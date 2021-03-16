@@ -38,7 +38,7 @@ void Sprite2DComponent::Update(float deltaTime)
 		quat.y = mOwner.GetRotation().y;
 		quat.z = mOwner.GetRotation().z;
 		quat.w = mOwner.GetRotation().w;
-		auto rotate =glm::mat4_cast(quat);
+		auto rotate = glm::mat4_cast(quat);
 		auto scale = glm::scale(glm::identity<glm::mat4>(), glm::vec3(mTexture->GetWidth() * scaleOwner, mTexture->GetHeight() * scaleOwner, 1));
 
 		if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::Vulkan)
@@ -91,7 +91,8 @@ void Sprite2DComponent::SetTexture(std::shared_ptr<Texture> texture, const float
 		viewproj[2][2] = 1.f;
 		viewproj[3][3] = 1.f;
 
-		mTextureVK->param.projView = viewproj;
+		mTextureVK->param.proj = viewproj;
+		mTextureVK->param.view = glm::identity<glm::mat4>();
 		memcpy(glm::value_ptr(mTextureVK->param.world), world.GetAsFloatPtr(), matrixSize);
 	}
 	if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::OpenGL)
@@ -115,7 +116,8 @@ void Sprite2DComponent::SetTexture(std::shared_ptr<Texture> texture, const float
 		viewproj[2][2] = 1.f;
 		viewproj[3][3] = 1.f;
 
-		sprite->param.projView = viewproj;
+		sprite->param.proj = viewproj;
+		sprite->param.view = glm::identity<glm::mat4>();
 		memcpy(glm::value_ptr(sprite->param.world), world.GetAsFloatPtr(), matrixSize);
 		mOwner.GetScene()->GetRenderer()->GetGL().pushSprite2d(sprite);
 	}

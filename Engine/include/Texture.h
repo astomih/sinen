@@ -25,7 +25,8 @@ struct ImageObject
 struct ShaderParameters
 {
 	glm::mat4x4 world;
-	glm::mat4x4 projView;
+	glm::mat4x4 view;
+	glm::mat4x4 proj;
 };
 struct SDLObjectCloser
 {

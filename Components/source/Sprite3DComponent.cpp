@@ -44,14 +44,16 @@ void Sprite3DComponent::Update(float deltaTime)
 		{
 			auto view = mOwner.GetScene()->GetRenderer()->GetViewMatrix();
 			static auto proj = glm::perspective(glm::radians(90.f), Window::Size.x / Window::Size.y, 0.01f, 10000.f);
-			mTextureVK->param.projView = proj * view;
+			mTextureVK->param.proj = proj;
+			mTextureVK->param.view = view;
 			mTextureVK->param.world = translate * rotate * scale;
 		}
 		else
 		{
 			auto view = mOwner.GetScene()->GetRenderer()->GetViewMatrix();
 			static auto proj = glm::perspective(glm::radians(90.f), Window::Size.x / Window::Size.y, 0.01f, 10000.f);
-			sprite->param.projView = proj * view;
+			sprite->param.proj = proj;
+			sprite->param.view = view;
 			sprite->param.world = translate * rotate * scale;
 		}
 		mOwner.RecomuteFinished();
@@ -62,13 +64,15 @@ void Sprite3DComponent::Update(float deltaTime)
 		{
 			auto view = mOwner.GetScene()->GetRenderer()->GetViewMatrix();
 			static auto proj = glm::perspective(glm::radians(90.f), Window::Size.x / Window::Size.y, 0.01f, 10000.f);
-			mTextureVK->param.projView = proj * view;
+			mTextureVK->param.proj = proj;
+			mTextureVK->param.view = view;
 		}
 		else
 		{
 			auto view = mOwner.GetScene()->GetRenderer()->GetViewMatrix();
 			static auto proj = glm::perspective(glm::radians(90.f), Window::Size.x / Window::Size.y, 0.01f, 10000.f);
-			sprite->param.projView = proj * view;
+			sprite->param.proj = proj;
+			sprite->param.view = view;
 		}
 	}
 }
@@ -115,7 +119,8 @@ void Sprite3DComponent::SetTexture(std::shared_ptr<Texture> texture, const float
 		auto proj = glm::perspective(glm::radians(90.f), Window::Size.x / Window::Size.y, 0.01f, 10000.f);
 
 		mTextureVK->param.world = world;
-		mTextureVK->param.projView = proj * view;
+		mTextureVK->param.proj = proj;
+		mTextureVK->param.view = view;
 	}
 	if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::OpenGL)
 	{
@@ -137,7 +142,8 @@ void Sprite3DComponent::SetTexture(std::shared_ptr<Texture> texture, const float
 		auto proj = glm::perspective(glm::radians(90.f), Window::Size.x / Window::Size.y, 0.01f, 10000.f);
 
 		sprite->param.world = world;
-		sprite->param.projView = proj * view;
+		sprite->param.proj = proj;
+		sprite->param.view = view;
 		mOwner.GetScene()->GetRenderer()->GetGL().pushSprite3d(sprite);
 	}
 	mOwner.GetScene()->GetRenderer()->AddSprite3D(this);

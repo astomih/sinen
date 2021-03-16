@@ -46,7 +46,8 @@ void GLRenderer::render()
 	for (auto &i : mSprite3Ds)
 	{
 		mSpriteShader->SetMatrixUniform("uWorld", i->param.world);
-		mSpriteShader->SetMatrixUniform("uProjView", i->param.projView);
+		mSpriteShader->SetMatrixUniform("uProj", i->param.proj);
+		mSpriteShader->SetMatrixUniform("uView", i->param.view);
 		int num = 0;
 		num = mTextureIDs[i->textureIndex];
 		glBindTexture(GL_TEXTURE_2D, num);
@@ -81,7 +82,8 @@ void GLRenderer::render()
 		if (i->isChangeBuffer)
 			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
 		mAlphaShader->SetMatrixUniform("uWorld", i->param.world);
-		mAlphaShader->SetMatrixUniform("uProjView", i->param.projView);
+		mAlphaShader->SetMatrixUniform("uProj", i->param.proj);
+		mAlphaShader->SetMatrixUniform("uView", i->param.view);
 		int num = mTextureIDs[i->textureIndex];
 		glBindTexture(GL_TEXTURE_2D, num);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);

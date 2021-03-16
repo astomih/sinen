@@ -5,9 +5,6 @@
 #include <vector>
 #include <memory>
 #include <Engine.hpp>
-static constexpr float start = -250.0f;
-static constexpr float size = 250.f;
-static constexpr float scale = 125.f;
 
 enum class Scenes : int16_t
 {

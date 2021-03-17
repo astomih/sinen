@@ -79,6 +79,7 @@ void Renderer::Shutdown()
 {
 	if (RendererAPI == GraphicsAPI::Vulkan)
 		vkRenderer->terminate();
+	if (RendererAPI == GraphicsAPI::OpenGL);
 }
 
 void Renderer::UnloadData()

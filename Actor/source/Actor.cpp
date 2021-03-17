@@ -38,7 +38,7 @@ void Actor::UpdateComponents(float deltaTime)
 	}
 	for (auto &comp : mComponents2)
 	{
-		comp->Update(deltaTime);
+		comp.second->Update(deltaTime);
 	}
 }
 
@@ -57,7 +57,7 @@ void Actor::ProcessInput(const InputState &state)
 		}
 		for (auto &comp : mComponents2)
 		{
-			comp->ProcessInput(state);
+			comp.second->ProcessInput(state);
 		}
 
 		ActorInput(state);
@@ -106,21 +106,23 @@ void Actor::AddComponent(std::shared_ptr<Component> component)
 	// Inserts element before position of iterator
 	mComponents.insert(iter, component);
 }
-void Actor::AddComponent(std::unique_ptr<Component> &&component)
+void Actor::AddComponent(std::unique_ptr<Component> &&component, uint16_t &index)
 {
 	// Find the insertion point in the sorted vector
 	// (The first element with a order higher than me)
 	int myOrder = component->GetUpdateOrder();
 	auto iter = mComponents2.begin();
+	index = ++m_index;
 	for (; iter != mComponents2.end(); ++iter)
 	{
-		if (myOrder < (*iter)->GetUpdateOrder())
+		if (myOrder < (*iter).second->GetUpdateOrder())
 		{
 			break;
 		}
 	}
 	// Inserts element before position of iterator
-	mComponents2.insert(iter, std::move(component));
+	using pair = std::pair<uint16_t, std::unique_ptr<Component>>;
+	mComponents2.insert(iter, pair{index, std::move(component)});
 }
 
 void Actor::RemoveComponent(std::shared_ptr<Component> component)

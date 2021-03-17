@@ -63,10 +63,12 @@ public:
 	std::shared_ptr<class Scene> GetScene() { return mScene; }
 
 	void AddComponent(std::shared_ptr<class Component> component);
-	void AddComponent(std::unique_ptr<class Component> &&component);
+	void AddComponent(std::unique_ptr<class Component> &&component, uint16_t &);
+	std::unordered_map<uint16_t, std::unique_ptr<Component>> &GetComponents() { return this->mComponents2; }
 	void RemoveComponent(std::shared_ptr<class Component> component);
 	bool isRecompute() { return mRecomputeWorldTransform; }
 	void RecomuteFinished() { mRecomputeWorldTransform = false; }
+
 protected:
 	bool mRecomputeWorldTransform;
 
@@ -76,8 +78,8 @@ private:
 	Vector3f mPosition;
 	Quaternion mRotation;
 	std::vector<std::shared_ptr<Component>> mComponents;
-	std::vector<std::unique_ptr<Component>> mComponents2;
+	std::unordered_map<uint16_t, std::unique_ptr<Component>> mComponents2;
 	std::shared_ptr<class Scene> mScene;
 	float mScale;
-	char padding[4];
+	uint16_t m_index = 0;
 };

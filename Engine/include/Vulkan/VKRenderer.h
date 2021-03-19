@@ -20,6 +20,7 @@ public:
 	std::string imageID;
 	std::shared_ptr<Texture> mTexture;
 	BufferObject buffer;
+	bool isInstance = false;
 };
 
 struct InstanceData
@@ -38,6 +39,8 @@ public:
 	void render();
 	void cleanup();
 	void makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri, VkCommandBufferBeginInfo &ci, VkFence &fence);
+	void draw3d(VkCommandBuffer);
+	void draw2d(VkCommandBuffer);
 	BufferObject CreateBuffer(uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 	BufferObject CreateBuffer(uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags, const void *initialData);
 

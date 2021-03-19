@@ -10,7 +10,7 @@
 #include <sstream>
 #include <VKBase.h>
 constexpr int maxpoolSize = 1000;
-constexpr int maxInstanceCount = 1000;
+constexpr int maxInstanceCount = 900;
 VKRenderer::VKRenderer()
 	: m_vertexBuffer(),
 	  m_descriptorPool(),
@@ -373,20 +373,33 @@ void VKRenderer::makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri,
 	VkDeviceSize offset = 0;
 	vkCmdBindVertexBuffers(command, 0, 1, &m_vertexBuffer.buffer, &offset);
 	vkCmdBindIndexBuffer(command, m_indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
+	draw3d(command);
+	vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline2D);
+	int bufCount = instanceCount;
+	instanceCount++;
+	draw2d(command);
+
+	renderImGUI(command);
+}
+
+void VKRenderer::draw3d(VkCommandBuffer command)
+{
 	instanceCount = 0;
+	/*
 	for (auto &sprite : mTextures3D)
 	{
-		instance[instanceCount].world = sprite->param.world;
+		memcpy(&instance[instanceCount].world, &sprite->param.world, sizeof(float) * 16);
 		instanceCount++;
 	}
-	for (int i = 0; i < m_instanceUniforms.size(); i++)
+	auto size = sizeof(InstanceData) * instance.size();
+	for (auto &i : m_instanceUniforms)
 	{
-		auto memory = m_instanceUniforms[i].memory;
 		void *p;
-		vkMapMemory(m_base->m_device, memory, 0, VK_WHOLE_SIZE, 0, &p);
-		memcpy(p, instance.data(), sizeof(InstanceData) * instance.size());
-		vkUnmapMemory(m_base->m_device, memory);
+		vkMapMemory(m_base->m_device, i.memory, 0, VK_WHOLE_SIZE, 0, &p);
+		memcpy(p, instance.data(), size);
+		vkUnmapMemory(m_base->m_device, i.memory);
 	}
+	*/
 	for (auto &sprite : mTextures3D)
 	{
 		if (sprite->isChangeBuffer)
@@ -430,9 +443,12 @@ void VKRenderer::makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri,
 		}
 		vkCmdDrawIndexed(command, m_indexCount, 1, 0, 0, 0);
 	}
-	vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline2D);
-	int bufCount = instanceCount;
-	instanceCount++;
+}
+
+void VKRenderer::draw2d(VkCommandBuffer command)
+{
+	VkDeviceSize offset = 0;
+	/*
 	for (auto &sprite : mTextures2D)
 	{
 		instance[instanceCount].world = sprite->param.world;
@@ -446,6 +462,7 @@ void VKRenderer::makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri,
 		memcpy(p, instance.data(), sizeof(InstanceData) * instance.size());
 		vkUnmapMemory(m_base->m_device, memory);
 	}
+	*/
 	for (auto &sprite : mTextures2D)
 	{
 		vkCmdBindVertexBuffers(command, 0, 1, &m_vertexBuffer.buffer, &offset);
@@ -492,8 +509,6 @@ void VKRenderer::makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri,
 		}
 		vkCmdDrawIndexed(command, m_indexCount, 1, 0, 0, 0);
 	}
-
-	renderImGUI(command);
 }
 
 void VKRenderer::makeSpriteGeometry()

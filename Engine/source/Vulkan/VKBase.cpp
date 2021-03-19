@@ -15,9 +15,9 @@ static VkBool32 VKAPI_CALL DebugReportCallback(
 	uint64_t object,
 	size_t location,
 	int32_t messageCode,
-	const char *pLayerPrefix,
-	const char *pMessage,
-	void *pUserData)
+	const char* pLayerPrefix,
+	const char* pMessage,
+	void* pUserData)
 {
 	VkBool32 ret = VK_FALSE;
 	if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT ||
@@ -45,12 +45,12 @@ void VKBase::checkResult(VkResult result)
 	}
 }
 
-VKBase::VKBase(VKRenderer *vkrenderer)
+VKBase::VKBase(VKRenderer* vkrenderer)
 	: m_presentMode(VK_PRESENT_MODE_IMMEDIATE_KHR), m_imageIndex(0), m_vkrenderer(vkrenderer)
 {
 }
 
-void VKBase::initialize(SDL_Window *window, const char *appName)
+void VKBase::initialize(SDL_Window* window, const char* appName)
 {
 	m_window = window;
 	// Vulkan インスタンスの生成
@@ -98,8 +98,6 @@ void VKBase::initialize(SDL_Window *window, const char *appName)
 	prepareSemaphores();
 
 	m_vkrenderer->prepare();
-	EffectManager = &Effect::get_mutable_instance();
-	EffectManager->Init(this);
 }
 
 void VKBase::terminate()
@@ -112,7 +110,7 @@ void VKBase::terminate()
 	m_commands.clear();
 
 	vkDestroyRenderPass(m_device, m_renderPass, nullptr);
-	for (auto &v : m_framebuffers)
+	for (auto& v : m_framebuffers)
 	{
 		vkDestroyFramebuffer(m_device, v, nullptr);
 	}
@@ -122,14 +120,14 @@ void VKBase::terminate()
 	vkDestroyImage(m_device, m_depthBuffer, nullptr);
 	vkDestroyImageView(m_device, m_depthBufferView, nullptr);
 
-	for (auto &v : m_swapchainViews)
+	for (auto& v : m_swapchainViews)
 	{
 		vkDestroyImageView(m_device, v, nullptr);
 	}
 	m_swapchainImages.clear();
 	vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
 
-	for (auto &v : m_fences)
+	for (auto& v : m_fences)
 	{
 		vkDestroyFence(m_device, v, nullptr);
 	}
@@ -147,9 +145,9 @@ void VKBase::terminate()
 	vkDestroyInstance(m_instance, nullptr);
 }
 
-void VKBase::initializeInstance(const char *appName)
+void VKBase::initializeInstance(const char* appName)
 {
-	std::vector<const char *> extensions;
+	std::vector<const char*> extensions;
 	VkApplicationInfo appInfo{};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	appInfo.pApplicationName = appName;
@@ -165,7 +163,7 @@ void VKBase::initializeInstance(const char *appName)
 		props.resize(count);
 		vkEnumerateInstanceExtensionProperties(nullptr, &count, props.data());
 
-		for (const auto &v : props)
+		for (const auto& v : props)
 		{
 			extensions.push_back(v.extensionName);
 		}
@@ -178,7 +176,7 @@ void VKBase::initializeInstance(const char *appName)
 	ci.pApplicationInfo = &appInfo;
 #ifdef _DEBUG
 	// デバッグビルド時には検証レイヤーを有効化
-	const char *layers[] = {"VK_LAYER_LUNARG_standard_validation"};
+	const char* layers[] = { "VK_LAYER_LUNARG_standard_validation" };
 	ci.enabledLayerCount = 1;
 	ci.ppEnabledLayerNames = layers;
 #endif
@@ -237,8 +235,8 @@ void VKBase::createDevice()
 		vkEnumerateDeviceExtensionProperties(m_physDev, nullptr, &count, devExtProps.data());
 	}
 
-	std::vector<const char *> extensions;
-	for (const auto &v : devExtProps)
+	std::vector<const char*> extensions;
+	for (const auto& v : devExtProps)
 	{
 		extensions.push_back(v.extensionName);
 	}
@@ -274,7 +272,7 @@ void VKBase::selectSurfaceFormat(VkFormat format)
 	vkGetPhysicalDeviceSurfaceFormatsKHR(m_physDev, m_surface, &surfaceFormatCount, formats.data());
 
 	// 検索して一致するフォーマットを見つける.
-	for (const auto &f : formats)
+	for (const auto& f : formats)
 	{
 		if (f.format == format)
 		{
@@ -283,7 +281,7 @@ void VKBase::selectSurfaceFormat(VkFormat format)
 	}
 }
 
-void VKBase::createSwapchain(SDL_Window *window)
+void VKBase::createSwapchain(SDL_Window* window)
 {
 	auto imageCount = (std::max)(2u, m_surfaceCaps.minImageCount);
 	auto extent = m_surfaceCaps.currentExtent;
@@ -295,7 +293,7 @@ void VKBase::createSwapchain(SDL_Window *window)
 		extent.width = uint32_t(width);
 		extent.height = uint32_t(height);
 	}
-	uint32_t queueFamilyIndices[] = {m_graphicsQueueIndex};
+	uint32_t queueFamilyIndices[] = { m_graphicsQueueIndex };
 	VkSwapchainCreateInfoKHR ci{};
 	ci.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 	ci.surface = m_surface;
@@ -362,7 +360,7 @@ void VKBase::createViews()
 			VK_COMPONENT_SWIZZLE_B,
 			VK_COMPONENT_SWIZZLE_A,
 		};
-		ci.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+		ci.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 		ci.image = m_swapchainImages[i];
 		auto result = vkCreateImageView(m_device, &ci, nullptr, &m_swapchainViews[i]);
 		checkResult(result);
@@ -380,7 +378,7 @@ void VKBase::createViews()
 			VK_COMPONENT_SWIZZLE_B,
 			VK_COMPONENT_SWIZZLE_A,
 		};
-		ci.subresourceRange = {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1};
+		ci.subresourceRange = { VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1 };
 		ci.image = m_depthBuffer;
 		auto result = vkCreateImageView(m_device, &ci, nullptr, &m_depthBufferView);
 		checkResult(result);
@@ -393,8 +391,8 @@ void VKBase::createRenderPass()
 	ci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 
 	std::array<VkAttachmentDescription, 2> attachments;
-	auto &colorTarget = attachments[0];
-	auto &depthTarget = attachments[1];
+	auto& colorTarget = attachments[0];
+	auto& depthTarget = attachments[1];
 
 	colorTarget = VkAttachmentDescription{};
 	colorTarget.format = m_surfaceFormat.format;
@@ -447,7 +445,7 @@ void VKBase::createFramebuffer()
 	ci.height = m_swapchainExtent.height;
 	ci.layers = 1;
 	m_framebuffers.clear();
-	for (auto &v : m_swapchainViews)
+	for (auto& v : m_swapchainViews)
 	{
 		std::array<VkImageView, 2> attachments;
 		ci.attachmentCount = uint32_t(attachments.size());
@@ -477,7 +475,7 @@ void VKBase::prepareCommandBuffers()
 	VkFenceCreateInfo ci{};
 	ci.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	ci.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-	for (auto &v : m_fences)
+	for (auto& v : m_fences)
 	{
 		result = vkCreateFence(m_device, &ci, nullptr, &v);
 		checkResult(result);
@@ -499,7 +497,7 @@ uint32_t VKBase::getMemoryTypeIndex(uint32_t requestBits, VkMemoryPropertyFlags 
 	{
 		if (requestBits & 1)
 		{
-			const auto &types = m_physMemProps.memoryTypes[i];
+			const auto& types = m_physMemProps.memoryTypes[i];
 			if ((types.propertyFlags & requestProps) == requestProps)
 			{
 				result = i;
@@ -541,17 +539,17 @@ void VKBase::render()
 
 	// クリア値
 	std::array<VkClearValue, 2> clearValue =
+	{
 		{
-			{
-				{0.f, 0.f, 0.f, 1.0f}, // for Color
-				{1.0f, 0}			   // for Depth
-			}};
+			{0.f, 0.f, 0.f, 1.0f}, // for Color
+			{1.0f, 0}			   // for Depth
+		} };
 
 	VkRenderPassBeginInfo renderPassBI{};
 	renderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	renderPassBI.renderPass = m_renderPass;
 	renderPassBI.framebuffer = m_framebuffers[nextImageIndex];
-	renderPassBI.renderArea.offset = VkOffset2D{0, 0};
+	renderPassBI.renderArea.offset = VkOffset2D{ 0, 0 };
 	renderPassBI.renderArea.extent = m_swapchainExtent;
 	renderPassBI.pClearValues = clearValue.data();
 	renderPassBI.clearValueCount = uint32_t(clearValue.size());
@@ -559,7 +557,7 @@ void VKBase::render()
 	// コマンドバッファ・レンダーパス開始
 	VkCommandBufferBeginInfo commandBI{};
 	commandBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	auto &command = m_commands[nextImageIndex];
+	auto& command = m_commands[nextImageIndex];
 	m_imageIndex = nextImageIndex;
 	m_vkrenderer->makeCommand(command, renderPassBI, commandBI, commandFence);
 

@@ -11,5 +11,4 @@ public:
 	void Remove();
 	void Draw();
 };
-static Effect* EffectManager;
 

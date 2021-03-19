@@ -6,13 +6,13 @@ Renderer::Renderer(GraphicsAPI api)
 	: transPic(nullptr), mScene(nullptr), mWindow(nullptr), vkRenderer(nullptr), glRenderer(nullptr), RendererAPI(api)
 {
 	SDL_GLContext context;
+	std::cout << "a" << std::endl;
 	switch (RendererAPI)
 	{
 	case GraphicsAPI::Vulkan:
 		vkRenderer = std::make_unique<VKRenderer>();
 		SDL_Init(SDL_INIT_EVERYTHING);
 		TTF_Init();
-		//
 		IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF);
 		mWindow = SDL_CreateWindow(
 			std::string(Window::name + " : Vulkan").c_str(),
@@ -79,7 +79,6 @@ void Renderer::Shutdown()
 {
 	if (RendererAPI == GraphicsAPI::Vulkan)
 		vkRenderer->terminate();
-	if (RendererAPI == GraphicsAPI::OpenGL);
 }
 
 void Renderer::UnloadData()

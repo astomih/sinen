@@ -93,7 +93,7 @@ void Sprite2DComponent::SetTexture(std::shared_ptr<Texture> texture, const float
 
 		mTextureVK->param.proj = viewproj;
 		mTextureVK->param.view = glm::identity<glm::mat4>();
-		memcpy(glm::value_ptr(mTextureVK->param.world), world.GetAsFloatPtr(), matrixSize);
+		memcpy(glm::value_ptr(mTextureVK->param.world), world.GetAsFloatPtr(), sizeof(Matrix4));
 	}
 	if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::OpenGL)
 	{

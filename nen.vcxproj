@@ -30,7 +30,7 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -46,16 +46,22 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir);$(ProjectDir)Engine;$(ProjectDir)lib\imgui\include;$(ProjectDir)Actor;$(ProjectDir)Components;$(BOOST_INCLUDE_PATH);$(ProjectDir)Engine\include\Vulkan;$(ProjectDir)lib\mojoAL-default;$(ProjectDir)lib\sol2-develop\include;$(ProjectDir)lib\rapidjson\include;$(ProjectDir)Scene\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir);$(ProjectDir)Engine;$(ProjectDir)lib\imgui\include;$(ProjectDir)Actor;$(ProjectDir)Components;$(BOOST_INCLUDE_PATH);$(ProjectDir)Engine\include\Vulkan;$(ProjectDir)lib\mojoAL-default;$(ProjectDir)lib\sol2-3.2.2\include;$(ProjectDir)lib\rapidjson\include;$(ProjectDir)Scene\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VK_SDK_PATH)\Lib32;$(BOOST_LIBRARY_PATH);%(AdditionalLibraryDirectories);$(LibraryPath)</LibraryPath>
     <TargetExt>.lib</TargetExt>
     <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     <SourcePath>C:\nen\lib\imgui\source;C:\nen\lib\mojoAL-default;$(SourcePath)</SourcePath>
+    <LuaType>static</LuaType>
+    <LuaConfiguration>Debug</LuaConfiguration>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir);$(ProjectDir)Engine;$(ProjectDir)lib\imgui\include;$(ProjectDir)Actor;$(ProjectDir)Components;$(BOOST_INCLUDE_PATH);$(ProjectDir)Engine\include\Vulkan;$(ProjectDir)lib\mojoAL-default;$(ProjectDir)lib\sol2-develop\include;$(ProjectDir)lib\rapidjson\include;$(ProjectDir)Scene\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir);$(ProjectDir)Engine;$(ProjectDir)lib\imgui\include;$(ProjectDir)Actor;$(ProjectDir)Components;$(BOOST_INCLUDE_PATH);$(ProjectDir)Engine\include\Vulkan;$(ProjectDir)lib\mojoAL-default;$(ProjectDir)lib\sol2-3.2.2\include;$(ProjectDir)lib\rapidjson\include;$(ProjectDir)Scene\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VK_SDK_PATH)\Lib32;$(BOOST_LIBRARY_PATH);%(AdditionalLibraryDirectories);$(LibraryPath)</LibraryPath>
+    <LuaType>static</LuaType>
+    <LuaConfiguration>Release</LuaConfiguration>
+    <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    <EnableMicrosoftCodeAnalysis>false</EnableMicrosoftCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -85,15 +91,17 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalOptions>/wd4996 %(AdditionalOptions)</AdditionalOptions>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -105,6 +113,8 @@
     <Lib>
       <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VK_SDK_PATH)\Lib32;</AdditionalLibraryDirectories>
+      <LinkTimeCodeGeneration>
+      </LinkTimeCodeGeneration>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>

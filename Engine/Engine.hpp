@@ -6,6 +6,7 @@
 #include "include/OpenGL/ShaderGL.h"
 #include "include/OpenGL/GLRenderer.h"
 #include "include/Random.h"
+#include "include/Vertex.h"
 #include "include/Texture.h"
 #include "include/Font.hpp"
 #include "include/Window.hpp"
@@ -18,5 +19,6 @@
 #include "include/InputSystem.h"
 #include "include/Effect.hpp"
 #include "include/Script.h"
+#include "include/VertexArray.h"
 #include "include/Vulkan/VulkanUtil.h"
 #endif

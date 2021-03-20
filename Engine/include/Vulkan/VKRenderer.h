@@ -4,6 +4,7 @@
 #include <Engine/include/Math.hpp>
 #include <Engine/include/Texture.h>
 #include <unordered_map>
+#include <Engine/include/VertexArray.h>
 enum class TextureType
 {
 	Image2D,

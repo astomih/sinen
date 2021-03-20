@@ -134,6 +134,8 @@
     <ClCompile Include="Engine\source\Texture.cpp" />
     <ClCompile Include="Engine\source\Transform.cpp" />
     <ClCompile Include="Engine\source\Transition.cpp" />
+    <ClCompile Include="Engine\source\Vertex.cpp" />
+    <ClCompile Include="Engine\source\VertexArray.cpp" />
     <ClCompile Include="Engine\source\Vulkan\Swapchain.cpp" />
     <ClCompile Include="Engine\source\Vulkan\VKBase.cpp" />
     <ClCompile Include="Engine\source\Vulkan\VKRenderer.cpp" />
@@ -183,6 +185,8 @@
     <ClInclude Include="Engine\include\Texture.h" />
     <ClInclude Include="Engine\include\Transform.hpp" />
     <ClInclude Include="Engine\include\Transition.h" />
+    <ClInclude Include="Engine\include\Vertex.h" />
+    <ClInclude Include="Engine\include\VertexArray.h" />
     <ClInclude Include="Engine\include\Vulkan\Pipeline.h" />
     <ClInclude Include="Engine\include\Vulkan\Swapchain.h" />
     <ClInclude Include="Engine\include\Vulkan\VKBase.h" />

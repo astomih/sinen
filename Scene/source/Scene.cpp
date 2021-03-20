@@ -69,6 +69,7 @@ void Scene::ProcessInput()
 		{
 			mIsRunning = false;
 			NextScene = Scenes::None;
+			mGameState = EQuit;
 		}
 		break;
 		case SDL_KEYDOWN:
@@ -81,7 +82,7 @@ void Scene::ProcessInput()
 	}
 
 	mInputSystem->Update();
-	const InputState& state = mInputSystem->GetState();
+	const InputState &state = mInputSystem->GetState();
 
 	if (state.Keyboard.GetKeyState(SDL_SCANCODE_ESCAPE) == EReleased)
 	{
@@ -92,7 +93,7 @@ void Scene::ProcessInput()
 	SystemInput(state);
 
 	mUpdatingActors = true;
-	const Uint8* oldstate = SDL_GetKeyboardState(NULL);
+	const Uint8 *oldstate = SDL_GetKeyboardState(NULL);
 	if (mGameState == EGameplay)
 	{
 		for (auto actor : mActors)
@@ -205,7 +206,7 @@ void Scene::RemoveActor(std::shared_ptr<Actor> actor)
 	}
 }
 
-Font* Scene::GetFont(const std::string& fileName)
+Font *Scene::GetFont(const std::string &fileName)
 {
 	auto iter = mFonts.find(fileName);
 	if (iter != mFonts.end())
@@ -214,7 +215,7 @@ Font* Scene::GetFont(const std::string& fileName)
 	}
 	else
 	{
-		Font* font = new Font();
+		Font *font = new Font();
 		if (font->Load(fileName))
 		{
 			mFonts.emplace(fileName, font);

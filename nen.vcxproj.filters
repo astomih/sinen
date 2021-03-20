@@ -192,6 +192,12 @@
     <ClCompile Include="Scene\source\Scene.cpp">
       <Filter>ソース ファイル\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\source\Vertex.cpp">
+      <Filter>ソース ファイル\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\source\VertexArray.cpp">
+      <Filter>ソース ファイル\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -334,6 +340,12 @@
     </ClInclude>
     <ClInclude Include="Scene\include\Scene.hpp">
       <Filter>ヘッダー ファイル\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\include\Vertex.h">
+      <Filter>ヘッダー ファイル\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\include\VertexArray.h">
+      <Filter>ヘッダー ファイル\Engine</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

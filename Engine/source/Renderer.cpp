@@ -6,7 +6,6 @@ Renderer::Renderer(GraphicsAPI api)
 	: transPic(nullptr), mScene(nullptr), mWindow(nullptr), vkRenderer(nullptr), glRenderer(nullptr), RendererAPI(api)
 {
 	SDL_GLContext context;
-	std::cout << "a" << std::endl;
 	switch (RendererAPI)
 	{
 	case GraphicsAPI::Vulkan:

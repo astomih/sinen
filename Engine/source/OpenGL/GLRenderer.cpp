@@ -178,18 +178,17 @@ void GLRenderer::createSpriteVerts()
 	const Vector2f rb(1.0f, 0.0f);
 	const Vector2f rt(1.0f, 1.0f);
 	std::array<float, 3> norm = {1, 1, 1};
+	VertexArray vArray;
 
-	Vertex vertices[] =
-		{
-			{Vector3f(-value, value, value), norm, lb},
-			{Vector3f(-value, -value, value), norm, lt},
-			{Vector3f(value, value, value), norm, rb},
-			{Vector3f(value, -value, value), norm, rt},
-		};
+	vArray.vertices.push_back({Vector3f(-value, value, value), norm, lb});
+	vArray.vertices.push_back({Vector3f(-value, -value, value), norm, lt});
+	vArray.vertices.push_back({Vector3f(value, value, value), norm, rb});
+	vArray.vertices.push_back({Vector3f(value, -value, value), norm, rt});
 
 	uint32_t indices[] =
 		{
 			0, 2, 1, 1, 2, 3};
+	vArray.PushIndices(indices, 6);
 	// Create vertex array
 	glGenVertexArrays(1, &mSpriteVertexID);
 	glBindVertexArray(mSpriteVertexID);
@@ -197,12 +196,12 @@ void GLRenderer::createSpriteVerts()
 	// Create vertex buffer
 	glGenBuffers(1, &mSpriteVertexID);
 	glBindBuffer(GL_ARRAY_BUFFER, mSpriteVertexID);
-	glBufferData(GL_ARRAY_BUFFER, 4 * 8 * sizeof(float), vertices, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 4 * 8 * sizeof(float), vArray.vertices.data(), GL_DYNAMIC_DRAW);
 
 	// Create index buffer
 	glGenBuffers(1, &mSpriteIndexID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mSpriteIndexID);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), vArray.indices.data(), GL_STATIC_DRAW);
 
 	// Specify the vertex attributes
 	// (For now, assume one vertex format)

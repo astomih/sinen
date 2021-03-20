@@ -4,13 +4,8 @@
 #include <Engine/include/Vulkan/VKRenderer.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <unordered_map>
+#include <Engine/include/Vertex.h>
 struct SDL_Surface;
-struct Vertex
-{
-	Vector3f pos;
-	std::array<float, 3> norm;
-	Vector2f uv;
-};
 struct BufferObject
 {
 	VkBuffer buffer;

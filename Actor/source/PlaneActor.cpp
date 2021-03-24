@@ -2,9 +2,11 @@
 #include <Scene.hpp>
 #include <Components.hpp>
 #include <Engine.hpp>
-
-PlaneActor::PlaneActor(std::shared_ptr<Scene> scene,const std::string&& path , bool isUseLightSource)
-	:Actor(scene)
+namespace nen
 {
-	
+	PlaneActor::PlaneActor(std::shared_ptr<Scene> scene, const std::string&& path, bool isUseLightSource)
+		:Actor(scene)
+	{
+
+	}
 }

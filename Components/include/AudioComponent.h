@@ -4,17 +4,20 @@
 #include <vector>
 #include <string>
 
-class AudioComponent : public Component
+namespace nen
 {
-public:
-	AudioComponent(class Actor &owner, int updateOrder = 200);
-	~AudioComponent();
+	class AudioComponent : public Component
+	{
+	public:
+		AudioComponent(class Actor& owner, int updateOrder = 200);
+		~AudioComponent();
 
-	void Update(float deltaTime) override;
-	void OnUpdateWorldTransform() override;
-	void StopAllEvents();
+		void Update(float deltaTime) override;
+		void OnUpdateWorldTransform() override;
+		void StopAllEvents();
 
-private:
-	std::vector<SoundEvent> mEvents2D;
-	std::vector<SoundEvent> mEvents3D;
-};
+	private:
+		std::vector<SoundEvent> mEvents2D;
+		std::vector<SoundEvent> mEvents3D;
+	};
+}

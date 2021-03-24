@@ -4,133 +4,135 @@
 #include <algorithm>
 #include <Engine.hpp>
 #include <type_traits>
-
-Actor::Actor(std::shared_ptr<Scene> scene)
-	: mState(EActive), mPosition(Vector3f::Zero), mRotation(Quaternion::Identity), mScene(scene), mRecomputeWorldTransform(true), mScale(1.0f)
+namespace nen
 {
-}
-
-Actor::~Actor()
-{
-	mScene->RemoveActor(shared_from_this());
-	// Need to delete components
-	while (!mComponents.empty())
+	Actor::Actor(std::shared_ptr<Scene> scene)
+		: mState(EActive), mPosition(Vector3f::Zero), mRotation(Quaternion::Identity), mScene(scene), mRecomputeWorldTransform(true), mScale(1.0f)
 	{
-		mComponents.pop_back();
 	}
-	mComponents2.clear();
-}
 
-void Actor::Update(float deltaTime)
-{
-	if (mState == EActive)
+	Actor::~Actor()
 	{
-		UpdateComponents(deltaTime);
-		UpdateActor(deltaTime);
-		ComputeWorldTransform();
+		mScene->RemoveActor(shared_from_this());
+		// Need to delete components
+		while (!mComponents.empty())
+		{
+			mComponents.pop_back();
+		}
+		mComponents2.clear();
 	}
-}
 
-void Actor::UpdateComponents(float deltaTime)
-{
-	for (auto comp : mComponents)
+	void Actor::Update(float deltaTime)
 	{
-		comp->Update(deltaTime);
+		if (mState == EActive)
+		{
+			UpdateComponents(deltaTime);
+			UpdateActor(deltaTime);
+			ComputeWorldTransform();
+		}
 	}
-	for (auto &comp : mComponents2)
-	{
-		comp.second->Update(deltaTime);
-	}
-}
 
-void Actor::UpdateActor(float deltaTime)
-{
-}
-
-void Actor::ProcessInput(const InputState &state)
-{
-	if (mState == EActive)
+	void Actor::UpdateComponents(float deltaTime)
 	{
-		// First process input for components
 		for (auto comp : mComponents)
 		{
-			comp->ProcessInput(state);
+			comp->Update(deltaTime);
 		}
-		for (auto &comp : mComponents2)
+		for (auto& comp : mComponents2)
 		{
-			comp.second->ProcessInput(state);
-		}
-
-		ActorInput(state);
-	}
-}
-
-void Actor::ActorInput(const InputState &state)
-{
-}
-
-void Actor::ComputeWorldTransform()
-{
-	if (mRecomputeWorldTransform)
-	{
-		mRecomputeWorldTransform = true;
-
-		// Scale, then rotate, then translate
-		mWorldTransform =
-			Matrix4::CreateTranslation(mPosition);
-		/*
-			* Matrix4::CreateScale(mScale)
-			* Matrix4::CreateFromQuaternion(mRotation);
-			*/
-
-		// Inform components world transform updated
-		for (const auto comp : mComponents)
-		{
-			comp->OnUpdateWorldTransform();
+			comp.second->Update(deltaTime);
 		}
 	}
-}
 
-void Actor::AddComponent(std::shared_ptr<Component> component)
-{
-	// Find the insertion point in the sorted vector
-	// (The first element with a order higher than me)
-	int myOrder = component->GetUpdateOrder();
-	auto iter = mComponents.begin();
-	for (; iter != mComponents.end(); ++iter)
+	void Actor::UpdateActor(float deltaTime)
 	{
-		if (myOrder < (*iter)->GetUpdateOrder())
+	}
+
+	void Actor::ProcessInput(const InputState& state)
+	{
+		if (mState == EActive)
 		{
-			break;
+			// First process input for components
+			for (auto comp : mComponents)
+			{
+				comp->ProcessInput(state);
+			}
+			for (auto& comp : mComponents2)
+			{
+				comp.second->ProcessInput(state);
+			}
+
+			ActorInput(state);
 		}
 	}
-	// Inserts element before position of iterator
-	mComponents.insert(iter, component);
-}
-void Actor::AddComponent(std::unique_ptr<Component> &&component, uint16_t &index)
-{
-	// Find the insertion point in the sorted vector
-	// (The first element with a order higher than me)
-	int myOrder = component->GetUpdateOrder();
-	auto iter = mComponents2.begin();
-	index = ++m_index;
-	for (; iter != mComponents2.end(); ++iter)
+
+	void Actor::ActorInput(const InputState& state)
 	{
-		if (myOrder < (*iter).second->GetUpdateOrder())
+	}
+
+	void Actor::ComputeWorldTransform()
+	{
+		if (mRecomputeWorldTransform)
 		{
-			break;
+			mRecomputeWorldTransform = true;
+
+			// Scale, then rotate, then translate
+			mWorldTransform =
+				Matrix4::CreateTranslation(mPosition);
+			/*
+				* Matrix4::CreateScale(mScale)
+				* Matrix4::CreateFromQuaternion(mRotation);
+				*/
+
+				// Inform components world transform updated
+			for (const auto comp : mComponents)
+			{
+				comp->OnUpdateWorldTransform();
+			}
 		}
 	}
-	// Inserts element before position of iterator
-	using pair = std::pair<uint16_t, std::unique_ptr<Component>>;
-	mComponents2.insert(iter, pair{index, std::move(component)});
-}
 
-void Actor::RemoveComponent(std::shared_ptr<Component> component)
-{
-	auto iter = std::find(mComponents.begin(), mComponents.end(), component);
-	if (iter != mComponents.end())
+	void Actor::AddComponent(std::shared_ptr<Component> component)
 	{
-		mComponents.erase(iter);
+		// Find the insertion point in the sorted vector
+		// (The first element with a order higher than me)
+		int myOrder = component->GetUpdateOrder();
+		auto iter = mComponents.begin();
+		for (; iter != mComponents.end(); ++iter)
+		{
+			if (myOrder < (*iter)->GetUpdateOrder())
+			{
+				break;
+			}
+		}
+		// Inserts element before position of iterator
+		mComponents.insert(iter, component);
+	}
+	void Actor::AddComponent(std::unique_ptr<Component>&& component, uint16_t& index)
+	{
+		// Find the insertion point in the sorted vector
+		// (The first element with a order higher than me)
+		int myOrder = component->GetUpdateOrder();
+		auto iter = mComponents2.begin();
+		index = ++m_index;
+		for (; iter != mComponents2.end(); ++iter)
+		{
+			if (myOrder < (*iter).second->GetUpdateOrder())
+			{
+				break;
+			}
+		}
+		// Inserts element before position of iterator
+		using pair = std::pair<uint16_t, std::unique_ptr<Component>>;
+		mComponents2.insert(iter, pair{ index, std::move(component) });
+	}
+
+	void Actor::RemoveComponent(std::shared_ptr<Component> component)
+	{
+		auto iter = std::find(mComponents.begin(), mComponents.end(), component);
+		if (iter != mComponents.end())
+		{
+			mComponents.erase(iter);
+		}
 	}
 }

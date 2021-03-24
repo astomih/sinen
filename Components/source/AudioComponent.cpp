@@ -2,74 +2,76 @@
 #include <Actors.hpp>
 #include <Scene.hpp>
 #include <Engine.hpp>
-
-AudioComponent::AudioComponent(Actor &owner, int updateOrder)
-	: Component(owner, updateOrder)
+namespace nen
 {
-}
-
-AudioComponent::~AudioComponent()
-{
-	StopAllEvents();
-}
-
-void AudioComponent::Update(float deltaTime)
-{
-	Component::Update(deltaTime);
-
-	// Remove invalid 2D events
-	auto iter = mEvents2D.begin();
-	while (iter != mEvents2D.end())
+	AudioComponent::AudioComponent(Actor& owner, int updateOrder)
+		: Component(owner, updateOrder)
 	{
-		if (!iter->IsValid())
+	}
+
+	AudioComponent::~AudioComponent()
+	{
+		StopAllEvents();
+	}
+
+	void AudioComponent::Update(float deltaTime)
+	{
+		Component::Update(deltaTime);
+
+		// Remove invalid 2D events
+		auto iter = mEvents2D.begin();
+		while (iter != mEvents2D.end())
 		{
-			iter = mEvents2D.erase(iter);
+			if (!iter->IsValid())
+			{
+				iter = mEvents2D.erase(iter);
+			}
+			else
+			{
+				++iter;
+			}
 		}
-		else
+
+		// Remove invalid 3D events
+		iter = mEvents3D.begin();
+		while (iter != mEvents3D.end())
 		{
-			++iter;
+			if (!iter->IsValid())
+			{
+				iter = mEvents3D.erase(iter);
+			}
+			else
+			{
+				++iter;
+			}
+		}
+	}
+
+	void AudioComponent::OnUpdateWorldTransform()
+	{
+		// Update 3D events' world transforms
+		Matrix4 world = mOwner.GetWorldTransform();
+		for (auto& event : mEvents3D)
+		{
+			if (event.IsValid())
+			{
+			}
 		}
 	}
 
-	// Remove invalid 3D events
-	iter = mEvents3D.begin();
-	while (iter != mEvents3D.end())
+	void AudioComponent::StopAllEvents()
 	{
-		if (!iter->IsValid())
+		// Stop all sounds
+		for (auto& e : mEvents2D)
 		{
-			iter = mEvents3D.erase(iter);
+			e.Stop();
 		}
-		else
+		for (auto& e : mEvents3D)
 		{
-			++iter;
+			e.Stop();
 		}
+		// Clear events
+		mEvents2D.clear();
+		mEvents3D.clear();
 	}
-}
-
-void AudioComponent::OnUpdateWorldTransform()
-{
-	// Update 3D events' world transforms
-	Matrix4 world = mOwner.GetWorldTransform();
-	for (auto &event : mEvents3D)
-	{
-		if (event.IsValid())
-		{
-		}
-	}
-}
-
-void AudioComponent::StopAllEvents()
-{
-	// Stop all sounds
-	for (auto &e : mEvents2D)
-	{
-		e.Stop();
-	}
-	for (auto &e : mEvents3D)
-	{
-		e.Stop();
-	}
-	// Clear events
-	mEvents2D.clear();
-	mEvents3D.clear();
 }

@@ -22,3 +22,6 @@
 #include "include/VertexArray.h"
 #include "include/Vulkan/VulkanUtil.h"
 #endif
+#ifdef NO_USE_NEN_NAMESPACE
+using namespace nen;
+#endif

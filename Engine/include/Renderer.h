@@ -8,85 +8,89 @@
 #include <VKRenderer.h>
 #include <Engine/include/OpenGL/GLRenderer.h>
 
-enum class GraphicsAPI
+namespace nen
 {
-	OpenGL,
-	Vulkan
-};
 
-class Renderer
-{
-public:
-	Renderer(GraphicsAPI api);
-	~Renderer() = default;
-
-	void SetGraphicsAPI(GraphicsAPI &api)
+	enum class GraphicsAPI
 	{
-		RendererAPI = api;
-	}
-	GraphicsAPI GetGraphicsAPI()
+		OpenGL,
+		Vulkan
+	};
+
+	class Renderer
 	{
-		return RendererAPI;
-	}
+	public:
+		Renderer(GraphicsAPI api);
+		~Renderer() = default;
 
-	bool Initialize(std::shared_ptr<class Scene> scene, std::shared_ptr<class Transition> transition);
-	void Shutdown();
-	void UnloadData();
+		void SetGraphicsAPI(GraphicsAPI& api)
+		{
+			RendererAPI = api;
+		}
+		GraphicsAPI GetGraphicsAPI()
+		{
+			return RendererAPI;
+		}
 
-	void Draw();
+		bool Initialize(std::shared_ptr<class Scene> scene, std::shared_ptr<class Transition> transition);
+		void Shutdown();
+		void UnloadData();
 
-	void AddSprite2D(class Sprite2DComponent *sprite);
-	void RemoveSprite2D(class Sprite2DComponent *sprite);
+		void Draw();
 
-	void AddSprite3D(class Sprite3DComponent *sprite);
-	void RemoveSprite3D(class Sprite3DComponent *sprite);
+		void AddSprite2D(class Sprite2DComponent* sprite);
+		void RemoveSprite2D(class Sprite2DComponent* sprite);
 
-	void AddEffectComp(class EffectComponent *effect);
-	void RemoveEffectComp(class EffectComponent *effect);
+		void AddSprite3D(class Sprite3DComponent* sprite);
+		void RemoveSprite3D(class Sprite3DComponent* sprite);
 
-	VKRenderer &GetVK() { return *(vkRenderer.get()); }
-	GLRenderer &GetGL() { return *(glRenderer.get()); }
+		void AddEffectComp(class EffectComponent* effect);
+		void RemoveEffectComp(class EffectComponent* effect);
 
-	class Texture *GetTexture(std::string_view fileName);
-	class Texture *GetTextureFromMemory(const unsigned char *const buffer, const std::string &key);
-	class Effect *GetEffect(const std::u16string &fileName);
+		vk::VKRenderer& GetVK() { return *(vkRenderer.get()); }
+		gl::GLRenderer& GetGL() { return *(glRenderer.get()); }
 
-	void SetViewMatrix(const glm::mat4x4 &view) { mView = view; }
-	glm::mat4x4 GetViewMatrix() { return mView; }
-	const glm::mat4x4 &GetProjectionMatrix() { return mProjection; }
+		class Texture* GetTexture(std::string_view fileName);
+		class Texture* GetTextureFromMemory(const unsigned char* const buffer, const std::string& key);
+		class Effect* GetEffect(const std::u16string& fileName);
 
-private:
-	class Sprite2DComponent *transPic;
+		void SetViewMatrix(const glm::mat4x4& view) { mView = view; }
+		glm::mat4x4 GetViewMatrix() { return mView; }
+		const glm::mat4x4& GetProjectionMatrix() { return mProjection; }
 
-	std::shared_ptr<Transition> mTransition;
-	// Map of textures loaded
-	std::unordered_map<std::string, class Texture *> mTextures3D;
-	// Map of meshes loaded
-	// Map of effects loaded
-	std::unordered_map<std::string, class Effect *> mEffects;
+	private:
+		class Sprite2DComponent* transPic;
 
-	// All the sprite components drawn
-	std::vector<class Sprite3DComponent *> mSprite3Ds;
-	std::vector<class Sprite2DComponent *> mSprite2Ds;
+		std::shared_ptr<Transition> mTransition;
+		// Map of textures loaded
+		std::unordered_map<std::string, class Texture*> mTextures3D;
+		// Map of meshes loaded
+		// Map of effects loaded
+		std::unordered_map<std::string, class Effect*> mEffects;
 
-	// All effects components drawn
-	std::vector<class EffectComponent *> mEffectComp;
+		// All the sprite components drawn
+		std::vector<class Sprite3DComponent*> mSprite3Ds;
+		std::vector<class Sprite2DComponent*> mSprite2Ds;
 
-	// GameHandler
-	std::shared_ptr<Scene> mScene;
+		// All effects components drawn
+		std::vector<class EffectComponent*> mEffectComp;
 
-	// Sprite vertex array
-	class VertexArray *mSpriteVerts;
+		// GameHandler
+		std::shared_ptr<Scene> mScene;
 
-	// View/projection for 3D shaders
-	glm::mat4x4 mView;
-	glm::mat4x4 mProjection;
+		// Sprite vertex array
+		class VertexArray* mSpriteVerts;
 
-	// Window
-	SDL_Window *mWindow;
-	// Renderer
-	std::unique_ptr<VKRenderer> vkRenderer;
-	std::unique_ptr<GLRenderer> glRenderer;
+		// View/projection for 3D shaders
+		glm::mat4x4 mView;
+		glm::mat4x4 mProjection;
 
-	GraphicsAPI RendererAPI;
-};
+		// Window
+		SDL_Window* mWindow;
+		// Renderer
+		std::unique_ptr<vk::VKRenderer> vkRenderer;
+		std::unique_ptr<gl::GLRenderer> glRenderer;
+
+		GraphicsAPI RendererAPI;
+	};
+}

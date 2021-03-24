@@ -1,9 +1,11 @@
 #include <Engine/include/VertexArray.h>
-
-void VertexArray::PushIndices(uint32_t indexArray[], size_t count)
+namespace nen
 {
-    for (size_t i = 0; i < count; i++)
+    void VertexArray::PushIndices(uint32_t indexArray[], size_t count)
     {
-        indices.push_back(indexArray[i]);
+        for (size_t i = 0; i < count; i++)
+        {
+            indices.push_back(indexArray[i]);
+        }
     }
 }

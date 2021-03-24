@@ -1,28 +1,31 @@
 ﻿#include <Engine.hpp>
-template <typename T>
-void vde::console::Print(const T& t)
+namespace nen::console
 {
-	std::cout << t << std::endl;
-}
-template <>
-void vde::console::Print(const Vector3f& t)
-{
-	std::cout << t.x << "," << t.y << "," << t.z << std::endl;
-}
-template <>
-void vde::console::Print(const Vector2f& t)
-{
-	std::cout << t.x << "," << t.y << std::endl;
-}
-template <>
-void vde::console::Print(const Matrix4& t)
-{
-	for (int i = 0; i < 4; i++)
+	template <typename T>
+	void Print(const T& t)
 	{
-		for (int j = 0; j < 4; j++)
+		std::cout << t << std::endl;
+	}
+	template <>
+	void Print(const Vector3f& t)
+	{
+		std::cout << t.x << "," << t.y << "," << t.z << std::endl;
+	}
+	template <>
+	void Print(const Vector2f& t)
+	{
+		std::cout << t.x << "," << t.y << std::endl;
+	}
+	template <>
+	void Print(const Matrix4& t)
+	{
+		for (int i = 0; i < 4; i++)
 		{
-			std::cout << t.GetAsFloatPtr()[i * 4 + j] << ",";
+			for (int j = 0; j < 4; j++)
+			{
+				std::cout << t.GetAsFloatPtr()[i * 4 + j] << ",";
+			}
+			std::cout << std::endl;
 		}
-		std::cout << std::endl;
 	}
 }

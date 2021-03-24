@@ -13,7 +13,7 @@
 #define FILE_PREFIX __FILE__ "(" TO_STRING(__LINE__) "): "
 #define ThrowIfFailed(code, msg) vkutil::CheckResultCodeVk(code, FILE_PREFIX msg)
 
-namespace vkutil
+namespace nen::vkutil
 {
   class VulkanException : public std::runtime_error
   {
@@ -57,7 +57,7 @@ namespace vkutil
         VK_COLOR_COMPONENT_B_BIT |
         VK_COLOR_COMPONENT_A_BIT;
     return VkPipelineColorBlendAttachmentState{
-        VK_TRUE,                                  // blendEnable
+        VK_TRUE,                                   // blendEnable
         VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, // color[Src/Dst] BlendFactor
         VK_BLEND_OP_ADD,
         VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, // alpha[Src/Dst] BlendFactor
@@ -72,7 +72,7 @@ namespace vkutil
         VK_COLOR_COMPONENT_B_BIT |
         VK_COLOR_COMPONENT_A_BIT;
     return VkPipelineColorBlendAttachmentState{
-        VK_TRUE,                                                       // blendEnable
+        VK_TRUE,                                                        // blendEnable
         VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, // color[Src/Dst] BlendFactor
         VK_BLEND_OP_ADD,
         VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, // alpha[Src/Dst] BlendFactor

@@ -1,14 +1,16 @@
 #include <Engine.hpp>
 #include <SDL.h>
-
-void Transition::Update()
+namespace nen
 {
-	mState = State::Processing;
-	mTime = SDL_GetTicks();
-}
+	void Transition::Update()
+	{
+		mState = State::Processing;
+		mTime = SDL_GetTicks();
+	}
 
-void Transition::Stop()
-{
-	mTime = SDL_GetTicks();
-	mState = State::AfterEnd;
+	void Transition::Stop()
+	{
+		mTime = SDL_GetTicks();
+		mState = State::AfterEnd;
+	}
 }

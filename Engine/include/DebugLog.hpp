@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-namespace vde::console
+namespace nen::console
 {
 	template <typename T>
 	void Print(const T& t);

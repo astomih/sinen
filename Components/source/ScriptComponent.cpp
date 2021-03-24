@@ -2,6 +2,9 @@
 #include <Components.hpp>
 #include <Actors.hpp>
 
-void ScriptComponent::LoadModule(std::string_view moduleName)
+namespace nen
 {
+	void ScriptComponent::LoadModule(std::string_view moduleName)
+	{
+	}
 }

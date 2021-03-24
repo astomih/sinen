@@ -3,46 +3,48 @@
 #include <Engine.hpp>
 #include <Scene.hpp>
 #include <iostream>
-
-MoveComponent::MoveComponent(class Actor &owner, int updateOrder)
-	: Component(owner, updateOrder), mAngularSpeed(0.0f), mForwardSpeed(0.0f)
+namespace nen
 {
-}
-
-void MoveComponent::Update(float deltaTime)
-{
-	if (!Math::NearZero(mAngularSpeed))
+	MoveComponent::MoveComponent(class Actor& owner, int updateOrder)
+		: Component(owner, updateOrder), mAngularSpeed(0.0f), mForwardSpeed(0.0f)
 	{
-		Quaternion rot = mOwner.GetRotation();
-		float angle = mAngularSpeed * deltaTime;
-		// Create quaternion for incremental rotation
-		// (Rotate about up axis)
-		Quaternion inc(Vector3f::UnitZ, angle);
-		// Concatenate old and new quaternion
-		rot = Quaternion::Concatenate(rot, inc);
-		mOwner.SetRotation(rot);
 	}
 
-	if (!Math::NearZero(mForwardSpeed))
+	void MoveComponent::Update(float deltaTime)
 	{
-		Vector3f pos = mOwner.GetPosition();
-		if (mDirection)
+		if (!Math::NearZero(mAngularSpeed))
 		{
-			pos += mOwner.GetForward() * mForwardSpeed * deltaTime;
+			Quaternion rot = mOwner.GetRotation();
+			float angle = mAngularSpeed * deltaTime;
+			// Create quaternion for incremental rotation
+			// (Rotate about up axis)
+			Quaternion inc(Vector3f::UnitZ, angle);
+			// Concatenate old and new quaternion
+			rot = Quaternion::Concatenate(rot, inc);
+			mOwner.SetRotation(rot);
 		}
-		else
+
+		if (!Math::NearZero(mForwardSpeed))
 		{
-			pos.y += mForwardSpeed * deltaTime;
+			Vector3f pos = mOwner.GetPosition();
+			if (mDirection)
+			{
+				pos += mOwner.GetForward() * mForwardSpeed * deltaTime;
+			}
+			else
+			{
+				pos.y += mForwardSpeed * deltaTime;
+			}
+			mOwner.SetPosition(pos);
 		}
-		mOwner.SetPosition(pos);
-	}
-	if (!Math::NearZero(mLeftRightSpeed))
-	{
-		Vector3f pos = mOwner.GetPosition();
-		if (!mDirection)
+		if (!Math::NearZero(mLeftRightSpeed))
 		{
-			pos.x += mLeftRightSpeed * deltaTime;
+			Vector3f pos = mOwner.GetPosition();
+			if (!mDirection)
+			{
+				pos.x += mLeftRightSpeed * deltaTime;
+			}
+			mOwner.SetPosition(pos);
 		}
-		mOwner.SetPosition(pos);
 	}
 }

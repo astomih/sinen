@@ -2,30 +2,33 @@
 #include <Actors.hpp>
 #include <Scene.hpp>
 #include <Engine.hpp>
-
-CircleComponent::CircleComponent(class Actor& owner)
-	:Component(owner)
-	, mRadius(0.0f)
+namespace  nen
 {
-}
 
-const Vector3f& CircleComponent::GetCenter() const
-{
-	return mOwner.GetPosition();
-}
+	CircleComponent::CircleComponent(class Actor& owner)
+		:Component(owner)
+		, mRadius(0.0f)
+	{
+	}
 
-float CircleComponent::GetRadius() const
-{
-	return mOwner.GetScale() * mRadius;
-}
+	const Vector3f& CircleComponent::GetCenter() const
+	{
+		return mOwner.GetPosition();
+	}
 
-bool Intersect(const CircleComponent& a, const CircleComponent& b)
-{
-	Vector3f diff = a.GetCenter() - b.GetCenter();
-	float distSq = diff.LengthSq();
+	float CircleComponent::GetRadius() const
+	{
+		return mOwner.GetScale() * mRadius;
+	}
 
-	float radiiSq = a.GetRadius() + b.GetRadius();
-	radiiSq *= radiiSq;
+	bool Intersect(const CircleComponent& a, const CircleComponent& b)
+	{
+		Vector3f diff = a.GetCenter() - b.GetCenter();
+		float distSq = diff.LengthSq();
 
-	return distSq <= radiiSq;
+		float radiiSq = a.GetRadius() + b.GetRadius();
+		radiiSq *= radiiSq;
+
+		return distSq <= radiiSq;
+	}
 }

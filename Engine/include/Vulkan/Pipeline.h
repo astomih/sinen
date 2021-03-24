@@ -1,13 +1,15 @@
 #pragma once
 #include <vulkan/vk_layer.h>
 #include <vulkan/vulkan_win32.h>
-
-class PipelineVK
+namespace nen::vk
 {
-public:
-	PipelineVK() = default;
-	void prepare();
+	class PipelineVK
+	{
+	public:
+		PipelineVK() = default;
+		void prepare();
 
-private:
-	VkPipeline m_pipeline;
-};
+	private:
+		VkPipeline m_pipeline;
+	};
+}

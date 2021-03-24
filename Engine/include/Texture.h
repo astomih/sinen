@@ -5,86 +5,89 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <unordered_map>
 #include <Engine/include/Vertex.h>
-struct SDL_Surface;
-struct BufferObject
+namespace nen
 {
-	VkBuffer buffer;
-	VkDeviceMemory memory;
-};
-struct ImageObject
-{
-	VkImage image;
-	VkDeviceMemory memory;
-	VkImageView view;
-};
-struct ShaderParameters
-{
-	glm::mat4x4 world;
-	glm::mat4x4 view;
-	glm::mat4x4 proj;
-};
-struct SDLObjectCloser
-{
-	void operator()(SDL_Surface *surface)
+	struct SDL_Surface;
+	struct BufferObject
 	{
-		if (surface != nullptr)
+		VkBuffer buffer;
+		VkDeviceMemory memory;
+	};
+	struct ImageObject
+	{
+		VkImage image;
+		VkDeviceMemory memory;
+		VkImageView view;
+	};
+	struct ShaderParameters
+	{
+		glm::mat4x4 world;
+		glm::mat4x4 view;
+		glm::mat4x4 proj;
+	};
+	struct SDLObjectCloser
+	{
+		void operator()(::SDL_Surface* surface)
 		{
-			SDL_FreeSurface(surface);
-			surface = nullptr;
+			if (surface != nullptr)
+			{
+				::SDL_FreeSurface(surface);
+				surface = nullptr;
+			}
 		}
-	}
-	void operator()(SDL_RWops *rw)
-	{
-		if (rw != nullptr)
+		void operator()(::SDL_RWops* rw)
 		{
-			SDL_FreeRW(rw);
-			rw = nullptr;
+			if (rw != nullptr)
+			{
+				::SDL_FreeRW(rw);
+				rw = nullptr;
+			}
 		}
-	}
-};
-class Texture
-{
-public:
-	Texture();
-	~Texture();
-	bool Load(std::string_view fileName);
-	bool LoadFromMemory(std::vector<char> &buffer, std::string_view ID);
-	void SetSurface(std::unique_ptr<SDL_Surface, SDLObjectCloser> surface);
-	const SDL_Surface &GetSurface();
-	const int GetWidth() { return width; }
-	const int GetHeight() { return height; }
-
-	std::string id = "default";
-
-private:
-	std::unique_ptr<SDL_Surface, SDLObjectCloser> m_surface;
-	int width = 0;
-	int height = 0;
-};
-class TextureAsset
-{
-public:
-	TextureAsset(std::string_view textureName)
+	};
+	class Texture
 	{
-		texname = textureName.data();
-	}
-	static void Store(std::string_view name, std::shared_ptr<Texture> texture)
+	public:
+		Texture();
+		~Texture();
+		bool Load(std::string_view fileName);
+		bool LoadFromMemory(std::vector<char>& buffer, std::string_view ID);
+		void SetSurface(std::unique_ptr<::SDL_Surface, SDLObjectCloser> surface);
+		const ::SDL_Surface& GetSurface();
+		const int GetWidth() { return width; }
+		const int GetHeight() { return height; }
+
+		std::string id = "default";
+
+	private:
+		std::unique_ptr<::SDL_Surface, SDLObjectCloser> m_surface;
+		int width = 0;
+		int height = 0;
+	};
+	class TextureAsset
 	{
-		if (!mTexture.contains(name.data()))
+	public:
+		TextureAsset(std::string_view textureName)
 		{
-			mTexture.emplace(name, texture);
+			texname = textureName.data();
 		}
-	}
-	static std::shared_ptr<Texture> Load(std::string_view name)
-	{
-		return mTexture[name.data()];
-	}
-	static std::shared_ptr<Texture> Load()
-	{
-		return mTexture[texname];
-	}
+		static void Store(std::string_view name, std::shared_ptr<Texture> texture)
+		{
+			if (!mTexture.contains(name.data()))
+			{
+				mTexture.emplace(name, texture);
+			}
+		}
+		static std::shared_ptr<Texture> Load(std::string_view name)
+		{
+			return mTexture[name.data()];
+		}
+		static std::shared_ptr<Texture> Load()
+		{
+			return mTexture[texname];
+		}
 
-private:
-	static std::string texname;
-	static std::unordered_map<std::string, std::shared_ptr<Texture>> mTexture;
-};
+	private:
+		static std::string texname;
+		static std::unordered_map<std::string, std::shared_ptr<Texture>> mTexture;
+	};
+}

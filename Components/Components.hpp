@@ -9,3 +9,6 @@
 #include "include/MoveComponent.h"
 #include "include/EffectComponent.hpp"
 #include "include/ScriptComponent.h"
+#ifdef NO_USE_NEN_NAMESPACE
+using namespace nen;
+#endif

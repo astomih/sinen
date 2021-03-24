@@ -16,6 +16,11 @@ public:
 	int drawOrder = 100;
 	bool isChangeBuffer = false;
 };
+struct VertexArrayForGL : public VertexArray
+{
+	uint32_t vertexID;
+	uint32_t indexID;
+};
 
 class GLRenderer
 {
@@ -41,23 +46,39 @@ public:
 		mSprite2Ds.insert(iter, sprite2d);
 	}
 
-	void pushSprite3d(std::shared_ptr<SpriteGL> sprite3d) { mSprite3Ds.push_back(sprite3d); }
+	void pushSprite3d(std::shared_ptr<SpriteGL> sprite3d)
+	{
+		auto iter = mSprite3Ds.begin();
+		for (;
+			 iter != mSprite3Ds.end();
+			 ++iter)
+		{
+			if (sprite3d->drawOrder < (*iter)->drawOrder)
+			{
+				break;
+			}
+		}
+		mSprite3Ds.insert(iter, sprite3d);
+	}
 	void setRenderer(class Renderer *renderer)
 	{
 		mRenderer = renderer;
 	}
 
+	uint32_t AddVertexArray(const VertexArrayForGL &);
+
 private:
 	bool loadShader();
 	void createSpriteVerts();
-	unsigned int mSpriteVertexID;
-	unsigned int mSpriteIndexID;
+	void createBoxVerts();
 	class Renderer *mRenderer;
 
 	ShaderGL *mSpriteShader;
 	ShaderGL *mAlphaShader;
 	GLuint mTextureID;
 	std::unordered_map<std::string, GLuint> mTextureIDs;
+	std::unordered_map<uint32_t, VertexArrayForGL> m_VertexArrays;
+	std::unordered_map<std::string,uint32_t> m_VertexArraysIndices;
 	SDL_Window *mWindow;
 	SDL_GLContext mContext;
 	std::vector<std::shared_ptr<SpriteGL>> mSprite2Ds;

@@ -3,6 +3,7 @@
 #include <Components.hpp>
 #include <algorithm>
 #include <Engine.hpp>
+#include <type_traits>
 
 Actor::Actor(std::shared_ptr<Scene> scene)
 	: mState(EActive), mPosition(Vector3f::Zero), mRotation(Quaternion::Identity), mScene(scene), mRecomputeWorldTransform(true), mScale(1.0f)
@@ -132,8 +133,4 @@ void Actor::RemoveComponent(std::shared_ptr<Component> component)
 	{
 		mComponents.erase(iter);
 	}
-}
-
-void Actor::Update(const std::shared_ptr<Scene> scene)
-{
 }

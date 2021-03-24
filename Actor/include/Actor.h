@@ -3,6 +3,7 @@
 #include <vector>
 #include <cstdint>
 #include <memory>
+#include <type_traits>
 
 class Actor : public std::enable_shared_from_this<Actor>
 {
@@ -17,8 +18,19 @@ public:
 	Actor(std::shared_ptr<class Scene> scene);
 	virtual ~Actor();
 
+	template <class T>
+	std::shared_ptr<T> NewComponent(int updateOwder = 100)
+	{
+		if (std::is_base_of<Component, T>::value)
+		{
+			auto component = std::make_shared<T>(*this, updateOwder);
+			this->AddComponent(component);
+			return component;
+		}
+		else
+			static_assert(std::is_base_of<Component, T>::value);
+	}
 	void Update(float deltaTime);
-	void Update(const std::shared_ptr<class Scene> scene);
 	void UpdateComponents(float deltaTime);
 	virtual void UpdateActor(float deltaTime);
 	virtual std::string GetID() { return ""; }

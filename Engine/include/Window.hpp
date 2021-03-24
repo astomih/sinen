@@ -13,6 +13,6 @@ namespace Window
 		static SDL_SysWMinfo info;
 	};
 	inline constexpr Vector2f Size(WINDOW_SIZE_X, WINDOW_SIZE_Y);
-	inline constexpr Vector2f Center(Size.x / 2.f, Size.y / 2.f);
+	inline constexpr Vector2f Center(0.f, 0.f);
 	const std::string name = "Works";
 }

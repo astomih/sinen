@@ -34,7 +34,7 @@ void Sprite2DComponent::Update(float deltaTime)
 		float scaleOwner = mOwner.GetScale();
 		auto translate = glm::translate(glm::identity<glm::mat4>(), glm::vec3(mOwner.GetPosition().x, mOwner.GetPosition().y, 0));
 		glm::quat quat;
-		memcpy(&quat, &mOwner.GetRotation(), sizeof(float) * 16);
+		memcpy(&quat, &mOwner.GetRotation(), sizeof(float) * 4);
 		auto rotate = glm::mat4_cast(quat);
 		auto scale = glm::scale(glm::identity<glm::mat4>(), glm::vec3(mTexture->GetWidth() * scaleOwner, mTexture->GetHeight() * scaleOwner, 1));
 

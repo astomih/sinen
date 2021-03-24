@@ -12,11 +12,8 @@
 constexpr int maxpoolSize = 1000;
 constexpr int maxInstanceCount = 900;
 VKRenderer::VKRenderer()
-	: m_vertexBuffer(),
-	  m_descriptorPool(),
+	: m_descriptorPool(),
 	  m_descriptorSetLayout(),
-	  m_indexBuffer(),
-	  m_indexCount(),
 	  m_pipelineLayout(),
 	  m_sampler(),
 	  m_base(std::make_unique<VKBase>(this)),
@@ -43,7 +40,8 @@ void VKRenderer::terminate()
 void VKRenderer::prepare()
 {
 
-	makeSpriteGeometry();
+	createBoxVertices();
+	createSpriteVertices();
 	prepareUniformBuffers();
 	prepareDescriptorSetLayout();
 	prepareDescriptorPool();
@@ -354,11 +352,13 @@ void VKRenderer::cleanup()
 	DestroyVulkanObject<VkPipeline>(m_base->m_device, m_pipelineOpaque, &vkDestroyPipeline);
 	DestroyVulkanObject<VkPipeline>(m_base->m_device, m_pipelineAlpha, &vkDestroyPipeline);
 	DestroyVulkanObject<VkPipeline>(m_base->m_device, m_pipeline2D, &vkDestroyPipeline);
-
-	DestroyVulkanObject<VkBuffer>(m_base->m_device, m_vertexBuffer.buffer, &vkDestroyBuffer);
-	DestroyVulkanObject<VkBuffer>(m_base->m_device, m_indexBuffer.buffer, &vkDestroyBuffer);
-	DestroyVulkanObject<VkDeviceMemory>(m_base->m_device, m_vertexBuffer.memory, &vkFreeMemory);
-	DestroyVulkanObject<VkDeviceMemory>(m_base->m_device, m_indexBuffer.memory, &vkFreeMemory);
+	for (auto &i : m_VertexArrays)
+	{
+		DestroyVulkanObject<VkBuffer>(m_base->m_device, i.second.vertexBuffer.buffer, &vkDestroyBuffer);
+		DestroyVulkanObject<VkBuffer>(m_base->m_device, i.second.indexBuffer.buffer, &vkDestroyBuffer);
+		DestroyVulkanObject<VkDeviceMemory>(m_base->m_device, i.second.vertexBuffer.memory, &vkFreeMemory);
+		DestroyVulkanObject<VkDeviceMemory>(m_base->m_device, i.second.indexBuffer.memory, &vkFreeMemory);
+	}
 	DestroyVulkanObject<VkDescriptorPool>(m_base->m_device, m_descriptorPool, &vkDestroyDescriptorPool);
 	DestroyVulkanObject<VkDescriptorSetLayout>(m_base->m_device, m_descriptorSetLayout, &vkDestroyDescriptorSetLayout);
 }
@@ -371,12 +371,14 @@ void VKRenderer::makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri,
 	vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineOpaque);
 	// Set various buffer objects
 	VkDeviceSize offset = 0;
-	vkCmdBindVertexBuffers(command, 0, 1, &m_vertexBuffer.buffer, &offset);
-	vkCmdBindIndexBuffer(command, m_indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
+	vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[m_VertexArraysIndices["BOX"]].vertexBuffer.buffer, &offset);
+	vkCmdBindIndexBuffer(command, m_VertexArrays[m_VertexArraysIndices["BOX"]].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 	draw3d(command);
 	vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline2D);
 	int bufCount = instanceCount;
 	instanceCount++;
+	vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[m_VertexArraysIndices["SPRITE"]].vertexBuffer.buffer, &offset);
+	vkCmdBindIndexBuffer(command, m_VertexArrays[m_VertexArraysIndices["SPRITE"]].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 	draw2d(command);
 
 	renderImGUI(command);
@@ -427,7 +429,7 @@ void VKRenderer::draw3d(VkCommandBuffer command)
 			}
 			VkDeviceSize offset = 0;
 			vkCmdBindVertexBuffers(command, 0, 1, &sprite->buffer.buffer, &offset);
-			vkCmdBindIndexBuffer(command, m_indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
+			vkCmdBindIndexBuffer(command, m_VertexArrays[m_VertexArraysIndices["BOX"]].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 		}
 		// Set descriptors
 		VkDescriptorSet descriptorSets[] = {
@@ -441,7 +443,7 @@ void VKRenderer::draw3d(VkCommandBuffer command)
 			memcpy(p, &sprite->param, sizeof(ShaderParameters));
 			vkUnmapMemory(m_base->m_device, memory);
 		}
-		vkCmdDrawIndexed(command, m_indexCount, 1, 0, 0, 0);
+		vkCmdDrawIndexed(command, m_VertexArrays[m_VertexArraysIndices["BOX"]].indexCount, 1, 0, 0, 0);
 	}
 }
 
@@ -465,8 +467,8 @@ void VKRenderer::draw2d(VkCommandBuffer command)
 	*/
 	for (auto &sprite : mTextures2D)
 	{
-		vkCmdBindVertexBuffers(command, 0, 1, &m_vertexBuffer.buffer, &offset);
-		vkCmdBindIndexBuffer(command, m_indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
+		vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[m_VertexArraysIndices["SPRITE"]].vertexBuffer.buffer, &offset);
+		vkCmdBindIndexBuffer(command, m_VertexArrays[m_VertexArraysIndices["SPRITE"]].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 		if (sprite->isChangeBuffer)
 		{
 			const float value = 1.f;
@@ -492,7 +494,7 @@ void VKRenderer::draw2d(VkCommandBuffer command)
 			}
 			VkDeviceSize offset = 0;
 			vkCmdBindVertexBuffers(command, 0, 1, &sprite->buffer.buffer, &offset);
-			vkCmdBindIndexBuffer(command, m_indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
+			vkCmdBindIndexBuffer(command, m_VertexArrays[m_VertexArraysIndices["SPRITE"]].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 		}
 
 		// Set descriptors
@@ -507,11 +509,91 @@ void VKRenderer::draw2d(VkCommandBuffer command)
 			memcpy(p, &sprite->param, sizeof(ShaderParameters));
 			vkUnmapMemory(m_base->m_device, memory);
 		}
-		vkCmdDrawIndexed(command, m_indexCount, 1, 0, 0, 0);
+		vkCmdDrawIndexed(command, m_VertexArrays[m_VertexArraysIndices["SPRITE"]].indexCount, 1, 0, 0, 0);
 	}
 }
 
-void VKRenderer::makeSpriteGeometry()
+void VKRenderer::createBoxVertices()
+{
+	const float value = 1.f;
+	const Vector2f lb(0.0f, 0.0f);
+	const Vector2f lt(0.f, 1.f);
+	const Vector2f rb(1.0f, 0.0f);
+	const Vector2f rt(1.0f, 1.0f);
+	std::array<float, 3> norm = {1, 1, 1};
+	const std::array<float, 3> red{1.0f, 0.0f, 0.0f};
+	const std::array<float, 3> green{0.0f, 1.0f, 0.0f};
+	const std::array<float, 3> blue{0.0f, 0.0f, 1.0f};
+	const std::array<float, 3> white{1.0f, 1, 1};
+	const std::array<float, 3> black{0.0f, 0, 0};
+	const std::array<float, 3> yellow{1.0f, 1.0f, 0.0f};
+	const std::array<float, 3> magenta{1.0f, 0.0f, 1.0f};
+	const std::array<float, 3> cyan{0.0f, 1.0f, 1.0f};
+
+	VertexArrayForVK vArray;
+	vArray.vertices.push_back({Vector3f(-value, value, value), yellow, lb});
+	vArray.vertices.push_back({Vector3f(-value, -value, value), red, lt});
+	vArray.vertices.push_back({Vector3f(value, value, value), white, rb});
+	vArray.vertices.push_back({Vector3f(value, -value, value), magenta, rt});
+
+	vArray.vertices.push_back({Vector3f(value, value, value), white, lb});
+	vArray.vertices.push_back({Vector3f(value, -value, value), magenta, lt});
+	vArray.vertices.push_back({Vector3f(value, value, -value), cyan, rb});
+	vArray.vertices.push_back({Vector3f(value, -value, -value), blue, rt});
+
+	vArray.vertices.push_back({Vector3f(-value, value, -value), green, lb});
+	vArray.vertices.push_back({Vector3f(-value, -value, -value), black, lt});
+	vArray.vertices.push_back({Vector3f(-value, value, value), yellow, rb});
+	vArray.vertices.push_back({Vector3f(-value, -value, value), red, rt});
+
+	vArray.vertices.push_back({Vector3f(value, value, -value), cyan, lb});
+	vArray.vertices.push_back({Vector3f(value, -value, -value), blue, lt});
+	vArray.vertices.push_back({Vector3f(-value, value, -value), green, rb});
+	vArray.vertices.push_back({Vector3f(-value, -value, -value), black, rt});
+
+	vArray.vertices.push_back({Vector3f(-value, value, -value), green, lb});
+	vArray.vertices.push_back({Vector3f(-value, value, value), yellow, lt});
+	vArray.vertices.push_back({Vector3f(value, value, -value), cyan, rb});
+	vArray.vertices.push_back({Vector3f(value, value, value), white, rt});
+
+	vArray.vertices.push_back({Vector3f(-value, -value, value), red, lb});
+	vArray.vertices.push_back({Vector3f(-value, -value, -value), black, lt});
+	vArray.vertices.push_back({Vector3f(value, -value, value), magenta, rb});
+	vArray.vertices.push_back({Vector3f(value, -value, -value), blue, rt});
+
+	uint32_t indices[] = {
+		0, 2, 1, 1, 2, 3,	 // front
+		4, 6, 5, 5, 6, 7,	 // right
+		8, 10, 9, 9, 10, 11, // left
+
+		12, 14, 13, 13, 14, 15, // back
+		16, 18, 17, 17, 18, 19, // top
+		20, 22, 21, 21, 22, 23, // bottom
+	};
+	vArray.indexCount = _countof(indices);
+	vArray.PushIndices(indices, vArray.indexCount);
+	auto vArraySize = vArray.vertices.size() * sizeof(Vertex);
+	vArray.vertexBuffer = CreateBuffer(vArraySize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	vArray.indexBuffer = CreateBuffer(vArray.indices.size() * sizeof(uint32_t), VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+	// Write vertex data
+	{
+		void *p;
+		vkMapMemory(m_base->m_device, vArray.vertexBuffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
+		memcpy(p, vArray.vertices.data(), vArraySize);
+		vkUnmapMemory(m_base->m_device, vArray.vertexBuffer.memory);
+	}
+	// Write index data
+
+	{
+		void *p;
+		vkMapMemory(m_base->m_device, vArray.indexBuffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
+		memcpy(p, indices, sizeof(indices));
+		vkUnmapMemory(m_base->m_device, vArray.indexBuffer.memory);
+	}
+	m_VertexArraysIndices.insert(std::pair<std::string, uint32_t>("BOX", this->addVertexArray(vArray)));
+}
+
+void VKRenderer::createSpriteVertices()
 {
 	const float value = 1.f;
 	const Vector2f lb(0.0f, 0.0f);
@@ -520,35 +602,36 @@ void VKRenderer::makeSpriteGeometry()
 	const Vector2f rt(1.0f, 1.0f);
 	std::array<float, 3> norm = {1, 1, 1};
 
-	Vertex vertices[] =
-		{
-			{Vector3f(-value, value, value), norm, lb},
-			{Vector3f(-value, -value, value), norm, lt},
-			{Vector3f(value, value, value), norm, rb},
-			{Vector3f(value, -value, value), norm, rt},
+	VertexArrayForVK vArray;
+	vArray.vertices.push_back({Vector3f(-value, value, value), norm, lb});
+	vArray.vertices.push_back({Vector3f(-value, -value, value), norm, lt});
+	vArray.vertices.push_back({Vector3f(value, value, value), norm, rb});
+	vArray.vertices.push_back({Vector3f(value, -value, value), norm, rt});
 
-		};
-
-	uint32_t indices[] =
-		{
-			0, 2, 1, 1, 2, 3};
-	m_vertexBuffer = CreateBuffer(sizeof(vertices), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	m_indexBuffer = CreateBuffer(sizeof(indices), VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+	uint32_t indices[] = {
+		0, 2, 1, 1, 2, 3, // front
+	};
+	vArray.indexCount = _countof(indices);
+	vArray.PushIndices(indices, vArray.indexCount);
+	auto vArraySize = vArray.vertices.size() * sizeof(Vertex);
+	vArray.vertexBuffer = CreateBuffer(vArraySize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	vArray.indexBuffer = CreateBuffer(vArray.indices.size() * sizeof(uint32_t), VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 	// Write vertex data
 	{
 		void *p;
-		vkMapMemory(m_base->m_device, m_vertexBuffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
-		memcpy(p, vertices, sizeof(vertices));
-		vkUnmapMemory(m_base->m_device, m_vertexBuffer.memory);
+		vkMapMemory(m_base->m_device, vArray.vertexBuffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
+		memcpy(p, vArray.vertices.data(), vArraySize);
+		vkUnmapMemory(m_base->m_device, vArray.vertexBuffer.memory);
 	}
 	// Write index data
+
 	{
 		void *p;
-		vkMapMemory(m_base->m_device, m_indexBuffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
+		vkMapMemory(m_base->m_device, vArray.indexBuffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
 		memcpy(p, indices, sizeof(indices));
-		vkUnmapMemory(m_base->m_device, m_indexBuffer.memory);
+		vkUnmapMemory(m_base->m_device, vArray.indexBuffer.memory);
 	}
-	m_indexCount = _countof(indices);
+	m_VertexArraysIndices.insert(std::pair<std::string, uint32_t>("SPRITE", this->addVertexArray(vArray)));
 }
 
 void VKRenderer::prepareImGUI()
@@ -1330,7 +1413,7 @@ void VKRenderer::AllocateCommandBufferSecondary(uint32_t count, VkCommandBuffer 
 		nullptr, m_base->m_commandPool,
 		VK_COMMAND_BUFFER_LEVEL_SECONDARY, count};
 	auto result = vkAllocateCommandBuffers(m_base->m_device, &commandAI, pCommands);
-	ThrowIfFailed(result, "vkAllocateCommandBuffers Faield.");
+	ThrowIfFailed(result, "vkAllocateCommandBuffers Failed.");
 }
 
 void VKRenderer::FreeCommandBufferSecondary(uint32_t count, VkCommandBuffer *pCommands)
@@ -1424,4 +1507,11 @@ void VKRenderer::registerTexture(std::shared_ptr<SpriteVK> &texture, std::string
 		layouts.push_back(m_descriptorSetLayout);
 		prepareDescriptorSet(texture);
 	}
+}
+uint32_t VKRenderer::addVertexArray(const VertexArrayForVK &vArray)
+{
+	static uint32_t count = 0;
+	count++;
+	m_VertexArrays.emplace(std::pair<uint32_t, VertexArrayForVK>(count, vArray));
+	return count;
 }

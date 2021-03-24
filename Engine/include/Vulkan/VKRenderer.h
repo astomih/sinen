@@ -24,6 +24,12 @@ public:
 	bool isInstance = false;
 };
 
+struct VertexArrayForVK : public VertexArray
+{
+	BufferObject vertexBuffer;
+	BufferObject indexBuffer;
+};
+
 struct InstanceData
 {
 	glm::mat4 world;
@@ -79,7 +85,8 @@ public:
 
 private:
 	std::unique_ptr<class VKBase> m_base;
-	void makeSpriteGeometry();
+	void createBoxVertices();
+	void createSpriteVertices();
 	void prepareUniformBuffers();
 	void prepareDescriptorSetLayout();
 	void prepareDescriptorPool();
@@ -87,15 +94,15 @@ private:
 	void prepareDescriptorSet(std::shared_ptr<SpriteVK>);
 	void prepareImGUI();
 	void renderImGUI(VkCommandBuffer command);
-
+	uint32_t addVertexArray(const VertexArrayForVK &);
 	VkPipelineShaderStageCreateInfo loadShaderModule(const char *fileName, VkShaderStageFlagBits stage);
 	VkSampler createSampler();
 	ImageObject createTextureFromSurface(const SDL_Surface &surface);
 	ImageObject createTextureFromMemory(const std::vector<char> &imageData);
 	void setImageMemoryBarrier(VkCommandBuffer command, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
 
-	BufferObject m_vertexBuffer;
-	BufferObject m_indexBuffer;
+	std::unordered_map<uint32_t, VertexArrayForVK> m_VertexArrays;
+	std::unordered_map<std::string, uint32_t> m_VertexArraysIndices;
 
 	ImageObject m_shadowColor;
 	ImageObject m_shadowDepth;
@@ -112,7 +119,6 @@ private:
 	VkPipeline m_pipelineOpaque;
 	VkPipeline m_pipelineAlpha;
 	VkPipeline m_pipeline2D;
-	uint32_t m_indexCount;
 	std::vector<std::shared_ptr<SpriteVK>> mTextures3D;
 	std::vector<std::shared_ptr<SpriteVK>> mTextures2D;
 	std::unordered_map<std::string, ImageObject> mImageObjects;

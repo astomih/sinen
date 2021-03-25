@@ -5,7 +5,6 @@
 #include <vector>
 #include <memory>
 #include <Engine.hpp>
-#include <Common.hpp>
 enum class Scenes : int16_t
 {
 	None,
@@ -33,12 +32,12 @@ namespace nen
 		std::shared_ptr<Scene> AddActor(std::shared_ptr<class Actor> actor);
 		void RemoveActor(std::shared_ptr<class Actor> actor);
 
-		class AudioSystem* GetAudioSystem() const { return mAudioSystem; }
+		class AudioSystem *GetAudioSystem() const { return mAudioSystem; }
 
 		virtual Scenes GetSceneName() { return Scenes::None; }
 		std::shared_ptr<class Renderer> GetRenderer() const { return mRenderer; }
 
-		class Font* GetFont(const std::string& fileName);
+		class Font *GetFont(const std::string &fileName);
 
 		enum GameState
 		{
@@ -50,9 +49,6 @@ namespace nen
 		GameState GetState() const { return mGameState; }
 		void SetState(GameState state) { mGameState = state; }
 
-		void SetCommon(std::shared_ptr<Common> common) { mCommon = common; }
-		std::shared_ptr<Common> GetCommon() { return mCommon; }
-
 		void Quit()
 		{
 			mIsRunning = false;
@@ -63,13 +59,13 @@ namespace nen
 	protected:
 		virtual void LoadData();
 		virtual void Update(float deltaTime);
-		virtual void SystemInput(const struct InputState&) {}
+		virtual void SystemInput(const struct InputState &) {}
 		void ExitScene() { mIsRunning = false; }
 
 		Scenes NextScene = Scenes::None;
 		// All the actors in the game
 		std::vector<std::shared_ptr<class Actor>> mActors;
-		class AudioSystem* mAudioSystem{};
+		class AudioSystem *mAudioSystem{};
 		SoundEvent mMusicEvent;
 		SoundEvent mReverbSnap;
 
@@ -77,10 +73,10 @@ namespace nen
 		void UnloadData();
 		void ProcessInput();
 		void UpdateScene();
-		class InputSystem* mInputSystem;
+		class InputSystem *mInputSystem;
 		std::shared_ptr<class Transition> mTransition;
 		std::shared_ptr<class Renderer> mRenderer;
-		std::unordered_map<std::string, class Font*> mFonts;
+		std::unordered_map<std::string, class Font *> mFonts;
 		// Any pending actors
 		std::vector<std::shared_ptr<class Actor>> mPendingActors;
 		Uint32 mTicksCount = 0;
@@ -88,12 +84,11 @@ namespace nen
 		// Track if we're updating actors right now
 		bool mUpdatingActors = false;
 		bool mIsRunning = true;
-		std::shared_ptr<Common> mCommon;
 		// Map for text localization
 		std::unordered_map<std::string, std::string> mText;
 		GameState mGameState;
 	};
 	template <class S>
-	Scene* createInstance() { return new S; }
-	using SceneName = std::unordered_map<::Scenes, Scene* (*)()>;
+	Scene *createInstance() { return new S; }
+	using SceneName = std::unordered_map<::Scenes, Scene *(*)()>;
 }

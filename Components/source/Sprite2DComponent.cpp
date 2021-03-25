@@ -97,7 +97,7 @@ namespace nen
 		{
 
 			mOwner.GetScene()->GetRenderer()->GetGL().registerTexture(mTexture, TextureType::Image2D);
-			sprite = std::make_shared<SpriteGL>();
+			sprite = std::make_shared<Sprite>();
 			sprite->drawOrder = mDrawOrder;
 			sprite->textureIndex = mTexture->id;
 			mTexWidth = mTexture->GetWidth();

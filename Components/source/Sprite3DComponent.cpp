@@ -126,7 +126,7 @@ namespace nen
 		if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::OpenGL)
 		{
 			mOwner.GetScene()->GetRenderer()->GetGL().registerTexture(mTexture, TextureType::Image3D);
-			sprite = std::make_shared<SpriteGL>();
+			sprite = std::make_shared<Sprite>();
 			sprite->textureIndex = mTexture->id;
 
 			const auto& rot = mOwner.GetRotation();

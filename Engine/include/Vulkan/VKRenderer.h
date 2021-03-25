@@ -14,7 +14,7 @@ enum class TextureType
 #include <Engine/include/OpenGL/GLRenderer.h>
 namespace nen::vk
 {
-	class SpriteVK : public nen::SpriteGL
+	class SpriteVK : public nen::Sprite
 	{
 	public:
 		std::vector<VkDescriptorSet> descripterSet;

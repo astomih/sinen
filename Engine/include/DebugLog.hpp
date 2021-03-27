@@ -4,11 +4,13 @@
 namespace nen::console
 {
 	template <typename T>
-	void Print(const T& t);
+	void Print(const T &t);
 	template <>
-	void Print(const Vector3f& t);
+	void Print(const Vector3f &t);
 	template <>
-	void Print(const Vector2f& t);
-	template<>
-	void Print(const Matrix4& t);
+	void Print(const Vector2f &t);
+	template <>
+	void Print(const Matrix4 &t);
+	template <>
+	void Print(const glm::mat4x4 &t);
 }

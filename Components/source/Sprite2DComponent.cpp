@@ -11,11 +11,11 @@ namespace nen
 {
 	constexpr int matrixSize = sizeof(float) * 16;
 
-	Matrix4 CreateWorld(const Matrix4& scale, const Quaternion& rotate, const Vector3f& position)
+	Matrix4 CreateWorld(const Matrix4 &scale, const Quaternion &rotate, const Vector3f &position)
 	{
 		return Matrix4::CreateTranslation(position) * scale * Matrix4::CreateScale(1.f) * Matrix4::CreateFromQuaternion(rotate);
 	};
-	Sprite2DComponent::Sprite2DComponent(Actor& owner, const int drawOrder, Texture tex)
+	Sprite2DComponent::Sprite2DComponent(Actor &owner, const int drawOrder, Texture tex)
 		: Component(owner), mDrawOrder(drawOrder), mTexture(nullptr)
 	{
 		mOwner.GetScene()->GetRenderer()->AddSprite2D(this);
@@ -30,7 +30,7 @@ namespace nen
 
 				auto tex = std::make_shared<Texture>();
 				tex->Load("Assets/Default.png");
-				SetTexture(tex);
+				Create(tex);
 			}
 			float scaleOwner = mOwner.GetScale();
 			auto translate = glm::translate(glm::identity<glm::mat4>(), glm::vec3(mOwner.GetPosition().x, mOwner.GetPosition().y, 0));
@@ -56,11 +56,11 @@ namespace nen
 		mOwner.GetScene()->GetRenderer()->RemoveSprite2D(this);
 	}
 
-	void Sprite2DComponent::Draw(Shader* shader)
+	void Sprite2DComponent::Draw(Shader *shader)
 	{
 	}
 
-	void Sprite2DComponent::SetTexture(std::shared_ptr<Texture> texture, const float scale)
+	void Sprite2DComponent::Create(std::shared_ptr<Texture> texture, const float scale, std::string_view shape)
 	{
 		if (texture)
 			mTexture = texture;
@@ -80,6 +80,7 @@ namespace nen
 			renderer->GetVK().registerImageObject(mTexture);
 			mTextureVK->mTexture = mTexture;
 			mTextureVK->drawOrder = mDrawOrder;
+			mTextureVK->vertexIndex = shape.data();
 			renderer->GetVK().registerTexture(mTextureVK, mTexture->id, TextureType::Image2D);
 
 			auto world = CreateWorld(Matrix4::CreateScale(mTexture->GetWidth(), mTexture->GetHeight(), 1), Quaternion(Vector3f::UnitZ, 0), mOwner.GetPosition());
@@ -100,6 +101,7 @@ namespace nen
 			sprite = std::make_shared<Sprite>();
 			sprite->drawOrder = mDrawOrder;
 			sprite->textureIndex = mTexture->id;
+			sprite->vertexIndex = shape.data();
 			mTexWidth = mTexture->GetWidth();
 			mTexHeight = mTexture->GetHeight();
 			auto world = CreateWorld(
@@ -120,7 +122,7 @@ namespace nen
 			mOwner.GetScene()->GetRenderer()->GetGL().pushSprite2d(sprite);
 		}
 	}
-	void Sprite2DComponent::SetTrimmingStartPos(const Vector2i& pos)
+	void Sprite2DComponent::SetTrimmingStartPos(const Vector2i &pos)
 	{
 		if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::Vulkan)
 		{
@@ -141,7 +143,7 @@ namespace nen
 		}
 	}
 
-	void Sprite2DComponent::SetTrimmingEndPos(const Vector2i& pos)
+	void Sprite2DComponent::SetTrimmingEndPos(const Vector2i &pos)
 	{
 		if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::Vulkan)
 		{

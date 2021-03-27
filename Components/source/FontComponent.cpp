@@ -15,6 +15,6 @@ namespace nen
 
 	void FontComponent::SetString(const std::string& str, const Vector3f& color, int pointSize)
 	{
-		SetTexture(mFont->RenderText(str, color, pointSize));
+		Create(mFont->RenderText(str, color, pointSize));
 	}
 }

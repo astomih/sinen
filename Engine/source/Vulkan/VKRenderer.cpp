@@ -372,15 +372,10 @@ namespace nen::vk
 		// Set created pipeline
 		vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineOpaque);
 		// Set various buffer objects
-		VkDeviceSize offset = 0;
-		vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[m_VertexArraysIndices["BOX"]].vertexBuffer.buffer, &offset);
-		vkCmdBindIndexBuffer(command, m_VertexArrays[m_VertexArraysIndices["BOX"]].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 		draw3d(command);
 		vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline2D);
 		int bufCount = instanceCount;
 		instanceCount++;
-		vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[m_VertexArraysIndices["SPRITE"]].vertexBuffer.buffer, &offset);
-		vkCmdBindIndexBuffer(command, m_VertexArrays[m_VertexArraysIndices["SPRITE"]].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 		draw2d(command);
 
 		renderImGUI(command);
@@ -404,8 +399,11 @@ namespace nen::vk
 		vkUnmapMemory(m_base->m_device, i.memory);
 	}
 	*/
+		VkDeviceSize offset = 0;
 		for (auto &sprite : mTextures3D)
 		{
+			::vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[m_VertexArraysIndices[sprite->vertexIndex]].vertexBuffer.buffer, &offset);
+			::vkCmdBindIndexBuffer(command, m_VertexArrays[m_VertexArraysIndices[sprite->vertexIndex]].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 			if (sprite->isChangeBuffer)
 			{
 				const float value = 1.f;
@@ -431,7 +429,7 @@ namespace nen::vk
 				}
 				VkDeviceSize offset = 0;
 				vkCmdBindVertexBuffers(command, 0, 1, &sprite->buffer.buffer, &offset);
-				vkCmdBindIndexBuffer(command, m_VertexArrays[m_VertexArraysIndices["BOX"]].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
+				vkCmdBindIndexBuffer(command, m_VertexArrays[m_VertexArraysIndices[sprite->vertexIndex]].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 			}
 			// Set descriptors
 			VkDescriptorSet descriptorSets[] = {
@@ -445,7 +443,7 @@ namespace nen::vk
 				memcpy(p, &sprite->param, sizeof(ShaderParameters));
 				vkUnmapMemory(m_base->m_device, memory);
 			}
-			vkCmdDrawIndexed(command, m_VertexArrays[m_VertexArraysIndices["BOX"]].indexCount, 1, 0, 0, 0);
+			vkCmdDrawIndexed(command, m_VertexArrays[m_VertexArraysIndices[sprite->vertexIndex]].indexCount, 1, 0, 0, 0);
 		}
 	}
 
@@ -469,8 +467,8 @@ namespace nen::vk
 	*/
 		for (auto &sprite : mTextures2D)
 		{
-			vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[m_VertexArraysIndices["SPRITE"]].vertexBuffer.buffer, &offset);
-			vkCmdBindIndexBuffer(command, m_VertexArrays[m_VertexArraysIndices["SPRITE"]].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
+			vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[m_VertexArraysIndices[sprite->vertexIndex]].vertexBuffer.buffer, &offset);
+			vkCmdBindIndexBuffer(command, m_VertexArrays[m_VertexArraysIndices[sprite->vertexIndex]].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 			if (sprite->isChangeBuffer)
 			{
 				const float value = 1.f;
@@ -496,7 +494,7 @@ namespace nen::vk
 				}
 				VkDeviceSize offset = 0;
 				vkCmdBindVertexBuffers(command, 0, 1, &sprite->buffer.buffer, &offset);
-				vkCmdBindIndexBuffer(command, m_VertexArrays[m_VertexArraysIndices["SPRITE"]].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
+				vkCmdBindIndexBuffer(command, m_VertexArrays[m_VertexArraysIndices[sprite->vertexIndex]].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 			}
 
 			// Set descriptors
@@ -511,7 +509,7 @@ namespace nen::vk
 				memcpy(p, &sprite->param, sizeof(ShaderParameters));
 				vkUnmapMemory(m_base->m_device, memory);
 			}
-			vkCmdDrawIndexed(command, m_VertexArrays[m_VertexArraysIndices["SPRITE"]].indexCount, 1, 0, 0, 0);
+			vkCmdDrawIndexed(command, m_VertexArrays[m_VertexArraysIndices[sprite->vertexIndex]].indexCount, 1, 0, 0, 0);
 		}
 	}
 

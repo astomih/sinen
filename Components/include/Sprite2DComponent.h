@@ -12,7 +12,7 @@ namespace nen
 		~Sprite2DComponent();
 
 		virtual void Draw(class Shader* shader);
-		virtual void SetTexture(std::shared_ptr<Texture> texture, float scale = 1.0f);
+		virtual void Create(std::shared_ptr<Texture> texture, float scale = 1.0f, std::string_view shape = "SPRITE");
 		virtual void Update(float deltaTime) override;
 
 		int GetDrawOrder() const { return mDrawOrder; }

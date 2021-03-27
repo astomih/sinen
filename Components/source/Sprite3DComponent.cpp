@@ -25,7 +25,7 @@ namespace nen
 
 				auto tex = std::make_shared<Texture>();
 				tex->Load("Assets/Default.png");
-				SetTexture(tex);
+				Create(tex);
 			}
 			float scaleOwner = mOwner.GetScale();
 			auto pos = mOwner.GetPosition();
@@ -87,7 +87,7 @@ namespace nen
 	{
 	}
 
-	void Sprite3DComponent::SetTexture(std::shared_ptr<Texture> texture, const float scale)
+	void Sprite3DComponent::Create(std::shared_ptr<Texture> texture, const float scale,std::string_view shape)
 	{
 		if (texture)
 			mTexture = texture;
@@ -95,7 +95,7 @@ namespace nen
 		{
 			auto tex = std::make_shared<Texture>();
 			tex->Load("Assets/Default.png");
-			SetTexture(tex);
+			Create(tex);
 		}
 		auto renderer = mOwner.GetScene()->GetRenderer();
 		if (renderer->GetGraphicsAPI() == GraphicsAPI::Vulkan)
@@ -105,6 +105,7 @@ namespace nen
 			renderer->GetVK().registerImageObject(mTexture);
 			mTextureVK->mTexture = mTexture;
 			renderer->GetVK().registerTexture(mTextureVK, mTexture->id, TextureType::Image3D);
+			mTextureVK->vertexIndex = shape.data();
 
 			const auto& rot = mOwner.GetRotation();
 			auto quat = glm::qua<float>();
@@ -128,6 +129,7 @@ namespace nen
 			mOwner.GetScene()->GetRenderer()->GetGL().registerTexture(mTexture, TextureType::Image3D);
 			sprite = std::make_shared<Sprite>();
 			sprite->textureIndex = mTexture->id;
+			sprite->vertexIndex = shape.data();
 
 			const auto& rot = mOwner.GetRotation();
 			auto quat = glm::qua<float>();

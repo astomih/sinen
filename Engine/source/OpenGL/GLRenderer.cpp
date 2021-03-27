@@ -5,12 +5,6 @@
 #include <iostream>
 #include <SDL_image.h>
 #include <sol/sol.hpp>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/quaternion.hpp>
-#include <glm/common.hpp>
 #include <rapidjson/document.h>
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
@@ -45,8 +39,6 @@ namespace nen::gl
 		// Enable alpha blending on the norm buffer
 		glEnable(GL_DEPTH_TEST);
 		mSpriteShader->SetActive();
-		glBindVertexArray(m_VertexArrays[m_VertexArraysIndices["BOX"]].vertexID);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VertexArrays[m_VertexArraysIndices["BOX"]].indexID);
 		// Specify the vertex attributes
 		// (For now, assume one vertex format)
 		// Position is 3 floats
@@ -62,13 +54,15 @@ namespace nen::gl
 							  reinterpret_cast<void *>(sizeof(float) * 6));
 		for (auto &i : mSprite3Ds)
 		{
+			glBindVertexArray(m_VertexArrays[m_VertexArraysIndices[i->vertexIndex]].vertexID);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VertexArrays[m_VertexArraysIndices[i->vertexIndex]].indexID);
 			mSpriteShader->SetMatrixUniform("uWorld", i->param.world);
 			mSpriteShader->SetMatrixUniform("uProj", i->param.proj);
 			mSpriteShader->SetMatrixUniform("uView", i->param.view);
 			int num = 0;
 			num = mTextureIDs[i->textureIndex];
 			glBindTexture(GL_TEXTURE_2D, num);
-			glDrawElements(GL_TRIANGLES, m_VertexArrays[m_VertexArraysIndices["BOX"]].indexCount, GL_UNSIGNED_INT, nullptr);
+			glDrawElements(GL_TRIANGLES, m_VertexArrays[m_VertexArraysIndices[i->vertexIndex]].indexCount, GL_UNSIGNED_INT, nullptr);
 		}
 
 		glDisable(GL_DEPTH_TEST);
@@ -78,10 +72,10 @@ namespace nen::gl
 
 		// Set shader/vao as active
 		mAlphaShader->SetActive();
-		glBindVertexArray(m_VertexArrays[m_VertexArraysIndices["SPRITE"]].vertexID);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VertexArrays[m_VertexArraysIndices["SPRITE"]].indexID);
 		for (auto &i : mSprite2Ds)
 		{
+			glBindVertexArray(m_VertexArrays[m_VertexArraysIndices[i->vertexIndex]].vertexID);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VertexArrays[m_VertexArraysIndices[i->vertexIndex]].indexID);
 			const float value = 1.f;
 			const Vector2f lb(i->trimStart.x, i->trimEnd.y);
 			const Vector2f lt(i->trimStart.x, i->trimStart.y);
@@ -104,7 +98,7 @@ namespace nen::gl
 			mAlphaShader->SetMatrixUniform("uView", i->param.view);
 			int num = mTextureIDs[i->textureIndex];
 			glBindTexture(GL_TEXTURE_2D, num);
-			glDrawElements(GL_TRIANGLES, m_VertexArrays[m_VertexArraysIndices["SPRITE"]].indexCount, GL_UNSIGNED_INT, nullptr);
+			glDrawElements(GL_TRIANGLES, m_VertexArrays[m_VertexArraysIndices[i->vertexIndex]].indexCount, GL_UNSIGNED_INT, nullptr);
 			if (i->isChangeBuffer)
 			{
 				const float value = 1.f;

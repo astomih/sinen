@@ -17,7 +17,7 @@ namespace nen
 		int GetTexHeight() const { return mTexHeight; }
 		int GetTexWidth() const { return mTexWidth; }
 
-		void SetTexture(std::shared_ptr<class Texture> texture, float scale = 1.0f);
+		void Create(std::shared_ptr<class Texture> texture, float scale = 1.0f, std::string_view shape = "SPRITE");
 		void SetReverse(bool Use) { mUseReverse = Use; }
 		void SetFlip(bool Use) { mUseFlip = Use; }
 		void SetScale(const Vector2f& scale)

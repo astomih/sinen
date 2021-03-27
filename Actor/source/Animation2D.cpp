@@ -16,7 +16,7 @@ namespace nen
 		auto tex = std::make_shared<Texture>();
 		if (tex->Load(path))
 		{
-			mImage->SetTexture(tex);
+			mImage->Create(tex);
 			mTexSize.x = tex->GetWidth();
 			mTexSize.y = tex->GetHeight();
 			mImage->SetTrimmingStartPos(Vector2i(mTexSize.x / 2.f, mTexSize.y));

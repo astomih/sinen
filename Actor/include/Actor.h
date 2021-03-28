@@ -37,11 +37,11 @@ namespace nen
 		virtual void UpdateActor(float deltaTime);
 		virtual std::string GetID() { return ""; }
 
-		void ProcessInput(const struct InputState& state);
-		virtual void ActorInput(const struct InputState& state);
+		void ProcessInput(const struct InputState &state);
+		virtual void ActorInput(const struct InputState &state);
 
-		const Vector3f& GetPosition() const noexcept { return mPosition; }
-		void SetPosition(const Vector3f& pos) noexcept
+		const Vector3f &GetPosition() const noexcept { return mPosition; }
+		void SetPosition(const Vector3f &pos) noexcept
 		{
 			mPosition = pos;
 			mRecomputeWorldTransform = true;
@@ -59,15 +59,15 @@ namespace nen
 			mScale = scale;
 			mRecomputeWorldTransform = true;
 		}
-		const Quaternion& GetRotation() const { return mRotation; }
-		void SetRotation(const Quaternion& rotation)
+		const Quaternion &GetRotation() const { return mRotation; }
+		void SetRotation(const Quaternion &rotation)
 		{
 			mRotation = rotation;
 			mRecomputeWorldTransform = true;
 		}
 
 		void ComputeWorldTransform();
-		const Matrix4& GetWorldTransform() const { return mWorldTransform; }
+		const Matrix4 &GetWorldTransform() const { return mWorldTransform; }
 
 		Vector3f GetForward() const { return Vector3f::Transform(Vector3f::UnitX, mRotation); }
 
@@ -77,8 +77,8 @@ namespace nen
 		std::shared_ptr<class Scene> GetScene() { return mScene; }
 
 		void AddComponent(std::shared_ptr<class Component> component);
-		void AddComponent(std::unique_ptr<class Component>&& component, uint16_t&);
-		std::unordered_map<uint16_t, std::unique_ptr<Component>>& GetComponents() { return this->mComponents2; }
+		void AddComponent(std::unique_ptr<class Component> &&component, uint16_t &);
+		std::unordered_map<uint16_t, std::unique_ptr<Component>> &GetComponents() { return this->mComponents2; }
 		void RemoveComponent(std::shared_ptr<class Component> component);
 		bool isRecompute() { return mRecomputeWorldTransform; }
 		void RecomuteFinished() { mRecomputeWorldTransform = false; }

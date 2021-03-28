@@ -4,13 +4,13 @@
 #include <Engine.hpp>
 namespace nen
 {
-	Animation2DSprite::Animation2DSprite(std::shared_ptr<Scene> scene, const int height, const int width, const float framePerSec, const std::string& path)
+	Animation2DSprite::Animation2DSprite(std::shared_ptr<Scene> scene, const int height, const int width, const float framePerSec, const std::string &path)
 		: Actor(scene),
-		mRow(height),
-		mColumn(width),
-		mframePerSec(framePerSec),
-		mPicCounter(height* width),
-		mImage(std::make_shared<Sprite2DComponent>(*this, 5000))
+		  mRow(height),
+		  mColumn(width),
+		  mframePerSec(framePerSec),
+		  mPicCounter(height * width),
+		  mImage(std::make_shared<Sprite2DComponent>(*this, 5000))
 	{
 		this->AddComponent(mImage);
 		auto tex = std::make_shared<Texture>();
@@ -19,7 +19,7 @@ namespace nen
 			mImage->Create(tex);
 			mTexSize.x = tex->GetWidth();
 			mTexSize.y = tex->GetHeight();
-			mImage->SetTrimmingStartPos(Vector2i(mTexSize.x / 2.f, mTexSize.y));
+			mImage->SetTrimmingStartPos(Vector2i(mTexSize.x / 2, mTexSize.y));
 			mImage->SetTrimmingEndPos(Vector2i(mTexSize.x, 0));
 		}
 		else

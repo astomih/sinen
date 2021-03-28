@@ -54,15 +54,15 @@ namespace nen::gl
 							  reinterpret_cast<void *>(sizeof(float) * 6));
 		for (auto &i : mSprite3Ds)
 		{
-			glBindVertexArray(m_VertexArrays[m_VertexArraysIndices[i->vertexIndex]].vertexID);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VertexArrays[m_VertexArraysIndices[i->vertexIndex]].indexID);
+			glBindVertexArray(m_VertexArrays[i->vertexIndex].vertexID);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VertexArrays[i->vertexIndex].indexID);
 			mSpriteShader->SetMatrixUniform("uWorld", i->param.world);
 			mSpriteShader->SetMatrixUniform("uProj", i->param.proj);
 			mSpriteShader->SetMatrixUniform("uView", i->param.view);
 			int num = 0;
 			num = mTextureIDs[i->textureIndex];
 			glBindTexture(GL_TEXTURE_2D, num);
-			glDrawElements(GL_TRIANGLES, m_VertexArrays[m_VertexArraysIndices[i->vertexIndex]].indexCount, GL_UNSIGNED_INT, nullptr);
+			glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr);
 		}
 
 		glDisable(GL_DEPTH_TEST);
@@ -74,8 +74,8 @@ namespace nen::gl
 		mAlphaShader->SetActive();
 		for (auto &i : mSprite2Ds)
 		{
-			glBindVertexArray(m_VertexArrays[m_VertexArraysIndices[i->vertexIndex]].vertexID);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VertexArrays[m_VertexArraysIndices[i->vertexIndex]].indexID);
+			glBindVertexArray(m_VertexArrays[i->vertexIndex].vertexID);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VertexArrays[i->vertexIndex].indexID);
 			const float value = 1.f;
 			const Vector2f lb(i->trimStart.x, i->trimEnd.y);
 			const Vector2f lt(i->trimStart.x, i->trimStart.y);
@@ -98,7 +98,7 @@ namespace nen::gl
 			mAlphaShader->SetMatrixUniform("uView", i->param.view);
 			int num = mTextureIDs[i->textureIndex];
 			glBindTexture(GL_TEXTURE_2D, num);
-			glDrawElements(GL_TRIANGLES, m_VertexArrays[m_VertexArraysIndices[i->vertexIndex]].indexCount, GL_UNSIGNED_INT, nullptr);
+			glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr);
 			if (i->isChangeBuffer)
 			{
 				const float value = 1.f;
@@ -182,6 +182,10 @@ namespace nen::gl
 		return true;
 	}
 
+	void GLRenderer::AddVertexArray(const VertexArrayForGL &vArray, std::string_view name)
+	{
+		m_VertexArrays.insert(std::pair<std::string, VertexArrayForGL>(name.data(), vArray));
+	}
 	void GLRenderer::createSpriteVerts()
 	{
 		const float value = 1.f;
@@ -214,7 +218,7 @@ namespace nen::gl
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vArray.indexID);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, vArray.indices.size() * sizeof(unsigned int), vArray.indices.data(), GL_STATIC_DRAW);
 
-		m_VertexArraysIndices.insert(std::pair<std::string, uint32_t>("SPRITE", this->AddVertexArray(vArray)));
+		m_VertexArrays.insert(std::pair<std::string, VertexArrayForGL>("SPRITE", vArray));
 	}
 
 	void GLRenderer::createBoxVerts()
@@ -290,14 +294,6 @@ namespace nen::gl
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vArray.indexID);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, vArray.indices.size() * sizeof(unsigned int), vArray.indices.data(), GL_STATIC_DRAW);
 
-		m_VertexArraysIndices.insert(std::pair<std::string, uint32_t>("BOX", this->AddVertexArray(vArray)));
-	}
-
-	uint32_t GLRenderer::AddVertexArray(const VertexArrayForGL &vArray)
-	{
-		static uint32_t count = 0;
-		count++;
-		m_VertexArrays.emplace(std::pair<uint32_t, VertexArrayForGL>(count, vArray));
-		return count;
+		m_VertexArrays.insert(std::pair<std::string, VertexArrayForGL>("BOX", vArray));
 	}
 }

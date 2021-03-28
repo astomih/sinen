@@ -99,15 +99,15 @@ namespace nen
 			glRenderer->render();
 	}
 
-	void Renderer::AddSprite2D(Sprite2DComponent* sprite)
+	void Renderer::AddSprite2D(Sprite2DComponent *sprite)
 	{
 		// Find the insertion point in the sorted vector
 		// (The first element with a higher draw order than me)
 		const auto myDrawOrder = sprite->GetDrawOrder();
 		auto iter = mSprite2Ds.begin();
 		for (;
-			iter != mSprite2Ds.end();
-			++iter)
+			 iter != mSprite2Ds.end();
+			 ++iter)
 		{
 			if (myDrawOrder < (*iter)->GetDrawOrder())
 			{
@@ -119,21 +119,21 @@ namespace nen
 		mSprite2Ds.insert(iter, sprite);
 	}
 
-	void Renderer::RemoveSprite2D(Sprite2DComponent* sprite)
+	void Renderer::RemoveSprite2D(Sprite2DComponent *sprite)
 	{
 		auto iter = std::find(mSprite2Ds.begin(), mSprite2Ds.end(), sprite);
 		mSprite2Ds.erase(iter);
 	}
 
-	void Renderer::AddSprite3D(Sprite3DComponent* sprite)
+	void Renderer::AddSprite3D(Sprite3DComponent *sprite)
 	{
 		// Find the insertion point in the sorted vector
 		// (The first element with a higher draw order than me)
 		const auto myDrawOrder = sprite->GetDrawOrder();
 		auto iter = mSprite3Ds.begin();
 		for (;
-			iter != mSprite3Ds.end();
-			++iter)
+			 iter != mSprite3Ds.end();
+			 ++iter)
 		{
 			if (myDrawOrder < (*iter)->GetDrawOrder())
 			{
@@ -145,24 +145,24 @@ namespace nen
 		mSprite3Ds.insert(iter, sprite);
 	}
 
-	void Renderer::RemoveSprite3D(Sprite3DComponent* sprite)
+	void Renderer::RemoveSprite3D(Sprite3DComponent *sprite)
 	{
 		auto iter = std::find(mSprite3Ds.begin(), mSprite3Ds.end(), sprite);
 		mSprite3Ds.erase(iter);
 	}
 
-	void Renderer::AddEffectComp(EffectComponent* effect)
+	void Renderer::AddEffectComp(EffectComponent *effect)
 	{
 		mEffectComp.emplace_back(effect);
 	}
-	void Renderer::RemoveEffectComp(EffectComponent* effect)
+	void Renderer::RemoveEffectComp(EffectComponent *effect)
 	{
 		auto iter = std::find(mEffectComp.begin(), mEffectComp.end(), effect);
 		mEffectComp.erase(iter);
 	}
-	Texture* Renderer::GetTexture(std::string_view fileName)
+	Texture *Renderer::GetTexture(std::string_view fileName)
 	{
-		Texture* tex = nullptr;
+		Texture *tex = nullptr;
 		auto iter = mTextures3D.find(fileName.data());
 		if (iter != mTextures3D.end())
 		{
@@ -184,9 +184,52 @@ namespace nen
 		return tex;
 	}
 
-	Texture* Renderer::GetTextureFromMemory(const unsigned char* const buffer, const std::string& key)
+	void Renderer::AddVertexArray(const VertexArray &vArray, std::string_view name)
 	{
-		Texture* tex = nullptr;
+		if (RendererAPI == GraphicsAPI::Vulkan)
+		{
+			vk::VertexArrayForVK vArrayVK;
+			vArrayVK.indexCount = vArray.indexCount;
+			vArrayVK.indices = vArray.indices;
+			vArrayVK.vertices = vArray.vertices;
+			auto vArraySize = vArray.vertices.size() * sizeof(Vertex);
+			vArrayVK.vertexBuffer = GetVK().CreateBuffer(vArraySize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+			vArrayVK.indexBuffer = GetVK().CreateBuffer(vArray.indices.size() * sizeof(uint32_t), VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+
+			//Write vertex data
+			GetVK().MapMemory(vArrayVK.vertexBuffer.memory, vArrayVK.vertices.data(), vArraySize);
+			// Write index data
+			GetVK().MapMemory(vArrayVK.indexBuffer.memory, vArrayVK.indices.data(), sizeof(uint32_t) * vArrayVK.indices.size());
+			// Insert VertexArray array
+			GetVK().AddVertexArray(vArrayVK, name);
+		}
+		else
+		{
+			gl::VertexArrayForGL vArrayGL;
+			vArrayGL.indexCount = vArray.indexCount;
+			vArrayGL.indices = vArray.indices;
+			vArrayGL.vertices = vArray.vertices;
+
+			// Create vertex array
+			glGenVertexArrays(1, &vArrayGL.vertexID);
+			glBindVertexArray(vArrayGL.vertexID);
+
+			// Create vertex buffer
+			glGenBuffers(1, &vArrayGL.vertexID);
+			glBindBuffer(GL_ARRAY_BUFFER, vArrayGL.vertexID);
+			glBufferData(GL_ARRAY_BUFFER, vArrayGL.vertices.size() * 8 * sizeof(float), vArrayGL.vertices.data(), GL_DYNAMIC_DRAW);
+
+			// Create index buffer
+			glGenBuffers(1, &vArrayGL.indexID);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.indexID);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.indices.size() * sizeof(unsigned int), vArrayGL.indices.data(), GL_STATIC_DRAW);
+			GetGL().AddVertexArray(vArrayGL, name);
+		}
+	}
+
+	Texture *Renderer::GetTextureFromMemory(const unsigned char *const buffer, const std::string &key)
+	{
+		Texture *tex = nullptr;
 		auto iter = mTextures3D.find(key);
 		if (iter != mTextures3D.end())
 		{
@@ -210,7 +253,7 @@ namespace nen
 		return tex;
 	}
 
-	Effect* Renderer::GetEffect(const std::u16string& fileName)
+	Effect *Renderer::GetEffect(const std::u16string &fileName)
 	{
 		return nullptr;
 	}

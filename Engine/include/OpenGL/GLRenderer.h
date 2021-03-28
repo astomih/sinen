@@ -71,9 +71,10 @@ namespace nen
 				mRenderer = renderer;
 			}
 
-			uint32_t AddVertexArray(const VertexArrayForGL &);
+			void AddVertexArray(const VertexArrayForGL &vArray, std::string_view name);
 
 		private:
+			uint32_t AddVertexArray(const VertexArrayForGL &);
 			bool loadShader();
 			void createSpriteVerts();
 			void createBoxVerts();
@@ -83,8 +84,7 @@ namespace nen
 			ShaderGL *mAlphaShader;
 			GLuint mTextureID;
 			std::unordered_map<std::string, GLuint> mTextureIDs;
-			std::unordered_map<uint32_t, VertexArrayForGL> m_VertexArrays;
-			std::unordered_map<std::string, uint32_t> m_VertexArraysIndices;
+			std::unordered_map<std::string, VertexArrayForGL> m_VertexArrays;
 			::SDL_Window *mWindow;
 			::SDL_GLContext mContext;
 			std::vector<std::shared_ptr<Sprite>> mSprite2Ds;

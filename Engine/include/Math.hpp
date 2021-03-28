@@ -6,7 +6,6 @@
 #include <SDL.h>
 #include <cstring>
 #include <algorithm>
-//#include <Effekseer.h>
 
 namespace nen::Math
 {
@@ -164,42 +163,42 @@ namespace nen
 			y = inY;
 		}
 
-		const float* GetAsFloatPtr() const
+		const float *GetAsFloatPtr() const
 		{
-			return reinterpret_cast<const float*>(&x);
+			return reinterpret_cast<const float *>(&x);
 		}
 		// Vector addition (a + b)
-		friend Vector2f operator+(const Vector2f& a, const Vector2f& b)
+		friend Vector2f operator+(const Vector2f &a, const Vector2f &b)
 		{
 			return Vector2f(a.x + b.x, a.y + b.y);
 		}
 
 		// Vector subtraction (a - b)
-		friend Vector2f operator-(const Vector2f& a, const Vector2f& b)
+		friend Vector2f operator-(const Vector2f &a, const Vector2f &b)
 		{
 			return Vector2f(a.x - b.x, a.y - b.y);
 		}
 
 		// Component-wise multiplication
 		// (a.x * b.x, ...)
-		friend Vector2f operator*(const Vector2f& a, const Vector2f& b)
+		friend Vector2f operator*(const Vector2f &a, const Vector2f &b)
 		{
 			return Vector2f(a.x * b.x, a.y * b.y);
 		}
 
 		// Scalar multiplication
-		friend Vector2f operator*(const Vector2f& vec, float scalar)
+		friend Vector2f operator*(const Vector2f &vec, float scalar)
 		{
 			return Vector2f(vec.x * scalar, vec.y * scalar);
 		}
 
 		// Scalar multiplication
-		friend Vector2f operator*(float scalar, const Vector2f& vec)
+		friend Vector2f operator*(float scalar, const Vector2f &vec)
 		{
 			return Vector2f(vec.x * scalar, vec.y * scalar);
 		}
 
-		Vector2f& operator/=(float scalar)
+		Vector2f &operator/=(float scalar)
 		{
 
 			x > 0.f ? x /= scalar : x = 0.f;
@@ -208,7 +207,7 @@ namespace nen
 		}
 
 		// Scalar *=
-		Vector2f& operator*=(float scalar)
+		Vector2f &operator*=(float scalar)
 		{
 			x *= scalar;
 			y *= scalar;
@@ -216,7 +215,7 @@ namespace nen
 		}
 
 		// Vector +=
-		Vector2f& operator+=(const Vector2f& right)
+		Vector2f &operator+=(const Vector2f &right)
 		{
 			x += right.x;
 			y += right.y;
@@ -224,7 +223,7 @@ namespace nen
 		}
 
 		// Vector -=
-		Vector2f& operator-=(const Vector2f& right)
+		Vector2f &operator-=(const Vector2f &right)
 		{
 			x -= right.x;
 			y -= right.y;
@@ -252,7 +251,7 @@ namespace nen
 		}
 
 		// Normalize the provided vector
-		static Vector2f Normalize(const Vector2f& vec)
+		static Vector2f Normalize(const Vector2f &vec)
 		{
 			auto temp = vec;
 			temp.Normalize();
@@ -260,25 +259,25 @@ namespace nen
 		}
 
 		// Dot product between two vectors (a dot b)
-		static float Dot(const Vector2f& a, const Vector2f& b)
+		static float Dot(const Vector2f &a, const Vector2f &b)
 		{
 			return (a.x * b.x + a.y * b.y);
 		}
 
 		// Lerp from A to B by f
-		static Vector2f Lerp(const Vector2f& a, const Vector2f& b, float f)
+		static Vector2f Lerp(const Vector2f &a, const Vector2f &b, float f)
 		{
 			return Vector2f(a + f * (b - a));
 		}
 
 		// Reflect V about (normalized) N
-		static Vector2f Reflect(const Vector2f& v, const Vector2f& n)
+		static Vector2f Reflect(const Vector2f &v, const Vector2f &n)
 		{
 			return v - 2.0f * Vector2f::Dot(v, n) * n;
 		}
 
 		// Transform vector by matrix
-		static Vector2f Transform(const Vector2f& vec, const class Matrix3& mat, float w = 1.0f);
+		static Vector2f Transform(const Vector2f &vec, const class Matrix3 &mat, float w = 1.0f);
 
 		static const Vector2f Zero;
 		static const Vector2f UnitX;
@@ -306,9 +305,9 @@ namespace nen
 		}
 
 		// Cast to a const float pointer
-		[[nodiscard]] const float* GetAsFloatPtr() const
+		[[nodiscard]] const float *GetAsFloatPtr() const
 		{
-			return reinterpret_cast<const float*>(&x);
+			return reinterpret_cast<const float *>(&x);
 		}
 
 		// Set all three components in one line
@@ -320,37 +319,37 @@ namespace nen
 		}
 
 		// Vector addition (a + b)
-		friend Vector3f operator+(const Vector3f& a, const Vector3f& b)
+		friend Vector3f operator+(const Vector3f &a, const Vector3f &b)
 		{
 			return Vector3f(a.x + b.x, a.y + b.y, a.z + b.z);
 		}
 
 		// Vector subtraction (a - b)
-		friend Vector3f operator-(const Vector3f& a, const Vector3f& b)
+		friend Vector3f operator-(const Vector3f &a, const Vector3f &b)
 		{
 			return Vector3f(a.x - b.x, a.y - b.y, a.z - b.z);
 		}
 
 		// Component-wise multiplication
-		friend Vector3f operator*(const Vector3f& left, const Vector3f& right)
+		friend Vector3f operator*(const Vector3f &left, const Vector3f &right)
 		{
 			return Vector3f(left.x * right.x, left.y * right.y, left.z * right.z);
 		}
 
 		// Scalar multiplication
-		friend Vector3f operator*(const Vector3f& vec, float scalar)
+		friend Vector3f operator*(const Vector3f &vec, float scalar)
 		{
 			return Vector3f(vec.x * scalar, vec.y * scalar, vec.z * scalar);
 		}
 
 		// Scalar multiplication
-		friend Vector3f operator*(float scalar, const Vector3f& vec)
+		friend Vector3f operator*(float scalar, const Vector3f &vec)
 		{
 			return Vector3f(vec.x * scalar, vec.y * scalar, vec.z * scalar);
 		}
 
 		// Scalar *=
-		Vector3f& operator*=(float scalar)
+		Vector3f &operator*=(float scalar)
 		{
 			x *= scalar;
 			y *= scalar;
@@ -359,7 +358,7 @@ namespace nen
 		}
 
 		// Vector +=
-		Vector3f& operator+=(const Vector3f& right)
+		Vector3f &operator+=(const Vector3f &right)
 		{
 			x += right.x;
 			y += right.y;
@@ -368,7 +367,7 @@ namespace nen
 		}
 
 		// Vector -=
-		Vector3f& operator-=(const Vector3f& right)
+		Vector3f &operator-=(const Vector3f &right)
 		{
 			x -= right.x;
 			y -= right.y;
@@ -398,7 +397,7 @@ namespace nen
 		}
 
 		// Normalize the provided vector
-		static Vector3f Normalize(const Vector3f& vec)
+		static Vector3f Normalize(const Vector3f &vec)
 		{
 			auto temp = vec;
 			temp.Normalize();
@@ -406,13 +405,13 @@ namespace nen
 		}
 
 		// Dot product between two vectors (a dot b)
-		static float Dot(const Vector3f& a, const Vector3f& b)
+		static float Dot(const Vector3f &a, const Vector3f &b)
 		{
 			return (a.x * b.x + a.y * b.y + a.z * b.z);
 		}
 
 		// Cross product between two vectors (a cross b)
-		static Vector3f Cross(const Vector3f& a, const Vector3f& b)
+		static Vector3f Cross(const Vector3f &a, const Vector3f &b)
 		{
 			Vector3f temp;
 			temp.x = a.y * b.z - a.z * b.y;
@@ -422,23 +421,23 @@ namespace nen
 		}
 
 		// Lerp from A to B by f
-		static Vector3f Lerp(const Vector3f& a, const Vector3f& b, float f)
+		static Vector3f Lerp(const Vector3f &a, const Vector3f &b, float f)
 		{
 			return Vector3f(a + f * (b - a));
 		}
 
 		// Reflect V about (normalized) N
-		static Vector3f Reflect(const Vector3f& v, const Vector3f& n)
+		static Vector3f Reflect(const Vector3f &v, const Vector3f &n)
 		{
 			return v - 2.0f * Vector3f::Dot(v, n) * n;
 		}
 
-		static Vector3f Transform(const Vector3f& vec, const class Matrix4& mat, float w = 1.0f);
+		static Vector3f Transform(const Vector3f &vec, const class Matrix4 &mat, float w = 1.0f);
 		// This will transform the vector and renormalize the w component
-		static Vector3f TransformWithPerspDiv(const Vector3f& vec, const class Matrix4& mat, float w = 1.0f);
+		static Vector3f TransformWithPerspDiv(const Vector3f &vec, const class Matrix4 &mat, float w = 1.0f);
 
 		// Transform a Vector3f by a quaternion
-		static Vector3f Transform(const Vector3f& v, const class Quaternion& q);
+		static Vector3f Transform(const Vector3f &v, const class Quaternion &q);
 
 		/// <summary>
 		/// VDE Vector3f to Effekseer Vector3D
@@ -475,26 +474,26 @@ namespace nen
 			return Vector3f(static_cast<float>(x), static_cast<float>(y), 0.f);
 		}
 
-		Vector2i& operator-=(const Vector2i& right)
+		Vector2i &operator-=(const Vector2i &right)
 		{
 			x -= right.x;
 			y -= right.y;
 			return *this;
 		}
 
-		Vector2i& operator+=(const Vector2i& right)
+		Vector2i &operator+=(const Vector2i &right)
 		{
 			x += right.x;
 			y += right.y;
 			return *this;
 		}
 
-		Vector2i operator-(const Vector2i& right) const
+		Vector2i operator-(const Vector2i &right) const
 		{
 			return Vector2i(x - right.x, y - right.y);
 		}
 
-		Vector2i operator+(const Vector2i& right) const
+		Vector2i operator+(const Vector2i &right) const
 		{
 			return Vector2i(x + right.x, y + right.y);
 		}
@@ -517,13 +516,13 @@ namespace nen
 		}
 
 		// Cast to a const float pointer
-		[[nodiscard]] const float* GetAsFloatPtr() const
+		[[nodiscard]] const float *GetAsFloatPtr() const
 		{
-			return reinterpret_cast<const float*>(&mat[0][0]);
+			return reinterpret_cast<const float *>(&mat[0][0]);
 		}
 
 		// Matrix multiplication
-		friend Matrix3 operator*(const Matrix3& left, const Matrix3& right)
+		friend Matrix3 operator*(const Matrix3 &left, const Matrix3 &right)
 		{
 			Matrix3 retVal;
 			// row 0
@@ -577,7 +576,7 @@ namespace nen
 			return retVal;
 		}
 
-		Matrix3& operator*=(const Matrix3& right)
+		Matrix3 &operator*=(const Matrix3 &right)
 		{
 			*this = *this * right;
 			return *this;
@@ -587,15 +586,15 @@ namespace nen
 		static Matrix3 CreateScale(float xScale, float yScale)
 		{
 			float temp[3][3] =
-			{
-				{xScale, 0.0f, 0.0f},
-				{0.0f, yScale, 0.0f},
-				{0.0f, 0.0f, 1.0f},
-			};
+				{
+					{xScale, 0.0f, 0.0f},
+					{0.0f, yScale, 0.0f},
+					{0.0f, 0.0f, 1.0f},
+				};
 			return Matrix3(temp);
 		}
 
-		static Matrix3 CreateScale(const Vector2f& scaleVector)
+		static Matrix3 CreateScale(const Vector2f &scaleVector)
 		{
 			return CreateScale(scaleVector.x, scaleVector.y);
 		}
@@ -611,23 +610,23 @@ namespace nen
 		static Matrix3 CreateRotation(float theta)
 		{
 			float temp[3][3] =
-			{
-				{Math::Cos(theta), Math::Sin(theta), 0.0f},
-				{-Math::Sin(theta), Math::Cos(theta), 0.0f},
-				{0.0f, 0.0f, 1.0f},
-			};
+				{
+					{Math::Cos(theta), Math::Sin(theta), 0.0f},
+					{-Math::Sin(theta), Math::Cos(theta), 0.0f},
+					{0.0f, 0.0f, 1.0f},
+				};
 			return Matrix3(temp);
 		}
 
 		// Create a translation matrix (on the xy-plane)
-		static Matrix3 CreateTranslation(const Vector2f& trans)
+		static Matrix3 CreateTranslation(const Vector2f &trans)
 		{
 			float temp[3][3] =
-			{
-				{1.0f, 0.0f, 0.0f},
-				{0.0f, 1.0f, 0.0f},
-				{trans.x, trans.y, 1.0f},
-			};
+				{
+					{1.0f, 0.0f, 0.0f},
+					{0.0f, 1.0f, 0.0f},
+					{trans.x, trans.y, 1.0f},
+				};
 			return Matrix3(temp);
 		}
 
@@ -651,13 +650,13 @@ namespace nen
 		}
 
 		// Cast to a const float pointer
-		[[nodiscard]] const float* GetAsFloatPtr() const
+		[[nodiscard]] const float *GetAsFloatPtr() const
 		{
-			return reinterpret_cast<const float*>(&mat[0][0]);
+			return reinterpret_cast<const float *>(&mat[0][0]);
 		}
 
 		// Matrix multiplication (a * b)
-		friend Matrix4 operator*(const Matrix4& a, const Matrix4& b)
+		friend Matrix4 operator*(const Matrix4 &a, const Matrix4 &b)
 		{
 			Matrix4 retVal;
 			// row 0
@@ -763,7 +762,7 @@ namespace nen
 			return retVal;
 		}
 
-		Matrix4& operator*=(const Matrix4& right)
+		Matrix4 &operator*=(const Matrix4 &right)
 		{
 			*this = *this * right;
 			return *this;
@@ -812,12 +811,12 @@ namespace nen
 		static Matrix4 CreateRotationX(const float theta)
 		{
 			float temp[4][4] =
-			{
-				{1.0f, 0.0f, 0.0f, 0.0f},
-				{0.0f, Math::Cos(theta), Math::Sin(theta), 0.0f},
-				{0.0f, -Math::Sin(theta), Math::Cos(theta), 0.0f},
-				{0.0f, 0.0f, 0.0f, 1.0f},
-			};
+				{
+					{1.0f, 0.0f, 0.0f, 0.0f},
+					{0.0f, Math::Cos(theta), Math::Sin(theta), 0.0f},
+					{0.0f, -Math::Sin(theta), Math::Cos(theta), 0.0f},
+					{0.0f, 0.0f, 0.0f, 1.0f},
+				};
 			return Matrix4(temp);
 		}
 
@@ -825,12 +824,12 @@ namespace nen
 		static Matrix4 CreateRotationY(const float theta)
 		{
 			float temp[4][4] =
-			{
-				{Math::Cos(theta), 0.0f, -Math::Sin(theta), 0.0f},
-				{0.0f, 1.0f, 0.0f, 0.0f},
-				{Math::Sin(theta), 0.0f, Math::Cos(theta), 0.0f},
-				{0.0f, 0.0f, 0.0f, 1.0f},
-			};
+				{
+					{Math::Cos(theta), 0.0f, -Math::Sin(theta), 0.0f},
+					{0.0f, 1.0f, 0.0f, 0.0f},
+					{Math::Sin(theta), 0.0f, Math::Cos(theta), 0.0f},
+					{0.0f, 0.0f, 0.0f, 1.0f},
+				};
 			return Matrix4(temp);
 		}
 
@@ -838,17 +837,17 @@ namespace nen
 		static Matrix4 CreateRotationZ(const float theta)
 		{
 			float temp[4][4] =
-			{
-				{Math::Cos(theta), Math::Sin(theta), 0.0f, 0.0f},
-				{-Math::Sin(theta), Math::Cos(theta), 0.0f, 0.0f},
-				{0.0f, 0.0f, 1.0f, 0.0f},
-				{0.0f, 0.0f, 0.0f, 1.0f},
-			};
+				{
+					{Math::Cos(theta), Math::Sin(theta), 0.0f, 0.0f},
+					{-Math::Sin(theta), Math::Cos(theta), 0.0f, 0.0f},
+					{0.0f, 0.0f, 1.0f, 0.0f},
+					{0.0f, 0.0f, 0.0f, 1.0f},
+				};
 			return Matrix4(temp);
 		}
 
 		// Create a rotation matrix from a quaternion
-		static Matrix4 CreateFromQuaternion(const class Quaternion& q);
+		static Matrix4 CreateFromQuaternion(const class Quaternion &q);
 
 		static const Matrix4 Identity;
 	};
@@ -867,17 +866,12 @@ namespace nen
 			*this = Quaternion::Identity;
 		}
 
-		// This directly sets the quaternion components --
-		// don't use for axis/angle
 		explicit Quaternion(float inX, float inY, float inZ, float inW)
 		{
 			Set(inX, inY, inZ, inW);
 		}
 
-		// Construct the quaternion from an axis and angle
-		// It is assumed that axis is already normalized,
-		// and the angle is in radians
-		explicit Quaternion(const Vector3f& axis, float angle)
+		explicit Quaternion(const Vector3f &axis, float angle)
 		{
 			const auto scalar = Math::Sin(angle / 2.0f);
 			x = axis.x * scalar;
@@ -922,7 +916,7 @@ namespace nen
 		}
 
 		// Normalize the provided quaternion
-		static Quaternion Normalize(const Quaternion& q)
+		static Quaternion Normalize(const Quaternion &q)
 		{
 			auto retVal = q;
 			retVal.Normalize();
@@ -930,7 +924,7 @@ namespace nen
 		}
 
 		// Linear interpolation
-		static Quaternion Lerp(const Quaternion& a, const Quaternion& b, float f)
+		static Quaternion Lerp(const Quaternion &a, const Quaternion &b, float f)
 		{
 			Quaternion retVal;
 			retVal.x = Math::Lerp(a.x, b.x, f);
@@ -941,13 +935,13 @@ namespace nen
 			return retVal;
 		}
 
-		static float Dot(const Quaternion& a, const Quaternion& b)
+		static float Dot(const Quaternion &a, const Quaternion &b)
 		{
 			return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
 		}
 
 		// Spherical Linear Interpolation
-		static Quaternion Slerp(const Quaternion& a, const Quaternion& b, float f)
+		static Quaternion Slerp(const Quaternion &a, const Quaternion &b, float f)
 		{
 			const auto rawCosm = Quaternion::Dot(a, b);
 
@@ -968,8 +962,6 @@ namespace nen
 			}
 			else
 			{
-				// Use linear interpolation if the quaternions
-				// are collinear
 				scale0 = 1.0f - f;
 				scale1 = f;
 			}
@@ -990,12 +982,10 @@ namespace nen
 
 		// Concatenate
 		// Rotate by q FOLLOWED BY p
-		static Quaternion Concatenate(const Quaternion& q, const Quaternion& p)
+		static Quaternion Concatenate(const Quaternion &q, const Quaternion &p)
 		{
 			Quaternion retVal;
 
-			// Vector component is:
-			// ps * qv + qs * pv + pv x qv
 			const Vector3f qv(q.x, q.y, q.z);
 			const Vector3f pv(p.x, p.y, p.z);
 			const auto newVec = p.w * qv + q.w * pv + Vector3f::Cross(pv, qv);
@@ -1003,8 +993,6 @@ namespace nen
 			retVal.y = newVec.y;
 			retVal.z = newVec.z;
 
-			// Scalar component is:
-			// ps * qs - pv . qv
 			retVal.w = p.w * q.w - Vector3f::Dot(pv, qv);
 
 			return retVal;
@@ -1018,7 +1006,7 @@ namespace nen
 		class Color
 		{
 		public:
-			Color(const float& red, const float& green, const float& blue, const float& alpha)
+			Color(const float &red, const float &green, const float &blue, const float &alpha)
 			{
 				r = red;
 				g = green;

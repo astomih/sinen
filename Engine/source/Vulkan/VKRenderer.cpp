@@ -402,8 +402,8 @@ namespace nen::vk
 		VkDeviceSize offset = 0;
 		for (auto &sprite : mTextures3D)
 		{
-			::vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[m_VertexArraysIndices[sprite->vertexIndex]].vertexBuffer.buffer, &offset);
-			::vkCmdBindIndexBuffer(command, m_VertexArrays[m_VertexArraysIndices[sprite->vertexIndex]].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
+			::vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[sprite->vertexIndex].vertexBuffer.buffer, &offset);
+			::vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 			if (sprite->isChangeBuffer)
 			{
 				const float value = 1.f;
@@ -429,7 +429,7 @@ namespace nen::vk
 				}
 				VkDeviceSize offset = 0;
 				vkCmdBindVertexBuffers(command, 0, 1, &sprite->buffer.buffer, &offset);
-				vkCmdBindIndexBuffer(command, m_VertexArrays[m_VertexArraysIndices[sprite->vertexIndex]].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
+				vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 			}
 			// Set descriptors
 			VkDescriptorSet descriptorSets[] = {
@@ -443,7 +443,7 @@ namespace nen::vk
 				memcpy(p, &sprite->param, sizeof(ShaderParameters));
 				vkUnmapMemory(m_base->m_device, memory);
 			}
-			vkCmdDrawIndexed(command, m_VertexArrays[m_VertexArraysIndices[sprite->vertexIndex]].indexCount, 1, 0, 0, 0);
+			vkCmdDrawIndexed(command, m_VertexArrays[sprite->vertexIndex].indexCount, 1, 0, 0, 0);
 		}
 	}
 
@@ -467,8 +467,8 @@ namespace nen::vk
 	*/
 		for (auto &sprite : mTextures2D)
 		{
-			vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[m_VertexArraysIndices[sprite->vertexIndex]].vertexBuffer.buffer, &offset);
-			vkCmdBindIndexBuffer(command, m_VertexArrays[m_VertexArraysIndices[sprite->vertexIndex]].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
+			vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[sprite->vertexIndex].vertexBuffer.buffer, &offset);
+			vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 			if (sprite->isChangeBuffer)
 			{
 				const float value = 1.f;
@@ -494,7 +494,7 @@ namespace nen::vk
 				}
 				VkDeviceSize offset = 0;
 				vkCmdBindVertexBuffers(command, 0, 1, &sprite->buffer.buffer, &offset);
-				vkCmdBindIndexBuffer(command, m_VertexArrays[m_VertexArraysIndices[sprite->vertexIndex]].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
+				vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 			}
 
 			// Set descriptors
@@ -509,8 +509,21 @@ namespace nen::vk
 				memcpy(p, &sprite->param, sizeof(ShaderParameters));
 				vkUnmapMemory(m_base->m_device, memory);
 			}
-			vkCmdDrawIndexed(command, m_VertexArrays[m_VertexArraysIndices[sprite->vertexIndex]].indexCount, 1, 0, 0, 0);
+			vkCmdDrawIndexed(command, m_VertexArrays[sprite->vertexIndex].indexCount, 1, 0, 0, 0);
 		}
+	}
+
+	void VKRenderer::MapMemory(VkDeviceMemory memory, void *data, size_t size)
+	{
+
+		void *p;
+		vkMapMemory(m_base->m_device, memory, 0, VK_WHOLE_SIZE, 0, &p);
+		memcpy(p, data, size);
+		vkUnmapMemory(m_base->m_device, memory);
+	}
+	void VKRenderer::AddVertexArray(const VertexArrayForVK &vArray, std::string_view name)
+	{
+		m_VertexArrays.insert(std::pair<std::string, VertexArrayForVK>(name.data(), vArray));
 	}
 
 	void VKRenderer::createBoxVertices()
@@ -590,7 +603,7 @@ namespace nen::vk
 			memcpy(p, indices, sizeof(indices));
 			vkUnmapMemory(m_base->m_device, vArray.indexBuffer.memory);
 		}
-		m_VertexArraysIndices.insert(std::pair<std::string, uint32_t>("BOX", this->addVertexArray(vArray)));
+		m_VertexArrays.insert(std::pair<std::string, VertexArrayForVK>("BOX", vArray));
 	}
 
 	void VKRenderer::createSpriteVertices()
@@ -631,7 +644,7 @@ namespace nen::vk
 			memcpy(p, indices, sizeof(indices));
 			vkUnmapMemory(m_base->m_device, vArray.indexBuffer.memory);
 		}
-		m_VertexArraysIndices.insert(std::pair<std::string, uint32_t>("SPRITE", this->addVertexArray(vArray)));
+		m_VertexArrays.insert(std::pair<std::string, VertexArrayForVK>("SPRITE", vArray));
 	}
 
 	void VKRenderer::prepareImGUI()
@@ -1507,12 +1520,5 @@ namespace nen::vk
 			layouts.push_back(m_descriptorSetLayout);
 			prepareDescriptorSet(texture);
 		}
-	}
-	uint32_t VKRenderer::addVertexArray(const VertexArrayForVK &vArray)
-	{
-		static uint32_t count = 0;
-		count++;
-		m_VertexArrays.emplace(std::pair<uint32_t, VertexArrayForVK>(count, vArray));
-		return count;
 	}
 }

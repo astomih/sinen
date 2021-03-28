@@ -3,7 +3,7 @@ namespace nen
 {
 	constexpr Vector2f Vector2f::Zero(0.0f, 0.0f);
 	constexpr Vector2f Vector2f::UnitX(1.0f, 0.0f);
-	constexpr  Vector2f Vector2f::UnitY(0.0f, 1.0f);
+	constexpr Vector2f Vector2f::UnitY(0.0f, 1.0f);
 	constexpr Vector2f Vector2f::NegUnitX(-1.0f, 0.0f);
 	constexpr Vector2f Vector2f::NegUnitY(0.0f, -1.0f);
 

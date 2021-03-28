@@ -807,27 +807,6 @@ namespace nen
 		}
 
 		// Create a scale matrix with x, y, and z scales
-		static Matrix4 CreateScale(const float xScale, const float yScale, const float zScale)
-		{
-			float temp[4][4] =
-			{
-				{xScale, 0.0f, 0.0f, 0.0f},
-				{0.0f, yScale, 0.0f, 0.0f},
-				{0.0f, 0.0f, zScale, 0.0f},
-				{0.0f, 0.0f, 0.0f, 1.0f} };
-			return Matrix4(temp);
-		}
-
-		static Matrix4 CreateScale(const Vector3f& scaleVector)
-		{
-			return CreateScale(scaleVector.x, scaleVector.y, scaleVector.z);
-		}
-
-		// Create a scale matrix with a uniform factor
-		static Matrix4 CreateScale(const float scale)
-		{
-			return CreateScale(scale, scale, scale);
-		}
 
 		// Rotation about x-axis
 		static Matrix4 CreateRotationX(const float theta)
@@ -870,64 +849,6 @@ namespace nen
 
 		// Create a rotation matrix from a quaternion
 		static Matrix4 CreateFromQuaternion(const class Quaternion& q);
-
-		static Matrix4 CreateTranslation(const Vector3f& trans)
-		{
-			float temp[4][4] =
-			{
-				{1.0f, 0.0f, 0.0f, 0},
-				{0.0f, 1.0f, 0.0f, 0},
-				{0.0f, 0.0f, 1.0f, 0},
-				{trans.x, trans.y, trans.z, 1.0f} };
-
-			return Matrix4(temp);
-		}
-		static Matrix4 CreateTranslationForVk(const Vector3f& trans)
-		{
-			float temp[4][4] =
-			{
-				{1.0f, 0.0f, 0.0f, trans.x},
-				{0.0f, 1.0f, 0.0f, trans.y},
-				{0.0f, 0.0f, 1.0f, trans.z},
-				{0.0f, 0.0f, 0.0f, 1.0f} };
-
-			return Matrix4(temp);
-		}
-
-		static Matrix4 CreateLookAt(const Vector3f& eye, const Vector3f& target, const Vector3f& up)
-		{
-			const auto f = Vector3f::Normalize(target - eye);
-			const auto s = Vector3f::Normalize(Vector3f::Cross(f, up));
-			const auto u = Vector3f::Normalize(Vector3f::Cross(s, f));
-			Vector3f trans;
-			trans.x = Vector3f::Dot(s, eye);
-			trans.y = Vector3f::Dot(u, eye);
-			trans.z = Vector3f::Dot(f, eye);
-
-			float temp[4][4] =
-			{
-				{s.x, u.x, -f.x, 1.0f},
-				{s.y, u.y, -f.y, 1.0f},
-				{s.z, u.z, -f.z, 1.0f},
-				{-trans.x, -trans.y, trans.z, 1.0f} };
-			return Matrix4(temp);
-		}
-
-		// Create "Simple" View-Projection Matrix from Chapter 6
-		static Matrix4 CreateSimpleViewProj(const float width, const float height)
-		{
-			float temp[4][4] =
-			{
-				{2.0f / width, 0.0f, 0.0f, 0.0f},
-				{0.0f, 2.0f / height, 0.0f, 0.0f},
-				{0.0f, 0.0f, 1.0f, 0.0f},
-				{0.0f, 0.0f, 1.0f, 1.0f} };
-			return Matrix4(temp);
-		}
-		/// <summary>
-		/// VDE Matrix4 to Effekseer Matrix44
-		/// </summary>
-		//Effekseer::Matrix44 ToEffekseer() const;
 
 		static const Matrix4 Identity;
 	};

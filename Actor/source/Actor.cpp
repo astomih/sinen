@@ -38,7 +38,7 @@ namespace nen
 		{
 			comp->Update(deltaTime);
 		}
-		for (auto& comp : mComponents2)
+		for (auto &comp : mComponents2)
 		{
 			comp.second->Update(deltaTime);
 		}
@@ -48,7 +48,7 @@ namespace nen
 	{
 	}
 
-	void Actor::ProcessInput(const InputState& state)
+	void Actor::ProcessInput(const InputState &state)
 	{
 		if (mState == EActive)
 		{
@@ -57,7 +57,7 @@ namespace nen
 			{
 				comp->ProcessInput(state);
 			}
-			for (auto& comp : mComponents2)
+			for (auto &comp : mComponents2)
 			{
 				comp.second->ProcessInput(state);
 			}
@@ -66,7 +66,7 @@ namespace nen
 		}
 	}
 
-	void Actor::ActorInput(const InputState& state)
+	void Actor::ActorInput(const InputState &state)
 	{
 	}
 
@@ -76,15 +76,7 @@ namespace nen
 		{
 			mRecomputeWorldTransform = true;
 
-			// Scale, then rotate, then translate
-			mWorldTransform =
-				Matrix4::CreateTranslation(mPosition);
-			/*
-				* Matrix4::CreateScale(mScale)
-				* Matrix4::CreateFromQuaternion(mRotation);
-				*/
-
-				// Inform components world transform updated
+			// Inform components world transform updated
 			for (const auto comp : mComponents)
 			{
 				comp->OnUpdateWorldTransform();
@@ -108,7 +100,7 @@ namespace nen
 		// Inserts element before position of iterator
 		mComponents.insert(iter, component);
 	}
-	void Actor::AddComponent(std::unique_ptr<Component>&& component, uint16_t& index)
+	void Actor::AddComponent(std::unique_ptr<Component> &&component, uint16_t &index)
 	{
 		// Find the insertion point in the sorted vector
 		// (The first element with a order higher than me)
@@ -124,7 +116,7 @@ namespace nen
 		}
 		// Inserts element before position of iterator
 		using pair = std::pair<uint16_t, std::unique_ptr<Component>>;
-		mComponents2.insert(iter, pair{ index, std::move(component) });
+		mComponents2.insert(iter, pair{index, std::move(component)});
 	}
 
 	void Actor::RemoveComponent(std::shared_ptr<Component> component)

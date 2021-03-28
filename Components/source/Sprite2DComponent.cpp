@@ -10,12 +10,7 @@
 namespace nen
 {
 	constexpr int matrixSize = sizeof(float) * 16;
-
-	Matrix4 CreateWorld(const Matrix4 &scale, const Quaternion &rotate, const Vector3f &position)
-	{
-		return Matrix4::CreateTranslation(position) * scale * Matrix4::CreateScale(1.f) * Matrix4::CreateFromQuaternion(rotate);
-	};
-	Sprite2DComponent::Sprite2DComponent(Actor &owner, const int drawOrder, Texture tex)
+	Sprite2DComponent::Sprite2DComponent(Actor& owner, const int drawOrder, Texture tex)
 		: Component(owner), mDrawOrder(drawOrder), mTexture(nullptr)
 	{
 		mOwner.GetScene()->GetRenderer()->AddSprite2D(this);
@@ -56,7 +51,7 @@ namespace nen
 		mOwner.GetScene()->GetRenderer()->RemoveSprite2D(this);
 	}
 
-	void Sprite2DComponent::Draw(Shader *shader)
+	void Sprite2DComponent::Draw(Shader* shader)
 	{
 	}
 
@@ -74,6 +69,17 @@ namespace nen
 		mTexHeight = mTexture->GetHeight();
 		auto renderer = mOwner.GetScene()->GetRenderer();
 		auto api = renderer->GetGraphicsAPI();
+		float scaleOwner = mOwner.GetScale();
+		auto translate = glm::translate(glm::identity<glm::mat4>(), glm::vec3(mOwner.GetPosition().x, mOwner.GetPosition().y, 0));
+		glm::quat quat;
+		memcpy(&quat, &mOwner.GetRotation(), sizeof(float) * 4);
+		auto rotate = glm::mat4_cast(quat);
+		auto scale2 = glm::scale(glm::identity<glm::mat4>(), glm::vec3(mTexture->GetWidth() * scaleOwner, mTexture->GetHeight() * scaleOwner, 1));
+		glm::mat4x4 viewproj(0);
+		viewproj[0][0] = 1.f / Window::Size.x;
+		viewproj[1][1] = 1.f / Window::Size.y;
+		viewproj[2][2] = 1.f;
+		viewproj[3][3] = 1.f;
 		if (renderer->GetGraphicsAPI() == GraphicsAPI::Vulkan)
 		{
 			mTextureVK = std::make_shared<vk::SpriteVK>();
@@ -83,16 +89,9 @@ namespace nen
 			mTextureVK->vertexIndex = shape.data();
 			renderer->GetVK().registerTexture(mTextureVK, mTexture->id, TextureType::Image2D);
 
-			auto world = CreateWorld(Matrix4::CreateScale(mTexture->GetWidth(), mTexture->GetHeight(), 1), Quaternion(Vector3f::UnitZ, 0), mOwner.GetPosition());
-			glm::mat4x4 viewproj(0);
-			viewproj[0][0] = 1.f / Window::Size.x;
-			viewproj[1][1] = 1.f / Window::Size.y;
-			viewproj[2][2] = 1.f;
-			viewproj[3][3] = 1.f;
-
+			mTextureVK->param.world = translate * rotate * scale2;
 			mTextureVK->param.proj = viewproj;
 			mTextureVK->param.view = glm::identity<glm::mat4>();
-			memcpy(glm::value_ptr(mTextureVK->param.world), world.GetAsFloatPtr(), sizeof(Matrix4));
 		}
 		if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::OpenGL)
 		{
@@ -102,27 +101,13 @@ namespace nen
 			sprite->drawOrder = mDrawOrder;
 			sprite->textureIndex = mTexture->id;
 			sprite->vertexIndex = shape.data();
-			mTexWidth = mTexture->GetWidth();
-			mTexHeight = mTexture->GetHeight();
-			auto world = CreateWorld(
-				Matrix4::CreateScale(
-					mTexture->GetWidth(),
-					mTexture->GetHeight(), 1),
-				Quaternion(Vector3f::UnitZ, 0),
-				mOwner.GetPosition());
-			glm::mat4x4 viewproj(0);
-			viewproj[0][0] = 1.f / Window::Size.x;
-			viewproj[1][1] = 1.f / Window::Size.y;
-			viewproj[2][2] = 1.f;
-			viewproj[3][3] = 1.f;
 
+			sprite->param.world = translate * rotate * scale2;
 			sprite->param.proj = viewproj;
 			sprite->param.view = glm::identity<glm::mat4>();
-			memcpy(glm::value_ptr(sprite->param.world), world.GetAsFloatPtr(), matrixSize);
-			mOwner.GetScene()->GetRenderer()->GetGL().pushSprite2d(sprite);
 		}
 	}
-	void Sprite2DComponent::SetTrimmingStartPos(const Vector2i &pos)
+	void Sprite2DComponent::SetTrimmingStartPos(const Vector2i& pos)
 	{
 		if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::Vulkan)
 		{
@@ -143,7 +128,7 @@ namespace nen
 		}
 	}
 
-	void Sprite2DComponent::SetTrimmingEndPos(const Vector2i &pos)
+	void Sprite2DComponent::SetTrimmingEndPos(const Vector2i& pos)
 	{
 		if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::Vulkan)
 		{

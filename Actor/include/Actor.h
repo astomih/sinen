@@ -30,7 +30,7 @@ namespace nen
 				return component;
 			}
 			else
-				static_assert(std::is_base_of<Component, T>::value);
+				std::cerr << "NewComponent<T>:type T is not derived from Component." << std::endl;
 		}
 		void Update(float deltaTime);
 		void UpdateComponents(float deltaTime);
@@ -77,11 +77,10 @@ namespace nen
 		std::shared_ptr<class Scene> GetScene() { return mScene; }
 
 		void AddComponent(std::shared_ptr<class Component> component);
-		void AddComponent(std::unique_ptr<class Component> &&component, uint16_t &);
-		std::unordered_map<uint16_t, std::unique_ptr<Component>> &GetComponents() { return this->mComponents2; }
 		void RemoveComponent(std::shared_ptr<class Component> component);
 		bool isRecompute() { return mRecomputeWorldTransform; }
 		void RecomuteFinished() { mRecomputeWorldTransform = false; }
+		void AddedScene() { addedSceneActorList = true; }
 
 	protected:
 		bool mRecomputeWorldTransform;
@@ -92,9 +91,8 @@ namespace nen
 		Vector3f mPosition;
 		Quaternion mRotation;
 		std::vector<std::shared_ptr<Component>> mComponents;
-		std::unordered_map<uint16_t, std::unique_ptr<Component>> mComponents2;
 		std::shared_ptr<class Scene> mScene;
 		float mScale;
-		uint16_t m_index = 0;
+		bool addedSceneActorList = false;
 	};
 }

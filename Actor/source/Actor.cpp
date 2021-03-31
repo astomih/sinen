@@ -7,19 +7,19 @@
 namespace nen
 {
 	Actor::Actor(std::shared_ptr<Scene> scene)
-		: mState(EActive), mPosition(Vector3f::Zero), mRotation(Quaternion::Identity), mScene(scene), mRecomputeWorldTransform(true), mScale(1.0f)
+		: mState(EActive), mPosition(Vector3f::Zero), mRotation(Quaternion::Identity), mScene(scene), mRecomputeWorldTransform(true), mScale(1.0f), mComponents()
 	{
 	}
 
 	Actor::~Actor()
 	{
-		mScene->RemoveActor(shared_from_this());
+		if (addedSceneActorList)
+			mScene->RemoveActor(shared_from_this());
 		// Need to delete components
 		while (!mComponents.empty())
 		{
 			mComponents.pop_back();
 		}
-		mComponents2.clear();
 	}
 
 	void Actor::Update(float deltaTime)
@@ -38,10 +38,6 @@ namespace nen
 		{
 			comp->Update(deltaTime);
 		}
-		for (auto &comp : mComponents2)
-		{
-			comp.second->Update(deltaTime);
-		}
 	}
 
 	void Actor::UpdateActor(float deltaTime)
@@ -56,10 +52,6 @@ namespace nen
 			for (auto comp : mComponents)
 			{
 				comp->ProcessInput(state);
-			}
-			for (auto &comp : mComponents2)
-			{
-				comp.second->ProcessInput(state);
 			}
 
 			ActorInput(state);
@@ -89,34 +81,23 @@ namespace nen
 		// Find the insertion point in the sorted vector
 		// (The first element with a order higher than me)
 		int myOrder = component->GetUpdateOrder();
-		auto iter = mComponents.begin();
-		for (; iter != mComponents.end(); ++iter)
+		if (!mComponents.empty())
 		{
-			if (myOrder < (*iter)->GetUpdateOrder())
+
+			auto iter = mComponents.begin();
+			for (; iter != mComponents.end(); ++iter)
 			{
-				break;
+				if (myOrder < (*iter)->GetUpdateOrder())
+				{
+					break;
+				}
 			}
+			// Inserts element before position of iterator
+			mComponents.insert(iter, component);
 		}
-		// Inserts element before position of iterator
-		mComponents.insert(iter, component);
-	}
-	void Actor::AddComponent(std::unique_ptr<Component> &&component, uint16_t &index)
-	{
-		// Find the insertion point in the sorted vector
-		// (The first element with a order higher than me)
-		int myOrder = component->GetUpdateOrder();
-		auto iter = mComponents2.begin();
-		index = ++m_index;
-		for (; iter != mComponents2.end(); ++iter)
-		{
-			if (myOrder < (*iter).second->GetUpdateOrder())
-			{
-				break;
-			}
-		}
-		// Inserts element before position of iterator
-		using pair = std::pair<uint16_t, std::unique_ptr<Component>>;
-		mComponents2.insert(iter, pair{index, std::move(component)});
+		else
+			mComponents.emplace_back(component);
+		component->AddedActor();
 	}
 
 	void Actor::RemoveComponent(std::shared_ptr<Component> component)

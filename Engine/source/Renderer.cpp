@@ -217,12 +217,13 @@ namespace nen
 			// Create vertex buffer
 			glGenBuffers(1, &vArrayGL.vertexID);
 			glBindBuffer(GL_ARRAY_BUFFER, vArrayGL.vertexID);
-			glBufferData(GL_ARRAY_BUFFER, vArrayGL.vertices.size() * 8 * sizeof(float), vArrayGL.vertices.data(), GL_DYNAMIC_DRAW);
+			auto vArraySize = vArrayGL.vertices.size() * sizeof(Vertex);
+			glBufferData(GL_ARRAY_BUFFER, vArraySize, vArrayGL.vertices.data(), GL_STATIC_DRAW);
 
 			// Create index buffer
 			glGenBuffers(1, &vArrayGL.indexID);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.indexID);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.indices.size() * sizeof(unsigned int), vArrayGL.indices.data(), GL_STATIC_DRAW);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.indices.size() * sizeof(uint32_t), vArrayGL.indices.data(), GL_STATIC_DRAW);
 			GetGL().AddVertexArray(vArrayGL, name);
 		}
 	}

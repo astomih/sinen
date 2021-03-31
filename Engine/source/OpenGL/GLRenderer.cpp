@@ -29,76 +29,92 @@ namespace nen::gl
 		{
 			std::cout << "failed to loads shader" << std::endl;
 		}
-		createSpriteVerts();
 		createBoxVerts();
+		createSpriteVerts();
 	}
 
 	void GLRenderer::render()
 	{
+		glClearColor(0.0, 0.0, 0.0, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		// Enable alpha blending on the norm buffer
-		glEnable(GL_DEPTH_TEST);
 		mSpriteShader->SetActive();
 		// Specify the vertex attributes
 		// (For now, assume one vertex format)
 		// Position is 3 floats
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 8 * sizeof(float), 0);
 		// Normal is 3 floats
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 8 * sizeof(float),
 							  reinterpret_cast<void *>(sizeof(float) * 3));
 		// Texture coordinates is 2 floats
 		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_TRUE, 8 * sizeof(float),
 							  reinterpret_cast<void *>(sizeof(float) * 6));
+		// Enable alpha blending on the norm buffer
+		glDisable(GL_BLEND);
+		glEnable(GL_DEPTH_TEST);
+		std::string vertexID;
 		for (auto &i : mSprite3Ds)
 		{
-			glBindVertexArray(m_VertexArrays[i->vertexIndex].vertexID);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VertexArrays[i->vertexIndex].indexID);
+			if (vertexID != i->vertexIndex)
+			{
+				glBindVertexArray(m_VertexArrays[i->vertexIndex].vertexID);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VertexArrays[i->vertexIndex].indexID);
+				auto vArraySize = m_VertexArrays[i->vertexIndex].vertices.size() * sizeof(Vertex);
+				glBufferSubData(GL_ARRAY_BUFFER, 0, vArraySize, m_VertexArrays[i->vertexIndex].vertices.data());
+
+				vertexID = i->vertexIndex;
+			}
+			glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
 			mSpriteShader->SetMatrixUniform("uWorld", i->param.world);
 			mSpriteShader->SetMatrixUniform("uProj", i->param.proj);
 			mSpriteShader->SetMatrixUniform("uView", i->param.view);
-			int num = 0;
-			num = mTextureIDs[i->textureIndex];
-			glBindTexture(GL_TEXTURE_2D, num);
-			glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr);
+			glDrawElementsBaseVertex(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr, 0);
 		}
-
 		glDisable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-
 		// Set shader/vao as active
 		mAlphaShader->SetActive();
 		for (auto &i : mSprite2Ds)
 		{
-			glBindVertexArray(m_VertexArrays[i->vertexIndex].vertexID);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VertexArrays[i->vertexIndex].indexID);
-			const float value = 1.f;
-			const Vector2f lb(i->trimStart.x, i->trimEnd.y);
-			const Vector2f lt(i->trimStart.x, i->trimStart.y);
-			const Vector2f rb(i->trimEnd.x, i->trimEnd.y);
-			const Vector2f rt(i->trimEnd.x, i->trimStart.y);
-			std::array<float, 3> norm = {1, 1, 1};
+			if (vertexID != i->vertexIndex)
+			{
+				glBindVertexArray(m_VertexArrays[i->vertexIndex].vertexID);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VertexArrays[i->vertexIndex].indexID);
+				auto vArraySize = m_VertexArrays[i->vertexIndex].vertices.size() * sizeof(Vertex);
+				glBufferSubData(GL_ARRAY_BUFFER, 0, vArraySize, m_VertexArrays[i->vertexIndex].vertices.data());
 
-			Vertex vertices[] =
-				{
-					{Vector3f(-value, value, value), norm, lb},
-					{Vector3f(-value, -value, value), norm, lt},
-					{Vector3f(value, value, value), norm, rb},
-					{Vector3f(value, -value, value), norm, rt},
+				vertexID = i->vertexIndex;
+			}
 
-				};
 			if (i->isChangeBuffer)
+			{
+				const float value = 1.f;
+				const Vector2f lb(i->trimStart.x, i->trimEnd.y);
+				const Vector2f lt(i->trimStart.x, i->trimStart.y);
+				const Vector2f rb(i->trimEnd.x, i->trimEnd.y);
+				const Vector2f rt(i->trimEnd.x, i->trimStart.y);
+				std::array<float, 3> norm = {1, 1, 1};
+
+				Vertex vertices[] =
+					{
+						{Vector3f(-value, value, value), norm, lb},
+						{Vector3f(-value, -value, value), norm, lt},
+						{Vector3f(value, value, value), norm, rb},
+						{Vector3f(value, -value, value), norm, rt},
+
+					};
 				glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+			}
 			mAlphaShader->SetMatrixUniform("uWorld", i->param.world);
 			mAlphaShader->SetMatrixUniform("uProj", i->param.proj);
 			mAlphaShader->SetMatrixUniform("uView", i->param.view);
 			int num = mTextureIDs[i->textureIndex];
 			glBindTexture(GL_TEXTURE_2D, num);
-			glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr);
+			glDrawElementsBaseVertex(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr, 0);
 			if (i->isChangeBuffer)
 			{
 				const float value = 1.f;
@@ -124,7 +140,7 @@ namespace nen::gl
 		ImGui_ImplSDL2_NewFrame(mWindow);
 		ImGui::NewFrame();
 
-		// ImGui ウィジェットを描画する.
+		// Draw ImGUI widgets.
 		ImGui::Begin("Information");
 		ImGui::Text("Hello,ImGui world");
 		ImGui::Text("Framerate(avg) %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -156,8 +172,8 @@ namespace nen::gl
 			glBindTexture(GL_TEXTURE_2D, textureId);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surf.w, surf.h, 0, GL_RGBA,
 						 GL_UNSIGNED_BYTE, imagedata->pixels);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 			// Use linear filtering
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -194,31 +210,18 @@ namespace nen::gl
 		const Vector2f rb(1.0f, 0.0f);
 		const Vector2f rt(1.0f, 1.0f);
 		std::array<float, 3> norm = {1, 1, 1};
-		VertexArrayForGL vArray;
+		VertexArray vArray;
 		vArray.vertices.push_back({Vector3f(-value, value, value), norm, lb});
 		vArray.vertices.push_back({Vector3f(-value, -value, value), norm, lt});
 		vArray.vertices.push_back({Vector3f(value, value, value), norm, rb});
 		vArray.vertices.push_back({Vector3f(value, -value, value), norm, rt});
 		uint32_t indices[] = {
-			0, 2, 1, 1, 2, 3, // front
+			0, 2, 1, 1, 2, 3 // front
 		};
 		vArray.indexCount = 6;
 		vArray.PushIndices(indices, vArray.indexCount);
-		// Create vertex array
-		glGenVertexArrays(1, &vArray.vertexID);
-		glBindVertexArray(vArray.vertexID);
 
-		// Create vertex buffer
-		glGenBuffers(1, &vArray.vertexID);
-		glBindBuffer(GL_ARRAY_BUFFER, vArray.vertexID);
-		glBufferData(GL_ARRAY_BUFFER, vArray.vertices.size() * 8 * sizeof(float), vArray.vertices.data(), GL_DYNAMIC_DRAW);
-
-		// Create index buffer
-		glGenBuffers(1, &vArray.indexID);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vArray.indexID);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, vArray.indices.size() * sizeof(unsigned int), vArray.indices.data(), GL_STATIC_DRAW);
-
-		m_VertexArrays.insert(std::pair<std::string, VertexArrayForGL>("SPRITE", vArray));
+		mRenderer->AddVertexArray(vArray, "SPRITE");
 	}
 
 	void GLRenderer::createBoxVerts()
@@ -280,20 +283,6 @@ namespace nen::gl
 		};
 		vArray.indexCount = 36;
 		vArray.PushIndices(indices, vArray.indexCount);
-		// Create vertex array
-		glGenVertexArrays(1, &vArray.vertexID);
-		glBindVertexArray(vArray.vertexID);
-
-		// Create vertex buffer
-		glGenBuffers(1, &vArray.vertexID);
-		glBindBuffer(GL_ARRAY_BUFFER, vArray.vertexID);
-		glBufferData(GL_ARRAY_BUFFER, vArray.vertices.size() * 8 * sizeof(float), vArray.vertices.data(), GL_DYNAMIC_DRAW);
-
-		// Create index buffer
-		glGenBuffers(1, &vArray.indexID);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vArray.indexID);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, vArray.indices.size() * sizeof(unsigned int), vArray.indices.data(), GL_STATIC_DRAW);
-
-		m_VertexArrays.insert(std::pair<std::string, VertexArrayForGL>("BOX", vArray));
+		mRenderer->AddVertexArray(vArray, "BOX");
 	}
 }

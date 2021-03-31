@@ -84,7 +84,7 @@ namespace nen
 		}
 
 		mInputSystem->Update();
-		const InputState& state = mInputSystem->GetState();
+		const InputState &state = mInputSystem->GetState();
 
 		if (state.Keyboard.GetKeyState(SDL_SCANCODE_ESCAPE) == EReleased)
 		{
@@ -95,7 +95,7 @@ namespace nen
 		SystemInput(state);
 
 		mUpdatingActors = true;
-		const Uint8* oldstate = SDL_GetKeyboardState(NULL);
+		const Uint8 *oldstate = SDL_GetKeyboardState(NULL);
 		if (mGameState == EGameplay)
 		{
 			for (auto actor : mActors)
@@ -184,6 +184,7 @@ namespace nen
 		{
 			mActors.emplace_back(actor);
 		}
+		actor->AddedScene();
 		return shared_from_this();
 	}
 
@@ -208,7 +209,7 @@ namespace nen
 		}
 	}
 
-	Font* Scene::GetFont(const std::string& fileName)
+	Font *Scene::GetFont(const std::string &fileName)
 	{
 		auto iter = mFonts.find(fileName);
 		if (iter != mFonts.end())
@@ -217,7 +218,7 @@ namespace nen
 		}
 		else
 		{
-			Font* font = new Font();
+			Font *font = new Font();
 			if (font->Load(fileName))
 			{
 				mFonts.emplace(fileName, font);

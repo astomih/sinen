@@ -10,7 +10,7 @@
 namespace nen
 {
 	constexpr int matrixSize = sizeof(float) * 16;
-	Sprite2DComponent::Sprite2DComponent(Actor& owner, const int drawOrder, Texture tex)
+	Sprite2DComponent::Sprite2DComponent(Actor &owner, const int drawOrder, Texture tex)
 		: Component(owner), mDrawOrder(drawOrder), mTexture(nullptr)
 	{
 		mOwner.GetScene()->GetRenderer()->AddSprite2D(this);
@@ -51,7 +51,7 @@ namespace nen
 		mOwner.GetScene()->GetRenderer()->RemoveSprite2D(this);
 	}
 
-	void Sprite2DComponent::Draw(Shader* shader)
+	void Sprite2DComponent::Draw(Shader *shader)
 	{
 	}
 
@@ -105,9 +105,10 @@ namespace nen
 			sprite->param.world = translate * rotate * scale2;
 			sprite->param.proj = viewproj;
 			sprite->param.view = glm::identity<glm::mat4>();
+			mOwner.GetScene()->GetRenderer()->GetGL().pushSprite2d(sprite);
 		}
 	}
-	void Sprite2DComponent::SetTrimmingStartPos(const Vector2i& pos)
+	void Sprite2DComponent::SetTrimmingStartPos(const Vector2i &pos)
 	{
 		if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::Vulkan)
 		{
@@ -128,7 +129,7 @@ namespace nen
 		}
 	}
 
-	void Sprite2DComponent::SetTrimmingEndPos(const Vector2i& pos)
+	void Sprite2DComponent::SetTrimmingEndPos(const Vector2i &pos)
 	{
 		if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::Vulkan)
 		{

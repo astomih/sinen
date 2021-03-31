@@ -603,7 +603,7 @@ namespace nen::vk
 			memcpy(p, indices, sizeof(indices));
 			vkUnmapMemory(m_base->m_device, vArray.indexBuffer.memory);
 		}
-		m_VertexArrays.insert(std::pair<std::string, VertexArrayForVK>("BOX", vArray));
+		m_VertexArrays.emplace(std::pair<std::string, VertexArrayForVK>("BOX", vArray));
 	}
 
 	void VKRenderer::createSpriteVertices()

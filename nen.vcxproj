@@ -46,7 +46,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir);$(ProjectDir)Engine;$(ProjectDir)lib\imgui\include;$(ProjectDir)Actor;$(ProjectDir)Components;$(BOOST_INCLUDE_PATH);$(ProjectDir)Engine\include\Vulkan;$(ProjectDir)lib\mojoAL-default;$(ProjectDir)lib\sol2-3.2.2\include;$(ProjectDir)lib\rapidjson\include;$(ProjectDir)Scene\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir);$(ProjectDir)Engine;$(ProjectDir)lib\imgui\include;$(ProjectDir)Actor;$(ProjectDir)Components;$(BOOST_INCLUDE_PATH);$(ProjectDir)Engine\include\Vulkan;$(ProjectDir)lib\mojoAL-default;$(ProjectDir)lib\sol2-3.2.2\include;$(ProjectDir)lib\rapidjson\include;$(ProjectDir)Scene\include;$(ProjectDir)lib\tinyobjloader;$(IncludePath)</IncludePath>
     <LibraryPath>$(VK_SDK_PATH)\Lib32;$(BOOST_LIBRARY_PATH);%(AdditionalLibraryDirectories);$(LibraryPath)</LibraryPath>
     <TargetExt>.lib</TargetExt>
     <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -56,7 +56,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir);$(ProjectDir)Engine;$(ProjectDir)lib\imgui\include;$(ProjectDir)Actor;$(ProjectDir)Components;$(BOOST_INCLUDE_PATH);$(ProjectDir)Engine\include\Vulkan;$(ProjectDir)lib\mojoAL-default;$(ProjectDir)lib\sol2-3.2.2\include;$(ProjectDir)lib\rapidjson\include;$(ProjectDir)Scene\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir);$(ProjectDir)Engine;$(ProjectDir)lib\imgui\include;$(ProjectDir)Actor;$(ProjectDir)Components;$(BOOST_INCLUDE_PATH);$(ProjectDir)Engine\include\Vulkan;$(ProjectDir)lib\mojoAL-default;$(ProjectDir)lib\sol2-3.2.2\include;$(ProjectDir)lib\rapidjson\include;$(ProjectDir)Scene\include;$(ProjectDir)lib\tinyobjloader;$(IncludePath)</IncludePath>
     <LibraryPath>$(VK_SDK_PATH)\Lib32;$(BOOST_LIBRARY_PATH);%(AdditionalLibraryDirectories);$(LibraryPath)</LibraryPath>
     <LuaType>static</LuaType>
     <LuaConfiguration>Release</LuaConfiguration>
@@ -136,6 +136,8 @@
     <ClCompile Include="Engine\source\Transition.cpp" />
     <ClCompile Include="Engine\source\Vertex.cpp" />
     <ClCompile Include="Engine\source\VertexArray.cpp" />
+    <ClCompile Include="lib\tinyobjloader\tiny_obj_loader.cc"/>
+    <ClCompile Include="Engine\source\ObjLoader.cpp" />
     <ClCompile Include="Engine\source\Vulkan\Swapchain.cpp" />
     <ClCompile Include="Engine\source\Vulkan\VKBase.cpp" />
     <ClCompile Include="Engine\source\Vulkan\VKRenderer.cpp" />
@@ -187,6 +189,7 @@
     <ClInclude Include="Engine\include\Transition.h" />
     <ClInclude Include="Engine\include\Vertex.h" />
     <ClInclude Include="Engine\include\VertexArray.h" />
+    <ClInclude Include="Engine\include\ObjLoader.h" />
     <ClInclude Include="Engine\include\Vulkan\Pipeline.h" />
     <ClInclude Include="Engine\include\Vulkan\Swapchain.h" />
     <ClInclude Include="Engine\include\Vulkan\VKBase.h" />

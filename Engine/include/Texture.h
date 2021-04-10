@@ -27,7 +27,7 @@ namespace nen
 	};
 	struct SDLObjectCloser
 	{
-		void operator()(::SDL_Surface* surface)
+		void operator()(::SDL_Surface *surface)
 		{
 			if (surface != nullptr)
 			{
@@ -35,7 +35,7 @@ namespace nen
 				surface = nullptr;
 			}
 		}
-		void operator()(::SDL_RWops* rw)
+		void operator()(::SDL_RWops *rw)
 		{
 			if (rw != nullptr)
 			{
@@ -50,9 +50,9 @@ namespace nen
 		Texture();
 		~Texture();
 		bool Load(std::string_view fileName);
-		bool LoadFromMemory(std::vector<char>& buffer, std::string_view ID);
+		bool LoadFromMemory(std::vector<char> &buffer, std::string_view ID);
 		void SetSurface(std::unique_ptr<::SDL_Surface, SDLObjectCloser> surface);
-		const ::SDL_Surface& GetSurface();
+		const ::SDL_Surface &GetSurface();
 		const int GetWidth() { return width; }
 		const int GetHeight() { return height; }
 

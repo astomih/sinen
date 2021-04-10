@@ -97,11 +97,11 @@ namespace nen::gl
 		glUniform1i(loc, integer);
 	}
 
-	void ShaderGL::SetVectorUniform(const char *name, const Vector3f &vector)
+	void ShaderGL::SetVectorUniform(const char *name, const glm::vec3 &vector)
 	{
 		GLuint loc = glGetUniformLocation(mShaderProgram, name);
 		// Send the vector data
-		glUniform3fv(loc, 1, vector.GetAsFloatPtr());
+		glUniform3fv(loc, 1, (&vector[0]));
 	}
 
 	void ShaderGL::SetFloatUniform(const char *name, const float value)

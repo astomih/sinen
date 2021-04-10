@@ -20,6 +20,7 @@
 #include "include/Effect.hpp"
 #include "include/Script.h"
 #include "include/VertexArray.h"
+#include "include/ObjLoader.h"
 #include "include/Vulkan/VulkanUtil.h"
 #endif
 #ifdef NO_USE_NEN_NAMESPACE

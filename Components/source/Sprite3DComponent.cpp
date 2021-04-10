@@ -40,6 +40,7 @@ namespace nen
 			}
 			auto rotate = glm::toMat4(quat);
 			auto scale = glm::scale(glm::identity<glm::mat4>(), glm::vec3(scaleOwner, scaleOwner, scaleOwner));
+			auto world = translate * rotate * scale;
 
 			if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::Vulkan)
 			{
@@ -47,7 +48,7 @@ namespace nen
 				static auto proj = glm::perspective(glm::radians(90.f), Window::Size.x / Window::Size.y, 0.01f, 10000.f);
 				mTextureVK->param.proj = proj;
 				mTextureVK->param.view = view;
-				mTextureVK->param.world = translate * rotate * scale;
+				mTextureVK->param.world = world;
 			}
 			else
 			{
@@ -55,7 +56,7 @@ namespace nen
 				static auto proj = glm::perspective(glm::radians(90.f), Window::Size.x / Window::Size.y, 0.01f, 10000.f);
 				sprite->param.proj = proj;
 				sprite->param.view = view;
-				sprite->param.world = translate * rotate * scale;
+				sprite->param.world = world;
 			}
 			mOwner.RecomuteFinished();
 		}

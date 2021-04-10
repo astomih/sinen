@@ -142,7 +142,6 @@ namespace nen::gl
 
 		// Draw ImGUI widgets.
 		ImGui::Begin("Information");
-		ImGui::Text("Hello,ImGui world");
 		ImGui::Text("Framerate(avg) %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		if (ImGui::Button("toggleAPI"))
 		{

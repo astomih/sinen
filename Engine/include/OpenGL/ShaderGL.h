@@ -20,7 +20,7 @@ namespace nen::gl
 		void SetBoolUniform(const char *name, const bool boolean);
 		void SetIntUniform(const char *name, const int integer);
 		// Sets a Vector3f uniform
-		void SetVectorUniform(const char *name, const Vector3f &vector);
+		void SetVectorUniform(const char *name, const glm::vec3 &vector);
 		void SetFloatUniform(const char *name, const float value);
 
 	private:

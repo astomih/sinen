@@ -60,6 +60,12 @@ namespace nen
 		glm::mat4x4 GetViewMatrix() { return mView; }
 		const glm::mat4x4 &GetProjectionMatrix() { return mProjection; }
 
+		SDL_Window *GetWindow() {
+			if(!mWindow)
+				return nullptr;
+			return mWindow;
+		}
+
 	private:
 		class Sprite2DComponent *transPic;
 

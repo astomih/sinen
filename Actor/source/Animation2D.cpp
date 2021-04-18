@@ -28,10 +28,6 @@ namespace nen
 		}
 	}
 
-	Animation2DSprite::~Animation2DSprite()
-	{
-		this->GetScene()->RemoveActor(shared_from_this());
-	}
 
 	void Animation2DSprite::UpdateActor(float deltaTime)
 	{

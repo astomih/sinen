@@ -11,6 +11,8 @@
 #include <VKBase.h>
 namespace nen::vk
 {
+	using namespace vkutil;
+
 	constexpr int maxpoolSize = 1000;
 	constexpr int maxInstanceCount = 900;
 	VKRenderer::VKRenderer()
@@ -332,15 +334,6 @@ namespace nen::vk
 		}
 		return false;
 	}
-	template <class U>
-	void DestroyVulkanObject(VkDevice &device, U &object, std::function<void(VkDevice, U, VkAllocationCallbacks *)> function)
-	{
-		if (object == VK_NULL_HANDLE)
-		{
-			function(device, object, nullptr);
-			object = VK_NULL_HANDLE;
-		}
-	}
 	void VKRenderer::cleanup()
 	{
 		for (auto &i : mImageObjects)
@@ -432,9 +425,7 @@ namespace nen::vk
 				vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 			}
 			// Set descriptors
-			VkDescriptorSet descriptorSets[] = {
-				sprite->descripterSet[m_base->m_imageIndex]};
-			vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, descriptorSets, 0, nullptr);
+			vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
 
 			{
 				auto memory = sprite->uniformBuffers[m_base->m_imageIndex].memory;
@@ -498,9 +489,7 @@ namespace nen::vk
 			}
 
 			// Set descriptors
-			VkDescriptorSet descriptorSets[] = {
-				sprite->descripterSet[m_base->m_imageIndex]};
-			vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, descriptorSets, 0, nullptr);
+			vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
 
 			{
 				auto memory = sprite->uniformBuffers[m_base->m_imageIndex].memory;
@@ -816,7 +805,6 @@ namespace nen::vk
 		sprite->descripterSet.resize(sprite->uniformBuffers.size());
 		vkAllocateDescriptorSets(m_base->m_device, &ai, sprite->descripterSet.data());
 		static int count = 0;
-
 		// ディスクリプタセットへ書き込み.
 		for (int i = 0; i < int(sprite->uniformBuffers.size()); ++i)
 		{
@@ -831,7 +819,7 @@ namespace nen::vk
 			descImage.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 			VkDescriptorBufferInfo descInstance{};
-			descInstance.buffer = m_instanceUniforms[count].buffer;
+			descInstance.buffer = m_instanceUniforms[0].buffer;
 			descInstance.offset = 0;
 			descInstance.range = VK_WHOLE_SIZE;
 
@@ -1480,7 +1468,7 @@ namespace nen::vk
 			return m_base->m_device;
 		return m_base->m_device;
 	}
-	void VKRenderer::registerTexture(std::shared_ptr<SpriteVK> &texture, std::string_view ID, TextureType type)
+	void VKRenderer::registerTexture(std::shared_ptr<SpriteVK> texture, std::string_view ID, TextureType type)
 	{
 		if (TextureType::Image3D == type)
 		{
@@ -1519,6 +1507,42 @@ namespace nen::vk
 			texture->imageID = ID.data();
 			layouts.push_back(m_descriptorSetLayout);
 			prepareDescriptorSet(texture);
+		}
+	}
+	void VKRenderer::unregisterTexture(std::shared_ptr<SpriteVK> texture, TextureType type)
+	{
+		if (TextureType::Image3D == type)
+		{
+			auto itr = std::find(mTextures3D.begin(), mTextures3D.end(), texture);
+			if (itr != mTextures3D.end())
+			{
+				DestroyVulkanObject<VkBuffer>(m_base->m_device, (*itr)->buffer.buffer, &vkDestroyBuffer);
+				DestroyVulkanObject<VkDeviceMemory>(m_base->m_device, (*itr)->buffer.memory, &vkFreeMemory);
+				vkFreeDescriptorSets(m_base->m_device, m_descriptorPool, static_cast<uint32_t>(texture->uniformBuffers.size()), texture->descripterSet.data());
+				for (auto &i : (*itr)->uniformBuffers)
+				{
+					DestroyVulkanObject<VkBuffer>(m_base->m_device, i.buffer, &vkDestroyBuffer);
+					DestroyVulkanObject<VkDeviceMemory>(m_base->m_device, i.memory, &vkFreeMemory);
+				}
+				mTextures3D.erase(itr);
+				mTextures3D.shrink_to_fit();
+			}
+		}
+		else
+		{
+			auto itr = std::find(mTextures2D.begin(), mTextures2D.end(), texture);
+			DestroyVulkanObject<VkBuffer>(m_base->m_device, (*itr)->buffer.buffer, &vkDestroyBuffer);
+			DestroyVulkanObject<VkDeviceMemory>(m_base->m_device, (*itr)->buffer.memory, &vkFreeMemory);
+			vkFreeDescriptorSets(m_base->m_device, m_descriptorPool, static_cast<uint32_t>(texture->uniformBuffers.size()), texture->descripterSet.data());
+			for (auto &i : (*itr)->uniformBuffers)
+			{
+				DestroyVulkanObject<VkBuffer>(m_base->m_device, i.buffer, &vkDestroyBuffer);
+				DestroyVulkanObject<VkDeviceMemory>(m_base->m_device, i.memory, &vkFreeMemory);
+			}
+			if (itr != mTextures2D.end())
+			{
+				mTextures2D.erase(itr);
+			}
 		}
 	}
 }

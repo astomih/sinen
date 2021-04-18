@@ -6,8 +6,7 @@ namespace nen
 	class Animation2DSprite : public Actor
 	{
 	public:
-		Animation2DSprite(std::shared_ptr<class Scene> scene, const int height, const int width, const float framePerSec, const std::string& path);
-		~Animation2DSprite() override;
+		Animation2DSprite(std::shared_ptr<class Scene> scene, const int height, const int width, const float framePerSec, const std::string &path);
 		void UpdateActor(float deltaTime) override;
 		void Init();
 		void SetReverse(bool isReverse) { misReverse = isReverse; }

@@ -2,6 +2,10 @@
 #include <SDL_image.h>
 namespace nen
 {
+	BufferObject::~BufferObject()
+	{
+		
+	}
 	std::string TextureAsset::texname = "default";
 	std::unordered_map<std::string, std::shared_ptr<Texture>> TextureAsset::mTexture;
 	Texture::Texture()
@@ -30,10 +34,10 @@ namespace nen
 		::SDL_Log("%s", ::IMG_GetError());
 		return false;
 	}
-	bool Texture::LoadFromMemory(std::vector<char>& buffer, std::string_view ID)
+	bool Texture::LoadFromMemory(std::vector<char> &buffer, std::string_view ID)
 	{
 		id = ID.data();
-		auto rw = std::unique_ptr<::SDL_RWops, SDLObjectCloser>(::SDL_RWFromMem(reinterpret_cast<void*>(buffer.data()), buffer.size()));
+		auto rw = std::unique_ptr<::SDL_RWops, SDLObjectCloser>(::SDL_RWFromMem(reinterpret_cast<void *>(buffer.data()), buffer.size()));
 		if (!rw)
 		{
 			::SDL_Log("%s", ::SDL_GetError());
@@ -76,7 +80,7 @@ namespace nen
 		height = surface->h;
 		m_surface = std::move(surface);
 	}
-	const ::SDL_Surface& Texture::GetSurface()
+	const ::SDL_Surface &Texture::GetSurface()
 	{
 		if (m_surface)
 			return *m_surface.get();

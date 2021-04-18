@@ -51,6 +51,14 @@ namespace nen
 				}
 				mSprite2Ds.insert(iter, sprite2d);
 			}
+			void eraseSprite2d(std::shared_ptr<Sprite> sprite2d)
+			{
+				auto itr = std::find(mSprite2Ds.begin(), mSprite2Ds.end(), sprite2d);
+				if (itr != mSprite2Ds.end())
+				{
+					mSprite2Ds.erase(itr);
+				}
+			}
 
 			void pushSprite3d(std::shared_ptr<Sprite> sprite3d)
 			{
@@ -65,6 +73,14 @@ namespace nen
 					}
 				}
 				mSprite3Ds.insert(iter, sprite3d);
+			}
+			void eraseSprite3d(std::shared_ptr<Sprite> sprite3d)
+			{
+				auto itr = std::find(mSprite3Ds.begin(), mSprite3Ds.end(), sprite3d);
+				if (itr != mSprite3Ds.end())
+				{
+					mSprite3Ds.erase(itr);
+				}
 			}
 			void setRenderer(nen::Renderer *renderer)
 			{

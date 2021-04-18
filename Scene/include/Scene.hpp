@@ -29,7 +29,7 @@ namespace nen
 
 		Scenes Shutdown();
 
-		std::shared_ptr<Scene> AddActor(std::shared_ptr<class Actor> actor);
+		void AddActor(std::shared_ptr<class Actor> actor);
 		void RemoveActor(std::shared_ptr<class Actor> actor);
 
 		class AudioSystem *GetAudioSystem() const { return mAudioSystem; }

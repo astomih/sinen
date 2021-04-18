@@ -10,8 +10,8 @@ namespace nen
 
 	Component::~Component()
 	{
-		if (addedComponentList)
-			mOwner.RemoveComponent(shared_from_this());
+		//if (addedComponentList)
+		//	mOwner.RemoveComponent(shared_from_this());
 	}
 
 	void Component::Update(float deltaTime)

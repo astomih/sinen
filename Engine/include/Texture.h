@@ -10,6 +10,7 @@ namespace nen
 	struct SDL_Surface;
 	struct BufferObject
 	{
+		~BufferObject();
 		VkBuffer buffer;
 		VkDeviceMemory memory;
 	};

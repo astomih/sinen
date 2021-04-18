@@ -52,7 +52,8 @@ namespace nen::vk
 		BufferObject CreateBuffer(uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		BufferObject CreateBuffer(uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags, const void *initialData);
 
-		void registerTexture(std::shared_ptr<SpriteVK> &texture, std::string_view, TextureType type);
+		void registerTexture(std::shared_ptr<SpriteVK> texture, std::string_view, TextureType type);
+		void unregisterTexture(std::shared_ptr<SpriteVK> texture, TextureType type);
 		void registerImageObject(std::shared_ptr<Texture>);
 		VkPipelineLayout GetPipelineLayout(const std::string &name) { return m_pipelineLayout; }
 		VkDescriptorSetLayout GetDescriptorSetLayout(const std::string &name) { return m_descriptorSetLayout; }

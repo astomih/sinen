@@ -128,6 +128,21 @@ namespace nen
 		}
 		mUpdatingActors = false;
 
+		//erase dead actors
+		for (auto it = mActors.begin(); it != mActors.end();)
+		{
+			if ((*it)->GetState() == Actor::EDead)
+			{
+				std::cout << it->use_count() << std::endl;
+				it->reset();
+				it = mActors.erase(it);
+			}
+			else
+			{
+				++it;
+			}
+		}
+
 		//move pending actors
 		for (auto pending : mPendingActors)
 		{
@@ -136,19 +151,6 @@ namespace nen
 		}
 		mPendingActors.clear();
 
-		//erase dead actors
-		{
-			auto i = mActors.begin();
-			for (auto actor : mActors)
-			{
-				if (actor->GetState() == Actor::EDead)
-				{
-					mActors.erase(i);
-				}
-				i++;
-			}
-			mActors.shrink_to_fit();
-		}
 		mAudioSystem->Update(deltaTime);
 	}
 
@@ -158,6 +160,7 @@ namespace nen
 
 	void Scene::UnloadData()
 	{
+		mActors.clear();
 	}
 
 	void Scene::Update(float deltaTime)
@@ -173,7 +176,7 @@ namespace nen
 		return NextScene;
 	}
 
-	std::shared_ptr<Scene> Scene::AddActor(std::shared_ptr<Actor> actor)
+	void Scene::AddActor(std::shared_ptr<Actor> actor)
 	{
 		// If we're updating actors, need to add to pending
 		if (mUpdatingActors)
@@ -185,7 +188,6 @@ namespace nen
 			mActors.emplace_back(actor);
 		}
 		actor->AddedScene();
-		return shared_from_this();
 	}
 
 	void Scene::RemoveActor(std::shared_ptr<Actor> actor)

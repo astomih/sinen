@@ -13,13 +13,7 @@ namespace nen
 
 	Actor::~Actor()
 	{
-		if (addedSceneActorList)
-			mScene->RemoveActor(shared_from_this());
-		// Need to delete components
-		while (!mComponents.empty())
-		{
-			mComponents.pop_back();
-		}
+		mComponents.clear();
 	}
 
 	void Actor::Update(float deltaTime)
@@ -83,7 +77,6 @@ namespace nen
 		int myOrder = component->GetUpdateOrder();
 		if (!mComponents.empty())
 		{
-
 			auto iter = mComponents.begin();
 			for (; iter != mComponents.end(); ++iter)
 			{

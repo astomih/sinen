@@ -28,11 +28,13 @@ namespace nen
 				Create(tex);
 			}
 			float scaleOwner = mOwner.GetScale();
-			auto translate = glm::translate(glm::identity<glm::mat4>(), glm::vec3(mOwner.GetPosition().x, mOwner.GetPosition().y, 0));
+			auto translate = glm::translate(glm::identity<glm::mat4>(), glm::vec3(mOwner.GetPosition().x * 2.f, mOwner.GetPosition().y * 2.f, 0.f));
+
 			glm::quat quat;
-			memcpy(&quat, &mOwner.GetRotation(), sizeof(float) * 4);
-			auto rotate = glm::mat4_cast(quat);
-			auto scale = glm::scale(glm::identity<glm::mat4>(), glm::vec3(mTexture->GetWidth() * scaleOwner, mTexture->GetHeight() * scaleOwner, 1));
+			auto rotate = glm::mat4(0);
+			Matrix4 mat = Matrix4::CreateFromQuaternion(mOwner.GetRotation());
+			memcpy(&rotate, &mat, sizeof(float) * 16);
+			glm::mat4x4 scale = glm::scale(glm::identity<glm::mat4x4>(), glm::vec3(scaleOwner * mTexture->GetWidth(), mTexture->GetHeight() * scaleOwner, 0.f));
 
 			if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::Vulkan)
 			{
@@ -70,16 +72,20 @@ namespace nen
 		auto renderer = mOwner.GetScene()->GetRenderer();
 		auto api = renderer->GetGraphicsAPI();
 		float scaleOwner = mOwner.GetScale();
-		auto translate = glm::translate(glm::identity<glm::mat4>(), glm::vec3(mOwner.GetPosition().x, mOwner.GetPosition().y, 0));
+		//auto translate = glm::translate(glm::identity<glm::mat4>(), glm::vec3(mOwner.GetPosition().x, mOwner.GetPosition().y, 0));
+		auto translate = glm::identity<glm::mat4>();
+		translate[3][0] = mOwner.GetPosition().x;
+		translate[3][1] = mOwner.GetPosition().y;
+
 		glm::quat quat;
-		memcpy(&quat, &mOwner.GetRotation(), sizeof(float) * 4);
+		memcpy(&quat, &mOwner.GetRotation(), sizeof(Quaternion));
 		auto rotate = glm::mat4_cast(quat);
-		auto scale2 = glm::scale(glm::identity<glm::mat4>(), glm::vec3(mTexture->GetWidth() * scaleOwner, mTexture->GetHeight() * scaleOwner, 1));
-		glm::mat4x4 viewproj(0);
-		viewproj[0][0] = 1.f / Window::Size.x;
-		viewproj[1][1] = 1.f / Window::Size.y;
-		viewproj[2][2] = 1.f;
-		viewproj[3][3] = 1.f;
+		glm::mat4x4 scale2(0);
+		scale2[0][0] = scaleOwner;
+		scale2[1][1] = scaleOwner;
+		scale2[2][2] = 1.f;
+		scale2[3][3] = 1.f;
+		static glm::mat4x4 viewproj = glm::ortho(-Window::Size.x, Window::Size.x, -Window::Size.y, Window::Size.y);
 		if (renderer->GetGraphicsAPI() == GraphicsAPI::Vulkan)
 		{
 			mTextureVK = std::make_shared<vk::SpriteVK>();

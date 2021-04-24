@@ -36,9 +36,11 @@ namespace nen
 			SDL_Log("Failed to initialize input system");
 			std::exit(1);
 		}
-		// Load Scene data
+		// スクリプトのインスタンスを作成
+		Script::Create();
+		// シーンのデータを読み込み
 		LoadData();
-		// for delta time
+		// デルタタイムを読み込み
 		mTicksCount = SDL_GetTicks();
 	}
 

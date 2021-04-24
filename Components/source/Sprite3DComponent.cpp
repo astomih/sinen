@@ -88,7 +88,7 @@ namespace nen
 	{
 	}
 
-	void Sprite3DComponent::Create(std::shared_ptr<Texture> texture, const float scale, std::string_view shape)
+	void Sprite3DComponent::Create(std::shared_ptr<Texture> texture, std::string_view shape)
 	{
 		if (texture)
 			mTexture = texture;
@@ -99,16 +99,20 @@ namespace nen
 			Create(tex);
 		}
 		auto renderer = mOwner.GetScene()->GetRenderer();
-		const auto &rot = mOwner.GetRotation();
-		auto quat = glm::qua<float>();
-		quat.x = rot.x;
-		quat.y = rot.y;
-		quat.z = rot.z;
-		quat.w = rot.w;
-		auto world = glm::translate(
-						 glm::identity<glm::mat4>(),
-						 glm::vec3(mOwner.GetPosition().x, mOwner.GetPosition().y, mOwner.GetPosition().z)) *
-					 glm::toMat4(quat) * glm::scale(glm::identity<glm::mat4>(), glm::vec3(mOwner.GetScale(), mOwner.GetScale(), mOwner.GetScale()));
+		float scaleOwner = mOwner.GetScale();
+		auto pos = mOwner.GetPosition();
+		auto translate = glm::translate(glm::identity<glm::mat4>(), glm::vec3(pos.x, pos.y, pos.z));
+		glm::quat quat;
+		{
+			auto rot = mOwner.GetRotation();
+			quat.x = rot.x;
+			quat.y = rot.y;
+			quat.z = rot.z;
+			quat.w = rot.w;
+		}
+		auto rotate = glm::toMat4(quat);
+		auto scale2 = glm::scale(glm::identity<glm::mat4>(), glm::vec3(scaleOwner, scaleOwner, scaleOwner));
+		auto world = translate * rotate * scale2;
 		static auto view = glm::lookAtRH(glm::vec3(0, 0, 0), glm::vec3(1.f, 0, 0), glm::vec3(0, 0, 1.f));
 		static auto proj = glm::perspective(glm::radians(90.f), Window::Size.x / Window::Size.y, 0.01f, 10000.f);
 		if (renderer->GetGraphicsAPI() == GraphicsAPI::Vulkan)

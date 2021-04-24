@@ -2,19 +2,21 @@
 #include <memory>
 #include <string>
 #include <functional>
+#include <sol/sol.hpp>
 
 namespace nen
 {
-	class Script {
+	class Script
+	{
 	public:
-		static bool Init();
-		static void LoadModule();
-		static void LoadFunc();
-		template<class T, class U>
-		static void CreateModule(std::function<T(U)> func, const std::string& name);
-	private:
 		Script() {}
-		static Script* pScript;
-		static bool isInited;
+		static void Create();
+		static const Script &Get() { return *instance; }
+		static sol::state &GetSolState() { return lua; }
+		static void DoScript(std::string_view fileName);
+
+	private:
+		inline static std::unique_ptr<nen::Script> instance;
+		inline static sol::state lua;
 	};
 }

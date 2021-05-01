@@ -53,8 +53,8 @@ namespace nen
 			mPosition.z += z;
 			mRecomputeWorldTransform = true;
 		}
-		float GetScale() const { return mScale; }
-		void SetScale(float scale)
+		const Vector3f &GetScale() const { return mScale; }
+		void SetScale(const Vector3f &scale)
 		{
 			mScale = scale;
 			mRecomputeWorldTransform = true;
@@ -92,7 +92,7 @@ namespace nen
 		Quaternion mRotation;
 		std::vector<std::shared_ptr<Component>> mComponents;
 		std::shared_ptr<class Scene> mScene;
-		float mScale;
+		Vector3f mScale;
 		bool addedSceneActorList = false;
 	};
 }

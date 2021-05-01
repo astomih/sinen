@@ -11,6 +11,4 @@ namespace nen::console
 	void Print(const Vector2f &t);
 	template <>
 	void Print(const Matrix4 &t);
-	template <>
-	void Print(const glm::mat4x4 &t);
 }

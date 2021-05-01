@@ -7,7 +7,7 @@
 namespace nen
 {
 	Actor::Actor(std::shared_ptr<Scene> scene)
-		: mState(EActive), mPosition(Vector3f::Zero), mRotation(Quaternion::Identity), mScene(scene), mRecomputeWorldTransform(true), mScale(1.0f), mComponents()
+		: mState(EActive), mPosition(Vector3f::Zero), mRotation(Quaternion::Identity), mScene(scene), mRecomputeWorldTransform(true), mScale(Vector3f(1.f, 1.f, 1.f)), mComponents()
 	{
 	}
 
@@ -60,7 +60,20 @@ namespace nen
 	{
 		if (mRecomputeWorldTransform)
 		{
-			mRecomputeWorldTransform = true;
+			this->RecomuteFinished();
+
+			auto scaleOwner = GetScale();
+			auto pos = GetPosition();
+			Matrix4 t = Matrix4::Identity;
+			t.mat[3][0] = pos.x;
+			t.mat[3][1] = pos.y;
+			t.mat[3][2] = pos.z;
+			Matrix4 r = Matrix4::CreateFromQuaternion(this->GetRotation());
+			Matrix4 s = Matrix4::Identity;
+			s.mat[0][0] = scaleOwner.x;
+			s.mat[1][1] = scaleOwner.y;
+			s.mat[2][2] = scaleOwner.z;
+			this->mWorldTransform = s * r * t;
 
 			// Inform components world transform updated
 			for (const auto comp : mComponents)

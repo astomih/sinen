@@ -13,7 +13,7 @@ namespace nen::vk
 {
 	using namespace vkutil;
 
-	constexpr int maxpoolSize = 1000;
+	constexpr int maxpoolSize = 2000;
 	constexpr int maxInstanceCount = 900;
 	VKRenderer::VKRenderer()
 		: m_descriptorPool(),
@@ -1516,13 +1516,11 @@ namespace nen::vk
 			auto itr = std::find(mTextures3D.begin(), mTextures3D.end(), texture);
 			if (itr != mTextures3D.end())
 			{
-				DestroyVulkanObject<VkBuffer>(m_base->m_device, (*itr)->buffer.buffer, &vkDestroyBuffer);
-				DestroyVulkanObject<VkDeviceMemory>(m_base->m_device, (*itr)->buffer.memory, &vkFreeMemory);
+				DestroyBuffer((*itr)->buffer);
 				vkFreeDescriptorSets(m_base->m_device, m_descriptorPool, static_cast<uint32_t>(texture->uniformBuffers.size()), texture->descripterSet.data());
 				for (auto &i : (*itr)->uniformBuffers)
 				{
-					DestroyVulkanObject<VkBuffer>(m_base->m_device, i.buffer, &vkDestroyBuffer);
-					DestroyVulkanObject<VkDeviceMemory>(m_base->m_device, i.memory, &vkFreeMemory);
+					DestroyBuffer(i);
 				}
 				mTextures3D.erase(itr);
 				mTextures3D.shrink_to_fit();

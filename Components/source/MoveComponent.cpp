@@ -5,13 +5,17 @@
 #include <iostream>
 namespace nen
 {
-	MoveComponent::MoveComponent(class Actor& owner, int updateOrder)
+	MoveComponent::MoveComponent(class Actor &owner, int updateOrder)
 		: Component(owner, updateOrder), mAngularSpeed(0.0f), mForwardSpeed(0.0f)
 	{
 	}
 
 	void MoveComponent::Update(float deltaTime)
 	{
+		if (!Math::NearZero(axis.x) || !Math::NearZero(axis.y) || !Math::NearZero(axis.z))
+		{
+			mOwner.SetPosition(mOwner.GetPosition() + axis * deltaTime);
+		}
 		if (!Math::NearZero(mAngularSpeed))
 		{
 			Quaternion rot = mOwner.GetRotation();

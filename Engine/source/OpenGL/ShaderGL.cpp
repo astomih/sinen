@@ -6,12 +6,6 @@
 #include <iostream>
 #include <SDL_image.h>
 #include <sol/sol.hpp>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/quaternion.hpp>
-#include <glm/common.hpp>
 #include <GL/glew.h>
 namespace nen::gl
 {
@@ -64,12 +58,12 @@ namespace nen::gl
 		glDisable(mShaderProgram);
 	}
 
-	void ShaderGL::SetMatrixUniform(const char *name, const glm::mat4 &matrix)
+	void ShaderGL::SetMatrixUniform(const char *name, const Matrix4 &matrix)
 	{
 		// Find the uniform by this name
 		GLuint loc = glGetUniformLocation(mShaderProgram, name);
 		// Send the matrix data to the uniform
-		glUniformMatrix4fv(loc, 1, GL_TRUE, glm::value_ptr(matrix));
+		glUniformMatrix4fv(loc, 1, GL_TRUE, matrix.GetAsFloatPtr());
 	}
 
 	void ShaderGL::SetColorUniform(const char *name, const Color::Color &color)
@@ -97,11 +91,11 @@ namespace nen::gl
 		glUniform1i(loc, integer);
 	}
 
-	void ShaderGL::SetVectorUniform(const char *name, const glm::vec3 &vector)
+	void ShaderGL::SetVectorUniform(const char *name, const Vector3f &vector)
 	{
 		GLuint loc = glGetUniformLocation(mShaderProgram, name);
 		// Send the vector data
-		glUniform3fv(loc, 1, (&vector[0]));
+		glUniform3fv(loc, 1, &vector.x);
 	}
 
 	void ShaderGL::SetFloatUniform(const char *name, const float value)

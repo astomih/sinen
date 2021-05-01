@@ -56,12 +56,13 @@ namespace nen
 		class Texture *GetTextureFromMemory(const unsigned char *const buffer, const std::string &key);
 		class Effect *GetEffect(const std::u16string &fileName);
 
-		void SetViewMatrix(const glm::mat4x4 &view) { mView = view; }
-		glm::mat4x4 GetViewMatrix() { return mView; }
-		const glm::mat4x4 &GetProjectionMatrix() { return mProjection; }
+		void SetViewMatrix(const Matrix4 &view) { mView = view; }
+		Matrix4 GetViewMatrix() { return mView; }
+		const Matrix4 &GetProjectionMatrix() { return mProjection; }
 
-		SDL_Window *GetWindow() {
-			if(!mWindow)
+		SDL_Window *GetWindow()
+		{
+			if (!mWindow)
 				return nullptr;
 			return mWindow;
 		}
@@ -90,8 +91,8 @@ namespace nen
 		class VertexArray *mSpriteVerts;
 
 		// View/projection for 3D shaders
-		glm::mat4x4 mView;
-		glm::mat4x4 mProjection;
+		Matrix4 mView;
+		Matrix4 mProjection;
 
 		// Window
 		SDL_Window *mWindow;

@@ -298,6 +298,10 @@ namespace nen
 			: x(0.0f), y(0.0f), z(0.0f)
 		{
 		}
+		constexpr explicit Vector3f(float value)
+			: x(value), y(value), z(value)
+		{
+		}
 
 		constexpr explicit Vector3f(float inX, float inY, float inZ)
 			: x(inX), y(inY), z(inZ)

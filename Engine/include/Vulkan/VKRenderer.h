@@ -33,7 +33,7 @@ namespace nen::vk
 
 	struct InstanceData
 	{
-		glm::mat4 world;
+		Matrix4 world;
 	};
 
 	class VKRenderer

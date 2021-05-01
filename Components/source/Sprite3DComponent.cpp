@@ -4,11 +4,6 @@
 #include <Scene.hpp>
 #include <iostream>
 #include <SDL_image.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/quaternion.hpp>
-#include <glm/common.hpp>
 namespace nen
 {
 	Sprite3DComponent::Sprite3DComponent(Actor &owner, const int drawOrder, Texture tex)
@@ -18,64 +13,18 @@ namespace nen
 
 	void Sprite3DComponent::Update(float deltaTime)
 	{
-		if (mOwner.isRecompute())
+		auto world = mOwner.GetWorldTransform();
+		if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::Vulkan)
 		{
-			if (!mTexture)
-			{
-
-				auto tex = std::make_shared<Texture>();
-				tex->Load("Assets/Default.png");
-				Create(tex);
-			}
-			float scaleOwner = mOwner.GetScale();
-			auto pos = mOwner.GetPosition();
-			auto translate = glm::translate(glm::identity<glm::mat4>(), glm::vec3(pos.x, pos.y, pos.z));
-			glm::quat quat;
-			{
-				auto rot = mOwner.GetRotation();
-				quat.x = rot.x;
-				quat.y = rot.y;
-				quat.z = rot.z;
-				quat.w = rot.w;
-			}
-			auto rotate = glm::toMat4(quat);
-			auto scale = glm::scale(glm::identity<glm::mat4>(), glm::vec3(scaleOwner, scaleOwner, scaleOwner));
-			auto world = translate * rotate * scale;
-
-			if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::Vulkan)
-			{
-				auto view = mOwner.GetScene()->GetRenderer()->GetViewMatrix();
-				static auto proj = glm::perspective(glm::radians(90.f), Window::Size.x / Window::Size.y, 0.01f, 10000.f);
-				mTextureVK->param.proj = proj;
-				mTextureVK->param.view = view;
-				mTextureVK->param.world = world;
-			}
-			else
-			{
-				auto view = mOwner.GetScene()->GetRenderer()->GetViewMatrix();
-				static auto proj = glm::perspective(glm::radians(90.f), Window::Size.x / Window::Size.y, 0.01f, 10000.f);
-				sprite->param.proj = proj;
-				sprite->param.view = view;
-				sprite->param.world = world;
-			}
-			mOwner.RecomuteFinished();
+			auto view = mOwner.GetScene()->GetRenderer()->GetViewMatrix();
+			mTextureVK->param.view = view;
+			mTextureVK->param.world = world;
 		}
 		else
 		{
-			if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::Vulkan)
-			{
-				auto view = mOwner.GetScene()->GetRenderer()->GetViewMatrix();
-				static auto proj = glm::perspective(glm::radians(90.f), Window::Size.x / Window::Size.y, 0.01f, 10000.f);
-				mTextureVK->param.proj = proj;
-				mTextureVK->param.view = view;
-			}
-			else
-			{
-				auto view = mOwner.GetScene()->GetRenderer()->GetViewMatrix();
-				static auto proj = glm::perspective(glm::radians(90.f), Window::Size.x / Window::Size.y, 0.01f, 10000.f);
-				sprite->param.proj = proj;
-				sprite->param.view = view;
-			}
+			auto view = mOwner.GetScene()->GetRenderer()->GetViewMatrix();
+			sprite->param.view = view;
+			sprite->param.world = world;
 		}
 	}
 
@@ -99,22 +48,19 @@ namespace nen
 			Create(tex);
 		}
 		auto renderer = mOwner.GetScene()->GetRenderer();
-		float scaleOwner = mOwner.GetScale();
+		auto scaleOwner = mOwner.GetScale();
 		auto pos = mOwner.GetPosition();
-		auto translate = glm::translate(glm::identity<glm::mat4>(), glm::vec3(pos.x, pos.y, pos.z));
-		glm::quat quat;
-		{
-			auto rot = mOwner.GetRotation();
-			quat.x = rot.x;
-			quat.y = rot.y;
-			quat.z = rot.z;
-			quat.w = rot.w;
-		}
-		auto rotate = glm::toMat4(quat);
-		auto scale2 = glm::scale(glm::identity<glm::mat4>(), glm::vec3(scaleOwner, scaleOwner, scaleOwner));
-		auto world = translate * rotate * scale2;
-		static auto view = glm::lookAtRH(glm::vec3(0, 0, 0), glm::vec3(1.f, 0, 0), glm::vec3(0, 0, 1.f));
-		static auto proj = glm::perspective(glm::radians(90.f), Window::Size.x / Window::Size.y, 0.01f, 10000.f);
+		auto view = mOwner.GetScene()->GetRenderer()->GetViewMatrix();
+		const auto yScale = Math::Cot(Math::ToRadians(90.f) / 2.0f);
+		const auto xScale = yScale * Window::Size.y / Window::Size.x;
+		float temp[4][4] =
+			{
+				{xScale, 0.0f, 0.0f, 0.0f},
+				{0.0f, yScale, 0.0f, 0.0f},
+				{0.0f, 0.0f, 10000.f / (10000.f - 0.01f), 1.0f},
+				{0.0f, 0.0f, -0.01f * 10000.f / (10000.f - 0.01f), 0.0f}};
+		Matrix4 proj(temp);
+
 		if (renderer->GetGraphicsAPI() == GraphicsAPI::Vulkan)
 		{
 			mTextureVK = std::make_shared<vk::SpriteVK>();
@@ -124,7 +70,7 @@ namespace nen
 			renderer->GetVK().registerTexture(mTextureVK, mTexture->id, TextureType::Image3D);
 			mTextureVK->vertexIndex = shape.data();
 
-			mTextureVK->param.world = world;
+			mTextureVK->param.world = mOwner.GetWorldTransform();
 			mTextureVK->param.proj = proj;
 			mTextureVK->param.view = view;
 		}
@@ -135,7 +81,7 @@ namespace nen
 			sprite->textureIndex = mTexture->id;
 			sprite->vertexIndex = shape.data();
 
-			sprite->param.world = world;
+			sprite->param.world = mOwner.GetWorldTransform();
 			sprite->param.proj = proj;
 			sprite->param.view = view;
 			mOwner.GetScene()->GetRenderer()->GetGL().pushSprite3d(sprite);

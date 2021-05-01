@@ -2,7 +2,6 @@
 #include <string>
 #include <memory>
 #include <Engine/include/Vulkan/VKRenderer.h>
-#include <glm/gtc/matrix_transform.hpp>
 #include <unordered_map>
 #include <Engine/include/Vertex.h>
 namespace nen
@@ -22,9 +21,9 @@ namespace nen
 	};
 	struct ShaderParameters
 	{
-		glm::mat4x4 world;
-		glm::mat4x4 view;
-		glm::mat4x4 proj;
+		Matrix4 world;
+		Matrix4 view;
+		Matrix4 proj;
 	};
 	struct SDLObjectCloser
 	{

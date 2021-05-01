@@ -14,13 +14,13 @@ namespace nen::gl
 		void SetActive();
 		void SetDisable();
 		// Sets a Matrix uniform
-		void SetMatrixUniform(const char *name, const glm::mat4 &matrix);
+		void SetMatrixUniform(const char *name, const Matrix4 &matrix);
 		void SetColorUniform(const char *name, const Color::Color &color);
 		void SetVector2fUniform(const char *name, const Vector2f &vuv);
 		void SetBoolUniform(const char *name, const bool boolean);
 		void SetIntUniform(const char *name, const int integer);
 		// Sets a Vector3f uniform
-		void SetVectorUniform(const char *name, const glm::vec3 &vector);
+		void SetVectorUniform(const char *name, const Vector3f &vector);
 		void SetFloatUniform(const char *name, const float value);
 
 	private:

@@ -1,2 +1,2 @@
 # NenEngine
- Lightweight OpenGL/Vulkan sprite engine
+ Lightweight OpenGL/Vulkan Game Engine.

@@ -7,10 +7,10 @@ namespace nen
 	class Sprite3DComponent : public Component
 	{
 	public:
-		Sprite3DComponent(class Actor& owner, int drawOrder = 100, Texture tex = Texture());
+		Sprite3DComponent(class Actor &owner, int drawOrder = 100, Texture tex = Texture());
 		~Sprite3DComponent();
 
-		virtual void Draw(class Shader* shader);
+		virtual void Draw(class Shader *shader);
 		virtual void Update(float deltaTime) override;
 
 		int GetDrawOrder() const { return mDrawOrder; }
@@ -20,28 +20,29 @@ namespace nen
 		void Create(std::shared_ptr<class Texture> texture, std::string_view shape = "SPRITE");
 		void SetReverse(bool Use) { mUseReverse = Use; }
 		void SetFlip(bool Use) { mUseFlip = Use; }
-		void SetScale(const Vector2f& scale)
+		void SetScale(const Vector2f &scale)
 		{
 			mTexWidth = static_cast<int>(static_cast<float>(mTexWidth) * scale.x);
 			mTexHeight = static_cast<int>(static_cast<float>(mTexHeight) * scale.y);
 		}
 		void SetUseTrimming(const bool isuse) { mUseTrim = isuse; }
-		void SetTrimmingStartPos(const Vector2i& pos)
+		void SetTrimmingStartPos(const Vector2i &pos)
 		{
 			trim_s.x = pos.x + (int)Window::Center.x;
 			trim_s.y = pos.y + (int)Window::Center.y;
 		}
-		void SetTrimmingEndPos(const Vector2i& pos)
+		void SetTrimmingEndPos(const Vector2i &pos)
 		{
 			trim_e.x = pos.x;
 			trim_e.y = pos.y;
 		}
 		void SetBoolean(bool boolean) { mBoolean = boolean; }
-		void SetColor(const Color::Color& color) { mColor = color; }
+		void SetColor(const Color::Color &color) { mColor = color; }
 		Color::Color GetColor() { return mColor; }
 
 		std::shared_ptr<class vk::SpriteVK> mTextureVK;
 		std::shared_ptr<class Sprite> sprite;
+
 	private:
 		int mDrawOrder = 0;
 		int mTexWidth = 0;
@@ -54,7 +55,7 @@ namespace nen
 		bool mUseTrim = false;
 		Vector2i trim_s;
 		Vector2i trim_e;
-		Actor& mOwner;
+		Actor &mOwner;
 
 		std::shared_ptr<Texture> mTexture;
 	};

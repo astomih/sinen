@@ -135,8 +135,6 @@ namespace nen
 		{
 			if ((*it)->GetState() == Actor::EDead)
 			{
-				std::cout << it->use_count() << std::endl;
-				it->reset();
 				it = mActors.erase(it);
 			}
 			else

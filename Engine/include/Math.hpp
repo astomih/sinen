@@ -285,6 +285,139 @@ namespace nen
 		static const Vector2f NegUnitX;
 		static const Vector2f NegUnitY;
 	};
+	class Vector2i
+	{
+	public:
+		int x;
+		int y;
+
+		Vector2i() : x(0), y(0)
+		{
+		}
+
+		constexpr explicit Vector2i(int inX, int inY) : x(inX), y(inY)
+		{
+		}
+
+		// Set both components in one line
+		void Set(int inX, int inY)
+		{
+			x = inX;
+			y = inY;
+		}
+
+		const int *GetAsFloatPtr() const
+		{
+			return reinterpret_cast<const int *>(&x);
+		}
+		// Vector addition (a + b)
+		friend Vector2i operator+(const Vector2i &a, const Vector2i &b)
+		{
+			return Vector2i(a.x + b.x, a.y + b.y);
+		}
+
+		// Vector subtraction (a - b)
+		friend Vector2i operator-(const Vector2i &a, const Vector2i &b)
+		{
+			return Vector2i(a.x - b.x, a.y - b.y);
+		}
+
+		// Component-wise multiplication
+		// (a.x * b.x, ...)
+		friend Vector2i operator*(const Vector2i &a, const Vector2i &b)
+		{
+			return Vector2i(a.x * b.x, a.y * b.y);
+		}
+
+		// Scalar multiplication
+		friend Vector2i operator*(const Vector2i &vec, int scalar)
+		{
+			return Vector2i(vec.x * scalar, vec.y * scalar);
+		}
+
+		// Scalar multiplication
+		friend Vector2i operator*(int scalar, const Vector2i &vec)
+		{
+			return Vector2i(vec.x * scalar, vec.y * scalar);
+		}
+
+		Vector2i &operator/=(int scalar)
+		{
+			x > 0 ? x /= scalar : x = 0;
+			y > 0 ? y /= scalar : y = 0;
+			return *this;
+		}
+
+		// Scalar *=
+		Vector2i &operator*=(int scalar)
+		{
+			x *= scalar;
+			y *= scalar;
+			return *this;
+		}
+
+		// Vector +=
+		Vector2i &operator+=(const Vector2i &right)
+		{
+			x += right.x;
+			y += right.y;
+			return *this;
+		}
+
+		// Vector -=
+		Vector2i &operator-=(const Vector2i &right)
+		{
+			x -= right.x;
+			y -= right.y;
+			return *this;
+		}
+
+		// Length squared of vector
+		[[nodiscard]] float LengthSq() const
+		{
+			return static_cast<float>(x * x + y * y);
+		}
+
+		// Length of vector
+		[[nodiscard]] float Length() const
+		{
+			return (Math::Sqrt(LengthSq()));
+		}
+
+		// Normalize this vector
+		void Normalize()
+		{
+			const auto length = static_cast<int>(Length());
+			x /= length;
+			y /= length;
+		}
+
+		// Normalize the provided vector
+		static Vector2i Normalize(const Vector2i &vec)
+		{
+			auto temp = vec;
+			temp.Normalize();
+			return temp;
+		}
+
+		// Dot product between two vectors (a dot b)
+		static int Dot(const Vector2i &a, const Vector2i &b)
+		{
+			return (a.x * b.x + a.y * b.y);
+		}
+
+		// Lerp from A to B by f
+		static Vector2i Lerp(const Vector2i &a, const Vector2i &b, int f)
+		{
+			return Vector2i(a + f * (b - a));
+		}
+
+		// Reflect V about (normalized) N
+		static Vector2i Reflect(const Vector2i &v, const Vector2i &n)
+		{
+			return v - 2 * Vector2i::Dot(v, n) * n;
+		}
+	};
 
 	// 3D Vector
 	class Vector3f
@@ -457,50 +590,6 @@ namespace nen
 		static const Vector3f NegUnitZ;
 		static const Vector3f Infinity;
 		static const Vector3f NegInfinity;
-	};
-
-	class Vector2i
-	{
-	public:
-		int x;
-		int y;
-
-		Vector2i() : x(0), y(0)
-		{
-		}
-
-		constexpr explicit Vector2i(int inX, int inY) : x(inX), y(inY)
-		{
-		}
-
-		[[nodiscard]] constexpr Vector3f toVector3() const
-		{
-			return Vector3f(static_cast<float>(x), static_cast<float>(y), 0.f);
-		}
-
-		Vector2i &operator-=(const Vector2i &right)
-		{
-			x -= right.x;
-			y -= right.y;
-			return *this;
-		}
-
-		Vector2i &operator+=(const Vector2i &right)
-		{
-			x += right.x;
-			y += right.y;
-			return *this;
-		}
-
-		Vector2i operator-(const Vector2i &right) const
-		{
-			return Vector2i(x - right.x, y - right.y);
-		}
-
-		Vector2i operator+(const Vector2i &right) const
-		{
-			return Vector2i(x + right.x, y + right.y);
-		}
 	};
 
 	// 3x3 Matrix

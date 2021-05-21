@@ -14,7 +14,7 @@ namespace nen
 	void Sprite3DComponent::Update(float deltaTime)
 	{
 		auto world = mOwner.GetWorldTransform();
-		if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::Vulkan)
+		if (mTextureVK)
 		{
 			auto view = mOwner.GetScene()->GetRenderer()->GetViewMatrix();
 			mTextureVK->param.view = view;

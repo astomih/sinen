@@ -15,31 +15,25 @@ namespace nen
 
 	void Sprite2DComponent::Update(float deltaTime)
 	{
+		if (!mTexture)
 		{
-			if (!mTexture)
-			{
-				auto tex = std::make_shared<Texture>();
-				tex->Load("Assets/Default.png");
-				Create(tex);
-			}
-
-			auto w = mOwner.GetWorldTransform();
-			Matrix4 s = Matrix4::Identity;
-			s.mat[0][0] = mTexture->GetWidth();
-			s.mat[1][1] = mTexture->GetHeight();
-			auto world = s * w;
-			world.mat[3][0] *= 2.f;
-			world.mat[3][1] *= 2.f;
-
-			if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::Vulkan)
-			{
-				mTextureVK->param.world = world;
-			}
-			if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::OpenGL)
-			{
-				sprite->param.world = world;
-			}
+			auto tex = std::make_shared<Texture>();
+			tex->Load("Assets/Default.png");
+			Create(tex);
 		}
+
+		auto w = mOwner.GetWorldTransform();
+		Matrix4 s = Matrix4::Identity;
+		s.mat[0][0] = mTexture->GetWidth();
+		s.mat[1][1] = mTexture->GetHeight();
+		auto world = s * w;
+		world.mat[3][0] *= 2.f;
+		world.mat[3][1] *= 2.f;
+
+		if (mTextureVK)
+			mTextureVK->param.world = world;
+		else
+			sprite->param.world = world;
 	}
 
 	Sprite2DComponent::~Sprite2DComponent()

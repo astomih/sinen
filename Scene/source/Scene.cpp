@@ -21,12 +21,11 @@ namespace nen
 		mRenderer = renderer;
 		mRenderer->Initialize(shared_from_this(), mTransition);
 
-		mAudioSystem = new AudioSystem(shared_from_this());
+		mAudioSystem = std::make_shared<AudioSystem>(shared_from_this());
 		if (!mAudioSystem->Initialize())
 		{
 			SDL_Log("Failed to initialize audio system");
 			mAudioSystem->Shutdown();
-			delete mAudioSystem;
 			mAudioSystem = nullptr;
 			std::exit(1);
 		}

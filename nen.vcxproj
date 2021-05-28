@@ -129,7 +129,7 @@
     <ClCompile Include="Engine\source\Random.cpp" />
     <ClCompile Include="Engine\source\Renderer.cpp" />
     <ClCompile Include="Engine\source\Script.cpp" />
-    <ClCompile Include="Engine\source\SoundEvent.cpp" />
+    <ClCompile Include="Engine\source\AudioEvent.cpp" />
     <ClCompile Include="Engine\source\StreamReader.cpp" />
     <ClCompile Include="Engine\source\Texture.cpp" />
     <ClCompile Include="Engine\source\Transform.cpp" />
@@ -182,7 +182,7 @@
     <ClInclude Include="Engine\include\Random.h" />
     <ClInclude Include="Engine\include\Renderer.h" />
     <ClInclude Include="Engine\include\Script.h" />
-    <ClInclude Include="Engine\include\SoundEvent.h" />
+    <ClInclude Include="Engine\include\AudioEvent.h" />
     <ClInclude Include="Engine\include\StreamReader.h" />
     <ClInclude Include="Engine\include\Texture.h" />
     <ClInclude Include="Engine\include\Transform.hpp" />

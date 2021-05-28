@@ -4,7 +4,7 @@
 #include <Engine.hpp>
 namespace nen
 {
-	AudioComponent::AudioComponent(Actor& owner, int updateOrder)
+	AudioComponent::AudioComponent(Actor &owner, int updateOrder)
 		: Component(owner, updateOrder)
 	{
 	}
@@ -16,34 +16,17 @@ namespace nen
 
 	void AudioComponent::Update(float deltaTime)
 	{
-		Component::Update(deltaTime);
 
-		// Remove invalid 2D events
-		auto iter = mEvents2D.begin();
-		while (iter != mEvents2D.end())
+		auto iter = mEvents.begin();
+		while (iter != mEvents.end())
 		{
+			iter->SetPosition(mOwner.GetPosition());
 			if (!iter->IsValid())
 			{
-				iter = mEvents2D.erase(iter);
+				iter = mEvents.erase(iter);
 			}
 			else
-			{
 				++iter;
-			}
-		}
-
-		// Remove invalid 3D events
-		iter = mEvents3D.begin();
-		while (iter != mEvents3D.end())
-		{
-			if (!iter->IsValid())
-			{
-				iter = mEvents3D.erase(iter);
-			}
-			else
-			{
-				++iter;
-			}
 		}
 	}
 
@@ -51,7 +34,7 @@ namespace nen
 	{
 		// Update 3D events' world transforms
 		Matrix4 world = mOwner.GetWorldTransform();
-		for (auto& event : mEvents3D)
+		for (auto &event : mEvents)
 		{
 			if (event.IsValid())
 			{
@@ -62,16 +45,22 @@ namespace nen
 	void AudioComponent::StopAllEvents()
 	{
 		// Stop all sounds
-		for (auto& e : mEvents2D)
-		{
-			e.Stop();
-		}
-		for (auto& e : mEvents3D)
+		for (auto &e : mEvents)
 		{
 			e.Stop();
 		}
 		// Clear events
-		mEvents2D.clear();
-		mEvents3D.clear();
+		mEvents.clear();
+	}
+
+	void AudioComponent::AddEvent(const AudioEvent &e)
+	{
+		for (auto &i : mEvents)
+		{
+			if (i.GetName() == i.GetName())
+				return;
+		}
+		mEvents.push_back(e);
+		mEvents[0].SetVolume(100.f);
 	}
 }

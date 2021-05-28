@@ -17,6 +17,7 @@ enum class Scenes : int16_t
 };
 namespace nen
 {
+	class AudioSystem;
 	class Scene : public std::enable_shared_from_this<Scene>
 	{
 	public:
@@ -32,7 +33,7 @@ namespace nen
 		void AddActor(std::shared_ptr<class Actor> actor);
 		void RemoveActor(std::shared_ptr<class Actor> actor);
 
-		class AudioSystem *GetAudioSystem() const { return mAudioSystem; }
+		std::shared_ptr<AudioSystem> GetAudioSystem() const { return mAudioSystem; }
 
 		virtual Scenes GetSceneName() { return Scenes::None; }
 		std::shared_ptr<class Renderer> GetRenderer() const { return mRenderer; }
@@ -65,9 +66,7 @@ namespace nen
 		Scenes NextScene = Scenes::None;
 		// All the actors in the game
 		std::vector<std::shared_ptr<class Actor>> mActors;
-		class AudioSystem *mAudioSystem{};
-		SoundEvent mMusicEvent;
-		SoundEvent mReverbSnap;
+		std::shared_ptr<AudioSystem> mAudioSystem;
 
 	private:
 		void UnloadData();

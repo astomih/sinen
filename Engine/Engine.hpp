@@ -13,7 +13,7 @@
 #include "include/Transform.hpp"
 #include "include/DebugLog.hpp"
 #include "include/AudioSystem.h"
-#include "include/SoundEvent.h"
+#include "include/AudioEvent.h"
 #include "include/Renderer.h"
 #include "include/Transition.h"
 #include "include/InputSystem.h"

@@ -118,19 +118,11 @@ namespace nen
 		return e;
 	}
 
-	void AudioSystem::SetListener(const Matrix4 &viewMatrix, const Quaternion &quat)
+	void AudioSystem::SetListener(const Vector3f &pos, const Quaternion &quat)
 	{
-		// Invert the view matrix to get the correct vectors
-		Matrix4 invView = viewMatrix;
-		invView.Invert();
-		Vector3f v = invView.GetTranslation();
-
-		alListener3f(AL_POSITION, v.x, v.y, v.z);
+		alListener3f(AL_POSITION, pos.x, pos.z, pos.y);
 		Vector3f d = Vector3f::Transform(Vector3f::UnitX, quat);
-		Vector3f z = Vector3f::Transform(Vector3f::UnitZ, quat);
-		console::Print<Vector3f>(d);
-		float d2[6] = {d.x, 1, d.y, 0, 1, 0};
-
+		float d2[6] = {d.z, -d.x, d.y, 1, 1, 0};
 		alListenerfv(AL_ORIENTATION, d2);
 	}
 
@@ -202,8 +194,6 @@ namespace nen
 			detail::check_openal_error("alSourcei");
 			alSourcei(sid, AL_LOOPING, AL_TRUE);
 			detail::check_openal_error("alSourcei");
-			alSourcePlay(sid);
-			detail::check_openal_error("alSourcePlay");
 		}
 	}
 

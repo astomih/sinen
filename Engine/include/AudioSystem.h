@@ -36,14 +36,14 @@ namespace nen
 		void Shutdown();
 		void Update(float deltaTime);
 
-		AudioEvent PlayEvent(std::string_view name,AudioType ae);
+		AudioEvent PlayEvent(std::string_view name, AudioType ae);
 
-		void LoadAudioFile(std::string_view fileName,AudioType type);
+		void LoadAudioFile(std::string_view fileName, AudioType type);
 		void UnloadAudioFile(std::string_view fileName);
 
 		// For positional audio
-		void SetListener(const Matrix4 &viewMatrix,const Quaternion& quat);
-		SoundParameters& GetSoundParameter(std::string_view name)
+		void SetListener(const Vector3f &pos, const Quaternion &quat);
+		SoundParameters &GetSoundParameter(std::string_view name)
 		{
 #ifdef _DEBUG
 			if (!sounds.contains(name.data()))
@@ -53,7 +53,7 @@ namespace nen
 			return sounds[name.data()];
 		}
 
-		MusicParameters& GetMusicParameter(std::string_view name)
+		MusicParameters &GetMusicParameter(std::string_view name)
 		{
 #ifdef _DEBUG
 			if (!musics.contains(name.data()))
@@ -61,7 +61,6 @@ namespace nen
 #endif
 
 			return musics[name.data()];
-
 		}
 
 	protected:

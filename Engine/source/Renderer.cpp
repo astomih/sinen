@@ -101,6 +101,7 @@ namespace nen
 
 	void Renderer::AddSprite2D(Sprite2DComponent *sprite)
 	{
+		
 		// Find the insertion point in the sorted vector
 		// (The first element with a higher draw order than me)
 		const auto myDrawOrder = sprite->GetDrawOrder();

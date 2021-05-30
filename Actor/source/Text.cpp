@@ -4,12 +4,13 @@
 namespace nen
 {
 	Text::Text(std::shared_ptr<Scene> scene)
-		:Actor(scene)
+		: Actor(scene)
 	{
-		mFont = std::make_unique<FontComponent>(*this);
+		mFont = std::make_shared<FontComponent>(*this);
+		this->AddComponent(mFont);
 	}
 
-	void Text::SetText(const std::string& text, const int size) const
+	void Text::SetText(const std::string &text, const int size) const
 	{
 		mFont->SetString(text, Color::White, size);
 	}
@@ -24,7 +25,7 @@ namespace nen
 		return mFont->GetTexHeight();
 	}
 
-	void Text::SetColor(const Color::Color& color)
+	void Text::SetColor(const Color::Color &color)
 	{
 		mFont->SetColor(color);
 	}

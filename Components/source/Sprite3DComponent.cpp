@@ -17,8 +17,8 @@ namespace nen
 		if (mTextureVK)
 		{
 			auto view = mOwner.GetScene()->GetRenderer()->GetViewMatrix();
-			mTextureVK->param.view = view;
-			mTextureVK->param.world = world;
+			mTextureVK->sprite->param.view = view;
+			mTextureVK->sprite->param.world = world;
 		}
 		else
 		{
@@ -64,15 +64,16 @@ namespace nen
 		if (renderer->GetGraphicsAPI() == GraphicsAPI::Vulkan)
 		{
 			mTextureVK = std::make_shared<vk::SpriteVK>();
+			mTextureVK->sprite = std::make_shared<Sprite>();
 
 			renderer->GetVK().registerImageObject(mTexture);
 			mTextureVK->mTexture = mTexture;
 			renderer->GetVK().registerTexture(mTextureVK, mTexture->id, TextureType::Image3D);
-			mTextureVK->vertexIndex = shape.data();
+			mTextureVK->sprite->vertexIndex = shape.data();
 
-			mTextureVK->param.world = mOwner.GetWorldTransform();
-			mTextureVK->param.proj = proj;
-			mTextureVK->param.view = view;
+			mTextureVK->sprite->param.world = mOwner.GetWorldTransform();
+			mTextureVK->sprite->param.proj = proj;
+			mTextureVK->sprite->param.view = view;
 		}
 		if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::OpenGL)
 		{

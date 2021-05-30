@@ -31,7 +31,7 @@ namespace nen
 		world.mat[3][1] *= 2.f;
 
 		if (mTextureVK)
-			mTextureVK->param.world = world;
+			mTextureVK->sprite->param.world = world;
 		else
 			sprite->param.world = world;
 	}
@@ -67,15 +67,16 @@ namespace nen
 		if (renderer->GetGraphicsAPI() == GraphicsAPI::Vulkan)
 		{
 			mTextureVK = std::make_shared<vk::SpriteVK>();
+			mTextureVK->sprite = std::make_shared<Sprite>();
 			renderer->GetVK().registerImageObject(mTexture);
 			mTextureVK->mTexture = mTexture;
-			mTextureVK->drawOrder = mDrawOrder;
-			mTextureVK->vertexIndex = shape.data();
+			mTextureVK->sprite->drawOrder = mDrawOrder;
+			mTextureVK->sprite->vertexIndex = shape.data();
 			renderer->GetVK().registerTexture(mTextureVK, mTexture->id, TextureType::Image2D);
 
-			mTextureVK->param.world = mOwner.GetWorldTransform();
-			mTextureVK->param.proj = viewproj;
-			mTextureVK->param.view = Matrix4::Identity;
+			mTextureVK->sprite->param.world = mOwner.GetWorldTransform();
+			mTextureVK->sprite->param.proj = viewproj;
+			mTextureVK->sprite->param.view = Matrix4::Identity;
 		}
 		if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::OpenGL)
 		{
@@ -97,13 +98,13 @@ namespace nen
 	{
 		if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::Vulkan)
 		{
-			mTextureVK->trimStart.x = (float)pos.x / (float)mTexWidth;
-			mTextureVK->trimStart.y = (float)pos.y / (float)mTexHeight;
-			if (mTextureVK->isChangeBuffer == false)
+			mTextureVK->sprite->trimStart.x = (float)pos.x / (float)mTexWidth;
+			mTextureVK->sprite->trimStart.y = (float)pos.y / (float)mTexHeight;
+			if (mTextureVK->sprite->isChangeBuffer == false)
 			{
 				mTextureVK->buffer = mOwner.GetScene()->GetRenderer()->GetVK().CreateBuffer(
 					sizeof(Vertex) * 4, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-				mTextureVK->isChangeBuffer = true;
+				mTextureVK->sprite->isChangeBuffer = true;
 			}
 		}
 		else
@@ -118,13 +119,13 @@ namespace nen
 	{
 		if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::Vulkan)
 		{
-			mTextureVK->trimEnd.x = (float)pos.x / (float)mTexWidth;
-			mTextureVK->trimEnd.y = (float)pos.y / (float)mTexHeight;
-			if (mTextureVK->isChangeBuffer == false)
+			mTextureVK->sprite->trimEnd.x = (float)pos.x / (float)mTexWidth;
+			mTextureVK->sprite->trimEnd.y = (float)pos.y / (float)mTexHeight;
+			if (mTextureVK->sprite->isChangeBuffer == false)
 			{
 				mTextureVK->buffer = mOwner.GetScene()->GetRenderer()->GetVK().CreateBuffer(
 					sizeof(Vertex), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-				mTextureVK->isChangeBuffer = true;
+				mTextureVK->sprite->isChangeBuffer = true;
 			}
 		}
 		else

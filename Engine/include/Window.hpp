@@ -16,6 +16,6 @@ namespace nen
 		};
 		inline constexpr Vector2f Size(WINDOW_SIZE_X, WINDOW_SIZE_Y);
 		inline constexpr Vector2f Center(0.f, 0.f);
-		const std::string name = "Works";
+		inline std::string name = "";
 	}
 }

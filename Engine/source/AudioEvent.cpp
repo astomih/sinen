@@ -11,6 +11,7 @@ namespace nen
 		else
 		{
 			s_param = &audiosys->sounds[mName.data()];
+			alSourcePlay(s_param->source_id);
 		}
 	}
 	bool AudioEvent::IsValid()
@@ -40,7 +41,7 @@ namespace nen
 			;
 		else
 		{
-			alSourcePlay(s_param->source_id);
+			alSourceStop(s_param->source_id);
 		}
 	}
 
@@ -84,7 +85,7 @@ namespace nen
 			;
 		else
 		{
-			alSource3f(s_param->source_id, AL_POSITION, pos.x, pos.y, pos.z);
+			alSource3f(s_param->source_id, AL_POSITION, pos.x, pos.z, pos.y);
 		}
 	}
 

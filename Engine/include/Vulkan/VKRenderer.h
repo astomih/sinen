@@ -14,7 +14,7 @@ enum class TextureType
 #include <Engine/include/OpenGL/GLRenderer.h>
 namespace nen::vk
 {
-	class SpriteVK : public nen::Sprite
+	class SpriteVK
 	{
 	public:
 		std::vector<VkDescriptorSet> descripterSet;
@@ -23,6 +23,7 @@ namespace nen::vk
 		std::shared_ptr<Texture> mTexture;
 		BufferObject buffer;
 		bool isInstance = false;
+		std::shared_ptr<nen::Sprite> sprite;
 	};
 
 	struct VertexArrayForVK : public VertexArray

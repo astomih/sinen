@@ -395,15 +395,15 @@ namespace nen::vk
 		VkDeviceSize offset = 0;
 		for (auto &sprite : mTextures3D)
 		{
-			::vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[sprite->vertexIndex].vertexBuffer.buffer, &offset);
-			::vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
-			if (sprite->isChangeBuffer)
+			::vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[sprite->sprite->vertexIndex].vertexBuffer.buffer, &offset);
+			::vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->sprite->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
+			if (sprite->sprite->isChangeBuffer)
 			{
 				const float value = 1.f;
-				const Vector2f lb(sprite->trimStart.x, sprite->trimEnd.y);
-				const Vector2f lt(sprite->trimStart.x, sprite->trimStart.y);
-				const Vector2f rb(sprite->trimEnd.x, sprite->trimEnd.y);
-				const Vector2f rt(sprite->trimEnd.x, sprite->trimStart.y);
+				const Vector2f lb(sprite->sprite->trimStart.x, sprite->sprite->trimEnd.y);
+				const Vector2f lt(sprite->sprite->trimStart.x, sprite->sprite->trimStart.y);
+				const Vector2f rb(sprite->sprite->trimEnd.x, sprite->sprite->trimEnd.y);
+				const Vector2f rt(sprite->sprite->trimEnd.x, sprite->sprite->trimStart.y);
 				std::array<float, 3> norm = {1, 1, 1};
 
 				Vertex vertices[] =
@@ -422,7 +422,7 @@ namespace nen::vk
 				}
 				VkDeviceSize offset = 0;
 				vkCmdBindVertexBuffers(command, 0, 1, &sprite->buffer.buffer, &offset);
-				vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
+				vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->sprite->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 			}
 			// Set descriptors
 			vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
@@ -431,10 +431,10 @@ namespace nen::vk
 				auto memory = sprite->uniformBuffers[m_base->m_imageIndex].memory;
 				void *p;
 				vkMapMemory(m_base->m_device, memory, 0, VK_WHOLE_SIZE, 0, &p);
-				memcpy(p, &sprite->param, sizeof(ShaderParameters));
+				memcpy(p, &sprite->sprite->param, sizeof(ShaderParameters));
 				vkUnmapMemory(m_base->m_device, memory);
 			}
-			vkCmdDrawIndexed(command, m_VertexArrays[sprite->vertexIndex].indexCount, 1, 0, 0, 0);
+			vkCmdDrawIndexed(command, m_VertexArrays[sprite->sprite->vertexIndex].indexCount, 1, 0, 0, 0);
 		}
 	}
 
@@ -458,15 +458,15 @@ namespace nen::vk
 	*/
 		for (auto &sprite : mTextures2D)
 		{
-			vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[sprite->vertexIndex].vertexBuffer.buffer, &offset);
-			vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
-			if (sprite->isChangeBuffer)
+			vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[sprite->sprite->vertexIndex].vertexBuffer.buffer, &offset);
+			vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->sprite->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
+			if (sprite->sprite->isChangeBuffer)
 			{
 				const float value = 1.f;
-				const Vector2f lb(sprite->trimStart.x, sprite->trimEnd.y);
-				const Vector2f lt(sprite->trimStart.x, sprite->trimStart.y);
-				const Vector2f rb(sprite->trimEnd.x, sprite->trimEnd.y);
-				const Vector2f rt(sprite->trimEnd.x, sprite->trimStart.y);
+				const Vector2f lb(sprite->sprite->trimStart.x, sprite->sprite->trimEnd.y);
+				const Vector2f lt(sprite->sprite->trimStart.x, sprite->sprite->trimStart.y);
+				const Vector2f rb(sprite->sprite->trimEnd.x, sprite->sprite->trimEnd.y);
+				const Vector2f rt(sprite->sprite->trimEnd.x, sprite->sprite->trimStart.y);
 				std::array<float, 3> norm = {1, 1, 1};
 
 				Vertex vertices[] =
@@ -485,7 +485,7 @@ namespace nen::vk
 				}
 				VkDeviceSize offset = 0;
 				vkCmdBindVertexBuffers(command, 0, 1, &sprite->buffer.buffer, &offset);
-				vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
+				vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->sprite->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 			}
 
 			// Set descriptors
@@ -495,10 +495,10 @@ namespace nen::vk
 				auto memory = sprite->uniformBuffers[m_base->m_imageIndex].memory;
 				void *p;
 				vkMapMemory(m_base->m_device, memory, 0, VK_WHOLE_SIZE, 0, &p);
-				memcpy(p, &sprite->param, sizeof(ShaderParameters));
+				memcpy(p, &sprite->sprite->param, sizeof(ShaderParameters));
 				vkUnmapMemory(m_base->m_device, memory);
 			}
-			vkCmdDrawIndexed(command, m_VertexArrays[sprite->vertexIndex].indexCount, 1, 0, 0, 0);
+			vkCmdDrawIndexed(command, m_VertexArrays[sprite->sprite->vertexIndex].indexCount, 1, 0, 0, 0);
 		}
 	}
 
@@ -1490,7 +1490,7 @@ namespace nen::vk
 				 iter != mTextures2D.end();
 				 ++iter)
 			{
-				if (texture->drawOrder < (*iter)->drawOrder)
+				if (texture->sprite->drawOrder < (*iter)->sprite->drawOrder)
 				{
 					break;
 				}

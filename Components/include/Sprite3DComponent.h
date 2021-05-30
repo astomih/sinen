@@ -40,7 +40,6 @@ namespace nen
 		void SetColor(const Color::Color &color) { mColor = color; }
 		Color::Color GetColor() { return mColor; }
 
-		std::shared_ptr<class vk::SpriteVK> mTextureVK;
 		std::shared_ptr<class Sprite> sprite;
 
 	private:

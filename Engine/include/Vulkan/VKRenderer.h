@@ -76,6 +76,9 @@ namespace nen::vk
 
 		std::vector<BufferObject> CreateUniformBuffers(uint32_t size, uint32_t imageCount);
 
+		const std::vector<std::shared_ptr<SpriteVK>> &GetSprite2Ds() { return mTextures2D; }
+		const std::vector<std::shared_ptr<SpriteVK>> &GetSprite3Ds() { return mTextures3D; }
+
 		// ホストから見えるメモリ領域にデータを書き込む.以下バッファを対象に使用.
 		// - ステージングバッファ
 		// - ユニフォームバッファ

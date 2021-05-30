@@ -99,18 +99,31 @@ namespace nen
 			glRenderer->render();
 	}
 
-	void Renderer::AddSprite2D(Sprite2DComponent *sprite)
+	void Renderer::AddSprite2D(std::shared_ptr<nen::Sprite> sprite, std::shared_ptr<Texture> texture)
 	{
-		
+		if (this->RendererAPI == GraphicsAPI::Vulkan)
+		{
+			auto t = std::make_shared<vk::SpriteVK>();
+			t->sprite = sprite;
+			GetVK().registerImageObject(texture);
+			t->mTexture = texture;
+			GetVK().registerTexture(t, texture->id, TextureType::Image2D);
+		}
+		else
+		{
+			GetGL().registerTexture(texture, TextureType::Image2D);
+			GetGL().pushSprite2d(sprite);
+		}
+
 		// Find the insertion point in the sorted vector
 		// (The first element with a higher draw order than me)
-		const auto myDrawOrder = sprite->GetDrawOrder();
+		const auto myDrawOrder = sprite->drawOrder;
 		auto iter = mSprite2Ds.begin();
 		for (;
 			 iter != mSprite2Ds.end();
 			 ++iter)
 		{
-			if (myDrawOrder < (*iter)->GetDrawOrder())
+			if (myDrawOrder < (*iter)->drawOrder)
 			{
 				break;
 			}
@@ -120,23 +133,58 @@ namespace nen
 		mSprite2Ds.insert(iter, sprite);
 	}
 
-	void Renderer::RemoveSprite2D(Sprite2DComponent *sprite)
+	void Renderer::RemoveSprite2D(std::shared_ptr<Sprite> sprite)
 	{
+		if (this->RendererAPI == GraphicsAPI::Vulkan)
+		{
+			auto &sprites = GetVK().GetSprite2Ds();
+			auto iter = sprites.begin();
+			for (;
+				 iter != sprites.end();)
+			{
+				if (sprite == (*iter)->sprite)
+				{
+					GetVK().unregisterTexture((*iter), TextureType::Image2D);
+					iter = sprites.begin();
+					if (iter == sprites.end())
+						break;
+				}
+				iter++;
+			}
+		}
+		else
+		{
+			GetGL().eraseSprite2d(sprite);
+		}
 		auto iter = std::find(mSprite2Ds.begin(), mSprite2Ds.end(), sprite);
 		mSprite2Ds.erase(iter);
 	}
 
-	void Renderer::AddSprite3D(Sprite3DComponent *sprite)
+	void Renderer::AddSprite3D(std::shared_ptr<Sprite> sprite, std::shared_ptr<Texture> texture)
 	{
+		if (this->RendererAPI == GraphicsAPI::Vulkan)
+		{
+			auto t = std::make_shared<vk::SpriteVK>();
+			t->sprite = sprite;
+			GetVK().registerImageObject(texture);
+			t->mTexture = texture;
+			GetVK().registerTexture(t, texture->id, TextureType::Image3D);
+		}
+		else
+		{
+			GetGL().registerTexture(texture, TextureType::Image3D);
+			GetGL().pushSprite3d(sprite);
+		}
+
 		// Find the insertion point in the sorted vector
 		// (The first element with a higher draw order than me)
-		const auto myDrawOrder = sprite->GetDrawOrder();
+		const auto myDrawOrder = sprite->drawOrder;
 		auto iter = mSprite3Ds.begin();
 		for (;
 			 iter != mSprite3Ds.end();
 			 ++iter)
 		{
-			if (myDrawOrder < (*iter)->GetDrawOrder())
+			if (myDrawOrder < (*iter)->drawOrder)
 			{
 				break;
 			}
@@ -146,8 +194,29 @@ namespace nen
 		mSprite3Ds.insert(iter, sprite);
 	}
 
-	void Renderer::RemoveSprite3D(Sprite3DComponent *sprite)
+	void Renderer::RemoveSprite3D(std::shared_ptr<Sprite> sprite)
 	{
+		if (this->RendererAPI == GraphicsAPI::Vulkan)
+		{
+			auto &sprites = GetVK().GetSprite2Ds();
+			auto iter = sprites.begin();
+			for (;
+				 iter != sprites.end();
+				 ++iter)
+			{
+				if (sprite == (*iter)->sprite)
+				{
+					GetVK().unregisterTexture((*iter), TextureType::Image2D);
+					iter = sprites.begin();
+					if (iter == sprites.end())
+						break;
+				}
+			}
+		}
+		else
+		{
+			GetGL().eraseSprite2d(sprite);
+		}
 		auto iter = std::find(mSprite3Ds.begin(), mSprite3Ds.end(), sprite);
 		mSprite3Ds.erase(iter);
 	}

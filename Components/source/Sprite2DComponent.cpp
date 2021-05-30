@@ -10,7 +10,6 @@ namespace nen
 	Sprite2DComponent::Sprite2DComponent(Actor &owner, const int drawOrder, Texture tex)
 		: Component(owner), mDrawOrder(drawOrder), mTexture(nullptr)
 	{
-		mOwner.GetScene()->GetRenderer()->AddSprite2D(this);
 	}
 
 	void Sprite2DComponent::Update(float deltaTime)
@@ -29,16 +28,12 @@ namespace nen
 		auto world = s * w;
 		world.mat[3][0] *= 2.f;
 		world.mat[3][1] *= 2.f;
-
-		if (mTextureVK)
-			mTextureVK->sprite->param.world = world;
-		else
-			sprite->param.world = world;
+		sprite->param.world = world;
 	}
 
 	Sprite2DComponent::~Sprite2DComponent()
 	{
-		mOwner.GetScene()->GetRenderer()->RemoveSprite2D(this);
+		mOwner.GetScene()->GetRenderer()->RemoveSprite2D(sprite);
 	}
 
 	void Sprite2DComponent::Draw(Shader *shader)
@@ -63,41 +58,21 @@ namespace nen
 		Matrix4 viewproj = Matrix4::Identity;
 		viewproj.mat[0][0] = 1.f / Window::Size.x;
 		viewproj.mat[1][1] = 1.f / Window::Size.y;
+		sprite = std::make_shared<Sprite>();
+		sprite->drawOrder = mDrawOrder;
+		sprite->textureIndex = mTexture->id;
+		sprite->vertexIndex = shape.data();
 
-		if (renderer->GetGraphicsAPI() == GraphicsAPI::Vulkan)
-		{
-			mTextureVK = std::make_shared<vk::SpriteVK>();
-			mTextureVK->sprite = std::make_shared<Sprite>();
-			renderer->GetVK().registerImageObject(mTexture);
-			mTextureVK->mTexture = mTexture;
-			mTextureVK->sprite->drawOrder = mDrawOrder;
-			mTextureVK->sprite->vertexIndex = shape.data();
-			renderer->GetVK().registerTexture(mTextureVK, mTexture->id, TextureType::Image2D);
-
-			mTextureVK->sprite->param.world = mOwner.GetWorldTransform();
-			mTextureVK->sprite->param.proj = viewproj;
-			mTextureVK->sprite->param.view = Matrix4::Identity;
-		}
-		if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::OpenGL)
-		{
-
-			mOwner.GetScene()->GetRenderer()->GetGL().registerTexture(mTexture, TextureType::Image2D);
-			sprite = std::make_shared<Sprite>();
-			sprite->drawOrder = mDrawOrder;
-			sprite->textureIndex = mTexture->id;
-			sprite->vertexIndex = shape.data();
-
-			sprite->param.world = mOwner.GetWorldTransform();
-			sprite->param.proj = viewproj;
-			sprite->param.view = Matrix4::Identity;
-
-			mOwner.GetScene()->GetRenderer()->GetGL().pushSprite2d(sprite);
-		}
+		sprite->param.world = mOwner.GetWorldTransform();
+		sprite->param.proj = viewproj;
+		sprite->param.view = Matrix4::Identity;
+		mOwner.GetScene()->GetRenderer()->AddSprite2D(sprite, texture);
 	}
 	void Sprite2DComponent::SetTrimmingStartPos(const Vector2i &pos)
 	{
 		if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::Vulkan)
 		{
+			/*
 			mTextureVK->sprite->trimStart.x = (float)pos.x / (float)mTexWidth;
 			mTextureVK->sprite->trimStart.y = (float)pos.y / (float)mTexHeight;
 			if (mTextureVK->sprite->isChangeBuffer == false)
@@ -106,6 +81,7 @@ namespace nen
 					sizeof(Vertex) * 4, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 				mTextureVK->sprite->isChangeBuffer = true;
 			}
+			*/
 		}
 		else
 		{
@@ -119,6 +95,7 @@ namespace nen
 	{
 		if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::Vulkan)
 		{
+			/*
 			mTextureVK->sprite->trimEnd.x = (float)pos.x / (float)mTexWidth;
 			mTextureVK->sprite->trimEnd.y = (float)pos.y / (float)mTexHeight;
 			if (mTextureVK->sprite->isChangeBuffer == false)
@@ -127,6 +104,7 @@ namespace nen
 					sizeof(Vertex), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 				mTextureVK->sprite->isChangeBuffer = true;
 			}
+			*/
 		}
 		else
 		{

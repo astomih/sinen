@@ -14,23 +14,14 @@ namespace nen
 	void Sprite3DComponent::Update(float deltaTime)
 	{
 		auto world = mOwner.GetWorldTransform();
-		if (mTextureVK)
-		{
-			auto view = mOwner.GetScene()->GetRenderer()->GetViewMatrix();
-			mTextureVK->sprite->param.view = view;
-			mTextureVK->sprite->param.world = world;
-		}
-		else
-		{
-			auto view = mOwner.GetScene()->GetRenderer()->GetViewMatrix();
-			sprite->param.view = view;
-			sprite->param.world = world;
-		}
+		auto view = mOwner.GetScene()->GetRenderer()->GetViewMatrix();
+		sprite->param.view = view;
+		sprite->param.world = world;
 	}
 
 	Sprite3DComponent::~Sprite3DComponent()
 	{
-		mOwner.GetScene()->GetRenderer()->RemoveSprite3D(this);
+		mOwner.GetScene()->GetRenderer()->RemoveSprite3D(sprite);
 	}
 
 	void Sprite3DComponent::Draw(Shader *shader)
@@ -60,33 +51,14 @@ namespace nen
 				{0.0f, 0.0f, 10000.f / (10000.f - 0.01f), 1.0f},
 				{0.0f, 0.0f, -0.01f * 10000.f / (10000.f - 0.01f), 0.0f}};
 		Matrix4 proj(temp);
+		sprite = std::make_shared<Sprite>();
+		sprite->textureIndex = mTexture->id;
+		sprite->vertexIndex = shape.data();
 
-		if (renderer->GetGraphicsAPI() == GraphicsAPI::Vulkan)
-		{
-			mTextureVK = std::make_shared<vk::SpriteVK>();
-			mTextureVK->sprite = std::make_shared<Sprite>();
+		sprite->param.world = mOwner.GetWorldTransform();
+		sprite->param.proj = proj;
+		sprite->param.view = view;
 
-			renderer->GetVK().registerImageObject(mTexture);
-			mTextureVK->mTexture = mTexture;
-			renderer->GetVK().registerTexture(mTextureVK, mTexture->id, TextureType::Image3D);
-			mTextureVK->sprite->vertexIndex = shape.data();
-
-			mTextureVK->sprite->param.world = mOwner.GetWorldTransform();
-			mTextureVK->sprite->param.proj = proj;
-			mTextureVK->sprite->param.view = view;
-		}
-		if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::OpenGL)
-		{
-			mOwner.GetScene()->GetRenderer()->GetGL().registerTexture(mTexture, TextureType::Image3D);
-			sprite = std::make_shared<Sprite>();
-			sprite->textureIndex = mTexture->id;
-			sprite->vertexIndex = shape.data();
-
-			sprite->param.world = mOwner.GetWorldTransform();
-			sprite->param.proj = proj;
-			sprite->param.view = view;
-			mOwner.GetScene()->GetRenderer()->GetGL().pushSprite3d(sprite);
-		}
-		mOwner.GetScene()->GetRenderer()->AddSprite3D(this);
+		mOwner.GetScene()->GetRenderer()->AddSprite3D(sprite, texture);
 	}
 }

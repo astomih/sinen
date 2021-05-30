@@ -38,11 +38,11 @@ namespace nen
 
 		void Draw();
 
-		void AddSprite2D(class Sprite2DComponent *sprite);
-		void RemoveSprite2D(class Sprite2DComponent *sprite);
+		void AddSprite2D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture);
+		void RemoveSprite2D(std::shared_ptr<class Sprite> sprite);
 
-		void AddSprite3D(class Sprite3DComponent *sprite);
-		void RemoveSprite3D(class Sprite3DComponent *sprite);
+		void AddSprite3D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture);
+		void RemoveSprite3D(std::shared_ptr<class Sprite> sprite);
 
 		void AddEffectComp(class EffectComponent *effect);
 		void RemoveEffectComp(class EffectComponent *effect);
@@ -78,8 +78,8 @@ namespace nen
 		std::unordered_map<std::string, class Effect *> mEffects;
 
 		// All the sprite components drawn
-		std::vector<class Sprite3DComponent *> mSprite3Ds;
-		std::vector<class Sprite2DComponent *> mSprite2Ds;
+		std::vector<std::shared_ptr<class Sprite>> mSprite3Ds;
+		std::vector<std::shared_ptr<class Sprite>> mSprite2Ds;
 
 		// All effects components drawn
 		std::vector<class EffectComponent *> mEffectComp;

@@ -34,7 +34,6 @@ namespace nen
 		Color::Color GetColor() { return mColor; }
 
 	private:
-		std::shared_ptr<class vk::SpriteVK> mTextureVK;
 		std::shared_ptr<class Sprite> sprite;
 		int mDrawOrder = 0;
 		int mTexWidth = 0;

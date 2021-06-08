@@ -56,8 +56,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir);$(ProjectDir)Engine;$(ProjectDir)lib\imgui\include;$(ProjectDir)Actor;$(ProjectDir)Components;$(BOOST_INCLUDE_PATH);$(ProjectDir)Engine\include\Vulkan;$(ProjectDir)lib\mojoAL-default;$(ProjectDir)lib\sol2-3.2.2\include;$(ProjectDir)lib\rapidjson\include;$(ProjectDir)Scene\include;$(ProjectDir)lib\tinyobjloader;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VK_SDK_PATH)\Lib32;$(BOOST_LIBRARY_PATH);%(AdditionalLibraryDirectories);$(LibraryPath)</LibraryPath>
+    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir);$(ProjectDir)Engine;$(ProjectDir)lib\imgui\include;$(ProjectDir)Actor;$(ProjectDir)Components;$(BOOST_INCLUDE_PATH);$(ProjectDir)Engine\include\Vulkan;$(ProjectDir)lib\mojoAL-default;$(ProjectDir)lib\sol2-3.2.2\include;$(ProjectDir)lib\rapidjson\include;$(ProjectDir)Scene\include;$(ProjectDir)lib\tinyobjloader;C:\Program Files (x86)\OpenAL_SDK\include\;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VK_SDK_PATH)\Lib32;$(BOOST_LIBRARY_PATH);%(AdditionalLibraryDirectories);C:\Program Files (x86)\OpenAL_SDK\libs\Win32;$(LibraryPath)</LibraryPath>
     <LuaType>static</LuaType>
     <LuaConfiguration>Release</LuaConfiguration>
     <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -111,7 +111,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;OpenAL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VK_SDK_PATH)\Lib32;</AdditionalLibraryDirectories>
       <LinkTimeCodeGeneration>
       </LinkTimeCodeGeneration>
@@ -232,6 +232,8 @@
     <Import Project="packages\glew.redist.1.9.0.1\build\native\glew.redist.targets" Condition="Exists('packages\glew.redist.1.9.0.1\build\native\glew.redist.targets')" />
     <Import Project="packages\glew.v140.1.12.0\build\native\glew.v140.targets" Condition="Exists('packages\glew.v140.1.12.0\build\native\glew.v140.targets')" />
     <Import Project="packages\lua.5.4.3\build\native\Lua.targets" Condition="Exists('packages\lua.5.4.3\build\native\Lua.targets')" />
+    <Import Project="packages\sdl2_mixer.nuget.redist.2.0.4\build\native\sdl2_mixer.nuget.redist.targets" Condition="Exists('packages\sdl2_mixer.nuget.redist.2.0.4\build\native\sdl2_mixer.nuget.redist.targets')" />
+    <Import Project="packages\sdl2_mixer.nuget.2.0.4\build\native\sdl2_mixer.nuget.targets" Condition="Exists('packages\sdl2_mixer.nuget.2.0.4\build\native\sdl2_mixer.nuget.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -247,5 +249,7 @@
     <Error Condition="!Exists('packages\glew.redist.1.9.0.1\build\native\glew.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\glew.redist.1.9.0.1\build\native\glew.redist.targets'))" />
     <Error Condition="!Exists('packages\glew.v140.1.12.0\build\native\glew.v140.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\glew.v140.1.12.0\build\native\glew.v140.targets'))" />
     <Error Condition="!Exists('packages\lua.5.4.3\build\native\Lua.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\lua.5.4.3\build\native\Lua.targets'))" />
+    <Error Condition="!Exists('packages\sdl2_mixer.nuget.redist.2.0.4\build\native\sdl2_mixer.nuget.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\sdl2_mixer.nuget.redist.2.0.4\build\native\sdl2_mixer.nuget.redist.targets'))" />
+    <Error Condition="!Exists('packages\sdl2_mixer.nuget.2.0.4\build\native\sdl2_mixer.nuget.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\sdl2_mixer.nuget.2.0.4\build\native\sdl2_mixer.nuget.targets'))" />
   </Target>
 </Project>

@@ -688,9 +688,8 @@ namespace nen::vk
 		ImGui::NewFrame();
 
 		// ImGui ウィジェットを描画する.
-		ImGui::Begin("Information");
-		ImGui::Text("Hello,ImGui world");
-		ImGui::Text("Framerate(avg) %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::Begin("NenEngine Info");
+		ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
 		if (ImGui::Button("toggleAPI"))
 		{
 			std::ofstream ofs("./api");
@@ -1472,7 +1471,7 @@ namespace nen::vk
 	{
 		if (TextureType::Image3D == type)
 		{
-			mTextures3D.emplace_back(texture);
+			mTextures3D.push_back(texture);
 			mTextures3D.back()->uniformBuffers.resize(m_base->m_swapchainViews.size());
 			for (auto &v : mTextures3D.back()->uniformBuffers)
 			{

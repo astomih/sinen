@@ -70,9 +70,7 @@ namespace nen
 	}
 	void Sprite2DComponent::SetTrimmingStartPos(const Vector2i &pos)
 	{
-		if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::Vulkan)
-		{
-			/*
+		/*
 			mTextureVK->sprite->trimStart.x = (float)pos.x / (float)mTexWidth;
 			mTextureVK->sprite->trimStart.y = (float)pos.y / (float)mTexHeight;
 			if (mTextureVK->sprite->isChangeBuffer == false)
@@ -82,20 +80,15 @@ namespace nen
 				mTextureVK->sprite->isChangeBuffer = true;
 			}
 			*/
-		}
-		else
-		{
-			sprite->isChangeBuffer = true;
-			sprite->trimStart.x = (float)pos.x / (float)mTexWidth;
-			sprite->trimStart.y = (float)pos.y / (float)mTexHeight;
-		}
+		sprite->isChangeBuffer = true;
+		mOwner.GetScene()->GetRenderer()->ChangeBufferSprite(sprite);
+		sprite->trimStart.x = (float)pos.x / (float)mTexWidth;
+		sprite->trimStart.y = (float)pos.y / (float)mTexHeight;
 	}
 
 	void Sprite2DComponent::SetTrimmingEndPos(const Vector2i &pos)
 	{
-		if (mOwner.GetScene()->GetRenderer()->GetGraphicsAPI() == GraphicsAPI::Vulkan)
-		{
-			/*
+		/*
 			mTextureVK->sprite->trimEnd.x = (float)pos.x / (float)mTexWidth;
 			mTextureVK->sprite->trimEnd.y = (float)pos.y / (float)mTexHeight;
 			if (mTextureVK->sprite->isChangeBuffer == false)
@@ -105,12 +98,9 @@ namespace nen
 				mTextureVK->sprite->isChangeBuffer = true;
 			}
 			*/
-		}
-		else
-		{
-			sprite->isChangeBuffer = true;
-			sprite->trimEnd.x = (float)pos.x / (float)mTexWidth;
-			sprite->trimEnd.y = (float)pos.y / (float)mTexHeight;
-		}
+		sprite->isChangeBuffer = true;
+		mOwner.GetScene()->GetRenderer()->ChangeBufferSprite(sprite);
+		sprite->trimEnd.x = (float)pos.x / (float)mTexWidth;
+		sprite->trimEnd.y = (float)pos.y / (float)mTexHeight;
 	}
 }

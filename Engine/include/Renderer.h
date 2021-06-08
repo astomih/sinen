@@ -44,6 +44,8 @@ namespace nen
 		void AddSprite3D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture);
 		void RemoveSprite3D(std::shared_ptr<class Sprite> sprite);
 
+		void ChangeBufferSprite(std::shared_ptr<class Sprite> sprite);
+
 		void AddEffectComp(class EffectComponent *effect);
 		void RemoveEffectComp(class EffectComponent *effect);
 

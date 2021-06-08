@@ -87,6 +87,7 @@ namespace nen
 		for (auto i : mTextures3D)
 		{
 			delete i.second;
+			i.second = nullptr;
 		}
 		mTextures3D.clear();
 	}
@@ -104,6 +105,9 @@ namespace nen
 		if (this->RendererAPI == GraphicsAPI::Vulkan)
 		{
 			auto t = std::make_shared<vk::SpriteVK>();
+			if (sprite->isChangeBuffer)
+				t->buffer = GetVK().CreateBuffer(
+					sizeof(Vertex), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 			t->sprite = sprite;
 			GetVK().registerImageObject(texture);
 			t->mTexture = texture;
@@ -198,7 +202,7 @@ namespace nen
 	{
 		if (this->RendererAPI == GraphicsAPI::Vulkan)
 		{
-			auto &sprites = GetVK().GetSprite2Ds();
+			auto &sprites = GetVK().GetSprite3Ds();
 			auto iter = sprites.begin();
 			for (;
 				 iter != sprites.end();
@@ -206,7 +210,7 @@ namespace nen
 			{
 				if (sprite == (*iter)->sprite)
 				{
-					GetVK().unregisterTexture((*iter), TextureType::Image2D);
+					GetVK().unregisterTexture((*iter), TextureType::Image3D);
 					iter = sprites.begin();
 					if (iter == sprites.end())
 						break;
@@ -215,10 +219,30 @@ namespace nen
 		}
 		else
 		{
-			GetGL().eraseSprite2d(sprite);
+			GetGL().eraseSprite3d(sprite);
 		}
 		auto iter = std::find(mSprite3Ds.begin(), mSprite3Ds.end(), sprite);
 		mSprite3Ds.erase(iter);
+	}
+
+	void Renderer::ChangeBufferSprite(std::shared_ptr<Sprite> sprite)
+	{
+		if (this->RendererAPI == GraphicsAPI::Vulkan)
+		{
+			auto &sprites = GetVK().GetSprite2Ds();
+			for (auto &i : sprites)
+			{
+				if (sprite == i->sprite)
+				{
+					if (sprite->isChangeBuffer && i->buffer.buffer == 0)
+					{
+						i->buffer = GetVK().CreateBuffer(
+							sizeof(Vertex) * 4, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+						break;
+					}
+				}
+			}
+		}
 	}
 
 	void Renderer::AddEffectComp(EffectComponent *effect)

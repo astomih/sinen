@@ -1,11 +1,9 @@
 #pragma once
-#include <unordered_map>
 #include <string>
 #include <AL/al.h>
 #include <AL/alc.h>
 #include "AudioEvent.h"
 #include "Math.hpp"
-#include <unordered_map>
 
 namespace nen
 {

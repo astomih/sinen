@@ -2,18 +2,13 @@
 #include <SDL_log.h>
 #include <vector>
 #include <Scene.hpp>
+#include <Actor/include/Actor.h>
+#include <SDL_mixer.h>
 namespace nen
 {
 	Vector3f Calc(const Quaternion &r);
 	namespace detail
 	{
-		static LPALCTRACEDEVICELABEL palcTraceDeviceLabel;
-		static LPALCTRACECONTEXTLABEL palcTraceContextLabel;
-		static LPALTRACEPUSHSCOPE palTracePushScope;
-		static LPALTRACEPOPSCOPE palTracePopScope;
-		static LPALTRACEMESSAGE palTraceMessage;
-		static LPALTRACEBUFFERLABEL palTraceBufferLabel;
-		static LPALTRACESOURCELABEL palTraceSourceLabel;
 		static int check_openal_error(const char *where)
 		{
 			const ALenum err = alGetError();
@@ -73,11 +68,6 @@ namespace nen
 			printf("Couldn't open OpenAL default device.\n");
 			return -1;
 		}
-		if (alcIsExtensionPresent(device, "ALC_EXT_trace_info"))
-		{
-			detail::palcTraceDeviceLabel = (LPALCTRACEDEVICELABEL)alcGetProcAddress(device, "alcTraceDeviceLabel");
-			detail::palcTraceContextLabel = (LPALCTRACECONTEXTLABEL)alcGetProcAddress(device, "alcTraceContextLabel");
-		}
 		context = alcCreateContext(device, NULL);
 		if (!context)
 		{
@@ -86,20 +76,11 @@ namespace nen
 			return -1;
 		}
 
-		if (detail::palcTraceDeviceLabel)
-			detail::palcTraceDeviceLabel(device, "The playback device");
-		if (detail::palcTraceContextLabel)
-			detail::palcTraceContextLabel(context, "Main context");
-
-		alcMakeContextCurrent(context);
-
-		if (alIsExtensionPresent("AL_EXT_trace_info"))
+		if (!alcMakeContextCurrent(context))
 		{
-			detail::palTracePushScope = (LPALTRACEPUSHSCOPE)alGetProcAddress("alTracePushScope");
-			detail::palTracePopScope = (LPALTRACEPOPSCOPE)alGetProcAddress("alTracePopScope");
-			detail::palTraceMessage = (LPALTRACEMESSAGE)alGetProcAddress("alTraceMessage");
-			detail::palTraceBufferLabel = (LPALTRACEBUFFERLABEL)alGetProcAddress("alTraceBufferLabel");
-			detail::palTraceSourceLabel = (LPALTRACESOURCELABEL)alGetProcAddress("alTraceSourceLabel");
+			printf("Couldn't create OpenAL context.\n");
+			alcMakeContextCurrent(NULL);
+			alcCloseDevice(device);
 		}
 		return true;
 	}
@@ -121,9 +102,10 @@ namespace nen
 	void AudioSystem::SetListener(const Vector3f &pos, const Quaternion &quat)
 	{
 		alListener3f(AL_POSITION, pos.x, pos.z, pos.y);
-		Vector3f d = Vector3f::Transform(Vector3f::UnitX, quat);
-		float d2[6] = {d.z, -d.x, d.y, 1, 1, 0};
-		alListenerfv(AL_ORIENTATION, d2);
+		auto at = Vector3f::Transform(Vector3f::UnitX, quat);
+		auto up = Vector3f::Transform(Vector3f::UnitZ, quat);
+		float ori[6] = {at.x, at.z, at.y, up.x, up.z, up.y};
+		alListenerfv(AL_ORIENTATION, ori);
 	}
 
 	void AudioSystem::LoadAudioFile(std::string_view fileName, AudioType type)
@@ -135,65 +117,27 @@ namespace nen
 		{
 			SDL_AudioSpec spec;
 			ALenum alfmt = AL_NONE;
-			Uint8 *buf = NULL;
-			Uint32 buflen = 0;
+			Uint8 *buffer = NULL;
+			Uint32 buffer_length = 0;
 			ALuint sid = 0;
 			ALuint bid = 0;
 
-			if (!SDL_LoadWAV(fileName.data(), &spec, &buf, &buflen))
+			if (!SDL_LoadWAV(fileName.data(), &spec, &buffer, &buffer_length))
 			{
 				printf("Loading '%s' failed! %s\n", fileName.data(), SDL_GetError());
 				return;
 			}
-			else if ((alfmt = detail::get_openal_format(&spec)) == AL_NONE)
-			{
-				printf("Can't queue '%s', format not supported by the AL.\n", fileName);
-				SDL_FreeWAV(buf);
-				return;
-			}
-
-			detail::check_openal_error("startup");
-
-			printf("Now queueing '%s'...\n", fileName);
-
-			if (detail::palTracePushScope)
-				detail::palTracePushScope("Initial setup");
 
 			alGenSources(1, &sid);
-			if (detail::check_openal_error("alGenSources"))
-			{
-				SDL_FreeWAV(buf);
-				return;
-			}
-
-			if (detail::palTraceSourceLabel)
-				detail::palTraceSourceLabel(sid, "Moving source");
-
 			alGenBuffers(1, &bid);
-			if (detail::check_openal_error("alGenBuffers"))
-			{
-				alDeleteSources(1, &sid);
-				detail::check_openal_error("alDeleteSources");
-				SDL_FreeWAV(buf);
-				return;
-			}
 
-			if (detail::palTraceBufferLabel)
-				detail::palTraceBufferLabel(bid, "Sound effect");
-
-			alBufferData(bid, alfmt, buf, buflen, spec.freq);
-			SDL_FreeWAV(buf);
-			detail::check_openal_error("alBufferData");
-
+			alBufferData(bid, AL_FORMAT_MONO16, buffer, buffer_length, spec.freq);
+			alSourcei(sid, AL_BUFFER, bid);
 			SoundParameters param;
 			param.buffer_id = bid;
 			param.source_id = sid;
 			sounds.emplace(fileName.data(), param);
-
-			alSourcei(sid, AL_BUFFER, bid);
-			detail::check_openal_error("alSourcei");
-			alSourcei(sid, AL_LOOPING, AL_TRUE);
-			detail::check_openal_error("alSourcei");
+			SDL_FreeWAV(buffer);
 		}
 	}
 

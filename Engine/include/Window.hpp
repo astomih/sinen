@@ -4,8 +4,8 @@
 #include <SDL_syswm.h>
 namespace nen
 {
-	constexpr auto WINDOW_SIZE_X = 1280.f;
-	constexpr auto WINDOW_SIZE_Y = 720.f;
+	constexpr auto WINDOW_SIZE_X = 1024.f;
+	constexpr auto WINDOW_SIZE_Y = 768.f;
 
 	namespace Window
 	{

@@ -159,7 +159,8 @@ namespace nen
 
 	void Scene::UnloadData()
 	{
-		mActors.clear();
+		for (int i = 0; i < mActors.size(); i++)
+			mActors.pop_back();
 	}
 
 	void Scene::Update(float deltaTime)

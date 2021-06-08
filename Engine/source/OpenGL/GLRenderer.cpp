@@ -141,8 +141,8 @@ namespace nen::gl
 		ImGui::NewFrame();
 
 		// Draw ImGUI widgets.
-		ImGui::Begin("Information");
-		ImGui::Text("Framerate(avg) %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::Begin("NenEngine Info");
+		ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
 		if (ImGui::Button("toggleAPI"))
 		{
 			std::ofstream ofs("./api");

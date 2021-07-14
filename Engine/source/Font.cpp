@@ -50,6 +50,7 @@ namespace nen
 		{
 			assert(TTF_GetError());
 		}
+		texture->id = text;
 
 		return texture;
 	}

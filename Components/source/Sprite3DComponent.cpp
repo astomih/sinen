@@ -14,14 +14,14 @@ namespace nen
 	void Sprite3DComponent::Update(float deltaTime)
 	{
 		auto world = mOwner.GetWorldTransform();
-		auto view = mOwner.GetScene()->GetRenderer()->GetViewMatrix();
+		auto view = mOwner.GetScene().GetRenderer()->GetViewMatrix();
 		sprite->param.view = view;
 		sprite->param.world = world;
 	}
 
 	Sprite3DComponent::~Sprite3DComponent()
 	{
-		mOwner.GetScene()->GetRenderer()->RemoveSprite3D(sprite);
+		mOwner.GetScene().GetRenderer()->RemoveSprite3D(sprite);
 	}
 
 	void Sprite3DComponent::Draw(Shader *shader)
@@ -38,10 +38,12 @@ namespace nen
 			tex->Load("Assets/Default.png");
 			Create(tex);
 		}
-		auto renderer = mOwner.GetScene()->GetRenderer();
+		mTexWidth = mTexture->GetWidth();
+		mTexHeight = mTexture->GetHeight();
+		auto renderer = mOwner.GetScene().GetRenderer();
 		auto scaleOwner = mOwner.GetScale();
 		auto pos = mOwner.GetPosition();
-		auto view = mOwner.GetScene()->GetRenderer()->GetViewMatrix();
+		auto view = mOwner.GetScene().GetRenderer()->GetViewMatrix();
 		const auto yScale = Math::Cot(Math::ToRadians(90.f) / 2.0f);
 		const auto xScale = yScale * Window::Size.y / Window::Size.x;
 		float temp[4][4] =
@@ -59,6 +61,20 @@ namespace nen
 		sprite->param.proj = proj;
 		sprite->param.view = view;
 
-		mOwner.GetScene()->GetRenderer()->AddSprite3D(sprite, texture);
+		mOwner.GetScene().GetRenderer()->AddSprite3D(sprite, texture);
+	}
+	void Sprite3DComponent::SetTrimmingStartPos(const Vector2i &pos)
+	{
+		sprite->isChangeBuffer = true;
+		mOwner.GetScene().GetRenderer()->ChangeBufferSprite(sprite, TextureType::Image3D);
+		sprite->trimStart.x = (float)pos.x / (float)mTexWidth;
+		sprite->trimStart.y = (float)pos.y / (float)mTexHeight;
+	}
+	void Sprite3DComponent::SetTrimmingEndPos(const Vector2i &pos)
+	{
+		sprite->isChangeBuffer = true;
+		mOwner.GetScene().GetRenderer()->ChangeBufferSprite(sprite, TextureType::Image3D);
+		sprite->trimEnd.x = (float)pos.x / (float)mTexWidth;
+		sprite->trimEnd.y = (float)pos.y / (float)mTexHeight;
 	}
 }

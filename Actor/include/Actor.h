@@ -17,7 +17,7 @@ namespace nen
 			EDead
 		};
 
-		Actor(std::shared_ptr<class Scene> scene);
+		Actor(Scene &scene);
 		virtual ~Actor();
 
 		template <class T>
@@ -74,7 +74,7 @@ namespace nen
 		State GetState() const { return mState; }
 		void SetState(State state) { mState = state; }
 
-		std::shared_ptr<class Scene> GetScene() { return mScene; }
+		Scene &GetScene() { return mScene; }
 
 		void AddComponent(std::shared_ptr<class Component> component);
 		void RemoveComponent(std::shared_ptr<class Component> component);
@@ -91,7 +91,7 @@ namespace nen
 		Vector3f mPosition;
 		Quaternion mRotation;
 		std::vector<std::shared_ptr<Component>> mComponents;
-		std::shared_ptr<class Scene> mScene;
+		Scene &mScene;
 		Vector3f mScale;
 		bool addedSceneActorList = false;
 	};

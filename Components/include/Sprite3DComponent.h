@@ -16,6 +16,7 @@ namespace nen
 		int GetDrawOrder() const { return mDrawOrder; }
 		int GetTexHeight() const { return mTexHeight; }
 		int GetTexWidth() const { return mTexWidth; }
+		std::shared_ptr<class Sprite> GetSprite() { return this->sprite; }
 
 		void Create(std::shared_ptr<class Texture> texture, std::string_view shape = "SPRITE");
 		void SetReverse(bool Use) { mUseReverse = Use; }
@@ -26,16 +27,8 @@ namespace nen
 			mTexHeight = static_cast<int>(static_cast<float>(mTexHeight) * scale.y);
 		}
 		void SetUseTrimming(const bool isuse) { mUseTrim = isuse; }
-		void SetTrimmingStartPos(const Vector2i &pos)
-		{
-			trim_s.x = pos.x + (int)Window::Center.x;
-			trim_s.y = pos.y + (int)Window::Center.y;
-		}
-		void SetTrimmingEndPos(const Vector2i &pos)
-		{
-			trim_e.x = pos.x;
-			trim_e.y = pos.y;
-		}
+		void SetTrimmingStartPos(const Vector2i &pos);
+		void SetTrimmingEndPos(const Vector2i &pos);
 		void SetBoolean(bool boolean) { mBoolean = boolean; }
 		void SetColor(const Color::Color &color) { mColor = color; }
 		Color::Color GetColor() { return mColor; }

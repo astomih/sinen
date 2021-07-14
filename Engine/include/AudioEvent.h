@@ -4,8 +4,13 @@
 #include "Math.hpp"
 namespace nen
 {
-	enum class AudioType;
-	class AudioSystem;
+	struct AudioParameter
+	{
+		Vector3f position;
+		ALuint source_id;
+		ALuint buffer_id;
+	};
+
 	class AudioEvent
 	{
 	public:
@@ -29,14 +34,12 @@ namespace nen
 
 	protected:
 		friend class AudioSystem;
-		AudioEvent(std::shared_ptr<class AudioSystem> audiosystem, AudioType t, std::string_view name);
+		AudioEvent(std::shared_ptr<class AudioSystem> audiosystem, std::string_view name, ALuint sourceID = 0);
 
 	private:
 		std::shared_ptr<AudioSystem> audiosys;
-		AudioType mType;
 		std::string mName;
-		struct SoundParameters *s_param;
-		struct MusicParameters *m_param;
+		AudioParameter param;
 		float volume = 1.f;
 		float pitch = 1.f;
 		Vector3f pos;

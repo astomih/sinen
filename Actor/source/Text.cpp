@@ -3,7 +3,7 @@
 #include <Components.hpp>
 namespace nen
 {
-	Text::Text(std::shared_ptr<Scene> scene)
+	Text::Text(Scene& scene)
 		: Actor(scene)
 	{
 		mFont = std::make_shared<FontComponent>(*this);

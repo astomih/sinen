@@ -7,7 +7,7 @@ namespace nen
 	class Text : public Actor
 	{
 	public:
-		Text(std::shared_ptr<class Scene> scene);
+		Text(class Scene &scene);
 		void SetText(const std::string &text, const int size = 10) const;
 		int GetWidth() const;
 		int GetHeight() const;

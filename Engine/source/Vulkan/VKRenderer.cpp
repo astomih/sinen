@@ -1,4 +1,5 @@
-﻿#include <Engine.hpp>
+﻿#ifndef EMSCRIPTEN
+#include <Engine.hpp>
 #include <fstream>
 #include <array>
 #include <SDL_ttf.h>
@@ -43,7 +44,6 @@ namespace nen::vk
 	}
 	void VKRenderer::prepare()
 	{
-
 		createBoxVertices();
 		createSpriteVertices();
 		prepareUniformBuffers();
@@ -688,7 +688,7 @@ namespace nen::vk
 		ImGui::NewFrame();
 
 		// ImGui ウィジェットを描画する.
-		ImGui::Begin("NenEngine Info");
+		ImGui::Begin("Engine Info");
 		ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
 		if (ImGui::Button("toggleAPI"))
 		{
@@ -1543,3 +1543,4 @@ namespace nen::vk
 		}
 	}
 }
+#endif

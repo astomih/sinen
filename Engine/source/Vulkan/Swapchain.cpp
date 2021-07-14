@@ -1,4 +1,5 @@
-﻿#include <Engine.hpp>
+﻿#ifndef EMSCRIPTEN
+#include <Engine.hpp>
 #include <algorithm>
 namespace nen::vk
 {
@@ -159,3 +160,5 @@ namespace nen::vk
     }
 
 }
+
+#endif

@@ -6,7 +6,7 @@
 #include <type_traits>
 namespace nen
 {
-	Actor::Actor(std::shared_ptr<Scene> scene)
+	Actor::Actor(Scene &scene)
 		: mState(EActive), mPosition(Vector3f::Zero), mRotation(Quaternion::Identity), mScene(scene), mRecomputeWorldTransform(true), mScale(Vector3f(1.f, 1.f, 1.f)), mComponents()
 	{
 	}

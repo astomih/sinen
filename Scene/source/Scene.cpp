@@ -19,9 +19,8 @@ namespace nen
 	void Scene::Initialize(std::shared_ptr<Renderer> renderer)
 	{
 		mRenderer = renderer;
-		mRenderer->Initialize(shared_from_this(), mTransition);
 
-		mAudioSystem = std::make_shared<AudioSystem>(shared_from_this());
+		mAudioSystem = std::make_shared<AudioSystem>(*this);
 		if (!mAudioSystem->Initialize())
 		{
 			SDL_Log("Failed to initialize audio system");
@@ -159,8 +158,7 @@ namespace nen
 
 	void Scene::UnloadData()
 	{
-		for (int i = 0; i < mActors.size(); i++)
-			mActors.pop_back();
+		mActors.clear();
 	}
 
 	void Scene::Update(float deltaTime)

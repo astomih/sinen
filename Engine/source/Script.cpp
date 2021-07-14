@@ -5,24 +5,23 @@ namespace nen
 	{
 		instance = std::make_unique<Script>();
 		lua.open_libraries(sol::lib::base, sol::lib::package);
-		// ユーザー定義型の登録
 		lua.new_usertype<Vector3f>(
-			// 型名
+			// type name
 			"vec3",
-			//コンストラクタ
+			// constructor
 			sol::constructors<sol::types<>, sol::types<float, float, float>>(),
-			// データメンバ
+			// data member
 			"x", &Vector3f::x,
 			"y", &Vector3f::y,
 			"z", &Vector3f::z);
 		lua.new_usertype<Quaternion>(
-			// 型名
+			// type name
 			"quat",
-			//コンストラクタ
+			// constructor
 			sol::constructors<sol::types<>, sol::types<Vector3f, float>>(),
-			// メンバ関数
+			// member function
 			"concatenate", &Quaternion::Concatenate,
-			// データメンバ
+			// data member
 			"x", &Quaternion::x,
 			"y", &Quaternion::y,
 			"z", &Quaternion::z);

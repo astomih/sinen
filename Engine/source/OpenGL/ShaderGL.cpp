@@ -1,3 +1,4 @@
+#ifndef EMSCRIPTEN
 #include <Engine.hpp>
 #include "../../include/OpenGL/ShaderGL.h"
 #include "../../include/OpenGL/GLRenderer.h"
@@ -176,3 +177,4 @@ namespace nen::gl
 	}
 
 } //namespace nen::gl
+#endif

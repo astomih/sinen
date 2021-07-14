@@ -44,12 +44,20 @@ namespace nen
 		void AddSprite3D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture);
 		void RemoveSprite3D(std::shared_ptr<class Sprite> sprite);
 
-		void ChangeBufferSprite(std::shared_ptr<class Sprite> sprite);
+		void ChangeBufferSprite(std::shared_ptr<class Sprite> sprite, TextureType type = TextureType::Image2D);
 
 		void AddEffectComp(class EffectComponent *effect);
 		void RemoveEffectComp(class EffectComponent *effect);
 
 		void AddVertexArray(const VertexArray &vArray, std::string_view name);
+
+		void SetClearColor(const Vector3f &color)
+		{
+			if (color.x >= 0.f && color.y >= 0.f && color.z >= 0.f)
+				clearColor = color;
+		}
+
+		Vector3f GetClearColor() { return this->clearColor; }
 
 		vk::VKRenderer &GetVK() { return *(vkRenderer.get()); }
 		gl::GLRenderer &GetGL() { return *(glRenderer.get()); }
@@ -70,6 +78,7 @@ namespace nen
 		}
 
 	private:
+		Vector3f clearColor = Color::Black;
 		class Sprite2DComponent *transPic;
 
 		std::shared_ptr<Transition> mTransition;

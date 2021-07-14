@@ -22,6 +22,7 @@ namespace nen
 				static_cast<int>(Window::Size.y),
 				SDL_WINDOW_VULKAN);
 			vkRenderer->initialize(mWindow, Window::name.c_str());
+			vkRenderer->setRenderer(this);
 			break;
 		case GraphicsAPI::OpenGL:
 			glRenderer = std::make_unique<gl::GLRenderer>();
@@ -161,7 +162,8 @@ namespace nen
 			GetGL().eraseSprite2d(sprite);
 		}
 		auto iter = std::find(mSprite2Ds.begin(), mSprite2Ds.end(), sprite);
-		mSprite2Ds.erase(iter);
+		if (iter != mSprite2Ds.end())
+			mSprite2Ds.erase(iter);
 	}
 
 	void Renderer::AddSprite3D(std::shared_ptr<Sprite> sprite, std::shared_ptr<Texture> texture)
@@ -222,23 +224,44 @@ namespace nen
 			GetGL().eraseSprite3d(sprite);
 		}
 		auto iter = std::find(mSprite3Ds.begin(), mSprite3Ds.end(), sprite);
-		mSprite3Ds.erase(iter);
+		if (iter != mSprite3Ds.end())
+			mSprite3Ds.erase(iter);
 	}
 
-	void Renderer::ChangeBufferSprite(std::shared_ptr<Sprite> sprite)
+	void Renderer::ChangeBufferSprite(std::shared_ptr<Sprite> sprite, TextureType type)
 	{
 		if (this->RendererAPI == GraphicsAPI::Vulkan)
 		{
-			auto &sprites = GetVK().GetSprite2Ds();
-			for (auto &i : sprites)
+
+			if (type == TextureType::Image2D)
 			{
-				if (sprite == i->sprite)
+				auto &sprites = GetVK().GetSprite2Ds();
+				for (auto &i : sprites)
 				{
-					if (sprite->isChangeBuffer && i->buffer.buffer == 0)
+					if (sprite == i->sprite)
 					{
-						i->buffer = GetVK().CreateBuffer(
-							sizeof(Vertex) * 4, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-						break;
+						if (sprite->isChangeBuffer && i->buffer.buffer == 0)
+						{
+							i->buffer = GetVK().CreateBuffer(
+								sizeof(Vertex) * 4, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+							break;
+						}
+					}
+				}
+			}
+			if (type == TextureType::Image3D)
+			{
+				auto &sprites = GetVK().GetSprite3Ds();
+				for (auto &i : sprites)
+				{
+					if (sprite == i->sprite)
+					{
+						if (sprite->isChangeBuffer && i->buffer.buffer == 0)
+						{
+							i->buffer = GetVK().CreateBuffer(
+								sizeof(Vertex) * 4, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+							break;
+						}
 					}
 				}
 			}

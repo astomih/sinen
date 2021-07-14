@@ -16,17 +16,9 @@ namespace nen
 
 	void AudioComponent::Update(float deltaTime)
 	{
-
-		auto iter = mEvents.begin();
-		while (iter != mEvents.end())
+		for (auto &i : mEvents)
 		{
-			iter->SetPosition(mOwner.GetPosition());
-			if (!iter->IsValid())
-			{
-				iter = mEvents.erase(iter);
-			}
-			else
-				++iter;
+			i.SetPosition(mOwner.GetPosition());
 		}
 	}
 
@@ -55,12 +47,6 @@ namespace nen
 
 	void AudioComponent::AddEvent(const AudioEvent &e)
 	{
-		for (auto &i : mEvents)
-		{
-			if (i.GetName() == i.GetName())
-				return;
-		}
-		mEvents.push_back(e);
-		mEvents[0].SetVolume(100.f);
+		mEvents.emplace_back(e);
 	}
 }

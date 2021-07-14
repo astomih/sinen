@@ -11,7 +11,7 @@ namespace nen
 		explicit Transform(class Actor& owner)
 			:mOwner(owner)
 		{}
-		void LookAt(const Vector3f& target);
+		void LookAt(const Vector3f& target,const Vector3f& norm);
 	private:
 		Actor& mOwner;
 	};

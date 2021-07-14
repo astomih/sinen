@@ -66,20 +66,13 @@ namespace nen
 	class TextureAsset
 	{
 	public:
-		TextureAsset(std::string_view textureName)
-		{
-			texname = textureName.data();
-		}
 		static void Store(std::string_view name, std::shared_ptr<Texture> texture)
 		{
-			if (!mTexture.contains(name.data()))
-			{
-				mTexture.emplace(name, texture);
-			}
+			mTexture.emplace(name, texture);
 		}
 		static std::shared_ptr<Texture> Load(std::string_view name)
 		{
-			return mTexture[name.data()];
+			return mTexture.at(name.data());
 		}
 		static std::shared_ptr<Texture> Load()
 		{

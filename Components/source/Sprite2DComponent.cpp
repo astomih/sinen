@@ -33,7 +33,7 @@ namespace nen
 
 	Sprite2DComponent::~Sprite2DComponent()
 	{
-		mOwner.GetScene()->GetRenderer()->RemoveSprite2D(sprite);
+		mOwner.GetScene().GetRenderer()->RemoveSprite2D(sprite);
 	}
 
 	void Sprite2DComponent::Draw(Shader *shader)
@@ -52,7 +52,7 @@ namespace nen
 		}
 		mTexWidth = mTexture->GetWidth();
 		mTexHeight = mTexture->GetHeight();
-		auto renderer = mOwner.GetScene()->GetRenderer();
+		auto renderer = mOwner.GetScene().GetRenderer();
 		auto api = renderer->GetGraphicsAPI();
 		auto scaleOwner = mOwner.GetScale();
 		Matrix4 viewproj = Matrix4::Identity;
@@ -66,7 +66,7 @@ namespace nen
 		sprite->param.world = mOwner.GetWorldTransform();
 		sprite->param.proj = viewproj;
 		sprite->param.view = Matrix4::Identity;
-		mOwner.GetScene()->GetRenderer()->AddSprite2D(sprite, texture);
+		mOwner.GetScene().GetRenderer()->AddSprite2D(sprite, texture);
 	}
 	void Sprite2DComponent::SetTrimmingStartPos(const Vector2i &pos)
 	{
@@ -81,7 +81,7 @@ namespace nen
 			}
 			*/
 		sprite->isChangeBuffer = true;
-		mOwner.GetScene()->GetRenderer()->ChangeBufferSprite(sprite);
+		mOwner.GetScene().GetRenderer()->ChangeBufferSprite(sprite);
 		sprite->trimStart.x = (float)pos.x / (float)mTexWidth;
 		sprite->trimStart.y = (float)pos.y / (float)mTexHeight;
 	}
@@ -99,7 +99,7 @@ namespace nen
 			}
 			*/
 		sprite->isChangeBuffer = true;
-		mOwner.GetScene()->GetRenderer()->ChangeBufferSprite(sprite);
+		mOwner.GetScene().GetRenderer()->ChangeBufferSprite(sprite);
 		sprite->trimEnd.x = (float)pos.x / (float)mTexWidth;
 		sprite->trimEnd.y = (float)pos.y / (float)mTexHeight;
 	}

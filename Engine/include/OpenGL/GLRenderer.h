@@ -10,6 +10,7 @@ namespace nen
 	{
 	public:
 		Sprite() : trimStart(Vector2f(0.f, 1.f)), trimEnd(Vector2f(1.f, 0.f)) {}
+		~Sprite() {}
 		ShaderParameters param;
 		std::string textureIndex;
 		std::string vertexIndex;

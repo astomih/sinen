@@ -48,13 +48,17 @@ namespace nen
 			return AL_NONE;
 		}
 	}
-	AudioSystem::AudioSystem(std::shared_ptr<Scene> scene)
+	AudioSystem::AudioSystem(Scene &scene)
 		: mScene(scene)
 	{
 	}
 
 	AudioSystem::~AudioSystem()
 	{
+		for (auto &i : buffers)
+		{
+			alDeleteBuffers(1, &i.second);
+		}
 		alcMakeContextCurrent(NULL);
 		alcDestroyContext(context);
 		alcCloseDevice(device);
@@ -93,9 +97,9 @@ namespace nen
 	{
 	}
 
-	AudioEvent AudioSystem::PlayEvent(std::string_view name, AudioType ae)
+	AudioEvent AudioSystem::PlayEvent(std::string_view name, ALuint sourceID)
 	{
-		AudioEvent e(shared_from_this(), ae, name);
+		AudioEvent e(shared_from_this(), name, sourceID);
 		return e;
 	}
 
@@ -108,50 +112,48 @@ namespace nen
 		alListenerfv(AL_ORIENTATION, ori);
 	}
 
-	void AudioSystem::LoadAudioFile(std::string_view fileName, AudioType type)
+	void AudioSystem::LoadAudioFile(std::string_view fileName)
 	{
-		if (type == AudioType::Music)
+		SDL_AudioSpec spec;
+		ALenum alfmt = AL_NONE;
+		Uint8 *buffer = NULL;
+		Uint32 buffer_length = 0;
+		ALuint bid = 0;
+
+		if (!SDL_LoadWAV(fileName.data(), &spec, &buffer, &buffer_length))
 		{
+			printf("Loading '%s' failed! %s\n", fileName.data(), SDL_GetError());
+			return;
 		}
-		else
-		{
-			SDL_AudioSpec spec;
-			ALenum alfmt = AL_NONE;
-			Uint8 *buffer = NULL;
-			Uint32 buffer_length = 0;
-			ALuint sid = 0;
-			ALuint bid = 0;
 
-			if (!SDL_LoadWAV(fileName.data(), &spec, &buffer, &buffer_length))
-			{
-				printf("Loading '%s' failed! %s\n", fileName.data(), SDL_GetError());
-				return;
-			}
-
-			alGenSources(1, &sid);
-			alGenBuffers(1, &bid);
-
-			alBufferData(bid, AL_FORMAT_MONO16, buffer, buffer_length, spec.freq);
-			alSourcei(sid, AL_BUFFER, bid);
-			SoundParameters param;
-			param.buffer_id = bid;
-			param.source_id = sid;
-			sounds.emplace(fileName.data(), param);
-			SDL_FreeWAV(buffer);
-		}
+		alGenBuffers(1, &bid);
+		alBufferData(bid, AL_FORMAT_MONO16, buffer, buffer_length, spec.freq);
+		buffers.emplace(fileName.data(), bid);
+		SDL_FreeWAV(buffer);
 	}
 
 	void AudioSystem::UnloadAudioFile(std::string_view fileName)
 	{
 		std::string name = fileName.data();
-		if (sounds.contains(name))
+		if (buffers.contains(name))
 		{
-			alDeleteSources(1, &sounds[name].source_id);
-			detail::check_openal_error("alDeleteSources");
-			alDeleteBuffers(1, &sounds[name].buffer_id);
+			alDeleteBuffers(1, &buffers[fileName.data()]);
 			detail::check_openal_error("alDeleteBuffers");
-			sounds.erase(name);
+			buffers.erase(name);
 		}
+	}
+
+	ALuint AudioSystem::NewSource(std::string_view name)
+	{
+		ALuint source;
+		alGenSources(1, &source);
+		alSourcei(source, AL_BUFFER, buffers[name.data()]);
+		return source;
+	}
+
+	void AudioSystem::DeleteSource(ALuint sourceID)
+	{
+		alDeleteBuffers(1, &sourceID);
 	}
 	Vector3f Calc(const Quaternion &r)
 	{

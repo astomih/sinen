@@ -43,6 +43,7 @@ namespace nen::vk
 		VKRenderer();
 
 		void initialize(::SDL_Window *window, const char *appName);
+		void setRenderer(class Renderer *renderer) { mRenderer = renderer; }
 		void terminate();
 		void prepare();
 		void render();
@@ -92,7 +93,10 @@ namespace nen::vk
 		void MapMemory(VkDeviceMemory memory, void *data, size_t size);
 		void AddVertexArray(const VertexArrayForVK &vArray, std::string_view name);
 
+		friend VKBase;
+
 	private:
+		class Renderer *mRenderer;
 		std::unique_ptr<class VKBase> m_base;
 		void createBoxVertices();
 		void createSpriteVertices();

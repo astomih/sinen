@@ -2,11 +2,10 @@
 #include <Actors.hpp>
 namespace nen
 {
-	void Transform::LookAt(const Vector3f& target)
+	void Transform::LookAt(const Vector3f& target,const Vector3f& norm)
 	{
 		Vector3f  vec = target - mOwner.GetPosition();
 		vec.Normalize();
-		Vector3f norm(Vector3f::UnitY);
 		float dot = Vector3f::Dot(norm, vec);
 		float theta = Math::Acos(dot);
 		Vector3f cross = Vector3f::Cross(norm, vec);

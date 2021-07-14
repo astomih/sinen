@@ -1,4 +1,5 @@
-﻿#include <Engine.hpp>
+﻿#ifndef EMSCRIPTEN
+#include <Engine.hpp>
 #include "../../include/OpenGL/GLRenderer.h"
 #include <fstream>
 #include <sstream>
@@ -29,13 +30,14 @@ namespace nen::gl
 		{
 			std::cout << "failed to loads shader" << std::endl;
 		}
-		createBoxVerts();
 		createSpriteVerts();
+		createBoxVerts();
 	}
 
 	void GLRenderer::render()
 	{
-		glClearColor(0.0, 0.0, 0.0, 1.0);
+		auto color = mRenderer->GetClearColor();
+		glClearColor(color.x, color.y, color.z, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		mSpriteShader->SetActive();
 		// Specify the vertex attributes
@@ -55,6 +57,7 @@ namespace nen::gl
 		glDisable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
 		std::string vertexID;
+		bool lastFrameChanged = false;
 		for (auto &i : mSprite3Ds)
 		{
 			if (vertexID != i->vertexIndex)
@@ -65,7 +68,37 @@ namespace nen::gl
 				glBufferSubData(GL_ARRAY_BUFFER, 0, vArraySize, m_VertexArrays[i->vertexIndex].vertices.data());
 
 				vertexID = i->vertexIndex;
+				glEnableVertexAttribArray(0);
+				glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 8 * sizeof(float), 0);
+				// Normal is 3 floats
+				glEnableVertexAttribArray(1);
+				glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 8 * sizeof(float),
+									  reinterpret_cast<void *>(sizeof(float) * 3));
+				// Texture coordinates is 2 floats
+				glEnableVertexAttribArray(2);
+				glVertexAttribPointer(2, 2, GL_FLOAT, GL_TRUE, 8 * sizeof(float),
+									  reinterpret_cast<void *>(sizeof(float) * 6));
 			}
+			if ((vertexID != i->vertexIndex && i->isChangeBuffer) || (i->isChangeBuffer ^ lastFrameChanged))
+			{
+				const float value = 1.f;
+				const Vector2f lb(i->trimStart.x, i->trimEnd.y);
+				const Vector2f lt(i->trimStart.x, i->trimStart.y);
+				const Vector2f rb(i->trimEnd.x, i->trimEnd.y);
+				const Vector2f rt(i->trimEnd.x, i->trimStart.y);
+				std::array<float, 3> norm = {1, 1, 1};
+
+				Vertex vertices[] =
+					{
+						{Vector3f(-value, value, value), norm, lb},
+						{Vector3f(-value, -value, value), norm, lt},
+						{Vector3f(value, value, value), norm, rb},
+						{Vector3f(value, -value, value), norm, rt},
+
+					};
+				glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+			}
+			lastFrameChanged = i->isChangeBuffer;
 			glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
 			mSpriteShader->SetMatrixUniform("uWorld", i->param.world);
 			mSpriteShader->SetMatrixUniform("uProj", i->param.proj);
@@ -141,7 +174,7 @@ namespace nen::gl
 		ImGui::NewFrame();
 
 		// Draw ImGUI widgets.
-		ImGui::Begin("NenEngine Info");
+		ImGui::Begin("Engine Info");
 		ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
 		if (ImGui::Button("toggleAPI"))
 		{
@@ -240,7 +273,7 @@ namespace nen::gl
 		const std::array<float, 3> magenta{1.0f, 0.0f, 1.0f};
 		const std::array<float, 3> cyan{0.0f, 1.0f, 1.0f};
 
-		VertexArrayForGL vArray;
+		VertexArray vArray;
 		vArray.vertices.push_back({Vector3f(-value, value, value), yellow, lb});
 		vArray.vertices.push_back({Vector3f(-value, -value, value), red, lt});
 		vArray.vertices.push_back({Vector3f(value, value, value), white, rb});
@@ -280,8 +313,10 @@ namespace nen::gl
 			16, 18, 17, 17, 18, 19, // top
 			20, 22, 21, 21, 22, 23, // bottom
 		};
-		vArray.indexCount = 36;
+		vArray.indexCount = _countof(indices);
+
 		vArray.PushIndices(indices, vArray.indexCount);
 		mRenderer->AddVertexArray(vArray, "BOX");
 	}
 }
+#endif

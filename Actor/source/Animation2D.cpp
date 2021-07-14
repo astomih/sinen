@@ -4,7 +4,7 @@
 #include <Engine.hpp>
 namespace nen
 {
-	Animation2DSprite::Animation2DSprite(std::shared_ptr<Scene> scene, const int height, const int width, const float framePerSec, const std::string &path)
+	Animation2DSprite::Animation2DSprite(Scene& scene, const int height, const int width, const float framePerSec, const std::string &path)
 		: Actor(scene),
 		  mRow(height),
 		  mColumn(width),

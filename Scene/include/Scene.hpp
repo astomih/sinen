@@ -22,7 +22,7 @@ namespace nen
 	{
 	public:
 		Scene();
-		virtual ~Scene() = default;
+		virtual ~Scene() {}
 
 		void Initialize(std::shared_ptr<class Renderer> renderer);
 
@@ -57,13 +57,14 @@ namespace nen
 			mGameState = EQuit;
 		}
 
+		Scenes NextScene = Scenes::None;
+		void ExitScene() { mIsRunning = false; }
+
 	protected:
 		virtual void LoadData();
 		virtual void Update(float deltaTime);
 		virtual void SystemInput(const struct InputState &) {}
-		void ExitScene() { mIsRunning = false; }
 
-		Scenes NextScene = Scenes::None;
 		// All the actors in the game
 		std::vector<std::shared_ptr<class Actor>> mActors;
 		std::shared_ptr<AudioSystem> mAudioSystem;
@@ -85,7 +86,7 @@ namespace nen
 		bool mIsRunning = true;
 		// Map for text localization
 		std::unordered_map<std::string, std::string> mText;
-		GameState mGameState;
+		GameState mGameState = GameState::EGameplay;
 	};
 	template <class S>
 	Scene *createInstance() { return new S; }

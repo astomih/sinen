@@ -61,6 +61,12 @@
     <Filter Include="Header\Scene">
       <UniqueIdentifier>{18f42db0-8edc-495c-a66c-996db4f3bfff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Engine\ES">
+      <UniqueIdentifier>{12c0ec8a-a6ab-4cec-9f92-6b8db6aec793}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header\Engine\ES">
+      <UniqueIdentifier>{423c02df-93af-4c0f-b2d6-c29fedb04ce7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\source\AudioSystem.cpp">
@@ -203,6 +209,9 @@
     </ClCompile>
     <ClCompile Include="Engine\source\ObjLoader.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\source\ES\ESRenderer.cpp">
+      <Filter>Source\Engine\ES</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -355,6 +364,12 @@
     </ClInclude>
     <ClInclude Include="Engine\include\ObjLoader.h">
       <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\include\ES\ESRenderer.h">
+      <Filter>Header\Engine\ES</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\include\Sprite.h">
+      <Filter>Header\Engine</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

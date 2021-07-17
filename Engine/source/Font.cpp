@@ -1,4 +1,5 @@
 ﻿#include <Engine.hpp>
+#include <cassert>
 namespace nen
 {
 	bool Font::Load(const std::string& fileName)

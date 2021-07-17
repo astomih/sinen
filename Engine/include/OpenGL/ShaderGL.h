@@ -1,5 +1,11 @@
 #pragma once
+#ifndef EMSCRIPTEN
 #include <GL/glew.h>
+#endif
+#ifdef EMSCRIPTEN
+#define GL_GLEXT_PROTOTYPES
+#include <SDL_opengles2.h>
+#endif
 namespace nen::gl
 {
 	class ShaderGL

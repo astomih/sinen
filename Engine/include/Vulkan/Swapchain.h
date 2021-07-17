@@ -1,4 +1,5 @@
 ﻿#pragma once
+#ifndef EMSCRIPTEN
 #include <vector>
 
 namespace nen::vk
@@ -39,3 +40,4 @@ namespace nen::vk
 		std::vector<VkImageView> m_imageViews;
 	};
 }
+#endif

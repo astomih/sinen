@@ -8,7 +8,9 @@
 #include "include/InputComponent.h"
 #include "include/MoveComponent.h"
 #include "include/EffectComponent.hpp"
+#ifndef EMSCRIPTEN
 #include "include/ScriptComponent.h"
+#endif
 #ifdef NO_USE_NEN_NAMESPACE
 using namespace nen;
 #endif

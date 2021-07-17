@@ -8,6 +8,16 @@
 #include <SDL_image.h>
 #include <sol/sol.hpp>
 #include <GL/glew.h>
+#endif
+#ifdef EMSCRIPTEN
+#include <Engine.hpp>
+#include "../../include/OpenGL/ShaderGL.h"
+#include "../../include/ES/ESRenderer.h"
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <SDL_image.h>
+#endif
 namespace nen::gl
 {
 
@@ -128,13 +138,13 @@ namespace nen::gl
 
 			if (!IsCompiled(outShader))
 			{
-				SDL_Log("Failed to compile shader %s", fileName.c_str());
+				std::cout << "Failed to compile shader " <<  fileName << std::endl;
 				return false;
 			}
 		}
 		else
 		{
-			SDL_Log("Shader file not found: %s", fileName.c_str());
+			std::cout << "Shader file not found: " <<  fileName << std::endl;
 			return false;
 		}
 
@@ -152,7 +162,7 @@ namespace nen::gl
 			char buffer[512];
 			memset(buffer, 0, 512);
 			glGetShaderInfoLog(shader, 511, nullptr, buffer);
-			SDL_Log("GLSL Compile Failed:\n%s", buffer);
+			std::cout << "GLSL Compile Failed: " <<  buffer << std::endl;
 			return false;
 		}
 
@@ -169,7 +179,7 @@ namespace nen::gl
 			char buffer[512];
 			memset(buffer, 0, 512);
 			glGetProgramInfoLog(mShaderProgram, 511, nullptr, buffer);
-			SDL_Log("GLSL Link Status:\n%s", buffer);
+			std::cout << "GLSL Link Status: " <<  buffer << std::endl;
 			return false;
 		}
 
@@ -177,4 +187,3 @@ namespace nen::gl
 	}
 
 } //namespace nen::gl
-#endif

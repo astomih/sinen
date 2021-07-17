@@ -2,11 +2,12 @@
 #include <string>
 #include <memory>
 #include <Engine/include/Vulkan/VKRenderer.h>
-#include <unordered_map>
 #include <Engine/include/Vertex.h>
+#include <unordered_map>
 namespace nen
 {
 	struct SDL_Surface;
+#ifndef EMSCRIPTEN
 	struct BufferObject
 	{
 		~BufferObject();
@@ -19,6 +20,8 @@ namespace nen
 		VkDeviceMemory memory;
 		VkImageView view;
 	};
+#endif
+	
 	struct ShaderParameters
 	{
 		Matrix4 world;

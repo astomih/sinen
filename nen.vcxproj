@@ -121,6 +121,7 @@
     <ClCompile Include="Engine\source\AudioSystem.cpp" />
     <ClCompile Include="Engine\source\DebugLog.cpp" />
     <ClCompile Include="Engine\source\Effect.cpp" />
+    <ClCompile Include="Engine\source\ES\ESRenderer.cpp" />
     <ClCompile Include="Engine\source\Font.cpp" />
     <ClCompile Include="Engine\source\InputSystem.cpp" />
     <ClCompile Include="Engine\source\Math.cpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="Engine\include\AudioSystem.h" />
     <ClInclude Include="Engine\include\DebugLog.hpp" />
     <ClInclude Include="Engine\include\Effect.hpp" />
+    <ClInclude Include="Engine\include\ES\ESRenderer.h" />
     <ClInclude Include="Engine\include\Font.hpp" />
     <ClInclude Include="Engine\include\InputSystem.h" />
     <ClInclude Include="Engine\include\Math.hpp" />
@@ -183,6 +185,7 @@
     <ClInclude Include="Engine\include\Renderer.h" />
     <ClInclude Include="Engine\include\Script.h" />
     <ClInclude Include="Engine\include\AudioEvent.h" />
+    <ClInclude Include="Engine\include\Sprite.h" />
     <ClInclude Include="Engine\include\StreamReader.h" />
     <ClInclude Include="Engine\include\Texture.h" />
     <ClInclude Include="Engine\include\Transform.hpp" />

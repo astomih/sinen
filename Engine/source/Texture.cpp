@@ -2,9 +2,11 @@
 #include <SDL_image.h>
 namespace nen
 {
+#ifndef EMSCRIPTEN
 	BufferObject::~BufferObject()
 	{
-		}
+	}
+#endif
 	std::string TextureAsset::texname = "default";
 	std::unordered_map<std::string, std::shared_ptr<Texture>> TextureAsset::mTexture;
 	Texture::Texture()

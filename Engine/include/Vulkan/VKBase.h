@@ -1,4 +1,5 @@
 ﻿#pragma once
+#ifndef EMSCRIPTEN
 #include <windows.h>
 
 #define VK_USE_PLATFORM_WIN32_KHR
@@ -88,3 +89,5 @@ namespace nen::vk
 		VKRenderer* m_vkrenderer;
 	};
 }
+
+#endif

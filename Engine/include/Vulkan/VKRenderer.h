@@ -1,17 +1,25 @@
 ﻿#pragma once
+#ifndef EMSCRIPTEN
 #include <array>
 #include "VKBase.h"
 #include <Engine/include/Math.hpp>
 #include <Engine/include/Texture.h>
 #include <unordered_map>
 #include <Engine/include/VertexArray.h>
+#endif
+
+namespace nen {
+	class Renderer;
+}
+
 enum class TextureType
 {
 	Image2D,
 	Image3D,
 	Font
 };
-#include <Engine/include/OpenGL/GLRenderer.h>
+#ifndef EMSCRIPTEN
+#include <Engine/include/Sprite.h>
 namespace nen::vk
 {
 	class SpriteVK
@@ -43,7 +51,7 @@ namespace nen::vk
 		VKRenderer();
 
 		void initialize(::SDL_Window *window, const char *appName);
-		void setRenderer(class Renderer *renderer) { mRenderer = renderer; }
+		void setRenderer(class nen::Renderer *renderer) { mRenderer = renderer; }
 		void terminate();
 		void prepare();
 		void render();
@@ -138,3 +146,4 @@ namespace nen::vk
 		int instanceCount;
 	};
 }
+#endif

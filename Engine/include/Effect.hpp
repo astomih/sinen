@@ -1,11 +1,9 @@
 #pragma once
-#include <boost/serialization/singleton.hpp>
 namespace nen
 {
-	class Effect : public boost::serialization::singleton<Effect>
+	class Effect
 	{
 	private:
-		friend class boost::serialization::detail::singleton_wrapper<Effect>;
 		Effect() = default;
 	public:
 		void Init(class VKBase* vkrenderer);

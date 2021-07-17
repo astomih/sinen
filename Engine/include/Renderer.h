@@ -7,6 +7,9 @@
 #include "Window.hpp"
 #include <VKRenderer.h>
 #include <Engine/include/OpenGL/GLRenderer.h>
+#ifdef EMSCRIPTEN
+#include <Engine/include/ES/ESRenderer.h>
+#endif
 
 namespace nen
 {
@@ -14,7 +17,8 @@ namespace nen
 	enum class GraphicsAPI
 	{
 		OpenGL,
-		Vulkan
+		Vulkan,
+		ES
 	};
 
 	class Renderer
@@ -23,7 +27,7 @@ namespace nen
 		Renderer(GraphicsAPI api);
 		~Renderer() = default;
 
-		void SetGraphicsAPI(GraphicsAPI &api)
+		void SetGraphicsAPI(GraphicsAPI& api)
 		{
 			RendererAPI = api;
 		}
@@ -46,12 +50,12 @@ namespace nen
 
 		void ChangeBufferSprite(std::shared_ptr<class Sprite> sprite, TextureType type = TextureType::Image2D);
 
-		void AddEffectComp(class EffectComponent *effect);
-		void RemoveEffectComp(class EffectComponent *effect);
+		void AddEffectComp(class EffectComponent* effect);
+		void RemoveEffectComp(class EffectComponent* effect);
 
-		void AddVertexArray(const VertexArray &vArray, std::string_view name);
+		void AddVertexArray(const VertexArray& vArray, std::string_view name);
 
-		void SetClearColor(const Vector3f &color)
+		void SetClearColor(const Vector3f& color)
 		{
 			if (color.x >= 0.f && color.y >= 0.f && color.z >= 0.f)
 				clearColor = color;
@@ -59,18 +63,24 @@ namespace nen
 
 		Vector3f GetClearColor() { return this->clearColor; }
 
-		vk::VKRenderer &GetVK() { return *(vkRenderer.get()); }
-		gl::GLRenderer &GetGL() { return *(glRenderer.get()); }
 
-		class Texture *GetTexture(std::string_view fileName);
-		class Texture *GetTextureFromMemory(const unsigned char *const buffer, const std::string &key);
-		class Effect *GetEffect(const std::u16string &fileName);
+#ifdef EMSCRIPTEN
+		es::ESRenderer& GetES() { return *(esRenderer.get()); }
+#endif
+#ifndef EMSCRIPTEN
+		vk::VKRenderer& GetVK() { return *(vkRenderer.get()); }
+		gl::GLRenderer& GetGL() { return *(glRenderer.get()); }
+#endif
 
-		void SetViewMatrix(const Matrix4 &view) { mView = view; }
+		class Texture* GetTexture(std::string_view fileName);
+		class Texture* GetTextureFromMemory(const unsigned char* const buffer, const std::string& key);
+		class Effect* GetEffect(const std::u16string& fileName);
+
+		void SetViewMatrix(const Matrix4& view) { mView = view; }
 		Matrix4 GetViewMatrix() { return mView; }
-		const Matrix4 &GetProjectionMatrix() { return mProjection; }
+		const Matrix4& GetProjectionMatrix() { return mProjection; }
 
-		SDL_Window *GetWindow()
+		SDL_Window* GetWindow()
 		{
 			if (!mWindow)
 				return nullptr;
@@ -79,37 +89,43 @@ namespace nen
 
 	private:
 		Vector3f clearColor = Color::Black;
-		class Sprite2DComponent *transPic;
+		class Sprite2DComponent* transPic;
 
 		std::shared_ptr<Transition> mTransition;
 		// Map of textures loaded
-		std::unordered_map<std::string, class Texture *> mTextures3D;
+		std::unordered_map<std::string, class Texture*> mTextures3D;
 		// Map of meshes loaded
 		// Map of effects loaded
-		std::unordered_map<std::string, class Effect *> mEffects;
+		std::unordered_map<std::string, class Effect*> mEffects;
 
 		// All the sprite components drawn
 		std::vector<std::shared_ptr<class Sprite>> mSprite3Ds;
 		std::vector<std::shared_ptr<class Sprite>> mSprite2Ds;
 
 		// All effects components drawn
-		std::vector<class EffectComponent *> mEffectComp;
+		std::vector<class EffectComponent*> mEffectComp;
 
 		// GameHandler
 		std::shared_ptr<Scene> mScene;
 
 		// Sprite vertex array
-		class VertexArray *mSpriteVerts;
+		class VertexArray* mSpriteVerts;
 
 		// View/projection for 3D shaders
 		Matrix4 mView;
 		Matrix4 mProjection;
 
 		// Window
-		SDL_Window *mWindow;
+		SDL_Window* mWindow;
 		// Renderer
+#ifndef EMSCRIPTEN
 		std::unique_ptr<vk::VKRenderer> vkRenderer;
 		std::unique_ptr<gl::GLRenderer> glRenderer;
+#endif
+#ifdef EMSCRIPTEN
+		std::unique_ptr<es::ESRenderer> esRenderer;
+#endif
+
 
 		GraphicsAPI RendererAPI;
 	};

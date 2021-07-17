@@ -1,4 +1,5 @@
 ﻿#pragma once
+#ifndef EMSCRIPTEN
 #include <vulkan/vulkan.h>
 #include <SDL.h>
 
@@ -15,15 +16,15 @@
 
 namespace nen::vkutil
 {
-	template <class U>
-	void DestroyVulkanObject(VkDevice &device, U &object, std::function<void(VkDevice, U, VkAllocationCallbacks *)> function)
-	{
-		if (object == VK_NULL_HANDLE)
-		{
-			function(device, object, nullptr);
-			object = VK_NULL_HANDLE;
-		}
-	}
+  template <class U>
+  void DestroyVulkanObject(VkDevice &device, U &object, std::function<void(VkDevice, U, VkAllocationCallbacks *)> function)
+  {
+    if (object == VK_NULL_HANDLE)
+    {
+      function(device, object, nullptr);
+      object = VK_NULL_HANDLE;
+    }
+  }
 
   class VulkanException : public std::runtime_error
   {
@@ -364,3 +365,5 @@ namespace nen::vkutil
         pImageInfo, nullptr, nullptr};
   }
 }
+
+#endif

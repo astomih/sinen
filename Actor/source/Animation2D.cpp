@@ -2,6 +2,7 @@
 #include <Scene.hpp>
 #include <Components.hpp>
 #include <Engine.hpp>
+#include <cassert>
 namespace nen
 {
 	Animation2DSprite::Animation2DSprite(Scene& scene, const int height, const int width, const float framePerSec, const std::string &path)

@@ -4,8 +4,17 @@
 namespace nen
 {
 	Renderer::Renderer(GraphicsAPI api)
-		: transPic(nullptr), mScene(nullptr), mWindow(nullptr), vkRenderer(nullptr), glRenderer(nullptr), RendererAPI(api)
+		: transPic(nullptr), mScene(nullptr), mWindow(nullptr),
+#ifndef EMSCRIPTEN
+		  vkRenderer(nullptr),
+		  glRenderer(nullptr),
+#endif
+#ifdef EMSCRIPTEN
+		  esRenderer(nullptr),
+#endif
+		  RendererAPI(api)
 	{
+#ifndef EMSCRIPTEN
 		SDL_GLContext context;
 		switch (RendererAPI)
 		{
@@ -67,6 +76,37 @@ namespace nen
 		default:
 			break;
 		}
+#endif
+#ifdef EMSCRIPTEN
+		SDL_GLContext context;
+		esRenderer = std::make_unique<es::ESRenderer>();
+		SDL_Init(SDL_INIT_EVERYTHING);
+		TTF_Init();
+		IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+		// Request a color buffer with 8-bits per RGBA channel
+		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+		SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+		// Enable double buffering
+		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+		mWindow = SDL_CreateWindow(
+			std::string(Window::name + " : ES").c_str(),
+			SDL_WINDOWPOS_CENTERED,
+			SDL_WINDOWPOS_CENTERED,
+			static_cast<int>(Window::Size.x),
+			static_cast<int>(Window::Size.y),
+			SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+
+		context = SDL_GL_CreateContext(mWindow);
+		SDL_GL_MakeCurrent(mWindow, context);
+		esRenderer->setRenderer(this);
+		esRenderer->initialize(mWindow, context);
+#endif
 		Window::Info::id = SDL_GetWindowID(mWindow);
 		SDL_VERSION(&Window::Info::info.version);
 	}
@@ -78,8 +118,10 @@ namespace nen
 
 	void Renderer::Shutdown()
 	{
+#ifndef EMSCRIPTEN
 		if (RendererAPI == GraphicsAPI::Vulkan)
 			vkRenderer->terminate();
+#endif
 	}
 
 	void Renderer::UnloadData()
@@ -95,14 +137,20 @@ namespace nen
 
 	void Renderer::Draw()
 	{
+#ifndef EMSCRIPTEN
 		if (RendererAPI == GraphicsAPI::Vulkan)
 			vkRenderer->render();
 		if (RendererAPI == GraphicsAPI::OpenGL)
 			glRenderer->render();
+#endif
+#ifdef EMSCRIPTEN
+		esRenderer->render();
+#endif
 	}
 
 	void Renderer::AddSprite2D(std::shared_ptr<nen::Sprite> sprite, std::shared_ptr<Texture> texture)
 	{
+#ifndef EMSCRIPTEN
 		if (this->RendererAPI == GraphicsAPI::Vulkan)
 		{
 			auto t = std::make_shared<vk::SpriteVK>();
@@ -114,11 +162,16 @@ namespace nen
 			t->mTexture = texture;
 			GetVK().registerTexture(t, texture->id, TextureType::Image2D);
 		}
-		else
+		else if (this->RendererAPI == GraphicsAPI::OpenGL)
 		{
 			GetGL().registerTexture(texture, TextureType::Image2D);
 			GetGL().pushSprite2d(sprite);
 		}
+#endif
+#ifdef EMSCRIPTEN
+		GetES().registerTexture(texture, TextureType::Image2D);
+		GetES().pushSprite2d(sprite);
+#endif
 
 		// Find the insertion point in the sorted vector
 		// (The first element with a higher draw order than me)
@@ -140,6 +193,7 @@ namespace nen
 
 	void Renderer::RemoveSprite2D(std::shared_ptr<Sprite> sprite)
 	{
+#ifndef EMSCRIPTEN
 		if (this->RendererAPI == GraphicsAPI::Vulkan)
 		{
 			auto &sprites = GetVK().GetSprite2Ds();
@@ -161,6 +215,10 @@ namespace nen
 		{
 			GetGL().eraseSprite2d(sprite);
 		}
+#endif
+#ifdef EMSCRIPTEN
+		GetES().eraseSprite2d(sprite);
+#endif
 		auto iter = std::find(mSprite2Ds.begin(), mSprite2Ds.end(), sprite);
 		if (iter != mSprite2Ds.end())
 			mSprite2Ds.erase(iter);
@@ -168,6 +226,7 @@ namespace nen
 
 	void Renderer::AddSprite3D(std::shared_ptr<Sprite> sprite, std::shared_ptr<Texture> texture)
 	{
+#ifndef EMSCRIPTEN
 		if (this->RendererAPI == GraphicsAPI::Vulkan)
 		{
 			auto t = std::make_shared<vk::SpriteVK>();
@@ -181,6 +240,11 @@ namespace nen
 			GetGL().registerTexture(texture, TextureType::Image3D);
 			GetGL().pushSprite3d(sprite);
 		}
+#endif
+#ifdef EMSCRIPTEN
+		GetES().registerTexture(texture, TextureType::Image3D);
+		GetES().pushSprite3d(sprite);
+#endif
 
 		// Find the insertion point in the sorted vector
 		// (The first element with a higher draw order than me)
@@ -202,6 +266,7 @@ namespace nen
 
 	void Renderer::RemoveSprite3D(std::shared_ptr<Sprite> sprite)
 	{
+#ifndef EMSCRIPTEN
 		if (this->RendererAPI == GraphicsAPI::Vulkan)
 		{
 			auto &sprites = GetVK().GetSprite3Ds();
@@ -223,6 +288,11 @@ namespace nen
 		{
 			GetGL().eraseSprite3d(sprite);
 		}
+#endif
+#ifdef EMSCRIPTEN
+		GetES().eraseSprite3d(sprite);
+#endif
+
 		auto iter = std::find(mSprite3Ds.begin(), mSprite3Ds.end(), sprite);
 		if (iter != mSprite3Ds.end())
 			mSprite3Ds.erase(iter);
@@ -230,6 +300,7 @@ namespace nen
 
 	void Renderer::ChangeBufferSprite(std::shared_ptr<Sprite> sprite, TextureType type)
 	{
+#ifndef EMSCRIPTEN
 		if (this->RendererAPI == GraphicsAPI::Vulkan)
 		{
 
@@ -266,6 +337,7 @@ namespace nen
 				}
 			}
 		}
+#endif
 	}
 
 	void Renderer::AddEffectComp(EffectComponent *effect)
@@ -303,6 +375,7 @@ namespace nen
 
 	void Renderer::AddVertexArray(const VertexArray &vArray, std::string_view name)
 	{
+#ifndef EMSCRIPTEN
 		if (RendererAPI == GraphicsAPI::Vulkan)
 		{
 			vk::VertexArrayForVK vArrayVK;
@@ -343,6 +416,30 @@ namespace nen
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.indices.size() * sizeof(uint32_t), vArrayGL.indices.data(), GL_STATIC_DRAW);
 			GetGL().AddVertexArray(vArrayGL, name);
 		}
+#endif
+#ifdef EMSCRIPTEN
+		gl::VertexArrayForGL vArrayGL;
+		vArrayGL.indexCount = vArray.indexCount;
+		vArrayGL.indices = vArray.indices;
+		vArrayGL.vertices = vArray.vertices;
+
+		// Create vertex array
+		glGenVertexArraysOES(1, &vArrayGL.vertexID);
+		glBindVertexArrayOES(vArrayGL.vertexID);
+
+		// Create vertex buffer
+		glGenBuffers(1, &vArrayGL.vertexID);
+		glBindBuffer(GL_ARRAY_BUFFER, vArrayGL.vertexID);
+		auto vArraySize = vArrayGL.vertices.size() * sizeof(Vertex);
+		glBufferData(GL_ARRAY_BUFFER, vArraySize, vArrayGL.vertices.data(), GL_STATIC_DRAW);
+
+		// Create index buffer
+		glGenBuffers(1, &vArrayGL.indexID);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.indexID);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.indices.size() * sizeof(uint32_t), vArrayGL.indices.data(), GL_STATIC_DRAW);
+		GetES().AddVertexArray(vArrayGL, name);
+
+#endif
 	}
 
 	Texture *Renderer::GetTextureFromMemory(const unsigned char *const buffer, const std::string &key)

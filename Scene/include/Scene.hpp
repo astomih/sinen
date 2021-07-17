@@ -26,6 +26,8 @@ namespace nen
 
 		void Initialize(std::shared_ptr<class Renderer> renderer);
 
+		bool isRunning() { return mIsRunning; }
+
 		void RunLoop();
 
 		Scenes Shutdown();

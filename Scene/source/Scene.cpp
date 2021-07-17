@@ -5,10 +5,11 @@
 #include <Components.hpp>
 #include <iostream>
 #include <Engine.hpp>
-
+#ifndef EMSCRIPTEN
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 
+#endif
 namespace nen
 {
 	Scene::Scene()
@@ -34,8 +35,10 @@ namespace nen
 			SDL_Log("Failed to initialize input system");
 			std::exit(1);
 		}
-		// スクリプトのインスタンスを作成
+// スクリプトのインスタンスを作成
+#ifndef EMSCRIPTEN
 		Script::Create();
+#endif
 		// シーンのデータを読み込み
 		LoadData();
 		// デルタタイムを読み込み
@@ -47,15 +50,12 @@ namespace nen
 	*/
 	void Scene::RunLoop()
 	{
-		while (mIsRunning)
-		{
-			// Call system events
-			ProcessInput();
-			//update actor, components
-			UpdateScene();
-			//draw sprites, meshes
-			mRenderer->Draw();
-		}
+		// Call system events
+		ProcessInput();
+		//update actor, components
+		UpdateScene();
+		//draw sprites, meshes
+		mRenderer->Draw();
 	}
 
 	void Scene::ProcessInput()
@@ -64,7 +64,9 @@ namespace nen
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
+#ifndef EMSCRIPTEN
 			ImGui_ImplSDL2_ProcessEvent(&event);
+#endif
 			switch (event.type)
 			{
 			case SDL_QUIT:

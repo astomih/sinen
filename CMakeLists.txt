@@ -44,6 +44,12 @@ set(SOURCE_FILES
 	Actor/source/PlaneActor.cpp 
 	Actor/source/Text.cpp 
 	Scene/source/Scene.cpp 
+	lib/imgui/source/imgui.cpp
+	lib/imgui/source/imgui_draw.cpp
+	lib/imgui/source/imgui_demo.cpp
+	lib/imgui/source/imgui_impl_opengl3.cpp
+	lib/imgui/source/imgui_impl_sdl.cpp
+	lib/imgui/source/imgui_widgets.cpp
 	)
 
 if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
@@ -66,6 +72,7 @@ include_directories(
 	./lib/Effekseer/include/Effekseer
 	./lib/Effekseer/include/EffekseerRendererGL
 	./lib/Effekseer/include
+	./lib/imgui/include
 )
 
 if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")

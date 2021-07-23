@@ -5,6 +5,9 @@
 #include <sstream>
 #include <iostream>
 #include <SDL_image.h>
+#include <imgui.h>
+#include <imgui_impl_sdl.h>
+#include <imgui_impl_opengl3.h>
 #include <Effekseer.h>
 #include <EffekseerRendererGL.h>
 #include <Engine/include/Effect.hpp>
@@ -20,6 +23,16 @@ namespace nen
 			mWindow = window;
 			// Create an OpenGL context
 			prepare();
+			IMGUI_CHECKVERSION();
+			ImGui::CreateContext();
+			ImGuiIO &io = ImGui::GetIO();
+			
+			(void)io;
+			io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+    		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+			io.IniFilename = NULL;
+			ImGui_ImplSDL2_InitForOpenGL(window, context);
+			ImGui_ImplOpenGL3_Init("#version 100");
 		}
 
 		void ESRenderer::prepare()
@@ -197,6 +210,17 @@ namespace nen
 				}
 			}
 			glDisable(GL_BLEND);
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplSDL2_NewFrame(mWindow);
+			ImGui::NewFrame();
+
+			// Draw ImGUI widgets.
+			ImGui::Begin("Engine Info");
+			ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
+			ImGui::End();
+
+			ImGui::Render();
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 			SDL_GL_SwapWindow(mWindow);
 		}
 

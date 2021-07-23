@@ -5,11 +5,9 @@
 #include <Components.hpp>
 #include <iostream>
 #include <Engine.hpp>
-#ifndef EMSCRIPTEN
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 
-#endif
 namespace nen
 {
 	Scene::Scene()
@@ -33,7 +31,6 @@ namespace nen
 		if (!mInputSystem->Initialize())
 		{
 			SDL_Log("Failed to initialize input system");
-			std::exit(1);
 		}
 // スクリプトのインスタンスを作成
 #ifndef EMSCRIPTEN
@@ -64,9 +61,7 @@ namespace nen
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
-#ifndef EMSCRIPTEN
 			ImGui_ImplSDL2_ProcessEvent(&event);
-#endif
 			switch (event.type)
 			{
 			case SDL_QUIT:

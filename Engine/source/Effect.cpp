@@ -31,14 +31,9 @@ static void ArrayToMatrix43(const float *array, Effekseer::Matrix43 &matrix)
 	}
 }
 
-static bool isEffekseerLogEnabled = false;
-
 static void PrintEffekseerLog(const std::string &message)
 {
-	if (isEffekseerLogEnabled)
-	{
-		printf("%s\n", message.c_str());
-	}
+	printf("%s\n", message.c_str());
 }
 using namespace Effekseer;
 
@@ -56,10 +51,9 @@ public:
 	Effekseer::TextureRef Load(const EFK_CHAR *path, Effekseer::TextureType textureType) override
 	{
 
-
 		std::array<char, 260> path8;
 		Effekseer::ConvertUtf16ToUtf8(path8.data(), static_cast<int32_t>(path8.size()), path);
-		SDL_Surface* surf = ::IMG_Load(path8.data());
+		SDL_Surface *surf = ::IMG_Load(path8.data());
 		::SDL_LockSurface(surf);
 		auto formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
 		formatbuf->BytesPerPixel = 4;
@@ -77,7 +71,6 @@ public:
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-
 		// Load texture from image
 
 		std::string pathStr = path8.data();
@@ -94,6 +87,8 @@ public:
 		PrintEffekseerLog("Effekseer : Load : " + pathStr);
 
 		SDL_FreeSurface(surf);
+		SDL_FreeSurface(imagedata);
+		SDL_FreeFormat(formatbuf);
 
 		return textureData;
 	}

@@ -63,6 +63,9 @@ include_directories(
 	./Actor/include 
 	./lib/tinyobjloader 
 	./Scene/include 
+	./lib/Effekseer/include/Effekseer
+	./lib/Effekseer/include/EffekseerRendererGL
+	./lib/Effekseer/include
 )
 
 if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")

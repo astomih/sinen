@@ -138,13 +138,13 @@ namespace nen::gl
 
 			if (!IsCompiled(outShader))
 			{
-				std::cout << "Failed to compile shader " <<  fileName << std::endl;
+				std::cout << "Failed to compile shader " << fileName << std::endl;
 				return false;
 			}
 		}
 		else
 		{
-			std::cout << "Shader file not found: " <<  fileName << std::endl;
+			std::cout << "Shader file not found: " << fileName << std::endl;
 			return false;
 		}
 
@@ -162,7 +162,7 @@ namespace nen::gl
 			char buffer[512];
 			memset(buffer, 0, 512);
 			glGetShaderInfoLog(shader, 511, nullptr, buffer);
-			std::cout << "GLSL Compile Failed: " <<  buffer << std::endl;
+			std::cout << "GLSL Compile Failed: " << buffer << std::endl;
 			return false;
 		}
 
@@ -179,7 +179,7 @@ namespace nen::gl
 			char buffer[512];
 			memset(buffer, 0, 512);
 			glGetProgramInfoLog(mShaderProgram, 511, nullptr, buffer);
-			std::cout << "GLSL Link Status: " <<  buffer << std::endl;
+			std::cout << "GLSL Link Status: " << buffer << std::endl;
 			return false;
 		}
 

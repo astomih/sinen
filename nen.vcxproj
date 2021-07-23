@@ -46,8 +46,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir);$(ProjectDir)Engine;$(ProjectDir)lib\imgui\include;$(ProjectDir)Actor;$(ProjectDir)Components;$(BOOST_INCLUDE_PATH);$(ProjectDir)Engine\include\Vulkan;$(ProjectDir)lib\mojoAL-default;$(ProjectDir)lib\sol2-3.2.2\include;$(ProjectDir)lib\rapidjson\include;$(ProjectDir)Scene\include;$(ProjectDir)lib\tinyobjloader;$(ProjectDir)lib\sdl2_gfx\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VK_SDK_PATH)\Lib32;$(BOOST_LIBRARY_PATH);$(ProjectDir)lib\sdl2_gfx\lib;%(AdditionalLibraryDirectories);$(LibraryPath)</LibraryPath>
+    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir);$(ProjectDir)Engine;$(ProjectDir)lib\imgui\include;$(ProjectDir)Actor;$(ProjectDir)Components;$(BOOST_INCLUDE_PATH);$(ProjectDir)Engine\include\Vulkan;$(ProjectDir)lib\mojoAL-default;$(ProjectDir)lib\sol2-3.2.2\include;$(ProjectDir)lib\rapidjson\include;$(ProjectDir)Scene\include;$(ProjectDir)lib\tinyobjloader;$(ProjectDir)lib\sdl2_gfx\include;$(ProjectDir)lib\Effekseer\include\Effekseer;$(ProjectDir)lib\Effekseer\include\EffekseerRendererGL;$(ProjectDir)lib\Effekseer\include\EffekseerRendererVulkan;$(ProjectDir)lib\LLGI\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VK_SDK_PATH)\Lib32;$(BOOST_LIBRARY_PATH);$(ProjectDir)lib\sdl2_gfx\lib;%(AdditionalLibraryDirectories);$(ProjectDir)lib\Effekseer\Debug;$(ProjectDir)lib\LLGI\Debug;$(LibraryPath)</LibraryPath>
     <TargetExt>.lib</TargetExt>
     <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     <SourcePath>C:\nen\lib\imgui\source;C:\nen\lib\mojoAL-default;$(SourcePath)</SourcePath>
@@ -56,8 +56,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir);$(ProjectDir)Engine;$(ProjectDir)lib\imgui\include;$(ProjectDir)Actor;$(ProjectDir)Components;$(BOOST_INCLUDE_PATH);$(ProjectDir)Engine\include\Vulkan;$(ProjectDir)lib\mojoAL-default;$(ProjectDir)lib\sol2-3.2.2\include;$(ProjectDir)lib\rapidjson\include;$(ProjectDir)Scene\include;$(ProjectDir)lib\tinyobjloader;$(ProjectDir)lib\sdl2_gfx\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VK_SDK_PATH)\Lib32;$(BOOST_LIBRARY_PATH);$(ProjectDir)lib\sdl2_gfx\lib;%(AdditionalLibraryDirectories);$(LibraryPath)</LibraryPath>
+    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir);$(ProjectDir)Engine;$(ProjectDir)lib\imgui\include;$(ProjectDir)Actor;$(ProjectDir)Components;$(BOOST_INCLUDE_PATH);$(ProjectDir)Engine\include\Vulkan;$(ProjectDir)lib\mojoAL-default;$(ProjectDir)lib\sol2-3.2.2\include;$(ProjectDir)lib\rapidjson\include;$(ProjectDir)Scene\include;$(ProjectDir)lib\tinyobjloader;$(ProjectDir)lib\sdl2_gfx\include;$(ProjectDir)lib\Effekseer\include\Effekseer;$(ProjectDir)lib\Effekseer\include\EffekseerRendererGL;$(ProjectDir)lib\Effekseer\include\EffekseerRendererVulkan;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VK_SDK_PATH)\Lib32;$(BOOST_LIBRARY_PATH);$(ProjectDir)lib\sdl2_gfx\lib;%(AdditionalLibraryDirectories);$(ProjectDir)lib\Effekseer\Release;$(LibraryPath)</LibraryPath>
     <LuaType>static</LuaType>
     <LuaConfiguration>Release</LuaConfiguration>
     <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -83,7 +83,7 @@
       <AdditionalDependencies>vulkan-1.lib;SDL2_ttf.lib;lua52.lib;SDL2_gfx.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
-      <AdditionalDependencies>vulkan-1.lib;SDL2_gfx.lib%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;SDL2_gfx.lib;Effekseerd.lib;EffekseerRendererGLd.lib;EffekseerRendererVulkand.lib;LLGId.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(VK_SDK_PATH)\Lib32;</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>

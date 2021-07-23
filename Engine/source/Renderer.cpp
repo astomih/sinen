@@ -14,6 +14,7 @@ namespace nen
 #endif
 		  RendererAPI(api)
 	{
+		mEffectManager = std::make_unique<Effect>();
 #ifndef EMSCRIPTEN
 		SDL_GLContext context;
 		switch (RendererAPI)
@@ -32,6 +33,7 @@ namespace nen
 				SDL_WINDOW_VULKAN);
 			vkRenderer->initialize(mWindow, Window::name.c_str());
 			vkRenderer->setRenderer(this);
+			mEffectManager->Init(vkRenderer.get(), vkRenderer->GetBase());
 			break;
 		case GraphicsAPI::OpenGL:
 			glRenderer = std::make_unique<gl::GLRenderer>();
@@ -67,11 +69,12 @@ namespace nen
 			glewExperimental = GL_TRUE;
 			if (glewInit() != GLEW_OK)
 			{
-				std::cout << "Error: glew isn't init" << std::endl;
+				std::cout << "ERROR: glew isn't init" << std::endl;
 			}
 			glGetError();
 			glRenderer->setRenderer(this);
 			glRenderer->initialize(mWindow, context);
+			mEffectManager->Init(glRenderer.get());
 			break;
 		default:
 			break;
@@ -101,11 +104,15 @@ namespace nen
 			static_cast<int>(Window::Size.x),
 			static_cast<int>(Window::Size.y),
 			SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+		std::cout << "INFO: Window created" << std::endl;
 
 		context = SDL_GL_CreateContext(mWindow);
 		SDL_GL_MakeCurrent(mWindow, context);
 		esRenderer->setRenderer(this);
 		esRenderer->initialize(mWindow, context);
+		std::cout << "INFO: Renderer Initialized" << std::endl;
+		mEffectManager->Init(esRenderer.get());
+		std::cout << "INFO: Effekseer Initialized" << std::endl;
 #endif
 		Window::Info::id = SDL_GetWindowID(mWindow);
 		SDL_VERSION(&Window::Info::info.version);

@@ -4,7 +4,6 @@
 #include <sstream>
 #include <algorithm>
 #include <array>
-#include <Engine/include/Effect.hpp>
 #include <VKRenderer.h>
 #include <Engine.hpp>
 

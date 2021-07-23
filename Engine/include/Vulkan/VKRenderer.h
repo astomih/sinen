@@ -8,7 +8,8 @@
 #include <Engine/include/VertexArray.h>
 #endif
 
-namespace nen {
+namespace nen
+{
 	class Renderer;
 }
 
@@ -60,6 +61,8 @@ namespace nen::vk
 		void draw3d(VkCommandBuffer);
 		void draw2d(VkCommandBuffer);
 		BufferObject CreateBuffer(uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+
+		VKBase *GetBase() { return m_base.get(); }
 		BufferObject CreateBuffer(uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags, const void *initialData);
 
 		void registerTexture(std::shared_ptr<SpriteVK> texture, std::string_view, TextureType type);
@@ -101,11 +104,14 @@ namespace nen::vk
 		void MapMemory(VkDeviceMemory memory, void *data, size_t size);
 		void AddVertexArray(const VertexArrayForVK &vArray, std::string_view name);
 
+		void SetEffect(std::unique_ptr<class EffectVK> effect) { mEffectManager = std::move(effect); }
+
 		friend VKBase;
 
 	private:
 		class Renderer *mRenderer;
 		std::unique_ptr<class VKBase> m_base;
+		std::unique_ptr<class EffectVK> mEffectManager;
 		void createBoxVertices();
 		void createSpriteVertices();
 		void prepareUniformBuffers();

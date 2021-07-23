@@ -1114,6 +1114,7 @@ namespace nen
 		};
 
 		static constexpr Vector3f Black(0.0f, 0.0f, 0.0f);
+		static constexpr Vector3f LightBlack(51.f, 51.f, 51.f);
 		static constexpr Vector3f White(1.0f, 1.0f, 1.0f);
 		static constexpr Vector3f Red(1.0f, 0.0f, 0.0f);
 		static constexpr Vector3f Green(0.0f, 1.0f, 0.0f);

@@ -10,6 +10,9 @@
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_opengl3.h>
+#include <Effekseer.h>
+#include <EffekseerRendererGL.h>
+#include <Engine/include/Effect.hpp>
 
 namespace nen::gl
 {
@@ -39,6 +42,34 @@ namespace nen::gl
 		auto color = mRenderer->GetClearColor();
 		glClearColor(color.x, color.y, color.z, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		static int time = 0;
+		if (time % 120 == 0)
+		{
+			// Play an effect
+			mEffectManager->handle = mEffectManager->GetManager()->Play(mEffectManager->GetEffect(u"Laser01.efk"), 0, 0, 0);
+		}
+
+		if (time % 120 == 119)
+		{
+			// Stop effects
+			mEffectManager->GetManager()->StopEffect(mEffectManager->handle);
+		}
+		time++;
+		// Move the effect
+		//manager->AddLocation(handle, ::Effekseer::Vector3D(0.2f, 0.0f, 0.0f));
+
+		// Update the manager
+		mEffectManager->GetManager()->Update();
+
+		// Begin to rendering effects
+		mEffectManager->GetRenderer()->BeginRendering();
+
+		// Render effects
+		mEffectManager->GetManager()->Draw();
+
+		// Finish to rendering effects
+		mEffectManager->GetRenderer()->EndRendering();
+
 		mSpriteShader->SetActive();
 		// Specify the vertex attributes
 		// (For now, assume one vertex format)

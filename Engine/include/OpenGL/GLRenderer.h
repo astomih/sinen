@@ -82,7 +82,10 @@ namespace nen
 
 			void AddVertexArray(const VertexArrayForGL &vArray, std::string_view name);
 
+			void SetEffect(std::unique_ptr<class EffectGL> effect) { mEffectManager = std::move(effect); }
+
 		private:
+			std::unique_ptr<class EffectGL> mEffectManager;
 			uint32_t AddVertexArray(const VertexArrayForGL &);
 			bool loadShader();
 			void createSpriteVerts();

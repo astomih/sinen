@@ -10,6 +10,9 @@
 #include <string>
 #include <sstream>
 #include <VKBase.h>
+#include <Effekseer.h>
+#include <EffekseerRendererVulkan.h>
+#include <Engine/include/Effect.hpp>
 namespace nen::vk
 {
 	using namespace vkutil;
@@ -362,6 +365,28 @@ namespace nen::vk
 		vkWaitForFences(m_base->m_device, 1, &fence, VK_TRUE, UINT64_MAX);
 		vkBeginCommandBuffer(command, &ci);
 		vkCmdBeginRenderPass(command, &ri, VK_SUBPASS_CONTENTS_INLINE);
+
+		static int time = 0;
+		mEffectManager->GetMemoryPool()->NewFrame();
+		EffekseerRendererVulkan::BeginCommandList(mEffectManager->GetCommandList(), command);
+		mEffectManager->GetRenderer()->SetCommandList(mEffectManager->GetCommandList());
+		if (time % 120 == 0)
+		{
+			mEffectManager->handle = mEffectManager->GetManager()->Play(mEffectManager->GetEffect(u"Laser01.efk"), 0, 0, 0);
+		}
+		if (time % 120 == 119)
+		{
+			mEffectManager->GetManager()->StopEffect(mEffectManager->handle);
+		}
+		//mEffectManager->GetManager()->AddLocation(mEffectManager->handle, ::Effekseer::Vector3D(0.2f, 0.0f, 0.0f));
+		mEffectManager->GetManager()->Update();
+		mEffectManager->GetRenderer()->BeginRendering();
+		mEffectManager->GetManager()->Draw();
+		mEffectManager->GetRenderer()->EndRendering();
+		mEffectManager->GetRenderer()->SetCommandList(mEffectManager->GetCommandList());
+		EffekseerRendererVulkan::EndCommandList(mEffectManager->GetCommandList());
+		time++;
+
 		// Set created pipeline
 		vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineOpaque);
 		// Set various buffer objects
@@ -372,6 +397,7 @@ namespace nen::vk
 		draw2d(command);
 
 		renderImGUI(command);
+		vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineOpaque);
 	}
 
 	void VKRenderer::draw3d(VkCommandBuffer command)

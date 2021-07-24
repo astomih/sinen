@@ -33,9 +33,7 @@ namespace nen
 			SDL_Log("Failed to initialize input system");
 		}
 // スクリプトのインスタンスを作成
-#ifndef EMSCRIPTEN
 		Script::Create();
-#endif
 		// シーンのデータを読み込み
 		LoadData();
 		// デルタタイムを読み込み

@@ -20,9 +20,7 @@
 #include "include/Transition.h"
 #include "include/InputSystem.h"
 #include "include/Effect.hpp"
-#ifndef EMSCRIPTEN
 #include "include/Script.h"
-#endif
 #include "include/ObjLoader.h"
 #include "include/Vulkan/VulkanUtil.h"
 #endif

@@ -28,6 +28,7 @@ set(SOURCE_FILES
 	Engine/source/Vertex.cpp 
 	Engine/source/VertexArray.cpp 
 	Engine/source/Window.cpp 
+	Engine/source/Script.cpp 
 	Engine/source/OpenGL/ShaderGL.cpp 
 	Engine/source/ES/ESRenderer.cpp 
 	Components/source/AudioComponent.cpp 
@@ -73,6 +74,8 @@ include_directories(
 	./lib/Effekseer/include/EffekseerRendererGL
 	./lib/Effekseer/include
 	./lib/imgui/include
+	./lib/sol2-3.2.2/include
+	./lib/lua
 )
 
 if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
@@ -80,6 +83,7 @@ if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
 endif ()
 
 add_library(nen STATIC ${SOURCE_FILES})
+target_link_libraries(nen ./lib/lua/lua)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
 	set(CMAKE_CXX_FLAGS

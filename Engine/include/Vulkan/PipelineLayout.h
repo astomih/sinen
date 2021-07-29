@@ -11,7 +11,8 @@ namespace nen::vk
     class PipelineLayout
     {
     public:
-        PipelineLayout(VkDevice device, const VkDescriptorSetLayout *descriptorLayout, const VkExtent2D &extent);
+        PipelineLayout() = default;
+        void Initialize(VkDevice device, const VkDescriptorSetLayout *descriptorLayout, const VkExtent2D &extent);
         void Prepare(VkDevice device);
         void Cleanup(VkDevice device);
         const VkPipelineInputAssemblyStateCreateInfo* GetInputAssemblyCI() { return &inputAssemblyCI; }

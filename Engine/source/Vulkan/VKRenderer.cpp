@@ -14,6 +14,7 @@
 #include <EffekseerRendererVulkan.h>
 #include <Engine/include/Effect.hpp>
 #include <Components.hpp>
+#include <Pipeline.h>
 #include <PipelineLayout.h>
 namespace nen::vk
 {
@@ -57,177 +58,46 @@ namespace nen::vk
 		m_sampler = createSampler();
 		prepareDescriptorSetAll();
 
-		mPipelineLayout = std::make_unique<PipelineLayout>(m_base->m_device, &m_descriptorSetLayout, m_base->mSwapchain->GetSurfaceExtent());
-		mPipelineLayout->Prepare(m_base->m_device);
+		mPipelineLayout.Initialize(m_base->m_device, &m_descriptorSetLayout, m_base->mSwapchain->GetSurfaceExtent());
+		mPipelineLayout.Prepare(m_base->m_device);
 
 		// 不透明用: パイプラインの構築
 		{
-			// ブレンディングの設定
-			const auto colorWriteAll =
-				VK_COLOR_COMPONENT_R_BIT |
-				VK_COLOR_COMPONENT_G_BIT |
-				VK_COLOR_COMPONENT_B_BIT |
-				VK_COLOR_COMPONENT_A_BIT;
-			VkPipelineColorBlendAttachmentState blendAttachment{
-				.blendEnable = VK_TRUE,
-				.srcColorBlendFactor = VK_BLEND_FACTOR_ONE,
-				.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO,
-				.colorBlendOp = VK_BLEND_OP_ADD,
-				.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
-				.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
-				.alphaBlendOp = VK_BLEND_OP_ADD,
-				.colorWriteMask = colorWriteAll};
-			VkPipelineColorBlendStateCreateInfo cbCI{};
-			cbCI.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-			cbCI.attachmentCount = 1;
-			cbCI.pAttachments = &blendAttachment;
-
-			// デプスステンシルステート設定
-			VkPipelineDepthStencilStateCreateInfo depthStencilCI{
-				.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
-				.depthTestEnable = VK_TRUE,
-				.depthWriteEnable = VK_TRUE,
-				.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL,
-				.stencilTestEnable = VK_FALSE};
-
-			// シェーダーバイナリの読み込み
 			std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-				loadShaderModule("shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-				loadShaderModule("shaderOpaque.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
-			// パイプラインの構築
-			VkGraphicsPipelineCreateInfo ci{};
-			ci.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-			ci.stageCount = uint32_t(shaderStages.size());
-			ci.pStages = shaderStages.data();
-			ci.pInputAssemblyState = mPipelineLayout->GetInputAssemblyCI();
-			ci.pVertexInputState = mPipelineLayout->GetVertexInputCI();
-			ci.pRasterizationState = mPipelineLayout->GetRasterizerCI();
-			ci.pDepthStencilState = mPipelineLayout->GetDepthStencilCI();
-			ci.pMultisampleState = mPipelineLayout->GetMultisampleCI();
-			ci.pViewportState = mPipelineLayout->GetViewportCI();
-			ci.pColorBlendState = &cbCI;
-			ci.renderPass = m_base->m_renderPass;
-			ci.layout = mPipelineLayout->GetLayout();
-			vkCreateGraphicsPipelines(m_base->m_device, VK_NULL_HANDLE, 1, &ci, nullptr, &m_pipelineOpaque);
-
-			// ShaderModule はもう不要のため破棄
-			for (const auto &v : shaderStages)
-			{
-				vkDestroyShaderModule(m_base->m_device, v.module, nullptr);
-			}
+				VulkanShader::LoadModule(m_base->m_device, "shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+				VulkanShader::LoadModule(m_base->m_device, "shaderOpaque.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
+			pipelineOpaque.Initialize(mPipelineLayout, m_base->m_renderPass, shaderStages);
+			pipelineOpaque.ColorBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
+			pipelineOpaque.AlphaBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
+			pipelineOpaque.Prepare(m_base->m_device);
+			VulkanShader::CleanModule(m_base->m_device, shaderStages);
 		}
 
 		// 半透明用: パイプラインの構築
 		{
-			// ブレンディングの設定
-			const auto colorWriteAll =
-				VK_COLOR_COMPONENT_R_BIT |
-				VK_COLOR_COMPONENT_G_BIT |
-				VK_COLOR_COMPONENT_B_BIT |
-				VK_COLOR_COMPONENT_A_BIT;
-			VkPipelineColorBlendAttachmentState blendAttachment{};
-			blendAttachment.blendEnable = VK_TRUE;
-			blendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-			blendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			blendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-			blendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			blendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-			blendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
-			blendAttachment.colorWriteMask = colorWriteAll;
-			VkPipelineColorBlendStateCreateInfo cbCI{};
-			cbCI.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-			cbCI.attachmentCount = 1;
-			cbCI.pAttachments = &blendAttachment;
-
-			// デプスステンシルステート設定
-			VkPipelineDepthStencilStateCreateInfo depthStencilCI{};
-			depthStencilCI.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-			depthStencilCI.depthTestEnable = VK_TRUE;
-			depthStencilCI.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-			depthStencilCI.depthWriteEnable = VK_FALSE;
-			depthStencilCI.stencilTestEnable = VK_FALSE;
-
-			// シェーダーバイナリの読み込み
 			std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-				loadShaderModule("shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-				loadShaderModule("shaderAlpha.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
-			// パイプラインの構築
-			VkGraphicsPipelineCreateInfo ci{};
-			ci.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-			ci.stageCount = uint32_t(shaderStages.size());
-			ci.pStages = shaderStages.data();
-			ci.pInputAssemblyState = mPipelineLayout->GetInputAssemblyCI();
-			ci.pVertexInputState = mPipelineLayout->GetVertexInputCI();
-			ci.pRasterizationState = mPipelineLayout->GetRasterizerCI();
-			ci.pDepthStencilState = mPipelineLayout->GetDepthStencilCI();
-			ci.pMultisampleState = mPipelineLayout->GetMultisampleCI();
-			ci.pViewportState = mPipelineLayout->GetViewportCI();
-			ci.pColorBlendState = &cbCI;
-			ci.renderPass = m_base->m_renderPass;
-			ci.layout = mPipelineLayout->GetLayout();
-			vkCreateGraphicsPipelines(m_base->m_device, VK_NULL_HANDLE, 1, &ci, nullptr, &m_pipelineAlpha);
-
-			// ShaderModule はもう不要のため破棄
-			for (const auto &v : shaderStages)
-			{
-				vkDestroyShaderModule(m_base->m_device, v.module, nullptr);
-			}
+				VulkanShader::LoadModule(m_base->m_device, "shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+				VulkanShader::LoadModule(m_base->m_device, "shaderAlpha.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
+			pipelineAlpha.Initialize(mPipelineLayout, m_base->m_renderPass, shaderStages);
+			pipelineAlpha.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+			pipelineAlpha.AlphaBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+			pipelineAlpha.SetDepthTest(VK_TRUE);
+			pipelineAlpha.SetDepthWrite(VK_FALSE);
+			pipelineAlpha.Prepare(m_base->m_device);
+			VulkanShader::CleanModule(m_base->m_device, shaderStages);
 		}
 		// 2D用: パイプラインの構築
 		{
-			// ブレンディングの設定
-			const auto colorWriteAll =
-				VK_COLOR_COMPONENT_R_BIT |
-				VK_COLOR_COMPONENT_G_BIT |
-				VK_COLOR_COMPONENT_B_BIT |
-				VK_COLOR_COMPONENT_A_BIT;
-			VkPipelineColorBlendAttachmentState blendAttachment{};
-			blendAttachment.blendEnable = VK_TRUE;
-			blendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-			blendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			blendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-			blendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-			blendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-			blendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
-			blendAttachment.colorWriteMask = colorWriteAll;
-			VkPipelineColorBlendStateCreateInfo cbCI{};
-			cbCI.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-			cbCI.attachmentCount = 1;
-			cbCI.pAttachments = &blendAttachment;
-
-			// デプスステンシルステート設定
-			VkPipelineDepthStencilStateCreateInfo depthStencilCI{};
-			depthStencilCI.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-			depthStencilCI.depthTestEnable = VK_FALSE;
-			depthStencilCI.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-			depthStencilCI.depthWriteEnable = VK_FALSE;
-			depthStencilCI.stencilTestEnable = VK_FALSE;
-
-			// シェーダーバイナリの読み込み
 			std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-				loadShaderModule("shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-				loadShaderModule("shaderAlpha.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
-			// パイプラインの構築
-			VkGraphicsPipelineCreateInfo ci{};
-			ci.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-			ci.stageCount = uint32_t(shaderStages.size());
-			ci.pStages = shaderStages.data();
-			ci.pInputAssemblyState = mPipelineLayout->GetInputAssemblyCI();
-			ci.pVertexInputState = mPipelineLayout->GetVertexInputCI();
-			ci.pRasterizationState = mPipelineLayout->GetRasterizerCI();
-			ci.pDepthStencilState = mPipelineLayout->GetDepthStencilCI();
-			ci.pMultisampleState = mPipelineLayout->GetMultisampleCI();
-			ci.pViewportState = mPipelineLayout->GetViewportCI();
-			ci.pColorBlendState = &cbCI;
-			ci.renderPass = m_base->m_renderPass;
-			ci.layout = mPipelineLayout->GetLayout();
-			vkCreateGraphicsPipelines(m_base->m_device, VK_NULL_HANDLE, 1, &ci, nullptr, &m_pipeline2D);
-
-			// ShaderModule はもう不要のため破棄
-			for (const auto &v : shaderStages)
-			{
-				vkDestroyShaderModule(m_base->m_device, v.module, nullptr);
-			}
+				VulkanShader::LoadModule(m_base->m_device, "shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+				VulkanShader::LoadModule(m_base->m_device, "shaderAlpha.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
+			pipeline2D.Initialize(mPipelineLayout, m_base->m_renderPass, shaderStages);
+			pipeline2D.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+			pipeline2D.AlphaBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ZERO);
+			pipeline2D.SetDepthTest(VK_FALSE);
+			pipeline2D.SetDepthWrite(VK_FALSE);
+			pipeline2D.Prepare(m_base->m_device);
+			VulkanShader::CleanModule(m_base->m_device, shaderStages);
 		}
 		prepareImGUI();
 	}
@@ -249,10 +119,10 @@ namespace nen::vk
 			DestroyVulkanObject<VkDeviceMemory>(m_base->m_device, i.second.view, &vkFreeMemory);
 		}
 		DestroyVulkanObject<VkSampler>(m_base->m_device, m_sampler, &vkDestroySampler);
-		mPipelineLayout->Cleanup(m_base->m_device);
-		DestroyVulkanObject<VkPipeline>(m_base->m_device, m_pipelineOpaque, &vkDestroyPipeline);
-		DestroyVulkanObject<VkPipeline>(m_base->m_device, m_pipelineAlpha, &vkDestroyPipeline);
-		DestroyVulkanObject<VkPipeline>(m_base->m_device, m_pipeline2D, &vkDestroyPipeline);
+		mPipelineLayout.Cleanup(m_base->m_device);
+		pipelineOpaque.Cleanup(m_base->m_device);
+		pipelineAlpha.Cleanup(m_base->m_device);
+		pipeline2D.Cleanup(m_base->m_device);
 		for (auto &i : m_VertexArrays)
 		{
 			DestroyVulkanObject<VkBuffer>(m_base->m_device, i.second.vertexBuffer.buffer, &vkDestroyBuffer);
@@ -295,16 +165,16 @@ namespace nen::vk
 		EffekseerRendererVulkan::EndCommandList(mEffectManager->GetCommandList());
 
 		// Set created pipeline
-		vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineOpaque);
+		pipelineOpaque.Bind(command);
 		// Set various buffer objects
 		draw3d(command);
-		vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline2D);
+		pipeline2D.Bind(command);
 		int bufCount = instanceCount;
 		instanceCount++;
 		draw2d(command);
 
 		renderImGUI(command);
-		vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineOpaque);
+		pipelineOpaque.Bind(command);
 	}
 
 	void VKRenderer::draw3d(VkCommandBuffer command)
@@ -358,7 +228,7 @@ namespace nen::vk
 				vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->sprite->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 			}
 			// Set descriptors
-			vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout->GetLayout(), 0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
+			vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout.GetLayout(), 0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
 
 			{
 				auto memory = sprite->uniformBuffers[m_base->m_imageIndex].memory;
@@ -422,7 +292,7 @@ namespace nen::vk
 			}
 
 			// Set descriptors
-			vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout->GetLayout(), 0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
+			vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout.GetLayout(), 0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
 
 			{
 				auto memory = sprite->uniformBuffers[m_base->m_imageIndex].memory;

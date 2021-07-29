@@ -6,6 +6,7 @@
 #include <Engine/include/Texture.h>
 #include <unordered_map>
 #include <Engine/include/VertexArray.h>
+#include <Pipeline.h>
 #include <PipelineLayout.h>
 #endif
 
@@ -69,7 +70,7 @@ namespace nen::vk
 		void registerTexture(std::shared_ptr<SpriteVK> texture, std::string_view, TextureType type);
 		void unregisterTexture(std::shared_ptr<SpriteVK> texture, TextureType type);
 		void registerImageObject(std::shared_ptr<Texture>);
-		VkPipelineLayout GetPipelineLayout(const std::string &name) { return mPipelineLayout->GetLayout(); }
+		VkPipelineLayout GetPipelineLayout(const std::string &name) { return mPipelineLayout.GetLayout(); }
 		VkDescriptorSetLayout GetDescriptorSetLayout(const std::string &name) { return m_descriptorSetLayout; }
 		VkRenderPass GetRenderPass(const std::string &name);
 		VkDescriptorPool GetDescriptorPool() const { return m_descriptorPool; }
@@ -142,10 +143,10 @@ namespace nen::vk
 		VkSampler m_sampler;
 
 		VkPhysicalDeviceMemoryProperties m_physicalMemProps;
-		std::unique_ptr<PipelineLayout> mPipelineLayout;
-		VkPipeline m_pipelineOpaque;
-		VkPipeline m_pipelineAlpha;
-		VkPipeline m_pipeline2D;
+		PipelineLayout mPipelineLayout;
+		Pipeline pipelineOpaque;
+		Pipeline pipelineAlpha;
+		Pipeline pipeline2D;
 		std::vector<std::shared_ptr<SpriteVK>> mTextures3D;
 		std::vector<std::shared_ptr<SpriteVK>> mTextures2D;
 		std::unordered_map<std::string, ImageObject> mImageObjects;

@@ -2,7 +2,7 @@
 
 namespace nen::vk
 {
-    PipelineLayout::PipelineLayout(VkDevice device, const VkDescriptorSetLayout *descriptorLayout, const VkExtent2D &extent)
+    void PipelineLayout::Initialize(VkDevice device, const VkDescriptorSetLayout *descriptorLayout, const VkExtent2D &extent)
     {
         // Setting vertex inputs
         inputBinding = {

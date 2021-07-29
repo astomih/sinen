@@ -22,7 +22,7 @@ namespace nen
 		mAudioSystem = std::make_shared<AudioSystem>(*this);
 		if (!mAudioSystem->Initialize())
 		{
-			SDL_Log("Failed to initialize audio system");
+			std::cout << "Failed to initialize audio system" << std::endl;
 			mAudioSystem->Shutdown();
 			mAudioSystem = nullptr;
 			std::exit(1);
@@ -30,9 +30,9 @@ namespace nen
 		mInputSystem = new InputSystem();
 		if (!mInputSystem->Initialize())
 		{
-			SDL_Log("Failed to initialize input system");
+			std::cout << "Failed to initialize input system" << std::endl;
 		}
-// スクリプトのインスタンスを作成
+		// スクリプトのインスタンスを作成
 		Script::Create();
 		// シーンのデータを読み込み
 		LoadData();
@@ -55,7 +55,6 @@ namespace nen
 
 	void Scene::ProcessInput()
 	{
-		mInputSystem->PrepareForUpdate();
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
@@ -78,7 +77,6 @@ namespace nen
 			}
 		}
 
-		mInputSystem->Update();
 		const InputState &state = mInputSystem->GetState();
 
 		if (state.Keyboard.GetKeyState(SDL_SCANCODE_ESCAPE) == EReleased)
@@ -88,9 +86,7 @@ namespace nen
 			mGameState = EQuit;
 		}
 		SystemInput(state);
-
 		mUpdatingActors = true;
-		const Uint8 *oldstate = SDL_GetKeyboardState(NULL);
 		if (mGameState == EGameplay)
 		{
 			for (auto actor : mActors)
@@ -101,6 +97,9 @@ namespace nen
 				}
 			}
 		}
+
+		mInputSystem->PrepareForUpdate();
+		mInputSystem->Update();
 		mUpdatingActors = false;
 	}
 

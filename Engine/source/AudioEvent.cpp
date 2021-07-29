@@ -8,7 +8,7 @@ namespace nen
 	{
 		ALint buf;
 		alGetSourcei(sourceID, AL_BUFFER, &buf);
-		alSourcef(sourceID, AL_VELOCITY, 250.f);
+		alSourcef(sourceID, AL_VELOCITY, 25.f);
 		alSourcePlay(sourceID);
 		param.source_id = sourceID;
 		param.buffer_id = buf;
@@ -52,7 +52,7 @@ namespace nen
 	void AudioEvent::SetPosition(Vector3f pos)
 	{
 		this->pos = pos;
-		alSource3f(param.source_id, AL_POSITION, pos.x, pos.z, pos.y);
+		alSource3f(param.source_id, AL_POSITION, pos.x, pos.y, pos.z);
 	}
 
 	bool AudioEvent::GetPaused()

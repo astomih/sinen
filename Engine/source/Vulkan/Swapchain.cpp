@@ -5,16 +5,16 @@ namespace nen::vk
 {
 
     Swapchain::Swapchain(VkInstance instance, VkDevice device, VkSurfaceKHR surface)
-        : m_swapchain(VK_NULL_HANDLE), m_surface(surface), m_vkInstance(instance), m_device(device), m_presentMode(VK_PRESENT_MODE_FIFO_KHR)
+        : m_swapchain(VK_NULL_HANDLE), m_surface(surface), m_vkInstance(instance), m_device(device), m_presentMode(VK_PRESENT_MODE_IMMEDIATE_KHR)
     {
     }
 
     Swapchain::~Swapchain()
     {
+        if (!isClean)
+            Cleanup();
     }
 
-
-    // スワップチェインの生成.
     void Swapchain::Prepare(VkPhysicalDevice physDev, uint32_t graphicsQueueIndex, uint32_t width, uint32_t height, VkFormat desireFormat)
     {
         VkResult result;
@@ -28,9 +28,8 @@ namespace nen::vk
         ThrowIfFailed(result, "vkGetPhysicalDeviceSurfaceFormatsKHR Failed.");
 
         m_selectFormat = VkSurfaceFormatKHR{
-          VK_FORMAT_B8G8R8A8_UNORM,VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
-        };
-        for (const auto& f : m_surfaceFormats)
+            VK_FORMAT_B8G8R8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
+        for (const auto &f : m_surfaceFormats)
         {
             if (f.format == desireFormat)
             {
@@ -59,25 +58,24 @@ namespace nen::vk
         m_surfaceExtent = extent;
 
         VkSwapchainKHR oldSwapchain = m_swapchain;
-        uint32_t queueFamilyIndices[] = { graphicsQueueIndex };
+        uint32_t queueFamilyIndices[] = {graphicsQueueIndex};
         VkSwapchainCreateInfoKHR swapchainCI{
-          VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-          nullptr, 0,
-          m_surface,
-          imageCount,
-          m_selectFormat.format,
-          m_selectFormat.colorSpace,
-          m_surfaceExtent,
-          1,
-          VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
-          VK_SHARING_MODE_EXCLUSIVE,
-          _countof(queueFamilyIndices), queueFamilyIndices,
-          m_surfaceCaps.currentTransform,
-          VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-          m_presentMode,
-          VK_TRUE,
-          oldSwapchain
-        };
+            VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+            nullptr, 0,
+            m_surface,
+            imageCount,
+            m_selectFormat.format,
+            m_selectFormat.colorSpace,
+            m_surfaceExtent,
+            1,
+            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+            VK_SHARING_MODE_EXCLUSIVE,
+            _countof(queueFamilyIndices), queueFamilyIndices,
+            m_surfaceCaps.currentTransform,
+            VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+            m_presentMode,
+            VK_TRUE,
+            oldSwapchain};
 
         result = vkCreateSwapchainKHR(m_device, &swapchainCI, nullptr, &m_swapchain);
         ThrowIfFailed(result, "vkCreateSwapchainKHR Failed.");
@@ -85,7 +83,7 @@ namespace nen::vk
         // 古いリソースを解放.
         if (oldSwapchain != VK_NULL_HANDLE)
         {
-            for (auto& view : m_imageViews)
+            for (auto &view : m_imageViews)
             {
                 vkDestroyImageView(m_device, view, nullptr);
             }
@@ -101,16 +99,15 @@ namespace nen::vk
         for (uint32_t i = 0; i < imageCount; ++i)
         {
             VkImageViewCreateInfo viewCI{
-              VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-              nullptr, 0,
-              m_images[i],
-              VK_IMAGE_VIEW_TYPE_2D,
-              m_selectFormat.format,
-              vkutil::DefaultComponentMapping(),
-              { // VkImageSubresourceRange
-                VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1
-              }
-            };
+                VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+                nullptr,
+                0,
+                m_images[i],
+                VK_IMAGE_VIEW_TYPE_2D,
+                m_selectFormat.format,
+                vkutil::DefaultComponentMapping(),
+                {// VkImageSubresourceRange
+                 VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
             result = vkCreateImageView(m_device, &viewCI, nullptr, &m_imageViews[i]);
             ThrowIfFailed(result, "vkCreateImageView Failed.");
         }
@@ -139,9 +136,10 @@ namespace nen::vk
 
         m_images.clear();
         m_imageViews.clear();
+        isClean = true;
     }
 
-    VkResult Swapchain::AcquireNextImage(uint32_t* pImageIndex, VkSemaphore semaphore, uint64_t timeout)
+    VkResult Swapchain::AcquireNextImage(uint32_t *pImageIndex, VkSemaphore semaphore, uint64_t timeout)
     {
         auto result = vkAcquireNextImageKHR(m_device, m_swapchain, timeout, semaphore, VK_NULL_HANDLE, pImageIndex);
         return result;
@@ -150,12 +148,11 @@ namespace nen::vk
     void Swapchain::QueuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitRenderComplete)
     {
         VkPresentInfoKHR presentInfo{
-          VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-          nullptr,
-          1, &waitRenderComplete,
-          1, &m_swapchain,
-          &imageIndex
-        };
+            VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+            nullptr,
+            1, &waitRenderComplete,
+            1, &m_swapchain,
+            &imageIndex};
         vkQueuePresentKHR(queue, &presentInfo);
     }
 

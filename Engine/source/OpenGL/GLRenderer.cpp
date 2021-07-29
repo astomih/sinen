@@ -13,6 +13,7 @@
 #include <Effekseer.h>
 #include <EffekseerRendererGL.h>
 #include <Engine/include/Effect.hpp>
+#include <Components.hpp>
 
 namespace nen::gl
 {
@@ -43,16 +44,17 @@ namespace nen::gl
 		glClearColor(color.x, color.y, color.z, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		static int time = 0;
-		if (time % 120 == 0)
+		for (auto i : this->mRenderer->GetEffectComponent())
 		{
-			// Play an effect
-			mEffectManager->handle = mEffectManager->GetManager()->Play(mEffectManager->GetEffect(u"Laser01.efk"), 0, 0, 0);
-		}
-
-		if (time % 120 == 119)
-		{
-			// Stop effects
-			mEffectManager->GetManager()->StopEffect(mEffectManager->handle);
+			if (time % 200 == 0)
+			{
+				auto eref = mEffectManager->GetEffect(i->GetPath());
+				auto p = i->GetPosition();
+				mEffectManager->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
+				i->handle = mEffectManager->handle;
+			}
+			if (time % 200 == 199)
+				mEffectManager->GetManager()->StopEffect(i->handle);
 		}
 		time++;
 		// Move the effect

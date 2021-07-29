@@ -1,20 +1,25 @@
 ﻿#pragma once
 #ifndef EMSCRIPTEN
+#ifdef _WIN32
 #include <windows.h>
-
 #define VK_USE_PLATFORM_WIN32_KHR
+#endif // _WIN32
 #include <SDL.h>
 #include <SDL_vulkan.h>
 #include <vulkan/vk_layer.h>
+#ifdef _WIN32
 #include <vulkan/vulkan_win32.h>
+#endif // _WIN32
 #include <vector>
+#include <memory>
+#include "Swapchain.h"
 namespace nen::vk
 {
 	class VKBase
 	{
 	public:
-		VKBase(class VKRenderer*);
-		void initialize(SDL_Window* window, const char* appName);
+		VKBase(class VKRenderer *);
+		void initialize(SDL_Window *window, const char *appName);
 		void terminate();
 
 		void render();
@@ -22,38 +27,36 @@ namespace nen::vk
 		VkDevice GetVkDevice() { return m_device; }
 		VkQueue GetVkQueue() { return m_deviceQueue; }
 		VkCommandPool GetVkCommandPool() { return m_commandPool; }
-		int32_t GetSwapBufferCount() { return static_cast<int32_t>(m_swapchainViews.size()); }
+		int32_t GetSwapBufferCount() { return static_cast<int32_t>(mSwapchain->GetImageCount()); }
 
 		static void checkResult(VkResult);
 
-		void initializeInstance(const char* appName);
+		void initializeInstance(const char *appName);
 		void selectPhysicalDevice();
 		uint32_t searchGraphicsQueueIndex();
 		void createDevice();
 		void prepareCommandPool();
-		void selectSurfaceFormat(VkFormat format);
-		void createSwapchain(SDL_Window* window);
 		void createDepthBuffer();
-		void createViews();
 
 		void createRenderPass();
 		void createFramebuffer();
 
 		void prepareCommandBuffers();
-		void prepareSemaphores();
 
 		uint32_t getMemoryTypeIndex(uint32_t requestBits, VkMemoryPropertyFlags requestProps) const;
 
 		void enableDebugReport();
 		void disableDebugReport();
 
+		std::unique_ptr<Swapchain> mSwapchain;
+
 		VkInstance m_instance;
 		VkDevice m_device;
 		VkPhysicalDevice m_physDev;
 
-		VkSurfaceKHR m_surface;
-		VkSurfaceFormatKHR m_surfaceFormat;
-		VkSurfaceCapabilitiesKHR m_surfaceCaps;
+		//VkSurfaceKHR m_surface;
+		//VkSurfaceFormatKHR m_surfaceFormat;
+		//VkSurfaceCapabilitiesKHR m_surfaceCaps;
 
 		VkPhysicalDeviceMemoryProperties m_physMemProps;
 
@@ -61,11 +64,10 @@ namespace nen::vk
 		VkQueue m_deviceQueue;
 
 		VkCommandPool m_commandPool;
-		VkPresentModeKHR m_presentMode;
-		VkSwapchainKHR m_swapchain;
-		VkExtent2D m_swapchainExtent;
-		std::vector<VkImage> m_swapchainImages;
-		std::vector<VkImageView> m_swapchainViews;
+		//VkSwapchainKHR m_swapchain;
+		//VkExtent2D m_swapchainExtent;
+		//std::vector<VkImage> m_swapchainImages;
+		//std::vector<VkImageView> m_swapchainViews;
 
 		VkImage m_depthBuffer;
 		VkDeviceMemory m_depthBufferMemory;
@@ -85,9 +87,9 @@ namespace nen::vk
 		std::vector<VkCommandBuffer> m_commands;
 
 		uint32_t m_imageIndex;
-		SDL_Window* m_window;
-		VKRenderer* m_vkrenderer;
+		SDL_Window *m_window;
+		VKRenderer *m_vkrenderer;
 	};
 }
 
-#endif
+#endif // EMSCRIPTEN

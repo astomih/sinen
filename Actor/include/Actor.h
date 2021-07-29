@@ -69,7 +69,7 @@ namespace nen
 		void ComputeWorldTransform();
 		const Matrix4 &GetWorldTransform() const { return mWorldTransform; }
 
-		Vector3f GetForward() const { return Vector3f::Transform(Vector3f::UnitX, mRotation); }
+		Vector3f GetForward() const { return Vector3f::Transform(Vector3f::NegUnitZ, mRotation); }
 
 		State GetState() const { return mState; }
 		void SetState(State state) { mState = state; }

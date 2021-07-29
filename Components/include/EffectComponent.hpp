@@ -1,17 +1,45 @@
 #pragma once
 #include <Engine.hpp>
+#include <Actors.hpp>
 #include "Component.h"
 namespace nen
 {
 	class EffectComponent : public Component
 	{
 	public:
-		EffectComponent(class Actor& actor);
+		EffectComponent(class Actor &actor, std::u16string_view filepath);
 		~EffectComponent();
-		void Draw();
+
 		void Update(float deltaTime) override;
-		void Play(int32_t startFrame = 0);
+
+		void SetLoop(bool loop) { isLoop = loop; }
+		bool IsLoop() { return isLoop; }
+
+		void SetTimer(float timer)
+		{
+			mTimer = timer;
+			buf = timer;
+		}
+
+		std::u16string GetPath() { return path; }
+
+		const Vector3f &GetPosition() { return mOwner.GetPosition(); }
+
+		void Play(bool play) { this->playing = play; }
+		bool IsPlaying() { return this->playing; }
+
+		void Stop() { isStop = true; }
+		bool IsStop() { return isStop; }
+		int handle;	
+
 	private:
-		Effect* mEffect;
+		Actor &mOwner;
+		Effect *mEffect;
+		std::u16string path;
+		float mTimer;
+		float buf;
+		bool playing;
+		bool isLoop;
+		bool isStop;
 	};
 }

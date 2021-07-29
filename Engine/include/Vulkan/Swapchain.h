@@ -38,6 +38,7 @@ namespace nen::vk
 
 		std::vector<VkImage> m_images;
 		std::vector<VkImageView> m_imageViews;
+		bool isClean = false;
 	};
 }
 #endif

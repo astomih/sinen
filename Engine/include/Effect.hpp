@@ -88,14 +88,14 @@ namespace nen::es
 #ifdef EMSCRIPTEN
 class CustomFileReader : public Effekseer::FileReader
 {
-	uint8_t* fileData;
+	uint8_t *fileData;
 	size_t fileSize;
 	int currentPosition;
 
 public:
-	CustomFileReader(uint8_t* fileData, size_t fileSize) : fileData(fileData), fileSize(fileSize), currentPosition(0) {}
+	CustomFileReader(uint8_t *fileData, size_t fileSize) : fileData(fileData), fileSize(fileSize), currentPosition(0) {}
 	~CustomFileReader() { free(fileData); }
-	size_t Read(void* buffer, size_t size)
+	size_t Read(void *buffer, size_t size)
 	{
 		if (currentPosition + size > fileSize)
 		{
@@ -113,7 +113,7 @@ public:
 class CustomFileInterface : public Effekseer::FileInterface
 {
 public:
-	Effekseer::FileReader* OpenRead(const EFK_CHAR* path, bool isRequired)
+	Effekseer::FileReader *OpenRead(const EFK_CHAR *path, bool isRequired)
 	{
 		// Request to load file
 		int loaded = EM_ASM_INT({ return Module._loadBinary(UTF16ToString($0), $1) != null; }, path, isRequired);
@@ -122,7 +122,7 @@ public:
 			return nullptr;
 		}
 
-		uint8_t* fileData = nullptr;
+		uint8_t *fileData = nullptr;
 		int fileSize = 0;
 
 		// Copy data from arraybuffer
@@ -147,11 +147,11 @@ public:
 		return new CustomFileReader(fileData, fileSize);
 	}
 
-	Effekseer::FileReader* OpenRead(const EFK_CHAR* path) override { return OpenRead(path, true); }
+	Effekseer::FileReader *OpenRead(const EFK_CHAR *path) override { return OpenRead(path, true); }
 
-	Effekseer::FileReader* TryOpenRead(const EFK_CHAR* path) override { return OpenRead(path, false); }
+	Effekseer::FileReader *TryOpenRead(const EFK_CHAR *path) override { return OpenRead(path, false); }
 
-	Effekseer::FileWriter* OpenWrite(const EFK_CHAR* path) override { return nullptr; }
+	Effekseer::FileWriter *OpenWrite(const EFK_CHAR *path) override { return nullptr; }
 };
 #endif
 namespace nen

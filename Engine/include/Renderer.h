@@ -53,6 +53,8 @@ namespace nen
 		void AddEffectComp(class EffectComponent *effect);
 		void RemoveEffectComp(class EffectComponent *effect);
 
+		std::vector<EffectComponent *> &GetEffectComponent() { return mEffectComp; }
+
 		void AddVertexArray(const VertexArray &vArray, std::string_view name);
 
 		void SetClearColor(const Vector3f &color)

@@ -103,6 +103,7 @@ namespace nen::vk
 
 		void MapMemory(VkDeviceMemory memory, void *data, size_t size);
 		void AddVertexArray(const VertexArrayForVK &vArray, std::string_view name);
+		void UpdateVertexArray(const VertexArrayForVK &vArray, std::string_view name);
 
 		void SetEffect(std::unique_ptr<class EffectVK> effect) { mEffectManager = std::move(effect); }
 

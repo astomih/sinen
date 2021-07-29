@@ -28,7 +28,7 @@ namespace nen
 		void DeleteSource(ALuint sourceID);
 
 		// For positional audio
-		void SetListener(const Vector3f &pos, const Quaternion &quat);
+		void SetListener(const Vector3f &pos, const Quaternion &direction);
 
 	protected:
 		friend class AudioEvent;

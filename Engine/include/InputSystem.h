@@ -4,6 +4,8 @@
 #include <SDL_mouse.h>
 #include "Math.hpp"
 
+#include <array>
+
 namespace nen
 {
 	// The different button states
@@ -25,9 +27,10 @@ namespace nen
 		bool GetKeyValue(SDL_Scancode keyCode) const;
 		// Get a state based on current and previous frame
 		ButtonState GetKeyState(SDL_Scancode keyCode) const;
+
 	private:
-		const Uint8* mCurrState;
-		Uint8 mPrevState[SDL_NUM_SCANCODES];
+		const Uint8 *mCurrState;
+		std::array<Uint8, SDL_NUM_SCANCODES> mPrevState;
 	};
 
 	// Helper for mouse input
@@ -37,13 +40,14 @@ namespace nen
 		friend class InputSystem;
 
 		// For mouse position
-		const Vector2f& GetPosition() const { return mMousePos; }
-		const Vector2f& GetScrollWheel() const { return mScrollWheel; }
+		const Vector2f &GetPosition() const { return mMousePos; }
+		const Vector2f &GetScrollWheel() const { return mScrollWheel; }
 		bool IsRelative() const { return mIsRelative; }
 
 		// For buttons
 		bool GetButtonValue(int button) const;
 		ButtonState GetButtonState(int button) const;
+
 	private:
 		// Store current mouse position
 		Vector2f mMousePos;
@@ -66,12 +70,13 @@ namespace nen
 		bool GetButtonValue(SDL_GameControllerButton button) const;
 		ButtonState GetButtonState(SDL_GameControllerButton button) const;
 
-		const Vector2f& GetLeftStick() const { return mLeftStick; }
-		const Vector2f& GetRightStick() const { return mRightStick; }
+		const Vector2f &GetLeftStick() const { return mLeftStick; }
+		const Vector2f &GetRightStick() const { return mRightStick; }
 		float GetLeftTrigger() const { return mLeftTrigger; }
 		float GetRightTrigger() const { return mRightTrigger; }
 
 		bool GetIsConnected() const { return mIsConnected; }
+
 	private:
 		// Current/previous buttons
 		Uint8 mCurrButtons[SDL_CONTROLLER_BUTTON_MAX];
@@ -105,15 +110,16 @@ namespace nen
 		// Called after SDL_PollEvents loop
 		void Update();
 		// Called to process an SDL event in input system
-		void ProcessEvent(union SDL_Event& event);
+		void ProcessEvent(union SDL_Event &event);
 
-		const InputState& GetState() const { return mState; }
+		const InputState &GetState() const { return mState; }
 
 		void SetRelativeMouseMode(bool value);
+
 	private:
 		float Filter1D(int input);
 		Vector2f Filter2D(int inputX, int inputY);
 		InputState mState;
-		SDL_GameController* mController;
+		SDL_GameController *mController;
 	};
 }

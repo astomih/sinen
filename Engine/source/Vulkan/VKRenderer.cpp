@@ -13,6 +13,7 @@
 #include <Effekseer.h>
 #include <EffekseerRendererVulkan.h>
 #include <Engine/include/Effect.hpp>
+#include <Components.hpp>
 namespace nen::vk
 {
 	using namespace vkutil;
@@ -105,15 +106,15 @@ namespace nen::vk
 		VkViewport viewport;
 		{
 			viewport.x = 0.0f;
-			viewport.y = float(m_base->m_swapchainExtent.height);
-			viewport.width = float(m_base->m_swapchainExtent.width);
-			viewport.height = -1.0f * float(m_base->m_swapchainExtent.height);
+			viewport.y = float(m_base->mSwapchain->GetSurfaceExtent().height);
+			viewport.width = float(m_base->mSwapchain->GetSurfaceExtent().width);
+			viewport.height = -1.0f * float(m_base->mSwapchain->GetSurfaceExtent().height);
 			viewport.minDepth = 0.0f;
 			viewport.maxDepth = 1.0f;
 		}
 		VkRect2D scissor = {
 			{0, 0}, // offset
-			m_base->m_swapchainExtent};
+			m_base->mSwapchain->GetSurfaceExtent()};
 		VkPipelineViewportStateCreateInfo viewportCI{};
 		viewportCI.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 		viewportCI.viewportCount = 1;
@@ -161,27 +162,27 @@ namespace nen::vk
 				VK_COLOR_COMPONENT_G_BIT |
 				VK_COLOR_COMPONENT_B_BIT |
 				VK_COLOR_COMPONENT_A_BIT;
-			VkPipelineColorBlendAttachmentState blendAttachment{};
-			blendAttachment.blendEnable = VK_TRUE;
-			blendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-			blendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-			blendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-			blendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-			blendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-			blendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
-			blendAttachment.colorWriteMask = colorWriteAll;
+			VkPipelineColorBlendAttachmentState blendAttachment{
+				.blendEnable = VK_TRUE,
+				.srcColorBlendFactor = VK_BLEND_FACTOR_ONE,
+				.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO,
+				.colorBlendOp = VK_BLEND_OP_ADD,
+				.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
+				.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
+				.alphaBlendOp = VK_BLEND_OP_ADD,
+				.colorWriteMask = colorWriteAll};
 			VkPipelineColorBlendStateCreateInfo cbCI{};
 			cbCI.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 			cbCI.attachmentCount = 1;
 			cbCI.pAttachments = &blendAttachment;
 
 			// デプスステンシルステート設定
-			VkPipelineDepthStencilStateCreateInfo depthStencilCI{};
-			depthStencilCI.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-			depthStencilCI.depthTestEnable = VK_TRUE;
-			depthStencilCI.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-			depthStencilCI.depthWriteEnable = VK_TRUE;
-			depthStencilCI.stencilTestEnable = VK_FALSE;
+			VkPipelineDepthStencilStateCreateInfo depthStencilCI{
+				.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+				.depthTestEnable = VK_TRUE,
+				.depthWriteEnable = VK_TRUE,
+				.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL,
+				.stencilTestEnable = VK_FALSE};
 
 			// シェーダーバイナリの読み込み
 			std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
@@ -331,11 +332,7 @@ namespace nen::vk
 	template <class T>
 	inline bool isExist(T &handle)
 	{
-		if (handle != VK_NULL_HANDLE)
-		{
-			return true;
-		}
-		return false;
+		return handle != VK_NULL_HANDLE;
 	}
 	void VKRenderer::cleanup()
 	{
@@ -366,26 +363,30 @@ namespace nen::vk
 		vkBeginCommandBuffer(command, &ci);
 		vkCmdBeginRenderPass(command, &ri, VK_SUBPASS_CONTENTS_INLINE);
 
-		static int time = 0;
 		mEffectManager->GetMemoryPool()->NewFrame();
 		EffekseerRendererVulkan::BeginCommandList(mEffectManager->GetCommandList(), command);
 		mEffectManager->GetRenderer()->SetCommandList(mEffectManager->GetCommandList());
-		if (time % 120 == 0)
+		static int time = 0;
+		for (auto i : this->mRenderer->GetEffectComponent())
 		{
-			mEffectManager->handle = mEffectManager->GetManager()->Play(mEffectManager->GetEffect(u"Laser01.efk"), 0, 0, 0);
+			auto eref = mEffectManager->GetEffect(i->GetPath());
+			auto p = i->GetPosition();
+			if (time % 500 == 0)
+			{
+				mEffectManager->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
+				i->handle = mEffectManager->handle;
+			}
+			if (time % 500 == 499)
+				mEffectManager->GetManager()->StopEffect(i->handle);
+			mEffectManager->GetManager()->SetLocation(mEffectManager->handle, ::Effekseer::Vector3D(p.x, p.y, p.z));
 		}
-		if (time % 120 == 119)
-		{
-			mEffectManager->GetManager()->StopEffect(mEffectManager->handle);
-		}
-		//mEffectManager->GetManager()->AddLocation(mEffectManager->handle, ::Effekseer::Vector3D(0.2f, 0.0f, 0.0f));
+		time++;
 		mEffectManager->GetManager()->Update();
 		mEffectManager->GetRenderer()->BeginRendering();
 		mEffectManager->GetManager()->Draw();
 		mEffectManager->GetRenderer()->EndRendering();
 		mEffectManager->GetRenderer()->SetCommandList(mEffectManager->GetCommandList());
 		EffekseerRendererVulkan::EndCommandList(mEffectManager->GetCommandList());
-		time++;
 
 		// Set created pipeline
 		vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineOpaque);
@@ -668,8 +669,7 @@ namespace nen::vk
 		ImGui::CreateContext();
 		ImGui_ImplSDL2_InitForVulkan(m_base->m_window);
 
-		uint32_t imageCount;
-		vkGetSwapchainImagesKHR(m_base->m_device, m_base->m_swapchain, &imageCount, nullptr);
+		uint32_t imageCount = m_base->mSwapchain->GetImageCount();
 		ImGui_ImplVulkan_InitInfo info{};
 		info.Instance = m_base->m_instance;
 		info.PhysicalDevice = m_base->m_physDev;
@@ -739,7 +739,7 @@ namespace nen::vk
 		}
 		for (auto &s : mTextures3D)
 		{
-			s->uniformBuffers.resize(m_base->m_swapchainViews.size());
+			s->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
 			for (auto &v : s->uniformBuffers)
 			{
 				VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
@@ -748,7 +748,7 @@ namespace nen::vk
 		}
 		for (auto &s : mTextures2D)
 		{
-			s->uniformBuffers.resize(m_base->m_swapchainViews.size());
+			s->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
 			for (auto &v : s->uniformBuffers)
 			{
 				VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
@@ -806,7 +806,7 @@ namespace nen::vk
 
 	void VKRenderer::prepareDescriptorSetAll()
 	{
-		layouts.resize(m_base->m_swapchainViews.size() + (mTextures3D.size() + mTextures2D.size()));
+		layouts.resize(m_base->mSwapchain->GetImageCount() + (mTextures3D.size() + mTextures2D.size()));
 		for (auto &i : layouts)
 		{
 			i = m_descriptorSetLayout;
@@ -1498,7 +1498,7 @@ namespace nen::vk
 		if (TextureType::Image3D == type)
 		{
 			mTextures3D.push_back(texture);
-			mTextures3D.back()->uniformBuffers.resize(m_base->m_swapchainViews.size());
+			mTextures3D.back()->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
 			for (auto &v : mTextures3D.back()->uniformBuffers)
 			{
 				VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
@@ -1523,7 +1523,7 @@ namespace nen::vk
 
 			// Inserts element before position of iterator
 			mTextures2D.insert(iter, texture);
-			texture->uniformBuffers.resize(m_base->m_swapchainViews.size());
+			texture->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
 			for (auto &v : texture->uniformBuffers)
 			{
 				VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;

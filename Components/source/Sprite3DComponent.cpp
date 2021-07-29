@@ -45,18 +45,21 @@ namespace nen
 		auto pos = mOwner.GetPosition();
 		auto view = mOwner.GetScene().GetRenderer()->GetViewMatrix();
 		const auto yScale = Math::Cot(Math::ToRadians(90.f) / 2.0f);
-		const auto xScale = yScale * Window::Size.y / Window::Size.x;
+		const auto xScale = yScale / (Window::Size.x / Window::Size.y);
+		const float zfar = 10000.f;
+		const float znear = 0.01f;
 		float temp[4][4] =
 			{
 				{xScale, 0.0f, 0.0f, 0.0f},
 				{0.0f, yScale, 0.0f, 0.0f},
-				{0.0f, 0.0f, 10000.f / (10000.f - 0.01f), 1.0f},
-				{0.0f, 0.0f, -0.01f * 10000.f / (10000.f - 0.01f), 0.0f}};
+				{0.0f, 0.0f, zfar/ (znear - zfar), -1.0f},
+				{0.0f, 0.0f, znear * zfar / (znear - zfar), 0.0f}};
 		Matrix4 proj(temp);
 		sprite = std::make_shared<Sprite>();
 		sprite->textureIndex = mTexture->id;
 		sprite->vertexIndex = shape.data();
-
+		mOwner.Move(0, 0, 0);
+		mOwner.ComputeWorldTransform();
 		sprite->param.world = mOwner.GetWorldTransform();
 		sprite->param.proj = proj;
 		sprite->param.view = view;

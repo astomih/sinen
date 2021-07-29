@@ -49,7 +49,7 @@ namespace nen::vk
 	}
 
 	VKBase::VKBase(VKRenderer *vkrenderer)
-		: m_presentMode(VK_PRESENT_MODE_IMMEDIATE_KHR), m_imageIndex(0), m_vkrenderer(vkrenderer)
+		: m_imageIndex(0), m_vkrenderer(vkrenderer)
 	{
 	}
 
@@ -72,23 +72,34 @@ namespace nen::vk
 		// コマンドプールの準備
 		prepareCommandPool();
 
+		VkSurfaceKHR surface;
 		// サーフェース生成
-		SDL_Vulkan_CreateSurface(window, m_instance, &m_surface);
-		// サーフェースのフォーマット情報選択
-		selectSurfaceFormat(VK_FORMAT_B8G8R8A8_UNORM);
-		// サーフェースの能力値情報取得
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_physDev, m_surface, &m_surfaceCaps);
-		VkBool32 isSupport;
-		vkGetPhysicalDeviceSurfaceSupportKHR(m_physDev, m_graphicsQueueIndex, m_surface, &isSupport);
+		SDL_Vulkan_CreateSurface(window, m_instance, &surface);
+		mSwapchain = std::make_unique<Swapchain>(m_instance, m_device, surface);
+		mSwapchain->Prepare(
+			m_physDev,
+			m_graphicsQueueIndex,
+			static_cast<uint32_t>(nen::Window::Size.x),
+			static_cast<uint32_t>(nen::Window::Size.y),
+			VK_FORMAT_B8G8R8A8_UNORM);
 
-		// スワップチェイン生成
-		createSwapchain(window);
-		// デプスバッファ生成
 		createDepthBuffer();
-		// スワップチェインイメージとデプスバッファへのImageViewを生成
-		createViews();
-
-		// レンダーパスの生成
+		{
+			VkImageViewCreateInfo ci{};
+			ci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+			ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+			ci.format = VK_FORMAT_D32_SFLOAT;
+			ci.components = {
+				VK_COMPONENT_SWIZZLE_R,
+				VK_COMPONENT_SWIZZLE_G,
+				VK_COMPONENT_SWIZZLE_B,
+				VK_COMPONENT_SWIZZLE_A,
+			};
+			ci.subresourceRange = {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1};
+			ci.image = m_depthBuffer;
+			auto result = vkCreateImageView(m_device, &ci, nullptr, &m_depthBufferView);
+			checkResult(result);
+		}
 		createRenderPass();
 
 		// フレームバッファの生成
@@ -96,9 +107,11 @@ namespace nen::vk
 
 		// コマンドバッファの準備.
 		prepareCommandBuffers();
-
 		// 描画フレーム同期用
-		prepareSemaphores();
+		VkSemaphoreCreateInfo ci{};
+		ci.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		vkCreateSemaphore(m_device, &ci, nullptr, &m_renderCompletedSem);
+		vkCreateSemaphore(m_device, &ci, nullptr, &m_presentCompletedSem);
 
 		m_vkrenderer->prepare();
 	}
@@ -123,13 +136,6 @@ namespace nen::vk
 		vkDestroyImage(m_device, m_depthBuffer, nullptr);
 		vkDestroyImageView(m_device, m_depthBufferView, nullptr);
 
-		for (auto &v : m_swapchainViews)
-		{
-			vkDestroyImageView(m_device, v, nullptr);
-		}
-		m_swapchainImages.clear();
-		vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
-
 		for (auto &v : m_fences)
 		{
 			vkDestroyFence(m_device, v, nullptr);
@@ -140,7 +146,6 @@ namespace nen::vk
 
 		vkDestroyCommandPool(m_device, m_commandPool, nullptr);
 
-		vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
 		vkDestroyDevice(m_device, nullptr);
 #ifdef _DEBUG
 		disableDebugReport();
@@ -267,65 +272,14 @@ namespace nen::vk
 		checkResult(result);
 	}
 
-	void VKBase::selectSurfaceFormat(VkFormat format)
-	{
-		uint32_t surfaceFormatCount = 0;
-		vkGetPhysicalDeviceSurfaceFormatsKHR(m_physDev, m_surface, &surfaceFormatCount, nullptr);
-		std::vector<VkSurfaceFormatKHR> formats(surfaceFormatCount);
-		vkGetPhysicalDeviceSurfaceFormatsKHR(m_physDev, m_surface, &surfaceFormatCount, formats.data());
-
-		// 検索して一致するフォーマットを見つける.
-		for (const auto &f : formats)
-		{
-			if (f.format == format)
-			{
-				m_surfaceFormat = f;
-			}
-		}
-	}
-
-	void VKBase::createSwapchain(SDL_Window *window)
-	{
-		auto imageCount = (std::max)(2u, m_surfaceCaps.minImageCount);
-		auto extent = m_surfaceCaps.currentExtent;
-		if (extent.width == ~0u)
-		{
-			// 値が無効なのでウィンドウサイズを使用する.
-			int width, height;
-			SDL_GetWindowSize(window, &width, &height);
-			extent.width = uint32_t(width);
-			extent.height = uint32_t(height);
-		}
-		uint32_t queueFamilyIndices[] = {m_graphicsQueueIndex};
-		VkSwapchainCreateInfoKHR ci{};
-		ci.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-		ci.surface = m_surface;
-		ci.minImageCount = imageCount;
-		ci.imageFormat = m_surfaceFormat.format;
-		ci.imageColorSpace = m_surfaceFormat.colorSpace;
-		ci.imageExtent = extent;
-		ci.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-		ci.preTransform = m_surfaceCaps.currentTransform;
-		ci.imageArrayLayers = 1;
-		ci.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		ci.queueFamilyIndexCount = 0;
-		ci.presentMode = m_presentMode;
-		ci.oldSwapchain = VK_NULL_HANDLE;
-		ci.clipped = VK_TRUE;
-		ci.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-
-		auto result = vkCreateSwapchainKHR(m_device, &ci, nullptr, &m_swapchain);
-		checkResult(result);
-		m_swapchainExtent = extent;
-	}
 	void VKBase::createDepthBuffer()
 	{
 		VkImageCreateInfo ci{};
 		ci.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		ci.imageType = VK_IMAGE_TYPE_2D;
 		ci.format = VK_FORMAT_D32_SFLOAT;
-		ci.extent.width = m_swapchainExtent.width;
-		ci.extent.height = m_swapchainExtent.height;
+		ci.extent.width = mSwapchain->GetSurfaceExtent().width;
+		ci.extent.height = mSwapchain->GetSurfaceExtent().height;
 		ci.extent.depth = 1;
 		ci.mipLevels = 1;
 		ci.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
@@ -344,50 +298,6 @@ namespace nen::vk
 		vkBindImageMemory(m_device, m_depthBuffer, m_depthBufferMemory, 0);
 	}
 
-	void VKBase::createViews()
-	{
-		uint32_t imageCount;
-		vkGetSwapchainImagesKHR(m_device, m_swapchain, &imageCount, nullptr);
-		m_swapchainImages.resize(imageCount);
-		vkGetSwapchainImagesKHR(m_device, m_swapchain, &imageCount, m_swapchainImages.data());
-		m_swapchainViews.resize(imageCount);
-		for (uint32_t i = 0; i < imageCount; ++i)
-		{
-			VkImageViewCreateInfo ci{};
-			ci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-			ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
-			ci.format = m_surfaceFormat.format;
-			ci.components = {
-				VK_COMPONENT_SWIZZLE_R,
-				VK_COMPONENT_SWIZZLE_G,
-				VK_COMPONENT_SWIZZLE_B,
-				VK_COMPONENT_SWIZZLE_A,
-			};
-			ci.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-			ci.image = m_swapchainImages[i];
-			auto result = vkCreateImageView(m_device, &ci, nullptr, &m_swapchainViews[i]);
-			checkResult(result);
-		}
-
-		// for depthbuffer
-		{
-			VkImageViewCreateInfo ci{};
-			ci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-			ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
-			ci.format = VK_FORMAT_D32_SFLOAT;
-			ci.components = {
-				VK_COMPONENT_SWIZZLE_R,
-				VK_COMPONENT_SWIZZLE_G,
-				VK_COMPONENT_SWIZZLE_B,
-				VK_COMPONENT_SWIZZLE_A,
-			};
-			ci.subresourceRange = {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1};
-			ci.image = m_depthBuffer;
-			auto result = vkCreateImageView(m_device, &ci, nullptr, &m_depthBufferView);
-			checkResult(result);
-		}
-	}
-
 	void VKBase::createRenderPass()
 	{
 		VkRenderPassCreateInfo ci{};
@@ -398,7 +308,7 @@ namespace nen::vk
 		auto &depthTarget = attachments[1];
 
 		colorTarget = VkAttachmentDescription{};
-		colorTarget.format = m_surfaceFormat.format;
+		colorTarget.format = mSwapchain->GetSurfaceFormat().format;
 		colorTarget.samples = VK_SAMPLE_COUNT_1_BIT;
 		colorTarget.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		colorTarget.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -444,16 +354,16 @@ namespace nen::vk
 		VkFramebufferCreateInfo ci{};
 		ci.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		ci.renderPass = m_renderPass;
-		ci.width = m_swapchainExtent.width;
-		ci.height = m_swapchainExtent.height;
+		ci.width = mSwapchain->GetSurfaceExtent().width;
+		ci.height = mSwapchain->GetSurfaceExtent().height;
 		ci.layers = 1;
 		m_framebuffers.clear();
-		for (auto &v : m_swapchainViews)
+		for (int i = 0; i < mSwapchain->GetImageCount(); i++)
 		{
 			std::array<VkImageView, 2> attachments;
 			ci.attachmentCount = uint32_t(attachments.size());
 			ci.pAttachments = attachments.data();
-			attachments[0] = v;
+			attachments[0] = mSwapchain->GetImageView(i);
 			attachments[1] = m_depthBufferView;
 
 			VkFramebuffer framebuffer;
@@ -467,7 +377,7 @@ namespace nen::vk
 		VkCommandBufferAllocateInfo ai{};
 		ai.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		ai.commandPool = m_commandPool;
-		ai.commandBufferCount = uint32_t(m_swapchainViews.size());
+		ai.commandBufferCount = mSwapchain->GetImageCount();
 		ai.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		m_commands.resize(ai.commandBufferCount);
 		auto result = vkAllocateCommandBuffers(m_device, &ai, m_commands.data());
@@ -483,14 +393,6 @@ namespace nen::vk
 			result = vkCreateFence(m_device, &ci, nullptr, &v);
 			checkResult(result);
 		}
-	}
-
-	void VKBase::prepareSemaphores()
-	{
-		VkSemaphoreCreateInfo ci{};
-		ci.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-		vkCreateSemaphore(m_device, &ci, nullptr, &m_renderCompletedSem);
-		vkCreateSemaphore(m_device, &ci, nullptr, &m_presentCompletedSem);
 	}
 
 	uint32_t VKBase::getMemoryTypeIndex(uint32_t requestBits, VkMemoryPropertyFlags requestProps) const
@@ -537,7 +439,7 @@ namespace nen::vk
 	void VKBase::render()
 	{
 		uint32_t nextImageIndex = 0;
-		vkAcquireNextImageKHR(m_device, m_swapchain, UINT64_MAX, m_presentCompletedSem, VK_NULL_HANDLE, &nextImageIndex);
+		mSwapchain->AcquireNextImage(&nextImageIndex, m_presentCompletedSem);
 		auto commandFence = m_fences[nextImageIndex];
 
 		auto color = m_vkrenderer->mRenderer->GetClearColor();
@@ -554,7 +456,7 @@ namespace nen::vk
 		renderPassBI.renderPass = m_renderPass;
 		renderPassBI.framebuffer = m_framebuffers[nextImageIndex];
 		renderPassBI.renderArea.offset = VkOffset2D{0, 0};
-		renderPassBI.renderArea.extent = m_swapchainExtent;
+		renderPassBI.renderArea.extent = mSwapchain->GetSurfaceExtent();
 		renderPassBI.pClearValues = clearValue.data();
 		renderPassBI.clearValueCount = uint32_t(clearValue.size());
 
@@ -584,14 +486,7 @@ namespace nen::vk
 		vkQueueSubmit(m_deviceQueue, 1, &submitInfo, commandFence);
 
 		// Present 処理
-		VkPresentInfoKHR presentInfo{};
-		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-		presentInfo.swapchainCount = 1;
-		presentInfo.pSwapchains = &m_swapchain;
-		presentInfo.pImageIndices = &nextImageIndex;
-		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = &m_renderCompletedSem;
-		vkQueuePresentKHR(m_deviceQueue, &presentInfo);
+		mSwapchain->QueuePresent(m_deviceQueue, nextImageIndex, m_renderCompletedSem);
 	}
 }
 #endif

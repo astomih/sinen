@@ -103,12 +103,12 @@ namespace nen
 		return e;
 	}
 
-	void AudioSystem::SetListener(const Vector3f &pos, const Quaternion &quat)
+	void AudioSystem::SetListener(const Vector3f &pos, const Quaternion &direction)
 	{
-		alListener3f(AL_POSITION, pos.x, pos.z, pos.y);
-		auto at = Vector3f::Transform(Vector3f::UnitX, quat);
-		auto up = Vector3f::Transform(Vector3f::UnitZ, quat);
-		float ori[6] = {at.x, at.z, at.y, up.x, up.z, up.y};
+		alListener3f(AL_POSITION, pos.x, pos.y, pos.z);
+		auto at = Vector3f::Transform(Vector3f::NegUnitZ, direction);
+		auto up = Vector3f::Transform(Vector3f::UnitY, direction);
+		float ori[6] = {at.x, at.y, at.z, up.x, up.y, up.z};
 		alListenerfv(AL_ORIENTATION, ori);
 	}
 

@@ -102,9 +102,9 @@ namespace nen
 		// Keyboard
 		// Assign current state pointer
 		mState.Keyboard.mCurrState = SDL_GetKeyboardState(NULL);
-		// Clear previous state memory
-		memset(mState.Keyboard.mPrevState, 0,
-			SDL_NUM_SCANCODES);
+		memcpy(mState.Keyboard.mPrevState.data(),
+			   mState.Keyboard.mCurrState,
+			   SDL_NUM_SCANCODES);
 
 		// Mouse (just set everything to 0)
 		mState.Mouse.mCurrButtons = 0;
@@ -115,9 +115,9 @@ namespace nen
 		// Initialize controller state
 		mState.Controller.mIsConnected = (mController != nullptr);
 		memset(mState.Controller.mCurrButtons, 0,
-			SDL_CONTROLLER_BUTTON_MAX);
+			   SDL_CONTROLLER_BUTTON_MAX);
 		memset(mState.Controller.mPrevButtons, 0,
-			SDL_CONTROLLER_BUTTON_MAX);
+			   SDL_CONTROLLER_BUTTON_MAX);
 
 		return true;
 	}
@@ -130,9 +130,9 @@ namespace nen
 	{
 		// Copy current state to previous
 		// Keyboard
-		memcpy(mState.Keyboard.mPrevState,
-			mState.Keyboard.mCurrState,
-			SDL_NUM_SCANCODES);
+		memcpy(mState.Keyboard.mPrevState.data(),
+			   mState.Keyboard.mCurrState,
+			   SDL_NUM_SCANCODES);
 
 		// Mouse
 		mState.Mouse.mPrevButtons = mState.Mouse.mCurrButtons;
@@ -141,8 +141,8 @@ namespace nen
 
 		// Controller
 		memcpy(mState.Controller.mPrevButtons,
-			mState.Controller.mCurrButtons,
-			SDL_CONTROLLER_BUTTON_MAX);
+			   mState.Controller.mCurrButtons,
+			   SDL_CONTROLLER_BUTTON_MAX);
 	}
 
 	void InputSystem::Update()
@@ -169,32 +169,32 @@ namespace nen
 		{
 			mState.Controller.mCurrButtons[i] =
 				SDL_GameControllerGetButton(mController,
-					SDL_GameControllerButton(i));
+											SDL_GameControllerButton(i));
 		}
 
 		// Triggers
 		mState.Controller.mLeftTrigger =
 			Filter1D(SDL_GameControllerGetAxis(mController,
-				SDL_CONTROLLER_AXIS_TRIGGERLEFT));
+											   SDL_CONTROLLER_AXIS_TRIGGERLEFT));
 		mState.Controller.mRightTrigger =
 			Filter1D(SDL_GameControllerGetAxis(mController,
-				SDL_CONTROLLER_AXIS_TRIGGERRIGHT));
+											   SDL_CONTROLLER_AXIS_TRIGGERRIGHT));
 
 		// Sticks
 		x = SDL_GameControllerGetAxis(mController,
-			SDL_CONTROLLER_AXIS_LEFTX);
+									  SDL_CONTROLLER_AXIS_LEFTX);
 		y = -SDL_GameControllerGetAxis(mController,
-			SDL_CONTROLLER_AXIS_LEFTY);
+									   SDL_CONTROLLER_AXIS_LEFTY);
 		mState.Controller.mLeftStick = Filter2D(x, y);
 
 		x = SDL_GameControllerGetAxis(mController,
-			SDL_CONTROLLER_AXIS_RIGHTX);
+									  SDL_CONTROLLER_AXIS_RIGHTX);
 		y = -SDL_GameControllerGetAxis(mController,
-			SDL_CONTROLLER_AXIS_RIGHTY);
+									   SDL_CONTROLLER_AXIS_RIGHTY);
 		mState.Controller.mRightStick = Filter2D(x, y);
 	}
 
-	void InputSystem::ProcessEvent(SDL_Event& event)
+	void InputSystem::ProcessEvent(SDL_Event &event)
 	{
 		switch (event.type)
 		{
@@ -232,7 +232,7 @@ namespace nen
 		{
 			// Compute fractional value between dead zone and max value
 			retVal = static_cast<float>(absValue - deadZone) /
-				(maxValue - deadZone);
+					 (maxValue - deadZone);
 			// Make sure sign matches original value
 			retVal = input > 0 ? retVal : -1.0f * retVal;
 			// Clamp between -1.0f and 1.0f

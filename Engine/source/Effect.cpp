@@ -162,16 +162,14 @@ namespace nen
 	Effekseer::EffectRef Effect::GetEffectRef(const std::u16string &filePath)
 	{
 
-		if (effects.find(filePath) != effects.end())
+		if (!effects.contains(filePath))
 		{
-			//Load an effect
-			auto effect = ::Effekseer::Effect::Create(this->manager, filePath.c_str(), 10.f);
-			effects.emplace(filePath, effect);
-			return effect;
+			auto ref = Effekseer::Effect::Create(this->manager, filePath.c_str(), 10.f);
+			effects.insert({filePath, ref});
 		}
 		else
 		{
-			return effects[filePath];
+			return effects.find(filePath)->second;
 		}
 	}
 
@@ -213,15 +211,15 @@ namespace nen
 		manager->SetMaterialLoader(renderer->CreateMaterialLoader());
 
 		// Specify a position of view
-		auto g_position = ::Effekseer::Vector3D(10.0f, 5.0f, 20.0f);
+		auto g_position = ::Effekseer::Vector3D(0.0f, 0.0f, 0.0f);
 
 		// Specify a projection matrix
 		renderer->SetProjectionMatrix(
-			::Effekseer::Matrix44().PerspectiveFovRH(90.0f / 180.0f * 3.14f, Window::Size.x / Window::Size.y, 1.0f, 500.0f));
+			::Effekseer::Matrix44().PerspectiveFovLH(Math::ToRadians(90.f), Window::Size.x / Window::Size.y, 0.01f, 10000.f));
 
 		// Specify a camera matrix
 		renderer->SetCameraMatrix(
-			::Effekseer::Matrix44().LookAtRH(g_position, ::Effekseer::Vector3D(0.0f, 0.0f, 0.0f), ::Effekseer::Vector3D(0.0f, 1.0f, 0.0f)));
+			::Effekseer::Matrix44().LookAtLH(g_position, ::Effekseer::Vector3D(0.0f, 0.0f, -1.f), ::Effekseer::Vector3D(0.0f, -1.0f, 0.0f)));
 
 		vkrenderer->SetEffect(std::make_unique<vk::EffectVK>(sfMemoryPoolEfk, commandListEfk, renderer, manager, *this));
 	}
@@ -246,15 +244,15 @@ namespace nen
 		manager->SetMaterialLoader(renderer->CreateMaterialLoader());
 
 		// Specify a position of view
-		auto g_position = ::Effekseer::Vector3D(10.0f, 5.0f, 20.0f);
+		auto g_position = ::Effekseer::Vector3D(0.0f, 0.0f, 0.0f);
 
 		// Specify a projection matrix
 		renderer->SetProjectionMatrix(
-			::Effekseer::Matrix44().PerspectiveFovRH(90.0f / 180.0f * 3.14f, Window::Size.x / Window::Size.y, 1.0f, 500.0f));
+			::Effekseer::Matrix44().PerspectiveFovRH(Math::ToRadians(90.f), Window::Size.x / Window::Size.y, 0.01f, 10000.f));
 
 		// Specify a camera matrix
 		renderer->SetCameraMatrix(
-			::Effekseer::Matrix44().LookAtRH(g_position, ::Effekseer::Vector3D(0.0f, 0.0f, 0.0f), ::Effekseer::Vector3D(0.0f, 1.0f, 0.0f)));
+			::Effekseer::Matrix44().LookAtRH(g_position, ::Effekseer::Vector3D(0.0f, 0.0f, -1.f), ::Effekseer::Vector3D(0.0f, 1.0f, 0.0f)));
 
 		glrenderer->SetEffect(std::make_unique<gl::EffectGL>(renderer, manager, *this));
 	}

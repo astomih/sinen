@@ -140,6 +140,7 @@
     <ClCompile Include="lib\tinyobjloader\tiny_obj_loader.cc" />
     <ClCompile Include="Engine\source\ObjLoader.cpp" />
     <ClCompile Include="Engine\source\Vulkan\Swapchain.cpp" />
+    <ClCompile Include="Engine\source\Vulkan\PipelineLayout.cpp" />
     <ClCompile Include="Engine\source\Vulkan\VKBase.cpp" />
     <ClCompile Include="Engine\source\Vulkan\VKRenderer.cpp" />
     <ClCompile Include="Engine\source\Window.cpp" />

@@ -14,6 +14,7 @@
 #include <EffekseerRendererVulkan.h>
 #include <Engine/include/Effect.hpp>
 #include <Components.hpp>
+#include <PipelineLayout.h>
 namespace nen::vk
 {
 	using namespace vkutil;
@@ -23,7 +24,6 @@ namespace nen::vk
 	VKRenderer::VKRenderer()
 		: m_descriptorPool(),
 		  m_descriptorSetLayout(),
-		  m_pipelineLayout(),
 		  m_sampler(),
 		  m_base(std::make_unique<VKBase>(this)),
 		  instance(maxInstanceCount)
@@ -57,103 +57,9 @@ namespace nen::vk
 		m_sampler = createSampler();
 		prepareDescriptorSetAll();
 
-		// Setting vertex inputs
-		VkVertexInputBindingDescription inputBinding{
-			0,							// binding
-			sizeof(Vertex),				// stride
-			VK_VERTEX_INPUT_RATE_VERTEX // inputRate
-		};
-		std::array<VkVertexInputBindingDescription, 2> vibDisc{
-			{
-				{0, sizeof(float) * 6, VK_VERTEX_INPUT_RATE_VERTEX},
-				{1, sizeof(float) * 2, VK_VERTEX_INPUT_RATE_INSTANCE},
-			}};
-		std::array<VkVertexInputAttributeDescription, 3> inputAttribs{
-			{
-				{0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos)},
-				{1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, norm)},
-				{2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, uv)},
-			}};
-		VkPipelineVertexInputStateCreateInfo vertexInputCI{};
-		vertexInputCI.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputCI.vertexBindingDescriptionCount = 1;
-		vertexInputCI.pVertexBindingDescriptions = &inputBinding;
-		vertexInputCI.vertexAttributeDescriptionCount = uint32_t(inputAttribs.size());
-		vertexInputCI.pVertexAttributeDescriptions = inputAttribs.data();
+		mPipelineLayout = std::make_unique<PipelineLayout>(m_base->m_device, &m_descriptorSetLayout, m_base->mSwapchain->GetSurfaceExtent());
+		mPipelineLayout->Prepare(m_base->m_device);
 
-		// Setting blending
-		const auto colorWriteAll =
-			VK_COLOR_COMPONENT_R_BIT |
-			VK_COLOR_COMPONENT_G_BIT |
-			VK_COLOR_COMPONENT_B_BIT |
-			VK_COLOR_COMPONENT_A_BIT;
-
-		VkPipelineColorBlendAttachmentState blendAttachment{};
-		blendAttachment.blendEnable = VK_FALSE;
-		blendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-		blendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-		blendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-		blendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-		blendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-		blendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
-		blendAttachment.colorWriteMask = colorWriteAll;
-		VkPipelineColorBlendStateCreateInfo cbCI{};
-		cbCI.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-		cbCI.attachmentCount = 1;
-		cbCI.pAttachments = &blendAttachment;
-
-		// Set viewport
-		VkViewport viewport;
-		{
-			viewport.x = 0.0f;
-			viewport.y = float(m_base->mSwapchain->GetSurfaceExtent().height);
-			viewport.width = float(m_base->mSwapchain->GetSurfaceExtent().width);
-			viewport.height = -1.0f * float(m_base->mSwapchain->GetSurfaceExtent().height);
-			viewport.minDepth = 0.0f;
-			viewport.maxDepth = 1.0f;
-		}
-		VkRect2D scissor = {
-			{0, 0}, // offset
-			m_base->mSwapchain->GetSurfaceExtent()};
-		VkPipelineViewportStateCreateInfo viewportCI{};
-		viewportCI.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-		viewportCI.viewportCount = 1;
-		viewportCI.pViewports = &viewport;
-		viewportCI.scissorCount = 1;
-		viewportCI.pScissors = &scissor;
-
-		// Setting primitive toporogy
-		VkPipelineInputAssemblyStateCreateInfo inputAssemblyCI{};
-		inputAssemblyCI.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		inputAssemblyCI.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-
-		// Setting rasterizer state
-		VkPipelineRasterizationStateCreateInfo rasterizerCI{};
-		rasterizerCI.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-		rasterizerCI.polygonMode = VK_POLYGON_MODE_FILL;
-		rasterizerCI.cullMode = VK_CULL_MODE_NONE;
-		rasterizerCI.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-		rasterizerCI.lineWidth = 1.0f;
-
-		// Setting multisampling
-		VkPipelineMultisampleStateCreateInfo multisampleCI{};
-		multisampleCI.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-		multisampleCI.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-
-		// Setting depth stencil state
-		VkPipelineDepthStencilStateCreateInfo depthStencilCI{};
-		depthStencilCI.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-		depthStencilCI.depthTestEnable = VK_TRUE;
-		depthStencilCI.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-		depthStencilCI.depthWriteEnable = VK_TRUE;
-		depthStencilCI.stencilTestEnable = VK_FALSE;
-
-		// Setting pipeline layout
-		VkPipelineLayoutCreateInfo pipelineLayoutCI{};
-		pipelineLayoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutCI.setLayoutCount = 1;
-		pipelineLayoutCI.pSetLayouts = &m_descriptorSetLayout;
-		vkCreatePipelineLayout(m_base->m_device, &pipelineLayoutCI, nullptr, &m_pipelineLayout);
 		// 不透明用: パイプラインの構築
 		{
 			// ブレンディングの設定
@@ -193,15 +99,15 @@ namespace nen::vk
 			ci.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 			ci.stageCount = uint32_t(shaderStages.size());
 			ci.pStages = shaderStages.data();
-			ci.pInputAssemblyState = &inputAssemblyCI;
-			ci.pVertexInputState = &vertexInputCI;
-			ci.pRasterizationState = &rasterizerCI;
-			ci.pDepthStencilState = &depthStencilCI;
-			ci.pMultisampleState = &multisampleCI;
-			ci.pViewportState = &viewportCI;
+			ci.pInputAssemblyState = mPipelineLayout->GetInputAssemblyCI();
+			ci.pVertexInputState = mPipelineLayout->GetVertexInputCI();
+			ci.pRasterizationState = mPipelineLayout->GetRasterizerCI();
+			ci.pDepthStencilState = mPipelineLayout->GetDepthStencilCI();
+			ci.pMultisampleState = mPipelineLayout->GetMultisampleCI();
+			ci.pViewportState = mPipelineLayout->GetViewportCI();
 			ci.pColorBlendState = &cbCI;
 			ci.renderPass = m_base->m_renderPass;
-			ci.layout = m_pipelineLayout;
+			ci.layout = mPipelineLayout->GetLayout();
 			vkCreateGraphicsPipelines(m_base->m_device, VK_NULL_HANDLE, 1, &ci, nullptr, &m_pipelineOpaque);
 
 			// ShaderModule はもう不要のため破棄
@@ -250,15 +156,15 @@ namespace nen::vk
 			ci.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 			ci.stageCount = uint32_t(shaderStages.size());
 			ci.pStages = shaderStages.data();
-			ci.pInputAssemblyState = &inputAssemblyCI;
-			ci.pVertexInputState = &vertexInputCI;
-			ci.pRasterizationState = &rasterizerCI;
-			ci.pDepthStencilState = &depthStencilCI;
-			ci.pMultisampleState = &multisampleCI;
-			ci.pViewportState = &viewportCI;
+			ci.pInputAssemblyState = mPipelineLayout->GetInputAssemblyCI();
+			ci.pVertexInputState = mPipelineLayout->GetVertexInputCI();
+			ci.pRasterizationState = mPipelineLayout->GetRasterizerCI();
+			ci.pDepthStencilState = mPipelineLayout->GetDepthStencilCI();
+			ci.pMultisampleState = mPipelineLayout->GetMultisampleCI();
+			ci.pViewportState = mPipelineLayout->GetViewportCI();
 			ci.pColorBlendState = &cbCI;
 			ci.renderPass = m_base->m_renderPass;
-			ci.layout = m_pipelineLayout;
+			ci.layout = mPipelineLayout->GetLayout();
 			vkCreateGraphicsPipelines(m_base->m_device, VK_NULL_HANDLE, 1, &ci, nullptr, &m_pipelineAlpha);
 
 			// ShaderModule はもう不要のため破棄
@@ -306,15 +212,15 @@ namespace nen::vk
 			ci.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 			ci.stageCount = uint32_t(shaderStages.size());
 			ci.pStages = shaderStages.data();
-			ci.pInputAssemblyState = &inputAssemblyCI;
-			ci.pVertexInputState = &vertexInputCI;
-			ci.pRasterizationState = &rasterizerCI;
-			ci.pDepthStencilState = &depthStencilCI;
-			ci.pMultisampleState = &multisampleCI;
-			ci.pViewportState = &viewportCI;
+			ci.pInputAssemblyState = mPipelineLayout->GetInputAssemblyCI();
+			ci.pVertexInputState = mPipelineLayout->GetVertexInputCI();
+			ci.pRasterizationState = mPipelineLayout->GetRasterizerCI();
+			ci.pDepthStencilState = mPipelineLayout->GetDepthStencilCI();
+			ci.pMultisampleState = mPipelineLayout->GetMultisampleCI();
+			ci.pViewportState = mPipelineLayout->GetViewportCI();
 			ci.pColorBlendState = &cbCI;
 			ci.renderPass = m_base->m_renderPass;
-			ci.layout = m_pipelineLayout;
+			ci.layout = mPipelineLayout->GetLayout();
 			vkCreateGraphicsPipelines(m_base->m_device, VK_NULL_HANDLE, 1, &ci, nullptr, &m_pipeline2D);
 
 			// ShaderModule はもう不要のため破棄
@@ -343,7 +249,7 @@ namespace nen::vk
 			DestroyVulkanObject<VkDeviceMemory>(m_base->m_device, i.second.view, &vkFreeMemory);
 		}
 		DestroyVulkanObject<VkSampler>(m_base->m_device, m_sampler, &vkDestroySampler);
-		DestroyVulkanObject<VkPipelineLayout>(m_base->m_device, m_pipelineLayout, &vkDestroyPipelineLayout);
+		mPipelineLayout->Cleanup(m_base->m_device);
 		DestroyVulkanObject<VkPipeline>(m_base->m_device, m_pipelineOpaque, &vkDestroyPipeline);
 		DestroyVulkanObject<VkPipeline>(m_base->m_device, m_pipelineAlpha, &vkDestroyPipeline);
 		DestroyVulkanObject<VkPipeline>(m_base->m_device, m_pipeline2D, &vkDestroyPipeline);
@@ -452,7 +358,7 @@ namespace nen::vk
 				vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->sprite->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 			}
 			// Set descriptors
-			vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
+			vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout->GetLayout(), 0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
 
 			{
 				auto memory = sprite->uniformBuffers[m_base->m_imageIndex].memory;
@@ -516,7 +422,7 @@ namespace nen::vk
 			}
 
 			// Set descriptors
-			vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
+			vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout->GetLayout(), 0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
 
 			{
 				auto memory = sprite->uniformBuffers[m_base->m_imageIndex].memory;

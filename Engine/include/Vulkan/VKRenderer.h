@@ -6,6 +6,7 @@
 #include <Engine/include/Texture.h>
 #include <unordered_map>
 #include <Engine/include/VertexArray.h>
+#include <PipelineLayout.h>
 #endif
 
 namespace nen
@@ -68,7 +69,7 @@ namespace nen::vk
 		void registerTexture(std::shared_ptr<SpriteVK> texture, std::string_view, TextureType type);
 		void unregisterTexture(std::shared_ptr<SpriteVK> texture, TextureType type);
 		void registerImageObject(std::shared_ptr<Texture>);
-		VkPipelineLayout GetPipelineLayout(const std::string &name) { return m_pipelineLayout; }
+		VkPipelineLayout GetPipelineLayout(const std::string &name) { return mPipelineLayout->GetLayout(); }
 		VkDescriptorSetLayout GetDescriptorSetLayout(const std::string &name) { return m_descriptorSetLayout; }
 		VkRenderPass GetRenderPass(const std::string &name);
 		VkDescriptorPool GetDescriptorPool() const { return m_descriptorPool; }
@@ -141,7 +142,7 @@ namespace nen::vk
 		VkSampler m_sampler;
 
 		VkPhysicalDeviceMemoryProperties m_physicalMemProps;
-		VkPipelineLayout m_pipelineLayout;
+		std::unique_ptr<PipelineLayout> mPipelineLayout;
 		VkPipeline m_pipelineOpaque;
 		VkPipeline m_pipelineAlpha;
 		VkPipeline m_pipeline2D;

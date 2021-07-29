@@ -5,6 +5,7 @@
 #include "include/VertexArray.h"
 #include "include/Vulkan/VKRenderer.h"
 #include "include/Vulkan/Swapchain.h"
+#include "include/Vulkan/PipelineLayout.h"
 #include "include/OpenGL/ShaderGL.h"
 #include "include/OpenGL/GLRenderer.h"
 #include "include/ES/ESRenderer.h"

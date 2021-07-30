@@ -147,12 +147,13 @@ namespace nen::vk
 
     void Swapchain::QueuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitRenderComplete)
     {
-        VkPresentInfoKHR presentInfo{
-            VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-            nullptr,
-            1, &waitRenderComplete,
-            1, &m_swapchain,
-            &imageIndex};
+        VkPresentInfoKHR presentInfo{};
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = &m_swapchain;
+        presentInfo.pImageIndices = &imageIndex;
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = &waitRenderComplete;
         vkQueuePresentKHR(queue, &presentInfo);
     }
 

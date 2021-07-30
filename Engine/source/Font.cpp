@@ -2,31 +2,37 @@
 #include <cassert>
 namespace nen
 {
-	bool Font::Load(const std::string& fileName)
+	Font::Font()
+		: padding(""),
+		  loaded(false),
+		  mFontData()
+	{
+	}
+	bool Font::Load(const std::string &fileName)
 	{
 		//Support font sizes
 		std::vector<int> fontSizes =
-		{
-			8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28,
-			30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 52, 56,
-			60, 64, 68, 72 };
+			{
+				8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28,
+				30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 52, 56,
+				60, 64, 68, 72};
 
 		//Call TTF_OpenFont func per fontSizes
-		for (auto& size : fontSizes)
+		for (auto &size : fontSizes)
 		{
-			::TTF_Font* font = ::TTF_OpenFont(fileName.c_str(), size);
+			::TTF_Font *font = ::TTF_OpenFont(fileName.c_str(), size);
 			if (!font)
 			{
 				::SDL_Log("font %s couldn't be loaded.", fileName.c_str());
 				return false;
 			}
-			mFontData.emplace(size, font);
+			mFontData.insert({size, font});
 		}
 		loaded = true;
 		return true;
 	}
 
-	std::shared_ptr<Texture> Font::RenderText(const std::string& text, const Vector3f& color, int pointSize)
+	std::shared_ptr<Texture> Font::RenderText(const std::string &text, const Vector3f &color, int pointSize)
 	{
 		auto texture = std::make_shared<Texture>();
 		//My Color to SDL_Color
@@ -39,7 +45,7 @@ namespace nen
 		auto itr = mFontData.find(pointSize);
 		if (itr != mFontData.end())
 		{
-			::TTF_Font* font = itr->second;
+			::TTF_Font *font = itr->second;
 			//Render to SDL_Surface（Alpha blending)
 			auto surf = std::unique_ptr<::SDL_Surface, SDLObjectCloser>(::TTF_RenderUTF8_Blended(font, text.c_str(), sdlColor));
 			if (surf)
@@ -56,7 +62,7 @@ namespace nen
 		return texture;
 	}
 
-	std::shared_ptr<Texture> Font::RenderText(const std::string& text, SupportFontSizes pointSize, const Vector3f& color)
+	std::shared_ptr<Texture> Font::RenderText(const std::string &text, SupportFontSizes pointSize, const Vector3f &color)
 	{
 		auto texture = std::make_shared<Texture>();
 		//My Color to SDL_Color
@@ -164,7 +170,7 @@ namespace nen
 		auto itr = mFontData.find(size);
 		if (itr != mFontData.end())
 		{
-			::TTF_Font* font = itr->second;
+			::TTF_Font *font = itr->second;
 			//Render to SDL_Surface（Alpha blending)
 			auto surf = std::unique_ptr<::SDL_Surface, SDLObjectCloser>(::TTF_RenderUTF8_Blended(font, text.c_str(), sdlColor));
 

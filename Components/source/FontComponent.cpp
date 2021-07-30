@@ -5,17 +5,25 @@
 #include <Scene.hpp>
 namespace nen
 {
-	std::shared_ptr<Font> FontComponent::mFont = std::shared_ptr<Font>(std::make_shared<Font>());
 	FontComponent::FontComponent(Actor &actor, int drawOrder) : Sprite2DComponent(actor, drawOrder)
 	{
-		if (!mFont->isLoaded())
-		{
-			mFont->Load("Assets/mplus-1p-medium.ttf");
-		}
 	}
 
 	void FontComponent::SetString(const std::string &str, const Vector3f &color, int pointSize)
 	{
+		try
+		{
+			if (!mFont)
+				throw std::runtime_error("Error: Font set yet.");
+		}
+		catch (std::runtime_error &e)
+		{
+			std::cout << e.what() << std::endl;
+		}
+		if (!mFont->isLoaded())
+		{
+			mFont->Load("Assets/Font/mplus/mplus-1p-medium.ttf");
+		}
 
 		if (this->GetSprite())
 		{
@@ -23,5 +31,9 @@ namespace nen
 			this->GetSprite().reset();
 		}
 		Create(mFont->RenderText(str, color, pointSize));
+	}
+	void FontComponent::SetFont(std::shared_ptr<Font> font)
+	{
+		mFont = font;
 	}
 }

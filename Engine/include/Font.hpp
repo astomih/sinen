@@ -42,11 +42,7 @@ namespace nen
 	class Font
 	{
 	public:
-		Font()
-			: padding(""),
-			loaded(false)
-		{
-		}
+		Font();
 		~Font()
 		{
 			Unload();

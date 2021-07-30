@@ -40,7 +40,7 @@ namespace nen::vk
         graphicsCI.pInputAssemblyState = layout.GetInputAssemblyCI();
         graphicsCI.pVertexInputState = layout.GetVertexInputCI();
         graphicsCI.pRasterizationState = layout.GetRasterizerCI();
-        graphicsCI.pDepthStencilState = layout.GetDepthStencilCI();
+        graphicsCI.pDepthStencilState = &depthStencilCI;
         graphicsCI.pMultisampleState = layout.GetMultisampleCI();
         graphicsCI.pViewportState = layout.GetViewportCI();
         graphicsCI.pColorBlendState = &cbCI;
@@ -49,7 +49,7 @@ namespace nen::vk
     }
     void Pipeline::Prepare(VkDevice device)
     {
-        vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphicsCI, nullptr, &pipeline);
+        VkResult result = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphicsCI, nullptr, &pipeline);
     }
 
     void Pipeline::Bind(VkCommandBuffer command)

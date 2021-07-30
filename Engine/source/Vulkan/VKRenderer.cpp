@@ -58,46 +58,46 @@ namespace nen::vk
 		m_sampler = createSampler();
 		prepareDescriptorSetAll();
 
-		mPipelineLayout.Initialize(m_base->m_device, &m_descriptorSetLayout, m_base->mSwapchain->GetSurfaceExtent());
-		mPipelineLayout.Prepare(m_base->m_device);
+		mPipelineLayout.Initialize(m_base->GetVkDevice(), &m_descriptorSetLayout, m_base->mSwapchain->GetSurfaceExtent());
+		mPipelineLayout.Prepare(m_base->GetVkDevice());
 
 		// 不透明用: パイプラインの構築
 		{
 			std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-				VulkanShader::LoadModule(m_base->m_device, "shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-				VulkanShader::LoadModule(m_base->m_device, "shaderOpaque.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
+				VulkanShader::LoadModule(m_base->GetVkDevice(), "shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+				VulkanShader::LoadModule(m_base->GetVkDevice(), "shaderOpaque.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
 			pipelineOpaque.Initialize(mPipelineLayout, m_base->m_renderPass, shaderStages);
 			pipelineOpaque.ColorBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
 			pipelineOpaque.AlphaBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
-			pipelineOpaque.Prepare(m_base->m_device);
-			VulkanShader::CleanModule(m_base->m_device, shaderStages);
+			pipelineOpaque.Prepare(m_base->GetVkDevice());
+			VulkanShader::CleanModule(m_base->GetVkDevice(), shaderStages);
 		}
 
 		// 半透明用: パイプラインの構築
 		{
 			std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-				VulkanShader::LoadModule(m_base->m_device, "shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-				VulkanShader::LoadModule(m_base->m_device, "shaderAlpha.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
+				VulkanShader::LoadModule(m_base->GetVkDevice(), "shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+				VulkanShader::LoadModule(m_base->GetVkDevice(), "shaderAlpha.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
 			pipelineAlpha.Initialize(mPipelineLayout, m_base->m_renderPass, shaderStages);
 			pipelineAlpha.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
 			pipelineAlpha.AlphaBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
 			pipelineAlpha.SetDepthTest(VK_TRUE);
 			pipelineAlpha.SetDepthWrite(VK_FALSE);
-			pipelineAlpha.Prepare(m_base->m_device);
-			VulkanShader::CleanModule(m_base->m_device, shaderStages);
+			pipelineAlpha.Prepare(m_base->GetVkDevice());
+			VulkanShader::CleanModule(m_base->GetVkDevice(), shaderStages);
 		}
 		// 2D用: パイプラインの構築
 		{
 			std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-				VulkanShader::LoadModule(m_base->m_device, "shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-				VulkanShader::LoadModule(m_base->m_device, "shaderAlpha.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
+				VulkanShader::LoadModule(m_base->GetVkDevice(), "shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+				VulkanShader::LoadModule(m_base->GetVkDevice(), "shaderAlpha.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
 			pipeline2D.Initialize(mPipelineLayout, m_base->m_renderPass, shaderStages);
 			pipeline2D.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
 			pipeline2D.AlphaBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ZERO);
 			pipeline2D.SetDepthTest(VK_FALSE);
 			pipeline2D.SetDepthWrite(VK_FALSE);
-			pipeline2D.Prepare(m_base->m_device);
-			VulkanShader::CleanModule(m_base->m_device, shaderStages);
+			pipeline2D.Prepare(m_base->GetVkDevice());
+			VulkanShader::CleanModule(m_base->GetVkDevice(), shaderStages);
 		}
 		prepareImGUI();
 	}
@@ -112,57 +112,33 @@ namespace nen::vk
 	}
 	void VKRenderer::cleanup()
 	{
+		VkDevice device = m_base->GetVkDevice();
 		for (auto &i : mImageObjects)
 		{
-			DestroyVulkanObject<VkImage>(m_base->m_device, i.second.image, &vkDestroyImage);
-			DestroyVulkanObject<VkImageView>(m_base->m_device, i.second.view, &vkDestroyImageView);
-			DestroyVulkanObject<VkDeviceMemory>(m_base->m_device, i.second.view, &vkFreeMemory);
+			DestroyVulkanObject<VkImage>(device, i.second.image, &vkDestroyImage);
+			DestroyVulkanObject<VkImageView>(device, i.second.view, &vkDestroyImageView);
+			DestroyVulkanObject<VkDeviceMemory>(device, i.second.view, &vkFreeMemory);
 		}
-		DestroyVulkanObject<VkSampler>(m_base->m_device, m_sampler, &vkDestroySampler);
-		mPipelineLayout.Cleanup(m_base->m_device);
-		pipelineOpaque.Cleanup(m_base->m_device);
-		pipelineAlpha.Cleanup(m_base->m_device);
-		pipeline2D.Cleanup(m_base->m_device);
+		DestroyVulkanObject<VkSampler>(device, m_sampler, &vkDestroySampler);
+		mPipelineLayout.Cleanup(device);
+		pipelineOpaque.Cleanup(device);
+		pipelineAlpha.Cleanup(device);
+		pipeline2D.Cleanup(device);
 		for (auto &i : m_VertexArrays)
 		{
-			DestroyVulkanObject<VkBuffer>(m_base->m_device, i.second.vertexBuffer.buffer, &vkDestroyBuffer);
-			DestroyVulkanObject<VkBuffer>(m_base->m_device, i.second.indexBuffer.buffer, &vkDestroyBuffer);
-			DestroyVulkanObject<VkDeviceMemory>(m_base->m_device, i.second.vertexBuffer.memory, &vkFreeMemory);
-			DestroyVulkanObject<VkDeviceMemory>(m_base->m_device, i.second.indexBuffer.memory, &vkFreeMemory);
+			DestroyVulkanObject<VkBuffer>(device, i.second.vertexBuffer.buffer, &vkDestroyBuffer);
+			DestroyVulkanObject<VkBuffer>(device, i.second.indexBuffer.buffer, &vkDestroyBuffer);
+			DestroyVulkanObject<VkDeviceMemory>(device, i.second.vertexBuffer.memory, &vkFreeMemory);
+			DestroyVulkanObject<VkDeviceMemory>(device, i.second.indexBuffer.memory, &vkFreeMemory);
 		}
-		DestroyVulkanObject<VkDescriptorPool>(m_base->m_device, m_descriptorPool, &vkDestroyDescriptorPool);
-		DestroyVulkanObject<VkDescriptorSetLayout>(m_base->m_device, m_descriptorSetLayout, &vkDestroyDescriptorSetLayout);
+		DestroyVulkanObject<VkDescriptorPool>(device, m_descriptorPool, &vkDestroyDescriptorPool);
+		DestroyVulkanObject<VkDescriptorSetLayout>(device, m_descriptorSetLayout, &vkDestroyDescriptorSetLayout);
 	}
 	void VKRenderer::makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri, VkCommandBufferBeginInfo &ci, VkFence &fence)
 	{
-		vkWaitForFences(m_base->m_device, 1, &fence, VK_TRUE, UINT64_MAX);
+		vkWaitForFences(m_base->GetVkDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
 		vkBeginCommandBuffer(command, &ci);
 		vkCmdBeginRenderPass(command, &ri, VK_SUBPASS_CONTENTS_INLINE);
-
-		mEffectManager->GetMemoryPool()->NewFrame();
-		EffekseerRendererVulkan::BeginCommandList(mEffectManager->GetCommandList(), command);
-		mEffectManager->GetRenderer()->SetCommandList(mEffectManager->GetCommandList());
-		static int time = 0;
-		for (auto i : this->mRenderer->GetEffectComponent())
-		{
-			auto eref = mEffectManager->GetEffect(i->GetPath());
-			auto p = i->GetPosition();
-			if (time % 500 == 0)
-			{
-				mEffectManager->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
-				i->handle = mEffectManager->handle;
-			}
-			if (time % 500 == 499)
-				mEffectManager->GetManager()->StopEffect(i->handle);
-			mEffectManager->GetManager()->SetLocation(mEffectManager->handle, ::Effekseer::Vector3D(p.x, p.y, p.z));
-		}
-		time++;
-		mEffectManager->GetManager()->Update();
-		mEffectManager->GetRenderer()->BeginRendering();
-		mEffectManager->GetManager()->Draw();
-		mEffectManager->GetRenderer()->EndRendering();
-		mEffectManager->GetRenderer()->SetCommandList(mEffectManager->GetCommandList());
-		EffekseerRendererVulkan::EndCommandList(mEffectManager->GetCommandList());
 
 		// Set created pipeline
 		pipelineOpaque.Bind(command);
@@ -173,6 +149,7 @@ namespace nen::vk
 		instanceCount++;
 		draw2d(command);
 
+		renderEffekseer(command);
 		renderImGUI(command);
 		pipelineOpaque.Bind(command);
 	}
@@ -190,9 +167,9 @@ namespace nen::vk
 	for (auto &i : m_instanceUniforms)
 	{
 		void *p;
-		vkMapMemory(m_base->m_device, i.memory, 0, VK_WHOLE_SIZE, 0, &p);
+		vkMapMemory(m_base->GetVkDevice(), i.memory, 0, VK_WHOLE_SIZE, 0, &p);
 		memcpy(p, instance.data(), size);
-		vkUnmapMemory(m_base->m_device, i.memory);
+		vkUnmapMemory(m_base->GetVkDevice(), i.memory);
 	}
 	*/
 		VkDeviceSize offset = 0;
@@ -219,9 +196,9 @@ namespace nen::vk
 					};
 				{
 					void *p;
-					vkMapMemory(m_base->m_device, sprite->buffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
+					vkMapMemory(m_base->GetVkDevice(), sprite->buffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
 					memcpy(p, vertices, sizeof(vertices));
-					vkUnmapMemory(m_base->m_device, sprite->buffer.memory);
+					vkUnmapMemory(m_base->GetVkDevice(), sprite->buffer.memory);
 				}
 				VkDeviceSize offset = 0;
 				vkCmdBindVertexBuffers(command, 0, 1, &sprite->buffer.buffer, &offset);
@@ -233,9 +210,9 @@ namespace nen::vk
 			{
 				auto memory = sprite->uniformBuffers[m_base->m_imageIndex].memory;
 				void *p;
-				vkMapMemory(m_base->m_device, memory, 0, VK_WHOLE_SIZE, 0, &p);
+				vkMapMemory(m_base->GetVkDevice(), memory, 0, VK_WHOLE_SIZE, 0, &p);
 				memcpy(p, &sprite->sprite->param, sizeof(ShaderParameters));
-				vkUnmapMemory(m_base->m_device, memory);
+				vkUnmapMemory(m_base->GetVkDevice(), memory);
 			}
 			vkCmdDrawIndexed(command, m_VertexArrays[sprite->sprite->vertexIndex].indexCount, 1, 0, 0, 0);
 		}
@@ -254,9 +231,9 @@ namespace nen::vk
 	{
 		auto memory = m_instanceUniforms[i].memory;
 		void *p;
-		vkMapMemory(m_base->m_device, memory, 0, VK_WHOLE_SIZE, 0, &p);
+		vkMapMemory(m_base->GetVkDevice(), memory, 0, VK_WHOLE_SIZE, 0, &p);
 		memcpy(p, instance.data(), sizeof(InstanceData) * instance.size());
-		vkUnmapMemory(m_base->m_device, memory);
+		vkUnmapMemory(m_base->GetVkDevice(), memory);
 	}
 	*/
 		for (auto &sprite : mTextures2D)
@@ -282,9 +259,9 @@ namespace nen::vk
 					};
 				{
 					void *p;
-					vkMapMemory(m_base->m_device, sprite->buffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
+					vkMapMemory(m_base->GetVkDevice(), sprite->buffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
 					memcpy(p, vertices, sizeof(vertices));
-					vkUnmapMemory(m_base->m_device, sprite->buffer.memory);
+					vkUnmapMemory(m_base->GetVkDevice(), sprite->buffer.memory);
 				}
 				VkDeviceSize offset = 0;
 				vkCmdBindVertexBuffers(command, 0, 1, &sprite->buffer.buffer, &offset);
@@ -297,9 +274,9 @@ namespace nen::vk
 			{
 				auto memory = sprite->uniformBuffers[m_base->m_imageIndex].memory;
 				void *p;
-				vkMapMemory(m_base->m_device, memory, 0, VK_WHOLE_SIZE, 0, &p);
+				vkMapMemory(m_base->GetVkDevice(), memory, 0, VK_WHOLE_SIZE, 0, &p);
 				memcpy(p, &sprite->sprite->param, sizeof(ShaderParameters));
-				vkUnmapMemory(m_base->m_device, memory);
+				vkUnmapMemory(m_base->GetVkDevice(), memory);
 			}
 			vkCmdDrawIndexed(command, m_VertexArrays[sprite->sprite->vertexIndex].indexCount, 1, 0, 0, 0);
 		}
@@ -309,9 +286,9 @@ namespace nen::vk
 	{
 
 		void *p;
-		vkMapMemory(m_base->m_device, memory, 0, VK_WHOLE_SIZE, 0, &p);
+		vkMapMemory(m_base->GetVkDevice(), memory, 0, VK_WHOLE_SIZE, 0, &p);
 		memcpy(p, data, size);
-		vkUnmapMemory(m_base->m_device, memory);
+		vkUnmapMemory(m_base->GetVkDevice(), memory);
 	}
 	void VKRenderer::AddVertexArray(const VertexArrayForVK &vArray, std::string_view name)
 	{
@@ -383,17 +360,17 @@ namespace nen::vk
 		// Write vertex data
 		{
 			void *p;
-			vkMapMemory(m_base->m_device, vArray.vertexBuffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
+			vkMapMemory(m_base->GetVkDevice(), vArray.vertexBuffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
 			memcpy(p, vArray.vertices.data(), vArraySize);
-			vkUnmapMemory(m_base->m_device, vArray.vertexBuffer.memory);
+			vkUnmapMemory(m_base->GetVkDevice(), vArray.vertexBuffer.memory);
 		}
 		// Write index data
 
 		{
 			void *p;
-			vkMapMemory(m_base->m_device, vArray.indexBuffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
+			vkMapMemory(m_base->GetVkDevice(), vArray.indexBuffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
 			memcpy(p, indices, sizeof(indices));
-			vkUnmapMemory(m_base->m_device, vArray.indexBuffer.memory);
+			vkUnmapMemory(m_base->GetVkDevice(), vArray.indexBuffer.memory);
 		}
 		m_VertexArrays.emplace(std::pair<std::string, VertexArrayForVK>("BOX", vArray));
 	}
@@ -424,17 +401,17 @@ namespace nen::vk
 		// Write vertex data
 		{
 			void *p;
-			vkMapMemory(m_base->m_device, vArray.vertexBuffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
+			vkMapMemory(m_base->GetVkDevice(), vArray.vertexBuffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
 			memcpy(p, vArray.vertices.data(), vArraySize);
-			vkUnmapMemory(m_base->m_device, vArray.vertexBuffer.memory);
+			vkUnmapMemory(m_base->GetVkDevice(), vArray.vertexBuffer.memory);
 		}
 		// Write index data
 
 		{
 			void *p;
-			vkMapMemory(m_base->m_device, vArray.indexBuffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
+			vkMapMemory(m_base->GetVkDevice(), vArray.indexBuffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
 			memcpy(p, indices, sizeof(indices));
-			vkUnmapMemory(m_base->m_device, vArray.indexBuffer.memory);
+			vkUnmapMemory(m_base->GetVkDevice(), vArray.indexBuffer.memory);
 		}
 		m_VertexArrays.insert(std::pair<std::string, VertexArrayForVK>("SPRITE", vArray));
 	}
@@ -449,9 +426,9 @@ namespace nen::vk
 		ImGui_ImplVulkan_InitInfo info{};
 		info.Instance = m_base->m_instance;
 		info.PhysicalDevice = m_base->m_physDev;
-		info.Device = m_base->m_device;
+		info.Device = m_base->GetVkDevice();
 		info.QueueFamily = m_base->m_graphicsQueueIndex;
-		info.Queue = m_base->m_deviceQueue;
+		info.Queue = m_base->GetVkQueue();
 		info.DescriptorPool = m_descriptorPool;
 		info.MinImageCount = 2;
 		info.ImageCount = imageCount;
@@ -469,7 +446,7 @@ namespace nen::vk
 		};
 
 		VkCommandBuffer command;
-		vkAllocateCommandBuffers(m_base->m_device, &commandAI, &command);
+		vkAllocateCommandBuffers(m_base->GetVkDevice(), &commandAI, &command);
 		vkBeginCommandBuffer(command, &beginInfo);
 		ImGui_ImplVulkan_CreateFontsTexture(command);
 		vkEndCommandBuffer(command);
@@ -477,11 +454,11 @@ namespace nen::vk
 		VkSubmitInfo submitInfo{VK_STRUCTURE_TYPE_SUBMIT_INFO, nullptr};
 		submitInfo.pCommandBuffers = &command;
 		submitInfo.commandBufferCount = 1;
-		vkQueueSubmit(m_base->m_deviceQueue, 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueSubmit(m_base->GetVkQueue(), 1, &submitInfo, VK_NULL_HANDLE);
 
 		// フォントテクスチャ転送の完了を待つ.
-		vkDeviceWaitIdle(m_base->m_device);
-		vkFreeCommandBuffers(m_base->m_device, m_base->m_commandPool, 1, &command);
+		vkDeviceWaitIdle(m_base->GetVkDevice());
+		vkFreeCommandBuffers(m_base->GetVkDevice(), m_base->m_commandPool, 1, &command);
 	}
 	void VKRenderer::renderImGUI(VkCommandBuffer command)
 	{
@@ -558,7 +535,7 @@ namespace nen::vk
 		ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		ci.bindingCount = uint32_t(bindings.size());
 		ci.pBindings = bindings.data();
-		vkCreateDescriptorSetLayout(m_base->m_device, &ci, nullptr, &m_descriptorSetLayout);
+		vkCreateDescriptorSetLayout(m_base->GetVkDevice(), &ci, nullptr, &m_descriptorSetLayout);
 	}
 
 	void VKRenderer::prepareDescriptorPool()
@@ -577,7 +554,7 @@ namespace nen::vk
 			_countof(poolSize),
 			poolSize,
 		};
-		result = vkCreateDescriptorPool(m_base->m_device, &descPoolCI, nullptr, &m_descriptorPool);
+		result = vkCreateDescriptorPool(m_base->GetVkDevice(), &descPoolCI, nullptr, &m_descriptorPool);
 	}
 
 	void VKRenderer::prepareDescriptorSetAll()
@@ -604,7 +581,7 @@ namespace nen::vk
 		ai.descriptorSetCount = uint32_t(sprite->uniformBuffers.size());
 		ai.pSetLayouts = layouts.data();
 		sprite->descripterSet.resize(sprite->uniformBuffers.size());
-		vkAllocateDescriptorSets(m_base->m_device, &ai, sprite->descripterSet.data());
+		vkAllocateDescriptorSets(m_base->GetVkDevice(), &ai, sprite->descripterSet.data());
 		static int count = 0;
 		// ディスクリプタセットへ書き込み.
 		for (int i = 0; i < int(sprite->uniformBuffers.size()); ++i)
@@ -651,7 +628,7 @@ namespace nen::vk
 			std::vector<VkWriteDescriptorSet> writeSets =
 				{
 					ubo, tex, ins};
-			vkUpdateDescriptorSets(m_base->m_device, uint32_t(writeSets.size()), writeSets.data(), 0, nullptr);
+			vkUpdateDescriptorSets(m_base->GetVkDevice(), uint32_t(writeSets.size()), writeSets.data(), 0, nullptr);
 			count++;
 		}
 	}
@@ -662,22 +639,22 @@ namespace nen::vk
 		ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		ci.usage = usage;
 		ci.size = size;
-		auto result = vkCreateBuffer(m_base->m_device, &ci, nullptr, &obj.buffer);
+		auto result = vkCreateBuffer(m_base->GetVkDevice(), &ci, nullptr, &obj.buffer);
 		m_base->checkResult(result);
 
 		// メモリ量の算出
 		VkMemoryRequirements reqs;
-		vkGetBufferMemoryRequirements(m_base->m_device, obj.buffer, &reqs);
+		vkGetBufferMemoryRequirements(m_base->GetVkDevice(), obj.buffer, &reqs);
 		VkMemoryAllocateInfo info{};
 		info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		info.allocationSize = reqs.size;
 		// メモリタイプの判定
 		info.memoryTypeIndex = m_base->getMemoryTypeIndex(reqs.memoryTypeBits, flags);
 		// メモリの確保
-		vkAllocateMemory(m_base->m_device, &info, nullptr, &obj.memory);
+		vkAllocateMemory(m_base->GetVkDevice(), &info, nullptr, &obj.memory);
 
 		// メモリのバインド
-		vkBindBufferMemory(m_base->m_device, obj.buffer, obj.memory, 0);
+		vkBindBufferMemory(m_base->GetVkDevice(), obj.buffer, obj.memory, 0);
 		return obj;
 	}
 	BufferObject VKRenderer::CreateBuffer(uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags, const void *initialData)
@@ -687,59 +664,32 @@ namespace nen::vk
 		ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		ci.usage = usage;
 		ci.size = size;
-		auto result = vkCreateBuffer(m_base->m_device, &ci, nullptr, &obj.buffer);
+		auto result = vkCreateBuffer(m_base->GetVkDevice(), &ci, nullptr, &obj.buffer);
 		m_base->checkResult(result);
 
 		// メモリ量の算出
 		VkMemoryRequirements reqs;
-		vkGetBufferMemoryRequirements(m_base->m_device, obj.buffer, &reqs);
+		vkGetBufferMemoryRequirements(m_base->GetVkDevice(), obj.buffer, &reqs);
 		VkMemoryAllocateInfo info{};
 		info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		info.allocationSize = reqs.size;
 		// メモリタイプの判定
 		info.memoryTypeIndex = m_base->getMemoryTypeIndex(reqs.memoryTypeBits, flags);
 		// メモリの確保
-		vkAllocateMemory(m_base->m_device, &info, nullptr, &obj.memory);
+		vkAllocateMemory(m_base->GetVkDevice(), &info, nullptr, &obj.memory);
 
 		// メモリのバインド
-		vkBindBufferMemory(m_base->m_device, obj.buffer, obj.memory, 0);
+		vkBindBufferMemory(m_base->GetVkDevice(), obj.buffer, obj.memory, 0);
 
 		if ((flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0 &&
 			initialData != nullptr)
 		{
 			void *p;
-			vkMapMemory(m_base->m_device, obj.memory, 0, VK_WHOLE_SIZE, 0, &p);
+			vkMapMemory(m_base->GetVkDevice(), obj.memory, 0, VK_WHOLE_SIZE, 0, &p);
 			memcpy(p, initialData, size);
-			vkUnmapMemory(m_base->m_device, obj.memory);
+			vkUnmapMemory(m_base->GetVkDevice(), obj.memory);
 		}
 		return obj;
-	}
-
-	VkPipelineShaderStageCreateInfo VKRenderer::loadShaderModule(const char *fileName, VkShaderStageFlagBits stage)
-	{
-		std::ifstream infile(fileName, std::ios::binary);
-		if (!infile)
-		{
-			OutputDebugStringA("file not found.\n");
-			DebugBreak();
-		}
-		std::vector<char> filedata;
-		filedata.resize(uint32_t(infile.seekg(0, std::ifstream::end).tellg()));
-		infile.seekg(0, std::ifstream::beg).read(filedata.data(), filedata.size());
-
-		VkShaderModule shaderModule;
-		VkShaderModuleCreateInfo ci{};
-		ci.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		ci.pCode = reinterpret_cast<uint32_t *>(filedata.data());
-		ci.codeSize = filedata.size();
-		vkCreateShaderModule(m_base->m_device, &ci, nullptr, &shaderModule);
-
-		VkPipelineShaderStageCreateInfo shaderStageCI{};
-		shaderStageCI.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		shaderStageCI.stage = stage;
-		shaderStageCI.module = shaderModule;
-		shaderStageCI.pName = "main";
-		return shaderStageCI;
 	}
 
 	VkSampler VKRenderer::createSampler()
@@ -753,7 +703,7 @@ namespace nen::vk
 		ci.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 		ci.maxAnisotropy = 1.0f;
 		ci.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
-		vkCreateSampler(m_base->m_device, &ci, nullptr, &sampler);
+		vkCreateSampler(m_base->GetVkDevice(), &ci, nullptr, &sampler);
 		return sampler;
 	}
 
@@ -784,28 +734,28 @@ namespace nen::vk
 			ci.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 			ci.tiling = VkImageTiling::VK_IMAGE_TILING_LINEAR;
 			ci.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
-			vkCreateImage(m_base->m_device, &ci, nullptr, &texture.image);
+			vkCreateImage(m_base->GetVkDevice(), &ci, nullptr, &texture.image);
 
 			VkMemoryRequirements reqs;
-			vkGetImageMemoryRequirements(m_base->m_device, texture.image, &reqs);
+			vkGetImageMemoryRequirements(m_base->GetVkDevice(), texture.image, &reqs);
 			VkMemoryAllocateInfo info{};
 			info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 			info.allocationSize = reqs.size;
 			// Judge memory type
 			info.memoryTypeIndex = m_base->getMemoryTypeIndex(reqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 			// Allocate memory
-			vkAllocateMemory(m_base->m_device, &info, nullptr, &texture.memory);
+			vkAllocateMemory(m_base->GetVkDevice(), &info, nullptr, &texture.memory);
 			// Bind memory
-			vkBindImageMemory(m_base->m_device, texture.image, texture.memory, 0);
+			vkBindImageMemory(m_base->GetVkDevice(), texture.image, texture.memory, 0);
 		}
 
 		{
 			uint32_t imageSize = imagedata->h * imagedata->w * 4;
 			stagingBuffer = CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 			void *p;
-			vkMapMemory(m_base->m_device, stagingBuffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
+			vkMapMemory(m_base->GetVkDevice(), stagingBuffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
 			memcpy(p, pImage, imageSize);
-			vkUnmapMemory(m_base->m_device, stagingBuffer.memory);
+			vkUnmapMemory(m_base->GetVkDevice(), stagingBuffer.memory);
 		}
 
 		VkBufferImageCopy copyRegion{};
@@ -818,7 +768,7 @@ namespace nen::vk
 			ai.commandBufferCount = 1;
 			ai.commandPool = m_base->m_commandPool;
 			ai.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-			vkAllocateCommandBuffers(m_base->m_device, &ai, &command);
+			vkAllocateCommandBuffers(m_base->GetVkDevice(), &ai, &command);
 		}
 
 		VkCommandBufferBeginInfo commandBI{};
@@ -834,7 +784,7 @@ namespace nen::vk
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &command;
-		vkQueueSubmit(m_base->m_deviceQueue, 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueSubmit(m_base->GetVkQueue(), 1, &submitInfo, VK_NULL_HANDLE);
 		{
 			// Create view for texture reference
 			VkImageViewCreateInfo ci{};
@@ -851,14 +801,14 @@ namespace nen::vk
 
 			ci.subresourceRange = {
 				VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-			vkCreateImageView(m_base->m_device, &ci, nullptr, &texture.view);
+			vkCreateImageView(m_base->GetVkDevice(), &ci, nullptr, &texture.view);
 		}
 
-		vkDeviceWaitIdle(m_base->m_device);
-		vkFreeCommandBuffers(m_base->m_device, m_base->m_commandPool, 1, &command);
+		vkDeviceWaitIdle(m_base->GetVkDevice());
+		vkFreeCommandBuffers(m_base->GetVkDevice(), m_base->m_commandPool, 1, &command);
 
-		vkFreeMemory(m_base->m_device, stagingBuffer.memory, nullptr);
-		vkDestroyBuffer(m_base->m_device, stagingBuffer.buffer, nullptr);
+		vkFreeMemory(m_base->GetVkDevice(), stagingBuffer.memory, nullptr);
+		vkDestroyBuffer(m_base->GetVkDevice(), stagingBuffer.buffer, nullptr);
 
 		return texture;
 	}
@@ -889,20 +839,20 @@ namespace nen::vk
 			ci.mipLevels = 1;
 			ci.samples = VK_SAMPLE_COUNT_1_BIT;
 			ci.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-			vkCreateImage(m_base->m_device, &ci, nullptr, &texture.image);
+			vkCreateImage(m_base->GetVkDevice(), &ci, nullptr, &texture.image);
 
 			// メモリ量の算出
 			VkMemoryRequirements reqs;
-			vkGetImageMemoryRequirements(m_base->m_device, texture.image, &reqs);
+			vkGetImageMemoryRequirements(m_base->GetVkDevice(), texture.image, &reqs);
 			VkMemoryAllocateInfo info{};
 			info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 			info.allocationSize = reqs.size;
 			// メモリタイプの判定
 			info.memoryTypeIndex = m_base->getMemoryTypeIndex(reqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 			// メモリの確保
-			vkAllocateMemory(m_base->m_device, &info, nullptr, &texture.memory);
+			vkAllocateMemory(m_base->GetVkDevice(), &info, nullptr, &texture.memory);
 			// メモリのバインド
-			vkBindImageMemory(m_base->m_device, texture.image, texture.memory, 0);
+			vkBindImageMemory(m_base->GetVkDevice(), texture.image, texture.memory, 0);
 		}
 
 		{
@@ -921,7 +871,7 @@ namespace nen::vk
 			ai.commandBufferCount = 1;
 			ai.commandPool = m_base->m_commandPool;
 			ai.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-			vkAllocateCommandBuffers(m_base->m_device, &ai, &command);
+			vkAllocateCommandBuffers(m_base->GetVkDevice(), &ai, &command);
 		}
 
 		VkCommandBufferBeginInfo commandBI{};
@@ -937,7 +887,7 @@ namespace nen::vk
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &command;
-		vkQueueSubmit(m_base->m_deviceQueue, 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueSubmit(m_base->GetVkQueue(), 1, &submitInfo, VK_NULL_HANDLE);
 		{
 			// テクスチャ参照用のビューを生成
 			VkImageViewCreateInfo ci{};
@@ -953,15 +903,15 @@ namespace nen::vk
 			};
 			ci.subresourceRange = {
 				VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-			vkCreateImageView(m_base->m_device, &ci, nullptr, &texture.view);
+			vkCreateImageView(m_base->GetVkDevice(), &ci, nullptr, &texture.view);
 		}
 
-		vkDeviceWaitIdle(m_base->m_device);
-		vkFreeCommandBuffers(m_base->m_device, m_base->m_commandPool, 1, &command);
+		vkDeviceWaitIdle(m_base->GetVkDevice());
+		vkFreeCommandBuffers(m_base->GetVkDevice(), m_base->m_commandPool, 1, &command);
 
 		// ステージングバッファ解放.
-		vkFreeMemory(m_base->m_device, stagingBuffer.memory, nullptr);
-		vkDestroyBuffer(m_base->m_device, stagingBuffer.buffer, nullptr);
+		vkFreeMemory(m_base->GetVkDevice(), stagingBuffer.memory, nullptr);
+		vkDestroyBuffer(m_base->GetVkDevice(), stagingBuffer.buffer, nullptr);
 
 		return texture;
 	}
@@ -1070,19 +1020,19 @@ namespace nen::vk
 			0,
 			nullptr,
 			VK_IMAGE_LAYOUT_UNDEFINED};
-		auto result = vkCreateImage(m_base->m_device, &imageCI, nullptr, &obj.image);
+		auto result = vkCreateImage(m_base->GetVkDevice(), &imageCI, nullptr, &obj.image);
 		ThrowIfFailed(result, "vkCreateImage Failed.");
 
 		VkMemoryRequirements reqs;
-		vkGetImageMemoryRequirements(m_base->m_device, obj.image, &reqs);
+		vkGetImageMemoryRequirements(m_base->GetVkDevice(), obj.image, &reqs);
 		VkMemoryAllocateInfo info{
 			VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
 			nullptr,
 			reqs.size,
 			GetMemoryTypeIndex(reqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)};
-		result = vkAllocateMemory(m_base->m_device, &info, nullptr, &obj.memory);
+		result = vkAllocateMemory(m_base->GetVkDevice(), &info, nullptr, &obj.memory);
 		ThrowIfFailed(result, "vkAllocateMemory Failed.");
-		vkBindImageMemory(m_base->m_device, obj.image, obj.memory, 0);
+		vkBindImageMemory(m_base->GetVkDevice(), obj.image, obj.memory, 0);
 
 		VkImageAspectFlags imageAspect = VK_IMAGE_ASPECT_COLOR_BIT;
 		if (usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
@@ -1099,7 +1049,7 @@ namespace nen::vk
 			imageCI.format,
 			vkutil::DefaultComponentMapping(),
 			{imageAspect, 0, 1, 0, 1}};
-		result = vkCreateImageView(m_base->m_device, &viewCI, nullptr, &obj.view);
+		result = vkCreateImageView(m_base->GetVkDevice(), &viewCI, nullptr, &obj.view);
 		ThrowIfFailed(result, "vkCreateImageView Failed.");
 		return obj;
 	}
@@ -1118,24 +1068,24 @@ namespace nen::vk
 			1,
 		};
 		VkFramebuffer framebuffer;
-		auto result = vkCreateFramebuffer(m_base->m_device, &fbCI, nullptr, &framebuffer);
+		auto result = vkCreateFramebuffer(m_base->GetVkDevice(), &fbCI, nullptr, &framebuffer);
 		ThrowIfFailed(result, "vkCreateFramebuffer Failed.");
 		return framebuffer;
 	}
 
 	void VKRenderer::DestroyBuffer(BufferObject bufferObj)
 	{
-		vkDestroyBuffer(m_base->m_device, bufferObj.buffer, nullptr);
-		vkFreeMemory(m_base->m_device, bufferObj.memory, nullptr);
+		vkDestroyBuffer(m_base->GetVkDevice(), bufferObj.buffer, nullptr);
+		vkFreeMemory(m_base->GetVkDevice(), bufferObj.memory, nullptr);
 	}
 
 	void VKRenderer::DestroyImage(ImageObject imageObj)
 	{
-		vkDestroyImage(m_base->m_device, imageObj.image, nullptr);
-		vkFreeMemory(m_base->m_device, imageObj.memory, nullptr);
+		vkDestroyImage(m_base->GetVkDevice(), imageObj.image, nullptr);
+		vkFreeMemory(m_base->GetVkDevice(), imageObj.memory, nullptr);
 		if (imageObj.view != VK_NULL_HANDLE)
 		{
-			vkDestroyImageView(m_base->m_device, imageObj.view, nullptr);
+			vkDestroyImageView(m_base->GetVkDevice(), imageObj.view, nullptr);
 		}
 	}
 
@@ -1143,7 +1093,7 @@ namespace nen::vk
 	{
 		for (uint32_t i = 0; i < count; ++i)
 		{
-			vkDestroyFramebuffer(m_base->m_device, framebuffers[i], nullptr);
+			vkDestroyFramebuffer(m_base->GetVkDevice(), framebuffers[i], nullptr);
 		}
 	}
 
@@ -1158,7 +1108,7 @@ namespace nen::vk
 		};
 
 		VkCommandBuffer command;
-		vkAllocateCommandBuffers(m_base->m_device, &commandAI, &command);
+		vkAllocateCommandBuffers(m_base->GetVkDevice(), &commandAI, &command);
 		vkBeginCommandBuffer(command, &beginInfo);
 		return command;
 	}
@@ -1171,7 +1121,7 @@ namespace nen::vk
 		VkFenceCreateInfo fenceCI{
 			VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
 			nullptr, 0};
-		result = vkCreateFence(m_base->m_device, &fenceCI, nullptr, &fence);
+		result = vkCreateFence(m_base->GetVkDevice(), &fenceCI, nullptr, &fence);
 
 		VkSubmitInfo submitInfo{
 			VK_STRUCTURE_TYPE_SUBMIT_INFO,
@@ -1184,9 +1134,9 @@ namespace nen::vk
 			0,
 			nullptr,
 		};
-		vkQueueSubmit(m_base->m_deviceQueue, 1, &submitInfo, fence);
-		vkWaitForFences(m_base->m_device, 1, &fence, VK_TRUE, UINT64_MAX);
-		vkDestroyFence(m_base->m_device, fence, nullptr);
+		vkQueueSubmit(m_base->GetVkQueue(), 1, &submitInfo, fence);
+		vkWaitForFences(m_base->GetVkDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
+		vkDestroyFence(m_base->GetVkDevice(), fence, nullptr);
 	}
 
 	std::vector<BufferObject> VKRenderer::CreateUniformBuffers(uint32_t size, uint32_t imageCount)
@@ -1203,9 +1153,9 @@ namespace nen::vk
 	void VKRenderer::WriteToHostVisibleMemory(VkDeviceMemory memory, uint32_t size, const void *pData)
 	{
 		void *p;
-		vkMapMemory(m_base->m_device, memory, 0, VK_WHOLE_SIZE, 0, &p);
+		vkMapMemory(m_base->GetVkDevice(), memory, 0, VK_WHOLE_SIZE, 0, &p);
 		memcpy(p, pData, size);
-		vkUnmapMemory(m_base->m_device, memory);
+		vkUnmapMemory(m_base->GetVkDevice(), memory);
 	}
 
 	void VKRenderer::AllocateCommandBufferSecondary(uint32_t count, VkCommandBuffer *pCommands)
@@ -1214,13 +1164,13 @@ namespace nen::vk
 			VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
 			nullptr, m_base->m_commandPool,
 			VK_COMMAND_BUFFER_LEVEL_SECONDARY, count};
-		auto result = vkAllocateCommandBuffers(m_base->m_device, &commandAI, pCommands);
+		auto result = vkAllocateCommandBuffers(m_base->GetVkDevice(), &commandAI, pCommands);
 		ThrowIfFailed(result, "vkAllocateCommandBuffers Failed.");
 	}
 
 	void VKRenderer::FreeCommandBufferSecondary(uint32_t count, VkCommandBuffer *pCommands)
 	{
-		vkFreeCommandBuffers(m_base->m_device, m_base->m_commandPool, count, pCommands);
+		vkFreeCommandBuffers(m_base->GetVkDevice(), m_base->m_commandPool, count, pCommands);
 	}
 
 	void VKRenderer::TransferStageBufferToImage(const BufferObject &srcBuffer, const ImageObject &dstImage, const VkBufferImageCopy *region)
@@ -1266,8 +1216,8 @@ namespace nen::vk
 	VkDevice VKRenderer::GetDevice()
 	{
 		if (m_base)
-			return m_base->m_device;
-		return m_base->m_device;
+			return m_base->GetVkDevice();
+		return m_base->GetVkDevice();
 	}
 	void VKRenderer::registerTexture(std::shared_ptr<SpriteVK> texture, std::string_view ID, TextureType type)
 	{
@@ -1318,7 +1268,7 @@ namespace nen::vk
 			if (itr != mTextures3D.end())
 			{
 				DestroyBuffer((*itr)->buffer);
-				vkFreeDescriptorSets(m_base->m_device, m_descriptorPool, static_cast<uint32_t>(texture->uniformBuffers.size()), texture->descripterSet.data());
+				vkFreeDescriptorSets(m_base->GetVkDevice(), m_descriptorPool, static_cast<uint32_t>(texture->uniformBuffers.size()), texture->descripterSet.data());
 				for (auto &i : (*itr)->uniformBuffers)
 				{
 					DestroyBuffer(i);
@@ -1329,20 +1279,51 @@ namespace nen::vk
 		}
 		else
 		{
+			auto device = m_base->GetVkDevice();
 			auto itr = std::find(mTextures2D.begin(), mTextures2D.end(), texture);
-			DestroyVulkanObject<VkBuffer>(m_base->m_device, (*itr)->buffer.buffer, &vkDestroyBuffer);
-			DestroyVulkanObject<VkDeviceMemory>(m_base->m_device, (*itr)->buffer.memory, &vkFreeMemory);
-			vkFreeDescriptorSets(m_base->m_device, m_descriptorPool, static_cast<uint32_t>(texture->uniformBuffers.size()), texture->descripterSet.data());
+			DestroyVulkanObject<VkBuffer>(device, (*itr)->buffer.buffer, &vkDestroyBuffer);
+			DestroyVulkanObject<VkDeviceMemory>(device, (*itr)->buffer.memory, &vkFreeMemory);
+			vkFreeDescriptorSets(device, m_descriptorPool, static_cast<uint32_t>(texture->uniformBuffers.size()), texture->descripterSet.data());
 			for (auto &i : (*itr)->uniformBuffers)
 			{
-				DestroyVulkanObject<VkBuffer>(m_base->m_device, i.buffer, &vkDestroyBuffer);
-				DestroyVulkanObject<VkDeviceMemory>(m_base->m_device, i.memory, &vkFreeMemory);
+				DestroyVulkanObject<VkBuffer>(device, i.buffer, &vkDestroyBuffer);
+				DestroyVulkanObject<VkDeviceMemory>(device, i.memory, &vkFreeMemory);
 			}
 			if (itr != mTextures2D.end())
 			{
 				mTextures2D.erase(itr);
 			}
 		}
+	}
+	void VKRenderer::renderEffekseer(VkCommandBuffer command)
+	{
+		mEffectManager->GetMemoryPool()->NewFrame();
+		EffekseerRendererVulkan::BeginCommandList(mEffectManager->GetCommandList(), command);
+		mEffectManager->GetRenderer()->SetCommandList(mEffectManager->GetCommandList());
+		static float oldtime = SDL_GetTicks();
+		float nowtime = SDL_GetTicks();
+		static float timer = 0.f;
+		timer += (nowtime - oldtime) / 1000.f;
+		for (auto i : this->mRenderer->GetEffectComponent())
+		{
+			auto eref = mEffectManager->GetEffect(i->GetPath());
+			auto p = i->GetPosition();
+			if (timer > 0.2f)
+			{
+				mEffectManager->GetManager()->StopEffect(i->handle);
+				mEffectManager->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
+				i->handle = mEffectManager->handle;
+				timer = 0.f;
+			}
+			mEffectManager->GetManager()->SetLocation(i->handle, ::Effekseer::Vector3D(p.x, p.y, p.z));
+		}
+		oldtime = SDL_GetTicks();
+		mEffectManager->GetManager()->Update();
+		mEffectManager->GetRenderer()->BeginRendering();
+		mEffectManager->GetManager()->Draw();
+		mEffectManager->GetRenderer()->EndRendering();
+		mEffectManager->GetRenderer()->SetCommandList(mEffectManager->GetCommandList());
+		EffekseerRendererVulkan::EndCommandList(mEffectManager->GetCommandList());
 	}
 }
 #endif

@@ -54,20 +54,12 @@ namespace nen::vk
 		VkDevice m_device;
 		VkPhysicalDevice m_physDev;
 
-		//VkSurfaceKHR m_surface;
-		//VkSurfaceFormatKHR m_surfaceFormat;
-		//VkSurfaceCapabilitiesKHR m_surfaceCaps;
-
 		VkPhysicalDeviceMemoryProperties m_physMemProps;
 
 		uint32_t m_graphicsQueueIndex;
 		VkQueue m_deviceQueue;
 
 		VkCommandPool m_commandPool;
-		//VkSwapchainKHR m_swapchain;
-		//VkExtent2D m_swapchainExtent;
-		//std::vector<VkImage> m_swapchainImages;
-		//std::vector<VkImageView> m_swapchainViews;
 
 		VkImage m_depthBuffer;
 		VkDeviceMemory m_depthBufferMemory;

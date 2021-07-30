@@ -52,9 +52,9 @@ namespace nen::vk
 	{
 	public:
 		VKRenderer();
-
 		void initialize(::SDL_Window *window, const char *appName);
 		void setRenderer(class nen::Renderer *renderer) { mRenderer = renderer; }
+		nen::Renderer* GetRenderer() { return mRenderer; }
 		void terminate();
 		void prepare();
 		void render();
@@ -63,10 +63,8 @@ namespace nen::vk
 		void draw3d(VkCommandBuffer);
 		void draw2d(VkCommandBuffer);
 		BufferObject CreateBuffer(uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-
 		VKBase *GetBase() { return m_base.get(); }
 		BufferObject CreateBuffer(uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags, const void *initialData);
-
 		void registerTexture(std::shared_ptr<SpriteVK> texture, std::string_view, TextureType type);
 		void unregisterTexture(std::shared_ptr<SpriteVK> texture, TextureType type);
 		void registerImageObject(std::shared_ptr<Texture>);
@@ -75,7 +73,6 @@ namespace nen::vk
 		VkRenderPass GetRenderPass(const std::string &name);
 		VkDescriptorPool GetDescriptorPool() const { return m_descriptorPool; }
 		VkDevice GetDevice();
-
 		uint32_t GetMemoryTypeIndex(uint32_t requestBits, VkMemoryPropertyFlags requestProps) const;
 		void RegisterLayout(const std::string &name, VkDescriptorSetLayout &layout) { m_descriptorSetLayout; }
 		void RegisterRenderPass(const std::string &name, VkRenderPass renderPass);
@@ -84,33 +81,19 @@ namespace nen::vk
 		void DestroyBuffer(BufferObject bufferObj);
 		void DestroyImage(ImageObject imageObj);
 		void DestroyFramebuffers(uint32_t count, VkFramebuffer *framebuffers);
-
 		VkCommandBuffer CreateCommandBuffer();
 		void FinishCommandBuffer(VkCommandBuffer command);
-
 		std::vector<BufferObject> CreateUniformBuffers(uint32_t size, uint32_t imageCount);
-
 		const std::vector<std::shared_ptr<SpriteVK>> &GetSprite2Ds() { return mTextures2D; }
 		const std::vector<std::shared_ptr<SpriteVK>> &GetSprite3Ds() { return mTextures3D; }
-
-		// ホストから見えるメモリ領域にデータを書き込む.以下バッファを対象に使用.
-		// - ステージングバッファ
-		// - ユニフォームバッファ
 		void WriteToHostVisibleMemory(VkDeviceMemory memory, uint32_t size, const void *pData);
-
 		void AllocateCommandBufferSecondary(uint32_t count, VkCommandBuffer *pCommands);
 		void FreeCommandBufferSecondary(uint32_t count, VkCommandBuffer *pCommands);
-
 		void TransferStageBufferToImage(const BufferObject &srcBuffer, const ImageObject &dstImage, const VkBufferImageCopy *region);
-
 		void MapMemory(VkDeviceMemory memory, void *data, size_t size);
 		void AddVertexArray(const VertexArrayForVK &vArray, std::string_view name);
 		void UpdateVertexArray(const VertexArrayForVK &vArray, std::string_view name);
-
 		void SetEffect(std::unique_ptr<class EffectVK> effect) { mEffectManager = std::move(effect); }
-
-		friend VKBase;
-
 	private:
 		class Renderer *mRenderer;
 		std::unique_ptr<class VKBase> m_base;
@@ -124,24 +107,20 @@ namespace nen::vk
 		void prepareDescriptorSet(std::shared_ptr<SpriteVK>);
 		void prepareImGUI();
 		void renderImGUI(VkCommandBuffer command);
-		VkPipelineShaderStageCreateInfo loadShaderModule(const char *fileName, VkShaderStageFlagBits stage);
+		void renderEffekseer(VkCommandBuffer command);
 		VkSampler createSampler();
 		ImageObject createTextureFromSurface(const ::SDL_Surface &surface);
 		ImageObject createTextureFromMemory(const std::vector<char> &imageData);
 		void setImageMemoryBarrier(VkCommandBuffer command, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
-
 		std::unordered_map<std::string, VertexArrayForVK> m_VertexArrays;
-
 		ImageObject m_shadowColor;
 		ImageObject m_shadowDepth;
 		std::vector<float> m_faceWeights;
 		VkFramebuffer m_shadowFramebuffer;
 		std::vector<VkDescriptorSetLayout> layouts;
-
 		VkDescriptorSetLayout m_descriptorSetLayout;
 		VkDescriptorPool m_descriptorPool;
 		VkSampler m_sampler;
-
 		VkPhysicalDeviceMemoryProperties m_physicalMemProps;
 		PipelineLayout mPipelineLayout;
 		Pipeline pipelineOpaque;

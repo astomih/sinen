@@ -442,7 +442,7 @@ namespace nen::vk
 		mSwapchain->AcquireNextImage(&nextImageIndex, m_presentCompletedSem);
 		auto commandFence = m_fences[nextImageIndex];
 
-		auto color = m_vkrenderer->mRenderer->GetClearColor();
+		auto color = m_vkrenderer->GetRenderer()->GetClearColor();
 		// クリア値
 		std::array<VkClearValue, 2> clearValue =
 			{

@@ -1,5 +1,7 @@
 ﻿#ifndef EMSCRIPTEN
 #include <Engine.hpp>
+#include <SDL.h>
+#include <GL/glew.h>
 #include "../../include/OpenGL/GLRenderer.h"
 #include <fstream>
 #include <sstream>
@@ -17,7 +19,7 @@
 
 namespace nen::gl
 {
-	void GLRenderer::initialize(::SDL_Window *window, ::SDL_GLContext context)
+	void GLRenderer::initialize(::SDL_Window *window, SDL_GLContext context)
 	{
 		mWindow = window;
 		// Create an OpenGL context
@@ -251,12 +253,12 @@ namespace nen::gl
 	{
 		// Create sprite shader
 		mSpriteShader = new ShaderGL();
-		if (!mSpriteShader->Load("sprite.vert", "sprite.frag"))
+		if (!mSpriteShader->Load("Assets/Shader/GL/sprite.vert", "Assets/Shader/GL/sprite.frag"))
 		{
 			return false;
 		}
 		mAlphaShader = new ShaderGL();
-		if (!mAlphaShader->Load("sprite.vert", "alpha.frag"))
+		if (!mAlphaShader->Load("Assets/Shader/GL/sprite.vert", "Assets/Shader/GL/alpha.frag"))
 		{
 			return false;
 		}

@@ -1,6 +1,7 @@
 ﻿#include <Engine.hpp>
 #include <Components.hpp>
 #include <SDL_image.h>
+#include <SDL_net.h>
 namespace nen
 {
 	Renderer::Renderer(GraphicsAPI api)
@@ -84,7 +85,8 @@ namespace nen
 		SDL_GLContext context;
 		esRenderer = std::make_unique<es::ESRenderer>();
 		SDL_Init(SDL_INIT_EVERYTHING);
-		TTF_Init();
+		if (TTF_Init() == -1)
+			std::cout << "SDL2_TTF failed initialize." << std::endl;
 		IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -114,6 +116,9 @@ namespace nen
 		mEffectManager->Init(esRenderer.get());
 		std::cout << "INFO: Effekseer Initialized" << std::endl;
 #endif
+		if (SDLNet_Init() != 0)
+			std::cout << "net init error." << std::endl;
+		
 		Window::Info::id = SDL_GetWindowID(mWindow);
 		SDL_VERSION(&Window::Info::info.version);
 	}

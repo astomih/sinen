@@ -27,15 +27,19 @@ namespace nen
 			mAudioSystem = nullptr;
 			std::exit(1);
 		}
+		std::cout << "INFO: Audio system Initialized." << std::endl;
 		mInputSystem = new InputSystem();
 		if (!mInputSystem->Initialize())
 		{
 			std::cout << "Failed to initialize input system" << std::endl;
 		}
+		std::cout << "INFO: Input system Initialized." << std::endl;
 		// スクリプトのインスタンスを作成
 		Script::Create();
+		std::cout << "INFO: Script system Initialized." << std::endl;
 		// シーンのデータを読み込み
 		LoadData();
+		std::cout << "INFO: Loaded scene data." << std::endl;
 		// デルタタイムを読み込み
 		mTicksCount = SDL_GetTicks();
 	}

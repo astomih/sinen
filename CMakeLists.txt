@@ -87,7 +87,7 @@ target_link_libraries(nen ./lib/lua/lua)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
 	set(CMAKE_CXX_FLAGS
-		"${CMAKE_CXX_FLAGS} -O2 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_SDL_TTF=2 -s USE_SDL_MIXER=2 -std=c++2b")
+		"${CMAKE_CXX_FLAGS} -O2 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_SDL_TTF=2 -s USE_SDL_MIXER=2 -s USE_SDL_NET=2 -std=c++2b")
 
 else ()
 	#TODO

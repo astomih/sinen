@@ -106,9 +106,20 @@ namespace nen
 			   mState.Keyboard.mCurrState,
 			   SDL_NUM_SCANCODES);
 
-		// Mouse (just set everything to 0)
-		mState.Mouse.mCurrButtons = 0;
-		mState.Mouse.mPrevButtons = 0;
+		int x = 0, y = 0;
+		if (mState.Mouse.mIsRelative)
+		{
+			mState.Mouse.mCurrButtons =
+				SDL_GetRelativeMouseState(&x, &y);
+		}
+		else
+		{
+			mState.Mouse.mCurrButtons =
+				SDL_GetMouseState(&x, &y);
+		}
+
+		mState.Mouse.mMousePos.x = static_cast<float>(x);
+		mState.Mouse.mMousePos.y = static_cast<float>(y);
 
 		// Get the connected controller, if it exists
 		mController = SDL_GameControllerOpen(0);

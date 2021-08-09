@@ -32,7 +32,7 @@ namespace nen
 			height = m_surface->h;
 			return true;
 		}
-		::SDL_Log("%s", ::IMG_GetError());
+		std::cout << ::IMG_GetError() << std::endl;
 		return false;
 	}
 	bool Texture::LoadFromMemory(std::vector<char> &buffer, std::string_view ID)
@@ -41,14 +41,14 @@ namespace nen
 		auto rw = std::unique_ptr<::SDL_RWops, SDLObjectCloser>(::SDL_RWFromMem(reinterpret_cast<void *>(buffer.data()), buffer.size()));
 		if (!rw)
 		{
-			::SDL_Log("%s", ::SDL_GetError());
+			std::cout << ::IMG_GetError() << std::endl;
 			return false;
 		}
 
 		auto temp = std::unique_ptr<::SDL_Surface, SDLObjectCloser>(IMG_Load_RW(rw.get(), 1));
 		if (!temp)
 		{
-			::SDL_Log("%s", ::IMG_GetError());
+			std::cout << ::IMG_GetError() << std::endl;
 			return false;
 		}
 
@@ -64,7 +64,7 @@ namespace nen
 		m_surface = std::unique_ptr<::SDL_Surface, SDLObjectCloser>(::SDL_ConvertSurface(temp.get(), formatbuf, 0));
 		if (!m_surface)
 		{
-			::SDL_Log("%s", ::SDL_GetError());
+			std::cout << ::IMG_GetError() << std::endl;
 			return false;
 		}
 

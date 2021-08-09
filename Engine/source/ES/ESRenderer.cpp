@@ -11,6 +11,7 @@
 #include <Effekseer.h>
 #include <EffekseerRendererGL.h>
 #include <Engine/include/Effect.hpp>
+#include <Components.hpp>
 
 #define _countof(array) (sizeof(array) / sizeof(array[0]))
 
@@ -26,10 +27,10 @@ namespace nen
 			IMGUI_CHECKVERSION();
 			ImGui::CreateContext();
 			ImGuiIO &io = ImGui::GetIO();
-			
+
 			(void)io;
 			io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-    		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+			io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
 			io.IniFilename = NULL;
 			ImGui_ImplSDL2_InitForOpenGL(window, context);
 			ImGui_ImplOpenGL3_Init("#version 100");
@@ -50,21 +51,24 @@ namespace nen
 			auto color = mRenderer->GetClearColor();
 			glClearColor(color.x, color.y, color.z, 1.0);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			static int time = 0;
-			if (time % 120 == 0)
+			static float oldtime = SDL_GetTicks();
+			float nowtime = SDL_GetTicks();
+			static float timer = 0.f;
+			timer += (nowtime - oldtime) / 1000.f;
+			for (auto i : this->mRenderer->GetEffectComponent())
 			{
-				// Play an effect
-				mEffectManager->handle = mEffectManager->GetManager()->Play(mEffectManager->GetEffect(u"Laser01.efk"), 0, 0, 0);
-				time = 0;
+				auto eref = mEffectManager->GetEffect(i->GetPath());
+				auto p = i->GetPosition();
+				if (timer > 0.2f)
+				{
+					mEffectManager->GetManager()->StopEffect(i->handle);
+					mEffectManager->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
+					i->handle = mEffectManager->handle;
+					timer = 0.f;
+				}
+				mEffectManager->GetManager()->SetLocation(i->handle, ::Effekseer::Vector3D(p.x, p.y, p.z));
 			}
-
-			if (time % 120 == 119)
-			{
-				// Stop effects
-				mEffectManager->GetManager()->StopEffect(mEffectManager->handle);
-			}
-			time++;
+			oldtime = SDL_GetTicks();
 			// Move the effect
 			//manager->AddLocation(handle, ::Effekseer::Vector3D(0.2f, 0.0f, 0.0f));
 
@@ -254,12 +258,12 @@ namespace nen
 		{
 			// Create sprite shader
 			mSpriteShader = new gl::ShaderGL();
-			if (!mSpriteShader->Load("sprite.vert", "sprite.frag"))
+			if (!mSpriteShader->Load("Assets/Shader/GLES/sprite.vert", "Assets/Shader/GLES/sprite.frag"))
 			{
 				return false;
 			}
 			mAlphaShader = new gl::ShaderGL();
-			if (!mAlphaShader->Load("sprite.vert", "alpha.frag"))
+			if (!mAlphaShader->Load("Assets/Shader/GLES/sprite.vert", "Assets/Shader/GLES/alpha.frag"))
 			{
 				return false;
 			}

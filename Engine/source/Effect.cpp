@@ -3,38 +3,12 @@
 #ifndef EMSCRIPTEN
 #include <EffekseerRendererVulkan.h>
 #endif
-#ifdef EMSCRIPTEN
-#include <Renderer.h>
+#include <Engine/include/Renderer.h>
 #include <EffekseerRenderer/EffekseerRendererGL.MaterialLoader.h>
 #include <EffekseerRenderer/EffekseerRendererGL.RendererImplemented.h>
 #include <EffekseerRenderer/GraphicsDevice.h>
+#include <fstream>
 #include <SDL_image.h>
-static void ArrayToMatrix44(const float *array, Effekseer::Matrix44 &matrix)
-{
-	for (int i = 0; i < 4; i++)
-	{
-		for (int j = 0; j < 4; j++)
-		{
-			matrix.Values[i][j] = array[i * 4 + j];
-		}
-	}
-}
-
-static void ArrayToMatrix43(const float *array, Effekseer::Matrix43 &matrix)
-{
-	for (int i = 0; i < 4; i++)
-	{
-		for (int j = 0; j < 3; j++)
-		{
-			matrix.Value[i][j] = array[i * 4 + j];
-		}
-	}
-}
-
-static void PrintEffekseerLog(const std::string &message)
-{
-	printf("%s\n", message.c_str());
-}
 using namespace Effekseer;
 
 class CustomTextureLoader : public TextureLoader
@@ -50,10 +24,14 @@ public:
 public:
 	Effekseer::TextureRef Load(const EFK_CHAR *path, Effekseer::TextureType textureType) override
 	{
-
 		std::array<char, 260> path8;
 		Effekseer::ConvertUtf16ToUtf8(path8.data(), static_cast<int32_t>(path8.size()), path);
 		SDL_Surface *surf = ::IMG_Load(path8.data());
+		if (!surf)
+		{
+			std::cout << "ERROR: Failed to load \"" << std::string(path8.data()) << "\".\n"
+					  << IMG_GetError() << std::endl;
+		}
 		::SDL_LockSurface(surf);
 		auto formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
 		formatbuf->BytesPerPixel = 4;
@@ -65,37 +43,31 @@ public:
 		glBindTexture(GL_TEXTURE_2D, texture);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surf->w, surf->h, 0, GL_RGBA,
 					 GL_UNSIGNED_BYTE, imagedata->pixels);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		// Use linear filtering
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
 
 		// Load texture from image
 
 		std::string pathStr = path8.data();
 
 		auto backend = static_cast<EffekseerRendererGL::Backend::GraphicsDevice *>(graphicsDevice_)
-						   ->CreateTexture(texture, true, [texture, pathStr]() -> void
+						   ->CreateTexture(texture, false, [texture, pathStr]() -> void
 										   {
 											   glDeleteTextures(1, &texture);
-											   PrintEffekseerLog("Effekseer : Unload : " + pathStr);
 										   });
 		auto textureData = Effekseer::MakeRefPtr<Effekseer::Texture>();
 		textureData->SetBackend(backend);
-
-		PrintEffekseerLog("Effekseer : Load : " + pathStr);
-
+		std::cout << "INFO: Loaded \"" << pathStr << "\"." << std::endl;
 		SDL_FreeSurface(surf);
 		SDL_FreeSurface(imagedata);
 		SDL_FreeFormat(formatbuf);
-
 		return textureData;
 	}
 
 	void Unload(Effekseer::TextureRef data) override {}
 };
-#endif
 
 #ifndef EMSCRIPTEN
 namespace nen::vk
@@ -149,23 +121,24 @@ namespace nen::es
 	}
 
 }
+
 namespace nen
 {
 	Effect::Effect()
 #ifndef EMSCRIPTEN
 		: manager(Effekseer::Manager::Create(8000))
 #else
-		: manager(Effekseer::Manager::Create(1000))
+		: manager(Effekseer::Manager::Create(8000))
 #endif
 	{
 	}
 	Effekseer::EffectRef Effect::GetEffectRef(const std::u16string &filePath)
 	{
-
 		if (!effects.contains(filePath))
 		{
 			auto ref = Effekseer::Effect::Create(this->manager, filePath.c_str(), 10.f);
 			effects.insert({filePath, ref});
+			return ref;
 		}
 		else
 		{
@@ -239,7 +212,7 @@ namespace nen
 
 		// Specify a texture, model and material loader
 		// It can be extended by yourself. It is loaded from a file on now.
-		manager->SetTextureLoader(renderer->CreateTextureLoader());
+		manager->SetTextureLoader(Effekseer::MakeRefPtr<CustomTextureLoader>(renderer->GetGraphicsDevice().Get()));
 		manager->SetModelLoader(renderer->CreateModelLoader());
 		manager->SetMaterialLoader(renderer->CreateMaterialLoader());
 
@@ -258,11 +231,70 @@ namespace nen
 	}
 #endif
 #ifdef EMSCRIPTEN
+	class CustomFileReader : public Effekseer::FileReader
+	{
+		uint8_t *fileData;
+		size_t fileSize;
+		int currentPosition;
+
+	public:
+		CustomFileReader(uint8_t *fileData, size_t fileSize) : fileData(fileData), fileSize(fileSize), currentPosition(0) {}
+		~CustomFileReader() { free(fileData); }
+		size_t Read(void *buffer, size_t size)
+		{
+			if (currentPosition + size > fileSize)
+			{
+				size = fileSize - currentPosition;
+			}
+			memcpy(buffer, fileData + currentPosition, size);
+			currentPosition += size;
+			return size;
+		}
+		void Seek(int position) { currentPosition = position; }
+		int GetPosition() { return currentPosition; }
+		size_t GetLength() { return fileSize; }
+	};
+
+	class CustomFileInterface : public Effekseer::FileInterface
+	{
+	public:
+		Effekseer::FileReader *OpenRead(const EFK_CHAR *path, bool isRequired)
+		{
+			std::cout << "INFO: OpenRead() called." << std::endl;
+			// Request to load file
+			std::array<char, 260> path8;
+			Effekseer::ConvertUtf16ToUtf8(path8.data(), static_cast<int32_t>(path8.size()), path);
+			std::ifstream ifs(path8.data());
+			if (ifs.fail())
+			{
+				std::cout << "ERROR: Failed file open." << std::endl;
+			}
+			std::string fdata = std::string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
+			ifs.close();
+			uint8_t *fileData = reinterpret_cast<uint8_t *>(fdata.data());
+			int fileSize = fdata.size();
+
+			if (fileData == nullptr)
+			{
+				return nullptr;
+			}
+
+			return new CustomFileReader(fileData, fileSize);
+		}
+
+		Effekseer::FileReader *OpenRead(const EFK_CHAR *path) override { return OpenRead(path, true); }
+
+		Effekseer::FileReader *TryOpenRead(const EFK_CHAR *path) override { return OpenRead(path, false); }
+
+		Effekseer::FileWriter *OpenWrite(const EFK_CHAR *path) override { return nullptr; }
+	};
+	CustomFileInterface fileInterface;
+
 	void Effect::Init(::nen::es::ESRenderer *glrenderer)
 	{
 		// Create a renderer of effects
 		auto renderer = ::EffekseerRendererGL::Renderer::Create(
-			1000,
+			8000,
 			EffekseerRendererGL::OpenGLDeviceType::OpenGLES3);
 
 		// Sprcify rendering modules
@@ -275,21 +307,22 @@ namespace nen
 		// Specify a texture, model and material loader
 		manager->SetTextureLoader(Effekseer::MakeRefPtr<CustomTextureLoader>(renderer->GetGraphicsDevice().Get()));
 		manager->SetModelLoader(renderer->CreateModelLoader(&fileInterface));
-		manager->SetCurveLoader(Effekseer::MakeRefPtr<Effekseer::CurveLoader>(&fileInterface));
+		//manager->SetModelLoader(renderer->CreateModelLoader());
+		//manager->SetMaterialLoader(renderer->CreateMaterialLoader());
+		//	manager->SetCurveLoader(Effekseer::MakeRefPtr<Effekseer::CurveLoader>(&fileInterface));
 
 		manager->SetMaterialLoader(Effekseer::MakeRefPtr<EffekseerRendererGL::MaterialLoader>(
 			renderer->GetGraphicsDevice().DownCast<EffekseerRendererGL::Backend::GraphicsDevice>(), &fileInterface, false));
 
-		// Specify a position of view
-		auto g_position = ::Effekseer::Vector3D(10.0f, 5.0f, 20.0f);
+		auto g_position = ::Effekseer::Vector3D(0.0f, 0.0f, 0.0f);
 
 		// Specify a projection matrix
 		renderer->SetProjectionMatrix(
-			::Effekseer::Matrix44().PerspectiveFovRH(90.0f / 180.0f * 3.14f, Window::Size.x / Window::Size.y, 1.0f, 500.0f));
+			::Effekseer::Matrix44().PerspectiveFovRH(Math::ToRadians(90.f), Window::Size.x / Window::Size.y, 0.01f, 10000.f));
 
 		// Specify a camera matrix
 		renderer->SetCameraMatrix(
-			::Effekseer::Matrix44().LookAtRH(g_position, ::Effekseer::Vector3D(0.0f, 0.0f, 0.0f), ::Effekseer::Vector3D(0.0f, 1.0f, 0.0f)));
+			::Effekseer::Matrix44().LookAtRH(g_position, ::Effekseer::Vector3D(0.0f, 0.0f, -1.f), ::Effekseer::Vector3D(0.0f, 1.0f, 0.0f)));
 
 		glrenderer->SetEffect(std::make_unique<es::EffectGL>(renderer, manager, *this));
 	}

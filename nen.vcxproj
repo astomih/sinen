@@ -46,7 +46,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir);$(ProjectDir)Engine;$(ProjectDir)lib\imgui\include;$(ProjectDir)Actor;$(ProjectDir)Components;$(BOOST_INCLUDE_PATH);$(ProjectDir)Engine\include\Vulkan;$(ProjectDir)lib\mojoAL-default;$(ProjectDir)lib\sol2-3.2.2\include;$(ProjectDir)lib\rapidjson\include;$(ProjectDir)Scene\include;$(ProjectDir)lib\tinyobjloader;$(ProjectDir)lib\sdl2_gfx\include;$(ProjectDir)lib\Effekseer\include\Effekseer;$(ProjectDir)lib\Effekseer\include\EffekseerRendererGL;$(ProjectDir)lib\Effekseer\include\EffekseerRendererVulkan;$(ProjectDir)lib\LLGI\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir);$(ProjectDir)Engine;$(ProjectDir)lib\imgui\include;$(ProjectDir)Actor;$(ProjectDir)Components;$(BOOST_INCLUDE_PATH);$(ProjectDir)Engine\include\Vulkan;$(ProjectDir)lib\mojoAL-default;$(ProjectDir)lib\sol2-3.2.2\include;$(ProjectDir)lib\rapidjson\include;$(ProjectDir)Scene\include;$(ProjectDir)lib\tinyobjloader;$(ProjectDir)lib\sdl2_gfx\include;$(ProjectDir)lib\Effekseer\include\Effekseer;$(ProjectDir)lib\Effekseer\include\EffekseerRendererGL;$(ProjectDir)lib\Effekseer\include\EffekseerRendererVulkan;$(ProjectDir)lib\LLGI\include;$(ProjectDir)\lib\Effekseer\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VK_SDK_PATH)\Lib32;$(BOOST_LIBRARY_PATH);$(ProjectDir)lib\sdl2_gfx\lib;%(AdditionalLibraryDirectories);$(ProjectDir)lib\Effekseer\Debug;$(ProjectDir)lib\LLGI\Debug;$(LibraryPath)</LibraryPath>
     <TargetExt>.lib</TargetExt>
     <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -240,6 +240,8 @@
     <Import Project="packages\lua.5.4.3\build\native\Lua.targets" Condition="Exists('packages\lua.5.4.3\build\native\Lua.targets')" />
     <Import Project="packages\sdl2_mixer.nuget.redist.2.0.4\build\native\sdl2_mixer.nuget.redist.targets" Condition="Exists('packages\sdl2_mixer.nuget.redist.2.0.4\build\native\sdl2_mixer.nuget.redist.targets')" />
     <Import Project="packages\sdl2_mixer.nuget.2.0.4\build\native\sdl2_mixer.nuget.targets" Condition="Exists('packages\sdl2_mixer.nuget.2.0.4\build\native\sdl2_mixer.nuget.targets')" />
+    <Import Project="packages\sdl2_net.nuget.redist.2.0.1.2\build\native\sdl2_net.nuget.redist.targets" Condition="Exists('packages\sdl2_net.nuget.redist.2.0.1.2\build\native\sdl2_net.nuget.redist.targets')" />
+    <Import Project="packages\sdl2_net.nuget.2.0.1.2\build\native\sdl2_net.nuget.targets" Condition="Exists('packages\sdl2_net.nuget.2.0.1.2\build\native\sdl2_net.nuget.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -257,5 +259,7 @@
     <Error Condition="!Exists('packages\lua.5.4.3\build\native\Lua.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\lua.5.4.3\build\native\Lua.targets'))" />
     <Error Condition="!Exists('packages\sdl2_mixer.nuget.redist.2.0.4\build\native\sdl2_mixer.nuget.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\sdl2_mixer.nuget.redist.2.0.4\build\native\sdl2_mixer.nuget.redist.targets'))" />
     <Error Condition="!Exists('packages\sdl2_mixer.nuget.2.0.4\build\native\sdl2_mixer.nuget.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\sdl2_mixer.nuget.2.0.4\build\native\sdl2_mixer.nuget.targets'))" />
+    <Error Condition="!Exists('packages\sdl2_net.nuget.redist.2.0.1.2\build\native\sdl2_net.nuget.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\sdl2_net.nuget.redist.2.0.1.2\build\native\sdl2_net.nuget.redist.targets'))" />
+    <Error Condition="!Exists('packages\sdl2_net.nuget.2.0.1.2\build\native\sdl2_net.nuget.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\sdl2_net.nuget.2.0.1.2\build\native\sdl2_net.nuget.targets'))" />
   </Target>
 </Project>

@@ -64,8 +64,8 @@ namespace nen::vk
 		// 不透明用: パイプラインの構築
 		{
 			std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-				VulkanShader::LoadModule(m_base->GetVkDevice(), "shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-				VulkanShader::LoadModule(m_base->GetVkDevice(), "shaderOpaque.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
+				VulkanShader::LoadModule(m_base->GetVkDevice(), "Assets/Shader/Vulkan/shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+				VulkanShader::LoadModule(m_base->GetVkDevice(), "Assets/Shader/Vulkan/shaderOpaque.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
 			pipelineOpaque.Initialize(mPipelineLayout, m_base->m_renderPass, shaderStages);
 			pipelineOpaque.ColorBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
 			pipelineOpaque.AlphaBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
@@ -76,8 +76,8 @@ namespace nen::vk
 		// 半透明用: パイプラインの構築
 		{
 			std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-				VulkanShader::LoadModule(m_base->GetVkDevice(), "shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-				VulkanShader::LoadModule(m_base->GetVkDevice(), "shaderAlpha.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
+				VulkanShader::LoadModule(m_base->GetVkDevice(), "Assets/Shader/Vulkan/shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+				VulkanShader::LoadModule(m_base->GetVkDevice(), "Assets/Shader/Vulkan/shaderAlpha.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
 			pipelineAlpha.Initialize(mPipelineLayout, m_base->m_renderPass, shaderStages);
 			pipelineAlpha.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
 			pipelineAlpha.AlphaBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
@@ -89,8 +89,8 @@ namespace nen::vk
 		// 2D用: パイプラインの構築
 		{
 			std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-				VulkanShader::LoadModule(m_base->GetVkDevice(), "shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-				VulkanShader::LoadModule(m_base->GetVkDevice(), "shaderAlpha.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
+				VulkanShader::LoadModule(m_base->GetVkDevice(), "Assets/Shader/Vulkan/shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+				VulkanShader::LoadModule(m_base->GetVkDevice(), "Assets/Shader/Vulkan/shaderAlpha.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
 			pipeline2D.Initialize(mPipelineLayout, m_base->m_renderPass, shaderStages);
 			pipeline2D.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
 			pipeline2D.AlphaBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ZERO);

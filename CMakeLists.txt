@@ -10,41 +10,13 @@ endif ()
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ./bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ./bin)
 
-set(SOURCE_FILES 
-	Engine/source/AudioEvent.cpp 
-	Engine/source/AudioSystem.cpp 
-	Engine/source/DebugLog.cpp 
-	Engine/source/Effect.cpp 
-	Engine/source/Font.cpp 
-	Engine/source/InputSystem.cpp 
-	Engine/source/Math.cpp 
-	Engine/source/ObjLoader.cpp 
-	Engine/source/Random.cpp 
-	Engine/source/Renderer.cpp 
-	Engine/source/StreamReader.cpp 
-	Engine/source/Texture.cpp 
-	Engine/source/Transform.cpp 
-	Engine/source/Transition.cpp 
-	Engine/source/Vertex.cpp 
-	Engine/source/VertexArray.cpp 
-	Engine/source/Window.cpp 
-	Engine/source/Script.cpp 
-	Engine/source/OpenGL/ShaderGL.cpp 
-	Engine/source/ES/ESRenderer.cpp 
-	Components/source/AudioComponent.cpp 
-	Components/source/CircleComponent.cpp 
-	Components/source/Component.cpp 
-	Components/source/EffectComponent.cpp 
-	Components/source/FontComponent.cpp 
-	Components/source/InputComponent.cpp 
-	Components/source/MoveComponent.cpp 
-	Components/source/Sprite2DComponent.cpp 
-	Components/source/Sprite3DComponent.cpp 
-	Actor/source/Actor.cpp 
-	Actor/source/Animation2D.cpp 
-	Actor/source/PlaneActor.cpp 
-	Actor/source/Text.cpp 
-	Scene/source/Scene.cpp 
+file(GLOB SOURCE_FILES 
+	src/nen/*.cpp
+	src/nen/OpenGL/ShaderGL.cpp
+	src/nen/ES/*.cpp
+	src/nen/component/*.cpp
+	src/nen/actor/*.cpp
+	src/nen/scene/*.cpp
 	lib/imgui/source/imgui.cpp
 	lib/imgui/source/imgui_draw.cpp
 	lib/imgui/source/imgui_demo.cpp
@@ -59,17 +31,8 @@ endif ()
 
 include_directories(
 	.
-	./Engine 
-	./Engine/include 
-	./Engine/include/Vulkan 
-	./Engine/include/OpenGL 
-	./Engine/include/ES 
-	./Components 
-	./Components/include 
-	./Actor 
-	./Actor/include 
+	./include/nen 
 	./lib/tinyobjloader 
-	./Scene/include 
 	./lib/Effekseer/include/Effekseer
 	./lib/Effekseer/include/EffekseerRendererGL
 	./lib/Effekseer/include

@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="リソース ファイル">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="lib">
       <UniqueIdentifier>{f14fcffc-f61d-4e5f-821e-47af973e1aab}</UniqueIdentifier>
     </Filter>
@@ -21,105 +17,58 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Source\Actor">
-      <UniqueIdentifier>{91c8df3c-4ecd-4200-9c73-b35ebf3188fb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Component">
-      <UniqueIdentifier>{5b991e4c-acb7-413f-9170-3396a3fa6fb9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Engine">
-      <UniqueIdentifier>{53934bb9-499d-4881-b63f-3979f946c6d0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Engine\Vulkan">
-      <UniqueIdentifier>{91b86038-e845-4e7c-bc34-6c5bf4d15a4e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Engine\OpenGL">
-      <UniqueIdentifier>{0cab6838-72f1-452c-9ff4-00475514abaf}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Scene">
-      <UniqueIdentifier>{1b52d71a-ac7a-42dc-b609-3b29d19287fe}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Header\Actor">
-      <UniqueIdentifier>{6c102719-a86b-4763-9e68-c8ce81bcf626}</UniqueIdentifier>
+    <Filter Include="resouce">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header\Component">
-      <UniqueIdentifier>{8e24df90-4db7-4a5c-8517-a984d4fda4fa}</UniqueIdentifier>
+    <Filter Include="Header\nen">
+      <UniqueIdentifier>{6058dd22-2bd8-4e80-a753-a04e1053dca2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header\Engine">
-      <UniqueIdentifier>{1e5e160f-3d10-451d-bc02-0a56e2ac8163}</UniqueIdentifier>
+    <Filter Include="Header\nen\actor">
+      <UniqueIdentifier>{f2bc2f8b-b1bd-47b4-9cef-c0286f14243f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header\Engine\Vulkan">
-      <UniqueIdentifier>{783ec565-a4ad-4b3e-943a-cba8ba522e07}</UniqueIdentifier>
+    <Filter Include="Header\nen\component">
+      <UniqueIdentifier>{8216e19e-fb9d-4e41-b20a-f0fe44d19939}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header\Engine\OpenGL">
-      <UniqueIdentifier>{d99b3c1a-872a-4a89-9673-0f8586599bad}</UniqueIdentifier>
+    <Filter Include="Header\nen\gles">
+      <UniqueIdentifier>{2b8a76d8-006f-455d-a76c-e3aeb0e74509}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header\Scene">
-      <UniqueIdentifier>{18f42db0-8edc-495c-a66c-996db4f3bfff}</UniqueIdentifier>
+    <Filter Include="Header\nen\gl">
+      <UniqueIdentifier>{93fe7a43-ab11-4b4f-8ffe-05d64d49e719}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Engine\ES">
-      <UniqueIdentifier>{12c0ec8a-a6ab-4cec-9f92-6b8db6aec793}</UniqueIdentifier>
+    <Filter Include="Header\nen\vk">
+      <UniqueIdentifier>{97be371f-cf79-4a2b-83f0-402b6867d38f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header\Engine\ES">
-      <UniqueIdentifier>{423c02df-93af-4c0f-b2d6-c29fedb04ce7}</UniqueIdentifier>
+    <Filter Include="Header\nen\scene">
+      <UniqueIdentifier>{a91a27b7-e8ba-4e60-9731-940f60da7f1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\nen">
+      <UniqueIdentifier>{84492b37-ceca-45d2-aa4a-f8a85417d7d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\nen\actor">
+      <UniqueIdentifier>{dd2a3218-ba1b-4f4c-b726-299b7d9938c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\nen\component">
+      <UniqueIdentifier>{55e981c2-70ec-4e3f-b674-e90a0273e94d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\nen\gles">
+      <UniqueIdentifier>{5e90a0a8-cfa1-4ead-9b2a-f912cd0347dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\nen\gl">
+      <UniqueIdentifier>{ab0fa0b5-47ee-44b0-ba7a-e8e312662d2e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\nen\vk">
+      <UniqueIdentifier>{195e4c87-3fdc-4fdd-a668-c9dd7922b91f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\nen\scene">
+      <UniqueIdentifier>{c9bdc4d3-d007-4859-94fa-466f4f47db46}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Engine\source\AudioSystem.cpp">
-      <Filter>Source\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\source\DebugLog.cpp">
-      <Filter>Source\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\source\Effect.cpp">
-      <Filter>Source\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\source\Font.cpp">
-      <Filter>Source\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\source\InputSystem.cpp">
-      <Filter>Source\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\source\Math.cpp">
-      <Filter>Source\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\source\Random.cpp">
-      <Filter>Source\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\source\Renderer.cpp">
-      <Filter>Source\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\source\Script.cpp">
-      <Filter>Source\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\source\AudioEvent.cpp">
-      <Filter>Source\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\source\Texture.cpp">
-      <Filter>Source\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\source\Transform.cpp">
-      <Filter>Source\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\source\Transition.cpp">
-      <Filter>Source\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\source\Vulkan\VKRenderer.cpp">
-      <Filter>Source\Engine\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\source\Window.cpp">
-      <Filter>Source\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\source\StreamReader.cpp">
-      <Filter>Source\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\source\Vulkan\VKBase.cpp">
-      <Filter>Source\Engine\Vulkan</Filter>
-    </ClCompile>
     <ClCompile Include="lib\imgui\source\imgui.cpp">
       <Filter>lib\imgui\source</Filter>
     </ClCompile>
@@ -138,149 +87,146 @@
     <ClCompile Include="lib\imgui\source\imgui_impl_sdl.cpp">
       <Filter>lib\imgui\source</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\source\Vulkan\Swapchain.cpp">
-      <Filter>Source\Engine\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\source\OpenGL\GLRenderer.cpp">
-      <Filter>Source\Engine\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\source\OpenGL\ShaderGL.cpp">
-      <Filter>Source\Engine\OpenGL</Filter>
-    </ClCompile>
     <ClCompile Include="lib\imgui\source\imgui_impl_opengl3.cpp">
       <Filter>lib\imgui\source</Filter>
     </ClCompile>
     <ClCompile Include="lib\mojoAL-default\mojoal.c">
       <Filter>lib</Filter>
     </ClCompile>
-    <ClCompile Include="Scene\source\Scene.cpp">
-      <Filter>Source\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\source\Vertex.cpp">
-      <Filter>Source\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\source\VertexArray.cpp">
-      <Filter>Source\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Actor\source\Actor.cpp">
-      <Filter>Source\Actor</Filter>
-    </ClCompile>
-    <ClCompile Include="Actor\source\Animation2D.cpp">
-      <Filter>Source\Actor</Filter>
-    </ClCompile>
-    <ClCompile Include="Components\source\AudioComponent.cpp">
-      <Filter>Source\Component</Filter>
-    </ClCompile>
-    <ClCompile Include="Components\source\CircleComponent.cpp">
-      <Filter>Source\Component</Filter>
-    </ClCompile>
-    <ClCompile Include="Components\source\EffectComponent.cpp">
-      <Filter>Source\Component</Filter>
-    </ClCompile>
-    <ClCompile Include="Components\source\FontComponent.cpp">
-      <Filter>Source\Component</Filter>
-    </ClCompile>
-    <ClCompile Include="Components\source\InputComponent.cpp">
-      <Filter>Source\Component</Filter>
-    </ClCompile>
-    <ClCompile Include="Components\source\MoveComponent.cpp">
-      <Filter>Source\Component</Filter>
-    </ClCompile>
-    <ClCompile Include="Components\source\Component.cpp">
-      <Filter>Source\Component</Filter>
-    </ClCompile>
-    <ClCompile Include="Actor\source\PlaneActor.cpp">
-      <Filter>Source\Actor</Filter>
-    </ClCompile>
-    <ClCompile Include="Components\source\Sprite3DComponent.cpp">
-      <Filter>Source\Component</Filter>
-    </ClCompile>
-    <ClCompile Include="Components\source\Sprite2DComponent.cpp">
-      <Filter>Source\Component</Filter>
-    </ClCompile>
-    <ClCompile Include="Actor\source\Text.cpp">
-      <Filter>Source\Actor</Filter>
-    </ClCompile>
-    <ClCompile Include="Components\source\ScriptComponent.cpp">
-      <Filter>Source\Component</Filter>
-    </ClCompile>
     <ClCompile Include="lib\tinyobjloader\tiny_obj_loader.cc">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\source\ObjLoader.cpp">
-      <Filter>Source</Filter>
+    <ClCompile Include="src\nen\actor\Actor.cpp">
+      <Filter>Source\nen\actor</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\source\ES\ESRenderer.cpp">
-      <Filter>Source\Engine\ES</Filter>
+    <ClCompile Include="src\nen\actor\Animation2D.cpp">
+      <Filter>Source\nen\actor</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\source\Vulkan\VulkanShader.cpp">
-      <Filter>Source</Filter>
+    <ClCompile Include="src\nen\actor\PlaneActor.cpp">
+      <Filter>Source\nen\actor</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\source\Vulkan\Pipeline.cpp">
-      <Filter>Source</Filter>
+    <ClCompile Include="src\nen\actor\Text.cpp">
+      <Filter>Source\nen\actor</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\source\Vulkan\PipelineLayout.cpp">
-      <Filter>Source</Filter>
+    <ClCompile Include="src\nen\component\AudioComponent.cpp">
+      <Filter>Source\nen\component</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\component\CircleComponent.cpp">
+      <Filter>Source\nen\component</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\component\Component.cpp">
+      <Filter>Source\nen\component</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\component\EffectComponent.cpp">
+      <Filter>Source\nen\component</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\component\FontComponent.cpp">
+      <Filter>Source\nen\component</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\component\InputComponent.cpp">
+      <Filter>Source\nen\component</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\component\MoveComponent.cpp">
+      <Filter>Source\nen\component</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\component\ScriptComponent.cpp">
+      <Filter>Source\nen\component</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\component\Sprite2DComponent.cpp">
+      <Filter>Source\nen\component</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\component\Sprite3DComponent.cpp">
+      <Filter>Source\nen\component</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\ES\ESRenderer.cpp">
+      <Filter>Source\nen\gles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\OpenGL\GLRenderer.cpp">
+      <Filter>Source\nen\gl</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\OpenGL\ShaderGL.cpp">
+      <Filter>Source\nen\gl</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\scene\Scene.cpp">
+      <Filter>Source\nen\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\Vulkan\Pipeline.cpp">
+      <Filter>Source\nen\vk</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\Vulkan\PipelineLayout.cpp">
+      <Filter>Source\nen\vk</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\Vulkan\Swapchain.cpp">
+      <Filter>Source\nen\vk</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\Vulkan\VKBase.cpp">
+      <Filter>Source\nen\vk</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\Vulkan\VKRenderer.cpp">
+      <Filter>Source\nen\vk</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\Vulkan\VulkanShader.cpp">
+      <Filter>Source\nen\vk</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\AudioEvent.cpp">
+      <Filter>Source\nen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\AudioSystem.cpp">
+      <Filter>Source\nen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\DebugLog.cpp">
+      <Filter>Source\nen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\Effect.cpp">
+      <Filter>Source\nen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\Font.cpp">
+      <Filter>Source\nen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\InputSystem.cpp">
+      <Filter>Source\nen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\Math.cpp">
+      <Filter>Source\nen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\ObjLoader.cpp">
+      <Filter>Source\nen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\Random.cpp">
+      <Filter>Source\nen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\Renderer.cpp">
+      <Filter>Source\nen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\Script.cpp">
+      <Filter>Source\nen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\StreamReader.cpp">
+      <Filter>Source\nen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\Texture.cpp">
+      <Filter>Source\nen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\Transform.cpp">
+      <Filter>Source\nen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\Transition.cpp">
+      <Filter>Source\nen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\Vertex.cpp">
+      <Filter>Source\nen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\VertexArray.cpp">
+      <Filter>Source\nen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nen\Window.cpp">
+      <Filter>Source\nen</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Engine\include\AudioSystem.h">
-      <Filter>Header\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\include\DebugLog.hpp">
-      <Filter>Header\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\include\Effect.hpp">
-      <Filter>Header\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\include\Font.hpp">
-      <Filter>Header\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\include\InputSystem.h">
-      <Filter>Header\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\include\Math.hpp">
-      <Filter>Header\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\include\Random.h">
-      <Filter>Header\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\include\Renderer.h">
-      <Filter>Header\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\include\Script.h">
-      <Filter>Header\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\include\AudioEvent.h">
-      <Filter>Header\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\include\Texture.h">
-      <Filter>Header\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\include\Transform.hpp">
-      <Filter>Header\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\include\Transition.h">
-      <Filter>Header\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\include\Window.hpp">
-      <Filter>Header\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\include\Vulkan\VKRenderer.h">
-      <Filter>Header\Engine\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\include\StreamReader.h">
-      <Filter>Header\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Engine.hpp">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\include\Vulkan\VKBase.h">
-      <Filter>Header\Engine\Vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="lib\imgui\include\imconfig.h">
       <Filter>lib\imgui\include</Filter>
     </ClInclude>
@@ -305,80 +251,146 @@
     <ClInclude Include="lib\imgui\include\imstb_truetype.h">
       <Filter>lib\imgui\include</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\include\Vulkan\VulkanUtil.h">
-      <Filter>Header\Engine\Vulkan</Filter>
+    <ClInclude Include="include\nen\AudioEvent.h">
+      <Filter>Header\nen</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\include\Vulkan\Swapchain.h">
-      <Filter>Header\Engine\Vulkan</Filter>
+    <ClInclude Include="include\nen\AudioSystem.h">
+      <Filter>Header\nen</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\include\OpenGL\GLRenderer.h">
-      <Filter>Header\Engine\OpenGL</Filter>
+    <ClInclude Include="include\nen\DebugLog.hpp">
+      <Filter>Header\nen</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\include\OpenGL\ShaderGL.h">
-      <Filter>Header\Engine\OpenGL</Filter>
+    <ClInclude Include="include\nen\Effect.hpp">
+      <Filter>Header\nen</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\include\Vulkan\Pipeline.h">
-      <Filter>Header\Engine\Vulkan</Filter>
+    <ClInclude Include="include\nen\Font.hpp">
+      <Filter>Header\nen</Filter>
     </ClInclude>
-    <ClInclude Include="Scene\include\Scene.hpp">
-      <Filter>Header\Scene</Filter>
+    <ClInclude Include="include\nen\InputSystem.h">
+      <Filter>Header\nen</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\include\Vertex.h">
-      <Filter>Header\Engine</Filter>
+    <ClInclude Include="include\nen\Math.hpp">
+      <Filter>Header\nen</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\include\VertexArray.h">
-      <Filter>Header\Engine</Filter>
+    <ClInclude Include="include\nen\nen.hpp">
+      <Filter>Header\nen</Filter>
     </ClInclude>
-    <ClInclude Include="Actor\include\Actor.h">
-      <Filter>Header\Actor</Filter>
+    <ClInclude Include="include\nen\ObjLoader.h">
+      <Filter>Header\nen</Filter>
     </ClInclude>
-    <ClInclude Include="Actor\include\Animation2D.hpp">
-      <Filter>Header\Actor</Filter>
+    <ClInclude Include="include\nen\Random.h">
+      <Filter>Header\nen</Filter>
     </ClInclude>
-    <ClInclude Include="Components\include\AudioComponent.h">
-      <Filter>Header\Component</Filter>
+    <ClInclude Include="include\nen\Renderer.h">
+      <Filter>Header\nen</Filter>
     </ClInclude>
-    <ClInclude Include="Components\include\CircleComponent.h">
-      <Filter>Header\Component</Filter>
+    <ClInclude Include="include\nen\Script.h">
+      <Filter>Header\nen</Filter>
     </ClInclude>
-    <ClInclude Include="Components\include\Component.h">
-      <Filter>Header\Component</Filter>
+    <ClInclude Include="include\nen\Sprite.h">
+      <Filter>Header\nen</Filter>
     </ClInclude>
-    <ClInclude Include="Components\include\EffectComponent.hpp">
-      <Filter>Header\Component</Filter>
+    <ClInclude Include="include\nen\StreamReader.h">
+      <Filter>Header\nen</Filter>
     </ClInclude>
-    <ClInclude Include="Components\include\FontComponent.hpp">
-      <Filter>Header\Component</Filter>
+    <ClInclude Include="include\nen\Texture.h">
+      <Filter>Header\nen</Filter>
     </ClInclude>
-    <ClInclude Include="Components\include\InputComponent.h">
-      <Filter>Header\Component</Filter>
+    <ClInclude Include="include\nen\Transform.hpp">
+      <Filter>Header\nen</Filter>
     </ClInclude>
-    <ClInclude Include="Components\include\MoveComponent.h">
-      <Filter>Header\Component</Filter>
+    <ClInclude Include="include\nen\Transition.h">
+      <Filter>Header\nen</Filter>
     </ClInclude>
-    <ClInclude Include="Actor\include\PlaneActor.h">
-      <Filter>Header\Actor</Filter>
+    <ClInclude Include="include\nen\Vertex.h">
+      <Filter>Header\nen</Filter>
     </ClInclude>
-    <ClInclude Include="Components\include\ScriptComponent.h">
-      <Filter>Header\Component</Filter>
+    <ClInclude Include="include\nen\VertexArray.h">
+      <Filter>Header\nen</Filter>
     </ClInclude>
-    <ClInclude Include="Components\include\Sprite2DComponent.h">
-      <Filter>Header\Component</Filter>
+    <ClInclude Include="include\nen\Window.hpp">
+      <Filter>Header\nen</Filter>
     </ClInclude>
-    <ClInclude Include="Components\include\Sprite3DComponent.h">
-      <Filter>Header\Component</Filter>
+    <ClInclude Include="include\nen\actor\Actor.h">
+      <Filter>Header\nen\actor</Filter>
     </ClInclude>
-    <ClInclude Include="Actor\include\Text.hpp">
-      <Filter>Header\Actor</Filter>
+    <ClInclude Include="include\nen\actor\Actors.hpp">
+      <Filter>Header\nen\actor</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\include\ObjLoader.h">
-      <Filter>Header</Filter>
+    <ClInclude Include="include\nen\actor\Animation2D.hpp">
+      <Filter>Header\nen\actor</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\include\ES\ESRenderer.h">
-      <Filter>Header\Engine\ES</Filter>
+    <ClInclude Include="include\nen\actor\PlaneActor.h">
+      <Filter>Header\nen\actor</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\include\Sprite.h">
-      <Filter>Header\Engine</Filter>
+    <ClInclude Include="include\nen\actor\Text.hpp">
+      <Filter>Header\nen\actor</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nen\component\AudioComponent.h">
+      <Filter>Header\nen\component</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nen\component\CircleComponent.h">
+      <Filter>Header\nen\component</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nen\component\Component.h">
+      <Filter>Header\nen\component</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nen\component\Components.hpp">
+      <Filter>Header\nen\component</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nen\component\EffectComponent.hpp">
+      <Filter>Header\nen\component</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nen\component\FontComponent.hpp">
+      <Filter>Header\nen\component</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nen\component\InputComponent.h">
+      <Filter>Header\nen\component</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nen\component\MoveComponent.h">
+      <Filter>Header\nen\component</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nen\component\ScriptComponent.h">
+      <Filter>Header\nen\component</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nen\component\Sprite2DComponent.h">
+      <Filter>Header\nen\component</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nen\component\Sprite3DComponent.h">
+      <Filter>Header\nen\component</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nen\ES\ESRenderer.h">
+      <Filter>Header\nen\gles</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nen\OpenGL\GLRenderer.h">
+      <Filter>Header\nen\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nen\OpenGL\ShaderGL.h">
+      <Filter>Header\nen\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nen\scene\Scene.hpp">
+      <Filter>Header\nen\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nen\Vulkan\Pipeline.h">
+      <Filter>Header\nen\vk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nen\Vulkan\PipelineLayout.h">
+      <Filter>Header\nen\vk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nen\Vulkan\Swapchain.h">
+      <Filter>Header\nen\vk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nen\Vulkan\VKBase.h">
+      <Filter>Header\nen\vk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nen\Vulkan\VKRenderer.h">
+      <Filter>Header\nen\vk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nen\Vulkan\VulkanShader.h">
+      <Filter>Header\nen\vk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nen\Vulkan\VulkanUtil.h">
+      <Filter>Header\nen\vk</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

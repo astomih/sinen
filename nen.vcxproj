@@ -46,8 +46,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir);$(ProjectDir)Engine;$(ProjectDir)lib\imgui\include;$(ProjectDir)Actor;$(ProjectDir)Components;$(BOOST_INCLUDE_PATH);$(ProjectDir)Engine\include\Vulkan;$(ProjectDir)lib\mojoAL-default;$(ProjectDir)lib\sol2-3.2.2\include;$(ProjectDir)lib\rapidjson\include;$(ProjectDir)Scene\include;$(ProjectDir)lib\tinyobjloader;$(ProjectDir)lib\sdl2_gfx\include;$(ProjectDir)lib\Effekseer\include\Effekseer;$(ProjectDir)lib\Effekseer\include\EffekseerRendererGL;$(ProjectDir)lib\Effekseer\include\EffekseerRendererVulkan;$(ProjectDir)lib\LLGI\include;$(ProjectDir)\lib\Effekseer\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VK_SDK_PATH)\Lib32;$(BOOST_LIBRARY_PATH);$(ProjectDir)lib\sdl2_gfx\lib;%(AdditionalLibraryDirectories);$(ProjectDir)lib\Effekseer\Debug;$(ProjectDir)lib\LLGI\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir);$(ProjectDir)include\nen;$(ProjectDir)lib\imgui\include;$(ProjectDir)lib\mojoAL-default;$(ProjectDir)lib\sol2-3.2.2\include;$(ProjectDir)lib\rapidjson\include;$(ProjectDir)lib\tinyobjloader;$(ProjectDir)lib\sdl2_gfx\include;$(ProjectDir)lib\Effekseer\include\Effekseer;$(ProjectDir)lib\Effekseer\include\EffekseerRendererGL;$(ProjectDir)lib\Effekseer\include\EffekseerRendererVulkan;$(ProjectDir)lib\LLGI\include;$(ProjectDir)\lib\Effekseer\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VK_SDK_PATH)\Lib32;$(BOOST_LIBRARY_PATH);$(ProjectDir)lib\sdl2_gfx\lib;%(AdditionalLibraryDirectories);$(ProjectDir)lib\Effekseer\lib;$(ProjectDir)lib\LLGI\lib;$(LibraryPath)</LibraryPath>
     <TargetExt>.lib</TargetExt>
     <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     <SourcePath>C:\nen\lib\imgui\source;C:\nen\lib\mojoAL-default;$(SourcePath)</SourcePath>
@@ -118,34 +118,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Engine\source\AudioSystem.cpp" />
-    <ClCompile Include="Engine\source\DebugLog.cpp" />
-    <ClCompile Include="Engine\source\Effect.cpp" />
-    <ClCompile Include="Engine\source\ES\ESRenderer.cpp" />
-    <ClCompile Include="Engine\source\Font.cpp" />
-    <ClCompile Include="Engine\source\InputSystem.cpp" />
-    <ClCompile Include="Engine\source\Math.cpp" />
-    <ClCompile Include="Engine\source\OpenGL\GLRenderer.cpp" />
-    <ClCompile Include="Engine\source\OpenGL\ShaderGL.cpp" />
-    <ClCompile Include="Engine\source\Random.cpp" />
-    <ClCompile Include="Engine\source\Renderer.cpp" />
-    <ClCompile Include="Engine\source\Script.cpp" />
-    <ClCompile Include="Engine\source\AudioEvent.cpp" />
-    <ClCompile Include="Engine\source\StreamReader.cpp" />
-    <ClCompile Include="Engine\source\Texture.cpp" />
-    <ClCompile Include="Engine\source\Transform.cpp" />
-    <ClCompile Include="Engine\source\Transition.cpp" />
-    <ClCompile Include="Engine\source\Vertex.cpp" />
-    <ClCompile Include="Engine\source\VertexArray.cpp" />
     <ClCompile Include="lib\tinyobjloader\tiny_obj_loader.cc" />
-    <ClCompile Include="Engine\source\ObjLoader.cpp" />
-    <ClCompile Include="Engine\source\Vulkan\Swapchain.cpp" />
-    <ClCompile Include="Engine\source\Vulkan\VulkanShader.cpp" />
-    <ClCompile Include="Engine\source\Vulkan\Pipeline.cpp" />
-    <ClCompile Include="Engine\source\Vulkan\PipelineLayout.cpp" />
-    <ClCompile Include="Engine\source\Vulkan\VKBase.cpp" />
-    <ClCompile Include="Engine\source\Vulkan\VKRenderer.cpp" />
-    <ClCompile Include="Engine\source\Window.cpp" />
     <ClCompile Include="lib\imgui\source\imgui.cpp" />
     <ClCompile Include="lib\imgui\source\imgui_demo.cpp" />
     <ClCompile Include="lib\imgui\source\imgui_draw.cpp" />
@@ -154,54 +127,100 @@
     <ClCompile Include="lib\imgui\source\imgui_impl_vulkan.cpp" />
     <ClCompile Include="lib\imgui\source\imgui_widgets.cpp" />
     <ClCompile Include="lib\mojoAL-default\mojoal.c" />
-    <ClCompile Include="Actor\source\Actor.cpp" />
-    <ClCompile Include="Actor\source\Animation2D.cpp" />
-    <ClCompile Include="Actor\source\PlaneActor.cpp" />
-    <ClCompile Include="Actor\source\Text.cpp" />
-    <ClCompile Include="Components\source\AudioComponent.cpp" />
-    <ClCompile Include="Components\source\CircleComponent.cpp" />
-    <ClCompile Include="Components\source\Component.cpp" />
-    <ClCompile Include="Components\source\EffectComponent.cpp" />
-    <ClCompile Include="Components\source\FontComponent.cpp" />
-    <ClCompile Include="Components\source\InputComponent.cpp" />
-    <ClCompile Include="Components\source\MoveComponent.cpp" />
-    <ClCompile Include="Components\source\ScriptComponent.cpp" />
-    <ClCompile Include="Components\source\Sprite2DComponent.cpp" />
-    <ClCompile Include="Components\source\Sprite3DComponent.cpp" />
-    <ClCompile Include="Scene\source\Scene.cpp" />
+    <ClCompile Include="src\nen\actor\Actor.cpp" />
+    <ClCompile Include="src\nen\actor\Animation2D.cpp" />
+    <ClCompile Include="src\nen\actor\PlaneActor.cpp" />
+    <ClCompile Include="src\nen\actor\Text.cpp" />
+    <ClCompile Include="src\nen\AudioEvent.cpp" />
+    <ClCompile Include="src\nen\AudioSystem.cpp" />
+    <ClCompile Include="src\nen\component\AudioComponent.cpp" />
+    <ClCompile Include="src\nen\component\CircleComponent.cpp" />
+    <ClCompile Include="src\nen\component\Component.cpp" />
+    <ClCompile Include="src\nen\component\EffectComponent.cpp" />
+    <ClCompile Include="src\nen\component\FontComponent.cpp" />
+    <ClCompile Include="src\nen\component\InputComponent.cpp" />
+    <ClCompile Include="src\nen\component\MoveComponent.cpp" />
+    <ClCompile Include="src\nen\component\ScriptComponent.cpp" />
+    <ClCompile Include="src\nen\component\Sprite2DComponent.cpp" />
+    <ClCompile Include="src\nen\component\Sprite3DComponent.cpp" />
+    <ClCompile Include="src\nen\DebugLog.cpp" />
+    <ClCompile Include="src\nen\Effect.cpp" />
+    <ClCompile Include="src\nen\ES\ESRenderer.cpp" />
+    <ClCompile Include="src\nen\Font.cpp" />
+    <ClCompile Include="src\nen\InputSystem.cpp" />
+    <ClCompile Include="src\nen\Math.cpp" />
+    <ClCompile Include="src\nen\ObjLoader.cpp" />
+    <ClCompile Include="src\nen\OpenGL\GLRenderer.cpp" />
+    <ClCompile Include="src\nen\OpenGL\ShaderGL.cpp" />
+    <ClCompile Include="src\nen\Random.cpp" />
+    <ClCompile Include="src\nen\Renderer.cpp" />
+    <ClCompile Include="src\nen\scene\Scene.cpp" />
+    <ClCompile Include="src\nen\Script.cpp" />
+    <ClCompile Include="src\nen\StreamReader.cpp" />
+    <ClCompile Include="src\nen\Texture.cpp" />
+    <ClCompile Include="src\nen\Transform.cpp" />
+    <ClCompile Include="src\nen\Transition.cpp" />
+    <ClCompile Include="src\nen\Vertex.cpp" />
+    <ClCompile Include="src\nen\VertexArray.cpp" />
+    <ClCompile Include="src\nen\Vulkan\Pipeline.cpp" />
+    <ClCompile Include="src\nen\Vulkan\PipelineLayout.cpp" />
+    <ClCompile Include="src\nen\Vulkan\Swapchain.cpp" />
+    <ClCompile Include="src\nen\Vulkan\VKBase.cpp" />
+    <ClCompile Include="src\nen\Vulkan\VKRenderer.cpp" />
+    <ClCompile Include="src\nen\Vulkan\VulkanShader.cpp" />
+    <ClCompile Include="src\nen\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Engine\Engine.hpp" />
-    <ClInclude Include="Engine\include\AudioSystem.h" />
-    <ClInclude Include="Engine\include\DebugLog.hpp" />
-    <ClInclude Include="Engine\include\Effect.hpp" />
-    <ClInclude Include="Engine\include\ES\ESRenderer.h" />
-    <ClInclude Include="Engine\include\Font.hpp" />
-    <ClInclude Include="Engine\include\InputSystem.h" />
-    <ClInclude Include="Engine\include\Math.hpp" />
-    <ClInclude Include="Engine\include\OpenGL\GLRenderer.h" />
-    <ClInclude Include="Engine\include\OpenGL\ShaderGL.h" />
-    <ClInclude Include="Engine\include\Random.h" />
-    <ClInclude Include="Engine\include\Renderer.h" />
-    <ClInclude Include="Engine\include\Script.h" />
-    <ClInclude Include="Engine\include\AudioEvent.h" />
-    <ClInclude Include="Engine\include\Sprite.h" />
-    <ClInclude Include="Engine\include\StreamReader.h" />
-    <ClInclude Include="Engine\include\Texture.h" />
-    <ClInclude Include="Engine\include\Transform.hpp" />
-    <ClInclude Include="Engine\include\Transition.h" />
-    <ClInclude Include="Engine\include\Vertex.h" />
-    <ClInclude Include="Engine\include\VertexArray.h" />
-    <ClInclude Include="Engine\include\ObjLoader.h" />
-    <ClInclude Include="Engine\include\Vulkan\Pipeline.h" />
-    <ClInclude Include="Engine\include\Vulkan\Swapchain.h" />
-    <ClInclude Include="Engine\include\Vulkan\VKBase.h" />
-    <ClInclude Include="Engine\include\Vulkan\VKRenderer.h" />
-    <ClInclude Include="Engine\include\Vulkan\VulkanUtil.h" />
-    <ClInclude Include="Engine\include\Window.hpp" />
+    <ClInclude Include="include\nen\actor\Actor.h" />
+    <ClInclude Include="include\nen\actor\Actors.hpp" />
+    <ClInclude Include="include\nen\actor\Animation2D.hpp" />
+    <ClInclude Include="include\nen\actor\PlaneActor.h" />
+    <ClInclude Include="include\nen\actor\Text.hpp" />
+    <ClInclude Include="include\nen\AudioEvent.h" />
+    <ClInclude Include="include\nen\AudioSystem.h" />
+    <ClInclude Include="include\nen\component\AudioComponent.h" />
+    <ClInclude Include="include\nen\component\CircleComponent.h" />
+    <ClInclude Include="include\nen\component\Component.h" />
+    <ClInclude Include="include\nen\component\Components.hpp" />
+    <ClInclude Include="include\nen\component\EffectComponent.hpp" />
+    <ClInclude Include="include\nen\component\FontComponent.hpp" />
+    <ClInclude Include="include\nen\component\InputComponent.h" />
+    <ClInclude Include="include\nen\component\MoveComponent.h" />
+    <ClInclude Include="include\nen\component\ScriptComponent.h" />
+    <ClInclude Include="include\nen\component\Sprite2DComponent.h" />
+    <ClInclude Include="include\nen\component\Sprite3DComponent.h" />
+    <ClInclude Include="include\nen\DebugLog.hpp" />
+    <ClInclude Include="include\nen\Effect.hpp" />
+    <ClInclude Include="include\nen\ES\ESRenderer.h" />
+    <ClInclude Include="include\nen\Font.hpp" />
+    <ClInclude Include="include\nen\InputSystem.h" />
+    <ClInclude Include="include\nen\Math.hpp" />
+    <ClInclude Include="include\nen\nen.hpp" />
+    <ClInclude Include="include\nen\ObjLoader.h" />
+    <ClInclude Include="include\nen\OpenGL\GLRenderer.h" />
+    <ClInclude Include="include\nen\OpenGL\ShaderGL.h" />
+    <ClInclude Include="include\nen\Random.h" />
+    <ClInclude Include="include\nen\Renderer.h" />
+    <ClInclude Include="include\nen\scene\Scene.hpp" />
+    <ClInclude Include="include\nen\Script.h" />
+    <ClInclude Include="include\nen\Sprite.h" />
+    <ClInclude Include="include\nen\StreamReader.h" />
+    <ClInclude Include="include\nen\Texture.h" />
+    <ClInclude Include="include\nen\Transform.hpp" />
+    <ClInclude Include="include\nen\Transition.h" />
+    <ClInclude Include="include\nen\Vertex.h" />
+    <ClInclude Include="include\nen\VertexArray.h" />
+    <ClInclude Include="include\nen\Vulkan\Pipeline.h" />
+    <ClInclude Include="include\nen\Vulkan\PipelineLayout.h" />
+    <ClInclude Include="include\nen\Vulkan\Swapchain.h" />
+    <ClInclude Include="include\nen\Vulkan\VKBase.h" />
+    <ClInclude Include="include\nen\Vulkan\VKRenderer.h" />
+    <ClInclude Include="include\nen\Vulkan\VulkanShader.h" />
+    <ClInclude Include="include\nen\Vulkan\VulkanUtil.h" />
+    <ClInclude Include="include\nen\Window.hpp" />
     <ClInclude Include="lib\imgui\include\imconfig.h" />
     <ClInclude Include="lib\imgui\include\imgui.h" />
     <ClInclude Include="lib\imgui\include\imgui_impl_sdl.h" />
@@ -210,21 +229,6 @@
     <ClInclude Include="lib\imgui\include\imstb_rectpack.h" />
     <ClInclude Include="lib\imgui\include\imstb_textedit.h" />
     <ClInclude Include="lib\imgui\include\imstb_truetype.h" />
-    <ClInclude Include="Actor\include\Actor.h" />
-    <ClInclude Include="Actor\include\Animation2D.hpp" />
-    <ClInclude Include="Actor\include\PlaneActor.h" />
-    <ClInclude Include="Actor\include\Text.hpp" />
-    <ClInclude Include="Components\include\AudioComponent.h" />
-    <ClInclude Include="Components\include\CircleComponent.h" />
-    <ClInclude Include="Components\include\Component.h" />
-    <ClInclude Include="Components\include\EffectComponent.hpp" />
-    <ClInclude Include="Components\include\FontComponent.hpp" />
-    <ClInclude Include="Components\include\InputComponent.h" />
-    <ClInclude Include="Components\include\MoveComponent.h" />
-    <ClInclude Include="Components\include\ScriptComponent.h" />
-    <ClInclude Include="Components\include\Sprite2DComponent.h" />
-    <ClInclude Include="Components\include\Sprite3DComponent.h" />
-    <ClInclude Include="Scene\include\Scene.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,4 +1,6 @@
 #include <nen.hpp>
+#include <AL/al.h>
+#include <AL/alc.h>
 namespace nen
 {
 	AudioEvent::AudioEvent(std::shared_ptr<class AudioSystem> audiosystem, std::string_view name, ALuint sourceID)

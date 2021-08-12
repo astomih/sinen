@@ -7,7 +7,6 @@
 #include <iostream>
 #include <SDL_image.h>
 #include <sol/sol.hpp>
-#include <rapidjson/document.h>
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_opengl3.h>

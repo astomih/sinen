@@ -2,6 +2,8 @@
 #include <SDL_log.h>
 #include <vector>
 #include <SDL_mixer.h>
+#include <AL/al.h>
+#include <AL/alc.h>
 namespace nen
 {
 	Vector3f Calc(const Quaternion &r);

@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{4d7d9fff-2473-4d60-8f6a-58ebc117100f}</ProjectGuid>
+    <RootNamespace>nen</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <EnableASAN>false</EnableASAN>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir)..\;$(ProjectDir)..\include\nen;$(ProjectDir)..\libs\ImGui\include;$(ProjectDir)..\libs\mojoAL;$(ProjectDir)..\libs\sol2\include;$(ProjectDir)..\libs\rapidjson\include;$(ProjectDir)..\libs\tinyobjloader;$(ProjectDir)..\libs\sdl2_gfx\include;$(ProjectDir)..\libs\Effekseer\include\Effekseer;$(ProjectDir)..\libs\Effekseer\include\EffekseerRendererGL;$(ProjectDir)..\libs\Effekseer\include\EffekseerRendererVulkan;$(ProjectDir)..\libs\LLGI\include;$(ProjectDir)..\libs\Effekseer\include;$(ProjectDir)..\libs\SDL2\include;$(ProjectDir)..\libs\SDL2_image\include;$(ProjectDir)..\libs\SDL2_mixer\include;$(ProjectDir)..\libs\SDL2_ttf\include;$(ProjectDir)..\libs\SDL2_net\include;$(ProjectDir)..\libs\glew\include;$(ProjectDir)..\libs\Lua\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VK_SDK_PATH)\Lib32;$(ProjectDir)..\libs\mojoAL\lib;$(ProjectDir)..\libs\Effekseer\lib;$(ProjectDir)..\libs\LLGI\lib;$(ProjectDir)..\libs\glew\lib\Release\Win32;$(ProjectDir)..\libs\Lua\lib;$(ProjectDir)..\libs\SDL2\lib\x86;$(ProjectDir)..\libs\SDL2_image\lib\x86;$(ProjectDir)..\libs\SDL2_mixer\lib\x86;$(ProjectDir)..\libs\SDL2_ttf\lib\x86;$(ProjectDir)..\libs\SDL2_net\lib\x86;%(AdditionalLibraryDirectories);$(LibraryPath)</LibraryPath>
+    <TargetExt>.lib</TargetExt>
+    <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    <SourcePath>$(ProjectDir)..\libs\ImGui\source;</SourcePath>
+    <LuaType>static</LuaType>
+    <LuaConfiguration>Debug</LuaConfiguration>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir);$(ProjectDir)Engine;$(ProjectDir)lib\ImGui\include;$(ProjectDir)Actor;$(ProjectDir)Components;$(BOOST_INCLUDE_PATH);$(ProjectDir)Engine\include\Vulkan;$(ProjectDir)lib\mojoAL;$(ProjectDir)lib\sol2-3.2.2\include;$(ProjectDir)lib\rapidjson\include;$(ProjectDir)Scene\include;$(ProjectDir)lib\tinyobjloader;$(ProjectDir)lib\sdl2_gfx\include;$(ProjectDir)lib\Effekseer\include\Effekseer;$(ProjectDir)lib\Effekseer\include\EffekseerRendererGL;$(ProjectDir)lib\Effekseer\include\EffekseerRendererVulkan;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VK_SDK_PATH)\Lib32;$(BOOST_LIBRARY_PATH);$(ProjectDir)lib\sdl2_gfx\lib;%(AdditionalLibraryDirectories);$(ProjectDir)lib\Effekseer\Release;$(LibraryPath)</LibraryPath>
+    <LuaType>static</LuaType>
+    <LuaConfiguration>Release</LuaConfiguration>
+    <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    <EnableMicrosoftCodeAnalysis>false</EnableMicrosoftCodeAnalysis>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard_C>Default</LanguageStandard_C>
+      <AdditionalOptions>/MTd /wd4996</AdditionalOptions>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>vulkan-1.lib;SDL2_ttf.lib;lua52.lib;SDL2_gfx.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>mojoal.lib;vulkan-1.lib;Effekseerd.lib;EffekseerRendererGLd.lib;EffekseerRendererVulkand.lib;LLGId.lib;glew32s.lib;lua.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;SDL2_net.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
+    </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalOptions>/wd4996 %(AdditionalOptions)</AdditionalOptions>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>vulkan-1.lib;OpenAL32.lib;SDL2_gfx.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(VK_SDK_PATH)\Lib32;</AdditionalLibraryDirectories>
+      <LinkTimeCodeGeneration>
+      </LinkTimeCodeGeneration>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\libs\ImGui\source\imgui.cpp" />
+    <ClCompile Include="..\libs\ImGui\source\imgui_demo.cpp" />
+    <ClCompile Include="..\libs\ImGui\source\imgui_draw.cpp" />
+    <ClCompile Include="..\libs\ImGui\source\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="..\libs\ImGui\source\imgui_impl_sdl.cpp" />
+    <ClCompile Include="..\libs\ImGui\source\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="..\libs\ImGui\source\imgui_widgets.cpp" />
+    <ClCompile Include="..\libs\tinyobjloader\tiny_obj_loader.cc" />
+    <ClCompile Include="..\src\nen\actor\Actor.cpp" />
+    <ClCompile Include="..\src\nen\actor\Animation2D.cpp" />
+    <ClCompile Include="..\src\nen\actor\PlaneActor.cpp" />
+    <ClCompile Include="..\src\nen\actor\Text.cpp" />
+    <ClCompile Include="..\src\nen\AudioEvent.cpp" />
+    <ClCompile Include="..\src\nen\AudioSystem.cpp" />
+    <ClCompile Include="..\src\nen\component\AudioComponent.cpp" />
+    <ClCompile Include="..\src\nen\component\CircleComponent.cpp" />
+    <ClCompile Include="..\src\nen\component\Component.cpp" />
+    <ClCompile Include="..\src\nen\component\EffectComponent.cpp" />
+    <ClCompile Include="..\src\nen\component\FontComponent.cpp" />
+    <ClCompile Include="..\src\nen\component\InputComponent.cpp" />
+    <ClCompile Include="..\src\nen\component\MoveComponent.cpp" />
+    <ClCompile Include="..\src\nen\component\ScriptComponent.cpp" />
+    <ClCompile Include="..\src\nen\component\Sprite2DComponent.cpp" />
+    <ClCompile Include="..\src\nen\component\Sprite3DComponent.cpp" />
+    <ClCompile Include="..\src\nen\DebugLog.cpp" />
+    <ClCompile Include="..\src\nen\Effect.cpp" />
+    <ClCompile Include="..\src\nen\ES\ESRenderer.cpp" />
+    <ClCompile Include="..\src\nen\Font.cpp" />
+    <ClCompile Include="..\src\nen\InputSystem.cpp" />
+    <ClCompile Include="..\src\nen\Math.cpp" />
+    <ClCompile Include="..\src\nen\ObjLoader.cpp" />
+    <ClCompile Include="..\src\nen\OpenGL\GLRenderer.cpp" />
+    <ClCompile Include="..\src\nen\OpenGL\ShaderGL.cpp" />
+    <ClCompile Include="..\src\nen\Random.cpp" />
+    <ClCompile Include="..\src\nen\Renderer.cpp" />
+    <ClCompile Include="..\src\nen\scene\Scene.cpp" />
+    <ClCompile Include="..\src\nen\Script.cpp" />
+    <ClCompile Include="..\src\nen\StreamReader.cpp" />
+    <ClCompile Include="..\src\nen\Texture.cpp" />
+    <ClCompile Include="..\src\nen\Transform.cpp" />
+    <ClCompile Include="..\src\nen\Transition.cpp" />
+    <ClCompile Include="..\src\nen\Vertex.cpp" />
+    <ClCompile Include="..\src\nen\VertexArray.cpp" />
+    <ClCompile Include="..\src\nen\Vulkan\Pipeline.cpp" />
+    <ClCompile Include="..\src\nen\Vulkan\PipelineLayout.cpp" />
+    <ClCompile Include="..\src\nen\Vulkan\Swapchain.cpp" />
+    <ClCompile Include="..\src\nen\Vulkan\VKBase.cpp" />
+    <ClCompile Include="..\src\nen\Vulkan\VKRenderer.cpp" />
+    <ClCompile Include="..\src\nen\Vulkan\VulkanShader.cpp" />
+    <ClCompile Include="..\src\nen\Window.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\nen\actor\Actor.h" />
+    <ClInclude Include="..\include\nen\actor\Actors.hpp" />
+    <ClInclude Include="..\include\nen\actor\Animation2D.hpp" />
+    <ClInclude Include="..\include\nen\actor\PlaneActor.h" />
+    <ClInclude Include="..\include\nen\actor\Text.hpp" />
+    <ClInclude Include="..\include\nen\AudioEvent.h" />
+    <ClInclude Include="..\include\nen\AudioSystem.h" />
+    <ClInclude Include="..\include\nen\component\AudioComponent.h" />
+    <ClInclude Include="..\include\nen\component\CircleComponent.h" />
+    <ClInclude Include="..\include\nen\component\Component.h" />
+    <ClInclude Include="..\include\nen\component\Components.hpp" />
+    <ClInclude Include="..\include\nen\component\EffectComponent.hpp" />
+    <ClInclude Include="..\include\nen\component\FontComponent.hpp" />
+    <ClInclude Include="..\include\nen\component\InputComponent.h" />
+    <ClInclude Include="..\include\nen\component\MoveComponent.h" />
+    <ClInclude Include="..\include\nen\component\ScriptComponent.h" />
+    <ClInclude Include="..\include\nen\component\Sprite2DComponent.h" />
+    <ClInclude Include="..\include\nen\component\Sprite3DComponent.h" />
+    <ClInclude Include="..\include\nen\DebugLog.hpp" />
+    <ClInclude Include="..\include\nen\Effect.hpp" />
+    <ClInclude Include="..\include\nen\ES\ESRenderer.h" />
+    <ClInclude Include="..\include\nen\Font.hpp" />
+    <ClInclude Include="..\include\nen\InputSystem.h" />
+    <ClInclude Include="..\include\nen\Math.hpp" />
+    <ClInclude Include="..\include\nen\nen.hpp" />
+    <ClInclude Include="..\include\nen\ObjLoader.h" />
+    <ClInclude Include="..\include\nen\OpenGL\GLRenderer.h" />
+    <ClInclude Include="..\include\nen\OpenGL\ShaderGL.h" />
+    <ClInclude Include="..\include\nen\Random.h" />
+    <ClInclude Include="..\include\nen\Renderer.h" />
+    <ClInclude Include="..\include\nen\scene\Scene.hpp" />
+    <ClInclude Include="..\include\nen\Script.h" />
+    <ClInclude Include="..\include\nen\Sprite.h" />
+    <ClInclude Include="..\include\nen\StreamReader.h" />
+    <ClInclude Include="..\include\nen\Texture.h" />
+    <ClInclude Include="..\include\nen\Transform.hpp" />
+    <ClInclude Include="..\include\nen\Transition.h" />
+    <ClInclude Include="..\include\nen\Vertex.h" />
+    <ClInclude Include="..\include\nen\VertexArray.h" />
+    <ClInclude Include="..\include\nen\Vulkan\Pipeline.h" />
+    <ClInclude Include="..\include\nen\Vulkan\PipelineLayout.h" />
+    <ClInclude Include="..\include\nen\Vulkan\Swapchain.h" />
+    <ClInclude Include="..\include\nen\Vulkan\VKBase.h" />
+    <ClInclude Include="..\include\nen\Vulkan\VKRenderer.h" />
+    <ClInclude Include="..\include\nen\Vulkan\VulkanShader.h" />
+    <ClInclude Include="..\include\nen\Vulkan\VulkanUtil.h" />
+    <ClInclude Include="..\include\nen\Window.hpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>

@@ -16,7 +16,7 @@
 #include "Font.hpp"
 #include "Window.hpp"
 #include "Transform.hpp"
-#include "DebugLog.hpp"
+#include "Logger.h"
 #include "AudioSystem.h"
 #include "AudioEvent.h"
 #include "Renderer.h"

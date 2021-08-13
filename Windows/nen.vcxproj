@@ -149,7 +149,7 @@
     <ClCompile Include="..\src\nen\component\ScriptComponent.cpp" />
     <ClCompile Include="..\src\nen\component\Sprite2DComponent.cpp" />
     <ClCompile Include="..\src\nen\component\Sprite3DComponent.cpp" />
-    <ClCompile Include="..\src\nen\DebugLog.cpp" />
+    <ClCompile Include="..\src\nen\Logger.cpp" />
     <ClCompile Include="..\src\nen\Effect.cpp" />
     <ClCompile Include="..\src\nen\ES\ESRenderer.cpp" />
     <ClCompile Include="..\src\nen\Font.cpp" />
@@ -195,7 +195,7 @@
     <ClInclude Include="..\include\nen\component\ScriptComponent.h" />
     <ClInclude Include="..\include\nen\component\Sprite2DComponent.h" />
     <ClInclude Include="..\include\nen\component\Sprite3DComponent.h" />
-    <ClInclude Include="..\include\nen\DebugLog.hpp" />
+    <ClInclude Include="..\include\nen\Logger.h" />
     <ClInclude Include="..\include\nen\Effect.hpp" />
     <ClInclude Include="..\include\nen\ES\ESRenderer.h" />
     <ClInclude Include="..\include\nen\Font.hpp" />

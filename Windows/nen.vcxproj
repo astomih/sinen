@@ -56,8 +56,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir);$(ProjectDir)Engine;$(ProjectDir)lib\ImGui\include;$(ProjectDir)Actor;$(ProjectDir)Components;$(BOOST_INCLUDE_PATH);$(ProjectDir)Engine\include\Vulkan;$(ProjectDir)lib\mojoAL;$(ProjectDir)lib\sol2-3.2.2\include;$(ProjectDir)lib\rapidjson\include;$(ProjectDir)Scene\include;$(ProjectDir)lib\tinyobjloader;$(ProjectDir)lib\sdl2_gfx\include;$(ProjectDir)lib\Effekseer\include\Effekseer;$(ProjectDir)lib\Effekseer\include\EffekseerRendererGL;$(ProjectDir)lib\Effekseer\include\EffekseerRendererVulkan;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VK_SDK_PATH)\Lib32;$(BOOST_LIBRARY_PATH);$(ProjectDir)lib\sdl2_gfx\lib;%(AdditionalLibraryDirectories);$(ProjectDir)lib\Effekseer\Release;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir)..\;$(ProjectDir)..\include\nen;$(ProjectDir)..\libs\ImGui\include;$(ProjectDir)..\libs\mojoAL;$(ProjectDir)..\libs\sol2\include;$(ProjectDir)..\libs\rapidjson\include;$(ProjectDir)..\libs\tinyobjloader;$(ProjectDir)..\libs\sdl2_gfx\include;$(ProjectDir)..\libs\Effekseer\include\Effekseer;$(ProjectDir)..\libs\Effekseer\include\EffekseerRendererGL;$(ProjectDir)..\libs\Effekseer\include\EffekseerRendererVulkan;$(ProjectDir)..\libs\LLGI\include;$(ProjectDir)..\libs\Effekseer\include;$(ProjectDir)..\libs\SDL2\include;$(ProjectDir)..\libs\SDL2_image\include;$(ProjectDir)..\libs\SDL2_mixer\include;$(ProjectDir)..\libs\SDL2_ttf\include;$(ProjectDir)..\libs\SDL2_net\include;$(ProjectDir)..\libs\glew\include;$(ProjectDir)..\libs\Lua\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VK_SDK_PATH)\Lib32;$(ProjectDir)..\libs\mojoAL\lib;$(ProjectDir)..\libs\Effekseer\lib;$(ProjectDir)..\libs\LLGI\lib;$(ProjectDir)..\libs\glew\lib\Release\Win32;$(ProjectDir)..\libs\Lua\lib;$(ProjectDir)..\libs\SDL2\lib\x86;$(ProjectDir)..\libs\SDL2_image\lib\x86;$(ProjectDir)..\libs\SDL2_mixer\lib\x86;$(ProjectDir)..\libs\SDL2_ttf\lib\x86;$(ProjectDir)..\libs\SDL2_net\lib\x86;%(AdditionalLibraryDirectories);$(LibraryPath)</LibraryPath>
     <LuaType>static</LuaType>
     <LuaConfiguration>Release</LuaConfiguration>
     <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -67,7 +67,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;GLEW_STATIC ;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
@@ -82,10 +82,9 @@
       <SubSystem>
       </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>vulkan-1.lib;SDL2_ttf.lib;lua52.lib;SDL2_gfx.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
-      <AdditionalDependencies>mojoal.lib;vulkan-1.lib;Effekseerd.lib;EffekseerRendererGLd.lib;EffekseerRendererVulkand.lib;LLGId.lib;glew32s.lib;lua.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;SDL2_net.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mojoal.lib;vulkan-1.lib;Effekseerd.lib;EffekseerRendererGLd.lib;EffekseerRendererVulkand.lib;LLGId.lib;glew32s.lib;lua.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;SDL2_net.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
@@ -100,7 +99,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -118,8 +117,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>vulkan-1.lib;OpenAL32.lib;SDL2_gfx.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(VK_SDK_PATH)\Lib32;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mojoal.lib;vulkan-1.lib;Effekseer.lib;EffekseerRendererGL.lib;EffekseerRendererVulkan.lib;LLGI.lib;glew32s.lib;lua.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;SDL2_net.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>
       </LinkTimeCodeGeneration>
     </Lib>

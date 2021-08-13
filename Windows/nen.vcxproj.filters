@@ -134,9 +134,6 @@
     <ClCompile Include="..\src\nen\component\Sprite3DComponent.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\nen\DebugLog.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\nen\Effect.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -212,6 +209,9 @@
     <ClCompile Include="..\src\nen\Window.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\nen\Logger.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\nen\actor\Actor.h">
@@ -266,9 +266,6 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\include\nen\component\Sprite3DComponent.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\nen\DebugLog.hpp">
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\include\nen\Effect.hpp">
@@ -353,6 +350,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\include\nen\Window.hpp">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nen\Logger.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

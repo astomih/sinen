@@ -1,5 +1,5 @@
-#ifdef EMSCRIPTEN
 #include <nen.hpp>
+#if defined(EMSCRIPTEN) || defined(MOBILE)
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -98,7 +98,7 @@ namespace nen
 			// Enable alpha blending on the norm buffer
 			glDisable(GL_BLEND);
 			glEnable(GL_DEPTH_TEST);
-			std::string vertexID;
+			std::string vertexID = "";
 			bool lastFrameChanged = false;
 			for (auto &i : mSprite3Ds)
 			{
@@ -121,25 +121,7 @@ namespace nen
 					glVertexAttribPointer(2, 2, GL_FLOAT, GL_TRUE, 8 * sizeof(float),
 										  reinterpret_cast<void *>(sizeof(float) * 6));
 				}
-				if ((vertexID != i->vertexIndex && i->isChangeBuffer) || (i->isChangeBuffer ^ lastFrameChanged))
-				{
-					const float value = 1.f;
-					const Vector2f lb(i->trimStart.x, i->trimEnd.y);
-					const Vector2f lt(i->trimStart.x, i->trimStart.y);
-					const Vector2f rb(i->trimEnd.x, i->trimEnd.y);
-					const Vector2f rt(i->trimEnd.x, i->trimStart.y);
-					std::array<float, 3> norm = {1, 1, 1};
 
-					Vertex vertices[] =
-						{
-							{Vector3f(-value, value, value), norm, lb},
-							{Vector3f(-value, -value, value), norm, lt},
-							{Vector3f(value, value, value), norm, rb},
-							{Vector3f(value, -value, value), norm, rt},
-
-						};
-					glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-				}
 				lastFrameChanged = i->isChangeBuffer;
 				glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
 				mSpriteShader->SetMatrixUniform("uWorld", i->param.world);
@@ -165,50 +147,13 @@ namespace nen
 					vertexID = i->vertexIndex;
 				}
 
-				if (i->isChangeBuffer)
-				{
-					const float value = 1.f;
-					const Vector2f lb(i->trimStart.x, i->trimEnd.y);
-					const Vector2f lt(i->trimStart.x, i->trimStart.y);
-					const Vector2f rb(i->trimEnd.x, i->trimEnd.y);
-					const Vector2f rt(i->trimEnd.x, i->trimStart.y);
-					std::array<float, 3> norm = {1, 1, 1};
-
-					Vertex vertices[] =
-						{
-							{Vector3f(-value, value, value), norm, lb},
-							{Vector3f(-value, -value, value), norm, lt},
-							{Vector3f(value, value, value), norm, rb},
-							{Vector3f(value, -value, value), norm, rt},
-
-						};
-					glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-				}
 				mAlphaShader->SetMatrixUniform("uWorld", i->param.world);
 				mAlphaShader->SetMatrixUniform("uProj", i->param.proj);
 				mAlphaShader->SetMatrixUniform("uView", i->param.view);
 				int num = mTextureIDs[i->textureIndex];
 				glBindTexture(GL_TEXTURE_2D, num);
 				glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr);
-				if (i->isChangeBuffer)
-				{
-					const float value = 1.f;
-					const Vector2f lb(0, 0);
-					const Vector2f lt(0, 1);
-					const Vector2f rb(1, 0);
-					const Vector2f rt(1, 1);
-					std::array<float, 3> norm = {1, 1, 1};
 
-					Vertex vertices[] =
-						{
-							{Vector3f(-value, value, value), norm, lb},
-							{Vector3f(-value, -value, value), norm, lt},
-							{Vector3f(value, value, value), norm, rb},
-							{Vector3f(value, -value, value), norm, rt},
-
-						};
-					glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-				}
 			}
 			glDisable(GL_BLEND);
 			ImGui_ImplOpenGL3_NewFrame();

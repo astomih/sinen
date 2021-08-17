@@ -1,7 +1,9 @@
 #pragma once
-#ifdef EMSCRIPTEN
+#if defined(EMSCRIPTEN) || defined(MOBILE)
 #include <unordered_map>
+#ifdef EMSCRIPTEN
 #include <emscripten.h>
+#endif
 #include <SDL.h>
 #include <GLES3/gl3.h>
 #include "../Texture.h"

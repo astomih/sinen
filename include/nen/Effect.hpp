@@ -1,14 +1,14 @@
 #pragma once
 #include <Effekseer.h>
 #include <EffekseerRendererGL.h>
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include <EffekseerRendererVulkan.h>
 #endif
-#ifdef EMSCRIPTEN
+#if defined(EMSCRIPTEN) || defined(MOBILE)
 #include "ES/ESRenderer.h"
 #endif
 
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 namespace nen::vk
 {
 	class EffectVK
@@ -57,7 +57,7 @@ namespace nen::gl
 }
 #endif
 
-#ifdef EMSCRIPTEN
+#if defined(EMSCRIPTEN) || defined(MOBILE)
 namespace nen
 {
 	class Effect;
@@ -85,7 +85,7 @@ namespace nen::es
 
 }
 
-#ifdef EMSCRIPTEN
+#if defined(EMSCRIPTEN) || defined(MOBILE)
 #endif
 namespace nen
 {
@@ -93,11 +93,11 @@ namespace nen
 	{
 	public:
 		Effect();
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 		void Init(class nen::vk::VKRenderer *vkrenderer, class nen::vk::VKBase *vkbase);
 		void Init(class nen::gl::GLRenderer *glrenderer);
 #endif
-#ifdef EMSCRIPTEN
+#if defined(EMSCRIPTEN) || defined(MOBILE)
 		void Init(class es::ESRenderer *esrenderer);
 #endif
 

@@ -1,5 +1,5 @@
 #pragma once
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include <SDL.h>
 #include <string>
 #include <GL/glew.h>
@@ -19,7 +19,7 @@ namespace nen
 			uint32_t vertexID;
 			uint32_t indexID;
 		};
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 
 		class GLRenderer
 		{

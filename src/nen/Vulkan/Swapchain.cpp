@@ -1,4 +1,4 @@
-﻿#ifndef EMSCRIPTEN
+﻿#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include <nen.hpp>
 #include <algorithm>
 namespace nen::vk

@@ -1,4 +1,4 @@
-﻿#ifndef EMSCRIPTEN
+﻿#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include <iostream>
 #include <sstream>
 #include <algorithm>

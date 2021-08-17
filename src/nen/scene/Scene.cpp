@@ -19,24 +19,24 @@ namespace nen
 		mAudioSystem = std::make_shared<AudioSystem>(*this);
 		if (!mAudioSystem->Initialize())
 		{
-			std::cout << "Failed to initialize audio system" << std::endl;
+			Logger::Info("Failed to initialize audio system");
 			mAudioSystem->Shutdown();
 			mAudioSystem = nullptr;
 			std::exit(1);
 		}
-		std::cout << "INFO: Audio system Initialized." << std::endl;
+		Logger::Info("Audio system Initialized.");
 		mInputSystem = new InputSystem();
 		if (!mInputSystem->Initialize())
 		{
-			std::cout << "Failed to initialize input system" << std::endl;
+			Logger::Info("Failed to initialize input system");
 		}
-		std::cout << "INFO: Input system Initialized." << std::endl;
+		Logger::Info("Input system initialized.");
 		// スクリプトのインスタンスを作成
 		Script::Create();
-		std::cout << "INFO: Script system Initialized." << std::endl;
+		Logger::Info("Script system initialized.");
 		// シーンのデータを読み込み
 		LoadData();
-		std::cout << "INFO: Loaded scene data." << std::endl;
+		Logger::Info("Scene data loaded.");
 		// デルタタイムを読み込み
 		mTicksCount = SDL_GetTicks();
 	}

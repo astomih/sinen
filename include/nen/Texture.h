@@ -7,7 +7,7 @@
 namespace nen
 {
 	struct SDL_Surface;
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 	struct BufferObject
 	{
 		~BufferObject();

@@ -2,7 +2,7 @@
 #include <SDL_image.h>
 namespace nen
 {
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 	BufferObject::~BufferObject()
 	{
 	}

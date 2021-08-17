@@ -1,4 +1,4 @@
-﻿#ifndef EMSCRIPTEN
+﻿#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include <nen.hpp>
 #include <SDL.h>
 #include <GL/glew.h>

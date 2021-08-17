@@ -1,9 +1,8 @@
 ﻿#include <nen.hpp>
 #include <Effekseer.h>
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include <EffekseerRendererVulkan.h>
 #endif
-#include "Renderer.h"
 #include <EffekseerRenderer/EffekseerRendererGL.MaterialLoader.h>
 #include <EffekseerRenderer/EffekseerRendererGL.RendererImplemented.h>
 #include <EffekseerRenderer/GraphicsDevice.h>
@@ -29,8 +28,7 @@ public:
 		SDL_Surface *surf = ::IMG_Load(path8.data());
 		if (!surf)
 		{
-			std::cout << "ERROR: Failed to load \"" << std::string(path8.data()) << "\".\n"
-					  << IMG_GetError() << std::endl;
+			nen::Logger::Error("Failed to load \"%s\". IMG_Error: %s",std::string(path8.data()),IMG_GetError());
 		}
 		::SDL_LockSurface(surf);
 		auto formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
@@ -59,7 +57,7 @@ public:
 										   });
 		auto textureData = Effekseer::MakeRefPtr<Effekseer::Texture>();
 		textureData->SetBackend(backend);
-		std::cout << "INFO: Loaded \"" << pathStr << "\"." << std::endl;
+		nen::Logger::Info("Loaded \"%s\".",pathStr);
 		SDL_FreeSurface(surf);
 		SDL_FreeSurface(imagedata);
 		SDL_FreeFormat(formatbuf);
@@ -69,7 +67,7 @@ public:
 	void Unload(Effekseer::TextureRef data) override {}
 };
 
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 namespace nen::vk
 {
 	EffectVK::EffectVK(Effekseer::RefPtr<EffekseerRenderer::SingleFrameMemoryPool> SFMemoryPool,
@@ -125,7 +123,7 @@ namespace nen::es
 namespace nen
 {
 	Effect::Effect()
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 		: manager(Effekseer::Manager::Create(8000))
 #else
 		: manager(Effekseer::Manager::Create(8000))
@@ -146,7 +144,7 @@ namespace nen
 		}
 	}
 
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 	void Effect::Init(class nen::vk::VKRenderer *vkrenderer, class nen::vk::VKBase *vkbase)
 	{
 		// Create a renderer of effects
@@ -230,7 +228,7 @@ namespace nen
 		glrenderer->SetEffect(std::make_unique<gl::EffectGL>(renderer, manager, *this));
 	}
 #endif
-#ifdef EMSCRIPTEN
+#if defined(EMSCRIPTEN) || defined(MOBILE)
 	class CustomFileReader : public Effekseer::FileReader
 	{
 		uint8_t *fileData;
@@ -335,6 +333,3 @@ namespace nen
 	{
 	}
 }
-
-#ifdef EMSCRIPTEN
-#endif

@@ -164,7 +164,7 @@ namespace nen
 			break;
 		default:
 			size = 0;
-			throw 0;
+
 			break;
 		}
 		auto itr = mFontData.find(size);

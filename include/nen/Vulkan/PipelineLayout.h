@@ -1,5 +1,5 @@
 #pragma once
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #ifdef _WIN32
 #include <vulkan/vk_layer.h>
 #include <vulkan/vulkan_win32.h>

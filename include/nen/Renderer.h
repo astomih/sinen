@@ -3,7 +3,7 @@
 #include <vector>
 #include <unordered_map>
 #include <SDL.h>
-#ifdef EMSCRIPTEN
+#if defined(EMSCRIPTEN) || defined(MOBILE)
 #include "ES/ESRenderer.h"
 #endif
 #include "Math.hpp"
@@ -65,13 +65,13 @@ namespace nen
 
 		Vector3f GetClearColor() { return this->clearColor; }
 
-#ifdef EMSCRIPTEN
+#if defined(EMSCRIPTEN) || defined(MOBILE)
 		es::ESRenderer &GetES()
 		{
 			return *(esRenderer.get());
 		}
 #endif
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 		vk::VKRenderer &GetVK()
 		{
 			return *(vkRenderer.get());
@@ -123,11 +123,11 @@ namespace nen
 		// Window
 		SDL_Window *mWindow;
 		// Renderer
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 		std::unique_ptr<vk::VKRenderer> vkRenderer;
 		std::unique_ptr<gl::GLRenderer> glRenderer;
 #endif
-#ifdef EMSCRIPTEN
+#if defined(EMSCRIPTEN) || defined(MOBILE)
 		std::unique_ptr<es::ESRenderer> esRenderer;
 #endif
 		GraphicsAPI RendererAPI;

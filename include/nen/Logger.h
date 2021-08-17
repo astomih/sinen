@@ -28,13 +28,7 @@ namespace nen
         std::string StringFormatInternal(const std::string &format, Args &&...args)
         {
             int str_len = std::snprintf(nullptr, 0, format.c_str(), std::forward<Args>(args)...);
-            if (str_len < 0)
-            {
-                throw std::runtime_error("String Formatting Error");
-            }
-            else
-            {
-            }
+
             size_t buffer_size = str_len + sizeof(char);
             std::unique_ptr<char[]> buffer(new char[buffer_size]);
             std::snprintf(buffer.get(), buffer_size, format.c_str(), args...);
@@ -87,14 +81,14 @@ namespace nen
         template <typename... Args>
         static void Info(std::string_view format, Args &&...args)
         {
-            mLogger->Info(StringFormatLogger(format.data(), std::forward<Args>(args)...));
+            mLogger->Info(StringFormatLogger(std::string(format), std::forward<Args>(args)...));
         }
 
         /* エラーを表示するログ */
         template <typename... Args>
         static void Error(std::string_view format, Args &&...args)
         {
-            mLogger->Error(StringFormatLogger(format.data(), std::forward<Args>(args)...));
+            mLogger->Error(StringFormatLogger(std::string(format), std::forward<Args>(args)...));
         }
         /* 警告を表示するログ */
         template <typename... Args>

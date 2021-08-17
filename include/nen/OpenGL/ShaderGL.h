@@ -1,11 +1,13 @@
 #pragma once
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include <GL/glew.h>
 #endif
-#ifdef EMSCRIPTEN
+
+#if defined(EMSCRIPTEN) || defined(MOBILE) 
 #define GL_GLEXT_PROTOTYPES
 #include <SDL_opengles2.h>
 #endif
+
 namespace nen::gl
 {
 	class ShaderGL

@@ -1,5 +1,8 @@
 #ifndef NEN_HPP
 #define NEN_HPP
+#ifdef ANDROID
+#define MOBILE
+#endif
 #include "Math.hpp"
 #include "Vertex.h"
 #include "VertexArray.h"

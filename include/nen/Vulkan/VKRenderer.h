@@ -1,5 +1,5 @@
 ﻿#pragma once
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include <array>
 #include "VKBase.h"
 #include "../Math.hpp"
@@ -21,7 +21,7 @@ enum class TextureType
 	Image3D,
 	Font
 };
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "../Sprite.h"
 namespace nen::vk
 {

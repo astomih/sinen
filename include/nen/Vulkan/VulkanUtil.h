@@ -1,5 +1,5 @@
 ﻿#pragma once
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include <vulkan/vulkan.h>
 #include <SDL.h>
 

@@ -5,17 +5,17 @@ namespace nen
 {
 	Renderer::Renderer(GraphicsAPI api)
 		: transPic(nullptr), mScene(nullptr), mWindow(nullptr),
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 		  vkRenderer(nullptr),
 		  glRenderer(nullptr),
 #endif
-#ifdef EMSCRIPTEN
+#if defined(EMSCRIPTEN) || defined(MOBILE)
 		  esRenderer(nullptr),
 #endif
 		  RendererAPI(api)
 	{
 		mEffectManager = std::make_unique<Effect>();
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 		SDL_GLContext context;
 		switch (RendererAPI)
 		{
@@ -80,13 +80,13 @@ namespace nen
 			break;
 		}
 #endif
-#ifdef EMSCRIPTEN
+#if defined(EMSCRIPTEN) || defined(MOBILE)
 		SDL_GLContext context;
 		esRenderer = std::make_unique<es::ESRenderer>();
 		SDL_Init(SDL_INIT_EVERYTHING);
 		if (TTF_Init() == -1)
 			std::cout << "SDL2_TTF failed initialize." << std::endl;
-		IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF);
+		IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
@@ -104,16 +104,15 @@ namespace nen
 			SDL_WINDOWPOS_CENTERED,
 			static_cast<int>(Window::Size.x),
 			static_cast<int>(Window::Size.y),
-			SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
-		std::cout << "INFO: Window created" << std::endl;
-
+			SDL_WINDOW_OPENGL);
+		Logger::Info("Window created.");
 		context = SDL_GL_CreateContext(mWindow);
 		SDL_GL_MakeCurrent(mWindow, context);
 		esRenderer->setRenderer(this);
 		esRenderer->initialize(mWindow, context);
-		std::cout << "INFO: Renderer Initialized" << std::endl;
+		Logger::Info("Renderer initialized.");
 		mEffectManager->Init(esRenderer.get());
-		std::cout << "INFO: Effekseer Initialized" << std::endl;
+		Logger::Info("Effekseer initialized.");
 #endif
 		if (SDLNet_Init() != 0)
 			std::cout << "net init error." << std::endl;
@@ -129,7 +128,7 @@ namespace nen
 
 	void Renderer::Shutdown()
 	{
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 		if (RendererAPI == GraphicsAPI::Vulkan)
 			vkRenderer->terminate();
 #endif
@@ -148,20 +147,20 @@ namespace nen
 
 	void Renderer::Draw()
 	{
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 		if (RendererAPI == GraphicsAPI::Vulkan)
 			vkRenderer->render();
 		if (RendererAPI == GraphicsAPI::OpenGL)
 			glRenderer->render();
 #endif
-#ifdef EMSCRIPTEN
+#if defined(EMSCRIPTEN) || defined(MOBILE)
 		esRenderer->render();
 #endif
 	}
 
 	void Renderer::AddSprite2D(std::shared_ptr<nen::Sprite> sprite, std::shared_ptr<Texture> texture)
 	{
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 		if (this->RendererAPI == GraphicsAPI::Vulkan)
 		{
 			auto t = std::make_shared<vk::SpriteVK>();
@@ -179,7 +178,7 @@ namespace nen
 			GetGL().pushSprite2d(sprite);
 		}
 #endif
-#ifdef EMSCRIPTEN
+#if defined(EMSCRIPTEN) || defined(MOBILE)
 		GetES().registerTexture(texture, TextureType::Image2D);
 		GetES().pushSprite2d(sprite);
 #endif
@@ -204,7 +203,7 @@ namespace nen
 
 	void Renderer::RemoveSprite2D(std::shared_ptr<Sprite> sprite)
 	{
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 		if (this->RendererAPI == GraphicsAPI::Vulkan)
 		{
 			auto &sprites = GetVK().GetSprite2Ds();
@@ -227,7 +226,7 @@ namespace nen
 			GetGL().eraseSprite2d(sprite);
 		}
 #endif
-#ifdef EMSCRIPTEN
+#if defined(EMSCRIPTEN) || defined(MOBILE)
 		GetES().eraseSprite2d(sprite);
 #endif
 		auto iter = std::find(mSprite2Ds.begin(), mSprite2Ds.end(), sprite);
@@ -237,7 +236,7 @@ namespace nen
 
 	void Renderer::AddSprite3D(std::shared_ptr<Sprite> sprite, std::shared_ptr<Texture> texture)
 	{
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 		if (this->RendererAPI == GraphicsAPI::Vulkan)
 		{
 			auto t = std::make_shared<vk::SpriteVK>();
@@ -252,7 +251,7 @@ namespace nen
 			GetGL().pushSprite3d(sprite);
 		}
 #endif
-#ifdef EMSCRIPTEN
+#if defined(EMSCRIPTEN) || defined(MOBILE)
 		GetES().registerTexture(texture, TextureType::Image3D);
 		GetES().pushSprite3d(sprite);
 #endif
@@ -277,7 +276,7 @@ namespace nen
 
 	void Renderer::RemoveSprite3D(std::shared_ptr<Sprite> sprite)
 	{
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 		if (this->RendererAPI == GraphicsAPI::Vulkan)
 		{
 			auto &sprites = GetVK().GetSprite3Ds();
@@ -300,7 +299,7 @@ namespace nen
 			GetGL().eraseSprite3d(sprite);
 		}
 #endif
-#ifdef EMSCRIPTEN
+#if defined(EMSCRIPTEN) || defined(MOBILE)
 		GetES().eraseSprite3d(sprite);
 #endif
 
@@ -311,7 +310,7 @@ namespace nen
 
 	void Renderer::ChangeBufferSprite(std::shared_ptr<Sprite> sprite, TextureType type)
 	{
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 		if (this->RendererAPI == GraphicsAPI::Vulkan)
 		{
 
@@ -386,7 +385,7 @@ namespace nen
 
 	void Renderer::AddVertexArray(const VertexArray &vArray, std::string_view name)
 	{
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 		if (RendererAPI == GraphicsAPI::Vulkan)
 		{
 			vk::VertexArrayForVK vArrayVK;
@@ -428,7 +427,7 @@ namespace nen
 			GetGL().AddVertexArray(vArrayGL, name);
 		}
 #endif
-#ifdef EMSCRIPTEN
+#if defined(EMSCRIPTEN) || defined(MOBILE)
 		gl::VertexArrayForGL vArrayGL;
 		vArrayGL.indexCount = vArray.indexCount;
 		vArrayGL.indices = vArray.indices;

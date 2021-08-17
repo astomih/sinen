@@ -1,5 +1,5 @@
-#ifndef EMSCRIPTEN
 #include <nen.hpp>
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -7,7 +7,10 @@
 #include <sol/sol.hpp>
 #include <GL/glew.h>
 #endif
-#ifdef EMSCRIPTEN
+
+
+
+#if defined(EMSCRIPTEN) || defined(MOBILE)
 #include <nen.hpp>
 #include <fstream>
 #include <sstream>
@@ -116,6 +119,26 @@ namespace nen::gl
 								 GLenum shaderType,
 								 GLuint &outShader)
 	{
+#ifdef ANDROID
+		SDL_RWops* file{SDL_RWFromFile(fileName.c_str(), "r")};
+		size_t fileLength{static_cast<size_t>(SDL_RWsize(file))};
+		void* data{SDL_LoadFile_RW(file, nullptr, 1)};
+		std::string result(static_cast<char*>(data), fileLength);
+		SDL_free(data);
+		// Create a shader of the specified type
+		outShader = glCreateShader(shaderType);
+		const char* contentchar = result.c_str();
+		// Set the source characters and try to compile
+		glShaderSource(outShader, 1, &(contentchar), nullptr);
+		glCompileShader(outShader);
+
+		if (!IsCompiled(outShader))
+		{
+			std::cout << "Failed to compile shader " << fileName << std::endl;
+			return false;
+		}
+#else
+
 		// Open file
 		std::ifstream shaderFile(fileName);
 		if (shaderFile.is_open())
@@ -143,7 +166,7 @@ namespace nen::gl
 			std::cout << "Shader file not found: " << fileName << std::endl;
 			return false;
 		}
-
+#endif
 		return true;
 	}
 

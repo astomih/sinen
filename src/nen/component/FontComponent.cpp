@@ -8,15 +8,6 @@ namespace nen
 
 	void FontComponent::SetString(const std::string &str, const Vector3f &color, int pointSize)
 	{
-		try
-		{
-			if (!mFont)
-				throw std::runtime_error("Error: Font set yet.");
-		}
-		catch (std::runtime_error &e)
-		{
-			std::cout << e.what() << std::endl;
-		}
 		if (!mFont->isLoaded())
 		{
 			mFont->Load("Assets/Font/mplus/mplus-1p-medium.ttf");

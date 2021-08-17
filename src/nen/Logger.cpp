@@ -1,4 +1,7 @@
 ﻿#include <nen.hpp>
+#ifdef __ANDROID__
+#include <android/log.h>
+#endif
 
 namespace nen
 {
@@ -17,11 +20,21 @@ namespace nen
 	}
 	void Logger::NenLoggers::ConsoleLogger::Info(std::string_view string)
 	{
-		std::cout << "INFO: " << string << std::endl;
+#ifdef __ANDROID__
+		__android_log_print(ANDROID_LOG_INFO, "NEN" , "INFO: %s\n",string.data());
+#else
+        std::cout << "INFO: " << string << std::endl;
+#endif
 	}
 	void Logger::NenLoggers::ConsoleLogger::Error(std::string_view string)
 	{
-		std::cout << "ERROR: " << string << std::endl;
+
+#ifdef __ANDROID__
+		__android_log_print(ANDROID_LOG_ERROR, "NEN" , "ERROR: %s\n", string.data());
+
+#else
+        std::cout << "ERROR: " << string << std::endl;
+#endif
 	}
 	void Logger::NenLoggers::ConsoleLogger::Warn(std::string_view string)
 	{

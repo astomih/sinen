@@ -1,27 +1,12 @@
 #pragma once
 #include <string>
 #include <memory>
-#include "Vulkan/VKRenderer.h"
+#include "Math.hpp"
 #include "Vertex.h"
 #include <unordered_map>
 namespace nen
 {
 	struct SDL_Surface;
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
-	struct BufferObject
-	{
-		~BufferObject();
-		VkBuffer buffer;
-		VkDeviceMemory memory;
-	};
-	struct ImageObject
-	{
-		VkImage image;
-		VkDeviceMemory memory;
-		VkImageView view;
-	};
-#endif
-	
 	struct ShaderParameters
 	{
 		Matrix4 world;

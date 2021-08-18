@@ -2,6 +2,12 @@
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include <vector>
 
+#include <SDL_vulkan.h>
+#include <vulkan/vk_layer.h>
+#ifdef _WIN32
+#include <vulkan/vulkan_win32.h>
+#endif // _WIN32
+
 namespace nen::vk
 {
 	class Swapchain

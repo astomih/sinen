@@ -4,31 +4,41 @@
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 #endif
+#include "ShaderES.h"
 #include <SDL.h>
 #include <GLES3/gl3.h>
-#include "../Texture.h"
-#include "../OpenGL/ShaderGL.h"
-#include "../Effect.hpp"
+#include <Texture.h>
 #include <string>
-#include "../Window.hpp"
-#include "../Sprite.h"
-
-namespace nen
-{
-	class Texture;
-	class Renderer;
-}
+#include <Window.hpp>
+#include <Sprite.h>
+#include <Renderer.h>
+#include <VertexArray.h>
 
 namespace nen::es
 {
-	class ESRenderer
+	struct VertexArrayForES : public VertexArray
+	{
+		uint32_t vertexID;
+		uint32_t indexID;
+	};
+	class ESRenderer : public IRenderer
 	{
 	public:
-		ESRenderer() : mRenderer(nullptr) {}
-		void initialize(struct ::SDL_Window *window, ::SDL_GLContext context);
+		ESRenderer();
+		~ESRenderer() override {}
+		void Initialize(struct SDL_Window *window) override;
+		void Shutdown() override;
+		void Render() override;
+		void AddVertexArray(const VertexArray &vArray, std::string_view name) override;
+		void ChangeBufferSprite(std::shared_ptr<class Sprite> sprite, const TextureType type) override;
+
+		void AddSprite2D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture) override;
+		void RemoveSprite2D(std::shared_ptr<class Sprite> sprite) override;
+		void AddSprite3D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture) override;
+		void RemoveSprite3D(std::shared_ptr<class Sprite> sprite) override;
+
 		void prepare();
 		void cleanup() {}
-		void render();
 		void registerTexture(std::shared_ptr<Texture>, const TextureType &type);
 		void pushSprite2d(std::shared_ptr<Sprite> sprite2d)
 		{
@@ -75,29 +85,18 @@ namespace nen::es
 				mSprite3Ds.erase(itr);
 			}
 		}
-		void setRenderer(nen::Renderer *renderer)
-		{
-			mRenderer = renderer;
-		}
-
-		void AddVertexArray(const nen::gl::VertexArrayForGL &vArray, std::string_view name);
-
-		void SetEffect(std::unique_ptr<class EffectGL> effect) { mEffectManager = std::move(effect); }
 
 	private:
-		std::unique_ptr<EffectGL> mEffectManager;
-		uint32_t AddVertexArray(const nen::gl::VertexArrayForGL &);
+		std::unique_ptr<class EffectManagerES> mEffectManager;
 		bool loadShader();
 		void createSpriteVerts();
 		void createBoxVerts();
-		nen::Renderer *mRenderer;
 
-		gl::ShaderGL *mSpriteShader;
-		gl::ShaderGL *mAlphaShader;
+		ShaderES *mSpriteShader;
+		ShaderES *mAlphaShader;
 		GLuint mTextureID;
 		std::unordered_map<std::string, GLuint> mTextureIDs;
-		std::unordered_map<std::string, nen::gl::VertexArrayForGL> m_VertexArrays;
-		::SDL_Window *mWindow;
+		std::unordered_map<std::string, VertexArrayForES> m_VertexArrays;
 		::SDL_GLContext mContext;
 		std::vector<std::shared_ptr<Sprite>> mSprite2Ds;
 		std::vector<std::shared_ptr<Sprite>> mSprite3Ds;

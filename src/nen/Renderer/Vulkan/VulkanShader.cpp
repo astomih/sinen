@@ -1,4 +1,8 @@
-﻿#include <nen.hpp>
+﻿#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#include "VKBase.h"
+#include "VulkanShader.h"
+#include <nen.hpp>
+#include <fstream>
 
 namespace nen::vk
 {
@@ -36,3 +40,4 @@ namespace nen::vk
         }
     }
 }
+#endif

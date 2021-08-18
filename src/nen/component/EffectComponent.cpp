@@ -3,14 +3,17 @@ namespace nen
 {
 	//TODO
 	EffectComponent::EffectComponent(Actor &actor, std::u16string_view filepath)
-		: Component(actor), mOwner(actor), path(filepath), mTimer(0.f), playing(false), isStop(true)
+		: Component(actor), mOwner(actor), mTimer(0.f), playing(false), isStop(true)
 	{
-		mOwner.GetScene().GetRenderer()->AddEffectComp(this);
+		mEffect = new Effect(filepath);
+		mOwner.GetScene().GetRenderer()->AddEffect(mEffect);
 	}
 
 	EffectComponent::~EffectComponent()
 	{
-		mOwner.GetScene().GetRenderer()->RemoveEffectComp(this);
+		mOwner.GetScene().GetRenderer()->RemoveEffect(mEffect);
+		delete mEffect;
+		mEffect = nullptr;
 	}
 
 	void EffectComponent::Update(float deltaTime)

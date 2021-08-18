@@ -2,11 +2,6 @@
 #include <SDL_image.h>
 namespace nen
 {
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
-	BufferObject::~BufferObject()
-	{
-	}
-#endif
 	std::string TextureAsset::texname = "default";
 	std::unordered_map<std::string, std::shared_ptr<Texture>> TextureAsset::mTexture;
 	Texture::Texture()
@@ -89,6 +84,6 @@ namespace nen
 		::SDL_FillRect(m_surface.get(), NULL, SDL_MapRGBA(m_surface->format, 0, 0, 0, 0));
 		if (m_surface)
 			return *m_surface.get();
-		std::cout << SDL_GetError() << std::endl;
+		Logger::Error("%s", SDL_GetError());
 	}
 }

@@ -10,8 +10,8 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ./build)
 
 file(GLOB SOURCE_FILES 
 	../src/nen/*.cpp
-	../src/nen/OpenGL/ShaderGL.cpp
-	../src/nen/ES/*.cpp
+	../src/nen/Renderer/OpenGLES/*.cpp
+	../src/nen/effect/*.cpp
 	../src/nen/component/*.cpp
 	../src/nen/actor/*.cpp
 	../src/nen/scene/*.cpp
@@ -22,7 +22,7 @@ file(GLOB SOURCE_FILES
 	../libs/ImGui/source/imgui_impl_sdl.cpp
 	../libs/ImGui/source/imgui_widgets.cpp
 	../libs/tinyobjloader/tiny_ob_loader.cc
-	)
+)
 add_library(nen STATIC ${SOURCE_FILES})
 set(NEN_INCLUDE_DIRECTORIES 
 	.

@@ -1,9 +1,13 @@
 ﻿#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#include "VKBase.h"
+#include "VKRenderer.h"
+#include "EffectManagerVK.h"
+#include "Pipeline.h"
+#include <nen.hpp>
 #include <iostream>
 #include <sstream>
 #include <algorithm>
 #include <array>
-#include <nen.hpp>
 
 namespace nen::vk
 {

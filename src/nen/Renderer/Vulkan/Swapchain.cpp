@@ -1,4 +1,7 @@
 ﻿#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#include "VKBase.h"
+#include "Swapchain.h"
+#include "VulkanUtil.h"
 #include <nen.hpp>
 #include <algorithm>
 namespace nen::vk

@@ -1,3 +1,7 @@
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#include "VKBase.h"
+#include "Pipeline.h"
+#include "VulkanUtil.h"
 #include <nen.hpp>
 
 namespace nen::vk
@@ -116,3 +120,4 @@ namespace nen::vk
         nen::vkutil::DestroyVulkanObject<VkPipelineLayout>(device, layout, &vkDestroyPipelineLayout);
     }
 }
+#endif

@@ -1,20 +1,16 @@
 #pragma once
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
-#include <GL/glew.h>
-#endif
-
 #if defined(EMSCRIPTEN) || defined(MOBILE) 
 #define GL_GLEXT_PROTOTYPES
 #include <SDL_opengles2.h>
-#endif
+#include <Math.hpp>
 
-namespace nen::gl
+namespace nen::es
 {
-	class ShaderGL
+	class ShaderES
 	{
 	public:
-		ShaderGL();
-		~ShaderGL() {}
+		ShaderES();
+		~ShaderES() {}
 		// Load the vertex/fragment shaders with the given names
 		bool Load(const std::string &vertName, const std::string &fragName);
 		void Unload();
@@ -50,3 +46,4 @@ namespace nen::gl
 	};
 
 }
+#endif

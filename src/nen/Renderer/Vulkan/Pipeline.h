@@ -1,10 +1,11 @@
 #pragma once
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#include <vector>
+#include <SDL_vulkan.h>
 #include <vulkan/vk_layer.h>
 #ifdef _WIN32
 #include <vulkan/vulkan_win32.h>
-#endif
-#include <vector>
+#endif // _WIN32
 #include "PipelineLayout.h"
 namespace nen::vk
 {

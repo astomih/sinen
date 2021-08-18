@@ -1,7 +1,8 @@
 ﻿#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#include <GL/glew.h>
+#include "GLRenderer.h"
 #include <nen.hpp>
 #include <SDL.h>
-#include <GL/glew.h>
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -12,44 +13,49 @@
 #include <imgui_impl_opengl3.h>
 #include <Effekseer.h>
 #include <EffekseerRendererGL.h>
+#include "EffectManagerGL.h"
 
 namespace nen::gl
 {
-	void GLRenderer::initialize(::SDL_Window *window, SDL_GLContext context)
+	GLRenderer::GLRenderer()
+	{
+	}
+
+	void GLRenderer::Initialize(::SDL_Window *window)
 	{
 		mWindow = window;
+		mContext = SDL_GL_CreateContext(mWindow);
+		SDL_GL_MakeCurrent(mWindow, mContext);
+		glewExperimental = GL_TRUE;
+		if (glewInit() != GLEW_OK)
+		{
+			std::cout << "ERROR: glew isn't init" << std::endl;
+		}
+		glGetError();
+
 		// Create an OpenGL context
 		prepare();
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
-		ImGui_ImplSDL2_InitForOpenGL(window, context);
+		ImGui_ImplSDL2_InitForOpenGL(window, mContext);
 		ImGui_ImplOpenGL3_Init("#version 130");
+		mEffectManager = std::make_unique<EffectManagerGL>(this);
+		mEffectManager->Init();
 	}
 
-	void GLRenderer::prepare()
-	{
-		if (!loadShader())
-		{
-			std::cout << "failed to loads shader" << std::endl;
-		}
-		createSpriteVerts();
-		createBoxVerts();
-	}
-
-	void GLRenderer::render()
+	void GLRenderer::Render()
 	{
 		auto color = mRenderer->GetClearColor();
 		glClearColor(color.x, color.y, color.z, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		static int time = 0;
-		for (auto i : this->mRenderer->GetEffectComponent())
+		for (auto i : this->mRenderer->GetEffects())
 		{
 			if (time % 200 == 0)
 			{
 				auto eref = mEffectManager->GetEffect(i->GetPath());
 				auto p = i->GetPosition();
-				mEffectManager->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
-				i->handle = mEffectManager->handle;
+				i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
 			}
 			if (time % 200 == 199)
 				mEffectManager->GetManager()->StopEffect(i->handle);
@@ -218,6 +224,63 @@ namespace nen::gl
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		SDL_GL_SwapWindow(mWindow);
 	}
+	void GLRenderer::AddVertexArray(const VertexArray &vArray, std::string_view name)
+	{
+		gl::VertexArrayForGL vArrayGL;
+		vArrayGL.indexCount = vArray.indexCount;
+		vArrayGL.indices = vArray.indices;
+		vArrayGL.vertices = vArray.vertices;
+
+		// Create vertex array
+		glGenVertexArrays(1, &vArrayGL.vertexID);
+		glBindVertexArray(vArrayGL.vertexID);
+
+		// Create vertex buffer
+		glGenBuffers(1, &vArrayGL.vertexID);
+		glBindBuffer(GL_ARRAY_BUFFER, vArrayGL.vertexID);
+		auto vArraySize = vArrayGL.vertices.size() * sizeof(Vertex);
+		glBufferData(GL_ARRAY_BUFFER, vArraySize, vArrayGL.vertices.data(), GL_STATIC_DRAW);
+
+		// Create index buffer
+		glGenBuffers(1, &vArrayGL.indexID);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.indexID);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.indices.size() * sizeof(uint32_t), vArrayGL.indices.data(), GL_STATIC_DRAW);
+		AddVertexArray(vArrayGL, name);
+		m_VertexArrays.insert(std::pair<std::string, VertexArrayForGL>(name.data(), vArrayGL));
+	}
+	void GLRenderer::ChangeBufferSprite(std::shared_ptr<class Sprite> sprite, const TextureType type)
+	{
+	}
+
+	void GLRenderer::AddSprite2D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture)
+	{
+		registerTexture(texture, TextureType::Image2D);
+		pushSprite2d(sprite);
+	}
+	void GLRenderer::RemoveSprite2D(std::shared_ptr<class Sprite> sprite)
+	{
+		eraseSprite2d(sprite);
+	}
+
+	void GLRenderer::AddSprite3D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture)
+	{
+		registerTexture(texture, TextureType::Image3D);
+		pushSprite3d(sprite);
+	}
+	void GLRenderer::RemoveSprite3D(std::shared_ptr<class Sprite> sprite)
+	{
+		eraseSprite3d(sprite);
+	}
+
+	void GLRenderer::prepare()
+	{
+		if (!loadShader())
+		{
+			std::cout << "failed to loads shader" << std::endl;
+		}
+		createSpriteVerts();
+		createBoxVerts();
+	}
 
 	void GLRenderer::registerTexture(std::shared_ptr<Texture> texture, const TextureType &type)
 	{
@@ -263,7 +326,6 @@ namespace nen::gl
 
 	void GLRenderer::AddVertexArray(const VertexArrayForGL &vArray, std::string_view name)
 	{
-		m_VertexArrays.insert(std::pair<std::string, VertexArrayForGL>(name.data(), vArray));
 	}
 	void GLRenderer::createSpriteVerts()
 	{
@@ -284,7 +346,7 @@ namespace nen::gl
 		vArray.indexCount = 6;
 		vArray.PushIndices(indices, vArray.indexCount);
 
-		mRenderer->AddVertexArray(vArray, "SPRITE");
+		AddVertexArray(vArray, "SPRITE");
 	}
 
 	void GLRenderer::createBoxVerts()
@@ -347,7 +409,7 @@ namespace nen::gl
 		vArray.indexCount = _countof(indices);
 
 		vArray.PushIndices(indices, vArray.indexCount);
-		mRenderer->AddVertexArray(vArray, "BOX");
+		AddVertexArray(vArray, "BOX");
 	}
 }
 #endif

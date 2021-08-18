@@ -1,5 +1,6 @@
 #include <nen.hpp>
 #if defined(EMSCRIPTEN) || defined(MOBILE)
+#include "ESRenderer.h"
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -9,16 +10,20 @@
 #include <imgui_impl_opengl3.h>
 #include <Effekseer.h>
 #include <EffekseerRendererGL.h>
-
-#define _countof(array) (sizeof(array) / sizeof(array[0]))
+#include "EffectManagerES.h"
 
 namespace nen
 {
 	namespace es
 	{
-		void ESRenderer::initialize(::SDL_Window *window, ::SDL_GLContext context)
+		ESRenderer::ESRenderer()
+		{
+		}
+		void ESRenderer::Initialize(::SDL_Window *window)
 		{
 			mWindow = window;
+			mContext = SDL_GL_CreateContext(mWindow);
+			SDL_GL_MakeCurrent(mWindow, mContext);
 			// Create an OpenGL context
 			prepare();
 			IMGUI_CHECKVERSION();
@@ -29,43 +34,33 @@ namespace nen
 			io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
 			io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
 			io.IniFilename = NULL;
-			ImGui_ImplSDL2_InitForOpenGL(window, context);
+			ImGui_ImplSDL2_InitForOpenGL(mWindow, mContext);
 			ImGui_ImplOpenGL3_Init("#version 100");
+			mEffectManager = std::make_unique<EffectManagerES>(this);
+			mEffectManager->Init();
 		}
-
-		void ESRenderer::prepare()
+		void ESRenderer::Shutdown()
 		{
-			if (!loadShader())
-			{
-				std::cout << "failed to loads shader" << std::endl;
-			}
-			createSpriteVerts();
-			createBoxVerts();
 		}
-
-		void ESRenderer::render()
+		
+		void ESRenderer::Render()
 		{
 			auto color = mRenderer->GetClearColor();
 			glClearColor(color.x, color.y, color.z, 1.0);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			static float oldtime = SDL_GetTicks();
-			float nowtime = SDL_GetTicks();
-			static float timer = 0.f;
-			timer += (nowtime - oldtime) / 1000.f;
-			for (auto i : this->mRenderer->GetEffectComponent())
+			static int time = 0;
+			for (auto i : this->mRenderer->GetEffects())
 			{
-				auto eref = mEffectManager->GetEffect(i->GetPath());
-				auto p = i->GetPosition();
-				if (timer > 0.2f)
+				if (time % 200 == 0)
 				{
-					mEffectManager->GetManager()->StopEffect(i->handle);
-					mEffectManager->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
-					i->handle = mEffectManager->handle;
-					timer = 0.f;
+					auto eref = mEffectManager->GetEffect(i->GetPath());
+					auto p = i->GetPosition();
+					i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
 				}
-				mEffectManager->GetManager()->SetLocation(i->handle, ::Effekseer::Vector3D(p.x, p.y, p.z));
+				if (time % 200 == 199)
+					mEffectManager->GetManager()->StopEffect(i->handle);
 			}
-			oldtime = SDL_GetTicks();
+			time++;
 			// Move the effect
 			//manager->AddLocation(handle, ::Effekseer::Vector3D(0.2f, 0.0f, 0.0f));
 
@@ -153,7 +148,6 @@ namespace nen
 				int num = mTextureIDs[i->textureIndex];
 				glBindTexture(GL_TEXTURE_2D, num);
 				glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr);
-
 			}
 			glDisable(GL_BLEND);
 			ImGui_ImplOpenGL3_NewFrame();
@@ -168,6 +162,60 @@ namespace nen
 			ImGui::Render();
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 			SDL_GL_SwapWindow(mWindow);
+		}
+		void ESRenderer::AddVertexArray(const VertexArray &vArray, std::string_view name)
+		{
+			VertexArrayForES vArrayGL;
+			vArrayGL.indexCount = vArray.indexCount;
+			vArrayGL.indices = vArray.indices;
+			vArrayGL.vertices = vArray.vertices;
+
+			// Create vertex array
+			glGenVertexArraysOES(1, &vArrayGL.vertexID);
+			glBindVertexArrayOES(vArrayGL.vertexID);
+
+			// Create vertex buffer
+			glGenBuffers(1, &vArrayGL.vertexID);
+			glBindBuffer(GL_ARRAY_BUFFER, vArrayGL.vertexID);
+			auto vArraySize = vArrayGL.vertices.size() * sizeof(Vertex);
+			glBufferData(GL_ARRAY_BUFFER, vArraySize, vArrayGL.vertices.data(), GL_STATIC_DRAW);
+
+			// Create index buffer
+			glGenBuffers(1, &vArrayGL.indexID);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.indexID);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.indices.size() * sizeof(uint32_t), vArrayGL.indices.data(), GL_STATIC_DRAW);
+			m_VertexArrays.insert(std::pair<std::string, VertexArrayForES>(name.data(), vArrayGL));
+		}
+		void ESRenderer::ChangeBufferSprite(std::shared_ptr<class Sprite> sprite, const TextureType type)
+		{
+		}
+		void ESRenderer::AddSprite2D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture)
+		{
+			registerTexture(texture, TextureType::Image2D);
+			pushSprite2d(sprite);
+		}
+		void ESRenderer::RemoveSprite2D(std::shared_ptr<class Sprite> sprite)
+		{
+			eraseSprite2d(sprite);
+		}
+		void ESRenderer::AddSprite3D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture)
+		{
+			registerTexture(texture, TextureType::Image3D);
+			pushSprite3d(sprite);
+		}
+		void ESRenderer::RemoveSprite3D(std::shared_ptr<class Sprite> sprite)
+		{
+			eraseSprite3d(sprite);
+		}
+
+		void ESRenderer::prepare()
+		{
+			if (!loadShader())
+			{
+				std::cout << "failed to loads shader" << std::endl;
+			}
+			createSpriteVerts();
+			createBoxVerts();
 		}
 
 		void ESRenderer::registerTexture(std::shared_ptr<Texture> texture, const TextureType &type)
@@ -199,12 +247,12 @@ namespace nen
 		bool ESRenderer::loadShader()
 		{
 			// Create sprite shader
-			mSpriteShader = new gl::ShaderGL();
+			mSpriteShader = new ShaderES();
 			if (!mSpriteShader->Load("Assets/Shader/GLES/sprite.vert", "Assets/Shader/GLES/sprite.frag"))
 			{
 				return false;
 			}
-			mAlphaShader = new gl::ShaderGL();
+			mAlphaShader = new ShaderES();
 			if (!mAlphaShader->Load("Assets/Shader/GLES/sprite.vert", "Assets/Shader/GLES/alpha.frag"))
 			{
 				return false;
@@ -212,10 +260,6 @@ namespace nen
 			return true;
 		}
 
-		void ESRenderer::AddVertexArray(const gl::VertexArrayForGL &vArray, std::string_view name)
-		{
-			m_VertexArrays.insert(std::pair<std::string, gl::VertexArrayForGL>(name.data(), vArray));
-		}
 		void ESRenderer::createSpriteVerts()
 		{
 			const float value = 1.f;
@@ -235,7 +279,7 @@ namespace nen
 			vArray.indexCount = 6;
 			vArray.PushIndices(indices, vArray.indexCount);
 
-			mRenderer->AddVertexArray(vArray, "SPRITE");
+			AddVertexArray(vArray, "SPRITE");
 		}
 
 		void ESRenderer::createBoxVerts()
@@ -295,10 +339,10 @@ namespace nen
 				16, 18, 17, 17, 18, 19, // top
 				20, 22, 21, 21, 22, 23, // bottom
 			};
-			vArray.indexCount = _countof(indices);
+			vArray.indexCount = 36;
 
 			vArray.PushIndices(indices, vArray.indexCount);
-			mRenderer->AddVertexArray(vArray, "BOX");
+			AddVertexArray(vArray, "BOX");
 		}
 	}
 }

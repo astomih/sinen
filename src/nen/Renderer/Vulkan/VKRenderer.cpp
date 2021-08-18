@@ -1,4 +1,9 @@
 ﻿#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#include "EffectManagerVK.h"
+#include "VKBase.h"
+#include "VKRenderer.h"
+#include "VulkanUtil.h"
+#include "VulkanShader.h"
 #include <nen.hpp>
 #include <fstream>
 #include <array>
@@ -11,6 +16,7 @@
 #include <sstream>
 #include <Effekseer.h>
 #include <EffekseerRendererVulkan.h>
+
 namespace nen::vk
 {
 	using namespace vkutil;
@@ -34,14 +40,125 @@ namespace nen::vk
 			abort();
 	}
 
-	void VKRenderer::initialize(SDL_Window *window, const char *appName)
+	void VKRenderer::Initialize(SDL_Window *window)
 	{
-		m_base->initialize(window, appName);
+		m_base->initialize(window, Window::name.c_str());
+		mEffectManager = std::make_unique<EffectManagerVK>(this);
+		mEffectManager->Init();
 	}
-	void VKRenderer::terminate()
+
+	void VKRenderer::Shutdown()
 	{
+		cleanup();
 		m_base->terminate();
 	}
+	void VKRenderer::Render()
+	{
+		m_base->render();
+	}
+	void VKRenderer::AddVertexArray(const VertexArray &vArray, std::string_view name)
+	{
+		VertexArrayForVK vArrayVK;
+		vArrayVK.indexCount = vArray.indexCount;
+		vArrayVK.indices = vArray.indices;
+		vArrayVK.vertices = vArray.vertices;
+		auto vArraySize = vArray.vertices.size() * sizeof(Vertex);
+		vArrayVK.vertexBuffer = CreateBuffer(vArraySize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		vArrayVK.indexBuffer = CreateBuffer(vArray.indices.size() * sizeof(uint32_t), VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+
+		MapMemory(vArrayVK.vertexBuffer.memory, vArrayVK.vertices.data(), vArraySize);
+		MapMemory(vArrayVK.indexBuffer.memory, vArrayVK.indices.data(), sizeof(uint32_t) * vArrayVK.indices.size());
+		m_VertexArrays.insert(std::pair<std::string, VertexArrayForVK>(name.data(), vArrayVK));
+	}
+	void VKRenderer::ChangeBufferSprite(std::shared_ptr<class Sprite> sprite, const TextureType type)
+	{
+		if (type == TextureType::Image2D)
+		{
+			auto &sprites = GetSprite2Ds();
+			for (auto &i : sprites)
+			{
+				if (sprite == i->sprite)
+				{
+					if (sprite->isChangeBuffer && i->buffer.buffer == 0)
+					{
+						i->buffer = CreateBuffer(
+							sizeof(Vertex) * 4, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+						break;
+					}
+				}
+			}
+		}
+		if (type == TextureType::Image3D)
+		{
+			auto &sprites = GetSprite3Ds();
+			for (auto &i : sprites)
+			{
+				if (sprite == i->sprite)
+				{
+					if (sprite->isChangeBuffer && i->buffer.buffer == 0)
+					{
+						i->buffer = CreateBuffer(
+							sizeof(Vertex) * 4, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	void VKRenderer::AddSprite2D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture)
+	{
+		auto t = std::make_shared<vk::SpriteVK>();
+		if (sprite->isChangeBuffer)
+			t->buffer = CreateBuffer(
+				sizeof(Vertex), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		t->sprite = sprite;
+		registerImageObject(texture);
+		t->mTexture = texture;
+		registerTexture(t, texture->id, TextureType::Image2D);
+	}
+	void VKRenderer::RemoveSprite2D(std::shared_ptr<class Sprite> sprite)
+	{
+		auto &sprites = GetSprite2Ds();
+		auto iter = sprites.begin();
+		for (;
+			 iter != sprites.end();)
+		{
+			if (sprite == (*iter)->sprite)
+			{
+				unregisterTexture((*iter), TextureType::Image2D);
+				iter = sprites.begin();
+				if (iter == sprites.end())
+					break;
+			}
+			iter++;
+		}
+	}
+
+	void VKRenderer::AddSprite3D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture)
+	{
+		auto t = std::make_shared<vk::SpriteVK>();
+		t->sprite = sprite;
+		registerImageObject(texture);
+		t->mTexture = texture;
+		registerTexture(t, texture->id, TextureType::Image3D);
+	}
+	void VKRenderer::RemoveSprite3D(std::shared_ptr<class Sprite> sprite)
+	{
+		auto &sprites = GetSprite3Ds();
+		auto iter = sprites.begin();
+		for (; iter != sprites.end(); ++iter)
+		{
+			if (sprite == (*iter)->sprite)
+			{
+				unregisterTexture((*iter), TextureType::Image3D);
+				iter = sprites.begin();
+				if (iter == sprites.end())
+					break;
+			}
+		}
+	}
+
 	void VKRenderer::prepare()
 	{
 		createBoxVertices();
@@ -95,10 +212,6 @@ namespace nen::vk
 			VulkanShader::CleanModule(m_base->GetVkDevice(), shaderStages);
 		}
 		prepareImGUI();
-	}
-	void VKRenderer::render()
-	{
-		m_base->render();
 	}
 	template <class T>
 	inline bool isExist(T &handle)
@@ -191,10 +304,6 @@ namespace nen::vk
 		vkMapMemory(m_base->GetVkDevice(), memory, 0, VK_WHOLE_SIZE, 0, &p);
 		memcpy(p, data, size);
 		vkUnmapMemory(m_base->GetVkDevice(), memory);
-	}
-	void VKRenderer::AddVertexArray(const VertexArrayForVK &vArray, std::string_view name)
-	{
-		m_VertexArrays.insert(std::pair<std::string, VertexArrayForVK>(name.data(), vArray));
 	}
 
 	void VKRenderer::createBoxVertices()
@@ -1206,15 +1315,14 @@ namespace nen::vk
 		float nowtime = SDL_GetTicks();
 		static float timer = 0.f;
 		timer += (nowtime - oldtime) / 1000.f;
-		for (auto i : this->mRenderer->GetEffectComponent())
+		for (auto i : this->mRenderer->GetEffects())
 		{
 			auto eref = mEffectManager->GetEffect(i->GetPath());
 			auto p = i->GetPosition();
 			if (timer > 0.2f)
 			{
 				mEffectManager->GetManager()->StopEffect(i->handle);
-				mEffectManager->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
-				i->handle = mEffectManager->handle;
+				i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
 				timer = 0.f;
 			}
 			mEffectManager->GetManager()->SetLocation(i->handle, ::Effekseer::Vector3D(p.x, p.y, p.z));

@@ -1,31 +1,19 @@
+#include "ShaderES.h"
 #include <nen.hpp>
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <SDL_image.h>
-#include <sol/sol.hpp>
-#include <GL/glew.h>
-#endif
-
-
-
 #if defined(EMSCRIPTEN) || defined(MOBILE)
-#include <nen.hpp>
 #include <fstream>
 #include <sstream>
 #include <iostream>
 #include <SDL_image.h>
-#endif
-namespace nen::gl
+namespace nen::es
 {
 
-	ShaderGL::ShaderGL()
+	ShaderES::ShaderES()
 		: mShaderProgram(0), mVertexShader(0), mFragShader(0)
 	{
 	}
 
-	bool ShaderGL::Load(const std::string &vertName, const std::string &fragName)
+	bool ShaderES::Load(const std::string &vertName, const std::string &fragName)
 	{
 		// Compile vertex and pixel shaders
 		if (!CompileShader(fragName, GL_FRAGMENT_SHADER, mFragShader) ||
@@ -49,7 +37,7 @@ namespace nen::gl
 		return true;
 	}
 
-	void ShaderGL::Unload()
+	void ShaderES::Unload()
 	{
 		// Delete the program/shaders
 		glDeleteProgram(mShaderProgram);
@@ -57,18 +45,18 @@ namespace nen::gl
 		glDeleteShader(mFragShader);
 	}
 
-	void ShaderGL::SetActive()
+	void ShaderES::SetActive()
 	{
 		// Set this program as the active one
 		glUseProgram(mShaderProgram);
 	}
 
-	void ShaderGL::SetDisable()
+	void ShaderES::SetDisable()
 	{
 		glDisable(mShaderProgram);
 	}
 
-	void ShaderGL::SetMatrixUniform(const char *name, const Matrix4 &matrix)
+	void ShaderES::SetMatrixUniform(const char *name, const Matrix4 &matrix)
 	{
 		// Find the uniform by this name
 		GLuint loc = glGetUniformLocation(mShaderProgram, name);
@@ -76,46 +64,46 @@ namespace nen::gl
 		glUniformMatrix4fv(loc, 1, GL_TRUE, matrix.GetAsFloatPtr());
 	}
 
-	void ShaderGL::SetColorUniform(const char *name, const Color::Color &color)
+	void ShaderES::SetColorUniform(const char *name, const Color::Color &color)
 	{
 		GLuint loc = glGetUniformLocation(mShaderProgram, name);
 		glUniform4f(loc, color.r, color.g, color.b, color.a);
 	}
 
-	void ShaderGL::SetVector2fUniform(const char *name, const Vector2f &vector)
+	void ShaderES::SetVector2fUniform(const char *name, const Vector2f &vector)
 	{
 		GLuint loc = glGetUniformLocation(mShaderProgram, name);
 		// Send the vector data
 		glUniform2fv(loc, 1, vector.GetAsFloatPtr());
 	}
 
-	void ShaderGL::SetBoolUniform(const char *name, const bool boolean)
+	void ShaderES::SetBoolUniform(const char *name, const bool boolean)
 	{
 		glUniform1i(glGetUniformLocation(mShaderProgram, name), boolean);
 	}
 
-	void ShaderGL::SetIntUniform(const char *name, const int integer)
+	void ShaderES::SetIntUniform(const char *name, const int integer)
 	{
 		GLuint loc = glGetUniformLocation(mShaderProgram, name);
 		// Send the float data
 		glUniform1i(loc, integer);
 	}
 
-	void ShaderGL::SetVectorUniform(const char *name, const Vector3f &vector)
+	void ShaderES::SetVectorUniform(const char *name, const Vector3f &vector)
 	{
 		GLuint loc = glGetUniformLocation(mShaderProgram, name);
 		// Send the vector data
 		glUniform3fv(loc, 1, &vector.x);
 	}
 
-	void ShaderGL::SetFloatUniform(const char *name, const float value)
+	void ShaderES::SetFloatUniform(const char *name, const float value)
 	{
 		GLuint loc = glGetUniformLocation(mShaderProgram, name);
 		// Send the float data
 		glUniform1f(loc, value);
 	}
 
-	bool ShaderGL::CompileShader(const std::string &fileName,
+	bool ShaderES::CompileShader(const std::string &fileName,
 								 GLenum shaderType,
 								 GLuint &outShader)
 	{
@@ -170,7 +158,7 @@ namespace nen::gl
 		return true;
 	}
 
-	bool ShaderGL::IsCompiled(GLuint shader)
+	bool ShaderES::IsCompiled(GLuint shader)
 	{
 		GLint status;
 		// Query the compile status
@@ -188,7 +176,7 @@ namespace nen::gl
 		return true;
 	}
 
-	bool ShaderGL::IsValidProgram()
+	bool ShaderES::IsValidProgram()
 	{
 		GLint status;
 		// Query the link status
@@ -205,4 +193,6 @@ namespace nen::gl
 		return true;
 	}
 
-} //namespace nen::gl
+} //namespace nen::es
+
+#endif

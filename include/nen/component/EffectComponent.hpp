@@ -19,21 +19,15 @@ namespace nen
 			buf = timer;
 		}
 
-		std::u16string GetPath() { return path; }
-
-		const Vector3f &GetPosition() { return mOwner.GetPosition(); }
-
 		void Play(bool play) { this->playing = play; }
 		bool IsPlaying() { return this->playing; }
 
 		void Stop() { isStop = true; }
 		bool IsStop() { return isStop; }
-		int handle;	
 
 	private:
 		Actor &mOwner;
-		Effect *mEffect;
-		std::u16string path;
+		class Effect* mEffect;
 		float mTimer;
 		float buf;
 		bool playing;

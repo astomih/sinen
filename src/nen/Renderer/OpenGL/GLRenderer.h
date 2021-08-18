@@ -1,11 +1,13 @@
 #pragma once
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#include "ShaderGL.h"
 #include <SDL.h>
 #include <string>
-#include <GL/glew.h>
-#include "ShaderGL.h"
-#include "../Window.hpp"
-#include "../Sprite.h"
+#include <VertexArray.h>
+#include <Texture.h>
+#include <Sprite.h>
+#include <Renderer.h>
+
 #endif
 namespace nen
 {
@@ -21,15 +23,27 @@ namespace nen
 		};
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 
-		class GLRenderer
+		class GLRenderer : public IRenderer
 		{
 		public:
-			GLRenderer() : mRenderer(nullptr) {}
-			void initialize(struct ::SDL_Window *window, ::SDL_GLContext context);
+			GLRenderer();
+			~GLRenderer() override
+			{
+			}
+
+			void Initialize(struct SDL_Window *window) override;
+			void Render() override;
+			void AddVertexArray(const VertexArray &vArray, std::string_view name) override;
+			void ChangeBufferSprite(std::shared_ptr<class Sprite> sprite, const TextureType type) override;
+			void AddSprite2D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture) override;
+			void RemoveSprite2D(std::shared_ptr<class Sprite> sprite) override;
+
+			void AddSprite3D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture) override;
+			void RemoveSprite3D(std::shared_ptr<class Sprite> sprite) override;
+
 			void prepare();
 			void cleanup() {}
-			void render();
-			void registerTexture(std::shared_ptr<Texture>, const TextureType &type);
+			void registerTexture(std::shared_ptr<class Texture>, const TextureType &type);
 			void pushSprite2d(std::shared_ptr<Sprite> sprite2d)
 			{
 				auto iter = mSprite2Ds.begin();
@@ -82,22 +96,17 @@ namespace nen
 
 			void AddVertexArray(const VertexArrayForGL &vArray, std::string_view name);
 
-			void SetEffect(std::unique_ptr<class EffectGL> effect) { mEffectManager = std::move(effect); }
-
 		private:
-			std::unique_ptr<class EffectGL> mEffectManager;
-			uint32_t AddVertexArray(const VertexArrayForGL &);
+			std::unique_ptr<class EffectManagerGL> mEffectManager;
 			bool loadShader();
 			void createSpriteVerts();
 			void createBoxVerts();
-			nen::Renderer *mRenderer;
 
 			ShaderGL *mSpriteShader;
 			ShaderGL *mAlphaShader;
 			GLuint mTextureID;
 			std::unordered_map<std::string, GLuint> mTextureIDs;
 			std::unordered_map<std::string, VertexArrayForGL> m_VertexArrays;
-			::SDL_Window *mWindow;
 			::SDL_GLContext mContext;
 			std::vector<std::shared_ptr<Sprite>> mSprite2Ds;
 			std::vector<std::shared_ptr<Sprite>> mSprite3Ds;

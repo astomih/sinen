@@ -39,15 +39,6 @@
     <Filter Include="Source\nen\component">
       <UniqueIdentifier>{55e981c2-70ec-4e3f-b674-e90a0273e94d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\nen\gles">
-      <UniqueIdentifier>{5e90a0a8-cfa1-4ead-9b2a-f912cd0347dd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\nen\gl">
-      <UniqueIdentifier>{ab0fa0b5-47ee-44b0-ba7a-e8e312662d2e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\nen\vk">
-      <UniqueIdentifier>{195e4c87-3fdc-4fdd-a668-c9dd7922b91f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\nen\scene">
       <UniqueIdentifier>{c9bdc4d3-d007-4859-94fa-466f4f47db46}</UniqueIdentifier>
     </Filter>
@@ -59,6 +50,21 @@
     </Filter>
     <Filter Include="libs\imgui\source">
       <UniqueIdentifier>{758a346d-2b80-4664-a07b-bb49b904039a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\nen\Renderer">
+      <UniqueIdentifier>{8686dc5a-6732-4f3c-8553-66952ca51418}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\nen\Renderer\Vulkan">
+      <UniqueIdentifier>{0e4fdbeb-7206-4ecb-9600-ca93919939ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\nen\Renderer\OpenGL">
+      <UniqueIdentifier>{6c41593a-d3ac-44bc-80cc-10fe48b8690c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\nen\Renderer\OpenGLES">
+      <UniqueIdentifier>{28a4c8ef-fccb-4089-8f69-8dd88cb1de50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\nen\effect">
+      <UniqueIdentifier>{a65c6e62-843e-449d-aa7c-b15c03b7a70e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -137,9 +143,6 @@
     <ClCompile Include="..\src\nen\Effect.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\nen\ES\ESRenderer.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\nen\Font.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -150,12 +153,6 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\src\nen\ObjLoader.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\nen\OpenGL\GLRenderer.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\nen\OpenGL\ShaderGL.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\src\nen\Random.cpp">
@@ -188,29 +185,50 @@
     <ClCompile Include="..\src\nen\VertexArray.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\nen\Vulkan\Pipeline.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\nen\Vulkan\PipelineLayout.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\nen\Vulkan\Swapchain.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\nen\Vulkan\VKBase.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\nen\Vulkan\VKRenderer.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\nen\Vulkan\VulkanShader.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\nen\Window.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\src\nen\Logger.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\nen\Renderer\OpenGL\GLRenderer.cpp">
+      <Filter>Source\nen\Renderer\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\nen\Renderer\OpenGL\ShaderGL.cpp">
+      <Filter>Source\nen\Renderer\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\nen\Renderer\OpenGLES\ESRenderer.cpp">
+      <Filter>Source\nen\Renderer\OpenGLES</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\nen\Renderer\Vulkan\Pipeline.cpp">
+      <Filter>Source\nen\Renderer\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\nen\Renderer\Vulkan\PipelineLayout.cpp">
+      <Filter>Source\nen\Renderer\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\nen\Renderer\Vulkan\Swapchain.cpp">
+      <Filter>Source\nen\Renderer\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\nen\Renderer\Vulkan\VKBase.cpp">
+      <Filter>Source\nen\Renderer\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\nen\Renderer\Vulkan\VKRenderer.cpp">
+      <Filter>Source\nen\Renderer\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\nen\Renderer\Vulkan\VulkanShader.cpp">
+      <Filter>Source\nen\Renderer\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\nen\effect\EffectManager.cpp">
+      <Filter>Source\nen\effect</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\nen\Renderer\OpenGL\EffectManagerGL.cpp">
+      <Filter>Source\nen\Renderer\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\nen\Renderer\Vulkan\EffectManagerVK.cpp">
+      <Filter>Source\nen\Renderer\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\nen\effect\CustomTextureLoader.cpp">
+      <Filter>Source\nen\effect</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -271,9 +289,6 @@
     <ClInclude Include="..\include\nen\Effect.hpp">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\nen\ES\ESRenderer.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\nen\Font.hpp">
       <Filter>Header</Filter>
     </ClInclude>
@@ -289,16 +304,7 @@
     <ClInclude Include="..\include\nen\ObjLoader.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\nen\OpenGL\GLRenderer.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\nen\OpenGL\ShaderGL.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\nen\Random.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\nen\Renderer.h">
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\include\nen\scene\Scene.hpp">
@@ -328,31 +334,61 @@
     <ClInclude Include="..\include\nen\VertexArray.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\nen\Vulkan\Pipeline.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\nen\Vulkan\PipelineLayout.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\nen\Vulkan\Swapchain.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\nen\Vulkan\VKBase.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\nen\Vulkan\VKRenderer.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\nen\Vulkan\VulkanShader.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\nen\Vulkan\VulkanUtil.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\nen\Window.hpp">
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\include\nen\Logger.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\nen\Renderer\OpenGL\GLRenderer.h">
+      <Filter>Source\nen\Renderer\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\nen\Renderer\OpenGL\ShaderGL.h">
+      <Filter>Source\nen\Renderer\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\nen\Renderer\OpenGLES\ESRenderer.h">
+      <Filter>Source\nen\Renderer\OpenGLES</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\nen\Renderer\Vulkan\Pipeline.h">
+      <Filter>Source\nen\Renderer\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\nen\Renderer\Vulkan\PipelineLayout.h">
+      <Filter>Source\nen\Renderer\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\nen\Renderer\Vulkan\Swapchain.h">
+      <Filter>Source\nen\Renderer\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\nen\Renderer\Vulkan\VKBase.h">
+      <Filter>Source\nen\Renderer\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\nen\Renderer\Vulkan\VKRenderer.h">
+      <Filter>Source\nen\Renderer\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\nen\Renderer\Vulkan\VulkanShader.h">
+      <Filter>Source\nen\Renderer\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\nen\Renderer\Vulkan\VulkanUtil.h">
+      <Filter>Source\nen\Renderer\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\nen\Renderer\IRenderer.h">
+      <Filter>Source\nen\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nen\TextureType.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\nen\effect\EffectManager.h">
+      <Filter>Source\nen\effect</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\nen\Renderer\OpenGL\EffectManagerGL.h">
+      <Filter>Source\nen\Renderer\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\nen\Renderer\Vulkan\EffectManagerVK.h">
+      <Filter>Source\nen\Renderer\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\nen\effect\CustomTextureLoader.h">
+      <Filter>Source\nen\effect</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\nen\Renderer.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

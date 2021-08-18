@@ -1,29 +1,31 @@
 ﻿#include <nen.hpp>
 #include <SDL_image.h>
 #include <SDL_net.h>
+#include <TextureType.h>
+#include "Renderer/Vulkan/VKRenderer.h"
+#include "Renderer/OpenGL/GLRenderer.h"
+#include "Renderer/OpenGLES/ESRenderer.h"
+#include "Renderer/OpenGLES/EffectManagerES.h"
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#include "Renderer/Vulkan/EffectManagerVK.h"
+#include "Renderer/OpenGL/EffectManagerGL.h"
+#endif
+
 namespace nen
 {
 	Renderer::Renderer(GraphicsAPI api)
 		: transPic(nullptr), mScene(nullptr), mWindow(nullptr),
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
-		  vkRenderer(nullptr),
-		  glRenderer(nullptr),
-#endif
-#if defined(EMSCRIPTEN) || defined(MOBILE)
-		  esRenderer(nullptr),
-#endif
+		  renderer(nullptr),
 		  RendererAPI(api)
 	{
-		mEffectManager = std::make_unique<Effect>();
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
-		SDL_GLContext context;
 		switch (RendererAPI)
 		{
 		case GraphicsAPI::Vulkan:
-			vkRenderer = std::make_unique<vk::VKRenderer>();
+			renderer = std::make_unique<vk::VKRenderer>();
 			SDL_Init(SDL_INIT_EVERYTHING);
 			TTF_Init();
-			IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF);
+			IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
 			mWindow = SDL_CreateWindow(
 				std::string(Window::name + " : Vulkan").c_str(),
 				SDL_WINDOWPOS_CENTERED,
@@ -31,30 +33,23 @@ namespace nen
 				static_cast<int>(Window::Size.x),
 				static_cast<int>(Window::Size.y),
 				SDL_WINDOW_VULKAN);
-			vkRenderer->initialize(mWindow, Window::name.c_str());
-			vkRenderer->setRenderer(this);
-			mEffectManager->Init(vkRenderer.get(), vkRenderer->GetBase());
+			renderer->Initialize(mWindow);
+			renderer->SetRenderer(this);
 			break;
 		case GraphicsAPI::OpenGL:
-			glRenderer = std::make_unique<gl::GLRenderer>();
+			renderer = std::make_unique<gl::GLRenderer>();
 			SDL_Init(SDL_INIT_EVERYTHING);
 			TTF_Init();
-			IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF);
-			// Set OpenGL attributes
-			// Use the core OpenGL profile
+			IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-			// Specify version 3.3
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-			// Request a color buffer with 8-bits per RGBA channel
 			SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 			SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 			SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 			SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 			SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-			// Enable double buffering
 			SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-			// Force OpenGL to use hardware acceleration
 			SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 			mWindow = SDL_CreateWindow(
 				std::string(Window::name + " : OpenGL").c_str(),
@@ -64,25 +59,15 @@ namespace nen
 				static_cast<int>(Window::Size.y),
 				SDL_WINDOW_OPENGL);
 
-			context = SDL_GL_CreateContext(mWindow);
-			SDL_GL_MakeCurrent(mWindow, context);
-			glewExperimental = GL_TRUE;
-			if (glewInit() != GLEW_OK)
-			{
-				std::cout << "ERROR: glew isn't init" << std::endl;
-			}
-			glGetError();
-			glRenderer->setRenderer(this);
-			glRenderer->initialize(mWindow, context);
-			mEffectManager->Init(glRenderer.get());
+			renderer->SetRenderer(this);
+			renderer->Initialize(mWindow);
 			break;
 		default:
 			break;
 		}
 #endif
 #if defined(EMSCRIPTEN) || defined(MOBILE)
-		SDL_GLContext context;
-		esRenderer = std::make_unique<es::ESRenderer>();
+		renderer = std::make_unique<es::ESRenderer>();
 		SDL_Init(SDL_INIT_EVERYTHING);
 		if (TTF_Init() == -1)
 			std::cout << "SDL2_TTF failed initialize." << std::endl;
@@ -106,17 +91,13 @@ namespace nen
 			static_cast<int>(Window::Size.y),
 			SDL_WINDOW_OPENGL);
 		Logger::Info("Window created.");
-		context = SDL_GL_CreateContext(mWindow);
-		SDL_GL_MakeCurrent(mWindow, context);
-		esRenderer->setRenderer(this);
-		esRenderer->initialize(mWindow, context);
+		renderer->SetRenderer(this);
+		renderer->Initialize(mWindow);
 		Logger::Info("Renderer initialized.");
-		mEffectManager->Init(esRenderer.get());
-		Logger::Info("Effekseer initialized.");
 #endif
 		if (SDLNet_Init() != 0)
 			std::cout << "net init error." << std::endl;
-		
+
 		Window::Info::id = SDL_GetWindowID(mWindow);
 		SDL_VERSION(&Window::Info::info.version);
 	}
@@ -128,10 +109,7 @@ namespace nen
 
 	void Renderer::Shutdown()
 	{
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
-		if (RendererAPI == GraphicsAPI::Vulkan)
-			vkRenderer->terminate();
-#endif
+		renderer->Shutdown();
 	}
 
 	void Renderer::UnloadData()
@@ -147,88 +125,27 @@ namespace nen
 
 	void Renderer::Draw()
 	{
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
-		if (RendererAPI == GraphicsAPI::Vulkan)
-			vkRenderer->render();
-		if (RendererAPI == GraphicsAPI::OpenGL)
-			glRenderer->render();
-#endif
-#if defined(EMSCRIPTEN) || defined(MOBILE)
-		esRenderer->render();
-#endif
+		renderer->Render();
 	}
 
 	void Renderer::AddSprite2D(std::shared_ptr<nen::Sprite> sprite, std::shared_ptr<Texture> texture)
 	{
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
-		if (this->RendererAPI == GraphicsAPI::Vulkan)
-		{
-			auto t = std::make_shared<vk::SpriteVK>();
-			if (sprite->isChangeBuffer)
-				t->buffer = GetVK().CreateBuffer(
-					sizeof(Vertex), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-			t->sprite = sprite;
-			GetVK().registerImageObject(texture);
-			t->mTexture = texture;
-			GetVK().registerTexture(t, texture->id, TextureType::Image2D);
-		}
-		else if (this->RendererAPI == GraphicsAPI::OpenGL)
-		{
-			GetGL().registerTexture(texture, TextureType::Image2D);
-			GetGL().pushSprite2d(sprite);
-		}
-#endif
-#if defined(EMSCRIPTEN) || defined(MOBILE)
-		GetES().registerTexture(texture, TextureType::Image2D);
-		GetES().pushSprite2d(sprite);
-#endif
-
-		// Find the insertion point in the sorted vector
-		// (The first element with a higher draw order than me)
+		renderer->AddSprite2D(sprite, texture);
 		const auto myDrawOrder = sprite->drawOrder;
 		auto iter = mSprite2Ds.begin();
-		for (;
-			 iter != mSprite2Ds.end();
-			 ++iter)
+		for (; iter != mSprite2Ds.end(); ++iter)
 		{
 			if (myDrawOrder < (*iter)->drawOrder)
 			{
 				break;
 			}
 		}
-
-		// Inserts element before position of iterator
 		mSprite2Ds.insert(iter, sprite);
 	}
 
 	void Renderer::RemoveSprite2D(std::shared_ptr<Sprite> sprite)
 	{
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
-		if (this->RendererAPI == GraphicsAPI::Vulkan)
-		{
-			auto &sprites = GetVK().GetSprite2Ds();
-			auto iter = sprites.begin();
-			for (;
-				 iter != sprites.end();)
-			{
-				if (sprite == (*iter)->sprite)
-				{
-					GetVK().unregisterTexture((*iter), TextureType::Image2D);
-					iter = sprites.begin();
-					if (iter == sprites.end())
-						break;
-				}
-				iter++;
-			}
-		}
-		else
-		{
-			GetGL().eraseSprite2d(sprite);
-		}
-#endif
-#if defined(EMSCRIPTEN) || defined(MOBILE)
-		GetES().eraseSprite2d(sprite);
-#endif
+		renderer->RemoveSprite2D(sprite);
 		auto iter = std::find(mSprite2Ds.begin(), mSprite2Ds.end(), sprite);
 		if (iter != mSprite2Ds.end())
 			mSprite2Ds.erase(iter);
@@ -236,26 +153,7 @@ namespace nen
 
 	void Renderer::AddSprite3D(std::shared_ptr<Sprite> sprite, std::shared_ptr<Texture> texture)
 	{
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
-		if (this->RendererAPI == GraphicsAPI::Vulkan)
-		{
-			auto t = std::make_shared<vk::SpriteVK>();
-			t->sprite = sprite;
-			GetVK().registerImageObject(texture);
-			t->mTexture = texture;
-			GetVK().registerTexture(t, texture->id, TextureType::Image3D);
-		}
-		else
-		{
-			GetGL().registerTexture(texture, TextureType::Image3D);
-			GetGL().pushSprite3d(sprite);
-		}
-#endif
-#if defined(EMSCRIPTEN) || defined(MOBILE)
-		GetES().registerTexture(texture, TextureType::Image3D);
-		GetES().pushSprite3d(sprite);
-#endif
-
+		renderer->AddSprite3D(sprite, texture);
 		// Find the insertion point in the sorted vector
 		// (The first element with a higher draw order than me)
 		const auto myDrawOrder = sprite->drawOrder;
@@ -276,33 +174,7 @@ namespace nen
 
 	void Renderer::RemoveSprite3D(std::shared_ptr<Sprite> sprite)
 	{
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
-		if (this->RendererAPI == GraphicsAPI::Vulkan)
-		{
-			auto &sprites = GetVK().GetSprite3Ds();
-			auto iter = sprites.begin();
-			for (;
-				 iter != sprites.end();
-				 ++iter)
-			{
-				if (sprite == (*iter)->sprite)
-				{
-					GetVK().unregisterTexture((*iter), TextureType::Image3D);
-					iter = sprites.begin();
-					if (iter == sprites.end())
-						break;
-				}
-			}
-		}
-		else
-		{
-			GetGL().eraseSprite3d(sprite);
-		}
-#endif
-#if defined(EMSCRIPTEN) || defined(MOBILE)
-		GetES().eraseSprite3d(sprite);
-#endif
-
+		renderer->RemoveSprite3D(sprite);
 		auto iter = std::find(mSprite3Ds.begin(), mSprite3Ds.end(), sprite);
 		if (iter != mSprite3Ds.end())
 			mSprite3Ds.erase(iter);
@@ -310,54 +182,17 @@ namespace nen
 
 	void Renderer::ChangeBufferSprite(std::shared_ptr<Sprite> sprite, TextureType type)
 	{
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
-		if (this->RendererAPI == GraphicsAPI::Vulkan)
-		{
-
-			if (type == TextureType::Image2D)
-			{
-				auto &sprites = GetVK().GetSprite2Ds();
-				for (auto &i : sprites)
-				{
-					if (sprite == i->sprite)
-					{
-						if (sprite->isChangeBuffer && i->buffer.buffer == 0)
-						{
-							i->buffer = GetVK().CreateBuffer(
-								sizeof(Vertex) * 4, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-							break;
-						}
-					}
-				}
-			}
-			if (type == TextureType::Image3D)
-			{
-				auto &sprites = GetVK().GetSprite3Ds();
-				for (auto &i : sprites)
-				{
-					if (sprite == i->sprite)
-					{
-						if (sprite->isChangeBuffer && i->buffer.buffer == 0)
-						{
-							i->buffer = GetVK().CreateBuffer(
-								sizeof(Vertex) * 4, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-							break;
-						}
-					}
-				}
-			}
-		}
-#endif
+		renderer->ChangeBufferSprite(sprite, type);
 	}
 
-	void Renderer::AddEffectComp(EffectComponent *effect)
+	void Renderer::AddEffect(Effect *effect)
 	{
-		mEffectComp.emplace_back(effect);
+		mEffects.emplace_back(effect);
 	}
-	void Renderer::RemoveEffectComp(EffectComponent *effect)
+	void Renderer::RemoveEffect(Effect *effect)
 	{
-		auto iter = std::find(mEffectComp.begin(), mEffectComp.end(), effect);
-		mEffectComp.erase(iter);
+		auto iter = std::find(mEffects.begin(), mEffects.end(), effect);
+		mEffects.erase(iter);
 	}
 	Texture *Renderer::GetTexture(std::string_view fileName)
 	{
@@ -385,71 +220,7 @@ namespace nen
 
 	void Renderer::AddVertexArray(const VertexArray &vArray, std::string_view name)
 	{
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
-		if (RendererAPI == GraphicsAPI::Vulkan)
-		{
-			vk::VertexArrayForVK vArrayVK;
-			vArrayVK.indexCount = vArray.indexCount;
-			vArrayVK.indices = vArray.indices;
-			vArrayVK.vertices = vArray.vertices;
-			auto vArraySize = vArray.vertices.size() * sizeof(Vertex);
-			vArrayVK.vertexBuffer = GetVK().CreateBuffer(vArraySize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-			vArrayVK.indexBuffer = GetVK().CreateBuffer(vArray.indices.size() * sizeof(uint32_t), VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
-
-			//Write vertex data
-			GetVK().MapMemory(vArrayVK.vertexBuffer.memory, vArrayVK.vertices.data(), vArraySize);
-			// Write index data
-			GetVK().MapMemory(vArrayVK.indexBuffer.memory, vArrayVK.indices.data(), sizeof(uint32_t) * vArrayVK.indices.size());
-			// Insert VertexArray array
-			GetVK().AddVertexArray(vArrayVK, name);
-		}
-		else
-		{
-			gl::VertexArrayForGL vArrayGL;
-			vArrayGL.indexCount = vArray.indexCount;
-			vArrayGL.indices = vArray.indices;
-			vArrayGL.vertices = vArray.vertices;
-
-			// Create vertex array
-			glGenVertexArrays(1, &vArrayGL.vertexID);
-			glBindVertexArray(vArrayGL.vertexID);
-
-			// Create vertex buffer
-			glGenBuffers(1, &vArrayGL.vertexID);
-			glBindBuffer(GL_ARRAY_BUFFER, vArrayGL.vertexID);
-			auto vArraySize = vArrayGL.vertices.size() * sizeof(Vertex);
-			glBufferData(GL_ARRAY_BUFFER, vArraySize, vArrayGL.vertices.data(), GL_STATIC_DRAW);
-
-			// Create index buffer
-			glGenBuffers(1, &vArrayGL.indexID);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.indexID);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.indices.size() * sizeof(uint32_t), vArrayGL.indices.data(), GL_STATIC_DRAW);
-			GetGL().AddVertexArray(vArrayGL, name);
-		}
-#endif
-#if defined(EMSCRIPTEN) || defined(MOBILE)
-		gl::VertexArrayForGL vArrayGL;
-		vArrayGL.indexCount = vArray.indexCount;
-		vArrayGL.indices = vArray.indices;
-		vArrayGL.vertices = vArray.vertices;
-
-		// Create vertex array
-		glGenVertexArraysOES(1, &vArrayGL.vertexID);
-		glBindVertexArrayOES(vArrayGL.vertexID);
-
-		// Create vertex buffer
-		glGenBuffers(1, &vArrayGL.vertexID);
-		glBindBuffer(GL_ARRAY_BUFFER, vArrayGL.vertexID);
-		auto vArraySize = vArrayGL.vertices.size() * sizeof(Vertex);
-		glBufferData(GL_ARRAY_BUFFER, vArraySize, vArrayGL.vertices.data(), GL_STATIC_DRAW);
-
-		// Create index buffer
-		glGenBuffers(1, &vArrayGL.indexID);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.indexID);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.indices.size() * sizeof(uint32_t), vArrayGL.indices.data(), GL_STATIC_DRAW);
-		GetES().AddVertexArray(vArrayGL, name);
-
-#endif
+		renderer->AddVertexArray(vArray, name);
 	}
 
 	Texture *Renderer::GetTextureFromMemory(const unsigned char *const buffer, const std::string &key)
@@ -478,8 +249,4 @@ namespace nen
 		return tex;
 	}
 
-	Effect *Renderer::GetEffect(const std::u16string &fileName)
-	{
-		return nullptr;
-	}
 }

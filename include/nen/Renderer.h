@@ -2,14 +2,10 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <SDL.h>
-#if defined(EMSCRIPTEN) || defined(MOBILE)
-#include "ES/ESRenderer.h"
-#endif
 #include "Math.hpp"
 #include "Window.hpp"
-#include "Vulkan/VKRenderer.h"
-#include "OpenGL/GLRenderer.h"
+#include "TextureType.h"
+#include "VertexArray.h"
 
 namespace nen
 {
@@ -50,10 +46,10 @@ namespace nen
 
 		void ChangeBufferSprite(std::shared_ptr<class Sprite> sprite, TextureType type = TextureType::Image2D);
 
-		void AddEffectComp(class EffectComponent *effect);
-		void RemoveEffectComp(class EffectComponent *effect);
+		void AddEffect(class Effect *effect);
+		void RemoveEffect(class Effect *effect);
 
-		std::vector<EffectComponent *> &GetEffectComponent() { return mEffectComp; }
+		std::vector<Effect *> &GetEffects() { return mEffects; }
 
 		void AddVertexArray(const VertexArray &vArray, std::string_view name);
 
@@ -65,29 +61,15 @@ namespace nen
 
 		Vector3f GetClearColor() { return this->clearColor; }
 
-#if defined(EMSCRIPTEN) || defined(MOBILE)
-		es::ESRenderer &GetES()
-		{
-			return *(esRenderer.get());
-		}
-#endif
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
-		vk::VKRenderer &GetVK()
-		{
-			return *(vkRenderer.get());
-		}
-		gl::GLRenderer &GetGL() { return *(glRenderer.get()); }
-#endif
-
 		class Texture *GetTexture(std::string_view fileName);
 		class Texture *GetTextureFromMemory(const unsigned char *const buffer, const std::string &key);
-		class Effect *GetEffect(const std::u16string &fileName);
+		class EffectManager *GetEffect(const std::u16string &fileName);
 
 		void SetViewMatrix(const Matrix4 &view) { mView = view; }
 		Matrix4 GetViewMatrix() { return mView; }
 		const Matrix4 &GetProjectionMatrix() { return mProjection; }
 
-		SDL_Window *GetWindow()
+		struct SDL_Window *GetWindow()
 		{
 			if (!mWindow)
 				return nullptr;
@@ -105,10 +87,8 @@ namespace nen
 		std::vector<std::shared_ptr<class Sprite>> mSprite3Ds;
 		std::vector<std::shared_ptr<class Sprite>> mSprite2Ds;
 
-		std::unique_ptr<class Effect> mEffectManager;
-
 		// All effects components drawn
-		std::vector<class EffectComponent *> mEffectComp;
+		std::vector<class Effect *> mEffects;
 
 		// GameHandler
 		std::shared_ptr<Scene> mScene;
@@ -121,15 +101,34 @@ namespace nen
 		Matrix4 mProjection;
 
 		// Window
-		SDL_Window *mWindow;
+		struct SDL_Window *mWindow;
 		// Renderer
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
-		std::unique_ptr<vk::VKRenderer> vkRenderer;
-		std::unique_ptr<gl::GLRenderer> glRenderer;
-#endif
-#if defined(EMSCRIPTEN) || defined(MOBILE)
-		std::unique_ptr<es::ESRenderer> esRenderer;
-#endif
+		std::unique_ptr<class IRenderer> renderer;
 		GraphicsAPI RendererAPI;
+	};
+
+	class IRenderer
+	{
+	public:
+		IRenderer() = default;
+		virtual ~IRenderer() {}
+
+		virtual void Initialize(struct SDL_Window *window) {}
+		virtual void Shutdown() {}
+		virtual void Render() {}
+		virtual void AddVertexArray(const VertexArray &vArray, std::string_view name) {}
+		virtual void ChangeBufferSprite(std::shared_ptr<class Sprite> sprite, const TextureType type) {}
+
+		virtual void AddSprite2D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture) {}
+		virtual void RemoveSprite2D(std::shared_ptr<class Sprite> sprite) {}
+
+		virtual void AddSprite3D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture) {}
+		virtual void RemoveSprite3D(std::shared_ptr<class Sprite> sprite) {}
+
+		void SetRenderer(class Renderer *renderer) { mRenderer = renderer; }
+
+	protected:
+		struct SDL_Window *mWindow;
+		class Renderer *mRenderer;
 	};
 }

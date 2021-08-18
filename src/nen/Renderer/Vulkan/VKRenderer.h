@@ -2,12 +2,14 @@
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include <array>
 #include "VKBase.h"
-#include "../Math.hpp"
-#include "../Texture.h"
+#include <Math.hpp>
+#include <Texture.h>
 #include <unordered_map>
-#include "../VertexArray.h"
+#include <VertexArray.h>
 #include "Pipeline.h"
 #include "PipelineLayout.h"
+#include <TextureType.h>
+#include <Renderer.h>
 #endif
 
 namespace nen
@@ -15,16 +17,22 @@ namespace nen
 	class Renderer;
 }
 
-enum class TextureType
-{
-	Image2D,
-	Image3D,
-	Font
-};
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
-#include "../Sprite.h"
+#include <Sprite.h>
 namespace nen::vk
 {
+	struct BufferObject
+	{
+		VkBuffer buffer;
+		VkDeviceMemory memory;
+	};
+	struct ImageObject
+	{
+		VkImage image;
+		VkDeviceMemory memory;
+		VkImageView view;
+	};
+
 	class SpriteVK
 	{
 	public:
@@ -48,16 +56,26 @@ namespace nen::vk
 		Matrix4 world;
 	};
 
-	class VKRenderer
+	class VKRenderer : public IRenderer
 	{
 	public:
 		VKRenderer();
-		void initialize(::SDL_Window *window, const char *appName);
-		void setRenderer(class nen::Renderer *renderer) { mRenderer = renderer; }
-		nen::Renderer* GetRenderer() { return mRenderer; }
-		void terminate();
+		~VKRenderer() override
+		{}
+		void Initialize(struct SDL_Window *window) override;
+		void Shutdown() override;
+		void Render() override;
+		void AddVertexArray(const VertexArray &vArray, std::string_view name) override;
+		void ChangeBufferSprite(std::shared_ptr<class Sprite> sprite, const TextureType type) override;
+
+		void AddSprite2D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture) override;
+		void RemoveSprite2D(std::shared_ptr<class Sprite> sprite) override;
+
+		void AddSprite3D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture) override;
+		void RemoveSprite3D(std::shared_ptr<class Sprite> sprite) override;
+
+		nen::Renderer *GetRenderer() { return mRenderer; }
 		void prepare();
-		void render();
 		void cleanup();
 		void makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri, VkCommandBufferBeginInfo &ci, VkFence &fence);
 		void draw3d(VkCommandBuffer);
@@ -91,13 +109,11 @@ namespace nen::vk
 		void FreeCommandBufferSecondary(uint32_t count, VkCommandBuffer *pCommands);
 		void TransferStageBufferToImage(const BufferObject &srcBuffer, const ImageObject &dstImage, const VkBufferImageCopy *region);
 		void MapMemory(VkDeviceMemory memory, void *data, size_t size);
-		void AddVertexArray(const VertexArrayForVK &vArray, std::string_view name);
 		void UpdateVertexArray(const VertexArrayForVK &vArray, std::string_view name);
-		void SetEffect(std::unique_ptr<class EffectVK> effect) { mEffectManager = std::move(effect); }
+
 	private:
-		class Renderer *mRenderer;
 		std::unique_ptr<class VKBase> m_base;
-		std::unique_ptr<class EffectVK> mEffectManager;
+		std::unique_ptr<class EffectManagerVK> mEffectManager;
 		void createBoxVertices();
 		void createSpriteVertices();
 		void prepareUniformBuffers();

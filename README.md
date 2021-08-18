@@ -6,8 +6,7 @@
  **ドキュメントは全て日本語です（All documentation is only in Japanese）。**
 
 ## 対応プラットフォーム
- 今のところ、Windows、WebGLに対応しています。Linuxでは確認していませんが、少しの手直しで動くと思います。  
- 今後Android版の開発を行うかもしれません。
+ 今のところ、Windows、WebGL、Androidに対応しています。Linuxでは確認していませんが、少しの手直しで動くと思います。  
 
 ## コード例
  exampleフォルダを参照してください。
@@ -26,6 +25,8 @@
  $ emmake make
  ```
  NenEngine/Emscripten/buildフォルダ内にlibnen.aが作成されます。
+ ### Android
+  上記に比べて複雑なため、ここでは割愛します。
 
 ## 使用ライブラリ
 NenEngineで使用しているライブラリです。  
@@ -48,7 +49,7 @@ NenEngineで使用しているライブラリです。
 各ライブラリはNenEngine/libsフォルダ内にライセンス文ともに格納されています。
 
 ## ライセンス
- NenEngineのライセンスはMITライセンスです。
+ NenEngineのライセンスはMIT Lisenceです。
 
 ## ドキュメント
 製作中...

@@ -26,7 +26,7 @@
  ```
  NenEngine/Emscripten/buildフォルダ内にlibnen.aが作成されます。
  ### Android
-  上記に比べて複雑なため、ここでは割愛します。
+  上記に比べて複雑なため、ここでは割愛します。tutorialフォルダのInstall.mdを御覧ください。
 
 ## 使用ライブラリ
 NenEngineで使用しているライブラリです。  

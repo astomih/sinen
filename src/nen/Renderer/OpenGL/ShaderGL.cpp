@@ -7,8 +7,6 @@
 #include <SDL_image.h>
 #include <sol/sol.hpp>
 
-
-
 namespace nen::gl
 {
 
@@ -65,7 +63,7 @@ namespace nen::gl
 		// Find the uniform by this name
 		GLuint loc = glGetUniformLocation(mShaderProgram, name);
 		// Send the matrix data to the uniform
-		glUniformMatrix4fv(loc, 1, GL_TRUE, matrix.GetAsFloatPtr());
+		glUniformMatrix4fv(loc, 1, GL_FALSE, matrix.GetAsFloatPtr());
 	}
 
 	void ShaderGL::SetColorUniform(const char *name, const Color::Color &color)
@@ -97,7 +95,7 @@ namespace nen::gl
 	{
 		GLuint loc = glGetUniformLocation(mShaderProgram, name);
 		// Send the vector data
-		glUniform3fv(loc, 1, &vector.x);
+		glUniform3fv(loc, 1, vector.GetAsFloatPtr());
 	}
 
 	void ShaderGL::SetFloatUniform(const char *name, const float value)

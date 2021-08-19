@@ -61,7 +61,7 @@ namespace nen::es
 		// Find the uniform by this name
 		GLuint loc = glGetUniformLocation(mShaderProgram, name);
 		// Send the matrix data to the uniform
-		glUniformMatrix4fv(loc, 1, GL_TRUE, matrix.GetAsFloatPtr());
+		glUniformMatrix4fv(loc, 1, GL_FALSE, matrix.GetAsFloatPtr());
 	}
 
 	void ShaderES::SetColorUniform(const char *name, const Color::Color &color)
@@ -93,7 +93,7 @@ namespace nen::es
 	{
 		GLuint loc = glGetUniformLocation(mShaderProgram, name);
 		// Send the vector data
-		glUniform3fv(loc, 1, &vector.x);
+		glUniform3fv(loc, 1, vector.GetAsFloatPtr());
 	}
 
 	void ShaderES::SetFloatUniform(const char *name, const float value)
@@ -108,14 +108,14 @@ namespace nen::es
 								 GLuint &outShader)
 	{
 #ifdef ANDROID
-		SDL_RWops* file{SDL_RWFromFile(fileName.c_str(), "r")};
+		SDL_RWops *file{SDL_RWFromFile(fileName.c_str(), "r")};
 		size_t fileLength{static_cast<size_t>(SDL_RWsize(file))};
-		void* data{SDL_LoadFile_RW(file, nullptr, 1)};
-		std::string result(static_cast<char*>(data), fileLength);
+		void *data{SDL_LoadFile_RW(file, nullptr, 1)};
+		std::string result(static_cast<char *>(data), fileLength);
 		SDL_free(data);
 		// Create a shader of the specified type
 		outShader = glCreateShader(shaderType);
-		const char* contentchar = result.c_str();
+		const char *contentchar = result.c_str();
 		// Set the source characters and try to compile
 		glShaderSource(outShader, 1, &(contentchar), nullptr);
 		glCompileShader(outShader);

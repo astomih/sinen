@@ -5,12 +5,12 @@
 
 namespace nen::mesh
 {
-    std::string LoadTextFile(const std::string& path)
+    std::string LoadTextFile(const std::string &path)
     {
-        SDL_RWops* file{SDL_RWFromFile(path.c_str(), "r")};
+        SDL_RWops *file{SDL_RWFromFile(path.c_str(), "r")};
         size_t fileLength{static_cast<size_t>(SDL_RWsize(file))};
-        void* data{SDL_LoadFile_RW(file, nullptr, 1)};
-        std::string result(static_cast<char*>(data), fileLength);
+        void *data{SDL_LoadFile_RW(file, nullptr, 1)};
+        std::string result(static_cast<char *>(data), fileLength);
         SDL_free(data);
 
         return result;
@@ -18,33 +18,36 @@ namespace nen::mesh
 
     bool ObjLoader::Load(std::shared_ptr<Renderer> renderer, std::string_view filepath, std::string_view name)
     {
-        std::istringstream sourceStream(LoadTextFile(filepath.data()));
+        std::string path = filepath.data();
+        std::istringstream sourceStream(LoadTextFile(path));
+        if (filepath.ends_with(".obj"))
+        {
+            for (int i = 0; i < 3;i++)
+                path.pop_back();
+            path += "mtl";
+        }
+        std::istringstream materialStream(LoadTextFile(path.data()));
         tinyobj::attrib_t attrib;
         std::vector<tinyobj::shape_t> shapes;
         std::vector<tinyobj::material_t> materials;
         std::string warn;
         std::string err;
-        std::string base_dir;
-        base_dir = ".";
-#ifdef _WIN32
-        base_dir += "\\";
-#else
-        base_dir += "/";
-#endif
+        auto materialStreamReader = std::make_unique<tinyobj::MaterialStreamReader>(materialStream);
         bool ret = tinyobj::LoadObj(
-                &attrib,
-                &shapes,
-                &materials,
-                &warn,
-                &err,
-                &sourceStream);
+            &attrib,
+            &shapes,
+            &materials,
+            &warn,
+            &err,
+            &sourceStream,
+            materialStreamReader.get());
         if (!warn.empty())
         {
-            nen::Logger::Warn("%s",warn);
+            nen::Logger::Warn("%s", warn);
         }
         if (!err.empty())
         {
-            nen::Logger::Error("%s",err);
+            nen::Logger::Error("%s", err);
             return false;
         }
 

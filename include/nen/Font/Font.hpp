@@ -1,8 +1,8 @@
 ﻿#pragma once
 #pragma once
-#include <Math/Vector3.hpp>
-#include <Color/Color.hpp>
-#include <Texture/Texture.hpp>
+#include "../Math/Vector3.hpp"
+#include "../Color/Color.hpp"
+#include "../Texture/Texture.hpp"
 #include <SDL_ttf.h>
 #include <unordered_map>
 

@@ -1,6 +1,5 @@
 #pragma once
-#include <Math/Math.hpp>
-#include <Vertex/Vertex.hpp>
+#include "../Vertex/Vertex.hpp"
 #include <string>
 #include <memory>
 #include <unordered_map>

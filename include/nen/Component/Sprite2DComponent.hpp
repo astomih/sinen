@@ -1,7 +1,7 @@
 #pragma once
-#include <Math/Vector2.hpp>
-#include <Texture/Texture.hpp>
-#include <Color/Color.hpp>
+#include "../Math/Vector2.hpp"
+#include "../Texture/Texture.hpp"
+#include "../Color/Color.hpp"
 #include <utility>
 
 namespace nen

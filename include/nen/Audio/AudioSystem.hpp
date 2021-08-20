@@ -1,7 +1,7 @@
 #pragma once
-#include <Math/Math.hpp>
-#include <Math/Vector3.hpp>
-#include <Math/Quaternion.hpp>
+#include "../Math/Math.hpp"
+#include "../Math/Vector3.hpp"
+#include "../Math/Quaternion.hpp"
 #include "AudioEvent.hpp"
 #include <AL/al.h>
 #include <AL/alc.h>

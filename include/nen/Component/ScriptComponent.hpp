@@ -1,5 +1,5 @@
 #pragma once
-#include <Script/Script.hpp>
+#include "../Script/Script.hpp"
 #include <string>
 namespace nen
 {

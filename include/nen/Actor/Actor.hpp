@@ -1,7 +1,7 @@
 #pragma once
-#include <Math/Math.hpp>
-#include <Math/Matrix4.hpp>
-#include <Math/Vector3.hpp>
+#include "../Math/Math.hpp"
+#include "../Math/Matrix4.hpp"
+#include "../Math/Vector3.hpp"
 #include <vector>
 #include <cstdint>
 #include <memory>

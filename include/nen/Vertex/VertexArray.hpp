@@ -1,5 +1,5 @@
 #pragma once
-#include <Vertex/Vertex.hpp>
+#include "../Vertex/Vertex.hpp"
 #include <vector>
 
 namespace nen

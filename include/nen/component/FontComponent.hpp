@@ -1,6 +1,6 @@
 #pragma once
-#include <Math/Vector3.hpp>
-#include <Color/Color.hpp>
+#include "../Math/Vector3.hpp"
+#include "../Color/Color.hpp"
 #include "Sprite2DComponent.hpp"
 #include <string>
 #include <memory>

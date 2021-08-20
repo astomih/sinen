@@ -37,8 +37,7 @@ file(GLOB SOURCE_FILES
 add_library(nen STATIC ${SOURCE_FILES})
 set(NEN_INCLUDE_DIRECTORIES 
 	.
-	../include
-	../include/nen 
+	../include/nen
 	../libs/tinyobjloader 
 	../libs/Effekseer/include/Effekseer
 	../libs/Effekseer/include/EffekseerRendererGL

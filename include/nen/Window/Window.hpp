@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include <Math/Math.hpp>
+#include "../Math/Vector2.hpp"
 #include <SDL.h>
 #include <SDL_syswm.h>
 namespace nen

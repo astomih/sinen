@@ -2,7 +2,7 @@
 #include <SDL_scancode.h>
 #include <SDL_gamecontroller.h>
 #include <SDL_mouse.h>
-#include <Math/Vector2.hpp>
+#include "../Math/Vector2.hpp"
 
 #include <array>
 

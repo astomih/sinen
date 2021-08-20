@@ -1,6 +1,6 @@
 #pragma once
 #include "Actor.hpp"
-#include <Color/Color.hpp>
+#include "../Color/Color.hpp"
 #include <string>
 #include <memory>
 namespace nen

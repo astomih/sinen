@@ -1,5 +1,5 @@
 #pragma once
-#include <Math/Vector2.hpp>
+#include "../Math/Vector2.hpp"
 namespace nen
 {
 	class Sprite3DComponent : public Component

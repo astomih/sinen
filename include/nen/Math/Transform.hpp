@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "Math.hpp"
-#include <Window/Window.hpp>
-#include <Actor/Actor.hpp>
+#include "../Window/Window.hpp"
+#include "../Actor/Actor.hpp"
 #include <cstdio>
 #include <string>
 namespace nen

@@ -1,6 +1,6 @@
 #pragma once
 #include "Component.hpp"
-#include <Audio/AudioEvent.hpp>
+#include "../Audio/AudioEvent.hpp"
 #include <vector>
 #include <string>
 

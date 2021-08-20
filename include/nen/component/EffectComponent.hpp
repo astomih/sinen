@@ -1,5 +1,5 @@
 #pragma once
-#include "../nen.hpp"
+#include <string>
 namespace nen
 {
 	class EffectComponent : public Component
@@ -27,7 +27,7 @@ namespace nen
 
 	private:
 		Actor &mOwner;
-		class Effect* mEffect;
+		class Effect *mEffect;
 		float mTimer;
 		float buf;
 		bool playing;

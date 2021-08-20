@@ -7,19 +7,19 @@ namespace nen
 	{
 	}
 
-	const Vector3f &CircleComponent::GetCenter() const
+	const Vector3 &CircleComponent::GetCenter() const
 	{
 		return mOwner.GetPosition();
 	}
 
-	const Vector3f &CircleComponent::GetRadius() const
+	const Vector3 &CircleComponent::GetRadius() const
 	{
 		return mOwner.GetScale() * mRadius;
 	}
 
 	bool Intersect(const CircleComponent &a, const CircleComponent &b)
 	{
-		Vector3f diff = a.GetCenter() - b.GetCenter();
+		Vector3 diff = a.GetCenter() - b.GetCenter();
 		float distSq = diff.LengthSq();
 
 		auto radiiSq = a.GetRadius() + b.GetRadius();

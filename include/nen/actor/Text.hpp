@@ -1,5 +1,6 @@
 #pragma once
-#include "Actor.h"
+#include "Actor.hpp"
+#include <Color/Color.hpp>
 #include <string>
 #include <memory>
 namespace nen
@@ -11,7 +12,7 @@ namespace nen
 		void SetText(const std::string &text, const int size = 10) const;
 		int GetWidth() const;
 		int GetHeight() const;
-		void SetColor(const Color::Color &color);
+		void SetColor(const Color &color);
 
 	private:
 		std::shared_ptr<class FontComponent> mFont;

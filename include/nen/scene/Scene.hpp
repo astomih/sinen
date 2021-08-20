@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include <SDL.h>
 #include <unordered_map>
 #include <string>
 #include <vector>
@@ -68,14 +67,13 @@ namespace nen
 
 		// All the actors in the game
 		std::vector<std::shared_ptr<class Actor>> mActors;
-		std::shared_ptr<AudioSystem> mAudioSystem;
+		std::shared_ptr<class AudioSystem> mAudioSystem;
 
 	private:
 		void UnloadData();
 		void ProcessInput();
 		void UpdateScene();
 		class InputSystem *mInputSystem;
-		std::shared_ptr<class Transition> mTransition;
 		std::shared_ptr<class Renderer> mRenderer;
 		std::unordered_map<std::string, class Font *> mFonts;
 		// Any pending actors

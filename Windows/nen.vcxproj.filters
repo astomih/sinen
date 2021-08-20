@@ -9,27 +9,6 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Header\nen">
-      <UniqueIdentifier>{6058dd22-2bd8-4e80-a753-a04e1053dca2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header\nen\actor">
-      <UniqueIdentifier>{f2bc2f8b-b1bd-47b4-9cef-c0286f14243f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header\nen\component">
-      <UniqueIdentifier>{8216e19e-fb9d-4e41-b20a-f0fe44d19939}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header\nen\gles">
-      <UniqueIdentifier>{2b8a76d8-006f-455d-a76c-e3aeb0e74509}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header\nen\gl">
-      <UniqueIdentifier>{93fe7a43-ab11-4b4f-8ffe-05d64d49e719}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header\nen\vk">
-      <UniqueIdentifier>{97be371f-cf79-4a2b-83f0-402b6867d38f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header\nen\scene">
-      <UniqueIdentifier>{a91a27b7-e8ba-4e60-9731-940f60da7f1c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\nen">
       <UniqueIdentifier>{84492b37-ceca-45d2-aa4a-f8a85417d7d6}</UniqueIdentifier>
     </Filter>
@@ -229,6 +208,9 @@
     </ClCompile>
     <ClCompile Include="..\src\nen\effect\CustomTextureLoader.cpp">
       <Filter>Source\nen\effect</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\nen\Color\Color.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

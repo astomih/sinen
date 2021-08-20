@@ -8,7 +8,6 @@
 namespace nen
 {
 	Scene::Scene()
-		: mTransition(std::move(std::make_shared<Transition>()))
 	{
 	}
 

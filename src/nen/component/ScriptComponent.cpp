@@ -11,7 +11,7 @@ namespace nen
 		auto &actor = this->GetActor();
 		lua["pos"] = this->GetActor().GetPosition();
 		lua["rotate"] = this->GetActor().GetRotation();
-		lua["setPosition"] = [&](Vector3f pos) { actor.SetPosition(pos); };
+		lua["setPosition"] = [&](Vector3 pos) { actor.SetPosition(pos); };
 		lua["setRotation"] = [&](Quaternion rot) { actor.SetRotation(rot); };
 
 		Script::DoScript(funcName);

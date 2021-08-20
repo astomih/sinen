@@ -19,7 +19,7 @@ namespace nen
 			float angle = mAngularSpeed * deltaTime;
 			// Create quaternion for incremental rotation
 			// (Rotate about up axis)
-			Quaternion inc(Vector3f::UnitZ, angle);
+			Quaternion inc(Vector3::UnitZ, angle);
 			// Concatenate old and new quaternion
 			rot = Quaternion::Concatenate(rot, inc);
 			mOwner.SetRotation(rot);
@@ -27,7 +27,7 @@ namespace nen
 
 		if (!Math::NearZero(mForwardSpeed))
 		{
-			Vector3f pos = mOwner.GetPosition();
+			Vector3 pos = mOwner.GetPosition();
 			if (mDirection)
 			{
 				pos += mOwner.GetForward() * mForwardSpeed * deltaTime;
@@ -40,7 +40,7 @@ namespace nen
 		}
 		if (!Math::NearZero(mLeftRightSpeed))
 		{
-			Vector3f pos = mOwner.GetPosition();
+			Vector3 pos = mOwner.GetPosition();
 			if (!mDirection)
 			{
 				pos.x += mLeftRightSpeed * deltaTime;

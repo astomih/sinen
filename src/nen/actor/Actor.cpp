@@ -1,10 +1,10 @@
-#include <algorithm>
 #include <nen.hpp>
+#include <algorithm>
 #include <type_traits>
 namespace nen
 {
 	Actor::Actor(Scene &scene)
-		: mState(EActive), mPosition(Vector3f::Zero), mRotation(Quaternion::Identity), mScene(scene), mRecomputeWorldTransform(true), mScale(Vector3f(1.f, 1.f, 1.f)), mComponents()
+		: mState(EActive), mPosition(Vector3::Zero), mRotation(Quaternion::Identity), mScene(scene), mRecomputeWorldTransform(true), mScale(Vector3(1.f, 1.f, 1.f)), mComponents()
 	{
 	}
 

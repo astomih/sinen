@@ -1,12 +1,12 @@
-#include <iostream>
 #include <nen.hpp>
+#include <iostream>
 namespace nen
 {
 	FontComponent::FontComponent(Actor &actor, int drawOrder) : Sprite2DComponent(actor, drawOrder)
 	{
 	}
 
-	void FontComponent::SetString(const std::string &str, const Vector3f &color, int pointSize)
+	void FontComponent::SetString(const std::string &str, const Color &color, int pointSize)
 	{
 		if (!mFont->isLoaded())
 		{

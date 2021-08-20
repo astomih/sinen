@@ -21,10 +21,6 @@ namespace nen
 		mOwner.GetScene().GetRenderer()->RemoveSprite3D(sprite);
 	}
 
-	void Sprite3DComponent::Draw(Shader *shader)
-	{
-	}
-
 	void Sprite3DComponent::Create(std::shared_ptr<Texture> texture, std::string_view shape)
 	{
 		if (texture)
@@ -49,7 +45,7 @@ namespace nen
 			{
 				{xScale, 0.0f, 0.0f, 0.0f},
 				{0.0f, yScale, 0.0f, 0.0f},
-				{0.0f, 0.0f, zfar/ (znear - zfar), -1.0f},
+				{0.0f, 0.0f, zfar / (znear - zfar), -1.0f},
 				{0.0f, 0.0f, znear * zfar / (znear - zfar), 0.0f}};
 		Matrix4 proj(temp);
 		sprite = std::make_shared<Sprite>();
@@ -63,18 +59,18 @@ namespace nen
 
 		mOwner.GetScene().GetRenderer()->AddSprite3D(sprite, texture);
 	}
-	void Sprite3DComponent::SetTrimmingStartPos(const Vector2i &pos)
+	void Sprite3DComponent::SetTrimmingStartPos(int x, int y)
 	{
 		sprite->isChangeBuffer = true;
 		mOwner.GetScene().GetRenderer()->ChangeBufferSprite(sprite, TextureType::Image3D);
-		sprite->trimStart.x = (float)pos.x / (float)mTexWidth;
-		sprite->trimStart.y = (float)pos.y / (float)mTexHeight;
+		sprite->trimStart.x = (float)x / (float)mTexWidth;
+		sprite->trimStart.y = (float)y / (float)mTexHeight;
 	}
-	void Sprite3DComponent::SetTrimmingEndPos(const Vector2i &pos)
+	void Sprite3DComponent::SetTrimmingEndPos(int x, int y)
 	{
 		sprite->isChangeBuffer = true;
 		mOwner.GetScene().GetRenderer()->ChangeBufferSprite(sprite, TextureType::Image3D);
-		sprite->trimEnd.x = (float)pos.x / (float)mTexWidth;
-		sprite->trimEnd.y = (float)pos.y / (float)mTexHeight;
+		sprite->trimEnd.x = (float)x / (float)mTexWidth;
+		sprite->trimEnd.y = (float)y / (float)mTexHeight;
 	}
 }

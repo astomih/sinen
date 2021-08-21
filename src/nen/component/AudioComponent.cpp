@@ -1,4 +1,4 @@
-#include <nen.hpp>
+#include <Nen.hpp>
 namespace nen
 {
 	AudioComponent::AudioComponent(Actor &owner, int updateOrder)

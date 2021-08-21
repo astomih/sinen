@@ -1,4 +1,4 @@
-#include <nen.hpp>
+#include <Nen.hpp>
 #include <iostream>
 #include <SDL_image.h>
 namespace nen

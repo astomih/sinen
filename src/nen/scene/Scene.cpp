@@ -1,4 +1,4 @@
-﻿#include <nen.hpp>
+﻿#include <Nen.hpp>
 #include <SDL_ttf.h>
 #include <algorithm>
 #include <iostream>

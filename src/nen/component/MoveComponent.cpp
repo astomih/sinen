@@ -1,4 +1,4 @@
-#include <nen.hpp>
+#include <Nen.hpp>
 #include <iostream>
 namespace nen
 {

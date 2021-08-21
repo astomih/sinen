@@ -1,5 +1,5 @@
 #include "CustomTextureLoader.h"
-#include <nen.hpp>
+#include <Nen.hpp>
 #include <EffekseerRenderer/EffekseerRendererGL.MaterialLoader.h>
 #include <EffekseerRenderer/EffekseerRendererGL.RendererImplemented.h>
 #include <EffekseerRenderer/GraphicsDevice.h>

@@ -4,6 +4,7 @@
 #include <iostream>
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
+#include "../Render/RendererHandle.hpp"
 
 namespace nen
 {
@@ -11,10 +12,9 @@ namespace nen
 	{
 	}
 
-	void Scene::Initialize(std::shared_ptr<Renderer> renderer)
+	void Scene::Initialize()
 	{
-		mRenderer = renderer;
-
+		mRenderer = RendererHandle::GetRenderer();
 		mAudioSystem = std::make_shared<AudioSystem>(*this);
 		if (!mAudioSystem->Initialize())
 		{

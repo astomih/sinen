@@ -9,9 +9,11 @@
 #include "Vulkan/EffectManagerVK.h"
 #include "OpenGL/EffectManagerGL.h"
 #endif
+#include "RendererHandle.hpp"
 
 namespace nen
 {
+	std::shared_ptr<Renderer> RendererHandle::mRenderer = nullptr;
 	Renderer::Renderer(GraphicsAPI api)
 		: transPic(nullptr), mScene(nullptr), mWindow(nullptr),
 		  renderer(nullptr),

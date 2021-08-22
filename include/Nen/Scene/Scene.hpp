@@ -22,7 +22,9 @@ namespace nen
 		Scene();
 		virtual ~Scene() {}
 
-		void Initialize(std::shared_ptr<class Renderer> renderer);
+		void Initialize();
+
+		void SetRenderer(std::shared_ptr<class Renderer> renderer) { mRenderer = renderer; }
 
 		bool isRunning() { return mIsRunning; }
 

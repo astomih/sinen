@@ -1,13 +1,14 @@
 #include "EffectManagerGL.h"
-#include "../../effect/CustomTextureLoader.h"
+#include "../../Effect/CustomTextureLoader.h"
 #include "GLRenderer.h"
 #include <Nen.hpp>
 
 namespace nen::gl
 {
-	EffectManagerGL::EffectManagerGL(GLRenderer* renderer)
+	EffectManagerGL::EffectManagerGL(GLRenderer *renderer)
 		: mRenderer(renderer)
-	{}
+	{
+	}
 	void EffectManagerGL::Init()
 	{
 		// Create a renderer of effects
@@ -37,7 +38,5 @@ namespace nen::gl
 		// Specify a camera matrix
 		renderer->SetCameraMatrix(
 			::Effekseer::Matrix44().LookAtRH(g_position, ::Effekseer::Vector3D(0.0f, 0.0f, -1.f), ::Effekseer::Vector3D(0.0f, 1.0f, 0.0f)));
-
-
 	}
 }

@@ -178,7 +178,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Nen\Actor\Actor.hpp" />
-    <ClInclude Include="..\include\Nen\Actor\Animation2D.hpp" />
     <ClInclude Include="..\include\Nen\Actor\PlaneActor.hpp" />
     <ClInclude Include="..\include\Nen\Actor\Text.hpp" />
     <ClInclude Include="..\include\Nen\Audio\AudioEvent.hpp" />
@@ -186,7 +185,6 @@
     <ClInclude Include="..\include\Nen\Component\AudioComponent.hpp" />
     <ClInclude Include="..\include\Nen\Component\CircleComponent.hpp" />
     <ClInclude Include="..\include\Nen\Component\Component.hpp" />
-    <ClInclude Include="..\include\Nen\Component\Components.hpp" />
     <ClInclude Include="..\include\Nen\Component\EffectComponent.hpp" />
     <ClInclude Include="..\include\Nen\Component\FontComponent.hpp" />
     <ClInclude Include="..\include\Nen\Component\InputComponent.hpp" />

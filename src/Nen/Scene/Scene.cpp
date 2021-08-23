@@ -203,27 +203,4 @@ namespace nen
 		}
 	}
 
-	Font *Scene::GetFont(const std::string &fileName)
-	{
-		auto iter = mFonts.find(fileName);
-		if (iter != mFonts.end())
-		{
-			return iter->second;
-		}
-		else
-		{
-			Font *font = new Font();
-			if (font->Load(fileName))
-			{
-				mFonts.emplace(fileName, font);
-			}
-			else
-			{
-				font->Unload();
-				delete font;
-				font = nullptr;
-			}
-			return font;
-		}
-	}
 }

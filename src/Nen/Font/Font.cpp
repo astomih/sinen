@@ -1,38 +1,23 @@
-﻿#include <Nen.hpp>
+﻿#include <SDL_ttf.h>
+#include <Nen.hpp>
 #include <cassert>
 namespace nen
 {
-	Font::Font()
-		: padding(""),
-		  loaded(false),
-		  mFontData()
+	bool Font::Load(std::string_view fontName, int pointSize)
 	{
-	}
-	bool Font::Load(const std::string &fileName)
-	{
-		//Support font sizes
-		std::vector<int> fontSizes =
-			{
-				8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28,
-				30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 52, 56,
-				60, 64, 68, 72};
-
-		//Call TTF_OpenFont func per fontSizes
-		for (auto &size : fontSizes)
+		this->fontName = fontName;
+		this->pointSize = pointSize;
+		font = ::TTF_OpenFont(std::string(this->fontName).c_str(), this->pointSize);
+		if (!font)
 		{
-			::TTF_Font *font = ::TTF_OpenFont(fileName.c_str(), size);
-			if (!font)
-			{
-				::SDL_Log("font %s couldn't be loaded.", fileName.c_str());
-				return false;
-			}
-			mFontData.insert({size, font});
+			Logger::Error("%s", TTF_GetError());
+			return false;
 		}
-		loaded = true;
-		return true;
+		return (isLoad = true);
 	}
 
-	std::shared_ptr<Texture> Font::RenderText(const std::string &text, const Color &color, int pointSize)
+
+	std::shared_ptr<Texture> Font::RenderText(std::string_view text, const Color& color, Quality quality, const Color& backgroundColor)
 	{
 		auto texture = std::make_shared<Texture>();
 		//My Color to SDL_Color
@@ -41,148 +26,37 @@ namespace nen
 		sdlColor.g = static_cast<Uint8>(color.g * 255);
 		sdlColor.b = static_cast<Uint8>(color.b * 255);
 		sdlColor.a = 255;
-		//Find pointSize Data
-		auto itr = mFontData.find(pointSize);
-		if (itr != mFontData.end())
-		{
-			::TTF_Font *font = itr->second;
-			//Render to SDL_Surface（Alpha blending)
-			auto surf = std::unique_ptr<::SDL_Surface, SDLObjectCloser>(::TTF_RenderUTF8_Blended(font, text.c_str(), sdlColor));
-			if (surf)
-			{
-				texture->SetSurface(std::move(surf));
-			}
-		}
-		else
-		{
-			assert(TTF_GetError());
-		}
 		texture->id = text;
-
-		return texture;
-	}
-
-	std::shared_ptr<Texture> Font::RenderText(const std::string &text, SupportFontSizes pointSize, const Color &color)
-	{
-		auto texture = std::make_shared<Texture>();
-		//My Color to SDL_Color
-		SDL_Color sdlColor;
-		sdlColor.r = static_cast<Uint8>(color.r * 255);
-		sdlColor.g = static_cast<Uint8>(color.g * 255);
-		sdlColor.b = static_cast<Uint8>(color.b * 255);
-		sdlColor.a = 255;
-		//Find pointSize Data
-		int size;
-		switch (pointSize)
+		std::unique_ptr<::SDL_Surface, SDLObjectCloser> surf;
+		switch (quality)
 		{
-		case SupportFontSizes::S8:
-			size = 8;
+		case nen::Font::Quality::Solid:
+			surf = std::unique_ptr<::SDL_Surface, SDLObjectCloser>(::TTF_RenderUTF8_Solid(font, std::string(text).c_str(), sdlColor));
 			break;
-		case SupportFontSizes::S9:
-			size = 9;
-			break;
-		case SupportFontSizes::S10:
-			size = 10;
-			break;
-		case SupportFontSizes::S11:
-			size = 11;
-			break;
-		case SupportFontSizes::S12:
-			size = 12;
-			break;
-		case SupportFontSizes::S14:
-			size = 14;
-			break;
-		case SupportFontSizes::S16:
-			size = 16;
-			break;
-		case SupportFontSizes::S18:
-			size = 18;
-			break;
-		case SupportFontSizes::S20:
-			size = 20;
-			break;
-		case SupportFontSizes::S22:
-			size = 22;
-			break;
-		case SupportFontSizes::S24:
-			size = 24;
-			break;
-		case SupportFontSizes::S26:
-			size = 26;
-			break;
-		case SupportFontSizes::S28:
-			size = 28;
-			break;
-		case SupportFontSizes::S30:
-			size = 30;
-			break;
-		case SupportFontSizes::S32:
-			size = 32;
-			break;
-		case SupportFontSizes::S34:
-			size = 34;
-			break;
-		case SupportFontSizes::S36:
-			size = 36;
-			break;
-		case SupportFontSizes::S38:
-			size = 38;
-			break;
-		case SupportFontSizes::S40:
-			size = 40;
-			break;
-		case SupportFontSizes::S42:
-			size = 42;
-			break;
-		case SupportFontSizes::S44:
-			size = 44;
-			break;
-		case SupportFontSizes::S46:
-			size = 46;
-			break;
-		case SupportFontSizes::S48:
-			size = 48;
-			break;
-		case SupportFontSizes::S52:
-			size = 52;
-			break;
-		case SupportFontSizes::S56:
-			size = 56;
-			break;
-		case SupportFontSizes::S60:
-			size = 60;
-			break;
-		case SupportFontSizes::S64:
-			size = 64;
-			break;
-		case SupportFontSizes::S68:
-			size = 68;
-			break;
-		case SupportFontSizes::S72:
-			size = 72;
+		case nen::Font::Quality::Shaded:
+		{
+			SDL_Color bg;
+			bg.r = static_cast<Uint8>(color.r * 255);
+			bg.g = static_cast<Uint8>(color.g * 255);
+			bg.b = static_cast<Uint8>(color.b * 255);
+			bg.a = 255;
+			surf = std::unique_ptr<::SDL_Surface, SDLObjectCloser>(::TTF_RenderUTF8_Shaded(font, std::string(text).c_str(), sdlColor, bg));
+		}
+		break;
+		case nen::Font::Quality::Blended:
+			surf = std::unique_ptr<::SDL_Surface, SDLObjectCloser>(::TTF_RenderUTF8_Blended(font, std::string(text).c_str(), sdlColor));
 			break;
 		default:
-			size = 0;
-
 			break;
 		}
-		auto itr = mFontData.find(size);
-		if (itr != mFontData.end())
+		if (surf)
 		{
-			::TTF_Font *font = itr->second;
-			//Render to SDL_Surface（Alpha blending)
-			auto surf = std::unique_ptr<::SDL_Surface, SDLObjectCloser>(::TTF_RenderUTF8_Blended(font, text.c_str(), sdlColor));
-
-			if (surf)
-			{
-				texture->SetSurface(std::move(surf));
-			}
+			texture->SetSurface(std::move(surf));
 		}
 		else
 		{
+			Logger::Error("Font RenderError:%s", TTF_GetError());
 		}
 		return texture;
-		return nullptr;
 	}
 }

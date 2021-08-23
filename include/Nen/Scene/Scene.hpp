@@ -40,8 +40,6 @@ namespace nen
 		virtual Scenes GetSceneName() { return Scenes::None; }
 		std::shared_ptr<class Renderer> GetRenderer() const { return mRenderer; }
 
-		class Font *GetFont(const std::string &fileName);
-
 		enum GameState
 		{
 			EGameplay,

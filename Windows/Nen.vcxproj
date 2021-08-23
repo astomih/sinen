@@ -157,6 +157,7 @@
     <ClCompile Include="..\src\Nen\Math\Random.cpp" />
     <ClCompile Include="..\src\Nen\Math\Transform.cpp" />
     <ClCompile Include="..\src\Nen\Mesh\ObjLoader.cpp" />
+    <ClCompile Include="..\src\Nen\Time\Time.cpp" />
     <ClCompile Include="..\src\Nen\Render\Renderer.cpp" />
     <ClCompile Include="..\src\Nen\Render\OpenGLES\ESRenderer.cpp" />
     <ClCompile Include="..\src\Nen\Render\OpenGL\EffectManagerGL.cpp" />
@@ -172,6 +173,7 @@
     <ClCompile Include="..\src\Nen\Scene\Scene.cpp" />
     <ClCompile Include="..\src\Nen\Script\Script.cpp" />
     <ClCompile Include="..\src\Nen\Texture\Texture.cpp" />
+    <ClCompile Include="..\src\Nen\Utility\Singleton.cpp" />
     <ClCompile Include="..\src\Nen\Vertex\Vertex.cpp" />
     <ClCompile Include="..\src\Nen\Vertex\VertexArray.cpp" />
     <ClCompile Include="..\src\Nen\Window\Window.cpp" />
@@ -212,6 +214,8 @@
     <ClInclude Include="..\include\Nen\Sprite\Sprite.h" />
     <ClInclude Include="..\include\Nen\Texture\Texture.h" />
     <ClInclude Include="..\include\Nen\Texture\TextureType.h" />
+    <ClInclude Include="..\include\Nen\Utility\NonCopyable.hpp" />
+    <ClInclude Include="..\include\Nen\Utility\Singleton.hpp" />
     <ClInclude Include="..\include\Nen\Vertex\Vertex.h" />
     <ClInclude Include="..\include\Nen\Vertex\VertexArray.h" />
     <ClInclude Include="..\include\Nen\Window\Window.hpp" />

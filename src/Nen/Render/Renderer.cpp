@@ -1,4 +1,5 @@
 ﻿#include <Nen.hpp>
+#include <SDL_ttf.h>
 #include <SDL_image.h>
 #include <SDL_net.h>
 #include "Vulkan/VKRenderer.h"

@@ -1,4 +1,4 @@
-#include <nen/nen.hpp>
+#include <Nen/Nen.hpp>
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 #endif

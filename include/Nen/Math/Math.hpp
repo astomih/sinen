@@ -1,9 +1,9 @@
 ﻿#pragma once
+#include "../Time/Time.hpp"
 #include <cmath>
 #include <limits>
 #include <iostream>
 #include <vector>
-#include <SDL.h>
 #include <cstring>
 #include <algorithm>
 
@@ -109,14 +109,14 @@ namespace nen
 			return fmod(numer, denom);
 		}
 
-		static float Sin0_1(const float periodSec, const float t = static_cast<float>(SDL_GetTicks()) / 1000.f)
+		static float Sin0_1(const float periodSec, const float t = Time::GetTicksAsSeconds())
 		{
 			const auto f = Fmod(t, periodSec);
 			const auto x = f / (periodSec * (1.f / (2.f * Pi)));
 			return Sin(x) * 0.5f + 0.5f;
 		}
 
-		static float Cos0_1(const float periodSec, const float t = static_cast<float>(SDL_GetTicks()) / 1000.f)
+		static float Cos0_1(const float periodSec, const float t = Time::GetTicksAsSeconds())
 		{
 			const auto f = Fmod(t, periodSec);
 			const auto x = f / (periodSec * (1.f / (2.f * Pi)));

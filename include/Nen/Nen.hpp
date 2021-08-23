@@ -3,6 +3,7 @@
 #ifdef ANDROID
 #define MOBILE
 #endif
+#include "Time/Time.hpp"
 #include "Math/Math.hpp"
 #include "Math/Vector2.hpp"
 #include "Math/Vector3.hpp"
@@ -35,6 +36,8 @@
 #include "Sprite/Sprite.hpp"
 #include "Script/Script.hpp"
 #include "Texture/Texture.hpp"
+#include "Utility/Singleton.hpp"
+#include "Utility/NonCopyable.hpp"
 #include "Vertex/Vertex.hpp"
 #include "Vertex/VertexArray.hpp"
 #include "Window/Window.hpp"

@@ -1,74 +1,52 @@
-﻿#pragma once
-#pragma once
+﻿#ifndef NEN_FONT_HPP
+#define NEN_FONT_HPP
 #include "../Math/Vector3.hpp"
-#include "../Color/Color.hpp"
-#include "../Texture/Texture.hpp"
-#include <SDL_ttf.h>
-#include <unordered_map>
+
+namespace
+{
+	struct _TTF_Font;
+}
 
 namespace nen
 {
-	enum class SupportFontSizes : int
-	{
-		S8,
-		S9,
-		S10,
-		S11,
-		S12,
-		S14,
-		S16,
-		S18,
-		S20,
-		S22,
-		S24,
-		S26,
-		S28,
-		S30,
-		S32,
-		S34,
-		S36,
-		S38,
-		S40,
-		S42,
-		S44,
-		S46,
-		S48,
-		S52,
-		S56,
-		S60,
-		S64,
-		S68,
-		S72
-	};
-
+	/*
+		フォントクラス
+	*/
 	class Font
 	{
 	public:
-		Font();
-		~Font()
-		{
-			Unload();
-		}
-		//File Load/Unload
-		bool Load(const std::string &fileName);
-		bool isLoaded() { return loaded; }
-		void Unload()
-		{
-			for (const auto &i : mFontData)
-			{
-				if (i.second)
-					TTF_CloseFont(i.second);
-			}
-		}
+		Font() :font(nullptr),isLoad(false) {};
+		~Font() = default;
 
-		//Render string
-		class std::shared_ptr<Texture> RenderText(const std::string &text, const Color &color = Palette::White, int pointSize = 30);
-		class std::shared_ptr<Texture> RenderText(const std::string &text, SupportFontSizes pointSize, const Color &color = Palette::White);
+		/*
+			フォントの描画クオリティ
+		*/
+		enum class Quality
+		{
+			// 荒いが高速。背景あり
+			Solid,
+			// 高品質・高速だが背景あり
+			Shaded,
+			// 高品質で背景が無いが遅い
+			Blended
+		};
+
+		// ファイルからフォントを読み込む
+		bool Load(std::string_view fontName, int pointSize);
+		bool isLoaded() { return isLoad; }
+		// フォントを解放
+		void Unload();
+
+		// Textureにフォントを書き込む
+		std::shared_ptr<Texture> RenderText(std::string_view text, const Color& color = Palette::White, Quality quality = Quality::Blended,
+			const Color& backgroundColor = Palette::Black);
 
 	private:
-		std::unordered_map<int, TTF_Font *> mFontData;
-		bool loaded;
-		using S1 = char;
-		const S1 padding[3];
+
+		int pointSize;
+		bool isLoad;
+		std::string fontName;
+		::_TTF_Font* font;
 	};
 }
+#endif

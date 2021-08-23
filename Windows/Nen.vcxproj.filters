@@ -86,7 +86,6 @@
     <ClInclude Include="..\include\Nen\Mesh\ObjLoader.hpp" />
     <ClInclude Include="..\include\Nen\Render\Renderer.hpp" />
     <ClInclude Include="..\include\Nen\Scene\Scene.hpp" />
-    <ClInclude Include="..\include\Nen\Script\Script.h" />
     <ClInclude Include="..\include\Nen\Sprite\Sprite.h" />
     <ClInclude Include="..\include\Nen\Texture\Texture.h" />
     <ClInclude Include="..\include\Nen\Texture\TextureType.h" />
@@ -113,5 +112,9 @@
     <ClInclude Include="..\include\Nen\Utility\Singleton.hpp" />
     <ClInclude Include="..\include\Nen\Utility\NonCopyable.hpp" />
     <ClInclude Include="..\include\Nen\Scene\MainScene.hpp" />
+    <ClInclude Include="..\include\Nen\Input\KeyCode.hpp" />
+    <ClInclude Include="..\include\Nen\Input\GameControllerButton.hpp" />
+    <ClInclude Include="..\include\Nen\Script\Script.hpp" />
+    <ClInclude Include="..\include\Nen\Input\MouseCode.hpp" />
   </ItemGroup>
 </Project>

@@ -1,9 +1,9 @@
-﻿#include <Nen.hpp>
+﻿#include <AL/al.h>
+#include <AL/alc.h>
 #include <SDL_log.h>
 #include <vector>
 #include <SDL_mixer.h>
-#include <AL/al.h>
-#include <AL/alc.h>
+#include <Nen.hpp>
 namespace nen
 {
 	Vector3 Calc(const Quaternion &r);
@@ -97,7 +97,7 @@ namespace nen
 	{
 	}
 
-	AudioEvent AudioSystem::PlayEvent(std::string_view name, ALuint sourceID)
+	AudioEvent AudioSystem::PlayEvent(std::string_view name, uint32_t sourceID)
 	{
 		AudioEvent e(shared_from_this(), name, sourceID);
 		return e;
@@ -118,7 +118,7 @@ namespace nen
 		ALenum alfmt = AL_NONE;
 		Uint8 *buffer = NULL;
 		Uint32 buffer_length = 0;
-		ALuint bid = 0;
+		uint32_t bid = 0;
 
 		if (!SDL_LoadWAV(fileName.data(), &spec, &buffer, &buffer_length))
 		{
@@ -143,7 +143,7 @@ namespace nen
 		}
 	}
 
-	ALuint AudioSystem::NewSource(std::string_view name)
+	uint32_t AudioSystem::NewSource(std::string_view name)
 	{
 		ALuint source;
 		alGenSources(1, &source);
@@ -151,7 +151,7 @@ namespace nen
 		return source;
 	}
 
-	void AudioSystem::DeleteSource(ALuint sourceID)
+	void AudioSystem::DeleteSource(uint32_t sourceID)
 	{
 		alDeleteBuffers(1, &sourceID);
 	}

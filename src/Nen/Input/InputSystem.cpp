@@ -1,98 +1,101 @@
 #include <Nen.hpp>
 #include <SDL.h>
 #include <cstring>
+#include <SDL_gamecontroller.h>
+#include <SDL_mouse.h>
+#include <SDL_keyboard.h>
 namespace nen
 {
-	bool KeyboardState::GetKeyValue(SDL_Scancode keyCode) const
+	bool KeyboardState::GetKeyValue(KeyCode keyCode) const
 	{
-		return mCurrState[keyCode] == 1;
+		return mCurrState[static_cast<int>(keyCode)] == 1;
 	}
 
-	ButtonState KeyboardState::GetKeyState(SDL_Scancode keyCode) const
+	ButtonState KeyboardState::GetKeyState(KeyCode keyCode) const
 	{
-		if (mPrevState[keyCode] == 0)
+		if (mPrevState[static_cast<int>(keyCode)] == 0)
 		{
-			if (mCurrState[keyCode] == 0)
+			if (mCurrState[static_cast<int>(keyCode)] == 0)
 			{
-				return ENone;
+				return ButtonState::None;
 			}
 			else
 			{
-				return EPressed;
+				return ButtonState::Pressed;
 			}
 		}
 		else // Prev state must be 1
 		{
-			if (mCurrState[keyCode] == 0)
+			if (mCurrState[static_cast<int>(keyCode)] == 0)
 			{
-				return EReleased;
+				return ButtonState::Released;
 			}
 			else
 			{
-				return EHeld;
+				return ButtonState::Held;
 			}
 		}
 	}
 
-	bool MouseState::GetButtonValue(int button) const
+	bool MouseState::GetButtonValue(MouseCode button) const
 	{
-		return (SDL_BUTTON(button) & mCurrButtons) == 1;
+		return (SDL_BUTTON(static_cast<int>(button)) & mCurrButtons) == 1;
 	}
 
-	ButtonState MouseState::GetButtonState(int button) const
+	ButtonState MouseState::GetButtonState(MouseCode button) const
 	{
-		int mask = SDL_BUTTON(button);
+		int mask = SDL_BUTTON(static_cast<int>(button));
 		if ((mask & mPrevButtons) == 0)
 		{
 			if ((mask & mCurrButtons) == 0)
 			{
-				return ENone;
+				return ButtonState::None;
 			}
 			else
 			{
-				return EPressed;
+				return ButtonState::Pressed;
 			}
 		}
 		else
 		{
 			if ((mask & mCurrButtons) == 0)
 			{
-				return EReleased;
+				return ButtonState::Released;
 			}
 			else
 			{
-				return EHeld;
+				return ButtonState::Held;
 			}
 		}
 	}
 
-	bool ControllerState::GetButtonValue(SDL_GameControllerButton button) const
+	bool ControllerState::GetButtonValue(GameControllerButton button) const
 	{
-		return mCurrButtons[button] == 1;
+		return mCurrButtons[static_cast<int>(button)] == 1;
 	}
 
-	ButtonState ControllerState::GetButtonState(SDL_GameControllerButton button) const
+	ButtonState ControllerState::GetButtonState(GameControllerButton button) const
 	{
-		if (mPrevButtons[button] == 0)
+		if (mPrevButtons[static_cast<int>(button)] == 0)
 		{
-			if (mCurrButtons[button] == 0)
+			if (mCurrButtons[static_cast<int>(button)] == 0)
 			{
-				return ENone;
+				return ButtonState::None;
 			}
 			else
 			{
-				return EPressed;
+				return ButtonState::Pressed;
 			}
 		}
 		else // Prev state must be 1
 		{
-			if (mCurrButtons[button] == 0)
+			if (mCurrButtons[static_cast<int>(button)] == 0)
 			{
-				return EReleased;
+				return ButtonState::Released;
 			}
 			else
 			{
-				return EHeld;
+				return ButtonState::Held;
 			}
 		}
 	}

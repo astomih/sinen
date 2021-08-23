@@ -194,6 +194,9 @@
     <ClInclude Include="..\include\Nen\Component\ScriptComponent.hpp" />
     <ClInclude Include="..\include\Nen\Component\Sprite2DComponent.hpp" />
     <ClInclude Include="..\include\Nen\Component\Sprite3DComponent.hpp" />
+    <ClInclude Include="..\include\Nen\Input\GameControllerButton.hpp" />
+    <ClInclude Include="..\include\Nen\Input\KeyCode.hpp" />
+    <ClInclude Include="..\include\Nen\Input\MouseCode.hpp" />
     <ClInclude Include="..\include\Nen\Logger\Logger.hpp" />
     <ClInclude Include="..\include\Nen\Effect\Effect.hpp" />
     <ClInclude Include="..\include\Nen\Font\Font.hpp" />
@@ -211,7 +214,7 @@
     <ClInclude Include="..\include\Nen\Render\Renderer.hpp" />
     <ClInclude Include="..\include\Nen\Scene\MainScene.hpp" />
     <ClInclude Include="..\include\Nen\Scene\Scene.hpp" />
-    <ClInclude Include="..\include\Nen\Script\Script.h" />
+    <ClInclude Include="..\include\Nen\Script\Script.hpp" />
     <ClInclude Include="..\include\Nen\Sprite\Sprite.h" />
     <ClInclude Include="..\include\Nen\Texture\Texture.h" />
     <ClInclude Include="..\include\Nen\Texture\TextureType.h" />

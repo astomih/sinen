@@ -78,7 +78,7 @@ namespace nen
 
 		const InputState &state = mInputSystem->GetState();
 
-		if (state.Keyboard.GetKeyState(SDL_SCANCODE_ESCAPE) == EReleased)
+		if (state.Keyboard.GetKeyState(KeyCode::ESCAPE) == ButtonState::Released)
 		{
 			mIsRunning = false;
 			mGameState = EQuit;

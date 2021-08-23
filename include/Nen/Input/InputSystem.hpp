@@ -1,20 +1,25 @@
 #pragma once
-#include <SDL_scancode.h>
-#include <SDL_gamecontroller.h>
-#include <SDL_mouse.h>
 #include "../Math/Vector2.hpp"
-
+#include "KeyCode.hpp"
+#include "MouseCode.hpp"
+#include "GameControllerButton.hpp"
+#include <cstdint>
 #include <array>
 
+
+namespace
+{
+	struct SDL_GameController;
+}
 namespace nen
 {
 	// The different button states
-	enum ButtonState
+	enum class ButtonState
 	{
-		ENone,
-		EPressed,
-		EReleased,
-		EHeld
+		None,
+		Pressed,
+		Released,
+		Held
 	};
 
 	// Helper for keyboard input
@@ -24,13 +29,13 @@ namespace nen
 		// Friend so InputSystem can easily update it
 		friend class InputSystem;
 		// Get just the boolean true/false value of key
-		bool GetKeyValue(SDL_Scancode keyCode) const;
+		bool GetKeyValue(KeyCode keyCode) const;
 		// Get a state based on current and previous frame
-		ButtonState GetKeyState(SDL_Scancode keyCode) const;
+		ButtonState GetKeyState(KeyCode keyCode) const;
 
 	private:
-		const Uint8 *mCurrState;
-		std::array<Uint8, SDL_NUM_SCANCODES> mPrevState;
+		const uint8_t *mCurrState;
+		std::array<uint8_t, static_cast<int>(KeyCode::NUM_KEYCODES)> mPrevState;
 	};
 
 	// Helper for mouse input
@@ -45,8 +50,8 @@ namespace nen
 		bool IsRelative() const { return mIsRelative; }
 
 		// For buttons
-		bool GetButtonValue(int button) const;
-		ButtonState GetButtonState(int button) const;
+		bool GetButtonValue(MouseCode button) const;
+		ButtonState GetButtonState(MouseCode button) const;
 
 	private:
 		// Store current mouse position
@@ -54,8 +59,8 @@ namespace nen
 		// Motion of scroll wheel
 		Vector2 mScrollWheel;
 		// Store button data
-		Uint32 mCurrButtons;
-		Uint32 mPrevButtons;
+		uint32_t mCurrButtons;
+		uint32_t mPrevButtons;
 		// Are we in relative mouse mode
 		bool mIsRelative;
 	};
@@ -67,8 +72,8 @@ namespace nen
 		friend class InputSystem;
 
 		// For buttons
-		bool GetButtonValue(SDL_GameControllerButton button) const;
-		ButtonState GetButtonState(SDL_GameControllerButton button) const;
+		bool GetButtonValue(GameControllerButton button) const;
+		ButtonState GetButtonState(GameControllerButton button) const;
 
 		const Vector2 &GetLeftStick() const { return mLeftStick; }
 		const Vector2 &GetRightStick() const { return mRightStick; }
@@ -79,8 +84,8 @@ namespace nen
 
 	private:
 		// Current/previous buttons
-		Uint8 mCurrButtons[SDL_CONTROLLER_BUTTON_MAX];
-		Uint8 mPrevButtons[SDL_CONTROLLER_BUTTON_MAX];
+		uint8_t mCurrButtons[static_cast<int>(GameControllerButton::NUM_GAMECONTROLLER_BUTTON)];
+		uint8_t mPrevButtons[static_cast<int>(GameControllerButton::NUM_GAMECONTROLLER_BUTTON)];
 		// Left/right sticks
 		Vector2 mLeftStick;
 		Vector2 mRightStick;
@@ -120,6 +125,6 @@ namespace nen
 		float Filter1D(int input);
 		Vector2 Filter2D(int inputX, int inputY);
 		InputState mState;
-		SDL_GameController *mController;
+		::SDL_GameController* mController;
 	};
 }

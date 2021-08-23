@@ -2,21 +2,25 @@
 #include <memory>
 #include <string>
 #include <functional>
-#include <sol/sol.hpp>
+
+namespace sol
+{
+	class state;
+}
 
 namespace nen
 {
 	class Script
 	{
 	public:
-		Script() {}
+		Script() = default;
 		static void Create();
+		static class sol::state* GetSolState();
 		static const Script &Get() { return *instance; }
-		static sol::state &GetSolState() { return lua; }
 		static void DoScript(std::string_view fileName);
+		
 
 	private:
-		inline static std::unique_ptr<nen::Script> instance;
-		inline static sol::state lua;
+		static inline std::unique_ptr<Script> instance;
 	};
 }

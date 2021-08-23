@@ -3,10 +3,14 @@
 #include "../Math/Vector3.hpp"
 #include "../Math/Quaternion.hpp"
 #include "AudioEvent.hpp"
-#include <AL/al.h>
-#include <AL/alc.h>
 #include <unordered_map>
 #include <string>
+
+namespace
+{
+		struct ALCdevice;
+		struct ALCcontext;
+}
 
 namespace nen
 {
@@ -22,13 +26,13 @@ namespace nen
 		void Shutdown();
 		void Update(float deltaTime);
 
-		AudioEvent PlayEvent(std::string_view name, ALuint sourceID = 0);
+		AudioEvent PlayEvent(std::string_view name, uint32_t sourceID = 0);
 
 		void LoadAudioFile(std::string_view fileName);
 		void UnloadAudioFile(std::string_view fileName);
 
-		ALuint NewSource(std::string_view name);
-		void DeleteSource(ALuint sourceID);
+		uint32_t NewSource(std::string_view name);
+		void DeleteSource(uint32_t sourceID);
 
 		// For positional audio
 		void SetListener(const Vector3 &pos, const Quaternion &direction);
@@ -38,8 +42,8 @@ namespace nen
 
 	private:
 		Scene &mScene;
-		std::unordered_map<std::string, ALuint> buffers;
-		ALCdevice *device;
-		ALCcontext *context;
+		std::unordered_map<std::string, uint32_t> buffers;
+		::ALCdevice *device;
+		::ALCcontext *context;
 	};
 }

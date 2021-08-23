@@ -6,9 +6,19 @@
 #endif
 std::function<void()> loop;
 void main_loop() { loop(); }
-int main(int argc, char** argv)
+std::shared_ptr<nen::Scene> scene;
+namespace nen
 {
-	nen::Window::name = "test";
+	void ChangeScene(std::shared_ptr<Scene> newScene)
+	{
+		scene->Shutdown();
+		scene = newScene;
+		scene->Initialize();
+	}
+}
+int main(int argc, char **argv)
+{
+	nen::Window::name = "Nen";
 	nen::Logger::MakeLogger(std::move(nen::Logger::NenLoggers::CreateConsoleLogger()));
 	std::shared_ptr<nen::Renderer> renderer;
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
@@ -27,7 +37,7 @@ int main(int argc, char** argv)
 #endif
 
 	nen::RendererHandle::SetRenderer(renderer);
-	std::shared_ptr<nen::Scene> scene = std::make_shared<Main>();
+	scene = std::make_shared<Main>();
 	scene->Initialize();
 	loop = [&]
 	{
@@ -38,10 +48,9 @@ int main(int argc, char** argv)
 			scene->Shutdown();
 #ifndef EMSCRIPTEN
 			std::exit(0);
-#else 
+#else
 			emscripten_force_exit(0);
 #endif
-
 		}
 	};
 

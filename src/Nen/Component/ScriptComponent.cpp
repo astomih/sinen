@@ -1,14 +1,16 @@
 #include <Nen.hpp>
+#include <sol/sol.hpp>
 namespace nen
 {
-	ScriptComponent::ScriptComponent(Actor &owner, int updateOrder)
+	ScriptComponent::ScriptComponent(Actor& owner, int updateOrder)
 		: Component(owner), script(Script::Get())
 	{
 	}
 	void ScriptComponent::DoScript(std::string_view funcName)
 	{
-		auto &lua = script.GetSolState();
-		auto &actor = this->GetActor();
+		sol::state& lua = *script.GetSolState();
+
+		auto& actor = this->GetActor();
 		lua["pos"] = this->GetActor().GetPosition();
 		lua["rotate"] = this->GetActor().GetRotation();
 		lua["setPosition"] = [&](Vector3 pos) { actor.SetPosition(pos); };

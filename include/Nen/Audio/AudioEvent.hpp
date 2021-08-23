@@ -2,15 +2,14 @@
 #include "../Math/Math.hpp"
 #include "../Math/Vector3.hpp"
 #include <string>
-#include <AL/al.h>
-#include <AL/alc.h>
+#include <cstdint>
 namespace nen
 {
 	struct AudioParameter
 	{
 		Vector3 position;
-		ALuint source_id;
-		ALuint buffer_id;
+		uint32_t source_id;
+		uint32_t buffer_id;
 	};
 
 	class AudioEvent
@@ -36,7 +35,7 @@ namespace nen
 
 	protected:
 		friend class AudioSystem;
-		AudioEvent(std::shared_ptr<class AudioSystem> audiosystem, std::string_view name, ALuint sourceID = 0);
+		AudioEvent(std::shared_ptr<class AudioSystem> audiosystem, std::string_view name, uint32_t sourceID = 0);
 
 	private:
 		std::shared_ptr<class AudioSystem> audiosys;

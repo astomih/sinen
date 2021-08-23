@@ -1,10 +1,13 @@
 #include <Nen.hpp>
+#include <sol/sol.hpp>
 namespace nen
 {
+	static sol::state lua = sol::state();
 	void Script::Create()
 	{
 		instance = std::make_unique<Script>();
 		lua.open_libraries(sol::lib::base, sol::lib::package);
+		lua["aa"];
 		lua.new_usertype<Vector3>(
 			// type name
 			"vec3",
@@ -30,6 +33,11 @@ namespace nen
 	void Script::DoScript(std::string_view fileName)
 	{
 		lua.script_file(fileName.data());
+	}
+
+	sol::state* Script::GetSolState()
+	{
+		return &lua;
 	}
 
 }

@@ -23,11 +23,11 @@ namespace nen
 		{
 			// Calculate forward speed for MoveComponent
 			float forwardSpeed = 0.0f;
-			if (state.Keyboard.GetKeyValue(SDL_Scancode(mForwardKey)))
+			if (state.Keyboard.GetKeyValue(static_cast<KeyCode>(mForwardKey)))
 			{
 				forwardSpeed += mMaxForwardSpeed;
 			}
-			if (state.Keyboard.GetKeyValue(SDL_Scancode(mBackKey)))
+			if (state.Keyboard.GetKeyValue(static_cast<KeyCode>(mBackKey)))
 			{
 				forwardSpeed -= mMaxForwardSpeed;
 			}
@@ -35,11 +35,11 @@ namespace nen
 
 			// Calculate angular speed for MoveComponent
 			float angularSpeed = 0.0f;
-			if (state.Keyboard.GetKeyValue(SDL_Scancode(mClockwiseKey)))
+			if (state.Keyboard.GetKeyValue(static_cast<KeyCode>(mClockwiseKey)))
 			{
 				angularSpeed += mMaxAngularSpeed;
 			}
-			if (state.Keyboard.GetKeyValue(SDL_Scancode(mCounterClockwiseKey)))
+			if (state.Keyboard.GetKeyValue(static_cast<KeyCode>(mCounterClockwiseKey)))
 			{
 				angularSpeed -= mMaxAngularSpeed;
 			}
@@ -48,22 +48,22 @@ namespace nen
 		else
 		{
 			float forwardSpeed = 0.0f;
-			if (state.Keyboard.GetKeyValue(SDL_Scancode(mForwardKey)))
+			if (state.Keyboard.GetKeyValue(static_cast<KeyCode>(mForwardKey)))
 			{
 				forwardSpeed += mMaxForwardSpeed;
 			}
-			if (state.Keyboard.GetKeyValue(SDL_Scancode(mBackKey)))
+			if (state.Keyboard.GetKeyValue(static_cast<KeyCode>(mBackKey)))
 			{
 				forwardSpeed -= mMaxForwardSpeed;
 			}
 			SetForwardSpeed(forwardSpeed);
 
 			float leftRightSpeed = 0.0f;
-			if (state.Keyboard.GetKeyValue(SDL_Scancode(mRightMoveKey)))
+			if (state.Keyboard.GetKeyValue(static_cast<KeyCode>(mRightMoveKey)))
 			{
 				leftRightSpeed += mMaxLeftRightSpeed;
 			}
-			if (state.Keyboard.GetKeyValue(SDL_Scancode(mLeftMoveKey)))
+			if (state.Keyboard.GetKeyValue(static_cast<KeyCode>(mLeftMoveKey)))
 			{
 				leftRightSpeed -= mMaxLeftRightSpeed;
 			}

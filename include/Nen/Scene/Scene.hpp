@@ -73,4 +73,5 @@ namespace nen
 		std::unordered_map<std::string, std::string> mText;
 		GameState mGameState = GameState::EGameplay;
 	};
+	void ChangeScene(std::shared_ptr<Scene> newScene);
 }

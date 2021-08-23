@@ -3,16 +3,6 @@
 #include <string>
 #include <vector>
 #include <memory>
-enum class Scenes : int16_t
-{
-	None,
-	Title,
-	Stage1,
-	Stage2,
-	Stage3,
-	Stage4,
-	Stage5
-};
 namespace nen
 {
 	class AudioSystem;
@@ -30,14 +20,13 @@ namespace nen
 
 		void RunLoop();
 
-		Scenes Shutdown();
+		void Shutdown();
 
 		void AddActor(std::shared_ptr<class Actor> actor);
 		void RemoveActor(std::shared_ptr<class Actor> actor);
 
 		std::shared_ptr<AudioSystem> GetAudioSystem() const { return mAudioSystem; }
 
-		virtual Scenes GetSceneName() { return Scenes::None; }
 		std::shared_ptr<class Renderer> GetRenderer() const { return mRenderer; }
 
 		enum GameState
@@ -53,15 +42,12 @@ namespace nen
 		void Quit()
 		{
 			mIsRunning = false;
-			NextScene = Scenes::None;
 			mGameState = EQuit;
 		}
-
-		Scenes NextScene = Scenes::None;
 		void ExitScene() { mIsRunning = false; }
 
 	protected:
-		virtual void LoadData();
+		virtual void Setup();
 		virtual void Update(float deltaTime);
 		virtual void SystemInput(const struct InputState &) {}
 
@@ -87,7 +73,4 @@ namespace nen
 		std::unordered_map<std::string, std::string> mText;
 		GameState mGameState = GameState::EGameplay;
 	};
-	template <class S>
-	Scene *createInstance() { return new S; }
-	using SceneName = std::unordered_map<::Scenes, Scene *(*)()>;
 }

@@ -112,5 +112,6 @@
     <ClInclude Include="..\include\Nen\Component\AudioComponent.hpp" />
     <ClInclude Include="..\include\Nen\Utility\Singleton.hpp" />
     <ClInclude Include="..\include\Nen\Utility\NonCopyable.hpp" />
+    <ClInclude Include="..\include\Nen\Scene\MainScene.hpp" />
   </ItemGroup>
 </Project>

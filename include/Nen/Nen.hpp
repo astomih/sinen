@@ -33,6 +33,7 @@
 #include "Mesh/ObjLoader.hpp"
 #include "Render/Renderer.hpp"
 #include "Scene/Scene.hpp"
+#include "Scene/MainScene.hpp"
 #include "Sprite/Sprite.hpp"
 #include "Script/Script.hpp"
 #include "Texture/Texture.hpp"

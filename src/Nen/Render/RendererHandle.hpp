@@ -1,3 +1,4 @@
+#pragma once
 #include <Render/Renderer.hpp>
 
 namespace nen

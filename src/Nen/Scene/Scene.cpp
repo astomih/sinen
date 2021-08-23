@@ -34,8 +34,8 @@ namespace nen
 		Script::Create();
 		Logger::Info("Script system initialized.");
 		// シーンのデータを読み込み
-		LoadData();
-		Logger::Info("Scene data loaded.");
+		Setup();
+		Logger::Info("Scene setup.");
 		// デルタタイムを読み込み
 		mTicksCount = SDL_GetTicks();
 	}
@@ -64,7 +64,6 @@ namespace nen
 			case SDL_QUIT:
 			{
 				mIsRunning = false;
-				NextScene = Scenes::None;
 				mGameState = EQuit;
 			}
 			break;
@@ -82,7 +81,6 @@ namespace nen
 		if (state.Keyboard.GetKeyState(SDL_SCANCODE_ESCAPE) == EReleased)
 		{
 			mIsRunning = false;
-			NextScene = Scenes::None;
 			mGameState = EQuit;
 		}
 		SystemInput(state);
@@ -146,7 +144,7 @@ namespace nen
 		mAudioSystem->Update(deltaTime);
 	}
 
-	void Scene::LoadData()
+	void Scene::Setup()
 	{
 	}
 
@@ -159,13 +157,12 @@ namespace nen
 	{
 	}
 
-	Scenes Scene::Shutdown()
+	void Scene::Shutdown()
 	{
 		mInputSystem->Shutdown();
 		delete mInputSystem;
 		mInputSystem = nullptr;
 		UnloadData();
-		return NextScene;
 	}
 
 	void Scene::AddActor(std::shared_ptr<Actor> actor)

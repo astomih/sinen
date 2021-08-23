@@ -9,23 +9,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ./build)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ./build)
 
 file(GLOB SOURCE_FILES 
-	../src/Nen/Actor/*.cpp
-	../src/Nen/Audio/*.cpp
-	../src/Nen/Color/*.cpp
-	../src/Nen/Component/*.cpp
-	../src/Nen/Effect/*.cpp
-	../src/Nen/Font/*.cpp
-	../src/Nen/Input/*.cpp
-	../src/Nen/Logger/*.cpp
-	../src/Nen/Math/*.cpp
-	../src/Nen/Mesh/*.cpp
-	../src/Nen/Render/*.cpp
+	../src/Nen/*/*.cpp
 	../src/Nen/Render/OpenGLES/*.cpp
-	../src/Nen/Scene/*.cpp
-	../src/Nen/Script/*.cpp
-	../src/Nen/Texture/*.cpp
-	../src/Nen/Vertex/*.cpp
-	../src/Nen/Window/*.cpp
 	../libs/ImGui/source/imgui.cpp
 	../libs/ImGui/source/imgui_draw.cpp
 	../libs/ImGui/source/imgui_demo.cpp

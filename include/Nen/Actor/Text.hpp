@@ -15,6 +15,6 @@ namespace nen
         void SetColor(const Color &color);
 
     private:
-        std::shared_ptr<class FontComponent> mFont;
+        std::shared_ptr<class TextComponent> mFont;
     };
 }

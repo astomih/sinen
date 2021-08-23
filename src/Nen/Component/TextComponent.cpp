@@ -2,11 +2,11 @@
 #include <iostream>
 namespace nen
 {
-	FontComponent::FontComponent(Actor& actor, int drawOrder) : Sprite2DComponent(actor, drawOrder)
+	TextComponent::TextComponent(Actor &actor, int drawOrder) : Sprite2DComponent(actor, drawOrder)
 	{
 	}
 
-	void FontComponent::SetString(const std::string& str, const Color& color, int pointSize)
+	void TextComponent::SetString(const std::string &str, const Color &color, int pointSize)
 	{
 		if (!mFont->isLoaded())
 		{
@@ -20,7 +20,7 @@ namespace nen
 		}
 		Create(mFont->RenderText(str, color));
 	}
-	void FontComponent::SetFont(std::shared_ptr<Font> font)
+	void TextComponent::SetFont(std::shared_ptr<Font> font)
 	{
 		mFont = font;
 	}

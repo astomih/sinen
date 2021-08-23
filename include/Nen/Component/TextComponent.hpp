@@ -6,10 +6,10 @@
 #include <memory>
 namespace nen
 {
-	class FontComponent : public Sprite2DComponent
+	class TextComponent : public Sprite2DComponent
 	{
 	public:
-		FontComponent(class Actor &, int drawOrder = 10000);
+		TextComponent(class Actor &, int drawOrder = 10000);
 		void SetString(const std::string &, const class Color &color = Palette::White, int drawSize = 30);
 		void SetFont(std::shared_ptr<class Font> font);
 

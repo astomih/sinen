@@ -141,7 +141,7 @@
     <ClCompile Include="..\src\Nen\Component\CircleComponent.cpp" />
     <ClCompile Include="..\src\Nen\Component\Component.cpp" />
     <ClCompile Include="..\src\Nen\Component\EffectComponent.cpp" />
-    <ClCompile Include="..\src\Nen\Component\FontComponent.cpp" />
+    <ClCompile Include="..\src\Nen\Component\TextComponent.cpp" />
     <ClCompile Include="..\src\Nen\Component\InputComponent.cpp" />
     <ClCompile Include="..\src\Nen\Component\MoveComponent.cpp" />
     <ClCompile Include="..\src\Nen\Component\ScriptComponent.cpp" />

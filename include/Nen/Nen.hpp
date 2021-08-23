@@ -20,7 +20,7 @@
 #include "Component/AudioComponent.hpp"
 #include "Component/CircleComponent.hpp"
 #include "Component/EffectComponent.hpp"
-#include "Component/FontComponent.hpp"
+#include "Component/TextComponent.hpp"
 #include "Component/InputComponent.hpp"
 #include "Component/MoveComponent.hpp"
 #include "Component/ScriptComponent.hpp"

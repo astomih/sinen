@@ -1,6 +1,7 @@
 ﻿#include <SDL_ttf.h>
 #include <Nen.hpp>
 #include <cassert>
+#include "../Texture/SurfaceHandle.hpp"
 namespace nen
 {
 	bool Font::Load(std::string_view fontName, int pointSize)
@@ -51,7 +52,7 @@ namespace nen
 		}
 		if (surf)
 		{
-			texture->SetSurface(std::move(surf));
+			SurfaceHandle::Register(texture->id,std::move(surf));
 		}
 		else
 		{

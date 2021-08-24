@@ -60,4 +60,5 @@ int main(int argc, char **argv)
 #else
 	emscripten_set_main_loop(main_loop, 120, true);
 #endif
+	return 0;
 }

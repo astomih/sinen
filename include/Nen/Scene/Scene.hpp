@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <cstdint>
 namespace nen
 {
 	class AudioSystem;
@@ -64,8 +65,8 @@ namespace nen
 		std::unordered_map<std::string, class Font *> mFonts;
 		// Any pending actors
 		std::vector<std::shared_ptr<class Actor>> mPendingActors;
-		Uint32 mTicksCount = 0;
-		Uint32 mTimeBuf = 0;
+		uint32_t mTicksCount = 0;
+		uint32_t mTimeBuf = 0;
 		// Track if we're updating actors right now
 		bool mUpdatingActors = false;
 		bool mIsRunning = true;

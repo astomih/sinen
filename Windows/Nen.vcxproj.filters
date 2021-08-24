@@ -17,7 +17,6 @@
     <ClCompile Include="..\src\Nen\Component\CircleComponent.cpp" />
     <ClCompile Include="..\src\Nen\Component\Component.cpp" />
     <ClCompile Include="..\src\Nen\Component\EffectComponent.cpp" />
-    <ClCompile Include="..\src\Nen\Component\FontComponent.cpp" />
     <ClCompile Include="..\src\Nen\Component\InputComponent.cpp" />
     <ClCompile Include="..\src\Nen\Component\MoveComponent.cpp" />
     <ClCompile Include="..\src\Nen\Component\ScriptComponent.cpp" />
@@ -55,6 +54,8 @@
     <ClCompile Include="..\src\Nen\Component\AudioComponent.cpp" />
     <ClCompile Include="..\src\Nen\Actor\Actor.cpp" />
     <ClCompile Include="..\src\Nen\Utility\Singleton.cpp" />
+    <ClCompile Include="..\src\Nen\Component\TextComponent.cpp" />
+    <ClCompile Include="..\src\Nen\Input\GameController.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Nen\Actor\PlaneActor.hpp" />
@@ -87,7 +88,6 @@
     <ClInclude Include="..\include\Nen\Render\Renderer.hpp" />
     <ClInclude Include="..\include\Nen\Scene\Scene.hpp" />
     <ClInclude Include="..\include\Nen\Sprite\Sprite.h" />
-    <ClInclude Include="..\include\Nen\Texture\Texture.h" />
     <ClInclude Include="..\include\Nen\Texture\TextureType.h" />
     <ClInclude Include="..\include\Nen\Vertex\Vertex.h" />
     <ClInclude Include="..\include\Nen\Vertex\VertexArray.h" />
@@ -116,5 +116,8 @@
     <ClInclude Include="..\include\Nen\Input\GameControllerButton.hpp" />
     <ClInclude Include="..\include\Nen\Script\Script.hpp" />
     <ClInclude Include="..\include\Nen\Input\MouseCode.hpp" />
+    <ClInclude Include="..\include\Nen\Texture\Texture.hpp" />
+    <ClInclude Include="..\include\Nen\Input\GameController.hpp" />
+    <ClInclude Include="..\src\Nen\Texture\SurfaceHandle.hpp" />
   </ItemGroup>
 </Project>

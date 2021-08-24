@@ -16,6 +16,7 @@
 #include <sstream>
 #include <Effekseer.h>
 #include <EffekseerRendererVulkan.h>
+#include "../../Texture/SurfaceHandle.hpp"
 
 namespace nen::vk
 {
@@ -1215,7 +1216,7 @@ namespace nen::vk
 	{
 		if (!mImageObjects.contains(texture->id))
 		{
-			mImageObjects.insert({texture->id, VKRenderer::createTextureFromSurface(texture->GetSurface())});
+			mImageObjects.insert({texture->id, VKRenderer::createTextureFromSurface(SurfaceHandle::Load(texture->id))});
 		}
 	}
 	VkRenderPass VKRenderer::GetRenderPass(const std::string &name)

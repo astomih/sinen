@@ -5,48 +5,29 @@
 #include <unordered_map>
 namespace nen
 {
-	struct SDL_Surface;
 	struct ShaderParameters
 	{
 		Matrix4 world;
 		Matrix4 view;
 		Matrix4 proj;
 	};
-	struct SDLObjectCloser
-	{
-		void operator()(::SDL_Surface *surface)
-		{
-			if (surface != nullptr)
-			{
-				::SDL_FreeSurface(surface);
-				surface = nullptr;
-			}
-		}
-		void operator()(::SDL_RWops *rw)
-		{
-			if (rw != nullptr)
-			{
-				::SDL_FreeRW(rw);
-				rw = nullptr;
-			}
-		}
-	};
+
 	class Texture
 	{
 	public:
 		Texture();
 		~Texture();
 		bool Load(std::string_view fileName);
-		bool LoadFromMemory(std::vector<char> &buffer, std::string_view ID);
-		void SetSurface(std::unique_ptr<::SDL_Surface, SDLObjectCloser> surface);
-		const ::SDL_Surface &GetSurface();
+		bool LoadFromMemory(std::vector<char>& buffer, std::string_view ID);
+
 		const int GetWidth() { return width; }
 		const int GetHeight() { return height; }
 
 		std::string id = "default";
 
 	private:
-		std::unique_ptr<::SDL_Surface, SDLObjectCloser> m_surface;
+		class Impl;
+		std::unique_ptr<Impl> impl;
 		int width = 0;
 		int height = 0;
 	};

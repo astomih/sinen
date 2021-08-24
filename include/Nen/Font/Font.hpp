@@ -15,7 +15,7 @@ namespace nen
 	class Font
 	{
 	public:
-		Font() :font(nullptr),isLoad(false) {};
+		Font() :font(nullptr), isLoad(false), pointSize(0) {};
 		~Font() = default;
 
 		/*

@@ -1,4 +1,4 @@
-﻿#include <Nen.hpp>
+﻿#include <SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_image.h>
 #include <SDL_net.h>
@@ -11,6 +11,7 @@
 #include "OpenGL/EffectManagerGL.h"
 #endif
 #include "RendererHandle.hpp"
+#include <Nen.hpp>
 
 namespace nen
 {
@@ -99,9 +100,6 @@ namespace nen
 #endif
 		if (SDLNet_Init() != 0)
 			std::cout << "net init error." << std::endl;
-
-		Window::Info::id = SDL_GetWindowID(mWindow);
-		SDL_VERSION(&Window::Info::info.version);
 	}
 
 	bool Renderer::Initialize(std::shared_ptr<Scene> scene, std::shared_ptr<Transition> transition)

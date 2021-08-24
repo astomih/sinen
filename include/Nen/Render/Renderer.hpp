@@ -5,6 +5,7 @@
 #include "../Math/Matrix4.hpp"
 #include "../Window/Window.hpp"
 #include "../Texture/TextureType.hpp"
+#include "../Texture/Texture.hpp"
 #include "../Vertex/VertexArray.hpp"
 #include "../Color/Color.hpp"
 #include <string>

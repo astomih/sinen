@@ -56,7 +56,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir)..\;$(ProjectDir)..\include\Nen;$(ProjectDir)..\libs\ImGui\include;$(ProjectDir)..\libs\mojoAL;$(ProjectDir)..\libs\sol2\include;$(ProjectDir)..\libs\rapidjson\include;$(ProjectDir)..\libs\tinyobjloader;$(ProjectDir)..\libs\sdl2_gfx\include;$(ProjectDir)..\libs\Effekseer\include\Effekseer;$(ProjectDir)..\libs\Effekseer\include\EffekseerRendererGL;$(ProjectDir)..\libs\Effekseer\include\EffekseerRendererVulkan;$(ProjectDir)..\libs\LLGI\include;$(ProjectDir)..\libs\Effekseer\include;$(ProjectDir)..\libs\SDL2\include;$(ProjectDir)..\libs\SDL2_image\include;$(ProjectDir)..\libs\SDL2_mixer\include;$(ProjectDir)..\libs\SDL2_ttf\include;$(ProjectDir)..\libs\SDL2_net\include;$(ProjectDir)..\libs\glew\include;$(ProjectDir)..\libs\Lua\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir)..\;$(ProjectDir)..\include\Nen;$(ProjectDir)..\libs\ImGui\include;$(ProjectDir)..\libs\mojoAL;$(ProjectDir)..\libs\sol2\include;$(ProjectDir)..\libs\rapidjson\include;$(ProjectDir)..\libs\tinyobjloader;$(ProjectDir)..\libs\Effekseer\include\Effekseer;$(ProjectDir)..\libs\Effekseer\include\EffekseerRendererGL;$(ProjectDir)..\libs\Effekseer\include\EffekseerRendererVulkan;$(ProjectDir)..\libs\LLGI\include;$(ProjectDir)..\libs\Effekseer\include;$(ProjectDir)..\libs\SDL2\include;$(ProjectDir)..\libs\SDL2_image\include;$(ProjectDir)..\libs\SDL2_mixer\include;$(ProjectDir)..\libs\SDL2_ttf\include;$(ProjectDir)..\libs\SDL2_net\include;$(ProjectDir)..\libs\glew\include;$(ProjectDir)..\libs\Lua\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VK_SDK_PATH)\Lib32;$(ProjectDir)..\libs\mojoAL\lib;$(ProjectDir)..\libs\Effekseer\lib;$(ProjectDir)..\libs\LLGI\lib;$(ProjectDir)..\libs\glew\lib\Release\Win32;$(ProjectDir)..\libs\Lua\lib;$(ProjectDir)..\libs\SDL2\lib\x86;$(ProjectDir)..\libs\SDL2_image\lib\x86;$(ProjectDir)..\libs\SDL2_mixer\lib\x86;$(ProjectDir)..\libs\SDL2_ttf\lib\x86;$(ProjectDir)..\libs\SDL2_net\lib\x86;%(AdditionalLibraryDirectories);$(LibraryPath)</LibraryPath>
     <LuaType>static</LuaType>
     <LuaConfiguration>Release</LuaConfiguration>
@@ -67,7 +67,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;GLEW_STATIC ;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;SDL_MAIN_HANDLED;_DEBUG;GLEW_STATIC ;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
@@ -84,7 +84,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>mojoal.lib;vulkan-1.lib;Effekseerd.lib;EffekseerRendererGLd.lib;EffekseerRendererVulkand.lib;LLGId.lib;glew32s.lib;lua.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;SDL2_net.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mojoal.lib;vulkan-1.lib;Effekseerd.lib;EffekseerRendererGLd.lib;EffekseerRendererVulkand.lib;LLGId.lib;glew32s.lib;lua.lib;SDL2.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;SDL2_net.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
@@ -150,6 +150,7 @@
     <ClCompile Include="..\src\Nen\Effect\CustomTextureLoader.cpp" />
     <ClCompile Include="..\src\Nen\Effect\EffectManager.cpp" />
     <ClCompile Include="..\src\Nen\Effect\Effect.cpp" />
+    <ClCompile Include="..\src\Nen\Input\GameController.cpp" />
     <ClCompile Include="..\src\Nen\Logger\Logger.cpp" />
     <ClCompile Include="..\src\Nen\Font\Font.cpp" />
     <ClCompile Include="..\src\Nen\Input\InputSystem.cpp" />
@@ -194,6 +195,7 @@
     <ClInclude Include="..\include\Nen\Component\ScriptComponent.hpp" />
     <ClInclude Include="..\include\Nen\Component\Sprite2DComponent.hpp" />
     <ClInclude Include="..\include\Nen\Component\Sprite3DComponent.hpp" />
+    <ClInclude Include="..\include\Nen\Input\GameController.hpp" />
     <ClInclude Include="..\include\Nen\Input\GameControllerButton.hpp" />
     <ClInclude Include="..\include\Nen\Input\KeyCode.hpp" />
     <ClInclude Include="..\include\Nen\Input\MouseCode.hpp" />
@@ -216,7 +218,7 @@
     <ClInclude Include="..\include\Nen\Scene\Scene.hpp" />
     <ClInclude Include="..\include\Nen\Script\Script.hpp" />
     <ClInclude Include="..\include\Nen\Sprite\Sprite.h" />
-    <ClInclude Include="..\include\Nen\Texture\Texture.h" />
+    <ClInclude Include="..\include\Nen\Texture\Texture.hpp" />
     <ClInclude Include="..\include\Nen\Texture\TextureType.h" />
     <ClInclude Include="..\include\Nen\Utility\NonCopyable.hpp" />
     <ClInclude Include="..\include\Nen\Utility\Singleton.hpp" />
@@ -238,6 +240,7 @@
     <ClInclude Include="..\src\Nen\Render\Vulkan\VKRenderer.h" />
     <ClInclude Include="..\src\Nen\Render\Vulkan\VulkanShader.h" />
     <ClInclude Include="..\src\Nen\Render\Vulkan\VulkanUtil.h" />
+    <ClInclude Include="..\src\Nen\Texture\SurfaceHandle.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

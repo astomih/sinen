@@ -1,10 +1,11 @@
-﻿#include <Nen.hpp>
+﻿#include <SDL.h>
 #include <SDL_ttf.h>
 #include <algorithm>
 #include <iostream>
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "../Render/RendererHandle.hpp"
+#include <Nen.hpp>
 
 namespace nen
 {

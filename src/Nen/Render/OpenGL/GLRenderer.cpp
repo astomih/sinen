@@ -14,6 +14,7 @@
 #include <Effekseer.h>
 #include <EffekseerRendererGL.h>
 #include "EffectManagerGL.h"
+#include "../../Texture/SurfaceHandle.hpp"
 
 namespace nen::gl
 {
@@ -286,7 +287,7 @@ namespace nen::gl
 	{
 		if (mTextureIDs.find(texture->id) == mTextureIDs.end())
 		{
-			::SDL_Surface surf = texture->GetSurface();
+			::SDL_Surface surf = SurfaceHandle::Load(texture->id);
 			::SDL_LockSurface(&surf);
 			auto formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
 			formatbuf->BytesPerPixel = 4;

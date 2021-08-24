@@ -1,7 +1,9 @@
-﻿#include <Nen.hpp>
-#include <tiny_obj_loader.h>
+﻿#include <tiny_obj_loader.h>
 #include <memory>
 #include <sstream>
+#include <SDL.h>
+#include <SDL_rwops.h>
+#include <Nen.hpp>
 
 namespace nen::mesh
 {

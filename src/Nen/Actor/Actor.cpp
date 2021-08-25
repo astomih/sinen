@@ -79,36 +79,4 @@ namespace nen
 			}
 		}
 	}
-
-	void Actor::AddComponent(std::shared_ptr<Component> component)
-	{
-		// Find the insertion point in the sorted vector
-		// (The first element with a order higher than me)
-		int myOrder = component->GetUpdateOrder();
-		if (!mComponents.empty())
-		{
-			auto iter = mComponents.begin();
-			for (; iter != mComponents.end(); ++iter)
-			{
-				if (myOrder < (*iter)->GetUpdateOrder())
-				{
-					break;
-				}
-			}
-			// Inserts element before position of iterator
-			mComponents.insert(iter, component);
-		}
-		else
-			mComponents.emplace_back(component);
-		component->AddedActor();
-	}
-
-	void Actor::RemoveComponent(std::shared_ptr<Component> component)
-	{
-		auto iter = std::find(mComponents.begin(), mComponents.end(), component);
-		if (iter != mComponents.end())
-		{
-			mComponents.erase(iter);
-		}
-	}
 }

@@ -4,8 +4,7 @@ namespace nen
 	Text::Text(Scene &scene)
 		: Actor(scene)
 	{
-		mFont = std::make_shared<TextComponent>(*this);
-		this->AddComponent(mFont);
+		mFont = this->AddComponent<TextComponent>();
 	}
 
 	void Text::SetText(const std::string &text, const int size) const

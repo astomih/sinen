@@ -214,7 +214,6 @@
     <ClInclude Include="..\include\Nen\Nen.hpp" />
     <ClInclude Include="..\include\Nen\Mesh\ObjLoader.hpp" />
     <ClInclude Include="..\include\Nen\Render\Renderer.hpp" />
-    <ClInclude Include="..\include\Nen\Scene\MainScene.hpp" />
     <ClInclude Include="..\include\Nen\Scene\Scene.hpp" />
     <ClInclude Include="..\include\Nen\Script\Script.hpp" />
     <ClInclude Include="..\include\Nen\Sprite\Sprite.h" />

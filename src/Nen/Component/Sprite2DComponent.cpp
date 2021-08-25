@@ -63,16 +63,6 @@ namespace nen
 	}
 	void Sprite2DComponent::SetTrimmingStartPos(int x, int y)
 	{
-		/*
-			mTextureVK->sprite->trimStart.x = (float)pos.x / (float)mTexWidth;
-			mTextureVK->sprite->trimStart.y = (float)pos.y / (float)mTexHeight;
-			if (mTextureVK->sprite->isChangeBuffer == false)
-			{
-				mTextureVK->buffer = mOwner.GetScene()->GetRenderer()->GetVK().CreateBuffer(
-					sizeof(Vertex) * 4, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-				mTextureVK->sprite->isChangeBuffer = true;
-			}
-			*/
 		sprite->isChangeBuffer = true;
 		mOwner.GetScene().GetRenderer()->ChangeBufferSprite(sprite);
 		sprite->trimStart.x = (float)x / (float)mTexWidth;
@@ -81,16 +71,6 @@ namespace nen
 
 	void Sprite2DComponent::SetTrimmingEndPos(int x, int y)
 	{
-		/*
-			mTextureVK->sprite->trimEnd.x = (float)pos.x / (float)mTexWidth;
-			mTextureVK->sprite->trimEnd.y = (float)pos.y / (float)mTexHeight;
-			if (mTextureVK->sprite->isChangeBuffer == false)
-			{
-				mTextureVK->buffer = mOwner.GetScene()->GetRenderer()->GetVK().CreateBuffer(
-					sizeof(Vertex), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-				mTextureVK->sprite->isChangeBuffer = true;
-			}
-			*/
 		sprite->isChangeBuffer = true;
 		mOwner.GetScene().GetRenderer()->ChangeBufferSprite(sprite);
 		sprite->trimEnd.x = (float)x / (float)mTexWidth;

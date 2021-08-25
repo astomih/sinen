@@ -18,10 +18,20 @@ namespace nen
 		Texture();
 		~Texture();
 		bool Load(std::string_view fileName);
-		bool LoadFromMemory(std::vector<char>& buffer, std::string_view ID);
+		bool LoadFromMemory(std::vector<char> &buffer, std::string_view ID);
 
 		const int GetWidth() { return width; }
 		const int GetHeight() { return height; }
+		void SetWidth(const int w)
+		{
+			if (w >= 0)
+				this->width = w;
+		}
+		void SetHeight(const int h)
+		{
+			if (h >= 0)
+				this->height = h;
+		}
 
 		std::string id = "default";
 

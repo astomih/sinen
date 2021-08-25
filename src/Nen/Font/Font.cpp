@@ -17,8 +17,7 @@ namespace nen
 		return (isLoad = true);
 	}
 
-
-	std::shared_ptr<Texture> Font::RenderText(std::string_view text, const Color& color, Quality quality, const Color& backgroundColor)
+	std::shared_ptr<Texture> Font::RenderText(std::string_view text, const Color &color, Quality quality, const Color &backgroundColor)
 	{
 		auto texture = std::make_shared<Texture>();
 		//My Color to SDL_Color
@@ -27,12 +26,12 @@ namespace nen
 		sdlColor.g = static_cast<Uint8>(color.g * 255);
 		sdlColor.b = static_cast<Uint8>(color.b * 255);
 		sdlColor.a = 255;
-		texture->id = text;
-		std::unique_ptr<::SDL_Surface, SDLObjectCloser> surf;
+		texture->id = std::string(text);
+		::SDL_Surface *surf = nullptr;
 		switch (quality)
 		{
 		case nen::Font::Quality::Solid:
-			surf = std::unique_ptr<::SDL_Surface, SDLObjectCloser>(::TTF_RenderUTF8_Solid(font, std::string(text).c_str(), sdlColor));
+			surf = ::TTF_RenderUTF8_Solid(font, std::string(text).c_str(), sdlColor);
 			break;
 		case nen::Font::Quality::Shaded:
 		{
@@ -41,23 +40,18 @@ namespace nen
 			bg.g = static_cast<Uint8>(color.g * 255);
 			bg.b = static_cast<Uint8>(color.b * 255);
 			bg.a = 255;
-			surf = std::unique_ptr<::SDL_Surface, SDLObjectCloser>(::TTF_RenderUTF8_Shaded(font, std::string(text).c_str(), sdlColor, bg));
+			surf = ::TTF_RenderUTF8_Shaded(font, std::string(text).c_str(), sdlColor, bg);
 		}
 		break;
 		case nen::Font::Quality::Blended:
-			surf = std::unique_ptr<::SDL_Surface, SDLObjectCloser>(::TTF_RenderUTF8_Blended(font, std::string(text).c_str(), sdlColor));
+			surf = ::TTF_RenderUTF8_Blended(font, std::string(text).c_str(), sdlColor);
 			break;
 		default:
 			break;
 		}
-		if (surf)
-		{
-			SurfaceHandle::Register(texture->id,std::move(surf));
-		}
-		else
-		{
-			Logger::Error("Font RenderError:%s", TTF_GetError());
-		}
+		texture->SetWidth(surf->w);
+		texture->SetHeight(surf->h);
+		SurfaceHandle::Register(text, std::move(std::unique_ptr<::SDL_Surface, SDLObjectCloser>(surf)));
 		return texture;
 	}
 }

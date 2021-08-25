@@ -4,6 +4,7 @@
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 #endif
+
 std::function<void()> loop;
 void main_loop() { loop(); }
 std::shared_ptr<nen::Scene> scene;

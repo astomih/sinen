@@ -5,7 +5,7 @@
 namespace nen
 {
 
-	void SDLObjectCloser::operator()(::SDL_Surface* surface)
+	void SDLObjectCloser::operator()(::SDL_Surface *surface)
 	{
 		if (surface != nullptr)
 		{
@@ -13,7 +13,7 @@ namespace nen
 			surface = nullptr;
 		}
 	}
-	void SDLObjectCloser::operator()(::SDL_RWops* rw)
+	void SDLObjectCloser::operator()(::SDL_RWops *rw)
 	{
 		if (rw != nullptr)
 		{
@@ -21,18 +21,18 @@ namespace nen
 			rw = nullptr;
 		}
 	}
-	std::unordered_map<std::string, std::unique_ptr<::SDL_Surface, SDLObjectCloser>> SurfaceHandle::surfaces = {};
+	std::unordered_map<std::string, std::unique_ptr<::SDL_Surface, SDLObjectCloser>> SurfaceHandle::surfaces = std::unordered_map<std::string, std::unique_ptr<::SDL_Surface, SDLObjectCloser>>{};
 	void SurfaceHandle::Register(std::string_view string, std::unique_ptr<::SDL_Surface, SDLObjectCloser> surface)
 	{
-		surfaces.insert({ std::string(string), std::move(surface) });
+		surfaces.insert({std::string(string), std::move(surface)});
 	}
 	bool SurfaceHandle::Contain(std::string_view string)
 	{
 		return surfaces.contains(std::string(string));
 	}
-	SDL_Surface& SurfaceHandle::Load(std::string_view string)
+	SDL_Surface &SurfaceHandle::Load(std::string_view string)
 	{
-		return *surfaces[std::string(string)];
+			return *surfaces[std::string(string)].get();
 	}
 	class Texture::Impl
 	{
@@ -51,7 +51,7 @@ namespace nen
 		id = fileName.data();
 		if (SurfaceHandle::Contain(id))
 			return true;
-		auto* surface = ::IMG_Load(fileName.data());
+		auto *surface = ::IMG_Load(fileName.data());
 		if (surface)
 		{
 			width = surface->w;
@@ -65,14 +65,14 @@ namespace nen
 		SurfaceHandle::Register(id, std::move(std::unique_ptr<::SDL_Surface, SDLObjectCloser>(surface)));
 		return true;
 	}
-	bool Texture::LoadFromMemory(std::vector<char>& buffer, std::string_view ID)
+	bool Texture::LoadFromMemory(std::vector<char> &buffer, std::string_view ID)
 	{
 		id = ID.data();
 		if (SurfaceHandle::Contain(id))
 		{
 			return true;
 		}
-		auto rw = std::unique_ptr<::SDL_RWops, SDLObjectCloser>(::SDL_RWFromMem(reinterpret_cast<void*>(buffer.data()), buffer.size()));
+		auto rw = std::unique_ptr<::SDL_RWops, SDLObjectCloser>(::SDL_RWFromMem(reinterpret_cast<void *>(buffer.data()), buffer.size()));
 		if (!rw)
 		{
 			Logger::Error("%s", IMG_GetError());
@@ -112,6 +112,5 @@ namespace nen
 		Logger::Error("%s", SDL_GetError());
 	}
 	*/
-
 
 }

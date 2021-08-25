@@ -117,25 +117,6 @@ namespace nen::gl
 				glVertexAttribPointer(2, 2, GL_FLOAT, GL_TRUE, 8 * sizeof(float),
 									  reinterpret_cast<void *>(sizeof(float) * 6));
 			}
-			if ((vertexID != i->vertexIndex && i->isChangeBuffer) || (i->isChangeBuffer ^ lastFrameChanged))
-			{
-				const float value = 1.f;
-				const Vector2 lb(i->trimStart.x, i->trimEnd.y);
-				const Vector2 lt(i->trimStart.x, i->trimStart.y);
-				const Vector2 rb(i->trimEnd.x, i->trimEnd.y);
-				const Vector2 rt(i->trimEnd.x, i->trimStart.y);
-				std::array<float, 3> norm = {1, 1, 1};
-
-				Vertex vertices[] =
-					{
-						{Vector3(-value, value, value), norm, lb},
-						{Vector3(-value, -value, value), norm, lt},
-						{Vector3(value, value, value), norm, rb},
-						{Vector3(value, -value, value), norm, rt},
-
-					};
-				glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-			}
 			lastFrameChanged = i->isChangeBuffer;
 			glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
 			mSpriteShader->SetMatrixUniform("uWorld", i->param.world);
@@ -161,51 +142,13 @@ namespace nen::gl
 				vertexID = i->vertexIndex;
 			}
 
-			if (i->isChangeBuffer)
-			{
-				const float value = 1.f;
-				const Vector2 lb(i->trimStart.x, i->trimEnd.y);
-				const Vector2 lt(i->trimStart.x, i->trimStart.y);
-				const Vector2 rb(i->trimEnd.x, i->trimEnd.y);
-				const Vector2 rt(i->trimEnd.x, i->trimStart.y);
-				std::array<float, 3> norm = {1, 1, 1};
-
-				Vertex vertices[] =
-					{
-						{Vector3(-value, value, value), norm, lb},
-						{Vector3(-value, -value, value), norm, lt},
-						{Vector3(value, value, value), norm, rb},
-						{Vector3(value, -value, value), norm, rt},
-
-					};
-				glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-			}
 			mAlphaShader->SetMatrixUniform("uWorld", i->param.world);
 			mAlphaShader->SetMatrixUniform("uProj", i->param.proj);
 			mAlphaShader->SetMatrixUniform("uView", i->param.view);
-			int num = mTextureIDs[i->textureIndex];
-			glBindTexture(GL_TEXTURE_2D, num);
+			glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
 			glDrawElementsBaseVertex(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr, 0);
-			if (i->isChangeBuffer)
-			{
-				const float value = 1.f;
-				const Vector2 lb(0, 0);
-				const Vector2 lt(0, 1);
-				const Vector2 rb(1, 0);
-				const Vector2 rt(1, 1);
-				std::array<float, 3> norm = {1, 1, 1};
-
-				Vertex vertices[] =
-					{
-						{Vector3(-value, value, value), norm, lb},
-						{Vector3(-value, -value, value), norm, lt},
-						{Vector3(value, value, value), norm, rb},
-						{Vector3(value, -value, value), norm, rt},
-
-					};
-				glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-			}
 		}
+
 		glDisable(GL_BLEND);
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplSDL2_NewFrame(mWindow);
@@ -285,28 +228,28 @@ namespace nen::gl
 
 	void GLRenderer::registerTexture(std::shared_ptr<Texture> texture, const TextureType &type)
 	{
-		if (mTextureIDs.find(texture->id) == mTextureIDs.end())
-		{
-			::SDL_Surface surf = SurfaceHandle::Load(texture->id);
-			::SDL_LockSurface(&surf);
-			auto formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
-			formatbuf->BytesPerPixel = 4;
-			auto imagedata = ::SDL_ConvertSurface(&surf, formatbuf, 0);
-			SDL_UnlockSurface(&surf);
-			// Generate a GL texture
-			GLuint textureId;
-			glGenTextures(1, &textureId);
-			glBindTexture(GL_TEXTURE_2D, textureId);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surf.w, surf.h, 0, GL_RGBA,
-						 GL_UNSIGNED_BYTE, imagedata->pixels);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-			// Use linear filtering
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		if (mTextureIDs.contains(texture->id))
+			return;
 
-			mTextureIDs.emplace(texture->id, textureId);
-		}
+		::SDL_Surface surf = SurfaceHandle::Load(texture->id);
+		::SDL_LockSurface(&surf);
+		auto formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
+		formatbuf->BytesPerPixel = 4;
+		auto imagedata = ::SDL_ConvertSurface(&surf, formatbuf, 0);
+		SDL_UnlockSurface(&surf);
+		// Generate a GL texture
+		GLuint textureId;
+		glGenTextures(1, &textureId);
+		glBindTexture(GL_TEXTURE_2D, textureId);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surf.w, surf.h, 0, GL_RGBA,
+					 GL_UNSIGNED_BYTE, imagedata->pixels);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		// Use linear filtering
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		mTextureIDs.emplace(texture->id, textureId);
 	}
 
 	bool GLRenderer::loadShader()

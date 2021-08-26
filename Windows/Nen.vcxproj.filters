@@ -56,6 +56,13 @@
     <ClCompile Include="..\src\Nen\Utility\Singleton.cpp" />
     <ClCompile Include="..\src\Nen\Component\TextComponent.cpp" />
     <ClCompile Include="..\src\Nen\Input\GameController.cpp" />
+    <ClCompile Include="..\src\Nen\Network\TCPClient.cpp" />
+    <ClCompile Include="..\src\Nen\Network\TCPSocket.cpp" />
+    <ClCompile Include="..\src\Nen\GUI\Button.cpp" />
+    <ClCompile Include="..\src\Nen\GUI\DialogBox.cpp" />
+    <ClCompile Include="..\src\Nen\GUI\HUD.cpp" />
+    <ClCompile Include="..\src\Nen\GUI\PauseMenu.cpp" />
+    <ClCompile Include="..\src\Nen\GUI\UIScreen.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Nen\Actor\PlaneActor.hpp" />
@@ -118,5 +125,10 @@
     <ClInclude Include="..\include\Nen\Texture\Texture.hpp" />
     <ClInclude Include="..\include\Nen\Input\GameController.hpp" />
     <ClInclude Include="..\src\Nen\Texture\SurfaceHandle.hpp" />
+    <ClInclude Include="..\include\Nen\GUI\Button.hpp" />
+    <ClInclude Include="..\include\Nen\GUI\DialogBox.hpp" />
+    <ClInclude Include="..\include\Nen\GUI\HUD.hpp" />
+    <ClInclude Include="..\include\Nen\GUI\PauseMenu.hpp" />
+    <ClInclude Include="..\include\Nen\GUI\UIScreen.hpp" />
   </ItemGroup>
 </Project>

@@ -150,6 +150,11 @@
     <ClCompile Include="..\src\Nen\Effect\CustomTextureLoader.cpp" />
     <ClCompile Include="..\src\Nen\Effect\EffectManager.cpp" />
     <ClCompile Include="..\src\Nen\Effect\Effect.cpp" />
+    <ClCompile Include="..\src\Nen\GUI\Button.cpp" />
+    <ClCompile Include="..\src\Nen\GUI\DialogBox.cpp" />
+    <ClCompile Include="..\src\Nen\GUI\HUD.cpp" />
+    <ClCompile Include="..\src\Nen\GUI\PauseMenu.cpp" />
+    <ClCompile Include="..\src\Nen\GUI\UIScreen.cpp" />
     <ClCompile Include="..\src\Nen\Input\GameController.cpp" />
     <ClCompile Include="..\src\Nen\Logger\Logger.cpp" />
     <ClCompile Include="..\src\Nen\Font\Font.cpp" />
@@ -197,6 +202,11 @@
     <ClInclude Include="..\include\Nen\Component\ScriptComponent.hpp" />
     <ClInclude Include="..\include\Nen\Component\Sprite2DComponent.hpp" />
     <ClInclude Include="..\include\Nen\Component\Sprite3DComponent.hpp" />
+    <ClInclude Include="..\include\Nen\GUI\Button.hpp" />
+    <ClInclude Include="..\include\Nen\GUI\DialogBox.hpp" />
+    <ClInclude Include="..\include\Nen\GUI\HUD.hpp" />
+    <ClInclude Include="..\include\Nen\GUI\PauseMenu.hpp" />
+    <ClInclude Include="..\include\Nen\GUI\UIScreen.hpp" />
     <ClInclude Include="..\include\Nen\Input\GameController.hpp" />
     <ClInclude Include="..\include\Nen\Input\GameControllerButton.hpp" />
     <ClInclude Include="..\include\Nen\Input\KeyCode.hpp" />

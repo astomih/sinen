@@ -12,6 +12,8 @@
 #include "Math/Quaternion.hpp"
 #include "Math/Transform.hpp"
 #include "Math/Random.hpp"
+#include "Network/TCPClient.hpp"
+#include "Network/TCPSocket.hpp"
 #include "Actor/Actor.hpp"
 #include "Actor/Text.hpp"
 #include "Audio/AudioEvent.hpp"

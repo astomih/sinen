@@ -158,6 +158,8 @@
     <ClCompile Include="..\src\Nen\Math\Random.cpp" />
     <ClCompile Include="..\src\Nen\Math\Transform.cpp" />
     <ClCompile Include="..\src\Nen\Mesh\ObjLoader.cpp" />
+    <ClCompile Include="..\src\Nen\Network\TCPClient.cpp" />
+    <ClCompile Include="..\src\Nen\Network\TCPSocket.cpp" />
     <ClCompile Include="..\src\Nen\Time\Time.cpp" />
     <ClCompile Include="..\src\Nen\Render\Renderer.cpp" />
     <ClCompile Include="..\src\Nen\Render\OpenGLES\ESRenderer.cpp" />

@@ -128,38 +128,38 @@ namespace nen
 		renderer->Render();
 	}
 
-	void Renderer::AddSprite2D(std::shared_ptr<nen::Sprite> sprite, std::shared_ptr<Texture> texture)
+	void Renderer::AddDrawObject2D(std::shared_ptr<nen::DrawObject> drawObject, std::shared_ptr<Texture> texture)
 	{
-		renderer->AddSprite2D(sprite, texture);
-		const auto myDrawOrder = sprite->drawOrder;
-		auto iter = mSprite2Ds.begin();
-		for (; iter != mSprite2Ds.end(); ++iter)
+		renderer->AddDrawObject2D(drawObject, texture);
+		const auto myDrawOrder = drawObject->drawOrder;
+		auto iter = mDrawObject2D.begin();
+		for (; iter != mDrawObject2D.end(); ++iter)
 		{
 			if (myDrawOrder < (*iter)->drawOrder)
 			{
 				break;
 			}
 		}
-		mSprite2Ds.insert(iter, sprite);
+		mDrawObject2D.insert(iter, drawObject);
 	}
 
-	void Renderer::RemoveSprite2D(std::shared_ptr<Sprite> sprite)
+	void Renderer::RemoveDrawObject2D(std::shared_ptr<DrawObject> drawObject)
 	{
-		renderer->RemoveSprite2D(sprite);
-		auto iter = std::find(mSprite2Ds.begin(), mSprite2Ds.end(), sprite);
-		if (iter != mSprite2Ds.end())
-			mSprite2Ds.erase(iter);
+		renderer->RemoveDrawObject2D(drawObject);
+		auto iter = std::find(mDrawObject2D.begin(), mDrawObject2D.end(), drawObject);
+		if (iter != mDrawObject2D.end())
+			mDrawObject2D.erase(iter);
 	}
 
-	void Renderer::AddSprite3D(std::shared_ptr<Sprite> sprite, std::shared_ptr<Texture> texture)
+	void Renderer::AddDrawObject3D(std::shared_ptr<DrawObject> drawObject, std::shared_ptr<Texture> texture)
 	{
-		renderer->AddSprite3D(sprite, texture);
+		renderer->AddDrawObject3D(drawObject, texture);
 		// Find the insertion point in the sorted vector
 		// (The first element with a higher draw order than me)
-		const auto myDrawOrder = sprite->drawOrder;
-		auto iter = mSprite3Ds.begin();
+		const auto myDrawOrder = drawObject->drawOrder;
+		auto iter = mDrawObject3D.begin();
 		for (;
-			 iter != mSprite3Ds.end();
+			 iter != mDrawObject3D.end();
 			 ++iter)
 		{
 			if (myDrawOrder < (*iter)->drawOrder)
@@ -169,20 +169,20 @@ namespace nen
 		}
 
 		// Inserts element before position of iterator
-		mSprite3Ds.insert(iter, sprite);
+		mDrawObject3D.insert(iter, drawObject);
 	}
 
-	void Renderer::RemoveSprite3D(std::shared_ptr<Sprite> sprite)
+	void Renderer::RemoveDrawObject3D(std::shared_ptr<DrawObject> drawObject)
 	{
-		renderer->RemoveSprite3D(sprite);
-		auto iter = std::find(mSprite3Ds.begin(), mSprite3Ds.end(), sprite);
-		if (iter != mSprite3Ds.end())
-			mSprite3Ds.erase(iter);
+		renderer->RemoveDrawObject3D(drawObject);
+		auto iter = std::find(mDrawObject3D.begin(), mDrawObject3D.end(), drawObject);
+		if (iter != mDrawObject3D.end())
+			mDrawObject3D.erase(iter);
 	}
 
-	void Renderer::ChangeBufferSprite(std::shared_ptr<Sprite> sprite, TextureType type)
+	void Renderer::ChangeBufferDrawObject(std::shared_ptr<DrawObject> drawObject, TextureType type)
 	{
-		renderer->ChangeBufferSprite(sprite, type);
+		renderer->ChangeBufferDrawObject(drawObject, type);
 	}
 
 	void Renderer::AddEffect(Effect *effect)
@@ -194,6 +194,17 @@ namespace nen
 		auto iter = std::find(mEffects.begin(), mEffects.end(), effect);
 		mEffects.erase(iter);
 	}
+
+	void Renderer::AddGUI(std::shared_ptr<UIScreen> ui)
+	{
+		renderer->AddGUI(ui);
+	}
+
+	void Renderer::RemoveGUI(std::shared_ptr<UIScreen> ui)
+	{
+		renderer->RemoveGUI(ui);
+	}
+
 	Texture *Renderer::GetTexture(std::string_view fileName)
 	{
 		Texture *tex = nullptr;

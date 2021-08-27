@@ -2,7 +2,7 @@
 #include <iostream>
 namespace nen
 {
-	TextComponent::TextComponent(Actor &actor, int drawOrder) : Sprite2DComponent(actor, drawOrder)
+	TextComponent::TextComponent(Actor &actor, int drawOrder) : Draw2DComponent(actor, drawOrder)
 	{
 	}
 
@@ -15,7 +15,7 @@ namespace nen
 
 		if (this->GetSprite())
 		{
-			GetActor().GetScene().GetRenderer()->RemoveSprite2D(this->GetSprite());
+			GetActor().GetScene().GetRenderer()->RemoveDrawObject2D(this->GetSprite());
 			this->GetSprite().reset();
 		}
 		Create(mFont->RenderText(str, color));

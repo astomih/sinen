@@ -133,7 +133,6 @@
     <ClCompile Include="..\libs\tinyobjloader\tiny_obj_loader.cc" />
     <ClCompile Include="..\src\Nen\Engine\Engine.cpp" />
     <ClCompile Include="..\src\Nen\Actor\Actor.cpp" />
-    <ClCompile Include="..\src\Nen\Actor\Text.cpp" />
     <ClCompile Include="..\src\Nen\Audio\AudioEvent.cpp" />
     <ClCompile Include="..\src\Nen\Audio\AudioSystem.cpp" />
     <ClCompile Include="..\src\Nen\Color\Color.cpp" />
@@ -145,8 +144,8 @@
     <ClCompile Include="..\src\Nen\Component\InputComponent.cpp" />
     <ClCompile Include="..\src\Nen\Component\MoveComponent.cpp" />
     <ClCompile Include="..\src\Nen\Component\ScriptComponent.cpp" />
-    <ClCompile Include="..\src\Nen\Component\Sprite2DComponent.cpp" />
-    <ClCompile Include="..\src\Nen\Component\Sprite3DComponent.cpp" />
+    <ClCompile Include="..\src\Nen\Component\Draw2DComponent.cpp" />
+    <ClCompile Include="..\src\Nen\Component\Draw3DComponent.cpp" />
     <ClCompile Include="..\src\Nen\Effect\CustomTextureLoader.cpp" />
     <ClCompile Include="..\src\Nen\Effect\EffectManager.cpp" />
     <ClCompile Include="..\src\Nen\Effect\Effect.cpp" />

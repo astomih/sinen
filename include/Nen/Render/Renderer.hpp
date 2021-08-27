@@ -43,16 +43,19 @@ namespace nen
 
 		void Draw();
 
-		void AddSprite2D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture);
-		void RemoveSprite2D(std::shared_ptr<class Sprite> sprite);
+		void AddDrawObject2D(std::shared_ptr<class DrawObject> drawObject, std::shared_ptr<Texture> texture);
+		void RemoveDrawObject2D(std::shared_ptr<class DrawObject> drawObject);
 
-		void AddSprite3D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture);
-		void RemoveSprite3D(std::shared_ptr<class Sprite> sprite);
+		void AddDrawObject3D(std::shared_ptr<class DrawObject> drawObject, std::shared_ptr<Texture> texture);
+		void RemoveDrawObject3D(std::shared_ptr<class DrawObject> drawObject);
 
-		void ChangeBufferSprite(std::shared_ptr<class Sprite> sprite, TextureType type = TextureType::Image2D);
+		void ChangeBufferDrawObject(std::shared_ptr<class DrawObject> drawObject, TextureType type = TextureType::Image2D);
 
 		void AddEffect(class Effect *effect);
 		void RemoveEffect(class Effect *effect);
+
+		void AddGUI(std::shared_ptr<class UIScreen> ui);
+		void RemoveGUI(std::shared_ptr<class UIScreen> ui);
 
 		std::vector<Effect *> &GetEffects() { return mEffects; }
 
@@ -83,14 +86,14 @@ namespace nen
 
 	private:
 		Color clearColor = Palette::Black;
-		class Sprite2DComponent *transPic;
+		class Draw2DComponent *transPic;
 
 		std::shared_ptr<Transition> mTransition;
 		// Map of textures loaded
 		std::unordered_map<std::string, class Texture *> mTextures3D;
 		// All the sprite components drawn
-		std::vector<std::shared_ptr<class Sprite>> mSprite3Ds;
-		std::vector<std::shared_ptr<class Sprite>> mSprite2Ds;
+		std::vector<std::shared_ptr<class DrawObject>> mDrawObject3D;
+		std::vector<std::shared_ptr<class DrawObject>> mDrawObject2D;
 
 		// All effects components drawn
 		std::vector<class Effect *> mEffects;
@@ -122,13 +125,16 @@ namespace nen
 		virtual void Shutdown() {}
 		virtual void Render() {}
 		virtual void AddVertexArray(const VertexArray &vArray, std::string_view name) {}
-		virtual void ChangeBufferSprite(std::shared_ptr<class Sprite> sprite, const TextureType type) {}
+		virtual void ChangeBufferDrawObject(std::shared_ptr<class DrawObject> sprite, const TextureType type) {}
 
-		virtual void AddSprite2D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture) {}
-		virtual void RemoveSprite2D(std::shared_ptr<class Sprite> sprite) {}
+		virtual void AddDrawObject2D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture) {}
+		virtual void RemoveDrawObject2D(std::shared_ptr<class DrawObject> sprite) {}
 
-		virtual void AddSprite3D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture) {}
-		virtual void RemoveSprite3D(std::shared_ptr<class Sprite> sprite) {}
+		virtual void AddDrawObject3D(std::shared_ptr<class DrawObject> drawObject, std::shared_ptr<Texture> texture) {}
+		virtual void RemoveDrawObject3D(std::shared_ptr<class DrawObject> drawObject) {}
+
+		virtual void AddGUI(std::shared_ptr<class UIScreen> ui) {}
+		virtual void RemoveGUI(std::shared_ptr<class UIScreen> ui) {}
 
 		void SetRenderer(class Renderer *renderer) { mRenderer = renderer; }
 

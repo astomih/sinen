@@ -47,6 +47,10 @@ namespace nen
 		}
 		void ExitScene() { mIsRunning = false; }
 
+		void AddGUI(std::shared_ptr<class UIScreen> ui);
+		void RemoveGUI(std::shared_ptr<class UIScreen> ui);
+
+
 	protected:
 		virtual void Setup();
 		virtual void Update(float deltaTime);

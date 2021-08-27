@@ -1,12 +1,12 @@
 #pragma once
 #include "../Math/Vector3.hpp"
 #include "../Color/Color.hpp"
-#include "Sprite2DComponent.hpp"
+#include "Draw2DComponent.hpp"
 #include <string>
 #include <memory>
 namespace nen
 {
-	class TextComponent : public Sprite2DComponent
+	class TextComponent : public Draw2DComponent
 	{
 	public:
 		TextComponent(class Actor &, int drawOrder = 10000);

@@ -26,10 +26,10 @@ namespace nen::vk
 	constexpr int maxInstanceCount = 900;
 	VKRenderer::VKRenderer()
 		: m_descriptorPool(),
-		  m_descriptorSetLayout(),
-		  m_sampler(),
-		  m_base(std::make_unique<VKBase>(this)),
-		  instance(maxInstanceCount)
+		m_descriptorSetLayout(),
+		m_sampler(),
+		m_base(std::make_unique<VKBase>(this)),
+		instance(maxInstanceCount)
 	{
 	}
 	static void check_vk_result(VkResult err)
@@ -41,7 +41,7 @@ namespace nen::vk
 			abort();
 	}
 
-	void VKRenderer::Initialize(SDL_Window *window)
+	void VKRenderer::Initialize(SDL_Window* window)
 	{
 		m_base->initialize(window, Window::name.c_str());
 		mEffectManager = std::make_unique<EffectManagerVK>(this);
@@ -57,7 +57,7 @@ namespace nen::vk
 	{
 		m_base->render();
 	}
-	void VKRenderer::AddVertexArray(const VertexArray &vArray, std::string_view name)
+	void VKRenderer::AddVertexArray(const VertexArray& vArray, std::string_view name)
 	{
 		VertexArrayForVK vArrayVK;
 		vArrayVK.indexCount = vArray.indexCount;
@@ -71,16 +71,16 @@ namespace nen::vk
 		MapMemory(vArrayVK.indexBuffer.memory, vArrayVK.indices.data(), sizeof(uint32_t) * vArrayVK.indices.size());
 		m_VertexArrays.insert(std::pair<std::string, VertexArrayForVK>(name.data(), vArrayVK));
 	}
-	void VKRenderer::ChangeBufferSprite(std::shared_ptr<class Sprite> sprite, const TextureType type)
+	void VKRenderer::ChangeBufferDrawObject(std::shared_ptr<class DrawObject> sprite, const TextureType type)
 	{
 		if (type == TextureType::Image2D)
 		{
-			auto &sprites = GetSprite2Ds();
-			for (auto &i : sprites)
+			auto& sprites = GetSprite2Ds();
+			for (auto& i : sprites)
 			{
 				if (sprite == i->sprite)
 				{
-					if (sprite->isChangeBuffer && i->buffer.buffer == 0)
+					if (i->buffer.buffer == 0)
 					{
 						i->buffer = CreateBuffer(
 							sizeof(Vertex) * 4, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
@@ -91,12 +91,12 @@ namespace nen::vk
 		}
 		if (type == TextureType::Image3D)
 		{
-			auto &sprites = GetSprite3Ds();
-			for (auto &i : sprites)
+			auto& sprites = GetSprite3Ds();
+			for (auto& i : sprites)
 			{
 				if (sprite == i->sprite)
 				{
-					if (sprite->isChangeBuffer && i->buffer.buffer == 0)
+					if (i->buffer.buffer == 0)
 					{
 						i->buffer = CreateBuffer(
 							sizeof(Vertex) * 4, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
@@ -107,23 +107,22 @@ namespace nen::vk
 		}
 	}
 
-	void VKRenderer::AddSprite2D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture)
+	void VKRenderer::AddDrawObject2D(std::shared_ptr<class DrawObject> drawObject, std::shared_ptr<Texture> texture)
 	{
 		auto t = std::make_shared<vk::SpriteVK>();
-		if (sprite->isChangeBuffer)
-			t->buffer = CreateBuffer(
-				sizeof(Vertex), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		t->sprite = sprite;
+		t->buffer = CreateBuffer(
+			sizeof(Vertex), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		t->sprite = drawObject;
 		registerImageObject(texture);
 		t->mTexture = texture;
 		registerTexture(t, texture->id, TextureType::Image2D);
 	}
-	void VKRenderer::RemoveSprite2D(std::shared_ptr<class Sprite> sprite)
+	void VKRenderer::RemoveDrawObject2D(std::shared_ptr<class DrawObject> sprite)
 	{
-		auto &sprites = GetSprite2Ds();
+		auto& sprites = GetSprite2Ds();
 		auto iter = sprites.begin();
 		for (;
-			 iter != sprites.end();)
+			iter != sprites.end();)
 		{
 			if (sprite == (*iter)->sprite)
 			{
@@ -136,7 +135,7 @@ namespace nen::vk
 		}
 	}
 
-	void VKRenderer::AddSprite3D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture)
+	void VKRenderer::AddDrawObject3D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture)
 	{
 		auto t = std::make_shared<vk::SpriteVK>();
 		t->sprite = sprite;
@@ -144,9 +143,9 @@ namespace nen::vk
 		t->mTexture = texture;
 		registerTexture(t, texture->id, TextureType::Image3D);
 	}
-	void VKRenderer::RemoveSprite3D(std::shared_ptr<class Sprite> sprite)
+	void VKRenderer::RemoveDrawObject3D(std::shared_ptr<class DrawObject> sprite)
 	{
-		auto &sprites = GetSprite3Ds();
+		auto& sprites = GetSprite3Ds();
 		auto iter = sprites.begin();
 		for (; iter != sprites.end(); ++iter)
 		{
@@ -157,6 +156,20 @@ namespace nen::vk
 				if (iter == sprites.end())
 					break;
 			}
+		}
+	}
+
+	void VKRenderer::AddGUI(std::shared_ptr<UIScreen> ui)
+	{
+		mGUI.push_back(ui);
+	}
+
+	void VKRenderer::RemoveGUI(std::shared_ptr<UIScreen> ui)
+	{
+		auto gui = std::find(mGUI.begin(), mGUI.end(), ui);
+		if (gui != mGUI.end())
+		{
+			mGUI.erase(gui);
 		}
 	}
 
@@ -178,7 +191,7 @@ namespace nen::vk
 		{
 			std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
 				VulkanShader::LoadModule(m_base->GetVkDevice(), "Assets/Shader/Vulkan/shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-				VulkanShader::LoadModule(m_base->GetVkDevice(), "Assets/Shader/Vulkan/shaderOpaque.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
+				VulkanShader::LoadModule(m_base->GetVkDevice(), "Assets/Shader/Vulkan/shaderOpaque.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT) };
 			pipelineOpaque.Initialize(mPipelineLayout, m_base->m_renderPass, shaderStages);
 			pipelineOpaque.ColorBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
 			pipelineOpaque.AlphaBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
@@ -190,7 +203,7 @@ namespace nen::vk
 		{
 			std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
 				VulkanShader::LoadModule(m_base->GetVkDevice(), "Assets/Shader/Vulkan/shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-				VulkanShader::LoadModule(m_base->GetVkDevice(), "Assets/Shader/Vulkan/shaderAlpha.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
+				VulkanShader::LoadModule(m_base->GetVkDevice(), "Assets/Shader/Vulkan/shaderAlpha.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT) };
 			pipelineAlpha.Initialize(mPipelineLayout, m_base->m_renderPass, shaderStages);
 			pipelineAlpha.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
 			pipelineAlpha.AlphaBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
@@ -203,7 +216,7 @@ namespace nen::vk
 		{
 			std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
 				VulkanShader::LoadModule(m_base->GetVkDevice(), "Assets/Shader/Vulkan/shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-				VulkanShader::LoadModule(m_base->GetVkDevice(), "Assets/Shader/Vulkan/shaderAlpha.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
+				VulkanShader::LoadModule(m_base->GetVkDevice(), "Assets/Shader/Vulkan/shaderAlpha.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT) };
 			pipeline2D.Initialize(mPipelineLayout, m_base->m_renderPass, shaderStages);
 			pipeline2D.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
 			pipeline2D.AlphaBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ZERO);
@@ -215,14 +228,14 @@ namespace nen::vk
 		prepareImGUI();
 	}
 	template <class T>
-	inline bool isExist(T &handle)
+	inline bool isExist(T& handle)
 	{
 		return handle != VK_NULL_HANDLE;
 	}
 	void VKRenderer::cleanup()
 	{
 		VkDevice device = m_base->GetVkDevice();
-		for (auto &i : mImageObjects)
+		for (auto& i : mImageObjects)
 		{
 			DestroyVulkanObject<VkImage>(device, i.second.image, &vkDestroyImage);
 			DestroyVulkanObject<VkImageView>(device, i.second.view, &vkDestroyImageView);
@@ -233,7 +246,7 @@ namespace nen::vk
 		pipelineOpaque.Cleanup(device);
 		pipelineAlpha.Cleanup(device);
 		pipeline2D.Cleanup(device);
-		for (auto &i : m_VertexArrays)
+		for (auto& i : m_VertexArrays)
 		{
 			DestroyVulkanObject<VkBuffer>(device, i.second.vertexBuffer.buffer, &vkDestroyBuffer);
 			DestroyVulkanObject<VkBuffer>(device, i.second.indexBuffer.buffer, &vkDestroyBuffer);
@@ -243,13 +256,14 @@ namespace nen::vk
 		DestroyVulkanObject<VkDescriptorPool>(device, m_descriptorPool, &vkDestroyDescriptorPool);
 		DestroyVulkanObject<VkDescriptorSetLayout>(device, m_descriptorSetLayout, &vkDestroyDescriptorSetLayout);
 	}
-	void VKRenderer::makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri, VkCommandBufferBeginInfo &ci, VkFence &fence)
+	void VKRenderer::makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo& ri, VkCommandBufferBeginInfo& ci, VkFence& fence)
 	{
 		vkWaitForFences(m_base->GetVkDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
 		vkBeginCommandBuffer(command, &ci);
 		vkCmdBeginRenderPass(command, &ri, VK_SUBPASS_CONTENTS_INLINE);
 		draw3d(command);
 		draw2d(command);
+		drawGUI(command);
 		renderEffekseer(command);
 		renderImGUI(command);
 		pipelineOpaque.Bind(command);
@@ -259,7 +273,7 @@ namespace nen::vk
 	{
 		pipelineOpaque.Bind(command);
 		VkDeviceSize offset = 0;
-		for (auto &sprite : mTextures3D)
+		for (auto& sprite : mTextures3D)
 		{
 			::vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[sprite->sprite->vertexIndex].vertexBuffer.buffer, &offset);
 			::vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->sprite->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
@@ -267,7 +281,7 @@ namespace nen::vk
 			vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout.GetLayout(), 0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
 			{
 				auto memory = sprite->uniformBuffers[m_base->m_imageIndex].memory;
-				void *p;
+				void* p;
 				vkMapMemory(m_base->GetVkDevice(), memory, 0, VK_WHOLE_SIZE, 0, &p);
 				memcpy(p, &sprite->sprite->param, sizeof(ShaderParameters));
 				vkUnmapMemory(m_base->GetVkDevice(), memory);
@@ -280,7 +294,7 @@ namespace nen::vk
 	{
 		pipeline2D.Bind(command);
 		VkDeviceSize offset = 0;
-		for (auto &sprite : mTextures2D)
+		for (auto& sprite : mTextures2D)
 		{
 			vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[sprite->sprite->vertexIndex].vertexBuffer.buffer, &offset);
 			vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->sprite->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
@@ -289,7 +303,7 @@ namespace nen::vk
 			vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout.GetLayout(), 0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
 			{
 				auto memory = sprite->uniformBuffers[m_base->m_imageIndex].memory;
-				void *p;
+				void* p;
 				vkMapMemory(m_base->GetVkDevice(), memory, 0, VK_WHOLE_SIZE, 0, &p);
 				memcpy(p, &sprite->sprite->param, sizeof(ShaderParameters));
 				vkUnmapMemory(m_base->GetVkDevice(), memory);
@@ -298,10 +312,17 @@ namespace nen::vk
 		}
 	}
 
-	void VKRenderer::MapMemory(VkDeviceMemory memory, void *data, size_t size)
+	void VKRenderer::drawGUI(VkCommandBuffer command)
+	{
+		for (auto& gui : mGUI)
+		{
+		}
+	}
+
+	void VKRenderer::MapMemory(VkDeviceMemory memory, void* data, size_t size)
 	{
 
-		void *p;
+		void* p;
 		vkMapMemory(m_base->GetVkDevice(), memory, 0, VK_WHOLE_SIZE, 0, &p);
 		memcpy(p, data, size);
 		vkUnmapMemory(m_base->GetVkDevice(), memory);
@@ -314,46 +335,46 @@ namespace nen::vk
 		const Vector2 lt(0.f, 1.f);
 		const Vector2 rb(1.0f, 0.0f);
 		const Vector2 rt(1.0f, 1.0f);
-		std::array<float, 3> norm = {1, 1, 1};
-		const std::array<float, 3> red{1.0f, 0.0f, 0.0f};
-		const std::array<float, 3> green{0.0f, 1.0f, 0.0f};
-		const std::array<float, 3> blue{0.0f, 0.0f, 1.0f};
-		const std::array<float, 3> white{1.0f, 1, 1};
-		const std::array<float, 3> black{0.0f, 0, 0};
-		const std::array<float, 3> yellow{1.0f, 1.0f, 0.0f};
-		const std::array<float, 3> magenta{1.0f, 0.0f, 1.0f};
-		const std::array<float, 3> cyan{0.0f, 1.0f, 1.0f};
+		std::array<float, 3> norm = { 1, 1, 1 };
+		const std::array<float, 3> red{ 1.0f, 0.0f, 0.0f };
+		const std::array<float, 3> green{ 0.0f, 1.0f, 0.0f };
+		const std::array<float, 3> blue{ 0.0f, 0.0f, 1.0f };
+		const std::array<float, 3> white{ 1.0f, 1, 1 };
+		const std::array<float, 3> black{ 0.0f, 0, 0 };
+		const std::array<float, 3> yellow{ 1.0f, 1.0f, 0.0f };
+		const std::array<float, 3> magenta{ 1.0f, 0.0f, 1.0f };
+		const std::array<float, 3> cyan{ 0.0f, 1.0f, 1.0f };
 
 		VertexArrayForVK vArray;
-		vArray.vertices.push_back({Vector3(-value, value, value), yellow, lb});
-		vArray.vertices.push_back({Vector3(-value, -value, value), red, lt});
-		vArray.vertices.push_back({Vector3(value, value, value), white, rb});
-		vArray.vertices.push_back({Vector3(value, -value, value), magenta, rt});
+		vArray.vertices.push_back({ Vector3(-value, value, value), yellow, lb });
+		vArray.vertices.push_back({ Vector3(-value, -value, value), red, lt });
+		vArray.vertices.push_back({ Vector3(value, value, value), white, rb });
+		vArray.vertices.push_back({ Vector3(value, -value, value), magenta, rt });
 
-		vArray.vertices.push_back({Vector3(value, value, value), white, lb});
-		vArray.vertices.push_back({Vector3(value, -value, value), magenta, lt});
-		vArray.vertices.push_back({Vector3(value, value, -value), cyan, rb});
-		vArray.vertices.push_back({Vector3(value, -value, -value), blue, rt});
+		vArray.vertices.push_back({ Vector3(value, value, value), white, lb });
+		vArray.vertices.push_back({ Vector3(value, -value, value), magenta, lt });
+		vArray.vertices.push_back({ Vector3(value, value, -value), cyan, rb });
+		vArray.vertices.push_back({ Vector3(value, -value, -value), blue, rt });
 
-		vArray.vertices.push_back({Vector3(-value, value, -value), green, lb});
-		vArray.vertices.push_back({Vector3(-value, -value, -value), black, lt});
-		vArray.vertices.push_back({Vector3(-value, value, value), yellow, rb});
-		vArray.vertices.push_back({Vector3(-value, -value, value), red, rt});
+		vArray.vertices.push_back({ Vector3(-value, value, -value), green, lb });
+		vArray.vertices.push_back({ Vector3(-value, -value, -value), black, lt });
+		vArray.vertices.push_back({ Vector3(-value, value, value), yellow, rb });
+		vArray.vertices.push_back({ Vector3(-value, -value, value), red, rt });
 
-		vArray.vertices.push_back({Vector3(value, value, -value), cyan, lb});
-		vArray.vertices.push_back({Vector3(value, -value, -value), blue, lt});
-		vArray.vertices.push_back({Vector3(-value, value, -value), green, rb});
-		vArray.vertices.push_back({Vector3(-value, -value, -value), black, rt});
+		vArray.vertices.push_back({ Vector3(value, value, -value), cyan, lb });
+		vArray.vertices.push_back({ Vector3(value, -value, -value), blue, lt });
+		vArray.vertices.push_back({ Vector3(-value, value, -value), green, rb });
+		vArray.vertices.push_back({ Vector3(-value, -value, -value), black, rt });
 
-		vArray.vertices.push_back({Vector3(-value, value, -value), green, lb});
-		vArray.vertices.push_back({Vector3(-value, value, value), yellow, lt});
-		vArray.vertices.push_back({Vector3(value, value, -value), cyan, rb});
-		vArray.vertices.push_back({Vector3(value, value, value), white, rt});
+		vArray.vertices.push_back({ Vector3(-value, value, -value), green, lb });
+		vArray.vertices.push_back({ Vector3(-value, value, value), yellow, lt });
+		vArray.vertices.push_back({ Vector3(value, value, -value), cyan, rb });
+		vArray.vertices.push_back({ Vector3(value, value, value), white, rt });
 
-		vArray.vertices.push_back({Vector3(-value, -value, value), red, lb});
-		vArray.vertices.push_back({Vector3(-value, -value, -value), black, lt});
-		vArray.vertices.push_back({Vector3(value, -value, value), magenta, rb});
-		vArray.vertices.push_back({Vector3(value, -value, -value), blue, rt});
+		vArray.vertices.push_back({ Vector3(-value, -value, value), red, lb });
+		vArray.vertices.push_back({ Vector3(-value, -value, -value), black, lt });
+		vArray.vertices.push_back({ Vector3(value, -value, value), magenta, rb });
+		vArray.vertices.push_back({ Vector3(value, -value, -value), blue, rt });
 
 		uint32_t indices[] = {
 			0, 2, 1, 1, 2, 3,	 // front
@@ -371,7 +392,7 @@ namespace nen::vk
 		vArray.indexBuffer = CreateBuffer(vArray.indices.size() * sizeof(uint32_t), VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 		// Write vertex data
 		{
-			void *p;
+			void* p;
 			vkMapMemory(m_base->GetVkDevice(), vArray.vertexBuffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
 			memcpy(p, vArray.vertices.data(), vArraySize);
 			vkUnmapMemory(m_base->GetVkDevice(), vArray.vertexBuffer.memory);
@@ -379,7 +400,7 @@ namespace nen::vk
 		// Write index data
 
 		{
-			void *p;
+			void* p;
 			vkMapMemory(m_base->GetVkDevice(), vArray.indexBuffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
 			memcpy(p, indices, sizeof(indices));
 			vkUnmapMemory(m_base->GetVkDevice(), vArray.indexBuffer.memory);
@@ -394,13 +415,13 @@ namespace nen::vk
 		const Vector2 lt(0.f, 1.f);
 		const Vector2 rb(1.0f, 0.0f);
 		const Vector2 rt(1.0f, 1.0f);
-		std::array<float, 3> norm = {1, 1, 1};
+		std::array<float, 3> norm = { 1, 1, 1 };
 
 		VertexArrayForVK vArray;
-		vArray.vertices.push_back({Vector3(-value, value, value), norm, lb});
-		vArray.vertices.push_back({Vector3(-value, -value, value), norm, lt});
-		vArray.vertices.push_back({Vector3(value, value, value), norm, rb});
-		vArray.vertices.push_back({Vector3(value, -value, value), norm, rt});
+		vArray.vertices.push_back({ Vector3(-value, value, value), norm, lb });
+		vArray.vertices.push_back({ Vector3(-value, -value, value), norm, lt });
+		vArray.vertices.push_back({ Vector3(value, value, value), norm, rb });
+		vArray.vertices.push_back({ Vector3(value, -value, value), norm, rt });
 
 		uint32_t indices[] = {
 			0, 2, 1, 1, 2, 3, // front
@@ -412,7 +433,7 @@ namespace nen::vk
 		vArray.indexBuffer = CreateBuffer(vArray.indices.size() * sizeof(uint32_t), VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 		// Write vertex data
 		{
-			void *p;
+			void* p;
 			vkMapMemory(m_base->GetVkDevice(), vArray.vertexBuffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
 			memcpy(p, vArray.vertices.data(), vArraySize);
 			vkUnmapMemory(m_base->GetVkDevice(), vArray.vertexBuffer.memory);
@@ -420,7 +441,7 @@ namespace nen::vk
 		// Write index data
 
 		{
-			void *p;
+			void* p;
 			vkMapMemory(m_base->GetVkDevice(), vArray.indexBuffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
 			memcpy(p, indices, sizeof(indices));
 			vkUnmapMemory(m_base->GetVkDevice(), vArray.indexBuffer.memory);
@@ -452,7 +473,7 @@ namespace nen::vk
 		// フォントテクスチャを転送する.
 		VkCommandBufferAllocateInfo commandAI{
 			VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-			nullptr, m_base->m_commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, 1};
+			nullptr, m_base->m_commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, 1 };
 		VkCommandBufferBeginInfo beginInfo{
 			VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
 		};
@@ -463,7 +484,7 @@ namespace nen::vk
 		ImGui_ImplVulkan_CreateFontsTexture(command);
 		vkEndCommandBuffer(command);
 
-		VkSubmitInfo submitInfo{VK_STRUCTURE_TYPE_SUBMIT_INFO, nullptr};
+		VkSubmitInfo submitInfo{ VK_STRUCTURE_TYPE_SUBMIT_INFO, nullptr };
 		submitInfo.pCommandBuffers = &command;
 		submitInfo.commandBufferCount = 1;
 		vkQueueSubmit(m_base->GetVkQueue(), 1, &submitInfo, VK_NULL_HANDLE);
@@ -497,24 +518,24 @@ namespace nen::vk
 	{
 
 		m_instanceUniforms.resize(maxInstanceCount);
-		for (auto &v : m_instanceUniforms)
+		for (auto& v : m_instanceUniforms)
 		{
 			VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 			v = CreateBuffer(sizeof(InstanceData) * m_instanceUniforms.size(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
 		}
-		for (auto &s : mTextures3D)
+		for (auto& s : mTextures3D)
 		{
 			s->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
-			for (auto &v : s->uniformBuffers)
+			for (auto& v : s->uniformBuffers)
 			{
 				VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 				v = CreateBuffer(sizeof(ShaderParameters), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
 			}
 		}
-		for (auto &s : mTextures2D)
+		for (auto& s : mTextures2D)
 		{
 			s->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
-			for (auto &v : s->uniformBuffers)
+			for (auto& v : s->uniformBuffers)
 			{
 				VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 				v = CreateBuffer(sizeof(ShaderParameters), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
@@ -572,15 +593,15 @@ namespace nen::vk
 	void VKRenderer::prepareDescriptorSetAll()
 	{
 		layouts.resize(m_base->mSwapchain->GetImageCount() + (mTextures3D.size() + mTextures2D.size()));
-		for (auto &i : layouts)
+		for (auto& i : layouts)
 		{
 			i = m_descriptorSetLayout;
 		}
-		for (auto &sprite : mTextures3D)
+		for (auto& sprite : mTextures3D)
 		{
 			prepareDescriptorSet(sprite);
 		}
-		for (auto &sprite : mTextures2D)
+		for (auto& sprite : mTextures2D)
 		{
 			prepareDescriptorSet(sprite);
 		}
@@ -638,8 +659,8 @@ namespace nen::vk
 			ins.dstSet = sprite->descripterSet[i];
 
 			std::vector<VkWriteDescriptorSet> writeSets =
-				{
-					ubo, tex, ins};
+			{
+				ubo, tex, ins };
 			vkUpdateDescriptorSets(m_base->GetVkDevice(), uint32_t(writeSets.size()), writeSets.data(), 0, nullptr);
 			count++;
 		}
@@ -669,7 +690,7 @@ namespace nen::vk
 		vkBindBufferMemory(m_base->GetVkDevice(), obj.buffer, obj.memory, 0);
 		return obj;
 	}
-	BufferObject VKRenderer::CreateBuffer(uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags, const void *initialData)
+	BufferObject VKRenderer::CreateBuffer(uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags, const void* initialData)
 	{
 		BufferObject obj;
 		VkBufferCreateInfo ci{};
@@ -696,7 +717,7 @@ namespace nen::vk
 		if ((flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0 &&
 			initialData != nullptr)
 		{
-			void *p;
+			void* p;
 			vkMapMemory(m_base->GetVkDevice(), obj.memory, 0, VK_WHOLE_SIZE, 0, &p);
 			memcpy(p, initialData, size);
 			vkUnmapMemory(m_base->GetVkDevice(), obj.memory);
@@ -719,7 +740,7 @@ namespace nen::vk
 		return sampler;
 	}
 
-	ImageObject VKRenderer::createTextureFromSurface(const ::SDL_Surface &surface)
+	ImageObject VKRenderer::createTextureFromSurface(const ::SDL_Surface& surface)
 	{
 		::SDL_Surface surf = surface;
 		::SDL_LockSurface(&surf);
@@ -730,14 +751,14 @@ namespace nen::vk
 		BufferObject stagingBuffer;
 		ImageObject texture{};
 		int width = imagedata->w, height = imagedata->h;
-		auto *pImage = imagedata->pixels;
+		auto* pImage = imagedata->pixels;
 		auto format = VK_FORMAT_R8G8B8A8_UNORM;
 
 		{
 			// Create VkImage texture
 			VkImageCreateInfo ci{};
 			ci.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-			ci.extent = {uint32_t(width), uint32_t(height), 1};
+			ci.extent = { uint32_t(width), uint32_t(height), 1 };
 			ci.format = format;
 			ci.imageType = VK_IMAGE_TYPE_2D;
 			ci.arrayLayers = 1;
@@ -764,15 +785,15 @@ namespace nen::vk
 		{
 			uint32_t imageSize = imagedata->h * imagedata->w * 4;
 			stagingBuffer = CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-			void *p;
+			void* p;
 			vkMapMemory(m_base->GetVkDevice(), stagingBuffer.memory, 0, VK_WHOLE_SIZE, 0, &p);
 			memcpy(p, pImage, imageSize);
 			vkUnmapMemory(m_base->GetVkDevice(), stagingBuffer.memory);
 		}
 
 		VkBufferImageCopy copyRegion{};
-		copyRegion.imageExtent = {uint32_t(width), uint32_t(height), 1};
-		copyRegion.imageSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+		copyRegion.imageExtent = { uint32_t(width), uint32_t(height), 1 };
+		copyRegion.imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
 		VkCommandBuffer command;
 		{
 			VkCommandBufferAllocateInfo ai{};
@@ -812,7 +833,7 @@ namespace nen::vk
 			};
 
 			ci.subresourceRange = {
-				VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+				VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 			vkCreateImageView(m_base->GetVkDevice(), &ci, nullptr, &texture.view);
 		}
 
@@ -824,10 +845,10 @@ namespace nen::vk
 
 		return texture;
 	}
-	ImageObject VKRenderer::createTextureFromMemory(const std::vector<char> &imageData)
+	ImageObject VKRenderer::createTextureFromMemory(const std::vector<char>& imageData)
 	{
-		auto *rw = ::SDL_RWFromMem((void *)imageData.data(), imageData.size());
-		::SDL_Surface *surface;
+		auto* rw = ::SDL_RWFromMem((void*)imageData.data(), imageData.size());
+		::SDL_Surface* surface;
 		surface = ::IMG_Load_RW(rw, 1);
 		::SDL_LockSurface(surface);
 		auto formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
@@ -837,14 +858,14 @@ namespace nen::vk
 		BufferObject stagingBuffer;
 		ImageObject texture{};
 		int width = imagedata->w, height = imagedata->h;
-		auto *pImage = imagedata->pixels;
+		auto* pImage = imagedata->pixels;
 		auto format = VK_FORMAT_R8G8B8A8_UNORM;
 
 		{
 			// テクスチャのVkImage を生成
 			VkImageCreateInfo ci{};
 			ci.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-			ci.extent = {uint32_t(width), uint32_t(height), 1};
+			ci.extent = { uint32_t(width), uint32_t(height), 1 };
 			ci.format = format;
 			ci.imageType = VK_IMAGE_TYPE_2D;
 			ci.arrayLayers = 1;
@@ -874,8 +895,8 @@ namespace nen::vk
 		}
 
 		VkBufferImageCopy copyRegion{};
-		copyRegion.imageExtent = {uint32_t(width), uint32_t(height), 1};
-		copyRegion.imageSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+		copyRegion.imageExtent = { uint32_t(width), uint32_t(height), 1 };
+		copyRegion.imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
 		VkCommandBuffer command;
 		{
 			VkCommandBufferAllocateInfo ai{};
@@ -914,7 +935,7 @@ namespace nen::vk
 				VK_COMPONENT_SWIZZLE_A,
 			};
 			ci.subresourceRange = {
-				VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+				VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 			vkCreateImageView(m_base->GetVkDevice(), &ci, nullptr, &texture.view);
 		}
 
@@ -939,7 +960,7 @@ namespace nen::vk
 		imb.newLayout = newLayout;
 		imb.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		imb.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		imb.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+		imb.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 		imb.image = image;
 
 		VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
@@ -995,7 +1016,7 @@ namespace nen::vk
 		{
 			if (requestBits & 1)
 			{
-				const auto &types = m_physicalMemProps.memoryTypes[i];
+				const auto& types = m_physicalMemProps.memoryTypes[i];
 				if ((types.propertyFlags & requestProps) == requestProps)
 				{
 					result = i;
@@ -1007,7 +1028,7 @@ namespace nen::vk
 		return result;
 	}
 
-	void VKRenderer::RegisterRenderPass(const std::string &name, VkRenderPass renderPass)
+	void VKRenderer::RegisterRenderPass(const std::string& name, VkRenderPass renderPass)
 	{
 		if (m_base)
 			m_base->m_renderPass;
@@ -1031,7 +1052,7 @@ namespace nen::vk
 			VK_SHARING_MODE_EXCLUSIVE,
 			0,
 			nullptr,
-			VK_IMAGE_LAYOUT_UNDEFINED};
+			VK_IMAGE_LAYOUT_UNDEFINED };
 		auto result = vkCreateImage(m_base->GetVkDevice(), &imageCI, nullptr, &obj.image);
 		ThrowIfFailed(result, "vkCreateImage Failed.");
 
@@ -1041,7 +1062,7 @@ namespace nen::vk
 			VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
 			nullptr,
 			reqs.size,
-			GetMemoryTypeIndex(reqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)};
+			GetMemoryTypeIndex(reqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) };
 		result = vkAllocateMemory(m_base->GetVkDevice(), &info, nullptr, &obj.memory);
 		ThrowIfFailed(result, "vkAllocateMemory Failed.");
 		vkBindImageMemory(m_base->GetVkDevice(), obj.image, obj.memory, 0);
@@ -1060,13 +1081,13 @@ namespace nen::vk
 			VK_IMAGE_VIEW_TYPE_2D,
 			imageCI.format,
 			vkutil::DefaultComponentMapping(),
-			{imageAspect, 0, 1, 0, 1}};
+			{imageAspect, 0, 1, 0, 1} };
 		result = vkCreateImageView(m_base->GetVkDevice(), &viewCI, nullptr, &obj.view);
 		ThrowIfFailed(result, "vkCreateImageView Failed.");
 		return obj;
 	}
 
-	VkFramebuffer VKRenderer::CreateFramebuffer(VkRenderPass renderPass, uint32_t width, uint32_t height, uint32_t viewCount, VkImageView *views)
+	VkFramebuffer VKRenderer::CreateFramebuffer(VkRenderPass renderPass, uint32_t width, uint32_t height, uint32_t viewCount, VkImageView* views)
 	{
 		VkFramebufferCreateInfo fbCI{
 			VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
@@ -1101,7 +1122,7 @@ namespace nen::vk
 		}
 	}
 
-	void VKRenderer::DestroyFramebuffers(uint32_t count, VkFramebuffer *framebuffers)
+	void VKRenderer::DestroyFramebuffers(uint32_t count, VkFramebuffer* framebuffers)
 	{
 		for (uint32_t i = 0; i < count; ++i)
 		{
@@ -1114,7 +1135,7 @@ namespace nen::vk
 		VkCommandBufferAllocateInfo commandAI{
 			VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
 			nullptr, m_base->m_commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-			1};
+			1 };
 		VkCommandBufferBeginInfo beginInfo{
 			VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
 		};
@@ -1132,7 +1153,7 @@ namespace nen::vk
 		VkFence fence;
 		VkFenceCreateInfo fenceCI{
 			VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-			nullptr, 0};
+			nullptr, 0 };
 		result = vkCreateFence(m_base->GetVkDevice(), &fenceCI, nullptr, &fence);
 
 		VkSubmitInfo submitInfo{
@@ -1154,7 +1175,7 @@ namespace nen::vk
 	std::vector<BufferObject> VKRenderer::CreateUniformBuffers(uint32_t size, uint32_t imageCount)
 	{
 		std::vector<BufferObject> buffers(imageCount);
-		for (auto &b : buffers)
+		for (auto& b : buffers)
 		{
 			VkMemoryPropertyFlags props = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 			b = CreateBuffer(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, props);
@@ -1162,39 +1183,39 @@ namespace nen::vk
 		return buffers;
 	}
 
-	void VKRenderer::WriteToHostVisibleMemory(VkDeviceMemory memory, uint32_t size, const void *pData)
+	void VKRenderer::WriteToHostVisibleMemory(VkDeviceMemory memory, uint32_t size, const void* pData)
 	{
-		void *p;
+		void* p;
 		vkMapMemory(m_base->GetVkDevice(), memory, 0, VK_WHOLE_SIZE, 0, &p);
 		memcpy(p, pData, size);
 		vkUnmapMemory(m_base->GetVkDevice(), memory);
 	}
 
-	void VKRenderer::AllocateCommandBufferSecondary(uint32_t count, VkCommandBuffer *pCommands)
+	void VKRenderer::AllocateCommandBufferSecondary(uint32_t count, VkCommandBuffer* pCommands)
 	{
 		VkCommandBufferAllocateInfo commandAI{
 			VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
 			nullptr, m_base->m_commandPool,
-			VK_COMMAND_BUFFER_LEVEL_SECONDARY, count};
+			VK_COMMAND_BUFFER_LEVEL_SECONDARY, count };
 		auto result = vkAllocateCommandBuffers(m_base->GetVkDevice(), &commandAI, pCommands);
 		ThrowIfFailed(result, "vkAllocateCommandBuffers Failed.");
 	}
 
-	void VKRenderer::FreeCommandBufferSecondary(uint32_t count, VkCommandBuffer *pCommands)
+	void VKRenderer::FreeCommandBufferSecondary(uint32_t count, VkCommandBuffer* pCommands)
 	{
 		vkFreeCommandBuffers(m_base->GetVkDevice(), m_base->m_commandPool, count, pCommands);
 	}
 
-	void VKRenderer::TransferStageBufferToImage(const BufferObject &srcBuffer, const ImageObject &dstImage, const VkBufferImageCopy *region)
+	void VKRenderer::TransferStageBufferToImage(const BufferObject& srcBuffer, const ImageObject& dstImage, const VkBufferImageCopy* region)
 	{
 		VkImageMemoryBarrier imb{
-			VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, dstImage.image, {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
+			VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, dstImage.image, {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1} };
 
 		auto command = CreateCommandBuffer();
 		vkCmdPipelineBarrier(command,
-							 VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-							 0, 0, nullptr,
-							 0, nullptr, 1, &imb);
+			VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+			0, 0, nullptr,
+			0, nullptr, 1, &imb);
 
 		vkCmdCopyBufferToImage(
 			command,
@@ -1205,10 +1226,10 @@ namespace nen::vk
 		imb.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 		imb.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		vkCmdPipelineBarrier(command,
-							 VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-							 0, 0, nullptr,
-							 0, nullptr,
-							 1, &imb);
+			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+			0, 0, nullptr,
+			0, nullptr,
+			1, &imb);
 		FinishCommandBuffer(command);
 	}
 
@@ -1216,10 +1237,10 @@ namespace nen::vk
 	{
 		if (!mImageObjects.contains(texture->id))
 		{
-			mImageObjects.insert({texture->id, VKRenderer::createTextureFromSurface(SurfaceHandle::Load(texture->id))});
+			mImageObjects.insert({ texture->id, VKRenderer::createTextureFromSurface(SurfaceHandle::Load(texture->id)) });
 		}
 	}
-	VkRenderPass VKRenderer::GetRenderPass(const std::string &name)
+	VkRenderPass VKRenderer::GetRenderPass(const std::string& name)
 	{
 		if (m_base)
 			return m_base->m_renderPass;
@@ -1237,7 +1258,7 @@ namespace nen::vk
 		{
 			mTextures3D.push_back(texture);
 			mTextures3D.back()->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
-			for (auto &v : mTextures3D.back()->uniformBuffers)
+			for (auto& v : mTextures3D.back()->uniformBuffers)
 			{
 				VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 				v = CreateBuffer(sizeof(ShaderParameters), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
@@ -1250,8 +1271,8 @@ namespace nen::vk
 		{
 			auto iter = mTextures2D.begin();
 			for (;
-				 iter != mTextures2D.end();
-				 ++iter)
+				iter != mTextures2D.end();
+				++iter)
 			{
 				if (texture->sprite->drawOrder < (*iter)->sprite->drawOrder)
 				{
@@ -1262,7 +1283,7 @@ namespace nen::vk
 			// Inserts element before position of iterator
 			mTextures2D.insert(iter, texture);
 			texture->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
-			for (auto &v : texture->uniformBuffers)
+			for (auto& v : texture->uniformBuffers)
 			{
 				VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 				v = CreateBuffer(sizeof(ShaderParameters), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
@@ -1281,7 +1302,7 @@ namespace nen::vk
 			{
 				DestroyBuffer((*itr)->buffer);
 				vkFreeDescriptorSets(m_base->GetVkDevice(), m_descriptorPool, static_cast<uint32_t>(texture->uniformBuffers.size()), texture->descripterSet.data());
-				for (auto &i : (*itr)->uniformBuffers)
+				for (auto& i : (*itr)->uniformBuffers)
 				{
 					DestroyBuffer(i);
 				}
@@ -1296,7 +1317,7 @@ namespace nen::vk
 			DestroyVulkanObject<VkBuffer>(device, (*itr)->buffer.buffer, &vkDestroyBuffer);
 			DestroyVulkanObject<VkDeviceMemory>(device, (*itr)->buffer.memory, &vkFreeMemory);
 			vkFreeDescriptorSets(device, m_descriptorPool, static_cast<uint32_t>(texture->uniformBuffers.size()), texture->descripterSet.data());
-			for (auto &i : (*itr)->uniformBuffers)
+			for (auto& i : (*itr)->uniformBuffers)
 			{
 				DestroyVulkanObject<VkBuffer>(device, i.buffer, &vkDestroyBuffer);
 				DestroyVulkanObject<VkDeviceMemory>(device, i.memory, &vkFreeMemory);

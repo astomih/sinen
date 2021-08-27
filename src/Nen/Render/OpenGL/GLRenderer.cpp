@@ -117,7 +117,6 @@ namespace nen::gl
 				glVertexAttribPointer(2, 2, GL_FLOAT, GL_TRUE, 8 * sizeof(float),
 									  reinterpret_cast<void *>(sizeof(float) * 6));
 			}
-			lastFrameChanged = i->isChangeBuffer;
 			glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
 			mSpriteShader->SetMatrixUniform("uWorld", i->param.world);
 			mSpriteShader->SetMatrixUniform("uProj", i->param.proj);
@@ -192,26 +191,26 @@ namespace nen::gl
 		AddVertexArray(vArrayGL, name);
 		m_VertexArrays.insert(std::pair<std::string, VertexArrayForGL>(name.data(), vArrayGL));
 	}
-	void GLRenderer::ChangeBufferSprite(std::shared_ptr<class Sprite> sprite, const TextureType type)
+	void GLRenderer::ChangeBufferDrawObject(std::shared_ptr<class DrawObject> sprite, const TextureType type)
 	{
 	}
 
-	void GLRenderer::AddSprite2D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture)
+	void GLRenderer::AddDrawObject2D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture)
 	{
 		registerTexture(texture, TextureType::Image2D);
 		pushSprite2d(sprite);
 	}
-	void GLRenderer::RemoveSprite2D(std::shared_ptr<class Sprite> sprite)
+	void GLRenderer::RemoveDrawObject2D(std::shared_ptr<class DrawObject> sprite)
 	{
 		eraseSprite2d(sprite);
 	}
 
-	void GLRenderer::AddSprite3D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture)
+	void GLRenderer::AddDrawObject3D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture)
 	{
 		registerTexture(texture, TextureType::Image3D);
 		pushSprite3d(sprite);
 	}
-	void GLRenderer::RemoveSprite3D(std::shared_ptr<class Sprite> sprite)
+	void GLRenderer::RemoveDrawObject3D(std::shared_ptr<class DrawObject> sprite)
 	{
 		eraseSprite3d(sprite);
 	}

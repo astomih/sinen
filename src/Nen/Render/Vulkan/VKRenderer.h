@@ -14,7 +14,7 @@ namespace nen
 }
 
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
-#include <Sprite/Sprite.hpp>
+#include <DrawObject/DrawObject.hpp>
 namespace nen::vk
 {
 	struct BufferObject
@@ -38,7 +38,7 @@ namespace nen::vk
 		std::shared_ptr<Texture> mTexture;
 		BufferObject buffer;
 		bool isInstance = false;
-		std::shared_ptr<nen::Sprite> sprite;
+		std::shared_ptr<nen::DrawObject> sprite;
 	};
 
 	struct VertexArrayForVK : public VertexArray
@@ -57,18 +57,22 @@ namespace nen::vk
 	public:
 		VKRenderer();
 		~VKRenderer() override
-		{}
+		{
+		}
 		void Initialize(struct SDL_Window *window) override;
 		void Shutdown() override;
 		void Render() override;
 		void AddVertexArray(const VertexArray &vArray, std::string_view name) override;
-		void ChangeBufferSprite(std::shared_ptr<class Sprite> sprite, const TextureType type) override;
+		void ChangeBufferDrawObject(std::shared_ptr<class DrawObject> sprite, const TextureType type) override;
 
-		void AddSprite2D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture) override;
-		void RemoveSprite2D(std::shared_ptr<class Sprite> sprite) override;
+		void AddDrawObject2D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture) override;
+		void RemoveDrawObject2D(std::shared_ptr<class DrawObject> sprite) override;
 
-		void AddSprite3D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture) override;
-		void RemoveSprite3D(std::shared_ptr<class Sprite> sprite) override;
+		void AddDrawObject3D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture) override;
+		void RemoveDrawObject3D(std::shared_ptr<class DrawObject> sprite) override;
+
+		void AddGUI(std::shared_ptr<class UIScreen> ui) override;
+		void RemoveGUI(std::shared_ptr<class UIScreen> ui) override;
 
 		nen::Renderer *GetRenderer() { return mRenderer; }
 		void prepare();
@@ -76,6 +80,7 @@ namespace nen::vk
 		void makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri, VkCommandBufferBeginInfo &ci, VkFence &fence);
 		void draw3d(VkCommandBuffer);
 		void draw2d(VkCommandBuffer);
+		void drawGUI(VkCommandBuffer);
 		BufferObject CreateBuffer(uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		VKBase *GetBase() { return m_base.get(); }
 		BufferObject CreateBuffer(uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags, const void *initialData);
@@ -143,6 +148,7 @@ namespace nen::vk
 		std::unordered_map<std::string, ImageObject> mImageObjects;
 		std::vector<InstanceData> instance;
 		std::vector<BufferObject> m_instanceUniforms;
+		std::vector<std::shared_ptr<class UIScreen>> mGUI;
 		int instanceCount;
 	};
 }

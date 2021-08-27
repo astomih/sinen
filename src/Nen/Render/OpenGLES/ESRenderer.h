@@ -30,17 +30,17 @@ namespace nen::es
 		void Shutdown() override;
 		void Render() override;
 		void AddVertexArray(const VertexArray &vArray, std::string_view name) override;
-		void ChangeBufferSprite(std::shared_ptr<class Sprite> sprite, const TextureType type) override;
+		void ChangeBufferDrawObject(std::shared_ptr<class DrawObject> sprite, const TextureType type) override;
 
-		void AddSprite2D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture) override;
-		void RemoveSprite2D(std::shared_ptr<class Sprite> sprite) override;
-		void AddSprite3D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture) override;
-		void RemoveSprite3D(std::shared_ptr<class Sprite> sprite) override;
+		void AddDrawObject2D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture) override;
+		void RemoveDrawObject2D(std::shared_ptr<class DrawObject> sprite) override;
+		void AddDrawObject3D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture) override;
+		void RemoveDrawObject3D(std::shared_ptr<class DrawObject> sprite) override;
 
 		void prepare();
 		void cleanup() {}
 		void registerTexture(std::shared_ptr<Texture>, const TextureType &type);
-		void pushSprite2d(std::shared_ptr<Sprite> sprite2d)
+		void pushSprite2d(std::shared_ptr<DrawObject> sprite2d)
 		{
 			auto iter = mSprite2Ds.begin();
 			for (;
@@ -54,7 +54,7 @@ namespace nen::es
 			}
 			mSprite2Ds.insert(iter, sprite2d);
 		}
-		void eraseSprite2d(std::shared_ptr<Sprite> sprite2d)
+		void eraseSprite2d(std::shared_ptr<DrawObject> sprite2d)
 		{
 			auto itr = std::find(mSprite2Ds.begin(), mSprite2Ds.end(), sprite2d);
 			if (itr != mSprite2Ds.end())
@@ -63,7 +63,7 @@ namespace nen::es
 			}
 		}
 
-		void pushSprite3d(std::shared_ptr<Sprite> sprite3d)
+		void pushSprite3d(std::shared_ptr<DrawObject> sprite3d)
 		{
 			auto iter = mSprite3Ds.begin();
 			for (;
@@ -77,7 +77,7 @@ namespace nen::es
 			}
 			mSprite3Ds.insert(iter, sprite3d);
 		}
-		void eraseSprite3d(std::shared_ptr<Sprite> sprite3d)
+		void eraseSprite3d(std::shared_ptr<DrawObject> sprite3d)
 		{
 			auto itr = std::find(mSprite3Ds.begin(), mSprite3Ds.end(), sprite3d);
 			if (itr != mSprite3Ds.end())
@@ -98,8 +98,8 @@ namespace nen::es
 		std::unordered_map<std::string, GLuint> mTextureIDs;
 		std::unordered_map<std::string, VertexArrayForES> m_VertexArrays;
 		::SDL_GLContext mContext;
-		std::vector<std::shared_ptr<Sprite>> mSprite2Ds;
-		std::vector<std::shared_ptr<Sprite>> mSprite3Ds;
+		std::vector<std::shared_ptr<DrawObject>> mSprite2Ds;
+		std::vector<std::shared_ptr<DrawObject>> mSprite3Ds;
 	};
 }
 

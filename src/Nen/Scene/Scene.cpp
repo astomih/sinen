@@ -201,4 +201,13 @@ namespace nen
 		}
 	}
 
+	void Scene::AddGUI(std::shared_ptr<UIScreen> ui)
+	{
+		GetRenderer()->AddGUI(ui);
+	}
+	void Scene::RemoveGUI(std::shared_ptr<UIScreen> ui)
+	{
+		GetRenderer()->RemoveGUI(ui);
+	}
+
 }

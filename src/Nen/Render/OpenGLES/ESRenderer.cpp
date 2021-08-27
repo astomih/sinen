@@ -43,7 +43,7 @@ namespace nen
 		void ESRenderer::Shutdown()
 		{
 		}
-		
+
 		void ESRenderer::Render()
 		{
 			auto color = mRenderer->GetClearColor();
@@ -187,24 +187,24 @@ namespace nen
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.indices.size() * sizeof(uint32_t), vArrayGL.indices.data(), GL_STATIC_DRAW);
 			m_VertexArrays.insert(std::pair<std::string, VertexArrayForES>(name.data(), vArrayGL));
 		}
-		void ESRenderer::ChangeBufferSprite(std::shared_ptr<class Sprite> sprite, const TextureType type)
+		void ESRenderer::ChangeBufferDrawObject(std::shared_ptr<class DrawObject> sprite, const TextureType type)
 		{
 		}
-		void ESRenderer::AddSprite2D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture)
+		void ESRenderer::AddDrawObject2D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture)
 		{
 			registerTexture(texture, TextureType::Image2D);
 			pushSprite2d(sprite);
 		}
-		void ESRenderer::RemoveSprite2D(std::shared_ptr<class Sprite> sprite)
+		void ESRenderer::RemoveDrawObject2D(std::shared_ptr<class DrawObject> sprite)
 		{
 			eraseSprite2d(sprite);
 		}
-		void ESRenderer::AddSprite3D(std::shared_ptr<class Sprite> sprite, std::shared_ptr<Texture> texture)
+		void ESRenderer::AddDrawObject3D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture)
 		{
 			registerTexture(texture, TextureType::Image3D);
 			pushSprite3d(sprite);
 		}
-		void ESRenderer::RemoveSprite3D(std::shared_ptr<class Sprite> sprite)
+		void ESRenderer::RemoveDrawObject3D(std::shared_ptr<class DrawObject> sprite)
 		{
 			eraseSprite3d(sprite);
 		}

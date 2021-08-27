@@ -3,25 +3,26 @@
 #include <SDL_image.h>
 namespace nen
 {
-	Sprite3DComponent::Sprite3DComponent(Actor &owner, const int drawOrder, Texture tex)
-		: Component(owner), mOwner(owner), mDrawOrder(drawOrder)
+	Draw3DComponent::Draw3DComponent(Actor &owner, int drawOrder)
+		: Component(owner), mOwner(owner)
 	{
 	}
 
-	void Sprite3DComponent::Update(float deltaTime)
+	void Draw3DComponent::Update(float deltaTime)
 	{
 		auto world = mOwner.GetWorldTransform();
 		auto view = mOwner.GetScene().GetRenderer()->GetViewMatrix();
+
 		sprite->param.view = view;
 		sprite->param.world = world;
 	}
 
-	Sprite3DComponent::~Sprite3DComponent()
+	Draw3DComponent::~Draw3DComponent()
 	{
-		mOwner.GetScene().GetRenderer()->RemoveSprite3D(sprite);
+		mOwner.GetScene().GetRenderer()->RemoveDrawObject3D(sprite);
 	}
 
-	void Sprite3DComponent::Create(std::shared_ptr<Texture> texture, std::string_view shape)
+	void Draw3DComponent::Create(std::shared_ptr<Texture> texture, std::string_view shape)
 	{
 		if (texture)
 			mTexture = texture;
@@ -48,7 +49,7 @@ namespace nen
 				{0.0f, 0.0f, zfar / (znear - zfar), -1.0f},
 				{0.0f, 0.0f, znear * zfar / (znear - zfar), 0.0f}};
 		Matrix4 proj(temp);
-		sprite = std::make_shared<Sprite>();
+		sprite = std::make_shared<DrawObject>();
 		sprite->textureIndex = mTexture->id;
 		sprite->vertexIndex = shape.data();
 		mOwner.Move(0, 0, 0);
@@ -57,20 +58,6 @@ namespace nen
 		sprite->param.proj = proj;
 		sprite->param.view = view;
 
-		mOwner.GetScene().GetRenderer()->AddSprite3D(sprite, texture);
-	}
-	void Sprite3DComponent::SetTrimmingStartPos(int x, int y)
-	{
-		sprite->isChangeBuffer = true;
-		mOwner.GetScene().GetRenderer()->ChangeBufferSprite(sprite, TextureType::Image3D);
-		sprite->trimStart.x = (float)x / (float)mTexWidth;
-		sprite->trimStart.y = (float)y / (float)mTexHeight;
-	}
-	void Sprite3DComponent::SetTrimmingEndPos(int x, int y)
-	{
-		sprite->isChangeBuffer = true;
-		mOwner.GetScene().GetRenderer()->ChangeBufferSprite(sprite, TextureType::Image3D);
-		sprite->trimEnd.x = (float)x / (float)mTexWidth;
-		sprite->trimEnd.y = (float)y / (float)mTexHeight;
+		mOwner.GetScene().GetRenderer()->AddDrawObject3D(sprite, texture);
 	}
 }

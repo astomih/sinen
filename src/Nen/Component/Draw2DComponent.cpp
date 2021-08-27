@@ -4,12 +4,12 @@
 namespace nen
 {
 	constexpr int matrixSize = sizeof(float) * 16;
-	Sprite2DComponent::Sprite2DComponent(Actor &owner, const int drawOrder, Texture tex)
+	Draw2DComponent::Draw2DComponent(Actor &owner, const int drawOrder, Texture tex)
 		: Component(owner), mDrawOrder(drawOrder), mTexture(nullptr)
 	{
 	}
 
-	void Sprite2DComponent::Update(float deltaTime)
+	void Draw2DComponent::Update(float deltaTime)
 	{
 		if (!mTexture)
 		{
@@ -28,12 +28,12 @@ namespace nen
 		sprite->param.world = world;
 	}
 
-	Sprite2DComponent::~Sprite2DComponent()
+	Draw2DComponent::~Draw2DComponent()
 	{
-		mOwner.GetScene().GetRenderer()->RemoveSprite2D(sprite);
+		mOwner.GetScene().GetRenderer()->RemoveDrawObject2D(sprite);
 	}
 
-	void Sprite2DComponent::Create(std::shared_ptr<Texture> texture, const float scale, std::string_view shape)
+	void Draw2DComponent::Create(std::shared_ptr<Texture> texture, const float scale, std::string_view shape)
 	{
 		if (texture)
 			mTexture = texture;
@@ -51,7 +51,7 @@ namespace nen
 		Matrix4 viewproj = Matrix4::Identity;
 		viewproj.mat[0][0] = 1.f / Window::Size.x;
 		viewproj.mat[1][1] = 1.f / Window::Size.y;
-		sprite = std::make_shared<Sprite>();
+		sprite = std::make_shared<DrawObject>();
 		sprite->drawOrder = mDrawOrder;
 		sprite->textureIndex = mTexture->id;
 		sprite->vertexIndex = shape.data();
@@ -59,21 +59,6 @@ namespace nen
 		sprite->param.world = mOwner.GetWorldTransform();
 		sprite->param.proj = viewproj;
 		sprite->param.view = Matrix4::Identity;
-		mOwner.GetScene().GetRenderer()->AddSprite2D(sprite, texture);
-	}
-	void Sprite2DComponent::SetTrimmingStartPos(int x, int y)
-	{
-		sprite->isChangeBuffer = true;
-		mOwner.GetScene().GetRenderer()->ChangeBufferSprite(sprite);
-		sprite->trimStart.x = (float)x / (float)mTexWidth;
-		sprite->trimStart.y = (float)y / (float)mTexHeight;
-	}
-
-	void Sprite2DComponent::SetTrimmingEndPos(int x, int y)
-	{
-		sprite->isChangeBuffer = true;
-		mOwner.GetScene().GetRenderer()->ChangeBufferSprite(sprite);
-		sprite->trimEnd.x = (float)x / (float)mTexWidth;
-		sprite->trimEnd.y = (float)y / (float)mTexHeight;
+		mOwner.GetScene().GetRenderer()->AddDrawObject2D(sprite, texture);
 	}
 }

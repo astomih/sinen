@@ -20,8 +20,8 @@ namespace nen
 
 		auto w = mOwner.GetWorldTransform();
 		Matrix4 s = Matrix4::Identity;
-		s.mat[0][0] = mTexture->GetWidth();
-		s.mat[1][1] = mTexture->GetHeight();
+		s.mat[0][0] = static_cast<float>(mTexture->GetWidth());
+		s.mat[1][1] = static_cast<float>(mTexture->GetHeight());
 		auto world = s * w;
 		world.mat[3][0] *= 2.f;
 		world.mat[3][1] *= 2.f;

@@ -22,6 +22,7 @@ file(GLOB SOURCE_FILES
 add_library(nen STATIC ${SOURCE_FILES})
 set(NEN_INCLUDE_DIRECTORIES 
 	.
+	../include
 	../include/Nen
 	../libs/tinyobjloader 
 	../libs/Effekseer/include/Effekseer
@@ -37,4 +38,4 @@ set(NEN_INCLUDE_DIRECTORIES
 target_include_directories(nen PUBLIC
 	${NEN_INCLUDE_DIRECTORIES}
 )
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_SDL_TTF=2 -s USE_SDL_MIXER=2 -s USE_SDL_NET=2 -std=gnu++2b")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_SDL_TTF=2 -s USE_SDL_MIXER=2 -s USE_SDL_NET=2 -std=c++2b")

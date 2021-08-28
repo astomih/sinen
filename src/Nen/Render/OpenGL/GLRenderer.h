@@ -7,8 +7,6 @@
 #include <Texture/Texture.hpp>
 #include <DrawObject/DrawObject.hpp>
 #include <Render/Renderer.hpp>
-
-#endif
 namespace nen
 {
 	class Renderer;
@@ -21,7 +19,6 @@ namespace nen
 			uint32_t vertexID;
 			uint32_t indexID;
 		};
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 
 		class GLRenderer : public IRenderer
 		{
@@ -111,7 +108,6 @@ namespace nen
 			std::vector<std::shared_ptr<DrawObject>> mSprite2Ds;
 			std::vector<std::shared_ptr<DrawObject>> mSprite3Ds;
 		};
-
-#endif
 	}
 }
+#endif

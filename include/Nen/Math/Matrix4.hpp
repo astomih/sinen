@@ -220,6 +220,10 @@ namespace nen
         // Create a rotation matrix from a quaternion
         static Matrix4 CreateFromQuaternion(const class Quaternion &q);
 
+        static Matrix4 LookAt(const Vector3 &eye, const Vector3 &at, const Vector3 &up);
+
+        static Matrix4 Perspective(const float angle, const float aspect, const float near, const float far);
+
         static const Matrix4 Identity;
     };
 }

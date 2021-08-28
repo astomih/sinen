@@ -6,16 +6,16 @@
 #include <vector>
 #include <cstring>
 #include <algorithm>
+#include <numbers>
 
 namespace nen
 {
 	class Math
 	{
 	public:
-		static constexpr float Pi = 3.1415926535f;
-		static constexpr float TwoPi = Pi * 2.0f;
-		static constexpr float PiPiP = Pi * (5.f / 2.f);
-		static constexpr float PiOver2 = Pi / 2.0f;
+		static constexpr float Pi = std::numbers::pi_v<float>;
+		static constexpr float TwoPi = Pi * 2.f;
+		static constexpr float PiOver2 = Pi / 2.f;
 		static constexpr float Infinity = std::numeric_limits<float>::infinity();
 		static constexpr float NegInfinity = -std::numeric_limits<float>::infinity();
 
@@ -122,5 +122,7 @@ namespace nen
 			const auto x = f / (periodSec * (1.f / (2.f * Pi)));
 			return Cos(x) * 0.5f + 0.5f;
 		}
+		
+		
 	};
 }

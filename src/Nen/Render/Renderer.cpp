@@ -5,13 +5,15 @@
 #include "Vulkan/VKRenderer.h"
 #include "OpenGL/GLRenderer.h"
 #include "OpenGLES/ESRenderer.h"
+#include <Nen.hpp>
+#if defined(EMSCRIPTEN) || defined(MOBILE)
 #include "OpenGLES/EffectManagerES.h"
+#endif
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "Vulkan/EffectManagerVK.h"
 #include "OpenGL/EffectManagerGL.h"
 #endif
 #include "RendererHandle.hpp"
-#include <Nen.hpp>
 
 namespace nen
 {
@@ -93,10 +95,8 @@ namespace nen
 			static_cast<int>(Window::Size.x),
 			static_cast<int>(Window::Size.y),
 			SDL_WINDOW_OPENGL);
-		Logger::Info("Window created.");
 		renderer->SetRenderer(this);
 		renderer->Initialize(mWindow);
-		Logger::Info("Renderer initialized.");
 #endif
 		if (SDLNet_Init() != 0)
 			std::cout << "net init error." << std::endl;

@@ -7,13 +7,10 @@
 #include <cstdint>
 #include <memory>
 #include <type_traits>
-#include <concepts>
 
 namespace nen
 {
 	class Scene;
-	template <class T>
-	concept DerivedComponent = std::derived_from<T, Component>;
 
 	class Actor : public std::enable_shared_from_this<Actor>
 	{
@@ -71,7 +68,7 @@ namespace nen
 
 		Scene& GetScene() { return mScene; }
 
-		template <DerivedComponent T>
+		template <class T>
 		std::shared_ptr<T> AddComponent(int updateOrder = 100)
 		{
 			auto ptr = std::make_shared<T>(*this, updateOrder);
@@ -93,7 +90,7 @@ namespace nen
 			return ptr;
 		}
 
-		template <DerivedComponent T>
+		template <class T>
 		std::shared_ptr<T> GetComponent()
 		{
 			for (auto i : mComponents)
@@ -105,7 +102,7 @@ namespace nen
 			return nullptr;
 		}
 
-		template <DerivedComponent T>
+		template <class T>
 		void RemoveComponent()
 		{
 			auto iter = std::find(mComponents.begin(), mComponents.end(), GetComponent<T>());

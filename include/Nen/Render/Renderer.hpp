@@ -139,7 +139,7 @@ namespace nen
 		void SetRenderer(class Renderer *renderer) { mRenderer = renderer; }
 
 	protected:
-		struct SDL_Window *mWindow;
+		SDL_Window *mWindow;
 		class Renderer *mRenderer;
 	};
 }

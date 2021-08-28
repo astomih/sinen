@@ -1,10 +1,14 @@
+#include <SDL.h>
+#include <SDL_image.h>
 #include <Nen.hpp>
 #if defined(EMSCRIPTEN) || defined(MOBILE)
+#define GL_GLEXT_PROTOTYPES
+#include <SDL_opengles2.h>
+#include "ShaderES.h"
 #include "ESRenderer.h"
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include <SDL_image.h>
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_opengl3.h>
@@ -20,7 +24,7 @@ namespace nen
 		ESRenderer::ESRenderer()
 		{
 		}
-		void ESRenderer::Initialize(::SDL_Window *window)
+		void ESRenderer::Initialize(struct SDL_Window *window)
 		{
 			mWindow = window;
 			mContext = SDL_GL_CreateContext(mWindow);
@@ -35,8 +39,8 @@ namespace nen
 			io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
 			io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
 			io.IniFilename = NULL;
-			ImGui_ImplSDL2_InitForOpenGL(mWindow, mContext);
-			ImGui_ImplOpenGL3_Init("#version 100");
+			::ImGui_ImplSDL2_InitForOpenGL(mWindow, mContext);
+			::ImGui_ImplOpenGL3_Init("#version 100");
 			mEffectManager = std::make_unique<EffectManagerES>(this);
 			mEffectManager->Init();
 		}
@@ -118,7 +122,6 @@ namespace nen
 										  reinterpret_cast<void *>(sizeof(float) * 6));
 				}
 
-				lastFrameChanged = i->isChangeBuffer;
 				glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
 				mSpriteShader->SetMatrixUniform("uWorld", i->param.world);
 				mSpriteShader->SetMatrixUniform("uProj", i->param.proj);

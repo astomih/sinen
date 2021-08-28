@@ -38,6 +38,7 @@ namespace nen
 		auto scaleOwner = mOwner.GetScale();
 		auto pos = mOwner.GetPosition();
 		auto view = mOwner.GetScene().GetRenderer()->GetViewMatrix();
+		/*
 		const auto yScale = Math::Cot(Math::ToRadians(90.f) / 2.0f);
 		const auto xScale = yScale / (Window::Size.x / Window::Size.y);
 		const float zfar = 10000.f;
@@ -49,6 +50,8 @@ namespace nen
 				{0.0f, 0.0f, zfar / (znear - zfar), -1.0f},
 				{0.0f, 0.0f, znear * zfar / (znear - zfar), 0.0f}};
 		Matrix4 proj(temp);
+		*/
+		auto proj = Matrix4::Perspective(Math::ToRadians(90.f), Window::Size.x / Window::Size.y, 0.01f, 10000.f);
 		sprite = std::make_shared<DrawObject>();
 		sprite->textureIndex = mTexture->id;
 		sprite->vertexIndex = shape.data();

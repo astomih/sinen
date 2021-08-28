@@ -6,14 +6,6 @@
 #include "Pipeline.h"
 #include "PipelineLayout.h"
 #include <array>
-#endif
-
-namespace nen
-{
-	class Renderer;
-}
-
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include <DrawObject/DrawObject.hpp>
 namespace nen::vk
 {

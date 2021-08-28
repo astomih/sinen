@@ -4,13 +4,12 @@
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 #endif
-#include "ShaderES.h"
 #include <SDL.h>
 #include <GLES3/gl3.h>
 #include <Texture/Texture.hpp>
 #include <string>
 #include <Window/Window.hpp>
-#include <Sprite/Sprite.hpp>
+#include <DrawObject/DrawObject.hpp>
 #include <Render/Renderer.hpp>
 #include <Vertex/VertexArray.hpp>
 
@@ -92,8 +91,8 @@ namespace nen::es
 		void createSpriteVerts();
 		void createBoxVerts();
 
-		ShaderES *mSpriteShader;
-		ShaderES *mAlphaShader;
+		class ShaderES *mSpriteShader;
+		class ShaderES *mAlphaShader;
 		GLuint mTextureID;
 		std::unordered_map<std::string, GLuint> mTextureIDs;
 		std::unordered_map<std::string, VertexArrayForES> m_VertexArrays;

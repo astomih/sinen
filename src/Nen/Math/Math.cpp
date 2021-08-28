@@ -18,26 +18,24 @@ namespace nen
 	constexpr Vector3 Vector3::NegInfinity(Math::NegInfinity, Math::NegInfinity, Math::NegInfinity);
 
 	static float m3Ident[3][3] =
-	{
-		{ 1.0f, 0.0f, 0.0f },
-		{ 0.0f, 1.0f, 0.0f },
-		{ 0.0f, 0.0f, 1.0f }
-	};
+		{
+			{1.0f, 0.0f, 0.0f},
+			{0.0f, 1.0f, 0.0f},
+			{0.0f, 0.0f, 1.0f}};
 	const Matrix3 Matrix3::Identity(m3Ident);
 
 	static float m4Ident[4][4] =
-	{
-		{ 1.0f, 0.0f, 0.0f, 0.0f },
-		{ 0.0f, 1.0f, 0.0f, 0.0f },
-		{ 0.0f, 0.0f, 1.0f, 0.0f },
-		{ 0.0f, 0.0f, 0.0f, 1.0f }
-	};
+		{
+			{1.0f, 0.0f, 0.0f, 0.0f},
+			{0.0f, 1.0f, 0.0f, 0.0f},
+			{0.0f, 0.0f, 1.0f, 0.0f},
+			{0.0f, 0.0f, 0.0f, 1.0f}};
 
 	const Matrix4 Matrix4::Identity(m4Ident);
 
 	const Quaternion Quaternion::Identity(0.0f, 0.0f, 0.0f, 1.0f);
 
-	Vector2 Vector2::Transform(const Vector2& vec, const Matrix3& mat, float w /*= 1.0f*/)
+	Vector2 Vector2::Transform(const Vector2 &vec, const Matrix3 &mat, float w /*= 1.0f*/)
 	{
 		Vector2 retVal;
 		retVal.x = vec.x * mat.mat[0][0] + vec.y * mat.mat[1][0] + w * mat.mat[2][0];
@@ -46,31 +44,31 @@ namespace nen
 		return retVal;
 	}
 
-	Vector3 Vector3::Transform(const Vector3& vec, const Matrix4& mat, float w /*= 1.0f*/)
+	Vector3 Vector3::Transform(const Vector3 &vec, const Matrix4 &mat, float w /*= 1.0f*/)
 	{
 		Vector3 retVal;
 		retVal.x = vec.x * mat.mat[0][0] + vec.y * mat.mat[1][0] +
-			vec.z * mat.mat[2][0] + w * mat.mat[3][0];
+				   vec.z * mat.mat[2][0] + w * mat.mat[3][0];
 		retVal.y = vec.x * mat.mat[0][1] + vec.y * mat.mat[1][1] +
-			vec.z * mat.mat[2][1] + w * mat.mat[3][1];
+				   vec.z * mat.mat[2][1] + w * mat.mat[3][1];
 		retVal.z = vec.x * mat.mat[0][2] + vec.y * mat.mat[1][2] +
-			vec.z * mat.mat[2][2] + w * mat.mat[3][2];
+				   vec.z * mat.mat[2][2] + w * mat.mat[3][2];
 		//ignore w since we aren't returning a new value for it...
 		return retVal;
 	}
 
 	// This will transform the vector and renormalize the w component
-	Vector3 Vector3::TransformWithPerspDiv(const Vector3& vec, const Matrix4& mat, float w /*= 1.0f*/)
+	Vector3 Vector3::TransformWithPerspDiv(const Vector3 &vec, const Matrix4 &mat, float w /*= 1.0f*/)
 	{
 		Vector3 retVal;
 		retVal.x = vec.x * mat.mat[0][0] + vec.y * mat.mat[1][0] +
-			vec.z * mat.mat[2][0] + w * mat.mat[3][0];
+				   vec.z * mat.mat[2][0] + w * mat.mat[3][0];
 		retVal.y = vec.x * mat.mat[0][1] + vec.y * mat.mat[1][1] +
-			vec.z * mat.mat[2][1] + w * mat.mat[3][1];
+				   vec.z * mat.mat[2][1] + w * mat.mat[3][1];
 		retVal.z = vec.x * mat.mat[0][2] + vec.y * mat.mat[1][2] +
-			vec.z * mat.mat[2][2] + w * mat.mat[3][2];
+				   vec.z * mat.mat[2][2] + w * mat.mat[3][2];
 		float transformedW = vec.x * mat.mat[0][3] + vec.y * mat.mat[1][3] +
-			vec.z * mat.mat[2][3] + w * mat.mat[3][3];
+							 vec.z * mat.mat[2][3] + w * mat.mat[3][3];
 		if (!Math::NearZero(Math::Abs(transformedW)))
 		{
 			transformedW = 1.0f / transformedW;
@@ -80,7 +78,7 @@ namespace nen
 	}
 
 	// Transform a Vector3 by a quaternion
-	Vector3 Vector3::Transform(const Vector3& v, const Quaternion& q)
+	Vector3 Vector3::Transform(const Vector3 &v, const Quaternion &q)
 	{
 		// v + 2.0*cross(q.xyz, cross(q.xyz,v) + q.w*v);
 		Vector3 qv(q.x, q.y, q.z);
@@ -210,7 +208,39 @@ namespace nen
 		}
 	}
 
-	Matrix4 Matrix4::CreateFromQuaternion(const class Quaternion& q)
+	Matrix4 Matrix4::LookAt(const Vector3 &eye, const Vector3 &at, const Vector3 &up)
+	{
+		const auto FRONT = Vector3::Normalize(eye - at);
+		const auto RIGHT = Vector3::Normalize(Vector3::Cross(up, FRONT));
+		const auto UP = Vector3::Normalize(Vector3::Cross(FRONT, RIGHT));
+		Vector3 trans;
+		trans.x = -Vector3::Dot(RIGHT, eye);
+		trans.y = -Vector3::Dot(UP, eye);
+		trans.z = -Vector3::Dot(FRONT, eye);
+
+		float temp[4][4] =
+			{
+				{RIGHT.x, UP.x, FRONT.x, 0.0f},
+				{RIGHT.y, UP.y, FRONT.y, 0.0f},
+				{RIGHT.z, UP.z, FRONT.z, 0.0f},
+				{trans.x, trans.y, trans.z, 1.0f}};
+		return Matrix4(temp);
+	}
+
+	Matrix4 Matrix4::Perspective(const float angle, const float aspect, const float near, const float far)
+	{
+		const auto yScale = Math::Cot(angle / 2.0f);
+		const auto xScale = yScale / aspect;
+		float temp[4][4] =
+			{
+				{xScale, 0.0f, 0.0f, 0.0f},
+				{0.0f, yScale, 0.0f, 0.0f},
+				{0.0f, 0.0f, far / (near - far), -1.0f},
+				{0.0f, 0.0f, near * far / (near - far), 0.0f}};
+		return Matrix4(temp);
+	}
+
+	Matrix4 Matrix4::CreateFromQuaternion(const class Quaternion &q)
 	{
 		float mat[4][4];
 

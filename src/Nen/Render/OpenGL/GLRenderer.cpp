@@ -52,13 +52,13 @@ namespace nen::gl
 		static int time = 0;
 		for (auto i : this->mRenderer->GetEffects())
 		{
-			if (time % 200 == 0)
+			if (time % 1000 == 0)
 			{
 				auto eref = mEffectManager->GetEffect(i->GetPath());
 				auto p = i->GetPosition();
 				i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
 			}
-			if (time % 200 == 199)
+			if (time % 1000 == 999)
 				mEffectManager->GetManager()->StopEffect(i->handle);
 		}
 		time++;

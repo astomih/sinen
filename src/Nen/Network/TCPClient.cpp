@@ -32,7 +32,7 @@ namespace nen
     bool TCPClient::Open()
     {
         impl->accepting = SDLNet_TCP_Open(&impl->server_ip);
-        if (impl->accepting == NULL)
+        if (impl->accepting != NULL)
         {
             Logger::Error("%s", SDLNet_GetError());
             return false;

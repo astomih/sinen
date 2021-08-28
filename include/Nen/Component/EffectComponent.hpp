@@ -5,9 +5,10 @@ namespace nen
 	class EffectComponent : public Component
 	{
 	public:
-		EffectComponent(class Actor &actor, std::u16string_view filepath);
+		EffectComponent(class Actor &actor, int updateOrder = 100);
 		~EffectComponent();
 
+		void Create(std::u16string_view filePath);
 		void Update(float deltaTime) override;
 
 		void SetLoop(bool loop) { isLoop = loop; }

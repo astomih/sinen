@@ -8,17 +8,18 @@
 std::function<void()> loop;
 void main_loop() { loop(); }
 std::shared_ptr<nen::Scene> scene;
+std::shared_ptr<nen::Scene> nextScene;
 namespace nen
 {
 	void ChangeScene(std::shared_ptr<Scene> newScene)
 	{
-		scene->Shutdown();
-		scene = newScene;
-		scene->Initialize();
+		scene->ExitScene();
+		nextScene = newScene;
 	}
 }
 int main(int argc, char **argv)
 {
+	nextScene = nullptr;
 	nen::Window::name = "Nen";
 	nen::Logger::MakeLogger(std::move(nen::Logger::NenLoggers::CreateConsoleLogger()));
 	std::shared_ptr<nen::Renderer> renderer;
@@ -44,9 +45,17 @@ int main(int argc, char **argv)
 	{
 		if (scene->isRunning())
 			scene->RunLoop();
+		else if (nextScene)
+		{
+			scene->Shutdown();
+			scene = nextScene;
+			scene->Initialize();
+			nextScene = nullptr;
+		}
 		else
 		{
 			scene->Shutdown();
+			scene = nullptr;
 #ifndef EMSCRIPTEN
 			std::exit(0);
 #else

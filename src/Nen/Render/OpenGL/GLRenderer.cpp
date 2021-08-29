@@ -34,14 +34,13 @@ namespace nen::gl
 		}
 		glGetError();
 
-		// Create an OpenGL context
+		mEffectManager = std::make_unique<EffectManagerGL>(this);
+		mEffectManager->Init();
 		prepare();
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		ImGui_ImplSDL2_InitForOpenGL(window, mContext);
 		ImGui_ImplOpenGL3_Init("#version 130");
-		mEffectManager = std::make_unique<EffectManagerGL>(this);
-		mEffectManager->Init();
 	}
 
 	void GLRenderer::Render()
@@ -49,33 +48,7 @@ namespace nen::gl
 		auto color = mRenderer->GetClearColor();
 		glClearColor(color.r, color.g, color.b, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		static int time = 0;
-		for (auto i : this->mRenderer->GetEffects())
-		{
-			if (time % 1000 == 0)
-			{
-				auto eref = mEffectManager->GetEffect(i->GetPath());
-				auto p = i->GetPosition();
-				i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
-			}
-			if (time % 1000 == 999)
-				mEffectManager->GetManager()->StopEffect(i->handle);
-		}
-		time++;
-		// Move the effect
-		//manager->AddLocation(handle, ::Effekseer::Vector3D(0.2f, 0.0f, 0.0f));
 
-		// Update the manager
-		mEffectManager->GetManager()->Update();
-
-		// Begin to rendering effects
-		mEffectManager->GetRenderer()->BeginRendering();
-
-		// Render effects
-		mEffectManager->GetManager()->Draw();
-
-		// Finish to rendering effects
-		mEffectManager->GetRenderer()->EndRendering();
 
 		mSpriteShader->SetActive();
 		// Specify the vertex attributes
@@ -137,10 +110,8 @@ namespace nen::gl
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VertexArrays[i->vertexIndex].indexID);
 				auto vArraySize = m_VertexArrays[i->vertexIndex].vertices.size() * sizeof(Vertex);
 				glBufferSubData(GL_ARRAY_BUFFER, 0, vArraySize, m_VertexArrays[i->vertexIndex].vertices.data());
-
 				vertexID = i->vertexIndex;
 			}
-
 			mAlphaShader->SetMatrixUniform("uWorld", i->param.world);
 			mAlphaShader->SetMatrixUniform("uProj", i->param.proj);
 			mAlphaShader->SetMatrixUniform("uView", i->param.view);
@@ -149,6 +120,29 @@ namespace nen::gl
 		}
 
 		glDisable(GL_BLEND);
+
+		static float oldtime = SDL_GetTicks();
+		float nowtime = SDL_GetTicks();
+		static float timer = 0.f;
+		timer += (nowtime - oldtime) / 1000.f;
+		for (auto i : this->mRenderer->GetEffects())
+		{
+			auto eref = mEffectManager->GetEffect(i->GetPath());
+			auto p = i->GetPosition();
+			if (timer > 0.2f)
+			{
+				mEffectManager->GetManager()->StopEffect(i->handle);
+				i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
+				timer = 0.f;
+			}
+			mEffectManager->GetManager()->SetLocation(i->handle, ::Effekseer::Vector3D(p.x, p.y, p.z));
+		}
+		oldtime = SDL_GetTicks();
+		mEffectManager->GetManager()->Update();
+		mEffectManager->GetRenderer()->BeginRendering();
+		mEffectManager->GetManager()->Draw();
+		mEffectManager->GetRenderer()->EndRendering();
+
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplSDL2_NewFrame(mWindow);
 		ImGui::NewFrame();

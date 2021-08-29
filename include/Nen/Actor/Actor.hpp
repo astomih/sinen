@@ -21,19 +21,19 @@ namespace nen
 			EPaused,
 			EDead
 		};
-
-		Actor(Scene& scene);
+		uint32_t handle;
+		Actor(Scene &scene);
 		virtual ~Actor();
 		void Update(float deltaTime);
 		void UpdateComponents(float deltaTime);
 		virtual void UpdateActor(float deltaTime);
 		virtual std::string GetID() { return ""; }
 
-		void ProcessInput(const struct InputState& state);
-		virtual void ActorInput(const struct InputState& state);
+		void ProcessInput(const struct InputState &state);
+		virtual void ActorInput(const struct InputState &state);
 
-		const Vector3& GetPosition() const noexcept { return mPosition; }
-		void SetPosition(const Vector3& pos) noexcept
+		const Vector3 &GetPosition() const noexcept { return mPosition; }
+		void SetPosition(const Vector3 &pos) noexcept
 		{
 			mPosition = pos;
 			mRecomputeWorldTransform = true;
@@ -45,50 +45,28 @@ namespace nen
 			mPosition.z += z;
 			mRecomputeWorldTransform = true;
 		}
-		const Vector3& GetScale() const { return mScale; }
-		void SetScale(const Vector3& scale)
+		const Vector3 &GetScale() const { return mScale; }
+		void SetScale(const Vector3 &scale)
 		{
 			mScale = scale;
 			mRecomputeWorldTransform = true;
 		}
-		const Quaternion& GetRotation() const { return mRotation; }
-		void SetRotation(const Quaternion& rotation)
+		const Quaternion &GetRotation() const { return mRotation; }
+		void SetRotation(const Quaternion &rotation)
 		{
 			mRotation = rotation;
 			mRecomputeWorldTransform = true;
 		}
 
 		void ComputeWorldTransform();
-		const Matrix4& GetWorldTransform() const { return mWorldTransform; }
+		const Matrix4 &GetWorldTransform() const { return mWorldTransform; }
 
 		Vector3 GetForward() const { return Vector3::Transform(Vector3::NegUnitZ, mRotation); }
 
 		State GetState() const { return mState; }
 		void SetState(State state) { mState = state; }
 
-		Scene& GetScene() { return mScene; }
-
-		template <class T>
-		std::shared_ptr<T> AddComponent(int updateOrder = 100)
-		{
-			auto ptr = std::make_shared<T>(*this, updateOrder);
-			if (!mComponents.empty())
-			{
-				auto iter = mComponents.begin();
-				for (; iter != mComponents.end(); ++iter)
-				{
-					if (updateOrder < (*iter)->GetUpdateOrder())
-					{
-						break;
-					}
-				}
-				mComponents.insert(iter, ptr);
-			}
-			else
-				mComponents.emplace_back(ptr);
-			ptr->AddedActor();
-			return ptr;
-		}
+		Scene &GetScene() { return mScene; }
 
 		template <class T>
 		std::shared_ptr<T> GetComponent()
@@ -100,6 +78,46 @@ namespace nen
 					return component;
 			}
 			return nullptr;
+		}
+
+		template <class T>
+		std::shared_ptr<T> AddComponent(int updateOrder = 100)
+		{
+			auto com = GetComponent<T>();
+			if (com == nullptr)
+			{
+				auto ptr = std::make_shared<T>(*this, updateOrder);
+				if (!mComponents.empty())
+				{
+					auto iter = mComponents.begin();
+					for (; iter != mComponents.end(); ++iter)
+					{
+						if (updateOrder < (*iter)->GetUpdateOrder())
+						{
+							break;
+						}
+					}
+					mComponents.insert(iter, ptr);
+				}
+				else
+					mComponents.emplace_back(ptr);
+				ptr->AddedActor();
+				return ptr;
+			}
+			else
+			{
+				RemoveComponent<T>();
+				auto ptr = std::make_shared<T>(*this, updateOrder);
+				auto iter = mComponents.begin();
+				for (; iter != mComponents.end(); ++iter)
+				{
+					if (updateOrder < (*iter)->GetUpdateOrder())
+					{
+						break;
+					}
+				}
+				mComponents.insert(iter, ptr);
+			}
 		}
 
 		template <class T>
@@ -125,7 +143,7 @@ namespace nen
 		Vector3 mPosition;
 		Quaternion mRotation;
 		std::vector<std::shared_ptr<Component>> mComponents;
-		Scene& mScene;
+		Scene &mScene;
 		Vector3 mScale;
 		bool addedSceneActorList = false;
 	};

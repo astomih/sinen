@@ -85,6 +85,8 @@ namespace nen
 			mGameState = EQuit;
 		}
 		SystemInput(state);
+		if(!mIsRunning)
+			return;
 		mUpdatingActors = true;
 		if (mGameState == EGameplay)
 		{
@@ -164,41 +166,6 @@ namespace nen
 		delete mInputSystem;
 		mInputSystem = nullptr;
 		UnloadData();
-	}
-
-	void Scene::AddActor(std::shared_ptr<Actor> actor)
-	{
-		// If we're updating actors, need to add to pending
-		if (mUpdatingActors)
-		{
-			mPendingActors.emplace_back(actor);
-		}
-		else
-		{
-			mActors.emplace_back(actor);
-		}
-		actor->AddedScene();
-	}
-
-	void Scene::RemoveActor(std::shared_ptr<Actor> actor)
-	{
-		// Is it in pending actors?
-		auto iter = std::find(mPendingActors.begin(), mPendingActors.end(), actor);
-		if (iter != mPendingActors.end())
-		{
-			// Swap to end of vector and pop off (avoid erase copies)
-			std::iter_swap(iter, mPendingActors.end() - 1);
-			mPendingActors.pop_back();
-		}
-
-		// Is it in actors?
-		iter = std::find(mActors.begin(), mActors.end(), actor);
-		if (iter != mActors.end())
-		{
-			// Swap to end of vector and pop off (avoid erase copies)
-			std::iter_swap(iter, mActors.end() - 1);
-			mActors.pop_back();
-		}
 	}
 
 	void Scene::AddGUI(std::shared_ptr<UIScreen> ui)

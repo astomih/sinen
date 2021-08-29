@@ -23,8 +23,57 @@ namespace nen
 
 		void Shutdown();
 
-		void AddActor(std::shared_ptr<class Actor> actor);
-		void RemoveActor(std::shared_ptr<class Actor> actor);
+		template <class T>
+		std::shared_ptr<T> AddActor()
+		{
+			auto actor = std::make_shared<T>(*this);
+			if (mUpdatingActors)
+			{
+				mPendingActors.emplace_back(actor);
+			}
+			else
+			{
+				mActors.emplace_back(actor);
+			}
+			actor->AddedScene();
+			return actor;
+		}
+
+		template <class T>
+		std::shared_ptr<T> GetActor(uint32_t handle = 0)
+		{
+			for (auto i : mActors)
+			{
+				auto actor = std::dynamic_pointer_cast<T>(i);
+				if (actor != nullptr && i->handle)
+					return actor;
+			}
+			for (auto i : mPendingActors)
+			{
+				auto actor = std::dynamic_pointer_cast<T>(i);
+				if (actor != nullptr && i->handle)
+					return actor;
+			}
+			return nullptr;
+		}
+
+		template <class T>
+		void RemoveActor(std::shared_ptr<T> actor)
+		{
+			auto iter = std::find(mPendingActors.begin(), mPendingActors.end(), actor);
+			if (iter != mPendingActors.end())
+			{
+				std::iter_swap(iter, mPendingActors.end() - 1);
+				mPendingActors.pop_back();
+			}
+
+			iter = std::find(mActors.begin(), mActors.end(), actor);
+			if (iter != mActors.end())
+			{
+				std::iter_swap(iter, mActors.end() - 1);
+				mActors.pop_back();
+			}
+		}
 
 		std::shared_ptr<AudioSystem> GetAudioSystem() const { return mAudioSystem; }
 
@@ -49,7 +98,6 @@ namespace nen
 
 		void AddGUI(std::shared_ptr<class UIScreen> ui);
 		void RemoveGUI(std::shared_ptr<class UIScreen> ui);
-
 
 	protected:
 		virtual void Setup();

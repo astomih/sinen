@@ -8,7 +8,6 @@ namespace nen
 	{
 		ALint buf;
 		alGetSourcei(sourceID, AL_BUFFER, &buf);
-		alSourcef(sourceID, AL_VELOCITY, 25.f);
 		alSourcePlay(sourceID);
 		param.source_id = sourceID;
 		param.buffer_id = buf;

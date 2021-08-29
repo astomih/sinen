@@ -127,7 +127,7 @@ namespace nen
 		}
 
 		alGenBuffers(1, &bid);
-		alBufferData(bid, AL_FORMAT_MONO16, buffer, buffer_length, spec.freq);
+		alBufferData(bid, detail::get_openal_format(&spec), buffer, buffer_length, spec.freq);
 		buffers.emplace(fileName.data(), bid);
 		SDL_FreeWAV(buffer);
 	}

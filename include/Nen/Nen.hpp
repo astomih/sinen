@@ -4,6 +4,7 @@
 #define MOBILE
 #endif
 #include "Time/Time.hpp"
+#include "Time/Timer.hpp"
 #include "Math/Math.hpp"
 #include "Math/Vector2.hpp"
 #include "Math/Vector3.hpp"

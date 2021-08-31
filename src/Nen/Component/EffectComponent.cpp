@@ -2,7 +2,7 @@
 namespace nen
 {
 	EffectComponent::EffectComponent(Actor &actor, int updateOrder)
-		: Component(actor, updateOrder), mOwner(actor), mTimer(0.f), playing(false), isStop(true), mEffect(nullptr)
+		: Component(actor, updateOrder), mOwner(actor)
 	{
 	}
 
@@ -18,6 +18,14 @@ namespace nen
 		mEffect = new Effect(filePath);
 		mOwner.GetScene().GetRenderer()->AddEffect(mEffect);
 	}
+	void EffectComponent::SetLoop(bool loop, Timer interval)
+	{
+		mEffect->SetLoop(loop, interval);
+	}
+	bool EffectComponent::isLoop()
+	{
+		return mEffect->isLoop();
+	}
 
 	void EffectComponent::Update(float deltaTime)
 	{
@@ -25,15 +33,6 @@ namespace nen
 		{
 			auto pos = mOwner.GetPosition();
 			mEffect->SetPosition(pos);
-		}
-		if (mTimer != 0.f)
-		{
-			mTimer -= deltaTime;
-			if (mTimer <= 0.f)
-			{
-				this->playing = !playing;
-				mTimer = buf;
-			}
 		}
 	}
 }

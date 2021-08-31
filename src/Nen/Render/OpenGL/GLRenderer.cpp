@@ -118,26 +118,35 @@ namespace nen::gl
 			glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
 			glDrawElementsBaseVertex(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr, 0);
 		}
-
 		glDisable(GL_BLEND);
 
-		static float oldtime = SDL_GetTicks();
-		float nowtime = SDL_GetTicks();
-		static float timer = 0.f;
-		timer += (nowtime - oldtime) / 1000.f;
 		for (auto i : this->mRenderer->GetEffects())
 		{
 			auto eref = mEffectManager->GetEffect(i->GetPath());
 			auto p = i->GetPosition();
-			if (timer > 0.2f)
+			if (i->isLoop())
 			{
-				mEffectManager->GetManager()->StopEffect(i->handle);
+				if (i->GetTimer().isStarted())
+				{
+					if (i->GetTimer().Check())
+					{
+						i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
+						i->GetTimer().Stop();
+					}
+				}
+				else
+				{
+					mEffectManager->GetManager()->StopEffect(i->handle);
+					i->GetTimer().Start();
+				}
+			}
+			else
+			{
 				i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
-				timer = 0.f;
+				i->GetTimer().Stop();
 			}
 			mEffectManager->GetManager()->SetLocation(i->handle, ::Effekseer::Vector3D(p.x, p.y, p.z));
 		}
-		oldtime = SDL_GetTicks();
 		mEffectManager->GetManager()->Update();
 		mEffectManager->GetRenderer()->BeginRendering();
 		mEffectManager->GetManager()->Draw();

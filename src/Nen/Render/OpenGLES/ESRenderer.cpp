@@ -29,20 +29,18 @@ namespace nen
 			mWindow = window;
 			mContext = SDL_GL_CreateContext(mWindow);
 			SDL_GL_MakeCurrent(mWindow, mContext);
-			// Create an OpenGL context
+			mEffectManager = std::make_unique<EffectManagerES>(this);
+			mEffectManager->Init();
 			prepare();
 			IMGUI_CHECKVERSION();
 			ImGui::CreateContext();
 			ImGuiIO &io = ImGui::GetIO();
-
 			(void)io;
 			io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
 			io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
 			io.IniFilename = NULL;
 			::ImGui_ImplSDL2_InitForOpenGL(mWindow, mContext);
 			::ImGui_ImplOpenGL3_Init("#version 100");
-			mEffectManager = std::make_unique<EffectManagerES>(this);
-			mEffectManager->Init();
 		}
 		void ESRenderer::Shutdown()
 		{
@@ -53,32 +51,36 @@ namespace nen
 			auto color = mRenderer->GetClearColor();
 			glClearColor(color.r, color.g, color.b, 1.0);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			static int time = 0;
 			for (auto i : this->mRenderer->GetEffects())
 			{
-				if (time % 200 == 0)
+				auto eref = mEffectManager->GetEffect(i->GetPath());
+				auto p = i->GetPosition();
+				if (i->isLoop())
 				{
-					auto eref = mEffectManager->GetEffect(i->GetPath());
-					auto p = i->GetPosition();
-					i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
+					if (i->GetTimer().isStarted())
+					{
+						if (i->GetTimer().Check())
+						{
+							i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
+							i->GetTimer().Stop();
+						}
+					}
+					else
+					{
+						mEffectManager->GetManager()->StopEffect(i->handle);
+						i->GetTimer().Start();
+					}
 				}
-				if (time % 200 == 199)
-					mEffectManager->GetManager()->StopEffect(i->handle);
+				else
+				{
+					i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
+					i->GetTimer().Stop();
+				}
+				mEffectManager->GetManager()->SetLocation(i->handle, ::Effekseer::Vector3D(p.x, p.y, p.z));
 			}
-			time++;
-			// Move the effect
-			//manager->AddLocation(handle, ::Effekseer::Vector3D(0.2f, 0.0f, 0.0f));
-
-			// Update the manager
 			mEffectManager->GetManager()->Update();
-
-			// Begin to rendering effects
 			mEffectManager->GetRenderer()->BeginRendering();
-
-			// Render effects
 			mEffectManager->GetManager()->Draw();
-
-			// Finish to rendering effects
 			mEffectManager->GetRenderer()->EndRendering();
 
 			mSpriteShader->SetActive();

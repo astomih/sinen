@@ -22,7 +22,7 @@ namespace nen::vk
 {
 	using namespace vkutil;
 
-	constexpr int maxpoolSize = 2000;
+	constexpr int maxpoolSize = 5000;
 	constexpr int maxInstanceCount = 900;
 	VKRenderer::VKRenderer()
 		: m_descriptorPool(),
@@ -78,7 +78,7 @@ namespace nen::vk
 			auto &sprites = GetSprite2Ds();
 			for (auto &i : sprites)
 			{
-				if (sprite == i->sprite)
+				if (sprite == i->drawObject)
 				{
 					if (i->buffer.buffer == 0)
 					{
@@ -94,7 +94,7 @@ namespace nen::vk
 			auto &sprites = GetSprite3Ds();
 			for (auto &i : sprites)
 			{
-				if (sprite == i->sprite)
+				if (sprite == i->drawObject)
 				{
 					if (i->buffer.buffer == 0)
 					{
@@ -109,53 +109,45 @@ namespace nen::vk
 
 	void VKRenderer::AddDrawObject2D(std::shared_ptr<class DrawObject> drawObject, std::shared_ptr<Texture> texture)
 	{
-		auto t = std::make_shared<vk::SpriteVK>();
+		auto t = std::make_shared<vk::VulkanDrawObject>();
 		t->buffer = CreateBuffer(
 			sizeof(Vertex), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		t->sprite = drawObject;
+		t->drawObject = drawObject;
 		registerImageObject(texture);
-		t->mTexture = texture;
 		registerTexture(t, texture->id, TextureType::Image2D);
 	}
 	void VKRenderer::RemoveDrawObject2D(std::shared_ptr<class DrawObject> sprite)
 	{
-		auto &sprites = GetSprite2Ds();
-		auto iter = sprites.begin();
-		for (;
-			 iter != sprites.end();)
+		for (auto itr = mTextures2D.begin(); itr != mTextures2D.end();)
 		{
-			if (sprite == (*iter)->sprite)
+			if ((*itr)->drawObject == sprite)
 			{
-				unregisterTexture((*iter), TextureType::Image2D);
-				iter = sprites.begin();
-				if (iter == sprites.end())
-					break;
+				unregisterTexture((*itr), TextureType::Image2D);
+				itr = mTextures2D.begin();
 			}
-			iter++;
+			if (itr != mTextures2D.end())
+				itr++;
 		}
 	}
 
 	void VKRenderer::AddDrawObject3D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture)
 	{
-		auto t = std::make_shared<vk::SpriteVK>();
-		t->sprite = sprite;
+		auto t = std::make_shared<vk::VulkanDrawObject>();
+		t->drawObject = sprite;
 		registerImageObject(texture);
-		t->mTexture = texture;
 		registerTexture(t, texture->id, TextureType::Image3D);
 	}
 	void VKRenderer::RemoveDrawObject3D(std::shared_ptr<class DrawObject> sprite)
 	{
-		auto &sprites = GetSprite3Ds();
-		auto iter = sprites.begin();
-		for (; iter != sprites.end(); ++iter)
+		for (auto itr = mTextures3D.begin(); itr != mTextures3D.end();)
 		{
-			if (sprite == (*iter)->sprite)
+			if ((*itr)->drawObject == sprite)
 			{
-				unregisterTexture((*iter), TextureType::Image3D);
-				iter = sprites.begin();
-				if (iter == sprites.end())
-					break;
+				unregisterTexture((*itr), TextureType::Image3D);
+				itr = mTextures3D.begin();
 			}
+			if (itr != mTextures3D.end())
+				itr++;
 		}
 	}
 
@@ -258,8 +250,18 @@ namespace nen::vk
 	}
 	void VKRenderer::makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri, VkCommandBufferBeginInfo &ci, VkFence &fence)
 	{
-		vkWaitForFences(m_base->GetVkDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
-		vkBeginCommandBuffer(command, &ci);
+		{
+			auto result = vkWaitForFences(m_base->GetVkDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
+			if (result != VK_SUCCESS)
+			{
+				Logger::Fatal("vkWaitForFences Error! VkResult:%d", result);
+			}
+			result = vkBeginCommandBuffer(command, &ci);
+			if (result != VK_SUCCESS)
+			{
+				Logger::Fatal("vkBeginCommandBuffer Error! VkResult:%d", result);
+			}
+		}
 		vkCmdBeginRenderPass(command, &ri, VK_SUBPASS_CONTENTS_INLINE);
 		draw3d(command);
 		draw2d(command);
@@ -275,18 +277,22 @@ namespace nen::vk
 		VkDeviceSize offset = 0;
 		for (auto &sprite : mTextures3D)
 		{
-			::vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[sprite->sprite->vertexIndex].vertexBuffer.buffer, &offset);
-			::vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->sprite->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
+			::vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[sprite->drawObject->vertexIndex].vertexBuffer.buffer, &offset);
+			::vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->drawObject->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 			// Set descriptors
 			vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout.GetLayout(), 0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
 			{
 				auto memory = sprite->uniformBuffers[m_base->m_imageIndex].memory;
 				void *p;
-				vkMapMemory(m_base->GetVkDevice(), memory, 0, VK_WHOLE_SIZE, 0, &p);
-				memcpy(p, &sprite->sprite->param, sizeof(ShaderParameters));
+				auto result = vkMapMemory(m_base->GetVkDevice(), memory, 0, VK_WHOLE_SIZE, 0, &p);
+				if (result != VK_SUCCESS)
+				{
+					Logger::Fatal("vkMapMemory Error! VkResult:%d", result);
+				}
+				memcpy(p, &sprite->drawObject->param, sizeof(ShaderParameters));
 				vkUnmapMemory(m_base->GetVkDevice(), memory);
 			}
-			vkCmdDrawIndexed(command, m_VertexArrays[sprite->sprite->vertexIndex].indexCount, 1, 0, 0, 0);
+			vkCmdDrawIndexed(command, m_VertexArrays[sprite->drawObject->vertexIndex].indexCount, 1, 0, 0, 0);
 		}
 	}
 
@@ -296,8 +302,8 @@ namespace nen::vk
 		VkDeviceSize offset = 0;
 		for (auto &sprite : mTextures2D)
 		{
-			vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[sprite->sprite->vertexIndex].vertexBuffer.buffer, &offset);
-			vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->sprite->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
+			vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[sprite->drawObject->vertexIndex].vertexBuffer.buffer, &offset);
+			vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->drawObject->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 
 			// Set descriptors
 			vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout.GetLayout(), 0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
@@ -305,10 +311,10 @@ namespace nen::vk
 				auto memory = sprite->uniformBuffers[m_base->m_imageIndex].memory;
 				void *p;
 				vkMapMemory(m_base->GetVkDevice(), memory, 0, VK_WHOLE_SIZE, 0, &p);
-				memcpy(p, &sprite->sprite->param, sizeof(ShaderParameters));
+				memcpy(p, &sprite->drawObject->param, sizeof(ShaderParameters));
 				vkUnmapMemory(m_base->GetVkDevice(), memory);
 			}
-			vkCmdDrawIndexed(command, m_VertexArrays[sprite->sprite->vertexIndex].indexCount, 1, 0, 0, 0);
+			vkCmdDrawIndexed(command, m_VertexArrays[sprite->drawObject->vertexIndex].indexCount, 1, 0, 0, 0);
 		}
 	}
 
@@ -429,7 +435,7 @@ namespace nen::vk
 		vArray.indexCount = _countof(indices);
 		vArray.PushIndices(indices, vArray.indexCount);
 		auto vArraySize = vArray.vertices.size() * sizeof(Vertex);
-		vArray.vertexBuffer = CreateBuffer(vArraySize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		vArray.vertexBuffer = CreateBuffer(vArraySize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		vArray.indexBuffer = CreateBuffer(vArray.indices.size() * sizeof(uint32_t), VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 		// Write vertex data
 		{
@@ -606,7 +612,7 @@ namespace nen::vk
 			prepareDescriptorSet(sprite);
 		}
 	}
-	void VKRenderer::prepareDescriptorSet(std::shared_ptr<SpriteVK> sprite)
+	void VKRenderer::prepareDescriptorSet(std::shared_ptr<VulkanDrawObject> sprite)
 	{
 		VkDescriptorSetAllocateInfo ai{};
 		ai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -614,7 +620,13 @@ namespace nen::vk
 		ai.descriptorSetCount = uint32_t(sprite->uniformBuffers.size());
 		ai.pSetLayouts = layouts.data();
 		sprite->descripterSet.resize(sprite->uniformBuffers.size());
-		vkAllocateDescriptorSets(m_base->GetVkDevice(), &ai, sprite->descripterSet.data());
+		{
+			auto result = vkAllocateDescriptorSets(m_base->GetVkDevice(), &ai, sprite->descripterSet.data());
+			if (result != VkResult::VK_SUCCESS)
+			{
+				Logger::Fatal("vkAllocateDescriptorSets Error! VkResult:%d", result);
+			}
+		}
 		static int count = 0;
 		// ディスクリプタセットへ書き込み.
 		for (int i = 0; i < int(sprite->uniformBuffers.size()); ++i)
@@ -625,7 +637,7 @@ namespace nen::vk
 			descUBO.range = VK_WHOLE_SIZE;
 
 			VkDescriptorImageInfo descImage{};
-			descImage.imageView = mImageObjects[sprite->imageID].view;
+			descImage.imageView = mImageObjects[sprite->drawObject->textureIndex].view;
 			descImage.sampler = m_sampler;
 			descImage.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -1252,7 +1264,7 @@ namespace nen::vk
 			return m_base->GetVkDevice();
 		return m_base->GetVkDevice();
 	}
-	void VKRenderer::registerTexture(std::shared_ptr<SpriteVK> texture, std::string_view ID, TextureType type)
+	void VKRenderer::registerTexture(std::shared_ptr<VulkanDrawObject> texture, std::string_view ID, TextureType type)
 	{
 		if (TextureType::Image3D == type)
 		{
@@ -1263,7 +1275,6 @@ namespace nen::vk
 				VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 				v = CreateBuffer(sizeof(ShaderParameters), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
 			}
-			texture->imageID = ID.data();
 			layouts.push_back(m_descriptorSetLayout);
 			prepareDescriptorSet(texture);
 		}
@@ -1274,7 +1285,7 @@ namespace nen::vk
 				 iter != mTextures2D.end();
 				 ++iter)
 			{
-				if (texture->sprite->drawOrder < (*iter)->sprite->drawOrder)
+				if (texture->drawObject->drawOrder < (*iter)->drawObject->drawOrder)
 				{
 					break;
 				}
@@ -1288,26 +1299,27 @@ namespace nen::vk
 				VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 				v = CreateBuffer(sizeof(ShaderParameters), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
 			}
-			texture->imageID = ID.data();
 			layouts.push_back(m_descriptorSetLayout);
 			prepareDescriptorSet(texture);
 		}
 	}
-	void VKRenderer::unregisterTexture(std::shared_ptr<SpriteVK> texture, TextureType type)
+	void VKRenderer::unregisterTexture(std::shared_ptr<VulkanDrawObject> texture, TextureType type)
 	{
 		if (TextureType::Image3D == type)
 		{
 			auto itr = std::find(mTextures3D.begin(), mTextures3D.end(), texture);
 			if (itr != mTextures3D.end())
 			{
-				DestroyBuffer((*itr)->buffer);
-				vkFreeDescriptorSets(m_base->GetVkDevice(), m_descriptorPool, static_cast<uint32_t>(texture->uniformBuffers.size()), texture->descripterSet.data());
+				auto device = m_base->GetVkDevice();
+				vkFreeDescriptorSets(m_base->GetVkDevice(), m_descriptorPool, static_cast<uint32_t>(texture->descripterSet.size()), texture->descripterSet.data());
+				DestroyVulkanObject<VkBuffer>(device, (*itr)->buffer.buffer, &vkDestroyBuffer);
+				DestroyVulkanObject<VkDeviceMemory>(device, (*itr)->buffer.memory, &vkFreeMemory);
 				for (auto &i : (*itr)->uniformBuffers)
 				{
-					DestroyBuffer(i);
+					DestroyVulkanObject<VkBuffer>(device, i.buffer, &vkDestroyBuffer);
+					DestroyVulkanObject<VkDeviceMemory>(device, i.memory, &vkFreeMemory);
 				}
-				mTextures3D.erase(itr);
-				mTextures3D.shrink_to_fit();
+				itr = mTextures3D.erase(itr);
 			}
 		}
 		else
@@ -1330,6 +1342,18 @@ namespace nen::vk
 	}
 	void VKRenderer::renderEffekseer(VkCommandBuffer command)
 	{
+		Effekseer::Matrix44 mat;
+		auto nenm = GetRenderer()->GetViewMatrix();
+		memcpy(&mat, &nenm, sizeof(float) * 16);
+
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = 1; j < 3; j++)
+			{
+				mat.Values[i][j] = -mat.Values[i][j];
+			}
+		}
+		mEffectManager->GetRenderer()->SetCameraMatrix(mat);
 		mEffectManager->GetMemoryPool()->NewFrame();
 		EffekseerRendererVulkan::BeginCommandList(mEffectManager->GetCommandList(), command);
 		mEffectManager->GetRenderer()->SetCommandList(mEffectManager->GetCommandList());
@@ -1343,20 +1367,30 @@ namespace nen::vk
 				{
 					if (i->GetTimer().Check())
 					{
+						mEffectManager->GetManager()->StopEffect(i->handle);
 						i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
 						i->GetTimer().Stop();
 					}
 				}
 				else
 				{
-					mEffectManager->GetManager()->StopEffect(i->handle);
 					i->GetTimer().Start();
+					if (i->first)
+					{
+						mEffectManager->GetManager()->StopEffect(i->handle);
+						i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
+						i->first = false;
+					}
 				}
 			}
 			else
 			{
-				i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
-				i->GetTimer().Stop();
+				if (i->first)
+				{
+					mEffectManager->GetManager()->StopEffect(i->handle);
+					i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
+					i->first = false;
+				}
 			}
 			mEffectManager->GetManager()->SetLocation(i->handle, ::Effekseer::Vector3D(p.x, p.y, p.z));
 		}

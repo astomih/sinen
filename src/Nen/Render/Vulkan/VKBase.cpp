@@ -484,8 +484,21 @@ namespace nen::vk
 		submitInfo.pWaitSemaphores = &m_presentCompletedSem;
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = &m_renderCompletedSem;
-		vkResetFences(m_device, 1, &commandFence);
-		vkQueueSubmit(m_deviceQueue, 1, &submitInfo, commandFence);
+		{
+			VkResult result = vkResetFences(m_device, 1, &commandFence);
+
+			if (result != VkResult::VK_SUCCESS)
+			{
+				Logger::Fatal("Vulkan Error! VkResult:%d", result);
+			}
+		}
+		{
+			VkResult result = vkQueueSubmit(m_deviceQueue, 1, &submitInfo, commandFence);
+			if (result != VkResult::VK_SUCCESS)
+			{
+				Logger::Fatal("Vulkan Error! VkResult:%d", result);
+			}
+		}
 
 		// Present 処理
 		mSwapchain->QueuePresent(m_deviceQueue, nextImageIndex, m_renderCompletedSem);

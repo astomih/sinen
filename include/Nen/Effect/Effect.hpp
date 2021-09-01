@@ -22,6 +22,9 @@ namespace nen
 
 		Timer &GetTimer() { return interval; }
 
+		bool first = true;
+
+
 	private:
 		Vector3 position;
 		std::u16string path;

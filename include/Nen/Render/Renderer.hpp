@@ -69,8 +69,6 @@ namespace nen
 
 		Color GetClearColor() { return this->clearColor; }
 
-		class Texture *GetTexture(std::string_view fileName);
-		class Texture *GetTextureFromMemory(const unsigned char *const buffer, const std::string &key);
 		class EffectManager *GetEffect(const std::u16string &fileName);
 
 		void SetViewMatrix(const Matrix4 &view) { mView = view; }
@@ -87,13 +85,6 @@ namespace nen
 	private:
 		Color clearColor = Palette::Black;
 		class Draw2DComponent *transPic;
-
-		std::shared_ptr<Transition> mTransition;
-		// Map of textures loaded
-		std::unordered_map<std::string, class Texture *> mTextures3D;
-		// All the sprite components drawn
-		std::vector<std::shared_ptr<class DrawObject>> mDrawObject3D;
-		std::vector<std::shared_ptr<class DrawObject>> mDrawObject2D;
 
 		// All effects components drawn
 		std::vector<class Effect *> mEffects;

@@ -166,6 +166,7 @@
     <ClCompile Include="..\src\Nen\Network\TCPSocket.cpp" />
     <ClCompile Include="..\src\Nen\Time\Time.cpp" />
     <ClCompile Include="..\src\Nen\Time\Timer.cpp" />
+    <ClCompile Include="..\src\Nen\Physics\Collision.cpp" />
     <ClCompile Include="..\src\Nen\Render\Renderer.cpp" />
     <ClCompile Include="..\src\Nen\Render\OpenGLES\ESRenderer.cpp" />
     <ClCompile Include="..\src\Nen\Render\OpenGL\EffectManagerGL.cpp" />

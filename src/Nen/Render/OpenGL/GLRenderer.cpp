@@ -49,7 +49,6 @@ namespace nen::gl
 		glClearColor(color.r, color.g, color.b, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
 		mSpriteShader->SetActive();
 		// Specify the vertex attributes
 		// (For now, assume one vertex format)
@@ -119,6 +118,11 @@ namespace nen::gl
 			glDrawElementsBaseVertex(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr, 0);
 		}
 		glDisable(GL_BLEND);
+		Effekseer::Matrix44 mat;
+		auto nenm = mRenderer->GetViewMatrix();
+		memcpy(&mat, &nenm, sizeof(float) * 16);
+
+		mEffectManager->GetRenderer()->SetCameraMatrix(mat);
 
 		for (auto i : this->mRenderer->GetEffects())
 		{
@@ -130,20 +134,30 @@ namespace nen::gl
 				{
 					if (i->GetTimer().Check())
 					{
+						mEffectManager->GetManager()->StopEffect(i->handle);
 						i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
 						i->GetTimer().Stop();
 					}
 				}
 				else
 				{
-					mEffectManager->GetManager()->StopEffect(i->handle);
 					i->GetTimer().Start();
+					if (i->first)
+					{
+						mEffectManager->GetManager()->StopEffect(i->handle);
+						i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
+						i->first = false;
+					}
 				}
 			}
 			else
 			{
-				i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
-				i->GetTimer().Stop();
+				if (i->first)
+				{
+					mEffectManager->GetManager()->StopEffect(i->handle);
+					i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
+					i->first = false;
+				}
 			}
 			mEffectManager->GetManager()->SetLocation(i->handle, ::Effekseer::Vector3D(p.x, p.y, p.z));
 		}

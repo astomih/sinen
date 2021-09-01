@@ -39,6 +39,7 @@
 #include "Input/InputSystem.hpp"
 #include "Logger/Logger.hpp"
 #include "Mesh/ObjLoader.hpp"
+#include "Physics/Collision.hpp"
 #include "Render/Renderer.hpp"
 #include "Scene/Scene.hpp"
 #include "Scene/MainScene.hpp"

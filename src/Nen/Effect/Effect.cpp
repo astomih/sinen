@@ -3,8 +3,7 @@
 namespace nen
 {
 	Effect::Effect(std::u16string_view path)
-		:path(path)
+		: path(path), loop(false)
 	{
-
 	}
 }

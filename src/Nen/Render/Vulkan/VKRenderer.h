@@ -21,16 +21,14 @@ namespace nen::vk
 		VkImageView view;
 	};
 
-	class SpriteVK
+	class VulkanDrawObject
 	{
 	public:
 		std::vector<VkDescriptorSet> descripterSet;
 		std::vector<BufferObject> uniformBuffers;
-		std::string imageID;
-		std::shared_ptr<Texture> mTexture;
 		BufferObject buffer;
 		bool isInstance = false;
-		std::shared_ptr<nen::DrawObject> sprite;
+		std::shared_ptr<nen::DrawObject> drawObject;
 	};
 
 	struct VertexArrayForVK : public VertexArray
@@ -76,8 +74,8 @@ namespace nen::vk
 		BufferObject CreateBuffer(uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		VKBase *GetBase() { return m_base.get(); }
 		BufferObject CreateBuffer(uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags, const void *initialData);
-		void registerTexture(std::shared_ptr<SpriteVK> texture, std::string_view, TextureType type);
-		void unregisterTexture(std::shared_ptr<SpriteVK> texture, TextureType type);
+		void registerTexture(std::shared_ptr<VulkanDrawObject> texture, std::string_view, TextureType type);
+		void unregisterTexture(std::shared_ptr<VulkanDrawObject> texture, TextureType type);
 		void registerImageObject(std::shared_ptr<Texture>);
 		VkPipelineLayout GetPipelineLayout(const std::string &name) { return mPipelineLayout.GetLayout(); }
 		VkDescriptorSetLayout GetDescriptorSetLayout(const std::string &name) { return m_descriptorSetLayout; }
@@ -95,8 +93,8 @@ namespace nen::vk
 		VkCommandBuffer CreateCommandBuffer();
 		void FinishCommandBuffer(VkCommandBuffer command);
 		std::vector<BufferObject> CreateUniformBuffers(uint32_t size, uint32_t imageCount);
-		const std::vector<std::shared_ptr<SpriteVK>> &GetSprite2Ds() { return mTextures2D; }
-		const std::vector<std::shared_ptr<SpriteVK>> &GetSprite3Ds() { return mTextures3D; }
+		const std::vector<std::shared_ptr<VulkanDrawObject>> &GetSprite2Ds() { return mTextures2D; }
+		const std::vector<std::shared_ptr<VulkanDrawObject>> &GetSprite3Ds() { return mTextures3D; }
 		void WriteToHostVisibleMemory(VkDeviceMemory memory, uint32_t size, const void *pData);
 		void AllocateCommandBufferSecondary(uint32_t count, VkCommandBuffer *pCommands);
 		void FreeCommandBufferSecondary(uint32_t count, VkCommandBuffer *pCommands);
@@ -113,7 +111,7 @@ namespace nen::vk
 		void prepareDescriptorSetLayout();
 		void prepareDescriptorPool();
 		void prepareDescriptorSetAll();
-		void prepareDescriptorSet(std::shared_ptr<SpriteVK>);
+		void prepareDescriptorSet(std::shared_ptr<VulkanDrawObject>);
 		void prepareImGUI();
 		void renderImGUI(VkCommandBuffer command);
 		void renderEffekseer(VkCommandBuffer command);
@@ -135,8 +133,8 @@ namespace nen::vk
 		Pipeline pipelineOpaque;
 		Pipeline pipelineAlpha;
 		Pipeline pipeline2D;
-		std::vector<std::shared_ptr<SpriteVK>> mTextures3D;
-		std::vector<std::shared_ptr<SpriteVK>> mTextures2D;
+		std::vector<std::shared_ptr<VulkanDrawObject>> mTextures3D;
+		std::vector<std::shared_ptr<VulkanDrawObject>> mTextures2D;
 		std::unordered_map<std::string, ImageObject> mImageObjects;
 		std::vector<InstanceData> instance;
 		std::vector<BufferObject> m_instanceUniforms;

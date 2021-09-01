@@ -38,8 +38,8 @@ namespace nen
 				static_cast<int>(Window::Size.x),
 				static_cast<int>(Window::Size.y),
 				SDL_WINDOW_VULKAN);
-			renderer->Initialize(mWindow);
 			renderer->SetRenderer(this);
+			renderer->Initialize(mWindow);
 			break;
 		case GraphicsAPI::OpenGL:
 			renderer = std::make_unique<gl::GLRenderer>();
@@ -114,13 +114,6 @@ namespace nen
 
 	void Renderer::UnloadData()
 	{
-		// Destroy textures
-		for (auto i : mTextures3D)
-		{
-			delete i.second;
-			i.second = nullptr;
-		}
-		mTextures3D.clear();
 	}
 
 	void Renderer::Draw()
@@ -131,53 +124,21 @@ namespace nen
 	void Renderer::AddDrawObject2D(std::shared_ptr<nen::DrawObject> drawObject, std::shared_ptr<Texture> texture)
 	{
 		renderer->AddDrawObject2D(drawObject, texture);
-		const auto myDrawOrder = drawObject->drawOrder;
-		auto iter = mDrawObject2D.begin();
-		for (; iter != mDrawObject2D.end(); ++iter)
-		{
-			if (myDrawOrder < (*iter)->drawOrder)
-			{
-				break;
-			}
-		}
-		mDrawObject2D.insert(iter, drawObject);
 	}
 
 	void Renderer::RemoveDrawObject2D(std::shared_ptr<DrawObject> drawObject)
 	{
 		renderer->RemoveDrawObject2D(drawObject);
-		auto iter = std::find(mDrawObject2D.begin(), mDrawObject2D.end(), drawObject);
-		if (iter != mDrawObject2D.end())
-			mDrawObject2D.erase(iter);
 	}
 
 	void Renderer::AddDrawObject3D(std::shared_ptr<DrawObject> drawObject, std::shared_ptr<Texture> texture)
 	{
 		renderer->AddDrawObject3D(drawObject, texture);
-		// Find the insertion point in the sorted vector
-		// (The first element with a higher draw order than me)
-		const auto myDrawOrder = drawObject->drawOrder;
-		auto iter = mDrawObject3D.begin();
-		for (;
-			 iter != mDrawObject3D.end();
-			 ++iter)
-		{
-			if (myDrawOrder < (*iter)->drawOrder)
-			{
-				break;
-			}
-		}
-
-		// Inserts element before position of iterator
-		mDrawObject3D.insert(iter, drawObject);
 	}
 
 	void Renderer::RemoveDrawObject3D(std::shared_ptr<DrawObject> drawObject)
 	{
 		renderer->RemoveDrawObject3D(drawObject);
-		auto iter = std::find(mDrawObject3D.begin(), mDrawObject3D.end(), drawObject);
-		if (iter != mDrawObject3D.end())
-			mDrawObject3D.erase(iter);
 	}
 
 	void Renderer::ChangeBufferDrawObject(std::shared_ptr<DrawObject> drawObject, TextureType type)
@@ -205,58 +166,10 @@ namespace nen
 		renderer->RemoveGUI(ui);
 	}
 
-	Texture *Renderer::GetTexture(std::string_view fileName)
-	{
-		Texture *tex = nullptr;
-		auto iter = mTextures3D.find(fileName.data());
-		if (iter != mTextures3D.end())
-		{
-			tex = iter->second;
-		}
-		else
-		{
-			tex = new Texture();
-			if (tex->Load(fileName))
-			{
-				mTextures3D.emplace(fileName, tex);
-			}
-			else
-			{
-				delete tex;
-				tex = nullptr;
-			}
-		}
-		return tex;
-	}
 
 	void Renderer::AddVertexArray(const VertexArray &vArray, std::string_view name)
 	{
 		renderer->AddVertexArray(vArray, name);
 	}
 
-	Texture *Renderer::GetTextureFromMemory(const unsigned char *const buffer, const std::string &key)
-	{
-		Texture *tex = nullptr;
-		auto iter = mTextures3D.find(key);
-		if (iter != mTextures3D.end())
-		{
-			tex = iter->second;
-		}
-		else
-		{
-			tex = new Texture();
-			/*
-			//if (tex->LoadFromMemory(buffer))
-			{
-				mTextures3D.emplace(key, tex);
-			}
-			//else
-			{
-				delete tex;
-				tex = nullptr;
-			}
-			*/
-		}
-		return tex;
-	}
 }

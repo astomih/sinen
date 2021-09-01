@@ -47,15 +47,15 @@ namespace nen::vk
 		manager->SetMaterialLoader(renderer->CreateMaterialLoader());
 
 		// Specify a position of view
-		auto g_position = ::Effekseer::Vector3D(0.0f, 0.0f, 0.0f);
+		auto g_position = ::Effekseer::Vector3D(0.0f, 30.f, 5.f);
 
 		// Specify a projection matrix
 		renderer->SetProjectionMatrix(
 			::Effekseer::Matrix44().PerspectiveFovLH(Math::ToRadians(90.f), Window::Size.x / Window::Size.y, 0.01f, 10000.f));
 
+		auto m2 = ::Effekseer::Matrix44().LookAtLH(g_position, ::Effekseer::Vector3D(0.0f, -5.f, -10.f), ::Effekseer::Vector3D(0.0f, -1.0f, 0.0f));
 		// Specify a camera matrix
-		renderer->SetCameraMatrix(
-			::Effekseer::Matrix44().LookAtLH(g_position, ::Effekseer::Vector3D(0.0f, 0.0f, -1.f), ::Effekseer::Vector3D(0.0f, -1.0f, 0.0f)));
+		renderer->SetCameraMatrix(m2);
 	}
 }
 #endif

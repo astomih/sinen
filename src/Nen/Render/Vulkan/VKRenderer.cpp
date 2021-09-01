@@ -32,15 +32,6 @@ namespace nen::vk
 		  instance(maxInstanceCount)
 	{
 	}
-	static void check_vk_result(VkResult err)
-	{
-		if (err == 0)
-			return;
-		fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
-		if (err < 0)
-			abort();
-	}
-
 	void VKRenderer::Initialize(SDL_Window *window)
 	{
 		m_base->initialize(window, Window::name.c_str());
@@ -185,11 +176,6 @@ namespace nen::vk
 		}
 		prepareImGUI();
 	}
-	template <class T>
-	inline bool isExist(T &handle)
-	{
-		return handle != VK_NULL_HANDLE;
-	}
 	void VKRenderer::cleanup()
 	{
 		VkDevice device = m_base->GetVkDevice();
@@ -197,7 +183,7 @@ namespace nen::vk
 		{
 			DestroyVulkanObject<VkImage>(device, i.second.image, &vkDestroyImage);
 			DestroyVulkanObject<VkImageView>(device, i.second.view, &vkDestroyImageView);
-			DestroyVulkanObject<VkDeviceMemory>(device, i.second.view, &vkFreeMemory);
+			DestroyVulkanObject<VkDeviceMemory>(device, i.second.memory, &vkFreeMemory);
 		}
 		DestroyVulkanObject<VkSampler>(device, m_sampler, &vkDestroySampler);
 		mPipelineLayout.Cleanup(device);
@@ -214,15 +200,12 @@ namespace nen::vk
 		DestroyVulkanObject<VkDescriptorPool>(device, m_descriptorPool, &vkDestroyDescriptorPool);
 		DestroyVulkanObject<VkDescriptorSetLayout>(device, m_descriptorSetLayout, &vkDestroyDescriptorSetLayout);
 	}
+
+	//コマンドバッファの発行
 	void VKRenderer::makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri, VkCommandBufferBeginInfo &ci, VkFence &fence)
 	{
 		{
-			auto result = vkWaitForFences(m_base->GetVkDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
-			if (result != VK_SUCCESS)
-			{
-				Logger::Fatal("vkWaitForFences Error! VkResult:%d", result);
-			}
-			result = vkBeginCommandBuffer(command, &ci);
+			auto result = vkBeginCommandBuffer(command, &ci);
 			if (result != VK_SUCCESS)
 			{
 				Logger::Fatal("vkBeginCommandBuffer Error! VkResult:%d", result);
@@ -235,6 +218,11 @@ namespace nen::vk
 		renderEffekseer(command);
 		renderImGUI(command);
 		pipelineOpaque.Bind(command);
+		auto result = vkWaitForFences(m_base->GetVkDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
+		if (result != VK_SUCCESS)
+		{
+			Logger::Fatal("vkWaitForFences Error! VkResult:%d", result);
+		}
 	}
 
 	void VKRenderer::draw3d(VkCommandBuffer command)
@@ -459,7 +447,10 @@ namespace nen::vk
 		VkSubmitInfo submitInfo{VK_STRUCTURE_TYPE_SUBMIT_INFO, nullptr};
 		submitInfo.pCommandBuffers = &command;
 		submitInfo.commandBufferCount = 1;
-		vkQueueSubmit(m_base->GetVkQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+		auto result =
+			vkQueueSubmit(m_base->GetVkQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+		if (result != VK_SUCCESS)
+			Logger::Fatal("vkQueueSubmit Error! VkResult:%d", result);
 
 		// フォントテクスチャ転送の完了を待つ.
 		vkDeviceWaitIdle(m_base->GetVkDevice());
@@ -583,9 +574,9 @@ namespace nen::vk
 		VkDescriptorSetAllocateInfo ai{};
 		ai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		ai.descriptorPool = m_descriptorPool;
-		ai.descriptorSetCount = uint32_t(sprite->uniformBuffers.size());
+		ai.descriptorSetCount = uint32_t(m_base->mSwapchain->GetImageCount());
 		ai.pSetLayouts = layouts.data();
-		sprite->descripterSet.resize(sprite->uniformBuffers.size());
+		sprite->descripterSet.resize(m_base->mSwapchain->GetImageCount());
 		{
 			auto result = vkAllocateDescriptorSets(m_base->GetVkDevice(), &ai, sprite->descripterSet.data());
 			if (result != VkResult::VK_SUCCESS)
@@ -595,7 +586,7 @@ namespace nen::vk
 		}
 		static int count = 0;
 		// ディスクリプタセットへ書き込み.
-		for (int i = 0; i < int(sprite->uniformBuffers.size()); ++i)
+		for (int i = 0; i < m_base->mSwapchain->GetImageCount(); i++)
 		{
 			VkDescriptorBufferInfo descUBO{};
 			descUBO.buffer = sprite->uniformBuffers[i].buffer;
@@ -661,11 +652,21 @@ namespace nen::vk
 		info.allocationSize = reqs.size;
 		// メモリタイプの判定
 		info.memoryTypeIndex = m_base->getMemoryTypeIndex(reqs.memoryTypeBits, flags);
-		// メモリの確保
-		vkAllocateMemory(m_base->GetVkDevice(), &info, nullptr, &obj.memory);
+		{
+			// メモリの確保
+			auto result = vkAllocateMemory(m_base->GetVkDevice(), &info, nullptr, &obj.memory);
+			if (result != VK_SUCCESS)
+			{
+				Logger::Fatal("vkAllocateMemory Error! VkResult:%d", result);
+			}
 
-		// メモリのバインド
-		vkBindBufferMemory(m_base->GetVkDevice(), obj.buffer, obj.memory, 0);
+			// メモリのバインド
+			result = vkBindBufferMemory(m_base->GetVkDevice(), obj.buffer, obj.memory, 0);
+			if (result != VK_SUCCESS)
+			{
+				Logger::Fatal("vkBindBufferMemory Error! VkResult:%d", result);
+			}
+		}
 		return obj;
 	}
 	BufferObject VKRenderer::CreateBuffer(uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags, const void *initialData)
@@ -795,7 +796,14 @@ namespace nen::vk
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &command;
-		vkQueueSubmit(m_base->GetVkQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+		{
+			auto result = vkQueueSubmit(m_base->GetVkQueue(), 1, &submitInfo, m_base->m_fences[m_base->m_imageIndex]);
+			if (result != VK_SUCCESS)
+			{
+				Logger::Fatal("vkQueueSubmit Error! VkResult:%d", result);
+			}
+		}
+
 		{
 			// Create view for texture reference
 			VkImageViewCreateInfo ci{};
@@ -1235,8 +1243,8 @@ namespace nen::vk
 		if (TextureType::Image3D == type)
 		{
 			mTextures3D.push_back(texture);
-			mTextures3D.back()->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
-			for (auto &v : mTextures3D.back()->uniformBuffers)
+			texture->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
+			for (auto &v : texture->uniformBuffers)
 			{
 				VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 				v = CreateBuffer(sizeof(ShaderParameters), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
@@ -1277,13 +1285,18 @@ namespace nen::vk
 			if (itr != mTextures3D.end())
 			{
 				auto device = m_base->GetVkDevice();
-				vkFreeDescriptorSets(m_base->GetVkDevice(), m_descriptorPool, static_cast<uint32_t>(texture->descripterSet.size()), texture->descripterSet.data());
+				auto result = vkFreeDescriptorSets(m_base->GetVkDevice(), m_descriptorPool, static_cast<uint32_t>(texture->descripterSet.size()), texture->descripterSet.data());
+				if (result != VK_SUCCESS)
+				{
+					Logger::Fatal("vkFreeDescriptorSets Error! VkResult:%d", result);
+				}
 				for (auto &i : (*itr)->uniformBuffers)
 				{
+					m_base->destroyMemory.push_back(i.memory);
 					DestroyVulkanObject<VkBuffer>(device, i.buffer, &vkDestroyBuffer);
-					DestroyVulkanObject<VkDeviceMemory>(device, i.memory, &vkFreeMemory);
 				}
 				itr = mTextures3D.erase(itr);
+				layouts.pop_back();
 			}
 		}
 		else

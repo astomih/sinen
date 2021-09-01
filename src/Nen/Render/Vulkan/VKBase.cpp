@@ -496,12 +496,17 @@ namespace nen::vk
 			VkResult result = vkQueueSubmit(m_deviceQueue, 1, &submitInfo, commandFence);
 			if (result != VkResult::VK_SUCCESS)
 			{
-				Logger::Fatal("Vulkan Error! VkResult:%d", result);
+				Logger::Fatal("vkQueueSubmit Error! VkResult:%d", result);
 			}
 		}
 
 		// Present 処理
 		mSwapchain->QueuePresent(m_deviceQueue, nextImageIndex, m_renderCompletedSem);
+		for (auto &memory : destroyMemory)
+		{
+			vkFreeMemory(m_device, memory, nullptr);
+		}
+		destroyMemory.clear();
 	}
 }
 #endif

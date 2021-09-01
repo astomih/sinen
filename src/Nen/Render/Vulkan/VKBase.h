@@ -78,6 +78,8 @@ namespace nen::vk
 
 		std::vector<VkCommandBuffer> m_commands;
 
+		std::vector<VkDeviceMemory> destroyMemory;
+
 		uint32_t m_imageIndex;
 		SDL_Window *m_window;
 		VKRenderer *m_vkrenderer;

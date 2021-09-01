@@ -56,6 +56,7 @@ int main(int argc, char **argv)
 		{
 			scene->Shutdown();
 			scene = nullptr;
+			renderer->Shutdown();
 #ifndef EMSCRIPTEN
 			std::exit(0);
 #else

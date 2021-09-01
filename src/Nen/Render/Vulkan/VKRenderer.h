@@ -26,7 +26,6 @@ namespace nen::vk
 	public:
 		std::vector<VkDescriptorSet> descripterSet;
 		std::vector<BufferObject> uniformBuffers;
-		BufferObject buffer;
 		bool isInstance = false;
 		std::shared_ptr<nen::DrawObject> drawObject;
 	};

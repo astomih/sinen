@@ -73,45 +73,11 @@ namespace nen::vk
 	}
 	void VKRenderer::ChangeBufferDrawObject(std::shared_ptr<class DrawObject> sprite, const TextureType type)
 	{
-		if (type == TextureType::Image2D)
-		{
-			auto &sprites = GetSprite2Ds();
-			for (auto &i : sprites)
-			{
-				if (sprite == i->drawObject)
-				{
-					if (i->buffer.buffer == 0)
-					{
-						i->buffer = CreateBuffer(
-							sizeof(Vertex) * 4, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-						break;
-					}
-				}
-			}
-		}
-		if (type == TextureType::Image3D)
-		{
-			auto &sprites = GetSprite3Ds();
-			for (auto &i : sprites)
-			{
-				if (sprite == i->drawObject)
-				{
-					if (i->buffer.buffer == 0)
-					{
-						i->buffer = CreateBuffer(
-							sizeof(Vertex) * 4, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-						break;
-					}
-				}
-			}
-		}
 	}
 
 	void VKRenderer::AddDrawObject2D(std::shared_ptr<class DrawObject> drawObject, std::shared_ptr<Texture> texture)
 	{
 		auto t = std::make_shared<vk::VulkanDrawObject>();
-		t->buffer = CreateBuffer(
-			sizeof(Vertex), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		t->drawObject = drawObject;
 		registerImageObject(texture);
 		registerTexture(t, texture->id, TextureType::Image2D);
@@ -1312,8 +1278,6 @@ namespace nen::vk
 			{
 				auto device = m_base->GetVkDevice();
 				vkFreeDescriptorSets(m_base->GetVkDevice(), m_descriptorPool, static_cast<uint32_t>(texture->descripterSet.size()), texture->descripterSet.data());
-				DestroyVulkanObject<VkBuffer>(device, (*itr)->buffer.buffer, &vkDestroyBuffer);
-				DestroyVulkanObject<VkDeviceMemory>(device, (*itr)->buffer.memory, &vkFreeMemory);
 				for (auto &i : (*itr)->uniformBuffers)
 				{
 					DestroyVulkanObject<VkBuffer>(device, i.buffer, &vkDestroyBuffer);
@@ -1326,8 +1290,6 @@ namespace nen::vk
 		{
 			auto device = m_base->GetVkDevice();
 			auto itr = std::find(mTextures2D.begin(), mTextures2D.end(), texture);
-			DestroyVulkanObject<VkBuffer>(device, (*itr)->buffer.buffer, &vkDestroyBuffer);
-			DestroyVulkanObject<VkDeviceMemory>(device, (*itr)->buffer.memory, &vkFreeMemory);
 			vkFreeDescriptorSets(device, m_descriptorPool, static_cast<uint32_t>(texture->uniformBuffers.size()), texture->descripterSet.data());
 			for (auto &i : (*itr)->uniformBuffers)
 			{

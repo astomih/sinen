@@ -38,6 +38,8 @@ namespace nen
 			void AddDrawObject3D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture) override;
 			void RemoveDrawObject3D(std::shared_ptr<class DrawObject> sprite) override;
 
+			void LoadEffect(std::shared_ptr<class Effect> effect) override;
+
 			void prepare();
 			void cleanup() {}
 			void registerTexture(std::shared_ptr<class Texture>, const TextureType &type);

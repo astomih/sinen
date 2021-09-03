@@ -1,6 +1,8 @@
 #pragma once
 #include <Effekseer.h>
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include <GL/glew.h>
+#endif
 #include <EffekseerRendererGL.h>
 
 namespace nen

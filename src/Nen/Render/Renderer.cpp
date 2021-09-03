@@ -118,6 +118,13 @@ namespace nen
 
 	void Renderer::Draw()
 	{
+		for (auto effect = mEffects.begin(); effect != mEffects.end();)
+		{
+			if ((*effect)->state == Effect::State::Dead)
+				effect = mEffects.erase(effect);
+			if (effect != mEffects.end())
+				effect++;
+		}
 		renderer->Render();
 	}
 
@@ -148,6 +155,7 @@ namespace nen
 
 	void Renderer::AddEffect(std::shared_ptr<Effect> effect)
 	{
+		renderer->LoadEffect(effect);
 		mEffects.emplace_back(effect);
 	}
 	void Renderer::RemoveEffect(std::shared_ptr<Effect> effect)

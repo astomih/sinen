@@ -126,6 +126,8 @@ namespace nen
 		virtual void AddGUI(std::shared_ptr<class UIScreen> ui) {}
 		virtual void RemoveGUI(std::shared_ptr<class UIScreen> ui) {}
 
+		virtual void LoadEffect(std::shared_ptr<Effect> effect) {}
+
 		void SetRenderer(class Renderer *renderer) { mRenderer = renderer; }
 
 	protected:

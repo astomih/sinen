@@ -63,6 +63,8 @@ namespace nen::vk
 		void AddGUI(std::shared_ptr<class UIScreen> ui) override;
 		void RemoveGUI(std::shared_ptr<class UIScreen> ui) override;
 
+		void LoadEffect(std::shared_ptr<class Effect> effect) override;
+
 		nen::Renderer *GetRenderer() { return mRenderer; }
 		void prepare();
 		void cleanup();

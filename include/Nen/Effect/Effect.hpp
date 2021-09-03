@@ -8,6 +8,7 @@ namespace nen
 	{
 	public:
 		Effect(std::u16string_view path);
+		~Effect();
 		const Vector3 &GetPosition() { return this->position; }
 		void SetPosition(const Vector3 &pos) { this->position = pos; }
 		const std::u16string &GetPath() { return path; }
@@ -24,6 +25,13 @@ namespace nen
 
 		bool first = true;
 
+		enum class State
+		{
+			Active,
+			Dead
+		};
+
+		State state = State::Active;
 
 	private:
 		Vector3 position;

@@ -227,6 +227,11 @@ namespace nen
 				eraseSprite3d(sprite);
 			}
 
+			void ESRenderer::LoadEffect(std::shared_ptr<Effect> effect)
+			{
+				mEffectManager->GetEffect(effect->GetPath());
+			}
+
 			void ESRenderer::prepare()
 			{
 				if (!loadShader())

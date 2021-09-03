@@ -122,6 +122,11 @@ namespace nen::vk
 		}
 	}
 
+	void VKRenderer::LoadEffect(std::shared_ptr<Effect> effect)
+	{
+		mEffectManager->GetEffect(effect->GetPath());
+	}
+
 	void VKRenderer::prepare()
 	{
 		createBoxVertices();
@@ -1368,6 +1373,7 @@ namespace nen::vk
 					mEffectManager->GetManager()->StopEffect(i->handle);
 					i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
 					i->first = false;
+					i->state = Effect::State::Dead;
 				}
 			}
 			mEffectManager->GetManager()->SetLocation(i->handle, ::Effekseer::Vector3D(p.x, p.y, p.z));

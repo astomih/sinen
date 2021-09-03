@@ -232,6 +232,11 @@ namespace nen::gl
 		eraseSprite3d(sprite);
 	}
 
+	void GLRenderer::LoadEffect(std::shared_ptr<Effect> effect)
+	{
+		mEffectManager->GetEffect(effect->GetPath());
+	}
+
 	void GLRenderer::prepare()
 	{
 		if (!loadShader())

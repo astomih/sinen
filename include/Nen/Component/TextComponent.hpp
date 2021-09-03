@@ -10,7 +10,7 @@ namespace nen
 	{
 	public:
 		TextComponent(class Actor &, int drawOrder = 10000);
-		void SetString(const std::string &, const class Color &color = Palette::White, int drawSize = 30);
+		void SetString(const std::string &, const class Color &color = Palette::White);
 		void SetFont(std::shared_ptr<class Font> font);
 
 	private:

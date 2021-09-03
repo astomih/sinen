@@ -6,7 +6,7 @@ namespace nen
 	{
 	}
 
-	void TextComponent::SetString(const std::string &str, const Color &color, int pointSize)
+	void TextComponent::SetString(const std::string &str, const Color &color)
 	{
 		if (!mFont->isLoaded())
 		{

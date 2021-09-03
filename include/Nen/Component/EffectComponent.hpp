@@ -16,6 +16,6 @@ namespace nen
 
 	private:
 		Actor &mOwner;
-		class Effect *mEffect;
+		std::shared_ptr<class Effect> mEffect;
 	};
 }

@@ -28,7 +28,7 @@ namespace nen
 		{
 		case GraphicsAPI::Vulkan:
 			renderer = std::make_unique<vk::VKRenderer>();
-			SDL_Init(SDL_INIT_EVERYTHING);
+			SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER | SDL_INIT_EVENTS);
 			TTF_Init();
 			IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
 			mWindow = SDL_CreateWindow(
@@ -146,11 +146,11 @@ namespace nen
 		renderer->ChangeBufferDrawObject(drawObject, type);
 	}
 
-	void Renderer::AddEffect(Effect *effect)
+	void Renderer::AddEffect(std::shared_ptr<Effect> effect)
 	{
 		mEffects.emplace_back(effect);
 	}
-	void Renderer::RemoveEffect(Effect *effect)
+	void Renderer::RemoveEffect(std::shared_ptr<Effect> effect)
 	{
 		auto iter = std::find(mEffects.begin(), mEffects.end(), effect);
 		mEffects.erase(iter);
@@ -165,7 +165,6 @@ namespace nen
 	{
 		renderer->RemoveGUI(ui);
 	}
-
 
 	void Renderer::AddVertexArray(const VertexArray &vArray, std::string_view name)
 	{

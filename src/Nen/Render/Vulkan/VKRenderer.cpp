@@ -1303,16 +1303,17 @@ namespace nen::vk
 		{
 			auto device = m_base->GetVkDevice();
 			auto itr = std::find(mTextures2D.begin(), mTextures2D.end(), texture);
-			vkFreeDescriptorSets(device, m_descriptorPool, static_cast<uint32_t>(texture->uniformBuffers.size()), texture->descripterSet.data());
-			for (auto &i : (*itr)->uniformBuffers)
-			{
-				DestroyVulkanObject<VkBuffer>(device, i.buffer, &vkDestroyBuffer);
-				DestroyVulkanObject<VkDeviceMemory>(device, i.memory, &vkFreeMemory);
-			}
+			vkFreeDescriptorSets(device, m_descriptorPool, static_cast<uint32_t>(texture->descripterSet.size()), texture->descripterSet.data());
 			if (itr != mTextures2D.end())
 			{
+				for (auto &i : (*itr)->uniformBuffers)
+				{
+					m_base->destroyMemory.push_back(i.memory);
+					DestroyVulkanObject<VkBuffer>(device, i.buffer, &vkDestroyBuffer);
+				}
 				mTextures2D.erase(itr);
 			}
+			layouts.pop_back();
 		}
 	}
 	void VKRenderer::renderEffekseer(VkCommandBuffer command)
@@ -1335,6 +1336,8 @@ namespace nen::vk
 		for (auto i : this->mRenderer->GetEffects())
 		{
 			auto eref = mEffectManager->GetEffect(i->GetPath());
+			if (eref == 0)
+				continue;
 			auto p = i->GetPosition();
 			if (i->isLoop())
 			{

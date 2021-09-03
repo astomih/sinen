@@ -9,13 +9,12 @@ namespace nen
 	EffectComponent::~EffectComponent()
 	{
 		mOwner.GetScene().GetRenderer()->RemoveEffect(mEffect);
-		delete mEffect;
 		mEffect = nullptr;
 	}
 
 	void EffectComponent::Create(std::u16string_view filePath)
 	{
-		mEffect = new Effect(filePath);
+		mEffect =std::make_shared<Effect>(filePath);
 		mOwner.GetScene().GetRenderer()->AddEffect(mEffect);
 	}
 	void EffectComponent::SetLoop(bool loop, Timer interval)

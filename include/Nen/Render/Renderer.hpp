@@ -51,13 +51,13 @@ namespace nen
 
 		void ChangeBufferDrawObject(std::shared_ptr<class DrawObject> drawObject, TextureType type = TextureType::Image2D);
 
-		void AddEffect(class Effect *effect);
-		void RemoveEffect(class Effect *effect);
+		void AddEffect(std::shared_ptr<class Effect> effect);
+		void RemoveEffect(std::shared_ptr<class Effect> effect);
 
 		void AddGUI(std::shared_ptr<class UIScreen> ui);
 		void RemoveGUI(std::shared_ptr<class UIScreen> ui);
 
-		std::vector<Effect *> &GetEffects() { return mEffects; }
+		std::vector<std::shared_ptr<class Effect>> &GetEffects() { return mEffects; }
 
 		void AddVertexArray(const VertexArray &vArray, std::string_view name);
 
@@ -69,7 +69,7 @@ namespace nen
 
 		Color GetClearColor() { return this->clearColor; }
 
-		class EffectManager *GetEffect(const std::u16string &fileName);
+		std::shared_ptr<class EffectManager> GetEffect(const std::u16string &fileName);
 
 		void SetViewMatrix(const Matrix4 &view) { mView = view; }
 		Matrix4 GetViewMatrix() { return mView; }
@@ -86,8 +86,7 @@ namespace nen
 		Color clearColor = Palette::Black;
 		class Draw2DComponent *transPic;
 
-		// All effects components drawn
-		std::vector<class Effect *> mEffects;
+		std::vector<std::shared_ptr<class Effect>> mEffects;
 
 		// GameHandler
 		std::shared_ptr<Scene> mScene;

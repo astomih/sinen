@@ -36,7 +36,8 @@ NenEngineで使用しているライブラリです。
 - Dear ImGui (ImGui)
 - LLGI
 - Lua
-- mojoAL
+- mojoAL  (実装に不具合があるようなので見送り)
+- OpenAL 1.1  (mojoALが機能するまでの間)
 - rapidJSON
 - Simple DirectMedia Layer (SDL2)
 - SDL2_image

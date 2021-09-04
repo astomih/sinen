@@ -16,7 +16,7 @@ namespace nen
 	void Scene::Initialize()
 	{
 		mRenderer = RendererHandle::GetRenderer();
-		mAudioSystem = std::make_shared<AudioSystem>(*this);
+		mAudioSystem = std::make_shared<SoundSystem>(*this);
 		if (!mAudioSystem->Initialize())
 		{
 			Logger::Info("Failed to initialize audio system");

@@ -48,12 +48,12 @@ namespace nen
 			return AL_NONE;
 		}
 	}
-	AudioSystem::AudioSystem(Scene &scene)
+	SoundSystem::SoundSystem(Scene &scene)
 		: mScene(scene)
 	{
 	}
 
-	AudioSystem::~AudioSystem()
+	SoundSystem::~SoundSystem()
 	{
 		for (auto &i : buffers)
 		{
@@ -64,7 +64,7 @@ namespace nen
 		alcCloseDevice(device);
 	}
 
-	bool AudioSystem::Initialize()
+	bool SoundSystem::Initialize()
 	{
 		device = alcOpenDevice(NULL);
 		if (!device)
@@ -89,21 +89,21 @@ namespace nen
 		return true;
 	}
 
-	void AudioSystem::Shutdown()
+	void SoundSystem::Shutdown()
 	{
 	}
 
-	void AudioSystem::Update(float deltaTime)
+	void SoundSystem::Update(float deltaTime)
 	{
 	}
 
-	AudioEvent AudioSystem::PlayEvent(std::string_view name, uint32_t sourceID)
+	SoundEvent SoundSystem::PlayEvent(std::string_view name, uint32_t sourceID)
 	{
-		AudioEvent e(shared_from_this(), name, sourceID);
+		SoundEvent e(shared_from_this(), name, sourceID);
 		return e;
 	}
 
-	void AudioSystem::SetListener(const Vector3 &pos, const Quaternion &direction)
+	void SoundSystem::SetListener(const Vector3 &pos, const Quaternion &direction)
 	{
 		alListener3f(AL_POSITION, pos.x, pos.y, pos.z);
 		auto at = Vector3::Transform(Vector3::NegUnitZ, direction);
@@ -112,7 +112,7 @@ namespace nen
 		alListenerfv(AL_ORIENTATION, ori);
 	}
 
-	void AudioSystem::LoadAudioFile(std::string_view fileName)
+	void SoundSystem::LoadAudioFile(std::string_view fileName)
 	{
 		SDL_AudioSpec spec;
 		ALenum alfmt = AL_NONE;
@@ -132,7 +132,7 @@ namespace nen
 		SDL_FreeWAV(buffer);
 	}
 
-	void AudioSystem::UnloadAudioFile(std::string_view fileName)
+	void SoundSystem::UnloadAudioFile(std::string_view fileName)
 	{
 		std::string name = fileName.data();
 		if (buffers.contains(name))
@@ -143,7 +143,7 @@ namespace nen
 		}
 	}
 
-	uint32_t AudioSystem::NewSource(std::string_view name)
+	uint32_t SoundSystem::NewSource(std::string_view name)
 	{
 		ALuint source;
 		alGenSources(1, &source);
@@ -151,7 +151,7 @@ namespace nen
 		return source;
 	}
 
-	void AudioSystem::DeleteSource(uint32_t sourceID)
+	void SoundSystem::DeleteSource(uint32_t sourceID)
 	{
 		alDeleteBuffers(1, &sourceID);
 	}

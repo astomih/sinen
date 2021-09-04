@@ -1,17 +1,17 @@
 #include <Nen.hpp>
 namespace nen
 {
-	AudioComponent::AudioComponent(Actor &owner, int updateOrder)
+	SoundComponent::SoundComponent(Actor &owner, int updateOrder)
 		: Component(owner, updateOrder)
 	{
 	}
 
-	AudioComponent::~AudioComponent()
+	SoundComponent::~SoundComponent()
 	{
 		StopAllEvents();
 	}
 
-	void AudioComponent::Update(float deltaTime)
+	void SoundComponent::Update(float deltaTime)
 	{
 		for (auto &i : mEvents)
 		{
@@ -19,7 +19,7 @@ namespace nen
 		}
 	}
 
-	void AudioComponent::OnUpdateWorldTransform()
+	void SoundComponent::OnUpdateWorldTransform()
 	{
 		// Update 3D events' world transforms
 		Matrix4 world = mOwner.GetWorldTransform();
@@ -31,7 +31,7 @@ namespace nen
 		}
 	}
 
-	void AudioComponent::StopAllEvents()
+	void SoundComponent::StopAllEvents()
 	{
 		// Stop all sounds
 		for (auto &e : mEvents)
@@ -42,7 +42,7 @@ namespace nen
 		mEvents.clear();
 	}
 
-	void AudioComponent::AddEvent(const AudioEvent &e)
+	void SoundComponent::AddEvent(const SoundEvent &e)
 	{
 		mEvents.emplace_back(e);
 	}

@@ -2,7 +2,7 @@
 #include "../Math/Math.hpp"
 #include "../Math/Vector3.hpp"
 #include "../Math/Quaternion.hpp"
-#include "AudioEvent.hpp"
+#include "SoundEvent.hpp"
 #include <unordered_map>
 #include <string>
 
@@ -14,19 +14,19 @@ namespace
 
 namespace nen
 {
-	class AudioSystem : public std::enable_shared_from_this<AudioSystem>
+	class SoundSystem : public std::enable_shared_from_this<SoundSystem>
 	{
 	public:
-		//AudioSystem Constructor
-		AudioSystem(class Scene &scene);
-		//AudioSystem Destructor
-		~AudioSystem();
+		//SoundSystem Constructor
+		SoundSystem(class Scene &scene);
+		//SoundSystem Destructor
+		~SoundSystem();
 
 		bool Initialize();
 		void Shutdown();
 		void Update(float deltaTime);
 
-		AudioEvent PlayEvent(std::string_view name, uint32_t sourceID = 0);
+		SoundEvent PlayEvent(std::string_view name, uint32_t sourceID = 0);
 
 		void LoadAudioFile(std::string_view fileName);
 		void UnloadAudioFile(std::string_view fileName);
@@ -38,7 +38,7 @@ namespace nen
 		void SetListener(const Vector3 &pos, const Quaternion &direction);
 
 	protected:
-		friend class AudioEvent;
+		friend class SoundEvent;
 
 	private:
 		Scene &mScene;

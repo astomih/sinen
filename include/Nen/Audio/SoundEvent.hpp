@@ -5,17 +5,17 @@
 #include <cstdint>
 namespace nen
 {
-	struct AudioParameter
+	struct SoundParameter
 	{
 		Vector3 position;
 		uint32_t source_id;
 		uint32_t buffer_id;
 	};
 
-	class AudioEvent
+	class SoundEvent
 	{
 	public:
-		AudioEvent() = default;
+		SoundEvent() = default;
 		bool IsValid();
 		// Restart event from begining
 		void Restart();
@@ -34,13 +34,13 @@ namespace nen
 		const Vector3 &GetPosition();
 
 	protected:
-		friend class AudioSystem;
-		AudioEvent(std::shared_ptr<class AudioSystem> audiosystem, std::string_view name, uint32_t sourceID = 0);
+		friend class SoundSystem;
+		SoundEvent(std::shared_ptr<class SoundSystem> audiosystem, std::string_view name, uint32_t sourceID = 0);
 
 	private:
-		std::shared_ptr<class AudioSystem> audiosys;
+		std::shared_ptr<class SoundSystem> audiosys;
 		std::string mName;
-		AudioParameter param;
+		SoundParameter param;
 		float volume = 1.f;
 		float pitch = 1.f;
 		Vector3 pos;

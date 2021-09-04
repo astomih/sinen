@@ -7,7 +7,7 @@
 #include "../Input/InputSystem.hpp"
 namespace nen
 {
-	class AudioSystem;
+	class SoundSystem;
 	class Scene : public std::enable_shared_from_this<Scene>
 	{
 	public:
@@ -76,7 +76,7 @@ namespace nen
 			}
 		}
 
-		std::shared_ptr<AudioSystem> GetAudioSystem() const { return mAudioSystem; }
+		std::shared_ptr<SoundSystem> GetAudioSystem() const { return mAudioSystem; }
 
 		std::shared_ptr<class Renderer> GetRenderer() const { return mRenderer; }
 
@@ -108,7 +108,7 @@ namespace nen
 
 		// All the actors in the game
 		std::vector<std::shared_ptr<class Actor>> mActors;
-		std::shared_ptr<class AudioSystem> mAudioSystem;
+		std::shared_ptr<class SoundSystem> mAudioSystem;
 
 	private:
 		void UnloadData();

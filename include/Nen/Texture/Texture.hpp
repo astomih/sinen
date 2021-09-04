@@ -1,6 +1,7 @@
 #pragma once
 #include "../Math/Matrix4.hpp"
 #include "../Vertex/Vertex.hpp"
+#include "../Color/Color.hpp"
 #include <string>
 #include <memory>
 #include <unordered_map>
@@ -20,6 +21,8 @@ namespace nen
 		~Texture();
 		bool Load(std::string_view fileName);
 		bool LoadFromMemory(std::vector<char> &buffer, std::string_view ID);
+
+		void CreateFromColor(const Color &color,std::string_view ID);
 
 		const int GetWidth() { return width; }
 		const int GetHeight() { return height; }

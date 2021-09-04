@@ -3,6 +3,7 @@
 #include "../Math/Vector3.hpp"
 #include "../Math/Quaternion.hpp"
 #include "../Component/Component.hpp"
+#include "../Input/InputSystem.hpp"
 #include <vector>
 #include <cstdint>
 #include <memory>
@@ -24,13 +25,9 @@ namespace nen
 		uint32_t handle;
 		Actor(Scene &scene);
 		virtual ~Actor();
-		void Update(float deltaTime);
-		void UpdateComponents(float deltaTime);
-		virtual void UpdateActor(float deltaTime);
+		void UpdateActor(float deltaTime);
+		virtual void Update(float deltaTime);
 		virtual std::string GetID() { return ""; }
-
-		void ProcessInput(const struct InputState &state);
-		virtual void ActorInput(const struct InputState &state);
 
 		const Vector3 &GetPosition() const noexcept { return mPosition; }
 		void SetPosition(const Vector3 &pos) noexcept
@@ -133,6 +130,8 @@ namespace nen
 		bool isRecompute() { return mRecomputeWorldTransform; }
 		void RecomuteFinished() { mRecomputeWorldTransform = false; }
 		void AddedScene() { addedSceneActorList = true; }
+
+		const InputState &GetInput();
 
 	protected:
 		bool mRecomputeWorldTransform;

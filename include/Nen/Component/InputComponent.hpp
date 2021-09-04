@@ -8,9 +8,9 @@ namespace nen
 	{
 	public:
 		// Lower update order to update first
-		InputComponent(class Actor& owner);
+		InputComponent(class Actor &owner);
 
-		void ProcessInput(const struct InputState& state) override;
+		void Update(float deltaTime) override;
 
 		// Getters/setters for private variables
 		float GetMaxForward() const { return mMaxForwardSpeed; }
@@ -33,6 +33,7 @@ namespace nen
 		void SetCounterClockwiseKey(int key) { mCounterClockwiseKey = key; }
 
 		void SetDirectionMode(bool Use) { mUseDirectionMode = Use; }
+
 	private:
 		// The maximum forward/angular speeds
 		float mMaxForwardSpeed = 0;

@@ -42,13 +42,11 @@ namespace nen
 	}
 
 	/*
-		breaf:main loop
+		メインループ
 	*/
 	void Scene::RunLoop()
 	{
-		// Call system events
 		ProcessInput();
-		//update actor, components
 		UpdateScene();
 		//draw sprites, meshes
 		mRenderer->Draw();
@@ -89,16 +87,6 @@ namespace nen
 		if (!mIsRunning)
 			return;
 		mUpdatingActors = true;
-		if (mGameState == GameState::Gameplay)
-		{
-			for (auto actor : mActors)
-			{
-				if (actor->GetState() == Actor::State::Active)
-				{
-					actor->ProcessInput(state);
-				}
-			}
-		}
 
 		mUpdatingActors = false;
 	}
@@ -118,7 +106,7 @@ namespace nen
 		mUpdatingActors = true;
 		for (auto actor : mActors)
 		{
-			actor->Update(deltaTime);
+			actor->UpdateActor(deltaTime);
 		}
 		mUpdatingActors = false;
 

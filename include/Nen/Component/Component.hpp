@@ -1,4 +1,5 @@
 #pragma once
+#include "../Input/InputSystem.hpp"
 #include <cstdint>
 #include <memory>
 
@@ -15,8 +16,6 @@ namespace nen
 		virtual ~Component();
 		// Update this component by delta time
 		virtual void Update(float deltaTime);
-		// Process input for this component
-		virtual void ProcessInput(const struct InputState &state) {}
 		// Called when world transform changes
 		virtual void OnUpdateWorldTransform() {}
 
@@ -25,12 +24,13 @@ namespace nen
 
 		void AddedActor() { addedComponentList = true; }
 
+		const InputState &GetInput();
+
 	protected:
 		// Owning actor
 		Actor &mOwner;
 		// Update order of component
 		int mUpdateOrder;
 		bool addedComponentList = false;
-
 	};
 }

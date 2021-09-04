@@ -32,7 +32,7 @@ namespace nen
 	}
 	SDL_Surface &SurfaceHandle::Load(std::string_view string)
 	{
-			return *surfaces[std::string(string)].get();
+		return *surfaces[std::string(string)].get();
 	}
 	class Texture::Impl
 	{
@@ -93,24 +93,12 @@ namespace nen
 		return true;
 	}
 
-	/*
-	void Texture::SetSurface(std::unique_ptr<::SDL_Surface, SDLObjectCloser> surface)
+	void Texture::CreateFromColor(const Color &color, std::string_view ID)
 	{
-		width = surface->w;
-		height = surface->h;
-		impl->SetSurface(std::move(surface));
+		auto surface = std::unique_ptr<::SDL_Surface, SDLObjectCloser>(::SDL_CreateRGBSurface(NULL, 1, 1, 32, 0, 0, 0, 0));
+		::SDL_FillRect(surface.get(), NULL, ::SDL_MapRGB(surface->format, color.r * 255, color.g * 255, color.b * 255));
+		width = 1;
+		height = 1;
+		SurfaceHandle::Register(ID, std::move(surface));
 	}
-
-	const ::SDL_Surface& Texture::GetSurface()
-	{
-		if (impl->GetSurface())
-			return *impl->GetSurface();
-		impl->SetSurface(std::move(std::unique_ptr<::SDL_Surface, SDLObjectCloser>(::SDL_CreateRGBSurface(NULL, 32, 32, 32, 0, 0, 0, 0))));
-		::SDL_FillRect(impl->GetSurface(), NULL, SDL_MapRGBA(impl->GetSurface()->format, 0, 0, 0, 0));
-		if (impl->GetSurface())
-			return *impl->GetSurface();
-		Logger::Error("%s", SDL_GetError());
-	}
-	*/
-
 }

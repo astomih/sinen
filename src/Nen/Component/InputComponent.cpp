@@ -2,22 +2,14 @@
 #include <iostream>
 namespace nen
 {
-	InputComponent::InputComponent(class Actor& owner)
-		:MoveComponent(owner)
-		, mForwardKey(0)
-		, mBackKey(0)
-		, mClockwiseKey(0)
-		, mCounterClockwiseKey(0)
-		, mLeftMoveKey(0)
-		, mMaxAngularSpeed(0)
-		, mMaxForwardSpeed(0)
-		, mMaxLeftRightSpeed(0)
-		, mRightMoveKey(0)
+	InputComponent::InputComponent(class Actor &owner)
+		: MoveComponent(owner), mForwardKey(0), mBackKey(0), mClockwiseKey(0), mCounterClockwiseKey(0), mLeftMoveKey(0), mMaxAngularSpeed(0), mMaxForwardSpeed(0), mMaxLeftRightSpeed(0), mRightMoveKey(0)
 	{
 	}
 
-	void InputComponent::ProcessInput(const InputState& state)
+	void InputComponent::Update(float deltaTime)
 	{
+		auto state = GetInput();
 		SetUseDirectionMode(mUseDirectionMode);
 		if (mUseDirectionMode)
 		{

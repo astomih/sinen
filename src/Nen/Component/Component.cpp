@@ -9,11 +9,13 @@ namespace nen
 
 	Component::~Component()
 	{
-		//if (addedComponentList)
-		//	mOwner.RemoveComponent(shared_from_this());
 	}
 
 	void Component::Update(float deltaTime)
 	{
+	}
+	const InputState &Component::GetInput()
+	{
+		return mOwner.GetInput();
 	}
 }

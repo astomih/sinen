@@ -13,43 +13,20 @@ namespace nen
 		mComponents.clear();
 	}
 
-	void Actor::Update(float deltaTime)
+	void Actor::UpdateActor(float deltaTime)
 	{
 		if (mState == State::Active)
 		{
-			UpdateComponents(deltaTime);
-			UpdateActor(deltaTime);
+			for (auto comp : mComponents)
+			{
+				comp->Update(deltaTime);
+			}
+			Update(deltaTime);
 			ComputeWorldTransform();
 		}
 	}
 
-	void Actor::UpdateComponents(float deltaTime)
-	{
-		for (auto comp : mComponents)
-		{
-			comp->Update(deltaTime);
-		}
-	}
-
-	void Actor::UpdateActor(float deltaTime)
-	{
-	}
-
-	void Actor::ProcessInput(const InputState &state)
-	{
-		if (mState == State::Active)
-		{
-			// First process input for components
-			for (auto comp : mComponents)
-			{
-				comp->ProcessInput(state);
-			}
-
-			ActorInput(state);
-		}
-	}
-
-	void Actor::ActorInput(const InputState &state)
+	void Actor::Update(float deltaTime)
 	{
 	}
 
@@ -79,4 +56,5 @@ namespace nen
 			}
 		}
 	}
+	const InputState &Actor::GetInput() { return mScene.GetInput(); }
 }

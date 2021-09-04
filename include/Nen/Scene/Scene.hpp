@@ -46,13 +46,13 @@ namespace nen
 			for (auto i : mActors)
 			{
 				auto actor = std::dynamic_pointer_cast<T>(i);
-				if (actor != nullptr && i->handle)
+				if (actor != nullptr && i->handle == handle)
 					return actor;
 			}
 			for (auto i : mPendingActors)
 			{
 				auto actor = std::dynamic_pointer_cast<T>(i);
-				if (actor != nullptr && i->handle)
+				if (actor != nullptr && i->handle == handle)
 					return actor;
 			}
 			return nullptr;

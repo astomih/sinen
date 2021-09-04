@@ -4,7 +4,7 @@
 namespace nen
 {
 	Actor::Actor(Scene &scene)
-		: mState(State::Active), mPosition(Vector3::Zero), mRotation(Quaternion::Identity), mScene(scene), mRecomputeWorldTransform(true), mScale(Vector3(1.f, 1.f, 1.f)), mComponents()
+		: mState(State::Active), mPosition(Vector3::Zero), mRotation(Quaternion::Identity), mScene(scene), mRecomputeWorldTransform(true), mScale(Vector3(1.f, 1.f, 1.f)), mComponents(), handle(0)
 	{
 	}
 

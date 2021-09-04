@@ -4,7 +4,7 @@
 namespace nen
 {
 	Actor::Actor(Scene &scene)
-		: mState(EActive), mPosition(Vector3::Zero), mRotation(Quaternion::Identity), mScene(scene), mRecomputeWorldTransform(true), mScale(Vector3(1.f, 1.f, 1.f)), mComponents()
+		: mState(State::Active), mPosition(Vector3::Zero), mRotation(Quaternion::Identity), mScene(scene), mRecomputeWorldTransform(true), mScale(Vector3(1.f, 1.f, 1.f)), mComponents()
 	{
 	}
 
@@ -15,7 +15,7 @@ namespace nen
 
 	void Actor::Update(float deltaTime)
 	{
-		if (mState == EActive)
+		if (mState == State::Active)
 		{
 			UpdateComponents(deltaTime);
 			UpdateActor(deltaTime);
@@ -37,7 +37,7 @@ namespace nen
 
 	void Actor::ProcessInput(const InputState &state)
 	{
-		if (mState == EActive)
+		if (mState == State::Active)
 		{
 			// First process input for components
 			for (auto comp : mComponents)

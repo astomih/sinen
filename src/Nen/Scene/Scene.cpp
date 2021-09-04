@@ -52,6 +52,8 @@ namespace nen
 		UpdateScene();
 		//draw sprites, meshes
 		mRenderer->Draw();
+		mInputSystem->PrepareForUpdate();
+		mInputSystem->Update();
 	}
 
 	void Scene::ProcessInput()
@@ -65,13 +67,9 @@ namespace nen
 			case SDL_QUIT:
 			{
 				mIsRunning = false;
-				mGameState = EQuit;
+				mGameState = GameState::Quit;
 			}
 			break;
-			case SDL_KEYDOWN:
-				break;
-			case SDL_MOUSEBUTTONDOWN:
-				break;
 			default:
 				break;
 			}
@@ -82,25 +80,26 @@ namespace nen
 		if (state.Keyboard.GetKeyState(KeyCode::ESCAPE) == ButtonState::Released)
 		{
 			mIsRunning = false;
-			mGameState = EQuit;
+			mGameState = GameState::Quit;
 		}
-		SystemInput(state);
-		if(!mIsRunning)
+		if (state.Keyboard.GetKeyState(KeyCode::F3) == ButtonState::Pressed)
+		{
+			GetRenderer()->toggleShowImGui();
+		}
+		if (!mIsRunning)
 			return;
 		mUpdatingActors = true;
-		if (mGameState == EGameplay)
+		if (mGameState == GameState::Gameplay)
 		{
 			for (auto actor : mActors)
 			{
-				if (actor->GetState() == Actor::EActive)
+				if (actor->GetState() == Actor::State::Active)
 				{
 					actor->ProcessInput(state);
 				}
 			}
 		}
 
-		mInputSystem->PrepareForUpdate();
-		mInputSystem->Update();
 		mUpdatingActors = false;
 	}
 
@@ -126,7 +125,7 @@ namespace nen
 		//erase dead actors
 		for (auto it = mActors.begin(); it != mActors.end();)
 		{
-			if ((*it)->GetState() == Actor::EDead)
+			if ((*it)->GetState() == Actor::State::Dead)
 			{
 				it = mActors.erase(it);
 			}

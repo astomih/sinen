@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <cstdint>
+#include "../Input/InputSystem.hpp"
 namespace nen
 {
 	class AudioSystem;
@@ -79,11 +80,11 @@ namespace nen
 
 		std::shared_ptr<class Renderer> GetRenderer() const { return mRenderer; }
 
-		enum GameState
+		enum class GameState
 		{
-			EGameplay,
-			EPaused,
-			EQuit
+			Gameplay,
+			Paused,
+			Quit
 		};
 
 		GameState GetState() const { return mGameState; }
@@ -92,17 +93,18 @@ namespace nen
 		void Quit()
 		{
 			mIsRunning = false;
-			mGameState = EQuit;
+			mGameState = GameState::Quit;
 		}
 		void ExitScene() { mIsRunning = false; }
 
 		void AddGUI(std::shared_ptr<class UIScreen> ui);
 		void RemoveGUI(std::shared_ptr<class UIScreen> ui);
 
+		const InputState &GetInput() { return mInputSystem->GetState(); }
+
 	protected:
 		virtual void Setup();
 		virtual void Update(float deltaTime);
-		virtual void SystemInput(const struct InputState &) {}
 
 		// All the actors in the game
 		std::vector<std::shared_ptr<class Actor>> mActors;
@@ -124,7 +126,7 @@ namespace nen
 		bool mIsRunning = true;
 		// Map for text localization
 		std::unordered_map<std::string, std::string> mText;
-		GameState mGameState = GameState::EGameplay;
+		GameState mGameState = GameState::Gameplay;
 	};
 	void ChangeScene(std::shared_ptr<Scene> newScene);
 }

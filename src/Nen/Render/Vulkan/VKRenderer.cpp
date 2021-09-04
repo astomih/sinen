@@ -221,7 +221,8 @@ namespace nen::vk
 		draw2d(command);
 		drawGUI(command);
 		renderEffekseer(command);
-		renderImGUI(command);
+		if (GetRenderer()->isShowImGui())
+			renderImGUI(command);
 		pipelineOpaque.Bind(command);
 		auto result = vkWaitForFences(m_base->GetVkDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
 		if (result != VK_SUCCESS)

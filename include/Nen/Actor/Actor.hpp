@@ -15,11 +15,11 @@ namespace nen
 	class Actor : public std::enable_shared_from_this<Actor>
 	{
 	public:
-		enum State
+		enum class State
 		{
-			EActive,
-			EPaused,
-			EDead
+			Active,
+			Paused,
+			Dead
 		};
 		uint32_t handle;
 		Actor(Scene &scene);

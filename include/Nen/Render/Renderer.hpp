@@ -82,6 +82,9 @@ namespace nen
 			return mWindow;
 		}
 
+		void toggleShowImGui() { showImGui = !showImGui; }
+		bool isShowImGui() { return showImGui; }
+
 	private:
 		Color clearColor = Palette::Black;
 		class Draw2DComponent *transPic;
@@ -103,6 +106,7 @@ namespace nen
 		// Renderer
 		std::unique_ptr<class IRenderer> renderer;
 		GraphicsAPI RendererAPI;
+		bool showImGui = false;
 	};
 
 	class IRenderer

@@ -10,7 +10,7 @@ namespace nen
 	{
 		if (!mFont->isLoaded())
 		{
-			mFont->Load("Assets/Font/mplus/mplus-1p-medium.ttf", 32);
+			mFont->LoadFromFile("Assets/Font/mplus/mplus-1p-medium.ttf", 32);
 		}
 
 		if (this->GetSprite())

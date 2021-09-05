@@ -32,7 +32,7 @@ namespace nen
 		};
 
 		// ファイルからフォントを読み込む
-		bool Load(std::string_view fontName, int pointSize);
+		bool LoadFromFile(std::string_view fontName, int pointSize);
 		bool isLoaded() { return isLoad; }
 		// フォントを解放
 		void Unload();

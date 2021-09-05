@@ -1,73 +1,35 @@
-#include <Nen/Nen.hpp>
-#ifdef EMSCRIPTEN
-#include <emscripten.h>
-#endif
-#include <memory>
+﻿#include <Nen/Nen.hpp>
 
-class TestScene : public nen::Scene
+/**
+ *  メインシーン
+ * データメンバが定義出来ないので、
+ * 基本的に各種設定を行って他のシーンに移るための踏み台となる
+*/
+void Main::Setup()
 {
-public:
-    TestScene() {}
-    void Update(float deltaTime) override
-    {
-    }
+    //背景を黒に設定
+    GetRenderer()->SetClearColor(nen::Palette::Black);
 
-private:
-    void LoadData() override
-    {
-        auto font = std::make_shared<nen::Font>();
+    //フォントの読み込み
+    auto font = std::make_shared<nen::Font>();
+    font->LoadFromFile("Assets/Font/mplus/mplus-1p-medium.ttf", 72);
 
-        if (!font->Load("Assets/Font/SoukouMincho-Font/SoukouMincho.ttf"))
-        {
-            //Do something
-        }
-        auto fontActor = std::make_shared<nen::Actor>(*this);
-        auto fontcomp = std::make_shared<nen::FontComponent>(*fontActor);
-        fontcomp->SetFont(font);
-        fontcomp->SetString("Hello World!", nen::Color::White, 30);
-        fontActor->AddComponent(fontcomp);
-        this->AddActor(fontActor);
-    }
-};
-std::function<void()> loop;
-void main_loop() { loop(); }
-int main(int argc, char **argv)
+    //アクターを追加
+    auto actor = this->AddActor<nen::Actor>();
+
+    //アクターにコンポーネントを追加
+    auto text = actor->AddComponent<nen::TextComponent>();
+    text->SetFont(font);
+    text->SetString("Hello,World!", nen::Palette::White);
+}
+
+void Main::Update(float deltaTime)
 {
-    nen::Window::name = "test";
-    std::shared_ptr<nen::Renderer> renderer;
+    //キーボードのQが押されたら終了
+    if (GetInput().Keyboard.GetKeyValue(nen::KeyCode::Q))
+        ExitScene();
 
-    try
-    {
-#ifndef EMSCRIPTEN
-        renderer = std::make_shared<nen::Renderer>(nen::GraphicsAPI::Vulkan);
-#else
-        renderer = std::make_shared<nen::Renderer>(nen::GraphicsAPI::ES);
-#endif
-    }
-    catch (const std::bad_alloc &e)
-    {
-        std::cerr << e.what() << '\n';
-        return -1;
-    }
-
-    auto scene = std::make_shared<TestScene>();
-    scene->Initialize(renderer);
-
-    loop = [&]
-    {
-        if (scene->isRunning())
-        {
-            scene->RunLoop();
-        }
-        else
-            scene->Shutdown();
-    };
-
-#ifndef EMSCRIPTEN
-    while (true)
-        loop();
-#else
-    emscripten_set_main_loop(main_loop, 120, true);
-#endif
-    return 0;
+    /**
+     * 描画処理は裏側で行っている
+    */
 }

@@ -4,7 +4,7 @@
 #include "../Texture/SurfaceHandle.hpp"
 namespace nen
 {
-	bool Font::Load(std::string_view fontName, int pointSize)
+	bool Font::LoadFromFile(std::string_view fontName, int pointSize)
 	{
 		this->fontName = fontName;
 		this->pointSize = pointSize;

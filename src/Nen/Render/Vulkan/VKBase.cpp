@@ -498,6 +498,11 @@ namespace nen::vk
 			{
 				Logger::Fatal("vkQueueSubmit Error! VkResult:%d", result);
 			}
+			result = vkQueueWaitIdle(m_deviceQueue);
+			if (result != VkResult::VK_SUCCESS)
+			{
+				Logger::Fatal("vkQueueWaitIdle Error! VkResult:%d", result);
+			}
 		}
 
 		// Present 処理

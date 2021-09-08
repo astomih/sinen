@@ -221,8 +221,7 @@ namespace nen::vk
 		draw2d(command);
 		drawGUI(command);
 		renderEffekseer(command);
-		if (GetRenderer()->isShowImGui())
-			renderImGUI(command);
+		renderImGUI(command);
 		pipelineOpaque.Bind(command);
 		auto result = vkWaitForFences(m_base->GetVkDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
 		if (result != VK_SUCCESS)
@@ -273,7 +272,9 @@ namespace nen::vk
 				vkMapMemory(m_base->GetVkDevice(), memory, 0, VK_WHOLE_SIZE, 0, &p);
 				memcpy(p, &sprite->drawObject->param, sizeof(ShaderParameters));
 				vkUnmapMemory(m_base->GetVkDevice(), memory);
+				//vkCmdPushConstants(command, mPipelineLayout.GetLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ShaderParameters), &sprite->drawObject->param);
 			}
+
 			vkCmdDrawIndexed(command, m_VertexArrays[sprite->drawObject->vertexIndex].indexCount, 1, 0, 0, 0);
 		}
 	}
@@ -469,14 +470,17 @@ namespace nen::vk
 		ImGui::NewFrame();
 
 		// ImGui ウィジェットを描画する.
-		ImGui::Begin("Engine Info");
-		ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
-		if (ImGui::Button("toggleAPI"))
+		if (GetRenderer()->isShowImGui())
 		{
-			std::ofstream ofs("./api");
-			ofs << "OpenGL";
+			ImGui::Begin("Engine Info");
+			ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
+			if (ImGui::Button("toggleAPI"))
+			{
+				std::ofstream ofs("./api");
+				ofs << "OpenGL";
+			}
+			ImGui::End();
 		}
-		ImGui::End();
 
 		ImGui::Render();
 		ImGui_ImplVulkan_RenderDrawData(

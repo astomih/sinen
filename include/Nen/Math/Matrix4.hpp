@@ -1,6 +1,7 @@
 #pragma once
 #include "Math.hpp"
 #include "Vector3.hpp"
+#include "Quaternion.hpp"
 #include <string>
 namespace nen
 {
@@ -26,6 +27,10 @@ namespace nen
             return reinterpret_cast<const float *>(&mat[0][0]);
         }
 
+        float *operator[](const size_t index)
+        {
+            return mat[index];
+        }
         // Matrix multiplication (a * b)
         friend Matrix4 operator*(const Matrix4 &a, const Matrix4 &b)
         {
@@ -219,6 +224,8 @@ namespace nen
 
         // Create a rotation matrix from a quaternion
         static Matrix4 CreateFromQuaternion(const class Quaternion &q);
+
+        static Quaternion ToQuaternion(const Matrix4 &m);
 
         static Matrix4 LookAt(const Vector3 &eye, const Vector3 &at, const Vector3 &up);
 

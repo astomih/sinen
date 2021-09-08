@@ -119,6 +119,7 @@ namespace nen::gl
 		}
 		glDisable(GL_BLEND);
 		Effekseer::Matrix44 mat;
+
 		auto nenm = mRenderer->GetViewMatrix();
 		memcpy(&mat, &nenm, sizeof(float) * 16);
 
@@ -169,16 +170,19 @@ namespace nen::gl
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplSDL2_NewFrame(mWindow);
 		ImGui::NewFrame();
-
-		// Draw ImGUI widgets.
-		ImGui::Begin("Engine Info");
-		ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
-		if (ImGui::Button("toggleAPI"))
+		if (mRenderer->isShowImGui())
 		{
-			std::ofstream ofs("./api");
-			ofs << "Vulkan";
+
+			// Draw ImGUI widgets.
+			ImGui::Begin("Engine Info");
+			ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
+			if (ImGui::Button("toggleAPI"))
+			{
+				std::ofstream ofs("./api");
+				ofs << "Vulkan";
+			}
+			ImGui::End();
 		}
-		ImGui::End();
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

@@ -101,6 +101,7 @@ namespace nen
 		void RemoveGUI(std::shared_ptr<class UIScreen> ui);
 
 		const InputState &GetInput() { return mInputSystem->GetState(); }
+		const InputSystem &GetInputSystem() { return *mInputSystem; }
 
 	protected:
 		virtual void Setup();

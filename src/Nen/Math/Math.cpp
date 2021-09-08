@@ -207,6 +207,76 @@ namespace nen
 			}
 		}
 	}
+	Quaternion Matrix4::ToQuaternion(const Matrix4 &m)
+	{
+		auto px = m.mat[0][0] - m.mat[1][1] - m.mat[2][2] + 1;
+		auto py = -m.mat[0][0] + m.mat[1][1] - m.mat[2][2] + 1;
+		auto pz = -m.mat[0][0] - m.mat[1][1] + m.mat[2][2] + 1;
+		auto pw = m.mat[0][0] + m.mat[1][1] + m.mat[2][2] + 1;
+
+		int flag = 0;
+		float max = px;
+		if (max < py)
+		{
+			flag = 1;
+			max = py;
+		}
+		if (max < pz)
+		{
+			flag = 2;
+			max = pz;
+		}
+		if (max < pw)
+		{
+			flag = 3;
+			max = pw;
+		}
+		switch (flag)
+		{
+		case 0:
+		{
+			auto x = Math::Sqrt(px) * 0.5f;
+			auto d = 1 / (4 * x);
+			return Quaternion(
+				x,
+				(m.mat[1][0] + m.mat[0][1]) * d,
+				(m.mat[0][2] + m.mat[2][0]) * d,
+				(m.mat[2][1] - m.mat[1][2]) * d);
+		}
+		case 1:
+		{
+			auto y = Math::Sqrt(py) * 0.5f;
+			auto d = 1 / (4 * y);
+			return Quaternion(
+				(m.mat[1][0] + m.mat[0][1]) * d,
+				y,
+				(m.mat[2][1] + m.mat[1][2]) * d,
+				(m.mat[0][2] - m.mat[2][0]) * d);
+		}
+		case 2:
+		{
+			auto z = Math::Sqrt(pz) * 0.5f;
+			auto d = 1 / (4 * z);
+			return Quaternion(
+				(m.mat[0][2] + m.mat[2][0]) * d,
+				(m.mat[2][1] + m.mat[1][2]) * d,
+				z,
+				(m.mat[1][0] - m.mat[0][1]) * d);
+		}
+		case 3:
+		{
+			auto w = Math::Sqrt(pw) * 0.5f;
+			auto d = 1 / (4 * w);
+			return Quaternion(
+				(m.mat[2][1] - m.mat[1][2]) * d,
+				(m.mat[0][2] - m.mat[2][0]) * d,
+				(m.mat[1][0] - m.mat[0][1]) * d,
+				w);
+		}
+		default:
+			return Quaternion();
+		}
+	}
 
 	Matrix4 Matrix4::LookAt(const Vector3 &eye, const Vector3 &at, const Vector3 &up)
 	{

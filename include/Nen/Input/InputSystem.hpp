@@ -30,7 +30,7 @@ namespace nen
 		ButtonState GetKeyState(KeyCode keyCode) const;
 
 	private:
-		const uint8_t* mCurrState;
+		const uint8_t *mCurrState;
 		std::array<uint8_t, static_cast<int>(KeyCode::NUM_KEYCODES)> mPrevState;
 	};
 
@@ -41,8 +41,10 @@ namespace nen
 		friend class InputSystem;
 
 		// For mouse position
-		const Vector2& GetPosition() const { return mMousePos; }
-		const Vector2& GetScrollWheel() const { return mScrollWheel; }
+		void SetPosition(const Vector2 &pos) const;
+		void HideCursor(bool hide) const;
+		const Vector2 &GetPosition() const { return mMousePos; }
+		const Vector2 &GetScrollWheel() const { return mScrollWheel; }
 		bool IsRelative() const { return mIsRelative; }
 
 		// For buttons
@@ -71,8 +73,8 @@ namespace nen
 		bool GetButtonValue(GameControllerButton button) const;
 		ButtonState GetButtonState(GameControllerButton button) const;
 
-		const Vector2& GetLeftStick() const { return mLeftStick; }
-		const Vector2& GetRightStick() const { return mRightStick; }
+		const Vector2 &GetLeftStick() const { return mLeftStick; }
+		const Vector2 &GetRightStick() const { return mRightStick; }
 		float GetLeftTrigger() const { return mLeftTrigger; }
 		float GetRightTrigger() const { return mRightTrigger; }
 
@@ -111,9 +113,9 @@ namespace nen
 		// Called after SDL_PollEvents loop
 		void Update();
 		// Called to process an SDL event in input system
-		void ProcessEvent(union SDL_Event& event);
+		void ProcessEvent(union SDL_Event &event);
 
-		const InputState& GetState() const { return mState; }
+		const InputState &GetState() const { return mState; }
 
 		void SetRelativeMouseMode(bool value);
 

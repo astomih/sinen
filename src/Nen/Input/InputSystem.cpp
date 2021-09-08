@@ -4,8 +4,13 @@
 #include <SDL_mouse.h>
 #include <SDL_keyboard.h>
 #include <Nen.hpp>
+#include "../Render/RendererHandle.hpp"
+#include <imgui_impl_sdl.h>
 namespace nen
 {
+	bool isHide = false;
+	SDL_Cursor *g_cursor = nullptr;
+
 	bool KeyboardState::GetKeyValue(KeyCode keyCode) const
 	{
 		return mCurrState[static_cast<int>(keyCode)] == 1;
@@ -37,6 +42,23 @@ namespace nen
 		}
 	}
 
+	void MouseState::SetPosition(const Vector2 &pos) const
+	{
+		SDL_WarpMouseInWindow(RendererHandle::GetRenderer()->GetWindow(), pos.x, pos.y);
+	}
+	void MouseState::HideCursor(bool hide) const
+	{
+		isHide = hide;
+		if (hide)
+		{
+			int result = SDL_ShowCursor(SDL_DISABLE);
+			ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+		}
+		else
+		{
+			SDL_ShowCursor(SDL_ENABLE);
+		}
+	}
 	bool MouseState::GetButtonValue(MouseCode button) const
 	{
 		return (SDL_BUTTON(static_cast<int>(button)) & mCurrButtons) == 1;
@@ -102,12 +124,11 @@ namespace nen
 
 	bool InputSystem::Initialize()
 	{
-		// Keyboard
-		// Assign current state pointer
+
 		mState.Keyboard.mCurrState = SDL_GetKeyboardState(NULL);
 		memcpy(mState.Keyboard.mPrevState.data(),
-			mState.Keyboard.mCurrState,
-			SDL_NUM_SCANCODES);
+			   mState.Keyboard.mCurrState,
+			   SDL_NUM_SCANCODES);
 
 		int x = 0, y = 0;
 		if (mState.Mouse.mIsRelative)
@@ -127,15 +148,18 @@ namespace nen
 		// Initialize controller state
 		mState.Controller.mIsConnected = mController.Initialize();
 		memset(mState.Controller.mCurrButtons, 0,
-			SDL_CONTROLLER_BUTTON_MAX);
+			   SDL_CONTROLLER_BUTTON_MAX);
 		memset(mState.Controller.mPrevButtons, 0,
-			SDL_CONTROLLER_BUTTON_MAX);
+			   SDL_CONTROLLER_BUTTON_MAX);
 
 		return true;
 	}
 
 	void InputSystem::Shutdown()
 	{
+		SDL_FreeCursor(g_cursor);
+		g_cursor = nullptr;
+		SDL_SetCursor(NULL);
 	}
 
 	void InputSystem::PrepareForUpdate()
@@ -143,8 +167,8 @@ namespace nen
 		// Copy current state to previous
 		// Keyboard
 		memcpy(mState.Keyboard.mPrevState.data(),
-			mState.Keyboard.mCurrState,
-			SDL_NUM_SCANCODES);
+			   mState.Keyboard.mCurrState,
+			   SDL_NUM_SCANCODES);
 
 		// Mouse
 		mState.Mouse.mPrevButtons = mState.Mouse.mCurrButtons;
@@ -153,8 +177,8 @@ namespace nen
 
 		// Controller
 		memcpy(mState.Controller.mPrevButtons,
-			mState.Controller.mCurrButtons,
-			SDL_CONTROLLER_BUTTON_MAX);
+			   mState.Controller.mCurrButtons,
+			   SDL_CONTROLLER_BUTTON_MAX);
 	}
 
 	void InputSystem::Update()
@@ -196,9 +220,11 @@ namespace nen
 		x = mController.GetAxis(GameController::Axis::RIGHTX);
 		y = -mController.GetAxis(GameController::Axis::RIGHTY);
 		mState.Controller.mRightStick = Filter2D(x, y);
+
+		mState.Mouse.HideCursor(isHide);
 	}
 
-	void InputSystem::ProcessEvent(SDL_Event& event)
+	void InputSystem::ProcessEvent(SDL_Event &event)
 	{
 		switch (event.type)
 		{
@@ -236,7 +262,7 @@ namespace nen
 		{
 			// Compute fractional value between dead zone and max value
 			retVal = static_cast<float>(absValue - deadZone) /
-				(maxValue - deadZone);
+					 (maxValue - deadZone);
 			// Make sure sign matches original value
 			retVal = input > 0 ? retVal : -1.0f * retVal;
 			// Clamp between -1.0f and 1.0f

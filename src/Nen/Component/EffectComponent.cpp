@@ -32,6 +32,8 @@ namespace nen
 		{
 			auto pos = mOwner.GetPosition();
 			mEffect->SetPosition(pos);
+
+			mEffect->SetRotation(mOwner.GetRotation());
 		}
 	}
 }

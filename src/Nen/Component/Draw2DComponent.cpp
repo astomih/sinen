@@ -49,13 +49,15 @@ namespace nen
 		auto api = renderer->GetGraphicsAPI();
 		auto scaleOwner = mOwner.GetScale();
 		Matrix4 viewproj = Matrix4::Identity;
-		viewproj.mat[0][0] = 1.f / Window::Size.x;
-		viewproj.mat[1][1] = 1.f / Window::Size.y;
+		auto windowsize = mOwner.GetScene().GetRenderer()->GetWindow()->Size();
+		viewproj.mat[0][0] = 1.f / windowsize.x;
+		viewproj.mat[1][1] = 1.f / windowsize.y;
 		sprite = std::make_shared<DrawObject>();
 		sprite->drawOrder = mDrawOrder;
 		sprite->textureIndex = mTexture->id;
 		sprite->vertexIndex = shape.data();
 
+		mOwner.ComputeWorldTransform();
 		sprite->param.world = mOwner.GetWorldTransform();
 		sprite->param.proj = viewproj;
 		sprite->param.view = Matrix4::Identity;

@@ -21,6 +21,7 @@
 #include "Audio/MusicEvent.hpp"
 #include "Audio/MusicSystem.hpp"
 #include "Component/Component.hpp"
+#include "Component/BillboardComponent.hpp"
 #include "Component/CircleComponent.hpp"
 #include "Component/Draw2DComponent.hpp"
 #include "Component/Draw3DComponent.hpp"

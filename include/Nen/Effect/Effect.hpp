@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "../Math/Vector3.hpp"
+#include "../Math/Quaternion.hpp"
 #include <string>
 
 namespace nen
@@ -10,7 +11,9 @@ namespace nen
 		Effect(std::u16string_view path);
 		~Effect();
 		const Vector3 &GetPosition() { return this->position; }
+		const Quaternion &GetRotation() { return this->rotate; }
 		void SetPosition(const Vector3 &pos) { this->position = pos; }
+		void SetRotation(const Quaternion &rot) { this->rotate = rot; }
 		const std::u16string &GetPath() { return path; }
 		int handle;
 
@@ -35,6 +38,7 @@ namespace nen
 
 	private:
 		Vector3 position;
+		Quaternion rotate;
 		std::u16string path;
 		/* 
 			ループ再生させるのか？ 

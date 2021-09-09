@@ -48,7 +48,7 @@ namespace nen::vk
 		~VKRenderer() override
 		{
 		}
-		void Initialize(struct SDL_Window *window) override;
+		void Initialize(std::shared_ptr<Window> window) override;
 		void Shutdown() override;
 		void Render() override;
 		void AddVertexArray(const VertexArray &vArray, std::string_view name) override;
@@ -62,6 +62,8 @@ namespace nen::vk
 
 		void AddGUI(std::shared_ptr<class UIScreen> ui) override;
 		void RemoveGUI(std::shared_ptr<class UIScreen> ui) override;
+
+		void SetRenderer(class Renderer *renderer) override;
 
 		void LoadEffect(std::shared_ptr<class Effect> effect) override;
 
@@ -102,8 +104,10 @@ namespace nen::vk
 		void TransferStageBufferToImage(const BufferObject &srcBuffer, const ImageObject &dstImage, const VkBufferImageCopy *region);
 		void MapMemory(VkDeviceMemory memory, void *data, size_t size);
 		void UpdateVertexArray(const VertexArrayForVK &vArray, std::string_view name);
+		std::shared_ptr<class Window> GetWindow(){return m_base->m_window;}
 
 	private:
+		Renderer *mRenderer;
 		std::unique_ptr<class VKBase> m_base;
 		std::unique_ptr<class EffectManagerVK> mEffectManager;
 		void createBoxVertices();

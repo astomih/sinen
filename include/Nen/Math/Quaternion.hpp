@@ -1,9 +1,9 @@
 #pragma once
-#include "Math.hpp"	
+#include "Math.hpp"
 #include "Vector3.hpp"
 namespace nen
 {
-    // (Unit) Quaternion
+	// (Unit) Quaternion
 	class Quaternion
 	{
 	public:
@@ -148,6 +148,8 @@ namespace nen
 
 			return retVal;
 		}
+
+		static Vector3 ToEuler(const Quaternion &r);
 
 		static const Quaternion Identity;
 	};

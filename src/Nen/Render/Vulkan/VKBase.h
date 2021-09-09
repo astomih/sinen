@@ -13,13 +13,14 @@
 #include <vector>
 #include <memory>
 #include "Swapchain.h"
+#include <Window/Window.hpp>
 namespace nen::vk
 {
 	class VKBase
 	{
 	public:
 		VKBase(class VKRenderer *);
-		void initialize(SDL_Window *window, const char *appName);
+		void initialize(std::shared_ptr<Window> window);
 		void terminate();
 
 		void render();
@@ -81,7 +82,7 @@ namespace nen::vk
 		std::vector<VkDeviceMemory> destroyMemory;
 
 		uint32_t m_imageIndex;
-		SDL_Window *m_window;
+		std::shared_ptr<Window> m_window;
 		VKRenderer *m_vkrenderer;
 	};
 }

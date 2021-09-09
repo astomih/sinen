@@ -33,7 +33,7 @@ namespace nen::gl
 
 		// Specify a projection matrix
 		renderer->SetProjectionMatrix(
-			::Effekseer::Matrix44().PerspectiveFovRH(Math::ToRadians(90.f), Window::Size.x / Window::Size.y, 0.01f, 10000.f));
+			::Effekseer::Matrix44().PerspectiveFovRH(Math::ToRadians(90.f), mRenderer->GetWindow()->Size().x / mRenderer->GetWindow()->Size().y, 0.01f, 10000.f));
 
 		auto m2 = ::Effekseer::Matrix44().LookAtRH(g_position, ::Effekseer::Vector3D(0.0f, -5.f, -10.f), ::Effekseer::Vector3D(0.0f, 1.0f, 0.0f));
 		// Specify a camera matrix

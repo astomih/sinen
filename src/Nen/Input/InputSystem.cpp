@@ -3,9 +3,9 @@
 #include <SDL_gamecontroller.h>
 #include <SDL_mouse.h>
 #include <SDL_keyboard.h>
+#include <imgui_impl_sdl.h>
 #include <Nen.hpp>
 #include "../Render/RendererHandle.hpp"
-#include <imgui_impl_sdl.h>
 namespace nen
 {
 	bool isHide = false;
@@ -44,7 +44,7 @@ namespace nen
 
 	void MouseState::SetPosition(const Vector2 &pos) const
 	{
-		SDL_WarpMouseInWindow(RendererHandle::GetRenderer()->GetWindow(), pos.x, pos.y);
+		SDL_WarpMouseInWindow(RendererHandle::GetRenderer()->GetWindow()->GetSDLWindow(), pos.x, pos.y);
 	}
 	void MouseState::HideCursor(bool hide) const
 	{

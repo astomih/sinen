@@ -3,13 +3,13 @@
 #include "../Math/Vector2.hpp"
 #include "../Math/Vector3.hpp"
 #include "../Math/Matrix4.hpp"
-#include "../Window/Window.hpp"
 #include "../Texture/TextureType.hpp"
 #include "../Texture/Texture.hpp"
 #include "../Vertex/VertexArray.hpp"
 #include "../Color/Color.hpp"
 #include <string>
 #include <vector>
+#include <memory>
 #include <unordered_map>
 
 namespace nen
@@ -25,7 +25,7 @@ namespace nen
 	class Renderer
 	{
 	public:
-		Renderer(GraphicsAPI api);
+		Renderer(GraphicsAPI api, std::shared_ptr<class Window> window);
 		~Renderer() = default;
 
 		void SetGraphicsAPI(GraphicsAPI &api)
@@ -72,15 +72,11 @@ namespace nen
 		std::shared_ptr<class EffectManager> GetEffect(const std::u16string &fileName);
 
 		void SetViewMatrix(const Matrix4 &view) { mView = view; }
-		Matrix4 GetViewMatrix() { return mView; }
+		const Matrix4 &GetViewMatrix() { return mView; }
+		void SetProjectionMatrix(const Matrix4 &projection) { mProjection = projection; }
 		const Matrix4 &GetProjectionMatrix() { return mProjection; }
 
-		struct SDL_Window *GetWindow()
-		{
-			if (!mWindow)
-				return nullptr;
-			return mWindow;
-		}
+		std::shared_ptr<class Window> GetWindow() { return mWindow; }
 
 		void toggleShowImGui() { showImGui = !showImGui; }
 		bool isShowImGui() { return showImGui; }
@@ -102,7 +98,7 @@ namespace nen
 		Matrix4 mProjection;
 
 		// Window
-		struct SDL_Window *mWindow;
+		std::shared_ptr<class Window> mWindow;
 		// Renderer
 		std::unique_ptr<class IRenderer> renderer;
 		GraphicsAPI RendererAPI;
@@ -115,7 +111,7 @@ namespace nen
 		IRenderer() = default;
 		virtual ~IRenderer() {}
 
-		virtual void Initialize(struct SDL_Window *window) {}
+		virtual void Initialize(std::shared_ptr<Window> window) {}
 		virtual void Shutdown() {}
 		virtual void Render() {}
 		virtual void AddVertexArray(const VertexArray &vArray, std::string_view name) {}
@@ -132,10 +128,6 @@ namespace nen
 
 		virtual void LoadEffect(std::shared_ptr<Effect> effect) {}
 
-		void SetRenderer(class Renderer *renderer) { mRenderer = renderer; }
-
-	protected:
-		SDL_Window *mWindow;
-		class Renderer *mRenderer;
+		virtual void SetRenderer(class Renderer *renderer) {}
 	};
 }

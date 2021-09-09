@@ -138,6 +138,7 @@
     <ClCompile Include="..\src\Nen\Audio\SoundEvent.cpp" />
     <ClCompile Include="..\src\Nen\Audio\SoundSystem.cpp" />
     <ClCompile Include="..\src\Nen\Color\Color.cpp" />
+    <ClCompile Include="..\src\Nen\Component\BillboardComponent.cpp" />
     <ClCompile Include="..\src\Nen\Component\SoundComponent.cpp" />
     <ClCompile Include="..\src\Nen\Component\CircleComponent.cpp" />
     <ClCompile Include="..\src\Nen\Component\Component.cpp" />

@@ -55,11 +55,11 @@ namespace nen::vk
 	{
 	}
 
-	void VKBase::initialize(SDL_Window *window, const char *appName)
+	void VKBase::initialize(std::shared_ptr<Window> window)
 	{
 		m_window = window;
 		// Vulkan インスタンスの生成
-		initializeInstance(appName);
+		initializeInstance(window->Name().c_str());
 		// 物理デバイスの選択
 		selectPhysicalDevice();
 		m_graphicsQueueIndex = searchGraphicsQueueIndex();
@@ -76,13 +76,13 @@ namespace nen::vk
 
 		VkSurfaceKHR surface;
 		// サーフェース生成
-		SDL_Vulkan_CreateSurface(window, m_instance, &surface);
+		SDL_Vulkan_CreateSurface(window->GetSDLWindow(), m_instance, &surface);
 		mSwapchain = std::make_unique<Swapchain>(m_instance, m_device, surface);
 		mSwapchain->Prepare(
 			m_physDev,
 			m_graphicsQueueIndex,
-			static_cast<uint32_t>(nen::Window::Size.x),
-			static_cast<uint32_t>(nen::Window::Size.y),
+			static_cast<uint32_t>(window->Size().x),
+			static_cast<uint32_t>(window->Size().y),
 			VK_FORMAT_B8G8R8A8_UNORM);
 
 		createDepthBuffer();

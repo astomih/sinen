@@ -28,7 +28,7 @@ namespace nen
 			{
 			}
 
-			void Initialize(struct SDL_Window *window) override;
+			void Initialize(std::shared_ptr<Window> window) override;
 			void Render() override;
 			void AddVertexArray(const VertexArray &vArray, std::string_view name) override;
 			void ChangeBufferDrawObject(std::shared_ptr<class DrawObject> sprite, const TextureType type) override;
@@ -37,6 +37,8 @@ namespace nen
 
 			void AddDrawObject3D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture) override;
 			void RemoveDrawObject3D(std::shared_ptr<class DrawObject> sprite) override;
+
+			void SetRenderer(class Renderer *renderer) override;
 
 			void LoadEffect(std::shared_ptr<class Effect> effect) override;
 
@@ -95,7 +97,11 @@ namespace nen
 
 			void AddVertexArray(const VertexArrayForGL &vArray, std::string_view name);
 
+			std::shared_ptr<Window> GetWindow() { return mWindow; }
+
 		private:
+			Renderer *mRenderer;
+			std::shared_ptr<Window> mWindow;
 			std::unique_ptr<class EffectManagerGL> mEffectManager;
 			bool loadShader();
 			void createSpriteVerts();

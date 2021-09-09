@@ -9,7 +9,6 @@ namespace nen
 		  mBGPos(0.0f, 250.0f),
 		  mState(State::Active)
 	{
-
 	}
 
 	UIScreen::~UIScreen()
@@ -28,8 +27,8 @@ namespace nen
 			y = state.Mouse.GetPosition().y;
 			// Convert to (0,0) center coordinates
 			Vector2 mousePos((x), (y));
-			mousePos.x -= Window::Size.x * 0.5f;
-			mousePos.y = Window::Size.y * 0.5f - mousePos.y;
+			mousePos.x -= 1280 * 0.5f;
+			mousePos.y = 720 * 0.5f - mousePos.y;
 
 			// Highlight any buttons
 			for (auto &b : mButtons)

@@ -1,4 +1,11 @@
 ﻿#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#include <SDL_ttf.h>
+#include <SDL_image.h>
+#include <imgui.h>
+#include <imgui_impl_sdl.h>
+#include <imgui_impl_vulkan.h>
+#include <Effekseer.h>
+#include <EffekseerRendererVulkan.h>
 #include "EffectManagerVK.h"
 #include "VKBase.h"
 #include "VKRenderer.h"
@@ -7,15 +14,8 @@
 #include <Nen.hpp>
 #include <fstream>
 #include <array>
-#include <SDL_ttf.h>
-#include <SDL_image.h>
-#include <imgui.h>
-#include <imgui_impl_sdl.h>
-#include <imgui_impl_vulkan.h>
 #include <string>
 #include <sstream>
-#include <Effekseer.h>
-#include <EffekseerRendererVulkan.h>
 #include "../../Texture/SurfaceHandle.hpp"
 
 namespace nen::vk
@@ -32,9 +32,13 @@ namespace nen::vk
 		  instance(maxInstanceCount)
 	{
 	}
-	void VKRenderer::Initialize(SDL_Window *window)
+	void VKRenderer::SetRenderer(Renderer *renderer)
 	{
-		m_base->initialize(window, Window::name.c_str());
+		mRenderer = renderer;
+	}
+	void VKRenderer::Initialize(std::shared_ptr<Window> window)
+	{
+		m_base->initialize(window);
 		mEffectManager = std::make_unique<EffectManagerVK>(this);
 		mEffectManager->Init();
 	}
@@ -420,7 +424,7 @@ namespace nen::vk
 	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
-		ImGui_ImplSDL2_InitForVulkan(m_base->m_window);
+		ImGui_ImplSDL2_InitForVulkan(m_base->m_window->GetSDLWindow());
 
 		uint32_t imageCount = m_base->mSwapchain->GetImageCount();
 		ImGui_ImplVulkan_InitInfo info{};
@@ -466,7 +470,7 @@ namespace nen::vk
 	void VKRenderer::renderImGUI(VkCommandBuffer command)
 	{
 		ImGui_ImplVulkan_NewFrame();
-		ImGui_ImplSDL2_NewFrame(m_base->m_window);
+		ImGui_ImplSDL2_NewFrame(m_base->m_window->GetSDLWindow());
 		ImGui::NewFrame();
 
 		// ImGui ウィジェットを描画する.

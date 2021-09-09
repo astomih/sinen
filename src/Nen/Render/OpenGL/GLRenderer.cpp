@@ -1,20 +1,19 @@
 ﻿#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include <GL/glew.h>
-#include "GLRenderer.h"
-#include <Nen.hpp>
 #include <SDL.h>
-#include <fstream>
-#include <sstream>
-#include <iostream>
 #include <SDL_image.h>
-#include <sol/sol.hpp>
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_opengl3.h>
 #include <Effekseer.h>
 #include <EffekseerRendererGL.h>
+#include "GLRenderer.h"
+#include <fstream>
+#include <sstream>
+#include <iostream>
 #include "EffectManagerGL.h"
 #include "../../Texture/SurfaceHandle.hpp"
+#include <Nen.hpp>
 
 namespace nen::gl
 {
@@ -22,15 +21,15 @@ namespace nen::gl
 	{
 	}
 
-	void GLRenderer::Initialize(::SDL_Window *window)
+	void GLRenderer::Initialize(std::shared_ptr<Window> window)
 	{
 		mWindow = window;
-		mContext = SDL_GL_CreateContext(mWindow);
-		SDL_GL_MakeCurrent(mWindow, mContext);
+		mContext = SDL_GL_CreateContext(mWindow->GetSDLWindow());
+		SDL_GL_MakeCurrent(mWindow->GetSDLWindow(), mContext);
 		glewExperimental = GL_TRUE;
 		if (glewInit() != GLEW_OK)
 		{
-			std::cout << "ERROR: glew isn't init" << std::endl;
+			Logger::Error("GLEW Init error.");
 		}
 		glGetError();
 
@@ -39,8 +38,12 @@ namespace nen::gl
 		prepare();
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
-		ImGui_ImplSDL2_InitForOpenGL(window, mContext);
+		ImGui_ImplSDL2_InitForOpenGL(window->GetSDLWindow(), mContext);
 		ImGui_ImplOpenGL3_Init("#version 130");
+	}
+	void GLRenderer::SetRenderer(Renderer *renderer)
+	{
+		mRenderer = renderer;
 	}
 
 	void GLRenderer::Render()
@@ -50,20 +53,14 @@ namespace nen::gl
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		mSpriteShader->SetActive();
-		// Specify the vertex attributes
-		// (For now, assume one vertex format)
-		// Position is 3 floats
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 8 * sizeof(float), 0);
-		// Normal is 3 floats
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 8 * sizeof(float),
 							  reinterpret_cast<void *>(sizeof(float) * 3));
-		// Texture coordinates is 2 floats
 		glEnableVertexAttribArray(2);
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_TRUE, 8 * sizeof(float),
 							  reinterpret_cast<void *>(sizeof(float) * 6));
-		// Enable alpha blending on the norm buffer
 		glDisable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
 		std::string vertexID;
@@ -114,6 +111,7 @@ namespace nen::gl
 			mAlphaShader->SetMatrixUniform("uWorld", i->param.world);
 			mAlphaShader->SetMatrixUniform("uProj", i->param.proj);
 			mAlphaShader->SetMatrixUniform("uView", i->param.view);
+
 			glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
 			glDrawElementsBaseVertex(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr, 0);
 		}
@@ -160,6 +158,8 @@ namespace nen::gl
 					i->first = false;
 				}
 			}
+			auto euler = Quaternion::ToEuler(i->GetRotation());
+			mEffectManager->GetManager()->SetRotation(i->handle, euler.x, euler.y, euler.z);
 			mEffectManager->GetManager()->SetLocation(i->handle, ::Effekseer::Vector3D(p.x, p.y, p.z));
 		}
 		mEffectManager->GetManager()->Update();
@@ -168,7 +168,7 @@ namespace nen::gl
 		mEffectManager->GetRenderer()->EndRendering();
 
 		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplSDL2_NewFrame(mWindow);
+		ImGui_ImplSDL2_NewFrame(mWindow->GetSDLWindow());
 		ImGui::NewFrame();
 		if (mRenderer->isShowImGui())
 		{
@@ -186,7 +186,7 @@ namespace nen::gl
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-		SDL_GL_SwapWindow(mWindow);
+		SDL_GL_SwapWindow(mWindow->GetSDLWindow());
 	}
 	void GLRenderer::AddVertexArray(const VertexArray &vArray, std::string_view name)
 	{

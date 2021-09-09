@@ -37,7 +37,7 @@ namespace nen
 		auto renderer = mOwner.GetScene().GetRenderer();
 		auto scaleOwner = mOwner.GetScale();
 		auto view = mOwner.GetScene().GetRenderer()->GetViewMatrix();
-		auto proj = Matrix4::Perspective(Math::ToRadians(90.f), Window::Size.x / Window::Size.y, 0.01f, 10000.f);
+		auto proj = mOwner.GetScene().GetRenderer()->GetProjectionMatrix();
 		sprite = std::make_shared<DrawObject>();
 		sprite->textureIndex = mTexture->id;
 		sprite->vertexIndex = shape.data();

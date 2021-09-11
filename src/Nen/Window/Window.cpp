@@ -93,4 +93,12 @@ namespace nen
             SDL_WINDOW_OPENGL);
 #endif
     }
+
+    void Window::ProcessInput(union ::SDL_Event &event)
+    {
+        if (event.type == SDL_WINDOWEVENT)
+        {
+            state = static_cast<WindowState>(event.window.event);
+        }
+    }
 }

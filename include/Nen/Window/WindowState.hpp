@@ -1,13 +1,27 @@
 #pragma once
-#include <memory>
 namespace nen
 {
-    class WindowState
+    enum class WindowState
     {
-    public:
-        WindowState();
-        ~WindowState();
+        SHOWN = 1,
+        HIDDEN,
+        EXPOSED,
 
-        void ProcessInput(union SDL_Event &event);
+        MOVED,
+
+        RESIZED,
+        SIZE_CHANGED,
+
+        MINIMIZED,
+        MAXIMIZED,
+        RESTORED,
+
+        ENTER,
+        LEAVE,
+        FOCUS_GAINED,
+        FOCUS_LOST,
+        CLOSE,
+        TAKE_FOCUS,
+        HIT_TEST
     };
 }

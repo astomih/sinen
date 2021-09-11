@@ -13,6 +13,7 @@ namespace nen
 		EffectManager();
 		virtual ~EffectManager() {}
 		virtual void Init() {}
+		virtual void Shutdown();
 		Effekseer::EffectRef GetEffect(const std::u16string &filePath);
 		EffekseerRenderer::RendererRef GetRenderer() { return renderer; }
 		Effekseer::ManagerRef GetManager() { return manager; }

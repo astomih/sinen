@@ -10,6 +10,10 @@ namespace nen::vk
 		: mRenderer(renderer)
 	{
 	}
+
+	EffectManagerVK::~EffectManagerVK()
+	{
+	}
 	void EffectManagerVK::Init()
 	{
 		// Create a renderer of effects
@@ -56,6 +60,19 @@ namespace nen::vk
 		auto m2 = ::Effekseer::Matrix44().LookAtLH(g_position, ::Effekseer::Vector3D(0.0f, -5.f, -10.f), ::Effekseer::Vector3D(0.0f, -1.0f, 0.0f));
 		// Specify a camera matrix
 		renderer->SetCameraMatrix(m2);
+	}
+	void EffectManagerVK::Shutdown()
+	{
+		GetManager()->StopAllEffects();
+		for (auto &i : effects)
+		{
+			i.second.Reset();
+		}
+		effects.clear();
+		commandList.Reset();
+		sfMemoryPool.Reset();
+		manager.Reset();
+		renderer.Reset();
 	}
 }
 #endif

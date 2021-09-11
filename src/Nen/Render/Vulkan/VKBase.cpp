@@ -122,8 +122,6 @@ namespace nen::vk
 	{
 		vkDeviceWaitIdle(m_device);
 
-		m_vkrenderer->cleanup();
-
 		vkFreeCommandBuffers(m_device, m_commandPool, uint32_t(m_commands.size()), m_commands.data());
 		m_commands.clear();
 
@@ -148,6 +146,7 @@ namespace nen::vk
 
 		vkDestroyCommandPool(m_device, m_commandPool, nullptr);
 
+		mSwapchain->Cleanup();
 		vkDestroyDevice(m_device, nullptr);
 #ifdef _DEBUG
 		disableDebugReport();

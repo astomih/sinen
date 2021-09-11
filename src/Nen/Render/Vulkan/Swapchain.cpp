@@ -14,8 +14,6 @@ namespace nen::vk
 
     Swapchain::~Swapchain()
     {
-        if (!isClean)
-            Cleanup();
     }
 
     void Swapchain::Prepare(VkPhysicalDevice physDev, uint32_t graphicsQueueIndex, uint32_t width, uint32_t height, VkFormat desireFormat)
@@ -139,7 +137,6 @@ namespace nen::vk
 
         m_images.clear();
         m_imageViews.clear();
-        isClean = true;
     }
 
     VkResult Swapchain::AcquireNextImage(uint32_t *pImageIndex, VkSemaphore semaphore, uint64_t timeout)

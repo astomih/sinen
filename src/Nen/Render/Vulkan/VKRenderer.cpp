@@ -187,7 +187,10 @@ namespace nen::vk
 	}
 	void VKRenderer::cleanup()
 	{
+		mEffectManager->Shutdown();
+		//delete mEffectManager.release();
 		VkDevice device = m_base->GetVkDevice();
+
 		for (auto &i : mImageObjects)
 		{
 			DestroyVulkanObject<VkImage>(device, i.second.image, &vkDestroyImage);

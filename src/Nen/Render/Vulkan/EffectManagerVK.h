@@ -7,10 +7,9 @@ namespace nen::vk
 	{
 	public:
 		EffectManagerVK(class VKRenderer *renderer);
-		~EffectManagerVK() override
-		{
-		}
+		~EffectManagerVK() override;
 		void Init() override;
+		void Shutdown() override;
 		Effekseer::RefPtr<EffekseerRenderer::SingleFrameMemoryPool> GetMemoryPool() { return sfMemoryPool; }
 		Effekseer::RefPtr<EffekseerRenderer::CommandList> GetCommandList() { return commandList; }
 

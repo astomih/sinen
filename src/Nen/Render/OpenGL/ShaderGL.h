@@ -10,43 +10,84 @@
 #include <Math/Matrix4.hpp>
 #include <Math/Quaternion.hpp>
 #include <Color/Color.hpp>
+#include <unordered_map>
 
 namespace nen::gl
 {
 	class ShaderGL
 	{
 	public:
+		/**
+		 * @brief コンストラクタ
+		 * 
+		 */
 		ShaderGL();
-		~ShaderGL() {}
-		// Load the vertex/fragment shaders with the given names
+		/**
+		 * @brief デストラクタ
+		 * 
+		 */
+		~ShaderGL()=default;
+
+		/**
+		 * @brief シェーダーをファイルから読み込む
+		 * 
+		 * @param vertName 頂点シェーダのファイルパス
+		 * @param fragName フラグメントシェーダのファイルパス
+		 * @return true 読み込み成功
+		 * @return false 読み込み失敗(Loggerを参照)
+		 */
 		bool Load(const std::string &vertName, const std::string &fragName);
+		
+		/**
+		 * @brief 読み込んだシェーダを閉じる
+		 * 
+		 */
 		void Unload();
-		// Set this as the active shader program
-		void SetActive();
+		
+		/**
+		 * @brief シェーダを有効にする
+		 * 
+		 * @param blockIndex 有効なBlock Index
+		 */
+		void SetActive(const GLuint &blockIndex);
+		
+		/**
+		 * @brief シェーダを無効にする
+		 * 
+		 */
 		void SetDisable();
-		// Sets a Matrix uniform
-		void SetMatrixUniform(const char *name, const Matrix4 &matrix);
-		void SetColorUniform(const char *name, const Color &color);
-		void SetVector2fUniform(const char *name, const Vector2 &vuv);
-		void SetBoolUniform(const char *name, const bool boolean);
-		void SetIntUniform(const char *name, const int integer);
-		// Sets a Vector3 uniform
-		void SetVectorUniform(const char *name, const Vector3 &vector);
-		void SetFloatUniform(const char *name, const float value);
+		
+		/**
+		 * @brief UBO(Uniform Buffer Object)を作成
+		 * 
+		 * @param blockIndex Block Index
+		 * @param size バッファのサイズ
+		 * @param data データ（size内に収めること）
+		 * @return true UBOの作成に成功
+		 * @return false UBOの作成に失敗
+		 */
+		bool CreateUBO(const GLuint &blockIndex, const size_t &size, const void *data);
+		
+		/**
+		 * @brief UBOを更新する
+		 * 
+		 * @param blockIndex Block Index
+		 * @param size バッファのサイズ
+		 * @param data データ(size内に収めること)
+		 * @param offset 更新のオフセット
+		 */
+		void UpdateUBO(const GLuint &blockIndex, const size_t &size, const void *data, const GLsizeiptr &offset = 0);
 
 	private:
-		// Tries to compile the specified shader
 		bool CompileShader(const std::string &fileName,
 						   GLenum shaderType,
 						   GLuint &outShader);
 
-		// Tests whether shader compiled successfully
 		bool IsCompiled(GLuint shader);
-		// Tests whether vertex/fragment programs link
 		bool IsValidProgram();
 
 	private:
-		// Store the shader object IDs
+		std::unordered_map<GLuint, GLuint> blockIndexBuffers;
 		GLuint mVertexShader;
 		GLuint mFragShader;
 		GLuint mShaderProgram;

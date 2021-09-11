@@ -52,7 +52,7 @@ namespace nen::gl
 		glClearColor(color.r, color.g, color.b, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		mSpriteShader->SetActive();
+		mSpriteShader->SetActive(0);
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 8 * sizeof(float), 0);
 		glEnableVertexAttribArray(1);
@@ -87,9 +87,7 @@ namespace nen::gl
 									  reinterpret_cast<void *>(sizeof(float) * 6));
 			}
 			glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
-			mSpriteShader->SetMatrixUniform("uWorld", i->param.world);
-			mSpriteShader->SetMatrixUniform("uProj", i->param.proj);
-			mSpriteShader->SetMatrixUniform("uView", i->param.view);
+			mSpriteShader->UpdateUBO(0, sizeof(ShaderParameters), &i->param);
 			glDrawElementsBaseVertex(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr, 0);
 		}
 		glDisable(GL_DEPTH_TEST);
@@ -97,7 +95,7 @@ namespace nen::gl
 		glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
 		// Set shader/vao as active
-		mAlphaShader->SetActive();
+		mAlphaShader->SetActive(0);
 		for (auto &i : mSprite2Ds)
 		{
 			if (vertexID != i->vertexIndex)
@@ -108,9 +106,7 @@ namespace nen::gl
 				glBufferSubData(GL_ARRAY_BUFFER, 0, vArraySize, m_VertexArrays[i->vertexIndex].vertices.data());
 				vertexID = i->vertexIndex;
 			}
-			mAlphaShader->SetMatrixUniform("uWorld", i->param.world);
-			mAlphaShader->SetMatrixUniform("uProj", i->param.proj);
-			mAlphaShader->SetMatrixUniform("uView", i->param.view);
+			mAlphaShader->UpdateUBO(0, sizeof(ShaderParameters), &i->param);
 
 			glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
 			glDrawElementsBaseVertex(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr, 0);
@@ -279,17 +275,20 @@ namespace nen::gl
 
 	bool GLRenderer::loadShader()
 	{
-		// Create sprite shader
 		mSpriteShader = new ShaderGL();
 		if (!mSpriteShader->Load("Assets/Shader/GL/sprite.vert", "Assets/Shader/GL/sprite.frag"))
 		{
 			return false;
 		}
+
+		ShaderParameters param{};
+		mSpriteShader->CreateUBO(0, sizeof(ShaderParameters), &param);
 		mAlphaShader = new ShaderGL();
 		if (!mAlphaShader->Load("Assets/Shader/GL/sprite.vert", "Assets/Shader/GL/alpha.frag"))
 		{
 			return false;
 		}
+		mAlphaShader->CreateUBO(0, sizeof(ShaderParameters), &param);
 		return true;
 	}
 
@@ -309,9 +308,10 @@ namespace nen::gl
 		vArray.vertices.push_back({Vector3(-value, -value, value), norm, lt});
 		vArray.vertices.push_back({Vector3(value, value, value), norm, rb});
 		vArray.vertices.push_back({Vector3(value, -value, value), norm, rt});
-		uint32_t indices[] = {
-			0, 2, 1, 1, 2, 3 // front
-		};
+		uint32_t indices[] =
+			{
+				0, 2, 1, 1, 2, 3 // front
+			};
 		vArray.indexCount = 6;
 		vArray.PushIndices(indices, vArray.indexCount);
 

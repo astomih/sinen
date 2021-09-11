@@ -5,7 +5,6 @@
 #include <sstream>
 #include <iostream>
 #include <SDL_image.h>
-#include <sol/sol.hpp>
 
 namespace nen::gl
 {
@@ -47,93 +46,45 @@ namespace nen::gl
 		glDeleteShader(mFragShader);
 	}
 
-	void ShaderGL::SetActive()
+	void ShaderGL::SetActive(const GLuint &blockIndex)
 	{
 		// Set this program as the active one
 		glUseProgram(mShaderProgram);
+		glBindBufferBase(GL_UNIFORM_BUFFER, 1, blockIndexBuffers[blockIndex]);
+		glUniformBlockBinding(mShaderProgram, blockIndex, 1);
 	}
 
 	void ShaderGL::SetDisable()
 	{
 		glDisable(mShaderProgram);
 	}
-
-	void ShaderGL::SetMatrixUniform(const char *name, const Matrix4 &matrix)
-	{
-		// Find the uniform by this name
-		GLuint loc = glGetUniformLocation(mShaderProgram, name);
-		// Send the matrix data to the uniform
-		glUniformMatrix4fv(loc, 1, GL_FALSE, matrix.GetAsFloatPtr());
-	}
-
-	void ShaderGL::SetColorUniform(const char *name, const Color &color)
-	{
-		GLuint loc = glGetUniformLocation(mShaderProgram, name);
-		glUniform4f(loc, color.r, color.g, color.b, color.a);
-	}
-
-	void ShaderGL::SetVector2fUniform(const char *name, const Vector2 &vector)
-	{
-		GLuint loc = glGetUniformLocation(mShaderProgram, name);
-		// Send the vector data
-		glUniform2fv(loc, 1, vector.GetAsFloatPtr());
-	}
-
-	void ShaderGL::SetBoolUniform(const char *name, const bool boolean)
-	{
-		glUniform1i(glGetUniformLocation(mShaderProgram, name), boolean);
-	}
-
-	void ShaderGL::SetIntUniform(const char *name, const int integer)
-	{
-		GLuint loc = glGetUniformLocation(mShaderProgram, name);
-		// Send the float data
-		glUniform1i(loc, integer);
-	}
-
-	void ShaderGL::SetVectorUniform(const char *name, const Vector3 &vector)
-	{
-		GLuint loc = glGetUniformLocation(mShaderProgram, name);
-		// Send the vector data
-		glUniform3fv(loc, 1, vector.GetAsFloatPtr());
-	}
-
-	void ShaderGL::SetFloatUniform(const char *name, const float value)
-	{
-		GLuint loc = glGetUniformLocation(mShaderProgram, name);
-		// Send the float data
-		glUniform1f(loc, value);
-	}
-
 	bool ShaderGL::CompileShader(const std::string &fileName,
 								 GLenum shaderType,
 								 GLuint &outShader)
 	{
 		// Open file
 		std::ifstream shaderFile(fileName);
-		if (shaderFile.is_open())
-		{
-			// Read all the text into a string
-			std::stringstream sstream;
-			sstream << shaderFile.rdbuf();
-			std::string contents = sstream.str();
-			const char *contentsChar = contents.c_str();
-
-			// Create a shader of the specified type
-			outShader = glCreateShader(shaderType);
-			// Set the source characters and try to compile
-			glShaderSource(outShader, 1, &(contentsChar), nullptr);
-			glCompileShader(outShader);
-
-			if (!IsCompiled(outShader))
-			{
-				std::cout << "Failed to compile shader " << fileName << std::endl;
-				return false;
-			}
-		}
-		else
+		if (!shaderFile.is_open())
 		{
 			std::cout << "Shader file not found: " << fileName << std::endl;
+			Logger::Error("Shader file not found: %s", fileName);
+			return false;
+		}
+		// Read all the text into a string
+		std::stringstream sstream;
+		sstream << shaderFile.rdbuf();
+		std::string contents = sstream.str();
+		const char *contentsChar = contents.c_str();
+
+		// Create a shader of the specified type
+		outShader = glCreateShader(shaderType);
+		// Set the source characters and try to compile
+		glShaderSource(outShader, 1, &(contentsChar), nullptr);
+		glCompileShader(outShader);
+
+		if (!IsCompiled(outShader))
+		{
+			std::cout << "Failed to compile shader " << fileName << std::endl;
 			return false;
 		}
 		return true;
@@ -172,6 +123,24 @@ namespace nen::gl
 		}
 
 		return true;
+	}
+
+	bool ShaderGL::CreateUBO(const GLuint &blockIndex, const size_t &size, const void *data)
+	{
+		GLuint BIB; //blockIndexBuffer
+		glGenBuffers(1, &BIB);
+		glBindBuffer(GL_UNIFORM_BUFFER, BIB);
+		glBufferData(GL_UNIFORM_BUFFER, size, data, GL_DYNAMIC_DRAW);
+		glUniformBlockBinding(mShaderProgram, blockIndex, 1);
+		blockIndexBuffers.emplace(blockIndex, BIB);
+		return true;
+	}
+
+	void ShaderGL::UpdateUBO(const GLuint &blockIndex, const size_t &size, const void *data, const GLsizeiptr &offset)
+	{
+		auto BIB = blockIndexBuffers[blockIndex];
+		glBindBuffer(GL_UNIFORM_BUFFER, BIB);
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
 	}
 
 } //namespace nen::gl

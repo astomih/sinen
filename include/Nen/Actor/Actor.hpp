@@ -13,28 +13,90 @@ namespace nen
 {
 	class Scene;
 
+	/**
+	 * @brief Sceneに依存するアクター
+	 * 
+	 */
 	class Actor : public std::enable_shared_from_this<Actor>
 	{
 	public:
+
+		/**
+		 * @brief アクターの状態を表すステート
+		 * 
+		 */
 		enum class State
 		{
 			Active,
 			Paused,
 			Dead
 		};
+
+		/**
+		 * @brief 識別用のハンドル
+		 * 
+		 */
 		uint32_t handle;
+		
+		/**
+		 * @brief コンストラクタ
+		 * 
+		 * @param scene 親シーンの参照
+		 */
 		Actor(Scene &scene);
+		
+		/**
+		 * @brief デストラクタ
+		 * 
+		 */
 		virtual ~Actor();
+		
+		/**
+		 * @brief アップデート時に呼ばれる関数
+		 * 
+		 * @param deltaTime 変位時間
+		 */
 		void UpdateActor(float deltaTime);
+		
+		/**
+		 * @brief 毎ループ更新される関数
+		 * 
+		 * @param deltaTime 変位時間
+		 */
 		virtual void Update(float deltaTime);
+		
+		/**
+		 * @brief アクターごとのIDを取得
+		 * 
+		 * @return std::string 文字列
+		 */
 		virtual std::string GetID() { return ""; }
 
+		/**
+		 * @brief 位置ベクトルを取得する
+		 * 
+		 * @return const Vector3& 
+		 */
 		const Vector3 &GetPosition() const noexcept { return mPosition; }
+		
+		/**
+		 * @brief 位置ベクトルを設定する
+		 * 
+		 * @param pos Vector3
+		 */
 		void SetPosition(const Vector3 &pos) noexcept
 		{
 			mPosition = pos;
 			mRecomputeWorldTransform = true;
 		}
+		
+		/**
+		 * @brief 現在の位置ベクトルに加算する
+		 * 
+		 * @param x 
+		 * @param y 
+		 * @param z 
+		 */
 		void Move(const float x, const float y, const float z) noexcept
 		{
 			mPosition.x += x;
@@ -42,12 +104,30 @@ namespace nen
 			mPosition.z += z;
 			mRecomputeWorldTransform = true;
 		}
+		
+		/**
+		 * @brief スケールベクトルを取得
+		 * 
+		 * @return const Vector3& 
+		 */
 		const Vector3 &GetScale() const { return mScale; }
+		
+		/**
+		 * @brief スケールベクトルを設定
+		 * 
+		 * @param scale 
+		 */
 		void SetScale(const Vector3 &scale)
 		{
 			mScale = scale;
 			mRecomputeWorldTransform = true;
 		}
+		
+		/**
+		 * @brief 回転用のクォータニオンを取得
+		 * 
+		 * @return const Quaternion& 
+		 */
 		const Quaternion &GetRotation() const { return mRotation; }
 		void SetRotation(const Quaternion &rotation)
 		{

@@ -40,7 +40,7 @@ void Main::Update(float deltaTime)
 {
     //キーボードのQが押されたら終了
     if (GetInput().Keyboard.GetKeyValue(nen::KeyCode::Q))
-        ExitScene();
+        Quit();
 
     /**
      * 描画処理は裏側で行っている
@@ -91,4 +91,5 @@ NenEngineで使用しているライブラリです。
  NenEngineのライセンスはMIT Lisenceです。
 
 ## ドキュメント
-製作中...
+![APIリファレンス](https://astomih.github.io/NenEngine)  
+その他については製作中。。。

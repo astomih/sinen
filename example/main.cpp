@@ -27,8 +27,7 @@ void Main::Update(float deltaTime)
 {
     //キーボードのQが押されたら終了
     if (GetInput().Keyboard.GetKeyValue(nen::KeyCode::Q))
-        ExitScene();
-
+        Quit();
     /**
      * 描画処理は裏側で行っている
     */

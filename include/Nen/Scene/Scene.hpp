@@ -49,16 +49,16 @@ namespace nen
 		template <class T>
 		std::shared_ptr<T> GetActor(uint32_t handle = 0)
 		{
-			for (auto i : mActors)
+			for (const auto &i : mActors)
 			{
 				auto actor = std::dynamic_pointer_cast<T>(i);
-				if (actor != nullptr && i->handle == handle)
+				if (actor && i->handle == handle)
 					return actor;
 			}
-			for (auto i : mPendingActors)
+			for (const auto &i : mPendingActors)
 			{
 				auto actor = std::dynamic_pointer_cast<T>(i);
-				if (actor != nullptr && i->handle == handle)
+				if (actor && i->handle == handle)
 					return actor;
 			}
 			return nullptr;

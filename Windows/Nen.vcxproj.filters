@@ -10,9 +10,6 @@
     <ClCompile Include="..\libs\ImGui\source\imgui_widgets.cpp" />
     <ClCompile Include="..\libs\tinyobjloader\tiny_obj_loader.cc" />
     <ClCompile Include="..\src\Nen\Engine\Engine.cpp" />
-    <ClCompile Include="..\src\Nen\Actor\Text.cpp" />
-    <ClCompile Include="..\src\Nen\Audio\AudioEvent.cpp" />
-    <ClCompile Include="..\src\Nen\Audio\AudioSystem.cpp" />
     <ClCompile Include="..\src\Nen\Color\Color.cpp" />
     <ClCompile Include="..\src\Nen\Component\CircleComponent.cpp" />
     <ClCompile Include="..\src\Nen\Component\Component.cpp" />
@@ -20,8 +17,6 @@
     <ClCompile Include="..\src\Nen\Component\InputComponent.cpp" />
     <ClCompile Include="..\src\Nen\Component\MoveComponent.cpp" />
     <ClCompile Include="..\src\Nen\Component\ScriptComponent.cpp" />
-    <ClCompile Include="..\src\Nen\Component\Sprite2DComponent.cpp" />
-    <ClCompile Include="..\src\Nen\Component\Sprite3DComponent.cpp" />
     <ClCompile Include="..\src\Nen\Effect\CustomTextureLoader.cpp" />
     <ClCompile Include="..\src\Nen\Effect\EffectManager.cpp" />
     <ClCompile Include="..\src\Nen\Effect\Effect.cpp" />
@@ -51,7 +46,6 @@
     <ClCompile Include="..\src\Nen\Vertex\Vertex.cpp" />
     <ClCompile Include="..\src\Nen\Vertex\VertexArray.cpp" />
     <ClCompile Include="..\src\Nen\Window\Window.cpp" />
-    <ClCompile Include="..\src\Nen\Component\AudioComponent.cpp" />
     <ClCompile Include="..\src\Nen\Actor\Actor.cpp" />
     <ClCompile Include="..\src\Nen\Utility\Singleton.cpp" />
     <ClCompile Include="..\src\Nen\Component\TextComponent.cpp" />
@@ -63,6 +57,16 @@
     <ClCompile Include="..\src\Nen\GUI\HUD.cpp" />
     <ClCompile Include="..\src\Nen\GUI\PauseMenu.cpp" />
     <ClCompile Include="..\src\Nen\GUI\UIScreen.cpp" />
+    <ClCompile Include="..\src\Nen\Audio\MusicEvent.cpp" />
+    <ClCompile Include="..\src\Nen\Audio\MusicSystem.cpp" />
+    <ClCompile Include="..\src\Nen\Audio\SoundEvent.cpp" />
+    <ClCompile Include="..\src\Nen\Audio\SoundSystem.cpp" />
+    <ClCompile Include="..\src\Nen\Component\BillboardComponent.cpp" />
+    <ClCompile Include="..\src\Nen\Component\SoundComponent.cpp" />
+    <ClCompile Include="..\src\Nen\Component\Draw2DComponent.cpp" />
+    <ClCompile Include="..\src\Nen\Component\Draw3DComponent.cpp" />
+    <ClCompile Include="..\src\Nen\Time\Timer.cpp" />
+    <ClCompile Include="..\src\Nen\Physics\Collision.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Nen\Actor\PlaneActor.hpp" />

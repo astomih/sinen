@@ -41,7 +41,7 @@
 #include "GUI/UIScreen.hpp"
 #include "Input/InputSystem.hpp"
 #include "Logger/Logger.hpp"
-#include "Mesh/ObjLoader.hpp"
+#include "Mesh/Mesh.hpp"
 #include "Physics/Collision.hpp"
 #include "Render/Renderer.hpp"
 #include "Scene/Scene.hpp"

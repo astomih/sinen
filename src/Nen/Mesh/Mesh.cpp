@@ -5,8 +5,9 @@
 #include <SDL_rwops.h>
 #include <Nen.hpp>
 
-namespace nen::mesh
+namespace nen
 {
+
     std::string LoadTextFile(const std::string &path)
     {
         SDL_RWops *file{SDL_RWFromFile(path.c_str(), "r")};
@@ -18,13 +19,13 @@ namespace nen::mesh
         return result;
     }
 
-    bool ObjLoader::Load(std::shared_ptr<Renderer> renderer, std::string_view filepath, std::string_view name)
+    bool Mesh::Obj::LoadFromFile(std::shared_ptr<Renderer> renderer, std::string_view filepath, std::string_view registerName)
     {
         std::string path = filepath.data();
         std::istringstream sourceStream(LoadTextFile(path));
         if (filepath.ends_with(".obj"))
         {
-            for (int i = 0; i < 3;i++)
+            for (int i = 0; i < 3; i++)
                 path.pop_back();
             path += "mtl";
         }
@@ -80,7 +81,7 @@ namespace nen::mesh
             }
         }
         vArray.indexCount = vArray.indices.size();
-        renderer->AddVertexArray(vArray, name);
+        renderer->AddVertexArray(vArray, registerName);
         return true;
     }
 }

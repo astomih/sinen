@@ -164,7 +164,7 @@
     <ClCompile Include="..\src\Nen\Math\Math.cpp" />
     <ClCompile Include="..\src\Nen\Math\Random.cpp" />
     <ClCompile Include="..\src\Nen\Math\Transform.cpp" />
-    <ClCompile Include="..\src\Nen\Mesh\ObjLoader.cpp" />
+    <ClCompile Include="..\src\Nen\Mesh\Mesh.cpp" />
     <ClCompile Include="..\src\Nen\Network\TCPClient.cpp" />
     <ClCompile Include="..\src\Nen\Network\TCPSocket.cpp" />
     <ClCompile Include="..\src\Nen\Time\Time.cpp" />
@@ -228,7 +228,7 @@
     <ClInclude Include="..\include\Nen\Math\Vector2.hpp" />
     <ClInclude Include="..\include\Nen\Math\Vector3.hpp" />
     <ClInclude Include="..\include\Nen\Nen.hpp" />
-    <ClInclude Include="..\include\Nen\Mesh\ObjLoader.hpp" />
+    <ClInclude Include="..\include\Nen\Mesh\Mesh.hpp" />
     <ClInclude Include="..\include\Nen\Render\Renderer.hpp" />
     <ClInclude Include="..\include\Nen\Scene\Scene.hpp" />
     <ClInclude Include="..\include\Nen\Script\Script.hpp" />

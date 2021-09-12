@@ -359,7 +359,7 @@ namespace nen::vk
 		ci.height = mSwapchain->GetSurfaceExtent().height;
 		ci.layers = 1;
 		m_framebuffers.clear();
-		for (int i = 0; i < mSwapchain->GetImageCount(); i++)
+		for (int i = 0; std::cmp_less(i, mSwapchain->GetImageCount()); i++)
 		{
 			std::array<VkImageView, 2> attachments;
 			ci.attachmentCount = uint32_t(attachments.size());

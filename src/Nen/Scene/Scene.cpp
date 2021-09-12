@@ -65,7 +65,6 @@ namespace nen
 			{
 			case SDL_QUIT:
 			{
-				mIsRunning = false;
 				mGameState = GameState::Quit;
 			}
 			break;
@@ -78,14 +77,13 @@ namespace nen
 
 		if (state.Keyboard.GetKeyState(KeyCode::ESCAPE) == ButtonState::Released)
 		{
-			mIsRunning = false;
 			mGameState = GameState::Quit;
 		}
 		if (state.Keyboard.GetKeyState(KeyCode::F3) == ButtonState::Pressed)
 		{
 			GetRenderer()->toggleShowImGui();
 		}
-		if (!mIsRunning)
+		if (mGameState == GameState::Quit)
 			return;
 		mUpdatingActors = true;
 

@@ -8,17 +8,24 @@
 namespace nen
 {
 	class SoundSystem;
-	class Scene : public std::enable_shared_from_this<Scene>
+	class Scene
 	{
 	public:
 		Scene();
 		virtual ~Scene() {}
 
+		enum class GameState
+		{
+			Gameplay,
+			Paused,
+			Quit
+		};
+
 		void Initialize();
 
 		void SetRenderer(std::shared_ptr<class Renderer> renderer) { mRenderer = renderer; }
 
-		bool isRunning() { return mIsRunning; }
+		bool isRunning() { return mGameState != GameState::Quit; }
 
 		void RunLoop();
 
@@ -36,7 +43,6 @@ namespace nen
 			{
 				mActors.emplace_back(actor);
 			}
-			actor->AddedScene();
 			return actor;
 		}
 
@@ -80,22 +86,13 @@ namespace nen
 
 		std::shared_ptr<class Renderer> GetRenderer() const { return mRenderer; }
 
-		enum class GameState
-		{
-			Gameplay,
-			Paused,
-			Quit
-		};
-
 		GameState GetState() const { return mGameState; }
 		void SetState(GameState state) { mGameState = state; }
 
 		void Quit()
 		{
-			mIsRunning = false;
 			mGameState = GameState::Quit;
 		}
-		void ExitScene() { mIsRunning = false; }
 
 		void AddGUI(std::shared_ptr<class UIScreen> ui);
 		void RemoveGUI(std::shared_ptr<class UIScreen> ui);
@@ -117,17 +114,10 @@ namespace nen
 		void UpdateScene();
 		class InputSystem *mInputSystem;
 		std::shared_ptr<class Renderer> mRenderer;
-		std::unordered_map<std::string, class Font *> mFonts;
-		// Any pending actors
 		std::vector<std::shared_ptr<class Actor>> mPendingActors;
-		uint32_t mTicksCount = 0;
-		uint32_t mTimeBuf = 0;
-		// Track if we're updating actors right now
-		bool mUpdatingActors = false;
-		bool mIsRunning = true;
-		// Map for text localization
-		std::unordered_map<std::string, std::string> mText;
 		GameState mGameState = GameState::Gameplay;
+		uint32_t mTicksCount = 0;
+		bool mUpdatingActors = false;
 	};
 	void ChangeScene(std::shared_ptr<Scene> newScene);
 }

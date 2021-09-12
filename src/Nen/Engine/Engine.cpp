@@ -17,7 +17,7 @@ namespace nen
 {
 	void ChangeScene(std::shared_ptr<Scene> newScene)
 	{
-		scene->ExitScene();
+		scene->Quit();
 		nextScene = newScene;
 	}
 }

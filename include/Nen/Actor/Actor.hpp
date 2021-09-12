@@ -17,7 +17,7 @@ namespace nen
 	 * @brief Sceneに依存するアクター
 	 * 
 	 */
-	class Actor : public std::enable_shared_from_this<Actor>
+	class Actor
 	{
 	public:
 
@@ -178,7 +178,6 @@ namespace nen
 				}
 				else
 					mComponents.emplace_back(ptr);
-				ptr->AddedActor();
 				return ptr;
 			}
 			else
@@ -209,7 +208,6 @@ namespace nen
 
 		bool isRecompute() { return mRecomputeWorldTransform; }
 		void RecomuteFinished() { mRecomputeWorldTransform = false; }
-		void AddedScene() { addedSceneActorList = true; }
 
 		const InputState &GetInput();
 
@@ -224,6 +222,5 @@ namespace nen
 		std::vector<std::shared_ptr<Component>> mComponents;
 		Scene &mScene;
 		Vector3 mScale;
-		bool addedSceneActorList = false;
 	};
 }

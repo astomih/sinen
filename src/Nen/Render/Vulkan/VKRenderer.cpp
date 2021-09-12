@@ -1388,6 +1388,8 @@ namespace nen::vk
 					i->state = Effect::State::Dead;
 				}
 			}
+			auto euler = Quaternion::ToEuler(i->GetRotation());
+			mEffectManager->GetManager()->SetRotation(i->handle, euler.x, euler.y, euler.z);
 			mEffectManager->GetManager()->SetLocation(i->handle, ::Effekseer::Vector3D(p.x, p.y, p.z));
 		}
 		mEffectManager->GetManager()->Update();

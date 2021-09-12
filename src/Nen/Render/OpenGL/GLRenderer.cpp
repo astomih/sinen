@@ -53,14 +53,6 @@ namespace nen::gl
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		mSpriteShader->SetActive(0);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 8 * sizeof(float), 0);
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 8 * sizeof(float),
-							  reinterpret_cast<void *>(sizeof(float) * 3));
-		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_TRUE, 8 * sizeof(float),
-							  reinterpret_cast<void *>(sizeof(float) * 6));
 		glDisable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
 		std::string vertexID;
@@ -69,22 +61,8 @@ namespace nen::gl
 		{
 			if (vertexID != i->vertexIndex)
 			{
-				glBindVertexArray(m_VertexArrays[i->vertexIndex].vertexID);
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VertexArrays[i->vertexIndex].indexID);
-				auto vArraySize = m_VertexArrays[i->vertexIndex].vertices.size() * sizeof(Vertex);
-				glBufferSubData(GL_ARRAY_BUFFER, 0, vArraySize, m_VertexArrays[i->vertexIndex].vertices.data());
-
+				glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
 				vertexID = i->vertexIndex;
-				glEnableVertexAttribArray(0);
-				glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 8 * sizeof(float), 0);
-				// Normal is 3 floats
-				glEnableVertexAttribArray(1);
-				glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 8 * sizeof(float),
-									  reinterpret_cast<void *>(sizeof(float) * 3));
-				// Texture coordinates is 2 floats
-				glEnableVertexAttribArray(2);
-				glVertexAttribPointer(2, 2, GL_FLOAT, GL_TRUE, 8 * sizeof(float),
-									  reinterpret_cast<void *>(sizeof(float) * 6));
 			}
 			glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
 			mSpriteShader->UpdateUBO(0, sizeof(ShaderParameters), &i->param);
@@ -94,20 +72,15 @@ namespace nen::gl
 		glEnable(GL_BLEND);
 		glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-		// Set shader/vao as active
 		mAlphaShader->SetActive(0);
 		for (auto &i : mSprite2Ds)
 		{
 			if (vertexID != i->vertexIndex)
 			{
-				glBindVertexArray(m_VertexArrays[i->vertexIndex].vertexID);
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VertexArrays[i->vertexIndex].indexID);
-				auto vArraySize = m_VertexArrays[i->vertexIndex].vertices.size() * sizeof(Vertex);
-				glBufferSubData(GL_ARRAY_BUFFER, 0, vArraySize, m_VertexArrays[i->vertexIndex].vertices.data());
+				glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
 				vertexID = i->vertexIndex;
 			}
 			mAlphaShader->UpdateUBO(0, sizeof(ShaderParameters), &i->param);
-
 			glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
 			glDrawElementsBaseVertex(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr, 0);
 		}
@@ -190,23 +163,33 @@ namespace nen::gl
 		vArrayGL.indexCount = vArray.indexCount;
 		vArrayGL.indices = vArray.indices;
 		vArrayGL.vertices = vArray.vertices;
+		vArrayGL.materialName = vArray.materialName;
 
-		// Create vertex array
-		glGenVertexArrays(1, &vArrayGL.vertexID);
-		glBindVertexArray(vArrayGL.vertexID);
+		// VAOを作成
+		glGenVertexArrays(1, &vArrayGL.vao);
+		glBindVertexArray(vArrayGL.vao);
 
-		// Create vertex buffer
-		glGenBuffers(1, &vArrayGL.vertexID);
-		glBindBuffer(GL_ARRAY_BUFFER, vArrayGL.vertexID);
+		// VBOを作成
+		glGenBuffers(1, &vArrayGL.vbo);
+		glBindBuffer(GL_ARRAY_BUFFER, vArrayGL.vbo);
 		auto vArraySize = vArrayGL.vertices.size() * sizeof(Vertex);
 		glBufferData(GL_ARRAY_BUFFER, vArraySize, vArrayGL.vertices.data(), GL_STATIC_DRAW);
 
-		// Create index buffer
-		glGenBuffers(1, &vArrayGL.indexID);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.indexID);
+		// VBOをVAOに登録
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 8 * sizeof(float), 0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 8 * sizeof(float),
+							  reinterpret_cast<void *>(sizeof(float) * 3));
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_TRUE, 8 * sizeof(float),
+							  reinterpret_cast<void *>(sizeof(float) * 6));
+		// IBOを作成
+		glGenBuffers(1, &vArrayGL.ibo);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.ibo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.indices.size() * sizeof(uint32_t), vArrayGL.indices.data(), GL_STATIC_DRAW);
-		AddVertexArray(vArrayGL, name);
-		m_VertexArrays.insert(std::pair<std::string, VertexArrayForGL>(name.data(), vArrayGL));
+		// 登録
+		m_VertexArrays.emplace(name.data(), vArrayGL);
 	}
 	void GLRenderer::ChangeBufferDrawObject(std::shared_ptr<class DrawObject> sprite, const TextureType type)
 	{
@@ -292,9 +275,6 @@ namespace nen::gl
 		return true;
 	}
 
-	void GLRenderer::AddVertexArray(const VertexArrayForGL &vArray, std::string_view name)
-	{
-	}
 	void GLRenderer::createSpriteVerts()
 	{
 		const float value = 1.f;

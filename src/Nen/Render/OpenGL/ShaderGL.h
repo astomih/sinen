@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include <GL/glew.h>
 #include <Math/Vector2.hpp>
@@ -26,7 +26,7 @@ namespace nen::gl
 		 * @brief デストラクタ
 		 * 
 		 */
-		~ShaderGL()=default;
+		~ShaderGL() = default;
 
 		/**
 		 * @brief シェーダーをファイルから読み込む
@@ -37,26 +37,26 @@ namespace nen::gl
 		 * @return false 読み込み失敗(Loggerを参照)
 		 */
 		bool Load(const std::string &vertName, const std::string &fragName);
-		
+
 		/**
 		 * @brief 読み込んだシェーダを閉じる
 		 * 
 		 */
 		void Unload();
-		
+
 		/**
 		 * @brief シェーダを有効にする
 		 * 
 		 * @param blockIndex 有効なBlock Index
 		 */
 		void SetActive(const GLuint &blockIndex);
-		
+
 		/**
 		 * @brief シェーダを無効にする
 		 * 
 		 */
 		void SetDisable();
-		
+
 		/**
 		 * @brief UBO(Uniform Buffer Object)を作成
 		 * 
@@ -67,7 +67,7 @@ namespace nen::gl
 		 * @return false UBOの作成に失敗
 		 */
 		bool CreateUBO(const GLuint &blockIndex, const size_t &size, const void *data);
-		
+
 		/**
 		 * @brief UBOを更新する
 		 * 

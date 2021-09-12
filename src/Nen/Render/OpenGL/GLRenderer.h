@@ -16,8 +16,23 @@ namespace nen
 
 		struct VertexArrayForGL : public nen::VertexArray
 		{
-			uint32_t vertexID;
-			uint32_t indexID;
+			/**
+			 * @brief Vertex Array Object
+			 * 
+			 */
+			uint32_t vao;
+			
+			/**
+			 * @brief Vertex Buffer Object
+			 * 
+			 */
+			uint32_t vbo;
+			
+			/**
+			 * @brief Index Buffer Object
+			 * 
+			 */
+			uint32_t ibo;
 		};
 
 		class GLRenderer : public IRenderer
@@ -94,8 +109,6 @@ namespace nen
 			{
 				mRenderer = renderer;
 			}
-
-			void AddVertexArray(const VertexArrayForGL &vArray, std::string_view name);
 
 			std::shared_ptr<Window> GetWindow() { return mWindow; }
 

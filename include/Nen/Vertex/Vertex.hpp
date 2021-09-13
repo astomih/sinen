@@ -1,13 +1,30 @@
 #pragma once
 #include "../Math/Vector3.hpp"
 #include "../Math/Vector2.hpp"
-#include <array>
 namespace nen
 {
+    /**
+     * @brief 頂点情報
+     * 
+     */
     struct Vertex
     {
-        Vector3 pos;
-        std::array<float, 3> norm;
+        /**
+         * @brief 位置ベクトル
+         * 
+         */
+        Vector3 position;
+
+        /**
+         * @brief 法線ベクトル
+         * 
+         */
+        Vector3 normal;
+
+        /**
+         * @brief UV座標
+         * 
+         */
         Vector2 uv;
     };
 }

@@ -282,7 +282,7 @@ namespace nen::gl
 		const Vector2 lt(0.f, 1.f);
 		const Vector2 rb(1.0f, 0.0f);
 		const Vector2 rt(1.0f, 1.0f);
-		std::array<float, 3> norm = {1, 1, 1};
+		Vector3 norm{1, 1, 1};
 		VertexArray vArray;
 		vArray.vertices.push_back({Vector3(-value, value, value), norm, lb});
 		vArray.vertices.push_back({Vector3(-value, -value, value), norm, lt});
@@ -305,15 +305,15 @@ namespace nen::gl
 		const Vector2 lt(0.f, 1.f);
 		const Vector2 rb(1.0f, 0.0f);
 		const Vector2 rt(1.0f, 1.0f);
-		std::array<float, 3> norm = {1, 1, 1};
-		const std::array<float, 3> red{1.0f, 0.0f, 0.0f};
-		const std::array<float, 3> green{0.0f, 1.0f, 0.0f};
-		const std::array<float, 3> blue{0.0f, 0.0f, 1.0f};
-		const std::array<float, 3> white{1.0f, 1, 1};
-		const std::array<float, 3> black{0.0f, 0, 0};
-		const std::array<float, 3> yellow{1.0f, 1.0f, 0.0f};
-		const std::array<float, 3> magenta{1.0f, 0.0f, 1.0f};
-		const std::array<float, 3> cyan{0.0f, 1.0f, 1.0f};
+		Vector3 norm{1, 1, 1};
+		const Vector3 red{1.0f, 0.0f, 0.0f};
+		const Vector3 green{0.0f, 1.0f, 0.0f};
+		const Vector3 blue{0.0f, 0.0f, 1.0f};
+		const Vector3 white{1.0f, 1, 1};
+		const Vector3 black{0.0f, 0, 0};
+		const Vector3 yellow{1.0f, 1.0f, 0.0f};
+		const Vector3 magenta{1.0f, 0.0f, 1.0f};
+		const Vector3 cyan{0.0f, 1.0f, 1.0f};
 
 		VertexArray vArray;
 		vArray.vertices.push_back({Vector3(-value, value, value), yellow, lb});

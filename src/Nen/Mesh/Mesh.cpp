@@ -61,16 +61,15 @@ namespace nen
             for (const auto &index : shape.mesh.indices)
             {
                 Vertex v{};
-                v.pos = Vector3(
+                v.position = Vector3(
                     attrib.vertices[3 * index.vertex_index + 0],
                     attrib.vertices[3 * index.vertex_index + 1],
                     attrib.vertices[3 * index.vertex_index + 2]);
 
-                v.norm = {
+                v.normal = Vector3{
                     attrib.normals[3 * index.normal_index + 0],
                     attrib.normals[3 * index.normal_index + 1],
-                    attrib.normals[3 * index.normal_index + 2],
-                };
+                    attrib.normals[3 * index.normal_index + 2]};
 
                 v.uv = Vector2(
                     attrib.texcoords[2 * index.texcoord_index + 0],

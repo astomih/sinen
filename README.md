@@ -72,7 +72,7 @@ NenEngineで使用しているライブラリです。
 - Effekseer
 - The OpenGL Extension Wrangler Library (GLEW)
 - Dear ImGui (ImGui)
-- LLGI
+- LLGI (Effekseer用)
 - Lua
 - mojoAL  (実装に不具合があるようなので見送り)
 - OpenAL 1.1  (mojoALが機能するまでの間)

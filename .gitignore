@@ -340,6 +340,7 @@ ASALocalRun/
 healthchecksdb
 
 #user
+nen-cppcheck-build-dir/
 Debug/
 Release/
 packages/

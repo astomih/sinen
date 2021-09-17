@@ -4,7 +4,7 @@
 namespace nen
 {
 	constexpr int matrixSize = sizeof(float) * 16;
-	Draw2DComponent::Draw2DComponent(Actor &owner, const int drawOrder, Texture tex)
+	Draw2DComponent::Draw2DComponent(Actor &owner, const int drawOrder)
 		: Component(owner), mDrawOrder(drawOrder), mTexture(nullptr)
 	{
 	}
@@ -61,6 +61,9 @@ namespace nen
 		sprite->param.world = mOwner.GetWorldTransform();
 		sprite->param.proj = viewproj;
 		sprite->param.view = Matrix4::Identity;
-		mOwner.GetScene().GetRenderer()->AddDrawObject2D(sprite, texture);
+	}
+	void Draw2DComponent::Register()
+	{
+		mOwner.GetScene().GetRenderer()->AddDrawObject2D(sprite, mTexture);
 	}
 }

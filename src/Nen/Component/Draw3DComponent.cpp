@@ -45,7 +45,10 @@ namespace nen
 		sprite->param.world = mOwner.GetWorldTransform();
 		sprite->param.proj = proj;
 		sprite->param.view = view;
-
-		mOwner.GetScene().GetRenderer()->AddDrawObject3D(sprite, texture);
+	}
+	void Draw3DComponent::Register()
+	{
+		if (sprite)
+			mOwner.GetScene().GetRenderer()->AddDrawObject3D(sprite, mTexture);
 	}
 }

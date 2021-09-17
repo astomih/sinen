@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "../Render/Renderer.hpp"
+#include "../Vertex/VertexArray.hpp"
 #include <memory>
 #include <string_view>
 namespace nen
@@ -10,6 +11,8 @@ namespace nen
         class Obj
         {
         public:
+            Obj() = default;
+            ~Obj() = default;
             /**
              * @brief ファイルからobj形式のメッシュを読み込む
              * 
@@ -19,7 +22,13 @@ namespace nen
              * @return true 読み込み成功
              * @return false 読み込み失敗
              */
-            static bool LoadFromFile(std::shared_ptr<class Renderer> renderer, std::string_view filePath, std::string_view registerName);
+            bool LoadFromFile(std::shared_ptr<class Renderer> renderer, std::string_view filePath, std::string_view registerName);
+            void Register();
+
+        private:
+            std::string_view name;
+            VertexArray vArray;
+            std::shared_ptr<class Renderer> mRenderer;
         };
     };
 }

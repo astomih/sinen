@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "../Math/Vector2.hpp"
 #include "../Texture/Texture.hpp"
 #include "../Color/Color.hpp"
@@ -10,12 +10,37 @@ namespace nen
 	class Draw2DComponent : public Component
 	{
 	public:
-		// (Lower draw order corresponds with further back)
-		Draw2DComponent(class Actor &owner, int drawOrder = 100, Texture tex = Texture());
+		/**
+		 * @brief コンストラクタ
+		 * 
+		 * @param owner 親となるアクター
+		 * @param drawOrder 描画順序
+		 * @param tex テクスチャ
+		 */
+		Draw2DComponent(class Actor &owner, int drawOrder = 100);
 		~Draw2DComponent();
 
-		virtual void Create(std::shared_ptr<Texture> texture, float scale = 1.0f, std::string_view shape = "SPRITE");
+		/**
+		 * @brief Actorから呼ばれる更新関数
+		 * 
+		 * @param deltaTime 変位時間
+		 */
 		virtual void Update(float deltaTime) override;
+
+		/**
+		 * @brief DrawObjectを使用する
+		 * 
+		 * @param texture 使用するテクスチャ
+		 * @param scale スケール
+		 * @param shape 形
+		 */
+		virtual void Create(std::shared_ptr<Texture> texture, float scale = 1.0f, std::string_view shape = "SPRITE");
+
+		/**
+		 * @brief 生成したDrawObjectを登録する
+		 * 
+		 */
+		void Register();
 
 		int GetDrawOrder() const { return mDrawOrder; }
 		int GetTexHeight() const { return mTexHeight; }

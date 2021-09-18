@@ -8,7 +8,7 @@ namespace nen
 	class Effect
 	{
 	public:
-		Effect(std::u16string_view path);
+		Effect(std::string_view path);
 		~Effect();
 		const Vector3 &GetPosition() { return this->position; }
 		const Quaternion &GetRotation() { return this->rotate; }

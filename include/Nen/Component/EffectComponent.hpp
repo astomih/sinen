@@ -8,7 +8,7 @@ namespace nen
 		EffectComponent(class Actor &actor, int updateOrder = 100);
 		~EffectComponent();
 
-		void Create(std::u16string_view filePath);
+		void Create(std::string_view filePath);
 		void Update(float deltaTime) override;
 
 		void SetLoop(bool loop, Timer interval);

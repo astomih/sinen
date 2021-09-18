@@ -12,9 +12,9 @@ namespace nen
 		mEffect = nullptr;
 	}
 
-	void EffectComponent::Create(std::u16string_view filePath)
+	void EffectComponent::Create(std::string_view filePath)
 	{
-		mEffect =std::make_shared<Effect>(filePath);
+		mEffect = std::make_shared<Effect>(filePath);
 		mOwner.GetScene().GetRenderer()->AddEffect(mEffect);
 	}
 	void EffectComponent::SetLoop(bool loop, Timer interval)

@@ -1,4 +1,5 @@
 ﻿#include <SDL_ttf.h>
+#include <SDL.h>
 #include <Nen.hpp>
 #include <cassert>
 #include "../Texture/SurfaceHandle.hpp"
@@ -8,7 +9,7 @@ namespace nen
 	{
 		this->fontName = fontName;
 		this->pointSize = pointSize;
-		font = ::TTF_OpenFont(std::string(this->fontName).c_str(), this->pointSize);
+		font = ::TTF_OpenFontRW((SDL_RWops *)AssetReader::LoadAsRWops(AssetType::Font, this->fontName), 1, this->pointSize);
 		if (!font)
 		{
 			Logger::Error("%s", TTF_GetError());

@@ -38,7 +38,8 @@ namespace nen
 
     void MusicSystem::LoadMusicFromFile(std::string_view fileName)
     {
-        ::Mix_Music *music = ::Mix_LoadMUS(std::string(fileName).c_str());
+        auto rwops = (SDL_RWops *)AssetReader::LoadAsRWops(AssetType::Music, fileName);
+        ::Mix_Music *music = ::Mix_LoadMUS_RW(rwops, 1);
         if (music)
         {
             impl->buffer.emplace(std::string(fileName), music);

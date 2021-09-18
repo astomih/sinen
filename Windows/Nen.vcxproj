@@ -161,6 +161,7 @@
     <ClCompile Include="..\src\Nen\Logger\Logger.cpp" />
     <ClCompile Include="..\src\Nen\Font\Font.cpp" />
     <ClCompile Include="..\src\Nen\Input\InputSystem.cpp" />
+    <ClCompile Include="..\src\Nen\IO\AssetReader.cpp" />
     <ClCompile Include="..\src\Nen\Math\Math.cpp" />
     <ClCompile Include="..\src\Nen\Math\Random.cpp" />
     <ClCompile Include="..\src\Nen\Math\Transform.cpp" />

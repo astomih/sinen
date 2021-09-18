@@ -21,15 +21,7 @@ namespace nen
         mRenderer = renderer;
         name = registerName;
         std::string path = filepath.data();
-        std::istringstream sourceStream(LoadTextFile(path));
-        if (filepath.ends_with(".obj"))
-        {
-            for (int i = 0; i < 3; i++)
-                path.pop_back();
-            path += "mtl";
-        }
-        //std::istringstream materialStream(LoadTextFile(path.data()));
-        //auto materialStreamReader = std::make_unique<tinyobj::MaterialStreamReader>(materialStream);
+        std::istringstream sourceStream(AssetReader::Load(AssetType::Model, filepath).data());
         tinyobj::attrib_t attrib;
         std::vector<tinyobj::shape_t> shapes;
         std::vector<tinyobj::material_t> materials;

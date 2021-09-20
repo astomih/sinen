@@ -48,8 +48,7 @@ namespace nen
 			return AL_NONE;
 		}
 	}
-	SoundSystem::SoundSystem(Scene &scene)
-		: mScene(scene)
+	SoundSystem::SoundSystem()
 	{
 	}
 

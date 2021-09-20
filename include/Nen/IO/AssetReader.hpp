@@ -31,6 +31,15 @@ namespace nen
          */
         static void *LoadAsRWops(const AssetType &assetType, std::string_view name);
 
+        /**
+         * @brief std::stringとしてアセットを読み込む
+         * 
+         * @param assetType アセットの種類。EffectならAssets/Effect内にあるファイルを読み込む。
+         * @param name Assets/〇〇(任意のディレクトリ)にあるファイル。
+         * @return std::string 
+         */
+        static std::string LoadAsString(const AssetType &assetType, std::string_view name);
+
         static void ConvertFilePath(std::string &filePath, std::string_view name, const AssetType &assetType);
     };
 }

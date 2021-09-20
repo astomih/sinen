@@ -10,19 +10,24 @@
 #endif
 
 std::function<void()> loop;
+std::function<void(std::shared_ptr<nen::Scene>)> changeScene;
 void main_loop() { loop(); }
-std::shared_ptr<nen::Scene> scene;
-std::shared_ptr<nen::Scene> nextScene;
 namespace nen
 {
 	void ChangeScene(std::shared_ptr<Scene> newScene)
 	{
-		scene->Quit();
-		nextScene = newScene;
+		changeScene(newScene);
 	}
 }
 int main(int argc, char **argv)
 {
+	std::shared_ptr<nen::Scene> scene;
+	std::shared_ptr<nen::Scene> nextScene;
+	changeScene = [&](std::shared_ptr<nen::Scene> newScene)
+	{
+		scene->Quit();
+		nextScene = newScene;
+	};
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();
 	IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
@@ -52,10 +57,30 @@ int main(int argc, char **argv)
 	window->Initialize(nen::Vector2(1280, 720), "Nen", nen::GraphicsAPI::ES);
 	renderer = std::make_shared<nen::Renderer>(nen::GraphicsAPI::ES, window);
 #endif
-	renderer->SetProjectionMatrix(nen::Matrix4::Perspective(nen::Math::ToRadians(90.f), window->Size().x / window->Size().y, 0.01f, 10000.f));
+	renderer->SetProjectionMatrix(nen::Matrix4::Perspective(nen::Math::ToRadians(70.f), window->Size().x / window->Size().y, 0.1f, 1000.f));
 
 	nen::RendererHandle::SetRenderer(renderer);
+	auto soundSystem = std::make_shared<nen::SoundSystem>();
+	if (!soundSystem->Initialize())
+	{
+		nen::Logger::Info("Failed to initialize audio system");
+		soundSystem->Shutdown();
+		soundSystem = nullptr;
+		std::exit(-1);
+	}
+	nen::Logger::Info("Audio system Initialized.");
+	auto inputSystem = std::make_shared<nen::InputSystem>();
+	if (!inputSystem->Initialize())
+	{
+		nen::Logger::Info("Failed to initialize input system");
+	}
+	nen::Logger::Info("Input system initialized.");
+	// スクリプトのインスタンスを作成
+	nen::Script::Create();
+	nen::Logger::Info("Script system initialized.");
 	scene = std::make_shared<Main>();
+	scene->SetInputSystem(inputSystem);
+	scene->SetSoundSystem(soundSystem);
 	scene->Initialize();
 	loop = [&]
 	{
@@ -64,13 +89,18 @@ int main(int argc, char **argv)
 		else if (nextScene)
 		{
 			scene->Shutdown();
+			scene = nullptr;
 			scene = nextScene;
+			scene->SetInputSystem(inputSystem);
+			scene->SetSoundSystem(soundSystem);
 			scene->Initialize();
 			nextScene = nullptr;
 		}
 		else
 		{
 			scene->Shutdown();
+			inputSystem->Shutdown();
+			soundSystem->Shutdown();
 			scene = nullptr;
 			renderer->Shutdown();
 			renderer = nullptr;

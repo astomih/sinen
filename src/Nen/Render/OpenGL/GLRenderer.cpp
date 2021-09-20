@@ -65,6 +65,7 @@ namespace nen::gl
 				vertexID = i->vertexIndex;
 			}
 			glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
+			i->param.view = mRenderer->GetViewMatrix();
 			mSpriteShader->UpdateUBO(0, sizeof(ShaderParameters), &i->param);
 			glDrawElementsBaseVertex(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr, 0);
 		}

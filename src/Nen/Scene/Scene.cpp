@@ -16,24 +16,6 @@ namespace nen
 	void Scene::Initialize()
 	{
 		mRenderer = RendererHandle::GetRenderer();
-		mAudioSystem = std::make_shared<SoundSystem>(*this);
-		if (!mAudioSystem->Initialize())
-		{
-			Logger::Info("Failed to initialize audio system");
-			mAudioSystem->Shutdown();
-			mAudioSystem = nullptr;
-			std::exit(1);
-		}
-		Logger::Info("Audio system Initialized.");
-		mInputSystem = new InputSystem();
-		if (!mInputSystem->Initialize())
-		{
-			Logger::Info("Failed to initialize input system");
-		}
-		Logger::Info("Input system initialized.");
-		// スクリプトのインスタンスを作成
-		Script::Create();
-		Logger::Info("Script system initialized.");
 		// シーンのデータを読み込み
 		Setup();
 		Logger::Info("Scene setup.");
@@ -130,7 +112,7 @@ namespace nen
 		}
 		mPendingActors.clear();
 
-		mAudioSystem->Update(deltaTime);
+		mSoundSystem->Update(deltaTime);
 	}
 
 	void Scene::Setup()
@@ -148,9 +130,6 @@ namespace nen
 
 	void Scene::Shutdown()
 	{
-		mInputSystem->Shutdown();
-		delete mInputSystem;
-		mInputSystem = nullptr;
 		UnloadData();
 	}
 

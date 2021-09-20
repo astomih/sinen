@@ -6,22 +6,14 @@
 #include <sstream>
 namespace nen
 {
-    std::string LoadTextFile(const std::string &path)
-    {
-        SDL_RWops *file{SDL_RWFromFile(path.c_str(), "r")};
-        size_t fileLength{static_cast<size_t>(SDL_RWsize(file))};
-        void *data{SDL_LoadFile_RW(file, nullptr, 1)};
-        std::string result(static_cast<char *>(data), fileLength);
-        SDL_free(data);
-
-        return result;
-    }
     bool Mesh::Obj::LoadFromFile(std::shared_ptr<Renderer> renderer, std::string_view filepath, std::string_view registerName)
     {
         mRenderer = renderer;
         name = registerName;
         std::string path = filepath.data();
-        std::istringstream sourceStream(AssetReader::Load(AssetType::Model, filepath).data());
+        auto src = AssetReader::Load(AssetType::Model, filepath);
+        std::istringstream srcistr{std::string{src}};
+
         tinyobj::attrib_t attrib;
         std::vector<tinyobj::shape_t> shapes;
         std::vector<tinyobj::material_t> materials;
@@ -33,8 +25,12 @@ namespace nen
             &materials,
             &warn,
             &err,
-            &sourceStream,
+            &srcistr,
             nullptr);
+        if (!ret)
+        {
+            nen::Logger::Error("Failed to load Obj %s.", filepath);
+        }
         if (!warn.empty())
         {
             nen::Logger::Warn("%s", warn);
@@ -44,7 +40,6 @@ namespace nen
             nen::Logger::Error("%s", err);
             return false;
         }
-        uint32_t indexCount = 0;
         for (const auto &shape : shapes)
         {
             for (const auto &index : shape.mesh.indices)
@@ -75,6 +70,9 @@ namespace nen
     }
     void Mesh::Obj::Register()
     {
-        mRenderer->AddVertexArray(vArray, name);
+        if (!vArray.vertices.empty())
+            mRenderer->AddVertexArray(vArray, name);
+        else
+            Logger::Warn("Not loaded %s", name.data());
     }
 }

@@ -96,15 +96,15 @@ namespace nen::vk
 		VkCommandBuffer CreateCommandBuffer();
 		void FinishCommandBuffer(VkCommandBuffer command);
 		std::vector<BufferObject> CreateUniformBuffers(uint32_t size, uint32_t imageCount);
-		const std::vector<std::shared_ptr<VulkanDrawObject>> &GetSprite2Ds() { return mTextures2D; }
-		const std::vector<std::shared_ptr<VulkanDrawObject>> &GetSprite3Ds() { return mTextures3D; }
+		const std::vector<std::shared_ptr<VulkanDrawObject>> &GetSprite2Ds() { return mDrawObject2D; }
+		const std::vector<std::shared_ptr<VulkanDrawObject>> &GetSprite3Ds() { return mDrawObject3D; }
 		void WriteToHostVisibleMemory(VkDeviceMemory memory, uint32_t size, const void *pData);
 		void AllocateCommandBufferSecondary(uint32_t count, VkCommandBuffer *pCommands);
 		void FreeCommandBufferSecondary(uint32_t count, VkCommandBuffer *pCommands);
 		void TransferStageBufferToImage(const BufferObject &srcBuffer, const ImageObject &dstImage, const VkBufferImageCopy *region);
 		void MapMemory(VkDeviceMemory memory, void *data, size_t size);
 		void UpdateVertexArray(const VertexArrayForVK &vArray, std::string_view name);
-		std::shared_ptr<class Window> GetWindow(){return m_base->m_window;}
+		std::shared_ptr<class Window> GetWindow() { return m_base->m_window; }
 
 	private:
 		Renderer *mRenderer;
@@ -138,8 +138,8 @@ namespace nen::vk
 		Pipeline pipelineOpaque;
 		Pipeline pipelineAlpha;
 		Pipeline pipeline2D;
-		std::vector<std::shared_ptr<VulkanDrawObject>> mTextures3D;
-		std::vector<std::shared_ptr<VulkanDrawObject>> mTextures2D;
+		std::vector<std::shared_ptr<VulkanDrawObject>> mDrawObject3D;
+		std::vector<std::shared_ptr<VulkanDrawObject>> mDrawObject2D;
 		std::unordered_map<std::string, ImageObject> mImageObjects;
 		std::vector<InstanceData> instance;
 		std::vector<BufferObject> m_instanceUniforms;

@@ -82,8 +82,6 @@ namespace nen
 			}
 		}
 
-		std::shared_ptr<SoundSystem> GetAudioSystem() const { return mAudioSystem; }
-
 		std::shared_ptr<class Renderer> GetRenderer() const { return mRenderer; }
 
 		GameState GetState() const { return mGameState; }
@@ -98,7 +96,10 @@ namespace nen
 		void RemoveGUI(std::shared_ptr<class UIScreen> ui);
 
 		const InputState &GetInput() { return mInputSystem->GetState(); }
-		const InputSystem &GetInputSystem() { return *mInputSystem; }
+		void SetInputSystem(std::shared_ptr<class InputSystem> inputSystem) { mInputSystem = inputSystem; }
+
+		SoundSystem &GetSound() { return *mSoundSystem; }
+		void SetSoundSystem(std::shared_ptr<class SoundSystem> soundSystem) { mSoundSystem = soundSystem; }
 
 	protected:
 		virtual void Setup();
@@ -106,13 +107,13 @@ namespace nen
 
 		// All the actors in the game
 		std::vector<std::shared_ptr<class Actor>> mActors;
-		std::shared_ptr<class SoundSystem> mAudioSystem;
 
 	private:
 		void UnloadData();
 		void ProcessInput();
 		void UpdateScene();
-		class InputSystem *mInputSystem;
+		std::shared_ptr<class InputSystem> mInputSystem;
+		std::shared_ptr<class SoundSystem> mSoundSystem;
 		std::shared_ptr<class Renderer> mRenderer;
 		std::vector<std::shared_ptr<class Actor>> mPendingActors;
 		GameState mGameState = GameState::Gameplay;

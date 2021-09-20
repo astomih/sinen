@@ -8,8 +8,8 @@
 
 namespace
 {
-		struct ALCdevice;
-		struct ALCcontext;
+	struct ALCdevice;
+	struct ALCcontext;
 }
 
 namespace nen
@@ -18,7 +18,7 @@ namespace nen
 	{
 	public:
 		//SoundSystem Constructor
-		SoundSystem(class Scene &scene);
+		SoundSystem();
 		//SoundSystem Destructor
 		~SoundSystem();
 
@@ -41,7 +41,6 @@ namespace nen
 		friend class SoundEvent;
 
 	private:
-		Scene &mScene;
 		std::unordered_map<std::string, uint32_t> buffers;
 		::ALCdevice *device;
 		::ALCcontext *context;

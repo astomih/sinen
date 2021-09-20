@@ -99,16 +99,16 @@ namespace nen::es
         manager->SetMaterialLoader(Effekseer::MakeRefPtr<EffekseerRendererGL::MaterialLoader>(
             renderer->GetGraphicsDevice().DownCast<EffekseerRendererGL::Backend::GraphicsDevice>(), &fileInterface, false));
 
-		// Specify a position of view
-		auto g_position = ::Effekseer::Vector3D(0.0f, 30.f, 5.f);
+        // Specify a position of view
+        auto g_position = ::Effekseer::Vector3D(0.0f, 30.f, 5.f);
 
-		// Specify a projection matrix
-		renderer->SetProjectionMatrix(
-			::Effekseer::Matrix44().PerspectiveFovRH(Math::ToRadians(90.f), Window::Size.x / Window::Size.y, 0.01f, 10000.f));
+        // Specify a projection matrix
+        renderer->SetProjectionMatrix(
+            ::Effekseer::Matrix44().PerspectiveFovRH(Math::ToRadians(70.f), Window::Size.x / Window::Size.y, 0.1f, 1000.f));
 
-		auto m2 = ::Effekseer::Matrix44().LookAtRH(g_position, ::Effekseer::Vector3D(0.0f, -5.f, -10.f), ::Effekseer::Vector3D(0.0f, 1.0f, 0.0f));
-		// Specify a camera matrix
-		renderer->SetCameraMatrix(m2);
+        auto m2 = ::Effekseer::Matrix44().LookAtRH(g_position, ::Effekseer::Vector3D(0.0f, -5.f, -10.f), ::Effekseer::Vector3D(0.0f, 1.0f, 0.0f));
+        // Specify a camera matrix
+        renderer->SetCameraMatrix(m2);
     }
 }
 #endif

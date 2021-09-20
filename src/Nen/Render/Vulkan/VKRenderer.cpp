@@ -59,7 +59,9 @@ namespace nen::vk
 		vArrayVK.indices = vArray.indices;
 		vArrayVK.vertices = vArray.vertices;
 		auto vArraySize = vArray.vertices.size() * sizeof(Vertex);
-		vArrayVK.vertexBuffer = CreateBuffer(vArraySize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		vArrayVK.vertexBuffer = CreateBuffer(vArraySize,
+											 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+											 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		vArrayVK.indexBuffer = CreateBuffer(vArray.indices.size() * sizeof(uint32_t), VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 
 		MapMemory(vArrayVK.vertexBuffer.memory, vArrayVK.vertices.data(), vArraySize);
@@ -79,14 +81,14 @@ namespace nen::vk
 	}
 	void VKRenderer::RemoveDrawObject2D(std::shared_ptr<class DrawObject> sprite)
 	{
-		for (auto itr = mTextures2D.begin(); itr != mTextures2D.end();)
+		for (auto itr = mDrawObject2D.begin(); itr != mDrawObject2D.end();)
 		{
 			if ((*itr)->drawObject == sprite)
 			{
 				unregisterTexture((*itr), TextureType::Image2D);
-				itr = mTextures2D.begin();
+				itr = mDrawObject2D.begin();
 			}
-			if (itr != mTextures2D.end())
+			if (itr != mDrawObject2D.end())
 				itr++;
 		}
 	}
@@ -100,14 +102,14 @@ namespace nen::vk
 	}
 	void VKRenderer::RemoveDrawObject3D(std::shared_ptr<class DrawObject> sprite)
 	{
-		for (auto itr = mTextures3D.begin(); itr != mTextures3D.end();)
+		for (auto itr = mDrawObject3D.begin(); itr != mDrawObject3D.end();)
 		{
 			if ((*itr)->drawObject == sprite)
 			{
 				unregisterTexture((*itr), TextureType::Image3D);
-				itr = mTextures3D.begin();
+				itr = mDrawObject3D.begin();
 			}
-			if (itr != mTextures3D.end())
+			if (itr != mDrawObject3D.end())
 				itr++;
 		}
 	}
@@ -241,7 +243,7 @@ namespace nen::vk
 	{
 		pipelineOpaque.Bind(command);
 		VkDeviceSize offset = 0;
-		for (auto &sprite : mTextures3D)
+		for (auto &sprite : mDrawObject3D)
 		{
 			::vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[sprite->drawObject->vertexIndex].vertexBuffer.buffer, &offset);
 			::vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->drawObject->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
@@ -255,6 +257,7 @@ namespace nen::vk
 				{
 					Logger::Fatal("vkMapMemory Error! VkResult:%d", result);
 				}
+				sprite->drawObject->param.view = mRenderer->GetViewMatrix();
 				memcpy(p, &sprite->drawObject->param, sizeof(ShaderParameters));
 				vkUnmapMemory(m_base->GetVkDevice(), memory);
 			}
@@ -266,7 +269,7 @@ namespace nen::vk
 	{
 		pipeline2D.Bind(command);
 		VkDeviceSize offset = 0;
-		for (auto &sprite : mTextures2D)
+		for (auto &sprite : mDrawObject2D)
 		{
 			vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[sprite->drawObject->vertexIndex].vertexBuffer.buffer, &offset);
 			vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->drawObject->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
@@ -503,7 +506,7 @@ namespace nen::vk
 			VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 			v = CreateBuffer(sizeof(InstanceData) * m_instanceUniforms.size(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
 		}
-		for (auto &s : mTextures3D)
+		for (auto &s : mDrawObject3D)
 		{
 			s->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
 			for (auto &v : s->uniformBuffers)
@@ -512,7 +515,7 @@ namespace nen::vk
 				v = CreateBuffer(sizeof(ShaderParameters), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
 			}
 		}
-		for (auto &s : mTextures2D)
+		for (auto &s : mDrawObject2D)
 		{
 			s->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
 			for (auto &v : s->uniformBuffers)
@@ -572,16 +575,16 @@ namespace nen::vk
 
 	void VKRenderer::prepareDescriptorSetAll()
 	{
-		layouts.resize(m_base->mSwapchain->GetImageCount() + (mTextures3D.size() + mTextures2D.size()));
+		layouts.resize(m_base->mSwapchain->GetImageCount() + (mDrawObject3D.size() + mDrawObject2D.size()));
 		for (auto &i : layouts)
 		{
 			i = m_descriptorSetLayout;
 		}
-		for (auto &sprite : mTextures3D)
+		for (auto &sprite : mDrawObject3D)
 		{
 			prepareDescriptorSet(sprite);
 		}
-		for (auto &sprite : mTextures2D)
+		for (auto &sprite : mDrawObject2D)
 		{
 			prepareDescriptorSet(sprite);
 		}
@@ -1259,7 +1262,7 @@ namespace nen::vk
 	{
 		if (TextureType::Image3D == type)
 		{
-			mTextures3D.push_back(texture);
+			mDrawObject3D.push_back(texture);
 			texture->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
 			for (auto &v : texture->uniformBuffers)
 			{
@@ -1271,9 +1274,9 @@ namespace nen::vk
 		}
 		else
 		{
-			auto iter = mTextures2D.begin();
+			auto iter = mDrawObject2D.begin();
 			for (;
-				 iter != mTextures2D.end();
+				 iter != mDrawObject2D.end();
 				 ++iter)
 			{
 				if (texture->drawObject->drawOrder < (*iter)->drawObject->drawOrder)
@@ -1283,7 +1286,7 @@ namespace nen::vk
 			}
 
 			// Inserts element before position of iterator
-			mTextures2D.insert(iter, texture);
+			mDrawObject2D.insert(iter, texture);
 			texture->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
 			for (auto &v : texture->uniformBuffers)
 			{
@@ -1298,8 +1301,8 @@ namespace nen::vk
 	{
 		if (TextureType::Image3D == type)
 		{
-			auto itr = std::find(mTextures3D.begin(), mTextures3D.end(), texture);
-			if (itr != mTextures3D.end())
+			auto itr = std::find(mDrawObject3D.begin(), mDrawObject3D.end(), texture);
+			if (itr != mDrawObject3D.end())
 			{
 				auto device = m_base->GetVkDevice();
 				auto result = vkFreeDescriptorSets(m_base->GetVkDevice(), m_descriptorPool, static_cast<uint32_t>(texture->descripterSet.size()), texture->descripterSet.data());
@@ -1312,23 +1315,23 @@ namespace nen::vk
 					m_base->destroyMemory.push_back(i.memory);
 					DestroyVulkanObject<VkBuffer>(device, i.buffer, &vkDestroyBuffer);
 				}
-				itr = mTextures3D.erase(itr);
+				itr = mDrawObject3D.erase(itr);
 				layouts.pop_back();
 			}
 		}
 		else
 		{
 			auto device = m_base->GetVkDevice();
-			auto itr = std::find(mTextures2D.begin(), mTextures2D.end(), texture);
+			auto itr = std::find(mDrawObject2D.begin(), mDrawObject2D.end(), texture);
 			vkFreeDescriptorSets(device, m_descriptorPool, static_cast<uint32_t>(texture->descripterSet.size()), texture->descripterSet.data());
-			if (itr != mTextures2D.end())
+			if (itr != mDrawObject2D.end())
 			{
 				for (auto &i : (*itr)->uniformBuffers)
 				{
 					m_base->destroyMemory.push_back(i.memory);
 					DestroyVulkanObject<VkBuffer>(device, i.buffer, &vkDestroyBuffer);
 				}
-				mTextures2D.erase(itr);
+				mDrawObject2D.erase(itr);
 			}
 			layouts.pop_back();
 		}

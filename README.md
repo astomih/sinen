@@ -69,6 +69,7 @@ void Main::Update(float deltaTime)
 ## 使用ライブラリ
 NenEngineで使用しているライブラリです。  
 ライセンス文はlibs内の各フォルダ内に記載されています。
+- Assimp
 - Effekseer
 - The OpenGL Extension Wrangler Library (GLEW)
 - Dear ImGui (ImGui)
@@ -83,7 +84,6 @@ NenEngineで使用しているライブラリです。
 - SDL2_net
 - SDL2_ttf
 - sol2
-- tinyobjloader
   
 各ライブラリはNenEngine/libsフォルダ内にライセンス文ともに格納されています。
 

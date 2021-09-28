@@ -46,8 +46,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir)..\;$(ProjectDir)..\include\Nen;$(ProjectDir)..\libs\ImGui\include;$(ProjectDir)..\libs\OpenAL\include;$(ProjectDir)..\libs\sol2\include;$(ProjectDir)..\libs\rapidjson\include;$(ProjectDir)..\libs\tinyobjloader;$(ProjectDir)..\libs\sdl2_gfx\include;$(ProjectDir)..\libs\Effekseer\include\Effekseer;$(ProjectDir)..\libs\Effekseer\include\EffekseerRendererGL;$(ProjectDir)..\libs\Effekseer\include\EffekseerRendererVulkan;$(ProjectDir)..\libs\LLGI\include;$(ProjectDir)..\libs\Effekseer\include;$(ProjectDir)..\libs\SDL2\include;$(ProjectDir)..\libs\SDL2_image\include;$(ProjectDir)..\libs\SDL2_mixer\include;$(ProjectDir)..\libs\SDL2_ttf\include;$(ProjectDir)..\libs\SDL2_net\include;$(ProjectDir)..\libs\glew\include;$(ProjectDir)..\libs\Lua\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VK_SDK_PATH)\Lib32;$(ProjectDir)..\libs\OpenAL\lib\Win32;$(ProjectDir)..\libs\Effekseer\lib;$(ProjectDir)..\libs\LLGI\lib;$(ProjectDir)..\libs\glew\lib\Release\Win32;$(ProjectDir)..\libs\Lua\lib;$(ProjectDir)..\libs\SDL2\lib\x86;$(ProjectDir)..\libs\SDL2_image\lib\x86;$(ProjectDir)..\libs\SDL2_mixer\lib\x86;$(ProjectDir)..\libs\SDL2_ttf\lib\x86;$(ProjectDir)..\libs\SDL2_net\lib\x86;%(AdditionalLibraryDirectories);$(LibraryPath)</LibraryPath>
+    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir)..\;$(ProjectDir)..\include\Nen;$(ProjectDir)..\libs\ImGui\include;$(ProjectDir)..\libs\OpenAL\include;$(ProjectDir)..\libs\sol2\include;$(ProjectDir)..\libs\rapidjson\include;$(ProjectDir)..\libs\sdl2_gfx\include;$(ProjectDir)..\libs\Effekseer\include\Effekseer;$(ProjectDir)..\libs\Effekseer\include\EffekseerRendererGL;$(ProjectDir)..\libs\Effekseer\include\EffekseerRendererVulkan;$(ProjectDir)..\libs\LLGI\include;$(ProjectDir)..\libs\Effekseer\include;$(ProjectDir)..\libs\SDL2\include;$(ProjectDir)..\libs\SDL2_image\include;$(ProjectDir)..\libs\SDL2_mixer\include;$(ProjectDir)..\libs\SDL2_ttf\include;$(ProjectDir)..\libs\SDL2_net\include;$(ProjectDir)..\libs\Assimp\include;$(ProjectDir)..\libs\glew\include;$(ProjectDir)..\libs\Lua\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VK_SDK_PATH)\Lib32;$(ProjectDir)..\libs\OpenAL\lib\Win32;$(ProjectDir)..\libs\Effekseer\lib;$(ProjectDir)..\libs\LLGI\lib;$(ProjectDir)..\libs\glew\lib\Release\Win32;$(ProjectDir)..\libs\Lua\lib;$(ProjectDir)..\libs\SDL2\lib\x86;$(ProjectDir)..\libs\SDL2_image\lib\x86;$(ProjectDir)..\libs\SDL2_mixer\lib\x86;$(ProjectDir)..\libs\SDL2_ttf\lib\x86;$(ProjectDir)..\libs\SDL2_net\lib\x86;$(ProjectDir)..\libs\Assimp\lib;%(AdditionalLibraryDirectories);$(LibraryPath)</LibraryPath>
     <TargetExt>.lib</TargetExt>
     <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     <SourcePath>$(ProjectDir)..\libs\ImGui\source;</SourcePath>
@@ -56,7 +56,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir)..\;$(ProjectDir)..\include\Nen;$(ProjectDir)..\libs\ImGui\include;$(ProjectDir)..\libs\OpenAL\include;$(ProjectDir)..\libs\sol2\include;$(ProjectDir)..\libs\rapidjson\include;$(ProjectDir)..\libs\tinyobjloader;$(ProjectDir)..\libs\Effekseer\include\Effekseer;$(ProjectDir)..\libs\Effekseer\include\EffekseerRendererGL;$(ProjectDir)..\libs\Effekseer\include\EffekseerRendererVulkan;$(ProjectDir)..\libs\LLGI\include;$(ProjectDir)..\libs\Effekseer\include;$(ProjectDir)..\libs\SDL2\include;$(ProjectDir)..\libs\SDL2_image\include;$(ProjectDir)..\libs\SDL2_mixer\include;$(ProjectDir)..\libs\SDL2_ttf\include;$(ProjectDir)..\libs\SDL2_net\include;$(ProjectDir)..\libs\glew\include;$(ProjectDir)..\libs\Lua\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(VK_SDK_PATH)\Include;$(ProjectDir)..\;$(ProjectDir)..\include\Nen;$(ProjectDir)..\libs\ImGui\include;$(ProjectDir)..\libs\OpenAL\include;$(ProjectDir)..\libs\sol2\include;$(ProjectDir)..\libs\rapidjson\include;$(ProjectDir)..\libs\Effekseer\include\Effekseer;$(ProjectDir)..\libs\Effekseer\include\EffekseerRendererGL;$(ProjectDir)..\libs\Effekseer\include\EffekseerRendererVulkan;$(ProjectDir)..\libs\LLGI\include;$(ProjectDir)..\libs\Effekseer\include;$(ProjectDir)..\libs\SDL2\include;$(ProjectDir)..\libs\SDL2_image\include;$(ProjectDir)..\libs\SDL2_mixer\include;$(ProjectDir)..\libs\SDL2_ttf\include;$(ProjectDir)..\libs\SDL2_net\include;$(ProjectDir)..\libs\glew\include;$(ProjectDir)..\libs\Lua\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VK_SDK_PATH)\Lib32;$(ProjectDir)..\libs\OpenAL\lib\Win32;$(ProjectDir)..\libs\Effekseer\lib;$(ProjectDir)..\libs\LLGI\lib;$(ProjectDir)..\libs\glew\lib\Release\Win32;$(ProjectDir)..\libs\Lua\lib;$(ProjectDir)..\libs\SDL2\lib\x86;$(ProjectDir)..\libs\SDL2_image\lib\x86;$(ProjectDir)..\libs\SDL2_mixer\lib\x86;$(ProjectDir)..\libs\SDL2_ttf\lib\x86;$(ProjectDir)..\libs\SDL2_net\lib\x86;%(AdditionalLibraryDirectories);$(LibraryPath)</LibraryPath>
     <LuaType>static</LuaType>
     <LuaConfiguration>Release</LuaConfiguration>
@@ -84,7 +84,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>OpenAL32.lib;vulkan-1.lib;Effekseerd.lib;EffekseerRendererGLd.lib;EffekseerRendererVulkand.lib;LLGId.lib;glew32s.lib;lua.lib;SDL2.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;SDL2_net.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp-vc142-mtd.lib;OpenAL32.lib;vulkan-1.lib;Effekseerd.lib;EffekseerRendererGLd.lib;EffekseerRendererVulkand.lib;LLGId.lib;glew32s.lib;lua.lib;SDL2.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;SDL2_net.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
@@ -130,7 +130,6 @@
     <ClCompile Include="..\libs\ImGui\source\imgui_impl_sdl.cpp" />
     <ClCompile Include="..\libs\ImGui\source\imgui_impl_vulkan.cpp" />
     <ClCompile Include="..\libs\ImGui\source\imgui_widgets.cpp" />
-    <ClCompile Include="..\libs\tinyobjloader\tiny_obj_loader.cc" />
     <ClCompile Include="..\src\Nen\Engine\Engine.cpp" />
     <ClCompile Include="..\src\Nen\Actor\Actor.cpp" />
     <ClCompile Include="..\src\Nen\Audio\MusicEvent.cpp" />

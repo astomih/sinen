@@ -1,4 +1,10 @@
-﻿#include <tiny_obj_loader.h>
+﻿#include <assimp/cimport.h>
+#include <assimp/postprocess.h>
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+#include <assimp/DefaultLogger.hpp>
+#include <assimp/LogStream.hpp>
 #include <SDL.h>
 #include <SDL_rwops.h>
 #include <Nen.hpp>
@@ -6,69 +12,79 @@
 #include <sstream>
 namespace nen
 {
-    bool Mesh::Obj::LoadFromFile(std::shared_ptr<Renderer> renderer, std::string_view filepath, std::string_view registerName)
+    void recursive_render(const C_STRUCT aiScene *sc, const C_STRUCT aiNode *nd, VertexArray &vArray, int &indices)
+    {
+        unsigned int i;
+        unsigned int n = 0, t;
+        C_STRUCT aiMatrix4x4 m = nd->mTransformation;
+        aiTransposeMatrix4(&m);
+        int previndex = indices;
+
+        for (; n < nd->mNumMeshes; ++n)
+        {
+            const C_STRUCT aiMesh *mesh = sc->mMeshes[nd->mMeshes[n]];
+
+            for (t = 0; t < mesh->mNumFaces; ++t)
+            {
+                const C_STRUCT aiFace *face = &mesh->mFaces[t];
+
+                for (i = 0; i < face->mNumIndices; i++)
+                {
+                    Vertex v{};
+                    int index = face->mIndices[i];
+                    if (mesh->mNormals != NULL)
+                    {
+                        v.normal.x = mesh->mNormals[index].x;
+                        v.normal.y = mesh->mNormals[index].y;
+                        v.normal.z = mesh->mNormals[index].z;
+                        if (mesh->HasTextureCoords(0)) //HasTextureCoords(texture_coordinates_set)
+                        {
+                            v.uv.x = mesh->mTextureCoords[0][index].x;
+                            v.uv.y = 1 - mesh->mTextureCoords[0][index].y;
+                        }
+                    }
+                    v.position.x = mesh->mVertices[index].x;
+                    v.position.y = mesh->mVertices[index].y;
+                    v.position.z = mesh->mVertices[index].z;
+
+                    vArray.vertices.push_back(v);
+                    vArray.indices.push_back(indices);
+                    indices++;
+                }
+            }
+        }
+
+        for (n = 0; n < nd->mNumChildren; ++n)
+        {
+            recursive_render(sc, nd->mChildren[n], vArray, indices);
+        }
+    }
+    bool Mesh::LoadFromFile(std::shared_ptr<Renderer> renderer, std::string_view filepath, std::string_view registerName)
     {
         mRenderer = renderer;
         name = registerName;
-        std::string path = filepath.data();
-        auto src = AssetReader::Load(AssetType::Model, filepath);
-        std::istringstream srcistr{std::string{src}};
+        Assimp::Importer importer;
+        C_STRUCT aiLogStream stream;
+        stream = aiGetPredefinedLogStream(aiDefaultLogStream_STDOUT, NULL);
+        aiAttachLogStream(&stream);
 
-        tinyobj::attrib_t attrib;
-        std::vector<tinyobj::shape_t> shapes;
-        std::vector<tinyobj::material_t> materials;
-        std::string warn;
-        std::string err;
-        bool ret = tinyobj::LoadObj(
-            &attrib,
-            &shapes,
-            &materials,
-            &warn,
-            &err,
-            &srcistr,
-            nullptr);
-        if (!ret)
+        stream = aiGetPredefinedLogStream(aiDefaultLogStream_FILE, "assimp_log.txt");
+        aiAttachLogStream(&stream);
+        const C_STRUCT aiScene *scene = NULL;
+        auto path = "Assets/Model/" + std::string(filepath);
+        scene = importer.ReadFile(path, aiProcessPreset_TargetRealtime_Fast);
+        if (!scene)
         {
-            nen::Logger::Error("Failed to load Obj %s.", filepath);
+            Logger::Error("%s", importer.GetErrorString());
         }
-        if (!warn.empty())
-        {
-            nen::Logger::Warn("%s", warn);
-        }
-        if (!err.empty())
-        {
-            nen::Logger::Error("%s", err);
-            return false;
-        }
-        for (const auto &shape : shapes)
-        {
-            for (const auto &index : shape.mesh.indices)
-            {
-                Vertex v{};
-                v.position = Vector3(
-                    attrib.vertices[3 * index.vertex_index + 0],
-                    attrib.vertices[3 * index.vertex_index + 1],
-                    attrib.vertices[3 * index.vertex_index + 2]);
-                v.normal = Vector3{
-                    attrib.normals[3 * index.normal_index + 0],
-                    attrib.normals[3 * index.normal_index + 1],
-                    attrib.normals[3 * index.normal_index + 2]};
-                if (!attrib.texcoords.empty())
-                {
-                    v.uv = Vector2(
-                        attrib.texcoords[2 * index.texcoord_index + 0],
-                        attrib.texcoords[2 * index.texcoord_index + 1]);
-                }
-                else
-                    v.uv = Vector2(0, 0);
-                vArray.vertices.push_back(v);
-                vArray.indices.push_back(vArray.indices.size());
-            }
-        }
+
+        int indices = 0;
+        recursive_render(scene, scene->mRootNode, vArray, indices);
         vArray.indexCount = vArray.indices.size();
         return true;
     }
-    void Mesh::Obj::Register()
+
+    void Mesh::Register()
     {
         if (!vArray.vertices.empty())
             mRenderer->AddVertexArray(vArray, name);

@@ -12,13 +12,15 @@
 #include <sstream>
 namespace nen
 {
-    void recursive_render(const C_STRUCT aiScene *sc, const C_STRUCT aiNode *nd, VertexArray &vArray, int &indices)
+    Assimp::Importer importer;
+    C_STRUCT aiLogStream stream;
+
+    void LoadImpl(const C_STRUCT aiScene *sc, const C_STRUCT aiNode *nd, VertexArray &vArray)
     {
         unsigned int i;
         unsigned int n = 0, t;
         C_STRUCT aiMatrix4x4 m = nd->mTransformation;
         aiTransposeMatrix4(&m);
-        int previndex = indices;
 
         for (; n < nd->mNumMeshes; ++n)
         {
@@ -37,7 +39,7 @@ namespace nen
                         v.normal.x = mesh->mNormals[index].x;
                         v.normal.y = mesh->mNormals[index].y;
                         v.normal.z = mesh->mNormals[index].z;
-                        if (mesh->HasTextureCoords(0)) //HasTextureCoords(texture_coordinates_set)
+                        if (mesh->HasTextureCoords(0))
                         {
                             v.uv.x = mesh->mTextureCoords[0][index].x;
                             v.uv.y = 1 - mesh->mTextureCoords[0][index].y;
@@ -48,30 +50,29 @@ namespace nen
                     v.position.z = mesh->mVertices[index].z;
 
                     vArray.vertices.push_back(v);
-                    vArray.indices.push_back(indices);
-                    indices++;
+                    vArray.indices.push_back(vArray.indices.size());
                 }
             }
         }
 
         for (n = 0; n < nd->mNumChildren; ++n)
         {
-            recursive_render(sc, nd->mChildren[n], vArray, indices);
+            LoadImpl(sc, nd->mChildren[n], vArray);
         }
     }
     bool Mesh::LoadFromFile(std::shared_ptr<Renderer> renderer, std::string_view filepath, std::string_view registerName)
     {
+        static auto once = [&]()
+        {
+            stream = aiGetPredefinedLogStream(aiDefaultLogStream_STDOUT, NULL);
+            aiAttachLogStream(&stream);
+            stream = aiGetPredefinedLogStream(aiDefaultLogStream_FILE, "assimp_log.txt");
+            aiAttachLogStream(&stream);
+        };
         mRenderer = renderer;
         name = registerName;
-        Assimp::Importer importer;
-        C_STRUCT aiLogStream stream;
-        stream = aiGetPredefinedLogStream(aiDefaultLogStream_STDOUT, NULL);
-        aiAttachLogStream(&stream);
-
-        stream = aiGetPredefinedLogStream(aiDefaultLogStream_FILE, "assimp_log.txt");
-        aiAttachLogStream(&stream);
-        const C_STRUCT aiScene *scene = NULL;
         auto path = "Assets/Model/" + std::string(filepath);
+        const C_STRUCT aiScene *scene = NULL;
         scene = importer.ReadFile(path, aiProcessPreset_TargetRealtime_Fast);
         if (!scene)
         {
@@ -79,7 +80,7 @@ namespace nen
         }
 
         int indices = 0;
-        recursive_render(scene, scene->mRootNode, vArray, indices);
+        LoadImpl(scene, scene->mRootNode, vArray);
         vArray.indexCount = vArray.indices.size();
         return true;
     }

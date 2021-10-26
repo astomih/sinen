@@ -9,6 +9,10 @@
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
@@ -47,6 +51,23 @@ $(function() {
 /* @license-end */
 </script>
 <div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(document).ready(function(){initNavTree('classnen_1_1_scene.html',''); initResizable(); });
+/* @license-end */
+</script>
+<div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -61,11 +82,6 @@ $(function() {
 </iframe>
 </div>
 
-<div id="nav-path" class="navpath">
-  <ul>
-<li class="navelem"><b>nen</b></li><li class="navelem"><a class="el" href="classnen_1_1_scene.html">Scene</a></li>  </ul>
-</div>
-</div><!-- top -->
 <div class="header">
   <div class="summary">
 <a href="#pub-types">Public Types</a> &#124;
@@ -82,7 +98,7 @@ Inheritance diagram for nen::Scene:</div>
  <div class="center">
   <img src="classnen_1_1_scene.png" usemap="#nen::Scene_map" alt=""/>
   <map id="nen::Scene_map" name="nen::Scene_map">
-<area href="class_main.html" alt="Main" shape="rect" coords="0,112,236,136"/>
+<area href="class_main.html" alt="Main" shape="rect" coords="0,56,75,80"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -123,9 +139,6 @@ template&lt;class T &gt; </td></tr>
 template&lt;class T &gt; </td></tr>
 <tr class="memitem:a0cea072da35b7bd9069452fb346a6db6"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>RemoveActor</b> (std::shared_ptr&lt; T &gt; actor)</td></tr>
 <tr class="separator:a0cea072da35b7bd9069452fb346a6db6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae82c8265ff77cf6864d5ab0f31a82987"><td class="memItemLeft" align="right" valign="top"><a id="ae82c8265ff77cf6864d5ab0f31a82987" name="ae82c8265ff77cf6864d5ab0f31a82987"></a>
-std::shared_ptr&lt; <a class="el" href="classnen_1_1_sound_system.html">SoundSystem</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetAudioSystem</b> () const</td></tr>
-<tr class="separator:ae82c8265ff77cf6864d5ab0f31a82987"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae4e1c7b4dd347b35e42f9313f7206c07"><td class="memItemLeft" align="right" valign="top"><a id="ae4e1c7b4dd347b35e42f9313f7206c07" name="ae4e1c7b4dd347b35e42f9313f7206c07"></a>
 std::shared_ptr&lt; class <a class="el" href="classnen_1_1_renderer.html">Renderer</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetRenderer</b> () const</td></tr>
 <tr class="separator:ae4e1c7b4dd347b35e42f9313f7206c07"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -138,9 +151,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>SetState</b> (GameSta
 <tr class="memitem:afdfa5f9e43ba4b87adf73968a6ff51a0"><td class="memItemLeft" align="right" valign="top"><a id="afdfa5f9e43ba4b87adf73968a6ff51a0" name="afdfa5f9e43ba4b87adf73968a6ff51a0"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>Quit</b> ()</td></tr>
 <tr class="separator:afdfa5f9e43ba4b87adf73968a6ff51a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a412e6ef8c189569ea403956ced12a98c"><td class="memItemLeft" align="right" valign="top"><a id="a412e6ef8c189569ea403956ced12a98c" name="a412e6ef8c189569ea403956ced12a98c"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>ExitScene</b> ()</td></tr>
-<tr class="separator:a412e6ef8c189569ea403956ced12a98c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a28b8c963124e7a3fe1c781b30964cc4e"><td class="memItemLeft" align="right" valign="top"><a id="a28b8c963124e7a3fe1c781b30964cc4e" name="a28b8c963124e7a3fe1c781b30964cc4e"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>AddGUI</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1_u_i_screen.html">UIScreen</a> &gt; ui)</td></tr>
 <tr class="separator:a28b8c963124e7a3fe1c781b30964cc4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -150,9 +160,15 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveGUI</b> (std::s
 <tr class="memitem:a40197e5738ee477f1fe5874da3709775"><td class="memItemLeft" align="right" valign="top"><a id="a40197e5738ee477f1fe5874da3709775" name="a40197e5738ee477f1fe5874da3709775"></a>
 const <a class="el" href="structnen_1_1_input_state.html">InputState</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>GetInput</b> ()</td></tr>
 <tr class="separator:a40197e5738ee477f1fe5874da3709775"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad8f3a5a8d0c62b7babef9f8a8b37510d"><td class="memItemLeft" align="right" valign="top"><a id="ad8f3a5a8d0c62b7babef9f8a8b37510d" name="ad8f3a5a8d0c62b7babef9f8a8b37510d"></a>
-const <a class="el" href="classnen_1_1_input_system.html">InputSystem</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>GetInputSystem</b> ()</td></tr>
-<tr class="separator:ad8f3a5a8d0c62b7babef9f8a8b37510d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38f901f91384d7e513899dde25abc13b"><td class="memItemLeft" align="right" valign="top"><a id="a38f901f91384d7e513899dde25abc13b" name="a38f901f91384d7e513899dde25abc13b"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>SetInputSystem</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1_input_system.html">InputSystem</a> &gt; inputSystem)</td></tr>
+<tr class="separator:a38f901f91384d7e513899dde25abc13b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a35b79e1f59288ef5c8ff94eaf66523b0"><td class="memItemLeft" align="right" valign="top"><a id="a35b79e1f59288ef5c8ff94eaf66523b0" name="a35b79e1f59288ef5c8ff94eaf66523b0"></a>
+<a class="el" href="classnen_1_1_sound_system.html">SoundSystem</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>GetSound</b> ()</td></tr>
+<tr class="separator:a35b79e1f59288ef5c8ff94eaf66523b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae6e7547dd36a360b60f9918cefec0e8d"><td class="memItemLeft" align="right" valign="top"><a id="ae6e7547dd36a360b60f9918cefec0e8d" name="ae6e7547dd36a360b60f9918cefec0e8d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>SetSoundSystem</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1_sound_system.html">SoundSystem</a> &gt; soundSystem)</td></tr>
+<tr class="separator:ae6e7547dd36a360b60f9918cefec0e8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -168,17 +184,18 @@ Protected Attributes</h2></td></tr>
 <tr class="memitem:abaf6380e0eedc7f62bb16fce67d95f3f"><td class="memItemLeft" align="right" valign="top"><a id="abaf6380e0eedc7f62bb16fce67d95f3f" name="abaf6380e0eedc7f62bb16fce67d95f3f"></a>
 std::vector&lt; std::shared_ptr&lt; class <a class="el" href="classnen_1_1_actor.html">Actor</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>mActors</b></td></tr>
 <tr class="separator:abaf6380e0eedc7f62bb16fce67d95f3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a38182c6dd3eaf9716d7f47dc8f349176"><td class="memItemLeft" align="right" valign="top"><a id="a38182c6dd3eaf9716d7f47dc8f349176" name="a38182c6dd3eaf9716d7f47dc8f349176"></a>
-std::shared_ptr&lt; class <a class="el" href="classnen_1_1_sound_system.html">SoundSystem</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>mAudioSystem</b></td></tr>
-<tr class="separator:a38182c6dd3eaf9716d7f47dc8f349176"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li><a class="el" href="_scene_8hpp_source.html">Scene.hpp</a></li>
 </ul>
 </div><!-- contents -->
+</div><!-- doc-content -->
 <!-- start footer part -->
-<hr class="footer"/><address class="footer"><small>
-Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.2
-</small></address>
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><b>nen</b></li><li class="navelem"><a class="el" href="classnen_1_1_scene.html">Scene</a></li>
+    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.2 </li>
+  </ul>
+</div>
 </body>
 </html>

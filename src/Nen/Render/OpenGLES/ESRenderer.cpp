@@ -205,7 +205,7 @@ namespace nen
 				glBufferData(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.indices.size() * sizeof(uint32_t), vArrayGL.indices.data(), GL_STATIC_DRAW);
 				m_VertexArrays.insert(std::pair<std::string, VertexArrayForES>(name.data(), vArrayGL));
 			}
-			void ESRenderer::ChangeBufferDrawObject(std::shared_ptr<class DrawObject> sprite, const TextureType type)
+			void ESRenderer::UpdateVertexArray(std::shared_ptr<class DrawObject> sprite, const TextureType type)
 			{
 			}
 			void ESRenderer::AddDrawObject2D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture)

@@ -18,6 +18,11 @@ namespace nen
          * @return false 読み込み失敗
          */
         bool LoadFromFile(std::shared_ptr<class Renderer> renderer, std::string_view filePath, std::string_view registerName);
+
+        /**
+         * @brief レンダラに登録する
+         * 
+         */
         void Register();
 
     private:

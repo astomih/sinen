@@ -192,8 +192,20 @@ namespace nen::gl
 		// 登録
 		m_VertexArrays.emplace(name.data(), vArrayGL);
 	}
-	void GLRenderer::ChangeBufferDrawObject(std::shared_ptr<class DrawObject> sprite, const TextureType type)
+	void GLRenderer::UpdateVertexArray(const VertexArray &vArray, std::string_view name)
 	{
+		gl::VertexArrayForGL vArrayGL;
+		vArrayGL.indexCount = vArray.indexCount;
+		vArrayGL.indices = vArray.indices;
+		vArrayGL.vertices = vArray.vertices;
+		vArrayGL.materialName = vArray.materialName;
+		//vboを更新
+		glBindBuffer(GL_ARRAY_BUFFER, m_VertexArrays[name.data()].vbo);
+		auto vArraySize = vArrayGL.vertices.size() * sizeof(Vertex);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, vArraySize, vArrayGL.vertices.data());
+		//iboを更新
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VertexArrays[name.data()].ibo);
+		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, vArrayGL.indices.size() * sizeof(uint32_t), vArrayGL.indices.data());
 	}
 
 	void GLRenderer::AddDrawObject2D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture)

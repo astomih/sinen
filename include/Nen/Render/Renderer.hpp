@@ -49,7 +49,7 @@ namespace nen
 		void AddDrawObject3D(std::shared_ptr<class DrawObject> drawObject, std::shared_ptr<Texture> texture);
 		void RemoveDrawObject3D(std::shared_ptr<class DrawObject> drawObject);
 
-		void ChangeBufferDrawObject(std::shared_ptr<class DrawObject> drawObject, TextureType type = TextureType::Image2D);
+		void UpdateVertexArray(std::shared_ptr<class DrawObject> drawObject, TextureType type = TextureType::Image2D);
 
 		void AddEffect(std::shared_ptr<class Effect> effect);
 		void RemoveEffect(std::shared_ptr<class Effect> effect);
@@ -60,6 +60,7 @@ namespace nen
 		std::vector<std::shared_ptr<class Effect>> &GetEffects() { return mEffects; }
 
 		void AddVertexArray(const VertexArray &vArray, std::string_view name);
+		void UpdateVertexArray(const VertexArray &vArray, std::string_view name);
 
 		void SetClearColor(const Color &color)
 		{
@@ -115,7 +116,7 @@ namespace nen
 		virtual void Shutdown() {}
 		virtual void Render() {}
 		virtual void AddVertexArray(const VertexArray &vArray, std::string_view name) {}
-		virtual void ChangeBufferDrawObject(std::shared_ptr<class DrawObject> sprite, const TextureType type) {}
+		virtual void UpdateVertexArray(const VertexArray &vArray, std::string_view name) {}
 
 		virtual void AddDrawObject2D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture) {}
 		virtual void RemoveDrawObject2D(std::shared_ptr<class DrawObject> sprite) {}

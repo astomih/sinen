@@ -85,11 +85,6 @@ namespace nen
 		renderer->RemoveDrawObject3D(drawObject);
 	}
 
-	void Renderer::ChangeBufferDrawObject(std::shared_ptr<DrawObject> drawObject, TextureType type)
-	{
-		renderer->ChangeBufferDrawObject(drawObject, type);
-	}
-
 	void Renderer::AddEffect(std::shared_ptr<Effect> effect)
 	{
 		renderer->LoadEffect(effect);
@@ -114,6 +109,11 @@ namespace nen
 	void Renderer::AddVertexArray(const VertexArray &vArray, std::string_view name)
 	{
 		renderer->AddVertexArray(vArray, name);
+	}
+
+	void Renderer::UpdateVertexArray(const VertexArray &vArray, std::string_view name)
+	{
+		renderer->UpdateVertexArray(vArray, name);
 	}
 
 }

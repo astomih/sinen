@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['_7eactor_0',['~Actor',['../classnen_1_1_actor.html#a8b3551b0a3928a8acaff5686793f7d7e',1,'nen::Actor']]]
+  ['move_0',['Move',['../classnen_1_1_actor.html#abd352d76de1fa34f255d1a8ce0814e4b',1,'nen::Actor']]]
 ];

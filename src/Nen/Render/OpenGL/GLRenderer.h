@@ -21,13 +21,13 @@ namespace nen
 			 * 
 			 */
 			uint32_t vao;
-			
+
 			/**
 			 * @brief Vertex Buffer Object
 			 * 
 			 */
 			uint32_t vbo;
-			
+
 			/**
 			 * @brief Index Buffer Object
 			 * 
@@ -46,7 +46,7 @@ namespace nen
 			void Initialize(std::shared_ptr<Window> window) override;
 			void Render() override;
 			void AddVertexArray(const VertexArray &vArray, std::string_view name) override;
-			void ChangeBufferDrawObject(std::shared_ptr<class DrawObject> sprite, const TextureType type) override;
+			void UpdateVertexArray(const VertexArray &vArray, std::string_view name) override;
 			void AddDrawObject2D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture) override;
 			void RemoveDrawObject2D(std::shared_ptr<class DrawObject> sprite) override;
 

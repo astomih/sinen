@@ -68,8 +68,14 @@ namespace nen::vk
 		MapMemory(vArrayVK.indexBuffer.memory, vArrayVK.indices.data(), sizeof(uint32_t) * vArrayVK.indices.size());
 		m_VertexArrays.insert(std::pair<std::string, VertexArrayForVK>(name.data(), vArrayVK));
 	}
-	void VKRenderer::ChangeBufferDrawObject(std::shared_ptr<class DrawObject> sprite, const TextureType type)
+	void VKRenderer::UpdateVertexArray(const VertexArray &vArray, std::string_view name)
 	{
+		VertexArrayForVK vArrayVK;
+		vArrayVK.indexCount = vArray.indexCount;
+		vArrayVK.indices = vArray.indices;
+		vArrayVK.vertices = vArray.vertices;
+		MapMemory(m_VertexArrays[name.data()].vertexBuffer.memory, vArrayVK.vertices.data(), vArray.vertices.size() * sizeof(Vertex));
+		MapMemory(m_VertexArrays[name.data()].indexBuffer.memory, vArrayVK.indices.data(), vArray.indices.size() * sizeof(uint32_t));
 	}
 
 	void VKRenderer::AddDrawObject2D(std::shared_ptr<class DrawObject> drawObject, std::shared_ptr<Texture> texture)

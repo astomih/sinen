@@ -7,6 +7,7 @@
 #include "../Texture/Texture.hpp"
 #include "../Vertex/VertexArray.hpp"
 #include "../Color/Color.hpp"
+#include "../Shader/Shader.hpp"
 #include <string>
 #include <vector>
 #include <memory>
@@ -82,6 +83,9 @@ namespace nen
 		void toggleShowImGui() { showImGui = !showImGui; }
 		bool isShowImGui() { return showImGui; }
 
+		void LoadShader(const Shader &shaderinfo);
+		void UnloadShader(const Shader &shaderinfo);
+
 	private:
 		Color clearColor = Palette::Black;
 		class Draw2DComponent *transPic;
@@ -130,5 +134,8 @@ namespace nen
 		virtual void LoadEffect(std::shared_ptr<Effect> effect) {}
 
 		virtual void SetRenderer(class Renderer *renderer) {}
+
+		virtual void LoadShader(const Shader &shaderInfo) {}
+		virtual void UnloadShader(const Shader &shaderInfo) {}
 	};
 }

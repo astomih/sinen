@@ -67,6 +67,9 @@ namespace nen::vk
 
 		void LoadEffect(std::shared_ptr<class Effect> effect) override;
 
+		void LoadShader(const Shader &shaderInfo) override;
+		void UnloadShader(const Shader &shaderInfo) override;
+
 		nen::Renderer *GetRenderer() { return mRenderer; }
 		void prepare();
 		void cleanup();
@@ -138,6 +141,7 @@ namespace nen::vk
 		Pipeline pipelineOpaque;
 		Pipeline pipelineAlpha;
 		Pipeline pipeline2D;
+		std::vector<std::pair<Shader, Pipeline>> userPipelines;
 		std::vector<std::shared_ptr<VulkanDrawObject>> mDrawObject3D;
 		std::vector<std::shared_ptr<VulkanDrawObject>> mDrawObject2D;
 		std::unordered_map<std::string, ImageObject> mImageObjects;

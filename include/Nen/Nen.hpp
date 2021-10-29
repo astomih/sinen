@@ -48,6 +48,7 @@
 #include "Scene/Scene.hpp"
 #include "Scene/MainScene.hpp"
 #include "Script/Script.hpp"
+#include "Shader/Shader.hpp"
 #include "Texture/Texture.hpp"
 #include "Utility/Singleton.hpp"
 #include "Utility/NonCopyable.hpp"

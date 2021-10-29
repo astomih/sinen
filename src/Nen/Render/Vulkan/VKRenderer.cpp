@@ -139,6 +139,32 @@ namespace nen::vk
 		mEffectManager->GetEffect(effect->GetPath());
 	}
 
+	void VKRenderer::LoadShader(const Shader &shaderInfo)
+	{
+		std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
+			VulkanShader::LoadModule(m_base->GetVkDevice(), std::string(std::string("Assets/Shader/Vulkan/") + shaderInfo.vertName + std::string(".vert.spv")).c_str(), VK_SHADER_STAGE_VERTEX_BIT),
+			VulkanShader::LoadModule(m_base->GetVkDevice(), std::string(std::string("Assets/Shader/Vulkan/") + shaderInfo.fragName + std::string(".frag.spv")).c_str(), VK_SHADER_STAGE_FRAGMENT_BIT)};
+		Pipeline pipeline;
+		pipeline.Initialize(mPipelineLayout, m_base->m_renderPass, shaderStages);
+		pipeline.ColorBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
+		pipeline.AlphaBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
+		pipeline.Prepare(m_base->GetVkDevice());
+		VulkanShader::CleanModule(m_base->GetVkDevice(), shaderStages);
+		userPipelines.emplace_back(std::pair<Shader, Pipeline>{shaderInfo, pipeline});
+	}
+	void VKRenderer::UnloadShader(const Shader &shaderInfo)
+	{
+		std::erase_if(userPipelines, [&](auto &x)
+					  {
+						  if (x.first == shaderInfo)
+						  {
+							  x.second.Cleanup(m_base->m_device);
+							  return true;
+						  };
+						  return false;
+					  });
+	}
+
 	void VKRenderer::prepare()
 	{
 		createBoxVertices();
@@ -210,6 +236,10 @@ namespace nen::vk
 		pipelineOpaque.Cleanup(device);
 		pipelineAlpha.Cleanup(device);
 		pipeline2D.Cleanup(device);
+		for (auto &i : userPipelines)
+		{
+			i.second.Cleanup(device);
+		}
 		for (auto &i : m_VertexArrays)
 		{
 			DestroyVulkanObject<VkBuffer>(device, i.second.vertexBuffer.buffer, &vkDestroyBuffer);
@@ -251,6 +281,18 @@ namespace nen::vk
 		VkDeviceSize offset = 0;
 		for (auto &sprite : mDrawObject3D)
 		{
+			if (sprite->drawObject->shader.vertName == "default" &&
+				sprite->drawObject->shader.fragName == "default")
+				pipelineOpaque.Bind(command);
+			else
+			{
+				for (auto &i : userPipelines)
+				{
+					if (i.first == sprite->drawObject->shader)
+						i.second.Bind(command);
+				}
+			}
+
 			::vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[sprite->drawObject->vertexIndex].vertexBuffer.buffer, &offset);
 			::vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->drawObject->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 			// Set descriptors
@@ -277,6 +319,17 @@ namespace nen::vk
 		VkDeviceSize offset = 0;
 		for (auto &sprite : mDrawObject2D)
 		{
+			if (sprite->drawObject->shader.vertName == "default" &&
+				sprite->drawObject->shader.fragName == "default")
+				pipeline2D.Bind(command);
+			else
+			{
+				for (auto &i : userPipelines)
+				{
+					if (i.first == sprite->drawObject->shader)
+						i.second.Bind(command);
+				}
+			}
 			vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[sprite->drawObject->vertexIndex].vertexBuffer.buffer, &offset);
 			vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->drawObject->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 

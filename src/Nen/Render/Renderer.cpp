@@ -116,4 +116,14 @@ namespace nen
 		renderer->UpdateVertexArray(vArray, name);
 	}
 
+	void Renderer::LoadShader(const Shader &shaderInfo)
+	{
+		renderer->LoadShader(shaderInfo);
+	}
+
+	void Renderer::UnloadShader(const Shader &shaderInfo)
+	{
+		renderer->UnloadShader(shaderInfo);
+	}
+
 }

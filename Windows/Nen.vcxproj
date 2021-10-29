@@ -189,6 +189,7 @@
     <ClCompile Include="..\src\Nen\Render\Vulkan\VulkanShader.cpp" />
     <ClCompile Include="..\src\Nen\Scene\Scene.cpp" />
     <ClCompile Include="..\src\Nen\Script\Script.cpp" />
+    <ClCompile Include="..\src\Nen\Shader\Shader.cpp" />
     <ClCompile Include="..\src\Nen\Texture\Texture.cpp" />
     <ClCompile Include="..\src\Nen\Utility\Singleton.cpp" />
     <ClCompile Include="..\src\Nen\Vertex\Vertex.cpp" />

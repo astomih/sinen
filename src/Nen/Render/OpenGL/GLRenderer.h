@@ -57,6 +57,9 @@ namespace nen
 
 			void LoadEffect(std::shared_ptr<class Effect> effect) override;
 
+			void LoadShader(const Shader &shaderInfo) override;
+			void UnloadShader(const Shader &shaderInfo) override;
+
 			void prepare();
 			void cleanup() {}
 			void registerTexture(std::shared_ptr<class Texture>, const TextureType &type);
@@ -122,6 +125,7 @@ namespace nen
 
 			ShaderGL *mSpriteShader;
 			ShaderGL *mAlphaShader;
+			std::vector<std::pair<Shader, ShaderGL>> userPipelines;
 			GLuint mTextureID;
 			std::unordered_map<std::string, GLuint> mTextureIDs;
 			std::unordered_map<std::string, VertexArrayForGL> m_VertexArrays;

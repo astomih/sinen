@@ -52,28 +52,41 @@ namespace nen::gl
 		glClearColor(color.r, color.g, color.b, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		mSpriteShader->SetActive(0);
 		glDisable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
 		std::string vertexID;
 		bool lastFrameChanged = false;
 		for (auto &i : mSprite3Ds)
 		{
+			i->param.view = mRenderer->GetViewMatrix();
 			if (vertexID != i->vertexIndex)
 			{
 				glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
 				vertexID = i->vertexIndex;
 			}
+			if (i->shader.vertName == "default" && i->shader.fragName == "default")
+			{
+				mSpriteShader->SetActive(0);
+				mSpriteShader->UpdateUBO(0, sizeof(ShaderParameters), &i->param);
+			}
+			else
+			{
+				for (auto &j : userPipelines)
+				{
+					if (j.first == i->shader)
+					{
+						j.second.SetActive(0);
+						j.second.UpdateUBO(0, sizeof(ShaderParameters), &i->param);
+					}
+				}
+			}
 			glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
-			i->param.view = mRenderer->GetViewMatrix();
-			mSpriteShader->UpdateUBO(0, sizeof(ShaderParameters), &i->param);
 			glDrawElementsBaseVertex(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr, 0);
 		}
 		glDisable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-		mAlphaShader->SetActive(0);
 		for (auto &i : mSprite2Ds)
 		{
 			if (vertexID != i->vertexIndex)
@@ -81,7 +94,22 @@ namespace nen::gl
 				glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
 				vertexID = i->vertexIndex;
 			}
-			mAlphaShader->UpdateUBO(0, sizeof(ShaderParameters), &i->param);
+			if (i->shader.vertName == "default" && i->shader.fragName == "default")
+			{
+				mAlphaShader->SetActive(0);
+				mAlphaShader->UpdateUBO(0, sizeof(ShaderParameters), &i->param);
+			}
+			else
+			{
+				for (auto &j : userPipelines)
+				{
+					if (j.first == i->shader)
+					{
+						j.second.SetActive(0);
+						j.second.UpdateUBO(0, sizeof(ShaderParameters), &i->param);
+					}
+				}
+			}
 			glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
 			glDrawElementsBaseVertex(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr, 0);
 		}
@@ -233,6 +261,28 @@ namespace nen::gl
 		mEffectManager->GetEffect(effect->GetPath());
 	}
 
+	void GLRenderer::LoadShader(const Shader &shaderInfo)
+	{
+		ShaderGL pipeline;
+		pipeline.Load(std::string("Assets/Shader/GL/") + shaderInfo.vertName + std::string(".vert"), std::string("Assets/Shader/GL/") + shaderInfo.fragName + std::string(".frag"));
+		ShaderParameters param;
+		pipeline.CreateUBO(0, sizeof(ShaderParameters), &param);
+		userPipelines.emplace_back(std::pair<Shader, ShaderGL>{shaderInfo, pipeline});
+	}
+
+	void GLRenderer::UnloadShader(const Shader &shaderInfo)
+	{
+		std::erase_if(userPipelines, [&](auto &x)
+					  {
+						  if (x.first == shaderInfo)
+						  {
+							  x.second.Unload();
+							  return true;
+						  };
+						  return false;
+					  });
+	}
+
 	void GLRenderer::prepare()
 	{
 		if (!loadShader())
@@ -272,7 +322,7 @@ namespace nen::gl
 	bool GLRenderer::loadShader()
 	{
 		mSpriteShader = new ShaderGL();
-		if (!mSpriteShader->Load("Assets/Shader/GL/sprite.vert", "Assets/Shader/GL/sprite.frag"))
+		if (!mSpriteShader->Load("Assets/Shader/GL/shader.vert", "Assets/Shader/GL/shader.frag"))
 		{
 			return false;
 		}
@@ -280,7 +330,7 @@ namespace nen::gl
 		ShaderParameters param{};
 		mSpriteShader->CreateUBO(0, sizeof(ShaderParameters), &param);
 		mAlphaShader = new ShaderGL();
-		if (!mAlphaShader->Load("Assets/Shader/GL/sprite.vert", "Assets/Shader/GL/alpha.frag"))
+		if (!mAlphaShader->Load("Assets/Shader/GL/shader.vert", "Assets/Shader/GL/alpha.frag"))
 		{
 			return false;
 		}

@@ -47,7 +47,7 @@ void Main::Update(float deltaTime)
     */
 }
 ```
-![結果](https://github.com/Astomih/NenEngine/blob/main/example/result.bmp "result")
+![結果](https://github.com/Astomih/NenEngine/blob/main/example/result.png "result")
 
 ## ビルド方法
 ### Windows

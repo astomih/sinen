@@ -17,14 +17,12 @@ file(GLOB SOURCE_FILES
 	../libs/ImGui/source/imgui_impl_opengl3.cpp
 	../libs/ImGui/source/imgui_impl_sdl.cpp
 	../libs/ImGui/source/imgui_widgets.cpp
-	../libs/tinyobjloader/tiny_ob_loader.cc
 )
 add_library(nen STATIC ${SOURCE_FILES})
 set(NEN_INCLUDE_DIRECTORIES 
 	.
 	../include
 	../include/Nen
-	../libs/tinyobjloader 
 	../libs/Effekseer/include/Effekseer
 	../libs/Effekseer/include/EffekseerRendererGL
 	../libs/Effekseer/include

@@ -5,10 +5,6 @@
 #if defined(EMSCRIPTEN) || defined(MOBILE)
 #include "OpenGLES/EffectManagerES.h"
 #endif
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
-#include "Vulkan/EffectManagerVK.h"
-#include "OpenGL/EffectManagerGL.h"
-#endif
 #include "RendererHandle.hpp"
 
 namespace nen

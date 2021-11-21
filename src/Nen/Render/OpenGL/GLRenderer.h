@@ -118,7 +118,6 @@ namespace nen
 		private:
 			Renderer *mRenderer;
 			std::shared_ptr<Window> mWindow;
-			std::unique_ptr<class EffectManagerGL> mEffectManager;
 			bool loadShader();
 			void createSpriteVerts();
 			void createBoxVerts();

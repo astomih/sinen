@@ -1,7 +1,6 @@
 ﻿#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "VKBase.h"
 #include "VKRenderer.h"
-#include "EffectManagerVK.h"
 #include "Pipeline.h"
 #include <Nen.hpp>
 #include <iostream>

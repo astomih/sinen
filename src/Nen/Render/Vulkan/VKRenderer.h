@@ -112,7 +112,6 @@ namespace nen::vk
 	private:
 		Renderer *mRenderer;
 		std::unique_ptr<class VKBase> m_base;
-		std::unique_ptr<class EffectManagerVK> mEffectManager;
 		void createBoxVertices();
 		void createSpriteVertices();
 		void prepareUniformBuffers();
@@ -122,7 +121,6 @@ namespace nen::vk
 		void prepareDescriptorSet(std::shared_ptr<VulkanDrawObject>);
 		void prepareImGUI();
 		void renderImGUI(VkCommandBuffer command);
-		void renderEffekseer(VkCommandBuffer command);
 		VkSampler createSampler();
 		ImageObject createTextureFromSurface(const ::SDL_Surface &surface);
 		ImageObject createTextureFromMemory(const std::vector<char> &imageData);

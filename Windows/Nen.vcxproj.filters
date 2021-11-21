@@ -16,7 +16,6 @@
     <ClCompile Include="..\src\Nen\Component\InputComponent.cpp" />
     <ClCompile Include="..\src\Nen\Component\MoveComponent.cpp" />
     <ClCompile Include="..\src\Nen\Component\ScriptComponent.cpp" />
-    <ClCompile Include="..\src\Nen\Effect\CustomTextureLoader.cpp" />
     <ClCompile Include="..\src\Nen\Effect\EffectManager.cpp" />
     <ClCompile Include="..\src\Nen\Effect\Effect.cpp" />
     <ClCompile Include="..\src\Nen\Logger\Logger.cpp" />
@@ -28,10 +27,8 @@
     <ClCompile Include="..\src\Nen\Time\Time.cpp" />
     <ClCompile Include="..\src\Nen\Render\Renderer.cpp" />
     <ClCompile Include="..\src\Nen\Render\OpenGLES\ESRenderer.cpp" />
-    <ClCompile Include="..\src\Nen\Render\OpenGL\EffectManagerGL.cpp" />
     <ClCompile Include="..\src\Nen\Render\OpenGL\GLRenderer.cpp" />
     <ClCompile Include="..\src\Nen\Render\OpenGL\ShaderGL.cpp" />
-    <ClCompile Include="..\src\Nen\Render\Vulkan\EffectManagerVK.cpp" />
     <ClCompile Include="..\src\Nen\Render\Vulkan\Pipeline.cpp" />
     <ClCompile Include="..\src\Nen\Render\Vulkan\PipelineLayout.cpp" />
     <ClCompile Include="..\src\Nen\Render\Vulkan\Swapchain.cpp" />
@@ -67,6 +64,7 @@
     <ClCompile Include="..\src\Nen\Physics\Collision.cpp" />
     <ClCompile Include="..\src\Nen\IO\AssetReader.cpp" />
     <ClCompile Include="..\src\Nen\Mesh\Mesh.cpp" />
+    <ClCompile Include="..\src\Nen\Shader\Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Nen\Actor\PlaneActor.hpp" />
@@ -102,14 +100,11 @@
     <ClInclude Include="..\include\Nen\Vertex\Vertex.h" />
     <ClInclude Include="..\include\Nen\Vertex\VertexArray.h" />
     <ClInclude Include="..\include\Nen\Window\Window.hpp" />
-    <ClInclude Include="..\src\Nen\Effect\CustomTextureLoader.h" />
     <ClInclude Include="..\src\Nen\Effect\EffectManager.h" />
     <ClInclude Include="..\src\Nen\Render\IRenderer.h" />
     <ClInclude Include="..\src\Nen\Render\OpenGLES\ESRenderer.h" />
-    <ClInclude Include="..\src\Nen\Render\OpenGL\EffectManagerGL.h" />
     <ClInclude Include="..\src\Nen\Render\OpenGL\GLRenderer.h" />
     <ClInclude Include="..\src\Nen\Render\OpenGL\ShaderGL.h" />
-    <ClInclude Include="..\src\Nen\Render\Vulkan\EffectManagerVK.h" />
     <ClInclude Include="..\src\Nen\Render\Vulkan\Pipeline.h" />
     <ClInclude Include="..\src\Nen\Render\Vulkan\PipelineLayout.h" />
     <ClInclude Include="..\src\Nen\Render\Vulkan\Swapchain.h" />

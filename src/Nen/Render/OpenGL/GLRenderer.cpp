@@ -5,13 +5,10 @@
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_opengl3.h>
-#include <Effekseer.h>
-#include <EffekseerRendererGL.h>
 #include "GLRenderer.h"
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include "EffectManagerGL.h"
 #include "../../Texture/SurfaceHandle.hpp"
 #include <Nen.hpp>
 
@@ -33,8 +30,6 @@ namespace nen::gl
 		}
 		glGetError();
 
-		mEffectManager = std::make_unique<EffectManagerGL>(this);
-		mEffectManager->Init();
 		prepare();
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -114,57 +109,6 @@ namespace nen::gl
 			glDrawElementsBaseVertex(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr, 0);
 		}
 		glDisable(GL_BLEND);
-		Effekseer::Matrix44 mat;
-
-		auto nenm = mRenderer->GetViewMatrix();
-		memcpy(&mat, &nenm, sizeof(float) * 16);
-
-		mEffectManager->GetRenderer()->SetCameraMatrix(mat);
-
-		for (auto i : this->mRenderer->GetEffects())
-		{
-			auto eref = mEffectManager->GetEffect(i->GetPath());
-			auto p = i->GetPosition();
-			if (i->isLoop())
-			{
-				if (i->GetTimer().isStarted())
-				{
-					if (i->GetTimer().Check())
-					{
-						mEffectManager->GetManager()->StopEffect(i->handle);
-						i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
-						i->GetTimer().Stop();
-					}
-				}
-				else
-				{
-					i->GetTimer().Start();
-					if (i->first)
-					{
-						mEffectManager->GetManager()->StopEffect(i->handle);
-						i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
-						i->first = false;
-					}
-				}
-			}
-			else
-			{
-				if (i->first)
-				{
-					mEffectManager->GetManager()->StopEffect(i->handle);
-					i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
-					i->first = false;
-				}
-			}
-			auto euler = Quaternion::ToEuler(i->GetRotation());
-			mEffectManager->GetManager()->SetRotation(i->handle, euler.x, euler.y, euler.z);
-			mEffectManager->GetManager()->SetLocation(i->handle, ::Effekseer::Vector3D(p.x, p.y, p.z));
-		}
-		mEffectManager->GetManager()->Update();
-		mEffectManager->GetRenderer()->BeginRendering();
-		mEffectManager->GetManager()->Draw();
-		mEffectManager->GetRenderer()->EndRendering();
-
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplSDL2_NewFrame(mWindow->GetSDLWindow());
 		ImGui::NewFrame();
@@ -258,7 +202,6 @@ namespace nen::gl
 
 	void GLRenderer::LoadEffect(std::shared_ptr<Effect> effect)
 	{
-		mEffectManager->GetEffect(effect->GetPath());
 	}
 
 	void GLRenderer::LoadShader(const Shader &shaderInfo)

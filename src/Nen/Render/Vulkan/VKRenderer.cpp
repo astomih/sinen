@@ -4,9 +4,6 @@
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_vulkan.h>
-#include <Effekseer.h>
-#include <EffekseerRendererVulkan.h>
-#include "EffectManagerVK.h"
 #include "VKBase.h"
 #include "VKRenderer.h"
 #include "VulkanUtil.h"
@@ -39,8 +36,6 @@ namespace nen::vk
 	void VKRenderer::Initialize(std::shared_ptr<Window> window)
 	{
 		m_base->initialize(window);
-		mEffectManager = std::make_unique<EffectManagerVK>(this);
-		mEffectManager->Init();
 	}
 
 	void VKRenderer::Shutdown()
@@ -136,7 +131,6 @@ namespace nen::vk
 
 	void VKRenderer::LoadEffect(std::shared_ptr<Effect> effect)
 	{
-		mEffectManager->GetEffect(effect->GetPath());
 	}
 
 	void VKRenderer::LoadShader(const Shader &shaderInfo)
@@ -221,7 +215,6 @@ namespace nen::vk
 	}
 	void VKRenderer::cleanup()
 	{
-		mEffectManager->Shutdown();
 		//delete mEffectManager.release();
 		VkDevice device = m_base->GetVkDevice();
 
@@ -265,7 +258,6 @@ namespace nen::vk
 		draw3d(command);
 		draw2d(command);
 		drawGUI(command);
-		renderEffekseer(command);
 		renderImGUI(command);
 		pipelineOpaque.Bind(command);
 		auto result = vkWaitForFences(m_base->GetVkDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
@@ -1394,72 +1386,6 @@ namespace nen::vk
 			}
 			layouts.pop_back();
 		}
-	}
-	void VKRenderer::renderEffekseer(VkCommandBuffer command)
-	{
-		Effekseer::Matrix44 mat;
-		auto nenm = GetRenderer()->GetViewMatrix();
-		memcpy(&mat, &nenm, sizeof(float) * 16);
-
-		for (int i = 0; i < 4; i++)
-		{
-			for (int j = 1; j < 3; j++)
-			{
-				mat.Values[i][j] = -mat.Values[i][j];
-			}
-		}
-		mEffectManager->GetRenderer()->SetCameraMatrix(mat);
-		mEffectManager->GetMemoryPool()->NewFrame();
-		EffekseerRendererVulkan::BeginCommandList(mEffectManager->GetCommandList(), command);
-		mEffectManager->GetRenderer()->SetCommandList(mEffectManager->GetCommandList());
-		for (auto i : this->mRenderer->GetEffects())
-		{
-			auto eref = mEffectManager->GetEffect(i->GetPath());
-			if (eref == 0)
-				continue;
-			auto p = i->GetPosition();
-			if (i->isLoop())
-			{
-				if (i->GetTimer().isStarted())
-				{
-					if (i->GetTimer().Check())
-					{
-						mEffectManager->GetManager()->StopEffect(i->handle);
-						i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
-						i->GetTimer().Stop();
-					}
-				}
-				else
-				{
-					i->GetTimer().Start();
-					if (i->first)
-					{
-						mEffectManager->GetManager()->StopEffect(i->handle);
-						i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
-						i->first = false;
-					}
-				}
-			}
-			else
-			{
-				if (i->first)
-				{
-					mEffectManager->GetManager()->StopEffect(i->handle);
-					i->handle = mEffectManager->GetManager()->Play(eref, p.x, p.y, p.z);
-					i->first = false;
-					i->state = Effect::State::Dead;
-				}
-			}
-			auto euler = Quaternion::ToEuler(i->GetRotation());
-			mEffectManager->GetManager()->SetRotation(i->handle, euler.x, euler.y, euler.z);
-			mEffectManager->GetManager()->SetLocation(i->handle, ::Effekseer::Vector3D(p.x, p.y, p.z));
-		}
-		mEffectManager->GetManager()->Update();
-		mEffectManager->GetRenderer()->BeginRendering();
-		mEffectManager->GetManager()->Draw();
-		mEffectManager->GetRenderer()->EndRendering();
-		mEffectManager->GetRenderer()->SetCommandList(mEffectManager->GetCommandList());
-		EffekseerRendererVulkan::EndCommandList(mEffectManager->GetCommandList());
 	}
 }
 #endif

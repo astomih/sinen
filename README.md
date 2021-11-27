@@ -69,18 +69,17 @@ void Main::Update(float deltaTime)
 ## 使用ライブラリ
 NenEngineで使用しているライブラリです。  
 ライセンス文はlibs内の各フォルダ内に記載されています。
-- The OpenGL Extension Wrangler Library (GLEW)
-- Dear ImGui (ImGui)
+- GLEW
+- ImGui
 - Lua
-- mojoAL  (実装に不具合があるようなので見送り)
-- OpenAL 1.1  (mojoALが機能するまでの間)
+- Sol2
+- OpenAL 1.1
 - rapidJSON
-- Simple DirectMedia Layer (SDL2)
+- SDL2
 - SDL2_image
 - SDL2_mixer
 - SDL2_net
 - SDL2_ttf
-- sol2
   
 各ライブラリはNenEngine/libsフォルダ内にライセンス文ともに格納されています。
 

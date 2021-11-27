@@ -51,7 +51,7 @@ namespace nen
 		id = fileName.data();
 		if (SurfaceHandle::Contain(id))
 			return true;
-		auto *surface = ::IMG_Load_RW((SDL_RWops *)AssetReader::LoadAsRWops(AssetType::Texture, fileName), 1);
+		auto *surface = ::IMG_Load_RW((SDL_RWops *)AssetReader::LoadAsRWops(AssetType::Texture, fileName), 0);
 		if (surface)
 		{
 			width = surface->w;

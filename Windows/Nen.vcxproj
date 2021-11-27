@@ -128,13 +128,7 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\libs\ImGui\source\imgui.cpp" />
-    <ClCompile Include="..\libs\ImGui\source\imgui_demo.cpp" />
-    <ClCompile Include="..\libs\ImGui\source\imgui_draw.cpp" />
-    <ClCompile Include="..\libs\ImGui\source\imgui_impl_opengl3.cpp" />
-    <ClCompile Include="..\libs\ImGui\source\imgui_impl_sdl.cpp" />
-    <ClCompile Include="..\libs\ImGui\source\imgui_impl_vulkan.cpp" />
-    <ClCompile Include="..\libs\ImGui\source\imgui_widgets.cpp" />
+    <ClCompile Include="..\libs\ImGui\source\*.cpp" />
     <ClCompile Include="..\src\Nen\Engine\Engine.cpp" />
     <ClCompile Include="..\src\Nen\Actor\Actor.cpp" />
     <ClCompile Include="..\src\Nen\Audio\MusicEvent.cpp" />

@@ -1,107 +1,143 @@
 #pragma once
 #if defined(EMSCRIPTEN) || defined(MOBILE)
-#include <unordered_map>
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
+#include <emscripten/html5.h>
 #endif
+#include "ShaderES.h"
 #include <SDL.h>
 #include <GLES3/gl3.h>
+#include <Vertex/VertexArray.hpp>
 #include <Texture/Texture.hpp>
-#include <string>
-#include <Window/Window.hpp>
 #include <DrawObject/DrawObject.hpp>
 #include <Render/Renderer.hpp>
-#include <Vertex/VertexArray.hpp>
 
-namespace nen::es
+namespace nen
 {
-	struct VertexArrayForES : public VertexArray
+	class Renderer;
+
+	namespace es
 	{
-		uint32_t vertexID;
-		uint32_t indexID;
-	};
-	class ESRenderer : public IRenderer
-	{
-	public:
-		ESRenderer();
-		~ESRenderer() override {}
-		void Initialize(struct SDL_Window *window) override;
-		void Shutdown() override;
-		void Render() override;
-		void AddVertexArray(const VertexArray &vArray, std::string_view name) override;
-		void UpdateVertexArray(std::shared_ptr<class DrawObject> sprite, const TextureType type) override;
 
-		void AddDrawObject2D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture) override;
-		void RemoveDrawObject2D(std::shared_ptr<class DrawObject> sprite) override;
-		void AddDrawObject3D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture) override;
-		void RemoveDrawObject3D(std::shared_ptr<class DrawObject> sprite) override;
-
-		void LoadEffect(std::shared_ptr<class Effect> effect) override;
-
-		void prepare();
-		void cleanup() {}
-		void registerTexture(std::shared_ptr<Texture>, const TextureType &type);
-		void pushSprite2d(std::shared_ptr<DrawObject> sprite2d)
+		struct VertexArrayForES : public nen::VertexArray
 		{
-			auto iter = mSprite2Ds.begin();
-			for (;
-				 iter != mSprite2Ds.end();
-				 ++iter)
+			/**
+			 * @brief Vertex Array Object
+			 * 
+			 */
+			uint32_t vao;
+
+			/**
+			 * @brief Vertex Buffer Object
+			 * 
+			 */
+			uint32_t vbo;
+
+			/**
+			 * @brief Index Buffer Object
+			 * 
+			 */
+			uint32_t ibo;
+		};
+
+		class ESRenderer : public IRenderer
+		{
+		public:
+			ESRenderer();
+			~ESRenderer() override
 			{
-				if (sprite2d->drawOrder < (*iter)->drawOrder)
+			}
+
+			void Initialize(std::shared_ptr<Window> window) override;
+			void Render() override;
+			void AddVertexArray(const VertexArray &vArray, std::string_view name) override;
+			void UpdateVertexArray(const VertexArray &vArray, std::string_view name) override;
+			void AddDrawObject2D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture) override;
+			void RemoveDrawObject2D(std::shared_ptr<class DrawObject> sprite) override;
+
+			void AddDrawObject3D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture) override;
+			void RemoveDrawObject3D(std::shared_ptr<class DrawObject> sprite) override;
+
+			void SetRenderer(class Renderer *renderer) override;
+
+			void LoadEffect(std::shared_ptr<class Effect> effect) override;
+
+			void LoadShader(const Shader &shaderInfo) override;
+			void UnloadShader(const Shader &shaderInfo) override;
+
+			void prepare();
+			void cleanup() {}
+			void registerTexture(std::shared_ptr<class Texture>, const TextureType &type);
+			void pushSprite2d(std::shared_ptr<DrawObject> sprite2d)
+			{
+				auto iter = mSprite2Ds.begin();
+				for (;
+					 iter != mSprite2Ds.end();
+					 ++iter)
 				{
-					break;
+					if (sprite2d->drawOrder < (*iter)->drawOrder)
+					{
+						break;
+					}
+				}
+				mSprite2Ds.insert(iter, sprite2d);
+			}
+			void eraseSprite2d(std::shared_ptr<DrawObject> sprite2d)
+			{
+				auto itr = std::find(mSprite2Ds.begin(), mSprite2Ds.end(), sprite2d);
+				if (itr != mSprite2Ds.end())
+				{
+					mSprite2Ds.erase(itr);
 				}
 			}
-			mSprite2Ds.insert(iter, sprite2d);
-		}
-		void eraseSprite2d(std::shared_ptr<DrawObject> sprite2d)
-		{
-			auto itr = std::find(mSprite2Ds.begin(), mSprite2Ds.end(), sprite2d);
-			if (itr != mSprite2Ds.end())
-			{
-				mSprite2Ds.erase(itr);
-			}
-		}
 
-		void pushSprite3d(std::shared_ptr<DrawObject> sprite3d)
-		{
-			auto iter = mSprite3Ds.begin();
-			for (;
-				 iter != mSprite3Ds.end();
-				 ++iter)
+			void pushSprite3d(std::shared_ptr<DrawObject> sprite3d)
 			{
-				if (sprite3d->drawOrder < (*iter)->drawOrder)
+				auto iter = mSprite3Ds.begin();
+				for (;
+					 iter != mSprite3Ds.end();
+					 ++iter)
 				{
-					break;
+					if (sprite3d->drawOrder < (*iter)->drawOrder)
+					{
+						break;
+					}
+				}
+				mSprite3Ds.insert(iter, sprite3d);
+			}
+			void eraseSprite3d(std::shared_ptr<DrawObject> sprite3d)
+			{
+				auto itr = std::find(mSprite3Ds.begin(), mSprite3Ds.end(), sprite3d);
+				if (itr != mSprite3Ds.end())
+				{
+					mSprite3Ds.erase(itr);
 				}
 			}
-			mSprite3Ds.insert(iter, sprite3d);
-		}
-		void eraseSprite3d(std::shared_ptr<DrawObject> sprite3d)
-		{
-			auto itr = std::find(mSprite3Ds.begin(), mSprite3Ds.end(), sprite3d);
-			if (itr != mSprite3Ds.end())
+			void setRenderer(nen::Renderer *renderer)
 			{
-				mSprite3Ds.erase(itr);
+				mRenderer = renderer;
 			}
-		}
 
-	private:
-		std::unique_ptr<class EffectManagerES> mEffectManager;
-		bool loadShader();
-		void createSpriteVerts();
-		void createBoxVerts();
+			std::shared_ptr<Window> GetWindow() { return mWindow; }
 
-		class ShaderES *mSpriteShader;
-		class ShaderES *mAlphaShader;
-		GLuint mTextureID;
-		std::unordered_map<std::string, GLuint> mTextureIDs;
-		std::unordered_map<std::string, VertexArrayForES> m_VertexArrays;
-		::SDL_GLContext mContext;
-		std::vector<std::shared_ptr<DrawObject>> mSprite2Ds;
-		std::vector<std::shared_ptr<DrawObject>> mSprite3Ds;
-	};
+		private:
+			Renderer *mRenderer;
+			std::shared_ptr<Window> mWindow;
+			bool loadShader();
+			void createSpriteVerts();
+			void createBoxVerts();
+
+			ShaderES *mSpriteShader;
+			ShaderES *mAlphaShader;
+			std::vector<std::pair<Shader, ShaderES>> userPipelines;
+			GLuint mTextureID;
+			std::unordered_map<std::string, GLuint> mTextureIDs;
+			std::unordered_map<std::string, VertexArrayForES> m_VertexArrays;
+			::SDL_GLContext mContext;
+			std::vector<std::shared_ptr<DrawObject>> mSprite2Ds;
+			std::vector<std::shared_ptr<DrawObject>> mSprite3Ds;
+		};
+	}
 }
 
 #endif

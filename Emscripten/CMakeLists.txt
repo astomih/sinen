@@ -10,22 +10,15 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ./build)
 
 file(GLOB SOURCE_FILES 
 	../src/Nen/*/*.cpp
+	../src/Nen/Engine/Engine.cpp
 	../src/Nen/Render/OpenGLES/*.cpp
-	../libs/ImGui/source/imgui.cpp
-	../libs/ImGui/source/imgui_draw.cpp
-	../libs/ImGui/source/imgui_demo.cpp
-	../libs/ImGui/source/imgui_impl_opengl3.cpp
-	../libs/ImGui/source/imgui_impl_sdl.cpp
-	../libs/ImGui/source/imgui_widgets.cpp
+	../libs/ImGui/source/gles/*.cpp
 )
 add_library(nen STATIC ${SOURCE_FILES})
 set(NEN_INCLUDE_DIRECTORIES 
 	.
 	../include
 	../include/Nen
-	../libs/Effekseer/include/Effekseer
-	../libs/Effekseer/include/EffekseerRendererGL
-	../libs/Effekseer/include
 	../libs/ImGui/include
 	../libs/sol2/include
 	../libs/Lua/include
@@ -36,4 +29,4 @@ set(NEN_INCLUDE_DIRECTORIES
 target_include_directories(nen PUBLIC
 	${NEN_INCLUDE_DIRECTORIES}
 )
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_SDL_TTF=2 -s USE_SDL_MIXER=2 -s USE_SDL_NET=2 -std=c++2b")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_SDL_TTF=2 -s USE_SDL_MIXER=2 -s USE_SDL_NET=2 -std=c++20")

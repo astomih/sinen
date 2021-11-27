@@ -2,9 +2,6 @@
 #include "OpenGL/GLRenderer.h"
 #include "OpenGLES/ESRenderer.h"
 #include <Nen.hpp>
-#if defined(EMSCRIPTEN) || defined(MOBILE)
-#include "OpenGLES/EffectManagerES.h"
-#endif
 #include "RendererHandle.hpp"
 
 namespace nen

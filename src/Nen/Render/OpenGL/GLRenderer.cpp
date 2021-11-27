@@ -34,7 +34,7 @@ namespace nen::gl
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		ImGui_ImplSDL2_InitForOpenGL(window->GetSDLWindow(), mContext);
-		ImGui_ImplOpenGL3_Init("#version 130");
+		ImGui_ImplOpenGL3_Init("#version 330 core");
 	}
 	void GLRenderer::SetRenderer(Renderer *renderer)
 	{
@@ -76,7 +76,7 @@ namespace nen::gl
 				}
 			}
 			glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
-			glDrawElementsBaseVertex(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr, 0);
+			glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr);
 		}
 		glDisable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
@@ -106,7 +106,7 @@ namespace nen::gl
 				}
 			}
 			glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
-			glDrawElementsBaseVertex(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr, 0);
+			glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr);
 		}
 		glDisable(GL_BLEND);
 		ImGui_ImplOpenGL3_NewFrame();

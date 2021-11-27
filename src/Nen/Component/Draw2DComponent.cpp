@@ -3,7 +3,7 @@
 #include <SDL_image.h>
 namespace nen
 {
-	constexpr int matrixSize = sizeof(float) * 16;
+	const int matrixSize = sizeof(float) * 16;
 	Draw2DComponent::Draw2DComponent(Actor &owner, const int drawOrder)
 		: Component(owner), mDrawOrder(drawOrder), mTexture(nullptr)
 	{
@@ -11,13 +11,6 @@ namespace nen
 
 	void Draw2DComponent::Update(float deltaTime)
 	{
-		if (!mTexture)
-		{
-			auto tex = std::make_shared<Texture>();
-			tex->Load("Assets/Default.png");
-			Create(tex);
-		}
-
 		auto w = mOwner.GetWorldTransform();
 		Matrix4 s = Matrix4::Identity;
 		s.mat[0][0] = static_cast<float>(mTexture->GetWidth());
@@ -35,19 +28,10 @@ namespace nen
 
 	void Draw2DComponent::Create(std::shared_ptr<Texture> texture, const float scale, std::string_view shape)
 	{
-		if (texture)
-			mTexture = texture;
-		else
-		{
-			auto tex = std::make_shared<Texture>();
-			tex->Load("Assets/Texture/Default.png");
-			mTexture = tex;
-		}
+		mTexture = texture;
 		mTexWidth = mTexture->GetWidth();
 		mTexHeight = mTexture->GetHeight();
 		auto renderer = mOwner.GetScene().GetRenderer();
-		auto api = renderer->GetGraphicsAPI();
-		auto scaleOwner = mOwner.GetScale();
 		Matrix4 viewproj = Matrix4::Identity;
 		auto windowsize = mOwner.GetScene().GetRenderer()->GetWindow()->Size();
 		viewproj.mat[0][0] = 1.f / windowsize.x;
@@ -64,6 +48,7 @@ namespace nen
 	}
 	void Draw2DComponent::Register()
 	{
-		mOwner.GetScene().GetRenderer()->AddDrawObject2D(sprite, mTexture);
+		if (sprite && mTexture)
+			mOwner.GetScene().GetRenderer()->AddDrawObject2D(sprite, mTexture);
 	}
 }

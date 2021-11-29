@@ -1,7 +1,4 @@
 #pragma once
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
-#include <GL/glew.h>
-#endif
 
 namespace nen
 {

@@ -46,7 +46,6 @@
 #include "Physics/Collision.hpp"
 #include "Render/Renderer.hpp"
 #include "Scene/Scene.hpp"
-#include "Scene/MainScene.hpp"
 #include "Script/Script.hpp"
 #include "Shader/Shader.hpp"
 #include "Texture/Texture.hpp"

@@ -6,14 +6,15 @@
 #include <vector>
 #include <cstring>
 #include <algorithm>
-#include <numbers>
+//#include <numbers>
 
 namespace nen
 {
 	class Math
 	{
 	public:
-		static constexpr float Pi = std::numbers::pi_v<float>;
+		//static constexpr float Pi = std::numbers::pi_v<float>;
+		static constexpr float Pi = 3.141592f;
 		static constexpr float TwoPi = Pi * 2.f;
 		static constexpr float PiOver2 = Pi / 2.f;
 		static constexpr float Infinity = std::numeric_limits<float>::infinity();

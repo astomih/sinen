@@ -121,4 +121,6 @@ namespace nen
 		bool mUpdatingActors = false;
 	};
 	void ChangeScene(std::shared_ptr<Scene> newScene);
+
+	void Launch(std::shared_ptr<Scene> scene);
 }

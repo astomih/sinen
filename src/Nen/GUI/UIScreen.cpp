@@ -16,6 +16,11 @@ namespace nen
 		mButtons.clear();
 	}
 
+	void UIScreen::Update(float deltaTime)
+	{
+
+	}
+
 	void UIScreen::HandleInput(const InputState &state)
 	{
 		// Do we have buttons?

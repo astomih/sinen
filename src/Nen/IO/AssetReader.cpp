@@ -45,16 +45,12 @@ namespace nen
         ConvertFilePath(filePath, name, assetType);
 
         SDL_RWops *file = SDL_RWFromFile(filePath.c_str(), "r");
-#ifndef NEN_NO_EXCEPTION
         if (!file)
-            throw std::runtime_error("File open error.");
-#endif
+            return std::string("");
         size_t fileLength;
         void *load = SDL_LoadFile_RW(file, &fileLength, 1);
-#ifndef NEN_NO_EXCEPTION
         if (!load)
-            throw std::runtime_error("convert error.");
-#endif
+            return std::string("");
         std::string result{reinterpret_cast<char *>(load), fileLength};
         SDL_free(load);
         return result;

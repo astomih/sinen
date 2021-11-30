@@ -1,4 +1,10 @@
-﻿#include <rapidjson/document.h>
+﻿#include <assimp/cimport.h>
+#include <assimp/postprocess.h>
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+#include <assimp/DefaultLogger.hpp>
+#include <assimp/LogStream.hpp>
 #include <SDL.h>
 #include <SDL_rwops.h>
 #include <Nen.hpp>
@@ -7,90 +13,75 @@
 #include <fstream>
 namespace nen
 {
+    void recursive_render(const C_STRUCT aiScene *sc, const C_STRUCT aiNode *nd, VertexArray &vArray, int &indices)
+    {
+        unsigned int i;
+        unsigned int n = 0, t;
+        C_STRUCT aiMatrix4x4 m = nd->mTransformation;
+        aiTransposeMatrix4(&m);
+        int previndex = indices;
+
+        for (; n < nd->mNumMeshes; ++n)
+        {
+            const C_STRUCT aiMesh *mesh = sc->mMeshes[nd->mMeshes[n]];
+
+            for (t = 0; t < mesh->mNumFaces; ++t)
+            {
+                const C_STRUCT aiFace *face = &mesh->mFaces[t];
+
+                for (i = 0; i < face->mNumIndices; i++)
+                {
+                    Vertex v{};
+                    int index = face->mIndices[i];
+                    if (mesh->mNormals != NULL)
+                    {
+                        v.normal.x = mesh->mNormals[index].x;
+                        v.normal.y = mesh->mNormals[index].y;
+                        v.normal.z = mesh->mNormals[index].z;
+                        if (mesh->HasTextureCoords(0)) //HasTextureCoords(texture_coordinates_set)
+                        {
+                            v.uv.x = mesh->mTextureCoords[0][index].x;
+                            v.uv.y = 1 - mesh->mTextureCoords[0][index].y;
+                        }
+                    }
+                    v.position.x = mesh->mVertices[index].x;
+                    v.position.y = mesh->mVertices[index].y;
+                    v.position.z = mesh->mVertices[index].z;
+
+                    vArray.vertices.push_back(v);
+                    vArray.indices.push_back(indices);
+                    indices++;
+                }
+            }
+        }
+
+        for (n = 0; n < nd->mNumChildren; ++n)
+        {
+            recursive_render(sc, nd->mChildren[n], vArray, indices);
+        }
+    }
 
     bool Mesh::LoadFromFile(std::shared_ptr<Renderer> renderer, std::string_view filepath, std::string_view registerName)
     {
         mRenderer = renderer;
         name = registerName;
-        std::string contents = AssetReader::LoadAsString(AssetType::Model,filepath);
+        Assimp::Importer importer;
+        C_STRUCT aiLogStream stream;
+        stream = aiGetPredefinedLogStream(aiDefaultLogStream_STDOUT, NULL);
+        aiAttachLogStream(&stream);
 
-        rapidjson::StringStream jsonStr(contents.c_str());
-        rapidjson::Document doc;
-        doc.ParseStream(jsonStr);
-
-        if (!doc.IsObject())
+        stream = aiGetPredefinedLogStream(aiDefaultLogStream_FILE, "assimp_log.txt");
+        aiAttachLogStream(&stream);
+        const C_STRUCT aiScene *scene = NULL;
+        auto path = "Assets/Model/" + std::string(filepath);
+        scene = importer.ReadFile(path, aiProcessPreset_TargetRealtime_Fast);
+        if (!scene)
         {
-            SDL_Log("Mesh %s is not valid json", filepath.data());
-            return false;
+            Logger::Error("%s", importer.GetErrorString());
         }
 
-        int ver = doc["version"].GetInt();
-
-        // Check the version
-        if (ver != 1)
-        {
-            SDL_Log("Mesh %s not version 1", filepath.data());
-            return false;
-        }
-
-        //mShaderName = doc["shader"].GetString();
-
-        size_t vertSize = 8;
-
-                // Load in the vertices
-        const rapidjson::Value &vertsJson = doc["vertices"];
-        if (!vertsJson.IsArray() || vertsJson.Size() < 1)
-        {
-            SDL_Log("Mesh %s has no vertices", filepath.data());
-            return false;
-        }
-
-        //mRadius = 0.0f;
-        for (rapidjson::SizeType i = 0; i < vertsJson.Size(); i++)
-        {
-            // For now, just assume we have 8 elements
-            const rapidjson::Value &vert = vertsJson[i];
-            if (!vert.IsArray() || vert.Size() != 8)
-            {
-                SDL_Log("Unexpected vertex format for %s", filepath.data());
-                return false;
-            }
-
-            Vertex v;
-            v.position = Vector3(vert[0].GetDouble(), vert[1].GetDouble(), vert[2].GetDouble());
-            v.normal = Vector3(vert[3].GetDouble(), vert[4].GetDouble(), vert[5].GetDouble());
-            v.uv = Vector2(vert[6].GetDouble(), vert[7].GetDouble());
-            vArray.vertices.push_back(v);
-
-            //mRadius = Math::Max(mRadius, pos.LengthSq());
-
-            // Add the floats
-        }
-
-        // We were computing length squared earlier
-        //mRadius = Math::Sqrt(mRadius);
-
-        // Load in the indices
-        const rapidjson::Value &indJson = doc["indices"];
-        if (!indJson.IsArray() || indJson.Size() < 1)
-        {
-            SDL_Log("Mesh %s has no indices", filepath.data());
-            return false;
-        }
-
-        for (rapidjson::SizeType i = 0; i < indJson.Size(); i++)
-        {
-            const rapidjson::Value &ind = indJson[i];
-            if (!ind.IsArray() || ind.Size() != 3)
-            {
-                SDL_Log("Invalid indices for %s", filepath.data());
-                return false;
-            }
-
-            vArray.indices.push_back(ind[0].GetUint());
-            vArray.indices.push_back(ind[1].GetUint());
-            vArray.indices.push_back(ind[2].GetUint());
-        }
+        int indices = 0;
+        recursive_render(scene, scene->mRootNode, vArray, indices);
         vArray.indexCount = vArray.indices.size();
         return true;
     }

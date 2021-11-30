@@ -69,6 +69,7 @@ void Main::Update(float deltaTime)
 ## 使用ライブラリ
 NenEngineで使用しているライブラリです。  
 ライセンス文はlibs内の各フォルダ内に記載されています。
+- Assimp
 - GLEW
 - ImGui
 - Lua

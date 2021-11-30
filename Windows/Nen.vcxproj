@@ -131,6 +131,7 @@
     <ClCompile Include="..\libs\ImGui\source\*.cpp" />
     <ClCompile Include="..\src\Nen\Engine\Engine.cpp" />
     <ClCompile Include="..\src\Nen\Actor\Actor.cpp" />
+    <ClInclude Include="..\src\Nen\Animatin\*.cpp" />
     <ClCompile Include="..\src\Nen\Audio\MusicEvent.cpp" />
     <ClCompile Include="..\src\Nen\Audio\MusicSystem.cpp" />
     <ClCompile Include="..\src\Nen\Audio\SoundEvent.cpp" />
@@ -169,6 +170,7 @@
     <ClInclude Include="..\include\Nen\Actor\Text.hpp" />
     <ClInclude Include="..\include\Nen\Audio\AudioEvent.hpp" />
     <ClInclude Include="..\include\Nen\Audio\AudioSystem.hpp" />
+    <ClInclude Include="..\include\Nen\Animatin\*.hpp" />
     <ClInclude Include="..\include\Nen\Component\AudioComponent.hpp" />
     <ClInclude Include="..\include\Nen\Component\CircleComponent.hpp" />
     <ClInclude Include="..\include\Nen\Component\Component.hpp" />

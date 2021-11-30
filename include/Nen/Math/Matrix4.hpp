@@ -225,6 +225,8 @@ namespace nen
         // Create a rotation matrix from a quaternion
         static Matrix4 CreateFromQuaternion(const class Quaternion &q);
 
+        static Matrix4 CreateTranslation(const Vector3 &trans);
+
         static Quaternion ToQuaternion(const Matrix4 &m);
 
         static Matrix4 LookAt(const Vector3 &eye, const Vector3 &at, const Vector3 &up);

@@ -310,6 +310,17 @@ namespace nen
 		return Matrix4(temp);
 	}
 
+	Matrix4 Matrix4::CreateTranslation(const Vector3 &trans)
+	{
+		float temp[4][4] =
+			{
+				{1.0f, 0.0f, 0.0f, 0.0f},
+				{0.0f, 1.0f, 0.0f, 0.0f},
+				{0.0f, 0.0f, 1.0f, 0.0f},
+				{trans.x, trans.y, trans.z, 1.0f}};
+		return Matrix4(temp);
+	}
+
 	Matrix4 Matrix4::CreateFromQuaternion(const class Quaternion &q)
 	{
 		float mat[4][4];

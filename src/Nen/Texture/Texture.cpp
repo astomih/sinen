@@ -24,7 +24,7 @@ namespace nen
 	std::unordered_map<std::string, std::unique_ptr<::SDL_Surface, SDLObjectCloser>> SurfaceHandle::surfaces = std::unordered_map<std::string, std::unique_ptr<::SDL_Surface, SDLObjectCloser>>{};
 	void SurfaceHandle::Register(std::string_view string, std::unique_ptr<::SDL_Surface, SDLObjectCloser> surface)
 	{
-		surfaces.insert({std::string(string), std::move(surface)});
+		surfaces.insert_or_assign(std::string(string), std::move(surface));
 	}
 	bool SurfaceHandle::Contain(std::string_view string)
 	{
@@ -49,8 +49,6 @@ namespace nen
 	bool Texture::Load(std::string_view fileName)
 	{
 		id = fileName.data();
-		if (SurfaceHandle::Contain(id))
-			return true;
 		auto *surface = ::IMG_Load_RW((SDL_RWops *)AssetReader::LoadAsRWops(AssetType::Texture, fileName), 0);
 		if (surface)
 		{
@@ -68,10 +66,6 @@ namespace nen
 	bool Texture::LoadFromMemory(std::vector<char> &buffer, std::string_view ID)
 	{
 		id = ID.data();
-		if (SurfaceHandle::Contain(id))
-		{
-			return true;
-		}
 		auto rw = std::unique_ptr<::SDL_RWops, SDLObjectCloser>(::SDL_RWFromMem(reinterpret_cast<void *>(buffer.data()), buffer.size()));
 		if (!rw)
 		{

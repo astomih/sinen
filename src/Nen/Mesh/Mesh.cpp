@@ -11,6 +11,7 @@
 #include <memory>
 #include <sstream>
 #include <fstream>
+#include <cstring>
 namespace nen
 {
     void recursive_render(const C_STRUCT aiScene *sc, const C_STRUCT aiNode *nd, VertexArray &vArray, int &indices)
@@ -73,8 +74,12 @@ namespace nen
         stream = aiGetPredefinedLogStream(aiDefaultLogStream_FILE, "assimp_log.txt");
         aiAttachLogStream(&stream);
         const C_STRUCT aiScene *scene = NULL;
-        auto path = "Assets/Model/" + std::string(filepath);
-        scene = importer.ReadFile(path, aiProcessPreset_TargetRealtime_Fast);
+
+        auto path = AssetReader::LoadAsString(AssetType::Model, filepath);
+        auto pos = std::string(filepath).find_last_of(".");
+        auto hint = std::string(filepath).substr(pos + 1, std::string(filepath).size());
+
+        scene = importer.ReadFileFromMemory(path.c_str(), path.size(), aiProcessPreset_TargetRealtime_Fast, hint.c_str());
         if (!scene)
         {
             Logger::Error("%s", importer.GetErrorString());

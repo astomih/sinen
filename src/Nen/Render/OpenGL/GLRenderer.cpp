@@ -238,9 +238,6 @@ namespace nen::gl
 
 	void GLRenderer::registerTexture(std::shared_ptr<Texture> texture, const TextureType &type)
 	{
-		if (mTextureIDs.contains(texture->id))
-			return;
-
 		::SDL_Surface surf = SurfaceHandle::Load(texture->id);
 		::SDL_LockSurface(&surf);
 		auto formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);

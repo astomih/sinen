@@ -46,6 +46,7 @@
 #include "Input/InputSystem.hpp"
 #include "IO/AssetReader.hpp"
 #include "Logger/Logger.hpp"
+#include "Model/Model.hpp"
 #include "Mesh/Mesh.hpp"
 #include "Physics/Collision.hpp"
 #include "Render/Renderer.hpp"

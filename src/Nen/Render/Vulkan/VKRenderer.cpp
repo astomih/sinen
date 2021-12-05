@@ -73,6 +73,32 @@ namespace nen::vk
 		MapMemory(m_VertexArrays[name.data()].indexBuffer.memory, vArrayVK.indices.data(), vArray.indices.size() * sizeof(uint32_t));
 	}
 
+	void VKRenderer::AddModel(std::shared_ptr<Model> model, std::string_view name)
+	{
+		int n = 0;
+		for (auto &i : model->node_list)
+		{
+			for (auto &j : i->mesh)
+			{
+				this->AddVertexArray(j.body, std::string(name) + std::to_string(n));
+				n++;
+			}
+		}
+	}
+
+	void VKRenderer::UpdateModel(std::shared_ptr<Model> model, std::string_view name)
+	{
+		int n = 0;
+		for (auto &i : model->node_list)
+		{
+			for (auto &j : i->mesh)
+			{
+				this->UpdateVertexArray(j.body, std::string(name) + std::to_string(n));
+				n++;
+			}
+		}
+	}
+
 	void VKRenderer::AddDrawObject2D(std::shared_ptr<class DrawObject> drawObject, std::shared_ptr<Texture> texture)
 	{
 		auto t = std::make_shared<vk::VulkanDrawObject>();
@@ -285,23 +311,27 @@ namespace nen::vk
 				}
 			}
 
-			::vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[sprite->drawObject->vertexIndex].vertexBuffer.buffer, &offset);
-			::vkCmdBindIndexBuffer(command, m_VertexArrays[sprite->drawObject->vertexIndex].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
-			// Set descriptors
-			vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout.GetLayout(), 0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
+			for (int i = 0; i < sprite->drawObject->nodeNum; i++)
 			{
-				auto memory = sprite->uniformBuffers[m_base->m_imageIndex].memory;
-				void *p;
-				auto result = vkMapMemory(m_base->GetVkDevice(), memory, 0, VK_WHOLE_SIZE, 0, &p);
-				if (result != VK_SUCCESS)
+				std::string index = sprite->drawObject->vertexIndex + std::to_string(i);
+				::vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[index].vertexBuffer.buffer, &offset);
+				::vkCmdBindIndexBuffer(command, m_VertexArrays[index].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
+				// Set descriptors
+				vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout.GetLayout(), 0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
 				{
-					Logger::Fatal("vkMapMemory Error! VkResult:%d", result);
+					auto memory = sprite->uniformBuffers[m_base->m_imageIndex].memory;
+					void *p;
+					auto result = vkMapMemory(m_base->GetVkDevice(), memory, 0, VK_WHOLE_SIZE, 0, &p);
+					if (result != VK_SUCCESS)
+					{
+						Logger::Fatal("vkMapMemory Error! VkResult:%d", result);
+					}
+					sprite->drawObject->param.view = mRenderer->GetViewMatrix();
+					memcpy(p, &sprite->drawObject->param, sizeof(ShaderParameters));
+					vkUnmapMemory(m_base->GetVkDevice(), memory);
 				}
-				sprite->drawObject->param.view = mRenderer->GetViewMatrix();
-				memcpy(p, &sprite->drawObject->param, sizeof(ShaderParameters));
-				vkUnmapMemory(m_base->GetVkDevice(), memory);
+				vkCmdDrawIndexed(command, m_VertexArrays[index].indexCount, 1, 0, 0, 0);
 			}
-			vkCmdDrawIndexed(command, m_VertexArrays[sprite->drawObject->vertexIndex].indexCount, 1, 0, 0, 0);
 		}
 	}
 

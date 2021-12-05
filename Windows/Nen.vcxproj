@@ -131,7 +131,7 @@
     <ClCompile Include="..\libs\ImGui\source\*.cpp" />
     <ClCompile Include="..\src\Nen\Engine\Engine.cpp" />
     <ClCompile Include="..\src\Nen\Actor\Actor.cpp" />
-    <ClInclude Include="..\src\Nen\Animatin\*.cpp" />
+    <ClCompile Include="..\src\Nen\Animation\*.cpp" />
     <ClCompile Include="..\src\Nen\Audio\MusicEvent.cpp" />
     <ClCompile Include="..\src\Nen\Audio\MusicSystem.cpp" />
     <ClCompile Include="..\src\Nen\Audio\SoundEvent.cpp" />
@@ -147,10 +147,9 @@
     <ClCompile Include="..\src\Nen\IO\AssetReader.cpp" />
     <ClCompile Include="..\src\Nen\Math\*.cpp" />
     <ClCompile Include="..\src\Nen\Mesh\Mesh.cpp" />
-    <ClCompile Include="..\src\Nen\Network\TCPClient.cpp" />
-    <ClCompile Include="..\src\Nen\Network\TCPSocket.cpp" />
-    <ClCompile Include="..\src\Nen\Time\Time.cpp" />
-    <ClCompile Include="..\src\Nen\Time\Timer.cpp" />
+    <ClCompile Include="..\src\Nen\Model\*.cpp" />
+    <ClCompile Include="..\src\Nen\Network\*.cpp" />
+    <ClCompile Include="..\src\Nen\Time\*.cpp" />
     <ClCompile Include="..\src\Nen\Physics\Collision.cpp" />
     <ClCompile Include="..\src\Nen\Render\Renderer.cpp" />
     <ClCompile Include="..\src\Nen\Render\OpenGL\*.cpp" />
@@ -160,8 +159,7 @@
     <ClCompile Include="..\src\Nen\Shader\Shader.cpp" />
     <ClCompile Include="..\src\Nen\Texture\Texture.cpp" />
     <ClCompile Include="..\src\Nen\Utility\Singleton.cpp" />
-    <ClCompile Include="..\src\Nen\Vertex\Vertex.cpp" />
-    <ClCompile Include="..\src\Nen\Vertex\VertexArray.cpp" />
+    <ClCompile Include="..\src\Nen\Vertex\*.cpp" />
     <ClCompile Include="..\src\Nen\Window\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -170,7 +168,7 @@
     <ClInclude Include="..\include\Nen\Actor\Text.hpp" />
     <ClInclude Include="..\include\Nen\Audio\AudioEvent.hpp" />
     <ClInclude Include="..\include\Nen\Audio\AudioSystem.hpp" />
-    <ClInclude Include="..\include\Nen\Animatin\*.hpp" />
+    <ClInclude Include="..\include\Nen\Animation\*.hpp" />
     <ClInclude Include="..\include\Nen\Component\AudioComponent.hpp" />
     <ClInclude Include="..\include\Nen\Component\CircleComponent.hpp" />
     <ClInclude Include="..\include\Nen\Component\Component.hpp" />
@@ -204,6 +202,7 @@
     <ClInclude Include="..\include\Nen\Math\Vector3.hpp" />
     <ClInclude Include="..\include\Nen\Nen.hpp" />
     <ClInclude Include="..\include\Nen\Mesh\Mesh.hpp" />
+    <ClInclude Include="..\include\Nen\Model\Model.hpp" />
     <ClInclude Include="..\include\Nen\Render\Renderer.hpp" />
     <ClInclude Include="..\include\Nen\Scene\Scene.hpp" />
     <ClInclude Include="..\include\Nen\Script\Script.hpp" />
@@ -215,6 +214,7 @@
     <ClInclude Include="..\include\Nen\Vertex\Vertex.h" />
     <ClInclude Include="..\include\Nen\Vertex\VertexArray.h" />
     <ClInclude Include="..\include\Nen\Window\Window.hpp" />
+    <ClInclude Include="..\src\Nen\Animation\FromAssimp.hpp" />
     <ClInclude Include="..\src\Nen\Effect\EffectManager.h" />
     <ClInclude Include="..\src\Nen\Render\IRenderer.h" />
     <ClInclude Include="..\src\Nen\Render\OpenGLES\ESRenderer.h" />

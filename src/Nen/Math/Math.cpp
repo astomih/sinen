@@ -86,12 +86,19 @@ namespace nen
 		retVal += 2.0f * Vector3::Cross(qv, Vector3::Cross(qv, v) + q.w * v);
 		return retVal;
 	}
-	/*
-	Effekseer::Vector3D Vector3::ToEffekseer() const
+	Vector3 Matrix4::operator*(const Vector3 &vec) const
 	{
-		return Effekseer::Vector3D(x, y, z);
+
+		Vector3 retVal;
+		retVal.x = vec.x * mat[0][0] + vec.y * mat[0][1] +
+				   vec.z * mat[0][2];
+		retVal.y = vec.x * mat[1][0] + vec.y * mat[1][1] +
+				   vec.z * mat[1][2];
+		retVal.z = vec.x * mat[2][0] + vec.y * mat[2][1] +
+				   vec.z * mat[2][2];
+		//ignore w since we aren't returning a new value for it...
+		return retVal;
 	}
-	*/
 
 	void Matrix4::Invert()
 	{

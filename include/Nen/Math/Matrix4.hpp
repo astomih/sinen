@@ -31,6 +31,9 @@ namespace nen
         {
             return mat[index];
         }
+
+        Vector3 operator*(const Vector3 &vec) const;
+
         // Matrix multiplication (a * b)
         friend Matrix4 operator*(const Matrix4 &a, const Matrix4 &b)
         {

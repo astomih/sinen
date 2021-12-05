@@ -14,6 +14,7 @@ namespace nen
 		std::string vertexIndex;
 		Shader shader;
 		int drawOrder = 100;
+		int nodeNum = 1;
 	};
 
 }

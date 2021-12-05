@@ -1,4 +1,4 @@
-#include <Nen/Nen.hpp>
+#include <Nen.hpp>
 namespace nen
 {
     Matrix4 BoneTransform::ToMatrix() const

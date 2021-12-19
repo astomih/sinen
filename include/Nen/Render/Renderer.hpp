@@ -8,7 +8,6 @@
 #include "../Vertex/VertexArray.hpp"
 #include "../Color/Color.hpp"
 #include "../Shader/Shader.hpp"
-#include "../Model/Model.hpp"
 #include <string>
 #include <vector>
 #include <memory>
@@ -63,9 +62,6 @@ namespace nen
 
 		void AddVertexArray(const VertexArray &vArray, std::string_view name);
 		void UpdateVertexArray(const VertexArray &vArray, std::string_view name);
-
-		void AddModel(std::shared_ptr<class Model>, std::string_view name);
-		void UpdateModel(std::shared_ptr<class Model>, std::string_view name);
 
 		void SetClearColor(const Color &color)
 		{
@@ -125,9 +121,6 @@ namespace nen
 		virtual void Render() {}
 		virtual void AddVertexArray(const VertexArray &vArray, std::string_view name) {}
 		virtual void UpdateVertexArray(const VertexArray &vArray, std::string_view name) {}
-
-		virtual void AddModel(std::shared_ptr<class Model> model, std::string_view name) {}
-		virtual void UpdateModel(std::shared_ptr<class Model> model, std::string_view name) {}
 
 		virtual void AddDrawObject2D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture) {}
 		virtual void RemoveDrawObject2D(std::shared_ptr<class DrawObject> sprite) {}

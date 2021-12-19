@@ -89,15 +89,12 @@ namespace nen
 	Vector3 Matrix4::operator*(const Vector3 &vec) const
 	{
 
-		Vector3 retVal;
-		retVal.x = vec.x * mat[0][0] + vec.y * mat[0][1] +
-				   vec.z * mat[0][2];
-		retVal.y = vec.x * mat[1][0] + vec.y * mat[1][1] +
-				   vec.z * mat[1][2];
-		retVal.z = vec.x * mat[2][0] + vec.y * mat[2][1] +
-				   vec.z * mat[2][2];
-		//ignore w since we aren't returning a new value for it...
-		return retVal;
+		float x = mat[0][0] * vec.x + mat[1][0] * vec.y + mat[2][0] * vec.z + mat[3][0];
+		float y = mat[0][1] * vec.x + mat[1][1] * vec.y + mat[2][1] * vec.z + mat[3][1];
+		float z = mat[0][2] * vec.x + mat[1][2] * vec.y + mat[2][2] * vec.z + mat[3][2];
+		float w = mat[0][3] * vec.x + mat[1][3] * vec.y + mat[2][3] * vec.z + mat[3][3];
+
+		return Vector3(x / w, y / w, z / w);
 	}
 
 	void Matrix4::Invert()
@@ -315,6 +312,29 @@ namespace nen
 				{0.0f, 0.0f, far / (near - far), -1.0f},
 				{0.0f, 0.0f, near * far / (near - far), 0.0f}};
 		return Matrix4(temp);
+	}
+
+	Matrix4 Matrix4::Transpose(const Matrix4 &m)
+	{
+		float mat[4][4];
+
+		mat[0][0] = m.mat[0][0];
+		mat[0][1] = m.mat[1][0];
+		mat[0][2] = m.mat[2][0];
+		mat[0][3] = m.mat[3][0];
+		mat[1][0] = m.mat[0][1];
+		mat[1][1] = m.mat[1][1];
+		mat[1][2] = m.mat[2][1];
+		mat[1][3] = m.mat[3][1];
+		mat[2][0] = m.mat[0][2];
+		mat[2][1] = m.mat[1][2];
+		mat[2][2] = m.mat[2][2];
+		mat[2][3] = m.mat[3][2];
+		mat[3][0] = m.mat[0][3];
+		mat[3][1] = m.mat[1][3];
+		mat[3][2] = m.mat[2][3];
+		mat[3][3] = m.mat[3][3];
+		return Matrix4(mat);
 	}
 
 	Matrix4 Matrix4::CreateTranslation(const Vector3 &trans)

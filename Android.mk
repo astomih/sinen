@@ -12,7 +12,6 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH) \
                     $(LOCAL_PATH)/libs/mojoAL \
                     $(LOCAL_PATH)/libs/rapidjson/include \
                     $(LOCAL_PATH)/libs/sol2/include \
-                    $(LOCAL_PATH)/libs/Assimp/include
 
 LOCAL_CFLAGS := -DSOL_NO_EXCEPTIONS -DNEN_NO_EXCEPTION -DMOBILE
 SRC_PATH := $(LOCAL_PATH)/src/Nen \
@@ -27,7 +26,7 @@ LOCAL_SRC_FILES := \
     $(wildcard $(LOCAL_PATH)/libs/Lua/source/*.c) \
     $(wildcard $(LOCAL_PATH)/libs/mojoAL/mojoal.c)
 LOCAL_STATIC_LIBRARIES :=
-LOCAL_SHARED_LIBRARIES := SDL2 SDL2_image SDL2_mixer SDL2_ttf SDL2_net assimp
+LOCAL_SHARED_LIBRARIES := SDL2 SDL2_image SDL2_mixer SDL2_ttf SDL2_net
 LOCAL_LDLIBS := -lGLESv3 -llog
 LOCAL_EXPORT_C_INCLUDES += $(LOCAL_C_INCLUDES)
 

@@ -224,6 +224,7 @@ namespace nen
                 };
             return Matrix4(temp);
         }
+        static Matrix4 Transpose(const Matrix4 &m);
 
         // Create a rotation matrix from a quaternion
         static Matrix4 CreateFromQuaternion(const class Quaternion &q);

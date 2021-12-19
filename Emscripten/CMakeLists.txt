@@ -23,7 +23,6 @@ set(NEN_INCLUDE_DIRECTORIES
 	../libs/sol2/include
 	../libs/Lua/include
 	../libs/rapidjson/include
-	../libs/Assimp/include
 )
 
 

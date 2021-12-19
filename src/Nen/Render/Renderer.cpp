@@ -109,15 +109,6 @@ namespace nen
 		renderer->UpdateVertexArray(vArray, name);
 	}
 
-	void Renderer::AddModel(std::shared_ptr<Model> model, std::string_view name)
-	{
-		renderer->AddModel(model, name);
-	}
-	void Renderer::UpdateModel(std::shared_ptr<Model> model, std::string_view name)
-	{
-		renderer->UpdateModel(model, name);
-	}
-
 	void Renderer::LoadShader(const Shader &shaderInfo)
 	{
 		renderer->LoadShader(shaderInfo);

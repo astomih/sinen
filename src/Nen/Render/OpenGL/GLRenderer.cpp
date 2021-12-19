@@ -54,9 +54,10 @@ namespace nen::gl
 		for (auto &i : mSprite3Ds)
 		{
 			i->param.view = mRenderer->GetViewMatrix();
-			if (vertexID != i->vertexIndex)
+			std::string z("0");
+			if (vertexID != i->vertexIndex + z)
 			{
-				glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
+				glBindVertexArray(m_VertexArrays[i->vertexIndex + z].vao);
 				vertexID = i->vertexIndex;
 			}
 			if (i->shader.vertName == "default" && i->shader.fragName == "default")
@@ -75,8 +76,9 @@ namespace nen::gl
 					}
 				}
 			}
+
 			glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
-			glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr);
+			glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex + z].indexCount, GL_UNSIGNED_INT, nullptr);
 		}
 		glDisable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);

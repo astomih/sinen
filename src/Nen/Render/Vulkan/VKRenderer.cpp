@@ -53,6 +53,7 @@ namespace nen::vk
 		vArrayVK.indexCount = vArray.indexCount;
 		vArrayVK.indices = vArray.indices;
 		vArrayVK.vertices = vArray.vertices;
+		vArrayVK.materialName = vArray.materialName;
 		auto vArraySize = vArray.vertices.size() * sizeof(Vertex);
 		vArrayVK.vertexBuffer = CreateBuffer(vArraySize,
 											 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
@@ -69,34 +70,9 @@ namespace nen::vk
 		vArrayVK.indexCount = vArray.indexCount;
 		vArrayVK.indices = vArray.indices;
 		vArrayVK.vertices = vArray.vertices;
+		vArrayVK.materialName = vArray.materialName;
 		MapMemory(m_VertexArrays[name.data()].vertexBuffer.memory, vArrayVK.vertices.data(), vArray.vertices.size() * sizeof(Vertex));
 		MapMemory(m_VertexArrays[name.data()].indexBuffer.memory, vArrayVK.indices.data(), vArray.indices.size() * sizeof(uint32_t));
-	}
-
-	void VKRenderer::AddModel(std::shared_ptr<Model> model, std::string_view name)
-	{
-		int n = 0;
-		for (auto &i : model->node_list)
-		{
-			for (auto &j : i->mesh)
-			{
-				this->AddVertexArray(j.body, std::string(name) + std::to_string(n));
-				n++;
-			}
-		}
-	}
-
-	void VKRenderer::UpdateModel(std::shared_ptr<Model> model, std::string_view name)
-	{
-		int n = 0;
-		for (auto &i : model->node_list)
-		{
-			for (auto &j : i->mesh)
-			{
-				this->UpdateVertexArray(j.body, std::string(name) + std::to_string(n));
-				n++;
-			}
-		}
 	}
 
 	void VKRenderer::AddDrawObject2D(std::shared_ptr<class DrawObject> drawObject, std::shared_ptr<Texture> texture)

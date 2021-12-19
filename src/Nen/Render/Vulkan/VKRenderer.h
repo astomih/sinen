@@ -55,9 +55,6 @@ namespace nen::vk
 		void AddVertexArray(const VertexArray &vArray, std::string_view name) override;
 		void UpdateVertexArray(const VertexArray &vArray, std::string_view name) override;
 
-		void AddModel(std::shared_ptr<class Model> model, std::string_view name) override;
-		void UpdateModel(std::shared_ptr<class Model> model, std::string_view name) override;
-
 		void AddDrawObject2D(std::shared_ptr<class DrawObject> sprite, std::shared_ptr<Texture> texture) override;
 		void RemoveDrawObject2D(std::shared_ptr<class DrawObject> sprite) override;
 

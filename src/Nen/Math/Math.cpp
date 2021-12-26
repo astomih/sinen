@@ -1,21 +1,21 @@
 #include <Nen.hpp>
 namespace nen
 {
-	constexpr Vector2 Vector2::Zero(0.0f, 0.0f);
-	constexpr Vector2 Vector2::UnitX(1.0f, 0.0f);
-	constexpr Vector2 Vector2::UnitY(0.0f, 1.0f);
-	constexpr Vector2 Vector2::NegUnitX(-1.0f, 0.0f);
-	constexpr Vector2 Vector2::NegUnitY(0.0f, -1.0f);
+	const Vector2 Vector2::Zero(0.0f, 0.0f);
+	const Vector2 Vector2::UnitX(1.0f, 0.0f);
+	const Vector2 Vector2::UnitY(0.0f, 1.0f);
+	const Vector2 Vector2::NegUnitX(-1.0f, 0.0f);
+	const Vector2 Vector2::NegUnitY(0.0f, -1.0f);
 
-	constexpr Vector3 Vector3::Zero(0.0f, 0.0f, 0.f);
-	constexpr Vector3 Vector3::UnitX(1.0f, 0.0f, 0.0f);
-	constexpr Vector3 Vector3::UnitY(0.0f, 1.0f, 0.0f);
-	constexpr Vector3 Vector3::UnitZ(0.0f, 0.0f, 1.0f);
-	constexpr Vector3 Vector3::NegUnitX(-1.0f, 0.0f, 0.0f);
-	constexpr Vector3 Vector3::NegUnitY(0.0f, -1.0f, 0.0f);
-	constexpr Vector3 Vector3::NegUnitZ(0.0f, 0.0f, -1.0f);
-	constexpr Vector3 Vector3::Infinity(Math::Infinity, Math::Infinity, Math::Infinity);
-	constexpr Vector3 Vector3::NegInfinity(Math::NegInfinity, Math::NegInfinity, Math::NegInfinity);
+	const Vector3 Vector3::Zero(0.0f, 0.0f, 0.f);
+	const Vector3 Vector3::UnitX(1.0f, 0.0f, 0.0f);
+	const Vector3 Vector3::UnitY(0.0f, 1.0f, 0.0f);
+	const Vector3 Vector3::UnitZ(0.0f, 0.0f, 1.0f);
+	const Vector3 Vector3::NegUnitX(-1.0f, 0.0f, 0.0f);
+	const Vector3 Vector3::NegUnitY(0.0f, -1.0f, 0.0f);
+	const Vector3 Vector3::NegUnitZ(0.0f, 0.0f, -1.0f);
+	const Vector3 Vector3::Infinity(Math::Infinity, Math::Infinity, Math::Infinity);
+	const Vector3 Vector3::NegInfinity(Math::NegInfinity, Math::NegInfinity, Math::NegInfinity);
 
 	static float m3Ident[3][3] =
 		{

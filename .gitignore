@@ -362,3 +362,6 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 *.a
+build/build.ninja
+build/.ninja_deps
+build/.ninja_log

@@ -287,9 +287,7 @@ namespace nen::vk
 				}
 			}
 
-			for (int i = 0; i < sprite->drawObject->nodeNum; i++)
-			{
-				std::string index = sprite->drawObject->vertexIndex + std::to_string(i);
+				std::string index = sprite->drawObject->vertexIndex;
 				::vkCmdBindVertexBuffers(command, 0, 1, &m_VertexArrays[index].vertexBuffer.buffer, &offset);
 				::vkCmdBindIndexBuffer(command, m_VertexArrays[index].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 				// Set descriptors
@@ -303,11 +301,11 @@ namespace nen::vk
 						Logger::Fatal("vkMapMemory Error! VkResult:%d", result);
 					}
 					sprite->drawObject->param.view = mRenderer->GetViewMatrix();
+					sprite->drawObject->param.proj = mRenderer->GetProjectionMatrix();
 					memcpy(p, &sprite->drawObject->param, sizeof(ShaderParameters));
 					vkUnmapMemory(m_base->GetVkDevice(), memory);
 				}
 				vkCmdDrawIndexed(command, m_VertexArrays[index].indexCount, 1, 0, 0, 0);
-			}
 		}
 	}
 
@@ -786,8 +784,8 @@ namespace nen::vk
 		VkSampler sampler;
 		VkSamplerCreateInfo ci{};
 		ci.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		ci.minFilter = VK_FILTER_LINEAR;
-		ci.magFilter = VK_FILTER_LINEAR;
+		ci.minFilter = VK_FILTER_NEAREST;
+		ci.magFilter = VK_FILTER_NEAREST;
 		ci.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 		ci.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 		ci.maxAnisotropy = 1.0f;
@@ -1091,11 +1089,6 @@ namespace nen::vk
 		return result;
 	}
 
-	void VKRenderer::RegisterRenderPass(const std::string &name, VkRenderPass renderPass)
-	{
-		if (m_base)
-			m_base->m_renderPass;
-	}
 
 	ImageObject VKRenderer::CreateTexture(uint32_t width, uint32_t height, VkFormat format, VkImageUsageFlags usage)
 	{

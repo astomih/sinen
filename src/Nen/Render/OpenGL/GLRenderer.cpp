@@ -54,10 +54,10 @@ namespace nen::gl
 		for (auto &i : mSprite3Ds)
 		{
 			i->param.view = mRenderer->GetViewMatrix();
-			std::string z("0");
-			if (vertexID != i->vertexIndex + z)
+			i->param.proj = mRenderer->GetProjectionMatrix();
+			if (vertexID != i->vertexIndex)
 			{
-				glBindVertexArray(m_VertexArrays[i->vertexIndex + z].vao);
+				glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
 				vertexID = i->vertexIndex;
 			}
 			if (i->shader.vertName == "default" && i->shader.fragName == "default")
@@ -78,7 +78,7 @@ namespace nen::gl
 			}
 
 			glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
-			glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex + z].indexCount, GL_UNSIGNED_INT, nullptr);
+			glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount, GL_UNSIGNED_INT, nullptr);
 		}
 		glDisable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
@@ -255,8 +255,8 @@ namespace nen::gl
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		// Use linear filtering
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 		mTextureIDs.emplace(texture->id, textureId);
 	}

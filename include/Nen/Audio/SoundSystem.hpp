@@ -2,9 +2,11 @@
 #include "../Math/Math.hpp"
 #include "../Math/Vector3.hpp"
 #include "../Math/Quaternion.hpp"
-#include "SoundEvent.hpp"
+#include <memory>
 #include <unordered_map>
 #include <string>
+#include <string_view>
+#include "SoundEvent.hpp"
 
 namespace
 {
@@ -17,9 +19,7 @@ namespace nen
 	class SoundSystem : public std::enable_shared_from_this<SoundSystem>
 	{
 	public:
-		//SoundSystem Constructor
 		SoundSystem();
-		//SoundSystem Destructor
 		~SoundSystem();
 
 		bool Initialize();

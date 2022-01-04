@@ -193,6 +193,7 @@ namespace nen
 					}
 				}
 				mComponents.insert(iter, ptr);
+				return ptr;
 			}
 		}
 

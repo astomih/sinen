@@ -1,4 +1,5 @@
-﻿#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+﻿#include "vulkan/vulkan_core.h"
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include <SDL_ttf.h>
 #include <SDL_image.h>
 #include <imgui.h>
@@ -292,6 +293,9 @@ namespace nen::vk
 				::vkCmdBindIndexBuffer(command, m_VertexArrays[index].indexBuffer.buffer, offset, VK_INDEX_TYPE_UINT32);
 				// Set descriptors
 				vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout.GetLayout(), 0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
+				auto device = m_base->GetVkDevice();
+				auto result = vkFreeDescriptorSets(m_base->GetVkDevice(), m_descriptorPool, static_cast<uint32_t>(sprite->descripterSet.size()), sprite->descripterSet.data());
+				prepareDescriptorSet(sprite);
 				{
 					auto memory = sprite->uniformBuffers[m_base->m_imageIndex].memory;
 					void *p;
@@ -331,13 +335,15 @@ namespace nen::vk
 
 			// Set descriptors
 			vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout.GetLayout(), 0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
+				auto device = m_base->GetVkDevice();
+				auto result = vkFreeDescriptorSets(m_base->GetVkDevice(), m_descriptorPool, static_cast<uint32_t>(sprite->descripterSet.size()), sprite->descripterSet.data());
+			prepareDescriptorSet(sprite);
 			{
 				auto memory = sprite->uniformBuffers[m_base->m_imageIndex].memory;
 				void *p;
 				vkMapMemory(m_base->GetVkDevice(), memory, 0, VK_WHOLE_SIZE, 0, &p);
 				memcpy(p, &sprite->drawObject->param, sizeof(ShaderParameters));
 				vkUnmapMemory(m_base->GetVkDevice(), memory);
-				//vkCmdPushConstants(command, mPipelineLayout.GetLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(ShaderParameters), &sprite->drawObject->param);
 			}
 
 			vkCmdDrawIndexed(command, m_VertexArrays[sprite->drawObject->vertexIndex].indexCount, 1, 0, 0, 0);
@@ -450,10 +456,10 @@ namespace nen::vk
 		Vector3 norm{1, 1, 1};
 
 		VertexArrayForVK vArray;
-		vArray.vertices.push_back({Vector3(-value, value, value), norm, lb});
-		vArray.vertices.push_back({Vector3(-value, -value, value), norm, lt});
-		vArray.vertices.push_back({Vector3(value, value, value), norm, rb});
-		vArray.vertices.push_back({Vector3(value, -value, value), norm, rt});
+		vArray.vertices.push_back({Vector3(-value, value, 0.5f), norm, lb});
+		vArray.vertices.push_back({Vector3(-value, -value,0.5f), norm, lt});
+		vArray.vertices.push_back({Vector3(value, value, 0.5f), norm, rb});
+		vArray.vertices.push_back({Vector3(value, -value, 0.5f), norm, rt});
 
 		uint32_t indices[] = {
 			0, 2, 1, 1, 2, 3, // front
@@ -659,7 +665,6 @@ namespace nen::vk
 				Logger::Fatal("vkAllocateDescriptorSets Error! VkResult:%d", result);
 			}
 		}
-		static int count = 0;
 		// ディスクリプタセットへ書き込み.
 		for (int i = 0; i < m_base->mSwapchain->GetImageCount(); i++)
 		{
@@ -706,7 +711,6 @@ namespace nen::vk
 				{
 					ubo, tex, ins};
 			vkUpdateDescriptorSets(m_base->GetVkDevice(), uint32_t(writeSets.size()), writeSets.data(), 0, nullptr);
-			count++;
 		}
 	}
 	BufferObject VKRenderer::CreateBuffer(uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags flags)

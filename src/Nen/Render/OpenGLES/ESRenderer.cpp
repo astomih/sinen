@@ -283,10 +283,10 @@ namespace nen::es
 		const Vector2 rt(1.0f, 1.0f);
 		Vector3 norm{1, 1, 1};
 		VertexArray vArray;
-		vArray.vertices.push_back({Vector3(-value, value, value), norm, lb});
-		vArray.vertices.push_back({Vector3(-value, -value, value), norm, lt});
-		vArray.vertices.push_back({Vector3(value, value, value), norm, rb});
-		vArray.vertices.push_back({Vector3(value, -value, value), norm, rt});
+		vArray.vertices.push_back({Vector3(-value, value, 0.5f), norm, lb});
+		vArray.vertices.push_back({Vector3(-value, -value, 0.5f), norm, lt});
+		vArray.vertices.push_back({Vector3(value, value, 0.5f), norm, rb});
+		vArray.vertices.push_back({Vector3(value, -value, 0.5f), norm, rt});
 		uint32_t indices[] =
 			{
 				0, 2, 1, 1, 2, 3 // front

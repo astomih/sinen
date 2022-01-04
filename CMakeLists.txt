@@ -2,13 +2,9 @@ cmake_minimum_required(VERSION 3.7)
 project(nen)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
-set(CMAKE_CXX_FLAGS "-std=c++20")
+set(CMAKE_CXX_FLAGS "-std=c++20 -Wno-subobject-linkage")
 set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0 -pg")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -s -DNDEBUG -march=native")
-
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ./build)
-
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ./build)
 
 find_package(Vulkan REQUIRED)
 find_package(OpenGL REQUIRED)

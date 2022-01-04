@@ -89,11 +89,11 @@ namespace nen
 
 	void Texture::CreateFromColor(const Color &color, std::string_view ID)
 	{
-		id = ID;
+		id = ID.data();
 		auto surface = ::SDL_CreateRGBSurface(NULL, 1, 1, 32, 0, 0, 0, 0);
-		::SDL_FillRect(surface, NULL, ::SDL_MapRGB(surface->format, color.r * 255, color.g * 255, color.b * 255));
-		width = 1;
-		height = 1;
+		::SDL_FillRect(surface, NULL, ::SDL_MapRGBA(surface->format, color.r * 255, color.g * 255, color.b * 255, color.a * 255));
+		width = surface->w;
+		height = surface->h;
 		auto s = std::unique_ptr<::SDL_Surface, SDLObjectCloser>(surface);
 		SurfaceHandle::Register(ID, std::move(s));
 	}

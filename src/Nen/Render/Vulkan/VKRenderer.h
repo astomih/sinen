@@ -90,7 +90,6 @@ namespace nen::vk
 		VkDescriptorPool GetDescriptorPool() const { return m_descriptorPool; }
 		VkDevice GetDevice();
 		uint32_t GetMemoryTypeIndex(uint32_t requestBits, VkMemoryPropertyFlags requestProps) const;
-		void RegisterLayout(const std::string &name, VkDescriptorSetLayout &layout) { m_descriptorSetLayout; }
 		void RegisterRenderPass(const std::string &name, VkRenderPass renderPass);
 		ImageObject CreateTexture(uint32_t width, uint32_t height, VkFormat format, VkImageUsageFlags usage);
 		VkFramebuffer CreateFramebuffer(VkRenderPass renderPass, uint32_t width, uint32_t height, uint32_t viewCount, VkImageView *views);
@@ -107,7 +106,6 @@ namespace nen::vk
 		void FreeCommandBufferSecondary(uint32_t count, VkCommandBuffer *pCommands);
 		void TransferStageBufferToImage(const BufferObject &srcBuffer, const ImageObject &dstImage, const VkBufferImageCopy *region);
 		void MapMemory(VkDeviceMemory memory, void *data, size_t size);
-		void UpdateVertexArray(const VertexArrayForVK &vArray, std::string_view name);
 		std::shared_ptr<class Window> GetWindow() { return m_base->m_window; }
 
 	private:

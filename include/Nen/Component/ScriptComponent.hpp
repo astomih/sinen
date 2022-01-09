@@ -1,5 +1,6 @@
 #pragma once
 #include "../Script/Script.hpp"
+#include "Component.hpp"
 #include <string>
 namespace nen {
 class script_component : public base_component {
@@ -8,6 +9,6 @@ public:
   void DoScript(std::string_view funcName);
 
 private:
-  const script &script;
+  const script &m_script;
 };
 } // namespace nen

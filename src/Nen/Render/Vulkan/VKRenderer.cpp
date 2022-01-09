@@ -1,4 +1,6 @@
-﻿#include "vulkan/vulkan_core.h"
+﻿#include "SDL_stdinc.h"
+#include "vulkan/vulkan_core.h"
+#include <cstdint>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "../../Texture/SurfaceHandle.hpp"
 #include "VKBase.h"
@@ -435,7 +437,7 @@ void VKRenderer::createBoxVertices() {
       16, 18, 17, 17, 18, 19, // top
       20, 22, 21, 21, 22, 23, // bottom
   };
-  vArray.indexCount = _countof(indices);
+  vArray.indexCount = sizeof(indices) / sizeof(uint32_t);
   vArray.PushIndices(indices, vArray.indexCount);
   auto vArraySize = vArray.vertices.size() * sizeof(vertex);
   vArray.vertexBuffer =
@@ -482,7 +484,7 @@ void VKRenderer::createSpriteVertices() {
   uint32_t indices[] = {
       0, 2, 1, 1, 2, 3, // front
   };
-  vArray.indexCount = _countof(indices);
+  vArray.indexCount = sizeof(indices) / sizeof(uint32_t);
   vArray.PushIndices(indices, vArray.indexCount);
   auto vArraySize = vArray.vertices.size() * sizeof(vertex);
   vArray.vertexBuffer =
@@ -645,8 +647,8 @@ void VKRenderer::prepareDescriptorPool() {
       VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
       nullptr,
       VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
-      maxpoolSize * _countof(poolSize), // maxSets
-      _countof(poolSize),
+      maxpoolSize * sizeof(poolSize) / sizeof(poolSize[0]), // maxSets
+      sizeof(poolSize) / sizeof(poolSize[0]),
       poolSize,
   };
   result = vkCreateDescriptorPool(m_base->GetVkDevice(), &descPoolCI, nullptr,
@@ -1064,6 +1066,8 @@ void VKRenderer::setImageMemoryBarrier(VkCommandBuffer command, VkImage image,
     imb.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
     srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
     break;
+  default:
+    break;
   }
 
   switch (newLayout) {
@@ -1078,6 +1082,8 @@ void VKRenderer::setImageMemoryBarrier(VkCommandBuffer command, VkImage image,
   case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
     imb.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
     dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    break;
+  default:
     break;
   }
 

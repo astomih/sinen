@@ -1,6 +1,9 @@
-﻿#if !defined(EMSCRIPTEN) && !defined(MOBILE)
-#include "GLRenderer.h"
+﻿#include "SDL_stdinc.h"
+#include <cstdint>
+#include <vector>
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "../../Texture/SurfaceHandle.hpp"
+#include "GLRenderer.h"
 #include <GL/glew.h>
 #include <Nen.hpp>
 #include <SDL.h>
@@ -333,7 +336,7 @@ void GLRenderer::createBoxVerts() {
       16, 18, 17, 17, 18, 19, // top
       20, 22, 21, 21, 22, 23, // bottom
   };
-  vArray.indexCount = _countof(indices);
+  vArray.indexCount = sizeof(indices) / sizeof(uint32_t);
 
   vArray.PushIndices(indices, vArray.indexCount);
   AddVertexArray(vArray, "BOX");

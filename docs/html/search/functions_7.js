@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['setposition_0',['SetPosition',['../classnen_1_1_actor.html#a3833b51e3f72c0895493c8ef317cb4eb',1,'nen::Actor']]],
-  ['setscale_1',['SetScale',['../classnen_1_1_actor.html#acdd56484e5342229c5997d12d98f6fc7',1,'nen::Actor']]]
+  ['setposition_0',['SetPosition',['../classnen_1_1base__actor.html#aae45b7cfdec341a68a9bb2979cace0f2',1,'nen::base_actor']]],
+  ['setscale_1',['SetScale',['../classnen_1_1base__actor.html#a53d0c88be5a9fceda24ace2304b00632',1,'nen::base_actor']]]
 ];

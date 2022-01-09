@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.2"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>NenEngine: nen::IRenderer クラス</title>
+<title>sinen: nen::IRenderer クラス</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,9 +21,9 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">NenEngine<span id="projectnumber">&#160;0.0.1</span>
+   <div id="projectname">sinen<span id="projectnumber">&#160;0.0.1</span>
    </div>
-   <div id="projectbrief">C++20用ゲームエンジン</div>
+   <div id="projectbrief">C++20用ゲームライブラリ</div>
   </td>
  </tr>
  </tbody>
@@ -76,51 +76,51 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 公開メンバ関数</h2></td></tr>
-<tr class="memitem:a2c7d13db40951c140876bc6459ed68cc"><td class="memItemLeft" align="right" valign="top"><a id="a2c7d13db40951c140876bc6459ed68cc" name="a2c7d13db40951c140876bc6459ed68cc"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>Initialize</b> (std::shared_ptr&lt; <a class="el" href="classnen_1_1_window.html">Window</a> &gt; window)</td></tr>
-<tr class="separator:a2c7d13db40951c140876bc6459ed68cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a196d01e8e549a30aa330a18efcd26fcd"><td class="memItemLeft" align="right" valign="top"><a id="a196d01e8e549a30aa330a18efcd26fcd" name="a196d01e8e549a30aa330a18efcd26fcd"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>Initialize</b> (std::shared_ptr&lt; <a class="el" href="classnen_1_1window.html">window</a> &gt; <a class="el" href="classnen_1_1window.html">window</a>)</td></tr>
+<tr class="separator:a196d01e8e549a30aa330a18efcd26fcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a350ca88e28f58468b68a02b550c06de2"><td class="memItemLeft" align="right" valign="top"><a id="a350ca88e28f58468b68a02b550c06de2" name="a350ca88e28f58468b68a02b550c06de2"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>Shutdown</b> ()</td></tr>
 <tr class="separator:a350ca88e28f58468b68a02b550c06de2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abbeedce821d431f3bca909d33b9097b7"><td class="memItemLeft" align="right" valign="top"><a id="abbeedce821d431f3bca909d33b9097b7" name="abbeedce821d431f3bca909d33b9097b7"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>Render</b> ()</td></tr>
 <tr class="separator:abbeedce821d431f3bca909d33b9097b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aea45151e1c3e36fb89d320dc538aa543"><td class="memItemLeft" align="right" valign="top"><a id="aea45151e1c3e36fb89d320dc538aa543" name="aea45151e1c3e36fb89d320dc538aa543"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>AddVertexArray</b> (const <a class="el" href="classnen_1_1_vertex_array.html">VertexArray</a> &amp;vArray, std::string_view name)</td></tr>
-<tr class="separator:aea45151e1c3e36fb89d320dc538aa543"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a79faaee57a3f0031eb7f1573429893f6"><td class="memItemLeft" align="right" valign="top"><a id="a79faaee57a3f0031eb7f1573429893f6" name="a79faaee57a3f0031eb7f1573429893f6"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>UpdateVertexArray</b> (const <a class="el" href="classnen_1_1_vertex_array.html">VertexArray</a> &amp;vArray, std::string_view name)</td></tr>
-<tr class="separator:a79faaee57a3f0031eb7f1573429893f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7463538cea6d8ace4de21e427ba7823b"><td class="memItemLeft" align="right" valign="top"><a id="a7463538cea6d8ace4de21e427ba7823b" name="a7463538cea6d8ace4de21e427ba7823b"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>AddDrawObject2D</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1_draw_object.html">DrawObject</a> &gt; sprite, std::shared_ptr&lt; <a class="el" href="classnen_1_1_texture.html">Texture</a> &gt; texture)</td></tr>
-<tr class="separator:a7463538cea6d8ace4de21e427ba7823b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ade1d4fcd7659c03fa54124230c6a99ea"><td class="memItemLeft" align="right" valign="top"><a id="ade1d4fcd7659c03fa54124230c6a99ea" name="ade1d4fcd7659c03fa54124230c6a99ea"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveDrawObject2D</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1_draw_object.html">DrawObject</a> &gt; sprite)</td></tr>
-<tr class="separator:ade1d4fcd7659c03fa54124230c6a99ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae5d4ab9ea33db6cd22c90a1560d8c24e"><td class="memItemLeft" align="right" valign="top"><a id="ae5d4ab9ea33db6cd22c90a1560d8c24e" name="ae5d4ab9ea33db6cd22c90a1560d8c24e"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>AddDrawObject3D</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1_draw_object.html">DrawObject</a> &gt; drawObject, std::shared_ptr&lt; <a class="el" href="classnen_1_1_texture.html">Texture</a> &gt; texture)</td></tr>
-<tr class="separator:ae5d4ab9ea33db6cd22c90a1560d8c24e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a834b39232cc8466dac4b3b0260a99d8c"><td class="memItemLeft" align="right" valign="top"><a id="a834b39232cc8466dac4b3b0260a99d8c" name="a834b39232cc8466dac4b3b0260a99d8c"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveDrawObject3D</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1_draw_object.html">DrawObject</a> &gt; drawObject)</td></tr>
-<tr class="separator:a834b39232cc8466dac4b3b0260a99d8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a415837611b0b457863b9dac3be335fed"><td class="memItemLeft" align="right" valign="top"><a id="a415837611b0b457863b9dac3be335fed" name="a415837611b0b457863b9dac3be335fed"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>AddGUI</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1_u_i_screen.html">UIScreen</a> &gt; ui)</td></tr>
-<tr class="separator:a415837611b0b457863b9dac3be335fed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a46977b73cd651e8a8357bef7e45db1ec"><td class="memItemLeft" align="right" valign="top"><a id="a46977b73cd651e8a8357bef7e45db1ec" name="a46977b73cd651e8a8357bef7e45db1ec"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveGUI</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1_u_i_screen.html">UIScreen</a> &gt; ui)</td></tr>
-<tr class="separator:a46977b73cd651e8a8357bef7e45db1ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a408efa755cfe190ef7d48af9ab15e6d9"><td class="memItemLeft" align="right" valign="top"><a id="a408efa755cfe190ef7d48af9ab15e6d9" name="a408efa755cfe190ef7d48af9ab15e6d9"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>LoadEffect</b> (std::shared_ptr&lt; <a class="el" href="classnen_1_1_effect.html">Effect</a> &gt; effect)</td></tr>
-<tr class="separator:a408efa755cfe190ef7d48af9ab15e6d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa1ee59d12e1c69e037e032baeea69b74"><td class="memItemLeft" align="right" valign="top"><a id="aa1ee59d12e1c69e037e032baeea69b74" name="aa1ee59d12e1c69e037e032baeea69b74"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>SetRenderer</b> (class <a class="el" href="classnen_1_1_renderer.html">Renderer</a> *renderer)</td></tr>
-<tr class="separator:aa1ee59d12e1c69e037e032baeea69b74"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6397e6876a8fe10b82115c1c23fd843e"><td class="memItemLeft" align="right" valign="top"><a id="a6397e6876a8fe10b82115c1c23fd843e" name="a6397e6876a8fe10b82115c1c23fd843e"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>LoadShader</b> (const <a class="el" href="classnen_1_1_shader.html">Shader</a> &amp;shaderInfo)</td></tr>
-<tr class="separator:a6397e6876a8fe10b82115c1c23fd843e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae324d3812fbcc1a61d7f81ed803fdf67"><td class="memItemLeft" align="right" valign="top"><a id="ae324d3812fbcc1a61d7f81ed803fdf67" name="ae324d3812fbcc1a61d7f81ed803fdf67"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>UnloadShader</b> (const <a class="el" href="classnen_1_1_shader.html">Shader</a> &amp;shaderInfo)</td></tr>
-<tr class="separator:ae324d3812fbcc1a61d7f81ed803fdf67"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f527eb4502956a5b56e666818073352"><td class="memItemLeft" align="right" valign="top"><a id="a2f527eb4502956a5b56e666818073352" name="a2f527eb4502956a5b56e666818073352"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>AddVertexArray</b> (const <a class="el" href="classnen_1_1vertex__array.html">vertex_array</a> &amp;vArray, std::string_view name)</td></tr>
+<tr class="separator:a2f527eb4502956a5b56e666818073352"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a28161ab38ff1d3ead1d8f160a223b5ac"><td class="memItemLeft" align="right" valign="top"><a id="a28161ab38ff1d3ead1d8f160a223b5ac" name="a28161ab38ff1d3ead1d8f160a223b5ac"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>UpdateVertexArray</b> (const <a class="el" href="classnen_1_1vertex__array.html">vertex_array</a> &amp;vArray, std::string_view name)</td></tr>
+<tr class="separator:a28161ab38ff1d3ead1d8f160a223b5ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3174509eda9e8a3943d54f8a75a01ef5"><td class="memItemLeft" align="right" valign="top"><a id="a3174509eda9e8a3943d54f8a75a01ef5" name="a3174509eda9e8a3943d54f8a75a01ef5"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>AddDrawObject2D</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1draw__object.html">draw_object</a> &gt; sprite, std::shared_ptr&lt; <a class="el" href="classnen_1_1texture.html">texture</a> &gt; <a class="el" href="classnen_1_1texture.html">texture</a>)</td></tr>
+<tr class="separator:a3174509eda9e8a3943d54f8a75a01ef5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0ca89d5a6472b2af97b4ad83fb1ee67"><td class="memItemLeft" align="right" valign="top"><a id="aa0ca89d5a6472b2af97b4ad83fb1ee67" name="aa0ca89d5a6472b2af97b4ad83fb1ee67"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveDrawObject2D</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1draw__object.html">draw_object</a> &gt; sprite)</td></tr>
+<tr class="separator:aa0ca89d5a6472b2af97b4ad83fb1ee67"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a46f43effa991dfbd11c4a31fee43b285"><td class="memItemLeft" align="right" valign="top"><a id="a46f43effa991dfbd11c4a31fee43b285" name="a46f43effa991dfbd11c4a31fee43b285"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>AddDrawObject3D</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1draw__object.html">draw_object</a> &gt; drawObject, std::shared_ptr&lt; <a class="el" href="classnen_1_1texture.html">texture</a> &gt; <a class="el" href="classnen_1_1texture.html">texture</a>)</td></tr>
+<tr class="separator:a46f43effa991dfbd11c4a31fee43b285"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52db2867fce5a1d25c02d10cdff56b83"><td class="memItemLeft" align="right" valign="top"><a id="a52db2867fce5a1d25c02d10cdff56b83" name="a52db2867fce5a1d25c02d10cdff56b83"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveDrawObject3D</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1draw__object.html">draw_object</a> &gt; drawObject)</td></tr>
+<tr class="separator:a52db2867fce5a1d25c02d10cdff56b83"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a58852159bce1452ab90da1588ffdb74b"><td class="memItemLeft" align="right" valign="top"><a id="a58852159bce1452ab90da1588ffdb74b" name="a58852159bce1452ab90da1588ffdb74b"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>AddGUI</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1ui__screen.html">ui_screen</a> &gt; ui)</td></tr>
+<tr class="separator:a58852159bce1452ab90da1588ffdb74b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a713e8dd01663405fab30ce48fd54a709"><td class="memItemLeft" align="right" valign="top"><a id="a713e8dd01663405fab30ce48fd54a709" name="a713e8dd01663405fab30ce48fd54a709"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveGUI</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1ui__screen.html">ui_screen</a> &gt; ui)</td></tr>
+<tr class="separator:a713e8dd01663405fab30ce48fd54a709"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae836d12c837c0f644b26ea8742da76ea"><td class="memItemLeft" align="right" valign="top"><a id="ae836d12c837c0f644b26ea8742da76ea" name="ae836d12c837c0f644b26ea8742da76ea"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>LoadEffect</b> (std::shared_ptr&lt; <a class="el" href="classnen_1_1effect.html">effect</a> &gt; <a class="el" href="classnen_1_1effect.html">effect</a>)</td></tr>
+<tr class="separator:ae836d12c837c0f644b26ea8742da76ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b62e565ade6cae8497ca3c327b36715"><td class="memItemLeft" align="right" valign="top"><a id="a8b62e565ade6cae8497ca3c327b36715" name="a8b62e565ade6cae8497ca3c327b36715"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>SetRenderer</b> (class <a class="el" href="classnen_1_1renderer.html">renderer</a> *<a class="el" href="classnen_1_1renderer.html">renderer</a>)</td></tr>
+<tr class="separator:a8b62e565ade6cae8497ca3c327b36715"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91b78ec42e877c5929606ed38d29cac0"><td class="memItemLeft" align="right" valign="top"><a id="a91b78ec42e877c5929606ed38d29cac0" name="a91b78ec42e877c5929606ed38d29cac0"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>LoadShader</b> (const <a class="el" href="classnen_1_1shader.html">shader</a> &amp;shaderInfo)</td></tr>
+<tr class="separator:a91b78ec42e877c5929606ed38d29cac0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad73464d8d49ffdd2df65c8732dcf25a2"><td class="memItemLeft" align="right" valign="top"><a id="ad73464d8d49ffdd2df65c8732dcf25a2" name="ad73464d8d49ffdd2df65c8732dcf25a2"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>UnloadShader</b> (const <a class="el" href="classnen_1_1shader.html">shader</a> &amp;shaderInfo)</td></tr>
+<tr class="separator:ad73464d8d49ffdd2df65c8732dcf25a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>このクラス詳解は次のファイルから抽出されました:<ul>
 <li><a class="el" href="_renderer_8hpp_source.html">Renderer.hpp</a></li>

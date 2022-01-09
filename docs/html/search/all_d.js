@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['palette_0',['Palette',['../classnen_1_1_palette.html',1,'nen']]],
-  ['pausemenu_1',['PauseMenu',['../classnen_1_1_pause_menu.html',1,'nen']]],
-  ['position_2',['position',['../structnen_1_1_vertex.html#a31535eab42dd317b852c77defa8e708d',1,'nen::Vertex']]]
+  ['non_5fcopyable_0',['non_copyable',['../classnen_1_1non__copyable.html',1,'nen']]],
+  ['normal_1',['normal',['../structnen_1_1vertex.html#aaaaeb9bafd79f9860e4656ef7c7c989d',1,'nen::vertex']]]
 ];

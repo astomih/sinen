@@ -1,7 +1,4 @@
 #pragma once
-#include "SDL_events.h"
-#include "Utility/Singleton.hpp"
-#include "imgui_impl_sdl.h"
 #include <Nen.hpp>
 #include <SDL.h>
 

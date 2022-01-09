@@ -1,9 +1,9 @@
 var searchData=
 [
-  ['getid_0',['GetID',['../classnen_1_1_actor.html#a2d4f8693c1f955a128c733c98420e598',1,'nen::Actor']]],
-  ['getposition_1',['GetPosition',['../classnen_1_1_actor.html#acd2376e4f2e0e791b58c4c5324650cbc',1,'nen::Actor']]],
-  ['getrotation_2',['GetRotation',['../classnen_1_1_actor.html#af81aa9e09bf667c224e73b02c959b731',1,'nen::Actor']]],
-  ['getscale_3',['GetScale',['../classnen_1_1_actor.html#a9d71a409f50f95359055e19a8c9cc24b',1,'nen::Actor']]],
-  ['gettexheight_4',['GetTexHeight',['../classnen_1_1_draw3_d_component.html#aba9054afc2449a4a6de7a0666247ef62',1,'nen::Draw3DComponent']]],
-  ['gettexwidth_5',['GetTexWidth',['../classnen_1_1_draw3_d_component.html#a01e06a8923cf7d2b284adf5dc0aeb5ef',1,'nen::Draw3DComponent']]]
+  ['getid_0',['GetID',['../classnen_1_1base__actor.html#a03a9bcc37f07aac02c633b8c7abd98da',1,'nen::base_actor']]],
+  ['getposition_1',['GetPosition',['../classnen_1_1base__actor.html#af610f8004a045015f398d3208d455fe0',1,'nen::base_actor']]],
+  ['getrotation_2',['GetRotation',['../classnen_1_1base__actor.html#afe2405f5f93be5a8144237f89f87000f',1,'nen::base_actor']]],
+  ['getscale_3',['GetScale',['../classnen_1_1base__actor.html#ae3f062b52b9b960849609f8a676f4a66',1,'nen::base_actor']]],
+  ['gettexheight_4',['GetTexHeight',['../classnen_1_1draw__3d__component.html#afac274857d7d6a16f5a3c8ff11fef6d9',1,'nen::draw_3d_component']]],
+  ['gettexwidth_5',['GetTexWidth',['../classnen_1_1draw__3d__component.html#ac00d2ac6989cbd6358b765ec3ecf9cf4',1,'nen::draw_3d_component']]]
 ];

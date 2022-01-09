@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['zero_0',['Zero',['../classnen_1_1_vector3.html#a3b1fc6c595bac4b2fdc5d01ea5d5e3eb',1,'nen::Vector3']]]
+  ['zero_0',['Zero',['../classnen_1_1vector3.html#a45ec2438e89ec4cc8397fd6bae513658',1,'nen::vector3']]]
 ];

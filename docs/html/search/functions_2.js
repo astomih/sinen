@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['draw2dcomponent_0',['Draw2DComponent',['../classnen_1_1_draw2_d_component.html#a7d01e6793cbf9af28609734d585493b2',1,'nen::Draw2DComponent']]],
-  ['draw3dcomponent_1',['Draw3DComponent',['../classnen_1_1_draw3_d_component.html#a8259aa021a9d0b596ae571ed30eb1d40',1,'nen::Draw3DComponent']]]
+  ['draw_5f2d_5fcomponent_0',['draw_2d_component',['../classnen_1_1draw__2d__component.html#ab17176378db2ab03a5f5fcbd4af70c62',1,'nen::draw_2d_component']]],
+  ['draw_5f3d_5fcomponent_1',['draw_3d_component',['../classnen_1_1draw__3d__component.html#a56c3c5fd98f7e24f8aa84217e3587d11',1,'nen::draw_3d_component']]]
 ];

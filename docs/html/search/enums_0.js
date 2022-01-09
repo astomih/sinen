@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['state_0',['State',['../classnen_1_1_actor.html#a6e1ca77c5590fcb22bd7dfa85e17d4b1',1,'nen::Actor']]]
+  ['state_0',['state',['../classnen_1_1base__actor.html#afecb2cfb95af8adb2afc771bdbb81972',1,'nen::base_actor']]]
 ];

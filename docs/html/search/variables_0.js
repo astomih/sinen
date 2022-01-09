@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['handle_0',['handle',['../classnen_1_1_actor.html#a3d0202c260b07479bf92ce0ce6bcba18',1,'nen::Actor']]]
+  ['handle_0',['handle',['../classnen_1_1base__actor.html#a2e55c929a40a148d628cf5193463fee2',1,'nen::base_actor']]]
 ];

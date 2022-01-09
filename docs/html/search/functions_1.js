@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['create_0',['Create',['../classnen_1_1_draw2_d_component.html#afaf8d432d444d0cae7217e058fce5513',1,'nen::Draw2DComponent::Create()'],['../classnen_1_1_draw3_d_component.html#a382633cdeb975feed546145afdf1ac33',1,'nen::Draw3DComponent::Create()']]]
+  ['create_0',['Create',['../classnen_1_1draw__2d__component.html#acf4e2615360adf626685f19bfac41c78',1,'nen::draw_2d_component::Create()'],['../classnen_1_1draw__3d__component.html#af35412320eb429e933813e38c1c0b759',1,'nen::draw_3d_component::Create()']]]
 ];

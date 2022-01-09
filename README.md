@@ -1,7 +1,7 @@
-# NenEngine
+[![CMake](https://github.com/astomih/sinen/actions/workflows/cmake.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/cmake.yml)
+# sinen
 ## 概要
- NenEngineは、主にゲーム開発のために製作中のC++20向けメディアライブラリです。  
- 某ゲーム開発アニメのNeneEngineに影響を受けています。そのためにエンジンと冠していますが実際はライブラリ程度です。  
+ sinenは、主にゲーム開発のために製作中のC++20向けメディアライブラリです。  
  自身のみで使用する予定のライブラリであるので、サポートやドキュメントは充実しないと思われます。  
  **ドキュメントは全て日本語です（All documentation is only in Japanese）。**
 
@@ -21,25 +21,25 @@
 void Main::Setup()
 {
     //背景を黒に設定
-    GetRenderer()->SetClearColor(nen::Palette::Black);
+    GetRenderer()->SetClearColor(nen::palette::Black);
 
     //フォントの読み込み
-    auto font = std::make_shared<nen::Font>();
-    font->LoadFromFile("Assets/Font/mplus/mplus-1p-medium.ttf", 72);
+    auto f = std::make_shared<nen::font>();
+    f->LoadFromFile("Assets/Font/mplus/mplus-1p-medium.ttf", 72);
 
     //アクターを追加
-    auto actor = this->AddActor<nen::Actor>();
+    auto actor = this->AddActor<nen::base_actor>();
 
     //アクターにコンポーネントを追加
-    auto text = actor->AddComponent<nen::TextComponent>();
+    auto text = actor->AddComponent<nen::text_component>();
     text->SetFont(font);
-    text->SetString("Hello,World!", nen::Palette::White);
+    text->SetString("Hello,World!", nen::palette::White);
 }
 
 void Main::Update(float deltaTime)
 {
     //キーボードのQが押されたら終了
-    if (GetInput().Keyboard.GetKeyValue(nen::KeyCode::Q))
+    if (GetInput().Keyboard.GetKeyValue(nen::key_code::Q))
         Quit();
 
     /**
@@ -47,13 +47,11 @@ void Main::Update(float deltaTime)
     */
 }
 ```
-![結果](https://github.com/Astomih/NenEngine/blob/main/example/result.png "result")
+![結果](https://github.com/Astomih/sinen/blob/main/example/result.png "result")
 
 ## ビルド方法
 ### Windows
-　zipとしてダウンロード・解凍し、NenEngine/Windowsフォルダ内のslnファイルをVisual Studio（2019以降)でビルドしてください。  
- NenEngine/DebugもしくはNenEngine/Releaseフォルダが作成され、nen.libが作成されます。  
- 今のところVisual Studioでのビルドのみに対応しています。MinGWでは検証していません。  
+ MinGWのみ確認しています。MSVCでも出来ると思いますが、確認はしていません。
 ### WebGL
  ビルドにはEmscriptenのセットアップおよびCMakeが必要です。
  その後、以下のコマンドを実行してください。
@@ -62,12 +60,12 @@ void Main::Update(float deltaTime)
  $ emcmake cmake .
  $ emmake make
  ```
- NenEngine/Emscripten/buildフォルダ内にlibnen.aが作成されます。
+ sinen/Emscripten/buildフォルダ内にlibnen.aが作成されます。
  ### Android
   上記に比べて複雑なため、ここでは割愛します。tutorialフォルダのInstall.mdを御覧ください。
 
 ## 使用ライブラリ
-NenEngineで使用しているライブラリです。  
+sinenで使用しているライブラリです。  
 ライセンス文はlibs内の各フォルダ内に記載されています。
 - GLEW
 - ImGui
@@ -81,11 +79,11 @@ NenEngineで使用しているライブラリです。
 - SDL2_net
 - SDL2_ttf
   
-各ライブラリはNenEngine/libsフォルダ内にライセンス文ともに格納されています。
+各ライブラリはsinen/libsフォルダ内にライセンス文ともに格納されています。
 
 ## ライセンス
- NenEngineのライセンスはMIT Lisenceです。
+ MIT Lisence
 
 ## ドキュメント
-[APIリファレンス](https://astomih.github.io/NenEngine)  
+[APIリファレンス](https://astomih.github.io/sinen)  
 その他については製作中。。。

@@ -28,14 +28,11 @@ static VkBool32 VKAPI_CALL DebugReportCallback(
   }
   ss << pMessage << std::endl;
 
-  OutputDebugStringA(ss.str().c_str());
-
   return ret;
 }
 
 void VKBase::checkResult(VkResult result) {
   if (result != VK_SUCCESS) {
-    DebugBreak();
   }
 }
 
@@ -331,7 +328,7 @@ void VKBase::createFramebuffer() {
   ci.height = mSwapchain->GetSurfaceExtent().height;
   ci.layers = 1;
   m_framebuffers.clear();
-  for (int i = 0; std::cmp_less(i, mSwapchain->GetImageCount()); i++) {
+  for (int i = 0; i < mSwapchain->GetImageCount(); i++) {
     std::array<VkImageView, 2> attachments;
     ci.attachmentCount = uint32_t(attachments.size());
     ci.pAttachments = attachments.data();

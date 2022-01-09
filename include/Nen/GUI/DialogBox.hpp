@@ -4,12 +4,10 @@
 #undef DialogBox
 #endif
 
-namespace nen
-{
-	class DialogBox : public UIScreen
-	{
-	public:
-		DialogBox(std::string_view, std::function<void()> onOK);
-		~DialogBox();
-	};
-}
+namespace nen {
+class dialog_box : public ui_screen {
+public:
+  dialog_box(std::string_view, std::function<void()> onOK);
+  ~dialog_box();
+};
+} // namespace nen

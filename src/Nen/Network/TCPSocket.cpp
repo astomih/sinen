@@ -1,15 +1,12 @@
-#include <SDL_net.h>
 #include <Nen.hpp>
+#include <SDL_net.h>
 
-namespace nen
-{
-    class TCPSocket::Impl
-    {
-    public:
-        Impl() = default;
-        ~Impl() = default;
-    };
-    TCPSocket::TCPSocket()
-        : impl(std::make_unique<Impl>()){};
-    TCPSocket::~TCPSocket() = default;
-}
+namespace nen {
+class tcp_socket::Impl {
+public:
+  Impl() = default;
+  ~Impl() = default;
+};
+tcp_socket::tcp_socket() : impl(std::make_unique<Impl>()){};
+tcp_socket::~tcp_socket() = default;
+} // namespace nen

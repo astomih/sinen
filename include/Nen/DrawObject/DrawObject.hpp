@@ -1,20 +1,20 @@
 #pragma once
 #include "../Math/Vector2.hpp"
-#include "ObjectType.hpp"
 #include "../Shader/Shader.hpp"
-namespace nen
-{
-	class DrawObject
-	{
-	public:
-		DrawObject() = default;
-		~DrawObject() = default;
-		ShaderParameters param;
-		std::string textureIndex;
-		std::string vertexIndex;
-		Shader shader;
-		int drawOrder = 100;
-		int nodeNum = 1;
-	};
+#include "../Texture/Texture.hpp"
+#include "ObjectType.hpp"
 
-}
+namespace nen {
+class draw_object {
+public:
+  draw_object() = default;
+  ~draw_object() = default;
+  shader_parameter param;
+  std::string textureIndex;
+  std::string vertexIndex;
+  shader shader;
+  int drawOrder = 100;
+  int nodeNum = 1;
+};
+
+} // namespace nen

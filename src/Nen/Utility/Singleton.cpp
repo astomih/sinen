@@ -1,22 +1,18 @@
 #include <Utility/Singleton.hpp>
 
-namespace nen
-{
-	std::list<std::function<void(void)>> SingletonFinalizer::finalizers = std::list<std::function<void(void)>>();
+namespace nen {
+std::list<std::function<void(void)>> singleton_finalizer::finalizers =
+    std::list<std::function<void(void)>>();
 
-
-	void SingletonFinalizer::AddFinalizer(const std::function<void(void)>& func)
-	{
-		finalizers.push_front(func);
-	}
-
-	void SingletonFinalizer::Finalize()
-	{
-		for (const auto& func : finalizers)
-		{
-			if (func)
-				func();
-		}
-		finalizers.clear();
-	}
+void singleton_finalizer::AddFinalizer(const std::function<void(void)> &func) {
+  finalizers.push_front(func);
 }
+
+void singleton_finalizer::Finalize() {
+  for (const auto &func : finalizers) {
+    if (func)
+      func();
+  }
+  finalizers.clear();
+}
+} // namespace nen

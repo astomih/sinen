@@ -10,81 +10,83 @@
 #ifdef _WIN32
 #include <vulkan/vulkan_win32.h>
 #endif // _WIN32
-#include <vector>
-#include <memory>
 #include "Swapchain.h"
 #include <Window/Window.hpp>
-namespace nen::vk
-{
-	class VKBase
-	{
-	public:
-		VKBase(class VKRenderer *);
-		void initialize(std::shared_ptr<Window> window);
-		void terminate();
+#include <memory>
+#include <vector>
 
-		void render();
-		VkPhysicalDevice GetVkPhysicalDevice() { return m_physDev; }
-		VkDevice GetVkDevice() { return m_device; }
-		VkQueue GetVkQueue() { return m_deviceQueue; }
-		VkCommandPool GetVkCommandPool() { return m_commandPool; }
-		int32_t GetSwapBufferCount() { return static_cast<int32_t>(mSwapchain->GetImageCount()); }
+namespace nen::vk {
+class VKBase {
+public:
+  VKBase(class VKRenderer *);
+  void initialize(std::shared_ptr<window> window);
+  void terminate();
 
-		static void checkResult(VkResult);
+  void render();
+  VkPhysicalDevice GetVkPhysicalDevice() { return m_physDev; }
+  VkDevice GetVkDevice() { return m_device; }
+  VkQueue GetVkQueue() { return m_deviceQueue; }
+  VkCommandPool GetVkCommandPool() { return m_commandPool; }
+  int32_t GetSwapBufferCount() {
+    return static_cast<int32_t>(mSwapchain->GetImageCount());
+  }
 
-		void initializeInstance(const char *appName);
-		void selectPhysicalDevice();
-		uint32_t searchGraphicsQueueIndex();
-		void createDevice();
-		void prepareCommandPool();
-		void createDepthBuffer();
+  static void checkResult(VkResult);
 
-		void createRenderPass();
-		void createFramebuffer();
+  void initializeInstance(const char *appName);
+  void selectPhysicalDevice();
+  uint32_t searchGraphicsQueueIndex();
+  void createDevice();
+  void prepareCommandPool();
+  void createDepthBuffer();
 
-		void prepareCommandBuffers();
+  void createRenderPass();
+  void createFramebuffer();
 
-		uint32_t getMemoryTypeIndex(uint32_t requestBits, VkMemoryPropertyFlags requestProps) const;
+  void prepareCommandBuffers();
 
-		void enableDebugReport();
-		void disableDebugReport();
+  uint32_t getMemoryTypeIndex(uint32_t requestBits,
+                              VkMemoryPropertyFlags requestProps) const;
 
-		std::unique_ptr<Swapchain> mSwapchain;
+  void enableDebugReport();
+  void disableDebugReport();
 
-		VkInstance m_instance;
-		VkDevice m_device;
-		VkPhysicalDevice m_physDev;
+  std::unique_ptr<Swapchain> mSwapchain;
 
-		VkPhysicalDeviceMemoryProperties m_physMemProps;
+  VkInstance m_instance;
+  VkDevice m_device;
+  VkPhysicalDevice m_physDev;
 
-		uint32_t m_graphicsQueueIndex;
-		VkQueue m_deviceQueue;
+  VkPhysicalDeviceMemoryProperties m_physMemProps;
 
-		VkCommandPool m_commandPool;
+  uint32_t m_graphicsQueueIndex;
+  VkQueue m_deviceQueue;
 
-		VkImage m_depthBuffer;
-		VkDeviceMemory m_depthBufferMemory;
-		VkImageView m_depthBufferView;
+  VkCommandPool m_commandPool;
 
-		VkRenderPass m_renderPass;
-		std::vector<VkFramebuffer> m_framebuffers;
+  VkImage m_depthBuffer;
+  VkDeviceMemory m_depthBufferMemory;
+  VkImageView m_depthBufferView;
 
-		std::vector<VkFence> m_fences;
-		VkSemaphore m_renderCompletedSem, m_presentCompletedSem;
+  VkRenderPass m_renderPass;
+  std::vector<VkFramebuffer> m_framebuffers;
 
-		PFN_vkCreateDebugReportCallbackEXT m_vkCreateDebugReportCallbackEXT;
-		PFN_vkDebugReportMessageEXT m_vkDebugReportMessageEXT;
-		PFN_vkDestroyDebugReportCallbackEXT m_vkDestroyDebugReportCallbackEXT;
-		VkDebugReportCallbackEXT m_debugReport;
+  std::vector<VkFence> m_fences;
+  VkSemaphore m_renderCompletedSem, m_presentCompletedSem;
 
-		std::vector<VkCommandBuffer> m_commands;
+  PFN_vkCreateDebugReportCallbackEXT m_vkCreateDebugReportCallbackEXT;
+  PFN_vkDebugReportMessageEXT m_vkDebugReportMessageEXT;
+  PFN_vkDestroyDebugReportCallbackEXT m_vkDestroyDebugReportCallbackEXT;
+  VkDebugReportCallbackEXT m_debugReport;
 
-		std::vector<VkDeviceMemory> destroyMemory;
+  std::vector<VkCommandBuffer> m_commands;
 
-		uint32_t m_imageIndex;
-		std::shared_ptr<Window> m_window;
-		VKRenderer *m_vkrenderer;
-	};
-}
+  std::vector<VkDeviceMemory> destroyMemory;
+
+  uint32_t m_imageIndex;
+  std::shared_ptr<window> m_window;
+  VKRenderer *m_vkrenderer;
+};
+} // namespace nen::vk
 
 #endif // EMSCRIPTEN

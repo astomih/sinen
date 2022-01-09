@@ -2,36 +2,31 @@
 #include "../Math/Vector2.hpp"
 #include "../Render/Renderer.hpp"
 #include "WindowState.hpp"
-#include <string>
 #include <memory>
-namespace
-{
-	struct SDL_Window;
-}
+#include <string>
 
-namespace nen
-{
-	class Window
-	{
-	public:
-		Window();
-		~Window();
+namespace nen {
+class window {
+public:
+  window();
+  ~window();
 
-		void Initialize(const Vector2 &size, const std::string &name, GraphicsAPI api);
+  void Initialize(const vector2 &size, const std::string &name,
+                  graphics_api api);
 
-		::SDL_Window *GetSDLWindow();
+  void *GetSDLWindow();
 
-		Vector2 Size() { return size; }
-		std::string Name() { return name; }
+  vector2 Size() { return size; }
+  std::string Name() { return name; }
 
-		void ProcessInput(union SDL_Event &event);
-		const WindowState &GetState() { return state; }
+  void ProcessInput();
+  const window_state &GetState() { return state; }
 
-	private:
-		Vector2 size;
-		std::string name;
-		class Impl;
-		std::unique_ptr<Impl> impl;
-		WindowState state = WindowState::ENTER;
-	};
-}
+private:
+  vector2 size;
+  std::string name;
+  class Impl;
+  std::unique_ptr<Impl> impl;
+  window_state state = window_state::ENTER;
+};
+} // namespace nen

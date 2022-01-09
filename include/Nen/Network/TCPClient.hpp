@@ -1,25 +1,23 @@
 #pragma once
-#include <string>
+#include "TCPSocket.hpp"
 #include <cstdint>
 #include <memory>
-#include "TCPSocket.hpp"
+#include <string>
 
-namespace nen
-{
-    class TCPClient
-    {
-    public:
-        TCPClient();
-        ~TCPClient();
-        bool ResolveHost(std::string_view address, uint16_t port);
-        bool Open();
-        void Close();
+namespace nen {
+class tcp_client {
+public:
+  tcp_client();
+  ~tcp_client();
+  bool ResolveHost(std::string_view address, uint16_t port);
+  bool Open();
+  void Close();
 
-        bool Receive(void *data, int maxLength);
-        bool Send(const void *data, int size);
+  bool Receive(void *data, int maxLength);
+  bool Send(const void *data, int size);
 
-    private:
-        class Impl;
-        std::unique_ptr<Impl> impl;
-    };
-}
+private:
+  class Impl;
+  std::unique_ptr<Impl> impl;
+};
+} // namespace nen

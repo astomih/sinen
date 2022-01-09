@@ -1,17 +1,10 @@
 ﻿#include <Nen.hpp>
 #include <algorithm>
 
-namespace nen
-{
-	HUD::HUD() : UIScreen()
-	{
-	}
+namespace nen {
+hud::hud() : ui_screen() {}
 
-	void HUD::Update(float deltaTime)
-	{
-	}
+void hud::Update(float deltaTime) {}
 
-	void HUD::HandleInput(const InputState &state)
-	{
-	}
-}
+void hud::HandleInput(const input_state &state) {}
+} // namespace nen

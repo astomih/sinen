@@ -1,23 +1,21 @@
 #pragma once
-#include "Component.hpp"
 #include "../Audio/SoundEvent.hpp"
-#include <vector>
+#include "Component.hpp"
 #include <string>
+#include <vector>
 
-namespace nen
-{
-	class SoundComponent : public Component
-	{
-	public:
-		SoundComponent(class Actor &owner, int updateOrder = 200);
-		~SoundComponent();
+namespace nen {
+class sound_component : public base_component {
+public:
+  sound_component(class base_actor &owner, int updateOrder = 200);
+  ~sound_component();
 
-		void Update(float deltaTime) override;
-		void OnUpdateWorldTransform() override;
-		void StopAllEvents();
-		void AddEvent(const SoundEvent &e);
+  void Update(float deltaTime) override;
+  void OnUpdateWorldTransform() override;
+  void StopAllEvents();
+  void AddEvent(const sound_event &e);
 
-	private:
-		std::vector<SoundEvent> mEvents;
-	};
-}
+private:
+  std::vector<sound_event> mEvents;
+};
+} // namespace nen

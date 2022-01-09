@@ -1,15 +1,9 @@
-﻿#include <Nen.hpp>
-#include "../Render/RendererHandle.hpp"
+﻿#include "../Render/RendererHandle.hpp"
+#include <Nen.hpp>
 #include <wchar.h>
 
-namespace nen
-{
-	Effect::Effect(std::string_view path)
-		: loop(false)
-	{
-	}
+namespace nen {
+effect::effect(std::string_view path) : loop(false) {}
 
-	Effect::~Effect()
-	{
-	}
-}
+effect::~effect() {}
+} // namespace nen

@@ -1,15 +1,13 @@
 #pragma once
 #include "../Script/Script.hpp"
 #include <string>
-namespace nen
-{
-	class ScriptComponent : public Component
-	{
-	public:
-		ScriptComponent(class Actor &owner, int updateOrder = 100);
-		void DoScript(std::string_view funcName);
+namespace nen {
+class script_component : public base_component {
+public:
+  script_component(class base_actor &owner, int updateOrder = 100);
+  void DoScript(std::string_view funcName);
 
-	private:
-		const Script &script;
-	};
-}
+private:
+  const script &script;
+};
+} // namespace nen

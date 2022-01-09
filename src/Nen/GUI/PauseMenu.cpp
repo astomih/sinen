@@ -1,25 +1,16 @@
 #include <Nen.hpp>
-namespace nen
-{
-	PauseMenu::PauseMenu()
-		: UIScreen()
-	{
-		SetRelativeMouseMode(false);
-		SetTitle("Pause");
-		AddButton("Resume", [this]()
-				  { Close(); });
-		AddButton("Quit", [this]() {
+namespace nen {
+pause_menu::pause_menu() : ui_screen() {
+  SetRelativeMouseMode(false);
+  SetTitle("Pause");
+  AddButton("Resume", [this]() { Close(); });
+  AddButton("Quit", [this]() {
 
-		});
-	}
-
-	PauseMenu::~PauseMenu()
-	{
-		SetRelativeMouseMode(true);
-	}
-
-	void PauseMenu::HandleInput(const InputState &state)
-	{
-	}
-
+  });
 }
+
+pause_menu::~pause_menu() { SetRelativeMouseMode(true); }
+
+void pause_menu::HandleInput(const input_state &state) {}
+
+} // namespace nen

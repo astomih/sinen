@@ -1,151 +1,122 @@
 #pragma once
 #include "Math.hpp"
 
-namespace nen
-{
-    class Vector2
-    {
-    public:
-        float x;
-        float y;
+namespace nen {
+class vector2 {
+public:
+  float x;
+  float y;
 
-        constexpr Vector2()
-            : x(0.0f), y(0.0f)
-        {
-        }
+  constexpr vector2() : x(0.0f), y(0.0f) {}
 
-        constexpr explicit Vector2(float inX, float inY)
-            : x(inX), y(inY)
-        {
-        }
+  constexpr explicit vector2(float inX, float inY) : x(inX), y(inY) {}
 
-        // Set both components in one line
-        void Set(float inX, float inY)
-        {
-            x = inX;
-            y = inY;
-        }
+  // Set both components in one line
+  void Set(float inX, float inY) {
+    x = inX;
+    y = inY;
+  }
 
-        const float *GetAsFloatPtr() const
-        {
-            return reinterpret_cast<const float *>(&x);
-        }
-        // Vector addition (a + b)
-        friend Vector2 operator+(const Vector2 &a, const Vector2 &b)
-        {
-            return Vector2(a.x + b.x, a.y + b.y);
-        }
+  const float *GetAsFloatPtr() const {
+    return reinterpret_cast<const float *>(&x);
+  }
+  // Vector addition (a + b)
+  friend vector2 operator+(const vector2 &a, const vector2 &b) {
+    return vector2(a.x + b.x, a.y + b.y);
+  }
 
-        // Vector subtraction (a - b)
-        friend Vector2 operator-(const Vector2 &a, const Vector2 &b)
-        {
-            return Vector2(a.x - b.x, a.y - b.y);
-        }
+  // Vector subtraction (a - b)
+  friend vector2 operator-(const vector2 &a, const vector2 &b) {
+    return vector2(a.x - b.x, a.y - b.y);
+  }
 
-        // Component-wise multiplication
-        // (a.x * b.x, ...)
-        friend Vector2 operator*(const Vector2 &a, const Vector2 &b)
-        {
-            return Vector2(a.x * b.x, a.y * b.y);
-        }
+  // Component-wise multiplication
+  // (a.x * b.x, ...)
+  friend vector2 operator*(const vector2 &a, const vector2 &b) {
+    return vector2(a.x * b.x, a.y * b.y);
+  }
 
-        // Scalar multiplication
-        friend Vector2 operator*(const Vector2 &vec, float scalar)
-        {
-            return Vector2(vec.x * scalar, vec.y * scalar);
-        }
+  // Scalar multiplication
+  friend vector2 operator*(const vector2 &vec, float scalar) {
+    return vector2(vec.x * scalar, vec.y * scalar);
+  }
 
-        // Scalar multiplication
-        friend Vector2 operator*(float scalar, const Vector2 &vec)
-        {
-            return Vector2(vec.x * scalar, vec.y * scalar);
-        }
+  // Scalar multiplication
+  friend vector2 operator*(float scalar, const vector2 &vec) {
+    return vector2(vec.x * scalar, vec.y * scalar);
+  }
 
-        Vector2 &operator/=(float scalar)
-        {
+  vector2 &operator/=(float scalar) {
 
-            x > 0.f ? x /= scalar : x = 0.f;
-            y > 0.f ? y /= scalar : y = 0.f;
-            return *this;
-        }
+    x > 0.f ? x /= scalar : x = 0.f;
+    y > 0.f ? y /= scalar : y = 0.f;
+    return *this;
+  }
 
-        // Scalar *=
-        Vector2 &operator*=(float scalar)
-        {
-            x *= scalar;
-            y *= scalar;
-            return *this;
-        }
+  // Scalar *=
+  vector2 &operator*=(float scalar) {
+    x *= scalar;
+    y *= scalar;
+    return *this;
+  }
 
-        // Vector +=
-        Vector2 &operator+=(const Vector2 &right)
-        {
-            x += right.x;
-            y += right.y;
-            return *this;
-        }
+  // Vector +=
+  vector2 &operator+=(const vector2 &right) {
+    x += right.x;
+    y += right.y;
+    return *this;
+  }
 
-        // Vector -=
-        Vector2 &operator-=(const Vector2 &right)
-        {
-            x -= right.x;
-            y -= right.y;
-            return *this;
-        }
+  // Vector -=
+  vector2 &operator-=(const vector2 &right) {
+    x -= right.x;
+    y -= right.y;
+    return *this;
+  }
 
-        // Length squared of vector
-        [[nodiscard]] float LengthSq() const
-        {
-            return (x * x + y * y);
-        }
+  // Length squared of vector
+  [[nodiscard]] float LengthSq() const { return (x * x + y * y); }
 
-        // Length of vector
-        [[nodiscard]] float Length() const
-        {
-            return (Math::Sqrt(LengthSq()));
-        }
+  // Length of vector
+  [[nodiscard]] float Length() const { return (Math::Sqrt(LengthSq())); }
 
-        // Normalize this vector
-        void Normalize()
-        {
-            const auto length = Length();
-            x /= length;
-            y /= length;
-        }
+  // Normalize this vector
+  void Normalize() {
+    const auto length = Length();
+    x /= length;
+    y /= length;
+  }
 
-        // Normalize the provided vector
-        static Vector2 Normalize(const Vector2 &vec)
-        {
-            auto temp = vec;
-            temp.Normalize();
-            return temp;
-        }
+  // Normalize the provided vector
+  static vector2 Normalize(const vector2 &vec) {
+    auto temp = vec;
+    temp.Normalize();
+    return temp;
+  }
 
-        // Dot product between two vectors (a dot b)
-        static float Dot(const Vector2 &a, const Vector2 &b)
-        {
-            return (a.x * b.x + a.y * b.y);
-        }
+  // Dot product between two vectors (a dot b)
+  static float Dot(const vector2 &a, const vector2 &b) {
+    return (a.x * b.x + a.y * b.y);
+  }
 
-        // Lerp from A to B by f
-        static Vector2 Lerp(const Vector2 &a, const Vector2 &b, float f)
-        {
-            return Vector2(a + f * (b - a));
-        }
+  // Lerp from A to B by f
+  static vector2 Lerp(const vector2 &a, const vector2 &b, float f) {
+    return vector2(a + f * (b - a));
+  }
 
-        // Reflect V about (normalized) N
-        static Vector2 Reflect(const Vector2 &v, const Vector2 &n)
-        {
-            return v - 2.0f * Vector2::Dot(v, n) * n;
-        }
+  // Reflect V about (normalized) N
+  static vector2 Reflect(const vector2 &v, const vector2 &n) {
+    return v - 2.0f * vector2::Dot(v, n) * n;
+  }
 
-        // Transform vector by matrix
-        static Vector2 Transform(const Vector2 &vec, const class Matrix3 &mat, float w = 1.0f);
+  // Transform vector by matrix
+  static vector2 Transform(const vector2 &vec, const class matrix3 &mat,
+                           float w = 1.0f);
 
-        static const Vector2 Zero;
-        static const Vector2 UnitX;
-        static const Vector2 UnitY;
-        static const Vector2 NegUnitX;
-        static const Vector2 NegUnitY;
-    };
-}
+  static const vector2 Zero;
+  static const vector2 UnitX;
+  static const vector2 UnitY;
+  static const vector2 NegUnitX;
+  static const vector2 NegUnitY;
+};
+} // namespace nen

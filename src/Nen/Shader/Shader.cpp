@@ -1,9 +1,6 @@
-#include <Nen.hpp>
 #include "../Render/RendererHandle.hpp"
-namespace nen
-{
-    Shader::Shader()
-        : vertName("default"), fragName("default")
-    {
-    }
-}
+#include <Nen.hpp>
+
+namespace nen {
+shader::shader() : vertName("default"), fragName("default") {}
+} // namespace nen

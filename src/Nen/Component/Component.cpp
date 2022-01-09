@@ -1,21 +1,11 @@
 #include <Nen.hpp>
 
-namespace nen
-{
-	Component::Component(Actor &owner, int updateOrder)
-		: mOwner(owner), mUpdateOrder(updateOrder)
-	{
-	}
+namespace nen {
+base_component::base_component(base_actor &owner, int updateOrder)
+    : mOwner(owner), mUpdateOrder(updateOrder) {}
 
-	Component::~Component()
-	{
-	}
+base_component::~base_component() {}
 
-	void Component::Update(float deltaTime)
-	{
-	}
-	const InputState &Component::GetInput()
-	{
-		return mOwner.GetInput();
-	}
-}
+void base_component::Update(float deltaTime) {}
+const input_state &base_component::GetInput() { return mOwner.GetInput(); }
+} // namespace nen

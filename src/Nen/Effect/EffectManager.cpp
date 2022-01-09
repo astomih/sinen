@@ -1,5 +1,2 @@
 #include "EffectManager.h"
-namespace nen
-{
-
-}
+namespace nen {}

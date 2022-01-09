@@ -1,7 +1,3 @@
 #pragma once
 
-enum class ShaderType
-{
-    Vert,
-    Frag
-};
+enum class shader_type { Vert, Frag };

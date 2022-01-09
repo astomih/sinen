@@ -1,20 +1,17 @@
 #pragma once
 #include <Render/Renderer.hpp>
 
-namespace nen
-{
-    class RendererHandle
-    {
-    public:
-        static void SetRenderer(std::shared_ptr<Renderer> renderer)
-        {
-            mRenderer = renderer;
-        }
+namespace nen {
+class renderer_handle {
+public:
+  static void SetRenderer(std::shared_ptr<renderer> renderer) {
+    mRenderer = renderer;
+  }
 
-        static std::shared_ptr<Renderer> GetRenderer() { return mRenderer; }
+  static std::shared_ptr<renderer> GetRenderer() { return mRenderer; }
 
-    private:
-        RendererHandle() = default;
-        static std::shared_ptr<Renderer> mRenderer;
-    };
-}
+private:
+  renderer_handle() = default;
+  static std::shared_ptr<renderer> mRenderer;
+};
+} // namespace nen

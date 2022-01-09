@@ -1,15 +1,11 @@
 #include <Nen.hpp>
 
-namespace nen
-{
-    BillboardComponent::BillboardComponent(Actor &owner, int updateOwner)
-        : Component(owner, updateOwner)
-    {
-    }
+namespace nen {
+billboard_component::billboard_component(base_actor &owner, int updateOwner)
+    : base_component(owner, updateOwner) {}
 
-    void BillboardComponent::Update(float deltaTime)
-    {
-        auto camera = mOwner.GetScene().GetRenderer()->GetViewMatrix();
-        mOwner.SetRotation(Matrix4::ToQuaternion(camera));
-    }
+void billboard_component::Update(float deltaTime) {
+  auto camera = mOwner.GetScene().GetRenderer()->GetViewMatrix();
+  mOwner.SetRotation(matrix4::ToQuaternion(camera));
 }
+} // namespace nen

@@ -1,37 +1,31 @@
 #pragma once
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
-#include <vector>
-#include <SDL_vulkan.h>
-#include <vulkan/vk_layer.h>
-#ifdef _WIN32
-#include <vulkan/vulkan_win32.h>
-#endif // _WIN32
 #include "PipelineLayout.h"
-namespace nen::vk
-{
-	class Pipeline
-	{
-	public:
-		Pipeline() = default;
-		void Initialize(
-			PipelineLayout &layout,
-			VkRenderPass renderPass,
-			std::vector<VkPipelineShaderStageCreateInfo> &shaderStages);
-		void Prepare(VkDevice device);
-		void Bind(VkCommandBuffer command);
-		void Cleanup(VkDevice device);
+#include <SDL_vulkan.h>
+#include <vector>
+#include <vulkan/vk_layer.h>
 
-		void SetDepthTest(VkBool32 isEnable);
-		void SetDepthWrite(VkBool32 isEnable);
-		void ColorBlendFactor(VkBlendFactor src, VkBlendFactor dst);
-		void AlphaBlendFactor(VkBlendFactor src, VkBlendFactor dst);
+namespace nen::vk {
+class Pipeline {
+public:
+  Pipeline() = default;
+  void Initialize(PipelineLayout &layout, VkRenderPass renderPass,
+                  std::vector<VkPipelineShaderStageCreateInfo> &shaderStages);
+  void Prepare(VkDevice device);
+  void Bind(VkCommandBuffer command);
+  void Cleanup(VkDevice device);
 
-	private:
-		VkPipeline pipeline;
-		VkPipelineColorBlendStateCreateInfo cbCI;
-		VkPipelineColorBlendAttachmentState blendAttachment;
-		VkPipelineDepthStencilStateCreateInfo depthStencilCI;
-		VkGraphicsPipelineCreateInfo graphicsCI;
-	};
-}
+  void SetDepthTest(VkBool32 isEnable);
+  void SetDepthWrite(VkBool32 isEnable);
+  void ColorBlendFactor(VkBlendFactor src, VkBlendFactor dst);
+  void AlphaBlendFactor(VkBlendFactor src, VkBlendFactor dst);
+
+private:
+  VkPipeline pipeline;
+  VkPipelineColorBlendStateCreateInfo cbCI;
+  VkPipelineColorBlendAttachmentState blendAttachment;
+  VkPipelineDepthStencilStateCreateInfo depthStencilCI;
+  VkGraphicsPipelineCreateInfo graphicsCI;
+};
+} // namespace nen::vk
 #endif

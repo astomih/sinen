@@ -1,27 +1,25 @@
 #pragma once
-namespace nen
-{
-    enum class WindowState
-    {
-        SHOWN = 1,
-        HIDDEN,
-        EXPOSED,
+namespace nen {
+enum class window_state {
+  SHOWN = 1,
+  HIDDEN,
+  EXPOSED,
 
-        MOVED,
+  MOVED,
 
-        RESIZED,
-        SIZE_CHANGED,
+  RESIZED,
+  SIZE_CHANGED,
 
-        MINIMIZED,
-        MAXIMIZED,
-        RESTORED,
+  MINIMIZED,
+  MAXIMIZED,
+  RESTORED,
 
-        ENTER,
-        LEAVE,
-        FOCUS_GAINED,
-        FOCUS_LOST,
-        CLOSE,
-        TAKE_FOCUS,
-        HIT_TEST
-    };
+  ENTER,
+  LEAVE,
+  FOCUS_GAINED,
+  FOCUS_LOST,
+  CLOSE,
+  TAKE_FOCUS,
+  HIT_TEST
+};
 }

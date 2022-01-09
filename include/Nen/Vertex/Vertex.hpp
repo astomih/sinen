@@ -1,30 +1,29 @@
 ﻿#pragma once
-#include "../Math/Vector3.hpp"
 #include "../Math/Vector2.hpp"
-namespace nen
-{
-    /**
-     * @brief 頂点情報
-     * 
-     */
-    struct Vertex
-    {
-        /**
-         * @brief 位置ベクトル
-         * 
-         */
-        Vector3 position;
+#include "../Math/Vector3.hpp"
 
-        /**
-         * @brief 法線ベクトル
-         * 
-         */
-        Vector3 normal;
+namespace nen {
+/**
+ * @brief 頂点情報
+ *
+ */
+struct vertex {
+  /**
+   * @brief 位置ベクトル
+   *
+   */
+  vector3 position;
 
-        /**
-         * @brief UV座標
-         * 
-         */
-        Vector2 uv;
-    };
-}
+  /**
+   * @brief 法線ベクトル
+   *
+   */
+  vector3 normal;
+
+  /**
+   * @brief UV座標
+   *
+   */
+  vector2 uv;
+};
+} // namespace nen

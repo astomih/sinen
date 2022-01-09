@@ -1,10 +1,5 @@
 #pragma once
 
-namespace nen
-{
-    enum class ObjectType
-    {
-        _2D,
-        _3D
-    };
+namespace nen {
+enum class object_type { _2D, _3D };
 }

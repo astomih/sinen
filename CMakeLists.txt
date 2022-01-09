@@ -5,12 +5,6 @@ set(CMAKE_CXX_FLAGS "-std=c++20 -Wno-subobject-linkage")
 set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0 -pg")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -s -DNDEBUG -march=native")
 
-find_package(Vulkan REQUIRED)
-find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
-find_package(SDL2 REQUIRED)
-find_package(OpenAL REQUIRED)
-
 
 file(GLOB SOURCE_FILES 
 	src/Nen/*/*.cpp

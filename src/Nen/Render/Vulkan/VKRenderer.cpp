@@ -278,12 +278,12 @@ void VKRenderer::draw3d(VkCommandBuffer command) {
   pipelineOpaque.Bind(command);
   VkDeviceSize offset = 0;
   for (auto &sprite : mDrawObject3D) {
-    if (sprite->drawObject->shader.vertName == "default" &&
-        sprite->drawObject->shader.fragName == "default")
+    if (sprite->drawObject->shader_data.vertName == "default" &&
+        sprite->drawObject->shader_data.fragName == "default")
       pipelineOpaque.Bind(command);
     else {
       for (auto &i : userPipelines) {
-        if (i.first == sprite->drawObject->shader)
+        if (i.first == sprite->drawObject->shader_data)
           i.second.Bind(command);
       }
     }
@@ -324,12 +324,12 @@ void VKRenderer::draw2d(VkCommandBuffer command) {
   pipeline2D.Bind(command);
   VkDeviceSize offset = 0;
   for (auto &sprite : mDrawObject2D) {
-    if (sprite->drawObject->shader.vertName == "default" &&
-        sprite->drawObject->shader.fragName == "default")
+    if (sprite->drawObject->shader_data.vertName == "default" &&
+        sprite->drawObject->shader_data.fragName == "default")
       pipeline2D.Bind(command);
     else {
       for (auto &i : userPipelines) {
-        if (i.first == sprite->drawObject->shader)
+        if (i.first == sprite->drawObject->shader_data)
           i.second.Bind(command);
       }
     }

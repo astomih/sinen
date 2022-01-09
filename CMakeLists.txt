@@ -27,8 +27,8 @@ add_library(nen STATIC
 
 set(NEN_INCLUDE_DIRECTORIES 
 	.
-	include
-	include/Nen
+	./include
+	./include/Nen
 	libs/ImGui/include
 	libs/sol2/include
 	libs/Lua/include

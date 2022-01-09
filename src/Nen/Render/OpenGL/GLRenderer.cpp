@@ -49,12 +49,13 @@ void GLRenderer::Render() {
       glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
       vertexID = i->vertexIndex;
     }
-    if (i->shader.vertName == "default" && i->shader.fragName == "default") {
+    if (i->shader_data.vertName == "default" &&
+        i->shader_data.fragName == "default") {
       mSpriteShader->SetActive(0);
       mSpriteShader->UpdateUBO(0, sizeof(shader_parameter), &i->param);
     } else {
       for (auto &j : userPipelines) {
-        if (j.first == i->shader) {
+        if (j.first == i->shader_data) {
           j.second.SetActive(0);
           j.second.UpdateUBO(0, sizeof(shader_parameter), &i->param);
         }
@@ -74,12 +75,13 @@ void GLRenderer::Render() {
       glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
       vertexID = i->vertexIndex;
     }
-    if (i->shader.vertName == "default" && i->shader.fragName == "default") {
+    if (i->shader_data.vertName == "default" &&
+        i->shader_data.fragName == "default") {
       mAlphaShader->SetActive(0);
       mAlphaShader->UpdateUBO(0, sizeof(shader_parameter), &i->param);
     } else {
       for (auto &j : userPipelines) {
-        if (j.first == i->shader) {
+        if (j.first == i->shader_data) {
           j.second.SetActive(0);
           j.second.UpdateUBO(0, sizeof(shader_parameter), &i->param);
         }

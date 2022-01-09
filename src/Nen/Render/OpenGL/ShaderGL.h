@@ -1,15 +1,9 @@
 ﻿#pragma once
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
-#include <Color/Color.hpp>
 #include <GL/glew.h>
-#include <Math/Math.hpp>
-#include <Math/Matrix3.hpp>
-#include <Math/Matrix4.hpp>
-#include <Math/Quaternion.hpp>
-#include <Math/Vector2.hpp>
-#include <Math/Vector3.hpp>
+#include <Nen.hpp>
+#include <string>
 #include <unordered_map>
-
 
 namespace nen::gl {
 class ShaderGL {

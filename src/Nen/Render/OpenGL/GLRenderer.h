@@ -6,7 +6,9 @@
 #include <SDL.h>
 #include <Texture/Texture.hpp>
 #include <Vertex/VertexArray.hpp>
+#include <memory>
 #include <string>
+
 
 namespace nen {
 class renderer;

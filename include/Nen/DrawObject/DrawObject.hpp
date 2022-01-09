@@ -12,7 +12,7 @@ public:
   shader_parameter param;
   std::string textureIndex;
   std::string vertexIndex;
-  shader shader;
+  shader shader_data;
   int drawOrder = 100;
   int nodeNum = 1;
 };

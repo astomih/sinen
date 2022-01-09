@@ -4,15 +4,12 @@
 #include <Nen.hpp>
 #include <fstream>
 
-
 namespace nen::vk {
 VkPipelineShaderStageCreateInfo
 VulkanShader::LoadModule(VkDevice device, const char *fileName,
                          VkShaderStageFlagBits stage) {
   std::ifstream infile(fileName, std::ios::binary);
   if (!infile) {
-    OutputDebugStringA("file not found.\n");
-    DebugBreak();
   }
   std::vector<char> filedata;
   filedata.resize(uint32_t(infile.seekg(0, std::ifstream::end).tellg()));

@@ -14,14 +14,13 @@
 #include <iostream>
 #include <sstream>
 
-
 namespace nen::es {
 ESRenderer::ESRenderer() {}
 
-void ESRenderer::Initialize(std::shared_ptr<Window> window) {
-  mWindow = window;
-  mContext = SDL_GL_CreateContext(mWindow->GetSDLWindow());
-  SDL_GL_MakeCurrent(mWindow->GetSDLWindow(), mContext);
+void ESRenderer::Initialize(std::shared_ptr<window> _window) {
+  mWindow = _window;
+  mContext = SDL_GL_CreateContext((SDL_Window *)mWindow->GetSDLWindow());
+  SDL_GL_MakeCurrent((SDL_Window *)mWindow->GetSDLWindow(), mContext);
   prepare();
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
@@ -32,10 +31,11 @@ void ESRenderer::Initialize(std::shared_ptr<Window> window) {
   io.ConfigFlags |=
       ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
   io.IniFilename = NULL;
-  ::ImGui_ImplSDL2_InitForOpenGL(mWindow->GetSDLWindow(), mContext);
+  ::ImGui_ImplSDL2_InitForOpenGL((SDL_Window *)mWindow->GetSDLWindow(),
+                                 mContext);
   ::ImGui_ImplOpenGL3_Init("#version 300 es");
 }
-void ESRenderer::SetRenderer(Renderer *renderer) { mRenderer = renderer; }
+void ESRenderer::SetRenderer(renderer *_renderer) { mRenderer = _renderer; }
 
 void ESRenderer::Render() {
 
@@ -53,14 +53,15 @@ void ESRenderer::Render() {
       glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
       vertexID = i->vertexIndex;
     }
-    if (i->shader.vertName == "default" && i->shader.fragName == "default") {
+    if (i->shader_data.vertName == "default" &&
+        i->shader_data.fragName == "default") {
       mSpriteShader->SetActive(0);
-      mSpriteShader->UpdateUBO(0, sizeof(ShaderParameters), &i->param);
+      mSpriteShader->UpdateUBO(0, sizeof(shader_parameter), &i->param);
     } else {
       for (auto &j : userPipelines) {
-        if (j.first == i->shader) {
+        if (j.first == i->shader_data) {
           j.second.SetActive(0);
-          j.second.UpdateUBO(0, sizeof(ShaderParameters), &i->param);
+          j.second.UpdateUBO(0, sizeof(shader_parameter), &i->param);
         }
       }
     }
@@ -77,14 +78,15 @@ void ESRenderer::Render() {
       glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
       vertexID = i->vertexIndex;
     }
-    if (i->shader.vertName == "default" && i->shader.fragName == "default") {
+    if (i->shader_data.vertName == "default" &&
+        i->shader_data.fragName == "default") {
       mAlphaShader->SetActive(0);
-      mAlphaShader->UpdateUBO(0, sizeof(ShaderParameters), &i->param);
+      mAlphaShader->UpdateUBO(0, sizeof(shader_parameter), &i->param);
     } else {
       for (auto &j : userPipelines) {
-        if (j.first == i->shader) {
+        if (j.first == i->shader_data) {
           j.second.SetActive(0);
-          j.second.UpdateUBO(0, sizeof(ShaderParameters), &i->param);
+          j.second.UpdateUBO(0, sizeof(shader_parameter), &i->param);
         }
       }
     }
@@ -95,7 +97,7 @@ void ESRenderer::Render() {
 
   ImGuiIO &io = ImGui::GetIO();
   ImGui_ImplOpenGL3_NewFrame();
-  ImGui_ImplSDL2_NewFrame(mWindow->GetSDLWindow());
+  ImGui_ImplSDL2_NewFrame((SDL_Window *)mWindow->GetSDLWindow());
   ImGui::NewFrame();
   if (mRenderer->isShowImGui()) {
     // Draw ImGUI widgets.
@@ -105,9 +107,9 @@ void ESRenderer::Render() {
   }
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-  SDL_GL_SwapWindow(mWindow->GetSDLWindow());
+  SDL_GL_SwapWindow((SDL_Window *)mWindow->GetSDLWindow());
 }
-void ESRenderer::AddVertexArray(const VertexArray &vArray,
+void ESRenderer::AddVertexArray(const vertex_array &vArray,
                                 std::string_view name) {
   es::VertexArrayForES vArrayGL;
   vArrayGL.indexCount = vArray.indexCount;
@@ -122,7 +124,7 @@ void ESRenderer::AddVertexArray(const VertexArray &vArray,
   // VBO
   glGenBuffers(1, &vArrayGL.vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vArrayGL.vbo);
-  auto vArraySize = vArrayGL.vertices.size() * sizeof(Vertex);
+  auto vArraySize = vArrayGL.vertices.size() * sizeof(vertex);
   glBufferData(GL_ARRAY_BUFFER, vArraySize, vArrayGL.vertices.data(),
                GL_STATIC_DRAW);
 
@@ -144,7 +146,7 @@ void ESRenderer::AddVertexArray(const VertexArray &vArray,
                vArrayGL.indices.data(), GL_STATIC_DRAW);
   m_VertexArrays.emplace(name.data(), vArrayGL);
 }
-void ESRenderer::UpdateVertexArray(const VertexArray &vArray,
+void ESRenderer::UpdateVertexArray(const vertex_array &vArray,
                                    std::string_view name) {
   es::VertexArrayForES vArrayGL;
   vArrayGL.indexCount = vArray.indexCount;
@@ -153,7 +155,7 @@ void ESRenderer::UpdateVertexArray(const VertexArray &vArray,
   vArrayGL.materialName = vArray.materialName;
   // vboを更新
   glBindBuffer(GL_ARRAY_BUFFER, m_VertexArrays[name.data()].vbo);
-  auto vArraySize = vArrayGL.vertices.size() * sizeof(Vertex);
+  auto vArraySize = vArrayGL.vertices.size() * sizeof(vertex);
   glBufferSubData(GL_ARRAY_BUFFER, 0, vArraySize, vArrayGL.vertices.data());
   // iboを更新
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VertexArrays[name.data()].ibo);
@@ -161,37 +163,37 @@ void ESRenderer::UpdateVertexArray(const VertexArray &vArray,
                   vArrayGL.indices.size() * sizeof(uint32_t),
                   vArrayGL.indices.data());
 }
-void ESRenderer::AddDrawObject2D(std::shared_ptr<class DrawObject> sprite,
-                                 std::shared_ptr<Texture> texture) {
-  registerTexture(texture, TextureType::Image2D);
+void ESRenderer::AddDrawObject2D(std::shared_ptr<class draw_object> sprite,
+                                 std::shared_ptr<texture> _texture) {
+  registerTexture(_texture, texture_type::Image2D);
   pushSprite2d(sprite);
 }
-void ESRenderer::RemoveDrawObject2D(std::shared_ptr<class DrawObject> sprite) {
+void ESRenderer::RemoveDrawObject2D(std::shared_ptr<class draw_object> sprite) {
   eraseSprite2d(sprite);
 }
-void ESRenderer::AddDrawObject3D(std::shared_ptr<class DrawObject> sprite,
-                                 std::shared_ptr<Texture> texture) {
-  registerTexture(texture, TextureType::Image3D);
+void ESRenderer::AddDrawObject3D(std::shared_ptr<class draw_object> sprite,
+                                 std::shared_ptr<texture> _texture) {
+  registerTexture(_texture, texture_type::Image3D);
   pushSprite3d(sprite);
 }
-void ESRenderer::RemoveDrawObject3D(std::shared_ptr<class DrawObject> sprite) {
+void ESRenderer::RemoveDrawObject3D(std::shared_ptr<class draw_object> sprite) {
   eraseSprite3d(sprite);
 }
 
-void ESRenderer::LoadEffect(std::shared_ptr<Effect> effect) {}
+void ESRenderer::LoadEffect(std::shared_ptr<effect> _effect) {}
 
-void ESRenderer::LoadShader(const Shader &shaderInfo) {
+void ESRenderer::LoadShader(const shader &shaderInfo) {
   ShaderES pipeline;
   pipeline.Load(std::string("Assets/Shader/GLES/") + shaderInfo.vertName +
                     std::string(".vert"),
                 std::string("Assets/Shader/GLES/") + shaderInfo.fragName +
                     std::string(".frag"));
-  ShaderParameters param;
-  pipeline.CreateUBO(0, sizeof(ShaderParameters), &param);
-  userPipelines.emplace_back(std::pair<Shader, ShaderES>{shaderInfo, pipeline});
+  shader_parameter param;
+  pipeline.CreateUBO(0, sizeof(shader_parameter), &param);
+  userPipelines.emplace_back(std::pair<shader, ShaderES>{shaderInfo, pipeline});
 }
 
-void ESRenderer::UnloadShader(const Shader &shaderInfo) {
+void ESRenderer::UnloadShader(const shader &shaderInfo) {
   std::erase_if(userPipelines, [&](auto &x) {
     if (x.first == shaderInfo) {
       x.second.Unload();
@@ -209,11 +211,11 @@ void ESRenderer::prepare() {
   createBoxVerts();
 }
 
-void ESRenderer::registerTexture(std::shared_ptr<Texture> texture,
-                                 const TextureType &type) {
+void ESRenderer::registerTexture(std::shared_ptr<texture> texture,
+                                 const texture_type &type) {
   if (mTextureIDs.contains(texture->id))
     return;
-  ::SDL_Surface surf = SurfaceHandle::Load(texture->id);
+  ::SDL_Surface surf = nen::surface_handler::Load(texture->id);
   ::SDL_LockSurface(&surf);
   auto formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
   formatbuf->BytesPerPixel = 4;
@@ -241,30 +243,30 @@ bool ESRenderer::loadShader() {
                            "Assets/Shader/GLES/shader.frag")) {
     return false;
   }
-  ShaderParameters param{};
-  mSpriteShader->CreateUBO(0, sizeof(ShaderParameters), &param);
+  shader_parameter param{};
+  mSpriteShader->CreateUBO(0, sizeof(shader_parameter), &param);
 
   mAlphaShader = new ShaderES();
   if (!mAlphaShader->Load("Assets/Shader/GLES/shader.vert",
                           "Assets/Shader/GLES/alpha.frag")) {
     return false;
   }
-  mAlphaShader->CreateUBO(0, sizeof(ShaderParameters), &param);
+  mAlphaShader->CreateUBO(0, sizeof(shader_parameter), &param);
   return true;
 }
 
 void ESRenderer::createSpriteVerts() {
   const float value = 1.f;
-  const Vector2 lb(0.0f, 0.0f);
-  const Vector2 lt(0.f, 1.f);
-  const Vector2 rb(1.0f, 0.0f);
-  const Vector2 rt(1.0f, 1.0f);
-  Vector3 norm{1, 1, 1};
-  VertexArray vArray;
-  vArray.vertices.push_back({Vector3(-value, value, 0.5f), norm, lb});
-  vArray.vertices.push_back({Vector3(-value, -value, 0.5f), norm, lt});
-  vArray.vertices.push_back({Vector3(value, value, 0.5f), norm, rb});
-  vArray.vertices.push_back({Vector3(value, -value, 0.5f), norm, rt});
+  const vector2 lb(0.0f, 0.0f);
+  const vector2 lt(0.f, 1.f);
+  const vector2 rb(1.0f, 0.0f);
+  const vector2 rt(1.0f, 1.0f);
+  vector3 norm{1, 1, 1};
+  vertex_array vArray;
+  vArray.vertices.push_back({vector3(-value, value, 0.5f), norm, lb});
+  vArray.vertices.push_back({vector3(-value, -value, 0.5f), norm, lt});
+  vArray.vertices.push_back({vector3(value, value, 0.5f), norm, rb});
+  vArray.vertices.push_back({vector3(value, -value, 0.5f), norm, rt});
   uint32_t indices[] = {
       0, 2, 1, 1, 2, 3 // front
   };
@@ -276,50 +278,50 @@ void ESRenderer::createSpriteVerts() {
 
 void ESRenderer::createBoxVerts() {
   const float value = 1.f;
-  const Vector2 lb(0.0f, 0.0f);
-  const Vector2 lt(0.f, 1.f);
-  const Vector2 rb(1.0f, 0.0f);
-  const Vector2 rt(1.0f, 1.0f);
-  Vector3 norm{1, 1, 1};
-  const Vector3 red{1.0f, 0.0f, 0.0f};
-  const Vector3 green{0.0f, 1.0f, 0.0f};
-  const Vector3 blue{0.0f, 0.0f, 1.0f};
-  const Vector3 white{1.0f, 1, 1};
-  const Vector3 black{0.0f, 0, 0};
-  const Vector3 yellow{1.0f, 1.0f, 0.0f};
-  const Vector3 magenta{1.0f, 0.0f, 1.0f};
-  const Vector3 cyan{0.0f, 1.0f, 1.0f};
+  const vector2 lb(0.0f, 0.0f);
+  const vector2 lt(0.f, 1.f);
+  const vector2 rb(1.0f, 0.0f);
+  const vector2 rt(1.0f, 1.0f);
+  vector3 norm{1, 1, 1};
+  const vector3 red{1.0f, 0.0f, 0.0f};
+  const vector3 green{0.0f, 1.0f, 0.0f};
+  const vector3 blue{0.0f, 0.0f, 1.0f};
+  const vector3 white{1.0f, 1, 1};
+  const vector3 black{0.0f, 0, 0};
+  const vector3 yellow{1.0f, 1.0f, 0.0f};
+  const vector3 magenta{1.0f, 0.0f, 1.0f};
+  const vector3 cyan{0.0f, 1.0f, 1.0f};
 
-  VertexArray vArray;
-  vArray.vertices.push_back({Vector3(-value, value, value), yellow, lb});
-  vArray.vertices.push_back({Vector3(-value, -value, value), red, lt});
-  vArray.vertices.push_back({Vector3(value, value, value), white, rb});
-  vArray.vertices.push_back({Vector3(value, -value, value), magenta, rt});
+  vertex_array vArray;
+  vArray.vertices.push_back({vector3(-value, value, value), yellow, lb});
+  vArray.vertices.push_back({vector3(-value, -value, value), red, lt});
+  vArray.vertices.push_back({vector3(value, value, value), white, rb});
+  vArray.vertices.push_back({vector3(value, -value, value), magenta, rt});
 
-  vArray.vertices.push_back({Vector3(value, value, value), white, lb});
-  vArray.vertices.push_back({Vector3(value, -value, value), magenta, lt});
-  vArray.vertices.push_back({Vector3(value, value, -value), cyan, rb});
-  vArray.vertices.push_back({Vector3(value, -value, -value), blue, rt});
+  vArray.vertices.push_back({vector3(value, value, value), white, lb});
+  vArray.vertices.push_back({vector3(value, -value, value), magenta, lt});
+  vArray.vertices.push_back({vector3(value, value, -value), cyan, rb});
+  vArray.vertices.push_back({vector3(value, -value, -value), blue, rt});
 
-  vArray.vertices.push_back({Vector3(-value, value, -value), green, lb});
-  vArray.vertices.push_back({Vector3(-value, -value, -value), black, lt});
-  vArray.vertices.push_back({Vector3(-value, value, value), yellow, rb});
-  vArray.vertices.push_back({Vector3(-value, -value, value), red, rt});
+  vArray.vertices.push_back({vector3(-value, value, -value), green, lb});
+  vArray.vertices.push_back({vector3(-value, -value, -value), black, lt});
+  vArray.vertices.push_back({vector3(-value, value, value), yellow, rb});
+  vArray.vertices.push_back({vector3(-value, -value, value), red, rt});
 
-  vArray.vertices.push_back({Vector3(value, value, -value), cyan, lb});
-  vArray.vertices.push_back({Vector3(value, -value, -value), blue, lt});
-  vArray.vertices.push_back({Vector3(-value, value, -value), green, rb});
-  vArray.vertices.push_back({Vector3(-value, -value, -value), black, rt});
+  vArray.vertices.push_back({vector3(value, value, -value), cyan, lb});
+  vArray.vertices.push_back({vector3(value, -value, -value), blue, lt});
+  vArray.vertices.push_back({vector3(-value, value, -value), green, rb});
+  vArray.vertices.push_back({vector3(-value, -value, -value), black, rt});
 
-  vArray.vertices.push_back({Vector3(-value, value, -value), green, lb});
-  vArray.vertices.push_back({Vector3(-value, value, value), yellow, lt});
-  vArray.vertices.push_back({Vector3(value, value, -value), cyan, rb});
-  vArray.vertices.push_back({Vector3(value, value, value), white, rt});
+  vArray.vertices.push_back({vector3(-value, value, -value), green, lb});
+  vArray.vertices.push_back({vector3(-value, value, value), yellow, lt});
+  vArray.vertices.push_back({vector3(value, value, -value), cyan, rb});
+  vArray.vertices.push_back({vector3(value, value, value), white, rt});
 
-  vArray.vertices.push_back({Vector3(-value, -value, value), red, lb});
-  vArray.vertices.push_back({Vector3(-value, -value, -value), black, lt});
-  vArray.vertices.push_back({Vector3(value, -value, value), magenta, rb});
-  vArray.vertices.push_back({Vector3(value, -value, -value), blue, rt});
+  vArray.vertices.push_back({vector3(-value, -value, value), red, lb});
+  vArray.vertices.push_back({vector3(-value, -value, -value), black, lt});
+  vArray.vertices.push_back({vector3(value, -value, value), magenta, rb});
+  vArray.vertices.push_back({vector3(value, -value, -value), blue, rt});
 
   uint32_t indices[] = {
       0,  2,  1,  1,  2,  3,  // front

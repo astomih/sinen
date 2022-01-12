@@ -12,13 +12,12 @@
 #include <Texture/Texture.hpp>
 #include <Vertex/VertexArray.hpp>
 
-
 namespace nen {
-class Renderer;
+class renderer;
 
 namespace es {
 
-struct VertexArrayForES : public nen::VertexArray {
+struct VertexArrayForES : public nen::vertex_array {
   /**
    * @brief Vertex Array Object
    *
@@ -43,31 +42,31 @@ public:
   ESRenderer();
   ~ESRenderer() override {}
 
-  void Initialize(std::shared_ptr<Window> window) override;
+  void Initialize(std::shared_ptr<window>) override;
   void Render() override;
-  void AddVertexArray(const VertexArray &vArray,
+  void AddVertexArray(const vertex_array &vArray,
                       std::string_view name) override;
-  void UpdateVertexArray(const VertexArray &vArray,
+  void UpdateVertexArray(const vertex_array &vArray,
                          std::string_view name) override;
-  void AddDrawObject2D(std::shared_ptr<class DrawObject> sprite,
-                       std::shared_ptr<Texture> texture) override;
-  void RemoveDrawObject2D(std::shared_ptr<class DrawObject> sprite) override;
+  void AddDrawObject2D(std::shared_ptr<class draw_object> sprite,
+                       std::shared_ptr<texture>) override;
+  void RemoveDrawObject2D(std::shared_ptr<class draw_object> sprite) override;
 
-  void AddDrawObject3D(std::shared_ptr<class DrawObject> sprite,
-                       std::shared_ptr<Texture> texture) override;
-  void RemoveDrawObject3D(std::shared_ptr<class DrawObject> sprite) override;
+  void AddDrawObject3D(std::shared_ptr<class draw_object> sprite,
+                       std::shared_ptr<texture>) override;
+  void RemoveDrawObject3D(std::shared_ptr<class draw_object> sprite) override;
 
-  void SetRenderer(class Renderer *renderer) override;
+  void SetRenderer(class renderer *) override;
 
-  void LoadEffect(std::shared_ptr<class Effect> effect) override;
+  void LoadEffect(std::shared_ptr<class effect>) override;
 
-  void LoadShader(const Shader &shaderInfo) override;
-  void UnloadShader(const Shader &shaderInfo) override;
+  void LoadShader(const shader &shaderInfo) override;
+  void UnloadShader(const shader &shaderInfo) override;
 
   void prepare();
   void cleanup() {}
-  void registerTexture(std::shared_ptr<class Texture>, const TextureType &type);
-  void pushSprite2d(std::shared_ptr<DrawObject> sprite2d) {
+  void registerTexture(std::shared_ptr<class texture>, const texture_type &);
+  void pushSprite2d(std::shared_ptr<draw_object> sprite2d) {
     auto iter = mSprite2Ds.begin();
     for (; iter != mSprite2Ds.end(); ++iter) {
       if (sprite2d->drawOrder < (*iter)->drawOrder) {
@@ -76,14 +75,14 @@ public:
     }
     mSprite2Ds.insert(iter, sprite2d);
   }
-  void eraseSprite2d(std::shared_ptr<DrawObject> sprite2d) {
+  void eraseSprite2d(std::shared_ptr<draw_object> sprite2d) {
     auto itr = std::find(mSprite2Ds.begin(), mSprite2Ds.end(), sprite2d);
     if (itr != mSprite2Ds.end()) {
       mSprite2Ds.erase(itr);
     }
   }
 
-  void pushSprite3d(std::shared_ptr<DrawObject> sprite3d) {
+  void pushSprite3d(std::shared_ptr<draw_object> sprite3d) {
     auto iter = mSprite3Ds.begin();
     for (; iter != mSprite3Ds.end(); ++iter) {
       if (sprite3d->drawOrder < (*iter)->drawOrder) {
@@ -92,32 +91,32 @@ public:
     }
     mSprite3Ds.insert(iter, sprite3d);
   }
-  void eraseSprite3d(std::shared_ptr<DrawObject> sprite3d) {
+  void eraseSprite3d(std::shared_ptr<draw_object> sprite3d) {
     auto itr = std::find(mSprite3Ds.begin(), mSprite3Ds.end(), sprite3d);
     if (itr != mSprite3Ds.end()) {
       mSprite3Ds.erase(itr);
     }
   }
-  void setRenderer(nen::Renderer *renderer) { mRenderer = renderer; }
+  void setRenderer(nen::renderer *_renderer) { mRenderer = _renderer; }
 
-  std::shared_ptr<Window> GetWindow() { return mWindow; }
+  std::shared_ptr<window> GetWindow() { return mWindow; }
 
 private:
-  Renderer *mRenderer;
-  std::shared_ptr<Window> mWindow;
+  renderer *mRenderer;
+  std::shared_ptr<window> mWindow;
   bool loadShader();
   void createSpriteVerts();
   void createBoxVerts();
 
   ShaderES *mSpriteShader;
   ShaderES *mAlphaShader;
-  std::vector<std::pair<Shader, ShaderES>> userPipelines;
+  std::vector<std::pair<shader, ShaderES>> userPipelines;
   GLuint mTextureID;
   std::unordered_map<std::string, GLuint> mTextureIDs;
   std::unordered_map<std::string, VertexArrayForES> m_VertexArrays;
   ::SDL_GLContext mContext;
-  std::vector<std::shared_ptr<DrawObject>> mSprite2Ds;
-  std::vector<std::shared_ptr<DrawObject>> mSprite3Ds;
+  std::vector<std::shared_ptr<draw_object>> mSprite2Ds;
+  std::vector<std::shared_ptr<draw_object>> mSprite3Ds;
 };
 } // namespace es
 } // namespace nen

@@ -55,8 +55,8 @@ void Launch(std::shared_ptr<base_scene> scene) {
   }
 
 #else
-  window->Initialize(nen::Vector2(1280, 720), "Nen", nen::GraphicsAPI::ES);
-  renderer = std::make_shared<nen::Renderer>(nen::GraphicsAPI::ES, window);
+  window->Initialize(nen::vector2(1280, 720), "Nen", nen::graphics_api::ES);
+  renderer = std::make_shared<nen::renderer>(nen::graphics_api::ES, window);
 #endif
   renderer->SetProjectionMatrix(nen::matrix4::Perspective(
       nen::Math::ToRadians(70.f), window->Size().x / window->Size().y, 0.1f,

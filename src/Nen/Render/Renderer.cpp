@@ -23,7 +23,7 @@ renderer::renderer(graphics_api api, std::shared_ptr<window> window)
   }
 #endif
 #if defined(EMSCRIPTEN) || defined(MOBILE)
-  renderer = std::make_unique<es::ESRenderer>();
+  m_renderer = std::make_unique<es::ESRenderer>();
 #endif
   m_renderer->SetRenderer(this);
   m_renderer->Initialize(mWindow);

@@ -1,6 +1,6 @@
 ﻿#include "Utility/Singleton.hpp"
-#define SDL_MAIN_HANDLED
 #include "../Render/RendererHandle.hpp"
+#define SDL_MAIN_HANDLED
 #include <Nen.hpp>
 #include <SDL.h>
 #include <SDL_image.h>
@@ -119,7 +119,7 @@ void Launch(std::shared_ptr<base_scene> scene) {
 
 } // namespace nen
 
-int main(int argc, char **argv) {
+int main(int argc, char *argv[]) {
   nen::Launch(std::make_shared<Main>());
   nen::singleton_finalizer::Finalize();
   return 0;

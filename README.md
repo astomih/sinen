@@ -1,36 +1,31 @@
 [![CMake](https://github.com/astomih/sinen/actions/workflows/cmake.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/cmake.yml)
 # sinen
-## 概要
- sinenは、主にゲーム開発のために製作中のC++20向けメディアライブラリです。  
- 自身のみで使用する予定のライブラリであるので、サポートやドキュメントは充実しないと思われます。  
- **ドキュメントは全て日本語です（All documentation is only in Japanese）。**
+  sinen is a media library for C++20 that is being produced mainly for game development.  
+The library is planned to be used only by me, so I don't think it will have full support and documentation.
 
-## 対応プラットフォーム
- 今のところ、Windows、WebGL、Androidに対応しています。Linuxでは確認していませんが、少しの手直しで動くと思います。  
+## Supported platforms
+    Windows/Linux/WebGL/Android
 
-## サンプルコード
- exampleフォルダを参照してください。
+## Hello world in sinen
 ``` c++
 #include <Nen/Nen.hpp>
 
 /**
- *  メインシーン
- * データメンバが定義出来ないので、
- * 基本的に各種設定を行って他のシーンに移るための踏み台となる
+* Main class has already been defined.
 */
 void Main::Setup()
 {
-    //背景を黒に設定
+    //Set up background color to black.
     GetRenderer()->SetClearColor(nen::palette::Black);
 
-    //フォントの読み込み
+    //Load fonts.
     auto f = std::make_shared<nen::font>();
     f->LoadFromFile("Assets/Font/mplus/mplus-1p-medium.ttf", 72);
 
-    //アクターを追加
+    //Generate actor and add to scene
     auto actor = this->AddActor<nen::base_actor>();
 
-    //アクターにコンポーネントを追加
+    //Generate component for actor 
     auto text = actor->AddComponent<nen::text_component>();
     text->SetFont(font);
     text->SetString("Hello,World!", nen::palette::White);
@@ -38,35 +33,35 @@ void Main::Setup()
 
 void Main::Update(float deltaTime)
 {
-    //キーボードのQが押されたら終了
+    //Quit to Q key.
     if (GetInput().Keyboard.GetKeyValue(nen::key_code::Q))
         Quit();
 
     /**
-     * 描画処理は裏側で行っている
+     * The drawing process is done behind the scenes.
     */
 }
 ```
-![結果](https://github.com/Astomih/sinen/blob/main/example/result.png "result")
+![result](https://github.com/Astomih/sinen/blob/main/example/result.png "result")
 
-## ビルド方法
+## How to build
 ### Windows
- MinGWのみ確認しています。MSVCでも出来ると思いますが、確認はしていません。
+    Install msys, CMake and Vulkan. then install 'Using libraries' in pacman.  
+    Finally, build with CMake.
 ### WebGL
- ビルドにはEmscriptenのセットアップおよびCMakeが必要です。
- その後、以下のコマンドを実行してください。
- ```
- $ cd ./Emscripten  
+    Install emscripten SDK. and do this.  
+ ``` 
  $ emcmake cmake .
  $ emmake make
  ```
- sinen/Emscripten/buildフォルダ内にlibnen.aが作成されます。
  ### Android
-  上記に比べて複雑なため、ここでは割愛します。tutorialフォルダのInstall.mdを御覧ください。
+ Build with gradle.
 
-## 使用ライブラリ
-sinenで使用しているライブラリです。  
-ライセンス文はlibs内の各フォルダ内に記載されています。
+## Documents
+[APIリファレンス](https://astomih.github.io/sinen)  
+No tutorials, etc. have been created yet.
+
+## Using libraries
 - GLEW
 - ImGui
 - Lua
@@ -79,11 +74,5 @@ sinenで使用しているライブラリです。
 - SDL2_net
 - SDL2_ttf
   
-各ライブラリはsinen/libsフォルダ内にライセンス文ともに格納されています。
-
-## ライセンス
+## Lisence
  MIT Lisence
-
-## ドキュメント
-[APIリファレンス](https://astomih.github.io/sinen)  
-その他については製作中。。。

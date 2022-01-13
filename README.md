@@ -4,7 +4,7 @@
 The library is planned to be used only by me, so I don't think it will have full support and documentation.
 
 ## Supported platforms
-    Windows/Linux/WebGL/Android
+    Windows/Linux/WebGL/Android(experimental)
 
 ## Hello world in sinen
 ``` c++

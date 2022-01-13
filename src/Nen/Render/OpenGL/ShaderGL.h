@@ -1,5 +1,6 @@
-﻿#pragma once
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+﻿#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#pragma once
+
 #include <GL/glew.h>
 #include <Nen.hpp>
 #include <string>

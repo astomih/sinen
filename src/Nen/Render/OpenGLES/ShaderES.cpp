@@ -73,7 +73,7 @@ bool ShaderES::CompileShader(const std::string &fileName, GLenum shaderType,
   std::ifstream shaderFile(fileName);
   if (!shaderFile.is_open()) {
     std::cout << "Shader file not found: " << fileName << std::endl;
-    Logger::Error("Shader file not found: %s", fileName);
+    logger::Error("Shader file not found: %s", fileName);
     return false;
   }
   // Read all the text into a string

@@ -1,6 +1,10 @@
-﻿#include "Utility/Singleton.hpp"
-#include "../Render/RendererHandle.hpp"
+﻿#include "../Render/RendererHandle.hpp"
+#include "Utility/Singleton.hpp"
+#ifndef MOBILE
 #define SDL_MAIN_HANDLED
+#else
+#include <SDL_main.h>
+#endif
 #include <Nen.hpp>
 #include <SDL.h>
 #include <SDL_image.h>
@@ -118,8 +122,12 @@ void Launch(std::shared_ptr<base_scene> scene) {
 }
 
 } // namespace nen
+#ifdef MOBILE
 
-int main(int argc, char *argv[]) {
+int SDL_main(int argc, char *argv[]) {
+#else
+int main(int argc, char **argv) {
+#endif
   nen::Launch(std::make_shared<Main>());
   nen::singleton_finalizer::Finalize();
   return 0;

@@ -1,5 +1,5 @@
-#pragma once
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#pragma once
 #include "ShaderGL.h"
 #include <DrawObject/DrawObject.hpp>
 #include <Render/Renderer.hpp>

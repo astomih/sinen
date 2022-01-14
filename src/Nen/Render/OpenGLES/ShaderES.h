@@ -1,4 +1,5 @@
 #pragma once
+#include <Nen.hpp>
 #if defined(EMSCRIPTEN) || defined(MOBILE)
 #define GL_GLEXT_PROTOTYPES
 #include <Color/Color.hpp>

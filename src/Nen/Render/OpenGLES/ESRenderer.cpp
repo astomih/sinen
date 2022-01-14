@@ -1,9 +1,9 @@
+#include <Nen.hpp>
 #if defined(EMSCRIPTEN) || defined(MOBILE)
 #include "ESRenderer.h"
 #include "../../Texture/SurfaceHandle.hpp"
 #include "ShaderES.h"
 #include <GLES3/gl3.h>
-#include <Nen.hpp>
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_opengles2.h>

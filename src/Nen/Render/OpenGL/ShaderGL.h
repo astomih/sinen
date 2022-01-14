@@ -1,8 +1,10 @@
-﻿#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+﻿
 #pragma once
 
-#include <GL/glew.h>
+
 #include <Nen.hpp>
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#include <GL/glew.h>
 #include <string>
 #include <unordered_map>
 

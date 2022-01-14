@@ -1,5 +1,7 @@
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+
 #pragma once
+#include <Nen.hpp>
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "ShaderGL.h"
 #include <DrawObject/DrawObject.hpp>
 #include <Render/Renderer.hpp>

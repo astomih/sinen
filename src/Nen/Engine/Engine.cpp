@@ -122,13 +122,7 @@ void Launch(std::shared_ptr<base_scene> scene) {
 }
 
 } // namespace nen
-#ifdef MOBILE
 
-int SDL_main(int argc, char *argv[]) {
-#else
-int main(int argc, char **argv) {
-#endif
-  nen::Launch(std::make_shared<Main>());
-  nen::singleton_finalizer::Finalize();
-  return 0;
-}
+void Main::Setup() { }
+
+void Main::Update(float deltaTime) {}

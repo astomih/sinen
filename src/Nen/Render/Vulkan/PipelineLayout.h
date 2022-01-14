@@ -1,4 +1,5 @@
 #pragma once
+#include <Nen.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include <SDL_vulkan.h>
 #include <array>

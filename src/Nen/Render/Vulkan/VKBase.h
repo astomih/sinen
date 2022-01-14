@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <Nen.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #ifdef _WIN32
 #include <windows.h>

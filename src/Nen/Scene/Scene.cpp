@@ -4,7 +4,7 @@
 #include "Utility/Singleton.hpp"
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
-#include "src/Nen/event/current_event.hpp"
+#include "../event/current_event.hpp"
 #include <Nen.hpp>
 #include <SDL.h>
 #include <SDL_ttf.h>

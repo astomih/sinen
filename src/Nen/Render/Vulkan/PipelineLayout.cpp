@@ -1,3 +1,4 @@
+#include <Nen.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "Pipeline.h"
 #include "VKBase.h"

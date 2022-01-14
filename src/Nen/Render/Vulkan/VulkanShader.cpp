@@ -1,7 +1,7 @@
-﻿#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+﻿#include <Nen.hpp>
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "VulkanShader.h"
 #include "VKBase.h"
-#include <Nen.hpp>
 #include <fstream>
 
 namespace nen::vk {

@@ -1,13 +1,13 @@
-﻿#include "SDL_stdinc.h"
+﻿#include <Nen.hpp>
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#include "SDL_stdinc.h"
 #include "vulkan/vulkan_core.h"
 #include <cstdint>
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "../../Texture/SurfaceHandle.hpp"
 #include "VKBase.h"
 #include "VKRenderer.h"
 #include "VulkanShader.h"
 #include "VulkanUtil.h"
-#include <Nen.hpp>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <array>

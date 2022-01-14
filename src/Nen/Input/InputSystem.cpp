@@ -3,7 +3,7 @@
 #include "SDL_events.h"
 #include "SDL_video.h"
 #include "Utility/Singleton.hpp"
-#include "src/Nen/event/current_event.hpp"
+#include "../event/current_event.hpp"
 #include <Nen.hpp>
 #include <SDL.h>
 #include <SDL_gamecontroller.h>

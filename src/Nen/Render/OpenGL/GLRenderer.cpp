@@ -1,7 +1,9 @@
-﻿#include "SDL_stdinc.h"
+﻿#include <Nen.hpp>
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#include "SDL_stdinc.h"
 #include <cstdint>
 #include <vector>
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+
 #include "../../Texture/SurfaceHandle.hpp"
 #include "GLRenderer.h"
 #include <GL/glew.h>

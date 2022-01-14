@@ -1,10 +1,10 @@
 ﻿#pragma once
+#include <Nen.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "Pipeline.h"
 #include "PipelineLayout.h"
 #include "VKBase.h"
 #include <DrawObject/DrawObject.hpp>
-#include <Nen.hpp>
 #include <array>
 #include <string_view>
 #include <unordered_map>

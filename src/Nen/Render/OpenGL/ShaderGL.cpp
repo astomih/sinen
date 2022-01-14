@@ -1,6 +1,6 @@
-#include "ShaderGL.h"
 #include <Nen.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#include "ShaderGL.h"
 #include <SDL_image.h>
 #include <fstream>
 #include <iostream>

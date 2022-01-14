@@ -1,6 +1,6 @@
 #include "../event/current_event.hpp"
 #include "Utility/Singleton.hpp"
-#include "src/Nen/event/current_event.hpp"
+#include "../event/current_event.hpp"
 #include <Nen.hpp>
 #include <SDL.h>
 

@@ -1,8 +1,8 @@
-﻿#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+﻿#include <Nen.hpp>
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "VKBase.h"
 #include "Pipeline.h"
 #include "VKRenderer.h"
-#include <Nen.hpp>
 #include <algorithm>
 #include <array>
 #include <iostream>

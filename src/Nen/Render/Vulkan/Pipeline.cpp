@@ -1,4 +1,6 @@
-﻿#include "Pipeline.h"
+﻿#include <Nen.hpp>
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#include "Pipeline.h"
 #include "VKBase.h"
 #include "VulkanUtil.h"
 #include <Nen.hpp>
@@ -79,3 +81,4 @@ void Pipeline::AlphaBlendFactor(VkBlendFactor src, VkBlendFactor dst) {
   blendAttachment.dstAlphaBlendFactor = dst;
 }
 } // namespace nen::vk
+#endif

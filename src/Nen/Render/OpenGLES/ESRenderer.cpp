@@ -1,7 +1,7 @@
 #include <Nen.hpp>
 #if defined(EMSCRIPTEN) || defined(MOBILE)
-#include "ESRenderer.h"
 #include "../../Texture/SurfaceHandle.hpp"
+#include "ESRenderer.h"
 #include "ShaderES.h"
 #include <GLES3/gl3.h>
 #include <SDL.h>
@@ -13,6 +13,7 @@
 #include <imgui_impl_sdl.h>
 #include <iostream>
 #include <sstream>
+
 
 namespace nen::es {
 ESRenderer::ESRenderer() {}
@@ -49,6 +50,7 @@ void ESRenderer::Render() {
   bool lastFrameChanged = false;
   for (auto &i : mSprite3Ds) {
     i->param.view = mRenderer->GetViewMatrix();
+    i->param.proj = mRenderer->GetProjectionMatrix();
     if (vertexID != i->vertexIndex) {
       glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
       vertexID = i->vertexIndex;

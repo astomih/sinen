@@ -108,8 +108,3 @@ void ChangeScene(std::shared_ptr<base_scene> newScene);
 
 void Launch(std::shared_ptr<base_scene> scene);
 } // namespace nen
-class Main : public nen::base_scene {
-public:
-  void Setup() override;
-  void Update(float deltaTime) override;
-};

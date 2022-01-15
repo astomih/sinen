@@ -122,7 +122,3 @@ void Launch(std::shared_ptr<base_scene> scene) {
 }
 
 } // namespace nen
-
-void Main::Setup() { }
-
-void Main::Update(float deltaTime) {}

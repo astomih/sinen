@@ -27,7 +27,46 @@ if(ANDROID)
 			)
 	target_include_directories(nen PUBLIC ${INCLUDE_DIRS})
 	target_link_libraries(nen SDL2 SDL2_image SDL2_mixer SDL2_ttf SDL2_net GLESv3 log)
-	else()
+	elseif(EMSCRIPTEN)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/example/bin)
+set(CMAKE_BUILD_TYPE_INIT "Release")
+set(CMAKE_C_COMPILER "emcc")
+
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ./build)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ./build)
+
+file(GLOB SOURCE_FILES 
+	src/Nen/*/*.cpp
+	src/Nen/Engine/Engine.cpp
+	src/Nen/Render/OpenGLES/*.cpp
+	libs/ImGui/source/gles/*.cpp
+)
+add_library(nen STATIC ${SOURCE_FILES})
+set(NEN_INCLUDE_DIRECTORIES 
+	.
+	include
+	include/Nen
+	libs/ImGui/include
+	libs/sol2/include
+	libs/Lua/include
+	libs/rapidjson/include
+)
+
+
+target_include_directories(nen PUBLIC
+	${NEN_INCLUDE_DIRECTORIES}
+)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 \
+		-s USE_WEBGL2=1 \
+		-s FULL_ES3=1 \
+		-s SDL2_IMAGE_FORMATS="[""png""]" \
+		-s USE_SDL=2 \
+		-s USE_SDL_IMAGE=2 \
+		-s USE_SDL_TTF=2 \
+		-s USE_SDL_MIXER=2 \
+		-s USE_SDL_NET=2 \
+		-std=c++20")
+	else()	
 	set(CMAKE_CXX_FLAGS "-std=c++2a -Wno-subobject-linkage")
 	set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0 -pg")
 	set(CMAKE_CXX_FLAGS_RELEASE "-O2 -s -DNDEBUG -march=native")

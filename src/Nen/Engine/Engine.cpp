@@ -105,6 +105,7 @@ void Launch(std::shared_ptr<base_scene> scene) {
       renderer->Shutdown();
       renderer = nullptr;
       window = nullptr;
+      singleton_finalizer::Finalize();
 #ifndef EMSCRIPTEN
       std::exit(0);
 #else

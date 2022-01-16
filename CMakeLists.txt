@@ -72,7 +72,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 \
 	set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0 -pg")
 	set(CMAKE_CXX_FLAGS_RELEASE "-O2 -s -DNDEBUG -march=native")
 	set(CMAKE_EXPORT_COMPILE_COMMANDS true)
-	find_package(boost REQUIRED)
+	find_package(Boost REQUIRED)
 	find_package(Vulkan REQUIRED)
 	find_package(OpenGL REQUIRED)
 	find_package(GLEW REQUIRED)
@@ -106,7 +106,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 \
 
 	target_include_directories(nen PUBLIC
 			${NEN_INCLUDE_DIRECTORIES}
-			${BOOST_INCLUDE_DIRS}
 			${Vulkan_INCLUDE_DIRS}
 			${SDL2_INCLUDE_DIRS}
 			${OpenAL_INCLUDE_DIRS}

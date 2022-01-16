@@ -20,8 +20,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       
-    - name: Download and install Boost
-      uses: MarkusJx/install-boost@v2.1.0
     - name: Install boost
       uses: MarkusJx/install-boost@v2.1.0
       id: install-boost

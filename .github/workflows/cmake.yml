@@ -20,10 +20,17 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       
-      - name: Download and install Boost
+    - name: Download and install Boost
       uses: MarkusJx/install-boost@v2.1.0
+    - name: Install boost
+      uses: MarkusJx/install-boost@v2.1.0
+      id: install-boost
+      with:
+      # REQUIRED: Specify the required boost version
+      # A list of supported versions can be found here: 
+      # https://github.com/actions/boost-versions/blob/main/versions-manifest.json
+      boost_version: 1.75.0
 
-      
     - name: Setup Vulkan SDK
       uses: humbletim/setup-vulkan-sdk@v1.0.3
 

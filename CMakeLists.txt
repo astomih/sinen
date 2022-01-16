@@ -59,7 +59,7 @@ target_include_directories(nen PUBLIC
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 \
 		-s USE_WEBGL2=1 \
 		-s FULL_ES3=1 \
-		-s SDL2_IMAGE_FORMATS="[\"png\"]" \
+		-s SDL2_IMAGE_FORMATS='[\"png\"]' \
 		-s USE_BOOST=1 \
 		-s USE_SDL=2 \
 		-s USE_SDL_IMAGE=2 \

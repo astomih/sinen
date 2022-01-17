@@ -41,9 +41,9 @@ jobs:
     
 
     - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-    - name: Build with Gradle
       run: |
           pwd
           cd android-project
-          ./gradlew build
+          chmod +x gradlew
+    - name: Build with Gradle
+      run: ./gradlew build

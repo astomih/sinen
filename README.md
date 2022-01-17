@@ -1,4 +1,7 @@
-[![CMake](https://github.com/astomih/sinen/actions/workflows/cmake.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/cmake.yml)
+[![MinGW](https://github.com/astomih/sinen/actions/workflows/mingw.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/mingw.yml)
+[![Linux](https://github.com/astomih/sinen/actions/workflows/linux.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/linux.yml)
+[![Emscripten](https://github.com/astomih/sinen/actions/workflows/emscripten.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/emscripten.yml)
+[![Android](https://github.com/astomih/sinen/actions/workflows/android.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/android.yml)
 # sinen
   sinen is a media library for C++20 that is being produced mainly for game development.  
 The library is planned to be used only by me, so I don't think it will have full support and documentation.

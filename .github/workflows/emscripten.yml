@@ -1,4 +1,4 @@
-name: emscripten 
+name: Emscripten 
 on:
   push:
     branches: [ main ]

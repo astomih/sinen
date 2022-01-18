@@ -20,8 +20,7 @@ jobs:
     - uses: msys2/setup-msys2@v2
       with:
         msystem: MINGW64
-        install: mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-gcc
-       # install: mingw-w64-i686-cmake mingw-w64-i686-ninja mingw-w64-i686-gcc mingw-w64-i686-boost mingw-w64-i686-glew mingw-w64-i686-lua mingw-w64-i686-openal mingw-w64-i686-SDL2 mingw-w64-i686-SDL2_image mingw-w64-i686-SDL2_mixer mingw-w64-i686-SDL2_net mingw-w64-i686-SDL2_net mingw-w64-i686-SDL2_ttf
+        install: mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-gcc mingw-w64-x86_64-boost mingw-w64-x86_64-glew mingw-w64-x86_64-lua mingw-w64-x86_64-openal mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-SDL2_mixer mingw-w64-x86_64-SDL2_net mingw-w64-x86_64-SDL2_net mingw-w64-x86_64-SDL2_ttf
 
     - name: Setup Vulkan SDK
       uses: humbletim/setup-vulkan-sdk@v1.0.3

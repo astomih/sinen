@@ -1,22 +1,33 @@
 ﻿#include <Nen.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
-#include "SDL_stdinc.h"
-#include "vulkan/vulkan_core.h"
-#include <cstdint>
 #include "../../Texture/SurfaceHandle.hpp"
+#include "SDL_stdinc.h"
 #include "VKBase.h"
 #include "VKRenderer.h"
 #include "VulkanShader.h"
 #include "VulkanUtil.h"
+#include "vulkan/vulkan_core.h"
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <array>
+#include <cstdint>
 #include <fstream>
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_vulkan.h>
 #include <sstream>
 #include <string>
+
+#define VMA_IMPLEMENTATION
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits"
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wreorder"
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
+#include <vk_mem_alloc.h>
+#pragma GCC diagnostic pop
 
 namespace nen::vk {
 using namespace vkutil;

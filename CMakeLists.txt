@@ -102,6 +102,7 @@ else()
 			libs/sol2/include
 			libs/Lua/include
 			libs/rapidjson/include
+			libs/VulkanMemoryAllocator/include
 			)
 
 

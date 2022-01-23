@@ -1,3 +1,0 @@
-[submodule "libs/VulkanMemoryAllocator"]
-	path = libs/VulkanMemoryAllocator
-	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator

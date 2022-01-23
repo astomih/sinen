@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <Nen.hpp>
+#include <memory>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "Pipeline.h"
 #include "PipelineLayout.h"
@@ -8,12 +9,12 @@
 #include <array>
 #include <string_view>
 #include <unordered_map>
-
+#include <vk_mem_alloc.h>
 
 namespace nen::vk {
 struct BufferObject {
   VkBuffer buffer;
-  VkDeviceMemory memory;
+  VmaAllocation allocation;
 };
 struct ImageObject {
   VkImage image;
@@ -81,9 +82,6 @@ public:
       uint32_t size, VkBufferUsageFlags usage,
       VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
   VKBase *GetBase() { return m_base.get(); }
-  BufferObject CreateBuffer(uint32_t size, VkBufferUsageFlags usage,
-                            VkMemoryPropertyFlags flags,
-                            const void *initialData);
   void registerTexture(std::shared_ptr<VulkanDrawObject> texture,
                        std::string_view, texture_type type);
   void unregisterTexture(std::shared_ptr<VulkanDrawObject> texture,
@@ -127,7 +125,7 @@ public:
   void TransferStageBufferToImage(const BufferObject &srcBuffer,
                                   const ImageObject &dstImage,
                                   const VkBufferImageCopy *region);
-  void MapMemory(VkDeviceMemory memory, void *data, size_t size);
+  void MapMemory(const VmaAllocation &, void *data, size_t size);
   std::shared_ptr<class window> GetWindow() { return m_base->m_window; }
 
 private:
@@ -169,6 +167,7 @@ private:
   std::vector<BufferObject> m_instanceUniforms;
   std::vector<std::shared_ptr<class ui_screen>> mGUI;
   int instanceCount;
+  VmaAllocator allocator;
 };
 } // namespace nen::vk
 #endif

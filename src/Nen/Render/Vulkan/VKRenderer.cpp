@@ -439,7 +439,7 @@ void VKRenderer::createBoxVertices() {
       20, 22, 21, 21, 22, 23, // bottom
   };
   vArray.indexCount = sizeof(indices) / sizeof(uint32_t);
-  vArray.PushIndices(indices, vArray.indexCount);
+  vArray.push_indices(indices, vArray.indexCount);
   auto vArraySize = vArray.vertices.size() * sizeof(vertex);
   vArray.vertexBuffer =
       CreateBuffer(vArraySize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -474,7 +474,7 @@ void VKRenderer::createSpriteVertices() {
       0, 2, 1, 1, 2, 3, // front
   };
   vArray.indexCount = sizeof(indices) / sizeof(uint32_t);
-  vArray.PushIndices(indices, vArray.indexCount);
+  vArray.push_indices(indices, vArray.indexCount);
   auto vArraySize = vArray.vertices.size() * sizeof(vertex);
   vArray.vertexBuffer =
       CreateBuffer(vArraySize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,

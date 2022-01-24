@@ -5,7 +5,7 @@
 namespace nen {
 class vertex_array {
 public:
-  void PushIndices(uint32_t indiceArray[], size_t count);
+  void push_indices(uint32_t indiceArray[], size_t count);
   std::vector<vertex> vertices;
   std::vector<uint32_t> indices;
   std::string materialName;

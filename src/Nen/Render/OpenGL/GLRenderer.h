@@ -11,7 +11,6 @@
 #include <memory>
 #include <string>
 
-
 namespace nen {
 class renderer;
 
@@ -108,6 +107,10 @@ private:
   bool loadShader();
   void createSpriteVerts();
   void createBoxVerts();
+  void draw_3d();
+  void draw_2d();
+
+  std::string vertexID;
 
   ShaderGL *mSpriteShader;
   ShaderGL *mAlphaShader;

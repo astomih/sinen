@@ -1,4 +1,6 @@
-﻿#include <Nen.hpp>
+﻿#include "src/Nen/Render/OpenGL/GLRenderer.h"
+#include "Component/Draw2DComponent.hpp"
+#include <Nen.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "SDL_stdinc.h"
 #include <cstdint>
@@ -45,11 +47,41 @@ void GLRenderer::Render() {
 
   glDisable(GL_BLEND);
   glEnable(GL_DEPTH_TEST);
-  std::string vertexID;
+  vertexID = "";
   bool lastFrameChanged = false;
+  draw_3d();
+  glDisable(GL_DEPTH_TEST);
+  glEnable(GL_BLEND);
+  glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+  glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+  draw_2d();
+  glDisable(GL_BLEND);
+  ImGui_ImplOpenGL3_NewFrame();
+  ImGui_ImplSDL2_NewFrame((SDL_Window *)mWindow->GetSDLWindow());
+  ImGui::NewFrame();
+  if (mRenderer->isShowImGui()) {
+
+    // Draw ImGUI widgets.
+    ImGui::Begin("Engine Info");
+    ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
+    if (ImGui::Button("toggleAPI")) {
+      std::ofstream ofs("./api");
+      ofs << "Vulkan";
+    }
+    ImGui::End();
+  }
+
+  ImGui::Render();
+  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+  SDL_GL_SwapWindow((SDL_Window *)mWindow->GetSDLWindow());
+}
+
+void GLRenderer::draw_3d() {
+  auto view = mRenderer->GetViewMatrix();
+  auto proj = mRenderer->GetProjectionMatrix();
   for (auto &i : mSprite3Ds) {
-    i->param.view = mRenderer->GetViewMatrix();
-    i->param.proj = mRenderer->GetProjectionMatrix();
+    i->param.view = view;
+    i->param.proj = proj;
     if (vertexID != i->vertexIndex) {
       glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
       vertexID = i->vertexIndex;
@@ -71,10 +103,9 @@ void GLRenderer::Render() {
     glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount,
                    GL_UNSIGNED_INT, nullptr);
   }
-  glDisable(GL_DEPTH_TEST);
-  glEnable(GL_BLEND);
-  glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-  glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+}
+
+void GLRenderer::draw_2d() {
   for (auto &i : mSprite2Ds) {
     if (vertexID != i->vertexIndex) {
       glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
@@ -96,26 +127,8 @@ void GLRenderer::Render() {
     glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount,
                    GL_UNSIGNED_INT, nullptr);
   }
-  glDisable(GL_BLEND);
-  ImGui_ImplOpenGL3_NewFrame();
-  ImGui_ImplSDL2_NewFrame((SDL_Window *)mWindow->GetSDLWindow());
-  ImGui::NewFrame();
-  if (mRenderer->isShowImGui()) {
-
-    // Draw ImGUI widgets.
-    ImGui::Begin("Engine Info");
-    ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
-    if (ImGui::Button("toggleAPI")) {
-      std::ofstream ofs("./api");
-      ofs << "Vulkan";
-    }
-    ImGui::End();
-  }
-
-  ImGui::Render();
-  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-  SDL_GL_SwapWindow((SDL_Window *)mWindow->GetSDLWindow());
 }
+
 void GLRenderer::AddVertexArray(const vertex_array &vArray,
                                 std::string_view name) {
   gl::VertexArrayForGL vArrayGL;
@@ -133,7 +146,7 @@ void GLRenderer::AddVertexArray(const vertex_array &vArray,
   glBindBuffer(GL_ARRAY_BUFFER, vArrayGL.vbo);
   auto vArraySize = vArrayGL.vertices.size() * sizeof(vertex);
   glBufferData(GL_ARRAY_BUFFER, vArraySize, vArrayGL.vertices.data(),
-               GL_STATIC_DRAW);
+               GL_DYNAMIC_DRAW);
 
   // VBOをVAOに登録
   glEnableVertexAttribArray(0);
@@ -149,7 +162,7 @@ void GLRenderer::AddVertexArray(const vertex_array &vArray,
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.ibo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,
                vArrayGL.indices.size() * sizeof(uint32_t),
-               vArrayGL.indices.data(), GL_STATIC_DRAW);
+               vArrayGL.indices.data(), GL_DYNAMIC_DRAW);
   // 登録
   m_VertexArrays.emplace(name.data(), vArrayGL);
 }
@@ -277,7 +290,7 @@ void GLRenderer::createSpriteVerts() {
       0, 2, 1, 1, 2, 3 // front
   };
   vArray.indexCount = 6;
-  vArray.PushIndices(indices, vArray.indexCount);
+  vArray.push_indices(indices, vArray.indexCount);
 
   AddVertexArray(vArray, "SPRITE");
 }
@@ -340,7 +353,7 @@ void GLRenderer::createBoxVerts() {
   };
   vArray.indexCount = sizeof(indices) / sizeof(uint32_t);
 
-  vArray.PushIndices(indices, vArray.indexCount);
+  vArray.push_indices(indices, vArray.indexCount);
   AddVertexArray(vArray, "BOX");
 }
 } // namespace nen::gl

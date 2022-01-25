@@ -14,7 +14,6 @@
 #include <iostream>
 #include <sstream>
 
-
 namespace nen::es {
 ESRenderer::ESRenderer() {}
 
@@ -273,7 +272,7 @@ void ESRenderer::createSpriteVerts() {
       0, 2, 1, 1, 2, 3 // front
   };
   vArray.indexCount = 6;
-  vArray.PushIndices(indices, vArray.indexCount);
+  vArray.push_indices(indices, vArray.indexCount);
 
   AddVertexArray(vArray, "SPRITE");
 }
@@ -336,7 +335,7 @@ void ESRenderer::createBoxVerts() {
   };
   vArray.indexCount = 36;
 
-  vArray.PushIndices(indices, vArray.indexCount);
+  vArray.push_indices(indices, vArray.indexCount);
   AddVertexArray(vArray, "BOX");
 }
 } // namespace nen::es

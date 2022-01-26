@@ -105,8 +105,6 @@ private:
   renderer *mRenderer;
   std::shared_ptr<window> mWindow;
   bool loadShader();
-  void createSpriteVerts();
-  void createBoxVerts();
 
   ShaderES *mSpriteShader;
   ShaderES *mAlphaShader;

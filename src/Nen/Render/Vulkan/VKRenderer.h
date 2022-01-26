@@ -131,8 +131,6 @@ public:
 private:
   renderer *mRenderer;
   std::unique_ptr<class VKBase> m_base;
-  void createBoxVertices();
-  void createSpriteVertices();
   void prepareUniformBuffers();
   void prepareDescriptorSetLayout();
   void prepareDescriptorPool();

@@ -52,6 +52,7 @@
 #include "Vertex/Vertex.hpp"
 #include "Vertex/VertexArray.hpp"
 #include "Window/Window.hpp"
+#include "exception/exception.hpp"
 #include "Json/JsonReader.hpp"
 #include "Json/JsonWriter.hpp"
 

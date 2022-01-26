@@ -80,6 +80,7 @@ public:
   void UnloadShader(const shader &shaderinfo);
 
 private:
+  void setup_shapes();
   color clearColor = palette::Black;
   class draw_2d_component *transPic;
 

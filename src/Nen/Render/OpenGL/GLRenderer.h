@@ -105,8 +105,6 @@ private:
   renderer *mRenderer;
   std::shared_ptr<window> mWindow;
   bool loadShader();
-  void createSpriteVerts();
-  void createBoxVerts();
   void draw_3d();
   void draw_2d();
 

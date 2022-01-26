@@ -208,8 +208,6 @@ void ESRenderer::prepare() {
   if (!loadShader()) {
     std::cout << "failed to loads shader" << std::endl;
   }
-  createSpriteVerts();
-  createBoxVerts();
 }
 
 void ESRenderer::registerTexture(std::shared_ptr<texture> texture,
@@ -256,87 +254,5 @@ bool ESRenderer::loadShader() {
   return true;
 }
 
-void ESRenderer::createSpriteVerts() {
-  const float value = 1.f;
-  const vector2 lb(0.0f, 0.0f);
-  const vector2 lt(0.f, 1.f);
-  const vector2 rb(1.0f, 0.0f);
-  const vector2 rt(1.0f, 1.0f);
-  vector3 norm{1, 1, 1};
-  vertex_array vArray;
-  vArray.vertices.push_back({vector3(-value, value, 0.5f), norm, lb});
-  vArray.vertices.push_back({vector3(-value, -value, 0.5f), norm, lt});
-  vArray.vertices.push_back({vector3(value, value, 0.5f), norm, rb});
-  vArray.vertices.push_back({vector3(value, -value, 0.5f), norm, rt});
-  uint32_t indices[] = {
-      0, 2, 1, 1, 2, 3 // front
-  };
-  vArray.indexCount = 6;
-  vArray.push_indices(indices, vArray.indexCount);
-
-  AddVertexArray(vArray, "SPRITE");
-}
-
-void ESRenderer::createBoxVerts() {
-  const float value = 1.f;
-  const vector2 lb(0.0f, 0.0f);
-  const vector2 lt(0.f, 1.f);
-  const vector2 rb(1.0f, 0.0f);
-  const vector2 rt(1.0f, 1.0f);
-  vector3 norm{1, 1, 1};
-  const vector3 red{1.0f, 0.0f, 0.0f};
-  const vector3 green{0.0f, 1.0f, 0.0f};
-  const vector3 blue{0.0f, 0.0f, 1.0f};
-  const vector3 white{1.0f, 1, 1};
-  const vector3 black{0.0f, 0, 0};
-  const vector3 yellow{1.0f, 1.0f, 0.0f};
-  const vector3 magenta{1.0f, 0.0f, 1.0f};
-  const vector3 cyan{0.0f, 1.0f, 1.0f};
-
-  vertex_array vArray;
-  vArray.vertices.push_back({vector3(-value, value, value), yellow, lb});
-  vArray.vertices.push_back({vector3(-value, -value, value), red, lt});
-  vArray.vertices.push_back({vector3(value, value, value), white, rb});
-  vArray.vertices.push_back({vector3(value, -value, value), magenta, rt});
-
-  vArray.vertices.push_back({vector3(value, value, value), white, lb});
-  vArray.vertices.push_back({vector3(value, -value, value), magenta, lt});
-  vArray.vertices.push_back({vector3(value, value, -value), cyan, rb});
-  vArray.vertices.push_back({vector3(value, -value, -value), blue, rt});
-
-  vArray.vertices.push_back({vector3(-value, value, -value), green, lb});
-  vArray.vertices.push_back({vector3(-value, -value, -value), black, lt});
-  vArray.vertices.push_back({vector3(-value, value, value), yellow, rb});
-  vArray.vertices.push_back({vector3(-value, -value, value), red, rt});
-
-  vArray.vertices.push_back({vector3(value, value, -value), cyan, lb});
-  vArray.vertices.push_back({vector3(value, -value, -value), blue, lt});
-  vArray.vertices.push_back({vector3(-value, value, -value), green, rb});
-  vArray.vertices.push_back({vector3(-value, -value, -value), black, rt});
-
-  vArray.vertices.push_back({vector3(-value, value, -value), green, lb});
-  vArray.vertices.push_back({vector3(-value, value, value), yellow, lt});
-  vArray.vertices.push_back({vector3(value, value, -value), cyan, rb});
-  vArray.vertices.push_back({vector3(value, value, value), white, rt});
-
-  vArray.vertices.push_back({vector3(-value, -value, value), red, lb});
-  vArray.vertices.push_back({vector3(-value, -value, -value), black, lt});
-  vArray.vertices.push_back({vector3(value, -value, value), magenta, rb});
-  vArray.vertices.push_back({vector3(value, -value, -value), blue, rt});
-
-  uint32_t indices[] = {
-      0,  2,  1,  1,  2,  3,  // front
-      4,  6,  5,  5,  6,  7,  // right
-      8,  10, 9,  9,  10, 11, // left
-
-      12, 14, 13, 13, 14, 15, // back
-      16, 18, 17, 17, 18, 19, // top
-      20, 22, 21, 21, 22, 23, // bottom
-  };
-  vArray.indexCount = 36;
-
-  vArray.push_indices(indices, vArray.indexCount);
-  AddVertexArray(vArray, "BOX");
-}
 } // namespace nen::es
 #endif

@@ -23,7 +23,7 @@ void PipelineLayout::Initialize(VkDevice device,
       {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(vertex, position)},
       {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(vertex, normal)},
       {2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(vertex, uv)},
-      {3, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(vertex, color)},
+      {3, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(vertex, rgba)},
   }};
 
   vertexInputCI = VkPipelineVertexInputStateCreateInfo{};

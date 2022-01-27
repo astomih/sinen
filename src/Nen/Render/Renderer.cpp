@@ -187,7 +187,7 @@ void create_box_vertices(renderer *_renderer) {
   vArray.indexCount = sizeof(indices) / sizeof(uint32_t);
   vArray.push_indices(indices, vArray.indexCount);
   auto vArraySize = vArray.vertices.size() * sizeof(vertex);
-  _renderer->AddVertexArray(vArray, "BOX");
+  _renderer->AddVertexArray(vArray, vertex_default_shapes::box);
 }
 
 void create_sprite_vertices(renderer *_renderer) {
@@ -214,7 +214,7 @@ void create_sprite_vertices(renderer *_renderer) {
   };
   vArray.indexCount = sizeof(indices) / sizeof(uint32_t);
   vArray.push_indices(indices, vArray.indexCount);
-  _renderer->AddVertexArray(vArray, "SPRITE");
+  _renderer->AddVertexArray(vArray, vertex_default_shapes::sprite);
 }
 void renderer::setup_shapes() {
   create_box_vertices(this);

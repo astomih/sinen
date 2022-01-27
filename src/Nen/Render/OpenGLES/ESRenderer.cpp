@@ -131,13 +131,16 @@ void ESRenderer::AddVertexArray(const vertex_array &vArray,
 
   // VBOをVAOに登録
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 8 * sizeof(float), 0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 12 * sizeof(float), 0);
   glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 8 * sizeof(float),
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 12 * sizeof(float),
                         reinterpret_cast<void *>(sizeof(float) * 3));
   glEnableVertexAttribArray(2);
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_TRUE, 8 * sizeof(float),
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_TRUE, 12 * sizeof(float),
                         reinterpret_cast<void *>(sizeof(float) * 6));
+  glEnableVertexAttribArray(3);
+  glVertexAttribPointer(3, 4, GL_FLOAT, GL_TRUE, 12 * sizeof(float),
+                        reinterpret_cast<void *>(sizeof(float) * 8));
 
   // IBO
   glGenBuffers(1, &vArrayGL.ibo);

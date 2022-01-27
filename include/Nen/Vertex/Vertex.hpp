@@ -1,29 +1,15 @@
 ﻿#pragma once
+#include "../Color/Color.hpp"
 #include "../Math/Vector2.hpp"
 #include "../Math/Vector3.hpp"
+#include "Color/Color.hpp"
+#include "Math/Vector3.hpp"
 
 namespace nen {
-/**
- * @brief 頂点情報
- *
- */
 struct vertex {
-  /**
-   * @brief 位置ベクトル
-   *
-   */
   vector3 position;
-
-  /**
-   * @brief 法線ベクトル
-   *
-   */
   vector3 normal;
-
-  /**
-   * @brief UV座標
-   *
-   */
   vector2 uv;
+  color color = nen::color(nen::color(1, 1, 1, 1));
 };
 } // namespace nen

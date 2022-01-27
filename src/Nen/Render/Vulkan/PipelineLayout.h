@@ -41,7 +41,7 @@ private:
   VkPipelineLayout layout;
   VkVertexInputBindingDescription inputBinding;
   std::array<VkVertexInputBindingDescription, 2> vibDisc;
-  std::array<VkVertexInputAttributeDescription, 3> inputAttribs;
+  std::array<VkVertexInputAttributeDescription, 4> inputAttribs;
   VkPipelineVertexInputStateCreateInfo vertexInputCI;
   int colorMask;
   VkPipelineColorBlendAttachmentState blendAttachment;

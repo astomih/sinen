@@ -121,6 +121,7 @@ void ShaderGL::UpdateUBO(const GLuint &blockIndex, const size_t &size,
   auto BIB = blockIndexBuffers[blockIndex];
   glBindBuffer(GL_UNIFORM_BUFFER, BIB);
   glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
+  glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 } // namespace nen::gl

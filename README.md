@@ -5,8 +5,13 @@ The library is planned to be used only by me, so I don't think it will have full
 ## Supported platforms
 [![Windows(MinGW)](https://github.com/astomih/sinen/actions/workflows/mingw.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/mingw.yml)
 [![Linux](https://github.com/astomih/sinen/actions/workflows/linux.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/linux.yml)
-[![Emscripten](https://github.com/astomih/sinen/actions/workflows/emscripten.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/emscripten.yml)
+[![Emscripten(Web)](https://github.com/astomih/sinen/actions/workflows/emscripten.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/emscripten.yml)
 [![Android](https://github.com/astomih/sinen/actions/workflows/android.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/android.yml)
+
+## Documents
+[![doxygen](https://github.com/astomih/sinen/actions/workflows/doxygen.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/doxygen.yml)
+[API references](https://astomih.github.io/sinen)  
+No tutorials, etc. have been created yet.
 
 ## Hello world in sinen
 ``` c++
@@ -61,10 +66,6 @@ Install emscripten SDK. and do this.
  ```
  ### Android
  Build with gradle.
-
-## Documents
-[API references](https://astomih.github.io/sinen)  
-No tutorials, etc. have been created yet.
 
 ## Using libraries
 - GLEW

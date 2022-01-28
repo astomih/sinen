@@ -1,4 +1,4 @@
-name: Emscripten 
+name: Emscripten(Web) 
 on:
   push:
     branches: [ main ]

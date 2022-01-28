@@ -21,7 +21,9 @@ jobs:
           doxygen
 
     - name: create nojekyll
-      run: sudo touch docs/html/.nojekyll
+      run: |
+          ls
+          sudo touch docs/html/.nojekyll
     - name: Deploy 🚀
       uses: JamesIves/github-pages-deploy-action@v4.2.2
       with:

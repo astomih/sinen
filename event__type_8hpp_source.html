@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=11"/>
+<meta name="generator" content="Doxygen 1.9.2"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>sinen: event_type.hpp ソースファイル</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">sinen<span id="projectnumber">&#160;0.0.1</span>
+   </div>
+   <div id="projectbrief">C++20用ゲームライブラリ</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- 構築: Doxygen 1.9.2 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+var searchBox = new SearchBox("searchBox", "search",'検索','.html');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(function() {
+  initMenu('',true,false,'search.php','検索');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */
+</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_ccc60e118a0cae4e936731ca4c908b46.html">Nen</a></li><li class="navelem"><a class="el" href="dir_dee1a95a7970b2d611e26f9ec597cf77.html">event</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle"><div class="title">event_type.hpp</div></div>
+</div><!--header-->
+<div class="contents">
+<div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="keyword">namespace </span>nen {</div>
+<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="keyword">enum class</span> event_type {</div>
+<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span>  FIRSTEVENT = 0, </div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span>  <span class="comment">/* Application events */</span></div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span>  QUIT = 0x100, </div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span>  <span class="comment">/* These application events have special meaning on iOS, see README-ios.md for</span></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="comment">     details */</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span>  APP_TERMINATING,         </div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>  APP_LOWMEMORY,           </div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>  APP_WILLENTERBACKGROUND, </div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>  APP_DIDENTERBACKGROUND,  </div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>  APP_WILLENTERFOREGROUND, </div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>  APP_DIDENTERFOREGROUND,  </div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>  LOCALECHANGED, </div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>  <span class="comment">/* Display events */</span></div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>  DISPLAYEVENT = 0x150, </div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  <span class="comment">/* Window events */</span></div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>  WINDOWEVENT = 0x200, </div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  SYSWMEVENT,          </div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  <span class="comment">/* Keyboard events */</span></div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  KEYDOWN = 0x300, </div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>  KEYUP,           </div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  TEXTEDITING,     </div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>  TEXTINPUT,       </div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>  KEYMAPCHANGED,   </div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>  <span class="comment">/* Mouse events */</span></div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>  MOUSEMOTION = 0x400, </div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>  MOUSEBUTTONDOWN,     </div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>  MOUSEBUTTONUP,       </div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>  MOUSEWHEEL,          </div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>  <span class="comment">/* Joystick events */</span></div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  JOYAXISMOTION = 0x600, </div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>  JOYBALLMOTION,         </div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>  JOYHATMOTION,          </div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>  JOYBUTTONDOWN,         </div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>  JOYBUTTONUP,           </div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>  JOYDEVICEADDED,   </div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  JOYDEVICEREMOVED, </div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>  <span class="comment">/* Game controller events */</span></div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>  CONTROLLERAXISMOTION = 0x650, </div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>  CONTROLLERBUTTONDOWN,         </div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>  CONTROLLERBUTTONUP,           </div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  CONTROLLERDEVICEADDED,    </div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>  CONTROLLERDEVICEREMOVED,  </div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>  CONTROLLERDEVICEREMAPPED, </div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>  CONTROLLERTOUCHPADDOWN,   </div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>  CONTROLLERTOUCHPADMOTION, </div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>  CONTROLLERTOUCHPADUP,     </div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>  CONTROLLERSENSORUPDATE,   </div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>  <span class="comment">/* Touch events */</span></div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>  FINGERDOWN = 0x700,</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>  FINGERUP,</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>  FINGERMOTION,</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span> </div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>  <span class="comment">/* Gesture events */</span></div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>  DOLLARGESTURE = 0x800,</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>  DOLLARRECORD,</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>  MULTIGESTURE,</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span> </div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>  <span class="comment">/* Clipboard events */</span></div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>  CLIPBOARDUPDATE = 0x900, </div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>  <span class="comment">/* Drag and drop events */</span></div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>  DROPFILE = 0x1000, </div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>  DROPTEXT,          </div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>  DROPBEGIN,         </div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>  DROPCOMPLETE, </div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>  <span class="comment">/* Audio hotplug events */</span></div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>  AUDIODEVICEADDED = 0x1100, </div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>  AUDIODEVICEREMOVED,        </div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>  <span class="comment">/* Sensor events */</span></div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>  SENSORUPDATE = 0x1200, </div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>  <span class="comment">/* Render events */</span></div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>  RENDER_TARGETS_RESET = 0x2000, </div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>  RENDER_DEVICE_RESET, </div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>  <span class="comment">/* Internal events */</span></div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>  POLLSENTINEL = 0x7F00, </div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>  USEREVENT = 0x8000,</div>
+<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span> </div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>  LASTEVENT = 0xFFFF</div>
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span> </div>
+<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span>};</div>
+<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>}</div>
+</div><!-- fragment --></div><!-- contents -->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+構築:&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.2
+</small></address>
+</body>
+</html>

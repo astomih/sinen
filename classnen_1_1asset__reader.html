@@ -1,0 +1,246 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=11"/>
+<meta name="generator" content="Doxygen 1.9.2"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>sinen: nen::asset_reader クラス</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">sinen<span id="projectnumber">&#160;0.0.1</span>
+   </div>
+   <div id="projectbrief">C++20用ゲームライブラリ</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- 構築: Doxygen 1.9.2 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+var searchBox = new SearchBox("searchBox", "search",'検索','.html');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(function() {
+  initMenu('',true,false,'search.php','検索');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */
+</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><b>nen</b></li><li class="navelem"><a class="el" href="classnen_1_1asset__reader.html">asset_reader</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-static-methods">静的公開メンバ関数</a> &#124;
+<a href="classnen_1_1asset__reader-members.html">全メンバ一覧</a>  </div>
+  <div class="headertitle"><div class="title">nen::asset_reader クラス</div></div>
+</div><!--header-->
+<div class="contents">
+
+<p>汎用のAssets内のファイルの読み込みを行うクラス  
+ <a href="classnen_1_1asset__reader.html#details">[詳解]</a></p>
+
+<p><code>#include &lt;<a class="el" href="_asset_reader_8hpp_source.html">AssetReader.hpp</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
+静的公開メンバ関数</h2></td></tr>
+<tr class="memitem:adc2aa8e67fb5342885a205c453305e89"><td class="memItemLeft" align="right" valign="top">static std::string_view&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnen_1_1asset__reader.html#adc2aa8e67fb5342885a205c453305e89">Load</a> (const asset_type &amp;assetType, std::string_view name)</td></tr>
+<tr class="memdesc:adc2aa8e67fb5342885a205c453305e89"><td class="mdescLeft">&#160;</td><td class="mdescRight">アセットを読み込む  <a href="classnen_1_1asset__reader.html#adc2aa8e67fb5342885a205c453305e89">[詳解]</a><br /></td></tr>
+<tr class="separator:adc2aa8e67fb5342885a205c453305e89"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aece118f7cd6485f59d1ba4885c830c91"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnen_1_1asset__reader.html#aece118f7cd6485f59d1ba4885c830c91">LoadAsRWops</a> (const asset_type &amp;assetType, std::string_view name)</td></tr>
+<tr class="memdesc:aece118f7cd6485f59d1ba4885c830c91"><td class="mdescLeft">&#160;</td><td class="mdescRight">SDL_RWopsとしてアセットを読み込む  <a href="classnen_1_1asset__reader.html#aece118f7cd6485f59d1ba4885c830c91">[詳解]</a><br /></td></tr>
+<tr class="separator:aece118f7cd6485f59d1ba4885c830c91"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61c489fa898eb02c2238a21f6acd2330"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnen_1_1asset__reader.html#a61c489fa898eb02c2238a21f6acd2330">LoadAsString</a> (const asset_type &amp;assetType, std::string_view name)</td></tr>
+<tr class="memdesc:a61c489fa898eb02c2238a21f6acd2330"><td class="mdescLeft">&#160;</td><td class="mdescRight">std::stringとしてアセットを読み込む  <a href="classnen_1_1asset__reader.html#a61c489fa898eb02c2238a21f6acd2330">[詳解]</a><br /></td></tr>
+<tr class="separator:a61c489fa898eb02c2238a21f6acd2330"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a12687c0df147e3d513662609382a3379"><td class="memItemLeft" align="right" valign="top"><a id="a12687c0df147e3d513662609382a3379" name="a12687c0df147e3d513662609382a3379"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>ConvertFilePath</b> (std::string &amp;filePath, std::string_view name, const asset_type &amp;assetType)</td></tr>
+<tr class="separator:a12687c0df147e3d513662609382a3379"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">詳解</h2>
+<div class="textblock"><p >汎用のAssets内のファイルの読み込みを行うクラス </p>
+</div><h2 class="groupheader">関数詳解</h2>
+<a id="adc2aa8e67fb5342885a205c453305e89" name="adc2aa8e67fb5342885a205c453305e89"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adc2aa8e67fb5342885a205c453305e89">&#9670;&nbsp;</a></span>Load()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string_view nen::asset_reader::Load </td>
+          <td>(</td>
+          <td class="paramtype">const asset_type &amp;&#160;</td>
+          <td class="paramname"><em>assetType</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view&#160;</td>
+          <td class="paramname"><em>name</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>アセットを読み込む </p>
+<p >asset_type アセットの種類。EffectならAssets/Effect内にあるファイルを読み込む。 </p><dl class="params"><dt>引数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">name</td><td>Assets/〇〇(任意のディレクトリ)にあるファイル。 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>戻り値</dt><dd>std::string_view </dd></dl>
+
+</div>
+</div>
+<a id="aece118f7cd6485f59d1ba4885c830c91" name="aece118f7cd6485f59d1ba4885c830c91"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aece118f7cd6485f59d1ba4885c830c91">&#9670;&nbsp;</a></span>LoadAsRWops()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void * nen::asset_reader::LoadAsRWops </td>
+          <td>(</td>
+          <td class="paramtype">const asset_type &amp;&#160;</td>
+          <td class="paramname"><em>assetType</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view&#160;</td>
+          <td class="paramname"><em>name</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>SDL_RWopsとしてアセットを読み込む </p>
+<dl class="params"><dt>引数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">asset_type</td><td>アセットの種類。EffectならAssets/Effect内にあるファイルを読み込む。 </td></tr>
+    <tr><td class="paramname">name</td><td>Assets/〇〇(任意のディレクトリ)にあるファイル。 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>戻り値</dt><dd>void* SDL_RWops </dd></dl>
+
+</div>
+</div>
+<a id="a61c489fa898eb02c2238a21f6acd2330" name="a61c489fa898eb02c2238a21f6acd2330"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a61c489fa898eb02c2238a21f6acd2330">&#9670;&nbsp;</a></span>LoadAsString()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string nen::asset_reader::LoadAsString </td>
+          <td>(</td>
+          <td class="paramtype">const asset_type &amp;&#160;</td>
+          <td class="paramname"><em>assetType</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view&#160;</td>
+          <td class="paramname"><em>name</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>std::stringとしてアセットを読み込む </p>
+<dl class="params"><dt>引数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">asset_type</td><td>アセットの種類。EffectならAssets/Effect内にあるファイルを読み込む。 </td></tr>
+    <tr><td class="paramname">name</td><td>Assets/〇〇(任意のディレクトリ)にあるファイル。 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>戻り値</dt><dd>std::string </dd></dl>
+
+</div>
+</div>
+<hr/>このクラス詳解は次のファイルから抽出されました:<ul>
+<li><a class="el" href="_asset_reader_8hpp_source.html">AssetReader.hpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+構築:&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.2
+</small></address>
+</body>
+</html>

@@ -23,4 +23,4 @@
  @licend  The above is the entire license notice for the JavaScript code in this file
 */
 var menudata={children:[
-{text:"総合概要",url:"index.html"}]}
+{text:"Main Page",url:"index.html"}]}

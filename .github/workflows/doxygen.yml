@@ -16,10 +16,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Doxygen Action
-      uses: mattnotmitt/doxygen-action@1.9.1
-      with:
-          doxyfile-path: ./Doxyfile
-          working-directory: .
+      run: |
+          sudo apt install doxygen
+          doxygen
 
     - name: create nojekyll
       run: sudo touch docs/html/.nojekyll

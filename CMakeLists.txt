@@ -60,7 +60,6 @@ elseif(EMSCRIPTEN)
 		-s USE_WEBGL2=1 \
 		-s FULL_ES3=1 \
 		-s SDL2_IMAGE_FORMATS='[\"png\"]' \
-		-s USE_BOOST_HEADERS=1 \
 		-s USE_SDL=2 \
 		-s USE_SDL_IMAGE=2 \
 		-s USE_SDL_TTF=2 \
@@ -74,7 +73,6 @@ else()
 	set(CMAKE_CXX_FLAGS_RELEASE "-O2 -s -DNDEBUG -march=native")
 	set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 	find_package(Vulkan REQUIRED)
-	find_package(Boost REQUIRED)
 	find_package(OpenGL REQUIRED)
 	find_package(GLEW REQUIRED)
 	find_package(SDL2 REQUIRED)

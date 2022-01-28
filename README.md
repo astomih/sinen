@@ -73,11 +73,10 @@ No tutorials, etc. have been created yet.
 - Sol2
 - OpenAL 1.1
 - rapidJSON
-- SDL2
-- SDL2_image
-- SDL2_mixer
-- SDL2_net
-- SDL2_ttf
+- OpenGL 3.3
+- SDL2(image,mixer,net,ttf)
+- Vulkan 1.2
+- VulkanMemoryAllocator
   
 ## Lisence
  MIT Lisence

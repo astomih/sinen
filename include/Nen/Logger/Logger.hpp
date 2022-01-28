@@ -22,7 +22,7 @@ enum class log_type {
 
 namespace detail {
 template <typename... Args>
-std::string StringFormatInternal(const std::string &format, Args &&...args) {
+std::string string_format_internal(const std::string &format, Args &&...args) {
   int str_len =
       std::snprintf(nullptr, 0, format.c_str(), std::forward<Args>(args)...);
 
@@ -39,13 +39,20 @@ template <typename T> auto Convert(T &&value) {
     return std::forward<T>(value);
   }
 }
-} // namespace detail
-/* ロガーのための文字列フォーマッティングを行う */
+/**
+ * @brief string format for logger
+ *
+ * @tparam Args
+ * @param format
+ * @param args
+ * @return std::string
+ */
 template <typename... Args>
-std::string StringFormatLogger(const std::string &format, Args &&...args) {
-  return ::nen::detail::StringFormatInternal(
+std::string string_format_logger(const std::string &format, Args &&...args) {
+  return ::nen::detail::string_format_internal(
       format, ::nen::detail::Convert(std::forward<Args>(args))...);
 }
+} // namespace detail
 
 /* ロギングを行うクラス */
 class logger {
@@ -64,34 +71,34 @@ public:
   /* デバッグビルド時のみに表示される情報ログ */
   template <typename... Args>
   static void Debug(std::string_view format, Args &&...args) {
-    mLogger->Debug(
-        StringFormatLogger(format.data(), std::forward<Args>(args)...));
+    mLogger->Debug(detail::string_format_logger(format.data(),
+                                                std::forward<Args>(args)...));
   }
 
   /* デバッグ・リリースビルド時に表示される情報ログ */
   template <typename... Args>
   static void Info(std::string_view format, Args &&...args) {
-    mLogger->Info(
-        StringFormatLogger(std::string(format), std::forward<Args>(args)...));
+    mLogger->Info(detail::string_format_logger(std::string(format),
+                                               std::forward<Args>(args)...));
   }
 
   /* エラーを表示するログ */
   template <typename... Args>
   static void Error(std::string_view format, Args &&...args) {
-    mLogger->Error(
-        StringFormatLogger(std::string(format), std::forward<Args>(args)...));
+    mLogger->Error(detail::string_format_logger(std::string(format),
+                                                std::forward<Args>(args)...));
   }
   /* 警告を表示するログ */
   template <typename... Args>
   static void Warn(std::string_view format, Args &&...args) {
-    mLogger->Warn(
-        StringFormatLogger(format.data(), std::forward<Args>(args)...));
+    mLogger->Warn(detail::string_format_logger(format.data(),
+                                               std::forward<Args>(args)...));
   }
   /* 致命的なエラー（Errorよりも深刻）を表示するログ */
   template <typename... Args>
   static void Fatal(std::string_view format, Args &&...args) {
-    mLogger->Fatal(
-        StringFormatLogger(format.data(), std::forward<Args>(args)...));
+    mLogger->Fatal(detail::string_format_logger(format.data(),
+                                                std::forward<Args>(args)...));
   }
 
 private:

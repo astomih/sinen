@@ -16,11 +16,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Doxygen Action
-      run: |
-          sudo apt-add-repository universe
-          sudo apt-get update
-          sudo apt-get install doxygen
-          doxygen
+      uses: mattnotmitt/doxygen-action@1.9.1
     - name: Deploy 🚀
       uses: JamesIves/github-pages-deploy-action@v4.2.2
       with:

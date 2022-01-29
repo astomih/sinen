@@ -186,7 +186,6 @@ void create_box_vertices(renderer *_renderer) {
   };
   vArray.indexCount = sizeof(indices) / sizeof(uint32_t);
   vArray.push_indices(indices, vArray.indexCount);
-  auto vArraySize = vArray.vertices.size() * sizeof(vertex);
   _renderer->AddVertexArray(vArray, vertex_default_shapes::box);
 }
 

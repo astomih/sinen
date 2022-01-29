@@ -1,4 +1,4 @@
-﻿#include "src/Nen/Render/OpenGL/GLRenderer.h"
+#include "src/Nen/Render/OpenGL/GLRenderer.h"
 #include "Component/Draw2DComponent.hpp"
 #include <Nen.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
@@ -41,14 +41,13 @@ void GLRenderer::Initialize(std::shared_ptr<window> window) {
 void GLRenderer::SetRenderer(renderer *renderer) { mRenderer = renderer; }
 
 void GLRenderer::Render() {
+  glViewport(0, 0, mWindow->Size().x, mWindow->Size().y);
   auto color = mRenderer->GetClearColor();
   glClearColor(color.r, color.g, color.b, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  glDisable(GL_BLEND);
   glEnable(GL_DEPTH_TEST);
   vertexID = "";
-  bool lastFrameChanged = false;
   draw_3d();
   glDisable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
@@ -100,7 +99,7 @@ void GLRenderer::draw_3d() {
     }
 
     glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
-    glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount,
+    glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indices.size(),
                    GL_UNSIGNED_INT, nullptr);
   }
 }
@@ -124,7 +123,7 @@ void GLRenderer::draw_2d() {
       }
     }
     glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
-    glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indexCount,
+    glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indices.size(),
                    GL_UNSIGNED_INT, nullptr);
   }
 }

@@ -80,13 +80,9 @@ void base_scene::UpdateScene() {
   mUpdatingActors = false;
 
   // erase dead actors
-  for (auto it = mActors.begin(); it != mActors.end();) {
-    if ((*it)->GetState() == base_actor::state::Dead) {
-      it = mActors.erase(it);
-    } else {
-      ++it;
-    }
-  }
+  std::erase_if(mActors, [](std::shared_ptr<base_actor> act) {
+    return act->GetState() == base_actor::state::Dead;
+  });
 
   // move pending actors
   for (auto pending : mPendingActors) {

@@ -188,7 +188,7 @@ void GLRenderer::UpdateVertexArray(const vertex_array &vArray,
 
 void GLRenderer::AddDrawObject2D(std::shared_ptr<class draw_object> sprite,
                                  std::shared_ptr<texture> texture) {
-  registerTexture(texture, texture_type::Image2D);
+  registerTexture(texture);
   pushSprite2d(sprite);
 }
 void GLRenderer::RemoveDrawObject2D(std::shared_ptr<class draw_object> sprite) {
@@ -197,7 +197,7 @@ void GLRenderer::RemoveDrawObject2D(std::shared_ptr<class draw_object> sprite) {
 
 void GLRenderer::AddDrawObject3D(std::shared_ptr<class draw_object> sprite,
                                  std::shared_ptr<texture> texture) {
-  registerTexture(texture, texture_type::Image3D);
+  registerTexture(texture);
   pushSprite3d(sprite);
 }
 void GLRenderer::RemoveDrawObject3D(std::shared_ptr<class draw_object> sprite) {
@@ -233,8 +233,7 @@ void GLRenderer::prepare() {
   }
 }
 
-void GLRenderer::registerTexture(std::shared_ptr<texture> texture,
-                                 const texture_type &type) {
+void GLRenderer::registerTexture(std::shared_ptr<texture> texture) {
   ::SDL_Surface surf = surface_handler::Load(texture->id);
   ::SDL_LockSurface(&surf);
   auto formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);

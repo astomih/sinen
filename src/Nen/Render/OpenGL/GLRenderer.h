@@ -64,8 +64,7 @@ public:
 
   void prepare();
   void cleanup() {}
-  void registerTexture(std::shared_ptr<class texture>,
-                       const texture_type &type);
+  void registerTexture(std::shared_ptr<class texture>);
   void pushSprite2d(std::shared_ptr<draw_object> sprite2d) {
     auto iter = mSprite2Ds.begin();
     for (; iter != mSprite2Ds.end(); ++iter) {

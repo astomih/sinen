@@ -4,5 +4,6 @@ var searchData=
   ['base_5fcomponent_2',['base_component',['../classnen_1_1base__component.html',1,'nen']]],
   ['base_5fscene_3',['base_scene',['../classnen_1_1base__scene.html',1,'nen']]],
   ['billboard_5fcomponent_4',['billboard_component',['../classnen_1_1billboard__component.html',1,'nen']]],
-  ['button_5',['button',['../classnen_1_1button.html',1,'nen']]]
+  ['blended_5',['Blended',['../classnen_1_1font.html#ab0c10a0e8f336b062ee6f6b3649ef254a3452c82c7aab95f6ecf260b19985caf7',1,'nen::font']]],
+  ['button_6',['button',['../classnen_1_1button.html',1,'nen']]]
 ];

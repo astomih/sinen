@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['_7ebase_5factor_174',['~base_actor',['../classnen_1_1base__actor.html#aed1309afc6a86a8bf4e999952464e77a',1,'nen::base_actor']]],
-  ['_7edraw_5f3d_5fcomponent_175',['~draw_3d_component',['../classnen_1_1draw__3d__component.html#a179cf6100a8cb9100e30b7d2b81dcfb5',1,'nen::draw_3d_component']]]
+  ['update_188',['Update',['../classnen_1_1base__actor.html#af026ccaff9ac0c4e04b40cb449a6aec4',1,'nen::base_actor::Update()'],['../classnen_1_1draw__2d__component.html#a723f7dcf92dda34778eaf3937f84b725',1,'nen::draw_2d_component::Update()'],['../classnen_1_1draw__3d__component.html#af7d8070ebdbe226338e9f64f21cf62e9',1,'nen::draw_3d_component::Update()']]],
+  ['updateactor_189',['UpdateActor',['../classnen_1_1base__actor.html#aa531b0bc1fb8098e687cbc5021e57495',1,'nen::base_actor']]]
 ];

@@ -25,10 +25,10 @@ void window::Initialize(const vector2 &size, const std::string &name,
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
   switch (api) {
   case graphics_api::Vulkan: {
-    impl->window = SDL_CreateWindow(
-        std::string(name).c_str(), SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED, static_cast<int>(size.x),
-        static_cast<int>(size.y), SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
+    impl->window =
+        SDL_CreateWindow(std::string(name).c_str(), SDL_WINDOWPOS_CENTERED,
+                         SDL_WINDOWPOS_CENTERED, static_cast<int>(size.x),
+                         static_cast<int>(size.y), SDL_WINDOW_VULKAN);
 
     break;
   }
@@ -44,10 +44,10 @@ void window::Initialize(const vector2 &size, const std::string &name,
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-    impl->window = SDL_CreateWindow(
-        std::string(name).c_str(), SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED, static_cast<int>(size.x),
-        static_cast<int>(size.y), SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    impl->window =
+        SDL_CreateWindow(std::string(name).c_str(), SDL_WINDOWPOS_CENTERED,
+                         SDL_WINDOWPOS_CENTERED, static_cast<int>(size.x),
+                         static_cast<int>(size.y), SDL_WINDOW_OPENGL);
     break;
   }
   default:
@@ -69,15 +69,11 @@ void window::Initialize(const vector2 &size, const std::string &name,
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   impl->window = SDL_CreateWindow(
       std::string(name).c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-      static_cast<int>(size.x), static_cast<int>(size.y),
-      SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+      static_cast<int>(size.x), static_cast<int>(size.y), SDL_WINDOW_OPENGL);
 #endif
 }
 
 void window::ProcessInput() {
-  int x, y;
-  SDL_GetWindowSize(impl->window, &x, &y);
-  this->size = vector2(static_cast<float>(x), static_cast<float>(y));
   if (current_event_handle::current_event.type == SDL_WINDOWEVENT) {
     state = static_cast<window_state>(
         current_event_handle::current_event.window.event);

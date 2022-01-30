@@ -8,7 +8,7 @@ namespace nen {
 bool font::LoadFromFile(std::string_view fontName, int pointSize) {
   this->fontName = fontName;
   this->pointSize = pointSize;
-  m_font = ::TTF_OpenFontRW(
+  m_font = (void *)::TTF_OpenFontRW(
       (SDL_RWops *)asset_reader::LoadAsRWops(asset_type::Font, this->fontName),
       1, this->pointSize);
   if (!m_font) {
@@ -32,7 +32,8 @@ std::shared_ptr<texture> font::RenderText(std::string_view text,
   ::SDL_Surface *surf = nullptr;
   switch (quality) {
   case nen::font::quality::Solid:
-    surf = ::TTF_RenderUTF8_Solid(m_font, std::string(text).c_str(), sdlColor);
+    surf = ::TTF_RenderUTF8_Solid((::TTF_Font *)m_font,
+                                  std::string(text).c_str(), sdlColor);
     break;
   case nen::font::quality::Shaded: {
     SDL_Color bg;
@@ -40,12 +41,12 @@ std::shared_ptr<texture> font::RenderText(std::string_view text,
     bg.g = static_cast<Uint8>(_color.g * 255);
     bg.b = static_cast<Uint8>(_color.b * 255);
     bg.a = 255;
-    surf = ::TTF_RenderUTF8_Shaded(m_font, std::string(text).c_str(), sdlColor,
+    surf = ::TTF_RenderUTF8_Shaded((::TTF_Font*)m_font, std::string(text).c_str(), sdlColor,
                                    bg);
   } break;
   case nen::font::quality::Blended:
     surf =
-        ::TTF_RenderUTF8_Blended(m_font, std::string(text).c_str(), sdlColor);
+        ::TTF_RenderUTF8_Blended((::TTF_Font*)m_font, std::string(text).c_str(), sdlColor);
     break;
   default:
     break;

@@ -165,7 +165,6 @@ void GLRenderer::AddVertexArray(const vertex_array &vArray,
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,
                vArrayGL.indices.size() * sizeof(uint32_t),
                vArrayGL.indices.data(), GL_DYNAMIC_DRAW);
-  // 登録
   m_VertexArrays.emplace(name.data(), vArrayGL);
 }
 void GLRenderer::UpdateVertexArray(const vertex_array &vArray,

@@ -4,38 +4,65 @@
 #include "../Texture/Texture.hpp"
 #include <memory>
 
-namespace {
-struct _TTF_Font;
-}
-
 namespace nen {
-/*
-        フォントクラス
-*/
+/**
+ * @brief font load and render to texture.
+ *
+ */
 class font {
 public:
   font() : m_font(nullptr), isLoad(false), pointSize(0){};
   ~font() = default;
 
-  /*
-          フォントの描画クオリティ
-  */
+  /**
+   * @brief rendering quality
+   *
+   */
   enum class quality {
-    // 荒いが高速。背景あり
+    /**
+     * @brief speedy
+     *
+     */
     Solid,
-    // 高品質・高速だが背景あり
+    /**
+     * @brief slowly, but high quality
+     *
+     */
     Shaded,
-    // 高品質で背景が無いが遅い
+    /**
+     * @brief Shaded without backimage
+     *
+     */
     Blended
   };
 
-  // ファイルからフォントを読み込む
+  /**
+   * @brief font load from filepath
+   *
+   * @param fontName file path
+   * @param pointSize font size
+   * @return true success to load
+   * @return false failed to load
+   */
   bool LoadFromFile(std::string_view fontName, int pointSize);
+  /**
+   * @brief return already loaded font
+   *
+   * @return true loaded
+   * @return false not load yet
+   */
   bool isLoaded() { return isLoad; }
-  // フォントを解放
   void Unload();
 
-  // Textureにフォントを書き込む
+  /**
+   * @brief render to texture
+   *
+   * @param text require UTF-8
+   * @param _color font color
+   * @param _quality font quality
+   * @param backgroundColor background color
+   * @return std::shared_ptr<texture> rendered texture
+   */
   std::shared_ptr<texture>
   RenderText(std::string_view text, const color &_color = palette::White,
              quality _quality = quality::Blended,
@@ -45,7 +72,7 @@ private:
   int pointSize;
   bool isLoad;
   std::string fontName;
-  ::_TTF_Font *m_font;
+  void *m_font;
 };
 } // namespace nen
 #endif

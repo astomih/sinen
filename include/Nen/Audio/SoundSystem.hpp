@@ -8,11 +8,6 @@
 #include <string_view>
 #include <unordered_map>
 
-namespace {
-struct ALCdevice;
-struct ALCcontext;
-} // namespace
-
 namespace nen {
 class sound_system : public std::enable_shared_from_this<sound_system> {
 public:
@@ -39,7 +34,7 @@ protected:
 
 private:
   std::unordered_map<std::string, uint32_t> buffers;
-  ::ALCdevice *device;
-  ::ALCcontext *context;
+  void *device;
+  void *context;
 };
 } // namespace nen

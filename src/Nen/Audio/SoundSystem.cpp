@@ -45,27 +45,27 @@ sound_system::~sound_system() {
     alDeleteBuffers(1, &i.second);
   }
   alcMakeContextCurrent(NULL);
-  alcDestroyContext(context);
-  alcCloseDevice(device);
+  alcDestroyContext((ALCcontext *)context);
+  alcCloseDevice((ALCdevice *)device);
 }
 
 bool sound_system::Initialize() {
-  device = alcOpenDevice(NULL);
+  device = (void *)alcOpenDevice(NULL);
   if (!device) {
     printf("Couldn't open OpenAL default device.\n");
     return -1;
   }
-  context = alcCreateContext(device, NULL);
+  context = (void *)alcCreateContext((ALCdevice *)device, NULL);
   if (!context) {
     printf("Couldn't create OpenAL context.\n");
-    alcCloseDevice(device);
+    alcCloseDevice((ALCdevice *)device);
     return -1;
   }
 
-  if (!alcMakeContextCurrent(context)) {
+  if (!alcMakeContextCurrent((ALCcontext *)context)) {
     printf("Couldn't create OpenAL context.\n");
     alcMakeContextCurrent(NULL);
-    alcCloseDevice(device);
+    alcCloseDevice((ALCdevice *)device);
   }
   return true;
 }

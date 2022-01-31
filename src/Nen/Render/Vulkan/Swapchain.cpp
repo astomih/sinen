@@ -88,14 +88,14 @@ void Swapchain::Prepare(VkPhysicalDevice physDev, uint32_t graphicsQueueIndex,
     }
     vkDestroySwapchainKHR(m_device, oldSwapchain, nullptr);
     m_imageViews.clear();
-    m_images.clear();
+    //m_images.clear();
   }
 
   vkGetSwapchainImagesKHR(m_device, m_swapchain, &imageCount, nullptr);
   m_images.resize(imageCount);
   m_imageViews.resize(imageCount);
   vkGetSwapchainImagesKHR(m_device, m_swapchain, &imageCount, m_images.data());
-  for (uint32_t i = 0; i < imageCount; ++i) {
+  for (uint32_t i = 0; i < imageCount; i++) {
     VkImageViewCreateInfo viewCI{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
                                  nullptr,
                                  0,

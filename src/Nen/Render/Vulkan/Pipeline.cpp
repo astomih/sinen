@@ -5,7 +5,6 @@
 #include "VulkanUtil.h"
 #include <Nen.hpp>
 
-
 namespace nen::vk {
 void Pipeline::Initialize(
     PipelineLayout &layout, VkRenderPass renderPass,
@@ -37,19 +36,23 @@ void Pipeline::Initialize(
       .stencilTestEnable = VK_FALSE};
 
   // パイプラインの構築
-  graphicsCI = VkGraphicsPipelineCreateInfo{};
-  graphicsCI.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-  graphicsCI.stageCount = uint32_t(shaderStages.size());
-  graphicsCI.pStages = shaderStages.data();
-  graphicsCI.pInputAssemblyState = layout.GetInputAssemblyCI();
-  graphicsCI.pVertexInputState = layout.GetVertexInputCI();
-  graphicsCI.pRasterizationState = layout.GetRasterizerCI();
-  graphicsCI.pDepthStencilState = &depthStencilCI;
-  graphicsCI.pMultisampleState = layout.GetMultisampleCI();
-  graphicsCI.pViewportState = layout.GetViewportCI();
-  graphicsCI.pColorBlendState = &cbCI;
-  graphicsCI.renderPass = renderPass;
-  graphicsCI.layout = layout.GetLayout();
+  graphicsCI = VkGraphicsPipelineCreateInfo{
+      .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+      .pNext = nullptr,
+      .flags = 0,
+      .stageCount = uint32_t(shaderStages.size()),
+      .pStages = shaderStages.data(),
+      .pVertexInputState = layout.GetVertexInputCI(),
+      .pInputAssemblyState = layout.GetInputAssemblyCI(),
+      .pViewportState = layout.GetViewportCI(),
+      .pRasterizationState = layout.GetRasterizerCI(),
+      .pMultisampleState = layout.GetMultisampleCI(),
+      .pDepthStencilState = &depthStencilCI,
+      .pColorBlendState = &cbCI,
+      .pDynamicState = layout.GetDynamicStateCI(),
+      .layout = layout.GetLayout(),
+      .renderPass = renderPass,
+  };
 }
 void Pipeline::Prepare(VkDevice device) {
   VkResult result = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1,

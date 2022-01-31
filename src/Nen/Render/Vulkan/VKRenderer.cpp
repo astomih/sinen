@@ -278,6 +278,19 @@ void VKRenderer::makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri,
       logger::Fatal("vkBeginCommandBuffer Error! VkResult:%d", result);
     }
   }
+  auto viewport = VkViewport{};
+  viewport.x = 0.0f;
+  viewport.y = float(GetWindow()->Size().y);
+  viewport.width = float(GetWindow()->Size().x);
+  viewport.height = -1.0f * float(GetWindow()->Size().y);
+  viewport.minDepth = 0.0f;
+  viewport.maxDepth = 1.0f;
+  VkRect2D scissor{{0, 0},
+                   {(m_base->mSwapchain->GetSurfaceExtent().width),
+                    (m_base->mSwapchain->GetSurfaceExtent().height)}};
+  mPipelineLayout.change_viewport(scissor, viewport);
+  vkCmdSetScissor(command, 0, 1, &scissor);
+  vkCmdSetViewport(command, 0, 1, &viewport);
   vkCmdBeginRenderPass(command, &ri, VK_SUBPASS_CONTENTS_INLINE);
   draw3d(command);
   draw2d(command);

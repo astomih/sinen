@@ -52,26 +52,34 @@ void PipelineLayout::Initialize(VkDevice device,
   cbCI.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
   cbCI.attachmentCount = 1;
   cbCI.pAttachments = &blendAttachment;
+  // setup dynamic state
+  std::vector<VkDynamicState> dynamicStates{VK_DYNAMIC_STATE_SCISSOR,
+                                            VK_DYNAMIC_STATE_VIEWPORT};
+  pipelineDynamicStateCI = {
+      VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO, nullptr, 0,
+      uint32_t(dynamicStates.size()), dynamicStates.data()};
 
   // Set viewport
-  {
-    viewport = VkViewport{};
-    viewport.x = 0.0f;
-    viewport.y = float(extent.height);
-    viewport.width = float(extent.width);
-    viewport.height = -1.0f * float(extent.height);
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-  }
+  viewport = VkViewport{.x = 0.f,
+                        .y = 0.f,
+                        .width = 0.f,
+                        .height = 0.f,
+                        .minDepth = 0.f,
+                        .maxDepth = 1.f};
+  scissor = {
+      .offset = {0, 0},
+      .extent = {0, 0},
+  };
 
-  scissor = {{0, 0}, // offset
-             extent};
-  viewportCI = VkPipelineViewportStateCreateInfo{};
-  viewportCI.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-  viewportCI.viewportCount = 1;
-  viewportCI.pViewports = &viewport;
-  viewportCI.scissorCount = 1;
-  viewportCI.pScissors = &scissor;
+  viewportCI = VkPipelineViewportStateCreateInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+      .pNext = nullptr,
+      .flags = 0,
+      .viewportCount = 1,
+      .pViewports = &viewport,
+      .scissorCount = 1,
+      .pScissors = &scissor,
+  };
 
   // Setting primitive toporogy
   inputAssemblyCI = VkPipelineInputAssemblyStateCreateInfo{};

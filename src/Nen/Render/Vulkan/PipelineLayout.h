@@ -35,7 +35,15 @@ public:
   const VkPipelineVertexInputStateCreateInfo *GetVertexInputCI() {
     return &vertexInputCI;
   };
+  const VkPipelineDynamicStateCreateInfo *GetDynamicStateCI() {
+    return &pipelineDynamicStateCI;
+  };
   VkPipelineLayout GetLayout() { return layout; }
+
+  void change_viewport(VkRect2D _scissor, VkViewport _viewport) {
+    viewport = _viewport;
+    scissor = _scissor;
+  }
 
 private:
   VkPipelineLayout layout;
@@ -54,6 +62,7 @@ private:
   VkPipelineMultisampleStateCreateInfo multisampleCI;
   VkPipelineDepthStencilStateCreateInfo depthStencilCI;
   VkPipelineLayoutCreateInfo pipelineLayoutCI;
+  VkPipelineDynamicStateCreateInfo pipelineDynamicStateCI;
 };
 } // namespace nen::vk
 #endif

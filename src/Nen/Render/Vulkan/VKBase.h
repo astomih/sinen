@@ -52,6 +52,8 @@ public:
   void enableDebugReport();
   void disableDebugReport();
 
+  void recreate_swapchain();
+
   std::unique_ptr<Swapchain> mSwapchain;
 
   VkInstance m_instance;

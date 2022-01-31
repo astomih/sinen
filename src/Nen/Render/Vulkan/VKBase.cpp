@@ -1,7 +1,7 @@
 ﻿#include <Nen.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
-#include "VKBase.h"
 #include "Pipeline.h"
+#include "VKBase.h"
 #include "VKRenderer.h"
 #include <algorithm>
 #include <array>
@@ -398,7 +398,42 @@ void VKBase::disableDebugReport() {
   }
 }
 
+void VKBase::recreate_swapchain() {
+  vkDeviceWaitIdle(m_device);
+
+  auto size = m_vkrenderer->GetWindow()->Size();
+  mSwapchain->Prepare(m_physDev, m_graphicsQueueIndex,
+                      static_cast<uint32_t>(size.x),
+                      static_cast<uint32_t>(size.y), VK_FORMAT_B8G8R8A8_UNORM);
+  vkDestroyImage(m_device, m_depthBuffer, nullptr);
+  for (auto &v : m_framebuffers) {
+    vkDestroyFramebuffer(m_device, v, nullptr);
+  }
+  createDepthBuffer();
+  {
+    VkImageViewCreateInfo ci{};
+    ci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    ci.format = VK_FORMAT_D32_SFLOAT;
+    ci.components = {
+        VK_COMPONENT_SWIZZLE_R,
+        VK_COMPONENT_SWIZZLE_G,
+        VK_COMPONENT_SWIZZLE_B,
+        VK_COMPONENT_SWIZZLE_A,
+    };
+    ci.subresourceRange = {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1};
+    ci.image = m_depthBuffer;
+    auto result = vkCreateImageView(m_device, &ci, nullptr, &m_depthBufferView);
+    checkResult(result);
+  }
+  createRenderPass();
+  // フレームバッファの生成
+  createFramebuffer();
+}
+
 void VKBase::render() {
+  if (mSwapchain->is_need_recreate(m_vkrenderer->GetWindow()->Size()))
+    recreate_swapchain();
   uint32_t nextImageIndex = 0;
   mSwapchain->AcquireNextImage(&nextImageIndex, m_presentCompletedSem);
   auto commandFence = m_fences[nextImageIndex];
@@ -424,6 +459,16 @@ void VKBase::render() {
   commandBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   auto &command = m_commands[nextImageIndex];
   m_imageIndex = nextImageIndex;
+  auto extent = mSwapchain->GetSurfaceExtent();
+
+  auto viewport = VkViewport{};
+  viewport.x = 0.0f;
+  viewport.y = float(extent.height);
+  viewport.width = float(extent.width);
+  viewport.height = -1.0f * float(extent.height);
+  viewport.minDepth = 0.0f;
+  viewport.maxDepth = 1.0f;
+  VkRect2D scissor{{0, 0}, extent};
   m_vkrenderer->makeCommand(command, renderPassBI, commandBI, commandFence);
 
   // コマンド・レンダーパス終了

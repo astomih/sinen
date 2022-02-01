@@ -19,15 +19,7 @@
 #include <sstream>
 #include <string>
 #define VMA_IMPLEMENTATION
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wtype-limits"
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#pragma GCC diagnostic ignored "-Wunused-variable"
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wreorder"
-#pragma GCC diagnostic ignored "-Wclass-memaccess"
 #include "vk_mem_alloc.h"
-#pragma GCC diagnostic pop
 
 namespace nen::vk {
 using namespace vkutil;
@@ -244,10 +236,9 @@ void VKRenderer::cleanup() {
   VkDevice device = m_base->GetVkDevice();
 
   for (auto &i : mImageObjects) {
-    DestroyVulkanObject<VkImage>(device, i.second.image, &vkDestroyImage);
+    vmaDestroyImage(allocator, i.second.image, i.second.allocation);
     DestroyVulkanObject<VkImageView>(device, i.second.view,
                                      &vkDestroyImageView);
-    DestroyVulkanObject<VkDeviceMemory>(device, i.second.memory, &vkFreeMemory);
   }
   DestroyVulkanObject<VkSampler>(device, m_sampler, &vkDestroySampler);
   mPipelineLayout.Cleanup(device);
@@ -278,19 +269,17 @@ void VKRenderer::makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri,
       logger::Fatal("vkBeginCommandBuffer Error! VkResult:%d", result);
     }
   }
-  auto viewport = VkViewport{};
-  viewport.x = 0.0f;
-  viewport.y = float(GetWindow()->Size().y);
-  viewport.width = float(GetWindow()->Size().x);
-  viewport.height = -1.0f * float(GetWindow()->Size().y);
-  viewport.minDepth = 0.0f;
-  viewport.maxDepth = 1.0f;
+  auto viewport = VkViewport{
+      .x = 0.f,
+      .y = static_cast<float>(m_base->mSwapchain->GetSurfaceExtent().height),
+      .width = static_cast<float>(m_base->mSwapchain->GetSurfaceExtent().width),
+      .height =
+          -static_cast<float>(m_base->mSwapchain->GetSurfaceExtent().height),
+      .minDepth = 0.f,
+      .maxDepth = 1.f};
   VkRect2D scissor{{0, 0},
                    {(m_base->mSwapchain->GetSurfaceExtent().width),
                     (m_base->mSwapchain->GetSurfaceExtent().height)}};
-  mPipelineLayout.change_viewport(scissor, viewport);
-  vkCmdSetScissor(command, 0, 1, &scissor);
-  vkCmdSetViewport(command, 0, 1, &viewport);
   vkCmdBeginRenderPass(command, &ri, VK_SUBPASS_CONTENTS_INLINE);
   draw3d(command);
   draw2d(command);
@@ -302,6 +291,8 @@ void VKRenderer::makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri,
   if (result != VK_SUCCESS) {
     logger::Fatal("vkWaitForFences Error! VkResult:%d", result);
   }
+  vkCmdSetScissor(command, 0, 1, &scissor);
+  vkCmdSetViewport(command, 0, 1, &viewport);
 }
 
 void VKRenderer::draw3d(VkCommandBuffer command) {
@@ -327,11 +318,9 @@ void VKRenderer::draw3d(VkCommandBuffer command) {
     vkCmdBindDescriptorSets(
         command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout.GetLayout(),
         0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
-    auto device = m_base->GetVkDevice();
-    auto result = vkFreeDescriptorSets(
-        m_base->GetVkDevice(), m_descriptorPool,
-        static_cast<uint32_t>(sprite->descripterSet.size()),
-        sprite->descripterSet.data());
+    vkFreeDescriptorSets(m_base->GetVkDevice(), m_descriptorPool,
+                         static_cast<uint32_t>(sprite->descripterSet.size()),
+                         sprite->descripterSet.data());
     prepareDescriptorSet(sprite);
     auto allocation = sprite->uniformBuffers[m_base->m_imageIndex].allocation;
     MapMemory(allocation, &sprite->drawObject->param, sizeof(shader_parameter));
@@ -365,11 +354,9 @@ void VKRenderer::draw2d(VkCommandBuffer command) {
     vkCmdBindDescriptorSets(
         command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout.GetLayout(),
         0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
-    auto device = m_base->GetVkDevice();
-    auto result = vkFreeDescriptorSets(
-        m_base->GetVkDevice(), m_descriptorPool,
-        static_cast<uint32_t>(sprite->descripterSet.size()),
-        sprite->descripterSet.data());
+    vkFreeDescriptorSets(m_base->GetVkDevice(), m_descriptorPool,
+                         static_cast<uint32_t>(sprite->descripterSet.size()),
+                         sprite->descripterSet.data());
     prepareDescriptorSet(sprite);
     auto allocation = sprite->uniformBuffers[m_base->m_imageIndex].allocation;
     MapMemory(allocation, &sprite->drawObject->param, sizeof(shader_parameter));
@@ -531,8 +518,8 @@ void VKRenderer::prepareDescriptorPool() {
       sizeof(poolSize) / sizeof(poolSize[0]),
       poolSize,
   };
-  result = vkCreateDescriptorPool(m_base->GetVkDevice(), &descPoolCI, nullptr,
-                                  &m_descriptorPool);
+  vkCreateDescriptorPool(m_base->GetVkDevice(), &descPoolCI, nullptr,
+                         &m_descriptorPool);
 }
 
 void VKRenderer::prepareDescriptorSetAll() {
@@ -638,19 +625,12 @@ VkSampler VKRenderer::createSampler() {
   return sampler;
 }
 
-ImageObject VKRenderer::createTextureFromSurface(const ::SDL_Surface &surface) {
-  ::SDL_Surface surf = surface;
-  ::SDL_LockSurface(&surf);
-  auto formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
-  formatbuf->BytesPerPixel = 4;
-  auto imagedata = ::SDL_ConvertSurface(&surf, formatbuf, 0);
-  ::SDL_UnlockSurface(&surf);
+ImageObject VKRenderer::create_texture(SDL_Surface *imagedata,
+                                       VkFormat format) {
   BufferObject stagingBuffer;
   ImageObject texture{};
   int width = imagedata->w, height = imagedata->h;
   auto *pImage = imagedata->pixels;
-  auto format = VK_FORMAT_R8G8B8A8_UNORM;
-
   {
     // Create VkImage texture
     VkImageCreateInfo ci{};
@@ -664,20 +644,22 @@ ImageObject VKRenderer::createTextureFromSurface(const ::SDL_Surface &surface) {
     ci.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     ci.tiling = VkImageTiling::VK_IMAGE_TILING_LINEAR;
     ci.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
-    vkCreateImage(m_base->GetVkDevice(), &ci, nullptr, &texture.image);
+    // vkCreateImage(m_base->GetVkDevice(), &ci, nullptr, &texture.image);
+    VmaAllocationCreateInfo alloc_info = {};
+    alloc_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+    vmaCreateImage(allocator, &ci, &alloc_info, &texture.image,
+                   &texture.allocation, nullptr);
 
     VkMemoryRequirements reqs;
     vkGetImageMemoryRequirements(m_base->GetVkDevice(), texture.image, &reqs);
-    VkMemoryAllocateInfo info{};
-    info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    info.allocationSize = reqs.size;
-    // Judge memory type
-    info.memoryTypeIndex = m_base->getMemoryTypeIndex(
-        reqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    VmaAllocationCreateInfo info{};
+    info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+    VmaAllocationInfo allocInfo;
+    allocInfo.size = reqs.size;
     // Allocate memory
-    vkAllocateMemory(m_base->GetVkDevice(), &info, nullptr, &texture.memory);
-    // Bind memory
-    vkBindImageMemory(m_base->GetVkDevice(), texture.image, texture.memory, 0);
+    vmaAllocateMemory(allocator, &reqs, &info, &texture.allocation, &allocInfo);
+    //  Bind memory
+    vmaBindImageMemory(allocator, texture.allocation, texture.image);
   }
 
   {
@@ -751,6 +733,18 @@ ImageObject VKRenderer::createTextureFromSurface(const ::SDL_Surface &surface) {
 
   return texture;
 }
+
+ImageObject VKRenderer::createTextureFromSurface(const ::SDL_Surface &surface) {
+  ::SDL_Surface surf = surface;
+  ::SDL_LockSurface(&surf);
+  auto formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
+  formatbuf->BytesPerPixel = 4;
+  auto imagedata = ::SDL_ConvertSurface(&surf, formatbuf, 0);
+  ::SDL_UnlockSurface(&surf);
+  auto format = VK_FORMAT_R8G8B8A8_UNORM;
+  return create_texture(imagedata, format);
+}
+
 ImageObject
 VKRenderer::createTextureFromMemory(const std::vector<char> &imageData) {
   auto *rw = ::SDL_RWFromMem((void *)imageData.data(), imageData.size());
@@ -766,99 +760,7 @@ VKRenderer::createTextureFromMemory(const std::vector<char> &imageData) {
   int width = imagedata->w, height = imagedata->h;
   auto *pImage = imagedata->pixels;
   auto format = VK_FORMAT_R8G8B8A8_UNORM;
-
-  {
-    // テクスチャのVkImage を生成
-    VkImageCreateInfo ci{};
-    ci.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    ci.extent = {uint32_t(width), uint32_t(height), 1};
-    ci.format = format;
-    ci.imageType = VK_IMAGE_TYPE_2D;
-    ci.arrayLayers = 1;
-    ci.mipLevels = 1;
-    ci.samples = VK_SAMPLE_COUNT_1_BIT;
-    ci.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-    vkCreateImage(m_base->GetVkDevice(), &ci, nullptr, &texture.image);
-
-    // メモリ量の算出
-    VkMemoryRequirements reqs;
-    vkGetImageMemoryRequirements(m_base->GetVkDevice(), texture.image, &reqs);
-    VkMemoryAllocateInfo info{};
-    info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    info.allocationSize = reqs.size;
-    // メモリタイプの判定
-    info.memoryTypeIndex = m_base->getMemoryTypeIndex(
-        reqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    // メモリの確保
-    vkAllocateMemory(m_base->GetVkDevice(), &info, nullptr, &texture.memory);
-    // メモリのバインド
-    vkBindImageMemory(m_base->GetVkDevice(), texture.image, texture.memory, 0);
-  }
-
-  {
-    uint32_t imageSize = width * height * sizeof(uint32_t);
-    // ステージングバッファを用意.
-    stagingBuffer = CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-    MapMemory(stagingBuffer.allocation, pImage, imageSize);
-  }
-
-  VkBufferImageCopy copyRegion{};
-  copyRegion.imageExtent = {uint32_t(width), uint32_t(height), 1};
-  copyRegion.imageSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
-  VkCommandBuffer command;
-  {
-    VkCommandBufferAllocateInfo ai{};
-    ai.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    ai.commandBufferCount = 1;
-    ai.commandPool = m_base->m_commandPool;
-    ai.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    vkAllocateCommandBuffers(m_base->GetVkDevice(), &ai, &command);
-  }
-
-  VkCommandBufferBeginInfo commandBI{};
-  commandBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-  vkBeginCommandBuffer(command, &commandBI);
-  setImageMemoryBarrier(command, texture.image, VK_IMAGE_LAYOUT_UNDEFINED,
-                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-  vkCmdCopyBufferToImage(command, stagingBuffer.buffer, texture.image,
-                         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
-
-  setImageMemoryBarrier(command, texture.image,
-                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-  vkEndCommandBuffer(command);
-
-  VkSubmitInfo submitInfo{};
-  submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-  submitInfo.commandBufferCount = 1;
-  submitInfo.pCommandBuffers = &command;
-  vkQueueSubmit(m_base->GetVkQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-  {
-    // テクスチャ参照用のビューを生成
-    VkImageViewCreateInfo ci{};
-    ci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    ci.image = texture.image;
-    ci.format = format;
-    ci.components = {
-        VK_COMPONENT_SWIZZLE_R,
-        VK_COMPONENT_SWIZZLE_G,
-        VK_COMPONENT_SWIZZLE_B,
-        VK_COMPONENT_SWIZZLE_A,
-    };
-    ci.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-    vkCreateImageView(m_base->GetVkDevice(), &ci, nullptr, &texture.view);
-  }
-
-  vkDeviceWaitIdle(m_base->GetVkDevice());
-  vkFreeCommandBuffers(m_base->GetVkDevice(), m_base->m_commandPool, 1,
-                       &command);
-
-  // ステージングバッファ解放.
-  vkDestroyBuffer(m_base->GetVkDevice(), stagingBuffer.buffer, nullptr);
-
-  return texture;
+  return create_texture(imagedata, format);
 }
 
 void VKRenderer::setImageMemoryBarrier(VkCommandBuffer command, VkImage image,
@@ -936,58 +838,6 @@ VKRenderer::GetMemoryTypeIndex(uint32_t requestBits,
   return result;
 }
 
-ImageObject VKRenderer::CreateTexture(uint32_t width, uint32_t height,
-                                      VkFormat format,
-                                      VkImageUsageFlags usage) {
-  ImageObject obj;
-  VkImageCreateInfo imageCI{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-                            nullptr,
-                            0,
-                            VK_IMAGE_TYPE_2D,
-                            format,
-                            {width, height, 1},
-                            1,
-                            1,
-                            VK_SAMPLE_COUNT_1_BIT,
-                            VK_IMAGE_TILING_OPTIMAL,
-                            usage,
-                            VK_SHARING_MODE_EXCLUSIVE,
-                            0,
-                            nullptr,
-                            VK_IMAGE_LAYOUT_UNDEFINED};
-  auto result =
-      vkCreateImage(m_base->GetVkDevice(), &imageCI, nullptr, &obj.image);
-  ThrowIfFailed(result, "vkCreateImage Failed.");
-
-  VkMemoryRequirements reqs;
-  vkGetImageMemoryRequirements(m_base->GetVkDevice(), obj.image, &reqs);
-  VkMemoryAllocateInfo info{
-      VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO, nullptr, reqs.size,
-      GetMemoryTypeIndex(reqs.memoryTypeBits,
-                         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)};
-  result = vkAllocateMemory(m_base->GetVkDevice(), &info, nullptr, &obj.memory);
-  ThrowIfFailed(result, "vkAllocateMemory Failed.");
-  vkBindImageMemory(m_base->GetVkDevice(), obj.image, obj.memory, 0);
-
-  VkImageAspectFlags imageAspect = VK_IMAGE_ASPECT_COLOR_BIT;
-  if (usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-    imageAspect = VK_IMAGE_ASPECT_DEPTH_BIT;
-  }
-
-  VkImageViewCreateInfo viewCI{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-                               nullptr,
-                               0,
-                               obj.image,
-                               VK_IMAGE_VIEW_TYPE_2D,
-                               imageCI.format,
-                               vkutil::DefaultComponentMapping(),
-                               {imageAspect, 0, 1, 0, 1}};
-  result =
-      vkCreateImageView(m_base->GetVkDevice(), &viewCI, nullptr, &obj.view);
-  ThrowIfFailed(result, "vkCreateImageView Failed.");
-  return obj;
-}
-
 VkFramebuffer VKRenderer::CreateFramebuffer(VkRenderPass renderPass,
                                             uint32_t width, uint32_t height,
                                             uint32_t viewCount,
@@ -1016,7 +866,7 @@ void VKRenderer::DestroyBuffer(BufferObject bufferObj) {
 
 void VKRenderer::DestroyImage(ImageObject imageObj) {
   vkDestroyImage(m_base->GetVkDevice(), imageObj.image, nullptr);
-  vkFreeMemory(m_base->GetVkDevice(), imageObj.memory, nullptr);
+  vmaFreeMemory(allocator, imageObj.allocation);
   if (imageObj.view != VK_NULL_HANDLE) {
     vkDestroyImageView(m_base->GetVkDevice(), imageObj.view, nullptr);
   }
@@ -1048,7 +898,7 @@ void VKRenderer::FinishCommandBuffer(VkCommandBuffer command) {
   ThrowIfFailed(result, "vkEndCommandBuffer Failed.");
   VkFence fence;
   VkFenceCreateInfo fenceCI{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr, 0};
-  result = vkCreateFence(m_base->GetVkDevice(), &fenceCI, nullptr, &fence);
+  vkCreateFence(m_base->GetVkDevice(), &fenceCI, nullptr, &fence);
 
   VkSubmitInfo submitInfo{
       VK_STRUCTURE_TYPE_SUBMIT_INFO,
@@ -1075,14 +925,6 @@ VKRenderer::CreateUniformBuffers(uint32_t size, uint32_t imageCount) {
     b = CreateBuffer(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, props);
   }
   return buffers;
-}
-
-void VKRenderer::WriteToHostVisibleMemory(VkDeviceMemory memory, uint32_t size,
-                                          const void *pData) {
-  void *p;
-  vkMapMemory(m_base->GetVkDevice(), memory, 0, VK_WHOLE_SIZE, 0, &p);
-  memcpy(p, pData, size);
-  vkUnmapMemory(m_base->GetVkDevice(), memory);
 }
 
 void VKRenderer::AllocateCommandBufferSecondary(uint32_t count,

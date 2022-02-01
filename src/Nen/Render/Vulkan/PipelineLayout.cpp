@@ -18,6 +18,7 @@ void PipelineLayout::Initialize(VkDevice device,
   vibDisc = {{
       {0, sizeof(float) * 6, VK_VERTEX_INPUT_RATE_VERTEX},
       {1, sizeof(float) * 2, VK_VERTEX_INPUT_RATE_INSTANCE},
+      {2, sizeof(float) * 4, VK_VERTEX_INPUT_RATE_VERTEX},
   }};
   inputAttribs = {{
       {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(vertex, position)},
@@ -61,14 +62,14 @@ void PipelineLayout::Initialize(VkDevice device,
 
   // Set viewport
   viewport = VkViewport{.x = 0.f,
-                        .y = 0.f,
-                        .width = 0.f,
-                        .height = 0.f,
+                        .y = static_cast<float>(extent.height),
+                        .width = static_cast<float>(extent.width),
+                        .height = -static_cast<float>(extent.height),
                         .minDepth = 0.f,
                         .maxDepth = 1.f};
   scissor = {
       .offset = {0, 0},
-      .extent = {0, 0},
+      .extent = extent,
   };
 
   viewportCI = VkPipelineViewportStateCreateInfo{
@@ -120,8 +121,7 @@ void PipelineLayout::Initialize(VkDevice device,
 }
 
 void PipelineLayout::Prepare(VkDevice device) {
-  VkResult result =
-      vkCreatePipelineLayout(device, &pipelineLayoutCI, NULL, &layout);
+  vkCreatePipelineLayout(device, &pipelineLayoutCI, NULL, &layout);
 }
 
 void PipelineLayout::Cleanup(VkDevice device) {

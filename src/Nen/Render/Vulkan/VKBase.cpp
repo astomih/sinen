@@ -13,24 +13,6 @@ namespace nen::vk {
   m_##FuncName = reinterpret_cast<PFN_##FuncName>(                             \
       vkGetInstanceProcAddr(m_instance, #FuncName))
 
-static VkBool32 VKAPI_CALL DebugReportCallback(
-    VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objactTypes,
-    uint64_t object, size_t location, int32_t messageCode,
-    const char *pLayerPrefix, const char *pMessage, void *pUserData) {
-  VkBool32 ret = VK_FALSE;
-  if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT ||
-      flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) {
-    ret = VK_TRUE;
-  }
-  std::stringstream ss;
-  if (pLayerPrefix) {
-    ss << "[" << pLayerPrefix << "] ";
-  }
-  ss << pMessage << std::endl;
-
-  return ret;
-}
-
 void VKBase::checkResult(VkResult result) {
   if (result != VK_SUCCESS) {
   }
@@ -41,31 +23,18 @@ VKBase::VKBase(VKRenderer *vkrenderer)
 
 void VKBase::initialize(std::shared_ptr<window> window) {
   m_window = window;
-  // Vulkan インスタンスの生成
   initializeInstance(window->Name().c_str());
-  // 物理デバイスの選択
   selectPhysicalDevice();
   m_graphicsQueueIndex = searchGraphicsQueueIndex();
-
-#ifdef _DEBUG
-  // デバッグレポート関数のセット.
-  enableDebugReport();
-#endif
-
-  // 論理デバイスの生成
   createDevice();
-  // コマンドプールの準備
   prepareCommandPool();
-
   VkSurfaceKHR surface;
-  // サーフェース生成
   SDL_Vulkan_CreateSurface((SDL_Window *)window->GetSDLWindow(), m_instance,
                            &surface);
   mSwapchain = std::make_unique<Swapchain>(m_instance, m_device, surface);
   mSwapchain->Prepare(
       m_physDev, m_graphicsQueueIndex, static_cast<uint32_t>(window->Size().x),
       static_cast<uint32_t>(window->Size().y), VK_FORMAT_B8G8R8A8_UNORM);
-
   createDepthBuffer();
   {
     VkImageViewCreateInfo ci{};
@@ -84,18 +53,12 @@ void VKBase::initialize(std::shared_ptr<window> window) {
     checkResult(result);
   }
   createRenderPass();
-
-  // フレームバッファの生成
   createFramebuffer();
-
-  // コマンドバッファの準備.
   prepareCommandBuffers();
-  // 描画フレーム同期用
   VkSemaphoreCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
   vkCreateSemaphore(m_device, &ci, nullptr, &m_renderCompletedSem);
   vkCreateSemaphore(m_device, &ci, nullptr, &m_presentCompletedSem);
-
   m_vkrenderer->prepare();
 }
 
@@ -127,9 +90,6 @@ void VKBase::terminate() {
 
   mSwapchain->Cleanup();
   vkDestroyDevice(m_device, nullptr);
-#ifdef _DEBUG
-  disableDebugReport();
-#endif
   vkDestroyInstance(m_instance, nullptr);
 }
 
@@ -142,7 +102,7 @@ void VKBase::initializeInstance(const char *appName) {
   appInfo.apiVersion = VK_API_VERSION_1_1;
   appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
 
-  // 拡張情報の取得.
+  // Get all extensions
   std::vector<VkExtensionProperties> props;
   {
     uint32_t count = 0;
@@ -160,14 +120,8 @@ void VKBase::initializeInstance(const char *appName) {
   ci.enabledExtensionCount = uint32_t(extensions.size());
   ci.ppEnabledExtensionNames = extensions.data();
   ci.pApplicationInfo = &appInfo;
-#ifdef _DEBUG
-  // デバッグビルド時には検証レイヤーを有効化
-  const char *layers[] = {"VK_LAYER_LUNARG_standard_validation"};
-  ci.enabledLayerCount = 1;
-  ci.ppEnabledLayerNames = layers;
-#endif
 
-  // インスタンス生成
+  // Create instance
   auto result = vkCreateInstance(&ci, nullptr, &m_instance);
   checkResult(result);
 }
@@ -178,9 +132,8 @@ void VKBase::selectPhysicalDevice() {
   std::vector<VkPhysicalDevice> physDevs(devCount);
   vkEnumeratePhysicalDevices(m_instance, &devCount, physDevs.data());
 
-  // 最初のデバイスを使用する
+  // Use first device
   m_physDev = physDevs[0];
-  // メモリプロパティを取得しておく
   vkGetPhysicalDeviceMemoryProperties(m_physDev, &m_physMemProps);
 }
 
@@ -209,7 +162,7 @@ void VKBase::createDevice() {
 
   std::vector<VkExtensionProperties> devExtProps;
   {
-    // 拡張情報の取得.
+    // Get extension
     uint32_t count = 0;
     vkEnumerateDeviceExtensionProperties(m_physDev, nullptr, &count, nullptr);
     devExtProps.resize(count);
@@ -231,7 +184,6 @@ void VKBase::createDevice() {
   auto result = vkCreateDevice(m_physDev, &ci, nullptr, &m_device);
   checkResult(result);
 
-  // デバイスキューの取得
   vkGetDeviceQueue(m_device, m_graphicsQueueIndex, 0, &m_deviceQueue);
 }
 
@@ -351,7 +303,6 @@ void VKBase::prepareCommandBuffers() {
   auto result = vkAllocateCommandBuffers(m_device, &ai, m_commands.data());
   checkResult(result);
 
-  // コマンドバッファのフェンスも同数用意する.
   m_fences.resize(ai.commandBufferCount);
   VkFenceCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -376,26 +327,6 @@ uint32_t VKBase::getMemoryTypeIndex(uint32_t requestBits,
     requestBits >>= 1;
   }
   return result;
-}
-
-void VKBase::enableDebugReport() {
-  GetInstanceProcAddr(vkCreateDebugReportCallbackEXT);
-  GetInstanceProcAddr(vkDebugReportMessageEXT);
-  GetInstanceProcAddr(vkDestroyDebugReportCallbackEXT);
-
-  VkDebugReportFlagsEXT flags =
-      VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
-
-  VkDebugReportCallbackCreateInfoEXT drcCI{};
-  drcCI.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
-  drcCI.flags = flags;
-  drcCI.pfnCallback = &DebugReportCallback;
-  m_vkCreateDebugReportCallbackEXT(m_instance, &drcCI, nullptr, &m_debugReport);
-}
-void VKBase::disableDebugReport() {
-  if (m_vkDestroyDebugReportCallbackEXT) {
-    m_vkDestroyDebugReportCallbackEXT(m_instance, m_debugReport, nullptr);
-  }
 }
 
 void VKBase::recreate_swapchain() {
@@ -427,7 +358,6 @@ void VKBase::recreate_swapchain() {
     checkResult(result);
   }
   createRenderPass();
-  // フレームバッファの生成
   createFramebuffer();
 }
 
@@ -439,7 +369,6 @@ void VKBase::render() {
   auto commandFence = m_fences[nextImageIndex];
 
   auto color = m_vkrenderer->GetRenderer()->GetClearColor();
-  // クリア値
   std::array<VkClearValue, 2> clearValue = {{
       {color.r, color.g, color.b, 1.0f}, // for Color
       {1.0f, 0}                          // for Depth
@@ -454,28 +383,18 @@ void VKBase::render() {
   renderPassBI.pClearValues = clearValue.data();
   renderPassBI.clearValueCount = uint32_t(clearValue.size());
 
-  // コマンドバッファ・レンダーパス開始
+  // Begin Command Buffer
   VkCommandBufferBeginInfo commandBI{};
   commandBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   auto &command = m_commands[nextImageIndex];
   m_imageIndex = nextImageIndex;
-  auto extent = mSwapchain->GetSurfaceExtent();
-
-  auto viewport = VkViewport{};
-  viewport.x = 0.0f;
-  viewport.y = float(extent.height);
-  viewport.width = float(extent.width);
-  viewport.height = -1.0f * float(extent.height);
-  viewport.minDepth = 0.0f;
-  viewport.maxDepth = 1.0f;
-  VkRect2D scissor{{0, 0}, extent};
   m_vkrenderer->makeCommand(command, renderPassBI, commandBI, commandFence);
 
-  // コマンド・レンダーパス終了
+  // End Render Pass
   vkCmdEndRenderPass(command);
   vkEndCommandBuffer(command);
 
-  // コマンドを実行（送信)
+  // Do command
   VkSubmitInfo submitInfo{};
   VkPipelineStageFlags waitStageMask =
       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -505,8 +424,6 @@ void VKBase::render() {
       logger::Fatal("vkQueueWaitIdle Error! VkResult:%d", result);
     }
   }
-
-  // Present 処理
   mSwapchain->QueuePresent(m_deviceQueue, nextImageIndex, m_renderCompletedSem);
   for (auto &memory : destroyMemory) {
     vkFreeMemory(m_device, memory, nullptr);

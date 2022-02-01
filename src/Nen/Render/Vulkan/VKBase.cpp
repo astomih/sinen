@@ -13,21 +13,21 @@ namespace nen::vk {
   m_##FuncName = reinterpret_cast<PFN_##FuncName>(                             \
       vkGetInstanceProcAddr(m_instance, #FuncName))
 
-void VKBase::checkResult(VkResult result) {
+void vulkan_base_framework::check_result(VkResult result) {
   if (result != VK_SUCCESS) {
   }
 }
 
-VKBase::VKBase(VKRenderer *vkrenderer)
+vulkan_base_framework::vulkan_base_framework(VKRenderer *vkrenderer)
     : m_imageIndex(0), m_vkrenderer(vkrenderer) {}
 
-void VKBase::initialize(std::shared_ptr<window> window) {
+void vulkan_base_framework::initialize(std::shared_ptr<window> window) {
   m_window = window;
-  initializeInstance(window->Name().c_str());
-  selectPhysicalDevice();
-  m_graphicsQueueIndex = searchGraphicsQueueIndex();
-  createDevice();
-  prepareCommandPool();
+  initialize_instance(window->Name().c_str());
+  select_physical_device();
+  m_graphicsQueueIndex = search_graphics_queue_index();
+  create_device();
+  create_command_pool();
   VkSurfaceKHR surface;
   SDL_Vulkan_CreateSurface((SDL_Window *)window->GetSDLWindow(), m_instance,
                            &surface);
@@ -35,34 +35,41 @@ void VKBase::initialize(std::shared_ptr<window> window) {
   mSwapchain->Prepare(
       m_physDev, m_graphicsQueueIndex, static_cast<uint32_t>(window->Size().x),
       static_cast<uint32_t>(window->Size().y), VK_FORMAT_B8G8R8A8_UNORM);
-  createDepthBuffer();
-  {
-    VkImageViewCreateInfo ci{};
-    ci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    ci.format = VK_FORMAT_D32_SFLOAT;
-    ci.components = {
-        VK_COMPONENT_SWIZZLE_R,
-        VK_COMPONENT_SWIZZLE_G,
-        VK_COMPONENT_SWIZZLE_B,
-        VK_COMPONENT_SWIZZLE_A,
-    };
-    ci.subresourceRange = {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1};
-    ci.image = m_depthBuffer;
-    auto result = vkCreateImageView(m_device, &ci, nullptr, &m_depthBufferView);
-    checkResult(result);
-  }
-  createRenderPass();
-  createFramebuffer();
-  prepareCommandBuffers();
+  create_depth_buffer();
+  create_image_view();
+  create_render_pass();
+  create_frame_buffer();
+  create_command_buffers();
+  create_semaphore();
+  m_vkrenderer->prepare();
+}
+
+void vulkan_base_framework::create_image_view() {
+
+  VkImageViewCreateInfo ci{};
+  ci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+  ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+  ci.format = VK_FORMAT_D32_SFLOAT;
+  ci.components = {
+      VK_COMPONENT_SWIZZLE_R,
+      VK_COMPONENT_SWIZZLE_G,
+      VK_COMPONENT_SWIZZLE_B,
+      VK_COMPONENT_SWIZZLE_A,
+  };
+  ci.subresourceRange = {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1};
+  ci.image = m_depthBuffer;
+  auto result = vkCreateImageView(m_device, &ci, nullptr, &m_depthBufferView);
+  check_result(result);
+}
+
+void vulkan_base_framework::create_semaphore() {
   VkSemaphoreCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
   vkCreateSemaphore(m_device, &ci, nullptr, &m_renderCompletedSem);
   vkCreateSemaphore(m_device, &ci, nullptr, &m_presentCompletedSem);
-  m_vkrenderer->prepare();
 }
 
-void VKBase::terminate() {
+void vulkan_base_framework::terminate() {
   vkDeviceWaitIdle(m_device);
 
   vkFreeCommandBuffers(m_device, m_commandPool, uint32_t(m_commands.size()),
@@ -75,7 +82,7 @@ void VKBase::terminate() {
   }
   m_framebuffers.clear();
 
-  vkFreeMemory(m_device, m_depthBufferMemory, nullptr);
+  vmaFreeMemory(m_vkrenderer->allocator, m_depthBufferAllocation);
   vkDestroyImage(m_device, m_depthBuffer, nullptr);
   vkDestroyImageView(m_device, m_depthBufferView, nullptr);
 
@@ -93,7 +100,7 @@ void VKBase::terminate() {
   vkDestroyInstance(m_instance, nullptr);
 }
 
-void VKBase::initializeInstance(const char *appName) {
+void vulkan_base_framework::initialize_instance(const char *appName) {
   std::vector<const char *> extensions;
   VkApplicationInfo appInfo{};
   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -123,10 +130,10 @@ void VKBase::initializeInstance(const char *appName) {
 
   // Create instance
   auto result = vkCreateInstance(&ci, nullptr, &m_instance);
-  checkResult(result);
+  check_result(result);
 }
 
-void VKBase::selectPhysicalDevice() {
+void vulkan_base_framework::select_physical_device() {
   uint32_t devCount = 0;
   vkEnumeratePhysicalDevices(m_instance, &devCount, nullptr);
   std::vector<VkPhysicalDevice> physDevs(devCount);
@@ -137,7 +144,7 @@ void VKBase::selectPhysicalDevice() {
   vkGetPhysicalDeviceMemoryProperties(m_physDev, &m_physMemProps);
 }
 
-uint32_t VKBase::searchGraphicsQueueIndex() {
+uint32_t vulkan_base_framework::search_graphics_queue_index() {
   uint32_t propCount;
   vkGetPhysicalDeviceQueueFamilyProperties(m_physDev, &propCount, nullptr);
   std::vector<VkQueueFamilyProperties> props(propCount);
@@ -152,7 +159,7 @@ uint32_t VKBase::searchGraphicsQueueIndex() {
   }
   return graphicsQueue;
 }
-void VKBase::createDevice() {
+void vulkan_base_framework::create_device() {
   const float defaultQueuePriority(1.0f);
   VkDeviceQueueCreateInfo devQueueCI{};
   devQueueCI.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -182,21 +189,31 @@ void VKBase::createDevice() {
   ci.enabledExtensionCount = uint32_t(extensions.size());
 
   auto result = vkCreateDevice(m_physDev, &ci, nullptr, &m_device);
-  checkResult(result);
+  check_result(result);
 
   vkGetDeviceQueue(m_device, m_graphicsQueueIndex, 0, &m_deviceQueue);
 }
 
-void VKBase::prepareCommandPool() {
+void vulkan_base_framework::create_command_pool() {
   VkCommandPoolCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
   ci.queueFamilyIndex = m_graphicsQueueIndex;
   ci.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
   auto result = vkCreateCommandPool(m_device, &ci, nullptr, &m_commandPool);
-  checkResult(result);
+  check_result(result);
 }
 
-void VKBase::createDepthBuffer() {
+void vulkan_base_framework::create_depth_buffer() {
+  VmaAllocatorCreateInfo allocator_info = {};
+  allocator_info.physicalDevice = get_vk_physical_device();
+  allocator_info.device = get_vk_device();
+  {
+    const auto result =
+        vmaCreateAllocator(&allocator_info, &m_vkrenderer->allocator);
+    if (result != VK_SUCCESS) {
+      nen::logger::Fatal("Can not create allocator");
+    }
+  }
   VkImageCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
   ci.imageType = VK_IMAGE_TYPE_2D;
@@ -208,21 +225,25 @@ void VKBase::createDepthBuffer() {
   ci.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
   ci.samples = VK_SAMPLE_COUNT_1_BIT;
   ci.arrayLayers = 1;
-  auto result = vkCreateImage(m_device, &ci, nullptr, &m_depthBuffer);
-  checkResult(result);
+  VmaAllocationCreateInfo alloc_info = {};
+  alloc_info.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
+  vmaCreateImage(m_vkrenderer->allocator, &ci, &alloc_info, &m_depthBuffer,
+                 &m_depthBufferAllocation, nullptr);
 
   VkMemoryRequirements reqs;
   vkGetImageMemoryRequirements(m_device, m_depthBuffer, &reqs);
-  VkMemoryAllocateInfo ai{};
-  ai.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-  ai.allocationSize = reqs.size;
-  ai.memoryTypeIndex = getMemoryTypeIndex(reqs.memoryTypeBits,
-                                          VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-  vkAllocateMemory(m_device, &ai, nullptr, &m_depthBufferMemory);
-  vkBindImageMemory(m_device, m_depthBuffer, m_depthBufferMemory, 0);
+  VmaAllocationCreateInfo ai{};
+  ai.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
+  VmaAllocationInfo allocInfo;
+  allocInfo.size = reqs.size;
+
+  vmaAllocateMemory(m_vkrenderer->allocator, &reqs, &ai,
+                    &m_depthBufferAllocation, &allocInfo);
+  vmaBindImageMemory(m_vkrenderer->allocator, m_depthBufferAllocation,
+                     m_depthBuffer);
 }
 
-void VKBase::createRenderPass() {
+void vulkan_base_framework::create_render_pass() {
   VkRenderPassCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 
@@ -269,10 +290,10 @@ void VKBase::createRenderPass() {
   ci.pSubpasses = &subpassDesc;
 
   auto result = vkCreateRenderPass(m_device, &ci, nullptr, &m_renderPass);
-  checkResult(result);
+  check_result(result);
 }
 
-void VKBase::createFramebuffer() {
+void vulkan_base_framework::create_frame_buffer() {
   VkFramebufferCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
   ci.renderPass = m_renderPass;
@@ -289,11 +310,11 @@ void VKBase::createFramebuffer() {
 
     VkFramebuffer framebuffer;
     auto result = vkCreateFramebuffer(m_device, &ci, nullptr, &framebuffer);
-    checkResult(result);
+    check_result(result);
     m_framebuffers.push_back(framebuffer);
   }
 }
-void VKBase::prepareCommandBuffers() {
+void vulkan_base_framework::create_command_buffers() {
   VkCommandBufferAllocateInfo ai{};
   ai.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
   ai.commandPool = m_commandPool;
@@ -301,7 +322,7 @@ void VKBase::prepareCommandBuffers() {
   ai.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
   m_commands.resize(ai.commandBufferCount);
   auto result = vkAllocateCommandBuffers(m_device, &ai, m_commands.data());
-  checkResult(result);
+  check_result(result);
 
   m_fences.resize(ai.commandBufferCount);
   VkFenceCreateInfo ci{};
@@ -309,12 +330,12 @@ void VKBase::prepareCommandBuffers() {
   ci.flags = VK_FENCE_CREATE_SIGNALED_BIT;
   for (auto &v : m_fences) {
     result = vkCreateFence(m_device, &ci, nullptr, &v);
-    checkResult(result);
+    check_result(result);
   }
 }
 
-uint32_t VKBase::getMemoryTypeIndex(uint32_t requestBits,
-                                    VkMemoryPropertyFlags requestProps) const {
+uint32_t vulkan_base_framework::get_memory_type_index(
+    uint32_t requestBits, VkMemoryPropertyFlags requestProps) const {
   uint32_t result = ~0u;
   for (uint32_t i = 0; i < m_physMemProps.memoryTypeCount; ++i) {
     if (requestBits & 1) {
@@ -329,7 +350,7 @@ uint32_t VKBase::getMemoryTypeIndex(uint32_t requestBits,
   return result;
 }
 
-void VKBase::recreate_swapchain() {
+void vulkan_base_framework::recreate_swapchain() {
   vkDeviceWaitIdle(m_device);
 
   auto size = m_vkrenderer->GetWindow()->Size();
@@ -340,28 +361,13 @@ void VKBase::recreate_swapchain() {
   for (auto &v : m_framebuffers) {
     vkDestroyFramebuffer(m_device, v, nullptr);
   }
-  createDepthBuffer();
-  {
-    VkImageViewCreateInfo ci{};
-    ci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    ci.format = VK_FORMAT_D32_SFLOAT;
-    ci.components = {
-        VK_COMPONENT_SWIZZLE_R,
-        VK_COMPONENT_SWIZZLE_G,
-        VK_COMPONENT_SWIZZLE_B,
-        VK_COMPONENT_SWIZZLE_A,
-    };
-    ci.subresourceRange = {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1};
-    ci.image = m_depthBuffer;
-    auto result = vkCreateImageView(m_device, &ci, nullptr, &m_depthBufferView);
-    checkResult(result);
-  }
-  createRenderPass();
-  createFramebuffer();
+  create_depth_buffer();
+  create_image_view();
+  create_render_pass();
+  create_frame_buffer();
 }
 
-void VKBase::render() {
+void vulkan_base_framework::render() {
   if (mSwapchain->is_need_recreate(m_vkrenderer->GetWindow()->Size()))
     recreate_swapchain();
   uint32_t nextImageIndex = 0;

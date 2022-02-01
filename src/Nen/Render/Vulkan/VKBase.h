@@ -15,43 +15,43 @@
 #include <Window/Window.hpp>
 #include <memory>
 #include <vector>
+#include <vk_mem_alloc.h>
 
 namespace nen::vk {
-class VKBase {
+/**
+ * @brief vulkan base framework class
+ *
+ */
+class vulkan_base_framework {
 public:
-  VKBase(class VKRenderer *);
+  vulkan_base_framework(class VKRenderer *);
   void initialize(std::shared_ptr<window> window);
   void terminate();
-
   void render();
-  VkPhysicalDevice GetVkPhysicalDevice() { return m_physDev; }
-  VkDevice GetVkDevice() { return m_device; }
-  VkQueue GetVkQueue() { return m_deviceQueue; }
-  VkCommandPool GetVkCommandPool() { return m_commandPool; }
-  int32_t GetSwapBufferCount() {
+  VkPhysicalDevice get_vk_physical_device() { return m_physDev; }
+  VkDevice get_vk_device() { return m_device; }
+  VkQueue get_vk_queue() { return m_deviceQueue; }
+  VkCommandPool get_vk_command_pool() { return m_commandPool; }
+  int32_t get_swap_buffer_count() {
     return static_cast<int32_t>(mSwapchain->GetImageCount());
   }
 
-  static void checkResult(VkResult);
+  static void check_result(VkResult);
 
-  void initializeInstance(const char *appName);
-  void selectPhysicalDevice();
-  uint32_t searchGraphicsQueueIndex();
-  void createDevice();
-  void prepareCommandPool();
-  void createDepthBuffer();
+  void initialize_instance(const char *appName);
+  void select_physical_device();
+  uint32_t search_graphics_queue_index();
+  void create_device();
+  void create_command_pool();
+  void create_depth_buffer();
+  void create_render_pass();
+  void create_frame_buffer();
+  void create_image_view();
+  void create_semaphore();
+  void create_command_buffers();
 
-  void createRenderPass();
-  void createFramebuffer();
-
-  void prepareCommandBuffers();
-
-  uint32_t getMemoryTypeIndex(uint32_t requestBits,
-                              VkMemoryPropertyFlags requestProps) const;
-
-  void enableDebugReport();
-  void disableDebugReport();
-
+  uint32_t get_memory_type_index(uint32_t requestBits,
+                                 VkMemoryPropertyFlags requestProps) const;
   void recreate_swapchain();
 
   std::unique_ptr<Swapchain> mSwapchain;
@@ -68,7 +68,7 @@ public:
   VkCommandPool m_commandPool;
 
   VkImage m_depthBuffer;
-  VkDeviceMemory m_depthBufferMemory;
+  VmaAllocation m_depthBufferAllocation{};
   VkImageView m_depthBufferView;
 
   VkRenderPass m_renderPass;

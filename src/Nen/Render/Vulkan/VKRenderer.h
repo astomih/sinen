@@ -81,7 +81,7 @@ public:
   BufferObject CreateBuffer(
       uint32_t size, VkBufferUsageFlags usage,
       VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-  VKBase *GetBase() { return m_base.get(); }
+  vulkan_base_framework *GetBase() { return m_base.get(); }
   void registerTexture(std::shared_ptr<VulkanDrawObject> texture,
                        std::string_view, texture_type type);
   void unregisterTexture(std::shared_ptr<VulkanDrawObject> texture,
@@ -124,9 +124,11 @@ public:
   void MapMemory(const VmaAllocation &, void *data, size_t size);
   std::shared_ptr<class window> GetWindow() { return m_base->m_window; }
 
+  VmaAllocator allocator{};
+
 private:
   renderer *mRenderer;
-  std::unique_ptr<class VKBase> m_base;
+  std::unique_ptr<class vulkan_base_framework> m_base;
   void prepareUniformBuffers();
   void prepareDescriptorSetLayout();
   void prepareDescriptorPool();
@@ -162,7 +164,6 @@ private:
   std::vector<BufferObject> m_instanceUniforms;
   std::vector<std::shared_ptr<class ui_screen>> mGUI;
   int instanceCount;
-  VmaAllocator allocator{};
 };
 } // namespace nen::vk
 #endif

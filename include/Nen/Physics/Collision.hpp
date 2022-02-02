@@ -4,7 +4,7 @@
 namespace nen {
 class collision {
 public:
-  static bool IntersectAABB(const vector3 &a, const vector3 &b,
-                            const vector3 &detectSpace);
+  static int IntersectAABB(const vector3 &a, const vector3 &b,
+                           const vector3 &detectSpace);
 };
 } // namespace nen

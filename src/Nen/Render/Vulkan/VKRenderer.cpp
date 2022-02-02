@@ -1,25 +1,29 @@
-﻿#include "Logger/Logger.hpp"
-#include <Nen.hpp>
+﻿#include <Nen.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
-#include "../../Texture/SurfaceHandle.hpp"
+// general
+#include <array>
+#include <cstdint>
+#include <fstream>
+#include <sstream>
+#include <string>
+
+// extenal
 #include "SDL_stdinc.h"
+#include "vulkan/vulkan_core.h"
+#include <SDL_image.h>
+#include <SDL_ttf.h>
+#include <imgui.h>
+#include <imgui_impl_sdl.h>
+#include <imgui_impl_vulkan.h>
+#define VMA_IMPLEMENTATION
+#include "vk_mem_alloc.h"
+
+// internal
+#include "../../Texture/SurfaceHandle.hpp"
 #include "VKBase.h"
 #include "VKRenderer.h"
 #include "VulkanShader.h"
 #include "VulkanUtil.h"
-#include "vulkan/vulkan_core.h"
-#include <SDL_image.h>
-#include <SDL_ttf.h>
-#include <array>
-#include <cstdint>
-#include <fstream>
-#include <imgui.h>
-#include <imgui_impl_sdl.h>
-#include <imgui_impl_vulkan.h>
-#include <sstream>
-#include <string>
-#define VMA_IMPLEMENTATION
-#include "vk_mem_alloc.h"
 
 namespace nen::vk {
 using namespace vkutil;
@@ -54,10 +58,10 @@ void VKRenderer::AddVertexArray(const vertex_array &vArray,
   vArrayVK.indexBuffer = CreateBuffer(vArray.indices.size() * sizeof(uint32_t),
                                       VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 
-  MapMemory(vArrayVK.vertexBuffer.allocation, vArrayVK.vertices.data(),
-            vArraySize);
-  MapMemory(vArrayVK.indexBuffer.allocation, vArrayVK.indices.data(),
-            sizeof(uint32_t) * vArrayVK.indices.size());
+  write_memory(vArrayVK.vertexBuffer.allocation, vArrayVK.vertices.data(),
+               vArraySize);
+  write_memory(vArrayVK.indexBuffer.allocation, vArrayVK.indices.data(),
+               sizeof(uint32_t) * vArrayVK.indices.size());
   m_VertexArrays.insert(
       std::pair<std::string, VertexArrayForVK>(name.data(), vArrayVK));
 }
@@ -68,10 +72,12 @@ void VKRenderer::UpdateVertexArray(const vertex_array &vArray,
   vArrayVK.indices = vArray.indices;
   vArrayVK.vertices = vArray.vertices;
   vArrayVK.materialName = vArray.materialName;
-  MapMemory(m_VertexArrays[name.data()].vertexBuffer.allocation,
-            vArrayVK.vertices.data(), vArray.vertices.size() * sizeof(vertex));
-  MapMemory(m_VertexArrays[name.data()].indexBuffer.allocation,
-            vArrayVK.indices.data(), vArray.indices.size() * sizeof(uint32_t));
+  write_memory(m_VertexArrays[name.data()].vertexBuffer.allocation,
+               vArrayVK.vertices.data(),
+               vArray.vertices.size() * sizeof(vertex));
+  write_memory(m_VertexArrays[name.data()].indexBuffer.allocation,
+               vArrayVK.indices.data(),
+               vArray.indices.size() * sizeof(uint32_t));
 }
 
 void VKRenderer::AddDrawObject2D(std::shared_ptr<class draw_object> drawObject,
@@ -255,12 +261,7 @@ void VKRenderer::cleanup() {
 //コマンドバッファの発行
 void VKRenderer::makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri,
                              VkCommandBufferBeginInfo &ci, VkFence &fence) {
-  {
-    auto result = vkBeginCommandBuffer(command, &ci);
-    if (result != VK_SUCCESS) {
-      logger::Fatal("vkBeginCommandBuffer Error! VkResult:%d", result);
-    }
-  }
+  vkBeginCommandBuffer(command, &ci);
   auto viewport = VkViewport{
       .x = 0.f,
       .y = static_cast<float>(m_base->mSwapchain->GetSurfaceExtent().height),
@@ -278,11 +279,8 @@ void VKRenderer::makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri,
   drawGUI(command);
   renderImGUI(command);
   pipelineOpaque.Bind(command);
-  auto result =
-      vkWaitForFences(m_base->get_vk_device(), 1, &fence, VK_TRUE, UINT64_MAX);
-  if (result != VK_SUCCESS) {
-    logger::Fatal("vkWaitForFences Error! VkResult:%d", result);
-  }
+
+  vkWaitForFences(m_base->get_vk_device(), 1, &fence, VK_TRUE, UINT64_MAX);
   vkCmdSetScissor(command, 0, 1, &scissor);
   vkCmdSetViewport(command, 0, 1, &viewport);
 }
@@ -315,7 +313,8 @@ void VKRenderer::draw3d(VkCommandBuffer command) {
                          sprite->descripterSet.data());
     prepareDescriptorSet(sprite);
     auto allocation = sprite->uniformBuffers[m_base->m_imageIndex].allocation;
-    MapMemory(allocation, &sprite->drawObject->param, sizeof(shader_parameter));
+    write_memory(allocation, &sprite->drawObject->param,
+                 sizeof(shader_parameter));
     vkCmdDrawIndexed(command, m_VertexArrays[index].indexCount, 1, 0, 0, 0);
   }
 }
@@ -351,7 +350,8 @@ void VKRenderer::draw2d(VkCommandBuffer command) {
                          sprite->descripterSet.data());
     prepareDescriptorSet(sprite);
     auto allocation = sprite->uniformBuffers[m_base->m_imageIndex].allocation;
-    MapMemory(allocation, &sprite->drawObject->param, sizeof(shader_parameter));
+    write_memory(allocation, &sprite->drawObject->param,
+                 sizeof(shader_parameter));
 
     vkCmdDrawIndexed(command,
                      m_VertexArrays[sprite->drawObject->vertexIndex].indexCount,
@@ -364,9 +364,9 @@ void VKRenderer::drawGUI(VkCommandBuffer command) {
   }
 }
 
-void VKRenderer::MapMemory(const VmaAllocation &allocation, void *data,
-                           size_t size) {
-  void *p;
+void VKRenderer::write_memory(const VmaAllocation &allocation, const void *data,
+                              size_t size) {
+  void *p = nullptr;
   vmaMapMemory(allocator, allocation, &p);
   memcpy(p, data, size);
   vmaUnmapMemory(allocator, allocation);
@@ -408,10 +408,8 @@ void VKRenderer::prepareImGUI() {
   VkSubmitInfo submitInfo{VK_STRUCTURE_TYPE_SUBMIT_INFO, nullptr};
   submitInfo.pCommandBuffers = &command;
   submitInfo.commandBufferCount = 1;
-  auto result =
-      vkQueueSubmit(m_base->get_vk_queue(), 1, &submitInfo, VK_NULL_HANDLE);
-  if (result != VK_SUCCESS)
-    logger::Fatal("vkQueueSubmit Error! VkResult:%d", result);
+
+  vkQueueSubmit(m_base->get_vk_queue(), 1, &submitInfo, VK_NULL_HANDLE);
 
   // フォントテクスチャ転送の完了を待つ.
   vkDeviceWaitIdle(m_base->get_vk_device());
@@ -497,7 +495,6 @@ void VKRenderer::prepareDescriptorSetLayout() {
 
 void VKRenderer::prepareDescriptorPool() {
 
-  VkResult result;
   VkDescriptorPoolSize poolSize[] = {
       {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxpoolSize},
       {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, maxpoolSize},
@@ -535,13 +532,8 @@ void VKRenderer::prepareDescriptorSet(
   ai.descriptorSetCount = uint32_t(m_base->mSwapchain->GetImageCount());
   ai.pSetLayouts = layouts.data();
   sprite->descripterSet.resize(m_base->mSwapchain->GetImageCount());
-  {
-    auto result = vkAllocateDescriptorSets(m_base->get_vk_device(), &ai,
-                                           sprite->descripterSet.data());
-    if (result != VkResult::VK_SUCCESS) {
-      logger::Fatal("vkAllocateDescriptorSets Error! VkResult:%d", result);
-    }
-  }
+  vkAllocateDescriptorSets(m_base->get_vk_device(), &ai,
+                           sprite->descripterSet.data());
   // ディスクリプタセットへ書き込み.
   for (int i = 0; i < m_base->mSwapchain->GetImageCount(); i++) {
     VkDescriptorBufferInfo descUBO{};
@@ -597,9 +589,8 @@ BufferObject VKRenderer::CreateBuffer(uint32_t size, VkBufferUsageFlags usage,
   ci.size = size;
   VmaAllocationCreateInfo buffer_alloc_info = {};
   buffer_alloc_info.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
-  auto result = vmaCreateBuffer(allocator, &ci, &buffer_alloc_info, &obj.buffer,
-                                &obj.allocation, nullptr);
-  m_base->check_result(result);
+  vmaCreateBuffer(allocator, &ci, &buffer_alloc_info, &obj.buffer,
+                  &obj.allocation, nullptr);
   return obj;
 }
 
@@ -636,7 +627,6 @@ ImageObject VKRenderer::create_texture(SDL_Surface *imagedata,
     ci.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     ci.tiling = VkImageTiling::VK_IMAGE_TILING_LINEAR;
     ci.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
-    // vkCreateImage(m_base->GetVkDevice(), &ci, nullptr, &texture.image);
     VmaAllocationCreateInfo alloc_info = {};
     alloc_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
     vmaCreateImage(allocator, &ci, &alloc_info, &texture.image,
@@ -658,7 +648,7 @@ ImageObject VKRenderer::create_texture(SDL_Surface *imagedata,
     uint32_t imageSize = imagedata->h * imagedata->w * 4;
     stagingBuffer = CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-    MapMemory(stagingBuffer.allocation, pImage, imageSize);
+    write_memory(stagingBuffer.allocation, pImage, imageSize);
   }
 
   VkBufferImageCopy copyRegion{};
@@ -691,13 +681,8 @@ ImageObject VKRenderer::create_texture(SDL_Surface *imagedata,
   submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
   submitInfo.commandBufferCount = 1;
   submitInfo.pCommandBuffers = &command;
-  {
-    auto result = vkQueueSubmit(m_base->get_vk_queue(), 1, &submitInfo,
-                                m_base->m_fences[m_base->m_imageIndex]);
-    if (result != VK_SUCCESS) {
-      logger::Fatal("vkQueueSubmit Error! VkResult:%d", result);
-    }
-  }
+  vkQueueSubmit(m_base->get_vk_queue(), 1, &submitInfo,
+                m_base->m_fences[m_base->m_imageIndex]);
 
   {
     // Create view for texture reference
@@ -842,9 +827,7 @@ VkFramebuffer VKRenderer::CreateFramebuffer(VkRenderPass renderPass,
       1,
   };
   VkFramebuffer framebuffer;
-  auto result = vkCreateFramebuffer(m_base->get_vk_device(), &fbCI, nullptr,
-                                    &framebuffer);
-  ThrowIfFailed(result, "vkCreateFramebuffer Failed.");
+  vkCreateFramebuffer(m_base->get_vk_device(), &fbCI, nullptr, &framebuffer);
   return framebuffer;
 }
 
@@ -882,8 +865,7 @@ VkCommandBuffer VKRenderer::CreateCommandBuffer() {
 }
 
 void VKRenderer::FinishCommandBuffer(VkCommandBuffer command) {
-  auto result = vkEndCommandBuffer(command);
-  ThrowIfFailed(result, "vkEndCommandBuffer Failed.");
+  vkEndCommandBuffer(command);
   VkFence fence;
   VkFenceCreateInfo fenceCI{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr, 0};
   vkCreateFence(m_base->get_vk_device(), &fenceCI, nullptr, &fence);
@@ -920,9 +902,8 @@ void VKRenderer::AllocateCommandBufferSecondary(uint32_t count,
   VkCommandBufferAllocateInfo commandAI{
       VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO, nullptr,
       m_base->m_commandPool, VK_COMMAND_BUFFER_LEVEL_SECONDARY, count};
-  auto result =
-      vkAllocateCommandBuffers(m_base->get_vk_device(), &commandAI, pCommands);
-  ThrowIfFailed(result, "vkAllocateCommandBuffers Failed.");
+
+  vkAllocateCommandBuffers(m_base->get_vk_device(), &commandAI, pCommands);
 }
 
 void VKRenderer::FreeCommandBufferSecondary(uint32_t count,
@@ -1019,13 +1000,9 @@ void VKRenderer::unregisterTexture(std::shared_ptr<VulkanDrawObject> texture,
     auto itr = std::find(mDrawObject3D.begin(), mDrawObject3D.end(), texture);
     if (itr != mDrawObject3D.end()) {
       auto device = m_base->get_vk_device();
-      auto result = vkFreeDescriptorSets(
-          m_base->get_vk_device(), m_descriptorPool,
-          static_cast<uint32_t>(texture->descripterSet.size()),
-          texture->descripterSet.data());
-      if (result != VK_SUCCESS) {
-        logger::Fatal("vkFreeDescriptorSets Error! VkResult:%d", result);
-      }
+      vkFreeDescriptorSets(m_base->get_vk_device(), m_descriptorPool,
+                           static_cast<uint32_t>(texture->descripterSet.size()),
+                           texture->descripterSet.data());
       for (auto &i : (*itr)->uniformBuffers) {
         DestroyVulkanObject<VkBuffer>(device, i.buffer, &vkDestroyBuffer);
       }

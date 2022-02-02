@@ -121,7 +121,7 @@ public:
   void TransferStageBufferToImage(const BufferObject &srcBuffer,
                                   const ImageObject &dstImage,
                                   const VkBufferImageCopy *region);
-  void MapMemory(const VmaAllocation &, void *data, size_t size);
+  void write_memory(const VmaAllocation &, const void *data, size_t size);
   std::shared_ptr<class window> GetWindow() { return m_base->m_window; }
 
   VmaAllocator allocator{};

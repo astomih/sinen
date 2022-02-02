@@ -95,6 +95,11 @@ public:
     mRecomputeWorldTransform = true;
   }
 
+  void Move(vector3 vec) noexcept {
+    mPosition += vec;
+    mRecomputeWorldTransform = true;
+  }
+
   /**
    * @brief スケールベクトルを取得
    *

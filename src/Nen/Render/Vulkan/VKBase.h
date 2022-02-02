@@ -36,8 +36,6 @@ public:
     return static_cast<int32_t>(mSwapchain->GetImageCount());
   }
 
-  static void check_result(VkResult);
-
   void initialize_instance(const char *appName);
   void select_physical_device();
   uint32_t search_graphics_queue_index();
@@ -83,9 +81,6 @@ public:
   VkDebugReportCallbackEXT m_debugReport;
 
   std::vector<VkCommandBuffer> m_commands;
-
-  std::vector<VkDeviceMemory> destroyMemory;
-
   uint32_t m_imageIndex;
   std::shared_ptr<window> m_window;
   VKRenderer *m_vkrenderer;

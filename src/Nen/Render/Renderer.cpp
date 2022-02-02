@@ -1,4 +1,5 @@
 ﻿#include "Render/Renderer.hpp"
+#include "../Vertex/default_model_creator.h"
 #include "Effect/Effect.hpp"
 #include "Math/Vector3.hpp"
 #include "OpenGL/GLRenderer.h"
@@ -103,121 +104,10 @@ void renderer::LoadShader(const shader &shaderInfo) {
 void renderer::UnloadShader(const shader &shaderInfo) {
   m_renderer->UnloadShader(shaderInfo);
 }
-void create_box_vertices(renderer *_renderer) {
-  const float value = 1.f;
-  const vector2 lb(0.0f, 0.0f);
-  const vector2 lt(0.f, 1.f);
-  const vector2 rb(1.0f, 0.0f);
-  const vector2 rt(1.0f, 1.0f);
-  vector3 norm{1, 1, 1};
-  const vector3 red{1.0f, 0.0f, 0.0f};
-  const vector3 green{0.0f, 1.0f, 0.0f};
-  const vector3 blue{0.0f, 0.0f, 1.0f};
-  const vector3 white{1.0f, 1, 1};
-  const vector3 black{0.0f, 0, 0};
-  const vector3 yellow{1.0f, 1.0f, 0.0f};
-  const vector3 magenta{1.0f, 0.0f, 1.0f};
-  const vector3 cyan{0.0f, 1.0f, 1.0f};
-  color base_color{1.f, 1.f, 1.f, 1.f};
 
-  vertex_array vArray;
-  vArray.vertices.push_back(
-      {vector3(-value, value, value), yellow, lb, base_color});
-  vArray.vertices.push_back(
-      {vector3(-value, -value, value), red, lt, base_color});
-  vArray.vertices.push_back(
-      {vector3(value, value, value), white, rb, base_color});
-  vArray.vertices.push_back(
-      {vector3(value, -value, value), magenta, rt, base_color});
-
-  vArray.vertices.push_back(
-      {vector3(value, value, value), white, lb, base_color});
-  vArray.vertices.push_back(
-      {vector3(value, -value, value), magenta, lt, base_color});
-  vArray.vertices.push_back(
-      {vector3(value, value, -value), cyan, rb, base_color});
-  vArray.vertices.push_back(
-      {vector3(value, -value, -value), blue, rt, base_color});
-
-  vArray.vertices.push_back(
-      {vector3(-value, value, -value), green, lb, base_color});
-  vArray.vertices.push_back(
-      {vector3(-value, -value, -value), black, lt, base_color});
-  vArray.vertices.push_back(
-      {vector3(-value, value, value), yellow, rb, base_color});
-  vArray.vertices.push_back(
-      {vector3(-value, -value, value), red, rt, base_color});
-
-  vArray.vertices.push_back(
-      {vector3(value, value, -value), cyan, lb, base_color});
-  vArray.vertices.push_back(
-      {vector3(value, -value, -value), blue, lt, base_color});
-  vArray.vertices.push_back(
-      {vector3(-value, value, -value), green, rb, base_color});
-  vArray.vertices.push_back(
-      {vector3(-value, -value, -value), black, rt, base_color});
-
-  vArray.vertices.push_back(
-      {vector3(-value, value, -value), green, lb, base_color});
-  vArray.vertices.push_back(
-      {vector3(-value, value, value), yellow, lt, base_color});
-  vArray.vertices.push_back(
-      {vector3(value, value, -value), cyan, rb, base_color});
-  vArray.vertices.push_back(
-      {vector3(value, value, value), white, rt, base_color});
-
-  vArray.vertices.push_back(
-      {vector3(-value, -value, value), red, lb, base_color});
-  vArray.vertices.push_back(
-      {vector3(-value, -value, -value), black, lt, base_color});
-  vArray.vertices.push_back(
-      {vector3(value, -value, value), magenta, rb, base_color});
-  vArray.vertices.push_back(
-      {vector3(value, -value, -value), blue, rt, base_color});
-
-  uint32_t indices[] = {
-      0,  2,  1,  1,  2,  3,  // front
-      4,  6,  5,  5,  6,  7,  // right
-      8,  10, 9,  9,  10, 11, // left
-
-      12, 14, 13, 13, 14, 15, // back
-      16, 18, 17, 17, 18, 19, // top
-      20, 22, 21, 21, 22, 23, // bottom
-  };
-  vArray.indexCount = sizeof(indices) / sizeof(uint32_t);
-  vArray.push_indices(indices, vArray.indexCount);
-  _renderer->AddVertexArray(vArray, vertex_default_shapes::box);
-}
-
-void create_sprite_vertices(renderer *_renderer) {
-  const float value = 1.f;
-  const vector2 lb(0.0f, 0.0f);
-  const vector2 lt(0.f, 1.f);
-  const vector2 rb(1.0f, 0.0f);
-  const vector2 rt(1.0f, 1.0f);
-  color base_color{1.f, 1.f, 1.f, 1.f};
-  vector3 norm{1, 1, 1};
-
-  vertex_array vArray;
-  vArray.vertices.push_back(
-      {vector3(-value, value, 0.5f), norm, lb, base_color});
-  vArray.vertices.push_back(
-      {vector3(-value, -value, 0.5f), norm, lt, base_color});
-  vArray.vertices.push_back(
-      {vector3(value, value, 0.5f), norm, rb, base_color});
-  vArray.vertices.push_back(
-      {vector3(value, -value, 0.5f), norm, rt, base_color});
-
-  uint32_t indices[] = {
-      0, 2, 1, 1, 2, 3, // front
-  };
-  vArray.indexCount = sizeof(indices) / sizeof(uint32_t);
-  vArray.push_indices(indices, vArray.indexCount);
-  _renderer->AddVertexArray(vArray, vertex_default_shapes::sprite);
-}
 void renderer::setup_shapes() {
-  create_box_vertices(this);
-  create_sprite_vertices(this);
+  AddVertexArray(create_box_vertices(), vertex_default_shapes::box);
+  AddVertexArray(create_sprite_vertices(), vertex_default_shapes::sprite);
 }
 
 } // namespace nen

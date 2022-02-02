@@ -1,22 +1,17 @@
 ﻿#include <Nen.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
-#include "Pipeline.h"
-#include "VKBase.h"
-#include "VKRenderer.h"
+// general
 #include <algorithm>
 #include <array>
 #include <iostream>
 #include <sstream>
 
-namespace nen::vk {
-#define GetInstanceProcAddr(FuncName)                                          \
-  m_##FuncName = reinterpret_cast<PFN_##FuncName>(                             \
-      vkGetInstanceProcAddr(m_instance, #FuncName))
+// internal
+#include "Pipeline.h"
+#include "VKBase.h"
+#include "VKRenderer.h"
 
-void vulkan_base_framework::check_result(VkResult result) {
-  if (result != VK_SUCCESS) {
-  }
-}
+namespace nen::vk {
 
 vulkan_base_framework::vulkan_base_framework(VKRenderer *vkrenderer)
     : m_imageIndex(0), m_vkrenderer(vkrenderer) {}
@@ -58,8 +53,7 @@ void vulkan_base_framework::create_image_view() {
   };
   ci.subresourceRange = {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1};
   ci.image = m_depthBuffer;
-  auto result = vkCreateImageView(m_device, &ci, nullptr, &m_depthBufferView);
-  check_result(result);
+  vkCreateImageView(m_device, &ci, nullptr, &m_depthBufferView);
 }
 
 void vulkan_base_framework::create_semaphore() {
@@ -129,8 +123,7 @@ void vulkan_base_framework::initialize_instance(const char *appName) {
   ci.pApplicationInfo = &appInfo;
 
   // Create instance
-  auto result = vkCreateInstance(&ci, nullptr, &m_instance);
-  check_result(result);
+  vkCreateInstance(&ci, nullptr, &m_instance);
 }
 
 void vulkan_base_framework::select_physical_device() {
@@ -188,8 +181,7 @@ void vulkan_base_framework::create_device() {
   ci.ppEnabledExtensionNames = extensions.data();
   ci.enabledExtensionCount = uint32_t(extensions.size());
 
-  auto result = vkCreateDevice(m_physDev, &ci, nullptr, &m_device);
-  check_result(result);
+  vkCreateDevice(m_physDev, &ci, nullptr, &m_device);
 
   vkGetDeviceQueue(m_device, m_graphicsQueueIndex, 0, &m_deviceQueue);
 }
@@ -199,21 +191,14 @@ void vulkan_base_framework::create_command_pool() {
   ci.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
   ci.queueFamilyIndex = m_graphicsQueueIndex;
   ci.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-  auto result = vkCreateCommandPool(m_device, &ci, nullptr, &m_commandPool);
-  check_result(result);
+  vkCreateCommandPool(m_device, &ci, nullptr, &m_commandPool);
 }
 
 void vulkan_base_framework::create_depth_buffer() {
   VmaAllocatorCreateInfo allocator_info = {};
   allocator_info.physicalDevice = get_vk_physical_device();
   allocator_info.device = get_vk_device();
-  {
-    const auto result =
-        vmaCreateAllocator(&allocator_info, &m_vkrenderer->allocator);
-    if (result != VK_SUCCESS) {
-      nen::logger::Fatal("Can not create allocator");
-    }
-  }
+  vmaCreateAllocator(&allocator_info, &m_vkrenderer->allocator);
   VkImageCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
   ci.imageType = VK_IMAGE_TYPE_2D;
@@ -289,8 +274,7 @@ void vulkan_base_framework::create_render_pass() {
   ci.subpassCount = 1;
   ci.pSubpasses = &subpassDesc;
 
-  auto result = vkCreateRenderPass(m_device, &ci, nullptr, &m_renderPass);
-  check_result(result);
+  vkCreateRenderPass(m_device, &ci, nullptr, &m_renderPass);
 }
 
 void vulkan_base_framework::create_frame_buffer() {
@@ -309,8 +293,7 @@ void vulkan_base_framework::create_frame_buffer() {
     attachments[1] = m_depthBufferView;
 
     VkFramebuffer framebuffer;
-    auto result = vkCreateFramebuffer(m_device, &ci, nullptr, &framebuffer);
-    check_result(result);
+    vkCreateFramebuffer(m_device, &ci, nullptr, &framebuffer);
     m_framebuffers.push_back(framebuffer);
   }
 }
@@ -321,16 +304,14 @@ void vulkan_base_framework::create_command_buffers() {
   ai.commandBufferCount = mSwapchain->GetImageCount();
   ai.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
   m_commands.resize(ai.commandBufferCount);
-  auto result = vkAllocateCommandBuffers(m_device, &ai, m_commands.data());
-  check_result(result);
+  vkAllocateCommandBuffers(m_device, &ai, m_commands.data());
 
   m_fences.resize(ai.commandBufferCount);
   VkFenceCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
   ci.flags = VK_FENCE_CREATE_SIGNALED_BIT;
   for (auto &v : m_fences) {
-    result = vkCreateFence(m_device, &ci, nullptr, &v);
-    check_result(result);
+    vkCreateFence(m_device, &ci, nullptr, &v);
   }
 }
 
@@ -412,29 +393,10 @@ void vulkan_base_framework::render() {
   submitInfo.pWaitSemaphores = &m_presentCompletedSem;
   submitInfo.signalSemaphoreCount = 1;
   submitInfo.pSignalSemaphores = &m_renderCompletedSem;
-  {
-    VkResult result = vkResetFences(m_device, 1, &commandFence);
-
-    if (result != VkResult::VK_SUCCESS) {
-      logger::Fatal("Vulkan Error! VkResult:%d", result);
-    }
-  }
-  {
-    VkResult result =
-        vkQueueSubmit(m_deviceQueue, 1, &submitInfo, commandFence);
-    if (result != VkResult::VK_SUCCESS) {
-      logger::Fatal("vkQueueSubmit Error! VkResult:%d", result);
-    }
-    result = vkQueueWaitIdle(m_deviceQueue);
-    if (result != VkResult::VK_SUCCESS) {
-      logger::Fatal("vkQueueWaitIdle Error! VkResult:%d", result);
-    }
-  }
+  vkResetFences(m_device, 1, &commandFence);
+  vkQueueSubmit(m_deviceQueue, 1, &submitInfo, commandFence);
+  vkQueueWaitIdle(m_deviceQueue);
   mSwapchain->QueuePresent(m_deviceQueue, nextImageIndex, m_renderCompletedSem);
-  for (auto &memory : destroyMemory) {
-    vkFreeMemory(m_device, memory, nullptr);
-  }
-  destroyMemory.clear();
 }
 } // namespace nen::vk
 #endif

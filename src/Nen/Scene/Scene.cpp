@@ -77,6 +77,9 @@ void base_scene::UpdateScene() {
   for (auto actor : mActors) {
     actor->UpdateActor(deltaTime);
   }
+  for (const auto &actor : m_actor_map) {
+    actor.second->UpdateActor(deltaTime);
+  }
   mUpdatingActors = false;
 
   // erase dead actors
@@ -84,12 +87,25 @@ void base_scene::UpdateScene() {
     return act->GetState() == base_actor::state::Dead;
   });
 
+  for (auto itr = m_actor_map.begin(); itr != m_actor_map.end();) {
+    if (itr->second->GetState() == base_actor::state::Dead) {
+      itr = m_actor_map.erase(itr);
+    } else {
+      ++itr;
+    }
+  }
+
   // move pending actors
   for (auto pending : mPendingActors) {
     pending->ComputeWorldTransform();
     mActors.emplace_back(pending);
   }
   mPendingActors.clear();
+  for (auto &pending : m_pending_actor_map) {
+    pending.second->ComputeWorldTransform();
+    m_actor_map.emplace(pending.first, std::move(pending.second));
+  }
+  m_pending_actor_map.clear();
 
   mSoundSystem->Update(deltaTime);
 }

@@ -36,6 +36,26 @@ public:
     }
     return actor;
   }
+  template <class T, typename... _Args>
+  T &add_actor2(std::uint16_t &store_value, _Args &&...__args) {
+    auto actor = std::make_unique<T>(*this, std::forward<_Args>(__args)...);
+    store_value = m_next_handle++;
+    if (mUpdatingActors) {
+      m_pending_actor_map.emplace(store_value, std::move(actor));
+    } else {
+      m_actor_map.emplace(store_value, std::move(actor));
+    }
+    base_actor *ptr = m_actor_map[store_value].get();
+    return *static_cast<T *>(ptr);
+  }
+  template <class T> T &get_actor2(std::uint16_t stored_value) {
+    auto it = m_actor_map.find(stored_value);
+    if (it == m_actor_map.end()) {
+      throw std::runtime_error("actor not found");
+    }
+    base_actor *ptr = it->second.get();
+    return *static_cast<T *>(ptr);
+  }
 
   template <class T> std::shared_ptr<T> GetActor(uint32_t handle = 0) {
     for (const auto &i : mActors) {
@@ -96,12 +116,17 @@ private:
   void UnloadData();
   void ProcessInput();
   void UpdateScene();
+  std::unordered_map<std::uint16_t, std::unique_ptr<class base_actor>>
+      m_actor_map;
+  std::unordered_map<std::uint16_t, std::unique_ptr<class base_actor>>
+      m_pending_actor_map;
   std::shared_ptr<class input_system> mInputSystem;
   std::shared_ptr<class sound_system> mSoundSystem;
   std::shared_ptr<class renderer> mRenderer;
   std::vector<std::shared_ptr<class base_actor>> mPendingActors;
   GameState mGameState = GameState::Gameplay;
   uint32_t mTicksCount = 0;
+  std::uint16_t m_next_handle = 0;
   bool mUpdatingActors = false;
 };
 void ChangeScene(std::shared_ptr<base_scene> newScene);

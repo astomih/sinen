@@ -11,7 +11,6 @@
 #include <iostream>
 
 namespace nen {
-base_scene::base_scene() {}
 
 void base_scene::Initialize() {
   mRenderer = renderer_handle::GetRenderer();
@@ -41,7 +40,7 @@ void base_scene::ProcessInput() {
     GetRenderer()->GetWindow()->ProcessInput();
     switch (current_event_handle::current_event.type) {
     case SDL_QUIT: {
-      mGameState = GameState::Quit;
+      mGameState = game_state::Quit;
     } break;
     default:
       break;
@@ -51,12 +50,12 @@ void base_scene::ProcessInput() {
   const input_state &state = mInputSystem->GetState();
 
   if (state.Keyboard.GetKeyState(key_code::ESCAPE) == button_state::Released) {
-    mGameState = GameState::Quit;
+    mGameState = game_state::Quit;
   }
   if (state.Keyboard.GetKeyState(key_code::F3) == button_state::Pressed) {
     GetRenderer()->toggleShowImGui();
   }
-  if (mGameState == GameState::Quit)
+  if (mGameState == game_state::Quit)
     return;
   mUpdatingActors = true;
 
@@ -74,19 +73,12 @@ void base_scene::UpdateScene() {
   this->Update(deltaTime);
   // All actors update
   mUpdatingActors = true;
-  for (auto actor : mActors) {
-    actor->UpdateActor(deltaTime);
-  }
   for (const auto &actor : m_actor_map) {
     actor.second->UpdateActor(deltaTime);
   }
   mUpdatingActors = false;
 
   // erase dead actors
-  std::erase_if(mActors, [](std::shared_ptr<base_actor> act) {
-    return act->GetState() == base_actor::state::Dead;
-  });
-
   for (auto itr = m_actor_map.begin(); itr != m_actor_map.end();) {
     if (itr->second->GetState() == base_actor::state::Dead) {
       itr = m_actor_map.erase(itr);
@@ -96,11 +88,6 @@ void base_scene::UpdateScene() {
   }
 
   // move pending actors
-  for (auto pending : mPendingActors) {
-    pending->ComputeWorldTransform();
-    mActors.emplace_back(pending);
-  }
-  mPendingActors.clear();
   for (auto &pending : m_pending_actor_map) {
     pending.second->ComputeWorldTransform();
     m_actor_map.emplace(pending.first, std::move(pending.second));
@@ -112,7 +99,7 @@ void base_scene::UpdateScene() {
 
 void base_scene::Setup() {}
 
-void base_scene::UnloadData() { mActors.clear(); }
+void base_scene::UnloadData() { m_actor_map.clear(); }
 
 void base_scene::Update(float deltaTime) {}
 

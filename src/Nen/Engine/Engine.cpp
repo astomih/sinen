@@ -18,17 +18,17 @@
 #endif
 
 std::function<void()> loop;
-std::function<void(std::shared_ptr<nen::base_scene>)> changeScene;
+std::function<void(std::unique_ptr<nen::base_scene>)> changeScene;
 void main_loop() { loop(); }
 namespace nen {
-void ChangeScene(std::shared_ptr<base_scene> newScene) {
-  changeScene(newScene);
+void ChangeScene(std::unique_ptr<base_scene> newScene) {
+  changeScene(std::move(newScene));
 }
-void Launch(std::shared_ptr<base_scene> scene) {
-  std::shared_ptr<nen::base_scene> nextScene;
-  changeScene = [&](std::shared_ptr<nen::base_scene> newScene) {
+void Launch(std::unique_ptr<base_scene> scene) {
+  std::unique_ptr<nen::base_scene> nextScene;
+  changeScene = [&](std::unique_ptr<nen::base_scene> newScene) {
     scene->Quit();
-    nextScene = newScene;
+    nextScene = std::move(newScene);
   };
   SDL_SetMainReady();
   SDL_Init(SDL_INIT_EVERYTHING);
@@ -91,8 +91,7 @@ void Launch(std::shared_ptr<base_scene> scene) {
       scene->RunLoop();
     else if (nextScene) {
       scene->Shutdown();
-      scene = nullptr;
-      scene = nextScene;
+      scene = std::move(nextScene);
       scene->SetInputSystem(inputSystem);
       scene->SetSoundSystem(soundSystem);
       scene->Initialize();

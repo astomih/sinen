@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['state_195',['state',['../classnen_1_1base__actor.html#afecb2cfb95af8adb2afc771bdbb81972',1,'nen::base_actor']]]
+  ['quality_233',['quality',['../classnen_1_1font.html#ab0c10a0e8f336b062ee6f6b3649ef254',1,'nen::font']]]
 ];

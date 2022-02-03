@@ -81,133 +81,114 @@ $(function() {
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160; </div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="keyword">namespace </span>nen {</div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="keyword">class </span>sound_system;</div>
-<div class="line"><a name="l00011"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html">   11</a></span>&#160;<span class="keyword">class </span><a class="code" href="classnen_1_1base__scene.html">base_scene</a> {</div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;  <a class="code" href="classnen_1_1base__scene.html">base_scene</a>();</div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;  <span class="keyword">virtual</span> ~<a class="code" href="classnen_1_1base__scene.html">base_scene</a>() {}</div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160; </div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;  <span class="keyword">enum class</span> GameState { Gameplay, Paused, Quit };</div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160; </div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;  <span class="keywordtype">void</span> Initialize();</div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160; </div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;  <span class="keywordtype">void</span> SetRenderer(std::shared_ptr&lt;class renderer&gt; <a class="code" href="classnen_1_1renderer.html">renderer</a>) {</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    mRenderer = <a class="code" href="classnen_1_1renderer.html">renderer</a>;</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;  }</div>
+<div class="line"><a name="l00015"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html">   15</a></span>&#160;<span class="keyword">class </span><a class="code" href="classnen_1_1base__scene.html">base_scene</a> {</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00021"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html#a6697354004f5e93c598bf31c27270b63">   21</a></span>&#160;  <a class="code" href="classnen_1_1base__scene.html#a6697354004f5e93c598bf31c27270b63">base_scene</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;  <span class="keyword">virtual</span> ~<a class="code" href="classnen_1_1base__scene.html">base_scene</a>() = <span class="keywordflow">default</span>;</div>
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160; </div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;  <span class="keywordtype">bool</span> isRunning() { <span class="keywordflow">return</span> mGameState != GameState::Quit; }</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160; </div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;  <span class="keywordtype">void</span> RunLoop();</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160; </div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;  <span class="keywordtype">void</span> Shutdown();</div>
+<div class="line"><a name="l00028"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html#a93d8693c09c6971dc71beea5fa1ade10">   28</a></span>&#160;  <span class="keyword">enum class</span> <a class="code" href="classnen_1_1base__scene.html#a93d8693c09c6971dc71beea5fa1ade10">game_state</a> { Gameplay, Paused, Quit };</div>
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt; std::shared_ptr&lt;T&gt; AddActor() {</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <span class="keyword">auto</span> actor = std::make_shared&lt;T&gt;(*<span class="keyword">this</span>);</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <span class="keywordflow">if</span> (mUpdatingActors) {</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;      mPendingActors.emplace_back(actor);</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;      mActors.emplace_back(actor);</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    }</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    <span class="keywordflow">return</span> actor;</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  }</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">class </span>T, <span class="keyword">typename</span>... _Args&gt;</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  T &amp;add_actor2(std::uint16_t &amp;store_value, _Args &amp;&amp;...__args) {</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keyword">auto</span> actor = std::make_unique&lt;T&gt;(*<span class="keyword">this</span>, std::forward&lt;_Args&gt;(__args)...);</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    store_value = m_next_handle++;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keywordflow">if</span> (mUpdatingActors) {</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;      m_pending_actor_map.emplace(store_value, std::move(actor));</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;      m_actor_map.emplace(store_value, std::move(actor));</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    }</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <a class="code" href="classnen_1_1base__actor.html">base_actor</a> *ptr = m_actor_map[store_value].get();</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keywordflow">return</span> *<span class="keyword">static_cast&lt;</span>T *<span class="keyword">&gt;</span>(ptr);</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;  }</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt; T &amp;get_actor2(std::uint16_t stored_value) {</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="keyword">auto</span> it = m_actor_map.find(stored_value);</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keywordflow">if</span> (it == m_actor_map.end()) {</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;      <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;actor not found&quot;</span>);</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    }</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <a class="code" href="classnen_1_1base__actor.html">base_actor</a> *ptr = it-&gt;second.get();</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="keywordflow">return</span> *<span class="keyword">static_cast&lt;</span>T *<span class="keyword">&gt;</span>(ptr);</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;  }</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160; </div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt; std::shared_ptr&lt;T&gt; GetActor(uint32_t handle = 0) {</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> &amp;i : mActors) {</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;      <span class="keyword">auto</span> actor = std::dynamic_pointer_cast&lt;T&gt;(i);</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;      <span class="keywordflow">if</span> (actor &amp;&amp; i-&gt;handle == handle)</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        <span class="keywordflow">return</span> actor;</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    }</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> &amp;i : mPendingActors) {</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;      <span class="keyword">auto</span> actor = std::dynamic_pointer_cast&lt;T&gt;(i);</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;      <span class="keywordflow">if</span> (actor &amp;&amp; i-&gt;handle == handle)</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        <span class="keywordflow">return</span> actor;</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    }</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;  }</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160; </div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt; <span class="keywordtype">void</span> RemoveActor(std::shared_ptr&lt;T&gt; actor) {</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <span class="keyword">auto</span> iter = std::find(mPendingActors.begin(), mPendingActors.end(), actor);</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <span class="keywordflow">if</span> (iter != mPendingActors.end()) {</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;      std::iter_swap(iter, mPendingActors.end() - 1);</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;      mPendingActors.pop_back();</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    }</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160; </div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    iter = std::find(mActors.begin(), mActors.end(), actor);</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="keywordflow">if</span> (iter != mActors.end()) {</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;      std::iter_swap(iter, mActors.end() - 1);</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;      mActors.pop_back();</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    }</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;  }</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160; </div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;  std::shared_ptr&lt;class renderer&gt; GetRenderer()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> mRenderer; }</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160; </div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;  GameState GetState()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> mGameState; }</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;  <span class="keywordtype">void</span> SetState(GameState state) { mGameState = state; }</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160; </div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;  <span class="keywordtype">void</span> Quit() { mGameState = GameState::Quit; }</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160; </div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;  <span class="keywordtype">void</span> AddGUI(std::shared_ptr&lt;class ui_screen&gt; ui);</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;  <span class="keywordtype">void</span> RemoveGUI(std::shared_ptr&lt;class ui_screen&gt; ui);</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160; </div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;  <span class="keyword">const</span> <a class="code" href="structnen_1_1input__state.html">input_state</a> &amp;GetInput() { <span class="keywordflow">return</span> mInputSystem-&gt;GetState(); }</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;  <span class="keywordtype">void</span> SetInputSystem(std::shared_ptr&lt;class input_system&gt; inputSystem) {</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    mInputSystem = inputSystem;</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;  }</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160; </div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;  <a class="code" href="classnen_1_1sound__system.html">sound_system</a> &amp;GetSound() { <span class="keywordflow">return</span> *mSoundSystem; }</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;  <span class="keywordtype">void</span> SetSoundSystem(std::shared_ptr&lt;class sound_system&gt; soundSystem) {</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    mSoundSystem = soundSystem;</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;  }</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160; </div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;  <span class="keyword">virtual</span> <span class="keywordtype">void</span> Setup();</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;  <span class="keyword">virtual</span> <span class="keywordtype">void</span> Update(<span class="keywordtype">float</span> deltaTime);</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160; </div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;  <span class="comment">// All the actors in the game</span></div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;  std::vector&lt;std::shared_ptr&lt;class base_actor&gt;&gt; mActors;</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160; </div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;  <span class="keywordtype">void</span> UnloadData();</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;  <span class="keywordtype">void</span> ProcessInput();</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;  <span class="keywordtype">void</span> UpdateScene();</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;  std::unordered_map&lt;std::uint16_t, std::unique_ptr&lt;class base_actor&gt;&gt;</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;      m_actor_map;</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;  std::unordered_map&lt;std::uint16_t, std::unique_ptr&lt;class base_actor&gt;&gt;</div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;      m_pending_actor_map;</div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;  std::shared_ptr&lt;class input_system&gt; mInputSystem;</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;  std::shared_ptr&lt;class sound_system&gt; mSoundSystem;</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;  std::shared_ptr&lt;class renderer&gt; mRenderer;</div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;  std::vector&lt;std::shared_ptr&lt;class base_actor&gt;&gt; mPendingActors;</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;  GameState mGameState = GameState::Gameplay;</div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;  uint32_t mTicksCount = 0;</div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;  std::uint16_t m_next_handle = 0;</div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;  <span class="keywordtype">bool</span> mUpdatingActors = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;};</div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;<span class="keywordtype">void</span> ChangeScene(std::shared_ptr&lt;base_scene&gt; newScene);</div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160; </div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;<span class="keywordtype">void</span> Launch(std::shared_ptr&lt;base_scene&gt; scene);</div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;} <span class="comment">// namespace nen</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html#af8f422f30f23afd0fd6365036b0308d5">   34</a></span>&#160;  <span class="keywordtype">void</span> <a class="code" href="classnen_1_1base__scene.html#af8f422f30f23afd0fd6365036b0308d5">Initialize</a>();</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
+<div class="line"><a name="l00041"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html#aa8b6c47b628d9b149f50d3155a6eb828">   41</a></span>&#160;  <span class="keywordtype">void</span> <a class="code" href="classnen_1_1base__scene.html#aa8b6c47b628d9b149f50d3155a6eb828">SetRenderer</a>(std::shared_ptr&lt;class renderer&gt; <a class="code" href="classnen_1_1renderer.html">renderer</a>) {</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    mRenderer = <a class="code" href="classnen_1_1renderer.html">renderer</a>;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;  }</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160; </div>
+<div class="line"><a name="l00051"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html#a534b8b741a63b8962029f662c5c56a57">   51</a></span>&#160;  <span class="keywordtype">bool</span> <a class="code" href="classnen_1_1base__scene.html#a534b8b741a63b8962029f662c5c56a57">isRunning</a>() { <span class="keywordflow">return</span> mGameState != game_state::Quit; }</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160; </div>
+<div class="line"><a name="l00057"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html#ae3d9c3082843af0685dc82a94d1255fe">   57</a></span>&#160;  <span class="keywordtype">void</span> <a class="code" href="classnen_1_1base__scene.html#ae3d9c3082843af0685dc82a94d1255fe">RunLoop</a>();</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160; </div>
+<div class="line"><a name="l00063"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html#abb439280765659a5fc0503e4f26d7129">   63</a></span>&#160;  <span class="keywordtype">void</span> <a class="code" href="classnen_1_1base__scene.html#abb439280765659a5fc0503e4f26d7129">Shutdown</a>();</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160; </div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">class </span>T, <span class="keyword">typename</span>... _Args&gt;</div>
+<div class="line"><a name="l00075"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html#a7e564a201df7b2996953ddbd5ebf648a">   75</a></span>&#160;  T &amp;<a class="code" href="classnen_1_1base__scene.html#a7e564a201df7b2996953ddbd5ebf648a">add_actor</a>(std::uint32_t &amp;store_value, _Args &amp;&amp;...__args) {</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <span class="keyword">auto</span> actor = std::make_unique&lt;T&gt;(*<span class="keyword">this</span>, std::forward&lt;_Args&gt;(__args)...);</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    store_value = m_next_handle++;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <span class="keywordflow">if</span> (mUpdatingActors) {</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;      m_pending_actor_map.emplace(store_value, std::move(actor));</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;      m_actor_map.emplace(store_value, std::move(actor));</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    }</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    <a class="code" href="classnen_1_1base__actor.html">base_actor</a> *ptr = m_actor_map[store_value].get();</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <span class="keywordflow">return</span> *<span class="keyword">static_cast&lt;</span>T *<span class="keyword">&gt;</span>(ptr);</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;  }</div>
+<div class="line"><a name="l00093"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html#a7128fa5e22c5c3343c7bb9ebae73dcc2">   93</a></span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt; T &amp;<a class="code" href="classnen_1_1base__scene.html#a7128fa5e22c5c3343c7bb9ebae73dcc2">get_actor</a>(std::uint32_t stored_value) {</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keyword">auto</span> it = m_actor_map.find(stored_value);</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    <span class="keywordflow">if</span> (it == m_actor_map.end()) {</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;      <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;actor not found&quot;</span>);</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    }</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    <a class="code" href="classnen_1_1base__actor.html">base_actor</a> *ptr = it-&gt;second.get();</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    <span class="keywordflow">return</span> *<span class="keyword">static_cast&lt;</span>T *<span class="keyword">&gt;</span>(ptr);</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;  }</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160; </div>
+<div class="line"><a name="l00107"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html#a420a3e4a36deecd09a940fd77377c6c6">  107</a></span>&#160;  std::shared_ptr&lt;class renderer&gt; <a class="code" href="classnen_1_1base__scene.html#a420a3e4a36deecd09a940fd77377c6c6">GetRenderer</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> mRenderer; }</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160; </div>
+<div class="line"><a name="l00114"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html#a3f2d4ddd21da9f20dfbc6bd9744b9315">  114</a></span>&#160;  <a class="code" href="classnen_1_1base__scene.html#a93d8693c09c6971dc71beea5fa1ade10">game_state</a> <a class="code" href="classnen_1_1base__scene.html#a3f2d4ddd21da9f20dfbc6bd9744b9315">GetState</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> mGameState; }</div>
+<div class="line"><a name="l00120"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html#a16dc3d7f3eca67eb0701bdc906a81cce">  120</a></span>&#160;  <span class="keywordtype">void</span> <a class="code" href="classnen_1_1base__scene.html#a16dc3d7f3eca67eb0701bdc906a81cce">SetState</a>(<a class="code" href="classnen_1_1base__scene.html#a93d8693c09c6971dc71beea5fa1ade10">game_state</a> state) { mGameState = state; }</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160; </div>
+<div class="line"><a name="l00126"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html#ad31bd1770d9b314bc94070b111f15105">  126</a></span>&#160;  <span class="keywordtype">void</span> <a class="code" href="classnen_1_1base__scene.html#ad31bd1770d9b314bc94070b111f15105">Quit</a>() { mGameState = game_state::Quit; }</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160; </div>
+<div class="line"><a name="l00133"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html#a3d8ed3eaae62c48d1031c9ad54691445">  133</a></span>&#160;  <span class="keywordtype">void</span> <a class="code" href="classnen_1_1base__scene.html#a3d8ed3eaae62c48d1031c9ad54691445">AddGUI</a>(std::shared_ptr&lt;class ui_screen&gt; ui);</div>
+<div class="line"><a name="l00139"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html#a51d67883be54276e97fb7e4599f477dd">  139</a></span>&#160;  <span class="keywordtype">void</span> <a class="code" href="classnen_1_1base__scene.html#a51d67883be54276e97fb7e4599f477dd">RemoveGUI</a>(std::shared_ptr&lt;class ui_screen&gt; ui);</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160; </div>
+<div class="line"><a name="l00146"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html#af6a7ee8d2001fd1ad80562160e63e88f">  146</a></span>&#160;  <span class="keyword">const</span> <a class="code" href="structnen_1_1input__state.html">input_state</a> &amp;<a class="code" href="classnen_1_1base__scene.html#af6a7ee8d2001fd1ad80562160e63e88f">GetInput</a>() { <span class="keywordflow">return</span> mInputSystem-&gt;GetState(); }</div>
+<div class="line"><a name="l00152"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html#a26821a951967ebdd06474502f5b49107">  152</a></span>&#160;  <span class="keywordtype">void</span> <a class="code" href="classnen_1_1base__scene.html#a26821a951967ebdd06474502f5b49107">SetInputSystem</a>(std::shared_ptr&lt;class input_system&gt; inputSystem) {</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;    mInputSystem = inputSystem;</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;  }</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160; </div>
+<div class="line"><a name="l00161"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html#aacd22221a725f67f43d55d2dbe32ff4b">  161</a></span>&#160;  <a class="code" href="classnen_1_1sound__system.html">sound_system</a> &amp;<a class="code" href="classnen_1_1base__scene.html#aacd22221a725f67f43d55d2dbe32ff4b">GetSound</a>() { <span class="keywordflow">return</span> *mSoundSystem; }</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160; </div>
+<div class="line"><a name="l00168"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html#a06b52ca3c9301112e6353305f49c59c7">  168</a></span>&#160;  <span class="keywordtype">void</span> <a class="code" href="classnen_1_1base__scene.html#a06b52ca3c9301112e6353305f49c59c7">SetSoundSystem</a>(std::shared_ptr&lt;class sound_system&gt; soundSystem) {</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;    mSoundSystem = soundSystem;</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;  }</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160; </div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;<span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00177"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html#a20b4fe31432db2b9dbad5bbadb826fa9">  177</a></span>&#160;  <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classnen_1_1base__scene.html#a20b4fe31432db2b9dbad5bbadb826fa9">Setup</a>();</div>
+<div class="line"><a name="l00183"></a><span class="lineno"><a class="line" href="classnen_1_1base__scene.html#a00e5e7382504b0c9f7412a185b04a468">  183</a></span>&#160;  <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classnen_1_1base__scene.html#a00e5e7382504b0c9f7412a185b04a468">Update</a>(<span class="keywordtype">float</span> deltaTime);</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160; </div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;  <span class="keywordtype">void</span> UnloadData();</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;  <span class="keywordtype">void</span> ProcessInput();</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;  <span class="keywordtype">void</span> UpdateScene();</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;  std::unordered_map&lt;std::uint32_t, std::unique_ptr&lt;class base_actor&gt;&gt;</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;      m_actor_map;</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;  std::unordered_map&lt;std::uint32_t, std::unique_ptr&lt;class base_actor&gt;&gt;</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;      m_pending_actor_map;</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;  std::shared_ptr&lt;class input_system&gt; mInputSystem;</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;  std::shared_ptr&lt;class sound_system&gt; mSoundSystem;</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;  std::shared_ptr&lt;class renderer&gt; mRenderer;</div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;  <a class="code" href="classnen_1_1base__scene.html#a93d8693c09c6971dc71beea5fa1ade10">game_state</a> mGameState = game_state::Gameplay;</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;  uint32_t mTicksCount = 0;</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;  std::uint16_t m_next_handle = 0;</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;  <span class="keywordtype">bool</span> mUpdatingActors = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;};</div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;<span class="keywordtype">void</span> ChangeScene(std::unique_ptr&lt;base_scene&gt; newScene);</div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160; </div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;<span class="keywordtype">void</span> Launch(std::unique_ptr&lt;base_scene&gt; scene);</div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;} <span class="comment">// namespace nen</span></div>
 <div class="ttc" id="aclassnen_1_1base__actor_html"><div class="ttname"><a href="classnen_1_1base__actor.html">nen::base_actor</a></div><div class="ttdoc">Sceneに依存するアクター</div><div class="ttdef"><b>Definition:</b> Actor.hpp:19</div></div>
-<div class="ttc" id="aclassnen_1_1base__scene_html"><div class="ttname"><a href="classnen_1_1base__scene.html">nen::base_scene</a></div><div class="ttdef"><b>Definition:</b> Scene.hpp:11</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html"><div class="ttname"><a href="classnen_1_1base__scene.html">nen::base_scene</a></div><div class="ttdoc">Base of scene class.</div><div class="ttdef"><b>Definition:</b> Scene.hpp:15</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html_a00e5e7382504b0c9f7412a185b04a468"><div class="ttname"><a href="classnen_1_1base__scene.html#a00e5e7382504b0c9f7412a185b04a468">nen::base_scene::Update</a></div><div class="ttdeci">virtual void Update(float deltaTime)</div><div class="ttdoc">Update scene.</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html_a06b52ca3c9301112e6353305f49c59c7"><div class="ttname"><a href="classnen_1_1base__scene.html#a06b52ca3c9301112e6353305f49c59c7">nen::base_scene::SetSoundSystem</a></div><div class="ttdeci">void SetSoundSystem(std::shared_ptr&lt; class sound_system &gt; soundSystem)</div><div class="ttdoc">Set the Sound System object.</div><div class="ttdef"><b>Definition:</b> Scene.hpp:168</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html_a16dc3d7f3eca67eb0701bdc906a81cce"><div class="ttname"><a href="classnen_1_1base__scene.html#a16dc3d7f3eca67eb0701bdc906a81cce">nen::base_scene::SetState</a></div><div class="ttdeci">void SetState(game_state state)</div><div class="ttdoc">Set the State object.</div><div class="ttdef"><b>Definition:</b> Scene.hpp:120</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html_a20b4fe31432db2b9dbad5bbadb826fa9"><div class="ttname"><a href="classnen_1_1base__scene.html#a20b4fe31432db2b9dbad5bbadb826fa9">nen::base_scene::Setup</a></div><div class="ttdeci">virtual void Setup()</div><div class="ttdoc">Setup scene.</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html_a26821a951967ebdd06474502f5b49107"><div class="ttname"><a href="classnen_1_1base__scene.html#a26821a951967ebdd06474502f5b49107">nen::base_scene::SetInputSystem</a></div><div class="ttdeci">void SetInputSystem(std::shared_ptr&lt; class input_system &gt; inputSystem)</div><div class="ttdoc">Set the Input System object.</div><div class="ttdef"><b>Definition:</b> Scene.hpp:152</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html_a3d8ed3eaae62c48d1031c9ad54691445"><div class="ttname"><a href="classnen_1_1base__scene.html#a3d8ed3eaae62c48d1031c9ad54691445">nen::base_scene::AddGUI</a></div><div class="ttdeci">void AddGUI(std::shared_ptr&lt; class ui_screen &gt; ui)</div><div class="ttdoc">Add GUI element.</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html_a3f2d4ddd21da9f20dfbc6bd9744b9315"><div class="ttname"><a href="classnen_1_1base__scene.html#a3f2d4ddd21da9f20dfbc6bd9744b9315">nen::base_scene::GetState</a></div><div class="ttdeci">game_state GetState() const</div><div class="ttdoc">Get the State object.</div><div class="ttdef"><b>Definition:</b> Scene.hpp:114</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html_a420a3e4a36deecd09a940fd77377c6c6"><div class="ttname"><a href="classnen_1_1base__scene.html#a420a3e4a36deecd09a940fd77377c6c6">nen::base_scene::GetRenderer</a></div><div class="ttdeci">std::shared_ptr&lt; class renderer &gt; GetRenderer() const</div><div class="ttdoc">Get the Renderer object.</div><div class="ttdef"><b>Definition:</b> Scene.hpp:107</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html_a51d67883be54276e97fb7e4599f477dd"><div class="ttname"><a href="classnen_1_1base__scene.html#a51d67883be54276e97fb7e4599f477dd">nen::base_scene::RemoveGUI</a></div><div class="ttdeci">void RemoveGUI(std::shared_ptr&lt; class ui_screen &gt; ui)</div><div class="ttdoc">Remove GUI element.</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html_a534b8b741a63b8962029f662c5c56a57"><div class="ttname"><a href="classnen_1_1base__scene.html#a534b8b741a63b8962029f662c5c56a57">nen::base_scene::isRunning</a></div><div class="ttdeci">bool isRunning()</div><div class="ttdoc">is running scene</div><div class="ttdef"><b>Definition:</b> Scene.hpp:51</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html_a6697354004f5e93c598bf31c27270b63"><div class="ttname"><a href="classnen_1_1base__scene.html#a6697354004f5e93c598bf31c27270b63">nen::base_scene::base_scene</a></div><div class="ttdeci">base_scene()=default</div><div class="ttdoc">Construct a new base scene object.</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html_a7128fa5e22c5c3343c7bb9ebae73dcc2"><div class="ttname"><a href="classnen_1_1base__scene.html#a7128fa5e22c5c3343c7bb9ebae73dcc2">nen::base_scene::get_actor</a></div><div class="ttdeci">T &amp; get_actor(std::uint32_t stored_value)</div><div class="ttdoc">Get the actor object.</div><div class="ttdef"><b>Definition:</b> Scene.hpp:93</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html_a7e564a201df7b2996953ddbd5ebf648a"><div class="ttname"><a href="classnen_1_1base__scene.html#a7e564a201df7b2996953ddbd5ebf648a">nen::base_scene::add_actor</a></div><div class="ttdeci">T &amp; add_actor(std::uint32_t &amp;store_value, _Args &amp;&amp;...__args)</div><div class="ttdoc">Add actor to scene.</div><div class="ttdef"><b>Definition:</b> Scene.hpp:75</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html_a93d8693c09c6971dc71beea5fa1ade10"><div class="ttname"><a href="classnen_1_1base__scene.html#a93d8693c09c6971dc71beea5fa1ade10">nen::base_scene::game_state</a></div><div class="ttdeci">game_state</div><div class="ttdoc">Game state.</div><div class="ttdef"><b>Definition:</b> Scene.hpp:28</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html_aa8b6c47b628d9b149f50d3155a6eb828"><div class="ttname"><a href="classnen_1_1base__scene.html#aa8b6c47b628d9b149f50d3155a6eb828">nen::base_scene::SetRenderer</a></div><div class="ttdeci">void SetRenderer(std::shared_ptr&lt; class renderer &gt; renderer)</div><div class="ttdoc">Set the Renderer object.</div><div class="ttdef"><b>Definition:</b> Scene.hpp:41</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html_aacd22221a725f67f43d55d2dbe32ff4b"><div class="ttname"><a href="classnen_1_1base__scene.html#aacd22221a725f67f43d55d2dbe32ff4b">nen::base_scene::GetSound</a></div><div class="ttdeci">sound_system &amp; GetSound()</div><div class="ttdoc">Get the Sound object.</div><div class="ttdef"><b>Definition:</b> Scene.hpp:161</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html_abb439280765659a5fc0503e4f26d7129"><div class="ttname"><a href="classnen_1_1base__scene.html#abb439280765659a5fc0503e4f26d7129">nen::base_scene::Shutdown</a></div><div class="ttdeci">void Shutdown()</div><div class="ttdoc">Get the Renderer object.</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html_ad31bd1770d9b314bc94070b111f15105"><div class="ttname"><a href="classnen_1_1base__scene.html#ad31bd1770d9b314bc94070b111f15105">nen::base_scene::Quit</a></div><div class="ttdeci">void Quit()</div><div class="ttdoc">Quit scene.</div><div class="ttdef"><b>Definition:</b> Scene.hpp:126</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html_ae3d9c3082843af0685dc82a94d1255fe"><div class="ttname"><a href="classnen_1_1base__scene.html#ae3d9c3082843af0685dc82a94d1255fe">nen::base_scene::RunLoop</a></div><div class="ttdeci">void RunLoop()</div><div class="ttdoc">run loop</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html_af6a7ee8d2001fd1ad80562160e63e88f"><div class="ttname"><a href="classnen_1_1base__scene.html#af6a7ee8d2001fd1ad80562160e63e88f">nen::base_scene::GetInput</a></div><div class="ttdeci">const input_state &amp; GetInput()</div><div class="ttdoc">Get the Input object.</div><div class="ttdef"><b>Definition:</b> Scene.hpp:146</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html_af8f422f30f23afd0fd6365036b0308d5"><div class="ttname"><a href="classnen_1_1base__scene.html#af8f422f30f23afd0fd6365036b0308d5">nen::base_scene::Initialize</a></div><div class="ttdeci">void Initialize()</div><div class="ttdoc">Initialize scene.</div></div>
 <div class="ttc" id="aclassnen_1_1renderer_html"><div class="ttname"><a href="classnen_1_1renderer.html">nen::renderer</a></div><div class="ttdef"><b>Definition:</b> Renderer.hpp:20</div></div>
 <div class="ttc" id="aclassnen_1_1sound__system_html"><div class="ttname"><a href="classnen_1_1sound__system.html">nen::sound_system</a></div><div class="ttdef"><b>Definition:</b> SoundSystem.hpp:12</div></div>
 <div class="ttc" id="astructnen_1_1input__state_html"><div class="ttname"><a href="structnen_1_1input__state.html">nen::input_state</a></div><div class="ttdef"><b>Definition:</b> InputSystem.hpp:91</div></div>

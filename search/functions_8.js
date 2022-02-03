@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['setposition_186',['SetPosition',['../classnen_1_1base__actor.html#aae45b7cfdec341a68a9bb2979cace0f2',1,'nen::base_actor']]],
-  ['setscale_187',['SetScale',['../classnen_1_1base__actor.html#a53d0c88be5a9fceda24ace2304b00632',1,'nen::base_actor']]]
+  ['quit_213',['Quit',['../classnen_1_1base__scene.html#ad31bd1770d9b314bc94070b111f15105',1,'nen::base_scene']]]
 ];

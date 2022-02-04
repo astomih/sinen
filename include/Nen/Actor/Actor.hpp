@@ -13,40 +13,34 @@ namespace nen {
 class base_scene;
 
 /**
- * @brief Sceneに依存するアクター
+ * @brief Base of all actors.
  *
  */
 class base_actor {
 public:
   /**
-   * @brief アクターの状態を表すステート
+   * @brief State of the actor
    *
    */
   enum class state { Active, Paused, Dead };
 
   /**
-   * @brief 識別用のハンドル
+   * @brief Construct a new base actor object
    *
-   */
-  uint32_t handle;
-
-  /**
-   * @brief コンストラクタ
-   *
-   * @param scene 親シーンの参照
+   * @param scene Parent scene
    */
   base_actor(base_scene &scene);
 
   /**
-   * @brief デストラクタ
+   * @brief Destroy the base actor object
    *
    */
   virtual ~base_actor();
 
   /**
-   * @brief アップデート時に呼ばれる関数
+   * @brief Update the actor
    *
-   * @param deltaTime 変位時間
+   * @param deltaTime dT
    */
   void UpdateActor(float deltaTime);
 
@@ -56,13 +50,6 @@ public:
    * @param deltaTime 変位時間
    */
   virtual void Update(float deltaTime);
-
-  /**
-   * @brief アクターごとのIDを取得
-   *
-   * @return std::string 文字列
-   */
-  virtual std::string GetID() { return ""; }
 
   /**
    * @brief 位置ベクトルを取得する
@@ -140,50 +127,22 @@ public:
 
   base_scene &GetScene() { return mScene; }
 
-  template <class T> std::shared_ptr<T> GetComponent() {
-    for (auto i : mComponents) {
-      auto component = std::dynamic_pointer_cast<T>(i);
-      if (component != nullptr)
-        return component;
-    }
-    return nullptr;
+  template <class T, typename... _Args>
+  T &add_component(std::uint32_t &store_value = m_default_handle,
+                   _Args &&...__args) {
+    auto component = std::make_unique<T>(*this, std::forward<_Args>(__args)...);
+    store_value = m_next_handle++;
+    m_components.emplace(store_value, std::move(component));
+    base_component *ptr = m_components[store_value].get();
+    return *static_cast<T *>(ptr);
   }
-
-  template <class T> std::shared_ptr<T> AddComponent(int updateOrder = 100) {
-    auto com = GetComponent<T>();
-    if (com == nullptr) {
-      auto ptr = std::make_shared<T>(*this, updateOrder);
-      if (!mComponents.empty()) {
-        auto iter = mComponents.begin();
-        for (; iter != mComponents.end(); ++iter) {
-          if (updateOrder < (*iter)->GetUpdateOrder()) {
-            break;
-          }
-        }
-        mComponents.insert(iter, ptr);
-      } else
-        mComponents.emplace_back(ptr);
-      return ptr;
-    } else {
-      RemoveComponent<T>();
-      auto ptr = std::make_shared<T>(*this, updateOrder);
-      auto iter = mComponents.begin();
-      for (; iter != mComponents.end(); ++iter) {
-        if (updateOrder < (*iter)->GetUpdateOrder()) {
-          break;
-        }
-      }
-      mComponents.insert(iter, ptr);
-      return ptr;
+  template <class T> T &get_component(std::uint32_t stored_value) {
+    auto it = m_components.find(stored_value);
+    if (it == m_components.end()) {
+      throw std::runtime_error("component not found");
     }
-  }
-
-  template <class T> void RemoveComponent() {
-    auto iter =
-        std::find(mComponents.begin(), mComponents.end(), GetComponent<T>());
-    if (iter != mComponents.end()) {
-      mComponents.erase(iter);
-    }
+    base_component *ptr = it->second.get();
+    return *static_cast<T *>(ptr);
   }
 
   bool isRecompute() { return mRecomputeWorldTransform; }
@@ -199,8 +158,11 @@ private:
   matrix4 mWorldTransform;
   vector3 mPosition;
   quaternion mRotation;
-  std::vector<std::shared_ptr<base_component>> mComponents;
+  std::unordered_map<std::uint32_t, std::unique_ptr<base_component>>
+      m_components;
   base_scene &mScene;
   vector3 mScale;
+  static std::uint32_t m_default_handle;
+  std::uint32_t m_next_handle;
 };
 } // namespace nen

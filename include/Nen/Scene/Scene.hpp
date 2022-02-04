@@ -72,7 +72,8 @@ public:
    * @return T& Actor object
    */
   template <class T, typename... _Args>
-  T &add_actor(std::uint32_t &store_value, _Args &&...__args) {
+  T &add_actor(std::uint32_t &store_value = m_default_handle,
+               _Args &&...__args) {
     auto actor = std::make_unique<T>(*this, std::forward<_Args>(__args)...);
     store_value = m_next_handle++;
     if (mUpdatingActors) {
@@ -239,7 +240,13 @@ private:
    * @brief next handle
    *
    */
-  std::uint16_t m_next_handle = 0;
+  std::uint32_t m_next_handle = 0;
+
+  /**
+   * @brief Default handler
+   *
+   */
+  static std::uint32_t m_default_handle;
   /**
    * @brief is updating actors
    *

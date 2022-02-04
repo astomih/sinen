@@ -2,18 +2,18 @@
 #include <algorithm>
 #include <type_traits>
 namespace nen {
+uint32_t base_actor::m_default_handle = 0;
 base_actor::base_actor(base_scene &scene)
     : mState(state::Active), mPosition(vector3::Zero),
       mRotation(quaternion::Identity), mScene(scene),
-      mRecomputeWorldTransform(true), mScale(vector3(1.f, 1.f, 1.f)),
-      mComponents(), handle(0) {}
+      mRecomputeWorldTransform(true), mScale(vector3(1.f, 1.f, 1.f)) {}
 
-base_actor::~base_actor() { mComponents.clear(); }
+base_actor::~base_actor() { m_components.clear(); }
 
 void base_actor::UpdateActor(float deltaTime) {
   if (mState == state::Active) {
-    for (auto comp : mComponents) {
-      comp->Update(deltaTime);
+    for (const auto &comp : m_components) {
+      comp.second->Update(deltaTime);
     }
     Update(deltaTime);
     ComputeWorldTransform();
@@ -40,8 +40,8 @@ void base_actor::ComputeWorldTransform() {
     this->mWorldTransform = s * r * t;
 
     // Inform components world transform updated
-    for (const auto comp : mComponents) {
-      comp->OnUpdateWorldTransform();
+    for (const auto &comp : m_components) {
+      comp.second->OnUpdateWorldTransform();
     }
   }
 }

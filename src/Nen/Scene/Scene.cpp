@@ -11,6 +11,7 @@
 #include <iostream>
 
 namespace nen {
+std::uint32_t base_scene::m_default_handle = 0;
 
 void base_scene::Initialize() {
   mRenderer = renderer_handle::GetRenderer();

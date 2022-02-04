@@ -70,7 +70,6 @@ $(function() {
   <div class="summary">
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="classnen_1_1base__actor-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -78,7 +77,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Sceneに依存するアクター  
+<p>Base of all actors.  
  <a href="classnen_1_1base__actor.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="_actor_8hpp_source.html">Actor.hpp</a>&gt;</code></p>
@@ -89,27 +88,24 @@ Public Types</h2></td></tr>
 , <b>Paused</b>
 , <b>Dead</b>
  }</td></tr>
-<tr class="memdesc:afecb2cfb95af8adb2afc771bdbb81972"><td class="mdescLeft">&#160;</td><td class="mdescRight">アクターの状態を表すステート <br /></td></tr>
+<tr class="memdesc:afecb2cfb95af8adb2afc771bdbb81972"><td class="mdescLeft">&#160;</td><td class="mdescRight">State of the actor. <br /></td></tr>
 <tr class="separator:afecb2cfb95af8adb2afc771bdbb81972"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a386e0b2286b18ff44b2b91db36ae1724"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnen_1_1base__actor.html#a386e0b2286b18ff44b2b91db36ae1724">base_actor</a> (<a class="el" href="classnen_1_1base__scene.html">base_scene</a> &amp;scene)</td></tr>
-<tr class="memdesc:a386e0b2286b18ff44b2b91db36ae1724"><td class="mdescLeft">&#160;</td><td class="mdescRight">コンストラクタ  <a href="classnen_1_1base__actor.html#a386e0b2286b18ff44b2b91db36ae1724">More...</a><br /></td></tr>
+<tr class="memdesc:a386e0b2286b18ff44b2b91db36ae1724"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a new base actor object.  <a href="classnen_1_1base__actor.html#a386e0b2286b18ff44b2b91db36ae1724">More...</a><br /></td></tr>
 <tr class="separator:a386e0b2286b18ff44b2b91db36ae1724"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed1309afc6a86a8bf4e999952464e77a"><td class="memItemLeft" align="right" valign="top"><a id="aed1309afc6a86a8bf4e999952464e77a"></a>
 virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnen_1_1base__actor.html#aed1309afc6a86a8bf4e999952464e77a">~base_actor</a> ()</td></tr>
-<tr class="memdesc:aed1309afc6a86a8bf4e999952464e77a"><td class="mdescLeft">&#160;</td><td class="mdescRight">デストラクタ <br /></td></tr>
+<tr class="memdesc:aed1309afc6a86a8bf4e999952464e77a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy the base actor object. <br /></td></tr>
 <tr class="separator:aed1309afc6a86a8bf4e999952464e77a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa531b0bc1fb8098e687cbc5021e57495"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnen_1_1base__actor.html#aa531b0bc1fb8098e687cbc5021e57495">UpdateActor</a> (float deltaTime)</td></tr>
-<tr class="memdesc:aa531b0bc1fb8098e687cbc5021e57495"><td class="mdescLeft">&#160;</td><td class="mdescRight">アップデート時に呼ばれる関数  <a href="classnen_1_1base__actor.html#aa531b0bc1fb8098e687cbc5021e57495">More...</a><br /></td></tr>
+<tr class="memdesc:aa531b0bc1fb8098e687cbc5021e57495"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the actor.  <a href="classnen_1_1base__actor.html#aa531b0bc1fb8098e687cbc5021e57495">More...</a><br /></td></tr>
 <tr class="separator:aa531b0bc1fb8098e687cbc5021e57495"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af026ccaff9ac0c4e04b40cb449a6aec4"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnen_1_1base__actor.html#af026ccaff9ac0c4e04b40cb449a6aec4">Update</a> (float deltaTime)</td></tr>
 <tr class="memdesc:af026ccaff9ac0c4e04b40cb449a6aec4"><td class="mdescLeft">&#160;</td><td class="mdescRight">毎ループ更新される関数  <a href="classnen_1_1base__actor.html#af026ccaff9ac0c4e04b40cb449a6aec4">More...</a><br /></td></tr>
 <tr class="separator:af026ccaff9ac0c4e04b40cb449a6aec4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a03a9bcc37f07aac02c633b8c7abd98da"><td class="memItemLeft" align="right" valign="top">virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnen_1_1base__actor.html#a03a9bcc37f07aac02c633b8c7abd98da">GetID</a> ()</td></tr>
-<tr class="memdesc:a03a9bcc37f07aac02c633b8c7abd98da"><td class="mdescLeft">&#160;</td><td class="mdescRight">アクターごとのIDを取得  <a href="classnen_1_1base__actor.html#a03a9bcc37f07aac02c633b8c7abd98da">More...</a><br /></td></tr>
-<tr class="separator:a03a9bcc37f07aac02c633b8c7abd98da"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad999cd1dbf19061113a53db7b01979b3"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnen_1_1base__actor.html#ad999cd1dbf19061113a53db7b01979b3">GetPosition</a> () const noexcept</td></tr>
 <tr class="memdesc:ad999cd1dbf19061113a53db7b01979b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">位置ベクトルを取得する  <a href="classnen_1_1base__actor.html#ad999cd1dbf19061113a53db7b01979b3">More...</a><br /></td></tr>
 <tr class="separator:ad999cd1dbf19061113a53db7b01979b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -152,18 +148,14 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>SetState</b> (<a clas
 <tr class="memitem:a3a202ff0e522eb0df5a9cd4c5f6170a3"><td class="memItemLeft" align="right" valign="top"><a id="a3a202ff0e522eb0df5a9cd4c5f6170a3"></a>
 <a class="el" href="classnen_1_1base__scene.html">base_scene</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>GetScene</b> ()</td></tr>
 <tr class="separator:a3a202ff0e522eb0df5a9cd4c5f6170a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1bb3378f4236931416f38fc5101f9042"><td class="memTemplParams" colspan="2"><a id="a1bb3378f4236931416f38fc5101f9042"></a>
+<tr class="memitem:a3d46429f6d7bd9176f13e0170eb118a3"><td class="memTemplParams" colspan="2"><a id="a3d46429f6d7bd9176f13e0170eb118a3"></a>
+template&lt;class T , typename... _Args&gt; </td></tr>
+<tr class="memitem:a3d46429f6d7bd9176f13e0170eb118a3"><td class="memTemplItemLeft" align="right" valign="top">T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>add_component</b> (std::uint32_t &amp;store_value=m_default_handle, _Args &amp;&amp;...__args)</td></tr>
+<tr class="separator:a3d46429f6d7bd9176f13e0170eb118a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe7eeea00096b3c85f05049fa203f0f9"><td class="memTemplParams" colspan="2"><a id="afe7eeea00096b3c85f05049fa203f0f9"></a>
 template&lt;class T &gt; </td></tr>
-<tr class="memitem:a1bb3378f4236931416f38fc5101f9042"><td class="memTemplItemLeft" align="right" valign="top">std::shared_ptr&lt; T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>GetComponent</b> ()</td></tr>
-<tr class="separator:a1bb3378f4236931416f38fc5101f9042"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4a62b271a844b9d02dca8eb92aba88cd"><td class="memTemplParams" colspan="2"><a id="a4a62b271a844b9d02dca8eb92aba88cd"></a>
-template&lt;class T &gt; </td></tr>
-<tr class="memitem:a4a62b271a844b9d02dca8eb92aba88cd"><td class="memTemplItemLeft" align="right" valign="top">std::shared_ptr&lt; T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>AddComponent</b> (int updateOrder=100)</td></tr>
-<tr class="separator:a4a62b271a844b9d02dca8eb92aba88cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a22fbc405c759941096e3f67a9e565a9b"><td class="memTemplParams" colspan="2"><a id="a22fbc405c759941096e3f67a9e565a9b"></a>
-template&lt;class T &gt; </td></tr>
-<tr class="memitem:a22fbc405c759941096e3f67a9e565a9b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>RemoveComponent</b> ()</td></tr>
-<tr class="separator:a22fbc405c759941096e3f67a9e565a9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe7eeea00096b3c85f05049fa203f0f9"><td class="memTemplItemLeft" align="right" valign="top">T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>get_component</b> (std::uint32_t stored_value)</td></tr>
+<tr class="separator:afe7eeea00096b3c85f05049fa203f0f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae9bd330e74292040bac54863f5d0c90e"><td class="memItemLeft" align="right" valign="top"><a id="ae9bd330e74292040bac54863f5d0c90e"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>isRecompute</b> ()</td></tr>
 <tr class="separator:ae9bd330e74292040bac54863f5d0c90e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -174,13 +166,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>RecomuteFinished</b> 
 const <a class="el" href="structnen_1_1input__state.html">input_state</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>GetInput</b> ()</td></tr>
 <tr class="separator:a615ba4302fb12af59b2a3b684f43cece"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
-Public Attributes</h2></td></tr>
-<tr class="memitem:a2e55c929a40a148d628cf5193463fee2"><td class="memItemLeft" align="right" valign="top"><a id="a2e55c929a40a148d628cf5193463fee2"></a>
-uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnen_1_1base__actor.html#a2e55c929a40a148d628cf5193463fee2">handle</a></td></tr>
-<tr class="memdesc:a2e55c929a40a148d628cf5193463fee2"><td class="mdescLeft">&#160;</td><td class="mdescRight">識別用のハンドル <br /></td></tr>
-<tr class="separator:a2e55c929a40a148d628cf5193463fee2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
 <tr class="memitem:a34f51b15f93c62d804357cf2b294213a"><td class="memItemLeft" align="right" valign="top"><a id="a34f51b15f93c62d804357cf2b294213a"></a>
@@ -188,7 +173,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>mRecomputeWorldTransf
 <tr class="separator:a34f51b15f93c62d804357cf2b294213a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Sceneに依存するアクター </p>
+<div class="textblock"><p>Base of all actors. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a386e0b2286b18ff44b2b91db36ae1724"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a386e0b2286b18ff44b2b91db36ae1724">&#9670;&nbsp;</a></span>base_actor()</h2>
@@ -206,10 +191,10 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>mRecomputeWorldTransf
       </table>
 </div><div class="memdoc">
 
-<p>コンストラクタ </p>
+<p>Construct a new base actor object. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">scene</td><td>親シーンの参照 </td></tr>
+    <tr><td class="paramname">scene</td><td>Parent scene </td></tr>
   </table>
   </dd>
 </dl>
@@ -217,34 +202,6 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>mRecomputeWorldTransf
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a03a9bcc37f07aac02c633b8c7abd98da"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a03a9bcc37f07aac02c633b8c7abd98da">&#9670;&nbsp;</a></span>GetID()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">virtual std::string nen::base_actor::GetID </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>アクターごとのIDを取得 </p>
-<dl class="section return"><dt>Returns</dt><dd>std::string 文字列 </dd></dl>
-
-</div>
-</div>
 <a id="ad999cd1dbf19061113a53db7b01979b3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad999cd1dbf19061113a53db7b01979b3">&#9670;&nbsp;</a></span>GetPosition()</h2>
 
@@ -499,10 +456,10 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>mRecomputeWorldTransf
       </table>
 </div><div class="memdoc">
 
-<p>アップデート時に呼ばれる関数 </p>
+<p>Update the actor. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">deltaTime</td><td>変位時間 </td></tr>
+    <tr><td class="paramname">deltaTime</td><td>dT </td></tr>
   </table>
   </dd>
 </dl>

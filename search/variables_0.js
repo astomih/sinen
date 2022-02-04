@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['handle_230',['handle',['../classnen_1_1base__actor.html#a2e55c929a40a148d628cf5193463fee2',1,'nen::base_actor']]]
+  ['zero_227',['Zero',['../classnen_1_1vector3.html#a45ec2438e89ec4cc8397fd6bae513658',1,'nen::vector3']]]
 ];

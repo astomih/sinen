@@ -1,4 +1,3 @@
-#include "../Render/RendererHandle.hpp"
 #include <Nen.hpp>
 
 namespace nen {

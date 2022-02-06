@@ -1,5 +1,4 @@
-﻿#include "../Render/RendererHandle.hpp"
-#include <Nen.hpp>
+﻿#include <Nen.hpp>
 #include <wchar.h>
 
 namespace nen {

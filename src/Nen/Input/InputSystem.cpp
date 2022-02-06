@@ -1,9 +1,9 @@
-#include "../Render/RendererHandle.hpp"
+#include "Input/InputSystem.hpp"
 #include "../event/current_event.hpp"
+#include "Input/MouseCode.hpp"
 #include "SDL_events.h"
 #include "SDL_video.h"
 #include "Utility/Singleton.hpp"
-#include "../event/current_event.hpp"
 #include <Nen.hpp>
 #include <SDL.h>
 #include <SDL_gamecontroller.h>
@@ -37,11 +37,13 @@ button_state keyboard_state::GetKeyState(key_code _key_code) const {
   }
 }
 
+mouse_state::mouse_state(renderer &renderer) : m_renderer(renderer) {}
+
 void mouse_state::SetPosition(const vector2 &pos) const {
-  SDL_WarpMouseInWindow(
-      (SDL_Window *)renderer_handle::GetRenderer()->GetWindow()->GetSDLWindow(),
-      pos.x, pos.y);
+  SDL_WarpMouseInWindow((SDL_Window *)m_renderer.GetWindow()->GetSDLWindow(),
+                        pos.x, pos.y);
 }
+
 void mouse_state::HideCursor(bool hide) const {
   isHide = hide;
   if (hide) {

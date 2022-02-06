@@ -1,5 +1,4 @@
-﻿#include "../Render/RendererHandle.hpp"
-#include "Utility/Singleton.hpp"
+﻿#include "Utility/Singleton.hpp"
 #ifndef MOBILE
 #define SDL_MAIN_HANDLED
 #else
@@ -66,7 +65,6 @@ void Launch(std::unique_ptr<base_scene> scene) {
       nen::Math::ToRadians(70.f), window->Size().x / window->Size().y, 0.1f,
       1000.f));
 
-  nen::renderer_handle::SetRenderer(renderer);
   auto soundSystem = std::make_shared<nen::sound_system>();
   if (!soundSystem->Initialize()) {
     nen::logger::Info("Failed to initialize audio system");
@@ -75,7 +73,7 @@ void Launch(std::unique_ptr<base_scene> scene) {
     std::exit(-1);
   }
   nen::logger::Info("Audio system Initialized.");
-  auto inputSystem = std::make_shared<nen::input_system>();
+  auto inputSystem = std::make_shared<nen::input_system>(*renderer);
   if (!inputSystem->Initialize()) {
     nen::logger::Info("Failed to initialize input system");
   }
@@ -83,6 +81,7 @@ void Launch(std::unique_ptr<base_scene> scene) {
   // スクリプトのインスタンスを作成
   nen::script::Create();
   nen::logger::Info("Script system initialized.");
+  scene->SetRenderer(renderer);
   scene->SetInputSystem(inputSystem);
   scene->SetSoundSystem(soundSystem);
   scene->Initialize();
@@ -92,6 +91,7 @@ void Launch(std::unique_ptr<base_scene> scene) {
     else if (nextScene) {
       scene->Shutdown();
       scene = std::move(nextScene);
+      scene->SetRenderer(renderer);
       scene->SetInputSystem(inputSystem);
       scene->SetSoundSystem(soundSystem);
       scene->Initialize();

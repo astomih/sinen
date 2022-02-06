@@ -1,5 +1,6 @@
 #pragma once
 #include "../Math/Vector2.hpp"
+#include "../Render/Renderer.hpp"
 #include "../event/process_event.hpp"
 #include "GameController.hpp"
 #include "GameControllerButton.hpp"
@@ -30,6 +31,7 @@ private:
 // Helper for mouse input
 class mouse_state {
 public:
+  mouse_state(renderer &_renderer);
   friend class input_system;
 
   // For mouse position
@@ -44,6 +46,7 @@ public:
   button_state GetButtonState(mouse_code _button) const;
 
 private:
+  renderer &m_renderer;
   // Store current mouse position
   vector2 mMousePos;
   // Motion of scroll wheel
@@ -89,6 +92,7 @@ private:
 
 // Wrapper that contains current state of input
 struct input_state {
+  input_state(renderer &_renderer) : Mouse(_renderer) {}
   keyboard_state Keyboard;
   mouse_state Mouse;
   joystick_state Controller;
@@ -96,6 +100,8 @@ struct input_state {
 
 class input_system {
 public:
+  input_system(renderer &_renderer)
+      : m_renderer(_renderer), mState(_renderer) {}
   bool Initialize();
   void Shutdown();
 
@@ -110,6 +116,7 @@ public:
   void SetRelativeMouseMode(bool value);
 
 private:
+  renderer &m_renderer;
   float Filter1D(int input);
   vector2 Filter2D(int inputX, int inputY);
   input_state mState;

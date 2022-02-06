@@ -1,5 +1,4 @@
 #pragma once
-#include <Nen.hpp>
 #include <SDL.h>
 
 namespace nen {

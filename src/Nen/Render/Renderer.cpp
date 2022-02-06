@@ -4,14 +4,12 @@
 #include "Math/Vector3.hpp"
 #include "OpenGL/GLRenderer.h"
 #include "OpenGLES/ESRenderer.h"
-#include "RendererHandle.hpp"
 #include "Vertex/Vertex.hpp"
 #include "Vertex/VertexArray.hpp"
 #include "Vulkan/VKRenderer.h"
 #include <Nen.hpp>
 
 namespace nen {
-std::shared_ptr<renderer> renderer_handle::mRenderer = nullptr;
 renderer::renderer(graphics_api api, std::shared_ptr<window> window)
     : transPic(nullptr), mScene(nullptr), mWindow(window), m_renderer(nullptr),
       RendererAPI(api) {

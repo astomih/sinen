@@ -1,5 +1,4 @@
-﻿#include "../Render/RendererHandle.hpp"
-#include "../event/current_event.hpp"
+﻿#include "../event/current_event.hpp"
 #include "Input/KeyCode.hpp"
 #include "Utility/Singleton.hpp"
 #include "imgui.h"
@@ -14,7 +13,6 @@ namespace nen {
 std::uint32_t base_scene::m_default_handle = 0;
 
 void base_scene::Initialize() {
-  mRenderer = renderer_handle::GetRenderer();
   // シーンのデータを読み込み
   Setup();
   logger::Info("Scene setup.");

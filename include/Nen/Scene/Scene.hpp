@@ -260,5 +260,4 @@ private:
  */
 void ChangeScene(std::unique_ptr<base_scene> newScene);
 
-void Launch(std::unique_ptr<base_scene> scene);
 } // namespace nen

@@ -1,4 +1,4 @@
-﻿#include "Utility/Singleton.hpp"
+#include "Utility/Singleton.hpp"
 #ifndef MOBILE
 #define SDL_MAIN_HANDLED
 #else
@@ -23,7 +23,7 @@ namespace nen {
 void ChangeScene(std::unique_ptr<base_scene> newScene) {
   changeScene(std::move(newScene));
 }
-void Launch(std::unique_ptr<base_scene> scene) {
+void manager::launch(std::unique_ptr<base_scene> scene) {
   std::unique_ptr<nen::base_scene> nextScene;
   changeScene = [&](std::unique_ptr<nen::base_scene> newScene) {
     scene->Quit();

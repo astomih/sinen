@@ -69,7 +69,8 @@ void window::Initialize(const vector2 &size, const std::string &name,
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   impl->window = SDL_CreateWindow(
       std::string(name).c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-      static_cast<int>(size.x), static_cast<int>(size.y), SDL_WINDOW_OPENGL);
+      static_cast<int>(size.x), static_cast<int>(size.y),
+      SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 #endif
 }
 

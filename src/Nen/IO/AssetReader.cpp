@@ -59,29 +59,29 @@ void asset_reader::ConvertFilePath(std::string &filePath, std::string_view name,
 
   switch (assetType) {
   case asset_type::Effect:
-    filePath += std::string{"Assets/Effect/"} + name.data();
+    filePath += std::string{"data/effect/"} + name.data();
     break;
   case asset_type::Font:
-    filePath += std::string{"Assets/Font/"} + name.data();
+    filePath += std::string{"data/font/"} + name.data();
     break;
 
   case asset_type::Model:
-    filePath += std::string{"Assets/Model/"} + name.data();
+    filePath += std::string{"data/model/"} + name.data();
     break;
   case asset_type::Music:
-    filePath = std::string{"Assets/Music/"} + name.data();
+    filePath = std::string{"data/music/"} + name.data();
     break;
   case asset_type::Script:
-    filePath = std::string{"Assets/Script/"} + name.data();
+    filePath = std::string{"data/script/"} + name.data();
     break;
   case asset_type::Shader:
-    filePath = std::string{"Assets/Shader/"} + name.data();
+    filePath = std::string{"data/shader/"} + name.data();
     break;
   case asset_type::Sound:
-    filePath = std::string{"Assets/Sound/"} + name.data();
+    filePath = std::string{"data/sound/"} + name.data();
     break;
   case asset_type::Texture:
-    filePath = std::string{"Assets/Texture/"} + name.data();
+    filePath = std::string{"data/texture/"} + name.data();
     break;
 
   default:

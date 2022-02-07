@@ -188,9 +188,9 @@ void ESRenderer::LoadEffect(std::shared_ptr<effect> _effect) {}
 
 void ESRenderer::LoadShader(const shader &shaderInfo) {
   ShaderES pipeline;
-  pipeline.Load(std::string("Assets/Shader/GLES/") + shaderInfo.vertName +
+  pipeline.Load(std::string("data/shader/GLES/") + shaderInfo.vertName +
                     std::string(".vert"),
-                std::string("Assets/Shader/GLES/") + shaderInfo.fragName +
+                std::string("data/shader/GLES/") + shaderInfo.fragName +
                     std::string(".frag"));
   shader_parameter param;
   pipeline.CreateUBO(0, sizeof(shader_parameter), &param);
@@ -241,16 +241,16 @@ void ESRenderer::registerTexture(std::shared_ptr<texture> texture,
 bool ESRenderer::loadShader() {
   // Create sprite shader
   mSpriteShader = new ShaderES();
-  if (!mSpriteShader->Load("Assets/Shader/GLES/shader.vert",
-                           "Assets/Shader/GLES/shader.frag")) {
+  if (!mSpriteShader->Load("data/shader/GLES/shader.vert",
+                           "data/shader/GLES/shader.frag")) {
     return false;
   }
   shader_parameter param{};
   mSpriteShader->CreateUBO(0, sizeof(shader_parameter), &param);
 
   mAlphaShader = new ShaderES();
-  if (!mAlphaShader->Load("Assets/Shader/GLES/shader.vert",
-                          "Assets/Shader/GLES/alpha.frag")) {
+  if (!mAlphaShader->Load("data/shader/GLES/shader.vert",
+                          "data/shader/GLES/alpha.frag")) {
     return false;
   }
   mAlphaShader->CreateUBO(0, sizeof(shader_parameter), &param);

@@ -207,9 +207,9 @@ void GLRenderer::LoadEffect(std::shared_ptr<effect> effect) {}
 
 void GLRenderer::LoadShader(const shader &shaderInfo) {
   ShaderGL pipeline;
-  pipeline.Load(std::string("Assets/Shader/GL/") + shaderInfo.vertName +
+  pipeline.Load(std::string("data/shader/GL/") + shaderInfo.vertName +
                     std::string(".vert"),
-                std::string("Assets/Shader/GL/") + shaderInfo.fragName +
+                std::string("data/shader/GL/") + shaderInfo.fragName +
                     std::string(".frag"));
   shader_parameter param;
   pipeline.CreateUBO(0, sizeof(shader_parameter), &param);
@@ -256,16 +256,16 @@ void GLRenderer::registerTexture(std::shared_ptr<texture> texture) {
 
 bool GLRenderer::loadShader() {
   mSpriteShader = new ShaderGL();
-  if (!mSpriteShader->Load("Assets/Shader/GL/shader.vert",
-                           "Assets/Shader/GL/shader.frag")) {
+  if (!mSpriteShader->Load("data/shader/GL/shader.vert",
+                           "data/shader/GL/shader.frag")) {
     return false;
   }
 
   shader_parameter param{};
   mSpriteShader->CreateUBO(0, sizeof(shader_parameter), &param);
   mAlphaShader = new ShaderGL();
-  if (!mAlphaShader->Load("Assets/Shader/GL/shader.vert",
-                          "Assets/Shader/GL/alpha.frag")) {
+  if (!mAlphaShader->Load("data/shader/GL/shader.vert",
+                          "data/shader/GL/alpha.frag")) {
     return false;
   }
   mAlphaShader->CreateUBO(0, sizeof(shader_parameter), &param);

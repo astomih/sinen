@@ -38,6 +38,7 @@ void ESRenderer::Initialize(std::shared_ptr<window> _window) {
 void ESRenderer::SetRenderer(renderer *_renderer) { mRenderer = _renderer; }
 
 void ESRenderer::Render() {
+  glViewport(0, 0, mWindow->Size().x, mWindow->Size().y);
 
   auto color = mRenderer->GetClearColor();
   glClearColor(color.r, color.g, color.b, 1.0);

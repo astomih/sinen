@@ -58,8 +58,6 @@ public:
 
   void SetRenderer(class renderer *) override;
 
-  void LoadEffect(std::shared_ptr<class effect>) override;
-
   void LoadShader(const shader &shaderInfo) override;
   void UnloadShader(const shader &shaderInfo) override;
 

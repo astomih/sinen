@@ -203,8 +203,6 @@ void GLRenderer::RemoveDrawObject3D(std::shared_ptr<class draw_object> sprite) {
   eraseSprite3d(sprite);
 }
 
-void GLRenderer::LoadEffect(std::shared_ptr<effect> effect) {}
-
 void GLRenderer::LoadShader(const shader &shaderInfo) {
   ShaderGL pipeline;
   pipeline.Load(std::string("data/shader/GL/") + shaderInfo.vertName +

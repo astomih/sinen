@@ -185,8 +185,6 @@ void ESRenderer::RemoveDrawObject3D(std::shared_ptr<class draw_object> sprite) {
   eraseSprite3d(sprite);
 }
 
-void ESRenderer::LoadEffect(std::shared_ptr<effect> _effect) {}
-
 void ESRenderer::LoadShader(const shader &shaderInfo) {
   ShaderES pipeline;
   pipeline.Load(std::string("data/shader/GLES/") + shaderInfo.vertName +

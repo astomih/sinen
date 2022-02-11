@@ -43,13 +43,8 @@ public:
   void UpdateVertexArray(std::shared_ptr<class draw_object> drawObject,
                          texture_type type = texture_type::Image2D);
 
-  void AddEffect(std::shared_ptr<class effect> effect);
-  void RemoveEffect(std::shared_ptr<class effect> effect);
-
   void AddGUI(std::shared_ptr<class ui_screen> ui);
   void RemoveGUI(std::shared_ptr<class ui_screen> ui);
-
-  std::vector<std::shared_ptr<class effect>> &GetEffects() { return mEffects; }
 
   void AddVertexArray(const vertex_array &vArray, std::string_view name);
   void UpdateVertexArray(const vertex_array &vArray, std::string_view name);
@@ -60,9 +55,6 @@ public:
   }
 
   color GetClearColor() { return this->clearColor; }
-
-  std::shared_ptr<class EffectManager>
-  GetEffect(const std::u16string &fileName);
 
   void SetViewMatrix(const matrix4 &view) { mView = view; }
   const matrix4 &GetViewMatrix() { return mView; }
@@ -83,8 +75,6 @@ private:
   void setup_shapes();
   color clearColor = palette::Black;
   class draw_2d_component *transPic;
-
-  std::vector<std::shared_ptr<class effect>> mEffects;
 
   // GameHandler
   std::shared_ptr<base_scene> mScene;
@@ -128,8 +118,6 @@ public:
 
   virtual void AddGUI(std::shared_ptr<class ui_screen> ui) {}
   virtual void RemoveGUI(std::shared_ptr<class ui_screen> ui) {}
-
-  virtual void LoadEffect(std::shared_ptr<effect> effect) {}
 
   virtual void SetRenderer(class renderer *renderer) {}
 

@@ -125,8 +125,6 @@ void VKRenderer::RemoveGUI(std::shared_ptr<ui_screen> ui) {
   }
 }
 
-void VKRenderer::LoadEffect(std::shared_ptr<effect> effect) {}
-
 void VKRenderer::LoadShader(const shader &shaderInfo) {
   std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
       VulkanShader::LoadModule(m_base->get_vk_device(),
@@ -230,7 +228,6 @@ void VKRenderer::prepare() {
   prepareImGUI();
 }
 void VKRenderer::cleanup() {
-  // delete mEffectManager.release();
   VkDevice device = m_base->get_vk_device();
 
   for (auto &i : mImageObjects) {

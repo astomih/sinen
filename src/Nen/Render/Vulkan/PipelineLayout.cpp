@@ -1,7 +1,11 @@
+#include "src/Nen/Render/Vulkan/VKRenderer.h"
+#include "vulkan/vulkan_core.h"
 #include <Nen.hpp>
+#include <cstddef>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "Pipeline.h"
 #include "VKBase.h"
+#include "VKRenderer.h"
 #include "VulkanUtil.h"
 #include <Nen.hpp>
 
@@ -10,30 +14,31 @@ void PipelineLayout::Initialize(VkDevice device,
                                 const VkDescriptorSetLayout *descriptorLayout,
                                 const VkExtent2D &extent) {
   // Setting vertex inputs
-  inputBinding = {
-      0,                          // binding
-      sizeof(vertex),             // stride
-      VK_VERTEX_INPUT_RATE_VERTEX // inputRate
-  };
-  vibDisc = {{
-      {0, sizeof(float) * 6, VK_VERTEX_INPUT_RATE_VERTEX},
-      {1, sizeof(float) * 2, VK_VERTEX_INPUT_RATE_INSTANCE},
-      {2, sizeof(float) * 4, VK_VERTEX_INPUT_RATE_VERTEX},
+  vibDesc = {{
+      // position 3, normal 3, uv 2, color4 = 12
+      {0, sizeof(vertex), VK_VERTEX_INPUT_RATE_VERTEX},
+      {1, sizeof(InstanceData), VK_VERTEX_INPUT_RATE_INSTANCE},
   }};
   inputAttribs = {{
       {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(vertex, position)},
       {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(vertex, normal)},
-      {2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(vertex, uv)},
-      {3, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(vertex, rgba)},
+      {2, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(vertex, uv)},
+      {3, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(vertex, rgba)},
+      {4, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, m1)},
+      {5, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, m2)},
+      {6, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, m3)},
+      {7, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, m4)},
   }};
 
-  vertexInputCI = VkPipelineVertexInputStateCreateInfo{};
-  vertexInputCI.sType =
-      VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-  vertexInputCI.vertexBindingDescriptionCount = 1;
-  vertexInputCI.pVertexBindingDescriptions = &inputBinding;
-  vertexInputCI.vertexAttributeDescriptionCount = uint32_t(inputAttribs.size());
-  vertexInputCI.pVertexAttributeDescriptions = inputAttribs.data();
+  vertexInputCI = VkPipelineVertexInputStateCreateInfo{
+      VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+      nullptr,
+      0,
+      uint32_t(vibDesc.size()),
+      vibDesc.data(),
+      uint32_t(inputAttribs.size()),
+      inputAttribs.data(),
+  };
 
   // Setting blending
   colorMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |

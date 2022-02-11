@@ -36,7 +36,10 @@ struct VertexArrayForVK : public vertex_array {
 };
 
 struct InstanceData {
-  matrix4 world;
+  float m1[4];
+  float m2[4];
+  float m3[4];
+  float m4[4];
 };
 
 class VKRenderer : public IRenderer {
@@ -103,22 +106,6 @@ public:
   void DestroyBuffer(BufferObject bufferObj);
   void DestroyImage(ImageObject imageObj);
   void DestroyFramebuffers(uint32_t count, VkFramebuffer *framebuffers);
-  VkCommandBuffer CreateCommandBuffer();
-  void FinishCommandBuffer(VkCommandBuffer command);
-  std::vector<BufferObject> CreateUniformBuffers(uint32_t size,
-                                                 uint32_t imageCount);
-  const std::vector<std::shared_ptr<VulkanDrawObject>> &GetSprite2Ds() {
-    return mDrawObject2D;
-  }
-  const std::vector<std::shared_ptr<VulkanDrawObject>> &GetSprite3Ds() {
-    return mDrawObject3D;
-  }
-  void AllocateCommandBufferSecondary(uint32_t count,
-                                      VkCommandBuffer *pCommands);
-  void FreeCommandBufferSecondary(uint32_t count, VkCommandBuffer *pCommands);
-  void TransferStageBufferToImage(const BufferObject &srcBuffer,
-                                  const ImageObject &dstImage,
-                                  const VkBufferImageCopy *region);
   void write_memory(const VmaAllocation &, const void *data, size_t size);
   std::shared_ptr<class window> GetWindow() { return m_base->m_window; }
 
@@ -156,12 +143,12 @@ private:
   Pipeline pipeline2D;
   std::vector<std::pair<shader, Pipeline>> userPipelines;
   std::vector<std::shared_ptr<VulkanDrawObject>> mDrawObject3D;
+  std::vector<std::shared_ptr<VulkanDrawObject>> mBOX;
   std::vector<std::shared_ptr<VulkanDrawObject>> mDrawObject2D;
   std::unordered_map<std::string, ImageObject> mImageObjects;
   std::vector<InstanceData> instance;
   std::vector<BufferObject> m_instanceUniforms;
   std::vector<std::shared_ptr<class ui_screen>> mGUI;
-  int instanceCount;
 };
 } // namespace nen::vk
 #endif

@@ -1,4 +1,6 @@
-﻿#include <Nen.hpp>
+﻿#include "src/Nen/Render/Vulkan/VKRenderer.h"
+#include <Nen.hpp>
+#include <cwchar>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 // general
 #include <array>
@@ -314,6 +316,48 @@ void VKRenderer::draw3d(VkCommandBuffer command) {
                  sizeof(shader_parameter));
     vkCmdDrawIndexed(command, m_VertexArrays[index].indexCount, 1, 0, 0, 0);
   }
+  std::vector<InstanceData> data;
+  auto instance_buffer = CreateBuffer(mBOX.size() * sizeof(InstanceData),
+                                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
+                                          VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                          VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+  for (auto &sprite : mBOX) {
+    InstanceData d;
+    for (int i = 0; i < 4; i++) {
+      d.m1[i] = sprite->drawObject->param.world.mat[0][i];
+    }
+    for (int i = 0; i < 4; i++) {
+      d.m2[i] = sprite->drawObject->param.world.mat[1][i];
+    }
+    for (int i = 0; i < 4; i++) {
+      d.m3[i] = sprite->drawObject->param.world.mat[2][i];
+    }
+    for (int i = 0; i < 4; i++) {
+      d.m4[i] = sprite->drawObject->param.world.mat[3][i];
+    }
+    data.push_back(d);
+    // Set descriptors
+    vkCmdBindDescriptorSets(
+        command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout.GetLayout(),
+        0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
+    auto allocation = sprite->uniformBuffers[m_base->m_imageIndex].allocation;
+    write_memory(allocation, &sprite->drawObject->param,
+                 sizeof(shader_parameter));
+  }
+  auto allocation = instance_buffer.allocation;
+  write_memory(allocation, data.data(), sizeof(InstanceData) * data.size());
+  VkBuffer vkbuffers[] = {m_VertexArrays["BOX"].vertexBuffer.buffer,
+                          instance_buffer.buffer};
+  VkDeviceSize offsets[] = {0, 0};
+  ::vkCmdBindVertexBuffers(command, 0, sizeof(vkbuffers) / sizeof(vkbuffers[0]),
+                           vkbuffers, offsets);
+  ::vkCmdBindIndexBuffer(command, m_VertexArrays["BOX"].indexBuffer.buffer,
+                         offset, VK_INDEX_TYPE_UINT32);
+  vkCmdDrawIndexed(command, m_VertexArrays["BOX"].indexCount, data.size(), 0, 0,
+                   0);
+  DestroyBuffer(instance_buffer);
 }
 
 void VKRenderer::draw2d(VkCommandBuffer command) {
@@ -847,99 +891,6 @@ void VKRenderer::DestroyFramebuffers(uint32_t count,
   }
 }
 
-VkCommandBuffer VKRenderer::CreateCommandBuffer() {
-  VkCommandBufferAllocateInfo commandAI{
-      VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO, nullptr,
-      m_base->m_commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, 1};
-  VkCommandBufferBeginInfo beginInfo{
-      VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-  };
-
-  VkCommandBuffer command;
-  vkAllocateCommandBuffers(m_base->get_vk_device(), &commandAI, &command);
-  vkBeginCommandBuffer(command, &beginInfo);
-  return command;
-}
-
-void VKRenderer::FinishCommandBuffer(VkCommandBuffer command) {
-  vkEndCommandBuffer(command);
-  VkFence fence;
-  VkFenceCreateInfo fenceCI{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr, 0};
-  vkCreateFence(m_base->get_vk_device(), &fenceCI, nullptr, &fence);
-
-  VkSubmitInfo submitInfo{
-      VK_STRUCTURE_TYPE_SUBMIT_INFO,
-      nullptr,
-      0,
-      nullptr,
-      nullptr,
-      1,
-      &command,
-      0,
-      nullptr,
-  };
-  vkQueueSubmit(m_base->get_vk_queue(), 1, &submitInfo, fence);
-  vkWaitForFences(m_base->get_vk_device(), 1, &fence, VK_TRUE, UINT64_MAX);
-  vkDestroyFence(m_base->get_vk_device(), fence, nullptr);
-}
-
-std::vector<BufferObject>
-VKRenderer::CreateUniformBuffers(uint32_t size, uint32_t imageCount) {
-  std::vector<BufferObject> buffers(imageCount);
-  for (auto &b : buffers) {
-    VkMemoryPropertyFlags props = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-    b = CreateBuffer(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, props);
-  }
-  return buffers;
-}
-
-void VKRenderer::AllocateCommandBufferSecondary(uint32_t count,
-                                                VkCommandBuffer *pCommands) {
-  VkCommandBufferAllocateInfo commandAI{
-      VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO, nullptr,
-      m_base->m_commandPool, VK_COMMAND_BUFFER_LEVEL_SECONDARY, count};
-
-  vkAllocateCommandBuffers(m_base->get_vk_device(), &commandAI, pCommands);
-}
-
-void VKRenderer::FreeCommandBufferSecondary(uint32_t count,
-                                            VkCommandBuffer *pCommands) {
-  vkFreeCommandBuffers(m_base->get_vk_device(), m_base->m_commandPool, count,
-                       pCommands);
-}
-
-void VKRenderer::TransferStageBufferToImage(const BufferObject &srcBuffer,
-                                            const ImageObject &dstImage,
-                                            const VkBufferImageCopy *region) {
-  VkImageMemoryBarrier imb{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                           nullptr,
-                           0,
-                           VK_ACCESS_TRANSFER_WRITE_BIT,
-                           VK_IMAGE_LAYOUT_UNDEFINED,
-                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                           VK_QUEUE_FAMILY_IGNORED,
-                           VK_QUEUE_FAMILY_IGNORED,
-                           dstImage.image,
-                           {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
-
-  auto command = CreateCommandBuffer();
-  vkCmdPipelineBarrier(command, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-                       VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0,
-                       nullptr, 1, &imb);
-
-  vkCmdCopyBufferToImage(command, srcBuffer.buffer, dstImage.image,
-                         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, region);
-  imb.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-  imb.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-  imb.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-  imb.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-  vkCmdPipelineBarrier(command, VK_PIPELINE_STAGE_TRANSFER_BIT,
-                       VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0,
-                       nullptr, 1, &imb);
-  FinishCommandBuffer(command);
-}
-
 void VKRenderer::registerImageObject(std::shared_ptr<texture> texture) {
   if (!mImageObjects.contains(texture->id)) {
     mImageObjects.insert(
@@ -960,16 +911,29 @@ VkDevice VKRenderer::GetDevice() {
 void VKRenderer::registerTexture(std::shared_ptr<VulkanDrawObject> texture,
                                  std::string_view ID, texture_type type) {
   if (texture_type::Image3D == type) {
-    mDrawObject3D.push_back(texture);
-    texture->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
-    for (auto &v : texture->uniformBuffers) {
-      VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                       VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-      v = CreateBuffer(sizeof(shader_parameter),
-                       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
+    if (texture->drawObject->vertexIndex == "BOX") {
+      mBOX.push_back(texture);
+      texture->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
+      for (auto &v : texture->uniformBuffers) {
+        VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                         VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+        v = CreateBuffer(sizeof(shader_parameter),
+                         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
+      }
+      layouts.push_back(m_descriptorSetLayout);
+      prepareDescriptorSet(texture);
+    } else {
+      mDrawObject3D.push_back(texture);
+      texture->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
+      for (auto &v : texture->uniformBuffers) {
+        VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                         VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+        v = CreateBuffer(sizeof(shader_parameter),
+                         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
+      }
+      layouts.push_back(m_descriptorSetLayout);
+      prepareDescriptorSet(texture);
     }
-    layouts.push_back(m_descriptorSetLayout);
-    prepareDescriptorSet(texture);
   } else {
     auto iter = mDrawObject2D.begin();
     for (; iter != mDrawObject2D.end(); ++iter) {

@@ -1,6 +1,11 @@
 #include "src/Nen/Render/OpenGL/GLRenderer.h"
 #include "Component/Draw2DComponent.hpp"
+#include "DrawObject/DrawObject.hpp"
+#include "SDL_mixer.h"
+#include "Texture/Texture.hpp"
+#include "instancing/instance_data.hpp"
 #include <Nen.hpp>
+#include <corecrt.h>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "SDL_stdinc.h"
 #include <cstdint>
@@ -102,6 +107,48 @@ void GLRenderer::draw_3d() {
     glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indices.size(),
                    GL_UNSIGNED_INT, nullptr);
   }
+
+  mSpriteInstanceShader->SetActive(0);
+  for (auto &i : m_instancing) {
+    mSpriteInstanceShader->UpdateUBO(0, sizeof(shader_parameter),
+                                     &i.ins.object->param);
+    uint32_t vbo;
+
+    glBindVertexArray(m_VertexArrays[i.ins.object->vertexIndex].vao);
+    // VBOを作成
+    auto va = m_VertexArrays[i.ins.object->vertexIndex];
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, i.ins.size, i.ins.data.data(),
+                 GL_DYNAMIC_DRAW);
+    auto size = sizeof(instance_data);
+    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, size,
+                          reinterpret_cast<void *>(sizeof(float) * 0));
+    glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, size,
+                          reinterpret_cast<void *>(sizeof(float) * 4));
+    glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, size,
+                          reinterpret_cast<void *>(sizeof(float) * 8));
+    glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, size,
+                          reinterpret_cast<void *>(sizeof(float) * 12));
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
+    glEnableVertexAttribArray(4);
+    glEnableVertexAttribArray(5);
+    glEnableVertexAttribArray(6);
+    glEnableVertexAttribArray(7);
+    glVertexAttribDivisor(4, 1);
+    glVertexAttribDivisor(5, 1);
+    glVertexAttribDivisor(6, 1);
+    glVertexAttribDivisor(7, 1);
+
+    glBindTexture(GL_TEXTURE_2D, mTextureIDs[i.ins.object->textureIndex]);
+    glDrawElementsInstanced(
+        GL_TRIANGLES, m_VertexArrays[i.ins.object->vertexIndex].indices.size(),
+        GL_UNSIGNED_INT, nullptr, i.ins.data.size());
+    glDeleteBuffers(1, &vbo);
+  }
 }
 
 void GLRenderer::draw_2d() {
@@ -146,19 +193,19 @@ void GLRenderer::AddVertexArray(const vertex_array &vArray,
   auto vArraySize = vArrayGL.vertices.size() * sizeof(vertex);
   glBufferData(GL_ARRAY_BUFFER, vArraySize, vArrayGL.vertices.data(),
                GL_DYNAMIC_DRAW);
-
+  size_t size = sizeof(shader_parameter);
   // VBOをVAOに登録
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 12 * sizeof(float), 0);
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 12 * sizeof(float),
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, size, 0);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, size,
                         reinterpret_cast<void *>(sizeof(float) * 3));
-  glEnableVertexAttribArray(2);
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_TRUE, 12 * sizeof(float),
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, size,
                         reinterpret_cast<void *>(sizeof(float) * 6));
-  glEnableVertexAttribArray(3);
-  glVertexAttribPointer(3, 4, GL_FLOAT, GL_TRUE, 12 * sizeof(float),
+  glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, size,
                         reinterpret_cast<void *>(sizeof(float) * 8));
+  glEnableVertexAttribArray(0);
+  glEnableVertexAttribArray(1);
+  glEnableVertexAttribArray(2);
+  glEnableVertexAttribArray(3);
   // IBOを作成
   glGenBuffers(1, &vArrayGL.ibo);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.ibo);
@@ -224,6 +271,13 @@ void GLRenderer::UnloadShader(const shader &shaderInfo) {
   });
 }
 
+void GLRenderer::add_instancing(instancing &_instancing) {
+  registerTexture(_instancing._texture);
+
+  m_instancing.emplace_back(ogl_instancing(_instancing));
+}
+void GLRenderer::remove_instancing(instancing &_instancing) {}
+
 void GLRenderer::prepare() {
   if (!loadShader()) {
     std::cout << "failed to loads shader" << std::endl;
@@ -267,6 +321,21 @@ bool GLRenderer::loadShader() {
     return false;
   }
   mAlphaShader->CreateUBO(0, sizeof(shader_parameter), &param);
+
+  mSpriteInstanceShader = new ShaderGL();
+  if (!mSpriteInstanceShader->Load("data/shader/GL/shader_instance.vert",
+                                   "data/shader/GL/shader.frag")) {
+    return false;
+  }
+
+  mSpriteInstanceShader->CreateUBO(0, sizeof(shader_parameter), &param);
+  mAlphaInstanceShader = new ShaderGL();
+  if (!mAlphaInstanceShader->Load("data/shader/GL/shader_instance.vert",
+                                  "data/shader/GL/alpha.frag")) {
+    return false;
+  }
+  mAlphaInstanceShader->CreateUBO(0, sizeof(shader_parameter), &param);
+
   return true;
 }
 

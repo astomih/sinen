@@ -36,6 +36,12 @@ struct VertexArrayForGL : public nen::vertex_array {
   uint32_t ibo;
 };
 
+class ogl_instancing {
+public:
+  ogl_instancing(instancing &ins) : ins(ins) {}
+  instancing &ins;
+};
+
 class GLRenderer : public IRenderer {
 public:
   GLRenderer();
@@ -59,6 +65,9 @@ public:
 
   void LoadShader(const shader &shaderInfo) override;
   void UnloadShader(const shader &shaderInfo) override;
+
+  void add_instancing(instancing &_instancing) override;
+  void remove_instancing(instancing &_instancing) override;
 
   void prepare();
   void cleanup() {}
@@ -109,6 +118,8 @@ private:
 
   ShaderGL *mSpriteShader;
   ShaderGL *mAlphaShader;
+  ShaderGL *mSpriteInstanceShader;
+  ShaderGL *mAlphaInstanceShader;
   std::vector<std::pair<shader, ShaderGL>> userPipelines;
   GLuint mTextureID;
   std::unordered_map<std::string, GLuint> mTextureIDs;
@@ -116,6 +127,7 @@ private:
   ::SDL_GLContext mContext;
   std::vector<std::shared_ptr<draw_object>> mSprite2Ds;
   std::vector<std::shared_ptr<draw_object>> mSprite3Ds;
+  std::vector<ogl_instancing> m_instancing;
 };
 } // namespace gl
 } // namespace nen

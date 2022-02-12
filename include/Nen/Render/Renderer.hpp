@@ -8,6 +8,7 @@
 #include "../Texture/Texture.hpp"
 #include "../Texture/TextureType.hpp"
 #include "../Vertex/VertexArray.hpp"
+#include "../instancing/instancing.hpp"
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -48,6 +49,9 @@ public:
 
   void AddVertexArray(const vertex_array &vArray, std::string_view name);
   void UpdateVertexArray(const vertex_array &vArray, std::string_view name);
+
+  void add_instancing(instancing &_instancing);
+  void remove_instancing(instancing &_instancing);
 
   void SetClearColor(const color &color) {
     if (color.r >= 0.f && color.g >= 0.f && color.b >= 0.f)
@@ -106,6 +110,9 @@ public:
                               std::string_view name) {}
   virtual void UpdateVertexArray(const vertex_array &vArray,
                                  std::string_view name) {}
+
+  virtual void add_instancing(instancing &_instancing) {}
+  virtual void remove_instancing(instancing &_instancing) {}
 
   virtual void AddDrawObject2D(std::shared_ptr<class draw_object> sprite,
                                std::shared_ptr<texture> texture) {}

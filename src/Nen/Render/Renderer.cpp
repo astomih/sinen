@@ -77,6 +77,13 @@ void renderer::UpdateVertexArray(const vertex_array &vArray,
   m_renderer->UpdateVertexArray(vArray, name);
 }
 
+void renderer::add_instancing(instancing &_instancing) {
+  m_renderer->add_instancing(_instancing);
+}
+void renderer::remove_instancing(instancing &_instancing) {
+  m_renderer->remove_instancing(_instancing);
+}
+
 void renderer::LoadShader(const shader &shaderInfo) {
   m_renderer->LoadShader(shaderInfo);
 }

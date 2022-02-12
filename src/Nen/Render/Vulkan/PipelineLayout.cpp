@@ -1,3 +1,5 @@
+#include "instancing/instance_data.hpp"
+#include "instancing/instancing.hpp"
 #include "src/Nen/Render/Vulkan/VKRenderer.h"
 #include "vulkan/vulkan_core.h"
 #include <Nen.hpp>
@@ -17,17 +19,21 @@ void PipelineLayout::Initialize(VkDevice device,
   vibDesc = {{
       // position 3, normal 3, uv 2, color4 = 12
       {0, sizeof(vertex), VK_VERTEX_INPUT_RATE_VERTEX},
-      {1, sizeof(InstanceData), VK_VERTEX_INPUT_RATE_INSTANCE},
+      {1, sizeof(instance_data), VK_VERTEX_INPUT_RATE_INSTANCE},
   }};
   inputAttribs = {{
       {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(vertex, position)},
       {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(vertex, normal)},
       {2, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(vertex, uv)},
       {3, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(vertex, rgba)},
-      {4, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, m1)},
-      {5, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, m2)},
-      {6, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, m3)},
-      {7, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, m4)},
+      {4, 1, VK_FORMAT_R32G32B32A32_SFLOAT,
+       offsetof(instance_data, world_matrix_1)},
+      {5, 1, VK_FORMAT_R32G32B32A32_SFLOAT,
+       offsetof(instance_data, world_matrix_2)},
+      {6, 1, VK_FORMAT_R32G32B32A32_SFLOAT,
+       offsetof(instance_data, world_matrix_3)},
+      {7, 1, VK_FORMAT_R32G32B32A32_SFLOAT,
+       offsetof(instance_data, world_matrix_4)},
   }};
 
   vertexInputCI = VkPipelineVertexInputStateCreateInfo{

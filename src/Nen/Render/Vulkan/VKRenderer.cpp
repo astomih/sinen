@@ -1,4 +1,5 @@
 ﻿#include "src/Nen/Render/Vulkan/VKRenderer.h"
+#include "src/Nen/Render/Vulkan/VKBase.h"
 #include <Nen.hpp>
 #include <cwchar>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
@@ -34,8 +35,7 @@ constexpr int maxpoolSize = 5000;
 constexpr int maxInstanceCount = 900;
 VKRenderer::VKRenderer()
     : m_descriptorPool(), m_descriptorSetLayout(), m_sampler(),
-      m_base(std::make_unique<vulkan_base_framework>(this)),
-      instance(maxInstanceCount) {}
+      m_base(std::make_unique<vulkan_base_framework>(this)) {}
 void VKRenderer::SetRenderer(renderer *renderer) { mRenderer = renderer; }
 void VKRenderer::Initialize(std::shared_ptr<window> window) {
   m_base->initialize(window);
@@ -159,6 +159,55 @@ void VKRenderer::UnloadShader(const shader &shaderInfo) {
   });
 }
 
+void VKRenderer::add_instancing(instancing &_instancing) {
+  auto t = std::make_shared<vk::VulkanDrawObject>();
+  t->drawObject = _instancing.object;
+  registerImageObject(_instancing._texture);
+  t->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
+  for (auto &v : t->uniformBuffers) {
+    VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                     VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+    v = CreateBuffer(sizeof(shader_parameter),
+                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
+  }
+  layouts.push_back(m_descriptorSetLayout);
+  prepareDescriptorSet(t);
+
+  vulkan_instancing vi{_instancing};
+  vi.vk_draw_object = t;
+  m_instancies.push_back(vi);
+}
+
+void VKRenderer::prepare_instancing(vulkan_instancing &_instancing,
+                                    VkCommandBuffer command) {
+  auto instance_buffer = CreateBuffer(_instancing.ins.size,
+                                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
+                                          VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                          VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+  auto allocation =
+      _instancing.vk_draw_object->uniformBuffers[m_base->m_imageIndex]
+          .allocation;
+  write_memory(allocation, &_instancing.vk_draw_object->drawObject->param,
+               sizeof(shader_parameter));
+  write_memory(instance_buffer.allocation, _instancing.ins.data.data(),
+               _instancing.ins.size);
+  std::string index = _instancing.ins.object->vertexIndex;
+  VkBuffer vkbuffers[] = {m_VertexArrays[index].vertexBuffer.buffer,
+                          instance_buffer.buffer};
+  VkDeviceSize offsets[] = {0, 0};
+  vkCmdBindVertexBuffers(command, 0, sizeof(vkbuffers) / sizeof(vkbuffers[0]),
+                         vkbuffers, offsets);
+  vkCmdBindIndexBuffer(command, m_VertexArrays[index].indexBuffer.buffer, 0,
+                       VK_INDEX_TYPE_UINT32);
+  vkCmdDrawIndexed(command, m_VertexArrays[index].indexCount,
+                   _instancing.ins.data.size(), 0, 0, 0);
+  DestroyBuffer(instance_buffer);
+}
+
+void VKRenderer::remove_instancing(instancing &_instancing) {}
+
 void VKRenderer::prepare() {
   prepareUniformBuffers();
   prepareDescriptorSetLayout();
@@ -171,7 +220,7 @@ void VKRenderer::prepare() {
                              m_base->mSwapchain->GetSurfaceExtent());
   mPipelineLayout.Prepare(m_base->get_vk_device());
 
-  // 不透明用: パイプラインの構築
+  // Opaque pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
         VulkanShader::LoadModule(m_base->get_vk_device(),
@@ -188,7 +237,7 @@ void VKRenderer::prepare() {
     VulkanShader::CleanModule(m_base->get_vk_device(), shaderStages);
   }
 
-  // 半透明用: パイプラインの構築
+  // alpha pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
         VulkanShader::LoadModule(m_base->get_vk_device(),
@@ -208,7 +257,7 @@ void VKRenderer::prepare() {
     pipelineAlpha.Prepare(m_base->get_vk_device());
     VulkanShader::CleanModule(m_base->get_vk_device(), shaderStages);
   }
-  // 2D用: パイプラインの構築
+  // 2D pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
         VulkanShader::LoadModule(m_base->get_vk_device(),
@@ -225,6 +274,68 @@ void VKRenderer::prepare() {
     pipeline2D.SetDepthTest(VK_FALSE);
     pipeline2D.SetDepthWrite(VK_FALSE);
     pipeline2D.Prepare(m_base->get_vk_device());
+    VulkanShader::CleanModule(m_base->get_vk_device(), shaderStages);
+  }
+  //
+  // Instancing pipelines
+  //
+  // Opaque pipeline
+  {
+    std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
+        VulkanShader::LoadModule(m_base->get_vk_device(),
+                                 "data/shader/Vulkan/shader_instance.vert.spv",
+                                 VK_SHADER_STAGE_VERTEX_BIT),
+        VulkanShader::LoadModule(m_base->get_vk_device(),
+                                 "data/shader/Vulkan/shaderOpaque.frag.spv",
+                                 VK_SHADER_STAGE_FRAGMENT_BIT)};
+    pipelineInstancingOpaque.Initialize(mPipelineLayout, m_base->m_renderPass,
+                                        shaderStages);
+    pipelineInstancingOpaque.ColorBlendFactor(VK_BLEND_FACTOR_ONE,
+                                              VK_BLEND_FACTOR_ZERO);
+    pipelineInstancingOpaque.AlphaBlendFactor(VK_BLEND_FACTOR_ONE,
+                                              VK_BLEND_FACTOR_ZERO);
+    pipelineInstancingOpaque.Prepare(m_base->get_vk_device());
+    VulkanShader::CleanModule(m_base->get_vk_device(), shaderStages);
+  }
+
+  // alpha pipeline
+  {
+    std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
+        VulkanShader::LoadModule(m_base->get_vk_device(),
+                                 "data/shader/Vulkan/shader_instance.vert.spv",
+                                 VK_SHADER_STAGE_VERTEX_BIT),
+        VulkanShader::LoadModule(m_base->get_vk_device(),
+                                 "data/shader/Vulkan/shaderAlpha.frag.spv",
+                                 VK_SHADER_STAGE_FRAGMENT_BIT)};
+    pipelineInstancingAlpha.Initialize(mPipelineLayout, m_base->m_renderPass,
+                                       shaderStages);
+    pipelineInstancingAlpha.ColorBlendFactor(
+        VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    pipelineInstancingAlpha.AlphaBlendFactor(
+        VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    pipelineInstancingAlpha.SetDepthTest(VK_TRUE);
+    pipelineInstancingAlpha.SetDepthWrite(VK_FALSE);
+    pipelineInstancingAlpha.Prepare(m_base->get_vk_device());
+    VulkanShader::CleanModule(m_base->get_vk_device(), shaderStages);
+  }
+  // 2D pipeline
+  {
+    std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
+        VulkanShader::LoadModule(m_base->get_vk_device(),
+                                 "data/shader/Vulkan/shader_instance.vert.spv",
+                                 VK_SHADER_STAGE_VERTEX_BIT),
+        VulkanShader::LoadModule(m_base->get_vk_device(),
+                                 "data/shader/Vulkan/shaderAlpha.frag.spv",
+                                 VK_SHADER_STAGE_FRAGMENT_BIT)};
+    pipelineInstancing2D.Initialize(mPipelineLayout, m_base->m_renderPass,
+                                    shaderStages);
+    pipelineInstancing2D.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
+                                          VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    pipelineInstancing2D.AlphaBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
+                                          VK_BLEND_FACTOR_ZERO);
+    pipelineInstancing2D.SetDepthTest(VK_FALSE);
+    pipelineInstancing2D.SetDepthWrite(VK_FALSE);
+    pipelineInstancing2D.Prepare(m_base->get_vk_device());
     VulkanShader::CleanModule(m_base->get_vk_device(), shaderStages);
   }
   prepareImGUI();
@@ -316,48 +427,10 @@ void VKRenderer::draw3d(VkCommandBuffer command) {
                  sizeof(shader_parameter));
     vkCmdDrawIndexed(command, m_VertexArrays[index].indexCount, 1, 0, 0, 0);
   }
-  std::vector<InstanceData> data;
-  auto instance_buffer = CreateBuffer(mBOX.size() * sizeof(InstanceData),
-                                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
-                                          VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                          VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-  for (auto &sprite : mBOX) {
-    InstanceData d;
-    for (int i = 0; i < 4; i++) {
-      d.m1[i] = sprite->drawObject->param.world.mat[0][i];
-    }
-    for (int i = 0; i < 4; i++) {
-      d.m2[i] = sprite->drawObject->param.world.mat[1][i];
-    }
-    for (int i = 0; i < 4; i++) {
-      d.m3[i] = sprite->drawObject->param.world.mat[2][i];
-    }
-    for (int i = 0; i < 4; i++) {
-      d.m4[i] = sprite->drawObject->param.world.mat[3][i];
-    }
-    data.push_back(d);
-    // Set descriptors
-    vkCmdBindDescriptorSets(
-        command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout.GetLayout(),
-        0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
-    auto allocation = sprite->uniformBuffers[m_base->m_imageIndex].allocation;
-    write_memory(allocation, &sprite->drawObject->param,
-                 sizeof(shader_parameter));
+  for (auto &i : m_instancies) {
+    pipelineInstancingOpaque.Bind(command);
+    prepare_instancing(i, command);
   }
-  auto allocation = instance_buffer.allocation;
-  write_memory(allocation, data.data(), sizeof(InstanceData) * data.size());
-  VkBuffer vkbuffers[] = {m_VertexArrays["BOX"].vertexBuffer.buffer,
-                          instance_buffer.buffer};
-  VkDeviceSize offsets[] = {0, 0};
-  ::vkCmdBindVertexBuffers(command, 0, sizeof(vkbuffers) / sizeof(vkbuffers[0]),
-                           vkbuffers, offsets);
-  ::vkCmdBindIndexBuffer(command, m_VertexArrays["BOX"].indexBuffer.buffer,
-                         offset, VK_INDEX_TYPE_UINT32);
-  vkCmdDrawIndexed(command, m_VertexArrays["BOX"].indexCount, data.size(), 0, 0,
-                   0);
-  DestroyBuffer(instance_buffer);
 }
 
 void VKRenderer::draw2d(VkCommandBuffer command) {
@@ -479,13 +552,6 @@ void VKRenderer::renderImGUI(VkCommandBuffer command) {
 
 void VKRenderer::prepareUniformBuffers() {
 
-  m_instanceUniforms.resize(maxInstanceCount);
-  for (auto &v : m_instanceUniforms) {
-    VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                     VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-    v = CreateBuffer(sizeof(InstanceData) * m_instanceUniforms.size(),
-                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
-  }
   for (auto &s : mDrawObject3D) {
     s->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
     for (auto &v : s->uniformBuffers) {
@@ -587,11 +653,6 @@ void VKRenderer::prepareDescriptorSet(
     descImage.sampler = m_sampler;
     descImage.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-    VkDescriptorBufferInfo descInstance{};
-    descInstance.buffer = m_instanceUniforms[0].buffer;
-    descInstance.offset = 0;
-    descInstance.range = VK_WHOLE_SIZE;
-
     VkWriteDescriptorSet ubo{};
     ubo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     ubo.dstBinding = 0;
@@ -608,15 +669,7 @@ void VKRenderer::prepareDescriptorSet(
     tex.pImageInfo = &descImage;
     tex.dstSet = sprite->descripterSet[i];
 
-    VkWriteDescriptorSet ins{};
-    ins.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    ins.dstBinding = 2;
-    ins.descriptorCount = 1;
-    ins.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    ins.pBufferInfo = &descInstance;
-    ins.dstSet = sprite->descripterSet[i];
-
-    std::vector<VkWriteDescriptorSet> writeSets = {ubo, tex, ins};
+    std::vector<VkWriteDescriptorSet> writeSets = {ubo, tex};
     vkUpdateDescriptorSets(m_base->get_vk_device(), uint32_t(writeSets.size()),
                            writeSets.data(), 0, nullptr);
   }
@@ -911,29 +964,16 @@ VkDevice VKRenderer::GetDevice() {
 void VKRenderer::registerTexture(std::shared_ptr<VulkanDrawObject> texture,
                                  std::string_view ID, texture_type type) {
   if (texture_type::Image3D == type) {
-    if (texture->drawObject->vertexIndex == "BOX") {
-      mBOX.push_back(texture);
-      texture->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
-      for (auto &v : texture->uniformBuffers) {
-        VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                         VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-        v = CreateBuffer(sizeof(shader_parameter),
-                         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
-      }
-      layouts.push_back(m_descriptorSetLayout);
-      prepareDescriptorSet(texture);
-    } else {
-      mDrawObject3D.push_back(texture);
-      texture->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
-      for (auto &v : texture->uniformBuffers) {
-        VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                         VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-        v = CreateBuffer(sizeof(shader_parameter),
-                         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
-      }
-      layouts.push_back(m_descriptorSetLayout);
-      prepareDescriptorSet(texture);
+    mDrawObject3D.push_back(texture);
+    texture->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
+    for (auto &v : texture->uniformBuffers) {
+      VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                       VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+      v = CreateBuffer(sizeof(shader_parameter),
+                       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
     }
+    layouts.push_back(m_descriptorSetLayout);
+    prepareDescriptorSet(texture);
   } else {
     auto iter = mDrawObject2D.begin();
     for (; iter != mDrawObject2D.end(); ++iter) {

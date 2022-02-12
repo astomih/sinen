@@ -1,5 +1,8 @@
 ﻿#pragma once
+#include "instancing/instancing.hpp"
+#include "vulkan/vulkan_core.h"
 #include <Nen.hpp>
+#include <functional>
 #include <memory>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "Pipeline.h"
@@ -35,11 +38,11 @@ struct VertexArrayForVK : public vertex_array {
   BufferObject indexBuffer;
 };
 
-struct InstanceData {
-  float m1[4];
-  float m2[4];
-  float m3[4];
-  float m4[4];
+class vulkan_instancing {
+public:
+  vulkan_instancing(instancing &_instancing) : ins(_instancing) {}
+  instancing ins;
+  std::shared_ptr<VulkanDrawObject> vk_draw_object;
 };
 
 class VKRenderer : public IRenderer {
@@ -70,6 +73,9 @@ public:
 
   void LoadShader(const shader &shaderInfo) override;
   void UnloadShader(const shader &shaderInfo) override;
+
+  void add_instancing(instancing &_instancing) override;
+  void remove_instancing(instancing &_instancing) override;
 
   nen::renderer *GetRenderer() { return mRenderer; }
   void prepare();
@@ -121,6 +127,8 @@ private:
   void prepareDescriptorSet(std::shared_ptr<VulkanDrawObject>);
   void prepareImGUI();
   void renderImGUI(VkCommandBuffer command);
+  void prepare_instancing(vulkan_instancing &vk_instancing,
+                          VkCommandBuffer command);
   VkSampler createSampler();
   ImageObject create_texture(SDL_Surface *imagedata, VkFormat format);
   ImageObject createTextureFromSurface(const ::SDL_Surface &surface);
@@ -141,14 +149,16 @@ private:
   Pipeline pipelineOpaque;
   Pipeline pipelineAlpha;
   Pipeline pipeline2D;
+  Pipeline pipelineInstancingOpaque;
+  Pipeline pipelineInstancingAlpha;
+  Pipeline pipelineInstancing2D;
   std::vector<std::pair<shader, Pipeline>> userPipelines;
   std::vector<std::shared_ptr<VulkanDrawObject>> mDrawObject3D;
-  std::vector<std::shared_ptr<VulkanDrawObject>> mBOX;
   std::vector<std::shared_ptr<VulkanDrawObject>> mDrawObject2D;
   std::unordered_map<std::string, ImageObject> mImageObjects;
-  std::vector<InstanceData> instance;
-  std::vector<BufferObject> m_instanceUniforms;
   std::vector<std::shared_ptr<class ui_screen>> mGUI;
+  std::vector<vulkan_instancing> m_instancies;
+  BufferObject m_instance_buffer;
 };
 } // namespace nen::vk
 #endif

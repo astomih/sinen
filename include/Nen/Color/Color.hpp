@@ -7,6 +7,7 @@ public:
                   const float alpha)
       : r(red), g(green), b(blue), a(alpha) {}
   constexpr color(const float value) : r(value), g(value), b(value), a(1.f) {}
+  color() = default;
 
   float r;
   float g;

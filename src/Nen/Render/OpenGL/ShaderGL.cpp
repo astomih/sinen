@@ -1,10 +1,12 @@
-#include <Nen.hpp>
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "ShaderGL.h"
+#include <Nen.hpp>
 #include <SDL_image.h>
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#if defined(EMSCRIPTEN) || defined(MOBILE)
+#include <GLES3/gl3.h>
+#endif
 
 namespace nen::gl {
 
@@ -58,7 +60,13 @@ bool ShaderGL::CompileShader(const std::string &fileName, GLenum shaderType,
   // Read all the text into a string
   std::stringstream sstream;
   sstream << shaderFile.rdbuf();
-  std::string contents = sstream.str();
+  std::string contents;
+#if defined __EMSCRIPTEN__ || defined MOBILE
+  contents = "#version 300 es\n";
+#else
+  contents = "#version 330 core\n";
+#endif
+  contents += sstream.str();
   const char *contentsChar = contents.c_str();
 
   // Create a shader of the specified type
@@ -140,4 +148,3 @@ void ShaderGL::UpdateUBO(const GLuint &blockIndex, const size_t &size,
 }
 
 } // namespace nen::gl
-#endif

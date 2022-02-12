@@ -5,7 +5,7 @@ if(ANDROID)
 
 	file(GLOB_RECURSE SOURCE_FILES
 			src/Nen/*/*.cpp
-			src/Nen/Render/OpenGLES/*.cpp
+			src/Nen/Render/OpenGL/*.cpp
 			libs/ImGui/source/gles/*.cpp
 			libs/mojoAL/mojoal.c
 			libs/Lua/source/*.c
@@ -38,7 +38,7 @@ elseif(EMSCRIPTEN)
 	file(GLOB SOURCE_FILES 
 		src/Nen/*/*.cpp
 		src/Nen/Engine/Engine.cpp
-		src/Nen/Render/OpenGLES/*.cpp
+		src/Nen/Render/OpenGL/*.cpp
 		libs/ImGui/source/gles/*.cpp
 	)
 	add_library(nen STATIC ${SOURCE_FILES})

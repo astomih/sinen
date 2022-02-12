@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "instancing/instancing.hpp"
-#include "vulkan/vulkan_core.h"
 #include <Nen.hpp>
 #include <functional>
 #include <memory>

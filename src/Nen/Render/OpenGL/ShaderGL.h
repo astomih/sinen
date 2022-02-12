@@ -1,9 +1,10 @@
 ﻿
 #pragma once
 
-
 #include <Nen.hpp>
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#if defined(EMSCRIPTEN) || defined(MOBILE)
+#include <SDL_opengles2.h>
+#endif
 #include <GL/glew.h>
 #include <string>
 #include <unordered_map>
@@ -89,4 +90,3 @@ private:
 };
 
 } // namespace nen::gl
-#endif

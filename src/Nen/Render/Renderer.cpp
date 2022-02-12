@@ -2,7 +2,6 @@
 #include "../Vertex/default_model_creator.h"
 #include "Math/Vector3.hpp"
 #include "OpenGL/GLRenderer.h"
-#include "OpenGLES/ESRenderer.h"
 #include "Vertex/Vertex.hpp"
 #include "Vertex/VertexArray.hpp"
 #include "Vulkan/VKRenderer.h"
@@ -25,7 +24,7 @@ renderer::renderer(graphics_api api, std::shared_ptr<window> window)
   }
 #endif
 #if defined(EMSCRIPTEN) || defined(MOBILE)
-  m_renderer = std::make_unique<es::ESRenderer>();
+  m_renderer = std::make_unique<gl::GLRenderer>();
 #endif
   m_renderer->SetRenderer(this);
   m_renderer->Initialize(mWindow);

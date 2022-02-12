@@ -1,9 +1,14 @@
-
 #pragma once
-#include <Nen.hpp>
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#include <emscripten/html5.h>
+#endif
+#if defined(EMSCRIPTEN) || defined(MOBILE)
+#include <GLES3/gl3.h>
+#endif
 #include "ShaderGL.h"
 #include <DrawObject/DrawObject.hpp>
+#include <Nen.hpp>
 #include <Render/Renderer.hpp>
 #include <SDL.h>
 #include <Texture/Texture.hpp>
@@ -131,4 +136,3 @@ private:
 };
 } // namespace gl
 } // namespace nen
-#endif

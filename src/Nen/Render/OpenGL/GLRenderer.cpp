@@ -5,18 +5,24 @@
 #include "Texture/Texture.hpp"
 #include "instancing/instance_data.hpp"
 #include <Nen.hpp>
-#include <corecrt.h>
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+
+#include <SDL.h>
+#include <SDL_image.h>
+
+#if defined(EMSCRIPTEN) || defined(MOBILE)
+#include <GLES3/gl3.h>
+#include <SDL_opengles2.h>
+#else
+#include <GL/glew.h>
+#endif
+
 #include "SDL_stdinc.h"
 #include <cstdint>
 #include <vector>
 
 #include "../../Texture/SurfaceHandle.hpp"
 #include "GLRenderer.h"
-#include <GL/glew.h>
 #include <Nen.hpp>
-#include <SDL.h>
-#include <SDL_image.h>
 #include <fstream>
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
@@ -340,4 +346,3 @@ bool GLRenderer::loadShader() {
 }
 
 } // namespace nen::gl
-#endif

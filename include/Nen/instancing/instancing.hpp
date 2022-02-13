@@ -16,6 +16,7 @@ public:
   instancing &operator=(instancing &&) = default;
   instancing &operator=(const instancing &) = default;
   ~instancing() = default;
+  void world_to_instance_data(const matrix4 &mat, instance_data &data);
 
   std::shared_ptr<draw_object> object;
   std::shared_ptr<texture> _texture;

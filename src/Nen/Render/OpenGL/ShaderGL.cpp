@@ -118,13 +118,7 @@ bool ShaderGL::CreateUBO(const GLuint &blockIndex, const size_t &size,
   GLuint BIB = 0; // blockIndexBuffer
   glGenBuffers(1, &BIB);
   glBindBuffer(GL_UNIFORM_BUFFER, BIB);
-  glBufferData(GL_UNIFORM_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
-  {
-    void *p;
-    p = glMapBufferRange(GL_UNIFORM_BUFFER, 0, size, GL_MAP_WRITE_BIT_EXT);
-    memcpy(p, data, size);
-    glUnmapBuffer(GL_UNIFORM_BUFFER);
-  }
+  glBufferData(GL_UNIFORM_BUFFER, size, data, GL_DYNAMIC_DRAW);
   glUniformBlockBinding(mShaderProgram, blockIndex, 1);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
   blockIndexBuffers.emplace(blockIndex, BIB);
@@ -136,14 +130,7 @@ void ShaderGL::UpdateUBO(const GLuint &blockIndex, const size_t &size,
   auto BIB = blockIndexBuffers[blockIndex];
 
   glBindBuffer(GL_UNIFORM_BUFFER, BIB);
-  // glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
-  {
-    void *p;
-    p = glMapBufferRange(GL_UNIFORM_BUFFER, offset, size,
-                         GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
-    memcpy(p, data, size);
-    glUnmapBuffer(GL_UNIFORM_BUFFER);
-  }
+  glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 

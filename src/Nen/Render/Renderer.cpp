@@ -5,35 +5,21 @@
 #include "Vertex/Vertex.hpp"
 #include "Vertex/VertexArray.hpp"
 #include "Vulkan/VKRenderer.h"
+#include "src/Nen/Render/Vulkan/VKRenderer.h"
 #include <Nen.hpp>
 
 namespace nen {
 renderer::renderer(graphics_api api, std::shared_ptr<window> window)
-    : transPic(nullptr), mScene(nullptr), mWindow(window), m_renderer(nullptr),
-      RendererAPI(api) {
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
-  switch (RendererAPI) {
-  case graphics_api::Vulkan:
+    : mWindow(window), m_renderer(nullptr), RendererAPI(api) {
+  if (RendererAPI == graphics_api::Vulkan) {
     m_renderer = std::make_unique<vk::VKRenderer>();
-    break;
-  case graphics_api::OpenGL:
+
+  } else {
     m_renderer = std::make_unique<gl::GLRenderer>();
-    break;
-  default:
-    break;
   }
-#endif
-#if defined(EMSCRIPTEN) || defined(MOBILE)
-  m_renderer = std::make_unique<gl::GLRenderer>();
-#endif
   m_renderer->SetRenderer(this);
   m_renderer->Initialize(mWindow);
   setup_shapes();
-}
-
-bool renderer::Initialize(std::shared_ptr<base_scene> scene,
-                          std::shared_ptr<Transition> transition) {
-  return true;
 }
 
 void renderer::Shutdown() { m_renderer->Shutdown(); }

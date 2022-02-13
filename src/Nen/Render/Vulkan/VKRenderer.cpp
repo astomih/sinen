@@ -175,35 +175,36 @@ void VKRenderer::add_instancing(instancing &_instancing) {
 
   vulkan_instancing vi{_instancing};
   vi.vk_draw_object = t;
+  vi.instance_buffer = CreateBuffer(_instancing.size,
+                                    VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
+                                        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+  write_memory(vi.instance_buffer.allocation, _instancing.data.data(),
+               _instancing.size);
   m_instancies.push_back(vi);
 }
 
 void VKRenderer::prepare_instancing(vulkan_instancing &_instancing,
                                     VkCommandBuffer command) {
-  auto instance_buffer = CreateBuffer(_instancing.ins.size,
-                                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
-                                          VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                          VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
+  vkCmdBindDescriptorSets(
+      command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout.GetLayout(), 0,
+      1, &_instancing.vk_draw_object->descripterSet[m_base->m_imageIndex], 0,
+      nullptr);
   auto allocation =
       _instancing.vk_draw_object->uniformBuffers[m_base->m_imageIndex]
           .allocation;
   write_memory(allocation, &_instancing.vk_draw_object->drawObject->param,
                sizeof(shader_parameter));
-  write_memory(instance_buffer.allocation, _instancing.ins.data.data(),
-               _instancing.ins.size);
   std::string index = _instancing.ins.object->vertexIndex;
-  VkBuffer vkbuffers[] = {m_VertexArrays[index].vertexBuffer.buffer,
-                          instance_buffer.buffer};
+  VkBuffer buffers[] = {m_VertexArrays[index].vertexBuffer.buffer,
+                        _instancing.instance_buffer.buffer};
   VkDeviceSize offsets[] = {0, 0};
-  vkCmdBindVertexBuffers(command, 0, sizeof(vkbuffers) / sizeof(vkbuffers[0]),
-                         vkbuffers, offsets);
+  vkCmdBindVertexBuffers(command, 0, 2, buffers, offsets);
   vkCmdBindIndexBuffer(command, m_VertexArrays[index].indexBuffer.buffer, 0,
                        VK_INDEX_TYPE_UINT32);
   vkCmdDrawIndexed(command, m_VertexArrays[index].indexCount,
                    _instancing.ins.data.size(), 0, 0, 0);
-  DestroyBuffer(instance_buffer);
 }
 
 void VKRenderer::remove_instancing(instancing &_instancing) {}
@@ -927,6 +928,7 @@ VkFramebuffer VKRenderer::CreateFramebuffer(VkRenderPass renderPass,
 
 void VKRenderer::DestroyBuffer(BufferObject bufferObj) {
   vkDestroyBuffer(m_base->get_vk_device(), bufferObj.buffer, nullptr);
+  vmaFreeMemory(allocator, bufferObj.allocation);
 }
 
 void VKRenderer::DestroyImage(ImageObject imageObj) {

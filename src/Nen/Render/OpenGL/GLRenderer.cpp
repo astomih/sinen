@@ -1,6 +1,7 @@
 #include "src/Nen/Render/OpenGL/GLRenderer.h"
 #include "Component/Draw2DComponent.hpp"
 #include "DrawObject/DrawObject.hpp"
+#include "IO/AssetReader.hpp"
 #include "SDL_mixer.h"
 #include "Texture/Texture.hpp"
 #include "instancing/instance_data.hpp"
@@ -56,6 +57,7 @@ void GLRenderer::Render() {
   auto color = mRenderer->GetClearColor();
   glClearColor(color.r, color.g, color.b, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glDisable(GL_BLEND);
 
   glEnable(GL_DEPTH_TEST);
   vertexID = "";
@@ -98,8 +100,8 @@ void GLRenderer::draw_3d() {
     }
     if (i->shader_data.vertName == "default" &&
         i->shader_data.fragName == "default") {
-      mSpriteShader->SetActive(0);
-      mSpriteShader->UpdateUBO(0, sizeof(shader_parameter), &i->param);
+      mSpriteShader.SetActive(0);
+      mSpriteShader.UpdateUBO(0, sizeof(shader_parameter), &i->param);
     } else {
       for (auto &j : userPipelines) {
         if (j.first == i->shader_data) {
@@ -114,15 +116,14 @@ void GLRenderer::draw_3d() {
                    GL_UNSIGNED_INT, nullptr);
   }
 
-  mSpriteInstanceShader->SetActive(0);
+  mSpriteInstanceShader.SetActive(0);
   for (auto &i : m_instancing) {
-    mSpriteInstanceShader->UpdateUBO(0, sizeof(shader_parameter),
-                                     &i.ins.object->param);
+    mSpriteInstanceShader.UpdateUBO(0, sizeof(shader_parameter),
+                                    &i.ins.object->param);
     uint32_t vbo;
 
-    glBindVertexArray(m_VertexArrays[i.ins.object->vertexIndex].vao);
-    // VBOを作成
     auto va = m_VertexArrays[i.ins.object->vertexIndex];
+    glBindVertexArray(va.vao);
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, i.ins.size, i.ins.data.data(),
@@ -136,10 +137,6 @@ void GLRenderer::draw_3d() {
                           reinterpret_cast<void *>(sizeof(float) * 8));
     glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, size,
                           reinterpret_cast<void *>(sizeof(float) * 12));
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-    glEnableVertexAttribArray(3);
     glEnableVertexAttribArray(4);
     glEnableVertexAttribArray(5);
     glEnableVertexAttribArray(6);
@@ -165,8 +162,8 @@ void GLRenderer::draw_2d() {
     }
     if (i->shader_data.vertName == "default" &&
         i->shader_data.fragName == "default") {
-      mAlphaShader->SetActive(0);
-      mAlphaShader->UpdateUBO(0, sizeof(shader_parameter), &i->param);
+      mAlphaShader.SetActive(0);
+      mAlphaShader.UpdateUBO(0, sizeof(shader_parameter), &i->param);
     } else {
       for (auto &j : userPipelines) {
         if (j.first == i->shader_data) {
@@ -199,7 +196,7 @@ void GLRenderer::AddVertexArray(const vertex_array &vArray,
   auto vArraySize = vArrayGL.vertices.size() * sizeof(vertex);
   glBufferData(GL_ARRAY_BUFFER, vArraySize, vArrayGL.vertices.data(),
                GL_DYNAMIC_DRAW);
-  size_t size = sizeof(shader_parameter);
+  size_t size = sizeof(vertex);
   // VBOをVAOに登録
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, size, 0);
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, size,
@@ -313,35 +310,27 @@ void GLRenderer::registerTexture(std::shared_ptr<texture> texture) {
 }
 
 bool GLRenderer::loadShader() {
-  mSpriteShader = new ShaderGL();
-  if (!mSpriteShader->Load("data/shader/GL/shader.vert",
-                           "data/shader/GL/shader.frag")) {
-    return false;
-  }
-
   shader_parameter param{};
-  mSpriteShader->CreateUBO(0, sizeof(shader_parameter), &param);
-  mAlphaShader = new ShaderGL();
-  if (!mAlphaShader->Load("data/shader/GL/shader.vert",
-                          "data/shader/GL/alpha.frag")) {
+  if (!mSpriteShader.Load("data/shader/GL/shader.vert",
+                          "data/shader/GL/shader.frag")) {
     return false;
   }
-  mAlphaShader->CreateUBO(0, sizeof(shader_parameter), &param);
-
-  mSpriteInstanceShader = new ShaderGL();
-  if (!mSpriteInstanceShader->Load("data/shader/GL/shader_instance.vert",
-                                   "data/shader/GL/shader.frag")) {
+  mSpriteShader.CreateUBO(0, sizeof(shader_parameter), &param);
+  if (!mAlphaShader.Load("data/shader/GL/shader.vert",
+                         "data/shader/GL/alpha.frag")) {
     return false;
   }
-
-  mSpriteInstanceShader->CreateUBO(0, sizeof(shader_parameter), &param);
-  mAlphaInstanceShader = new ShaderGL();
-  if (!mAlphaInstanceShader->Load("data/shader/GL/shader_instance.vert",
-                                  "data/shader/GL/alpha.frag")) {
+  mAlphaShader.CreateUBO(0, sizeof(shader_parameter), &param);
+  if (!mSpriteInstanceShader.Load("data/shader/GL/shader_instance.vert",
+                                  "data/shader/GL/shader.frag")) {
     return false;
   }
-  mAlphaInstanceShader->CreateUBO(0, sizeof(shader_parameter), &param);
-
+  mSpriteInstanceShader.CreateUBO(0, sizeof(shader_parameter), &param);
+  if (!mAlphaInstanceShader.Load("data/shader/GL/shader_instance.vert",
+                                 "data/shader/GL/alpha.frag")) {
+    return false;
+  }
+  mAlphaInstanceShader.CreateUBO(0, sizeof(shader_parameter), &param);
   return true;
 }
 

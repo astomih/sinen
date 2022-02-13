@@ -26,8 +26,6 @@ public:
   void SetGraphicsAPI(graphics_api &api) { RendererAPI = api; }
   graphics_api GetGraphicsAPI() { return RendererAPI; }
 
-  bool Initialize(std::shared_ptr<class base_scene> scene,
-                  std::shared_ptr<class Transition> transition);
   void Shutdown();
   void UnloadData();
 
@@ -78,13 +76,6 @@ public:
 private:
   void setup_shapes();
   color clearColor = palette::Black;
-  class draw_2d_component *transPic;
-
-  // GameHandler
-  std::shared_ptr<base_scene> mScene;
-
-  // Sprite vertex array
-  class vertex_array *mSpriteVerts;
 
   // View/projection for 3D shaders
   matrix4 mView;

@@ -146,6 +146,13 @@ public:
     return *static_cast<T *>(ptr);
   }
 
+  void remove_component(std::uint32_t stored_value) {
+    if (m_components.find(stored_value) == m_components.end()) {
+      throw std::runtime_error("component not found");
+    }
+    m_components.erase(stored_value);
+  }
+
   bool isRecompute() { return mRecomputeWorldTransform; }
   void RecomuteFinished() { mRecomputeWorldTransform = false; }
 

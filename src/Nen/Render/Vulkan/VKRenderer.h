@@ -40,8 +40,9 @@ struct VertexArrayForVK : public vertex_array {
 class vulkan_instancing {
 public:
   vulkan_instancing(instancing &_instancing) : ins(_instancing) {}
-  instancing ins;
+  instancing &ins;
   std::shared_ptr<VulkanDrawObject> vk_draw_object;
+  BufferObject instance_buffer;
 };
 
 class VKRenderer : public IRenderer {

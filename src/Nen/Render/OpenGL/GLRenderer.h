@@ -121,10 +121,10 @@ private:
 
   std::string vertexID;
 
-  ShaderGL *mSpriteShader;
-  ShaderGL *mAlphaShader;
-  ShaderGL *mSpriteInstanceShader;
-  ShaderGL *mAlphaInstanceShader;
+  ShaderGL mSpriteShader;
+  ShaderGL mAlphaShader;
+  ShaderGL mSpriteInstanceShader;
+  ShaderGL mAlphaInstanceShader;
   std::vector<std::pair<shader, ShaderGL>> userPipelines;
   GLuint mTextureID;
   std::unordered_map<std::string, GLuint> mTextureIDs;

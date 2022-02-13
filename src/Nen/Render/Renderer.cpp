@@ -12,7 +12,9 @@ namespace nen {
 renderer::renderer(graphics_api api, std::shared_ptr<window> window)
     : mWindow(window), m_renderer(nullptr), RendererAPI(api) {
   if (RendererAPI == graphics_api::Vulkan) {
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
     m_renderer = std::make_unique<vk::VKRenderer>();
+#endif
 
   } else {
     m_renderer = std::make_unique<gl::GLRenderer>();

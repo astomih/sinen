@@ -94,10 +94,7 @@ void GLRenderer::draw_3d() {
   for (auto &i : mSprite3Ds) {
     i->param.view = view;
     i->param.proj = proj;
-    if (vertexID != i->vertexIndex) {
-      glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
-      vertexID = i->vertexIndex;
-    }
+    glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
     if (i->shader_data.vertName == "default" &&
         i->shader_data.fragName == "default") {
       mSpriteShader.SetActive(0);
@@ -156,10 +153,7 @@ void GLRenderer::draw_3d() {
 
 void GLRenderer::draw_2d() {
   for (auto &i : mSprite2Ds) {
-    if (vertexID != i->vertexIndex) {
-      glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
-      vertexID = i->vertexIndex;
-    }
+    glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
     if (i->shader_data.vertName == "default" &&
         i->shader_data.fragName == "default") {
       mAlphaShader.SetActive(0);

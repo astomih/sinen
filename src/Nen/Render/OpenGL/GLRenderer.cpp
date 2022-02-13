@@ -1,10 +1,3 @@
-#include "src/Nen/Render/OpenGL/GLRenderer.h"
-#include "Component/Draw2DComponent.hpp"
-#include "DrawObject/DrawObject.hpp"
-#include "IO/AssetReader.hpp"
-#include "SDL_mixer.h"
-#include "Texture/Texture.hpp"
-#include "instancing/instance_data.hpp"
 #include <Nen.hpp>
 
 #include <SDL.h>
@@ -23,7 +16,6 @@
 
 #include "../../Texture/SurfaceHandle.hpp"
 #include "GLRenderer.h"
-#include <Nen.hpp>
 #include <fstream>
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
@@ -38,17 +30,23 @@ void GLRenderer::Initialize(std::shared_ptr<window> window) {
   mWindow = window;
   mContext = SDL_GL_CreateContext((SDL_Window *)mWindow->GetSDLWindow());
   SDL_GL_MakeCurrent((SDL_Window *)mWindow->GetSDLWindow(), mContext);
+#if !defined EMSCRIPTEN && !defined MOBILE
   glewExperimental = GL_TRUE;
   if (glewInit() != GLEW_OK) {
     logger::Error("GLEW Init error.");
   }
   glGetError();
+#endif
 
   prepare();
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGui_ImplSDL2_InitForOpenGL((SDL_Window *)window->GetSDLWindow(), mContext);
+#if defined EMSCRIPTEN || defined MOBILE
+  ImGui_ImplOpenGL3_Init("#version 300 es");
+#else
   ImGui_ImplOpenGL3_Init("#version 330 core");
+#endif
 }
 void GLRenderer::SetRenderer(renderer *renderer) { mRenderer = renderer; }
 
@@ -57,10 +55,7 @@ void GLRenderer::Render() {
   auto color = mRenderer->GetClearColor();
   glClearColor(color.r, color.g, color.b, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glDisable(GL_BLEND);
-
   glEnable(GL_DEPTH_TEST);
-  vertexID = "";
   draw_3d();
   glDisable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
@@ -89,11 +84,7 @@ void GLRenderer::Render() {
 }
 
 void GLRenderer::draw_3d() {
-  auto view = mRenderer->GetViewMatrix();
-  auto proj = mRenderer->GetProjectionMatrix();
   for (auto &i : mSprite3Ds) {
-    i->param.view = view;
-    i->param.proj = proj;
     glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
     if (i->shader_data.vertName == "default" &&
         i->shader_data.fragName == "default") {
@@ -107,47 +98,22 @@ void GLRenderer::draw_3d() {
         }
       }
     }
-
     glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
     glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indices.size(),
                    GL_UNSIGNED_INT, nullptr);
   }
-
-  mSpriteInstanceShader.SetActive(0);
   for (auto &i : m_instancing) {
+    mSpriteInstanceShader.SetActive(0);
     mSpriteInstanceShader.UpdateUBO(0, sizeof(shader_parameter),
                                     &i.ins.object->param);
-    uint32_t vbo;
 
     auto va = m_VertexArrays[i.ins.object->vertexIndex];
     glBindVertexArray(va.vao);
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, i.ins.size, i.ins.data.data(),
-                 GL_DYNAMIC_DRAW);
-    auto size = sizeof(instance_data);
-    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, size,
-                          reinterpret_cast<void *>(sizeof(float) * 0));
-    glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, size,
-                          reinterpret_cast<void *>(sizeof(float) * 4));
-    glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, size,
-                          reinterpret_cast<void *>(sizeof(float) * 8));
-    glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, size,
-                          reinterpret_cast<void *>(sizeof(float) * 12));
-    glEnableVertexAttribArray(4);
-    glEnableVertexAttribArray(5);
-    glEnableVertexAttribArray(6);
-    glEnableVertexAttribArray(7);
-    glVertexAttribDivisor(4, 1);
-    glVertexAttribDivisor(5, 1);
-    glVertexAttribDivisor(6, 1);
-    glVertexAttribDivisor(7, 1);
 
     glBindTexture(GL_TEXTURE_2D, mTextureIDs[i.ins.object->textureIndex]);
     glDrawElementsInstanced(
         GL_TRIANGLES, m_VertexArrays[i.ins.object->vertexIndex].indices.size(),
         GL_UNSIGNED_INT, nullptr, i.ins.data.size());
-    glDeleteBuffers(1, &vbo);
   }
 }
 
@@ -192,24 +158,24 @@ void GLRenderer::AddVertexArray(const vertex_array &vArray,
                GL_DYNAMIC_DRAW);
   size_t size = sizeof(vertex);
   // VBOをVAOに登録
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, size, 0);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, size,
-                        reinterpret_cast<void *>(sizeof(float) * 3));
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, size,
-                        reinterpret_cast<void *>(sizeof(float) * 6));
-  glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, size,
-                        reinterpret_cast<void *>(sizeof(float) * 8));
   glEnableVertexAttribArray(0);
   glEnableVertexAttribArray(1);
   glEnableVertexAttribArray(2);
   glEnableVertexAttribArray(3);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, size, 0);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, size,
+                        reinterpret_cast<void *>(sizeof(float) * 3));
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_TRUE, size,
+                        reinterpret_cast<void *>(sizeof(float) * 6));
+  glVertexAttribPointer(3, 4, GL_FLOAT, GL_TRUE, size,
+                        reinterpret_cast<void *>(sizeof(float) * 8));
   // IBOを作成
   glGenBuffers(1, &vArrayGL.ibo);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.ibo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,
                vArrayGL.indices.size() * sizeof(uint32_t),
                vArrayGL.indices.data(), GL_DYNAMIC_DRAW);
-  m_VertexArrays.emplace(name.data(), vArrayGL);
+  m_VertexArrays.insert({name.data(), vArrayGL});
 }
 void GLRenderer::UpdateVertexArray(const vertex_array &vArray,
                                    std::string_view name) {
@@ -270,8 +236,36 @@ void GLRenderer::UnloadShader(const shader &shaderInfo) {
 
 void GLRenderer::add_instancing(instancing &_instancing) {
   registerTexture(_instancing._texture);
+  auto va = m_VertexArrays[_instancing.object->vertexIndex];
+  glBindVertexArray(va.vao);
+  uint32_t vbo;
+  glGenBuffers(1, &vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBufferData(GL_ARRAY_BUFFER, _instancing.size, _instancing.data.data(),
+               GL_DYNAMIC_DRAW);
+  auto size = sizeof(instance_data);
+  glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, size,
+                        reinterpret_cast<void *>(sizeof(float) * 0));
+  glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, size,
+                        reinterpret_cast<void *>(sizeof(float) * 4));
+  glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, size,
+                        reinterpret_cast<void *>(sizeof(float) * 8));
+  glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, size,
+                        reinterpret_cast<void *>(sizeof(float) * 12));
+  glEnableVertexAttribArray(4);
+  glEnableVertexAttribArray(5);
+  glEnableVertexAttribArray(6);
+  glEnableVertexAttribArray(7);
+  glVertexAttribDivisor(4, 1);
+  glVertexAttribDivisor(5, 1);
+  glVertexAttribDivisor(6, 1);
+  glVertexAttribDivisor(7, 1);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindVertexArray(0);
+  auto ogl = ogl_instancing(_instancing);
+  ogl.vbo = vbo;
 
-  m_instancing.emplace_back(ogl_instancing(_instancing));
+  m_instancing.emplace_back(ogl);
 }
 void GLRenderer::remove_instancing(instancing &_instancing) {}
 

@@ -4,8 +4,9 @@
 #include <Nen.hpp>
 #if defined(EMSCRIPTEN) || defined(MOBILE)
 #include <SDL_opengles2.h>
-#endif
+#else
 #include <GL/glew.h>
+#endif
 #include <string>
 #include <unordered_map>
 

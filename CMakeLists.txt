@@ -28,12 +28,6 @@ if(ANDROID)
 	target_include_directories(nen PUBLIC ${INCLUDE_DIRS})
 	target_link_libraries(nen SDL2 SDL2_image SDL2_mixer SDL2_ttf SDL2_net GLESv3 log)
 elseif(EMSCRIPTEN)
-	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/example/bin)
-	set(CMAKE_BUILD_TYPE_INIT "Release")
-	set(CMAKE_C_COMPILER "emcc")
-
-	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ./build)
-	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ./build)
 
 	file(GLOB SOURCE_FILES 
 		src/Nen/*/*.cpp

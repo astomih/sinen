@@ -61,7 +61,7 @@ bool ShaderGL::CompileShader(const std::string &fileName, GLenum shaderType,
   std::stringstream sstream;
   sstream << shaderFile.rdbuf();
   std::string contents;
-#if defined __EMSCRIPTEN__ || defined MOBILE
+#if defined EMSCRIPTEN || defined MOBILE
   contents = "#version 300 es\n";
 #else
   contents = "#version 330 core\n";

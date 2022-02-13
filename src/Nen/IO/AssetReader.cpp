@@ -15,6 +15,8 @@ std::string_view asset_reader::Load(const asset_type &assetType,
 #ifndef NEN_NO_EXCEPTION
   if (!file)
     throw std::runtime_error("File open error.");
+#else
+  std::cerr << "File open error" << std::endl;
 #endif
   size_t fileLength;
   void *load = SDL_LoadFile_RW(file, &fileLength, 1);
@@ -44,12 +46,16 @@ std::string asset_reader::LoadAsString(const asset_type &assetType,
   ConvertFilePath(filePath, name, assetType);
 
   SDL_RWops *file = SDL_RWFromFile(filePath.c_str(), "r");
-  if (!file)
+  if (!file) {
+    std::cerr << "File can't open" << std::endl;
     return std::string("");
+  }
   size_t fileLength;
   void *load = SDL_LoadFile_RW(file, &fileLength, 1);
-  if (!load)
+  if (!load) {
+    std::cerr << "model can't load" << std::endl;
     return std::string("");
+  }
   std::string result{reinterpret_cast<char *>(load), fileLength};
   SDL_free(load);
   return result;

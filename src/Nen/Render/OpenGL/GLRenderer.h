@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 #include <emscripten/html5.h>
@@ -45,6 +46,7 @@ class ogl_instancing {
 public:
   ogl_instancing(instancing &ins) : ins(ins) {}
   instancing &ins;
+  uint32_t vbo;
 };
 
 class GLRenderer : public IRenderer {

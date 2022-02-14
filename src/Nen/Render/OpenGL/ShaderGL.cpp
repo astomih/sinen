@@ -1,4 +1,5 @@
 #include "ShaderGL.h"
+#include "IO/AssetReader.hpp"
 #include <Nen.hpp>
 #include <SDL_image.h>
 #include <fstream>
@@ -50,23 +51,13 @@ void ShaderGL::SetActive(const GLuint &blockIndex) {
 void ShaderGL::SetDisable() { glDisable(mShaderProgram); }
 bool ShaderGL::CompileShader(const std::string &fileName, GLenum shaderType,
                              GLuint &outShader) {
-  // Open file
-  std::ifstream shaderFile(fileName);
-  if (!shaderFile.is_open()) {
-    std::cout << "Shader file not found: " << fileName << std::endl;
-    logger::Error("Shader file not found: %s", fileName);
-    return false;
-  }
-  // Read all the text into a string
-  std::stringstream sstream;
-  sstream << shaderFile.rdbuf();
   std::string contents;
 #if defined EMSCRIPTEN || defined MOBILE
   contents = "#version 300 es\n";
 #else
   contents = "#version 330 core\n";
 #endif
-  contents += sstream.str();
+  contents += asset_reader::LoadAsString(asset_type::gl_shader, fileName);
   const char *contentsChar = contents.c_str();
 
   // Create a shader of the specified type

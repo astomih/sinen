@@ -1,7 +1,3 @@
-#include "instancing/instance_data.hpp"
-#include "instancing/instancing.hpp"
-#include "src/Nen/Render/Vulkan/VKRenderer.h"
-#include "vulkan/vulkan_core.h"
 #include <Nen.hpp>
 #include <cstddef>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
@@ -9,8 +5,7 @@
 #include "VKBase.h"
 #include "VKRenderer.h"
 #include "VulkanUtil.h"
-#include <Nen.hpp>
-
+#include "vulkan/vulkan_core.h"
 namespace nen::vk {
 void PipelineLayout::Initialize(VkDevice device,
                                 const VkDescriptorSetLayout *descriptorLayout,

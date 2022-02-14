@@ -5,7 +5,6 @@
 #include "Vertex/Vertex.hpp"
 #include "Vertex/VertexArray.hpp"
 #include "Vulkan/VKRenderer.h"
-#include "src/Nen/Render/Vulkan/VKRenderer.h"
 #include <Nen.hpp>
 
 namespace nen {

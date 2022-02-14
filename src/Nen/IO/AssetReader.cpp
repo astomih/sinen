@@ -47,13 +47,11 @@ std::string asset_reader::LoadAsString(const asset_type &assetType,
 
   SDL_RWops *file = SDL_RWFromFile(filePath.c_str(), "r");
   if (!file) {
-    std::cerr << "File can't open" << std::endl;
     return std::string("");
   }
   size_t fileLength;
   void *load = SDL_LoadFile_RW(file, &fileLength, 1);
   if (!load) {
-    std::cerr << "model can't load" << std::endl;
     return std::string("");
   }
   std::string result{reinterpret_cast<char *>(load), fileLength};
@@ -64,9 +62,6 @@ void asset_reader::ConvertFilePath(std::string &filePath, std::string_view name,
                                    const asset_type &assetType) {
 
   switch (assetType) {
-  case asset_type::Effect:
-    filePath += std::string{"data/effect/"} + name.data();
-    break;
   case asset_type::Font:
     filePath += std::string{"data/font/"} + name.data();
     break;
@@ -80,8 +75,11 @@ void asset_reader::ConvertFilePath(std::string &filePath, std::string_view name,
   case asset_type::Script:
     filePath = std::string{"data/script/"} + name.data();
     break;
-  case asset_type::Shader:
-    filePath = std::string{"data/shader/"} + name.data();
+  case asset_type::gl_shader:
+    filePath = std::string{"data/shader/GL/"} + name.data();
+    break;
+  case asset_type::vk_shader:
+    filePath = std::string{"data/shader/Vulkan/"} + name.data();
     break;
   case asset_type::Sound:
     filePath = std::string{"data/sound/"} + name.data();

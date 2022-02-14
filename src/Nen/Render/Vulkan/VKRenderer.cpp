@@ -1,8 +1,4 @@
-﻿#include "src/Nen/Render/Vulkan/VKRenderer.h"
-#include "DrawObject/ObjectType.hpp"
-#include "src/Nen/Render/Vulkan/VKBase.h"
-#include <Nen.hpp>
-#include <cwchar>
+﻿#include <Nen.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 // general
 #include <array>

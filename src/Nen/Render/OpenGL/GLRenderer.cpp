@@ -1,5 +1,4 @@
-#include "src/Nen/Render/OpenGL/GLRenderer.h"
-#include "DrawObject/ObjectType.hpp"
+
 #include <Nen.hpp>
 
 #include <SDL.h>
@@ -327,23 +326,19 @@ void GLRenderer::registerTexture(std::shared_ptr<texture> texture) {
 
 bool GLRenderer::loadShader() {
   shader_parameter param{};
-  if (!mSpriteShader.Load("data/shader/GL/shader.vert",
-                          "data/shader/GL/shader.frag")) {
+  if (!mSpriteShader.Load("shader.vert", "shader.frag")) {
     return false;
   }
   mSpriteShader.CreateUBO(0, sizeof(shader_parameter), &param);
-  if (!mAlphaShader.Load("data/shader/GL/shader.vert",
-                         "data/shader/GL/alpha.frag")) {
+  if (!mAlphaShader.Load("shader.vert", "alpha.frag")) {
     return false;
   }
   mAlphaShader.CreateUBO(0, sizeof(shader_parameter), &param);
-  if (!mSpriteInstanceShader.Load("data/shader/GL/shader_instance.vert",
-                                  "data/shader/GL/shader.frag")) {
+  if (!mSpriteInstanceShader.Load("shader_instance.vert", "shader.frag")) {
     return false;
   }
   mSpriteInstanceShader.CreateUBO(0, sizeof(shader_parameter), &param);
-  if (!mAlphaInstanceShader.Load("data/shader/GL/shader_instance.vert",
-                                 "data/shader/GL/alpha.frag")) {
+  if (!mAlphaInstanceShader.Load("shader_instance.vert", "alpha.frag")) {
     return false;
   }
   mAlphaInstanceShader.CreateUBO(0, sizeof(shader_parameter), &param);

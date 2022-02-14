@@ -1,12 +1,12 @@
 #pragma once
 namespace nen {
 enum class asset_type {
-  Effect,
   Font,
   Model,
   Music,
   Script,
-  Shader,
+  gl_shader,
+  vk_shader,
   Sound,
   Texture
 };

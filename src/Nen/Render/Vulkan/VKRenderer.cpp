@@ -1,4 +1,5 @@
 ﻿#include "src/Nen/Render/Vulkan/VKRenderer.h"
+#include "DrawObject/ObjectType.hpp"
 #include "src/Nen/Render/Vulkan/VKBase.h"
 #include <Nen.hpp>
 #include <cwchar>
@@ -182,29 +183,58 @@ void VKRenderer::add_instancing(instancing &_instancing) {
                                         VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
   write_memory(vi.instance_buffer.allocation, _instancing.data.data(),
                _instancing.size);
-  m_instancies.push_back(vi);
+  if (_instancing.type == object_type::_2D) {
+    m_instancies_2d.push_back(vi);
+  } else {
+    m_instancies_3d.push_back(vi);
+  }
 }
 
-void VKRenderer::prepare_instancing(vulkan_instancing &_instancing,
-                                    VkCommandBuffer command) {
-  vkCmdBindDescriptorSets(
-      command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout.GetLayout(), 0,
-      1, &_instancing.vk_draw_object->descripterSet[m_base->m_imageIndex], 0,
-      nullptr);
-  auto allocation =
-      _instancing.vk_draw_object->uniformBuffers[m_base->m_imageIndex]
-          .allocation;
-  write_memory(allocation, &_instancing.vk_draw_object->drawObject->param,
-               sizeof(shader_parameter));
-  std::string index = _instancing.ins.object->vertexIndex;
-  VkBuffer buffers[] = {m_VertexArrays[index].vertexBuffer.buffer,
-                        _instancing.instance_buffer.buffer};
-  VkDeviceSize offsets[] = {0, 0};
-  vkCmdBindVertexBuffers(command, 0, 2, buffers, offsets);
-  vkCmdBindIndexBuffer(command, m_VertexArrays[index].indexBuffer.buffer, 0,
-                       VK_INDEX_TYPE_UINT32);
-  vkCmdDrawIndexed(command, m_VertexArrays[index].indexCount,
-                   _instancing.ins.data.size(), 0, 0, 0);
+void VKRenderer::draw_instancing_3d(VkCommandBuffer command) {
+  for (auto &_instancing : m_instancies_3d) {
+    pipelineInstancingOpaque.Bind(command);
+    vkCmdBindDescriptorSets(
+        command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout.GetLayout(),
+        0, 1, &_instancing.vk_draw_object->descripterSet[m_base->m_imageIndex],
+        0, nullptr);
+    auto allocation =
+        _instancing.vk_draw_object->uniformBuffers[m_base->m_imageIndex]
+            .allocation;
+    write_memory(allocation, &_instancing.vk_draw_object->drawObject->param,
+                 sizeof(shader_parameter));
+    std::string index = _instancing.ins.object->vertexIndex;
+    VkBuffer buffers[] = {m_VertexArrays[index].vertexBuffer.buffer,
+                          _instancing.instance_buffer.buffer};
+    VkDeviceSize offsets[] = {0, 0};
+    vkCmdBindVertexBuffers(command, 0, 2, buffers, offsets);
+    vkCmdBindIndexBuffer(command, m_VertexArrays[index].indexBuffer.buffer, 0,
+                         VK_INDEX_TYPE_UINT32);
+    vkCmdDrawIndexed(command, m_VertexArrays[index].indexCount,
+                     _instancing.ins.data.size(), 0, 0, 0);
+  }
+}
+void VKRenderer::draw_instancing_2d(VkCommandBuffer command) {
+  for (auto &_instancing : m_instancies_2d) {
+    pipelineInstancing2D.Bind(command);
+    vkCmdBindDescriptorSets(
+        command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout.GetLayout(),
+        0, 1, &_instancing.vk_draw_object->descripterSet[m_base->m_imageIndex],
+        0, nullptr);
+    auto allocation =
+        _instancing.vk_draw_object->uniformBuffers[m_base->m_imageIndex]
+            .allocation;
+    write_memory(allocation, &_instancing.vk_draw_object->drawObject->param,
+                 sizeof(shader_parameter));
+    std::string index = _instancing.ins.object->vertexIndex;
+    VkBuffer buffers[] = {m_VertexArrays[index].vertexBuffer.buffer,
+                          _instancing.instance_buffer.buffer};
+    VkDeviceSize offsets[] = {0, 0};
+    vkCmdBindVertexBuffers(command, 0, 2, buffers, offsets);
+    vkCmdBindIndexBuffer(command, m_VertexArrays[index].indexBuffer.buffer, 0,
+                         VK_INDEX_TYPE_UINT32);
+    vkCmdDrawIndexed(command, m_VertexArrays[index].indexCount,
+                     _instancing.ins.data.size(), 0, 0, 0);
+  }
 }
 
 void VKRenderer::remove_instancing(instancing &_instancing) {}
@@ -386,7 +416,9 @@ void VKRenderer::makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri,
                     (m_base->mSwapchain->GetSurfaceExtent().height)}};
   vkCmdBeginRenderPass(command, &ri, VK_SUBPASS_CONTENTS_INLINE);
   draw3d(command);
+  draw_instancing_3d(command);
   draw2d(command);
+  draw_instancing_2d(command);
   drawGUI(command);
   renderImGUI(command);
   pipelineOpaque.Bind(command);
@@ -427,10 +459,6 @@ void VKRenderer::draw3d(VkCommandBuffer command) {
     write_memory(allocation, &sprite->drawObject->param,
                  sizeof(shader_parameter));
     vkCmdDrawIndexed(command, m_VertexArrays[index].indexCount, 1, 0, 0, 0);
-  }
-  for (auto &i : m_instancies) {
-    pipelineInstancingOpaque.Bind(command);
-    prepare_instancing(i, command);
   }
 }
 

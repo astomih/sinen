@@ -1,3 +1,5 @@
+#include "src/Nen/Render/OpenGL/GLRenderer.h"
+#include "DrawObject/ObjectType.hpp"
 #include <Nen.hpp>
 
 #include <SDL.h>
@@ -57,11 +59,13 @@ void GLRenderer::Render() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glEnable(GL_DEPTH_TEST);
   draw_3d();
+  draw_instancing_3d();
   glDisable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
   glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
   glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
   draw_2d();
+  draw_instancing_2d();
   glDisable(GL_BLEND);
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplSDL2_NewFrame((SDL_Window *)mWindow->GetSDLWindow());
@@ -102,7 +106,10 @@ void GLRenderer::draw_3d() {
     glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indices.size(),
                    GL_UNSIGNED_INT, nullptr);
   }
-  for (auto &i : m_instancing) {
+}
+void GLRenderer::draw_instancing_3d() {
+
+  for (auto &i : m_instancing_3d) {
     mSpriteInstanceShader.SetActive(0);
     mSpriteInstanceShader.UpdateUBO(0, sizeof(shader_parameter),
                                     &i.ins.object->param);
@@ -138,6 +145,22 @@ void GLRenderer::draw_2d() {
   }
 }
 
+void GLRenderer::draw_instancing_2d() {
+  for (auto &i : m_instancing_2d) {
+    mAlphaInstanceShader.SetActive(0);
+    mAlphaInstanceShader.UpdateUBO(0, sizeof(shader_parameter),
+                                   &i.ins.object->param);
+
+    auto va = m_VertexArrays[i.ins.object->vertexIndex];
+    glBindVertexArray(va.vao);
+
+    glBindTexture(GL_TEXTURE_2D, mTextureIDs[i.ins.object->textureIndex]);
+    glDrawElementsInstanced(
+        GL_TRIANGLES, m_VertexArrays[i.ins.object->vertexIndex].indices.size(),
+        GL_UNSIGNED_INT, nullptr, i.ins.data.size());
+  }
+}
+
 void GLRenderer::AddVertexArray(const vertex_array &vArray,
                                 std::string_view name) {
   gl::VertexArrayForGL vArrayGL;
@@ -162,12 +185,12 @@ void GLRenderer::AddVertexArray(const vertex_array &vArray,
   glEnableVertexAttribArray(1);
   glEnableVertexAttribArray(2);
   glEnableVertexAttribArray(3);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, size, 0);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, size,
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, size, 0);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, size,
                         reinterpret_cast<void *>(sizeof(float) * 3));
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_TRUE, size,
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, size,
                         reinterpret_cast<void *>(sizeof(float) * 6));
-  glVertexAttribPointer(3, 4, GL_FLOAT, GL_TRUE, size,
+  glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, size,
                         reinterpret_cast<void *>(sizeof(float) * 8));
   // IBOを作成
   glGenBuffers(1, &vArrayGL.ibo);
@@ -265,7 +288,12 @@ void GLRenderer::add_instancing(instancing &_instancing) {
   auto ogl = ogl_instancing(_instancing);
   ogl.vbo = vbo;
 
-  m_instancing.emplace_back(ogl);
+  if (_instancing.type == object_type::_2D) {
+    m_instancing_2d.emplace_back(ogl);
+
+  } else {
+    m_instancing_3d.emplace_back(ogl);
+  }
 }
 void GLRenderer::remove_instancing(instancing &_instancing) {}
 

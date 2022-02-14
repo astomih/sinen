@@ -120,6 +120,8 @@ private:
   bool loadShader();
   void draw_3d();
   void draw_2d();
+  void draw_instancing_2d();
+  void draw_instancing_3d();
 
   std::string vertexID;
 
@@ -134,7 +136,8 @@ private:
   ::SDL_GLContext mContext;
   std::vector<std::shared_ptr<draw_object>> mSprite2Ds;
   std::vector<std::shared_ptr<draw_object>> mSprite3Ds;
-  std::vector<ogl_instancing> m_instancing;
+  std::vector<ogl_instancing> m_instancing_2d;
+  std::vector<ogl_instancing> m_instancing_3d;
 };
 } // namespace gl
 } // namespace nen

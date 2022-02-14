@@ -51,6 +51,7 @@ elseif(EMSCRIPTEN)
 		${NEN_INCLUDE_DIRECTORIES}
 	)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 \
+		-Wno-unused-command-line-argument \
 		-s USE_WEBGL2=1 \
 		-s FULL_ES3=1 \
 		-s SDL2_IMAGE_FORMATS='[\"png\"]' \

@@ -127,8 +127,8 @@ private:
   void prepareDescriptorSet(std::shared_ptr<VulkanDrawObject>);
   void prepareImGUI();
   void renderImGUI(VkCommandBuffer command);
-  void prepare_instancing(vulkan_instancing &vk_instancing,
-                          VkCommandBuffer command);
+  void draw_instancing_3d(VkCommandBuffer command);
+  void draw_instancing_2d(VkCommandBuffer command);
   VkSampler createSampler();
   ImageObject create_texture(SDL_Surface *imagedata, VkFormat format);
   ImageObject createTextureFromSurface(const ::SDL_Surface &surface);
@@ -157,7 +157,8 @@ private:
   std::vector<std::shared_ptr<VulkanDrawObject>> mDrawObject2D;
   std::unordered_map<std::string, ImageObject> mImageObjects;
   std::vector<std::shared_ptr<class ui_screen>> mGUI;
-  std::vector<vulkan_instancing> m_instancies;
+  std::vector<vulkan_instancing> m_instancies_3d;
+  std::vector<vulkan_instancing> m_instancies_2d;
   BufferObject m_instance_buffer;
 };
 } // namespace nen::vk

@@ -237,10 +237,7 @@ void GLRenderer::RemoveDrawObject3D(std::shared_ptr<class draw_object> sprite) {
 
 void GLRenderer::LoadShader(const shader &shaderInfo) {
   ShaderGL pipeline;
-  pipeline.Load(std::string("data/shader/GL/") + shaderInfo.vertName +
-                    std::string(".vert"),
-                std::string("data/shader/GL/") + shaderInfo.fragName +
-                    std::string(".frag"));
+  pipeline.Load(shaderInfo.vertName, shaderInfo.fragName);
   shader_parameter param;
   pipeline.CreateUBO(0, sizeof(shader_parameter), &param);
   userPipelines.emplace_back(std::pair<shader, ShaderGL>{shaderInfo, pipeline});

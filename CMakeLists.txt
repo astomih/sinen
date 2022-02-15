@@ -60,6 +60,7 @@ elseif(EMSCRIPTEN)
 		-s USE_SDL_TTF=2 \
 		-s USE_SDL_MIXER=2 \
 		-s USE_SDL_NET=2 \
+		-s WASM=1 \
 		-std=c++20"
 	)
 else()	

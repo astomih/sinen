@@ -1,19 +1,16 @@
-﻿#include <Nen.hpp>
+﻿#include "IO/AssetReader.hpp"
+#include <Nen.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
-#include "VulkanShader.h"
 #include "VKBase.h"
+#include "VulkanShader.h"
 #include <fstream>
 
 namespace nen::vk {
 VkPipelineShaderStageCreateInfo
 VulkanShader::LoadModule(VkDevice device, const char *fileName,
                          VkShaderStageFlagBits stage) {
-  std::ifstream infile(fileName, std::ios::binary);
-  if (!infile) {
-  }
-  std::vector<char> filedata;
-  filedata.resize(uint32_t(infile.seekg(0, std::ifstream::end).tellg()));
-  infile.seekg(0, std::ifstream::beg).read(filedata.data(), filedata.size());
+  std::string filedata =
+      asset_reader::LoadAsString(asset_type::vk_shader, fileName);
 
   VkShaderModule shaderModule;
   VkShaderModuleCreateInfo ci{};

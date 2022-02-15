@@ -127,16 +127,10 @@ void VKRenderer::RemoveGUI(std::shared_ptr<ui_screen> ui) {
 void VKRenderer::LoadShader(const shader &shaderInfo) {
   std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
       VulkanShader::LoadModule(m_base->get_vk_device(),
-                               std::string(std::string("data/shader/Vulkan/") +
-                                           shaderInfo.vertName +
-                                           std::string(".vert.spv"))
-                                   .c_str(),
+                               shaderInfo.vertName.c_str(),
                                VK_SHADER_STAGE_VERTEX_BIT),
       VulkanShader::LoadModule(m_base->get_vk_device(),
-                               std::string(std::string("data/shader/Vulkan/") +
-                                           shaderInfo.fragName +
-                                           std::string(".frag.spv"))
-                                   .c_str(),
+                               shaderInfo.fragName.c_str(),
                                VK_SHADER_STAGE_FRAGMENT_BIT)};
   Pipeline pipeline;
   pipeline.Initialize(mPipelineLayout, m_base->m_renderPass, shaderStages);
@@ -250,11 +244,10 @@ void VKRenderer::prepare() {
   // Opaque pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-        VulkanShader::LoadModule(m_base->get_vk_device(),
-                                 "data/shader/Vulkan/shader.vert.spv",
+        VulkanShader::LoadModule(m_base->get_vk_device(), "shader.vert.spv",
                                  VK_SHADER_STAGE_VERTEX_BIT),
         VulkanShader::LoadModule(m_base->get_vk_device(),
-                                 "data/shader/Vulkan/shaderOpaque.frag.spv",
+                                 "shaderOpaque.frag.spv",
                                  VK_SHADER_STAGE_FRAGMENT_BIT)};
     pipelineOpaque.Initialize(mPipelineLayout, m_base->m_renderPass,
                               shaderStages);
@@ -267,11 +260,10 @@ void VKRenderer::prepare() {
   // alpha pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-        VulkanShader::LoadModule(m_base->get_vk_device(),
-                                 "data/shader/Vulkan/shader.vert.spv",
+        VulkanShader::LoadModule(m_base->get_vk_device(), "shader.vert.spv",
                                  VK_SHADER_STAGE_VERTEX_BIT),
         VulkanShader::LoadModule(m_base->get_vk_device(),
-                                 "data/shader/Vulkan/shaderAlpha.frag.spv",
+                                 "shaderAlpha.frag.spv",
                                  VK_SHADER_STAGE_FRAGMENT_BIT)};
     pipelineAlpha.Initialize(mPipelineLayout, m_base->m_renderPass,
                              shaderStages);
@@ -287,11 +279,10 @@ void VKRenderer::prepare() {
   // 2D pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-        VulkanShader::LoadModule(m_base->get_vk_device(),
-                                 "data/shader/Vulkan/shader.vert.spv",
+        VulkanShader::LoadModule(m_base->get_vk_device(), "shader.vert.spv",
                                  VK_SHADER_STAGE_VERTEX_BIT),
         VulkanShader::LoadModule(m_base->get_vk_device(),
-                                 "data/shader/Vulkan/shaderAlpha.frag.spv",
+                                 "shaderAlpha.frag.spv",
                                  VK_SHADER_STAGE_FRAGMENT_BIT)};
     pipeline2D.Initialize(mPipelineLayout, m_base->m_renderPass, shaderStages);
     pipeline2D.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
@@ -310,10 +301,10 @@ void VKRenderer::prepare() {
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
         VulkanShader::LoadModule(m_base->get_vk_device(),
-                                 "data/shader/Vulkan/shader_instance.vert.spv",
+                                 "shader_instance.vert.spv",
                                  VK_SHADER_STAGE_VERTEX_BIT),
         VulkanShader::LoadModule(m_base->get_vk_device(),
-                                 "data/shader/Vulkan/shaderOpaque.frag.spv",
+                                 "shaderOpaque.frag.spv",
                                  VK_SHADER_STAGE_FRAGMENT_BIT)};
     pipelineInstancingOpaque.Initialize(mPipelineLayout, m_base->m_renderPass,
                                         shaderStages);
@@ -329,10 +320,10 @@ void VKRenderer::prepare() {
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
         VulkanShader::LoadModule(m_base->get_vk_device(),
-                                 "data/shader/Vulkan/shader_instance.vert.spv",
+                                 "shader_instance.vert.spv",
                                  VK_SHADER_STAGE_VERTEX_BIT),
         VulkanShader::LoadModule(m_base->get_vk_device(),
-                                 "data/shader/Vulkan/shaderAlpha.frag.spv",
+                                 "shaderAlpha.frag.spv",
                                  VK_SHADER_STAGE_FRAGMENT_BIT)};
     pipelineInstancingAlpha.Initialize(mPipelineLayout, m_base->m_renderPass,
                                        shaderStages);
@@ -349,10 +340,10 @@ void VKRenderer::prepare() {
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
         VulkanShader::LoadModule(m_base->get_vk_device(),
-                                 "data/shader/Vulkan/shader_instance.vert.spv",
+                                 "shader_instance.vert.spv",
                                  VK_SHADER_STAGE_VERTEX_BIT),
         VulkanShader::LoadModule(m_base->get_vk_device(),
-                                 "data/shader/Vulkan/shaderAlpha.frag.spv",
+                                 "shaderAlpha.frag.spv",
                                  VK_SHADER_STAGE_FRAGMENT_BIT)};
     pipelineInstancing2D.Initialize(mPipelineLayout, m_base->m_renderPass,
                                     shaderStages);

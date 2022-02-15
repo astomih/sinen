@@ -88,7 +88,8 @@ void GLRenderer::Render() {
 
 void GLRenderer::draw_3d() {
   for (auto &i : mSprite3Ds) {
-    glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
+    auto va = m_VertexArrays[i->vertexIndex];
+    glBindVertexArray(va.vao);
     if (i->shader_data.vertName == "default" &&
         i->shader_data.fragName == "default") {
       mSpriteShader.SetActive(0);
@@ -104,6 +105,7 @@ void GLRenderer::draw_3d() {
     glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
     glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indices.size(),
                    GL_UNSIGNED_INT, nullptr);
+    glBindVertexArray(0);
   }
 }
 void GLRenderer::draw_instancing_3d() {
@@ -120,6 +122,7 @@ void GLRenderer::draw_instancing_3d() {
     glDrawElementsInstanced(
         GL_TRIANGLES, m_VertexArrays[i.ins.object->vertexIndex].indices.size(),
         GL_UNSIGNED_INT, nullptr, i.ins.data.size());
+    glBindVertexArray(0);
   }
 }
 
@@ -141,6 +144,7 @@ void GLRenderer::draw_2d() {
     glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
     glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indices.size(),
                    GL_UNSIGNED_INT, nullptr);
+    glBindVertexArray(0);
   }
 }
 
@@ -157,6 +161,7 @@ void GLRenderer::draw_instancing_2d() {
     glDrawElementsInstanced(
         GL_TRIANGLES, m_VertexArrays[i.ins.object->vertexIndex].indices.size(),
         GL_UNSIGNED_INT, nullptr, i.ins.data.size());
+    glBindVertexArray(0);
   }
 }
 
@@ -177,7 +182,7 @@ void GLRenderer::AddVertexArray(const vertex_array &vArray,
   glBindBuffer(GL_ARRAY_BUFFER, vArrayGL.vbo);
   auto vArraySize = vArrayGL.vertices.size() * sizeof(vertex);
   glBufferData(GL_ARRAY_BUFFER, vArraySize, vArrayGL.vertices.data(),
-               GL_DYNAMIC_DRAW);
+               GL_STATIC_DRAW);
   size_t size = sizeof(vertex);
   // VBOをVAOに登録
   glEnableVertexAttribArray(0);
@@ -196,8 +201,11 @@ void GLRenderer::AddVertexArray(const vertex_array &vArray,
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.ibo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,
                vArrayGL.indices.size() * sizeof(uint32_t),
-               vArrayGL.indices.data(), GL_DYNAMIC_DRAW);
-  m_VertexArrays.insert({name.data(), vArrayGL});
+               vArrayGL.indices.data(), GL_STATIC_DRAW);
+  m_VertexArrays.emplace(std::string(name), vArrayGL);
+  glBindVertexArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 void GLRenderer::UpdateVertexArray(const vertex_array &vArray,
                                    std::string_view name) {

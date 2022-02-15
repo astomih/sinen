@@ -269,7 +269,7 @@ void GLRenderer::add_instancing(instancing &_instancing) {
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, _instancing.size, _instancing.data.data(),
-               GL_DYNAMIC_DRAW);
+               GL_STATIC_DRAW);
   auto size = sizeof(instance_data);
   glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, size,
                         reinterpret_cast<void *>(sizeof(float) * 0));

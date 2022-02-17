@@ -180,30 +180,29 @@ void GLRenderer::AddVertexArray(const vertex_array &vArray,
   vArrayGL.vertices = vArray.vertices;
   vArrayGL.materialName = vArray.materialName;
 
-  // VAOを作成
+  // Create vao
   glGenVertexArrays(1, &vArrayGL.vao);
   glBindVertexArray(vArrayGL.vao);
 
-  // VBOを作成
+  // Create vbo
   glGenBuffers(1, &vArrayGL.vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vArrayGL.vbo);
   auto vArraySize = vArrayGL.vertices.size() * sizeof(vertex);
   glBufferData(GL_ARRAY_BUFFER, vArraySize, vArrayGL.vertices.data(),
-               GL_DYNAMIC_DRAW);
-  size_t size = sizeof(vertex);
-  // VBOをVAOに登録
+               GL_STATIC_DRAW);
+  // Prepare vertex attribute
   glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 12 * sizeof(float), 0);
   glEnableVertexAttribArray(1);
-  glEnableVertexAttribArray(2);
-  glEnableVertexAttribArray(3);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, size, 0);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, size,
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 12 * sizeof(float),
                         reinterpret_cast<void *>(sizeof(float) * 3));
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, size,
+  glEnableVertexAttribArray(2);
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_TRUE, 12 * sizeof(float),
                         reinterpret_cast<void *>(sizeof(float) * 6));
-  glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, size,
+  glEnableVertexAttribArray(3);
+  glVertexAttribPointer(3, 4, GL_FLOAT, GL_TRUE, 12 * sizeof(float),
                         reinterpret_cast<void *>(sizeof(float) * 8));
-  // IBOを作成
+  // Create IBO
   glGenBuffers(1, &vArrayGL.ibo);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.ibo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,
@@ -211,8 +210,6 @@ void GLRenderer::AddVertexArray(const vertex_array &vArray,
                vArrayGL.indices.data(), GL_STATIC_DRAW);
   m_VertexArrays.emplace(std::string(name), vArrayGL);
   glBindVertexArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 void GLRenderer::UpdateVertexArray(const vertex_array &vArray,
                                    std::string_view name) {

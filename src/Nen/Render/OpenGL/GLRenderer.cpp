@@ -31,6 +31,8 @@ void GLRenderer::Initialize(std::shared_ptr<window> window) {
   mWindow = window;
   mContext = SDL_GL_CreateContext((SDL_Window *)mWindow->GetSDLWindow());
   SDL_GL_MakeCurrent((SDL_Window *)mWindow->GetSDLWindow(), mContext);
+  prev_window_x = mWindow->Size().x;
+  prev_window_y = mWindow->Size().y;
 #if !defined EMSCRIPTEN && !defined MOBILE
   glewExperimental = GL_TRUE;
   if (glewInit() != GLEW_OK) {
@@ -52,7 +54,12 @@ void GLRenderer::Initialize(std::shared_ptr<window> window) {
 void GLRenderer::SetRenderer(renderer *renderer) { mRenderer = renderer; }
 
 void GLRenderer::Render() {
-  glViewport(0, 0, mWindow->Size().x, mWindow->Size().y);
+  if (mWindow->Size().x != prev_window_x ||
+      mWindow->Size().y != prev_window_y) {
+    glViewport(0, 0, mWindow->Size().x, mWindow->Size().y);
+    prev_window_x = mWindow->Size().x;
+    prev_window_y = mWindow->Size().y;
+  }
   auto color = mRenderer->GetClearColor();
   glClearColor(color.r, color.g, color.b, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -182,7 +189,7 @@ void GLRenderer::AddVertexArray(const vertex_array &vArray,
   glBindBuffer(GL_ARRAY_BUFFER, vArrayGL.vbo);
   auto vArraySize = vArrayGL.vertices.size() * sizeof(vertex);
   glBufferData(GL_ARRAY_BUFFER, vArraySize, vArrayGL.vertices.data(),
-               GL_STATIC_DRAW);
+               GL_DYNAMIC_DRAW);
   size_t size = sizeof(vertex);
   // VBOをVAOに登録
   glEnableVertexAttribArray(0);
@@ -269,7 +276,7 @@ void GLRenderer::add_instancing(instancing &_instancing) {
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, _instancing.size, _instancing.data.data(),
-               GL_STATIC_DRAW);
+               GL_DYNAMIC_DRAW);
   auto size = sizeof(instance_data);
   glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, size,
                         reinterpret_cast<void *>(sizeof(float) * 0));

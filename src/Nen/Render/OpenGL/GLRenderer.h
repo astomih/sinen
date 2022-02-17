@@ -138,6 +138,8 @@ private:
   std::vector<std::shared_ptr<draw_object>> mSprite3Ds;
   std::vector<ogl_instancing> m_instancing_2d;
   std::vector<ogl_instancing> m_instancing_3d;
+  float prev_window_x;
+  float prev_window_y;
 };
 } // namespace gl
 } // namespace nen

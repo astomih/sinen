@@ -44,6 +44,13 @@ void GLRenderer::Initialize(std::shared_ptr<window> window) {
   prepare();
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
+  ImGuiIO &io = ImGui::GetIO();
+  (void)io;
+  io.ConfigFlags |=
+      ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+  io.ConfigFlags |=
+      ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
+  io.IniFilename = NULL;
   ImGui_ImplSDL2_InitForOpenGL((SDL_Window *)window->GetSDLWindow(), mContext);
 #if defined EMSCRIPTEN || defined MOBILE
   ImGui_ImplOpenGL3_Init("#version 300 es");
@@ -81,10 +88,12 @@ void GLRenderer::Render() {
     // Draw ImGUI widgets.
     ImGui::Begin("Engine Info");
     ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
     if (ImGui::Button("toggleAPI")) {
       std::ofstream ofs("./api");
       ofs << "Vulkan";
     }
+#endif
     ImGui::End();
   }
 
@@ -112,7 +121,6 @@ void GLRenderer::draw_3d() {
     glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
     glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indices.size(),
                    GL_UNSIGNED_INT, nullptr);
-    glBindVertexArray(0);
   }
 }
 void GLRenderer::draw_instancing_3d() {
@@ -129,7 +137,6 @@ void GLRenderer::draw_instancing_3d() {
     glDrawElementsInstanced(
         GL_TRIANGLES, m_VertexArrays[i.ins.object->vertexIndex].indices.size(),
         GL_UNSIGNED_INT, nullptr, i.ins.data.size());
-    glBindVertexArray(0);
   }
 }
 
@@ -151,7 +158,6 @@ void GLRenderer::draw_2d() {
     glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
     glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indices.size(),
                    GL_UNSIGNED_INT, nullptr);
-    glBindVertexArray(0);
   }
 }
 
@@ -168,7 +174,6 @@ void GLRenderer::draw_instancing_2d() {
     glDrawElementsInstanced(
         GL_TRIANGLES, m_VertexArrays[i.ins.object->vertexIndex].indices.size(),
         GL_UNSIGNED_INT, nullptr, i.ins.data.size());
-    glBindVertexArray(0);
   }
 }
 
@@ -209,7 +214,6 @@ void GLRenderer::AddVertexArray(const vertex_array &vArray,
                vArrayGL.indices.size() * sizeof(uint32_t),
                vArrayGL.indices.data(), GL_STATIC_DRAW);
   m_VertexArrays.emplace(std::string(name), vArrayGL);
-  glBindVertexArray(0);
 }
 void GLRenderer::UpdateVertexArray(const vertex_array &vArray,
                                    std::string_view name) {
@@ -291,8 +295,6 @@ void GLRenderer::add_instancing(instancing &_instancing) {
   glVertexAttribDivisor(5, 1);
   glVertexAttribDivisor(6, 1);
   glVertexAttribDivisor(7, 1);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glBindVertexArray(0);
   auto ogl = ogl_instancing(_instancing);
   ogl.vbo = vbo;
 

@@ -43,9 +43,9 @@ void ShaderGL::Unload() {
 
 void ShaderGL::SetActive(const GLuint &blockIndex) {
   // Set this program as the active one
-  glUseProgram(mShaderProgram);
   glBindBufferBase(GL_UNIFORM_BUFFER, 1, blockIndexBuffers[blockIndex]);
   glUniformBlockBinding(mShaderProgram, blockIndex, 1);
+  glUseProgram(mShaderProgram);
 }
 
 void ShaderGL::SetDisable() { glDisable(mShaderProgram); }
@@ -111,7 +111,6 @@ bool ShaderGL::CreateUBO(const GLuint &blockIndex, const size_t &size,
   glBindBuffer(GL_UNIFORM_BUFFER, BIB);
   glBufferData(GL_UNIFORM_BUFFER, size, data, GL_STREAM_DRAW);
   glUniformBlockBinding(mShaderProgram, blockIndex, 1);
-  glBindBuffer(GL_UNIFORM_BUFFER, 0);
   blockIndexBuffers.emplace(blockIndex, BIB);
   return true;
 }
@@ -119,10 +118,7 @@ bool ShaderGL::CreateUBO(const GLuint &blockIndex, const size_t &size,
 void ShaderGL::UpdateUBO(const GLuint &blockIndex, const size_t &size,
                          const void *data, const GLsizeiptr &offset) {
   auto BIB = blockIndexBuffers[blockIndex];
-
-  glBindBuffer(GL_UNIFORM_BUFFER, BIB);
   glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
-  glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 } // namespace nen::gl

@@ -1,4 +1,4 @@
-﻿#include "../event/current_event.hpp"
+#include "../event/current_event.hpp"
 #include "Input/KeyCode.hpp"
 #include "Utility/Singleton.hpp"
 #include "imgui.h"
@@ -13,20 +13,15 @@ namespace nen {
 std::uint32_t base_scene::m_default_handle = 0;
 
 void base_scene::Initialize() {
-  // シーンのデータを読み込み
   Setup();
   logger::Info("Scene setup.");
-  // デルタタイムを読み込み
   mTicksCount = SDL_GetTicks();
 }
 
-/*
-        メインループ
-*/
 void base_scene::RunLoop() {
   ProcessInput();
   UpdateScene();
-  // draw sprites, meshes
+  // Draw sprites, meshes
   mRenderer->Draw();
   mInputSystem->PrepareForUpdate();
   mInputSystem->Update();

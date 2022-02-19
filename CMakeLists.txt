@@ -17,7 +17,6 @@ if(ANDROID)
 			libs/ImGui/include
 			libs/sol2/include
 			libs/Lua/include
-			libs/rapidjson/include
 			libs/mojoAL
 			../SDL2/include
 			../SDL2_net
@@ -43,7 +42,6 @@ elseif(EMSCRIPTEN)
 		libs/ImGui/include
 		libs/sol2/include
 		libs/Lua/include
-		libs/rapidjson/include
 	)
 
 
@@ -99,7 +97,6 @@ else()
 			libs/ImGui/include
 			libs/sol2/include
 			libs/Lua/include
-			libs/rapidjson/include
 			libs/VulkanMemoryAllocator/include
 			)
 

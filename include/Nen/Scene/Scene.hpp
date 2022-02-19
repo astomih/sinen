@@ -92,11 +92,7 @@ public:
    * @return T& Actor object
    */
   template <class T> T &get_actor(std::uint32_t stored_value) {
-    auto it = m_actor_map.find(stored_value);
-    if (it == m_actor_map.end()) {
-      throw std::runtime_error("actor not found");
-    }
-    base_actor *ptr = it->second.get();
+    base_actor *ptr = m_actor_map[stored_value].get();
     return *static_cast<T *>(ptr);
   }
 

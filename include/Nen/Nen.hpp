@@ -53,9 +53,6 @@
 #include "exception/exception.hpp"
 #include "instancing/instancing.hpp"
 #include "manager/manager.hpp"
-#include "Json/JsonReader.hpp"
-#include "Json/JsonWriter.hpp"
-
 
 #endif
 #ifdef NO_USE_NEN_NAMESPACE

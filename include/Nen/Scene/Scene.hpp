@@ -75,14 +75,10 @@ public:
   T &add_actor(std::uint32_t &store_value = m_default_handle,
                _Args &&...__args) {
     auto actor = std::make_unique<T>(*this, std::forward<_Args>(__args)...);
-    store_value = m_next_handle++;
-    if (mUpdatingActors) {
-      m_pending_actor_map.emplace(store_value, std::move(actor));
-    } else {
-      m_actor_map.emplace(store_value, std::move(actor));
-    }
+    store_value = search_space_actor_map();
+    m_actor_map.emplace(store_value, std::move(actor));
     base_actor *ptr = m_actor_map[store_value].get();
-    return *static_cast<T *>(ptr);
+    return *reinterpret_cast<T *>(ptr);
   }
   /**
    * @brief Get the actor object
@@ -93,7 +89,7 @@ public:
    */
   template <class T> T &get_actor(std::uint32_t stored_value) {
     base_actor *ptr = m_actor_map[stored_value].get();
-    return *static_cast<T *>(ptr);
+    return *reinterpret_cast<T *>(ptr);
   }
 
   /**
@@ -180,80 +176,20 @@ protected:
   virtual void Update(float deltaTime);
 
 private:
-  /**
-   * @brief Unload scene data
-   *
-   */
   void UnloadData();
-  /**
-   * @brief Process Input
-   *
-   */
   void ProcessInput();
-  /**
-   * @brief Update Scene impl
-   *
-   */
   void UpdateScene();
-  /**
-   * @brief actor map
-   *
-   */
+  uint32_t search_space_actor_map();
   std::unordered_map<std::uint32_t, std::unique_ptr<class base_actor>>
       m_actor_map;
-  /**
-   * @brief pending actor map
-   *
-   */
-  std::unordered_map<std::uint32_t, std::unique_ptr<class base_actor>>
-      m_pending_actor_map;
-  /**
-   * @brief input system
-   *
-   */
   std::shared_ptr<class input_system> mInputSystem;
-  /**
-   * @brief sound system
-   *
-   */
   std::shared_ptr<class sound_system> mSoundSystem;
-  /**
-   * @brief renderer
-   *
-   */
   std::shared_ptr<class renderer> mRenderer;
-  /**
-   * @brief state
-   *
-   */
   game_state mGameState = game_state::Gameplay;
-  /**
-   * @brief tick count
-   *
-   */
   uint32_t mTicksCount = 0;
-  /**
-   * @brief next handle
-   *
-   */
-  std::uint32_t m_next_handle = 0;
-
-  /**
-   * @brief Default handler
-   *
-   */
-  static std::uint32_t m_default_handle;
-  /**
-   * @brief is updating actors
-   *
-   */
   bool mUpdatingActors = false;
+  static std::uint32_t m_default_handle;
 };
-/**
- * @brief Change scene
- *
- * @param newScene
- */
 void ChangeScene(std::unique_ptr<base_scene> newScene);
 
 } // namespace nen

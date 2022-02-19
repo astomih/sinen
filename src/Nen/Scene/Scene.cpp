@@ -1,3 +1,4 @@
+#include "Scene/Scene.hpp"
 #include "../event/current_event.hpp"
 #include "Input/KeyCode.hpp"
 #include "Utility/Singleton.hpp"
@@ -7,6 +8,8 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <algorithm>
+#include <cstdint>
+#include <functional>
 #include <iostream>
 
 namespace nen {
@@ -81,13 +84,6 @@ void base_scene::UpdateScene() {
     }
   }
 
-  // move pending actors
-  for (auto &pending : m_pending_actor_map) {
-    pending.second->ComputeWorldTransform();
-    m_actor_map.emplace(pending.first, std::move(pending.second));
-  }
-  m_pending_actor_map.clear();
-
   mSoundSystem->Update(deltaTime);
 }
 
@@ -104,6 +100,14 @@ void base_scene::AddGUI(std::shared_ptr<ui_screen> ui) {
 }
 void base_scene::RemoveGUI(std::shared_ptr<ui_screen> ui) {
   GetRenderer()->RemoveGUI(ui);
+}
+
+uint32_t base_scene::search_space_actor_map() {
+  uint32_t handle = 0;
+  while (m_actor_map.find(handle) != m_actor_map.end()) {
+    ++handle;
+  }
+  return handle;
 }
 
 } // namespace nen

@@ -1,3 +1,4 @@
+#include "Color/Color.hpp"
 #include <Nen.hpp>
 #include <SDL_image.h>
 #include <iostream>
@@ -25,7 +26,7 @@ void draw_3d_component::Create(std::shared_ptr<texture> _texture,
     mTexture = _texture;
   else {
     auto tex = std::make_shared<texture>();
-    tex->Load("Assets/Default.png");
+    tex->CreateFromColor(palette::White, "none");
     Create(tex);
   }
   mTexWidth = mTexture->GetWidth();

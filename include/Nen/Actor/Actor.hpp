@@ -120,7 +120,7 @@ public:
   const matrix4 &GetWorldTransform() const { return mWorldTransform; }
 
   vector3 GetForward() const {
-    return vector3::Transform(vector3::NegUnitZ, mRotation);
+    return vector3::Transform(vector3::UnitY, mRotation);
   }
 
   state GetState() const { return mState; }

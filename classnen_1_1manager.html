@@ -89,23 +89,32 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a423316291a32dcaa81a60d0a7d698188"><td class="memItemLeft" align="right" valign="top"><a id="a423316291a32dcaa81a60d0a7d698188"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>manager</b> (const <a class="el" href="classnen_1_1manager.html">manager</a> &amp;)=delete</td></tr>
 <tr class="separator:a423316291a32dcaa81a60d0a7d698188"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa9cbf9cabed22e259ed0fd0bc404f9fd"><td class="memItemLeft" align="right" valign="top"><a id="aa9cbf9cabed22e259ed0fd0bc404f9fd"></a>
-<a class="el" href="classnen_1_1manager.html">manager</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classnen_1_1manager.html">manager</a> &amp;)=delete</td></tr>
-<tr class="separator:aa9cbf9cabed22e259ed0fd0bc404f9fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa21b136dba17965c6c1e860374d60604"><td class="memItemLeft" align="right" valign="top"><a id="aa21b136dba17965c6c1e860374d60604"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>manager</b> (<a class="el" href="classnen_1_1manager.html">manager</a> &amp;&amp;)=delete</td></tr>
-<tr class="separator:aa21b136dba17965c6c1e860374d60604"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a08aa5d9f39b3a72bff91e97bb584df98"><td class="memItemLeft" align="right" valign="top"><a id="a08aa5d9f39b3a72bff91e97bb584df98"></a>
-<a class="el" href="classnen_1_1manager.html">manager</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classnen_1_1manager.html">manager</a> &amp;&amp;)=delete</td></tr>
-<tr class="separator:a08aa5d9f39b3a72bff91e97bb584df98"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a86eb82ecba89dcb2d14d404b14b6c7fa"><td class="memItemLeft" align="right" valign="top"><a id="a86eb82ecba89dcb2d14d404b14b6c7fa"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnen_1_1manager.html#a86eb82ecba89dcb2d14d404b14b6c7fa">initialize</a> ()</td></tr>
 <tr class="memdesc:a86eb82ecba89dcb2d14d404b14b6c7fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">initialize manager <br /></td></tr>
 <tr class="separator:a86eb82ecba89dcb2d14d404b14b6c7fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9b212efbb1a51218323a61e7818fa7af"><td class="memItemLeft" align="right" valign="top"><a id="a9b212efbb1a51218323a61e7818fa7af"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>change_scene</b> (std::unique_ptr&lt; <a class="el" href="classnen_1_1base__scene.html">base_scene</a> &gt; next_scene)</td></tr>
+<tr class="separator:a9b212efbb1a51218323a61e7818fa7af"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a40d4d740372492bd6802d2bd09ef65c0"><td class="memItemLeft" align="right" valign="top"><a id="a40d4d740372492bd6802d2bd09ef65c0"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnen_1_1manager.html#a40d4d740372492bd6802d2bd09ef65c0">launch</a> (std::unique_ptr&lt; class <a class="el" href="classnen_1_1base__scene.html">base_scene</a> &gt;)</td></tr>
 <tr class="memdesc:a40d4d740372492bd6802d2bd09ef65c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">launch engine <br /></td></tr>
 <tr class="separator:a40d4d740372492bd6802d2bd09ef65c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d1404b6c61719606c65ec0bbf28377c"><td class="memItemLeft" align="right" valign="top"><a id="a3d1404b6c61719606c65ec0bbf28377c"></a>
+class <a class="el" href="classnen_1_1window.html">window</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>get_window</b> ()</td></tr>
+<tr class="separator:a3d1404b6c61719606c65ec0bbf28377c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa04ae93620e11ff74904226ccc758e33"><td class="memItemLeft" align="right" valign="top"><a id="aa04ae93620e11ff74904226ccc758e33"></a>
+class <a class="el" href="classnen_1_1renderer.html">renderer</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>get_renderer</b> ()</td></tr>
+<tr class="separator:aa04ae93620e11ff74904226ccc758e33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15fbcbe42f5d8f949a177b91155d04c4"><td class="memItemLeft" align="right" valign="top"><a id="a15fbcbe42f5d8f949a177b91155d04c4"></a>
+class <a class="el" href="classnen_1_1input__system.html">input_system</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>get_input_system</b> ()</td></tr>
+<tr class="separator:a15fbcbe42f5d8f949a177b91155d04c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae14ea1015b4152fc36e62200d7cbf7c5"><td class="memItemLeft" align="right" valign="top"><a id="ae14ea1015b4152fc36e62200d7cbf7c5"></a>
+class <a class="el" href="classnen_1_1base__scene.html">base_scene</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>get_current_scene</b> ()</td></tr>
+<tr class="separator:ae14ea1015b4152fc36e62200d7cbf7c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a523196f489a044989cc3047479c6cbc6"><td class="memItemLeft" align="right" valign="top"><a id="a523196f489a044989cc3047479c6cbc6"></a>
+class <a class="el" href="classnen_1_1sound__system.html">sound_system</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>get_sound_system</b> ()</td></tr>
+<tr class="separator:a523196f489a044989cc3047479c6cbc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>sinen manager </p>

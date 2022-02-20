@@ -71,9 +71,9 @@ $(function() {
 <div class="title">InputSystem.hpp</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="preprocessor">#pragma once</span></div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="preprocessor">#include &quot;../Math/Vector2.hpp&quot;</span></div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="preprocessor">#include &quot;../Render/Renderer.hpp&quot;</span></div>
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="preprocessor">#ifndef NEN_INPUT_SYSTEM_HPP</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="preprocessor">#define NEN_INPUT_SYSTEM_HPP</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="preprocessor">#include &quot;../Math/Vector2.hpp&quot;</span></div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &quot;../event/process_event.hpp&quot;</span></div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#include &quot;GameController.hpp&quot;</span></div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &quot;GameControllerButton.hpp&quot;</span></div>
@@ -104,7 +104,7 @@ $(function() {
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment">// Helper for mouse input</span></div>
 <div class="line"><a name="l00032"></a><span class="lineno"><a class="line" href="classnen_1_1mouse__state.html">   32</a></span>&#160;<span class="keyword">class </span><a class="code" href="classnen_1_1mouse__state.html">mouse_state</a> {</div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <a class="code" href="classnen_1_1mouse__state.html">mouse_state</a>(<a class="code" href="classnen_1_1renderer.html">renderer</a> &amp;_renderer);</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <a class="code" href="classnen_1_1mouse__state.html">mouse_state</a>(<span class="keyword">class</span> <a class="code" href="classnen_1_1manager.html">manager</a> &amp;_manager);</div>
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  <span class="keyword">friend</span> <span class="keyword">class </span><a class="code" href="classnen_1_1input__system.html">input_system</a>;</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160; </div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="comment">// For mouse position</span></div>
@@ -119,7 +119,7 @@ $(function() {
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;  button_state GetButtonState(mouse_code _button) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160; </div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;  <a class="code" href="classnen_1_1renderer.html">renderer</a> &amp;m_renderer;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;  <span class="keyword">class </span><a class="code" href="classnen_1_1manager.html">manager</a> &amp;m_manager;</div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;  <span class="comment">// Store current mouse position</span></div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;  <a class="code" href="classnen_1_1vector2.html">vector2</a> mMousePos;</div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;  <span class="comment">// Motion of scroll wheel</span></div>
@@ -165,7 +165,7 @@ $(function() {
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160; </div>
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment">// Wrapper that contains current state of input</span></div>
 <div class="line"><a name="l00094"></a><span class="lineno"><a class="line" href="structnen_1_1input__state.html">   94</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structnen_1_1input__state.html">input_state</a> {</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;  <a class="code" href="structnen_1_1input__state.html">input_state</a>(<a class="code" href="classnen_1_1renderer.html">renderer</a> &amp;_renderer) : Mouse(_renderer) {}</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;  <a class="code" href="structnen_1_1input__state.html">input_state</a>(<span class="keyword">class</span> <a class="code" href="classnen_1_1manager.html">manager</a> &amp;_manager) : Mouse(_manager) {}</div>
 <div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;  <a class="code" href="classnen_1_1keyboard__state.html">keyboard_state</a> Keyboard;</div>
 <div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;  <a class="code" href="classnen_1_1mouse__state.html">mouse_state</a> Mouse;</div>
 <div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;  <a class="code" href="classnen_1_1joystick__state.html">joystick_state</a> Controller;</div>
@@ -173,8 +173,8 @@ $(function() {
 <div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160; </div>
 <div class="line"><a name="l00101"></a><span class="lineno"><a class="line" href="classnen_1_1input__system.html">  101</a></span>&#160;<span class="keyword">class </span><a class="code" href="classnen_1_1input__system.html">input_system</a> {</div>
 <div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;  <a class="code" href="classnen_1_1input__system.html">input_system</a>(<a class="code" href="classnen_1_1renderer.html">renderer</a> &amp;_renderer)</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;      : m_renderer(_renderer), mState(_renderer) {}</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;  <a class="code" href="classnen_1_1input__system.html">input_system</a>(<span class="keyword">class</span> <a class="code" href="classnen_1_1manager.html">manager</a> &amp;_manager)</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;      : m_manager(_manager), mState(_manager) {}</div>
 <div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;  <span class="keywordtype">bool</span> Initialize();</div>
 <div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;  <span class="keywordtype">void</span> Shutdown();</div>
 <div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160; </div>
@@ -189,19 +189,21 @@ $(function() {
 <div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;  <span class="keywordtype">void</span> SetRelativeMouseMode(<span class="keywordtype">bool</span> value);</div>
 <div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160; </div>
 <div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;  <a class="code" href="classnen_1_1renderer.html">renderer</a> &amp;m_renderer;</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;  <span class="keyword">class </span><a class="code" href="classnen_1_1manager.html">manager</a> &amp;m_manager;</div>
 <div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;  <span class="keywordtype">float</span> Filter1D(<span class="keywordtype">int</span> input);</div>
 <div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;  <a class="code" href="classnen_1_1vector2.html">vector2</a> Filter2D(<span class="keywordtype">int</span> inputX, <span class="keywordtype">int</span> inputY);</div>
 <div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;  <a class="code" href="structnen_1_1input__state.html">input_state</a> mState;</div>
 <div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;  <a class="code" href="classnen_1_1joystick.html">joystick</a> mController;</div>
 <div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;};</div>
 <div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;} <span class="comment">// namespace nen</span></div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160; </div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassnen_1_1input__system_html"><div class="ttname"><a href="classnen_1_1input__system.html">nen::input_system</a></div><div class="ttdef"><b>Definition:</b> InputSystem.hpp:101</div></div>
 <div class="ttc" id="aclassnen_1_1joystick__state_html"><div class="ttname"><a href="classnen_1_1joystick__state.html">nen::joystick_state</a></div><div class="ttdef"><b>Definition:</b> InputSystem.hpp:62</div></div>
 <div class="ttc" id="aclassnen_1_1joystick_html"><div class="ttname"><a href="classnen_1_1joystick.html">nen::joystick</a></div><div class="ttdef"><b>Definition:</b> GameController.hpp:7</div></div>
 <div class="ttc" id="aclassnen_1_1keyboard__state_html"><div class="ttname"><a href="classnen_1_1keyboard__state.html">nen::keyboard_state</a></div><div class="ttdef"><b>Definition:</b> InputSystem.hpp:17</div></div>
+<div class="ttc" id="aclassnen_1_1manager_html"><div class="ttname"><a href="classnen_1_1manager.html">nen::manager</a></div><div class="ttdoc">sinen manager</div><div class="ttdef"><b>Definition:</b> manager.hpp:19</div></div>
 <div class="ttc" id="aclassnen_1_1mouse__state_html"><div class="ttname"><a href="classnen_1_1mouse__state.html">nen::mouse_state</a></div><div class="ttdef"><b>Definition:</b> InputSystem.hpp:32</div></div>
-<div class="ttc" id="aclassnen_1_1renderer_html"><div class="ttname"><a href="classnen_1_1renderer.html">nen::renderer</a></div><div class="ttdef"><b>Definition:</b> Renderer.hpp:21</div></div>
 <div class="ttc" id="aclassnen_1_1vector2_html"><div class="ttname"><a href="classnen_1_1vector2.html">nen::vector2</a></div><div class="ttdef"><b>Definition:</b> Vector2.hpp:5</div></div>
 <div class="ttc" id="astructnen_1_1input__state_html"><div class="ttname"><a href="structnen_1_1input__state.html">nen::input_state</a></div><div class="ttdef"><b>Definition:</b> InputSystem.hpp:94</div></div>
 </div><!-- fragment --></div><!-- contents -->

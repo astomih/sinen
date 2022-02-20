@@ -82,7 +82,7 @@ $(function() {
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;unordered_map&gt;</span></div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160; </div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="keyword">namespace </span>nen {</div>
-<div class="line"><a name="l00012"></a><span class="lineno"><a class="line" href="classnen_1_1sound__system.html">   12</a></span>&#160;<span class="keyword">class </span><a class="code" href="classnen_1_1sound__system.html">sound_system</a> : <span class="keyword">public</span> std::enable_shared_from_this&lt;sound_system&gt; {</div>
+<div class="line"><a name="l00012"></a><span class="lineno"><a class="line" href="classnen_1_1sound__system.html">   12</a></span>&#160;<span class="keyword">class </span><a class="code" href="classnen_1_1sound__system.html">sound_system</a> {</div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="keyword">public</span>:</div>
 <div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;  <a class="code" href="classnen_1_1sound__system.html">sound_system</a>();</div>
 <div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;  ~<a class="code" href="classnen_1_1sound__system.html">sound_system</a>();</div>
@@ -102,15 +102,14 @@ $(function() {
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;  <span class="comment">// For positional audio</span></div>
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  <span class="keywordtype">void</span> SetListener(<span class="keyword">const</span> <a class="code" href="classnen_1_1vector3.html">vector3</a> &amp;pos, <span class="keyword">const</span> <a class="code" href="classnen_1_1quaternion.html">quaternion</a> &amp;direction);</div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  <span class="keyword">friend</span> <span class="keyword">class </span><a class="code" href="classnen_1_1sound__event.html">sound_event</a>;</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160; </div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  std::unordered_map&lt;std::string, uint32_t&gt; buffers;</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="keywordtype">void</span> *device;</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  <span class="keywordtype">void</span> *context;</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;};</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;} <span class="comment">// namespace nen</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  std::unordered_map&lt;std::string, uint32_t&gt; &amp;get_buffers() { <span class="keywordflow">return</span> buffers; }</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; </div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  std::unordered_map&lt;std::string, uint32_t&gt; buffers;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  <span class="keywordtype">void</span> *device;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="keywordtype">void</span> *context;</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;};</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;} <span class="comment">// namespace nen</span></div>
 <div class="ttc" id="aclassnen_1_1quaternion_html"><div class="ttname"><a href="classnen_1_1quaternion.html">nen::quaternion</a></div><div class="ttdef"><b>Definition:</b> Quaternion.hpp:6</div></div>
 <div class="ttc" id="aclassnen_1_1sound__event_html"><div class="ttname"><a href="classnen_1_1sound__event.html">nen::sound_event</a></div><div class="ttdef"><b>Definition:</b> SoundEvent.hpp:15</div></div>
 <div class="ttc" id="aclassnen_1_1sound__system_html"><div class="ttname"><a href="classnen_1_1sound__system.html">nen::sound_system</a></div><div class="ttdef"><b>Definition:</b> SoundSystem.hpp:12</div></div>

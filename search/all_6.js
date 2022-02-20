@@ -4,7 +4,7 @@ var searchData=
   ['get_5ffunction_5ftime_23',['get_function_time',['../classnen_1_1time.html#acb16d159b435a697b88f493a1d686d08',1,'nen::time']]],
   ['getinput_24',['GetInput',['../classnen_1_1base__scene.html#af6a7ee8d2001fd1ad80562160e63e88f',1,'nen::base_scene']]],
   ['getposition_25',['GetPosition',['../classnen_1_1base__actor.html#ad999cd1dbf19061113a53db7b01979b3',1,'nen::base_actor']]],
-  ['getrenderer_26',['GetRenderer',['../classnen_1_1base__scene.html#a420a3e4a36deecd09a940fd77377c6c6',1,'nen::base_scene']]],
+  ['getrenderer_26',['GetRenderer',['../classnen_1_1base__scene.html#a8a78cc4c13e25bf94291b2f7e7668979',1,'nen::base_scene']]],
   ['getrotation_27',['GetRotation',['../classnen_1_1base__actor.html#a6128a79e4e20cbf6d86e1e03525c6430',1,'nen::base_actor']]],
   ['getscale_28',['GetScale',['../classnen_1_1base__actor.html#a0df525fce8651d588c49e951125eb99e',1,'nen::base_actor']]],
   ['getsound_29',['GetSound',['../classnen_1_1base__scene.html#aacd22221a725f67f43d55d2dbe32ff4b',1,'nen::base_scene']]],

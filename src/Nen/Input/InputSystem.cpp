@@ -37,10 +37,10 @@ button_state keyboard_state::GetKeyState(key_code _key_code) const {
   }
 }
 
-mouse_state::mouse_state(renderer &renderer) : m_renderer(renderer) {}
+mouse_state::mouse_state(manager &_manager) : m_manager(_manager) {}
 
 void mouse_state::SetPosition(const vector2 &pos) const {
-  SDL_WarpMouseInWindow((SDL_Window *)m_renderer.GetWindow()->GetSDLWindow(),
+  SDL_WarpMouseInWindow((SDL_Window *)m_manager.get_window().GetSDLWindow(),
                         pos.x, pos.y);
 }
 

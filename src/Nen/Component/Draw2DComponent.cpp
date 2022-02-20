@@ -19,7 +19,7 @@ void draw_2d_component::Update(float deltaTime) {
 }
 
 draw_2d_component::~draw_2d_component() {
-  mOwner.GetScene().GetRenderer()->RemoveDrawObject2D(sprite);
+  mOwner.GetScene().GetRenderer().RemoveDrawObject2D(sprite);
 }
 
 void draw_2d_component::Create(std::shared_ptr<texture> _texture,
@@ -27,9 +27,8 @@ void draw_2d_component::Create(std::shared_ptr<texture> _texture,
   mTexture = _texture;
   mTexWidth = mTexture->GetWidth();
   mTexHeight = mTexture->GetHeight();
-  auto renderer = mOwner.GetScene().GetRenderer();
   matrix4 viewproj = matrix4::Identity;
-  auto windowsize = mOwner.GetScene().GetRenderer()->GetWindow()->Size();
+  auto windowsize = mOwner.GetScene().GetRenderer().GetWindow().Size();
   viewproj.mat[0][0] = 1.f / windowsize.x;
   viewproj.mat[1][1] = 1.f / windowsize.y;
   sprite = std::make_shared<draw_object>();
@@ -44,6 +43,6 @@ void draw_2d_component::Create(std::shared_ptr<texture> _texture,
 }
 void draw_2d_component::Register() {
   if (sprite && mTexture)
-    mOwner.GetScene().GetRenderer()->AddDrawObject2D(sprite, mTexture);
+    mOwner.GetScene().GetRenderer().AddDrawObject2D(sprite, mTexture);
 }
 } // namespace nen

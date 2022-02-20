@@ -13,23 +13,24 @@
 
 namespace nen::vk {
 
-vulkan_base_framework::vulkan_base_framework(VKRenderer *vkrenderer)
-    : m_imageIndex(0), m_vkrenderer(vkrenderer) {}
+vulkan_base_framework::vulkan_base_framework(VKRenderer *vkrenderer,
+                                             manager &_manager)
+    : m_imageIndex(0), m_vkrenderer(vkrenderer), m_manager(_manager) {}
 
-void vulkan_base_framework::initialize(std::shared_ptr<window> window) {
-  m_window = window;
-  initialize_instance(window->Name().c_str());
+void vulkan_base_framework::initialize() {
+  auto &w = m_manager.get_window();
+  initialize_instance(w.Name().c_str());
   select_physical_device();
   m_graphicsQueueIndex = search_graphics_queue_index();
   create_device();
   create_command_pool();
   VkSurfaceKHR surface;
-  SDL_Vulkan_CreateSurface((SDL_Window *)window->GetSDLWindow(), m_instance,
+  SDL_Vulkan_CreateSurface((SDL_Window *)w.GetSDLWindow(), m_instance,
                            &surface);
   mSwapchain = std::make_unique<Swapchain>(m_instance, m_device, surface);
   mSwapchain->Prepare(
-      m_physDev, m_graphicsQueueIndex, static_cast<uint32_t>(window->Size().x),
-      static_cast<uint32_t>(window->Size().y), VK_FORMAT_B8G8R8A8_UNORM);
+      m_physDev, m_graphicsQueueIndex, static_cast<uint32_t>(w.Size().x),
+      static_cast<uint32_t>(w.Size().y), VK_FORMAT_B8G8R8A8_UNORM);
   create_depth_buffer();
   create_image_view();
   create_render_pass();
@@ -334,7 +335,7 @@ uint32_t vulkan_base_framework::get_memory_type_index(
 void vulkan_base_framework::recreate_swapchain() {
   vkDeviceWaitIdle(m_device);
 
-  auto size = m_vkrenderer->GetWindow()->Size();
+  auto size = m_manager.get_window().Size();
   mSwapchain->Prepare(m_physDev, m_graphicsQueueIndex,
                       static_cast<uint32_t>(size.x),
                       static_cast<uint32_t>(size.y), VK_FORMAT_B8G8R8A8_UNORM);
@@ -349,13 +350,13 @@ void vulkan_base_framework::recreate_swapchain() {
 }
 
 void vulkan_base_framework::render() {
-  if (mSwapchain->is_need_recreate(m_vkrenderer->GetWindow()->Size()))
+  if (mSwapchain->is_need_recreate(m_manager.get_window().Size()))
     recreate_swapchain();
   uint32_t nextImageIndex = 0;
   mSwapchain->AcquireNextImage(&nextImageIndex, m_presentCompletedSem);
   auto commandFence = m_fences[nextImageIndex];
 
-  auto color = m_vkrenderer->GetRenderer()->GetClearColor();
+  auto color = m_manager.get_renderer().GetClearColor();
   std::array<VkClearValue, 2> clearValue = {{
       {color.r, color.g, color.b, 1.0f}, // for Color
       {1.0f, 0}                          // for Depth

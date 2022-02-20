@@ -10,14 +10,14 @@ draw_3d_component::draw_3d_component(base_actor &owner, int drawOrder)
 
 void draw_3d_component::Update(float deltaTime) {
   auto world = mOwner.GetWorldTransform();
-  auto view = mOwner.GetScene().GetRenderer()->GetViewMatrix();
+  auto view = mOwner.GetScene().GetRenderer().GetViewMatrix();
 
   sprite->param.view = view;
   sprite->param.world = world;
 }
 
 draw_3d_component::~draw_3d_component() {
-  mOwner.GetScene().GetRenderer()->RemoveDrawObject3D(sprite);
+  mOwner.GetScene().GetRenderer().RemoveDrawObject3D(sprite);
 }
 
 void draw_3d_component::Create(std::shared_ptr<texture> _texture,
@@ -31,10 +31,8 @@ void draw_3d_component::Create(std::shared_ptr<texture> _texture,
   }
   mTexWidth = mTexture->GetWidth();
   mTexHeight = mTexture->GetHeight();
-  auto renderer = mOwner.GetScene().GetRenderer();
-  auto scaleOwner = mOwner.GetScale();
-  auto view = mOwner.GetScene().GetRenderer()->GetViewMatrix();
-  auto proj = mOwner.GetScene().GetRenderer()->GetProjectionMatrix();
+  auto view = mOwner.GetScene().GetRenderer().GetViewMatrix();
+  auto proj = mOwner.GetScene().GetRenderer().GetProjectionMatrix();
   sprite = std::make_shared<draw_object>();
   sprite->textureIndex = mTexture->id;
   sprite->vertexIndex = shape.data();
@@ -45,6 +43,6 @@ void draw_3d_component::Create(std::shared_ptr<texture> _texture,
 }
 void draw_3d_component::Register() {
   if (sprite)
-    mOwner.GetScene().GetRenderer()->AddDrawObject3D(sprite, mTexture);
+    mOwner.GetScene().GetRenderer().AddDrawObject3D(sprite, mTexture);
 }
 } // namespace nen

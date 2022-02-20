@@ -22,7 +22,7 @@ public:
    * @brief Construct a new base scene object
    *
    */
-  base_scene() = default;
+  base_scene(class manager &_manager);
   virtual ~base_scene() = default;
 
   /**
@@ -36,15 +36,6 @@ public:
    *
    */
   void Initialize();
-
-  /**
-   * @brief Set the Renderer object
-   *
-   * @param renderer
-   */
-  void SetRenderer(std::shared_ptr<class renderer> renderer) {
-    mRenderer = renderer;
-  }
 
   /**
    * @brief is running scene
@@ -74,13 +65,6 @@ public:
   template <class T> T &get_actor(const handle_t &handle) {
     return m_actor.get<T>(handle);
   }
-
-  /**
-   * @brief Get the Renderer object
-   *
-   * @return std::shared_ptr<class renderer>
-   */
-  std::shared_ptr<class renderer> GetRenderer() const { return mRenderer; }
 
   /**
    * @brief Get the State object
@@ -113,37 +97,28 @@ public:
    * @param ui
    */
   void RemoveGUI(std::shared_ptr<class ui_screen> ui);
-
+  /**
+   * @brief Get the Renderer object
+   *
+   * @return std::shared_ptr<class renderer>
+   */
+  class renderer &GetRenderer();
   /**
    * @brief Get the Input object
    *
    * @return const input_state&
    */
-  const input_state &GetInput() { return mInputSystem->GetState(); }
-  /**
-   * @brief Set the Input System object
-   *
-   * @param inputSystem
-   */
-  void SetInputSystem(std::shared_ptr<class input_system> inputSystem) {
-    mInputSystem = inputSystem;
-  }
-
+  const input_state &GetInput();
   /**
    * @brief Get the Sound object
    *
    * @return sound_system&
    */
-  sound_system &GetSound() { return *mSoundSystem; }
+  sound_system &GetSound();
 
-  /**
-   * @brief Set the Sound System object
-   *
-   * @param soundSystem
-   */
-  void SetSoundSystem(std::shared_ptr<class sound_system> soundSystem) {
-    mSoundSystem = soundSystem;
-  }
+  class manager &get_manager();
+
+  void change_scene(std::unique_ptr<base_scene> next_scene);
 
 protected:
   /**
@@ -162,13 +137,9 @@ private:
   void UnloadData();
   void ProcessInput();
   void UpdateScene();
+  class manager &m_manager;
   dynamic_handler<class base_actor> m_actor;
-  std::shared_ptr<class input_system> mInputSystem;
-  std::shared_ptr<class sound_system> mSoundSystem;
-  std::shared_ptr<class renderer> mRenderer;
   game_state mGameState = game_state::Gameplay;
   uint32_t mTicksCount = 0;
 };
-void ChangeScene(std::unique_ptr<base_scene> newScene);
-
 } // namespace nen

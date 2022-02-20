@@ -75,7 +75,7 @@ void sound_system::Shutdown() {}
 void sound_system::Update(float deltaTime) {}
 
 sound_event sound_system::PlayEvent(std::string_view name, uint32_t sourceID) {
-  sound_event e(shared_from_this(), name, sourceID);
+  sound_event e(*this, name, sourceID);
   return e;
 }
 

@@ -47,9 +47,9 @@ public:
 
 class VKRenderer : public IRenderer {
 public:
-  VKRenderer();
+  VKRenderer(manager &_manager);
   ~VKRenderer() override {}
-  void Initialize(std::shared_ptr<window> window) override;
+  void Initialize() override;
   void Shutdown() override;
   void Render() override;
 
@@ -69,15 +69,12 @@ public:
   void AddGUI(std::shared_ptr<class ui_screen> ui) override;
   void RemoveGUI(std::shared_ptr<class ui_screen> ui) override;
 
-  void SetRenderer(class renderer *renderer) override;
-
   void LoadShader(const shader &shaderInfo) override;
   void UnloadShader(const shader &shaderInfo) override;
 
   void add_instancing(instancing &_instancing) override;
   void remove_instancing(instancing &_instancing) override;
 
-  nen::renderer *GetRenderer() { return mRenderer; }
   void prepare();
   void cleanup();
   void makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri,
@@ -113,12 +110,10 @@ public:
   void DestroyImage(ImageObject imageObj);
   void DestroyFramebuffers(uint32_t count, VkFramebuffer *framebuffers);
   void write_memory(const VmaAllocation &, const void *data, size_t size);
-  std::shared_ptr<class window> GetWindow() { return m_base->m_window; }
 
   VmaAllocator allocator{};
 
 private:
-  renderer *mRenderer;
   std::unique_ptr<class vulkan_base_framework> m_base;
   void prepareUniformBuffers();
   void prepareDescriptorSetLayout();
@@ -160,6 +155,7 @@ private:
   std::vector<vulkan_instancing> m_instancies_3d;
   std::vector<vulkan_instancing> m_instancies_2d;
   BufferObject m_instance_buffer;
+  manager &m_manager;
 };
 } // namespace nen::vk
 #endif

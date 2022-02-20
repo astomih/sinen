@@ -1,4 +1,5 @@
-﻿#include <Nen.hpp>
+﻿#include "manager/manager.hpp"
+#include <Nen.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 // general
 #include <array>
@@ -30,13 +31,11 @@ using namespace vkutil;
 
 constexpr int maxpoolSize = 5000;
 constexpr int maxInstanceCount = 900;
-VKRenderer::VKRenderer()
-    : m_descriptorPool(), m_descriptorSetLayout(), m_sampler(),
-      m_base(std::make_unique<vulkan_base_framework>(this)) {}
-void VKRenderer::SetRenderer(renderer *renderer) { mRenderer = renderer; }
-void VKRenderer::Initialize(std::shared_ptr<window> window) {
-  m_base->initialize(window);
-}
+VKRenderer::VKRenderer(manager &_manager)
+    : m_manager(_manager), m_descriptorPool(), m_descriptorSetLayout(),
+      m_sampler(),
+      m_base(std::make_unique<vulkan_base_framework>(this, _manager)) {}
+void VKRenderer::Initialize() { m_base->initialize(); }
 
 void VKRenderer::Shutdown() {
   cleanup();
@@ -505,7 +504,8 @@ void VKRenderer::write_memory(const VmaAllocation &allocation, const void *data,
 void VKRenderer::prepareImGUI() {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
-  ImGui_ImplSDL2_InitForVulkan((SDL_Window *)m_base->m_window->GetSDLWindow());
+  ImGui_ImplSDL2_InitForVulkan(
+      (SDL_Window *)m_base->m_manager.get_window().GetSDLWindow());
 
   uint32_t imageCount = m_base->mSwapchain->GetImageCount();
   ImGui_ImplVulkan_InitInfo info{};
@@ -548,11 +548,12 @@ void VKRenderer::prepareImGUI() {
 }
 void VKRenderer::renderImGUI(VkCommandBuffer command) {
   ImGui_ImplVulkan_NewFrame();
-  ImGui_ImplSDL2_NewFrame((SDL_Window *)m_base->m_window->GetSDLWindow());
+  ImGui_ImplSDL2_NewFrame(
+      (SDL_Window *)m_base->m_manager.get_window().GetSDLWindow());
   ImGui::NewFrame();
 
   // ImGui ウィジェットを描画する.
-  if (GetRenderer()->isShowImGui()) {
+  if (m_manager.get_renderer().isShowImGui()) {
     ImGui::Begin("Engine Info");
     ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
     if (ImGui::Button("toggleAPI")) {

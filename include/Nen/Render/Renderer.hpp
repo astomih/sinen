@@ -9,6 +9,7 @@
 #include "../Texture/TextureType.hpp"
 #include "../Vertex/VertexArray.hpp"
 #include "../instancing/instancing.hpp"
+#include "graphics_api.hpp"
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -16,14 +17,12 @@
 
 namespace nen {
 
-enum class graphics_api { OpenGL, Vulkan, ES };
-
 class renderer {
 public:
-  renderer(graphics_api api, std::shared_ptr<class window> window);
+  renderer(class manager &_manager);
+  void initialize(graphics_api api);
   ~renderer() = default;
 
-  void SetGraphicsAPI(graphics_api &api) { RendererAPI = api; }
   graphics_api GetGraphicsAPI() { return RendererAPI; }
 
   void Shutdown();
@@ -65,7 +64,7 @@ public:
   }
   const matrix4 &GetProjectionMatrix() { return mProjection; }
 
-  std::shared_ptr<class window> GetWindow() { return mWindow; }
+  class window &GetWindow();
 
   void toggleShowImGui() { showImGui = !showImGui; }
   bool isShowImGui() { return showImGui; }
@@ -74,6 +73,7 @@ public:
   void UnloadShader(const shader &shaderinfo);
 
 private:
+  class manager &m_manager;
   void setup_shapes();
   color clearColor = palette::Black;
 
@@ -94,7 +94,7 @@ public:
   IRenderer() = default;
   virtual ~IRenderer() {}
 
-  virtual void Initialize(std::shared_ptr<window> window) {}
+  virtual void Initialize() {}
   virtual void Shutdown() {}
   virtual void Render() {}
   virtual void AddVertexArray(const vertex_array &vArray,
@@ -116,8 +116,6 @@ public:
 
   virtual void AddGUI(std::shared_ptr<class ui_screen> ui) {}
   virtual void RemoveGUI(std::shared_ptr<class ui_screen> ui) {}
-
-  virtual void SetRenderer(class renderer *renderer) {}
 
   virtual void LoadShader(const shader &shaderInfo) {}
   virtual void UnloadShader(const shader &shaderInfo) {}

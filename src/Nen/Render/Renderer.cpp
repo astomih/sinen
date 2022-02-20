@@ -8,18 +8,18 @@
 #include <Nen.hpp>
 
 namespace nen {
-renderer::renderer(graphics_api api, std::shared_ptr<window> window)
-    : mWindow(window), m_renderer(nullptr), RendererAPI(api) {
+renderer::renderer(manager &_manager) : m_manager(_manager) {}
+void renderer::initialize(graphics_api api) {
+  m_renderer = nullptr;
+  RendererAPI = api;
   if (RendererAPI == graphics_api::Vulkan) {
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
-    m_renderer = std::make_unique<vk::VKRenderer>();
+    m_renderer = std::make_unique<vk::VKRenderer>(m_manager);
 #endif
-
   } else {
-    m_renderer = std::make_unique<gl::GLRenderer>();
+    m_renderer = std::make_unique<gl::GLRenderer>(m_manager);
   }
-  m_renderer->SetRenderer(this);
-  m_renderer->Initialize(mWindow);
+  m_renderer->Initialize();
   setup_shapes();
 }
 
@@ -82,5 +82,6 @@ void renderer::setup_shapes() {
   AddVertexArray(create_box_vertices(), vertex_default_shapes::box);
   AddVertexArray(create_sprite_vertices(), vertex_default_shapes::sprite);
 }
+window &renderer::GetWindow() { return m_manager.get_window(); }
 
 } // namespace nen

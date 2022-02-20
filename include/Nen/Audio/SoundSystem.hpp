@@ -9,7 +9,7 @@
 #include <unordered_map>
 
 namespace nen {
-class sound_system : public std::enable_shared_from_this<sound_system> {
+class sound_system {
 public:
   sound_system();
   ~sound_system();
@@ -29,8 +29,7 @@ public:
   // For positional audio
   void SetListener(const vector3 &pos, const quaternion &direction);
 
-protected:
-  friend class sound_event;
+  std::unordered_map<std::string, uint32_t> &get_buffers() { return buffers; }
 
 private:
   std::unordered_map<std::string, uint32_t> buffers;

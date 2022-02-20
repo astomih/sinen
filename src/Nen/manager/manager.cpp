@@ -1,9 +1,9 @@
-#include "Utility/Singleton.hpp"
 #ifndef MOBILE
 #define SDL_MAIN_HANDLED
 #else
 #include <SDL_main.h>
 #endif
+
 #include <Nen.hpp>
 #include <SDL.h>
 #include <SDL_image.h>
@@ -14,31 +14,24 @@
 
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
+
+std::function<void()> emscripten_loop;
+void main_loop() { emscripten_loop(); }
 #endif
 
-std::function<void()> loop;
-std::function<void(std::unique_ptr<nen::base_scene>)> changeScene;
-void main_loop() { loop(); }
 namespace nen {
-void ChangeScene(std::unique_ptr<base_scene> newScene) {
-  changeScene(std::move(newScene));
-}
 void manager::launch(std::unique_ptr<base_scene> scene) {
-  std::unique_ptr<nen::base_scene> nextScene;
-  changeScene = [&](std::unique_ptr<nen::base_scene> newScene) {
-    scene->Quit();
-    nextScene = std::move(newScene);
-  };
+  m_current_scene = std::move(scene);
   SDL_SetMainReady();
   SDL_Init(SDL_INIT_EVERYTHING);
   TTF_Init();
   IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
   SDLNet_Init();
-  nextScene = nullptr;
-  std::shared_ptr<nen::window> window = std::make_shared<nen::window>();
+  m_next_scene = nullptr;
+  m_window = std::make_unique<nen::window>();
+  m_renderer = std::make_unique<nen::renderer>(*this);
   nen::logger::MakeLogger(
       std::move(nen::logger::default_logger::CreateConsoleLogger()));
-  std::shared_ptr<nen::renderer> renderer;
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
   std::ifstream ifs("./api");
   std::string str;
@@ -46,79 +39,72 @@ void manager::launch(std::unique_ptr<base_scene> scene) {
     throw std::runtime_error("api file not found.");
   std::getline(ifs, str);
   if (str.compare("Vulkan") == 0) {
-    window->Initialize(nen::vector2(1280, 720), "Nen : Vulkan",
-                       nen::graphics_api::Vulkan);
-    renderer =
-        std::make_shared<nen::renderer>(nen::graphics_api::Vulkan, window);
+    m_window->Initialize(nen::vector2(1280, 720), "Nen : Vulkan",
+                         nen::graphics_api::Vulkan);
+    m_renderer->initialize(nen::graphics_api::Vulkan);
   } else if (str.compare("OpenGL") == 0) {
-    window->Initialize(nen::vector2(1280, 720), "Nen : OpenGL",
-                       nen::graphics_api::OpenGL);
-    renderer =
-        std::make_shared<nen::renderer>(nen::graphics_api::OpenGL, window);
+    m_window->Initialize(nen::vector2(1280, 720), "Nen : OpenGL",
+                         nen::graphics_api::OpenGL);
+    m_renderer->initialize(nen::graphics_api::OpenGL);
   }
 
 #else
-  window->Initialize(nen::vector2(1280, 720), "Nen", nen::graphics_api::ES);
-  renderer = std::make_shared<nen::renderer>(nen::graphics_api::ES, window);
+  m_window->Initialize(nen::vector2(1280, 720), "Nen", nen::graphics_api::ES);
+  m_renderer->initialize(nen::graphics_api::ES);
 #endif
-  renderer->SetProjectionMatrix(nen::matrix4::Perspective(
-      nen::Math::ToRadians(70.f), window->Size().x / window->Size().y, 0.1f,
+  m_renderer->SetProjectionMatrix(nen::matrix4::Perspective(
+      nen::Math::ToRadians(70.f), m_window->Size().x / m_window->Size().y, 0.1f,
       1000.f));
 
-  auto soundSystem = std::make_shared<nen::sound_system>();
-  if (!soundSystem->Initialize()) {
+  m_sound_system = std::make_unique<nen::sound_system>();
+  if (!m_sound_system->Initialize()) {
     nen::logger::Info("Failed to initialize audio system");
-    soundSystem->Shutdown();
-    soundSystem = nullptr;
+    m_sound_system->Shutdown();
+    m_sound_system = nullptr;
     std::exit(-1);
   }
   nen::logger::Info("Audio system Initialized.");
-  auto inputSystem = std::make_shared<nen::input_system>(*renderer);
-  if (!inputSystem->Initialize()) {
+  m_input_system = std::make_unique<nen::input_system>(*this);
+  if (!m_input_system->Initialize()) {
     nen::logger::Info("Failed to initialize input system");
   }
   nen::logger::Info("Input system initialized.");
   // スクリプトのインスタンスを作成
   nen::script::Create();
   nen::logger::Info("Script system initialized.");
-  scene->SetRenderer(renderer);
-  scene->SetInputSystem(inputSystem);
-  scene->SetSoundSystem(soundSystem);
-  scene->Initialize();
-  loop = [&] {
-    if (scene->isRunning())
-      scene->RunLoop();
-    else if (nextScene) {
-      scene->Shutdown();
-      scene = std::move(nextScene);
-      scene->SetRenderer(renderer);
-      scene->SetInputSystem(inputSystem);
-      scene->SetSoundSystem(soundSystem);
-      scene->Initialize();
-      nextScene = nullptr;
-    } else {
-      scene->Shutdown();
-      inputSystem->Shutdown();
-      soundSystem->Shutdown();
-      scene = nullptr;
-      renderer->Shutdown();
-      renderer = nullptr;
-      window = nullptr;
-      singleton_finalizer::Finalize();
-#ifndef EMSCRIPTEN
-      std::exit(0);
-#else
-      emscripten_force_exit(0);
-#endif
-    }
-  };
+  m_current_scene->Initialize();
 
 #if !defined(EMSCRIPTEN)
   while (true)
     loop();
 #else
+  emscripten_loop = [&]() { loop(); };
   emscripten_set_main_loop(main_loop, 120, true);
 #endif
+}
+void manager::loop() {
+  if (m_current_scene->isRunning())
+    m_current_scene->RunLoop();
+  else if (m_next_scene) {
+    m_current_scene->Shutdown();
+    m_current_scene = std::move(m_next_scene);
+    m_current_scene->Initialize();
+    m_next_scene = nullptr;
+  } else {
+    m_current_scene->Shutdown();
+    m_input_system->Shutdown();
+    m_sound_system->Shutdown();
+    m_current_scene = nullptr;
+    m_renderer->Shutdown();
+    m_renderer = nullptr;
+    m_window = nullptr;
+    singleton_finalizer::Finalize();
+#ifndef EMSCRIPTEN
+    std::exit(0);
+#else
+    emscripten_force_exit(0);
+#endif
+  }
 }
 
 } // namespace nen

@@ -1,6 +1,9 @@
 ﻿#pragma once
+#include "../manager/manager.hpp"
+
 #include "../Math/Vector2.hpp"
 #include "../Render/Renderer.hpp"
+#include "../Render/graphics_api.hpp"
 #include "WindowState.hpp"
 #include <memory>
 #include <string>

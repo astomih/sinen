@@ -2,8 +2,8 @@
 #include <AL/alc.h>
 #include <Nen.hpp>
 namespace nen {
-sound_event::sound_event(std::shared_ptr<sound_system> audiosystem,
-                         std::string_view name, uint32_t sourceID)
+sound_event::sound_event(sound_system &audiosystem, std::string_view name,
+                         uint32_t sourceID)
     : audiosys(audiosystem), mName(name) {
   ALint buf;
   alGetSourcei(sourceID, AL_BUFFER, &buf);
@@ -12,7 +12,7 @@ sound_event::sound_event(std::shared_ptr<sound_system> audiosystem,
   param.buffer_id = buf;
 }
 bool sound_event::IsValid() {
-  return audiosys && audiosys->buffers.contains(mName.data());
+  return audiosys.get_buffers().contains(mName.data());
 }
 
 void sound_event::Restart() {

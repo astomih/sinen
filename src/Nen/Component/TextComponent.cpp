@@ -10,7 +10,7 @@ void text_component::SetString(const std::string &str, const color &color) {
   }
 
   if (this->GetSprite()) {
-    GetActor().GetScene().GetRenderer()->RemoveDrawObject2D(this->GetSprite());
+    GetActor().GetScene().GetRenderer().RemoveDrawObject2D(this->GetSprite());
     this->GetSprite().reset();
   }
   Create(mFont->RenderText(str, color));

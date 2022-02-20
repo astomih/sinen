@@ -14,7 +14,8 @@ struct sound_prameter {
 
 class sound_event {
 public:
-  sound_event() = default;
+  sound_event(class sound_system &audiosystem, std::string_view name,
+              uint32_t sourceID = 0);
   bool IsValid();
   // Restart event from begining
   void Restart();
@@ -32,13 +33,8 @@ public:
   std::string GetName();
   const vector3 &GetPosition();
 
-protected:
-  friend class sound_system;
-  sound_event(std::shared_ptr<class sound_system> audiosystem,
-              std::string_view name, uint32_t sourceID = 0);
-
 private:
-  std::shared_ptr<class sound_system> audiosys;
+  sound_system &audiosys;
   std::string mName;
   sound_prameter param;
   float volume = 1.f;

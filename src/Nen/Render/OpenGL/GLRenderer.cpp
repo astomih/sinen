@@ -1,4 +1,5 @@
 
+#include "manager/manager.hpp"
 #include <Nen.hpp>
 
 #include <SDL.h>
@@ -25,14 +26,14 @@
 #include <sstream>
 
 namespace nen::gl {
-GLRenderer::GLRenderer() {}
+GLRenderer::GLRenderer(manager &_manager) : m_manager(_manager) {}
 
-void GLRenderer::Initialize(std::shared_ptr<window> window) {
-  mWindow = window;
-  mContext = SDL_GL_CreateContext((SDL_Window *)mWindow->GetSDLWindow());
-  SDL_GL_MakeCurrent((SDL_Window *)mWindow->GetSDLWindow(), mContext);
-  prev_window_x = mWindow->Size().x;
-  prev_window_y = mWindow->Size().y;
+void GLRenderer::Initialize() {
+  auto &w = m_manager.get_window();
+  mContext = SDL_GL_CreateContext((SDL_Window *)w.GetSDLWindow());
+  SDL_GL_MakeCurrent((SDL_Window *)w.GetSDLWindow(), mContext);
+  prev_window_x = w.Size().x;
+  prev_window_y = w.Size().y;
 #if !defined EMSCRIPTEN && !defined MOBILE
   glewExperimental = GL_TRUE;
   if (glewInit() != GLEW_OK) {
@@ -51,23 +52,23 @@ void GLRenderer::Initialize(std::shared_ptr<window> window) {
   io.ConfigFlags |=
       ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
   io.IniFilename = NULL;
-  ImGui_ImplSDL2_InitForOpenGL((SDL_Window *)window->GetSDLWindow(), mContext);
+  ImGui_ImplSDL2_InitForOpenGL(
+      (SDL_Window *)m_manager.get_window().GetSDLWindow(), mContext);
 #if defined EMSCRIPTEN || defined MOBILE
   ImGui_ImplOpenGL3_Init("#version 300 es");
 #else
   ImGui_ImplOpenGL3_Init("#version 330 core");
 #endif
 }
-void GLRenderer::SetRenderer(renderer *renderer) { mRenderer = renderer; }
 
 void GLRenderer::Render() {
-  if (mWindow->Size().x != prev_window_x ||
-      mWindow->Size().y != prev_window_y) {
-    glViewport(0, 0, mWindow->Size().x, mWindow->Size().y);
-    prev_window_x = mWindow->Size().x;
-    prev_window_y = mWindow->Size().y;
+  auto &w = m_manager.get_window();
+  if (w.Size().x != prev_window_x || w.Size().y != prev_window_y) {
+    glViewport(0, 0, w.Size().x, w.Size().y);
+    prev_window_x = w.Size().x;
+    prev_window_y = w.Size().y;
   }
-  auto color = mRenderer->GetClearColor();
+  auto color = m_manager.get_renderer().GetClearColor();
   glClearColor(color.r, color.g, color.b, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glEnable(GL_DEPTH_TEST);
@@ -81,9 +82,9 @@ void GLRenderer::Render() {
   draw_instancing_2d();
   glDisable(GL_BLEND);
   ImGui_ImplOpenGL3_NewFrame();
-  ImGui_ImplSDL2_NewFrame((SDL_Window *)mWindow->GetSDLWindow());
+  ImGui_ImplSDL2_NewFrame((SDL_Window *)w.GetSDLWindow());
   ImGui::NewFrame();
-  if (mRenderer->isShowImGui()) {
+  if (m_manager.get_renderer().isShowImGui()) {
 
     // Draw ImGUI widgets.
     ImGui::Begin("Engine Info");
@@ -99,7 +100,7 @@ void GLRenderer::Render() {
 
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-  SDL_GL_SwapWindow((SDL_Window *)mWindow->GetSDLWindow());
+  SDL_GL_SwapWindow((SDL_Window *)w.GetSDLWindow());
 }
 
 void GLRenderer::draw_3d() {

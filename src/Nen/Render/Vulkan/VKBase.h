@@ -24,8 +24,8 @@ namespace nen::vk {
  */
 class vulkan_base_framework {
 public:
-  vulkan_base_framework(class VKRenderer *);
-  void initialize(std::shared_ptr<window> window);
+  vulkan_base_framework(class VKRenderer *, manager &_manager);
+  void initialize();
   void terminate();
   void render();
   VkPhysicalDevice get_vk_physical_device() { return m_physDev; }
@@ -84,6 +84,7 @@ public:
   uint32_t m_imageIndex;
   std::shared_ptr<window> m_window;
   VKRenderer *m_vkrenderer;
+  manager &m_manager;
 };
 } // namespace nen::vk
 

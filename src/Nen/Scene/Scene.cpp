@@ -1,19 +1,19 @@
-#include "Scene/Scene.hpp"
+#include <Nen.hpp>
+
 #include "../event/current_event.hpp"
-#include "Actor/Actor.hpp"
-#include "Input/KeyCode.hpp"
-#include "Utility/Singleton.hpp"
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
-#include <Nen.hpp>
 #include <SDL.h>
 #include <SDL_ttf.h>
+
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <functional>
 #include <iostream>
 
 namespace nen {
+base_scene::base_scene(manager &_manager) : m_manager(_manager) {}
 
 void base_scene::Initialize() {
   Setup();
@@ -25,16 +25,16 @@ void base_scene::RunLoop() {
   ProcessInput();
   UpdateScene();
   // Draw sprites, meshes
-  mRenderer->Draw();
-  mInputSystem->PrepareForUpdate();
-  mInputSystem->Update();
+  GetRenderer().Draw();
+  m_manager.get_input_system().PrepareForUpdate();
+  m_manager.get_input_system().Update();
 }
 
 void base_scene::ProcessInput() {
 
   while (SDL_PollEvent(&current_event_handle::current_event)) {
     ImGui_ImplSDL2_ProcessEvent(&current_event_handle::current_event);
-    GetRenderer()->GetWindow()->ProcessInput();
+    GetRenderer().GetWindow().ProcessInput();
     switch (current_event_handle::current_event.type) {
     case SDL_QUIT: {
       mGameState = game_state::Quit;
@@ -44,13 +44,13 @@ void base_scene::ProcessInput() {
     }
   }
 
-  const input_state &state = mInputSystem->GetState();
+  const input_state &state = m_manager.get_input_system().GetState();
 
   if (state.Keyboard.GetKeyState(key_code::ESCAPE) == button_state::Released) {
     mGameState = game_state::Quit;
   }
   if (state.Keyboard.GetKeyState(key_code::F3) == button_state::Pressed) {
-    GetRenderer()->toggleShowImGui();
+    GetRenderer().toggleShowImGui();
   }
   if (mGameState == game_state::Quit)
     return;
@@ -77,7 +77,7 @@ void base_scene::UpdateScene() {
       ++itr;
     }
   }
-  mSoundSystem->Update(deltaTime);
+  m_manager.get_sound_system().Update(deltaTime);
 }
 
 void base_scene::Setup() {}
@@ -89,10 +89,37 @@ void base_scene::Update(float deltaTime) {}
 void base_scene::Shutdown() { UnloadData(); }
 
 void base_scene::AddGUI(std::shared_ptr<ui_screen> ui) {
-  GetRenderer()->AddGUI(ui);
+  GetRenderer().AddGUI(ui);
 }
 void base_scene::RemoveGUI(std::shared_ptr<ui_screen> ui) {
-  GetRenderer()->RemoveGUI(ui);
+  GetRenderer().RemoveGUI(ui);
+}
+
+/**
+ * @brief Get the Renderer object
+ *
+ * @return std::shared_ptr<class renderer>
+ */
+renderer &base_scene::GetRenderer() { return m_manager.get_renderer(); }
+/**
+ * @brief Get the Input object
+ *
+ * @return const input_state&
+ */
+const input_state &base_scene::GetInput() {
+  return m_manager.get_input_system().GetState();
+}
+/**
+ * @brief Get the Sound object
+ *
+ * @return sound_system&
+ */
+sound_system &base_scene::GetSound() { return m_manager.get_sound_system(); }
+
+manager &base_scene::get_manager() { return m_manager; }
+
+void base_scene::change_scene(std::unique_ptr<base_scene> next_scene) {
+  m_manager.change_scene(std::move(next_scene));
 }
 
 } // namespace nen

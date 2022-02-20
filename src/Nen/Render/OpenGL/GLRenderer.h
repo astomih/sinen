@@ -1,4 +1,5 @@
 #pragma once
+#include "manager/manager.hpp"
 #include <cstdint>
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
@@ -51,10 +52,10 @@ public:
 
 class GLRenderer : public IRenderer {
 public:
-  GLRenderer();
+  GLRenderer(manager &_manager);
   ~GLRenderer() override {}
 
-  void Initialize(std::shared_ptr<window> window) override;
+  void Initialize() override;
   void Render() override;
   void AddVertexArray(const vertex_array &vArray,
                       std::string_view name) override;
@@ -67,8 +68,6 @@ public:
   void AddDrawObject3D(std::shared_ptr<class draw_object> sprite,
                        std::shared_ptr<texture> texture) override;
   void RemoveDrawObject3D(std::shared_ptr<class draw_object> sprite) override;
-
-  void SetRenderer(class renderer *renderer) override;
 
   void LoadShader(const shader &shaderInfo) override;
   void UnloadShader(const shader &shaderInfo) override;
@@ -110,18 +109,15 @@ public:
       mSprite3Ds.erase(itr);
     }
   }
-  void setRenderer(nen::renderer *renderer) { mRenderer = renderer; }
-
-  std::shared_ptr<window> GetWindow() { return mWindow; }
 
 private:
-  renderer *mRenderer;
-  std::shared_ptr<window> mWindow;
   bool loadShader();
   void draw_3d();
   void draw_2d();
   void draw_instancing_2d();
   void draw_instancing_3d();
+
+  manager &m_manager;
 
   std::string vertexID;
 

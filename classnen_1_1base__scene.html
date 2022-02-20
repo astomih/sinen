@@ -115,14 +115,14 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnen_1_1base__scene.html#abb439280765659a5fc0503e4f26d7129">Shutdown</a> ()</td></tr>
 <tr class="memdesc:abb439280765659a5fc0503e4f26d7129"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the Renderer object. <br /></td></tr>
 <tr class="separator:abb439280765659a5fc0503e4f26d7129"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4c3f796a0bfc41b4540991227be2804f"><td class="memTemplParams" colspan="2">template&lt;class T , typename... _Args&gt; </td></tr>
-<tr class="memitem:a4c3f796a0bfc41b4540991227be2804f"><td class="memTemplItemLeft" align="right" valign="top">T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classnen_1_1base__scene.html#a4c3f796a0bfc41b4540991227be2804f">add_actor</a> (std::uint32_t &amp;store_value=m_default_handle, _Args &amp;&amp;...__args)</td></tr>
-<tr class="memdesc:a4c3f796a0bfc41b4540991227be2804f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add actor to scene.  <a href="classnen_1_1base__scene.html#a4c3f796a0bfc41b4540991227be2804f">More...</a><br /></td></tr>
-<tr class="separator:a4c3f796a0bfc41b4540991227be2804f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7128fa5e22c5c3343c7bb9ebae73dcc2"><td class="memTemplParams" colspan="2">template&lt;class T &gt; </td></tr>
-<tr class="memitem:a7128fa5e22c5c3343c7bb9ebae73dcc2"><td class="memTemplItemLeft" align="right" valign="top">T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classnen_1_1base__scene.html#a7128fa5e22c5c3343c7bb9ebae73dcc2">get_actor</a> (std::uint32_t stored_value)</td></tr>
-<tr class="memdesc:a7128fa5e22c5c3343c7bb9ebae73dcc2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the actor object.  <a href="classnen_1_1base__scene.html#a7128fa5e22c5c3343c7bb9ebae73dcc2">More...</a><br /></td></tr>
-<tr class="separator:a7128fa5e22c5c3343c7bb9ebae73dcc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa6edee7f9e6e781acddbdbeffb1b1bb1"><td class="memTemplParams" colspan="2"><a id="aa6edee7f9e6e781acddbdbeffb1b1bb1"></a>
+template&lt;class T , typename... _Args&gt; </td></tr>
+<tr class="memitem:aa6edee7f9e6e781acddbdbeffb1b1bb1"><td class="memTemplItemLeft" align="right" valign="top">T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>add_actor</b> (handle_t &amp;handle, _Args &amp;&amp;...__args)</td></tr>
+<tr class="separator:aa6edee7f9e6e781acddbdbeffb1b1bb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ad520e1427e817e67aa30284a0cb6f5"><td class="memTemplParams" colspan="2"><a id="a6ad520e1427e817e67aa30284a0cb6f5"></a>
+template&lt;class T &gt; </td></tr>
+<tr class="memitem:a6ad520e1427e817e67aa30284a0cb6f5"><td class="memTemplItemLeft" align="right" valign="top">T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>get_actor</b> (const handle_t &amp;handle)</td></tr>
+<tr class="separator:a6ad520e1427e817e67aa30284a0cb6f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a420a3e4a36deecd09a940fd77377c6c6"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; class <a class="el" href="classnen_1_1renderer.html">renderer</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnen_1_1base__scene.html#a420a3e4a36deecd09a940fd77377c6c6">GetRenderer</a> () const</td></tr>
 <tr class="memdesc:a420a3e4a36deecd09a940fd77377c6c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the Renderer object.  <a href="classnen_1_1base__scene.html#a420a3e4a36deecd09a940fd77377c6c6">More...</a><br /></td></tr>
 <tr class="separator:a420a3e4a36deecd09a940fd77377c6c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -168,61 +168,6 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Base of scene class. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="a4c3f796a0bfc41b4540991227be2804f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4c3f796a0bfc41b4540991227be2804f">&#9670;&nbsp;</a></span>add_actor()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class T , typename... _Args&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">T&amp; nen::base_scene::add_actor </td>
-          <td>(</td>
-          <td class="paramtype">std::uint32_t &amp;&#160;</td>
-          <td class="paramname"><em>store_value</em> = <code>m_default_handle</code>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">_Args &amp;&amp;...&#160;</td>
-          <td class="paramname"><em>__args</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Add actor to scene. </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">T</td><td>actor type </td></tr>
-    <tr><td class="paramname">_Args</td><td>arguments </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">store_value</td><td>store value </td></tr>
-    <tr><td class="paramname">__args</td><td>arguments </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>T&amp; Actor object </dd></dl>
-
-</div>
-</div>
 <a id="a3d8ed3eaae62c48d1031c9ad54691445"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3d8ed3eaae62c48d1031c9ad54691445">&#9670;&nbsp;</a></span>AddGUI()</h2>
 
@@ -246,49 +191,6 @@ template&lt;class T , typename... _Args&gt; </div>
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<a id="a7128fa5e22c5c3343c7bb9ebae73dcc2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7128fa5e22c5c3343c7bb9ebae73dcc2">&#9670;&nbsp;</a></span>get_actor()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class T &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">T&amp; nen::base_scene::get_actor </td>
-          <td>(</td>
-          <td class="paramtype">std::uint32_t&#160;</td>
-          <td class="paramname"><em>stored_value</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Get the actor object. </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">T</td><td>actor type </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">stored_value</td><td></td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>T&amp; Actor object </dd></dl>
 
 </div>
 </div>

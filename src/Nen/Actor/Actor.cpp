@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <type_traits>
 namespace nen {
-uint32_t base_actor::m_default_handle = 0;
 base_actor::base_actor(base_scene &scene)
     : mState(state::Active), mPosition(vector3::Zero),
       mRotation(quaternion::Identity), mScene(scene),
@@ -13,7 +12,7 @@ base_actor::~base_actor() { m_components.clear(); }
 
 void base_actor::UpdateActor(float deltaTime) {
   if (mState == state::Active) {
-    for (const auto &comp : m_components) {
+    for (const auto &comp : m_components.data) {
       comp.second->Update(deltaTime);
     }
     Update(deltaTime);
@@ -41,17 +40,11 @@ void base_actor::ComputeWorldTransform() {
     this->mWorldTransform = s * r * t;
 
     // Inform components world transform updated
-    for (const auto &comp : m_components) {
+    for (const auto &comp : m_components.data) {
       comp.second->OnUpdateWorldTransform();
     }
   }
 }
 const input_state &base_actor::GetInput() { return mScene.GetInput(); }
 
-uint32_t base_actor::get_handle() {
-  uint32_t handle = 0;
-  while (m_components.contains(handle))
-    ++handle;
-  return handle;
-}
 } // namespace nen

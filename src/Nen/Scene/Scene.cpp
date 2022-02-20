@@ -1,5 +1,6 @@
 #include "Scene/Scene.hpp"
 #include "../event/current_event.hpp"
+#include "Actor/Actor.hpp"
 #include "Input/KeyCode.hpp"
 #include "Utility/Singleton.hpp"
 #include "imgui.h"
@@ -13,7 +14,6 @@
 #include <iostream>
 
 namespace nen {
-std::uint32_t base_scene::m_default_handle = 0;
 
 void base_scene::Initialize() {
   Setup();
@@ -54,9 +54,6 @@ void base_scene::ProcessInput() {
   }
   if (mGameState == game_state::Quit)
     return;
-  mUpdatingActors = true;
-
-  mUpdatingActors = false;
 }
 
 void base_scene::UpdateScene() {
@@ -69,27 +66,23 @@ void base_scene::UpdateScene() {
 
   this->Update(deltaTime);
   // All actors update
-  mUpdatingActors = true;
-  for (const auto &actor : m_actor_map) {
-    actor.second->UpdateActor(deltaTime);
+  for (auto &i : m_actor.data) {
+    i.second->UpdateActor(deltaTime);
   }
-  mUpdatingActors = false;
-
   // erase dead actors
-  for (auto itr = m_actor_map.begin(); itr != m_actor_map.end();) {
+  for (auto itr = m_actor.data.begin(); itr != m_actor.data.end();) {
     if (itr->second->GetState() == base_actor::state::Dead) {
-      itr = m_actor_map.erase(itr);
+      itr = m_actor.data.erase(itr);
     } else {
       ++itr;
     }
   }
-
   mSoundSystem->Update(deltaTime);
 }
 
 void base_scene::Setup() {}
 
-void base_scene::UnloadData() { m_actor_map.clear(); }
+void base_scene::UnloadData() { m_actor.clear(); }
 
 void base_scene::Update(float deltaTime) {}
 
@@ -100,13 +93,6 @@ void base_scene::AddGUI(std::shared_ptr<ui_screen> ui) {
 }
 void base_scene::RemoveGUI(std::shared_ptr<ui_screen> ui) {
   GetRenderer()->RemoveGUI(ui);
-}
-
-uint32_t base_scene::get_handle() {
-  uint32_t handle = 0;
-  while (m_actor_map.contains(handle))
-    ++handle;
-  return handle;
 }
 
 } // namespace nen

@@ -47,6 +47,8 @@
 #include "Time/Timer.hpp"
 #include "Utility/NonCopyable.hpp"
 #include "Utility/Singleton.hpp"
+#include "Utility/dynamic_handler.hpp"
+#include "Utility/static_handler.hpp"
 #include "Vertex/Vertex.hpp"
 #include "Vertex/VertexArray.hpp"
 #include "Window/Window.hpp"

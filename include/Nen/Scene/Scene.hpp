@@ -1,9 +1,13 @@
 ﻿#pragma once
 #include "../Input/InputSystem.hpp"
+#include "../Utility/dynamic_handler.hpp"
+#include "Utility/dynamic_handler.hpp"
+#include "Utility/handle_t.hpp"
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace nen {
@@ -62,33 +66,13 @@ public:
    */
   void Shutdown();
 
-  /**
-   * @brief Add actor to scene
-   *
-   * @tparam T actor type
-   * @tparam _Args arguments
-   * @param store_value store value
-   * @param __args arguments
-   * @return T& Actor object
-   */
   template <class T, typename... _Args>
-  T &add_actor(std::uint32_t &store_value = m_default_handle,
-               _Args &&...__args) {
-    store_value = get_handle();
-    m_actor_map.emplace(
-        store_value,
-        std::make_unique<T>(*this, std::forward<_Args>(__args)...));
-    return *reinterpret_cast<T *>(m_actor_map[store_value].get());
+  T &add_actor(handle_t &handle, _Args &&...__args) {
+    return m_actor.add<T>(handle, *this, std::forward<_Args>(__args)...);
   }
-  /**
-   * @brief Get the actor object
-   *
-   * @tparam T actor type
-   * @param stored_value
-   * @return T& Actor object
-   */
-  template <class T> T &get_actor(std::uint32_t stored_value) {
-    return *reinterpret_cast<T *>(m_actor_map[stored_value].get());
+
+  template <class T> T &get_actor(const handle_t &handle) {
+    return m_actor.get<T>(handle);
   }
 
   /**
@@ -178,16 +162,12 @@ private:
   void UnloadData();
   void ProcessInput();
   void UpdateScene();
-  uint32_t get_handle();
-  std::unordered_map<std::uint32_t, std::unique_ptr<class base_actor>>
-      m_actor_map;
+  dynamic_handler<class base_actor> m_actor;
   std::shared_ptr<class input_system> mInputSystem;
   std::shared_ptr<class sound_system> mSoundSystem;
   std::shared_ptr<class renderer> mRenderer;
   game_state mGameState = game_state::Gameplay;
   uint32_t mTicksCount = 0;
-  bool mUpdatingActors = false;
-  static std::uint32_t m_default_handle;
 };
 void ChangeScene(std::unique_ptr<base_scene> newScene);
 

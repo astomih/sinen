@@ -4,6 +4,8 @@
 #include "../Math/Matrix4.hpp"
 #include "../Math/Quaternion.hpp"
 #include "../Math/Vector3.hpp"
+#include "Component/MoveComponent.hpp"
+#include "Utility/dynamic_handler.hpp"
 #include <cstdint>
 #include <memory>
 #include <type_traits>
@@ -130,28 +132,15 @@ public:
   base_scene &GetScene() { return mScene; }
 
   template <class T, typename... _Args>
-  T &add_component(std::uint32_t &store_value = m_default_handle,
-                   _Args &&...__args) {
-    store_value = get_handle();
-    m_components.emplace(
-        store_value,
-        std::make_unique<T>(*this, std::forward<_Args>(__args)...));
-    return *reinterpret_cast<T *>(m_components[store_value].get());
+  T &add_component(std::uint32_t &handle, _Args &&...__args) {
+    return m_components.add<T>(handle, *this, std::forward<_Args>(__args)...);
   }
-  template <class T> T &get_component(std::uint32_t stored_value) {
-    auto it = m_components.find(stored_value);
-    if (it == m_components.end()) {
-      throw std::runtime_error("component not found");
-    }
-    base_component *ptr = it->second.get();
-    return *static_cast<T *>(ptr);
+  template <class T> T &get_component(std::uint32_t handle) {
+    return m_components.get<T>(handle);
   }
 
   void remove_component(std::uint32_t stored_value) {
-    if (m_components.find(stored_value) == m_components.end()) {
-      throw std::runtime_error("component not found");
-    }
-    m_components.erase(stored_value);
+    m_components.remove(stored_value);
   }
 
   bool isRecompute() { return mRecomputeWorldTransform; }
@@ -163,15 +152,12 @@ protected:
   bool mRecomputeWorldTransform;
 
 private:
-  uint32_t get_handle();
   state mState;
   matrix4 mWorldTransform;
   vector3 mPosition;
   quaternion mRotation;
-  std::unordered_map<std::uint32_t, std::unique_ptr<base_component>>
-      m_components;
+  dynamic_handler<base_component> m_components;
   base_scene &mScene;
   vector3 mScale;
-  static std::uint32_t m_default_handle;
-};
+}; // namespace nen
 } // namespace nen

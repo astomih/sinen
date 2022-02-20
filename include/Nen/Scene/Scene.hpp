@@ -74,11 +74,11 @@ public:
   template <class T, typename... _Args>
   T &add_actor(std::uint32_t &store_value = m_default_handle,
                _Args &&...__args) {
-    auto actor = std::make_unique<T>(*this, std::forward<_Args>(__args)...);
-    store_value = search_space_actor_map();
-    m_actor_map.emplace(store_value, std::move(actor));
-    base_actor *ptr = m_actor_map[store_value].get();
-    return *reinterpret_cast<T *>(ptr);
+    store_value = get_handle();
+    m_actor_map.emplace(
+        store_value,
+        std::make_unique<T>(*this, std::forward<_Args>(__args)...));
+    return *reinterpret_cast<T *>(m_actor_map[store_value].get());
   }
   /**
    * @brief Get the actor object
@@ -88,8 +88,7 @@ public:
    * @return T& Actor object
    */
   template <class T> T &get_actor(std::uint32_t stored_value) {
-    base_actor *ptr = m_actor_map[stored_value].get();
-    return *reinterpret_cast<T *>(ptr);
+    return *reinterpret_cast<T *>(m_actor_map[stored_value].get());
   }
 
   /**
@@ -179,7 +178,7 @@ private:
   void UnloadData();
   void ProcessInput();
   void UpdateScene();
-  uint32_t search_space_actor_map();
+  uint32_t get_handle();
   std::unordered_map<std::uint32_t, std::unique_ptr<class base_actor>>
       m_actor_map;
   std::shared_ptr<class input_system> mInputSystem;

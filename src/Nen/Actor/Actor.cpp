@@ -1,5 +1,6 @@
 #include <Nen.hpp>
 #include <algorithm>
+#include <cstdint>
 #include <type_traits>
 namespace nen {
 uint32_t base_actor::m_default_handle = 0;
@@ -46,4 +47,11 @@ void base_actor::ComputeWorldTransform() {
   }
 }
 const input_state &base_actor::GetInput() { return mScene.GetInput(); }
+
+uint32_t base_actor::get_handle() {
+  uint32_t handle = 0;
+  while (m_components.contains(handle))
+    ++handle;
+  return handle;
+}
 } // namespace nen

@@ -10,6 +10,7 @@ public:
   // Constructor
   // (the lower the update order, the earlier the component updates)
   base_component(class base_actor &owner, int updateOrder = 100);
+  base_component(const base_component &) = delete;
   // Destructor
   virtual ~base_component();
   // Update this component by delta time

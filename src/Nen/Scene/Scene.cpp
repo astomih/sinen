@@ -102,11 +102,10 @@ void base_scene::RemoveGUI(std::shared_ptr<ui_screen> ui) {
   GetRenderer()->RemoveGUI(ui);
 }
 
-uint32_t base_scene::search_space_actor_map() {
+uint32_t base_scene::get_handle() {
   uint32_t handle = 0;
-  while (m_actor_map.find(handle) != m_actor_map.end()) {
+  while (m_actor_map.contains(handle))
     ++handle;
-  }
   return handle;
 }
 

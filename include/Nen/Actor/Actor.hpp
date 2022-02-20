@@ -31,6 +31,7 @@ public:
    * @param scene Parent scene
    */
   base_actor(base_scene &scene);
+  base_actor(const base_actor &) = delete;
 
   /**
    * @brief Destroy the base actor object
@@ -131,11 +132,11 @@ public:
   template <class T, typename... _Args>
   T &add_component(std::uint32_t &store_value = m_default_handle,
                    _Args &&...__args) {
-    auto component = std::make_unique<T>(*this, std::forward<_Args>(__args)...);
-    store_value = m_next_handle++;
-    m_components.emplace(store_value, std::move(component));
-    base_component *ptr = m_components[store_value].get();
-    return *static_cast<T *>(ptr);
+    store_value = get_handle();
+    m_components.emplace(
+        store_value,
+        std::make_unique<T>(*this, std::forward<_Args>(__args)...));
+    return *reinterpret_cast<T *>(m_components[store_value].get());
   }
   template <class T> T &get_component(std::uint32_t stored_value) {
     auto it = m_components.find(stored_value);
@@ -162,6 +163,7 @@ protected:
   bool mRecomputeWorldTransform;
 
 private:
+  uint32_t get_handle();
   state mState;
   matrix4 mWorldTransform;
   vector3 mPosition;
@@ -171,6 +173,5 @@ private:
   base_scene &mScene;
   vector3 mScale;
   static std::uint32_t m_default_handle;
-  std::uint32_t m_next_handle;
 };
 } // namespace nen

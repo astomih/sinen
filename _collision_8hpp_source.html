@@ -71,18 +71,21 @@ $(function() {
 <div class="title">Collision.hpp</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="preprocessor">#include &quot;../Math/Math.hpp&quot;</span></div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="preprocessor">#include &quot;../Math/Vector3.hpp&quot;</span></div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="keyword">namespace </span>nen {</div>
-<div class="line"><a name="l00005"></a><span class="lineno"><a class="line" href="classnen_1_1collision.html">    5</a></span>&#160;<span class="keyword">class </span><a class="code" href="classnen_1_1collision.html">collision</a> {</div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">int</span> IntersectAABB(<span class="keyword">const</span> <a class="code" href="classnen_1_1vector3.html">vector3</a> &amp;a, <span class="keyword">const</span> <a class="code" href="classnen_1_1vector3.html">vector3</a> &amp;b,</div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;                           <span class="keyword">const</span> <a class="code" href="classnen_1_1vector3.html">vector3</a> &amp;detectSpace);</div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;};</div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;} <span class="comment">// namespace nen</span></div>
-<div class="ttc" id="aclassnen_1_1collision_html"><div class="ttname"><a href="classnen_1_1collision.html">nen::collision</a></div><div class="ttdef"><b>Definition:</b> Collision.hpp:5</div></div>
-<div class="ttc" id="aclassnen_1_1vector3_html"><div class="ttname"><a href="classnen_1_1vector3.html">nen::vector3</a></div><div class="ttdef"><b>Definition:</b> Vector3.hpp:5</div></div>
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="preprocessor">#ifndef NEN_COLLISION_HPP</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="preprocessor">#define NEN_COLLISION_HPP</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="preprocessor">#include &quot;../Math/Math.hpp&quot;</span></div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &quot;../Math/Vector3.hpp&quot;</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#include &quot;primitive.hpp&quot;</span></div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160; </div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="keyword">namespace </span>nen {</div>
+<div class="line"><a name="l00008"></a><span class="lineno"><a class="line" href="classnen_1_1collision.html">    8</a></span>&#160;<span class="keyword">class </span><a class="code" href="classnen_1_1collision.html">collision</a> {</div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">bool</span> aabb_aabb(<span class="keyword">const</span> <a class="code" href="structnen_1_1aabb.html">aabb</a> &amp;a, <span class="keyword">const</span> <a class="code" href="structnen_1_1aabb.html">aabb</a> &amp;b);</div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;};</div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;} <span class="comment">// namespace nen</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassnen_1_1collision_html"><div class="ttname"><a href="classnen_1_1collision.html">nen::collision</a></div><div class="ttdef"><b>Definition:</b> Collision.hpp:8</div></div>
+<div class="ttc" id="astructnen_1_1aabb_html"><div class="ttname"><a href="structnen_1_1aabb.html">nen::aabb</a></div><div class="ttdef"><b>Definition:</b> primitive.hpp:40</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

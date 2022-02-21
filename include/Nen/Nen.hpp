@@ -19,6 +19,7 @@
 #include "Component/ScriptComponent.hpp"
 #include "Component/SoundComponent.hpp"
 #include "Component/TextComponent.hpp"
+#include "Component/rigidbody_component.hpp"
 #include "DrawObject/DrawObject.hpp"
 #include "Font/Font.hpp"
 #include "GUI/Button.hpp"

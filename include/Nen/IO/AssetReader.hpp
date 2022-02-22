@@ -45,5 +45,7 @@ public:
 
   static void ConvertFilePath(std::string &filePath, std::string_view name,
                               const asset_type &assetType);
+  static std::string ConvertFilePath(std::string_view name,
+                                     const asset_type &assetType);
 };
 } // namespace nen

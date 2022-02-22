@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "../Input/InputSystem.hpp"
 #include "../Utility/dynamic_handler.hpp"
+#include "Script/Script.hpp"
 #include "Utility/dynamic_handler.hpp"
 #include "Utility/handle_t.hpp"
 #include <cstdint>
@@ -97,27 +98,12 @@ public:
    * @param ui
    */
   void RemoveGUI(std::shared_ptr<class ui_screen> ui);
-  /**
-   * @brief Get the Renderer object
-   *
-   * @return std::shared_ptr<class renderer>
-   */
+
   class renderer &GetRenderer();
-  /**
-   * @brief Get the Input object
-   *
-   * @return const input_state&
-   */
   const input_state &GetInput();
-  /**
-   * @brief Get the Sound object
-   *
-   * @return sound_system&
-   */
-  sound_system &GetSound();
-
+  class sound_system &GetSound();
+  class script_system &get_script();
   class manager &get_manager();
-
   void change_scene(std::unique_ptr<base_scene> next_scene);
 
 protected:

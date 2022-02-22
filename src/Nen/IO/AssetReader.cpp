@@ -2,6 +2,7 @@
 #include <SDL.h>
 #include <SDL_rwops.h>
 #include <mutex>
+#include <string_view>
 #include <thread>
 
 namespace nen {
@@ -92,4 +93,11 @@ void asset_reader::ConvertFilePath(std::string &filePath, std::string_view name,
     break;
   }
 }
+std::string asset_reader::ConvertFilePath(std::string_view name,
+                                          const asset_type &assetType) {
+  std::string filePath;
+  ConvertFilePath(filePath, name, assetType);
+  return filePath;
+}
+
 } // namespace nen

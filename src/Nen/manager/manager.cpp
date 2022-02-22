@@ -69,7 +69,7 @@ void manager::launch(std::unique_ptr<base_scene> scene) {
     nen::logger::Info("Failed to initialize input system");
     std::exit(-1);
   }
-  m_script_system = std::make_unique<nen::script_system>();
+  m_script_system = std::make_unique<nen::script_system>(*this);
   if (!m_script_system->initialize()) {
     nen::logger::Info("Failed to initialize script system");
     std::exit(-1);

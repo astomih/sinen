@@ -95,26 +95,15 @@ void base_scene::RemoveGUI(std::shared_ptr<ui_screen> ui) {
   GetRenderer().RemoveGUI(ui);
 }
 
-/**
- * @brief Get the Renderer object
- *
- * @return std::shared_ptr<class renderer>
- */
 renderer &base_scene::GetRenderer() { return m_manager.get_renderer(); }
-/**
- * @brief Get the Input object
- *
- * @return const input_state&
- */
 const input_state &base_scene::GetInput() {
   return m_manager.get_input_system().GetState();
 }
-/**
- * @brief Get the Sound object
- *
- * @return sound_system&
- */
 sound_system &base_scene::GetSound() { return m_manager.get_sound_system(); }
+
+script_system &base_scene::get_script() {
+  return m_manager.get_script_system();
+}
 
 manager &base_scene::get_manager() { return m_manager; }
 

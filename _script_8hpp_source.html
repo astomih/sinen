@@ -81,19 +81,20 @@ $(function() {
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;}</div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160; </div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="keyword">namespace </span>nen {</div>
-<div class="line"><a name="l00011"></a><span class="lineno"><a class="line" href="classnen_1_1script.html">   11</a></span>&#160;<span class="keyword">class </span><a class="code" href="classnen_1_1script.html">script</a> {</div>
+<div class="line"><a name="l00011"></a><span class="lineno"><a class="line" href="classnen_1_1script__system.html">   11</a></span>&#160;<span class="keyword">class </span><a class="code" href="classnen_1_1script__system.html">script_system</a> {</div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;  <a class="code" href="classnen_1_1script.html">script</a>() = <span class="keywordflow">default</span>;</div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">void</span> Create();</div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;  <span class="keyword">static</span> <span class="keyword">class </span>sol::state *GetSolState();</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;  <span class="keyword">static</span> <span class="keyword">const</span> <a class="code" href="classnen_1_1script.html">script</a> &amp;Get() { <span class="keywordflow">return</span> *instance; }</div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">void</span> DoScript(std::string_view fileName);</div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;  <a class="code" href="classnen_1_1script__system.html">script_system</a>();</div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;  ~<a class="code" href="classnen_1_1script__system.html">script_system</a>();</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;  <span class="keywordtype">bool</span> initialize();</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;  <span class="keyword">class </span>sol::state &amp;get_sol_state();</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;  <span class="keywordtype">void</span> DoScript(std::string_view fileName);</div>
 <div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160; </div>
 <div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> std::unique_ptr&lt;script&gt; instance;</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;};</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;} <span class="comment">// namespace nen</span></div>
-<div class="ttc" id="aclassnen_1_1script_html"><div class="ttname"><a href="classnen_1_1script.html">nen::script</a></div><div class="ttdef"><b>Definition:</b> Script.hpp:11</div></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;  <span class="keyword">class </span>implement;</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;  std::unique_ptr&lt;implement&gt; m_impl;</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;};</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;} <span class="comment">// namespace nen</span></div>
+<div class="ttc" id="aclassnen_1_1script__system_html"><div class="ttname"><a href="classnen_1_1script__system.html">nen::script_system</a></div><div class="ttdef"><b>Definition:</b> Script.hpp:11</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

@@ -8,15 +8,16 @@ class state;
 }
 
 namespace nen {
-class script {
+class script_system {
 public:
-  script() = default;
-  static void Create();
-  static class sol::state *GetSolState();
-  static const script &Get() { return *instance; }
-  static void DoScript(std::string_view fileName);
+  script_system();
+  ~script_system();
+  bool initialize();
+  class sol::state &get_sol_state();
+  void DoScript(std::string_view fileName);
 
 private:
-  static inline std::unique_ptr<script> instance;
+  class implement;
+  std::unique_ptr<implement> m_impl;
 };
 } // namespace nen

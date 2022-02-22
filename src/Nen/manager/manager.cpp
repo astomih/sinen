@@ -36,7 +36,7 @@ void manager::launch(std::unique_ptr<base_scene> scene) {
   std::ifstream ifs("./api");
   std::string str;
   if (ifs.fail())
-    throw std::runtime_error("api file not found.");
+    str = "Vulkan";
   std::getline(ifs, str);
   if (str.compare("Vulkan") == 0) {
     m_window->Initialize(nen::vector2(1280, 720), "Nen : Vulkan",
@@ -67,11 +67,13 @@ void manager::launch(std::unique_ptr<base_scene> scene) {
   m_input_system = std::make_unique<nen::input_system>(*this);
   if (!m_input_system->Initialize()) {
     nen::logger::Info("Failed to initialize input system");
+    std::exit(-1);
   }
-  nen::logger::Info("Input system initialized.");
-  // スクリプトのインスタンスを作成
-  nen::script::Create();
-  nen::logger::Info("Script system initialized.");
+  m_script_system = std::make_unique<nen::script_system>();
+  if (!m_script_system->initialize()) {
+    nen::logger::Info("Failed to initialize script system");
+    std::exit(-1);
+  }
   m_current_scene->Initialize();
 
 #if !defined(EMSCRIPTEN)

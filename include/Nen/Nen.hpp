@@ -3,6 +3,7 @@
 #ifdef ANDROID
 #define MOBILE
 #endif
+
 #include "manager/manager.hpp"
 
 #include "Actor/Actor.hpp"
@@ -57,6 +58,8 @@
 #include "Window/Window.hpp"
 #include "exception/exception.hpp"
 #include "instancing/instancing.hpp"
+
+#include <sol/sol.hpp>
 
 #endif
 #ifdef NO_USE_NEN_NAMESPACE

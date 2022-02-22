@@ -75,22 +75,24 @@ $(function() {
 <div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="preprocessor">#include &quot;../Script/Script.hpp&quot;</span></div>
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="preprocessor">#include &quot;Component.hpp&quot;</span></div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &lt;string&gt;</span></div>
-<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="keyword">namespace </span>nen {</div>
-<div class="line"><a name="l00006"></a><span class="lineno"><a class="line" href="classnen_1_1script__component.html">    6</a></span>&#160;<span class="keyword">class </span><a class="code" href="classnen_1_1script__component.html">script_component</a> : <span class="keyword">public</span> <a class="code" href="classnen_1_1base__component.html">base_component</a> {</div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;  <a class="code" href="classnen_1_1script__component.html">script_component</a>(<span class="keyword">class</span> <a class="code" href="classnen_1_1base__actor.html">base_actor</a> &amp;owner, <span class="keywordtype">int</span> updateOrder = 100);</div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;  <span class="keywordtype">void</span> Update(<span class="keywordtype">float</span> dt) <span class="keyword">override</span>;</div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;  <span class="keywordtype">void</span> DoScript(std::string_view funcName);</div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160; </div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;  <span class="keywordtype">float</span> delta_time;</div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;  <a class="code" href="classnen_1_1script__system.html">script_system</a> &amp;m_script;</div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;};</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;} <span class="comment">// namespace nen</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#include &lt;string_view&gt;</span></div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="keyword">namespace </span>nen {</div>
+<div class="line"><a name="l00007"></a><span class="lineno"><a class="line" href="classnen_1_1script__component.html">    7</a></span>&#160;<span class="keyword">class </span><a class="code" href="classnen_1_1script__component.html">script_component</a> : <span class="keyword">public</span> <a class="code" href="classnen_1_1base__component.html">base_component</a> {</div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;  <a class="code" href="classnen_1_1script__component.html">script_component</a>(<span class="keyword">class</span> <a class="code" href="classnen_1_1base__actor.html">base_actor</a> &amp;owner, std::string_view identification);</div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;  <span class="keywordtype">void</span> Update(<span class="keywordtype">float</span> dt) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;  <span class="keywordtype">void</span> DoScript(std::string_view funcName);</div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160; </div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;  <span class="keywordtype">float</span> delta_time;</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;  std::string script_name;</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;  <a class="code" href="classnen_1_1script__system.html">script_system</a> &amp;m_script;</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;};</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;} <span class="comment">// namespace nen</span></div>
 <div class="ttc" id="aclassnen_1_1base__actor_html"><div class="ttname"><a href="classnen_1_1base__actor.html">nen::base_actor</a></div><div class="ttdoc">Base of all actors.</div><div class="ttdef"><b>Definition:</b> Actor.hpp:22</div></div>
 <div class="ttc" id="aclassnen_1_1base__component_html"><div class="ttname"><a href="classnen_1_1base__component.html">nen::base_component</a></div><div class="ttdef"><b>Definition:</b> Component.hpp:8</div></div>
-<div class="ttc" id="aclassnen_1_1script__component_html"><div class="ttname"><a href="classnen_1_1script__component.html">nen::script_component</a></div><div class="ttdef"><b>Definition:</b> ScriptComponent.hpp:6</div></div>
-<div class="ttc" id="aclassnen_1_1script__system_html"><div class="ttname"><a href="classnen_1_1script__system.html">nen::script_system</a></div><div class="ttdef"><b>Definition:</b> Script.hpp:11</div></div>
+<div class="ttc" id="aclassnen_1_1script__component_html"><div class="ttname"><a href="classnen_1_1script__component.html">nen::script_component</a></div><div class="ttdef"><b>Definition:</b> ScriptComponent.hpp:7</div></div>
+<div class="ttc" id="aclassnen_1_1script__system_html"><div class="ttname"><a href="classnen_1_1script__system.html">nen::script_system</a></div><div class="ttdef"><b>Definition:</b> Script.hpp:9</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

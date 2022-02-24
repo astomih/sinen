@@ -10,10 +10,7 @@ button::button(const std::string &name, std::shared_ptr<font> font,
 
 button::~button() {}
 
-void button::SetName(const std::string &name) {
-  mName = name;
-  mNameTex = mFont->RenderText(mName);
-}
+void button::SetName(const std::string &name) { mName = name; }
 
 bool button::ContainsPoint(const vector2 &pt) const {
   const bool no = pt.x < (mPosition.x - mDimensions.x / 2.0f) ||

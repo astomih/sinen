@@ -35,10 +35,7 @@ void ui_screen::HandleInput(const input_state &state) {
 void ui_screen::Close() { mState = State::Closing; }
 
 void ui_screen::SetTitle(std::string_view text, const color &color,
-                         int pointSize) {
-  // Clear out previous title texture if it exists
-  const auto font = mFont->RenderText(text.data(), color);
-}
+                         int pointSize) {}
 
 void ui_screen::AddButton(std::string_view name,
                           std::function<void()> onClick) {

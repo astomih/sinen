@@ -5,8 +5,7 @@
 namespace nen {
 script_component::script_component(base_actor &owner,
                                    std::string_view identification)
-    : base_component(owner),
-      m_script(owner.GetScene().get_manager().get_script_system()) {
+    : base_component(owner), m_script(owner.GetScene().get_script()) {
   sol::state &lua = m_script.get_sol_state();
   lua[identification.data()] = &mOwner;
 }

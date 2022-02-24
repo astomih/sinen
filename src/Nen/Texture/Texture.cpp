@@ -33,10 +33,11 @@ SDL_Surface &surface_handler::Load(std::string_view string) {
   return *surfaces[std::string(string)].get();
 }
 class texture::Impl {};
-std::string texture_asset::texname = "default";
-std::unordered_map<std::string, std::shared_ptr<texture>>
-    texture_asset::mTexture;
 texture::texture() : impl(nullptr), width(0), height(0) {}
+texture::texture(std::string_view file_name)
+    : impl(nullptr), width(0), height(0) {
+  Load(file_name);
+}
 
 texture::~texture() = default;
 

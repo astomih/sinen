@@ -19,7 +19,7 @@ public:
   void world_to_instance_data(const matrix4 &mat, instance_data &data);
 
   std::shared_ptr<draw_object> object;
-  std::shared_ptr<texture> _texture;
+  handle_t _texture;
   object_type type;
   std::size_t size;
   std::vector<instance_data> data;

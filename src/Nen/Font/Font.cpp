@@ -5,6 +5,9 @@
 #include <cassert>
 
 namespace nen {
+font::font(std::string_view file_name, int32_t point) {
+  LoadFromFile(file_name, point);
+}
 bool font::LoadFromFile(std::string_view fontName, int pointSize) {
   this->fontName = fontName;
   this->pointSize = pointSize;
@@ -18,17 +21,15 @@ bool font::LoadFromFile(std::string_view fontName, int pointSize) {
   return (isLoad = true);
 }
 
-std::shared_ptr<texture> font::RenderText(std::string_view text,
-                                          const color &_color, quality quality,
-                                          const color &backgroundColor) {
-  auto tex = std::make_shared<texture>();
+void font::RenderText(texture &tex, std::string_view text, const color &_color,
+                      quality quality, const color &backgroundColor) {
   // My Color to SDL_Color
   SDL_Color sdlColor;
   sdlColor.r = static_cast<Uint8>(_color.r * 255);
   sdlColor.g = static_cast<Uint8>(_color.g * 255);
   sdlColor.b = static_cast<Uint8>(_color.b * 255);
   sdlColor.a = 255;
-  tex->id = std::string(text);
+  tex.id = std::string(text);
   ::SDL_Surface *surf = nullptr;
   switch (quality) {
   case nen::font::quality::Solid:
@@ -41,20 +42,19 @@ std::shared_ptr<texture> font::RenderText(std::string_view text,
     bg.g = static_cast<Uint8>(_color.g * 255);
     bg.b = static_cast<Uint8>(_color.b * 255);
     bg.a = 255;
-    surf = ::TTF_RenderUTF8_Shaded((::TTF_Font*)m_font, std::string(text).c_str(), sdlColor,
-                                   bg);
+    surf = ::TTF_RenderUTF8_Shaded((::TTF_Font *)m_font,
+                                   std::string(text).c_str(), sdlColor, bg);
   } break;
   case nen::font::quality::Blended:
-    surf =
-        ::TTF_RenderUTF8_Blended((::TTF_Font*)m_font, std::string(text).c_str(), sdlColor);
+    surf = ::TTF_RenderUTF8_Blended((::TTF_Font *)m_font,
+                                    std::string(text).c_str(), sdlColor);
     break;
   default:
     break;
   }
-  tex->SetWidth(surf->w);
-  tex->SetHeight(surf->h);
+  tex.SetWidth(surf->w);
+  tex.SetHeight(surf->h);
   surface_handler::Register(
       text, std::move(std::unique_ptr<::SDL_Surface, SDLObjectCloser>(surf)));
-  return tex;
 }
 } // namespace nen

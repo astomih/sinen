@@ -16,6 +16,7 @@ struct shader_parameter {
 class texture {
 public:
   texture();
+  texture(std::string_view file_name);
   ~texture();
   bool Load(std::string_view fileName);
   bool LoadFromMemory(std::vector<char> &buffer, std::string_view ID);
@@ -40,19 +41,5 @@ private:
   std::unique_ptr<Impl> impl;
   int width = 0;
   int height = 0;
-};
-class texture_asset {
-public:
-  static void Store(std::string_view name, std::shared_ptr<texture> texture) {
-    mTexture.emplace(name, texture);
-  }
-  static std::shared_ptr<texture> Load(std::string_view name) {
-    return mTexture.at(name.data());
-  }
-  static std::shared_ptr<texture> Load() { return mTexture[texname]; }
-
-private:
-  static std::string texname;
-  static std::unordered_map<std::string, std::shared_ptr<texture>> mTexture;
 };
 } // namespace nen

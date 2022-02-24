@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "../Math/Vector2.hpp"
+#include "../Utility/handler.hpp"
 #include "Component.hpp"
 namespace nen {
 class draw_3d_component : public base_component {
@@ -30,8 +31,7 @@ public:
    * @param texture 使用するテクスチャ
    * @param shape 使用する頂点配列
    */
-  void Create(std::shared_ptr<class texture> _texture,
-              std::string_view shape = "SPRITE");
+  void Create(handle_t handle, std::string_view shape = "SPRITE");
 
   /**
    * @brief 生成したDrawObjectを登録する
@@ -58,6 +58,5 @@ private:
   int mTexWidth = 0;
   int mTexHeight = 0;
   base_actor &mOwner;
-  std::shared_ptr<class texture> mTexture;
 };
 } // namespace nen

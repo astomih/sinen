@@ -234,18 +234,16 @@ void GLRenderer::UpdateVertexArray(const vertex_array &vArray,
                   vArrayGL.indices.data());
 }
 
-void GLRenderer::AddDrawObject2D(std::shared_ptr<class draw_object> sprite,
-                                 std::shared_ptr<texture> texture) {
-  registerTexture(texture);
+void GLRenderer::AddDrawObject2D(std::shared_ptr<class draw_object> sprite) {
+  registerTexture(sprite->texture_handle);
   pushSprite2d(sprite);
 }
 void GLRenderer::RemoveDrawObject2D(std::shared_ptr<class draw_object> sprite) {
   eraseSprite2d(sprite);
 }
 
-void GLRenderer::AddDrawObject3D(std::shared_ptr<class draw_object> sprite,
-                                 std::shared_ptr<texture> texture) {
-  registerTexture(texture);
+void GLRenderer::AddDrawObject3D(std::shared_ptr<class draw_object> sprite) {
+  registerTexture(sprite->texture_handle);
   pushSprite3d(sprite);
 }
 void GLRenderer::RemoveDrawObject3D(std::shared_ptr<class draw_object> sprite) {
@@ -314,8 +312,9 @@ void GLRenderer::prepare() {
   }
 }
 
-void GLRenderer::registerTexture(std::shared_ptr<texture> texture) {
-  ::SDL_Surface surf = surface_handler::Load(texture->id);
+void GLRenderer::registerTexture(handle_t handle) {
+  auto id = m_manager.get_texture_system().get_texture(handle).id;
+  ::SDL_Surface surf = surface_handler::Load(id);
   ::SDL_LockSurface(&surf);
   auto formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
   formatbuf->BytesPerPixel = 4;
@@ -333,7 +332,7 @@ void GLRenderer::registerTexture(std::shared_ptr<texture> texture) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-  mTextureIDs.emplace(texture->id, textureId);
+  mTextureIDs.emplace(id, textureId);
 }
 
 bool GLRenderer::loadShader() {

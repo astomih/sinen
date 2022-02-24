@@ -122,8 +122,11 @@ sound_system &base_scene::GetSound() { return m_manager.get_sound_system(); }
 script_system &base_scene::get_script() {
   return m_manager.get_script_system();
 }
+texture_system &base_scene::get_texture() {
+  return m_manager.get_texture_system();
+}
 
-manager &base_scene::get_manager() { return m_manager; }
+font_system &base_scene::get_font() { return m_manager.get_font_system(); }
 
 void base_scene::change_scene(std::uint32_t scene_number) {
   m_manager.change_scene(scene_number);

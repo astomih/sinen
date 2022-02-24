@@ -13,7 +13,10 @@ void text_component::SetString(const std::string &str, const color &color) {
     GetActor().GetScene().GetRenderer().RemoveDrawObject2D(this->GetSprite());
     this->GetSprite().reset();
   }
-  Create(mFont->RenderText(str, color));
+  handle_t handle = GetActor().GetScene().get_texture().add_texture();
+  auto &tex = GetActor().GetScene().get_texture().get_texture(handle);
+  mFont->RenderText(tex, str, color);
+  Create(handle);
 }
 void text_component::SetFont(std::shared_ptr<font> font) { mFont = font; }
 } // namespace nen

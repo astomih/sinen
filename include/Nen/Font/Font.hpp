@@ -12,6 +12,7 @@ namespace nen {
 class font {
 public:
   font() : m_font(nullptr), isLoad(false), pointSize(0){};
+  font(std::string_view file_name, int32_t point);
   ~font() = default;
 
   /**
@@ -63,10 +64,10 @@ public:
    * @param backgroundColor background color
    * @return std::shared_ptr<texture> rendered texture
    */
-  std::shared_ptr<texture>
-  RenderText(std::string_view text, const color &_color = palette::White,
-             quality _quality = quality::Blended,
-             const color &backgroundColor = palette::Black);
+  void RenderText(texture &tex, std::string_view text,
+                  const color &_color = palette::White,
+                  quality _quality = quality::Blended,
+                  const color &backgroundColor = palette::Black);
 
 private:
   int pointSize;

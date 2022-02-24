@@ -10,23 +10,22 @@
 #include "handle_t.hpp"
 
 namespace nen {
-template <class T> class dynamic_handler {
+template <class T> class handler {
 public:
-  dynamic_handler() = default;
-  dynamic_handler(const dynamic_handler &) = delete;
-  dynamic_handler(dynamic_handler &&) = default;
+  handler() = default;
+  handler(const handler &) = delete;
+  handler(handler &&) = default;
   std::unordered_map<handle_t, std::unique_ptr<T>> data;
 
   T &operator[](const handle_t &handle) {
     return *reinterpret_cast<T *>(data[handle].get());
   }
-  template <class S = T, typename... _Args>
-  S &add(handle_t &handle, _Args &&...__args) {
-    handle = 0;
+  template <class S = T, typename... _Args> handle_t add(_Args &&...__args) {
+    handle_t handle = 0;
     while (data.contains(handle))
       ++handle;
     data.emplace(handle, std::make_unique<S>(std::forward<_Args>(__args)...));
-    return get<S>(handle);
+    return handle;
   }
   template <class S = T> S &get(const handle_t &handle) {
     return *reinterpret_cast<S *>(data[handle].get());

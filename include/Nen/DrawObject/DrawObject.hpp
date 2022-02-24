@@ -2,6 +2,7 @@
 #include "../Math/Vector2.hpp"
 #include "../Shader/Shader.hpp"
 #include "../Texture/Texture.hpp"
+#include "../Utility/handler.hpp"
 #include "ObjectType.hpp"
 
 namespace nen {
@@ -11,6 +12,7 @@ public:
   ~draw_object() = default;
   shader_parameter param;
   std::string textureIndex;
+  handle_t texture_handle;
   std::string vertexIndex;
   shader shader_data;
   int drawOrder = 100;

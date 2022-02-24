@@ -61,12 +61,10 @@ public:
                       std::string_view name) override;
   void UpdateVertexArray(const vertex_array &vArray,
                          std::string_view name) override;
-  void AddDrawObject2D(std::shared_ptr<class draw_object> sprite,
-                       std::shared_ptr<texture> texture) override;
+  void AddDrawObject2D(std::shared_ptr<class draw_object> sprite) override;
   void RemoveDrawObject2D(std::shared_ptr<class draw_object> sprite) override;
 
-  void AddDrawObject3D(std::shared_ptr<class draw_object> sprite,
-                       std::shared_ptr<texture> texture) override;
+  void AddDrawObject3D(std::shared_ptr<class draw_object> sprite) override;
   void RemoveDrawObject3D(std::shared_ptr<class draw_object> sprite) override;
 
   void LoadShader(const shader &shaderInfo) override;
@@ -77,7 +75,7 @@ public:
 
   void prepare();
   void cleanup() {}
-  void registerTexture(std::shared_ptr<class texture>);
+  void registerTexture(handle_t handle);
   void pushSprite2d(std::shared_ptr<draw_object> sprite2d) {
     auto iter = mSprite2Ds.begin();
     for (; iter != mSprite2Ds.end(); ++iter) {

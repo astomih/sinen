@@ -29,18 +29,16 @@ void renderer::UnloadData() {}
 
 void renderer::Draw() { m_renderer->Render(); }
 
-void renderer::AddDrawObject2D(std::shared_ptr<nen::draw_object> drawObject,
-                               std::shared_ptr<texture> texture) {
-  m_renderer->AddDrawObject2D(drawObject, texture);
+void renderer::AddDrawObject2D(std::shared_ptr<nen::draw_object> drawObject) {
+  m_renderer->AddDrawObject2D(drawObject);
 }
 
 void renderer::RemoveDrawObject2D(std::shared_ptr<draw_object> drawObject) {
   m_renderer->RemoveDrawObject2D(drawObject);
 }
 
-void renderer::AddDrawObject3D(std::shared_ptr<draw_object> drawObject,
-                               std::shared_ptr<texture> texture) {
-  m_renderer->AddDrawObject3D(drawObject, texture);
+void renderer::AddDrawObject3D(std::shared_ptr<draw_object> drawObject) {
+  m_renderer->AddDrawObject3D(drawObject);
 }
 
 void renderer::RemoveDrawObject3D(std::shared_ptr<draw_object> drawObject) {

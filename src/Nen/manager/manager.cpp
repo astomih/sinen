@@ -74,6 +74,10 @@ bool manager::initialize() {
     nen::logger::Info("Failed to initialize script system");
     return false;
   }
+  m_texture_system = std::make_unique<nen::texture_system>(*this);
+
+  m_font_system = std::make_unique<nen::font_system>(*this);
+
   return true;
 }
 void manager::launch() {

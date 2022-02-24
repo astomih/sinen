@@ -5,7 +5,7 @@
 #include "../Math/Quaternion.hpp"
 #include "../Math/Vector3.hpp"
 #include "Component/MoveComponent.hpp"
-#include "Utility/dynamic_handler.hpp"
+#include "Utility/handler.hpp"
 #include <cstdint>
 #include <memory>
 #include <type_traits>
@@ -132,8 +132,8 @@ public:
   base_scene &GetScene() { return mScene; }
 
   template <class T, typename... _Args>
-  T &add_component(std::uint32_t &handle, _Args &&...__args) {
-    return m_components.add<T>(handle, *this, std::forward<_Args>(__args)...);
+  handle_t add_component(_Args &&...__args) {
+    return m_components.add<T>(*this, std::forward<_Args>(__args)...);
   }
   template <class T> T &get_component(std::uint32_t handle) {
     return m_components.get<T>(handle);
@@ -156,7 +156,7 @@ private:
   matrix4 mWorldTransform;
   vector3 mPosition;
   quaternion mRotation;
-  dynamic_handler<base_component> m_components;
+  handler<base_component> m_components;
   base_scene &mScene;
   vector3 mScale;
 }; // namespace nen

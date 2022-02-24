@@ -58,12 +58,10 @@ public:
   void UpdateVertexArray(const vertex_array &vArray,
                          std::string_view name) override;
 
-  void AddDrawObject2D(std::shared_ptr<class draw_object> sprite,
-                       std::shared_ptr<texture> texture) override;
+  void AddDrawObject2D(std::shared_ptr<class draw_object> sprite) override;
   void RemoveDrawObject2D(std::shared_ptr<class draw_object> sprite) override;
 
-  void AddDrawObject3D(std::shared_ptr<class draw_object> sprite,
-                       std::shared_ptr<texture> texture) override;
+  void AddDrawObject3D(std::shared_ptr<class draw_object> sprite) override;
   void RemoveDrawObject3D(std::shared_ptr<class draw_object> sprite) override;
 
   void AddGUI(std::shared_ptr<class ui_screen> ui) override;
@@ -90,7 +88,7 @@ public:
                        std::string_view, texture_type type);
   void unregisterTexture(std::shared_ptr<VulkanDrawObject> texture,
                          texture_type type);
-  void registerImageObject(std::shared_ptr<texture>);
+  void registerImageObject(const handle_t &handle);
   VkPipelineLayout GetPipelineLayout(const std::string &name) {
     return mPipelineLayout.GetLayout();
   }

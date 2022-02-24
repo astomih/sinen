@@ -9,7 +9,6 @@
 #include "../Render/graphics_api.hpp"
 #include "../Scene/Scene.hpp"
 #include "../Script/Script.hpp"
-#include "../Utility/dynamic_handler.hpp"
 #include <memory>
 
 namespace nen {
@@ -58,6 +57,12 @@ public:
   class script_system &get_script_system() {
     return *m_script_system;
   }
+  class texture_system &get_texture_system() {
+    return *m_texture_system;
+  }
+  class font_system &get_font_system() {
+    return *m_font_system;
+  }
 
   std::uint32_t get_current_scene_number() { return m_scene_number; }
 
@@ -70,6 +75,8 @@ private:
   std::unique_ptr<class input_system> m_input_system;
   std::unique_ptr<class sound_system> m_sound_system;
   std::unique_ptr<class script_system> m_script_system;
+  std::unique_ptr<class texture_system> m_texture_system;
+  std::unique_ptr<class font_system> m_font_system;
   std::uint32_t m_scene_number = 1;
 };
 } // namespace nen

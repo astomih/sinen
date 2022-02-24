@@ -78,12 +78,14 @@ void VKRenderer::UpdateVertexArray(const vertex_array &vArray,
                vArray.indices.size() * sizeof(uint32_t));
 }
 
-void VKRenderer::AddDrawObject2D(std::shared_ptr<class draw_object> drawObject,
-                                 std::shared_ptr<texture> texture) {
+void VKRenderer::AddDrawObject2D(
+    std::shared_ptr<class draw_object> drawObject) {
   auto t = std::make_shared<vk::VulkanDrawObject>();
   t->drawObject = drawObject;
-  registerImageObject(texture);
-  registerTexture(t, texture->id, texture_type::Image2D);
+  registerImageObject(drawObject->texture_handle);
+  auto id =
+      m_manager.get_texture_system().get_texture(drawObject->texture_handle).id;
+  registerTexture(t, id, texture_type::Image2D);
 }
 void VKRenderer::RemoveDrawObject2D(std::shared_ptr<class draw_object> sprite) {
   for (auto itr = mDrawObject2D.begin(); itr != mDrawObject2D.end();) {
@@ -96,12 +98,13 @@ void VKRenderer::RemoveDrawObject2D(std::shared_ptr<class draw_object> sprite) {
   }
 }
 
-void VKRenderer::AddDrawObject3D(std::shared_ptr<class draw_object> sprite,
-                                 std::shared_ptr<texture> texture) {
+void VKRenderer::AddDrawObject3D(std::shared_ptr<class draw_object> sprite) {
   auto t = std::make_shared<vk::VulkanDrawObject>();
   t->drawObject = sprite;
-  registerImageObject(texture);
-  registerTexture(t, texture->id, texture_type::Image3D);
+  registerImageObject(sprite->texture_handle);
+  auto id =
+      m_manager.get_texture_system().get_texture(sprite->texture_handle).id;
+  registerTexture(t, id, texture_type::Image3D);
 }
 void VKRenderer::RemoveDrawObject3D(std::shared_ptr<class draw_object> sprite) {
   for (auto itr = mDrawObject3D.begin(); itr != mDrawObject3D.end();) {
@@ -962,11 +965,11 @@ void VKRenderer::DestroyFramebuffers(uint32_t count,
   }
 }
 
-void VKRenderer::registerImageObject(std::shared_ptr<texture> texture) {
-  if (!mImageObjects.contains(texture->id)) {
+void VKRenderer::registerImageObject(const handle_t &handle) {
+  auto id = m_manager.get_texture_system().get_texture(handle).id;
+  if (!mImageObjects.contains(id)) {
     mImageObjects.insert(
-        {texture->id, VKRenderer::createTextureFromSurface(
-                          surface_handler::Load(texture->id))});
+        {id, VKRenderer::createTextureFromSurface(surface_handler::Load(id))});
   }
 }
 VkRenderPass VKRenderer::GetRenderPass(const std::string &name) {

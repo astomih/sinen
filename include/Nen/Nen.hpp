@@ -23,6 +23,7 @@
 #include "Component/rigidbody_component.hpp"
 #include "DrawObject/DrawObject.hpp"
 #include "Font/Font.hpp"
+#include "Font/font_system.hpp"
 #include "GUI/Button.hpp"
 #include "GUI/DialogBox.hpp"
 #include "GUI/HUD.hpp"
@@ -46,18 +47,18 @@
 #include "Scene/Scene.hpp"
 #include "Script/Script.hpp"
 #include "Shader/Shader.hpp"
-#include "Texture/Texture.hpp"
+#include "Texture/texture_system.hpp"
 #include "Time/Time.hpp"
 #include "Time/Timer.hpp"
 #include "Utility/NonCopyable.hpp"
 #include "Utility/Singleton.hpp"
-#include "Utility/dynamic_handler.hpp"
-#include "Utility/static_handler.hpp"
+#include "Utility/handler.hpp"
 #include "Vertex/Vertex.hpp"
 #include "Vertex/VertexArray.hpp"
 #include "Window/Window.hpp"
 #include "exception/exception.hpp"
 #include "instancing/instancing.hpp"
+
 
 #endif
 #ifdef NO_USE_NEN_NAMESPACE

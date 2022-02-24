@@ -1,8 +1,7 @@
 ﻿#pragma once
 #include "../Input/InputSystem.hpp"
-#include "../Utility/dynamic_handler.hpp"
+#include "../Utility/handler.hpp"
 #include "Script/Script.hpp"
-#include "Utility/dynamic_handler.hpp"
 #include "Utility/handle_t.hpp"
 #include <cstdint>
 #include <memory>
@@ -58,9 +57,8 @@ public:
    */
   void Shutdown();
 
-  template <class T, typename... _Args>
-  T &add_actor(handle_t &handle, _Args &&...__args) {
-    return m_actor.add<T>(handle, *this, std::forward<_Args>(__args)...);
+  template <class T, typename... _Args> handle_t add_actor(_Args &&...__args) {
+    return m_actor.add<T>(*this, std::forward<_Args>(__args)...);
   }
 
   template <class T> T &get_actor(const handle_t &handle) {
@@ -103,7 +101,8 @@ public:
   const input_state &GetInput();
   class sound_system &GetSound();
   class script_system &get_script();
-  class manager &get_manager();
+  class texture_system &get_texture();
+  class font_system &get_font();
   void change_scene(std::uint32_t scene_number);
 
 protected:
@@ -124,7 +123,7 @@ private:
   void ProcessInput();
   void UpdateScene();
   class manager &m_manager;
-  dynamic_handler<class base_actor> m_actor;
+  handler<class base_actor> m_actor;
   game_state mGameState = game_state::Gameplay;
   uint32_t mTicksCount = 0;
 };

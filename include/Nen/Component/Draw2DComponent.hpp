@@ -2,6 +2,7 @@
 #include "../Color/Color.hpp"
 #include "../Math/Vector2.hpp"
 #include "../Texture/Texture.hpp"
+#include "../Utility/handler.hpp"
 #include "Component.hpp"
 #include <utility>
 
@@ -32,7 +33,7 @@ public:
    * @param scale スケール
    * @param shape 形
    */
-  virtual void Create(std::shared_ptr<texture> _texture, float scale = 1.0f,
+  virtual void Create(handle_t texture_handle, float scale = 1.0f,
                       std::string_view shape = "SPRITE");
 
   /**
@@ -57,6 +58,5 @@ private:
   int mDrawOrder = 0;
   int mTexWidth = 0;
   int mTexHeight = 0;
-  std::shared_ptr<class texture> mTexture;
 };
 } // namespace nen

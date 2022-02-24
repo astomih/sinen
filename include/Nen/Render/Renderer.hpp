@@ -30,12 +30,10 @@ public:
 
   void Draw();
 
-  void AddDrawObject2D(std::shared_ptr<class draw_object> drawObject,
-                       std::shared_ptr<texture> texture);
+  void AddDrawObject2D(std::shared_ptr<class draw_object> drawObject);
   void RemoveDrawObject2D(std::shared_ptr<class draw_object> drawObject);
 
-  void AddDrawObject3D(std::shared_ptr<class draw_object> drawObject,
-                       std::shared_ptr<texture> texture);
+  void AddDrawObject3D(std::shared_ptr<class draw_object> drawObject);
   void RemoveDrawObject3D(std::shared_ptr<class draw_object> drawObject);
 
   void UpdateVertexArray(std::shared_ptr<class draw_object> drawObject,
@@ -105,12 +103,10 @@ public:
   virtual void add_instancing(instancing &_instancing) {}
   virtual void remove_instancing(instancing &_instancing) {}
 
-  virtual void AddDrawObject2D(std::shared_ptr<class draw_object> sprite,
-                               std::shared_ptr<texture> texture) {}
+  virtual void AddDrawObject2D(std::shared_ptr<class draw_object> sprite) {}
   virtual void RemoveDrawObject2D(std::shared_ptr<class draw_object> sprite) {}
 
-  virtual void AddDrawObject3D(std::shared_ptr<class draw_object> drawObject,
-                               std::shared_ptr<texture> texture) {}
+  virtual void AddDrawObject3D(std::shared_ptr<class draw_object> drawObject) {}
   virtual void
   RemoveDrawObject3D(std::shared_ptr<class draw_object> drawObject) {}
 

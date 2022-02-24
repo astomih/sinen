@@ -78,7 +78,7 @@ $(function() {
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#include &quot;../Math/Quaternion.hpp&quot;</span></div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &quot;../Math/Vector3.hpp&quot;</span></div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &quot;Component/MoveComponent.hpp&quot;</span></div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;Utility/dynamic_handler.hpp&quot;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;Utility/handler.hpp&quot;</span></div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;cstdint&gt;</span></div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;memory&gt;</span></div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &lt;type_traits&gt;</span></div>
@@ -146,8 +146,8 @@ $(function() {
 <div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;  base_scene &amp;GetScene() { <span class="keywordflow">return</span> mScene; }</div>
 <div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160; </div>
 <div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">class </span>T, <span class="keyword">typename</span>... _Args&gt;</div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;  T &amp;add_component(std::uint32_t &amp;handle, _Args &amp;&amp;...__args) {</div>
-<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;    <span class="keywordflow">return</span> m_components.add&lt;T&gt;(handle, *<span class="keyword">this</span>, std::forward&lt;_Args&gt;(__args)...);</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;  handle_t add_component(_Args &amp;&amp;...__args) {</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;    <span class="keywordflow">return</span> m_components.add&lt;T&gt;(*<span class="keyword">this</span>, std::forward&lt;_Args&gt;(__args)...);</div>
 <div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;  }</div>
 <div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt; T &amp;get_component(std::uint32_t handle) {</div>
 <div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;    <span class="keywordflow">return</span> m_components.get&lt;T&gt;(handle);</div>
@@ -170,7 +170,7 @@ $(function() {
 <div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;  matrix4 mWorldTransform;</div>
 <div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;  vector3 mPosition;</div>
 <div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;  quaternion mRotation;</div>
-<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;  dynamic_handler&lt;base_component&gt; m_components;</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;  handler&lt;base_component&gt; m_components;</div>
 <div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;  base_scene &amp;mScene;</div>
 <div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;  vector3 mScale;</div>
 <div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;}; <span class="comment">// namespace nen</span></div>
@@ -187,7 +187,7 @@ $(function() {
 <div class="ttc" id="aclassnen_1_1base__actor_html_aed1309afc6a86a8bf4e999952464e77a"><div class="ttname"><a href="classnen_1_1base__actor.html#aed1309afc6a86a8bf4e999952464e77a">nen::base_actor::~base_actor</a></div><div class="ttdeci">virtual ~base_actor()</div><div class="ttdoc">Destroy the base actor object.</div></div>
 <div class="ttc" id="aclassnen_1_1base__actor_html_af026ccaff9ac0c4e04b40cb449a6aec4"><div class="ttname"><a href="classnen_1_1base__actor.html#af026ccaff9ac0c4e04b40cb449a6aec4">nen::base_actor::Update</a></div><div class="ttdeci">virtual void Update(float deltaTime)</div><div class="ttdoc">毎ループ更新される関数</div></div>
 <div class="ttc" id="aclassnen_1_1base__actor_html_afecb2cfb95af8adb2afc771bdbb81972"><div class="ttname"><a href="classnen_1_1base__actor.html#afecb2cfb95af8adb2afc771bdbb81972">nen::base_actor::state</a></div><div class="ttdeci">state</div><div class="ttdoc">State of the actor.</div><div class="ttdef"><b>Definition:</b> Actor.hpp:28</div></div>
-<div class="ttc" id="aclassnen_1_1base__scene_html"><div class="ttname"><a href="classnen_1_1base__scene.html">nen::base_scene</a></div><div class="ttdoc">Base of scene class.</div><div class="ttdef"><b>Definition:</b> Scene.hpp:20</div></div>
+<div class="ttc" id="aclassnen_1_1base__scene_html"><div class="ttname"><a href="classnen_1_1base__scene.html">nen::base_scene</a></div><div class="ttdoc">Base of scene class.</div><div class="ttdef"><b>Definition:</b> Scene.hpp:19</div></div>
 <div class="ttc" id="aclassnen_1_1quaternion_html"><div class="ttname"><a href="classnen_1_1quaternion.html">nen::quaternion</a></div><div class="ttdef"><b>Definition:</b> Quaternion.hpp:6</div></div>
 <div class="ttc" id="aclassnen_1_1vector3_html"><div class="ttname"><a href="classnen_1_1vector3.html">nen::vector3</a></div><div class="ttdef"><b>Definition:</b> Vector3.hpp:5</div></div>
 </div><!-- fragment --></div><!-- contents -->

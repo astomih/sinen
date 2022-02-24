@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>sinen: Member List</title>
+<title>sinen: nen::texture_system Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,26 +63,40 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><b>nen</b></li><li class="navelem"><a class="el" href="classnen_1_1font.html">font</a></li>  </ul>
+<li class="navelem"><b>nen</b></li><li class="navelem"><a class="el" href="classnen_1_1texture__system.html">texture_system</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="classnen_1_1texture__system-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">nen::font Member List</div>  </div>
+<div class="title">nen::texture_system Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-
-<p>This is the complete list of members for <a class="el" href="classnen_1_1font.html">nen::font</a>, including all inherited members.</p>
-<table class="directory">
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>font</b>() (defined in <a class="el" href="classnen_1_1font.html">nen::font</a>)</td><td class="entry"><a class="el" href="classnen_1_1font.html">nen::font</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>font</b>(std::string_view file_name, int32_t point) (defined in <a class="el" href="classnen_1_1font.html">nen::font</a>)</td><td class="entry"><a class="el" href="classnen_1_1font.html">nen::font</a></td><td class="entry"></td></tr>
-  <tr class="even"><td class="entry"><a class="el" href="classnen_1_1font.html#af5a004c042f7aa51c606c894ba4be8fa">isLoaded</a>()</td><td class="entry"><a class="el" href="classnen_1_1font.html">nen::font</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr><td class="entry"><a class="el" href="classnen_1_1font.html#a2ea668ba4104a1318c27ddfcc71527a7">LoadFromFile</a>(std::string_view fontName, int pointSize)</td><td class="entry"><a class="el" href="classnen_1_1font.html">nen::font</a></td><td class="entry"></td></tr>
-  <tr class="even"><td class="entry"><a class="el" href="classnen_1_1font.html#ab0c10a0e8f336b062ee6f6b3649ef254">quality</a> enum name</td><td class="entry"><a class="el" href="classnen_1_1font.html">nen::font</a></td><td class="entry"></td></tr>
-  <tr><td class="entry"><a class="el" href="classnen_1_1font.html#ad29ef8688f8aaf9b93ccc3195ecde928">RenderText</a>(texture &amp;tex, std::string_view text, const color &amp;_color=palette::White, quality _quality=quality::Blended, const color &amp;backgroundColor=palette::Black)</td><td class="entry"><a class="el" href="classnen_1_1font.html">nen::font</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>Unload</b>() (defined in <a class="el" href="classnen_1_1font.html">nen::font</a>)</td><td class="entry"><a class="el" href="classnen_1_1font.html">nen::font</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>~font</b>()=default (defined in <a class="el" href="classnen_1_1font.html">nen::font</a>)</td><td class="entry"><a class="el" href="classnen_1_1font.html">nen::font</a></td><td class="entry"></td></tr>
-</table></div><!-- contents -->
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:af7a24333872f08835455b33a6e268dd4"><td class="memItemLeft" align="right" valign="top"><a id="af7a24333872f08835455b33a6e268dd4"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>texture_system</b> (class <a class="el" href="classnen_1_1manager.html">manager</a> &amp;_manager)</td></tr>
+<tr class="separator:af7a24333872f08835455b33a6e268dd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abdbd4cc94578921ca92852a31e23dd61"><td class="memItemLeft" align="right" valign="top"><a id="abdbd4cc94578921ca92852a31e23dd61"></a>
+handle_t&#160;</td><td class="memItemRight" valign="bottom"><b>add_texture</b> (std::string_view file_name)</td></tr>
+<tr class="separator:abdbd4cc94578921ca92852a31e23dd61"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a04e187401603112a00a3aeb7a9b015a9"><td class="memItemLeft" align="right" valign="top"><a id="a04e187401603112a00a3aeb7a9b015a9"></a>
+handle_t&#160;</td><td class="memItemRight" valign="bottom"><b>add_texture</b> ()</td></tr>
+<tr class="separator:a04e187401603112a00a3aeb7a9b015a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaac8ecdc8b3a4a62e4cbc1ed084ab2ca"><td class="memItemLeft" align="right" valign="top"><a id="aaac8ecdc8b3a4a62e4cbc1ed084ab2ca"></a>
+<a class="el" href="classnen_1_1texture.html">texture</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>get_texture</b> (handle_t handle)</td></tr>
+<tr class="separator:aaac8ecdc8b3a4a62e4cbc1ed084ab2ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4608796965924895f8e53bbacbcca48d"><td class="memItemLeft" align="right" valign="top"><a id="a4608796965924895f8e53bbacbcca48d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>remove_texture</b> (handle_t handle)</td></tr>
+<tr class="separator:a4608796965924895f8e53bbacbcca48d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li><a class="el" href="texture__system_8hpp_source.html">texture_system.hpp</a></li>
+</ul>
+</div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1

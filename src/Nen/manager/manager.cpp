@@ -20,8 +20,8 @@ void main_loop() { emscripten_loop(); }
 #endif
 
 namespace nen {
-void manager::launch(std::unique_ptr<base_scene> scene) {
-  m_current_scene = std::move(scene);
+bool manager::initialize() {
+  m_current_scene = std::make_unique<base_scene>(*this);
   SDL_SetMainReady();
   SDL_Init(SDL_INIT_EVERYTHING);
   TTF_Init();
@@ -61,19 +61,22 @@ void manager::launch(std::unique_ptr<base_scene> scene) {
     nen::logger::Info("Failed to initialize audio system");
     m_sound_system->Shutdown();
     m_sound_system = nullptr;
-    std::exit(-1);
+    return false;
   }
   nen::logger::Info("Audio system Initialized.");
   m_input_system = std::make_unique<nen::input_system>(*this);
   if (!m_input_system->Initialize()) {
     nen::logger::Info("Failed to initialize input system");
-    std::exit(-1);
+    return false;
   }
   m_script_system = std::make_unique<nen::script_system>(*this);
   if (!m_script_system->initialize()) {
     nen::logger::Info("Failed to initialize script system");
-    std::exit(-1);
+    return false;
   }
+  return true;
+}
+void manager::launch() {
   m_current_scene->Initialize();
 
 #if !defined(EMSCRIPTEN)
@@ -107,6 +110,11 @@ void manager::loop() {
     emscripten_force_exit(0);
 #endif
   }
+}
+void manager::change_scene(std::uint32_t scene_number) {
+  m_current_scene->Quit();
+  m_next_scene = std::make_unique<nen::base_scene>(*this);
+  m_scene_number = scene_number;
 }
 
 } // namespace nen

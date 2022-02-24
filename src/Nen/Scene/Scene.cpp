@@ -17,7 +17,6 @@ base_scene::base_scene(manager &_manager) : m_manager(_manager) {}
 
 void base_scene::Initialize() {
   Setup();
-  logger::Info("Scene setup.");
   mTicksCount = SDL_GetTicks();
 }
 
@@ -80,11 +79,30 @@ void base_scene::UpdateScene() {
   m_manager.get_sound_system().Update(deltaTime);
 }
 
-void base_scene::Setup() {}
+void base_scene::Setup() {
+  auto &lua = get_script().get_sol_state();
+  lua["scene"] = this;
+  std::string num = "";
+
+  if (m_manager.get_current_scene_number() < 10)
+    num = "0";
+  this->get_script().DoScript(
+      "scene" + num + std::to_string(m_manager.get_current_scene_number()) +
+      ".lua");
+  lua["setup"]();
+}
 
 void base_scene::UnloadData() { m_actor.clear(); }
 
-void base_scene::Update(float deltaTime) {}
+void base_scene::Update(float deltaTime) {
+  std::string num = "";
+  if (m_manager.get_current_scene_number() > 10)
+    num = "0";
+  this->get_script().DoScript(
+      "scene" + num + std::to_string(m_manager.get_current_scene_number()) +
+      ".lua");
+  get_script().get_sol_state()["update"]();
+}
 
 void base_scene::Shutdown() { UnloadData(); }
 
@@ -107,8 +125,8 @@ script_system &base_scene::get_script() {
 
 manager &base_scene::get_manager() { return m_manager; }
 
-void base_scene::change_scene(std::unique_ptr<base_scene> next_scene) {
-  m_manager.change_scene(std::move(next_scene));
+void base_scene::change_scene(std::uint32_t scene_number) {
+  m_manager.change_scene(scene_number);
 }
 
 } // namespace nen

@@ -59,8 +59,6 @@
 #include "exception/exception.hpp"
 #include "instancing/instancing.hpp"
 
-#include <sol/sol.hpp>
-
 #endif
 #ifdef NO_USE_NEN_NAMESPACE
 using namespace nen;

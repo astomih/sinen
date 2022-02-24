@@ -72,8 +72,7 @@ Install emscripten SDK. and do this.
 - ImGui
 - Lua
 - Sol2
-- OpenAL 1.1
-- rapidJSON
+- OpenAL
 - OpenGL 3.3
 - SDL2(image,mixer,net,ttf)
 - Vulkan 1.2

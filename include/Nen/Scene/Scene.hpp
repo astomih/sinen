@@ -104,7 +104,7 @@ public:
   class sound_system &GetSound();
   class script_system &get_script();
   class manager &get_manager();
-  void change_scene(std::unique_ptr<base_scene> next_scene);
+  void change_scene(std::uint32_t scene_number);
 
 protected:
   /**

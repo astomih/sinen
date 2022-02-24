@@ -12,7 +12,6 @@
 #include "../Utility/dynamic_handler.hpp"
 #include <memory>
 
-
 namespace nen {
 /**
  * @brief sinen manager
@@ -31,18 +30,15 @@ public:
    * @brief initialize manager
    *
    */
-  void initialize();
+  bool initialize();
 
-  void change_scene(std::unique_ptr<base_scene> next_scene) {
-    m_current_scene->Quit();
-    m_next_scene = std::move(next_scene);
-  }
+  void change_scene(std::uint32_t scene_number);
 
   /**
    * @brief launch engine
    *
    */
-  void launch(std::unique_ptr<class base_scene>);
+  void launch();
 
   class window &get_window() {
     return *m_window;
@@ -63,6 +59,8 @@ public:
     return *m_script_system;
   }
 
+  std::uint32_t get_current_scene_number() { return m_scene_number; }
+
 private:
   void loop();
   std::unique_ptr<class window> m_window;
@@ -72,5 +70,6 @@ private:
   std::unique_ptr<class input_system> m_input_system;
   std::unique_ptr<class sound_system> m_sound_system;
   std::unique_ptr<class script_system> m_script_system;
+  std::uint32_t m_scene_number = 1;
 };
 } // namespace nen

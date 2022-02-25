@@ -1,12 +1,8 @@
 #include <Nen.hpp>
 
 namespace nen {
-handle_t texture_system::add_texture(std::string_view file_name) {
-  handle_t handle = texture_handler.add(file_name);
-  return handle;
-}
-handle_t texture_system::add_texture() {
-  handle_t handle = texture_handler.add();
+handle_t texture_system::create_texture() {
+  handle_t handle = texture_handler.create();
   return handle;
 }
 

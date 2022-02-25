@@ -57,14 +57,6 @@ public:
    */
   void Shutdown();
 
-  template <class T, typename... _Args> handle_t add_actor(_Args &&...__args) {
-    return m_actor.add<T>(*this, std::forward<_Args>(__args)...);
-  }
-
-  template <class T> T &get_actor(const handle_t &handle) {
-    return m_actor.get<T>(handle);
-  }
-
   /**
    * @brief Get the State object
    *
@@ -83,19 +75,6 @@ public:
    *
    */
   void Quit() { mGameState = game_state::Quit; }
-
-  /**
-   * @brief Add GUI element
-   *
-   * @param ui
-   */
-  void AddGUI(std::shared_ptr<class ui_screen> ui);
-  /**
-   * @brief Remove GUI element
-   *
-   * @param ui
-   */
-  void RemoveGUI(std::shared_ptr<class ui_screen> ui);
 
   class renderer &GetRenderer();
   const input_state &GetInput();
@@ -123,8 +102,7 @@ private:
   void ProcessInput();
   void UpdateScene();
   class manager &m_manager;
-  handler<class base_actor> m_actor;
   game_state mGameState = game_state::Gameplay;
-  uint32_t mTicksCount = 0;
+  uint32_t m_prev_tick = 0;
 };
 } // namespace nen

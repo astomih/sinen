@@ -9,7 +9,7 @@ public:
   ~font_system() = default;
 
   handle_t add_font(std::string_view file_name, int32_t size);
-  handle_t add_font();
+  handle_t create_font();
   font &get_font(handle_t handle);
 
   void remove_font(handle_t handle);

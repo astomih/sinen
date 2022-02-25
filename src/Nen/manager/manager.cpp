@@ -20,6 +20,16 @@ void main_loop() { emscripten_loop(); }
 #endif
 
 namespace nen {
+manager _manager;
+manager &get_manager() { return _manager; }
+window &get_window() { return _manager.get_window(); }
+renderer &get_renderer() { return _manager.get_renderer(); }
+input_system &get_input_system() { return _manager.get_input_system(); }
+base_scene &get_current_scene() { return _manager.get_current_scene(); }
+sound_system &get_sound_system() { return _manager.get_sound_system(); }
+script_system &get_script_system() { return _manager.get_script_system(); }
+texture_system &get_texture_system() { return _manager.get_texture_system(); }
+font_system &get_font_system() { return _manager.get_font_system(); }
 bool manager::initialize() {
   m_current_scene = std::make_unique<base_scene>(*this);
   SDL_SetMainReady();

@@ -28,19 +28,10 @@ public:
   void Shutdown();
   void UnloadData();
 
-  void Draw();
+  void render();
 
-  void AddDrawObject2D(std::shared_ptr<class draw_object> drawObject);
-  void RemoveDrawObject2D(std::shared_ptr<class draw_object> drawObject);
-
-  void AddDrawObject3D(std::shared_ptr<class draw_object> drawObject);
-  void RemoveDrawObject3D(std::shared_ptr<class draw_object> drawObject);
-
-  void UpdateVertexArray(std::shared_ptr<class draw_object> drawObject,
-                         texture_type type = texture_type::Image2D);
-
-  void AddGUI(std::shared_ptr<class ui_screen> ui);
-  void RemoveGUI(std::shared_ptr<class ui_screen> ui);
+  void draw2d(const std::shared_ptr<draw_object> draw_object);
+  void draw3d(const std::shared_ptr<draw_object> draw_object);
 
   void AddVertexArray(const vertex_array &vArray, std::string_view name);
   void UpdateVertexArray(const vertex_array &vArray, std::string_view name);
@@ -95,6 +86,8 @@ public:
   virtual void Initialize() {}
   virtual void Shutdown() {}
   virtual void Render() {}
+  virtual void draw2d(std::shared_ptr<class draw_object> sprite) {}
+  virtual void draw3d(std::shared_ptr<class draw_object> sprite) {}
   virtual void AddVertexArray(const vertex_array &vArray,
                               std::string_view name) {}
   virtual void UpdateVertexArray(const vertex_array &vArray,
@@ -102,16 +95,6 @@ public:
 
   virtual void add_instancing(instancing &_instancing) {}
   virtual void remove_instancing(instancing &_instancing) {}
-
-  virtual void AddDrawObject2D(std::shared_ptr<class draw_object> sprite) {}
-  virtual void RemoveDrawObject2D(std::shared_ptr<class draw_object> sprite) {}
-
-  virtual void AddDrawObject3D(std::shared_ptr<class draw_object> drawObject) {}
-  virtual void
-  RemoveDrawObject3D(std::shared_ptr<class draw_object> drawObject) {}
-
-  virtual void AddGUI(std::shared_ptr<class ui_screen> ui) {}
-  virtual void RemoveGUI(std::shared_ptr<class ui_screen> ui) {}
 
   virtual void LoadShader(const shader &shaderInfo) {}
   virtual void UnloadShader(const shader &shaderInfo) {}

@@ -78,8 +78,7 @@ void VKRenderer::UpdateVertexArray(const vertex_array &vArray,
                vArray.indices.size() * sizeof(uint32_t));
 }
 
-void VKRenderer::AddDrawObject2D(
-    std::shared_ptr<class draw_object> drawObject) {
+void VKRenderer::draw2d(std::shared_ptr<class draw_object> drawObject) {
   auto t = std::make_shared<vk::VulkanDrawObject>();
   t->drawObject = drawObject;
   registerImageObject(drawObject->texture_handle);
@@ -87,43 +86,14 @@ void VKRenderer::AddDrawObject2D(
       m_manager.get_texture_system().get_texture(drawObject->texture_handle).id;
   registerTexture(t, id, texture_type::Image2D);
 }
-void VKRenderer::RemoveDrawObject2D(std::shared_ptr<class draw_object> sprite) {
-  for (auto itr = mDrawObject2D.begin(); itr != mDrawObject2D.end();) {
-    if ((*itr)->drawObject == sprite) {
-      unregisterTexture((*itr), texture_type::Image2D);
-      itr = mDrawObject2D.begin();
-    }
-    if (itr != mDrawObject2D.end())
-      itr++;
-  }
-}
 
-void VKRenderer::AddDrawObject3D(std::shared_ptr<class draw_object> sprite) {
+void VKRenderer::draw3d(std::shared_ptr<class draw_object> sprite) {
   auto t = std::make_shared<vk::VulkanDrawObject>();
   t->drawObject = sprite;
   registerImageObject(sprite->texture_handle);
   auto id =
       m_manager.get_texture_system().get_texture(sprite->texture_handle).id;
   registerTexture(t, id, texture_type::Image3D);
-}
-void VKRenderer::RemoveDrawObject3D(std::shared_ptr<class draw_object> sprite) {
-  for (auto itr = mDrawObject3D.begin(); itr != mDrawObject3D.end();) {
-    if ((*itr)->drawObject == sprite) {
-      unregisterTexture((*itr), texture_type::Image3D);
-      itr = mDrawObject3D.begin();
-    }
-    if (itr != mDrawObject3D.end())
-      itr++;
-  }
-}
-
-void VKRenderer::AddGUI(std::shared_ptr<ui_screen> ui) { mGUI.push_back(ui); }
-
-void VKRenderer::RemoveGUI(std::shared_ptr<ui_screen> ui) {
-  auto gui = std::find(mGUI.begin(), mGUI.end(), ui);
-  if (gui != mGUI.end()) {
-    mGUI.erase(gui);
-  }
 }
 
 void VKRenderer::LoadShader(const shader &shaderInfo) {
@@ -408,7 +378,6 @@ void VKRenderer::makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri,
   draw_instancing_3d(command);
   draw2d(command);
   draw_instancing_2d(command);
-  drawGUI(command);
   renderImGUI(command);
   pipelineOpaque.Bind(command);
 
@@ -448,7 +417,9 @@ void VKRenderer::draw3d(VkCommandBuffer command) {
     write_memory(allocation, &sprite->drawObject->param,
                  sizeof(shader_parameter));
     vkCmdDrawIndexed(command, m_VertexArrays[index].indexCount, 1, 0, 0, 0);
+    unregisterTexture(sprite, texture_type::Image3D);
   }
+  mDrawObject3D.clear();
 }
 
 void VKRenderer::draw2d(VkCommandBuffer command) {
@@ -488,12 +459,9 @@ void VKRenderer::draw2d(VkCommandBuffer command) {
     vkCmdDrawIndexed(command,
                      m_VertexArrays[sprite->drawObject->vertexIndex].indexCount,
                      1, 0, 0, 0);
+    unregisterTexture(sprite, texture_type::Image2D);
   }
-}
-
-void VKRenderer::drawGUI(VkCommandBuffer command) {
-  for (auto &gui : mGUI) {
-  }
+  mDrawObject2D.clear();
 }
 
 void VKRenderer::write_memory(const VmaAllocation &allocation, const void *data,

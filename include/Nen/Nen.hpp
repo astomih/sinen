@@ -6,22 +6,11 @@
 
 #include "manager/manager.hpp"
 
-#include "Actor/Actor.hpp"
 #include "Audio/MusicSystem.hpp"
 #include "Audio/SoundEvent.hpp"
 #include "Audio/SoundSystem.hpp"
-#include "Component/BillboardComponent.hpp"
-#include "Component/CircleComponent.hpp"
-#include "Component/Component.hpp"
-#include "Component/Draw2DComponent.hpp"
-#include "Component/Draw3DComponent.hpp"
-#include "Component/InputComponent.hpp"
-#include "Component/MoveComponent.hpp"
-#include "Component/ScriptComponent.hpp"
-#include "Component/SoundComponent.hpp"
-#include "Component/TextComponent.hpp"
-#include "Component/rigidbody_component.hpp"
 #include "DrawObject/DrawObject.hpp"
+#include "DrawObject/draw_object_wrapper.hpp"
 #include "Font/Font.hpp"
 #include "Font/font_system.hpp"
 #include "GUI/Button.hpp"
@@ -58,7 +47,6 @@
 #include "Window/Window.hpp"
 #include "exception/exception.hpp"
 #include "instancing/instancing.hpp"
-
 
 #endif
 #ifdef NO_USE_NEN_NAMESPACE

@@ -45,11 +45,11 @@ public:
   class renderer &get_renderer() {
     return *m_renderer;
   }
-  class input_system &get_input_system() {
-    return *m_input_system;
-  }
   class base_scene &get_current_scene() {
     return *m_current_scene;
+  }
+  class input_system &get_input_system() {
+    return *m_input_system;
   }
   class sound_system &get_sound_system() {
     return *m_sound_system;
@@ -79,4 +79,13 @@ private:
   std::unique_ptr<class font_system> m_font_system;
   std::uint32_t m_scene_number = 1;
 };
+manager &get_manager();
+class window &get_window();
+class renderer &get_renderer();
+class input_system &get_input_system();
+class base_scene &get_current_scene();
+class sound_system &get_sound_system();
+class script_system &get_script_system();
+class texture_system &get_texture_system();
+class font_system &get_font_system();
 } // namespace nen

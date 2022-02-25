@@ -79,7 +79,7 @@ bool texture::LoadFromMemory(std::vector<char> &buffer, std::string_view ID) {
   return true;
 }
 
-void texture::CreateFromColor(const color &color, std::string_view ID) {
+void texture::fill_color(const color &color, std::string_view ID) {
   id = ID.data();
   auto surface = ::SDL_CreateRGBSurface(0, 1, 1, 32, 0, 0, 0, 0);
   ::SDL_FillRect(surface, NULL,

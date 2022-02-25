@@ -122,7 +122,9 @@ void GLRenderer::draw_3d() {
     glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
     glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indices.size(),
                    GL_UNSIGNED_INT, nullptr);
+    eraseSprite3d(i);
   }
+  mSprite3Ds.clear();
 }
 void GLRenderer::draw_instancing_3d() {
 
@@ -159,7 +161,9 @@ void GLRenderer::draw_2d() {
     glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
     glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indices.size(),
                    GL_UNSIGNED_INT, nullptr);
+    eraseSprite2d(i);
   }
+  mSprite2Ds.clear();
 }
 
 void GLRenderer::draw_instancing_2d() {
@@ -234,20 +238,14 @@ void GLRenderer::UpdateVertexArray(const vertex_array &vArray,
                   vArrayGL.indices.data());
 }
 
-void GLRenderer::AddDrawObject2D(std::shared_ptr<class draw_object> sprite) {
+void GLRenderer::draw2d(std::shared_ptr<class draw_object> sprite) {
   registerTexture(sprite->texture_handle);
   pushSprite2d(sprite);
 }
-void GLRenderer::RemoveDrawObject2D(std::shared_ptr<class draw_object> sprite) {
-  eraseSprite2d(sprite);
-}
 
-void GLRenderer::AddDrawObject3D(std::shared_ptr<class draw_object> sprite) {
+void GLRenderer::draw3d(std::shared_ptr<class draw_object> sprite) {
   registerTexture(sprite->texture_handle);
   pushSprite3d(sprite);
-}
-void GLRenderer::RemoveDrawObject3D(std::shared_ptr<class draw_object> sprite) {
-  eraseSprite3d(sprite);
 }
 
 void GLRenderer::LoadShader(const shader &shaderInfo) {

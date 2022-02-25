@@ -20,7 +20,7 @@ public:
   T &operator[](const handle_t &handle) {
     return *reinterpret_cast<T *>(data[handle].get());
   }
-  template <class S = T, typename... _Args> handle_t add(_Args &&...__args) {
+  template <class S = T, typename... _Args> handle_t create(_Args &&...__args) {
     handle_t handle = 0;
     while (data.contains(handle))
       ++handle;

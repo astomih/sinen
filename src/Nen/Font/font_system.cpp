@@ -1,11 +1,11 @@
 #include <Nen.hpp>
 namespace nen {
 handle_t font_system::add_font(std::string_view file_name, int32_t size) {
-  handle_t handle = font_handler.add(file_name, size);
+  handle_t handle = font_handler.create(file_name, size);
   return handle;
 }
-handle_t font_system::add_font() {
-  handle_t handle = font_handler.add();
+handle_t font_system::create_font() {
+  handle_t handle = font_handler.create();
   return handle;
 }
 

@@ -17,14 +17,14 @@ base_scene::base_scene(manager &_manager) : m_manager(_manager) {}
 
 void base_scene::Initialize() {
   Setup();
-  mTicksCount = SDL_GetTicks();
+  m_prev_tick = SDL_GetTicks();
 }
 
 void base_scene::RunLoop() {
   ProcessInput();
   UpdateScene();
   // Draw sprites, meshes
-  GetRenderer().Draw();
+  GetRenderer().render();
   m_manager.get_input_system().PrepareForUpdate();
   m_manager.get_input_system().Update();
 }
@@ -57,31 +57,18 @@ void base_scene::ProcessInput() {
 
 void base_scene::UpdateScene() {
   // calc delta time
-  float deltaTime = (SDL_GetTicks() - mTicksCount) / 1000.0f;
+  float deltaTime = (SDL_GetTicks() - m_prev_tick) / 1000.0f;
   if (deltaTime > 0.05f) {
     deltaTime = 0.05f;
   }
-  mTicksCount = SDL_GetTicks();
+  m_prev_tick = SDL_GetTicks();
 
   this->Update(deltaTime);
-  // All actors update
-  for (auto &i : m_actor.data) {
-    i.second->UpdateActor(deltaTime);
-  }
-  // erase dead actors
-  for (auto itr = m_actor.data.begin(); itr != m_actor.data.end();) {
-    if (itr->second->GetState() == base_actor::state::Dead) {
-      itr = m_actor.data.erase(itr);
-    } else {
-      ++itr;
-    }
-  }
   m_manager.get_sound_system().Update(deltaTime);
 }
 
 void base_scene::Setup() {
   auto &lua = get_script().get_sol_state();
-  lua["scene"] = this;
   std::string num = "";
 
   if (m_manager.get_current_scene_number() < 10)
@@ -92,26 +79,21 @@ void base_scene::Setup() {
   lua["setup"]();
 }
 
-void base_scene::UnloadData() { m_actor.clear(); }
+void base_scene::UnloadData() {}
 
 void base_scene::Update(float deltaTime) {
+  /*
   std::string num = "";
   if (m_manager.get_current_scene_number() > 10)
     num = "0";
   this->get_script().DoScript(
       "scene" + num + std::to_string(m_manager.get_current_scene_number()) +
       ".lua");
+  */
   get_script().get_sol_state()["update"]();
 }
 
 void base_scene::Shutdown() { UnloadData(); }
-
-void base_scene::AddGUI(std::shared_ptr<ui_screen> ui) {
-  GetRenderer().AddGUI(ui);
-}
-void base_scene::RemoveGUI(std::shared_ptr<ui_screen> ui) {
-  GetRenderer().RemoveGUI(ui);
-}
 
 renderer &base_scene::GetRenderer() { return m_manager.get_renderer(); }
 const input_state &base_scene::GetInput() {

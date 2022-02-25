@@ -21,7 +21,7 @@ public:
   bool Load(std::string_view fileName);
   bool LoadFromMemory(std::vector<char> &buffer, std::string_view ID);
 
-  void CreateFromColor(const color &color, std::string_view ID);
+  void fill_color(const color &color, std::string_view ID);
 
   const int GetWidth() { return width; }
   const int GetHeight() { return height; }

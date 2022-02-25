@@ -58,14 +58,8 @@ public:
   void UpdateVertexArray(const vertex_array &vArray,
                          std::string_view name) override;
 
-  void AddDrawObject2D(std::shared_ptr<class draw_object> sprite) override;
-  void RemoveDrawObject2D(std::shared_ptr<class draw_object> sprite) override;
-
-  void AddDrawObject3D(std::shared_ptr<class draw_object> sprite) override;
-  void RemoveDrawObject3D(std::shared_ptr<class draw_object> sprite) override;
-
-  void AddGUI(std::shared_ptr<class ui_screen> ui) override;
-  void RemoveGUI(std::shared_ptr<class ui_screen> ui) override;
+  void draw2d(std::shared_ptr<class draw_object> sprite) override;
+  void draw3d(std::shared_ptr<class draw_object> sprite) override;
 
   void LoadShader(const shader &shaderInfo) override;
   void UnloadShader(const shader &shaderInfo) override;
@@ -79,7 +73,6 @@ public:
                    VkCommandBufferBeginInfo &ci, VkFence &fence);
   void draw3d(VkCommandBuffer);
   void draw2d(VkCommandBuffer);
-  void drawGUI(VkCommandBuffer);
   BufferObject CreateBuffer(
       uint32_t size, VkBufferUsageFlags usage,
       VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
@@ -149,7 +142,6 @@ private:
   std::vector<std::shared_ptr<VulkanDrawObject>> mDrawObject3D;
   std::vector<std::shared_ptr<VulkanDrawObject>> mDrawObject2D;
   std::unordered_map<std::string, ImageObject> mImageObjects;
-  std::vector<std::shared_ptr<class ui_screen>> mGUI;
   std::vector<vulkan_instancing> m_instancies_3d;
   std::vector<vulkan_instancing> m_instancies_2d;
   BufferObject m_instance_buffer;

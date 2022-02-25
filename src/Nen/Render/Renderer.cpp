@@ -27,28 +27,13 @@ void renderer::Shutdown() { m_renderer->Shutdown(); }
 
 void renderer::UnloadData() {}
 
-void renderer::Draw() { m_renderer->Render(); }
-
-void renderer::AddDrawObject2D(std::shared_ptr<nen::draw_object> drawObject) {
-  m_renderer->AddDrawObject2D(drawObject);
+void renderer::render() { m_renderer->Render(); }
+void renderer::draw2d(std::shared_ptr<nen::draw_object> drawObject) {
+  m_renderer->draw2d(drawObject);
 }
 
-void renderer::RemoveDrawObject2D(std::shared_ptr<draw_object> drawObject) {
-  m_renderer->RemoveDrawObject2D(drawObject);
-}
-
-void renderer::AddDrawObject3D(std::shared_ptr<draw_object> drawObject) {
-  m_renderer->AddDrawObject3D(drawObject);
-}
-
-void renderer::RemoveDrawObject3D(std::shared_ptr<draw_object> drawObject) {
-  m_renderer->RemoveDrawObject3D(drawObject);
-}
-
-void renderer::AddGUI(std::shared_ptr<ui_screen> ui) { m_renderer->AddGUI(ui); }
-
-void renderer::RemoveGUI(std::shared_ptr<ui_screen> ui) {
-  m_renderer->RemoveGUI(ui);
+void renderer::draw3d(std::shared_ptr<draw_object> drawObject) {
+  m_renderer->draw3d(drawObject);
 }
 
 void renderer::AddVertexArray(const vertex_array &vArray,

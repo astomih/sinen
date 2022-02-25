@@ -61,11 +61,8 @@ public:
                       std::string_view name) override;
   void UpdateVertexArray(const vertex_array &vArray,
                          std::string_view name) override;
-  void AddDrawObject2D(std::shared_ptr<class draw_object> sprite) override;
-  void RemoveDrawObject2D(std::shared_ptr<class draw_object> sprite) override;
-
-  void AddDrawObject3D(std::shared_ptr<class draw_object> sprite) override;
-  void RemoveDrawObject3D(std::shared_ptr<class draw_object> sprite) override;
+  void draw2d(std::shared_ptr<class draw_object> sprite) override;
+  void draw3d(std::shared_ptr<class draw_object> sprite) override;
 
   void LoadShader(const shader &shaderInfo) override;
   void UnloadShader(const shader &shaderInfo) override;

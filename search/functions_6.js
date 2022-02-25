@@ -1,8 +1,5 @@
 var searchData=
 [
-  ['launch_221',['launch',['../classnen_1_1manager.html#a89b24a6334060f36a21026add1d1eaf3',1,'nen::manager']]],
-  ['load_222',['Load',['../classnen_1_1asset__reader.html#adc2aa8e67fb5342885a205c453305e89',1,'nen::asset_reader']]],
-  ['loadasrwops_223',['LoadAsRWops',['../classnen_1_1asset__reader.html#a9732c9038d75d703cb693aaef5615261',1,'nen::asset_reader']]],
-  ['loadasstring_224',['LoadAsString',['../classnen_1_1asset__reader.html#a61c489fa898eb02c2238a21f6acd2330',1,'nen::asset_reader']]],
-  ['loadfromfile_225',['LoadFromFile',['../classnen_1_1font.html#a2ea668ba4104a1318c27ddfcc71527a7',1,'nen::font']]]
+  ['rendertext_178',['RenderText',['../classnen_1_1font.html#ad29ef8688f8aaf9b93ccc3195ecde928',1,'nen::font']]],
+  ['runloop_179',['RunLoop',['../classnen_1_1base__scene.html#ae3d9c3082843af0685dc82a94d1255fe',1,'nen::base_scene']]]
 ];

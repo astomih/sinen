@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['quit_228',['Quit',['../classnen_1_1base__scene.html#ad31bd1770d9b314bc94070b111f15105',1,'nen::base_scene']]]
+  ['update_183',['Update',['../classnen_1_1base__scene.html#a00e5e7382504b0c9f7412a185b04a468',1,'nen::base_scene']]]
 ];

@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['manager_226',['manager',['../classnen_1_1manager.html#a83252e5a03cfa0d93579f9809bfc3df1',1,'nen::manager']]],
-  ['move_227',['Move',['../classnen_1_1base__actor.html#a887b639c668e888cc150d7da8d2779d6',1,'nen::base_actor']]]
+  ['setstate_180',['SetState',['../classnen_1_1base__scene.html#a16dc3d7f3eca67eb0701bdc906a81cce',1,'nen::base_scene']]],
+  ['setup_181',['Setup',['../classnen_1_1base__scene.html#a20b4fe31432db2b9dbad5bbadb826fa9',1,'nen::base_scene']]],
+  ['shutdown_182',['Shutdown',['../classnen_1_1base__scene.html#abb439280765659a5fc0503e4f26d7129',1,'nen::base_scene']]]
 ];

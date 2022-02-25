@@ -81,18 +81,17 @@ $(function() {
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;  <a class="code" href="classnen_1_1texture__system.html">texture_system</a>(<span class="keyword">class</span> <a class="code" href="classnen_1_1manager.html">manager</a> &amp;_manager) : m_manager(_manager) {}</div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;  ~<a class="code" href="classnen_1_1texture__system.html">texture_system</a>() = <span class="keywordflow">default</span>;</div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160; </div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;  handle_t add_texture(std::string_view file_name);</div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;  handle_t add_texture();</div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;  <a class="code" href="classnen_1_1texture.html">texture</a> &amp;get_texture(handle_t handle);</div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160; </div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;  <span class="keywordtype">void</span> remove_texture(handle_t handle);</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160; </div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;  <span class="keyword">class </span><a class="code" href="classnen_1_1manager.html">manager</a> &amp;m_manager;</div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;  <a class="code" href="classnen_1_1handler.html">handler&lt;texture&gt;</a> texture_handler;</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;};</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;} <span class="comment">// namespace nen</span></div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;  handle_t create_texture();</div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;  <a class="code" href="classnen_1_1texture.html">texture</a> &amp;get_texture(handle_t handle);</div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160; </div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;  <span class="keywordtype">void</span> remove_texture(handle_t handle);</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160; </div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;  <span class="keyword">class </span><a class="code" href="classnen_1_1manager.html">manager</a> &amp;m_manager;</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;  <a class="code" href="classnen_1_1handler.html">handler&lt;texture&gt;</a> texture_handler;</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;};</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;} <span class="comment">// namespace nen</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassnen_1_1handler_html"><div class="ttname"><a href="classnen_1_1handler.html">nen::handler</a></div><div class="ttdef"><b>Definition:</b> handler.hpp:13</div></div>
 <div class="ttc" id="aclassnen_1_1manager_html"><div class="ttname"><a href="classnen_1_1manager.html">nen::manager</a></div><div class="ttdoc">sinen manager</div><div class="ttdef"><b>Definition:</b> manager.hpp:19</div></div>
 <div class="ttc" id="aclassnen_1_1texture__system_html"><div class="ttname"><a href="classnen_1_1texture__system.html">nen::texture_system</a></div><div class="ttdef"><b>Definition:</b> texture_system.hpp:6</div></div>

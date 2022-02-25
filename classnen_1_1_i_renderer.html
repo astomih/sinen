@@ -86,6 +86,12 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>Shutdown</b> 
 <tr class="memitem:abbeedce821d431f3bca909d33b9097b7"><td class="memItemLeft" align="right" valign="top"><a id="abbeedce821d431f3bca909d33b9097b7"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>Render</b> ()</td></tr>
 <tr class="separator:abbeedce821d431f3bca909d33b9097b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75e87abbde86eb6376c69d29878ebfd7"><td class="memItemLeft" align="right" valign="top"><a id="a75e87abbde86eb6376c69d29878ebfd7"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>draw2d</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1draw__object.html">draw_object</a> &gt; sprite)</td></tr>
+<tr class="separator:a75e87abbde86eb6376c69d29878ebfd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a684a2fcb3d6bc973255fba8b2bc104ba"><td class="memItemLeft" align="right" valign="top"><a id="a684a2fcb3d6bc973255fba8b2bc104ba"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>draw3d</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1draw__object.html">draw_object</a> &gt; sprite)</td></tr>
+<tr class="separator:a684a2fcb3d6bc973255fba8b2bc104ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2f527eb4502956a5b56e666818073352"><td class="memItemLeft" align="right" valign="top"><a id="a2f527eb4502956a5b56e666818073352"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>AddVertexArray</b> (const <a class="el" href="classnen_1_1vertex__array.html">vertex_array</a> &amp;vArray, std::string_view name)</td></tr>
 <tr class="separator:a2f527eb4502956a5b56e666818073352"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -98,24 +104,6 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>add_instancin
 <tr class="memitem:ab8ecd8dfc3590c3bf93cc2c46db990b0"><td class="memItemLeft" align="right" valign="top"><a id="ab8ecd8dfc3590c3bf93cc2c46db990b0"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>remove_instancing</b> (<a class="el" href="classnen_1_1instancing.html">instancing</a> &amp;_instancing)</td></tr>
 <tr class="separator:ab8ecd8dfc3590c3bf93cc2c46db990b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8c85f3e8e7f0190666a5f0a3c1a89384"><td class="memItemLeft" align="right" valign="top"><a id="a8c85f3e8e7f0190666a5f0a3c1a89384"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>AddDrawObject2D</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1draw__object.html">draw_object</a> &gt; sprite)</td></tr>
-<tr class="separator:a8c85f3e8e7f0190666a5f0a3c1a89384"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa0ca89d5a6472b2af97b4ad83fb1ee67"><td class="memItemLeft" align="right" valign="top"><a id="aa0ca89d5a6472b2af97b4ad83fb1ee67"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveDrawObject2D</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1draw__object.html">draw_object</a> &gt; sprite)</td></tr>
-<tr class="separator:aa0ca89d5a6472b2af97b4ad83fb1ee67"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab793b078b3021890adbfd775d0a3b8e7"><td class="memItemLeft" align="right" valign="top"><a id="ab793b078b3021890adbfd775d0a3b8e7"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>AddDrawObject3D</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1draw__object.html">draw_object</a> &gt; drawObject)</td></tr>
-<tr class="separator:ab793b078b3021890adbfd775d0a3b8e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a52db2867fce5a1d25c02d10cdff56b83"><td class="memItemLeft" align="right" valign="top"><a id="a52db2867fce5a1d25c02d10cdff56b83"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveDrawObject3D</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1draw__object.html">draw_object</a> &gt; drawObject)</td></tr>
-<tr class="separator:a52db2867fce5a1d25c02d10cdff56b83"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a58852159bce1452ab90da1588ffdb74b"><td class="memItemLeft" align="right" valign="top"><a id="a58852159bce1452ab90da1588ffdb74b"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>AddGUI</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1ui__screen.html">ui_screen</a> &gt; ui)</td></tr>
-<tr class="separator:a58852159bce1452ab90da1588ffdb74b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a713e8dd01663405fab30ce48fd54a709"><td class="memItemLeft" align="right" valign="top"><a id="a713e8dd01663405fab30ce48fd54a709"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>RemoveGUI</b> (std::shared_ptr&lt; class <a class="el" href="classnen_1_1ui__screen.html">ui_screen</a> &gt; ui)</td></tr>
-<tr class="separator:a713e8dd01663405fab30ce48fd54a709"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a91b78ec42e877c5929606ed38d29cac0"><td class="memItemLeft" align="right" valign="top"><a id="a91b78ec42e877c5929606ed38d29cac0"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>LoadShader</b> (const <a class="el" href="classnen_1_1shader.html">shader</a> &amp;shaderInfo)</td></tr>
 <tr class="separator:a91b78ec42e877c5929606ed38d29cac0"><td class="memSeparator" colspan="2">&#160;</td></tr>

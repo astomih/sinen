@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>sinen: nen::texture_system Class Reference</title>
+<title>sinen: nen::draw2d Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,35 +63,45 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><b>nen</b></li><li class="navelem"><a class="el" href="classnen_1_1texture__system.html">texture_system</a></li>  </ul>
+<li class="navelem"><b>nen</b></li><li class="navelem"><a class="el" href="classnen_1_1draw2d.html">draw2d</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="classnen_1_1texture__system-members.html">List of all members</a>  </div>
+<a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="classnen_1_1draw2d-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">nen::texture_system Class Reference</div>  </div>
+<div class="title">nen::draw2d Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:af7a24333872f08835455b33a6e268dd4"><td class="memItemLeft" align="right" valign="top"><a id="af7a24333872f08835455b33a6e268dd4"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>texture_system</b> (class <a class="el" href="classnen_1_1manager.html">manager</a> &amp;_manager)</td></tr>
-<tr class="separator:af7a24333872f08835455b33a6e268dd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a43a9def42a691466cd51d121651e4fad"><td class="memItemLeft" align="right" valign="top"><a id="a43a9def42a691466cd51d121651e4fad"></a>
-handle_t&#160;</td><td class="memItemRight" valign="bottom"><b>create_texture</b> ()</td></tr>
-<tr class="separator:a43a9def42a691466cd51d121651e4fad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaac8ecdc8b3a4a62e4cbc1ed084ab2ca"><td class="memItemLeft" align="right" valign="top"><a id="aaac8ecdc8b3a4a62e4cbc1ed084ab2ca"></a>
-<a class="el" href="classnen_1_1texture.html">texture</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>get_texture</b> (handle_t handle)</td></tr>
-<tr class="separator:aaac8ecdc8b3a4a62e4cbc1ed084ab2ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4608796965924895f8e53bbacbcca48d"><td class="memItemLeft" align="right" valign="top"><a id="a4608796965924895f8e53bbacbcca48d"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>remove_texture</b> (handle_t handle)</td></tr>
-<tr class="separator:a4608796965924895f8e53bbacbcca48d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d1402f5049af6e99caf6d5e4b2b5bfd"><td class="memItemLeft" align="right" valign="top"><a id="a3d1402f5049af6e99caf6d5e4b2b5bfd"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>draw2d</b> (<a class="el" href="classnen_1_1texture.html">texture</a>)</td></tr>
+<tr class="separator:a3d1402f5049af6e99caf6d5e4b2b5bfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae265597becce898f5357d2f2e2ac7e97"><td class="memItemLeft" align="right" valign="top"><a id="ae265597becce898f5357d2f2e2ac7e97"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>draw</b> ()</td></tr>
+<tr class="separator:ae265597becce898f5357d2f2e2ac7e97"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
+Public Attributes</h2></td></tr>
+<tr class="memitem:ad3f0bfffba2bbb237c1224a90734ea6b"><td class="memItemLeft" align="right" valign="top"><a id="ad3f0bfffba2bbb237c1224a90734ea6b"></a>
+<a class="el" href="classnen_1_1vector2.html">vector2</a>&#160;</td><td class="memItemRight" valign="bottom"><b>position</b></td></tr>
+<tr class="separator:ad3f0bfffba2bbb237c1224a90734ea6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af7dcf3bead6c1ea49f9a15c42870451b"><td class="memItemLeft" align="right" valign="top"><a id="af7dcf3bead6c1ea49f9a15c42870451b"></a>
+float&#160;</td><td class="memItemRight" valign="bottom"><b>rotation</b></td></tr>
+<tr class="separator:af7dcf3bead6c1ea49f9a15c42870451b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe0345e4eaa279e305e5de2c10817fdf"><td class="memItemLeft" align="right" valign="top"><a id="abe0345e4eaa279e305e5de2c10817fdf"></a>
+<a class="el" href="classnen_1_1vector2.html">vector2</a>&#160;</td><td class="memItemRight" valign="bottom"><b>scale</b></td></tr>
+<tr class="separator:abe0345e4eaa279e305e5de2c10817fdf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a43a9854d5c8d994c0d7b434de6e5e6d6"><td class="memItemLeft" align="right" valign="top"><a id="a43a9854d5c8d994c0d7b434de6e5e6d6"></a>
+<a class="el" href="classnen_1_1texture.html">texture</a>&#160;</td><td class="memItemRight" valign="bottom"><b>texture_handle</b></td></tr>
+<tr class="separator:a43a9854d5c8d994c0d7b434de6e5e6d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li><a class="el" href="texture__system_8hpp_source.html">texture_system.hpp</a></li>
+<li><a class="el" href="draw__object__wrapper_8hpp_source.html">draw_object_wrapper.hpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

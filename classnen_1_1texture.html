@@ -78,36 +78,30 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aa3446d2b0321f9ec6172e10f03fa7874"><td class="memItemLeft" align="right" valign="top"><a id="aa3446d2b0321f9ec6172e10f03fa7874"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>texture</b> (std::string_view file_name)</td></tr>
-<tr class="separator:aa3446d2b0321f9ec6172e10f03fa7874"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81923c64b3751ecd0ce7b1610197afa8"><td class="memItemLeft" align="right" valign="top"><a id="a81923c64b3751ecd0ce7b1610197afa8"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>texture</b> (handle_t handle)</td></tr>
+<tr class="separator:a81923c64b3751ecd0ce7b1610197afa8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7f236c5c3ab2fc21e2a63be72331bd8d"><td class="memItemLeft" align="right" valign="top"><a id="a7f236c5c3ab2fc21e2a63be72331bd8d"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>Load</b> (std::string_view fileName)</td></tr>
 <tr class="separator:a7f236c5c3ab2fc21e2a63be72331bd8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac75728b1dced12e33e58a2909172dcee"><td class="memItemLeft" align="right" valign="top"><a id="ac75728b1dced12e33e58a2909172dcee"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>LoadFromMemory</b> (std::vector&lt; char &gt; &amp;buffer, std::string_view ID)</td></tr>
 <tr class="separator:ac75728b1dced12e33e58a2909172dcee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af22b2cad5cf7bc4a99e74da60c2f396d"><td class="memItemLeft" align="right" valign="top"><a id="af22b2cad5cf7bc4a99e74da60c2f396d"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>fill_color</b> (const <a class="el" href="classnen_1_1color.html">color</a> &amp;<a class="el" href="classnen_1_1color.html">color</a>, std::string_view ID)</td></tr>
-<tr class="separator:af22b2cad5cf7bc4a99e74da60c2f396d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe390b90a57a593b6d3ffc1891106881"><td class="memItemLeft" align="right" valign="top"><a id="afe390b90a57a593b6d3ffc1891106881"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>fill_color</b> (const <a class="el" href="classnen_1_1color.html">color</a> &amp;<a class="el" href="classnen_1_1color.html">color</a>)</td></tr>
+<tr class="separator:afe390b90a57a593b6d3ffc1891106881"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a70208ecfbad0e9f28fe2da3ee985a3bf"><td class="memItemLeft" align="right" valign="top"><a id="a70208ecfbad0e9f28fe2da3ee985a3bf"></a>
 const int&#160;</td><td class="memItemRight" valign="bottom"><b>GetWidth</b> ()</td></tr>
 <tr class="separator:a70208ecfbad0e9f28fe2da3ee985a3bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a479db9186b45a7683e8741fa06a732ef"><td class="memItemLeft" align="right" valign="top"><a id="a479db9186b45a7683e8741fa06a732ef"></a>
 const int&#160;</td><td class="memItemRight" valign="bottom"><b>GetHeight</b> ()</td></tr>
 <tr class="separator:a479db9186b45a7683e8741fa06a732ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a036cc26b9dc66314c9dc49403f8ad6a3"><td class="memItemLeft" align="right" valign="top"><a id="a036cc26b9dc66314c9dc49403f8ad6a3"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>SetWidth</b> (const int w)</td></tr>
-<tr class="separator:a036cc26b9dc66314c9dc49403f8ad6a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6f72383e132306a5bbb163cfbf030ec3"><td class="memItemLeft" align="right" valign="top"><a id="a6f72383e132306a5bbb163cfbf030ec3"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>SetHeight</b> (const int h)</td></tr>
-<tr class="separator:a6f72383e132306a5bbb163cfbf030ec3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a36c64c6b9943e99abf7e5d646a94f074"><td class="memItemLeft" align="right" valign="top"><a id="a36c64c6b9943e99abf7e5d646a94f074"></a>
-std::string&#160;</td><td class="memItemRight" valign="bottom"><b>id</b> = &quot;default&quot;</td></tr>
-<tr class="separator:a36c64c6b9943e99abf7e5d646a94f074"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a47bbe26a26d561b6e62122edd015dc49"><td class="memItemLeft" align="right" valign="top"><a id="a47bbe26a26d561b6e62122edd015dc49"></a>
+handle_t&#160;</td><td class="memItemRight" valign="bottom"><b>handle</b></td></tr>
+<tr class="separator:a47bbe26a26d561b6e62122edd015dc49"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li><a class="el" href="_texture_8hpp_source.html">Texture.hpp</a></li>

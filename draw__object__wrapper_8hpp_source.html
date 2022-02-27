@@ -74,26 +74,37 @@ $(function() {
 <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="preprocessor">#pragma once</span></div>
 <div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="preprocessor">#include &quot;../Math/Vector2.hpp&quot;</span></div>
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="preprocessor">#include &quot;../Math/Vector3.hpp&quot;</span></div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &quot;../Utility/handle_t.hpp&quot;</span></div>
-<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="keyword">namespace </span>nen {</div>
-<div class="line"><a name="l00007"></a><span class="lineno"><a class="line" href="structnen_1_1draw2d__object.html">    7</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structnen_1_1draw2d__object.html">draw2d_object</a> {</div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;  <a class="code" href="classnen_1_1vector2.html">vector2</a> position;</div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;  <span class="keywordtype">float</span> rotation;</div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;  <a class="code" href="classnen_1_1vector2.html">vector2</a> scale;</div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;  handle_t texture_handle;</div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;};</div>
-<div class="line"><a name="l00013"></a><span class="lineno"><a class="line" href="structnen_1_1draw3d__object.html">   13</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structnen_1_1draw3d__object.html">draw3d_object</a> {</div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;  <a class="code" href="classnen_1_1vector3.html">vector3</a> position;</div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;  <a class="code" href="classnen_1_1vector3.html">vector3</a> rotation;</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;  <a class="code" href="classnen_1_1vector3.html">vector3</a> scale;</div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;  handle_t texture_handle;</div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &quot;../Texture/Texture.hpp&quot;</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#include &quot;../Utility/handle_t.hpp&quot;</span></div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &quot;DrawObject.hpp&quot;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160; </div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="keyword">namespace </span>nen {</div>
+<div class="line"><a name="l00009"></a><span class="lineno"><a class="line" href="classnen_1_1draw2d.html">    9</a></span>&#160;<span class="keyword">class </span><a class="code" href="classnen_1_1draw2d.html">draw2d</a> {</div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;  <a class="code" href="classnen_1_1draw2d.html">draw2d</a>();</div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;  <a class="code" href="classnen_1_1draw2d.html">draw2d</a>(<a class="code" href="classnen_1_1texture.html">texture</a>);</div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;  <span class="keywordtype">void</span> draw();</div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;  <a class="code" href="classnen_1_1vector2.html">vector2</a> position;</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;  <span class="keywordtype">float</span> rotation;</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;  <a class="code" href="classnen_1_1vector2.html">vector2</a> scale;</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;  <a class="code" href="classnen_1_1texture.html">texture</a> texture_handle;</div>
 <div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;};</div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;} <span class="comment">// namespace nen</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno"><a class="line" href="classnen_1_1draw3d.html">   19</a></span>&#160;<span class="keyword">class </span><a class="code" href="classnen_1_1draw3d.html">draw3d</a> {</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;  <a class="code" href="classnen_1_1draw3d.html">draw3d</a>();</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;  <a class="code" href="classnen_1_1draw3d.html">draw3d</a>(<a class="code" href="classnen_1_1texture.html">texture</a>);</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;  <span class="keywordtype">void</span> draw();</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;  <a class="code" href="classnen_1_1vector3.html">vector3</a> position;</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;  <a class="code" href="classnen_1_1vector3.html">vector3</a> rotation;</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;  <a class="code" href="classnen_1_1vector3.html">vector3</a> scale;</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;  <a class="code" href="classnen_1_1texture.html">texture</a> texture_handle;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;};</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;} <span class="comment">// namespace nen</span></div>
+<div class="ttc" id="aclassnen_1_1draw2d_html"><div class="ttname"><a href="classnen_1_1draw2d.html">nen::draw2d</a></div><div class="ttdef"><b>Definition:</b> draw_object_wrapper.hpp:9</div></div>
+<div class="ttc" id="aclassnen_1_1draw3d_html"><div class="ttname"><a href="classnen_1_1draw3d.html">nen::draw3d</a></div><div class="ttdef"><b>Definition:</b> draw_object_wrapper.hpp:19</div></div>
+<div class="ttc" id="aclassnen_1_1texture_html"><div class="ttname"><a href="classnen_1_1texture.html">nen::texture</a></div><div class="ttdef"><b>Definition:</b> Texture.hpp:17</div></div>
 <div class="ttc" id="aclassnen_1_1vector2_html"><div class="ttname"><a href="classnen_1_1vector2.html">nen::vector2</a></div><div class="ttdef"><b>Definition:</b> Vector2.hpp:5</div></div>
 <div class="ttc" id="aclassnen_1_1vector3_html"><div class="ttname"><a href="classnen_1_1vector3.html">nen::vector3</a></div><div class="ttdef"><b>Definition:</b> Vector3.hpp:5</div></div>
-<div class="ttc" id="astructnen_1_1draw2d__object_html"><div class="ttname"><a href="structnen_1_1draw2d__object.html">nen::draw2d_object</a></div><div class="ttdef"><b>Definition:</b> draw_object_wrapper.hpp:7</div></div>
-<div class="ttc" id="astructnen_1_1draw3d__object_html"><div class="ttname"><a href="structnen_1_1draw3d__object.html">nen::draw3d_object</a></div><div class="ttdef"><b>Definition:</b> draw_object_wrapper.hpp:13</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

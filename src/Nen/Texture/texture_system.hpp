@@ -12,14 +12,14 @@ struct SDLObjectCloser {
 };
 class texture_system {
 public:
-  texture_system(manager &_manager) : manager(_manager) {}
+  texture_system(manager &_manager) : m_manager(_manager) {}
   handle_t create();
   bool Contain(handle_t);
   SDL_Surface &get(handle_t);
   void remove(handle_t);
 
 private:
-  manager &manager;
+  manager &m_manager;
   handler<::SDL_Surface, SDLObjectCloser> surfaces;
 };
 } // namespace nen

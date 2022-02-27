@@ -1,4 +1,4 @@
-﻿#include "../Texture/SurfaceHandle.hpp"
+﻿#include "../Texture/texture_system.hpp"
 #include <Nen.hpp>
 #include <SDL.h>
 #include <SDL_ttf.h>
@@ -29,7 +29,6 @@ void font::RenderText(texture &tex, std::string_view text, const color &_color,
   sdlColor.g = static_cast<Uint8>(_color.g * 255);
   sdlColor.b = static_cast<Uint8>(_color.b * 255);
   sdlColor.a = 255;
-  tex.id = std::string(text);
   ::SDL_Surface *surf = nullptr;
   switch (quality) {
   case nen::font::quality::Solid:
@@ -52,9 +51,6 @@ void font::RenderText(texture &tex, std::string_view text, const color &_color,
   default:
     break;
   }
-  tex.SetWidth(surf->w);
-  tex.SetHeight(surf->h);
-  surface_handler::Register(
-      text, std::move(std::unique_ptr<::SDL_Surface, SDLObjectCloser>(surf)));
+  memcpy(&get_texture_system().get(tex.handle), surf, sizeof(SDL_Surface));
 }
 } // namespace nen

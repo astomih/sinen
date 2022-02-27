@@ -91,6 +91,7 @@ void base_scene::Update(float deltaTime) {
       ".lua");
   */
   get_script().get_sol_state()["update"]();
+  get_script().get_sol_state()["delta_time"] = deltaTime;
 }
 
 void base_scene::Shutdown() { UnloadData(); }

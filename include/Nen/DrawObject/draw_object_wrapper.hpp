@@ -1,19 +1,29 @@
 #pragma once
 #include "../Math/Vector2.hpp"
 #include "../Math/Vector3.hpp"
+#include "../Texture/Texture.hpp"
 #include "../Utility/handle_t.hpp"
+#include "DrawObject.hpp"
 
 namespace nen {
-struct draw2d_object {
+class draw2d {
+public:
+  draw2d();
+  draw2d(texture);
+  void draw();
   vector2 position;
   float rotation;
   vector2 scale;
-  handle_t texture_handle;
+  texture texture_handle;
 };
-struct draw3d_object {
+class draw3d {
+public:
+  draw3d();
+  draw3d(texture);
+  void draw();
   vector3 position;
   vector3 rotation;
   vector3 scale;
-  handle_t texture_handle;
+  texture texture_handle;
 };
 } // namespace nen

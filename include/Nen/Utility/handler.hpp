@@ -10,12 +10,12 @@
 #include "handle_t.hpp"
 
 namespace nen {
-template <class T> class handler {
+template <class T, class DP = std::default_delete<T>> class handler {
 public:
   handler() = default;
   handler(const handler &) = delete;
   handler(handler &&) = default;
-  std::unordered_map<handle_t, std::unique_ptr<T>> data;
+  std::unordered_map<handle_t, std::unique_ptr<T, DP>> data;
 
   T &operator[](const handle_t &handle) {
     return *reinterpret_cast<T *>(data[handle].get());
@@ -25,6 +25,13 @@ public:
     while (data.contains(handle))
       ++handle;
     data.emplace(handle, std::make_unique<S>(std::forward<_Args>(__args)...));
+    return handle;
+  }
+  handle_t move(std::unique_ptr<T, DP> ptr) {
+    handle_t handle = 0;
+    while (data.contains(handle))
+      ++handle;
+    data.emplace(handle, std::move(ptr));
     return handle;
   }
   template <class S = T> S &get(const handle_t &handle) {

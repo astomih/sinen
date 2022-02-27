@@ -78,10 +78,11 @@ public:
       VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
   vulkan_base_framework *GetBase() { return m_base.get(); }
   void registerTexture(std::shared_ptr<VulkanDrawObject> texture,
-                       std::string_view, texture_type type);
+                       texture_type type);
   void unregisterTexture(std::shared_ptr<VulkanDrawObject> texture,
                          texture_type type);
   void registerImageObject(const handle_t &handle);
+  void unregister_image_object(const handle_t &handle);
   VkPipelineLayout GetPipelineLayout(const std::string &name) {
     return mPipelineLayout.GetLayout();
   }
@@ -100,7 +101,7 @@ public:
   void DestroyBuffer(BufferObject bufferObj);
   void DestroyImage(ImageObject imageObj);
   void DestroyFramebuffers(uint32_t count, VkFramebuffer *framebuffers);
-  void write_memory(const VmaAllocation &, const void *data, size_t size);
+  void write_memory(VmaAllocation, const void *data, size_t size);
 
   VmaAllocator allocator{};
 
@@ -141,7 +142,7 @@ private:
   std::vector<std::pair<shader, Pipeline>> userPipelines;
   std::vector<std::shared_ptr<VulkanDrawObject>> mDrawObject3D;
   std::vector<std::shared_ptr<VulkanDrawObject>> mDrawObject2D;
-  std::unordered_map<std::string, ImageObject> mImageObjects;
+  std::unordered_map<handle_t, ImageObject> mImageObjects;
   std::vector<vulkan_instancing> m_instancies_3d;
   std::vector<vulkan_instancing> m_instancies_2d;
   BufferObject m_instance_buffer;

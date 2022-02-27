@@ -4,6 +4,7 @@
 #include <SDL_main.h>
 #endif
 
+#include "../Texture/texture_system.hpp"
 #include <Nen.hpp>
 #include <SDL.h>
 #include <SDL_image.h>
@@ -21,7 +22,8 @@ void main_loop() { emscripten_loop(); }
 
 namespace nen {
 manager _manager;
-manager &get_manager() { return _manager; }
+bool initialize() { return _manager.initialize(); }
+void launch() { _manager.launch(); }
 window &get_window() { return _manager.get_window(); }
 renderer &get_renderer() { return _manager.get_renderer(); }
 input_system &get_input_system() { return _manager.get_input_system(); }
@@ -65,6 +67,8 @@ bool manager::initialize() {
   m_renderer->SetProjectionMatrix(nen::matrix4::Perspective(
       nen::Math::ToRadians(70.f), m_window->Size().x / m_window->Size().y, 0.1f,
       1000.f));
+  m_renderer->SetViewMatrix(
+      nen::matrix4::LookAt(vector3(0, 0, 10), vector3(0), vector3(0, 1, 0)));
 
   m_sound_system = std::make_unique<nen::sound_system>();
   if (!m_sound_system->Initialize()) {

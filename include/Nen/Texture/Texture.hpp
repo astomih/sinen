@@ -1,6 +1,7 @@
 #pragma once
 #include "../Color/Color.hpp"
 #include "../Math/Matrix4.hpp"
+#include "../Utility/handle_t.hpp"
 #include "../Vertex/Vertex.hpp"
 #include <memory>
 #include <string>
@@ -15,31 +16,16 @@ struct shader_parameter {
 
 class texture {
 public:
-  texture();
-  texture(std::string_view file_name);
+  texture() = default;
+  texture(handle_t handle) : handle(handle){};
   ~texture();
   bool Load(std::string_view fileName);
   bool LoadFromMemory(std::vector<char> &buffer, std::string_view ID);
 
-  void fill_color(const color &color, std::string_view ID);
+  void fill_color(const color &color);
 
-  const int GetWidth() { return width; }
-  const int GetHeight() { return height; }
-  void SetWidth(const int w) {
-    if (w >= 0)
-      this->width = w;
-  }
-  void SetHeight(const int h) {
-    if (h >= 0)
-      this->height = h;
-  }
-
-  std::string id = "default";
-
-private:
-  class Impl;
-  std::unique_ptr<Impl> impl;
-  int width = 0;
-  int height = 0;
+  const int GetWidth();
+  const int GetHeight();
+  handle_t handle;
 };
 } // namespace nen

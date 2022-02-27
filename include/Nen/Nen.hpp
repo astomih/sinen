@@ -36,7 +36,6 @@
 #include "Scene/Scene.hpp"
 #include "Script/Script.hpp"
 #include "Shader/Shader.hpp"
-#include "Texture/texture_system.hpp"
 #include "Time/Time.hpp"
 #include "Time/Timer.hpp"
 #include "Utility/NonCopyable.hpp"

@@ -4,13 +4,11 @@
 #include <SDL.h>
 #include <vulkan/vulkan.h>
 
-
 #include <array>
 #include <fstream>
 #include <functional>
 #include <stdexcept>
 #include <vector>
-
 
 #define STRINGFY(s) #s
 #define TO_STRING(x) STRINGFY(x)
@@ -21,7 +19,7 @@
 namespace nen::vkutil {
 template <class U>
 void DestroyVulkanObject(
-    VkDevice &device, U &object,
+    const VkDevice &device, U &object,
     std::function<void(VkDevice, U, VkAllocationCallbacks *)> function) {
   if (object != VK_NULL_HANDLE) {
     function(device, object, nullptr);

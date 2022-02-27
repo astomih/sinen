@@ -16,7 +16,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "../../Texture/SurfaceHandle.hpp"
+#include "../../Texture/texture_system.hpp"
 #include "GLRenderer.h"
 #include <fstream>
 #include <imgui.h>
@@ -119,10 +119,9 @@ void GLRenderer::draw_3d() {
         }
       }
     }
-    glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
+    glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->texture_handle]);
     glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indices.size(),
                    GL_UNSIGNED_INT, nullptr);
-    eraseSprite3d(i);
   }
   mSprite3Ds.clear();
 }
@@ -136,7 +135,7 @@ void GLRenderer::draw_instancing_3d() {
     auto va = m_VertexArrays[i.ins.object->vertexIndex];
     glBindVertexArray(va.vao);
 
-    glBindTexture(GL_TEXTURE_2D, mTextureIDs[i.ins.object->textureIndex]);
+    glBindTexture(GL_TEXTURE_2D, mTextureIDs[i.ins.object->texture_handle]);
     glDrawElementsInstanced(
         GL_TRIANGLES, m_VertexArrays[i.ins.object->vertexIndex].indices.size(),
         GL_UNSIGNED_INT, nullptr, i.ins.data.size());
@@ -158,10 +157,9 @@ void GLRenderer::draw_2d() {
         }
       }
     }
-    glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->textureIndex]);
+    glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->texture_handle]);
     glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indices.size(),
                    GL_UNSIGNED_INT, nullptr);
-    eraseSprite2d(i);
   }
   mSprite2Ds.clear();
 }
@@ -175,7 +173,7 @@ void GLRenderer::draw_instancing_2d() {
     auto va = m_VertexArrays[i.ins.object->vertexIndex];
     glBindVertexArray(va.vao);
 
-    glBindTexture(GL_TEXTURE_2D, mTextureIDs[i.ins.object->textureIndex]);
+    glBindTexture(GL_TEXTURE_2D, mTextureIDs[i.ins.object->texture_handle]);
     glDrawElementsInstanced(
         GL_TRIANGLES, m_VertexArrays[i.ins.object->vertexIndex].indices.size(),
         GL_UNSIGNED_INT, nullptr, i.ins.data.size());
@@ -311,8 +309,10 @@ void GLRenderer::prepare() {
 }
 
 void GLRenderer::registerTexture(handle_t handle) {
-  auto id = m_manager.get_texture_system().get_texture(handle).id;
-  ::SDL_Surface surf = surface_handler::Load(id);
+  ::SDL_Surface surf = get_texture_system().get(handle);
+  if (mTextureIDs.contains(handle)) {
+    return;
+  }
   ::SDL_LockSurface(&surf);
   auto formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
   formatbuf->BytesPerPixel = 4;
@@ -330,7 +330,7 @@ void GLRenderer::registerTexture(handle_t handle) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-  mTextureIDs.emplace(id, textureId);
+  mTextureIDs.emplace(handle, textureId);
 }
 
 bool GLRenderer::loadShader() {

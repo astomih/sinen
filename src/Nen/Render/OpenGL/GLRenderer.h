@@ -122,7 +122,7 @@ private:
   ShaderGL mAlphaInstanceShader;
   std::vector<std::pair<shader, ShaderGL>> userPipelines;
   GLuint mTextureID;
-  std::unordered_map<std::string, GLuint> mTextureIDs;
+  std::unordered_map<handle_t, GLuint> mTextureIDs;
   std::unordered_map<std::string, VertexArrayForGL> m_VertexArrays;
   ::SDL_GLContext mContext;
   std::vector<std::shared_ptr<draw_object>> mSprite2Ds;

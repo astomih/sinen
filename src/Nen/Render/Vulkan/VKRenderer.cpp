@@ -20,7 +20,7 @@
 #include "vk_mem_alloc.h"
 
 // internal
-#include "../../Texture/SurfaceHandle.hpp"
+#include "../../Texture/texture_system.hpp"
 #include "VKBase.h"
 #include "VKRenderer.h"
 #include "VulkanShader.h"
@@ -82,18 +82,14 @@ void VKRenderer::draw2d(std::shared_ptr<class draw_object> drawObject) {
   auto t = std::make_shared<vk::VulkanDrawObject>();
   t->drawObject = drawObject;
   registerImageObject(drawObject->texture_handle);
-  auto id =
-      m_manager.get_texture_system().get_texture(drawObject->texture_handle).id;
-  registerTexture(t, id, texture_type::Image2D);
+  registerTexture(t, texture_type::Image2D);
 }
 
 void VKRenderer::draw3d(std::shared_ptr<class draw_object> sprite) {
   auto t = std::make_shared<vk::VulkanDrawObject>();
   t->drawObject = sprite;
   registerImageObject(sprite->texture_handle);
-  auto id =
-      m_manager.get_texture_system().get_texture(sprite->texture_handle).id;
-  registerTexture(t, id, texture_type::Image3D);
+  registerTexture(t, texture_type::Image3D);
 }
 
 void VKRenderer::LoadShader(const shader &shaderInfo) {
@@ -417,8 +413,9 @@ void VKRenderer::draw3d(VkCommandBuffer command) {
     write_memory(allocation, &sprite->drawObject->param,
                  sizeof(shader_parameter));
     vkCmdDrawIndexed(command, m_VertexArrays[index].indexCount, 1, 0, 0, 0);
-    unregisterTexture(sprite, texture_type::Image3D);
   }
+  for (auto &sprite : mDrawObject3D)
+    unregisterTexture(sprite, texture_type::Image3D);
   mDrawObject3D.clear();
 }
 
@@ -459,12 +456,13 @@ void VKRenderer::draw2d(VkCommandBuffer command) {
     vkCmdDrawIndexed(command,
                      m_VertexArrays[sprite->drawObject->vertexIndex].indexCount,
                      1, 0, 0, 0);
-    unregisterTexture(sprite, texture_type::Image2D);
   }
+  for (auto &sprite : mDrawObject2D)
+    unregisterTexture(sprite, texture_type::Image2D);
   mDrawObject2D.clear();
 }
 
-void VKRenderer::write_memory(const VmaAllocation &allocation, const void *data,
+void VKRenderer::write_memory(VmaAllocation allocation, const void *data,
                               size_t size) {
   void *p = nullptr;
   vmaMapMemory(allocator, allocation, &p);
@@ -637,7 +635,8 @@ void VKRenderer::prepareDescriptorSet(
     descUBO.range = VK_WHOLE_SIZE;
 
     VkDescriptorImageInfo descImage{};
-    descImage.imageView = mImageObjects[sprite->drawObject->textureIndex].view;
+    descImage.imageView =
+        mImageObjects[sprite->drawObject->texture_handle].view;
     descImage.sampler = m_sampler;
     descImage.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -814,10 +813,6 @@ VKRenderer::createTextureFromMemory(const std::vector<char> &imageData) {
   formatbuf->BytesPerPixel = 4;
   auto imagedata = SDL_ConvertSurface(surface, formatbuf, 0);
   SDL_UnlockSurface(surface);
-  BufferObject stagingBuffer;
-  ImageObject texture{};
-  int width = imagedata->w, height = imagedata->h;
-  auto *pImage = imagedata->pixels;
   auto format = VK_FORMAT_R8G8B8A8_UNORM;
   return create_texture(imagedata, format);
 }
@@ -934,10 +929,20 @@ void VKRenderer::DestroyFramebuffers(uint32_t count,
 }
 
 void VKRenderer::registerImageObject(const handle_t &handle) {
-  auto id = m_manager.get_texture_system().get_texture(handle).id;
-  if (!mImageObjects.contains(id)) {
-    mImageObjects.insert(
-        {id, VKRenderer::createTextureFromSurface(surface_handler::Load(id))});
+  if (mImageObjects.contains(handle)) {
+    return;
+  }
+  mImageObjects.insert({handle, VKRenderer::createTextureFromSurface(
+                                    get_texture_system().get(handle))});
+}
+void VKRenderer::unregister_image_object(const handle_t &handle) {
+  for (auto it = mImageObjects.begin(); it != mImageObjects.end(); ++it) {
+    if (it->first == handle) {
+      vmaDestroyImage(allocator, it->second.image, it->second.allocation);
+      vkutil::DestroyVulkanObject<VkImageView>(GetDevice(), it->second.view,
+                                               &vkDestroyImageView);
+      break;
+    }
   }
 }
 VkRenderPass VKRenderer::GetRenderPass(const std::string &name) {
@@ -951,7 +956,7 @@ VkDevice VKRenderer::GetDevice() {
   return m_base->get_vk_device();
 }
 void VKRenderer::registerTexture(std::shared_ptr<VulkanDrawObject> texture,
-                                 std::string_view ID, texture_type type) {
+                                 texture_type type) {
   if (texture_type::Image3D == type) {
     mDrawObject3D.push_back(texture);
     texture->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
@@ -986,33 +991,15 @@ void VKRenderer::registerTexture(std::shared_ptr<VulkanDrawObject> texture,
 }
 void VKRenderer::unregisterTexture(std::shared_ptr<VulkanDrawObject> texture,
                                    texture_type type) {
-  if (texture_type::Image3D == type) {
-    auto itr = std::find(mDrawObject3D.begin(), mDrawObject3D.end(), texture);
-    if (itr != mDrawObject3D.end()) {
-      auto device = m_base->get_vk_device();
-      vkFreeDescriptorSets(m_base->get_vk_device(), m_descriptorPool,
-                           static_cast<uint32_t>(texture->descripterSet.size()),
-                           texture->descripterSet.data());
-      for (auto &i : (*itr)->uniformBuffers) {
-        DestroyVulkanObject<VkBuffer>(device, i.buffer, &vkDestroyBuffer);
-      }
-      itr = mDrawObject3D.erase(itr);
-      layouts.pop_back();
-    }
-  } else {
-    auto device = m_base->get_vk_device();
-    auto itr = std::find(mDrawObject2D.begin(), mDrawObject2D.end(), texture);
-    vkFreeDescriptorSets(device, m_descriptorPool,
-                         static_cast<uint32_t>(texture->descripterSet.size()),
-                         texture->descripterSet.data());
-    if (itr != mDrawObject2D.end()) {
-      for (auto &i : (*itr)->uniformBuffers) {
-        DestroyVulkanObject<VkBuffer>(device, i.buffer, &vkDestroyBuffer);
-      }
-      mDrawObject2D.erase(itr);
-    }
-    layouts.pop_back();
+  auto device = m_base->get_vk_device();
+  vkFreeDescriptorSets(device, m_descriptorPool,
+                       static_cast<uint32_t>(texture->descripterSet.size()),
+                       texture->descripterSet.data());
+  for (auto &i : texture->uniformBuffers) {
+    vmaDestroyBuffer(allocator, i.buffer, i.allocation);
   }
+  texture->uniformBuffers.clear();
+  layouts.pop_back();
 }
 } // namespace nen::vk
 #endif

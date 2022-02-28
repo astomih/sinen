@@ -27,13 +27,13 @@ void launch() { _manager.launch(); }
 window &get_window() { return _manager.get_window(); }
 renderer &get_renderer() { return _manager.get_renderer(); }
 input_system &get_input_system() { return _manager.get_input_system(); }
-base_scene &get_current_scene() { return _manager.get_current_scene(); }
+scene &get_current_scene() { return _manager.get_current_scene(); }
 sound_system &get_sound_system() { return _manager.get_sound_system(); }
 script_system &get_script_system() { return _manager.get_script_system(); }
 texture_system &get_texture_system() { return _manager.get_texture_system(); }
 font_system &get_font_system() { return _manager.get_font_system(); }
 bool manager::initialize() {
-  m_current_scene = std::make_unique<base_scene>(*this);
+  m_current_scene = std::make_unique<scene>(*this);
   SDL_SetMainReady();
   SDL_Init(SDL_INIT_EVERYTHING);
   TTF_Init();
@@ -77,7 +77,6 @@ bool manager::initialize() {
     m_sound_system = nullptr;
     return false;
   }
-  nen::logger::Info("Audio system Initialized.");
   m_input_system = std::make_unique<nen::input_system>(*this);
   if (!m_input_system->Initialize()) {
     nen::logger::Info("Failed to initialize input system");
@@ -91,7 +90,6 @@ bool manager::initialize() {
   m_texture_system = std::make_unique<nen::texture_system>(*this);
 
   m_font_system = std::make_unique<nen::font_system>(*this);
-
   return true;
 }
 void manager::launch() {
@@ -131,7 +129,7 @@ void manager::loop() {
 }
 void manager::change_scene(std::uint32_t scene_number) {
   m_current_scene->Quit();
-  m_next_scene = std::make_unique<nen::base_scene>(*this);
+  m_next_scene = std::make_unique<nen::scene>(*this);
   m_scene_number = scene_number;
 }
 

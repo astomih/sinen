@@ -100,6 +100,8 @@ void GLRenderer::Render() {
 
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+  mSprite3Ds.clear();
+  mSprite2Ds.clear();
   SDL_GL_SwapWindow((SDL_Window *)w.GetSDLWindow());
 }
 
@@ -123,7 +125,6 @@ void GLRenderer::draw_3d() {
     glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indices.size(),
                    GL_UNSIGNED_INT, nullptr);
   }
-  mSprite3Ds.clear();
 }
 void GLRenderer::draw_instancing_3d() {
 
@@ -161,7 +162,6 @@ void GLRenderer::draw_2d() {
     glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indices.size(),
                    GL_UNSIGNED_INT, nullptr);
   }
-  mSprite2Ds.clear();
 }
 
 void GLRenderer::draw_instancing_2d() {

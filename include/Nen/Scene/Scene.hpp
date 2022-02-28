@@ -16,14 +16,14 @@ class sound_system;
  * @brief Base of scene class
  *
  */
-class base_scene {
+class scene {
 public:
   /**
    * @brief Construct a new base scene object
    *
    */
-  base_scene(class manager &_manager);
-  virtual ~base_scene() = default;
+  scene(class manager &_manager);
+  virtual ~scene() = default;
 
   /**
    * @brief Game state

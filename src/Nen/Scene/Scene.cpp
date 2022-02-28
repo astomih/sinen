@@ -12,15 +12,17 @@
 #include <functional>
 #include <iostream>
 
-namespace nen {
-base_scene::base_scene(manager &_manager) : m_manager(_manager) {}
+#include <sol/sol.hpp>
 
-void base_scene::Initialize() {
+namespace nen {
+scene::scene(manager &_manager) : m_manager(_manager) {}
+
+void scene::Initialize() {
   Setup();
   m_prev_tick = SDL_GetTicks();
 }
 
-void base_scene::RunLoop() {
+void scene::RunLoop() {
   ProcessInput();
   UpdateScene();
   // Draw sprites, meshes
@@ -29,7 +31,7 @@ void base_scene::RunLoop() {
   m_manager.get_input_system().Update();
 }
 
-void base_scene::ProcessInput() {
+void scene::ProcessInput() {
 
   while (SDL_PollEvent(&current_event_handle::current_event)) {
     ImGui_ImplSDL2_ProcessEvent(&current_event_handle::current_event);
@@ -55,7 +57,7 @@ void base_scene::ProcessInput() {
     return;
 }
 
-void base_scene::UpdateScene() {
+void scene::UpdateScene() {
   // calc delta time
   float deltaTime = (SDL_GetTicks() - m_prev_tick) / 1000.0f;
   if (deltaTime > 0.05f) {
@@ -67,45 +69,34 @@ void base_scene::UpdateScene() {
   m_manager.get_sound_system().Update(deltaTime);
 }
 
-void base_scene::Setup() {
-  auto &lua = get_script().get_sol_state();
-  this->get_script().DoScript("main.lua");
-  lua["setup"]();
+void scene::Setup() {
+  sol::state *lua = (sol::state *)get_script().get_state();
+  get_script().DoScript("main.lua");
+  (*lua)["setup"]();
 }
 
-void base_scene::UnloadData() {}
+void scene::UnloadData() {}
 
-void base_scene::Update(float deltaTime) {
-  /*
-  std::string num = "";
-  if (m_manager.get_current_scene_number() > 10)
-    num = "0";
-  this->get_script().DoScript(
-      "scene" + num + std::to_string(m_manager.get_current_scene_number()) +
-      ".lua");
-  */
-  get_script().get_sol_state()["update"]();
-  get_script().get_sol_state()["delta_time"] = deltaTime;
+void scene::Update(float deltaTime) {
+  sol::state *lua = (sol::state *)get_script().get_state();
+  (*lua)["delta_time"] = deltaTime;
+  (*lua)["update"]();
 }
 
-void base_scene::Shutdown() { UnloadData(); }
+void scene::Shutdown() { UnloadData(); }
 
-renderer &base_scene::GetRenderer() { return m_manager.get_renderer(); }
-const input_state &base_scene::GetInput() {
+renderer &scene::GetRenderer() { return m_manager.get_renderer(); }
+const input_state &scene::GetInput() {
   return m_manager.get_input_system().GetState();
 }
-sound_system &base_scene::GetSound() { return m_manager.get_sound_system(); }
+sound_system &scene::GetSound() { return m_manager.get_sound_system(); }
 
-script_system &base_scene::get_script() {
-  return m_manager.get_script_system();
-}
-texture_system &base_scene::get_texture() {
-  return m_manager.get_texture_system();
-}
+script_system &scene::get_script() { return m_manager.get_script_system(); }
+texture_system &scene::get_texture() { return m_manager.get_texture_system(); }
 
-font_system &base_scene::get_font() { return m_manager.get_font_system(); }
+font_system &scene::get_font() { return m_manager.get_font_system(); }
 
-void base_scene::change_scene(std::uint32_t scene_number) {
+void scene::change_scene(std::uint32_t scene_number) {
   m_manager.change_scene(scene_number);
 }
 

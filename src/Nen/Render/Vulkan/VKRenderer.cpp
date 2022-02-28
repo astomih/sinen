@@ -377,6 +377,13 @@ void VKRenderer::makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri,
   renderImGUI(command);
   pipelineOpaque.Bind(command);
 
+  for (auto &sprite : mDrawObject3D)
+    unregisterTexture(sprite, texture_type::Image3D);
+  mDrawObject3D.clear();
+  for (auto &sprite : mDrawObject2D)
+    unregisterTexture(sprite, texture_type::Image2D);
+  mDrawObject2D.clear();
+
   vkWaitForFences(m_base->get_vk_device(), 1, &fence, VK_TRUE, UINT64_MAX);
   vkCmdSetScissor(command, 0, 1, &scissor);
   vkCmdSetViewport(command, 0, 1, &viewport);
@@ -414,9 +421,6 @@ void VKRenderer::draw3d(VkCommandBuffer command) {
                  sizeof(shader_parameter));
     vkCmdDrawIndexed(command, m_VertexArrays[index].indexCount, 1, 0, 0, 0);
   }
-  for (auto &sprite : mDrawObject3D)
-    unregisterTexture(sprite, texture_type::Image3D);
-  mDrawObject3D.clear();
 }
 
 void VKRenderer::draw2d(VkCommandBuffer command) {
@@ -457,9 +461,6 @@ void VKRenderer::draw2d(VkCommandBuffer command) {
                      m_VertexArrays[sprite->drawObject->vertexIndex].indexCount,
                      1, 0, 0, 0);
   }
-  for (auto &sprite : mDrawObject2D)
-    unregisterTexture(sprite, texture_type::Image2D);
-  mDrawObject2D.clear();
 }
 
 void VKRenderer::write_memory(VmaAllocation allocation, const void *data,

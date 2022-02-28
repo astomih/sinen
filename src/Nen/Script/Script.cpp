@@ -96,6 +96,22 @@ bool script_system::initialize() {
   lua["color"] = [&](float r, float g, float b, float a) -> color {
     return color(r, g, b, a);
   };
+  lua.new_usertype<vector3>("nen_vector3", sol::no_construction());
+  lua.new_usertype<vector2>("nen_vector2", sol::no_construction(), "x",
+                            &vector2::x, "y", &vector2::y);
+  lua.new_usertype<quaternion>("nen_quaternion", sol::no_construction());
+  lua.new_usertype<color>("nen_color", sol::no_construction(), "r", &color::r,
+                          "g", &color::g, "b", &color::b, "a", &color::a);
+  lua.new_usertype<draw2d>("nen_draw2d", sol::no_construction(), "position",
+                           &draw2d::position, "rotation", &draw2d::rotation,
+                           "scale", &draw2d::scale, "texture",
+                           &draw2d::texture_handle, "draw", &draw2d::draw);
+  lua.new_usertype<draw3d>("nen_draw3d", sol::no_construction(), "position",
+                           &draw3d::position, "rotation", &draw3d::rotation,
+                           "scale", &draw3d::scale, "texture",
+                           &draw3d::texture_handle, "draw", &draw3d::draw);
+  lua.new_usertype<texture>("nen_texture", sol::no_construction(), "fill_color",
+                            &texture::fill_color);
 
   return true;
 }

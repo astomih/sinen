@@ -33,6 +33,7 @@ elseif(EMSCRIPTEN)
 		src/Nen/Engine/Engine.cpp
 		src/Nen/Render/OpenGL/*.cpp
 		libs/ImGui/source/gles/*.cpp
+		libs/Lua/source/*.c
 	)
 	add_library(nen STATIC ${SOURCE_FILES})
 	set(NEN_INCLUDE_DIRECTORIES 

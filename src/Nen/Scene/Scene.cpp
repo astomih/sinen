@@ -69,13 +69,7 @@ void base_scene::UpdateScene() {
 
 void base_scene::Setup() {
   auto &lua = get_script().get_sol_state();
-  std::string num = "";
-
-  if (m_manager.get_current_scene_number() < 10)
-    num = "0";
-  this->get_script().DoScript(
-      "scene" + num + std::to_string(m_manager.get_current_scene_number()) +
-      ".lua");
+  this->get_script().DoScript("main.lua");
   lua["setup"]();
 }
 

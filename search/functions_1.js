@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['get_5ffunction_5ftime_159',['get_function_time',['../classnen_1_1time.html#acb16d159b435a697b88f493a1d686d08',1,'nen::time']]],
-  ['getstate_160',['GetState',['../classnen_1_1base__scene.html#a3f2d4ddd21da9f20dfbc6bd9744b9315',1,'nen::base_scene']]],
-  ['getticksasmilliseconds_161',['GetTicksAsMilliSeconds',['../classnen_1_1time.html#a9aa6764e60296fdec96c8cf051a08d89',1,'nen::time']]],
-  ['getticksasseconds_162',['GetTicksAsSeconds',['../classnen_1_1time.html#a2e9daa3ba4f8c461ed7d1a57a6510da9',1,'nen::time']]]
+  ['initialize_162',['Initialize',['../classnen_1_1scene.html#aa6e5f5a63d5c90be208b04f8e6a88094',1,'nen::scene']]],
+  ['initialize_163',['initialize',['../classnen_1_1manager.html#a7959b7af4db66841672333e4e1fad1d9',1,'nen::manager']]],
+  ['isloaded_164',['isLoaded',['../classnen_1_1font.html#af5a004c042f7aa51c606c894ba4be8fa',1,'nen::font']]],
+  ['isrunning_165',['isRunning',['../classnen_1_1scene.html#a19b8eac4f43c72c6a2ad46e26a64036d',1,'nen::scene']]]
 ];

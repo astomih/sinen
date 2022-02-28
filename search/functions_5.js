@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['quit_173',['Quit',['../classnen_1_1base__scene.html#ad31bd1770d9b314bc94070b111f15105',1,'nen::base_scene']]]
+  ['rendertext_173',['RenderText',['../classnen_1_1font.html#ad29ef8688f8aaf9b93ccc3195ecde928',1,'nen::font']]],
+  ['runloop_174',['RunLoop',['../classnen_1_1scene.html#a4886424193e1860a77aeba230e9c2fcd',1,'nen::scene']]]
 ];

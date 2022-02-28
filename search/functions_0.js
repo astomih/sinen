@@ -1,4 +1,7 @@
 var searchData=
 [
-  ['base_5fscene_158',['base_scene',['../classnen_1_1base__scene.html#a2b88d308b3f22fe0a9e409f7e4b39d18',1,'nen::base_scene']]]
+  ['get_5ffunction_5ftime_158',['get_function_time',['../classnen_1_1time.html#acb16d159b435a697b88f493a1d686d08',1,'nen::time']]],
+  ['getstate_159',['GetState',['../classnen_1_1scene.html#add6a98e9b54cc03695798150f0a3b5e1',1,'nen::scene']]],
+  ['getticksasmilliseconds_160',['GetTicksAsMilliSeconds',['../classnen_1_1time.html#a9aa6764e60296fdec96c8cf051a08d89',1,'nen::time']]],
+  ['getticksasseconds_161',['GetTicksAsSeconds',['../classnen_1_1time.html#a2e9daa3ba4f8c461ed7d1a57a6510da9',1,'nen::time']]]
 ];

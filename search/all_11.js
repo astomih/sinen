@@ -1,13 +1,14 @@
 var searchData=
 [
+  ['scene_61',['scene',['../classnen_1_1scene.html',1,'nen::scene'],['../classnen_1_1scene.html#aa01c6997855520df7db578e46de7f58e',1,'nen::scene::scene()']]],
   ['script_5fsystem_62',['script_system',['../classnen_1_1script__system.html',1,'nen']]],
   ['segment_63',['segment',['../structnen_1_1segment.html',1,'nen']]],
-  ['setstate_64',['SetState',['../classnen_1_1base__scene.html#a16dc3d7f3eca67eb0701bdc906a81cce',1,'nen::base_scene']]],
-  ['setup_65',['Setup',['../classnen_1_1base__scene.html#a20b4fe31432db2b9dbad5bbadb826fa9',1,'nen::base_scene']]],
+  ['setstate_64',['SetState',['../classnen_1_1scene.html#af76bd7bec4dad22f55e51365c74d9135',1,'nen::scene']]],
+  ['setup_65',['Setup',['../classnen_1_1scene.html#ace72485df915ac2c70828cde7d74f2b0',1,'nen::scene']]],
   ['shaded_66',['Shaded',['../classnen_1_1font.html#ab0c10a0e8f336b062ee6f6b3649ef254a95e4c683b31aacc6c251c95780ff6808',1,'nen::font']]],
   ['shader_67',['shader',['../classnen_1_1shader.html',1,'nen']]],
   ['shader_5fparameter_68',['shader_parameter',['../structnen_1_1shader__parameter.html',1,'nen']]],
-  ['shutdown_69',['Shutdown',['../classnen_1_1base__scene.html#abb439280765659a5fc0503e4f26d7129',1,'nen::base_scene']]],
+  ['shutdown_69',['Shutdown',['../classnen_1_1scene.html#a3bf826d56e9928f9ccdaee8c79ddf28a',1,'nen::scene']]],
   ['singleton_70',['Singleton',['../classnen_1_1_singleton.html',1,'nen']]],
   ['singleton_5ffinalizer_71',['singleton_finalizer',['../classnen_1_1singleton__finalizer.html',1,'nen']]],
   ['solid_72',['Solid',['../classnen_1_1font.html#ab0c10a0e8f336b062ee6f6b3649ef254ae41480b6bbfbf7407974a88d3d34f4fa',1,'nen::font']]],

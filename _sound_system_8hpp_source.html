@@ -91,27 +91,24 @@ $(function() {
 <div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;  <span class="keywordtype">void</span> Shutdown();</div>
 <div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;  <span class="keywordtype">void</span> Update(<span class="keywordtype">float</span> deltaTime);</div>
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160; </div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;  <a class="code" href="classnen_1_1sound__event.html">sound_event</a> PlayEvent(std::string_view name, uint32_t sourceID = 0);</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160; </div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;  <span class="keywordtype">void</span> LoadAudioFile(std::string_view fileName);</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;  <span class="keywordtype">void</span> UnloadAudioFile(std::string_view fileName);</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160; </div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;  uint32_t NewSource(std::string_view name);</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;  <span class="keywordtype">void</span> DeleteSource(uint32_t sourceID);</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160; </div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;  <span class="comment">// For positional audio</span></div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  <span class="keywordtype">void</span> SetListener(<span class="keyword">const</span> <a class="code" href="classnen_1_1vector3.html">vector3</a> &amp;pos, <span class="keyword">const</span> <a class="code" href="classnen_1_1quaternion.html">quaternion</a> &amp;direction);</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;  <span class="keywordtype">void</span> LoadAudioFile(std::string_view fileName);</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;  <span class="keywordtype">void</span> UnloadAudioFile(std::string_view fileName);</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160; </div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;  uint32_t NewSource(std::string_view name);</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;  <span class="keywordtype">void</span> DeleteSource(uint32_t sourceID);</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160; </div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;  <span class="comment">// For positional audio</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;  <span class="keywordtype">void</span> SetListener(<span class="keyword">const</span> <a class="code" href="classnen_1_1vector3.html">vector3</a> &amp;pos, <span class="keyword">const</span> <a class="code" href="classnen_1_1quaternion.html">quaternion</a> &amp;direction);</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  std::unordered_map&lt;std::string, uint32_t&gt; &amp;get_buffers() { <span class="keywordflow">return</span> buffers; }</div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  std::unordered_map&lt;std::string, uint32_t&gt; &amp;get_buffers() { <span class="keywordflow">return</span> buffers; }</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; </div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  std::unordered_map&lt;std::string, uint32_t&gt; buffers;</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  <span class="keywordtype">void</span> *device;</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="keywordtype">void</span> *context;</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;};</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;} <span class="comment">// namespace nen</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  std::unordered_map&lt;std::string, uint32_t&gt; buffers;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <span class="keywordtype">void</span> *device;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  <span class="keywordtype">void</span> *context;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;};</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;} <span class="comment">// namespace nen</span></div>
 <div class="ttc" id="aclassnen_1_1quaternion_html"><div class="ttname"><a href="classnen_1_1quaternion.html">nen::quaternion</a></div><div class="ttdef"><b>Definition:</b> Quaternion.hpp:6</div></div>
-<div class="ttc" id="aclassnen_1_1sound__event_html"><div class="ttname"><a href="classnen_1_1sound__event.html">nen::sound_event</a></div><div class="ttdef"><b>Definition:</b> SoundEvent.hpp:15</div></div>
 <div class="ttc" id="aclassnen_1_1sound__system_html"><div class="ttname"><a href="classnen_1_1sound__system.html">nen::sound_system</a></div><div class="ttdef"><b>Definition:</b> SoundSystem.hpp:12</div></div>
 <div class="ttc" id="aclassnen_1_1vector3_html"><div class="ttname"><a href="classnen_1_1vector3.html">nen::vector3</a></div><div class="ttdef"><b>Definition:</b> Vector3.hpp:5</div></div>
 </div><!-- fragment --></div><!-- contents -->

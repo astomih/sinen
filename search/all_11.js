@@ -12,7 +12,7 @@ var searchData=
   ['singleton_68',['Singleton',['../classnen_1_1_singleton.html',1,'nen']]],
   ['singleton_5ffinalizer_69',['singleton_finalizer',['../classnen_1_1singleton__finalizer.html',1,'nen']]],
   ['solid_70',['Solid',['../classnen_1_1font.html#ab0c10a0e8f336b062ee6f6b3649ef254ae41480b6bbfbf7407974a88d3d34f4fa',1,'nen::font']]],
-  ['sound_5fevent_71',['sound_event',['../classnen_1_1sound__event.html',1,'nen']]],
+  ['sound_71',['sound',['../classnen_1_1sound.html',1,'nen']]],
   ['sound_5fprameter_72',['sound_prameter',['../structnen_1_1sound__prameter.html',1,'nen']]],
   ['sound_5fsystem_73',['sound_system',['../classnen_1_1sound__system.html',1,'nen']]],
   ['sphere_74',['sphere',['../structnen_1_1sphere.html',1,'nen']]]

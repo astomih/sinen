@@ -5,5 +5,5 @@ var searchData=
   ['matrix3_43',['matrix3',['../classnen_1_1matrix3.html',1,'nen']]],
   ['matrix4_44',['matrix4',['../classnen_1_1matrix4.html',1,'nen']]],
   ['mouse_5fstate_45',['mouse_state',['../classnen_1_1mouse__state.html',1,'nen']]],
-  ['music_5fplayer_46',['music_player',['../classnen_1_1music__player.html',1,'nen']]]
+  ['music_46',['music',['../classnen_1_1music.html',1,'nen']]]
 ];

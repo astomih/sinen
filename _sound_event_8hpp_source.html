@@ -85,40 +85,43 @@ $(function() {
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;  uint32_t buffer_id;</div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;};</div>
 <div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160; </div>
-<div class="line"><a name="l00015"></a><span class="lineno"><a class="line" href="classnen_1_1sound__event.html">   15</a></span>&#160;<span class="keyword">class </span><a class="code" href="classnen_1_1sound__event.html">sound_event</a> {</div>
+<div class="line"><a name="l00015"></a><span class="lineno"><a class="line" href="classnen_1_1sound.html">   15</a></span>&#160;<span class="keyword">class </span><a class="code" href="classnen_1_1sound.html">sound</a> {</div>
 <div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;  <a class="code" href="classnen_1_1sound__event.html">sound_event</a>(<span class="keyword">class</span> <a class="code" href="classnen_1_1sound__system.html">sound_system</a> &amp;audiosystem, std::string_view name,</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;              uint32_t sourceID = 0);</div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;  <span class="keywordtype">bool</span> IsValid();</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;  <span class="comment">// Restart event from begining</span></div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;  <span class="keywordtype">void</span> Restart();</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;  <span class="comment">// Stop this event</span></div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;  <span class="keywordtype">void</span> Stop(<span class="keywordtype">bool</span> allowFadeOut = <span class="keyword">true</span>);</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;  <span class="comment">// Setters</span></div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;  <span class="keywordtype">void</span> SetPaused(<span class="keywordtype">bool</span> pause);</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;  <span class="keywordtype">void</span> SetVolume(<span class="keywordtype">float</span> value);</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;  <span class="keywordtype">void</span> SetPitch(<span class="keywordtype">float</span> value);</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;  <span class="keywordtype">void</span> SetPosition(<a class="code" href="classnen_1_1vector3.html">vector3</a> pos);</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;  <span class="comment">// Getters</span></div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  <span class="keywordtype">bool</span> GetPaused();</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  <span class="keywordtype">float</span> GetVolume();</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  <span class="keywordtype">float</span> GetPitch();</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  std::string GetName();</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <span class="keyword">const</span> <a class="code" href="classnen_1_1vector3.html">vector3</a> &amp;GetPosition();</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <a class="code" href="classnen_1_1sound__system.html">sound_system</a> &amp;audiosys;</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  std::string mName;</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  <a class="code" href="structnen_1_1sound__prameter.html">sound_prameter</a> param;</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  <span class="keywordtype">float</span> volume = 1.f;</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;  <span class="keywordtype">float</span> pitch = 1.f;</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  <a class="code" href="classnen_1_1vector3.html">vector3</a> pos;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;  <span class="keywordtype">bool</span> isPlaying = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  <span class="keywordtype">bool</span> isPaused = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;};</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;} <span class="comment">// namespace nen</span></div>
-<div class="ttc" id="aclassnen_1_1sound__event_html"><div class="ttname"><a href="classnen_1_1sound__event.html">nen::sound_event</a></div><div class="ttdef"><b>Definition:</b> SoundEvent.hpp:15</div></div>
-<div class="ttc" id="aclassnen_1_1sound__system_html"><div class="ttname"><a href="classnen_1_1sound__system.html">nen::sound_system</a></div><div class="ttdef"><b>Definition:</b> SoundSystem.hpp:12</div></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;  <a class="code" href="classnen_1_1sound.html">sound</a>();</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;  <span class="keywordtype">void</span> load(std::string_view file_name);</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;  <span class="keywordtype">void</span> new_source();</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;  <span class="keywordtype">void</span> delete_source();</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;  <span class="keywordtype">void</span> play();</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;  <span class="keywordtype">bool</span> IsValid();</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;  <span class="comment">// Restart event from begining</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;  <span class="keywordtype">void</span> Restart();</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;  <span class="comment">// Stop this event</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;  <span class="keywordtype">void</span> Stop(<span class="keywordtype">bool</span> allowFadeOut = <span class="keyword">true</span>);</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;  <span class="comment">// Setters</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;  <span class="keywordtype">void</span> SetPaused(<span class="keywordtype">bool</span> pause);</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;  <span class="keywordtype">void</span> SetVolume(<span class="keywordtype">float</span> value);</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  <span class="keywordtype">void</span> SetPitch(<span class="keywordtype">float</span> value);</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  <span class="keywordtype">void</span> SetPosition(<a class="code" href="classnen_1_1vector3.html">vector3</a> pos);</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  <span class="comment">// Getters</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  <span class="keywordtype">bool</span> GetPaused();</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <span class="keywordtype">float</span> GetVolume();</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  <span class="keywordtype">float</span> GetPitch();</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  std::string GetName();</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="keyword">const</span> <a class="code" href="classnen_1_1vector3.html">vector3</a> &amp;GetPosition();</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160; </div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  <span class="keywordtype">void</span> set_listener(<a class="code" href="classnen_1_1vector3.html">vector3</a> pos, <a class="code" href="classnen_1_1vector3.html">vector3</a> direction);</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160; </div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  std::string mName;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;  <a class="code" href="structnen_1_1sound__prameter.html">sound_prameter</a> param;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  <span class="keywordtype">float</span> volume = 1.f;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  <span class="keywordtype">float</span> pitch = 1.f;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;  <a class="code" href="classnen_1_1vector3.html">vector3</a> pos;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;  <span class="keywordtype">bool</span> isPlaying = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;  <span class="keywordtype">bool</span> isPaused = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;};</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;} <span class="comment">// namespace nen</span></div>
+<div class="ttc" id="aclassnen_1_1sound_html"><div class="ttname"><a href="classnen_1_1sound.html">nen::sound</a></div><div class="ttdef"><b>Definition:</b> SoundEvent.hpp:15</div></div>
 <div class="ttc" id="aclassnen_1_1vector3_html"><div class="ttname"><a href="classnen_1_1vector3.html">nen::vector3</a></div><div class="ttdef"><b>Definition:</b> Vector3.hpp:5</div></div>
 <div class="ttc" id="astructnen_1_1sound__prameter_html"><div class="ttname"><a href="structnen_1_1sound__prameter.html">nen::sound_prameter</a></div><div class="ttdef"><b>Definition:</b> SoundEvent.hpp:9</div></div>
 </div><!-- fragment --></div><!-- contents -->

@@ -18,8 +18,6 @@ public:
   void Shutdown();
   void Update(float deltaTime);
 
-  sound_event PlayEvent(std::string_view name, uint32_t sourceID = 0);
-
   void LoadAudioFile(std::string_view fileName);
   void UnloadAudioFile(std::string_view fileName);
 

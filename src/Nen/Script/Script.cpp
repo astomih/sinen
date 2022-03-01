@@ -77,7 +77,6 @@ bool script_system::initialize() {
         str,
         nen::asset_reader::LoadAsString(nen::asset_type::Script, str) + ".lua");
   };
-
   impl->state["texture"] = [&]() -> texture { return texture(); };
   impl->state["font"] = [&]() -> font { return font(); };
   impl->state["draw2d"] = [&]() -> draw2d { return draw2d(); };
@@ -96,72 +95,171 @@ bool script_system::initialize() {
   impl->state["color"] = [&](float r, float g, float b, float a) -> color {
     return color(r, g, b, a);
   };
-  impl->state.new_usertype<vector3>("nen_vector3", sol::no_construction(), "x",
-                                    &vector3::x, "y", &vector3::y, "z",
-                                    &vector3::z);
-  impl->state.new_usertype<vector2>("nen_vector2", sol::no_construction(), "x",
-                                    &vector2::x, "y", &vector2::y);
-  impl->state.new_usertype<color>("nen_color", sol::no_construction(), "r",
-                                  &color::r, "g", &color::g, "b", &color::b,
-                                  "a", &color::a);
-  impl->state.new_usertype<draw2d>(
-      "nen_draw2d", sol::no_construction(), "position", &draw2d::position,
-      "rotation", &draw2d::rotation, "scale", &draw2d::scale, "texture",
-      &draw2d::texture_handle, "draw", &draw2d::draw);
-  impl->state.new_usertype<draw3d>(
-      "nen_draw3d", sol::no_construction(), "position", &draw3d::position,
-      "rotation", &draw3d::rotation, "scale", &draw3d::scale, "texture",
-      &draw3d::texture_handle, "draw", &draw3d::draw);
-  impl->state.new_usertype<texture>("nen_texture", sol::no_construction(),
-                                    "fill_color", &texture::fill_color, "load",
-                                    &texture::Load);
-  impl->state.new_usertype<font>("nen_font", sol::no_construction(), "load",
-                                 &font::LoadFromFile, "render_text",
-                                 &font::RenderText);
-  impl->state.new_usertype<keyboard_state>(
-      "nen_keyboard_state", sol::no_construction(), "is_key_down",
-      &keyboard_state::GetKeyValue, "get_key_state",
-      &keyboard_state::GetKeyState);
-  impl->state.new_usertype<mouse_state>(
-      "nen_mouse_state", sol::no_construction(), "get_mouse_state",
-      &mouse_state::GetButtonState, "is_button_down",
-      &mouse_state::GetButtonValue, "get_position", &mouse_state::GetPosition,
-      "get_wheel_state", &mouse_state::GetScrollWheel);
-  impl->state.new_enum(
-      "key_code", "A", key_code::A, "B", key_code::B, "C", key_code::C, "D",
-      key_code::D, "E", key_code::E, "F", key_code::F, "G", key_code::G, "H",
-      key_code::H, "I", key_code::I, "J", key_code::J, "K", key_code::K, "L",
-      key_code::L, "M", key_code::M, "N", key_code::N, "O", key_code::O, "P",
-      key_code::P, "Q", key_code::Q, "R", key_code::R, "S", key_code::S, "T",
-      key_code::T, "U", key_code::U, "V", key_code::V, "W", key_code::W, "X",
-      key_code::X, "Y", key_code::Y, "Z", key_code::Z, "Key0", key_code::Key0,
-
-      "Key1", key_code::Key1, "Key2", key_code::Key2, "Key3", key_code::Key3,
-      "Key4", key_code::Key4, "Key5", key_code::Key5, "Key6", key_code::Key6,
-      "Key7", key_code::Key7, "Key8", key_code::Key8, "Key9", key_code::Key9,
-      "UP", key_code::UP, "DOWN", key_code::DOWN, "LEFT", key_code::LEFT,
-      "RIGHT", key_code::RIGHT, "ESCAPE", key_code::ESCAPE, "SPACE",
-      key_code::SPACE, "ENTER", key_code::KP_ENTER, "BACKSPACE",
-      key_code::BACKSPACE, "TAB", key_code::TAB, "LSHIFT", key_code::LSHIFT,
-      "RSHIFT", key_code::RSHIFT, "LCTRL", key_code::LCTRL, "RCTRL",
-      key_code::RCTRL, "ALT", key_code::ALTERASE, "F1", key_code::F1, "F2",
-      key_code::F2, "F3", key_code::F3, "F4", key_code::F4, "F5", key_code::F5,
-      "F6", key_code::F6, "F7", key_code::F7, "F8", key_code::F8, "F9",
-      key_code::F9, "F10", key_code::F10, "F11", key_code::F11, "F12",
-      key_code::F12);
-  impl->state.new_enum("mouse_code", "LEFT", mouse_code::LEFT, "RIGHT",
-                       mouse_code::RIGHT, "MIDDLE", mouse_code::MIDDLE, "X1",
-                       mouse_code::X1, "X2", mouse_code::X2);
-  impl->state.new_enum("button_state", "NONE", button_state::None, "PRESSED",
-                       button_state::Pressed, "RELEASED",
-                       button_state::Released, "HELD", button_state::Held);
-  /*
-  impl->state.new_usertype<music_player>("nen_music", sol::no_construction(),
-                                         "load",
-                                         &music_player::LoadMusicFromFile,
-  "play", &music_player::PlayMusic, "pause", &music_player::
-                                         )
-  */
+  impl->state["music"] = [&]() -> music { return music(); };
+  impl->state["sound"] = [&]() -> sound { return sound(); };
+  {
+    auto v = impl->state.new_usertype<vector3>("nen_vector3",
+                                               sol::no_construction());
+    v["x"] = &vector3::x;
+    v["y"] = &vector3::y;
+    v["z"] = &vector3::z;
+  }
+  {
+    auto v = impl->state.new_usertype<vector2>("nen_vector2",
+                                               sol::no_construction());
+    v["x"] = &vector2::x;
+    v["y"] = &vector2::y;
+  }
+  {
+    auto v =
+        impl->state.new_usertype<color>("nen_color", sol::no_construction());
+    v["r"] = &color::r;
+    v["g"] = &color::g;
+    v["b"] = &color::b;
+    v["a"] = &color::a;
+  }
+  {
+    auto v =
+        impl->state.new_usertype<draw2d>("nen_draw2d", sol::no_construction());
+    v["draw"] = &draw2d::draw;
+    v["position"] = &draw2d::position;
+    v["rotation"] = &draw2d::rotation;
+    v["scale"] = &draw2d::scale;
+    v["texture"] = &draw2d::texture_handle;
+  }
+  {
+    auto v =
+        impl->state.new_usertype<draw3d>("nen_draw3d", sol::no_construction());
+    v["position"] = &draw3d::position;
+    v["rotation"] = &draw3d::rotation;
+    v["scale"] = &draw3d::scale;
+    v["texture"] = &draw3d::texture_handle;
+    v["draw"] = &draw3d::draw;
+  }
+  {
+    auto v = impl->state.new_usertype<texture>("nen_texture",
+                                               sol::no_construction());
+    v["fill_color"] = &texture::fill_color;
+    v["load"] = &texture::Load;
+  }
+  {
+    auto v = impl->state.new_usertype<font>("nen_font", sol::no_construction());
+    v["load"] = &font::LoadFromFile;
+    v["render_text"] = &font::RenderText;
+  }
+  {
+    auto v = impl->state.new_usertype<keyboard_state>("nen_keyboard_state",
+                                                      sol::no_construction());
+    v["is_key_down"] = &keyboard_state::GetKeyValue;
+    v["get_key_state"] = &keyboard_state::GetKeyState;
+  }
+  {
+    auto v = impl->state.new_usertype<mouse_state>("nen_mouse_state",
+                                                   sol::no_construction());
+    v["get_mouse_state"] = &mouse_state::GetButtonState;
+    v["is_button_down"] = &mouse_state::GetButtonValue;
+    v["get_position"] = &mouse_state::GetPosition;
+    v["get_wheel_state"] = &mouse_state::GetScrollWheel;
+  }
+  {
+    auto v =
+        impl->state.new_usertype<music>("nen_music", sol::no_construction());
+    v["load"] = &music::LoadMusicFromFile;
+    v["play"] = &music::PlayMusic;
+    v["set_volume"] = &music::set_volume;
+  }
+  {
+    auto v =
+        impl->state.new_usertype<sound>("nen_sound", sol::no_construction());
+    v["load"] = &sound::load;
+    v["play"] = &sound::play;
+    v["set_volume"] = &sound::SetVolume;
+    v["set_pitch"] = &sound::SetPitch;
+    v["set_listener"] = &sound::set_listener;
+    v["set_position"] = &sound::SetPosition;
+  }
+  {
+    auto &v = impl->state;
+    v["keyA"] = key_code::A;
+    v["keyB"] = key_code::B;
+    v["keyC"] = key_code::C;
+    v["keyD"] = key_code::D;
+    v["keyE"] = key_code::E;
+    v["keyF"] = key_code::F;
+    v["keyG"] = key_code::G;
+    v["keyH"] = key_code::H;
+    v["keyI"] = key_code::I;
+    v["keyJ"] = key_code::J;
+    v["keyK"] = key_code::K;
+    v["keyL"] = key_code::L;
+    v["keyM"] = key_code::M;
+    v["keyN"] = key_code::N;
+    v["keyO"] = key_code::O;
+    v["keyP"] = key_code::P;
+    v["keyQ"] = key_code::Q;
+    v["keyR"] = key_code::R;
+    v["keyS"] = key_code::S;
+    v["keyT"] = key_code::T;
+    v["keyU"] = key_code::U;
+    v["keyV"] = key_code::V;
+    v["keyW"] = key_code::W;
+    v["keyX"] = key_code::X;
+    v["keyY"] = key_code::Y;
+    v["keyZ"] = key_code::Z;
+    v["key0"] = key_code::Key0;
+    v["key1"] = key_code::Key1;
+    v["key2"] = key_code::Key2;
+    v["key3"] = key_code::Key3;
+    v["key4"] = key_code::Key4;
+    v["key5"] = key_code::Key5;
+    v["key6"] = key_code::Key6;
+    v["key7"] = key_code::Key7;
+    v["key8"] = key_code::Key8;
+    v["key9"] = key_code::Key9;
+    v["keyF1"] = key_code::F1;
+    v["keyF2"] = key_code::F2;
+    v["keyF3"] = key_code::F3;
+    v["keyF4"] = key_code::F4;
+    v["keyF5"] = key_code::F5;
+    v["keyF6"] = key_code::F6;
+    v["keyF7"] = key_code::F7;
+    v["keyF8"] = key_code::F8;
+    v["keyF9"] = key_code::F9;
+    v["keyF10"] = key_code::F10;
+    v["keyF11"] = key_code::F11;
+    v["keyF12"] = key_code::F12;
+    v["keyUP"] = key_code::UP;
+    v["keyDOWN"] = key_code::DOWN;
+    v["keyLEFT"] = key_code::LEFT;
+    v["keyRIGHT"] = key_code::RIGHT;
+    v["keyESCAPE"] = key_code::ESCAPE;
+    v["keySPACE"] = key_code::SPACE;
+    v["keyENTER"] = key_code::KP_ENTER;
+    v["keyBACKSPACE"] = key_code::BACKSPACE;
+    v["keyTAB"] = key_code::TAB;
+    v["keyLSHIFT"] = key_code::LSHIFT;
+    v["keyRSHIFT"] = key_code::RSHIFT;
+    v["keyLCTRL"] = key_code::LCTRL;
+    v["keyRCTRL"] = key_code::RCTRL;
+    v["keyALT"] = key_code::ALTERASE;
+    v["keyLCTRL"] = key_code::LCTRL;
+    v["keyRCTRL"] = key_code::RCTRL;
+  }
+  {
+    auto &v = impl->state;
+    v["mouseLEFT"] = mouse_code::LEFT;
+    v["mouseRIGHT"] = mouse_code::RIGHT;
+    v["mouseMIDDLE"] = mouse_code::MIDDLE;
+    v["mouseX1"] = mouse_code::X1;
+    v["mouseX2"] = mouse_code::X2;
+  }
+  {
+    auto &v = impl->state;
+    v["buttonNONE"] = button_state::None;
+    v["buttonPRESSED"] = button_state::Pressed;
+    v["buttonRELEASED"] = button_state::Released;
+    v["buttonHELD"] = button_state::Held;
+  }
   return true;
 }
 

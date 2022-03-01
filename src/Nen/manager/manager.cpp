@@ -8,6 +8,7 @@
 #include <Nen.hpp>
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
 #include <SDL_net.h>
 #include <SDL_ttf.h>
 #include <fstream>
@@ -38,6 +39,8 @@ bool manager::initialize() {
   TTF_Init();
   IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
   SDLNet_Init();
+  Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3);
+  Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
   m_next_scene = nullptr;
   m_window = std::make_unique<nen::window>();
   m_renderer = std::make_unique<nen::renderer>(*this);

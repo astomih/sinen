@@ -74,11 +74,6 @@ void sound_system::Shutdown() {}
 
 void sound_system::Update(float deltaTime) {}
 
-sound_event sound_system::PlayEvent(std::string_view name, uint32_t sourceID) {
-  sound_event e(*this, name, sourceID);
-  return e;
-}
-
 void sound_system::SetListener(const vector3 &pos,
                                const quaternion &direction) {
   alListener3f(AL_POSITION, pos.x, pos.y, pos.z);
@@ -89,13 +84,18 @@ void sound_system::SetListener(const vector3 &pos,
 }
 
 void sound_system::LoadAudioFile(std::string_view fileName) {
+  if (buffers.contains(fileName.data())) {
+    return;
+  }
   SDL_AudioSpec spec;
   ALenum alfmt = AL_NONE;
   Uint8 *buffer = NULL;
   Uint32 buffer_length = 0;
   uint32_t bid = 0;
 
-  if (!SDL_LoadWAV(fileName.data(), &spec, &buffer, &buffer_length)) {
+  if (!SDL_LoadWAV(
+          asset_reader::ConvertFilePath(fileName, asset_type::Sound).c_str(),
+          &spec, &buffer, &buffer_length)) {
     printf("Loading '%s' failed! %s\n", fileName.data(), SDL_GetError());
     return;
   }

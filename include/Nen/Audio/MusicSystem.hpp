@@ -3,26 +3,19 @@
 #include <string>
 
 namespace nen {
-class music_player {
+class music {
 public:
-  music_player();
-  ~music_player();
+  music();
+  ~music();
 
-  void PlayMusic(std::string_view name);
+  void PlayMusic();
 
   void LoadMusicFromFile(std::string_view fileName);
-  void UnloadAllMusic();
-  void UnloadMusic(std::string_view name);
+  void UnloadMusic();
 
   void set_volume(int volume);
 
-  std::string_view name;
-
-protected:
-  friend class event;
-
 private:
-  class Impl;
-  std::unique_ptr<Impl> impl;
+  void *buffer;
 };
 } // namespace nen

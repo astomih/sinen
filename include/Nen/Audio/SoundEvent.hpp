@@ -12,10 +12,13 @@ struct sound_prameter {
   uint32_t buffer_id;
 };
 
-class sound_event {
+class sound {
 public:
-  sound_event(class sound_system &audiosystem, std::string_view name,
-              uint32_t sourceID = 0);
+  sound();
+  void load(std::string_view file_name);
+  void new_source();
+  void delete_source();
+  void play();
   bool IsValid();
   // Restart event from begining
   void Restart();
@@ -33,8 +36,9 @@ public:
   std::string GetName();
   const vector3 &GetPosition();
 
+  void set_listener(vector3 pos, vector3 direction);
+
 private:
-  sound_system &audiosys;
   std::string mName;
   sound_prameter param;
   float volume = 1.f;

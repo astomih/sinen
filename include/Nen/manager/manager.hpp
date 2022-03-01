@@ -50,9 +50,6 @@ public:
   class texture_system &get_texture_system() {
     return *m_texture_system;
   }
-  class font_system &get_font_system() {
-    return *m_font_system;
-  }
 
   std::uint32_t get_current_scene_number() { return m_scene_number; }
 
@@ -65,7 +62,6 @@ private:
   std::unique_ptr<class input_system> m_input_system;
   std::unique_ptr<class sound_system> m_sound_system;
   std::unique_ptr<class script_system> m_script_system;
-  std::unique_ptr<class font_system> m_font_system;
   std::unique_ptr<class texture_system> m_texture_system;
   std::uint32_t m_scene_number = 1;
 };
@@ -77,6 +73,5 @@ class input_system &get_input_system();
 class scene &get_current_scene();
 class sound_system &get_sound_system();
 class script_system &get_script_system();
-class font_system &get_font_system();
 class texture_system &get_texture_system();
 } // namespace nen

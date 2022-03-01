@@ -5,6 +5,7 @@
 
 namespace nen {
 
+texture::texture() { handle = get_texture_system().create(); }
 texture::~texture() {}
 
 bool texture::Load(std::string_view fileName) {

@@ -13,7 +13,7 @@ class font {
 public:
   font() : m_font(nullptr), isLoad(false), pointSize(0){};
   font(std::string_view file_name, int32_t point);
-  ~font() = default;
+  ~font();
 
   /**
    * @brief rendering quality

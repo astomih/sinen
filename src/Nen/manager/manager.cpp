@@ -31,7 +31,6 @@ scene &get_current_scene() { return _manager.get_current_scene(); }
 sound_system &get_sound_system() { return _manager.get_sound_system(); }
 script_system &get_script_system() { return _manager.get_script_system(); }
 texture_system &get_texture_system() { return _manager.get_texture_system(); }
-font_system &get_font_system() { return _manager.get_font_system(); }
 bool manager::initialize() {
   m_current_scene = std::make_unique<scene>(*this);
   SDL_SetMainReady();
@@ -88,8 +87,6 @@ bool manager::initialize() {
     return false;
   }
   m_texture_system = std::make_unique<nen::texture_system>(*this);
-
-  m_font_system = std::make_unique<nen::font_system>(*this);
   return true;
 }
 void manager::launch() {

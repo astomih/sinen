@@ -8,6 +8,7 @@ namespace nen {
 font::font(std::string_view file_name, int32_t point) {
   LoadFromFile(file_name, point);
 }
+font::~font() { Unload(); }
 bool font::LoadFromFile(std::string_view fontName, int pointSize) {
   this->fontName = fontName;
   this->pointSize = pointSize;
@@ -19,6 +20,13 @@ bool font::LoadFromFile(std::string_view fontName, int pointSize) {
     return false;
   }
   return (isLoad = true);
+}
+
+void font::Unload() {
+  if (isLoad) {
+    ::TTF_CloseFont((TTF_Font *)m_font);
+    isLoad = false;
+  }
 }
 
 void font::RenderText(texture &tex, std::string_view text, const color &_color,

@@ -81,6 +81,8 @@ void scene::Update(float deltaTime) {
   sol::state *lua = (sol::state *)get_script().get_state();
   (*lua)["delta_time"] = deltaTime;
   (*lua)["update"]();
+  (*lua)["keyboard"] = get_input_system().GetState().Keyboard;
+  (*lua)["mouse"] = get_input_system().GetState().Mouse;
 }
 
 void scene::Shutdown() { UnloadData(); }
@@ -93,8 +95,6 @@ sound_system &scene::GetSound() { return m_manager.get_sound_system(); }
 
 script_system &scene::get_script() { return m_manager.get_script_system(); }
 texture_system &scene::get_texture() { return m_manager.get_texture_system(); }
-
-font_system &scene::get_font() { return m_manager.get_font_system(); }
 
 void scene::change_scene(std::uint32_t scene_number) {
   m_manager.change_scene(scene_number);

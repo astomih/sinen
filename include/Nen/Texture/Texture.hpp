@@ -16,8 +16,7 @@ struct shader_parameter {
 
 class texture {
 public:
-  texture() = default;
-  texture(handle_t handle) : handle(handle){};
+  texture();
   ~texture();
   bool Load(std::string_view fileName);
   bool LoadFromMemory(std::vector<char> &buffer, std::string_view ID);

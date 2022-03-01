@@ -12,7 +12,6 @@
 #include "DrawObject/DrawObject.hpp"
 #include "DrawObject/draw_object_wrapper.hpp"
 #include "Font/Font.hpp"
-#include "Font/font_system.hpp"
 #include "GUI/Button.hpp"
 #include "GUI/DialogBox.hpp"
 #include "GUI/HUD.hpp"

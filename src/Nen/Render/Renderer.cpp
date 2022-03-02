@@ -8,7 +8,7 @@
 #include <Nen.hpp>
 
 namespace nen {
-renderer::renderer(manager &_manager) : m_manager(_manager) {}
+renderer::renderer(manager &_manager) : m_manager(_manager), showImGui(true) {}
 void renderer::initialize(graphics_api api) {
   m_renderer = nullptr;
   RendererAPI = api;

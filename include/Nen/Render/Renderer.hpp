@@ -61,6 +61,14 @@ public:
   void LoadShader(const shader &shaderinfo);
   void UnloadShader(const shader &shaderinfo);
 
+  std::vector<std::function<void()>> &get_imgui_function() {
+    return m_imgui_function;
+  }
+
+  void add_imgui_function(std::function<void()> function) {
+    m_imgui_function.push_back(function);
+  }
+
 private:
   class manager &m_manager;
   void setup_shapes();
@@ -75,7 +83,8 @@ private:
   // Renderer
   std::unique_ptr<class IRenderer> m_renderer;
   graphics_api RendererAPI;
-  bool showImGui = false;
+  bool showImGui;
+  std::vector<std::function<void()>> m_imgui_function;
 };
 
 class IRenderer {

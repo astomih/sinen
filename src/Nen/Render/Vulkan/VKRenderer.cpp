@@ -530,6 +530,10 @@ void VKRenderer::renderImGUI(VkCommandBuffer command) {
       std::ofstream ofs("./api");
       ofs << "OpenGL";
     }
+    for (auto &i : get_renderer().get_imgui_function()) {
+      i();
+    }
+    get_renderer().get_imgui_function().clear();
     ImGui::End();
   }
 

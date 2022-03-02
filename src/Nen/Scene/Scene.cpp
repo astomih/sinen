@@ -12,6 +12,7 @@
 #include <functional>
 #include <iostream>
 
+#include <imgui.h>
 #include <sol/sol.hpp>
 
 namespace nen {
@@ -69,20 +70,35 @@ void scene::UpdateScene() {
   m_manager.get_sound_system().Update(deltaTime);
 }
 
+char code[2048] = {};
+
 void scene::Setup() {
   sol::state *lua = (sol::state *)get_script().get_state();
   get_script().DoScript("main.lua");
   (*lua)["setup"]();
+  strcpy(code, "function setup()\nend\nfunction update()\nend\n");
 }
 
 void scene::UnloadData() {}
 
+bool pushed = false;
 void scene::Update(float deltaTime) {
   sol::state *lua = (sol::state *)get_script().get_state();
   (*lua)["delta_time"] = deltaTime;
-  (*lua)["update"]();
   (*lua)["keyboard"] = get_input_system().GetState().Keyboard;
   (*lua)["mouse"] = get_input_system().GetState().Mouse;
+  get_renderer().add_imgui_function([&]() {
+    ImGui::InputTextMultiline("Code", code, sizeof(code));
+    if (ImGui::Button("Run"))
+      pushed = true;
+  });
+  if (pushed) {
+    auto str = std::string(code);
+    lua->script(str);
+    (*lua)["setup"]();
+    pushed = false;
+  }
+  (*lua)["update"]();
 }
 
 void scene::Shutdown() { UnloadData(); }

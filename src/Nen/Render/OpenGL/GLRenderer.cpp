@@ -64,6 +64,7 @@ void GLRenderer::Initialize() {
 void GLRenderer::Render() {
   auto &w = m_manager.get_window();
   if (w.Size().x != prev_window_x || w.Size().y != prev_window_y) {
+    logger::Info("window size.x: ", w.Size().x, " window size.y: ", w.Size().y);
     glViewport(0, 0, w.Size().x, w.Size().y);
     prev_window_x = w.Size().x;
     prev_window_y = w.Size().y;
@@ -95,6 +96,10 @@ void GLRenderer::Render() {
       ofs << "Vulkan";
     }
 #endif
+    for (auto &i : get_renderer().get_imgui_function()) {
+      i();
+    }
+    get_renderer().get_imgui_function().clear();
     ImGui::End();
   }
 

@@ -48,9 +48,6 @@ void scene::ProcessInput() {
 
   const input_state &state = m_manager.get_input_system().GetState();
 
-  if (state.Keyboard.GetKeyState(key_code::ESCAPE) == button_state::Released) {
-    mGameState = game_state::Quit;
-  }
   if (state.Keyboard.GetKeyState(key_code::F3) == button_state::Pressed) {
     GetRenderer().toggleShowImGui();
   }
@@ -76,7 +73,25 @@ void scene::Setup() {
   sol::state *lua = (sol::state *)get_script().get_state();
   get_script().DoScript("main.lua");
   (*lua)["setup"]();
-  strcpy(code, "function setup()\nend\nfunction update()\nend\n");
+  char c[] =
+      "local hello_texture = {}\n"
+      "local hello_font = {}\n"
+      "local hello_drawer = {}\n"
+      "\n"
+      "function setup()\n"
+      "\thello_texture = texture()\n"
+      "\thello_drawer = draw2d(hello_texture)\n"
+      "\thello_drawer.scale = vector2(1, 1)\n"
+      "\thello_font = font()\n"
+      "\thello_font:load(DEFAULT_FONT, 128)\n"
+      "\thello_font:render_text(hello_texture, \"Hello World!\", color(1, 1, "
+      "1, 1))\n"
+      "end\n"
+      "\n"
+      "function update() \n"
+      "\thello_drawer:draw()\n"
+      "end\n";
+  strcpy(code, c);
 }
 
 void scene::UnloadData() {}
@@ -88,7 +103,9 @@ void scene::Update(float deltaTime) {
   (*lua)["keyboard"] = get_input_system().GetState().Keyboard;
   (*lua)["mouse"] = get_input_system().GetState().Mouse;
   get_renderer().add_imgui_function([&]() {
-    ImGui::InputTextMultiline("Code", code, sizeof(code));
+    ImGui::InputTextMultiline("Code", code, sizeof(code),
+                              ImVec2(0, ImGui::GetWindowHeight() / 2),
+                              ImGuiInputTextFlags_AllowTabInput);
     if (ImGui::Button("Run"))
       pushed = true;
   });

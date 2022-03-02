@@ -524,8 +524,12 @@ void VKRenderer::renderImGUI(VkCommandBuffer command) {
 
   // ImGui ウィジェットを描画する.
   if (m_manager.get_renderer().isShowImGui()) {
-    ImGui::Begin("Engine Info");
-    ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
+    ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(
+        ImVec2(ImGui::GetWindowWidth() * 4, ImGui::GetWindowHeight() * 2),
+        ImGuiCond_Always);
+    ImGui::Begin("Editor");
+    ImGui::Text("Frame Per Seconds: %.1f", ImGui::GetIO().Framerate);
     if (ImGui::Button("toggleAPI")) {
       std::ofstream ofs("./api");
       ofs << "OpenGL";

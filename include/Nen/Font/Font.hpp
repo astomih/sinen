@@ -65,9 +65,7 @@ public:
    * @return std::shared_ptr<texture> rendered texture
    */
   void RenderText(texture &tex, std::string_view text,
-                  const color &_color = palette::White,
-                  quality _quality = quality::Blended,
-                  const color &backgroundColor = palette::Black);
+                  const color &_color = palette::White);
 
 private:
   int pointSize;

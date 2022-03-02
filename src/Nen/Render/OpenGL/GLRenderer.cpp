@@ -84,12 +84,17 @@ void GLRenderer::Render() {
   glDisable(GL_BLEND);
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplSDL2_NewFrame((SDL_Window *)w.GetSDLWindow());
+  ImGui::SetWindowPos(ImVec2(0, 0));
   ImGui::NewFrame();
   if (m_manager.get_renderer().isShowImGui()) {
+    ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(
+        ImVec2(ImGui::GetWindowWidth() * 4, ImGui::GetWindowHeight() * 2),
+        ImGuiCond_Always);
 
     // Draw ImGUI widgets.
-    ImGui::Begin("Engine Info");
-    ImGui::Text("%.1f fps", ImGui::GetIO().Framerate);
+    ImGui::Begin("Editor");
+    ImGui::Text("Frame Per Seconds: %.1f", ImGui::GetIO().Framerate);
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
     if (ImGui::Button("toggleAPI")) {
       std::ofstream ofs("./api");

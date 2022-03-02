@@ -79,6 +79,7 @@ bool script_system::initialize() {
   };
   impl->state["texture"] = [&]() -> texture { return texture(); };
   impl->state["font"] = [&]() -> font { return font(); };
+  impl->state["DEFAULT_FONT"] = "mplus/mplus-1p-medium.ttf";
   impl->state["draw2d"] = [&]() -> draw2d { return draw2d(); };
   impl->state["draw2d"] = [&](texture t) -> draw2d { return draw2d(t); };
   impl->state["draw3d"] = [&]() -> draw3d { return draw3d(); };

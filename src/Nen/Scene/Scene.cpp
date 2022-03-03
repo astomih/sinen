@@ -9,7 +9,6 @@
 #include <Window/Window.hpp>
 #include <manager/manager.hpp>
 
-
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -115,7 +114,7 @@ void scene::Update(float deltaTime) {
   });
   if (pushed) {
     auto str = std::string(code);
-    lua->script(str);
+    lua->do_string(str);
     (*lua)["setup"]();
     pushed = false;
   }

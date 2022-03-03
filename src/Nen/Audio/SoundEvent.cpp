@@ -1,6 +1,10 @@
 #include <AL/al.h>
 #include <AL/alc.h>
-#include <Nen.hpp>
+
+#include <Audio/MusicSystem.hpp>
+#include <Audio/SoundEvent.hpp>
+#include <Audio/SoundSystem.hpp>
+#include <manager/manager.hpp>
 namespace nen {
 sound::sound() {}
 void sound::load(std::string_view file_name) {

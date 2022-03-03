@@ -1,4 +1,4 @@
-#include <Nen.hpp>
+#include <Network/TCPSocket.hpp>
 #include <SDL_net.h>
 
 namespace nen {

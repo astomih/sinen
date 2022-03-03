@@ -1,6 +1,6 @@
 #pragma once
-#include <Nen.hpp>
 #include <SDL.h>
+#include <Utility/handler.hpp>
 #include <memory>
 #include <string_view>
 #include <unordered_map>
@@ -12,14 +12,14 @@ struct SDLObjectCloser {
 };
 class texture_system {
 public:
-  texture_system(manager &_manager) : m_manager(_manager) {}
+  texture_system(class manager &_manager) : m_manager(_manager) {}
   handle_t create();
   bool Contain(handle_t);
   SDL_Surface &get(handle_t);
   void remove(handle_t);
 
 private:
-  manager &m_manager;
+  class manager &m_manager;
   handler<::SDL_Surface, SDLObjectCloser> surfaces;
 };
 } // namespace nen

@@ -1,5 +1,4 @@
-#include <Nen.hpp>
-
+#include <GUI/DialogBox.hpp>
 namespace nen {
 dialog_box::dialog_box(std::string_view text, std::function<void()> onOK)
     : ui_screen() {

@@ -1,4 +1,4 @@
-#include <Nen.hpp>
+#include <GUI/UIScreen.hpp>
 namespace nen {
 ui_screen::ui_screen()
     : mTitle(nullptr), mBackground(nullptr), mTitlePos(0.0f, 300.0f),

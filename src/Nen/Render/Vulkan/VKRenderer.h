@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "instancing/instancing.hpp"
-#include <Nen.hpp>
 #include <functional>
 #include <memory>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)

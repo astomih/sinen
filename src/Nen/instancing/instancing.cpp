@@ -1,5 +1,4 @@
 #include "instancing/instancing.hpp"
-#include <Nen.hpp>
 
 namespace nen {
 void instancing::world_to_instance_data(const matrix4 &mat,

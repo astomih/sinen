@@ -1,9 +1,12 @@
 ﻿#include <AL/al.h>
 #include <AL/alc.h>
-#include <Nen.hpp>
 #include <SDL_log.h>
 #include <SDL_mixer.h>
 #include <vector>
+
+#include <Audio/SoundSystem.hpp>
+#include <IO/AssetReader.hpp>
+#include <Math/Quaternion.hpp>
 
 namespace nen {
 vector3 calculate(const quaternion &r);

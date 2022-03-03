@@ -1,5 +1,4 @@
 #include "default_model_creator.h"
-#include <Nen.hpp>
 nen::vertex_array create_sprite_vertices() {
   nen::vertex_array v_array;
   v_array.vertices.push_back(

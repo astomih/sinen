@@ -1,7 +1,8 @@
 #include "../event/current_event.hpp"
 #include "Utility/Singleton.hpp"
-#include <Nen.hpp>
 #include <SDL.h>
+#include <Window/Window.hpp>
+
 
 namespace nen {
 class window::Impl {

@@ -1,7 +1,11 @@
 #include "texture_system.hpp"
-#include <Nen.hpp>
+#include <IO/AssetReader.hpp>
+#include <Logger/Logger.hpp>
 #include <SDL.h>
 #include <SDL_image.h>
+#include <Texture/Texture.hpp>
+#include <manager/manager.hpp>
+
 
 namespace nen {
 

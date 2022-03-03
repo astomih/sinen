@@ -1,5 +1,4 @@
-#include <Nen.hpp>
-
+#include <Math/Random.hpp>
 namespace nen {
 void random::Init() {
   std::random_device rd;

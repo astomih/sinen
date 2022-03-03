@@ -5,7 +5,6 @@
 #endif
 
 #include "../Texture/texture_system.hpp"
-#include <Nen.hpp>
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_mixer.h>
@@ -13,6 +12,15 @@
 #include <SDL_ttf.h>
 #include <fstream>
 #include <memory>
+
+#include <Audio/SoundSystem.hpp>
+#include <Input/InputSystem.hpp>
+#include <Logger/Logger.hpp>
+#include <Render/Renderer.hpp>
+#include <Scene/Scene.hpp>
+#include <Script/Script.hpp>
+#include <Utility/Singleton.hpp>
+#include <Window/Window.hpp>
 
 #ifdef EMSCRIPTEN
 #include <emscripten.h>

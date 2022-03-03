@@ -1,5 +1,4 @@
 ﻿#include "manager/manager.hpp"
-#include <Nen.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 // general
 #include <array>

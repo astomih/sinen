@@ -1,7 +1,6 @@
 ﻿
 #pragma once
 
-#include <Nen.hpp>
 #if defined(EMSCRIPTEN) || defined(MOBILE)
 #include <SDL_opengles2.h>
 #else

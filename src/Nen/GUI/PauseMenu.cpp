@@ -1,4 +1,4 @@
-#include <Nen.hpp>
+#include <GUI/PauseMenu.hpp>
 namespace nen {
 pause_menu::pause_menu() : ui_screen() {
   SetRelativeMouseMode(false);

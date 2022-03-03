@@ -1,4 +1,4 @@
-#include <Nen.hpp>
+#include <Shader/Shader.hpp>
 
 namespace nen {
 shader::shader() : vertName("default"), fragName("default") {}

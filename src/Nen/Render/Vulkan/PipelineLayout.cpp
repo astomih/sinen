@@ -1,4 +1,3 @@
-#include <Nen.hpp>
 #include <cstddef>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "Pipeline.h"

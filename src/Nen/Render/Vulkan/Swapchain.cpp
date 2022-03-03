@@ -1,5 +1,4 @@
-﻿#include <Nen.hpp>
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+﻿#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "Swapchain.h"
 #include "VKBase.h"
 #include "VulkanUtil.h"
@@ -88,7 +87,7 @@ void Swapchain::Prepare(VkPhysicalDevice physDev, uint32_t graphicsQueueIndex,
     }
     vkDestroySwapchainKHR(m_device, oldSwapchain, nullptr);
     m_imageViews.clear();
-    //m_images.clear();
+    // m_images.clear();
   }
 
   vkGetSwapchainImagesKHR(m_device, m_swapchain, &imageCount, nullptr);

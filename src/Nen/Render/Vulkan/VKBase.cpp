@@ -1,5 +1,4 @@
-﻿#include <Nen.hpp>
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+﻿#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 // general
 #include <algorithm>
 #include <array>

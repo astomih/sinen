@@ -1,4 +1,4 @@
-#include <Nen.hpp>
+#include <Input/GameController.hpp>
 #include <SDL.h>
 #include <SDL_gamecontroller.h>
 

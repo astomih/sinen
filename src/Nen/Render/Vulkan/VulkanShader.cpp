@@ -1,5 +1,4 @@
 ﻿#include "IO/AssetReader.hpp"
-#include <Nen.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "VKBase.h"
 #include "VulkanShader.h"

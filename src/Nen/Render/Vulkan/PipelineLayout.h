@@ -1,8 +1,8 @@
 #pragma once
-#include <Nen.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include <SDL_vulkan.h>
 #include <array>
+#include <vector>
 #include <vulkan/vk_layer.h>
 
 namespace nen::vk {

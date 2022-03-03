@@ -10,7 +10,6 @@
 #endif
 #include "ShaderGL.h"
 #include <DrawObject/DrawObject.hpp>
-#include <Nen.hpp>
 #include <Render/Renderer.hpp>
 #include <SDL.h>
 #include <Texture/Texture.hpp>

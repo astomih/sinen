@@ -1,4 +1,4 @@
-#include <Nen.hpp>
+#include <GUI/Button.hpp>
 namespace nen {
 button::button(const std::string &name, std::shared_ptr<font> font,
                std::function<void()> onClick, const vector2 &pos,

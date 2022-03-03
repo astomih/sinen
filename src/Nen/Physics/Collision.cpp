@@ -1,5 +1,4 @@
-#include <Nen.hpp>
-
+#include <Physics/Collision.hpp>
 namespace nen {
 bool collision::aabb_aabb(const aabb &a, const aabb &b) {
   return (a.min.x <= b.max.x && a.max.x >= b.min.x) &&

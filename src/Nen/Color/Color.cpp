@@ -1,4 +1,4 @@
-#include <Nen.hpp>
+#include <Color/Color.hpp>
 
 namespace nen {
 const color palette::Black = color(0.f);

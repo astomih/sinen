@@ -1,10 +1,11 @@
 ﻿#pragma once
-#include <Nen.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include <vector>
 
+#include <Math/Vector2.hpp>
 #include <SDL_vulkan.h>
 #include <vulkan/vk_layer.h>
+
 
 namespace nen::vk {
 class Swapchain {

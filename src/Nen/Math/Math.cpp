@@ -1,4 +1,8 @@
-#include <Nen.hpp>
+#include <Math/Math.hpp>
+#include <Math/Matrix3.hpp>
+#include <Math/Matrix4.hpp>
+#include <Math/Vector2.hpp>
+#include <Math/Vector3.hpp>
 namespace nen {
 const vector2 vector2::Zero(0.0f, 0.0f);
 const vector2 vector2::UnitX(1.0f, 0.0f);

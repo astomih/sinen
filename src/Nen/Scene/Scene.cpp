@@ -1,10 +1,14 @@
-#include <Nen.hpp>
-
 #include "../event/current_event.hpp"
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
+#include <Audio/SoundSystem.hpp>
+#include <Render/Renderer.hpp>
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <Scene/Scene.hpp>
+#include <Window/Window.hpp>
+#include <manager/manager.hpp>
+
 
 #include <algorithm>
 #include <cmath>

@@ -1,8 +1,13 @@
 ﻿#include "../Texture/texture_system.hpp"
-#include <Nen.hpp>
+#include <Color/Color.hpp>
+#include <Font/Font.hpp>
+#include <IO/AssetReader.hpp>
+#include <Logger/Logger.hpp>
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <Texture/Texture.hpp>
 #include <cassert>
+#include <manager/manager.hpp>
 
 namespace nen {
 font::font(std::string_view file_name, int32_t point) {

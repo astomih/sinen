@@ -1,5 +1,4 @@
 #include "texture_system.hpp"
-#include <Nen.hpp>
 
 namespace nen {
 void SDLObjectCloser::operator()(::SDL_Surface *surface) {

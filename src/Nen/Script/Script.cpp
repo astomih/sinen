@@ -1,8 +1,17 @@
 #include "../Texture/texture_system.hpp"
-#include <Nen.hpp>
-#include <Nen/DrawObject/draw_object_wrapper.hpp>
+#include <Audio/MusicSystem.hpp>
+#include <Audio/SoundEvent.hpp>
+#include <Audio/SoundSystem.hpp>
+#include <DrawObject/draw_object_wrapper.hpp>
+#include <Font/Font.hpp>
+#include <IO/AssetReader.hpp>
+#include <Input/InputSystem.hpp>
+#include <Render/Renderer.hpp>
+#include <Script/Script.hpp>
+#include <Window/Window.hpp>
 #include <functional>
 #include <sol/sol.hpp>
+
 
 namespace nen {
 draw2d::draw2d()

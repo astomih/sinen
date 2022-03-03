@@ -1,16 +1,13 @@
-#include "Input/InputSystem.hpp"
 #include "../event/current_event.hpp"
 #include "Input/MouseCode.hpp"
-#include "SDL_events.h"
-#include "SDL_video.h"
 #include "Utility/Singleton.hpp"
-#include <Nen.hpp>
+#include <Input/InputSystem.hpp>
 #include <SDL.h>
-#include <SDL_gamecontroller.h>
-#include <SDL_keyboard.h>
-#include <SDL_mouse.h>
+#include <Window/Window.hpp>
 #include <cstring>
 #include <imgui_impl_sdl.h>
+#include <manager/manager.hpp>
+
 
 namespace nen {
 bool isHide = false;

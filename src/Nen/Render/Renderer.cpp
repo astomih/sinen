@@ -5,7 +5,6 @@
 #include "Vertex/Vertex.hpp"
 #include "Vertex/VertexArray.hpp"
 #include "Vulkan/VKRenderer.h"
-#include <Nen.hpp>
 
 namespace nen {
 renderer::renderer(manager &_manager) : m_manager(_manager), showImGui(true) {}

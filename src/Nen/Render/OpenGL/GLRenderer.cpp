@@ -1,6 +1,4 @@
-
 #include "manager/manager.hpp"
-#include <Nen.hpp>
 
 #include <SDL.h>
 #include <SDL_image.h>
@@ -12,12 +10,13 @@
 #include <GL/glew.h>
 #endif
 
-#include "SDL_stdinc.h"
 #include <cstdint>
 #include <vector>
 
 #include "../../Texture/texture_system.hpp"
 #include "GLRenderer.h"
+#include <Logger/Logger.hpp>
+#include <Window/Window.hpp>
 #include <fstream>
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
@@ -84,13 +83,11 @@ void GLRenderer::Render() {
   glDisable(GL_BLEND);
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplSDL2_NewFrame((SDL_Window *)w.GetSDLWindow());
-  ImGui::SetWindowPos(ImVec2(0, 0));
   ImGui::NewFrame();
   if (m_manager.get_renderer().isShowImGui()) {
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
     ImGui::SetNextWindowSize(
-        ImVec2(ImGui::GetWindowWidth() * 4, ImGui::GetWindowHeight() * 2),
-        ImGuiCond_Always);
+        ImVec2(get_window().Size().x, get_window().Size().y), ImGuiCond_Always);
 
     // Draw ImGUI widgets.
     ImGui::Begin("Editor");

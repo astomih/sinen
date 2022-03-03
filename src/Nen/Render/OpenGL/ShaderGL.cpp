@@ -1,6 +1,5 @@
 #include "ShaderGL.h"
 #include "IO/AssetReader.hpp"
-#include <Nen.hpp>
 #include <SDL_image.h>
 #include <fstream>
 #include <iostream>

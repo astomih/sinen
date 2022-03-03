@@ -1,8 +1,8 @@
-﻿#include <Nen.hpp>
-#include <string>
+﻿#include <string>
 #ifdef __ANDROID__
 #include <android/log.h>
 #endif
+#include <Logger/Logger.hpp>
 
 namespace nen {
 std::unique_ptr<logger::interface_logger> logger::mLogger = nullptr;

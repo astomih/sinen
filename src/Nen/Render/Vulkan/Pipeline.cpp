@@ -1,9 +1,7 @@
-﻿#include <Nen.hpp>
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+﻿#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "Pipeline.h"
 #include "VKBase.h"
 #include "VulkanUtil.h"
-#include <Nen.hpp>
 
 namespace nen::vk {
 void Pipeline::Initialize(

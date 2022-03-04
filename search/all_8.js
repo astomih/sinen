@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['initialize_21',['initialize',['../classnen_1_1manager.html#a7959b7af4db66841672333e4e1fad1d9',1,'nen::manager']]],
-  ['initialize_22',['Initialize',['../classnen_1_1scene.html#aa6e5f5a63d5c90be208b04f8e6a88094',1,'nen::scene']]],
+  ['initialize_21',['Initialize',['../classnen_1_1scene.html#aa6e5f5a63d5c90be208b04f8e6a88094',1,'nen::scene']]],
+  ['initialize_22',['initialize',['../classnen_1_1manager.html#a7959b7af4db66841672333e4e1fad1d9',1,'nen::manager']]],
   ['input_5fstate_23',['input_state',['../structnen_1_1input__state.html',1,'nen']]],
   ['input_5fsystem_24',['input_system',['../classnen_1_1input__system.html',1,'nen']]],
   ['instance_5fdata_25',['instance_data',['../classnen_1_1instance__data.html',1,'nen']]],

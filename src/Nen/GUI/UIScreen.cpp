@@ -39,12 +39,12 @@ void ui_screen::SetTitle(std::string_view text, const color &color,
 
 void ui_screen::AddButton(std::string_view name,
                           std::function<void()> onClick) {
-  vector2 dims((mButtonOn->GetWidth()), (mButtonOn->GetHeight()));
+  vector2 dims(mButtonOn->size());
   auto b = std::make_unique<button>(name.data(), mFont, onClick, mNextButtonPos,
                                     dims);
   mButtons.emplace_back(std::move(b));
 
-  mNextButtonPos.y -= mButtonOff->GetHeight() + 20.0f;
+  mNextButtonPos.y -= mButtonOff->size().y + 20.0f;
 }
 
 void ui_screen::SetRelativeMouseMode(bool relative) {}

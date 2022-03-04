@@ -21,7 +21,7 @@ public:
    */
   bool initialize();
 
-  void change_scene(std::uint32_t scene_number);
+  void change_scene(std::string scene_number);
 
   /**
    * @brief launch engine
@@ -51,7 +51,7 @@ public:
     return *m_texture_system;
   }
 
-  std::uint32_t get_current_scene_number() { return m_scene_number; }
+  std::string get_current_scene_number() { return m_scene_name; }
 
 private:
   void loop();
@@ -63,7 +63,7 @@ private:
   std::unique_ptr<class sound_system> m_sound_system;
   std::unique_ptr<class script_system> m_script_system;
   std::unique_ptr<class texture_system> m_texture_system;
-  std::uint32_t m_scene_number = 1;
+  std::string m_scene_name = "main";
 };
 bool initialize();
 void launch();
@@ -74,4 +74,5 @@ class scene &get_current_scene();
 class sound_system &get_sound_system();
 class script_system &get_script_system();
 class texture_system &get_texture_system();
+manager &get_manager();
 } // namespace nen

@@ -10,67 +10,10 @@
 #include <Script/Script.hpp>
 #include <Window/Window.hpp>
 #include <functional>
+#include <manager/manager.hpp>
 #include <sol/sol.hpp>
 
-
 namespace nen {
-draw2d::draw2d()
-    : position(vector2(0.f, 0.f)), rotation(0.0f), scale(vector2(10.f, 10.f)) {}
-draw2d::draw2d(texture texture_handle)
-    : position(vector2(0.f, 0.f)), rotation(0.0f), scale(vector2(10.f, 10.f)),
-      texture_handle(texture_handle) {}
-draw3d::draw3d()
-    : position(vector3(0.f, 0.f, 0.f)), rotation(vector3(0.f, 0.f, 0.f)),
-      scale(vector3(10.f, 10.f, 10.f)) {}
-draw3d::draw3d(texture texture_handle)
-    : position(vector3(0.f, 0.f, 0.f)), rotation(vector3(0.f, 0.f, 0.f)),
-      scale(vector3(10.f, 10.f, 10.f)), texture_handle(texture_handle) {}
-void draw2d::draw() {
-  auto obj = std::make_shared<draw_object>();
-  matrix4 t = matrix4::Identity;
-  t.mat[3][0] = position.x;
-  t.mat[3][1] = position.y;
-  quaternion q(vector3::NegUnitZ, rotation);
-  matrix4 r = matrix4::CreateFromQuaternion(q);
-  matrix4 s = matrix4::Identity;
-  s.mat[0][0] = scale.x;
-  s.mat[1][1] = scale.y;
-  matrix4 ts = matrix4::Identity;
-  ts.mat[0][0] = static_cast<float>(texture(texture_handle).GetWidth());
-  ts.mat[1][1] = static_cast<float>(texture(texture_handle).GetHeight());
-  obj->param.world = ts * s * r * t;
-  obj->texture_handle = texture_handle.handle;
-  matrix4 viewproj = matrix4::Identity;
-
-  auto windowsize = get_window().Size();
-  viewproj.mat[0][0] = 1.f / windowsize.x;
-  viewproj.mat[1][1] = 1.f / windowsize.y;
-  obj->param.proj = viewproj;
-  obj->param.view = matrix4::Identity;
-  obj->vertexIndex = "SPRITE";
-  get_renderer().draw2d(obj);
-}
-void draw3d::draw() {
-  auto obj = std::make_shared<draw_object>();
-  matrix4 t = matrix4::Identity;
-  t.mat[3][0] = position.x;
-  t.mat[3][1] = position.y;
-  t.mat[3][2] = position.z;
-  quaternion q(vector3::NegUnitZ, rotation.z);
-  q = quaternion::Concatenate(q, quaternion(vector3::UnitY, rotation.y));
-  q = quaternion::Concatenate(q, quaternion(vector3::UnitX, rotation.x));
-  matrix4 r = matrix4::CreateFromQuaternion(q);
-  matrix4 s = matrix4::Identity;
-  s.mat[0][0] = scale.x;
-  s.mat[1][1] = scale.y;
-  s.mat[2][2] = scale.z;
-  obj->param.world = s * r * t;
-  obj->texture_handle = texture_handle.handle;
-  obj->param.proj = get_renderer().GetProjectionMatrix();
-  obj->param.view = get_renderer().GetViewMatrix();
-  obj->vertexIndex = "SPRITE";
-  get_renderer().draw3d(obj);
-}
 script_system::script_system(manager &_manager)
     : m_manager(_manager), impl(std::make_unique<implement>()) {}
 script_system::~script_system() = default;
@@ -151,6 +94,7 @@ bool script_system::initialize() {
                                                sol::no_construction());
     v["fill_color"] = &texture::fill_color;
     v["load"] = &texture::Load;
+    v["size"] = &texture::size;
   }
   {
     auto v = impl->state.new_usertype<font>("nen_font", sol::no_construction());
@@ -161,15 +105,15 @@ bool script_system::initialize() {
     auto v = impl->state.new_usertype<keyboard_state>("nen_keyboard_state",
                                                       sol::no_construction());
     v["is_key_down"] = &keyboard_state::GetKeyValue;
-    v["get_key_state"] = &keyboard_state::GetKeyState;
+    v["key_state"] = &keyboard_state::GetKeyState;
   }
   {
     auto v = impl->state.new_usertype<mouse_state>("nen_mouse_state",
                                                    sol::no_construction());
-    v["get_mouse_state"] = &mouse_state::GetButtonState;
+    v["mouse_state"] = &mouse_state::GetButtonState;
     v["is_button_down"] = &mouse_state::GetButtonValue;
-    v["get_position"] = &mouse_state::GetPosition;
-    v["get_wheel_state"] = &mouse_state::GetScrollWheel;
+    v["position"] = &mouse_state::GetPosition;
+    v["wheel_state"] = &mouse_state::GetScrollWheel;
   }
   {
     auto v =
@@ -188,6 +132,9 @@ bool script_system::initialize() {
     v["set_listener"] = &sound::set_listener;
     v["set_position"] = &sound::SetPosition;
   }
+  impl->state["change_scene"] = [&](const std::string &str) {
+    get_manager().change_scene(str);
+  };
   {
     auto &v = impl->state;
     v["keyA"] = key_code::A;

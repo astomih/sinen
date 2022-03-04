@@ -33,6 +33,7 @@ namespace nen {
 manager _manager;
 bool initialize() { return _manager.initialize(); }
 void launch() { _manager.launch(); }
+manager &get_manager() { return _manager; }
 window &get_window() { return _manager.get_window(); }
 renderer &get_renderer() { return _manager.get_renderer(); }
 input_system &get_input_system() { return _manager.get_input_system(); }
@@ -135,10 +136,10 @@ void manager::loop() {
 #endif
   }
 }
-void manager::change_scene(std::uint32_t scene_number) {
+void manager::change_scene(std::string scene_name) {
   m_current_scene->Quit();
   m_next_scene = std::make_unique<nen::scene>(*this);
-  m_scene_number = scene_number;
+  m_scene_name = scene_name;
 }
 
 } // namespace nen

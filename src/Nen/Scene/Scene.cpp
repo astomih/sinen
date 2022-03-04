@@ -74,27 +74,27 @@ char code[2048] = {};
 
 void scene::Setup() {
   sol::state *lua = (sol::state *)get_script().get_state();
-  get_script().DoScript("main.lua");
+  get_script().DoScript(m_manager.get_current_scene_number() + ".lua");
   (*lua)["setup"]();
-  char c[] =
-      "local hello_texture = {}\n"
-      "local hello_font = {}\n"
-      "local hello_drawer = {}\n"
-      "\n"
-      "function setup()\n"
-      "\thello_texture = texture()\n"
-      "\thello_drawer = draw2d(hello_texture)\n"
-      "\thello_drawer.scale = vector2(1, 1)\n"
-      "\thello_font = font()\n"
-      "\thello_font:load(DEFAULT_FONT, 128)\n"
-      "\thello_font:render_text(hello_texture, \"Hello World!\", color(1, 1, "
-      "1, 1))\n"
-      "end\n"
-      "\n"
-      "function update() \n"
-      "\thello_drawer:draw()\n"
-      "end\n";
-  strcpy(code, c);
+  char c[] = "local hello_texture = {}\n"
+             "local hello_font = {}\n"
+             "local hello_drawer = {}\n"
+             "\n"
+             "function setup()\n"
+             "\thello_texture = texture()\n"
+             "\thello_drawer = draw2d(hello_texture)\n"
+             "\thello_font = font()\n"
+             "\thello_font:load(DEFAULT_FONT, 128)\n"
+             "\thello_font:render_text(hello_texture, \"Hello Sinen World!\", "
+             "color(1, 1, "
+             "1, 1))\n"
+             "\thello_drawer.scale = hello_texture:size()\n"
+             "end\n"
+             "\n"
+             "function update() \n"
+             "\thello_drawer:draw()\n"
+             "end\n";
+  SDL_strlcpy(code, c, 2048);
 }
 
 void scene::UnloadData() {}
@@ -132,8 +132,8 @@ sound_system &scene::GetSound() { return m_manager.get_sound_system(); }
 script_system &scene::get_script() { return m_manager.get_script_system(); }
 texture_system &scene::get_texture() { return m_manager.get_texture_system(); }
 
-void scene::change_scene(std::uint32_t scene_number) {
-  m_manager.change_scene(scene_number);
+void scene::change_scene(std::string scene_name) {
+  m_manager.change_scene(scene_name);
 }
 
 } // namespace nen

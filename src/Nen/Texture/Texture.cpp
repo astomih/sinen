@@ -6,7 +6,6 @@
 #include <Texture/Texture.hpp>
 #include <manager/manager.hpp>
 
-
 namespace nen {
 
 texture::texture() { handle = get_texture_system().create(); }
@@ -49,12 +48,9 @@ void texture::fill_color(const color &color) {
                                color.b * 255, color.a * 255));
 }
 
-const int texture::GetWidth() {
+vector2 texture::size() {
   auto &surface = get_texture_system().get(handle);
-  return surface.w;
+  return vector2(surface.w, surface.h);
 }
-const int texture::GetHeight() {
-  auto &surface = get_texture_system().get(handle);
-  return surface.h;
-}
+
 } // namespace nen

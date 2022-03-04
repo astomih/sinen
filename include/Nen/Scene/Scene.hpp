@@ -82,7 +82,7 @@ public:
   class script_system &get_script();
   class texture_system &get_texture();
   class font_system &get_font();
-  void change_scene(std::uint32_t scene_number);
+  void change_scene(std::string scene_name);
 
 protected:
   /**

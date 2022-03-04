@@ -23,8 +23,8 @@ public:
 
   void fill_color(const color &color);
 
-  const int GetWidth();
-  const int GetHeight();
+  vector2 size();
+
   handle_t handle;
 };
 } // namespace nen

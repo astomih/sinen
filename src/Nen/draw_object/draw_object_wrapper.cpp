@@ -5,16 +5,16 @@
 
 namespace nen {
 draw2d::draw2d()
-    : position(vector2(0.f, 0.f)), rotation(0.0f), scale(vector2(10.f, 10.f)) {}
+    : position(vector2(0.f, 0.f)), rotation(0.0f), scale(vector2(1.f, 1.f)) {}
 draw2d::draw2d(texture texture_handle)
-    : position(vector2(0.f, 0.f)), rotation(0.0f), scale(vector2(10.f, 10.f)),
+    : position(vector2(0.f, 0.f)), rotation(0.0f), scale(vector2(1.f, 1.f)),
       texture_handle(texture_handle) {}
 draw3d::draw3d()
     : position(vector3(0.f, 0.f, 0.f)), rotation(vector3(0.f, 0.f, 0.f)),
-      scale(vector3(10.f, 10.f, 10.f)) {}
+      scale(vector3(1.f, 1.f, 1.f)) {}
 draw3d::draw3d(texture texture_handle)
     : position(vector3(0.f, 0.f, 0.f)), rotation(vector3(0.f, 0.f, 0.f)),
-      scale(vector3(10.f, 10.f, 10.f)), texture_handle(texture_handle) {}
+      scale(vector3(1.f, 1.f, 1.f)), texture_handle(texture_handle) {}
 void draw2d::draw() {
   auto obj = std::make_shared<draw_object>();
   matrix4 t = matrix4::Identity;
@@ -23,15 +23,15 @@ void draw2d::draw() {
   quaternion q(vector3::NegUnitZ, rotation);
   matrix4 r = matrix4::CreateFromQuaternion(q);
   matrix4 s = matrix4::Identity;
-  s.mat[0][0] = scale.x;
-  s.mat[1][1] = scale.y;
+  s.mat[0][0] = scale.x * 0.5f;
+  s.mat[1][1] = scale.y * 0.5f;
   obj->param.world = s * r * t;
   obj->texture_handle = texture_handle.handle;
   matrix4 viewproj = matrix4::Identity;
 
   auto windowsize = get_window().Size();
-  viewproj.mat[0][0] = 1.f / windowsize.x;
-  viewproj.mat[1][1] = 1.f / windowsize.y;
+  viewproj.mat[0][0] = 2.f / windowsize.x;
+  viewproj.mat[1][1] = 2.f / windowsize.y;
   obj->param.proj = viewproj;
   obj->param.view = matrix4::Identity;
   obj->vertexIndex = "SPRITE";

@@ -2,6 +2,7 @@
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include <Audio/SoundSystem.hpp>
+#include <IO/AssetReader.hpp>
 #include <Render/Renderer.hpp>
 #include <SDL.h>
 #include <SDL_ttf.h>
@@ -14,6 +15,7 @@
 #include <cstdint>
 #include <functional>
 #include <iostream>
+#include <string>
 
 #include <imgui.h>
 #include <sol/sol.hpp>
@@ -74,27 +76,13 @@ char code[2048] = {};
 
 void scene::Setup() {
   sol::state *lua = (sol::state *)get_script().get_state();
-  get_script().DoScript(m_manager.get_current_scene_number() + ".lua");
+  std::string str;
+  str.resize(2048);
+  str = asset_reader::LoadAsString(
+      asset_type::Script, m_manager.get_current_scene_number() + ".lua");
+  lua->do_string(str.data());
   (*lua)["setup"]();
-  char c[] = "local hello_texture = {}\n"
-             "local hello_font = {}\n"
-             "local hello_drawer = {}\n"
-             "\n"
-             "function setup()\n"
-             "\thello_texture = texture()\n"
-             "\thello_drawer = draw2d(hello_texture)\n"
-             "\thello_font = font()\n"
-             "\thello_font:load(DEFAULT_FONT, 128)\n"
-             "\thello_font:render_text(hello_texture, \"Hello Sinen World!\", "
-             "color(1, 1, "
-             "1, 1))\n"
-             "\thello_drawer.scale = hello_texture:size()\n"
-             "end\n"
-             "\n"
-             "function update() \n"
-             "\thello_drawer:draw()\n"
-             "end\n";
-  SDL_strlcpy(code, c, 2048);
+  SDL_strlcpy(code, str.c_str(), 2048);
 }
 
 void scene::UnloadData() {}

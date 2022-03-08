@@ -56,7 +56,7 @@ bool ShaderGL::CompileShader(const std::string &fileName, GLenum shaderType,
 #else
   contents = "#version 330 core\n";
 #endif
-  contents += asset_reader::LoadAsString(asset_type::gl_shader, fileName);
+  contents += data_io::LoadAsString(asset_type::gl_shader, fileName);
   const char *contentsChar = contents.c_str();
 
   // Create a shader of the specified type

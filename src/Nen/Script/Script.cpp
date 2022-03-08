@@ -26,8 +26,7 @@ bool script_system::initialize() {
   impl->state.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math);
   impl->state["require"] = [&](const std::string &str) -> sol::object {
     return impl->state.require_script(
-        str,
-        nen::asset_reader::LoadAsString(nen::asset_type::Script, str) + ".lua");
+        str, nen::data_io::LoadAsString(nen::asset_type::Script, str) + ".lua");
   };
   impl->state["texture"] = [&]() -> texture { return texture(); };
   impl->state["font"] = [&]() -> font { return font(); };
@@ -221,7 +220,7 @@ bool script_system::initialize() {
 }
 
 void script_system::DoScript(std::string_view fileName) {
-  impl->state.script(asset_reader::LoadAsString(asset_type::Script, fileName));
+  impl->state.script(data_io::LoadAsString(asset_type::Script, fileName));
 }
 
 } // namespace nen

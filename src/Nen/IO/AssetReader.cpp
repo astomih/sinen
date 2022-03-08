@@ -1,14 +1,15 @@
 ﻿#include <IO/AssetReader.hpp>
 #include <SDL.h>
 #include <SDL_rwops.h>
+#include <iostream>
 #include <mutex>
 #include <string_view>
 #include <thread>
 
 namespace nen {
 
-std::string_view asset_reader::Load(const asset_type &assetType,
-                                    std::string_view name) {
+std::string_view data_io::Load(const asset_type &assetType,
+                               std::string_view name) {
   std::string filePath;
   ConvertFilePath(filePath, name, assetType);
 
@@ -26,11 +27,11 @@ std::string_view asset_reader::Load(const asset_type &assetType,
     throw std::runtime_error("convert error.");
 #endif
   std::string_view result(reinterpret_cast<char *>(load), fileLength);
+  SDL_RWclose(file);
   SDL_free(load);
   return result;
 }
-void *asset_reader::LoadAsRWops(const asset_type &assetType,
-                                std::string_view name) {
+void *data_io::LoadAsRWops(const asset_type &assetType, std::string_view name) {
   std::string filePath;
   ConvertFilePath(filePath, name, assetType);
 
@@ -41,8 +42,8 @@ void *asset_reader::LoadAsRWops(const asset_type &assetType,
 #endif
   return file;
 }
-std::string asset_reader::LoadAsString(const asset_type &assetType,
-                                       std::string_view name) {
+std::string data_io::LoadAsString(const asset_type &assetType,
+                                  std::string_view name) {
   std::string filePath;
   ConvertFilePath(filePath, name, assetType);
 
@@ -56,11 +57,24 @@ std::string asset_reader::LoadAsString(const asset_type &assetType,
     return std::string("");
   }
   std::string result{reinterpret_cast<char *>(load), fileLength};
+  SDL_RWclose(file);
   SDL_free(load);
   return result;
 }
-void asset_reader::ConvertFilePath(std::string &filePath, std::string_view name,
-                                   const asset_type &assetType) {
+
+void data_io::write(const asset_type &assetType, std::string_view name,
+                    std::string_view data) {
+  std::string filePath;
+  ConvertFilePath(filePath, name, assetType);
+  SDL_RWops *file = SDL_RWFromFile(filePath.c_str(), "w");
+  if (!file) {
+    return;
+  }
+  SDL_RWwrite(file, data.data(), 1, data.size());
+  SDL_RWclose(file);
+}
+void data_io::ConvertFilePath(std::string &filePath, std::string_view name,
+                              const asset_type &assetType) {
 
   switch (assetType) {
   case asset_type::Font:
@@ -93,8 +107,8 @@ void asset_reader::ConvertFilePath(std::string &filePath, std::string_view name,
     break;
   }
 }
-std::string asset_reader::ConvertFilePath(std::string_view name,
-                                          const asset_type &assetType) {
+std::string data_io::ConvertFilePath(std::string_view name,
+                                     const asset_type &assetType) {
   std::string filePath;
   ConvertFilePath(filePath, name, assetType);
   return filePath;

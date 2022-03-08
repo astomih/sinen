@@ -17,8 +17,7 @@ void music::set_volume(int value) { ::Mix_VolumeMusic(value); }
 void music::PlayMusic() { ::Mix_PlayMusic((::Mix_Music *)buffer, -1); }
 
 void music::LoadMusicFromFile(std::string_view fileName) {
-  auto rwops =
-      (SDL_RWops *)asset_reader::LoadAsRWops(asset_type::Music, fileName);
+  auto rwops = (SDL_RWops *)data_io::LoadAsRWops(asset_type::Music, fileName);
   ::Mix_Music *m = ::Mix_LoadMUS_RW(rwops, 1);
   if (m) {
     buffer = (void *)m;

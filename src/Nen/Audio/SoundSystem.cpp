@@ -97,8 +97,8 @@ void sound_system::LoadAudioFile(std::string_view fileName) {
   uint32_t bid = 0;
 
   if (!SDL_LoadWAV(
-          asset_reader::ConvertFilePath(fileName, asset_type::Sound).c_str(),
-          &spec, &buffer, &buffer_length)) {
+          data_io::ConvertFilePath(fileName, asset_type::Sound).c_str(), &spec,
+          &buffer, &buffer_length)) {
     printf("Loading '%s' failed! %s\n", fileName.data(), SDL_GetError());
     return;
   }

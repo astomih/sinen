@@ -15,6 +15,7 @@
 
 #include "../../Texture/texture_system.hpp"
 #include "GLRenderer.h"
+#include <IO/AssetReader.hpp>
 #include <Logger/Logger.hpp>
 #include <Window/Window.hpp>
 #include <fstream>
@@ -51,6 +52,8 @@ void GLRenderer::Initialize() {
   io.ConfigFlags |=
       ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
   io.IniFilename = NULL;
+  io.Fonts->AddFontFromFileTTF("data/font/mplus/mplus-1p-medium.ttf", 18.0f,
+                               nullptr, io.Fonts->GetGlyphRangesJapanese());
   ImGui_ImplSDL2_InitForOpenGL(
       (SDL_Window *)m_manager.get_window().GetSDLWindow(), mContext);
 #if defined EMSCRIPTEN || defined MOBILE

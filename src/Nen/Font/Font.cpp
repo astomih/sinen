@@ -18,8 +18,8 @@ bool font::LoadFromFile(std::string_view fontName, int pointSize) {
   this->fontName = fontName;
   this->pointSize = pointSize;
   m_font = (void *)::TTF_OpenFontRW(
-      (SDL_RWops *)asset_reader::LoadAsRWops(asset_type::Font, this->fontName),
-      1, this->pointSize);
+      (SDL_RWops *)data_io::LoadAsRWops(asset_type::Font, this->fontName), 1,
+      this->pointSize);
   if (!m_font) {
     logger::Error("%s", TTF_GetError());
     return false;

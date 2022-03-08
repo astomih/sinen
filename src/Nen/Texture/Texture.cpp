@@ -14,7 +14,7 @@ texture::~texture() {}
 bool texture::Load(std::string_view fileName) {
   auto &surface = get_texture_system().get(handle);
   auto *src_surface = ::IMG_Load_RW(
-      (SDL_RWops *)asset_reader::LoadAsRWops(asset_type::Texture, fileName), 0);
+      (SDL_RWops *)data_io::LoadAsRWops(asset_type::Texture, fileName), 0);
   if (!src_surface) {
     logger::Error("%s", IMG_GetError());
     return false;

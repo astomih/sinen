@@ -8,8 +8,7 @@ namespace nen::vk {
 VkPipelineShaderStageCreateInfo
 VulkanShader::LoadModule(VkDevice device, const char *fileName,
                          VkShaderStageFlagBits stage) {
-  std::string filedata =
-      asset_reader::LoadAsString(asset_type::vk_shader, fileName);
+  std::string filedata = data_io::LoadAsString(asset_type::vk_shader, fileName);
 
   VkShaderModule shaderModule;
   VkShaderModuleCreateInfo ci{};

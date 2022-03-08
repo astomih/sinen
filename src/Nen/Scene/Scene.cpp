@@ -78,8 +78,8 @@ void scene::Setup() {
   sol::state *lua = (sol::state *)get_script().get_state();
   std::string str;
   str.resize(2048);
-  str = asset_reader::LoadAsString(
-      asset_type::Script, m_manager.get_current_scene_number() + ".lua");
+  str = data_io::LoadAsString(asset_type::Script,
+                              m_manager.get_current_scene_number() + ".lua");
   lua->do_string(str.data());
   (*lua)["setup"]();
   SDL_strlcpy(code, str.c_str(), 2048);
@@ -88,6 +88,7 @@ void scene::Setup() {
 void scene::UnloadData() {}
 
 bool pushed = false;
+bool pushed2 = false;
 void scene::Update(float deltaTime) {
   sol::state *lua = (sol::state *)get_script().get_state();
   (*lua)["delta_time"] = deltaTime;
@@ -99,12 +100,24 @@ void scene::Update(float deltaTime) {
                               ImGuiInputTextFlags_AllowTabInput);
     if (ImGui::Button("Run"))
       pushed = true;
+#ifndef EMSCRIPTEN
+    if (ImGui::Button("Write and Run"))
+      pushed2 = true;
+#endif
   });
   if (pushed) {
     auto str = std::string(code);
     lua->do_string(str);
     (*lua)["setup"]();
     pushed = false;
+  }
+  if (pushed2) {
+    auto str = std::string(code);
+    lua->do_string(str);
+    (*lua)["setup"]();
+    pushed = false;
+    data_io::write(asset_type::Script,
+                   m_manager.get_current_scene_number() + ".lua", str);
   }
   (*lua)["update"]();
 }

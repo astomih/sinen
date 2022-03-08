@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['data_5fio_6',['data_io',['../classnen_1_1data__io.html',1,'nen']]],
   ['default_5flogger_7',['default_logger',['../classnen_1_1logger_1_1default__logger.html',1,'nen::logger']]],
   ['dialog_5fbox_8',['dialog_box',['../classnen_1_1dialog__box.html',1,'nen']]],
   ['draw2d_9',['draw2d',['../classnen_1_1draw2d.html',1,'nen']]],

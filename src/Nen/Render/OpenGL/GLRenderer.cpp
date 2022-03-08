@@ -37,7 +37,7 @@ void GLRenderer::Initialize() {
 #if !defined EMSCRIPTEN && !defined MOBILE
   glewExperimental = GL_TRUE;
   if (glewInit() != GLEW_OK) {
-    logger::Error("GLEW Init error.");
+    logger::error("GLEW Init error.");
   }
   glGetError();
 #endif
@@ -66,7 +66,7 @@ void GLRenderer::Initialize() {
 void GLRenderer::Render() {
   auto &w = m_manager.get_window();
   if (w.Size().x != prev_window_x || w.Size().y != prev_window_y) {
-    logger::Info("window size.x: ", w.Size().x, " window size.y: ", w.Size().y);
+    logger::info("window size.x: ", w.Size().x, " window size.y: ", w.Size().y);
     glViewport(0, 0, w.Size().x, w.Size().y);
     prev_window_x = w.Size().x;
     prev_window_y = w.Size().y;

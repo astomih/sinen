@@ -17,7 +17,7 @@ tcp_client::tcp_client() : impl(std::make_unique<Impl>()) {}
 tcp_client::~tcp_client() = default;
 bool tcp_client::ResolveHost(std::string_view address, uint16_t port) {
   if (SDLNet_ResolveHost(&impl->server_ip, address.data(), port) != 0) {
-    logger::Error("%s", SDLNet_GetError());
+    logger::error("%s", SDLNet_GetError());
     return false;
   }
   return true;
@@ -26,7 +26,7 @@ bool tcp_client::ResolveHost(std::string_view address, uint16_t port) {
 bool tcp_client::Open() {
   impl->accepting = SDLNet_TCP_Open(&impl->server_ip);
   if (impl->accepting != NULL) {
-    logger::Error("%s", SDLNet_GetError());
+    logger::error("%s", SDLNet_GetError());
     return false;
   }
   return true;

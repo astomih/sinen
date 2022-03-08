@@ -100,10 +100,8 @@ void scene::Update(float deltaTime) {
                               ImGuiInputTextFlags_AllowTabInput);
     if (ImGui::Button("Run"))
       pushed = true;
-#ifndef EMSCRIPTEN
     if (ImGui::Button("Write and Run"))
       pushed2 = true;
-#endif
   });
   if (pushed) {
     auto str = std::string(code);

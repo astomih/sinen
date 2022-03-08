@@ -5,9 +5,9 @@
 #include <Logger/Logger.hpp>
 
 namespace nen {
-std::unique_ptr<logger::interface_logger> logger::mLogger = nullptr;
+std::unique_ptr<logger::interface> logger::mLogger = nullptr;
 
-void logger::MakeLogger(std::unique_ptr<logger::interface_logger> logger) {
+void logger::MakeLogger(std::unique_ptr<logger::interface> logger) {
   mLogger = std::move(logger);
 }
 

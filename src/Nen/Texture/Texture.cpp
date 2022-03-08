@@ -16,7 +16,7 @@ bool texture::Load(std::string_view fileName) {
   auto *src_surface = ::IMG_Load_RW(
       (SDL_RWops *)data_io::LoadAsRWops(asset_type::Texture, fileName), 0);
   if (!src_surface) {
-    logger::Error("%s", IMG_GetError());
+    logger::error("%s", IMG_GetError());
     return false;
   }
   memcpy(&surface, src_surface, sizeof(SDL_Surface));
@@ -27,13 +27,13 @@ bool texture::LoadFromMemory(std::vector<char> &buffer, std::string_view ID) {
   auto rw = std::unique_ptr<::SDL_RWops, SDLObjectCloser>(
       ::SDL_RWFromMem(reinterpret_cast<void *>(buffer.data()), buffer.size()));
   if (!rw) {
-    logger::Error("%s", IMG_GetError());
+    logger::error("%s", IMG_GetError());
 
     return false;
   }
   auto *src_surface = ::IMG_Load_RW(rw.get(), 0);
   if (!src_surface) {
-    logger::Error("%s", IMG_GetError());
+    logger::error("%s", IMG_GetError());
     return false;
   }
   memcpy(&surface, src_surface, sizeof(SDL_Surface));

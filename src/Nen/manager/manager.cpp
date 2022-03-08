@@ -83,19 +83,19 @@ bool manager::initialize() {
 
   m_sound_system = std::make_unique<nen::sound_system>();
   if (!m_sound_system->Initialize()) {
-    nen::logger::Info("Failed to initialize audio system");
+    nen::logger::info("Failed to initialize audio system");
     m_sound_system->Shutdown();
     m_sound_system = nullptr;
     return false;
   }
   m_input_system = std::make_unique<nen::input_system>(*this);
   if (!m_input_system->Initialize()) {
-    nen::logger::Info("Failed to initialize input system");
+    nen::logger::info("Failed to initialize input system");
     return false;
   }
   m_script_system = std::make_unique<nen::script_system>(*this);
   if (!m_script_system->initialize()) {
-    nen::logger::Info("Failed to initialize script system");
+    nen::logger::info("Failed to initialize script system");
     return false;
   }
   m_texture_system = std::make_unique<nen::texture_system>(*this);

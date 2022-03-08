@@ -27,7 +27,6 @@ std::string_view data_io::Load(const asset_type &assetType,
     throw std::runtime_error("convert error.");
 #endif
   std::string_view result(reinterpret_cast<char *>(load), fileLength);
-  SDL_RWclose(file);
   SDL_free(load);
   return result;
 }
@@ -57,7 +56,6 @@ std::string data_io::LoadAsString(const asset_type &assetType,
     return std::string("");
   }
   std::string result{reinterpret_cast<char *>(load), fileLength};
-  SDL_RWclose(file);
   SDL_free(load);
   return result;
 }
@@ -71,7 +69,6 @@ void data_io::write(const asset_type &assetType, std::string_view name,
     return;
   }
   SDL_RWwrite(file, data.data(), 1, data.size());
-  SDL_RWclose(file);
 }
 void data_io::ConvertFilePath(std::string &filePath, std::string_view name,
                               const asset_type &assetType) {

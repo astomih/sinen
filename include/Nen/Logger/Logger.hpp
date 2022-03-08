@@ -5,21 +5,6 @@
 #include <string_view>
 
 namespace nen {
-/* ログの種類 */
-enum class log_type {
-  DEBUG,
-  INFO,
-#ifdef ERROR
-#undef ERROR
-  ERROR,
-#define ERROR 0
-#else
-  ERROR,
-#endif
-  WARN,
-  FATAL
-};
-
 namespace detail {
 template <typename... Args>
 std::string string_format_internal(const std::string &format, Args &&...args) {
@@ -39,14 +24,6 @@ template <typename T> auto Convert(T &&value) {
     return std::forward<T>(value);
   }
 }
-/**
- * @brief string format for logger
- *
- * @tparam Args
- * @param format
- * @param args
- * @return std::string
- */
 template <typename... Args>
 std::string string_format_logger(const std::string &format, Args &&...args) {
   return ::nen::detail::string_format_internal(
@@ -54,10 +31,9 @@ std::string string_format_logger(const std::string &format, Args &&...args) {
 }
 } // namespace detail
 
-/* ロギングを行うクラス */
 class logger {
 public:
-  class interface_logger {
+  class interface {
   public:
     virtual void Debug(std::string_view) {}
     virtual void Info(std::string_view) {}
@@ -65,56 +41,46 @@ public:
     virtual void Warn(std::string_view) {}
     virtual void Fatal(std::string_view) {}
   };
-  /* ロガーの実装のインスタンスを移します */
-  static void MakeLogger(std::unique_ptr<interface_logger> logger);
-
-  /* デバッグビルド時のみに表示される情報ログ */
+  static void MakeLogger(std::unique_ptr<interface> logger);
   template <typename... Args>
-  static void Debug(std::string_view format, Args &&...args) {
+  static void debug(std::string_view format, Args &&...args) {
     mLogger->Debug(detail::string_format_logger(format.data(),
                                                 std::forward<Args>(args)...));
   }
-
-  /* デバッグ・リリースビルド時に表示される情報ログ */
   template <typename... Args>
-  static void Info(std::string_view format, Args &&...args) {
+  static void info(std::string_view format, Args &&...args) {
     mLogger->Info(detail::string_format_logger(std::string(format),
                                                std::forward<Args>(args)...));
   }
-
-  /* エラーを表示するログ */
   template <typename... Args>
-  static void Error(std::string_view format, Args &&...args) {
+  static void error(std::string_view format, Args &&...args) {
     mLogger->Error(detail::string_format_logger(std::string(format),
                                                 std::forward<Args>(args)...));
   }
-  /* 警告を表示するログ */
   template <typename... Args>
-  static void Warn(std::string_view format, Args &&...args) {
+  static void warn(std::string_view format, Args &&...args) {
     mLogger->Warn(detail::string_format_logger(format.data(),
                                                std::forward<Args>(args)...));
   }
-  /* 致命的なエラー（Errorよりも深刻）を表示するログ */
   template <typename... Args>
-  static void Fatal(std::string_view format, Args &&...args) {
+  static void fatal(std::string_view format, Args &&...args) {
     mLogger->Fatal(detail::string_format_logger(format.data(),
                                                 std::forward<Args>(args)...));
   }
 
 private:
-  static std::unique_ptr<interface_logger> mLogger;
+  static std::unique_ptr<interface> mLogger;
 
 public:
-  /* Nen標準のロガー実装 */
   class default_logger {
   public:
-    static std::unique_ptr<interface_logger> CreateConsoleLogger() {
+    static std::unique_ptr<interface> CreateConsoleLogger() {
       return std::move(std::make_unique<console_logger>());
     }
 
   private:
     /* コンソールに表示するロガー */
-    class console_logger : public interface_logger {
+    class console_logger : public interface {
     public:
       virtual void Debug(std::string_view) override;
       virtual void Info(std::string_view) override;
@@ -122,7 +88,7 @@ public:
       virtual void Warn(std::string_view) override;
       virtual void Fatal(std::string_view) override;
     };
-    class file_logger : public interface_logger {
+    class file_logger : public interface {
     public:
       virtual void Debug(std::string_view) override;
       virtual void Info(std::string_view) override;

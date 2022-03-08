@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['initialize_155',['initialize',['../classnen_1_1manager.html#a7959b7af4db66841672333e4e1fad1d9',1,'nen::manager']]],
-  ['initialize_156',['Initialize',['../classnen_1_1scene.html#aa6e5f5a63d5c90be208b04f8e6a88094',1,'nen::scene']]],
+  ['initialize_155',['Initialize',['../classnen_1_1scene.html#aa6e5f5a63d5c90be208b04f8e6a88094',1,'nen::scene']]],
+  ['initialize_156',['initialize',['../classnen_1_1manager.html#a7959b7af4db66841672333e4e1fad1d9',1,'nen::manager']]],
   ['isloaded_157',['isLoaded',['../classnen_1_1font.html#af5a004c042f7aa51c606c894ba4be8fa',1,'nen::font']]],
   ['isrunning_158',['isRunning',['../classnen_1_1scene.html#a19b8eac4f43c72c6a2ad46e26a64036d',1,'nen::scene']]]
 ];

@@ -118,6 +118,7 @@ void scene::Update(float deltaTime) {
     pushed = false;
     data_io::write(asset_type::Script,
                    m_manager.get_current_scene_number() + ".lua", str);
+    pushed2 = false;
   }
   (*lua)["update"]();
 }

@@ -8,7 +8,6 @@
 #include <imgui_impl_sdl.h>
 #include <manager/manager.hpp>
 
-
 namespace nen {
 bool isHide = false;
 SDL_Cursor *g_cursor = nullptr;
@@ -44,17 +43,17 @@ void mouse_state::SetPosition(const vector2 &pos) const {
 void mouse_state::HideCursor(bool hide) const {
   isHide = hide;
   if (hide) {
-    int result = SDL_ShowCursor(SDL_DISABLE);
+    SDL_ShowCursor(SDL_DISABLE);
     ImGui::SetMouseCursor(ImGuiMouseCursor_None);
   } else {
     SDL_ShowCursor(SDL_ENABLE);
   }
 }
-bool mouse_state::GetButtonValue(mouse_code _button) const {
+bool mouse_state::is_button_down(mouse_code _button) const {
   return (SDL_BUTTON(static_cast<int>(_button)) & mCurrButtons) == 1;
 }
 
-button_state mouse_state::GetButtonState(mouse_code _button) const {
+button_state mouse_state::button_state(mouse_code _button) const {
   int mask = SDL_BUTTON(static_cast<int>(_button));
   if ((mask & mPrevButtons) == 0) {
     if ((mask & mCurrButtons) == 0) {

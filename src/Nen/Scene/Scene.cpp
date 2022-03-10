@@ -72,8 +72,6 @@ void scene::UpdateScene() {
   m_manager.get_sound_system().Update(deltaTime);
 }
 
-char code[2048] = {};
-
 void scene::Setup() {
   sol::state *lua = (sol::state *)get_script().get_state();
   std::string str;

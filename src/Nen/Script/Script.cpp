@@ -23,6 +23,7 @@ public:
 };
 void *script_system::get_state() { return (void *)&impl->state; }
 bool script_system::initialize() {
+#ifndef NEN_NO_USE_SCRIPT
   impl->state.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math);
   impl->state["require"] = [&](const std::string &str) -> sol::object {
     return impl->state.require_script(
@@ -109,8 +110,8 @@ bool script_system::initialize() {
   {
     auto v = impl->state.new_usertype<mouse_state>("nen_mouse_state",
                                                    sol::no_construction());
-    v["mouse_state"] = &mouse_state::GetButtonState;
-    v["is_button_down"] = &mouse_state::GetButtonValue;
+    v["button_state"] = &mouse_state::button_state;
+    v["is_button_down"] = &mouse_state::is_button_down;
     v["position"] = &mouse_state::GetPosition;
     v["wheel_state"] = &mouse_state::GetScrollWheel;
   }
@@ -216,6 +217,7 @@ bool script_system::initialize() {
     v["buttonRELEASED"] = button_state::Released;
     v["buttonHELD"] = button_state::Held;
   }
+#endif
   return true;
 }
 

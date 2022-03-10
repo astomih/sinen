@@ -104,5 +104,6 @@ private:
   class manager &m_manager;
   game_state mGameState = game_state::Gameplay;
   uint32_t m_prev_tick = 0;
+  char code[2048];
 };
 } // namespace nen

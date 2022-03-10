@@ -42,8 +42,8 @@ public:
   bool IsRelative() const { return mIsRelative; }
 
   // For buttons
-  bool GetButtonValue(mouse_code _button) const;
-  button_state GetButtonState(mouse_code _button) const;
+  bool is_button_down(mouse_code _button) const;
+  button_state button_state(mouse_code _button) const;
 
 private:
   class manager &m_manager;

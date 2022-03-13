@@ -19,6 +19,27 @@ namespace nen {
 
 class renderer {
 public:
+  class Interface {
+  public:
+    Interface() = default;
+    virtual ~Interface() {}
+
+    virtual void Initialize() {}
+    virtual void Shutdown() {}
+    virtual void Render() {}
+    virtual void draw2d(std::shared_ptr<class draw_object> sprite) {}
+    virtual void draw3d(std::shared_ptr<class draw_object> sprite) {}
+    virtual void AddVertexArray(const vertex_array &vArray,
+                                std::string_view name) {}
+    virtual void UpdateVertexArray(const vertex_array &vArray,
+                                   std::string_view name) {}
+
+    virtual void add_instancing(instancing &_instancing) {}
+    virtual void remove_instancing(instancing &_instancing) {}
+
+    virtual void LoadShader(const shader &shaderInfo) {}
+    virtual void UnloadShader(const shader &shaderInfo) {}
+  };
   renderer(class manager &_manager);
   void initialize(graphics_api api);
   ~renderer() = default;
@@ -81,31 +102,10 @@ private:
   // Window
   std::shared_ptr<class window> mWindow;
   // Renderer
-  std::unique_ptr<class IRenderer> m_renderer;
+  std::unique_ptr<Interface> m_renderer;
   graphics_api RendererAPI;
   bool showImGui;
   std::vector<std::function<void()>> m_imgui_function;
 };
 
-class IRenderer {
-public:
-  IRenderer() = default;
-  virtual ~IRenderer() {}
-
-  virtual void Initialize() {}
-  virtual void Shutdown() {}
-  virtual void Render() {}
-  virtual void draw2d(std::shared_ptr<class draw_object> sprite) {}
-  virtual void draw3d(std::shared_ptr<class draw_object> sprite) {}
-  virtual void AddVertexArray(const vertex_array &vArray,
-                              std::string_view name) {}
-  virtual void UpdateVertexArray(const vertex_array &vArray,
-                                 std::string_view name) {}
-
-  virtual void add_instancing(instancing &_instancing) {}
-  virtual void remove_instancing(instancing &_instancing) {}
-
-  virtual void LoadShader(const shader &shaderInfo) {}
-  virtual void UnloadShader(const shader &shaderInfo) {}
-};
 } // namespace nen

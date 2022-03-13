@@ -535,7 +535,7 @@ void VKRenderer::renderImGUI(VkCommandBuffer command) {
   if (m_manager.get_renderer().isShowImGui()) {
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
     ImGui::SetNextWindowSize(
-        ImVec2(ImGui::GetWindowWidth() * 4, ImGui::GetWindowHeight() * 2),
+        ImVec2(ImGui::GetWindowWidth() * 2, ImGui::GetWindowHeight() * 2),
         ImGuiCond_Always);
     ImGui::Begin("Editor");
     ImGui::Text("Frame Per Seconds: %.1f", ImGui::GetIO().Framerate);

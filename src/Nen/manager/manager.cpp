@@ -62,17 +62,17 @@ bool manager::initialize() {
     str = "Vulkan";
   std::getline(ifs, str);
   if (str.compare("Vulkan") == 0) {
-    m_window->Initialize(nen::vector2(1280, 720), "Nen : Vulkan",
+    m_window->Initialize(nen::vector2(800, 800), "Nen : Vulkan",
                          nen::graphics_api::Vulkan);
     m_renderer->initialize(nen::graphics_api::Vulkan);
   } else if (str.compare("OpenGL") == 0) {
-    m_window->Initialize(nen::vector2(1280, 720), "Nen : OpenGL",
+    m_window->Initialize(nen::vector2(800, 800), "Nen : OpenGL",
                          nen::graphics_api::OpenGL);
     m_renderer->initialize(nen::graphics_api::OpenGL);
   }
 
 #else
-  m_window->Initialize(nen::vector2(1280, 720), "Nen", nen::graphics_api::ES);
+  m_window->Initialize(nen::vector2(800, 800), "Nen", nen::graphics_api::ES);
   m_renderer->initialize(nen::graphics_api::ES);
 #endif
   m_renderer->SetProjectionMatrix(nen::matrix4::Perspective(

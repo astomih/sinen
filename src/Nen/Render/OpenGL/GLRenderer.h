@@ -49,7 +49,7 @@ public:
   uint32_t vbo;
 };
 
-class GLRenderer : public IRenderer {
+class GLRenderer : public renderer::Interface {
 public:
   GLRenderer(manager &_manager);
   ~GLRenderer() override {}

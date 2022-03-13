@@ -100,6 +100,8 @@ void scene::Update(float deltaTime) {
       pushed = true;
     if (ImGui::Button("Write and Run"))
       pushed2 = true;
+    if (ImGui::Button("Print to console"))
+      std::cout << code << std::endl;
   });
   if (pushed) {
     auto str = std::string(code);

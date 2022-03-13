@@ -3,6 +3,8 @@
 #include <functional>
 #include <memory>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#include <Render/Renderer.hpp>
+
 #include "Pipeline.h"
 #include "PipelineLayout.h"
 #include "VKBase.h"
@@ -44,7 +46,7 @@ public:
   BufferObject instance_buffer;
 };
 
-class VKRenderer : public IRenderer {
+class VKRenderer : public renderer::Interface {
 public:
   VKRenderer(manager &_manager);
   ~VKRenderer() override {}

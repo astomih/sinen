@@ -5,5 +5,5 @@ var searchData=
   ['instance_5fdata_104',['instance_data',['../classnen_1_1instance__data.html',1,'nen']]],
   ['instancing_105',['instancing',['../classnen_1_1instancing.html',1,'nen']]],
   ['interface_106',['interface',['../classnen_1_1logger_1_1interface.html',1,'nen::logger']]],
-  ['irenderer_107',['IRenderer',['../classnen_1_1_i_renderer.html',1,'nen']]]
+  ['interface_107',['Interface',['../classnen_1_1renderer_1_1_interface.html',1,'nen::renderer']]]
 ];

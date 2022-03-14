@@ -70,6 +70,7 @@ Install emscripten SDK. and do this.
 ## Using libraries
 - GLEW
 - ImGui
+- ImGuiColorTextEdit
 - Lua
 - Sol2
 - OpenAL

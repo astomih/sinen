@@ -7,6 +7,7 @@ if(ANDROID)
 			src/Nen/*/*.cpp
 			src/Nen/Render/OpenGL/*.cpp
 			libs/ImGui/source/gles/*.cpp
+			libs/ImGuiColorTextEdit/*.cpp
 			libs/mojoAL/mojoal.c
 			libs/Lua/source/*.c
 			)
@@ -15,6 +16,7 @@ if(ANDROID)
 			./include
 			./include/Nen
 			libs/ImGui/include
+			libs/ImGuiColorTextEdit
 			libs/sol2/include
 			libs/Lua/include
 			libs/mojoAL
@@ -33,6 +35,7 @@ elseif(EMSCRIPTEN)
 		src/Nen/Engine/Engine.cpp
 		src/Nen/Render/OpenGL/*.cpp
 		libs/ImGui/source/gles/*.cpp
+		libs/ImGuiColorTextEdit/*.cpp
 		libs/Lua/source/*.c
 	)
 	add_library(nen STATIC ${SOURCE_FILES})
@@ -41,6 +44,7 @@ elseif(EMSCRIPTEN)
 		include
 		include/Nen
 		libs/ImGui/include
+		libs/ImGuiColorTextEdit
 		libs/sol2/include
 		libs/Lua/include
 	)
@@ -81,6 +85,7 @@ else()
 			src/Nen/Render/Vulkan/*.cpp
 			src/Nen/Render/OpenGL/*.cpp
 			libs/ImGui/source/*.cpp
+			libs/ImGuiColorTextEdit/*.cpp
 			libs/Lua/source/*.c
 			)
 
@@ -94,6 +99,7 @@ else()
 			./include
 			./include/Nen
 			libs/ImGui/include
+			libs/ImGuiColorTextEdit
 			libs/sol2/include
 			libs/Lua/include
 			libs/VulkanMemoryAllocator/include

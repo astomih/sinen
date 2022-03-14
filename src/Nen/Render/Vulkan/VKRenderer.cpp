@@ -537,12 +537,9 @@ void VKRenderer::renderImGUI(VkCommandBuffer command) {
     ImGui::SetNextWindowSize(
         ImVec2(ImGui::GetWindowWidth() * 2, ImGui::GetWindowHeight() * 2),
         ImGuiCond_Always);
-    ImGui::Begin("Editor");
-    ImGui::Text("Frame Per Seconds: %.1f", ImGui::GetIO().Framerate);
-    if (ImGui::Button("toggleAPI")) {
-      std::ofstream ofs("./api");
-      ofs << "OpenGL";
-    }
+    ImGui::Begin("Editor", nullptr,
+                 ImGuiWindowFlags_HorizontalScrollbar |
+                     ImGuiWindowFlags_MenuBar);
     for (auto &i : get_renderer().get_imgui_function()) {
       i();
     }

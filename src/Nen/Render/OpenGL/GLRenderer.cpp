@@ -93,14 +93,9 @@ void GLRenderer::Render() {
         ImVec2(get_window().Size().x, get_window().Size().y), ImGuiCond_Always);
 
     // Draw ImGUI widgets.
-    ImGui::Begin("Editor");
-    ImGui::Text("Frame Per Seconds: %.1f", ImGui::GetIO().Framerate);
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
-    if (ImGui::Button("toggleAPI")) {
-      std::ofstream ofs("./api");
-      ofs << "Vulkan";
-    }
-#endif
+    ImGui::Begin("Editor", nullptr,
+                 ImGuiWindowFlags_HorizontalScrollbar |
+                     ImGuiWindowFlags_MenuBar);
     for (auto &i : get_renderer().get_imgui_function()) {
       i();
     }

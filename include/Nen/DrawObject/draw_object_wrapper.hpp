@@ -15,6 +15,7 @@ public:
   float rotation;
   vector2 scale;
   texture texture_handle;
+  std::string vertex_name = "SPRITE";
 };
 class draw3d {
 public:
@@ -25,5 +26,6 @@ public:
   vector3 rotation;
   vector3 scale;
   texture texture_handle;
+  std::string vertex_name = "SPRITE";
 };
 } // namespace nen

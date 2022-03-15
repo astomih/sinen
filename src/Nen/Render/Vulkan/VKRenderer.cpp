@@ -117,10 +117,10 @@ void VKRenderer::UnloadShader(const shader &shaderInfo) {
   });
 }
 
-void VKRenderer::add_instancing(instancing &_instancing) {
+void VKRenderer::add_instancing(const instancing &_instancing) {
   auto t = std::make_shared<vk::VulkanDrawObject>();
   t->drawObject = _instancing.object;
-  registerImageObject(_instancing._texture);
+  registerImageObject(_instancing.object->texture_handle);
   t->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
   for (auto &v : t->uniformBuffers) {
     VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
@@ -169,6 +169,11 @@ void VKRenderer::draw_instancing_3d(VkCommandBuffer command) {
     vkCmdDrawIndexed(command, m_VertexArrays[index].indexCount,
                      _instancing.ins.data.size(), 0, 0, 0);
   }
+  for (auto &_instancing : m_instancies_3d) {
+    DestroyBuffer(_instancing.instance_buffer);
+    unregisterTexture(_instancing.vk_draw_object, texture_type::Image3D);
+  }
+  m_instancies_3d.clear();
 }
 void VKRenderer::draw_instancing_2d(VkCommandBuffer command) {
   for (auto &_instancing : m_instancies_2d) {
@@ -192,9 +197,12 @@ void VKRenderer::draw_instancing_2d(VkCommandBuffer command) {
     vkCmdDrawIndexed(command, m_VertexArrays[index].indexCount,
                      _instancing.ins.data.size(), 0, 0, 0);
   }
+  for (auto &_instancing : m_instancies_2d) {
+    DestroyBuffer(_instancing.instance_buffer);
+    unregisterTexture(_instancing.vk_draw_object, texture_type::Image2D);
+  }
+  m_instancies_2d.clear();
 }
-
-void VKRenderer::remove_instancing(instancing &_instancing) {}
 
 void VKRenderer::prepare() {
   prepareUniformBuffers();

@@ -3,6 +3,7 @@
 #include "imgui_impl_sdl.h"
 #include <Audio/SoundSystem.hpp>
 #include <IO/AssetReader.hpp>
+#include <Input/InputSystem.hpp>
 #include <Render/Renderer.hpp>
 #include <SDL.h>
 #include <SDL_ttf.h>
@@ -123,7 +124,7 @@ void scene::Update(float deltaTime) {
   get_renderer().add_imgui_function([&]() {
     auto cpos = editor.GetCursorPosition();
     ImGui::Text(
-        "%6d/%-6d %6d lines  | %s | %s | %s | %s fps:%.2f", cpos.mLine + 1,
+        "%6d/%-6d %6d lines  | %s | %s | %s | %s | fps:%.2f", cpos.mLine + 1,
         cpos.mColumn + 1, editor.GetTotalLines(),
         editor.IsOverwrite() ? "Ovr" : "Ins", editor.CanUndo() ? "*" : " ",
         editor.GetLanguageDefinition().mName.c_str(),
@@ -190,20 +191,17 @@ void scene::Update(float deltaTime) {
       ImGui::EndMenuBar();
     }
     editor.Render("Code");
-    /*
-    if (ImGui::Button("Run"))
-      pushed = true;
-    if (ImGui::Button("Write and Run"))
-      pushed2 = true;
-    if (ImGui::Button("Print to console"))
-      std::cout << code << std::endl;
-      */
   });
   if (pushed) {
     auto str = editor.GetText();
     lua->do_string(str);
     (*lua)["setup"]();
     pushed = false;
+  }
+  if (get_renderer().isShowImGui() &&
+      get_input_system().GetState().Keyboard.GetKeyValue(key_code::LCTRL) &&
+      get_input_system().GetState().Keyboard.GetKeyValue(key_code::S)) {
+    pushed2 = true;
   }
   if (pushed2) {
     auto str = editor.GetText();

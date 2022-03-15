@@ -44,8 +44,8 @@ struct VertexArrayForGL : public nen::vertex_array {
 
 class ogl_instancing {
 public:
-  ogl_instancing(instancing &ins) : ins(ins) {}
-  instancing &ins;
+  ogl_instancing(instancing ins) : ins(ins) {}
+  instancing ins;
   uint32_t vbo;
 };
 
@@ -66,8 +66,7 @@ public:
   void LoadShader(const shader &shaderInfo) override;
   void UnloadShader(const shader &shaderInfo) override;
 
-  void add_instancing(instancing &_instancing) override;
-  void remove_instancing(instancing &_instancing) override;
+  void add_instancing(const instancing &_instancing) override;
 
   void prepare();
   void cleanup() {}

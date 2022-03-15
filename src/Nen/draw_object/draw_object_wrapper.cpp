@@ -34,7 +34,7 @@ void draw2d::draw() {
   viewproj.mat[1][1] = 2.f / windowsize.y;
   obj->param.proj = viewproj;
   obj->param.view = matrix4::Identity;
-  obj->vertexIndex = "SPRITE";
+  obj->vertexIndex = this->vertex_name;
   get_renderer().draw2d(obj);
 }
 void draw3d::draw() {
@@ -55,7 +55,7 @@ void draw3d::draw() {
   obj->texture_handle = texture_handle.handle;
   obj->param.proj = get_renderer().GetProjectionMatrix();
   obj->param.view = get_renderer().GetViewMatrix();
-  obj->vertexIndex = "SPRITE";
+  obj->vertexIndex = this->vertex_name;
   get_renderer().draw3d(obj);
 }
 } // namespace nen

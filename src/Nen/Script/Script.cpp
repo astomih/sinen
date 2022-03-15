@@ -10,7 +10,9 @@
 #include <Script/Script.hpp>
 #include <Window/Window.hpp>
 #include <functional>
+#include <instancing/instancing_wrapper.hpp>
 #include <manager/manager.hpp>
+#include <model/model.hpp>
 #include <sol/sol.hpp>
 
 namespace nen {
@@ -36,6 +38,12 @@ bool script_system::initialize() {
   impl->state["draw2d"] = [&](texture t) -> draw2d { return draw2d(t); };
   impl->state["draw3d"] = [&]() -> draw3d { return draw3d(); };
   impl->state["draw3d"] = [&](texture t) -> draw3d { return draw3d(t); };
+  impl->state["draw2d_instanced"] = [&](texture t) -> draw2d_instancing {
+    return draw2d_instancing(t);
+  };
+  impl->state["draw3d_instanced"] = [&](texture t) -> draw3d_instancing {
+    return draw3d_instancing(t);
+  };
   impl->state["vector3"] = [&](float x, float y, float z) -> vector3 {
     return vector3(x, y, z);
   };
@@ -48,6 +56,7 @@ bool script_system::initialize() {
   impl->state["color"] = [&](float r, float g, float b, float a) -> color {
     return color(r, g, b, a);
   };
+  impl->state["model"] = [&]() -> model { return model(); };
   impl->state["music"] = [&]() -> music { return music(); };
   impl->state["sound"] = [&]() -> sound { return sound(); };
   {
@@ -79,6 +88,7 @@ bool script_system::initialize() {
     v["rotation"] = &draw2d::rotation;
     v["scale"] = &draw2d::scale;
     v["texture"] = &draw2d::texture_handle;
+    v["vertex_name"] = &draw2d::vertex_name;
   }
   {
     auto v =
@@ -88,6 +98,21 @@ bool script_system::initialize() {
     v["scale"] = &draw3d::scale;
     v["texture"] = &draw3d::texture_handle;
     v["draw"] = &draw3d::draw;
+    v["vertex_name"] = &draw3d::vertex_name;
+  }
+  {
+    auto v = impl->state.new_usertype<draw2d_instancing>(
+        "nen_draw2d_instanced", sol::no_construction());
+    v["draw"] = &draw2d_instancing::draw;
+    v["add"] = &draw2d_instancing::add;
+    v["texture"] = &draw2d_instancing::texture_handle;
+  }
+  {
+    auto v = impl->state.new_usertype<draw3d_instancing>(
+        "nen_draw3d_instanced", sol::no_construction());
+    v["draw"] = &draw3d_instancing::draw;
+    v["add"] = &draw3d_instancing::add;
+    v["texture"] = &draw3d_instancing::texture_handle;
   }
   {
     auto v = impl->state.new_usertype<texture>("nen_texture",
@@ -135,6 +160,11 @@ bool script_system::initialize() {
   impl->state["change_scene"] = [&](const std::string &str) {
     get_manager().change_scene(str);
   };
+  {
+    auto v =
+        impl->state.new_usertype<model>("nen_model", sol::no_construction());
+    v["load"] = &model::load;
+  }
   {
     auto &v = impl->state;
     v["keyA"] = key_code::A;

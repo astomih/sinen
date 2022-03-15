@@ -34,8 +34,7 @@ public:
     virtual void UpdateVertexArray(const vertex_array &vArray,
                                    std::string_view name) {}
 
-    virtual void add_instancing(instancing &_instancing) {}
-    virtual void remove_instancing(instancing &_instancing) {}
+    virtual void add_instancing(const instancing &_instancing) {}
 
     virtual void LoadShader(const shader &shaderInfo) {}
     virtual void UnloadShader(const shader &shaderInfo) {}
@@ -57,8 +56,7 @@ public:
   void AddVertexArray(const vertex_array &vArray, std::string_view name);
   void UpdateVertexArray(const vertex_array &vArray, std::string_view name);
 
-  void add_instancing(instancing &_instancing);
-  void remove_instancing(instancing &_instancing);
+  void add_instancing(const instancing &_instancing);
 
   void SetClearColor(const color &color) {
     if (color.r >= 0.f && color.g >= 0.f && color.b >= 0.f)

@@ -107,6 +107,8 @@ void GLRenderer::Render() {
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
   mSprite3Ds.clear();
   mSprite2Ds.clear();
+  m_instancing_3d.clear();
+  m_instancing_2d.clear();
   SDL_GL_SwapWindow((SDL_Window *)w.GetSDLWindow());
 }
 
@@ -269,8 +271,8 @@ void GLRenderer::UnloadShader(const shader &shaderInfo) {
   });
 }
 
-void GLRenderer::add_instancing(instancing &_instancing) {
-  registerTexture(_instancing._texture);
+void GLRenderer::add_instancing(const instancing &_instancing) {
+  registerTexture(_instancing.object->texture_handle);
   auto va = m_VertexArrays[_instancing.object->vertexIndex];
   glBindVertexArray(va.vao);
   uint32_t vbo;
@@ -305,7 +307,6 @@ void GLRenderer::add_instancing(instancing &_instancing) {
     m_instancing_3d.emplace_back(ogl);
   }
 }
-void GLRenderer::remove_instancing(instancing &_instancing) {}
 
 void GLRenderer::prepare() {
   if (!loadShader()) {

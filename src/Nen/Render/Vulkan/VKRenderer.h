@@ -40,8 +40,8 @@ struct VertexArrayForVK : public vertex_array {
 
 class vulkan_instancing {
 public:
-  vulkan_instancing(instancing &_instancing) : ins(_instancing) {}
-  instancing &ins;
+  vulkan_instancing(const instancing &_instancing) : ins(_instancing) {}
+  instancing ins;
   std::shared_ptr<VulkanDrawObject> vk_draw_object;
   BufferObject instance_buffer;
 };
@@ -65,8 +65,7 @@ public:
   void LoadShader(const shader &shaderInfo) override;
   void UnloadShader(const shader &shaderInfo) override;
 
-  void add_instancing(instancing &_instancing) override;
-  void remove_instancing(instancing &_instancing) override;
+  void add_instancing(const instancing &_instancing) override;
 
   void prepare();
   void cleanup();

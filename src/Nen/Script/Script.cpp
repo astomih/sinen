@@ -168,6 +168,7 @@ bool script_system::initialize() {
     v["fov"] = &camera::fov;
     v["target"] = &camera::target;
     v["up"] = &camera::up;
+    v["update"] = &camera::update;
   }
   impl->state["change_scene"] = [&](const std::string &str) {
     get_manager().change_scene(str);

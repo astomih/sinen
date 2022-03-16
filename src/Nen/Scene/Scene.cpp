@@ -101,10 +101,8 @@ void scene::Setup() {
       0x40a0a0a0, // Current line edge
   }};
   sol::state *lua = (sol::state *)get_script().get_state();
-  std::string str;
-  str.resize(2048);
-  str = data_io::LoadAsString(asset_type::Script,
-                              m_manager.get_current_scene_number() + ".lua");
+  std::string str = data_io::LoadAsString(
+      asset_type::Script, m_manager.get_current_scene_number() + ".lua");
   lua->do_string(str.data());
   (*lua)["setup"]();
   editor.SetPalette(p);
@@ -115,8 +113,8 @@ void scene::Setup() {
 
 void scene::UnloadData() {}
 
-bool pushed = false;
-bool pushed2 = false;
+bool is_run = false;
+bool is_save = false;
 void scene::Update(float deltaTime) {
   sol::state *lua = (sol::state *)get_script().get_state();
   (*lua)["delta_time"] = deltaTime;
@@ -135,7 +133,7 @@ void scene::Update(float deltaTime) {
     if (ImGui::BeginMenuBar()) {
       if (ImGui::BeginMenu("File")) {
         if (ImGui::MenuItem("Save")) {
-          pushed2 = true;
+          is_save = true;
         }
         if (ImGui::MenuItem("Quit", "Alt-F4"))
           this->Quit();
@@ -187,32 +185,39 @@ void scene::Update(float deltaTime) {
         ImGui::EndMenu();
       }
       if (ImGui::BeginMenu("Run")) {
-        pushed = true;
+        is_run = true;
         ImGui::EndMenu();
       }
       ImGui::EndMenuBar();
     }
     editor.Render("Code");
   });
-  if (pushed) {
+  if (get_renderer().isShowImGui() &&
+      get_input_system().GetState().Keyboard.GetKeyState(key_code::F5) ==
+          button_state::Pressed) {
+    is_run = true;
+  }
+  if (is_run) {
     auto str = editor.GetText();
     lua->do_string(str);
     (*lua)["setup"]();
-    pushed = false;
+    is_run = false;
   }
   if (get_renderer().isShowImGui() &&
       get_input_system().GetState().Keyboard.GetKeyValue(key_code::LCTRL) &&
-      get_input_system().GetState().Keyboard.GetKeyValue(key_code::S)) {
-    pushed2 = true;
+      get_input_system().GetState().Keyboard.GetKeyState(key_code::S) ==
+          button_state::Pressed) {
+    is_save = true;
   }
-  if (pushed2) {
+  if (is_save) {
     auto str = editor.GetText();
     data_io::write(asset_type::Script,
                    m_manager.get_current_scene_number() + ".lua", str);
-    pushed2 = false;
+    std::cout << str << std::endl;
+    is_save = false;
   }
+  // get_camera().update();
   (*lua)["update"]();
-  get_camera().update();
 }
 
 void scene::Shutdown() { UnloadData(); }

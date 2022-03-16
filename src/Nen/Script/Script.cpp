@@ -9,6 +9,7 @@
 #include <Render/Renderer.hpp>
 #include <Script/Script.hpp>
 #include <Window/Window.hpp>
+#include <camera/camera.hpp>
 #include <functional>
 #include <instancing/instancing_wrapper.hpp>
 #include <manager/manager.hpp>
@@ -156,6 +157,17 @@ bool script_system::initialize() {
     v["set_pitch"] = &sound::SetPitch;
     v["set_listener"] = &sound::set_listener;
     v["set_position"] = &sound::SetPosition;
+  }
+  {
+    auto v =
+        impl->state.new_usertype<camera>("nen_camera", sol::no_construction());
+    v["position"] = &camera::position;
+    v["aspect"] = &camera::aspect;
+    v["far"] = &camera::far;
+    v["near"] = &camera::near;
+    v["fov"] = &camera::fov;
+    v["target"] = &camera::target;
+    v["up"] = &camera::up;
   }
   impl->state["change_scene"] = [&](const std::string &str) {
     get_manager().change_scene(str);

@@ -43,10 +43,12 @@
 #include "Vertex/Vertex.hpp"
 #include "Vertex/VertexArray.hpp"
 #include "Window/Window.hpp"
+#include "camera/camera.hpp"
 #include "exception/exception.hpp"
 #include "instancing/instancing.hpp"
 #include "instancing/instancing_wrapper.hpp"
 #include "model/model.hpp"
+
 
 #endif
 #ifdef NO_USE_NEN_NAMESPACE

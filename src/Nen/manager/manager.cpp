@@ -21,6 +21,7 @@
 #include <Script/Script.hpp>
 #include <Utility/Singleton.hpp>
 #include <Window/Window.hpp>
+#include <camera/camera.hpp>
 
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
@@ -41,6 +42,7 @@ scene &get_current_scene() { return _manager.get_current_scene(); }
 sound_system &get_sound_system() { return _manager.get_sound_system(); }
 script_system &get_script_system() { return _manager.get_script_system(); }
 texture_system &get_texture_system() { return _manager.get_texture_system(); }
+camera &get_camera() { return _manager.get_camera(); }
 bool manager::initialize() {
   m_current_scene = std::make_unique<scene>(*this);
   SDL_SetMainReady();
@@ -75,11 +77,7 @@ bool manager::initialize() {
   m_window->Initialize(nen::vector2(800, 800), "Nen", nen::graphics_api::ES);
   m_renderer->initialize(nen::graphics_api::ES);
 #endif
-  m_renderer->SetProjectionMatrix(nen::matrix4::Perspective(
-      nen::Math::ToRadians(70.f), m_window->Size().x / m_window->Size().y, 0.1f,
-      1000.f));
-  m_renderer->SetViewMatrix(
-      nen::matrix4::LookAt(vector3(0, 0, 10), vector3(0), vector3(0, 1, 0)));
+  m_camera = std::make_unique<camera>();
 
   m_sound_system = std::make_unique<nen::sound_system>();
   if (!m_sound_system->Initialize()) {

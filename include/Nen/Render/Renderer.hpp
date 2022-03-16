@@ -65,13 +65,6 @@ public:
 
   color GetClearColor() { return this->clearColor; }
 
-  void SetViewMatrix(const matrix4 &view) { mView = view; }
-  const matrix4 &GetViewMatrix() { return mView; }
-  void SetProjectionMatrix(const matrix4 &projection) {
-    mProjection = projection;
-  }
-  const matrix4 &GetProjectionMatrix() { return mProjection; }
-
   class window &GetWindow();
 
   void toggleShowImGui() { showImGui = !showImGui; }
@@ -92,10 +85,6 @@ private:
   class manager &m_manager;
   void setup_shapes();
   color clearColor = palette::Black;
-
-  // View/projection for 3D shaders
-  matrix4 mView;
-  matrix4 mProjection;
 
   // Window
   std::shared_ptr<class window> mWindow;

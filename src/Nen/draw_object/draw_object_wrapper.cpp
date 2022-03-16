@@ -1,6 +1,7 @@
 #include <DrawObject/draw_object_wrapper.hpp>
 #include <Render/Renderer.hpp>
 #include <Window/Window.hpp>
+#include <camera/camera.hpp>
 #include <manager/manager.hpp>
 
 namespace nen {
@@ -43,9 +44,13 @@ void draw3d::draw() {
   t.mat[3][0] = position.x;
   t.mat[3][1] = position.y;
   t.mat[3][2] = position.z;
-  quaternion q(vector3::NegUnitZ, rotation.z);
-  q = quaternion::Concatenate(q, quaternion(vector3::UnitY, rotation.y));
-  q = quaternion::Concatenate(q, quaternion(vector3::UnitX, rotation.x));
+  quaternion q;
+  q = quaternion::Concatenate(
+      q, quaternion(vector3::UnitZ, Math::ToRadians(rotation.z)));
+  q = quaternion::Concatenate(
+      q, quaternion(vector3::UnitY, Math::ToRadians(rotation.y)));
+  q = quaternion::Concatenate(
+      q, quaternion(vector3::UnitX, Math::ToRadians(rotation.x)));
   matrix4 r = matrix4::CreateFromQuaternion(q);
   matrix4 s = matrix4::Identity;
   s.mat[0][0] = scale.x;
@@ -53,8 +58,8 @@ void draw3d::draw() {
   s.mat[2][2] = scale.z;
   obj->param.world = s * r * t;
   obj->texture_handle = texture_handle.handle;
-  obj->param.proj = get_renderer().GetProjectionMatrix();
-  obj->param.view = get_renderer().GetViewMatrix();
+  obj->param.proj = get_camera().get_projection();
+  obj->param.view = get_camera().get_view();
   obj->vertexIndex = this->vertex_name;
   get_renderer().draw3d(obj);
 }

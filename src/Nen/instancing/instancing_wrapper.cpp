@@ -3,7 +3,9 @@
 
 #include <Render/Renderer.hpp>
 #include <Window/Window.hpp>
+#include <camera/camera.hpp>
 #include <manager/manager.hpp>
+
 
 namespace nen {
 draw2d_instancing::draw2d_instancing(texture texture_handle)
@@ -61,8 +63,8 @@ void draw3d_instancing::draw() {
   auto obj = std::make_shared<draw_object>();
   obj->texture_handle = this->texture_handle.handle;
   obj->vertexIndex = this->vertex_name;
-  obj->param.proj = get_renderer().GetProjectionMatrix();
-  obj->param.view = get_renderer().GetViewMatrix();
+  obj->param.proj = get_camera().get_projection();
+  obj->param.view = get_camera().get_view();
   _instancing.object = obj;
   _instancing.type = object_type::_3D;
   for (int i = 0; i < this->position.size(); i++) {

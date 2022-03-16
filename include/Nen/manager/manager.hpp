@@ -51,6 +51,9 @@ public:
   class texture_system &get_texture_system() {
     return *m_texture_system;
   }
+  class camera &get_camera() {
+    return *m_camera;
+  }
 
   std::string get_current_scene_number() { return m_scene_name; }
 
@@ -64,6 +67,8 @@ private:
   std::unique_ptr<class sound_system> m_sound_system;
   std::unique_ptr<class script_system> m_script_system;
   std::unique_ptr<class texture_system> m_texture_system;
+  std::unique_ptr<class camera> m_camera;
+
   std::string m_scene_name = "main";
 };
 bool initialize();
@@ -75,5 +80,6 @@ class scene &get_current_scene();
 class sound_system &get_sound_system();
 class script_system &get_script_system();
 class texture_system &get_texture_system();
+class camera &get_camera();
 manager &get_manager();
 } // namespace nen

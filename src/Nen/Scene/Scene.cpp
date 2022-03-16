@@ -19,6 +19,7 @@
 #include <string>
 
 #include <TextEditor.h>
+#include <camera/camera.hpp>
 #include <imgui.h>
 #include <sol/sol.hpp>
 
@@ -89,7 +90,7 @@ void scene::Setup() {
       0xffc040a0, // Preproc identifier
       0xff206020, // Comment (single line)
       0xff406020, // Comment (multi line)
-      0x10101010, // Background
+      0x00101010, // Background
       0xffe0e0e0, // Cursor
       0x80a06020, // Selection
       0x800020ff, // ErrorMarker
@@ -121,6 +122,7 @@ void scene::Update(float deltaTime) {
   (*lua)["delta_time"] = deltaTime;
   (*lua)["keyboard"] = get_input_system().GetState().Keyboard;
   (*lua)["mouse"] = get_input_system().GetState().Mouse;
+  (*lua)["camera"] = &get_camera();
   get_renderer().add_imgui_function([&]() {
     auto cpos = editor.GetCursorPosition();
     ImGui::Text(
@@ -210,6 +212,7 @@ void scene::Update(float deltaTime) {
     pushed2 = false;
   }
   (*lua)["update"]();
+  get_camera().update();
 }
 
 void scene::Shutdown() { UnloadData(); }

@@ -76,6 +76,20 @@ public:
     return *this;
   }
 
+  vector3 add(const vector3 &right) const {
+    return vector3(x + right.x, y + right.y, z + right.z);
+  }
+  vector3 sub(const vector3 &right) const {
+    return vector3(x - right.x, y - right.y, z - right.z);
+  }
+  vector3 mul(const vector3 &right) const {
+    return vector3(x * right.x, y * right.y, z * right.z);
+  }
+  vector3 div(const vector3 &right) const {
+    return vector3(x / right.x, y / right.y, z / right.z);
+  }
+  vector3 copy() { return vector3(x, y, z); }
+
   // Length squared of vector
   [[nodiscard]] float LengthSq() const { return (x * x + y * y + z * z); }
 

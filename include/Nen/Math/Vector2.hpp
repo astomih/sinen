@@ -74,6 +74,19 @@ public:
     return *this;
   }
 
+  vector2 add(const vector2 &right) const {
+    return vector2(x + right.x, y + right.y);
+  }
+  vector2 sub(const vector2 &right) const {
+    return vector2(x - right.x, y - right.y);
+  }
+  vector2 mul(const vector2 &right) const {
+    return vector2(x * right.x, y * right.y);
+  }
+  vector2 div(const vector2 &right) const {
+    return vector2(x / right.x, y / right.y);
+  }
+
   // Length squared of vector
   [[nodiscard]] float LengthSq() const { return (x * x + y * y); }
 

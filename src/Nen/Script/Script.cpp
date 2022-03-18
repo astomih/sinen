@@ -27,7 +27,8 @@ public:
 void *script_system::get_state() { return (void *)&impl->state; }
 bool script_system::initialize() {
 #ifndef NEN_NO_USE_SCRIPT
-  impl->state.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math);
+  impl->state.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math,
+                             sol::lib::bit32);
   impl->state["require"] = [&](const std::string &str) -> sol::object {
     return impl->state.require_script(
         str, nen::data_io::LoadAsString(nen::asset_type::Script, str + ".lua"));
@@ -67,12 +68,21 @@ bool script_system::initialize() {
     v["x"] = &vector3::x;
     v["y"] = &vector3::y;
     v["z"] = &vector3::z;
+    v["add"] = &vector3::add;
+    v["sub"] = &vector3::sub;
+    v["mul"] = &vector3::mul;
+    v["div"] = &vector3::div;
+    v["copy"] = &vector3::copy;
   }
   {
     auto v = impl->state.new_usertype<vector2>("nen_vector2",
                                                sol::no_construction());
     v["x"] = &vector2::x;
     v["y"] = &vector2::y;
+    v["add"] = &vector2::add;
+    v["sub"] = &vector2::sub;
+    v["mul"] = &vector2::mul;
+    v["div"] = &vector2::div;
   }
   {
     auto v =

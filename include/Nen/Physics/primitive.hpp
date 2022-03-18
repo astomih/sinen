@@ -44,7 +44,7 @@ struct aabb : public primitive {
   ~aabb() = default;
   aabb(const vector3 &min, const vector3 &max) : min(min), max(max) {}
 
-  inline bool intersects(const aabb &other);
+  bool intersects_aabb(const aabb &other);
 };
 } // namespace nen
 #endif

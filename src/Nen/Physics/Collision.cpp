@@ -5,7 +5,7 @@ bool collision::aabb_aabb(const aabb &a, const aabb &b) {
          (a.min.y <= b.max.y && a.max.y >= b.min.y) &&
          (a.min.z <= b.max.z && a.max.z >= b.min.z);
 }
-bool aabb::intersects(const aabb &other) {
+bool aabb::intersects_aabb(const aabb &other) {
   return collision::aabb_aabb(*this, other);
 }
 } // namespace nen

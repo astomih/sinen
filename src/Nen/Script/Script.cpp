@@ -30,7 +30,7 @@ bool script_system::initialize() {
   impl->state.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math);
   impl->state["require"] = [&](const std::string &str) -> sol::object {
     return impl->state.require_script(
-        str, nen::data_io::LoadAsString(nen::asset_type::Script, str) + ".lua");
+        str, nen::data_io::LoadAsString(nen::asset_type::Script, str + ".lua"));
   };
   impl->state["texture"] = [&]() -> texture { return texture(); };
   impl->state["font"] = [&]() -> font { return font(); };
@@ -60,6 +60,7 @@ bool script_system::initialize() {
   impl->state["model"] = [&]() -> model { return model(); };
   impl->state["music"] = [&]() -> music { return music(); };
   impl->state["sound"] = [&]() -> sound { return sound(); };
+  impl->state["aabb"] = [&]() -> aabb { return aabb(); };
   {
     auto v = impl->state.new_usertype<vector3>("nen_vector3",
                                                sol::no_construction());
@@ -176,7 +177,14 @@ bool script_system::initialize() {
   {
     auto v =
         impl->state.new_usertype<model>("nen_model", sol::no_construction());
+    v["aabb"] = &model::m_aabb;
     v["load"] = &model::load;
+  }
+  {
+    auto v = impl->state.new_usertype<aabb>("nen_aabb", sol::no_construction());
+    v["min"] = &aabb::min;
+    v["max"] = &aabb::max;
+    v["intersects_aabb"] = &aabb::intersects_aabb;
   }
   {
     auto &v = impl->state;

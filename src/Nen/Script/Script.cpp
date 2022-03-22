@@ -1,4 +1,5 @@
 #include "../Texture/texture_system.hpp"
+#include "Math/Vector3.hpp"
 #include <Audio/MusicSystem.hpp>
 #include <Audio/SoundEvent.hpp>
 #include <Audio/SoundSystem.hpp>
@@ -6,6 +7,7 @@
 #include <Font/Font.hpp>
 #include <IO/AssetReader.hpp>
 #include <Input/InputSystem.hpp>
+#include <Math/Random.hpp>
 #include <Render/Renderer.hpp>
 #include <Script/Script.hpp>
 #include <Window/Window.hpp>
@@ -28,7 +30,9 @@ void *script_system::get_state() { return (void *)&impl->state; }
 bool script_system::initialize() {
 #ifndef NEN_NO_USE_SCRIPT
   impl->state.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math,
-                             sol::lib::bit32);
+                             sol::lib::bit32, sol::lib::io, sol::lib::os,
+                             sol::lib::string, sol::lib::debug,
+                             sol::lib::table);
   impl->state["require"] = [&](const std::string &str) -> sol::object {
     return impl->state.require_script(
         str, nen::data_io::LoadAsString(nen::asset_type::Script, str + ".lua"));
@@ -73,6 +77,16 @@ bool script_system::initialize() {
     v["mul"] = &vector3::mul;
     v["div"] = &vector3::div;
     v["copy"] = &vector3::copy;
+    v["forward"] = [](const vector3 v, const vector3 rotation) -> vector3 {
+      quaternion q;
+      q = quaternion::Concatenate(
+          q, quaternion(vector3::UnitZ, Math::ToRadians(rotation.z)));
+      q = quaternion::Concatenate(
+          q, quaternion(vector3::UnitY, Math::ToRadians(rotation.y)));
+      q = quaternion::Concatenate(
+          q, quaternion(vector3::UnitX, Math::ToRadians(rotation.x)));
+      return vector3::Transform(v, q);
+    };
   }
   {
     auto v = impl->state.new_usertype<vector2>("nen_vector2",
@@ -118,6 +132,7 @@ bool script_system::initialize() {
     v["draw"] = &draw2d_instancing::draw;
     v["add"] = &draw2d_instancing::add;
     v["texture"] = &draw2d_instancing::texture_handle;
+    v["vertex_name"] = &draw2d_instancing::vertex_name;
   }
   {
     auto v = impl->state.new_usertype<draw3d_instancing>(
@@ -125,6 +140,7 @@ bool script_system::initialize() {
     v["draw"] = &draw3d_instancing::draw;
     v["add"] = &draw3d_instancing::add;
     v["texture"] = &draw3d_instancing::texture_handle;
+    v["vertex_name"] = &draw3d_instancing::vertex_name;
   }
   {
     auto v = impl->state.new_usertype<texture>("nen_texture",
@@ -195,6 +211,12 @@ bool script_system::initialize() {
     v["min"] = &aabb::min;
     v["max"] = &aabb::max;
     v["intersects_aabb"] = &aabb::intersects_aabb;
+  }
+  {
+    auto v =
+        impl->state.new_usertype<random>("nen_random", sol::no_construction());
+    v["get_int_range"] = &random::GetIntRange;
+    v["get_float_range"] = &random::GetFloatRange;
   }
   {
     auto &v = impl->state;

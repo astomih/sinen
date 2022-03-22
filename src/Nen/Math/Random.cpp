@@ -29,5 +29,4 @@ vector3 random::GetVector(const vector3 &min, const vector3 &max) {
   return min + (max - min) * r;
 }
 
-std::mt19937 random::sGenerator;
 } // namespace nen

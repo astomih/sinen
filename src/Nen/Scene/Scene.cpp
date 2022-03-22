@@ -4,12 +4,14 @@
 #include <Audio/SoundSystem.hpp>
 #include <IO/AssetReader.hpp>
 #include <Input/InputSystem.hpp>
+#include <Math/Random.hpp>
 #include <Render/Renderer.hpp>
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <Scene/Scene.hpp>
 #include <Window/Window.hpp>
 #include <manager/manager.hpp>
+
 
 #include <algorithm>
 #include <cmath>
@@ -121,6 +123,7 @@ void scene::Update(float deltaTime) {
   (*lua)["keyboard"] = get_input_system().GetState().Keyboard;
   (*lua)["mouse"] = get_input_system().GetState().Mouse;
   (*lua)["camera"] = &get_camera();
+  (*lua)["random"] = &get_random();
   get_renderer().add_imgui_function([&]() {
     auto cpos = editor.GetCursorPosition();
     ImGui::Text(

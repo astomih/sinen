@@ -16,6 +16,7 @@
 #include <Audio/SoundSystem.hpp>
 #include <Input/InputSystem.hpp>
 #include <Logger/Logger.hpp>
+#include <Math/Random.hpp>
 #include <Render/Renderer.hpp>
 #include <Scene/Scene.hpp>
 #include <Script/Script.hpp>
@@ -43,6 +44,7 @@ sound_system &get_sound_system() { return _manager.get_sound_system(); }
 script_system &get_script_system() { return _manager.get_script_system(); }
 texture_system &get_texture_system() { return _manager.get_texture_system(); }
 camera &get_camera() { return _manager.get_camera(); }
+random &get_random() { return _manager.get_random(); }
 bool manager::initialize() {
   m_current_scene = std::make_unique<scene>(*this);
   SDL_SetMainReady();
@@ -97,6 +99,8 @@ bool manager::initialize() {
     return false;
   }
   m_texture_system = std::make_unique<nen::texture_system>(*this);
+  m_random = std::make_unique<nen::random>();
+  m_random->Init();
   return true;
 }
 void manager::launch() {

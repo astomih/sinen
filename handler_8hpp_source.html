@@ -107,15 +107,24 @@ $(function() {
 <div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    data.emplace(handle, std::move(ptr));</div>
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <span class="keywordflow">return</span> handle;</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  }</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">class</span> S = T&gt; S &amp;get(<span class="keyword">const</span> handle_t &amp;handle) {</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="keywordflow">return</span> *<span class="keyword">reinterpret_cast&lt;</span>S *<span class="keyword">&gt;</span>(data[handle].get());</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="keywordtype">void</span> move(handle_t handle, std::unique_ptr&lt;T, DP&gt; ptr) {</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    data[handle] = std::move(ptr);</div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  }</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  <span class="keywordtype">void</span> clear() { data.clear(); }</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;  <span class="keywordtype">bool</span> contains(<span class="keyword">const</span> handle_t &amp;handle) { <span class="keywordflow">return</span> data.contains(handle); }</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  <span class="keywordtype">void</span> remove(<span class="keyword">const</span> handle_t &amp;handle) { data.erase(handle); }</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;};</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;} <span class="comment">// namespace nen</span></div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">class</span> S = T&gt; S &amp;get(<span class="keyword">const</span> handle_t &amp;handle) {</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keywordflow">return</span> *<span class="keyword">reinterpret_cast&lt;</span>S *<span class="keyword">&gt;</span>(data[handle].get());</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  }</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">class</span> S = T&gt; S *get_raw(<span class="keyword">const</span> handle_t &amp;handle) {</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">reinterpret_cast&lt;</span>S *<span class="keyword">&gt;</span>(data[handle].get());</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  }</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;  <span class="keywordtype">void</span> clear() { data.clear(); }</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;  <span class="keywordtype">bool</span> contains(<span class="keyword">const</span> handle_t &amp;handle) { <span class="keywordflow">return</span> data.contains(handle); }</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;  <span class="keywordtype">void</span> remove(<span class="keyword">const</span> handle_t &amp;handle) {</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keyword">auto</span> ptr = std::move(data[handle]);</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    data.erase(handle);</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;  }</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;};</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;} <span class="comment">// namespace nen</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassnen_1_1handler_html"><div class="ttname"><a href="classnen_1_1handler.html">nen::handler</a></div><div class="ttdef"><b>Definition:</b> handler.hpp:13</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

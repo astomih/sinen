@@ -12,7 +12,6 @@
 #include <Window/Window.hpp>
 #include <manager/manager.hpp>
 
-
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -77,6 +76,8 @@ void scene::UpdateScene() {
   m_manager.get_sound_system().Update(deltaTime);
 }
 
+bool is_run = false;
+bool is_save = false;
 TextEditor editor;
 void scene::Setup() {
   const static TextEditor::Palette p = {{
@@ -111,19 +112,6 @@ void scene::Setup() {
   editor.SetText(str);
   editor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
   editor.SetShowWhitespaces(true);
-}
-
-void scene::UnloadData() {}
-
-bool is_run = false;
-bool is_save = false;
-void scene::Update(float deltaTime) {
-  sol::state *lua = (sol::state *)get_script().get_state();
-  (*lua)["delta_time"] = deltaTime;
-  (*lua)["keyboard"] = get_input_system().GetState().Keyboard;
-  (*lua)["mouse"] = get_input_system().GetState().Mouse;
-  (*lua)["camera"] = &get_camera();
-  (*lua)["random"] = &get_random();
   get_renderer().add_imgui_function([&]() {
     auto cpos = editor.GetCursorPosition();
     ImGui::Text(
@@ -195,6 +183,17 @@ void scene::Update(float deltaTime) {
     }
     editor.Render("Code");
   });
+}
+
+void scene::UnloadData() {}
+
+void scene::Update(float deltaTime) {
+  sol::state *lua = (sol::state *)get_script().get_state();
+  (*lua)["delta_time"] = deltaTime;
+  (*lua)["keyboard"] = get_input_system().GetState().Keyboard;
+  (*lua)["mouse"] = get_input_system().GetState().Mouse;
+  (*lua)["camera"] = &get_camera();
+  (*lua)["random"] = &get_random();
   if (get_renderer().isShowImGui() &&
       get_input_system().GetState().Keyboard.GetKeyState(key_code::F5) ==
           button_state::Pressed) {

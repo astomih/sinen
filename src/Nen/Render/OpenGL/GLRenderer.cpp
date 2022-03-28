@@ -99,7 +99,6 @@ void GLRenderer::Render() {
     for (auto &i : get_renderer().get_imgui_function()) {
       i();
     }
-    get_renderer().get_imgui_function().clear();
     ImGui::End();
   }
 
@@ -107,6 +106,12 @@ void GLRenderer::Render() {
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
   mSprite3Ds.clear();
   mSprite2Ds.clear();
+  for (auto &i : m_instancing_2d) {
+    glDeleteBuffers(1, &i.vbo);
+  }
+  for (auto &i : m_instancing_3d) {
+    glDeleteBuffers(1, &i.vbo);
+  }
   m_instancing_3d.clear();
   m_instancing_2d.clear();
   SDL_GL_SwapWindow((SDL_Window *)w.GetSDLWindow());
@@ -114,7 +119,7 @@ void GLRenderer::Render() {
 
 void GLRenderer::draw_3d() {
   for (auto &i : mSprite3Ds) {
-    auto va = m_VertexArrays[i->vertexIndex];
+    auto &va = m_VertexArrays[i->vertexIndex];
     glBindVertexArray(va.vao);
     if (i->shader_data.vertName == "default" &&
         i->shader_data.fragName == "default") {
@@ -140,7 +145,7 @@ void GLRenderer::draw_instancing_3d() {
     mSpriteInstanceShader.UpdateUBO(0, sizeof(shader_parameter),
                                     &i.ins.object->param);
 
-    auto va = m_VertexArrays[i.ins.object->vertexIndex];
+    auto &va = m_VertexArrays[i.ins.object->vertexIndex];
     glBindVertexArray(va.vao);
 
     glBindTexture(GL_TEXTURE_2D, mTextureIDs[i.ins.object->texture_handle]);
@@ -177,7 +182,7 @@ void GLRenderer::draw_instancing_2d() {
     mAlphaInstanceShader.UpdateUBO(0, sizeof(shader_parameter),
                                    &i.ins.object->param);
 
-    auto va = m_VertexArrays[i.ins.object->vertexIndex];
+    auto &va = m_VertexArrays[i.ins.object->vertexIndex];
     glBindVertexArray(va.vao);
 
     glBindTexture(GL_TEXTURE_2D, mTextureIDs[i.ins.object->texture_handle]);
@@ -315,9 +320,10 @@ void GLRenderer::prepare() {
 }
 
 void GLRenderer::registerTexture(handle_t handle) {
-  ::SDL_Surface surf = get_texture_system().get(handle);
+  ::SDL_Surface &surf = get_texture_system().get(handle);
   if (mTextureIDs.contains(handle)) {
-    return;
+    glDeleteTextures(1, &mTextureIDs[handle]);
+    mTextureIDs.erase(handle);
   }
   ::SDL_LockSurface(&surf);
   auto formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
@@ -335,8 +341,9 @@ void GLRenderer::registerTexture(handle_t handle) {
   // Use linear filtering
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-  mTextureIDs.emplace(handle, textureId);
+  SDL_FreeFormat(formatbuf);
+  SDL_FreeSurface(imagedata);
+  mTextureIDs[handle] = textureId;
 }
 
 bool GLRenderer::loadShader() {

@@ -1,4 +1,4 @@
-﻿#include "manager/manager.hpp"
+﻿#include <manager/manager.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 // general
 #include <array>
@@ -169,11 +169,6 @@ void VKRenderer::draw_instancing_3d(VkCommandBuffer command) {
     vkCmdDrawIndexed(command, m_VertexArrays[index].indexCount,
                      _instancing.ins.data.size(), 0, 0, 0);
   }
-  for (auto &_instancing : m_instancies_3d) {
-    DestroyBuffer(_instancing.instance_buffer);
-    unregisterTexture(_instancing.vk_draw_object, texture_type::Image3D);
-  }
-  m_instancies_3d.clear();
 }
 void VKRenderer::draw_instancing_2d(VkCommandBuffer command) {
   for (auto &_instancing : m_instancies_2d) {
@@ -197,11 +192,6 @@ void VKRenderer::draw_instancing_2d(VkCommandBuffer command) {
     vkCmdDrawIndexed(command, m_VertexArrays[index].indexCount,
                      _instancing.ins.data.size(), 0, 0, 0);
   }
-  for (auto &_instancing : m_instancies_2d) {
-    DestroyBuffer(_instancing.instance_buffer);
-    unregisterTexture(_instancing.vk_draw_object, texture_type::Image2D);
-  }
-  m_instancies_2d.clear();
 }
 
 void VKRenderer::prepare() {
@@ -337,9 +327,7 @@ void VKRenderer::cleanup() {
   VkDevice device = m_base->get_vk_device();
 
   for (auto &i : mImageObjects) {
-    vmaDestroyImage(allocator, i.second.image, i.second.allocation);
-    DestroyVulkanObject<VkImageView>(device, i.second.view,
-                                     &vkDestroyImageView);
+    DestroyImage(i.second);
   }
   DestroyVulkanObject<VkSampler>(device, m_sampler, &vkDestroySampler);
   mPipelineLayout.Cleanup(device);
@@ -390,10 +378,20 @@ void VKRenderer::makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri,
   for (auto &sprite : mDrawObject2D)
     unregisterTexture(sprite, texture_type::Image2D);
   mDrawObject2D.clear();
+  for (auto &_instancing : m_instancies_2d) {
+    unregisterTexture(_instancing.vk_draw_object, texture_type::Image2D);
+    DestroyBuffer(_instancing.instance_buffer);
+  }
+  m_instancies_2d.clear();
+  for (auto &_instancing : m_instancies_3d) {
+    unregisterTexture(_instancing.vk_draw_object, texture_type::Image3D);
+    DestroyBuffer(_instancing.instance_buffer);
+  }
+  m_instancies_3d.clear();
 
-  vkWaitForFences(m_base->get_vk_device(), 1, &fence, VK_TRUE, UINT64_MAX);
   vkCmdSetScissor(command, 0, 1, &scissor);
   vkCmdSetViewport(command, 0, 1, &viewport);
+  vkWaitForFences(m_base->get_vk_device(), 1, &fence, VK_TRUE, UINT64_MAX);
 }
 
 void VKRenderer::draw3d(VkCommandBuffer command) {
@@ -551,7 +549,6 @@ void VKRenderer::renderImGUI(VkCommandBuffer command) {
     for (auto &i : get_renderer().get_imgui_function()) {
       i();
     }
-    get_renderer().get_imgui_function().clear();
     ImGui::End();
   }
 
@@ -730,22 +727,11 @@ ImageObject VKRenderer::create_texture(SDL_Surface *imagedata,
     ci.samples = VK_SAMPLE_COUNT_1_BIT;
     ci.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     ci.tiling = VkImageTiling::VK_IMAGE_TILING_LINEAR;
-    ci.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
+    ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     VmaAllocationCreateInfo alloc_info = {};
-    alloc_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+    alloc_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
     vmaCreateImage(allocator, &ci, &alloc_info, &texture.image,
                    &texture.allocation, nullptr);
-
-    VkMemoryRequirements reqs;
-    vkGetImageMemoryRequirements(m_base->get_vk_device(), texture.image, &reqs);
-    VmaAllocationCreateInfo info{};
-    info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-    VmaAllocationInfo allocInfo;
-    allocInfo.size = reqs.size;
-    // Allocate memory
-    vmaAllocateMemory(allocator, &reqs, &info, &texture.allocation, &allocInfo);
-    //  Bind memory
-    vmaBindImageMemory(allocator, texture.allocation, texture.image);
   }
 
   {
@@ -805,24 +791,22 @@ ImageObject VKRenderer::create_texture(SDL_Surface *imagedata,
     ci.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
     vkCreateImageView(m_base->get_vk_device(), &ci, nullptr, &texture.view);
   }
-
-  vkDeviceWaitIdle(m_base->get_vk_device());
   vkFreeCommandBuffers(m_base->get_vk_device(), m_base->m_commandPool, 1,
                        &command);
-
-  vkDestroyBuffer(m_base->get_vk_device(), stagingBuffer.buffer, nullptr);
-
+  DestroyBuffer(stagingBuffer);
+  SDL_FreeSurface(imagedata);
   return texture;
 }
 
 ImageObject VKRenderer::createTextureFromSurface(const ::SDL_Surface &surface) {
   ::SDL_Surface surf = surface;
   ::SDL_LockSurface(&surf);
-  auto formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
+  auto *formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
   formatbuf->BytesPerPixel = 4;
   auto imagedata = ::SDL_ConvertSurface(&surf, formatbuf, 0);
   ::SDL_UnlockSurface(&surf);
   auto format = VK_FORMAT_R8G8B8A8_UNORM;
+  SDL_FreeFormat(formatbuf);
   return create_texture(imagedata, format);
 }
 
@@ -836,8 +820,7 @@ VKRenderer::createTextureFromMemory(const std::vector<char> &imageData) {
   formatbuf->BytesPerPixel = 4;
   auto imagedata = SDL_ConvertSurface(surface, formatbuf, 0);
   SDL_UnlockSurface(surface);
-  auto format = VK_FORMAT_R8G8B8A8_UNORM;
-  return create_texture(imagedata, format);
+  return create_texture(imagedata, VK_FORMAT_R8G8B8A8_UNORM);
 }
 
 void VKRenderer::setImageMemoryBarrier(VkCommandBuffer command, VkImage image,
@@ -931,17 +914,15 @@ VkFramebuffer VKRenderer::CreateFramebuffer(VkRenderPass renderPass,
   return framebuffer;
 }
 
-void VKRenderer::DestroyBuffer(BufferObject bufferObj) {
-  vkDestroyBuffer(m_base->get_vk_device(), bufferObj.buffer, nullptr);
-  vmaFreeMemory(allocator, bufferObj.allocation);
+void VKRenderer::DestroyBuffer(BufferObject &bufferObj) {
+  vmaDestroyBuffer(allocator, bufferObj.buffer, bufferObj.allocation);
+  // vmaFreeMemory(allocator, bufferObj.allocation);
 }
 
-void VKRenderer::DestroyImage(ImageObject imageObj) {
-  vkDestroyImage(m_base->get_vk_device(), imageObj.image, nullptr);
-  vmaFreeMemory(allocator, imageObj.allocation);
-  if (imageObj.view != VK_NULL_HANDLE) {
-    vkDestroyImageView(m_base->get_vk_device(), imageObj.view, nullptr);
-  }
+void VKRenderer::DestroyImage(ImageObject &imageObj) {
+  vkDestroyImageView(m_base->get_vk_device(), imageObj.view, nullptr);
+  vmaDestroyImage(allocator, imageObj.image, imageObj.allocation);
+  // vmaFreeMemory(allocator, imageObj.allocation);
 }
 
 void VKRenderer::DestroyFramebuffers(uint32_t count,
@@ -950,21 +931,116 @@ void VKRenderer::DestroyFramebuffers(uint32_t count,
     vkDestroyFramebuffer(m_base->get_vk_device(), framebuffers[i], nullptr);
   }
 }
+void VKRenderer::update_image_object(const handle_t &handle) {
+  DestroyImage(mImageObjects[handle]);
+  mImageObjects.erase(handle);
+  ::SDL_Surface &surf = get_texture_system().get(handle);
+  ::SDL_LockSurface(&surf);
+  auto *formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
+  formatbuf->BytesPerPixel = 4;
+  auto *imagedata = ::SDL_ConvertSurface(&surf, formatbuf, 0);
+  ::SDL_UnlockSurface(&surf);
+  BufferObject stagingBuffer;
+  ImageObject texture;
+  int width = imagedata->w, height = imagedata->h;
+  auto *pImage = imagedata->pixels;
+  {
+    // Create VkImage texture
+    VkImageCreateInfo ci{};
+    ci.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    ci.extent = {uint32_t(width), uint32_t(height), 1};
+    ci.format = VK_FORMAT_R8G8B8A8_UNORM;
+    ci.imageType = VK_IMAGE_TYPE_2D;
+    ci.arrayLayers = 1;
+    ci.mipLevels = 1;
+    ci.samples = VK_SAMPLE_COUNT_1_BIT;
+    ci.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+    ci.tiling = VkImageTiling::VK_IMAGE_TILING_LINEAR;
+    ci.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
+    VmaAllocationCreateInfo alloc_info = {};
+    alloc_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+    vmaCreateImage(allocator, &ci, &alloc_info, &texture.image,
+                   &texture.allocation, nullptr);
+  }
 
+  {
+    uint32_t imageSize = imagedata->h * imagedata->w * 4;
+    stagingBuffer = CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+    write_memory(stagingBuffer.allocation, pImage, imageSize);
+  }
+
+  VkBufferImageCopy copyRegion{};
+  copyRegion.imageExtent = {uint32_t(width), uint32_t(height), 1};
+  copyRegion.imageSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+  VkCommandBuffer command;
+  {
+    VkCommandBufferAllocateInfo ai{};
+    ai.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    ai.commandBufferCount = 1;
+    ai.commandPool = m_base->m_commandPool;
+    ai.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    vkAllocateCommandBuffers(m_base->get_vk_device(), &ai, &command);
+  }
+
+  VkCommandBufferBeginInfo commandBI{};
+  commandBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+  vkBeginCommandBuffer(command, &commandBI);
+  setImageMemoryBarrier(command, texture.image,
+                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+  vkCmdCopyBufferToImage(command, stagingBuffer.buffer, texture.image,
+                         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
+
+  setImageMemoryBarrier(command, texture.image,
+                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  vkEndCommandBuffer(command);
+
+  VkSubmitInfo submitInfo{};
+  submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+  submitInfo.commandBufferCount = 1;
+  submitInfo.pCommandBuffers = &command;
+  vkQueueSubmit(m_base->get_vk_queue(), 1, &submitInfo,
+                m_base->m_fences[m_base->m_imageIndex]);
+
+  // Create view for texture reference
+  VkImageViewCreateInfo ci{};
+  ci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+  ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+  ci.image = texture.image;
+  ci.format = VK_FORMAT_R8G8B8A8_UNORM;
+  ci.components = {
+      .r = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_R,
+      .g = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_G,
+      .b = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_B,
+      .a = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_A,
+  };
+
+  ci.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+  vkCreateImageView(m_base->get_vk_device(), &ci, nullptr, &texture.view);
+  vkDeviceWaitIdle(m_base->get_vk_device());
+  vkFreeCommandBuffers(m_base->get_vk_device(), m_base->m_commandPool, 1,
+                       &command);
+  DestroyBuffer(stagingBuffer);
+  SDL_FreeFormat(formatbuf);
+  SDL_FreeSurface(imagedata);
+  mImageObjects.emplace(handle, texture);
+}
 void VKRenderer::registerImageObject(const handle_t &handle) {
   if (mImageObjects.contains(handle)) {
+    update_image_object(handle);
     return;
   }
-  mImageObjects.insert({handle, VKRenderer::createTextureFromSurface(
-                                    get_texture_system().get(handle))});
+  mImageObjects[handle] =
+      VKRenderer::createTextureFromSurface(get_texture_system().get(handle));
 }
 void VKRenderer::unregister_image_object(const handle_t &handle) {
   for (auto it = mImageObjects.begin(); it != mImageObjects.end(); ++it) {
     if (it->first == handle) {
-      vmaDestroyImage(allocator, it->second.image, it->second.allocation);
-      vkutil::DestroyVulkanObject<VkImageView>(GetDevice(), it->second.view,
-                                               &vkDestroyImageView);
-      break;
+      DestroyImage(it->second);
+      mImageObjects.erase(it);
+      return;
     }
   }
 }
@@ -1019,7 +1095,7 @@ void VKRenderer::unregisterTexture(std::shared_ptr<VulkanDrawObject> texture,
                        static_cast<uint32_t>(texture->descripterSet.size()),
                        texture->descripterSet.data());
   for (auto &i : texture->uniformBuffers) {
-    vmaDestroyBuffer(allocator, i.buffer, i.allocation);
+    DestroyBuffer(i);
   }
   texture->uniformBuffers.clear();
   layouts.pop_back();

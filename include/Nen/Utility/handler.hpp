@@ -34,12 +34,21 @@ public:
     data.emplace(handle, std::move(ptr));
     return handle;
   }
+  void move(handle_t handle, std::unique_ptr<T, DP> ptr) {
+    data[handle] = std::move(ptr);
+  }
   template <class S = T> S &get(const handle_t &handle) {
     return *reinterpret_cast<S *>(data[handle].get());
   }
+  template <class S = T> S *get_raw(const handle_t &handle) {
+    return reinterpret_cast<S *>(data[handle].get());
+  }
   void clear() { data.clear(); }
   bool contains(const handle_t &handle) { return data.contains(handle); }
-  void remove(const handle_t &handle) { data.erase(handle); }
+  void remove(const handle_t &handle) {
+    auto ptr = std::move(data[handle]);
+    data.erase(handle);
+  }
 };
 } // namespace nen
 #endif

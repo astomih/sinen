@@ -45,6 +45,8 @@ void font::RenderText(texture &tex, std::string_view text,
   ::SDL_Surface *surf = nullptr;
   surf = ::TTF_RenderUTF8_Blended((::TTF_Font *)m_font,
                                   std::string(text).c_str(), sdlColor);
-  memcpy(&get_texture_system().get(tex.handle), surf, sizeof(SDL_Surface));
+  get_texture_system().remove(tex.handle);
+  get_texture_system().move(
+      tex.handle, std::unique_ptr<SDL_Surface, SDLObjectCloser>(surf));
 }
 } // namespace nen

@@ -16,6 +16,8 @@ public:
   handle_t create();
   bool Contain(handle_t);
   SDL_Surface &get(handle_t);
+  SDL_Surface *get_raw(handle_t);
+  void move(handle_t, std::unique_ptr<SDL_Surface, SDLObjectCloser>);
   void remove(handle_t);
 
 private:

@@ -98,8 +98,8 @@ public:
   VkFramebuffer CreateFramebuffer(VkRenderPass renderPass, uint32_t width,
                                   uint32_t height, uint32_t viewCount,
                                   VkImageView *views);
-  void DestroyBuffer(BufferObject bufferObj);
-  void DestroyImage(ImageObject imageObj);
+  void DestroyBuffer(BufferObject &bufferObj);
+  void DestroyImage(ImageObject &imageObj);
   void DestroyFramebuffers(uint32_t count, VkFramebuffer *framebuffers);
   void write_memory(VmaAllocation, const void *data, size_t size);
 
@@ -116,6 +116,7 @@ private:
   void renderImGUI(VkCommandBuffer command);
   void draw_instancing_3d(VkCommandBuffer command);
   void draw_instancing_2d(VkCommandBuffer command);
+  void update_image_object(const handle_t &handle);
   VkSampler createSampler();
   ImageObject create_texture(SDL_Surface *imagedata, VkFormat format);
   ImageObject createTextureFromSurface(const ::SDL_Surface &surface);

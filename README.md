@@ -67,13 +67,13 @@ Install emscripten SDK. and do this.
  ### Android
  Build with gradle.
 
-## Using libraries
+## Dependencies 
 - GLEW
 - ImGui
 - ImGuiColorTextEdit
 - Lua
 - Sol2
-- OpenAL
+- mojoAL
 - OpenGL 3.3
 - SDL2(image,mixer,net,ttf)
 - Vulkan 1.2

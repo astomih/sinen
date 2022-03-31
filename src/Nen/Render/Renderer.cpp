@@ -7,7 +7,7 @@
 #include "Vulkan/VKRenderer.h"
 
 namespace nen {
-renderer::renderer(manager &_manager) : m_manager(_manager), showImGui(true) {}
+renderer::renderer(manager &_manager) : m_manager(_manager), showImGui(false) {}
 void renderer::initialize(graphics_api api) {
   m_renderer = nullptr;
   RendererAPI = api;

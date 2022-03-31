@@ -77,7 +77,6 @@ else()
 	find_package(OpenGL REQUIRED)
 	find_package(GLEW REQUIRED)
 	find_package(SDL2 REQUIRED)
-	find_package(OpenAL REQUIRED)
 
 
 	file(GLOB SOURCE_FILES
@@ -87,6 +86,7 @@ else()
 			libs/ImGui/source/*.cpp
 			libs/ImGuiColorTextEdit/*.cpp
 			libs/Lua/source/*.c
+			libs/mojoAL/*.c
 			)
 
 
@@ -103,6 +103,8 @@ else()
 			libs/sol2/include
 			libs/Lua/include
 			libs/VulkanMemoryAllocator/include
+			libs/mojoAL/AL
+			libs/mojoAL
 			)
 
 
@@ -110,6 +112,5 @@ else()
 			${NEN_INCLUDE_DIRECTORIES}
 			${Vulkan_INCLUDE_DIRS}
 			${SDL2_INCLUDE_DIRS}
-			${OpenAL_INCLUDE_DIRS}
 			)
 endif()

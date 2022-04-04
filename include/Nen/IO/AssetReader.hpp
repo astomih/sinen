@@ -2,11 +2,14 @@
 #include "AssetType.hpp"
 #include <cstddef>
 #include <string>
+#include <string_view>
+#include <vector>
 
 namespace nen {
 
 class data_io {
 public:
+  static std::vector<uint8_t> key;
   static std::string_view Load(const asset_type &assetType,
                                std::string_view name);
 

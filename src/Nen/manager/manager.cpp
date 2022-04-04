@@ -66,36 +66,34 @@ bool manager::initialize() {
     str = "Vulkan";
   std::getline(ifs, str);
   if (str.compare("Vulkan") == 0) {
-    m_window->Initialize(nen::vector2(800, 800), "Nen : Vulkan",
-                         nen::graphics_api::Vulkan);
+    m_window->Initialize("Nen : Vulkan", nen::graphics_api::Vulkan);
     m_renderer->initialize(nen::graphics_api::Vulkan);
   } else if (str.compare("OpenGL") == 0) {
-    m_window->Initialize(nen::vector2(800, 800), "Nen : OpenGL",
-                         nen::graphics_api::OpenGL);
+    m_window->Initialize("Nen : OpenGL", nen::graphics_api::OpenGL);
     m_renderer->initialize(nen::graphics_api::OpenGL);
   }
 
 #else
-  m_window->Initialize(nen::vector2(800, 800), "Nen", nen::graphics_api::ES);
+  m_window->Initialize("Nen", nen::graphics_api::ES);
   m_renderer->initialize(nen::graphics_api::ES);
 #endif
   m_camera = std::make_unique<camera>();
 
   m_sound_system = std::make_unique<nen::sound_system>();
   if (!m_sound_system->Initialize()) {
-    nen::logger::info("Failed to initialize audio system");
+    logger::fatal("Failed to initialize audio system");
     m_sound_system->Shutdown();
     m_sound_system = nullptr;
     return false;
   }
   m_input_system = std::make_unique<nen::input_system>(*this);
   if (!m_input_system->Initialize()) {
-    nen::logger::info("Failed to initialize input system");
+    logger::fatal("Failed to initialize input system");
     return false;
   }
   m_script_system = std::make_unique<nen::script_system>(*this);
   if (!m_script_system->initialize()) {
-    nen::logger::info("Failed to initialize script system");
+    logger::fatal("Failed to initialize script system");
     return false;
   }
   m_texture_system = std::make_unique<nen::texture_system>(*this);

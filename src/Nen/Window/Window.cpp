@@ -12,14 +12,12 @@ public:
 };
 
 window::window()
-    : size(vector2(800.f, 800.f)), impl(std::make_unique<window::Impl>()) {}
+    : size(vector2(1280.f, 720.f)), impl(std::make_unique<window::Impl>()) {}
 window::~window() = default;
 
 void *window::GetSDLWindow() { return impl->window; }
 
-void window::Initialize(const vector2 &size, const std::string &name,
-                        graphics_api api) {
-  this->size = size;
+void window::Initialize(const std::string &name, graphics_api api) {
   this->name = name;
 
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)

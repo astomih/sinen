@@ -14,8 +14,7 @@ public:
   window();
   ~window();
 
-  void Initialize(const vector2 &size, const std::string &name,
-                  graphics_api api);
+  void Initialize(const std::string &name, graphics_api api);
 
   void *GetSDLWindow();
 

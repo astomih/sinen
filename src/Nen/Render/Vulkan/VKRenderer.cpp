@@ -541,8 +541,7 @@ void VKRenderer::renderImGUI(VkCommandBuffer command) {
   if (m_manager.get_renderer().isShowImGui()) {
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
     ImGui::SetNextWindowSize(
-        ImVec2(ImGui::GetWindowWidth() * 2, ImGui::GetWindowHeight() * 2),
-        ImGuiCond_Always);
+        ImVec2(get_window().Size().x, get_window().Size().y), ImGuiCond_Always);
     ImGui::Begin("Editor", nullptr,
                  ImGuiWindowFlags_HorizontalScrollbar |
                      ImGuiWindowFlags_MenuBar);
@@ -699,8 +698,8 @@ VkSampler VKRenderer::createSampler() {
   VkSampler sampler;
   VkSamplerCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-  ci.minFilter = VK_FILTER_NEAREST;
-  ci.magFilter = VK_FILTER_NEAREST;
+  ci.minFilter = VK_FILTER_LINEAR;
+  ci.magFilter = VK_FILTER_LINEAR;
   ci.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
   ci.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
   ci.maxAnisotropy = 1.0f;

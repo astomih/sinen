@@ -41,12 +41,11 @@ void font::RenderText(texture &tex, std::string_view text,
   sdlColor.r = static_cast<Uint8>(_color.r * 255);
   sdlColor.g = static_cast<Uint8>(_color.g * 255);
   sdlColor.b = static_cast<Uint8>(_color.b * 255);
-  sdlColor.a = 255;
-  ::SDL_Surface *surf = nullptr;
-  surf = ::TTF_RenderUTF8_Blended((::TTF_Font *)m_font,
-                                  std::string(text).c_str(), sdlColor);
+  sdlColor.a = static_cast<Uint8>(_color.a * 255);
   get_texture_system().remove(tex.handle);
   get_texture_system().move(
-      tex.handle, std::unique_ptr<SDL_Surface, SDLObjectCloser>(surf));
+      tex.handle,
+      std::unique_ptr<SDL_Surface, SDLObjectCloser>(::TTF_RenderUTF8_Blended(
+          (::TTF_Font *)m_font, std::string(text).c_str(), sdlColor)));
 }
 } // namespace nen

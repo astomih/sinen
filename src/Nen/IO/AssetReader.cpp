@@ -5,9 +5,19 @@
 #include <mutex>
 #include <string_view>
 #include <thread>
+#include <unordered_map>
 
 namespace nen {
-
+void decoding(std::string &str, std::vector<uint8_t> &key) {
+  int i = 0;
+  for (auto &c : str) {
+    uint8_t uc = (uint8_t)c;
+    uc ^= (uint8_t)key[i % key.size()];
+    c = (char)uc;
+    i++;
+  }
+}
+std::vector<uint8_t> data_io::key = {0};
 std::string_view data_io::Load(const asset_type &assetType,
                                std::string_view name) {
   std::string filePath;
@@ -30,11 +40,15 @@ std::string_view data_io::Load(const asset_type &assetType,
   SDL_free(load);
   return result;
 }
+static std::unordered_map<std::string, std::string> map;
 void *data_io::LoadAsRWops(const asset_type &assetType, std::string_view name) {
   std::string filePath;
   ConvertFilePath(filePath, name, assetType);
 
-  SDL_RWops *file{SDL_RWFromFile(filePath.c_str(), "r")};
+  map[name.data()] = LoadAsString(assetType, name);
+
+  SDL_RWops *file =
+      SDL_RWFromConstMem(map[name.data()].data(), map[name.data()].size());
 #ifndef NEN_NO_EXCEPTION
   if (!file)
     throw std::runtime_error("File open error.");
@@ -57,6 +71,8 @@ std::string data_io::LoadAsString(const asset_type &assetType,
   }
   std::string result{reinterpret_cast<char *>(load), fileLength};
   SDL_free(load);
+  if (name.ends_with(".sia"))
+    decoding(result, key);
   return result;
 }
 
@@ -72,32 +88,32 @@ void data_io::write(const asset_type &assetType, std::string_view name,
 }
 void data_io::ConvertFilePath(std::string &filePath, std::string_view name,
                               const asset_type &assetType) {
-
+  std::string base = "data/";
   switch (assetType) {
   case asset_type::Font:
-    filePath += std::string{"data/font/"} + name.data();
+    filePath += base + std::string{"font/"} + name.data();
     break;
 
   case asset_type::Model:
-    filePath += std::string{"data/model/"} + name.data();
+    filePath += base + std::string{"model/"} + name.data();
     break;
   case asset_type::Music:
-    filePath = std::string{"data/music/"} + name.data();
+    filePath = base + std::string{"music/"} + name.data();
     break;
   case asset_type::Script:
-    filePath = std::string{"data/script/"} + name.data();
+    filePath = base + std::string{"script/"} + name.data();
     break;
   case asset_type::gl_shader:
-    filePath = std::string{"data/shader/GL/"} + name.data();
+    filePath = base + std::string{"shader/GL/"} + name.data();
     break;
   case asset_type::vk_shader:
-    filePath = std::string{"data/shader/Vulkan/"} + name.data();
+    filePath = base + std::string{"shader/Vulkan/"} + name.data();
     break;
   case asset_type::Sound:
-    filePath = std::string{"data/sound/"} + name.data();
+    filePath = base + std::string{"sound/"} + name.data();
     break;
   case asset_type::Texture:
-    filePath = std::string{"data/texture/"} + name.data();
+    filePath = base + std::string{"texture/"} + name.data();
     break;
 
   default:

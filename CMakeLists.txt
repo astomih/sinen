@@ -1,59 +1,62 @@
 cmake_minimum_required(VERSION 3.7)
 project(nen)
 if(ANDROID)
-	set(CMAKE_CXX_FLAGS "-std=c++20 -DANDROID")
-
-	file(GLOB_RECURSE SOURCE_FILES
-			src/Nen/*/*.cpp
-			src/Nen/Render/OpenGL/*.cpp
-			libs/ImGui/source/gles/*.cpp
-			libs/ImGuiColorTextEdit/*.cpp
-			libs/mojoAL/mojoal.c
-			libs/Lua/source/*.c
-			)
-	add_library(nen STATIC ${SOURCE_FILES})
-	set(INCLUDE_DIRS
-			./include
-			./include/Nen
-			libs/ImGui/include
-			libs/ImGuiColorTextEdit
-			libs/sol2/include
-			libs/Lua/include
-			libs/mojoAL
-			../SDL2/include
-			../SDL2_net
-			../SDL2_image
-			../SDL2_mixer/include
-			../SDL2_ttf
-			)
-	target_include_directories(nen PUBLIC ${INCLUDE_DIRS})
-	target_link_libraries(nen SDL2 SDL2_image SDL2_mixer SDL2_ttf SDL2_net GLESv3 log)
+  set(CMAKE_CXX_FLAGS "-std=c++20 -DANDROID")
+  file(
+    GLOB_RECURSE
+    SOURCE_FILES
+    src/Nen/*/*.cpp
+    src/Nen/Render/OpenGL/*.cpp
+    external/ImGui/source/gles/*.cpp
+    external/ImGuiColorTextEdit/*.cpp
+    external/mojoAL/mojoal.c
+    external/Lua/source/*.c)
+  add_library(nen STATIC ${SOURCE_FILES})
+  set(INCLUDE_DIRS
+      ./include
+      ./include/Nen
+      external/ImGui/include
+      external/ImGuiColorTextEdit
+      external/sol2/include
+      external/Lua/include
+      external/mojoAL
+      ../SDL2/include
+      ../SDL2_net
+      ../SDL2_image
+      ../SDL2_mixer/include
+      ../SDL2_ttf)
+  target_include_directories(nen PUBLIC ${INCLUDE_DIRS})
+  target_link_libraries(
+    nen
+    SDL2
+    SDL2_image
+    SDL2_mixer
+    SDL2_ttf
+    SDL2_net
+    GLESv3
+    log)
 elseif(EMSCRIPTEN)
-
-	file(GLOB SOURCE_FILES 
-		src/Nen/*/*.cpp
-		src/Nen/Engine/Engine.cpp
-		src/Nen/Render/OpenGL/*.cpp
-		libs/ImGui/source/gles/*.cpp
-		libs/ImGuiColorTextEdit/*.cpp
-		libs/Lua/source/*.c
-	)
-	add_library(nen STATIC ${SOURCE_FILES})
-	set(NEN_INCLUDE_DIRECTORIES 
-		.
-		include
-		include/Nen
-		libs/ImGui/include
-		libs/ImGuiColorTextEdit
-		libs/sol2/include
-		libs/Lua/include
-	)
-
-
-	target_include_directories(nen PUBLIC
-		${NEN_INCLUDE_DIRECTORIES}
-	)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 \
+  file(
+    GLOB
+    SOURCE_FILES
+    src/Nen/*/*.cpp
+    src/Nen/Engine/Engine.cpp
+    src/Nen/Render/OpenGL/*.cpp
+    external/ImGui/source/gles/*.cpp
+    external/ImGuiColorTextEdit/*.cpp
+    external/Lua/source/*.c)
+  add_library(nen STATIC ${SOURCE_FILES})
+  set(NEN_INCLUDE_DIRECTORIES
+      .
+      include
+      include/Nen
+      external/ImGui/include
+      external/ImGuiColorTextEdit
+      external/sol2/include
+      external/Lua/include)
+  target_include_directories(nen PUBLIC ${NEN_INCLUDE_DIRECTORIES})
+  set(CMAKE_CXX_FLAGS
+      "${CMAKE_CXX_FLAGS} -O2 \
 		-Wno-unused-command-line-argument \
 		-s USE_WEBGL2=1 \
 		-s FULL_ES3=1 \
@@ -64,53 +67,41 @@ elseif(EMSCRIPTEN)
 		-s USE_SDL_MIXER=2 \
 		-s USE_SDL_NET=2 \
 		-s WASM=1 \
-		-std=c++20"
-	)
-else()	
-	if(WIN32)
-	set(CMAKE_CXX_STANDARD 20)
-	else()
-	set(CMAKE_CXX_FLAGS "-std=c++2a")
-	endif()
-	set(CMAKE_EXPORT_COMPILE_COMMANDS true)
-	find_package(Vulkan REQUIRED)
-	find_package(OpenGL REQUIRED)
-	find_package(GLEW REQUIRED)
-	find_package(SDL2 REQUIRED)
-
-
-	file(GLOB SOURCE_FILES
-			src/Nen/*/*.cpp
-			src/Nen/Render/Vulkan/*.cpp
-			src/Nen/Render/OpenGL/*.cpp
-			libs/ImGui/source/*.cpp
-			libs/ImGuiColorTextEdit/*.cpp
-			libs/Lua/source/*.c
-			libs/mojoAL/*.c
-			)
-
-
-	add_library(nen STATIC
-			${SOURCE_FILES}
-			)
-
-	set(NEN_INCLUDE_DIRECTORIES
-			.
-			./include
-			./include/Nen
-			libs/ImGui/include
-			libs/ImGuiColorTextEdit
-			libs/sol2/include
-			libs/Lua/include
-			libs/VulkanMemoryAllocator/include
-			libs/mojoAL/AL
-			libs/mojoAL
-			)
-
-
-	target_include_directories(nen PUBLIC
-			${NEN_INCLUDE_DIRECTORIES}
-			${Vulkan_INCLUDE_DIRS}
-			${SDL2_INCLUDE_DIRS}
-			)
+		-std=c++20")
+else()
+  if(WIN32)
+    set(CMAKE_CXX_STANDARD 20)
+  else()
+    set(CMAKE_CXX_FLAGS "-std=c++2a")
+  endif()
+  set(CMAKE_EXPORT_COMPILE_COMMANDS true)
+  find_package(Vulkan REQUIRED)
+  find_package(OpenGL REQUIRED)
+  find_package(GLEW REQUIRED)
+  find_package(SDL2 REQUIRED)
+  file(
+    GLOB
+    SOURCE_FILES
+    src/Nen/*/*.cpp
+    src/Nen/Render/Vulkan/*.cpp
+    src/Nen/Render/OpenGL/*.cpp
+    external/ImGui/source/*.cpp
+    external/ImGuiColorTextEdit/*.cpp
+    external/Lua/source/*.c
+    external/mojoAL/*.c)
+  add_library(nen STATIC ${SOURCE_FILES})
+  set(NEN_INCLUDE_DIRECTORIES
+      .
+      ./include
+      ./include/Nen
+      external/ImGui/include
+      external/ImGuiColorTextEdit
+      external/sol2/include
+      external/Lua/include
+      external/VulkanMemoryAllocator/include
+      external/mojoAL/AL
+      external/mojoAL)
+  target_include_directories(
+    nen PUBLIC ${NEN_INCLUDE_DIRECTORIES} ${Vulkan_INCLUDE_DIRS}
+               ${SDL2_INCLUDE_DIRS})
 endif()

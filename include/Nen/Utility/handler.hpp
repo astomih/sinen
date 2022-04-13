@@ -6,7 +6,6 @@
 #include <unordered_map>
 #include <utility>
 
-#include "Utility/handle_t.hpp"
 #include "handle_t.hpp"
 
 namespace nen {

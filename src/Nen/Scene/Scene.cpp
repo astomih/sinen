@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <fstream>
 #include <functional>
 #include <iostream>
 #include <string>
@@ -123,7 +124,7 @@ void scene::Setup() {
         ImGui::GetIO().Framerate);
     if (ImGui::BeginMenuBar()) {
       if (ImGui::BeginMenu("File")) {
-        if (ImGui::MenuItem("Save")) {
+        if (ImGui::MenuItem("Save", "Ctrl-S", nullptr, editor.CanUndo())) {
           is_save = true;
         }
         if (ImGui::MenuItem("Quit", "Alt-F4"))
@@ -175,8 +176,18 @@ void scene::Setup() {
           editor.SetPalette(TextEditor::GetRetroBluePalette());
         ImGui::EndMenu();
       }
-      if (ImGui::BeginMenu("Run")) {
-        is_run = true;
+      if (ImGui::BeginMenu("App")) {
+        if (ImGui::MenuItem("Run", "F5", nullptr, true))
+          is_run = true;
+#if !defined(MOBILE) && !defined(EMSCRIPTEN)
+        if (ImGui::MenuItem("Toggle API")) {
+          std::ofstream ofs("api");
+          if (get_renderer().GetGraphicsAPI() == graphics_api::OpenGL)
+            ofs << "Vulkan";
+          else
+            ofs << "OpenGL";
+        }
+#endif
         ImGui::EndMenu();
       }
       ImGui::EndMenuBar();
@@ -185,7 +196,7 @@ void scene::Setup() {
   });
 }
 
-void scene::UnloadData() {}
+void scene::UnloadData() { get_renderer().get_imgui_function().clear(); }
 
 void scene::Update(float deltaTime) {
   sol::state *lua = (sol::state *)get_script().get_state();
@@ -218,7 +229,6 @@ void scene::Update(float deltaTime) {
     std::cout << str << std::endl;
     is_save = false;
   }
-  // get_camera().update();
   (*lua)["update"]();
 }
 

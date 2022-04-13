@@ -1,8 +1,7 @@
 ﻿#pragma once
 #include "../Input/InputSystem.hpp"
+#include "../Script/Script.hpp"
 #include "../Utility/handler.hpp"
-#include "Script/Script.hpp"
-#include "Utility/handle_t.hpp"
 #include <cstdint>
 #include <memory>
 #include <string>

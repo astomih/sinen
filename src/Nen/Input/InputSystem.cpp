@@ -53,7 +53,7 @@ bool mouse_state::is_button_down(mouse_code _button) const {
   return (SDL_BUTTON(static_cast<int>(_button)) & mCurrButtons) == 1;
 }
 
-button_state mouse_state::button_state(mouse_code _button) const {
+button_state mouse_state::get_button_state(mouse_code _button) const {
   int mask = SDL_BUTTON(static_cast<int>(_button));
   if ((mask & mPrevButtons) == 0) {
     if ((mask & mCurrButtons) == 0) {

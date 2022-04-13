@@ -163,7 +163,7 @@ bool script_system::initialize() {
   {
     auto v = impl->state.new_usertype<mouse_state>("nen_mouse_state",
                                                    sol::no_construction());
-    v["button_state"] = &mouse_state::button_state;
+    v["button_state"] = &mouse_state::get_button_state;
     v["is_button_down"] = &mouse_state::is_button_down;
     v["position"] = &mouse_state::GetPosition;
     v["wheel_state"] = &mouse_state::GetScrollWheel;
@@ -304,7 +304,7 @@ bool script_system::initialize() {
   return true;
 }
 
-void script_system::DoScript(std::string_view fileName) {
+void script_system::do_script(std::string_view fileName) {
   impl->state.script(data_io::LoadAsString(asset_type::Script, fileName));
 }
 

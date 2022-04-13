@@ -43,7 +43,7 @@ public:
 
   // For buttons
   bool is_button_down(mouse_code _button) const;
-  button_state button_state(mouse_code _button) const;
+  button_state get_button_state(mouse_code _button) const;
 
 private:
   class manager &m_manager;

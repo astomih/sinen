@@ -2,6 +2,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <string_view>
 
 namespace nen {
 class script_system {
@@ -12,7 +13,7 @@ public:
   script_system(script_system &&) = default;
   bool initialize();
   void *get_state();
-  void DoScript(std::string_view fileName);
+  void do_script(std::string_view fileName);
 
 private:
   class implement;

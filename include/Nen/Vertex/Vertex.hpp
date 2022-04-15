@@ -1,10 +1,9 @@
 ﻿#pragma once
+#include <string_view>
+
 #include "../Color/Color.hpp"
 #include "../Math/Vector2.hpp"
 #include "../Math/Vector3.hpp"
-#include "Color/Color.hpp"
-#include "Math/Vector3.hpp"
-#include <string_view>
 
 namespace nen {
 struct vertex_default_shapes {

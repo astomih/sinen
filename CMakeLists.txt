@@ -69,11 +69,6 @@ elseif(EMSCRIPTEN)
 		-s WASM=1 \
 		-std=c++20")
 else()
-  if(WIN32)
-    set(CMAKE_CXX_STANDARD 20)
-  else()
-    set(CMAKE_CXX_FLAGS "-std=c++2a")
-  endif()
   set(CMAKE_EXPORT_COMPILE_COMMANDS true)
   find_package(Vulkan REQUIRED)
   find_package(OpenGL REQUIRED)
@@ -90,6 +85,7 @@ else()
     external/Lua/source/*.c
     external/mojoAL/*.c)
   add_library(nen STATIC ${SOURCE_FILES})
+  target_compile_features(nen PUBLIC cxx_std_20)
   set(NEN_INCLUDE_DIRECTORIES
       .
       ./include

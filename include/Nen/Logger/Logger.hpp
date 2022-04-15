@@ -1,4 +1,4 @@
-﻿#ifndef NEN_LOGGER
+#ifndef NEN_LOGGER
 #define NEN_LOGGER
 #include <iostream>
 #include <memory>
@@ -79,7 +79,6 @@ public:
     }
 
   private:
-    /* コンソールに表示するロガー */
     class console_logger : public interface {
     public:
       virtual void Debug(std::string_view) override;

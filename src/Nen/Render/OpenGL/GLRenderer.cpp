@@ -1,4 +1,4 @@
-#include "manager/manager.hpp"
+#include <manager/manager.hpp>
 
 #include <SDL.h>
 #include <SDL_image.h>
@@ -18,6 +18,7 @@
 #include <IO/AssetReader.hpp>
 #include <Logger/Logger.hpp>
 #include <Window/Window.hpp>
+#include <camera/camera.hpp>
 #include <fstream>
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
@@ -74,6 +75,26 @@ void GLRenderer::Render() {
   auto color = m_manager.get_renderer().GetClearColor();
   glClearColor(color.r, color.g, color.b, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glEnable(GL_BLEND);
+  /**
+   * skybox
+   */
+  {
+    registerTexture(get_renderer().skybox_texture->handle);
+    auto &va = m_VertexArrays["BOX"];
+    glBindVertexArray(va.vao);
+    mSpriteShader.SetActive(0);
+    shader_parameter param;
+    param.proj = get_camera().get_projection();
+    param.view = get_camera().get_view();
+    mSpriteShader.SetActive(0);
+    mSpriteShader.UpdateUBO(0, sizeof(shader_parameter), &param);
+    glBindTexture(GL_TEXTURE_2D,
+                  mTextureIDs[get_renderer().skybox_texture->handle]);
+    glDrawElements(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT, nullptr);
+  }
+
+  glDisable(GL_BLEND);
   glEnable(GL_DEPTH_TEST);
   draw_3d();
   draw_instancing_3d();

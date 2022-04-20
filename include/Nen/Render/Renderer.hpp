@@ -81,6 +81,8 @@ public:
     m_imgui_function.push_back(function);
   }
 
+  std::unique_ptr<texture> skybox_texture;
+
 private:
   class manager &m_manager;
   void setup_shapes();

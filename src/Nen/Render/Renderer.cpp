@@ -1,10 +1,10 @@
-﻿#include "Render/Renderer.hpp"
-#include "../Vertex/default_model_creator.h"
-#include "Math/Vector3.hpp"
+﻿#include "../Vertex/default_model_creator.h"
 #include "OpenGL/GLRenderer.h"
-#include "Vertex/Vertex.hpp"
-#include "Vertex/VertexArray.hpp"
 #include "Vulkan/VKRenderer.h"
+#include <Math/Vector3.hpp>
+#include <Render/Renderer.hpp>
+#include <Vertex/Vertex.hpp>
+#include <Vertex/VertexArray.hpp>
 
 namespace nen {
 renderer::renderer(manager &_manager) : m_manager(_manager), showImGui(false) {}

@@ -79,8 +79,7 @@ public:
   vulkan_base_framework *GetBase() { return m_base.get(); }
   void registerTexture(std::shared_ptr<VulkanDrawObject> texture,
                        texture_type type);
-  void unregisterTexture(std::shared_ptr<VulkanDrawObject> texture,
-                         texture_type type);
+  void unregisterTexture(std::shared_ptr<VulkanDrawObject> texture);
   void registerImageObject(const handle_t &handle);
   void unregister_image_object(const handle_t &handle);
   VkPipelineLayout GetPipelineLayout(const std::string &name) {
@@ -107,13 +106,12 @@ public:
 
 private:
   std::unique_ptr<class vulkan_base_framework> m_base;
-  void prepareUniformBuffers();
   void prepareDescriptorSetLayout();
   void prepareDescriptorPool();
-  void prepareDescriptorSetAll();
   void prepareDescriptorSet(std::shared_ptr<VulkanDrawObject>);
   void prepareImGUI();
   void renderImGUI(VkCommandBuffer command);
+  void draw_skybox(VkCommandBuffer command);
   void draw_instancing_3d(VkCommandBuffer command);
   void draw_instancing_2d(VkCommandBuffer command);
   void update_image_object(const handle_t &handle);
@@ -134,6 +132,7 @@ private:
   VkSampler m_sampler;
   VkPhysicalDeviceMemoryProperties m_physicalMemProps;
   PipelineLayout mPipelineLayout;
+  Pipeline pipelineSkyBox;
   Pipeline pipelineOpaque;
   Pipeline pipelineAlpha;
   Pipeline pipeline2D;

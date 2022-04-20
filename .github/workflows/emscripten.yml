@@ -24,7 +24,7 @@ jobs:
           git clone https://github.com/astomih/sinen
       
       - name: CMake
-      - run: |
+        run: |
           cd ${{github.workspace}}/example
           emcmake cmake -B build
       - name: Build

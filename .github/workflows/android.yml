@@ -48,10 +48,10 @@ jobs:
     - name: Grant execute permission for gradlew
       run: |
           pwd
-          cd android-project
+          cd ${{github.workspace}}/example/android-project
           chmod +x gradlew
     - name: Build with Gradle
       run: |
           pwd
-          cd android-project
+          cd ${{github.workspace}}/example/android-project
           ./gradlew build

@@ -154,21 +154,23 @@ $(function() {
 <div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    m_imgui_function.push_back(<span class="keyword">function</span>);</div>
 <div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;  }</div>
 <div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160; </div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;  <span class="keyword">class </span>manager &amp;m_manager;</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;  <span class="keywordtype">void</span> setup_shapes();</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;  color clearColor = palette::Black;</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160; </div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;  <span class="comment">// Window</span></div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;  std::shared_ptr&lt;class window&gt; mWindow;</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;  <span class="comment">// Renderer</span></div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;  std::unique_ptr&lt;Interface&gt; m_renderer;</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;  graphics_api RendererAPI;</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;  <span class="keywordtype">bool</span> showImGui;</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;  std::vector&lt;std::function&lt;void()&gt;&gt; m_imgui_function;</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;};</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160; </div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;} <span class="comment">// namespace nen</span></div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;  std::unique_ptr&lt;texture&gt; skybox_texture;</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;  <span class="keyword">class </span>manager &amp;m_manager;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;  <span class="keywordtype">void</span> setup_shapes();</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;  color clearColor = palette::Black;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160; </div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;  <span class="comment">// Window</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;  std::shared_ptr&lt;class window&gt; mWindow;</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;  <span class="comment">// Renderer</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;  std::unique_ptr&lt;Interface&gt; m_renderer;</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;  graphics_api RendererAPI;</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;  <span class="keywordtype">bool</span> showImGui;</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;  std::vector&lt;std::function&lt;void()&gt;&gt; m_imgui_function;</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;};</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160; </div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;} <span class="comment">// namespace nen</span></div>
 <div class="ttc" id="aclassnen_1_1color_html"><div class="ttname"><a href="classnen_1_1color.html">nen::color</a></div><div class="ttdef"><b>Definition:</b> Color.hpp:4</div></div>
 <div class="ttc" id="aclassnen_1_1draw2d_html"><div class="ttname"><a href="classnen_1_1draw2d.html">nen::draw2d</a></div><div class="ttdef"><b>Definition:</b> draw_object_wrapper.hpp:9</div></div>
 <div class="ttc" id="aclassnen_1_1draw3d_html"><div class="ttname"><a href="classnen_1_1draw3d.html">nen::draw3d</a></div><div class="ttdef"><b>Definition:</b> draw_object_wrapper.hpp:20</div></div>

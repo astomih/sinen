@@ -36,5 +36,5 @@ jobs:
         with:
           branch: gh-pages
           folder: build
-          repositoryName: 'astomih/sinen_app',
+          repositoryName: 'astomih/sinen_app'
           ssh-key: ${{ secrets.DEPLOY_KEY }}

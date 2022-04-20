@@ -20,9 +20,9 @@ jobs:
 
     - name: Install libraries
       run: |
-          cd android-project/app/jni
-          ln -s ../../../ ./singa
-          ln -s ../../../external/sinen ./sinen
+          cd ${{github.workspace}}/example/android-project/app/jni
+          ln -s ${{github.workspace}}/example ./singa
+          ln -s ${{github.workspace}}/example/external/sinen ./sinen
           git clone https://github.com/libsdl-org/SDL.git
           git clone https://github.com/libsdl-org/SDL_image.git
           git clone https://github.com/libsdl-org/SDL_mixer.git

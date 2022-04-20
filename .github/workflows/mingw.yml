@@ -30,7 +30,7 @@ jobs:
       uses: humbletim/setup-vulkan-sdk@v1.0.3
     - name: Build sinen
       run: |
-          cd external/sinen
+          cd ${{github.workspace}}/example/external/sinen
           mkdir build
           cmake -G "Ninja" -B build
           cd build

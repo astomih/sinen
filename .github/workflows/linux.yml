@@ -31,7 +31,7 @@ jobs:
       uses: humbletim/setup-vulkan-sdk@v1.0.3
     
     - name: build sinen
-      run: cd ${{github.workspace}}/external/sinen && cmake -B ./build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} &&  cmake --build ./build --config ${{env.BUILD_TYPE}}
+      run: cd ${{github.workspace}}/example/external/sinen && cmake -B ./build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} &&  cmake --build ./build --config ${{env.BUILD_TYPE}}
 
       
 

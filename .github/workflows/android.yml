@@ -13,10 +13,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - run: |
+          cd example/external
+          git clone https://github.com/astomih/sinen
+          cd ..
+
     - name: Install libraries
       run: |
           cd android-project/app/jni
-          ln -s ../../../ ./sinen
+          ln -s ../../../ ./singa
+          ln -s ../../../external/sinen ./sinen
           git clone https://github.com/libsdl-org/SDL.git
           git clone https://github.com/libsdl-org/SDL_image.git
           git clone https://github.com/libsdl-org/SDL_mixer.git

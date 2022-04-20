@@ -20,17 +20,30 @@ jobs:
     - uses: msys2/setup-msys2@v2
       with:
         msystem: MINGW64
-        install: mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-gcc mingw-w64-x86_64-glew mingw-w64-x86_64-lua mingw-w64-x86_64-openal mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-SDL2_mixer mingw-w64-x86_64-SDL2_net mingw-w64-x86_64-SDL2_net mingw-w64-x86_64-SDL2_ttf
+        install: git mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-gcc mingw-w64-x86_64-boost mingw-w64-x86_64-glew mingw-w64-x86_64-lua mingw-w64-x86_64-openal mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-SDL2_mixer mingw-w64-x86_64-SDL2_net mingw-w64-x86_64-SDL2_net mingw-w64-x86_64-SDL2_ttf
+    - run: |
+          cd example/external
+          git clone https://github.com/astomih/sinen
+          cd ..
 
     - name: Setup Vulkan SDK
       uses: humbletim/setup-vulkan-sdk@v1.0.3
+    - name: Build sinen
+      run: |
+          cd external/sinen
+          mkdir build
+          cmake -G "Ninja" -B build
+          cd build
+          ninja
+          cd ../../../
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: |
-          cmake -G "Ninja" .
+          cmake -G "Ninja" -B build
 
     - name: Build
       # Build your program with the given configuration
       run: |
+          cd build
           ninja

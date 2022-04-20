@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
 jobs:
   build:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
@@ -15,18 +19,34 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-      
+    - run: |
+          cd example/external
+          git clone https://github.com/astomih/sinen
+          cd ..
 
     - name: Install libraries
-      run: sudo add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu `lsb_release -sc` main universe restricted multiverse" && sudo apt-get update -y -qq && sudo apt-get update -y -qq &&  sudo apt-get install libglew-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-net-dev libsdl2-ttf-dev libopenal-dev
+      run: sudo add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu `lsb_release -sc` main universe restricted multiverse" && sudo apt-get update -y -qq && sudo apt-get update -y -qq &&  sudo apt-get install libboost-all-dev libglew-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-net-dev libsdl2-ttf-dev libopenal-dev
 
     - name: Setup Vulkan SDK
       uses: humbletim/setup-vulkan-sdk@v1.0.3
+    
+    - name: build sinen
+      run: cd ${{github.workspace}}/external/sinen && cmake -B ./build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} &&  cmake --build ./build --config ${{env.BUILD_TYPE}}
+
       
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
     - name: Build
       # Build your program with the given configuration
-      run: cd build && make
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      # Execute tests defined by the CMake configuration.  
+      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+      run: ctest -C ${{env.BUILD_TYPE}}
+      

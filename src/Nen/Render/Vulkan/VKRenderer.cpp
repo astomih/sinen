@@ -1,4 +1,6 @@
 #include <manager/manager.hpp>
+
+#include <camera/camera.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 // general
 #include <array>
@@ -24,7 +26,6 @@
 #include "VKRenderer.h"
 #include "VulkanShader.h"
 #include "VulkanUtil.h"
-#include <camera/camera.hpp>
 
 namespace nen::vk {
 using namespace vkutil;
@@ -428,9 +429,12 @@ void VKRenderer::draw_skybox(VkCommandBuffer command) {
   t->drawObject->param.view = get_camera().get_view();
   auto &va = m_VertexArrays["BOX"];
 
-  mImageObjects[t->drawObject->texture_handle] =
-      VKRenderer::createTextureFromSurface(
-          get_texture_system().get(t->drawObject->texture_handle));
+  static auto once = [&]() {
+    mImageObjects[t->drawObject->texture_handle] =
+        VKRenderer::createTextureFromSurface(
+            get_texture_system().get(t->drawObject->texture_handle));
+    return true;
+  }();
   t->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
   for (auto &v : t->uniformBuffers) {
     VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |

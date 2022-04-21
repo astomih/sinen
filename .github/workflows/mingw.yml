@@ -30,12 +30,12 @@ jobs:
           git clone https://github.com/astomih/sinen
           cd ..
     - name: Build sinen
-      run: cd ${{github.workspace}}/example/external/sinen && cmake -G Ninja -B build && cd build && ninja
+      run: cd ${{github.workspace}}\example\external\sinen && cmake -G Ninja -B build && cd build && ninja
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/example/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake -B ${{github.workspace}}\example\build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
     - name: Build
       # Build your program with the given configuration
-      run: cd ${{github.workspace}}/example/build && ninja
+      run: cd ${{github.workspace}}\example\build && ninja

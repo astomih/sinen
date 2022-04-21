@@ -1,4 +1,4 @@
-﻿#include <Nen/Nen.hpp>
+﻿#include <sinen/sinen.hpp>
 
 int main(int argc, char *argv[]) {
   if (!nen::initialize())

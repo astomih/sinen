@@ -1,0 +1,6 @@
+/home/runner/work/sinen/sinen/example/build/CMakeFiles/index.dir
+/home/runner/work/sinen/sinen/example/build/CMakeFiles/edit_cache.dir
+/home/runner/work/sinen/sinen/example/build/CMakeFiles/rebuild_cache.dir
+/home/runner/work/sinen/sinen/example/build/external/sinen/CMakeFiles/nen.dir
+/home/runner/work/sinen/sinen/example/build/external/sinen/CMakeFiles/edit_cache.dir
+/home/runner/work/sinen/sinen/example/build/external/sinen/CMakeFiles/rebuild_cache.dir

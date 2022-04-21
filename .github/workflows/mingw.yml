@@ -28,15 +28,6 @@ jobs:
           cd example/external
           pwd
           git clone https://github.com/astomih/sinen
-          cd sinen 
-    - name: Build sinen
-      run: cmake -G Ninja -B build && cd build && ninja
-    - name: Configure CMake
-      run: |
-          pwd
-          cd ../../
-          pwd
+          cd ..
           cmake -G Ninja -B build 
-
-    - name: Build
-      run: cd build && ninja
+          cd build && ninja

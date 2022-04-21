@@ -17,10 +17,6 @@ jobs:
         shell: msys2 {0}
     steps:
     - uses: actions/checkout@v2
-    - run: |
-          cd example/external
-          git clone https://github.com/astomih/sinen
-          cd ..
     - uses: msys2/setup-msys2@v2
       with:
         msystem: MINGW64
@@ -28,6 +24,10 @@ jobs:
 
     - name: Setup Vulkan SDK
       uses: humbletim/setup-vulkan-sdk@v1.0.3
+    - run: |
+          cd example/external
+          git clone https://github.com/astomih/sinen
+          cd ..
     - name: Build sinen
       run: |
           cd external/sinen

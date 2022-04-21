@@ -33,8 +33,9 @@ jobs:
       run: cmake -G Ninja -B build && cd build && ninja
     - name: Configure CMake
       run: |
-          cd ../../../
-          cmake -B ${{github.workspace}}\example\build 
+          cd ../../..
+          pwd
+          cmake -G Ninja -B build 
 
     - name: Build
       run: cd build && ninja

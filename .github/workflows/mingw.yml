@@ -30,7 +30,6 @@ jobs:
           cd ..
     - name: Build sinen
       run: |
-          cd external/sinen
           cmake -G "Ninja" -B build
           cd build
           ninja

@@ -52,7 +52,24 @@ int main(int argc, char **argv) {
   return 0;
 }
 ```
-![result](https://github.com/Astomih/sinen/blob/main/example/result.png "result")
+``` lua
+local hello_texture = {}
+local hello_font = {}
+local hello_drawer = {}
+
+function setup()
+	hello_texture = texture()
+	hello_drawer = draw2d(hello_texture)
+	hello_drawer.scale = vector2(1, 1)
+	hello_font = font()
+	hello_font:load(DEFAULT_FONT, 128)
+	hello_font:render_text(hello_texture, "Hello Sinen World!", color(1, 1, 1, 1))
+end
+
+function update() 
+	hello_drawer:draw()
+end
+```
 
 ## How to build
 ### Windows

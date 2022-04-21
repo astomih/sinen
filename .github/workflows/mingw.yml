@@ -25,15 +25,16 @@ jobs:
     - name: Setup Vulkan SDK
       uses: humbletim/setup-vulkan-sdk@v1.0.3
     - run: |
-          pwd
           cd example/external
+          pwd
           git clone https://github.com/astomih/sinen
           cd sinen 
     - name: Build sinen
       run: cmake -G Ninja -B build && cd build && ninja
     - name: Configure CMake
       run: |
-          cd ../../..
+          pwd
+          cd ../../
           pwd
           cmake -G Ninja -B build 
 

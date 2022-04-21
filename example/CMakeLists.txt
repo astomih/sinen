@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.7)
 project(sinen_app)
 file(GLOB SOURCE_FILES src/*/*.cpp src/*.cpp)
-file(GLOB INCLUDE_DIRS external/sinen/include external/sinen/include/Nen)
+file(GLOB INCLUDE_DIRS external/sinen/include external/sinen/include/sinen)
 if(ANDROID)
   set(CMAKE_CXX_FLAGS "-std=c++20")
   add_library(main STATIC ${SOURCE_FILES})

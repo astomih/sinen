@@ -1,0 +1,50 @@
+#ifndef NEN_HPP
+#define NEN_HPP
+#ifdef ANDROID
+#define MOBILE
+#endif
+
+#include "manager/manager.hpp"
+
+#include "audio/music_system.hpp"
+#include "audio/sound_event.hpp"
+#include "audio/sound_system.hpp"
+#include "camera/camera.hpp"
+#include "draw_object/draw_object.hpp"
+#include "draw_object/draw_object_wrapper.hpp"
+#include "exception/exception.hpp"
+#include "font/font.hpp"
+#include "input/input_system.hpp"
+#include "instancing/instancing.hpp"
+#include "instancing/instancing_wrapper.hpp"
+#include "io/dstream.hpp"
+#include "logger/logger.hpp"
+#include "math/math.hpp"
+#include "math/matrix3.hpp"
+#include "math/matrix4.hpp"
+#include "math/quaternion.hpp"
+#include "math/random.hpp"
+#include "math/transform.hpp"
+#include "math/vector2.hpp"
+#include "math/vector3.hpp"
+#include "model/model.hpp"
+#include "network/tcp_client.hpp"
+#include "network/tcp_socket.hpp"
+#include "physics/collision.hpp"
+#include "render/renderer.hpp"
+#include "scene/scene.hpp"
+#include "script/script.hpp"
+#include "shader/shader.hpp"
+#include "time/time.hpp"
+#include "time/timer.hpp"
+#include "utility/handler.hpp"
+#include "utility/non_copyable.hpp"
+#include "utility/singleton.hpp"
+#include "vertex/vertex.hpp"
+#include "vertex/vertex_array.hpp"
+#include "window/window.hpp"
+
+#endif
+#ifdef NO_USE_NEN_NAMESPACE
+using namespace nen;
+#endif

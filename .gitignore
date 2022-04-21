@@ -367,7 +367,6 @@ _deps
 *.ninja
 build
 
-sinen
 
 
 *.lnk

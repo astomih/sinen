@@ -5,8 +5,8 @@ if(ANDROID)
   file(
     GLOB_RECURSE
     SOURCE_FILES
-    src/Nen/*/*.cpp
-    src/Nen/Render/OpenGL/*.cpp
+    src/*/*.cpp
+    src/render/opengl/*.cpp
     external/ImGui/source/gles/*.cpp
     external/ImGuiColorTextEdit/*.cpp
     external/mojoAL/mojoal.c
@@ -14,7 +14,7 @@ if(ANDROID)
   add_library(nen STATIC ${SOURCE_FILES})
   set(INCLUDE_DIRS
       ./include
-      ./include/Nen
+      ./include/sinen
       external/ImGui/include
       external/ImGuiColorTextEdit
       external/sol2/include
@@ -39,17 +39,16 @@ elseif(EMSCRIPTEN)
   file(
     GLOB
     SOURCE_FILES
-    src/Nen/*/*.cpp
-    src/Nen/Engine/Engine.cpp
-    src/Nen/Render/OpenGL/*.cpp
+    src/*/*.cpp
+    src/render/opengl/*.cpp
     external/ImGui/source/gles/*.cpp
     external/ImGuiColorTextEdit/*.cpp
     external/Lua/source/*.c)
   add_library(nen STATIC ${SOURCE_FILES})
   set(NEN_INCLUDE_DIRECTORIES
       .
-      include
-      include/Nen
+      ./include
+      ./include/sinen
       external/ImGui/include
       external/ImGuiColorTextEdit
       external/sol2/include
@@ -77,9 +76,9 @@ else()
   file(
     GLOB
     SOURCE_FILES
-    src/Nen/*/*.cpp
-    src/Nen/Render/Vulkan/*.cpp
-    src/Nen/Render/OpenGL/*.cpp
+    src/*/*.cpp
+    src/render/vulkan/*.cpp
+    src/render/opengl/*.cpp
     external/ImGui/source/*.cpp
     external/ImGuiColorTextEdit/*.cpp
     external/Lua/source/*.c
@@ -89,7 +88,7 @@ else()
   set(NEN_INCLUDE_DIRECTORIES
       .
       ./include
-      ./include/Nen
+      ./include/sinen
       external/ImGui/include
       external/ImGuiColorTextEdit
       external/sol2/include

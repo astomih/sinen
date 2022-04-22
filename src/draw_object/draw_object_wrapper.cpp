@@ -58,8 +58,8 @@ void draw3d::draw() {
   s.mat[2][2] = scale.z;
   obj->param.world = s * r * t;
   obj->texture_handle = texture_handle.handle;
-  obj->param.proj = get_camera().get_projection();
-  obj->param.view = get_camera().get_view();
+  obj->param.proj = get_camera().projection;
+  obj->param.view = get_camera().view;
   obj->vertexIndex = this->vertex_name;
   get_renderer().draw3d(obj);
 }

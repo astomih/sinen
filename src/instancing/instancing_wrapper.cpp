@@ -62,8 +62,8 @@ void draw3d_instancing::draw() {
   auto obj = std::make_shared<draw_object>();
   obj->texture_handle = this->texture_handle.handle;
   obj->vertexIndex = this->vertex_name;
-  obj->param.proj = get_camera().get_projection();
-  obj->param.view = get_camera().get_view();
+  obj->param.proj = get_camera().projection;
+  obj->param.view = get_camera().view;
   _instancing.object = obj;
   _instancing.type = object_type::_3D;
   for (int i = 0; i < this->position.size(); i++) {

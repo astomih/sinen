@@ -1,8 +1,9 @@
-#include <camera/camera.hpp>
 #include <manager/manager.hpp>
 #include <math/matrix4.hpp>
 #include <render/renderer.hpp>
 #include <window/window.hpp>
+
+#include <camera/camera.hpp>
 
 namespace nen {
 camera::camera()

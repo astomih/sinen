@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SINEN_CAMERA_HPP
+#define SINEN_CAMERA_HPP
 #include "../math/matrix4.hpp"
 #include "../math/vector3.hpp"
 
@@ -7,8 +8,8 @@ class camera {
 public:
   camera();
   void update();
-  matrix4 get_view() const { return view; }
-  matrix4 get_projection() const { return projection; }
+  matrix4 view;
+  matrix4 projection;
   vector3 position;
   vector3 target;
   vector3 up;
@@ -16,9 +17,6 @@ public:
   float aspect;
   float near;
   float far;
-
-private:
-  matrix4 view;
-  matrix4 projection;
 };
 } // namespace nen
+#endif

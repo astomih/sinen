@@ -1,4 +1,3 @@
-#include <camera/camera.hpp>
 #include <manager/manager.hpp>
 
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
@@ -26,6 +25,7 @@
 #include "vk_renderer.hpp"
 #include "vk_shader.hpp"
 #include "vk_util.hpp"
+#include <camera/camera.hpp>
 
 namespace nen::vk {
 using namespace vkutil;
@@ -425,8 +425,8 @@ void VKRenderer::draw_skybox(VkCommandBuffer command) {
   t->drawObject = std::make_shared<draw_object>();
   t->drawObject->texture_handle = get_renderer().skybox_texture->handle;
   t->drawObject->vertexIndex = "BOX";
-  t->drawObject->param.proj = get_camera().get_projection();
-  t->drawObject->param.view = get_camera().get_view();
+  t->drawObject->param.proj = get_camera().projection;
+  t->drawObject->param.view = get_camera().view;
   auto &va = m_VertexArrays["BOX"];
 
   static auto once = [&]() {

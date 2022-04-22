@@ -85,8 +85,8 @@ void GLRenderer::Render() {
     glBindVertexArray(va.vao);
     mSpriteShader.SetActive(0);
     shader_parameter param;
-    param.proj = get_camera().get_projection();
-    param.view = get_camera().get_view();
+    param.proj = get_camera().projection;
+    param.view = get_camera().view;
     mSpriteShader.SetActive(0);
     mSpriteShader.UpdateUBO(0, sizeof(shader_parameter), &param);
     glBindTexture(GL_TEXTURE_2D,

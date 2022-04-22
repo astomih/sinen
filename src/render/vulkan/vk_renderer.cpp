@@ -1,3 +1,4 @@
+#include <camera/camera.hpp>
 #include <manager/manager.hpp>
 
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
@@ -25,7 +26,6 @@
 #include "vk_renderer.hpp"
 #include "vk_shader.hpp"
 #include "vk_util.hpp"
-#include <camera/camera.hpp>
 
 namespace nen::vk {
 using namespace vkutil;

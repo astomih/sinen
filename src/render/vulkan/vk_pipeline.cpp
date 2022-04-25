@@ -4,8 +4,8 @@
 #include "vk_util.hpp"
 
 namespace nen::vk {
-void Pipeline::Initialize(
-    PipelineLayout &layout, VkRenderPass renderPass,
+void vk_pipeline::Initialize(
+    vk_pipeline_layout &layout, VkRenderPass renderPass,
     std::vector<VkPipelineShaderStageCreateInfo> &shaderStages) {
   // ブレンディングの設定
   const auto colorWriteAll =
@@ -52,32 +52,32 @@ void Pipeline::Initialize(
       .renderPass = renderPass,
   };
 }
-void Pipeline::Prepare(VkDevice device) {
+void vk_pipeline::Prepare(VkDevice device) {
   VkResult result = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1,
                                               &graphicsCI, nullptr, &pipeline);
 }
 
-void Pipeline::Bind(VkCommandBuffer command) {
+void vk_pipeline::Bind(VkCommandBuffer command) {
   vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 }
 
-void Pipeline::Cleanup(VkDevice device) {
+void vk_pipeline::Cleanup(VkDevice device) {
   nen::vkutil::DestroyVulkanObject<VkPipeline>(device, pipeline,
                                                &vkDestroyPipeline);
 }
 
-void Pipeline::SetDepthTest(VkBool32 isEnable) {
+void vk_pipeline::SetDepthTest(VkBool32 isEnable) {
   depthStencilCI.depthTestEnable = isEnable;
 }
-void Pipeline::SetDepthWrite(VkBool32 isEnable) {
+void vk_pipeline::SetDepthWrite(VkBool32 isEnable) {
   depthStencilCI.depthWriteEnable = isEnable;
 }
 
-void Pipeline::ColorBlendFactor(VkBlendFactor src, VkBlendFactor dst) {
+void vk_pipeline::ColorBlendFactor(VkBlendFactor src, VkBlendFactor dst) {
   blendAttachment.srcColorBlendFactor = src;
   blendAttachment.dstColorBlendFactor = dst;
 }
-void Pipeline::AlphaBlendFactor(VkBlendFactor src, VkBlendFactor dst) {
+void vk_pipeline::AlphaBlendFactor(VkBlendFactor src, VkBlendFactor dst) {
   blendAttachment.srcAlphaBlendFactor = src;
   blendAttachment.dstAlphaBlendFactor = dst;
 }

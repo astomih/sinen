@@ -91,7 +91,7 @@ public:
   [[nodiscard]] float LengthSq() const { return (x * x + y * y); }
 
   // Length of vector
-  [[nodiscard]] float Length() const { return (Math::Sqrt(LengthSq())); }
+  [[nodiscard]] float Length() const { return (math::Sqrt(LengthSq())); }
 
   // Normalize this vector
   void Normalize() {
@@ -123,13 +123,13 @@ public:
   }
 
   // Transform vector by matrix
-  static vector2 Transform(const vector2 &vec, const class matrix3 &mat,
+  static vector2 transform(const vector2 &vec, const class matrix3 &mat,
                            float w = 1.0f);
 
-  static const vector2 Zero;
-  static const vector2 UnitX;
-  static const vector2 UnitY;
-  static const vector2 NegUnitX;
-  static const vector2 NegUnitY;
+  static const vector2 zero;
+  static const vector2 unit_x;
+  static const vector2 unit_y;
+  static const vector2 neg_unit_x;
+  static const vector2 neg_unit_y;
 };
 } // namespace nen

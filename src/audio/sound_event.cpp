@@ -26,9 +26,9 @@ void sound::new_source() {
   param.buffer_id = buf;
 }
 void sound::set_listener(vector3 pos, vector3 rotation) {
-  quaternion q(vector3::NegUnitZ, rotation.z);
-  q = quaternion::Concatenate(q, quaternion(vector3::UnitY, rotation.y));
-  q = quaternion::Concatenate(q, quaternion(vector3::UnitX, rotation.x));
+  quaternion q(vector3::neg_unit_z, rotation.z);
+  q = quaternion::Concatenate(q, quaternion(vector3::unit_y, rotation.y));
+  q = quaternion::Concatenate(q, quaternion(vector3::unit_x, rotation.x));
   get_sound_system().SetListener(pos, q);
 }
 void sound::delete_source() {

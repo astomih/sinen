@@ -6,9 +6,9 @@
 #include <vulkan/vk_layer.h>
 
 namespace nen::vk {
-class PipelineLayout {
+class vk_pipeline_layout {
 public:
-  PipelineLayout() = default;
+  vk_pipeline_layout() = default;
   void Initialize(VkDevice device,
                   const VkDescriptorSetLayout *descriptorLayout,
                   const VkExtent2D &extent);

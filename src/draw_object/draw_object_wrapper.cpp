@@ -21,7 +21,7 @@ void draw2d::draw() {
   matrix4 t = matrix4::Identity;
   t.mat[3][0] = position.x;
   t.mat[3][1] = position.y;
-  quaternion q(vector3::NegUnitZ, rotation);
+  quaternion q(vector3::neg_unit_z, rotation);
   matrix4 r = matrix4::CreateFromQuaternion(q);
   matrix4 s = matrix4::Identity;
   s.mat[0][0] = scale.x * 0.5f;
@@ -46,11 +46,11 @@ void draw3d::draw() {
   t.mat[3][2] = position.z;
   quaternion q;
   q = quaternion::Concatenate(
-      q, quaternion(vector3::UnitZ, Math::ToRadians(rotation.z)));
+      q, quaternion(vector3::unit_z, math::to_radians(rotation.z)));
   q = quaternion::Concatenate(
-      q, quaternion(vector3::UnitY, Math::ToRadians(rotation.y)));
+      q, quaternion(vector3::unit_y, math::to_radians(rotation.y)));
   q = quaternion::Concatenate(
-      q, quaternion(vector3::UnitX, Math::ToRadians(rotation.x)));
+      q, quaternion(vector3::unit_x, math::to_radians(rotation.x)));
   matrix4 r = matrix4::CreateFromQuaternion(q);
   matrix4 s = matrix4::Identity;
   s.mat[0][0] = scale.x;

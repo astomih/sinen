@@ -5,11 +5,11 @@ subtitle:
 ---
 # 目次
 1. [はじめに](#1)
- 1.  [Sinenとは？](#2)
- 2.  [対象OS](#3)
- 3.  [Sinenを使うと何が出来る？](#4)
- 4.  [将来的に出来ること](#5)
-2. [Sinenでハローワールド](#6)
+2. [Sinenとは？](#2)
+3. [対象OS](#3)
+4. [Sinenを使うと何が出来る？](#4)
+5. [将来的に出来ること](#5)
+6. [Sinenでハローワールド](#6)
   
 <a id="1"></a>  
   
@@ -17,9 +17,9 @@ subtitle:
 <a id="2"></a>
 
 ## Sinenとは？
-Sinen is a library for game development.  
-The goal is to be able to write in Lua intuitively.  
-We have prepared a web version [here](https://astomih.github.io/singa/) for you to try it out.  
+Sinenはゲーム開発のためのエンジンです。  
+Lua言語で直感的に書けるようになることが目標です。  
+Web向けのクライアントが、[ここ](https://astomih.github.io/sinen_app/)にあります。
 <a id="3"></a>
   
 ## 対象OS
@@ -38,14 +38,16 @@ Apple製品でも動くと思いますが、未確認です。
 - キーボードやマウス、ゲームパッド等の入力検出
 - BGMの再生
 - 効果音の再生  
+- 衝突検知
+- 任意のモデルデータの読み込み
   
 など
   
 <a id="5"></a>
   
 ## 将来的に出来ること
-- 衝突検知
-- 任意のモデルデータの読み込み
+- アニメーション
+- シャドウマッピング
 - シェーダーの読み込み
   
 これらは既にライブラリの内部で実装済みのため早い段階で提供出来ると思います。

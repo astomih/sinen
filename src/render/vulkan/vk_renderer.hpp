@@ -46,10 +46,10 @@ public:
   BufferObject instance_buffer;
 };
 
-class VKRenderer : public renderer::Interface {
+class vk_renderer : public renderer::Interface {
 public:
-  VKRenderer(manager &_manager);
-  ~VKRenderer() override {}
+  vk_renderer(manager &_manager);
+  ~vk_renderer() override {}
   void Initialize() override;
   void Shutdown() override;
   void Render() override;
@@ -76,7 +76,7 @@ public:
   BufferObject CreateBuffer(
       uint32_t size, VkBufferUsageFlags usage,
       VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-  vulkan_base_framework *GetBase() { return m_base.get(); }
+  vk_base *GetBase() { return m_base.get(); }
   void registerTexture(std::shared_ptr<VulkanDrawObject> texture,
                        texture_type type);
   void unregisterTexture(std::shared_ptr<VulkanDrawObject> texture);
@@ -105,7 +105,7 @@ public:
   VmaAllocator allocator{};
 
 private:
-  std::unique_ptr<class vulkan_base_framework> m_base;
+  std::unique_ptr<class vk_base> m_base;
   void prepareDescriptorSetLayout();
   void prepareDescriptorPool();
   void prepareDescriptorSet(std::shared_ptr<VulkanDrawObject>);
@@ -131,15 +131,15 @@ private:
   VkDescriptorPool m_descriptorPool;
   VkSampler m_sampler;
   VkPhysicalDeviceMemoryProperties m_physicalMemProps;
-  PipelineLayout mPipelineLayout;
-  Pipeline pipelineSkyBox;
-  Pipeline pipelineOpaque;
-  Pipeline pipelineAlpha;
-  Pipeline pipeline2D;
-  Pipeline pipelineInstancingOpaque;
-  Pipeline pipelineInstancingAlpha;
-  Pipeline pipelineInstancing2D;
-  std::vector<std::pair<shader, Pipeline>> userPipelines;
+  vk_pipeline_layout mPipelineLayout;
+  vk_pipeline pipelineSkyBox;
+  vk_pipeline pipelineOpaque;
+  vk_pipeline pipelineAlpha;
+  vk_pipeline pipeline2D;
+  vk_pipeline pipelineInstancingOpaque;
+  vk_pipeline pipelineInstancingAlpha;
+  vk_pipeline pipelineInstancing2D;
+  std::vector<std::pair<shader, vk_pipeline>> userPipelines;
   std::vector<std::shared_ptr<VulkanDrawObject>> mDrawObject3D;
   std::vector<std::shared_ptr<VulkanDrawObject>> mDrawObject2D;
   std::unordered_map<handle_t, ImageObject> mImageObjects;

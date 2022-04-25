@@ -12,11 +12,10 @@
 
 namespace nen::vk {
 
-vulkan_base_framework::vulkan_base_framework(VKRenderer *vkrenderer,
-                                             manager &_manager)
+vk_base::vk_base(vk_renderer *vkrenderer, manager &_manager)
     : m_imageIndex(0), m_vkrenderer(vkrenderer), m_manager(_manager) {}
 
-void vulkan_base_framework::initialize() {
+void vk_base::initialize() {
   auto &w = m_manager.get_window();
   initialize_instance(w.Name().c_str());
   select_physical_device();
@@ -26,7 +25,7 @@ void vulkan_base_framework::initialize() {
   VkSurfaceKHR surface;
   SDL_Vulkan_CreateSurface((SDL_Window *)w.GetSDLWindow(), m_instance,
                            &surface);
-  mSwapchain = std::make_unique<Swapchain>(m_instance, m_device, surface);
+  mSwapchain = std::make_unique<vk_swapchain>(m_instance, m_device, surface);
   mSwapchain->Prepare(
       m_physDev, m_graphicsQueueIndex, static_cast<uint32_t>(w.Size().x),
       static_cast<uint32_t>(w.Size().y), VK_FORMAT_B8G8R8A8_UNORM);
@@ -39,7 +38,7 @@ void vulkan_base_framework::initialize() {
   m_vkrenderer->prepare();
 }
 
-void vulkan_base_framework::create_image_view() {
+void vk_base::create_image_view() {
 
   VkImageViewCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -56,14 +55,14 @@ void vulkan_base_framework::create_image_view() {
   vkCreateImageView(m_device, &ci, nullptr, &m_depthBufferView);
 }
 
-void vulkan_base_framework::create_semaphore() {
+void vk_base::create_semaphore() {
   VkSemaphoreCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
   vkCreateSemaphore(m_device, &ci, nullptr, &m_renderCompletedSem);
   vkCreateSemaphore(m_device, &ci, nullptr, &m_presentCompletedSem);
 }
 
-void vulkan_base_framework::terminate() {
+void vk_base::terminate() {
   vkDeviceWaitIdle(m_device);
 
   vkFreeCommandBuffers(m_device, m_commandPool, uint32_t(m_commands.size()),
@@ -94,7 +93,7 @@ void vulkan_base_framework::terminate() {
   vkDestroyInstance(m_instance, nullptr);
 }
 
-void vulkan_base_framework::initialize_instance(const char *appName) {
+void vk_base::initialize_instance(const char *appName) {
   std::vector<const char *> extensions;
   VkApplicationInfo appInfo{};
   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -126,7 +125,7 @@ void vulkan_base_framework::initialize_instance(const char *appName) {
   vkCreateInstance(&ci, nullptr, &m_instance);
 }
 
-void vulkan_base_framework::select_physical_device() {
+void vk_base::select_physical_device() {
   uint32_t devCount = 0;
   vkEnumeratePhysicalDevices(m_instance, &devCount, nullptr);
   std::vector<VkPhysicalDevice> physDevs(devCount);
@@ -137,7 +136,7 @@ void vulkan_base_framework::select_physical_device() {
   vkGetPhysicalDeviceMemoryProperties(m_physDev, &m_physMemProps);
 }
 
-uint32_t vulkan_base_framework::search_graphics_queue_index() {
+uint32_t vk_base::search_graphics_queue_index() {
   uint32_t propCount;
   vkGetPhysicalDeviceQueueFamilyProperties(m_physDev, &propCount, nullptr);
   std::vector<VkQueueFamilyProperties> props(propCount);
@@ -152,7 +151,7 @@ uint32_t vulkan_base_framework::search_graphics_queue_index() {
   }
   return graphicsQueue;
 }
-void vulkan_base_framework::create_device() {
+void vk_base::create_device() {
   const float defaultQueuePriority(1.0f);
   VkDeviceQueueCreateInfo devQueueCI{};
   devQueueCI.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -186,7 +185,7 @@ void vulkan_base_framework::create_device() {
   vkGetDeviceQueue(m_device, m_graphicsQueueIndex, 0, &m_deviceQueue);
 }
 
-void vulkan_base_framework::create_command_pool() {
+void vk_base::create_command_pool() {
   VkCommandPoolCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
   ci.queueFamilyIndex = m_graphicsQueueIndex;
@@ -194,7 +193,7 @@ void vulkan_base_framework::create_command_pool() {
   vkCreateCommandPool(m_device, &ci, nullptr, &m_commandPool);
 }
 
-void vulkan_base_framework::create_depth_buffer() {
+void vk_base::create_depth_buffer() {
   VmaAllocatorCreateInfo allocator_info = {};
   allocator_info.physicalDevice = get_vk_physical_device();
   allocator_info.device = get_vk_device();
@@ -228,7 +227,7 @@ void vulkan_base_framework::create_depth_buffer() {
                      m_depthBuffer);
 }
 
-void vulkan_base_framework::create_render_pass() {
+void vk_base::create_render_pass() {
   VkRenderPassCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 
@@ -277,7 +276,7 @@ void vulkan_base_framework::create_render_pass() {
   vkCreateRenderPass(m_device, &ci, nullptr, &m_renderPass);
 }
 
-void vulkan_base_framework::create_frame_buffer() {
+void vk_base::create_frame_buffer() {
   VkFramebufferCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
   ci.renderPass = m_renderPass;
@@ -297,7 +296,7 @@ void vulkan_base_framework::create_frame_buffer() {
     m_framebuffers.push_back(framebuffer);
   }
 }
-void vulkan_base_framework::create_command_buffers() {
+void vk_base::create_command_buffers() {
   VkCommandBufferAllocateInfo ai{};
   ai.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
   ai.commandPool = m_commandPool;
@@ -315,8 +314,9 @@ void vulkan_base_framework::create_command_buffers() {
   }
 }
 
-uint32_t vulkan_base_framework::get_memory_type_index(
-    uint32_t requestBits, VkMemoryPropertyFlags requestProps) const {
+uint32_t
+vk_base::get_memory_type_index(uint32_t requestBits,
+                               VkMemoryPropertyFlags requestProps) const {
   uint32_t result = ~0u;
   for (uint32_t i = 0; i < m_physMemProps.memoryTypeCount; ++i) {
     if (requestBits & 1) {
@@ -331,7 +331,7 @@ uint32_t vulkan_base_framework::get_memory_type_index(
   return result;
 }
 
-void vulkan_base_framework::recreate_swapchain() {
+void vk_base::recreate_swapchain() {
   vkDeviceWaitIdle(m_device);
 
   auto size = m_manager.get_window().Size();
@@ -348,7 +348,7 @@ void vulkan_base_framework::recreate_swapchain() {
   create_frame_buffer();
 }
 
-void vulkan_base_framework::render() {
+void vk_base::render() {
   if (mSwapchain->is_need_recreate(m_manager.get_window().Size()))
     recreate_swapchain();
   uint32_t nextImageIndex = 0;

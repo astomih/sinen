@@ -7,10 +7,10 @@
 #include <vulkan/vk_layer.h>
 
 namespace nen::vk {
-class Swapchain {
+class vk_swapchain {
 public:
-  Swapchain(VkInstance instance, VkDevice device, VkSurfaceKHR surface);
-  ~Swapchain();
+  vk_swapchain(VkInstance instance, VkDevice device, VkSurfaceKHR surface);
+  ~vk_swapchain();
 
   void Prepare(VkPhysicalDevice physDev, uint32_t graphicsQueueIndex,
                uint32_t width, uint32_t height, VkFormat desireFormat);

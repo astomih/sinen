@@ -6,15 +6,16 @@
 
 namespace nen::vk {
 
-Swapchain::Swapchain(VkInstance instance, VkDevice device, VkSurfaceKHR surface)
+vk_swapchain::vk_swapchain(VkInstance instance, VkDevice device,
+                           VkSurfaceKHR surface)
     : m_swapchain(VK_NULL_HANDLE), m_surface(surface), m_vkInstance(instance),
       m_device(device), m_presentMode(VK_PRESENT_MODE_IMMEDIATE_KHR) {}
 
-Swapchain::~Swapchain() {}
+vk_swapchain::~vk_swapchain() {}
 
-void Swapchain::Prepare(VkPhysicalDevice physDev, uint32_t graphicsQueueIndex,
-                        uint32_t width, uint32_t height,
-                        VkFormat desireFormat) {
+void vk_swapchain::Prepare(VkPhysicalDevice physDev,
+                           uint32_t graphicsQueueIndex, uint32_t width,
+                           uint32_t height, VkFormat desireFormat) {
   VkResult result;
   result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDev, m_surface,
                                                      &m_surfaceCaps);
@@ -109,7 +110,7 @@ void Swapchain::Prepare(VkPhysicalDevice physDev, uint32_t graphicsQueueIndex,
   }
 }
 
-void Swapchain::Cleanup() {
+void vk_swapchain::Cleanup() {
   if (m_device != VK_NULL_HANDLE) {
     for (auto view : m_imageViews) {
       vkDestroyImageView(m_device, view, nullptr);
@@ -129,15 +130,16 @@ void Swapchain::Cleanup() {
   m_imageViews.clear();
 }
 
-VkResult Swapchain::AcquireNextImage(uint32_t *pImageIndex,
-                                     VkSemaphore semaphore, uint64_t timeout) {
+VkResult vk_swapchain::AcquireNextImage(uint32_t *pImageIndex,
+                                        VkSemaphore semaphore,
+                                        uint64_t timeout) {
   auto result = vkAcquireNextImageKHR(m_device, m_swapchain, timeout, semaphore,
                                       VK_NULL_HANDLE, pImageIndex);
   return result;
 }
 
-void Swapchain::QueuePresent(VkQueue queue, uint32_t imageIndex,
-                             VkSemaphore waitRenderComplete) {
+void vk_swapchain::QueuePresent(VkQueue queue, uint32_t imageIndex,
+                                VkSemaphore waitRenderComplete) {
   VkPresentInfoKHR presentInfo{};
   presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
   presentInfo.swapchainCount = 1;

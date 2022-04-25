@@ -27,9 +27,9 @@
 #include <window/window.hpp>
 
 namespace nen::gl {
-GLRenderer::GLRenderer(manager &_manager) : m_manager(_manager) {}
+gl_renderer::gl_renderer(manager &_manager) : m_manager(_manager) {}
 
-void GLRenderer::Initialize() {
+void gl_renderer::Initialize() {
   auto &w = m_manager.get_window();
   mContext = SDL_GL_CreateContext((SDL_Window *)w.GetSDLWindow());
   SDL_GL_MakeCurrent((SDL_Window *)w.GetSDLWindow(), mContext);
@@ -64,7 +64,7 @@ void GLRenderer::Initialize() {
 #endif
 }
 
-void GLRenderer::Render() {
+void gl_renderer::Render() {
   auto &w = m_manager.get_window();
   if (w.Size().x != prev_window_x || w.Size().y != prev_window_y) {
     logger::info("window size.x: ", w.Size().x, " window size.y: ", w.Size().y);
@@ -138,7 +138,7 @@ void GLRenderer::Render() {
   SDL_GL_SwapWindow((SDL_Window *)w.GetSDLWindow());
 }
 
-void GLRenderer::draw_3d() {
+void gl_renderer::draw_3d() {
   for (auto &i : mSprite3Ds) {
     auto &va = m_VertexArrays[i->vertexIndex];
     glBindVertexArray(va.vao);
@@ -159,7 +159,7 @@ void GLRenderer::draw_3d() {
                    GL_UNSIGNED_INT, nullptr);
   }
 }
-void GLRenderer::draw_instancing_3d() {
+void gl_renderer::draw_instancing_3d() {
 
   for (auto &i : m_instancing_3d) {
     mSpriteInstanceShader.SetActive(0);
@@ -176,7 +176,7 @@ void GLRenderer::draw_instancing_3d() {
   }
 }
 
-void GLRenderer::draw_2d() {
+void gl_renderer::draw_2d() {
   for (auto &i : mSprite2Ds) {
     glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
     if (i->shader_data.vertName == "default" &&
@@ -197,7 +197,7 @@ void GLRenderer::draw_2d() {
   }
 }
 
-void GLRenderer::draw_instancing_2d() {
+void gl_renderer::draw_instancing_2d() {
   for (auto &i : m_instancing_2d) {
     mAlphaInstanceShader.SetActive(0);
     mAlphaInstanceShader.UpdateUBO(0, sizeof(shader_parameter),
@@ -213,8 +213,8 @@ void GLRenderer::draw_instancing_2d() {
   }
 }
 
-void GLRenderer::AddVertexArray(const vertex_array &vArray,
-                                std::string_view name) {
+void gl_renderer::AddVertexArray(const vertex_array &vArray,
+                                 std::string_view name) {
   gl::VertexArrayForGL vArrayGL;
   vArrayGL.indexCount = vArray.indexCount;
   vArrayGL.indices = vArray.indices;
@@ -251,8 +251,8 @@ void GLRenderer::AddVertexArray(const vertex_array &vArray,
                vArrayGL.indices.data(), GL_STATIC_DRAW);
   m_VertexArrays.emplace(std::string(name), vArrayGL);
 }
-void GLRenderer::UpdateVertexArray(const vertex_array &vArray,
-                                   std::string_view name) {
+void gl_renderer::UpdateVertexArray(const vertex_array &vArray,
+                                    std::string_view name) {
   gl::VertexArrayForGL vArrayGL;
   vArrayGL.indexCount = vArray.indexCount;
   vArrayGL.indices = vArray.indices;
@@ -269,25 +269,26 @@ void GLRenderer::UpdateVertexArray(const vertex_array &vArray,
                   vArrayGL.indices.data());
 }
 
-void GLRenderer::draw2d(std::shared_ptr<class draw_object> sprite) {
+void gl_renderer::draw2d(std::shared_ptr<class draw_object> sprite) {
   registerTexture(sprite->texture_handle);
   pushSprite2d(sprite);
 }
 
-void GLRenderer::draw3d(std::shared_ptr<class draw_object> sprite) {
+void gl_renderer::draw3d(std::shared_ptr<class draw_object> sprite) {
   registerTexture(sprite->texture_handle);
   pushSprite3d(sprite);
 }
 
-void GLRenderer::LoadShader(const shader &shaderInfo) {
-  ShaderGL pipeline;
+void gl_renderer::LoadShader(const shader &shaderInfo) {
+  gl_shader pipeline;
   pipeline.Load(shaderInfo.vertName, shaderInfo.fragName);
   shader_parameter param;
   pipeline.CreateUBO(0, sizeof(shader_parameter), &param);
-  userPipelines.emplace_back(std::pair<shader, ShaderGL>{shaderInfo, pipeline});
+  userPipelines.emplace_back(
+      std::pair<shader, gl_shader>{shaderInfo, pipeline});
 }
 
-void GLRenderer::UnloadShader(const shader &shaderInfo) {
+void gl_renderer::UnloadShader(const shader &shaderInfo) {
   std::erase_if(userPipelines, [&](auto &x) {
     if (x.first == shaderInfo) {
       x.second.Unload();
@@ -297,7 +298,7 @@ void GLRenderer::UnloadShader(const shader &shaderInfo) {
   });
 }
 
-void GLRenderer::add_instancing(const instancing &_instancing) {
+void gl_renderer::add_instancing(const instancing &_instancing) {
   registerTexture(_instancing.object->texture_handle);
   auto va = m_VertexArrays[_instancing.object->vertexIndex];
   glBindVertexArray(va.vao);
@@ -334,13 +335,13 @@ void GLRenderer::add_instancing(const instancing &_instancing) {
   }
 }
 
-void GLRenderer::prepare() {
+void gl_renderer::prepare() {
   if (!loadShader()) {
     std::cout << "failed to loads shader" << std::endl;
   }
 }
 
-void GLRenderer::registerTexture(handle_t handle) {
+void gl_renderer::registerTexture(handle_t handle) {
   ::SDL_Surface &surf = get_texture_system().get(handle);
   if (mTextureIDs.contains(handle)) {
     glDeleteTextures(1, &mTextureIDs[handle]);
@@ -367,7 +368,7 @@ void GLRenderer::registerTexture(handle_t handle) {
   mTextureIDs[handle] = textureId;
 }
 
-bool GLRenderer::loadShader() {
+bool gl_renderer::loadShader() {
   shader_parameter param{};
   if (!mSpriteShader.Load("shader.vert", "shader.frag")) {
     return false;

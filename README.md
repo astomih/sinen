@@ -14,44 +14,6 @@ The library is planned to be used only by me, so I don't think it will have full
 No tutorials, etc. have been created yet.
 
 ## Hello world in sinen
-``` c++
-#include <Nen/Nen.hpp>
-
-class app : public nen::base_scene {
-public:
-  app() = default;
-  ~app() = default;
-  void Setup() override {
-    // Set up background color to black.
-    GetRenderer()->SetClearColor(nen::palette::Black);
-
-    // Load fonts.
-    auto font = std::make_shared<nen::font>();
-    font->LoadFromFile("mplus/mplus-1p-medium.ttf", 72);
-
-    // Generate actor and add to scene
-    auto actor = this->AddActor<nen::base_actor>();
-
-    // Generate component for actor
-    auto text = actor->AddComponent<nen::text_component>();
-    text->SetFont(font);
-    text->SetString("Hello,World!", nen::palette::White);
-    // Register to Renderer
-    text->Register();
-  }
-
-  void Update(float deltaTime) override {
-    // Quit to Q key.
-    if (GetInput().Keyboard.GetKeyValue(nen::key_code::Q))
-      Quit();
-  }
-};
-
-int main(int argc, char **argv) {
-  nen::Launch(std::make_shared<app>());
-  return 0;
-}
-```
 ``` lua
 local hello_texture = {}
 local hello_font = {}

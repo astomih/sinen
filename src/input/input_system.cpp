@@ -130,7 +130,7 @@ void input_system::PrepareForUpdate() {
   // Mouse
   mState.Mouse.mPrevButtons = mState.Mouse.mCurrButtons;
   mState.Mouse.mIsRelative = false;
-  mState.Mouse.mScrollWheel = vector2::Zero;
+  mState.Mouse.mScrollWheel = vector2::zero;
 
   // Controller
   memcpy(mState.Controller.mPrevButtons, mState.Controller.mCurrButtons,
@@ -212,7 +212,7 @@ float input_system::Filter1D(int _input) {
     // Make sure sign matches original value
     retVal = _input > 0 ? retVal : -1.0f * retVal;
     // Clamp between -1.0f and 1.0f
-    retVal = Math::Clamp(retVal, -1.0f, 1.0f);
+    retVal = math::Clamp(retVal, -1.0f, 1.0f);
   }
 
   return retVal;
@@ -231,13 +231,13 @@ vector2 input_system::Filter2D(int inputX, int inputY) {
 
   // If length < deadZone, should be no input
   if (length < deadZone) {
-    dir = vector2::Zero;
+    dir = vector2::zero;
   } else {
     // Calculate fractional value between
     // dead zone and max value circles
     float f = (length - deadZone) / (maxValue - deadZone);
     // Clamp f between 0.0f and 1.0f
-    f = Math::Clamp(f, 0.0f, 1.0f);
+    f = math::Clamp(f, 0.0f, 1.0f);
     // Normalize the vector, and then scale it to the
     // fractional value
     dir *= f / length;

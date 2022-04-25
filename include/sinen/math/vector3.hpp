@@ -94,7 +94,7 @@ public:
   [[nodiscard]] float LengthSq() const { return (x * x + y * y + z * z); }
 
   // Length of vector
-  [[nodiscard]] float Length() const { return (Math::Sqrt(LengthSq())); }
+  [[nodiscard]] float Length() const { return (math::Sqrt(LengthSq())); }
 
   // Normalize this vector
   void Normalize() {
@@ -135,12 +135,12 @@ public:
     return v - 2.0f * vector3::Dot(v, n) * n;
   }
 
-  static vector3 Transform(const vector3 &vec, const class matrix4 &mat,
+  static vector3 transform(const vector3 &vec, const class matrix4 &mat,
                            float w = 1.0f);
   // This will transform the vector and renormalize the w component
-  static vector3 TransformWithPerspDiv(const vector3 &vec,
-                                       const class matrix4 &mat,
-                                       float w = 1.0f);
+  static vector3 transform_with_persp_div(const vector3 &vec,
+                                          const class matrix4 &mat,
+                                          float w = 1.0f);
 
   // Transform a Vector3f by a quaternion
   static vector3 Transform(const vector3 &v, const class quaternion &q);
@@ -150,14 +150,14 @@ public:
   /// </summary>
   // Effekseer::Vector3D ToEffekseer() const;
 
-  static const vector3 Zero;
-  static const vector3 UnitX;
-  static const vector3 UnitY;
-  static const vector3 UnitZ;
-  static const vector3 NegUnitX;
-  static const vector3 NegUnitY;
-  static const vector3 NegUnitZ;
-  static const vector3 Infinity;
-  static const vector3 NegInfinity;
+  static const vector3 zero;
+  static const vector3 unit_x;
+  static const vector3 unit_y;
+  static const vector3 unit_z;
+  static const vector3 neg_unit_x;
+  static const vector3 neg_unit_y;
+  static const vector3 neg_unit_z;
+  static const vector3 infinity;
+  static const vector3 neg_infinity;
 };
 } // namespace nen

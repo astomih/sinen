@@ -21,9 +21,9 @@ namespace nen::vk {
  * @brief vulkan base framework class
  *
  */
-class vulkan_base_framework {
+class vk_base {
 public:
-  vulkan_base_framework(class VKRenderer *, manager &_manager);
+  vk_base(class vk_renderer *, manager &_manager);
   void initialize();
   void terminate();
   void render();
@@ -51,7 +51,7 @@ public:
                                  VkMemoryPropertyFlags requestProps) const;
   void recreate_swapchain();
 
-  std::unique_ptr<Swapchain> mSwapchain;
+  std::unique_ptr<vk_swapchain> mSwapchain;
 
   VkInstance m_instance;
   VkDevice m_device;
@@ -82,7 +82,7 @@ public:
   std::vector<VkCommandBuffer> m_commands;
   uint32_t m_imageIndex;
   std::shared_ptr<window> m_window;
-  VKRenderer *m_vkrenderer;
+  vk_renderer *m_vkrenderer;
   manager &m_manager;
 };
 } // namespace nen::vk

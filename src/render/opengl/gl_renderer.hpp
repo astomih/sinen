@@ -49,10 +49,10 @@ public:
   uint32_t vbo;
 };
 
-class GLRenderer : public renderer::Interface {
+class gl_renderer : public renderer::Interface {
 public:
-  GLRenderer(manager &_manager);
-  ~GLRenderer() override {}
+  gl_renderer(manager &_manager);
+  ~gl_renderer() override {}
 
   void Initialize() override;
   void Render() override;
@@ -114,11 +114,11 @@ private:
 
   std::string vertexID;
 
-  ShaderGL mSpriteShader;
-  ShaderGL mAlphaShader;
-  ShaderGL mSpriteInstanceShader;
-  ShaderGL mAlphaInstanceShader;
-  std::vector<std::pair<shader, ShaderGL>> userPipelines;
+  gl_shader mSpriteShader;
+  gl_shader mAlphaShader;
+  gl_shader mSpriteInstanceShader;
+  gl_shader mAlphaInstanceShader;
+  std::vector<std::pair<shader, gl_shader>> userPipelines;
   GLuint mTextureID;
   std::unordered_map<handle_t, GLuint> mTextureIDs;
   std::unordered_map<std::string, VertexArrayForGL> m_VertexArrays;

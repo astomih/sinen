@@ -6,10 +6,10 @@
 #include <vulkan/vk_layer.h>
 
 namespace nen::vk {
-class Pipeline {
+class vk_pipeline {
 public:
-  Pipeline() = default;
-  void Initialize(PipelineLayout &layout, VkRenderPass renderPass,
+  vk_pipeline() = default;
+  void Initialize(vk_pipeline_layout &layout, VkRenderPass renderPass,
                   std::vector<VkPipelineShaderStageCreateInfo> &shaderStages);
   void Prepare(VkDevice device);
   void Bind(VkCommandBuffer command);

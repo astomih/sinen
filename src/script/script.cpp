@@ -3,20 +3,20 @@
 #include <audio/music_system.hpp>
 #include <audio/sound_event.hpp>
 #include <audio/sound_system.hpp>
+#include <camera/camera.hpp>
 #include <draw_object/draw_object_wrapper.hpp>
 #include <font/font.hpp>
-#include <io/dstream.hpp>
+#include <functional>
 #include <input/input_system.hpp>
+#include <instancing/instancing_wrapper.hpp>
+#include <io/dstream.hpp>
+#include <manager/manager.hpp>
 #include <math/random.hpp>
+#include <model/model.hpp>
 #include <render/renderer.hpp>
 #include <script/script.hpp>
-#include <window/window.hpp>
-#include <camera/camera.hpp>
-#include <functional>
-#include <instancing/instancing_wrapper.hpp>
-#include <manager/manager.hpp>
-#include <model/model.hpp>
 #include <sol/sol.hpp>
+#include <window/window.hpp>
 
 namespace nen {
 script_system::script_system(manager &_manager)
@@ -35,7 +35,8 @@ bool script_system::initialize() {
                              sol::lib::table);
   impl->state["require"] = [&](const std::string &str) -> sol::object {
     return impl->state.require_script(
-        str, nen::dstream::open_as_string(nen::asset_type::Script, str + ".lua"));
+        str,
+        nen::dstream::open_as_string(nen::asset_type::Script, str + ".lua"));
   };
   impl->state["texture"] = [&]() -> texture { return texture(); };
   impl->state["font"] = [&]() -> font { return font(); };
@@ -80,11 +81,11 @@ bool script_system::initialize() {
     v["forward"] = [](const vector3 v, const vector3 rotation) -> vector3 {
       quaternion q;
       q = quaternion::Concatenate(
-          q, quaternion(vector3::UnitZ, Math::ToRadians(rotation.z)));
+          q, quaternion(vector3::unit_z, math::to_radians(rotation.z)));
       q = quaternion::Concatenate(
-          q, quaternion(vector3::UnitY, Math::ToRadians(rotation.y)));
+          q, quaternion(vector3::unit_y, math::to_radians(rotation.y)));
       q = quaternion::Concatenate(
-          q, quaternion(vector3::UnitX, Math::ToRadians(rotation.x)));
+          q, quaternion(vector3::unit_x, math::to_radians(rotation.x)));
       return vector3::Transform(v, q);
     };
   }

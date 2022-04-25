@@ -81,8 +81,8 @@ void sound_system::Update(float deltaTime) {}
 void sound_system::SetListener(const vector3 &pos,
                                const quaternion &direction) {
   alListener3f(AL_POSITION, pos.x, pos.y, pos.z);
-  auto at = vector3::Transform(vector3::NegUnitZ, direction);
-  auto up = vector3::Transform(vector3::UnitY, direction);
+  auto at = vector3::Transform(vector3::neg_unit_z, direction);
+  auto up = vector3::Transform(vector3::unit_y, direction);
   float ori[6] = {at.x, at.y, at.z, up.x, up.y, up.z};
   alListenerfv(AL_ORIENTATION, ori);
 }
@@ -98,8 +98,8 @@ void sound_system::LoadAudioFile(std::string_view fileName) {
   uint32_t bid = 0;
 
   if (!SDL_LoadWAV(
-          dstream::convert_file_path(fileName, asset_type::Sound).c_str(), &spec,
-          &buffer, &buffer_length)) {
+          dstream::convert_file_path(fileName, asset_type::Sound).c_str(),
+          &spec, &buffer, &buffer_length)) {
     printf("Loading '%s' failed! %s\n", fileName.data(), SDL_GetError());
     return;
   }
@@ -171,19 +171,20 @@ vector3 calculate(const quaternion &r) {
   float tx, ty, tz;
 
   if (m21 >= 0.99 && m21 <= 1.01) {
-    tx = Math::Pi / 2.f;
+    tx = math::Pi / 2.f;
     ty = 0;
-    tz = Math::Atan2(m10, m00);
+    tz = math::Atan2(m10, m00);
   } else if (m21 >= -1.01f && m21 <= -0.99f) {
-    tx = -Math::Pi / 2.f;
+    tx = -math::Pi / 2.f;
     ty = 0;
-    tz = Math::Atan2(m10, m00);
+    tz = math::Atan2(m10, m00);
   } else {
     tx = std::asin(-m21);
-    ty = Math::Atan2(m20, m22);
-    tz = Math::Atan2(m01, m11);
+    ty = math::Atan2(m20, m22);
+    tz = math::Atan2(m01, m11);
   }
 
-  return vector3(Math::ToDegrees(tx), Math::ToDegrees(ty), Math::ToDegrees(tz));
+  return vector3(math::to_degrees(tx), math::to_degrees(ty),
+                 math::to_degrees(tz));
 }
 } // namespace nen

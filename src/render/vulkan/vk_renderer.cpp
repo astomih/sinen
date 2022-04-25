@@ -1,5 +1,6 @@
-#include <camera/camera.hpp>
 #include <manager/manager.hpp>
+
+#include <camera/camera.hpp>
 
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 // general
@@ -10,13 +11,12 @@
 #include <string>
 
 // extenal
-#include "SDL_stdinc.h"
-#include "vulkan/vulkan_core.h"
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_vulkan.h>
+#include <vulkan/vulkan_core.h>
 #define VMA_IMPLEMENTATION
 #include "vk_mem_alloc.h"
 
@@ -31,20 +31,18 @@ namespace nen::vk {
 using namespace vkutil;
 
 constexpr int maxpoolSize = 5000;
-constexpr int maxInstanceCount = 900;
-VKRenderer::VKRenderer(manager &_manager)
+vk_renderer::vk_renderer(manager &_manager)
     : m_manager(_manager), m_descriptorPool(), m_descriptorSetLayout(),
-      m_sampler(),
-      m_base(std::make_unique<vulkan_base_framework>(this, _manager)) {}
-void VKRenderer::Initialize() { m_base->initialize(); }
+      m_sampler(), m_base(std::make_unique<vk_base>(this, _manager)) {}
+void vk_renderer::Initialize() { m_base->initialize(); }
 
-void VKRenderer::Shutdown() {
+void vk_renderer::Shutdown() {
   cleanup();
   m_base->terminate();
 }
-void VKRenderer::Render() { m_base->render(); }
-void VKRenderer::AddVertexArray(const vertex_array &vArray,
-                                std::string_view name) {
+void vk_renderer::Render() { m_base->render(); }
+void vk_renderer::AddVertexArray(const vertex_array &vArray,
+                                 std::string_view name) {
   VertexArrayForVK vArrayVK;
   vArrayVK.indexCount = vArray.indexCount;
   vArrayVK.indices = vArray.indices;
@@ -64,8 +62,8 @@ void VKRenderer::AddVertexArray(const vertex_array &vArray,
   m_VertexArrays.insert(
       std::pair<std::string, VertexArrayForVK>(name.data(), vArrayVK));
 }
-void VKRenderer::UpdateVertexArray(const vertex_array &vArray,
-                                   std::string_view name) {
+void vk_renderer::UpdateVertexArray(const vertex_array &vArray,
+                                    std::string_view name) {
   VertexArrayForVK vArrayVK;
   vArrayVK.indexCount = vArray.indexCount;
   vArrayVK.indices = vArray.indices;
@@ -79,37 +77,38 @@ void VKRenderer::UpdateVertexArray(const vertex_array &vArray,
                vArray.indices.size() * sizeof(uint32_t));
 }
 
-void VKRenderer::draw2d(std::shared_ptr<class draw_object> drawObject) {
+void vk_renderer::draw2d(std::shared_ptr<class draw_object> drawObject) {
   auto t = std::make_shared<vk::VulkanDrawObject>();
   t->drawObject = drawObject;
   registerImageObject(drawObject->texture_handle);
   registerTexture(t, texture_type::Image2D);
 }
 
-void VKRenderer::draw3d(std::shared_ptr<class draw_object> sprite) {
+void vk_renderer::draw3d(std::shared_ptr<class draw_object> sprite) {
   auto t = std::make_shared<vk::VulkanDrawObject>();
   t->drawObject = sprite;
   registerImageObject(sprite->texture_handle);
   registerTexture(t, texture_type::Image3D);
 }
 
-void VKRenderer::LoadShader(const shader &shaderInfo) {
+void vk_renderer::LoadShader(const shader &shaderInfo) {
   std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-      VulkanShader::LoadModule(m_base->get_vk_device(),
-                               shaderInfo.vertName.c_str(),
-                               VK_SHADER_STAGE_VERTEX_BIT),
-      VulkanShader::LoadModule(m_base->get_vk_device(),
-                               shaderInfo.fragName.c_str(),
-                               VK_SHADER_STAGE_FRAGMENT_BIT)};
-  Pipeline pipeline;
+      vk_shader::LoadModule(m_base->get_vk_device(),
+                            shaderInfo.vertName.c_str(),
+                            VK_SHADER_STAGE_VERTEX_BIT),
+      vk_shader::LoadModule(m_base->get_vk_device(),
+                            shaderInfo.fragName.c_str(),
+                            VK_SHADER_STAGE_FRAGMENT_BIT)};
+  vk_pipeline pipeline;
   pipeline.Initialize(mPipelineLayout, m_base->m_renderPass, shaderStages);
   pipeline.ColorBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
   pipeline.AlphaBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
   pipeline.Prepare(m_base->get_vk_device());
-  VulkanShader::CleanModule(m_base->get_vk_device(), shaderStages);
-  userPipelines.emplace_back(std::pair<shader, Pipeline>{shaderInfo, pipeline});
+  vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
+  userPipelines.emplace_back(
+      std::pair<shader, vk_pipeline>{shaderInfo, pipeline});
 }
-void VKRenderer::UnloadShader(const shader &shaderInfo) {
+void vk_renderer::UnloadShader(const shader &shaderInfo) {
   std::erase_if(userPipelines, [&](auto &x) {
     if (x.first == shaderInfo) {
       x.second.Cleanup(m_base->m_device);
@@ -119,7 +118,7 @@ void VKRenderer::UnloadShader(const shader &shaderInfo) {
   });
 }
 
-void VKRenderer::add_instancing(const instancing &_instancing) {
+void vk_renderer::add_instancing(const instancing &_instancing) {
   auto t = std::make_shared<vk::VulkanDrawObject>();
   t->drawObject = _instancing.object;
   registerImageObject(_instancing.object->texture_handle);
@@ -149,7 +148,7 @@ void VKRenderer::add_instancing(const instancing &_instancing) {
   }
 }
 
-void VKRenderer::draw_instancing_3d(VkCommandBuffer command) {
+void vk_renderer::draw_instancing_3d(VkCommandBuffer command) {
   for (auto &_instancing : m_instancies_3d) {
     pipelineInstancingOpaque.Bind(command);
     vkCmdBindDescriptorSets(
@@ -172,7 +171,7 @@ void VKRenderer::draw_instancing_3d(VkCommandBuffer command) {
                      _instancing.ins.data.size(), 0, 0, 0);
   }
 }
-void VKRenderer::draw_instancing_2d(VkCommandBuffer command) {
+void vk_renderer::draw_instancing_2d(VkCommandBuffer command) {
   for (auto &_instancing : m_instancies_2d) {
     pipelineInstancing2D.Bind(command);
     vkCmdBindDescriptorSets(
@@ -196,7 +195,7 @@ void VKRenderer::draw_instancing_2d(VkCommandBuffer command) {
   }
 }
 
-void VKRenderer::prepare() {
+void vk_renderer::prepare() {
   prepareDescriptorSetLayout();
   prepareDescriptorPool();
 
@@ -213,27 +212,25 @@ void VKRenderer::prepare() {
   // Opaque pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-        VulkanShader::LoadModule(m_base->get_vk_device(), "shader.vert.spv",
-                                 VK_SHADER_STAGE_VERTEX_BIT),
-        VulkanShader::LoadModule(m_base->get_vk_device(),
-                                 "shaderOpaque.frag.spv",
-                                 VK_SHADER_STAGE_FRAGMENT_BIT)};
+        vk_shader::LoadModule(m_base->get_vk_device(), "shader.vert.spv",
+                              VK_SHADER_STAGE_VERTEX_BIT),
+        vk_shader::LoadModule(m_base->get_vk_device(), "shaderOpaque.frag.spv",
+                              VK_SHADER_STAGE_FRAGMENT_BIT)};
     pipelineOpaque.Initialize(mPipelineLayout, m_base->m_renderPass,
                               shaderStages);
     pipelineOpaque.ColorBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
     pipelineOpaque.AlphaBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
     pipelineOpaque.Prepare(m_base->get_vk_device());
-    VulkanShader::CleanModule(m_base->get_vk_device(), shaderStages);
+    vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
   }
 
   // alpha pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-        VulkanShader::LoadModule(m_base->get_vk_device(), "shader.vert.spv",
-                                 VK_SHADER_STAGE_VERTEX_BIT),
-        VulkanShader::LoadModule(m_base->get_vk_device(),
-                                 "shaderAlpha.frag.spv",
-                                 VK_SHADER_STAGE_FRAGMENT_BIT)};
+        vk_shader::LoadModule(m_base->get_vk_device(), "shader.vert.spv",
+                              VK_SHADER_STAGE_VERTEX_BIT),
+        vk_shader::LoadModule(m_base->get_vk_device(), "shaderAlpha.frag.spv",
+                              VK_SHADER_STAGE_FRAGMENT_BIT)};
     pipelineAlpha.Initialize(mPipelineLayout, m_base->m_renderPass,
                              shaderStages);
     pipelineAlpha.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
@@ -243,16 +240,15 @@ void VKRenderer::prepare() {
     pipelineAlpha.SetDepthTest(VK_TRUE);
     pipelineAlpha.SetDepthWrite(VK_FALSE);
     pipelineAlpha.Prepare(m_base->get_vk_device());
-    VulkanShader::CleanModule(m_base->get_vk_device(), shaderStages);
+    vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
   }
   // 2D pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-        VulkanShader::LoadModule(m_base->get_vk_device(), "shader.vert.spv",
-                                 VK_SHADER_STAGE_VERTEX_BIT),
-        VulkanShader::LoadModule(m_base->get_vk_device(),
-                                 "shaderAlpha.frag.spv",
-                                 VK_SHADER_STAGE_FRAGMENT_BIT)};
+        vk_shader::LoadModule(m_base->get_vk_device(), "shader.vert.spv",
+                              VK_SHADER_STAGE_VERTEX_BIT),
+        vk_shader::LoadModule(m_base->get_vk_device(), "shaderAlpha.frag.spv",
+                              VK_SHADER_STAGE_FRAGMENT_BIT)};
     pipeline2D.Initialize(mPipelineLayout, m_base->m_renderPass, shaderStages);
     pipeline2D.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
                                 VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
@@ -261,16 +257,15 @@ void VKRenderer::prepare() {
     pipeline2D.SetDepthTest(VK_FALSE);
     pipeline2D.SetDepthWrite(VK_FALSE);
     pipeline2D.Prepare(m_base->get_vk_device());
-    VulkanShader::CleanModule(m_base->get_vk_device(), shaderStages);
+    vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
   }
   // SkyBox pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-        VulkanShader::LoadModule(m_base->get_vk_device(), "shader.vert.spv",
-                                 VK_SHADER_STAGE_VERTEX_BIT),
-        VulkanShader::LoadModule(m_base->get_vk_device(),
-                                 "shaderOpaque.frag.spv",
-                                 VK_SHADER_STAGE_FRAGMENT_BIT)};
+        vk_shader::LoadModule(m_base->get_vk_device(), "shader.vert.spv",
+                              VK_SHADER_STAGE_VERTEX_BIT),
+        vk_shader::LoadModule(m_base->get_vk_device(), "shaderOpaque.frag.spv",
+                              VK_SHADER_STAGE_FRAGMENT_BIT)};
     pipelineSkyBox.Initialize(mPipelineLayout, m_base->m_renderPass,
                               shaderStages);
     pipelineSkyBox.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
@@ -280,7 +275,7 @@ void VKRenderer::prepare() {
     pipelineSkyBox.SetDepthTest(VK_FALSE);
     pipelineSkyBox.SetDepthWrite(VK_FALSE);
     pipelineSkyBox.Prepare(m_base->get_vk_device());
-    VulkanShader::CleanModule(m_base->get_vk_device(), shaderStages);
+    vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
   }
   //
   // Instancing pipelines
@@ -288,12 +283,11 @@ void VKRenderer::prepare() {
   // Opaque pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-        VulkanShader::LoadModule(m_base->get_vk_device(),
-                                 "shader_instance.vert.spv",
-                                 VK_SHADER_STAGE_VERTEX_BIT),
-        VulkanShader::LoadModule(m_base->get_vk_device(),
-                                 "shaderOpaque.frag.spv",
-                                 VK_SHADER_STAGE_FRAGMENT_BIT)};
+        vk_shader::LoadModule(m_base->get_vk_device(),
+                              "shader_instance.vert.spv",
+                              VK_SHADER_STAGE_VERTEX_BIT),
+        vk_shader::LoadModule(m_base->get_vk_device(), "shaderOpaque.frag.spv",
+                              VK_SHADER_STAGE_FRAGMENT_BIT)};
     pipelineInstancingOpaque.Initialize(mPipelineLayout, m_base->m_renderPass,
                                         shaderStages);
     pipelineInstancingOpaque.ColorBlendFactor(VK_BLEND_FACTOR_ONE,
@@ -301,18 +295,17 @@ void VKRenderer::prepare() {
     pipelineInstancingOpaque.AlphaBlendFactor(VK_BLEND_FACTOR_ONE,
                                               VK_BLEND_FACTOR_ZERO);
     pipelineInstancingOpaque.Prepare(m_base->get_vk_device());
-    VulkanShader::CleanModule(m_base->get_vk_device(), shaderStages);
+    vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
   }
 
   // alpha pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-        VulkanShader::LoadModule(m_base->get_vk_device(),
-                                 "shader_instance.vert.spv",
-                                 VK_SHADER_STAGE_VERTEX_BIT),
-        VulkanShader::LoadModule(m_base->get_vk_device(),
-                                 "shaderAlpha.frag.spv",
-                                 VK_SHADER_STAGE_FRAGMENT_BIT)};
+        vk_shader::LoadModule(m_base->get_vk_device(),
+                              "shader_instance.vert.spv",
+                              VK_SHADER_STAGE_VERTEX_BIT),
+        vk_shader::LoadModule(m_base->get_vk_device(), "shaderAlpha.frag.spv",
+                              VK_SHADER_STAGE_FRAGMENT_BIT)};
     pipelineInstancingAlpha.Initialize(mPipelineLayout, m_base->m_renderPass,
                                        shaderStages);
     pipelineInstancingAlpha.ColorBlendFactor(
@@ -322,17 +315,16 @@ void VKRenderer::prepare() {
     pipelineInstancingAlpha.SetDepthTest(VK_TRUE);
     pipelineInstancingAlpha.SetDepthWrite(VK_FALSE);
     pipelineInstancingAlpha.Prepare(m_base->get_vk_device());
-    VulkanShader::CleanModule(m_base->get_vk_device(), shaderStages);
+    vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
   }
   // 2D pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-        VulkanShader::LoadModule(m_base->get_vk_device(),
-                                 "shader_instance.vert.spv",
-                                 VK_SHADER_STAGE_VERTEX_BIT),
-        VulkanShader::LoadModule(m_base->get_vk_device(),
-                                 "shaderAlpha.frag.spv",
-                                 VK_SHADER_STAGE_FRAGMENT_BIT)};
+        vk_shader::LoadModule(m_base->get_vk_device(),
+                              "shader_instance.vert.spv",
+                              VK_SHADER_STAGE_VERTEX_BIT),
+        vk_shader::LoadModule(m_base->get_vk_device(), "shaderAlpha.frag.spv",
+                              VK_SHADER_STAGE_FRAGMENT_BIT)};
     pipelineInstancing2D.Initialize(mPipelineLayout, m_base->m_renderPass,
                                     shaderStages);
     pipelineInstancing2D.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
@@ -342,11 +334,11 @@ void VKRenderer::prepare() {
     pipelineInstancing2D.SetDepthTest(VK_FALSE);
     pipelineInstancing2D.SetDepthWrite(VK_FALSE);
     pipelineInstancing2D.Prepare(m_base->get_vk_device());
-    VulkanShader::CleanModule(m_base->get_vk_device(), shaderStages);
+    vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
   }
   prepareImGUI();
 }
-void VKRenderer::cleanup() {
+void vk_renderer::cleanup() {
   VkDevice device = m_base->get_vk_device();
 
   for (auto &i : mImageObjects) {
@@ -372,9 +364,9 @@ void VKRenderer::cleanup() {
                                              &vkDestroyDescriptorSetLayout);
 }
 
-//コマンドバッファの発行
-void VKRenderer::makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri,
-                             VkCommandBufferBeginInfo &ci, VkFence &fence) {
+void vk_renderer::makeCommand(VkCommandBuffer command,
+                              VkRenderPassBeginInfo &ri,
+                              VkCommandBufferBeginInfo &ci, VkFence &fence) {
   vkBeginCommandBuffer(command, &ci);
   auto viewport = VkViewport{
       .x = 0.f,
@@ -419,22 +411,24 @@ void VKRenderer::makeCommand(VkCommandBuffer command, VkRenderPassBeginInfo &ri,
   vkCmdSetViewport(command, 0, 1, &viewport);
   vkWaitForFences(m_base->get_vk_device(), 1, &fence, VK_TRUE, UINT64_MAX);
 }
-void VKRenderer::draw_skybox(VkCommandBuffer command) {
+void vk_renderer::draw_skybox(VkCommandBuffer command) {
   pipelineSkyBox.Bind(command);
   auto t = std::make_shared<vk::VulkanDrawObject>();
   t->drawObject = std::make_shared<draw_object>();
   t->drawObject->texture_handle = get_renderer().skybox_texture->handle;
   t->drawObject->vertexIndex = "BOX";
-  t->drawObject->param.proj = get_camera().projection;
-  t->drawObject->param.view = get_camera().view;
+  shader_parameter param;
+  param.proj = get_camera().projection;
+  param.view = get_camera().view;
   auto &va = m_VertexArrays["BOX"];
 
-  static auto once = [&]() {
+  if (!mImageObjects.contains(t->drawObject->texture_handle)) {
     mImageObjects[t->drawObject->texture_handle] =
-        VKRenderer::createTextureFromSurface(
+        vk_renderer::createTextureFromSurface(
             get_texture_system().get(t->drawObject->texture_handle));
-    return true;
-  }();
+  } else {
+    update_image_object(t->drawObject->texture_handle);
+  }
   t->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
   for (auto &v : t->uniformBuffers) {
     VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
@@ -453,12 +447,12 @@ void VKRenderer::draw_skybox(VkCommandBuffer command) {
                           mPipelineLayout.GetLayout(), 0, 1,
                           &t->descripterSet[m_base->m_imageIndex], 0, nullptr);
   auto allocation = t->uniformBuffers[m_base->m_imageIndex].allocation;
-  write_memory(allocation, &t->drawObject->param, sizeof(shader_parameter));
+  write_memory(allocation, &param, sizeof(shader_parameter));
   vkCmdDrawIndexed(command, va.indexCount, 1, 0, 0, 0);
   unregisterTexture(t);
 }
 
-void VKRenderer::draw3d(VkCommandBuffer command) {
+void vk_renderer::draw3d(VkCommandBuffer command) {
   pipelineOpaque.Bind(command);
   VkDeviceSize offset = 0;
   for (auto &sprite : mDrawObject3D) {
@@ -488,7 +482,7 @@ void VKRenderer::draw3d(VkCommandBuffer command) {
   }
 }
 
-void VKRenderer::draw2d(VkCommandBuffer command) {
+void vk_renderer::draw2d(VkCommandBuffer command) {
   pipeline2D.Bind(command);
   VkDeviceSize offset = 0;
   for (auto &sprite : mDrawObject2D) {
@@ -524,15 +518,15 @@ void VKRenderer::draw2d(VkCommandBuffer command) {
   }
 }
 
-void VKRenderer::write_memory(VmaAllocation allocation, const void *data,
-                              size_t size) {
+void vk_renderer::write_memory(VmaAllocation allocation, const void *data,
+                               size_t size) {
   void *p = nullptr;
   vmaMapMemory(allocator, allocation, &p);
   memcpy(p, data, size);
   vmaUnmapMemory(allocator, allocation);
 }
 
-void VKRenderer::prepareImGUI() {
+void vk_renderer::prepareImGUI() {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
@@ -562,7 +556,7 @@ void VKRenderer::prepareImGUI() {
     std::exit(1);
   }
 
-  // フォントテクスチャを転送する.
+  // Transfar font texture
   VkCommandBufferAllocateInfo commandAI{
       VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO, nullptr,
       m_base->m_commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, 1};
@@ -582,18 +576,17 @@ void VKRenderer::prepareImGUI() {
 
   vkQueueSubmit(m_base->get_vk_queue(), 1, &submitInfo, VK_NULL_HANDLE);
 
-  // フォントテクスチャ転送の完了を待つ.
+  // Wait for transfar font texture
   vkDeviceWaitIdle(m_base->get_vk_device());
   vkFreeCommandBuffers(m_base->get_vk_device(), m_base->m_commandPool, 1,
                        &command);
 }
-void VKRenderer::renderImGUI(VkCommandBuffer command) {
+void vk_renderer::renderImGUI(VkCommandBuffer command) {
   ImGui_ImplVulkan_NewFrame();
   ImGui_ImplSDL2_NewFrame(
       (SDL_Window *)m_base->m_manager.get_window().GetSDLWindow());
   ImGui::NewFrame();
 
-  // ImGui ウィジェットを描画する.
   if (m_manager.get_renderer().isShowImGui()) {
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
     ImGui::SetNextWindowSize(
@@ -611,7 +604,7 @@ void VKRenderer::renderImGUI(VkCommandBuffer command) {
   ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), command);
 }
 
-void VKRenderer::prepareDescriptorSetLayout() {
+void vk_renderer::prepareDescriptorSetLayout() {
   std::vector<VkDescriptorSetLayoutBinding> bindings;
   VkDescriptorSetLayoutBinding bindingUBO{}, bindingTex{}, bindingInstance{};
   bindingUBO.binding = 0;
@@ -640,7 +633,7 @@ void VKRenderer::prepareDescriptorSetLayout() {
                               &m_descriptorSetLayout);
 }
 
-void VKRenderer::prepareDescriptorPool() {
+void vk_renderer::prepareDescriptorPool() {
 
   VkDescriptorPoolSize poolSize[] = {
       {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxpoolSize},
@@ -658,7 +651,7 @@ void VKRenderer::prepareDescriptorPool() {
                          &m_descriptorPool);
 }
 
-void VKRenderer::prepareDescriptorSet(
+void vk_renderer::prepareDescriptorSet(
     std::shared_ptr<VulkanDrawObject> sprite) {
   VkDescriptorSetAllocateInfo ai{};
   ai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -668,7 +661,7 @@ void VKRenderer::prepareDescriptorSet(
   sprite->descripterSet.resize(m_base->mSwapchain->GetImageCount());
   vkAllocateDescriptorSets(m_base->get_vk_device(), &ai,
                            sprite->descripterSet.data());
-  // ディスクリプタセットへ書き込み.
+  // Write to descriptor set.
   for (int i = 0; i < m_base->mSwapchain->GetImageCount(); i++) {
     VkDescriptorBufferInfo descUBO{};
     descUBO.buffer = sprite->uniformBuffers[i].buffer;
@@ -702,8 +695,8 @@ void VKRenderer::prepareDescriptorSet(
                            writeSets.data(), 0, nullptr);
   }
 }
-BufferObject VKRenderer::CreateBuffer(uint32_t size, VkBufferUsageFlags usage,
-                                      VkMemoryPropertyFlags flags) {
+BufferObject vk_renderer::CreateBuffer(uint32_t size, VkBufferUsageFlags usage,
+                                       VkMemoryPropertyFlags flags) {
   BufferObject obj;
   VkBufferCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -716,7 +709,7 @@ BufferObject VKRenderer::CreateBuffer(uint32_t size, VkBufferUsageFlags usage,
   return obj;
 }
 
-VkSampler VKRenderer::createSampler() {
+VkSampler vk_renderer::createSampler() {
   VkSampler sampler;
   VkSamplerCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -730,8 +723,8 @@ VkSampler VKRenderer::createSampler() {
   return sampler;
 }
 
-ImageObject VKRenderer::create_texture(SDL_Surface *imagedata,
-                                       VkFormat format) {
+ImageObject vk_renderer::create_texture(SDL_Surface *imagedata,
+                                        VkFormat format) {
   BufferObject stagingBuffer;
   ImageObject texture{};
   int width = imagedata->w, height = imagedata->h;
@@ -819,7 +812,8 @@ ImageObject VKRenderer::create_texture(SDL_Surface *imagedata,
   return texture;
 }
 
-ImageObject VKRenderer::createTextureFromSurface(const ::SDL_Surface &surface) {
+ImageObject
+vk_renderer::createTextureFromSurface(const ::SDL_Surface &surface) {
   ::SDL_Surface surf = surface;
   ::SDL_LockSurface(&surf);
   auto *formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
@@ -832,7 +826,7 @@ ImageObject VKRenderer::createTextureFromSurface(const ::SDL_Surface &surface) {
 }
 
 ImageObject
-VKRenderer::createTextureFromMemory(const std::vector<char> &imageData) {
+vk_renderer::createTextureFromMemory(const std::vector<char> &imageData) {
   auto *rw = ::SDL_RWFromMem((void *)imageData.data(), imageData.size());
   ::SDL_Surface *surface;
   surface = ::IMG_Load_RW(rw, 1);
@@ -844,9 +838,9 @@ VKRenderer::createTextureFromMemory(const std::vector<char> &imageData) {
   return create_texture(imagedata, VK_FORMAT_R8G8B8A8_UNORM);
 }
 
-void VKRenderer::setImageMemoryBarrier(VkCommandBuffer command, VkImage image,
-                                       VkImageLayout oldLayout,
-                                       VkImageLayout newLayout) {
+void vk_renderer::setImageMemoryBarrier(VkCommandBuffer command, VkImage image,
+                                        VkImageLayout oldLayout,
+                                        VkImageLayout newLayout) {
   VkImageMemoryBarrier imb{};
   imb.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
   imb.oldLayout = oldLayout;
@@ -884,10 +878,8 @@ void VKRenderer::setImageMemoryBarrier(VkCommandBuffer command, VkImage image,
     break;
   }
 
-  srcStage =
-      VK_PIPELINE_STAGE_ALL_COMMANDS_BIT; // パイプライン中でリソースへの書込み最終のステージ.
-  dstStage =
-      VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT; // パイプライン中で次にリソースに書き込むステージ.
+  srcStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+  dstStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 
   vkCmdPipelineBarrier(command, srcStage, dstStage, 0,
                        0, // memoryBarrierCount
@@ -899,8 +891,8 @@ void VKRenderer::setImageMemoryBarrier(VkCommandBuffer command, VkImage image,
 }
 
 uint32_t
-VKRenderer::GetMemoryTypeIndex(uint32_t requestBits,
-                               VkMemoryPropertyFlags requestProps) const {
+vk_renderer::GetMemoryTypeIndex(uint32_t requestBits,
+                                VkMemoryPropertyFlags requestProps) const {
   uint32_t result = ~0u;
   for (uint32_t i = 0; i < m_physicalMemProps.memoryTypeCount; ++i) {
     if (requestBits & 1) {
@@ -915,10 +907,10 @@ VKRenderer::GetMemoryTypeIndex(uint32_t requestBits,
   return result;
 }
 
-VkFramebuffer VKRenderer::CreateFramebuffer(VkRenderPass renderPass,
-                                            uint32_t width, uint32_t height,
-                                            uint32_t viewCount,
-                                            VkImageView *views) {
+VkFramebuffer vk_renderer::CreateFramebuffer(VkRenderPass renderPass,
+                                             uint32_t width, uint32_t height,
+                                             uint32_t viewCount,
+                                             VkImageView *views) {
   VkFramebufferCreateInfo fbCI{
       VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
       nullptr,
@@ -935,22 +927,22 @@ VkFramebuffer VKRenderer::CreateFramebuffer(VkRenderPass renderPass,
   return framebuffer;
 }
 
-void VKRenderer::DestroyBuffer(BufferObject &bufferObj) {
+void vk_renderer::DestroyBuffer(BufferObject &bufferObj) {
   vmaDestroyBuffer(allocator, bufferObj.buffer, bufferObj.allocation);
 }
 
-void VKRenderer::DestroyImage(ImageObject &imageObj) {
+void vk_renderer::DestroyImage(ImageObject &imageObj) {
   vkDestroyImageView(m_base->get_vk_device(), imageObj.view, nullptr);
   vmaDestroyImage(allocator, imageObj.image, imageObj.allocation);
 }
 
-void VKRenderer::DestroyFramebuffers(uint32_t count,
-                                     VkFramebuffer *framebuffers) {
+void vk_renderer::DestroyFramebuffers(uint32_t count,
+                                      VkFramebuffer *framebuffers) {
   for (uint32_t i = 0; i < count; ++i) {
     vkDestroyFramebuffer(m_base->get_vk_device(), framebuffers[i], nullptr);
   }
 }
-void VKRenderer::update_image_object(const handle_t &handle) {
+void vk_renderer::update_image_object(const handle_t &handle) {
   DestroyImage(mImageObjects[handle]);
   mImageObjects.erase(handle);
   ::SDL_Surface &surf = get_texture_system().get(handle);
@@ -1046,15 +1038,15 @@ void VKRenderer::update_image_object(const handle_t &handle) {
   SDL_FreeSurface(imagedata);
   mImageObjects.emplace(handle, texture);
 }
-void VKRenderer::registerImageObject(const handle_t &handle) {
+void vk_renderer::registerImageObject(const handle_t &handle) {
   if (mImageObjects.contains(handle)) {
     update_image_object(handle);
     return;
   }
   mImageObjects[handle] =
-      VKRenderer::createTextureFromSurface(get_texture_system().get(handle));
+      vk_renderer::createTextureFromSurface(get_texture_system().get(handle));
 }
-void VKRenderer::unregister_image_object(const handle_t &handle) {
+void vk_renderer::unregister_image_object(const handle_t &handle) {
   for (auto it = mImageObjects.begin(); it != mImageObjects.end(); ++it) {
     if (it->first == handle) {
       DestroyImage(it->second);
@@ -1063,18 +1055,18 @@ void VKRenderer::unregister_image_object(const handle_t &handle) {
     }
   }
 }
-VkRenderPass VKRenderer::GetRenderPass(const std::string &name) {
+VkRenderPass vk_renderer::GetRenderPass(const std::string &name) {
   if (m_base)
     return m_base->m_renderPass;
   return 0;
 }
-VkDevice VKRenderer::GetDevice() {
+VkDevice vk_renderer::GetDevice() {
   if (m_base)
     return m_base->get_vk_device();
   return m_base->get_vk_device();
 }
-void VKRenderer::registerTexture(std::shared_ptr<VulkanDrawObject> texture,
-                                 texture_type type) {
+void vk_renderer::registerTexture(std::shared_ptr<VulkanDrawObject> texture,
+                                  texture_type type) {
   if (texture_type::Image3D == type) {
     mDrawObject3D.push_back(texture);
     texture->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
@@ -1107,7 +1099,7 @@ void VKRenderer::registerTexture(std::shared_ptr<VulkanDrawObject> texture,
     prepareDescriptorSet(texture);
   }
 }
-void VKRenderer::unregisterTexture(std::shared_ptr<VulkanDrawObject> texture) {
+void vk_renderer::unregisterTexture(std::shared_ptr<VulkanDrawObject> texture) {
   auto device = m_base->get_vk_device();
   vkFreeDescriptorSets(device, m_descriptorPool,
                        static_cast<uint32_t>(texture->descripterSet.size()),

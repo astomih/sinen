@@ -4,9 +4,9 @@
 #include <vulkan/vk_layer.h>
 
 namespace nen::vk {
-class VulkanShader {
+class vk_shader {
 public:
-  VulkanShader() = default;
+  vk_shader() = default;
   static VkPipelineShaderStageCreateInfo
   LoadModule(VkDevice device, const char *fileName,
              VkShaderStageFlagBits stage);

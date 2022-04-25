@@ -33,7 +33,7 @@ void draw2d_instancing::draw() {
     matrix4 t = matrix4::Identity;
     t.mat[3][0] = position[i].x;
     t.mat[3][1] = position[i].y;
-    quaternion q(vector3::NegUnitZ, rotation[i]);
+    quaternion q(vector3::neg_unit_z, rotation[i]);
     matrix4 r = matrix4::CreateFromQuaternion(q);
     matrix4 s = matrix4::Identity;
     s.mat[0][0] = scale[i].x * 0.5f;
@@ -71,9 +71,9 @@ void draw3d_instancing::draw() {
     t.mat[3][0] = position[i].x;
     t.mat[3][1] = position[i].y;
     t.mat[3][2] = position[i].z;
-    quaternion q(vector3::NegUnitZ, rotation[i].z);
-    q = quaternion::Concatenate(q, quaternion(vector3::UnitY, rotation[i].y));
-    q = quaternion::Concatenate(q, quaternion(vector3::UnitX, rotation[i].x));
+    quaternion q(vector3::neg_unit_z, rotation[i].z);
+    q = quaternion::Concatenate(q, quaternion(vector3::unit_y, rotation[i].y));
+    q = quaternion::Concatenate(q, quaternion(vector3::unit_x, rotation[i].x));
     matrix4 r = matrix4::CreateFromQuaternion(q);
     matrix4 s = matrix4::Identity;
     s.mat[0][0] = scale[i].x;

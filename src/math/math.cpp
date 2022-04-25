@@ -4,26 +4,26 @@
 #include <math/vector2.hpp>
 #include <math/vector3.hpp>
 namespace nen {
-const vector2 vector2::Zero(0.0f, 0.0f);
-const vector2 vector2::UnitX(1.0f, 0.0f);
-const vector2 vector2::UnitY(0.0f, 1.0f);
-const vector2 vector2::NegUnitX(-1.0f, 0.0f);
-const vector2 vector2::NegUnitY(0.0f, -1.0f);
+const vector2 vector2::zero(0.0f, 0.0f);
+const vector2 vector2::unit_x(1.0f, 0.0f);
+const vector2 vector2::unit_y(0.0f, 1.0f);
+const vector2 vector2::neg_unit_x(-1.0f, 0.0f);
+const vector2 vector2::neg_unit_y(0.0f, -1.0f);
 
-const vector3 vector3::Zero(0.0f, 0.0f, 0.f);
-const vector3 vector3::UnitX(1.0f, 0.0f, 0.0f);
-const vector3 vector3::UnitY(0.0f, 1.0f, 0.0f);
-const vector3 vector3::UnitZ(0.0f, 0.0f, 1.0f);
-const vector3 vector3::NegUnitX(-1.0f, 0.0f, 0.0f);
-const vector3 vector3::NegUnitY(0.0f, -1.0f, 0.0f);
-const vector3 vector3::NegUnitZ(0.0f, 0.0f, -1.0f);
-const vector3 vector3::Infinity(Math::Infinity, Math::Infinity, Math::Infinity);
-const vector3 vector3::NegInfinity(Math::NegInfinity, Math::NegInfinity,
-                                   Math::NegInfinity);
+const vector3 vector3::zero(0.0f, 0.0f, 0.f);
+const vector3 vector3::unit_x(1.0f, 0.0f, 0.0f);
+const vector3 vector3::unit_y(0.0f, 1.0f, 0.0f);
+const vector3 vector3::unit_z(0.0f, 0.0f, 1.0f);
+const vector3 vector3::neg_unit_x(-1.0f, 0.0f, 0.0f);
+const vector3 vector3::neg_unit_y(0.0f, -1.0f, 0.0f);
+const vector3 vector3::neg_unit_z(0.0f, 0.0f, -1.0f);
+const vector3 vector3::infinity(math::Infinity, math::Infinity, math::Infinity);
+const vector3 vector3::neg_infinity(math::NegInfinity, math::NegInfinity,
+                                    math::NegInfinity);
 
 static float m3Ident[3][3] = {
     {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}};
-const matrix3 matrix3::Identity(m3Ident);
+const matrix3 matrix3::identity(m3Ident);
 
 static float m4Ident[4][4] = {{1.0f, 0.0f, 0.0f, 0.0f},
                               {0.0f, 1.0f, 0.0f, 0.0f},
@@ -34,7 +34,7 @@ const matrix4 matrix4::Identity(m4Ident);
 
 const quaternion quaternion::Identity(0.0f, 0.0f, 0.0f, 1.0f);
 
-vector2 vector2::Transform(const vector2 &vec, const matrix3 &mat,
+vector2 vector2::transform(const vector2 &vec, const matrix3 &mat,
                            float w /*= 1.0f*/) {
   vector2 retVal;
   retVal.x = vec.x * mat.mat[0][0] + vec.y * mat.mat[1][0] + w * mat.mat[2][0];
@@ -43,7 +43,7 @@ vector2 vector2::Transform(const vector2 &vec, const matrix3 &mat,
   return retVal;
 }
 
-vector3 vector3::Transform(const vector3 &vec, const matrix4 &mat,
+vector3 vector3::transform(const vector3 &vec, const matrix4 &mat,
                            float w /*= 1.0f*/) {
   vector3 retVal;
   retVal.x = vec.x * mat.mat[0][0] + vec.y * mat.mat[1][0] +
@@ -57,8 +57,9 @@ vector3 vector3::Transform(const vector3 &vec, const matrix4 &mat,
 }
 
 // This will transform the vector and renormalize the w component
-vector3 vector3::TransformWithPerspDiv(const vector3 &vec, const matrix4 &mat,
-                                       float w /*= 1.0f*/) {
+vector3 vector3::transform_with_persp_div(const vector3 &vec,
+                                          const matrix4 &mat,
+                                          float w /*= 1.0f*/) {
   vector3 retVal;
   retVal.x = vec.x * mat.mat[0][0] + vec.y * mat.mat[1][0] +
              vec.z * mat.mat[2][0] + w * mat.mat[3][0];
@@ -68,7 +69,7 @@ vector3 vector3::TransformWithPerspDiv(const vector3 &vec, const matrix4 &mat,
              vec.z * mat.mat[2][2] + w * mat.mat[3][2];
   float transformedW = vec.x * mat.mat[0][3] + vec.y * mat.mat[1][3] +
                        vec.z * mat.mat[2][3] + w * mat.mat[3][3];
-  if (!Math::NearZero(Math::Abs(transformedW))) {
+  if (!math::NearZero(math::Abs(transformedW))) {
     transformedW = 1.0f / transformedW;
     retVal *= transformedW;
   }
@@ -229,28 +230,28 @@ quaternion matrix4::ToQuaternion(const matrix4 &m) {
   }
   switch (flag) {
   case 0: {
-    auto x = Math::Sqrt(px) * 0.5f;
+    auto x = math::Sqrt(px) * 0.5f;
     auto d = 1 / (4 * x);
     return quaternion(x, (m.mat[1][0] + m.mat[0][1]) * d,
                       (m.mat[0][2] + m.mat[2][0]) * d,
                       (m.mat[2][1] - m.mat[1][2]) * d);
   }
   case 1: {
-    auto y = Math::Sqrt(py) * 0.5f;
+    auto y = math::Sqrt(py) * 0.5f;
     auto d = 1 / (4 * y);
     return quaternion((m.mat[1][0] + m.mat[0][1]) * d, y,
                       (m.mat[2][1] + m.mat[1][2]) * d,
                       (m.mat[0][2] - m.mat[2][0]) * d);
   }
   case 2: {
-    auto z = Math::Sqrt(pz) * 0.5f;
+    auto z = math::Sqrt(pz) * 0.5f;
     auto d = 1 / (4 * z);
     return quaternion((m.mat[0][2] + m.mat[2][0]) * d,
                       (m.mat[2][1] + m.mat[1][2]) * d, z,
                       (m.mat[1][0] - m.mat[0][1]) * d);
   }
   case 3: {
-    auto w = Math::Sqrt(pw) * 0.5f;
+    auto w = math::Sqrt(pw) * 0.5f;
     auto d = 1 / (4 * w);
     return quaternion((m.mat[2][1] - m.mat[1][2]) * d,
                       (m.mat[0][2] - m.mat[2][0]) * d,
@@ -280,7 +281,7 @@ matrix4 matrix4::LookAt(const vector3 &eye, const vector3 &at,
 
 matrix4 matrix4::Perspective(const float angle, const float aspect,
                              const float near, const float far) {
-  const auto yScale = Math::Cot(angle / 2.0f);
+  const auto yScale = math::Cot(angle / 2.0f);
   const auto xScale = yScale / aspect;
   float temp[4][4] = {{xScale, 0.0f, 0.0f, 0.0f},
                       {0.0f, yScale, 0.0f, 0.0f},
@@ -386,17 +387,17 @@ vector3 quaternion::ToEuler(const quaternion &r) {
   float tx, ty, tz;
 
   if (m21 >= 0.99 && m21 <= 1.01) {
-    tx = Math::Pi / 2.f;
+    tx = math::Pi / 2.f;
     ty = 0;
-    tz = Math::Atan2(m10, m00);
+    tz = math::Atan2(m10, m00);
   } else if (m21 >= -1.01f && m21 <= -0.99f) {
-    tx = -Math::Pi / 2.f;
+    tx = -math::Pi / 2.f;
     ty = 0;
-    tz = Math::Atan2(m10, m00);
+    tz = math::Atan2(m10, m00);
   } else {
     tx = std::asin(-m21);
-    ty = Math::Atan2(m20, m22);
-    tz = Math::Atan2(m01, m11);
+    ty = math::Atan2(m20, m22);
+    tz = math::Atan2(m01, m11);
   }
 
   return vector3(tx, ty, tz);

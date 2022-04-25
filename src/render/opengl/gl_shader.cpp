@@ -10,9 +10,9 @@
 
 namespace nen::gl {
 
-ShaderGL::ShaderGL() : mShaderProgram(0), mVertexShader(0), mFragShader(0) {}
+gl_shader::gl_shader() : mShaderProgram(0), mVertexShader(0), mFragShader(0) {}
 
-bool ShaderGL::Load(const std::string &vertName, const std::string &fragName) {
+bool gl_shader::Load(const std::string &vertName, const std::string &fragName) {
   // Compile vertex and pixel shaders
   if (!CompileShader(fragName, GL_FRAGMENT_SHADER, mFragShader) ||
       !CompileShader(vertName, GL_VERTEX_SHADER, mVertexShader)) {
@@ -33,23 +33,23 @@ bool ShaderGL::Load(const std::string &vertName, const std::string &fragName) {
   return true;
 }
 
-void ShaderGL::Unload() {
+void gl_shader::Unload() {
   // Delete the program/shaders
   glDeleteProgram(mShaderProgram);
   glDeleteShader(mVertexShader);
   glDeleteShader(mFragShader);
 }
 
-void ShaderGL::SetActive(const GLuint &blockIndex) {
+void gl_shader::SetActive(const GLuint &blockIndex) {
   // Set this program as the active one
   glBindBufferBase(GL_UNIFORM_BUFFER, 1, blockIndexBuffers[blockIndex]);
   glUniformBlockBinding(mShaderProgram, blockIndex, 1);
   glUseProgram(mShaderProgram);
 }
 
-void ShaderGL::SetDisable() { glDisable(mShaderProgram); }
-bool ShaderGL::CompileShader(const std::string &fileName, GLenum shaderType,
-                             GLuint &outShader) {
+void gl_shader::SetDisable() { glDisable(mShaderProgram); }
+bool gl_shader::CompileShader(const std::string &fileName, GLenum shaderType,
+                              GLuint &outShader) {
   std::string contents;
 #if defined EMSCRIPTEN || defined MOBILE
   contents = "#version 300 es\n";
@@ -72,7 +72,7 @@ bool ShaderGL::CompileShader(const std::string &fileName, GLenum shaderType,
   return true;
 }
 
-bool ShaderGL::IsCompiled(GLuint shader) {
+bool gl_shader::IsCompiled(GLuint shader) {
   GLint status;
   // Query the compile status
   glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
@@ -88,7 +88,7 @@ bool ShaderGL::IsCompiled(GLuint shader) {
   return true;
 }
 
-bool ShaderGL::IsValidProgram() {
+bool gl_shader::IsValidProgram() {
   GLint status;
   // Query the link status
   glGetProgramiv(mShaderProgram, GL_LINK_STATUS, &status);
@@ -103,8 +103,8 @@ bool ShaderGL::IsValidProgram() {
   return true;
 }
 
-bool ShaderGL::CreateUBO(const GLuint &blockIndex, const size_t &size,
-                         const void *data) {
+bool gl_shader::CreateUBO(const GLuint &blockIndex, const size_t &size,
+                          const void *data) {
   GLuint BIB = 0; // blockIndexBuffer
   glGenBuffers(1, &BIB);
   glBindBuffer(GL_UNIFORM_BUFFER, BIB);
@@ -114,8 +114,8 @@ bool ShaderGL::CreateUBO(const GLuint &blockIndex, const size_t &size,
   return true;
 }
 
-void ShaderGL::UpdateUBO(const GLuint &blockIndex, const size_t &size,
-                         const void *data, const GLsizeiptr &offset) {
+void gl_shader::UpdateUBO(const GLuint &blockIndex, const size_t &size,
+                          const void *data, const GLsizeiptr &offset) {
   auto BIB = blockIndexBuffers[blockIndex];
   glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
 }

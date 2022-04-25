@@ -8,7 +8,7 @@ class matrix3 {
 public:
   float mat[3][3] = {};
 
-  matrix3() { *this = matrix3::Identity; }
+  matrix3() { *this = matrix3::identity; }
 
   explicit matrix3(float inMat[3][3]) { memcpy(mat, inMat, 9 * sizeof(float)); }
 
@@ -88,8 +88,8 @@ public:
   // theta is in radians
   static matrix3 CreateRotation(float theta) {
     float temp[3][3] = {
-        {Math::Cos(theta), Math::Sin(theta), 0.0f},
-        {-Math::Sin(theta), Math::Cos(theta), 0.0f},
+        {math::Cos(theta), math::Sin(theta), 0.0f},
+        {-math::Sin(theta), math::Cos(theta), 0.0f},
         {0.0f, 0.0f, 1.0f},
     };
     return matrix3(temp);
@@ -105,6 +105,6 @@ public:
     return matrix3(temp);
   }
 
-  static const matrix3 Identity;
+  static const matrix3 identity;
 };
 } // namespace nen

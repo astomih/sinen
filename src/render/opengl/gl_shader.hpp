@@ -10,18 +10,18 @@
 #include <unordered_map>
 
 namespace nen::gl {
-class ShaderGL {
+class gl_shader {
 public:
   /**
    * @brief コンストラクタ
    *
    */
-  ShaderGL();
+  gl_shader();
   /**
    * @brief デストラクタ
    *
    */
-  ~ShaderGL() = default;
+  ~gl_shader() = default;
 
   /**
    * @brief シェーダーをファイルから読み込む

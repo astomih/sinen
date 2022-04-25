@@ -13,10 +13,10 @@ void renderer::initialize(graphics_api api) {
   RendererAPI = api;
   if (RendererAPI == graphics_api::Vulkan) {
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
-    m_renderer = std::make_unique<vk::VKRenderer>(m_manager);
+    m_renderer = std::make_unique<vk::vk_renderer>(m_manager);
 #endif
   } else {
-    m_renderer = std::make_unique<gl::GLRenderer>(m_manager);
+    m_renderer = std::make_unique<gl::gl_renderer>(m_manager);
   }
   m_renderer->Initialize();
   setup_shapes();

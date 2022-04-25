@@ -10,7 +10,7 @@
 //#include <numbers>
 
 namespace nen {
-class Math {
+class math {
 public:
   // static constexpr float Pi = std::numbers::pi_v<float>;
   static constexpr float Pi = 3.141592f;
@@ -19,9 +19,13 @@ public:
   static constexpr float Infinity = std::numeric_limits<float>::infinity();
   static constexpr float NegInfinity = -std::numeric_limits<float>::infinity();
 
-  static inline float ToRadians(float degrees) { return degrees * Pi / 180.0f; }
+  static inline float to_radians(float degrees) {
+    return degrees * Pi / 180.0f;
+  }
 
-  static inline float ToDegrees(float radians) { return radians * 180.0f / Pi; }
+  static inline float to_degrees(float radians) {
+    return radians * 180.0f / Pi;
+  }
 
   static inline bool NearZero(float val, float epsilon = 0.001f) {
     if (fabs(val) <= epsilon) {

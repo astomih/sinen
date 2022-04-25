@@ -6,9 +6,10 @@
 
 namespace nen::vk {
 VkPipelineShaderStageCreateInfo
-VulkanShader::LoadModule(VkDevice device, const char *fileName,
-                         VkShaderStageFlagBits stage) {
-  std::string filedata = dstream::open_as_string(asset_type::vk_shader, fileName);
+vk_shader::LoadModule(VkDevice device, const char *fileName,
+                      VkShaderStageFlagBits stage) {
+  std::string filedata =
+      dstream::open_as_string(asset_type::vk_shader, fileName);
 
   VkShaderModule shaderModule;
   VkShaderModuleCreateInfo ci{};
@@ -24,7 +25,7 @@ VulkanShader::LoadModule(VkDevice device, const char *fileName,
   return shaderStageCI;
 }
 
-void VulkanShader::CleanModule(
+void vk_shader::CleanModule(
     VkDevice device,
     std::vector<VkPipelineShaderStageCreateInfo> &shaderStages) {
   for (const auto &v : shaderStages) {

@@ -6,9 +6,9 @@
 #include "vk_util.hpp"
 #include "vulkan/vulkan_core.h"
 namespace nen::vk {
-void PipelineLayout::Initialize(VkDevice device,
-                                const VkDescriptorSetLayout *descriptorLayout,
-                                const VkExtent2D &extent) {
+void vk_pipeline_layout::Initialize(
+    VkDevice device, const VkDescriptorSetLayout *descriptorLayout,
+    const VkExtent2D &extent) {
   // Setting vertex inputs
   vibDesc = {{
       // position 3, normal 3, uv 2, color4 = 12
@@ -125,11 +125,11 @@ void PipelineLayout::Initialize(VkDevice device,
     pipelineLayoutCI.pSetLayouts = descriptorLayout;
 }
 
-void PipelineLayout::Prepare(VkDevice device) {
+void vk_pipeline_layout::Prepare(VkDevice device) {
   vkCreatePipelineLayout(device, &pipelineLayoutCI, NULL, &layout);
 }
 
-void PipelineLayout::Cleanup(VkDevice device) {
+void vk_pipeline_layout::Cleanup(VkDevice device) {
   nen::vkutil::DestroyVulkanObject<VkPipelineLayout>(device, layout,
                                                      &vkDestroyPipelineLayout);
 }

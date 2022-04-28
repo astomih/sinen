@@ -6,7 +6,9 @@
 #if defined(EMSCRIPTEN) || defined(MOBILE)
 #include <GLES3/gl3.h>
 #include <SDL_opengles2.h>
-#else
+#endif
+
+#ifndef MOBILE
 #include <GL/glew.h>
 #endif
 
@@ -76,24 +78,9 @@ void gl_renderer::Render() {
   glClearColor(color.r, color.g, color.b, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glEnable(GL_BLEND);
-  /**
-   * skybox
-   */
-  {
-    registerTexture(get_renderer().skybox_texture->handle);
-    auto &va = m_VertexArrays["BOX"];
-    glBindVertexArray(va.vao);
-    mSpriteShader.SetActive(0);
-    shader_parameter param;
-    param.proj = get_camera().projection;
-    param.view = get_camera().view;
-    mSpriteShader.SetActive(0);
-    mSpriteShader.UpdateUBO(0, sizeof(shader_parameter), &param);
-    glBindTexture(GL_TEXTURE_2D,
-                  mTextureIDs[get_renderer().skybox_texture->handle]);
-    glDrawElements(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT, nullptr);
-  }
-
+  glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+  glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+  draw_skybox();
   glDisable(GL_BLEND);
   glEnable(GL_DEPTH_TEST);
   draw_3d();
@@ -138,10 +125,29 @@ void gl_renderer::Render() {
   SDL_GL_SwapWindow((SDL_Window *)w.GetSDLWindow());
 }
 
+void gl_renderer::draw_skybox() {
+  registerTexture(get_renderer().skybox_texture->handle);
+  auto &va = m_VertexArrays["BOX"];
+  glBindVertexArray(va.vao);
+  mSpriteShader.SetActive(0);
+  shader_parameter param;
+  param.proj = get_camera().projection;
+  param.view = get_camera().view;
+  mSpriteShader.SetActive(0);
+  mSpriteShader.UpdateUBO(0, sizeof(shader_parameter), &param);
+  glBindTexture(GL_TEXTURE_2D,
+                mTextureIDs[get_renderer().skybox_texture->handle]);
+  glDrawElements(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT, nullptr);
+}
+
 void gl_renderer::draw_3d() {
   for (auto &i : mSprite3Ds) {
     auto &va = m_VertexArrays[i->vertexIndex];
     glBindVertexArray(va.vao);
+    glDisableVertexAttribArray(4);
+    glDisableVertexAttribArray(5);
+    glDisableVertexAttribArray(6);
+    glDisableVertexAttribArray(7);
     if (i->shader_data.vertName == "default" &&
         i->shader_data.fragName == "default") {
       mSpriteShader.SetActive(0);
@@ -160,7 +166,6 @@ void gl_renderer::draw_3d() {
   }
 }
 void gl_renderer::draw_instancing_3d() {
-
   for (auto &i : m_instancing_3d) {
     mSpriteInstanceShader.SetActive(0);
     mSpriteInstanceShader.UpdateUBO(0, sizeof(shader_parameter),
@@ -168,6 +173,10 @@ void gl_renderer::draw_instancing_3d() {
 
     auto &va = m_VertexArrays[i.ins.object->vertexIndex];
     glBindVertexArray(va.vao);
+    glEnableVertexAttribArray(4);
+    glEnableVertexAttribArray(5);
+    glEnableVertexAttribArray(6);
+    glEnableVertexAttribArray(7);
 
     glBindTexture(GL_TEXTURE_2D, mTextureIDs[i.ins.object->texture_handle]);
     glDrawElementsInstanced(
@@ -179,6 +188,11 @@ void gl_renderer::draw_instancing_3d() {
 void gl_renderer::draw_2d() {
   for (auto &i : mSprite2Ds) {
     glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
+    glDisableVertexAttribArray(4);
+    glDisableVertexAttribArray(5);
+    glDisableVertexAttribArray(6);
+    glDisableVertexAttribArray(7);
+    glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->texture_handle]);
     if (i->shader_data.vertName == "default" &&
         i->shader_data.fragName == "default") {
       mAlphaShader.SetActive(0);
@@ -191,7 +205,6 @@ void gl_renderer::draw_2d() {
         }
       }
     }
-    glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->texture_handle]);
     glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indices.size(),
                    GL_UNSIGNED_INT, nullptr);
   }
@@ -205,6 +218,10 @@ void gl_renderer::draw_instancing_2d() {
 
     auto &va = m_VertexArrays[i.ins.object->vertexIndex];
     glBindVertexArray(va.vao);
+    glEnableVertexAttribArray(4);
+    glEnableVertexAttribArray(5);
+    glEnableVertexAttribArray(6);
+    glEnableVertexAttribArray(7);
 
     glBindTexture(GL_TEXTURE_2D, mTextureIDs[i.ins.object->texture_handle]);
     glDrawElementsInstanced(
@@ -230,25 +247,27 @@ void gl_renderer::AddVertexArray(const vertex_array &vArray,
   glBindBuffer(GL_ARRAY_BUFFER, vArrayGL.vbo);
   auto vArraySize = vArrayGL.vertices.size() * sizeof(vertex);
   glBufferData(GL_ARRAY_BUFFER, vArraySize, vArrayGL.vertices.data(),
-               GL_STATIC_DRAW);
+               GL_DYNAMIC_DRAW);
+
   // Prepare vertex attribute
+  glBindBuffer(GL_ARRAY_BUFFER, vArrayGL.vbo);
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 12 * sizeof(float), 0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(float), 0);
   glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 12 * sizeof(float),
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(float),
                         reinterpret_cast<void *>(sizeof(float) * 3));
   glEnableVertexAttribArray(2);
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_TRUE, 12 * sizeof(float),
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 12 * sizeof(float),
                         reinterpret_cast<void *>(sizeof(float) * 6));
   glEnableVertexAttribArray(3);
-  glVertexAttribPointer(3, 4, GL_FLOAT, GL_TRUE, 12 * sizeof(float),
+  glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 12 * sizeof(float),
                         reinterpret_cast<void *>(sizeof(float) * 8));
   // Create IBO
   glGenBuffers(1, &vArrayGL.ibo);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vArrayGL.ibo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,
                vArrayGL.indices.size() * sizeof(uint32_t),
-               vArrayGL.indices.data(), GL_STATIC_DRAW);
+               vArrayGL.indices.data(), GL_DYNAMIC_DRAW);
   m_VertexArrays.emplace(std::string(name), vArrayGL);
 }
 void gl_renderer::UpdateVertexArray(const vertex_array &vArray,
@@ -281,9 +300,9 @@ void gl_renderer::draw3d(std::shared_ptr<class draw_object> sprite) {
 
 void gl_renderer::LoadShader(const shader &shaderInfo) {
   gl_shader pipeline;
-  pipeline.Load(shaderInfo.vertName, shaderInfo.fragName);
+  pipeline.load(shaderInfo.vertName, shaderInfo.fragName);
   shader_parameter param;
-  pipeline.CreateUBO(0, sizeof(shader_parameter), &param);
+  pipeline.create_ubo(0, sizeof(shader_parameter), &param);
   userPipelines.emplace_back(
       std::pair<shader, gl_shader>{shaderInfo, pipeline});
 }
@@ -291,7 +310,7 @@ void gl_renderer::LoadShader(const shader &shaderInfo) {
 void gl_renderer::UnloadShader(const shader &shaderInfo) {
   std::erase_if(userPipelines, [&](auto &x) {
     if (x.first == shaderInfo) {
-      x.second.Unload();
+      x.second.unload();
       return true;
     };
     return false;
@@ -300,7 +319,7 @@ void gl_renderer::UnloadShader(const shader &shaderInfo) {
 
 void gl_renderer::add_instancing(const instancing &_instancing) {
   registerTexture(_instancing.object->texture_handle);
-  auto va = m_VertexArrays[_instancing.object->vertexIndex];
+  auto &va = m_VertexArrays[_instancing.object->vertexIndex];
   glBindVertexArray(va.vao);
   uint32_t vbo;
   glGenBuffers(1, &vbo);
@@ -308,14 +327,6 @@ void gl_renderer::add_instancing(const instancing &_instancing) {
   glBufferData(GL_ARRAY_BUFFER, _instancing.size, _instancing.data.data(),
                GL_DYNAMIC_DRAW);
   auto size = sizeof(instance_data);
-  glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, size,
-                        reinterpret_cast<void *>(sizeof(float) * 0));
-  glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, size,
-                        reinterpret_cast<void *>(sizeof(float) * 4));
-  glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, size,
-                        reinterpret_cast<void *>(sizeof(float) * 8));
-  glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, size,
-                        reinterpret_cast<void *>(sizeof(float) * 12));
   glEnableVertexAttribArray(4);
   glEnableVertexAttribArray(5);
   glEnableVertexAttribArray(6);
@@ -324,6 +335,14 @@ void gl_renderer::add_instancing(const instancing &_instancing) {
   glVertexAttribDivisor(5, 1);
   glVertexAttribDivisor(6, 1);
   glVertexAttribDivisor(7, 1);
+  glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, size,
+                        reinterpret_cast<void *>(sizeof(float) * 0));
+  glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, size,
+                        reinterpret_cast<void *>(sizeof(float) * 4));
+  glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, size,
+                        reinterpret_cast<void *>(sizeof(float) * 8));
+  glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, size,
+                        reinterpret_cast<void *>(sizeof(float) * 12));
   auto ogl = ogl_instancing(_instancing);
   ogl.vbo = vbo;
 
@@ -370,22 +389,22 @@ void gl_renderer::registerTexture(handle_t handle) {
 
 bool gl_renderer::loadShader() {
   shader_parameter param{};
-  if (!mSpriteShader.Load("shader.vert", "shader.frag")) {
+  if (!mSpriteShader.load("shader.vert", "shader.frag")) {
     return false;
   }
-  mSpriteShader.CreateUBO(0, sizeof(shader_parameter), &param);
-  if (!mAlphaShader.Load("shader.vert", "alpha.frag")) {
+  mSpriteShader.create_ubo(0, sizeof(shader_parameter), &param);
+  if (!mAlphaShader.load("shader.vert", "alpha.frag")) {
     return false;
   }
-  mAlphaShader.CreateUBO(0, sizeof(shader_parameter), &param);
-  if (!mSpriteInstanceShader.Load("shader_instance.vert", "shader.frag")) {
+  mAlphaShader.create_ubo(0, sizeof(shader_parameter), &param);
+  if (!mSpriteInstanceShader.load("shader_instance.vert", "shader.frag")) {
     return false;
   }
-  mSpriteInstanceShader.CreateUBO(0, sizeof(shader_parameter), &param);
-  if (!mAlphaInstanceShader.Load("shader_instance.vert", "alpha.frag")) {
+  mSpriteInstanceShader.create_ubo(0, sizeof(shader_parameter), &param);
+  if (!mAlphaInstanceShader.load("shader_instance.vert", "alpha.frag")) {
     return false;
   }
-  mAlphaInstanceShader.CreateUBO(0, sizeof(shader_parameter), &param);
+  mAlphaInstanceShader.create_ubo(0, sizeof(shader_parameter), &param);
   return true;
 }
 

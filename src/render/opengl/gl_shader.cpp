@@ -3,7 +3,9 @@
 #include <SDL_image.h>
 #include <fstream>
 #include <iostream>
+#include <logger/logger.hpp>
 #include <sstream>
+
 #if defined(EMSCRIPTEN) || defined(MOBILE)
 #include <GLES3/gl3.h>
 #endif
@@ -12,7 +14,7 @@ namespace nen::gl {
 
 gl_shader::gl_shader() : mShaderProgram(0), mVertexShader(0), mFragShader(0) {}
 
-bool gl_shader::Load(const std::string &vertName, const std::string &fragName) {
+bool gl_shader::load(const std::string &vertName, const std::string &fragName) {
   // Compile vertex and pixel shaders
   if (!CompileShader(fragName, GL_FRAGMENT_SHADER, mFragShader) ||
       !CompileShader(vertName, GL_VERTEX_SHADER, mVertexShader)) {
@@ -26,14 +28,10 @@ bool gl_shader::Load(const std::string &vertName, const std::string &fragName) {
   glLinkProgram(mShaderProgram);
 
   // Verify that the program linked successfully
-  if (!IsValidProgram()) {
-    return false;
-  }
-
-  return true;
+  return IsValidProgram();
 }
 
-void gl_shader::Unload() {
+void gl_shader::unload() {
   // Delete the program/shaders
   glDeleteProgram(mShaderProgram);
   glDeleteShader(mVertexShader);
@@ -64,12 +62,7 @@ bool gl_shader::CompileShader(const std::string &fileName, GLenum shaderType,
   // Set the source characters and try to compile
   glShaderSource(outShader, 1, &(contentsChar), nullptr);
   glCompileShader(outShader);
-
-  if (!IsCompiled(outShader)) {
-    std::cout << "Failed to compile shader " << fileName << std::endl;
-    return false;
-  }
-  return true;
+  return IsCompiled(outShader);
 }
 
 bool gl_shader::IsCompiled(GLuint shader) {
@@ -81,7 +74,7 @@ bool gl_shader::IsCompiled(GLuint shader) {
     char buffer[512];
     memset(buffer, 0, 512);
     glGetShaderInfoLog(shader, 511, nullptr, buffer);
-    std::cout << "GLSL Compile Failed: " << buffer << std::endl;
+    logger::error("Shader compilation failed: %s", buffer);
     return false;
   }
 
@@ -96,19 +89,18 @@ bool gl_shader::IsValidProgram() {
     char buffer[512];
     memset(buffer, 0, 512);
     glGetProgramInfoLog(mShaderProgram, 511, nullptr, buffer);
-    std::cout << "GLSL Link Status: " << buffer << std::endl;
     return false;
   }
 
   return true;
 }
 
-bool gl_shader::CreateUBO(const GLuint &blockIndex, const size_t &size,
-                          const void *data) {
+bool gl_shader::create_ubo(const GLuint &blockIndex, const size_t &size,
+                           const void *data) {
   GLuint BIB = 0; // blockIndexBuffer
   glGenBuffers(1, &BIB);
   glBindBuffer(GL_UNIFORM_BUFFER, BIB);
-  glBufferData(GL_UNIFORM_BUFFER, size, data, GL_STREAM_DRAW);
+  glBufferData(GL_UNIFORM_BUFFER, size, data, GL_DYNAMIC_DRAW);
   glUniformBlockBinding(mShaderProgram, blockIndex, 1);
   blockIndexBuffers.emplace(blockIndex, BIB);
   return true;

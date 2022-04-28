@@ -105,6 +105,7 @@ public:
 
 private:
   bool loadShader();
+  void draw_skybox();
   void draw_3d();
   void draw_2d();
   void draw_instancing_2d();

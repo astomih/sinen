@@ -31,13 +31,13 @@ public:
    * @return true 読み込み成功
    * @return false 読み込み失敗(Loggerを参照)
    */
-  bool Load(const std::string &vertName, const std::string &fragName);
+  bool load(const std::string &vertName, const std::string &fragName);
 
   /**
    * @brief 読み込んだシェーダを閉じる
    *
    */
-  void Unload();
+  void unload();
 
   /**
    * @brief シェーダを有効にする
@@ -61,8 +61,8 @@ public:
    * @return true UBOの作成に成功
    * @return false UBOの作成に失敗
    */
-  bool CreateUBO(const GLuint &blockIndex, const size_t &size,
-                 const void *data);
+  bool create_ubo(const GLuint &blockIndex, const size_t &size,
+                  const void *data);
 
   /**
    * @brief UBOを更新する

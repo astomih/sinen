@@ -22,7 +22,7 @@ class renderer;
 
 namespace gl {
 
-struct VertexArrayForGL : public nen::vertex_array {
+struct gl_vertex_array : public nen::vertex_array {
   /**
    * @brief Vertex Array Object
    *
@@ -42,9 +42,9 @@ struct VertexArrayForGL : public nen::vertex_array {
   uint32_t ibo;
 };
 
-class ogl_instancing {
+class gl_instancing {
 public:
-  ogl_instancing(instancing ins) : ins(ins) {}
+  gl_instancing(instancing ins) : ins(ins) {}
   instancing ins;
   uint32_t vbo;
 };
@@ -110,6 +110,8 @@ private:
   void draw_2d();
   void draw_instancing_2d();
   void draw_instancing_3d();
+  void enable_vertex_attrib_array();
+  void disable_vertex_attrib_array();
 
   manager &m_manager;
 
@@ -122,12 +124,12 @@ private:
   std::vector<std::pair<shader, gl_shader>> userPipelines;
   GLuint mTextureID;
   std::unordered_map<handle_t, GLuint> mTextureIDs;
-  std::unordered_map<std::string, VertexArrayForGL> m_VertexArrays;
+  std::unordered_map<std::string, gl_vertex_array> m_VertexArrays;
   ::SDL_GLContext mContext;
   std::vector<std::shared_ptr<draw_object>> mSprite2Ds;
   std::vector<std::shared_ptr<draw_object>> mSprite3Ds;
-  std::vector<ogl_instancing> m_instancing_2d;
-  std::vector<ogl_instancing> m_instancing_3d;
+  std::vector<gl_instancing> m_instancing_2d;
+  std::vector<gl_instancing> m_instancing_3d;
   float prev_window_x;
   float prev_window_y;
 };

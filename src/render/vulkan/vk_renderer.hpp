@@ -15,35 +15,35 @@
 #include <vk_mem_alloc.h>
 
 namespace nen::vk {
-struct BufferObject {
+struct vk_buffer_object {
   VkBuffer buffer;
   VmaAllocation allocation;
 };
-struct ImageObject {
+struct vk_image_object {
   VkImage image;
   VmaAllocation allocation;
   VkImageView view;
 };
 
-class VulkanDrawObject {
+class vk_draw_object {
 public:
   std::vector<VkDescriptorSet> descripterSet;
-  std::vector<BufferObject> uniformBuffers;
+  std::vector<vk_buffer_object> uniformBuffers;
   bool isInstance = false;
   std::shared_ptr<nen::draw_object> drawObject;
 };
 
-struct VertexArrayForVK : public vertex_array {
-  BufferObject vertexBuffer;
-  BufferObject indexBuffer;
+struct vk_vertex_array : public vertex_array {
+  vk_buffer_object vertexBuffer;
+  vk_buffer_object indexBuffer;
 };
 
-class vulkan_instancing {
+class vk_instancing {
 public:
-  vulkan_instancing(const instancing &_instancing) : ins(_instancing) {}
+  vk_instancing(const instancing &_instancing) : ins(_instancing) {}
   instancing ins;
-  std::shared_ptr<VulkanDrawObject> vk_draw_object;
-  BufferObject instance_buffer;
+  std::shared_ptr<vk_draw_object> vk_draw_object;
+  vk_buffer_object instance_buffer;
 };
 
 class vk_renderer : public renderer::Interface {
@@ -73,13 +73,13 @@ public:
                    VkCommandBufferBeginInfo &ci, VkFence &fence);
   void draw3d(VkCommandBuffer);
   void draw2d(VkCommandBuffer);
-  BufferObject CreateBuffer(
+  vk_buffer_object CreateBuffer(
       uint32_t size, VkBufferUsageFlags usage,
       VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
   vk_base *GetBase() { return m_base.get(); }
-  void registerTexture(std::shared_ptr<VulkanDrawObject> texture,
+  void registerTexture(std::shared_ptr<vk_draw_object> texture,
                        texture_type type);
-  void unregisterTexture(std::shared_ptr<VulkanDrawObject> texture);
+  void unregisterTexture(std::shared_ptr<vk_draw_object> texture);
   void registerImageObject(const handle_t &handle);
   void unregister_image_object(const handle_t &handle);
   VkPipelineLayout GetPipelineLayout(const std::string &name) {
@@ -97,8 +97,8 @@ public:
   VkFramebuffer CreateFramebuffer(VkRenderPass renderPass, uint32_t width,
                                   uint32_t height, uint32_t viewCount,
                                   VkImageView *views);
-  void DestroyBuffer(BufferObject &bufferObj);
-  void DestroyImage(ImageObject &imageObj);
+  void DestroyBuffer(vk_buffer_object &bufferObj);
+  void DestroyImage(vk_image_object &imageObj);
   void DestroyFramebuffers(uint32_t count, VkFramebuffer *framebuffers);
   void write_memory(VmaAllocation, const void *data, size_t size);
 
@@ -108,7 +108,7 @@ private:
   std::unique_ptr<class vk_base> m_base;
   void prepareDescriptorSetLayout();
   void prepareDescriptorPool();
-  void prepareDescriptorSet(std::shared_ptr<VulkanDrawObject>);
+  void prepareDescriptorSet(std::shared_ptr<vk_draw_object>);
   void prepareImGUI();
   void renderImGUI(VkCommandBuffer command);
   void draw_skybox(VkCommandBuffer command);
@@ -116,14 +116,14 @@ private:
   void draw_instancing_2d(VkCommandBuffer command);
   void update_image_object(const handle_t &handle);
   VkSampler createSampler();
-  ImageObject create_texture(SDL_Surface *imagedata, VkFormat format);
-  ImageObject createTextureFromSurface(const ::SDL_Surface &surface);
-  ImageObject createTextureFromMemory(const std::vector<char> &imageData);
+  vk_image_object create_texture(SDL_Surface *imagedata, VkFormat format);
+  vk_image_object createTextureFromSurface(const ::SDL_Surface &surface);
+  vk_image_object createTextureFromMemory(const std::vector<char> &imageData);
   void setImageMemoryBarrier(VkCommandBuffer command, VkImage image,
                              VkImageLayout oldLayout, VkImageLayout newLayout);
-  std::unordered_map<std::string, VertexArrayForVK> m_VertexArrays;
-  ImageObject m_shadowColor;
-  ImageObject m_shadowDepth;
+  std::unordered_map<std::string, vk_vertex_array> m_VertexArrays;
+  vk_image_object m_shadowColor;
+  vk_image_object m_shadowDepth;
   std::vector<float> m_faceWeights;
   VkFramebuffer m_shadowFramebuffer;
   std::vector<VkDescriptorSetLayout> layouts;
@@ -140,12 +140,12 @@ private:
   vk_pipeline pipelineInstancingAlpha;
   vk_pipeline pipelineInstancing2D;
   std::vector<std::pair<shader, vk_pipeline>> userPipelines;
-  std::vector<std::shared_ptr<VulkanDrawObject>> mDrawObject3D;
-  std::vector<std::shared_ptr<VulkanDrawObject>> mDrawObject2D;
-  std::unordered_map<handle_t, ImageObject> mImageObjects;
-  std::vector<vulkan_instancing> m_instancies_3d;
-  std::vector<vulkan_instancing> m_instancies_2d;
-  BufferObject m_instance_buffer;
+  std::vector<std::shared_ptr<vk_draw_object>> mDrawObject3D;
+  std::vector<std::shared_ptr<vk_draw_object>> mDrawObject2D;
+  std::unordered_map<handle_t, vk_image_object> mImageObjects;
+  std::vector<vk_instancing> m_instancies_3d;
+  std::vector<vk_instancing> m_instancies_2d;
+  vk_buffer_object m_instance_buffer;
   manager &m_manager;
 };
 } // namespace nen::vk

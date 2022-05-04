@@ -43,7 +43,7 @@ void vk_renderer::Shutdown() {
 void vk_renderer::Render() { m_base->render(); }
 void vk_renderer::AddVertexArray(const vertex_array &vArray,
                                  std::string_view name) {
-  VertexArrayForVK vArrayVK;
+  vk_vertex_array vArrayVK;
   vArrayVK.indexCount = vArray.indexCount;
   vArrayVK.indices = vArray.indices;
   vArrayVK.vertices = vArray.vertices;
@@ -60,11 +60,11 @@ void vk_renderer::AddVertexArray(const vertex_array &vArray,
   write_memory(vArrayVK.indexBuffer.allocation, vArrayVK.indices.data(),
                sizeof(uint32_t) * vArrayVK.indices.size());
   m_VertexArrays.insert(
-      std::pair<std::string, VertexArrayForVK>(name.data(), vArrayVK));
+      std::pair<std::string, vk_vertex_array>(name.data(), vArrayVK));
 }
 void vk_renderer::UpdateVertexArray(const vertex_array &vArray,
                                     std::string_view name) {
-  VertexArrayForVK vArrayVK;
+  vk_vertex_array vArrayVK;
   vArrayVK.indexCount = vArray.indexCount;
   vArrayVK.indices = vArray.indices;
   vArrayVK.vertices = vArray.vertices;
@@ -78,14 +78,14 @@ void vk_renderer::UpdateVertexArray(const vertex_array &vArray,
 }
 
 void vk_renderer::draw2d(std::shared_ptr<class draw_object> drawObject) {
-  auto t = std::make_shared<vk::VulkanDrawObject>();
+  auto t = std::make_shared<vk::vk_draw_object>();
   t->drawObject = drawObject;
   registerImageObject(drawObject->texture_handle);
   registerTexture(t, texture_type::Image2D);
 }
 
 void vk_renderer::draw3d(std::shared_ptr<class draw_object> sprite) {
-  auto t = std::make_shared<vk::VulkanDrawObject>();
+  auto t = std::make_shared<vk::vk_draw_object>();
   t->drawObject = sprite;
   registerImageObject(sprite->texture_handle);
   registerTexture(t, texture_type::Image3D);
@@ -119,7 +119,7 @@ void vk_renderer::UnloadShader(const shader &shaderInfo) {
 }
 
 void vk_renderer::add_instancing(const instancing &_instancing) {
-  auto t = std::make_shared<vk::VulkanDrawObject>();
+  auto t = std::make_shared<vk::vk_draw_object>();
   t->drawObject = _instancing.object;
   registerImageObject(_instancing.object->texture_handle);
   t->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
@@ -132,7 +132,7 @@ void vk_renderer::add_instancing(const instancing &_instancing) {
   layouts.push_back(m_descriptorSetLayout);
   prepareDescriptorSet(t);
 
-  vulkan_instancing vi{_instancing};
+  vk_instancing vi{_instancing};
   vi.vk_draw_object = t;
   vi.instance_buffer = CreateBuffer(_instancing.size,
                                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
@@ -413,13 +413,19 @@ void vk_renderer::makeCommand(VkCommandBuffer command,
 }
 void vk_renderer::draw_skybox(VkCommandBuffer command) {
   pipelineSkyBox.Bind(command);
-  auto t = std::make_shared<vk::VulkanDrawObject>();
+  auto t = std::make_shared<vk::vk_draw_object>();
   t->drawObject = std::make_shared<draw_object>();
   t->drawObject->texture_handle = get_renderer().skybox_texture->handle;
   t->drawObject->vertexIndex = "BOX";
   shader_parameter param;
+  matrix4 w = matrix4::Identity;
+  w[0][0] = 5;
+  w[1][1] = 5;
+  w[2][2] = 5;
   param.proj = get_camera().projection;
-  param.view = get_camera().view;
+  param.view = matrix4::LookAt(vector3(0, 0, 0),
+                               get_camera().target - get_camera().position,
+                               get_camera().up);
   auto &va = m_VertexArrays["BOX"];
 
   if (!mImageObjects.contains(t->drawObject->texture_handle)) {
@@ -651,8 +657,7 @@ void vk_renderer::prepareDescriptorPool() {
                          &m_descriptorPool);
 }
 
-void vk_renderer::prepareDescriptorSet(
-    std::shared_ptr<VulkanDrawObject> sprite) {
+void vk_renderer::prepareDescriptorSet(std::shared_ptr<vk_draw_object> sprite) {
   VkDescriptorSetAllocateInfo ai{};
   ai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
   ai.descriptorPool = m_descriptorPool;
@@ -695,9 +700,10 @@ void vk_renderer::prepareDescriptorSet(
                            writeSets.data(), 0, nullptr);
   }
 }
-BufferObject vk_renderer::CreateBuffer(uint32_t size, VkBufferUsageFlags usage,
-                                       VkMemoryPropertyFlags flags) {
-  BufferObject obj;
+vk_buffer_object vk_renderer::CreateBuffer(uint32_t size,
+                                           VkBufferUsageFlags usage,
+                                           VkMemoryPropertyFlags flags) {
+  vk_buffer_object obj;
   VkBufferCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
   ci.usage = usage;
@@ -723,10 +729,10 @@ VkSampler vk_renderer::createSampler() {
   return sampler;
 }
 
-ImageObject vk_renderer::create_texture(SDL_Surface *imagedata,
-                                        VkFormat format) {
-  BufferObject stagingBuffer;
-  ImageObject texture{};
+vk_image_object vk_renderer::create_texture(SDL_Surface *imagedata,
+                                            VkFormat format) {
+  vk_buffer_object stagingBuffer;
+  vk_image_object texture{};
   int width = imagedata->w, height = imagedata->h;
   auto *pImage = imagedata->pixels;
   {
@@ -812,7 +818,7 @@ ImageObject vk_renderer::create_texture(SDL_Surface *imagedata,
   return texture;
 }
 
-ImageObject
+vk_image_object
 vk_renderer::createTextureFromSurface(const ::SDL_Surface &surface) {
   ::SDL_Surface surf = surface;
   ::SDL_LockSurface(&surf);
@@ -825,7 +831,7 @@ vk_renderer::createTextureFromSurface(const ::SDL_Surface &surface) {
   return create_texture(imagedata, format);
 }
 
-ImageObject
+vk_image_object
 vk_renderer::createTextureFromMemory(const std::vector<char> &imageData) {
   auto *rw = ::SDL_RWFromMem((void *)imageData.data(), imageData.size());
   ::SDL_Surface *surface;
@@ -927,11 +933,11 @@ VkFramebuffer vk_renderer::CreateFramebuffer(VkRenderPass renderPass,
   return framebuffer;
 }
 
-void vk_renderer::DestroyBuffer(BufferObject &bufferObj) {
+void vk_renderer::DestroyBuffer(vk_buffer_object &bufferObj) {
   vmaDestroyBuffer(allocator, bufferObj.buffer, bufferObj.allocation);
 }
 
-void vk_renderer::DestroyImage(ImageObject &imageObj) {
+void vk_renderer::DestroyImage(vk_image_object &imageObj) {
   vkDestroyImageView(m_base->get_vk_device(), imageObj.view, nullptr);
   vmaDestroyImage(allocator, imageObj.image, imageObj.allocation);
 }
@@ -951,8 +957,8 @@ void vk_renderer::update_image_object(const handle_t &handle) {
   formatbuf->BytesPerPixel = 4;
   auto *imagedata = ::SDL_ConvertSurface(&surf, formatbuf, 0);
   ::SDL_UnlockSurface(&surf);
-  BufferObject stagingBuffer;
-  ImageObject texture;
+  vk_buffer_object stagingBuffer;
+  vk_image_object texture;
   int width = imagedata->w, height = imagedata->h;
   auto *pImage = imagedata->pixels;
   {
@@ -1065,7 +1071,7 @@ VkDevice vk_renderer::GetDevice() {
     return m_base->get_vk_device();
   return m_base->get_vk_device();
 }
-void vk_renderer::registerTexture(std::shared_ptr<VulkanDrawObject> texture,
+void vk_renderer::registerTexture(std::shared_ptr<vk_draw_object> texture,
                                   texture_type type) {
   if (texture_type::Image3D == type) {
     mDrawObject3D.push_back(texture);
@@ -1099,7 +1105,7 @@ void vk_renderer::registerTexture(std::shared_ptr<VulkanDrawObject> texture,
     prepareDescriptorSet(texture);
   }
 }
-void vk_renderer::unregisterTexture(std::shared_ptr<VulkanDrawObject> texture) {
+void vk_renderer::unregisterTexture(std::shared_ptr<vk_draw_object> texture) {
   auto device = m_base->get_vk_device();
   vkFreeDescriptorSets(device, m_descriptorPool,
                        static_cast<uint32_t>(texture->descripterSet.size()),

@@ -125,14 +125,35 @@ void gl_renderer::Render() {
   SDL_GL_SwapWindow((SDL_Window *)w.GetSDLWindow());
 }
 
+void gl_renderer::enable_vertex_attrib_array() {
+  glEnableVertexAttribArray(4);
+  glEnableVertexAttribArray(5);
+  glEnableVertexAttribArray(6);
+  glEnableVertexAttribArray(7);
+}
+
+void gl_renderer::disable_vertex_attrib_array() {
+  glDisableVertexAttribArray(4);
+  glDisableVertexAttribArray(5);
+  glDisableVertexAttribArray(6);
+  glDisableVertexAttribArray(7);
+}
+
 void gl_renderer::draw_skybox() {
   registerTexture(get_renderer().skybox_texture->handle);
   auto &va = m_VertexArrays["BOX"];
   glBindVertexArray(va.vao);
+  disable_vertex_attrib_array();
   mSpriteShader.SetActive(0);
   shader_parameter param;
+  matrix4 w = matrix4::Identity;
+  w[0][0] = 5;
+  w[1][1] = 5;
+  w[2][2] = 5;
   param.proj = get_camera().projection;
-  param.view = get_camera().view;
+  param.view = matrix4::LookAt(vector3(0, 0, 0),
+                               get_camera().target - get_camera().position,
+                               get_camera().up);
   mSpriteShader.SetActive(0);
   mSpriteShader.UpdateUBO(0, sizeof(shader_parameter), &param);
   glBindTexture(GL_TEXTURE_2D,
@@ -144,10 +165,7 @@ void gl_renderer::draw_3d() {
   for (auto &i : mSprite3Ds) {
     auto &va = m_VertexArrays[i->vertexIndex];
     glBindVertexArray(va.vao);
-    glDisableVertexAttribArray(4);
-    glDisableVertexAttribArray(5);
-    glDisableVertexAttribArray(6);
-    glDisableVertexAttribArray(7);
+    disable_vertex_attrib_array();
     if (i->shader_data.vertName == "default" &&
         i->shader_data.fragName == "default") {
       mSpriteShader.SetActive(0);
@@ -173,10 +191,7 @@ void gl_renderer::draw_instancing_3d() {
 
     auto &va = m_VertexArrays[i.ins.object->vertexIndex];
     glBindVertexArray(va.vao);
-    glEnableVertexAttribArray(4);
-    glEnableVertexAttribArray(5);
-    glEnableVertexAttribArray(6);
-    glEnableVertexAttribArray(7);
+    enable_vertex_attrib_array();
 
     glBindTexture(GL_TEXTURE_2D, mTextureIDs[i.ins.object->texture_handle]);
     glDrawElementsInstanced(
@@ -188,10 +203,7 @@ void gl_renderer::draw_instancing_3d() {
 void gl_renderer::draw_2d() {
   for (auto &i : mSprite2Ds) {
     glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
-    glDisableVertexAttribArray(4);
-    glDisableVertexAttribArray(5);
-    glDisableVertexAttribArray(6);
-    glDisableVertexAttribArray(7);
+    disable_vertex_attrib_array();
     glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->texture_handle]);
     if (i->shader_data.vertName == "default" &&
         i->shader_data.fragName == "default") {
@@ -218,10 +230,7 @@ void gl_renderer::draw_instancing_2d() {
 
     auto &va = m_VertexArrays[i.ins.object->vertexIndex];
     glBindVertexArray(va.vao);
-    glEnableVertexAttribArray(4);
-    glEnableVertexAttribArray(5);
-    glEnableVertexAttribArray(6);
-    glEnableVertexAttribArray(7);
+    enable_vertex_attrib_array();
 
     glBindTexture(GL_TEXTURE_2D, mTextureIDs[i.ins.object->texture_handle]);
     glDrawElementsInstanced(
@@ -232,7 +241,7 @@ void gl_renderer::draw_instancing_2d() {
 
 void gl_renderer::AddVertexArray(const vertex_array &vArray,
                                  std::string_view name) {
-  gl::VertexArrayForGL vArrayGL;
+  gl::gl_vertex_array vArrayGL;
   vArrayGL.indexCount = vArray.indexCount;
   vArrayGL.indices = vArray.indices;
   vArrayGL.vertices = vArray.vertices;
@@ -272,7 +281,7 @@ void gl_renderer::AddVertexArray(const vertex_array &vArray,
 }
 void gl_renderer::UpdateVertexArray(const vertex_array &vArray,
                                     std::string_view name) {
-  gl::VertexArrayForGL vArrayGL;
+  gl::gl_vertex_array vArrayGL;
   vArrayGL.indexCount = vArray.indexCount;
   vArrayGL.indices = vArray.indices;
   vArrayGL.vertices = vArray.vertices;
@@ -343,7 +352,7 @@ void gl_renderer::add_instancing(const instancing &_instancing) {
                         reinterpret_cast<void *>(sizeof(float) * 8));
   glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, size,
                         reinterpret_cast<void *>(sizeof(float) * 12));
-  auto ogl = ogl_instancing(_instancing);
+  auto ogl = gl_instancing(_instancing);
   ogl.vbo = vbo;
 
   if (_instancing.type == object_type::_2D) {

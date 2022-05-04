@@ -100,7 +100,7 @@ bool manager::initialize() {
   m_random = std::make_unique<nen::random>();
   m_random->Init();
   m_renderer->skybox_texture = std::make_unique<texture>();
-  m_renderer->skybox_texture->fill_color(palette::White);
+  m_renderer->skybox_texture->fill_color(palette::LightBlue);
   return true;
 }
 void manager::launch() {

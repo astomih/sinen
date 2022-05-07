@@ -10,7 +10,7 @@
 #include <GLES3/gl3.h>
 #endif
 
-namespace nen::gl {
+namespace nen {
 
 gl_shader::gl_shader() : mShaderProgram(0), mVertexShader(0), mFragShader(0) {}
 
@@ -112,4 +112,4 @@ void gl_shader::UpdateUBO(const GLuint &blockIndex, const size_t &size,
   glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
 }
 
-} // namespace nen::gl
+} // namespace nen

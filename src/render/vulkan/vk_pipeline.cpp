@@ -3,11 +3,11 @@
 #include "vk_base.hpp"
 #include "vk_util.hpp"
 
-namespace nen::vk {
+namespace nen {
 void vk_pipeline::Initialize(
     vk_pipeline_layout &layout, VkRenderPass renderPass,
     std::vector<VkPipelineShaderStageCreateInfo> &shaderStages) {
-  // ブレンディングの設定
+  // Blending settings
   const auto colorWriteAll =
       VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
       VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -25,7 +25,7 @@ void vk_pipeline::Initialize(
   cbCI.attachmentCount = 1;
   cbCI.pAttachments = &blendAttachment;
 
-  // デプスステンシルステート設定
+  // Depth stencil state settings
   depthStencilCI = VkPipelineDepthStencilStateCreateInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
       .depthTestEnable = VK_TRUE,
@@ -33,7 +33,7 @@ void vk_pipeline::Initialize(
       .depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL,
       .stencilTestEnable = VK_FALSE};
 
-  // パイプラインの構築
+  // Create pipeline
   graphicsCI = VkGraphicsPipelineCreateInfo{
       .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
       .pNext = nullptr,
@@ -81,5 +81,5 @@ void vk_pipeline::AlphaBlendFactor(VkBlendFactor src, VkBlendFactor dst) {
   blendAttachment.srcAlphaBlendFactor = src;
   blendAttachment.dstAlphaBlendFactor = dst;
 }
-} // namespace nen::vk
+} // namespace nen
 #endif

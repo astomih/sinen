@@ -18,10 +18,6 @@
 #include <vertex/vertex_array.hpp>
 
 namespace nen {
-class renderer;
-
-namespace gl {
-
 struct gl_vertex_array : public nen::vertex_array {
   /**
    * @brief Vertex Array Object
@@ -49,24 +45,22 @@ public:
   uint32_t vbo;
 };
 
-class gl_renderer : public renderer::Interface {
+class gl_renderer {
 public:
-  gl_renderer(manager &_manager);
-  ~gl_renderer() override {}
+  gl_renderer();
+  ~gl_renderer();
 
-  void Initialize() override;
-  void Render() override;
-  void AddVertexArray(const vertex_array &vArray,
-                      std::string_view name) override;
-  void UpdateVertexArray(const vertex_array &vArray,
-                         std::string_view name) override;
-  void draw2d(std::shared_ptr<class draw_object> sprite) override;
-  void draw3d(std::shared_ptr<class draw_object> sprite) override;
+  void initialize();
+  void render();
+  void add_vertex_array(const vertex_array &vArray, std::string_view name);
+  void update_vertex_array(const vertex_array &vArray, std::string_view name);
+  void draw2d(std::shared_ptr<class draw_object> sprite);
+  void draw3d(std::shared_ptr<class draw_object> sprite);
 
-  void LoadShader(const shader &shaderInfo) override;
-  void UnloadShader(const shader &shaderInfo) override;
+  void load_shader(const shader &shaderInfo);
+  void unload_shader(const shader &shaderInfo);
 
-  void add_instancing(const instancing &_instancing) override;
+  void add_instancing(const instancing &_instancing);
 
   void prepare();
   void cleanup() {}
@@ -104,7 +98,7 @@ public:
   }
 
 private:
-  bool loadShader();
+  bool load_shader();
   void draw_skybox();
   void draw_3d();
   void draw_2d();
@@ -112,8 +106,6 @@ private:
   void draw_instancing_3d();
   void enable_vertex_attrib_array();
   void disable_vertex_attrib_array();
-
-  manager &m_manager;
 
   std::string vertexID;
 
@@ -133,5 +125,4 @@ private:
   float prev_window_x;
   float prev_window_y;
 };
-} // namespace gl
 } // namespace nen

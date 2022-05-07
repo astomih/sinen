@@ -3,7 +3,7 @@
 #include <vector>
 #include <vulkan/vk_layer.h>
 
-namespace nen::vk {
+namespace nen {
 class vk_shader {
 public:
   vk_shader() = default;
@@ -16,5 +16,5 @@ public:
 
 private:
 };
-} // namespace nen::vk
+} // namespace nen
 #endif

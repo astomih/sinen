@@ -66,6 +66,6 @@ void model::load(std::string_view str, std::string_view name) {
     }
   }
   m_array.indexCount = m_array.indices.size();
-  get_renderer().AddVertexArray(m_array, name);
+  get_renderer().add_vertex_array(m_array, name);
 }
 } // namespace nen

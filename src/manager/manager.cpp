@@ -35,14 +35,13 @@ namespace nen {
 manager _manager;
 bool initialize() { return _manager.initialize(); }
 void launch() { _manager.launch(); }
-manager &get_manager() { return _manager; }
 window &get_window() { return _manager.get_window(); }
 renderer &get_renderer() { return _manager.get_renderer(); }
-input_system &get_input_system() { return _manager.get_input_system(); }
+input_system &get_input() { return _manager.get_input_system(); }
 scene &get_current_scene() { return _manager.get_current_scene(); }
-sound_system &get_sound_system() { return _manager.get_sound_system(); }
-script_system &get_script_system() { return _manager.get_script_system(); }
-texture_system &get_texture_system() { return _manager.get_texture_system(); }
+sound_system &get_sound() { return _manager.get_sound_system(); }
+script_system &get_script() { return _manager.get_script_system(); }
+texture_system &get_texture() { return _manager.get_texture_system(); }
 camera &get_camera() { return _manager.get_camera(); }
 random &get_random() { return _manager.get_random(); }
 bool manager::initialize() {
@@ -100,7 +99,7 @@ bool manager::initialize() {
   m_random = std::make_unique<nen::random>();
   m_random->Init();
   m_renderer->skybox_texture = std::make_unique<texture>();
-  m_renderer->skybox_texture->fill_color(palette::LightBlue);
+  m_renderer->skybox_texture->Load("skybox.jpg");
   return true;
 }
 void manager::launch() {
@@ -127,7 +126,7 @@ void manager::loop() {
     m_input_system->Shutdown();
     m_sound_system->Shutdown();
     m_current_scene = nullptr;
-    m_renderer->Shutdown();
+    m_renderer->shutdown();
     m_renderer = nullptr;
     m_window = nullptr;
     singleton_finalizer::Finalize();
@@ -142,6 +141,14 @@ void manager::change_scene(std::string scene_name) {
   m_current_scene->Quit();
   m_next_scene = std::make_unique<nen::scene>(*this);
   m_scene_name = scene_name;
+}
+
+void change_scene(std::string scene_number) {
+  _manager.change_scene(scene_number);
+}
+
+std::string get_current_scene_number() {
+  return _manager.get_current_scene_number();
 }
 
 } // namespace nen

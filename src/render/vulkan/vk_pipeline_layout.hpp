@@ -5,7 +5,7 @@
 #include <vector>
 #include <vulkan/vk_layer.h>
 
-namespace nen::vk {
+namespace nen {
 class vk_pipeline_layout {
 public:
   vk_pipeline_layout() = default;
@@ -63,5 +63,5 @@ private:
   VkPipelineLayoutCreateInfo pipelineLayoutCI;
   VkPipelineDynamicStateCreateInfo pipelineDynamicStateCI;
 };
-} // namespace nen::vk
+} // namespace nen
 #endif

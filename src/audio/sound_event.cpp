@@ -9,8 +9,8 @@
 namespace nen {
 sound::sound() {}
 void sound::load(std::string_view file_name) {
-  get_sound_system().LoadAudioFile(file_name);
-  auto sourceID = get_sound_system().NewSource(file_name);
+  get_sound().LoadAudioFile(file_name);
+  auto sourceID = get_sound().NewSource(file_name);
   ALint buf;
   alGetSourcei(sourceID, AL_BUFFER, &buf);
   param.source_id = sourceID;
@@ -19,7 +19,7 @@ void sound::load(std::string_view file_name) {
 }
 void sound::play() { alSourcePlay(param.source_id); }
 void sound::new_source() {
-  auto sourceID = get_sound_system().NewSource(mName);
+  auto sourceID = get_sound().NewSource(mName);
   ALint buf;
   alGetSourcei(sourceID, AL_BUFFER, &buf);
   param.source_id = sourceID;
@@ -29,13 +29,11 @@ void sound::set_listener(vector3 pos, vector3 rotation) {
   quaternion q(vector3::neg_unit_z, rotation.z);
   q = quaternion::Concatenate(q, quaternion(vector3::unit_y, rotation.y));
   q = quaternion::Concatenate(q, quaternion(vector3::unit_x, rotation.x));
-  get_sound_system().SetListener(pos, q);
+  get_sound().SetListener(pos, q);
 }
-void sound::delete_source() {
-  get_sound_system().DeleteSource(param.source_id);
-}
+void sound::delete_source() { get_sound().DeleteSource(param.source_id); }
 bool sound::IsValid() {
-  return get_sound_system().get_buffers().contains(mName.data());
+  return get_sound().get_buffers().contains(mName.data());
 }
 
 void sound::Restart() {

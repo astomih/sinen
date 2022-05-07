@@ -199,7 +199,7 @@ bool script_system::initialize() {
     v["update"] = &camera::update;
   }
   impl->state["change_scene"] = [&](const std::string &str) {
-    get_manager().change_scene(str);
+    change_scene(str);
   };
   {
     auto v =

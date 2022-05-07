@@ -28,11 +28,12 @@
 #include <sstream>
 #include <window/window.hpp>
 
-namespace nen::gl {
-gl_renderer::gl_renderer(manager &_manager) : m_manager(_manager) {}
+namespace nen {
+gl_renderer::gl_renderer() {}
+gl_renderer::~gl_renderer() = default;
 
-void gl_renderer::Initialize() {
-  auto &w = m_manager.get_window();
+void gl_renderer::initialize() {
+  auto &w = get_window();
   mContext = SDL_GL_CreateContext((SDL_Window *)w.GetSDLWindow());
   SDL_GL_MakeCurrent((SDL_Window *)w.GetSDLWindow(), mContext);
   prev_window_x = w.Size().x;
@@ -57,8 +58,8 @@ void gl_renderer::Initialize() {
   io.IniFilename = NULL;
   io.Fonts->AddFontFromFileTTF("data/font/mplus/mplus-1p-medium.ttf", 18.0f,
                                nullptr, io.Fonts->GetGlyphRangesJapanese());
-  ImGui_ImplSDL2_InitForOpenGL(
-      (SDL_Window *)m_manager.get_window().GetSDLWindow(), mContext);
+  ImGui_ImplSDL2_InitForOpenGL((SDL_Window *)get_window().GetSDLWindow(),
+                               mContext);
 #if defined EMSCRIPTEN || defined MOBILE
   ImGui_ImplOpenGL3_Init("#version 300 es");
 #else
@@ -66,15 +67,15 @@ void gl_renderer::Initialize() {
 #endif
 }
 
-void gl_renderer::Render() {
-  auto &w = m_manager.get_window();
+void gl_renderer::render() {
+  auto &w = get_window();
   if (w.Size().x != prev_window_x || w.Size().y != prev_window_y) {
     logger::info("window size.x: ", w.Size().x, " window size.y: ", w.Size().y);
     glViewport(0, 0, w.Size().x, w.Size().y);
     prev_window_x = w.Size().x;
     prev_window_y = w.Size().y;
   }
-  auto color = m_manager.get_renderer().GetClearColor();
+  auto color = get_renderer().GetClearColor();
   glClearColor(color.r, color.g, color.b, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glEnable(GL_BLEND);
@@ -95,7 +96,7 @@ void gl_renderer::Render() {
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplSDL2_NewFrame((SDL_Window *)w.GetSDLWindow());
   ImGui::NewFrame();
-  if (m_manager.get_renderer().isShowImGui()) {
+  if (get_renderer().isShowImGui()) {
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
     ImGui::SetNextWindowSize(
         ImVec2(get_window().Size().x, get_window().Size().y), ImGuiCond_Always);
@@ -239,9 +240,9 @@ void gl_renderer::draw_instancing_2d() {
   }
 }
 
-void gl_renderer::AddVertexArray(const vertex_array &vArray,
-                                 std::string_view name) {
-  gl::gl_vertex_array vArrayGL;
+void gl_renderer::add_vertex_array(const vertex_array &vArray,
+                                   std::string_view name) {
+  gl_vertex_array vArrayGL;
   vArrayGL.indexCount = vArray.indexCount;
   vArrayGL.indices = vArray.indices;
   vArrayGL.vertices = vArray.vertices;
@@ -279,9 +280,9 @@ void gl_renderer::AddVertexArray(const vertex_array &vArray,
                vArrayGL.indices.data(), GL_DYNAMIC_DRAW);
   m_VertexArrays.emplace(std::string(name), vArrayGL);
 }
-void gl_renderer::UpdateVertexArray(const vertex_array &vArray,
-                                    std::string_view name) {
-  gl::gl_vertex_array vArrayGL;
+void gl_renderer::update_vertex_array(const vertex_array &vArray,
+                                      std::string_view name) {
+  gl_vertex_array vArrayGL;
   vArrayGL.indexCount = vArray.indexCount;
   vArrayGL.indices = vArray.indices;
   vArrayGL.vertices = vArray.vertices;
@@ -307,7 +308,7 @@ void gl_renderer::draw3d(std::shared_ptr<class draw_object> sprite) {
   pushSprite3d(sprite);
 }
 
-void gl_renderer::LoadShader(const shader &shaderInfo) {
+void gl_renderer::load_shader(const shader &shaderInfo) {
   gl_shader pipeline;
   pipeline.load(shaderInfo.vertName, shaderInfo.fragName);
   shader_parameter param;
@@ -316,7 +317,7 @@ void gl_renderer::LoadShader(const shader &shaderInfo) {
       std::pair<shader, gl_shader>{shaderInfo, pipeline});
 }
 
-void gl_renderer::UnloadShader(const shader &shaderInfo) {
+void gl_renderer::unload_shader(const shader &shaderInfo) {
   std::erase_if(userPipelines, [&](auto &x) {
     if (x.first == shaderInfo) {
       x.second.unload();
@@ -364,13 +365,13 @@ void gl_renderer::add_instancing(const instancing &_instancing) {
 }
 
 void gl_renderer::prepare() {
-  if (!loadShader()) {
+  if (!load_shader()) {
     std::cout << "failed to loads shader" << std::endl;
   }
 }
 
 void gl_renderer::registerTexture(handle_t handle) {
-  ::SDL_Surface &surf = get_texture_system().get(handle);
+  ::SDL_Surface &surf = get_texture().get(handle);
   if (mTextureIDs.contains(handle)) {
     glDeleteTextures(1, &mTextureIDs[handle]);
     mTextureIDs.erase(handle);
@@ -396,7 +397,7 @@ void gl_renderer::registerTexture(handle_t handle) {
   mTextureIDs[handle] = textureId;
 }
 
-bool gl_renderer::loadShader() {
+bool gl_renderer::load_shader() {
   shader_parameter param{};
   if (!mSpriteShader.load("shader.vert", "shader.frag")) {
     return false;
@@ -417,4 +418,4 @@ bool gl_renderer::loadShader() {
   return true;
 }
 
-} // namespace nen::gl
+} // namespace nen

@@ -6,7 +6,7 @@
 #include <math/vector2.hpp>
 #include <vulkan/vk_layer.h>
 
-namespace nen::vk {
+namespace nen {
 class vk_swapchain {
 public:
   vk_swapchain(VkInstance instance, VkDevice device, VkSurfaceKHR surface);
@@ -51,5 +51,5 @@ private:
   std::vector<VkImageView> m_imageViews;
   bool isClean = false;
 };
-} // namespace nen::vk
+} // namespace nen
 #endif

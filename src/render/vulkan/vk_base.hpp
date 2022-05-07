@@ -16,14 +16,14 @@
 #include <vk_mem_alloc.h>
 #include <window/window.hpp>
 
-namespace nen::vk {
+namespace nen {
 /**
  * @brief vulkan base framework class
  *
  */
 class vk_base {
 public:
-  vk_base(class vk_renderer *, manager &_manager);
+  vk_base(class vk_renderer *);
   void initialize();
   void terminate();
   void render();
@@ -83,8 +83,7 @@ public:
   uint32_t m_imageIndex;
   std::shared_ptr<window> m_window;
   vk_renderer *m_vkrenderer;
-  manager &m_manager;
 };
-} // namespace nen::vk
+} // namespace nen
 
 #endif // EMSCRIPTEN

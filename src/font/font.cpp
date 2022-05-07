@@ -42,8 +42,8 @@ void font::RenderText(texture &tex, std::string_view text,
   sdlColor.g = static_cast<Uint8>(_color.g * 255);
   sdlColor.b = static_cast<Uint8>(_color.b * 255);
   sdlColor.a = static_cast<Uint8>(_color.a * 255);
-  get_texture_system().remove(tex.handle);
-  get_texture_system().move(
+  get_texture().remove(tex.handle);
+  get_texture().move(
       tex.handle,
       std::unique_ptr<SDL_Surface, SDLObjectCloser>(::TTF_RenderUTF8_Blended(
           (::TTF_Font *)m_font, std::string(text).c_str(), sdlColor)));

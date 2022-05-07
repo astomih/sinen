@@ -27,22 +27,23 @@
 #include "vk_shader.hpp"
 #include "vk_util.hpp"
 
-namespace nen::vk {
+namespace nen {
 using namespace vkutil;
 
 constexpr int maxpoolSize = 5000;
-vk_renderer::vk_renderer(manager &_manager)
-    : m_manager(_manager), m_descriptorPool(), m_descriptorSetLayout(),
-      m_sampler(), m_base(std::make_unique<vk_base>(this, _manager)) {}
-void vk_renderer::Initialize() { m_base->initialize(); }
+vk_renderer::vk_renderer()
+    : m_descriptor_pool(), m_descriptor_set_layout(), m_sampler(),
+      m_base(std::make_unique<vk_base>(this)) {}
+vk_renderer::~vk_renderer() = default;
+void vk_renderer::initialize() { m_base->initialize(); }
 
-void vk_renderer::Shutdown() {
+void vk_renderer::shutdown() {
   cleanup();
   m_base->terminate();
 }
-void vk_renderer::Render() { m_base->render(); }
-void vk_renderer::AddVertexArray(const vertex_array &vArray,
-                                 std::string_view name) {
+void vk_renderer::render() { m_base->render(); }
+void vk_renderer::add_vertex_array(const vertex_array &vArray,
+                                   std::string_view name) {
   vk_vertex_array vArrayVK;
   vArrayVK.indexCount = vArray.indexCount;
   vArrayVK.indices = vArray.indices;
@@ -50,48 +51,48 @@ void vk_renderer::AddVertexArray(const vertex_array &vArray,
   vArrayVK.materialName = vArray.materialName;
   auto vArraySize = vArray.vertices.size() * sizeof(vertex);
   vArrayVK.vertexBuffer =
-      CreateBuffer(vArraySize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-  vArrayVK.indexBuffer = CreateBuffer(vArray.indices.size() * sizeof(uint32_t),
-                                      VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+      create_buffer(vArraySize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+  vArrayVK.indexBuffer = create_buffer(vArray.indices.size() * sizeof(uint32_t),
+                                       VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 
   write_memory(vArrayVK.vertexBuffer.allocation, vArrayVK.vertices.data(),
                vArraySize);
   write_memory(vArrayVK.indexBuffer.allocation, vArrayVK.indices.data(),
                sizeof(uint32_t) * vArrayVK.indices.size());
-  m_VertexArrays.insert(
+  m_vertex_arrays.insert(
       std::pair<std::string, vk_vertex_array>(name.data(), vArrayVK));
 }
-void vk_renderer::UpdateVertexArray(const vertex_array &vArray,
-                                    std::string_view name) {
+void vk_renderer::update_vertex_array(const vertex_array &vArray,
+                                      std::string_view name) {
   vk_vertex_array vArrayVK;
   vArrayVK.indexCount = vArray.indexCount;
   vArrayVK.indices = vArray.indices;
   vArrayVK.vertices = vArray.vertices;
   vArrayVK.materialName = vArray.materialName;
-  write_memory(m_VertexArrays[name.data()].vertexBuffer.allocation,
+  write_memory(m_vertex_arrays[name.data()].vertexBuffer.allocation,
                vArrayVK.vertices.data(),
                vArray.vertices.size() * sizeof(vertex));
-  write_memory(m_VertexArrays[name.data()].indexBuffer.allocation,
+  write_memory(m_vertex_arrays[name.data()].indexBuffer.allocation,
                vArrayVK.indices.data(),
                vArray.indices.size() * sizeof(uint32_t));
 }
 
 void vk_renderer::draw2d(std::shared_ptr<class draw_object> drawObject) {
-  auto t = std::make_shared<vk::vk_draw_object>();
+  auto t = std::make_shared<vk_draw_object>();
   t->drawObject = drawObject;
-  registerImageObject(drawObject->texture_handle);
+  register_image_object(drawObject->texture_handle);
   registerTexture(t, texture_type::Image2D);
 }
 
 void vk_renderer::draw3d(std::shared_ptr<class draw_object> sprite) {
-  auto t = std::make_shared<vk::vk_draw_object>();
+  auto t = std::make_shared<vk_draw_object>();
   t->drawObject = sprite;
-  registerImageObject(sprite->texture_handle);
+  register_image_object(sprite->texture_handle);
   registerTexture(t, texture_type::Image3D);
 }
 
-void vk_renderer::LoadShader(const shader &shaderInfo) {
+void vk_renderer::load_shader(const shader &shaderInfo) {
   std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
       vk_shader::LoadModule(m_base->get_vk_device(),
                             shaderInfo.vertName.c_str(),
@@ -100,16 +101,16 @@ void vk_renderer::LoadShader(const shader &shaderInfo) {
                             shaderInfo.fragName.c_str(),
                             VK_SHADER_STAGE_FRAGMENT_BIT)};
   vk_pipeline pipeline;
-  pipeline.Initialize(mPipelineLayout, m_base->m_renderPass, shaderStages);
+  pipeline.Initialize(m_pipeline_layout, m_base->m_renderPass, shaderStages);
   pipeline.ColorBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
   pipeline.AlphaBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
   pipeline.Prepare(m_base->get_vk_device());
   vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
-  userPipelines.emplace_back(
+  m_user_pipelines.emplace_back(
       std::pair<shader, vk_pipeline>{shaderInfo, pipeline});
 }
-void vk_renderer::UnloadShader(const shader &shaderInfo) {
-  std::erase_if(userPipelines, [&](auto &x) {
+void vk_renderer::unload_shader(const shader &shaderInfo) {
+  std::erase_if(m_user_pipelines, [&](auto &x) {
     if (x.first == shaderInfo) {
       x.second.Cleanup(m_base->m_device);
       return true;
@@ -119,26 +120,26 @@ void vk_renderer::UnloadShader(const shader &shaderInfo) {
 }
 
 void vk_renderer::add_instancing(const instancing &_instancing) {
-  auto t = std::make_shared<vk::vk_draw_object>();
+  auto t = std::make_shared<vk_draw_object>();
   t->drawObject = _instancing.object;
-  registerImageObject(_instancing.object->texture_handle);
+  register_image_object(_instancing.object->texture_handle);
   t->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
   for (auto &v : t->uniformBuffers) {
     VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                      VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-    v = CreateBuffer(sizeof(shader_parameter),
-                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
+    v = create_buffer(sizeof(shader_parameter),
+                      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
   }
-  layouts.push_back(m_descriptorSetLayout);
-  prepareDescriptorSet(t);
+  layouts.push_back(m_descriptor_set_layout);
+  prepare_descriptor_set(t);
 
   vk_instancing vi{_instancing};
   vi.vk_draw_object = t;
-  vi.instance_buffer = CreateBuffer(_instancing.size,
-                                    VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
-                                        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+  vi.instance_buffer = create_buffer(_instancing.size,
+                                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
+                                         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                         VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
   write_memory(vi.instance_buffer.allocation, _instancing.data.data(),
                _instancing.size);
   if (_instancing.type == object_type::_2D) {
@@ -150,9 +151,9 @@ void vk_renderer::add_instancing(const instancing &_instancing) {
 
 void vk_renderer::draw_instancing_3d(VkCommandBuffer command) {
   for (auto &_instancing : m_instancies_3d) {
-    pipelineInstancingOpaque.Bind(command);
+    pipeline_instancing_opaque.Bind(command);
     vkCmdBindDescriptorSets(
-        command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout.GetLayout(),
+        command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
         0, 1, &_instancing.vk_draw_object->descripterSet[m_base->m_imageIndex],
         0, nullptr);
     auto allocation =
@@ -161,21 +162,21 @@ void vk_renderer::draw_instancing_3d(VkCommandBuffer command) {
     write_memory(allocation, &_instancing.vk_draw_object->drawObject->param,
                  sizeof(shader_parameter));
     std::string index = _instancing.ins.object->vertexIndex;
-    VkBuffer buffers[] = {m_VertexArrays[index].vertexBuffer.buffer,
+    VkBuffer buffers[] = {m_vertex_arrays[index].vertexBuffer.buffer,
                           _instancing.instance_buffer.buffer};
     VkDeviceSize offsets[] = {0, 0};
     vkCmdBindVertexBuffers(command, 0, 2, buffers, offsets);
-    vkCmdBindIndexBuffer(command, m_VertexArrays[index].indexBuffer.buffer, 0,
+    vkCmdBindIndexBuffer(command, m_vertex_arrays[index].indexBuffer.buffer, 0,
                          VK_INDEX_TYPE_UINT32);
-    vkCmdDrawIndexed(command, m_VertexArrays[index].indexCount,
+    vkCmdDrawIndexed(command, m_vertex_arrays[index].indexCount,
                      _instancing.ins.data.size(), 0, 0, 0);
   }
 }
 void vk_renderer::draw_instancing_2d(VkCommandBuffer command) {
   for (auto &_instancing : m_instancies_2d) {
-    pipelineInstancing2D.Bind(command);
+    pipeline_instancing_2d.Bind(command);
     vkCmdBindDescriptorSets(
-        command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout.GetLayout(),
+        command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
         0, 1, &_instancing.vk_draw_object->descripterSet[m_base->m_imageIndex],
         0, nullptr);
     auto allocation =
@@ -184,30 +185,31 @@ void vk_renderer::draw_instancing_2d(VkCommandBuffer command) {
     write_memory(allocation, &_instancing.vk_draw_object->drawObject->param,
                  sizeof(shader_parameter));
     std::string index = _instancing.ins.object->vertexIndex;
-    VkBuffer buffers[] = {m_VertexArrays[index].vertexBuffer.buffer,
+    VkBuffer buffers[] = {m_vertex_arrays[index].vertexBuffer.buffer,
                           _instancing.instance_buffer.buffer};
     VkDeviceSize offsets[] = {0, 0};
     vkCmdBindVertexBuffers(command, 0, 2, buffers, offsets);
-    vkCmdBindIndexBuffer(command, m_VertexArrays[index].indexBuffer.buffer, 0,
+    vkCmdBindIndexBuffer(command, m_vertex_arrays[index].indexBuffer.buffer, 0,
                          VK_INDEX_TYPE_UINT32);
-    vkCmdDrawIndexed(command, m_VertexArrays[index].indexCount,
+    vkCmdDrawIndexed(command, m_vertex_arrays[index].indexCount,
                      _instancing.ins.data.size(), 0, 0, 0);
   }
 }
 
 void vk_renderer::prepare() {
-  prepareDescriptorSetLayout();
-  prepareDescriptorPool();
+  prepare_descriptor_set_layout();
+  prepare_descriptor_pool();
 
-  m_sampler = createSampler();
+  m_sampler = create_sampler();
   layouts.resize(m_base->mSwapchain->GetImageCount());
   for (auto &i : layouts) {
-    i = m_descriptorSetLayout;
+    i = m_descriptor_set_layout;
   }
 
-  mPipelineLayout.Initialize(m_base->get_vk_device(), &m_descriptorSetLayout,
-                             m_base->mSwapchain->GetSurfaceExtent());
-  mPipelineLayout.Prepare(m_base->get_vk_device());
+  m_pipeline_layout.Initialize(m_base->get_vk_device(),
+                               &m_descriptor_set_layout,
+                               m_base->mSwapchain->GetSurfaceExtent());
+  m_pipeline_layout.Prepare(m_base->get_vk_device());
 
   // Opaque pipeline
   {
@@ -216,11 +218,11 @@ void vk_renderer::prepare() {
                               VK_SHADER_STAGE_VERTEX_BIT),
         vk_shader::LoadModule(m_base->get_vk_device(), "shaderOpaque.frag.spv",
                               VK_SHADER_STAGE_FRAGMENT_BIT)};
-    pipelineOpaque.Initialize(mPipelineLayout, m_base->m_renderPass,
-                              shaderStages);
-    pipelineOpaque.ColorBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
-    pipelineOpaque.AlphaBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
-    pipelineOpaque.Prepare(m_base->get_vk_device());
+    pipeline_opaque.Initialize(m_pipeline_layout, m_base->m_renderPass,
+                               shaderStages);
+    pipeline_opaque.ColorBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
+    pipeline_opaque.AlphaBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
+    pipeline_opaque.Prepare(m_base->get_vk_device());
     vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
   }
 
@@ -231,15 +233,15 @@ void vk_renderer::prepare() {
                               VK_SHADER_STAGE_VERTEX_BIT),
         vk_shader::LoadModule(m_base->get_vk_device(), "shaderAlpha.frag.spv",
                               VK_SHADER_STAGE_FRAGMENT_BIT)};
-    pipelineAlpha.Initialize(mPipelineLayout, m_base->m_renderPass,
-                             shaderStages);
-    pipelineAlpha.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
-                                   VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
-    pipelineAlpha.AlphaBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
-                                   VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
-    pipelineAlpha.SetDepthTest(VK_TRUE);
-    pipelineAlpha.SetDepthWrite(VK_FALSE);
-    pipelineAlpha.Prepare(m_base->get_vk_device());
+    pipeline_alpha.Initialize(m_pipeline_layout, m_base->m_renderPass,
+                              shaderStages);
+    pipeline_alpha.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
+                                    VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    pipeline_alpha.AlphaBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
+                                    VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    pipeline_alpha.SetDepthTest(VK_TRUE);
+    pipeline_alpha.SetDepthWrite(VK_FALSE);
+    pipeline_alpha.Prepare(m_base->get_vk_device());
     vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
   }
   // 2D pipeline
@@ -249,14 +251,15 @@ void vk_renderer::prepare() {
                               VK_SHADER_STAGE_VERTEX_BIT),
         vk_shader::LoadModule(m_base->get_vk_device(), "shaderAlpha.frag.spv",
                               VK_SHADER_STAGE_FRAGMENT_BIT)};
-    pipeline2D.Initialize(mPipelineLayout, m_base->m_renderPass, shaderStages);
-    pipeline2D.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
-                                VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
-    pipeline2D.AlphaBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
-                                VK_BLEND_FACTOR_ZERO);
-    pipeline2D.SetDepthTest(VK_FALSE);
-    pipeline2D.SetDepthWrite(VK_FALSE);
-    pipeline2D.Prepare(m_base->get_vk_device());
+    pipeline_2d.Initialize(m_pipeline_layout, m_base->m_renderPass,
+                           shaderStages);
+    pipeline_2d.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
+                                 VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    pipeline_2d.AlphaBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
+                                 VK_BLEND_FACTOR_ZERO);
+    pipeline_2d.SetDepthTest(VK_FALSE);
+    pipeline_2d.SetDepthWrite(VK_FALSE);
+    pipeline_2d.Prepare(m_base->get_vk_device());
     vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
   }
   // SkyBox pipeline
@@ -264,17 +267,17 @@ void vk_renderer::prepare() {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
         vk_shader::LoadModule(m_base->get_vk_device(), "shader.vert.spv",
                               VK_SHADER_STAGE_VERTEX_BIT),
-        vk_shader::LoadModule(m_base->get_vk_device(), "shaderOpaque.frag.spv",
+        vk_shader::LoadModule(m_base->get_vk_device(), "shaderAlpha.frag.spv",
                               VK_SHADER_STAGE_FRAGMENT_BIT)};
-    pipelineSkyBox.Initialize(mPipelineLayout, m_base->m_renderPass,
-                              shaderStages);
-    pipelineSkyBox.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
-                                    VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
-    pipelineSkyBox.AlphaBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
-                                    VK_BLEND_FACTOR_ZERO);
-    pipelineSkyBox.SetDepthTest(VK_FALSE);
-    pipelineSkyBox.SetDepthWrite(VK_FALSE);
-    pipelineSkyBox.Prepare(m_base->get_vk_device());
+    pipeline_skybox.Initialize(m_pipeline_layout, m_base->m_renderPass,
+                               shaderStages);
+    pipeline_skybox.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
+                                     VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    pipeline_skybox.AlphaBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
+                                     VK_BLEND_FACTOR_ZERO);
+    pipeline_skybox.SetDepthTest(VK_FALSE);
+    pipeline_skybox.SetDepthWrite(VK_FALSE);
+    pipeline_skybox.Prepare(m_base->get_vk_device());
     vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
   }
   //
@@ -288,13 +291,13 @@ void vk_renderer::prepare() {
                               VK_SHADER_STAGE_VERTEX_BIT),
         vk_shader::LoadModule(m_base->get_vk_device(), "shaderOpaque.frag.spv",
                               VK_SHADER_STAGE_FRAGMENT_BIT)};
-    pipelineInstancingOpaque.Initialize(mPipelineLayout, m_base->m_renderPass,
-                                        shaderStages);
-    pipelineInstancingOpaque.ColorBlendFactor(VK_BLEND_FACTOR_ONE,
-                                              VK_BLEND_FACTOR_ZERO);
-    pipelineInstancingOpaque.AlphaBlendFactor(VK_BLEND_FACTOR_ONE,
-                                              VK_BLEND_FACTOR_ZERO);
-    pipelineInstancingOpaque.Prepare(m_base->get_vk_device());
+    pipeline_instancing_opaque.Initialize(m_pipeline_layout,
+                                          m_base->m_renderPass, shaderStages);
+    pipeline_instancing_opaque.ColorBlendFactor(VK_BLEND_FACTOR_ONE,
+                                                VK_BLEND_FACTOR_ZERO);
+    pipeline_instancing_opaque.AlphaBlendFactor(VK_BLEND_FACTOR_ONE,
+                                                VK_BLEND_FACTOR_ZERO);
+    pipeline_instancing_opaque.Prepare(m_base->get_vk_device());
     vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
   }
 
@@ -306,15 +309,15 @@ void vk_renderer::prepare() {
                               VK_SHADER_STAGE_VERTEX_BIT),
         vk_shader::LoadModule(m_base->get_vk_device(), "shaderAlpha.frag.spv",
                               VK_SHADER_STAGE_FRAGMENT_BIT)};
-    pipelineInstancingAlpha.Initialize(mPipelineLayout, m_base->m_renderPass,
-                                       shaderStages);
-    pipelineInstancingAlpha.ColorBlendFactor(
+    pipeline_instancing_alpha.Initialize(m_pipeline_layout,
+                                         m_base->m_renderPass, shaderStages);
+    pipeline_instancing_alpha.ColorBlendFactor(
         VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
-    pipelineInstancingAlpha.AlphaBlendFactor(
+    pipeline_instancing_alpha.AlphaBlendFactor(
         VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
-    pipelineInstancingAlpha.SetDepthTest(VK_TRUE);
-    pipelineInstancingAlpha.SetDepthWrite(VK_FALSE);
-    pipelineInstancingAlpha.Prepare(m_base->get_vk_device());
+    pipeline_instancing_alpha.SetDepthTest(VK_TRUE);
+    pipeline_instancing_alpha.SetDepthWrite(VK_FALSE);
+    pipeline_instancing_alpha.Prepare(m_base->get_vk_device());
     vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
   }
   // 2D pipeline
@@ -325,48 +328,48 @@ void vk_renderer::prepare() {
                               VK_SHADER_STAGE_VERTEX_BIT),
         vk_shader::LoadModule(m_base->get_vk_device(), "shaderAlpha.frag.spv",
                               VK_SHADER_STAGE_FRAGMENT_BIT)};
-    pipelineInstancing2D.Initialize(mPipelineLayout, m_base->m_renderPass,
-                                    shaderStages);
-    pipelineInstancing2D.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
-                                          VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
-    pipelineInstancing2D.AlphaBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
-                                          VK_BLEND_FACTOR_ZERO);
-    pipelineInstancing2D.SetDepthTest(VK_FALSE);
-    pipelineInstancing2D.SetDepthWrite(VK_FALSE);
-    pipelineInstancing2D.Prepare(m_base->get_vk_device());
+    pipeline_instancing_2d.Initialize(m_pipeline_layout, m_base->m_renderPass,
+                                      shaderStages);
+    pipeline_instancing_2d.ColorBlendFactor(
+        VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    pipeline_instancing_2d.AlphaBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
+                                            VK_BLEND_FACTOR_ZERO);
+    pipeline_instancing_2d.SetDepthTest(VK_FALSE);
+    pipeline_instancing_2d.SetDepthWrite(VK_FALSE);
+    pipeline_instancing_2d.Prepare(m_base->get_vk_device());
     vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
   }
-  prepareImGUI();
+  prepare_imgui();
 }
 void vk_renderer::cleanup() {
   VkDevice device = m_base->get_vk_device();
 
-  for (auto &i : mImageObjects) {
-    DestroyImage(i.second);
+  for (auto &i : m_image_object) {
+    destroy_image(i.second);
   }
   DestroyVulkanObject<VkSampler>(device, m_sampler, &vkDestroySampler);
-  mPipelineLayout.Cleanup(device);
-  pipelineOpaque.Cleanup(device);
-  pipelineAlpha.Cleanup(device);
-  pipeline2D.Cleanup(device);
-  for (auto &i : userPipelines) {
+  m_pipeline_layout.Cleanup(device);
+  pipeline_opaque.Cleanup(device);
+  pipeline_alpha.Cleanup(device);
+  pipeline_2d.Cleanup(device);
+  for (auto &i : m_user_pipelines) {
     i.second.Cleanup(device);
   }
-  for (auto &i : m_VertexArrays) {
+  for (auto &i : m_vertex_arrays) {
     DestroyVulkanObject<VkBuffer>(device, i.second.vertexBuffer.buffer,
                                   &vkDestroyBuffer);
     DestroyVulkanObject<VkBuffer>(device, i.second.indexBuffer.buffer,
                                   &vkDestroyBuffer);
   }
-  DestroyVulkanObject<VkDescriptorPool>(device, m_descriptorPool,
+  DestroyVulkanObject<VkDescriptorPool>(device, m_descriptor_pool,
                                         &vkDestroyDescriptorPool);
-  DestroyVulkanObject<VkDescriptorSetLayout>(device, m_descriptorSetLayout,
+  DestroyVulkanObject<VkDescriptorSetLayout>(device, m_descriptor_set_layout,
                                              &vkDestroyDescriptorSetLayout);
 }
 
-void vk_renderer::makeCommand(VkCommandBuffer command,
-                              VkRenderPassBeginInfo &ri,
-                              VkCommandBufferBeginInfo &ci, VkFence &fence) {
+void vk_renderer::make_command(VkCommandBuffer command,
+                               VkRenderPassBeginInfo &ri,
+                               VkCommandBufferBeginInfo &ci, VkFence &fence) {
   vkBeginCommandBuffer(command, &ci);
   auto viewport = VkViewport{
       .x = 0.f,
@@ -387,23 +390,23 @@ void vk_renderer::makeCommand(VkCommandBuffer command,
   draw_instancing_3d(command);
   draw2d(command);
   draw_instancing_2d(command);
-  renderImGUI(command);
-  pipelineOpaque.Bind(command);
+  render_imgui(command);
+  pipeline_opaque.Bind(command);
 
-  for (auto &sprite : mDrawObject3D)
+  for (auto &sprite : m_draw_object_3d)
     unregisterTexture(sprite);
-  mDrawObject3D.clear();
-  for (auto &sprite : mDrawObject2D)
+  m_draw_object_3d.clear();
+  for (auto &sprite : m_draw_object_2d)
     unregisterTexture(sprite);
-  mDrawObject2D.clear();
+  m_draw_object_2d.clear();
   for (auto &_instancing : m_instancies_2d) {
     unregisterTexture(_instancing.vk_draw_object);
-    DestroyBuffer(_instancing.instance_buffer);
+    destroy_buffer(_instancing.instance_buffer);
   }
   m_instancies_2d.clear();
   for (auto &_instancing : m_instancies_3d) {
     unregisterTexture(_instancing.vk_draw_object);
-    DestroyBuffer(_instancing.instance_buffer);
+    destroy_buffer(_instancing.instance_buffer);
   }
   m_instancies_3d.clear();
 
@@ -412,8 +415,8 @@ void vk_renderer::makeCommand(VkCommandBuffer command,
   vkWaitForFences(m_base->get_vk_device(), 1, &fence, VK_TRUE, UINT64_MAX);
 }
 void vk_renderer::draw_skybox(VkCommandBuffer command) {
-  pipelineSkyBox.Bind(command);
-  auto t = std::make_shared<vk::vk_draw_object>();
+  pipeline_skybox.Bind(command);
+  auto t = std::make_shared<vk_draw_object>();
   t->drawObject = std::make_shared<draw_object>();
   t->drawObject->texture_handle = get_renderer().skybox_texture->handle;
   t->drawObject->vertexIndex = "BOX";
@@ -426,12 +429,12 @@ void vk_renderer::draw_skybox(VkCommandBuffer command) {
   param.view = matrix4::LookAt(vector3(0, 0, 0),
                                get_camera().target - get_camera().position,
                                get_camera().up);
-  auto &va = m_VertexArrays["BOX"];
+  auto &va = m_vertex_arrays["BOX"];
 
-  if (!mImageObjects.contains(t->drawObject->texture_handle)) {
-    mImageObjects[t->drawObject->texture_handle] =
-        vk_renderer::createTextureFromSurface(
-            get_texture_system().get(t->drawObject->texture_handle));
+  if (!m_image_object.contains(t->drawObject->texture_handle)) {
+    m_image_object[t->drawObject->texture_handle] =
+        vk_renderer::create_texture_from_surface(
+            get_texture().get(t->drawObject->texture_handle));
   } else {
     update_image_object(t->drawObject->texture_handle);
   }
@@ -439,18 +442,18 @@ void vk_renderer::draw_skybox(VkCommandBuffer command) {
   for (auto &v : t->uniformBuffers) {
     VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                      VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-    v = CreateBuffer(sizeof(shader_parameter),
-                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
+    v = create_buffer(sizeof(shader_parameter),
+                      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
   }
-  layouts.push_back(m_descriptorSetLayout);
-  prepareDescriptorSet(t);
+  layouts.push_back(m_descriptor_set_layout);
+  prepare_descriptor_set(t);
 
   VkDeviceSize offset = 0;
   vkCmdBindVertexBuffers(command, 0, 1, &va.vertexBuffer.buffer, &offset);
   vkCmdBindIndexBuffer(command, va.indexBuffer.buffer, offset,
                        VK_INDEX_TYPE_UINT32);
   vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                          mPipelineLayout.GetLayout(), 0, 1,
+                          m_pipeline_layout.GetLayout(), 0, 1,
                           &t->descripterSet[m_base->m_imageIndex], 0, nullptr);
   auto allocation = t->uniformBuffers[m_base->m_imageIndex].allocation;
   write_memory(allocation, &param, sizeof(shader_parameter));
@@ -459,14 +462,14 @@ void vk_renderer::draw_skybox(VkCommandBuffer command) {
 }
 
 void vk_renderer::draw3d(VkCommandBuffer command) {
-  pipelineOpaque.Bind(command);
+  pipeline_opaque.Bind(command);
   VkDeviceSize offset = 0;
-  for (auto &sprite : mDrawObject3D) {
+  for (auto &sprite : m_draw_object_3d) {
     if (sprite->drawObject->shader_data.vertName == "default" &&
         sprite->drawObject->shader_data.fragName == "default")
-      pipelineOpaque.Bind(command);
+      pipeline_opaque.Bind(command);
     else {
-      for (auto &i : userPipelines) {
+      for (auto &i : m_user_pipelines) {
         if (i.first == sprite->drawObject->shader_data)
           i.second.Bind(command);
       }
@@ -474,53 +477,53 @@ void vk_renderer::draw3d(VkCommandBuffer command) {
 
     std::string index = sprite->drawObject->vertexIndex;
     ::vkCmdBindVertexBuffers(
-        command, 0, 1, &m_VertexArrays[index].vertexBuffer.buffer, &offset);
-    ::vkCmdBindIndexBuffer(command, m_VertexArrays[index].indexBuffer.buffer,
+        command, 0, 1, &m_vertex_arrays[index].vertexBuffer.buffer, &offset);
+    ::vkCmdBindIndexBuffer(command, m_vertex_arrays[index].indexBuffer.buffer,
                            offset, VK_INDEX_TYPE_UINT32);
     // Set descriptors
     vkCmdBindDescriptorSets(
-        command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout.GetLayout(),
+        command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
         0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
     auto allocation = sprite->uniformBuffers[m_base->m_imageIndex].allocation;
     write_memory(allocation, &sprite->drawObject->param,
                  sizeof(shader_parameter));
-    vkCmdDrawIndexed(command, m_VertexArrays[index].indexCount, 1, 0, 0, 0);
+    vkCmdDrawIndexed(command, m_vertex_arrays[index].indexCount, 1, 0, 0, 0);
   }
 }
 
 void vk_renderer::draw2d(VkCommandBuffer command) {
-  pipeline2D.Bind(command);
+  pipeline_2d.Bind(command);
   VkDeviceSize offset = 0;
-  for (auto &sprite : mDrawObject2D) {
+  for (auto &sprite : m_draw_object_2d) {
     if (sprite->drawObject->shader_data.vertName == "default" &&
         sprite->drawObject->shader_data.fragName == "default")
-      pipeline2D.Bind(command);
+      pipeline_2d.Bind(command);
     else {
-      for (auto &i : userPipelines) {
+      for (auto &i : m_user_pipelines) {
         if (i.first == sprite->drawObject->shader_data)
           i.second.Bind(command);
       }
     }
     vkCmdBindVertexBuffers(
         command, 0, 1,
-        &m_VertexArrays[sprite->drawObject->vertexIndex].vertexBuffer.buffer,
+        &m_vertex_arrays[sprite->drawObject->vertexIndex].vertexBuffer.buffer,
         &offset);
     vkCmdBindIndexBuffer(
         command,
-        m_VertexArrays[sprite->drawObject->vertexIndex].indexBuffer.buffer,
+        m_vertex_arrays[sprite->drawObject->vertexIndex].indexBuffer.buffer,
         offset, VK_INDEX_TYPE_UINT32);
 
     // Set descriptors
     vkCmdBindDescriptorSets(
-        command, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout.GetLayout(),
+        command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
         0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
     auto allocation = sprite->uniformBuffers[m_base->m_imageIndex].allocation;
     write_memory(allocation, &sprite->drawObject->param,
                  sizeof(shader_parameter));
 
-    vkCmdDrawIndexed(command,
-                     m_VertexArrays[sprite->drawObject->vertexIndex].indexCount,
-                     1, 0, 0, 0);
+    vkCmdDrawIndexed(
+        command, m_vertex_arrays[sprite->drawObject->vertexIndex].indexCount, 1,
+        0, 0, 0);
   }
 }
 
@@ -532,7 +535,7 @@ void vk_renderer::write_memory(VmaAllocation allocation, const void *data,
   vmaUnmapMemory(allocator, allocation);
 }
 
-void vk_renderer::prepareImGUI() {
+void vk_renderer::prepare_imgui() {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
@@ -545,8 +548,7 @@ void vk_renderer::prepareImGUI() {
   io.Fonts->AddFontFromFileTTF("data/font/mplus/mplus-1p-medium.ttf", 18.0f,
                                nullptr, io.Fonts->GetGlyphRangesJapanese());
 
-  ImGui_ImplSDL2_InitForVulkan(
-      (SDL_Window *)m_base->m_manager.get_window().GetSDLWindow());
+  ImGui_ImplSDL2_InitForVulkan((SDL_Window *)get_window().GetSDLWindow());
 
   uint32_t imageCount = m_base->mSwapchain->GetImageCount();
   ImGui_ImplVulkan_InitInfo info{};
@@ -555,7 +557,7 @@ void vk_renderer::prepareImGUI() {
   info.Device = m_base->get_vk_device();
   info.QueueFamily = m_base->m_graphicsQueueIndex;
   info.Queue = m_base->get_vk_queue();
-  info.DescriptorPool = m_descriptorPool;
+  info.DescriptorPool = m_descriptor_pool;
   info.MinImageCount = 2;
   info.ImageCount = imageCount;
   if (!ImGui_ImplVulkan_Init(&info, m_base->m_renderPass)) {
@@ -587,13 +589,12 @@ void vk_renderer::prepareImGUI() {
   vkFreeCommandBuffers(m_base->get_vk_device(), m_base->m_commandPool, 1,
                        &command);
 }
-void vk_renderer::renderImGUI(VkCommandBuffer command) {
+void vk_renderer::render_imgui(VkCommandBuffer command) {
   ImGui_ImplVulkan_NewFrame();
-  ImGui_ImplSDL2_NewFrame(
-      (SDL_Window *)m_base->m_manager.get_window().GetSDLWindow());
+  ImGui_ImplSDL2_NewFrame((SDL_Window *)get_window().GetSDLWindow());
   ImGui::NewFrame();
 
-  if (m_manager.get_renderer().isShowImGui()) {
+  if (get_renderer().isShowImGui()) {
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
     ImGui::SetNextWindowSize(
         ImVec2(get_window().Size().x, get_window().Size().y), ImGuiCond_Always);
@@ -610,7 +611,7 @@ void vk_renderer::renderImGUI(VkCommandBuffer command) {
   ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), command);
 }
 
-void vk_renderer::prepareDescriptorSetLayout() {
+void vk_renderer::prepare_descriptor_set_layout() {
   std::vector<VkDescriptorSetLayoutBinding> bindings;
   VkDescriptorSetLayoutBinding bindingUBO{}, bindingTex{}, bindingInstance{};
   bindingUBO.binding = 0;
@@ -636,10 +637,10 @@ void vk_renderer::prepareDescriptorSetLayout() {
   ci.bindingCount = uint32_t(bindings.size());
   ci.pBindings = bindings.data();
   vkCreateDescriptorSetLayout(m_base->get_vk_device(), &ci, nullptr,
-                              &m_descriptorSetLayout);
+                              &m_descriptor_set_layout);
 }
 
-void vk_renderer::prepareDescriptorPool() {
+void vk_renderer::prepare_descriptor_pool() {
 
   VkDescriptorPoolSize poolSize[] = {
       {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxpoolSize},
@@ -654,13 +655,14 @@ void vk_renderer::prepareDescriptorPool() {
       poolSize,
   };
   vkCreateDescriptorPool(m_base->get_vk_device(), &descPoolCI, nullptr,
-                         &m_descriptorPool);
+                         &m_descriptor_pool);
 }
 
-void vk_renderer::prepareDescriptorSet(std::shared_ptr<vk_draw_object> sprite) {
+void vk_renderer::prepare_descriptor_set(
+    std::shared_ptr<vk_draw_object> sprite) {
   VkDescriptorSetAllocateInfo ai{};
   ai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-  ai.descriptorPool = m_descriptorPool;
+  ai.descriptorPool = m_descriptor_pool;
   ai.descriptorSetCount = uint32_t(m_base->mSwapchain->GetImageCount());
   ai.pSetLayouts = layouts.data();
   sprite->descripterSet.resize(m_base->mSwapchain->GetImageCount());
@@ -675,7 +677,7 @@ void vk_renderer::prepareDescriptorSet(std::shared_ptr<vk_draw_object> sprite) {
 
     VkDescriptorImageInfo descImage{};
     descImage.imageView =
-        mImageObjects[sprite->drawObject->texture_handle].view;
+        m_image_object[sprite->drawObject->texture_handle].view;
     descImage.sampler = m_sampler;
     descImage.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -700,9 +702,9 @@ void vk_renderer::prepareDescriptorSet(std::shared_ptr<vk_draw_object> sprite) {
                            writeSets.data(), 0, nullptr);
   }
 }
-vk_buffer_object vk_renderer::CreateBuffer(uint32_t size,
-                                           VkBufferUsageFlags usage,
-                                           VkMemoryPropertyFlags flags) {
+vk_buffer_object vk_renderer::create_buffer(uint32_t size,
+                                            VkBufferUsageFlags usage,
+                                            VkMemoryPropertyFlags flags) {
   vk_buffer_object obj;
   VkBufferCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -715,7 +717,7 @@ vk_buffer_object vk_renderer::CreateBuffer(uint32_t size,
   return obj;
 }
 
-VkSampler vk_renderer::createSampler() {
+VkSampler vk_renderer::create_sampler() {
   VkSampler sampler;
   VkSamplerCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -756,8 +758,8 @@ vk_image_object vk_renderer::create_texture(SDL_Surface *imagedata,
 
   {
     uint32_t imageSize = imagedata->h * imagedata->w * 4;
-    stagingBuffer = CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+    stagingBuffer = create_buffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
     write_memory(stagingBuffer.allocation, pImage, imageSize);
   }
 
@@ -777,14 +779,14 @@ vk_image_object vk_renderer::create_texture(SDL_Surface *imagedata,
   VkCommandBufferBeginInfo commandBI{};
   commandBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   vkBeginCommandBuffer(command, &commandBI);
-  setImageMemoryBarrier(command, texture.image, VK_IMAGE_LAYOUT_UNDEFINED,
-                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+  set_image_memory_barrier(command, texture.image, VK_IMAGE_LAYOUT_UNDEFINED,
+                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
   vkCmdCopyBufferToImage(command, stagingBuffer.buffer, texture.image,
                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
 
-  setImageMemoryBarrier(command, texture.image,
-                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  set_image_memory_barrier(command, texture.image,
+                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                           VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   vkEndCommandBuffer(command);
 
   VkSubmitInfo submitInfo{};
@@ -813,13 +815,13 @@ vk_image_object vk_renderer::create_texture(SDL_Surface *imagedata,
   }
   vkFreeCommandBuffers(m_base->get_vk_device(), m_base->m_commandPool, 1,
                        &command);
-  DestroyBuffer(stagingBuffer);
+  destroy_buffer(stagingBuffer);
   SDL_FreeSurface(imagedata);
   return texture;
 }
 
 vk_image_object
-vk_renderer::createTextureFromSurface(const ::SDL_Surface &surface) {
+vk_renderer::create_texture_from_surface(const ::SDL_Surface &surface) {
   ::SDL_Surface surf = surface;
   ::SDL_LockSurface(&surf);
   auto *formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
@@ -832,7 +834,7 @@ vk_renderer::createTextureFromSurface(const ::SDL_Surface &surface) {
 }
 
 vk_image_object
-vk_renderer::createTextureFromMemory(const std::vector<char> &imageData) {
+vk_renderer::create_texture_from_memory(const std::vector<char> &imageData) {
   auto *rw = ::SDL_RWFromMem((void *)imageData.data(), imageData.size());
   ::SDL_Surface *surface;
   surface = ::IMG_Load_RW(rw, 1);
@@ -844,9 +846,10 @@ vk_renderer::createTextureFromMemory(const std::vector<char> &imageData) {
   return create_texture(imagedata, VK_FORMAT_R8G8B8A8_UNORM);
 }
 
-void vk_renderer::setImageMemoryBarrier(VkCommandBuffer command, VkImage image,
-                                        VkImageLayout oldLayout,
-                                        VkImageLayout newLayout) {
+void vk_renderer::set_image_memory_barrier(VkCommandBuffer command,
+                                           VkImage image,
+                                           VkImageLayout oldLayout,
+                                           VkImageLayout newLayout) {
   VkImageMemoryBarrier imb{};
   imb.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
   imb.oldLayout = oldLayout;
@@ -897,12 +900,12 @@ void vk_renderer::setImageMemoryBarrier(VkCommandBuffer command, VkImage image,
 }
 
 uint32_t
-vk_renderer::GetMemoryTypeIndex(uint32_t requestBits,
-                                VkMemoryPropertyFlags requestProps) const {
+vk_renderer::get_memory_type_index(uint32_t requestBits,
+                                   VkMemoryPropertyFlags requestProps) const {
   uint32_t result = ~0u;
-  for (uint32_t i = 0; i < m_physicalMemProps.memoryTypeCount; ++i) {
+  for (uint32_t i = 0; i < m_physical_mem_props.memoryTypeCount; ++i) {
     if (requestBits & 1) {
-      const auto &types = m_physicalMemProps.memoryTypes[i];
+      const auto &types = m_physical_mem_props.memoryTypes[i];
       if ((types.propertyFlags & requestProps) == requestProps) {
         result = i;
         break;
@@ -913,45 +916,19 @@ vk_renderer::GetMemoryTypeIndex(uint32_t requestBits,
   return result;
 }
 
-VkFramebuffer vk_renderer::CreateFramebuffer(VkRenderPass renderPass,
-                                             uint32_t width, uint32_t height,
-                                             uint32_t viewCount,
-                                             VkImageView *views) {
-  VkFramebufferCreateInfo fbCI{
-      VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-      nullptr,
-      0,
-      renderPass,
-      viewCount,
-      views,
-      width,
-      height,
-      1,
-  };
-  VkFramebuffer framebuffer;
-  vkCreateFramebuffer(m_base->get_vk_device(), &fbCI, nullptr, &framebuffer);
-  return framebuffer;
-}
-
-void vk_renderer::DestroyBuffer(vk_buffer_object &bufferObj) {
+void vk_renderer::destroy_buffer(vk_buffer_object &bufferObj) {
   vmaDestroyBuffer(allocator, bufferObj.buffer, bufferObj.allocation);
 }
 
-void vk_renderer::DestroyImage(vk_image_object &imageObj) {
+void vk_renderer::destroy_image(vk_image_object &imageObj) {
   vkDestroyImageView(m_base->get_vk_device(), imageObj.view, nullptr);
   vmaDestroyImage(allocator, imageObj.image, imageObj.allocation);
 }
 
-void vk_renderer::DestroyFramebuffers(uint32_t count,
-                                      VkFramebuffer *framebuffers) {
-  for (uint32_t i = 0; i < count; ++i) {
-    vkDestroyFramebuffer(m_base->get_vk_device(), framebuffers[i], nullptr);
-  }
-}
 void vk_renderer::update_image_object(const handle_t &handle) {
-  DestroyImage(mImageObjects[handle]);
-  mImageObjects.erase(handle);
-  ::SDL_Surface &surf = get_texture_system().get(handle);
+  destroy_image(m_image_object[handle]);
+  m_image_object.erase(handle);
+  ::SDL_Surface &surf = get_texture().get(handle);
   ::SDL_LockSurface(&surf);
   auto *formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
   formatbuf->BytesPerPixel = 4;
@@ -982,8 +959,8 @@ void vk_renderer::update_image_object(const handle_t &handle) {
 
   {
     uint32_t imageSize = imagedata->h * imagedata->w * 4;
-    stagingBuffer = CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+    stagingBuffer = create_buffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
     write_memory(stagingBuffer.allocation, pImage, imageSize);
   }
 
@@ -1003,15 +980,15 @@ void vk_renderer::update_image_object(const handle_t &handle) {
   VkCommandBufferBeginInfo commandBI{};
   commandBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   vkBeginCommandBuffer(command, &commandBI);
-  setImageMemoryBarrier(command, texture.image,
-                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+  set_image_memory_barrier(command, texture.image,
+                           VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
   vkCmdCopyBufferToImage(command, stagingBuffer.buffer, texture.image,
                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
 
-  setImageMemoryBarrier(command, texture.image,
-                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  set_image_memory_barrier(command, texture.image,
+                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                           VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   vkEndCommandBuffer(command);
 
   VkSubmitInfo submitInfo{};
@@ -1039,34 +1016,34 @@ void vk_renderer::update_image_object(const handle_t &handle) {
   vkDeviceWaitIdle(m_base->get_vk_device());
   vkFreeCommandBuffers(m_base->get_vk_device(), m_base->m_commandPool, 1,
                        &command);
-  DestroyBuffer(stagingBuffer);
+  destroy_buffer(stagingBuffer);
   SDL_FreeFormat(formatbuf);
   SDL_FreeSurface(imagedata);
-  mImageObjects.emplace(handle, texture);
+  m_image_object.emplace(handle, texture);
 }
-void vk_renderer::registerImageObject(const handle_t &handle) {
-  if (mImageObjects.contains(handle)) {
+void vk_renderer::register_image_object(const handle_t &handle) {
+  if (m_image_object.contains(handle)) {
     update_image_object(handle);
     return;
   }
-  mImageObjects[handle] =
-      vk_renderer::createTextureFromSurface(get_texture_system().get(handle));
+  m_image_object[handle] =
+      vk_renderer::create_texture_from_surface(get_texture().get(handle));
 }
 void vk_renderer::unregister_image_object(const handle_t &handle) {
-  for (auto it = mImageObjects.begin(); it != mImageObjects.end(); ++it) {
+  for (auto it = m_image_object.begin(); it != m_image_object.end(); ++it) {
     if (it->first == handle) {
-      DestroyImage(it->second);
-      mImageObjects.erase(it);
+      destroy_image(it->second);
+      m_image_object.erase(it);
       return;
     }
   }
 }
-VkRenderPass vk_renderer::GetRenderPass(const std::string &name) {
+VkRenderPass vk_renderer::get_render_pass(const std::string &name) {
   if (m_base)
     return m_base->m_renderPass;
   return 0;
 }
-VkDevice vk_renderer::GetDevice() {
+VkDevice vk_renderer::get_device() {
   if (m_base)
     return m_base->get_vk_device();
   return m_base->get_vk_device();
@@ -1074,47 +1051,47 @@ VkDevice vk_renderer::GetDevice() {
 void vk_renderer::registerTexture(std::shared_ptr<vk_draw_object> texture,
                                   texture_type type) {
   if (texture_type::Image3D == type) {
-    mDrawObject3D.push_back(texture);
+    m_draw_object_3d.push_back(texture);
     texture->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
     for (auto &v : texture->uniformBuffers) {
       VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-      v = CreateBuffer(sizeof(shader_parameter),
-                       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
+      v = create_buffer(sizeof(shader_parameter),
+                        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
     }
-    layouts.push_back(m_descriptorSetLayout);
-    prepareDescriptorSet(texture);
+    layouts.push_back(m_descriptor_set_layout);
+    prepare_descriptor_set(texture);
   } else {
-    auto iter = mDrawObject2D.begin();
-    for (; iter != mDrawObject2D.end(); ++iter) {
+    auto iter = m_draw_object_2d.begin();
+    for (; iter != m_draw_object_2d.end(); ++iter) {
       if (texture->drawObject->drawOrder < (*iter)->drawObject->drawOrder) {
         break;
       }
     }
 
     // Inserts element before position of iterator
-    mDrawObject2D.insert(iter, texture);
+    m_draw_object_2d.insert(iter, texture);
     texture->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
     for (auto &v : texture->uniformBuffers) {
       VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-      v = CreateBuffer(sizeof(shader_parameter),
-                       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
+      v = create_buffer(sizeof(shader_parameter),
+                        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
     }
-    layouts.push_back(m_descriptorSetLayout);
-    prepareDescriptorSet(texture);
+    layouts.push_back(m_descriptor_set_layout);
+    prepare_descriptor_set(texture);
   }
 }
 void vk_renderer::unregisterTexture(std::shared_ptr<vk_draw_object> texture) {
   auto device = m_base->get_vk_device();
-  vkFreeDescriptorSets(device, m_descriptorPool,
+  vkFreeDescriptorSets(device, m_descriptor_pool,
                        static_cast<uint32_t>(texture->descripterSet.size()),
                        texture->descripterSet.data());
   for (auto &i : texture->uniformBuffers) {
-    DestroyBuffer(i);
+    destroy_buffer(i);
   }
   texture->uniformBuffers.clear();
   layouts.pop_back();
 }
-} // namespace nen::vk
+} // namespace nen
 #endif

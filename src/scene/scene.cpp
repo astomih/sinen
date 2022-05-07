@@ -1,16 +1,16 @@
 #include "../event/current_event.hpp"
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
-#include <audio/sound_system.hpp>
-#include <io/dstream.hpp>
-#include <input/input_system.hpp>
-#include <math/random.hpp>
-#include <render/renderer.hpp>
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <audio/sound_system.hpp>
+#include <input/input_system.hpp>
+#include <io/dstream.hpp>
+#include <manager/manager.hpp>
+#include <math/random.hpp>
+#include <render/renderer.hpp>
 #include <scene/scene.hpp>
 #include <window/window.hpp>
-#include <manager/manager.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -115,13 +115,13 @@ void scene::Setup() {
   editor.SetShowWhitespaces(true);
   get_renderer().add_imgui_function([&]() {
     auto cpos = editor.GetCursorPosition();
-    ImGui::Text(
-        "%6d/%-6d %6d lines  | %s | %s | %s | %s | fps:%.2f", cpos.mLine + 1,
-        cpos.mColumn + 1, editor.GetTotalLines(),
-        editor.IsOverwrite() ? "Ovr" : "Ins", editor.CanUndo() ? "*" : " ",
-        editor.GetLanguageDefinition().mName.c_str(),
-        std::string(get_manager().get_current_scene_number() + ".lua").c_str(),
-        ImGui::GetIO().Framerate);
+    ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s | fps:%.2f",
+                cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(),
+                editor.IsOverwrite() ? "Ovr" : "Ins",
+                editor.CanUndo() ? "*" : " ",
+                editor.GetLanguageDefinition().mName.c_str(),
+                std::string(get_current_scene_number() + ".lua").c_str(),
+                ImGui::GetIO().Framerate);
     if (ImGui::BeginMenuBar()) {
       if (ImGui::BeginMenu("File")) {
         if (ImGui::MenuItem("Save", "Ctrl-S", nullptr, editor.CanUndo())) {
@@ -201,12 +201,12 @@ void scene::UnloadData() { get_renderer().get_imgui_function().clear(); }
 void scene::Update(float deltaTime) {
   sol::state *lua = (sol::state *)get_script().get_state();
   (*lua)["delta_time"] = deltaTime;
-  (*lua)["keyboard"] = get_input_system().GetState().Keyboard;
-  (*lua)["mouse"] = get_input_system().GetState().Mouse;
+  (*lua)["keyboard"] = get_input().GetState().Keyboard;
+  (*lua)["mouse"] = get_input().GetState().Mouse;
   (*lua)["camera"] = &get_camera();
   (*lua)["random"] = &get_random();
   if (get_renderer().isShowImGui() &&
-      get_input_system().GetState().Keyboard.GetKeyState(key_code::F5) ==
+      get_input().GetState().Keyboard.GetKeyState(key_code::F5) ==
           button_state::Pressed) {
     is_run = true;
   }
@@ -217,8 +217,8 @@ void scene::Update(float deltaTime) {
     is_run = false;
   }
   if (get_renderer().isShowImGui() &&
-      get_input_system().GetState().Keyboard.GetKeyValue(key_code::LCTRL) &&
-      get_input_system().GetState().Keyboard.GetKeyState(key_code::S) ==
+      get_input().GetState().Keyboard.GetKeyValue(key_code::LCTRL) &&
+      get_input().GetState().Keyboard.GetKeyState(key_code::S) ==
           button_state::Pressed) {
     is_save = true;
   }

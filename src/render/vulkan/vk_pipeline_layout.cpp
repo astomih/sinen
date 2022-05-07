@@ -5,7 +5,7 @@
 #include "vk_renderer.hpp"
 #include "vk_util.hpp"
 #include "vulkan/vulkan_core.h"
-namespace nen::vk {
+namespace nen {
 void vk_pipeline_layout::Initialize(
     VkDevice device, const VkDescriptorSetLayout *descriptorLayout,
     const VkExtent2D &extent) {
@@ -133,5 +133,5 @@ void vk_pipeline_layout::Cleanup(VkDevice device) {
   nen::vkutil::DestroyVulkanObject<VkPipelineLayout>(device, layout,
                                                      &vkDestroyPipelineLayout);
 }
-} // namespace nen::vk
+} // namespace nen
 #endif

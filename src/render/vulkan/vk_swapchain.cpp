@@ -4,7 +4,7 @@
 #include "vk_util.hpp"
 #include <algorithm>
 
-namespace nen::vk {
+namespace nen {
 
 vk_swapchain::vk_swapchain(VkInstance instance, VkDevice device,
                            VkSurfaceKHR surface)
@@ -150,6 +150,6 @@ void vk_swapchain::QueuePresent(VkQueue queue, uint32_t imageIndex,
   vkQueuePresentKHR(queue, &presentInfo);
 }
 
-} // namespace nen::vk
+} // namespace nen
 
 #endif

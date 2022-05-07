@@ -5,7 +5,7 @@
 #include <vector>
 #include <vulkan/vk_layer.h>
 
-namespace nen::vk {
+namespace nen {
 class vk_pipeline {
 public:
   vk_pipeline() = default;
@@ -27,5 +27,5 @@ private:
   VkPipelineDepthStencilStateCreateInfo depthStencilCI;
   VkGraphicsPipelineCreateInfo graphicsCI;
 };
-} // namespace nen::vk
+} // namespace nen
 #endif

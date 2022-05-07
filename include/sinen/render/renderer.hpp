@@ -1,4 +1,10 @@
-#pragma once
+#ifndef SINEN_RENDER_RENDERER_HPP
+#define SINEN_RENDER_RENDERER_HPP
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 #include "../color/color.hpp"
 #include "../instancing/instancing.hpp"
 #include "../math/math.hpp"
@@ -10,51 +16,27 @@
 #include "../texture/texture_type.hpp"
 #include "../vertex/vertex_array.hpp"
 #include "graphics_api.hpp"
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <vector>
 
 namespace nen {
 
 class renderer {
 public:
-  class Interface {
-  public:
-    Interface() = default;
-    virtual ~Interface() {}
-
-    virtual void Initialize() {}
-    virtual void Shutdown() {}
-    virtual void Render() {}
-    virtual void draw2d(std::shared_ptr<class draw_object> sprite) {}
-    virtual void draw3d(std::shared_ptr<class draw_object> sprite) {}
-    virtual void AddVertexArray(const vertex_array &vArray,
-                                std::string_view name) {}
-    virtual void UpdateVertexArray(const vertex_array &vArray,
-                                   std::string_view name) {}
-
-    virtual void add_instancing(const instancing &_instancing) {}
-
-    virtual void LoadShader(const shader &shaderInfo) {}
-    virtual void UnloadShader(const shader &shaderInfo) {}
-  };
   renderer(class manager &_manager);
+  ~renderer();
   void initialize(graphics_api api);
-  ~renderer() = default;
 
   graphics_api GetGraphicsAPI() { return RendererAPI; }
 
-  void Shutdown();
-  void UnloadData();
+  void shutdown();
+  void unload_data();
 
   void render();
 
   void draw2d(const std::shared_ptr<draw_object> draw_object);
   void draw3d(const std::shared_ptr<draw_object> draw_object);
 
-  void AddVertexArray(const vertex_array &vArray, std::string_view name);
-  void UpdateVertexArray(const vertex_array &vArray, std::string_view name);
+  void add_vertex_array(const vertex_array &vArray, std::string_view name);
+  void update_vertex_array(const vertex_array &vArray, std::string_view name);
 
   void add_instancing(const instancing &_instancing);
 
@@ -70,8 +52,8 @@ public:
   void toggleShowImGui() { showImGui = !showImGui; }
   bool isShowImGui() { return showImGui; }
 
-  void LoadShader(const shader &shaderinfo);
-  void UnloadShader(const shader &shaderinfo);
+  void load_shader(const shader &shaderinfo);
+  void unload_shader(const shader &shaderinfo);
 
   std::vector<std::function<void()>> &get_imgui_function() {
     return m_imgui_function;
@@ -91,10 +73,12 @@ private:
   // Window
   std::shared_ptr<class window> mWindow;
   // Renderer
-  std::unique_ptr<Interface> m_renderer;
+  std::unique_ptr<class gl_renderer> m_gl_renderer;
+  std::unique_ptr<class vk_renderer> m_vk_renderer;
   graphics_api RendererAPI;
   bool showImGui;
   std::vector<std::function<void()>> m_imgui_function;
 };
 
 } // namespace nen
+#endif

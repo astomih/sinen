@@ -10,13 +10,13 @@
 #include "vk_pipeline.hpp"
 #include "vk_renderer.hpp"
 
-namespace nen::vk {
+namespace nen {
 
-vk_base::vk_base(vk_renderer *vkrenderer, manager &_manager)
-    : m_imageIndex(0), m_vkrenderer(vkrenderer), m_manager(_manager) {}
+vk_base::vk_base(vk_renderer *vkrenderer)
+    : m_imageIndex(0), m_vkrenderer(vkrenderer) {}
 
 void vk_base::initialize() {
-  auto &w = m_manager.get_window();
+  auto &w = get_window();
   initialize_instance(w.Name().c_str());
   select_physical_device();
   m_graphicsQueueIndex = search_graphics_queue_index();
@@ -334,7 +334,7 @@ vk_base::get_memory_type_index(uint32_t requestBits,
 void vk_base::recreate_swapchain() {
   vkDeviceWaitIdle(m_device);
 
-  auto size = m_manager.get_window().Size();
+  auto size = get_window().Size();
   mSwapchain->Prepare(m_physDev, m_graphicsQueueIndex,
                       static_cast<uint32_t>(size.x),
                       static_cast<uint32_t>(size.y), VK_FORMAT_B8G8R8A8_UNORM);
@@ -349,13 +349,13 @@ void vk_base::recreate_swapchain() {
 }
 
 void vk_base::render() {
-  if (mSwapchain->is_need_recreate(m_manager.get_window().Size()))
+  if (mSwapchain->is_need_recreate(get_window().Size()))
     recreate_swapchain();
   uint32_t nextImageIndex = 0;
   mSwapchain->AcquireNextImage(&nextImageIndex, m_presentCompletedSem);
   auto commandFence = m_fences[nextImageIndex];
 
-  auto color = m_manager.get_renderer().GetClearColor();
+  auto color = get_renderer().GetClearColor();
   std::array<VkClearValue, 2> clearValue = {{
       {color.r, color.g, color.b, 1.0f}, // for Color
       {1.0f, 0}                          // for Depth
@@ -375,7 +375,7 @@ void vk_base::render() {
   commandBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   auto &command = m_commands[nextImageIndex];
   m_imageIndex = nextImageIndex;
-  m_vkrenderer->makeCommand(command, renderPassBI, commandBI, commandFence);
+  m_vkrenderer->make_command(command, renderPassBI, commandBI, commandFence);
 
   // End Render Pass
   vkCmdEndRenderPass(command);
@@ -398,5 +398,5 @@ void vk_base::render() {
   vkQueueWaitIdle(m_deviceQueue);
   mSwapchain->QueuePresent(m_deviceQueue, nextImageIndex, m_renderCompletedSem);
 }
-} // namespace nen::vk
+} // namespace nen
 #endif

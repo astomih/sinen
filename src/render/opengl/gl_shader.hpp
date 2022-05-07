@@ -9,7 +9,7 @@
 #include <string>
 #include <unordered_map>
 
-namespace nen::gl {
+namespace nen {
 class gl_shader {
 public:
   /**
@@ -89,4 +89,4 @@ private:
   GLuint mShaderProgram;
 };
 
-} // namespace nen::gl
+} // namespace nen

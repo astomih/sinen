@@ -147,14 +147,16 @@ $(function() {
 <div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;  std::shared_ptr&lt;class window&gt; mWindow;</div>
 <div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;  <span class="comment">// Renderer</span></div>
 <div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;  std::unique_ptr&lt;class gl_renderer&gt; m_gl_renderer;</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;  std::unique_ptr&lt;class vk_renderer&gt; m_vk_renderer;</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;  graphics_api RendererAPI;</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;  <span class="keywordtype">bool</span> showImGui;</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;  std::vector&lt;std::function&lt;void()&gt;&gt; m_imgui_function;</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;};</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160; </div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;} <span class="comment">// namespace nen</span></div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="preprocessor">#if !defined(EMSCRIPTEN) &amp;&amp; !defined(MOBILE)</span></div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;  std::unique_ptr&lt;class vk_renderer&gt; m_vk_renderer;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;  graphics_api RendererAPI;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;  <span class="keywordtype">bool</span> showImGui;</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;  std::vector&lt;std::function&lt;void()&gt;&gt; m_imgui_function;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;};</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160; </div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;} <span class="comment">// namespace nen</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassnen_1_1color_html"><div class="ttname"><a href="classnen_1_1color.html">nen::color</a></div><div class="ttdef"><b>Definition:</b> color.hpp:4</div></div>
 <div class="ttc" id="aclassnen_1_1draw2d_html"><div class="ttname"><a href="classnen_1_1draw2d.html">nen::draw2d</a></div><div class="ttdef"><b>Definition:</b> draw_object_wrapper.hpp:9</div></div>
 <div class="ttc" id="aclassnen_1_1draw3d_html"><div class="ttname"><a href="classnen_1_1draw3d.html">nen::draw3d</a></div><div class="ttdef"><b>Definition:</b> draw_object_wrapper.hpp:20</div></div>

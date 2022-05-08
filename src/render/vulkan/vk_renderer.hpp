@@ -41,7 +41,7 @@ class vk_instancing {
 public:
   vk_instancing(const instancing &_instancing) : ins(_instancing) {}
   instancing ins;
-  std::shared_ptr<vk_draw_object> vk_draw_object;
+  std::shared_ptr<class vk_draw_object> m_vk_draw_object;
   vk_buffer_object instance_buffer;
 };
 
@@ -74,9 +74,9 @@ public:
       uint32_t size, VkBufferUsageFlags usage,
       VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
   vk_base *GetBase() { return m_base.get(); }
-  void registerTexture(std::shared_ptr<vk_draw_object> texture,
+  void registerTexture(std::shared_ptr<class vk_draw_object> texture,
                        texture_type type);
-  void unregisterTexture(std::shared_ptr<vk_draw_object> texture);
+  void unregisterTexture(std::shared_ptr<class vk_draw_object> texture);
   void register_image_object(const handle_t &handle);
   void unregister_image_object(const handle_t &handle);
   VkPipelineLayout get_pipeline_layout(const std::string &name) {

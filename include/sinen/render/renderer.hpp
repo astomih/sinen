@@ -74,7 +74,9 @@ private:
   std::shared_ptr<class window> mWindow;
   // Renderer
   std::unique_ptr<class gl_renderer> m_gl_renderer;
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
   std::unique_ptr<class vk_renderer> m_vk_renderer;
+#endif
   graphics_api RendererAPI;
   bool showImGui;
   std::vector<std::function<void()>> m_imgui_function;

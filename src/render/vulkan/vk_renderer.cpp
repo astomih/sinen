@@ -26,6 +26,7 @@
 #include "vk_renderer.hpp"
 #include "vk_shader.hpp"
 #include "vk_util.hpp"
+#include <io/dstream.hpp>
 
 namespace nen {
 using namespace vkutil;
@@ -134,7 +135,7 @@ void vk_renderer::add_instancing(const instancing &_instancing) {
   prepare_descriptor_set(t);
 
   vk_instancing vi{_instancing};
-  vi.vk_draw_object = t;
+  vi.m_vk_draw_object = t;
   vi.instance_buffer = create_buffer(_instancing.size,
                                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
                                          VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -154,12 +155,13 @@ void vk_renderer::draw_instancing_3d(VkCommandBuffer command) {
     pipeline_instancing_opaque.Bind(command);
     vkCmdBindDescriptorSets(
         command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
-        0, 1, &_instancing.vk_draw_object->descripterSet[m_base->m_imageIndex],
-        0, nullptr);
+        0, 1,
+        &_instancing.m_vk_draw_object->descripterSet[m_base->m_imageIndex], 0,
+        nullptr);
     auto allocation =
-        _instancing.vk_draw_object->uniformBuffers[m_base->m_imageIndex]
+        _instancing.m_vk_draw_object->uniformBuffers[m_base->m_imageIndex]
             .allocation;
-    write_memory(allocation, &_instancing.vk_draw_object->drawObject->param,
+    write_memory(allocation, &_instancing.m_vk_draw_object->drawObject->param,
                  sizeof(shader_parameter));
     std::string index = _instancing.ins.object->vertexIndex;
     VkBuffer buffers[] = {m_vertex_arrays[index].vertexBuffer.buffer,
@@ -177,12 +179,13 @@ void vk_renderer::draw_instancing_2d(VkCommandBuffer command) {
     pipeline_instancing_2d.Bind(command);
     vkCmdBindDescriptorSets(
         command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
-        0, 1, &_instancing.vk_draw_object->descripterSet[m_base->m_imageIndex],
-        0, nullptr);
+        0, 1,
+        &_instancing.m_vk_draw_object->descripterSet[m_base->m_imageIndex], 0,
+        nullptr);
     auto allocation =
-        _instancing.vk_draw_object->uniformBuffers[m_base->m_imageIndex]
+        _instancing.m_vk_draw_object->uniformBuffers[m_base->m_imageIndex]
             .allocation;
-    write_memory(allocation, &_instancing.vk_draw_object->drawObject->param,
+    write_memory(allocation, &_instancing.m_vk_draw_object->drawObject->param,
                  sizeof(shader_parameter));
     std::string index = _instancing.ins.object->vertexIndex;
     VkBuffer buffers[] = {m_vertex_arrays[index].vertexBuffer.buffer,
@@ -400,12 +403,12 @@ void vk_renderer::make_command(VkCommandBuffer command,
     unregisterTexture(sprite);
   m_draw_object_2d.clear();
   for (auto &_instancing : m_instancies_2d) {
-    unregisterTexture(_instancing.vk_draw_object);
+    unregisterTexture(_instancing.m_vk_draw_object);
     destroy_buffer(_instancing.instance_buffer);
   }
   m_instancies_2d.clear();
   for (auto &_instancing : m_instancies_3d) {
-    unregisterTexture(_instancing.vk_draw_object);
+    unregisterTexture(_instancing.m_vk_draw_object);
     destroy_buffer(_instancing.instance_buffer);
   }
   m_instancies_3d.clear();
@@ -545,8 +548,10 @@ void vk_renderer::prepare_imgui() {
   io.ConfigFlags |=
       ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
   io.IniFilename = NULL;
-  io.Fonts->AddFontFromFileTTF("data/font/mplus/mplus-1p-medium.ttf", 18.0f,
-                               nullptr, io.Fonts->GetGlyphRangesJapanese());
+  io.Fonts->AddFontFromFileTTF(
+      dstream::convert_file_path("mplus/mplus-1p-medium.ttf", asset_type::Font)
+          .data(),
+      18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
 
   ImGui_ImplSDL2_InitForVulkan((SDL_Window *)get_window().GetSDLWindow());
 

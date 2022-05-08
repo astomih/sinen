@@ -56,8 +56,10 @@ void gl_renderer::initialize() {
   io.ConfigFlags |=
       ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
   io.IniFilename = NULL;
-  io.Fonts->AddFontFromFileTTF("data/font/mplus/mplus-1p-medium.ttf", 18.0f,
-                               nullptr, io.Fonts->GetGlyphRangesJapanese());
+  io.Fonts->AddFontFromFileTTF(
+      dstream::convert_file_path("mplus/mplus-1p-medium.ttf", asset_type::Font)
+          .data(),
+      18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
   ImGui_ImplSDL2_InitForOpenGL((SDL_Window *)get_window().GetSDLWindow(),
                                mContext);
 #if defined EMSCRIPTEN || defined MOBILE
@@ -145,7 +147,7 @@ void gl_renderer::draw_skybox() {
   auto &va = m_VertexArrays["BOX"];
   glBindVertexArray(va.vao);
   disable_vertex_attrib_array();
-  mSpriteShader.SetActive(0);
+  mAlphaShader.SetActive(0);
   shader_parameter param;
   matrix4 w = matrix4::Identity;
   w[0][0] = 5;
@@ -155,8 +157,8 @@ void gl_renderer::draw_skybox() {
   param.view = matrix4::LookAt(vector3(0, 0, 0),
                                get_camera().target - get_camera().position,
                                get_camera().up);
-  mSpriteShader.SetActive(0);
-  mSpriteShader.UpdateUBO(0, sizeof(shader_parameter), &param);
+  mAlphaShader.SetActive(0);
+  mAlphaShader.UpdateUBO(0, sizeof(shader_parameter), &param);
   glBindTexture(GL_TEXTURE_2D,
                 mTextureIDs[get_renderer().skybox_texture->handle]);
   glDrawElements(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT, nullptr);

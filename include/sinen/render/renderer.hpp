@@ -25,7 +25,7 @@ public:
   ~renderer();
   void initialize(graphics_api api);
 
-  graphics_api GetGraphicsAPI() { return RendererAPI; }
+  graphics_api get_graphics_api() { return RendererAPI; }
 
   void shutdown();
   void unload_data();
@@ -45,7 +45,13 @@ public:
       clearColor = color;
   }
 
-  color GetClearColor() { return this->clearColor; }
+  color get_clear_color() { return this->clearColor; }
+
+  void set_skybox_texture(texture _skybox_texture) {
+    m_skybox_texture = _skybox_texture;
+  }
+
+  texture get_skybox_texture() { return m_skybox_texture; }
 
   class window &GetWindow();
 
@@ -63,8 +69,6 @@ public:
     m_imgui_function.push_back(function);
   }
 
-  std::unique_ptr<texture> skybox_texture;
-
 private:
   class manager &m_manager;
   void setup_shapes();
@@ -80,6 +84,7 @@ private:
   graphics_api RendererAPI;
   bool showImGui;
   std::vector<std::function<void()>> m_imgui_function;
+  texture m_skybox_texture;
 };
 
 } // namespace nen

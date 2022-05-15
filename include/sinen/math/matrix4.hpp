@@ -10,7 +10,7 @@ class matrix4 {
 public:
   float mat[4][4]{};
 
-  constexpr matrix4() { *this = matrix4::Identity; }
+  constexpr matrix4() { *this = matrix4::identity; }
 
   explicit matrix4(float inMat[4][4]) {
     memcpy(mat, inMat, 16 * sizeof(float));
@@ -89,86 +89,86 @@ public:
   }
 
   // Invert the matrix - super slow
-  void Invert();
+  void invert();
 
   // Get the translation component of the matrix
-  [[nodiscard]] vector3 GetTranslation() const {
+  [[nodiscard]] vector3 get_translation() const {
     return vector3(mat[3][0], mat[3][1], mat[3][2]);
   }
 
   // Get the X axis of the matrix (forward)
-  [[nodiscard]] vector3 GetXAxis() const {
-    return vector3::Normalize(vector3(mat[0][0], mat[0][1], mat[0][2]));
+  [[nodiscard]] vector3 get_x_axis() const {
+    return vector3::normalize(vector3(mat[0][0], mat[0][1], mat[0][2]));
   }
 
   // Get the Y axis of the matrix (left)
-  [[nodiscard]] vector3 GetYAxis() const {
-    return vector3::Normalize(vector3(mat[1][0], mat[1][1], mat[1][2]));
+  [[nodiscard]] vector3 get_y_axis() const {
+    return vector3::normalize(vector3(mat[1][0], mat[1][1], mat[1][2]));
   }
 
   // Get the Z axis of the matrix (up)
-  [[nodiscard]] vector3 GetZAxis() const {
-    return vector3::Normalize(vector3(mat[2][0], mat[2][1], mat[2][2]));
+  [[nodiscard]] vector3 get_z_axis() const {
+    return vector3::normalize(vector3(mat[2][0], mat[2][1], mat[2][2]));
   }
 
   // Extract the scale component from the matrix
-  [[nodiscard]] vector3 GetScale() const {
+  [[nodiscard]] vector3 get_scale() const {
     vector3 retVal;
-    retVal.x = vector3(mat[0][0], mat[0][1], mat[0][2]).Length();
-    retVal.y = vector3(mat[1][0], mat[1][1], mat[1][2]).Length();
-    retVal.z = vector3(mat[2][0], mat[2][1], mat[2][2]).Length();
+    retVal.x = vector3(mat[0][0], mat[0][1], mat[0][2]).length();
+    retVal.y = vector3(mat[1][0], mat[1][1], mat[1][2]).length();
+    retVal.z = vector3(mat[2][0], mat[2][1], mat[2][2]).length();
     return retVal;
   }
 
   // Create a scale matrix with x, y, and z scales
 
   // Rotation about x-axis
-  static matrix4 CreateRotationX(const float theta) {
+  static matrix4 create_rotaion_x(const float theta) {
     float temp[4][4] = {
         {1.0f, 0.0f, 0.0f, 0.0f},
-        {0.0f, math::Cos(theta), math::Sin(theta), 0.0f},
-        {0.0f, -math::Sin(theta), math::Cos(theta), 0.0f},
+        {0.0f, math::cos(theta), math::sin(theta), 0.0f},
+        {0.0f, -math::sin(theta), math::cos(theta), 0.0f},
         {0.0f, 0.0f, 0.0f, 1.0f},
     };
     return matrix4(temp);
   }
 
   // Rotation about y-axis
-  static matrix4 CreateRotationY(const float theta) {
+  static matrix4 create_rotation_y(const float theta) {
     float temp[4][4] = {
-        {math::Cos(theta), 0.0f, -math::Sin(theta), 0.0f},
+        {math::cos(theta), 0.0f, -math::sin(theta), 0.0f},
         {0.0f, 1.0f, 0.0f, 0.0f},
-        {math::Sin(theta), 0.0f, math::Cos(theta), 0.0f},
+        {math::sin(theta), 0.0f, math::cos(theta), 0.0f},
         {0.0f, 0.0f, 0.0f, 1.0f},
     };
     return matrix4(temp);
   }
 
   // Rotation about z-axis
-  static matrix4 CreateRotationZ(const float theta) {
+  static matrix4 create_rotation_z(const float theta) {
     float temp[4][4] = {
-        {math::Cos(theta), math::Sin(theta), 0.0f, 0.0f},
-        {-math::Sin(theta), math::Cos(theta), 0.0f, 0.0f},
+        {math::cos(theta), math::sin(theta), 0.0f, 0.0f},
+        {-math::sin(theta), math::cos(theta), 0.0f, 0.0f},
         {0.0f, 0.0f, 1.0f, 0.0f},
         {0.0f, 0.0f, 0.0f, 1.0f},
     };
     return matrix4(temp);
   }
-  static matrix4 Transpose(const matrix4 &m);
+  static matrix4 transpose(const matrix4 &m);
 
   // Create a rotation matrix from a quaternion
-  static matrix4 CreateFromQuaternion(const class quaternion &q);
+  static matrix4 create_from_quaternion(const class quaternion &q);
 
-  static matrix4 CreateTranslation(const vector3 &trans);
+  static matrix4 create_translation(const vector3 &trans);
 
-  static quaternion ToQuaternion(const matrix4 &m);
+  static quaternion to_quaternion(const matrix4 &m);
 
-  static matrix4 LookAt(const vector3 &eye, const vector3 &at,
+  static matrix4 lookat(const vector3 &eye, const vector3 &at,
                         const vector3 &up);
 
-  static matrix4 Perspective(const float angle, const float aspect,
+  static matrix4 perspective(const float angle, const float aspect,
                              const float near, const float far);
 
-  static const matrix4 Identity;
+  static const matrix4 identity;
 };
 } // namespace nen

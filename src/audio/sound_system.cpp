@@ -53,7 +53,7 @@ sound_system::~sound_system() {
   alcCloseDevice((ALCdevice *)device);
 }
 
-bool sound_system::Initialize() {
+bool sound_system::initialize() {
   device = (void *)alcOpenDevice(NULL);
   if (!device) {
     printf("Couldn't open OpenAL default device.\n");
@@ -74,20 +74,20 @@ bool sound_system::Initialize() {
   return true;
 }
 
-void sound_system::Shutdown() {}
+void sound_system::terminate() {}
 
-void sound_system::Update(float deltaTime) {}
+void sound_system::update(float deltaTime) {}
 
-void sound_system::SetListener(const vector3 &pos,
-                               const quaternion &direction) {
+void sound_system::set_listener(const vector3 &pos,
+                                const quaternion &direction) {
   alListener3f(AL_POSITION, pos.x, pos.y, pos.z);
-  auto at = vector3::Transform(vector3::neg_unit_z, direction);
-  auto up = vector3::Transform(vector3::unit_y, direction);
+  auto at = vector3::transform(vector3::neg_unit_z, direction);
+  auto up = vector3::transform(vector3::unit_y, direction);
   float ori[6] = {at.x, at.y, at.z, up.x, up.y, up.z};
   alListenerfv(AL_ORIENTATION, ori);
 }
 
-void sound_system::LoadAudioFile(std::string_view fileName) {
+void sound_system::load(std::string_view fileName) {
   if (buffers.contains(fileName.data())) {
     return;
   }
@@ -111,7 +111,7 @@ void sound_system::LoadAudioFile(std::string_view fileName) {
   SDL_FreeWAV(buffer);
 }
 
-void sound_system::UnloadAudioFile(std::string_view fileName) {
+void sound_system::unload(std::string_view fileName) {
   std::string name = fileName.data();
   if (buffers.contains(name)) {
     alDeleteBuffers(1, &buffers[fileName.data()]);
@@ -120,14 +120,14 @@ void sound_system::UnloadAudioFile(std::string_view fileName) {
   }
 }
 
-uint32_t sound_system::NewSource(std::string_view name) {
+uint32_t sound_system::new_source(std::string_view name) {
   ALuint source;
   alGenSources(1, &source);
   alSourcei(source, AL_BUFFER, buffers[name.data()]);
   return source;
 }
 
-void sound_system::DeleteSource(uint32_t sourceID) {
+void sound_system::delete_source(uint32_t sourceID) {
   alDeleteBuffers(1, &sourceID);
 }
 vector3 calculate(const quaternion &r) {
@@ -173,15 +173,15 @@ vector3 calculate(const quaternion &r) {
   if (m21 >= 0.99 && m21 <= 1.01) {
     tx = math::Pi / 2.f;
     ty = 0;
-    tz = math::Atan2(m10, m00);
+    tz = math::atan2(m10, m00);
   } else if (m21 >= -1.01f && m21 <= -0.99f) {
     tx = -math::Pi / 2.f;
     ty = 0;
-    tz = math::Atan2(m10, m00);
+    tz = math::atan2(m10, m00);
   } else {
     tx = std::asin(-m21);
-    ty = math::Atan2(m20, m22);
-    tz = math::Atan2(m01, m11);
+    ty = math::atan2(m20, m22);
+    tz = math::atan2(m01, m11);
   }
 
   return vector3(math::to_degrees(tx), math::to_degrees(ty),

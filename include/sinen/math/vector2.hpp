@@ -17,9 +17,7 @@ public:
     y = inY;
   }
 
-  const float *GetAsFloatPtr() const {
-    return reinterpret_cast<const float *>(&x);
-  }
+  const float *get_ptr() const { return reinterpret_cast<const float *>(&x); }
   // Vector addition (a + b)
   friend vector2 operator+(const vector2 &a, const vector2 &b) {
     return vector2(a.x + b.x, a.y + b.y);
@@ -88,38 +86,38 @@ public:
   }
 
   // Length squared of vector
-  [[nodiscard]] float LengthSq() const { return (x * x + y * y); }
+  [[nodiscard]] float length_sqrt() const { return (x * x + y * y); }
 
   // Length of vector
-  [[nodiscard]] float Length() const { return (math::Sqrt(LengthSq())); }
+  [[nodiscard]] float length() const { return (math::sqrt(length_sqrt())); }
 
   // Normalize this vector
-  void Normalize() {
-    const auto length = Length();
-    x /= length;
-    y /= length;
+  void normalize() {
+    const auto len = length();
+    x /= len;
+    y /= len;
   }
 
   // Normalize the provided vector
-  static vector2 Normalize(const vector2 &vec) {
+  static vector2 normalize(const vector2 &vec) {
     auto temp = vec;
-    temp.Normalize();
+    temp.normalize();
     return temp;
   }
 
   // Dot product between two vectors (a dot b)
-  static float Dot(const vector2 &a, const vector2 &b) {
+  static float dot(const vector2 &a, const vector2 &b) {
     return (a.x * b.x + a.y * b.y);
   }
 
   // Lerp from A to B by f
-  static vector2 Lerp(const vector2 &a, const vector2 &b, float f) {
+  static vector2 lerp(const vector2 &a, const vector2 &b, float f) {
     return vector2(a + f * (b - a));
   }
 
   // Reflect V about (normalized) N
-  static vector2 Reflect(const vector2 &v, const vector2 &n) {
-    return v - 2.0f * vector2::Dot(v, n) * n;
+  static vector2 reflect(const vector2 &v, const vector2 &n) {
+    return v - 2.0f * vector2::dot(v, n) * n;
   }
 
   // Transform vector by matrix

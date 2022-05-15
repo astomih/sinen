@@ -16,12 +16,12 @@ public:
       : x(x), y(y), z(z) {}
 
   // Cast to a const float pointer
-  [[nodiscard]] const float *GetAsFloatPtr() const {
+  [[nodiscard]] const float *get_ptr() const {
     return reinterpret_cast<const float *>(&x);
   }
 
   // Set all three components in one line
-  void Set(float inX, float inY, float inZ) {
+  void set(float inX, float inY, float inZ) {
     x = inX;
     y = inY;
     z = inZ;
@@ -91,33 +91,33 @@ public:
   vector3 copy() { return vector3(x, y, z); }
 
   // Length squared of vector
-  [[nodiscard]] float LengthSq() const { return (x * x + y * y + z * z); }
+  [[nodiscard]] float length_sqrt() const { return (x * x + y * y + z * z); }
 
   // Length of vector
-  [[nodiscard]] float Length() const { return (math::Sqrt(LengthSq())); }
+  [[nodiscard]] float length() const { return (math::sqrt(length_sqrt())); }
 
   // Normalize this vector
-  void Normalize() {
-    const auto length = Length();
-    x /= length;
-    y /= length;
-    z /= length;
+  void normalize() {
+    const auto len = length();
+    x /= len;
+    y /= len;
+    z /= len;
   }
 
   // Normalize the provided vector
-  static vector3 Normalize(const vector3 &vec) {
+  static vector3 normalize(const vector3 &vec) {
     auto temp = vec;
-    temp.Normalize();
+    temp.normalize();
     return temp;
   }
 
   // Dot product between two vectors (a dot b)
-  static float Dot(const vector3 &a, const vector3 &b) {
+  static float dot(const vector3 &a, const vector3 &b) {
     return (a.x * b.x + a.y * b.y + a.z * b.z);
   }
 
   // Cross product between two vectors (a cross b)
-  static vector3 Cross(const vector3 &a, const vector3 &b) {
+  static vector3 cross(const vector3 &a, const vector3 &b) {
     vector3 temp;
     temp.x = a.y * b.z - a.z * b.y;
     temp.y = a.z * b.x - a.x * b.z;
@@ -126,13 +126,13 @@ public:
   }
 
   // Lerp from A to B by f
-  static vector3 Lerp(const vector3 &a, const vector3 &b, float f) {
+  static vector3 lerp(const vector3 &a, const vector3 &b, float f) {
     return vector3(a + f * (b - a));
   }
 
   // Reflect V about (normalized) N
-  static vector3 Reflect(const vector3 &v, const vector3 &n) {
-    return v - 2.0f * vector3::Dot(v, n) * n;
+  static vector3 reflect(const vector3 &v, const vector3 &n) {
+    return v - 2.0f * vector3::dot(v, n) * n;
   }
 
   static vector3 transform(const vector3 &vec, const class matrix4 &mat,
@@ -143,12 +143,7 @@ public:
                                           float w = 1.0f);
 
   // Transform a Vector3f by a quaternion
-  static vector3 Transform(const vector3 &v, const class quaternion &q);
-
-  /// <summary>
-  /// VDE Vector3f to Effekseer Vector3D
-  /// </summary>
-  // Effekseer::Vector3D ToEffekseer() const;
+  static vector3 transform(const vector3 &v, const class quaternion &q);
 
   static const vector3 zero;
   static const vector3 unit_x;

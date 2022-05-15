@@ -11,10 +11,10 @@
 
 namespace nen {
 font::font(std::string_view file_name, int32_t point) {
-  LoadFromFile(file_name, point);
+  load(file_name, point);
 }
-font::~font() { Unload(); }
-bool font::LoadFromFile(std::string_view fontName, int pointSize) {
+font::~font() { unload(); }
+bool font::load(std::string_view fontName, int pointSize) {
   this->fontName = fontName;
   this->pointSize = pointSize;
   m_font = (void *)::TTF_OpenFontRW(
@@ -27,15 +27,15 @@ bool font::LoadFromFile(std::string_view fontName, int pointSize) {
   return (isLoad = true);
 }
 
-void font::Unload() {
+void font::unload() {
   if (isLoad) {
     ::TTF_CloseFont((TTF_Font *)m_font);
     isLoad = false;
   }
 }
 
-void font::RenderText(texture &tex, std::string_view text,
-                      const color &_color) {
+void font::render_text(texture &tex, std::string_view text,
+                       const color &_color) {
   // My Color to SDL_Color
   SDL_Color sdlColor;
   sdlColor.r = static_cast<Uint8>(_color.r * 255);

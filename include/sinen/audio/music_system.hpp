@@ -8,10 +8,10 @@ public:
   music();
   ~music();
 
-  void PlayMusic();
+  void play();
 
-  void LoadMusicFromFile(std::string_view fileName);
-  void UnloadMusic();
+  void load(std::string_view fileName);
+  void unload();
 
   void set_volume(int volume);
 

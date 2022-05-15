@@ -1,4 +1,5 @@
-﻿#pragma once
+#ifndef SINEN_TIME_TIMER_HPP
+#define SINEN_TIME_TIMER_HPP
 
 namespace nen {
 class timer {
@@ -7,26 +8,20 @@ public:
   timer(float time);
   ~timer();
 
-  /* 計測開始 */
-  void Start();
+  void start();
 
-  /* 時刻を設定 */
-  void SetTime(float milliSecond);
+  void set_time(float milliSecond);
 
-  /* 設定時刻を経過したか */
-  bool Check();
+  bool check();
 
-  /* 計測中か */
-  bool isStarted() { return isStart; }
+  bool is_started() { return m_is_started; }
 
-  void Stop();
+  void stop();
 
 private:
-  /* 計測開始時の時刻 */
-  float start;
-  /* 設定時刻 */
-  float time;
-  /* 計測中かどうか */
-  bool isStart;
+  float m_start;
+  float m_time;
+  bool m_is_started;
 };
 } // namespace nen
+#endif // SINEN_TIME_TIMER_HPP

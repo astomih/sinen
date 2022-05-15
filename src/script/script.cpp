@@ -80,13 +80,13 @@ bool script_system::initialize() {
     v["copy"] = &vector3::copy;
     v["forward"] = [](const vector3 v, const vector3 rotation) -> vector3 {
       quaternion q;
-      q = quaternion::Concatenate(
+      q = quaternion::concatenate(
           q, quaternion(vector3::unit_z, math::to_radians(rotation.z)));
-      q = quaternion::Concatenate(
+      q = quaternion::concatenate(
           q, quaternion(vector3::unit_y, math::to_radians(rotation.y)));
-      q = quaternion::Concatenate(
+      q = quaternion::concatenate(
           q, quaternion(vector3::unit_x, math::to_radians(rotation.x)));
-      return vector3::Transform(v, q);
+      return vector3::transform(v, q);
     };
   }
   {
@@ -147,33 +147,33 @@ bool script_system::initialize() {
     auto v = impl->state.new_usertype<texture>("nen_texture",
                                                sol::no_construction());
     v["fill_color"] = &texture::fill_color;
-    v["load"] = &texture::Load;
+    v["load"] = &texture::load;
     v["size"] = &texture::size;
   }
   {
     auto v = impl->state.new_usertype<font>("nen_font", sol::no_construction());
-    v["load"] = &font::LoadFromFile;
-    v["render_text"] = &font::RenderText;
+    v["load"] = &font::load;
+    v["render_text"] = &font::render_text;
   }
   {
     auto v = impl->state.new_usertype<keyboard_state>("nen_keyboard_state",
                                                       sol::no_construction());
-    v["is_key_down"] = &keyboard_state::GetKeyValue;
-    v["key_state"] = &keyboard_state::GetKeyState;
+    v["is_key_down"] = &keyboard_state::is_key_down;
+    v["key_state"] = &keyboard_state::get_key_state;
   }
   {
     auto v = impl->state.new_usertype<mouse_state>("nen_mouse_state",
                                                    sol::no_construction());
     v["button_state"] = &mouse_state::get_button_state;
     v["is_button_down"] = &mouse_state::is_button_down;
-    v["position"] = &mouse_state::GetPosition;
-    v["wheel_state"] = &mouse_state::GetScrollWheel;
+    v["position"] = &mouse_state::get_position;
+    v["scroll_wheel"] = &mouse_state::get_scroll_wheel;
   }
   {
     auto v =
         impl->state.new_usertype<music>("nen_music", sol::no_construction());
-    v["load"] = &music::LoadMusicFromFile;
-    v["play"] = &music::PlayMusic;
+    v["load"] = &music::load;
+    v["play"] = &music::play;
     v["set_volume"] = &music::set_volume;
   }
   {
@@ -181,10 +181,10 @@ bool script_system::initialize() {
         impl->state.new_usertype<sound>("nen_sound", sol::no_construction());
     v["load"] = &sound::load;
     v["play"] = &sound::play;
-    v["set_volume"] = &sound::SetVolume;
-    v["set_pitch"] = &sound::SetPitch;
+    v["set_volume"] = &sound::set_volume;
+    v["set_pitch"] = &sound::set_pitch;
     v["set_listener"] = &sound::set_listener;
-    v["set_position"] = &sound::SetPosition;
+    v["set_position"] = &sound::set_position;
   }
   {
     auto v =
@@ -216,8 +216,8 @@ bool script_system::initialize() {
   {
     auto v =
         impl->state.new_usertype<random>("nen_random", sol::no_construction());
-    v["get_int_range"] = &random::GetIntRange;
-    v["get_float_range"] = &random::GetFloatRange;
+    v["get_int_range"] = &random::get_int_range;
+    v["get_float_range"] = &random::get_float_range;
   }
   {
     auto &v = impl->state;

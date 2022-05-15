@@ -19,22 +19,22 @@ public:
   void new_source();
   void delete_source();
   void play();
-  bool IsValid();
+  bool is_valid();
   // Restart event from begining
-  void Restart();
+  void restart();
   // Stop this event
-  void Stop(bool allowFadeOut = true);
+  void stop(bool allowFadeOut = true);
   // Setters
-  void SetPaused(bool pause);
-  void SetVolume(float value);
-  void SetPitch(float value);
-  void SetPosition(vector3 pos);
+  void set_paused(bool pause);
+  void set_volume(float value);
+  void set_pitch(float value);
+  void set_position(vector3 pos);
   // Getters
-  bool GetPaused();
-  float GetVolume();
-  float GetPitch();
-  std::string GetName();
-  const vector3 &GetPosition();
+  bool get_paused();
+  float get_volume();
+  float get_pitch();
+  std::string get_name();
+  const vector3 &get_position();
 
   void set_listener(vector3 pos, vector3 direction);
 

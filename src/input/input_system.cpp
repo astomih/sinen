@@ -12,11 +12,11 @@ namespace nen {
 bool isHide = false;
 SDL_Cursor *g_cursor = nullptr;
 
-bool keyboard_state::GetKeyValue(key_code _key_code) const {
+bool keyboard_state::is_key_down(key_code _key_code) const {
   return mCurrState[static_cast<int>(_key_code)] == 1;
 }
 
-button_state keyboard_state::GetKeyState(key_code _key_code) const {
+button_state keyboard_state::get_key_state(key_code _key_code) const {
   if (mPrevState[static_cast<int>(_key_code)] == 0) {
     if (mCurrState[static_cast<int>(_key_code)] == 0) {
       return button_state::None;
@@ -35,12 +35,12 @@ button_state keyboard_state::GetKeyState(key_code _key_code) const {
 
 mouse_state::mouse_state(manager &_manager) : m_manager(_manager) {}
 
-void mouse_state::SetPosition(const vector2 &pos) const {
+void mouse_state::set_position(const vector2 &pos) const {
   SDL_WarpMouseInWindow((SDL_Window *)m_manager.get_window().GetSDLWindow(),
                         pos.x, pos.y);
 }
 
-void mouse_state::HideCursor(bool hide) const {
+void mouse_state::hide_cursor(bool hide) const {
   isHide = hide;
   if (hide) {
     SDL_ShowCursor(SDL_DISABLE);
@@ -70,11 +70,11 @@ button_state mouse_state::get_button_state(mouse_code _button) const {
   }
 }
 
-bool joystick_state::GetButtonValue(joystick_button _button) const {
+bool joystick_state::get_button_value(joystick_button _button) const {
   return mCurrButtons[static_cast<int>(_button)] == 1;
 }
 
-button_state joystick_state::GetButtonState(joystick_button _button) const {
+button_state joystick_state::get_button_state(joystick_button _button) const {
   if (mPrevButtons[static_cast<int>(_button)] == 0) {
     if (mCurrButtons[static_cast<int>(_button)] == 0) {
       return button_state::None;
@@ -91,7 +91,7 @@ button_state joystick_state::GetButtonState(joystick_button _button) const {
   }
 }
 
-bool input_system::Initialize() {
+bool input_system::initialize() {
 
   mState.Keyboard.mCurrState = SDL_GetKeyboardState(NULL);
   memcpy(mState.Keyboard.mPrevState.data(), mState.Keyboard.mCurrState,
@@ -108,20 +108,20 @@ bool input_system::Initialize() {
   mState.Mouse.mMousePos.y = static_cast<float>(y);
 
   // Initialize controller state
-  mState.Controller.mIsConnected = mController.Initialize();
+  mState.Controller.mIsConnected = mController.initialize();
   memset(mState.Controller.mCurrButtons, 0, SDL_CONTROLLER_BUTTON_MAX);
   memset(mState.Controller.mPrevButtons, 0, SDL_CONTROLLER_BUTTON_MAX);
 
   return true;
 }
 
-void input_system::Shutdown() {
+void input_system::terminate() {
   SDL_FreeCursor(g_cursor);
   g_cursor = nullptr;
   SDL_SetCursor(NULL);
 }
 
-void input_system::PrepareForUpdate() {
+void input_system::prepare_for_update() {
   // Copy current state to previous
   // Keyboard
   memcpy(mState.Keyboard.mPrevState.data(), mState.Keyboard.mCurrState,
@@ -137,7 +137,7 @@ void input_system::PrepareForUpdate() {
          SDL_CONTROLLER_BUTTON_MAX);
 }
 
-void input_system::Update() {
+void input_system::update() {
   // Mouse
   int x = 0, y = 0;
   if (mState.Mouse.mIsRelative) {
@@ -153,28 +153,28 @@ void input_system::Update() {
   // Buttons
   for (int i = 0; i < SDL_CONTROLLER_BUTTON_MAX; i++) {
     mState.Controller.mCurrButtons[i] =
-        mController.GetButton(static_cast<joystick_button>(i));
+        mController.get_button(static_cast<joystick_button>(i));
   }
 
   // Triggers
   mState.Controller.mLeftTrigger =
-      Filter1D(mController.GetAxis(joystick::axis::TRIGGERLEFT));
+      filter1d(mController.get_axis(joystick::axis::TRIGGERLEFT));
   mState.Controller.mRightTrigger =
-      Filter1D(mController.GetAxis(joystick::axis::TRIGGERRIGHT));
+      filter1d(mController.get_axis(joystick::axis::TRIGGERRIGHT));
 
   // Sticks
-  x = mController.GetAxis(joystick::axis::LEFTX);
-  y = -mController.GetAxis(joystick::axis::LEFTY);
-  mState.Controller.mLeftStick = Filter2D(x, y);
+  x = mController.get_axis(joystick::axis::LEFTX);
+  y = -mController.get_axis(joystick::axis::LEFTY);
+  mState.Controller.mLeftStick = filter2d(x, y);
 
-  x = mController.GetAxis(joystick::axis::RIGHTX);
-  y = -mController.GetAxis(joystick::axis::RIGHTY);
-  mState.Controller.mRightStick = Filter2D(x, y);
+  x = mController.get_axis(joystick::axis::RIGHTX);
+  y = -mController.get_axis(joystick::axis::RIGHTY);
+  mState.Controller.mRightStick = filter2d(x, y);
 
-  mState.Mouse.HideCursor(isHide);
+  mState.Mouse.hide_cursor(isHide);
 }
 SDL_Event current_event_handle::current_event = SDL_Event{};
-void input_system::ProcessEvent() {
+void input_system::process_event() {
 
   auto e = current_event_handle::current_event;
   switch (e.type) {
@@ -188,14 +188,14 @@ void input_system::ProcessEvent() {
   }
 }
 
-void input_system::SetRelativeMouseMode(bool _value) {
+void input_system::set_relative_mouse_mode(bool _value) {
   SDL_bool set = _value ? SDL_TRUE : SDL_FALSE;
   SDL_SetRelativeMouseMode(set);
 
   mState.Mouse.mIsRelative = _value;
 }
 
-float input_system::Filter1D(int _input) {
+float input_system::filter1d(int _input) {
   // A value < dead zone is interpreted as 0%
   const int deadZone = 250;
   // A value > max value is interpreted as 100%
@@ -212,13 +212,13 @@ float input_system::Filter1D(int _input) {
     // Make sure sign matches original value
     retVal = _input > 0 ? retVal : -1.0f * retVal;
     // Clamp between -1.0f and 1.0f
-    retVal = math::Clamp(retVal, -1.0f, 1.0f);
+    retVal = math::clamp(retVal, -1.0f, 1.0f);
   }
 
   return retVal;
 }
 
-vector2 input_system::Filter2D(int inputX, int inputY) {
+vector2 input_system::filter2d(int inputX, int inputY) {
   const float deadZone = 8000.0f;
   const float maxValue = 30000.0f;
 
@@ -227,7 +227,7 @@ vector2 input_system::Filter2D(int inputX, int inputY) {
   dir.x = static_cast<float>(inputX);
   dir.y = static_cast<float>(inputY);
 
-  float length = dir.Length();
+  float length = dir.length();
 
   // If length < deadZone, should be no input
   if (length < deadZone) {
@@ -237,7 +237,7 @@ vector2 input_system::Filter2D(int inputX, int inputY) {
     // dead zone and max value circles
     float f = (length - deadZone) / (maxValue - deadZone);
     // Clamp f between 0.0f and 1.0f
-    f = math::Clamp(f, 0.0f, 1.0f);
+    f = math::clamp(f, 0.0f, 1.0f);
     // Normalize the vector, and then scale it to the
     // fractional value
     dir *= f / length;

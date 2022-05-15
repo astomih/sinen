@@ -9,8 +9,8 @@
 namespace nen {
 sound::sound() {}
 void sound::load(std::string_view file_name) {
-  get_sound().LoadAudioFile(file_name);
-  auto sourceID = get_sound().NewSource(file_name);
+  get_sound().load(file_name);
+  auto sourceID = get_sound().new_source(file_name);
   ALint buf;
   alGetSourcei(sourceID, AL_BUFFER, &buf);
   param.source_id = sourceID;
@@ -19,7 +19,7 @@ void sound::load(std::string_view file_name) {
 }
 void sound::play() { alSourcePlay(param.source_id); }
 void sound::new_source() {
-  auto sourceID = get_sound().NewSource(mName);
+  auto sourceID = get_sound().new_source(mName);
   ALint buf;
   alGetSourcei(sourceID, AL_BUFFER, &buf);
   param.source_id = sourceID;
@@ -27,54 +27,54 @@ void sound::new_source() {
 }
 void sound::set_listener(vector3 pos, vector3 rotation) {
   quaternion q(vector3::neg_unit_z, rotation.z);
-  q = quaternion::Concatenate(q, quaternion(vector3::unit_y, rotation.y));
-  q = quaternion::Concatenate(q, quaternion(vector3::unit_x, rotation.x));
-  get_sound().SetListener(pos, q);
+  q = quaternion::concatenate(q, quaternion(vector3::unit_y, rotation.y));
+  q = quaternion::concatenate(q, quaternion(vector3::unit_x, rotation.x));
+  get_sound().set_listener(pos, q);
 }
-void sound::delete_source() { get_sound().DeleteSource(param.source_id); }
-bool sound::IsValid() {
+void sound::delete_source() { get_sound().delete_source(param.source_id); }
+bool sound::is_valid() {
   return get_sound().get_buffers().contains(mName.data());
 }
 
-void sound::Restart() {
+void sound::restart() {
   isPlaying = true;
-  Stop();
+  stop();
   alSourcePlay(param.source_id);
 }
 
-void sound::Stop(bool allowFadeOut /* true */) {
+void sound::stop(bool allowFadeOut /* true */) {
   isPlaying = false;
   alSourceStop(param.source_id);
 }
 
-void sound::SetPaused(bool pause) {
+void sound::set_paused(bool pause) {
   isPaused = pause;
   alSourcePause(param.source_id);
 }
 
-void sound::SetVolume(float value) {
+void sound::set_volume(float value) {
   volume = value;
   alSourcef(param.source_id, AL_GAIN, value);
 }
 
-void sound::SetPitch(float value) {
+void sound::set_pitch(float value) {
   pitch = value;
   alSourcef(param.source_id, AL_PITCH, value);
 }
 
-void sound::SetPosition(vector3 pos) {
+void sound::set_position(vector3 pos) {
   this->pos = pos;
   alSource3f(param.source_id, AL_POSITION, pos.x, pos.y, pos.z);
 }
 
-bool sound::GetPaused() { return isPaused; }
+bool sound::get_paused() { return isPaused; }
 
-float sound::GetVolume() { return volume; }
+float sound::get_volume() { return volume; }
 
-float sound::GetPitch() { return pitch; }
+float sound::get_pitch() { return pitch; }
 
-const vector3 &sound::GetPosition() { return pos; }
+const vector3 &sound::get_position() { return pos; }
 
-std::string sound::GetName() { return mName; }
+std::string sound::get_name() { return mName; }
 
 } // namespace nen

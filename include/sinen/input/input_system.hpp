@@ -19,9 +19,9 @@ public:
   // Friend so InputSystem can easily update it
   friend class input_system;
   // Get just the boolean true/false value of key
-  bool GetKeyValue(key_code _key) const;
+  bool is_key_down(key_code _key) const;
   // Get a state based on current and previous frame
-  button_state GetKeyState(key_code _key) const;
+  button_state get_key_state(key_code _key) const;
 
 private:
   const uint8_t *mCurrState;
@@ -35,10 +35,10 @@ public:
   friend class input_system;
 
   // For mouse position
-  void SetPosition(const vector2 &pos) const;
-  void HideCursor(bool hide) const;
-  const vector2 &GetPosition() const { return mMousePos; }
-  const vector2 &GetScrollWheel() const { return mScrollWheel; }
+  void set_position(const vector2 &pos) const;
+  void hide_cursor(bool hide) const;
+  const vector2 &get_position() const { return mMousePos; }
+  const vector2 &get_scroll_wheel() const { return mScrollWheel; }
   bool IsRelative() const { return mIsRelative; }
 
   // For buttons
@@ -64,15 +64,15 @@ public:
   friend class input_system;
 
   // For buttons
-  bool GetButtonValue(joystick_button j_button) const;
-  button_state GetButtonState(joystick_button j_button) const;
+  bool get_button_value(joystick_button j_button) const;
+  button_state get_button_state(joystick_button j_button) const;
 
-  const vector2 &GetLeftStick() const { return mLeftStick; }
-  const vector2 &GetRightStick() const { return mRightStick; }
-  float GetLeftTrigger() const { return mLeftTrigger; }
-  float GetRightTrigger() const { return mRightTrigger; }
+  const vector2 &get_left_stick() const { return mLeftStick; }
+  const vector2 &get_right_stick() const { return mRightStick; }
+  float get_left_trigger() const { return mLeftTrigger; }
+  float get_right_trigger() const { return mRightTrigger; }
 
-  bool GetIsConnected() const { return mIsConnected; }
+  bool is_connected() const { return mIsConnected; }
 
 private:
   // Current/previous buttons
@@ -102,23 +102,23 @@ class input_system {
 public:
   input_system(class manager &_manager)
       : m_manager(_manager), mState(_manager) {}
-  bool Initialize();
-  void Shutdown();
+  bool initialize();
+  void terminate();
 
   // Called right before SDL_PollEvents loop
-  void PrepareForUpdate();
+  void prepare_for_update();
   // Called after SDL_PollEvents loop
-  void Update();
-  void ProcessEvent();
+  void update();
+  void process_event();
 
-  const input_state &GetState() const { return mState; }
+  const input_state &get_state() const { return mState; }
 
-  void SetRelativeMouseMode(bool value);
+  void set_relative_mouse_mode(bool value);
 
 private:
   class manager &m_manager;
-  float Filter1D(int input);
-  vector2 Filter2D(int inputX, int inputY);
+  float filter1d(int input);
+  vector2 filter2d(int inputX, int inputY);
   input_state mState;
   joystick mController;
 };

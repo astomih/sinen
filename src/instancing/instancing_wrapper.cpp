@@ -19,23 +19,23 @@ void draw2d_instancing::draw() {
   obj->texture_handle = this->texture_handle.handle;
   obj->vertexIndex = this->vertex_name;
   obj->texture_handle = texture_handle.handle;
-  matrix4 viewproj = matrix4::Identity;
+  matrix4 viewproj = matrix4::identity;
 
   auto windowsize = get_window().Size();
   viewproj.mat[0][0] = 2.f / windowsize.x;
   viewproj.mat[1][1] = 2.f / windowsize.y;
   obj->param.proj = viewproj;
-  obj->param.view = matrix4::Identity;
+  obj->param.view = matrix4::identity;
   obj->vertexIndex = this->vertex_name;
   _instancing.object = obj;
   _instancing.type = object_type::_2D;
   for (int i = 0; i < this->position.size(); i++) {
-    matrix4 t = matrix4::Identity;
+    matrix4 t = matrix4::identity;
     t.mat[3][0] = position[i].x;
     t.mat[3][1] = position[i].y;
     quaternion q(vector3::neg_unit_z, rotation[i]);
-    matrix4 r = matrix4::CreateFromQuaternion(q);
-    matrix4 s = matrix4::Identity;
+    matrix4 r = matrix4::create_from_quaternion(q);
+    matrix4 s = matrix4::identity;
     s.mat[0][0] = scale[i].x * 0.5f;
     s.mat[1][1] = scale[i].y * 0.5f;
     instance_data insdata;
@@ -67,15 +67,15 @@ void draw3d_instancing::draw() {
   _instancing.object = obj;
   _instancing.type = object_type::_3D;
   for (int i = 0; i < this->position.size(); i++) {
-    matrix4 t = matrix4::Identity;
+    matrix4 t = matrix4::identity;
     t.mat[3][0] = position[i].x;
     t.mat[3][1] = position[i].y;
     t.mat[3][2] = position[i].z;
     quaternion q(vector3::neg_unit_z, rotation[i].z);
-    q = quaternion::Concatenate(q, quaternion(vector3::unit_y, rotation[i].y));
-    q = quaternion::Concatenate(q, quaternion(vector3::unit_x, rotation[i].x));
-    matrix4 r = matrix4::CreateFromQuaternion(q);
-    matrix4 s = matrix4::Identity;
+    q = quaternion::concatenate(q, quaternion(vector3::unit_y, rotation[i].y));
+    q = quaternion::concatenate(q, quaternion(vector3::unit_x, rotation[i].x));
+    matrix4 r = matrix4::create_from_quaternion(q);
+    matrix4 s = matrix4::identity;
     s.mat[0][0] = scale[i].x;
     s.mat[1][1] = scale[i].y;
     s.mat[2][2] = scale[i].z;

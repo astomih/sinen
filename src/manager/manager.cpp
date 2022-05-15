@@ -55,8 +55,9 @@ bool manager::initialize() {
   Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
   m_next_scene = nullptr;
   m_window = std::make_unique<nen::window>();
+  m_texture_system = std::make_unique<nen::texture_system>(*this);
   m_renderer = std::make_unique<nen::renderer>(*this);
-  nen::logger::MakeLogger(
+  nen::logger::change_logger(
       std::move(nen::logger::default_logger::CreateConsoleLogger()));
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
   std::ifstream ifs("./api");
@@ -79,14 +80,14 @@ bool manager::initialize() {
   m_camera = std::make_unique<camera>();
 
   m_sound_system = std::make_unique<nen::sound_system>();
-  if (!m_sound_system->Initialize()) {
+  if (!m_sound_system->initialize()) {
     logger::fatal("Failed to initialize audio system");
-    m_sound_system->Shutdown();
+    m_sound_system->terminate();
     m_sound_system = nullptr;
     return false;
   }
   m_input_system = std::make_unique<nen::input_system>(*this);
-  if (!m_input_system->Initialize()) {
+  if (!m_input_system->initialize()) {
     logger::fatal("Failed to initialize input system");
     return false;
   }
@@ -95,11 +96,11 @@ bool manager::initialize() {
     logger::fatal("Failed to initialize script system");
     return false;
   }
-  m_texture_system = std::make_unique<nen::texture_system>(*this);
   m_random = std::make_unique<nen::random>();
-  m_random->Init();
-  m_renderer->skybox_texture = std::make_unique<texture>();
-  m_renderer->skybox_texture->Load("skybox.jpg");
+  m_random->init();
+  texture tex;
+  tex.fill_color(palette::Black);
+  m_renderer->set_skybox_texture(tex);
   return true;
 }
 void manager::launch() {
@@ -123,8 +124,8 @@ void manager::loop() {
     m_next_scene = nullptr;
   } else {
     m_current_scene->Shutdown();
-    m_input_system->Shutdown();
-    m_sound_system->Shutdown();
+    m_input_system->terminate();
+    m_sound_system->terminate();
     m_current_scene = nullptr;
     m_renderer->shutdown();
     m_renderer = nullptr;

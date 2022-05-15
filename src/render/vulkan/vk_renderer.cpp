@@ -421,15 +421,15 @@ void vk_renderer::draw_skybox(VkCommandBuffer command) {
   pipeline_skybox.Bind(command);
   auto t = std::make_shared<vk_draw_object>();
   t->drawObject = std::make_shared<draw_object>();
-  t->drawObject->texture_handle = get_renderer().skybox_texture->handle;
+  t->drawObject->texture_handle = get_renderer().get_skybox_texture().handle;
   t->drawObject->vertexIndex = "BOX";
   shader_parameter param;
-  matrix4 w = matrix4::Identity;
+  matrix4 w = matrix4::identity;
   w[0][0] = 5;
   w[1][1] = 5;
   w[2][2] = 5;
   param.proj = get_camera().projection;
-  param.view = matrix4::LookAt(vector3(0, 0, 0),
+  param.view = matrix4::lookat(vector3(0, 0, 0),
                                get_camera().target - get_camera().position,
                                get_camera().up);
   auto &va = m_vertex_arrays["BOX"];

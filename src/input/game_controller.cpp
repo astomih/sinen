@@ -13,7 +13,7 @@ joystick::joystick() : impl(nullptr) {}
 
 joystick::~joystick() = default;
 
-bool joystick::Initialize() {
+bool joystick::initialize() {
   impl = std::make_unique<joystick::Impl>();
   impl->controller = SDL_GameControllerOpen(0);
   if (impl->controller)
@@ -21,11 +21,11 @@ bool joystick::Initialize() {
   return false;
 }
 
-int16_t joystick::GetAxis(joystick::axis _axis) {
+int16_t joystick::get_axis(joystick::axis _axis) {
   return ::SDL_GameControllerGetAxis(
       this->impl->controller, static_cast<SDL_GameControllerAxis>(_axis));
 }
-uint8_t joystick::GetButton(joystick_button button) {
+uint8_t joystick::get_button(joystick_button button) {
   return SDL_GameControllerGetButton(
       impl->controller, static_cast<SDL_GameControllerButton>(button));
 }

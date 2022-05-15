@@ -27,11 +27,11 @@ public:
     return handle;
   }
   handle_t move(std::unique_ptr<T, DP> ptr) {
-    handle_t handle = 0;
-    while (data.contains(handle))
-      ++handle;
-    data.emplace(handle, std::move(ptr));
-    return handle;
+    handle_t h = 0;
+    while (data.contains(h))
+      ++h;
+    data.emplace(h, std::move(ptr));
+    return h;
   }
   void move(handle_t handle, std::unique_ptr<T, DP> ptr) {
     data[handle] = std::move(ptr);

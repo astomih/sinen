@@ -13,7 +13,7 @@ public:
   explicit matrix3(float inMat[3][3]) { memcpy(mat, inMat, 9 * sizeof(float)); }
 
   // Cast to a const float pointer
-  [[nodiscard]] const float *GetAsFloatPtr() const {
+  [[nodiscard]] const float *get_ptr() const {
     return reinterpret_cast<const float *>(&mat[0][0]);
   }
 
@@ -68,7 +68,7 @@ public:
   }
 
   // Create a scale matrix with x and y scales
-  static matrix3 CreateScale(float xScale, float yScale) {
+  static matrix3 create_scale(float xScale, float yScale) {
     float temp[3][3] = {
         {xScale, 0.0f, 0.0f},
         {0.0f, yScale, 0.0f},
@@ -77,26 +77,28 @@ public:
     return matrix3(temp);
   }
 
-  static matrix3 CreateScale(const vector2 &scaleVector) {
-    return CreateScale(scaleVector.x, scaleVector.y);
+  static matrix3 create_scale(const vector2 &scaleVector) {
+    return create_scale(scaleVector.x, scaleVector.y);
   }
 
   // Create a scale matrix with a uniform factor
-  static matrix3 CreateScale(float scale) { return CreateScale(scale, scale); }
+  static matrix3 create_scale(float scale) {
+    return create_scale(scale, scale);
+  }
 
   // Create a rotation matrix about the Z axis
   // theta is in radians
-  static matrix3 CreateRotation(float theta) {
+  static matrix3 create_rotation(float theta) {
     float temp[3][3] = {
-        {math::Cos(theta), math::Sin(theta), 0.0f},
-        {-math::Sin(theta), math::Cos(theta), 0.0f},
+        {math::cos(theta), math::sin(theta), 0.0f},
+        {-math::sin(theta), math::cos(theta), 0.0f},
         {0.0f, 0.0f, 1.0f},
     };
     return matrix3(temp);
   }
 
   // Create a translation matrix (on the xy-plane)
-  static matrix3 CreateTranslation(const vector2 &trans) {
+  static matrix3 create_translation(const vector2 &trans) {
     float temp[3][3] = {
         {1.0f, 0.0f, 0.0f},
         {0.0f, 1.0f, 0.0f},

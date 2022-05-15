@@ -19,7 +19,7 @@ class texture {
 public:
   texture();
   ~texture();
-  bool Load(std::string_view fileName);
+  bool load(std::string_view fileName);
   bool LoadFromMemory(std::vector<char> &buffer, std::string_view ID);
 
   void fill_color(const color &color);

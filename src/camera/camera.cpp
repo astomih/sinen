@@ -15,8 +15,8 @@ camera::camera()
 }
 
 void camera::update() {
-  view = matrix4::LookAt(this->position, this->target, this->up);
+  view = matrix4::lookat(this->position, this->target, this->up);
   projection =
-      matrix4::Perspective(this->fov, this->aspect, this->near, this->far);
+      matrix4::perspective(this->fov, this->aspect, this->near, this->far);
 }
 } // namespace nen

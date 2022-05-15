@@ -86,7 +86,7 @@ void vk_render_texture::prepare_descriptorsetlayout(
       VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
       nullptr,
       0,
-      _countof(descSetLayoutBindings),
+      sizeof(descSetLayoutBindings) / sizeof(VkDescriptorSetLayoutBinding),
       descSetLayoutBindings,
   };
   vkCreateDescriptorSetLayout(m_device, &descSetLayoutCI, nullptr,

@@ -30,7 +30,7 @@ static float m4Ident[4][4] = {{1.0f, 0.0f, 0.0f, 0.0f},
                               {0.0f, 0.0f, 1.0f, 0.0f},
                               {0.0f, 0.0f, 0.0f, 1.0f}};
 
-const matrix4 matrix4::Identity(m4Ident);
+const matrix4 matrix4::identity(m4Ident);
 
 const quaternion quaternion::Identity(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -69,7 +69,7 @@ vector3 vector3::transform_with_persp_div(const vector3 &vec,
              vec.z * mat.mat[2][2] + w * mat.mat[3][2];
   float transformedW = vec.x * mat.mat[0][3] + vec.y * mat.mat[1][3] +
                        vec.z * mat.mat[2][3] + w * mat.mat[3][3];
-  if (!math::NearZero(math::Abs(transformedW))) {
+  if (!math::near_zero(math::abs(transformedW))) {
     transformedW = 1.0f / transformedW;
     retVal *= transformedW;
   }
@@ -77,11 +77,11 @@ vector3 vector3::transform_with_persp_div(const vector3 &vec,
 }
 
 // Transform a Vector3 by a quaternion
-vector3 vector3::Transform(const vector3 &v, const quaternion &q) {
+vector3 vector3::transform(const vector3 &v, const quaternion &q) {
   // v + 2.0*cross(q.xyz, cross(q.xyz,v) + q.w*v);
   vector3 qv(q.x, q.y, q.z);
   vector3 retVal = v;
-  retVal += 2.0f * vector3::Cross(qv, vector3::Cross(qv, v) + q.w * v);
+  retVal += 2.0f * vector3::cross(qv, vector3::cross(qv, v) + q.w * v);
   return retVal;
 }
 vector3 matrix4::operator*(const vector3 &vec) const {
@@ -98,7 +98,7 @@ vector3 matrix4::operator*(const vector3 &vec) const {
   return vector3(x / w, y / w, z / w);
 }
 
-void matrix4::Invert() {
+void matrix4::invert() {
   // Thanks slow math
   // This is a really janky way to unroll everything...
   float tmp[12];
@@ -208,7 +208,7 @@ void matrix4::Invert() {
     }
   }
 }
-quaternion matrix4::ToQuaternion(const matrix4 &m) {
+quaternion matrix4::to_quaternion(const matrix4 &m) {
   auto px = m.mat[0][0] - m.mat[1][1] - m.mat[2][2] + 1;
   auto py = -m.mat[0][0] + m.mat[1][1] - m.mat[2][2] + 1;
   auto pz = -m.mat[0][0] - m.mat[1][1] + m.mat[2][2] + 1;
@@ -230,28 +230,28 @@ quaternion matrix4::ToQuaternion(const matrix4 &m) {
   }
   switch (flag) {
   case 0: {
-    auto x = math::Sqrt(px) * 0.5f;
+    auto x = math::sqrt(px) * 0.5f;
     auto d = 1 / (4 * x);
     return quaternion(x, (m.mat[1][0] + m.mat[0][1]) * d,
                       (m.mat[0][2] + m.mat[2][0]) * d,
                       (m.mat[2][1] - m.mat[1][2]) * d);
   }
   case 1: {
-    auto y = math::Sqrt(py) * 0.5f;
+    auto y = math::sqrt(py) * 0.5f;
     auto d = 1 / (4 * y);
     return quaternion((m.mat[1][0] + m.mat[0][1]) * d, y,
                       (m.mat[2][1] + m.mat[1][2]) * d,
                       (m.mat[0][2] - m.mat[2][0]) * d);
   }
   case 2: {
-    auto z = math::Sqrt(pz) * 0.5f;
+    auto z = math::sqrt(pz) * 0.5f;
     auto d = 1 / (4 * z);
     return quaternion((m.mat[0][2] + m.mat[2][0]) * d,
                       (m.mat[2][1] + m.mat[1][2]) * d, z,
                       (m.mat[1][0] - m.mat[0][1]) * d);
   }
   case 3: {
-    auto w = math::Sqrt(pw) * 0.5f;
+    auto w = math::sqrt(pw) * 0.5f;
     auto d = 1 / (4 * w);
     return quaternion((m.mat[2][1] - m.mat[1][2]) * d,
                       (m.mat[0][2] - m.mat[2][0]) * d,
@@ -262,15 +262,15 @@ quaternion matrix4::ToQuaternion(const matrix4 &m) {
   }
 }
 
-matrix4 matrix4::LookAt(const vector3 &eye, const vector3 &at,
+matrix4 matrix4::lookat(const vector3 &eye, const vector3 &at,
                         const vector3 &up) {
-  const auto FRONT = vector3::Normalize(eye - at);
-  const auto RIGHT = vector3::Normalize(vector3::Cross(up, FRONT));
-  const auto UP = vector3::Normalize(vector3::Cross(FRONT, RIGHT));
+  const auto FRONT = vector3::normalize(eye - at);
+  const auto RIGHT = vector3::normalize(vector3::cross(up, FRONT));
+  const auto UP = vector3::normalize(vector3::cross(FRONT, RIGHT));
   vector3 trans;
-  trans.x = -vector3::Dot(RIGHT, eye);
-  trans.y = -vector3::Dot(UP, eye);
-  trans.z = -vector3::Dot(FRONT, eye);
+  trans.x = -vector3::dot(RIGHT, eye);
+  trans.y = -vector3::dot(UP, eye);
+  trans.z = -vector3::dot(FRONT, eye);
 
   float temp[4][4] = {{RIGHT.x, UP.x, FRONT.x, 0.0f},
                       {RIGHT.y, UP.y, FRONT.y, 0.0f},
@@ -279,9 +279,9 @@ matrix4 matrix4::LookAt(const vector3 &eye, const vector3 &at,
   return matrix4(temp);
 }
 
-matrix4 matrix4::Perspective(const float angle, const float aspect,
+matrix4 matrix4::perspective(const float angle, const float aspect,
                              const float near, const float far) {
-  const auto yScale = math::Cot(angle / 2.0f);
+  const auto yScale = math::cot(angle / 2.0f);
   const auto xScale = yScale / aspect;
   float temp[4][4] = {{xScale, 0.0f, 0.0f, 0.0f},
                       {0.0f, yScale, 0.0f, 0.0f},
@@ -290,7 +290,7 @@ matrix4 matrix4::Perspective(const float angle, const float aspect,
   return matrix4(temp);
 }
 
-matrix4 matrix4::Transpose(const matrix4 &m) {
+matrix4 matrix4::transpose(const matrix4 &m) {
   float mat[4][4];
 
   mat[0][0] = m.mat[0][0];
@@ -312,7 +312,7 @@ matrix4 matrix4::Transpose(const matrix4 &m) {
   return matrix4(mat);
 }
 
-matrix4 matrix4::CreateTranslation(const vector3 &trans) {
+matrix4 matrix4::create_translation(const vector3 &trans) {
   float temp[4][4] = {{1.0f, 0.0f, 0.0f, 0.0f},
                       {0.0f, 1.0f, 0.0f, 0.0f},
                       {0.0f, 0.0f, 1.0f, 0.0f},
@@ -320,7 +320,7 @@ matrix4 matrix4::CreateTranslation(const vector3 &trans) {
   return matrix4(temp);
 }
 
-matrix4 matrix4::CreateFromQuaternion(const class quaternion &q) {
+matrix4 matrix4::create_from_quaternion(const class quaternion &q) {
   float mat[4][4];
 
   mat[0][0] = 1.0f - 2.0f * q.y * q.y - 2.0f * q.z * q.z;
@@ -346,7 +346,7 @@ matrix4 matrix4::CreateFromQuaternion(const class quaternion &q) {
   return matrix4(mat);
 }
 
-vector3 quaternion::ToEuler(const quaternion &r) {
+vector3 quaternion::to_euler(const quaternion &r) {
   float x = r.x;
   float y = r.y;
   float z = r.z;
@@ -389,15 +389,15 @@ vector3 quaternion::ToEuler(const quaternion &r) {
   if (m21 >= 0.99 && m21 <= 1.01) {
     tx = math::Pi / 2.f;
     ty = 0;
-    tz = math::Atan2(m10, m00);
+    tz = math::atan2(m10, m00);
   } else if (m21 >= -1.01f && m21 <= -0.99f) {
     tx = -math::Pi / 2.f;
     ty = 0;
-    tz = math::Atan2(m10, m00);
+    tz = math::atan2(m10, m00);
   } else {
     tx = std::asin(-m21);
-    ty = math::Atan2(m20, m22);
-    tz = math::Atan2(m01, m11);
+    ty = math::atan2(m20, m22);
+    tz = math::atan2(m01, m11);
   }
 
   return vector3(tx, ty, tz);

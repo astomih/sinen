@@ -38,8 +38,8 @@ void scene::RunLoop() {
   UpdateScene();
   // Draw sprites, meshes
   GetRenderer().render();
-  m_manager.get_input_system().PrepareForUpdate();
-  m_manager.get_input_system().Update();
+  m_manager.get_input_system().prepare_for_update();
+  m_manager.get_input_system().update();
 }
 
 void scene::ProcessInput() {
@@ -56,9 +56,9 @@ void scene::ProcessInput() {
     }
   }
 
-  const input_state &state = m_manager.get_input_system().GetState();
+  const input_state &state = m_manager.get_input_system().get_state();
 
-  if (state.Keyboard.GetKeyState(key_code::F3) == button_state::Pressed) {
+  if (state.Keyboard.get_key_state(key_code::F3) == button_state::Pressed) {
     GetRenderer().toggleShowImGui();
   }
   if (mGameState == game_state::Quit)
@@ -74,7 +74,7 @@ void scene::UpdateScene() {
   m_prev_tick = SDL_GetTicks();
 
   this->Update(deltaTime);
-  m_manager.get_sound_system().Update(deltaTime);
+  m_manager.get_sound_system().update(deltaTime);
 }
 
 bool is_run = false;
@@ -182,7 +182,7 @@ void scene::Setup() {
 #if !defined(MOBILE) && !defined(EMSCRIPTEN)
         if (ImGui::MenuItem("Toggle API")) {
           std::ofstream ofs("api");
-          if (get_renderer().GetGraphicsAPI() == graphics_api::OpenGL)
+          if (get_renderer().get_graphics_api() == graphics_api::OpenGL)
             ofs << "Vulkan";
           else
             ofs << "OpenGL";
@@ -201,12 +201,12 @@ void scene::UnloadData() { get_renderer().get_imgui_function().clear(); }
 void scene::Update(float deltaTime) {
   sol::state *lua = (sol::state *)get_script().get_state();
   (*lua)["delta_time"] = deltaTime;
-  (*lua)["keyboard"] = get_input().GetState().Keyboard;
-  (*lua)["mouse"] = get_input().GetState().Mouse;
+  (*lua)["keyboard"] = get_input().get_state().Keyboard;
+  (*lua)["mouse"] = get_input().get_state().Mouse;
   (*lua)["camera"] = &get_camera();
   (*lua)["random"] = &get_random();
   if (get_renderer().isShowImGui() &&
-      get_input().GetState().Keyboard.GetKeyState(key_code::F5) ==
+      get_input().get_state().Keyboard.get_key_state(key_code::F5) ==
           button_state::Pressed) {
     is_run = true;
   }
@@ -217,8 +217,8 @@ void scene::Update(float deltaTime) {
     is_run = false;
   }
   if (get_renderer().isShowImGui() &&
-      get_input().GetState().Keyboard.GetKeyValue(key_code::LCTRL) &&
-      get_input().GetState().Keyboard.GetKeyState(key_code::S) ==
+      get_input().get_state().Keyboard.is_key_down(key_code::LCTRL) &&
+      get_input().get_state().Keyboard.get_key_state(key_code::S) ==
           button_state::Pressed) {
     is_save = true;
   }
@@ -236,7 +236,7 @@ void scene::Shutdown() { UnloadData(); }
 
 renderer &scene::GetRenderer() { return m_manager.get_renderer(); }
 const input_state &scene::GetInput() {
-  return m_manager.get_input_system().GetState();
+  return m_manager.get_input_system().get_state();
 }
 sound_system &scene::GetSound() { return m_manager.get_sound_system(); }
 

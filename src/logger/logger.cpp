@@ -7,7 +7,7 @@
 namespace nen {
 std::unique_ptr<logger::interface> logger::mLogger = nullptr;
 
-void logger::MakeLogger(std::unique_ptr<logger::interface> logger) {
+void logger::change_logger(std::unique_ptr<logger::interface> logger) {
   mLogger = std::move(logger);
 }
 

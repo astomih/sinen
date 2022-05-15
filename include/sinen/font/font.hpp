@@ -45,7 +45,7 @@ public:
    * @return true success to load
    * @return false failed to load
    */
-  bool LoadFromFile(std::string_view fontName, int pointSize);
+  bool load(std::string_view fontName, int pointSize);
   /**
    * @brief return already loaded font
    *
@@ -53,7 +53,7 @@ public:
    * @return false not load yet
    */
   bool isLoaded() { return isLoad; }
-  void Unload();
+  void unload();
 
   /**
    * @brief render to texture
@@ -64,8 +64,8 @@ public:
    * @param backgroundColor background color
    * @return std::shared_ptr<texture> rendered texture
    */
-  void RenderText(texture &tex, std::string_view text,
-                  const color &_color = palette::White);
+  void render_text(texture &tex, std::string_view text,
+                   const color &_color = palette::White);
 
 private:
   int pointSize;

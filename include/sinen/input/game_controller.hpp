@@ -20,9 +20,9 @@ public:
     MAX
   };
 
-  bool Initialize();
-  int16_t GetAxis(axis _axis);
-  uint8_t GetButton(joystick_button button);
+  bool initialize();
+  int16_t get_axis(axis _axis);
+  uint8_t get_button(joystick_button button);
 
 private:
   class Impl;

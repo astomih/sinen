@@ -77,7 +77,7 @@ void gl_renderer::render() {
     prev_window_x = w.Size().x;
     prev_window_y = w.Size().y;
   }
-  auto color = get_renderer().GetClearColor();
+  auto color = get_renderer().get_clear_color();
   glClearColor(color.r, color.g, color.b, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glEnable(GL_BLEND);
@@ -143,24 +143,24 @@ void gl_renderer::disable_vertex_attrib_array() {
 }
 
 void gl_renderer::draw_skybox() {
-  registerTexture(get_renderer().skybox_texture->handle);
+  registerTexture(get_renderer().get_skybox_texture().handle);
   auto &va = m_VertexArrays["BOX"];
   glBindVertexArray(va.vao);
   disable_vertex_attrib_array();
   mAlphaShader.SetActive(0);
   shader_parameter param;
-  matrix4 w = matrix4::Identity;
+  matrix4 w = matrix4::identity;
   w[0][0] = 5;
   w[1][1] = 5;
   w[2][2] = 5;
   param.proj = get_camera().projection;
-  param.view = matrix4::LookAt(vector3(0, 0, 0),
+  param.view = matrix4::lookat(vector3(0, 0, 0),
                                get_camera().target - get_camera().position,
                                get_camera().up);
   mAlphaShader.SetActive(0);
   mAlphaShader.UpdateUBO(0, sizeof(shader_parameter), &param);
   glBindTexture(GL_TEXTURE_2D,
-                mTextureIDs[get_renderer().skybox_texture->handle]);
+                mTextureIDs[get_renderer().get_skybox_texture().handle]);
   glDrawElements(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT, nullptr);
 }
 

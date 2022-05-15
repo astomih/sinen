@@ -355,7 +355,7 @@ void vk_base::render() {
   mSwapchain->AcquireNextImage(&nextImageIndex, m_presentCompletedSem);
   auto commandFence = m_fences[nextImageIndex];
 
-  auto color = get_renderer().GetClearColor();
+  auto color = get_renderer().get_clear_color();
   std::array<VkClearValue, 2> clearValue = {{
       {color.r, color.g, color.b, 1.0f}, // for Color
       {1.0f, 0}                          // for Depth

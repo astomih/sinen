@@ -11,7 +11,7 @@ namespace nen {
 texture::texture() { handle = get_texture().create(); }
 texture::~texture() {}
 
-bool texture::Load(std::string_view fileName) {
+bool texture::load(std::string_view fileName) {
   auto &surface = get_texture().get(handle);
   auto *src_surface = ::IMG_Load_RW(
       (SDL_RWops *)dstream::open_as_rwops(asset_type::Texture, fileName), 0);

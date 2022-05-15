@@ -87,18 +87,18 @@ $(function() {
 <div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;  <a class="code" href="classnen_1_1sound__system.html">sound_system</a>();</div>
 <div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;  ~<a class="code" href="classnen_1_1sound__system.html">sound_system</a>();</div>
 <div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160; </div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;  <span class="keywordtype">bool</span> Initialize();</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;  <span class="keywordtype">void</span> Shutdown();</div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;  <span class="keywordtype">void</span> Update(<span class="keywordtype">float</span> deltaTime);</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;  <span class="keywordtype">bool</span> initialize();</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;  <span class="keywordtype">void</span> terminate();</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;  <span class="keywordtype">void</span> update(<span class="keywordtype">float</span> deltaTime);</div>
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160; </div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;  <span class="keywordtype">void</span> LoadAudioFile(std::string_view fileName);</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;  <span class="keywordtype">void</span> UnloadAudioFile(std::string_view fileName);</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;  <span class="keywordtype">void</span> load(std::string_view fileName);</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;  <span class="keywordtype">void</span> unload(std::string_view fileName);</div>
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160; </div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;  uint32_t NewSource(std::string_view name);</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;  <span class="keywordtype">void</span> DeleteSource(uint32_t sourceID);</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;  uint32_t new_source(std::string_view name);</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;  <span class="keywordtype">void</span> delete_source(uint32_t sourceID);</div>
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160; </div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;  <span class="comment">// For positional audio</span></div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;  <span class="keywordtype">void</span> SetListener(<span class="keyword">const</span> <a class="code" href="classnen_1_1vector3.html">vector3</a> &amp;pos, <span class="keyword">const</span> <a class="code" href="classnen_1_1quaternion.html">quaternion</a> &amp;direction);</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;  <span class="keywordtype">void</span> set_listener(<span class="keyword">const</span> <a class="code" href="classnen_1_1vector3.html">vector3</a> &amp;pos, <span class="keyword">const</span> <a class="code" href="classnen_1_1quaternion.html">quaternion</a> &amp;direction);</div>
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  std::unordered_map&lt;std::string, uint32_t&gt; &amp;get_buffers() { <span class="keywordflow">return</span> buffers; }</div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>

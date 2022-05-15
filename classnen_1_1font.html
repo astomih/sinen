@@ -95,18 +95,18 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af00921ec08c9505ea8ba1f85c0ea29e7"><td class="memItemLeft" align="right" valign="top"><a id="af00921ec08c9505ea8ba1f85c0ea29e7"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>font</b> (std::string_view file_name, int32_t point)</td></tr>
 <tr class="separator:af00921ec08c9505ea8ba1f85c0ea29e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2ea668ba4104a1318c27ddfcc71527a7"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnen_1_1font.html#a2ea668ba4104a1318c27ddfcc71527a7">LoadFromFile</a> (std::string_view fontName, int pointSize)</td></tr>
-<tr class="memdesc:a2ea668ba4104a1318c27ddfcc71527a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">font load from filepath  <a href="classnen_1_1font.html#a2ea668ba4104a1318c27ddfcc71527a7">More...</a><br /></td></tr>
-<tr class="separator:a2ea668ba4104a1318c27ddfcc71527a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f1e87a199e65a014afddb7b0e40f5a5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnen_1_1font.html#a3f1e87a199e65a014afddb7b0e40f5a5">load</a> (std::string_view fontName, int pointSize)</td></tr>
+<tr class="memdesc:a3f1e87a199e65a014afddb7b0e40f5a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">font load from filepath  <a href="classnen_1_1font.html#a3f1e87a199e65a014afddb7b0e40f5a5">More...</a><br /></td></tr>
+<tr class="separator:a3f1e87a199e65a014afddb7b0e40f5a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af5a004c042f7aa51c606c894ba4be8fa"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnen_1_1font.html#af5a004c042f7aa51c606c894ba4be8fa">isLoaded</a> ()</td></tr>
 <tr class="memdesc:af5a004c042f7aa51c606c894ba4be8fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">return already loaded font  <a href="classnen_1_1font.html#af5a004c042f7aa51c606c894ba4be8fa">More...</a><br /></td></tr>
 <tr class="separator:af5a004c042f7aa51c606c894ba4be8fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af0c2082c985fca6d75caaa28ec79c877"><td class="memItemLeft" align="right" valign="top"><a id="af0c2082c985fca6d75caaa28ec79c877"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Unload</b> ()</td></tr>
-<tr class="separator:af0c2082c985fca6d75caaa28ec79c877"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a64d2ceb63e9f6da0505b3f98b6d3c45f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnen_1_1font.html#a64d2ceb63e9f6da0505b3f98b6d3c45f">RenderText</a> (<a class="el" href="classnen_1_1texture.html">texture</a> &amp;tex, std::string_view text, const <a class="el" href="classnen_1_1color.html">color</a> &amp;_color=palette::White)</td></tr>
-<tr class="memdesc:a64d2ceb63e9f6da0505b3f98b6d3c45f"><td class="mdescLeft">&#160;</td><td class="mdescRight">render to texture  <a href="classnen_1_1font.html#a64d2ceb63e9f6da0505b3f98b6d3c45f">More...</a><br /></td></tr>
-<tr class="separator:a64d2ceb63e9f6da0505b3f98b6d3c45f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a855119b0d2bb16f8d5b26ae639ccd547"><td class="memItemLeft" align="right" valign="top"><a id="a855119b0d2bb16f8d5b26ae639ccd547"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>unload</b> ()</td></tr>
+<tr class="separator:a855119b0d2bb16f8d5b26ae639ccd547"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4da75c39a85be1f4329d81595e394d89"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnen_1_1font.html#a4da75c39a85be1f4329d81595e394d89">render_text</a> (<a class="el" href="classnen_1_1texture.html">texture</a> &amp;tex, std::string_view text, const <a class="el" href="classnen_1_1color.html">color</a> &amp;_color=palette::White)</td></tr>
+<tr class="memdesc:a4da75c39a85be1f4329d81595e394d89"><td class="mdescLeft">&#160;</td><td class="mdescRight">render to texture  <a href="classnen_1_1font.html#a4da75c39a85be1f4329d81595e394d89">More...</a><br /></td></tr>
+<tr class="separator:a4da75c39a85be1f4329d81595e394d89"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>font load and render to texture. </p>
@@ -174,14 +174,14 @@ false not load yet </dd></dl>
 
 </div>
 </div>
-<a id="a2ea668ba4104a1318c27ddfcc71527a7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2ea668ba4104a1318c27ddfcc71527a7">&#9670;&nbsp;</a></span>LoadFromFile()</h2>
+<a id="a3f1e87a199e65a014afddb7b0e40f5a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3f1e87a199e65a014afddb7b0e40f5a5">&#9670;&nbsp;</a></span>load()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool nen::font::LoadFromFile </td>
+          <td class="memname">bool nen::font::load </td>
           <td>(</td>
           <td class="paramtype">std::string_view&#160;</td>
           <td class="paramname"><em>fontName</em>, </td>
@@ -214,14 +214,14 @@ false failed to load </dd></dl>
 
 </div>
 </div>
-<a id="a64d2ceb63e9f6da0505b3f98b6d3c45f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a64d2ceb63e9f6da0505b3f98b6d3c45f">&#9670;&nbsp;</a></span>RenderText()</h2>
+<a id="a4da75c39a85be1f4329d81595e394d89"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4da75c39a85be1f4329d81595e394d89">&#9670;&nbsp;</a></span>render_text()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void nen::font::RenderText </td>
+          <td class="memname">void nen::font::render_text </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classnen_1_1texture.html">texture</a> &amp;&#160;</td>
           <td class="paramname"><em>tex</em>, </td>

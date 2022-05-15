@@ -80,24 +80,24 @@ $(function() {
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="keyword">namespace </span>nen {</div>
 <div class="line"><a name="l00008"></a><span class="lineno"><a class="line" href="classnen_1_1random.html">    8</a></span>&#160;<span class="keyword">class </span><a class="code" href="classnen_1_1random.html">random</a> {</div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;  <span class="keywordtype">void</span> Init();</div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;  <span class="keywordtype">void</span> init();</div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160; </div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;  <span class="comment">// Seed the generator with the specified int</span></div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;  <span class="comment">// NOTE: You should generally not need to manually use this</span></div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;  <span class="keywordtype">void</span> Seed(<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> seed);</div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;  <span class="keywordtype">void</span> seed(<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> seed);</div>
 <div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160; </div>
 <div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;  <span class="comment">// Get a float between 0.0f and 1.0f</span></div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;  <span class="keywordtype">float</span> GetFloat();</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;  <span class="keywordtype">float</span> get_float();</div>
 <div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160; </div>
 <div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;  <span class="comment">// Get a float from the specified range</span></div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;  <span class="keywordtype">float</span> GetFloatRange(<span class="keywordtype">float</span> min, <span class="keywordtype">float</span> max);</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;  <span class="keywordtype">float</span> get_float_range(<span class="keywordtype">float</span> min, <span class="keywordtype">float</span> max);</div>
 <div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160; </div>
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;  <span class="comment">// Get an int from the specified range</span></div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;  <span class="keywordtype">int</span> GetIntRange(<span class="keywordtype">int</span> min, <span class="keywordtype">int</span> max);</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;  <span class="keywordtype">int</span> get_int_range(<span class="keywordtype">int</span> min, <span class="keywordtype">int</span> max);</div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160; </div>
 <div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;  <span class="comment">// Get a random vector given the min/max bounds</span></div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;  <a class="code" href="classnen_1_1vector2.html">vector2</a> GetVector(<span class="keyword">const</span> <a class="code" href="classnen_1_1vector2.html">vector2</a> &amp;min, <span class="keyword">const</span> <a class="code" href="classnen_1_1vector2.html">vector2</a> &amp;max);</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;  <a class="code" href="classnen_1_1vector3.html">vector3</a> GetVector(<span class="keyword">const</span> <a class="code" href="classnen_1_1vector3.html">vector3</a> &amp;min, <span class="keyword">const</span> <a class="code" href="classnen_1_1vector3.html">vector3</a> &amp;max);</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;  <a class="code" href="classnen_1_1vector2.html">vector2</a> get_vector(<span class="keyword">const</span> <a class="code" href="classnen_1_1vector2.html">vector2</a> &amp;min, <span class="keyword">const</span> <a class="code" href="classnen_1_1vector2.html">vector2</a> &amp;max);</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;  <a class="code" href="classnen_1_1vector3.html">vector3</a> get_vector(<span class="keyword">const</span> <a class="code" href="classnen_1_1vector3.html">vector3</a> &amp;min, <span class="keyword">const</span> <a class="code" href="classnen_1_1vector3.html">vector3</a> &amp;max);</div>
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160; </div>
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="keyword">private</span>:</div>
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  std::mt19937 sGenerator;</div>

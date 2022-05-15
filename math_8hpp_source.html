@@ -100,7 +100,7 @@ $(function() {
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    <span class="keywordflow">return</span> radians * 180.0f / Pi;</div>
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;  }</div>
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">bool</span> NearZero(<span class="keywordtype">float</span> val, <span class="keywordtype">float</span> epsilon = 0.001f) {</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">bool</span> near_zero(<span class="keywordtype">float</span> val, <span class="keywordtype">float</span> epsilon = 0.001f) {</div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <span class="keywordflow">if</span> (fabs(val) &lt;= epsilon) {</div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;      <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    } <span class="keywordflow">else</span> {</div>
@@ -108,60 +108,60 @@ $(function() {
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    }</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  }</div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160; </div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="keyword">static</span> T Max(<span class="keyword">const</span> T &amp;a, <span class="keyword">const</span> T &amp;b) {</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="keyword">static</span> T max(<span class="keyword">const</span> T &amp;a, <span class="keyword">const</span> T &amp;b) {</div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    <span class="keywordflow">return</span> (a &lt; b ? b : a);</div>
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  }</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160; </div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="keyword">static</span> T Min(<span class="keyword">const</span> T &amp;a, <span class="keyword">const</span> T &amp;b) {</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="keyword">static</span> T min(<span class="keyword">const</span> T &amp;a, <span class="keyword">const</span> T &amp;b) {</div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keywordflow">return</span> (a &lt; b ? a : b);</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  }</div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160; </div>
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;  <span class="keyword">static</span> T Clamp(<span class="keyword">const</span> T &amp;value, <span class="keyword">const</span> T &amp;min, <span class="keyword">const</span> T &amp;max) {</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;  <span class="keyword">static</span> T clamp(<span class="keyword">const</span> T &amp;value, <span class="keyword">const</span> T &amp;min, <span class="keyword">const</span> T &amp;max) {</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keywordflow">return</span> std::clamp(value, min, max);</div>
 <div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;  }</div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> Abs(<span class="keywordtype">float</span> value) { <span class="keywordflow">return</span> fabs(value); }</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> abs(<span class="keywordtype">float</span> value) { <span class="keywordflow">return</span> fabs(value); }</div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160; </div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> Cos(<span class="keywordtype">float</span> angle) { <span class="keywordflow">return</span> cosf(angle); }</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> cos(<span class="keywordtype">float</span> angle) { <span class="keywordflow">return</span> cosf(angle); }</div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160; </div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> Sin(<span class="keywordtype">float</span> angle) { <span class="keywordflow">return</span> sinf(angle); }</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> sin(<span class="keywordtype">float</span> angle) { <span class="keywordflow">return</span> sinf(angle); }</div>
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> Tan(<span class="keywordtype">float</span> angle) { <span class="keywordflow">return</span> tanf(angle); }</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> tan(<span class="keywordtype">float</span> angle) { <span class="keywordflow">return</span> tanf(angle); }</div>
 <div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160; </div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> Acos(<span class="keywordtype">float</span> value) { <span class="keywordflow">return</span> acosf(value); }</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> acos(<span class="keywordtype">float</span> value) { <span class="keywordflow">return</span> acosf(value); }</div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; </div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> Atan2(<span class="keywordtype">float</span> y, <span class="keywordtype">float</span> x) { <span class="keywordflow">return</span> atan2f(y, x); }</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> atan2(<span class="keywordtype">float</span> y, <span class="keywordtype">float</span> x) { <span class="keywordflow">return</span> atan2f(y, x); }</div>
 <div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160; </div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> Cot(<span class="keywordtype">float</span> angle) { <span class="keywordflow">return</span> 1.0f / Tan(angle); }</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> cot(<span class="keywordtype">float</span> angle) { <span class="keywordflow">return</span> 1.0f / tan(angle); }</div>
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160; </div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> Lerp(<span class="keywordtype">float</span> a, <span class="keywordtype">float</span> b, <span class="keywordtype">float</span> f) {</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> lerp(<span class="keywordtype">float</span> a, <span class="keywordtype">float</span> b, <span class="keywordtype">float</span> f) {</div>
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="keywordflow">return</span> a + f * (b - a);</div>
 <div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;  }</div>
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> Sqrt(<span class="keywordtype">float</span> value) { <span class="keywordflow">return</span> sqrtf(value); }</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> sqrt(<span class="keywordtype">float</span> value) { <span class="keywordflow">return</span> sqrtf(value); }</div>
 <div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160; </div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> Fmod(<span class="keywordtype">float</span> numer, <span class="keywordtype">float</span> denom) {</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;  <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">float</span> fmod(<span class="keywordtype">float</span> numer, <span class="keywordtype">float</span> denom) {</div>
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <span class="keywordflow">return</span> fmod(numer, denom);</div>
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;  }</div>
 <div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; </div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">float</span> Sin0_1(<span class="keyword">const</span> <span class="keywordtype">float</span> periodSec,</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;                      <span class="keyword">const</span> <span class="keywordtype">float</span> t = <a class="code" href="classnen_1_1time.html#a2e9daa3ba4f8c461ed7d1a57a6510da9">time::GetTicksAsSeconds</a>()) {</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span> f = Fmod(t, periodSec);</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">float</span> sin_0_1(<span class="keyword">const</span> <span class="keywordtype">float</span> periodSec,</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;                       <span class="keyword">const</span> <span class="keywordtype">float</span> t = <a class="code" href="classnen_1_1time.html#a9d7295c88d1d3251c177df4347633b5c">time::get_ticks_as_seconds</a>()) {</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span> f = fmod(t, periodSec);</div>
 <div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span> x = f / (periodSec * (1.f / (2.f * Pi)));</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keywordflow">return</span> Sin(x) * 0.5f + 0.5f;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keywordflow">return</span> sin(x) * 0.5f + 0.5f;</div>
 <div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;  }</div>
 <div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">float</span> Cos0_1(<span class="keyword">const</span> <span class="keywordtype">float</span> periodSec,</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;                      <span class="keyword">const</span> <span class="keywordtype">float</span> t = <a class="code" href="classnen_1_1time.html#a2e9daa3ba4f8c461ed7d1a57a6510da9">time::GetTicksAsSeconds</a>()) {</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span> f = Fmod(t, periodSec);</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;  <span class="keyword">static</span> <span class="keywordtype">float</span> cos_0_1(<span class="keyword">const</span> <span class="keywordtype">float</span> periodSec,</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;                       <span class="keyword">const</span> <span class="keywordtype">float</span> t = <a class="code" href="classnen_1_1time.html#a9d7295c88d1d3251c177df4347633b5c">time::get_ticks_as_seconds</a>()) {</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span> f = fmod(t, periodSec);</div>
 <div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span> x = f / (periodSec * (1.f / (2.f * Pi)));</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <span class="keywordflow">return</span> Cos(x) * 0.5f + 0.5f;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <span class="keywordflow">return</span> cos(x) * 0.5f + 0.5f;</div>
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;  }</div>
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;};</div>
 <div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;} <span class="comment">// namespace nen</span></div>
 <div class="ttc" id="aclassnen_1_1math_html"><div class="ttname"><a href="classnen_1_1math.html">nen::math</a></div><div class="ttdef"><b>Definition:</b> math.hpp:13</div></div>
-<div class="ttc" id="aclassnen_1_1time_html_a2e9daa3ba4f8c461ed7d1a57a6510da9"><div class="ttname"><a href="classnen_1_1time.html#a2e9daa3ba4f8c461ed7d1a57a6510da9">nen::time::GetTicksAsSeconds</a></div><div class="ttdeci">static float GetTicksAsSeconds()</div><div class="ttdoc">Get time about launch app to now as seconds.</div></div>
+<div class="ttc" id="aclassnen_1_1time_html_a9d7295c88d1d3251c177df4347633b5c"><div class="ttname"><a href="classnen_1_1time.html#a9d7295c88d1d3251c177df4347633b5c">nen::time::get_ticks_as_seconds</a></div><div class="ttdeci">static float get_ticks_as_seconds()</div><div class="ttdoc">Get time about launch app to now as seconds.</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

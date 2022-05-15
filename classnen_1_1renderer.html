@@ -69,7 +69,6 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="classnen_1_1renderer-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">nen::renderer Class Reference</div>  </div>
@@ -84,9 +83,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a26a7f2aa025d6d35c0a98d59b92e0e0e"><td class="memItemLeft" align="right" valign="top"><a id="a26a7f2aa025d6d35c0a98d59b92e0e0e"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>initialize</b> (graphics_api api)</td></tr>
 <tr class="separator:a26a7f2aa025d6d35c0a98d59b92e0e0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6999b94130b477e38a269c67fbc3ac3c"><td class="memItemLeft" align="right" valign="top"><a id="a6999b94130b477e38a269c67fbc3ac3c"></a>
-graphics_api&#160;</td><td class="memItemRight" valign="bottom"><b>GetGraphicsAPI</b> ()</td></tr>
-<tr class="separator:a6999b94130b477e38a269c67fbc3ac3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a975b201e252116cc5f4efa6fad93ce78"><td class="memItemLeft" align="right" valign="top"><a id="a975b201e252116cc5f4efa6fad93ce78"></a>
+graphics_api&#160;</td><td class="memItemRight" valign="bottom"><b>get_graphics_api</b> ()</td></tr>
+<tr class="separator:a975b201e252116cc5f4efa6fad93ce78"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6749f7663d6695b809c882297e44b35d"><td class="memItemLeft" align="right" valign="top"><a id="a6749f7663d6695b809c882297e44b35d"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>shutdown</b> ()</td></tr>
 <tr class="separator:a6749f7663d6695b809c882297e44b35d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -114,9 +113,15 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>add_instancing</b> (c
 <tr class="memitem:af31c9407c1d5f46d15ec6b0f809c4d0a"><td class="memItemLeft" align="right" valign="top"><a id="af31c9407c1d5f46d15ec6b0f809c4d0a"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>SetClearColor</b> (const <a class="el" href="classnen_1_1color.html">color</a> &amp;<a class="el" href="classnen_1_1color.html">color</a>)</td></tr>
 <tr class="separator:af31c9407c1d5f46d15ec6b0f809c4d0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8a8df06eb10120facd20b8a1d399214d"><td class="memItemLeft" align="right" valign="top"><a id="a8a8df06eb10120facd20b8a1d399214d"></a>
-<a class="el" href="classnen_1_1color.html">color</a>&#160;</td><td class="memItemRight" valign="bottom"><b>GetClearColor</b> ()</td></tr>
-<tr class="separator:a8a8df06eb10120facd20b8a1d399214d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4e593696e9096747529871f052b132a"><td class="memItemLeft" align="right" valign="top"><a id="ac4e593696e9096747529871f052b132a"></a>
+<a class="el" href="classnen_1_1color.html">color</a>&#160;</td><td class="memItemRight" valign="bottom"><b>get_clear_color</b> ()</td></tr>
+<tr class="separator:ac4e593696e9096747529871f052b132a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe46f4fcc76ce150940b0bb411f31514"><td class="memItemLeft" align="right" valign="top"><a id="abe46f4fcc76ce150940b0bb411f31514"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>set_skybox_texture</b> (<a class="el" href="classnen_1_1texture.html">texture</a> _skybox_texture)</td></tr>
+<tr class="separator:abe46f4fcc76ce150940b0bb411f31514"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26f206cfeb3420f14eb0520754a5bc58"><td class="memItemLeft" align="right" valign="top"><a id="a26f206cfeb3420f14eb0520754a5bc58"></a>
+<a class="el" href="classnen_1_1texture.html">texture</a>&#160;</td><td class="memItemRight" valign="bottom"><b>get_skybox_texture</b> ()</td></tr>
+<tr class="separator:a26f206cfeb3420f14eb0520754a5bc58"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa1e976c59b6988e7a942b857e5629959"><td class="memItemLeft" align="right" valign="top"><a id="aa1e976c59b6988e7a942b857e5629959"></a>
 class <a class="el" href="classnen_1_1window.html">window</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>GetWindow</b> ()</td></tr>
 <tr class="separator:aa1e976c59b6988e7a942b857e5629959"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -138,12 +143,6 @@ std::vector&lt; std::function&lt; void()&gt; &gt; &amp;&#160;</td><td class="mem
 <tr class="memitem:a7d8d82f2d5fd2dc72e0dcefcccfec939"><td class="memItemLeft" align="right" valign="top"><a id="a7d8d82f2d5fd2dc72e0dcefcccfec939"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>add_imgui_function</b> (std::function&lt; void()&gt; function)</td></tr>
 <tr class="separator:a7d8d82f2d5fd2dc72e0dcefcccfec939"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
-Public Attributes</h2></td></tr>
-<tr class="memitem:ad06af87597ac85f83cd397b5a1a4e530"><td class="memItemLeft" align="right" valign="top"><a id="ad06af87597ac85f83cd397b5a1a4e530"></a>
-std::unique_ptr&lt; <a class="el" href="classnen_1_1texture.html">texture</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>skybox_texture</b></td></tr>
-<tr class="separator:ad06af87597ac85f83cd397b5a1a4e530"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li><a class="el" href="renderer_8hpp_source.html">renderer.hpp</a></li>

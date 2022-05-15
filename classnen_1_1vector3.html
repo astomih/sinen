@@ -87,12 +87,12 @@ constexpr&#160;</td><td class="memItemRight" valign="bottom"><b>vector3</b> (con
 <tr class="memitem:ab1cd0673c56b82d61b9a7eba0bc72937"><td class="memItemLeft" align="right" valign="top"><a id="ab1cd0673c56b82d61b9a7eba0bc72937"></a>
 constexpr&#160;</td><td class="memItemRight" valign="bottom"><b>vector3</b> (const float x, const float y, const float z)</td></tr>
 <tr class="separator:ab1cd0673c56b82d61b9a7eba0bc72937"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1110028eb65ea62c42016acafae517b6"><td class="memItemLeft" align="right" valign="top"><a id="a1110028eb65ea62c42016acafae517b6"></a>
-const float *&#160;</td><td class="memItemRight" valign="bottom"><b>GetAsFloatPtr</b> () const</td></tr>
-<tr class="separator:a1110028eb65ea62c42016acafae517b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abcad6587b7fc751ccbc3fa48defedb4d"><td class="memItemLeft" align="right" valign="top"><a id="abcad6587b7fc751ccbc3fa48defedb4d"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Set</b> (float inX, float inY, float inZ)</td></tr>
-<tr class="separator:abcad6587b7fc751ccbc3fa48defedb4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54a09dc063061994d219398f53a28de0"><td class="memItemLeft" align="right" valign="top"><a id="a54a09dc063061994d219398f53a28de0"></a>
+const float *&#160;</td><td class="memItemRight" valign="bottom"><b>get_ptr</b> () const</td></tr>
+<tr class="separator:a54a09dc063061994d219398f53a28de0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45c03c14b9e062badccd5d4889fba5da"><td class="memItemLeft" align="right" valign="top"><a id="a45c03c14b9e062badccd5d4889fba5da"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>set</b> (float inX, float inY, float inZ)</td></tr>
+<tr class="separator:a45c03c14b9e062badccd5d4889fba5da"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad601dd1987a53a06ce50858800d76b6d"><td class="memItemLeft" align="right" valign="top"><a id="ad601dd1987a53a06ce50858800d76b6d"></a>
 <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator*=</b> (float scalar)</td></tr>
 <tr class="separator:ad601dd1987a53a06ce50858800d76b6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -117,42 +117,42 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>Set</b> (float inX, f
 <tr class="memitem:a89c52228882f23eca5805cbfbccead12"><td class="memItemLeft" align="right" valign="top"><a id="a89c52228882f23eca5805cbfbccead12"></a>
 <a class="el" href="classnen_1_1vector3.html">vector3</a>&#160;</td><td class="memItemRight" valign="bottom"><b>copy</b> ()</td></tr>
 <tr class="separator:a89c52228882f23eca5805cbfbccead12"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a95c926b6a48f6ff6fe5e87df407a179a"><td class="memItemLeft" align="right" valign="top"><a id="a95c926b6a48f6ff6fe5e87df407a179a"></a>
-float&#160;</td><td class="memItemRight" valign="bottom"><b>LengthSq</b> () const</td></tr>
-<tr class="separator:a95c926b6a48f6ff6fe5e87df407a179a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae407808f7266abb258793ad2ca63b110"><td class="memItemLeft" align="right" valign="top"><a id="ae407808f7266abb258793ad2ca63b110"></a>
-float&#160;</td><td class="memItemRight" valign="bottom"><b>Length</b> () const</td></tr>
-<tr class="separator:ae407808f7266abb258793ad2ca63b110"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8f8132c256e9dc7cdb4286fc4bb27958"><td class="memItemLeft" align="right" valign="top"><a id="a8f8132c256e9dc7cdb4286fc4bb27958"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Normalize</b> ()</td></tr>
-<tr class="separator:a8f8132c256e9dc7cdb4286fc4bb27958"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8408c694289f47c49f26242ae4992264"><td class="memItemLeft" align="right" valign="top"><a id="a8408c694289f47c49f26242ae4992264"></a>
+float&#160;</td><td class="memItemRight" valign="bottom"><b>length_sqrt</b> () const</td></tr>
+<tr class="separator:a8408c694289f47c49f26242ae4992264"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b36305fe27725e6b0a7b33bd1a65c02"><td class="memItemLeft" align="right" valign="top"><a id="a7b36305fe27725e6b0a7b33bd1a65c02"></a>
+float&#160;</td><td class="memItemRight" valign="bottom"><b>length</b> () const</td></tr>
+<tr class="separator:a7b36305fe27725e6b0a7b33bd1a65c02"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6693334074247aa067e2c70123abbdde"><td class="memItemLeft" align="right" valign="top"><a id="a6693334074247aa067e2c70123abbdde"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>normalize</b> ()</td></tr>
+<tr class="separator:a6693334074247aa067e2c70123abbdde"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a6414c383e80118e51fa55708becaaf9a"><td class="memItemLeft" align="right" valign="top"><a id="a6414c383e80118e51fa55708becaaf9a"></a>
-static <a class="el" href="classnen_1_1vector3.html">vector3</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Normalize</b> (const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;vec)</td></tr>
-<tr class="separator:a6414c383e80118e51fa55708becaaf9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4c6485debe992537e2becc31b8a821b1"><td class="memItemLeft" align="right" valign="top"><a id="a4c6485debe992537e2becc31b8a821b1"></a>
-static float&#160;</td><td class="memItemRight" valign="bottom"><b>Dot</b> (const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;a, const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;b)</td></tr>
-<tr class="separator:a4c6485debe992537e2becc31b8a821b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a24e2db905cccf80200f54a0ab38af774"><td class="memItemLeft" align="right" valign="top"><a id="a24e2db905cccf80200f54a0ab38af774"></a>
-static <a class="el" href="classnen_1_1vector3.html">vector3</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Cross</b> (const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;a, const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;b)</td></tr>
-<tr class="separator:a24e2db905cccf80200f54a0ab38af774"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a060d89d525259ffb6017eff6c817435b"><td class="memItemLeft" align="right" valign="top"><a id="a060d89d525259ffb6017eff6c817435b"></a>
-static <a class="el" href="classnen_1_1vector3.html">vector3</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Lerp</b> (const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;a, const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;b, float f)</td></tr>
-<tr class="separator:a060d89d525259ffb6017eff6c817435b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8dc1b93ec8d1e1e26d442d09f5f95621"><td class="memItemLeft" align="right" valign="top"><a id="a8dc1b93ec8d1e1e26d442d09f5f95621"></a>
-static <a class="el" href="classnen_1_1vector3.html">vector3</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Reflect</b> (const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;v, const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;n)</td></tr>
-<tr class="separator:a8dc1b93ec8d1e1e26d442d09f5f95621"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd4b745fb637b354180abb0f1c8e3579"><td class="memItemLeft" align="right" valign="top"><a id="abd4b745fb637b354180abb0f1c8e3579"></a>
+static <a class="el" href="classnen_1_1vector3.html">vector3</a>&#160;</td><td class="memItemRight" valign="bottom"><b>normalize</b> (const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;vec)</td></tr>
+<tr class="separator:abd4b745fb637b354180abb0f1c8e3579"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9ddb3a27a8a252cfb7cd80329aa4cf4"><td class="memItemLeft" align="right" valign="top"><a id="aa9ddb3a27a8a252cfb7cd80329aa4cf4"></a>
+static float&#160;</td><td class="memItemRight" valign="bottom"><b>dot</b> (const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;a, const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;b)</td></tr>
+<tr class="separator:aa9ddb3a27a8a252cfb7cd80329aa4cf4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a321da7c3991fe1349a44adbb8f26702a"><td class="memItemLeft" align="right" valign="top"><a id="a321da7c3991fe1349a44adbb8f26702a"></a>
+static <a class="el" href="classnen_1_1vector3.html">vector3</a>&#160;</td><td class="memItemRight" valign="bottom"><b>cross</b> (const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;a, const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;b)</td></tr>
+<tr class="separator:a321da7c3991fe1349a44adbb8f26702a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63a1d947414ef1905fdff7653a6a0a68"><td class="memItemLeft" align="right" valign="top"><a id="a63a1d947414ef1905fdff7653a6a0a68"></a>
+static <a class="el" href="classnen_1_1vector3.html">vector3</a>&#160;</td><td class="memItemRight" valign="bottom"><b>lerp</b> (const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;a, const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;b, float f)</td></tr>
+<tr class="separator:a63a1d947414ef1905fdff7653a6a0a68"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6b429e72619a6f215098e4842d60b2ba"><td class="memItemLeft" align="right" valign="top"><a id="a6b429e72619a6f215098e4842d60b2ba"></a>
+static <a class="el" href="classnen_1_1vector3.html">vector3</a>&#160;</td><td class="memItemRight" valign="bottom"><b>reflect</b> (const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;v, const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;n)</td></tr>
+<tr class="separator:a6b429e72619a6f215098e4842d60b2ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2d8dfad64473c6a568bbadd2eed85fc6"><td class="memItemLeft" align="right" valign="top"><a id="a2d8dfad64473c6a568bbadd2eed85fc6"></a>
 static <a class="el" href="classnen_1_1vector3.html">vector3</a>&#160;</td><td class="memItemRight" valign="bottom"><b>transform</b> (const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;vec, const class <a class="el" href="classnen_1_1matrix4.html">matrix4</a> &amp;mat, float w=1.0f)</td></tr>
 <tr class="separator:a2d8dfad64473c6a568bbadd2eed85fc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2b26d12e88cb33e65151a69bb8a59364"><td class="memItemLeft" align="right" valign="top"><a id="a2b26d12e88cb33e65151a69bb8a59364"></a>
 static <a class="el" href="classnen_1_1vector3.html">vector3</a>&#160;</td><td class="memItemRight" valign="bottom"><b>transform_with_persp_div</b> (const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;vec, const class <a class="el" href="classnen_1_1matrix4.html">matrix4</a> &amp;mat, float w=1.0f)</td></tr>
 <tr class="separator:a2b26d12e88cb33e65151a69bb8a59364"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:addf6c60192fd81be0369f1c03aa2236a"><td class="memItemLeft" align="right" valign="top"><a id="addf6c60192fd81be0369f1c03aa2236a"></a>
-static <a class="el" href="classnen_1_1vector3.html">vector3</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Transform</b> (const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;v, const class <a class="el" href="classnen_1_1quaternion.html">quaternion</a> &amp;q)</td></tr>
-<tr class="separator:addf6c60192fd81be0369f1c03aa2236a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76b16267202d9cfb7eb35d7a0b6557e1"><td class="memItemLeft" align="right" valign="top"><a id="a76b16267202d9cfb7eb35d7a0b6557e1"></a>
+static <a class="el" href="classnen_1_1vector3.html">vector3</a>&#160;</td><td class="memItemRight" valign="bottom"><b>transform</b> (const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;v, const class <a class="el" href="classnen_1_1quaternion.html">quaternion</a> &amp;q)</td></tr>
+<tr class="separator:a76b16267202d9cfb7eb35d7a0b6557e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -168,8 +168,8 @@ float&#160;</td><td class="memItemRight" valign="bottom"><b>z</b></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
-<tr class="memitem:ae860886e4b20d93f4d7aa8bf91736ed1"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="classnen_1_1vector3.html">vector3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnen_1_1vector3.html#ae860886e4b20d93f4d7aa8bf91736ed1">zero</a></td></tr>
-<tr class="memdesc:ae860886e4b20d93f4d7aa8bf91736ed1"><td class="mdescLeft">&#160;</td><td class="mdescRight">VDE Vector3f to Effekseer Vector3D  <a href="classnen_1_1vector3.html#ae860886e4b20d93f4d7aa8bf91736ed1">More...</a><br /></td></tr>
+<tr class="memitem:ae860886e4b20d93f4d7aa8bf91736ed1"><td class="memItemLeft" align="right" valign="top"><a id="ae860886e4b20d93f4d7aa8bf91736ed1"></a>
+static const <a class="el" href="classnen_1_1vector3.html">vector3</a>&#160;</td><td class="memItemRight" valign="bottom"><b>zero</b></td></tr>
 <tr class="separator:ae860886e4b20d93f4d7aa8bf91736ed1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2f7a6bd3e33ef5f8bbdb215f766518fc"><td class="memItemLeft" align="right" valign="top"><a id="a2f7a6bd3e33ef5f8bbdb215f766518fc"></a>
 static const <a class="el" href="classnen_1_1vector3.html">vector3</a>&#160;</td><td class="memItemRight" valign="bottom"><b>unit_x</b></td></tr>
@@ -214,31 +214,6 @@ Friends</h2></td></tr>
 <a class="el" href="classnen_1_1vector3.html">vector3</a>&#160;</td><td class="memItemRight" valign="bottom"><b>operator*</b> (float scalar, const <a class="el" href="classnen_1_1vector3.html">vector3</a> &amp;vec)</td></tr>
 <tr class="separator:a414c2f827e2cd1025279215865ff4b5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Data Documentation</h2>
-<a id="ae860886e4b20d93f4d7aa8bf91736ed1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae860886e4b20d93f4d7aa8bf91736ed1">&#9670;&nbsp;</a></span>zero</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">const <a class="el" href="classnen_1_1vector3.html">vector3</a> nen::vector3::zero</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>VDE Vector3f to Effekseer Vector3D </p>
-
-</div>
-</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li><a class="el" href="vector3_8hpp_source.html">vector3.hpp</a></li>
 </ul>

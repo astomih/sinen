@@ -128,6 +128,4 @@ void renderer::setup_shapes() {
   add_vertex_array(create_box_vertices(), vertex_default_shapes::box);
   add_vertex_array(create_sprite_vertices(), vertex_default_shapes::sprite);
 }
-window &renderer::GetWindow() { return m_manager.get_window(); }
-
 } // namespace nen

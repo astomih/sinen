@@ -599,7 +599,7 @@ void vk_renderer::render_imgui(VkCommandBuffer command) {
   ImGui_ImplSDL2_NewFrame((SDL_Window *)get_window().GetSDLWindow());
   ImGui::NewFrame();
 
-  if (get_renderer().isShowImGui()) {
+  if (get_renderer().is_show_imgui()) {
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
     ImGui::SetNextWindowSize(
         ImVec2(get_window().Size().x, get_window().Size().y), ImGuiCond_Always);

@@ -51,6 +51,7 @@ public:
   ~gl_renderer();
 
   void initialize();
+  void shutdown();
   void render();
   void add_vertex_array(const vertex_array &vArray, std::string_view name);
   void update_vertex_array(const vertex_array &vArray, std::string_view name);
@@ -65,7 +66,7 @@ public:
   void prepare();
   void cleanup() {}
   void registerTexture(handle_t handle);
-  void pushSprite2d(std::shared_ptr<draw_object> sprite2d) {
+  void add_sprite2d(std::shared_ptr<draw_object> sprite2d) {
     auto iter = mSprite2Ds.begin();
     for (; iter != mSprite2Ds.end(); ++iter) {
       if (sprite2d->drawOrder < (*iter)->drawOrder) {
@@ -74,14 +75,14 @@ public:
     }
     mSprite2Ds.insert(iter, sprite2d);
   }
-  void eraseSprite2d(std::shared_ptr<draw_object> sprite2d) {
+  void remove_sprite2d(std::shared_ptr<draw_object> sprite2d) {
     auto itr = std::find(mSprite2Ds.begin(), mSprite2Ds.end(), sprite2d);
     if (itr != mSprite2Ds.end()) {
       mSprite2Ds.erase(itr);
     }
   }
 
-  void pushSprite3d(std::shared_ptr<draw_object> sprite3d) {
+  void add_sprite3d(std::shared_ptr<draw_object> sprite3d) {
     auto iter = mSprite3Ds.begin();
     for (; iter != mSprite3Ds.end(); ++iter) {
       if (sprite3d->drawOrder < (*iter)->drawOrder) {
@@ -90,7 +91,7 @@ public:
     }
     mSprite3Ds.insert(iter, sprite3d);
   }
-  void eraseSprite3d(std::shared_ptr<draw_object> sprite3d) {
+  void remove_sprite3d(std::shared_ptr<draw_object> sprite3d) {
     auto itr = std::find(mSprite3Ds.begin(), mSprite3Ds.end(), sprite3d);
     if (itr != mSprite3Ds.end()) {
       mSprite3Ds.erase(itr);

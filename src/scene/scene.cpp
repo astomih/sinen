@@ -46,7 +46,7 @@ void scene::ProcessInput() {
 
   while (SDL_PollEvent(&current_event_handle::current_event)) {
     ImGui_ImplSDL2_ProcessEvent(&current_event_handle::current_event);
-    GetRenderer().GetWindow().ProcessInput();
+    get_window().ProcessInput();
     switch (current_event_handle::current_event.type) {
     case SDL_QUIT: {
       mGameState = game_state::Quit;
@@ -59,7 +59,7 @@ void scene::ProcessInput() {
   const input_state &state = m_manager.get_input_system().get_state();
 
   if (state.Keyboard.get_key_state(key_code::F3) == button_state::Pressed) {
-    GetRenderer().toggleShowImGui();
+    GetRenderer().toggle_show_imgui();
   }
   if (mGameState == game_state::Quit)
     return;
@@ -205,7 +205,7 @@ void scene::Update(float deltaTime) {
   (*lua)["mouse"] = get_input().get_state().Mouse;
   (*lua)["camera"] = &get_camera();
   (*lua)["random"] = &get_random();
-  if (get_renderer().isShowImGui() &&
+  if (get_renderer().is_show_imgui() &&
       get_input().get_state().Keyboard.get_key_state(key_code::F5) ==
           button_state::Pressed) {
     is_run = true;
@@ -216,7 +216,7 @@ void scene::Update(float deltaTime) {
     (*lua)["setup"]();
     is_run = false;
   }
-  if (get_renderer().isShowImGui() &&
+  if (get_renderer().is_show_imgui() &&
       get_input().get_state().Keyboard.is_key_down(key_code::LCTRL) &&
       get_input().get_state().Keyboard.get_key_state(key_code::S) ==
           button_state::Pressed) {

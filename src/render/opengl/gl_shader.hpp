@@ -50,7 +50,7 @@ public:
    * @brief シェーダを無効にする
    *
    */
-  void SetDisable();
+  void set_disable();
 
   /**
    * @brief UBO(Uniform Buffer Object)を作成

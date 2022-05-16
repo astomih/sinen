@@ -45,7 +45,7 @@ void gl_shader::SetActive(const GLuint &blockIndex) {
   glUseProgram(mShaderProgram);
 }
 
-void gl_shader::SetDisable() { glDisable(mShaderProgram); }
+void gl_shader::set_disable() { glDisable(mShaderProgram); }
 bool gl_shader::CompileShader(const std::string &fileName, GLenum shaderType,
                               GLuint &outShader) {
   std::string contents;

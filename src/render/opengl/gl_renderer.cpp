@@ -69,6 +69,8 @@ void gl_renderer::initialize() {
 #endif
 }
 
+void gl_renderer::shutdown() {}
+
 void gl_renderer::render() {
   auto &w = get_window();
   if (w.Size().x != prev_window_x || w.Size().y != prev_window_y) {
@@ -98,7 +100,7 @@ void gl_renderer::render() {
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplSDL2_NewFrame((SDL_Window *)w.GetSDLWindow());
   ImGui::NewFrame();
-  if (get_renderer().isShowImGui()) {
+  if (get_renderer().is_show_imgui()) {
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
     ImGui::SetNextWindowSize(
         ImVec2(get_window().Size().x, get_window().Size().y), ImGuiCond_Always);
@@ -302,12 +304,12 @@ void gl_renderer::update_vertex_array(const vertex_array &vArray,
 
 void gl_renderer::draw2d(std::shared_ptr<class draw_object> sprite) {
   registerTexture(sprite->texture_handle);
-  pushSprite2d(sprite);
+  add_sprite2d(sprite);
 }
 
 void gl_renderer::draw3d(std::shared_ptr<class draw_object> sprite) {
   registerTexture(sprite->texture_handle);
-  pushSprite3d(sprite);
+  add_sprite3d(sprite);
 }
 
 void gl_renderer::load_shader(const shader &shaderInfo) {

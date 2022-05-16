@@ -1,5 +1,6 @@
 #ifndef SINEN_RENDER_RENDERER_HPP
 #define SINEN_RENDER_RENDERER_HPP
+#include <list>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -40,7 +41,7 @@ public:
 
   void add_instancing(const instancing &_instancing);
 
-  void SetClearColor(const color &color) {
+  void set_clear_color(const color &color) {
     if (color.r >= 0.f && color.g >= 0.f && color.b >= 0.f)
       clearColor = color;
   }
@@ -53,15 +54,13 @@ public:
 
   texture get_skybox_texture() { return m_skybox_texture; }
 
-  class window &GetWindow();
-
-  void toggleShowImGui() { showImGui = !showImGui; }
-  bool isShowImGui() { return showImGui; }
+  void toggle_show_imgui() { showImGui = !showImGui; }
+  bool is_show_imgui() { return showImGui; }
 
   void load_shader(const shader &shaderinfo);
   void unload_shader(const shader &shaderinfo);
 
-  std::vector<std::function<void()>> &get_imgui_function() {
+  std::list<std::function<void()>> &get_imgui_function() {
     return m_imgui_function;
   }
 
@@ -83,7 +82,7 @@ private:
 #endif
   graphics_api RendererAPI;
   bool showImGui;
-  std::vector<std::function<void()>> m_imgui_function;
+  std::list<std::function<void()>> m_imgui_function;
   texture m_skybox_texture;
 };
 

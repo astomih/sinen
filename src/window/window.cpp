@@ -57,7 +57,7 @@ void window_system::initialize(const std::string &name, graphics_api api) {
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-  impl->window = SDL_CreateWindow(
+  m_window = SDL_CreateWindow(
       std::string(name).c_str(), SDL_WINDOWPOS_UNDEFINED,
       SDL_WINDOWPOS_UNDEFINED, static_cast<int>(size.x),
       static_cast<int>(size.y), SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);

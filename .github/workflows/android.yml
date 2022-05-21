@@ -23,8 +23,22 @@ jobs:
           cd ${{github.workspace}}/example/android-project/app/jni
           ln -s ${{github.workspace}}/example ./singa
           ln -s ${{github.workspace}}/example/external/sinen ./sinen
+          git clone https://github.com/libsdl-org/SDL.git
+          git clone https://github.com/libsdl-org/SDL_image.git
+          git clone https://github.com/libsdl-org/SDL_mixer.git
+          git clone https://github.com/astomih/SDL_ttf.git
+          git clone https://github.com/libsdl-org/SDL_net.git
+          mv SDL SDL2
+          mv SDL_image SDL2_image
+          mv SDL_mixer SDL2_mixer
+          mv SDL_ttf SDL2_ttf
+          mv SDL_net SDL2_net
+          mv CMakeLists-SDL_net.txt SDL2_net
+          cd SDL2_net
+          mv CMakeLists-SDL_net.txt CMakeLists.txt
           cd ${{github.workspace}}/example
     - name: set up JDK 11
+
       uses: actions/setup-java@v2
       with:
         java-version: '11'

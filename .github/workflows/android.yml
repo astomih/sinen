@@ -31,9 +31,6 @@ jobs:
           mv SDL SDL2
           mv SDL_image SDL2_image
           mv SDL_mixer SDL2_mixer
-          cd SDL_ttf
-          git submodule update --recursive
-          cd ..
           mv SDL_ttf SDL2_ttf
           mv SDL_net SDL2_net
           mv CMakeLists-SDL_net.txt SDL2_net

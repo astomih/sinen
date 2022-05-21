@@ -1,3 +1,5 @@
+#include "../manager/get_system.hpp"
+#include "../render/render_system.hpp"
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -6,7 +8,6 @@
 #include <string>
 
 #include <io/dstream.hpp>
-#include <manager/manager.hpp>
 #include <model/model.hpp>
 #include <render/renderer.hpp>
 

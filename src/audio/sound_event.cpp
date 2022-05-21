@@ -2,10 +2,10 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 
+#include "../manager/get_system.hpp"
+#include "sound_system.hpp"
 #include <audio/music_system.hpp>
 #include <audio/sound_event.hpp>
-#include <audio/sound_system.hpp>
-#include <manager/manager.hpp>
 namespace nen {
 sound::sound() {}
 void sound::load(std::string_view file_name) {

@@ -1,4 +1,5 @@
-﻿#include "../texture/texture_system.hpp"
+﻿#include "../manager/get_system.hpp"
+#include "../texture/texture_system.hpp"
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <cassert>
@@ -6,7 +7,6 @@
 #include <font/font.hpp>
 #include <io/dstream.hpp>
 #include <logger/logger.hpp>
-#include <manager/manager.hpp>
 #include <texture/texture.hpp>
 
 namespace nen {

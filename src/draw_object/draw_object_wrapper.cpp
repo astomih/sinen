@@ -1,6 +1,8 @@
+#include "../manager/get_system.hpp"
+#include "../render/render_system.hpp"
+#include "../window/window_system.hpp"
 #include <camera/camera.hpp>
 #include <draw_object/draw_object_wrapper.hpp>
-#include <manager/manager.hpp>
 #include <render/renderer.hpp>
 #include <window/window.hpp>
 

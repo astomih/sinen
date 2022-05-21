@@ -1,7 +1,9 @@
 ﻿#pragma once
-#include "instancing/instancing.hpp"
 #include <functional>
+#include <instancing/instancing.hpp>
 #include <memory>
+#include <texture/texture_type.hpp>
+#include <vertex/vertex_array.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 
 #include "vk_base.hpp"

@@ -1,5 +1,4 @@
 #pragma once
-#include "manager/manager.hpp"
 #include <cstdint>
 #ifdef EMSCRIPTEN
 #include <emscripten.h>

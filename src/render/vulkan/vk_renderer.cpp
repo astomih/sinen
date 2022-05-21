@@ -1,5 +1,6 @@
-#include <manager/manager.hpp>
-
+#include "../../manager/get_system.hpp"
+#include "../../render/render_system.hpp"
+#include "../../window/window_system.hpp"
 #include <camera/camera.hpp>
 
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)

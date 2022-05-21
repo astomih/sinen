@@ -1,7 +1,10 @@
-#include <manager/manager.hpp>
-
+#include "../../manager/get_system.hpp"
+#include "../../render/render_system.hpp"
+#include "../../texture/texture_system.hpp"
+#include "../../window/window_system.hpp"
 #include <SDL.h>
 #include <SDL_image.h>
+
 
 #if defined(EMSCRIPTEN) || defined(MOBILE)
 #include <GLES3/gl3.h>

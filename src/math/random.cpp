@@ -1,6 +1,10 @@
+#include "../manager/get_system.hpp"
+#include "random_system.hpp"
 #include <math/random.hpp>
+#include <random>
 namespace nen {
-void random::init() {
+std::mt19937 sGenerator;
+void random_system::init() {
   std::random_device rd;
   random::seed(rd());
 }
@@ -11,12 +15,13 @@ float random::get_float() { return get_float_range(0.0f, 1.0f); }
 
 float random::get_float_range(float min, float max) {
   std::uniform_real_distribution<float> dist(min, max);
-  return dist(sGenerator);
+  return dist(get_random().sGenerator);
 }
 
 int random::get_int_range(int min, int max) {
   std::uniform_int_distribution<int> dist(min, max);
-  return dist(sGenerator);
+  int a = dist(sGenerator);
+  return a;
 }
 
 vector2 random::get_vector(const vector2 &min, const vector2 &max) {

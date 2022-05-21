@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "../input/input_system.hpp"
+#include "../input/input.hpp"
 #include "../script/script.hpp"
 #include "../utility/handler.hpp"
 #include <cstdint>
@@ -21,7 +21,7 @@ public:
    * @brief Construct a new base scene object
    *
    */
-  scene(class manager &_manager);
+  scene();
   virtual ~scene() = default;
 
   /**
@@ -34,7 +34,7 @@ public:
    * @brief Initialize scene
    *
    */
-  void Initialize();
+  void initialize();
 
   /**
    * @brief is running scene
@@ -75,12 +75,6 @@ public:
    */
   void Quit() { mGameState = game_state::Quit; }
 
-  class renderer &GetRenderer();
-  const input_state &GetInput();
-  class sound_system &GetSound();
-  class script_system &get_script();
-  class texture_system &get_texture();
-  class font_system &get_font();
   void change_scene(std::string scene_name);
 
 protected:
@@ -100,7 +94,6 @@ private:
   void UnloadData();
   void ProcessInput();
   void UpdateScene();
-  class manager &m_manager;
   game_state mGameState = game_state::Gameplay;
   uint32_t m_prev_tick = 0;
 };

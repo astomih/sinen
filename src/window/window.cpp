@@ -1,29 +1,23 @@
 #include "../event/current_event.hpp"
+#include "../manager/get_system.hpp"
 #include "utility/singleton.hpp"
+#include "window_system.hpp"
 #include <SDL.h>
 #include <window/window.hpp>
 
 namespace nen {
-class window::Impl {
-public:
-  Impl() : window(nullptr) {}
-  ~Impl() { SDL_DestroyWindow(window); }
-  ::SDL_Window *window;
-};
-
-window::window()
-    : size(vector2(1280.f, 720.f)), impl(std::make_unique<window::Impl>()) {}
+window_system::window_system() : size(vector2(1280.f, 720.f)) {}
 window::~window() = default;
 
-void *window::GetSDLWindow() { return impl->window; }
+void *window::GetSDLWindow() { return get_window().m_window; }
 
-void window::Initialize(const std::string &name, graphics_api api) {
+void window_system::initialize(const std::string &name, graphics_api api) {
   this->name = name;
 
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
   switch (api) {
   case graphics_api::Vulkan: {
-    impl->window = SDL_CreateWindow(
+    get_window().m_window = SDL_CreateWindow(
         std::string(name).c_str(), SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED, static_cast<int>(size.x),
         static_cast<int>(size.y), SDL_WINDOW_VULKAN | SDL_WINDOW_SHOWN);
@@ -42,7 +36,7 @@ void window::Initialize(const std::string &name, graphics_api api) {
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-    impl->window = SDL_CreateWindow(
+    m_window = SDL_CreateWindow(
         std::string(name).c_str(), SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED, static_cast<int>(size.x),
         static_cast<int>(size.y), SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
@@ -70,9 +64,9 @@ void window::Initialize(const std::string &name, graphics_api api) {
 #endif
 }
 
-void window::ProcessInput() {
+void window_system::ProcessInput() {
   int x, y;
-  SDL_GetWindowSize((SDL_Window *)impl->window, &x, &y);
+  SDL_GetWindowSize(m_window, &x, &y);
   this->size.x = static_cast<float>(x);
   this->size.y = static_cast<float>(y);
   if (current_event_handle::current_event.type == SDL_WINDOWEVENT) {

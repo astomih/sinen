@@ -4,7 +4,13 @@
 #include <SDL_main.h>
 #endif
 
+#include "../input/input_system.hpp"
+#include "../math/random_system.hpp"
+#include "../render/render_system.hpp"
+#include "../script/script_system.hpp"
 #include "../texture/texture_system.hpp"
+#include "../window/window_system.hpp"
+#include "manager.hpp"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_mixer.h>
@@ -12,10 +18,11 @@
 #include <SDL_ttf.h>
 #include <fstream>
 #include <memory>
+#include <utility/launcher.hpp>
 
-#include <audio/sound_system.hpp>
+#include "../audio/sound_system.hpp"
 #include <camera/camera.hpp>
-#include <input/input_system.hpp>
+#include <input/input.hpp>
 #include <logger/logger.hpp>
 #include <math/random.hpp>
 #include <render/renderer.hpp>
@@ -23,6 +30,8 @@
 #include <script/script.hpp>
 #include <utility/singleton.hpp>
 #include <window/window.hpp>
+
+#include "get_system.hpp"
 
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
@@ -33,19 +42,28 @@ void main_loop() { emscripten_loop(); }
 
 namespace nen {
 manager _manager;
+std::unique_ptr<class window_system> m_window;
+std::unique_ptr<class render_system> m_renderer;
+std::unique_ptr<class scene> m_next_scene;
+std::unique_ptr<class input_system> m_input_system;
+std::unique_ptr<class sound_system> m_sound_system;
+std::unique_ptr<class script_system> m_script_system;
+std::unique_ptr<class texture_system> m_texture_system;
+std::unique_ptr<class camera> m_camera;
+std::unique_ptr<class random_system> m_random;
 bool initialize() { return _manager.initialize(); }
 void launch() { _manager.launch(); }
-window &get_window() { return _manager.get_window(); }
-renderer &get_renderer() { return _manager.get_renderer(); }
-input_system &get_input() { return _manager.get_input_system(); }
+window_system &get_window() { return *m_window; }
+render_system &get_renderer() { return *m_renderer; }
+input_system &get_input() { return *m_input_system; }
 scene &get_current_scene() { return _manager.get_current_scene(); }
-sound_system &get_sound() { return _manager.get_sound_system(); }
-script_system &get_script() { return _manager.get_script_system(); }
-texture_system &get_texture() { return _manager.get_texture_system(); }
-camera &get_camera() { return _manager.get_camera(); }
-random &get_random() { return _manager.get_random(); }
+sound_system &get_sound() { return *m_sound_system; }
+texture_system &get_texture() { return *m_texture_system; }
+camera &get_camera() { return *m_camera; }
+random_system &get_random() { return *m_random; }
+script_system &get_script() { return *m_script_system; }
 bool manager::initialize() {
-  m_current_scene = std::make_unique<scene>(*this);
+  m_current_scene = std::make_unique<scene>();
   SDL_SetMainReady();
   SDL_Init(SDL_INIT_EVERYTHING);
   TTF_Init();
@@ -54,9 +72,9 @@ bool manager::initialize() {
   Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3);
   Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
   m_next_scene = nullptr;
-  m_window = std::make_unique<nen::window>();
-  m_texture_system = std::make_unique<nen::texture_system>(*this);
-  m_renderer = std::make_unique<nen::renderer>(*this);
+  m_window = std::make_unique<window_system>();
+  m_texture_system = std::make_unique<texture_system>();
+  m_renderer = std::make_unique<nen::render_system>();
   nen::logger::change_logger(
       std::move(nen::logger::default_logger::CreateConsoleLogger()));
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
@@ -66,15 +84,15 @@ bool manager::initialize() {
     str = "Vulkan";
   std::getline(ifs, str);
   if (str.compare("Vulkan") == 0) {
-    m_window->Initialize("Nen : Vulkan", nen::graphics_api::Vulkan);
+    m_window->initialize("Nen : Vulkan", nen::graphics_api::Vulkan);
     m_renderer->initialize(nen::graphics_api::Vulkan);
   } else if (str.compare("OpenGL") == 0) {
-    m_window->Initialize("Nen : OpenGL", nen::graphics_api::OpenGL);
+    m_window->initialize("Nen : OpenGL", nen::graphics_api::OpenGL);
     m_renderer->initialize(nen::graphics_api::OpenGL);
   }
 
 #else
-  m_window->Initialize("Nen", nen::graphics_api::ES);
+  m_window->initialize("Nen", nen::graphics_api::ES);
   m_renderer->initialize(nen::graphics_api::ES);
 #endif
   m_camera = std::make_unique<camera>();
@@ -86,17 +104,17 @@ bool manager::initialize() {
     m_sound_system = nullptr;
     return false;
   }
-  m_input_system = std::make_unique<nen::input_system>(*this);
+  m_input_system = std::make_unique<nen::input_system>();
   if (!m_input_system->initialize()) {
     logger::fatal("Failed to initialize input system");
     return false;
   }
-  m_script_system = std::make_unique<nen::script_system>(*this);
+  m_script_system = std::make_unique<nen::script_system>();
   if (!m_script_system->initialize()) {
     logger::fatal("Failed to initialize script system");
     return false;
   }
-  m_random = std::make_unique<nen::random>();
+  m_random = std::make_unique<nen::random_system>();
   m_random->init();
   texture tex;
   tex.fill_color(palette::Black);
@@ -104,7 +122,7 @@ bool manager::initialize() {
   return true;
 }
 void manager::launch() {
-  m_current_scene->Initialize();
+  m_current_scene->initialize();
 
 #if !defined(EMSCRIPTEN)
   while (true)
@@ -120,7 +138,7 @@ void manager::loop() {
   else if (m_next_scene) {
     m_current_scene->Shutdown();
     m_current_scene = std::move(m_next_scene);
-    m_current_scene->Initialize();
+    m_current_scene->initialize();
     m_next_scene = nullptr;
   } else {
     m_current_scene->Shutdown();
@@ -140,7 +158,7 @@ void manager::loop() {
 }
 void manager::change_scene(std::string scene_name) {
   m_current_scene->Quit();
-  m_next_scene = std::make_unique<nen::scene>(*this);
+  m_next_scene = std::make_unique<nen::scene>();
   m_scene_name = scene_name;
 }
 

@@ -5,7 +5,7 @@
 #include <SDL_mixer.h>
 #include <vector>
 
-#include <audio/sound_system.hpp>
+#include "sound_system.hpp"
 #include <io/dstream.hpp>
 #include <math/quaternion.hpp>
 

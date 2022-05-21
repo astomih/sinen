@@ -3,15 +3,20 @@
 #include "imgui_impl_sdl.h"
 #include <SDL.h>
 #include <SDL_ttf.h>
-#include <audio/sound_system.hpp>
-#include <input/input_system.hpp>
+#include <input/input.hpp>
 #include <io/dstream.hpp>
-#include <manager/manager.hpp>
 #include <math/random.hpp>
 #include <render/renderer.hpp>
 #include <scene/scene.hpp>
 #include <window/window.hpp>
 
+#include "../audio/sound_system.hpp"
+#include "../input/input_system.hpp"
+#include "../manager/get_system.hpp"
+#include "../math/random_system.hpp"
+#include "../render/render_system.hpp"
+#include "../script/script_system.hpp"
+#include "../window/window_system.hpp"
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -19,16 +24,18 @@
 #include <functional>
 #include <iostream>
 #include <string>
+#include <utility/launcher.hpp>
 
 #include <TextEditor.h>
 #include <camera/camera.hpp>
 #include <imgui.h>
+#include <input/input.hpp>
 #include <sol/sol.hpp>
 
 namespace nen {
-scene::scene(manager &_manager) : m_manager(_manager) {}
+scene::scene() {}
 
-void scene::Initialize() {
+void scene::initialize() {
   Setup();
   m_prev_tick = SDL_GetTicks();
 }
@@ -37,9 +44,9 @@ void scene::RunLoop() {
   ProcessInput();
   UpdateScene();
   // Draw sprites, meshes
-  GetRenderer().render();
-  m_manager.get_input_system().prepare_for_update();
-  m_manager.get_input_system().update();
+  get_renderer().render();
+  get_input().prepare_for_update();
+  get_input().update();
 }
 
 void scene::ProcessInput() {
@@ -56,10 +63,8 @@ void scene::ProcessInput() {
     }
   }
 
-  const input_state &state = m_manager.get_input_system().get_state();
-
-  if (state.Keyboard.get_key_state(key_code::F3) == button_state::Pressed) {
-    GetRenderer().toggle_show_imgui();
+  if (input::keyboard.get_key_state(key_code::F3) == button_state::Pressed) {
+    get_renderer().toggle_show_imgui();
   }
   if (mGameState == game_state::Quit)
     return;
@@ -74,7 +79,7 @@ void scene::UpdateScene() {
   m_prev_tick = SDL_GetTicks();
 
   this->Update(deltaTime);
-  m_manager.get_sound_system().update(deltaTime);
+  get_sound().update(deltaTime);
 }
 
 bool is_run = false;
@@ -106,7 +111,7 @@ void scene::Setup() {
   }};
   sol::state *lua = (sol::state *)get_script().get_state();
   std::string str = dstream::open_as_string(
-      asset_type::Script, m_manager.get_current_scene_number() + ".lua");
+      asset_type::Script, get_current_scene_number() + ".lua");
   lua->do_string(str.data());
   (*lua)["setup"]();
   editor.SetPalette(p);
@@ -201,13 +206,13 @@ void scene::UnloadData() { get_renderer().get_imgui_function().clear(); }
 void scene::Update(float deltaTime) {
   sol::state *lua = (sol::state *)get_script().get_state();
   (*lua)["delta_time"] = deltaTime;
-  (*lua)["keyboard"] = get_input().get_state().Keyboard;
-  (*lua)["mouse"] = get_input().get_state().Mouse;
+  (*lua)["keyboard"] = input::keyboard;
+  (*lua)["mouse"] = input::mouse;
   (*lua)["camera"] = &get_camera();
-  (*lua)["random"] = &get_random();
+  random rand;
+  (*lua)["random"] = &rand;
   if (get_renderer().is_show_imgui() &&
-      get_input().get_state().Keyboard.get_key_state(key_code::F5) ==
-          button_state::Pressed) {
+      input::keyboard.get_key_state(key_code::F5) == button_state::Pressed) {
     is_run = true;
   }
   if (is_run) {
@@ -217,15 +222,14 @@ void scene::Update(float deltaTime) {
     is_run = false;
   }
   if (get_renderer().is_show_imgui() &&
-      get_input().get_state().Keyboard.is_key_down(key_code::LCTRL) &&
-      get_input().get_state().Keyboard.get_key_state(key_code::S) ==
-          button_state::Pressed) {
+      input::keyboard.is_key_down(key_code::LCTRL) &&
+      input::keyboard.get_key_state(key_code::S) == button_state::Pressed) {
     is_save = true;
   }
   if (is_save) {
     auto str = editor.GetText();
-    dstream::write(asset_type::Script,
-                   m_manager.get_current_scene_number() + ".lua", str);
+    dstream::write(asset_type::Script, get_current_scene_number() + ".lua",
+                   str);
     std::cout << str << std::endl;
     is_save = false;
   }
@@ -234,17 +238,6 @@ void scene::Update(float deltaTime) {
 
 void scene::Shutdown() { UnloadData(); }
 
-renderer &scene::GetRenderer() { return m_manager.get_renderer(); }
-const input_state &scene::GetInput() {
-  return m_manager.get_input_system().get_state();
-}
-sound_system &scene::GetSound() { return m_manager.get_sound_system(); }
-
-script_system &scene::get_script() { return m_manager.get_script_system(); }
-texture_system &scene::get_texture() { return m_manager.get_texture_system(); }
-
-void scene::change_scene(std::string scene_name) {
-  m_manager.change_scene(scene_name);
-}
+void scene::change_scene(std::string scene_name) { change_scene(scene_name); }
 
 } // namespace nen

@@ -1,8 +1,10 @@
 #include <instancing/instancing.hpp>
 #include <instancing/instancing_wrapper.hpp>
 
+#include "../manager/get_system.hpp"
+#include "../render/render_system.hpp"
+#include "../window/window_system.hpp"
 #include <camera/camera.hpp>
-#include <manager/manager.hpp>
 #include <render/renderer.hpp>
 #include <window/window.hpp>
 
@@ -21,7 +23,7 @@ void draw2d_instancing::draw() {
   obj->texture_handle = texture_handle.handle;
   matrix4 viewproj = matrix4::identity;
 
-  auto windowsize = get_window().Size();
+  auto windowsize = get_window().size;
   viewproj.mat[0][0] = 2.f / windowsize.x;
   viewproj.mat[1][1] = 2.f / windowsize.y;
   obj->param.proj = viewproj;

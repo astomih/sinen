@@ -1,12 +1,13 @@
 #pragma once
-#include "../math/math.hpp"
-#include "../math/quaternion.hpp"
-#include "../math/vector3.hpp"
-#include "sound_event.hpp"
+#include <audio/sound_event.hpp>
+#include <math/math.hpp>
+#include <math/quaternion.hpp>
+#include <math/vector3.hpp>
 #include <memory>
 #include <string>
 #include <string_view>
 #include <unordered_map>
+
 
 namespace nen {
 class sound_system {

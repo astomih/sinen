@@ -1,16 +1,18 @@
+#include "../audio/sound_system.hpp"
+#include "../manager/get_system.hpp"
 #include "../texture/texture_system.hpp"
 #include "math/vector3.hpp"
+#include "script_system.hpp"
+#include "utility/launcher.hpp"
 #include <audio/music_system.hpp>
 #include <audio/sound_event.hpp>
-#include <audio/sound_system.hpp>
 #include <camera/camera.hpp>
 #include <draw_object/draw_object_wrapper.hpp>
 #include <font/font.hpp>
 #include <functional>
-#include <input/input_system.hpp>
+#include <input/input.hpp>
 #include <instancing/instancing_wrapper.hpp>
 #include <io/dstream.hpp>
-#include <manager/manager.hpp>
 #include <math/random.hpp>
 #include <model/model.hpp>
 #include <render/renderer.hpp>
@@ -19,14 +21,16 @@
 #include <window/window.hpp>
 
 namespace nen {
-script_system::script_system(manager &_manager)
-    : m_manager(_manager), impl(std::make_unique<implement>()) {}
-script_system::~script_system() = default;
+script::script() = default;
+script::~script() = default;
 class script_system::implement {
 public:
   sol::state state;
 };
+void *script::get_state() { return get_script().get_state(); }
 void *script_system::get_state() { return (void *)&impl->state; }
+script_system::script_system() { impl = std::make_unique<implement>(); }
+script_system::~script_system() = default;
 bool script_system::initialize() {
 #ifndef NEN_NO_USE_SCRIPT
   impl->state.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math,
@@ -216,8 +220,8 @@ bool script_system::initialize() {
   {
     auto v =
         impl->state.new_usertype<random>("nen_random", sol::no_construction());
-    v["get_int_range"] = &random::get_int_range;
-    v["get_float_range"] = &random::get_float_range;
+    v["get_int_range"] = random::get_int_range;
+    v["get_float_range"] = random::get_float_range;
   }
   {
     auto &v = impl->state;
@@ -303,6 +307,10 @@ bool script_system::initialize() {
   }
 #endif
   return true;
+}
+
+void script::do_script(std::string_view fileName) {
+  get_script().do_script(fileName);
 }
 
 void script_system::do_script(std::string_view fileName) {

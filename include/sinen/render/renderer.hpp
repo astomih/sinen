@@ -22,13 +22,11 @@ namespace nen {
 
 class renderer {
 public:
-  renderer(class manager &_manager);
+  renderer();
   ~renderer();
-  void initialize(graphics_api api);
 
-  graphics_api get_graphics_api() { return RendererAPI; }
+  graphics_api get_graphics_api();
 
-  void shutdown();
   void unload_data();
 
   void render();
@@ -41,49 +39,25 @@ public:
 
   void add_instancing(const instancing &_instancing);
 
-  void set_clear_color(const color &color) {
-    if (color.r >= 0.f && color.g >= 0.f && color.b >= 0.f)
-      clearColor = color;
-  }
+  void set_clear_color(const color &color);
 
-  color get_clear_color() { return this->clearColor; }
+  color get_clear_color();
 
-  void set_skybox_texture(texture _skybox_texture) {
-    m_skybox_texture = _skybox_texture;
-  }
+  void set_skybox_texture(texture _skybox_texture);
 
-  texture get_skybox_texture() { return m_skybox_texture; }
+  texture get_skybox_texture();
 
-  void toggle_show_imgui() { showImGui = !showImGui; }
-  bool is_show_imgui() { return showImGui; }
+  void toggle_show_imgui();
+  bool is_show_imgui();
 
   void load_shader(const shader &shaderinfo);
   void unload_shader(const shader &shaderinfo);
 
-  std::list<std::function<void()>> &get_imgui_function() {
-    return m_imgui_function;
-  }
+  std::list<std::function<void()>> &get_imgui_function();
 
-  void add_imgui_function(std::function<void()> function) {
-    m_imgui_function.push_back(function);
-  }
+  void add_imgui_function(std::function<void()> function);
 
 private:
-  class manager &m_manager;
-  void setup_shapes();
-  color clearColor = palette::Black;
-
-  // Window
-  std::shared_ptr<class window> mWindow;
-  // Renderer
-  std::unique_ptr<class gl_renderer> m_gl_renderer;
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
-  std::unique_ptr<class vk_renderer> m_vk_renderer;
-#endif
-  graphics_api RendererAPI;
-  bool showImGui;
-  std::list<std::function<void()>> m_imgui_function;
-  texture m_skybox_texture;
 };
 
 } // namespace nen

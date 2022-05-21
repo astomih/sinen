@@ -6,6 +6,9 @@
 #include <sstream>
 
 // internal
+#include "../../manager/get_system.hpp"
+#include "../../render/render_system.hpp"
+#include "../../window/window_system.hpp"
 #include "vk_base.hpp"
 #include "vk_pipeline.hpp"
 #include "vk_renderer.hpp"
@@ -17,7 +20,7 @@ vk_base::vk_base(vk_renderer *vkrenderer)
 
 void vk_base::initialize() {
   auto &w = get_window();
-  initialize_instance(w.Name().c_str());
+  initialize_instance(w.name.c_str());
   select_physical_device();
   m_graphicsQueueIndex = search_graphics_queue_index();
   create_device();

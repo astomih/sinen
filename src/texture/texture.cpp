@@ -1,9 +1,9 @@
+#include "../manager/get_system.hpp"
 #include "texture_system.hpp"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <io/dstream.hpp>
 #include <logger/logger.hpp>
-#include <manager/manager.hpp>
 #include <texture/texture.hpp>
 
 namespace nen {

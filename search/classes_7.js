@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['joystick_104',['joystick',['../classnen_1_1joystick.html',1,'nen']]],
-  ['joystick_5fstate_105',['joystick_state',['../classnen_1_1joystick__state.html',1,'nen']]]
+  ['joystick_98',['joystick',['../classnen_1_1joystick.html',1,'nen']]],
+  ['joystick_5fstate_99',['joystick_state',['../classnen_1_1joystick__state.html',1,'nen']]]
 ];

@@ -22,7 +22,7 @@ void render_system::initialize(graphics_api api) {
     m_vk_renderer->initialize();
   }
 #endif
-  if (RendererAPI == graphics_api::OpenGL) {
+  if (RendererAPI == graphics_api::OpenGL || RendererAPI == graphics_api::ES) {
     m_gl_renderer = std::make_unique<gl_renderer>();
     m_gl_renderer->initialize();
   }
@@ -43,7 +43,7 @@ void render_system::render() {
     m_vk_renderer->render();
   }
 #endif
-  if (RendererAPI == graphics_api::OpenGL) {
+  if (RendererAPI == graphics_api::OpenGL || RendererAPI == graphics_api::ES) {
     m_gl_renderer->render();
   }
 }
@@ -53,7 +53,7 @@ void render_system::draw2d(std::shared_ptr<nen::draw_object> drawObject) {
     m_vk_renderer->draw2d(drawObject);
   }
 #endif
-  if (RendererAPI == graphics_api::OpenGL) {
+  if (RendererAPI == graphics_api::OpenGL || RendererAPI == graphics_api::ES) {
     m_gl_renderer->draw2d(drawObject);
   }
 }
@@ -64,7 +64,7 @@ void render_system::draw3d(std::shared_ptr<draw_object> drawObject) {
     m_vk_renderer->draw3d(drawObject);
   }
 #endif
-  if (RendererAPI == graphics_api::OpenGL) {
+  if (RendererAPI == graphics_api::OpenGL || RendererAPI == graphics_api::ES) {
     m_gl_renderer->draw3d(drawObject);
   }
 }
@@ -77,7 +77,7 @@ void render_system::add_vertex_array(const vertex_array &vArray,
     m_vk_renderer->add_vertex_array(vArray, name);
   }
 #endif
-  if (RendererAPI == graphics_api::OpenGL) {
+  if (RendererAPI == graphics_api::OpenGL || RendererAPI == graphics_api::ES) {
     m_gl_renderer->add_vertex_array(vArray, name);
   }
 }
@@ -89,7 +89,7 @@ void render_system::update_vertex_array(const vertex_array &vArray,
     m_vk_renderer->update_vertex_array(vArray, name);
   }
 #endif
-  if (RendererAPI == graphics_api::OpenGL) {
+  if (RendererAPI == graphics_api::OpenGL || RendererAPI == graphics_api::ES) {
     m_gl_renderer->update_vertex_array(vArray, name);
   }
 }
@@ -100,7 +100,7 @@ void render_system::add_instancing(const instancing &_instancing) {
     m_vk_renderer->add_instancing(_instancing);
   }
 #endif
-  if (RendererAPI == graphics_api::OpenGL) {
+  if (RendererAPI == graphics_api::OpenGL || RendererAPI == graphics_api::ES) {
     m_gl_renderer->add_instancing(_instancing);
   }
 }

@@ -2,6 +2,12 @@
   sinen is a media library for C++20 that is being produced mainly for game development.  
 The library is planned to be used only by me, so I don't think it will have full support and documentation.
 
+## Try on Web
+[https://astomih.github.io/sinen_app/](https://astomih.github.io/sinen_app/)
+
+## Game demo
+[https://astomih.github.io/game-demo/](https://astomih.github.io/game-demo/)
+
 ## Supported platforms
 [![Windows(MinGW)](https://github.com/astomih/sinen/actions/workflows/mingw.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/mingw.yml)
 [![Linux](https://github.com/astomih/sinen/actions/workflows/linux.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/linux.yml)
@@ -50,6 +56,7 @@ Install emscripten SDK. and do this.
 - GLEW
 - ImGui
 - ImGuiColorTextEdit
+- imgui_markdown
 - Lua
 - Sol2
 - mojoAL

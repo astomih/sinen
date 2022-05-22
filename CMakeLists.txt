@@ -17,6 +17,7 @@ if(ANDROID)
       ./include/sinen
       external/ImGui/include
       external/ImGuiColorTextEdit
+      external/imgui_markdown
       external/sol2/include
       external/Lua/include
       external/mojoAL
@@ -51,6 +52,7 @@ elseif(EMSCRIPTEN)
       ./include/sinen
       external/ImGui/include
       external/ImGuiColorTextEdit
+      external/imgui_markdown
       external/sol2/include
       external/Lua/include)
   target_include_directories(nen PUBLIC ${NEN_INCLUDE_DIRECTORIES})
@@ -89,6 +91,7 @@ else()
       ./include/sinen
       external/ImGui/include
       external/ImGuiColorTextEdit
+      external/imgui_markdown
       external/sol2/include
       external/Lua/include
       external/VulkanMemoryAllocator/include

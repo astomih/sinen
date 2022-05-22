@@ -1,5 +1,5 @@
 # sinen
-  sinen is a media library for C++20 that is being produced mainly for game development.  
+sinen is a media library for C++20 that is being produced mainly for game development.  
 The library is planned to be used only by me, so I don't think it will have full support and documentation.
 
 ## Try on Web
@@ -7,6 +7,14 @@ The library is planned to be used only by me, so I don't think it will have full
 
 ## Game demo
 [https://astomih.github.io/game-demo/](https://astomih.github.io/game-demo/)
+
+## Feature
+- Lua game engine
+- Written in C++20
+- Using OpenGL/Vulkan APIs
+- Cross platform
+- Lightweight
+- Incorporates a text editor
 
 ## Supported platforms
 [![Windows(MinGW)](https://github.com/astomih/sinen/actions/workflows/mingw.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/mingw.yml)
@@ -52,6 +60,9 @@ Install emscripten SDK. and do this.
  ### Android
  Build with gradle.
 
+## Lisence
+ MIT Lisence
+
 ## Dependencies 
 - GLEW
 - ImGui
@@ -64,6 +75,3 @@ Install emscripten SDK. and do this.
 - SDL2(image,mixer,net,ttf)
 - Vulkan 1.2
 - VulkanMemoryAllocator
-  
-## Lisence
- MIT Lisence

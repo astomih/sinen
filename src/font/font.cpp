@@ -36,6 +36,7 @@ void font::unload() {
 
 void font::render_text(texture &tex, std::string_view text,
                        const color &_color) {
+  *tex.is_need_update = true;
   // My Color to SDL_Color
   SDL_Color sdlColor;
   sdlColor.r = static_cast<Uint8>(_color.r * 255);

@@ -8,10 +8,14 @@
 
 namespace nen {
 
-texture::texture() { handle = get_texture().create(); }
+texture::texture() {
+  handle = get_texture().create();
+  is_need_update = std::make_shared<bool>(false);
+}
 texture::~texture() {}
 
 bool texture::load(std::string_view fileName) {
+  *is_need_update = true;
   auto &surface = get_texture().get(handle);
   auto *src_surface = ::IMG_Load_RW(
       (SDL_RWops *)dstream::open_as_rwops(asset_type::Texture, fileName), 0);
@@ -23,6 +27,7 @@ bool texture::load(std::string_view fileName) {
   return true;
 }
 bool texture::LoadFromMemory(std::vector<char> &buffer, std::string_view ID) {
+  *is_need_update = true;
   auto &surface = get_texture().get(handle);
   auto rw = std::unique_ptr<::SDL_RWops, SDLObjectCloser>(
       ::SDL_RWFromMem(reinterpret_cast<void *>(buffer.data()), buffer.size()));
@@ -42,6 +47,7 @@ bool texture::LoadFromMemory(std::vector<char> &buffer, std::string_view ID) {
 }
 
 void texture::fill_color(const color &color) {
+  *is_need_update = true;
   auto &surface = get_texture().get(handle);
   ::SDL_FillRect(&surface, NULL,
                  ::SDL_MapRGBA(surface.format, color.r * 255, color.g * 255,

@@ -5,7 +5,6 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
-
 #if defined(EMSCRIPTEN) || defined(MOBILE)
 #include <GLES3/gl3.h>
 #include <SDL_opengles2.h>
@@ -148,7 +147,7 @@ void gl_renderer::disable_vertex_attrib_array() {
 }
 
 void gl_renderer::draw_skybox() {
-  registerTexture(get_renderer().get_skybox_texture().handle);
+  registerTexture(get_renderer().get_skybox_texture());
   auto &va = m_VertexArrays["BOX"];
   glBindVertexArray(va.vao);
   disable_vertex_attrib_array();
@@ -186,7 +185,7 @@ void gl_renderer::draw_3d() {
         }
       }
     }
-    glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->texture_handle]);
+    glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->texture_handle.handle]);
     glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indices.size(),
                    GL_UNSIGNED_INT, nullptr);
   }
@@ -201,7 +200,8 @@ void gl_renderer::draw_instancing_3d() {
     glBindVertexArray(va.vao);
     enable_vertex_attrib_array();
 
-    glBindTexture(GL_TEXTURE_2D, mTextureIDs[i.ins.object->texture_handle]);
+    glBindTexture(GL_TEXTURE_2D,
+                  mTextureIDs[i.ins.object->texture_handle.handle]);
     glDrawElementsInstanced(
         GL_TRIANGLES, m_VertexArrays[i.ins.object->vertexIndex].indices.size(),
         GL_UNSIGNED_INT, nullptr, i.ins.data.size());
@@ -212,7 +212,7 @@ void gl_renderer::draw_2d() {
   for (auto &i : mSprite2Ds) {
     glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
     disable_vertex_attrib_array();
-    glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->texture_handle]);
+    glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->texture_handle.handle]);
     if (i->shader_data.vertName == "default" &&
         i->shader_data.fragName == "default") {
       mAlphaShader.SetActive(0);
@@ -240,7 +240,8 @@ void gl_renderer::draw_instancing_2d() {
     glBindVertexArray(va.vao);
     enable_vertex_attrib_array();
 
-    glBindTexture(GL_TEXTURE_2D, mTextureIDs[i.ins.object->texture_handle]);
+    glBindTexture(GL_TEXTURE_2D,
+                  mTextureIDs[i.ins.object->texture_handle.handle]);
     glDrawElementsInstanced(
         GL_TRIANGLES, m_VertexArrays[i.ins.object->vertexIndex].indices.size(),
         GL_UNSIGNED_INT, nullptr, i.ins.data.size());
@@ -377,11 +378,14 @@ void gl_renderer::prepare() {
   }
 }
 
-void gl_renderer::registerTexture(handle_t handle) {
-  ::SDL_Surface &surf = get_texture().get(handle);
-  if (mTextureIDs.contains(handle)) {
-    glDeleteTextures(1, &mTextureIDs[handle]);
-    mTextureIDs.erase(handle);
+void gl_renderer::registerTexture(texture handle) {
+  ::SDL_Surface &surf = get_texture().get(handle.handle);
+  if (mTextureIDs.contains(handle.handle)) {
+    if (*handle.is_need_update) {
+      glDeleteTextures(1, &mTextureIDs[handle.handle]);
+      mTextureIDs.erase(handle.handle);
+    } else
+      return;
   }
   ::SDL_LockSurface(&surf);
   auto formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
@@ -401,7 +405,7 @@ void gl_renderer::registerTexture(handle_t handle) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   SDL_FreeFormat(formatbuf);
   SDL_FreeSurface(imagedata);
-  mTextureIDs[handle] = textureId;
+  mTextureIDs[handle.handle] = textureId;
 }
 
 bool gl_renderer::load_shader() {

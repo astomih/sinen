@@ -27,5 +27,6 @@ public:
   vector2 size();
 
   handle_t handle;
+  std::shared_ptr<bool> is_need_update;
 };
 } // namespace nen

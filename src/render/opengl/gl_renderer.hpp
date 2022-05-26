@@ -64,7 +64,7 @@ public:
 
   void prepare();
   void cleanup() {}
-  void registerTexture(handle_t handle);
+  void registerTexture(texture tex);
   void add_sprite2d(std::shared_ptr<draw_object> sprite2d) {
     auto iter = mSprite2Ds.begin();
     for (; iter != mSprite2Ds.end(); ++iter) {

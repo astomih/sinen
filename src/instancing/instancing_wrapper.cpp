@@ -18,9 +18,8 @@ void draw2d_instancing::draw() {
 
   instancing _instancing;
   auto obj = std::make_shared<draw_object>();
-  obj->texture_handle = this->texture_handle.handle;
+  obj->texture_handle = this->texture_handle;
   obj->vertexIndex = this->vertex_name;
-  obj->texture_handle = texture_handle.handle;
   matrix4 viewproj = matrix4::identity;
 
   auto windowsize = get_window().size;
@@ -47,6 +46,7 @@ void draw2d_instancing::draw() {
   _instancing.size = sizeof(instance_data) * _instancing.data.size();
 
   get_renderer().add_instancing(_instancing);
+  *this->texture_handle.is_need_update = false;
 }
 void draw2d_instancing::add(const vector2 &position, const float &rotation,
                             const vector2 &scale) {
@@ -62,7 +62,7 @@ draw3d_instancing::draw3d_instancing(texture texture_handle)
 void draw3d_instancing::draw() {
   instancing _instancing;
   auto obj = std::make_shared<draw_object>();
-  obj->texture_handle = this->texture_handle.handle;
+  obj->texture_handle = this->texture_handle;
   obj->vertexIndex = this->vertex_name;
   obj->param.proj = get_camera().projection;
   obj->param.view = get_camera().view;
@@ -87,6 +87,7 @@ void draw3d_instancing::draw() {
   }
   _instancing.size = sizeof(instance_data) * _instancing.data.size();
   get_renderer().add_instancing(_instancing);
+  *this->texture_handle.is_need_update = false;
 }
 void draw3d_instancing::add(const vector3 &position, const vector3 &rotation,
                             const vector3 &scale) {

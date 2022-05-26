@@ -29,7 +29,7 @@ void draw2d::draw() {
   s.mat[0][0] = scale.x * 0.5f;
   s.mat[1][1] = scale.y * 0.5f;
   obj->param.world = s * r * t;
-  obj->texture_handle = texture_handle.handle;
+  obj->texture_handle = this->texture_handle;
   matrix4 viewproj = matrix4::identity;
 
   auto windowsize = get_window().Size();
@@ -39,9 +39,11 @@ void draw2d::draw() {
   obj->param.view = matrix4::identity;
   obj->vertexIndex = this->vertex_name;
   get_renderer().draw2d(obj);
+  *this->texture_handle.is_need_update = false;
 }
 void draw3d::draw() {
   auto obj = std::make_shared<draw_object>();
+  obj->texture_handle = this->texture_handle;
   matrix4 t = matrix4::identity;
   t.mat[3][0] = position.x;
   t.mat[3][1] = position.y;
@@ -59,10 +61,10 @@ void draw3d::draw() {
   s.mat[1][1] = scale.y;
   s.mat[2][2] = scale.z;
   obj->param.world = s * r * t;
-  obj->texture_handle = texture_handle.handle;
   obj->param.proj = get_camera().projection;
   obj->param.view = get_camera().view;
   obj->vertexIndex = this->vertex_name;
   get_renderer().draw3d(obj);
+  *this->texture_handle.is_need_update = false;
 }
 } // namespace nen

@@ -11,7 +11,7 @@ public:
   draw_object() = default;
   ~draw_object() = default;
   shader_parameter param;
-  handle_t texture_handle;
+  texture texture_handle;
   std::string vertexIndex;
   shader shader_data;
   int drawOrder = 100;

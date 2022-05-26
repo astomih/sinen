@@ -422,7 +422,8 @@ void vk_renderer::draw_skybox(VkCommandBuffer command) {
   pipeline_skybox.Bind(command);
   auto t = std::make_shared<vk_draw_object>();
   t->drawObject = std::make_shared<draw_object>();
-  t->drawObject->texture_handle = get_renderer().get_skybox_texture().handle;
+  t->drawObject->texture_handle.handle =
+      get_renderer().get_skybox_texture().handle;
   t->drawObject->vertexIndex = "BOX";
   shader_parameter param;
   matrix4 w = matrix4::identity;
@@ -435,12 +436,12 @@ void vk_renderer::draw_skybox(VkCommandBuffer command) {
                                get_camera().up);
   auto &va = m_vertex_arrays["BOX"];
 
-  if (!m_image_object.contains(t->drawObject->texture_handle)) {
-    m_image_object[t->drawObject->texture_handle] =
+  if (!m_image_object.contains(t->drawObject->texture_handle.handle)) {
+    m_image_object[t->drawObject->texture_handle.handle] =
         vk_renderer::create_texture_from_surface(
-            get_texture().get(t->drawObject->texture_handle));
+            get_texture().get(t->drawObject->texture_handle.handle));
   } else {
-    update_image_object(t->drawObject->texture_handle);
+    update_image_object(t->drawObject->texture_handle.handle);
   }
   t->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
   for (auto &v : t->uniformBuffers) {
@@ -683,7 +684,7 @@ void vk_renderer::prepare_descriptor_set(
 
     VkDescriptorImageInfo descImage{};
     descImage.imageView =
-        m_image_object[sprite->drawObject->texture_handle].view;
+        m_image_object[sprite->drawObject->texture_handle.handle].view;
     descImage.sampler = m_sampler;
     descImage.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -1027,13 +1028,15 @@ void vk_renderer::update_image_object(const handle_t &handle) {
   SDL_FreeSurface(imagedata);
   m_image_object.emplace(handle, texture);
 }
-void vk_renderer::register_image_object(const handle_t &handle) {
-  if (m_image_object.contains(handle)) {
-    update_image_object(handle);
+void vk_renderer::register_image_object(texture handle) {
+  if (m_image_object.contains(handle.handle)) {
+    if (*handle.is_need_update) {
+      update_image_object(handle.handle);
+    }
     return;
   }
-  m_image_object[handle] =
-      vk_renderer::create_texture_from_surface(get_texture().get(handle));
+  m_image_object[handle.handle] = vk_renderer::create_texture_from_surface(
+      get_texture().get(handle.handle));
 }
 void vk_renderer::unregister_image_object(const handle_t &handle) {
   for (auto it = m_image_object.begin(); it != m_image_object.end(); ++it) {

@@ -6,6 +6,7 @@ public:
   script_system();
   ~script_system();
   bool initialize();
+  void shutdown();
   void *get_state();
   void do_script(std::string_view fileName);
 

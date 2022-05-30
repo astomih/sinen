@@ -3,6 +3,7 @@
 #include "../script/script.hpp"
 #include "../utility/handler.hpp"
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -96,5 +97,7 @@ private:
   void UpdateScene();
   game_state mGameState = game_state::Gameplay;
   uint32_t m_prev_tick = 0;
+  std::function<void()> m_editor;
+  std::function<void()> m_markdown;
 };
 } // namespace nen

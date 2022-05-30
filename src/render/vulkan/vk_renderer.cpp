@@ -605,7 +605,7 @@ void vk_renderer::render_imgui(VkCommandBuffer command) {
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
     ImGui::SetNextWindowSize(
         ImVec2(get_window().Size().x, get_window().Size().y), ImGuiCond_Always);
-    ImGui::Begin("Editor", nullptr,
+    ImGui::Begin(" ", nullptr,
                  ImGuiWindowFlags_HorizontalScrollbar |
                      ImGuiWindowFlags_MenuBar);
     for (auto &i : get_renderer().get_imgui_function()) {

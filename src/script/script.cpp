@@ -309,12 +309,14 @@ bool script_system::initialize() {
   return true;
 }
 
-void script::do_script(std::string_view fileName) {
-  get_script().do_script(fileName);
-}
-
 void script_system::do_script(std::string_view fileName) {
   impl->state.script(dstream::open_as_string(asset_type::Script, fileName));
+}
+
+void script_system::shutdown() { impl->state.collect_gc(); }
+
+void script::do_script(std::string_view fileName) {
+  get_script().do_script(fileName);
 }
 
 } // namespace nen

@@ -169,6 +169,17 @@ void scene::ProcessInput() {
 
   if (input::keyboard.get_key_state(key_code::F3) == button_state::Pressed) {
     get_renderer().toggle_show_imgui();
+    if (get_renderer().is_show_imgui()) {
+      get_renderer().get_imgui_function().clear();
+      get_renderer().add_imgui_function(m_editor);
+    }
+  }
+  if (input::keyboard.get_key_state(key_code::F4) == button_state::Pressed) {
+    get_renderer().toggle_show_imgui();
+    if (get_renderer().is_show_imgui()) {
+      get_renderer().get_imgui_function().clear();
+      get_renderer().add_imgui_function(m_markdown);
+    }
   }
   if (mGameState == game_state::Quit)
     return;
@@ -222,7 +233,7 @@ void scene::Setup() {
   editor.SetText(str);
   editor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
   editor.SetShowWhitespaces(true);
-  get_renderer().add_imgui_function([&]() {
+  m_editor = [&]() {
     auto cpos = editor.GetCursorPosition();
     ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s | fps:%.2f",
                 cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(),
@@ -302,7 +313,9 @@ void scene::Setup() {
       ImGui::EndMenuBar();
     }
     editor.Render("Code");
-  });
+  };
+  get_renderer().add_imgui_function(m_editor);
+  m_markdown = [&]() { MarkdownExample(); };
 }
 
 void scene::UnloadData() { get_renderer().get_imgui_function().clear(); }

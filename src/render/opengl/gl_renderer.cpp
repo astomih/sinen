@@ -108,7 +108,7 @@ void gl_renderer::render() {
         ImVec2(get_window().Size().x, get_window().Size().y), ImGuiCond_Always);
 
     // Draw ImGUI widgets.
-    ImGui::Begin("Editor", nullptr,
+    ImGui::Begin(" ", nullptr,
                  ImGuiWindowFlags_HorizontalScrollbar |
                      ImGuiWindowFlags_MenuBar);
     for (auto &i : get_renderer().get_imgui_function()) {

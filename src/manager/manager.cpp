@@ -141,6 +141,7 @@ void manager::loop() {
     m_current_scene->initialize();
     m_next_scene = nullptr;
   } else {
+    m_script_system->shutdown();
     m_current_scene->Shutdown();
     m_input_system->terminate();
     m_sound_system->terminate();

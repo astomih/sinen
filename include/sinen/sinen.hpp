@@ -2,6 +2,7 @@
 #define NEN_HPP
 #ifdef ANDROID
 #define MOBILE
+#define SINEN_NO_USE_EFFEKSEER
 #endif
 
 #include "audio/music_system.hpp"

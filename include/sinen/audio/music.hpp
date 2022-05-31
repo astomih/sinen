@@ -9,6 +9,7 @@ public:
   ~music();
 
   void play();
+  void stop();
 
   void load(std::string_view fileName);
   void unload();

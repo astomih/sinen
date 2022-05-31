@@ -4,8 +4,8 @@
 #include "math/vector3.hpp"
 #include "script_system.hpp"
 #include "utility/launcher.hpp"
-#include <audio/music_system.hpp>
-#include <audio/sound_event.hpp>
+#include <audio/music.hpp>
+#include <audio/sound.hpp>
 #include <camera/camera.hpp>
 #include <draw_object/draw_object_wrapper.hpp>
 #include <font/font.hpp>
@@ -136,6 +136,7 @@ bool script_system::initialize() {
         "nen_draw2d_instanced", sol::no_construction());
     v["draw"] = &draw2d_instancing::draw;
     v["add"] = &draw2d_instancing::add;
+    v["clear"] = &draw2d_instancing::clear;
     v["texture"] = &draw2d_instancing::texture_handle;
     v["vertex_name"] = &draw2d_instancing::vertex_name;
   }
@@ -144,6 +145,7 @@ bool script_system::initialize() {
         "nen_draw3d_instanced", sol::no_construction());
     v["draw"] = &draw3d_instancing::draw;
     v["add"] = &draw3d_instancing::add;
+    v["clear"] = &draw3d_instancing::clear;
     v["texture"] = &draw3d_instancing::texture_handle;
     v["vertex_name"] = &draw3d_instancing::vertex_name;
   }

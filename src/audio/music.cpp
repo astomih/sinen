@@ -4,7 +4,7 @@
 
 #include <SDL_mixer.h>
 
-#include <audio/music_system.hpp>
+#include <audio/music.hpp>
 #include <io/dstream.hpp>
 
 namespace nen {
@@ -15,6 +15,8 @@ music::~music() {}
 void music::set_volume(int value) { ::Mix_VolumeMusic(value); }
 
 void music::play() { ::Mix_PlayMusic((::Mix_Music *)buffer, -1); }
+
+void music::stop() { ::Mix_HaltMusic(); }
 
 void music::load(std::string_view fileName) {
   auto rwops = (SDL_RWops *)dstream::open_as_rwops(asset_type::Music, fileName);

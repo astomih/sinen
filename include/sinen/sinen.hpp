@@ -1,12 +1,11 @@
-#ifndef NEN_HPP
-#define NEN_HPP
+#ifndef SINEN_HPP
+#define SINEN_HPP
 #ifdef ANDROID
 #define MOBILE
-#define SINEN_NO_USE_EFFEKSEER
 #endif
 
-#include "audio/music_system.hpp"
-#include "audio/sound_event.hpp"
+#include "audio/music.hpp"
+#include "audio/sound.hpp"
 #include "camera/camera.hpp"
 #include "draw_object/draw_object.hpp"
 #include "draw_object/draw_object_wrapper.hpp"
@@ -44,6 +43,6 @@
 #include "window/window.hpp"
 
 #endif
-#ifdef NO_USE_NEN_NAMESPACE
+#ifdef NO_USE_SINEN_NAMESPACE
 using namespace nen;
 #endif

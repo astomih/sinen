@@ -149,6 +149,7 @@ void manager::loop() {
     m_renderer->shutdown();
     m_renderer = nullptr;
     m_window = nullptr;
+    Mix_CloseAudio();
     singleton_finalizer::Finalize();
 #ifndef EMSCRIPTEN
     std::exit(0);

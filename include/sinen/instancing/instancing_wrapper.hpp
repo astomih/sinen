@@ -13,6 +13,7 @@ public:
   void draw();
   void add(const vector2 &position, const float &rotation,
            const vector2 &scale);
+  void clear();
   std::vector<vector2> position;
   std::vector<float> rotation;
   std::vector<vector2> scale;
@@ -27,6 +28,7 @@ public:
   void draw();
   void add(const vector3 &position, const vector3 &rotation,
            const vector3 &scale);
+  void clear();
   std::vector<vector3> position;
   std::vector<vector3> rotation;
   std::vector<vector3> scale;

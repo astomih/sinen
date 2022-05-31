@@ -4,8 +4,8 @@
 
 #include "../manager/get_system.hpp"
 #include "sound_system.hpp"
-#include <audio/music_system.hpp>
-#include <audio/sound_event.hpp>
+#include <audio/music.hpp>
+#include <audio/sound.hpp>
 namespace nen {
 sound::sound() {}
 void sound::load(std::string_view file_name) {

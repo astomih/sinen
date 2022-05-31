@@ -55,6 +55,12 @@ void draw2d_instancing::add(const vector2 &position, const float &rotation,
   this->scale.push_back(scale);
 }
 
+void draw2d_instancing::clear() {
+  this->position.clear();
+  this->rotation.clear();
+  this->scale.clear();
+}
+
 draw3d_instancing::draw3d_instancing(texture texture_handle)
     : texture_handle(texture_handle) {
   vertex_name = "SPRITE";
@@ -94,5 +100,10 @@ void draw3d_instancing::add(const vector3 &position, const vector3 &rotation,
   this->position.push_back(position);
   this->rotation.push_back(rotation);
   this->scale.push_back(scale);
+}
+void draw3d_instancing::clear() {
+  this->position.clear();
+  this->rotation.clear();
+  this->scale.clear();
 }
 } // namespace nen

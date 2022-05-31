@@ -1,5 +1,5 @@
 #pragma once
-#include <audio/sound_event.hpp>
+#include <audio/sound.hpp>
 #include <math/math.hpp>
 #include <math/quaternion.hpp>
 #include <math/vector3.hpp>
@@ -7,7 +7,6 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
-
 
 namespace nen {
 class sound_system {

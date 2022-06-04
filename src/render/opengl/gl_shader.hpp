@@ -44,13 +44,13 @@ public:
    *
    * @param blockIndex 有効なBlock Index
    */
-  void SetActive(const GLuint &blockIndex);
+  void active(const GLuint &blockIndex);
 
   /**
    * @brief シェーダを無効にする
    *
    */
-  void set_disable();
+  void disable();
 
   /**
    * @brief UBO(Uniform Buffer Object)を作成
@@ -72,8 +72,8 @@ public:
    * @param data データ(size内に収めること)
    * @param offset 更新のオフセット
    */
-  void UpdateUBO(const GLuint &blockIndex, const size_t &size, const void *data,
-                 const GLsizeiptr &offset = 0);
+  void update_ubo(const GLuint &blockIndex, const size_t &size,
+                  const void *data, const GLsizeiptr &offset = 0);
 
 private:
   bool CompileShader(const std::string &fileName, GLenum shaderType,

@@ -42,6 +42,7 @@ public:
   gl_instancing(instancing ins) : ins(ins) {}
   instancing ins;
   uint32_t vbo;
+  uint32_t vao;
 };
 
 class gl_renderer {
@@ -64,36 +65,36 @@ public:
 
   void prepare();
   void cleanup() {}
-  void registerTexture(texture tex);
+  void create_texture(texture tex);
   void add_sprite2d(std::shared_ptr<draw_object> sprite2d) {
-    auto iter = mSprite2Ds.begin();
-    for (; iter != mSprite2Ds.end(); ++iter) {
+    auto iter = m_drawer_2ds.begin();
+    for (; iter != m_drawer_2ds.end(); ++iter) {
       if (sprite2d->drawOrder < (*iter)->drawOrder) {
         break;
       }
     }
-    mSprite2Ds.insert(iter, sprite2d);
+    m_drawer_2ds.insert(iter, sprite2d);
   }
   void remove_sprite2d(std::shared_ptr<draw_object> sprite2d) {
-    auto itr = std::find(mSprite2Ds.begin(), mSprite2Ds.end(), sprite2d);
-    if (itr != mSprite2Ds.end()) {
-      mSprite2Ds.erase(itr);
+    auto itr = std::find(m_drawer_2ds.begin(), m_drawer_2ds.end(), sprite2d);
+    if (itr != m_drawer_2ds.end()) {
+      m_drawer_2ds.erase(itr);
     }
   }
 
   void add_sprite3d(std::shared_ptr<draw_object> sprite3d) {
-    auto iter = mSprite3Ds.begin();
-    for (; iter != mSprite3Ds.end(); ++iter) {
+    auto iter = m_drawer_3ds.begin();
+    for (; iter != m_drawer_3ds.end(); ++iter) {
       if (sprite3d->drawOrder < (*iter)->drawOrder) {
         break;
       }
     }
-    mSprite3Ds.insert(iter, sprite3d);
+    m_drawer_3ds.insert(iter, sprite3d);
   }
   void remove_sprite3d(std::shared_ptr<draw_object> sprite3d) {
-    auto itr = std::find(mSprite3Ds.begin(), mSprite3Ds.end(), sprite3d);
-    if (itr != mSprite3Ds.end()) {
-      mSprite3Ds.erase(itr);
+    auto itr = std::find(m_drawer_3ds.begin(), m_drawer_3ds.end(), sprite3d);
+    if (itr != m_drawer_3ds.end()) {
+      m_drawer_3ds.erase(itr);
     }
   }
 
@@ -113,13 +114,13 @@ private:
   gl_shader mAlphaShader;
   gl_shader mSpriteInstanceShader;
   gl_shader mAlphaInstanceShader;
-  std::vector<std::pair<shader, gl_shader>> userPipelines;
+  std::vector<std::pair<shader, gl_shader>> m_user_pipelines;
   GLuint mTextureID;
   std::unordered_map<handle_t, GLuint> mTextureIDs;
   std::unordered_map<std::string, gl_vertex_array> m_VertexArrays;
   ::SDL_GLContext mContext;
-  std::vector<std::shared_ptr<draw_object>> mSprite2Ds;
-  std::vector<std::shared_ptr<draw_object>> mSprite3Ds;
+  std::vector<std::shared_ptr<draw_object>> m_drawer_2ds;
+  std::vector<std::shared_ptr<draw_object>> m_drawer_3ds;
   std::vector<gl_instancing> m_instancing_2d;
   std::vector<gl_instancing> m_instancing_3d;
   float prev_window_x;

@@ -87,16 +87,20 @@ void gl_renderer::render() {
   glEnable(GL_BLEND);
   glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
   glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+  disable_vertex_attrib_array();
   draw_skybox();
   glDisable(GL_BLEND);
   glEnable(GL_DEPTH_TEST);
   draw_3d();
+  enable_vertex_attrib_array();
   draw_instancing_3d();
   glDisable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
   glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
   glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+  disable_vertex_attrib_array();
   draw_2d();
+  enable_vertex_attrib_array();
   draw_instancing_2d();
   glDisable(GL_BLEND);
   ImGui_ImplOpenGL3_NewFrame();
@@ -119,13 +123,15 @@ void gl_renderer::render() {
 
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-  mSprite3Ds.clear();
-  mSprite2Ds.clear();
+  m_drawer_3ds.clear();
+  m_drawer_2ds.clear();
   for (auto &i : m_instancing_2d) {
     glDeleteBuffers(1, &i.vbo);
+    glDeleteVertexArrays(1, &i.vao);
   }
   for (auto &i : m_instancing_3d) {
     glDeleteBuffers(1, &i.vbo);
+    glDeleteVertexArrays(1, &i.vao);
   }
   m_instancing_3d.clear();
   m_instancing_2d.clear();
@@ -133,10 +139,13 @@ void gl_renderer::render() {
 }
 
 void gl_renderer::enable_vertex_attrib_array() {
-  glEnableVertexAttribArray(4);
-  glEnableVertexAttribArray(5);
-  glEnableVertexAttribArray(6);
-  glEnableVertexAttribArray(7);
+  glVertexAttribDivisor(4, 1);
+  glVertexAttribDivisor(5, 1);
+  glVertexAttribDivisor(6, 1);
+  glVertexAttribDivisor(7, 1);
+  for (size_t i = 0; i < 8; i++) {
+    glEnableVertexAttribArray(i);
+  }
 }
 
 void gl_renderer::disable_vertex_attrib_array() {
@@ -144,14 +153,17 @@ void gl_renderer::disable_vertex_attrib_array() {
   glDisableVertexAttribArray(5);
   glDisableVertexAttribArray(6);
   glDisableVertexAttribArray(7);
+  glVertexAttribDivisor(4, 0);
+  glVertexAttribDivisor(5, 0);
+  glVertexAttribDivisor(6, 0);
+  glVertexAttribDivisor(7, 0);
 }
 
 void gl_renderer::draw_skybox() {
-  registerTexture(get_renderer().get_skybox_texture());
+  create_texture(get_renderer().get_skybox_texture());
   auto &va = m_VertexArrays["BOX"];
   glBindVertexArray(va.vao);
-  disable_vertex_attrib_array();
-  mAlphaShader.SetActive(0);
+  mAlphaShader.active(0);
   shader_parameter param;
   matrix4 w = matrix4::identity;
   w[0][0] = 5;
@@ -161,70 +173,70 @@ void gl_renderer::draw_skybox() {
   param.view = matrix4::lookat(vector3(0, 0, 0),
                                get_camera().target - get_camera().position,
                                get_camera().up);
-  mAlphaShader.SetActive(0);
-  mAlphaShader.UpdateUBO(0, sizeof(shader_parameter), &param);
+  mAlphaShader.active(0);
+  mAlphaShader.update_ubo(0, sizeof(shader_parameter), &param);
   glBindTexture(GL_TEXTURE_2D,
                 mTextureIDs[get_renderer().get_skybox_texture().handle]);
+  disable_vertex_attrib_array();
   glDrawElements(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT, nullptr);
 }
 
 void gl_renderer::draw_3d() {
-  for (auto &i : mSprite3Ds) {
+  for (auto &i : m_drawer_3ds) {
     auto &va = m_VertexArrays[i->vertexIndex];
     glBindVertexArray(va.vao);
-    disable_vertex_attrib_array();
     if (i->shader_data.vertName == "default" &&
         i->shader_data.fragName == "default") {
-      mSpriteShader.SetActive(0);
-      mSpriteShader.UpdateUBO(0, sizeof(shader_parameter), &i->param);
+      mSpriteShader.active(0);
+      mSpriteShader.update_ubo(0, sizeof(shader_parameter), &i->param);
     } else {
-      for (auto &j : userPipelines) {
+      for (auto &j : m_user_pipelines) {
         if (j.first == i->shader_data) {
-          j.second.SetActive(0);
-          j.second.UpdateUBO(0, sizeof(shader_parameter), &i->param);
+          j.second.active(0);
+          j.second.update_ubo(0, sizeof(shader_parameter), &i->param);
         }
       }
     }
     glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->texture_handle.handle]);
+    disable_vertex_attrib_array();
     glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indices.size(),
                    GL_UNSIGNED_INT, nullptr);
   }
 }
 void gl_renderer::draw_instancing_3d() {
   for (auto &i : m_instancing_3d) {
-    mSpriteInstanceShader.SetActive(0);
-    mSpriteInstanceShader.UpdateUBO(0, sizeof(shader_parameter),
-                                    &i.ins.object->param);
+    mSpriteInstanceShader.active(0);
+    mSpriteInstanceShader.update_ubo(0, sizeof(shader_parameter),
+                                     &i.ins.object->param);
 
     auto &va = m_VertexArrays[i.ins.object->vertexIndex];
-    glBindVertexArray(va.vao);
-    enable_vertex_attrib_array();
+    glBindVertexArray(i.vao);
 
     glBindTexture(GL_TEXTURE_2D,
                   mTextureIDs[i.ins.object->texture_handle.handle]);
-    glDrawElementsInstanced(
-        GL_TRIANGLES, m_VertexArrays[i.ins.object->vertexIndex].indices.size(),
-        GL_UNSIGNED_INT, nullptr, i.ins.data.size());
+    enable_vertex_attrib_array();
+    glDrawElementsInstanced(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT,
+                            nullptr, i.ins.data.size());
   }
 }
 
 void gl_renderer::draw_2d() {
-  for (auto &i : mSprite2Ds) {
+  for (auto &i : m_drawer_2ds) {
     glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
-    disable_vertex_attrib_array();
     glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->texture_handle.handle]);
     if (i->shader_data.vertName == "default" &&
         i->shader_data.fragName == "default") {
-      mAlphaShader.SetActive(0);
-      mAlphaShader.UpdateUBO(0, sizeof(shader_parameter), &i->param);
+      mAlphaShader.active(0);
+      mAlphaShader.update_ubo(0, sizeof(shader_parameter), &i->param);
     } else {
-      for (auto &j : userPipelines) {
+      for (auto &j : m_user_pipelines) {
         if (j.first == i->shader_data) {
-          j.second.SetActive(0);
-          j.second.UpdateUBO(0, sizeof(shader_parameter), &i->param);
+          j.second.active(0);
+          j.second.update_ubo(0, sizeof(shader_parameter), &i->param);
         }
       }
     }
+    disable_vertex_attrib_array();
     glDrawElements(GL_TRIANGLES, m_VertexArrays[i->vertexIndex].indices.size(),
                    GL_UNSIGNED_INT, nullptr);
   }
@@ -232,19 +244,18 @@ void gl_renderer::draw_2d() {
 
 void gl_renderer::draw_instancing_2d() {
   for (auto &i : m_instancing_2d) {
-    mAlphaInstanceShader.SetActive(0);
-    mAlphaInstanceShader.UpdateUBO(0, sizeof(shader_parameter),
-                                   &i.ins.object->param);
+    mAlphaInstanceShader.active(0);
+    mAlphaInstanceShader.update_ubo(0, sizeof(shader_parameter),
+                                    &i.ins.object->param);
 
     auto &va = m_VertexArrays[i.ins.object->vertexIndex];
-    glBindVertexArray(va.vao);
-    enable_vertex_attrib_array();
+    glBindVertexArray(i.vao);
 
     glBindTexture(GL_TEXTURE_2D,
                   mTextureIDs[i.ins.object->texture_handle.handle]);
-    glDrawElementsInstanced(
-        GL_TRIANGLES, m_VertexArrays[i.ins.object->vertexIndex].indices.size(),
-        GL_UNSIGNED_INT, nullptr, i.ins.data.size());
+    enable_vertex_attrib_array();
+    glDrawElementsInstanced(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT,
+                            nullptr, i.ins.data.size());
   }
 }
 
@@ -268,7 +279,6 @@ void gl_renderer::add_vertex_array(const vertex_array &vArray,
                GL_DYNAMIC_DRAW);
 
   // Prepare vertex attribute
-  glBindBuffer(GL_ARRAY_BUFFER, vArrayGL.vbo);
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(float), 0);
   glEnableVertexAttribArray(1);
@@ -295,11 +305,11 @@ void gl_renderer::update_vertex_array(const vertex_array &vArray,
   vArrayGL.indices = vArray.indices;
   vArrayGL.vertices = vArray.vertices;
   vArrayGL.materialName = vArray.materialName;
-  // vboを更新
+  // Update vbo
   glBindBuffer(GL_ARRAY_BUFFER, m_VertexArrays[name.data()].vbo);
   auto vArraySize = vArrayGL.vertices.size() * sizeof(vertex);
   glBufferSubData(GL_ARRAY_BUFFER, 0, vArraySize, vArrayGL.vertices.data());
-  // iboを更新
+  // Update ibo
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VertexArrays[name.data()].ibo);
   glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0,
                   vArrayGL.indices.size() * sizeof(uint32_t),
@@ -307,12 +317,12 @@ void gl_renderer::update_vertex_array(const vertex_array &vArray,
 }
 
 void gl_renderer::draw2d(std::shared_ptr<class draw_object> sprite) {
-  registerTexture(sprite->texture_handle);
+  create_texture(sprite->texture_handle);
   add_sprite2d(sprite);
 }
 
 void gl_renderer::draw3d(std::shared_ptr<class draw_object> sprite) {
-  registerTexture(sprite->texture_handle);
+  create_texture(sprite->texture_handle);
   add_sprite3d(sprite);
 }
 
@@ -321,12 +331,12 @@ void gl_renderer::load_shader(const shader &shaderInfo) {
   pipeline.load(shaderInfo.vertName, shaderInfo.fragName);
   shader_parameter param;
   pipeline.create_ubo(0, sizeof(shader_parameter), &param);
-  userPipelines.emplace_back(
+  m_user_pipelines.emplace_back(
       std::pair<shader, gl_shader>{shaderInfo, pipeline});
 }
 
 void gl_renderer::unload_shader(const shader &shaderInfo) {
-  std::erase_if(userPipelines, [&](auto &x) {
+  std::erase_if(m_user_pipelines, [&](auto &x) {
     if (x.first == shaderInfo) {
       x.second.unload();
       return true;
@@ -336,23 +346,34 @@ void gl_renderer::unload_shader(const shader &shaderInfo) {
 }
 
 void gl_renderer::add_instancing(const instancing &_instancing) {
-  registerTexture(_instancing.object->texture_handle);
+  create_texture(_instancing.object->texture_handle);
+  auto ogl = gl_instancing(_instancing);
   auto &va = m_VertexArrays[_instancing.object->vertexIndex];
-  glBindVertexArray(va.vao);
+  glGenVertexArrays(1, &ogl.vao);
+  glBindVertexArray(ogl.vao);
+  auto size = 12 * sizeof(float);
+  glBindBuffer(GL_ARRAY_BUFFER, va.vbo);
+  for (size_t i = 0; i < 5; i++) {
+    glEnableVertexAttribArray(i);
+  }
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, size, 0);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, size,
+                        reinterpret_cast<void *>(sizeof(float) * 3));
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, size,
+                        reinterpret_cast<void *>(sizeof(float) * 6));
+  glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, size,
+                        reinterpret_cast<void *>(sizeof(float) * 8));
+  glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, size,
+                        reinterpret_cast<void *>(sizeof(float) * 12));
   uint32_t vbo;
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, _instancing.size, _instancing.data.data(),
                GL_DYNAMIC_DRAW);
-  auto size = sizeof(instance_data);
-  glEnableVertexAttribArray(4);
-  glEnableVertexAttribArray(5);
-  glEnableVertexAttribArray(6);
-  glEnableVertexAttribArray(7);
-  glVertexAttribDivisor(4, 1);
-  glVertexAttribDivisor(5, 1);
-  glVertexAttribDivisor(6, 1);
-  glVertexAttribDivisor(7, 1);
+  size = sizeof(instance_data);
+  for (size_t i = 4; i < 8; i++) {
+    glEnableVertexAttribArray(i);
+  }
   glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, size,
                         reinterpret_cast<void *>(sizeof(float) * 0));
   glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, size,
@@ -361,7 +382,15 @@ void gl_renderer::add_instancing(const instancing &_instancing) {
                         reinterpret_cast<void *>(sizeof(float) * 8));
   glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, size,
                         reinterpret_cast<void *>(sizeof(float) * 12));
-  auto ogl = gl_instancing(_instancing);
+  glVertexAttribDivisor(0, 0);
+  glVertexAttribDivisor(1, 0);
+  glVertexAttribDivisor(2, 0);
+  glVertexAttribDivisor(3, 0);
+  glVertexAttribDivisor(4, 1);
+  glVertexAttribDivisor(5, 1);
+  glVertexAttribDivisor(6, 1);
+  glVertexAttribDivisor(7, 1);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, va.ibo);
   ogl.vbo = vbo;
 
   if (_instancing.type == object_type::_2D) {
@@ -378,7 +407,7 @@ void gl_renderer::prepare() {
   }
 }
 
-void gl_renderer::registerTexture(texture handle) {
+void gl_renderer::create_texture(texture handle) {
   ::SDL_Surface &surf = get_texture().get(handle.handle);
   if (mTextureIDs.contains(handle.handle)) {
     if (*handle.is_need_update) {

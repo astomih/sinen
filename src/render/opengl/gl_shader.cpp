@@ -38,14 +38,14 @@ void gl_shader::unload() {
   glDeleteShader(mFragShader);
 }
 
-void gl_shader::SetActive(const GLuint &blockIndex) {
+void gl_shader::active(const GLuint &blockIndex) {
   // Set this program as the active one
   glBindBufferBase(GL_UNIFORM_BUFFER, 1, blockIndexBuffers[blockIndex]);
   glUniformBlockBinding(mShaderProgram, blockIndex, 1);
   glUseProgram(mShaderProgram);
 }
 
-void gl_shader::set_disable() { glDisable(mShaderProgram); }
+void gl_shader::disable() { glDisable(mShaderProgram); }
 bool gl_shader::CompileShader(const std::string &fileName, GLenum shaderType,
                               GLuint &outShader) {
   std::string contents;
@@ -106,8 +106,8 @@ bool gl_shader::create_ubo(const GLuint &blockIndex, const size_t &size,
   return true;
 }
 
-void gl_shader::UpdateUBO(const GLuint &blockIndex, const size_t &size,
-                          const void *data, const GLsizeiptr &offset) {
+void gl_shader::update_ubo(const GLuint &blockIndex, const size_t &size,
+                           const void *data, const GLsizeiptr &offset) {
   auto BIB = blockIndexBuffers[blockIndex];
   glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
 }

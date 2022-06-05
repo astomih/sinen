@@ -160,6 +160,7 @@ void manager::loop() {
 }
 void manager::change_scene(std::string scene_name) {
   m_current_scene->Quit();
+  m_script_system->shutdown();
   m_next_scene = std::make_unique<nen::scene>();
   m_scene_name = scene_name;
 }

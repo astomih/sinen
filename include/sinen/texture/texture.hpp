@@ -20,9 +20,12 @@ public:
   texture();
   ~texture();
   bool load(std::string_view fileName);
-  bool LoadFromMemory(std::vector<char> &buffer, std::string_view ID);
+  bool load_from_memory(std::vector<char> &buffer, std::string_view ID);
+
+  texture copy();
 
   void fill_color(const color &color);
+  void blend_color(const color &color);
 
   vector2 size();
 

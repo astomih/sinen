@@ -12,6 +12,7 @@ class mouse_state_impl {
 public:
   // Store current mouse position
   vector2 mMousePos;
+  vector2 next_pos;
   // Motion of scroll wheel
   vector2 mScrollWheel;
   // Store button data
@@ -19,6 +20,7 @@ public:
   uint32_t mPrevButtons;
   // Are we in relative mouse mode
   bool mIsRelative;
+  bool is_update_pos = false;
 };
 
 class joystick_state_impl {

@@ -147,10 +147,10 @@ void scene::initialize() {
 void scene::RunLoop() {
   ProcessInput();
   UpdateScene();
-  // Draw sprites, meshes
-  get_renderer().render();
   get_input().prepare_for_update();
   get_input().update();
+  // Draw sprites, meshes
+  get_renderer().render();
 }
 
 void scene::ProcessInput() {

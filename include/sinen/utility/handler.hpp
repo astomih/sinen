@@ -34,6 +34,9 @@ public:
     return h;
   }
   void move(handle_t handle, std::unique_ptr<T, DP> ptr) {
+    if (data.contains(handle)) {
+      data.erase(handle);
+    }
     data[handle] = std::move(ptr);
   }
   template <class S = T> S &get(const handle_t &handle) {

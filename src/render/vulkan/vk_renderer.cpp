@@ -83,14 +83,14 @@ void vk_renderer::update_vertex_array(const vertex_array &vArray,
 void vk_renderer::draw2d(std::shared_ptr<class draw_object> drawObject) {
   auto t = std::make_shared<vk_draw_object>();
   t->drawObject = drawObject;
-  register_image_object(drawObject->texture_handle);
+  create_image_object(drawObject->texture_handle);
   registerTexture(t, texture_type::Image2D);
 }
 
 void vk_renderer::draw3d(std::shared_ptr<class draw_object> sprite) {
   auto t = std::make_shared<vk_draw_object>();
   t->drawObject = sprite;
-  register_image_object(sprite->texture_handle);
+  create_image_object(sprite->texture_handle);
   registerTexture(t, texture_type::Image3D);
 }
 
@@ -124,7 +124,7 @@ void vk_renderer::unload_shader(const shader &shaderInfo) {
 void vk_renderer::add_instancing(const instancing &_instancing) {
   auto t = std::make_shared<vk_draw_object>();
   t->drawObject = _instancing.object;
-  register_image_object(_instancing.object->texture_handle);
+  create_image_object(_instancing.object->texture_handle);
   t->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
   for (auto &v : t->uniformBuffers) {
     VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
@@ -398,18 +398,18 @@ void vk_renderer::make_command(VkCommandBuffer command,
   pipeline_opaque.Bind(command);
 
   for (auto &sprite : m_draw_object_3d)
-    unregisterTexture(sprite);
+    destroy_texture(sprite);
   m_draw_object_3d.clear();
   for (auto &sprite : m_draw_object_2d)
-    unregisterTexture(sprite);
+    destroy_texture(sprite);
   m_draw_object_2d.clear();
   for (auto &_instancing : m_instancies_2d) {
-    unregisterTexture(_instancing.m_vk_draw_object);
+    destroy_texture(_instancing.m_vk_draw_object);
     destroy_buffer(_instancing.instance_buffer);
   }
   m_instancies_2d.clear();
   for (auto &_instancing : m_instancies_3d) {
-    unregisterTexture(_instancing.m_vk_draw_object);
+    destroy_texture(_instancing.m_vk_draw_object);
     destroy_buffer(_instancing.instance_buffer);
   }
   m_instancies_3d.clear();
@@ -463,7 +463,7 @@ void vk_renderer::draw_skybox(VkCommandBuffer command) {
   auto allocation = t->uniformBuffers[m_base->m_imageIndex].allocation;
   write_memory(allocation, &param, sizeof(shader_parameter));
   vkCmdDrawIndexed(command, va.indexCount, 1, 0, 0, 0);
-  unregisterTexture(t);
+  destroy_texture(t);
 }
 
 void vk_renderer::draw3d(VkCommandBuffer command) {
@@ -1028,17 +1028,17 @@ void vk_renderer::update_image_object(const handle_t &handle) {
   SDL_FreeSurface(imagedata);
   m_image_object.emplace(handle, texture);
 }
-void vk_renderer::register_image_object(texture handle) {
+void vk_renderer::create_image_object(texture handle) {
   if (m_image_object.contains(handle.handle)) {
-    if (*handle.is_need_update) {
+    if (handle.is_need_update) {
       update_image_object(handle.handle);
     }
     return;
   }
-  m_image_object[handle.handle] = vk_renderer::create_texture_from_surface(
-      get_texture().get(handle.handle));
+  m_image_object[handle.handle] =
+      create_texture_from_surface(get_texture().get(handle.handle));
 }
-void vk_renderer::unregister_image_object(const handle_t &handle) {
+void vk_renderer::destroy_image_object(const handle_t &handle) {
   for (auto it = m_image_object.begin(); it != m_image_object.end(); ++it) {
     if (it->first == handle) {
       destroy_image(it->second);
@@ -1091,7 +1091,7 @@ void vk_renderer::registerTexture(std::shared_ptr<vk_draw_object> texture,
     prepare_descriptor_set(texture);
   }
 }
-void vk_renderer::unregisterTexture(std::shared_ptr<vk_draw_object> texture) {
+void vk_renderer::destroy_texture(std::shared_ptr<vk_draw_object> texture) {
   auto device = m_base->get_vk_device();
   vkFreeDescriptorSets(device, m_descriptor_pool,
                        static_cast<uint32_t>(texture->descripterSet.size()),

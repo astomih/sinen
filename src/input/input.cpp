@@ -45,7 +45,8 @@ button_state keyboard_state::get_key_state(key_code _key_code) const {
 mouse_state::mouse_state() = default;
 
 void mouse_state::set_position(const vector2 &pos) const {
-  SDL_WarpMouseInWindow(get_window().GetSDLWindow(), pos.x, pos.y);
+  get_input().m_mouse.is_update_pos = true;
+  get_input().m_mouse.next_pos = pos;
 }
 
 const vector2 &mouse_state::get_position() const {
@@ -165,6 +166,11 @@ void input_system::update() {
 
   m_mouse.mMousePos.x = static_cast<float>(x);
   m_mouse.mMousePos.y = static_cast<float>(y);
+  if (m_mouse.is_update_pos) {
+    SDL_WarpMouseInWindow(get_window().GetSDLWindow(), m_mouse.next_pos.x,
+                          m_mouse.next_pos.y);
+    m_mouse.is_update_pos = false;
+  }
 
   // Controller
   // Buttons

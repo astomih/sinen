@@ -78,9 +78,9 @@ public:
   vk_base *GetBase() { return m_base.get(); }
   void registerTexture(std::shared_ptr<class vk_draw_object> texture,
                        texture_type type);
-  void unregisterTexture(std::shared_ptr<class vk_draw_object> texture);
-  void register_image_object(texture tex);
-  void unregister_image_object(const handle_t &handle);
+  void destroy_texture(std::shared_ptr<class vk_draw_object> texture);
+  void create_image_object(texture tex);
+  void destroy_image_object(const handle_t &handle);
   VkPipelineLayout get_pipeline_layout(const std::string &name) {
     return m_pipeline_layout.GetLayout();
   }

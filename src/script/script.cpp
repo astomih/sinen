@@ -153,6 +153,8 @@ bool script_system::initialize() {
     auto v = impl->state.new_usertype<texture>("nen_texture",
                                                sol::no_construction());
     v["fill_color"] = &texture::fill_color;
+    v["blend_color"] = &texture::blend_color;
+    v["copy"] = &texture::copy;
     v["load"] = &texture::load;
     v["size"] = &texture::size;
   }
@@ -173,6 +175,7 @@ bool script_system::initialize() {
     v["button_state"] = &mouse_state::get_button_state;
     v["is_button_down"] = &mouse_state::is_button_down;
     v["position"] = &mouse_state::get_position;
+    v["set_position"] = &mouse_state::set_position;
     v["scroll_wheel"] = &mouse_state::get_scroll_wheel;
   }
   {

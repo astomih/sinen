@@ -360,14 +360,14 @@ void vk_base::render() {
 
   auto color = get_renderer().get_clear_color();
   std::array<VkClearValue, 2> clearValue = {{
-      {color.r, color.g, color.b, 1.0f}, // for Color
-      {1.0f, 0}                          // for Depth
+      {color.r, color.g, color.b, 1.f}, // for Color
+      {1.f, 0.f}                        // for Depth
   }};
 
   VkRenderPassBeginInfo renderPassBI{};
   renderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-  renderPassBI.renderPass = m_renderPass;
-  renderPassBI.framebuffer = m_framebuffers[nextImageIndex];
+  renderPassBI.renderPass = m_vkrenderer->m_render_texture.render_pass;
+  renderPassBI.framebuffer = m_vkrenderer->m_render_texture.fb;
   renderPassBI.renderArea.offset = VkOffset2D{0, 0};
   renderPassBI.renderArea.extent = mSwapchain->GetSurfaceExtent();
   renderPassBI.pClearValues = clearValue.data();
@@ -377,13 +377,49 @@ void vk_base::render() {
   VkCommandBufferBeginInfo commandBI{};
   commandBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   auto &command = m_commands[nextImageIndex];
+  vkBeginCommandBuffer(command, &commandBI);
   m_imageIndex = nextImageIndex;
-  m_vkrenderer->make_command(command, renderPassBI, commandBI, commandFence);
-
-  // End Render Pass
+  vkCmdBeginRenderPass(command, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
+  m_vkrenderer->make_command(command);
   vkCmdEndRenderPass(command);
-  vkEndCommandBuffer(command);
 
+  {
+    VkRenderPassBeginInfo renderPassBI{};
+    renderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassBI.renderArea.offset = VkOffset2D{0, 0};
+    renderPassBI.renderArea.extent = mSwapchain->GetSurfaceExtent();
+    renderPassBI.pClearValues = clearValue.data();
+    renderPassBI.clearValueCount = uint32_t(clearValue.size());
+    renderPassBI.renderPass = m_renderPass;
+    renderPassBI.framebuffer = m_framebuffers[nextImageIndex];
+
+    VkImageMemoryBarrier imageBarrier{
+        VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+        nullptr,
+        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, // srcAccessMask
+        VK_ACCESS_SHADER_READ_BIT,            // dstAccessMask
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        VK_QUEUE_FAMILY_IGNORED,
+        VK_QUEUE_FAMILY_IGNORED,
+        m_vkrenderer->m_render_texture.color_target.image,
+        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
+    vkCmdPipelineBarrier(command, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                         VK_DEPENDENCY_BY_REGION_BIT, 0,
+                         nullptr,    // memoryBarrier
+                         0, nullptr, // bufferMemoryBarrier
+                         1, &imageBarrier);
+
+    // Begin Command Buffer
+    vkCmdBeginRenderPass(command, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
+
+    m_vkrenderer->render_to_display(command);
+
+    // End Render Pass
+    vkCmdEndRenderPass(command);
+  }
+  vkEndCommandBuffer(command);
   // Do command
   VkSubmitInfo submitInfo{};
   VkPipelineStageFlags waitStageMask =
@@ -396,9 +432,7 @@ void vk_base::render() {
   submitInfo.pWaitSemaphores = &m_presentCompletedSem;
   submitInfo.signalSemaphoreCount = 1;
   submitInfo.pSignalSemaphores = &m_renderCompletedSem;
-  vkResetFences(m_device, 1, &commandFence);
   vkQueueSubmit(m_deviceQueue, 1, &submitInfo, commandFence);
-  vkQueueWaitIdle(m_deviceQueue);
   mSwapchain->QueuePresent(m_deviceQueue, nextImageIndex, m_renderCompletedSem);
 }
 } // namespace nen

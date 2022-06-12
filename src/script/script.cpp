@@ -1,5 +1,6 @@
 #include "../audio/sound_system.hpp"
 #include "../manager/get_system.hpp"
+#include "../render/render_system.hpp"
 #include "../texture/texture_system.hpp"
 #include "math/vector3.hpp"
 #include "script_system.hpp"
@@ -70,6 +71,9 @@ bool script_system::initialize() {
   impl->state["model"] = [&]() -> model { return model(); };
   impl->state["music"] = [&]() -> music { return music(); };
   impl->state["sound"] = [&]() -> sound { return sound(); };
+  impl->state["set_skybox_texture"] = [&](texture tex) -> void {
+    get_renderer().set_skybox_texture(tex);
+  };
   impl->state["aabb"] = [&]() -> aabb { return aabb(); };
   {
     auto v = impl->state.new_usertype<vector3>("nen_vector3",
@@ -177,6 +181,7 @@ bool script_system::initialize() {
     v["position"] = &mouse_state::get_position;
     v["set_position"] = &mouse_state::set_position;
     v["scroll_wheel"] = &mouse_state::get_scroll_wheel;
+    v["hide_cursor"] = &mouse_state::hide_cursor;
   }
   {
     auto v =

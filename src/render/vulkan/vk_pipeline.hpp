@@ -9,16 +9,16 @@ namespace nen {
 class vk_pipeline {
 public:
   vk_pipeline() = default;
-  void Initialize(vk_pipeline_layout &layout, VkRenderPass renderPass,
+  void initialize(vk_pipeline_layout &layout, VkRenderPass renderPass,
                   std::vector<VkPipelineShaderStageCreateInfo> &shaderStages);
-  void Prepare(VkDevice device);
+  void prepare(VkDevice device);
   void Bind(VkCommandBuffer command);
   void Cleanup(VkDevice device);
 
-  void SetDepthTest(VkBool32 isEnable);
-  void SetDepthWrite(VkBool32 isEnable);
-  void ColorBlendFactor(VkBlendFactor src, VkBlendFactor dst);
-  void AlphaBlendFactor(VkBlendFactor src, VkBlendFactor dst);
+  void set_depth_test(VkBool32 isEnable);
+  void set_depth_write(VkBool32 isEnable);
+  void color_blend_factor(VkBlendFactor src, VkBlendFactor dst);
+  void alpha_blend_factor(VkBlendFactor src, VkBlendFactor dst);
 
 private:
   VkPipeline pipeline;

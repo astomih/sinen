@@ -5,9 +5,9 @@
 #include <fstream>
 
 namespace nen {
-VkPipelineShaderStageCreateInfo
-vk_shader::LoadModule(VkDevice device, const char *fileName,
-                      VkShaderStageFlagBits stage) {
+VkPipelineShaderStageCreateInfo vk_shader::load(VkDevice device,
+                                                const char *fileName,
+                                                VkShaderStageFlagBits stage) {
   std::string filedata =
       dstream::open_as_string(asset_type::vk_shader, fileName);
 
@@ -25,7 +25,7 @@ vk_shader::LoadModule(VkDevice device, const char *fileName,
   return shaderStageCI;
 }
 
-void vk_shader::CleanModule(
+void vk_shader::clean(
     VkDevice device,
     std::vector<VkPipelineShaderStageCreateInfo> &shaderStages) {
   for (const auto &v : shaderStages) {

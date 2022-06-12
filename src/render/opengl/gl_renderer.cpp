@@ -38,6 +38,9 @@ void gl_renderer::initialize() {
   auto &w = get_window();
   mContext = SDL_GL_CreateContext((SDL_Window *)w.GetSDLWindow());
   SDL_GL_MakeCurrent((SDL_Window *)w.GetSDLWindow(), mContext);
+  if (!SDL_GL_SetSwapInterval(1)) {
+    SDL_GL_SetSwapInterval(0);
+  }
   prev_window_x = w.Size().x;
   prev_window_y = w.Size().y;
 #if !defined EMSCRIPTEN && !defined MOBILE
@@ -125,6 +128,7 @@ void gl_renderer::render() {
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
   m_drawer_3ds.clear();
   m_drawer_2ds.clear();
+  SDL_GL_SwapWindow((SDL_Window *)w.GetSDLWindow());
   for (auto &i : m_instancing_2d) {
     glDeleteBuffers(1, &i.vbo);
     glDeleteVertexArrays(1, &i.vao);
@@ -135,7 +139,6 @@ void gl_renderer::render() {
   }
   m_instancing_3d.clear();
   m_instancing_2d.clear();
-  SDL_GL_SwapWindow((SDL_Window *)w.GetSDLWindow());
 }
 
 void gl_renderer::enable_vertex_attrib_array() {

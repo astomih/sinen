@@ -35,7 +35,7 @@ using namespace vkutil;
 constexpr int maxpoolSize = 5000;
 vk_renderer::vk_renderer()
     : m_descriptor_pool(), m_descriptor_set_layout(), m_sampler(),
-      m_base(std::make_unique<vk_base>(this)) {}
+      m_base(std::make_unique<vk_base>(this)), m_render_texture(*this) {}
 vk_renderer::~vk_renderer() = default;
 void vk_renderer::initialize() { m_base->initialize(); }
 
@@ -96,18 +96,17 @@ void vk_renderer::draw3d(std::shared_ptr<class draw_object> sprite) {
 
 void vk_renderer::load_shader(const shader &shaderInfo) {
   std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-      vk_shader::LoadModule(m_base->get_vk_device(),
-                            shaderInfo.vertName.c_str(),
-                            VK_SHADER_STAGE_VERTEX_BIT),
-      vk_shader::LoadModule(m_base->get_vk_device(),
-                            shaderInfo.fragName.c_str(),
-                            VK_SHADER_STAGE_FRAGMENT_BIT)};
+      vk_shader::load(m_base->get_vk_device(), shaderInfo.vertName.c_str(),
+                      VK_SHADER_STAGE_VERTEX_BIT),
+      vk_shader::load(m_base->get_vk_device(), shaderInfo.fragName.c_str(),
+                      VK_SHADER_STAGE_FRAGMENT_BIT)};
   vk_pipeline pipeline;
-  pipeline.Initialize(m_pipeline_layout, m_base->m_renderPass, shaderStages);
-  pipeline.ColorBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
-  pipeline.AlphaBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
-  pipeline.Prepare(m_base->get_vk_device());
-  vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
+  pipeline.initialize(m_pipeline_layout, m_render_texture.render_pass,
+                      shaderStages);
+  pipeline.color_blend_factor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
+  pipeline.alpha_blend_factor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
+  pipeline.prepare(m_base->get_vk_device());
+  vk_shader::clean(m_base->get_vk_device(), shaderStages);
   m_user_pipelines.emplace_back(
       std::pair<shader, vk_pipeline>{shaderInfo, pipeline});
 }
@@ -205,6 +204,7 @@ void vk_renderer::prepare() {
   prepare_descriptor_pool();
 
   m_sampler = create_sampler();
+
   layouts.resize(m_base->mSwapchain->GetImageCount());
   for (auto &i : layouts) {
     i = m_descriptor_set_layout;
@@ -215,74 +215,80 @@ void vk_renderer::prepare() {
                                m_base->mSwapchain->GetSurfaceExtent());
   m_pipeline_layout.Prepare(m_base->get_vk_device());
 
+  m_render_texture.prepare(get_window().size.x, get_window().size.y);
+
   // Opaque pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-        vk_shader::LoadModule(m_base->get_vk_device(), "shader.vert.spv",
-                              VK_SHADER_STAGE_VERTEX_BIT),
-        vk_shader::LoadModule(m_base->get_vk_device(), "shaderOpaque.frag.spv",
-                              VK_SHADER_STAGE_FRAGMENT_BIT)};
-    pipeline_opaque.Initialize(m_pipeline_layout, m_base->m_renderPass,
+        vk_shader::load(m_base->get_vk_device(), "shader.vert.spv",
+                        VK_SHADER_STAGE_VERTEX_BIT),
+        vk_shader::load(m_base->get_vk_device(), "shaderOpaque.frag.spv",
+                        VK_SHADER_STAGE_FRAGMENT_BIT)};
+    pipeline_opaque.initialize(m_pipeline_layout, m_render_texture.render_pass,
                                shaderStages);
-    pipeline_opaque.ColorBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
-    pipeline_opaque.AlphaBlendFactor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
-    pipeline_opaque.Prepare(m_base->get_vk_device());
-    vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
+    pipeline_opaque.color_blend_factor(VK_BLEND_FACTOR_ONE,
+                                       VK_BLEND_FACTOR_ZERO);
+    pipeline_opaque.alpha_blend_factor(VK_BLEND_FACTOR_ONE,
+                                       VK_BLEND_FACTOR_ZERO);
+    pipeline_opaque.prepare(m_base->get_vk_device());
+    vk_shader::clean(m_base->get_vk_device(), shaderStages);
   }
 
   // alpha pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-        vk_shader::LoadModule(m_base->get_vk_device(), "shader.vert.spv",
-                              VK_SHADER_STAGE_VERTEX_BIT),
-        vk_shader::LoadModule(m_base->get_vk_device(), "shaderAlpha.frag.spv",
-                              VK_SHADER_STAGE_FRAGMENT_BIT)};
-    pipeline_alpha.Initialize(m_pipeline_layout, m_base->m_renderPass,
+        vk_shader::load(m_base->get_vk_device(), "shader.vert.spv",
+                        VK_SHADER_STAGE_VERTEX_BIT),
+        vk_shader::load(m_base->get_vk_device(), "shaderAlpha.frag.spv",
+                        VK_SHADER_STAGE_FRAGMENT_BIT)};
+    pipeline_alpha.initialize(m_pipeline_layout, m_render_texture.render_pass,
                               shaderStages);
-    pipeline_alpha.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
-                                    VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
-    pipeline_alpha.AlphaBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
-                                    VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
-    pipeline_alpha.SetDepthTest(VK_TRUE);
-    pipeline_alpha.SetDepthWrite(VK_FALSE);
-    pipeline_alpha.Prepare(m_base->get_vk_device());
-    vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
+    pipeline_alpha.color_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
+                                      VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    pipeline_alpha.alpha_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
+                                      VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    pipeline_alpha.set_depth_test(VK_TRUE);
+    pipeline_alpha.set_depth_write(VK_FALSE);
+    pipeline_alpha.prepare(m_base->get_vk_device());
+    vk_shader::clean(m_base->get_vk_device(), shaderStages);
   }
   // 2D pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-        vk_shader::LoadModule(m_base->get_vk_device(), "shader.vert.spv",
-                              VK_SHADER_STAGE_VERTEX_BIT),
-        vk_shader::LoadModule(m_base->get_vk_device(), "shaderAlpha.frag.spv",
-                              VK_SHADER_STAGE_FRAGMENT_BIT)};
-    pipeline_2d.Initialize(m_pipeline_layout, m_base->m_renderPass,
+        vk_shader::load(m_base->get_vk_device(), "shader.vert.spv",
+                        VK_SHADER_STAGE_VERTEX_BIT),
+        vk_shader::load(m_base->get_vk_device(), "shaderAlpha.frag.spv",
+                        VK_SHADER_STAGE_FRAGMENT_BIT)};
+    pipeline_2d.initialize(m_pipeline_layout, m_render_texture.render_pass,
                            shaderStages);
-    pipeline_2d.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
-                                 VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
-    pipeline_2d.AlphaBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
-                                 VK_BLEND_FACTOR_ZERO);
-    pipeline_2d.SetDepthTest(VK_FALSE);
-    pipeline_2d.SetDepthWrite(VK_FALSE);
-    pipeline_2d.Prepare(m_base->get_vk_device());
-    vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
+
+    pipeline_2d.color_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
+                                   VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    pipeline_2d.alpha_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
+                                   VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    pipeline_2d.set_depth_test(VK_FALSE);
+    pipeline_2d.set_depth_write(VK_FALSE);
+    pipeline_2d.prepare(m_base->get_vk_device());
+    vk_shader::clean(m_base->get_vk_device(), shaderStages);
   }
   // SkyBox pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-        vk_shader::LoadModule(m_base->get_vk_device(), "shader.vert.spv",
-                              VK_SHADER_STAGE_VERTEX_BIT),
-        vk_shader::LoadModule(m_base->get_vk_device(), "shaderAlpha.frag.spv",
-                              VK_SHADER_STAGE_FRAGMENT_BIT)};
-    pipeline_skybox.Initialize(m_pipeline_layout, m_base->m_renderPass,
+        vk_shader::load(m_base->get_vk_device(), "shader.vert.spv",
+                        VK_SHADER_STAGE_VERTEX_BIT),
+        vk_shader::load(m_base->get_vk_device(), "shaderAlpha.frag.spv",
+                        VK_SHADER_STAGE_FRAGMENT_BIT)};
+    pipeline_skybox.initialize(m_pipeline_layout, m_render_texture.render_pass,
                                shaderStages);
-    pipeline_skybox.ColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
-                                     VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
-    pipeline_skybox.AlphaBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
-                                     VK_BLEND_FACTOR_ZERO);
-    pipeline_skybox.SetDepthTest(VK_FALSE);
-    pipeline_skybox.SetDepthWrite(VK_FALSE);
-    pipeline_skybox.Prepare(m_base->get_vk_device());
-    vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
+
+    pipeline_skybox.color_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
+                                       VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    pipeline_skybox.alpha_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
+                                       VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    pipeline_skybox.set_depth_test(VK_FALSE);
+    pipeline_skybox.set_depth_write(VK_FALSE);
+    pipeline_skybox.prepare(m_base->get_vk_device());
+    vk_shader::clean(m_base->get_vk_device(), shaderStages);
   }
   //
   // Instancing pipelines
@@ -290,59 +296,75 @@ void vk_renderer::prepare() {
   // Opaque pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-        vk_shader::LoadModule(m_base->get_vk_device(),
-                              "shader_instance.vert.spv",
-                              VK_SHADER_STAGE_VERTEX_BIT),
-        vk_shader::LoadModule(m_base->get_vk_device(), "shaderOpaque.frag.spv",
-                              VK_SHADER_STAGE_FRAGMENT_BIT)};
-    pipeline_instancing_opaque.Initialize(m_pipeline_layout,
-                                          m_base->m_renderPass, shaderStages);
-    pipeline_instancing_opaque.ColorBlendFactor(VK_BLEND_FACTOR_ONE,
-                                                VK_BLEND_FACTOR_ZERO);
-    pipeline_instancing_opaque.AlphaBlendFactor(VK_BLEND_FACTOR_ONE,
-                                                VK_BLEND_FACTOR_ZERO);
-    pipeline_instancing_opaque.Prepare(m_base->get_vk_device());
-    vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
+        vk_shader::load(m_base->get_vk_device(), "shader_instance.vert.spv",
+                        VK_SHADER_STAGE_VERTEX_BIT),
+        vk_shader::load(m_base->get_vk_device(), "shaderOpaque.frag.spv",
+                        VK_SHADER_STAGE_FRAGMENT_BIT)};
+    pipeline_instancing_opaque.initialize(
+        m_pipeline_layout, m_render_texture.render_pass, shaderStages);
+    pipeline_instancing_opaque.color_blend_factor(VK_BLEND_FACTOR_ONE,
+                                                  VK_BLEND_FACTOR_ZERO);
+    pipeline_instancing_opaque.alpha_blend_factor(VK_BLEND_FACTOR_ONE,
+                                                  VK_BLEND_FACTOR_ZERO);
+    pipeline_instancing_opaque.prepare(m_base->get_vk_device());
+    vk_shader::clean(m_base->get_vk_device(), shaderStages);
   }
 
   // alpha pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-        vk_shader::LoadModule(m_base->get_vk_device(),
-                              "shader_instance.vert.spv",
-                              VK_SHADER_STAGE_VERTEX_BIT),
-        vk_shader::LoadModule(m_base->get_vk_device(), "shaderAlpha.frag.spv",
-                              VK_SHADER_STAGE_FRAGMENT_BIT)};
-    pipeline_instancing_alpha.Initialize(m_pipeline_layout,
-                                         m_base->m_renderPass, shaderStages);
-    pipeline_instancing_alpha.ColorBlendFactor(
+        vk_shader::load(m_base->get_vk_device(), "shader_instance.vert.spv",
+                        VK_SHADER_STAGE_VERTEX_BIT),
+        vk_shader::load(m_base->get_vk_device(), "shaderAlpha.frag.spv",
+                        VK_SHADER_STAGE_FRAGMENT_BIT)};
+    pipeline_instancing_alpha.initialize(
+        m_pipeline_layout, m_render_texture.render_pass, shaderStages);
+    pipeline_instancing_alpha.color_blend_factor(
         VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
-    pipeline_instancing_alpha.AlphaBlendFactor(
+    pipeline_instancing_alpha.alpha_blend_factor(
         VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
-    pipeline_instancing_alpha.SetDepthTest(VK_TRUE);
-    pipeline_instancing_alpha.SetDepthWrite(VK_FALSE);
-    pipeline_instancing_alpha.Prepare(m_base->get_vk_device());
-    vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
+    pipeline_instancing_alpha.set_depth_test(VK_TRUE);
+    pipeline_instancing_alpha.set_depth_write(VK_FALSE);
+    pipeline_instancing_alpha.prepare(m_base->get_vk_device());
+    vk_shader::clean(m_base->get_vk_device(), shaderStages);
   }
   // 2D pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-        vk_shader::LoadModule(m_base->get_vk_device(),
-                              "shader_instance.vert.spv",
-                              VK_SHADER_STAGE_VERTEX_BIT),
-        vk_shader::LoadModule(m_base->get_vk_device(), "shaderAlpha.frag.spv",
-                              VK_SHADER_STAGE_FRAGMENT_BIT)};
-    pipeline_instancing_2d.Initialize(m_pipeline_layout, m_base->m_renderPass,
-                                      shaderStages);
-    pipeline_instancing_2d.ColorBlendFactor(
+        vk_shader::load(m_base->get_vk_device(), "shader_instance.vert.spv",
+                        VK_SHADER_STAGE_VERTEX_BIT),
+        vk_shader::load(m_base->get_vk_device(), "shaderAlpha.frag.spv",
+                        VK_SHADER_STAGE_FRAGMENT_BIT)};
+    pipeline_instancing_2d.initialize(
+        m_pipeline_layout, m_render_texture.render_pass, shaderStages);
+    pipeline_instancing_2d.color_blend_factor(
         VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
-    pipeline_instancing_2d.AlphaBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA,
-                                            VK_BLEND_FACTOR_ZERO);
-    pipeline_instancing_2d.SetDepthTest(VK_FALSE);
-    pipeline_instancing_2d.SetDepthWrite(VK_FALSE);
-    pipeline_instancing_2d.Prepare(m_base->get_vk_device());
-    vk_shader::CleanModule(m_base->get_vk_device(), shaderStages);
+    pipeline_instancing_2d.alpha_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
+                                              VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    pipeline_instancing_2d.set_depth_test(VK_FALSE);
+    pipeline_instancing_2d.set_depth_write(VK_FALSE);
+    pipeline_instancing_2d.prepare(m_base->get_vk_device());
+    vk_shader::clean(m_base->get_vk_device(), shaderStages);
   }
+  // render texture pipeline
+  {
+    std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
+        vk_shader::load(m_base->get_vk_device(), "shader.vert.spv",
+                        VK_SHADER_STAGE_VERTEX_BIT),
+        vk_shader::load(m_base->get_vk_device(), "render_texture.frag.spv",
+                        VK_SHADER_STAGE_FRAGMENT_BIT)};
+    m_render_texture.pipeline.initialize(m_pipeline_layout,
+                                         m_base->m_renderPass, shaderStages);
+    m_render_texture.pipeline.color_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
+                                                 VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    m_render_texture.pipeline.alpha_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
+                                                 VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    m_render_texture.pipeline.set_depth_test(VK_FALSE);
+    m_render_texture.pipeline.set_depth_write(VK_FALSE);
+    m_render_texture.pipeline.prepare(m_base->get_vk_device());
+    vk_shader::clean(m_base->get_vk_device(), shaderStages);
+  }
+
   prepare_imgui();
 }
 void vk_renderer::cleanup() {
@@ -371,22 +393,8 @@ void vk_renderer::cleanup() {
                                              &vkDestroyDescriptorSetLayout);
 }
 
-void vk_renderer::make_command(VkCommandBuffer command,
-                               VkRenderPassBeginInfo &ri,
-                               VkCommandBufferBeginInfo &ci, VkFence &fence) {
-  vkBeginCommandBuffer(command, &ci);
-  auto viewport = VkViewport{
-      .x = 0.f,
-      .y = static_cast<float>(m_base->mSwapchain->GetSurfaceExtent().height),
-      .width = static_cast<float>(m_base->mSwapchain->GetSurfaceExtent().width),
-      .height =
-          -static_cast<float>(m_base->mSwapchain->GetSurfaceExtent().height),
-      .minDepth = 0.f,
-      .maxDepth = 1.f};
-  VkRect2D scissor{{0, 0},
-                   {(m_base->mSwapchain->GetSurfaceExtent().width),
-                    (m_base->mSwapchain->GetSurfaceExtent().height)}};
-  vkCmdBeginRenderPass(command, &ri, VK_SUBPASS_CONTENTS_INLINE);
+void vk_renderer::make_command(VkCommandBuffer command) {
+
   /* skybox
    */
   draw_skybox(command);
@@ -394,7 +402,6 @@ void vk_renderer::make_command(VkCommandBuffer command,
   draw_instancing_3d(command);
   draw2d(command);
   draw_instancing_2d(command);
-  render_imgui(command);
   pipeline_opaque.Bind(command);
 
   for (auto &sprite : m_draw_object_3d)
@@ -413,10 +420,6 @@ void vk_renderer::make_command(VkCommandBuffer command,
     destroy_buffer(_instancing.instance_buffer);
   }
   m_instancies_3d.clear();
-
-  vkCmdSetScissor(command, 0, 1, &scissor);
-  vkCmdSetViewport(command, 0, 1, &viewport);
-  vkWaitForFences(m_base->get_vk_device(), 1, &fence, VK_TRUE, UINT64_MAX);
 }
 void vk_renderer::draw_skybox(VkCommandBuffer command) {
   pipeline_skybox.Bind(command);
@@ -530,6 +533,30 @@ void vk_renderer::draw2d(VkCommandBuffer command) {
         command, m_vertex_arrays[sprite->drawObject->vertexIndex].indexCount, 1,
         0, 0, 0);
   }
+}
+
+void vk_renderer::render_to_display(VkCommandBuffer command) {
+  m_render_texture.pipeline.Bind(command);
+  VkDeviceSize offset = 0;
+  auto &sprite = m_render_texture.drawer;
+  vkCmdBindVertexBuffers(
+      command, 0, 1, &m_vertex_arrays["SPRITE"].vertexBuffer.buffer, &offset);
+  vkCmdBindIndexBuffer(command, m_vertex_arrays["SPRITE"].indexBuffer.buffer,
+                       offset, VK_INDEX_TYPE_UINT32);
+
+  // Set descriptors
+  vkCmdBindDescriptorSets(
+      command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
+      0, 1, &sprite.descripterSet[m_base->m_imageIndex], 0, nullptr);
+  auto allocation = sprite.uniformBuffers[m_base->m_imageIndex].allocation;
+
+  sprite.drawObject->param.proj = matrix4::identity;
+  sprite.drawObject->param.view = matrix4::identity;
+  sprite.drawObject->param.world = matrix4::identity;
+  write_memory(allocation, &sprite.drawObject->param, sizeof(shader_parameter));
+
+  vkCmdDrawIndexed(command, m_vertex_arrays["SPRITE"].indexCount, 1, 0, 0, 0);
+  render_imgui(command);
 }
 
 void vk_renderer::write_memory(VmaAllocation allocation, const void *data,
@@ -740,7 +767,6 @@ VkSampler vk_renderer::create_sampler() {
 
 vk_image_object vk_renderer::create_texture(SDL_Surface *imagedata,
                                             VkFormat format) {
-  vk_buffer_object stagingBuffer;
   vk_image_object texture{};
   int width = imagedata->w, height = imagedata->h;
   auto *pImage = imagedata->pixels;
@@ -764,44 +790,13 @@ vk_image_object vk_renderer::create_texture(SDL_Surface *imagedata,
   }
 
   {
+    vk_buffer_object stagingBuffer;
     uint32_t imageSize = imagedata->h * imagedata->w * 4;
     stagingBuffer = create_buffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
     write_memory(stagingBuffer.allocation, pImage, imageSize);
+    destroy_buffer(stagingBuffer);
   }
-
-  VkBufferImageCopy copyRegion{};
-  copyRegion.imageExtent = {uint32_t(width), uint32_t(height), 1};
-  copyRegion.imageSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
-  VkCommandBuffer command;
-  {
-    VkCommandBufferAllocateInfo ai{};
-    ai.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    ai.commandBufferCount = 1;
-    ai.commandPool = m_base->m_commandPool;
-    ai.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    vkAllocateCommandBuffers(m_base->get_vk_device(), &ai, &command);
-  }
-
-  VkCommandBufferBeginInfo commandBI{};
-  commandBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-  vkBeginCommandBuffer(command, &commandBI);
-  set_image_memory_barrier(command, texture.image, VK_IMAGE_LAYOUT_UNDEFINED,
-                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-  vkCmdCopyBufferToImage(command, stagingBuffer.buffer, texture.image,
-                         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
-
-  set_image_memory_barrier(command, texture.image,
-                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                           VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-  vkEndCommandBuffer(command);
-
-  VkSubmitInfo submitInfo{};
-  submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-  submitInfo.commandBufferCount = 1;
-  submitInfo.pCommandBuffers = &command;
-  vkQueueSubmit(m_base->get_vk_queue(), 1, &submitInfo,
-                m_base->m_fences[m_base->m_imageIndex]);
 
   {
     // Create view for texture reference
@@ -815,14 +810,12 @@ vk_image_object vk_renderer::create_texture(SDL_Surface *imagedata,
         .g = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_G,
         .b = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_B,
         .a = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_A,
+
     };
 
     ci.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
     vkCreateImageView(m_base->get_vk_device(), &ci, nullptr, &texture.view);
   }
-  vkFreeCommandBuffers(m_base->get_vk_device(), m_base->m_commandPool, 1,
-                       &command);
-  destroy_buffer(stagingBuffer);
   SDL_FreeSurface(imagedata);
   return texture;
 }

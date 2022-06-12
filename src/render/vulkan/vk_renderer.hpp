@@ -7,8 +7,10 @@
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 
 #include "vk_base.hpp"
+#include "vk_object.hpp"
 #include "vk_pipeline.hpp"
 #include "vk_pipeline_layout.hpp"
+#include "vk_render_texture.hpp"
 #include <array>
 #include <draw_object/draw_object.hpp>
 #include <string_view>
@@ -16,23 +18,6 @@
 #include <vk_mem_alloc.h>
 
 namespace nen {
-struct vk_buffer_object {
-  VkBuffer buffer;
-  VmaAllocation allocation;
-};
-struct vk_image_object {
-  VkImage image;
-  VmaAllocation allocation;
-  VkImageView view;
-};
-
-class vk_draw_object {
-public:
-  std::vector<VkDescriptorSet> descripterSet;
-  std::vector<vk_buffer_object> uniformBuffers;
-  bool isInstance = false;
-  std::shared_ptr<nen::draw_object> drawObject;
-};
 
 struct vk_vertex_array : public vertex_array {
   vk_buffer_object vertexBuffer;
@@ -54,6 +39,7 @@ public:
   void initialize();
   void shutdown();
   void render();
+  void render_to_display(VkCommandBuffer command);
 
   void add_vertex_array(const vertex_array &vArray, std::string_view name);
   void update_vertex_array(const vertex_array &vArray, std::string_view name);
@@ -68,25 +54,26 @@ public:
 
   void prepare();
   void cleanup();
-  void make_command(VkCommandBuffer command, VkRenderPassBeginInfo &ri,
-                    VkCommandBufferBeginInfo &ci, VkFence &fence);
+  void make_command(VkCommandBuffer command);
   void draw3d(VkCommandBuffer);
   void draw2d(VkCommandBuffer);
   vk_buffer_object create_buffer(
       uint32_t size, VkBufferUsageFlags usage,
       VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-  vk_base *GetBase() { return m_base.get(); }
+  vk_base &get_base() { return *m_base; }
   void registerTexture(std::shared_ptr<class vk_draw_object> texture,
                        texture_type type);
   void destroy_texture(std::shared_ptr<class vk_draw_object> texture);
   void create_image_object(texture tex);
   void destroy_image_object(const handle_t &handle);
-  VkPipelineLayout get_pipeline_layout(const std::string &name) {
+  VkPipelineLayout get_pipeline_layout() {
     return m_pipeline_layout.GetLayout();
   }
-  VkDescriptorSetLayout get_descriptor_set_layout(const std::string &name) {
+  VkDescriptorSetLayout get_descriptor_set_layout() {
     return m_descriptor_set_layout;
   }
+  std::vector<VkDescriptorSetLayout> &get_layouts() { return layouts; };
+
   VkRenderPass get_render_pass(const std::string &name);
   VkDescriptorPool get_descriptor_pool() const { return m_descriptor_pool; }
   VkDevice get_device();
@@ -97,6 +84,7 @@ public:
   void write_memory(VmaAllocation, const void *data, size_t size);
 
   VmaAllocator allocator{};
+  vk_render_texture m_render_texture;
 
 private:
   std::unique_ptr<class vk_base> m_base;

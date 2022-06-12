@@ -8,11 +8,9 @@ class vk_shader {
 public:
   vk_shader() = default;
   static VkPipelineShaderStageCreateInfo
-  LoadModule(VkDevice device, const char *fileName,
-             VkShaderStageFlagBits stage);
-  static void
-  CleanModule(VkDevice device,
-              std::vector<VkPipelineShaderStageCreateInfo> &shaderStages);
+  load(VkDevice device, const char *fileName, VkShaderStageFlagBits stage);
+  static void clean(VkDevice device,
+                    std::vector<VkPipelineShaderStageCreateInfo> &shaderStages);
 
 private:
 };

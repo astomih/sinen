@@ -4,7 +4,7 @@
 #include "vk_util.hpp"
 
 namespace nen {
-void vk_pipeline::Initialize(
+void vk_pipeline::initialize(
     vk_pipeline_layout &layout, VkRenderPass renderPass,
     std::vector<VkPipelineShaderStageCreateInfo> &shaderStages) {
   // Blending settings
@@ -52,7 +52,7 @@ void vk_pipeline::Initialize(
       .renderPass = renderPass,
   };
 }
-void vk_pipeline::Prepare(VkDevice device) {
+void vk_pipeline::prepare(VkDevice device) {
   VkResult result = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1,
                                               &graphicsCI, nullptr, &pipeline);
 }
@@ -66,18 +66,18 @@ void vk_pipeline::Cleanup(VkDevice device) {
                                                &vkDestroyPipeline);
 }
 
-void vk_pipeline::SetDepthTest(VkBool32 isEnable) {
+void vk_pipeline::set_depth_test(VkBool32 isEnable) {
   depthStencilCI.depthTestEnable = isEnable;
 }
-void vk_pipeline::SetDepthWrite(VkBool32 isEnable) {
+void vk_pipeline::set_depth_write(VkBool32 isEnable) {
   depthStencilCI.depthWriteEnable = isEnable;
 }
 
-void vk_pipeline::ColorBlendFactor(VkBlendFactor src, VkBlendFactor dst) {
+void vk_pipeline::color_blend_factor(VkBlendFactor src, VkBlendFactor dst) {
   blendAttachment.srcColorBlendFactor = src;
   blendAttachment.dstColorBlendFactor = dst;
 }
-void vk_pipeline::AlphaBlendFactor(VkBlendFactor src, VkBlendFactor dst) {
+void vk_pipeline::alpha_blend_factor(VkBlendFactor src, VkBlendFactor dst) {
   blendAttachment.srcAlphaBlendFactor = src;
   blendAttachment.dstAlphaBlendFactor = dst;
 }

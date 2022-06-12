@@ -47,9 +47,21 @@ mouse_state::mouse_state() = default;
 void mouse_state::set_position(const vector2 &pos) const {
   get_input().m_mouse.is_update_pos = true;
   get_input().m_mouse.next_pos = pos;
+  SDL_WarpMouseInWindow(get_window().GetSDLWindow(),
+                        input_system::m_mouse.next_pos.x,
+                        input_system::m_mouse.next_pos.y);
 }
 
 const vector2 &mouse_state::get_position() const {
+
+  int x = 0, y = 0;
+  if (input_system::m_mouse.mIsRelative) {
+    SDL_GetRelativeMouseState(&x, &y);
+  } else {
+    SDL_GetMouseState(&x, &y);
+  }
+  input_system::m_mouse.mMousePos.x = static_cast<float>(x);
+  input_system::m_mouse.mMousePos.y = static_cast<float>(y);
   return input_system::m_mouse.mMousePos;
 }
 
@@ -162,14 +174,6 @@ void input_system::update() {
     m_mouse.mCurrButtons = SDL_GetRelativeMouseState(&x, &y);
   } else {
     m_mouse.mCurrButtons = SDL_GetMouseState(&x, &y);
-  }
-
-  m_mouse.mMousePos.x = static_cast<float>(x);
-  m_mouse.mMousePos.y = static_cast<float>(y);
-  if (m_mouse.is_update_pos) {
-    SDL_WarpMouseInWindow(get_window().GetSDLWindow(), m_mouse.next_pos.x,
-                          m_mouse.next_pos.y);
-    m_mouse.is_update_pos = false;
   }
 
   // Controller

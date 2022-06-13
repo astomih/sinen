@@ -326,8 +326,6 @@ void scene::Update(float deltaTime) {
   (*lua)["keyboard"] = input::keyboard;
   (*lua)["mouse"] = input::mouse;
   (*lua)["camera"] = &get_camera();
-  random rand;
-  (*lua)["random"] = &rand;
   if (get_renderer().is_show_imgui() &&
       input::keyboard.get_key_state(key_code::F5) == button_state::Pressed) {
     is_run = true;

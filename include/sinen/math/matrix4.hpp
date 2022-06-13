@@ -169,6 +169,8 @@ public:
   static matrix4 perspective(const float angle, const float aspect,
                              const float near, const float far);
 
+  static matrix4 ortho(float width, float height, float near, float far);
+
   static const matrix4 identity;
 };
 } // namespace nen

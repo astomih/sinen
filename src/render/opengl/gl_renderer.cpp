@@ -79,12 +79,13 @@ void gl_renderer::shutdown() {}
 void gl_renderer::render() {
   auto &w = get_window();
   if (w.Size().x != prev_window_x || w.Size().y != prev_window_y) {
-    logger::info("window size.x: ", w.Size().x, " window size.y: ", w.Size().y);
     glViewport(0, 0, w.Size().x, w.Size().y);
     prev_window_x = w.Size().x;
     prev_window_y = w.Size().y;
   }
   auto color = get_renderer().get_clear_color();
+  glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+  glViewport(0, 0, get_window().size.x, -get_window().size.y);
   glClearColor(color.r, color.g, color.b, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glEnable(GL_BLEND);
@@ -106,6 +107,16 @@ void gl_renderer::render() {
   enable_vertex_attrib_array();
   draw_instancing_2d();
   glDisable(GL_BLEND);
+  glFlush();
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glBindVertexArray(m_VertexArrays["SPRITE"].vao);
+  glBindTexture(GL_TEXTURE_2D, rendertexture);
+  m_render_texture_shader.active(0);
+  shader_parameter param;
+  m_render_texture_shader.update_ubo(0, sizeof(shader_parameter), &param);
+  disable_vertex_attrib_array();
+  glDrawElements(GL_TRIANGLES, m_VertexArrays["SPRITE"].indices.size(),
+                 GL_UNSIGNED_INT, nullptr);
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplSDL2_NewFrame((SDL_Window *)w.GetSDLWindow());
   ImGui::NewFrame();
@@ -408,6 +419,31 @@ void gl_renderer::prepare() {
   if (!load_shader()) {
     std::cout << "failed to loads shader" << std::endl;
   }
+  prepare_render_texture();
+}
+
+void gl_renderer::prepare_render_texture() {
+
+  glGenFramebuffers(1, &framebuffer);
+  glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+  glGenTextures(1, &rendertexture);
+  glBindTexture(GL_TEXTURE_2D, rendertexture);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, get_window().size.x,
+               get_window().size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+  glGenRenderbuffers(1, &depthbuffer);
+  glBindRenderbuffer(GL_RENDERBUFFER, depthbuffer);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
+                        get_window().size.x, get_window().size.y);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                            GL_RENDERBUFFER, depthbuffer);
+
+  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rendertexture, 0);
 }
 
 void gl_renderer::create_texture(texture handle) {
@@ -442,6 +478,11 @@ void gl_renderer::create_texture(texture handle) {
 
 bool gl_renderer::load_shader() {
   shader_parameter param{};
+  if (!m_render_texture_shader.load("render_texture.vert",
+                                    "render_texture.frag")) {
+    return false;
+  }
+  m_render_texture_shader.create_ubo(0, sizeof(shader_parameter), &param);
   if (!mSpriteShader.load("shader.vert", "shader.frag")) {
     return false;
   }

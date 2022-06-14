@@ -105,8 +105,13 @@ private:
   void draw_2d();
   void draw_instancing_2d();
   void draw_instancing_3d();
+  void prepare_render_texture();
   void enable_vertex_attrib_array();
   void disable_vertex_attrib_array();
+
+  uint32_t framebuffer;
+  uint32_t rendertexture;
+  uint32_t depthbuffer;
 
   std::string vertexID;
 
@@ -114,6 +119,7 @@ private:
   gl_shader mAlphaShader;
   gl_shader mSpriteInstanceShader;
   gl_shader mAlphaInstanceShader;
+  gl_shader m_render_texture_shader;
   std::vector<std::pair<shader, gl_shader>> m_user_pipelines;
   GLuint mTextureID;
   std::unordered_map<handle_t, GLuint> mTextureIDs;

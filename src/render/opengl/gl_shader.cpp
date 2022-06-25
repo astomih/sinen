@@ -101,7 +101,7 @@ bool gl_shader::create_ubo(const GLuint &blockIndex, const size_t &size,
   glGenBuffers(1, &BIB);
   glBindBuffer(GL_UNIFORM_BUFFER, BIB);
   glBufferData(GL_UNIFORM_BUFFER, size, data, GL_DYNAMIC_DRAW);
-  glUniformBlockBinding(mShaderProgram, blockIndex, 1);
+  glUniformBlockBinding(mShaderProgram, blockIndex, 5);
   blockIndexBuffers.emplace(blockIndex, BIB);
   return true;
 }

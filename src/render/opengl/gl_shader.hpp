@@ -74,6 +74,7 @@ public:
    */
   void update_ubo(const GLuint &blockIndex, const size_t &size,
                   const void *data, const GLsizeiptr &offset = 0);
+  GLuint program() const { return mShaderProgram; }
 
 private:
   bool CompileShader(const std::string &fileName, GLenum shaderType,

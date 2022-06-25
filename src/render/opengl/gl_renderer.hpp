@@ -45,6 +45,13 @@ public:
   uint32_t vao;
 };
 
+class gl_shader_parameter {
+public:
+  shader_parameter param;
+  matrix4 view;
+  matrix4 projection;
+};
+
 class gl_renderer {
 public:
   gl_renderer();
@@ -106,12 +113,16 @@ private:
   void draw_instancing_2d();
   void draw_instancing_3d();
   void prepare_render_texture();
+  void prepare_depth_texture();
   void enable_vertex_attrib_array();
   void disable_vertex_attrib_array();
 
   uint32_t framebuffer;
   uint32_t rendertexture;
   uint32_t depthbuffer;
+
+  uint32_t shadowframebuffer;
+  uint32_t shadowdepthtexture;
 
   std::string vertexID;
 
@@ -120,6 +131,8 @@ private:
   gl_shader mSpriteInstanceShader;
   gl_shader mAlphaInstanceShader;
   gl_shader m_render_texture_shader;
+  gl_shader m_depth_texture_shader;
+  gl_shader m_depth_texture_instanced_shader;
   std::vector<std::pair<shader, gl_shader>> m_user_pipelines;
   GLuint mTextureID;
   std::unordered_map<handle_t, GLuint> mTextureIDs;

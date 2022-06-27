@@ -31,6 +31,12 @@ public:
   std::shared_ptr<class vk_draw_object> m_vk_draw_object;
   vk_buffer_object instance_buffer;
 };
+class vk_shader_parameter {
+public:
+  shader_parameter param;
+  matrix4 light_view;
+  matrix4 light_proj;
+};
 
 class vk_renderer {
 public:
@@ -55,6 +61,7 @@ public:
   void prepare();
   void cleanup();
   void make_command(VkCommandBuffer command);
+  void draw_depth(VkCommandBuffer command);
   void draw3d(VkCommandBuffer);
   void draw2d(VkCommandBuffer);
   vk_buffer_object create_buffer(
@@ -85,8 +92,15 @@ public:
 
   VmaAllocator allocator{};
   vk_render_texture m_render_texture;
+  vk_render_texture m_depth_texture;
 
 private:
+  vector3 eye;
+  vector3 at;
+  float width, height;
+  matrix4 light_view;
+
+  matrix4 light_projection;
   std::unique_ptr<class vk_base> m_base;
   void prepare_descriptor_set_layout();
   void prepare_descriptor_pool();
@@ -119,6 +133,7 @@ private:
   vk_pipeline pipeline_instancing_opaque;
   vk_pipeline pipeline_instancing_alpha;
   vk_pipeline pipeline_instancing_2d;
+  vk_pipeline pipeline_depth_instancing;
   std::vector<std::pair<shader, vk_pipeline>> m_user_pipelines;
   std::vector<std::shared_ptr<vk_draw_object>> m_draw_object_3d;
   std::vector<std::shared_ptr<vk_draw_object>> m_draw_object_2d;

@@ -31,7 +31,7 @@ void vk_pipeline::initialize(
       .depthTestEnable = VK_TRUE,
       .depthWriteEnable = VK_TRUE,
       .depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL,
-      .stencilTestEnable = VK_FALSE};
+      .stencilTestEnable = VK_TRUE};
 
   // Create pipeline
   graphicsCI = VkGraphicsPipelineCreateInfo{

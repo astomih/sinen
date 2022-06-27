@@ -72,6 +72,7 @@ void draw3d_instancing::draw() {
   obj->vertexIndex = this->vertex_name;
   obj->param.proj = get_camera().projection;
   obj->param.view = get_camera().view;
+  obj->is_draw_depth = this->is_draw_depth;
   _instancing.object = obj;
   _instancing.type = object_type::_3D;
   for (int i = 0; i < this->position.size(); i++) {

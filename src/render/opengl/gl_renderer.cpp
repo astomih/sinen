@@ -113,6 +113,8 @@ void gl_renderer::render() {
   glViewport(0, 0, 1024, 1024);
   glEnable(GL_DEPTH_TEST);
   for (auto &i : m_drawer_3ds) {
+    if (!i->is_draw_depth)
+      continue;
     auto &va = m_VertexArrays[i->vertexIndex];
     glBindVertexArray(va.vao);
     gl_shader_parameter param;
@@ -126,6 +128,8 @@ void gl_renderer::render() {
                    GL_UNSIGNED_INT, nullptr);
   }
   for (auto &i : m_instancing_3d) {
+    if (!i.ins.object->is_draw_depth)
+      continue;
     gl_shader_parameter param;
     param.param = i.ins.object->param;
     param.projection = light_projection;

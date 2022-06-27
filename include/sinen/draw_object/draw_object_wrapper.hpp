@@ -26,6 +26,7 @@ public:
   vector3 rotation;
   vector3 scale;
   texture texture_handle;
+  bool is_draw_depth = true;
   std::string vertex_name = "SPRITE";
 };
 } // namespace nen

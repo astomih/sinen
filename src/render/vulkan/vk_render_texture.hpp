@@ -12,7 +12,7 @@ public:
 
   void prepare_descriptor_set_layout();
   void prepare_descriptor_set();
-  void prepare(int width, int height);
+  void prepare(int width, int height, bool depth_only);
   VkSampler create_sampler();
   vk_image_object create_image_object(int width, int height, VkFormat format,
                                       bool isdepth);
@@ -28,6 +28,7 @@ public:
 
 private:
   class vk_renderer &m_vkrenderer;
+  bool is_depth_only;
 };
 } // namespace nen
 #endif

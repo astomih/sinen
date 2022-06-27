@@ -134,6 +134,7 @@ bool script_system::initialize() {
     v["texture"] = &draw3d::texture_handle;
     v["draw"] = &draw3d::draw;
     v["vertex_name"] = &draw3d::vertex_name;
+    v["is_draw_depth"] = &draw3d::is_draw_depth;
   }
   {
     auto v = impl->state.new_usertype<draw2d_instancing>(
@@ -152,6 +153,7 @@ bool script_system::initialize() {
     v["clear"] = &draw3d_instancing::clear;
     v["texture"] = &draw3d_instancing::texture_handle;
     v["vertex_name"] = &draw3d_instancing::vertex_name;
+    v["is_draw_depth"] = &draw3d_instancing::is_draw_depth;
   }
   {
     auto v = impl->state.new_usertype<texture>("nen_texture",

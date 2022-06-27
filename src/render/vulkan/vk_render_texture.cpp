@@ -6,78 +6,127 @@
 namespace nen {
 vk_render_texture::vk_render_texture(vk_renderer &r) : m_vkrenderer(r) {}
 
-void vk_render_texture::prepare(int width, int height) {
+void vk_render_texture::prepare(int width, int height, bool depth_only) {
   sampler = create_sampler();
   drawer.drawObject = std::make_shared<draw_object>();
-  color_target =
-      create_image_object(width, height, VK_FORMAT_R8G8B8A8_UNORM, false);
+  is_depth_only = depth_only;
+  if (!depth_only) {
+    color_target =
+        create_image_object(width, height, VK_FORMAT_R8G8B8A8_UNORM, false);
+  }
   depth_target = create_image_object(width, height, VK_FORMAT_D32_SFLOAT, true);
   VkRenderPassCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 
-  std::array<VkAttachmentDescription, 2> attachments;
-  auto &colorTarget = attachments[0];
-  auto &depthTarget = attachments[1];
+  if (depth_only) {
+    VkAttachmentDescription attachment;
+    attachment =
+        VkAttachmentDescription{0,
+                                VK_FORMAT_D32_SFLOAT,
+                                VK_SAMPLE_COUNT_1_BIT,
+                                VK_ATTACHMENT_LOAD_OP_CLEAR,
+                                VK_ATTACHMENT_STORE_OP_STORE,
+                                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                                VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                                VK_IMAGE_LAYOUT_UNDEFINED,
+                                VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL};
+    VkAttachmentReference depthReference{};
+    depthReference.attachment = 1;
+    depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
 
-  colorTarget = VkAttachmentDescription{
+    VkSubpassDescription subpassDesc{};
+    subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpassDesc.colorAttachmentCount = 0;
+    subpassDesc.pColorAttachments = nullptr;
+    subpassDesc.pDepthStencilAttachment = &depthReference;
 
-      0,                        // Flags
-      VK_FORMAT_R8G8B8A8_UNORM, // Format
-      VK_SAMPLE_COUNT_1_BIT,
-      VK_ATTACHMENT_LOAD_OP_CLEAR,
-      VK_ATTACHMENT_STORE_OP_STORE,
-      VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-      VK_ATTACHMENT_STORE_OP_DONT_CARE,
-      VK_IMAGE_LAYOUT_UNDEFINED,
-      VK_IMAGE_LAYOUT_PRESENT_SRC_KHR};
+    ci.attachmentCount = 1;
+    ci.pAttachments = &attachment;
+    ci.subpassCount = 1;
+    ci.pSubpasses = &subpassDesc;
+    vkCreateRenderPass(m_vkrenderer.get_base().m_device, &ci, nullptr,
+                       &render_pass);
+    std::vector<VkImageView> views;
+    views.push_back(depth_target.view);
+    VkFramebufferCreateInfo fbci{
+        VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+        nullptr,
+        0,
+        render_pass,
+        (uint32_t)views.size(),
+        views.data(),
+        (uint32_t)width,
+        (uint32_t)height,
+        1,
+    };
+    // VkFramebuffer m_renderTextureFB;
+    vkCreateFramebuffer(m_vkrenderer.get_base().m_device, &fbci, nullptr, &fb);
+    prepare_descriptor_set();
+  } else {
+    std::array<VkAttachmentDescription, 2> attachments;
+    auto &colorTarget = attachments[0];
+    auto &depthTarget = attachments[1];
 
-  depthTarget =
-      VkAttachmentDescription{0,
-                              VK_FORMAT_D32_SFLOAT,
-                              VK_SAMPLE_COUNT_1_BIT,
-                              VK_ATTACHMENT_LOAD_OP_CLEAR,
-                              VK_ATTACHMENT_STORE_OP_STORE,
-                              VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                              VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                              VK_IMAGE_LAYOUT_UNDEFINED,
-                              VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
+    colorTarget = VkAttachmentDescription{
 
-  VkAttachmentReference colorReference{}, depthReference{};
-  colorReference.attachment = 0;
-  colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-  depthReference.attachment = 1;
-  depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        0,                        // Flags
+        VK_FORMAT_R8G8B8A8_UNORM, // Format
+        VK_SAMPLE_COUNT_1_BIT,
+        VK_ATTACHMENT_LOAD_OP_CLEAR,
+        VK_ATTACHMENT_STORE_OP_STORE,
+        VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR};
 
-  VkSubpassDescription subpassDesc{};
-  subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-  subpassDesc.colorAttachmentCount = 1;
-  subpassDesc.pColorAttachments = &colorReference;
-  subpassDesc.pDepthStencilAttachment = &depthReference;
+    depthTarget =
+        VkAttachmentDescription{0,
+                                VK_FORMAT_D32_SFLOAT,
+                                VK_SAMPLE_COUNT_1_BIT,
+                                VK_ATTACHMENT_LOAD_OP_CLEAR,
+                                VK_ATTACHMENT_STORE_OP_STORE,
+                                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                                VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                                VK_IMAGE_LAYOUT_UNDEFINED,
+                                VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL};
 
-  ci.attachmentCount = uint32_t(attachments.size());
-  ci.pAttachments = attachments.data();
-  ci.subpassCount = 1;
-  ci.pSubpasses = &subpassDesc;
+    VkAttachmentReference colorReference{}, depthReference{};
+    colorReference.attachment = 0;
+    colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    depthReference.attachment = 1;
+    depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-  vkCreateRenderPass(m_vkrenderer.get_base().m_device, &ci, nullptr,
-                     &render_pass);
-  std::vector<VkImageView> views;
-  views.push_back(color_target.view);
-  views.push_back(depth_target.view);
-  VkFramebufferCreateInfo fbci{
-      VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-      nullptr,
-      0,
-      render_pass,
-      (uint32_t)views.size(),
-      views.data(),
-      (uint32_t)width,
-      (uint32_t)height,
-      1,
-  };
-  // VkFramebuffer m_renderTextureFB;
-  vkCreateFramebuffer(m_vkrenderer.get_base().m_device, &fbci, nullptr, &fb);
-  prepare_descriptor_set();
+    VkSubpassDescription subpassDesc{};
+    subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpassDesc.colorAttachmentCount = 1;
+    subpassDesc.pColorAttachments = &colorReference;
+    subpassDesc.pDepthStencilAttachment = &depthReference;
+
+    ci.attachmentCount = uint32_t(attachments.size());
+    ci.pAttachments = attachments.data();
+    ci.subpassCount = 1;
+    ci.pSubpasses = &subpassDesc;
+
+    vkCreateRenderPass(m_vkrenderer.get_base().m_device, &ci, nullptr,
+                       &render_pass);
+    std::vector<VkImageView> views;
+    views.push_back(color_target.view);
+    views.push_back(depth_target.view);
+    VkFramebufferCreateInfo fbci{
+        VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+        nullptr,
+        0,
+        render_pass,
+        (uint32_t)views.size(),
+        views.data(),
+        (uint32_t)width,
+        (uint32_t)height,
+        1,
+    };
+    // VkFramebuffer m_renderTextureFB;
+    vkCreateFramebuffer(m_vkrenderer.get_base().m_device, &fbci, nullptr, &fb);
+    prepare_descriptor_set();
+  }
 }
 vk_image_object vk_render_texture::create_image_object(int width, int height,
                                                        VkFormat format,
@@ -182,10 +231,16 @@ void vk_render_texture::prepare_descriptor_set() {
     tex.dstBinding = 1;
     tex.descriptorCount = 1;
     tex.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    tex.pImageInfo = &descImage;
+    if (is_depth_only) {
+      tex.pImageInfo = nullptr;
+    } else
+      tex.pImageInfo = &descImage;
     tex.dstSet = drawer.descripterSet[i];
 
-    std::vector<VkWriteDescriptorSet> writeSets = {ubo, tex};
+    std::vector<VkWriteDescriptorSet> writeSets;
+    writeSets.push_back(ubo);
+    if (!is_depth_only)
+      writeSets.push_back(tex);
     vkUpdateDescriptorSets(m_vkrenderer.get_base().get_vk_device(),
                            uint32_t(writeSets.size()), writeSets.data(), 0,
                            nullptr);

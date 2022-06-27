@@ -64,6 +64,7 @@ void draw3d::draw() {
   obj->param.proj = get_camera().projection;
   obj->param.view = get_camera().view;
   obj->vertexIndex = this->vertex_name;
+  obj->is_draw_depth = this->is_draw_depth;
   get_renderer().draw3d(obj);
   *this->texture_handle.is_need_update = false;
 }

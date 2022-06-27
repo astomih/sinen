@@ -372,6 +372,14 @@ void vk_base::render() {
   renderPassBI.renderArea.extent = mSwapchain->GetSurfaceExtent();
   renderPassBI.pClearValues = clearValue.data();
   renderPassBI.clearValueCount = uint32_t(clearValue.size());
+  VkRenderPassBeginInfo renderPassShadowBI{};
+  renderPassShadowBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+  renderPassShadowBI.renderPass = m_vkrenderer->m_depth_texture.render_pass;
+  renderPassShadowBI.framebuffer = m_vkrenderer->m_depth_texture.fb;
+  renderPassShadowBI.renderArea.offset = VkOffset2D{0, 0};
+  renderPassShadowBI.renderArea.extent = mSwapchain->GetSurfaceExtent();
+  renderPassShadowBI.pClearValues = clearValue.data();
+  renderPassShadowBI.clearValueCount = uint32_t(clearValue.size());
 
   // Begin Command Buffer
   VkCommandBufferBeginInfo commandBI{};
@@ -379,6 +387,27 @@ void vk_base::render() {
   auto &command = m_commands[nextImageIndex];
   vkBeginCommandBuffer(command, &commandBI);
   m_imageIndex = nextImageIndex;
+  vkCmdBeginRenderPass(command, &renderPassShadowBI,
+                       VK_SUBPASS_CONTENTS_INLINE);
+  m_vkrenderer->draw_depth(command);
+  vkCmdEndRenderPass(command);
+  VkImageMemoryBarrier imageBarrier{
+      VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+      nullptr,
+      VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT, // srcAccessMask
+      VK_ACCESS_SHADER_READ_BIT,                    // dstAccessMask
+      VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+      VK_QUEUE_FAMILY_IGNORED,
+      VK_QUEUE_FAMILY_IGNORED,
+      m_vkrenderer->m_depth_texture.depth_target.image,
+      {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
+  vkCmdPipelineBarrier(command, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                       VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                       VK_DEPENDENCY_BY_REGION_BIT, 0,
+                       nullptr,    // memoryBarrier
+                       0, nullptr, // bufferMemoryBarrier
+                       1, &imageBarrier);
   vkCmdBeginRenderPass(command, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
   m_vkrenderer->make_command(command);
   vkCmdEndRenderPass(command);

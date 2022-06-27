@@ -1,7 +1,9 @@
 #include "../../manager/get_system.hpp"
 #include "../../render/render_system.hpp"
+#include "../../script/script_system.hpp"
 #include "../../window/window_system.hpp"
 #include <camera/camera.hpp>
+#include <sol/sol.hpp>
 
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 // general
@@ -35,7 +37,8 @@ using namespace vkutil;
 constexpr int maxpoolSize = 5000;
 vk_renderer::vk_renderer()
     : m_descriptor_pool(), m_descriptor_set_layout(), m_sampler(),
-      m_base(std::make_unique<vk_base>(this)), m_render_texture(*this) {}
+      m_base(std::make_unique<vk_base>(this)), m_render_texture(*this),
+      m_depth_texture(*this) {}
 vk_renderer::~vk_renderer() = default;
 void vk_renderer::initialize() { m_base->initialize(); }
 
@@ -128,7 +131,7 @@ void vk_renderer::add_instancing(const instancing &_instancing) {
   for (auto &v : t->uniformBuffers) {
     VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                      VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-    v = create_buffer(sizeof(shader_parameter),
+    v = create_buffer(sizeof(vk_shader_parameter),
                       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
   }
   layouts.push_back(m_descriptor_set_layout);
@@ -161,8 +164,11 @@ void vk_renderer::draw_instancing_3d(VkCommandBuffer command) {
     auto allocation =
         _instancing.m_vk_draw_object->uniformBuffers[m_base->m_imageIndex]
             .allocation;
-    write_memory(allocation, &_instancing.m_vk_draw_object->drawObject->param,
-                 sizeof(shader_parameter));
+    vk_shader_parameter param;
+    param.param = _instancing.m_vk_draw_object->drawObject->param;
+    param.light_proj = light_projection;
+    param.light_view = light_view;
+    write_memory(allocation, &param, sizeof(vk_shader_parameter));
     std::string index = _instancing.ins.object->vertexIndex;
     VkBuffer buffers[] = {m_vertex_arrays[index].vertexBuffer.buffer,
                           _instancing.instance_buffer.buffer};
@@ -186,7 +192,7 @@ void vk_renderer::draw_instancing_2d(VkCommandBuffer command) {
         _instancing.m_vk_draw_object->uniformBuffers[m_base->m_imageIndex]
             .allocation;
     write_memory(allocation, &_instancing.m_vk_draw_object->drawObject->param,
-                 sizeof(shader_parameter));
+                 sizeof(vk_shader_parameter));
     std::string index = _instancing.ins.object->vertexIndex;
     VkBuffer buffers[] = {m_vertex_arrays[index].vertexBuffer.buffer,
                           _instancing.instance_buffer.buffer};
@@ -215,7 +221,7 @@ void vk_renderer::prepare() {
                                m_base->mSwapchain->GetSurfaceExtent());
   m_pipeline_layout.Prepare(m_base->get_vk_device());
 
-  m_render_texture.prepare(get_window().size.x, get_window().size.y);
+  m_render_texture.prepare(get_window().size.x, get_window().size.y, false);
 
   // Opaque pipeline
   {
@@ -339,8 +345,8 @@ void vk_renderer::prepare() {
         m_pipeline_layout, m_render_texture.render_pass, shaderStages);
     pipeline_instancing_2d.color_blend_factor(
         VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
-    pipeline_instancing_2d.alpha_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
-                                              VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    pipeline_instancing_2d.alpha_blend_factor(
+        VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
     pipeline_instancing_2d.set_depth_test(VK_FALSE);
     pipeline_instancing_2d.set_depth_write(VK_FALSE);
     pipeline_instancing_2d.prepare(m_base->get_vk_device());
@@ -355,13 +361,50 @@ void vk_renderer::prepare() {
                         VK_SHADER_STAGE_FRAGMENT_BIT)};
     m_render_texture.pipeline.initialize(m_pipeline_layout,
                                          m_base->m_renderPass, shaderStages);
-    m_render_texture.pipeline.color_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
-                                                 VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
-    m_render_texture.pipeline.alpha_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
-                                                 VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    m_render_texture.pipeline.color_blend_factor(
+        VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    m_render_texture.pipeline.alpha_blend_factor(
+        VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
     m_render_texture.pipeline.set_depth_test(VK_FALSE);
     m_render_texture.pipeline.set_depth_write(VK_FALSE);
     m_render_texture.pipeline.prepare(m_base->get_vk_device());
+    vk_shader::clean(m_base->get_vk_device(), shaderStages);
+  }
+  m_depth_texture.prepare(get_window().size.x, get_window().size.y, false);
+  // depth pipeline
+  {
+    std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
+        vk_shader::load(m_base->get_vk_device(), "depth.vert.spv",
+                        VK_SHADER_STAGE_VERTEX_BIT),
+        vk_shader::load(m_base->get_vk_device(), "depth.frag.spv",
+                        VK_SHADER_STAGE_FRAGMENT_BIT)};
+    m_depth_texture.pipeline.initialize(
+        m_pipeline_layout, m_depth_texture.render_pass, shaderStages);
+    m_depth_texture.pipeline.color_blend_factor(
+        VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    m_depth_texture.pipeline.alpha_blend_factor(
+        VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    m_depth_texture.pipeline.set_depth_test(VK_TRUE);
+    m_depth_texture.pipeline.set_depth_write(VK_TRUE);
+    m_depth_texture.pipeline.prepare(m_base->get_vk_device());
+    vk_shader::clean(m_base->get_vk_device(), shaderStages);
+  }
+  // depth instanced pipeline
+  {
+    std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
+        vk_shader::load(m_base->get_vk_device(), "depth_instanced.vert.spv",
+                        VK_SHADER_STAGE_VERTEX_BIT),
+        vk_shader::load(m_base->get_vk_device(), "depth.frag.spv",
+                        VK_SHADER_STAGE_FRAGMENT_BIT)};
+    pipeline_depth_instancing.initialize(
+        m_pipeline_layout, m_depth_texture.render_pass, shaderStages);
+    pipeline_depth_instancing.color_blend_factor(
+        VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    pipeline_depth_instancing.alpha_blend_factor(
+        VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    pipeline_depth_instancing.set_depth_test(VK_TRUE);
+    pipeline_depth_instancing.set_depth_write(VK_TRUE);
+    pipeline_depth_instancing.prepare(m_base->get_vk_device());
     vk_shader::clean(m_base->get_vk_device(), shaderStages);
   }
 
@@ -391,6 +434,67 @@ void vk_renderer::cleanup() {
                                         &vkDestroyDescriptorPool);
   DestroyVulkanObject<VkDescriptorSetLayout>(device, m_descriptor_set_layout,
                                              &vkDestroyDescriptorSetLayout);
+}
+
+void vk_renderer::draw_depth(VkCommandBuffer command) {
+  auto &lua = (*(sol::state *)get_script().get_state());
+  lua["light_eye"] = [&](const vector3 &v) { eye = v; };
+  lua["light_at"] = [&](const vector3 &v) { at = v; };
+  lua["light_width"] = [&](float v) { width = v; };
+  lua["light_height"] = [&](float v) { height = v; };
+  light_view = matrix4::lookat(eye, at, vector3(0, 1, 0));
+  light_projection = matrix4::ortho(width, height, 0.5, 10);
+  // shadow mapping
+  VkDeviceSize offset = 0;
+
+  for (auto &sprite : m_draw_object_3d) {
+    m_depth_texture.pipeline.Bind(command);
+    std::string index = sprite->drawObject->vertexIndex;
+    ::vkCmdBindVertexBuffers(
+        command, 0, 1, &m_vertex_arrays[index].vertexBuffer.buffer, &offset);
+    ::vkCmdBindIndexBuffer(command, m_vertex_arrays[index].indexBuffer.buffer,
+                           offset, VK_INDEX_TYPE_UINT32);
+    auto allocation = sprite->uniformBuffers[m_base->m_imageIndex].allocation;
+    vk_shader_parameter param;
+    param.param = sprite->drawObject->param;
+    param.param.proj = light_projection;
+    param.param.view = light_view;
+    param.light_proj = light_projection;
+    param.light_view = light_view;
+
+    vkCmdBindDescriptorSets(
+        command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
+        0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
+    write_memory(allocation, &param, sizeof(vk_shader_parameter));
+    vkCmdDrawIndexed(command, m_vertex_arrays[index].indexCount, 1, 0, 0, 0);
+  }
+  for (auto &_instancing : m_instancies_3d) {
+    pipeline_depth_instancing.Bind(command);
+    vkCmdBindDescriptorSets(
+        command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
+        0, 1,
+        &_instancing.m_vk_draw_object->descripterSet[m_base->m_imageIndex], 0,
+        nullptr);
+    auto allocation =
+        _instancing.m_vk_draw_object->uniformBuffers[m_base->m_imageIndex]
+            .allocation;
+    vk_shader_parameter param;
+    param.param = _instancing.m_vk_draw_object->drawObject->param;
+    param.param.proj = light_projection;
+    param.param.view = light_view;
+    param.light_proj = light_projection;
+    param.light_view = light_view;
+    write_memory(allocation, &param, sizeof(vk_shader_parameter));
+    std::string index = _instancing.ins.object->vertexIndex;
+    VkBuffer buffers[] = {m_vertex_arrays[index].vertexBuffer.buffer,
+                          _instancing.instance_buffer.buffer};
+    VkDeviceSize offsets[] = {0, 0};
+    vkCmdBindVertexBuffers(command, 0, 2, buffers, offsets);
+    vkCmdBindIndexBuffer(command, m_vertex_arrays[index].indexBuffer.buffer, 0,
+                         VK_INDEX_TYPE_UINT32);
+    vkCmdDrawIndexed(command, m_vertex_arrays[index].indexCount,
+                     _instancing.ins.data.size(), 0, 0, 0);
+  }
 }
 
 void vk_renderer::make_command(VkCommandBuffer command) {
@@ -428,15 +532,15 @@ void vk_renderer::draw_skybox(VkCommandBuffer command) {
   t->drawObject->texture_handle.handle =
       get_renderer().get_skybox_texture().handle;
   t->drawObject->vertexIndex = "BOX";
-  shader_parameter param;
+  vk_shader_parameter param;
   matrix4 w = matrix4::identity;
   w[0][0] = 5;
   w[1][1] = 5;
   w[2][2] = 5;
-  param.proj = get_camera().projection;
-  param.view = matrix4::lookat(vector3(0, 0, 0),
-                               get_camera().target - get_camera().position,
-                               get_camera().up);
+  param.param.proj = get_camera().projection;
+  param.param.view = matrix4::lookat(
+      vector3(0, 0, 0), get_camera().target - get_camera().position,
+      get_camera().up);
   auto &va = m_vertex_arrays["BOX"];
 
   if (!m_image_object.contains(t->drawObject->texture_handle.handle)) {
@@ -450,7 +554,7 @@ void vk_renderer::draw_skybox(VkCommandBuffer command) {
   for (auto &v : t->uniformBuffers) {
     VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                      VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-    v = create_buffer(sizeof(shader_parameter),
+    v = create_buffer(sizeof(vk_shader_parameter),
                       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
   }
   layouts.push_back(m_descriptor_set_layout);
@@ -464,7 +568,7 @@ void vk_renderer::draw_skybox(VkCommandBuffer command) {
                           m_pipeline_layout.GetLayout(), 0, 1,
                           &t->descripterSet[m_base->m_imageIndex], 0, nullptr);
   auto allocation = t->uniformBuffers[m_base->m_imageIndex].allocation;
-  write_memory(allocation, &param, sizeof(shader_parameter));
+  write_memory(allocation, &param, sizeof(vk_shader_parameter));
   vkCmdDrawIndexed(command, va.indexCount, 1, 0, 0, 0);
   destroy_texture(t);
 }
@@ -493,8 +597,11 @@ void vk_renderer::draw3d(VkCommandBuffer command) {
         command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
         0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
     auto allocation = sprite->uniformBuffers[m_base->m_imageIndex].allocation;
-    write_memory(allocation, &sprite->drawObject->param,
-                 sizeof(shader_parameter));
+    vk_shader_parameter param;
+    param.param = sprite->drawObject->param;
+    param.light_proj = light_projection;
+    param.light_view = light_view;
+    write_memory(allocation, &param, sizeof(vk_shader_parameter));
     vkCmdDrawIndexed(command, m_vertex_arrays[index].indexCount, 1, 0, 0, 0);
   }
 }
@@ -527,7 +634,7 @@ void vk_renderer::draw2d(VkCommandBuffer command) {
         0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
     auto allocation = sprite->uniformBuffers[m_base->m_imageIndex].allocation;
     write_memory(allocation, &sprite->drawObject->param,
-                 sizeof(shader_parameter));
+                 sizeof(vk_shader_parameter));
 
     vkCmdDrawIndexed(
         command, m_vertex_arrays[sprite->drawObject->vertexIndex].indexCount, 1,
@@ -553,7 +660,8 @@ void vk_renderer::render_to_display(VkCommandBuffer command) {
   sprite.drawObject->param.proj = matrix4::identity;
   sprite.drawObject->param.view = matrix4::identity;
   sprite.drawObject->param.world = matrix4::identity;
-  write_memory(allocation, &sprite.drawObject->param, sizeof(shader_parameter));
+  write_memory(allocation, &sprite.drawObject->param,
+               sizeof(vk_shader_parameter));
 
   vkCmdDrawIndexed(command, m_vertex_arrays["SPRITE"].indexCount, 1, 0, 0, 0);
   render_imgui(command);
@@ -647,7 +755,8 @@ void vk_renderer::render_imgui(VkCommandBuffer command) {
 
 void vk_renderer::prepare_descriptor_set_layout() {
   std::vector<VkDescriptorSetLayoutBinding> bindings;
-  VkDescriptorSetLayoutBinding bindingUBO{}, bindingTex{}, bindingInstance{};
+  VkDescriptorSetLayoutBinding bindingUBO{}, bindingTex{}, bindingInstance{},
+      bindingShadow{};
   bindingUBO.binding = 0;
   bindingUBO.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
   bindingUBO.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
@@ -665,6 +774,12 @@ void vk_renderer::prepare_descriptor_set_layout() {
   bindingInstance.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
   bindingInstance.descriptorCount = 1;
   bindings.push_back(bindingInstance);
+
+  bindingShadow.binding = 3;
+  bindingShadow.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+  bindingShadow.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+  bindingShadow.descriptorCount = 1;
+  bindings.push_back(bindingShadow);
 
   VkDescriptorSetLayoutCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -709,11 +824,15 @@ void vk_renderer::prepare_descriptor_set(
     descUBO.offset = 0;
     descUBO.range = VK_WHOLE_SIZE;
 
-    VkDescriptorImageInfo descImage{};
-    descImage.imageView =
+    std::array<VkDescriptorImageInfo, 2> descImage;
+
+    descImage[0].imageView =
         m_image_object[sprite->drawObject->texture_handle.handle].view;
-    descImage.sampler = m_sampler;
-    descImage.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    descImage[0].sampler = m_sampler;
+    descImage[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    descImage[1].imageView = m_depth_texture.depth_target.view;
+    descImage[1].sampler = m_depth_texture.sampler;
+    descImage[1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     VkWriteDescriptorSet ubo{};
     ubo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -728,10 +847,17 @@ void vk_renderer::prepare_descriptor_set(
     tex.dstBinding = 1;
     tex.descriptorCount = 1;
     tex.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    tex.pImageInfo = &descImage;
+    tex.pImageInfo = &descImage[0];
     tex.dstSet = sprite->descripterSet[i];
+    VkWriteDescriptorSet shadowTex{};
+    shadowTex.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    shadowTex.dstBinding = 3;
+    shadowTex.descriptorCount = 1;
+    shadowTex.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    shadowTex.pImageInfo = &descImage[1];
+    shadowTex.dstSet = sprite->descripterSet[i];
 
-    std::vector<VkWriteDescriptorSet> writeSets = {ubo, tex};
+    std::vector<VkWriteDescriptorSet> writeSets = {ubo, tex, shadowTex};
     vkUpdateDescriptorSets(m_base->get_vk_device(), uint32_t(writeSets.size()),
                            writeSets.data(), 0, nullptr);
   }
@@ -1058,7 +1184,7 @@ void vk_renderer::registerTexture(std::shared_ptr<vk_draw_object> texture,
     for (auto &v : texture->uniformBuffers) {
       VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-      v = create_buffer(sizeof(shader_parameter),
+      v = create_buffer(sizeof(vk_shader_parameter),
                         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
     }
     layouts.push_back(m_descriptor_set_layout);
@@ -1077,7 +1203,7 @@ void vk_renderer::registerTexture(std::shared_ptr<vk_draw_object> texture,
     for (auto &v : texture->uniformBuffers) {
       VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-      v = create_buffer(sizeof(shader_parameter),
+      v = create_buffer(sizeof(vk_shader_parameter),
                         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
     }
     layouts.push_back(m_descriptor_set_layout);

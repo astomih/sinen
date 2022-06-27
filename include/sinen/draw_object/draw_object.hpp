@@ -14,6 +14,7 @@ public:
   texture texture_handle;
   std::string vertexIndex;
   shader shader_data;
+  bool is_draw_depth = true;
   int drawOrder = 100;
   int nodeNum = 1;
 };

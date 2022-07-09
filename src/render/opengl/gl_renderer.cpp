@@ -10,8 +10,8 @@
 #if defined(EMSCRIPTEN) || defined(MOBILE)
 #include <GLES3/gl3.h>
 #include <SDL_opengles2.h>
-#define glGenFramebuffers glGenFramebuffersOES
-#define glBindFramebuffer glBindFramebufferOES
+#define glGenFramebuffers glGenFramebuffersEXT
+#define glBindFramebuffer glBindFramebufferEXT
 #endif
 
 #ifndef MOBILE
@@ -108,6 +108,7 @@ void gl_renderer::render() {
   auto color = get_renderer().get_clear_color();
   glClearColor(color.r, color.g, color.b, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  /*
   glBindFramebuffer(GL_FRAMEBUFFER, shadowframebuffer);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glViewport(0, 0, 1024, 1024);
@@ -151,6 +152,7 @@ void gl_renderer::render() {
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glViewport(0, 0, 1280, 720); // Render on the whole framebuffer, complete
+  */
   glEnable(GL_BLEND);
   glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
   glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
@@ -171,8 +173,9 @@ void gl_renderer::render() {
   draw_2d();
   enable_vertex_attrib_array();
   draw_instancing_2d();
-  glFlush();
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  // glFlush();
+  // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  /*
   glBindVertexArray(m_VertexArrays["SPRITE"].vao);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, rendertexture);
@@ -188,6 +191,7 @@ void gl_renderer::render() {
   glDrawElements(GL_TRIANGLES, m_VertexArrays["SPRITE"].indices.size(),
                  GL_UNSIGNED_INT, nullptr);
   glActiveTexture(GL_TEXTURE0);
+                 */
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplSDL2_NewFrame((SDL_Window *)w.GetSDLWindow());
   ImGui::NewFrame();
@@ -277,14 +281,17 @@ void gl_renderer::draw_3d() {
     mSpriteShader.active(0);
     mSpriteShader.update_ubo(0, sizeof(gl_shader_parameter), &param);
     disable_vertex_attrib_array();
+    /*
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, shadowdepthtexture);
     glUniform1i(glGetUniformLocation(mSpriteShader.program(), "shadowMap"), 0);
     glActiveTexture(GL_TEXTURE1);
+    */
     glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->texture_handle.handle]);
-    glUniform1i(glGetUniformLocation(mSpriteShader.program(), "diffuseMap"), 1);
+    // glUniform1i(glGetUniformLocation(mSpriteShader.program(), "diffuseMap"),
+    // 1);
     glDrawElements(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT, nullptr);
-    glActiveTexture(GL_TEXTURE0);
+    // glActiveTexture(GL_TEXTURE0);
   }
 }
 void gl_renderer::draw_instancing_3d() {
@@ -298,19 +305,23 @@ void gl_renderer::draw_instancing_3d() {
 
     auto &va = m_VertexArrays[i.ins.object->vertexIndex];
     glBindVertexArray(i.vao);
+    /*
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, shadowdepthtexture);
     glUniform1i(
         glGetUniformLocation(mSpriteInstanceShader.program(), "shadowMap"), 0);
     glActiveTexture(GL_TEXTURE1);
+    */
     glBindTexture(GL_TEXTURE_2D,
                   mTextureIDs[i.ins.object->texture_handle.handle]);
+    /*
     glUniform1i(
         glGetUniformLocation(mSpriteInstanceShader.program(), "diffuseMap"), 1);
+        */
     enable_vertex_attrib_array();
     glDrawElementsInstanced(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT,
                             nullptr, i.ins.data.size());
-    glActiveTexture(GL_TEXTURE0);
+    // glActiveTexture(GL_TEXTURE0);
   }
 }
 
@@ -505,6 +516,7 @@ void gl_renderer::prepare() {
 
 void gl_renderer::prepare_render_texture() {
 
+  /*
   glGenFramebuffers(1, &framebuffer);
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
@@ -527,9 +539,11 @@ void gl_renderer::prepare_render_texture() {
   glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rendertexture, 0);
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  */
 }
 void gl_renderer::prepare_depth_texture() {
 
+  /*
   glGenFramebuffers(1, &shadowframebuffer);
   glBindFramebuffer(GL_FRAMEBUFFER, shadowframebuffer);
   glGenTextures(1, &shadowdepthtexture);
@@ -547,6 +561,7 @@ void gl_renderer::prepare_depth_texture() {
   glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, shadowdepthtexture,
                        0);
   glDrawBuffer(GL_NONE);
+  */
 }
 
 void gl_renderer::create_texture(texture handle) {
@@ -581,6 +596,7 @@ void gl_renderer::create_texture(texture handle) {
 
 bool gl_renderer::load_shader() {
   gl_shader_parameter param{};
+  /*
   if (!m_depth_texture_shader.load("depth.vert", "depth.frag")) {
     return false;
   }
@@ -596,6 +612,7 @@ bool gl_renderer::load_shader() {
     return false;
   }
   m_render_texture_shader.create_ubo(0, sizeof(gl_shader_parameter), &param);
+  */
   if (!mSpriteShader.load("shader.vert", "shader.frag")) {
     return false;
   }

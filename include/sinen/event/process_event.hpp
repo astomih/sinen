@@ -1,7 +1,11 @@
+#ifndef SINEN_PROCESS_EVENT_HPP
+#define SINEN_PROCESS_EVENT_HPP
+
 #include "event_type.hpp"
-namespace nen {
+namespace sinen {
 class process_event {
 public:
   event_type type;
 };
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_PROCESS_EVENT_HPP

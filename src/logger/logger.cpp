@@ -4,7 +4,7 @@
 #endif
 #include <logger/logger.hpp>
 
-namespace nen {
+namespace sinen {
 std::unique_ptr<logger::interface> logger::mLogger = nullptr;
 
 void logger::change_logger(std::unique_ptr<logger::interface> logger) {
@@ -57,4 +57,4 @@ void logger::default_logger::file_logger::Fatal(std::string_view string) {
   std::cout << "SINEN_FATAL: " << string << std::endl;
 }
 
-} // namespace nen
+} // namespace sinen

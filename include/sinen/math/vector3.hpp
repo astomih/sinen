@@ -1,7 +1,11 @@
-#pragma once
+#ifndef SINEN_VECTOR3_HPP
+#define SINEN_VECTOR3_HPP
 #include "math.hpp"
-namespace nen {
-// 3D Vector
+namespace sinen {
+/**
+ * @brief Vector3 class
+ *
+ */
 class vector3 {
 public:
   float x;
@@ -155,4 +159,5 @@ public:
   static const vector3 infinity;
   static const vector3 neg_infinity;
 };
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_VECTOR3_HPP

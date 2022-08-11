@@ -2,7 +2,7 @@
 #include <SDL_gamecontroller.h>
 #include <input/game_controller.hpp>
 
-namespace nen {
+namespace sinen {
 class joystick::Impl {
 public:
   Impl() : controller(nullptr) {}
@@ -29,4 +29,4 @@ uint8_t joystick::get_button(joystick_button button) {
   return SDL_GameControllerGetButton(
       impl->controller, static_cast<SDL_GameControllerButton>(button));
 }
-} // namespace nen
+} // namespace sinen

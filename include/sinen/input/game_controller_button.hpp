@@ -1,6 +1,7 @@
-#pragma once
+#ifndef	SINEN_GAME_CONTROLLER_BUTTON_HPP
+#define	SINEN_GAME_CONTROLLER_BUTTON_HPP
 
-namespace nen {
+namespace sinen {
 enum class joystick_button {
   INVALID = -1,
   A,
@@ -28,3 +29,4 @@ enum class joystick_button {
   NUM_GAMECONTROLLER_BUTTON
 };
 }
+#endif // !SINEN_GAME_CONTROLLER_BUTTON_HPP

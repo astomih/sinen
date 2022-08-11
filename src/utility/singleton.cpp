@@ -1,6 +1,6 @@
 #include <utility/singleton.hpp>
 
-namespace nen {
+namespace sinen {
 std::list<std::function<void(void)>> singleton_finalizer::finalizers =
     std::list<std::function<void(void)>>();
 

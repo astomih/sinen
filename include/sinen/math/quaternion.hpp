@@ -1,7 +1,8 @@
-#pragma once
+#ifndef SINEN_QUATERNION_HPP
+#define SINEN_QUATERNION_HPP
 #include "math.hpp"
 #include "vector3.hpp"
-namespace nen {
+namespace sinen {
 // (Unit) Quaternion
 class quaternion {
 public:
@@ -129,4 +130,5 @@ public:
 
   static const quaternion Identity;
 };
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_QUATERNION_HPP

@@ -1,10 +1,12 @@
-#pragma once
+#ifndef SINEN_MATRIX4_HPP
+#define SINEN_MATRIX4_HPP
+
 #include "math.hpp"
 #include "quaternion.hpp"
 #include "vector3.hpp"
 #include <string>
 
-namespace nen {
+namespace sinen {
 // 4x4 Matrix
 class matrix4 {
 public:
@@ -173,4 +175,5 @@ public:
 
   static const matrix4 identity;
 };
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_MATRIX4_HPP

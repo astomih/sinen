@@ -13,7 +13,7 @@
 #include "vk_pipeline.hpp"
 #include "vk_renderer.hpp"
 
-namespace nen {
+namespace sinen {
 
 vk_base::vk_base(vk_renderer *vkrenderer)
     : m_imageIndex(0), m_vkrenderer(vkrenderer) {}
@@ -464,5 +464,5 @@ void vk_base::render() {
   vkQueueSubmit(m_deviceQueue, 1, &submitInfo, commandFence);
   mSwapchain->QueuePresent(m_deviceQueue, nextImageIndex, m_renderCompletedSem);
 }
-} // namespace nen
+} // namespace sinen
 #endif

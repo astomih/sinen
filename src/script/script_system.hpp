@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-namespace nen {
+namespace sinen {
 class script_system {
 public:
   script_system();

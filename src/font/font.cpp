@@ -9,7 +9,7 @@
 #include <logger/logger.hpp>
 #include <texture/texture.hpp>
 
-namespace nen {
+namespace sinen {
 font::font(std::string_view file_name, int32_t point) {
   load(file_name, point);
 }
@@ -50,4 +50,4 @@ void font::render_text(texture &tex, std::string_view text,
           ::TTF_RenderUTF8_Blended_Wrapped(
               (::TTF_Font *)m_font, std::string(text).c_str(), sdlColor, 0)));
 }
-} // namespace nen
+} // namespace sinen

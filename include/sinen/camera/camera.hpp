@@ -3,7 +3,7 @@
 #include "../math/matrix4.hpp"
 #include "../math/vector3.hpp"
 
-namespace nen {
+namespace sinen {
 class camera {
 public:
   camera();

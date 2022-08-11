@@ -1,6 +1,6 @@
 #include "texture_system.hpp"
 
-namespace nen {
+namespace sinen {
 void SDLObjectCloser::operator()(::SDL_Surface *surface) {
   ::SDL_FreeSurface(surface);
 }

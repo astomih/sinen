@@ -1,10 +1,10 @@
 #pragma once
 #include <SDL.h>
 
-namespace nen {
+namespace sinen {
 class current_event_handle {
 
 public:
   static SDL_Event current_event;
 };
-} // namespace nen
+} // namespace sinen

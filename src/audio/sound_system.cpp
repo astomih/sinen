@@ -9,7 +9,7 @@
 #include <io/dstream.hpp>
 #include <math/quaternion.hpp>
 
-namespace nen {
+namespace sinen {
 vector3 calculate(const quaternion &r);
 namespace detail {
 static int check_openal_error(const char *where) {
@@ -187,4 +187,4 @@ vector3 calculate(const quaternion &r) {
   return vector3(math::to_degrees(tx), math::to_degrees(ty),
                  math::to_degrees(tz));
 }
-} // namespace nen
+} // namespace sinen

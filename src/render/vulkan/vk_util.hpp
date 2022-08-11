@@ -15,7 +15,7 @@
 #define ThrowIfFailed(code, msg)                                               \
   vkutil::CheckResultCodeVk(code, FILE_PREFIX msg)
 
-namespace nen::vkutil {
+namespace sinen::vkutil {
 template <class U>
 void DestroyVulkanObject(
     const VkDevice &device, U &object,

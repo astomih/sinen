@@ -1,10 +1,10 @@
-#ifndef NEN_LOGGER
-#define NEN_LOGGER
+#ifndef SINEN_LOGGER
+#define SINEN_LOGGER
 #include <iostream>
 #include <memory>
 #include <string_view>
 
-namespace nen {
+namespace sinen {
 namespace detail {
 template <typename... Args>
 std::string string_format_internal(const std::string &format, Args &&...args) {
@@ -26,8 +26,7 @@ template <typename T> auto convert(T &&value) {
 }
 template <typename... Args>
 std::string string_format_logger(const std::string &format, Args &&...args) {
-  return ::nen::detail::string_format_internal(
-      format, ::nen::detail::convert(std::forward<Args>(args))...);
+  return string_format_internal(format, convert(std::forward<Args>(args))...);
 }
 } // namespace detail
 
@@ -97,6 +96,6 @@ public:
     };
   };
 };
-} // namespace nen
+} // namespace sinen
 
-#endif // NEN_LOGGER
+#endif // SINEN_LOGGER

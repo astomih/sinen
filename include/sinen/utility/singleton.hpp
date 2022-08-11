@@ -1,10 +1,10 @@
-#ifndef NEN_SINGLETON_HPP
-#define NEN_SINGLETON_HPP
+#ifndef SINEN_SINGLETON_HPP
+#define SINEN_SINGLETON_HPP
 #include <functional>
 #include <list>
 #include <memory>
 
-namespace nen {
+namespace sinen {
 
 class singleton_finalizer {
 public:
@@ -32,5 +32,5 @@ private:
   static void Destroy() { mInstance = nullptr; }
   static std::unique_ptr<T> mInstance;
 };
-} // namespace nen
-#endif
+} // namespace sinen
+#endif // !SINEN_SINGLETON_HPP

@@ -7,7 +7,7 @@
 #include <thread>
 #include <unordered_map>
 
-namespace nen {
+namespace sinen {
 void decoding(std::string &str, std::vector<uint8_t> &key) {
   int i = 0;
   for (auto &c : str) {
@@ -128,4 +128,4 @@ std::string dstream::convert_file_path(std::string_view name,
   return filePath;
 }
 
-} // namespace nen
+} // namespace sinen

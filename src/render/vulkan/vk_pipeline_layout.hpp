@@ -1,11 +1,12 @@
-#pragma once
+#ifndef SINEN_VK_PIPELINE_LAYOUT
+#define SINEN_VK_PIPELINE_LAYOUT
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include <SDL_vulkan.h>
 #include <array>
 #include <vector>
 #include <vulkan/vk_layer.h>
 
-namespace nen {
+namespace sinen {
 class vk_pipeline_layout {
 public:
   vk_pipeline_layout() = default;
@@ -63,5 +64,6 @@ private:
   VkPipelineLayoutCreateInfo pipelineLayoutCI;
   VkPipelineDynamicStateCreateInfo pipelineDynamicStateCI;
 };
-} // namespace nen
-#endif
+} // namespace sinen
+#endif // !!defined(EMSCRIPTEN) && !defined(MOBILE)
+#endif // !SINEN_VK_PIPELINE_LAYOUT

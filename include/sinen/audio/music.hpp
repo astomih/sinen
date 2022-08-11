@@ -1,8 +1,9 @@
-#pragma once
+#ifndef SINEN_MUSIC_HPP
+#define SINEN_MUSIC_HPP
 #include <memory>
 #include <string>
 
-namespace nen {
+namespace sinen {
 class music {
 public:
   music();
@@ -19,4 +20,5 @@ public:
 private:
   void *buffer;
 };
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_MUSIC_HPP

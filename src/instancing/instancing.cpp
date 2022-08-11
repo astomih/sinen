@@ -1,6 +1,6 @@
 #include "instancing/instancing.hpp"
 
-namespace nen {
+namespace sinen {
 void instancing::world_to_instance_data(const matrix4 &mat,
                                         instance_data &data) {
 
@@ -21,4 +21,4 @@ void instancing::world_to_instance_data(const matrix4 &mat,
     data.world_matrix_4[i] = mat.mat[l][i];
   }
 }
-} // namespace nen
+} // namespace sinen

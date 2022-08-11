@@ -1,9 +1,10 @@
-#pragma once
+#ifndef	SINEN_GAME_CONTROLLER_HPP
+#define	SINEN_GAME_CONTROLLER_HPP
 #include "game_controller_button.hpp"
 #include <cstdint>
 #include <memory>
 
-namespace nen {
+namespace sinen {
 class joystick {
 public:
   joystick();
@@ -28,4 +29,5 @@ private:
   class Impl;
   std::unique_ptr<Impl> impl;
 };
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_GAME_CONTROLLER_HPP

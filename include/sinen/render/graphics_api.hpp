@@ -1,6 +1,6 @@
-#ifndef NEN_GRAPHICS_API_HPP
-#define NEN_GRAPHICS_API_HPP
-namespace nen {
+#ifndef SINEN_GRAPHICS_API_HPP
+#define SINEN_GRAPHICS_API_HPP
+namespace sinen {
 enum class graphics_api { OpenGL, Vulkan, ES };
 }
-#endif
+#endif // !SINEN_GRAPHICS_API_HPP

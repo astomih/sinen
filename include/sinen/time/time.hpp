@@ -1,10 +1,10 @@
-﻿#ifndef NEN_TIME_HPP
-#define NEN_TIME_HPP
+﻿#ifndef SINEN_TIME_HPP
+#define SINEN_TIME_HPP
 #include <chrono>
 #include <cstdint>
 #include <functional>
 
-namespace nen {
+namespace sinen {
 /**
  * @brief About time
  *
@@ -37,6 +37,6 @@ public:
         .count();
   }
 };
-} // namespace nen
+} // namespace sinen
 
-#endif // NEN_TIME_HPP
+#endif // SINEN_TIME_HPP

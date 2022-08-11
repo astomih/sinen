@@ -1,10 +1,11 @@
-#pragma once
+#ifndef SINEN_TCP_CLIENT_HPP
+#define SINEN_TCP_CLIENT_HPP
 #include "tcp_socket.hpp"
 #include <cstdint>
 #include <memory>
 #include <string>
 
-namespace nen {
+namespace sinen {
 class tcp_client {
 public:
   tcp_client();
@@ -20,4 +21,5 @@ private:
   class Impl;
   std::unique_ptr<Impl> impl;
 };
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_TCP_CLIENT_HPP

@@ -2,7 +2,7 @@
 #include "random_system.hpp"
 #include <math/random.hpp>
 #include <random>
-namespace nen {
+namespace sinen {
 std::mt19937 sGenerator;
 void random_system::init() {
   std::random_device rd;
@@ -34,4 +34,4 @@ vector3 random::get_vector(const vector3 &min, const vector3 &max) {
   return min + (max - min) * r;
 }
 
-} // namespace nen
+} // namespace sinen

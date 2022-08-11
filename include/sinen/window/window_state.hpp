@@ -1,5 +1,7 @@
-#pragma once
-namespace nen {
+#ifndef SINEN_WINDOW_STATE_HPP
+#define SINEN_WINDOW_STATE_HPP
+
+namespace sinen {
 enum class window_state {
   SHOWN = 1,
   HIDDEN,
@@ -23,3 +25,4 @@ enum class window_state {
   HIT_TEST
 };
 }
+#endif // !WINDOW_STATE_HPP

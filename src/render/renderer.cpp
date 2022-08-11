@@ -8,7 +8,7 @@
 #include <vertex/vertex.hpp>
 #include <vertex/vertex_array.hpp>
 
-namespace nen {
+namespace sinen {
 render_system::render_system() : showImGui(false) {}
 render_system::~render_system() = default;
 renderer::~renderer() = default;
@@ -47,7 +47,7 @@ void render_system::render() {
     m_gl_renderer->render();
   }
 }
-void render_system::draw2d(std::shared_ptr<nen::draw_object> drawObject) {
+void render_system::draw2d(std::shared_ptr<draw_object> drawObject) {
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
   if (RendererAPI == graphics_api::Vulkan) {
     m_vk_renderer->draw2d(drawObject);
@@ -190,4 +190,4 @@ std::list<std::function<void()>> &renderer::get_imgui_function() {
 void renderer::add_imgui_function(std::function<void()> function) {
   get_renderer().get_imgui_function().push_back(function);
 }
-} // namespace nen
+} // namespace sinen

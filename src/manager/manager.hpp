@@ -1,8 +1,9 @@
-#pragma once
+#ifndef SINEN_MANAGER_HPP
+#define SINEN_MANAGER_HPP
 #include <memory>
 #include <string>
 
-namespace nen {
+namespace sinen {
 /**
  * @brief sinen manager
  *
@@ -39,4 +40,6 @@ private:
 
   std::string m_scene_name = "main";
 };
-} // namespace nen
+} // namespace sinen
+
+#endif // !SINEN_MANAGER_HPP

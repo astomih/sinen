@@ -44,5 +44,5 @@
 
 #endif
 #ifdef NO_USE_SINEN_NAMESPACE
-using namespace nen;
+using namespace sinen;
 #endif

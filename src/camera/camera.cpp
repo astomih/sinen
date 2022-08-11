@@ -5,7 +5,7 @@
 #include <render/renderer.hpp>
 #include <window/window.hpp>
 
-namespace nen {
+namespace sinen {
 camera::camera()
     : fov(math::to_radians(70.f)),
       aspect(get_window().size.x / get_window().size.y), near(0.1f),
@@ -19,4 +19,4 @@ void camera::update() {
   projection =
       matrix4::perspective(this->fov, this->aspect, this->near, this->far);
 }
-} // namespace nen
+} // namespace sinen

@@ -3,7 +3,7 @@
 #include <network/tcp_client.hpp>
 #include <vector>
 
-namespace nen {
+namespace sinen {
 class tcp_client::Impl {
 public:
   Impl() = default;
@@ -40,4 +40,4 @@ bool tcp_client::Receive(void *data, int maxLength) {
 bool tcp_client::Send(const void *data, int size) {
   return SDLNet_TCP_Send(impl->accepting, data, size) >= size;
 }
-} // namespace nen
+} // namespace sinen

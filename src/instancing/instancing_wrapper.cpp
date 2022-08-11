@@ -8,7 +8,7 @@
 #include <render/renderer.hpp>
 #include <window/window.hpp>
 
-namespace nen {
+namespace sinen {
 draw2d_instancing::draw2d_instancing(texture texture_handle)
     : texture_handle(texture_handle) {
   vertex_name = "SPRITE";
@@ -107,4 +107,4 @@ void draw3d_instancing::clear() {
   this->rotation.clear();
   this->scale.clear();
 }
-} // namespace nen
+} // namespace sinen

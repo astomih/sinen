@@ -18,7 +18,7 @@
 #include "../vertex/vertex_array.hpp"
 #include "graphics_api.hpp"
 
-namespace nen {
+namespace sinen {
 
 class renderer {
 public:
@@ -60,5 +60,5 @@ public:
 private:
 };
 
-} // namespace nen
-#endif
+} // namespace sinen
+#endif // !SINEN_RENDERER_HPP

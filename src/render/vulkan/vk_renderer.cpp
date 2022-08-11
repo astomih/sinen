@@ -31,7 +31,7 @@
 #include "vk_util.hpp"
 #include <io/dstream.hpp>
 
-namespace nen {
+namespace sinen {
 using namespace vkutil;
 
 constexpr int maxpoolSize = 5000;
@@ -1221,5 +1221,5 @@ void vk_renderer::destroy_texture(std::shared_ptr<vk_draw_object> texture) {
   texture->uniformBuffers.clear();
   layouts.pop_back();
 }
-} // namespace nen
+} // namespace sinen
 #endif

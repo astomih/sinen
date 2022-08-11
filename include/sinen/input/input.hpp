@@ -1,5 +1,5 @@
-#ifndef NEN_INPUT_SYSTEM_HPP
-#define NEN_INPUT_SYSTEM_HPP
+#ifndef SINEN_INPUT_HPP
+#define SINEN_INPUT_HPP
 #include "../event/process_event.hpp"
 #include "../math/vector2.hpp"
 #include "game_controller.hpp"
@@ -9,7 +9,7 @@
 #include <array>
 #include <cstdint>
 
-namespace nen {
+namespace sinen {
 // The different button states
 enum class button_state { None, Pressed, Released, Held };
 
@@ -59,6 +59,6 @@ public:
   static joystick_state controller;
   static void set_relative_mouse_mode(bool value);
 };
-} // namespace nen
+} // namespace sinen
 
-#endif
+#endif // !SINEN_INPUT_HPP

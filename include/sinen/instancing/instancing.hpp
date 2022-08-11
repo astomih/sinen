@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SINEN_INSTANCING_HPP
+#define SINEN_INSTANCING_HPP
+
 #include "../draw_object/draw_object.hpp"
 #include "../draw_object/object_type.hpp"
 #include "../texture/texture.hpp"
@@ -6,7 +8,7 @@
 #include <cstddef>
 #include <memory>
 #include <vector>
-namespace nen {
+namespace sinen {
 
 class instancing {
 public:
@@ -26,4 +28,5 @@ public:
 private:
 };
 
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_INSTANCING_HPP

@@ -1,11 +1,13 @@
-#pragma once
+#ifndef SINEN_RANDOM_SYSTEM_HPP
+#define SINEN_RANDOM_SYSTEM_HPP
 #include <random>
 
-namespace nen {
+namespace sinen {
 class random_system {
 public:
   void init();
 
   std::mt19937 sGenerator;
 };
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_RANDOM_SYSTEM_HPP

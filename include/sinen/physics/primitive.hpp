@@ -1,8 +1,8 @@
-#ifndef NEN_PRIMITIVE3_HPP
-#define NEN_PRIMITIVE3_HPP
+#ifndef SINEN_PRIMITIVE3_HPP
+#define SINEN_PRIMITIVE3_HPP
 #include "../math/vector3.hpp"
 
-namespace nen {
+namespace sinen {
 class primitive {
 public:
 };
@@ -45,5 +45,5 @@ struct aabb : public primitive {
 
   bool intersects_aabb(const aabb &other);
 };
-} // namespace nen
-#endif
+} // namespace sinen
+#endif // !SINEN_PRIMITIVE_HPP

@@ -40,7 +40,7 @@ std::function<void()> emscripten_loop;
 void main_loop() { emscripten_loop(); }
 #endif
 
-namespace nen {
+namespace sinen {
 manager _manager;
 std::unique_ptr<class window_system> m_window;
 std::unique_ptr<class render_system> m_renderer;
@@ -74,9 +74,9 @@ bool manager::initialize() {
   m_next_scene = nullptr;
   m_window = std::make_unique<window_system>();
   m_texture_system = std::make_unique<texture_system>();
-  m_renderer = std::make_unique<nen::render_system>();
-  nen::logger::change_logger(
-      std::move(nen::logger::default_logger::CreateConsoleLogger()));
+  m_renderer = std::make_unique<render_system>();
+  logger::change_logger(
+      std::move(logger::default_logger::CreateConsoleLogger()));
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
   std::ifstream ifs("./api");
   std::string str;
@@ -84,37 +84,37 @@ bool manager::initialize() {
     str = "Vulkan";
   std::getline(ifs, str);
   if (str.compare("Vulkan") == 0) {
-    m_window->initialize("Nen : Vulkan", nen::graphics_api::Vulkan);
-    m_renderer->initialize(nen::graphics_api::Vulkan);
+    m_window->initialize("Nen : Vulkan", graphics_api::Vulkan);
+    m_renderer->initialize(graphics_api::Vulkan);
   } else if (str.compare("OpenGL") == 0) {
-    m_window->initialize("Nen : OpenGL", nen::graphics_api::OpenGL);
-    m_renderer->initialize(nen::graphics_api::OpenGL);
+    m_window->initialize("Nen : OpenGL", graphics_api::OpenGL);
+    m_renderer->initialize(graphics_api::OpenGL);
   }
 
 #else
-  m_window->initialize("Nen", nen::graphics_api::ES);
-  m_renderer->initialize(nen::graphics_api::ES);
+  m_window->initialize("Nen", graphics_api::ES);
+  m_renderer->initialize(graphics_api::ES);
 #endif
   m_camera = std::make_unique<camera>();
 
-  m_sound_system = std::make_unique<nen::sound_system>();
+  m_sound_system = std::make_unique<sound_system>();
   if (!m_sound_system->initialize()) {
     logger::fatal("Failed to initialize audio system");
     m_sound_system->terminate();
     m_sound_system = nullptr;
     return false;
   }
-  m_input_system = std::make_unique<nen::input_system>();
+  m_input_system = std::make_unique<input_system>();
   if (!m_input_system->initialize()) {
     logger::fatal("Failed to initialize input system");
     return false;
   }
-  m_script_system = std::make_unique<nen::script_system>();
+  m_script_system = std::make_unique<script_system>();
   if (!m_script_system->initialize()) {
     logger::fatal("Failed to initialize script system");
     return false;
   }
-  m_random = std::make_unique<nen::random_system>();
+  m_random = std::make_unique<random_system>();
   m_random->init();
   texture tex;
   tex.fill_color(palette::Black);
@@ -161,7 +161,7 @@ void manager::loop() {
 void manager::change_scene(std::string scene_name) {
   m_current_scene->Quit();
   m_script_system->shutdown();
-  m_next_scene = std::make_unique<nen::scene>();
+  m_next_scene = std::make_unique<scene>();
   m_scene_name = scene_name;
 }
 
@@ -173,4 +173,4 @@ std::string get_current_scene_number() {
   return _manager.get_current_scene_number();
 }
 
-} // namespace nen
+} // namespace sinen

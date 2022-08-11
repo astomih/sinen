@@ -6,7 +6,7 @@
 #include <render/renderer.hpp>
 #include <window/window.hpp>
 
-namespace nen {
+namespace sinen {
 draw2d::draw2d()
     : position(vector2(0.f, 0.f)), rotation(0.0f), scale(vector2(1.f, 1.f)) {}
 draw2d::draw2d(texture texture_handle)
@@ -68,4 +68,4 @@ void draw3d::draw() {
   get_renderer().draw3d(obj);
   *this->texture_handle.is_need_update = false;
 }
-} // namespace nen
+} // namespace sinen

@@ -6,7 +6,7 @@
 #include <logger/logger.hpp>
 #include <texture/texture.hpp>
 
-namespace nen {
+namespace sinen {
 
 texture::texture() {
   handle = get_texture().create();

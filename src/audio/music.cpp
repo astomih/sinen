@@ -7,7 +7,7 @@
 #include <audio/music.hpp>
 #include <io/dstream.hpp>
 
-namespace nen {
+namespace sinen {
 music::music() {}
 
 music::~music() {}
@@ -33,4 +33,4 @@ void music::unload() {
   }
 }
 
-} // namespace nen
+} // namespace sinen

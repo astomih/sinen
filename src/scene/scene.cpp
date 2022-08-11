@@ -33,7 +33,7 @@
 #include <input/input.hpp>
 #include <sol/sol.hpp>
 
-namespace nen {
+namespace sinen {
 void LinkCallback(ImGui::MarkdownLinkCallbackData data_);
 inline ImGui::MarkdownImageData
 ImageCallback(ImGui::MarkdownLinkCallbackData data_);

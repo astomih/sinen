@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SINEN_GL_RENDERER_HPP
+#define SINEN_GL_RENDERER_HPP
 #include <cstdint>
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
@@ -16,8 +17,8 @@
 #include <texture/texture.hpp>
 #include <vertex/vertex_array.hpp>
 
-namespace nen {
-struct gl_vertex_array : public nen::vertex_array {
+namespace sinen {
+struct gl_vertex_array : public vertex_array {
   /**
    * @brief Vertex Array Object
    *
@@ -145,4 +146,5 @@ private:
   float prev_window_x;
   float prev_window_y;
 };
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_GL_RENDE

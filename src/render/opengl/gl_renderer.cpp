@@ -34,7 +34,7 @@
 #include <sstream>
 #include <window/window.hpp>
 
-namespace nen {
+namespace sinen {
 gl_renderer::gl_renderer() {}
 gl_renderer::~gl_renderer() = default;
 
@@ -632,4 +632,4 @@ bool gl_renderer::load_shader() {
   return true;
 }
 
-} // namespace nen
+} // namespace sinen

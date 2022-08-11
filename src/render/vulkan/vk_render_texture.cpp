@@ -3,7 +3,7 @@
 #include <array>
 #include <vector>
 
-namespace nen {
+namespace sinen {
 vk_render_texture::vk_render_texture(vk_renderer &r) : m_vkrenderer(r) {}
 
 void vk_render_texture::prepare(int width, int height, bool depth_only) {
@@ -301,4 +301,4 @@ void vk_render_texture::prepare_descriptor_set_layout() {
                               nullptr, &descriptor_set_layout);
 }
 
-} // namespace nen
+} // namespace sinen

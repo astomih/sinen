@@ -1,7 +1,7 @@
 #pragma once
 #include <input/input.hpp>
 
-namespace nen {
+namespace sinen {
 class keyboard_state_impl {
 public:
   const uint8_t *mCurrState;
@@ -65,4 +65,4 @@ private:
   vector2 filter2d(int inputX, int inputY);
   joystick mController;
 };
-} // namespace nen
+} // namespace sinen

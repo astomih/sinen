@@ -11,12 +11,12 @@
 #include <model/model.hpp>
 #include <render/renderer.hpp>
 
-namespace nen {
+namespace sinen {
 enum class load_state { version, vertex, indices };
 
 void model::load(std::string_view str, std::string_view name) {
   std::stringstream data;
-  data << nen::dstream::open_as_string(nen::asset_type::Model, str);
+  data << dstream::open_as_string(asset_type::Model, str);
   std::string line;
   load_state state = load_state::version;
   std::string version;
@@ -38,7 +38,7 @@ void model::load(std::string_view str, std::string_view name) {
       if (line.starts_with("begin indices"))
         state = load_state::indices;
 
-      nen::vertex v;
+      vertex v;
       sscanf(line.data(), "%f %f %f %f %f %f %f %f %f %f %f %f\n",
              &v.position.x, &v.position.y, &v.position.z, &v.normal.x,
              &v.normal.y, &v.normal.z, &v.uv.x, &v.uv.y, &v.rgba.r, &v.rgba.g,
@@ -69,4 +69,4 @@ void model::load(std::string_view str, std::string_view name) {
   m_array.indexCount = m_array.indices.size();
   get_renderer().add_vertex_array(m_array, name);
 }
-} // namespace nen
+} // namespace sinen

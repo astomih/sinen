@@ -3,7 +3,7 @@
 #include "vk_base.hpp"
 #include "vk_util.hpp"
 
-namespace nen {
+namespace sinen {
 void vk_pipeline::initialize(
     vk_pipeline_layout &layout, VkRenderPass renderPass,
     std::vector<VkPipelineShaderStageCreateInfo> &shaderStages) {
@@ -62,8 +62,7 @@ void vk_pipeline::Bind(VkCommandBuffer command) {
 }
 
 void vk_pipeline::Cleanup(VkDevice device) {
-  nen::vkutil::DestroyVulkanObject<VkPipeline>(device, pipeline,
-                                               &vkDestroyPipeline);
+  vkutil::DestroyVulkanObject<VkPipeline>(device, pipeline, &vkDestroyPipeline);
 }
 
 void vk_pipeline::set_depth_test(VkBool32 isEnable) {
@@ -81,5 +80,5 @@ void vk_pipeline::alpha_blend_factor(VkBlendFactor src, VkBlendFactor dst) {
   blendAttachment.srcAlphaBlendFactor = src;
   blendAttachment.dstAlphaBlendFactor = dst;
 }
-} // namespace nen
+} // namespace sinen
 #endif

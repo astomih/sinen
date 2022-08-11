@@ -1,10 +1,11 @@
-﻿#pragma once
+﻿#ifndef SINEN_TRANSFORM_HPP
+#define SINEN_TRANSFORM_HPP
 #include "../window/window.hpp"
 #include "math.hpp"
 #include <cstdio>
 #include <string>
 
-namespace nen {
+namespace sinen {
 class transform {
 public:
   /*
@@ -15,4 +16,5 @@ private:
   base_actor &mOwner;
   */
 };
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_TRANSFORM_HPP

@@ -7,7 +7,7 @@
 #include <string>
 #include <window/window_state.hpp>
 
-namespace nen {
+namespace sinen {
 class window_system {
 public:
   window_system();
@@ -21,4 +21,4 @@ public:
   window_state state = window_state::ENTER;
   ::SDL_Window *m_window;
 };
-} // namespace nen
+} // namespace sinen

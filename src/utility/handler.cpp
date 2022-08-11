@@ -1,1 +1,1 @@
-namespace nen {} // namespace nen
+namespace sinen {} // namespace sinen

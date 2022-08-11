@@ -1,11 +1,12 @@
-#pragma once
+#ifndef SINEN_VK_PIPELINE_HPP
+#define SINEN_VK_PIPELINE_HPP
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "vk_pipeline_layout.hpp"
 #include <SDL_vulkan.h>
 #include <vector>
 #include <vulkan/vk_layer.h>
 
-namespace nen {
+namespace sinen {
 class vk_pipeline {
 public:
   vk_pipeline() = default;
@@ -27,5 +28,6 @@ private:
   VkPipelineDepthStencilStateCreateInfo depthStencilCI;
   VkGraphicsPipelineCreateInfo graphicsCI;
 };
-} // namespace nen
+} // namespace sinen
 #endif
+#endif // !SINEN_VK_PIPELINE_HPP

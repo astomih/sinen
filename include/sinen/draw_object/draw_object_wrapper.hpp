@@ -1,11 +1,12 @@
-#pragma once
+#ifndef SINEN_DRAW_OBJECT_WRAPPER_HPP
+#define SINEN_DRAW_OBJECT_WRAPPER_HPP
 #include "../math/vector2.hpp"
 #include "../math/vector3.hpp"
 #include "../texture/texture.hpp"
 #include "../utility/handle_t.hpp"
 #include "draw_object.hpp"
 
-namespace nen {
+namespace sinen {
 class draw2d {
 public:
   draw2d();
@@ -29,4 +30,5 @@ public:
   bool is_draw_depth = true;
   std::string vertex_name = "SPRITE";
 };
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_DRAW_OBEJCT_WRAPPER_HPP

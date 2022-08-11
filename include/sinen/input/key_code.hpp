@@ -1,5 +1,6 @@
-#pragma once
-namespace nen {
+#ifndef SINEN_KEYCODE_HPP
+#define SINEN_KEYCODE_HPP
+namespace sinen {
 enum class key_code {
   UNKNOWN = 0,
 
@@ -260,3 +261,4 @@ enum class key_code {
   NUM_KEYCODES = 512
 };
 }
+#endif // !SINEN_KEYCODE_HPP

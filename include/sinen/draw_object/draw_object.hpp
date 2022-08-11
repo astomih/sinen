@@ -1,11 +1,12 @@
-#pragma once
+#ifndef SINEN_DRAW_OBJECT_HPP
+#define SINEN_DRAW_OBJECT_HPP
 #include "../math/vector2.hpp"
 #include "../shader/shader.hpp"
 #include "../texture/texture.hpp"
 #include "../utility/handler.hpp"
 #include "object_type.hpp"
 
-namespace nen {
+namespace sinen {
 class draw_object {
 public:
   draw_object() = default;
@@ -20,3 +21,4 @@ public:
 };
 
 } // namespace nen
+#endif // !SINEN_DRAW_OBJECT_HPP

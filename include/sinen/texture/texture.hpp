@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SINEN_TEXTURE_HPP
+#define SINEN_TEXTURE_HPP
 #include "../color/color.hpp"
 #include "../math/matrix4.hpp"
 #include "../utility/handle_t.hpp"
@@ -8,7 +9,7 @@
 #include <string_view>
 #include <unordered_map>
 
-namespace nen {
+namespace sinen {
 struct shader_parameter {
   matrix4 world;
   matrix4 view;
@@ -32,4 +33,5 @@ public:
   handle_t handle;
   std::shared_ptr<bool> is_need_update;
 };
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_TEXTURE_HPP

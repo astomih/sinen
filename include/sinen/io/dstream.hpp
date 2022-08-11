@@ -1,11 +1,13 @@
-﻿#pragma once
+﻿#ifndef SINEN_DSTREAM_HPP
+#define SINEN_DSTREAM_HPP
+
 #include "asset_type.hpp"
 #include <cstddef>
 #include <string>
 #include <string_view>
 #include <vector>
 
-namespace nen {
+namespace sinen {
 
 class dstream {
 public:
@@ -26,4 +28,5 @@ public:
   static std::string convert_file_path(std::string_view name,
                                        const asset_type &assetType);
 };
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_DSTREAM_HPP

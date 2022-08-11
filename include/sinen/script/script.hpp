@@ -1,10 +1,11 @@
-#pragma once
+#ifndef SINEN_SCRIPT_HPP
+#define SINEN_SCRIPT_HPP
 #include <functional>
 #include <memory>
 #include <string>
 #include <string_view>
 
-namespace nen {
+namespace sinen {
 class script {
 public:
   script();
@@ -16,4 +17,5 @@ public:
 
 private:
 };
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_SCRIPT_HPP

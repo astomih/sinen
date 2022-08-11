@@ -8,7 +8,7 @@
 #include <string_view>
 #include <unordered_map>
 
-namespace nen {
+namespace sinen {
 class sound_system {
 public:
   sound_system();
@@ -34,4 +34,4 @@ private:
   void *device;
   void *context;
 };
-} // namespace nen
+} // namespace sinen

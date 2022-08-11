@@ -5,7 +5,7 @@
 #include <SDL.h>
 #include <window/window.hpp>
 
-namespace nen {
+namespace sinen {
 window_system::window_system() : size(vector2(1280.f, 720.f)) {}
 window::~window() = default;
 
@@ -74,4 +74,4 @@ void window_system::ProcessInput() {
         current_event_handle::current_event.window.event);
   }
 }
-} // namespace nen
+} // namespace sinen

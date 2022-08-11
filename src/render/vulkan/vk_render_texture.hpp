@@ -5,7 +5,7 @@
 #include "vk_pipeline_layout.hpp"
 #include <vulkan/vulkan.h>
 
-namespace nen {
+namespace sinen {
 class vk_render_texture {
 public:
   vk_render_texture(class vk_renderer &);
@@ -30,5 +30,5 @@ private:
   class vk_renderer &m_vkrenderer;
   bool is_depth_only;
 };
-} // namespace nen
+} // namespace sinen
 #endif

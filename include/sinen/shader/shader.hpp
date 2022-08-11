@@ -1,8 +1,9 @@
-#pragma once
+#ifndef SINEN_SHADER_HPP
+#define SINEN_SHADER_HPP
 #include "shader_type.hpp"
 #include <string>
 
-namespace nen {
+namespace sinen {
 class shader {
 public:
   shader();
@@ -14,4 +15,5 @@ public:
     return this->vertName == info.vertName && this->fragName == info.fragName;
   }
 };
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_SHADER_HPP

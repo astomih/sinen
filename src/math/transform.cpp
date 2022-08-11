@@ -1,4 +1,4 @@
-namespace nen {
+namespace sinen {
 /*
 void transform::LookAt(const vector3 &target, const vector3 &norm) {
 vector3 vec = target - mOwner.GetPosition();
@@ -17,4 +17,4 @@ q.Normalize();
 mOwner.SetRotation(q);
 }
 */
-} // namespace nen
+} // namespace sinen

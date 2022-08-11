@@ -3,7 +3,7 @@
 #include <math/matrix4.hpp>
 #include <math/vector2.hpp>
 #include <math/vector3.hpp>
-namespace nen {
+namespace sinen {
 const vector2 vector2::zero(0.0f, 0.0f);
 const vector2 vector2::unit_x(1.0f, 0.0f);
 const vector2 vector2::unit_y(0.0f, 1.0f);
@@ -410,4 +410,4 @@ vector3 quaternion::to_euler(const quaternion &r) {
   return vector3(tx, ty, tz);
 }
 
-} // namespace nen
+} // namespace sinen

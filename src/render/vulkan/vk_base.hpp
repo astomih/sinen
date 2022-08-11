@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿#ifndef SINEN_VK_BASE_HPP
+#define SINEN_VK_BASE_HPP
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #ifdef _WIN32
 #include <windows.h>
@@ -16,7 +17,7 @@
 #include <vk_mem_alloc.h>
 #include <window/window.hpp>
 
-namespace nen {
+namespace sinen {
 /**
  * @brief vulkan base framework class
  *
@@ -84,6 +85,7 @@ public:
   std::shared_ptr<window> m_window;
   vk_renderer *m_vkrenderer;
 };
-} // namespace nen
+} // namespace sinen
 
 #endif // EMSCRIPTEN
+#endif

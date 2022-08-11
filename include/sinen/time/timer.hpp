@@ -1,7 +1,7 @@
 #ifndef SINEN_TIME_TIMER_HPP
 #define SINEN_TIME_TIMER_HPP
 
-namespace nen {
+namespace sinen {
 class timer {
 public:
   timer();
@@ -23,5 +23,5 @@ private:
   float m_time;
   bool m_is_started;
 };
-} // namespace nen
+} // namespace sinen
 #endif // SINEN_TIME_TIMER_HPP

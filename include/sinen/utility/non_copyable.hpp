@@ -1,9 +1,7 @@
-#pragma once
-#ifndef NEN_NONCOPYABLE_HPP
-#define NEN_NONCOPYABLE_HPP
+#ifndef SINEN_NONCOPYABLE_HPP
+#define SINEN_NONCOPYABLE_HPP
 
-namespace nen {
-
+namespace sinen {
 class non_copyable {
 protected:
   non_copyable() {}
@@ -16,6 +14,6 @@ private:
   non_copyable &operator=(non_copyable &&) = delete;
 };
 
-} // namespace nen
+} // namespace sinen
 
-#endif
+#endif // !SINEN_NONCOPYABLE_HPP

@@ -1,6 +1,7 @@
-#pragma once
+#ifndef SINEN_INSTANCE_DATA_HPP
+#define SINEN_INSTANCE_DATA_HPP
 #include "../color/color.hpp"
-namespace nen {
+namespace sinen {
 class instance_data {
 public:
   float world_matrix_1[4];
@@ -11,4 +12,5 @@ public:
 private:
 };
 
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_INSTANCE_DATA_HPP

@@ -1,5 +1,5 @@
 #include <shader/shader.hpp>
 
-namespace nen {
+namespace sinen {
 shader::shader() : vertName("default"), fragName("default") {}
 } // namespace nen

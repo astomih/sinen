@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿#ifndef SINEN_MATH_HPP
+#define SINEN_MATH_HPP
+
 #include "../time/time.hpp"
 #include <algorithm>
 #include <cmath>
@@ -7,9 +9,10 @@
 #include <limits>
 #include <vector>
 
+// C++20
 //#include <numbers>
 
-namespace nen {
+namespace sinen {
 class math {
 public:
   // static constexpr float Pi = std::numbers::pi_v<float>;
@@ -86,4 +89,5 @@ public:
     return cos(x) * 0.5f + 0.5f;
   }
 };
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_MATH_HPP

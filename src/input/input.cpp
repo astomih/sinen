@@ -10,7 +10,7 @@
 #include <utility/singleton.hpp>
 #include <window/window.hpp>
 
-namespace nen {
+namespace sinen {
 bool isHide = false;
 SDL_Cursor *g_cursor = nullptr;
 
@@ -276,4 +276,4 @@ vector2 input_system::filter2d(int inputX, int inputY) {
 
   return dir;
 }
-} // namespace nen
+} // namespace sinen

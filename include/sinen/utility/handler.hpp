@@ -1,5 +1,5 @@
-#ifndef NEN_DYNAMIC_HANDLER_HPP
-#define NEN_DYNAMIC_HANDLER_HPP
+#ifndef SINEN_DYNAMIC_HANDLER_HPP
+#define SINEN_DYNAMIC_HANDLER_HPP
 #include <functional>
 #include <iterator>
 #include <memory>
@@ -8,7 +8,7 @@
 
 #include "handle_t.hpp"
 
-namespace nen {
+namespace sinen {
 template <class T, class DP = std::default_delete<T>> class handler {
 public:
   handler() = default;
@@ -52,5 +52,5 @@ public:
     data.erase(handle);
   }
 };
-} // namespace nen
-#endif
+} // namespace sinen
+#endif // !SINEN_HANDLER_HPP

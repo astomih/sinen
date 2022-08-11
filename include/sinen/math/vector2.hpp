@@ -1,7 +1,8 @@
-#pragma once
+#ifndef SINEN_VECTOR2_HPP
+#define SINEN_VECTOR2_HPP
 #include "math.hpp"
 
-namespace nen {
+namespace sinen {
 class vector2 {
 public:
   float x;
@@ -130,4 +131,5 @@ public:
   static const vector2 neg_unit_x;
   static const vector2 neg_unit_y;
 };
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_VECTOR2_HPP

@@ -6,7 +6,7 @@
 #include "sound_system.hpp"
 #include <audio/music.hpp>
 #include <audio/sound.hpp>
-namespace nen {
+namespace sinen {
 sound::sound() {}
 void sound::load(std::string_view file_name) {
   get_sound().load(file_name);
@@ -77,4 +77,4 @@ const vector3 &sound::get_position() { return pos; }
 
 std::string sound::get_name() { return mName; }
 
-} // namespace nen
+} // namespace sinen

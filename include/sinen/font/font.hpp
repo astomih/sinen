@@ -1,10 +1,10 @@
-﻿#ifndef NEN_FONT_HPP
-#define NEN_FONT_HPP
+﻿#ifndef SINEN_FONT_HPP
+#define SINEN_FONT_HPP
 #include "../math/vector3.hpp"
 #include "../texture/texture.hpp"
 #include <memory>
 
-namespace nen {
+namespace sinen {
 /**
  * @brief font load and render to texture.
  *
@@ -73,5 +73,5 @@ private:
   std::string fontName;
   void *m_font;
 };
-} // namespace nen
-#endif
+} // namespace sinen
+#endif // !SINEN_FONT_HPP

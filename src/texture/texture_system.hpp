@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <utility/handler.hpp>
 
-namespace nen {
+namespace sinen {
 struct SDLObjectCloser {
   void operator()(::SDL_Surface *surface);
   void operator()(::SDL_RWops *rw);

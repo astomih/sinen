@@ -1,9 +1,10 @@
-﻿#pragma once
+﻿#ifndef SINEN_WINDOW_HPP
+#define SINEN_WINDOW_HPP
 #include "../math/vector2.hpp"
 #include "window_state.hpp"
 #include <string>
 
-namespace nen {
+namespace sinen {
 class window {
 public:
   window();
@@ -16,4 +17,5 @@ public:
 
   const window_state &state();
 };
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_WINDOW_HPP

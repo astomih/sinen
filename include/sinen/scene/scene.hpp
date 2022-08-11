@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿#ifndef SINEN_SCENE_HPP
+#define SINEN_SCENE_HPP
 #include "../input/input.hpp"
 #include "../script/script.hpp"
 #include "../utility/handler.hpp"
@@ -10,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-namespace nen {
+namespace sinen {
 class sound_system;
 /**
  * @brief Base of scene class
@@ -100,4 +101,5 @@ private:
   std::function<void()> m_editor;
   std::function<void()> m_markdown;
 };
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_SCENE_HPP

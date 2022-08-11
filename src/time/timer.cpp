@@ -1,7 +1,7 @@
 ﻿#include <time/time.hpp>
 #include <time/timer.hpp>
 
-namespace nen {
+namespace sinen {
 timer::timer() : m_start(0.f), m_time(0.f), m_is_started(false) {}
 timer::timer(float time) : m_start(0.f), m_time(0.f), m_is_started(false) {
   set_time(time);

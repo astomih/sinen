@@ -1,4 +1,7 @@
-namespace nen {
+#ifndef SINEN_EVENT_TYPE_HPP
+#define SINEN_EVENT_TYPE_HPP
+
+namespace sinen {
 enum class event_type {
   FIRSTEVENT = 0, /**< Unused (do not remove) */
 
@@ -131,3 +134,4 @@ enum class event_type {
 
 };
 }
+#endif // !SINEN_EVENT_TYPE_HPP

@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿#ifndef SINEN_VK_RENDERER_HPP
+#define SINEN_VK_RENDERER_HPP
 #include <functional>
 #include <instancing/instancing.hpp>
 #include <memory>
@@ -17,7 +18,7 @@
 #include <unordered_map>
 #include <vk_mem_alloc.h>
 
-namespace nen {
+namespace sinen {
 
 struct vk_vertex_array : public vertex_array {
   vk_buffer_object vertexBuffer;
@@ -143,4 +144,6 @@ private:
   vk_buffer_object m_instance_buffer;
 };
 } // namespace nen
+#endif
+
 #endif

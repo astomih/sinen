@@ -1,5 +1,5 @@
 #pragma once
-namespace nen {
+namespace sinen {
 class window_system &get_window();
 class render_system &get_renderer();
 class input_system &get_input();
@@ -9,4 +9,4 @@ class script_system &get_script();
 class texture_system &get_texture();
 class camera &get_camera();
 class random_system &get_random();
-} // namespace nen
+} // namespace sinen

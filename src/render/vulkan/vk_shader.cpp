@@ -4,7 +4,7 @@
 #include "vk_shader.hpp"
 #include <fstream>
 
-namespace nen {
+namespace sinen {
 VkPipelineShaderStageCreateInfo vk_shader::load(VkDevice device,
                                                 const char *fileName,
                                                 VkShaderStageFlagBits stage) {
@@ -32,5 +32,5 @@ void vk_shader::clean(
     vkDestroyShaderModule(device, v.module, nullptr);
   }
 }
-} // namespace nen
+} // namespace sinen
 #endif

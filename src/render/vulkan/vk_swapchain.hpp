@@ -6,7 +6,7 @@
 #include <math/vector2.hpp>
 #include <vulkan/vk_layer.h>
 
-namespace nen {
+namespace sinen {
 class vk_swapchain {
 public:
   vk_swapchain(VkInstance instance, VkDevice device, VkSurfaceKHR surface);

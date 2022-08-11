@@ -1,8 +1,9 @@
-#pragma once
+#ifndef SINEN_MATRIX3_HPP
+#define SINEN_MATRIX3_HPP
 #include "math.hpp"
 #include "vector2.hpp"
 #include <string>
-namespace nen {
+namespace sinen {
 // 3x3 Matrix
 class matrix3 {
 public:
@@ -109,4 +110,5 @@ public:
 
   static const matrix3 identity;
 };
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_MATRIX3_HPP

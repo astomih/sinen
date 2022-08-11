@@ -21,7 +21,7 @@
 #include <sol/sol.hpp>
 #include <window/window.hpp>
 
-namespace nen {
+namespace sinen {
 script::script() = default;
 script::~script() = default;
 class script_system::implement {
@@ -40,8 +40,7 @@ bool script_system::initialize() {
                              sol::lib::table);
   impl->state["require"] = [&](const std::string &str) -> sol::object {
     return impl->state.require_script(
-        str,
-        nen::dstream::open_as_string(nen::asset_type::Script, str + ".lua"));
+        str, dstream::open_as_string(asset_type::Script, str + ".lua"));
   };
   impl->state["texture"] = [&]() -> texture { return texture(); };
   impl->state["font"] = [&]() -> font { return font(); };
@@ -331,4 +330,4 @@ void script::do_script(std::string_view fileName) {
   get_script().do_script(fileName);
 }
 
-} // namespace nen
+} // namespace sinen

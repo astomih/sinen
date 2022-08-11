@@ -1,6 +1,7 @@
-#pragma once
+#ifndef SINEN_COLOR_HPP
+#define SINEN_COLOR_HPP
 #include "../math/vector3.hpp"
-namespace nen {
+namespace sinen {
 class color {
 public:
   constexpr color(const float red, const float green, const float blue,
@@ -30,3 +31,4 @@ public:
 };
 
 } // namespace nen
+#endif // !SINEN_COLOR_HPP

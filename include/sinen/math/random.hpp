@@ -1,9 +1,10 @@
-#pragma once
+#ifndef SINEN_RANDOM_HPP
+#define SINEN_RANDOM_HPP
 #include "math.hpp"
 #include "vector2.hpp"
 #include "vector3.hpp"
 
-namespace nen {
+namespace sinen {
 class random {
 public:
   // Seed the generator with the specified int
@@ -23,4 +24,5 @@ public:
   static vector2 get_vector(const vector2 &min, const vector2 &max);
   static vector3 get_vector(const vector3 &min, const vector3 &max);
 };
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_RANDOM_HPP

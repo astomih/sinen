@@ -60,7 +60,7 @@ elseif(EMSCRIPTEN)
       "${CMAKE_CXX_FLAGS} \
 		-Wno-unused-command-line-argument \
 		-s USE_WEBGL2=1 \
-		-s SDL2_IMAGE_FORMATS='[\"png\"]' \
+		-s SDL2_IMAGE_FORMATS="[""png""]" \
 		-s USE_SDL=2 \
 		-s USE_SDL_IMAGE=2 \
 		-s USE_SDL_TTF=2 \

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SINEN_RENDER_SYSTEM_HPP
+#define SINEN_RENDER_SYSTEM_HPP
 #include <color/color.hpp>
 #include <instancing/instancing.hpp>
 #include <list>
@@ -13,7 +14,7 @@
 #include <texture/texture_type.hpp>
 #include <vertex/vertex_array.hpp>
 
-namespace nen {
+namespace sinen {
 class render_system {
 public:
   render_system();
@@ -77,4 +78,5 @@ private:
   std::list<std::function<void()>> m_imgui_function;
   texture m_skybox_texture;
 };
-} // namespace nen
+} // namespace sinen
+#endif // !SINEN_RENDER_SYSTEM_HPP

@@ -1,12 +1,12 @@
 ﻿#pragma once
 #include "Weight.hpp"
-#include <Nen.hpp>
+#include <sinen.hpp>
 
-namespace nen {
+namespace sinen {
 struct Bone {
   std::string name;
   matrix4 offset;
 
   std::vector<Weight> weights;
 };
-} // namespace nen
+} // namespace sinen

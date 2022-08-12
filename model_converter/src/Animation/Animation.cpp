@@ -1,3 +1,3 @@
-﻿namespace nen
+﻿namespace sinen
 {
 }

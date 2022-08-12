@@ -12,7 +12,7 @@
 #include <map>
 #include <set>
 
-namespace nen {
+namespace sinen {
 Animation createAnimation(const aiAnimation *anim);
 std::shared_ptr<Node> createNode(const aiNode *const n, aiMesh **mesh);
 Mesh createMesh(const aiMesh *const m);
@@ -401,4 +401,4 @@ void UpdateMesh(Model *model) {
     }
   }
 }
-} // namespace nen
+} // namespace sinen

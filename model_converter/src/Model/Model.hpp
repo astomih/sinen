@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace nen {
+namespace sinen {
 class Model {
 public:
   /**
@@ -35,4 +35,4 @@ public:
 private:
   void NormalizeMeshWeight();
 };
-} // namespace nen
+} // namespace sinen

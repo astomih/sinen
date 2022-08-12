@@ -1,6 +1,6 @@
 ﻿#include "FromAssimp.hpp"
 
-namespace nen {
+namespace sinen {
 vector3 fromAssimp(const aiVector3D &v) { return vector3{v.x, v.y, v.z}; }
 
 color fromAssimp(const aiColor3D &col) {
@@ -28,4 +28,4 @@ QuatKey fromAssimp(const aiQuatKey &key) {
 
   return v;
 }
-} // namespace nen
+} // namespace sinen

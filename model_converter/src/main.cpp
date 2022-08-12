@@ -1,5 +1,4 @@
 #include "Model/Model.hpp"
-#include <SDL2/SDL_rwops.h>
 #include <iostream>
 #include <string>
 

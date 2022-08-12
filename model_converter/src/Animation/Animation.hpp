@@ -3,8 +3,7 @@
 #include <string>
 #include <vector>
 
-
-namespace nen {
+namespace sinen {
 struct VectorKey {
   double time;
   vector3 value;
@@ -26,4 +25,4 @@ public:
   float mDuration;
   std::vector<NodeAnim> body;
 };
-} // namespace nen
+} // namespace sinen

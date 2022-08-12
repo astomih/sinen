@@ -2,11 +2,11 @@
 #include "Bone.hpp"
 #include "Vertex/Vertex.hpp"
 #include "Vertex/VertexArray.hpp"
-#include <Nen.hpp>
 #include <memory>
+#include <sinen.hpp>
 #include <string_view>
 
-namespace nen {
+namespace sinen {
 class Mesh {
 public:
   vertex_array original;
@@ -15,4 +15,4 @@ public:
   bool has_bone;
   std::vector<Bone> bones;
 };
-} // namespace nen
+} // namespace sinen

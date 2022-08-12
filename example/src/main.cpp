@@ -1,8 +1,8 @@
 ﻿#include <sinen/sinen.hpp>
 
 int main(int argc, char *argv[]) {
-  if (!nen::initialize())
+  if (!sinen::initialize())
     return -1;
-  nen::launch();
+  sinen::launch();
   return 0;
 }

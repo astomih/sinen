@@ -7,6 +7,8 @@
 #include "audio/music.hpp"
 #include "audio/sound.hpp"
 #include "camera/camera.hpp"
+#include "color/color.hpp"
+#include "color/palette.hpp"
 #include "draw_object/draw_object.hpp"
 #include "draw_object/draw_object_wrapper.hpp"
 #include "exception/exception.hpp"

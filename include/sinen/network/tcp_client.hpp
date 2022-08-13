@@ -10,16 +10,16 @@ class tcp_client {
 public:
   tcp_client();
   ~tcp_client();
-  bool ResolveHost(std::string_view address, uint16_t port);
-  bool Open();
-  void Close();
+  bool resolve_host(std::string_view address, uint16_t port);
+  bool open();
+  void close();
 
-  bool Receive(void *data, int maxLength);
-  bool Send(const void *data, int size);
+  bool receive(void *data, int maxLength);
+  bool send(const void *data, int size);
 
 private:
-  class Impl;
-  std::unique_ptr<Impl> impl;
+  class impl;
+  std::unique_ptr<impl> m_impl;
 };
 } // namespace sinen
 #endif // !SINEN_TCP_CLIENT_HPP

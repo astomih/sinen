@@ -1,5 +1,7 @@
 ﻿#ifndef SINEN_FONT_HPP
 #define SINEN_FONT_HPP
+#include "../color/color.hpp"
+#include "../color/palette.hpp"
 #include "../math/vector3.hpp"
 #include "../texture/texture.hpp"
 #include <memory>

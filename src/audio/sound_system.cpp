@@ -171,11 +171,11 @@ vector3 calculate(const quaternion &r) {
   float tx, ty, tz;
 
   if (m21 >= 0.99 && m21 <= 1.01) {
-    tx = math::Pi / 2.f;
+    tx = math::pi / 2.f;
     ty = 0;
     tz = math::atan2(m10, m00);
   } else if (m21 >= -1.01f && m21 <= -0.99f) {
-    tx = -math::Pi / 2.f;
+    tx = -math::pi / 2.f;
     ty = 0;
     tz = math::atan2(m10, m00);
   } else {

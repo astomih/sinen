@@ -44,39 +44,43 @@ public:
    * @return true
    * @return false
    */
-  bool isRunning() { return mGameState != game_state::Quit; }
+  bool is_running() { return mGameState != game_state::Quit; }
 
   /**
    * @brief run loop
    *
    */
-  void RunLoop();
+  void run_loop();
 
   /**
    * @brief Get the Renderer object
    *
    */
-  void Shutdown();
+  void shutdown();
 
   /**
    * @brief Get the State object
    *
    * @return game_state
    */
-  game_state GetState() const { return mGameState; }
+  game_state get_state() const { return mGameState; }
   /**
    * @brief Set the State object
    *
    * @param state
    */
-  void SetState(game_state state) { mGameState = state; }
+  void set_state(game_state state) { mGameState = state; }
 
   /**
    * @brief Quit scene
    *
    */
-  void Quit() { mGameState = game_state::Quit; }
-
+  void quit() { mGameState = game_state::Quit; }
+  /**
+   * @brief Change scene
+   *
+   * @param scene_name Scene name
+   */
   void change_scene(std::string scene_name);
 
 protected:
@@ -84,18 +88,18 @@ protected:
    * @brief Setup scene
    *
    */
-  virtual void Setup();
+  virtual void setup();
   /**
    * @brief Update scene
    *
    * @param deltaTime
    */
-  virtual void Update(float deltaTime);
+  virtual void update(float deltaTime);
 
 private:
-  void UnloadData();
-  void ProcessInput();
-  void UpdateScene();
+  void unload_data();
+  void process_input();
+  void update_scene();
   game_state mGameState = game_state::Gameplay;
   uint32_t m_prev_tick = 0;
   std::function<void()> m_editor;

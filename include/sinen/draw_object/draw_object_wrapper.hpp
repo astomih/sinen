@@ -7,10 +7,27 @@
 #include "draw_object.hpp"
 
 namespace sinen {
-class draw2d {
+/**
+ * @brief 2D draw object class
+ *
+ */
+struct draw2d {
 public:
+  /**
+   * @brief Construct a new draw2d object
+   *
+   */
   draw2d();
+  /**
+   * @brief Construct a new draw2d object
+   * @param texture Texture to use
+   *
+   */
   draw2d(texture);
+  /**
+   * @brief Draw object
+   *
+   */
   void draw();
   vector2 position;
   float rotation;
@@ -18,10 +35,27 @@ public:
   texture texture_handle;
   std::string vertex_name = "SPRITE";
 };
+/**
+ * @brief 3D draw object class
+ *
+ */
 class draw3d {
 public:
+  /**
+   * @brief Construct a new draw3d object
+   *
+   */
   draw3d();
+  /**
+   * @brief Construct a new draw3d object
+   * @param texture Texture to use
+   *
+   */
   draw3d(texture);
+  /**
+   * @brief Draw object
+   *
+   */
   void draw();
   vector3 position;
   vector3 rotation;

@@ -2,33 +2,43 @@
 #define SINEN_COLOR_HPP
 #include "../math/vector3.hpp"
 namespace sinen {
+/**
+ * @brief Color class
+ *
+ */
 class color {
 public:
+  /**
+   * @brief Construct a new color object
+   * @param red red value 0.0 - 1.0
+   * @param green green value 0.0 - 1.0
+   * @param blue blue value 0.0 - 1.0
+   * @param alpha alpha value 0.0 - 1.0
+   *
+   */
   constexpr color(const float red, const float green, const float blue,
                   const float alpha)
       : r(red), g(green), b(blue), a(alpha) {}
+  /**
+   * @brief Construct a new color object
+   * @param value Set all value 0.0 - 1.0
+   *
+   */
   constexpr color(const float value) : r(value), g(value), b(value), a(1.f) {}
+  /**
+   * @brief Construct a new color object
+   *
+   */
   color() = default;
-
+  // red value 0.0 - 1.0
   float r;
+  // green value 0.0 - 1.0
   float g;
+  // blue value 0.0 - 1.0
   float b;
+  // alpha value 0.0 - 1.0
   float a;
 };
-class palette {
-public:
-  static const color Black;
-  static const color LightBlack;
-  static const color White;
-  static const color Red;
-  static const color Green;
-  static const color Blue;
-  static const color Yellow;
-  static const color LightYellow;
-  static const color LightBlue;
-  static const color LightPink;
-  static const color LightGreen;
-};
-
-} // namespace nen
+} // namespace sinen
+#include "palette.hpp"
 #endif // !SINEN_COLOR_HPP

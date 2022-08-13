@@ -3,34 +3,32 @@
 #include <functional>
 #include <list>
 #include <memory>
-
 namespace sinen {
-
 class singleton_finalizer {
 public:
-  static void AddFinalizer(const std::function<void(void)> &func);
-  static void Finalize();
+  static void add(const std::function<void(void)> &func);
+  static void finalize();
 
 private:
   static std::list<std::function<void(void)>> finalizers;
 };
-template <class T> class Singleton {
+template <class T> class singleton {
 public:
-  static T &Get() {
+  static T &get() {
     static auto once = []() {
-      Create();
+      create();
       return true;
     }();
-    return *mInstance.get();
+    return *m_instance.get();
   }
 
 private:
-  static void Create() {
-    mInstance = std::make_unique<T>();
-    singleton_finalizer::AddFinalizer(Singleton<T>::Destroy);
+  static void create() {
+    m_instance = std::make_unique<T>();
+    singleton_finalizer::add(singleton<T>::destroy);
   }
-  static void Destroy() { mInstance = nullptr; }
-  static std::unique_ptr<T> mInstance;
+  static void destroy() { m_instance = nullptr; }
+  static std::unique_ptr<T> m_instance;
 };
 } // namespace sinen
 #endif // !SINEN_SINGLETON_HPP

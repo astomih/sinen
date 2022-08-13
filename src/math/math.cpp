@@ -17,9 +17,9 @@ const vector3 vector3::unit_z(0.0f, 0.0f, 1.0f);
 const vector3 vector3::neg_unit_x(-1.0f, 0.0f, 0.0f);
 const vector3 vector3::neg_unit_y(0.0f, -1.0f, 0.0f);
 const vector3 vector3::neg_unit_z(0.0f, 0.0f, -1.0f);
-const vector3 vector3::infinity(math::Infinity, math::Infinity, math::Infinity);
-const vector3 vector3::neg_infinity(math::NegInfinity, math::NegInfinity,
-                                    math::NegInfinity);
+const vector3 vector3::infinity(math::infinity, math::infinity, math::infinity);
+const vector3 vector3::neg_infinity(math::neg_infinity, math::neg_infinity,
+                                    math::neg_infinity);
 
 static float m3Ident[3][3] = {
     {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}};
@@ -394,11 +394,11 @@ vector3 quaternion::to_euler(const quaternion &r) {
   float tx, ty, tz;
 
   if (m21 >= 0.99 && m21 <= 1.01) {
-    tx = math::Pi / 2.f;
+    tx = math::pi / 2.f;
     ty = 0;
     tz = math::atan2(m10, m00);
   } else if (m21 >= -1.01f && m21 <= -0.99f) {
-    tx = -math::Pi / 2.f;
+    tx = -math::pi / 2.f;
     ty = 0;
     tz = math::atan2(m10, m00);
   } else {

@@ -2,11 +2,11 @@
 #include <network/tcp_socket.hpp>
 
 namespace sinen {
-class tcp_socket::Impl {
+class tcp_socket::impl {
 public:
-  Impl() = default;
-  ~Impl() = default;
+  impl() = default;
+  ~impl() = default;
 };
-tcp_socket::tcp_socket() : impl(std::make_unique<Impl>()){};
+tcp_socket::tcp_socket() : m_impl(std::make_unique<impl>()){};
 tcp_socket::~tcp_socket() = default;
 } // namespace sinen

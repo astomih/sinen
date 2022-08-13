@@ -140,20 +140,20 @@ ___
 scene::scene() {}
 
 void scene::initialize() {
-  Setup();
+  setup();
   m_prev_tick = SDL_GetTicks();
 }
 
-void scene::RunLoop() {
-  ProcessInput();
-  UpdateScene();
+void scene::run_loop() {
+  process_input();
+  update_scene();
   get_input().prepare_for_update();
   get_input().update();
   // Draw sprites, meshes
   get_renderer().render();
 }
 
-void scene::ProcessInput() {
+void scene::process_input() {
 
   while (SDL_PollEvent(&current_event_handle::current_event)) {
     ImGui_ImplSDL2_ProcessEvent(&current_event_handle::current_event);
@@ -185,7 +185,7 @@ void scene::ProcessInput() {
     return;
 }
 
-void scene::UpdateScene() {
+void scene::update_scene() {
   // calc delta time
   float deltaTime = (SDL_GetTicks() - m_prev_tick) / 1000.0f;
   if (deltaTime > 0.05f) {
@@ -193,14 +193,14 @@ void scene::UpdateScene() {
   }
   m_prev_tick = SDL_GetTicks();
 
-  this->Update(deltaTime);
+  this->update(deltaTime);
   get_sound().update(deltaTime);
 }
 
 bool is_run = false;
 bool is_save = false;
 TextEditor editor;
-void scene::Setup() {
+void scene::setup() {
   const static TextEditor::Palette p = {{
       0xff7f7f7f, // Default
       0xffd69c56, // Keyword
@@ -248,7 +248,7 @@ void scene::Setup() {
           is_save = true;
         }
         if (ImGui::MenuItem("Quit", "Alt-F4"))
-          this->Quit();
+          this->quit();
         ImGui::EndMenu();
       }
       if (ImGui::BeginMenu("Edit")) {
@@ -318,9 +318,9 @@ void scene::Setup() {
   m_markdown = [&]() { MarkdownExample(); };
 }
 
-void scene::UnloadData() { get_renderer().get_imgui_function().clear(); }
+void scene::unload_data() { get_renderer().get_imgui_function().clear(); }
 
-void scene::Update(float deltaTime) {
+void scene::update(float deltaTime) {
   sol::state *lua = (sol::state *)get_script().get_state();
   (*lua)["delta_time"] = deltaTime;
   (*lua)["keyboard"] = input::keyboard;
@@ -351,8 +351,8 @@ void scene::Update(float deltaTime) {
   (*lua)["update"]();
 }
 
-void scene::Shutdown() { UnloadData(); }
+void scene::shutdown() { unload_data(); }
 
 void scene::change_scene(std::string scene_name) { change_scene(scene_name); }
 
-} // namespace nen
+} // namespace sinen

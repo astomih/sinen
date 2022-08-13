@@ -133,16 +133,16 @@ void manager::launch() {
 #endif
 }
 void manager::loop() {
-  if (m_current_scene->isRunning())
-    m_current_scene->RunLoop();
+  if (m_current_scene->is_running())
+    m_current_scene->run_loop();
   else if (m_next_scene) {
-    m_current_scene->Shutdown();
+    m_current_scene->shutdown();
     m_current_scene = std::move(m_next_scene);
     m_current_scene->initialize();
     m_next_scene = nullptr;
   } else {
     m_script_system->shutdown();
-    m_current_scene->Shutdown();
+    m_current_scene->shutdown();
     m_input_system->terminate();
     m_sound_system->terminate();
     m_current_scene = nullptr;
@@ -150,7 +150,7 @@ void manager::loop() {
     m_renderer = nullptr;
     m_window = nullptr;
     Mix_CloseAudio();
-    singleton_finalizer::Finalize();
+    singleton_finalizer::finalize();
 #ifndef EMSCRIPTEN
     std::exit(0);
 #else
@@ -159,7 +159,7 @@ void manager::loop() {
   }
 }
 void manager::change_scene(std::string scene_name) {
-  m_current_scene->Quit();
+  m_current_scene->quit();
   m_script_system->shutdown();
   m_next_scene = std::make_unique<scene>();
   m_scene_name = scene_name;

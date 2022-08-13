@@ -8,17 +8,41 @@
 #include <string>
 
 namespace sinen {
+/**
+ * @brief  Sound parameters for sound class
+ *
+ */
 struct sound_prameter {
   vector3 position;
   uint32_t source_id;
   uint32_t buffer_id;
 };
-
+/**
+ * @brief Sound class
+ *
+ */
 class sound {
 public:
+  /**
+   * @brief Construct a new sound object
+   *
+   */
   sound();
+  /**
+   * @brief Load the sound data from file
+   *
+   * @param file_name File name
+   */
   void load(std::string_view file_name);
+  /**
+   * @brief Create the source
+   *
+   */
   void new_source();
+  /**
+   * @brief Delete the source
+   *
+   */
   void delete_source();
   void play();
   bool is_valid();

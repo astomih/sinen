@@ -9,6 +9,10 @@
 
 namespace sinen {
 
+/**
+ * @brief Data stream class
+ *
+ */
 class dstream {
 public:
   static std::vector<uint8_t> key;

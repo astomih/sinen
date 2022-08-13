@@ -4,9 +4,21 @@
 #include "../math/vector3.hpp"
 
 namespace sinen {
-class camera {
+/**
+ * @brief Camera class
+ *
+ */
+struct camera {
 public:
+  /**
+   * @brief Construct a new camera object
+   *
+   */
   camera();
+  /**
+   * @brief Update the camera
+   *
+   */
   void update();
   matrix4 view;
   matrix4 projection;
@@ -18,5 +30,5 @@ public:
   float near;
   float far;
 };
-} // namespace nen
+} // namespace sinen
 #endif

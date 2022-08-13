@@ -1,4 +1,5 @@
 #include <color/color.hpp>
+#include <color/palette.hpp>
 
 namespace sinen {
 const color palette::Black = color(0.f);

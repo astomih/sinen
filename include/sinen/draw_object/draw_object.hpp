@@ -7,18 +7,45 @@
 #include "object_type.hpp"
 
 namespace sinen {
-class draw_object {
-public:
+/**
+ * @brief Drawable object class
+ *
+ */
+struct draw_object {
+  /**
+   * @brief Construct a new draw object object
+   *
+   */
   draw_object() = default;
+  /**
+   * @brief Destroy the draw object object
+   *
+   */
   ~draw_object() = default;
+  /**
+   * @brief Shader parameter
+   *
+   */
   shader_parameter param;
-  texture texture_handle;
-  std::string vertexIndex;
+  /**
+   * @brief Shader data
+   *
+   */
   shader shader_data;
+  /**
+   * @brief Use texture
+   *
+   */
+  texture texture_handle;
+  /**
+   * @brief Vertex index
+   *
+   */
+  std::string vertexIndex;
   bool is_draw_depth = true;
   int drawOrder = 100;
   int nodeNum = 1;
 };
 
-} // namespace nen
+} // namespace sinen
 #endif // !SINEN_DRAW_OBJECT_HPP

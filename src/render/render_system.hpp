@@ -1,6 +1,7 @@
 #ifndef SINEN_RENDER_SYSTEM_HPP
 #define SINEN_RENDER_SYSTEM_HPP
 #include <color/color.hpp>
+#include <color/palette.hpp>
 #include <instancing/instancing.hpp>
 #include <list>
 #include <math/math.hpp>

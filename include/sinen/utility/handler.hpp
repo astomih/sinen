@@ -12,7 +12,7 @@ namespace sinen {
 template <class T, class DP = std::default_delete<T>> class handler {
 public:
   handler() = default;
-  handler(const handler &) = delete;
+  handler(const handler &h) = default;
   handler(handler &&) = default;
   std::unordered_map<handle_t, std::unique_ptr<T, DP>> data;
 

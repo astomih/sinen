@@ -23,4 +23,4 @@ public:
 private:
   handler<::SDL_Surface, SDLObjectCloser> m_surfaces;
 };
-} // namespace nen
+} // namespace sinen

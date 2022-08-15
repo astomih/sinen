@@ -44,12 +44,12 @@ void main_loop() { emscripten_loop(); }
 namespace sinen {
 manager _manager;
 std::optional<class window_system> m_window;
-std::optional<class render_system> m_renderer;
+std::unique_ptr<class render_system> m_renderer;
 std::unique_ptr<class scene> m_next_scene;
-std::optional<class input_system> m_input_system;
+std::unique_ptr<class input_system> m_input_system;
 std::optional<class sound_system> m_sound_system;
-std::optional<class script_system> m_script_system;
-std::optional<class texture_system> m_texture_system;
+std::unique_ptr<class script_system> m_script_system;
+std::unique_ptr<class texture_system> m_texture_system;
 std::optional<class camera> m_camera;
 std::optional<class random_system> m_random;
 bool initialize() { return _manager.initialize(); }
@@ -74,8 +74,8 @@ bool manager::initialize() {
   Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
   m_next_scene = nullptr;
   m_window = window_system();
-  m_texture_system = texture_system();
-  m_renderer = render_system();
+  m_texture_system = std::make_unique<texture_system>();
+  m_renderer = std::make_unique<render_system>();
   logger::change_logger(
       std::move(logger::default_logger::CreateConsoleLogger()));
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
@@ -106,12 +106,12 @@ bool manager::initialize() {
     m_sound_system->terminate();
     return false;
   }
-  m_input_system = input_system();
+  m_input_system = std::make_unique<input_system>();
   if (!m_input_system->initialize()) {
     logger::fatal("Failed to initialize input system");
     return false;
   }
-  m_script_system = script_system();
+  m_script_system = std::make_unique<script_system>();
   if (!m_script_system->initialize()) {
     logger::fatal("Failed to initialize script system");
     return false;

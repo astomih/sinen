@@ -31,6 +31,9 @@ public:
 void *script::get_state() { return get_script().get_state(); }
 void *script_system::get_state() { return (void *)&impl->state; }
 script_system::script_system() { impl = std::make_unique<implement>(); }
+script_system::script_system(script_system &s) {
+  this->impl = std::move(s.impl);
+}
 script_system::~script_system() = default;
 bool script_system::initialize() {
 #ifndef NEN_NO_USE_SCRIPT

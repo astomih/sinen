@@ -4,6 +4,7 @@ namespace sinen {
 class script_system {
 public:
   script_system();
+  script_system(script_system &s);
   ~script_system();
   bool initialize();
   void shutdown();
@@ -15,4 +16,4 @@ private:
   std::unique_ptr<implement> impl;
 };
 
-} // namespace nen
+} // namespace sinen

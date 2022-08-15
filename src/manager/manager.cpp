@@ -18,6 +18,7 @@
 #include <SDL_ttf.h>
 #include <fstream>
 #include <memory>
+#include <optional>
 #include <utility/launcher.hpp>
 
 #include "../audio/sound_system.hpp"
@@ -42,15 +43,15 @@ void main_loop() { emscripten_loop(); }
 
 namespace sinen {
 manager _manager;
-std::unique_ptr<class window_system> m_window;
-std::unique_ptr<class render_system> m_renderer;
+std::optional<class window_system> m_window;
+std::optional<class render_system> m_renderer;
 std::unique_ptr<class scene> m_next_scene;
-std::unique_ptr<class input_system> m_input_system;
-std::unique_ptr<class sound_system> m_sound_system;
-std::unique_ptr<class script_system> m_script_system;
-std::unique_ptr<class texture_system> m_texture_system;
-std::unique_ptr<class camera> m_camera;
-std::unique_ptr<class random_system> m_random;
+std::optional<class input_system> m_input_system;
+std::optional<class sound_system> m_sound_system;
+std::optional<class script_system> m_script_system;
+std::optional<class texture_system> m_texture_system;
+std::optional<class camera> m_camera;
+std::optional<class random_system> m_random;
 bool initialize() { return _manager.initialize(); }
 void launch() { _manager.launch(); }
 window_system &get_window() { return *m_window; }
@@ -72,9 +73,9 @@ bool manager::initialize() {
   Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3);
   Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
   m_next_scene = nullptr;
-  m_window = std::make_unique<window_system>();
-  m_texture_system = std::make_unique<texture_system>();
-  m_renderer = std::make_unique<render_system>();
+  m_window = window_system();
+  m_texture_system = texture_system();
+  m_renderer = render_system();
   logger::change_logger(
       std::move(logger::default_logger::CreateConsoleLogger()));
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
@@ -84,37 +85,38 @@ bool manager::initialize() {
     str = "Vulkan";
   std::getline(ifs, str);
   if (str.compare("Vulkan") == 0) {
-    m_window->initialize("Nen : Vulkan", graphics_api::Vulkan);
+    m_window->initialize("sinen engine version:0.0.1, Graphics backends:Vulkan",
+                         graphics_api::Vulkan);
     m_renderer->initialize(graphics_api::Vulkan);
   } else if (str.compare("OpenGL") == 0) {
-    m_window->initialize("Nen : OpenGL", graphics_api::OpenGL);
+    m_window->initialize("sinen engine version:0.0.1, Graphics backends:OpenGL",
+                         graphics_api::OpenGL);
     m_renderer->initialize(graphics_api::OpenGL);
   }
 
 #else
-  m_window->initialize("Nen", graphics_api::ES);
+  m_window->initialize("sinen engine version:0.0.1", graphics_api::ES);
   m_renderer->initialize(graphics_api::ES);
 #endif
-  m_camera = std::make_unique<camera>();
+  m_camera = camera();
 
-  m_sound_system = std::make_unique<sound_system>();
+  m_sound_system = sound_system();
   if (!m_sound_system->initialize()) {
     logger::fatal("Failed to initialize audio system");
     m_sound_system->terminate();
-    m_sound_system = nullptr;
     return false;
   }
-  m_input_system = std::make_unique<input_system>();
+  m_input_system = input_system();
   if (!m_input_system->initialize()) {
     logger::fatal("Failed to initialize input system");
     return false;
   }
-  m_script_system = std::make_unique<script_system>();
+  m_script_system = script_system();
   if (!m_script_system->initialize()) {
     logger::fatal("Failed to initialize script system");
     return false;
   }
-  m_random = std::make_unique<random_system>();
+  m_random = random_system();
   m_random->init();
   texture tex;
   tex.fill_color(palette::Black);
@@ -147,8 +149,6 @@ void manager::loop() {
     m_sound_system->terminate();
     m_current_scene = nullptr;
     m_renderer->shutdown();
-    m_renderer = nullptr;
-    m_window = nullptr;
     Mix_CloseAudio();
     singleton_finalizer::finalize();
 #ifndef EMSCRIPTEN

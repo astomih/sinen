@@ -4,14 +4,30 @@
 #include "vector2.hpp"
 #include <string>
 namespace sinen {
-// 3x3 Matrix
+/**
+ * @brief float matrix3x3 class
+ *
+ */
 class matrix3 {
 public:
   float mat[3][3] = {};
-
+  /**
+   * @brief Construct a new matrix3 object
+   *
+   */
   matrix3() { *this = matrix3::identity; }
-
+  /**
+   * @brief Construct a new matrix3 object
+   *
+   * @param inMat 3x3 array
+   */
   explicit matrix3(float inMat[3][3]) { memcpy(mat, inMat, 9 * sizeof(float)); }
+  /**
+   * @brief Construct a new matrix3 object
+   *
+   * @param inMat 3x3 array
+   */
+  explicit matrix3(float inMat[9]) { memcpy(mat, inMat, 9 * sizeof(float)); }
 
   // Cast to a const float pointer
   [[nodiscard]] const float *get_ptr() const {

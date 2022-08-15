@@ -3,13 +3,23 @@
 #include "math.hpp"
 
 namespace sinen {
+/**
+ * @brief Vector2 class
+ *
+ */
 class vector2 {
 public:
   float x;
   float y;
-
+  /**
+   * @brief Construct a new vector2 object
+   *
+   */
   constexpr vector2() : x(0.0f), y(0.0f) {}
-
+  /**
+   * @brief Construct a new vector2 object
+   *
+   */
   constexpr explicit vector2(float inX, float inY) : x(inX), y(inY) {}
 
   // Set both components in one line

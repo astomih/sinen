@@ -7,19 +7,39 @@
 #include <string>
 
 namespace sinen {
-// 4x4 Matrix
+/**
+ * @brief float matrix4x4 class
+ *
+ */
 class matrix4 {
 public:
-  float mat[4][4]{};
+  float mat[4][4];
 
+  /**
+   * @brief Construct a new matrix4 object
+   *
+   */
   constexpr matrix4() { *this = matrix4::identity; }
-
+  /**
+   * @brief Construct a new matrix4 object
+   *
+   * @param inMat  matrix4x4 to copy
+   */
   explicit matrix4(float inMat[4][4]) {
     memcpy(mat, inMat, 16 * sizeof(float));
   }
-
-  // Cast to a const float pointer
-  [[nodiscard]] const float *GetAsFloatPtr() const {
+  /**
+   * @brief Construct a new matrix4 object
+   *
+   * @param inMat  matrix4x4 to copy
+   */
+  explicit matrix4(float inMat[16]) { memcpy(mat, inMat, 16 * sizeof(float)); }
+  /**
+   * @brief Cast to const float*
+   *
+   * @return const float* pointer to matrix4x4
+   */
+  [[nodiscard]] const float *get() const {
     return reinterpret_cast<const float *>(&mat[0][0]);
   }
 

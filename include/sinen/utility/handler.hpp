@@ -19,11 +19,11 @@ public:
   T &operator[](const handle_t &handle) {
     return *reinterpret_cast<T *>(data[handle].get());
   }
-  template <class S = T, typename... _Args> handle_t create(_Args &&...__args) {
+  template <class S = T, typename... Args> handle_t create(Args &&...__args) {
     handle_t handle = 0;
     while (data.contains(handle))
       ++handle;
-    data.emplace(handle, std::make_unique<S>(std::forward<_Args>(__args)...));
+    data.emplace(handle, std::make_unique<S>(std::forward<Args>(__args)...));
     return handle;
   }
   handle_t move(std::unique_ptr<T, DP> ptr) {

@@ -15,9 +15,13 @@
 namespace sinen {
 class math {
 public:
-  // static constexpr float Pi = std::numbers::pi_v<float>;
+  // static constexpr float pi = std::numbers::pi_v<float>;
+
+  // pi
   static constexpr float pi = 3.141592f;
+  // 2 * pi
   static constexpr float two_pi = pi * 2.f;
+  // pi / 2
   static constexpr float pi_over2 = pi / 2.f;
   static constexpr float infinity = std::numeric_limits<float>::infinity();
   static constexpr float neg_infinity = -std::numeric_limits<float>::infinity();

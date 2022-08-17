@@ -43,15 +43,15 @@ void main_loop() { emscripten_loop(); }
 
 namespace sinen {
 manager _manager;
-std::optional<class window_system> m_window;
+std::unique_ptr<class window_system> m_window;
 std::unique_ptr<class render_system> m_renderer;
 std::unique_ptr<class scene> m_next_scene;
 std::unique_ptr<class input_system> m_input_system;
-std::optional<class sound_system> m_sound_system;
+std::unique_ptr<class sound_system> m_sound_system;
 std::unique_ptr<class script_system> m_script_system;
 std::unique_ptr<class texture_system> m_texture_system;
-std::optional<class camera> m_camera;
-std::optional<class random_system> m_random;
+std::unique_ptr<class camera> m_camera;
+std::unique_ptr<class random_system> m_random;
 bool initialize() { return _manager.initialize(); }
 void launch() { _manager.launch(); }
 window_system &get_window() { return *m_window; }
@@ -73,7 +73,7 @@ bool manager::initialize() {
   Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3);
   Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
   m_next_scene = nullptr;
-  m_window = window_system();
+  m_window = std::make_unique<window_system>();
   m_texture_system = std::make_unique<texture_system>();
   m_renderer = std::make_unique<render_system>();
   logger::change_logger(
@@ -98,9 +98,9 @@ bool manager::initialize() {
   m_window->initialize("sinen engine version:0.0.1", graphics_api::ES);
   m_renderer->initialize(graphics_api::ES);
 #endif
-  m_camera = camera();
+  m_camera = std::make_unique<camera>();
 
-  m_sound_system = sound_system();
+  m_sound_system = std::make_unique<sound_system>();
   if (!m_sound_system->initialize()) {
     logger::fatal("Failed to initialize audio system");
     m_sound_system->terminate();
@@ -116,7 +116,7 @@ bool manager::initialize() {
     logger::fatal("Failed to initialize script system");
     return false;
   }
-  m_random = random_system();
+  m_random = std::make_unique<random_system>();
   m_random->init();
   texture tex;
   tex.fill_color(palette::Black);

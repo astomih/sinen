@@ -36,7 +36,7 @@ script_system::script_system(script_system &s) {
 }
 script_system::~script_system() = default;
 bool script_system::initialize() {
-#ifndef NEN_NO_USE_SCRIPT
+#ifndef sinen_NO_USE_SCRIPT
   impl->state.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math,
                              sol::lib::bit32, sol::lib::io, sol::lib::os,
                              sol::lib::string, sol::lib::debug,
@@ -78,7 +78,7 @@ bool script_system::initialize() {
   };
   impl->state["aabb"] = [&]() -> aabb { return aabb(); };
   {
-    auto v = impl->state.new_usertype<vector3>("nen_vector3",
+    auto v = impl->state.new_usertype<vector3>("sinen_vector3",
                                                sol::no_construction());
     v["x"] = &vector3::x;
     v["y"] = &vector3::y;
@@ -100,7 +100,7 @@ bool script_system::initialize() {
     };
   }
   {
-    auto v = impl->state.new_usertype<vector2>("nen_vector2",
+    auto v = impl->state.new_usertype<vector2>("sinen_vector2",
                                                sol::no_construction());
     v["x"] = &vector2::x;
     v["y"] = &vector2::y;
@@ -111,15 +111,15 @@ bool script_system::initialize() {
   }
   {
     auto v =
-        impl->state.new_usertype<color>("nen_color", sol::no_construction());
+        impl->state.new_usertype<color>("sinen_color", sol::no_construction());
     v["r"] = &color::r;
     v["g"] = &color::g;
     v["b"] = &color::b;
     v["a"] = &color::a;
   }
   {
-    auto v =
-        impl->state.new_usertype<draw2d>("nen_draw2d", sol::no_construction());
+    auto v = impl->state.new_usertype<draw2d>("sinen_draw2d",
+                                              sol::no_construction());
     v["draw"] = &draw2d::draw;
     v["position"] = &draw2d::position;
     v["rotation"] = &draw2d::rotation;
@@ -128,8 +128,8 @@ bool script_system::initialize() {
     v["vertex_name"] = &draw2d::vertex_name;
   }
   {
-    auto v =
-        impl->state.new_usertype<draw3d>("nen_draw3d", sol::no_construction());
+    auto v = impl->state.new_usertype<draw3d>("sinen_draw3d",
+                                              sol::no_construction());
     v["position"] = &draw3d::position;
     v["rotation"] = &draw3d::rotation;
     v["scale"] = &draw3d::scale;
@@ -140,7 +140,7 @@ bool script_system::initialize() {
   }
   {
     auto v = impl->state.new_usertype<draw2d_instancing>(
-        "nen_draw2d_instanced", sol::no_construction());
+        "sinen_draw2d_instanced", sol::no_construction());
     v["draw"] = &draw2d_instancing::draw;
     v["add"] = &draw2d_instancing::add;
     v["clear"] = &draw2d_instancing::clear;
@@ -149,7 +149,7 @@ bool script_system::initialize() {
   }
   {
     auto v = impl->state.new_usertype<draw3d_instancing>(
-        "nen_draw3d_instanced", sol::no_construction());
+        "sinen_draw3d_instanced", sol::no_construction());
     v["draw"] = &draw3d_instancing::draw;
     v["add"] = &draw3d_instancing::add;
     v["clear"] = &draw3d_instancing::clear;
@@ -158,7 +158,7 @@ bool script_system::initialize() {
     v["is_draw_depth"] = &draw3d_instancing::is_draw_depth;
   }
   {
-    auto v = impl->state.new_usertype<texture>("nen_texture",
+    auto v = impl->state.new_usertype<texture>("sinen_texture",
                                                sol::no_construction());
     v["fill_color"] = &texture::fill_color;
     v["blend_color"] = &texture::blend_color;
@@ -167,18 +167,19 @@ bool script_system::initialize() {
     v["size"] = &texture::size;
   }
   {
-    auto v = impl->state.new_usertype<font>("nen_font", sol::no_construction());
+    auto v =
+        impl->state.new_usertype<font>("sinen_font", sol::no_construction());
     v["load"] = &font::load;
     v["render_text"] = &font::render_text;
   }
   {
-    auto v = impl->state.new_usertype<keyboard_state>("nen_keyboard_state",
+    auto v = impl->state.new_usertype<keyboard_state>("sinen_keyboard_state",
                                                       sol::no_construction());
     v["is_key_down"] = &keyboard_state::is_key_down;
     v["key_state"] = &keyboard_state::get_key_state;
   }
   {
-    auto v = impl->state.new_usertype<mouse_state>("nen_mouse_state",
+    auto v = impl->state.new_usertype<mouse_state>("sinen_mouse_state",
                                                    sol::no_construction());
     v["button_state"] = &mouse_state::get_button_state;
     v["is_button_down"] = &mouse_state::is_button_down;
@@ -189,14 +190,14 @@ bool script_system::initialize() {
   }
   {
     auto v =
-        impl->state.new_usertype<music>("nen_music", sol::no_construction());
+        impl->state.new_usertype<music>("sinen_music", sol::no_construction());
     v["load"] = &music::load;
     v["play"] = &music::play;
     v["set_volume"] = &music::set_volume;
   }
   {
     auto v =
-        impl->state.new_usertype<sound>("nen_sound", sol::no_construction());
+        impl->state.new_usertype<sound>("sinen_sound", sol::no_construction());
     v["load"] = &sound::load;
     v["play"] = &sound::play;
     v["set_volume"] = &sound::set_volume;
@@ -205,8 +206,8 @@ bool script_system::initialize() {
     v["set_position"] = &sound::set_position;
   }
   {
-    auto v =
-        impl->state.new_usertype<camera>("nen_camera", sol::no_construction());
+    auto v = impl->state.new_usertype<camera>("sinen_camera",
+                                              sol::no_construction());
     v["position"] = &camera::position;
     v["aspect"] = &camera::aspect;
     v["far"] = &camera::far;
@@ -221,19 +222,20 @@ bool script_system::initialize() {
   };
   {
     auto v =
-        impl->state.new_usertype<model>("nen_model", sol::no_construction());
+        impl->state.new_usertype<model>("sinen_model", sol::no_construction());
     v["aabb"] = &model::m_aabb;
     v["load"] = &model::load;
   }
   {
-    auto v = impl->state.new_usertype<aabb>("nen_aabb", sol::no_construction());
+    auto v =
+        impl->state.new_usertype<aabb>("sinen_aabb", sol::no_construction());
     v["min"] = &aabb::min;
     v["max"] = &aabb::max;
     v["intersects_aabb"] = &aabb::intersects_aabb;
   }
   {
-    auto v =
-        impl->state.new_usertype<random>("nen_random", sol::no_construction());
+    auto v = impl->state.new_usertype<random>("sinen_random",
+                                              sol::no_construction());
     v["get_int_range"] = random::get_int_range;
     v["get_float_range"] = random::get_float_range;
   }

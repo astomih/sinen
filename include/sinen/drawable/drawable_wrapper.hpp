@@ -4,7 +4,7 @@
 #include "../math/vector3.hpp"
 #include "../texture/texture.hpp"
 #include "../utility/handle_t.hpp"
-#include "draw_object.hpp"
+#include "drawable.hpp"
 
 namespace sinen {
 /**

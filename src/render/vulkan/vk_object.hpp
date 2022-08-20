@@ -1,7 +1,7 @@
 #ifndef SINEN_VK_OBJECT_HPP
 #define SINEN_VK_OBJECT_HPP
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
-#include <draw_object/draw_object.hpp>
+#include <drawable/drawable.hpp>
 #include <vk_mem_alloc.h>
 namespace sinen {
 class vk_buffer_object {
@@ -20,7 +20,7 @@ public:
   std::vector<VkDescriptorSet> descripterSet;
   std::vector<vk_buffer_object> uniformBuffers;
   bool isInstance = false;
-  std::shared_ptr<draw_object> drawObject;
+  std::shared_ptr<drawable> drawObject;
 };
 } // namespace sinen
 #endif // !defined(EMSCRIPTEN) && !defined(MOBILE)

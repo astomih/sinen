@@ -83,14 +83,14 @@ void vk_renderer::update_vertex_array(const vertex_array &vArray,
                vArray.indices.size() * sizeof(uint32_t));
 }
 
-void vk_renderer::draw2d(std::shared_ptr<class draw_object> drawObject) {
+void vk_renderer::draw2d(std::shared_ptr<class drawable> drawObject) {
   auto t = std::make_shared<vk_draw_object>();
   t->drawObject = drawObject;
   create_image_object(drawObject->texture_handle);
   registerTexture(t, texture_type::Image2D);
 }
 
-void vk_renderer::draw3d(std::shared_ptr<class draw_object> sprite) {
+void vk_renderer::draw3d(std::shared_ptr<class drawable> sprite) {
   auto t = std::make_shared<vk_draw_object>();
   t->drawObject = sprite;
   create_image_object(sprite->texture_handle);
@@ -528,7 +528,7 @@ void vk_renderer::make_command(VkCommandBuffer command) {
 void vk_renderer::draw_skybox(VkCommandBuffer command) {
   pipeline_skybox.Bind(command);
   auto t = std::make_shared<vk_draw_object>();
-  t->drawObject = std::make_shared<draw_object>();
+  t->drawObject = std::make_shared<drawable>();
   t->drawObject->texture_handle.handle =
       get_renderer().get_skybox_texture().handle;
   t->drawObject->vertexIndex = "BOX";

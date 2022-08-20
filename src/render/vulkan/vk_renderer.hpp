@@ -13,7 +13,7 @@
 #include "vk_pipeline_layout.hpp"
 #include "vk_render_texture.hpp"
 #include <array>
-#include <draw_object/draw_object.hpp>
+#include <drawable/drawable.hpp>
 #include <string_view>
 #include <unordered_map>
 #include <vk_mem_alloc.h>
@@ -51,8 +51,8 @@ public:
   void add_vertex_array(const vertex_array &vArray, std::string_view name);
   void update_vertex_array(const vertex_array &vArray, std::string_view name);
 
-  void draw2d(std::shared_ptr<class draw_object> sprite);
-  void draw3d(std::shared_ptr<class draw_object> sprite);
+  void draw2d(std::shared_ptr<class drawable> sprite);
+  void draw3d(std::shared_ptr<class drawable> sprite);
 
   void load_shader(const shader &shaderInfo);
   void unload_shader(const shader &shaderInfo);
@@ -143,7 +143,7 @@ private:
   std::vector<vk_instancing> m_instancies_2d;
   vk_buffer_object m_instance_buffer;
 };
-} // namespace nen
+} // namespace sinen
 #endif
 
 #endif

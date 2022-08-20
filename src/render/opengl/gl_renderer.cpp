@@ -421,12 +421,12 @@ void gl_renderer::update_vertex_array(const vertex_array &vArray,
                   vArrayGL.indices.data());
 }
 
-void gl_renderer::draw2d(std::shared_ptr<class draw_object> sprite) {
+void gl_renderer::draw2d(std::shared_ptr<class drawable> sprite) {
   create_texture(sprite->texture_handle);
   add_sprite2d(sprite);
 }
 
-void gl_renderer::draw3d(std::shared_ptr<class draw_object> sprite) {
+void gl_renderer::draw3d(std::shared_ptr<class drawable> sprite) {
   create_texture(sprite->texture_handle);
   add_sprite3d(sprite);
 }

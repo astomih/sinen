@@ -1,8 +1,8 @@
 #ifndef SINEN_INSTANCING_HPP
 #define SINEN_INSTANCING_HPP
 
-#include "../draw_object/draw_object.hpp"
-#include "../draw_object/object_type.hpp"
+#include "../drawable/drawable.hpp"
+#include "../drawable/object_type.hpp"
 #include "../texture/texture.hpp"
 #include "instance_data.hpp"
 #include <cstddef>
@@ -20,7 +20,7 @@ public:
   ~instancing() = default;
   void world_to_instance_data(const matrix4 &mat, instance_data &data);
 
-  std::shared_ptr<draw_object> object;
+  std::shared_ptr<drawable> object;
   object_type type;
   std::size_t size;
   std::vector<instance_data> data;

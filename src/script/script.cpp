@@ -8,7 +8,7 @@
 #include <audio/music.hpp>
 #include <audio/sound.hpp>
 #include <camera/camera.hpp>
-#include <draw_object/draw_object_wrapper.hpp>
+#include <drawable/drawable_wrapper.hpp>
 #include <font/font.hpp>
 #include <functional>
 #include <input/input.hpp>

@@ -31,8 +31,8 @@ public:
 
   void render();
 
-  void draw2d(const std::shared_ptr<draw_object> draw_object);
-  void draw3d(const std::shared_ptr<draw_object> draw_object);
+  void draw2d(const std::shared_ptr<drawable> draw_object);
+  void draw3d(const std::shared_ptr<drawable> draw_object);
 
   void add_vertex_array(const vertex_array &vArray, std::string_view name);
   void update_vertex_array(const vertex_array &vArray, std::string_view name);

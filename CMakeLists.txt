@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.7)
-project(nen)
+project(sinen)
 if(ANDROID)
   set(CMAKE_CXX_FLAGS "-std=c++20 -DANDROID")
   file(
@@ -11,7 +11,7 @@ if(ANDROID)
     external/ImGuiColorTextEdit/*.cpp
     external/mojoAL/mojoal.c
     external/Lua/source/*.c)
-  add_library(nen STATIC ${SOURCE_FILES})
+  add_library(sinen STATIC ${SOURCE_FILES})
   set(INCLUDE_DIRS
       ./include
       ./include/sinen
@@ -26,9 +26,9 @@ if(ANDROID)
       ../SDL2_image
       ../SDL2_mixer/include
       ../SDL2_ttf)
-  target_include_directories(nen PUBLIC ${INCLUDE_DIRS})
+  target_include_directories(sinen PUBLIC ${INCLUDE_DIRS})
   target_link_libraries(
-    nen
+    sinen
     SDL2
     SDL2_image
     SDL2_mixer
@@ -45,8 +45,8 @@ elseif(EMSCRIPTEN)
     external/ImGui/source/gles/*.cpp
     external/ImGuiColorTextEdit/*.cpp
     external/Lua/source/*.c)
-  add_library(nen STATIC ${SOURCE_FILES})
-  set(NEN_INCLUDE_DIRECTORIES
+  add_library(sinen STATIC ${SOURCE_FILES})
+  set(SINEN_INCLUDE_DIRECTORIES
       .
       ./include
       ./include/sinen
@@ -55,7 +55,7 @@ elseif(EMSCRIPTEN)
       external/imgui_markdown
       external/sol2/include
       external/Lua/include)
-  target_include_directories(nen PUBLIC ${NEN_INCLUDE_DIRECTORIES})
+  target_include_directories(sinen PUBLIC ${SINEN_INCLUDE_DIRECTORIES})
   if(WIN32)
     set(CMAKE_CXX_FLAGS
         "${CMAKE_CXX_FLAGS} \
@@ -97,9 +97,9 @@ else()
     external/ImGuiColorTextEdit/*.cpp
     external/Lua/source/*.c
     external/mojoAL/*.c)
-  add_library(nen STATIC ${SOURCE_FILES})
-  target_compile_features(nen PUBLIC cxx_std_20)
-  set(NEN_INCLUDE_DIRECTORIES
+  add_library(sinen STATIC ${SOURCE_FILES})
+  target_compile_features(sinen PUBLIC cxx_std_20)
+  set(SINEN_INCLUDE_DIRECTORIES
       .
       ./include
       ./include/sinen
@@ -112,6 +112,6 @@ else()
       external/mojoAL/AL
       external/mojoAL)
   target_include_directories(
-    nen PUBLIC ${NEN_INCLUDE_DIRECTORIES} ${Vulkan_INCLUDE_DIRS}
-               ${SDL2_INCLUDE_DIRS})
+    sinen PUBLIC ${SINEN_INCLUDE_DIRECTORIES} ${Vulkan_INCLUDE_DIRS}
+                 ${SDL2_INCLUDE_DIRS})
 endif()

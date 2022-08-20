@@ -10,7 +10,7 @@
 #endif
 #include "gl_shader.hpp"
 #include <SDL.h>
-#include <draw_object/draw_object.hpp>
+#include <drawable/drawable.hpp>
 #include <memory>
 #include <render/renderer.hpp>
 #include <string>
@@ -63,8 +63,8 @@ public:
   void render();
   void add_vertex_array(const vertex_array &vArray, std::string_view name);
   void update_vertex_array(const vertex_array &vArray, std::string_view name);
-  void draw2d(std::shared_ptr<class draw_object> sprite);
-  void draw3d(std::shared_ptr<class draw_object> sprite);
+  void draw2d(std::shared_ptr<class drawable> sprite);
+  void draw3d(std::shared_ptr<class drawable> sprite);
 
   void load_shader(const shader &shaderInfo);
   void unload_shader(const shader &shaderInfo);
@@ -74,7 +74,7 @@ public:
   void prepare();
   void cleanup() {}
   void create_texture(texture tex);
-  void add_sprite2d(std::shared_ptr<draw_object> sprite2d) {
+  void add_sprite2d(std::shared_ptr<drawable> sprite2d) {
     auto iter = m_drawer_2ds.begin();
     for (; iter != m_drawer_2ds.end(); ++iter) {
       if (sprite2d->drawOrder < (*iter)->drawOrder) {
@@ -83,14 +83,14 @@ public:
     }
     m_drawer_2ds.insert(iter, sprite2d);
   }
-  void remove_sprite2d(std::shared_ptr<draw_object> sprite2d) {
+  void remove_sprite2d(std::shared_ptr<drawable> sprite2d) {
     auto itr = std::find(m_drawer_2ds.begin(), m_drawer_2ds.end(), sprite2d);
     if (itr != m_drawer_2ds.end()) {
       m_drawer_2ds.erase(itr);
     }
   }
 
-  void add_sprite3d(std::shared_ptr<draw_object> sprite3d) {
+  void add_sprite3d(std::shared_ptr<drawable> sprite3d) {
     auto iter = m_drawer_3ds.begin();
     for (; iter != m_drawer_3ds.end(); ++iter) {
       if (sprite3d->drawOrder < (*iter)->drawOrder) {
@@ -99,7 +99,7 @@ public:
     }
     m_drawer_3ds.insert(iter, sprite3d);
   }
-  void remove_sprite3d(std::shared_ptr<draw_object> sprite3d) {
+  void remove_sprite3d(std::shared_ptr<drawable> sprite3d) {
     auto itr = std::find(m_drawer_3ds.begin(), m_drawer_3ds.end(), sprite3d);
     if (itr != m_drawer_3ds.end()) {
       m_drawer_3ds.erase(itr);
@@ -139,8 +139,8 @@ private:
   std::unordered_map<handle_t, GLuint> mTextureIDs;
   std::unordered_map<std::string, gl_vertex_array> m_VertexArrays;
   ::SDL_GLContext mContext;
-  std::vector<std::shared_ptr<draw_object>> m_drawer_2ds;
-  std::vector<std::shared_ptr<draw_object>> m_drawer_3ds;
+  std::vector<std::shared_ptr<drawable>> m_drawer_2ds;
+  std::vector<std::shared_ptr<drawable>> m_drawer_3ds;
   std::vector<gl_instancing> m_instancing_2d;
   std::vector<gl_instancing> m_instancing_3d;
   float prev_window_x;

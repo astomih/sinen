@@ -11,17 +11,17 @@ namespace sinen {
  * @brief Drawable object class
  *
  */
-struct draw_object {
+struct drawable {
   /**
    * @brief Construct a new draw object object
    *
    */
-  draw_object() = default;
+  drawable() = default;
   /**
    * @brief Destroy the draw object object
    *
    */
-  ~draw_object() = default;
+  ~drawable() = default;
   /**
    * @brief Shader parameter
    *

@@ -47,7 +47,7 @@ void render_system::render() {
     m_gl_renderer->render();
   }
 }
-void render_system::draw2d(std::shared_ptr<draw_object> drawObject) {
+void render_system::draw2d(std::shared_ptr<drawable> drawObject) {
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
   if (RendererAPI == graphics_api::Vulkan) {
     m_vk_renderer->draw2d(drawObject);
@@ -58,7 +58,7 @@ void render_system::draw2d(std::shared_ptr<draw_object> drawObject) {
   }
 }
 
-void render_system::draw3d(std::shared_ptr<draw_object> drawObject) {
+void render_system::draw3d(std::shared_ptr<drawable> drawObject) {
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
   if (RendererAPI == graphics_api::Vulkan) {
     m_vk_renderer->draw3d(drawObject);
@@ -139,10 +139,10 @@ void renderer::unload_data() { get_renderer().unload_data(); }
 
 void renderer::render() { get_renderer().render(); }
 
-void renderer::draw2d(const std::shared_ptr<draw_object> draw_object) {
+void renderer::draw2d(const std::shared_ptr<drawable> draw_object) {
   get_renderer().draw2d(draw_object);
 }
-void renderer::draw3d(const std::shared_ptr<draw_object> draw_object) {
+void renderer::draw3d(const std::shared_ptr<drawable> draw_object) {
   get_renderer().draw3d(draw_object);
 }
 

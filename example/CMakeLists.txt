@@ -5,15 +5,15 @@ file(GLOB INCLUDE_DIRS external/sinen/include external/sinen/include/sinen)
 if(ANDROID)
   set(CMAKE_CXX_FLAGS "-std=c++20")
   add_library(main STATIC ${SOURCE_FILES})
-  find_library(nen nen)
-  target_link_libraries(main nen)
+  find_library(sinen sinen)
+  target_link_libraries(main sinen)
   target_include_directories(main PUBLIC ${INCLUDE_DIRS})
 elseif(EMSCRIPTEN)
   add_subdirectory(./external/sinen)
   set(CMAKE_C_COMPILER "emcc")
   add_executable(index ${SOURCE_FILES})
   target_link_directories(index PUBLIC .)
-  target_link_libraries(index nen)
+  target_link_libraries(index sinen)
   target_include_directories(index PUBLIC ${INCLUDE_DIRS})
   set(CMAKE_CXX_FLAGS
       "${CMAKE_CXX_FLAGS} \
@@ -50,7 +50,7 @@ else()
   find_package(OpenAL REQUIRED)
   if(WIN32)
     set(LIBRARIES
-        nen
+        sinen
         ${Vulkan_LIBRARIES}
         SDL2
         SDL2main
@@ -63,7 +63,7 @@ else()
         opengl32)
   else()
     set(LIBRARIES
-        nen
+        sinen
         ${Vulkan_LIBRARIES}
         SDL2
         SDL2main

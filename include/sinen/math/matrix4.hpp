@@ -13,7 +13,7 @@ namespace sinen {
  */
 class matrix4 {
 public:
-  float mat[4][4];
+  float mat[4][4]{};
 
   /**
    * @brief Construct a new matrix4 object

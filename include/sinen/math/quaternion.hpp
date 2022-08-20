@@ -17,7 +17,7 @@ public:
    * @brief Construct a new quaternion object
    *
    */
-  quaternion() { *this = quaternion::Identity; }
+  constexpr quaternion() { *this = quaternion::Identity; }
   /**
    * @brief Construct a new quaternion object
    *

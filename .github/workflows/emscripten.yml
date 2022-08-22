@@ -33,10 +33,10 @@ jobs:
           cp -r data ./build
           cp shell_minimum.html ./build
           cd ./build && make -j2
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4.2.2
-        with:
-          branch: gh-pages
-          folder: example/build
-          token: ${{ secrets.PAT }}
-          repository-name: astomih/sinen_app
+      # - name: Deploy 🚀
+      #   uses: JamesIves/github-pages-deploy-action@v4.2.2
+      #   with:
+      #     branch: gh-pages
+      #     folder: example/build
+      #     token: ${{ secrets.PAT }}
+      #     repository-name: astomih/sinen_app

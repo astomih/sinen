@@ -3,18 +3,17 @@
 #include "color.hpp"
 namespace sinen {
 struct palette {
-public:
-  static const color Black;
-  static const color LightBlack;
-  static const color White;
-  static const color Red;
-  static const color Green;
-  static const color Blue;
-  static const color Yellow;
-  static const color LightYellow;
-  static const color LightBlue;
-  static const color LightPink;
-  static const color LightGreen;
+  static const color black();
+  static const color light_black();
+  static const color white();
+  static const color red();
+  static const color green();
+  static const color blue();
+  static const color yellow();
+  static const color light_yellow();
+  static const color light_blue();
+  static const color light_pink();
+  static const color light_green();
 };
 } // namespace sinen
 #endif // !SINEN_PALETTE_HPP

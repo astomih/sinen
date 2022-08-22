@@ -36,6 +36,7 @@ public:
 
 private:
   std::unique_ptr<class scene> m_current_scene;
+  std::unique_ptr<class scene> m_next_scene;
   void loop();
 
   std::string m_scene_name = "main";

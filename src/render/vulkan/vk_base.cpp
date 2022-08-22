@@ -361,7 +361,7 @@ void vk_base::render() {
   auto color = get_renderer().get_clear_color();
   std::array<VkClearValue, 2> clearValue = {{
       {color.r, color.g, color.b, 1.f}, // for Color
-      {1.f, 0.f}                        // for Depth
+      {1.f, 1.f}                        // for Depth
   }};
 
   VkRenderPassBeginInfo renderPassBI{};

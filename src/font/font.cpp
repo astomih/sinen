@@ -15,22 +15,22 @@ font::font(std::string_view file_name, int32_t point) {
 }
 font::~font() { unload(); }
 bool font::load(std::string_view fontName, int pointSize) {
-  this->fontName = fontName;
-  this->pointSize = pointSize;
+  this->font_name = fontName;
+  this->point_size = pointSize;
   m_font = (void *)::TTF_OpenFontRW(
-      (SDL_RWops *)dstream::open_as_rwops(asset_type::Font, this->fontName), 1,
-      this->pointSize);
+      (SDL_RWops *)dstream::open_as_rwops(asset_type::Font, this->font_name), 1,
+      this->point_size);
   if (!m_font) {
     logger::error("%s", TTF_GetError());
     return false;
   }
-  return (isLoad = true);
+  return (is_load = true);
 }
 
 void font::unload() {
-  if (isLoad) {
+  if (is_load) {
     ::TTF_CloseFont((TTF_Font *)m_font);
-    isLoad = false;
+    is_load = false;
   }
 }
 

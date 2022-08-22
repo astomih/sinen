@@ -13,7 +13,7 @@ namespace sinen {
  */
 class font {
 public:
-  font() : m_font(nullptr), isLoad(false), pointSize(0){};
+  font() : m_font(nullptr), is_load(false), point_size(0){};
   font(std::string_view file_name, int32_t point);
   ~font();
 
@@ -23,17 +23,17 @@ public:
    */
   enum class quality {
     /**
-     * @brief speedy
+     * @brief Speedy, but low quality
      *
      */
     Solid,
     /**
-     * @brief slowly, but high quality
+     * @brief Slowly, but high quality
      *
      */
     Shaded,
     /**
-     * @brief Shaded without backimage
+     * @brief Shaded without back image(slowly)
      *
      */
     Blended
@@ -54,7 +54,7 @@ public:
    * @return true loaded
    * @return false not load yet
    */
-  bool isLoaded() { return isLoad; }
+  bool is_loaded() { return is_load; }
   void unload();
 
   /**
@@ -62,17 +62,14 @@ public:
    *
    * @param text require UTF-8
    * @param _color font color
-   * @param _quality font quality
-   * @param backgroundColor background color
-   * @return std::shared_ptr<texture> rendered texture
    */
   void render_text(texture &tex, std::string_view text,
-                   const color &_color = palette::White);
+                   const color &_color = palette::white());
 
 private:
-  int pointSize;
-  bool isLoad;
-  std::string fontName;
+  int point_size;
+  bool is_load;
+  std::string font_name;
   void *m_font;
 };
 } // namespace sinen

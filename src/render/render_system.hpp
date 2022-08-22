@@ -69,7 +69,7 @@ private:
   std::unique_ptr<class vk_renderer> m_vk_renderer;
 #endif
   void setup_shapes();
-  color clearColor = palette::Black;
+  color clearColor = palette::black();
 
   // Window
   std::shared_ptr<class window> mWindow;

@@ -15,10 +15,10 @@ private:
 template <class T> class singleton {
 public:
   static T &get() {
-    static auto once = []() {
+    if (!once) {
       create();
-      return true;
-    }();
+      once = true;
+    }
     return *m_instance.get();
   }
 
@@ -29,6 +29,9 @@ private:
   }
   static void destroy() { m_instance = nullptr; }
   static std::unique_ptr<T> m_instance;
+  static bool once;
 };
+template <class T> std::unique_ptr<T> singleton<T>::m_instance = nullptr;
+template <class T> bool singleton<T>::once = false;
 } // namespace sinen
 #endif // !SINEN_SINGLETON_HPP

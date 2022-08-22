@@ -42,29 +42,22 @@ void main_loop() { emscripten_loop(); }
 #endif
 
 namespace sinen {
-manager _manager;
-std::unique_ptr<class window_system> m_window;
-std::unique_ptr<class render_system> m_renderer;
-std::unique_ptr<class scene> m_next_scene;
-std::unique_ptr<class input_system> m_input_system;
-std::unique_ptr<class sound_system> m_sound_system;
-std::unique_ptr<class script_system> m_script_system;
-std::unique_ptr<class texture_system> m_texture_system;
-std::unique_ptr<class camera> m_camera;
-std::unique_ptr<class random_system> m_random;
-bool initialize() { return _manager.initialize(); }
-void launch() { _manager.launch(); }
-window_system &get_window() { return *m_window; }
-render_system &get_renderer() { return *m_renderer; }
-input_system &get_input() { return *m_input_system; }
-scene &get_current_scene() { return _manager.get_current_scene(); }
-sound_system &get_sound() { return *m_sound_system; }
-texture_system &get_texture() { return *m_texture_system; }
-camera &get_camera() { return *m_camera; }
-random_system &get_random() { return *m_random; }
-script_system &get_script() { return *m_script_system; }
+bool initialize() { return singleton<manager>::get().initialize(); }
+void launch() { singleton<manager>::get().launch(); }
+window_system &get_window() { return singleton<window_system>::get(); }
+render_system &get_renderer() { return singleton<render_system>::get(); }
+input_system &get_input() { return singleton<input_system>::get(); }
+scene &get_current_scene() {
+  return singleton<manager>::get().get_current_scene();
+}
+sound_system &get_sound() { return singleton<sound_system>::get(); }
+texture_system &get_texture() { return singleton<texture_system>::get(); }
+camera &get_camera() { return singleton<camera>::get(); }
+random_system &get_random() { return singleton<random_system>::get(); }
+script_system &get_script() { return singleton<script_system>::get(); }
 bool manager::initialize() {
   m_current_scene = std::make_unique<scene>();
+  m_next_scene = nullptr;
   SDL_SetMainReady();
   SDL_Init(SDL_INIT_EVERYTHING);
   TTF_Init();
@@ -72,10 +65,6 @@ bool manager::initialize() {
   SDLNet_Init();
   Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3);
   Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
-  m_next_scene = nullptr;
-  m_window = std::make_unique<window_system>();
-  m_texture_system = std::make_unique<texture_system>();
-  m_renderer = std::make_unique<render_system>();
   logger::change_logger(
       std::move(logger::default_logger::CreateConsoleLogger()));
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
@@ -85,42 +74,39 @@ bool manager::initialize() {
     str = "Vulkan";
   std::getline(ifs, str);
   if (str.compare("Vulkan") == 0) {
-    m_window->initialize("sinen engine version:0.0.1, Graphics backends:Vulkan",
-                         graphics_api::Vulkan);
-    m_renderer->initialize(graphics_api::Vulkan);
+    get_window().initialize(
+        "sinen engine version:0.0.1, Graphics backends:Vulkan",
+        graphics_api::Vulkan);
+    get_renderer().initialize(graphics_api::Vulkan);
   } else if (str.compare("OpenGL") == 0) {
-    m_window->initialize("sinen engine version:0.0.1, Graphics backends:OpenGL",
-                         graphics_api::OpenGL);
-    m_renderer->initialize(graphics_api::OpenGL);
+    get_window().initialize(
+        "sinen engine version:0.0.1, Graphics backends:OpenGL",
+        graphics_api::OpenGL);
+    get_renderer().initialize(graphics_api::OpenGL);
   }
 
 #else
-  m_window->initialize("sinen engine version:0.0.1", graphics_api::ES);
-  m_renderer->initialize(graphics_api::ES);
+  get_window().initialize("sinen engine version:0.0.1", graphics_api::ES);
+  get_renderer().initialize(graphics_api::ES);
 #endif
-  m_camera = std::make_unique<camera>();
-
-  m_sound_system = std::make_unique<sound_system>();
-  if (!m_sound_system->initialize()) {
+  singleton<camera>::get();
+  if (!get_sound().initialize()) {
     logger::fatal("Failed to initialize audio system");
-    m_sound_system->terminate();
+    get_sound().terminate();
     return false;
   }
-  m_input_system = std::make_unique<input_system>();
-  if (!m_input_system->initialize()) {
+  if (!get_input().initialize()) {
     logger::fatal("Failed to initialize input system");
     return false;
   }
-  m_script_system = std::make_unique<script_system>();
-  if (!m_script_system->initialize()) {
+  if (!get_script().initialize()) {
     logger::fatal("Failed to initialize script system");
     return false;
   }
-  m_random = std::make_unique<random_system>();
-  m_random->init();
+  get_random().init();
   texture tex;
-  tex.fill_color(palette::Black);
-  m_renderer->set_skybox_texture(tex);
+  tex.fill_color(palette::black());
+  get_renderer().set_skybox_texture(tex);
   return true;
 }
 void manager::launch() {
@@ -143,12 +129,12 @@ void manager::loop() {
     m_current_scene->initialize();
     m_next_scene = nullptr;
   } else {
-    m_script_system->shutdown();
+    get_script().shutdown();
     m_current_scene->shutdown();
-    m_input_system->terminate();
-    m_sound_system->terminate();
+    get_input().terminate();
+    get_sound().terminate();
     m_current_scene = nullptr;
-    m_renderer->shutdown();
+    get_renderer().shutdown();
     Mix_CloseAudio();
     singleton_finalizer::finalize();
 #ifndef EMSCRIPTEN
@@ -160,17 +146,17 @@ void manager::loop() {
 }
 void manager::change_scene(std::string scene_name) {
   m_current_scene->quit();
-  m_script_system->shutdown();
+  get_script().shutdown();
   m_next_scene = std::make_unique<scene>();
   m_scene_name = scene_name;
 }
 
 void change_scene(std::string scene_number) {
-  _manager.change_scene(scene_number);
+  singleton<manager>::get().change_scene(scene_number);
 }
 
 std::string get_current_scene_number() {
-  return _manager.get_current_scene_number();
+  return singleton<manager>::get().get_current_scene_number();
 }
 
 } // namespace sinen

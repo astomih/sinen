@@ -384,7 +384,7 @@ void vk_renderer::prepare() {
         VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
     m_depth_texture.pipeline.alpha_blend_factor(
         VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
-    m_depth_texture.pipeline.set_depth_test(VK_TRUE);
+    m_depth_texture.pipeline.set_depth_test(VK_FALSE);
     m_depth_texture.pipeline.set_depth_write(VK_TRUE);
     m_depth_texture.pipeline.prepare(m_base->get_vk_device());
     vk_shader::clean(m_base->get_vk_device(), shaderStages);

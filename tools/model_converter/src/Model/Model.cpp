@@ -1,7 +1,5 @@
 ﻿#include "Model.hpp"
 #include "../Animation/FromAssimp.hpp"
-#include "Color/Color.hpp"
-#include <Nen.hpp>
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/LogStream.hpp>
@@ -88,7 +86,7 @@ void resetModelNodes(Model &model) {
 void Model::LoadFromFile(std::string_view filePath) {
   Assimp::Importer importer;
 
-  auto path = data_io::LoadAsString(asset_type::Model, filePath);
+  auto path = dstream::open_as_string(asset_type::Model, filePath);
   auto pos = std::string(filePath).find_last_of(".");
   auto hint =
       std::string(filePath).substr(pos + 1, std::string(filePath).size());
@@ -159,7 +157,7 @@ std::shared_ptr<Node> createNode(const aiNode *const n, aiMesh **mesh) {
     node->mesh.push_back(createMesh(mesh[n->mMeshes[i]]));
   }
   memcpy(&node->matrix, &n->mTransformation, sizeof(float) * 16);
-  node->matrix = matrix4::Transpose(node->matrix);
+  node->matrix = matrix4::transpose(node->matrix);
   // 初期値を保存しておく
   node->matrix_orig = node->matrix;
 
@@ -175,7 +173,7 @@ Bone createBone(const aiBone *b) {
 
   bone.name = b->mName.C_Str();
   memcpy(&bone.offset, &b->mOffsetMatrix, sizeof(float) * 16);
-  bone.offset = matrix4::Transpose(bone.offset);
+  bone.offset = matrix4::transpose(bone.offset);
 
   const aiVertexWeight *w = b->mWeights;
   for (uint32_t i = 0; i < b->mNumWeights; i++) {
@@ -220,7 +218,7 @@ Mesh createMesh(const aiMesh *const m) {
   if (m->HasVertexColors(0)) {
     const aiColor4D *color = m->mColors[0];
     for (uint32_t h = 0; h < num_vtx; ++h) {
-      v[h].rgba = nen::color{color[h].r, color[h].g, color[h].b, color[h].a};
+      v[h].rgba = sinen::color{color[h].r, color[h].g, color[h].b, color[h].a};
     }
   }
 
@@ -297,7 +295,7 @@ quaternion getLerpValue(const float time, const std::vector<QuatKey> &values) {
     double dt = result->time - (result - 1)->time;
     double t = time - (result - 1)->time;
     value =
-        quaternion::Slerp((result - 1)->value, result->value, (float)(t / dt));
+        quaternion::slerp((result - 1)->value, result->value, (float)(t / dt));
   }
 
   return value;
@@ -319,7 +317,7 @@ vector3 getLerpValue(const float time, const std::vector<VectorKey> &values) {
     // 直線補間
     double dt = result->time - (result - 1)->time;
     double t = time - (result - 1)->time;
-    value = vector3::Lerp((result - 1)->value, result->value, float(t / dt));
+    value = vector3::lerp((result - 1)->value, result->value, float(t / dt));
   }
 
   return value;
@@ -330,13 +328,13 @@ void UpdateNodeMatrix(Model *model, const float time, const Animation &anim) {
 
     // 階層アニメーションを取り出して行列を生成
     vector3 translate = getLerpValue(time, body.translate);
-    matrix4 t = matrix4::Identity;
+    matrix4 t = matrix4::identity;
     t[3][0] = translate.x;
     t[3][1] = translate.y;
     t[3][2] = translate.z;
     t[3][3] = 1.f;
     matrix4 r =
-        matrix4::CreateFromQuaternion(getLerpValue(time, body.rotation));
+        matrix4::create_from_quaternion(getLerpValue(time, body.rotation));
 
     vector3 scaling = getLerpValue(time, body.scaling);
     matrix4 s;
@@ -358,7 +356,7 @@ void UpdateNodeDerivedMatrix(const std::shared_ptr<Node> &n,
                              const matrix4 &parent_matrix) {
   n->global_matrix = parent_matrix * n->matrix;
   n->invert_matrix = n->global_matrix;
-  n->invert_matrix.Invert();
+  n->invert_matrix.invert();
 
   for (auto child : n->children) {
     UpdateNodeDerivedMatrix(child, n->global_matrix);
@@ -382,7 +380,7 @@ void UpdateMesh(Model *model) {
       // 変換結果を書き出す頂点配列
       auto &body_vtx = mesh.body.vertices;
       for (auto &i : body_vtx) {
-        i.position = vector3::Zero;
+        i.position = vector3::zero;
       }
 
       // オリジナルの頂点データ

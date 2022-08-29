@@ -10,19 +10,7 @@
 namespace sinen {
 class Model {
 public:
-  /**
-   * @brief ファイルから読み込む
-   *
-   * @param filePath
-   */
   void LoadFromFile(std::string_view filePath);
-
-  /**
-   * @brief アニメーションを更新
-   *
-   * @param time アニメーション速度
-   * @param index アニメーション番号
-   */
   void UpdateAnimation(const double time, const size_t index);
   std::shared_ptr<Node> node;
   std::map<std::string, std::shared_ptr<Node>> node_index;

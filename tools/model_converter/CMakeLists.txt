@@ -12,11 +12,11 @@ file(GLOB SOURCE_FILES
 )
 
 include_directories(
-	../external/sinen/include
-	../external/sinen/include/Nen
+	../include
+	../include/sinen
 )
 link_directories(
-	../external/sinen/build
+	..
 )
 find_package(Vulkan REQUIRED)
 find_package(OpenGL REQUIRED)
@@ -24,10 +24,9 @@ find_package(GLEW REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(OpenAL REQUIRED)
 find_package(assimp REQUIRED)
-add_subdirectory(./external/sinen)
 set(LIBRARIES
-	nen
-    assimp
+	sinen
+  assimp
 	${Vulkan_LIBRARIES}	
 	SDL2
 	SDL2main

@@ -1,7 +1,5 @@
 ﻿#pragma once
 #include "Bone.hpp"
-#include "Vertex/Vertex.hpp"
-#include "Vertex/VertexArray.hpp"
 #include <memory>
 #include <sinen.hpp>
 #include <string_view>

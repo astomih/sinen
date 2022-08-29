@@ -24,7 +24,8 @@ find_package(GLEW REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(OpenAL REQUIRED)
 find_package(assimp REQUIRED)
-set(LIBRARIES
+
+set(COMMON_LIBRARIES
 	sinen
   assimp
 	${Vulkan_LIBRARIES}	
@@ -35,9 +36,12 @@ set(LIBRARIES
 	SDL2_ttf
 	SDL2_net
 	openal
-	glew32
-	opengl32
 )
+if(WIN32)
+	set(LIBRARIES ${COMMON_LIBRARIES} glew32 opengl32)
+else()
+	set(LIBRARIES ${COMMON_LIBRARIES} GLEW GL)
+endif()
 
 add_executable(model_converter
 	${SOURCE_FILES}

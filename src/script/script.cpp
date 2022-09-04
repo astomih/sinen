@@ -45,41 +45,40 @@ bool script_system::initialize() {
     return impl->state.require_script(
         str, dstream::open_as_string(asset_type::Script, str + ".lua"));
   };
-  impl->state["texture"] = [&]() -> texture { return texture(); };
-  impl->state["font"] = [&]() -> font { return font(); };
+  impl->state["texture"] = []() -> texture { return texture(); };
+  impl->state["font"] = []() -> font { return font(); };
   impl->state["DEFAULT_FONT"] = "mplus/mplus-1p-medium.ttf";
-  impl->state["draw2d"] = [&]() -> draw2d { return draw2d(); };
-  impl->state["draw2d"] = [&](texture t) -> draw2d { return draw2d(t); };
-  impl->state["draw3d"] = [&]() -> draw3d { return draw3d(); };
-  impl->state["draw3d"] = [&](texture t) -> draw3d { return draw3d(t); };
+  impl->state["draw2d"] = []() -> draw2d { return draw2d(); };
+  impl->state["draw2d"] = [](texture t) -> draw2d { return draw2d(t); };
+  impl->state["draw3d"] = []() -> draw3d { return draw3d(); };
+  impl->state["draw3d"] = [](texture t) -> draw3d { return draw3d(t); };
   impl->state["draw2d_instanced"] = [&](texture t) -> draw2d_instancing {
     return draw2d_instancing(t);
   };
-  impl->state["draw3d_instanced"] = [&](texture t) -> draw3d_instancing {
+  impl->state["draw3d_instanced"] = [](texture t) -> draw3d_instancing {
     return draw3d_instancing(t);
   };
-  impl->state["vector3"] = [&](float x, float y, float z) -> vector3 {
+  impl->state["vector3"] = [](float x, float y, float z) -> vector3 {
     return vector3(x, y, z);
   };
-  impl->state["vector2"] = [&](float x, float y) -> vector2 {
+  impl->state["vector2"] = [](float x, float y) -> vector2 {
     return vector2(x, y);
   };
-  impl->state["quaternion"] = [&](sol::this_state s) -> quaternion {
+  impl->state["quaternion"] = [](sol::this_state s) -> quaternion {
     return quaternion();
   };
-  impl->state["color"] = [&](float r, float g, float b, float a) -> color {
+  impl->state["color"] = [](float r, float g, float b, float a) -> color {
     return color(r, g, b, a);
   };
-  impl->state["model"] = [&]() -> model { return model(); };
-  impl->state["music"] = [&]() -> music { return music(); };
-  impl->state["sound"] = [&]() -> sound { return sound(); };
+  impl->state["model"] = []() -> model { return model(); };
+  impl->state["music"] = []() -> music { return music(); };
+  impl->state["sound"] = []() -> sound { return sound(); };
   impl->state["set_skybox_texture"] = [&](texture tex) -> void {
     get_renderer().set_skybox_texture(tex);
   };
-  impl->state["aabb"] = [&]() -> aabb { return aabb(); };
+  impl->state["aabb"] = []() -> aabb { return aabb(); };
   {
-    auto v = impl->state.new_usertype<vector3>("sinen_vector3",
-                                               sol::no_construction());
+    auto v = impl->state.new_usertype<vector3>("", sol::no_construction());
     v["x"] = &vector3::x;
     v["y"] = &vector3::y;
     v["z"] = &vector3::z;
@@ -100,8 +99,7 @@ bool script_system::initialize() {
     };
   }
   {
-    auto v = impl->state.new_usertype<vector2>("sinen_vector2",
-                                               sol::no_construction());
+    auto v = impl->state.new_usertype<vector2>("", sol::no_construction());
     v["x"] = &vector2::x;
     v["y"] = &vector2::y;
     v["add"] = &vector2::add;
@@ -110,16 +108,14 @@ bool script_system::initialize() {
     v["div"] = &vector2::div;
   }
   {
-    auto v =
-        impl->state.new_usertype<color>("sinen_color", sol::no_construction());
+    auto v = impl->state.new_usertype<color>("", sol::no_construction());
     v["r"] = &color::r;
     v["g"] = &color::g;
     v["b"] = &color::b;
     v["a"] = &color::a;
   }
   {
-    auto v = impl->state.new_usertype<draw2d>("sinen_draw2d",
-                                              sol::no_construction());
+    auto v = impl->state.new_usertype<draw2d>("", sol::no_construction());
     v["draw"] = &draw2d::draw;
     v["position"] = &draw2d::position;
     v["rotation"] = &draw2d::rotation;
@@ -128,8 +124,7 @@ bool script_system::initialize() {
     v["vertex_name"] = &draw2d::vertex_name;
   }
   {
-    auto v = impl->state.new_usertype<draw3d>("sinen_draw3d",
-                                              sol::no_construction());
+    auto v = impl->state.new_usertype<draw3d>("", sol::no_construction());
     v["position"] = &draw3d::position;
     v["rotation"] = &draw3d::rotation;
     v["scale"] = &draw3d::scale;
@@ -139,8 +134,8 @@ bool script_system::initialize() {
     v["is_draw_depth"] = &draw3d::is_draw_depth;
   }
   {
-    auto v = impl->state.new_usertype<draw2d_instancing>(
-        "sinen_draw2d_instanced", sol::no_construction());
+    auto v =
+        impl->state.new_usertype<draw2d_instancing>("", sol::no_construction());
     v["draw"] = &draw2d_instancing::draw;
     v["add"] = &draw2d_instancing::add;
     v["clear"] = &draw2d_instancing::clear;
@@ -148,8 +143,8 @@ bool script_system::initialize() {
     v["vertex_name"] = &draw2d_instancing::vertex_name;
   }
   {
-    auto v = impl->state.new_usertype<draw3d_instancing>(
-        "sinen_draw3d_instanced", sol::no_construction());
+    auto v =
+        impl->state.new_usertype<draw3d_instancing>("", sol::no_construction());
     v["draw"] = &draw3d_instancing::draw;
     v["add"] = &draw3d_instancing::add;
     v["clear"] = &draw3d_instancing::clear;
@@ -158,8 +153,7 @@ bool script_system::initialize() {
     v["is_draw_depth"] = &draw3d_instancing::is_draw_depth;
   }
   {
-    auto v = impl->state.new_usertype<texture>("sinen_texture",
-                                               sol::no_construction());
+    auto v = impl->state.new_usertype<texture>("", sol::no_construction());
     v["fill_color"] = &texture::fill_color;
     v["blend_color"] = &texture::blend_color;
     v["copy"] = &texture::copy;
@@ -167,20 +161,18 @@ bool script_system::initialize() {
     v["size"] = &texture::size;
   }
   {
-    auto v =
-        impl->state.new_usertype<font>("sinen_font", sol::no_construction());
+    auto v = impl->state.new_usertype<font>("", sol::no_construction());
     v["load"] = &font::load;
     v["render_text"] = &font::render_text;
   }
   {
-    auto v = impl->state.new_usertype<keyboard_state>("sinen_keyboard_state",
-                                                      sol::no_construction());
+    auto v =
+        impl->state.new_usertype<keyboard_state>("", sol::no_construction());
     v["is_key_down"] = &keyboard_state::is_key_down;
     v["key_state"] = &keyboard_state::get_key_state;
   }
   {
-    auto v = impl->state.new_usertype<mouse_state>("sinen_mouse_state",
-                                                   sol::no_construction());
+    auto v = impl->state.new_usertype<mouse_state>("", sol::no_construction());
     v["button_state"] = &mouse_state::get_button_state;
     v["is_button_down"] = &mouse_state::is_button_down;
     v["position"] = &mouse_state::get_position;
@@ -189,15 +181,13 @@ bool script_system::initialize() {
     v["hide_cursor"] = &mouse_state::hide_cursor;
   }
   {
-    auto v =
-        impl->state.new_usertype<music>("sinen_music", sol::no_construction());
+    auto v = impl->state.new_usertype<music>("", sol::no_construction());
     v["load"] = &music::load;
     v["play"] = &music::play;
     v["set_volume"] = &music::set_volume;
   }
   {
-    auto v =
-        impl->state.new_usertype<sound>("sinen_sound", sol::no_construction());
+    auto v = impl->state.new_usertype<sound>("", sol::no_construction());
     v["load"] = &sound::load;
     v["play"] = &sound::play;
     v["set_volume"] = &sound::set_volume;
@@ -206,8 +196,7 @@ bool script_system::initialize() {
     v["set_position"] = &sound::set_position;
   }
   {
-    auto v = impl->state.new_usertype<camera>("sinen_camera",
-                                              sol::no_construction());
+    auto v = impl->state.new_usertype<camera>("", sol::no_construction());
     v["position"] = &camera::position;
     v["aspect"] = &camera::aspect;
     v["far"] = &camera::far;
@@ -221,21 +210,18 @@ bool script_system::initialize() {
     change_scene(str);
   };
   {
-    auto v =
-        impl->state.new_usertype<model>("sinen_model", sol::no_construction());
+    auto v = impl->state.new_usertype<model>("", sol::no_construction());
     v["aabb"] = &model::m_aabb;
     v["load"] = &model::load;
   }
   {
-    auto v =
-        impl->state.new_usertype<aabb>("sinen_aabb", sol::no_construction());
+    auto v = impl->state.new_usertype<aabb>("", sol::no_construction());
     v["min"] = &aabb::min;
     v["max"] = &aabb::max;
     v["intersects_aabb"] = &aabb::intersects_aabb;
   }
   {
-    auto v = impl->state.new_usertype<random>("sinen_random",
-                                              sol::no_construction());
+    auto v = impl->state.new_usertype<random>("", sol::no_construction());
     v["get_int_range"] = random::get_int_range;
     v["get_float_range"] = random::get_float_range;
   }

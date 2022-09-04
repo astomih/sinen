@@ -2,6 +2,10 @@
 #define SINEN_PALETTE_HPP
 #include "color.hpp"
 namespace sinen {
+/**
+ * @brief Color palette
+ *
+ */
 struct palette {
   static const color black();
   static const color light_black();

@@ -8,6 +8,7 @@
 #include "audio/sound.hpp"
 #include "camera/camera.hpp"
 #include "color/color.hpp"
+#include "color/hsv.hpp"
 #include "color/palette.hpp"
 #include "drawable/drawable.hpp"
 #include "drawable/drawable_wrapper.hpp"
@@ -47,6 +48,7 @@
 #include "vertex/vertex.hpp"
 #include "vertex/vertex_array.hpp"
 #include "window/window.hpp"
+
 
 #endif
 #ifdef NO_USE_SINEN_NAMESPACE

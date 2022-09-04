@@ -40,5 +40,4 @@ public:
   float a;
 };
 } // namespace sinen
-#include "palette.hpp"
 #endif // !SINEN_COLOR_HPP

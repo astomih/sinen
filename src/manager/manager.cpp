@@ -4,12 +4,6 @@
 #include <SDL_main.h>
 #endif
 
-#include "../input/input_system.hpp"
-#include "../math/random_system.hpp"
-#include "../render/render_system.hpp"
-#include "../script/script_system.hpp"
-#include "../texture/texture_system.hpp"
-#include "../window/window_system.hpp"
 #include "manager.hpp"
 #include <SDL.h>
 #include <SDL_image.h>
@@ -21,7 +15,6 @@
 #include <optional>
 #include <utility/launcher.hpp>
 
-#include "../audio/sound_system.hpp"
 #include <camera/camera.hpp>
 #include <input/input.hpp>
 #include <logger/logger.hpp>
@@ -55,6 +48,7 @@ texture_system &get_texture() { return singleton<texture_system>::get(); }
 camera &get_camera() { return singleton<camera>::get(); }
 random_system &get_random() { return singleton<random_system>::get(); }
 script_system &get_script() { return singleton<script_system>::get(); }
+event_system &get_event() { return singleton<event_system>::get(); }
 bool manager::initialize() {
   m_current_scene = std::make_unique<scene>();
   m_next_scene = nullptr;

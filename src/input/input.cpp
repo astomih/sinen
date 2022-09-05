@@ -1,4 +1,4 @@
-#include "../event/current_event.hpp"
+#include "../event/event_system.hpp"
 #include "../manager/get_system.hpp"
 #include "../window/window_system.hpp"
 #include "input_system.hpp"
@@ -200,10 +200,9 @@ void input_system::update() {
 
   input::mouse.hide_cursor(isHide);
 }
-SDL_Event current_event_handle::current_event = SDL_Event{};
 void input_system::process_event() {
 
-  auto e = current_event_handle::current_event;
+  auto e = get_event().current_event;
   switch (e.type) {
   case SDL_MOUSEWHEEL: {
     m_mouse.mScrollWheel =

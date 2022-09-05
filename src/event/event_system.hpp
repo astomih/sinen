@@ -2,9 +2,9 @@
 #include <SDL.h>
 
 namespace sinen {
-class current_event_handle {
+class event_system {
 
 public:
-  static SDL_Event current_event;
+  SDL_Event current_event;
 };
 } // namespace sinen

@@ -1,4 +1,4 @@
-#include "../event/current_event.hpp"
+#include "../manager/get_system.hpp"
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include <SDL.h>
@@ -11,13 +11,6 @@
 #include <scene/scene.hpp>
 #include <window/window.hpp>
 
-#include "../audio/sound_system.hpp"
-#include "../input/input_system.hpp"
-#include "../manager/get_system.hpp"
-#include "../math/random_system.hpp"
-#include "../render/render_system.hpp"
-#include "../script/script_system.hpp"
-#include "../window/window_system.hpp"
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -155,10 +148,10 @@ void scene::run_loop() {
 
 void scene::process_input() {
 
-  while (SDL_PollEvent(&current_event_handle::current_event)) {
-    ImGui_ImplSDL2_ProcessEvent(&current_event_handle::current_event);
+  while (SDL_PollEvent(&get_event().current_event)) {
+    ImGui_ImplSDL2_ProcessEvent(&get_event().current_event);
     get_window().ProcessInput();
-    switch (current_event_handle::current_event.type) {
+    switch (get_event().current_event.type) {
     case SDL_QUIT: {
       mGameState = game_state::Quit;
     } break;

@@ -1,4 +1,4 @@
-#include "../event/current_event.hpp"
+#include "../event/event_system.hpp"
 #include "../manager/get_system.hpp"
 #include "utility/singleton.hpp"
 #include "window_system.hpp"
@@ -69,9 +69,8 @@ void window_system::ProcessInput() {
   SDL_GetWindowSize(m_window, &x, &y);
   this->size.x = static_cast<float>(x);
   this->size.y = static_cast<float>(y);
-  if (current_event_handle::current_event.type == SDL_WINDOWEVENT) {
-    state = static_cast<window_state>(
-        current_event_handle::current_event.window.event);
+  if (get_event().current_event.type == SDL_WINDOWEVENT) {
+    state = static_cast<window_state>(get_event().current_event.window.event);
   }
 }
 } // namespace sinen

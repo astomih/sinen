@@ -2,8 +2,6 @@
 #include <iostream>
 
 namespace sinen {
-const int dx[4] = {0, 1, 0, -1};
-const int dy[4] = {1, 0, -1, 0};
 bfs::bfs(const graph &field) { reset(field); }
 void bfs::reset() {
   m_dist = graph{width(), width(), -1};
@@ -23,6 +21,8 @@ void bfs::reset(const graph &field) {
   }
 }
 bool bfs::find_path(const point2i &start, const point2i &end) {
+  constexpr int dx[4] = {0, 1, 0, -1};
+  constexpr int dy[4] = {1, 0, -1, 0};
   // start or end is not in field
   if (start.x < 0 || start.x >= width() || start.y < 0 || start.y >= height()) {
     return false;

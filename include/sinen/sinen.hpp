@@ -20,6 +20,7 @@
 #include "instancing/instancing.hpp"
 #include "instancing/instancing_wrapper.hpp"
 #include "io/dstream.hpp"
+#include "io/file.hpp"
 #include "logger/logger.hpp"
 #include "math/math.hpp"
 #include "math/matrix3.hpp"
@@ -48,7 +49,6 @@
 #include "vertex/vertex.hpp"
 #include "vertex/vertex_array.hpp"
 #include "window/window.hpp"
-
 
 #endif
 #ifdef NO_USE_SINEN_NAMESPACE

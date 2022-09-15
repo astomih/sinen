@@ -20,16 +20,16 @@ jobs:
       - uses: actions/checkout@v2
       - uses: mymindstorm/setup-emsdk@v11
       - run: |
-          cd ${{github.workspace}}/example/external
+          cd ${{github.workspace}}/demo/external
           git clone https://github.com/astomih/sinen
       
       - name: CMake
         run: |
-          cd ${{github.workspace}}/example
+          cd ${{github.workspace}}/demo
           emcmake cmake -B build
       - name: Build
         run: |
-          cd ${{github.workspace}}/example
+          cd ${{github.workspace}}/demo
           cp -r data ./build
           cp shell_minimum.html ./build
           cd ./build && make -j2
@@ -37,6 +37,6 @@ jobs:
       #   uses: JamesIves/github-pages-deploy-action@v4.2.2
       #   with:
       #     branch: gh-pages
-      #     folder: example/build
+      #     folder: demo/build
       #     token: ${{ secrets.PAT }}
       #     repository-name: astomih/sinen_app

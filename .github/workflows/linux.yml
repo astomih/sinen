@@ -20,7 +20,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - run: |
-          cd example/external
+          cd demo/external
           git clone https://github.com/astomih/sinen
           cd ..
 
@@ -31,19 +31,19 @@ jobs:
       uses: humbletim/setup-vulkan-sdk@v1.0.3
     
     - name: build sinen
-      run: cd ${{github.workspace}}/example/external/sinen && cmake -B build && cd build && make 
+      run: cd ${{github.workspace}}/demo/external/sinen && cmake -B build && cd build && make 
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/example/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake -B ${{github.workspace}}/demo/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
     - name: Build
       # Build your program with the given configuration
-      run: cd ${{github.workspace}}/example/build && make
+      run: cd ${{github.workspace}}/demo/build && make
 
     - name: Test
-      working-directory: ${{github.workspace}}/example/build
+      working-directory: ${{github.workspace}}/demo/build
       # Execute tests defined by the CMake configuration.  
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}}

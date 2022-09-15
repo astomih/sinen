@@ -14,15 +14,15 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - run: |
-          cd ${{github.workspace}}/example/external
+          cd ${{github.workspace}}/demo/external
           git clone https://github.com/astomih/sinen
           cd ..
 
     - name: Install libraries
       run: |
-          cd ${{github.workspace}}/example/android-project/app/jni
-          ln -s ${{github.workspace}}/example ./singa
-          ln -s ${{github.workspace}}/example/external/sinen ./sinen
+          cd ${{github.workspace}}/demo/android-project/app/jni
+          ln -s ${{github.workspace}}/demo ./singa
+          ln -s ${{github.workspace}}/demo/external/sinen ./sinen
           git clone https://github.com/astomih/SDL.git
           git clone https://github.com/astomih/SDL_image.git
           git clone https://github.com/astomih/SDL_mixer.git
@@ -36,7 +36,7 @@ jobs:
           mv CMakeLists-SDL_net.txt SDL2_net
           cd SDL2_net
           mv CMakeLists-SDL_net.txt CMakeLists.txt
-          cd ${{github.workspace}}/example
+          cd ${{github.workspace}}/demo
     - name: set up JDK 11
 
       uses: actions/setup-java@v2
@@ -49,10 +49,10 @@ jobs:
     - name: Grant execute permission for gradlew
       run: |
           pwd
-          cd ${{github.workspace}}/example/android-project
+          cd ${{github.workspace}}/demo/android-project
           chmod +x gradlew
     - name: Build with Gradle
       run: |
           pwd
-          cd ${{github.workspace}}/example/android-project
+          cd ${{github.workspace}}/demo/android-project
           ./gradlew build

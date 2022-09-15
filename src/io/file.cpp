@@ -11,47 +11,55 @@ class file::impl {
 public:
   impl() : rwops(nullptr) {}
   ~impl() = default;
-  bool open(const char *filename, const open_mode &mode) {
+  std::string open_mode_to_string(const open_mode &mode) {
+    std::string m;
     switch (mode) {
     case open_mode::r:
-      rwops = SDL_RWFromFile(filename, "r");
+      m = "r";
       break;
     case open_mode::w:
-      rwops = SDL_RWFromFile(filename, "w");
+      m = "w";
       break;
     case open_mode::a:
-      rwops = SDL_RWFromFile(filename, "a");
+      m = "a";
       break;
-    case open_mode::rw:
-      rwops = SDL_RWFromFile(filename, "r+");
+    case open_mode::rp:
+      m = "r+";
       break;
-    case open_mode::wa:
-      rwops = SDL_RWFromFile(filename, "w+");
+    case open_mode::wp:
+      m = "w+";
       break;
-    case open_mode::rwa:
-      rwops = SDL_RWFromFile(filename, "a+");
+    case open_mode::ap:
+      m = "a+";
       break;
     case open_mode::rb:
-      rwops = SDL_RWFromFile(filename, "rb");
+      m = "rb";
       break;
     case open_mode::wb:
-      rwops = SDL_RWFromFile(filename, "wb");
+      m = "wb";
       break;
     case open_mode::ab:
-      rwops = SDL_RWFromFile(filename, "ab");
+      m = "ab";
       break;
-    case open_mode::rwb:
-      rwops = SDL_RWFromFile(filename, "r+b");
+    case open_mode::rpb:
+      m = "r+b";
       break;
-    case open_mode::wab:
-      rwops = SDL_RWFromFile(filename, "w+b");
+    case open_mode::wpb:
+      m = "w+b";
       break;
-    case open_mode::rwab:
-      rwops = SDL_RWFromFile(filename, "a+b");
+    case open_mode::apb:
+      m = "a+b";
       break;
     default:
-      return false;
+      return "";
     }
+    return m;
+  }
+  bool open(const char *filename, const open_mode &mode) {
+    return open(filename, open_mode_to_string(mode).c_str());
+  };
+  bool open(const char *filename, const char *mode) {
+    rwops = SDL_RWFromFile(filename, mode);
     if (rwops == nullptr) {
       return false;
     }
@@ -77,10 +85,19 @@ private:
 };
 file::file() : m_impl(new impl()) {}
 file::~file() = default;
+std::string file::open_mode_to_string(const open_mode &mode) {
+  return m_impl->open_mode_to_string(mode);
+}
 bool file::open(const char *filename, const open_mode &mode) {
   return m_impl->open(filename, mode);
 }
 bool file::open(std::string_view filename, const open_mode &mode) {
+  return m_impl->open(filename.data(), mode);
+}
+bool file::open(const char *filename, const char *mode) {
+  return m_impl->open(filename, mode);
+}
+bool file::open(std::string_view filename, const char *mode) {
   return m_impl->open(filename.data(), mode);
 }
 void file::close() { m_impl->close(); }

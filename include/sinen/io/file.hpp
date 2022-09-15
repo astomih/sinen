@@ -40,14 +40,14 @@ public:
      * exist.
      *
      */
-    rw,
+    rp,
     /**
      * @brief Create an empty file for both reading and writing. If a file with
      * the same name already exists its content is erased and the file is
      * treated as a new empty file.
      *
      */
-    wa,
+    wp,
     /**
      * @brief Open a file for reading and appending. All writing operations are
      * performed at the end of the file, protecting the previous content to be
@@ -56,7 +56,7 @@ public:
      * back to the end of file. The file is created if it does not exist.
      *
      */
-    rwa,
+    ap,
     /**
      * @brief Open a file for reading. The file must exist.
      *
@@ -79,14 +79,14 @@ public:
      * exist.
      *
      */
-    rwb,
+    rpb,
     /**
      * @brief Create an empty file for both reading and writing. If a file with
      * the same name already exists its content is erased and the file is
      * treated as a new empty file.
      *
      */
-    wab,
+    wpb,
     /**
      * @brief Open a file for reading and appending. All writing operations are
      * performed at the end of the file, protecting the previous content to be
@@ -95,7 +95,7 @@ public:
      * back to the end of file. The file is created if it does not exist.
      *
      */
-    rwab
+    apb
   };
   /**
    * @brief Open a file
@@ -115,6 +115,24 @@ public:
    * @return false Failed to open
    */
   bool open(std::string_view filename, const open_mode &mode);
+  /**
+   * @brief Open a file
+   *
+   * @param filename File name
+   * @param mode Open mode
+   * @return true Success to open
+   * @return false Failed to open
+   */
+  bool open(const char *filename, const char *mode);
+  /**
+   * @brief Open a file
+   *
+   * @param filename File name
+   * @param mode Open mode
+   * @return true Success to open
+   * @return false Failed to open
+   */
+  bool open(std::string_view filename, const char *mode);
   /**
    * @brief Close a file
    *
@@ -136,9 +154,32 @@ public:
    * @param num Write num
    */
   void write(const void *buffer, std::size_t size, std::size_t num);
+  /**
+   * @brief Seek to a position in a file
+   *
+   * @param offset Offset
+   * @param whence Whence
+   */
   void seek(const std::int64_t &offset, int whence);
+  /**
+   * @brief Get the current position of the file pointer
+   *
+   * @return std::int64_t Current position
+   */
   std::int64_t tell();
+  /**
+   * @brief Get the file size
+   *
+   * @return std::int64_t File size
+   */
   std::int64_t size();
+  /**
+   * @brief Open mode to string
+   *
+   * @param mode mode
+   * @return std::string string
+   */
+  std::string open_mode_to_string(const open_mode &mode);
 
 private:
   class impl;

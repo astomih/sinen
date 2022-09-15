@@ -25,7 +25,7 @@ jobs:
     - name: Setup Vulkan SDK
       uses: humbletim/setup-vulkan-sdk@v1.0.3
     - run: |
-          cd example/external
+          cd demo/external
           pwd
           git clone https://github.com/astomih/sinen
           cd ..

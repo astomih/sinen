@@ -23,11 +23,9 @@ find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(OpenAL REQUIRED)
-find_package(assimp REQUIRED)
 
 set(COMMON_LIBRARIES
 	sinen
-  assimp
 	${Vulkan_LIBRARIES}	
 	SDL2
 	SDL2main

@@ -4,12 +4,14 @@
 #define MOBILE
 #endif
 
+#include "actor/actor.hpp"
 #include "audio/music.hpp"
 #include "audio/sound.hpp"
 #include "camera/camera.hpp"
 #include "color/color.hpp"
 #include "color/hsv.hpp"
 #include "color/palette.hpp"
+#include "component/component.hpp"
 #include "drawable/drawable.hpp"
 #include "drawable/drawable_wrapper.hpp"
 #include "exception/exception.hpp"

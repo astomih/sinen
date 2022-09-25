@@ -38,7 +38,7 @@ set(COMMON_LIBRARIES
 if(WIN32)
 	set(LIBRARIES ${COMMON_LIBRARIES} glew32 opengl32)
 else()
-	set(LIBRARIES ${COMMON_LIBRARIES} GLEW GL)
+	set(LIBRARIES ${COMMON_LIBRARIES} GLEW GL ${CMAKE_DL_LIBS})
 endif()
 
 add_executable(editor

@@ -11,43 +11,43 @@ class file::impl {
 public:
   impl() : rwops(nullptr) {}
   ~impl() = default;
-  std::string open_mode_to_string(const open_mode &mode) {
+  std::string open_mode_to_string(const mode &mode) {
     std::string m;
     switch (mode) {
-    case open_mode::r:
+    case mode::r:
       m = "r";
       break;
-    case open_mode::w:
+    case mode::w:
       m = "w";
       break;
-    case open_mode::a:
+    case mode::a:
       m = "a";
       break;
-    case open_mode::rp:
+    case mode::rp:
       m = "r+";
       break;
-    case open_mode::wp:
+    case mode::wp:
       m = "w+";
       break;
-    case open_mode::ap:
+    case mode::ap:
       m = "a+";
       break;
-    case open_mode::rb:
+    case mode::rb:
       m = "rb";
       break;
-    case open_mode::wb:
+    case mode::wb:
       m = "wb";
       break;
-    case open_mode::ab:
+    case mode::ab:
       m = "ab";
       break;
-    case open_mode::rpb:
+    case mode::rpb:
       m = "r+b";
       break;
-    case open_mode::wpb:
+    case mode::wpb:
       m = "w+b";
       break;
-    case open_mode::apb:
+    case mode::apb:
       m = "a+b";
       break;
     default:
@@ -55,7 +55,7 @@ public:
     }
     return m;
   }
-  bool open(const char *filename, const open_mode &mode) {
+  bool open(const char *filename, const mode &mode) {
     return open(filename, open_mode_to_string(mode).c_str());
   };
   bool open(const char *filename, const char *mode) {
@@ -85,13 +85,13 @@ private:
 };
 file::file() : m_impl(new impl()) {}
 file::~file() = default;
-std::string file::open_mode_to_string(const open_mode &mode) {
+std::string file::open_mode_to_string(const mode &mode) {
   return m_impl->open_mode_to_string(mode);
 }
-bool file::open(const char *filename, const open_mode &mode) {
+bool file::open(const char *filename, const mode &mode) {
   return m_impl->open(filename, mode);
 }
-bool file::open(std::string_view filename, const open_mode &mode) {
+bool file::open(std::string_view filename, const mode &mode) {
   return m_impl->open(filename.data(), mode);
 }
 bool file::open(const char *filename, const char *mode) {

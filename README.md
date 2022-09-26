@@ -72,6 +72,7 @@ Install emscripten SDK. and do this.
 - Sol2
 - mojoAL
 - OpenGL 3.3
+- rapidjson
 - SDL2(image,mixer,net,ttf)
 - Vulkan 1.2
 - VulkanMemoryAllocator

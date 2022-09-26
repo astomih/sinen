@@ -17,7 +17,7 @@ public:
    *
    */
   ~file();
-  enum class open_mode {
+  enum class mode {
     /**
      * @brief Open a file for reading. The file must exist.
      *
@@ -105,7 +105,7 @@ public:
    * @return true Success to open
    * @return false Failed to open
    */
-  bool open(const char *filename, const open_mode &mode);
+  bool open(const char *filename, const mode &mode);
   /**
    * @brief Open a file
    *
@@ -114,7 +114,7 @@ public:
    * @return true Success to open
    * @return false Failed to open
    */
-  bool open(std::string_view filename, const open_mode &mode);
+  bool open(std::string_view filename, const mode &mode);
   /**
    * @brief Open a file
    *
@@ -179,7 +179,7 @@ public:
    * @param mode mode
    * @return std::string string
    */
-  std::string open_mode_to_string(const open_mode &mode);
+  std::string open_mode_to_string(const mode &mode);
 
 private:
   class impl;

@@ -21,6 +21,7 @@ if(ANDROID)
       external/sol2/include
       external/Lua/include
       external/mojoAL
+      external/rapidjson/include
       ../SDL2/include
       ../SDL2_net
       ../SDL2_image
@@ -54,6 +55,7 @@ elseif(EMSCRIPTEN)
       external/ImGuiColorTextEdit
       external/imgui_markdown
       external/sol2/include
+      external/rapidjson/include
       external/Lua/include)
   target_include_directories(sinen PUBLIC ${SINEN_INCLUDE_DIRECTORIES})
   if(WIN32)
@@ -112,6 +114,7 @@ else()
       external/Lua/include
       external/VulkanMemoryAllocator/include
       external/mojoAL/AL
+      external/rapidjson/include
       external/mojoAL)
   target_include_directories(
     sinen PUBLIC ${SINEN_INCLUDE_DIRECTORIES} ${Vulkan_INCLUDE_DIRS}

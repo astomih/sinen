@@ -25,3 +25,4 @@ jobs:
         branch: gh-pages
         folder: docs/cpp_api/html
         ssh-key: ${{ secrets.DEPLOY_KEY }}
+        target-folder: cpp_api

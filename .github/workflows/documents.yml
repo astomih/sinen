@@ -1,4 +1,4 @@
-name: Doxygen
+name: Documents
 
 on:
   push:
@@ -15,14 +15,21 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Main documents action
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - run: cd docs
+    - run: pip install mkdocs-material
+    - run: mkdocs gh-deploy --force
     - name: Doxygen Action
       uses: mattnotmitt/doxygen-action@1.9.1
       with:
-        doxyfile-path: 'docs/doxygen/Doxyfile'
+        doxyfile-path: 'tools/doxygen/Doxyfile'
     - name: Deploy 🚀
       uses: JamesIves/github-pages-deploy-action@v4.2.2
       with:
         branch: gh-pages
-        folder: docs/cpp_api/html
+        folder: tools/cpp_api/html
         ssh-key: ${{ secrets.DEPLOY_KEY }}
         target-folder: cpp_api

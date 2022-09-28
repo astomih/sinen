@@ -26,11 +26,11 @@ jobs:
     - name: Doxygen Action
       uses: mattnotmitt/doxygen-action@1.9.1
       with:
-        doxyfile-path: 'docs/doxygen/Doxyfile'
+        doxyfile-path: 'tools/doxygen/Doxyfile'
     - name: Deploy 🚀
       uses: JamesIves/github-pages-deploy-action@v4.2.2
       with:
         branch: gh-pages
-        folder: tools/cpp_api/html
+        folder: docs/cpp_api/html
         ssh-key: ${{ secrets.DEPLOY_KEY }}
         target-folder: cpp_api

@@ -23,9 +23,8 @@ The library is planned to be used only by me, so I don't think it will have full
 [![Android](https://github.com/astomih/sinen/actions/workflows/android.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/android.yml)
 
 ## Documents
-[![doxygen](https://github.com/astomih/sinen/actions/workflows/doxygen.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/doxygen.yml)  
-[API references](https://astomih.github.io/sinen)  
-No tutorials, etc. have been created yet.
+[![Documents](https://github.com/astomih/sinen/actions/workflows/documents.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/documents.yml)  
+[View Documents](https://astomih.github.io/sinen)  
 
 ## Hello world in sinen
 ``` lua

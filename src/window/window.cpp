@@ -1,5 +1,5 @@
 #include "../event/event_system.hpp"
-#include "../manager/get_system.hpp"
+#include "../main/get_system.hpp"
 #include "utility/singleton.hpp"
 #include "window_system.hpp"
 #include <SDL.h>

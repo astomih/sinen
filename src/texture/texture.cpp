@@ -1,4 +1,4 @@
-#include "../manager/get_system.hpp"
+#include "../main/get_system.hpp"
 #include "texture_system.hpp"
 #include <SDL.h>
 #include <SDL_image.h>
@@ -81,4 +81,4 @@ vector2 texture::size() {
   return vector2(surface.w, surface.h);
 }
 
-} // namespace nen
+} // namespace sinen

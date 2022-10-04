@@ -4,7 +4,7 @@
 #include <SDL_main.h>
 #endif
 
-#include "manager.hpp"
+#include "main_system.hpp"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_mixer.h>
@@ -13,11 +13,11 @@
 #include <fstream>
 #include <memory>
 #include <optional>
-#include <utility/launcher.hpp>
 
 #include <camera/camera.hpp>
 #include <input/input.hpp>
 #include <logger/logger.hpp>
+#include <main/main.hpp>
 #include <math/random.hpp>
 #include <render/renderer.hpp>
 #include <scene/scene.hpp>
@@ -35,13 +35,19 @@ void main_loop() { emscripten_loop(); }
 #endif
 
 namespace sinen {
-bool initialize() { return singleton<manager>::get().initialize(); }
-void launch() { singleton<manager>::get().launch(); }
+bool main::initialize() { return singleton<main_system>::get().initialize(); }
+void main::launch() { singleton<main_system>::get().launch(); }
+void main::change_scene(const std::string &scene_number) {
+  singleton<main_system>::get().change_scene(scene_number);
+}
+std::string main::get_current_scene_number() {
+  return singleton<main_system>::get().get_current_scene_number();
+}
 window_system &get_window() { return singleton<window_system>::get(); }
 render_system &get_renderer() { return singleton<render_system>::get(); }
 input_system &get_input() { return singleton<input_system>::get(); }
 scene &get_current_scene() {
-  return singleton<manager>::get().get_current_scene();
+  return singleton<main_system>::get().get_current_scene();
 }
 sound_system &get_sound() { return singleton<sound_system>::get(); }
 texture_system &get_texture() { return singleton<texture_system>::get(); }
@@ -49,7 +55,7 @@ camera &get_camera() { return singleton<camera>::get(); }
 random_system &get_random() { return singleton<random_system>::get(); }
 script_system &get_script() { return singleton<script_system>::get(); }
 event_system &get_event() { return singleton<event_system>::get(); }
-bool manager::initialize() {
+bool main_system::initialize() {
   m_current_scene = std::make_unique<scene>();
   m_next_scene = nullptr;
   SDL_SetMainReady();
@@ -103,7 +109,7 @@ bool manager::initialize() {
   get_renderer().set_skybox_texture(tex);
   return true;
 }
-void manager::launch() {
+void main_system::launch() {
   m_current_scene->initialize();
 
 #if !defined(EMSCRIPTEN)
@@ -114,7 +120,7 @@ void manager::launch() {
   emscripten_set_main_loop(main_loop, 120, true);
 #endif
 }
-void manager::loop() {
+void main_system::loop() {
   if (m_current_scene->is_running())
     m_current_scene->run_loop();
   else if (m_next_scene) {
@@ -138,19 +144,10 @@ void manager::loop() {
 #endif
   }
 }
-void manager::change_scene(std::string scene_name) {
+void main_system::change_scene(std::string scene_name) {
   m_current_scene->quit();
   get_script().shutdown();
   m_next_scene = std::make_unique<scene>();
   m_scene_name = scene_name;
 }
-
-void change_scene(std::string scene_number) {
-  singleton<manager>::get().change_scene(scene_number);
-}
-
-std::string get_current_scene_number() {
-  return singleton<manager>::get().get_current_scene_number();
-}
-
 } // namespace sinen

@@ -1,4 +1,4 @@
-#include "../manager/get_system.hpp"
+#include "../main/get_system.hpp"
 #include "../texture/texture_system.hpp"
 #include <SDL.h>
 #include <SDL_ttf.h>

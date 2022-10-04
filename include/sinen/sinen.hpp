@@ -24,6 +24,7 @@
 #include "io/dstream.hpp"
 #include "io/file.hpp"
 #include "logger/logger.hpp"
+#include "main/main.hpp"
 #include "math/math.hpp"
 #include "math/matrix3.hpp"
 #include "math/matrix4.hpp"
@@ -45,12 +46,12 @@
 #include "time/time.hpp"
 #include "time/timer.hpp"
 #include "utility/handler.hpp"
-#include "utility/launcher.hpp"
 #include "utility/non_copyable.hpp"
 #include "utility/singleton.hpp"
 #include "vertex/vertex.hpp"
 #include "vertex/vertex_array.hpp"
 #include "window/window.hpp"
+
 
 #endif
 #ifdef NO_USE_SINEN_NAMESPACE

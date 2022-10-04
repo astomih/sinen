@@ -1,5 +1,5 @@
 #include "../event/event_system.hpp"
-#include "../manager/get_system.hpp"
+#include "../main/get_system.hpp"
 #include "../window/window_system.hpp"
 #include "input_system.hpp"
 #include <SDL.h>

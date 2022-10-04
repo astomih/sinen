@@ -1,4 +1,4 @@
-﻿#include "../manager/get_system.hpp"
+﻿#include "../main/get_system.hpp"
 #include "../vertex/default_model_creator.h"
 #include "opengl/gl_renderer.hpp"
 #include "render_system.hpp"

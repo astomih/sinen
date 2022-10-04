@@ -1,4 +1,5 @@
-#include "../manager/get_system.hpp"
+#include "../main/get_system.hpp"
+#include "../main/main_system.hpp"
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include <SDL.h>
@@ -6,6 +7,9 @@
 #include <imgui_markdown.h>
 #include <input/input.hpp>
 #include <io/dstream.hpp>
+// For SDL2
+#undef main
+#include <main/main.hpp>
 #include <math/random.hpp>
 #include <render/renderer.hpp>
 #include <scene/scene.hpp>
@@ -18,7 +22,6 @@
 #include <functional>
 #include <iostream>
 #include <string>
-#include <utility/launcher.hpp>
 
 #include <TextEditor.h>
 #include <camera/camera.hpp>
@@ -219,7 +222,8 @@ void scene::setup() {
   }};
   sol::state *lua = (sol::state *)get_script().get_state();
   std::string str = dstream::open_as_string(
-      asset_type::Script, get_current_scene_number() + ".lua");
+      asset_type::Script, main::get_current_scene_number() + ".lua");
+
   lua->do_string(str.data());
   (*lua)["setup"]();
   editor.SetPalette(p);
@@ -233,7 +237,7 @@ void scene::setup() {
                 editor.IsOverwrite() ? "Ovr" : "Ins",
                 editor.CanUndo() ? "*" : " ",
                 editor.GetLanguageDefinition().mName.c_str(),
-                std::string(get_current_scene_number() + ".lua").c_str(),
+                std::string(main::get_current_scene_number() + ".lua").c_str(),
                 ImGui::GetIO().Framerate);
     if (ImGui::BeginMenuBar()) {
       if (ImGui::BeginMenu("File")) {
@@ -336,8 +340,8 @@ void scene::update(float deltaTime) {
   }
   if (is_save) {
     auto str = editor.GetText();
-    dstream::write(asset_type::Script, get_current_scene_number() + ".lua",
-                   str);
+    dstream::write(asset_type::Script,
+                   main::get_current_scene_number() + ".lua", str);
     std::cout << str << std::endl;
     is_save = false;
   }

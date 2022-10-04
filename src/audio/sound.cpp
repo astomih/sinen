@@ -2,7 +2,7 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 
-#include "../manager/get_system.hpp"
+#include "../main/get_system.hpp"
 #include "sound_system.hpp"
 #include <audio/music.hpp>
 #include <audio/sound.hpp>

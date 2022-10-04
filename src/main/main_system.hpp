@@ -5,20 +5,20 @@
 
 namespace sinen {
 /**
- * @brief sinen manager
+ * @brief sinen main system
  *
  */
-class manager {
+class main_system {
 public:
   /**
-   * @brief Construct a new manager object
+   * @brief Construct a new main system object
    *
    */
-  manager() = default;
-  ~manager() = default;
-  manager(const manager &) = delete;
+  main_system() = default;
+  ~main_system() = default;
+  main_system(const main_system &) = delete;
   /**
-   * @brief initialize manager
+   * @brief initialize
    *
    */
   bool initialize();
@@ -30,9 +30,7 @@ public:
   void launch();
   void change_scene(std::string scene_number);
   std::string get_current_scene_number() { return m_scene_name; }
-  class scene &get_current_scene() {
-    return *m_current_scene;
-  }
+  class scene &get_current_scene() { return *m_current_scene; }
 
 private:
   std::unique_ptr<class scene> m_current_scene;

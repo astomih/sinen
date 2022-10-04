@@ -53,11 +53,11 @@ Install msys, CMake and Vulkan. then install 'Using libraries' in pacman.
 Finally, build with CMake.
 ### WebGL
 Install emscripten SDK. and do this.  
- ``` 
- $ emcmake cmake .
- $ emmake make
- ```
- ### Android
+``` 
+$ emcmake cmake .
+$ emmake make  
+```
+### Android  
  Build with gradle.
 
 ## Lisence

@@ -43,19 +43,10 @@ void main::change_scene(const std::string &scene_number) {
 std::string main::get_current_scene_number() {
   return singleton<main_system>::get().get_current_scene_number();
 }
-window_system &get_window() { return singleton<window_system>::get(); }
-render_system &get_renderer() { return singleton<render_system>::get(); }
-input_system &get_input() { return singleton<input_system>::get(); }
-scene &get_current_scene() {
-  return singleton<main_system>::get().get_current_scene();
-}
-sound_system &get_sound() { return singleton<sound_system>::get(); }
-texture_system &get_texture() { return singleton<texture_system>::get(); }
-camera &get_camera() { return singleton<camera>::get(); }
-random_system &get_random() { return singleton<random_system>::get(); }
-script_system &get_script() { return singleton<script_system>::get(); }
-event_system &get_event() { return singleton<event_system>::get(); }
 bool main_system::initialize() {
+  logger::change_logger(
+      std::move(logger::default_logger::CreateConsoleLogger()));
+  logger::info("MAIN SYSTEM Activating");
   m_current_scene = std::make_unique<scene>();
   m_next_scene = nullptr;
   SDL_SetMainReady();
@@ -65,8 +56,6 @@ bool main_system::initialize() {
   SDLNet_Init();
   Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3);
   Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
-  logger::change_logger(
-      std::move(logger::default_logger::CreateConsoleLogger()));
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
   std::ifstream ifs("./api");
   std::string str;
@@ -129,6 +118,7 @@ void main_system::loop() {
     m_current_scene->initialize();
     m_next_scene = nullptr;
   } else {
+    logger::info("MAIN SYSTEM Inactiviating");
     get_script().shutdown();
     m_current_scene->shutdown();
     get_input().terminate();

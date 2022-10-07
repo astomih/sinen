@@ -22,42 +22,39 @@ namespace sinen {
 
 class renderer {
 public:
-  renderer();
-  ~renderer();
+  static graphics_api get_graphics_api();
 
-  graphics_api get_graphics_api();
+  static void unload_data();
 
-  void unload_data();
+  static void render();
 
-  void render();
+  static void draw2d(const std::shared_ptr<drawable> draw_object);
+  static void draw3d(const std::shared_ptr<drawable> draw_object);
 
-  void draw2d(const std::shared_ptr<drawable> draw_object);
-  void draw3d(const std::shared_ptr<drawable> draw_object);
+  static void add_vertex_array(const vertex_array &vArray,
+                               std::string_view name);
+  static void update_vertex_array(const vertex_array &vArray,
+                                  std::string_view name);
 
-  void add_vertex_array(const vertex_array &vArray, std::string_view name);
-  void update_vertex_array(const vertex_array &vArray, std::string_view name);
+  static void add_instancing(const instancing &_instancing);
 
-  void add_instancing(const instancing &_instancing);
+  static void set_clear_color(const color &color);
 
-  void set_clear_color(const color &color);
+  static color clear_color();
 
-  color get_clear_color();
+  static void set_skybox(texture _skybox_texture);
 
-  void set_skybox_texture(texture _skybox_texture);
+  static texture skybox();
 
-  texture get_skybox_texture();
+  static void toggle_show_imgui();
+  static bool is_show_imgui();
 
-  void toggle_show_imgui();
-  bool is_show_imgui();
+  static void load_shader(const shader &shaderinfo);
+  static void unload_shader(const shader &shaderinfo);
 
-  void load_shader(const shader &shaderinfo);
-  void unload_shader(const shader &shaderinfo);
+  static std::list<std::function<void()>> &get_imgui_function();
 
-  std::list<std::function<void()>> &get_imgui_function();
-
-  void add_imgui_function(std::function<void()> function);
-
-private:
+  static void add_imgui_function(std::function<void()> function);
 };
 
 } // namespace sinen

@@ -9,7 +9,10 @@ namespace sinen {
 window_system::window_system() : size(vector2(1280.f, 720.f)) {}
 window::~window() = default;
 
-void *window::GetSDLWindow() { return get_window().m_window; }
+const void *window::get_sdl_window() { return get_window().m_window; }
+vector2 window::size() { return get_window().size; }
+std::string window::name() { return get_window().name; }
+const window_state &window::state() { return get_window().state; }
 
 void window_system::initialize(const std::string &name, graphics_api api) {
   this->name = name;

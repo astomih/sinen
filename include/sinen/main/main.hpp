@@ -7,8 +7,7 @@ namespace sinen {
 #endif
 class main {
 public:
-  static bool initialize();
-  static void launch();
+  static int activate();
   static void change_scene(const std::string &scene_number);
   static std::string get_current_scene_number();
 };

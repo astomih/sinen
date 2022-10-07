@@ -11,7 +11,6 @@
 namespace sinen {
 render_system::render_system() : showImGui(false) {}
 render_system::~render_system() = default;
-renderer::~renderer() = default;
 graphics_api render_system::get_graphics_api() { return this->RendererAPI; }
 void render_system::unload_data() {}
 void render_system::initialize(graphics_api api) {
@@ -163,15 +162,13 @@ void renderer::set_clear_color(const color &color) {
   get_renderer().set_clear_color(color);
 }
 
-color renderer::get_clear_color() { return get_renderer().get_clear_color(); }
+color renderer::clear_color() { return get_renderer().get_clear_color(); }
 
-void renderer::set_skybox_texture(texture _skybox_texture) {
+void renderer::set_skybox(texture _skybox_texture) {
   get_renderer().set_skybox_texture(_skybox_texture);
 }
 
-texture renderer::get_skybox_texture() {
-  return get_renderer().get_skybox_texture();
-}
+texture renderer::skybox() { return get_renderer().get_skybox_texture(); }
 
 void renderer::toggle_show_imgui() { get_renderer().toggle_show_imgui(); }
 bool renderer::is_show_imgui() { return get_renderer().is_show_imgui(); }

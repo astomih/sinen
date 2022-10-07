@@ -13,14 +13,13 @@
 #include <input/input.hpp>
 #include <instancing/instancing_wrapper.hpp>
 #include <io/dstream.hpp>
+#include <main/main.hpp>
 #include <math/random.hpp>
 #include <model/model.hpp>
 #include <render/renderer.hpp>
 #include <script/script.hpp>
 #include <sol/sol.hpp>
 #include <window/window.hpp>
-#include <main/main.hpp>
-
 
 namespace sinen {
 script::script() = default;
@@ -308,6 +307,21 @@ bool script_system::initialize() {
     v["buttonRELEASED"] = (int)button_state::Released;
     v["buttonHELD"] = (int)button_state::Held;
   }
+  {
+    auto v = impl->state.create_table("window");
+    v["name"] = &window::name;
+    v["state"] = []() { return static_cast<int>(window::state()); };
+    v["size"] = &window::size;
+  }
+  {
+    auto v = impl->state.create_table("renderer");
+    v["set_skybox"] = &renderer::set_skybox;
+    v["skybox"] = &renderer::skybox;
+    v["clear_color"] = &renderer::clear_color;
+    v["set_clear_color"] = &renderer::set_clear_color;
+    v["get_graphics_api"] = &renderer::get_graphics_api;
+  }
+
 #endif
   return true;
 }

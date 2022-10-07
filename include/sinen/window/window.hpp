@@ -10,12 +10,12 @@ public:
   window();
   ~window();
 
-  void *GetSDLWindow();
+  static const void *get_sdl_window();
 
-  vector2 size();
-  std::string name();
+  static vector2 size();
+  static std::string name();
 
-  const window_state &state();
+  static const window_state &state();
 };
 } // namespace sinen
 #endif // !SINEN_WINDOW_HPP

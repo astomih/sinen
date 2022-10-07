@@ -35,10 +35,15 @@ void main_loop() { emscripten_loop(); }
 #endif
 
 namespace sinen {
-bool main::initialize() { return singleton<main_system>::get().initialize(); }
-void main::launch() { singleton<main_system>::get().launch(); }
+int main::activate() {
+  if (!singleton<main_system>::get().initialize()) {
+    return -1;
+  }
+  singleton<main_system>::get().launch();
+  return 0;
+}
 void main::change_scene(const std::string &scene_number) {
-  singleton<main_system>::get().change_scene(scene_number);
+  singleton<main_system>::get().change_scene<scene>(scene_number);
 }
 std::string main::get_current_scene_number() {
   return singleton<main_system>::get().get_current_scene_number();
@@ -134,7 +139,7 @@ void main_system::loop() {
 #endif
   }
 }
-void main_system::change_scene(std::string scene_name) {
+void main_system::change_scene_impl(const std::string &scene_name) {
   m_current_scene->quit();
   get_script().shutdown();
   m_next_scene = std::make_unique<scene>();

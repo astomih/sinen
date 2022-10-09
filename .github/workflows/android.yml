@@ -23,19 +23,12 @@ jobs:
           cd ${{github.workspace}}/demo/android-project/app/jni
           ln -s ${{github.workspace}}/demo ./singa
           ln -s ${{github.workspace}}/demo/external/sinen ./sinen
-          git clone https://github.com/astomih/SDL.git
-          git clone https://github.com/astomih/SDL_image.git
-          git clone https://github.com/astomih/SDL_mixer.git
-          git clone https://github.com/astomih/SDL_ttf.git
-          git clone https://github.com/astomih/SDL_net.git
-          mv SDL SDL2
-          mv SDL_image SDL2_image
-          mv SDL_mixer SDL2_mixer
-          mv SDL_ttf SDL2_ttf
-          mv SDL_net SDL2_net
-          mv CMakeLists-SDL_net.txt SDL2_net
-          cd SDL2_net
-          mv CMakeLists-SDL_net.txt CMakeLists.txt
+          git submodule update --init --recursive
+          mv external/SDL2 .
+          mv external/SDL2_image .
+          mv external/SDL2_mixer .
+          mv external/SDL2_net .
+          mv external/SDL2_ttf .
           cd ${{github.workspace}}/demo
     - name: set up JDK 11
 

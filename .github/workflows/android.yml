@@ -24,11 +24,11 @@ jobs:
           ln -s ${{github.workspace}}/demo ./singa
           ln -s ${{github.workspace}}/demo/external/sinen ./sinen
           git submodule update --init --recursive
-          mv external/SDL2 .
-          mv external/SDL2_image .
-          mv external/SDL2_mixer .
-          mv external/SDL2_net .
-          mv external/SDL2_ttf .
+          mv ${{github.workspace}}/external/SDL2 .
+          mv ${{github.workspace}}/external/SDL2_image .
+          mv ${{github.workspace}}/external/SDL2_mixer .
+          mv ${{github.workspace}}/external/SDL2_net .
+          mv ${{github.workspace}}/external/SDL2_ttf .
           cd ${{github.workspace}}/demo
     - name: set up JDK 11
 

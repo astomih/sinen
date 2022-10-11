@@ -137,6 +137,7 @@ scene::scene() {}
 
 void scene::initialize() {
   setup();
+  mGameState = game_state::Gameplay;
   m_prev_tick = SDL_GetTicks();
 }
 
@@ -197,6 +198,7 @@ bool is_run = false;
 bool is_save = false;
 TextEditor editor;
 void scene::setup() {
+  is_run = false;
   const static TextEditor::Palette p = {{
       0xff7f7f7f, // Default
       0xffd69c56, // Keyword
@@ -350,6 +352,9 @@ void scene::update(float deltaTime) {
 
 void scene::shutdown() { unload_data(); }
 
-void scene::change_scene(std::string scene_name) { change_scene(scene_name); }
+void scene::reset() {
+  unload_data();
+  this->quit();
+}
 
 } // namespace sinen

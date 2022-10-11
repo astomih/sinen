@@ -56,7 +56,7 @@ public:
    * @brief Get the Renderer object
    *
    */
-  void shutdown();
+  virtual void shutdown();
 
   /**
    * @brief Get the State object
@@ -82,6 +82,12 @@ public:
    * @param scene_name Scene name
    */
   void change_scene(std::string scene_name);
+
+  /**
+   * @brief Reset scene
+   *
+   */
+  void reset();
 
 protected:
   /**

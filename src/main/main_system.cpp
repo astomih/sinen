@@ -52,8 +52,7 @@ bool main_system::initialize() {
   logger::change_logger(
       std::move(logger::default_logger::CreateConsoleLogger()));
   logger::info("MAIN SYSTEM Activating");
-  m_current_scene = std::make_unique<scene>();
-  m_next_scene = nullptr;
+  m_scene = std::make_unique<scene>();
   SDL_SetMainReady();
   SDL_Init(SDL_INIT_EVERYTHING);
   TTF_Init();
@@ -104,7 +103,7 @@ bool main_system::initialize() {
   return true;
 }
 void main_system::launch() {
-  m_current_scene->initialize();
+  m_scene->initialize();
 
 #if !defined(EMSCRIPTEN)
   while (true)
@@ -115,34 +114,33 @@ void main_system::launch() {
 #endif
 }
 void main_system::loop() {
-  if (m_current_scene->is_running())
-    m_current_scene->run_loop();
-  else if (m_next_scene) {
-    m_current_scene->shutdown();
-    m_current_scene = std::move(m_next_scene);
-    m_current_scene->initialize();
-    m_next_scene = nullptr;
-  } else {
-    logger::info("MAIN SYSTEM Inactiviating");
-    get_script().shutdown();
-    m_current_scene->shutdown();
-    get_input().terminate();
-    get_sound().terminate();
-    m_current_scene = nullptr;
-    get_renderer().shutdown();
-    Mix_CloseAudio();
-    singleton_finalizer::finalize();
-#ifndef EMSCRIPTEN
-    std::exit(0);
-#else
-    emscripten_force_exit(0);
-#endif
+  if (m_scene->is_running()) {
+    m_scene->run_loop();
+    return;
   }
+  if (this->is_reset) {
+    m_scene->initialize();
+    this->is_reset = false;
+    return;
+  }
+  logger::info("MAIN SYSTEM Inactiviating");
+  get_script().shutdown();
+  m_scene->shutdown();
+  get_input().terminate();
+  get_sound().terminate();
+  get_renderer().shutdown();
+  Mix_CloseAudio();
+  singleton_finalizer::finalize();
+#ifndef EMSCRIPTEN
+  std::exit(0);
+#else
+  emscripten_force_exit(0);
+#endif
 }
 void main_system::change_scene_impl(const std::string &scene_name) {
-  m_current_scene->quit();
+  m_scene->quit();
   get_script().shutdown();
-  m_next_scene = std::make_unique<scene>();
   m_scene_name = scene_name;
+  is_reset = true;
 }
 } // namespace sinen

@@ -45,8 +45,8 @@ function setup()
     info_font = font()
     info_font:load("SoukouMincho-Font/SoukouMincho.ttf", 48)
     info_font:render_text(info_texture,
-                          "スペースキー と 移動 で 像 を 動かす",
-                          color(1.0, 1.0, 1.0, 1))
+        "スペースキー と 移動 で 像 を 動かす",
+        color(1.0, 1.0, 1.0, 1))
     info_drawer = draw2d(info_texture)
     info_drawer.position = vector2(0, -300)
     info_drawer.scale = info_texture:size()
@@ -56,19 +56,19 @@ function setup()
     brown:fill_color(color(0.843, 0.596, 0.043, 1))
 
     map = {
-        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 1, 1, 1, 10, 0, 10, 1, 1, 1, 1, 1},
-        {10, 10, 10, 10, 10, 0, 10, 10, 10, 10, 10, 10}
+        { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+        { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+        { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+        { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+        { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+        { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+        { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+        { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+        { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+        { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+        { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+        { 1, 1, 1, 1, 10, 0, 10, 1, 1, 1, 1, 1 },
+        { 10, 10, 10, 10, 10, 0, 10, 10, 10, 10, 10, 10 }
     }
     box = draw3d_instanced(tex)
     box.vertex_name = "tree"
@@ -97,22 +97,22 @@ function setup()
             map_draw3ds[y][x].position.x = x * 2
             map_draw3ds[y][x].position.y = y * 2
             sprite:add(map_draw3ds[y][x].position, map_draw3ds[y][x].rotation,
-                       map_draw3ds[y][x].scale)
+                map_draw3ds[y][x].scale)
             if map[y][x] == 1 then
                 map_draw3ds[y][x].position.z = 0.5
                 map_draw3ds[y][x].aabb = aabb()
                 map_draw3ds[y][x].aabb.max =
-                    map_draw3ds[y][x].position:add(map_draw3ds[y][x].scale)
+                map_draw3ds[y][x].position:add(map_draw3ds[y][x].scale)
                 map_draw3ds[y][x].aabb.min =
-                    map_draw3ds[y][x].position:sub(map_draw3ds[y][x].scale)
+                map_draw3ds[y][x].position:sub(map_draw3ds[y][x].scale)
                 map_draw3ds[y][x].scale = vector3(1, 1, 3)
 
                 box:add(map_draw3ds[y][x].position, map_draw3ds[y][x].rotation,
-                        map_draw3ds[y][x].scale)
+                    map_draw3ds[y][x].scale)
                 local collision_space_x = math.floor(x /
-                                                         collision_space_division)
+                    collision_space_division)
                 local collision_space_y = math.floor(y /
-                                                         collision_space_division)
+                    collision_space_division)
                 table.insert(
                     collision_space[collision_space_y + 2][collision_space_x + 2],
                     map_draw3ds[y][x])
@@ -122,17 +122,17 @@ function setup()
                 map_draw3ds[y][x].position.z = 0.5
                 map_draw3ds[y][x].aabb = aabb()
                 map_draw3ds[y][x].aabb.max =
-                    map_draw3ds[y][x].position:add(map_draw3ds[y][x].scale)
+                map_draw3ds[y][x].position:add(map_draw3ds[y][x].scale)
                 map_draw3ds[y][x].aabb.min =
-                    map_draw3ds[y][x].position:sub(map_draw3ds[y][x].scale)
+                map_draw3ds[y][x].position:sub(map_draw3ds[y][x].scale)
                 map_draw3ds[y][x].scale = vector3(1, 1, 5)
 
                 iseki:add(map_draw3ds[y][x].position,
-                          map_draw3ds[y][x].rotation, map_draw3ds[y][x].scale)
+                    map_draw3ds[y][x].rotation, map_draw3ds[y][x].scale)
                 local collision_space_x = math.floor(x /
-                                                         collision_space_division)
+                    collision_space_division)
                 local collision_space_y = math.floor(y /
-                                                         collision_space_division)
+                    collision_space_division)
                 table.insert(
                     collision_space[collision_space_y + 2][collision_space_x + 2],
                     map_draw3ds[y][x])
@@ -142,7 +142,7 @@ function setup()
     end
     camera.up = vector3(0, 0, 1)
     text_window_object:setup()
-    text_window_object.texts = {"扉が開いたようだ。"}
+    text_window_object.texts = { "扉が開いたようだ。" }
     boss:setup()
     boss.drawer.scale = vector3(0.5, 0.5, 0.5)
     boss.drawer.position = vector3(6 * 2, 6 * 2, 1)
@@ -154,40 +154,41 @@ local function camera_update()
     local offset = 4.0
     if fps_mode then
         camera.position = vector3(player.drawer.position.x,
-                                  player.drawer.position.y + 0.5,
-                                  player.drawer.position.z + 2)
+            player.drawer.position.y + 0.5,
+            player.drawer.position.z + 2)
         camera.target = vector3(player.drawer.position.x +
-                                    -math.sin(
-                                        player.drawer.rotation.z *
-                                            (math.pi / 180.0)) * 90,
-                                player.drawer.position.y +
-                                    math.cos(
-                                        player.drawer.rotation.z *
-                                            (math.pi / 180.0)) * 90,
-                                player.drawer.position.z)
+            -math.sin(
+                player.drawer.rotation.z *
+                (math.pi / 180.0)) * 90,
+            player.drawer.position.y +
+            math.cos(
+                player.drawer.rotation.z *
+                (math.pi / 180.0)) * 90,
+            player.drawer.position.z)
     else
         camera.position = vector3(player.drawer.position.x +
-                                      math.sin(
-                                          player.drawer.rotation.z *
-                                              (math.pi / 180)) * offset,
-                                  player.drawer.position.y -
-                                      math.cos(
-                                          player.drawer.rotation.z *
-                                              (math.pi / 180)) * offset,
-                                  player.drawer.position.z + 2)
+            math.sin(
+                player.drawer.rotation.z *
+                (math.pi / 180)) * offset,
+            player.drawer.position.y -
+            math.cos(
+                player.drawer.rotation.z *
+                (math.pi / 180)) * offset,
+            player.drawer.position.z + 2)
         camera.target = vector3(player.drawer.position.x +
-                                    -math.sin(
-                                        player.drawer.rotation.z *
-                                            (math.pi / 180)) * 90,
-                                player.drawer.position.y +
-                                    math.cos(
-                                        player.drawer.rotation.z *
-                                            (math.pi / 180)) * 90,
-                                player.drawer.position.z)
+            -math.sin(
+                player.drawer.rotation.z *
+                (math.pi / 180)) * 90,
+            player.drawer.position.y +
+            math.cos(
+                player.drawer.rotation.z *
+                (math.pi / 180)) * 90,
+            player.drawer.position.z)
 
     end
     camera:update()
 end
+
 local function draw()
     player:draw()
     for i, v in ipairs(enemies) do v:draw() end
@@ -203,6 +204,7 @@ local function draw()
     info_drawer:draw()
     menu_object:draw()
 end
+
 function update()
     light_eye(vector3(0, 1, -2))
     light_at(vector3(0, 0, 0))
@@ -247,5 +249,5 @@ function update()
     end
     draw()
 end
--------------------------------------------------------------------------------------
 
+-------------------------------------------------------------------------------------

@@ -20,11 +20,11 @@
 #include <main/main.hpp>
 #include <math/random.hpp>
 #include <render/renderer.hpp>
-#include <scene/scene.hpp>
 #include <script/script.hpp>
 #include <utility/singleton.hpp>
 #include <window/window.hpp>
 
+#include "../scene/scene_system.hpp"
 #include "get_system.hpp"
 
 #ifdef EMSCRIPTEN
@@ -52,7 +52,6 @@ bool main_system::initialize() {
   logger::change_logger(
       std::move(logger::default_logger::CreateConsoleLogger()));
   logger::info("MAIN SYSTEM Activating");
-  m_scene = std::make_unique<scene>();
   SDL_SetMainReady();
   SDL_Init(SDL_INIT_EVERYTHING);
   TTF_Init();
@@ -103,7 +102,7 @@ bool main_system::initialize() {
   return true;
 }
 void main_system::launch() {
-  m_scene->initialize();
+  scene_system::initialize();
 
 #if !defined(EMSCRIPTEN)
   while (true)
@@ -114,18 +113,18 @@ void main_system::launch() {
 #endif
 }
 void main_system::loop() {
-  if (m_scene->is_running()) {
-    m_scene->run_loop();
+  if (scene_system::is_running()) {
+    scene_system::run_loop();
     return;
   }
   if (this->is_reset) {
-    m_scene->initialize();
+    scene_system::initialize();
     this->is_reset = false;
     return;
   }
   logger::info("MAIN SYSTEM Inactiviating");
   get_script().shutdown();
-  m_scene->shutdown();
+  scene_system::shutdown();
   get_input().terminate();
   get_sound().terminate();
   get_renderer().shutdown();
@@ -138,7 +137,7 @@ void main_system::loop() {
 #endif
 }
 void main_system::change_scene_impl(const std::string &scene_name) {
-  m_scene->quit();
+  scene_system::shutdown();
   get_script().shutdown();
   m_scene_name = scene_name;
   is_reset = true;

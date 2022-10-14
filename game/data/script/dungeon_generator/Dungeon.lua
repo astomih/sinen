@@ -1,13 +1,13 @@
 local LevelModule = require("dungeon_generator/Level")
 
 ---------------------------------------------------------------------------
--- - - - - - - - - - - - - - - Dungeon object - - - - - - - - - - - - - - - 
+-- - - - - - - - - - - - - - - Dungeon object - - - - - - - - - - - - - - -
 ---------------------------------------------------------------------------
 
 -- Dungeon objects have several levels (consisting of Level objects) which
 -- together represent a whole dungeon.
 
-Dungeon = {nrOfLevels, height, width, levels}
+Dungeon = { nrOfLevels = {}, height = {}, width = {}, levels = {} }
 Dungeon.__index = Dungeon
 
 function Dungeon:new(nrOfLevels, height, width)

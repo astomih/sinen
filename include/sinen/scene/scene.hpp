@@ -12,7 +12,6 @@
 #include <vector>
 
 namespace sinen {
-class sound_system;
 /**
  * @brief Base of scene class
  *
@@ -20,96 +19,53 @@ class sound_system;
 class scene {
 public:
   /**
-   * @brief Construct a new base scene object
+   * @brief Scene implementation
    *
    */
-  scene();
-  virtual ~scene() = default;
-
+  class implements {
+  public:
+    implements() = default;
+    virtual ~implements() = default;
+    virtual void setup() {}
+    virtual void update(float delta_time) {}
+    virtual void terminate() {}
+  };
   /**
    * @brief Game state
    *
    */
-  enum class game_state { Gameplay, Paused, Quit };
-
-  /**
-   * @brief Initialize scene
-   *
-   */
-  void initialize();
-
+  enum class state { running, paused, quit };
   /**
    * @brief is running scene
    *
    * @return true
    * @return false
    */
-  bool is_running() { return mGameState != game_state::Quit; }
-
-  /**
-   * @brief run loop
-   *
-   */
-  void run_loop();
-
-  /**
-   * @brief Get the Renderer object
-   *
-   */
-  virtual void shutdown();
-
+  static bool is_running();
   /**
    * @brief Get the State object
    *
    * @return game_state
    */
-  game_state get_state() const { return mGameState; }
+  static const state &get_state();
   /**
    * @brief Set the State object
    *
    * @param state
    */
-  void set_state(game_state state) { mGameState = state; }
-
-  /**
-   * @brief Quit scene
-   *
-   */
-  void quit() { mGameState = game_state::Quit; }
-  /**
-   * @brief Change scene
-   *
-   * @param scene_name Scene name
-   */
-  void change_scene(std::string scene_name);
+  static void set_state(const state &state);
 
   /**
    * @brief Reset scene
    *
    */
-  void reset();
-
-protected:
-  /**
-   * @brief Setup scene
-   *
-   */
-  virtual void setup();
-  /**
-   * @brief Update scene
-   *
-   * @param deltaTime
-   */
-  virtual void update(float deltaTime);
+  static void reset();
+  template <class Implements> static void change_implements() {
+    change_impl(std::make_unique<Implements>());
+  }
 
 private:
-  void unload_data();
-  void process_input();
-  void update_scene();
-  game_state mGameState = game_state::Gameplay;
-  uint32_t m_prev_tick = 0;
-  std::function<void()> m_editor;
-  std::function<void()> m_markdown;
+  static void change_impl(std::unique_ptr<implements> impl);
 };
 } // namespace sinen
 #endif // !SINEN_SCENE_HPP

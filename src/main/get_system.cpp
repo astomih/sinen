@@ -16,7 +16,6 @@ namespace sinen {
 window_system &get_window() { return singleton<window_system>::get(); }
 render_system &get_renderer() { return singleton<render_system>::get(); }
 input_system &get_input() { return singleton<input_system>::get(); }
-scene &get_scene() { return singleton<main_system>::get().get_scene(); }
 sound_system &get_sound() { return singleton<sound_system>::get(); }
 texture_system &get_texture() { return singleton<texture_system>::get(); }
 camera &get_camera() { return singleton<camera>::get(); }

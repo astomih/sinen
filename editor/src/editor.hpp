@@ -7,7 +7,7 @@ namespace sinen {
  * @brief Editor
  *
  */
-class editor : public scene {
+class editor : public scene::implements {
 public:
   /**
    * @brief Construct a new editor object
@@ -18,7 +18,7 @@ public:
    * @brief Destroy the editor object
    *
    */
-  ~editor();
+  ~editor() override;
   /**
    * @brief Setup
    *

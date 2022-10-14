@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------
--- - - - - - - - - - - - - - - - Tile object - - - - - - - - - - - - - - -- 
+-- - - - - - - - - - - - - - - - Tile object - - - - - - - - - - - - - - --
 ---------------------------------------------------------------------------
 -- Tile objects:
 --  * Keeps track of room association, if not in room (default): roomId = 0
@@ -13,7 +13,7 @@
 --    *   "*" for mineral vein
 --    *   "'" for open door
 --    *   "+" for closed door
-Tile = {class, roomId}
+Tile = { class = {}, roomId = {} }
 Tile.__index = Tile
 
 Tile.EMPTY = 1
@@ -44,5 +44,5 @@ end
 
 function Tile:isWall()
     return (self.class == Tile.WALL or self.class == Tile.SOIL or self.class ==
-               Tile.VEIN)
+        Tile.VEIN)
 end

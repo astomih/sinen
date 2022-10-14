@@ -12,9 +12,9 @@ function setup()
     hello_font = font()
     hello_font:load(DEFAULT_FONT, 64)
     hello_font:render_text(hello_texture, "Hello Sinen World!",
-                           color(1, 1, 1, 1))
+        color(1, 1, 1, 1))
     hello_font:render_text(F3_texture, "Press F3 to open the window",
-                           color(1, 1, 1, 1))
+        color(1, 1, 1, 1))
 
     hello_drawer.scale = hello_texture:size()
     F3_drawer.scale = F3_texture:size()

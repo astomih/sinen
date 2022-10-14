@@ -48,6 +48,7 @@ stair_model:load("stair.sim", "stair")
 
 local menu = require("menu")
 local menu_object = menu()
+local bullet_type = require "bullet_type"
 
 function setup()
     score_font:load("SoukouMincho-Font/SoukouMincho.ttf", 64)
@@ -82,22 +83,22 @@ function setup()
             map_draw3ds[y][x].position.x = x * 2
             map_draw3ds[y][x].position.y = y * 2
             sprite:add(map_draw3ds[y][x].position, map_draw3ds[y][x].rotation,
-                       map_draw3ds[y][x].scale)
+                map_draw3ds[y][x].scale)
             if map[y][x] == 1 then
                 map_draw3ds[y][x].position.z = 0.5
                 map_draw3ds[y][x].aabb = aabb()
                 map_draw3ds[y][x].aabb.max =
-                    map_draw3ds[y][x].position:add(map_draw3ds[y][x].scale)
+                map_draw3ds[y][x].position:add(map_draw3ds[y][x].scale)
                 map_draw3ds[y][x].aabb.min =
-                    map_draw3ds[y][x].position:sub(map_draw3ds[y][x].scale)
+                map_draw3ds[y][x].position:sub(map_draw3ds[y][x].scale)
                 map_draw3ds[y][x].scale = vector3(1, 1, 3)
 
                 box:add(map_draw3ds[y][x].position, map_draw3ds[y][x].rotation,
-                        map_draw3ds[y][x].scale)
+                    map_draw3ds[y][x].scale)
                 local collision_space_x = math.floor(x /
-                                                         collision_space_division)
+                    collision_space_division)
                 local collision_space_y = math.floor(y /
-                                                         collision_space_division)
+                    collision_space_division)
                 table.insert(
                     collision_space[collision_space_y + 2][collision_space_x + 2],
                     map_draw3ds[y][x])
@@ -121,38 +122,39 @@ local function camera_update()
     local offset = 7
     if fps_mode then
         camera.position = vector3(player.drawer.position.x,
-                                  player.drawer.position.y + 0.5,
-                                  player.drawer.position.z + 2)
+            player.drawer.position.y + 0.5,
+            player.drawer.position.z + 2)
         camera.target = vector3(player.drawer.position.x +
-                                    -math.sin(
-                                        player.drawer.rotation.z *
-                                            (math.pi / 180)) * 90,
-                                player.drawer.position.y +
-                                    math.cos(
-                                        player.drawer.rotation.z *
-                                            (math.pi / 180)) * 90,
-                                player.drawer.position.z)
+            -math.sin(
+                player.drawer.rotation.z *
+                (math.pi / 180)) * 90,
+            player.drawer.position.y +
+            math.cos(
+                player.drawer.rotation.z *
+                (math.pi / 180)) * 90,
+            player.drawer.position.z)
     else
         camera.position = vector3(player.drawer.position.x +
-                                      math.sin(
-                                          player.drawer.rotation.z *
-                                              (math.pi / 180)) * offset,
-                                  player.drawer.position.y -
-                                      math.cos(
-                                          player.drawer.rotation.z *
-                                              (math.pi / 180)) * offset,
-                                  player.drawer.position.z + offset)
+            math.sin(
+                player.drawer.rotation.z *
+                (math.pi / 180)) * offset,
+            player.drawer.position.y -
+            math.cos(
+                player.drawer.rotation.z *
+                (math.pi / 180)) * offset,
+            player.drawer.position.z + offset)
         camera.target = vector3(player.drawer.position.x, -- -math.sin(
-        --     player.drawer.rotation.z *
-        --         (math.pi / 180)) * 90,
-        player.drawer.position.y, -- math.cos(
-        --     player.drawer.rotation.z *
-        --         (math.pi / 180)) * 90,
-        player.drawer.position.z)
+            --     player.drawer.rotation.z *
+            --         (math.pi / 180)) * 90,
+            player.drawer.position.y, -- math.cos(
+            --     player.drawer.rotation.z *
+            --         (math.pi / 180)) * 90,
+            player.drawer.position.z)
 
     end
     camera:update()
 end
+
 local function draw()
     player:draw()
     for i, v in ipairs(enemies) do v:draw() end
@@ -162,6 +164,7 @@ local function draw()
     score_drawer:draw()
     menu_object:draw()
 end
+
 function update()
     if now_stage == 4 then change_scene("boss_stage") end
     light_eye(vector3(0, 2, -10))
@@ -174,7 +177,7 @@ function update()
         return
     end
     score_font:render_text(score_texture, "Score: " .. score,
-                           color(1, 0.3, 0.3, 1))
+        color(1, 0.3, 0.3, 1))
     score_drawer.scale = score_texture:size()
     score_drawer.position.x = -300
     score_drawer.position.y = -300
@@ -211,9 +214,9 @@ function update()
             end
         end
         if map[math.floor(v.drawer.position.y / 2 + 0.5)][math.floor(v.drawer
-                                                                         .position
-                                                                         .x / 2 +
-                                                                         0.5)] ==
+            .position
+            .x / 2 +
+            0.5)] ==
             1 then table.remove(player.bullets, i) end
     end
     player:update(map, map_draw3ds, map_size_x, map_size_y)
@@ -237,5 +240,5 @@ function update()
     camera_update()
     draw()
 end
--------------------------------------------------------------------------------------
 
+-------------------------------------------------------------------------------------

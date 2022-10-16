@@ -17,7 +17,7 @@ function setup()
     hello_drawer = draw2d(hello_texture)
     hello_font = font()
     hello_font:load(DEFAULT_FONT, 64)
-    hello_font:render_text(hello_texture, "SINEN\n    WORLD", color(1, 1, 1, 1))
+    hello_font:render_text(hello_texture, "Dive2Sinen", color(1, 1, 1, 1))
     hello_drawer.scale = hello_texture:size()
 
     press_texture = texture()
@@ -44,4 +44,3 @@ function update()
         end
     end
 end
-

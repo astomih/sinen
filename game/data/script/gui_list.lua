@@ -38,12 +38,12 @@ local function gui_list()
                 local text_texture = texture()
                 self.text_drawers[i] = draw2d(text_texture)
                 self.font:render_text(text_texture, self.texts[i],
-                                      color(0, 0, 0, 1))
+                    color(0, 0, 0, 1))
                 self.text_drawers[i].scale = text_texture:size()
                 self.drawers[i].scale = self.scale
                 self.drawers[i].position =
-                    vector2(self.start_pos.x,
-                            self.start_pos.y + (i - 1) * -self.list_space)
+                vector2(self.start_pos.x,
+                    self.start_pos.y + (i - 1) * -self.list_space)
                 self.text_drawers[i].position = self.drawers[i].position
 
             end
@@ -69,7 +69,7 @@ local function gui_list()
                 end
             end
             self.select_frame_drawer.position =
-                self.drawers[self.selecting_index].position
+            self.drawers[self.selecting_index].position
             if keyboard:key_state(keyENTER) == buttonPRESSED then
                 self.selected_index = self.selecting_index
             else

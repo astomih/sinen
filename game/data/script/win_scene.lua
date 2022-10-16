@@ -17,4 +17,3 @@ function update()
         change_scene("main")
     end
 end
-

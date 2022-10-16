@@ -28,7 +28,7 @@ local function text_window()
             self.drawer.scale = vector2(1280, 720 / 2)
             self.drawer.position = vector2(0, -720 / 2)
 
-            self.texts = {"Text is null."}
+            self.texts = { "Text is null." }
         end,
         before_len = 1,
         update = function(self)
@@ -55,7 +55,7 @@ local function text_window()
                 end
             end
             local str = string.sub(self.texts[self.text_number], 1,
-                                   self.text_count)
+                self.text_count)
             if self.text_count ~= self.before_len then
                 sound:play()
                 self.before_len = self.text_count

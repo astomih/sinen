@@ -41,4 +41,3 @@ function update()
     hello_drawer:draw()
     menu_object:draw()
 end
-

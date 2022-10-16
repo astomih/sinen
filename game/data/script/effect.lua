@@ -59,17 +59,17 @@ local function effect()
             end
             for i = 1, self.max_particles do
                 self.worlds[i].position.x =
-                    self.worlds[i].position.x + math.cos(i) * delta_time
+                self.worlds[i].position.x + math.cos(i) * delta_time
                 self.worlds[i].position.y =
-                    self.worlds[i].position.y + math.sin(i) * delta_time
+                self.worlds[i].position.y + math.sin(i) * delta_time
                 self.worlds[i].position.z =
-                    self.worlds[i].position.z + delta_time
+                self.worlds[i].position.z + delta_time
             end
             if self.is_playing then
                 for i = 1, self.max_particles do
                     self.drawer:add(self.worlds[i].position,
-                                    self.worlds[i].rotation,
-                                    self.worlds[i].scale)
+                        self.worlds[i].rotation,
+                        self.worlds[i].scale)
 
                 end
                 self.drawer:draw()

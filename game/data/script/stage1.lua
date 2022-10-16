@@ -48,7 +48,6 @@ stair_model:load("stair.sim", "stair")
 
 local menu = require("menu")
 local menu_object = menu()
-local bullet_type = require "bullet_type"
 
 function setup()
     score_font:load("SoukouMincho-Font/SoukouMincho.ttf", 64)
@@ -194,15 +193,6 @@ function update()
                 table.insert(player.efks, efk)
 
                 table.remove(player.bullets, i)
-                if v.type == bullet_type.fire then
-                    w.hp = w.hp - 12
-                else
-                    if v.type == bullet_type.water then
-                        w.hp = w.hp - 8
-                    else
-                        w.hp = w.hp - 10
-                    end
-                end
                 if w.hp < 0 then
                     score = score + 10
                     table.remove(enemies, j)

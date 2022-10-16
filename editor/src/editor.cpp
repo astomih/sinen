@@ -8,7 +8,6 @@
 #include <imfilebrowser.h>
 #include <imgui_markdown.h>
 
-#include <sinen/sinen.hpp>
 namespace sinen {
 std::function<void()> editor::m_editor = nullptr;
 std::function<void()> editor::m_markdown = nullptr;

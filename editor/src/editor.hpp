@@ -1,7 +1,7 @@
 #ifndef SINEN_EDITOR_HPP
 #define SINEN_EDITOR_HPP
 #include <memory>
-#include <sinen/scene/scene.hpp>
+#include <sinen/sinen.hpp>
 
 namespace sinen {
 /**

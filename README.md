@@ -64,10 +64,9 @@ Install emscripten SDK. and do this.
  MIT Lisence
 
 ## Dependencies 
+### Core library
 - GLEW
-- ImGui
-- ImGuiColorTextEdit
-- imgui_markdown
+- Dear ImGui
 - Lua
 - Sol2
 - mojoAL
@@ -76,3 +75,8 @@ Install emscripten SDK. and do this.
 - SDL2(image,mixer,net,ttf)
 - Vulkan 1.2
 - VulkanMemoryAllocator
+### Editor
+- Sinen
+- ImGuiColorTextEdit
+- imgui_markdown
+- ImGuizmo

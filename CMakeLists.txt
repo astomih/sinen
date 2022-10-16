@@ -16,8 +16,6 @@ if(ANDROID)
       ./include
       ./include/sinen
       external/ImGui/include
-      external/ImGuiColorTextEdit
-      external/imgui_markdown
       external/sol2/include
       external/Lua/include
       external/mojoAL
@@ -44,7 +42,6 @@ elseif(EMSCRIPTEN)
     src/*/*.cpp
     src/render/opengl/*.cpp
     external/ImGui/source/gles/*.cpp
-    external/ImGuiColorTextEdit/*.cpp
     external/Lua/source/*.c)
   add_library(sinen STATIC ${SOURCE_FILES})
   set(SINEN_INCLUDE_DIRECTORIES
@@ -52,8 +49,6 @@ elseif(EMSCRIPTEN)
       ./include
       ./include/sinen
       external/ImGui/include
-      external/ImGuiColorTextEdit
-      external/imgui_markdown
       external/sol2/include
       external/rapidjson/include
       external/Lua/include)
@@ -99,7 +94,6 @@ else()
     src/render/vulkan/*.cpp
     src/render/opengl/*.cpp
     external/ImGui/source/*.cpp
-    external/ImGuiColorTextEdit/*.cpp
     external/Lua/source/*.c
     external/mojoAL/*.c)
   add_library(sinen STATIC ${SOURCE_FILES})
@@ -109,8 +103,6 @@ else()
       ./include
       ./include/sinen
       external/ImGui/include
-      external/ImGuiColorTextEdit
-      external/imgui_markdown
       external/sol2/include
       external/Lua/include
       external/VulkanMemoryAllocator/include

@@ -9,11 +9,17 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 file(GLOB SOURCE_FILES
 	./src/*/*.cpp 
 	./src/*.cpp
+  ../external/ImGuiColorTextEdit/*.cpp
+  ../external/ImGuizmo/*.cpp
 )
 
 include_directories(
 	../include
 	../include/sinen
+	../external/imgui_markdown
+	../external/imgui-filebrowser
+  ../external/ImGuiColorTextEdit
+	../external/ImGuizmo
 )
 link_directories(
 	..

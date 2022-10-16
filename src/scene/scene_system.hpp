@@ -45,7 +45,5 @@ private:
   static void update_scene();
   static scene::state m_game_state;
   static uint32_t m_prev_tick;
-  static std::function<void()> m_editor;
-  static std::function<void()> m_markdown;
 };
 } // namespace sinen

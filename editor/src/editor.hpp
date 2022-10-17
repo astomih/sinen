@@ -35,8 +35,6 @@ public:
 private:
   class implements;
   std::unique_ptr<implements> m_impl;
-  static std::function<void()> m_editor;
-  static std::function<void()> m_markdown;
 };
 } // namespace sinen
 #endif

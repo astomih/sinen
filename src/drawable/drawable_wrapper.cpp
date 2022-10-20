@@ -61,8 +61,8 @@ void draw3d::draw() {
   s.mat[1][1] = scale.y;
   s.mat[2][2] = scale.z;
   obj->param.world = s * r * t;
-  obj->param.proj = get_camera().projection;
-  obj->param.view = get_camera().view;
+  obj->param.proj = camera::projection();
+  obj->param.view = camera::view();
   obj->vertexIndex = this->vertex_name;
   obj->is_draw_depth = this->is_draw_depth;
   get_renderer().draw3d(obj);

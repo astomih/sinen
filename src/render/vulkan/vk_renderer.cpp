@@ -537,10 +537,9 @@ void vk_renderer::draw_skybox(VkCommandBuffer command) {
   w[0][0] = 5;
   w[1][1] = 5;
   w[2][2] = 5;
-  param.param.proj = get_camera().projection;
+  param.param.proj = camera::projection();
   param.param.view = matrix4::lookat(
-      vector3(0, 0, 0), get_camera().target - get_camera().position,
-      get_camera().up);
+      vector3(0, 0, 0), camera::target() - camera::position(), camera::up());
   auto &va = m_vertex_arrays["BOX"];
 
   if (!m_image_object.contains(t->drawObject->texture_handle.handle)) {

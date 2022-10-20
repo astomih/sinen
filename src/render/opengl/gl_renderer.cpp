@@ -258,10 +258,9 @@ void gl_renderer::draw_skybox() {
   w[0][0] = 5;
   w[1][1] = 5;
   w[2][2] = 5;
-  param.proj = get_camera().projection;
-  param.view = matrix4::lookat(vector3(0, 0, 0),
-                               get_camera().target - get_camera().position,
-                               get_camera().up);
+  param.proj = camera::projection();
+  param.view = matrix4::lookat(
+      vector3(0, 0, 0), camera::target() - camera::position(), camera::up());
   mAlphaShader.active(0);
   mAlphaShader.update_ubo(0, sizeof(shader_parameter), &param);
   glBindTexture(GL_TEXTURE_2D,

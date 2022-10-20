@@ -196,15 +196,13 @@ bool script_system::initialize() {
     v["set_position"] = &sound::set_position;
   }
   {
-    auto v = impl->state.new_usertype<camera>("", sol::no_construction());
+    auto v = impl->state.create_table("camera");
+    v["lookat"] = &camera::lookat;
+    v["perspective"] = &camera::perspective;
+    v["orthographic"] = &camera::orthographic;
     v["position"] = &camera::position;
-    v["aspect"] = &camera::aspect;
-    v["far"] = &camera::far;
-    v["near"] = &camera::near;
-    v["fov"] = &camera::fov;
     v["target"] = &camera::target;
     v["up"] = &camera::up;
-    v["update"] = &camera::update;
   }
   impl->state["change_scene"] = [&](const std::string &str) {
     main::change_scene(str);

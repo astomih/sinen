@@ -83,7 +83,6 @@ void scene_system::update_scene() {
   (*lua)["delta_time"] = deltaTime;
   (*lua)["keyboard"] = input::keyboard;
   (*lua)["mouse"] = input::mouse;
-  (*lua)["camera"] = &get_camera();
   (*lua)["update"]();
 
   m_impl->update(deltaTime);

@@ -114,26 +114,26 @@ function setup()
             end
         end
     end
-    camera.up = vector3(0, 0, 1)
 end
 
 local function camera_update()
     local offset = 7
     if fps_mode then
-        camera.position = vector3(player.drawer.position.x,
-            player.drawer.position.y + 0.5,
-            player.drawer.position.z + 2)
-        camera.target = vector3(player.drawer.position.x +
-            -math.sin(
-                player.drawer.rotation.z *
-                (math.pi / 180)) * 90,
-            player.drawer.position.y +
-            math.cos(
-                player.drawer.rotation.z *
-                (math.pi / 180)) * 90,
-            player.drawer.position.z)
+        -- camera.position = vector3(player.drawer.position.x,
+        --     player.drawer.position.y + 0.5,
+        --     player.drawer.position.z + 2)
+        -- camera.target = vector3(player.drawer.position.x +
+        --     -math.sin(
+        --         player.drawer.rotation.z *
+        --         (math.pi / 180)) * 90,
+        --     player.drawer.position.y +
+        --     math.cos(
+        --         player.drawer.rotation.z *
+        --         (math.pi / 180)) * 90,
+        --     player.drawer.position.z)
     else
-        camera.position = vector3(player.drawer.position.x +
+
+        camera.lookat(vector3(player.drawer.position.x +
             math.sin(
                 player.drawer.rotation.z *
                 (math.pi / 180)) * offset,
@@ -141,17 +141,9 @@ local function camera_update()
             math.cos(
                 player.drawer.rotation.z *
                 (math.pi / 180)) * offset,
-            player.drawer.position.z + offset)
-        camera.target = vector3(player.drawer.position.x, -- -math.sin(
-            --     player.drawer.rotation.z *
-            --         (math.pi / 180)) * 90,
-            player.drawer.position.y, -- math.cos(
-            --     player.drawer.rotation.z *
-            --         (math.pi / 180)) * 90,
-            player.drawer.position.z)
+            player.drawer.position.z + offset), player.drawer.position:copy(), vector3(0, 0, 1))
 
     end
-    camera:update()
 end
 
 local function draw()

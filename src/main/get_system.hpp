@@ -15,7 +15,6 @@ class input_system &get_input();
 class sound_system &get_sound();
 class script_system &get_script();
 class texture_system &get_texture();
-class camera &get_camera();
 class random_system &get_random();
 class event_system &get_event();
 } // namespace sinen

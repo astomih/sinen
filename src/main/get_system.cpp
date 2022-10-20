@@ -18,7 +18,6 @@ render_system &get_renderer() { return singleton<render_system>::get(); }
 input_system &get_input() { return singleton<input_system>::get(); }
 sound_system &get_sound() { return singleton<sound_system>::get(); }
 texture_system &get_texture() { return singleton<texture_system>::get(); }
-camera &get_camera() { return singleton<camera>::get(); }
 random_system &get_random() { return singleton<random_system>::get(); }
 script_system &get_script() { return singleton<script_system>::get(); }
 event_system &get_event() { return singleton<event_system>::get(); }

@@ -1,13 +1,14 @@
-﻿#pragma once
+﻿#ifndef SINEN_FROM_ASSIMP_HPP
+#define SINEN_FROM_ASSIMP_HPP
+
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/LogStream.hpp>
 #include <assimp/cimport.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
-#include <sinen.hpp>
 
-#include "Animation.hpp"
+#include "animation.hpp"
 namespace sinen {
 vector3 fromAssimp(const aiVector3D &v);
 
@@ -19,3 +20,4 @@ VectorKey fromAssimp(const aiVectorKey &key);
 
 QuatKey fromAssimp(const aiQuatKey &key);
 } // namespace sinen
+  #endif // SINEN_FROM_ASSIMP_HPP

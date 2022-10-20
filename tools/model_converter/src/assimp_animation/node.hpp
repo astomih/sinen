@@ -1,5 +1,6 @@
-﻿#pragma once
-#include "../Mesh/Mesh.hpp"
+﻿#ifndef SINEN_NODE_HPP
+#define SINEN_NODE_HPP
+#include "../assimp_mesh/mesh.hpp"
 #include <sinen.hpp>
 
 namespace sinen {
@@ -14,3 +15,4 @@ public:
   std::vector<std::shared_ptr<Node>> children;
 };
 } // namespace sinen
+#endif // SINEN_NODE_HPP

@@ -1,4 +1,4 @@
-﻿#include "FromAssimp.hpp"
+﻿#include "from_assimp.hpp"
 
 namespace sinen {
 vector3 fromAssimp(const aiVector3D &v) { return vector3{v.x, v.y, v.z}; }

@@ -1,8 +1,7 @@
-#include "Model/Model.hpp"
+#include "assimp_model/assimp_model.hpp"
 #include <SDL2/SDL.h>
 #include <iostream>
 #include <string>
-
 
 const std::string version = "0.0.1";
 bool z_mode = false;
@@ -33,19 +32,26 @@ void write_version(std::string &write_data) {
   write_data += "version " + version + "\n";
 }
 void write_vertex_cpp(const std::string &name, std::string &write_data,
-                      sinen::Model &model);
-void write_indices_cpp(std::string &write_data, sinen::Model &model);
+                      sinen::assimp_model &model);
+void write_indices_cpp(std::string &write_data, sinen::assimp_model &model);
 
-void write_vertex(std::string &write_data, sinen::Model &model);
-void write_indices(std::string &write_data, sinen::Model &model);
-
+void write_vertex(std::string &write_data, sinen::assimp_model &model);
+void write_indices(std::string &write_data, sinen::assimp_model &model);
+#ifdef main
+#undef main
+#endif
 int main(int argc, char *argv[]) {
   if (argc < 2) {
-    std::cout << "Please input model." << std::endl;
+    sinen::logger::error("Please input model path.");
+    std::string s;
+    std::getline(std::cin, s);
     return -1;
   }
-  sinen::Model model;
-  model.LoadFromFile(argv[1]);
+  sinen::assimp_model model;
+  if (!model.load_from_file(argv[1])) {
+    std::string s;
+    std::getline(std::cin, s);
+  }
   if (argc > 2 && std::string(argv[2]) == "z") {
     z_mode = true;
   }
@@ -83,7 +89,7 @@ int main(int argc, char *argv[]) {
   }
   return 0;
 }
-void write_vertex(std::string &write_data, sinen::Model &model) {
+void write_vertex(std::string &write_data, sinen::assimp_model &model) {
   write_data += "begin vertex\n";
   for (auto &i : model.node_list) {
     for (auto &j : i->mesh) {
@@ -115,7 +121,7 @@ void write_vertex(std::string &write_data, sinen::Model &model) {
   }
   write_data += "end vertex\n";
 }
-void write_indices(std::string &write_data, sinen::Model &model) {
+void write_indices(std::string &write_data, sinen::assimp_model &model) {
   write_data += "begin indices\n";
   for (auto &i : model.node_list) {
     for (auto &j : i->mesh) {
@@ -127,7 +133,7 @@ void write_indices(std::string &write_data, sinen::Model &model) {
   write_data += "end indices\n";
 }
 void write_vertex_cpp(const std::string &name, std::string &write_data,
-                      sinen::Model &model) {
+                      sinen::assimp_model &model) {
   write_data += "#include <Nen.hpp>\n";
   write_data += "nen::vertex_array create_" + name + "_vertices(){\n";
   write_data += "nen::vertex_array v_array;\n";
@@ -148,7 +154,7 @@ void write_vertex_cpp(const std::string &name, std::string &write_data,
     }
   }
 }
-void write_indices_cpp(std::string &write_data, sinen::Model &model) {
+void write_indices_cpp(std::string &write_data, sinen::assimp_model &model) {
   write_data += "uint32_t indices[] = {\n";
   for (auto &i : model.node_list) {
     for (auto &j : i->mesh) {

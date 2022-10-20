@@ -1,5 +1,5 @@
-﻿#include "Model.hpp"
-#include "../Animation/FromAssimp.hpp"
+﻿#include "assimp_model.hpp"
+#include "../assimp_animation/from_assimp.hpp"
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/LogStream.hpp>
@@ -18,15 +18,15 @@ Bone createBone(const aiBone *b);
 void createNodeInfo(std::shared_ptr<Node> node,
                     std::map<std::string, std::shared_ptr<Node>> &node_index,
                     std::vector<std::shared_ptr<Node>> &node_list);
-void UpdateNodeMatrix(Model *model, const float time,
+void UpdateNodeMatrix(assimp_model *model, const float time,
                       const Animation &animation);
 void UpdateNodeDerivedMatrix(const std::shared_ptr<Node> &node,
                              const matrix4 &parent_matrix);
-void UpdateMesh(Model *model);
+void UpdateMesh(assimp_model *model);
 // メッシュのウェイトを正規化
 // ウェイト編集時にウェイトが極端に小さい頂点が発生しうる
 // その場合に見た目におかしくなってしまうのをいい感じに直す
-void normalizeMeshWeight(Model &model) {
+void normalizeMeshWeight(assimp_model &model) {
   for (const auto &node : model.node_list) {
     for (auto &mesh : node->mesh) {
       if (!mesh.has_bone)
@@ -63,7 +63,7 @@ void normalizeMeshWeight(Model &model) {
   }
 }
 // 全頂点を元に戻す
-void resetMesh(Model &model) {
+void resetMesh(assimp_model &model) {
   for (const auto &node : model.node_list) {
     for (auto &mesh : node->mesh) {
       if (!mesh.has_bone)
@@ -75,7 +75,7 @@ void resetMesh(Model &model) {
 }
 
 // ノードの行列をリセット
-void resetModelNodes(Model &model) {
+void resetModelNodes(assimp_model &model) {
   for (const auto &node : model.node_list) {
     node->matrix = node->matrix_orig;
   }
@@ -83,7 +83,7 @@ void resetModelNodes(Model &model) {
   resetMesh(model);
 }
 
-void Model::LoadFromFile(std::string_view filePath) {
+bool assimp_model::load_from_file(std::string_view filePath) {
   Assimp::Importer importer;
 
   auto path = dstream::open_as_string(asset_type::Model, filePath);
@@ -98,6 +98,7 @@ void Model::LoadFromFile(std::string_view filePath) {
           aiProcess_LimitBoneWeights | aiProcess_RemoveRedundantMaterials);
   if (!scene) {
     logger::error("%s", importer.GetErrorString());
+    return false;
   }
 
   this->node = createNode(scene->mRootNode, scene->mMeshes);
@@ -111,6 +112,7 @@ void Model::LoadFromFile(std::string_view filePath) {
       animation.push_back(createAnimation(anim[i]));
     }
   }
+  return true;
 }
 // ノードに付随するアニメーション情報を作成
 NodeAnim createNodeAnim(const aiNodeAnim *anim) {
@@ -260,7 +262,7 @@ void createNodeInfo(std::shared_ptr<Node> node,
   }
 }
 
-void Model::UpdateAnimation(const double time, const size_t index) {
+void assimp_model::UpdateAnimation(const double time, const size_t index) {
   if (!this->has_anim)
     return;
 
@@ -323,7 +325,8 @@ vector3 getLerpValue(const float time, const std::vector<VectorKey> &values) {
   return value;
 }
 // 階層アニメーション用の行列を計算
-void UpdateNodeMatrix(Model *model, const float time, const Animation &anim) {
+void UpdateNodeMatrix(assimp_model *model, const float time,
+                      const Animation &anim) {
   for (const auto &body : anim.body) {
 
     // 階層アニメーションを取り出して行列を生成
@@ -363,7 +366,7 @@ void UpdateNodeDerivedMatrix(const std::shared_ptr<Node> &n,
   }
 }
 
-void UpdateMesh(Model *model) {
+void UpdateMesh(assimp_model *model) {
   for (const auto &node : model->node_list) {
     for (auto &mesh : node->mesh) {
       if (!mesh.has_bone)

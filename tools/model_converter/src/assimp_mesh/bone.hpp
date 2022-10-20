@@ -1,7 +1,7 @@
-﻿#pragma once
-#include "Weight.hpp"
-#include <sinen.hpp>
-
+﻿#ifndef SINEN_BONE_HPP
+#define SINEN_BONE_HPP
+#include "weight.hpp"
+#include <sinen/sinen.hpp>
 namespace sinen {
 struct Bone {
   std::string name;
@@ -10,3 +10,4 @@ struct Bone {
   std::vector<Weight> weights;
 };
 } // namespace sinen
+#endif // SINEN_BONE_HPP

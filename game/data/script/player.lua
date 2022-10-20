@@ -42,7 +42,7 @@ local player = {
         self.gun_drawer = draw3d(tex)
         self.gun_drawer.vertex_name = "gun"
         self.model = model()
-        self.model:load("untitled.sim", "player")
+        self.model:load("player.sim", "player")
         self.drawer = draw3d(tex)
         self.drawer.vertex_name = "player"
         self.aabb = aabb()
@@ -59,6 +59,7 @@ local player = {
         r2 = 0
         while decide_pos(map, map_size_x, map_size_y) == true do end
         self.drawer.position = vector3(r1 * 2, r2 * 2, 0)
+        self.drawer.scale = vector3(0.7, 0.7, 0.7)
         self.hp_drawer.position.x = 0
         self.hp_drawer.position.y = 300
         self.hp_drawer2.position.x = 0

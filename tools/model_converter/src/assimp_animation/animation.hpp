@@ -1,5 +1,6 @@
-#pragma once
-#include "Node.hpp"
+#ifndef SINEN_ANIMATION_HPP
+#define SINEN_ANIMATION_HPP
+#include "node.hpp"
 #include <string>
 #include <vector>
 
@@ -26,3 +27,4 @@ public:
   std::vector<NodeAnim> body;
 };
 } // namespace sinen
+#endif // SINEN_ANIMATION_HPP

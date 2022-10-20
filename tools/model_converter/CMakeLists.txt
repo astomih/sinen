@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.7)
 project(model_converter)
-set(CMAKE_CXX_FLAGS "-std=c++20")
+set(CMAKE_CXX_FLAGS "-std=c++2a")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -s -DNDEBUG -march=native")
 set(CMAKE_EXPORT_COMPILE_COMMANDS true)

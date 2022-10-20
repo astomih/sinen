@@ -24,10 +24,12 @@ if(ANDROID)
       ../SDL2_net
       ../SDL2_image
       ../SDL2_mixer/include
-      ../SDL2_ttf)
+      ../SDL2_ttf
+      ../assimp/include)
   target_include_directories(sinen PUBLIC ${INCLUDE_DIRS})
   target_link_libraries(
     sinen
+    assimp
     SDL2
     SDL2_image
     SDL2_mixer
@@ -36,6 +38,7 @@ if(ANDROID)
     GLESv3
     log)
 elseif(EMSCRIPTEN)
+  add_subdirectory(external/assimp)
   file(
     GLOB
     SOURCE_FILES
@@ -51,8 +54,11 @@ elseif(EMSCRIPTEN)
       external/ImGui/include
       external/sol2/include
       external/rapidjson/include
-      external/Lua/include)
+      external/Lua/include
+      external/assimp/include
+      )
   target_include_directories(sinen PUBLIC ${SINEN_INCLUDE_DIRECTORIES})
+  target_link_libraries(sinen assimp)
   if(WIN32)
     set(CMAKE_CXX_FLAGS
         "${CMAKE_CXX_FLAGS} \
@@ -108,8 +114,11 @@ else()
       external/VulkanMemoryAllocator/include
       external/mojoAL/AL
       external/rapidjson/include
-      external/mojoAL)
+      external/mojoAL
+      external/assimp/include
+      )
   target_include_directories(
     sinen PUBLIC ${SINEN_INCLUDE_DIRECTORIES} ${Vulkan_INCLUDE_DIRS}
                  ${SDL2_INCLUDE_DIRS})
+  target_link_directories(sinen PUBLIC assimp)
 endif()

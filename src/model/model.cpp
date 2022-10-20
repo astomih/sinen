@@ -11,6 +11,7 @@
 #include <model/model.hpp>
 #include <render/renderer.hpp>
 
+#include <assimp/Importer.hpp>
 namespace sinen {
 enum class load_state { version, vertex, indices };
 

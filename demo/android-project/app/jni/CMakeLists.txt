@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.6)
 
-project(GAME)
+project(demo)
 
 # armeabi-v7a requires cpufeatures library
 include(AndroidNdkModules)
@@ -14,4 +14,4 @@ add_subdirectory(SDL2_mixer)
 add_subdirectory(SDL2_ttf)
 add_subdirectory(SDL2_net)
 add_subdirectory(sinen)
-add_subdirectory(singa)
+add_subdirectory(demo)

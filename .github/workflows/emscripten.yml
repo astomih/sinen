@@ -25,6 +25,7 @@ jobs:
       
     - name: CMake
       run: |
+        git submodule update --init --recursive
         cd ${{github.workspace}}/demo
         emcmake cmake -B build
     - name: Build

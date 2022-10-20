@@ -5,7 +5,8 @@
 #include <logger/logger.hpp>
 
 namespace sinen {
-std::unique_ptr<logger::interface> logger::mLogger = nullptr;
+std::unique_ptr<logger::interface> logger::mLogger =
+    logger::default_logger::CreateConsoleLogger();
 
 void logger::change_logger(std::unique_ptr<logger::interface> logger) {
   mLogger = std::move(logger);

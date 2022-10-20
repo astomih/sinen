@@ -49,8 +49,6 @@ std::string main::get_current_scene_number() {
   return singleton<main_system>::get().get_current_scene_number();
 }
 bool main_system::initialize() {
-  logger::change_logger(
-      std::move(logger::default_logger::CreateConsoleLogger()));
   logger::info("MAIN SYSTEM Activating");
   SDL_SetMainReady();
   SDL_Init(SDL_INIT_EVERYTHING);

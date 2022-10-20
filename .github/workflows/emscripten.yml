@@ -25,6 +25,7 @@ jobs:
       
     - name: CMake
       run: |
+        cd ${{github.workspace}}/demo/sinen
         git submodule update --init --recursive
         cd ${{github.workspace}}/demo
         emcmake cmake -B build

@@ -8,9 +8,9 @@
 
 namespace sinen {
 
-vector3 camera::m_position = vector3(0.f, 0.f, 10.f);
-vector3 camera::m_target = vector3(0.f);
-vector3 camera::m_up = vector3(0.f, -1.f, 0.f);
+vector3 camera::m_position = vector3(0.f, -1.f, 10.f);
+vector3 camera::m_target = vector3(0.f,1.f,0.f);
+vector3 camera::m_up = vector3(0.f, 0.f, 1.f);
 matrix4 camera::m_view = matrix4::lookat(m_position, m_target, m_up);
 matrix4 camera::m_projection =
     matrix4::perspective(math::to_radians(70.f), 1280.f / 720.f, .1f, 1000.f);

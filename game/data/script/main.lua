@@ -17,7 +17,7 @@ function setup()
     hello_drawer = draw2d(hello_texture)
     hello_font = font()
     hello_font:load(DEFAULT_FONT, 64)
-    hello_font:render_text(hello_texture, "Dive2Sinen", color(1, 1, 1, 1))
+    hello_font:render_text(hello_texture, "Dive To Sinen", color(1, 1, 1, 1))
     hello_drawer.scale = hello_texture:size()
 
     press_texture = texture()
@@ -40,7 +40,7 @@ function update()
     if menu_object.hide then
         if keyboard:key_state(keySPACE) == buttonPRESSED or
             mouse:button_state(mouseLEFT) == buttonPRESSED then
-            change_scene("stage1")
+            change_scene("scene01_stage")
         end
     end
 end

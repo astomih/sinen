@@ -9,6 +9,7 @@
 namespace sinen {
 TextEditor te;
 void texteditor() {
+  ImGui::Begin("Text Editor");
   const static TextEditor::Palette p = {{
       0xff7f7f7f, // Default
       0xffd69c56, // Keyword
@@ -98,6 +99,7 @@ void texteditor() {
     ImGui::EndMenuBar();
   }
   te.Render("Code");
+  ImGui::End();
 }
 std::string get_text() { return te.GetText(); }
 } // namespace sinen

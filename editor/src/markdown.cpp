@@ -97,6 +97,7 @@ void Markdown(const std::string &markdown_) {
 }
 
 void markdown() {
+  ImGui::Begin("Markdown Viewer");
   const std::string markdownText = R"(
 # H1 Header: Text and Links
 You can add [links like this one to enkisoftware](https://www.enkisoftware.com/) and lines will wrap well.
@@ -114,6 +115,7 @@ ___
   * Lists can have [links like this one to Avoyd](https://www.avoyd.com/) and *emphasized text*
 )";
   Markdown(markdownText);
+  ImGui::End();
 }
 
 } // namespace sinen

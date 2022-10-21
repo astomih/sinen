@@ -196,18 +196,11 @@ void gl_renderer::render() {
   ImGui_ImplSDL2_NewFrame((SDL_Window *)w.GetSDLWindow());
   ImGui::NewFrame();
   if (get_renderer().is_show_imgui()) {
-    ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(
-        ImVec2(get_window().Size().x, get_window().Size().y), ImGuiCond_Always);
 
     // Draw ImGUI widgets.
-    ImGui::Begin(" ", nullptr,
-                 ImGuiWindowFlags_HorizontalScrollbar |
-                     ImGuiWindowFlags_MenuBar);
     for (auto &i : get_renderer().get_imgui_function()) {
       i();
     }
-    ImGui::End();
   }
 
   ImGui::Render();

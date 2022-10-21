@@ -157,7 +157,6 @@ local function draw()
 end
 
 function update()
-    if now_stage == 4 then change_scene("boss_stage") end
     light_eye(vector3(0, 2, -10))
     light_at(vector3(0, 0, 0))
     light_width(200)
@@ -185,6 +184,8 @@ function update()
                 table.insert(player.efks, efk)
 
                 table.remove(player.bullets, i)
+                -- hp
+                w.hp = w.hp - 10
                 if w.hp < 0 then
                     score = score + 10
                     table.remove(enemies, j)
@@ -213,9 +214,9 @@ function update()
             0 then
             now_stage = now_stage + 1
             if now_stage == 4 then
-                change_scene("clear")
+                change_scene("scene02_clear")
             else
-                change_scene("stage1")
+                change_scene("scene01_stage")
             end
         end
     end

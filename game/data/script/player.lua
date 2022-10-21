@@ -87,7 +87,7 @@ local player = {
             self.drawer.scale:mul(self.model.aabb.max))
         self.aabb.min = self.drawer.position:add(
             self.drawer.scale:mul(self.model.aabb.min))
-        if self.hp <= 0 then change_scene("gameover") end
+        if self.hp <= 0 then change_scene("scene03_gameover") end
         input_vector = calc_input_vector()
         if keyboard:is_key_down(keyLSHIFT) then
             speed = 8.0
@@ -189,7 +189,15 @@ local player = {
         self.hp_drawer:draw()
         self.hp_drawer2:draw()
     end,
-    render_text = function(self) end
+    render_text = function(self)
+        if self.hp < 20 then
+            self.hp_font_texture:fill_color(color(1, 0.6, 0.6, 0.8))
+        else
+            self.hp_font_texture:fill_color(color(0.6, 1, 0.6, 0.8))
+        end
+        self.hp_drawer.scale = vector2(self.hp * 10, 50)
+
+    end
 }
 
 return player

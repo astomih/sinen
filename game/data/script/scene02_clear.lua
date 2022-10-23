@@ -1,18 +1,18 @@
-local hello_texture = {}
-local hello_font = {}
-local hello_drawer = {}
+local texture_clear = {}
+local font_clear = {}
+local drawer_clear = {}
 
 function setup()
-    hello_texture = texture()
-    hello_drawer = draw2d_instanced(hello_texture)
-    hello_font = font()
-    hello_font:load(DEFAULT_FONT, 64)
-    hello_font:render_text(hello_texture, "You Win", color(1, 1, 1, 1))
-    hello_drawer:add(vector2(0, 0), 0, hello_texture:size())
+    texture_clear = texture()
+    drawer_clear = draw2d_instanced(texture_clear)
+    font_clear = font()
+    font_clear:load(DEFAULT_FONT, 64)
+    font_clear:render_text(texture_clear, "You Win", color(1, 1, 1, 1))
+    drawer_clear:add(vector2(0, 0), 0, texture_clear:size())
 end
 
 function update()
-    hello_drawer:draw()
+    drawer_clear:draw()
     if keyboard:key_state(keySPACE) == buttonPRESSED then
         change_scene("main")
     end

@@ -1,7 +1,6 @@
 # Sinen Engine
 <p align="center"><a href="https://astomih.github.io/sinen"><img src="https://raw.githubusercontent.com/astomih/sinen/main/logo/logo.png" width="480" alt="Sinen Engine logo"></a></p>
 sinen is a media library for C++20 that is being produced mainly for game development.  
-The library is planned to be used only by me, so I don't think it will have full support and documentation.
 
 ## Try on Web
 [https://astomih.github.io/sinen/web_demo](https://astomih.github.io/sinen/web_demo/)

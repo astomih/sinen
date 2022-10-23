@@ -1,7 +1,3 @@
-collision_space = {}
-brown = {}
-fps_mode = false
-
 local player = require "player"
 local enemy = require "enemy"
 local enemies = {}
@@ -25,6 +21,7 @@ local iseki_wall = texture()
 local bright = 0.6
 local dark = 0.5
 local tile = texture()
+local texture_brown_color = {}
 
 local score_font = font()
 local score_texture = texture()
@@ -60,12 +57,12 @@ local key_texture_2d = texture()
 key_texture_2d:load("key.png")
 local key_drawer2d = draw2d(key_texture_2d)
 key_drawer2d.scale = key_texture_2d:size()
-key_drawer2d.scale.x = key_drawer2d.scale.x * 6
-key_drawer2d.scale.y = key_drawer2d.scale.y * 6
-
+key_drawer2d.scale.x = key_drawer2d.scale.x / 6
+key_drawer2d.scale.y = key_drawer2d.scale.y / 6
+key_drawer2d.position = vector2(-window.size().x / 2 + key_drawer2d.scale.x / 2, -window.size().y / 3)
 local key_drawer = draw3d(key_texture)
 key_drawer.scale = vector3(0.25, 0.25, 0.25)
-key_drawer.position = vector3(0, 0, 2)
+key_drawer.position = vector3(0, 0, 1)
 key_drawer.rotation = vector3(90, 0, 0)
 key_drawer.vertex_name = "key"
 local key_hit = false
@@ -76,9 +73,9 @@ function setup()
     music:load("Stage1.ogg")
     music:play()
     tex = texture()
-    brown = texture()
+    texture_brown_color = texture()
     tex:fill_color(color(1, 1, 1, 1))
-    brown:fill_color(color(0.843, 0.596, 0.043, 1))
+    texture_brown_color:fill_color(color(0.843, 0.596, 0.043, 1))
     generator = dungeon_generator()
     generator:generate(map, map_size_x, map_size_y)
     box = draw3d_instanced(iseki_wall)
@@ -102,8 +99,10 @@ function setup()
             map_draw3ds[y][x] = world()
             map_draw3ds[y][x].position.x = x * 2
             map_draw3ds[y][x].position.y = y * 2
-            sprite:add(map_draw3ds[y][x].position, map_draw3ds[y][x].rotation,
-                map_draw3ds[y][x].scale)
+            if map[y][x] ~= 2 then
+                sprite:add(map_draw3ds[y][x].position, map_draw3ds[y][x].rotation,
+                    map_draw3ds[y][x].scale)
+            end
             if map[y][x] == 1 then
                 map_draw3ds[y][x].position.z = 0.5
                 map_draw3ds[y][x].aabb = aabb()
@@ -126,8 +125,8 @@ function setup()
             end
             if map[y][x] == 2 then
                 stair.position.x = x * 2
-                stair.position.y = y * 2
-                stair.position.z = 0
+                stair.position.y = y * 2 + 0.5
+                stair.position.z = 100
             end
             if map[y][x] == 3 then
                 player.drawer.position.x = x * 2
@@ -198,6 +197,7 @@ function update()
         draw()
         return
     end
+    key_drawer.rotation.y = key_drawer.rotation.y + delta_time * 100
     score_font:render_text(score_texture, "Score: " .. score,
         color(1, 0.3, 0.3, 1))
     score_drawer.scale = score_texture:size()
@@ -240,6 +240,7 @@ function update()
         math.floor(player.drawer.position.y) == math.floor(key_drawer.position.y) then
 
         key_hit = true
+        stair.position.z = -2.0
     end
     for i, v in ipairs(enemies) do
         v:update(player, map, map_draw3ds, map_size_x, map_size_y)
@@ -249,7 +250,7 @@ function update()
         player.drawer.position.x / 2 + 0.5)] == 2 then
 
         if keyboard:key_state(keySPACE) == buttonPRESSED and stair.position.z ==
-            0 then
+            -2 then
             now_stage = now_stage + 1
             if now_stage == 4 then
                 change_scene("scene02_clear")

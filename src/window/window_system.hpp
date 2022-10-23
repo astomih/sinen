@@ -12,6 +12,7 @@ class window_system {
 public:
   window_system();
   void initialize(const std::string &name, graphics_api api);
+  void shutdown();
   void ProcessInput();
   SDL_Window *GetSDLWindow() { return m_window; }
   vector2 Size() { return size; }

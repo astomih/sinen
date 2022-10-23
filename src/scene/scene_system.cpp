@@ -88,7 +88,6 @@ void scene_system::update_scene() {
   m_impl->update(deltaTime);
   get_sound().update(deltaTime);
 }
-
 void scene_system::shutdown() {
   m_impl->terminate();
   m_game_state = scene::state::quit;

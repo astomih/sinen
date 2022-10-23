@@ -46,7 +46,7 @@ public:
   friend class mouse_state;
   friend class joystick_state;
   bool initialize();
-  void terminate();
+  void shutdown();
 
   // Called right before SDL_PollEvents loop
   void prepare_for_update();

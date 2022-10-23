@@ -25,5 +25,6 @@ void texture_system::move(handle_t handle,
                           std::unique_ptr<SDL_Surface, SDLObjectCloser> ptr) {
   return m_surfaces.move(handle, std::move(ptr));
 }
+void texture_system::shutdown() { m_surfaces.clear(); }
 
-} // namespace nen
+} // namespace sinen

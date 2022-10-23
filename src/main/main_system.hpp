@@ -40,7 +40,7 @@ public:
 private:
   void change_scene_impl(const std::string &scene_name);
   bool is_reset = false;
-  void loop();
+  bool loop();
 
   std::string m_scene_name = "main";
 };

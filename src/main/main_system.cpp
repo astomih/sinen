@@ -40,6 +40,22 @@ int main::activate() {
     return -1;
   }
   singleton<main_system>::get().launch();
+  logger::info("MAIN SYSTEM Inactiviating");
+  scene_system::shutdown();
+  get_script().shutdown();
+  scene_system::shutdown();
+  get_input().shutdown();
+  get_sound().shutdown();
+  get_renderer().shutdown();
+  get_window().shutdown();
+  get_texture().shutdown();
+  Mix_CloseAudio();
+  TTF_Quit();
+  SDLNet_Quit();
+  Mix_Quit();
+  IMG_Quit();
+  SDL_Quit();
+  singleton_finalizer::finalize();
   return 0;
 }
 void main::change_scene(const std::string &scene_number) {
@@ -82,7 +98,7 @@ bool main_system::initialize() {
   singleton<camera>::get();
   if (!get_sound().initialize()) {
     logger::fatal("Failed to initialize audio system");
-    get_sound().terminate();
+    get_sound().shutdown();
     return false;
   }
   if (!get_input().initialize()) {
@@ -103,36 +119,27 @@ void main_system::launch() {
   scene_system::initialize();
 
 #if !defined(EMSCRIPTEN)
-  while (true)
-    loop();
+  while (loop()) {
+  }
 #else
-  emscripten_loop = [&]() { loop(); };
+  emscripten_loop = [&]() {
+    while (loop()) {
+    }
+  };
   emscripten_set_main_loop(main_loop, 120, true);
 #endif
 }
-void main_system::loop() {
+bool main_system::loop() {
   if (scene_system::is_running()) {
     scene_system::run_loop();
-    return;
+    return true;
   }
   if (this->is_reset) {
     scene_system::initialize();
     this->is_reset = false;
-    return;
+    return true;
   }
-  logger::info("MAIN SYSTEM Inactiviating");
-  get_script().shutdown();
-  scene_system::shutdown();
-  get_input().terminate();
-  get_sound().terminate();
-  get_renderer().shutdown();
-  Mix_CloseAudio();
-  singleton_finalizer::finalize();
-#ifndef EMSCRIPTEN
-  std::exit(0);
-#else
-  emscripten_force_exit(0);
-#endif
+  return false;
 }
 void main_system::change_scene_impl(const std::string &scene_name) {
   scene_system::shutdown();

@@ -49,6 +49,27 @@ stair_model:load("stair.sim", "stair")
 local menu = require("menu")
 local menu_object = menu()
 
+
+-- key object
+local key = {}
+local key_model = model()
+key_model:load("key.sim", "key")
+local key_texture = texture()
+key_texture:fill_color(color(1, 1, 1, 1))
+local key_texture_2d = texture()
+key_texture_2d:load("key.png")
+local key_drawer2d = draw2d(key_texture_2d)
+key_drawer2d.scale = key_texture_2d:size()
+key_drawer2d.scale.x = key_drawer2d.scale.x * 6
+key_drawer2d.scale.y = key_drawer2d.scale.y * 6
+
+local key_drawer = draw3d(key_texture)
+key_drawer.scale = vector3(0.25, 0.25, 0.25)
+key_drawer.position = vector3(0, 0, 2)
+key_drawer.rotation = vector3(90, 0, 0)
+key_drawer.vertex_name = "key"
+local key_hit = false
+
 function setup()
     score_font:load("SoukouMincho-Font/SoukouMincho.ttf", 64)
     menu_object:setup()
@@ -112,6 +133,11 @@ function setup()
                 player.drawer.position.x = x * 2
                 player.drawer.position.y = y * 2
             end
+            -- key object
+            if map[y][x] == 4 then
+                key_drawer.position.x = x * 2
+                key_drawer.position.y = y * 2
+            end
         end
     end
 end
@@ -152,6 +178,12 @@ local function draw()
     box:draw()
     sprite:draw()
     stair:draw()
+    if not key_hit then
+        key_drawer:draw()
+    end
+    if key_hit then
+        key_drawer2d:draw()
+    end
     score_drawer:draw()
     menu_object:draw()
 end
@@ -203,6 +235,12 @@ function update()
             1 then table.remove(player.bullets, i) end
     end
     player:update(map, map_draw3ds, map_size_x, map_size_y)
+    -- Player hit key
+    if math.floor(player.drawer.position.x) == math.floor(key_drawer.position.x) and
+        math.floor(player.drawer.position.y) == math.floor(key_drawer.position.y) then
+
+        key_hit = true
+    end
     for i, v in ipairs(enemies) do
         v:update(player, map, map_draw3ds, map_size_x, map_size_y)
         v:player_collision(player)

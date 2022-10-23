@@ -145,10 +145,7 @@ bool input_system::initialize() {
   return true;
 }
 
-void input_system::terminate() {
-  SDL_FreeCursor(g_cursor);
-  g_cursor = nullptr;
-  SDL_SetCursor(NULL);
+void input_system::shutdown() {
 }
 
 void input_system::prepare_for_update() {

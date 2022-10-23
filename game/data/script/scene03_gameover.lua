@@ -14,16 +14,13 @@ function setup()
     hello_drawer = draw2d_instanced(hello_texture)
     hello_font = font()
     hello_font:load(DEFAULT_FONT, 64)
-    hello_font:render_text(hello_texture, "Game Over!", color(1, 1, 1, 1))
+    hello_font:render_text(hello_texture, "You Dead", color(1, 1, 1, 1))
     hello_drawer:add(vector2(0, 0), 0, hello_texture:size())
     menu_object:setup()
     text_window_object:setup()
 
     text_window_object.texts = {
-        "ぐわあああああああああああああ！！！！",
-        "やられてしまった...。",
-        "神「まだ諦めるでない！再挑戦するのだ！」"
-
+        "夢の中で、"
     }
 end
 

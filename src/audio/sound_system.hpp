@@ -15,7 +15,7 @@ public:
   ~sound_system();
 
   bool initialize();
-  void terminate();
+  void shutdown();
   void update(float deltaTime);
 
   void load(std::string_view fileName);

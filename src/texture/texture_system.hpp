@@ -19,7 +19,7 @@ public:
   SDL_Surface *get_raw(handle_t);
   void move(handle_t, std::unique_ptr<SDL_Surface, SDLObjectCloser>);
   void remove(handle_t);
-
+  void shutdown();
 private:
   handler<::SDL_Surface, SDLObjectCloser> m_surfaces;
 };

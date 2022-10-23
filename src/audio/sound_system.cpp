@@ -74,7 +74,14 @@ bool sound_system::initialize() {
   return true;
 }
 
-void sound_system::terminate() {}
+void sound_system::shutdown() {
+  for (auto &i : buffers) {
+    alDeleteBuffers(1, &i.second);
+  }
+  alcMakeContextCurrent(NULL);
+  alcDestroyContext((ALCcontext *)context);
+  alcCloseDevice((ALCdevice *)device);
+}
 
 void sound_system::update(float deltaTime) {}
 

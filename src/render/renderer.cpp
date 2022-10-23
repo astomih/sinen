@@ -34,6 +34,9 @@ void render_system::shutdown() {
     m_vk_renderer->shutdown();
   }
 #endif
+  if (m_gl_renderer) {
+    m_gl_renderer->shutdown();
+  }
 }
 
 void render_system::render() {

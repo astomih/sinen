@@ -67,6 +67,11 @@ void window_system::initialize(const std::string &name, graphics_api api) {
 #endif
 }
 
+void window_system::shutdown() {
+  SDL_DestroyWindow(m_window);
+  m_window = nullptr;
+}
+
 void window_system::ProcessInput() {
   int x, y;
   SDL_GetWindowSize(m_window, &x, &y);

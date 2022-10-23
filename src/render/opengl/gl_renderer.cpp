@@ -1,4 +1,3 @@
-#include "../../main/get_system.hpp"
 #include "../../render/render_system.hpp"
 #include "../../script/script_system.hpp"
 #include "../../texture/texture_system.hpp"
@@ -46,14 +45,13 @@ auto light_projection = matrix4::ortho(20, 20, 0.5, 100);
 // 10);
 
 void gl_renderer::initialize() {
-  auto &w = get_window();
-  mContext = SDL_GL_CreateContext((SDL_Window *)w.GetSDLWindow());
-  SDL_GL_MakeCurrent((SDL_Window *)w.GetSDLWindow(), mContext);
+  mContext = SDL_GL_CreateContext(window_system::get_sdl_window());
+  SDL_GL_MakeCurrent(window_system::get_sdl_window(), mContext);
   if (!SDL_GL_SetSwapInterval(1)) {
     SDL_GL_SetSwapInterval(0);
   }
-  prev_window_x = w.Size().x;
-  prev_window_y = w.Size().y;
+  prev_window_x = window_system::size().x;
+  prev_window_y = window_system::size().y;
 #if !defined EMSCRIPTEN && !defined MOBILE
   glewExperimental = GL_TRUE;
   if (glewInit() != GLEW_OK) {
@@ -76,8 +74,7 @@ void gl_renderer::initialize() {
       dstream::convert_file_path("mplus/mplus-1p-medium.ttf", asset_type::Font)
           .data(),
       18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
-  ImGui_ImplSDL2_InitForOpenGL((SDL_Window *)get_window().GetSDLWindow(),
-                               mContext);
+  ImGui_ImplSDL2_InitForOpenGL(window_system::get_sdl_window(), mContext);
 #if defined EMSCRIPTEN || defined MOBILE
   ImGui_ImplOpenGL3_Init("#version 300 es");
 #else
@@ -91,7 +88,7 @@ vector3 eye;
 vector3 at;
 float width, height;
 void gl_renderer::render() {
-  auto &lua = (*(sol::state *)get_script().get_state());
+  auto &lua = (*(sol::state *)script_system::get_state());
   lua["light_eye"] = [&](const vector3 &v) { eye = v; };
   lua["light_at"] = [&](const vector3 &v) { at = v; };
   lua["light_width"] = [&](float v) { width = v; };
@@ -99,13 +96,13 @@ void gl_renderer::render() {
   light_view = matrix4::lookat(eye, at, vector3(0, 1, 0));
   light_projection = matrix4::ortho(width, height, 0.5, 10);
 
-  auto &w = get_window();
-  if (w.Size().x != prev_window_x || w.Size().y != prev_window_y) {
-    glViewport(0, 0, w.Size().x, w.Size().y);
-    prev_window_x = w.Size().x;
-    prev_window_y = w.Size().y;
+  auto w = window_system::size();
+  if (w.x != prev_window_x || w.y != prev_window_y) {
+    glViewport(0, 0, w.x, w.y);
+    prev_window_x = w.x;
+    prev_window_y = w.y;
   }
-  auto color = get_renderer().get_clear_color();
+  auto color = render_system::get_clear_color();
   glClearColor(color.r, color.g, color.b, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   /*
@@ -193,12 +190,12 @@ void gl_renderer::render() {
   glActiveTexture(GL_TEXTURE0);
                  */
   ImGui_ImplOpenGL3_NewFrame();
-  ImGui_ImplSDL2_NewFrame((SDL_Window *)w.GetSDLWindow());
+  ImGui_ImplSDL2_NewFrame(window_system::get_sdl_window());
   ImGui::NewFrame();
-  if (get_renderer().is_show_imgui()) {
+  if (renderer::is_show_imgui()) {
 
     // Draw ImGUI widgets.
-    for (auto &i : get_renderer().get_imgui_function()) {
+    for (auto &i : renderer::get_imgui_function()) {
       i();
     }
   }
@@ -207,7 +204,7 @@ void gl_renderer::render() {
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
   m_drawer_3ds.clear();
   m_drawer_2ds.clear();
-  SDL_GL_SwapWindow((SDL_Window *)w.GetSDLWindow());
+  SDL_GL_SwapWindow(window_system::get_sdl_window());
   for (auto &i : m_instancing_2d) {
     glDeleteBuffers(1, &i.vbo);
     glDeleteVertexArrays(1, &i.vao);
@@ -242,7 +239,7 @@ void gl_renderer::disable_vertex_attrib_array() {
 }
 
 void gl_renderer::draw_skybox() {
-  create_texture(get_renderer().get_skybox_texture());
+  create_texture(render_system::get_skybox_texture());
   auto &va = m_VertexArrays["BOX"];
   glBindVertexArray(va.vao);
   mAlphaShader.active(0);
@@ -257,7 +254,7 @@ void gl_renderer::draw_skybox() {
   mAlphaShader.active(0);
   mAlphaShader.update_ubo(0, sizeof(shader_parameter), &param);
   glBindTexture(GL_TEXTURE_2D,
-                mTextureIDs[get_renderer().get_skybox_texture().handle]);
+                mTextureIDs[render_system::get_skybox_texture().handle]);
   disable_vertex_attrib_array();
   glDrawElements(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT, nullptr);
 }
@@ -557,7 +554,7 @@ void gl_renderer::prepare_depth_texture() {
 }
 
 void gl_renderer::create_texture(texture handle) {
-  ::SDL_Surface &surf = get_texture().get(handle.handle);
+  ::SDL_Surface &surf = texture_system::get(handle.handle);
   if (mTextureIDs.contains(handle.handle)) {
     if (*handle.is_need_update) {
       glDeleteTextures(1, &mTextureIDs[handle.handle]);

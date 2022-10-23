@@ -1,5 +1,4 @@
 #include "../audio/sound_system.hpp"
-#include "../main/get_system.hpp"
 #include "../render/render_system.hpp"
 #include "../texture/texture_system.hpp"
 #include "math/vector3.hpp"
@@ -28,14 +27,11 @@ class script_system::implement {
 public:
   sol::state state;
 };
-void *script::get_state() { return get_script().get_state(); }
+std::unique_ptr<script_system::implement> script_system::impl = nullptr;
+void *script::get_state() { return script_system::get_state(); }
 void *script_system::get_state() { return (void *)&impl->state; }
-script_system::script_system() { impl = std::make_unique<implement>(); }
-script_system::script_system(script_system &s) {
-  this->impl = std::move(s.impl);
-}
-script_system::~script_system() = default;
 bool script_system::initialize() {
+  impl = std::make_unique<implement>();
 #ifndef sinen_NO_USE_SCRIPT
   impl->state.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math,
                              sol::lib::bit32, sol::lib::io, sol::lib::os,
@@ -74,7 +70,7 @@ bool script_system::initialize() {
   impl->state["music"] = []() -> music { return music(); };
   impl->state["sound"] = []() -> sound { return sound(); };
   impl->state["set_skybox_texture"] = [&](texture tex) -> void {
-    get_renderer().set_skybox_texture(tex);
+    render_system::set_skybox_texture(tex);
   };
   impl->state["aabb"] = []() -> aabb { return aabb(); };
   {
@@ -331,7 +327,7 @@ void script_system::do_script(std::string_view fileName) {
 void script_system::shutdown() { impl->state.collect_gc(); }
 
 void script::do_script(std::string_view fileName) {
-  get_script().do_script(fileName);
+  script_system::do_script(fileName);
 }
 
 } // namespace sinen

@@ -1,5 +1,4 @@
-﻿#include "../main/get_system.hpp"
-#include "../vertex/default_model_creator.h"
+﻿#include "../vertex/default_model_creator.h"
 #include "opengl/gl_renderer.hpp"
 #include "render_system.hpp"
 #include "vulkan/vk_renderer.hpp"
@@ -9,9 +8,17 @@
 #include <vertex/vertex_array.hpp>
 
 namespace sinen {
-render_system::render_system() : showImGui(false) {}
-render_system::~render_system() = default;
-graphics_api render_system::get_graphics_api() { return this->RendererAPI; }
+color render_system::clearColor = palette::black();
+std::unique_ptr<class gl_renderer> render_system::m_gl_renderer;
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+std::unique_ptr<class vk_renderer> render_system::m_vk_renderer;
+#endif
+// Renderer
+graphics_api render_system::RendererAPI;
+bool render_system::showImGui = false;
+std::list<std::function<void()>> render_system::m_imgui_function;
+texture render_system::m_skybox_texture;
+graphics_api render_system::get_graphics_api() { return RendererAPI; }
 void render_system::unload_data() {}
 void render_system::initialize(graphics_api api) {
   RendererAPI = api;
@@ -134,60 +141,60 @@ void render_system::setup_shapes() {
   add_vertex_array(create_sprite_vertices(), vertex_default_shapes::sprite);
 }
 graphics_api renderer::get_graphics_api() {
-  return get_renderer().get_graphics_api();
+  return render_system::get_graphics_api();
 }
 
-void renderer::unload_data() { get_renderer().unload_data(); }
+void renderer::unload_data() { render_system::unload_data(); }
 
-void renderer::render() { get_renderer().render(); }
+void renderer::render() { render_system::render(); }
 
 void renderer::draw2d(const std::shared_ptr<drawable> draw_object) {
-  get_renderer().draw2d(draw_object);
+  render_system::draw2d(draw_object);
 }
 void renderer::draw3d(const std::shared_ptr<drawable> draw_object) {
-  get_renderer().draw3d(draw_object);
+  render_system::draw3d(draw_object);
 }
 
 void renderer::add_vertex_array(const vertex_array &vArray,
                                 std::string_view name) {
-  get_renderer().add_vertex_array(vArray, name);
+  render_system::add_vertex_array(vArray, name);
 }
 void renderer::update_vertex_array(const vertex_array &vArray,
                                    std::string_view name) {
-  get_renderer().update_vertex_array(vArray, name);
+  render_system::update_vertex_array(vArray, name);
 }
 
 void renderer::add_instancing(const instancing &_instancing) {
-  get_renderer().add_instancing(_instancing);
+  render_system::add_instancing(_instancing);
 }
 
 void renderer::set_clear_color(const color &color) {
-  get_renderer().set_clear_color(color);
+  render_system::set_clear_color(color);
 }
 
-color renderer::clear_color() { return get_renderer().get_clear_color(); }
+color renderer::clear_color() { return render_system::get_clear_color(); }
 
 void renderer::set_skybox(texture _skybox_texture) {
-  get_renderer().set_skybox_texture(_skybox_texture);
+  render_system::set_skybox_texture(_skybox_texture);
 }
 
-texture renderer::skybox() { return get_renderer().get_skybox_texture(); }
+texture renderer::skybox() { return render_system::get_skybox_texture(); }
 
-void renderer::toggle_show_imgui() { get_renderer().toggle_show_imgui(); }
-bool renderer::is_show_imgui() { return get_renderer().is_show_imgui(); }
+void renderer::toggle_show_imgui() { render_system::toggle_show_imgui(); }
+bool renderer::is_show_imgui() { return render_system::is_show_imgui(); }
 
 void renderer::load_shader(const shader &shaderinfo) {
-  get_renderer().load_shader(shaderinfo);
+  render_system::load_shader(shaderinfo);
 }
 void renderer::unload_shader(const shader &shaderinfo) {
-  get_renderer().unload_shader(shaderinfo);
+  render_system::unload_shader(shaderinfo);
 }
 
 std::list<std::function<void()>> &renderer::get_imgui_function() {
-  return get_renderer().get_imgui_function();
+  return render_system::get_imgui_function();
 }
 
 void renderer::add_imgui_function(std::function<void()> function) {
-  get_renderer().get_imgui_function().push_back(function);
+  render_system::get_imgui_function().push_back(function);
 }
 } // namespace sinen

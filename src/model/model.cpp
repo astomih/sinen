@@ -1,4 +1,3 @@
-#include "../main/get_system.hpp"
 #include "../render/render_system.hpp"
 #include <algorithm>
 #include <cstddef>
@@ -68,6 +67,6 @@ void model::load(std::string_view str, std::string_view name) {
     }
   }
   m_array.indexCount = m_array.indices.size();
-  get_renderer().add_vertex_array(m_array, name);
+  render_system::add_vertex_array(m_array, name);
 }
 } // namespace sinen

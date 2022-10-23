@@ -1,4 +1,3 @@
-#include "../main/get_system.hpp"
 #include "../render/render_system.hpp"
 #include "../window/window_system.hpp"
 #include <camera/camera.hpp>
@@ -32,13 +31,13 @@ void draw2d::draw() {
   obj->texture_handle = this->texture_handle;
   matrix4 viewproj = matrix4::identity;
 
-  auto windowsize = get_window().Size();
+  auto windowsize = window::size();
   viewproj.mat[0][0] = 2.f / windowsize.x;
   viewproj.mat[1][1] = 2.f / windowsize.y;
   obj->param.proj = viewproj;
   obj->param.view = matrix4::identity;
   obj->vertexIndex = this->vertex_name;
-  get_renderer().draw2d(obj);
+  renderer::draw2d(obj);
   *this->texture_handle.is_need_update = false;
 }
 void draw3d::draw() {
@@ -65,7 +64,7 @@ void draw3d::draw() {
   obj->param.view = camera::view();
   obj->vertexIndex = this->vertex_name;
   obj->is_draw_depth = this->is_draw_depth;
-  get_renderer().draw3d(obj);
+  renderer::draw3d(obj);
   *this->texture_handle.is_need_update = false;
 }
 } // namespace sinen

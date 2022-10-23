@@ -5,6 +5,6 @@ namespace sinen {
 class event_system {
 
 public:
-  SDL_Event current_event;
+  static SDL_Event current_event;
 };
 } // namespace sinen

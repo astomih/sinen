@@ -1,4 +1,3 @@
-#include "../main/get_system.hpp"
 #include "../window/window_system.hpp"
 #include <camera/camera.hpp>
 #include <logger/logger.hpp>
@@ -9,7 +8,7 @@
 namespace sinen {
 
 vector3 camera::m_position = vector3(0.f, -1.f, 10.f);
-vector3 camera::m_target = vector3(0.f,1.f,0.f);
+vector3 camera::m_target = vector3(0.f, 1.f, 0.f);
 vector3 camera::m_up = vector3(0.f, 0.f, 1.f);
 matrix4 camera::m_view = matrix4::lookat(m_position, m_target, m_up);
 matrix4 camera::m_projection =

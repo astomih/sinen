@@ -1,5 +1,4 @@
 #include "../event/event_system.hpp"
-#include "../main/get_system.hpp"
 #include "../window/window_system.hpp"
 #include "input_system.hpp"
 #include <SDL.h>
@@ -7,7 +6,6 @@
 #include <imgui_impl_sdl.h>
 #include <input/input.hpp>
 #include <input/mouse_code.hpp>
-#include <utility/singleton.hpp>
 #include <window/window.hpp>
 
 namespace sinen {
@@ -45,9 +43,9 @@ button_state keyboard_state::get_key_state(key_code _key_code) const {
 mouse_state::mouse_state() = default;
 
 void mouse_state::set_position(const vector2 &pos) const {
-  get_input().m_mouse.is_update_pos = true;
-  get_input().m_mouse.next_pos = pos;
-  SDL_WarpMouseInWindow(get_window().GetSDLWindow(),
+  input_system::m_mouse.is_update_pos = true;
+  input_system::m_mouse.next_pos = pos;
+  SDL_WarpMouseInWindow(window_system::get_sdl_window(),
                         input_system::m_mouse.next_pos.x,
                         input_system::m_mouse.next_pos.y);
 }
@@ -121,6 +119,7 @@ button_state joystick_state::get_button_state(joystick_button _button) const {
   }
 }
 
+joystick input_system::mController;
 bool input_system::initialize() {
 
   m_keyboard.mCurrState = SDL_GetKeyboardState(NULL);
@@ -145,8 +144,7 @@ bool input_system::initialize() {
   return true;
 }
 
-void input_system::shutdown() {
-}
+void input_system::shutdown() {}
 
 void input_system::prepare_for_update() {
   // Copy current state to previous
@@ -199,7 +197,7 @@ void input_system::update() {
 }
 void input_system::process_event() {
 
-  auto e = get_event().current_event;
+  auto e = event_system::current_event;
   switch (e.type) {
   case SDL_MOUSEWHEEL: {
     m_mouse.mScrollWheel =
@@ -212,7 +210,7 @@ void input_system::process_event() {
 }
 
 void input::set_relative_mouse_mode(bool value) {
-  get_input().set_relative_mouse_mode(value);
+  input_system::set_relative_mouse_mode(value);
 }
 
 void input_system::set_relative_mouse_mode(bool _value) {

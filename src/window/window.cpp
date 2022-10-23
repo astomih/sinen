@@ -1,29 +1,28 @@
 #include "../event/event_system.hpp"
-#include "../main/get_system.hpp"
-#include "utility/singleton.hpp"
 #include "window_system.hpp"
 #include <SDL.h>
 #include <window/window.hpp>
 
 namespace sinen {
-window_system::window_system() : size(vector2(1280.f, 720.f)) {}
-window::~window() = default;
-
-const void *window::get_sdl_window() { return get_window().m_window; }
-vector2 window::size() { return get_window().size; }
-std::string window::name() { return get_window().name; }
-const window_state &window::state() { return get_window().state; }
+vector2 window_system::m_size = vector2(1280.f, 720.f);
+std::string window_system::m_name = "Sinen Engine";
+window_state window_system::m_state = window_state::ENTER;
+::SDL_Window *window_system::m_window = nullptr;
+const void *window::get_sdl_window() { return window_system::get_sdl_window(); }
+vector2 window::size() { return window_system::size(); }
+std::string window::name() { return window_system::name(); }
+const window_state &window::state() { return window_system::state(); }
 
 void window_system::initialize(const std::string &name, graphics_api api) {
-  this->name = name;
+  m_name = name;
 
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
   switch (api) {
   case graphics_api::Vulkan: {
-    get_window().m_window = SDL_CreateWindow(
+    m_window = SDL_CreateWindow(
         std::string(name).c_str(), SDL_WINDOWPOS_UNDEFINED,
-        SDL_WINDOWPOS_UNDEFINED, static_cast<int>(size.x),
-        static_cast<int>(size.y), SDL_WINDOW_VULKAN | SDL_WINDOW_SHOWN);
+        SDL_WINDOWPOS_UNDEFINED, static_cast<int>(m_size.x),
+        static_cast<int>(m_size.y), SDL_WINDOW_VULKAN | SDL_WINDOW_SHOWN);
 
     break;
   }
@@ -41,8 +40,8 @@ void window_system::initialize(const std::string &name, graphics_api api) {
     SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
     m_window = SDL_CreateWindow(
         std::string(name).c_str(), SDL_WINDOWPOS_UNDEFINED,
-        SDL_WINDOWPOS_UNDEFINED, static_cast<int>(size.x),
-        static_cast<int>(size.y), SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+        SDL_WINDOWPOS_UNDEFINED, static_cast<int>(m_size.x),
+        static_cast<int>(m_size.y), SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
     break;
   }
   default:
@@ -61,9 +60,9 @@ void window_system::initialize(const std::string &name, graphics_api api) {
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
   m_window = SDL_CreateWindow(
-      std::string(name).c_str(), SDL_WINDOWPOS_UNDEFINED,
-      SDL_WINDOWPOS_UNDEFINED, static_cast<int>(size.x),
-      static_cast<int>(size.y), SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+      std::string(m_name).c_str(), SDL_WINDOWPOS_UNDEFINED,
+      SDL_WINDOWPOS_UNDEFINED, static_cast<int>(m_size.x),
+      static_cast<int>(m_size.y), SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
 #endif
 }
 
@@ -72,13 +71,14 @@ void window_system::shutdown() {
   m_window = nullptr;
 }
 
-void window_system::ProcessInput() {
+void window_system::process_input() {
   int x, y;
   SDL_GetWindowSize(m_window, &x, &y);
-  this->size.x = static_cast<float>(x);
-  this->size.y = static_cast<float>(y);
-  if (get_event().current_event.type == SDL_WINDOWEVENT) {
-    state = static_cast<window_state>(get_event().current_event.window.event);
+  m_size.x = static_cast<float>(x);
+  m_size.y = static_cast<float>(y);
+  if (event_system::current_event.type == SDL_WINDOWEVENT) {
+    m_state =
+        static_cast<window_state>(event_system::current_event.window.event);
   }
 }
 } // namespace sinen

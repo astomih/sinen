@@ -2,7 +2,9 @@
 
 namespace sinen {
 void SDLObjectCloser::operator()(::SDL_Surface *surface) {
-  ::SDL_FreeSurface(surface);
+  if (surface) {
+    SDL_FreeSurface(surface);
+  }
 }
 void SDLObjectCloser::operator()(::SDL_RWops *rw) { ::SDL_FreeRW(rw); }
 handle_t texture_system::create() {

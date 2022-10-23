@@ -1,7 +1,6 @@
 #include <instancing/instancing.hpp>
 #include <instancing/instancing_wrapper.hpp>
 
-#include "../main/get_system.hpp"
 #include "../render/render_system.hpp"
 #include "../window/window_system.hpp"
 #include <camera/camera.hpp>
@@ -22,7 +21,7 @@ void draw2d_instancing::draw() {
   obj->vertexIndex = this->vertex_name;
   matrix4 viewproj = matrix4::identity;
 
-  auto windowsize = get_window().size;
+  auto windowsize = window::size();
   viewproj.mat[0][0] = 2.f / windowsize.x;
   viewproj.mat[1][1] = 2.f / windowsize.y;
   obj->param.proj = viewproj;
@@ -45,7 +44,7 @@ void draw2d_instancing::draw() {
   }
   _instancing.size = sizeof(instance_data) * _instancing.data.size();
 
-  get_renderer().add_instancing(_instancing);
+  renderer::add_instancing(_instancing);
   *this->texture_handle.is_need_update = false;
 }
 void draw2d_instancing::add(const vector2 &position, const float &rotation,
@@ -93,7 +92,7 @@ void draw3d_instancing::draw() {
     _instancing.data.push_back(insdata);
   }
   _instancing.size = sizeof(instance_data) * _instancing.data.size();
-  get_renderer().add_instancing(_instancing);
+  renderer::add_instancing(_instancing);
   *this->texture_handle.is_need_update = false;
 }
 void draw3d_instancing::add(const vector3 &position, const vector3 &rotation,

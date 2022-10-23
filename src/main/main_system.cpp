@@ -21,12 +21,17 @@
 #include <math/random.hpp>
 #include <render/renderer.hpp>
 #include <script/script.hpp>
-#include <utility/singleton.hpp>
 #include <window/window.hpp>
 
+#include "../audio/sound_system.hpp"
+#include "../font/font_system.hpp"
+#include "../input/input_system.hpp"
+#include "../math/random_system.hpp"
+#include "../render/render_system.hpp"
 #include "../scene/scene_system.hpp"
-#include "get_system.hpp"
-
+#include "../script/script_system.hpp"
+#include "../texture/texture_system.hpp"
+#include "../window/window_system.hpp"
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 
@@ -35,34 +40,36 @@ void main_loop() { emscripten_loop(); }
 #endif
 
 namespace sinen {
+bool main_system::is_reset = false;
+std::string main_system::m_scene_name = "main";
 int main::activate() {
-  if (!singleton<main_system>::get().initialize()) {
+  if (!main_system::initialize()) {
     return -1;
   }
-  singleton<main_system>::get().launch();
+  main_system::launch();
   logger::info("MAIN SYSTEM Inactiviating");
   scene_system::shutdown();
-  get_script().shutdown();
-  scene_system::shutdown();
-  get_input().shutdown();
-  get_sound().shutdown();
-  get_renderer().shutdown();
-  get_window().shutdown();
-  get_texture().shutdown();
+  script_system::shutdown();
+  input_system::shutdown();
+  sound_system::shutdown();
+  font_system::shutdown();
+  random_system::shutdown();
+  render_system::shutdown();
+  window_system::shutdown();
+  texture_system::shutdown();
   Mix_CloseAudio();
   TTF_Quit();
   SDLNet_Quit();
   Mix_Quit();
   IMG_Quit();
   SDL_Quit();
-  singleton_finalizer::finalize();
   return 0;
 }
 void main::change_scene(const std::string &scene_number) {
-  singleton<main_system>::get().change_scene<scene>(scene_number);
+  main_system::change_scene<scene>(scene_number);
 }
 std::string main::get_current_scene_number() {
-  return singleton<main_system>::get().get_current_scene_number();
+  return main_system::get_current_scene_number();
 }
 bool main_system::initialize() {
   logger::info("MAIN SYSTEM Activating");
@@ -80,39 +87,45 @@ bool main_system::initialize() {
     str = "Vulkan";
   std::getline(ifs, str);
   if (str.compare("Vulkan") == 0) {
-    get_window().initialize(
+    window_system::initialize(
         "sinen engine version:0.0.1, Graphics backends:Vulkan",
         graphics_api::Vulkan);
-    get_renderer().initialize(graphics_api::Vulkan);
+    render_system::initialize(graphics_api::Vulkan);
   } else if (str.compare("OpenGL") == 0) {
-    get_window().initialize(
+    window_system::initialize(
         "sinen engine version:0.0.1, Graphics backends:OpenGL",
         graphics_api::OpenGL);
-    get_renderer().initialize(graphics_api::OpenGL);
+    render_system::initialize(graphics_api::OpenGL);
   }
 
 #else
-  get_window().initialize("sinen engine version:0.0.1", graphics_api::ES);
-  get_renderer().initialize(graphics_api::ES);
+  window_system::initialize("sinen engine version:0.0.1", graphics_api::ES);
+  render_system::initialize(graphics_api::ES);
 #endif
-  singleton<camera>::get();
-  if (!get_sound().initialize()) {
+  if (!sound_system::initialize()) {
     logger::fatal("Failed to initialize audio system");
-    get_sound().shutdown();
+    sound_system::shutdown();
     return false;
   }
-  if (!get_input().initialize()) {
+  if (!input_system::initialize()) {
     logger::fatal("Failed to initialize input system");
     return false;
   }
-  if (!get_script().initialize()) {
+  if (!script_system::initialize()) {
     logger::fatal("Failed to initialize script system");
     return false;
   }
-  get_random().init();
+  if (!font_system::initialize()) {
+    logger::fatal("Failed to initialize font system");
+    return false;
+  }
+  if (!random_system::initialize()) {
+    logger::fatal("Failed to initialize random system");
+    return false;
+  }
   texture tex;
   tex.fill_color(palette::black());
-  get_renderer().set_skybox_texture(tex);
+  render_system::set_skybox_texture(tex);
   return true;
 }
 void main_system::launch() {
@@ -134,16 +147,16 @@ bool main_system::loop() {
     scene_system::run_loop();
     return true;
   }
-  if (this->is_reset) {
+  if (is_reset) {
     scene_system::initialize();
-    this->is_reset = false;
+    is_reset = false;
     return true;
   }
   return false;
 }
 void main_system::change_scene_impl(const std::string &scene_name) {
   scene_system::shutdown();
-  get_script().shutdown();
+  script_system::shutdown();
   m_scene_name = scene_name;
   is_reset = true;
 }

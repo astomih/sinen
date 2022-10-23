@@ -45,24 +45,24 @@ public:
   friend class keyboard_state;
   friend class mouse_state;
   friend class joystick_state;
-  bool initialize();
-  void shutdown();
+  static bool initialize();
+  static void shutdown();
 
   // Called right before SDL_PollEvents loop
-  void prepare_for_update();
+  static void prepare_for_update();
   // Called after SDL_PollEvents loop
-  void update();
-  void process_event();
+  static void update();
+  static void process_event();
 
-  void set_relative_mouse_mode(bool value);
+  static void set_relative_mouse_mode(bool value);
 
   static keyboard_state_impl m_keyboard;
   static mouse_state_impl m_mouse;
   static joystick_state_impl m_joystick;
 
 private:
-  float filter1d(int input);
-  vector2 filter2d(int inputX, int inputY);
-  joystick mController;
+  static float filter1d(int input);
+  static vector2 filter2d(int inputX, int inputY);
+  static joystick mController;
 };
 } // namespace sinen

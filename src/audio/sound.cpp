@@ -2,15 +2,14 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 
-#include "../main/get_system.hpp"
 #include "sound_system.hpp"
 #include <audio/music.hpp>
 #include <audio/sound.hpp>
 namespace sinen {
 sound::sound() {}
 void sound::load(std::string_view file_name) {
-  get_sound().load(file_name);
-  auto sourceID = get_sound().new_source(file_name);
+  sound_system::load(file_name);
+  auto sourceID = sound_system::new_source(file_name);
   ALint buf;
   alGetSourcei(sourceID, AL_BUFFER, &buf);
   param.source_id = sourceID;
@@ -19,7 +18,7 @@ void sound::load(std::string_view file_name) {
 }
 void sound::play() { alSourcePlay(param.source_id); }
 void sound::new_source() {
-  auto sourceID = get_sound().new_source(mName);
+  auto sourceID = sound_system::new_source(mName);
   ALint buf;
   alGetSourcei(sourceID, AL_BUFFER, &buf);
   param.source_id = sourceID;
@@ -29,11 +28,11 @@ void sound::set_listener(vector3 pos, vector3 rotation) {
   quaternion q(vector3::neg_unit_z, rotation.z);
   q = quaternion::concatenate(q, quaternion(vector3::unit_y, rotation.y));
   q = quaternion::concatenate(q, quaternion(vector3::unit_x, rotation.x));
-  get_sound().set_listener(pos, q);
+  sound_system::set_listener(pos, q);
 }
-void sound::delete_source() { get_sound().delete_source(param.source_id); }
+void sound::delete_source() { sound_system::delete_source(param.source_id); }
 bool sound::is_valid() {
-  return get_sound().get_buffers().contains(mName.data());
+  return sound_system::get_buffers().contains(mName.data());
 }
 
 void sound::restart() {

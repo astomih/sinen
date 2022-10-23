@@ -11,6 +11,9 @@
 
 namespace sinen {
 vector3 calculate(const quaternion &r);
+std::unordered_map<std::string, uint32_t> sound_system::buffers;
+void *sound_system::device = nullptr;
+void *sound_system::context = nullptr;
 namespace detail {
 static int check_openal_error(const char *where) {
   const ALenum err = alGetError();
@@ -42,16 +45,6 @@ static ALenum get_openal_format(const SDL_AudioSpec *spec) {
   return AL_NONE;
 }
 } // namespace detail
-sound_system::sound_system() {}
-
-sound_system::~sound_system() {
-  for (auto &i : buffers) {
-    alDeleteBuffers(1, &i.second);
-  }
-  alcMakeContextCurrent(NULL);
-  alcDestroyContext((ALCcontext *)context);
-  alcCloseDevice((ALCdevice *)device);
-}
 
 bool sound_system::initialize() {
   device = (void *)alcOpenDevice(NULL);

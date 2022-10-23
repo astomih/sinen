@@ -1,26 +1,27 @@
-#include "../main/get_system.hpp"
 #include "random_system.hpp"
 #include <math/random.hpp>
 #include <random>
 namespace sinen {
-std::mt19937 sGenerator;
-void random_system::init() {
+std::mt19937 random_system::sGenerator;
+bool random_system::initialize() {
   std::random_device rd;
   random::seed(rd());
+  return true;
 }
+void random_system::shutdown() {}
 
-void random::seed(unsigned int seed) { sGenerator.seed(seed); }
+void random::seed(unsigned int seed) { random_system::sGenerator.seed(seed); }
 
 float random::get_float() { return get_float_range(0.0f, 1.0f); }
 
 float random::get_float_range(float min, float max) {
   std::uniform_real_distribution<float> dist(min, max);
-  return dist(get_random().sGenerator);
+  return dist(random_system::sGenerator);
 }
 
 int random::get_int_range(int min, int max) {
   std::uniform_int_distribution<int> dist(min, max);
-  int a = dist(sGenerator);
+  int a = dist(random_system::sGenerator);
   return a;
 }
 

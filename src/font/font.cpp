@@ -1,5 +1,5 @@
-#include "../main/get_system.hpp"
 #include "../texture/texture_system.hpp"
+#include "font_system.hpp"
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <cassert>
@@ -7,30 +7,28 @@
 #include <font/font.hpp>
 #include <io/dstream.hpp>
 #include <logger/logger.hpp>
+#include <string_view>
 #include <texture/texture.hpp>
 
 namespace sinen {
 font::font(std::string_view file_name, int32_t point) {
   load(file_name, point);
 }
-font::~font() { unload(); }
+font::~font() {}
 bool font::load(std::string_view fontName, int pointSize) {
   this->font_name = fontName;
   this->point_size = pointSize;
-  m_font = (void *)::TTF_OpenFontRW(
-      (SDL_RWops *)dstream::open_as_rwops(asset_type::Font, this->font_name), 1,
-      this->point_size);
+  m_font = font_system::load(std::string(fontName), pointSize);
   if (!m_font) {
-    logger::error("%s", TTF_GetError());
     return false;
   }
-  return (is_load = true);
+  is_load = true;
+  return true;
 }
 
 void font::unload() {
   if (is_load) {
-    ::TTF_CloseFont((TTF_Font *)m_font);
-    is_load = false;
+    font_system::unload(font_name, point_size);
   }
 }
 
@@ -43,8 +41,8 @@ void font::render_text(texture &tex, std::string_view text,
   sdlColor.g = static_cast<Uint8>(_color.g * 255);
   sdlColor.b = static_cast<Uint8>(_color.b * 255);
   sdlColor.a = static_cast<Uint8>(_color.a * 255);
-  get_texture().remove(tex.handle);
-  get_texture().move(
+  texture_system::remove(tex.handle);
+  texture_system::move(
       tex.handle,
       std::unique_ptr<SDL_Surface, SDLObjectCloser>(
           ::TTF_RenderUTF8_Blended_Wrapped(

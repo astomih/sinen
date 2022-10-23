@@ -47,11 +47,9 @@
 #include "time/timer.hpp"
 #include "utility/handler.hpp"
 #include "utility/non_copyable.hpp"
-#include "utility/singleton.hpp"
 #include "vertex/vertex.hpp"
 #include "vertex/vertex_array.hpp"
 #include "window/window.hpp"
-
 
 #endif
 #ifdef NO_USE_SINEN_NAMESPACE

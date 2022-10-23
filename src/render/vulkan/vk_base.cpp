@@ -6,7 +6,6 @@
 #include <sstream>
 
 // internal
-#include "../../main/get_system.hpp"
 #include "../../render/render_system.hpp"
 #include "../../window/window_system.hpp"
 #include "vk_base.hpp"
@@ -19,19 +18,18 @@ vk_base::vk_base(vk_renderer *vkrenderer)
     : m_imageIndex(0), m_vkrenderer(vkrenderer) {}
 
 void vk_base::initialize() {
-  auto &w = get_window();
-  initialize_instance(w.name.c_str());
+  initialize_instance(window::name().c_str());
   select_physical_device();
   m_graphicsQueueIndex = search_graphics_queue_index();
   create_device();
   create_command_pool();
   VkSurfaceKHR surface;
-  SDL_Vulkan_CreateSurface((SDL_Window *)w.GetSDLWindow(), m_instance,
+  SDL_Vulkan_CreateSurface((SDL_Window *)window::get_sdl_window(), m_instance,
                            &surface);
   mSwapchain = std::make_unique<vk_swapchain>(m_instance, m_device, surface);
   mSwapchain->Prepare(
-      m_physDev, m_graphicsQueueIndex, static_cast<uint32_t>(w.Size().x),
-      static_cast<uint32_t>(w.Size().y), VK_FORMAT_B8G8R8A8_UNORM);
+      m_physDev, m_graphicsQueueIndex, static_cast<uint32_t>(window::size().x),
+      static_cast<uint32_t>(window::size().y), VK_FORMAT_B8G8R8A8_UNORM);
   create_depth_buffer();
   create_image_view();
   create_render_pass();
@@ -337,7 +335,7 @@ vk_base::get_memory_type_index(uint32_t requestBits,
 void vk_base::recreate_swapchain() {
   vkDeviceWaitIdle(m_device);
 
-  auto size = get_window().Size();
+  auto size = window::size();
   mSwapchain->Prepare(m_physDev, m_graphicsQueueIndex,
                       static_cast<uint32_t>(size.x),
                       static_cast<uint32_t>(size.y), VK_FORMAT_B8G8R8A8_UNORM);
@@ -352,13 +350,13 @@ void vk_base::recreate_swapchain() {
 }
 
 void vk_base::render() {
-  if (mSwapchain->is_need_recreate(get_window().Size()))
+  if (mSwapchain->is_need_recreate(window::size()))
     recreate_swapchain();
   uint32_t nextImageIndex = 0;
   mSwapchain->AcquireNextImage(&nextImageIndex, m_presentCompletedSem);
   auto commandFence = m_fences[nextImageIndex];
 
-  auto color = get_renderer().get_clear_color();
+  auto color = renderer::clear_color();
   std::array<VkClearValue, 2> clearValue = {{
       {color.r, color.g, color.b, 1.f}, // for Color
       {1.f, 1.f}                        // for Depth

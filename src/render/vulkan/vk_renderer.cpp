@@ -1,4 +1,3 @@
-#include "../../main/get_system.hpp"
 #include "../../render/render_system.hpp"
 #include "../../script/script_system.hpp"
 #include "../../window/window_system.hpp"
@@ -221,7 +220,7 @@ void vk_renderer::prepare() {
                                m_base->mSwapchain->GetSurfaceExtent());
   m_pipeline_layout.Prepare(m_base->get_vk_device());
 
-  m_render_texture.prepare(get_window().size.x, get_window().size.y, false);
+  m_render_texture.prepare(window::size().x, window::size().y, false);
 
   // Opaque pipeline
   {
@@ -370,7 +369,7 @@ void vk_renderer::prepare() {
     m_render_texture.pipeline.prepare(m_base->get_vk_device());
     vk_shader::clean(m_base->get_vk_device(), shaderStages);
   }
-  m_depth_texture.prepare(get_window().size.x, get_window().size.y, false);
+  m_depth_texture.prepare(window::size().x, window::size().y, false);
   // depth pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
@@ -437,7 +436,7 @@ void vk_renderer::cleanup() {
 }
 
 void vk_renderer::draw_depth(VkCommandBuffer command) {
-  auto &lua = (*(sol::state *)get_script().get_state());
+  auto &lua = (*(sol::state *)script_system::get_state());
   lua["light_eye"] = [&](const vector3 &v) { eye = v; };
   lua["light_at"] = [&](const vector3 &v) { at = v; };
   lua["light_width"] = [&](float v) { width = v; };
@@ -530,7 +529,7 @@ void vk_renderer::draw_skybox(VkCommandBuffer command) {
   auto t = std::make_shared<vk_draw_object>();
   t->drawObject = std::make_shared<drawable>();
   t->drawObject->texture_handle.handle =
-      get_renderer().get_skybox_texture().handle;
+      render_system::get_skybox_texture().handle;
   t->drawObject->vertexIndex = "BOX";
   vk_shader_parameter param;
   matrix4 w = matrix4::identity;
@@ -545,7 +544,7 @@ void vk_renderer::draw_skybox(VkCommandBuffer command) {
   if (!m_image_object.contains(t->drawObject->texture_handle.handle)) {
     m_image_object[t->drawObject->texture_handle.handle] =
         vk_renderer::create_texture_from_surface(
-            get_texture().get(t->drawObject->texture_handle.handle));
+            texture_system::get(t->drawObject->texture_handle.handle));
   } else {
     update_image_object(t->drawObject->texture_handle.handle);
   }
@@ -689,7 +688,7 @@ void vk_renderer::prepare_imgui() {
           .data(),
       18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
 
-  ImGui_ImplSDL2_InitForVulkan((SDL_Window *)get_window().GetSDLWindow());
+  ImGui_ImplSDL2_InitForVulkan((SDL_Window *)window::get_sdl_window());
 
   uint32_t imageCount = m_base->mSwapchain->GetImageCount();
   ImGui_ImplVulkan_InitInfo info{};
@@ -732,11 +731,11 @@ void vk_renderer::prepare_imgui() {
 }
 void vk_renderer::render_imgui(VkCommandBuffer command) {
   ImGui_ImplVulkan_NewFrame();
-  ImGui_ImplSDL2_NewFrame((SDL_Window *)get_window().GetSDLWindow());
+  ImGui_ImplSDL2_NewFrame((SDL_Window *)window::get_sdl_window());
   ImGui::NewFrame();
 
-  if (get_renderer().is_show_imgui()) {
-    for (auto &i : get_renderer().get_imgui_function()) {
+  if (renderer::is_show_imgui()) {
+    for (auto &i : renderer::get_imgui_function()) {
       i();
     }
   }
@@ -1046,7 +1045,7 @@ void vk_renderer::destroy_image(vk_image_object &imageObj) {
 void vk_renderer::update_image_object(const handle_t &handle) {
   destroy_image(m_image_object[handle]);
   m_image_object.erase(handle);
-  ::SDL_Surface &surf = get_texture().get(handle);
+  ::SDL_Surface &surf = texture_system::get(handle);
   ::SDL_LockSurface(&surf);
   auto *formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
   formatbuf->BytesPerPixel = 4;
@@ -1147,7 +1146,7 @@ void vk_renderer::create_image_object(texture handle) {
     return;
   }
   m_image_object[handle.handle] =
-      create_texture_from_surface(get_texture().get(handle.handle));
+      create_texture_from_surface(texture_system::get(handle.handle));
 }
 void vk_renderer::destroy_image_object(const handle_t &handle) {
   for (auto it = m_image_object.begin(); it != m_image_object.end(); ++it) {

@@ -5,9 +5,10 @@
 namespace sinen {
 class random_system {
 public:
-  void init();
+  static bool initialize();
+  static void shutdown();
 
-  std::mt19937 sGenerator;
+  static std::mt19937 sGenerator;
 };
 } // namespace sinen
 #endif // !SINEN_RANDOM_SYSTEM_HPP

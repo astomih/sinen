@@ -42,12 +42,26 @@ void main_loop() { emscripten_loop(); }
 namespace sinen {
 bool main_system::is_reset = false;
 std::string main_system::m_scene_name = "main";
-int main::activate() {
-  if (!main_system::initialize()) {
+int main::run() {
+  if (!activate()) {
     return -1;
   }
   main_system::launch();
-  logger::info("MAIN SYSTEM Inactiviating");
+  if (!deactivate()) {
+    return -1;
+  }
+  logger::info("QUIT SINEN PROGRAM");
+  return 0;
+}
+bool main::activate() {
+  if (!main_system::initialize()) {
+    return false;
+  }
+  logger::info("COMPLETE ACTIVATE");
+  return true;
+}
+bool main::deactivate() {
+  logger::info("SUB SYSTEM Deactiviating");
   scene_system::shutdown();
   script_system::shutdown();
   input_system::shutdown();
@@ -57,13 +71,15 @@ int main::activate() {
   render_system::shutdown();
   window_system::shutdown();
   texture_system::shutdown();
+  logger::info("MAIN SYSTEM Deactiviating");
   Mix_CloseAudio();
   TTF_Quit();
   SDLNet_Quit();
   Mix_Quit();
   IMG_Quit();
   SDL_Quit();
-  return 0;
+  logger::info("COMPLETE DEACTIVATE");
+  return true;
 }
 void main::change_scene(const std::string &scene_number) {
   main_system::change_scene<scene>(scene_number);
@@ -80,6 +96,7 @@ bool main_system::initialize() {
   SDLNet_Init();
   Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3);
   Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
+  logger::info("SUB SYSTEM Activating");
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
   std::ifstream ifs("./api");
   std::string str;

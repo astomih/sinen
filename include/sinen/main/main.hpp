@@ -5,11 +5,19 @@ namespace sinen {
 #ifdef main
 #undef main
 #endif
+/**
+ * @brief Engine main
+ *
+ */
 class main {
 public:
-  static int activate();
+  static int run();
   static void change_scene(const std::string &scene_number);
   static std::string get_current_scene_number();
+
+private:
+  static bool activate();
+  static bool deactivate();
 };
 } // namespace sinen
 #endif // !SINEN_MAIN_HPP

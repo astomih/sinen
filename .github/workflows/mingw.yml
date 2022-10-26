@@ -23,7 +23,7 @@ jobs:
         install: git mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-gcc mingw-w64-x86_64-assimp mingw-w64-x86_64-glew mingw-w64-x86_64-lua mingw-w64-x86_64-openal mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-SDL2_mixer mingw-w64-x86_64-SDL2_net mingw-w64-x86_64-SDL2_net mingw-w64-x86_64-SDL2_ttf
 
     - name: Setup Vulkan SDK
-      uses: humbletim/setup-vulkan-sdk@v1.0.3
+      uses: humbletim/setup-vulkan-sdk@v1.2.0
     - run: |
           cd demo/external
           pwd

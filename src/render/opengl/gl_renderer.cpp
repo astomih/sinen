@@ -318,8 +318,8 @@ void gl_renderer::draw_2d() {
   for (auto &i : m_drawer_2ds) {
     glBindVertexArray(m_VertexArrays[i->vertexIndex].vao);
     glBindTexture(GL_TEXTURE_2D, mTextureIDs[i->texture_handle.handle]);
-    if (i->shader_data.vertName == "default" &&
-        i->shader_data.fragName == "default") {
+    if (i->shader_data.vertex_shader() == "default" &&
+        i->shader_data.fragment_shader() == "default") {
       mAlphaShader.active(0);
       mAlphaShader.update_ubo(0, sizeof(shader_parameter), &i->param);
     } else {
@@ -422,7 +422,7 @@ void gl_renderer::draw3d(std::shared_ptr<class drawable> sprite) {
 
 void gl_renderer::load_shader(const shader &shaderInfo) {
   gl_shader pipeline;
-  pipeline.load(shaderInfo.vertName, shaderInfo.fragName);
+  pipeline.load(shaderInfo.vertex_shader(), shaderInfo.fragment_shader());
   gl_shader_parameter param;
   pipeline.create_ubo(0, sizeof(gl_shader_parameter), &param);
   m_user_pipelines.emplace_back(

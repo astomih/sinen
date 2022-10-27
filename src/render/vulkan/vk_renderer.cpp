@@ -98,9 +98,11 @@ void vk_renderer::draw3d(std::shared_ptr<class drawable> sprite) {
 
 void vk_renderer::load_shader(const shader &shaderInfo) {
   std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-      vk_shader::load(m_base->get_vk_device(), shaderInfo.vertName.c_str(),
+      vk_shader::load(m_base->get_vk_device(),
+                      shaderInfo.vertex_shader().c_str(),
                       VK_SHADER_STAGE_VERTEX_BIT),
-      vk_shader::load(m_base->get_vk_device(), shaderInfo.fragName.c_str(),
+      vk_shader::load(m_base->get_vk_device(),
+                      shaderInfo.fragment_shader().c_str(),
                       VK_SHADER_STAGE_FRAGMENT_BIT)};
   vk_pipeline pipeline;
   pipeline.initialize(m_pipeline_layout, m_render_texture.render_pass,
@@ -575,8 +577,8 @@ void vk_renderer::draw3d(VkCommandBuffer command) {
   pipeline_opaque.Bind(command);
   VkDeviceSize offset = 0;
   for (auto &sprite : m_draw_object_3d) {
-    if (sprite->drawObject->shader_data.vertName == "default" &&
-        sprite->drawObject->shader_data.fragName == "default")
+    if (sprite->drawObject->shader_data.vertex_shader() == "default" &&
+        sprite->drawObject->shader_data.fragment_shader() == "default")
       pipeline_opaque.Bind(command);
     else {
       for (auto &i : m_user_pipelines) {
@@ -608,8 +610,8 @@ void vk_renderer::draw2d(VkCommandBuffer command) {
   pipeline_2d.Bind(command);
   VkDeviceSize offset = 0;
   for (auto &sprite : m_draw_object_2d) {
-    if (sprite->drawObject->shader_data.vertName == "default" &&
-        sprite->drawObject->shader_data.fragName == "default")
+    if (sprite->drawObject->shader_data.vertex_shader() == "default" &&
+        sprite->drawObject->shader_data.fragment_shader() == "default")
       pipeline_2d.Bind(command);
     else {
       for (auto &i : m_user_pipelines) {

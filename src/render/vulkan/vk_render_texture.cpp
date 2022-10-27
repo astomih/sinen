@@ -187,8 +187,9 @@ void vk_render_texture::prepare_descriptor_set() {
   for (auto &v : drawer.uniformBuffers) {
     VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                      VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-    v = m_vkrenderer.create_buffer(
-        sizeof(shader_parameter), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
+    v = m_vkrenderer.create_buffer(sizeof(drawable::parameter),
+                                   VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                   uboFlags);
   }
   std::vector<VkDescriptorSetLayout> layouts;
   for (size_t i = 0; i < drawer.uniformBuffers.size(); i++) {

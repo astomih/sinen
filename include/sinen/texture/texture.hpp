@@ -56,8 +56,6 @@ public:
   vector2 size();
 
   handle_t handle;
-
-private:
   std::shared_ptr<bool> is_need_update;
 };
 } // namespace sinen

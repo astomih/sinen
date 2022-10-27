@@ -34,7 +34,7 @@ public:
 };
 class vk_shader_parameter {
 public:
-  shader_parameter param;
+  drawable::parameter param;
   matrix4 light_view;
   matrix4 light_proj;
 };

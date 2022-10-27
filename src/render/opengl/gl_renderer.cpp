@@ -161,7 +161,7 @@ void gl_renderer::render() {
   enable_vertex_attrib_array();
   draw_instancing_3d();
   glDisable(GL_DEPTH_TEST);
-  shader_parameter param;
+  drawable::parameter param;
 
   glEnable(GL_BLEND);
   glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
@@ -243,7 +243,7 @@ void gl_renderer::draw_skybox() {
   auto &va = m_VertexArrays["BOX"];
   glBindVertexArray(va.vao);
   mAlphaShader.active(0);
-  shader_parameter param;
+  drawable::parameter param;
   matrix4 w = matrix4::identity;
   w[0][0] = 5;
   w[1][1] = 5;
@@ -252,7 +252,7 @@ void gl_renderer::draw_skybox() {
   param.view = matrix4::lookat(
       vector3(0, 0, 0), camera::target() - camera::position(), camera::up());
   mAlphaShader.active(0);
-  mAlphaShader.update_ubo(0, sizeof(shader_parameter), &param);
+  mAlphaShader.update_ubo(0, sizeof(drawable::parameter), &param);
   glBindTexture(GL_TEXTURE_2D,
                 mTextureIDs[render_system::get_skybox_texture().handle]);
   disable_vertex_attrib_array();
@@ -321,12 +321,12 @@ void gl_renderer::draw_2d() {
     if (i->shader_data.vertex_shader() == "default" &&
         i->shader_data.fragment_shader() == "default") {
       mAlphaShader.active(0);
-      mAlphaShader.update_ubo(0, sizeof(shader_parameter), &i->param);
+      mAlphaShader.update_ubo(0, sizeof(drawable::parameter), &i->param);
     } else {
       for (auto &j : m_user_pipelines) {
         if (j.first == i->shader_data) {
           j.second.active(0);
-          j.second.update_ubo(0, sizeof(shader_parameter), &i->param);
+          j.second.update_ubo(0, sizeof(drawable::parameter), &i->param);
         }
       }
     }
@@ -339,7 +339,7 @@ void gl_renderer::draw_2d() {
 void gl_renderer::draw_instancing_2d() {
   for (auto &i : m_instancing_2d) {
     mAlphaInstanceShader.active(0);
-    mAlphaInstanceShader.update_ubo(0, sizeof(shader_parameter),
+    mAlphaInstanceShader.update_ubo(0, sizeof(drawable::parameter),
                                     &i.ins.object->param);
 
     auto &va = m_VertexArrays[i.ins.object->vertexIndex];

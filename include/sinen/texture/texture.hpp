@@ -10,19 +10,44 @@
 #include <unordered_map>
 
 namespace sinen {
-struct shader_parameter {
-  matrix4 world;
-  matrix4 view;
-  matrix4 proj;
-};
-
+/**
+ * @brief Texture
+ *
+ */
 class texture {
 public:
+  /**
+   * @brief Construct a new texture object
+   *
+   */
   texture();
+  /**
+   * @brief Destroy the texture object
+   *
+   */
   ~texture();
+  /**
+   * @brief Load texture from file
+   *
+   * @param fileName file name
+   * @return true success
+   * @return false failed
+   */
   bool load(std::string_view fileName);
-  bool load_from_memory(std::vector<char> &buffer, std::string_view ID);
-
+  /**
+   * @brief Load texture from memory
+   *
+   * @param buffer buffer
+   * @param ID
+   * @return true
+   * @return false
+   */
+  bool load_from_memory(std::vector<char> &buffer);
+  /**
+   * @brief Copy texture from another texture
+   *
+   * @return texture
+   */
   texture copy();
 
   void fill_color(const color &color);
@@ -31,6 +56,8 @@ public:
   vector2 size();
 
   handle_t handle;
+
+private:
   std::shared_ptr<bool> is_need_update;
 };
 } // namespace sinen

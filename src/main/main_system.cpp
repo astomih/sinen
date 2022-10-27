@@ -50,18 +50,18 @@ int main::run() {
   if (!deactivate()) {
     return -1;
   }
-  logger::info("QUIT SINEN PROGRAM");
+  logger::info("Quit Sinen Program");
   return 0;
 }
 bool main::activate() {
   if (!main_system::initialize()) {
     return false;
   }
-  logger::info("COMPLETE ACTIVATE");
+  logger::info("Complete activate");
   return true;
 }
 bool main::deactivate() {
-  logger::info("SUB SYSTEM Deactiviating");
+  logger::info("Sub system deactivating");
   scene_system::shutdown();
   script_system::shutdown();
   input_system::shutdown();
@@ -71,14 +71,14 @@ bool main::deactivate() {
   render_system::shutdown();
   window_system::shutdown();
   texture_system::shutdown();
-  logger::info("MAIN SYSTEM Deactiviating");
+  logger::info("Main system deactivating");
   Mix_CloseAudio();
   TTF_Quit();
   SDLNet_Quit();
   Mix_Quit();
   IMG_Quit();
   SDL_Quit();
-  logger::info("COMPLETE DEACTIVATE");
+  logger::info("Complete deactivate");
   return true;
 }
 void main::change_scene(const std::string &scene_number) {
@@ -88,7 +88,7 @@ std::string main::get_current_scene_number() {
   return main_system::get_current_scene_number();
 }
 bool main_system::initialize() {
-  logger::info("MAIN SYSTEM Activating");
+  logger::info("Main system activating");
   SDL_SetMainReady();
   SDL_Init(SDL_INIT_EVERYTHING);
   TTF_Init();
@@ -96,7 +96,7 @@ bool main_system::initialize() {
   SDLNet_Init();
   Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3);
   Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
-  logger::info("SUB SYSTEM Activating");
+  logger::info("Sub system activating");
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
   std::ifstream ifs("./api");
   std::string str;

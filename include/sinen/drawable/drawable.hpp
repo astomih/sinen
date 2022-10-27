@@ -1,10 +1,9 @@
-#ifndef SINEN_DRAW_OBJECT_HPP
-#define SINEN_DRAW_OBJECT_HPP
+#ifndef SINEN_DRAWABLE_HPP
+#define SINEN_DRAWABLE_HPP
 #include "../math/vector2.hpp"
 #include "../shader/shader.hpp"
 #include "../texture/texture.hpp"
 #include "../utility/handler.hpp"
-#include "object_type.hpp"
 
 namespace sinen {
 /**
@@ -26,7 +25,13 @@ struct drawable {
    * @brief Shader parameter
    *
    */
-  shader_parameter param;
+  struct parameter {
+    matrix4 world;
+    matrix4 view;
+    matrix4 proj;
+  };
+  // parameter
+  parameter param;
   /**
    * @brief Shader data
    *
@@ -48,4 +53,4 @@ struct drawable {
 };
 
 } // namespace sinen
-#endif // !SINEN_DRAW_OBJECT_HPP
+#endif // !SINEN_DRAWABLE_HPP

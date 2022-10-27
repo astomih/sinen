@@ -29,6 +29,10 @@ jobs:
 
     - name: Setup Vulkan SDK
       uses: humbletim/setup-vulkan-sdk@v1.2.0
+      with:
+        vulkan-query-version: 1.3.204.0
+        vulkan-components: Vulkan-Headers, Vulkan-Loader
+        vulkan-use-cache: true
     
     - name: build sinen
       run: cd ${{github.workspace}}/demo/external/sinen && cmake -B build && cd build && make 

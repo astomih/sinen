@@ -48,7 +48,7 @@ public:
 
 class gl_shader_parameter {
 public:
-  shader_parameter param;
+  drawable::parameter param;
   matrix4 view;
   matrix4 projection;
 };

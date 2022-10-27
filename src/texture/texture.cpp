@@ -25,7 +25,7 @@ bool texture::load(std::string_view fileName) {
   memcpy(&surface, src_surface, sizeof(SDL_Surface));
   return true;
 }
-bool texture::load_from_memory(std::vector<char> &buffer, std::string_view ID) {
+bool texture::load_from_memory(std::vector<char> &buffer) {
   *is_need_update = true;
   auto &surface = texture_system::get(handle);
   auto rw = std::unique_ptr<::SDL_RWops, SDLObjectCloser>(

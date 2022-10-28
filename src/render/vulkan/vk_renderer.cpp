@@ -31,7 +31,6 @@
 #include <io/dstream.hpp>
 
 namespace sinen {
-using namespace vkutil;
 
 constexpr int maxpoolSize = 5000;
 vk_renderer::vk_renderer()
@@ -43,7 +42,7 @@ void vk_renderer::initialize() { m_base->initialize(); }
 
 void vk_renderer::shutdown() {
   cleanup();
-  m_base->terminate();
+  m_base->shutdown();
 }
 void vk_renderer::render() { m_base->render(); }
 void vk_renderer::add_vertex_array(const vertex_array &vArray,
@@ -417,7 +416,7 @@ void vk_renderer::cleanup() {
   for (auto &i : m_image_object) {
     destroy_image(i.second);
   }
-  DestroyVulkanObject<VkSampler>(device, m_sampler, &vkDestroySampler);
+  vkutil::DestroyVulkanObject<VkSampler>(device, m_sampler, &vkDestroySampler);
   m_pipeline_layout.Cleanup(device);
   pipeline_opaque.Cleanup(device);
   pipeline_alpha.Cleanup(device);
@@ -426,15 +425,15 @@ void vk_renderer::cleanup() {
     i.second.Cleanup(device);
   }
   for (auto &i : m_vertex_arrays) {
-    DestroyVulkanObject<VkBuffer>(device, i.second.vertexBuffer.buffer,
-                                  &vkDestroyBuffer);
-    DestroyVulkanObject<VkBuffer>(device, i.second.indexBuffer.buffer,
-                                  &vkDestroyBuffer);
+    vkutil::DestroyVulkanObject<VkBuffer>(device, i.second.vertexBuffer.buffer,
+                                          &vkDestroyBuffer);
+    vkutil::DestroyVulkanObject<VkBuffer>(device, i.second.indexBuffer.buffer,
+                                          &vkDestroyBuffer);
   }
-  DestroyVulkanObject<VkDescriptorPool>(device, m_descriptor_pool,
-                                        &vkDestroyDescriptorPool);
-  DestroyVulkanObject<VkDescriptorSetLayout>(device, m_descriptor_set_layout,
-                                             &vkDestroyDescriptorSetLayout);
+  vkutil::DestroyVulkanObject<VkDescriptorPool>(device, m_descriptor_pool,
+                                                &vkDestroyDescriptorPool);
+  vkutil::DestroyVulkanObject<VkDescriptorSetLayout>(
+      device, m_descriptor_set_layout, &vkDestroyDescriptorSetLayout);
 }
 
 void vk_renderer::draw_depth(VkCommandBuffer command) {

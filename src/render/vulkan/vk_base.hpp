@@ -26,7 +26,7 @@ class vk_base {
 public:
   vk_base(class vk_renderer *);
   void initialize();
-  void terminate();
+  void shutdown();
   void render();
   VkPhysicalDevice get_vk_physical_device() { return m_physDev; }
   VkDevice get_vk_device() { return m_device; }

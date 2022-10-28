@@ -63,7 +63,7 @@ void vk_base::create_semaphore() {
   vkCreateSemaphore(m_device, &ci, nullptr, &m_presentCompletedSem);
 }
 
-void vk_base::terminate() {
+void vk_base::shutdown() {
   vkDeviceWaitIdle(m_device);
 
   vkFreeCommandBuffers(m_device, m_commandPool, uint32_t(m_commands.size()),

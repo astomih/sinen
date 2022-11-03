@@ -2,6 +2,10 @@
 #define SINEN_TCP_SOCKET_HPP
 #include <memory>
 namespace sinen {
+/**
+ * @brief TCP Socket
+ *
+ */
 class tcp_socket {
   class impl;
   std::unique_ptr<impl> m_impl;

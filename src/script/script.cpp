@@ -21,8 +21,6 @@
 #include <window/window.hpp>
 
 namespace sinen {
-script::script() = default;
-script::~script() = default;
 class script_system::implement {
 public:
   sol::state state;

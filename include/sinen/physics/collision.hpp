@@ -2,7 +2,7 @@
 #define SINEN_COLLISION_HPP
 #include "../math/math.hpp"
 #include "../math/vector3.hpp"
-#include "primitive.hpp"
+#include "primitive3.hpp"
 
 namespace sinen {
 class collision {

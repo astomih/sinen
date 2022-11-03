@@ -6,14 +6,24 @@
 #include <string_view>
 
 namespace sinen {
+/**
+ * @brief Script class
+ *
+ */
 class script {
 public:
-  script();
-  ~script();
-  script(const script &) = delete;
-  script(script &&) = default;
-  void *get_state();
-  void do_script(std::string_view fileName);
+  /**
+   * @brief Get the state object
+   *
+   * @return void* sol::state
+   */
+  static void *get_state();
+  /**
+   * @brief Do lua script
+   *
+   * @param fileName lua script file
+   */
+  static void do_script(std::string_view fileName);
 
 private:
 };

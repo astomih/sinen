@@ -60,6 +60,11 @@ public:
    *
    */
   static void reset();
+  /**
+   * @brief Change implementation of scene
+   *
+   * @tparam Implements scene implementation class
+   */
   template <class Implements> static void change_implements() {
     change_impl(std::make_unique<Implements>());
   }

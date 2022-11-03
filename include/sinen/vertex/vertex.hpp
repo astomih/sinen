@@ -7,10 +7,18 @@
 #include "../math/vector3.hpp"
 
 namespace sinen {
+/**
+ * @brief Default vertices
+ *
+ */
 struct vertex_default_shapes {
   static std::string_view sprite;
   static std::string_view box;
 };
+/**
+ * @brief Vertex struct
+ *
+ */
 struct vertex {
   vector3 position;
   vector3 normal;

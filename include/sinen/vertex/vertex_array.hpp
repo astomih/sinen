@@ -4,8 +4,18 @@
 #include <vector>
 
 namespace sinen {
-class vertex_array {
+/**
+ * @brief Vertex array for drawing
+ *
+ */
+struct vertex_array {
 public:
+  /**
+   * @brief Push the ndices of the vertex array
+   *
+   * @param indiceArray indices
+   * @param count count
+   */
   void push_indices(uint32_t indiceArray[], size_t count);
   std::vector<vertex> vertices;
   std::vector<uint32_t> indices;

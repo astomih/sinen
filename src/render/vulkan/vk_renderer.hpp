@@ -89,7 +89,8 @@ public:
                                  VkMemoryPropertyFlags requestProps) const;
   void destroy_buffer(vk_buffer_object &bufferObj);
   void destroy_image(vk_image_object &imageObj);
-  void write_memory(VmaAllocation, const void *data, size_t size);
+  void write_memory(VmaAllocation, const void *data, std::size_t size,
+                    std::size_t offset = 0);
 
   VmaAllocator allocator{};
   vk_render_texture m_render_texture;

@@ -10,7 +10,7 @@
 #include <vector>
 
 // C++20
-//#include <numbers>
+// #include <numbers>
 
 namespace sinen {
 class math {
@@ -55,7 +55,7 @@ public:
     return std::clamp(value, min, max);
   }
 
-  static inline float abs(float value) { return fabs(value); }
+  static inline float abs(float value) { return std::fabs(value); }
 
   static inline float cos(float angle) { return cosf(angle); }
 
@@ -76,7 +76,7 @@ public:
   static inline float sqrt(float value) { return sqrtf(value); }
 
   static inline float fmod(float numer, float denom) {
-    return fmod(numer, denom);
+    return std::fmod(numer, denom);
   }
 
   static float sin_0_1(const float periodSec,

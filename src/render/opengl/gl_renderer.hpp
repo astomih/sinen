@@ -8,7 +8,9 @@
 #if defined(EMSCRIPTEN) || defined(MOBILE)
 #include <GLES3/gl3.h>
 #endif
+#include "gl_drawable.hpp"
 #include "gl_shader.hpp"
+#include "gl_uniform_buffer.hpp"
 #include <SDL.h>
 #include <drawable/drawable.hpp>
 #include <memory>
@@ -44,6 +46,7 @@ public:
   instancing ins;
   uint32_t vbo;
   uint32_t vao;
+  gl_uniform_buffer ubo;
 };
 
 class gl_shader_parameter {
@@ -74,35 +77,21 @@ public:
   void prepare();
   void cleanup() {}
   void create_texture(texture tex);
-  void add_sprite2d(std::shared_ptr<drawable> sprite2d) {
-    auto iter = m_drawer_2ds.begin();
-    for (; iter != m_drawer_2ds.end(); ++iter) {
-      if (sprite2d->drawOrder < (*iter)->drawOrder) {
-        break;
-      }
-    }
-    m_drawer_2ds.insert(iter, sprite2d);
-  }
   void remove_sprite2d(std::shared_ptr<drawable> sprite2d) {
-    auto itr = std::find(m_drawer_2ds.begin(), m_drawer_2ds.end(), sprite2d);
-    if (itr != m_drawer_2ds.end()) {
-      m_drawer_2ds.erase(itr);
+    for (auto it = m_drawer_2ds.begin(); it != m_drawer_2ds.end(); ++it) {
+      if ((*it).drawable_object == sprite2d) {
+        m_drawer_2ds.erase(it);
+        return;
+      }
     }
   }
 
-  void add_sprite3d(std::shared_ptr<drawable> sprite3d) {
-    auto iter = m_drawer_3ds.begin();
-    for (; iter != m_drawer_3ds.end(); ++iter) {
-      if (sprite3d->drawOrder < (*iter)->drawOrder) {
-        break;
-      }
-    }
-    m_drawer_3ds.insert(iter, sprite3d);
-  }
   void remove_sprite3d(std::shared_ptr<drawable> sprite3d) {
-    auto itr = std::find(m_drawer_3ds.begin(), m_drawer_3ds.end(), sprite3d);
-    if (itr != m_drawer_3ds.end()) {
-      m_drawer_3ds.erase(itr);
+    for (auto it = m_drawer_3ds.begin(); it != m_drawer_3ds.end(); ++it) {
+      if ((*it).drawable_object == sprite3d) {
+        m_drawer_3ds.erase(it);
+        return;
+      }
     }
   }
 
@@ -139,8 +128,8 @@ private:
   std::unordered_map<handle_t, GLuint> mTextureIDs;
   std::unordered_map<std::string, gl_vertex_array> m_VertexArrays;
   ::SDL_GLContext mContext;
-  std::vector<std::shared_ptr<drawable>> m_drawer_2ds;
-  std::vector<std::shared_ptr<drawable>> m_drawer_3ds;
+  std::vector<gl_drawable> m_drawer_2ds;
+  std::vector<gl_drawable> m_drawer_3ds;
   std::vector<gl_instancing> m_instancing_2d;
   std::vector<gl_instancing> m_instancing_3d;
   float prev_window_x;

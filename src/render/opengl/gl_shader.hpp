@@ -51,40 +51,13 @@ public:
    *
    */
   void disable();
-
-  /**
-   * @brief Create UBO(Uniform Buffer Object)
-   *
-   * @param blockIndex Block Index
-   * @param size Buffer size
-   * @param data data
-   * @return true Success to create UBO
-   * @return false Failed to create UBO
-   */
-  bool create_ubo(const GLuint &blockIndex, const size_t &size,
-                  const void *data);
-
-  /**
-   * @brief UBOを更新する
-   *
-   * @param blockIndex Block Index
-   * @param size バッファのサイズ
-   * @param data データ(size内に収めること)
-   * @param offset 更新のオフセット
-   */
-  void update_ubo(const GLuint &blockIndex, const size_t &size,
-                  const void *data, const GLsizeiptr &offset = 0);
   GLuint program() const { return mShaderProgram; }
 
 private:
   bool CompileShader(const std::string &fileName, GLenum shaderType,
                      GLuint &outShader);
-
   bool IsCompiled(GLuint shader);
   bool IsValidProgram();
-
-private:
-  std::unordered_map<GLuint, GLuint> blockIndexBuffers;
   GLuint mVertexShader;
   GLuint mFragShader;
   GLuint mShaderProgram;

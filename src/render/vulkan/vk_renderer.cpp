@@ -168,7 +168,11 @@ void vk_renderer::draw_instancing_3d(VkCommandBuffer command) {
     param.param = _instancing.m_vk_draw_object->drawObject->param;
     param.light_proj = light_projection;
     param.light_view = light_view;
+    auto *ptr = _instancing.ins.object->shader_data.get_parameter().get();
     write_memory(allocation, &param, sizeof(vk_shader_parameter));
+    write_memory(allocation, ptr,
+                 _instancing.ins.object->shader_data.get_parameter_size(),
+                 sizeof(vk_shader_parameter));
     std::string index = _instancing.ins.object->vertexIndex;
     VkBuffer buffers[] = {m_vertex_arrays[index].vertexBuffer.buffer,
                           _instancing.instance_buffer.buffer};
@@ -191,7 +195,11 @@ void vk_renderer::draw_instancing_2d(VkCommandBuffer command) {
     auto allocation =
         _instancing.m_vk_draw_object->uniformBuffers[m_base->m_imageIndex]
             .allocation;
+    auto *ptr = _instancing.ins.object->shader_data.get_parameter().get();
     write_memory(allocation, &_instancing.m_vk_draw_object->drawObject->param,
+                 sizeof(vk_shader_parameter));
+    write_memory(allocation, ptr,
+                 _instancing.ins.object->shader_data.get_parameter_size(),
                  sizeof(vk_shader_parameter));
     std::string index = _instancing.ins.object->vertexIndex;
     VkBuffer buffers[] = {m_vertex_arrays[index].vertexBuffer.buffer,
@@ -600,7 +608,11 @@ void vk_renderer::draw3d(VkCommandBuffer command) {
     param.param = sprite->drawObject->param;
     param.light_proj = light_projection;
     param.light_view = light_view;
+    auto *ptr = sprite->drawObject->shader_data.get_parameter().get();
     write_memory(allocation, &param, sizeof(vk_shader_parameter));
+    write_memory(allocation, ptr,
+                 sprite->drawObject->shader_data.get_parameter_size(),
+                 sizeof(vk_shader_parameter));
     vkCmdDrawIndexed(command, m_vertex_arrays[index].indexCount, 1, 0, 0, 0);
   }
 }
@@ -632,7 +644,11 @@ void vk_renderer::draw2d(VkCommandBuffer command) {
         command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
         0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
     auto allocation = sprite->uniformBuffers[m_base->m_imageIndex].allocation;
+    auto *ptr = sprite->drawObject->shader_data.get_parameter().get();
     write_memory(allocation, &sprite->drawObject->param,
+                 sizeof(vk_shader_parameter));
+    write_memory(allocation, ptr,
+                 sprite->drawObject->shader_data.get_parameter_size(),
                  sizeof(vk_shader_parameter));
 
     vkCmdDrawIndexed(
@@ -667,9 +683,13 @@ void vk_renderer::render_to_display(VkCommandBuffer command) {
 }
 
 void vk_renderer::write_memory(VmaAllocation allocation, const void *data,
-                               size_t size) {
+                               std::size_t size, std::size_t offset) {
   void *p = nullptr;
+  char *pc;
   vmaMapMemory(allocator, allocation, &p);
+  pc = reinterpret_cast<char *>(p);
+  pc += offset;
+  p = reinterpret_cast<void *>(pc);
   memcpy(p, data, size);
   vmaUnmapMemory(allocator, allocation);
 }
@@ -1176,8 +1196,10 @@ void vk_renderer::registerTexture(std::shared_ptr<vk_draw_object> texture,
     for (auto &v : texture->uniformBuffers) {
       VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-      v = create_buffer(sizeof(vk_shader_parameter),
-                        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
+      v = create_buffer(
+          sizeof(vk_shader_parameter) +
+              texture->drawObject->shader_data.get_parameter_size(),
+          VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
     }
     layouts.push_back(m_descriptor_set_layout);
     prepare_descriptor_set(texture);
@@ -1195,8 +1217,10 @@ void vk_renderer::registerTexture(std::shared_ptr<vk_draw_object> texture,
     for (auto &v : texture->uniformBuffers) {
       VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-      v = create_buffer(sizeof(vk_shader_parameter),
-                        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
+      v = create_buffer(
+          sizeof(vk_shader_parameter) +
+              texture->drawObject->shader_data.get_parameter_size(),
+          VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
     }
     layouts.push_back(m_descriptor_set_layout);
     prepare_descriptor_set(texture);

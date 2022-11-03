@@ -40,8 +40,6 @@ void gl_shader::unload() {
 
 void gl_shader::active(const GLuint &blockIndex) {
   // Set this program as the active one
-  glBindBufferBase(GL_UNIFORM_BUFFER, 1, blockIndexBuffers[blockIndex]);
-  glUniformBlockBinding(mShaderProgram, blockIndex, 1);
   glUseProgram(mShaderProgram);
 }
 
@@ -93,23 +91,6 @@ bool gl_shader::IsValidProgram() {
   }
 
   return true;
-}
-
-bool gl_shader::create_ubo(const GLuint &blockIndex, const size_t &size,
-                           const void *data) {
-  GLuint BIB = 0; // blockIndexBuffer
-  glGenBuffers(1, &BIB);
-  glBindBuffer(GL_UNIFORM_BUFFER, BIB);
-  glBufferData(GL_UNIFORM_BUFFER, size, data, GL_DYNAMIC_DRAW);
-  glUniformBlockBinding(mShaderProgram, blockIndex, 5);
-  blockIndexBuffers.emplace(blockIndex, BIB);
-  return true;
-}
-
-void gl_shader::update_ubo(const GLuint &blockIndex, const size_t &size,
-                           const void *data, const GLsizeiptr &offset) {
-  auto BIB = blockIndexBuffers[blockIndex];
-  glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
 }
 
 } // namespace sinen

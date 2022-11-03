@@ -1,10 +1,10 @@
 #ifndef SINEN_SHADER_HPP
 #define SINEN_SHADER_HPP
 #include "shader_type.hpp"
-#include <list>
 #include <memory>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace sinen {
 /**
@@ -18,11 +18,6 @@ public:
    *
    */
   struct parameter {};
-  struct parameter_t {
-    std::shared_ptr<parameter> param;
-    std::size_t size;
-    std::size_t uniform_binding;
-  };
   /**
    * @brief Construct a new shader object
    *
@@ -65,37 +60,31 @@ public:
    */
   const std::string &fragment_shader() const;
   /**
-   * @brief Add a parameter to the shader
+   * @brief Set a parameter to the shader
    *
-   * @tparam T
-   * @tparam Args
-   * @param size
-   * @param uniform_binding
+   * @tparam T Type
+   * @tparam Args Constructor arguments of T
+   * @param size Size of the parameter
    * @param args
    */
   template <class T, class... Args>
-  void add_parameter(std::size_t size, std::size_t uniform_binding,
-                     Args &&...args) {
-    parameter_t param;
-    param.param = std::make_shared<T>(std::forward<Args>(args)...);
-    param.size = size;
-    param.uniform_binding = uniform_binding;
-    m_parameters.push_back(param);
+  void set_parameter(std::size_t size, Args &&...args) {
+    m_parameter_size = size;
+    m_parameter = std::make_shared<T>(std::forward<Args>(args)...);
   }
   /**
-   * @brief Add a parameter to the shader
+   * @brief Set a parameter to the shader
    *
-   * @param param parameter_t
+   * @param param
    */
-  void add_parameter(const parameter_t &param) {
-    m_parameters.push_back(param);
-  }
+  void add_parameter(std::shared_ptr<parameter> param) { m_parameter = param; }
   /**
    * @brief Get the parameters
    *
-   * @return const std::list<parameter_t>& parameters
+   * @return std::shared_ptr<parameter> parameter
    */
-  const std::list<parameter_t> &parameters() const { return m_parameters; }
+  std::shared_ptr<parameter> get_parameter() const { return m_parameter; }
+  const std::size_t get_parameter_size() const { return m_parameter_size; }
 
   bool operator==(const shader &info) const {
     return this->m_vert_name == info.m_vert_name &&
@@ -103,7 +92,8 @@ public:
   }
 
 private:
-  std::list<parameter_t> m_parameters;
+  std::shared_ptr<parameter> m_parameter;
+  std::size_t m_parameter_size;
   std::string m_vert_name;
   std::string m_frag_name;
 };

@@ -222,7 +222,7 @@ function update()
                     score = score + 10
                     table.remove(enemies, j)
                 end
-                if table.maxn(enemies) <= 0 then
+                if #enemies <= 0 then
                     stair.position.z = 0
 
                 end

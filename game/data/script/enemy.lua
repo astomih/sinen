@@ -13,8 +13,8 @@ local comp = function(a, b) return a.x == b[1] and a.y == b[2] end
 
 local bombed = sound()
 bombed:load("bombed.wav")
-local r1 = {}
-local r2 = {}
+local r1 = 0
+local r2 = 0
 local function decide_pos(map, map_size_x, map_size_y)
     r1 = math.random(1, map_size_x)
     r2 = math.random(1, map_size_y)
@@ -85,7 +85,7 @@ local enemy = function()
                 self.drawer.scale:mul(self.model.aabb.min))
             self.drawer.rotation = vector3(0, 0,
                 math.deg(
-                    -math.atan2(
+                    -math.atan(
                         player.drawer.position.x -
                         self.drawer.position.x,
                         player.drawer.position.y -

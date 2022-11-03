@@ -26,7 +26,7 @@ local function gui_list()
             self.font:load(DEFAULT_FONT, 32)
             self.start_pos.y = (self.scale.y + self.list_space) * self.num / 4
             for i = 1, self.num do
-                for i = table.maxn(self.texts) + 1, self.num do
+                for i = #self.texts + 1, self.num do
                     self.texts[i] = ""
                     if string.len(self.texts[i]) == 0 then
                         self.texts[i] = "Text is null."

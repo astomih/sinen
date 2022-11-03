@@ -4,6 +4,7 @@
 #include <SDL_opengles2.h>
 #else
 #include <GL/glew.h>
+#endif
 
 #include <unordered_map>
 namespace sinen {
@@ -21,5 +22,4 @@ private:
   std::unordered_map<GLuint, GLuint> block_index_buffers;
 };
 } // namespace sinen
-#endif
 #endif // GL_UNIFORM_BUFFER_HPP

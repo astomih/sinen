@@ -161,12 +161,12 @@ local function camera_update()
         camera.lookat(vector3(player.drawer.position.x +
             math.sin(
                 player.drawer.rotation.z *
-                (math.pi / 180)) * offset,
+                (math.pi / 180)) * 0.1,
             player.drawer.position.y -
             math.cos(
                 player.drawer.rotation.z *
-                (math.pi / 180)) * offset,
-            player.drawer.position.z + offset), player.drawer.position:copy(), vector3(0, 0, 1))
+                (math.pi / 180)) * 0.1,
+            player.drawer.position.z + 10), player.drawer.position:copy(), vector3(0, 0, 1))
 
     end
 end

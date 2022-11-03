@@ -22,6 +22,7 @@
 
 #include "../../texture/texture_system.hpp"
 #include "gl_renderer.hpp"
+#include "gl_uniform_buffer.hpp"
 #include <camera/camera.hpp>
 #include <fstream>
 #include <imgui.h>
@@ -450,7 +451,6 @@ void gl_renderer::update_vertex_array(const vertex_array &vArray,
 
 void gl_renderer::draw2d(std::shared_ptr<class drawable> sprite) {
   create_texture(sprite->texture_handle);
-  std::cout << "a" << std::endl;
   auto iter = m_drawer_2ds.begin();
   for (; iter != m_drawer_2ds.end(); ++iter) {
     if (sprite->drawOrder < (*iter).drawable_object->drawOrder) {

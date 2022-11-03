@@ -14,7 +14,6 @@
 #include "component/component.hpp"
 #include "drawable/drawable.hpp"
 #include "drawable/drawable_wrapper.hpp"
-#include "exception/exception.hpp"
 #include "font/font.hpp"
 #include "graph/bfs.hpp"
 #include "graph/grid.hpp"

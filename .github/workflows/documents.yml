@@ -31,6 +31,6 @@ jobs:
       uses: JamesIves/github-pages-deploy-action@v4.2.2
       with:
         branch: gh-pages
-        folder: docs/cpp_api/html
+        folder: docs/doxygen/html
         ssh-key: ${{ secrets.DEPLOY_KEY }}
-        target-folder: cpp_api
+        target-folder: doxygen

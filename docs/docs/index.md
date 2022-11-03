@@ -1,7 +1,9 @@
+# Sinen Project 
+Engine, Editor, Game, Tools, and more.
+<p align="center"><a href="https://astomih.github.io/sinen"><img src="https://raw.githubusercontent.com/astomih/sinen/main/logo/logo.png" width="480" alt="Sinen Engine logo"></a></p>  
+
 # Sinen Engine
-<p align="center"><a href="https://astomih.github.io/sinen"><img src="https://raw.githubusercontent.com/astomih/sinen/main/logo/logo.png" width="480" alt="Sinen Engine logo"></a></p>
-sinen is a media library for C++20 that is being produced mainly for game development.  
-The library is planned to be used only by me, so I don't think it will have full support and documentation.
+Sinen Engine is a media library for C++20 that is being produced mainly for game development.  
 
 ## Try on Web
 [https://astomih.github.io/sinen/web_demo](https://astomih.github.io/sinen/web_demo/)
@@ -53,21 +55,20 @@ Install msys, CMake and Vulkan. then install 'Using libraries' in pacman.
 Finally, build with CMake.
 ### WebGL
 Install emscripten SDK. and do this.  
-``` 
-$ emcmake cmake .
-$ emmake make  
-```
-### Android  
+ ``` 
+ $ emcmake cmake .
+ $ emmake make
+ ```
+ ### Android
  Build with gradle.
 
 ## Lisence
  MIT Lisence
 
 ## Dependencies 
+### Core library
 - GLEW
-- ImGui
-- ImGuiColorTextEdit
-- imgui_markdown
+- Dear ImGui
 - Lua
 - Sol2
 - mojoAL
@@ -76,3 +77,20 @@ $ emmake make
 - SDL2(image,mixer,net,ttf)
 - Vulkan 1.2
 - VulkanMemoryAllocator
+### Editor
+- Sinen
+- ImGuiColorTextEdit
+- imgui_markdown
+- ImGuizmo
+
+# Sinen Editor
+Sinen Editor is a level editor for Sinen Engine.  
+Developping...
+
+# Sinen Game
+I named this game 'DIVE TO SINEN'.  
+Developping...
+
+# Sinen Tools
+Sinen Tools is a tool for Sinen Engine.  
+Developping...

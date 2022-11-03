@@ -1,6 +1,9 @@
+# Sinen Project 
+Engine, Editor, Game, Tools, and more.
+<p align="center"><a href="https://astomih.github.io/sinen"><img src="https://raw.githubusercontent.com/astomih/sinen/main/logo/logo.png" width="480" alt="Sinen Engine logo"></a></p>  
+
 # Sinen Engine
-<p align="center"><a href="https://astomih.github.io/sinen"><img src="https://raw.githubusercontent.com/astomih/sinen/main/logo/logo.png" width="480" alt="Sinen Engine logo"></a></p>
-sinen is a media library for C++20 that is being produced mainly for game development.  
+Sinen Engine is a media library for C++20 that is being produced mainly for game development.  
 
 ## Try on Web
 [https://astomih.github.io/sinen/web_demo](https://astomih.github.io/sinen/web_demo/)
@@ -79,3 +82,15 @@ Install emscripten SDK. and do this.
 - ImGuiColorTextEdit
 - imgui_markdown
 - ImGuizmo
+
+# Sinen Editor
+Sinen Editor is a level editor for Sinen Engine.  
+Developping...
+
+# Sinen Game
+I named this game 'DIVE TO SINEN'.  
+Developping...
+
+# Sinen Tools
+Sinen Tools is a tool for Sinen Engine.  
+Developping...

@@ -1,4 +1,7 @@
 #include "gl_uniform_buffer.hpp"
+#if defined(EMSCRIPTEN) || defined(MOBILE)
+#include <GLES3/gl3.h>
+#endif
 namespace sinen {
 
 void gl_uniform_buffer::create(const GLuint &blockIndex, const GLuint &size,

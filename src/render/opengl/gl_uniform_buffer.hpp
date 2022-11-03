@@ -2,9 +2,8 @@
 #define GL_UNIFORM_BUFFER_HPP
 #if defined(EMSCRIPTEN) || defined(MOBILE)
 #include <SDL_opengles2.h>
-#else
-#include <GL/glew.h>
 #endif
+#include <GL/glew.h>
 
 #include <unordered_map>
 namespace sinen {

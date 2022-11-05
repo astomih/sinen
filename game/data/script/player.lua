@@ -17,8 +17,6 @@ local function get_forward_z(rotation)
         math.cos(math.rad(-rotation.z)))
 end
 
-local shadow = require("shadow")
-
 local player = {
     drawer = {},
     model = {},
@@ -35,14 +33,9 @@ local player = {
     efks = {},
     gun_model = {},
     gun_drawer = {},
-    shadow = {},
     setup = function(self, map, map_size_x, map_size_y)
-        self.gun_model = model()
-        self.gun_model:load("gun.sim", "gun")
-        self.gun_drawer = draw3d(tex)
-        self.gun_drawer.vertex_name = "gun"
         self.model = model()
-        self.model:load("player.sim", "player")
+        self.model:load("triangle.sim", "player")
         self.drawer = draw3d(tex)
         self.drawer.vertex_name = "player"
         self.aabb = aabb()
@@ -65,20 +58,20 @@ local player = {
         self.hp_drawer2.position.x = 0
         self.hp_drawer2.position.y = 300
         self.hp_drawer2.scale = vector2(self.hp * 10.0, 50)
-        self.shadow = shadow()
-        self.shadow.owner = self.drawer
-        self.shadow:setup()
     end,
     horizontal = math.pi,
     vertical = 0.0,
     update = function(self, map, map_draw3ds, map_size_x, map_size_y)
-        if keyboard:key_state(keyLEFT) == buttonHELD then
-            self.drawer.rotation.z = self.drawer.rotation.z +
-                ((delta_time * 100))
-        end
-        if keyboard:key_state(keyRIGHT) == buttonHELD then
-            self.drawer.rotation.z = self.drawer.rotation.z +
-                ((delta_time * -100))
+        self.drawer.rotation.z = math.deg(math.atan(mouse:position().y - 720 / 2, mouse:position().x - 1280 / 2))
+        if keyboard:is_key_down(keyUP) or keyboard:is_key_down(keyDOWN) then
+            if keyboard:key_state(keyLEFT) == buttonHELD then
+                self.drawer.rotation.z = self.drawer.rotation.z +
+                    ((delta_time * 200))
+            end
+            if keyboard:key_state(keyRIGHT) == buttonHELD then
+                self.drawer.rotation.z = self.drawer.rotation.z +
+                    ((delta_time * -200))
+            end
         end
         if keyboard:key_state(keyV) == buttonPRESSED then
             self.drawer.rotation.z = self.drawer.rotation.z + 180
@@ -96,10 +89,10 @@ local player = {
         end
         -- bullet
         self.bullet_timer = self.bullet_timer + delta_time
-        if keyboard:key_state(keyUP) == buttonHELD and self.bullet_timer >
+        if keyboard:key_state(keyZ) == buttonHELD and self.bullet_timer >
             self.bullet_time then
             local b = bullet(map_draw3ds)
-            b:setup(self.gun_drawer)
+            b:setup(self.drawer)
             b.drawer.rotation.z = b.drawer.rotation.z + 90
             table.insert(self.bullets, b)
             self.bullet_timer = 0.0
@@ -182,7 +175,6 @@ local player = {
         self.gun_drawer.rotation = self.drawer.rotation:copy()
         self.gun_drawer.rotation.z = self.gun_drawer.rotation.z - 90
         self.gun_drawer.position.z = 1.5
-        self.shadow:update()
     end,
     draw = function(self)
         if not fps_mode then self.drawer:draw() end

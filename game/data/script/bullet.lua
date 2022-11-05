@@ -36,12 +36,12 @@ local function bullet(map_draw3ds)
             self.current_time = self.current_time + delta_time
             self.drawer.position.x = self.drawer.position.x + delta_time *
                 self.speed *
-                -math.sin(
+                math.cos(
                     math.rad(self.drawer.rotation.z))
             self.drawer.position.y = self.drawer.position.y + delta_time *
                 self.speed *
-                math.cos(
-                    math.rad(-self.drawer.rotation.z))
+                math.sin(
+                    math.rad(self.drawer.rotation.z))
             self.drawer:draw()
         end
     }

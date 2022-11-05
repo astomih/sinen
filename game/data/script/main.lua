@@ -16,7 +16,7 @@ function setup()
     drawer_title = draw2d(texture_title)
     font_title = font()
     font_title:load(DEFAULT_FONT, 64)
-    font_title:render_text(texture_title, "Dive To Sinen", color(1, 1, 1, 1))
+    font_title:render_text(texture_title, "DIVE TO SINEN", color(1, 1, 1, 1))
     drawer_title.scale = texture_title:size()
 
     texture_press = texture()

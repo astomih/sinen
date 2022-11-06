@@ -159,7 +159,7 @@ local function camera_update()
     else
 
         camera.lookat(vector3(player.drawer.position.x, player.drawer.position.y - 0.5,
-            player.drawer.position.z + 20), player.drawer.position, vector3(0, 0, 1))
+            player.drawer.position.z + 15), player.drawer.position, vector3(0, 0, 1))
 
     end
 end

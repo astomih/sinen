@@ -31,7 +31,8 @@ local player = {
     bullet_time = {},
     bullet_timer = {},
     efks = {},
-    gun_model = {},
+    tex_scope = {},
+    drawer_scope = {},
     setup = function(self, map, map_size_x, map_size_y)
         self.model = model()
         self.model:load("triangle.sim", "player")
@@ -57,6 +58,11 @@ local player = {
         self.hp_drawer2.position.x = 0
         self.hp_drawer2.position.y = 300
         self.hp_drawer2.scale = vector2(self.hp * 10.0, 50)
+        self.tex_scope = texture()
+        self.tex_scope:load("scope.png")
+        self.drawer_scope = draw2d(self.tex_scope)
+        self.drawer_scope.scale = self.tex_scope:size()
+
     end,
     horizontal = math.pi,
     vertical = 0.0,
@@ -143,11 +149,30 @@ local player = {
                 self.drawer.position = before_pos
             end
         end
+        local offset = 120
+        if mouse:position().x >= window.size().x - math.cos(mouse:position().x) then
+            mouse:set_position(vector2(window.size().x - offset, mouse:position().y))
+        end
+        if mouse:position().y >= window.size().y - math.sin(mouse:position().y) then
+            mouse:set_position(vector2(mouse:position().x, window:size().y - offset))
+        end
+        if mouse:position().x <= math.cos(mouse:position().x) then
+            mouse:set_position(vector2(offset, mouse:position().y))
+        end
+        if mouse:position().y <= math.sin(mouse:position().y) then
+            mouse:set_position(vector2(mouse:position().x, offset))
+        end
+        self.drawer_scope.position.x = mouse:position().x - window.size().x / 2
+        self.drawer_scope.position.y = -(mouse:position().y - window.size().y / 2)
+        mouse:hide_cursor(true)
+
     end,
+
     draw = function(self)
         if not fps_mode then self.drawer:draw() end
         self.hp_drawer:draw()
         self.hp_drawer2:draw()
+        self.drawer_scope:draw()
     end,
     render_text = function(self)
         if self.hp < 20 then
@@ -156,7 +181,6 @@ local player = {
             self.hp_font_texture:fill_color(color(0.6, 1, 0.6, 0.8))
         end
         self.hp_drawer.scale = vector2(self.hp * 10, 50)
-
     end
 }
 

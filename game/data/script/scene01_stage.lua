@@ -76,8 +76,14 @@ function setup()
     texture_brown_color = texture()
     tex:fill_color(color(1, 1, 1, 1))
     texture_brown_color:fill_color(color(0.843, 0.596, 0.043, 1))
-    generator = dungeon_generator()
-    generator:generate(map, map_size_x, map_size_y)
+    -- generator = dungeon_generator()
+    -- generator:generate(map, map_size_x, map_size_y)
+    for i = 1, map_size_x do
+        map[i] = {}
+        for j = 1, map_size_y do
+            map[i][j] = 0
+        end
+    end
     box = draw3d_instanced(iseki_wall)
     box.vertex_name = "BOX"
     sprite = draw3d_instanced(tile)
@@ -91,7 +97,9 @@ function setup()
         end
     end
     for i = 1, enemy_max_num do table.insert(enemies, enemy()) end
+    print(1)
     player:setup(map, map_size_x, map_size_y)
+    print(1)
     for i, v in ipairs(enemies) do v:setup(map, map_size_x, map_size_y) end
     for y = 1, map_size_y do
         map_draw3ds[y] = {}

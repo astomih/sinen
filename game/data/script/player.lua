@@ -67,7 +67,7 @@ local player = {
     horizontal = math.pi,
     vertical = 0.0,
     update = function(self, map, map_draw3ds, map_size_x, map_size_y)
-        self.drawer.rotation.z = -math.deg(math.atan2(mouse:position().y - window.size().y / 2,
+        self.drawer.rotation.z = -math.deg(math.atan(mouse:position().y - window.size().y / 2,
             mouse:position().x - window.size().x / 2)) - 90
         if keyboard:key_state(keyV) == buttonPRESSED then
             self.drawer.rotation.z = self.drawer.rotation.z + 180

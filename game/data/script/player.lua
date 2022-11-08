@@ -9,7 +9,7 @@ local r2 = 0
 local function decide_pos(map, map_size_x, map_size_y)
     r1 = math.random(1, map_size_x)
     r2 = math.random(1, map_size_y)
-    return map[r2][r1] == 1
+    return map:at(r1, r2) == 1
 end
 
 local function get_forward_z(rotation)
@@ -148,19 +148,6 @@ local player = {
             if is_collision(self, map, map_draw3ds, map_size_x, map_size_y) then
                 self.drawer.position = before_pos
             end
-        end
-        local offset = 120
-        if mouse:position().x >= window.size().x - math.cos(mouse:position().x) then
-            mouse:set_position(vector2(window.size().x - offset, mouse:position().y))
-        end
-        if mouse:position().y >= window.size().y - math.sin(mouse:position().y) then
-            mouse:set_position(vector2(mouse:position().x, window:size().y - offset))
-        end
-        if mouse:position().x <= math.cos(mouse:position().x) then
-            mouse:set_position(vector2(offset, mouse:position().y))
-        end
-        if mouse:position().y <= math.sin(mouse:position().y) then
-            mouse:set_position(vector2(mouse:position().x, offset))
         end
         self.drawer_scope.position.x = mouse:position().x - window.size().x / 2
         self.drawer_scope.position.y = -(mouse:position().y - window.size().y / 2)

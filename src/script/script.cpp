@@ -11,6 +11,7 @@
 #include <input/input.hpp>
 #include <io/dstream.hpp>
 #include <main/main.hpp>
+#include <math/point2.hpp>
 #include <math/random.hpp>
 #include <model/model.hpp>
 #include <render/renderer.hpp>
@@ -46,6 +47,9 @@ bool script_system::initialize() {
   };
   impl->state["vector2"] = [](float x, float y) -> vector2 {
     return vector2(x, y);
+  };
+  impl->state["point2i"] = [](int x, int y) -> point2i {
+    return point2i(x, y);
   };
   impl->state["quaternion"] = [](sol::this_state s) -> quaternion {
     return quaternion();
@@ -89,6 +93,11 @@ bool script_system::initialize() {
     v["sub"] = &vector2::sub;
     v["mul"] = &vector2::mul;
     v["div"] = &vector2::div;
+  }
+  {
+    auto v = impl->state.new_usertype<point2i>("", sol::no_construction());
+    v["x"] = &point2i::x;
+    v["y"] = &point2i::y;
   }
   {
     auto v = impl->state.new_usertype<color>("", sol::no_construction());
@@ -186,6 +195,7 @@ bool script_system::initialize() {
     v["buttonRELEASED"] = (int)button_state::Released;
     v["buttonHELD"] = (int)button_state::Held;
   }
+  register_graph(impl->state);
 
 #endif
   return true;
@@ -197,8 +207,34 @@ void script_system::do_script(std::string_view fileName) {
 
 void script_system::shutdown() { impl->state.collect_gc(); }
 
+void *script_system::new_table(std::string_view table_name) {
+  auto *table = new sol::table(impl->state.create_table(table_name));
+  return (void *)table;
+}
+
+void script_system::register_function(std::string_view name,
+                                      std::function<void()> function,
+                                      void *table) {
+  if (table) {
+    auto *t = (sol::table *)table;
+    (*t)[name] = function;
+    return;
+  }
+  impl->state[name] = function;
+}
+
 void script::do_script(std::string_view fileName) {
   script_system::do_script(fileName);
+}
+
+script::table_handler script::new_table(std::string_view table_name) {
+  return script_system::new_table(table_name);
+}
+
+void script::register_function(std::string_view name,
+                               std::function<void()> function,
+                               table_handler handler) {
+  script_system::register_function(name, function, handler);
 }
 
 } // namespace sinen

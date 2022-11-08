@@ -2,11 +2,10 @@ local player = require "player"
 local enemy = require "enemy"
 local enemies = {}
 local enemy_max_num = 5
-local dungeon_generator = require "dungeon_generator/dungeon_generator"
 local world = require "world"
-local map = {}
 local map_size_x = 30
 local map_size_y = 30
+local map = grid(map_size_x, map_size_y)
 collision_space_division = map_size_x / 10 * 2 + 1
 -- draw object
 local map_draw3ds = {}
@@ -78,12 +77,9 @@ function setup()
     texture_brown_color:fill_color(color(0.843, 0.596, 0.043, 1))
     -- generator = dungeon_generator()
     -- generator:generate(map, map_size_x, map_size_y)
-    for i = 1, map_size_x do
-        map[i] = {}
-        for j = 1, map_size_y do
-            map[i][j] = 0
-        end
-    end
+    map:fill(0)
+    dts.dungeon_generator(map)
+
     box = draw3d_instanced(iseki_wall)
     box.vertex_name = "BOX"
     sprite = draw3d_instanced(tile)
@@ -97,9 +93,7 @@ function setup()
         end
     end
     for i = 1, enemy_max_num do table.insert(enemies, enemy()) end
-    print(1)
     player:setup(map, map_size_x, map_size_y)
-    print(1)
     for i, v in ipairs(enemies) do v:setup(map, map_size_x, map_size_y) end
     for y = 1, map_size_y do
         map_draw3ds[y] = {}
@@ -107,11 +101,11 @@ function setup()
             map_draw3ds[y][x] = world()
             map_draw3ds[y][x].position.x = x * 2
             map_draw3ds[y][x].position.y = y * 2
-            if map[y][x] ~= 2 then
+            if map:at(x, y) ~= 2 then
                 sprite:add(map_draw3ds[y][x].position, map_draw3ds[y][x].rotation,
                     map_draw3ds[y][x].scale)
             end
-            if map[y][x] == 1 then
+            if map:at(x, y) == 1 then
                 map_draw3ds[y][x].position.z = 0.5
                 map_draw3ds[y][x].aabb = aabb()
                 map_draw3ds[y][x].aabb.max =
@@ -131,17 +125,17 @@ function setup()
                     map_draw3ds[y][x])
 
             end
-            if map[y][x] == 2 then
+            if map:at(x, y) == 2 then
                 stair.position.x = x * 2
                 stair.position.y = y * 2 + 0.5
                 stair.position.z = 100
             end
-            if map[y][x] == 3 then
+            if map:at(x, y) == 4 then
                 player.drawer.position.x = x * 2
                 player.drawer.position.y = y * 2
             end
             -- key object
-            if map[y][x] == 4 then
+            if map:at(x, y) == 4 then
                 key_drawer.position.x = x * 2
                 key_drawer.position.y = y * 2
             end
@@ -229,10 +223,10 @@ function update()
                 end
             end
         end
-        if map[math.floor(v.drawer.position.y / 2 + 0.5)][math.floor(v.drawer
+        if map:at(math.floor(v.drawer
             .position
             .x / 2 +
-            0.5)] ==
+            0.5), math.floor(v.drawer.position.y / 2 + 0.5)) ==
             1 then table.remove(player.bullets, i) end
     end
     player:update(map, map_draw3ds, map_size_x, map_size_y)
@@ -247,8 +241,8 @@ function update()
         v:update(player, map, map_draw3ds, map_size_x, map_size_y)
         v:player_collision(player)
     end
-    if map[math.floor(player.drawer.position.y / 2 + 0.5)][math.floor(
-        player.drawer.position.x / 2 + 0.5)] == 2 then
+    if map:at(math.floor(player.drawer.position.x / 2 + 0.5), math.floor(
+        player.drawer.position.x / 2 + 0.5)) == 2 then
 
         if keyboard:key_state(keySPACE) == buttonPRESSED and stair.position.z ==
             -2 then

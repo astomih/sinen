@@ -11,12 +11,12 @@ namespace sinen {
  */
 class main {
 public:
+  static bool activate();
   static int run();
   static void change_scene(const std::string &scene_number);
   static std::string get_current_scene_number();
 
 private:
-  static bool activate();
   static bool deactivate();
 };
 } // namespace sinen

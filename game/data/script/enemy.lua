@@ -1,8 +1,4 @@
 local is_collision = require "is_collision"
-local BFS = require "Algorithm-Implementations/bfs"
-local gm_handler = require "Algorithm-Implementations/handlers/gridmap_handler"
-local gm_handler_inited = false
-gm_handler_inited = false
 
 local function same(t, p, comp)
     for k, v in ipairs(t) do if not comp(v, p[k]) then return false end end
@@ -18,7 +14,7 @@ local r2 = 0
 local function decide_pos(map, map_size_x, map_size_y)
     r1 = math.random(1, map_size_x)
     r2 = math.random(1, map_size_y)
-    return map[r2][r1] == 1
+    return map:at(r1, r2) == 1
 end
 
 local enemy = function()
@@ -32,13 +28,13 @@ local enemy = function()
         collision_time = {},
         collision_timer = {},
         map = {},
-        bfs = {},
         get_forward_z = function(drawer)
             return vector2(-math.sin(math.rad(drawer.rotation.z)),
                 math.cos(math.rad(-drawer.rotation.z)))
         end,
+        bfs = {},
         setup = function(self, _map, map_size_x, map_size_y)
-            gm_handler_inited = false
+            self.bfs = bfs_grid(_map)
             self.drawer = draw3d(tex)
             self.model = model()
             if now_stage == 1 then
@@ -71,12 +67,6 @@ local enemy = function()
             self.is_collision_first = true
             self.collision_time = 1.0
             self.collision_timer = 0.0
-            if not gm_handler_inited then
-                gm_handler.diagonal = false
-                gm_handler.init(self.map)
-                gm_handler_inited = true
-            end
-            self.bfs = BFS(gm_handler)
         end,
         update = function(self, player, map, map_draw3ds, map_size_x, map_size_y)
             self.aabb.max = self.drawer.position:add(
@@ -90,29 +80,29 @@ local enemy = function()
                         self.drawer.position.x,
                         player.drawer.position.y -
                         self.drawer.position.y)))
-            local start = gm_handler.getNode(math.floor(
+            local start = point2i(math.floor(
                 self.drawer.position.x / 2 +
                 0.5), math.floor(
                 self.drawer.position.y / 2 +
                 0.5))
-            local goal = gm_handler.getNode(math.floor(
+            local goal = point2i(math.floor(
                 player.drawer.position.x / 2 +
                 0.5), math.floor(
                 player.drawer.position.y / 2 +
                 0.5))
-            if start == nil or goal == nil then return end
-            local path = self.bfs:findPath(start, goal)
-
-            if path == nil then return end
-            if path[2] ~= nil then
+            self.bfs:find_path(start, goal)
+            if self.bfs:traceable() then
+                local path = self.bfs:trace()
+                path = self.bfs:trace()
                 self.drawer.position.x =
                 self.drawer.position.x +
-                    (path[2].x * 2 - self.drawer.position.x) * delta_time *
+                    (path.x * 2 - self.drawer.position.x) * delta_time *
                     3.0
                 self.drawer.position.y =
                 self.drawer.position.y +
-                    (path[2].y * 2 - self.drawer.position.y) * delta_time *
+                    (path.y * 2 - self.drawer.position.y) * delta_time *
                     3.0
+                self.bfs:reset()
             else
                 self.drawer.position.x =
                 self.drawer.position.x + delta_time * self.speed *

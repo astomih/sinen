@@ -1,5 +1,5 @@
-#ifndef SINEN_BFS_HPP
-#define SINEN_BFS_HPP
+#ifndef SINEN_BFS_GRID_HPP
+#define SINEN_BFS_GRID_HPP
 // std library
 #include <list>
 #include <queue>
@@ -15,7 +15,7 @@ namespace sinen {
  * @brief Breadth First Search Algorithm
  *
  */
-class bfs {
+class bfs_grid {
 public:
   using graph = grid<int>;
   /**
@@ -23,12 +23,12 @@ public:
    *
    * @param field trace field
    */
-  bfs(const graph &field);
+  bfs_grid(const graph &field);
   /**
    * @brief Destroy the bfs object
    *
    */
-  ~bfs() = default;
+  ~bfs_grid() = default;
   /**
    * @brief Find the shortest path from start to end
    *
@@ -56,12 +56,6 @@ public:
    *
    */
   void reset();
-  /**
-   * @brief Reset the bfs object
-   *
-   * @param field Graph info
-   */
-  void reset(const graph &field);
   /**
    * @brief Get the height of the field
    *

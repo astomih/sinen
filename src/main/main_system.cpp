@@ -43,10 +43,7 @@ namespace sinen {
 bool main_system::is_reset = false;
 std::string main_system::m_scene_name = "main";
 int main::run() {
-  if (!activate()) {
-    return -1;
-  }
-  main_system::launch();
+  main_system::run();
   if (!deactivate()) {
     return -1;
   }
@@ -68,9 +65,9 @@ bool main::deactivate() {
   sound_system::shutdown();
   font_system::shutdown();
   random_system::shutdown();
+  texture_system::shutdown();
   render_system::shutdown();
   window_system::shutdown();
-  texture_system::shutdown();
   logger::info("Main system deactivating");
   Mix_CloseAudio();
   TTF_Quit();
@@ -145,7 +142,7 @@ bool main_system::initialize() {
   render_system::set_skybox_texture(tex);
   return true;
 }
-void main_system::launch() {
+void main_system::run() {
   scene_system::initialize();
 
 #if !defined(EMSCRIPTEN)

@@ -1,26 +1,32 @@
-#include <graph/bfs.hpp>
+#include <graph/bfs_grid.hpp>
 #include <iostream>
 
 namespace sinen {
-bfs::bfs(const graph &field) { reset(field); }
-void bfs::reset() {
-  m_dist = graph{width(), width(), -1};
-  m_prev_y = m_dist;
-  m_prev_x = m_dist;
-  while (!shortest.empty()) {
-    shortest.pop();
-  }
-}
-void bfs::reset(const graph &field) {
+bfs_grid::bfs_grid(const graph &field) {
   this->m_field = field;
   m_dist = graph{width(), height(), -1};
   m_prev_y = m_dist;
   m_prev_x = m_dist;
+  reset();
+}
+void bfs_grid::reset() {
+  for (auto &i : m_dist) {
+    i = -1;
+  }
+  for (auto &i : m_prev_y) {
+    i = -1;
+  }
+  for (auto &i : m_prev_x) {
+    i = -1;
+  }
   while (!shortest.empty()) {
     shortest.pop();
   }
+  while (!queue.empty()) {
+    queue.pop();
+  }
 }
-bool bfs::find_path(const point2i &start, const point2i &end) {
+bool bfs_grid::find_path(const point2i &start, const point2i &end) {
   constexpr int dx[4] = {0, 1, 0, -1};
   constexpr int dy[4] = {1, 0, -1, 0};
   // start or end is not in field
@@ -71,7 +77,7 @@ bool bfs::find_path(const point2i &start, const point2i &end) {
   // If there is no path, return false
   return false;
 }
-void bfs::backtrace(const point2i &end) {
+void bfs_grid::backtrace(const point2i &end) {
   point2i p = end;
   while (p.x != -1 && p.y != -1) {
     // Add passed node to shortest_path
@@ -82,10 +88,10 @@ void bfs::backtrace(const point2i &end) {
     p.x = px, p.y = py;
   }
 }
-point2i bfs::trace() {
+point2i bfs_grid::trace() {
   point2i next = shortest.top();
   shortest.pop();
   return next;
 }
-bool bfs::traceable() const { return !shortest.empty(); }
+bool bfs_grid::traceable() const { return !shortest.empty(); }
 } // namespace sinen

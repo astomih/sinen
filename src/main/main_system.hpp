@@ -19,10 +19,10 @@ public:
   static bool initialize();
 
   /**
-   * @brief launch engine
+   * @brief Run engine
    *
    */
-  static void launch();
+  static void run();
 
   template <class Scene = scene>
   static void change_scene(const std::string &scene_name) {

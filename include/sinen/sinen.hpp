@@ -15,7 +15,7 @@
 #include "drawable/drawable.hpp"
 #include "drawable/drawable_wrapper.hpp"
 #include "font/font.hpp"
-#include "graph/bfs.hpp"
+#include "graph/bfs_grid.hpp"
 #include "graph/grid.hpp"
 #include "input/input.hpp"
 #include "instancing/instancing.hpp"

@@ -83,7 +83,11 @@ void gl_renderer::initialize() {
 #endif
 }
 
-void gl_renderer::shutdown() {}
+void gl_renderer::shutdown() {
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui::DestroyContext();
+  SDL_GL_DeleteContext(mContext);
+}
 
 vector3 eye;
 vector3 at;
@@ -203,6 +207,12 @@ void gl_renderer::render() {
 
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+  for (auto &i : m_drawer_3ds) {
+    i.ubo.destroy();
+  }
+  for (auto &i : m_drawer_2ds) {
+    i.ubo.destroy();
+  }
   m_drawer_3ds.clear();
   m_drawer_2ds.clear();
   SDL_GL_SwapWindow(window_system::get_sdl_window());
@@ -461,11 +471,9 @@ void gl_renderer::draw2d(std::shared_ptr<class drawable> sprite) {
   ubo.create(
       0, sizeof(drawable::parameter) + sprite->shader_data.get_parameter_size(),
       &sprite->param);
-  if (sprite->shader_data.get_parameter_size() > 0) {
-    ubo.update(0, sprite->shader_data.get_parameter_size(),
-               sprite->shader_data.get_parameter().get(),
-               sizeof(gl_shader_parameter));
-  }
+  ubo.update(0, sprite->shader_data.get_parameter_size(),
+             sprite->shader_data.get_parameter().get(),
+             sizeof(gl_shader_parameter));
   m_drawer_2ds.insert(iter, {sprite, ubo});
 }
 

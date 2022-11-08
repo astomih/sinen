@@ -7,7 +7,7 @@ local function effect()
         duration = 1.0,
         looping = false,
         prewarm = false,
-        start_lifetime = 0.5,
+        start_lifetime = 1.0,
         start_speed = 5.0,
         start_size = 1.0,
         start_rotation = 0.0,
@@ -42,7 +42,7 @@ local function effect()
 
         update = function(self)
             --  if not self.is_playing then return end
-            self.texture:fill_color(color(1, 0, 0, 1))
+            self.texture:fill_color(color(1, 0.2, 0.2, 1))
             self.drawer:clear()
             self.timer = self.timer + delta_time
             if self.timer > self.start_lifetime then

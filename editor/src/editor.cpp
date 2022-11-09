@@ -29,33 +29,39 @@ void imguizmo() {
   ImGui::SameLine();
   if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
     mCurrentGizmoOperation = ImGuizmo::SCALE;
+  ImGuizmo::SetOrthographic(false);
   ImGuizmo::SetRect(0, 0, window::size().x, window::size().y);
-  float mat[16];
-  float deltam[16];
+  static float mat[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1};
+  static float deltam[16];
   matrix4 pos;
   pos[0][0] = 1.0f;
   pos[1][1] = 1.0f;
   pos[2][2] = 1.0f;
-  pos[2][0] = 0.0f;
-  pos[2][1] = 1.0f;
-  pos[2][2] = 1.0f;
+  pos[3][3] = 1.0f;
+  ImGuizmo::AllowAxisFlip(false);
+
   ImGuizmo::DrawGrid(camera::view().get(), camera::projection().get(),
                      pos.get(), 20);
-  ImGuizmo::DrawCubes(camera::view().get(), camera::projection().get(),
-                      pos.get(), 16);
+  ImGuizmo::DrawCubes(camera::view().get(), camera::projection().get(), mat, 1);
+  static float snap[3] = {1.f, 1.f, 1.f};
+  static float bounds[] = {-0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f};
+  static float boundsSnap[] = {0.1f, 0.1f, 0.1f};
   ImGuizmo::Manipulate(camera::view().get(), camera::projection().get(),
                        mCurrentGizmoOperation, mCurrentGizmoMode, mat, deltam,
                        nullptr);
-  static vector3 translation(0.0f, 0.0f, 10.0f);
-  static vector3 target = vector3(0);
-  static vector3 up = vector3(0.0f, -1.0f, 0.0f);
-  ImGui::SliderFloat("X", &translation.x, -100.0f, 100.0f);
-  ImGui::SliderFloat("Y", &translation.y, -100.0f, 100.0f);
-  ImGui::SliderFloat("Z", &translation.z, -100.0f, 100.0f);
-  ImGui::SliderFloat("tX", &target.x, -100.0f, 100.0f);
-  ImGui::SliderFloat("tY", &target.y, -100.0f, 100.0f);
-  ImGui::SliderFloat("tZ", &target.z, -100.0f, 100.0f);
-  camera::lookat(translation, target, up);
+  static vector3 position(0.0f, -5.0f, 10.f);
+  static vector3 target = vector3(0, 0, 0);
+  static vector3 up = vector3(0.f, 0.f, 1.f);
+  ImGui::SliderFloat("X", &position.x, -10.0f, 10.0f);
+  ImGui::SliderFloat("Y", &position.y, -10.0f, 10.0f);
+  ImGui::SliderFloat("Z", &position.z, -10.0f, 10.0f);
+  ImGui::SliderFloat("tX", &target.x, -10.0f, 10.0f);
+  ImGui::SliderFloat("tY", &target.y, -10.0f, 10.0f);
+  ImGui::SliderFloat("tZ", &target.z, -10.0f, 10.0f);
+  ImGui::SliderFloat("uX", &up.x, -1.0f, 1.0f);
+  ImGui::SliderFloat("uY", &up.y, -1.0f, 1.0f);
+  ImGui::SliderFloat("uZ", &up.z, -1.0f, 1.0f);
+  camera::lookat(position, target, up);
   ImGui::End();
 }
 

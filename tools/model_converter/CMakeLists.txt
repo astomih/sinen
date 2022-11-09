@@ -22,7 +22,6 @@ find_package(Vulkan REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(SDL2 REQUIRED)
-find_package(OpenAL REQUIRED)
 find_package(assimp REQUIRED)
 
 set(COMMON_LIBRARIES
@@ -35,7 +34,6 @@ set(COMMON_LIBRARIES
 	SDL2_mixer
 	SDL2_ttf
 	SDL2_net
-	openal
 )
 if(WIN32)
 	set(LIBRARIES ${COMMON_LIBRARIES} glew32 opengl32)

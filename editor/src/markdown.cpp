@@ -1,4 +1,5 @@
 #include "markdown.hpp"
+#include <SDL.h>
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_markdown.h>
@@ -22,9 +23,7 @@ static ImGui::MarkdownConfig mdConfig;
 void LinkCallback(ImGui::MarkdownLinkCallbackData data_) {
   std::string url(data_.link, data_.linkLength);
   if (!data_.isImage) {
-#if _WIN32
-    ShellExecuteA(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
-#endif
+    SDL_OpenURL(url.c_str());
   }
 }
 

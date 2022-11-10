@@ -532,6 +532,7 @@ void vk_renderer::make_command(VkCommandBuffer command) {
     destroy_buffer(_instancing.instance_buffer);
   }
   m_instancies_3d.clear();
+  render_imgui(command);
 }
 void vk_renderer::draw_skybox(VkCommandBuffer command) {
   pipeline_skybox.Bind(command);
@@ -679,7 +680,6 @@ void vk_renderer::render_to_display(VkCommandBuffer command) {
                sizeof(vk_shader_parameter));
 
   vkCmdDrawIndexed(command, m_vertex_arrays["SPRITE"].indexCount, 1, 0, 0, 0);
-  render_imgui(command);
 }
 
 void vk_renderer::write_memory(VmaAllocation allocation, const void *data,

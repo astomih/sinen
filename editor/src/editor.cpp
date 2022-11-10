@@ -1,5 +1,4 @@
 #include "editor.hpp"
-// imgui
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 // Added for ImGui
@@ -9,6 +8,7 @@
 #include "markdown.hpp"
 #include "texteditor.hpp"
 namespace sinen {
+float mat[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1};
 void imguizmo() {
   ImGui::Begin("ImGuizmo");
   ImGuizmo::BeginFrame();
@@ -31,25 +31,21 @@ void imguizmo() {
     mCurrentGizmoOperation = ImGuizmo::SCALE;
   ImGuizmo::SetOrthographic(false);
   ImGuizmo::SetRect(0, 0, window::size().x, window::size().y);
-  static float mat[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1};
   static float deltam[16];
-  matrix4 pos;
-  pos[0][0] = 1.0f;
-  pos[1][1] = 1.0f;
-  pos[2][2] = 1.0f;
-  pos[3][3] = 1.0f;
+  static float grid_angle = 0.f;
   ImGuizmo::AllowAxisFlip(false);
 
-  ImGuizmo::DrawGrid(camera::view().get(), camera::projection().get(),
-                     pos.get(), 20);
-  ImGuizmo::DrawCubes(camera::view().get(), camera::projection().get(), mat, 1);
+  // ImGuizmo::DrawCubes(camera::view().get(), camera::projection().get(), mat,
+  // 1);
   static float snap[3] = {1.f, 1.f, 1.f};
   static float bounds[] = {-0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f};
   static float boundsSnap[] = {0.1f, 0.1f, 0.1f};
+  matrix4 pos = matrix4::create_from_quaternion(
+      quaternion(vector3::unit_x, math::to_radians(90.f)));
   ImGuizmo::Manipulate(camera::view().get(), camera::projection().get(),
                        mCurrentGizmoOperation, mCurrentGizmoMode, mat, deltam,
                        nullptr);
-  static vector3 position(0.0f, -5.0f, 10.f);
+  static vector3 position(0.0f, -10.0f, 10.f);
   static vector3 target = vector3(0, 0, 0);
   static vector3 up = vector3(0.f, 0.f, 1.f);
   ImGui::SliderFloat("X", &position.x, -10.0f, 10.0f);
@@ -82,6 +78,16 @@ void editor::setup() {
   renderer::toggle_show_imgui();
 }
 void editor::update(float delta_time) {
+  static texture tex;
+  tex.fill_color(palette::white());
+  std::shared_ptr<drawable> d3 = std::make_shared<drawable>();
+
+  d3->texture_handle = tex;
+  d3->param.proj = camera::projection();
+  d3->param.view = camera::view();
+  d3->param.world = matrix4(mat);
+  d3->vertexIndex = "BOX";
+  renderer::draw3d(d3);
   if (renderer::is_show_imgui() &&
       input::keyboard.get_key_state(key_code::F5) == button_state::Pressed) {
     m_impl->is_run = true;

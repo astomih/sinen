@@ -11,6 +11,15 @@ layout(location=3) in vec3 fragNormal;
 // Position (in world space)
 layout(location=4) in vec3 fragWorldPos;
 layout(location=5) in vec4 ShadowCoord;
+layout(set=0,binding=0) uniform Matrices
+{
+  mat4 world;
+  mat4 view;
+  mat4 proj;
+  mat4 light_view;
+  mat4 light_proj;
+	float time;
+};
 
 float simple_shadow( vec3 proj_pos ) {
  float shadow_distance = max( ( texture( shadowMap, proj_pos.xy).r ), 0.0 );

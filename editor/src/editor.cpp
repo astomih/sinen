@@ -1,4 +1,8 @@
 #include "editor.hpp"
+#include <SDL.h>
+#ifdef main
+#undef main
+#endif
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 // Added for ImGui

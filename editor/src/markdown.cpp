@@ -24,7 +24,9 @@ static ImGui::MarkdownConfig mdConfig;
 void link_call_back(ImGui::MarkdownLinkCallbackData data_) {
   std::string url(data_.link, data_.linkLength);
   if (!data_.isImage) {
+#if _WIN32
     ::SDL_OpenURL(url.c_str());
+#endif
   }
 }
 

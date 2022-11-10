@@ -1,5 +1,6 @@
 #include "markdown.hpp"
 #include <SDL.h>
+#include <SDL_misc.h>
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_markdown.h>
@@ -10,7 +11,7 @@
 #endif
 
 namespace sinen {
-void LinkCallback(ImGui::MarkdownLinkCallbackData data_);
+void link_call_back(ImGui::MarkdownLinkCallbackData data_);
 inline ImGui::MarkdownImageData
 ImageCallback(ImGui::MarkdownLinkCallbackData data_);
 
@@ -20,10 +21,10 @@ static ImFont *H3 = NULL;
 
 static ImGui::MarkdownConfig mdConfig;
 
-void LinkCallback(ImGui::MarkdownLinkCallbackData data_) {
+void link_call_back(ImGui::MarkdownLinkCallbackData data_) {
   std::string url(data_.link, data_.linkLength);
   if (!data_.isImage) {
-    SDL_OpenURL(url.c_str());
+    ::SDL_OpenURL(url.c_str());
   }
 }
 
@@ -83,7 +84,7 @@ void Markdown(const std::string &markdown_) {
   // and markdown config. > C++14 can use ImGui::MarkdownConfig mdConfig{
   // LinkCallback, NULL, ImageCallback, ICON_FA_LINK, { { H1, true }, { H2, true
   // }, { H3, false } }, NULL };
-  mdConfig.linkCallback = LinkCallback;
+  mdConfig.linkCallback = link_call_back;
   mdConfig.tooltipCallback = NULL;
   mdConfig.imageCallback = ImageCallback;
   mdConfig.linkIcon = "\xef\x83\x81";

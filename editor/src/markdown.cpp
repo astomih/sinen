@@ -1,6 +1,5 @@
 #include "markdown.hpp"
 #include <SDL.h>
-#include <SDL_misc.h>
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_markdown.h>

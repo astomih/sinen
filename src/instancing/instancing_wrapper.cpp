@@ -17,7 +17,7 @@ void draw2d_instancing::draw() {
 
   instancing _instancing;
   auto obj = std::make_shared<drawable>();
-  obj->texture_handle = this->texture_handle;
+  obj->binding_texture = this->texture_handle;
   obj->vertexIndex = this->vertex_name;
   matrix4 viewproj = matrix4::identity;
 
@@ -67,7 +67,7 @@ draw3d_instancing::draw3d_instancing(texture texture_handle)
 void draw3d_instancing::draw() {
   instancing _instancing;
   auto obj = std::make_shared<drawable>();
-  obj->texture_handle = this->texture_handle;
+  obj->binding_texture = this->texture_handle;
   obj->vertexIndex = this->vertex_name;
   obj->param.proj = camera::projection();
   obj->param.view = camera::view();

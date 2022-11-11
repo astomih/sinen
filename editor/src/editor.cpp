@@ -86,7 +86,7 @@ void editor::update(float delta_time) {
   tex.fill_color(palette::white());
   std::shared_ptr<drawable> d3 = std::make_shared<drawable>();
 
-  d3->texture_handle = tex;
+  d3->binding_texture = tex;
   d3->param.proj = camera::projection();
   d3->param.view = camera::view();
   d3->param.world = matrix4(mat);

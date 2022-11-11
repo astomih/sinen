@@ -163,7 +163,7 @@ bool script_system::initialize() {
   };
   {
     auto v = impl->state.new_usertype<model>("", sol::no_construction());
-    v["aabb"] = &model::m_aabb;
+    v["aabb"] = &model::local_aabb;
     v["load"] = &model::load;
   }
   {

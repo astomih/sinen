@@ -102,7 +102,26 @@ void render_system::update_vertex_array(const vertex_array &vArray,
     m_gl_renderer->update_vertex_array(vArray, name);
   }
 }
-
+void render_system::add_model(const model &m) {
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+  if (RendererAPI == graphics_api::Vulkan) {
+    m_vk_renderer->add_model(m);
+  }
+#endif
+  if (RendererAPI == graphics_api::OpenGL || RendererAPI == graphics_api::ES) {
+    m_gl_renderer->add_model(m);
+  }
+}
+void render_system::update_model(const model &m) {
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+  if (RendererAPI == graphics_api::Vulkan) {
+    m_vk_renderer->update_model(m);
+  }
+#endif
+  if (RendererAPI == graphics_api::OpenGL || RendererAPI == graphics_api::ES) {
+    m_gl_renderer->update_model(m);
+  }
+}
 void render_system::add_instancing(const instancing &_instancing) {
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
   if (RendererAPI == graphics_api::Vulkan) {
@@ -162,6 +181,12 @@ void renderer::add_vertex_array(const vertex_array &vArray,
 void renderer::update_vertex_array(const vertex_array &vArray,
                                    std::string_view name) {
   render_system::update_vertex_array(vArray, name);
+}
+void renderer::add_model(const model &_model) {
+  render_system::add_model(_model);
+}
+void renderer::update_model(const model &_model) {
+  render_system::update_model(_model);
 }
 
 void renderer::add_instancing(const instancing &_instancing) {

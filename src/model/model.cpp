@@ -44,14 +44,14 @@ void model::load(std::string_view str, std::string_view name) {
              &v.normal.y, &v.normal.z, &v.uv.x, &v.uv.y, &v.rgba.r, &v.rgba.g,
              &v.rgba.b, &v.rgba.a);
 
-      m_aabb.min.x = std::min(m_aabb.min.x, v.position.x);
-      m_aabb.min.y = std::min(m_aabb.min.y, v.position.y);
-      m_aabb.min.z = std::min(m_aabb.min.z, v.position.z);
-      m_aabb.max.x = std::max(m_aabb.max.x, v.position.x);
-      m_aabb.max.y = std::max(m_aabb.max.y, v.position.y);
-      m_aabb.max.z = std::max(m_aabb.max.z, v.position.z);
+      local_aabb.min.x = std::min(local_aabb.min.x, v.position.x);
+      local_aabb.min.y = std::min(local_aabb.min.y, v.position.y);
+      local_aabb.min.z = std::min(local_aabb.min.z, v.position.z);
+      local_aabb.max.x = std::max(local_aabb.max.x, v.position.x);
+      local_aabb.max.y = std::max(local_aabb.max.y, v.position.y);
+      local_aabb.max.z = std::max(local_aabb.max.z, v.position.z);
 
-      m_array.vertices.push_back(v);
+      v_array.vertices.push_back(v);
     } break;
     case load_state::indices: {
 
@@ -60,13 +60,32 @@ void model::load(std::string_view str, std::string_view name) {
 
       uint32_t i;
       sscanf(line.data(), "%u\n", &i);
-      m_array.indices.push_back(i);
+      v_array.indices.push_back(i);
     } break;
     default:
       break;
     }
   }
-  m_array.indexCount = m_array.indices.size();
-  render_system::add_vertex_array(m_array, name);
+  v_array.indexCount = v_array.indices.size();
+  render_system::add_vertex_array(v_array, name);
+}
+
+std::vector<vertex> model::all_vertex() const {
+  std::vector<vertex> all;
+  all.insert(all.end(), v_array.vertices.begin(), v_array.vertices.end());
+  for (auto &child : children) {
+    auto child_all = child->all_vertex();
+    all.insert(all.end(), child_all.begin(), child_all.end());
+  }
+  return all;
+}
+std::vector<std::uint32_t> model::all_indices() const {
+  std::vector<std::uint32_t> all;
+  all.insert(all.end(), v_array.indices.begin(), v_array.indices.end());
+  for (auto &child : children) {
+    auto child_all = child->all_indices();
+    all.insert(all.end(), child_all.begin(), child_all.end());
+  }
+  return all;
 }
 } // namespace sinen

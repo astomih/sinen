@@ -12,6 +12,7 @@
 #include "../math/matrix4.hpp"
 #include "../math/vector2.hpp"
 #include "../math/vector3.hpp"
+#include "../model/model.hpp"
 #include "../shader/shader.hpp"
 #include "../texture/texture.hpp"
 #include "../texture/texture_type.hpp"
@@ -69,6 +70,8 @@ public:
    */
   static void update_vertex_array(const vertex_array &vArray,
                                   std::string_view name);
+  static void add_model(const model &_model);
+  static void update_model(const model &_model);
   /**
    * @brief Draw instancing
    *

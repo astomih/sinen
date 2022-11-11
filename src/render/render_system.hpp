@@ -9,6 +9,7 @@
 #include <math/vector2.hpp>
 #include <math/vector3.hpp>
 #include <memory>
+#include <model/model.hpp>
 #include <render/graphics_api.hpp>
 #include <shader/shader.hpp>
 #include <texture/texture.hpp>
@@ -29,6 +30,8 @@ public:
                                std::string_view name);
   static void update_vertex_array(const vertex_array &vArray,
                                   std::string_view name);
+  static void add_model(const model &m);
+  static void update_model(const model &m);
   static void add_instancing(const instancing &_instancing);
   static void set_clear_color(const color &color) {
     if (color.r >= 0.f && color.g >= 0.f && color.b >= 0.f)

@@ -3,8 +3,10 @@
 #include <functional>
 #include <instancing/instancing.hpp>
 #include <memory>
+#include <model/model.hpp>
 #include <texture/texture_type.hpp>
 #include <vertex/vertex_array.hpp>
+
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 
 #include "vk_base.hpp"
@@ -50,6 +52,8 @@ public:
 
   void add_vertex_array(const vertex_array &vArray, std::string_view name);
   void update_vertex_array(const vertex_array &vArray, std::string_view name);
+  void add_model(const model &m);
+  void update_model(const model &m);
 
   void draw2d(std::shared_ptr<class drawable> sprite);
   void draw3d(std::shared_ptr<class drawable> sprite);

@@ -36,12 +36,12 @@ struct drawable {
    * @brief Shader data
    *
    */
-  shader shader_data;
+  shader shade;
   /**
    * @brief Use texture
    *
    */
-  texture texture_handle;
+  texture binding_texture;
   /**
    * @brief Vertex index
    *

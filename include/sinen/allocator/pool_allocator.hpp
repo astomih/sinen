@@ -8,7 +8,7 @@
  * @tparam T type of pool_allocator
  * @tparam MAXSIZE max size of pool_allocator
  */
-template <class T, std::size_t MAXSIZE> class pool_allocator {
+template <class T, std::size_t MAXSIZE = 128> class pool_allocator {
 public:
   /**
    * @brief Construct a new memory allocator object
@@ -28,6 +28,24 @@ public:
     current->next = nullptr;
   }
   /**
+   * @brief Construct a new pool allocator object
+   *
+   * @param max_size Max size of pool
+   */
+  pool_allocator(const std::size_t &max_size) {
+    this->buffer = reinterpret_cast<element_type *>(std::malloc(sizeof(T)));
+    element_type *current = this->buffer;
+    for (std::size_t i = 0; i < max_size; i++) {
+      element_type *next =
+          reinterpret_cast<element_type *>(std::malloc(sizeof(T)));
+      if (current) {
+        current->next = next;
+        current = next;
+      }
+    }
+    current->next = nullptr;
+  }
+  /**
    * @brief Destroy the memory allocator object
    *
    */
@@ -36,7 +54,7 @@ public:
       if (!this->buffer->next) {
         break;
       }
-      T *ptr = this->alloc();
+      T *ptr = this->allocate();
       std::free(ptr);
     }
     std::free(this->buffer);
@@ -46,7 +64,7 @@ public:
    *
    * @return T* pointer of memory
    */
-  T *alloc() {
+  T *allocate() {
     if (!this->buffer->next) {
       return nullptr;
     }
@@ -55,11 +73,11 @@ public:
     return ret;
   }
   /**
-   * @brief Free memory
+   * @brief Deallocate memory
    *
    * @param addr allocated memory
    */
-  void free(T *addr) {
+  void deallocate(T *addr) {
     if (!addr) {
       return;
     }

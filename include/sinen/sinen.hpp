@@ -5,6 +5,8 @@
 #endif
 
 #include "actor/actor.hpp"
+#include "allocator/pool_allocator.hpp"
+#include "allocator/stack_allocator.hpp"
 #include "audio/music.hpp"
 #include "audio/sound.hpp"
 #include "camera/camera.hpp"

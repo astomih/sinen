@@ -2,6 +2,7 @@
 #define POOL_ALLOCATOR_HPP
 #include <cstddef>
 #include <cstdlib>
+namespace sinen {
 /**
  * @brief Simple pool allocator
  *
@@ -15,29 +16,12 @@ public:
    *
    */
   pool_allocator() {
-    this->buffer = reinterpret_cast<element_type *>(std::malloc(sizeof(T)));
-    element_type *current = this->buffer;
+    this->head = reinterpret_cast<element_type *>(
+        std::malloc(sizeof(T) * (MAXSIZE + 1)));
+    this->free_list = this->head;
+    element_type *current = this->head;
     for (std::size_t i = 0; i < MAXSIZE; i++) {
-      element_type *next =
-          reinterpret_cast<element_type *>(std::malloc(sizeof(T)));
-      if (current) {
-        current->next = next;
-        current = next;
-      }
-    }
-    current->next = nullptr;
-  }
-  /**
-   * @brief Construct a new pool allocator object
-   *
-   * @param max_size Max size of pool
-   */
-  pool_allocator(const std::size_t &max_size) {
-    this->buffer = reinterpret_cast<element_type *>(std::malloc(sizeof(T)));
-    element_type *current = this->buffer;
-    for (std::size_t i = 0; i < max_size; i++) {
-      element_type *next =
-          reinterpret_cast<element_type *>(std::malloc(sizeof(T)));
+      element_type *next = reinterpret_cast<element_type *>(current + 1);
       if (current) {
         current->next = next;
         current = next;
@@ -49,27 +33,18 @@ public:
    * @brief Destroy the memory allocator object
    *
    */
-  ~pool_allocator() {
-    while (true) {
-      if (!this->buffer->next) {
-        break;
-      }
-      T *ptr = this->allocate();
-      std::free(ptr);
-    }
-    std::free(this->buffer);
-  }
+  ~pool_allocator() { std::free(this->head); }
   /**
    * @brief Allocate new memory
    *
    * @return T* pointer of memory
    */
   T *allocate() {
-    if (!this->buffer->next) {
+    if (!this->free_list->next) {
       return nullptr;
     }
-    T *ret = reinterpret_cast<T *>(this->buffer);
-    this->buffer = this->buffer->next;
+    T *ret = reinterpret_cast<T *>(this->free_list);
+    this->free_list = this->free_list->next;
     return ret;
   }
   /**
@@ -82,8 +57,28 @@ public:
       return;
     }
     element_type *eaddr = reinterpret_cast<element_type *>(addr);
-    eaddr->next = this->buffer;
-    this->buffer = eaddr;
+    eaddr->next = this->free_list;
+    this->free_list = eaddr;
+  }
+  /**
+   * @brief Get the max size pool
+   *
+   * @return const std::size_t
+   */
+  const std::size_t max_size() const { return MAXSIZE; }
+  /**
+   * @brief Get the size of pool
+   *
+   * @return const std::size_t
+   */
+  const std::size_t remain_size() const {
+    std::size_t ret = 0;
+    element_type *current = this->free_list;
+    while (current->next) {
+      ret++;
+      current = current->next;
+    }
+    return ret;
   }
 
 private:
@@ -93,7 +88,8 @@ private:
     T v;
     element_type *next;
   };
-  element_type *buffer;
+  element_type *head;
+  element_type *free_list;
 };
-
+} // namespace sinen
 #endif // !POOL_ALLOCATOR_HPP

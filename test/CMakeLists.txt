@@ -6,10 +6,9 @@ find_package(GTest REQUIRED)
 enable_testing()
 enable_language(CXX)
 
-
+file(GLOB_RECURSE TEST_SOURCES ./*.cpp)
 # Unit test
-add_executable(unit_test 
-grid_test.cpp)
+add_executable(unit_test ${TEST_SOURCES})
 target_include_directories(unit_test PUBLIC ../include)
 target_link_libraries(unit_test
   PRIVATE

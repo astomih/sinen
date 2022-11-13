@@ -187,6 +187,11 @@ public:
    */
   class const_iterator {
   public:
+    using difference_type = std::ptrdiff_t;
+    using value_type = T;
+    using pointer = T *;
+    using reference = T &;
+    using iterator_category = std::output_iterator_tag;
     const_iterator(typename std::vector<T, Allocator>::iterator itr)
         : m_itr(itr) {}
 

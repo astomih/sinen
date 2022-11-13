@@ -23,46 +23,35 @@ TEST(PoolAllocatorTest, TestPoolAllocatorAllocate) {
 
     const int TEST_SIZE = 100;
     sinen::pool_allocator<POINT, TEST_SIZE> a;
-
     POINT *ptr[TEST_SIZE];
     for (int i = 0; i < TEST_SIZE; ++i) {
       ptr[i] = a.allocate();
       if (nullptr == ptr[i]) {
-        std::cout << i << "個目のメモリ確保に失敗" << std::endl;
         FAIL();
       }
       ptr[i]->x = i;
       ptr[i]->y = i + i;
     }
-
     {
       POINT *p;
       p = a.allocate();
       if (nullptr != p) {
-        std::cout << TEST_SIZE << "個以上のメモリ確保が出来た" << std::endl;
         FAIL();
       }
     }
-
-    // nullptr開放
+    // nullptr
     a.deallocate(nullptr);
-
-    // 半分開放
     for (int i = 0; i < TEST_SIZE; i += 2) {
       a.deallocate(ptr[i]);
       ptr[i] = nullptr;
     }
-
-    // メモリ破壊チェック
     for (int i = 0; i < TEST_SIZE; ++i) {
       if (ptr[i]) {
         if (ptr[i]->x != i || ptr[i]->y != i + i) {
-          std::cout << "メモリが壊れています" << std::endl;
           FAIL();
         }
       }
     }
-    std::cout << "success" << std::endl;
     SUCCEED();
   }
 }

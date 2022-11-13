@@ -106,8 +106,8 @@ void editor::update(float delta_time) {
   }
   if (m_impl->is_save) {
     auto str = get_text();
-    dstream::write(asset_type::Script,
-                   main::get_current_scene_number() + ".lua", str);
+    data_stream::write(asset_type::Script,
+                       main::get_current_scene_number() + ".lua", str);
     std::cout << str << std::endl;
     m_impl->is_save = false;
   }

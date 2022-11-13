@@ -1,22 +1,23 @@
-#include "../render/render_system.hpp"
+// std
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <sstream>
 #include <string>
-
-#include <io/dstream.hpp>
+// internal
+#include "../render/render_system.hpp"
+#include <io/data_stream.hpp>
 #include <model/model.hpp>
 #include <render/renderer.hpp>
-
+// external
 #include <assimp/Importer.hpp>
 namespace sinen {
 enum class load_state { version, vertex, indices };
 
 void model::load(std::string_view str, std::string_view name) {
   std::stringstream data;
-  data << dstream::open_as_string(asset_type::Model, str);
+  data << data_stream::open_as_string(asset_type::Model, str);
   std::string line;
   load_state state = load_state::version;
   std::string version;

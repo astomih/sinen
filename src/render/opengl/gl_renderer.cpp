@@ -28,7 +28,7 @@
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl.h>
-#include <io/dstream.hpp>
+#include <io/data_stream.hpp>
 #include <iostream>
 #include <logger/logger.hpp>
 #include <sstream>
@@ -72,7 +72,8 @@ void gl_renderer::initialize() {
       ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
   io.IniFilename = NULL;
   io.Fonts->AddFontFromFileTTF(
-      dstream::convert_file_path("mplus/mplus-1p-medium.ttf", asset_type::Font)
+      data_stream::convert_file_path(asset_type::Font,
+                                     "mplus/mplus-1p-medium.ttf")
           .data(),
       18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
   ImGui_ImplSDL2_InitForOpenGL(window_system::get_sdl_window(), mContext);

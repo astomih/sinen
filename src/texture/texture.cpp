@@ -1,7 +1,7 @@
 #include "texture_system.hpp"
 #include <SDL.h>
 #include <SDL_image.h>
-#include <io/dstream.hpp>
+#include <io/data_stream.hpp>
 #include <logger/logger.hpp>
 #include <texture/texture.hpp>
 
@@ -17,7 +17,8 @@ bool texture::load(std::string_view fileName) {
   *is_need_update = true;
   auto &surface = texture_system::get(handle);
   auto *src_surface = ::IMG_Load_RW(
-      (SDL_RWops *)dstream::open_as_rwops(asset_type::Texture, fileName), 0);
+      (SDL_RWops *)data_stream::open_as_rwops(asset_type::Texture, fileName),
+      0);
   if (!src_surface) {
     logger::error("%s", IMG_GetError());
     return false;

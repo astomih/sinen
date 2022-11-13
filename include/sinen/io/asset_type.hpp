@@ -8,6 +8,8 @@ enum class asset_type {
   Script,
   gl_shader,
   vk_shader,
+  Scene,
+  Shader,
   Sound,
   Texture
 };

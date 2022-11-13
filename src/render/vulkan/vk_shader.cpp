@@ -1,4 +1,4 @@
-﻿#include "io/dstream.hpp"
+﻿#include <io/data_stream.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "vk_base.hpp"
 #include "vk_shader.hpp"
@@ -9,7 +9,7 @@ VkPipelineShaderStageCreateInfo vk_shader::load(VkDevice device,
                                                 const char *fileName,
                                                 VkShaderStageFlagBits stage) {
   std::string filedata =
-      dstream::open_as_string(asset_type::vk_shader, fileName);
+      data_stream::open_as_string(asset_type::vk_shader, fileName);
 
   VkShaderModule shaderModule;
   VkShaderModuleCreateInfo ci{};

@@ -22,7 +22,7 @@
 #include "input/input.hpp"
 #include "instancing/instancing.hpp"
 #include "instancing/instancing_wrapper.hpp"
-#include "io/dstream.hpp"
+#include "io/data_stream.hpp"
 #include "io/file.hpp"
 #include "logger/logger.hpp"
 #include "main/main.hpp"

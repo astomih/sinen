@@ -28,7 +28,7 @@
 #include "vk_renderer.hpp"
 #include "vk_shader.hpp"
 #include "vk_util.hpp"
-#include <io/dstream.hpp>
+#include <io/data_stream.hpp>
 
 namespace sinen {
 
@@ -738,7 +738,8 @@ void vk_renderer::prepare_imgui() {
       ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
   io.IniFilename = NULL;
   io.Fonts->AddFontFromFileTTF(
-      dstream::convert_file_path("mplus/mplus-1p-medium.ttf", asset_type::Font)
+      data_stream::convert_file_path(asset_type::Font,
+                                     "mplus/mplus-1p-medium.ttf")
           .data(),
       18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
 

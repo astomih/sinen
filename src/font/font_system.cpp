@@ -1,5 +1,5 @@
 #include "font_system.hpp"
-#include <io/dstream.hpp>
+#include <io/data_stream.hpp>
 #include <logger/logger.hpp>
 
 #include <SDL_ttf.h>
@@ -23,7 +23,7 @@ void *font_system::load(std::string_view file_name, int32_t point_size) {
   }
 
   m_fonts[std::string(file_name)][point_size] = (void *)::TTF_OpenFontRW(
-      (SDL_RWops *)dstream::open_as_rwops(asset_type::Font, file_name), 1,
+      (SDL_RWops *)data_stream::open_as_rwops(asset_type::Font, file_name), 1,
       point_size);
   if (!m_fonts[std::string(file_name)][point_size]) {
     logger::error("%s", TTF_GetError());

@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "sound_system.hpp"
-#include <io/dstream.hpp>
+#include <io/data_stream.hpp>
 #include <math/quaternion.hpp>
 
 namespace sinen {
@@ -98,7 +98,7 @@ void sound_system::load(std::string_view fileName) {
   uint32_t bid = 0;
 
   if (!SDL_LoadWAV(
-          dstream::convert_file_path(fileName, asset_type::Sound).c_str(),
+          data_stream::convert_file_path(asset_type::Sound, fileName).c_str(),
           &spec, &buffer, &buffer_length)) {
     printf("Loading '%s' failed! %s\n", fileName.data(), SDL_GetError());
     return;

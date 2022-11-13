@@ -1,10 +1,11 @@
 #include "gl_shader.hpp"
-#include "io/dstream.hpp"
 #include <SDL_image.h>
 #include <fstream>
+#include <io/data_stream.hpp>
 #include <iostream>
 #include <logger/logger.hpp>
 #include <sstream>
+
 
 #if defined(EMSCRIPTEN) || defined(MOBILE)
 #include <GLES3/gl3.h>
@@ -52,7 +53,7 @@ bool gl_shader::CompileShader(const std::string &fileName, GLenum shaderType,
 #else
   contents = "#version 330 core\n";
 #endif
-  contents += dstream::open_as_string(asset_type::gl_shader, fileName);
+  contents += data_stream::open_as_string(asset_type::gl_shader, fileName);
   const char *contentsChar = contents.c_str();
 
   // Create a shader of the specified type

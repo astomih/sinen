@@ -86,7 +86,7 @@ void resetModelNodes(assimp_model &model) {
 bool assimp_model::load_from_file(std::string_view filePath) {
   Assimp::Importer importer;
 
-  auto path = dstream::open_as_string(asset_type::Model, filePath);
+  auto path = data_stream::open_as_string(asset_type::Model, filePath);
   auto pos = std::string(filePath).find_last_of(".");
   auto hint =
       std::string(filePath).substr(pos + 1, std::string(filePath).size());

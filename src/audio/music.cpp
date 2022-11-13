@@ -5,7 +5,7 @@
 #include <SDL_mixer.h>
 
 #include <audio/music.hpp>
-#include <io/dstream.hpp>
+#include <io/data_stream.hpp>
 
 namespace sinen {
 music::music() {}
@@ -19,7 +19,8 @@ void music::play() { ::Mix_PlayMusic((::Mix_Music *)buffer, -1); }
 void music::stop() { ::Mix_HaltMusic(); }
 
 void music::load(std::string_view fileName) {
-  auto rwops = (SDL_RWops *)dstream::open_as_rwops(asset_type::Music, fileName);
+  auto rwops =
+      (SDL_RWops *)data_stream::open_as_rwops(asset_type::Music, fileName);
   ::Mix_Music *m = ::Mix_LoadMUS_RW(rwops, 1);
   if (m) {
     buffer = (void *)m;

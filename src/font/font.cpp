@@ -5,7 +5,6 @@
 #include <cassert>
 #include <color/color.hpp>
 #include <font/font.hpp>
-#include <io/dstream.hpp>
 #include <logger/logger.hpp>
 #include <string_view>
 #include <texture/texture.hpp>

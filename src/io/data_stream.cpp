@@ -1,11 +1,14 @@
-﻿#include <SDL.h>
-#include <SDL_rwops.h>
-#include <io/dstream.hpp>
+﻿// std
 #include <iostream>
 #include <mutex>
 #include <string_view>
 #include <thread>
 #include <unordered_map>
+// internal
+#include <io/data_stream.hpp>
+// external
+#include <SDL.h>
+#include <SDL_rwops.h>
 
 namespace sinen {
 void decoding(std::string &str, std::vector<uint8_t> &key) {
@@ -17,11 +20,11 @@ void decoding(std::string &str, std::vector<uint8_t> &key) {
     i++;
   }
 }
-std::vector<uint8_t> dstream::key = {0};
-std::string_view dstream::open(const asset_type &assetType,
-                               std::string_view name) {
+std::vector<uint8_t> data_stream::key = {0};
+std::string_view data_stream::open(const asset_type &type,
+                                   std::string_view name) {
   std::string filePath;
-  convert_file_path(filePath, name, assetType);
+  convert_file_path(type, filePath, name);
 
   SDL_RWops *file = SDL_RWFromFile(filePath.c_str(), "r");
 #ifndef NEN_NO_EXCEPTION
@@ -41,12 +44,12 @@ std::string_view dstream::open(const asset_type &assetType,
   return result;
 }
 static std::unordered_map<std::string, std::string> map;
-void *dstream::open_as_rwops(const asset_type &assetType,
-                             std::string_view name) {
+void *data_stream::open_as_rwops(const asset_type &type,
+                                 std::string_view name) {
   std::string filePath;
-  convert_file_path(filePath, name, assetType);
+  convert_file_path(type, filePath, name);
 
-  map[name.data()] = open_as_string(assetType, name);
+  map[name.data()] = open_as_string(type, name);
 
   SDL_RWops *file =
       SDL_RWFromConstMem(map[name.data()].data(), map[name.data()].size());
@@ -56,10 +59,10 @@ void *dstream::open_as_rwops(const asset_type &assetType,
 #endif
   return file;
 }
-std::string dstream::open_as_string(const asset_type &assetType,
-                                    std::string_view name) {
+std::string data_stream::open_as_string(const asset_type &type,
+                                        std::string_view name) {
   std::string filePath;
-  convert_file_path(filePath, name, assetType);
+  convert_file_path(type, filePath, name);
 
   SDL_RWops *file = SDL_RWFromFile(filePath.c_str(), "r");
   if (!file) {
@@ -77,20 +80,21 @@ std::string dstream::open_as_string(const asset_type &assetType,
   return result;
 }
 
-void dstream::write(const asset_type &assetType, std::string_view name,
-                    std::string_view data) {
+void data_stream::write(const asset_type &type, std::string_view name,
+                        std::string_view data) {
   std::string filePath;
-  convert_file_path(filePath, name, assetType);
+  convert_file_path(type, filePath, name);
   SDL_RWops *file = SDL_RWFromFile(filePath.c_str(), "w");
   if (!file) {
     return;
   }
   SDL_RWwrite(file, data.data(), 1, data.size());
 }
-void dstream::convert_file_path(std::string &filePath, std::string_view name,
-                                const asset_type &assetType) {
+void data_stream::convert_file_path(const asset_type &type,
+                                    std::string &filePath,
+                                    std::string_view name) {
   std::string base = "data/";
-  switch (assetType) {
+  switch (type) {
   case asset_type::Font:
     filePath += base + std::string{"font/"} + name.data();
     break;
@@ -110,6 +114,9 @@ void dstream::convert_file_path(std::string &filePath, std::string_view name,
   case asset_type::vk_shader:
     filePath = base + std::string{"shader/Vulkan/"} + name.data();
     break;
+  case asset_type::Scene:
+    filePath = base + std::string{"scene/"} + name.data();
+    break;
   case asset_type::Sound:
     filePath = base + std::string{"sound/"} + name.data();
     break;
@@ -121,10 +128,10 @@ void dstream::convert_file_path(std::string &filePath, std::string_view name,
     break;
   }
 }
-std::string dstream::convert_file_path(std::string_view name,
-                                       const asset_type &assetType) {
+std::string data_stream::convert_file_path(const asset_type &type,
+                                           std::string_view name) {
   std::string filePath;
-  convert_file_path(filePath, name, assetType);
+  convert_file_path(type, filePath, name);
   return filePath;
 }
 

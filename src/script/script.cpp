@@ -9,7 +9,7 @@
 #include <font/font.hpp>
 #include <functional>
 #include <input/input.hpp>
-#include <io/dstream.hpp>
+#include <io/data_stream.hpp>
 #include <main/main.hpp>
 #include <math/point2.hpp>
 #include <math/random.hpp>
@@ -37,7 +37,7 @@ bool script_system::initialize() {
                              sol::lib::table);
   impl->state["require"] = [&](const std::string &str) -> sol::object {
     return impl->state.require_script(
-        str, dstream::open_as_string(asset_type::Script, str + ".lua"));
+        str, data_stream::open_as_string(asset_type::Script, str + ".lua"));
   };
   impl->state["texture"] = []() -> texture { return texture(); };
   impl->state["font"] = []() -> font { return font(); };
@@ -202,7 +202,7 @@ bool script_system::initialize() {
 }
 
 void script_system::do_script(std::string_view fileName) {
-  impl->state.script(dstream::open_as_string(asset_type::Script, fileName));
+  impl->state.script(data_stream::open_as_string(asset_type::Script, fileName));
 }
 
 void script_system::shutdown() { impl->state.collect_gc(); }

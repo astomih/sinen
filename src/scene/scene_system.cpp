@@ -9,7 +9,7 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <input/input.hpp>
-#include <io/dstream.hpp>
+#include <io/data_stream.hpp>
 
 // For SDL2
 #undef main
@@ -40,7 +40,7 @@ scene::state scene_system::m_game_state = scene::state::running;
 uint32_t scene_system::m_prev_tick = 0;
 bool scene_system::initialize() {
   sol::state *lua = (sol::state *)script_system::get_state();
-  std::string str = dstream::open_as_string(
+  std::string str = data_stream::open_as_string(
       asset_type::Script, main::get_current_scene_number() + ".lua");
   lua->do_string(str.data());
   (*lua)["setup"]();

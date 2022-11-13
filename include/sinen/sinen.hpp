@@ -24,6 +24,7 @@
 #include "instancing/instancing_wrapper.hpp"
 #include "io/data_stream.hpp"
 #include "io/file.hpp"
+#include "io/json.hpp"
 #include "logger/logger.hpp"
 #include "main/main.hpp"
 #include "math/math.hpp"

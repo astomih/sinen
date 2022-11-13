@@ -31,9 +31,10 @@ std::string string_format_logger(const std::string &format, Args &&...args) {
 } // namespace detail
 
 class logger {
-private:
+public:
   class interface {
   public:
+    virtual ~interface() = default;
     virtual void debug(std::string_view) {}
     virtual void info(std::string_view) {}
     virtual void error(std::string_view) {}
@@ -41,7 +42,6 @@ private:
     virtual void fatal(std::string_view) {}
   };
 
-public:
   static void change_logger(std::unique_ptr<interface> logger);
   template <typename... Args>
   static void debug(std::string_view format, Args &&...args) {

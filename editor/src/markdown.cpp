@@ -98,7 +98,9 @@ void Markdown(const std::string &markdown_) {
 }
 
 void markdown() {
-  ImGui::Begin("Markdown Viewer");
+  ImGui::SetNextWindowPos({0, 360});
+  ImGui::SetNextWindowSize({250, 360});
+  ImGui::Begin("Document");
   const std::string markdownText = R"(
 # H1 Header: Text and Links
 You can add [links like this one to enkisoftware](https://www.enkisoftware.com/) and lines will wrap well.

@@ -9,7 +9,7 @@
 namespace sinen {
 TextEditor te;
 void texteditor() {
-  ImGui::Begin("Text Editor");
+  ImGui::Begin("Text Editor", nullptr, ImGuiWindowFlags_MenuBar);
   const static TextEditor::Palette p = {{
       0xff7f7f7f, // Default
       0xffd69c56, // Keyword
@@ -37,11 +37,10 @@ void texteditor() {
   te.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
   te.SetShowWhitespaces(true);
   auto cpos = te.GetCursorPosition();
-  ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s | fps:%.2f",
+  ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s ",
               cpos.mLine + 1, cpos.mColumn + 1, te.GetTotalLines(),
               te.IsOverwrite() ? "Ovr" : "Ins", te.CanUndo() ? "*" : " ",
-              te.GetLanguageDefinition().mName.c_str(), "aaaa",
-              ImGui::GetIO().Framerate);
+              te.GetLanguageDefinition().mName.c_str());
   if (ImGui::BeginMenuBar()) {
     if (ImGui::BeginMenu("File")) {
       if (ImGui::MenuItem("Save", "Ctrl-S", nullptr, te.CanUndo())) {
@@ -91,10 +90,6 @@ void texteditor() {
       if (ImGui::MenuItem("Retro blue palette"))
         te.SetPalette(TextEditor::GetRetroBluePalette());
       ImGui::EndMenu();
-    }
-    if (ImGui::BeginMenu("App")) {
-      if (ImGui::MenuItem("Run", "F5", nullptr, true))
-        ImGui::EndMenu();
     }
     ImGui::EndMenuBar();
   }

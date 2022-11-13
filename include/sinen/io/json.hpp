@@ -1,5 +1,6 @@
 #ifndef SINEN_JSON_HPP
 #define SINEN_JSON_HPP
+#include "file.hpp"
 #include <memory>
 #include <string_view>
 
@@ -8,7 +9,7 @@ namespace sinen {
  * @brief Json read/write class
  *
  */
-class json {
+class json : public file {
 public:
   /**
    * @brief Json object class

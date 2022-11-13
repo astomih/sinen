@@ -9,12 +9,17 @@
 #include <ImGuizmo.h>
 
 #include "file_dialog.hpp"
+#include "log_window.hpp"
 #include "markdown.hpp"
 #include "texteditor.hpp"
 namespace sinen {
 float mat[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1};
+float deltam[16];
 void imguizmo() {
-  ImGui::Begin("ImGuizmo");
+  ImGui::SetNextWindowPos({0, 0});
+  ImGui::SetNextWindowSize({250, 360});
+  ImGui::Begin("Camera", nullptr,
+               ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
   ImGuizmo::BeginFrame();
   static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
   static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
@@ -35,7 +40,6 @@ void imguizmo() {
     mCurrentGizmoOperation = ImGuizmo::SCALE;
   ImGuizmo::SetOrthographic(false);
   ImGuizmo::SetRect(0, 0, window::size().x, window::size().y);
-  static float deltam[16];
   static float grid_angle = 0.f;
   ImGuizmo::AllowAxisFlip(false);
 
@@ -64,6 +68,34 @@ void imguizmo() {
   camera::lookat(position, target, up);
   ImGui::End();
 }
+void inspector() {
+  ImGui::SetNextWindowPos({1030, 0});
+  ImGui::SetNextWindowSize({250, 720});
+  ImGui::Begin("Inspector");
+  ImGui::Text("Transform");
+  static vector3 pos, rot, scale;
+  ImGuizmo::DecomposeMatrixToComponents(mat, &pos.x, &rot.x, &scale.x);
+  ImGui::DragFloat3("Position", &pos.x);
+  ImGui::DragFloat3("Rotation", &rot.x);
+  ImGui::DragFloat3("Scale", &scale.x);
+  ImGuizmo::RecomposeMatrixFromComponents(&pos.x, &rot.x, &scale.x, mat);
+}
+void menu() {
+
+  ImGui::SetNextWindowPos({250,0});
+  ImGui::SetNextWindowSize({780, 20});
+  ImGui::Begin("Menu", nullptr, ImGuiWindowFlags_MenuBar);
+  if (ImGui::BeginMenuBar()) {
+    if (ImGui::BeginMenu("File")) {
+      if (ImGui::MenuItem("Save")) {
+        std::cout << "aa" << std::endl;
+      }
+      ImGui::EndMenu();
+    }
+    ImGui::EndMenuBar();
+  }
+  ImGui::End();
+}
 
 class editor::implements {
 public:
@@ -75,9 +107,12 @@ editor::editor() : m_impl(std::make_unique<editor::implements>()) {}
 editor::~editor() {}
 void editor::setup() {
   m_impl->is_run = false;
+  renderer::add_imgui_function(menu);
   renderer::add_imgui_function(texteditor);
   renderer::add_imgui_function(markdown);
   renderer::add_imgui_function(imguizmo);
+  renderer::add_imgui_function(log_window);
+  renderer::add_imgui_function(inspector);
   // renderer::add_imgui_function(func_file_dialog);
   renderer::toggle_show_imgui();
 }
@@ -110,6 +145,9 @@ void editor::update(float delta_time) {
                        main::get_current_scene_number() + ".lua", str);
     std::cout << str << std::endl;
     m_impl->is_save = false;
+  }
+  if (input::keyboard.get_key_state(key_code::F3) == button_state::Pressed) {
+    renderer::toggle_show_imgui();
   }
 }
 } // namespace sinen

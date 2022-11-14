@@ -1,7 +1,7 @@
 #include "register_script.hpp"
 
-#include "../render/render_system.hpp"
-#include "../window/window_system.hpp"
+#include <render/renderer.hpp>
+#include <scene/scene.hpp>
 #include <window/window.hpp>
 
 
@@ -20,6 +20,10 @@ void register_table(sol::state &lua) {
     v["clear_color"] = &renderer::clear_color;
     v["set_clear_color"] = &renderer::set_clear_color;
     v["get_graphics_api"] = &renderer::get_graphics_api;
+  }
+  {
+    auto v = lua.create_table("scene");
+    v["load_data"] = &scene::load_data;
   }
 }
 } // namespace sinen

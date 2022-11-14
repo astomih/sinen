@@ -12,9 +12,17 @@
 #include "log_window.hpp"
 #include "markdown.hpp"
 #include "texteditor.hpp"
+
+#include <rapidjson/document.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
 namespace sinen {
 float mat[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1};
 float deltam[16];
+vector3 pos, rot, scale;
+vector3 position(0.0f, -10.0f, 10.f);
+vector3 target = vector3(0, 0, 0);
+vector3 up = vector3(0.f, 0.f, 1.f);
 void imguizmo() {
   ImGui::SetNextWindowPos({0, 0});
   ImGui::SetNextWindowSize({250, 360});
@@ -38,33 +46,14 @@ void imguizmo() {
   ImGui::SameLine();
   if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
     mCurrentGizmoOperation = ImGuizmo::SCALE;
-  ImGuizmo::SetOrthographic(false);
   ImGuizmo::SetRect(0, 0, window::size().x, window::size().y);
-  static float grid_angle = 0.f;
   ImGuizmo::AllowAxisFlip(false);
-
-  // ImGuizmo::DrawCubes(camera::view().get(), camera::projection().get(), mat,
-  // 1);
-  static float snap[3] = {1.f, 1.f, 1.f};
-  static float bounds[] = {-0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f};
-  static float boundsSnap[] = {0.1f, 0.1f, 0.1f};
-  matrix4 pos = matrix4::create_from_quaternion(
-      quaternion(vector3::unit_x, math::to_radians(90.f)));
   ImGuizmo::Manipulate(camera::view().get(), camera::projection().get(),
                        mCurrentGizmoOperation, mCurrentGizmoMode, mat, deltam,
                        nullptr);
-  static vector3 position(0.0f, -10.0f, 10.f);
-  static vector3 target = vector3(0, 0, 0);
-  static vector3 up = vector3(0.f, 0.f, 1.f);
-  ImGui::SliderFloat("X", &position.x, -10.0f, 10.0f);
-  ImGui::SliderFloat("Y", &position.y, -10.0f, 10.0f);
-  ImGui::SliderFloat("Z", &position.z, -10.0f, 10.0f);
-  ImGui::SliderFloat("tX", &target.x, -10.0f, 10.0f);
-  ImGui::SliderFloat("tY", &target.y, -10.0f, 10.0f);
-  ImGui::SliderFloat("tZ", &target.z, -10.0f, 10.0f);
-  ImGui::SliderFloat("uX", &up.x, -1.0f, 1.0f);
-  ImGui::SliderFloat("uY", &up.y, -1.0f, 1.0f);
-  ImGui::SliderFloat("uZ", &up.z, -1.0f, 1.0f);
+  ImGui::SliderFloat3("Position", &position.x, -10.0f, 10.0f);
+  ImGui::SliderFloat3("Target", &target.x, -10.0f, 10.0f);
+  ImGui::SliderFloat3("Up", &up.x, -1.0f, 1.0f);
   camera::lookat(position, target, up);
   ImGui::End();
 }
@@ -73,7 +62,6 @@ void inspector() {
   ImGui::SetNextWindowSize({250, 720});
   ImGui::Begin("Inspector");
   ImGui::Text("Transform");
-  static vector3 pos, rot, scale;
   ImGuizmo::DecomposeMatrixToComponents(mat, &pos.x, &rot.x, &scale.x);
   ImGui::DragFloat3("Position", &pos.x);
   ImGui::DragFloat3("Rotation", &rot.x);
@@ -82,13 +70,45 @@ void inspector() {
 }
 void menu() {
 
-  ImGui::SetNextWindowPos({250,0});
+  ImGui::SetNextWindowPos({250, 0});
   ImGui::SetNextWindowSize({780, 20});
   ImGui::Begin("Menu", nullptr, ImGuiWindowFlags_MenuBar);
   if (ImGui::BeginMenuBar()) {
     if (ImGui::BeginMenu("File")) {
       if (ImGui::MenuItem("Save")) {
-        std::cout << "aa" << std::endl;
+        std::string str;
+        str = "{}";
+        rapidjson::Document doc;
+        doc.Parse(str.c_str());
+        rapidjson::Value actors(rapidjson::kObjectType);
+        {
+          actors.AddMember("px", pos.x, doc.GetAllocator());
+          actors.AddMember("py", pos.y, doc.GetAllocator());
+          actors.AddMember("pz", pos.z, doc.GetAllocator());
+          actors.AddMember("rx", rot.x, doc.GetAllocator());
+          actors.AddMember("ry", rot.y, doc.GetAllocator());
+          actors.AddMember("rz", rot.z, doc.GetAllocator());
+          actors.AddMember("sx", scale.x, doc.GetAllocator());
+          actors.AddMember("sy", scale.y, doc.GetAllocator());
+          actors.AddMember("sz", scale.z, doc.GetAllocator());
+          actors.AddMember("cpx", position.x, doc.GetAllocator());
+          actors.AddMember("cpy", position.y, doc.GetAllocator());
+          actors.AddMember("cpz", position.z, doc.GetAllocator());
+          actors.AddMember("ctx", target.x, doc.GetAllocator());
+          actors.AddMember("cty", target.y, doc.GetAllocator());
+          actors.AddMember("ctz", target.z, doc.GetAllocator());
+          actors.AddMember("cux", up.x, doc.GetAllocator());
+          actors.AddMember("cuy", up.y, doc.GetAllocator());
+          actors.AddMember("cuz", up.z, doc.GetAllocator());
+        }
+        doc.AddMember("Actors", actors, doc.GetAllocator());
+        rapidjson::StringBuffer buf;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(buf);
+        doc.Accept(writer);
+        file f;
+        f.open("data/scene/scene01.json", file::mode::w);
+        f.write(buf.GetString(), buf.GetSize(), 1);
+        f.close();
       }
       ImGui::EndMenu();
     }
@@ -117,7 +137,7 @@ void editor::setup() {
   renderer::toggle_show_imgui();
 }
 void editor::update(float delta_time) {
-  static texture tex;
+  texture tex;
   tex.fill_color(palette::white());
   std::shared_ptr<drawable> d3 = std::make_shared<drawable>();
 

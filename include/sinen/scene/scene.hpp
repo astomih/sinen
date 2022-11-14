@@ -1,5 +1,7 @@
 ﻿#ifndef SINEN_SCENE_HPP
 #define SINEN_SCENE_HPP
+#include "../actor/actor.hpp"
+#include "../component/component.hpp"
 #include "../input/input.hpp"
 #include "../script/script.hpp"
 #include "../utility/handler.hpp"
@@ -68,6 +70,12 @@ public:
   template <class Implements> static void change_implements() {
     change_impl(std::make_unique<Implements>());
   }
+  static void set_run_script(bool is_run);
+
+  static void load_data(std::string_view data_file_name);
+
+  static void add_actor(actor &_actor);
+  static void remove_actor(actor &_actor);
 
 private:
   static void change_impl(std::unique_ptr<implements> impl);

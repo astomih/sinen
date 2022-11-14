@@ -37,13 +37,18 @@ namespace sinen {
 std::unique_ptr<scene::implements> scene_system::m_impl =
     std::make_unique<scene::implements>();
 scene::state scene_system::m_game_state = scene::state::running;
+bool scene_system::is_run_script = true;
 uint32_t scene_system::m_prev_tick = 0;
+std::list<draw3d> scene_system::m_drawer;
+std::list<actor *> scene_system::m_actors;
 bool scene_system::initialize() {
-  sol::state *lua = (sol::state *)script_system::get_state();
-  std::string str = data_stream::open_as_string(
-      asset_type::Script, main::get_current_scene_number() + ".lua");
-  lua->do_string(str.data());
-  (*lua)["setup"]();
+  if (is_run_script) {
+    sol::state *lua = (sol::state *)script_system::get_state();
+    std::string str = data_stream::open_as_string(
+        asset_type::Script, main::get_current_scene_number() + ".lua");
+    lua->do_string(str.data());
+    (*lua)["setup"]();
+  }
   m_impl->setup();
   m_game_state = scene::state::running;
   m_prev_tick = SDL_GetTicks();
@@ -84,14 +89,19 @@ void scene_system::update_scene() {
     deltaTime = 0.05f;
   }
   m_prev_tick = SDL_GetTicks();
-  sol::state *lua = (sol::state *)script_system::get_state();
-  (*lua)["delta_time"] = deltaTime;
-  (*lua)["keyboard"] = input::keyboard;
-  (*lua)["mouse"] = input::mouse;
-  (*lua)["update"]();
+  if (is_run_script) {
+    sol::state *lua = (sol::state *)script_system::get_state();
+    (*lua)["delta_time"] = deltaTime;
+    (*lua)["keyboard"] = input::keyboard;
+    (*lua)["mouse"] = input::mouse;
+    (*lua)["update"]();
+  }
 
   m_impl->update(deltaTime);
   sound_system::update(deltaTime);
+  for (auto &i : m_drawer) {
+    i.draw();
+  }
 }
 void scene_system::shutdown() {
   m_impl->terminate();

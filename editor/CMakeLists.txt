@@ -20,6 +20,7 @@ include_directories(
 	../external/imgui-filebrowser
   ../external/ImGuiColorTextEdit
 	../external/ImGuizmo
+	../external/rapidjson/include
 )
 link_directories(
 	..

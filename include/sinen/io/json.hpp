@@ -9,7 +9,7 @@ namespace sinen {
  * @brief Json read/write class
  *
  */
-class json : public file {
+class json {
 public:
   /**
    * @brief Json object class
@@ -19,19 +19,35 @@ public:
     friend json;
 
   public:
+    ~object();
     object operator[](const std::string_view &key);
     std::int32_t get_int32();
     std::uint32_t get_uint32();
     std::int64_t get_int64();
     std::uint64_t get_uint64();
+    float get_float();
     double get_double();
     std::string get_string();
     bool get_bool();
 
+    void set_int32(std::int32_t value);
+    void set_uint32(std::uint32_t value);
+    void set_int64(std::int64_t value);
+    void set_uint64(std::uint64_t value);
+    void set_float(float value);
+    void set_double(double value);
+    void set_string(std::string_view value);
+    void set_bool(bool value);
+
+    void add_member(std::string_view key, int value);
+    void add_member(std::string_view key, float value);
+    void add_member(std::string_view key, std::string_view value);
+    void add_member(std::string_view key, object &value);
+
   private:
     object();
     class impl;
-    std::unique_ptr<impl> pimpl;
+    std::shared_ptr<impl> pimpl;
   };
   /**
    * @brief Construct a new json object
@@ -43,25 +59,23 @@ public:
    *
    */
   ~json();
-
   /**
-   * @brief Read json file
+   * @brief Parse json string
    *
-   * @param path
-   * @return true
-   * @return false
+   * @param str
    */
-  bool read(const std::string_view &path);
-  /**
-   * @brief Write json file
-   *
-   * @param path
-   * @return true
-   * @return false
-   */
-  bool write(const std::string_view &path);
+  void parse(std::string_view str);
 
-  object operator[](const std::string_view &key);
+  void add_member(std::string_view key, int value);
+  void add_member(std::string_view key, float value);
+  void add_member(std::string_view key, std::string_view value);
+  void add_member(std::string_view key, object &value);
+
+  object create_object();
+
+  std::string to_string();
+
+  object operator[](std::string_view key);
 
 private:
   friend object;

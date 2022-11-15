@@ -1,10 +1,9 @@
 #include "scene_system.hpp"
-
-#include <sinen.hpp>
-
-#include <rapidjson/document.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
+#include <camera/camera.hpp>
+#include <color/color.hpp>
+#include <color/palette.hpp>
+#include <io/data_stream.hpp>
+#include <io/json.hpp>
 
 namespace sinen {
 
@@ -27,33 +26,33 @@ void scene::set_run_script(bool is_run) {
   scene_system::set_run_script(is_run);
 }
 void scene::load_data(std::string_view data_file_name) {
-  rapidjson::Document doc;
+  json doc;
   auto str = data_stream::open_as_string(asset_type::Scene, data_file_name);
-  doc.Parse(str.data());
+  doc.parse(str.data());
   draw3d d;
   texture tex;
   tex.fill_color(palette::white());
-  d.position.x = doc["Actors"]["px"].GetFloat();
-  d.position.y = doc["Actors"]["py"].GetFloat();
-  d.position.z = doc["Actors"]["pz"].GetFloat();
-  d.rotation.x = doc["Actors"]["rx"].GetFloat();
-  d.rotation.y = doc["Actors"]["ry"].GetFloat();
-  d.rotation.z = doc["Actors"]["rz"].GetFloat();
-  d.scale.x = doc["Actors"]["sx"].GetFloat();
-  d.scale.y = doc["Actors"]["sy"].GetFloat();
-  d.scale.z = doc["Actors"]["sz"].GetFloat();
+  d.position.x = doc["Actors"]["px"].get_float();
+  d.position.y = doc["Actors"]["py"].get_float();
+  d.position.z = doc["Actors"]["pz"].get_float();
+  d.rotation.x = doc["Actors"]["rx"].get_float();
+  d.rotation.y = doc["Actors"]["ry"].get_float();
+  d.rotation.z = doc["Actors"]["rz"].get_float();
+  d.scale.x = doc["Actors"]["sx"].get_float();
+  d.scale.y = doc["Actors"]["sy"].get_float();
+  d.scale.z = doc["Actors"]["sz"].get_float();
   d.vertex_name = "BOX";
   d.texture_handle = tex;
   vector3 cp, ct, cu;
-  cp.x = doc["Actors"]["cpx"].GetFloat();
-  cp.y = doc["Actors"]["cpy"].GetFloat();
-  cp.z = doc["Actors"]["cpz"].GetFloat();
-  ct.x = doc["Actors"]["ctx"].GetFloat();
-  ct.y = doc["Actors"]["cty"].GetFloat();
-  ct.z = doc["Actors"]["ctz"].GetFloat();
-  cu.x = doc["Actors"]["cux"].GetFloat();
-  cu.y = doc["Actors"]["cuy"].GetFloat();
-  cu.z = doc["Actors"]["cuz"].GetFloat();
+  cp.x = doc["Actors"]["cpx"].get_float();
+  cp.y = doc["Actors"]["cpy"].get_float();
+  cp.z = doc["Actors"]["cpz"].get_float();
+  ct.x = doc["Actors"]["ctx"].get_float();
+  ct.y = doc["Actors"]["cty"].get_float();
+  ct.z = doc["Actors"]["ctz"].get_float();
+  cu.x = doc["Actors"]["cux"].get_float();
+  cu.y = doc["Actors"]["cuy"].get_float();
+  cu.z = doc["Actors"]["cuz"].get_float();
   camera::lookat(cp, ct, cu);
   scene_system::m_drawer.push_back(d);
 }

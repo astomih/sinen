@@ -16,6 +16,8 @@
 
 #include <camera/camera.hpp>
 #include <input/input.hpp>
+#include <io/file.hpp>
+#include <io/json.hpp>
 #include <logger/logger.hpp>
 #include <main/main.hpp>
 #include <math/random.hpp>
@@ -95,11 +97,19 @@ bool main_system::initialize() {
   Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
   logger::info("Sub system activating");
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
-  std::ifstream ifs("./api");
   std::string str;
-  if (ifs.fail())
+  file f;
+  if (f.open("settings.json", file::mode::r)) {
+    char raw[256];
+    f.read(raw, 256, 1);
+    auto s = std::string(raw);
+    json j;
+    j.parse(s);
+    str = j["GraphicsAPI"].get_string();
+    f.close();
+
+  } else
     str = "Vulkan";
-  std::getline(ifs, str);
   if (str.compare("Vulkan") == 0) {
     window_system::initialize(
         "sinen engine version:0.0.1, Graphics backends:Vulkan",

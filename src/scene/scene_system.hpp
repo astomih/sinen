@@ -1,6 +1,9 @@
 #include <drawable/drawable_wrapper.hpp>
 #include <scene/scene.hpp>
 
+#include <list>
+#include <vector>
+
 namespace sinen {
 class scene_system {
 public:
@@ -49,7 +52,8 @@ public:
 private:
   static bool is_run_script;
   static std::unique_ptr<scene::implements> m_impl;
-  static std::list<actor *> m_actors;
+  using ref_actor = std::reference_wrapper<actor>;
+  static std::vector<ref_actor> m_actors;
   static void process_input();
   static void update_scene();
   static scene::state m_game_state;

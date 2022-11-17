@@ -4,10 +4,9 @@
 namespace sinen {
 actor::actor(scene &scene) : m_scene(scene) {}
 actor::~actor() {}
-void actor::update(float delta_time) {}
-void actor::update_components(float delta_time) {
-  for (auto &c : m_components.data) {
-    c.second->update(delta_time);
+void actor::update(float delta_time) {
+  for (auto &c : m_components) {
+    c.get().update(delta_time);
   }
 }
 matrix4 actor::get_world_matrix() const {
@@ -17,5 +16,11 @@ matrix4 actor::get_world_matrix() const {
   s[2][2] = m_scale.z;
   return s * matrix4::create_from_quaternion(m_rotation) *
          matrix4::create_translation(m_position);
+}
+
+void actor::add_component(component &comp) { m_components.push_back(comp); }
+void actor::remove_component(component &comp) {
+  std::erase_if(m_components,
+                [&comp](ref_component &c) { return &c.get() == &comp; });
 }
 } // namespace sinen

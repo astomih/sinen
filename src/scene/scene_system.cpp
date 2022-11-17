@@ -40,7 +40,7 @@ scene::state scene_system::m_game_state = scene::state::running;
 bool scene_system::is_run_script = true;
 uint32_t scene_system::m_prev_tick = 0;
 std::list<draw3d> scene_system::m_drawer;
-std::list<actor *> scene_system::m_actors;
+std::vector<scene_system::ref_actor> scene_system::m_actors;
 bool scene_system::initialize() {
   if (is_run_script) {
     sol::state *lua = (sol::state *)script_system::get_state();
@@ -89,6 +89,14 @@ void scene_system::update_scene() {
     deltaTime = 0.05f;
   }
   m_prev_tick = SDL_GetTicks();
+  for (auto itr = m_actors.begin(); itr != m_actors.end();) {
+    if ((*itr).get().get_state() == actor::state::active) {
+      (*itr).get().update(deltaTime);
+      itr++;
+    } else if ((*itr).get().get_state() == actor::state::dead) {
+      itr = m_actors.erase(itr);
+    }
+  }
   if (is_run_script) {
     sol::state *lua = (sol::state *)script_system::get_state();
     (*lua)["delta_time"] = deltaTime;
@@ -96,7 +104,6 @@ void scene_system::update_scene() {
     (*lua)["mouse"] = input::mouse;
     (*lua)["update"]();
   }
-
   m_impl->update(deltaTime);
   sound_system::update(deltaTime);
   for (auto &i : m_drawer) {
@@ -106,6 +113,12 @@ void scene_system::update_scene() {
 void scene_system::shutdown() {
   m_impl->terminate();
   m_game_state = scene::state::quit;
+}
+
+void scene_system::add_actor(actor &_actor) { m_actors.push_back(_actor); }
+void scene_system::remove_actor(actor &_actor) {
+  std::erase_if(m_actors,
+                [&_actor](auto &act) { return &act.get() == &_actor; });
 }
 
 } // namespace sinen

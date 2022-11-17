@@ -82,24 +82,28 @@ void menu() {
         j.parse(str);
         auto actors = j.create_object();
         {
-          actors.add_member("px", pos.x);
-          actors.add_member("py", pos.y);
-          actors.add_member("pz", pos.z);
-          actors.add_member("rx", rot.x);
-          actors.add_member("ry", rot.y);
-          actors.add_member("rz", rot.z);
-          actors.add_member("sx", scale.x);
-          actors.add_member("sy", scale.y);
-          actors.add_member("sz", scale.z);
-          actors.add_member("cpx", position.x);
-          actors.add_member("cpy", position.y);
-          actors.add_member("cpz", position.z);
-          actors.add_member("ctx", target.x);
-          actors.add_member("cty", target.y);
-          actors.add_member("ctz", target.z);
-          actors.add_member("cux", up.x);
-          actors.add_member("cuy", up.y);
-          actors.add_member("cuz", up.z);
+          auto actor1 = j.create_object();
+          {
+            actors.add_member("px", pos.x);
+            actors.add_member("py", pos.y);
+            actors.add_member("pz", pos.z);
+            actors.add_member("rx", rot.x);
+            actors.add_member("ry", rot.y);
+            actors.add_member("rz", rot.z);
+            actors.add_member("sx", scale.x);
+            actors.add_member("sy", scale.y);
+            actors.add_member("sz", scale.z);
+            actors.add_member("cpx", position.x);
+            actors.add_member("cpy", position.y);
+            actors.add_member("cpz", position.z);
+            actors.add_member("ctx", target.x);
+            actors.add_member("cty", target.y);
+            actors.add_member("ctz", target.z);
+            actors.add_member("cux", up.x);
+            actors.add_member("cuy", up.y);
+            actors.add_member("cuz", up.z);
+          }
+          actors.add_member("Actor1", actor1);
         }
         j.add_member("Actors", actors);
         auto s = j.to_string();

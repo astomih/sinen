@@ -25,6 +25,8 @@ void scene::change_impl(std::unique_ptr<scene::implements> impl) {
 void scene::set_run_script(bool is_run) {
   scene_system::set_run_script(is_run);
 }
+void scene::add_actor(actor &_actor) { scene_system::add_actor(_actor); }
+void scene::remove_actor(actor &_actor) { scene_system::remove_actor(_actor); }
 void scene::load_data(std::string_view data_file_name) {
   json doc;
   auto str = data_stream::open_as_string(asset_type::Scene, data_file_name);

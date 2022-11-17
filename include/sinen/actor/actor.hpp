@@ -7,7 +7,6 @@
 #include "../math/vector3.hpp"
 #include "utility/handler.hpp"
 #include <cstdint>
-#include <list>
 #include <memory>
 #include <type_traits>
 #include <unordered_map>
@@ -40,16 +39,11 @@ public:
   virtual ~actor();
   /**
    * @brief Update Actor
-   *
+   * @details This function is called every frame by the scene.
+   * Components are updated in the order they were added.
    * @param deltaTime Delta time of the frame
    */
   virtual void update(float delta_time);
-  /**
-   * @brief Update component
-   *
-   * @param deltaTime Delta time of the frame
-   */
-  virtual void update_components(float delta_time);
   /**
    * @brief Get the position vector
    *
@@ -133,6 +127,11 @@ public:
    * @param stateb Actor state object
    */
   void set_state(state state) { m_state = state; }
+  // Get state
+  bool is_active() const { return m_state == state::active; }
+  bool is_paused() const { return m_state == state::paused; }
+  bool is_dead() const { return m_state == state::dead; }
+
   /**
    * @brief Get the parent scene object
    *
@@ -140,16 +139,8 @@ public:
    */
   scene &get_scene() { return m_scene; }
 
-  template <class T, typename... Args> handle_t add_component(Args &&...args) {
-    return m_components.create(*this, std::forward<Args>(args)...);
-  }
-  template <class T> T &get_component(const handle_t &handle) {
-    return m_components.get<T>(handle);
-  }
-
-  void remove_component(const handle_t &stored_value) {
-    m_components.remove(stored_value);
-  }
+  void add_component(component &comp);
+  void remove_component(component &comp);
 
 private:
   scene &m_scene;
@@ -157,7 +148,8 @@ private:
   vector3 m_position;
   quaternion m_rotation;
   vector3 m_scale;
-  handler<component> m_components;
+  using ref_component = std::reference_wrapper<component>;
+  std::vector<ref_component> m_components;
 };
 } // namespace sinen
 #endif // !SINEN_ACTOR_HPP

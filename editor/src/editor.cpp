@@ -20,10 +20,10 @@ namespace sinen {
 float mat[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1};
 float deltam[16];
 vector3 pos, rot, scale;
-vector3 position(0.0f, -10.0f, 10.f);
+vector3 position(0.0f, -1.0f, 10.f);
 vector3 target = vector3(0, 0, 0);
 vector3 up = vector3(0.f, 0.f, 1.f);
-void imguizmo() {
+void editor::imguizmo() {
   ImGui::SetNextWindowPos({0, 0});
   ImGui::SetNextWindowSize({250, 360});
   ImGui::Begin("Camera", nullptr,
@@ -57,7 +57,7 @@ void imguizmo() {
   camera::lookat(position, target, up);
   ImGui::End();
 }
-void inspector() {
+void editor::inspector() {
   ImGui::SetNextWindowPos({1030, 0});
   ImGui::SetNextWindowSize({250, 720});
   ImGui::Begin("Inspector");
@@ -67,8 +67,18 @@ void inspector() {
   ImGui::DragFloat3("Rotation", &rot.x);
   ImGui::DragFloat3("Scale", &scale.x);
   ImGuizmo::RecomposeMatrixFromComponents(&pos.x, &rot.x, &scale.x, mat);
+
+  ImGui::Separator();
+  ImGui::Text("Actors");
+  static int e = 0;
+  ImGui::RadioButton("actor1", &e, 0);
+  ImGui::RadioButton("actor2", &e, 1);
+  static int item = 1;
+  ImGui::Combo("combo", &item, "aaaa\0bbbb\0cccc\0dddd\0eeee\0\0");
+
+  ImGui::End();
 }
-void menu() {
+void editor::menu() {
 
   ImGui::SetNextWindowPos({250, 0});
   ImGui::SetNextWindowSize({780, 20});
@@ -80,28 +90,32 @@ void menu() {
         str = "{}";
         json j;
         j.parse(str);
+        auto camera_data = j.create_object();
+        {
+          camera_data.add_member("cpx", position.x);
+          camera_data.add_member("cpy", position.y);
+          camera_data.add_member("cpz", position.z);
+          camera_data.add_member("ctx", target.x);
+          camera_data.add_member("cty", target.y);
+          camera_data.add_member("ctz", target.z);
+          camera_data.add_member("cux", up.x);
+          camera_data.add_member("cuy", up.y);
+          camera_data.add_member("cuz", up.z);
+        }
+        j.add_member("Camera", camera_data);
         auto actors = j.create_object();
         {
           auto actor1 = j.create_object();
           {
-            actors.add_member("px", pos.x);
-            actors.add_member("py", pos.y);
-            actors.add_member("pz", pos.z);
-            actors.add_member("rx", rot.x);
-            actors.add_member("ry", rot.y);
-            actors.add_member("rz", rot.z);
-            actors.add_member("sx", scale.x);
-            actors.add_member("sy", scale.y);
-            actors.add_member("sz", scale.z);
-            actors.add_member("cpx", position.x);
-            actors.add_member("cpy", position.y);
-            actors.add_member("cpz", position.z);
-            actors.add_member("ctx", target.x);
-            actors.add_member("cty", target.y);
-            actors.add_member("ctz", target.z);
-            actors.add_member("cux", up.x);
-            actors.add_member("cuy", up.y);
-            actors.add_member("cuz", up.z);
+            actor1.add_member("px", pos.x);
+            actor1.add_member("py", pos.y);
+            actor1.add_member("pz", pos.z);
+            actor1.add_member("rx", rot.x);
+            actor1.add_member("ry", rot.y);
+            actor1.add_member("rz", rot.z);
+            actor1.add_member("sx", scale.x);
+            actor1.add_member("sy", scale.y);
+            actor1.add_member("sz", scale.z);
           }
           actors.add_member("Actor1", actor1);
         }

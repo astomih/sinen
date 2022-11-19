@@ -10,7 +10,7 @@ namespace sinen {
  */
 class camera {
 public:
-  class object {
+  class sub {
     friend camera;
 
   public:
@@ -142,11 +142,11 @@ public:
    */
   static matrix4 &projection() { return m_projection; }
 
-  static object create_object_from_init();
-  static object create_object_from_main();
+  static sub create_sub_camera_from_init();
+  static sub create_sub_camera_from_main();
 
 private:
-  friend object;
+  friend sub;
   // Position of camera
   static vector3 m_position;
   // Camera target vector

@@ -13,17 +13,18 @@
 #include "markdown.hpp"
 #include "texteditor.hpp"
 
+#include <sinen/sinen.hpp>
+
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 namespace sinen {
-float mat[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1};
 float deltam[16];
-vector3 pos, rot, scale;
-vector3 position(0.0f, -1.0f, 10.f);
-vector3 target = vector3(0, 0, 0);
-vector3 up = vector3(0.f, 0.f, 1.f);
-void editor::imguizmo() {
+camera::sub editor::main_camera_clone;
+std::vector<actor> editor::m_actors;
+std::vector<float *> editor::m_matrices;
+int editor::index = 0;
+void editor::gizmo() {
   ImGui::SetNextWindowPos({0, 0});
   ImGui::SetNextWindowSize({250, 360});
   ImGui::Begin("Camera", nullptr,
@@ -48,13 +49,17 @@ void editor::imguizmo() {
     mCurrentGizmoOperation = ImGuizmo::SCALE;
   ImGuizmo::SetRect(0, 0, window::size().x, window::size().y);
   ImGuizmo::AllowAxisFlip(false);
-  ImGuizmo::Manipulate(camera::view().get(), camera::projection().get(),
-                       mCurrentGizmoOperation, mCurrentGizmoMode, mat, deltam,
-                       nullptr);
-  ImGui::SliderFloat3("Position", &position.x, -10.0f, 10.0f);
-  ImGui::SliderFloat3("Target", &target.x, -10.0f, 10.0f);
-  ImGui::SliderFloat3("Up", &up.x, -1.0f, 1.0f);
-  camera::lookat(position, target, up);
+  if (m_matrices.size() > 0) {
+    ImGuizmo::Manipulate(camera::view().get(), camera::projection().get(),
+                         mCurrentGizmoOperation, mCurrentGizmoMode,
+                         m_matrices[index], deltam, nullptr);
+  }
+  ImGui::SliderFloat3("Position", &main_camera_clone.position().x, -10.0f,
+                      10.0f);
+  ImGui::SliderFloat3("Target", &main_camera_clone.target().x, -10.0f, 10.0f);
+  ImGui::SliderFloat3("Up", &main_camera_clone.up().x, -1.0f, 1.0f);
+  camera::lookat(main_camera_clone.position(), main_camera_clone.target(),
+                 main_camera_clone.up());
   ImGui::End();
 }
 void editor::inspector() {
@@ -62,19 +67,34 @@ void editor::inspector() {
   ImGui::SetNextWindowSize({250, 720});
   ImGui::Begin("Inspector");
   ImGui::Text("Transform");
-  ImGuizmo::DecomposeMatrixToComponents(mat, &pos.x, &rot.x, &scale.x);
-  ImGui::DragFloat3("Position", &pos.x);
-  ImGui::DragFloat3("Rotation", &rot.x);
-  ImGui::DragFloat3("Scale", &scale.x);
-  ImGuizmo::RecomposeMatrixFromComponents(&pos.x, &rot.x, &scale.x, mat);
+  vector3 pos, rot, scale;
+  if (m_actors.size() > 0) {
+    ImGuizmo::DecomposeMatrixToComponents(m_matrices[index], &pos.x, &rot.x,
+                                          &scale.x);
+    ImGui::DragFloat3("Position", &pos.x);
+    ImGui::DragFloat3("Rotation", &rot.x);
+    ImGui::DragFloat3("Scale", &scale.x);
+    ImGuizmo::RecomposeMatrixFromComponents(&pos.x, &rot.x, &scale.x,
+                                            m_matrices[index]);
+    m_actors[index].set_position(pos);
+    m_actors[index].set_rotation(rot);
+    m_actors[index].set_scale(scale);
+  }
 
   ImGui::Separator();
   ImGui::Text("Actors");
-  static int e = 0;
-  ImGui::RadioButton("actor1", &e, 0);
-  ImGui::RadioButton("actor2", &e, 1);
+  for (int i = 0; i < m_actors.size(); i++)
+    ImGui::RadioButton(std::string("actor" + std::to_string(i)).c_str(), &index,
+                       i);
   static int item = 1;
-  ImGui::Combo("combo", &item, "aaaa\0bbbb\0cccc\0dddd\0eeee\0\0");
+  /* ImGui::Combo("combo", &item, "aaaa\0bbbb\0cccc\0dddd\0eeee\0\0"); */
+  if (ImGui::Button("Add Actor")) {
+    m_actors.push_back(actor());
+    auto m = matrix4::identity;
+    float f[16];
+    memcpy(f, m.mat, sizeof(float) * 16);
+    m_matrices.push_back(f);
+  }
 
   ImGui::End();
 }
@@ -92,32 +112,37 @@ void editor::menu() {
         j.parse(str);
         auto camera_data = j.create_object();
         {
-          camera_data.add_member("cpx", position.x);
-          camera_data.add_member("cpy", position.y);
-          camera_data.add_member("cpz", position.z);
-          camera_data.add_member("ctx", target.x);
-          camera_data.add_member("cty", target.y);
-          camera_data.add_member("ctz", target.z);
-          camera_data.add_member("cux", up.x);
-          camera_data.add_member("cuy", up.y);
-          camera_data.add_member("cuz", up.z);
+          camera_data.add_member("cpx", main_camera_clone.position().x);
+          camera_data.add_member("cpy", main_camera_clone.position().y);
+          camera_data.add_member("cpz", main_camera_clone.position().z);
+          camera_data.add_member("ctx", main_camera_clone.target().x);
+          camera_data.add_member("cty", main_camera_clone.target().y);
+          camera_data.add_member("ctz", main_camera_clone.target().z);
+          camera_data.add_member("cux", main_camera_clone.up().x);
+          camera_data.add_member("cuy", main_camera_clone.up().y);
+          camera_data.add_member("cuz", main_camera_clone.up().z);
         }
         j.add_member("Camera", camera_data);
         auto actors = j.create_object();
         {
-          auto actor1 = j.create_object();
-          {
-            actor1.add_member("px", pos.x);
-            actor1.add_member("py", pos.y);
-            actor1.add_member("pz", pos.z);
-            actor1.add_member("rx", rot.x);
-            actor1.add_member("ry", rot.y);
-            actor1.add_member("rz", rot.z);
-            actor1.add_member("sx", scale.x);
-            actor1.add_member("sy", scale.y);
-            actor1.add_member("sz", scale.z);
+          for (int i = 0; i < m_actors.size(); i++) {
+            auto act = j.create_object();
+            {
+              vector3 pos = m_actors[i].get_position();
+              vector3 rot = m_actors[i].get_rotation();
+              vector3 scale = m_actors[i].get_scale();
+              act.add_member("px", pos.x);
+              act.add_member("py", pos.y);
+              act.add_member("pz", pos.z);
+              act.add_member("rx", rot.x);
+              act.add_member("ry", rot.y);
+              act.add_member("rz", rot.z);
+              act.add_member("sx", scale.x);
+              act.add_member("sy", scale.y);
+              act.add_member("sz", scale.z);
+            }
+            actors.add_member(std::string("Actor" + std::to_string(i)), act);
           }
-          actors.add_member("Actor1", actor1);
         }
         j.add_member("Actors", actors);
         auto s = j.to_string();
@@ -146,23 +171,25 @@ void editor::setup() {
   renderer::add_imgui_function(menu);
   renderer::add_imgui_function(texteditor);
   renderer::add_imgui_function(markdown);
-  renderer::add_imgui_function(imguizmo);
+  renderer::add_imgui_function(gizmo);
   renderer::add_imgui_function(log_window);
   renderer::add_imgui_function(inspector);
   // renderer::add_imgui_function(func_file_dialog);
   renderer::toggle_show_imgui();
 }
 void editor::update(float delta_time) {
-  texture tex;
-  tex.fill_color(palette::white());
-  std::shared_ptr<drawable> d3 = std::make_shared<drawable>();
+  for (int i = 0; i < m_actors.size(); i++) {
+    texture tex;
+    tex.fill_color(palette::white());
+    std::shared_ptr<drawable> d3 = std::make_shared<drawable>();
 
-  d3->binding_texture = tex;
-  d3->param.proj = camera::projection();
-  d3->param.view = camera::view();
-  d3->param.world = matrix4(mat);
-  d3->vertexIndex = "BOX";
-  renderer::draw3d(d3);
+    d3->binding_texture = tex;
+    d3->param.proj = camera::projection();
+    d3->param.view = camera::view();
+    d3->param.world = matrix4(m_matrices[i]);
+    d3->vertexIndex = "BOX";
+    renderer::draw3d(d3);
+  }
   if (renderer::is_show_imgui() &&
       input::keyboard.get_key_state(key_code::F5) == button_state::Pressed) {
     m_impl->is_run = true;

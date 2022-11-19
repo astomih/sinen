@@ -13,19 +13,18 @@ vector3 camera::m_up = vector3(0.f, 0.f, 1.f);
 matrix4 camera::m_view = matrix4::lookat(m_position, m_target, m_up);
 matrix4 camera::m_projection =
     matrix4::perspective(math::to_radians(70.f), 1280.f / 720.f, .1f, 1000.f);
-void camera::object::lookat(const vector3 &position, const vector3 &target,
-                            const vector3 &up) {
+void camera::sub::lookat(const vector3 &position, const vector3 &target,
+                         const vector3 &up) {
   m_position = position;
   m_target = target;
   m_up = up;
   m_view = matrix4::lookat(m_position, m_target, m_up);
 }
-void camera::object::perspective(float fov, float aspect, float near,
-                                 float far) {
+void camera::sub::perspective(float fov, float aspect, float near, float far) {
   m_projection = matrix4::perspective(math::to_radians(fov), aspect, near, far);
 }
-void camera::object::orthographic(float width, float height, float near,
-                                  float far) {
+void camera::sub::orthographic(float width, float height, float near,
+                               float far) {
   m_projection = matrix4::ortho(width, height, near, far);
 }
 void camera::lookat(const vector3 &position, const vector3 &target,
@@ -42,8 +41,8 @@ void camera::orthographic(float width, float height, float near, float far) {
   m_projection = matrix4::ortho(width, height, near, far);
 }
 
-camera::object camera::create_object_from_init() {
-  object obj;
+camera::sub camera::create_sub_camera_from_init() {
+  sub obj;
   obj.m_position = vector3(0.f, -1.f, 10.f);
   obj.m_target = vector3(0.f, 1.f, 0.f);
   obj.m_up = vector3(0.f, 0.f, 1.f);
@@ -52,9 +51,9 @@ camera::object camera::create_object_from_init() {
       math::to_radians(70.f), window::size().x / window::size().y, .1f, 1000.f);
   return obj;
 }
-camera::object camera::create_object_from_main() {
-  object obj;
-  memcpy(&obj, &camera::m_position, sizeof(camera::object));
+camera::sub camera::create_sub_camera_from_main() {
+  sub obj;
+  memcpy(&obj, &camera::m_position, sizeof(camera::sub));
   return obj;
 }
 

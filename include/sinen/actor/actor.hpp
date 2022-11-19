@@ -28,9 +28,8 @@ public:
   /**
    * @brief Construct a new base actor object
    *
-   * @param scene Parent scene
    */
-  actor(scene &scene);
+  actor();
 
   /**
    * @brief Destroy the base actor object
@@ -93,13 +92,13 @@ public:
    *
    * @return const Quaternion&
    */
-  const quaternion &get_rotation() const { return m_rotation; }
+  const vector3 &get_rotation() const { return m_rotation; }
   /**
    * @brief Set the rotation object
    *
    * @param rotation  Quaternion
    */
-  void set_rotation(const quaternion &rotation) { m_rotation = rotation; }
+  void set_rotation(const vector3 &rotation) { m_rotation = rotation; }
   /**
    * @brief Get the world transform matrix
    *
@@ -113,7 +112,8 @@ public:
    * @return vector3 Forward vector
    */
   vector3 get_forward(const vector3 &up) const {
-    return vector3::transform(up, m_rotation);
+    return vector3();
+    // return vector3::transform(up, m_rotation);
   }
   /**
    * @brief Get the State object
@@ -132,21 +132,13 @@ public:
   bool is_paused() const { return m_state == state::paused; }
   bool is_dead() const { return m_state == state::dead; }
 
-  /**
-   * @brief Get the parent scene object
-   *
-   * @return scene& parent scene
-   */
-  scene &get_scene() { return m_scene; }
-
   void add_component(component &comp);
   void remove_component(component &comp);
 
 private:
-  scene &m_scene;
   state m_state;
   vector3 m_position;
-  quaternion m_rotation;
+  vector3 m_rotation;
   vector3 m_scale;
   using ref_component = std::reference_wrapper<component>;
   std::vector<ref_component> m_components;

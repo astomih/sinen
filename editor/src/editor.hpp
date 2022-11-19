@@ -33,11 +33,13 @@ public:
   void update(float delta_time) final override;
 
 private:
-  static void imguizmo();
+  static void gizmo();
   static void inspector();
   static void menu();
-  camera::object main_camera;
-  std::vector<actor> actors;
+  static camera::sub main_camera_clone;
+  static std::vector<actor> m_actors;
+  static std::vector<float *> m_matrices;
+  static int index;
   class implements;
   std::unique_ptr<implements> m_impl;
 };

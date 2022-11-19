@@ -13,7 +13,14 @@ namespace sinen {
  */
 class matrix4 {
 public:
-  float mat[4][4]{};
+  union type {
+    float m[4][4];
+    float m16[16];
+
+    float *operator[](const std::size_t &i) { return m[i]; }
+    const float *operator[](const std::size_t &i) const { return m[i]; }
+  };
+  type mat;
 
   /**
    * @brief Construct a new matrix4 object
@@ -26,22 +33,22 @@ public:
    * @param inMat  matrix4x4 to copy
    */
   explicit matrix4(float inMat[4][4]) {
-    memcpy(mat, inMat, 16 * sizeof(float));
+    memcpy(mat.m, inMat, 16 * sizeof(float));
   }
   /**
    * @brief Construct a new matrix4 object
    *
    * @param inMat  matrix4x4 to copy
    */
-  explicit matrix4(float inMat[16]) { memcpy(mat, inMat, 16 * sizeof(float)); }
+  explicit matrix4(float inMat[16]) {
+    memcpy(mat.m16, inMat, 16 * sizeof(float));
+  }
   /**
    * @brief Cast to const float*
    *
    * @return const float* pointer to matrix4x4
    */
-  [[nodiscard]] const float *get() const {
-    return reinterpret_cast<const float *>(&mat[0][0]);
-  }
+  float *get() { return reinterpret_cast<float*>(mat.m16); }
 
   float *operator[](const size_t index) { return mat[index]; }
 

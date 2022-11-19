@@ -22,7 +22,7 @@ namespace sinen {
 float deltam[16];
 camera::sub editor::main_camera_clone;
 std::vector<actor> editor::m_actors;
-std::vector<float *> editor::m_matrices;
+std::vector<matrix4> editor::m_matrices;
 int editor::index = 0;
 void editor::gizmo() {
   ImGui::SetNextWindowPos({0, 0});
@@ -52,7 +52,7 @@ void editor::gizmo() {
   if (m_matrices.size() > 0) {
     ImGuizmo::Manipulate(camera::view().get(), camera::projection().get(),
                          mCurrentGizmoOperation, mCurrentGizmoMode,
-                         m_matrices[index], deltam, nullptr);
+                         m_matrices[index].mat.m16, deltam, nullptr);
   }
   ImGui::SliderFloat3("Position", &main_camera_clone.position().x, -10.0f,
                       10.0f);
@@ -69,13 +69,13 @@ void editor::inspector() {
   ImGui::Text("Transform");
   vector3 pos, rot, scale;
   if (m_actors.size() > 0) {
-    ImGuizmo::DecomposeMatrixToComponents(m_matrices[index], &pos.x, &rot.x,
-                                          &scale.x);
+    ImGuizmo::DecomposeMatrixToComponents(m_matrices[index].mat.m16, &pos.x,
+                                          &rot.x, &scale.x);
     ImGui::DragFloat3("Position", &pos.x);
     ImGui::DragFloat3("Rotation", &rot.x);
     ImGui::DragFloat3("Scale", &scale.x);
     ImGuizmo::RecomposeMatrixFromComponents(&pos.x, &rot.x, &scale.x,
-                                            m_matrices[index]);
+                                            m_matrices[index].mat.m16);
     m_actors[index].set_position(pos);
     m_actors[index].set_rotation(rot);
     m_actors[index].set_scale(scale);
@@ -91,9 +91,7 @@ void editor::inspector() {
   if (ImGui::Button("Add Actor")) {
     m_actors.push_back(actor());
     auto m = matrix4::identity;
-    float f[16];
-    memcpy(f, m.mat, sizeof(float) * 16);
-    m_matrices.push_back(f);
+    m_matrices.push_back(m);
   }
 
   ImGui::End();

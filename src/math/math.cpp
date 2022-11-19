@@ -352,6 +352,16 @@ matrix4 matrix4::create_from_quaternion(const class quaternion &q) {
 
   return matrix4(mat);
 }
+quaternion quaternion::from_euler(const vector3 &euler) {
+  quaternion q;
+  q = quaternion::concatenate(
+      q, quaternion(vector3::unit_z, math::to_radians(euler.z)));
+  q = quaternion::concatenate(
+      q, quaternion(vector3::unit_y, math::to_radians(euler.y)));
+  q = quaternion::concatenate(
+      q, quaternion(vector3::unit_x, math::to_radians(euler.x)));
+  return q;
+}
 
 vector3 quaternion::to_euler(const quaternion &r) {
   float x = r.x;

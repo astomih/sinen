@@ -131,6 +131,13 @@ public:
     return retVal;
   }
   /**
+   * @brief Euler angles to quaternion
+   *
+   * @param euler Angles
+   * @return quaternion Output
+   */
+  static quaternion from_euler(const vector3 &euler);
+  /**
    * @brief Quaternion to Euler angles
    *
    * @param r rotation quaternion

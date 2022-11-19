@@ -38,7 +38,7 @@ private:
   static void menu();
   static camera::sub main_camera_clone;
   static std::vector<actor> m_actors;
-  static std::vector<float *> m_matrices;
+  static std::vector<matrix4> m_matrices;
   static int index;
   class implements;
   std::unique_ptr<implements> m_impl;

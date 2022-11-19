@@ -27,6 +27,14 @@ inline std::string extract_path_without_extension(const std::string &fn) {
 
   return fn.substr(0, pos);
 }
+std::string to_string(float val) {
+  char buffer[std::numeric_limits<float>::max_exponent10 + 10];
+  std::sprintf(buffer, "%f", val);
+  std::string str = buffer;
+  str.erase(str.find_last_not_of('0') + 1, std::string::npos);
+  str.erase(str.find_last_not_of('.') + 1, std::string::npos);
+  return str;
+}
 
 void write_version(std::string &write_data) {
   write_data += "version " + version + "\n";
@@ -83,7 +91,7 @@ int main(int argc, char *argv[]) {
     if (SDL_RWwrite(file, write_data.data(), 1, len) != len) {
       std::cout << "Error: Failed to write data." << std::endl;
     } else {
-      std::cout << std::to_string(len) << " 1-byte block wrote.";
+      std::cout << to_string(len) << " 1-byte block wrote.";
     }
     SDL_RWclose(file);
   }
@@ -96,25 +104,21 @@ void write_vertex(std::string &write_data, sinen::assimp_model &model) {
       for (auto &v : j.body.vertices) {
         if (z_mode) {
           write_data +=
-              std::to_string(v.position.x) + " " +
-              std::to_string(v.position.z) + " " +
-              std::to_string(v.position.y) + " " + std::to_string(v.normal.x) +
-              " " + std::to_string(v.normal.z) + " " +
-              std::to_string(v.normal.x) + " " + std::to_string(v.uv.x) + " " +
-              std::to_string(v.uv.y) + " " + std::to_string(v.rgba.r) + " " +
-              std::to_string(v.rgba.g) + " " + std::to_string(v.rgba.b) + " " +
-              std::to_string(v.rgba.a) + "\n";
+              to_string(v.position.x) + " " + to_string(v.position.z) + " " +
+              to_string(v.position.y) + " " + to_string(v.normal.x) + " " +
+              to_string(v.normal.z) + " " + to_string(v.normal.x) + " " +
+              to_string(v.uv.x) + " " + to_string(v.uv.y) + " " +
+              to_string(v.rgba.r) + " " + to_string(v.rgba.g) + " " +
+              to_string(v.rgba.b) + " " + to_string(v.rgba.a) + "\n";
 
         } else {
           write_data +=
-              std::to_string(v.position.x) + " " +
-              std::to_string(v.position.y) + " " +
-              std::to_string(v.position.z) + " " + std::to_string(v.normal.x) +
-              " " + std::to_string(v.normal.y) + " " +
-              std::to_string(v.normal.z) + " " + std::to_string(v.uv.x) + " " +
-              std::to_string(v.uv.y) + " " + std::to_string(v.rgba.r) + " " +
-              std::to_string(v.rgba.g) + " " + std::to_string(v.rgba.b) + " " +
-              std::to_string(v.rgba.a) + "\n";
+              to_string(v.position.x) + " " + to_string(v.position.y) + " " +
+              to_string(v.position.z) + " " + to_string(v.normal.x) + " " +
+              to_string(v.normal.y) + " " + to_string(v.normal.z) + " " +
+              to_string(v.uv.x) + " " + to_string(v.uv.y) + " " +
+              to_string(v.rgba.r) + " " + to_string(v.rgba.g) + " " +
+              to_string(v.rgba.b) + " " + to_string(v.rgba.a) + "\n";
         }
       }
     }
@@ -134,22 +138,21 @@ void write_indices(std::string &write_data, sinen::assimp_model &model) {
 }
 void write_vertex_cpp(const std::string &name, std::string &write_data,
                       sinen::assimp_model &model) {
-  write_data += "#include <Nen.hpp>\n";
-  write_data += "nen::vertex_array create_" + name + "_vertices(){\n";
-  write_data += "nen::vertex_array v_array;\n";
+  write_data += "#include <sinen.hpp>\n";
+  write_data += "sinen::vertex_array create_" + name + "_vertices(){\n";
+  write_data += "sinen::vertex_array v_array;\n";
   for (auto &i : model.node_list) {
     for (auto &j : i->mesh) {
       for (auto &v : j.body.vertices) {
-        write_data +=
-            "v_array.vertices.push_back({nen::vector3(" +
-            std::to_string(v.position.x) + "," + std::to_string(v.position.y) +
-            "," + std::to_string(v.position.z) + "),nen::vector3(" +
-            std::to_string(v.normal.x) + "," + std::to_string(v.normal.y) +
-            "," + std::to_string(v.normal.z) + "),nen::vector2(" +
-            std::to_string(v.uv.x) + "," + std::to_string(v.uv.y) +
-            "),nen::color{" + std::to_string(v.rgba.r) + "," +
-            std::to_string(v.rgba.g) + "," + std::to_string(v.rgba.b) + "," +
-            std::to_string(v.rgba.a) + "}});\n";
+        write_data += "v_array.vertices.push_back({sinen::vector3(" +
+                      to_string(v.position.x) + "," + to_string(v.position.y) +
+                      "," + to_string(v.position.z) + "),sinen::vector3(" +
+                      to_string(v.normal.x) + "," + to_string(v.normal.y) +
+                      "," + to_string(v.normal.z) + "),sinen::vector2(" +
+                      to_string(v.uv.x) + "," + to_string(v.uv.y) +
+                      "),sinen::color{" + to_string(v.rgba.r) + "," +
+                      to_string(v.rgba.g) + "," + to_string(v.rgba.b) + "," +
+                      to_string(v.rgba.a) + "}});\n";
       }
     }
   }

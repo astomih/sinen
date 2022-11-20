@@ -18,6 +18,9 @@
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
+#if defined(_WIN32)
+#include <windows.h>
+#endif
 namespace sinen {
 float deltam[16];
 camera::sub editor::main_camera_clone;
@@ -209,6 +212,29 @@ void editor::update(float delta_time) {
   }
   if (input::keyboard.get_key_state(key_code::F3) == button_state::Pressed) {
     renderer::toggle_show_imgui();
+  }
+  if (input::keyboard.get_key_state(key_code::F5) == button_state::Pressed) {
+#ifdef _WIN32
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
+
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    ZeroMemory(&pi, sizeof(pi));
+    TCHAR *commandlp = "game.exe";
+    // Start the child process.
+    CreateProcess(NULL,      // No module name (use command line)
+                  commandlp, // Command line
+                  NULL,      // Process handle not inheritable
+                  NULL,      // Thread handle not inheritable
+                  FALSE,     // Set handle inheritance to FALSE
+                  0,         // No creation flags
+                  NULL,      // Use parent's environment block
+                  NULL,      // Use parent's starting directory
+                  &si,       // Pointer to STARTUPINFO structure
+                  &pi);      // Pointer to PROCESS_INFORMATION structure
+
+#endif // _WIN32
   }
 }
 } // namespace sinen

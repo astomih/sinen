@@ -2,7 +2,7 @@
 #include <scene/scene.hpp>
 
 namespace sinen {
-actor::actor() {}
+actor::actor() : m_state(actor::state::active) {}
 actor::~actor() {}
 void actor::update(float delta_time) {
   for (auto &c : m_components) {

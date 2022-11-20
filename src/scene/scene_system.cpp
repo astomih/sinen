@@ -100,6 +100,8 @@ void scene_system::update_scene() {
       itr++;
     } else if ((*itr)->get_state() == actor::state::dead) {
       itr = m_actors.erase(itr);
+    } else {
+      itr++;
     }
   }
   if (is_run_script) {

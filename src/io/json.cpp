@@ -106,6 +106,7 @@ void json::object::add_member(std::string_view key, object &value) {
   pimpl->value.AddMember(k, value.pimpl->value,
                          pimpl->m_json->pimpl->doc.GetAllocator());
 }
+std::size_t json::object::size() { return pimpl->value.Size(); }
 
 json::json() : pimpl(std::make_unique<json::impl>()) {}
 
@@ -156,5 +157,7 @@ std::string json::to_string() {
   pimpl->doc.Accept(writer);
   return buffer.GetString();
 }
+
+std::size_t json::size() { return pimpl->doc.Size(); }
 
 } // namespace sinen

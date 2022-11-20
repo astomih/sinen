@@ -45,15 +45,14 @@ public:
     m_impl = std::move(impl);
   }
 
-  static void add_actor(actor &_actor);
-  static void remove_actor(actor &_actor);
-  static std::list<draw3d> m_drawer;
+  static void add_actor(actor *_actor);
+  static void load_data(std::string_view data_file_name);
 
 private:
   static bool is_run_script;
   static std::unique_ptr<scene::implements> m_impl;
-  using ref_actor = std::reference_wrapper<actor>;
-  static std::vector<ref_actor> m_actors;
+  using actor_ptr = actor *;
+  static std::vector<actor_ptr> m_actors;
   static void process_input();
   static void update_scene();
   static scene::state m_game_state;

@@ -29,6 +29,7 @@ public:
     double get_double();
     std::string get_string();
     bool get_bool();
+    std::size_t size();
 
     void set_int32(std::int32_t value);
     void set_uint32(std::uint32_t value);
@@ -74,6 +75,8 @@ public:
   object create_object();
 
   std::string to_string();
+
+  std::size_t size();
 
   object operator[](std::string_view key);
 

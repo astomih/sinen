@@ -131,17 +131,22 @@ public:
   bool is_active() const { return m_state == state::active; }
   bool is_paused() const { return m_state == state::paused; }
   bool is_dead() const { return m_state == state::dead; }
-
-  void add_component(component &comp);
-  void remove_component(component &comp);
+  template <class Component, class... Args>
+  Component &create_component(Args &&...args) {
+    component *ptr = new Component(*this, std::forward<Args>(args)...);
+    Component &ref = *reinterpret_cast<Component *>(ptr);
+    add_component(ptr);
+    return ref;
+  }
 
 private:
+  using component_ptr = component *;
+  void add_component(component_ptr comp);
+  std::vector<component_ptr> m_components;
   state m_state;
   vector3 m_position;
   vector3 m_rotation;
   vector3 m_scale;
-  using ref_component = std::reference_wrapper<component>;
-  std::vector<ref_component> m_components;
 };
 } // namespace sinen
 #endif // !SINEN_ACTOR_HPP

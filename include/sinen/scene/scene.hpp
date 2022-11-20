@@ -7,6 +7,7 @@
 #include "../utility/handler.hpp"
 #include <cstdint>
 #include <functional>
+#include <list>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -74,10 +75,16 @@ public:
 
   static void load_data(std::string_view data_file_name);
 
-  static void add_actor(actor &_actor);
-  static void remove_actor(actor &_actor);
+  template <class Actor = actor, class... Args>
+  static Actor &create_actor(Args &&...args) {
+    actor *ptr = new Actor(std::forward<Args>(args)...);
+    Actor &ref = *reinterpret_cast<Actor *>(ptr);
+    add_actor(ptr);
+    return ref;
+  }
 
 private:
+  static void add_actor(actor *_actor);
   static void change_impl(std::unique_ptr<implements> impl);
 };
 } // namespace sinen

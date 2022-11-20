@@ -89,7 +89,7 @@ void editor::inspector() {
   static int item = 1;
   /* ImGui::Combo("combo", &item, "aaaa\0bbbb\0cccc\0dddd\0eeee\0\0"); */
   if (ImGui::Button("Add Actor")) {
-    m_actors.push_back(actor());
+    m_actors.push_back(std::move(actor{}));
     auto m = matrix4::identity;
     m_matrices.push_back(m);
   }

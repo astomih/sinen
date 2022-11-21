@@ -15,6 +15,7 @@
 
 #include <sinen/sinen.hpp>
 
+#include <component/draw3d_component.hpp>
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
@@ -68,7 +69,8 @@ void editor::gizmo() {
 void editor::inspector() {
   ImGui::SetNextWindowPos({1030, 0});
   ImGui::SetNextWindowSize({250, 720});
-  ImGui::Begin("Inspector");
+  ImGui::Begin("Inspector", nullptr,
+               ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
   ImGui::Text("Transform");
   vector3 pos, rot, scale;
   if (m_actors.size() > 0) {
@@ -83,8 +85,14 @@ void editor::inspector() {
     m_actors[index].set_rotation(rot);
     m_actors[index].set_scale(scale);
   }
-
   ImGui::Separator();
+  ImGui::Text("Components");
+  if (m_actors.size() > 0) {
+    static bool d3d = false;
+    ImGui::Checkbox("draw3d_component", &d3d);
+    if (ImGui::Button("Add component")) {
+    }
+  }
   ImGui::Text("Actors");
   for (int i = 0; i < m_actors.size(); i++)
     ImGui::RadioButton(std::string("actor" + std::to_string(i)).c_str(), &index,
@@ -99,60 +107,123 @@ void editor::inspector() {
 
   ImGui::End();
 }
+void editor::load_scene() {
+  index = 0;
+  auto str = data_stream::open_as_string(asset_type::Scene, "scene01.json");
+  json j;
+  j.parse(str);
+  // Camera
+  {
+    auto camera_data = j["Camera"];
+    main_camera_clone.position().x = camera_data["cpx"].get_float();
+    main_camera_clone.position().y = camera_data["cpy"].get_float();
+    main_camera_clone.position().z = camera_data["cpz"].get_float();
+    main_camera_clone.target().x = camera_data["ctx"].get_float();
+    main_camera_clone.target().y = camera_data["cty"].get_float();
+    main_camera_clone.target().z = camera_data["ctz"].get_float();
+    main_camera_clone.up().x = camera_data["cux"].get_float();
+    main_camera_clone.up().y = camera_data["cuy"].get_float();
+    main_camera_clone.up().z = camera_data["cuz"].get_float();
+    camera::lookat(main_camera_clone.position(), main_camera_clone.target(),
+                   main_camera_clone.up());
+  }
+  // Actors
+  {
+    m_actors.clear();
+    m_matrices.clear();
+    m_actors.resize(j["Actors"].size());
+    m_matrices.resize(j["Actors"].size());
+    texture tex;
+    tex.fill_color(palette::white());
+    for (int i = 0; i < m_actors.size(); i++) {
+      auto act = j["Actors"][std::string("Actor") + std::to_string(i)];
+      m_actors[i].set_position(vector3(
+          act["px"].get_float(), act["py"].get_float(), act["pz"].get_float()));
+      m_actors[i].set_rotation(vector3(
+          act["rx"].get_float(), act["ry"].get_float(), act["rz"].get_float()));
+      m_actors[i].set_scale(vector3(
+          act["sx"].get_float(), act["sy"].get_float(), act["sz"].get_float()));
+      auto &d3 = m_actors[i].create_component<draw3d_component>();
+      d3.set_texture(tex);
+      d3.set_vertex_name("BOX");
+      vector3 pos, rot, scale;
+      pos = m_actors[i].get_position();
+      rot = m_actors[i].get_rotation();
+      scale = m_actors[i].get_scale();
+      ImGuizmo::RecomposeMatrixFromComponents(&pos.x, &rot.x, &scale.x,
+                                              m_matrices[i].get());
+    }
+  }
+}
+void editor::save_scene() {
+  std::string str;
+  str = "{}";
+  json j;
+  j.parse(str);
+  auto camera_data = j.create_object();
+  {
+    camera_data.add_member("cpx", main_camera_clone.position().x);
+    camera_data.add_member("cpy", main_camera_clone.position().y);
+    camera_data.add_member("cpz", main_camera_clone.position().z);
+    camera_data.add_member("ctx", main_camera_clone.target().x);
+    camera_data.add_member("cty", main_camera_clone.target().y);
+    camera_data.add_member("ctz", main_camera_clone.target().z);
+    camera_data.add_member("cux", main_camera_clone.up().x);
+    camera_data.add_member("cuy", main_camera_clone.up().y);
+    camera_data.add_member("cuz", main_camera_clone.up().z);
+  }
+  j.add_member("Camera", camera_data);
+  auto actors = j.create_object();
+  {
+    for (int i = 0; i < m_actors.size(); i++) {
+      auto act = j.create_object();
+      {
+        vector3 pos = m_actors[i].get_position();
+        vector3 rot = m_actors[i].get_rotation();
+        vector3 scale = m_actors[i].get_scale();
+        act.add_member("px", pos.x);
+        act.add_member("py", pos.y);
+        act.add_member("pz", pos.z);
+        act.add_member("rx", rot.x);
+        act.add_member("ry", rot.y);
+        act.add_member("rz", rot.z);
+        act.add_member("sx", scale.x);
+        act.add_member("sy", scale.y);
+        act.add_member("sz", scale.z);
+      }
+      actors.add_member(std::string("Actor" + std::to_string(i)), act);
+    }
+  }
+  j.add_member("Actors", actors);
+  auto s = j.to_string();
+  file f;
+  f.open("data/scene/scene01.json", file::mode::w);
+  f.write(s.c_str(), s.size(), 1);
+  f.close();
+}
 void editor::menu() {
-
   ImGui::SetNextWindowPos({250, 0});
   ImGui::SetNextWindowSize({780, 20});
-  ImGui::Begin("Menu", nullptr, ImGuiWindowFlags_MenuBar);
+  ImGui::Begin("Menu", nullptr,
+               ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoMove |
+                   ImGuiWindowFlags_NoResize);
   if (ImGui::BeginMenuBar()) {
     if (ImGui::BeginMenu("File")) {
-      if (ImGui::MenuItem("Save")) {
-        std::string str;
-        str = "{}";
-        json j;
-        j.parse(str);
-        auto camera_data = j.create_object();
-        {
-          camera_data.add_member("cpx", main_camera_clone.position().x);
-          camera_data.add_member("cpy", main_camera_clone.position().y);
-          camera_data.add_member("cpz", main_camera_clone.position().z);
-          camera_data.add_member("ctx", main_camera_clone.target().x);
-          camera_data.add_member("cty", main_camera_clone.target().y);
-          camera_data.add_member("ctz", main_camera_clone.target().z);
-          camera_data.add_member("cux", main_camera_clone.up().x);
-          camera_data.add_member("cuy", main_camera_clone.up().y);
-          camera_data.add_member("cuz", main_camera_clone.up().z);
-        }
-        j.add_member("Camera", camera_data);
-        auto actors = j.create_object();
-        {
-          for (int i = 0; i < m_actors.size(); i++) {
-            auto act = j.create_object();
-            {
-              vector3 pos = m_actors[i].get_position();
-              vector3 rot = m_actors[i].get_rotation();
-              vector3 scale = m_actors[i].get_scale();
-              act.add_member("px", pos.x);
-              act.add_member("py", pos.y);
-              act.add_member("pz", pos.z);
-              act.add_member("rx", rot.x);
-              act.add_member("ry", rot.y);
-              act.add_member("rz", rot.z);
-              act.add_member("sx", scale.x);
-              act.add_member("sy", scale.y);
-              act.add_member("sz", scale.z);
-            }
-            actors.add_member(std::string("Actor" + std::to_string(i)), act);
-          }
-        }
-        j.add_member("Actors", actors);
-        auto s = j.to_string();
-        file f;
-        f.open("data/scene/scene01.json", file::mode::w);
-        f.write(s.c_str(), s.size(), 1);
-        f.close();
+      if (ImGui::MenuItem("Load")) {
+        load_scene();
+        ImGui::EndMenu();
       }
-      ImGui::EndMenu();
+      if (ImGui::MenuItem("Save", "Ctrl+S")) {
+        save_scene();
+        ImGui::EndMenu();
+      }
+      if (ImGui::MenuItem("Exit", "Alt+F4")) {
+#if !defined(EMSCRIPTEN)
+        std::exit(0);
+#else
+        emscripten_force_exit(0);
+#endif
+      }
     }
     ImGui::EndMenuBar();
   }
@@ -170,11 +241,11 @@ editor::~editor() {}
 void editor::setup() {
   m_impl->is_run = false;
   renderer::add_imgui_function(menu);
-  renderer::add_imgui_function(texteditor);
   renderer::add_imgui_function(markdown);
   renderer::add_imgui_function(gizmo);
   renderer::add_imgui_function(log_window);
   renderer::add_imgui_function(inspector);
+  // renderer::add_imgui_function(texteditor);
   // renderer::add_imgui_function(func_file_dialog);
   renderer::toggle_show_imgui();
 }
@@ -201,7 +272,7 @@ void editor::update(float delta_time) {
   if (renderer::is_show_imgui() &&
       input::keyboard.is_key_down(key_code::LCTRL) &&
       input::keyboard.get_key_state(key_code::S) == button_state::Pressed) {
-    m_impl->is_save = true;
+    // m_impl->is_save = true;
   }
   if (m_impl->is_save) {
     auto str = get_text();
@@ -210,6 +281,11 @@ void editor::update(float delta_time) {
     std::cout << str << std::endl;
     m_impl->is_save = false;
   }
+  if (renderer::is_show_imgui() &&
+      input::keyboard.is_key_down(key_code::LCTRL) &&
+      input::keyboard.get_key_state(key_code::S) == button_state::Pressed) {
+    save_scene();
+  }
   if (input::keyboard.get_key_state(key_code::F3) == button_state::Pressed) {
     renderer::toggle_show_imgui();
   }
@@ -217,22 +293,21 @@ void editor::update(float delta_time) {
 #ifdef _WIN32
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
-
     ZeroMemory(&si, sizeof(si));
     si.cb = sizeof(si);
     ZeroMemory(&pi, sizeof(pi));
-    TCHAR *commandlp = "game.exe";
+    const char *commandlp = "game.exe";
     // Start the child process.
-    CreateProcess(NULL,      // No module name (use command line)
-                  commandlp, // Command line
-                  NULL,      // Process handle not inheritable
-                  NULL,      // Thread handle not inheritable
-                  FALSE,     // Set handle inheritance to FALSE
-                  0,         // No creation flags
-                  NULL,      // Use parent's environment block
-                  NULL,      // Use parent's starting directory
-                  &si,       // Pointer to STARTUPINFO structure
-                  &pi);      // Pointer to PROCESS_INFORMATION structure
+    CreateProcess(NULL,             // No module name (use command line)
+                  (LPSTR)commandlp, // Command line
+                  NULL,             // Process handle not inheritable
+                  NULL,             // Thread handle not inheritable
+                  FALSE,            // Set handle inheritance to FALSE
+                  0,                // No creation flags
+                  NULL,             // Use parent's environment block
+                  NULL,             // Use parent's starting directory
+                  &si,              // Pointer to STARTUPINFO structure
+                  &pi);             // Pointer to PROCESS_INFORMATION structure
 
 #endif // _WIN32
   }

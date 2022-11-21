@@ -27,9 +27,20 @@ public:
    * @param delta_time delta time
    */
   virtual void update(float delta_time) override;
-
+  /**
+   * @brief set_texture Use texture
+   * @param _texture texture instance
+   */
   void set_texture(const texture &_texture) { texture_handle = _texture; }
+  /**
+   * @brief set_draw_depth
+   * @param _is_draw_depth
+   */
   void set_draw_depth(bool _is_draw_depth) { is_draw_depth = _is_draw_depth; }
+  /**
+   * @brief set_vertex_name
+   * @param _vertex_name
+   */
   void set_vertex_name(const std::string &_vertex_name) {
     vertex_name = _vertex_name;
   }

@@ -33,6 +33,8 @@ public:
   void update(float delta_time) final override;
 
 private:
+  static void load_scene();
+  static void save_scene();
   static void gizmo();
   static void inspector();
   static void menu();

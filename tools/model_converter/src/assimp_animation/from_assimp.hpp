@@ -1,4 +1,4 @@
-﻿#ifndef SINEN_FROM_ASSIMP_HPP
+#ifndef SINEN_FROM_ASSIMP_HPP
 #define SINEN_FROM_ASSIMP_HPP
 
 #include <assimp/DefaultLogger.hpp>
@@ -20,4 +20,4 @@ VectorKey fromAssimp(const aiVectorKey &key);
 
 QuatKey fromAssimp(const aiQuatKey &key);
 } // namespace sinen
-  #endif // SINEN_FROM_ASSIMP_HPP
+#endif // SINEN_FROM_ASSIMP_HPP

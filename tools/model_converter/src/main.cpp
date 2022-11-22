@@ -1,5 +1,5 @@
 #include "assimp_model/assimp_model.hpp"
-#include <SDL2/SDL.h>
+#include <fstream>
 #include <iostream>
 #include <string>
 
@@ -50,7 +50,7 @@ void write_indices(std::string &write_data, sinen::assimp_model &model);
 #endif
 int main(int argc, char *argv[]) {
   if (argc < 2) {
-    sinen::logger::error("Please input model path.");
+    std::cerr << "Please input model path." << std::endl;
     std::string s;
     std::getline(std::cin, s);
     return -1;
@@ -85,16 +85,13 @@ int main(int argc, char *argv[]) {
     file_name += ".cpp";
   else
     file_name += ".sim";
-  auto *file = SDL_RWFromFile(file_name.data(), "w");
-  if (file != NULL) {
-    auto len = write_data.size();
-    if (SDL_RWwrite(file, write_data.data(), 1, len) != len) {
-      std::cout << "Error: Failed to write data." << std::endl;
-    } else {
-      std::cout << to_string(len) << " 1-byte block wrote.";
-    }
-    SDL_RWclose(file);
+  std::ofstream out(file_name);
+  if (!out.is_open()) {
+    std::cerr << "Can't open file " << file_name << std::endl;
+    return -1;
   }
+  out.write(write_data.data(), write_data.size());
+  out.close();
   return 0;
 }
 void write_vertex(std::string &write_data, sinen::assimp_model &model) {

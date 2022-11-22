@@ -1,9 +1,9 @@
-﻿#ifndef SINEN_MESH_HPP
+#ifndef SINEN_MESH_HPP
 #define SINEN_MESH_HPP
 
 #include "bone.hpp"
 #include <memory>
-#include <sinen/sinen.hpp>
+#include <sinen/vertex/vertex_array.hpp>
 #include <string_view>
 
 namespace sinen {

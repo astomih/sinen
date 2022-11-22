@@ -1,7 +1,11 @@
-﻿#ifndef SINEN_BONE_HPP
+#ifndef SINEN_BONE_HPP
 #define SINEN_BONE_HPP
 #include "weight.hpp"
-#include <sinen/sinen.hpp>
+#include <sinen/math/math.hpp>
+#include <sinen/math/matrix4.hpp>
+#include <sinen/math/vector2.hpp>
+#include <sinen/math/vector3.hpp>
+
 namespace sinen {
 struct Bone {
   std::string name;

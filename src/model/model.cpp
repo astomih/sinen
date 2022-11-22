@@ -10,8 +10,6 @@
 #include <io/data_stream.hpp>
 #include <model/model.hpp>
 #include <render/renderer.hpp>
-// external
-#include <assimp/Importer.hpp>
 namespace sinen {
 enum class load_state { version, vertex, indices };
 

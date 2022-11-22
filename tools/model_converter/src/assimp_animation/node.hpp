@@ -1,7 +1,6 @@
-﻿#ifndef SINEN_NODE_HPP
+#ifndef SINEN_NODE_HPP
 #define SINEN_NODE_HPP
 #include "../assimp_mesh/mesh.hpp"
-#include <sinen.hpp>
 
 namespace sinen {
 class Node {

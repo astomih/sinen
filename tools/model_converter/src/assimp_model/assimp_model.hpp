@@ -1,4 +1,4 @@
-﻿#ifndef SINEN_ANIM_MODEL_HPP
+#ifndef SINEN_ANIM_MODEL_HPP
 #define SINEN_ANIM_MODEL_HPP
 #include "../assimp_animation/animation.hpp"
 #include "../assimp_animation/node.hpp"

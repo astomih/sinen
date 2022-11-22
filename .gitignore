@@ -344,11 +344,9 @@ nen-cppcheck-build-dir/
 Debug/
 Release/
 packages/
-.vscode/
 *.srctrlbm
 *.srctrldb
 *.srctrlprj
-*.code-workspace
 
 CMakeLists.txt.user
 CMakeCache.txt

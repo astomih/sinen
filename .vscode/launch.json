@@ -1,0 +1,39 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Game",
+            "program": "build/game/game.exe",
+            "preRunCommands": [],
+            "args": [],
+            "cwd": "./game",
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Editor",
+            "program": "build/editor/editor.exe",
+            "preRunCommands": [],
+            "args": [],
+            "cwd": "./editor",
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Runtime",
+            "program": "./build/game/game.exe",
+            "cwd": "./editor",
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Test",
+            "program": "build/test/unit_test.exe",
+            "preRunCommands": [],
+            "args": [],
+            "cwd": ".",
+        },
+    ]
+}

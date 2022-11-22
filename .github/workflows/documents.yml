@@ -20,8 +20,8 @@ jobs:
       with:
         python-version: 3.9
     - run: |
-          cd docs
           cp ./README.md ./docs/docs/index.md
+          cd docs
           pip install mkdocs-material
           mkdocs gh-deploy --force
     - name: Doxygen Action

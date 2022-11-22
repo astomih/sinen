@@ -66,7 +66,6 @@ Install emscripten SDK. and do this.
  MIT Lisence
 
 ## Dependencies 
-### Core library
 - GLEW
 - Dear ImGui
 - Lua
@@ -77,20 +76,20 @@ Install emscripten SDK. and do this.
 - SDL2(image,mixer,net,ttf)
 - Vulkan 1.2
 - VulkanMemoryAllocator
-### Editor
-- Sinen
+
+# Sinen Editor
+![Editor Sample](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/editor_sample.png)
+Sinen Editor is a level editor for Sinen Engine.  
+## Dependencies
+- Sinen Engine
 - ImGuiColorTextEdit
 - imgui_markdown
 - ImGuizmo
 
-# Sinen Editor
-Sinen Editor is a level editor for Sinen Engine.  
-Developping...
-
 # Sinen Game
-I named this game 'DIVE TO SINEN'.  
+I named this game 'Dive To Sinen'.  
 Developping...
 
 # Sinen Tools
-Sinen Tools is a tool for Sinen Engine.  
-Developping...
+## Model Converter
+Converts 3D model files to Sinen Engine's model format.

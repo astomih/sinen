@@ -159,10 +159,7 @@ void main_system::run() {
   while (loop()) {
   }
 #else
-  emscripten_loop = [&]() {
-    while (loop()) {
-    }
-  };
+  emscripten_loop = [&]() { loop(); };
   emscripten_set_main_loop(main_loop, 120, true);
 #endif
 }

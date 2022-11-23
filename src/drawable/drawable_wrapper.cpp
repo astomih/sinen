@@ -47,14 +47,7 @@ void draw3d::draw() {
   t.mat[3][0] = position.x;
   t.mat[3][1] = position.y;
   t.mat[3][2] = position.z;
-  quaternion q;
-  q = quaternion::concatenate(
-      q, quaternion(vector3::unit_z, math::to_radians(rotation.z)));
-  q = quaternion::concatenate(
-      q, quaternion(vector3::unit_y, math::to_radians(rotation.y)));
-  q = quaternion::concatenate(
-      q, quaternion(vector3::unit_x, math::to_radians(rotation.x)));
-  matrix4 r = matrix4::create_from_quaternion(q);
+  matrix4 r = matrix4::create_from_quaternion(quaternion::from_euler(rotation));
   matrix4 s = matrix4::identity;
   s.mat[0][0] = scale.x;
   s.mat[1][1] = scale.y;

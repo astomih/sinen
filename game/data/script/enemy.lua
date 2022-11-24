@@ -102,7 +102,6 @@ local enemy = function()
                 self.drawer.position.y +
                     (path.y * 2 - self.drawer.position.y) * delta_time *
                     3.0
-                self.bfs:reset()
             else
                 self.drawer.position.x =
                 self.drawer.position.x + delta_time * self.speed *
@@ -110,8 +109,8 @@ local enemy = function()
                 self.drawer.position.y =
                 self.drawer.position.y + delta_time * self.speed *
                     self.get_forward_z(self.drawer).y
-
             end
+            self.bfs:reset()
 
         end,
         draw = function(self) self.drawer:draw() end,

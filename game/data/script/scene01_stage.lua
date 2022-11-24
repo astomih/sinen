@@ -3,8 +3,8 @@ local enemy = require "enemy"
 local enemies = {}
 local enemy_max_num = 5
 local world = require "world"
-local map_size_x = 30
-local map_size_y = 30
+local map_size_x = 64
+local map_size_y = 64
 local map = grid(map_size_x, map_size_y)
 collision_space_division = map_size_x / 10 * 2 + 1
 -- draw object

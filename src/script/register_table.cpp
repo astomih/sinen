@@ -4,7 +4,6 @@
 #include <scene/scene.hpp>
 #include <window/window.hpp>
 
-
 namespace sinen {
 void register_table(sol::state &lua) {
   {
@@ -24,6 +23,10 @@ void register_table(sol::state &lua) {
   {
     auto v = lua.create_table("scene");
     v["load_data"] = &scene::load_data;
+  }
+  {
+    auto v = lua.create_table("collision");
+    v["aabb_aabb"] = &collision::aabb_aabb;
   }
 }
 } // namespace sinen

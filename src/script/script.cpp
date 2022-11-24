@@ -35,35 +35,7 @@ bool script_system::initialize() {
                              sol::lib::bit32, sol::lib::io, sol::lib::os,
                              sol::lib::string, sol::lib::debug,
                              sol::lib::table);
-  impl->state["require"] = [&](const std::string &str) -> sol::object {
-    return impl->state.require_script(
-        str, data_stream::open_as_string(asset_type::Script, str + ".lua"));
-  };
-  impl->state["texture"] = []() -> texture { return texture(); };
-  impl->state["font"] = []() -> font { return font(); };
-  impl->state["DEFAULT_FONT"] = "mplus/mplus-1p-medium.ttf";
-  impl->state["vector3"] = [](float x, float y, float z) -> vector3 {
-    return vector3(x, y, z);
-  };
-  impl->state["vector2"] = [](float x, float y) -> vector2 {
-    return vector2(x, y);
-  };
-  impl->state["point2i"] = [](int x, int y) -> point2i {
-    return point2i(x, y);
-  };
-  impl->state["quaternion"] = [](sol::this_state s) -> quaternion {
-    return quaternion();
-  };
-  impl->state["color"] = [](float r, float g, float b, float a) -> color {
-    return color(r, g, b, a);
-  };
-  impl->state["model"] = []() -> model { return model(); };
-  impl->state["music"] = []() -> music { return music(); };
-  impl->state["sound"] = []() -> sound { return sound(); };
-  impl->state["set_skybox_texture"] = [&](texture tex) -> void {
-    render_system::set_skybox_texture(tex);
-  };
-  impl->state["aabb"] = []() -> aabb { return aabb(); };
+  register_generator(impl->state);
   {
     auto v = impl->state.new_usertype<vector3>("", sol::no_construction());
     v["x"] = &vector3::x;

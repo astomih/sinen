@@ -136,7 +136,7 @@ void scene_system::load_data(std::string_view data_file_name) {
     cu.x = doc["Camera"]["cux"].get_float();
     cu.y = doc["Camera"]["cuy"].get_float();
     cu.z = doc["Camera"]["cuz"].get_float();
-    camera::lookat(cp, ct, cu);
+    scene::main_camera().lookat(cp, ct, cu);
   }
   texture tex;
   tex.fill_color(palette::white());

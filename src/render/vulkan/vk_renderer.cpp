@@ -1,7 +1,8 @@
 #include "../../render/render_system.hpp"
 #include "../../script/script_system.hpp"
-#include "../../window/window_system.hpp"
 #include <camera/camera.hpp>
+#include <render/renderer.hpp>
+#include <scene/scene.hpp>
 #include <sol/sol.hpp>
 
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
@@ -579,9 +580,11 @@ void vk_renderer::draw_skybox(VkCommandBuffer command) {
   w[0][0] = 5;
   w[1][1] = 5;
   w[2][2] = 5;
-  param.param.proj = camera::projection();
-  param.param.view = matrix4::lookat(
-      vector3(0, 0, 0), camera::target() - camera::position(), camera::up());
+  param.param.proj = scene::main_camera().projection();
+  param.param.view = matrix4::lookat(vector3(0, 0, 0),
+                                     scene::main_camera().target() -
+                                         scene::main_camera().position(),
+                                     scene::main_camera().up());
   auto &va = m_vertex_arrays["BOX"];
 
   if (!m_image_object.contains(t->drawObject->binding_texture.handle)) {

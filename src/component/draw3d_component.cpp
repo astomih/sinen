@@ -2,6 +2,7 @@
 #include <camera/camera.hpp>
 #include <component/draw3d_component.hpp>
 #include <render/renderer.hpp>
+#include <scene/scene.hpp>
 
 namespace sinen {
 draw3d_component::draw3d_component(actor &owner) : component(owner) {}
@@ -12,8 +13,8 @@ void draw3d_component::update(float delta_time) {
   obj->is_draw_depth = this->is_draw_depth;
   obj->vertexIndex = this->vertex_name;
   obj->param.world = this->get_actor().get_world_matrix();
-  obj->param.view = camera::view();
-  obj->param.proj = camera::projection();
+  obj->param.view = scene::main_camera().view();
+  obj->param.proj = scene::main_camera().projection();
   renderer::draw3d(obj);
 }
 } // namespace sinen

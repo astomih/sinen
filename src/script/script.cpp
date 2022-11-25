@@ -19,6 +19,9 @@
 #include <sol/sol.hpp>
 
 #include "register_script.hpp"
+#ifdef main
+#undef main
+#endif
 
 namespace sinen {
 class script_system::implement {
@@ -122,7 +125,7 @@ bool script_system::initialize() {
     v["set_position"] = &sound::set_position;
   }
   {
-    auto v = impl->state.create_table("camera");
+    auto v = impl->state.new_usertype<camera>("", sol::no_construction());
     v["lookat"] = &camera::lookat;
     v["perspective"] = &camera::perspective;
     v["orthographic"] = &camera::orthographic;

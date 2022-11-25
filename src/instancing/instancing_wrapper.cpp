@@ -1,11 +1,10 @@
+#include <camera/camera.hpp>
 #include <instancing/instancing.hpp>
 #include <instancing/instancing_wrapper.hpp>
-
-#include "../render/render_system.hpp"
-#include "../window/window_system.hpp"
-#include <camera/camera.hpp>
 #include <render/renderer.hpp>
+#include <scene/scene.hpp>
 #include <window/window.hpp>
+
 
 namespace sinen {
 draw2d_instancing::draw2d_instancing(texture texture_handle)
@@ -69,8 +68,8 @@ void draw3d_instancing::draw() {
   auto obj = std::make_shared<drawable>();
   obj->binding_texture = this->texture_handle;
   obj->vertexIndex = this->vertex_name;
-  obj->param.proj = camera::projection();
-  obj->param.view = camera::view();
+  obj->param.proj = scene::main_camera().projection();
+  obj->param.view = scene::main_camera().view();
   obj->is_draw_depth = this->is_draw_depth;
   _instancing.object = obj;
   _instancing.type = object_type::_3D;

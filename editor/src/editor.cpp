@@ -24,7 +24,6 @@
 #endif
 namespace sinen {
 float deltam[16];
-camera::sub editor::main_camera_clone;
 std::vector<actor> editor::m_actors;
 std::vector<matrix4> editor::m_matrices;
 int editor::index = 0;
@@ -54,16 +53,19 @@ void editor::gizmo() {
   ImGuizmo::SetRect(0, 0, window::size().x, window::size().y);
   ImGuizmo::AllowAxisFlip(false);
   if (m_matrices.size() > 0) {
-    ImGuizmo::Manipulate(camera::view().get(), camera::projection().get(),
+    ImGuizmo::Manipulate(scene::main_camera().view().get(),
+                         scene::main_camera().projection().get(),
                          mCurrentGizmoOperation, mCurrentGizmoMode,
                          m_matrices[index].mat.m16, deltam, nullptr);
   }
-  ImGui::SliderFloat3("Position", &main_camera_clone.position().x, -10.0f,
+  ImGui::SliderFloat3("Position", &scene::main_camera().position().x, -10.0f,
                       10.0f);
-  ImGui::SliderFloat3("Target", &main_camera_clone.target().x, -10.0f, 10.0f);
-  ImGui::SliderFloat3("Up", &main_camera_clone.up().x, -1.0f, 1.0f);
-  camera::lookat(main_camera_clone.position(), main_camera_clone.target(),
-                 main_camera_clone.up());
+  ImGui::SliderFloat3("Target", &scene::main_camera().target().x, -10.0f,
+                      10.0f);
+  ImGui::SliderFloat3("Up", &scene::main_camera().up().x, -1.0f, 1.0f);
+  scene::main_camera().lookat(scene::main_camera().position(),
+                              scene::main_camera().target(),
+                              scene::main_camera().up());
   ImGui::End();
 }
 void editor::inspector() {
@@ -115,17 +117,18 @@ void editor::load_scene() {
   // Camera
   {
     auto camera_data = j["Camera"];
-    main_camera_clone.position().x = camera_data["cpx"].get_float();
-    main_camera_clone.position().y = camera_data["cpy"].get_float();
-    main_camera_clone.position().z = camera_data["cpz"].get_float();
-    main_camera_clone.target().x = camera_data["ctx"].get_float();
-    main_camera_clone.target().y = camera_data["cty"].get_float();
-    main_camera_clone.target().z = camera_data["ctz"].get_float();
-    main_camera_clone.up().x = camera_data["cux"].get_float();
-    main_camera_clone.up().y = camera_data["cuy"].get_float();
-    main_camera_clone.up().z = camera_data["cuz"].get_float();
-    camera::lookat(main_camera_clone.position(), main_camera_clone.target(),
-                   main_camera_clone.up());
+    scene::main_camera().position().x = camera_data["cpx"].get_float();
+    scene::main_camera().position().y = camera_data["cpy"].get_float();
+    scene::main_camera().position().z = camera_data["cpz"].get_float();
+    scene::main_camera().target().x = camera_data["ctx"].get_float();
+    scene::main_camera().target().y = camera_data["cty"].get_float();
+    scene::main_camera().target().z = camera_data["ctz"].get_float();
+    scene::main_camera().up().x = camera_data["cux"].get_float();
+    scene::main_camera().up().y = camera_data["cuy"].get_float();
+    scene::main_camera().up().z = camera_data["cuz"].get_float();
+    scene::main_camera().lookat(scene::main_camera().position(),
+                                scene::main_camera().target(),
+                                scene::main_camera().up());
   }
   // Actors
   {
@@ -162,15 +165,15 @@ void editor::save_scene() {
   j.parse(str);
   auto camera_data = j.create_object();
   {
-    camera_data.add_member("cpx", main_camera_clone.position().x);
-    camera_data.add_member("cpy", main_camera_clone.position().y);
-    camera_data.add_member("cpz", main_camera_clone.position().z);
-    camera_data.add_member("ctx", main_camera_clone.target().x);
-    camera_data.add_member("cty", main_camera_clone.target().y);
-    camera_data.add_member("ctz", main_camera_clone.target().z);
-    camera_data.add_member("cux", main_camera_clone.up().x);
-    camera_data.add_member("cuy", main_camera_clone.up().y);
-    camera_data.add_member("cuz", main_camera_clone.up().z);
+    camera_data.add_member("cpx", scene::main_camera().position().x);
+    camera_data.add_member("cpy", scene::main_camera().position().y);
+    camera_data.add_member("cpz", scene::main_camera().position().z);
+    camera_data.add_member("ctx", scene::main_camera().target().x);
+    camera_data.add_member("cty", scene::main_camera().target().y);
+    camera_data.add_member("ctz", scene::main_camera().target().z);
+    camera_data.add_member("cux", scene::main_camera().up().x);
+    camera_data.add_member("cuy", scene::main_camera().up().y);
+    camera_data.add_member("cuz", scene::main_camera().up().z);
   }
   j.add_member("Camera", camera_data);
   auto actors = j.create_object();
@@ -256,8 +259,8 @@ void editor::update(float delta_time) {
     std::shared_ptr<drawable> d3 = std::make_shared<drawable>();
 
     d3->binding_texture = tex;
-    d3->param.proj = camera::projection();
-    d3->param.view = camera::view();
+    d3->param.proj = scene::main_camera().projection();
+    d3->param.view = scene::main_camera().view();
     d3->param.world = matrix4(m_matrices[i]);
     d3->vertexIndex = "BOX";
     renderer::draw3d(d3);

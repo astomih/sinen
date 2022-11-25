@@ -1,10 +1,6 @@
 ﻿#ifndef SINEN_SCENE_HPP
 #define SINEN_SCENE_HPP
 #include "../actor/actor.hpp"
-#include "../component/component.hpp"
-#include "../input/input.hpp"
-#include "../script/script.hpp"
-#include "../utility/handler.hpp"
 #include <cstdint>
 #include <functional>
 #include <list>
@@ -13,6 +9,8 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
+#include "../camera/camera.hpp"
 
 namespace sinen {
 /**
@@ -82,8 +80,11 @@ public:
     add_actor(ptr);
     return ref;
   }
+  static camera &main_camera() { return m_main_camera; }
 
 private:
+  // main camera
+  static camera m_main_camera;
   static void add_actor(actor *_actor);
   static void change_impl(std::unique_ptr<implements> impl);
 };

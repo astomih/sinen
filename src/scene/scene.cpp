@@ -1,6 +1,12 @@
 #include "scene_system.hpp"
 
 namespace sinen {
+camera scene::m_main_camera = []() {
+  camera c;
+  c.lookat(vector3{0, -1, 10}, vector3{0, 1, 0}, vector3{0, 1, 0});
+  c.perspective(70.f, 1280.f / 720.f, .1f, 1000.f);
+  return c;
+}();
 
 void scene::reset() {
   scene_system::shutdown();

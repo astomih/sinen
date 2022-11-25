@@ -1,8 +1,7 @@
-#include "../render/render_system.hpp"
-#include "../window/window_system.hpp"
 #include <camera/camera.hpp>
 #include <drawable/drawable_wrapper.hpp>
 #include <render/renderer.hpp>
+#include <scene/scene.hpp>
 #include <window/window.hpp>
 
 namespace sinen {
@@ -47,8 +46,8 @@ void draw3d::draw() {
   matrix4 r = matrix4::create_from_quaternion(quaternion::from_euler(rotation));
   matrix4 s = matrix4::create_scale(scale);
   obj->param.world = s * r * t;
-  obj->param.proj = camera::projection();
-  obj->param.view = camera::view();
+  obj->param.proj = scene::main_camera().projection();
+  obj->param.view = scene::main_camera().view();
   obj->vertexIndex = this->vertex_name;
   obj->is_draw_depth = this->is_draw_depth;
   renderer::draw3d(obj);

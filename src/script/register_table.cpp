@@ -23,6 +23,7 @@ void register_table(sol::state &lua) {
   {
     auto v = lua.create_table("scene");
     v["load_data"] = &scene::load_data;
+    v["main_camera"] = &scene::main_camera;
   }
   {
     auto v = lua.create_table("collision");

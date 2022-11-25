@@ -11,7 +11,28 @@ texture::texture() {
   handle = texture_system::create();
   is_need_update = std::make_shared<bool>(false);
 }
-texture::~texture() {}
+texture::texture(const texture &other) {
+  if (is_need_update.use_count() == 1) {
+    texture_system::remove(handle);
+  }
+  handle = other.handle;
+  is_need_update.reset();
+  is_need_update = other.is_need_update;
+}
+texture& texture::operator=(const texture &other) {
+  if (is_need_update.use_count() == 1) {
+    texture_system::remove(handle);
+  }
+  handle = other.handle;
+  is_need_update.reset();
+  is_need_update = other.is_need_update;
+  return *this;
+}
+texture::~texture() {
+  if (is_need_update.use_count() == 1) {
+    texture_system::remove(handle);
+  }
+}
 
 bool texture::load(std::string_view fileName) {
   *is_need_update = true;

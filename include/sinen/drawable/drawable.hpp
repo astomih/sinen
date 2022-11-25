@@ -15,12 +15,12 @@ struct drawable {
    * @brief Construct a new draw object object
    *
    */
-  drawable() = default;
+  drawable();
   /**
    * @brief Destroy the draw object object
    *
    */
-  ~drawable() = default;
+  ~drawable();
   /**
    * @brief Shader parameter
    *

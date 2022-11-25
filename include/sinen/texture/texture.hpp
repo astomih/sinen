@@ -22,6 +22,12 @@ public:
    */
   texture();
   /**
+   * @brief Copy constructor
+   *
+   * @param other
+   */
+  texture(const texture &other);
+  /**
    * @brief Destroy the texture object
    *
    */
@@ -54,6 +60,8 @@ public:
   void blend_color(const color &color);
 
   vector2 size();
+
+  texture &operator=(const texture &other);
 
   handle_t handle;
   std::shared_ptr<bool> is_need_update;

@@ -362,6 +362,13 @@ quaternion quaternion::from_euler(const vector3 &euler) {
       q, quaternion(vector3::unit_x, math::to_radians(euler.x)));
   return q;
 }
+matrix4 matrix4::create_scale(const vector3 &scale) {
+  float temp[4][4] = {{scale.x, 0.0f, 0.0f, 0.0f},
+                      {0.0f, scale.y, 0.0f, 0.0f},
+                      {0.0f, 0.0f, scale.z, 0.0f},
+                      {0.0f, 0.0f, 0.0f, 1.0f}};
+  return matrix4(temp);
+}
 
 vector3 quaternion::to_euler(const quaternion &r) {
   float x = r.x;

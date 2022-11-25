@@ -43,15 +43,9 @@ void draw2d::draw() {
 void draw3d::draw() {
   auto obj = std::make_shared<drawable>();
   obj->binding_texture = this->texture_handle;
-  matrix4 t = matrix4::identity;
-  t.mat[3][0] = position.x;
-  t.mat[3][1] = position.y;
-  t.mat[3][2] = position.z;
+  matrix4 t = matrix4::create_translation(position);
   matrix4 r = matrix4::create_from_quaternion(quaternion::from_euler(rotation));
-  matrix4 s = matrix4::identity;
-  s.mat[0][0] = scale.x;
-  s.mat[1][1] = scale.y;
-  s.mat[2][2] = scale.z;
+  matrix4 s = matrix4::create_scale(scale);
   obj->param.world = s * r * t;
   obj->param.proj = camera::projection();
   obj->param.view = camera::view();

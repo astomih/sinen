@@ -75,18 +75,10 @@ void draw3d_instancing::draw() {
   _instancing.object = obj;
   _instancing.type = object_type::_3D;
   for (int i = 0; i < this->position.size(); i++) {
-    matrix4 t = matrix4::identity;
-    t.mat[3][0] = position[i].x;
-    t.mat[3][1] = position[i].y;
-    t.mat[3][2] = position[i].z;
-    quaternion q(vector3::neg_unit_z, rotation[i].z);
-    q = quaternion::concatenate(q, quaternion(vector3::unit_y, rotation[i].y));
-    q = quaternion::concatenate(q, quaternion(vector3::unit_x, rotation[i].x));
-    matrix4 r = matrix4::create_from_quaternion(q);
-    matrix4 s = matrix4::identity;
-    s.mat[0][0] = scale[i].x;
-    s.mat[1][1] = scale[i].y;
-    s.mat[2][2] = scale[i].z;
+    matrix4 t = matrix4::create_translation(position[i]);
+    matrix4 r =
+        matrix4::create_from_quaternion(quaternion::from_euler(rotation[i]));
+    matrix4 s = matrix4::create_scale(scale[i]);
     instance_data insdata;
     _instancing.world_to_instance_data(s * r * t, insdata);
     _instancing.data.push_back(insdata);

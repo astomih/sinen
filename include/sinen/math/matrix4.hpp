@@ -48,7 +48,7 @@ public:
    *
    * @return const float* pointer to matrix4x4
    */
-  float *get() { return reinterpret_cast<float*>(mat.m16); }
+  float *get() { return reinterpret_cast<float *>(mat.m16); }
 
   float *operator[](const size_t index) { return mat[index]; }
 
@@ -191,6 +191,7 @@ public:
   static matrix4 create_translation(const vector3 &trans);
 
   static quaternion to_quaternion(const matrix4 &m);
+  static matrix4 create_scale(const vector3 &scale);
 
   static matrix4 lookat(const vector3 &eye, const vector3 &at,
                         const vector3 &up);

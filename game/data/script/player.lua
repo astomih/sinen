@@ -28,6 +28,8 @@ local player = {
     efks = {},
     tex_scope = {},
     drawer_scope = {},
+    drawer_scope_prev = vector2(0, 0),
+    is_shot = true,
     setup = function(self, map, map_size_x, map_size_y)
         self.model = model()
         self.model:load("triangle.sim", "player")
@@ -62,8 +64,8 @@ local player = {
     horizontal = math.pi,
     vertical = 0.0,
     update = function(self, map, map_draw3ds, map_size_x, map_size_y)
-        self.drawer.rotation.z = -math.deg(math.atan(mouse:position().y - window.size().y / 2,
-            mouse:position().x - window.size().x / 2)) - 90
+        self.drawer.rotation.z = math.deg(math.atan(self.drawer_scope.position.y,
+            self.drawer_scope.position.x)) - 90
         if keyboard:key_state(keyV) == buttonPRESSED then
             self.drawer.rotation.z = self.drawer.rotation.z + 180
         end
@@ -82,9 +84,12 @@ local player = {
             speed = speed / math.sqrt(2)
         end
         -- bullet
+        if keyboard:key_state(keyE) == buttonPRESSED then
+            self.is_shot = not self.is_shot
+        end
         self.bullet_timer = self.bullet_timer + delta_time
-        if mouse:is_button_down(mouseLEFT) and self.bullet_timer >
-            self.bullet_time then
+        if self.bullet_timer >
+            self.bullet_time and self.is_shot then
             local b = bullet(map_draw3ds)
             b:setup(self.drawer)
             b.drawer.rotation.z = b.drawer.rotation.z + 90
@@ -144,8 +149,27 @@ local player = {
                 self.drawer.position = before_pos
             end
         end
-        self.drawer_scope.position.x = mouse:position().x - window.size().x / 2
-        self.drawer_scope.position.y = -(mouse:position().y - window.size().y / 2)
+        local mouse_pos = mouse:position()
+        if mouse_pos.x == self.drawer_scope_prev.x and mouse_pos.y ==
+            self.drawer_scope_prev.y then
+            local speed = 1000 * delta_time
+            if keyboard:is_key_down(keyUP) then
+                self.drawer_scope.position.y = self.drawer_scope.position.y + speed
+            end
+            if keyboard:is_key_down(keyDOWN) then
+                self.drawer_scope.position.y = self.drawer_scope.position.y - speed
+            end
+            if keyboard:is_key_down(keyLEFT) then
+                self.drawer_scope.position.x = self.drawer_scope.position.x - speed
+            end
+            if keyboard:is_key_down(keyRIGHT) then
+                self.drawer_scope.position.x = self.drawer_scope.position.x + speed
+            end
+        else
+            self.drawer_scope.position.x = mouse_pos.x - window.size().x / 2
+            self.drawer_scope.position.y = -(mouse_pos.y - window.size().y / 2)
+        end
+        self.drawer_scope_prev = vector2(mouse_pos.x, mouse_pos.y)
         mouse:hide_cursor(true)
 
     end,

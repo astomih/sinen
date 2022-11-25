@@ -108,7 +108,8 @@
         "bfs_grid",
         "dts",
         "scene",
-        "collision"
+        "collision",
+        "keyE"
     ],
     "Lua.diagnostics.disable": [
         "lowercase-global"

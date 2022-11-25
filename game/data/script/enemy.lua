@@ -103,7 +103,7 @@ local enemy = function()
         end,
         draw = function(self) self.drawer:draw() end,
         player_collision = function(self, player)
-            if self.aabb:intersects_aabb(player.aabb) then
+            if collision.aabb_aabb(self.aabb, player.aabb) then
                 if self.is_collision_first then
                     bombed:play()
                     player.hp = player.hp - 1

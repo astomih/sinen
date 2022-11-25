@@ -201,7 +201,7 @@ function update()
     -- if keyboard:key_state(keyX) == buttonPRESSED then fps_mode = not fps_mode end
     for i, v in ipairs(player.bullets) do
         for j, w in ipairs(enemies) do
-            if v.aabb:intersects_aabb(w.aabb) then
+            if collision.aabb_aabb(v.aabb, w.aabb) then
                 local efk = effect()
                 efk:setup()
                 for k = 1, efk.max_particles do

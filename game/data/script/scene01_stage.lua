@@ -81,7 +81,7 @@ function setup()
     dts.dungeon_generator(map)
 
     box = draw3d_instanced(iseki_wall)
-    box.vertex_name = "BOX"
+    box.vertex_name = "tree"
     sprite = draw3d_instanced(tile)
     sprite.is_draw_depth = false
     stair = draw3d(tex)
@@ -257,5 +257,3 @@ function update()
     camera_update()
     draw()
 end
-
--------------------------------------------------------------------------------------

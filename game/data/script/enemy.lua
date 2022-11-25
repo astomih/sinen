@@ -1,12 +1,3 @@
-local is_collision = require "is_collision"
-
-local function same(t, p, comp)
-    for k, v in ipairs(t) do if not comp(v, p[k]) then return false end end
-    return true
-end
-
-local comp = function(a, b) return a.x == b[1] and a.y == b[2] end
-
 local bombed = sound()
 bombed:load("bombed.wav")
 local r1 = 0
@@ -80,28 +71,25 @@ local enemy = function()
                         self.drawer.position.x,
                         player.drawer.position.y -
                         self.drawer.position.y)))
-            local start = point2i(math.floor(
-                self.drawer.position.x / 2 +
-                0.5), math.floor(
-                self.drawer.position.y / 2 +
-                0.5))
-            local goal = point2i(math.floor(
-                player.drawer.position.x / 2 +
-                0.5), math.floor(
-                player.drawer.position.y / 2 +
-                0.5))
-            self.bfs:find_path(start, goal)
-            if self.bfs:traceable() then
+            local start = point2i(
+                self.drawer.position.x / 2
+                ,
+                self.drawer.position.y / 2
+            )
+            local goal = point2i(
+                player.drawer.position.x / 2,
+                player.drawer.position.y / 2
+            )
+            if self.bfs:find_path(start, goal) then
                 local path = self.bfs:trace()
                 path = self.bfs:trace()
                 self.drawer.position.x =
                 self.drawer.position.x +
-                    (path.x * 2 - self.drawer.position.x) * delta_time *
-                    3.0
+                    (path.x * 2 - self.drawer.position.x) * delta_time * self.speed
                 self.drawer.position.y =
                 self.drawer.position.y +
-                    (path.y * 2 - self.drawer.position.y) * delta_time *
-                    3.0
+                    (path.y * 2 - self.drawer.position.y) * delta_time * self.speed
+
             else
                 self.drawer.position.x =
                 self.drawer.position.x + delta_time * self.speed *

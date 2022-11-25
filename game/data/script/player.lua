@@ -12,11 +12,6 @@ local function decide_pos(map, map_size_x, map_size_y)
     return map:at(r1, r2) == 1
 end
 
-local function get_forward_z(rotation)
-    return vector2(-math.sin(math.rad(rotation.z)),
-        math.cos(math.rad(-rotation.z)))
-end
-
 local player = {
     drawer = {},
     model = {},

@@ -142,7 +142,6 @@ bool script_system::initialize() {
     auto v = impl->state.new_usertype<aabb>("", sol::no_construction());
     v["min"] = &aabb::min;
     v["max"] = &aabb::max;
-    v["intersects_aabb"] = &aabb::intersects_aabb;
   }
   {
     auto v = impl->state.new_usertype<random>("", sol::no_construction());

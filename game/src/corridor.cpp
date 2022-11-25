@@ -23,13 +23,15 @@ void corridor::connect(sinen::grid<int> &grid, std::vector<room> &rooms,
     sinen::point2i current = left;
     while (current.x < right.x) {
       grid[current.y][current.x] = floor_corridor;
+      path.push_back(current);
       ++current.x;
     }
 
     while (current.y != right.y) {
       grid[current.y][current.x] = floor_corridor;
       if (current.y < right.y) {
-        ++current.y;
+	      path.push_back(current);
+	      ++current.y;
       } else {
         --current.y;
       }

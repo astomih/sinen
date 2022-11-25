@@ -16,8 +16,8 @@ void dungeon_generator(sinen::grid<int> &grid) {
   int room_number =
       sinen::random::get_int_range(minimum_room_number, maximum_room_number);
   std::vector<room> rooms;
-  sinen::point2i minimum_room_size{10, 10};
-  sinen::point2i maximum_room_size{20, 20};
+  sinen::point2i minimum_room_size{5, 5};
+  sinen::point2i maximum_room_size{14, 14};
   for (int i = 0; i < room_number; ++i) {
     rooms.emplace_back(grid_size, minimum_room_size, maximum_room_size);
   }

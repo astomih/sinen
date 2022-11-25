@@ -219,10 +219,12 @@ void gl_renderer::render() {
   SDL_GL_SwapWindow(window_system::get_sdl_window());
   for (auto &i : m_instancing_2d) {
     glDeleteBuffers(1, &i.vbo);
+    i.ubo.destroy();
     glDeleteVertexArrays(1, &i.vao);
   }
   for (auto &i : m_instancing_3d) {
     glDeleteBuffers(1, &i.vbo);
+    i.ubo.destroy();
     glDeleteVertexArrays(1, &i.vao);
   }
   m_instancing_3d.clear();

@@ -695,8 +695,7 @@ void gl_renderer::create_texture(texture handle) {
   ::SDL_Surface &surf = texture_system::get(handle.handle);
   if (mTextureIDs.contains(handle.handle)) {
     if (*handle.is_need_update) {
-      glDeleteTextures(1, &mTextureIDs[handle.handle]);
-      mTextureIDs.erase(handle.handle);
+      destroy_texture(handle);
     } else
       return;
   }
@@ -719,6 +718,12 @@ void gl_renderer::create_texture(texture handle) {
   SDL_FreeFormat(formatbuf);
   SDL_FreeSurface(imagedata);
   mTextureIDs[handle.handle] = textureId;
+}
+void gl_renderer::destroy_texture(texture handle) {
+  if (mTextureIDs.contains(handle.handle)) {
+    glDeleteTextures(1, &mTextureIDs[handle.handle]);
+    mTextureIDs.erase(handle.handle);
+  }
 }
 
 bool gl_renderer::load_shader() {

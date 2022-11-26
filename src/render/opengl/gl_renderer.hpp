@@ -79,6 +79,7 @@ public:
   void prepare();
   void cleanup() {}
   void create_texture(texture tex);
+  void destroy_texture(texture tex);
   void remove_sprite2d(std::shared_ptr<drawable> sprite2d) {
     for (auto it = m_drawer_2ds.begin(); it != m_drawer_2ds.end(); ++it) {
       if ((*it).drawable_object == sprite2d) {

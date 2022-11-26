@@ -33,7 +33,7 @@
 
 namespace sinen {
 
-constexpr int maxpoolSize = 5000;
+constexpr int maxpoolSize = 65535;
 vk_renderer::vk_renderer()
     : m_descriptor_pool(), m_descriptor_set_layout(), m_sampler(),
       m_base(std::make_unique<vk_base>(this)), m_render_texture(*this),
@@ -572,8 +572,7 @@ void vk_renderer::draw_skybox(VkCommandBuffer command) {
   pipeline_skybox.Bind(command);
   auto t = std::make_shared<vk_draw_object>();
   t->drawObject = std::make_shared<drawable>();
-  t->drawObject->binding_texture.handle =
-      render_system::get_skybox_texture().handle;
+  t->drawObject->binding_texture = render_system::get_skybox_texture();
   t->drawObject->vertexIndex = "BOX";
   vk_shader_parameter param;
   matrix4 w = matrix4::identity;
@@ -587,13 +586,10 @@ void vk_renderer::draw_skybox(VkCommandBuffer command) {
                                      scene::main_camera().up());
   auto &va = m_vertex_arrays["BOX"];
 
-  if (!m_image_object.contains(t->drawObject->binding_texture.handle)) {
-    m_image_object[t->drawObject->binding_texture.handle] =
-        vk_renderer::create_texture_from_surface(
-            texture_system::get(t->drawObject->binding_texture.handle));
-  } else {
-    update_image_object(t->drawObject->binding_texture.handle);
+  if (m_image_object.contains(t->drawObject->binding_texture.handle)) {
+    destroy_image_object(t->drawObject->binding_texture.handle);
   }
+  update_image_object(t->drawObject->binding_texture.handle);
   t->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
   for (auto &v : t->uniformBuffers) {
     VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
@@ -1101,8 +1097,6 @@ void vk_renderer::destroy_image(vk_image_object &imageObj) {
 }
 
 void vk_renderer::update_image_object(const handle_t &handle) {
-  destroy_image(m_image_object[handle]);
-  m_image_object.erase(handle);
   ::SDL_Surface &surf = texture_system::get(handle);
   ::SDL_LockSurface(&surf);
   auto *formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
@@ -1198,13 +1192,12 @@ void vk_renderer::update_image_object(const handle_t &handle) {
 }
 void vk_renderer::create_image_object(texture handle) {
   if (m_image_object.contains(handle.handle)) {
-    if (handle.is_need_update) {
-      update_image_object(handle.handle);
-    }
-    return;
+    if (*handle.is_need_update) {
+      destroy_image_object(handle.handle);
+    } else
+      return;
   }
-  m_image_object[handle.handle] =
-      create_texture_from_surface(texture_system::get(handle.handle));
+  update_image_object(handle.handle);
 }
 void vk_renderer::destroy_image_object(const handle_t &handle) {
   for (auto it = m_image_object.begin(); it != m_image_object.end(); ++it) {

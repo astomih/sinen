@@ -41,6 +41,8 @@
 #include "network/tcp_client.hpp"
 #include "network/tcp_socket.hpp"
 #include "physics/collision.hpp"
+#include "physics/physics.hpp"
+#include "physics/primitive2.hpp"
 #include "render/renderer.hpp"
 #include "scene/scene.hpp"
 #include "script/script.hpp"

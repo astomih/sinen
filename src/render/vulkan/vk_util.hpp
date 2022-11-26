@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "vk_object.hpp"
 #include <SDL.h>

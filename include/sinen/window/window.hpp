@@ -1,4 +1,4 @@
-﻿#ifndef SINEN_WINDOW_HPP
+#ifndef SINEN_WINDOW_HPP
 #define SINEN_WINDOW_HPP
 #include "../math/vector2.hpp"
 #include "window_state.hpp"

@@ -1,4 +1,4 @@
-﻿#ifndef SINEN_GL_SHADER_HPP
+#ifndef SINEN_GL_SHADER_HPP
 #define SINEN_GL_SHADER_HPP
 
 #if defined(EMSCRIPTEN) || defined(MOBILE)

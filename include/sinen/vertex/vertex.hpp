@@ -1,4 +1,4 @@
-﻿#ifndef SINEN_VERTEX_HPP
+#ifndef SINEN_VERTEX_HPP
 #define SINEN_VERTEX_HPP
 #include <string_view>
 

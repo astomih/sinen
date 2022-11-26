@@ -1,4 +1,4 @@
-﻿#ifndef SINEN_FONT_HPP
+#ifndef SINEN_FONT_HPP
 #define SINEN_FONT_HPP
 #include "../color/color.hpp"
 #include "../color/palette.hpp"

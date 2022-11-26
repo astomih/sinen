@@ -1,4 +1,4 @@
-﻿#ifndef SINEN_TRANSFORM_HPP
+#ifndef SINEN_TRANSFORM_HPP
 #define SINEN_TRANSFORM_HPP
 #include "../window/window.hpp"
 #include "math.hpp"

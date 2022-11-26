@@ -1,4 +1,4 @@
-﻿// std
+// std
 #include <iostream>
 #include <mutex>
 #include <string_view>

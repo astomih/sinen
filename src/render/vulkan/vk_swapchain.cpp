@@ -1,4 +1,4 @@
-﻿#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #include "vk_swapchain.hpp"
 #include "vk_base.hpp"
 #include "vk_util.hpp"

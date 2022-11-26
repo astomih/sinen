@@ -1,4 +1,4 @@
-﻿#ifndef SINEN_SCENE_HPP
+#ifndef SINEN_SCENE_HPP
 #define SINEN_SCENE_HPP
 #include "../actor/actor.hpp"
 #include <cstdint>

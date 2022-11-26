@@ -1,4 +1,4 @@
-﻿#include "render_system.hpp"
+#include "render_system.hpp"
 #include <math/vector3.hpp>
 #include <render/renderer.hpp>
 #include <vertex/vertex.hpp>

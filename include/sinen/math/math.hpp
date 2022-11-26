@@ -1,4 +1,4 @@
-﻿#ifndef SINEN_MATH_HPP
+#ifndef SINEN_MATH_HPP
 #define SINEN_MATH_HPP
 
 #include "../time/time.hpp"

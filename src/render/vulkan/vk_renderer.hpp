@@ -1,4 +1,4 @@
-﻿#ifndef SINEN_VK_RENDERER_HPP
+#ifndef SINEN_VK_RENDERER_HPP
 #define SINEN_VK_RENDERER_HPP
 #include <functional>
 #include <instancing/instancing.hpp>

@@ -1,4 +1,4 @@
-﻿#ifndef SINEN_DATA_STREAM_HPP
+#ifndef SINEN_DATA_STREAM_HPP
 #define SINEN_DATA_STREAM_HPP
 // std
 #include <cstddef>

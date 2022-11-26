@@ -1,4 +1,4 @@
-﻿#ifndef SINEN_TIME_HPP
+#ifndef SINEN_TIME_HPP
 #define SINEN_TIME_HPP
 #include <chrono>
 #include <cstdint>

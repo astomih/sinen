@@ -1,4 +1,4 @@
-﻿#ifndef SINEN_VK_BASE_HPP
+#ifndef SINEN_VK_BASE_HPP
 #define SINEN_VK_BASE_HPP
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 #ifdef _WIN32

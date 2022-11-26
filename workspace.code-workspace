@@ -81,6 +81,7 @@
 		},
 		"Lua.diagnostics.globals": [
 			"model"
-		]
+		],
+		"files.eol": "\n"
 	},
 }

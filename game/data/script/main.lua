@@ -23,7 +23,7 @@ function setup()
     drawer_press = draw2d(texture_press)
     font_press = font()
     font_press:load("SoukouMincho-Font/SoukouMincho.ttf", 32)
-    font_press:render_text(texture_press, "PRESS SPACE", color(1, 1, 1, 1))
+    font_press:render_text(texture_press, "PRESS ENTER", color(1, 1, 1, 1))
     drawer_press.scale = texture_press:size()
     drawer_press.position = vector2(0, -drawer_title.scale.y * 1.5)
     local skybox_tex = texture()
@@ -37,7 +37,7 @@ function update()
     menu_object:update()
     menu_object:draw()
     if menu_object.hide then
-        if keyboard:key_state(keySPACE) == buttonPRESSED then
+        if keyboard:key_state(keyENTER) == buttonPRESSED then
             change_scene("scene01_stage")
         end
     end

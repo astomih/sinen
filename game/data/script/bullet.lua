@@ -1,6 +1,7 @@
 local m = model()
 local sound = sound()
 sound:load("shot.wav")
+sound:set_volume(0.3)
 local effect = require "effect"
 
 m:load("bullet.sim", "bullet")
@@ -20,7 +21,7 @@ local function bullet(map_draw3ds)
             self.drawer = draw3d(self.texture)
             self.drawer.vertex_name = "bullet"
             self.drawer.position = vector3(owner.position.x, owner.position.y,
-                1.3)
+                0)
             self.drawer.rotation = owner.rotation
             self.drawer.scale = vector3(0.2, 0.2, 0.2)
             sound:play()

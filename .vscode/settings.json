@@ -109,7 +109,11 @@
         "dts",
         "scene",
         "collision",
-        "keyE"
+        "keyE",
+        "keyK",
+        "keyJ",
+        "keyH",
+        "keyL"
     ],
     "Lua.diagnostics.disable": [
         "lowercase-global"

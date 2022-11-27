@@ -56,7 +56,7 @@ void register_keycode(sol::state &v) {
   v["keyRIGHT"] = (int)key_code::RIGHT;
   v["keyESCAPE"] = (int)key_code::ESCAPE;
   v["keySPACE"] = (int)key_code::SPACE;
-  v["keyENTER"] = (int)key_code::KP_ENTER;
+  v["keyENTER"] = (int)key_code::RETURN;
   v["keyBACKSPACE"] = (int)key_code::BACKSPACE;
   v["keyTAB"] = (int)key_code::TAB;
   v["keyLSHIFT"] = (int)key_code::LSHIFT;

@@ -31,6 +31,29 @@ void dungeon_generator(sinen::grid<int> &grid) {
     room.fill(grid, floor);
   }
 
+  // rooms sort by x
+  std::sort(rooms.begin(), rooms.end(), [](const room &a, const room &b) {
+    return a.get_position().x < b.get_position().x;
+  });
+  // Set room interior
+  {
+    // Set the stairs position
+    sinen::point2i stairs = rooms[rooms.size() - 1].get_position();
+    stairs.x += rooms[rooms.size() - 1].get_size().x / 2;
+    stairs.y += rooms[rooms.size() - 1].get_size().y / 2;
+    grid[stairs.y][stairs.x] = 2;
+    // Set the key position
+    sinen::point2i key = rooms[rooms.size() / 2].get_position();
+    key.x += rooms[rooms.size() / 2].get_size().x / 2;
+    key.y += rooms[rooms.size() / 2].get_size().y / 2;
+    grid[key.y][key.x] = 3;
+    // Set the player start position
+    sinen::point2i player_start = rooms[0].get_position();
+    player_start.x += rooms[0].get_size().x / 2;
+    player_start.y += rooms[0].get_size().y / 2;
+    grid[player_start.y][player_start.x] = 4;
+  }
+
   corridor c;
   c.connect(grid, rooms, floor);
 

@@ -89,7 +89,7 @@ local player = {
         end
         self.bullet_timer = self.bullet_timer + delta_time
         if self.bullet_timer >
-            self.bullet_time and self.is_shot then
+            self.bullet_time and (keyboard:is_key_down(keySPACE) or mouse:is_button_down(mouseLEFT)) then
             local b = bullet(map_draw3ds)
             b:setup(self.drawer)
             b.drawer.rotation.z = b.drawer.rotation.z + 90

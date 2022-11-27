@@ -54,12 +54,12 @@ local enemy = function()
             r1 = 0
             r2 = 0
             while decide_pos(_map, map_size_x, map_size_y) == true do end
-            self.drawer.position = vector3(r1 * 2, r2 * 2, 1)
+            self.drawer.position = vector3(r1 * 2, r2 * 2, 0.5)
             self.is_collision_first = true
             self.collision_time = 1.0
             self.collision_timer = 0.0
         end,
-        update = function(self, player, map, map_draw3ds, map_size_x, map_size_y)
+        update = function(self, player)
             self.aabb.max = self.drawer.position:add(
                 self.drawer.scale:mul(self.model.aabb.max))
             self.aabb.min = self.drawer.position:add(

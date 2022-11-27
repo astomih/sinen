@@ -4,7 +4,6 @@
 #include <sinen/math/point2.hpp>
 #include <sinen/math/random.hpp>
 
-
 namespace dts {
 class room {
 public:

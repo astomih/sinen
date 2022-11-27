@@ -4,10 +4,6 @@
 namespace dts {
 void corridor::connect(sinen::grid<int> &grid, std::vector<room> &rooms,
                        float floor_corridor) {
-  // rooms sort by x
-  std::sort(rooms.begin(), rooms.end(), [](const room &a, const room &b) {
-    return a.get_position().x < b.get_position().x;
-  });
 
   for (int i = 0; i < rooms.size() - 1;) {
     // choice room edge
@@ -30,8 +26,8 @@ void corridor::connect(sinen::grid<int> &grid, std::vector<room> &rooms,
     while (current.y != right.y) {
       grid[current.y][current.x] = floor_corridor;
       if (current.y < right.y) {
-	      path.push_back(current);
-	      ++current.y;
+        path.push_back(current);
+        ++current.y;
       } else {
         --current.y;
       }

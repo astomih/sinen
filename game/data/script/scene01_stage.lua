@@ -7,6 +7,13 @@ local map_size_x = 64
 local map_size_y = 64
 local map = grid(map_size_x, map_size_y)
 collision_space_division = map_size_x / 10 * 2 + 1
+local map_chip = {
+    floor = 0,
+    wall = 1,
+    stair = 2,
+    key = 3,
+    player = 4,
+}
 -- draw object
 local map_draw3ds = {}
 local box = {}
@@ -101,11 +108,11 @@ function setup()
             map_draw3ds[y][x] = world()
             map_draw3ds[y][x].position.x = x * 2
             map_draw3ds[y][x].position.y = y * 2
-            if map:at(x, y) ~= 2 then
+            if map:at(x, y) ~= map_chip.stair then
                 sprite:add(map_draw3ds[y][x].position, map_draw3ds[y][x].rotation,
                     map_draw3ds[y][x].scale)
             end
-            if map:at(x, y) == 1 then
+            if map:at(x, y) == map_chip.wall then
                 map_draw3ds[y][x].position.z = 0.5
                 map_draw3ds[y][x].aabb = aabb()
                 map_draw3ds[y][x].aabb.max =
@@ -125,19 +132,19 @@ function setup()
                     map_draw3ds[y][x])
 
             end
-            if map:at(x, y) == 2 then
+            if map:at(x, y) == map_chip.stair then
                 stair.position.x = x * 2
                 stair.position.y = y * 2 + 0.5
                 stair.position.z = 100
             end
-            if map:at(x, y) == 4 then
-                player.drawer.position.x = x * 2
-                player.drawer.position.y = y * 2
-            end
             -- key object
-            if map:at(x, y) == 4 then
+            if map:at(x, y) == map_chip.key then
                 key_drawer.position.x = x * 2
                 key_drawer.position.y = y * 2
+            end
+            if map:at(x, y) == map_chip.player then
+                player.drawer.position.x = x * 2
+                player.drawer.position.y = y * 2
             end
         end
     end
@@ -198,7 +205,6 @@ function update()
     score_drawer.scale = score_texture:size()
     score_drawer.position.x = -300
     score_drawer.position.y = -300
-    -- if keyboard:key_state(keyX) == buttonPRESSED then fps_mode = not fps_mode end
     for i, v in ipairs(player.bullets) do
         for j, w in ipairs(enemies) do
             if collision.aabb_aabb(v.aabb, w.aabb) then
@@ -218,7 +224,7 @@ function update()
                     table.remove(enemies, j)
                 end
                 if #enemies <= 0 then
-                    stair.position.z = 0
+                    stair.position.z = -2
 
                 end
             end
@@ -231,20 +237,21 @@ function update()
     end
     player:update(map, map_draw3ds, map_size_x, map_size_y)
     -- Player hit key
-    if math.floor(player.drawer.position.x) == math.floor(key_drawer.position.x) and
-        math.floor(player.drawer.position.y) == math.floor(key_drawer.position.y) then
+    if math.floor(player.drawer.position.x + 0.5) == math.floor(key_drawer.position.x) and
+        math.floor(player.drawer.position.y + 0.5) == math.floor(key_drawer.position.y) then
 
         key_hit = true
         stair.position.z = -2.0
     end
     for i, v in ipairs(enemies) do
-        v:update(player, map, map_draw3ds, map_size_x, map_size_y)
+        v:update(player)
         v:player_collision(player)
     end
-    if map:at(math.floor(player.drawer.position.x / 2 + 0.5), math.floor(
-        player.drawer.position.x / 2 + 0.5)) == 2 then
+    if math.floor(player.drawer.position.x + 0.5) == math.floor(stair.position.x) and
+        math.floor(player.drawer.position.y + 0.5) == math.floor(stair.position.y) then
 
-        if keyboard:key_state(keySPACE) == buttonPRESSED and stair.position.z ==
+        print(1)
+        if keyboard:key_state(keyENTER) == buttonPRESSED and stair.position.z ==
             -2 then
             now_stage = now_stage + 1
             if now_stage == 4 then

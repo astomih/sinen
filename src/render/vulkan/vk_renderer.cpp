@@ -118,14 +118,14 @@ void vk_renderer::update_model(const model &m) {
 void vk_renderer::draw2d(std::shared_ptr<class drawable> drawObject) {
   auto t = std::make_shared<vk_draw_object>();
   t->drawObject = drawObject;
-  create_image_object(drawObject->binding_texture);
+  add_texture(drawObject->binding_texture);
   registerTexture(t, texture_type::Image2D);
 }
 
 void vk_renderer::draw3d(std::shared_ptr<class drawable> sprite) {
   auto t = std::make_shared<vk_draw_object>();
   t->drawObject = sprite;
-  create_image_object(sprite->binding_texture);
+  add_texture(sprite->binding_texture);
   registerTexture(t, texture_type::Image3D);
 }
 
@@ -160,7 +160,7 @@ void vk_renderer::unload_shader(const shader &shaderInfo) {
 void vk_renderer::add_instancing(const instancing &_instancing) {
   auto t = std::make_shared<vk_draw_object>();
   t->drawObject = _instancing.object;
-  create_image_object(_instancing.object->binding_texture);
+  add_texture(_instancing.object->binding_texture);
   t->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
   for (auto &v : t->uniformBuffers) {
     VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
@@ -589,7 +589,7 @@ void vk_renderer::draw_skybox(VkCommandBuffer command) {
   if (m_image_object.contains(t->drawObject->binding_texture.handle)) {
     destroy_image_object(t->drawObject->binding_texture.handle);
   }
-  update_image_object(t->drawObject->binding_texture.handle);
+  create_image_object(t->drawObject->binding_texture.handle);
   t->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
   for (auto &v : t->uniformBuffers) {
     VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
@@ -936,87 +936,6 @@ VkSampler vk_renderer::create_sampler() {
   return sampler;
 }
 
-vk_image_object vk_renderer::create_texture(SDL_Surface *imagedata,
-                                            VkFormat format) {
-  vk_image_object texture{};
-  int width = imagedata->w, height = imagedata->h;
-  auto *pImage = imagedata->pixels;
-  {
-    // Create VkImage texture
-    VkImageCreateInfo ci{};
-    ci.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    ci.extent = {uint32_t(width), uint32_t(height), 1};
-    ci.format = format;
-    ci.imageType = VK_IMAGE_TYPE_2D;
-    ci.arrayLayers = 1;
-    ci.mipLevels = 1;
-    ci.samples = VK_SAMPLE_COUNT_1_BIT;
-    ci.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-    ci.tiling = VkImageTiling::VK_IMAGE_TILING_LINEAR;
-    ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    VmaAllocationCreateInfo alloc_info = {};
-    alloc_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-    vmaCreateImage(allocator, &ci, &alloc_info, &texture.image,
-                   &texture.allocation, nullptr);
-  }
-
-  {
-    vk_buffer_object stagingBuffer;
-    uint32_t imageSize = imagedata->h * imagedata->w * 4;
-    stagingBuffer = create_buffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-    write_memory(stagingBuffer.allocation, pImage, imageSize);
-    destroy_buffer(stagingBuffer);
-  }
-
-  {
-    // Create view for texture reference
-    VkImageViewCreateInfo ci{};
-    ci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    ci.image = texture.image;
-    ci.format = format;
-    ci.components = {
-        .r = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_R,
-        .g = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_G,
-        .b = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_B,
-        .a = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_A,
-
-    };
-
-    ci.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-    vkCreateImageView(m_base->get_vk_device(), &ci, nullptr, &texture.view);
-  }
-  SDL_FreeSurface(imagedata);
-  return texture;
-}
-
-vk_image_object
-vk_renderer::create_texture_from_surface(const ::SDL_Surface &surface) {
-  ::SDL_Surface surf = surface;
-  ::SDL_LockSurface(&surf);
-  auto *formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
-  formatbuf->BytesPerPixel = 4;
-  auto imagedata = ::SDL_ConvertSurface(&surf, formatbuf, 0);
-  ::SDL_UnlockSurface(&surf);
-  auto format = VK_FORMAT_R8G8B8A8_UNORM;
-  SDL_FreeFormat(formatbuf);
-  return create_texture(imagedata, format);
-}
-
-vk_image_object
-vk_renderer::create_texture_from_memory(const std::vector<char> &imageData) {
-  auto *rw = ::SDL_RWFromMem((void *)imageData.data(), imageData.size());
-  ::SDL_Surface *surface;
-  surface = ::IMG_Load_RW(rw, 1);
-  ::SDL_LockSurface(surface);
-  auto formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
-  formatbuf->BytesPerPixel = 4;
-  auto imagedata = SDL_ConvertSurface(surface, formatbuf, 0);
-  SDL_UnlockSurface(surface);
-  return create_texture(imagedata, VK_FORMAT_R8G8B8A8_UNORM);
-}
-
 void vk_renderer::set_image_memory_barrier(VkCommandBuffer command,
                                            VkImage image,
                                            VkImageLayout oldLayout,
@@ -1096,7 +1015,7 @@ void vk_renderer::destroy_image(vk_image_object &imageObj) {
   vmaDestroyImage(allocator, imageObj.image, imageObj.allocation);
 }
 
-void vk_renderer::update_image_object(const handle_t &handle) {
+void vk_renderer::create_image_object(const handle_t &handle) {
   ::SDL_Surface &surf = texture_system::get(handle);
   ::SDL_LockSurface(&surf);
   auto *formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
@@ -1190,14 +1109,14 @@ void vk_renderer::update_image_object(const handle_t &handle) {
   SDL_FreeSurface(imagedata);
   m_image_object.emplace(handle, texture);
 }
-void vk_renderer::create_image_object(texture handle) {
+void vk_renderer::add_texture(texture handle) {
   if (m_image_object.contains(handle.handle)) {
     if (*handle.is_need_update) {
       destroy_image_object(handle.handle);
     } else
       return;
   }
-  update_image_object(handle.handle);
+  create_image_object(handle.handle);
 }
 void vk_renderer::destroy_image_object(const handle_t &handle) {
   for (auto it = m_image_object.begin(); it != m_image_object.end(); ++it) {

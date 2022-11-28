@@ -76,7 +76,7 @@ public:
   void registerTexture(std::shared_ptr<class vk_draw_object> texture,
                        texture_type type);
   void destroy_texture(std::shared_ptr<class vk_draw_object> texture);
-  void create_image_object(texture tex);
+  void add_texture(texture tex);
   void destroy_image_object(const handle_t &handle);
   VkPipelineLayout get_pipeline_layout() {
     return m_pipeline_layout.GetLayout();
@@ -116,12 +116,8 @@ private:
   void draw_skybox(VkCommandBuffer command);
   void draw_instancing_3d(VkCommandBuffer command);
   void draw_instancing_2d(VkCommandBuffer command);
-  void update_image_object(const handle_t &handle);
+  void create_image_object(const handle_t &handle);
   VkSampler create_sampler();
-  vk_image_object create_texture(SDL_Surface *imagedata, VkFormat format);
-  vk_image_object create_texture_from_surface(const ::SDL_Surface &surface);
-  vk_image_object
-  create_texture_from_memory(const std::vector<char> &imageData);
   void set_image_memory_barrier(VkCommandBuffer command, VkImage image,
                                 VkImageLayout oldLayout,
                                 VkImageLayout newLayout);

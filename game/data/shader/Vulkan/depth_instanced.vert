@@ -23,5 +23,5 @@ void main()
   m[1] = m2;
   m[2] = m3;
   m[3] = m4;
-  gl_Position = proj * view * m * vec4(inPos,1.0);
+  gl_Position = light_proj * light_view * m * vec4(inPos,1.0);
 }

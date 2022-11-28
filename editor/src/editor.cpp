@@ -23,7 +23,6 @@
 #include <windows.h>
 #endif
 namespace sinen {
-float deltam[16];
 std::vector<actor> editor::m_actors;
 std::vector<matrix4> editor::m_matrices;
 int editor::index = 0;
@@ -34,7 +33,7 @@ void editor::gizmo() {
                ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
   ImGuizmo::BeginFrame();
   static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
-  static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
+  static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
   if (ImGui::IsKeyPressed(90))
     mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
   if (ImGui::IsKeyPressed(69))
@@ -56,7 +55,7 @@ void editor::gizmo() {
     ImGuizmo::Manipulate(scene::main_camera().view().get(),
                          scene::main_camera().projection().get(),
                          mCurrentGizmoOperation, mCurrentGizmoMode,
-                         m_matrices[index].mat.m16, deltam, nullptr);
+                         m_matrices[index].mat.m16);
   }
   ImGui::SliderFloat3("Position", &scene::main_camera().position().x, -10.0f,
                       10.0f);
@@ -100,7 +99,6 @@ void editor::inspector() {
     ImGui::RadioButton(std::string("actor" + std::to_string(i)).c_str(), &index,
                        i);
   static int item = 1;
-  /* ImGui::Combo("combo", &item, "aaaa\0bbbb\0cccc\0dddd\0eeee\0\0"); */
   if (ImGui::Button("Add Actor")) {
     m_actors.push_back(std::move(actor{}));
     auto m = matrix4::identity;
@@ -157,6 +155,7 @@ void editor::load_scene() {
                                               m_matrices[i].get());
     }
   }
+  logger::info("Scene loaded");
 }
 void editor::save_scene() {
   std::string str;
@@ -203,6 +202,7 @@ void editor::save_scene() {
   f.open("data/scene/scene01.json", file::mode::w);
   f.write(s.c_str(), s.size(), 1);
   f.close();
+  logger::info("Scene saved");
 }
 void editor::menu() {
   ImGui::SetNextWindowPos({250, 0});

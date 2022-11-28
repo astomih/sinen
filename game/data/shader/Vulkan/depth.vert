@@ -27,5 +27,9 @@ out gl_PerVertex
 
 void main()
 {
-  gl_Position = proj * view * world* vec4(inPos,1.0);
+  gl_Position = light_proj * light_view * world * vec4(inPos, 1.0);
+
+
+  outUV = inUV;
+  outColor = inColor;
 }

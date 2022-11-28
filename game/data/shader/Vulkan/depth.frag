@@ -1,6 +1,6 @@
 #version 450
-layout(location=0)out vec4 depth;
+layout(location=0)out float depth;
 void main()
 {
-    depth = gl_FragCoord;
+    depth = gl_FragCoord.z;
 }

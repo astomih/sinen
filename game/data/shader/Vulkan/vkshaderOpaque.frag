@@ -56,7 +56,7 @@ void main()
 	float NdotL = dot(N, L);
 	if (NdotL > 0)
 	{
-		vec3 Diffuse = mDiffuseColor * NdotL*visibility;
+		vec3 Diffuse = mDiffuseColor * NdotL * visibility;
 		Phong += Diffuse;
 	}
 	vec4 color = vec4(Phong,1.0) * inColor * texture(diffuseMap,inUV);

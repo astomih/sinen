@@ -1,7 +1,7 @@
 local player = require "player"
 local enemy = require "enemy"
 local enemies = {}
-local enemy_max_num = 5
+local enemy_max_num = 10
 local world = require "world"
 local map_size_x = 64
 local map_size_y = 64
@@ -250,7 +250,6 @@ function update()
     if math.floor(player.drawer.position.x + 0.5) == math.floor(stair.position.x) and
         math.floor(player.drawer.position.y + 0.5) == math.floor(stair.position.y) then
 
-        print(1)
         if keyboard:key_state(keyENTER) == buttonPRESSED and stair.position.z ==
             -2 then
             now_stage = now_stage + 1

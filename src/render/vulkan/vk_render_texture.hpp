@@ -22,7 +22,7 @@ public:
   VkSampler sampler;
   vk_image_object color_target;
   vk_image_object depth_target;
-  vk_draw_object drawer;
+  vk_drawable drawer;
   VkDescriptorSetLayout descriptor_set_layout;
   vk_pipeline pipeline;
 

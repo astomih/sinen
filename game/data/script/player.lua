@@ -153,17 +153,38 @@ local player = {
         if mouse_pos.x == self.drawer_scope_prev.x and mouse_pos.y ==
             self.drawer_scope_prev.y then
             local speed = 1000 * delta_time
+            local pressed = false
             if keyboard:is_key_down(keyUP) then
                 self.drawer_scope.position.y = self.drawer_scope.position.y + speed
+                pressed = true
             end
             if keyboard:is_key_down(keyDOWN) then
                 self.drawer_scope.position.y = self.drawer_scope.position.y - speed
+                pressed = true
             end
             if keyboard:is_key_down(keyLEFT) then
                 self.drawer_scope.position.x = self.drawer_scope.position.x - speed
+                pressed = true
             end
             if keyboard:is_key_down(keyRIGHT) then
                 self.drawer_scope.position.x = self.drawer_scope.position.x + speed
+                pressed = true
+            end
+            if pressed then
+                local rect = 100
+                if self.drawer_scope.position.x > rect then
+                    self.drawer_scope.position.x = rect
+                end
+                if self.drawer_scope.position.x < -rect then
+                    self.drawer_scope.position.x = -rect
+                end
+
+                if self.drawer_scope.position.y > rect then
+                    self.drawer_scope.position.y = rect
+                end
+                if self.drawer_scope.position.y < -rect then
+                    self.drawer_scope.position.y = -rect
+                end
             end
         else
             self.drawer_scope.position.x = mouse_pos.x - window.size().x / 2

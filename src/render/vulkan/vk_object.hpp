@@ -15,12 +15,12 @@ public:
   VmaAllocation allocation;
   VkImageView view;
 };
-class vk_draw_object {
+class vk_drawable {
 public:
   std::vector<VkDescriptorSet> descripterSet;
   std::vector<vk_buffer_object> uniformBuffers;
   bool isInstance = false;
-  std::shared_ptr<drawable> drawObject;
+  std::shared_ptr<drawable> p_drawable;
 };
 } // namespace sinen
 #endif // !defined(EMSCRIPTEN) && !defined(MOBILE)

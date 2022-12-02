@@ -31,7 +31,7 @@ class vk_instancing {
 public:
   vk_instancing(const instancing &_instancing) : ins(_instancing) {}
   instancing ins;
-  std::shared_ptr<class vk_draw_object> m_vk_draw_object;
+  std::shared_ptr<class vk_drawable> m_vk_draw_object;
   vk_buffer_object instance_buffer;
 };
 class vk_shader_parameter {
@@ -73,9 +73,9 @@ public:
       uint32_t size, VkBufferUsageFlags usage,
       VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
   vk_base &get_base() { return *m_base; }
-  void registerTexture(std::shared_ptr<class vk_draw_object> texture,
+  void registerTexture(std::shared_ptr<class vk_drawable> texture,
                        texture_type type);
-  void destroy_texture(std::shared_ptr<class vk_draw_object> texture);
+  void destroy_texture(std::shared_ptr<class vk_drawable> texture);
   void add_texture(texture tex);
   void destroy_image_object(const handle_t &handle);
   VkPipelineLayout get_pipeline_layout() {
@@ -110,7 +110,7 @@ private:
   std::unique_ptr<class vk_base> m_base;
   void prepare_descriptor_set_layout();
   void prepare_descriptor_pool();
-  void prepare_descriptor_set(std::shared_ptr<vk_draw_object>);
+  void prepare_descriptor_set(std::shared_ptr<vk_drawable>);
   void prepare_imgui();
   void render_imgui(VkCommandBuffer command);
   void draw_skybox(VkCommandBuffer command);
@@ -137,8 +137,8 @@ private:
   vk_pipeline pipeline_instancing_2d;
   vk_pipeline pipeline_depth_instancing;
   std::vector<std::pair<shader, vk_pipeline>> m_user_pipelines;
-  std::vector<std::shared_ptr<vk_draw_object>> m_draw_object_3d;
-  std::vector<std::shared_ptr<vk_draw_object>> m_draw_object_2d;
+  std::vector<std::shared_ptr<vk_drawable>> m_draw_object_3d;
+  std::vector<std::shared_ptr<vk_drawable>> m_draw_object_2d;
   std::unordered_map<handle_t, vk_image_object> m_image_object;
   std::vector<vk_instancing> m_instancies_3d;
   std::vector<vk_instancing> m_instancies_2d;

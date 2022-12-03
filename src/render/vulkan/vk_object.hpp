@@ -20,7 +20,7 @@ public:
   std::vector<VkDescriptorSet> descripterSet;
   std::vector<vk_buffer_object> uniformBuffers;
   bool isInstance = false;
-  std::shared_ptr<drawable> p_drawable;
+  std::shared_ptr<drawable> drawable;
 };
 } // namespace sinen
 #endif // !defined(EMSCRIPTEN) && !defined(MOBILE)

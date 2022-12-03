@@ -8,7 +8,7 @@ vk_render_texture::vk_render_texture(vk_renderer &r) : m_vkrenderer(r) {}
 
 void vk_render_texture::prepare(int width, int height, bool depth_only) {
   sampler = create_sampler();
-  drawer.drawable = std::make_shared<drawable>();
+  drawer.drawable_obj = std::make_shared<drawable>();
   is_depth_only = depth_only;
   if (!depth_only) {
     color_target =

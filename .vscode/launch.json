@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Game",
+      "program": "${workspaceFolder}/build/game/game.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}/game"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Editor",
+      "program": "${workspaceFolder}/build/editor/editor.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}/editor"
+    }
+  ]
+}

@@ -74,6 +74,7 @@ void scene_system::process_input() {
   while (SDL_PollEvent(&event_system::current_event)) {
     ImGui_ImplSDL2_ProcessEvent(&event_system::current_event);
     window_system::process_input();
+    input_system::process_event();
     switch (event_system::current_event.type) {
     case SDL_QUIT: {
       m_game_state = scene::state::quit;

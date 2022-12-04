@@ -172,18 +172,18 @@ local player = {
             end
             if pressed then
                 local rect = 100
-                if self.drawer_scope.position.x > rect then
-                    self.drawer_scope.position.x = rect
+                if self.drawer_scope.position.x > math.sin(rect)*rect then
+                    self.drawer_scope.position.x = math.sin(rect)*rect
                 end
-                if self.drawer_scope.position.x < -rect then
-                    self.drawer_scope.position.x = -rect
+                if self.drawer_scope.position.x < -math.sin(rect)*rect then
+                    self.drawer_scope.position.x = -math.sin(rect)*rect
                 end
 
-                if self.drawer_scope.position.y > rect then
-                    self.drawer_scope.position.y = rect
+                if self.drawer_scope.position.y > math.cos(rect) then
+                    self.drawer_scope.position.y = math.cos(rect)
                 end
-                if self.drawer_scope.position.y < -rect then
-                    self.drawer_scope.position.y = -rect
+                if self.drawer_scope.position.y < -math.cos(rect) then
+                    self.drawer_scope.position.y = -math.cos(rect)
                 end
             end
         else

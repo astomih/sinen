@@ -8,7 +8,6 @@
 // Added for ImGui
 #include <ImGuizmo.h>
 
-#include "file_dialog.hpp"
 #include "log_window.hpp"
 #include "markdown.hpp"
 #include "texteditor.hpp"
@@ -26,10 +25,10 @@ namespace sinen {
 std::vector<actor> editor::m_actors;
 std::vector<matrix4> editor::m_matrices;
 int editor::index = 0;
-void editor::gizmo() {
-  ImGui::SetNextWindowPos({0, 0});
-  ImGui::SetNextWindowSize({250, 360});
-  ImGui::Begin("Camera", nullptr,
+void editor::inspector() {
+  ImGui::SetNextWindowPos({1030, 0});
+  ImGui::SetNextWindowSize({250, 720});
+  ImGui::Begin("Inspector", nullptr,
                ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
   ImGuizmo::BeginFrame();
   static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
@@ -57,21 +56,6 @@ void editor::gizmo() {
                          mCurrentGizmoOperation, mCurrentGizmoMode,
                          m_matrices[index].mat.m16);
   }
-  ImGui::SliderFloat3("Position", &scene::main_camera().position().x, -10.0f,
-                      10.0f);
-  ImGui::SliderFloat3("Target", &scene::main_camera().target().x, -10.0f,
-                      10.0f);
-  ImGui::SliderFloat3("Up", &scene::main_camera().up().x, -1.0f, 1.0f);
-  scene::main_camera().lookat(scene::main_camera().position(),
-                              scene::main_camera().target(),
-                              scene::main_camera().up());
-  ImGui::End();
-}
-void editor::inspector() {
-  ImGui::SetNextWindowPos({1030, 0});
-  ImGui::SetNextWindowSize({250, 720});
-  ImGui::Begin("Inspector", nullptr,
-               ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
   ImGui::Text("Transform");
   vector3 pos, rot, scale;
   if (m_actors.size() > 0) {
@@ -245,7 +229,6 @@ void editor::setup() {
   m_impl->is_run = false;
   renderer::add_imgui_function(menu);
   renderer::add_imgui_function(markdown);
-  renderer::add_imgui_function(gizmo);
   renderer::add_imgui_function(log_window);
   renderer::add_imgui_function(inspector);
   // renderer::add_imgui_function(texteditor);
@@ -314,5 +297,39 @@ void editor::update(float delta_time) {
 
 #endif // _WIN32
   }
+
+  // Camera moved by mouse
+  {
+    // Normalize camera angle vector
+    auto vec = scene::main_camera().target() - scene::main_camera().position();
+    if (vec.length() > 0.1) {
+      vec.normalize();
+      scene::main_camera().position() +=
+          vec * input::mouse.get_scroll_wheel().y;
+    }
+    static vector2 prev = vector2();
+    if (input::mouse.get_button_state(mouse_code::RIGHT) ==
+        button_state::Held) {
+      auto pos = prev - input::mouse.get_position();
+      if (input::keyboard.is_key_down(key_code::LSHIFT)) {
+        scene::main_camera().position() +=
+            scene::main_camera().view().get_x_axis() * pos.x * delta_time;
+        scene::main_camera().target() +=
+            scene::main_camera().view().get_x_axis() * pos.x * delta_time;
+        scene::main_camera().position() -=
+            scene::main_camera().view().get_z_axis() * pos.y * delta_time;
+        scene::main_camera().target() -=
+            scene::main_camera().view().get_z_axis() * pos.y * delta_time;
+
+      } else {
+        scene::main_camera().target().x += pos.x * delta_time;
+        scene::main_camera().target().y -= pos.y * delta_time;
+      }
+    }
+    prev = input::mouse.get_position();
+  }
+  scene::main_camera().lookat(scene::main_camera().position(),
+                              scene::main_camera().target(),
+                              scene::main_camera().up());
 }
 } // namespace sinen

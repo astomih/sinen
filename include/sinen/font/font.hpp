@@ -55,6 +55,9 @@ public:
    * @return false not load yet
    */
   bool is_loaded() { return is_load; }
+  /**
+   * @brief Unload the font
+   */
   void unload();
 
   /**

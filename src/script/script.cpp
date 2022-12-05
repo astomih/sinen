@@ -49,6 +49,7 @@ bool script_system::initialize() {
     v["mul"] = &vector3::mul;
     v["div"] = &vector3::div;
     v["copy"] = &vector3::copy;
+    v["length"] = &vector3::length;
     v["forward"] = [](const vector3 v, const vector3 rotation) -> vector3 {
       quaternion q;
       q = quaternion::concatenate(
@@ -68,6 +69,7 @@ bool script_system::initialize() {
     v["sub"] = &vector2::sub;
     v["mul"] = &vector2::mul;
     v["div"] = &vector2::div;
+    v["length"] = &vector2::length;
   }
   {
     auto v = impl->state.new_usertype<point2i>("", sol::no_construction());

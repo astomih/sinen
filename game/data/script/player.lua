@@ -28,7 +28,7 @@ local player = {
     efks = {},
     tex_scope = {},
     drawer_scope = {},
-    drawer_scope_prev = vector2(0, 0),
+    drawer_scope_big = {},
     is_shot = true,
     setup = function(self, map, map_size_x, map_size_y)
         self.model = model()
@@ -57,15 +57,17 @@ local player = {
         self.hp_drawer2.scale = vector2(self.hp * 10.0, 50)
         self.tex_scope = texture()
         self.tex_scope:load("scope.png")
+        local big_scope = texture()
+        big_scope:load("scope_big.png")
         self.drawer_scope = draw2d(self.tex_scope)
+        self.drawer_scope_big = draw2d(big_scope)
         self.drawer_scope.scale = self.tex_scope:size()
+        self.drawer_scope_big.scale = vector2(big_scope:size().x * 2, big_scope:size().y * 2)
 
     end,
     horizontal = math.pi,
     vertical = 0.0,
     update = function(self, map, map_draw3ds, map_size_x, map_size_y)
-        self.drawer.rotation.z = math.deg(math.atan(self.drawer_scope.position.y,
-            self.drawer_scope.position.x)) - 90
         if keyboard:key_state(keyV) == buttonPRESSED then
             self.drawer.rotation.z = self.drawer.rotation.z + 180
         end
@@ -150,47 +152,42 @@ local player = {
             end
         end
         local mouse_pos = mouse:position()
-        if mouse_pos.x == self.drawer_scope_prev.x and mouse_pos.y ==
-            self.drawer_scope_prev.y then
-            local speed = 1000 * delta_time
-            local pressed = false
-            if keyboard:is_key_down(keyUP) then
-                self.drawer_scope.position.y = self.drawer_scope.position.y + speed
-                pressed = true
-            end
-            if keyboard:is_key_down(keyDOWN) then
-                self.drawer_scope.position.y = self.drawer_scope.position.y - speed
-                pressed = true
-            end
-            if keyboard:is_key_down(keyLEFT) then
-                self.drawer_scope.position.x = self.drawer_scope.position.x - speed
-                pressed = true
-            end
-            if keyboard:is_key_down(keyRIGHT) then
-                self.drawer_scope.position.x = self.drawer_scope.position.x + speed
-                pressed = true
-            end
-            if pressed then
-                local rect = 100
-                if self.drawer_scope.position.x > math.sin(rect)*rect then
-                    self.drawer_scope.position.x = math.sin(rect)*rect
-                end
-                if self.drawer_scope.position.x < -math.sin(rect)*rect then
-                    self.drawer_scope.position.x = -math.sin(rect)*rect
-                end
-
-                if self.drawer_scope.position.y > math.cos(rect) then
-                    self.drawer_scope.position.y = math.cos(rect)
-                end
-                if self.drawer_scope.position.y < -math.cos(rect) then
-                    self.drawer_scope.position.y = -math.cos(rect)
-                end
-            end
-        else
+        local speed = 1000 * delta_time
+        local pressed = false
+        if keyboard:is_key_down(keyUP) then
+            self.drawer_scope.position.y = self.drawer_scope.position.y + speed
+            pressed = true
+        end
+        if keyboard:is_key_down(keyDOWN) then
+            self.drawer_scope.position.y = self.drawer_scope.position.y - speed
+            pressed = true
+        end
+        if keyboard:is_key_down(keyLEFT) then
+            self.drawer_scope.position.x = self.drawer_scope.position.x - speed
+            pressed = true
+        end
+        if keyboard:is_key_down(keyRIGHT) then
+            self.drawer_scope.position.x = self.drawer_scope.position.x + speed
+            pressed = true
+        end
+        if not pressed then
             self.drawer_scope.position.x = mouse_pos.x - window.size().x / 2
             self.drawer_scope.position.y = -(mouse_pos.y - window.size().y / 2)
         end
-        self.drawer_scope_prev = vector2(mouse_pos.x, mouse_pos.y)
+        local r = 200
+        -- Make the coordinates fit in a circle of radius r
+        local x = self.drawer_scope.position.x
+        local y = self.drawer_scope.position.y
+        local d = self.drawer_scope.position:length()
+        if d > r then
+            x = x * r / d
+            y = y * r / d
+            self.drawer_scope.position.x = x
+            self.drawer_scope.position.y = y
+            mouse:set_position(vector2(window.size().x / 2 + x, window.size().y / 2 - y))
+        end
+        local drawer_scope_angle = math.atan(self.drawer_scope.position.y, self.drawer_scope.position.x)
+        self.drawer.rotation.z = math.deg(drawer_scope_angle) - 90
         mouse:hide_cursor(true)
 
     end,
@@ -199,6 +196,7 @@ local player = {
         if not fps_mode then self.drawer:draw() end
         self.hp_drawer:draw()
         self.hp_drawer2:draw()
+        self.drawer_scope_big:draw()
         self.drawer_scope:draw()
     end,
     render_text = function(self)

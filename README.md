@@ -1,6 +1,6 @@
 # Sinen Project 
 Engine, Editor, Game, Tools, and more.
-<p align="center"><a href="https://astomih.github.io/sinen"><img src="https://raw.githubusercontent.com/astomih/sinen/main/logo/logo.png" width="480" alt="Sinen Engine logo"></a></p>  
+<p align="center"><a href="https://astomih.github.io/sinen"><img src="https://raw.githubusercontent.com/astomih/sinen/main/logo/logo_bg_white.png" width="480" alt="Sinen Logo"></a></p>  
 
 # Engine
 Sinen Engine is a media library for C++20 that is being produced mainly for game development.  

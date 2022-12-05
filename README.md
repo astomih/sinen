@@ -2,7 +2,7 @@
 Engine, Editor, Game, Tools, and more.
 <p align="center"><a href="https://astomih.github.io/sinen"><img src="https://raw.githubusercontent.com/astomih/sinen/main/logo/logo.png" width="480" alt="Sinen Engine logo"></a></p>  
 
-# Sinen Engine
+# Engine
 Sinen Engine is a media library for C++20 that is being produced mainly for game development.  
 
 ## Try on Web
@@ -48,20 +48,6 @@ function update()
 	hello_drawer:draw()
 end
 ```
-
-## How to build
-### Windows
-Install msys, CMake and Vulkan. then install 'Using libraries' in pacman.  
-Finally, build with CMake.
-### WebGL
-Install emscripten SDK. and do this.  
- ``` 
- $ emcmake cmake .
- $ emmake make
- ```
- ### Android
- Build with gradle.
-
 ## Lisence
  MIT Lisence
 
@@ -77,19 +63,19 @@ Install emscripten SDK. and do this.
 - Vulkan 1.2
 - VulkanMemoryAllocator
 
-# Sinen Editor
+# Editor
 ![Editor Sample](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/editor_sample.png)
-Sinen Editor is a level editor for Sinen Engine.  
+Editor is a level editor for Engine.  
 ## Dependencies
 - Sinen Engine
 - ImGuiColorTextEdit
 - imgui_markdown
 - ImGuizmo
 
-# Sinen Game
-I named this game 'Dive To Sinen'.  
-Developping...
+# Game
+I named this game 'DIVE TO SINEN'.  
+![Game Sample](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/game_sample.png)
 
-# Sinen Tools
+# Tools
 ## Model Converter
 Converts 3D model files to Sinen Engine's model format.

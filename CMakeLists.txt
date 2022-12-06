@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.7)
 project(sinen)
+add_subdirectory(./script)
 if(ANDROID)
   set(CMAKE_CXX_FLAGS "-std=c++20 -DANDROID")
   file(
@@ -13,6 +14,7 @@ if(ANDROID)
     external/Lua/source/*.c)
   add_library(sinen STATIC ${SOURCE_FILES})
   set(INCLUDE_DIRS
+      ./script/include
       ./include
       ./include/sinen
       external/ImGui/include
@@ -48,6 +50,7 @@ elseif(EMSCRIPTEN)
       .
       ./include
       ./include/sinen
+      ./script/include
       external/ImGui/include
       external/sol2/include
       external/rapidjson/include
@@ -104,6 +107,7 @@ else()
       .
       ./include
       ./include/sinen
+      ./script/include
       external/ImGui/include
       external/sol2/include
       external/Lua/include
@@ -115,4 +119,12 @@ else()
   target_include_directories(
     sinen PUBLIC ${SINEN_INCLUDE_DIRECTORIES} ${Vulkan_INCLUDE_DIRS}
                  ${SDL2_INCLUDE_DIRS})
+  target_link_libraries(
+    sinen
+    SDL2
+    SDL2_image
+    SDL2_mixer
+    SDL2_ttf
+    SDL2_net
+  )
 endif()

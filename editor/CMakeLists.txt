@@ -32,13 +32,10 @@ find_package(SDL2 REQUIRED)
 
 set(COMMON_LIBRARIES
 	sinen
+	script_engine
 	${Vulkan_LIBRARIES}	
 	SDL2
 	SDL2main
-	SDL2_image
-	SDL2_mixer
-	SDL2_ttf
-	SDL2_net
 )
 if(WIN32)
 	set(LIBRARIES ${COMMON_LIBRARIES} glew32 opengl32)

@@ -100,7 +100,7 @@ bool main_system::initialize() {
   std::string str;
   file f;
   if (f.open("settings.json", file::mode::r)) {
-    char raw[256];
+    char raw[256] = {};
     f.read(raw, 256, 1);
     auto s = std::string(raw);
     json j;

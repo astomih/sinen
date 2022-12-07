@@ -12,6 +12,7 @@
 // internal libraries
 #include <io/file.hpp>
 #include <io/json.hpp>
+#include <logger/logger.hpp>
 
 namespace sinen {
 
@@ -111,12 +112,18 @@ std::size_t json::object::size() { return pimpl->value.Size(); }
 json::json() : pimpl(std::make_unique<json::impl>()) {}
 
 json::~json() {}
-
-void json::parse(std::string_view str) { pimpl->doc.Parse(str.data()); }
+void json::parse(std::string_view str) {
+  pimpl->doc.Parse(str.data());
+  if (pimpl->doc.HasParseError()) {
+    logger::fatal("%d", pimpl->doc.GetParseError());
+  }
+}
 json::object json::operator[](std::string_view key) {
   object obj;
-  obj.pimpl =
-      std::make_shared<json::object::impl>(pimpl->doc[key.data()], this);
+  if (pimpl->doc.HasMember(key.data())) {
+    obj.pimpl =
+        std::make_shared<json::object::impl>(pimpl->doc[key.data()], this);
+  }
   return obj;
 }
 

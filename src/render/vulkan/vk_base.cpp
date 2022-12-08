@@ -358,8 +358,9 @@ void vk_base::render() {
 
   auto color = renderer::clear_color();
   std::array<VkClearValue, 2> clearValue = {{
-      {color.r, color.g, color.b, 1.f}, // for Color
-      {1.f, 1.f}                        // for Depth
+      //{color.r, color.g, color.b, 1.f}, // for Color
+      {1, 1, 1, 1},
+      {1.f, 0.f} // for Depth
   }};
 
   VkRenderPassBeginInfo renderPassBI{};
@@ -379,10 +380,10 @@ void vk_base::render() {
   renderPassShadowBI.pClearValues = clearValue.data();
   renderPassShadowBI.clearValueCount = uint32_t(clearValue.size());
 
-  // Begin Command Buffer
   VkCommandBufferBeginInfo commandBI{};
   commandBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   auto &command = m_commands[nextImageIndex];
+  // Begin Command Buffer
   vkBeginCommandBuffer(command, &commandBI);
   m_imageIndex = nextImageIndex;
   vkCmdBeginRenderPass(command, &renderPassShadowBI,
@@ -392,20 +393,18 @@ void vk_base::render() {
   VkImageMemoryBarrier imageBarrier{
       VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
       nullptr,
-      VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT, // srcAccessMask
-      VK_ACCESS_SHADER_READ_BIT,                    // dstAccessMask
-      VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+      VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+      VK_ACCESS_SHADER_READ_BIT,
+      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
       VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
       VK_QUEUE_FAMILY_IGNORED,
       VK_QUEUE_FAMILY_IGNORED,
-      m_vkrenderer->m_depth_texture.depth_target.image,
+      m_vkrenderer->m_depth_texture.color_target.image,
       {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
   vkCmdPipelineBarrier(command, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                       VK_DEPENDENCY_BY_REGION_BIT, 0,
-                       nullptr,    // memoryBarrier
-                       0, nullptr, // bufferMemoryBarrier
-                       1, &imageBarrier);
+                       VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 0, nullptr, 1,
+                       &imageBarrier);
   vkCmdBeginRenderPass(command, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
   m_vkrenderer->make_command(command);
   vkCmdEndRenderPass(command);
@@ -438,7 +437,7 @@ void vk_base::render() {
                          0, nullptr, // bufferMemoryBarrier
                          1, &imageBarrier);
 
-    // Begin Command Buffer
+    // Begin Render Pass
     vkCmdBeginRenderPass(command, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
 
     m_vkrenderer->render_to_display(command);

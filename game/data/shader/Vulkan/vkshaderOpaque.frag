@@ -18,7 +18,7 @@ layout(set=0,binding=0) uniform Matrices
   mat4 proj;
   mat4 light_view;
   mat4 light_proj;
-	float time;
+  float time;
 };
 
 float simple_shadow( vec3 proj_pos ) {

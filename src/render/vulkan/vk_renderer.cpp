@@ -263,6 +263,7 @@ void vk_renderer::prepare() {
                                m_base->mSwapchain->GetSurfaceExtent());
   m_pipeline_layout.Prepare(m_base->get_vk_device());
   m_render_texture.prepare(window::size().x, window::size().y, false);
+  m_depth_texture.prepare(window::size().x, window::size().y, true);
 
   // Opaque pipeline
   {
@@ -411,8 +412,7 @@ void vk_renderer::prepare() {
     m_render_texture.pipeline.prepare(m_base->get_vk_device());
     vk_shader::clean(m_base->get_vk_device(), shaderStages);
   }
-  m_depth_texture.prepare(window::size().x, window::size().y, true);
-  // depth pipeline
+  // depth texture pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
         vk_shader::load(m_base->get_vk_device(), "depth.vert.spv",
@@ -430,6 +430,24 @@ void vk_renderer::prepare() {
     m_depth_texture.pipeline.prepare(m_base->get_vk_device());
     vk_shader::clean(m_base->get_vk_device(), shaderStages);
   }
+  // depth pipeline
+  {
+    std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
+        vk_shader::load(m_base->get_vk_device(), "depth_instanced.vert.spv",
+                        VK_SHADER_STAGE_VERTEX_BIT),
+        vk_shader::load(m_base->get_vk_device(), "depth.frag.spv",
+                        VK_SHADER_STAGE_FRAGMENT_BIT)};
+    pipeline_depth.initialize(m_pipeline_layout, m_depth_texture.render_pass,
+                              shaderStages);
+    pipeline_depth.color_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
+                                      VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    pipeline_depth.alpha_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
+                                      VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    pipeline_depth.set_depth_test(VK_TRUE);
+    pipeline_depth.set_depth_write(VK_TRUE);
+    pipeline_depth.prepare(m_base->get_vk_device());
+    vk_shader::clean(m_base->get_vk_device(), shaderStages);
+  }
   // depth instanced pipeline
   {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
@@ -443,7 +461,7 @@ void vk_renderer::prepare() {
         VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
     pipeline_depth_instancing.alpha_blend_factor(
         VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
-    pipeline_depth_instancing.set_depth_test(VK_FALSE);
+    pipeline_depth_instancing.set_depth_test(VK_TRUE);
     pipeline_depth_instancing.set_depth_write(VK_TRUE);
     pipeline_depth_instancing.prepare(m_base->get_vk_device());
     vk_shader::clean(m_base->get_vk_device(), shaderStages);
@@ -483,14 +501,16 @@ void vk_renderer::draw_depth(VkCommandBuffer command) {
   lua["light_at"] = [&](const vector3 &v) { at = v; };
   lua["light_width"] = [&](float v) { width = v; };
   lua["light_height"] = [&](float v) { height = v; };
-  light_view = matrix4::lookat(eye, at, vector3(0, 1, 0));
+  light_view = matrix4::lookat(eye, at, vector3(0, 0, 1));
   light_projection = matrix4::ortho(width, height, 0.5, 10);
   // shadow mapping
   VkDeviceSize offset = 0;
   vk_shader_parameter param;
+  param.light_proj = light_projection;
+  param.light_view = light_view;
 
+  m_depth_texture.pipeline.Bind(command);
   for (auto &sprite : m_draw_object_3d) {
-    m_depth_texture.pipeline.Bind(command);
     std::string index = sprite->drawable_obj->vertexIndex;
     ::vkCmdBindVertexBuffers(
         command, 0, 1, &m_vertex_arrays[index].vertexBuffer.buffer, &offset);
@@ -505,8 +525,8 @@ void vk_renderer::draw_depth(VkCommandBuffer command) {
     write_memory(allocation, &param, sizeof(vk_shader_parameter));
     vkCmdDrawIndexed(command, m_vertex_arrays[index].indexCount, 1, 0, 0, 0);
   }
+  pipeline_depth_instancing.Bind(command);
   for (auto &_instancing : m_instancies_3d) {
-    pipeline_depth_instancing.Bind(command);
     vkCmdBindDescriptorSets(
         command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
         0, 1,

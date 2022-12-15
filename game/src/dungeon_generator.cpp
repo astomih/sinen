@@ -56,13 +56,5 @@ void dungeon_generator(sinen::grid<int> &grid) {
 
   corridor c;
   c.connect(grid, rooms, floor);
-
-  // Print the grid
-  for (int y = 0; y < grid.height(); ++y) {
-    for (int x = 0; x < grid.width(); ++x) {
-      std::cout << grid[y][x];
-    }
-    std::cout << std::endl;
-  }
 }
 } // namespace dts

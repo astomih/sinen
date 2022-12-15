@@ -5,7 +5,7 @@
       "type": "lldb",
       "request": "launch",
       "name": "Game",
-      "program": "${workspaceFolder}/debug/game/game.exe",
+      "program": "${workspaceFolder}/build/game/game.exe",
       "args": [],
       "cwd": "${workspaceFolder}/game"
     },
@@ -13,7 +13,7 @@
       "type": "lldb",
       "request": "launch",
       "name": "Editor",
-      "program": "${workspaceFolder}/debug/editor/editor.exe",
+      "program": "${workspaceFolder}/build/editor/editor.exe",
       "args": [],
       "cwd": "${workspaceFolder}/editor"
     }

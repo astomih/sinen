@@ -234,6 +234,7 @@ void editor::setup() {
   // renderer::add_imgui_function(texteditor);
   // renderer::add_imgui_function(func_file_dialog);
   renderer::toggle_show_imgui();
+  load_scene();
 }
 void editor::update(float delta_time) {
   for (int i = 0; i < m_actors.size(); i++) {

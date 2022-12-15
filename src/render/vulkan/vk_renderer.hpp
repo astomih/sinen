@@ -135,6 +135,7 @@ private:
   vk_pipeline pipeline_instancing_opaque;
   vk_pipeline pipeline_instancing_alpha;
   vk_pipeline pipeline_instancing_2d;
+  vk_pipeline pipeline_depth;
   vk_pipeline pipeline_depth_instancing;
   std::vector<std::pair<shader, vk_pipeline>> m_user_pipelines;
   std::vector<std::shared_ptr<vk_drawable>> m_draw_object_3d;

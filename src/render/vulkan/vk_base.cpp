@@ -11,8 +11,30 @@
 #include "vk_base.hpp"
 #include "vk_pipeline.hpp"
 #include "vk_renderer.hpp"
-
+#define ENABLE_VALIDATION 0
 namespace sinen {
+#define GetInstanceProcAddr(FuncName)                                          \
+  m_##FuncName = reinterpret_cast<PFN_##FuncName>(                             \
+      vkGetInstanceProcAddr(m_instance, #FuncName))
+static VkBool32 VKAPI_CALL DebugReportCallback(
+    VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objactTypes,
+    uint64_t object, size_t location, int32_t messageCode,
+    const char *pLayerPrefix, const char *pMessage, void *pUserData) {
+  VkBool32 ret = VK_FALSE;
+  if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT ||
+      flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) {
+    ret = VK_TRUE;
+  }
+  std::stringstream ss;
+  if (pLayerPrefix) {
+    ss << "[" << pLayerPrefix << "] ";
+  }
+  ss << pMessage << std::endl;
+
+  std::cout << (ss.str()) << std::endl;
+
+  return ret;
+}
 
 vk_base::vk_base(vk_renderer *vkrenderer)
     : m_imageIndex(0), m_vkrenderer(vkrenderer) {}
@@ -21,6 +43,20 @@ void vk_base::initialize() {
   initialize_instance(window::name().c_str());
   select_physical_device();
   m_graphicsQueueIndex = search_graphics_queue_index();
+#if ENABLE_VALIDATION
+  GetInstanceProcAddr(vkCreateDebugReportCallbackEXT);
+  GetInstanceProcAddr(vkDebugReportMessageEXT);
+  GetInstanceProcAddr(vkDestroyDebugReportCallbackEXT);
+
+  VkDebugReportFlagsEXT flags =
+      VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
+
+  VkDebugReportCallbackCreateInfoEXT drcCI{};
+  drcCI.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
+  drcCI.flags = flags;
+  drcCI.pfnCallback = &DebugReportCallback;
+  m_vkCreateDebugReportCallbackEXT(m_instance, &drcCI, nullptr, &m_debugReport);
+#endif
   create_device();
   create_command_pool();
   VkSurfaceKHR surface;
@@ -121,6 +157,14 @@ void vk_base::initialize_instance(const char *appName) {
   ci.enabledExtensionCount = uint32_t(extensions.size());
   ci.ppEnabledExtensionNames = extensions.data();
   ci.pApplicationInfo = &appInfo;
+#if ENABLE_VALIDATION
+  const char *layers[] = {"VK_LAYER_KHRONOS_validation"};
+  if (VK_HEADER_VERSION_COMPLETE < VK_MAKE_VERSION(1, 1, 106)) {
+    layers[0] = "VK_LAYER_LUNARG_standard_validation";
+  }
+  ci.enabledLayerCount = 1;
+  ci.ppEnabledLayerNames = layers;
+#endif
 
   // Create instance
   vkCreateInstance(&ci, nullptr, &m_instance);
@@ -358,9 +402,8 @@ void vk_base::render() {
 
   auto color = renderer::clear_color();
   std::array<VkClearValue, 2> clearValue = {{
-      //{color.r, color.g, color.b, 1.f}, // for Color
-      {1, 1, 1, 1},
-      {1.f, 0.f} // for Depth
+      {color.r, color.g, color.b, 1.f}, // for Color
+      {1.f, 0.f}                        // for Depth
   }};
 
   VkRenderPassBeginInfo renderPassBI{};
@@ -439,9 +482,7 @@ void vk_base::render() {
 
     // Begin Render Pass
     vkCmdBeginRenderPass(command, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
-
     m_vkrenderer->render_to_display(command);
-
     // End Render Pass
     vkCmdEndRenderPass(command);
   }

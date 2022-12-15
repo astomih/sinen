@@ -135,6 +135,7 @@ private:
   std::vector<gl_drawable> m_drawer_3ds;
   std::vector<gl_instancing> m_instancing_2d;
   std::vector<gl_instancing> m_instancing_3d;
+  gl_uniform_buffer render_texture_ubo;
   float prev_window_x;
   float prev_window_y;
 };

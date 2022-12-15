@@ -190,7 +190,7 @@ local function draw()
 end
 
 function update()
-    light_eye(vector3(0, 2, -10))
+    light_eye(vector3(0, 0, -3))
     light_at(vector3(0, 0, 0))
     light_width(200)
     light_height(200)

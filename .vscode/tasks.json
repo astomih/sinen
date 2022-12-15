@@ -4,7 +4,7 @@
     {
       "label": "build",
       "type": "shell",
-      "command": "cd debug && ninja"
+      "command": "cd build && ninja"
     }
   ]
 }

@@ -36,8 +36,6 @@ void vk_swapchain::Prepare(VkPhysicalDevice physDev,
       break;
     }
   }
-
-  // サーフェース能力値の確認.
   VkBool32 isSupport;
   result = vkGetPhysicalDeviceSurfaceSupportKHR(physDev, graphicsQueueIndex,
                                                 m_surface, &isSupport);
@@ -50,7 +48,6 @@ void vk_swapchain::Prepare(VkPhysicalDevice physDev,
   auto imageCount = (std::max)(2u, m_surfaceCaps.minImageCount);
   auto extent = m_surfaceCaps.currentExtent;
   if (extent.width == ~0u) {
-    // 値が無効のためウィンドウサイズを使用する.
     extent.width = width;
     extent.height = height;
   }
@@ -81,7 +78,6 @@ void vk_swapchain::Prepare(VkPhysicalDevice physDev,
   result = vkCreateSwapchainKHR(m_device, &swapchainCI, nullptr, &m_swapchain);
   ThrowIfFailed(result, "vkCreateSwapchainKHR Failed.");
 
-  // 古いリソースを解放.
   if (oldSwapchain != VK_NULL_HANDLE) {
     for (auto &view : m_imageViews) {
       vkDestroyImageView(m_device, view, nullptr);

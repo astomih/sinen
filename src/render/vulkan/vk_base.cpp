@@ -6,11 +6,9 @@
 #include <sstream>
 
 // internal
-#include "../../render/render_system.hpp"
-#include "../../window/window_system.hpp"
 #include "vk_base.hpp"
-#include "vk_pipeline.hpp"
 #include "vk_renderer.hpp"
+#include <render/renderer.hpp>
 #define ENABLE_VALIDATION 0
 namespace sinen {
 #define GetInstanceProcAddr(FuncName)                                          \
@@ -72,7 +70,6 @@ void vk_base::initialize() {
   create_frame_buffer();
   create_command_buffers();
   create_semaphore();
-  m_vkrenderer->prepare();
 }
 
 void vk_base::create_image_view() {
@@ -391,116 +388,6 @@ void vk_base::recreate_swapchain() {
   create_image_view();
   create_render_pass();
   create_frame_buffer();
-}
-
-void vk_base::render() {
-  if (mSwapchain->is_need_recreate(window::size()))
-    recreate_swapchain();
-  uint32_t nextImageIndex = 0;
-  mSwapchain->AcquireNextImage(&nextImageIndex, m_presentCompletedSem);
-  auto commandFence = m_fences[nextImageIndex];
-
-  auto color = renderer::clear_color();
-  std::array<VkClearValue, 2> clearValue = {{
-      {color.r, color.g, color.b, 1.f}, // for Color
-      {1.f, 0.f}                        // for Depth
-  }};
-
-  VkRenderPassBeginInfo renderPassBI{};
-  renderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-  renderPassBI.renderPass = m_vkrenderer->m_render_texture.render_pass;
-  renderPassBI.framebuffer = m_vkrenderer->m_render_texture.fb;
-  renderPassBI.renderArea.offset = VkOffset2D{0, 0};
-  renderPassBI.renderArea.extent = mSwapchain->GetSurfaceExtent();
-  renderPassBI.pClearValues = clearValue.data();
-  renderPassBI.clearValueCount = uint32_t(clearValue.size());
-  VkRenderPassBeginInfo renderPassShadowBI{};
-  renderPassShadowBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-  renderPassShadowBI.renderPass = m_vkrenderer->m_depth_texture.render_pass;
-  renderPassShadowBI.framebuffer = m_vkrenderer->m_depth_texture.fb;
-  renderPassShadowBI.renderArea.offset = VkOffset2D{0, 0};
-  renderPassShadowBI.renderArea.extent = mSwapchain->GetSurfaceExtent();
-  renderPassShadowBI.pClearValues = clearValue.data();
-  renderPassShadowBI.clearValueCount = uint32_t(clearValue.size());
-
-  VkCommandBufferBeginInfo commandBI{};
-  commandBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-  auto &command = m_commands[nextImageIndex];
-  // Begin Command Buffer
-  vkBeginCommandBuffer(command, &commandBI);
-  m_imageIndex = nextImageIndex;
-  vkCmdBeginRenderPass(command, &renderPassShadowBI,
-                       VK_SUBPASS_CONTENTS_INLINE);
-  m_vkrenderer->draw_depth(command);
-  vkCmdEndRenderPass(command);
-  VkImageMemoryBarrier imageBarrier{
-      VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-      nullptr,
-      VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-      VK_ACCESS_SHADER_READ_BIT,
-      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-      VK_QUEUE_FAMILY_IGNORED,
-      VK_QUEUE_FAMILY_IGNORED,
-      m_vkrenderer->m_depth_texture.color_target.image,
-      {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
-  vkCmdPipelineBarrier(command, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                       VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                       VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 0, nullptr, 1,
-                       &imageBarrier);
-  vkCmdBeginRenderPass(command, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
-  m_vkrenderer->make_command(command);
-  vkCmdEndRenderPass(command);
-
-  {
-    VkRenderPassBeginInfo renderPassBI{};
-    renderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassBI.renderArea.offset = VkOffset2D{0, 0};
-    renderPassBI.renderArea.extent = mSwapchain->GetSurfaceExtent();
-    renderPassBI.pClearValues = clearValue.data();
-    renderPassBI.clearValueCount = uint32_t(clearValue.size());
-    renderPassBI.renderPass = m_renderPass;
-    renderPassBI.framebuffer = m_framebuffers[nextImageIndex];
-
-    VkImageMemoryBarrier imageBarrier{
-        VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-        nullptr,
-        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, // srcAccessMask
-        VK_ACCESS_SHADER_READ_BIT,            // dstAccessMask
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-        VK_QUEUE_FAMILY_IGNORED,
-        VK_QUEUE_FAMILY_IGNORED,
-        m_vkrenderer->m_render_texture.color_target.image,
-        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
-    vkCmdPipelineBarrier(command, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                         VK_DEPENDENCY_BY_REGION_BIT, 0,
-                         nullptr,    // memoryBarrier
-                         0, nullptr, // bufferMemoryBarrier
-                         1, &imageBarrier);
-
-    // Begin Render Pass
-    vkCmdBeginRenderPass(command, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
-    m_vkrenderer->render_to_display(command);
-    // End Render Pass
-    vkCmdEndRenderPass(command);
-  }
-  vkEndCommandBuffer(command);
-  // Do command
-  VkSubmitInfo submitInfo{};
-  VkPipelineStageFlags waitStageMask =
-      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-  submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-  submitInfo.commandBufferCount = 1;
-  submitInfo.pCommandBuffers = &command;
-  submitInfo.pWaitDstStageMask = &waitStageMask;
-  submitInfo.waitSemaphoreCount = 1;
-  submitInfo.pWaitSemaphores = &m_presentCompletedSem;
-  submitInfo.signalSemaphoreCount = 1;
-  submitInfo.pSignalSemaphores = &m_renderCompletedSem;
-  vkQueueSubmit(m_deviceQueue, 1, &submitInfo, commandFence);
-  mSwapchain->QueuePresent(m_deviceQueue, nextImageIndex, m_renderCompletedSem);
 }
 } // namespace sinen
 #endif

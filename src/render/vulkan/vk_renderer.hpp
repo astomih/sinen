@@ -37,8 +37,8 @@ public:
 class vk_shader_parameter {
 public:
   drawable::parameter param;
-  matrix4 light_view;
   matrix4 light_proj;
+  matrix4 light_view;
 };
 
 class vk_renderer {
@@ -67,7 +67,7 @@ public:
   void cleanup();
   void make_command(VkCommandBuffer command);
   void draw_depth(VkCommandBuffer command);
-  void draw3d(VkCommandBuffer);
+  void draw3d(VkCommandBuffer, bool is_change_pipeline = true);
   void draw2d(VkCommandBuffer);
   vk_buffer_object create_buffer(
       uint32_t size, VkBufferUsageFlags usage,
@@ -114,7 +114,8 @@ private:
   void prepare_imgui();
   void render_imgui(VkCommandBuffer command);
   void draw_skybox(VkCommandBuffer command);
-  void draw_instancing_3d(VkCommandBuffer command);
+  void draw_instancing_3d(VkCommandBuffer command,
+                          bool is_change_pipeline = true);
   void draw_instancing_2d(VkCommandBuffer command);
   void create_image_object(const handle_t &handle);
   VkSampler create_sampler();

@@ -1,6 +1,5 @@
 #include <io/data_stream.hpp>
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
-#include "vk_base.hpp"
 #include "vk_shader.hpp"
 #include <fstream>
 

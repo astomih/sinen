@@ -19,7 +19,7 @@ float simple_shadow(vec3 proj_pos) {
 }
 
 void main() {
-  vec3 uCameraPos = vec3(0);
+  vec3 uCameraPos = vec3(0.0);
   vec3 mDirection = vec3(0.0, -0.25, -0.25);
   vec3 mDiffuseColor = vec3(1.0, 1.0, 1.0);
   vec3 mSpecColor = vec3(1.0);

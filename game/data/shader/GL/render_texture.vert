@@ -23,6 +23,6 @@ void main() {
   gl_Position = proj * view * inworldmat * vec4(inPos, 1.0);
   fragNormal = (inworldmat * vec4(inNormal, 0.0)).xyz;
   outUV = inUV;
-  outUV.y = 1 - outUV.y;
+  outUV.y = 1.0 - outUV.y;
   outRgba = inRgba;
 }

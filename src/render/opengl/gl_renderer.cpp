@@ -35,7 +35,14 @@
 #include <sstream>
 #include <window/window.hpp>
 
+#ifdef _WIN32
+#define USE_SHADOWMAP 1
+#else
+#define USE_SHADOWMAP 1
+#endif
+
 namespace sinen {
+static constexpr int SHADOWMAP_SIZE = 2048;
 gl_renderer::gl_renderer() {}
 gl_renderer::~gl_renderer() = default;
 
@@ -86,15 +93,6 @@ void gl_renderer::initialize() {
 #else
   ImGui_ImplOpenGL3_Init("#version 330 core");
 #endif
-  renderer::toggle_show_imgui();
-  renderer::add_imgui_function([&]() {
-    ImGui::Begin("Light");
-    ImGui::SliderFloat3("eye", &eye.x, -10, 20);
-    ImGui::SliderFloat3("at", &at.x, -10, 20);
-    ImGui::SliderFloat("width", &width, 0, 200);
-    ImGui::SliderFloat("height", &height, 0, 200);
-    ImGui::End();
-  });
 }
 
 void gl_renderer::shutdown() {
@@ -105,22 +103,10 @@ void gl_renderer::shutdown() {
 
 void gl_renderer::render() {
   auto &lua = (*(sol::state *)script_system::get_state());
-  lua["light_eye"] = [&](const vector3 &v) {
-    return;
-    eye = v;
-  };
-  lua["light_at"] = [&](const vector3 &v) {
-    return;
-    at = v;
-  };
-  lua["light_width"] = [&](float v) {
-    return;
-    width = v;
-  };
-  lua["light_height"] = [&](float v) {
-    return;
-    height = v;
-  };
+  lua["light_eye"] = [&](const vector3 &v) { eye = v; };
+  lua["light_at"] = [&](const vector3 &v) { at = v; };
+  lua["light_width"] = [&](float v) { width = v; };
+  lua["light_height"] = [&](float v) { height = v; };
   light_view = matrix4::lookat(eye, at, vector3(0, 1, 0));
   light_projection = matrix4::ortho(width, height, 0.5, 10);
 
@@ -133,10 +119,10 @@ void gl_renderer::render() {
   auto color = render_system::get_clear_color();
   glClearColor(color.r, color.g, color.b, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-#ifdef _WIN32
+#if USE_SHADOWMAP
   glBindFramebuffer(GL_FRAMEBUFFER, shadowframebuffer);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glViewport(0, 0, 1024, 1024);
+  glViewport(0, 0, SHADOWMAP_SIZE, SHADOWMAP_SIZE);
   glEnable(GL_DEPTH_TEST);
   for (auto &i : m_drawer_3ds) {
     if (!i.drawable_object->is_draw_depth)
@@ -201,7 +187,7 @@ void gl_renderer::render() {
   draw_2d();
   enable_vertex_attrib_array();
   draw_instancing_2d();
-#ifdef _WIN32
+#if USE_SHADOWMAP
   glFlush();
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glBindVertexArray(m_VertexArrays["SPRITE"].vao);
@@ -287,9 +273,6 @@ void gl_renderer::draw_skybox() {
   mAlphaShader.active(0);
   gl_shader_parameter param;
   matrix4 w = matrix4::identity;
-  w[0][0] = 5;
-  w[1][1] = 5;
-  w[2][2] = 5;
   param.projection = scene::main_camera().projection();
   param.view = matrix4::lookat(vector3(0, 0, 0),
                                scene::main_camera().target() -
@@ -321,7 +304,7 @@ void gl_renderer::draw_3d() {
                    sizeof(gl_shader_parameter));
     }
     disable_vertex_attrib_array();
-#ifdef _WIN32
+#if USE_SHADOWMAP
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, shadowdepthtexture);
     glUniform1i(glGetUniformLocation(mSpriteShader.program(), "shadowMap"), 0);
@@ -329,11 +312,11 @@ void gl_renderer::draw_3d() {
 #endif
     glBindTexture(GL_TEXTURE_2D,
                   mTextureIDs[i.drawable_object->binding_texture.handle]);
-#ifdef _WIN32
+#if USE_SHADOWMAP
     glUniform1i(glGetUniformLocation(mSpriteShader.program(), "diffuseMap"), 1);
 #endif
     glDrawElements(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT, nullptr);
-#ifdef _WIN32
+#if USE_SHADOWMAP
     glActiveTexture(GL_TEXTURE0);
 #endif
   }
@@ -355,7 +338,7 @@ void gl_renderer::draw_instancing_3d() {
 
     auto &va = m_VertexArrays[i.ins.object->vertexIndex];
     glBindVertexArray(i.vao);
-#ifdef _WIN32
+#if USE_SHADOWMAP
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, shadowdepthtexture);
     glUniform1i(
@@ -364,14 +347,14 @@ void gl_renderer::draw_instancing_3d() {
 #endif
     glBindTexture(GL_TEXTURE_2D,
                   mTextureIDs[i.ins.object->binding_texture.handle]);
-#ifdef _WIN32
+#if USE_SHADOWMAP
     glUniform1i(
         glGetUniformLocation(mSpriteInstanceShader.program(), "diffuseMap"), 1);
 #endif
     enable_vertex_attrib_array();
     glDrawElementsInstanced(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT,
                             nullptr, i.ins.data.size());
-#ifdef _WIN32
+#if USE_SHADOWMAP
     glActiveTexture(GL_TEXTURE0);
 #endif
   }
@@ -673,7 +656,7 @@ void gl_renderer::prepare() {
 }
 
 void gl_renderer::prepare_render_texture() {
-#ifdef _WIN32
+#if USE_SHADOWMAP
   glGenFramebuffers(1, &framebuffer);
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
@@ -699,13 +682,13 @@ void gl_renderer::prepare_render_texture() {
 #endif
 }
 void gl_renderer::prepare_depth_texture() {
-#ifdef _WIN32
+#if USE_SHADOWMAP
   glGenFramebuffers(1, &shadowframebuffer);
   glBindFramebuffer(GL_FRAMEBUFFER, shadowframebuffer);
   glGenTextures(1, &shadowdepthtexture);
   glBindTexture(GL_TEXTURE_2D, shadowdepthtexture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0,
-               GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, SHADOWMAP_SIZE,
+               SHADOWMAP_SIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

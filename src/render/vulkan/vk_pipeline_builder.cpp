@@ -160,15 +160,16 @@ void vk_pipeline_builder::render_texture_pipeline(vk_pipeline &pipeline) {
 }
 void vk_pipeline_builder::depth_texture_pipeline(vk_pipeline &pipeline) {
   std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-      vk_shader::load(device, "depth.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-      vk_shader::load(device, "depth.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
+      vk_shader::load(device, "shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+      vk_shader::load(device, "render_texture.frag.spv",
+                      VK_SHADER_STAGE_FRAGMENT_BIT)};
   depth_texture.pipeline.initialize(pipeline_layout, depth_texture.render_pass,
                                     shaderStages);
   depth_texture.pipeline.color_blend_factor(
       VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
   depth_texture.pipeline.alpha_blend_factor(
       VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
-  depth_texture.pipeline.set_depth_test(VK_TRUE);
+  depth_texture.pipeline.set_depth_test(VK_FALSE);
   depth_texture.pipeline.set_depth_write(VK_TRUE);
   depth_texture.pipeline.prepare(device);
   vk_shader::clean(device, shaderStages);

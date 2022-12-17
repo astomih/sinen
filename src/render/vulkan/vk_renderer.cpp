@@ -90,6 +90,42 @@ void vk_renderer::render() {
   {
     VkRenderPassBeginInfo renderPassBI{};
     renderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassBI.renderArea.offset = VkOffset2D{0, 0};
+    renderPassBI.renderArea.extent = m_base->mSwapchain->GetSurfaceExtent();
+    renderPassBI.pClearValues = clearValue.data();
+    renderPassBI.clearValueCount = uint32_t(clearValue.size());
+    renderPassBI.renderPass = m_base->m_renderPass;
+    renderPassBI.framebuffer = m_base->m_framebuffers[nextImageIndex];
+    vkCmdBeginRenderPass(command, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
+    m_depth_texture.pipeline.Bind(command);
+    VkDeviceSize offset = 0;
+    auto &sprite = m_depth_texture.drawer;
+    vkCmdBindVertexBuffers(
+        command, 0, 1, &m_vertex_arrays["SPRITE"].vertexBuffer.buffer, &offset);
+    vkCmdBindIndexBuffer(command, m_vertex_arrays["SPRITE"].indexBuffer.buffer,
+                         offset, VK_INDEX_TYPE_UINT32);
+
+    // Set descriptors
+    vkCmdBindDescriptorSets(
+        command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
+        0, 1, &sprite.descripterSet[m_base->m_imageIndex], 0, nullptr);
+    auto allocation = sprite.uniformBuffers[m_base->m_imageIndex].allocation;
+
+    sprite.drawable_obj->param.proj = matrix4::identity;
+    sprite.drawable_obj->param.view = matrix4::identity;
+    sprite.drawable_obj->param.world = matrix4::identity;
+    write_memory(allocation, &sprite.drawable_obj->param,
+                 sizeof(vk_shader_parameter));
+
+    vkCmdDrawIndexed(command, m_vertex_arrays["SPRITE"].indexCount, 1, 0, 0, 0);
+    vkCmdEndRenderPass(command);
+    set_image_memory_barrier(command, m_depth_texture.color_target.image,
+                             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  }
+  {
+    VkRenderPassBeginInfo renderPassBI{};
+    renderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassBI.renderPass = m_render_texture.render_pass;
     renderPassBI.framebuffer = m_render_texture.fb;
     renderPassBI.renderArea.offset = VkOffset2D{0, 0};
@@ -362,10 +398,12 @@ void vk_renderer::prepare() {
   vk_pipeline_builder pipeline_builder(m_base->get_vk_device(),
                                        m_pipeline_layout, m_render_texture,
                                        m_depth_texture, m_base->m_renderPass);
-
+  // render texture pipeline
+  pipeline_builder.render_texture_pipeline(m_render_texture.pipeline);
+  // depth texture pipeline
+  pipeline_builder.depth_texture_pipeline(m_depth_texture.pipeline);
   // Opaque pipeline
   pipeline_builder.opaque(pipeline_opaque);
-
   // alpha pipeline
   pipeline_builder.alpha(pipeline_alpha);
   // 2D pipeline
@@ -377,15 +415,10 @@ void vk_renderer::prepare() {
   pipeline_builder.instancing_alpha(pipeline_instancing_alpha);
   // 2D pipeline
   pipeline_builder.instancing_alpha_2d(pipeline_instancing_2d);
-  // render texture pipeline
-  pipeline_builder.render_texture_pipeline(m_render_texture.pipeline);
-
   // depth pipeline
   pipeline_builder.depth(pipeline_depth);
   // depth instanced pipeline
   pipeline_builder.depth_instancing(pipeline_depth_instancing);
-  // depth texture pipeline
-  pipeline_builder.depth_texture_pipeline(m_depth_texture.pipeline);
 
   prepare_imgui();
 }
@@ -507,7 +540,6 @@ void vk_renderer::draw_skybox(VkCommandBuffer command) {
 }
 
 void vk_renderer::draw3d(VkCommandBuffer command, bool is_change_pipeline) {
-  pipeline_opaque.Bind(command);
   VkDeviceSize offset = 0;
   for (auto &sprite : m_draw_object_3d) {
     if (is_change_pipeline) {

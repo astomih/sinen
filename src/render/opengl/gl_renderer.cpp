@@ -8,10 +8,9 @@
 #include <sol/sol.hpp>
 
 #if defined(EMSCRIPTEN) || defined(MOBILE)
+#define GL_GLEXT_PROTOTYPES
 #include <GLES3/gl3.h>
 #include <SDL_opengles2.h>
-#define glGenFramebuffers glGenFramebuffersEXT
-#define glBindFramebuffer glBindFramebufferEXT
 #endif
 
 #ifndef MOBILE

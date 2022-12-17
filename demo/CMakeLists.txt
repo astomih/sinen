@@ -37,6 +37,7 @@ elseif(EMSCRIPTEN)
 		--preload-file=data \
 		-s ALLOW_MEMORY_GROWTH \
 		--shell-file shell_minimum.html \
+		-s ERROR_ON_UNDEFINED_SYMBOLS=0 \
 		-std=c++20")
   set(CMAKE_EXECUTABLE_SUFFIX ".html")
 else()

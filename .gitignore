@@ -364,6 +364,7 @@ _deps
 .ninja_log
 *.ninja
 build
+web
 
 
 

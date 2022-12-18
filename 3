@@ -34,7 +34,6 @@ public:
 };
 static bool is_save_as = false;
 static char save_as_path[256] = "";
-static bool request_pop_func = false;
 void editor::inspector() {
   ImGui::SetNextWindowPos({1030, 0});
   ImGui::SetNextWindowSize({250, 720});
@@ -230,7 +229,7 @@ void editor::save_scene(const std::string &path) {
   j.add_member("Actors", actors);
   auto s = j.to_string();
   file f;
-  f.open("data/scene/" + path, file::mode::w);
+  f.open("data/scene/"+path, file::mode::w);
   f.write(s.c_str(), s.size(), 1);
   f.close();
   logger::info("Scene saved");
@@ -265,12 +264,12 @@ void editor::menu() {
             ImGui::InputText("File Name", save_as_path, 256);
             if (ImGui::Button("Save")) {
               current_file_name = save_as_path;
+              // Create file  ./data/scene/save_as_path
               file f;
               f.open("data/scene/" + current_file_name, file::mode::wp);
               f.close();
               save_scene(current_file_name);
               is_save_as = false;
-              request_pop_func = true;
             }
             ImGui::End();
           });
@@ -303,10 +302,6 @@ void editor::setup() {
   renderer::toggle_show_imgui();
 }
 void editor::update(float delta_time) {
-  if (request_pop_func) {
-    renderer::get_imgui_function().pop_back();
-    request_pop_func = false;
-  }
   for (int i = 0; i < m_actors.size(); i++) {
     texture tex;
     tex.fill_color(palette::white());
@@ -404,3 +399,4 @@ void editor::update(float delta_time) {
                               scene::main_camera().up());
 }
 } // namespace sinen
+

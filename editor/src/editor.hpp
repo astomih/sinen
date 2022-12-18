@@ -33,8 +33,8 @@ public:
   void update(float delta_time) final override;
 
 private:
-  static void load_scene();
-  static void save_scene();
+  static void load_scene(const std::string &path);
+  static void save_scene(const std::string &path);
   static void gizmo();
   static void inspector();
   static void menu();
@@ -43,6 +43,7 @@ private:
   static int index;
   class implements;
   std::unique_ptr<implements> m_impl;
+  static std::string current_file_name;
 };
 } // namespace sinen
 #endif

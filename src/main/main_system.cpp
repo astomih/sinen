@@ -112,12 +112,12 @@ bool main_system::initialize() {
     str = "Vulkan";
   if (str.compare("Vulkan") == 0) {
     window_system::initialize(
-        "sinen engine version:0.0.1, Graphics backends:Vulkan",
+        "SinenEngine version:0.0.1, Graphics backends:Vulkan",
         graphics_api::Vulkan);
     render_system::initialize(graphics_api::Vulkan);
   } else if (str.compare("OpenGL") == 0) {
     window_system::initialize(
-        "sinen engine version:0.0.1, Graphics backends:OpenGL",
+        "SinenEngine version:0.0.1, Graphics backends:OpenGL",
         graphics_api::OpenGL);
     render_system::initialize(graphics_api::OpenGL);
   }

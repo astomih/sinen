@@ -128,36 +128,37 @@ void scene_system::load_data(std::string_view data_file_name) {
   doc.parse(str.data());
   {
     vector3 cp, ct, cu;
-    cp.x = doc["Camera"]["cpx"].get_float();
-    cp.y = doc["Camera"]["cpy"].get_float();
-    cp.z = doc["Camera"]["cpz"].get_float();
-    ct.x = doc["Camera"]["ctx"].get_float();
-    ct.y = doc["Camera"]["cty"].get_float();
-    ct.z = doc["Camera"]["ctz"].get_float();
-    cu.x = doc["Camera"]["cux"].get_float();
-    cu.y = doc["Camera"]["cuy"].get_float();
-    cu.z = doc["Camera"]["cuz"].get_float();
+    auto camera_data = doc["Camera"];
+    cp.x = camera_data["Position"]["x"].get_float();
+    cp.y = camera_data["Position"]["y"].get_float();
+    cp.z = camera_data["Position"]["z"].get_float();
+    ct.x = camera_data["Target"]["x"].get_float();
+    ct.y = camera_data["Target"]["y"].get_float();
+    ct.z = camera_data["Target"]["z"].get_float();
+    cu.x = camera_data["Up"]["x"].get_float();
+    cu.y = camera_data["Up"]["y"].get_float();
+    cu.z = camera_data["Up"]["z"].get_float();
     scene::main_camera().lookat(cp, ct, cu);
   }
   texture tex;
   tex.fill_color(palette::white());
-  for (int i = 0; i < doc["Actors"].size(); i++) {
+  for (int i = 0; i < doc["Actors"]["size"].get_int32(); i++) {
     // Actor setting
     auto &act = scene::create_actor();
     auto index = std::string("Actor") + std::to_string(i);
     auto ref = doc["Actors"][index];
     vector3 pos, rotation, scale;
-    pos.x = ref["px"].get_float();
-    pos.y = ref["py"].get_float();
-    pos.z = ref["pz"].get_float();
+    pos.x = ref["Position"]["x"].get_float();
+    pos.y = ref["Position"]["y"].get_float();
+    pos.z = ref["Position"]["z"].get_float();
     act.set_position(pos);
-    rotation.x = ref["rx"].get_float();
-    rotation.y = ref["ry"].get_float();
-    rotation.z = ref["rz"].get_float();
+    rotation.x = ref["Rotation"]["x"].get_float();
+    rotation.y = ref["Rotation"]["y"].get_float();
+    rotation.z = ref["Rotation"]["z"].get_float();
     act.set_rotation(rotation);
-    scale.x = ref["sx"].get_float();
-    scale.y = ref["sy"].get_float();
-    scale.z = ref["sz"].get_float();
+    scale.x = ref["Scale"]["x"].get_float();
+    scale.y = ref["Scale"]["y"].get_float();
+    scale.z = ref["Scale"]["z"].get_float();
     act.set_scale(scale);
     // Component
     auto &d3 = act.create_component<draw3d_component>();

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.7)
 project(game)
 set(CMAKE_CXX_FLAGS "-std=c++2a")
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -march=native")
 set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 

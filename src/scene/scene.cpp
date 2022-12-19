@@ -1,10 +1,11 @@
 #include "scene_system.hpp"
+#include <window/window.hpp>
 
 namespace sinen {
 camera scene::m_main_camera = []() {
   camera c;
   c.lookat(vector3{0, -1, 10}, vector3{0, 1, 0}, vector3{0, 1, 0});
-  c.perspective(70.f, 1280.f / 720.f, .1f, 1000.f);
+  c.perspective(70.f, window::size().x / window::size().y, .1f, 1000.f);
   return c;
 }();
 
@@ -27,7 +28,7 @@ void scene::set_run_script(bool is_run) {
   scene_system::set_run_script(is_run);
 }
 void scene::add_actor(actor *_actor) { scene_system::add_actor(_actor); }
-void scene::load_data(std::string_view data_file_name) {
+void scene::load(std::string_view data_file_name) {
   scene_system::load_data(data_file_name);
 }
 

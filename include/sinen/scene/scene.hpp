@@ -71,7 +71,7 @@ public:
   }
   static void set_run_script(bool is_run);
 
-  static void load_data(std::string_view data_file_name);
+  static void load(std::string_view data_file_name);
 
   template <class Actor = actor, class... Args>
   static Actor &create_actor(Args &&...args) {

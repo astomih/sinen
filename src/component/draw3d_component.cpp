@@ -16,5 +16,6 @@ void draw3d_component::update(float delta_time) {
   obj->param.view = scene::main_camera().view();
   obj->param.proj = scene::main_camera().projection();
   renderer::draw3d(obj);
+  *this->texture_handle.is_need_update = false;
 }
 } // namespace sinen

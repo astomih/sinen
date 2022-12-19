@@ -13,7 +13,7 @@
 #include "color/color.hpp"
 #include "color/hsv.hpp"
 #include "color/palette.hpp"
-#include "component/component.hpp"
+#include "component/components.hpp"
 #include "drawable/drawable.hpp"
 #include "drawable/drawable_wrapper.hpp"
 #include "font/font.hpp"

@@ -10,11 +10,7 @@ void actor::update(float delta_time) {
   }
 }
 matrix4 actor::get_world_matrix() const {
-  matrix4 s;
-  s[0][0] = m_scale.x;
-  s[1][1] = m_scale.y;
-  s[2][2] = m_scale.z;
-  return s *
+  return matrix4::create_scale(m_scale) *
          matrix4::create_from_quaternion(quaternion::from_euler(m_rotation)) *
          matrix4::create_translation(m_position);
 }

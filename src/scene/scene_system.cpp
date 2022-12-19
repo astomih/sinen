@@ -162,6 +162,7 @@ void scene_system::load_data(std::string_view data_file_name) {
     act.set_scale(scale);
     // Component
     auto &d3 = act.create_component<draw3d_component>();
+    d3.set_draw_depth(true);
     d3.set_vertex_name("BOX");
     d3.set_texture(tex);
   }

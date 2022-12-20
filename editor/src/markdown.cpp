@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <imgui_markdown.h>
+#include <io/file.hpp>
 #include <string>
 
 #if _WIN32
@@ -101,22 +102,15 @@ void markdown() {
   ImGui::SetNextWindowPos({0, 360});
   ImGui::SetNextWindowSize({250, 360});
   ImGui::Begin("Document");
-  const std::string markdownText = R"(
-# H1 Header: Text and Links
-You can add [links like this one to enkisoftware](https://www.enkisoftware.com/) and lines will wrap well.
-You can also insert images ![image alt text](image identifier e.g. filename)
-Horizontal rules:
-***
-___
-*Emphasis* and **strong emphasis** change the appearance of the text.
-## H2 Header: indented text.
-  This text has an indent (two leading spaces).
-    This one has two.
-### H3 Header: Lists
-  * Unordered iists
-    * Lists can be indented with two extra spaces.
-  * Lists can have [links like this one to Avoyd](https://www.avoyd.com/) and *emphasized text*
-)";
+  std::string markdownText;
+
+  file f;
+  if (f.open("../docs/docs/lua_api.md", file::mode::r)) {
+    char buf[2048] = {};
+    f.read(buf, f.size(), 1);
+    markdownText = buf;
+  }
+  f.close();
   Markdown(markdownText);
   ImGui::End();
 }

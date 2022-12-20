@@ -17,7 +17,6 @@ include_directories(
 	../include
 	../include/sinen
 	../external/imgui_markdown
-	../external/imgui-filebrowser
   ../external/ImGuiColorTextEdit
 	../external/ImGuizmo
 	../external/rapidjson/include

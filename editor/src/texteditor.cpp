@@ -9,6 +9,8 @@
 namespace sinen {
 TextEditor te;
 void texteditor() {
+  ImGui::SetNextWindowPos({0, 0});
+  ImGui::SetNextWindowSize({250, 360});
   ImGui::Begin("Text Editor", nullptr, ImGuiWindowFlags_MenuBar);
   const static TextEditor::Palette p = {{
       0xff7f7f7f, // Default
@@ -37,8 +39,8 @@ void texteditor() {
   te.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
   te.SetShowWhitespaces(true);
   auto cpos = te.GetCursorPosition();
-  ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s ",
-              cpos.mLine + 1, cpos.mColumn + 1, te.GetTotalLines(),
+  ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s ", cpos.mLine + 1,
+              cpos.mColumn + 1, te.GetTotalLines(),
               te.IsOverwrite() ? "Ovr" : "Ins", te.CanUndo() ? "*" : " ",
               te.GetLanguageDefinition().mName.c_str());
   if (ImGui::BeginMenuBar()) {

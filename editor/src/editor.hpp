@@ -35,6 +35,8 @@ public:
 private:
   static void load_scene(const std::string &path);
   static void save_scene(const std::string &path);
+  static void save_as_scene();
+  static void run();
   static void gizmo();
   static void inspector();
   static void menu();

@@ -11,7 +11,6 @@
 #include "log_window.hpp"
 #include "markdown.hpp"
 #include "texteditor.hpp"
-#include <imfilebrowser.h>
 
 #include <sinen/sinen.hpp>
 
@@ -22,6 +21,7 @@
 #if defined(_WIN32)
 #include <windows.h>
 #endif
+#include <filesystem>
 namespace sinen {
 std::vector<actor> editor::m_actors;
 std::vector<matrix4> editor::m_matrices;
@@ -88,16 +88,25 @@ void editor::inspector() {
     if (ImGui::Button("Add component")) {
     }
   }
+  if (ImGui::Button("Add Actor")) {
+    m_actors.push_back(actor{});
+    auto m = matrix4::identity;
+    m_matrices.push_back(m);
+  }
+  if (ImGui::Button("Remove Actor")) {
+    if (!m_actors.empty()) {
+      m_actors.erase(m_actors.begin() + index);
+      m_matrices.erase(m_matrices.begin() + index);
+      if (index > 0) {
+        index--;
+      }
+    }
+  }
+
   ImGui::Text("Actors");
   for (int i = 0; i < m_actors.size(); i++)
     ImGui::RadioButton(std::string("actor" + std::to_string(i)).c_str(), &index,
                        i);
-  static int item = 1;
-  if (ImGui::Button("Add Actor")) {
-    m_actors.push_back(std::move(actor{}));
-    auto m = matrix4::identity;
-    m_matrices.push_back(m);
-  }
 
   ImGui::End();
 }
@@ -154,7 +163,8 @@ void editor::load_scene(const std::string &path) {
                                               m_matrices[i].get());
     }
   }
-  logger::info("Scene loaded");
+  logger::info(
+      std::string("Scene " + std::string(current_file_name) + " loaded"));
 }
 void editor::save_scene(const std::string &path) {
   std::string str;
@@ -235,6 +245,25 @@ void editor::save_scene(const std::string &path) {
   f.close();
   logger::info("Scene saved");
 }
+void editor::save_as_scene() {
+  if (!is_save_as) {
+    renderer::add_imgui_function([&]() {
+      ImGui::Begin("Input File Name");
+      is_save_as = true;
+      ImGui::InputText("File Name", save_as_path, 256);
+      if (ImGui::Button("Save")) {
+        current_file_name = save_as_path;
+        file f;
+        f.open("data/scene/" + current_file_name, file::mode::wp);
+        f.close();
+        save_scene(current_file_name);
+        is_save_as = false;
+        request_pop_func = true;
+      }
+      ImGui::End();
+    });
+  }
+}
 void editor::menu() {
   ImGui::SetNextWindowPos({250, 0});
   ImGui::SetNextWindowSize({780, 20});
@@ -258,23 +287,7 @@ void editor::menu() {
         save_scene(current_file_name);
       }
       if (ImGui::MenuItem("Save As", "Ctrl+Shift+S")) {
-        if (!is_save_as) {
-          renderer::add_imgui_function([&]() {
-            ImGui::Begin("Input File Name");
-            is_save_as = true;
-            ImGui::InputText("File Name", save_as_path, 256);
-            if (ImGui::Button("Save")) {
-              current_file_name = save_as_path;
-              file f;
-              f.open("data/scene/" + current_file_name, file::mode::wp);
-              f.close();
-              save_scene(current_file_name);
-              is_save_as = false;
-              request_pop_func = true;
-            }
-            ImGui::End();
-          });
-        }
+        save_as_scene();
       }
       if (ImGui::MenuItem("Exit", "Alt+F4")) {
 #if !defined(EMSCRIPTEN)
@@ -282,6 +295,12 @@ void editor::menu() {
 #else
         emscripten_force_exit(0);
 #endif
+      }
+      ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Run")) {
+      if (ImGui::MenuItem("Run", "F5")) {
+        run();
       }
       ImGui::EndMenu();
     }
@@ -299,7 +318,6 @@ void editor::setup() {
   renderer::add_imgui_function(log_window);
   renderer::add_imgui_function(inspector);
   renderer::add_imgui_function(texteditor);
-  // renderer::add_imgui_function(func_file_dialog);
   renderer::toggle_show_imgui();
 }
 void editor::update(float delta_time) {
@@ -341,35 +359,17 @@ void editor::update(float delta_time) {
   if (renderer::is_show_imgui() &&
       input::keyboard.is_key_down(key_code::LCTRL) &&
       input::keyboard.get_key_state(key_code::S) == button_state::Pressed) {
-    save_scene(this->current_file_name);
+    if (input::keyboard.is_key_down(key_code::LSHIFT)) {
+
+    } else if (!current_file_name.empty()) {
+      save_scene(this->current_file_name);
+    }
   }
   if (input::keyboard.get_key_state(key_code::F3) == button_state::Pressed) {
     renderer::toggle_show_imgui();
   }
   if (input::keyboard.get_key_state(key_code::F5) == button_state::Pressed) {
-#ifdef _WIN32
-    if (!this->current_file_name.empty()) {
-      STARTUPINFO si;
-      PROCESS_INFORMATION pi;
-      ZeroMemory(&si, sizeof(si));
-      si.cb = sizeof(si);
-      ZeroMemory(&pi, sizeof(pi));
-      std::string commandlp = std::string(std::string("game.exe ") +
-                                          std::string(this->current_file_name));
-      // Start the child process.
-      CreateProcess(NULL, // No module name (use command line)
-                    (LPSTR)commandlp.c_str(), // Command line
-                    NULL,                     // Process handle not inheritable
-                    NULL,                     // Thread handle not inheritable
-                    FALSE,                    // Set handle inheritance to FALSE
-                    0,                        // No creation flags
-                    NULL,                     // Use parent's environment block
-                    NULL,                     // Use parent's starting directory
-                    &si,  // Pointer to STARTUPINFO structure
-                    &pi); // Pointer to PROCESS_INFORMATION structure
-    }
-
-#endif // _WIN32
+    run();
   }
 
   // Camera moved by mouse
@@ -405,5 +405,32 @@ void editor::update(float delta_time) {
   scene::main_camera().lookat(scene::main_camera().position(),
                               scene::main_camera().target(),
                               scene::main_camera().up());
+}
+void editor::run() {
+#ifdef _WIN32
+  if (!current_file_name.empty()) {
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    ZeroMemory(&pi, sizeof(pi));
+    std::string commandlp =
+        std::string(std::string("game.exe ") + std::string(current_file_name));
+    // Start the child process.
+    CreateProcess(NULL,                     // No module name (use command line)
+                  (LPSTR)commandlp.c_str(), // Command line
+                  NULL,                     // Process handle not inheritable
+                  NULL,                     // Thread handle not inheritable
+                  FALSE,                    // Set handle inheritance to FALSE
+                  0,                        // No creation flags
+                  NULL,                     // Use parent's environment block
+                  NULL,                     // Use parent's starting directory
+                  &si,                      // Pointer to STARTUPINFO structure
+                  &pi); // Pointer to PROCESS_INFORMATION structure
+  } else {
+    logger::error("The scene has not yet loaded anything.");
+  }
+
+#endif // _WIN32
 }
 } // namespace sinen

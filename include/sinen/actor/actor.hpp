@@ -1,11 +1,8 @@
 #ifndef SINEN_ACTOR_HPP
 #define SINEN_ACTOR_HPP
 #include "../component/component.hpp"
-#include "../input/input.hpp"
 #include "../math/matrix4.hpp"
-#include "../math/quaternion.hpp"
 #include "../math/vector3.hpp"
-#include "utility/handler.hpp"
 #include <cstdint>
 #include <memory>
 #include <type_traits>
@@ -142,6 +139,7 @@ public:
 private:
   using component_ptr = component *;
   void add_component(component_ptr comp);
+  void remove_component(component_ptr comp);
   std::vector<component_ptr> m_components;
   state m_state;
   vector3 m_position;

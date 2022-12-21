@@ -15,7 +15,13 @@
 #include <logger/logger.hpp>
 
 namespace sinen {
-
+class json::array::impl {
+public:
+  impl(rapidjson::Value &value, json *_json) : value(value), m_json(_json) {}
+  bool is_created_value = false;
+  rapidjson::Value &value;
+  json *m_json;
+};
 class json::object::impl {
 public:
   impl(rapidjson::Value &value, json *_json) : value(value), m_json(_json) {}
@@ -30,7 +36,29 @@ public:
   rapidjson::Document doc;
   std::list<rapidjson::Value *> values;
 };
-
+json::array::array() {}
+json::array::~array() {
+  if (pimpl->is_created_value) {
+    auto itr = std::find(pimpl->m_json->pimpl->values.begin(),
+                         pimpl->m_json->pimpl->values.end(), &pimpl->value);
+    if (itr != pimpl->m_json->pimpl->values.end()) {
+      rapidjson::Value *v = *itr;
+      pimpl->m_json->pimpl->values.erase(itr);
+      delete v;
+    }
+  }
+}
+json::object json::array::operator[](std::size_t index) {
+  object obj;
+  obj.pimpl = std::make_shared<json::object::impl>(pimpl->value[index],
+                                                   this->pimpl->m_json);
+  return obj;
+}
+void json::array::push_back(object &obj) {
+  pimpl->value.PushBack(obj.pimpl->value,
+                        pimpl->m_json->pimpl->doc.GetAllocator());
+}
+const std::size_t json::array::size() const { return pimpl->value.Size(); }
 json::object::object() {}
 json::object::~object() {
   if (pimpl->is_created_value) {
@@ -107,7 +135,13 @@ void json::object::add_member(std::string_view key, object &value) {
   pimpl->value.AddMember(k, value.pimpl->value,
                          pimpl->m_json->pimpl->doc.GetAllocator());
 }
-std::size_t json::object::size() { return pimpl->value.Size(); }
+
+void json::object::add_member(std::string_view key, array &value) {
+  rapidjson::Value k(key.data(), key.size(),
+                     pimpl->m_json->pimpl->doc.GetAllocator());
+  pimpl->value.AddMember(k, value.pimpl->value,
+                         pimpl->m_json->pimpl->doc.GetAllocator());
+}
 
 json::json() : pimpl(std::make_unique<json::impl>()) {}
 
@@ -150,12 +184,23 @@ void json::add_member(std::string_view key, object &value) {
   pimpl->doc.AddMember(k, value.pimpl->value, pimpl->doc.GetAllocator());
 }
 
+void json::add_member(std::string_view key, array &value) {
+  rapidjson::Value k(key.data(), pimpl->doc.GetAllocator());
+  pimpl->doc.AddMember(k, value.pimpl->value, pimpl->doc.GetAllocator());
+}
 json::object json::create_object() {
   object obj;
   rapidjson::Value *v = new rapidjson::Value(rapidjson::kObjectType);
   pimpl->values.push_back(v);
   obj.pimpl = std::make_shared<json::object::impl>(*v, this);
   return obj;
+}
+json::array json::create_array() {
+  array arr;
+  rapidjson::Value *v = new rapidjson::Value(rapidjson::kArrayType);
+  pimpl->values.push_back(v);
+  arr.pimpl = std::make_shared<json::array::impl>(*v, this);
+  return arr;
 }
 
 std::string json::to_string() {

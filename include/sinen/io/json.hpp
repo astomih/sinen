@@ -11,6 +11,25 @@ namespace sinen {
  */
 class json {
 public:
+  class object;
+  /**
+   * @brief Json array class
+   *
+   */
+  class array {
+    friend json;
+
+  public:
+    ~array();
+    object operator[](std::size_t index);
+    void push_back(object &obj);
+    const std::size_t size() const;
+
+  private:
+    array();
+    class impl;
+    std::shared_ptr<impl> pimpl;
+  };
   /**
    * @brief Json object class
    *
@@ -29,7 +48,6 @@ public:
     double get_double();
     std::string get_string();
     bool get_bool();
-    std::size_t size();
 
     void set_int32(std::int32_t value);
     void set_uint32(std::uint32_t value);
@@ -44,6 +62,7 @@ public:
     void add_member(std::string_view key, float value);
     void add_member(std::string_view key, std::string_view value);
     void add_member(std::string_view key, object &value);
+    void add_member(std::string_view key, array &value);
 
   private:
     object();
@@ -71,8 +90,10 @@ public:
   void add_member(std::string_view key, float value);
   void add_member(std::string_view key, std::string_view value);
   void add_member(std::string_view key, object &value);
+  void add_member(std::string_view key, array &value);
 
   object create_object();
+  array create_array();
 
   std::string to_string();
 

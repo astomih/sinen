@@ -233,6 +233,20 @@ void editor::save_scene(const std::string &path) {
           s.add_member("z", scale.z);
           act.add_member("Scale", s);
         }
+        {
+          auto arr = j.create_array();
+          {
+            auto obj = j.create_object();
+            obj.set_string("draw3d");
+            arr.push_back(obj);
+          }
+          {
+            auto obj = j.create_object();
+            obj.set_string("draw2d");
+            arr.push_back(obj);
+          }
+          act.add_member("Components", arr);
+        }
       }
       actors.add_member(std::string("Actor" + std::to_string(i)), act);
     }

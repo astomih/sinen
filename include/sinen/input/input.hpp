@@ -10,15 +10,48 @@
 #include <cstdint>
 
 namespace sinen {
-// The different button states
+/**
+ * @brief Button state
+ *
+ */
 enum class button_state { None, Pressed, Released, Held };
 
-// Helper for keyboard input
+/**
+ * @brief Keyboard state
+ *
+ */
 class keyboard_state {
 public:
-  // Get just the boolean true/false value of key
+  /**
+   * @brief Is key pressed?
+   *
+   * @param _key
+   * @return true yes
+   * @return false no
+   */
+  bool is_key_pressed(key_code _key) const;
+  /**
+   * @brief Is key down?
+   *
+   * @param _key key code
+   * @return true yes
+   * @return false no
+   */
   bool is_key_down(key_code _key) const;
-  // Get a state based on current and previous frame
+  /**
+   * @brief Is key released?
+   *
+   * @param _key
+   * @return true yes
+   * @return false no
+   */
+  bool is_key_released(key_code _key) const;
+  /**
+   * @brief Get the key state object
+   *
+   * @param _key
+   * @return button_state
+   */
   button_state get_key_state(key_code _key) const;
 };
 
@@ -34,6 +67,8 @@ public:
   bool IsRelative() const;
   // For buttons
   bool is_button_down(mouse_code _button) const;
+  bool is_button_pressed(mouse_code _button) const;
+  bool is_button_released(mouse_code _button) const;
   button_state get_button_state(mouse_code _button) const;
 };
 
@@ -41,7 +76,9 @@ public:
 class joystick_state {
 public:
   // For buttons
-  bool get_button_value(joystick_button j_button) const;
+  bool is_button_down(joystick_button j_button) const;
+  bool is_button_pressed(joystick_button j_button) const;
+  bool is_button_released(joystick_button j_button) const;
   button_state get_button_state(joystick_button j_button) const;
 
   const vector2 &get_left_stick() const;

@@ -86,12 +86,16 @@ bool script_engine::initialize(sol::state &lua) {
   }
   {
     auto v = lua.new_usertype<keyboard_state>("", sol::no_construction());
+    v["is_key_pressed"] = &keyboard_state::is_key_pressed;
+    v["is_key_released"] = &keyboard_state::is_key_released;
     v["is_key_down"] = &keyboard_state::is_key_down;
     v["key_state"] = &keyboard_state::get_key_state;
   }
   {
     auto v = lua.new_usertype<mouse_state>("", sol::no_construction());
     v["button_state"] = &mouse_state::get_button_state;
+    v["is_button_pressed"] = &mouse_state::is_button_pressed;
+    v["is_button_released"] = &mouse_state::is_button_released;
     v["is_button_down"] = &mouse_state::is_button_down;
     v["position"] = &mouse_state::get_position;
     v["set_position"] = &mouse_state::set_position;

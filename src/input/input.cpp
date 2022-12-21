@@ -20,7 +20,15 @@ mouse_state_impl input_system::m_mouse = mouse_state_impl();
 joystick_state_impl input_system::m_joystick = joystick_state_impl();
 
 bool keyboard_state::is_key_down(key_code _key_code) const {
-  return input_system::m_keyboard.mCurrState[static_cast<int>(_key_code)] == 1;
+  return get_key_state(_key_code) == button_state::Held;
+}
+
+bool keyboard_state::is_key_pressed(key_code _key_code) const {
+  return get_key_state(_key_code) == button_state::Pressed;
+}
+
+bool keyboard_state::is_key_released(key_code _key_code) const {
+  return get_key_state(_key_code) == button_state::Released;
 }
 
 button_state keyboard_state::get_key_state(key_code _key_code) const {
@@ -77,8 +85,15 @@ void mouse_state::hide_cursor(bool hide) const {
   }
 }
 bool mouse_state::is_button_down(mouse_code _button) const {
-  return (SDL_BUTTON(static_cast<int>(_button)) &
-          input_system::m_mouse.mCurrButtons) == 1;
+  return get_button_state(_button) == button_state::Held;
+}
+
+bool mouse_state::is_button_pressed(mouse_code _button) const {
+  return get_button_state(_button) == button_state::Pressed;
+}
+
+bool mouse_state::is_button_released(mouse_code _button) const {
+  return get_button_state(_button) == button_state::Released;
 }
 
 button_state mouse_state::get_button_state(mouse_code _button) const {
@@ -97,9 +112,16 @@ button_state mouse_state::get_button_state(mouse_code _button) const {
     }
   }
 }
+bool joystick_state::is_button_down(joystick_button _button) const {
+  return get_button_state(_button) == button_state::Held;
+}
 
-bool joystick_state::get_button_value(joystick_button _button) const {
-  return input_system::m_joystick.mCurrButtons[static_cast<int>(_button)] == 1;
+bool joystick_state::is_button_pressed(joystick_button _button) const {
+  return get_button_state(_button) == button_state::Pressed;
+}
+
+bool joystick_state::is_button_released(joystick_button _button) const {
+  return get_button_state(_button) == button_state::Released;
 }
 
 button_state joystick_state::get_button_state(joystick_button _button) const {

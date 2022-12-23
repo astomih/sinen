@@ -48,6 +48,7 @@ public:
     double get_double();
     std::string get_string();
     bool get_bool();
+    array get_array();
 
     void set_int32(std::int32_t value);
     void set_uint32(std::uint32_t value);
@@ -57,6 +58,7 @@ public:
     void set_double(double value);
     void set_string(std::string_view value);
     void set_bool(bool value);
+    void set_array(array &value);
 
     void add_member(std::string_view key, int value);
     void add_member(std::string_view key, float value);

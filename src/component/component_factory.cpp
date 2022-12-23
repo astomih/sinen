@@ -1,7 +1,10 @@
 #include <component/component_factory.hpp>
 
 namespace sinen {
-component *component_factory::create(const std::string &name, actor &owner) {
+component_factory::component_factory() = default;
+component_factory::~component_factory() = default;
+std::shared_ptr<component> component_factory::create(const std::string &name,
+                                                     actor &owner) {
   if (m_component_map.contains(name)) {
     return m_component_map[name](owner);
   }

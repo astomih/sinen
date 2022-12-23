@@ -1,6 +1,7 @@
 #ifndef SINEN_SCENE_HPP
 #define SINEN_SCENE_HPP
 #include "../actor/actor.hpp"
+#include "../component/component_factory.hpp"
 #include <cstdint>
 #include <functional>
 #include <list>
@@ -82,7 +83,15 @@ public:
   }
   static camera &main_camera() { return m_main_camera; }
 
+  static component_factory &get_component_factory() {
+    return m_component_factory;
+  }
+  static void set_component_factory(const component_factory &factory) {
+    m_component_factory = factory;
+  }
+
 private:
+  static component_factory m_component_factory;
   // main camera
   static camera m_main_camera;
   static void add_actor(actor *_actor);

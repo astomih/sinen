@@ -42,7 +42,8 @@ private:
   static void menu();
   static std::vector<actor> m_actors;
   static std::vector<matrix4> m_matrices;
-  static int index;
+  static int index_actors;
+  static int index_components;
   class implements;
   std::unique_ptr<implements> m_impl;
   static std::string current_file_name;

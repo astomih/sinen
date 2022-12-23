@@ -1,11 +1,15 @@
 #include <actor/actor.hpp>
 #include <camera/camera.hpp>
+#include <color/palette.hpp>
 #include <component/draw3d_component.hpp>
 #include <render/renderer.hpp>
 #include <scene/scene.hpp>
 
+
 namespace sinen {
-draw3d_component::draw3d_component(actor &owner) : component(owner) {}
+draw3d_component::draw3d_component(actor &owner) : component(owner) {
+  this->texture_handle.fill_color(palette::white());
+}
 draw3d_component::~draw3d_component() {}
 void draw3d_component::update(float delta_time) {
   auto obj = std::make_shared<drawable>();

@@ -28,6 +28,12 @@ public:
    */
   virtual void update(float delta_time) override;
   /**
+   * @brief Get the name object
+   *
+   * @return std::string
+   */
+  virtual std::string get_name() const override { return "draw3d"; }
+  /**
    * @brief set_texture Use texture
    * @param _texture texture instance
    */

@@ -3,12 +3,7 @@
 
 namespace sinen {
 actor::actor() : m_state(actor::state::active) {}
-actor::~actor() {
-  for (auto c : m_components) {
-    delete c;
-  }
-  m_components.clear();
-}
+actor::~actor() {}
 void actor::update(float delta_time) {
   for (auto &c : m_components) {
     c->update(delta_time);
@@ -27,7 +22,6 @@ void actor::remove_component(actor::component_ptr comp) {
   for (auto itr = m_components.begin(); itr != m_components.end();) {
     if (*itr == comp) {
       m_components.erase(itr);
-      delete comp;
       break;
     }
     itr++;

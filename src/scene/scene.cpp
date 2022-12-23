@@ -8,6 +8,7 @@ camera scene::m_main_camera = []() {
   c.perspective(70.f, window::size().x / window::size().y, .1f, 1000.f);
   return c;
 }();
+component_factory scene::m_component_factory;
 
 void scene::reset() {
   scene_system::shutdown();

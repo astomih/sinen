@@ -33,6 +33,12 @@ public:
    */
   virtual void update(float delta_time);
   /**
+   * @brief Get the name object
+   *
+   * @return std::string
+   */
+  virtual std::string get_name() const { return "unknown"; }
+  /**
    * @brief Get the actor object
    *
    * @return actor& actor

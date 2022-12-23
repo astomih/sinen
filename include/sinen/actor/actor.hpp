@@ -130,16 +130,17 @@ public:
   bool is_dead() const { return m_state == state::dead; }
   template <class Component, class... Args>
   Component &create_component(Args &&...args) {
-    component *ptr = new Component(*this, std::forward<Args>(args)...);
-    Component &ref = *reinterpret_cast<Component *>(ptr);
+    auto ptr = std::make_shared<Component>(*this, std::forward<Args>(args)...);
+    Component &ref = *reinterpret_cast<Component *>(ptr.get());
     add_component(ptr);
     return ref;
   }
-
-private:
-  using component_ptr = component *;
+  using component_ptr = std::shared_ptr<component>;
   void add_component(component_ptr comp);
   void remove_component(component_ptr comp);
+  std::vector<component_ptr> &get_components() { return m_components; }
+
+private:
   std::vector<component_ptr> m_components;
   state m_state;
   vector3 m_position;

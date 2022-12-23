@@ -25,7 +25,8 @@
 namespace sinen {
 std::vector<actor> editor::m_actors;
 std::vector<matrix4> editor::m_matrices;
-int editor::index = 0;
+int editor::index_actors = 0;
+int editor::index_components = 0;
 std::string editor::current_file_name = "";
 class editor::implements {
 public:
@@ -43,11 +44,11 @@ void editor::inspector() {
   ImGuizmo::BeginFrame();
   static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
   static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
-  if (ImGui::IsKeyPressed(90))
+  if (input::keyboard.is_key_pressed(key_code::T))
     mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-  if (ImGui::IsKeyPressed(69))
+  if (input::keyboard.is_key_pressed(key_code::R))
     mCurrentGizmoOperation = ImGuizmo::ROTATE;
-  if (ImGui::IsKeyPressed(82)) // r Key
+  if (input::keyboard.is_key_pressed(key_code::S))
     mCurrentGizmoOperation = ImGuizmo::SCALE;
   if (ImGui::RadioButton("Translate",
                          mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
@@ -64,30 +65,28 @@ void editor::inspector() {
     ImGuizmo::Manipulate(scene::main_camera().view().get(),
                          scene::main_camera().projection().get(),
                          mCurrentGizmoOperation, mCurrentGizmoMode,
-                         m_matrices[index].mat.m16);
+                         m_matrices[index_actors].mat.m16);
   }
   ImGui::Text("Transform");
   vector3 pos, rot, scale;
   if (m_actors.size() > 0) {
-    ImGuizmo::DecomposeMatrixToComponents(m_matrices[index].mat.m16, &pos.x,
-                                          &rot.x, &scale.x);
+    ImGuizmo::DecomposeMatrixToComponents(m_matrices[index_actors].mat.m16,
+                                          &pos.x, &rot.x, &scale.x);
     ImGui::DragFloat3("Position", &pos.x);
     ImGui::DragFloat3("Rotation", &rot.x);
     ImGui::DragFloat3("Scale", &scale.x);
     ImGuizmo::RecomposeMatrixFromComponents(&pos.x, &rot.x, &scale.x,
-                                            m_matrices[index].mat.m16);
-    m_actors[index].set_position(pos);
-    m_actors[index].set_rotation(rot);
-    m_actors[index].set_scale(scale);
+                                            m_matrices[index_actors].mat.m16);
+    m_actors[index_actors].set_position(pos);
+    m_actors[index_actors].set_rotation(rot);
+    m_actors[index_actors].set_scale(scale);
+  } else {
+    float dummy[3] = {0, 0, 0};
+    ImGui::DragFloat3("Position", dummy);
+    ImGui::DragFloat3("Rotation", dummy);
+    ImGui::DragFloat3("Scale", dummy);
   }
   ImGui::Separator();
-  ImGui::Text("Components");
-  if (m_actors.size() > 0) {
-    static bool d3d = false;
-    ImGui::Checkbox("draw3d_component", &d3d);
-    if (ImGui::Button("Add component")) {
-    }
-  }
   if (ImGui::Button("Add Actor")) {
     m_actors.push_back(actor{});
     auto m = matrix4::identity;
@@ -95,23 +94,45 @@ void editor::inspector() {
   }
   if (ImGui::Button("Remove Actor")) {
     if (!m_actors.empty()) {
-      m_actors.erase(m_actors.begin() + index);
-      m_matrices.erase(m_matrices.begin() + index);
-      if (index > 0) {
-        index--;
+      m_actors.erase(m_actors.begin() + index_actors);
+      m_matrices.erase(m_matrices.begin() + index_actors);
+      if (index_actors > 0) {
+        index_actors--;
       }
     }
   }
 
-  ImGui::Text("Actors");
-  for (int i = 0; i < m_actors.size(); i++)
-    ImGui::RadioButton(std::string("actor" + std::to_string(i)).c_str(), &index,
-                       i);
+  if (ImGui::CollapsingHeader("Actors", ImGuiTreeNodeFlags_DefaultOpen)) {
+    for (int i = 0; i < m_actors.size(); i++)
+      ImGui::RadioButton(std::string("actor" + std::to_string(i)).c_str(),
+                         &index_actors, i);
+  }
+  if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen)) {
+    if (m_actors.size() > 0) {
+      for (auto &c : m_actors[index_actors].get_components()) {
+        ImGui::Text(c->get_name().c_str());
+      }
+      std::vector<const char *> listbox_items;
+      auto comp_names = scene::get_component_factory().get_component_names();
+      for (auto &c : comp_names) {
+        listbox_items.push_back(c.c_str());
+      }
+
+      static int listbox_item_current = 0;
+      ImGui::ListBox("Component list", &listbox_item_current,
+                     listbox_items.data(), listbox_items.size(), 4);
+      if (ImGui::Button("Add component")) {
+        auto comp = scene::get_component_factory().create(
+            listbox_items[listbox_item_current], m_actors[index_actors]);
+        m_actors[index_actors].add_component(comp);
+      }
+    }
+  }
 
   ImGui::End();
 }
 void editor::load_scene(const std::string &path) {
-  index = 0;
+  index_actors = 0;
   auto str = data_stream::open_as_string(asset_type::Scene, path);
   json j;
   j.parse(str);
@@ -137,12 +158,12 @@ void editor::load_scene(const std::string &path) {
   {
     m_actors.clear();
     m_matrices.clear();
-    m_actors.resize(j["Actors"]["size"].get_int32());
-    m_matrices.resize(j["Actors"]["size"].get_int32());
+    m_actors.resize(j["Actors"].get_array().size());
+    m_matrices.resize(j["Actors"].get_array().size());
     texture tex;
     tex.fill_color(palette::white());
     for (int i = 0; i < m_actors.size(); i++) {
-      auto act = j["Actors"][std::string("Actor") + std::to_string(i)];
+      auto act = j["Actors"].get_array()[i];
       m_actors[i].set_position(vector3(act["Position"]["x"].get_float(),
                                        act["Position"]["y"].get_float(),
                                        act["Position"]["z"].get_float()));
@@ -199,13 +220,8 @@ void editor::save_scene(const std::string &path) {
     }
   }
   j.add_member("Camera", camera_data);
-  auto actors = j.create_object();
+  auto actors = j.create_array();
   {
-    {
-      auto act = j.create_object();
-      act.set_int32(m_actors.size());
-      actors.add_member("size", act);
-    }
     for (int i = 0; i < m_actors.size(); i++) {
       auto act = j.create_object();
       {
@@ -235,20 +251,15 @@ void editor::save_scene(const std::string &path) {
         }
         {
           auto arr = j.create_array();
-          {
+          for (auto &c : m_actors[i].get_components()) {
             auto obj = j.create_object();
-            obj.set_string("draw3d");
-            arr.push_back(obj);
-          }
-          {
-            auto obj = j.create_object();
-            obj.set_string("draw2d");
+            obj.set_string(c->get_name());
             arr.push_back(obj);
           }
           act.add_member("Components", arr);
         }
       }
-      actors.add_member(std::string("Actor" + std::to_string(i)), act);
+      actors.push_back(act);
     }
   }
   j.add_member("Actors", actors);
@@ -326,6 +337,52 @@ void editor::menu() {
 editor::editor() : m_impl(std::make_unique<editor::implements>()) {}
 editor::~editor() {}
 void editor::setup() {
+  ImGuiStyle &style = ImGui::GetStyle();
+  style.Alpha = 1.0;
+  style.ChildRounding = 3;
+  style.WindowRounding = 3;
+  style.GrabRounding = 1;
+  style.GrabMinSize = 20;
+  style.FrameRounding = 3;
+
+  style.Colors[ImGuiCol_Text] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
+  style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.00f, 0.40f, 0.41f, 1.00f);
+  style.Colors[ImGuiCol_WindowBg] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+  style.Colors[ImGuiCol_ChildBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+  style.Colors[ImGuiCol_Border] = ImVec4(0.00f, 1.00f, 1.00f, 0.65f);
+  style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+  style.Colors[ImGuiCol_FrameBg] = ImVec4(0.44f, 0.80f, 0.80f, 0.18f);
+  style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.44f, 0.80f, 0.80f, 0.27f);
+  style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.44f, 0.81f, 0.86f, 0.66f);
+  style.Colors[ImGuiCol_TitleBg] = ImVec4(0.14f, 0.18f, 0.21f, 0.73f);
+  style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.00f, 0.00f, 0.00f, 0.54f);
+  style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.00f, 1.00f, 1.00f, 0.27f);
+  style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.20f);
+  style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.22f, 0.29f, 0.30f, 0.71f);
+  style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.00f, 1.00f, 1.00f, 0.44f);
+  style.Colors[ImGuiCol_ScrollbarGrabHovered] =
+      ImVec4(0.00f, 1.00f, 1.00f, 0.74f);
+  style.Colors[ImGuiCol_ScrollbarGrabActive] =
+      ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
+  style.Colors[ImGuiCol_CheckMark] = ImVec4(0.00f, 1.00f, 1.00f, 0.68f);
+  style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.00f, 1.00f, 1.00f, 0.36f);
+  style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.00f, 1.00f, 1.00f, 0.76f);
+  style.Colors[ImGuiCol_Button] = ImVec4(0.00f, 0.65f, 0.65f, 0.46f);
+  style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.01f, 1.00f, 1.00f, 0.43f);
+  style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.00f, 1.00f, 1.00f, 0.62f);
+  style.Colors[ImGuiCol_Header] = ImVec4(0.00f, 1.00f, 1.00f, 0.33f);
+  style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.00f, 1.00f, 1.00f, 0.42f);
+  style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.00f, 1.00f, 1.00f, 0.54f);
+  style.Colors[ImGuiCol_ResizeGrip] = ImVec4(0.00f, 1.00f, 1.00f, 0.54f);
+  style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.00f, 1.00f, 1.00f, 0.74f);
+  style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
+  style.Colors[ImGuiCol_PlotLines] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
+  style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
+  style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
+  style.Colors[ImGuiCol_PlotHistogramHovered] =
+      ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
+  style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.00f, 1.00f, 1.00f, 0.22f);
+  style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.04f, 0.10f, 0.09f, 0.51f);
   m_impl->is_run = false;
   renderer::add_imgui_function(menu);
   renderer::add_imgui_function(markdown);
@@ -339,17 +396,8 @@ void editor::update(float delta_time) {
     renderer::get_imgui_function().pop_back();
     request_pop_func = false;
   }
-  for (int i = 0; i < m_actors.size(); i++) {
-    texture tex;
-    tex.fill_color(palette::white());
-    std::shared_ptr<drawable> d3 = std::make_shared<drawable>();
-
-    d3->binding_texture = tex;
-    d3->param.proj = scene::main_camera().projection();
-    d3->param.view = scene::main_camera().view();
-    d3->param.world = matrix4(m_matrices[i]);
-    d3->vertexIndex = "BOX";
-    renderer::draw3d(d3);
+  for (auto &act : m_actors) {
+    act.update(delta_time);
   }
   if (renderer::is_show_imgui() &&
       input::keyboard.get_key_state(key_code::F5) == button_state::Pressed) {

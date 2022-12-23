@@ -47,6 +47,7 @@ bool scene_system::is_run_script = true;
 uint32_t scene_system::m_prev_tick = 0;
 std::vector<scene_system::actor_ptr> scene_system::m_actors;
 bool scene_system::initialize() {
+  scene::get_component_factory().register_component<draw3d_component>("draw3d");
   if (is_run_script) {
     sol::state *lua = (sol::state *)script_system::get_state();
     std::string str = data_stream::open_as_string(
@@ -142,11 +143,10 @@ void scene_system::load_data(std::string_view data_file_name) {
   }
   texture tex;
   tex.fill_color(palette::white());
-  for (int i = 0; i < doc["Actors"]["size"].get_int32(); i++) {
+  for (int i = 0; i < doc["Actors"].get_array().size(); i++) {
     // Actor setting
     auto &act = scene::create_actor();
-    auto index = std::string("Actor") + std::to_string(i);
-    auto ref = doc["Actors"][index];
+    auto ref = doc["Actors"].get_array()[i];
     vector3 pos, rotation, scale;
     pos.x = ref["Position"]["x"].get_float();
     pos.y = ref["Position"]["y"].get_float();

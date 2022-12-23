@@ -90,6 +90,12 @@ std::string json::object::get_string() {
 }
 bool json::object::get_bool() { return pimpl->value.GetBool(); }
 
+json::array json::object::get_array() {
+  array arr;
+  arr.pimpl = std::make_shared<json::array::impl>(pimpl->value, pimpl->m_json);
+  return arr;
+}
+
 void json::object::set_int32(std::int32_t value) { pimpl->value.SetInt(value); }
 void json::object::set_uint32(std::uint32_t value) {
   pimpl->value.SetUint(value);
@@ -106,6 +112,14 @@ void json::object::set_string(std::string_view value) {
   pimpl->value.SetString(value.data(), value.size());
 }
 void json::object::set_bool(bool value) { pimpl->value.SetBool(value); }
+
+void json::object::set_array(array &value) {
+  pimpl->value.SetArray();
+  for (std::size_t i = 0; i < value.size(); i++) {
+    pimpl->value.PushBack(value[i].pimpl->value,
+                          pimpl->m_json->pimpl->doc.GetAllocator());
+  }
+}
 
 void json::object::add_member(std::string_view key, int value) {
   rapidjson::Value k(key.data(), key.size(),

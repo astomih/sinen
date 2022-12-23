@@ -1,17 +1,19 @@
 #ifndef SINEN_ACTOR_HPP
 #define SINEN_ACTOR_HPP
-#include "../component/component.hpp"
-#include "../math/matrix4.hpp"
-#include "../math/vector3.hpp"
+// Std
 #include <cstdint>
 #include <memory>
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
+// Internal
+#include "../component/component.hpp"
+#include "../math/matrix4.hpp"
+#include "../math/vector3.hpp"
 namespace sinen {
 class scene;
 /**
- * @brief Base of all actors.
+ * @brief Base of all actors
  *
  */
 class actor {
@@ -124,10 +126,35 @@ public:
    * @param stateb Actor state object
    */
   void set_state(state state) { m_state = state; }
-  // Get state
+  /**
+   * @brief Check if the actor is active
+   *
+   * @return true The actor is active
+   * @return false The actor is not active
+   */
   bool is_active() const { return m_state == state::active; }
+  /**
+   * @brief Check if the actor is paused
+   *
+   * @return true The actor is paused
+   * @return false The actor is not paused
+   */
   bool is_paused() const { return m_state == state::paused; }
+  /**
+   * @brief Check if the actor is dead
+   *
+   * @return true The actor is dead
+   * @return false The actor is not dead
+   */
   bool is_dead() const { return m_state == state::dead; }
+  /**
+   * @brief Create a component object
+   *
+   * @tparam Component Component type
+   * @tparam Args Component constructor arguments
+   * @param args Component constructor arguments
+   * @return Component& Reference to the component
+   */
   template <class Component, class... Args>
   Component &create_component(Args &&...args) {
     auto ptr = std::make_shared<Component>(*this, std::forward<Args>(args)...);
@@ -135,11 +162,56 @@ public:
     add_component(ptr);
     return ref;
   }
+  // Component ptr type
   using component_ptr = std::shared_ptr<component>;
+  /**
+   * @brief Add the component object
+   *
+   * @param comp Component pointer
+   */
   void add_component(component_ptr comp);
+  /**
+   * @brief Add the component object
+   *
+   * @param comp_name Component name
+   */
+  void add_component(std::string_view comp_name);
+  /**
+   * @brief Remove the component object
+   *
+   * @param comp Component pointer
+   */
   void remove_component(component_ptr comp);
+  /**
+   * @brief Remove the component object
+   *
+   * @param comp_name Component name
+   */
+  void remove_component(std::string_view comp_name);
+  /**
+   * @brief Get the components object
+   *
+   * @return std::vector<component_ptr>& Vector of component pointers
+   */
   std::vector<component_ptr> &get_components() { return m_components; }
-
+  /**
+   * @brief Check if the actor has the component
+   *
+   * @param comp Component pointer
+   * @return true The actor has the component
+   * @return false The actor does not have the component
+   */
+  bool has_component(component_ptr comp) const;
+  /**
+   * @brief Check if the actor has the component
+   *
+   * @param comp_name  Component name
+   * @details This function is used to check if the actor has a component by
+   * name. Name is component's get_name() function.
+   * @return true The actor has the component
+   * @return false The actor does not have the component
+   */
+  bool has_component(std::string_view comp_name) const;
   /**
    * @brief Get the name object
    *
@@ -168,12 +240,19 @@ public:
   }
 
 private:
+  // Components
   std::vector<component_ptr> m_components;
+  // Actor state
   state m_state;
+  // Transform
   vector3 m_position;
+  // Rotation for quaternion;
   vector3 m_rotation;
+  // Scale vector
   vector3 m_scale;
+  // Name
   std::string m_name;
+  // Script name
   std::string m_script_name;
 };
 } // namespace sinen

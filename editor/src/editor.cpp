@@ -88,11 +88,15 @@ void editor::inspector() {
   }
   ImGui::Separator();
 
+  static std::string buf;
   if (ImGui::CollapsingHeader("Actors", ImGuiTreeNodeFlags_DefaultOpen)) {
     if (ImGui::Button("Add Actor")) {
       m_actors.push_back(actor{});
       auto m = matrix4::identity;
       m_matrices.push_back(m);
+      if (m_actors.size() == 1) {
+        buf = m_actors[index_actors].get_script_name();
+      }
     }
     ImGui::SameLine();
     if (ImGui::Button("Remove Actor")) {
@@ -104,28 +108,46 @@ void editor::inspector() {
         }
       }
     }
-    for (int i = 0; i < m_actors.size(); i++)
-      ImGui::RadioButton(std::string("actor" + std::to_string(i)).c_str(),
-                         &index_actors, i);
+    if (!m_actors.empty()) {
+      ImGui::InputText("script name", buf.data(), buf.size());
+      if (ImGui::Button("Open")) {
+        if (!m_actors.empty()) {
+          texteditor::set_script_name(buf);
+          texteditor::set_text(
+              data_stream::open_as_string(asset_type::Script, buf));
+          script::do_script(buf);
+        }
+      }
+    }
+    for (int i = 0; i < m_actors.size(); i++) {
+      if (ImGui::RadioButton(std::string("actor" + std::to_string(i)).c_str(),
+                             &index_actors, i)) {
+        buf = m_actors[index_actors].get_script_name();
+      }
+    }
   }
   if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen)) {
     if (m_actors.size() > 0) {
-      for (auto &c : m_actors[index_actors].get_components()) {
-        ImGui::Text(c->get_name().c_str());
-      }
       std::vector<const char *> listbox_items;
+      static int listbox_item_current = 0;
       auto comp_names = scene::get_component_factory().get_component_names();
       for (auto &c : comp_names) {
         listbox_items.push_back(c.c_str());
       }
 
-      static int listbox_item_current = 0;
       ImGui::ListBox("Component list", &listbox_item_current,
-                     listbox_items.data(), listbox_items.size(), 4);
-      if (ImGui::Button("Add component")) {
-        auto comp = scene::get_component_factory().create(
-            listbox_items[listbox_item_current], m_actors[index_actors]);
-        m_actors[index_actors].add_component(comp);
+                     listbox_items.data(), listbox_items.size(), 3);
+      if (ImGui::Button("Add Component")) {
+        m_actors[index_actors].add_component(
+            listbox_items[listbox_item_current]);
+      }
+      ImGui::SameLine();
+      if (ImGui::Button("Remove Component")) {
+        m_actors[index_actors].remove_component(
+            listbox_items[listbox_item_current]);
+      }
+      for (auto &c : m_actors[index_actors].get_components()) {
+        ImGui::Text("%s", c->get_name().c_str());
       }
     }
   }
@@ -392,7 +414,7 @@ void editor::setup() {
   renderer::add_imgui_function(markdown);
   renderer::add_imgui_function(log_window);
   renderer::add_imgui_function(inspector);
-  renderer::add_imgui_function(texteditor);
+  renderer::add_imgui_function(texteditor::display);
   renderer::toggle_show_imgui();
 }
 void editor::update(float delta_time) {
@@ -416,7 +438,7 @@ void editor::update(float delta_time) {
     // m_impl->is_save = true;
   }
   if (m_impl->is_save) {
-    auto str = get_text();
+    auto str = texteditor::get_text();
     data_stream::write(asset_type::Script,
                        main::get_current_scene_number() + ".lua", str);
     std::cout << str << std::endl;
@@ -483,16 +505,22 @@ void editor::run() {
     std::string commandlp =
         std::string(std::string("game.exe ") + std::string(current_file_name));
     // Start the child process.
-    CreateProcess(NULL,                     // No module name (use command line)
-                  (LPSTR)commandlp.c_str(), // Command line
-                  NULL,                     // Process handle not inheritable
-                  NULL,                     // Thread handle not inheritable
-                  FALSE,                    // Set handle inheritance to FALSE
-                  0,                        // No creation flags
-                  NULL,                     // Use parent's environment block
-                  NULL,                     // Use parent's starting directory
-                  &si,                      // Pointer to STARTUPINFO structure
-                  &pi); // Pointer to PROCESS_INFORMATION structure
+    {
+      WINBOOL result =
+          CreateProcess(NULL, // No module name (use command line)
+                        (LPSTR)commandlp.c_str(), // Command line
+                        NULL,  // Process handle not inheritable
+                        NULL,  // Thread handle not inheritable
+                        FALSE, // Set handle inheritance to FALSE
+                        0,     // No creation flags
+                        NULL,  // Use parent's environment block
+                        NULL,  // Use parent's starting directory
+                        &si,   // Pointer to STARTUPINFO structure
+                        &pi);  // Pointer to PROCESS_INFORMATION structure
+      if (result == 0) {
+        logger::error("Failed to run the game.");
+      }
+    }
   } else {
     logger::error("The scene has not yet loaded anything.");
   }

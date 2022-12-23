@@ -140,12 +140,41 @@ public:
   void remove_component(component_ptr comp);
   std::vector<component_ptr> &get_components() { return m_components; }
 
+  /**
+   * @brief Get the name object
+   *
+   * @return const std::string& Name of the actor
+   */
+  const std::string &get_name() const { return m_name; }
+  /**
+   * @brief Set the name object
+   *
+   * @param name Name of the actor
+   */
+  void set_name(const std::string &name) { m_name = name; }
+  /**
+   * @brief Get the script name object
+   *
+   * @return const std::string& Script name of the actor
+   */
+  const std::string &get_script_name() const { return m_script_name; }
+  /**
+   * @brief Set the script name object
+   *
+   * @param script_name Script name of the actor
+   */
+  void set_script_name(const std::string &script_name) {
+    m_script_name = script_name;
+  }
+
 private:
   std::vector<component_ptr> m_components;
   state m_state;
   vector3 m_position;
   vector3 m_rotation;
   vector3 m_scale;
+  std::string m_name;
+  std::string m_script_name;
 };
 } // namespace sinen
 #endif // !SINEN_ACTOR_HPP

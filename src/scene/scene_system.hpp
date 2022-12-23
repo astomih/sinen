@@ -26,6 +26,7 @@ public:
    *
    */
   static void shutdown();
+  static void setup();
   /**
    * @brief Set the state object
    *

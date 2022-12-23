@@ -42,7 +42,7 @@ void main_loop() { emscripten_loop(); }
 #endif
 
 namespace sinen {
-bool main_system::is_reset = false;
+bool main_system::is_reset = true;
 std::string main_system::m_scene_name = "main";
 int main::run() {
   main_system::run();
@@ -150,10 +150,10 @@ bool main_system::initialize() {
   texture tex;
   tex.fill_color(palette::black());
   render_system::set_skybox_texture(tex);
+  scene_system::initialize();
   return true;
 }
 void main_system::run() {
-  scene_system::initialize();
 
 #if !defined(EMSCRIPTEN)
   while (loop()) {
@@ -169,7 +169,7 @@ bool main_system::loop() {
     return true;
   }
   if (is_reset) {
-    scene_system::initialize();
+    scene_system::setup();
     is_reset = false;
     return true;
   }

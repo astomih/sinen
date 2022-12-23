@@ -87,22 +87,23 @@ void editor::inspector() {
     ImGui::DragFloat3("Scale", dummy);
   }
   ImGui::Separator();
-  if (ImGui::Button("Add Actor")) {
-    m_actors.push_back(actor{});
-    auto m = matrix4::identity;
-    m_matrices.push_back(m);
-  }
-  if (ImGui::Button("Remove Actor")) {
-    if (!m_actors.empty()) {
-      m_actors.erase(m_actors.begin() + index_actors);
-      m_matrices.erase(m_matrices.begin() + index_actors);
-      if (index_actors > 0) {
-        index_actors--;
-      }
-    }
-  }
 
   if (ImGui::CollapsingHeader("Actors", ImGuiTreeNodeFlags_DefaultOpen)) {
+    if (ImGui::Button("Add Actor")) {
+      m_actors.push_back(actor{});
+      auto m = matrix4::identity;
+      m_matrices.push_back(m);
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Remove Actor")) {
+      if (!m_actors.empty()) {
+        m_actors.erase(m_actors.begin() + index_actors);
+        m_matrices.erase(m_matrices.begin() + index_actors);
+        if (index_actors > 0) {
+          index_actors--;
+        }
+      }
+    }
     for (int i = 0; i < m_actors.size(); i++)
       ImGui::RadioButton(std::string("actor" + std::to_string(i)).c_str(),
                          &index_actors, i);
@@ -173,15 +174,18 @@ void editor::load_scene(const std::string &path) {
       m_actors[i].set_scale(vector3(act["Scale"]["x"].get_float(),
                                     act["Scale"]["y"].get_float(),
                                     act["Scale"]["z"].get_float()));
-      auto &d3 = m_actors[i].create_component<draw3d_component>();
-      d3.set_texture(tex);
-      d3.set_vertex_name("BOX");
       vector3 pos, rot, scale;
       pos = m_actors[i].get_position();
       rot = m_actors[i].get_rotation();
       scale = m_actors[i].get_scale();
       ImGuizmo::RecomposeMatrixFromComponents(&pos.x, &rot.x, &scale.x,
                                               m_matrices[i].get());
+      for (int j = 0; j < act["Components"].get_array().size(); j++) {
+        auto comp = act["Components"].get_array()[j];
+        auto comp_name = comp.get_string();
+        auto c = scene::get_component_factory().create(comp_name, m_actors[i]);
+        m_actors[i].add_component(c);
+      }
     }
   }
   logger::info(

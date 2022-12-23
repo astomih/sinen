@@ -42,12 +42,15 @@
 namespace sinen {
 std::unique_ptr<scene::implements> scene_system::m_impl =
     std::make_unique<scene::implements>();
-scene::state scene_system::m_game_state = scene::state::running;
+scene::state scene_system::m_game_state = scene::state::quit;
 bool scene_system::is_run_script = true;
 uint32_t scene_system::m_prev_tick = 0;
 std::vector<scene_system::actor_ptr> scene_system::m_actors;
 bool scene_system::initialize() {
   scene::get_component_factory().register_component<draw3d_component>("draw3d");
+  return true;
+}
+void scene_system::setup() {
   if (is_run_script) {
     sol::state *lua = (sol::state *)script_system::get_state();
     std::string str = data_stream::open_as_string(
@@ -58,7 +61,6 @@ bool scene_system::initialize() {
   m_impl->setup();
   m_game_state = scene::state::running;
   m_prev_tick = SDL_GetTicks();
-  return true;
 }
 
 void scene_system::run_loop() {
@@ -160,11 +162,12 @@ void scene_system::load_data(std::string_view data_file_name) {
     scale.y = ref["Scale"]["y"].get_float();
     scale.z = ref["Scale"]["z"].get_float();
     act.set_scale(scale);
-    // Component
-    auto &d3 = act.create_component<draw3d_component>();
-    d3.set_draw_depth(true);
-    d3.set_vertex_name("BOX");
-    d3.set_texture(tex);
+    for (int j = 0; j < ref["Components"].get_array().size(); j++) {
+      auto comp = ref["Components"].get_array()[j];
+      auto comp_name = comp.get_string();
+      auto c = scene::get_component_factory().create(comp_name, act);
+      act.add_component(c);
+    }
   }
 }
 } // namespace sinen

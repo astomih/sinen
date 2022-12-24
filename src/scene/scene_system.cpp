@@ -124,6 +124,16 @@ void scene_system::shutdown() {
 }
 
 void scene_system::add_actor(actor_ptr _actor) { m_actors.push_back(_actor); }
+actor &scene_system::get_actor(const std::string &str) {
+  for (auto &actor : m_actors) {
+    if (actor->get_name() == str) {
+      return *actor;
+    }
+  }
+  static actor null_actor;
+  null_actor.set_name("null");
+  return null_actor;
+}
 
 void scene_system::load_data(std::string_view data_file_name) {
   json doc;

@@ -26,6 +26,12 @@ public:
   static void render();
   static void draw2d(const std::shared_ptr<drawable> draw_object);
   static void draw3d(const std::shared_ptr<drawable> draw_object);
+  static void add_queue_2d(const std::shared_ptr<drawable> draw_object);
+  static void add_queue_3d(const std::shared_ptr<drawable> draw_object);
+  static void add_queue_instancing(const std::shared_ptr<instancing> object);
+  static void remove_queue_2d(const std::shared_ptr<drawable> draw_object);
+  static void remove_queue_3d(const std::shared_ptr<drawable> draw_object);
+  static void remove_queue_instancing(const std::shared_ptr<instancing> object);
   static void add_vertex_array(const vertex_array &vArray,
                                std::string_view name);
   static void update_vertex_array(const vertex_array &vArray,
@@ -67,6 +73,9 @@ private:
   static bool showImGui;
   static std::list<std::function<void()>> m_imgui_function;
   static texture m_skybox_texture;
+  static std::vector<std::shared_ptr<drawable>> m_drawable_2d;
+  static std::vector<std::shared_ptr<drawable>> m_drawable_3d;
+  static std::vector<std::shared_ptr<instancing>> m_instancing;
 };
 } // namespace sinen
 #endif // !SINEN_RENDER_SYSTEM_HPP

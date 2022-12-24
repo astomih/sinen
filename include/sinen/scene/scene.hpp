@@ -81,6 +81,7 @@ public:
     add_actor(ptr);
     return ref;
   }
+  static actor &get_actor(const std::string &name);
   static camera &main_camera() { return m_main_camera; }
 
   static component_factory &get_component_factory() {

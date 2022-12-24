@@ -195,6 +195,13 @@ public:
    */
   std::vector<component_ptr> &get_components() { return m_components; }
   /**
+   * @brief Get the component object
+   *
+   * @param comp_name
+   * @return component_ptr
+   */
+  component &get_component(std::string_view comp_name);
+  /**
    * @brief Check if the actor has the component
    *
    * @param comp Component pointer

@@ -18,6 +18,9 @@ graphics_api render_system::RendererAPI;
 bool render_system::showImGui = false;
 std::list<std::function<void()>> render_system::m_imgui_function;
 texture render_system::m_skybox_texture;
+std::vector<std::shared_ptr<drawable>> render_system::m_drawable_2d;
+std::vector<std::shared_ptr<drawable>> render_system::m_drawable_3d;
+std::vector<std::shared_ptr<instancing>> render_system::m_instancing;
 graphics_api render_system::get_graphics_api() { return RendererAPI; }
 void render_system::unload_data() {}
 void render_system::initialize(graphics_api api) {
@@ -47,6 +50,15 @@ void render_system::shutdown() {
 }
 
 void render_system::render() {
+  for (auto &d : m_drawable_3d) {
+    draw3d(d);
+  }
+  for (auto &d : m_drawable_2d) {
+    draw2d(d);
+  }
+  for (auto &i : m_instancing) {
+    add_instancing(*i);
+  }
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
   if (RendererAPI == graphics_api::Vulkan) {
     m_vk_renderer->render();
@@ -77,7 +89,34 @@ void render_system::draw3d(std::shared_ptr<drawable> drawObject) {
     m_gl_renderer->draw3d(drawObject);
   }
 }
-
+void render_system::add_queue_2d(const std::shared_ptr<drawable> draw_object) {
+  m_drawable_2d.push_back(draw_object);
+}
+void render_system::add_queue_3d(const std::shared_ptr<drawable> draw_object) {
+  m_drawable_3d.push_back(draw_object);
+}
+void render_system::add_queue_instancing(
+    const std::shared_ptr<instancing> draw_object) {
+  m_instancing.push_back(draw_object);
+}
+void render_system::remove_queue_2d(
+    const std::shared_ptr<drawable> draw_object) {
+  m_drawable_2d.erase(
+      std::remove(m_drawable_2d.begin(), m_drawable_2d.end(), draw_object),
+      m_drawable_2d.end());
+}
+void render_system::remove_queue_3d(
+    const std::shared_ptr<drawable> draw_object) {
+  m_drawable_3d.erase(
+      std::remove(m_drawable_3d.begin(), m_drawable_3d.end(), draw_object),
+      m_drawable_3d.end());
+}
+void render_system::remove_queue_instancing(
+    const std::shared_ptr<instancing> draw_object) {
+  m_instancing.erase(
+      std::remove(m_instancing.begin(), m_instancing.end(), draw_object),
+      m_instancing.end());
+}
 void render_system::add_vertex_array(const vertex_array &vArray,
                                      std::string_view name) {
 

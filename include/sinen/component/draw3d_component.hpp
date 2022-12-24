@@ -52,6 +52,7 @@ public:
   }
 
 private:
+  std::shared_ptr<drawable> draw_object;
   texture texture_handle;
   bool is_draw_depth = true;
   std::string vertex_name = "SPRITE";

@@ -29,6 +29,9 @@ void scene::set_run_script(bool is_run) {
   scene_system::set_run_script(is_run);
 }
 void scene::add_actor(actor *_actor) { scene_system::add_actor(_actor); }
+actor &scene::get_actor(const std::string &name) {
+  return scene_system::get_actor(name);
+}
 void scene::load(std::string_view data_file_name) {
   scene_system::load_data(data_file_name);
 }

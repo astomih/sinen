@@ -47,6 +47,7 @@ public:
   }
 
   static void add_actor(actor *_actor);
+  static actor &get_actor(const std::string &name);
   static void load_data(std::string_view data_file_name);
 
 private:

@@ -19,7 +19,25 @@ void renderer::draw2d(const std::shared_ptr<drawable> draw_object) {
 void renderer::draw3d(const std::shared_ptr<drawable> draw_object) {
   render_system::draw3d(draw_object);
 }
-
+void renderer::add_queue_2d(const std::shared_ptr<drawable> draw_object) {
+  render_system::add_queue_2d(draw_object);
+}
+void renderer::add_queue_3d(const std::shared_ptr<drawable> draw_object) {
+  render_system::add_queue_3d(draw_object);
+}
+void renderer::add_queue_instancing(const std::shared_ptr<instancing> object) {
+  render_system::add_queue_instancing(object);
+}
+void renderer::remove_queue_2d(const std::shared_ptr<drawable> draw_object) {
+  render_system::remove_queue_2d(draw_object);
+}
+void renderer::remove_queue_3d(const std::shared_ptr<drawable> draw_object) {
+  render_system::remove_queue_3d(draw_object);
+}
+void renderer::remove_queue_instancing(
+    const std::shared_ptr<instancing> object) {
+  render_system::remove_queue_instancing(object);
+}
 void renderer::add_vertex_array(const vertex_array &vArray,
                                 std::string_view name) {
   render_system::add_vertex_array(vArray, name);

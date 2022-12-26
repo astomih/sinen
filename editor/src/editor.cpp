@@ -18,6 +18,7 @@
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
+#include <sol/sol.hpp>
 #if defined(_WIN32)
 #include <windows.h>
 #endif
@@ -90,16 +91,17 @@ void editor::inspector() {
 
   static std::string buf;
   if (ImGui::CollapsingHeader("Actors", ImGuiTreeNodeFlags_DefaultOpen)) {
-    if (ImGui::Button("Add Actor")) {
+    if (ImGui::Button("AddActor")) {
       m_actors.push_back(actor{});
       auto m = matrix4::identity;
       m_matrices.push_back(m);
       if (m_actors.size() == 1) {
         buf = m_actors[index_actors].get_script_name();
       }
+      m_actors.back().set_name("Actor" + std::to_string(m_actors.size()));
     }
     ImGui::SameLine();
-    if (ImGui::Button("Remove Actor")) {
+    if (ImGui::Button("RemoveActor")) {
       if (!m_actors.empty()) {
         m_actors.erase(m_actors.begin() + index_actors);
         m_matrices.erase(m_matrices.begin() + index_actors);
@@ -109,7 +111,12 @@ void editor::inspector() {
       }
     }
     if (!m_actors.empty()) {
-      ImGui::InputText("script name", buf.data(), buf.size());
+      static char name[128] = {};
+      ImGui::InputText("Actor", name, sizeof(name));
+      if (ImGui::Button("Set Name")) {
+        m_actors[index_actors].set_name(name);
+      }
+      ImGui::InputText("Script", buf.data(), buf.size());
       if (ImGui::Button("Open")) {
         if (!m_actors.empty()) {
           texteditor::set_script_name(buf);
@@ -120,8 +127,8 @@ void editor::inspector() {
       }
     }
     for (int i = 0; i < m_actors.size(); i++) {
-      if (ImGui::RadioButton(std::string("actor" + std::to_string(i)).c_str(),
-                             &index_actors, i)) {
+      if (ImGui::RadioButton(m_actors[i].get_name().c_str(), &index_actors,
+                             i)) {
         buf = m_actors[index_actors].get_script_name();
       }
     }
@@ -137,12 +144,12 @@ void editor::inspector() {
 
       ImGui::ListBox("Component list", &listbox_item_current,
                      listbox_items.data(), listbox_items.size(), 3);
-      if (ImGui::Button("Add Component")) {
+      if (ImGui::Button("AddComponent")) {
         m_actors[index_actors].add_component(
             listbox_items[listbox_item_current]);
       }
       ImGui::SameLine();
-      if (ImGui::Button("Remove Component")) {
+      if (ImGui::Button("RemoveComponent")) {
         m_actors[index_actors].remove_component(
             listbox_items[listbox_item_current]);
       }
@@ -187,6 +194,8 @@ void editor::load_scene(const std::string &path) {
     tex.fill_color(palette::white());
     for (int i = 0; i < m_actors.size(); i++) {
       auto act = j["Actors"].get_array()[i];
+      m_actors[i].set_name(act["Name"].get_string());
+      m_actors[i].set_script_name(act["Script"].get_string());
       m_actors[i].set_position(vector3(act["Position"]["x"].get_float(),
                                        act["Position"]["y"].get_float(),
                                        act["Position"]["z"].get_float()));
@@ -251,6 +260,8 @@ void editor::save_scene(const std::string &path) {
     for (int i = 0; i < m_actors.size(); i++) {
       auto act = j.create_object();
       {
+        { act.add_member("Name", m_actors[i].get_name()); }
+        { act.add_member("Script", m_actors[i].get_script_name()); }
         {
           vector3 pos = m_actors[i].get_position();
           auto position = j.create_object();
@@ -279,7 +290,8 @@ void editor::save_scene(const std::string &path) {
           auto arr = j.create_array();
           for (auto &c : m_actors[i].get_components()) {
             auto obj = j.create_object();
-            obj.set_string(c->get_name());
+            auto str = c->get_name();
+            obj.set_string(str);
             arr.push_back(obj);
           }
           act.add_member("Components", arr);
@@ -424,7 +436,12 @@ void editor::update(float delta_time) {
   }
   for (auto &act : m_actors) {
     act.update(delta_time);
+    sol::state &lua = *(sol::state *)script::get_state();
+    lua.do_string(
+        data_stream::open_as_string(asset_type::Script, act.get_script_name()));
+    lua["update"]();
   }
+
   if (renderer::is_show_imgui() &&
       input::keyboard.get_key_state(key_code::F5) == button_state::Pressed) {
     m_impl->is_run = true;

@@ -33,6 +33,8 @@
 
 #include <camera/camera.hpp>
 #include <component/draw3d_component.hpp>
+#include <component/move_component.hpp>
+#include <component/rigidbody_component.hpp>
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 #include <input/input.hpp>
@@ -48,6 +50,11 @@ uint32_t scene_system::m_prev_tick = 0;
 std::vector<scene_system::actor_ptr> scene_system::m_actors;
 bool scene_system::initialize() {
   scene::get_component_factory().register_component<draw3d_component>("draw3d");
+
+  scene::get_component_factory().register_component<move_component>("move");
+
+  scene::get_component_factory().register_component<rigidbody_component>(
+      "rigidbody");
   return true;
 }
 void scene_system::setup() {
@@ -100,7 +107,12 @@ void scene_system::update_scene() {
   m_prev_tick = SDL_GetTicks();
   for (auto itr = m_actors.begin(); itr != m_actors.end();) {
     if ((*itr)->get_state() == actor::state::active) {
+      sol::state *lua = (sol::state *)script_system::get_state();
+      lua->do_string(data_stream::open_as_string(asset_type::Script,
+                                                 (*itr)->get_script_name()));
+      (*lua)["update"]();
       (*itr)->update(deltaTime);
+
       itr++;
     } else if ((*itr)->get_state() == actor::state::dead) {
       itr = m_actors.erase(itr);
@@ -108,8 +120,13 @@ void scene_system::update_scene() {
       itr++;
     }
   }
+
   if (is_run_script) {
     sol::state *lua = (sol::state *)script_system::get_state();
+    lua->do_string(
+        data_stream::open_as_string(asset_type::Script,
+                                    main::get_current_scene_number() + ".lua")
+            .data());
     (*lua)["delta_time"] = deltaTime;
     (*lua)["keyboard"] = input::keyboard;
     (*lua)["mouse"] = input::mouse;
@@ -125,7 +142,7 @@ void scene_system::shutdown() {
 
 void scene_system::add_actor(actor_ptr _actor) { m_actors.push_back(_actor); }
 actor &scene_system::get_actor(const std::string &str) {
-  for (auto &actor : m_actors) {
+  for (auto actor : m_actors) {
     if (actor->get_name() == str) {
       return *actor;
     }
@@ -159,6 +176,8 @@ void scene_system::load_data(std::string_view data_file_name) {
     // Actor setting
     auto &act = scene::create_actor();
     auto ref = doc["Actors"].get_array()[i];
+    act.set_name(ref["Name"].get_string());
+    act.set_script_name(ref["Script"].get_string());
     vector3 pos, rotation, scale;
     pos.x = ref["Position"]["x"].get_float();
     pos.y = ref["Position"]["y"].get_float();

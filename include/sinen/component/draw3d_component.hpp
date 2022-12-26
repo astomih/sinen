@@ -47,7 +47,7 @@ public:
    * @brief set_vertex_name
    * @param _vertex_name
    */
-  void set_vertex_name(const std::string &_vertex_name) {
+  void set_vertex_name(std::string_view _vertex_name) {
     vertex_name = _vertex_name;
   }
 

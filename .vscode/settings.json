@@ -1,5 +1,6 @@
 {
   "Lua.diagnostics.globals": [
-    "keyboard"
+    "keyboard",
+    "cconvert_draw3d"
   ]
 }

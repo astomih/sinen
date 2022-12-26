@@ -200,7 +200,7 @@ public:
    * @param comp_name
    * @return component_ptr
    */
-  component &get_component(std::string_view comp_name);
+  component *get_component(std::string_view comp_name);
   /**
    * @brief Check if the actor has the component
    *

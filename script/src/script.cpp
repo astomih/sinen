@@ -144,6 +144,7 @@ bool script_engine::initialize(sol::state &lua) {
     v["get_int_range"] = random::get_int_range;
     v["get_float_range"] = random::get_float_range;
   }
+  register_component(lua);
   register_drawable(lua);
   register_keycode(lua);
   register_table(lua);

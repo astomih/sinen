@@ -6,9 +6,7 @@
 namespace sinen {
 void register_component(sol::state &lua) {
   lua["actor"] = []() -> actor { return actor(); };
-  lua["cconvert_draw3d"] = [](component &c) -> draw3d_component & {
-    return component_convert::to_draw3d(c);
-  };
+  lua["cconvert_draw3d"] = &component_convert::to_draw3d;
 
   {
     auto v = lua.new_usertype<actor>("", sol::no_construction());
@@ -18,14 +16,24 @@ void register_component(sol::state &lua) {
     v["set_rotation"] = &actor::set_rotation;
     v["get_scale"] = &actor::get_scale;
     v["set_scale"] = &actor::set_scale;
+    v["has_component"] = [](actor &a, std::string_view str) {
+      return a.has_component(str);
+    };
     v["get_component"] = &actor::get_component;
-  }
+    v["add_component"] = [](actor &a, std::string_view str) {
+      return a.add_component(str);
+    };
+  };
   { auto v = lua.new_usertype<component>("", sol::no_construction()); }
   {
     auto v = lua.new_usertype<draw3d_component>("", sol::no_construction());
     v["set_draw_depth"] = &draw3d_component::set_draw_depth;
     v["set_texture"] = &draw3d_component::set_texture;
     v["set_vertex_name"] = &draw3d_component::set_vertex_name;
+  }
+  { auto v = lua.new_usertype<move_component>("", sol::no_construction()); }
+  {
+    auto v = lua.new_usertype<rigidbody_component>("", sol::no_construction());
   }
 }
 } // namespace sinen

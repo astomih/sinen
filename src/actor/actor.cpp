@@ -26,14 +26,13 @@ void actor::add_component(std::string_view name) {
         scene::get_component_factory().create(name.data(), *this));
   }
 }
-component &actor::get_component(std::string_view name) {
+component *actor::get_component(std::string_view name) {
   for (auto &c : m_components) {
     if (c->get_name() == std::string(name)) {
-      return *c;
+      return c.get();
     }
   }
-  static component null_component(*this);
-  return null_component;
+  return nullptr;
 }
 void actor::remove_component(actor::component_ptr comp) {
   for (auto itr = m_components.begin(); itr != m_components.end();) {

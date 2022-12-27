@@ -108,8 +108,9 @@ void scene_system::update_scene() {
   for (auto itr = m_actors.begin(); itr != m_actors.end();) {
     if ((*itr)->get_state() == actor::state::active) {
       sol::state *lua = (sol::state *)script_system::get_state();
-      lua->do_string(data_stream::open_as_string(asset_type::Script,
-                                                 (*itr)->get_script_name()));
+      auto r = lua->do_string(data_stream::open_as_string(
+          asset_type::Script, (*itr)->get_script_name()));
+
       (*lua)["update"]();
       (*itr)->update(deltaTime);
 
@@ -123,10 +124,6 @@ void scene_system::update_scene() {
 
   if (is_run_script) {
     sol::state *lua = (sol::state *)script_system::get_state();
-    lua->do_string(
-        data_stream::open_as_string(asset_type::Script,
-                                    main::get_current_scene_number() + ".lua")
-            .data());
     (*lua)["delta_time"] = deltaTime;
     (*lua)["keyboard"] = input::keyboard;
     (*lua)["mouse"] = input::mouse;

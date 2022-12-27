@@ -38,7 +38,7 @@ vk_base::vk_base(vk_renderer *vkrenderer)
     : m_imageIndex(0), m_vkrenderer(vkrenderer) {}
 
 void vk_base::initialize() {
-  initialize_instance(window::name().c_str());
+  create_instance(window::name().c_str());
   select_physical_device();
   m_graphicsQueueIndex = search_graphics_queue_index();
 #if ENABLE_VALIDATION
@@ -64,6 +64,7 @@ void vk_base::initialize() {
   mSwapchain->Prepare(
       m_physDev, m_graphicsQueueIndex, static_cast<uint32_t>(window::size().x),
       static_cast<uint32_t>(window::size().y), VK_FORMAT_B8G8R8A8_UNORM);
+  create_allocator();
   create_depth_buffer();
   create_image_view();
   create_render_pass();
@@ -72,62 +73,49 @@ void vk_base::initialize() {
   create_semaphore();
 }
 
-void vk_base::create_image_view() {
-
-  VkImageViewCreateInfo ci{};
-  ci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-  ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
-  ci.format = VK_FORMAT_D32_SFLOAT;
-  ci.components = {
-      VK_COMPONENT_SWIZZLE_R,
-      VK_COMPONENT_SWIZZLE_G,
-      VK_COMPONENT_SWIZZLE_B,
-      VK_COMPONENT_SWIZZLE_A,
-  };
-  ci.subresourceRange = {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1};
-  ci.image = m_depthBuffer;
-  vkCreateImageView(m_device, &ci, nullptr, &m_depthBufferView);
-}
-
-void vk_base::create_semaphore() {
-  VkSemaphoreCreateInfo ci{};
-  ci.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-  vkCreateSemaphore(m_device, &ci, nullptr, &m_renderCompletedSem);
-  vkCreateSemaphore(m_device, &ci, nullptr, &m_presentCompletedSem);
-}
-
 void vk_base::shutdown() {
   vkDeviceWaitIdle(m_device);
-
-  vkFreeCommandBuffers(m_device, m_commandPool, uint32_t(m_commands.size()),
-                       m_commands.data());
-  m_commands.clear();
-
-  vkDestroyRenderPass(m_device, m_renderPass, nullptr);
-  for (auto &v : m_framebuffers) {
-    vkDestroyFramebuffer(m_device, v, nullptr);
-  }
-  m_framebuffers.clear();
-
-  vmaFreeMemory(m_vkrenderer->allocator, m_depthBufferAllocation);
-  vkDestroyImage(m_device, m_depthBuffer, nullptr);
-  vkDestroyImageView(m_device, m_depthBufferView, nullptr);
-
-  for (auto &v : m_fences) {
-    vkDestroyFence(m_device, v, nullptr);
-  }
-  m_fences.clear();
-  vkDestroySemaphore(m_device, m_presentCompletedSem, nullptr);
-  vkDestroySemaphore(m_device, m_renderCompletedSem, nullptr);
-
-  vkDestroyCommandPool(m_device, m_commandPool, nullptr);
-
+  destroy_command_buffers();
+  destroy_render_pass();
+  destroy_frame_buffer();
+  destroy_image_view();
+  destroy_depth_buffer();
+  destroy_allocator();
+  destroy_semaphore();
+  destroy_command_pool();
   mSwapchain->Cleanup();
-  vkDestroyDevice(m_device, nullptr);
-  vkDestroyInstance(m_instance, nullptr);
+  destroy_device();
+  destroy_instance();
 }
 
-void vk_base::initialize_instance(const char *appName) {
+void vk_base::select_physical_device() {
+  uint32_t devCount = 0;
+  vkEnumeratePhysicalDevices(m_instance, &devCount, nullptr);
+  std::vector<VkPhysicalDevice> physDevs(devCount);
+  vkEnumeratePhysicalDevices(m_instance, &devCount, physDevs.data());
+
+  // Use first device
+  m_physDev = physDevs[0];
+  vkGetPhysicalDeviceMemoryProperties(m_physDev, &m_physMemProps);
+}
+
+uint32_t vk_base::search_graphics_queue_index() {
+  uint32_t propCount;
+  vkGetPhysicalDeviceQueueFamilyProperties(m_physDev, &propCount, nullptr);
+  std::vector<VkQueueFamilyProperties> props(propCount);
+  vkGetPhysicalDeviceQueueFamilyProperties(m_physDev, &propCount, props.data());
+
+  uint32_t graphicsQueue = ~0u;
+  for (uint32_t i = 0; i < propCount; ++i) {
+    if (props[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+      graphicsQueue = i;
+      break;
+    }
+  }
+  return graphicsQueue;
+}
+
+void vk_base::create_instance(const char *appName) {
   std::vector<const char *> extensions;
   VkApplicationInfo appInfo{};
   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -166,33 +154,6 @@ void vk_base::initialize_instance(const char *appName) {
   // Create instance
   vkCreateInstance(&ci, nullptr, &m_instance);
 }
-
-void vk_base::select_physical_device() {
-  uint32_t devCount = 0;
-  vkEnumeratePhysicalDevices(m_instance, &devCount, nullptr);
-  std::vector<VkPhysicalDevice> physDevs(devCount);
-  vkEnumeratePhysicalDevices(m_instance, &devCount, physDevs.data());
-
-  // Use first device
-  m_physDev = physDevs[0];
-  vkGetPhysicalDeviceMemoryProperties(m_physDev, &m_physMemProps);
-}
-
-uint32_t vk_base::search_graphics_queue_index() {
-  uint32_t propCount;
-  vkGetPhysicalDeviceQueueFamilyProperties(m_physDev, &propCount, nullptr);
-  std::vector<VkQueueFamilyProperties> props(propCount);
-  vkGetPhysicalDeviceQueueFamilyProperties(m_physDev, &propCount, props.data());
-
-  uint32_t graphicsQueue = ~0u;
-  for (uint32_t i = 0; i < propCount; ++i) {
-    if (props[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-      graphicsQueue = i;
-      break;
-    }
-  }
-  return graphicsQueue;
-}
 void vk_base::create_device() {
   const float defaultQueuePriority(1.0f);
   VkDeviceQueueCreateInfo devQueueCI{};
@@ -226,7 +187,28 @@ void vk_base::create_device() {
 
   vkGetDeviceQueue(m_device, m_graphicsQueueIndex, 0, &m_deviceQueue);
 }
+void vk_base::create_image_view() {
 
+  VkImageViewCreateInfo ci{};
+  ci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+  ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+  ci.format = VK_FORMAT_D32_SFLOAT;
+  ci.components = {
+      VK_COMPONENT_SWIZZLE_R,
+      VK_COMPONENT_SWIZZLE_G,
+      VK_COMPONENT_SWIZZLE_B,
+      VK_COMPONENT_SWIZZLE_A,
+  };
+  ci.subresourceRange = {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1};
+  ci.image = m_depthBuffer;
+  vkCreateImageView(m_device, &ci, nullptr, &m_depthBufferView);
+}
+void vk_base::create_semaphore() {
+  VkSemaphoreCreateInfo ci{};
+  ci.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+  vkCreateSemaphore(m_device, &ci, nullptr, &m_renderCompletedSem);
+  vkCreateSemaphore(m_device, &ci, nullptr, &m_presentCompletedSem);
+}
 void vk_base::create_command_pool() {
   VkCommandPoolCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -234,12 +216,13 @@ void vk_base::create_command_pool() {
   ci.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
   vkCreateCommandPool(m_device, &ci, nullptr, &m_commandPool);
 }
-
-void vk_base::create_depth_buffer() {
+void vk_base::create_allocator() {
   VmaAllocatorCreateInfo allocator_info = {};
   allocator_info.physicalDevice = get_vk_physical_device();
   allocator_info.device = get_vk_device();
   vmaCreateAllocator(&allocator_info, &m_vkrenderer->allocator);
+}
+void vk_base::create_depth_buffer() {
   VkImageCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
   ci.imageType = VK_IMAGE_TYPE_2D;
@@ -268,7 +251,6 @@ void vk_base::create_depth_buffer() {
   vmaBindImageMemory(m_vkrenderer->allocator, m_depthBufferAllocation,
                      m_depthBuffer);
 }
-
 void vk_base::create_render_pass() {
   VkRenderPassCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -317,7 +299,6 @@ void vk_base::create_render_pass() {
 
   vkCreateRenderPass(m_device, &ci, nullptr, &m_renderPass);
 }
-
 void vk_base::create_frame_buffer() {
   VkFramebufferCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -355,7 +336,44 @@ void vk_base::create_command_buffers() {
     vkCreateFence(m_device, &ci, nullptr, &v);
   }
 }
+void vk_base::destroy_instance() { vkDestroyInstance(m_instance, nullptr); }
+void vk_base::destroy_device() { vkDestroyDevice(m_device, nullptr); }
 
+void vk_base::destroy_command_pool() {
+  vkDestroyCommandPool(m_device, m_commandPool, nullptr);
+}
+void vk_base::destroy_allocator() {
+  vmaDestroyAllocator(m_vkrenderer->allocator);
+}
+void vk_base::destroy_image_view() {
+  vkDestroyImageView(m_device, m_depthBufferView, nullptr);
+}
+void vk_base::destroy_depth_buffer() {
+  vmaDestroyImage(m_vkrenderer->allocator, m_depthBuffer,
+                  m_depthBufferAllocation);
+  vmaFreeMemory(m_vkrenderer->allocator, m_depthBufferAllocation);
+}
+void vk_base::destroy_render_pass() {
+  vkDestroyRenderPass(m_device, m_renderPass, nullptr);
+}
+void vk_base::destroy_frame_buffer() {
+  for (auto &v : m_framebuffers) {
+    vkDestroyFramebuffer(m_device, v, nullptr);
+  }
+  m_framebuffers.clear();
+}
+void vk_base::destroy_command_buffers() {
+  for (auto &v : m_fences) {
+    vkDestroyFence(m_device, v, nullptr);
+  }
+  m_fences.clear();
+  vkFreeCommandBuffers(m_device, m_commandPool, uint32_t(m_commands.size()),
+                       m_commands.data());
+}
+void vk_base::destroy_semaphore() {
+  vkDestroySemaphore(m_device, m_presentCompletedSem, nullptr);
+  vkDestroySemaphore(m_device, m_renderCompletedSem, nullptr);
+}
 uint32_t
 vk_base::get_memory_type_index(uint32_t requestBits,
                                VkMemoryPropertyFlags requestProps) const {
@@ -380,10 +398,11 @@ void vk_base::recreate_swapchain() {
   mSwapchain->Prepare(m_physDev, m_graphicsQueueIndex,
                       static_cast<uint32_t>(size.x),
                       static_cast<uint32_t>(size.y), VK_FORMAT_B8G8R8A8_UNORM);
-  vkDestroyImage(m_device, m_depthBuffer, nullptr);
-  for (auto &v : m_framebuffers) {
-    vkDestroyFramebuffer(m_device, v, nullptr);
-  }
+  destroy_frame_buffer();
+  destroy_render_pass();
+  destroy_image_view();
+  destroy_depth_buffer();
+
   create_depth_buffer();
   create_image_view();
   create_render_pass();

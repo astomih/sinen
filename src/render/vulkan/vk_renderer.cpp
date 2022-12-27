@@ -231,14 +231,14 @@ void vk_renderer::draw2d(std::shared_ptr<class drawable> drawObject) {
   auto t = std::make_shared<vk_drawable>();
   t->drawable_obj = drawObject;
   add_texture(drawObject->binding_texture);
-  registerTexture(t, texture_type::Image2D);
+  register_vk_drawable(t, texture_type::Image2D);
 }
 
 void vk_renderer::draw3d(std::shared_ptr<class drawable> sprite) {
   auto t = std::make_shared<vk_drawable>();
   t->drawable_obj = sprite;
   add_texture(sprite->binding_texture);
-  registerTexture(t, texture_type::Image3D);
+  register_vk_drawable(t, texture_type::Image3D);
 }
 
 void vk_renderer::load_shader(const shader &shaderInfo) {
@@ -1038,51 +1038,43 @@ void vk_renderer::destroy_image_object(const handle_t &handle) {
     }
   }
 }
-VkRenderPass vk_renderer::get_render_pass(const std::string &name) {
-  if (m_base)
-    return m_base->m_renderPass;
-  return 0;
-}
-VkDevice vk_renderer::get_device() {
-  if (m_base)
-    return m_base->get_vk_device();
-  return m_base->get_vk_device();
-}
-void vk_renderer::registerTexture(std::shared_ptr<vk_drawable> texture,
-                                  texture_type type) {
+void vk_renderer::register_vk_drawable(
+    std::shared_ptr<vk_drawable> _vk_drawable, texture_type type) {
   if (texture_type::Image3D == type) {
-    m_draw_object_3d.push_back(texture);
-    texture->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
-    for (auto &v : texture->uniformBuffers) {
+    m_draw_object_3d.push_back(_vk_drawable);
+    _vk_drawable->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
+    for (auto &v : _vk_drawable->uniformBuffers) {
       VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
       auto shader_param_size =
-          texture->drawable_obj->shade.get_parameter_size();
+          _vk_drawable->drawable_obj->shade.get_parameter_size();
       v = create_buffer(sizeof(vk_shader_parameter) + shader_param_size,
                         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
     }
     layouts.push_back(m_descriptor_set_layout);
-    prepare_descriptor_set(texture);
+    prepare_descriptor_set(_vk_drawable);
   } else {
     auto iter = m_draw_object_2d.begin();
     for (; iter != m_draw_object_2d.end(); ++iter) {
-      if (texture->drawable_obj->drawOrder < (*iter)->drawable_obj->drawOrder) {
+      if (_vk_drawable->drawable_obj->drawOrder <
+          (*iter)->drawable_obj->drawOrder) {
         break;
       }
     }
 
     // Inserts element before position of iterator
-    m_draw_object_2d.insert(iter, texture);
-    texture->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
-    for (auto &v : texture->uniformBuffers) {
+    m_draw_object_2d.insert(iter, _vk_drawable);
+    _vk_drawable->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
+    for (auto &v : _vk_drawable->uniformBuffers) {
       VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-      v = create_buffer(sizeof(vk_shader_parameter) +
-                            texture->drawable_obj->shade.get_parameter_size(),
-                        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
+      v = create_buffer(
+          sizeof(vk_shader_parameter) +
+              _vk_drawable->drawable_obj->shade.get_parameter_size(),
+          VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
     }
     layouts.push_back(m_descriptor_set_layout);
-    prepare_descriptor_set(texture);
+    prepare_descriptor_set(_vk_drawable);
   }
 }
 void vk_renderer::destroy_texture(std::shared_ptr<vk_drawable> texture) {

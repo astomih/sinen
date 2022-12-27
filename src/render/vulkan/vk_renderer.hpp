@@ -73,8 +73,8 @@ public:
       uint32_t size, VkBufferUsageFlags usage,
       VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
   vk_base &get_base() { return *m_base; }
-  void registerTexture(std::shared_ptr<class vk_drawable> texture,
-                       texture_type type);
+  void register_vk_drawable(std::shared_ptr<class vk_drawable> texture,
+                            texture_type type);
   void destroy_texture(std::shared_ptr<class vk_drawable> texture);
   void add_texture(texture tex);
   void destroy_image_object(const handle_t &handle);
@@ -86,9 +86,7 @@ public:
   }
   std::vector<VkDescriptorSetLayout> &get_layouts() { return layouts; };
 
-  VkRenderPass get_render_pass(const std::string &name);
   VkDescriptorPool get_descriptor_pool() const { return m_descriptor_pool; }
-  VkDevice get_device();
   uint32_t get_memory_type_index(uint32_t requestBits,
                                  VkMemoryPropertyFlags requestProps) const;
   void destroy_buffer(vk_buffer_object &bufferObj);

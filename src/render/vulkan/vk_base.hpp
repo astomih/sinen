@@ -35,17 +35,29 @@ public:
     return static_cast<int32_t>(mSwapchain->GetImageCount());
   }
 
-  void initialize_instance(const char *appName);
   void select_physical_device();
   uint32_t search_graphics_queue_index();
+  void create_instance(const char *appName);
   void create_device();
   void create_command_pool();
+  void create_allocator();
   void create_depth_buffer();
   void create_render_pass();
   void create_frame_buffer();
   void create_image_view();
   void create_semaphore();
   void create_command_buffers();
+
+  void destroy_instance();
+  void destroy_device();
+  void destroy_command_pool();
+  void destroy_allocator();
+  void destroy_depth_buffer();
+  void destroy_render_pass();
+  void destroy_frame_buffer();
+  void destroy_image_view();
+  void destroy_semaphore();
+  void destroy_command_buffers();
 
   uint32_t get_memory_type_index(uint32_t requestBits,
                                  VkMemoryPropertyFlags requestProps) const;

@@ -53,8 +53,8 @@ void vk_renderer::render() {
   if (m_base->mSwapchain->is_need_recreate(window::size()))
     m_base->recreate_swapchain();
   uint32_t nextImageIndex = 0;
-  m_base->mSwapchain->AcquireNextImage(&nextImageIndex,
-                                       m_base->m_presentCompletedSem);
+  m_base->mSwapchain->acquire_next_image(&nextImageIndex,
+                                         m_base->m_presentCompletedSem);
   auto commandFence = m_base->m_fences[nextImageIndex];
 
   auto color = renderer::clear_color();
@@ -108,7 +108,7 @@ void vk_renderer::render() {
     // Set descriptors
     vkCmdBindDescriptorSets(
         command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
-        0, 1, &sprite.descripterSet[m_base->m_imageIndex], 0, nullptr);
+        0, 1, &sprite.descriptor_set[m_base->m_imageIndex], 0, nullptr);
     auto allocation = sprite.uniformBuffers[m_base->m_imageIndex].allocation;
 
     sprite.drawable_obj->param.proj = matrix4::identity;
@@ -155,8 +155,8 @@ void vk_renderer::render() {
   submitInfo.signalSemaphoreCount = 1;
   submitInfo.pSignalSemaphores = &m_base->m_renderCompletedSem;
   vkQueueSubmit(m_base->m_deviceQueue, 1, &submitInfo, commandFence);
-  m_base->mSwapchain->QueuePresent(m_base->m_deviceQueue, nextImageIndex,
-                                   m_base->m_renderCompletedSem);
+  m_base->mSwapchain->queue_present(m_base->m_deviceQueue, nextImageIndex,
+                                    m_base->m_renderCompletedSem);
 }
 void vk_renderer::add_vertex_array(const vertex_array &vArray,
                                    std::string_view name) {
@@ -303,12 +303,12 @@ void vk_renderer::draw_instancing_3d(VkCommandBuffer command,
                                      bool is_change_pipeline) {
   for (auto &_instancing : m_instancies_3d) {
     if (is_change_pipeline) {
-      pipeline_instancing_opaque.Bind(command);
+      m_pipelines["instancing_opaque"].Bind(command);
     }
     vkCmdBindDescriptorSets(
         command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
         0, 1,
-        &_instancing.m_vk_draw_object->descripterSet[m_base->m_imageIndex], 0,
+        &_instancing.m_vk_draw_object->descriptor_set[m_base->m_imageIndex], 0,
         nullptr);
     auto allocation =
         _instancing.m_vk_draw_object->uniformBuffers[m_base->m_imageIndex]
@@ -335,11 +335,11 @@ void vk_renderer::draw_instancing_3d(VkCommandBuffer command,
 }
 void vk_renderer::draw_instancing_2d(VkCommandBuffer command) {
   for (auto &_instancing : m_instancies_2d) {
-    pipeline_instancing_2d.Bind(command);
+    m_pipelines["instancing_2d"].Bind(command);
     vkCmdBindDescriptorSets(
         command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
         0, 1,
-        &_instancing.m_vk_draw_object->descripterSet[m_base->m_imageIndex], 0,
+        &_instancing.m_vk_draw_object->descriptor_set[m_base->m_imageIndex], 0,
         nullptr);
     auto allocation =
         _instancing.m_vk_draw_object->uniformBuffers[m_base->m_imageIndex]
@@ -373,10 +373,10 @@ void vk_renderer::prepare() {
     i = m_descriptor_set_layout;
   }
 
-  m_pipeline_layout.Initialize(m_base->get_vk_device(),
+  m_pipeline_layout.initialize(m_base->get_vk_device(),
                                &m_descriptor_set_layout,
                                m_base->mSwapchain->GetSurfaceExtent());
-  m_pipeline_layout.Prepare(m_base->get_vk_device());
+  m_pipeline_layout.prepare(m_base->get_vk_device());
   m_render_texture.prepare(window::size().x, window::size().y, false);
   m_depth_texture.prepare(window::size().x, window::size().y, true);
 
@@ -387,6 +387,16 @@ void vk_renderer::prepare() {
   pipeline_builder.render_texture_pipeline(m_render_texture.pipeline);
   // depth texture pipeline
   pipeline_builder.depth_texture_pipeline(m_depth_texture.pipeline);
+  vk_pipeline pipeline_skybox;
+  vk_pipeline pipeline_opaque;
+  vk_pipeline pipeline_alpha;
+  vk_pipeline pipeline_2d;
+  vk_pipeline pipeline_instancing_opaque;
+  vk_pipeline pipeline_instancing_alpha;
+  vk_pipeline pipeline_instancing_2d;
+  vk_pipeline pipeline_depth;
+  vk_pipeline pipeline_depth_instancing;
+
   // Opaque pipeline
   pipeline_builder.opaque(pipeline_opaque);
   // alpha pipeline
@@ -404,6 +414,15 @@ void vk_renderer::prepare() {
   pipeline_builder.depth(pipeline_depth);
   // depth instanced pipeline
   pipeline_builder.depth_instancing(pipeline_depth_instancing);
+  m_pipelines["skybox"] = pipeline_skybox;
+  m_pipelines["opaque"] = pipeline_opaque;
+  m_pipelines["alpha"] = pipeline_alpha;
+  m_pipelines["2d"] = pipeline_2d;
+  m_pipelines["instancing_opaque"] = pipeline_instancing_opaque;
+  m_pipelines["instancing_alpha"] = pipeline_instancing_alpha;
+  m_pipelines["instancing_2d"] = pipeline_instancing_2d;
+  m_pipelines["depth"] = pipeline_depth;
+  m_pipelines["depth_instancing"] = pipeline_depth_instancing;
 
   prepare_imgui();
 }
@@ -413,23 +432,24 @@ void vk_renderer::cleanup() {
   for (auto &i : m_image_object) {
     destroy_image(i.second);
   }
-  vkutil::DestroyVulkanObject<VkSampler>(device, m_sampler, &vkDestroySampler);
-  m_pipeline_layout.Cleanup(device);
-  pipeline_opaque.Cleanup(device);
-  pipeline_alpha.Cleanup(device);
-  pipeline_2d.Cleanup(device);
+  vkutil::destroy_vulkan_object<VkSampler>(device, m_sampler,
+                                           &vkDestroySampler);
+  m_pipeline_layout.cleanup(device);
+  for (auto &i : m_pipelines) {
+    i.second.Cleanup(device);
+  }
   for (auto &i : m_user_pipelines) {
     i.second.Cleanup(device);
   }
   for (auto &i : m_vertex_arrays) {
-    vkutil::DestroyVulkanObject<VkBuffer>(device, i.second.vertexBuffer.buffer,
-                                          &vkDestroyBuffer);
-    vkutil::DestroyVulkanObject<VkBuffer>(device, i.second.indexBuffer.buffer,
-                                          &vkDestroyBuffer);
+    vkutil::destroy_vulkan_object<VkBuffer>(
+        device, i.second.vertexBuffer.buffer, &vkDestroyBuffer);
+    vkutil::destroy_vulkan_object<VkBuffer>(device, i.second.indexBuffer.buffer,
+                                            &vkDestroyBuffer);
   }
-  vkutil::DestroyVulkanObject<VkDescriptorPool>(device, m_descriptor_pool,
-                                                &vkDestroyDescriptorPool);
-  vkutil::DestroyVulkanObject<VkDescriptorSetLayout>(
+  vkutil::destroy_vulkan_object<VkDescriptorPool>(device, m_descriptor_pool,
+                                                  &vkDestroyDescriptorPool);
+  vkutil::destroy_vulkan_object<VkDescriptorSetLayout>(
       device, m_descriptor_set_layout, &vkDestroyDescriptorSetLayout);
 }
 
@@ -442,9 +462,9 @@ void vk_renderer::draw_depth(VkCommandBuffer command) {
   light_view = matrix4::lookat(eye, at, vector3(0, 0, 1));
   light_projection = matrix4::ortho(width, height, 0.5, 10);
 
-  pipeline_depth.Bind(command);
+  m_pipelines["depth"].Bind(command);
   draw3d(command, false);
-  pipeline_depth_instancing.Bind(command);
+  m_pipelines["depth_instancing"].Bind(command);
   draw_instancing_3d(command, false);
 }
 
@@ -453,14 +473,13 @@ void vk_renderer::make_command(VkCommandBuffer command) {
   /* skybox
    */
   draw_skybox(command);
-  pipeline_opaque.Bind(command);
+  m_pipelines["opaque"].Bind(command);
   draw3d(command);
-  pipeline_instancing_opaque.Bind(command);
+  m_pipelines["instancing_opaque"].Bind(command);
   draw_instancing_3d(command);
   draw2d(command);
   draw_instancing_2d(command);
-  pipeline_opaque.Bind(command);
-
+  m_pipelines["opaque"].Bind(command);
   for (auto &sprite : m_draw_object_3d)
     destroy_texture(sprite);
   m_draw_object_3d.clear();
@@ -480,7 +499,7 @@ void vk_renderer::make_command(VkCommandBuffer command) {
   render_imgui(command);
 }
 void vk_renderer::draw_skybox(VkCommandBuffer command) {
-  pipeline_skybox.Bind(command);
+  m_pipelines["skybox"].Bind(command);
   auto t = std::make_shared<vk_drawable>();
   t->drawable_obj = std::make_shared<drawable>();
   t->drawable_obj->binding_texture = render_system::get_skybox_texture();
@@ -517,7 +536,7 @@ void vk_renderer::draw_skybox(VkCommandBuffer command) {
                        VK_INDEX_TYPE_UINT32);
   vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS,
                           m_pipeline_layout.GetLayout(), 0, 1,
-                          &t->descripterSet[m_base->m_imageIndex], 0, nullptr);
+                          &t->descriptor_set[m_base->m_imageIndex], 0, nullptr);
   auto allocation = t->uniformBuffers[m_base->m_imageIndex].allocation;
   write_memory(allocation, &param, sizeof(vk_shader_parameter));
   vkCmdDrawIndexed(command, va.indexCount, 1, 0, 0, 0);
@@ -530,7 +549,7 @@ void vk_renderer::draw3d(VkCommandBuffer command, bool is_change_pipeline) {
     if (is_change_pipeline) {
       if (sprite->drawable_obj->shade.vertex_shader() == "default" &&
           sprite->drawable_obj->shade.fragment_shader() == "default")
-        pipeline_opaque.Bind(command);
+        m_pipelines["opaque"].Bind(command);
       else {
         for (auto &i : m_user_pipelines) {
           if (i.first == sprite->drawable_obj->shade)
@@ -547,7 +566,7 @@ void vk_renderer::draw3d(VkCommandBuffer command, bool is_change_pipeline) {
     // Set descriptors
     vkCmdBindDescriptorSets(
         command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
-        0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
+        0, 1, &sprite->descriptor_set[m_base->m_imageIndex], 0, nullptr);
     auto allocation = sprite->uniformBuffers[m_base->m_imageIndex].allocation;
     vk_shader_parameter param;
     param.param = sprite->drawable_obj->param;
@@ -563,12 +582,11 @@ void vk_renderer::draw3d(VkCommandBuffer command, bool is_change_pipeline) {
 }
 
 void vk_renderer::draw2d(VkCommandBuffer command) {
-  pipeline_2d.Bind(command);
   VkDeviceSize offset = 0;
   for (auto &sprite : m_draw_object_2d) {
     if (sprite->drawable_obj->shade.vertex_shader() == "default" &&
         sprite->drawable_obj->shade.fragment_shader() == "default")
-      pipeline_2d.Bind(command);
+      m_pipelines["2d"].Bind(command);
     else {
       for (auto &i : m_user_pipelines) {
         if (i.first == sprite->drawable_obj->shade)
@@ -587,7 +605,7 @@ void vk_renderer::draw2d(VkCommandBuffer command) {
     // Set descriptors
     vkCmdBindDescriptorSets(
         command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
-        0, 1, &sprite->descripterSet[m_base->m_imageIndex], 0, nullptr);
+        0, 1, &sprite->descriptor_set[m_base->m_imageIndex], 0, nullptr);
     auto allocation = sprite->uniformBuffers[m_base->m_imageIndex].allocation;
     auto *ptr = sprite->drawable_obj->shade.get_parameter().get();
     write_memory(allocation, &sprite->drawable_obj->param,
@@ -614,7 +632,7 @@ void vk_renderer::render_to_display(VkCommandBuffer command) {
   // Set descriptors
   vkCmdBindDescriptorSets(
       command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
-      0, 1, &sprite.descripterSet[m_base->m_imageIndex], 0, nullptr);
+      0, 1, &sprite.descriptor_set[m_base->m_imageIndex], 0, nullptr);
   auto allocation = sprite.uniformBuffers[m_base->m_imageIndex].allocation;
 
   sprite.drawable_obj->param.proj = matrix4::identity;
@@ -712,31 +730,30 @@ void vk_renderer::render_imgui(VkCommandBuffer command) {
 
 void vk_renderer::prepare_descriptor_set_layout() {
   std::vector<VkDescriptorSetLayoutBinding> bindings;
-  VkDescriptorSetLayoutBinding bindingUBO{}, bindingTex{}, bindingInstance{},
-      bindingShadow{};
-  bindingUBO.binding = 0;
-  bindingUBO.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  bindingUBO.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-  bindingUBO.descriptorCount = 1;
-  bindings.push_back(bindingUBO);
+  VkDescriptorSetLayoutBinding ubo{}, tex{}, instance{}, shadow{};
+  ubo.binding = 0;
+  ubo.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  ubo.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+  ubo.descriptorCount = 1;
+  bindings.push_back(ubo);
 
-  bindingTex.binding = 1;
-  bindingTex.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-  bindingTex.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-  bindingTex.descriptorCount = 1;
-  bindings.push_back(bindingTex);
+  tex.binding = 1;
+  tex.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+  tex.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+  tex.descriptorCount = 1;
+  bindings.push_back(tex);
 
-  bindingInstance.binding = 2;
-  bindingInstance.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  bindingInstance.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-  bindingInstance.descriptorCount = 1;
-  bindings.push_back(bindingInstance);
+  shadow.binding = 2;
+  shadow.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+  shadow.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+  shadow.descriptorCount = 1;
+  bindings.push_back(shadow);
 
-  bindingShadow.binding = 3;
-  bindingShadow.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-  bindingShadow.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-  bindingShadow.descriptorCount = 1;
-  bindings.push_back(bindingShadow);
+  instance.binding = 3;
+  instance.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  instance.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+  instance.descriptorCount = 1;
+  bindings.push_back(instance);
 
   VkDescriptorSetLayoutCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -770,9 +787,9 @@ void vk_renderer::prepare_descriptor_set(std::shared_ptr<vk_drawable> sprite) {
   ai.descriptorPool = m_descriptor_pool;
   ai.descriptorSetCount = uint32_t(m_base->mSwapchain->GetImageCount());
   ai.pSetLayouts = layouts.data();
-  sprite->descripterSet.resize(m_base->mSwapchain->GetImageCount());
+  sprite->descriptor_set.resize(m_base->mSwapchain->GetImageCount());
   vkAllocateDescriptorSets(m_base->get_vk_device(), &ai,
-                           sprite->descripterSet.data());
+                           sprite->descriptor_set.data());
   // Write to descriptor set.
   for (int i = 0; i < m_base->mSwapchain->GetImageCount(); i++) {
     VkDescriptorBufferInfo descUBO{};
@@ -786,7 +803,7 @@ void vk_renderer::prepare_descriptor_set(std::shared_ptr<vk_drawable> sprite) {
         m_image_object[sprite->drawable_obj->binding_texture.handle].view;
     descImage[0].sampler = m_sampler;
     descImage[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    descImage[1].imageView = m_depth_texture.depth_target.view;
+    descImage[1].imageView = m_depth_texture.color_target.view;
     descImage[1].sampler = m_depth_texture.sampler;
     descImage[1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -796,7 +813,7 @@ void vk_renderer::prepare_descriptor_set(std::shared_ptr<vk_drawable> sprite) {
     ubo.descriptorCount = 1;
     ubo.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     ubo.pBufferInfo = &descUBO;
-    ubo.dstSet = sprite->descripterSet[i];
+    ubo.dstSet = sprite->descriptor_set[i];
 
     VkWriteDescriptorSet tex{};
     tex.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -804,14 +821,14 @@ void vk_renderer::prepare_descriptor_set(std::shared_ptr<vk_drawable> sprite) {
     tex.descriptorCount = 1;
     tex.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     tex.pImageInfo = &descImage[0];
-    tex.dstSet = sprite->descripterSet[i];
+    tex.dstSet = sprite->descriptor_set[i];
     VkWriteDescriptorSet shadowTex{};
     shadowTex.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    shadowTex.dstBinding = 3;
+    shadowTex.dstBinding = 2;
     shadowTex.descriptorCount = 1;
     shadowTex.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     shadowTex.pImageInfo = &descImage[1];
-    shadowTex.dstSet = sprite->descripterSet[i];
+    shadowTex.dstSet = sprite->descriptor_set[i];
 
     std::vector<VkWriteDescriptorSet> writeSets = {ubo, tex, shadowTex};
     vkUpdateDescriptorSets(m_base->get_vk_device(), uint32_t(writeSets.size()),
@@ -842,7 +859,7 @@ VkSampler vk_renderer::create_sampler() {
   ci.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
   ci.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
   ci.maxAnisotropy = 1.0f;
-  ci.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
+  ci.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
   vkCreateSampler(m_base->get_vk_device(), &ci, nullptr, &sampler);
   return sampler;
 }
@@ -898,23 +915,6 @@ void vk_renderer::set_image_memory_barrier(VkCommandBuffer command,
                        nullptr,
                        1, // imageMemoryBarrierCount
                        &imb);
-}
-
-uint32_t
-vk_renderer::get_memory_type_index(uint32_t requestBits,
-                                   VkMemoryPropertyFlags requestProps) const {
-  uint32_t result = ~0u;
-  for (uint32_t i = 0; i < m_physical_mem_props.memoryTypeCount; ++i) {
-    if (requestBits & 1) {
-      const auto &types = m_physical_mem_props.memoryTypes[i];
-      if ((types.propertyFlags & requestProps) == requestProps) {
-        result = i;
-        break;
-      }
-    }
-    requestBits >>= 1;
-  }
-  return result;
 }
 
 void vk_renderer::destroy_buffer(vk_buffer_object &bufferObj) {
@@ -1080,8 +1080,8 @@ void vk_renderer::register_vk_drawable(
 void vk_renderer::destroy_texture(std::shared_ptr<vk_drawable> texture) {
   auto device = m_base->get_vk_device();
   vkFreeDescriptorSets(device, m_descriptor_pool,
-                       static_cast<uint32_t>(texture->descripterSet.size()),
-                       texture->descripterSet.data());
+                       static_cast<uint32_t>(texture->descriptor_set.size()),
+                       texture->descriptor_set.data());
   for (auto &i : texture->uniformBuffers) {
     destroy_buffer(i);
   }

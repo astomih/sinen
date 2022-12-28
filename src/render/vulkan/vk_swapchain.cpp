@@ -13,21 +13,17 @@ vk_swapchain::vk_swapchain(VkInstance instance, VkDevice device,
 
 vk_swapchain::~vk_swapchain() {}
 
-void vk_swapchain::Prepare(VkPhysicalDevice physDev,
+void vk_swapchain::prepare(VkPhysicalDevice physDev,
                            uint32_t graphicsQueueIndex, uint32_t width,
                            uint32_t height, VkFormat desireFormat) {
   VkResult result;
   result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDev, m_surface,
                                                      &m_surfaceCaps);
-  ThrowIfFailed(result, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR Failed.");
-
   uint32_t count = 0;
   vkGetPhysicalDeviceSurfaceFormatsKHR(physDev, m_surface, &count, nullptr);
   m_surfaceFormats.resize(count);
   result = vkGetPhysicalDeviceSurfaceFormatsKHR(physDev, m_surface, &count,
                                                 m_surfaceFormats.data());
-  ThrowIfFailed(result, "vkGetPhysicalDeviceSurfaceFormatsKHR Failed.");
-
   m_selectFormat = VkSurfaceFormatKHR{VK_FORMAT_B8G8R8A8_UNORM,
                                       VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
   for (const auto &f : m_surfaceFormats) {
@@ -39,9 +35,8 @@ void vk_swapchain::Prepare(VkPhysicalDevice physDev,
   VkBool32 isSupport;
   result = vkGetPhysicalDeviceSurfaceSupportKHR(physDev, graphicsQueueIndex,
                                                 m_surface, &isSupport);
-  ThrowIfFailed(result, "vkGetPhysicalDeviceSurfaceSupportKHR Failed.");
   if (isSupport == VK_FALSE) {
-    throw vkutil::VulkanException(
+    throw vkutil::vulkan_exception(
         "vkGetPhysicalDeviceSurfaceSupportKHR: isSupport = false.");
   }
 
@@ -76,7 +71,6 @@ void vk_swapchain::Prepare(VkPhysicalDevice physDev,
       oldSwapchain};
 
   result = vkCreateSwapchainKHR(m_device, &swapchainCI, nullptr, &m_swapchain);
-  ThrowIfFailed(result, "vkCreateSwapchainKHR Failed.");
 
   if (oldSwapchain != VK_NULL_HANDLE) {
     for (auto &view : m_imageViews) {
@@ -84,7 +78,7 @@ void vk_swapchain::Prepare(VkPhysicalDevice physDev,
     }
     vkDestroySwapchainKHR(m_device, oldSwapchain, nullptr);
     m_imageViews.clear();
-    // m_images.clear();
+    m_images.clear();
   }
 
   vkGetSwapchainImagesKHR(m_device, m_swapchain, &imageCount, nullptr);
@@ -98,7 +92,7 @@ void vk_swapchain::Prepare(VkPhysicalDevice physDev,
                                  m_images[i],
                                  VK_IMAGE_VIEW_TYPE_2D,
                                  m_selectFormat.format,
-                                 vkutil::DefaultComponentMapping(),
+                                 vkutil::default_component_mapping(),
                                  {// VkImageSubresourceRange
                                   VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
     result = vkCreateImageView(m_device, &viewCI, nullptr, &m_imageViews[i]);
@@ -106,7 +100,7 @@ void vk_swapchain::Prepare(VkPhysicalDevice physDev,
   }
 }
 
-void vk_swapchain::Cleanup() {
+void vk_swapchain::cleanup() {
   if (m_device != VK_NULL_HANDLE) {
     for (auto view : m_imageViews) {
       vkDestroyImageView(m_device, view, nullptr);
@@ -126,16 +120,16 @@ void vk_swapchain::Cleanup() {
   m_imageViews.clear();
 }
 
-VkResult vk_swapchain::AcquireNextImage(uint32_t *pImageIndex,
-                                        VkSemaphore semaphore,
-                                        uint64_t timeout) {
+VkResult vk_swapchain::acquire_next_image(uint32_t *pImageIndex,
+                                          VkSemaphore semaphore,
+                                          uint64_t timeout) {
   auto result = vkAcquireNextImageKHR(m_device, m_swapchain, timeout, semaphore,
                                       VK_NULL_HANDLE, pImageIndex);
   return result;
 }
 
-void vk_swapchain::QueuePresent(VkQueue queue, uint32_t imageIndex,
-                                VkSemaphore waitRenderComplete) {
+void vk_swapchain::queue_present(VkQueue queue, uint32_t imageIndex,
+                                 VkSemaphore waitRenderComplete) {
   VkPresentInfoKHR presentInfo{};
   presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
   presentInfo.swapchainCount = 1;

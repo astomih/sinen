@@ -6,7 +6,7 @@
 #include "vk_util.hpp"
 #include "vulkan/vulkan_core.h"
 namespace sinen {
-void vk_pipeline_layout::Initialize(
+void vk_pipeline_layout::initialize(
     VkDevice device, const VkDescriptorSetLayout *descriptorLayout,
     const VkExtent2D &extent) {
   // Setting vertex inputs
@@ -125,13 +125,13 @@ void vk_pipeline_layout::Initialize(
     pipelineLayoutCI.pSetLayouts = descriptorLayout;
 }
 
-void vk_pipeline_layout::Prepare(VkDevice device) {
+void vk_pipeline_layout::prepare(VkDevice device) {
   vkCreatePipelineLayout(device, &pipelineLayoutCI, NULL, &layout);
 }
 
-void vk_pipeline_layout::Cleanup(VkDevice device) {
-  vkutil::DestroyVulkanObject<VkPipelineLayout>(device, layout,
-                                                &vkDestroyPipelineLayout);
+void vk_pipeline_layout::cleanup(VkDevice device) {
+  vkutil::destroy_vulkan_object<VkPipelineLayout>(device, layout,
+                                                  &vkDestroyPipelineLayout);
 }
 } // namespace sinen
 #endif

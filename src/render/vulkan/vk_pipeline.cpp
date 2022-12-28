@@ -62,7 +62,8 @@ void vk_pipeline::Bind(VkCommandBuffer command) {
 }
 
 void vk_pipeline::Cleanup(VkDevice device) {
-  vkutil::DestroyVulkanObject<VkPipeline>(device, pipeline, &vkDestroyPipeline);
+  vkutil::destroy_vulkan_object<VkPipeline>(device, pipeline,
+                                            &vkDestroyPipeline);
 }
 
 void vk_pipeline::set_depth_test(VkBool32 isEnable) {

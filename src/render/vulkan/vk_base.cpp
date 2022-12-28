@@ -61,7 +61,7 @@ void vk_base::initialize() {
   SDL_Vulkan_CreateSurface((SDL_Window *)window::get_sdl_window(), m_instance,
                            &surface);
   mSwapchain = std::make_unique<vk_swapchain>(m_instance, m_device, surface);
-  mSwapchain->Prepare(
+  mSwapchain->prepare(
       m_physDev, m_graphicsQueueIndex, static_cast<uint32_t>(window::size().x),
       static_cast<uint32_t>(window::size().y), VK_FORMAT_B8G8R8A8_UNORM);
   create_allocator();
@@ -83,7 +83,7 @@ void vk_base::shutdown() {
   destroy_allocator();
   destroy_semaphore();
   destroy_command_pool();
-  mSwapchain->Cleanup();
+  mSwapchain->cleanup();
   destroy_device();
   destroy_instance();
 }
@@ -395,7 +395,7 @@ void vk_base::recreate_swapchain() {
   vkDeviceWaitIdle(m_device);
 
   auto size = window::size();
-  mSwapchain->Prepare(m_physDev, m_graphicsQueueIndex,
+  mSwapchain->prepare(m_physDev, m_graphicsQueueIndex,
                       static_cast<uint32_t>(size.x),
                       static_cast<uint32_t>(size.y), VK_FORMAT_B8G8R8A8_UNORM);
   destroy_frame_buffer();

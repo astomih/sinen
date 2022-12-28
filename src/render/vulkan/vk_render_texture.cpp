@@ -176,10 +176,10 @@ void vk_render_texture::prepare_descriptor_set() {
   ai.descriptorSetCount =
       uint32_t(m_vkrenderer.get_base().mSwapchain->GetImageCount());
   ai.pSetLayouts = layouts.data();
-  drawer.descripterSet.resize(
+  drawer.descriptor_set.resize(
       m_vkrenderer.get_base().mSwapchain->GetImageCount());
   vkAllocateDescriptorSets(m_vkrenderer.get_base().get_vk_device(), &ai,
-                           drawer.descripterSet.data());
+                           drawer.descriptor_set.data());
   // Write to descriptor set.
   for (int i = 0; i < m_vkrenderer.get_base().mSwapchain->GetImageCount();
        i++) {
@@ -199,7 +199,7 @@ void vk_render_texture::prepare_descriptor_set() {
     ubo.descriptorCount = 1;
     ubo.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     ubo.pBufferInfo = &descUBO;
-    ubo.dstSet = drawer.descripterSet[i];
+    ubo.dstSet = drawer.descriptor_set[i];
 
     VkWriteDescriptorSet tex{};
     tex.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -210,7 +210,7 @@ void vk_render_texture::prepare_descriptor_set() {
       tex.pImageInfo = nullptr;
     } else
       tex.pImageInfo = &descImage;
-    tex.dstSet = drawer.descripterSet[i];
+    tex.dstSet = drawer.descriptor_set[i];
 
     std::vector<VkWriteDescriptorSet> writeSets;
     writeSets.push_back(ubo);

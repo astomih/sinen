@@ -12,6 +12,16 @@
     {
       "type": "lldb",
       "request": "launch",
+      "name": "GameOnEditor",
+      "program": "${workspaceFolder}/debug/game/game.exe",
+      "args": [
+        "scene01.json"
+      ],
+      "cwd": "${workspaceFolder}/editor"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
       "name": "Editor",
       "program": "${workspaceFolder}/debug/editor/editor.exe",
       "args": [],

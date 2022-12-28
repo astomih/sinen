@@ -10,11 +10,11 @@ namespace sinen {
 class vk_pipeline_layout {
 public:
   vk_pipeline_layout() = default;
-  void Initialize(VkDevice device,
+  void initialize(VkDevice device,
                   const VkDescriptorSetLayout *descriptorLayout,
                   const VkExtent2D &extent);
-  void Prepare(VkDevice device);
-  void Cleanup(VkDevice device);
+  void prepare(VkDevice device);
+  void cleanup(VkDevice device);
   const VkPipelineInputAssemblyStateCreateInfo *GetInputAssemblyCI() {
     return &inputAssemblyCI;
   }

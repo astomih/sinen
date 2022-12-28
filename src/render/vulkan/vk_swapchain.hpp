@@ -12,14 +12,14 @@ public:
   vk_swapchain(VkInstance instance, VkDevice device, VkSurfaceKHR surface);
   ~vk_swapchain();
 
-  void Prepare(VkPhysicalDevice physDev, uint32_t graphicsQueueIndex,
+  void prepare(VkPhysicalDevice physDev, uint32_t graphicsQueueIndex,
                uint32_t width, uint32_t height, VkFormat desireFormat);
-  void Cleanup();
+  void cleanup();
 
-  VkResult AcquireNextImage(uint32_t *pImageIndex, VkSemaphore semaphore,
-                            uint64_t timeout = UINT64_MAX);
-  void QueuePresent(VkQueue queue, uint32_t imageIndex,
-                    VkSemaphore waitRenderComplete);
+  VkResult acquire_next_image(uint32_t *pImageIndex, VkSemaphore semaphore,
+                              uint64_t timeout = UINT64_MAX);
+  void queue_present(VkQueue queue, uint32_t imageIndex,
+                     VkSemaphore waitRenderComplete);
 
   VkSurfaceFormatKHR GetSurfaceFormat() const { return m_selectFormat; }
 
@@ -51,5 +51,5 @@ private:
   std::vector<VkImageView> m_imageViews;
   bool isClean = false;
 };
-} // namespace nen
+} // namespace sinen
 #endif

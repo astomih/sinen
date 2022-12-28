@@ -93,7 +93,6 @@ public:
 
   std::vector<VkCommandBuffer> m_commands;
   uint32_t m_imageIndex;
-  std::shared_ptr<window> m_window;
   vk_renderer *m_vkrenderer;
 };
 } // namespace sinen

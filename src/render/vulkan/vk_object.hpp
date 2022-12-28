@@ -17,10 +17,13 @@ public:
 };
 class vk_drawable {
 public:
-  std::vector<VkDescriptorSet> descripterSet;
+  std::vector<VkDescriptorSet> descriptor_set;
   std::vector<vk_buffer_object> uniformBuffers;
   bool isInstance = false;
   std::shared_ptr<drawable> drawable_obj;
+  drawable::parameter get_parameter() { return drawable_obj->param; }
+  shader get_shader() { return drawable_obj->shade; }
+  texture get_texture() { return drawable_obj->binding_texture; }
 };
 } // namespace sinen
 #endif // !defined(EMSCRIPTEN) && !defined(MOBILE)

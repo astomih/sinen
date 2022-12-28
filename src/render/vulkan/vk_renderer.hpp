@@ -87,8 +87,6 @@ public:
   std::vector<VkDescriptorSetLayout> &get_layouts() { return layouts; };
 
   VkDescriptorPool get_descriptor_pool() const { return m_descriptor_pool; }
-  uint32_t get_memory_type_index(uint32_t requestBits,
-                                 VkMemoryPropertyFlags requestProps) const;
   void destroy_buffer(vk_buffer_object &bufferObj);
   void destroy_image(vk_image_object &imageObj);
   void write_memory(VmaAllocation, const void *data, std::size_t size,
@@ -127,15 +125,7 @@ private:
   VkSampler m_sampler;
   VkPhysicalDeviceMemoryProperties m_physical_mem_props;
   vk_pipeline_layout m_pipeline_layout;
-  vk_pipeline pipeline_skybox;
-  vk_pipeline pipeline_opaque;
-  vk_pipeline pipeline_alpha;
-  vk_pipeline pipeline_2d;
-  vk_pipeline pipeline_instancing_opaque;
-  vk_pipeline pipeline_instancing_alpha;
-  vk_pipeline pipeline_instancing_2d;
-  vk_pipeline pipeline_depth;
-  vk_pipeline pipeline_depth_instancing;
+  std::unordered_map<std::string, vk_pipeline> m_pipelines;
   std::vector<std::pair<shader, vk_pipeline>> m_user_pipelines;
   std::vector<std::shared_ptr<vk_drawable>> m_draw_object_3d;
   std::vector<std::shared_ptr<vk_drawable>> m_draw_object_2d;

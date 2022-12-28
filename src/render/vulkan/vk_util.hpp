@@ -13,13 +13,13 @@
 #define TO_STRING(x) STRINGFY(x)
 #define FILE_PREFIX __FILE__ "(" TO_STRING(__LINE__) "): "
 #define ThrowIfFailed(code, msg)                                               \
-  vkutil::CheckResultCodeVk(code, FILE_PREFIX msg)
+  vkutil::vk_check_result_code(code, FILE_PREFIX msg)
 
 namespace sinen {
 class vkutil {
 public:
   template <class U>
-  static void DestroyVulkanObject(
+  static void destroy_vulkan_object(
       const VkDevice &device, U &object,
       std::function<void(VkDevice, U, VkAllocationCallbacks *)> function) {
     if (object != VK_NULL_HANDLE) {
@@ -28,33 +28,20 @@ public:
     }
   }
 
-  class VulkanException : public std::runtime_error {
+  class vulkan_exception : public std::runtime_error {
   public:
-    VulkanException(const std::string &msg) : std::runtime_error(msg.c_str()) {}
+    vulkan_exception(const std::string &msg)
+        : std::runtime_error(msg.c_str()) {}
   };
 
-  static inline void CheckResultCodeVk(VkResult code,
-                                       const std::string &errorMsg) {
+  static inline void vk_check_result_code(VkResult code,
+                                          const std::string &errorMsg) {
     if (code != VK_SUCCESS) {
-      throw VulkanException(errorMsg);
+      throw vulkan_exception(errorMsg);
     }
   }
 
-  static inline VkAttachmentDescription GetAttachmentDescription(
-      VkFormat format, VkImageLayout before, VkImageLayout after,
-      VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT) {
-    return VkAttachmentDescription{0,
-                                   format,
-                                   samples,
-                                   VK_ATTACHMENT_LOAD_OP_CLEAR,
-                                   VK_ATTACHMENT_STORE_OP_STORE,
-                                   VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                                   VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                                   before,
-                                   after};
-  }
-
-  static inline VkComponentMapping DefaultComponentMapping() {
+  static inline VkComponentMapping default_component_mapping() {
     return VkComponentMapping{VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G,
                               VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A};
   }

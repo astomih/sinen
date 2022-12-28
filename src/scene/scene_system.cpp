@@ -108,10 +108,12 @@ void scene_system::update_scene() {
   for (auto itr = m_actors.begin(); itr != m_actors.end();) {
     if ((*itr)->get_state() == actor::state::active) {
       sol::state *lua = (sol::state *)script_system::get_state();
-      auto r = lua->do_string(data_stream::open_as_string(
-          asset_type::Script, (*itr)->get_script_name()));
-
-      (*lua)["update"]();
+      auto r = lua->require_script(
+                      (*itr)->get_script_name(),
+                      data_stream::open_as_string(asset_type::Script,
+                                                  (*itr)->get_script_name()))
+                   .as<sol::table>();
+      r["update"]();
       (*itr)->update(deltaTime);
 
       itr++;

@@ -114,8 +114,7 @@ void vk_pipeline_builder::instancing_alpha_2d(vk_pipeline &pipeline) {
 }
 void vk_pipeline_builder::depth(vk_pipeline &pipeline) {
   std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
-      vk_shader::load(device, "depth_instanced.vert.spv",
-                      VK_SHADER_STAGE_VERTEX_BIT),
+      vk_shader::load(device, "depth.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
       vk_shader::load(device, "depth.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)};
   pipeline.initialize(pipeline_layout, depth_texture.render_pass, shaderStages);
   pipeline.color_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,

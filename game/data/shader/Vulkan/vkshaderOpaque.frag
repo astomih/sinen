@@ -23,7 +23,7 @@ float simple_shadow(vec3 proj_pos) {
   float shadow_distance = max((texture(shadowMap, proj_pos.xy).r), 0.0);
   float distance = proj_pos.z - 0.005;
   if (shadow_distance < distance)
-    return 0.5;
+    return 1.0;
   return 1.0;
 }
 
@@ -38,7 +38,7 @@ void main() {
   // Specular power for this surface
   float uSpecPower = 100;
   // Ambient light level
-  vec3 uAmbientLight = vec3(0.2);
+  vec3 uAmbientLight = vec3(0.5);
   // Surface normal
   vec3 N = normalize(fragNormal);
   // Vector from surface to light

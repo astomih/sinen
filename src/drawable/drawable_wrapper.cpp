@@ -6,18 +6,25 @@
 
 namespace sinen {
 draw2d::draw2d()
-    : position(vector2(0.f, 0.f)), rotation(0.0f), scale(vector2(1.f, 1.f)) {}
+    : position(vector2(0.f, 0.f)), rotation(0.0f), scale(vector2(1.f, 1.f)) {
+  obj = std::make_shared<drawable>();
+}
 draw2d::draw2d(texture texture_handle)
     : position(vector2(0.f, 0.f)), rotation(0.0f), scale(vector2(1.f, 1.f)),
-      texture_handle(texture_handle) {}
+      texture_handle(texture_handle) {
+  obj = std::make_shared<drawable>();
+}
 draw3d::draw3d()
     : position(vector3(0.f, 0.f, 0.f)), rotation(vector3(0.f, 0.f, 0.f)),
-      scale(vector3(1.f, 1.f, 1.f)) {}
+      scale(vector3(1.f, 1.f, 1.f)) {
+  obj = std::make_shared<drawable>();
+}
 draw3d::draw3d(texture texture_handle)
     : position(vector3(0.f, 0.f, 0.f)), rotation(vector3(0.f, 0.f, 0.f)),
-      scale(vector3(1.f, 1.f, 1.f)), texture_handle(texture_handle) {}
+      scale(vector3(1.f, 1.f, 1.f)), texture_handle(texture_handle) {
+  obj = std::make_shared<drawable>();
+}
 void draw2d::draw() {
-  auto obj = std::make_shared<drawable>();
   matrix4 t = matrix4::identity;
   t.mat[3][0] = position.x;
   t.mat[3][1] = position.y;
@@ -40,7 +47,6 @@ void draw2d::draw() {
   *this->texture_handle.is_need_update = false;
 }
 void draw3d::draw() {
-  auto obj = std::make_shared<drawable>();
   obj->binding_texture = this->texture_handle;
   matrix4 t = matrix4::create_translation(position);
   matrix4 r = matrix4::create_from_quaternion(quaternion::from_euler(rotation));

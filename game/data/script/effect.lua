@@ -75,7 +75,10 @@ local function effect()
                 self.drawer:draw()
             end
         end,
-        play = function(self) self.is_playing = true end
+        play = function(self)
+            self.is_playing = true
+            self.is_stop = false
+        end
 
     }
     return object

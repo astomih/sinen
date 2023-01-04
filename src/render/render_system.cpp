@@ -21,6 +21,7 @@ texture render_system::m_skybox_texture;
 std::vector<std::shared_ptr<drawable>> render_system::m_drawable_2d;
 std::vector<std::shared_ptr<drawable>> render_system::m_drawable_3d;
 std::vector<std::shared_ptr<instancing>> render_system::m_instancing;
+pool_allocator<drawable, 2048> render_system::m_drawable_pool;
 graphics_api render_system::get_graphics_api() { return RendererAPI; }
 void render_system::unload_data() {}
 void render_system::initialize(graphics_api api) {

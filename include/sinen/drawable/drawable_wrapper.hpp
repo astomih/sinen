@@ -34,6 +34,7 @@ public:
   vector2 scale;
   texture texture_handle;
   std::string vertex_name = "SPRITE";
+  std::shared_ptr<drawable> obj;
 };
 /**
  * @brief 3D draw object class
@@ -63,6 +64,7 @@ public:
   texture texture_handle;
   bool is_draw_depth = true;
   std::string vertex_name = "SPRITE";
+  std::shared_ptr<drawable> obj;
 };
 } // namespace sinen
 #endif // !SINEN_DRAW_OBEJCT_WRAPPER_HPP

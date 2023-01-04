@@ -24,8 +24,8 @@ local stair = {}
 local tree = model()
 local music = music()
 local iseki_wall = texture()
-local bright = 0.6
-local dark = 0.5
+local bright = 1.0
+local dark = 1.0
 local tile = texture()
 local texture_brown_color = {}
 
@@ -74,7 +74,7 @@ key_drawer.vertex_name = "key"
 local key_hit = false
 
 function setup()
-    score_font:load("SoukouMincho-Font/SoukouMincho.ttf", 64)
+    score_font:load("x16y32pxGridGazer.ttf", 64)
     menu_object:setup()
     music:load("Stage1.ogg")
     music:play()
@@ -82,8 +82,6 @@ function setup()
     texture_brown_color = texture()
     tex:fill_color(color(1, 1, 1, 1))
     texture_brown_color:fill_color(color(0.843, 0.596, 0.043, 1))
-    -- generator = dungeon_generator()
-    -- generator:generate(map, map_size_x, map_size_y)
     map:fill(0)
     dts.dungeon_generator(map)
 
@@ -151,26 +149,8 @@ function setup()
 end
 
 local function camera_update()
-    local offset = 7
-    if fps_mode then
-        -- camera.position = vector3(player.drawer.position.x,
-        --     player.drawer.position.y + 0.5,
-        --     player.drawer.position.z + 2)
-        -- camera.target = vector3(player.drawer.position.x +
-        --     -math.sin(
-        --         player.drawer.rotation.z *
-        --         (math.pi / 180)) * 90,
-        --     player.drawer.position.y +
-        --     math.cos(
-        --         player.drawer.rotation.z *
-        --         (math.pi / 180)) * 90,
-        --     player.drawer.position.z)
-    else
-
-        scene.main_camera():lookat(vector3(player.drawer.position.x, player.drawer.position.y - 0.5,
-            player.drawer.position.z + 15), player.drawer.position, vector3(0, 0, 1))
-
-    end
+    scene.main_camera():lookat(vector3(player.drawer.position.x, player.drawer.position.y - 0.5,
+        player.drawer.position.z + 15), player.drawer.position, vector3(0, 0, 1))
 end
 
 local function draw()
@@ -200,11 +180,11 @@ function update()
         return
     end
     key_drawer.rotation.y = key_drawer.rotation.y + delta_time * 100
-    score_font:render_text(score_texture, "Score: " .. score,
-        color(1, 0.3, 0.3, 1))
+    score_font:render_text(score_texture, "SCORE: " .. score,
+        color(1, 1, 1, 1))
     score_drawer.scale = score_texture:size()
     score_drawer.position.x = -300
-    score_drawer.position.y = -300
+    score_drawer.position.y = 300
     for i, v in ipairs(player.bullets) do
         for j, w in ipairs(enemies) do
             if collision.aabb_aabb(v.aabb, w.aabb) then

@@ -1,6 +1,18 @@
 {
   "Lua.diagnostics.globals": [
     "keyboard",
-    "cconvert_draw3d"
+    "cconvert_draw3d",
+    "vector2",
+    "texture",
+    "draw2d",
+    "change_scene",
+    "keyLSHIFT",
+    "buttonPRESSED",
+    "keyE",
+    "delta_time",
+    "keySPACE",
+    "mouseLEFT",
+    "mouse",
+    "vector3"
   ]
 }

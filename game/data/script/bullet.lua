@@ -12,7 +12,6 @@ local function bullet(map_draw3ds)
         life_time = 0.5,
         current_time = 0,
         aabb = {},
-        efk = {},
         texture = {},
         setup = function(self, owner)
             self.aabb = aabb()
@@ -25,11 +24,8 @@ local function bullet(map_draw3ds)
             self.drawer.rotation = owner.rotation
             self.drawer.scale = vector3(0.2, 0.2, 0.2)
             sound:play()
-            self.efk = effect()
-            self.efk:setup()
         end,
         update = function(self)
-            self.efk:update()
             self.aabb.max = self.drawer.position:add(
                 self.drawer.scale:mul(m.aabb.max))
             self.aabb.min = self.drawer.position:add(

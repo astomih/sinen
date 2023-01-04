@@ -18,18 +18,22 @@ local player = {
     bullets = {},
     hp = {},
     hp_drawer = {},
-    hp_drawer2 = {},
     hp_font = {},
     hp_font_texture = {},
-    hp_font_texture2 = {},
     aabb = {},
     bullet_time = {},
     bullet_timer = {},
+    efk = {},
     efks = {},
     tex_scope = {},
     drawer_scope = {},
     drawer_scope_big = {},
     is_shot = true,
+    boost = 1.0,
+    boost_time = 0.3,
+    boost_timer = 0.0,
+    boost_mag = 5,
+    is_boost = false,
     setup = function(self, map, map_size_x, map_size_y)
         self.model = model()
         self.model:load("triangle.sim", "player")
@@ -39,22 +43,18 @@ local player = {
         self.bullet_time = 0.1
         self.bullet_timer = 0.0
         self.hp = 100
+        self.hp_font = font()
+        self.hp_font:load("x16y32pxGridGazer.ttf", 64)
         self.hp_font_texture = texture()
-        self.hp_font_texture2 = texture()
         self.hp_drawer = draw2d(self.hp_font_texture)
-        self.hp_drawer2 = draw2d(self.hp_font_texture2)
-        self.hp_font_texture2:fill_color(color(0.2, 0.2, 0.2, 0.2))
         self.render_text(self)
         r1 = 0
         r2 = 0
         while decide_pos(map, map_size_x, map_size_y) == true do end
         self.drawer.position = vector3(r1 * 2, r2 * 2, 0)
-        self.drawer.scale = vector3(0.7, 0.7, 0.7)
+        self.drawer.scale = vector3(0.06, 0.06, 0.06)
         self.hp_drawer.position.x = 0
         self.hp_drawer.position.y = 300
-        self.hp_drawer2.position.x = 0
-        self.hp_drawer2.position.y = 300
-        self.hp_drawer2.scale = vector2(self.hp * 10.0, 50)
         self.tex_scope = texture()
         self.tex_scope:load("scope.png")
         local big_scope = texture()
@@ -63,11 +63,29 @@ local player = {
         self.drawer_scope_big = draw2d(big_scope)
         self.drawer_scope.scale = self.tex_scope:size()
         self.drawer_scope_big.scale = vector2(big_scope:size().x * 2, big_scope:size().y * 2)
+        self.efk = effect()
+        self.efk.start_lifetime = 0.3
+        self.efk:setup()
+        local p = self.drawer.position:copy()
+        for j = 1, self.efk.max_particles do
+            self.efk.worlds[j].position = p
+        end
+        self.efk:play()
+
 
     end,
     horizontal = math.pi,
     vertical = 0.0,
     update = function(self, map, map_draw3ds, map_size_x, map_size_y)
+        self.efk:update()
+        local p = self.drawer.position:copy()
+        if self.efk.is_stop then
+            self.efk:setup()
+            for j = 1, self.efk.max_particles do
+                self.efk.worlds[j].position = self.drawer.position:copy()
+            end
+            self.efk:play()
+        end
         if keyboard:key_state(keyV) == buttonPRESSED then
             self.drawer.rotation.z = self.drawer.rotation.z + 180
         end
@@ -91,12 +109,27 @@ local player = {
         end
         self.bullet_timer = self.bullet_timer + delta_time
         if self.bullet_timer >
-            self.bullet_time and (keyboard:is_key_down(keySPACE) or mouse:is_button_down(mouseLEFT)) then
+            self.bullet_time and (mouse:is_button_down(mouseLEFT)) then
             local b = bullet(map_draw3ds)
             b:setup(self.drawer)
             b.drawer.rotation.z = b.drawer.rotation.z + 90
             table.insert(self.bullets, b)
             self.bullet_timer = 0.0
+        end
+        if self.is_boost then
+            if self.boost_timer >= self.boost_time then
+                self.boost_timer = 0.0
+                self.boost = self.boost - self.boost_mag
+                self.is_boost = false
+            else
+                self.boost_timer = self.boost_timer + delta_time
+            end
+        else
+            if keyboard:key_state(keySPACE) == buttonPRESSED then
+                self.boost = self.boost + self.boost_mag
+                self.is_boost = true
+                self.boost_timer = 0.0
+            end
         end
         for i, v in ipairs(self.bullets) do
             v:update()
@@ -122,8 +155,7 @@ local player = {
             before_pos = self.drawer.position:copy()
             self.drawer.position = self.drawer.position:add(vector3(0,
                 input_vector.y *
-                scale *
-                speed *
+                speed * self.boost *
                 delta_time,
                 0))
             if is_collision(self, map, map_draw3ds, map_size_x, map_size_y) then
@@ -133,8 +165,7 @@ local player = {
         if input_vector.x ~= 0 then
             self.drawer.position = self.drawer.position:add(vector3(
                 input_vector.x *
-                scale *
-                speed *
+                speed * self.boost *
                 delta_time,
                 0, 0))
             if is_collision(self, map, map_draw3ds, map_size_x, map_size_y) then
@@ -143,8 +174,7 @@ local player = {
             before_pos = self.drawer.position:copy()
             self.drawer.position = self.drawer.position:add(vector3(0,
                 input_vector.y *
-                scale *
-                speed *
+                speed * self.boost *
                 delta_time,
                 0))
             if is_collision(self, map, map_draw3ds, map_size_x, map_size_y) then
@@ -195,17 +225,12 @@ local player = {
     draw = function(self)
         if not fps_mode then self.drawer:draw() end
         self.hp_drawer:draw()
-        self.hp_drawer2:draw()
         self.drawer_scope_big:draw()
         self.drawer_scope:draw()
     end,
     render_text = function(self)
-        if self.hp < 20 then
-            self.hp_font_texture:fill_color(color(1, 0.6, 0.6, 0.8))
-        else
-            self.hp_font_texture:fill_color(color(0.6, 1, 0.6, 0.8))
-        end
-        self.hp_drawer.scale = vector2(self.hp * 10, 50)
+        self.hp_font:render_text(self.hp_font_texture, "HP: " .. self.hp, color(1, 1, 1, 1))
+        self.hp_drawer.scale = self.hp_font_texture:size()
     end
 }
 

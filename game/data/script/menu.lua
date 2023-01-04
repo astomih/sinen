@@ -6,8 +6,8 @@ local function menu()
         hide = true,
         setup = function(self)
             self.list = gui_list()
-            self.list.num = 1
-            self.list.texts[1] = "Quit"
+            self.list.texts = { "Resume", "Quit" }
+            self.list.num = #self.list.texts
             self.list:setup()
             self.list.hide = self.hide
         end,

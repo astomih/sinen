@@ -16,15 +16,13 @@ texture::texture(const texture &other) {
     texture_system::remove(handle);
   }
   handle = other.handle;
-  is_need_update.reset();
   is_need_update = other.is_need_update;
 }
-texture& texture::operator=(const texture &other) {
+texture &texture::operator=(const texture &other) {
   if (is_need_update.use_count() == 1) {
     texture_system::remove(handle);
   }
   handle = other.handle;
-  is_need_update.reset();
   is_need_update = other.is_need_update;
   return *this;
 }

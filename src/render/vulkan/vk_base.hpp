@@ -12,9 +12,9 @@
 #include <vulkan/vulkan_win32.h>
 #endif // _WIN32
 #include "vk_swapchain.hpp"
+#include <vk_mem_alloc.h>
 #include <memory>
 #include <vector>
-#include <vk_mem_alloc.h>
 #include <window/window.hpp>
 
 namespace sinen {
@@ -37,6 +37,7 @@ public:
 
   void select_physical_device();
   uint32_t search_graphics_queue_index();
+  void enable_debug();
   void create_instance(const char *appName);
   void create_device();
   void create_command_pool();

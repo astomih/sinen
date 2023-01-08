@@ -9,7 +9,7 @@ namespace sinen {
 vk_swapchain::vk_swapchain(VkInstance instance, VkDevice device,
                            VkSurfaceKHR surface)
     : m_swapchain(VK_NULL_HANDLE), m_surface(surface), m_vkInstance(instance),
-      m_device(device), m_presentMode(VK_PRESENT_MODE_IMMEDIATE_KHR) {}
+      m_device(device), m_presentMode(VK_PRESENT_MODE_FIFO_RELAXED_KHR) {}
 
 vk_swapchain::~vk_swapchain() {}
 
@@ -19,11 +19,19 @@ void vk_swapchain::prepare(VkPhysicalDevice physDev,
   VkResult result;
   result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDev, m_surface,
                                                      &m_surfaceCaps);
+  if (result != VK_SUCCESS) {
+    throw vkutil::vulkan_exception("vkGetPhysicalDeviceSurfaceCapabilitiesKHR "
+                                   "failed.");
+  }
   uint32_t count = 0;
   vkGetPhysicalDeviceSurfaceFormatsKHR(physDev, m_surface, &count, nullptr);
   m_surfaceFormats.resize(count);
   result = vkGetPhysicalDeviceSurfaceFormatsKHR(physDev, m_surface, &count,
                                                 m_surfaceFormats.data());
+  if (result != VK_SUCCESS) {
+    throw vkutil::vulkan_exception("vkGetPhysicalDeviceSurfaceFormatsKHR "
+                                   "failed.");
+  }
   m_selectFormat = VkSurfaceFormatKHR{VK_FORMAT_B8G8R8A8_UNORM,
                                       VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
   for (const auto &f : m_surfaceFormats) {
@@ -35,9 +43,13 @@ void vk_swapchain::prepare(VkPhysicalDevice physDev,
   VkBool32 isSupport;
   result = vkGetPhysicalDeviceSurfaceSupportKHR(physDev, graphicsQueueIndex,
                                                 m_surface, &isSupport);
+  if (result != VK_SUCCESS) {
+    throw vkutil::vulkan_exception("vkGetPhysicalDeviceSurfaceSupportKHR "
+                                   "failed.");
+  }
   if (isSupport == VK_FALSE) {
     throw vkutil::vulkan_exception(
-        "vkGetPhysicalDeviceSurfaceSupportKHR: isSupport = false.");
+        "vkGetPhysicalDeviceSurfaceSupportKHR is not supported.");
   }
 
   auto imageCount = (std::max)(2u, m_surfaceCaps.minImageCount);
@@ -62,7 +74,7 @@ void vk_swapchain::prepare(VkPhysicalDevice physDev,
       1,
       VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
       VK_SHARING_MODE_EXCLUSIVE,
-      sizeof(queueFamilyIndices) / sizeof(queueFamilyIndices[0]),
+      1,
       queueFamilyIndices,
       m_surfaceCaps.currentTransform,
       VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
@@ -71,6 +83,9 @@ void vk_swapchain::prepare(VkPhysicalDevice physDev,
       oldSwapchain};
 
   result = vkCreateSwapchainKHR(m_device, &swapchainCI, nullptr, &m_swapchain);
+  if (result != VK_SUCCESS) {
+    throw vkutil::vulkan_exception("vkCreateSwapchainKHR failed.");
+  }
 
   if (oldSwapchain != VK_NULL_HANDLE) {
     for (auto &view : m_imageViews) {

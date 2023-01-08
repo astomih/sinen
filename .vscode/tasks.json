@@ -2,9 +2,19 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "build",
+      "label": "DebugBuild",
       "type": "shell",
-      "command": "cd debug && cmake .. && ninja"
+      "command": "cd debug && cmake .. -DALL_BUILD=OFF -DCMAKE_BUILD_TYPE=Debug && ninja",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "ReleaseBuild",
+      "type": "shell",
+      "command": "cd build && cmake .. -DALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release && ninja"
     }
   ]
 }

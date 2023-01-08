@@ -41,20 +41,7 @@ void vk_base::initialize() {
   create_instance(window::name().c_str());
   select_physical_device();
   m_graphicsQueueIndex = search_graphics_queue_index();
-#if ENABLE_VALIDATION
-  GetInstanceProcAddr(vkCreateDebugReportCallbackEXT);
-  GetInstanceProcAddr(vkDebugReportMessageEXT);
-  GetInstanceProcAddr(vkDestroyDebugReportCallbackEXT);
-
-  VkDebugReportFlagsEXT flags =
-      VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
-
-  VkDebugReportCallbackCreateInfoEXT drcCI{};
-  drcCI.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
-  drcCI.flags = flags;
-  drcCI.pfnCallback = &DebugReportCallback;
-  m_vkCreateDebugReportCallbackEXT(m_instance, &drcCI, nullptr, &m_debugReport);
-#endif
+  enable_debug();
   create_device();
   create_command_pool();
   VkSurfaceKHR surface;
@@ -86,6 +73,22 @@ void vk_base::shutdown() {
   mSwapchain->cleanup();
   destroy_device();
   destroy_instance();
+}
+void vk_base::enable_debug() {
+#if ENABLE_VALIDATION
+  GetInstanceProcAddr(vkCreateDebugReportCallbackEXT);
+  GetInstanceProcAddr(vkDebugReportMessageEXT);
+  GetInstanceProcAddr(vkDestroyDebugReportCallbackEXT);
+
+  VkDebugReportFlagsEXT flags =
+      VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
+
+  VkDebugReportCallbackCreateInfoEXT drcCI{};
+  drcCI.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
+  drcCI.flags = flags;
+  drcCI.pfnCallback = &DebugReportCallback;
+  m_vkCreateDebugReportCallbackEXT(m_instance, &drcCI, nullptr, &m_debugReport);
+#endif
 }
 
 void vk_base::select_physical_device() {
@@ -136,17 +139,13 @@ void vk_base::create_instance(const char *appName) {
       extensions.push_back(v.extensionName);
     }
   }
-
   VkInstanceCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-  ci.enabledExtensionCount = uint32_t(extensions.size());
+  ci.enabledExtensionCount = extensions.size();
   ci.ppEnabledExtensionNames = extensions.data();
   ci.pApplicationInfo = &appInfo;
 #if ENABLE_VALIDATION
   const char *layers[] = {"VK_LAYER_KHRONOS_validation"};
-  if (VK_HEADER_VERSION_COMPLETE < VK_MAKE_VERSION(1, 1, 106)) {
-    layers[0] = "VK_LAYER_LUNARG_standard_validation";
-  }
   ci.enabledLayerCount = 1;
   ci.ppEnabledLayerNames = layers;
 #endif

@@ -62,9 +62,18 @@ void vk_renderer::render() {
       {color.r, color.g, color.b, 1.f}, // for Color
       {1.f, 0.f}                        // for Depth
   }};
+  auto &lua = (*(sol::state *)script_system::get_state());
+  lua["light_eye"] = [&](const vector3 &v) { eye = v; };
+  lua["light_at"] = [&](const vector3 &v) { at = v; };
+  lua["light_width"] = [&](float v) { width = v; };
+  lua["light_height"] = [&](float v) { height = v; };
+  light_view = matrix4::lookat(eye, at, vector3(0, 0, 1));
+  light_projection = matrix4::ortho(width, height, 0.5, 10);
   VkCommandBufferBeginInfo commandBI{};
   commandBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   auto &command = m_base->m_commands[nextImageIndex];
+  // Begin Command Buffer
+  vkBeginCommandBuffer(command, &commandBI);
   {
     VkRenderPassBeginInfo renderPassShadowBI{};
     renderPassShadowBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -76,8 +85,6 @@ void vk_renderer::render() {
     renderPassShadowBI.pClearValues = clearValue.data();
     renderPassShadowBI.clearValueCount = uint32_t(clearValue.size());
 
-    // Begin Command Buffer
-    vkBeginCommandBuffer(command, &commandBI);
     m_base->m_imageIndex = nextImageIndex;
     vkCmdBeginRenderPass(command, &renderPassShadowBI,
                          VK_SUBPASS_CONTENTS_INLINE);
@@ -275,8 +282,7 @@ void vk_renderer::add_instancing(const instancing &_instancing) {
   add_texture(_instancing.object->binding_texture);
   t->uniformBuffers.resize(m_base->mSwapchain->GetImageCount());
   for (auto &v : t->uniformBuffers) {
-    VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                     VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+    VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
     v = create_buffer(sizeof(vk_shader_parameter),
                       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
   }
@@ -285,11 +291,10 @@ void vk_renderer::add_instancing(const instancing &_instancing) {
 
   vk_instancing vi{_instancing};
   vi.m_vk_draw_object = t;
-  vi.instance_buffer = create_buffer(_instancing.size,
-                                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
-                                         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                         VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+  vi.instance_buffer = create_buffer(
+      _instancing.size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+
+      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
   write_memory(vi.instance_buffer.allocation, _instancing.data.data(),
                _instancing.size);
   if (_instancing.type == object_type::_2D) {
@@ -454,13 +459,6 @@ void vk_renderer::cleanup() {
 }
 
 void vk_renderer::draw_depth(VkCommandBuffer command) {
-  auto &lua = (*(sol::state *)script_system::get_state());
-  lua["light_eye"] = [&](const vector3 &v) { eye = v; };
-  lua["light_at"] = [&](const vector3 &v) { at = v; };
-  lua["light_width"] = [&](float v) { width = v; };
-  lua["light_height"] = [&](float v) { height = v; };
-  light_view = matrix4::lookat(eye, at, vector3(0, 0, 1));
-  light_projection = matrix4::ortho(width, height, 0.5, 10);
 
   m_pipelines["depth"].Bind(command);
   draw3d(command, false);
@@ -837,14 +835,17 @@ void vk_renderer::prepare_descriptor_set(std::shared_ptr<vk_drawable> sprite) {
 }
 vk_buffer_object vk_renderer::create_buffer(uint32_t size,
                                             VkBufferUsageFlags usage,
-                                            VkMemoryPropertyFlags flags) {
+                                            VkMemoryPropertyFlags flags,
+                                            VmaMemoryUsage vma_usage) {
+
   vk_buffer_object obj;
   VkBufferCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
   ci.usage = usage;
   ci.size = size;
   VmaAllocationCreateInfo buffer_alloc_info = {};
-  buffer_alloc_info.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
+  buffer_alloc_info.usage = vma_usage;
+  buffer_alloc_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
   vmaCreateBuffer(allocator, &ci, &buffer_alloc_info, &obj.buffer,
                   &obj.allocation, nullptr);
   return obj;
@@ -959,7 +960,8 @@ void vk_renderer::create_image_object(const handle_t &handle) {
   {
     uint32_t imageSize = imagedata->h * imagedata->w * 4;
     stagingBuffer = create_buffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+                                  VMA_MEMORY_USAGE_CPU_ONLY);
     write_memory(stagingBuffer.allocation, pImage, imageSize);
   }
 
@@ -1049,9 +1051,9 @@ void vk_renderer::register_vk_drawable(
       auto shader_param_size =
           _vk_drawable->drawable_obj->shade.get_parameter_size();
       v = create_buffer(sizeof(vk_shader_parameter) + shader_param_size,
-                        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
+                        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags,
+                        VMA_MEMORY_USAGE_GPU_TO_CPU);
     }
-    layouts.push_back(m_descriptor_set_layout);
     prepare_descriptor_set(_vk_drawable);
   } else {
     auto iter = m_draw_object_2d.begin();
@@ -1073,7 +1075,6 @@ void vk_renderer::register_vk_drawable(
               _vk_drawable->drawable_obj->shade.get_parameter_size(),
           VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
     }
-    layouts.push_back(m_descriptor_set_layout);
     prepare_descriptor_set(_vk_drawable);
   }
 }
@@ -1086,7 +1087,6 @@ void vk_renderer::destroy_texture(std::shared_ptr<vk_drawable> texture) {
     destroy_buffer(i);
   }
   texture->uniformBuffers.clear();
-  layouts.pop_back();
 }
 } // namespace sinen
 #endif

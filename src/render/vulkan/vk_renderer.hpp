@@ -71,7 +71,8 @@ public:
   void draw2d(VkCommandBuffer);
   vk_buffer_object create_buffer(
       uint32_t size, VkBufferUsageFlags usage,
-      VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+      VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+      VmaMemoryUsage vma_usage = VMA_MEMORY_USAGE_GPU_TO_CPU);
   vk_base &get_base() { return *m_base; }
   void register_vk_drawable(std::shared_ptr<class vk_drawable> texture,
                             texture_type type);

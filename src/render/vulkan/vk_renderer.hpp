@@ -10,6 +10,7 @@
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 
 #include "vk_base.hpp"
+#include "vk_depth_texture.hpp"
 #include "vk_object.hpp"
 #include "vk_pipeline.hpp"
 #include "vk_pipeline_layout.hpp"
@@ -19,6 +20,7 @@
 #include <string_view>
 #include <unordered_map>
 #include <vk_mem_alloc.h>
+
 
 namespace sinen {
 
@@ -76,7 +78,7 @@ public:
   vk_base &get_base() { return *m_base; }
   void register_vk_drawable(std::shared_ptr<class vk_drawable> texture,
                             texture_type type);
-  void destroy_texture(std::shared_ptr<class vk_drawable> texture);
+  void destroy_vk_drawable(std::shared_ptr<class vk_drawable> texture);
   void add_texture(texture tex);
   void destroy_image_object(const handle_t &handle);
   VkPipelineLayout get_pipeline_layout() {
@@ -95,7 +97,7 @@ public:
 
   VmaAllocator allocator{};
   vk_render_texture m_render_texture;
-  vk_render_texture m_depth_texture;
+  vk_depth_texture m_depth_texture;
 
 private:
   vector3 eye;

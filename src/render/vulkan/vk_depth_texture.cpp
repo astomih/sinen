@@ -1,15 +1,14 @@
-#include "vk_render_texture.hpp"
+#include "vk_depth_texture.hpp"
 #include "vk_renderer.hpp"
 #include <array>
 #include <vector>
 
 namespace sinen {
-vk_render_texture::vk_render_texture(vk_renderer &r) : m_vkrenderer(r) {}
+vk_depth_texture::vk_depth_texture(vk_renderer &r) : m_vkrenderer(r) {}
 
-void vk_render_texture::prepare(int width, int height, bool depth_only) {
+void vk_depth_texture::prepare(int width, int height) {
   sampler = create_sampler();
   drawer.drawable_obj = std::make_shared<drawable>();
-  is_depth_only = depth_only;
   color_target =
       create_image_object(width, height, VK_FORMAT_R8G8B8A8_UNORM, false);
   depth_target = create_image_object(width, height, VK_FORMAT_D32_SFLOAT, true);
@@ -20,50 +19,26 @@ void vk_render_texture::prepare(int width, int height, bool depth_only) {
   auto &colorTarget = attachments[0];
   auto &depthTarget = attachments[1];
 
-  if (is_depth_only) {
-    colorTarget =
-        VkAttachmentDescription{0,
-                                VK_FORMAT_R32G32B32A32_SFLOAT,
-                                VK_SAMPLE_COUNT_1_BIT,
-                                VK_ATTACHMENT_LOAD_OP_CLEAR,
-                                VK_ATTACHMENT_STORE_OP_STORE,
-                                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                                VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                                VK_IMAGE_LAYOUT_UNDEFINED,
-                                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
-    depthTarget =
-        VkAttachmentDescription{0,
-                                VK_FORMAT_D32_SFLOAT,
-                                VK_SAMPLE_COUNT_1_BIT,
-                                VK_ATTACHMENT_LOAD_OP_CLEAR,
-                                VK_ATTACHMENT_STORE_OP_STORE,
-                                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                                VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                                VK_IMAGE_LAYOUT_UNDEFINED,
-                                VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL};
-  } else {
-    colorTarget = VkAttachmentDescription{
-
-        0,                        // Flags
-        VK_FORMAT_R8G8B8A8_UNORM, // Format
-        VK_SAMPLE_COUNT_1_BIT,
-        VK_ATTACHMENT_LOAD_OP_CLEAR,
-        VK_ATTACHMENT_STORE_OP_STORE,
-        VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-        VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR};
-    depthTarget =
-        VkAttachmentDescription{0,
-                                VK_FORMAT_D32_SFLOAT,
-                                VK_SAMPLE_COUNT_1_BIT,
-                                VK_ATTACHMENT_LOAD_OP_CLEAR,
-                                VK_ATTACHMENT_STORE_OP_STORE,
-                                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                                VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                                VK_IMAGE_LAYOUT_UNDEFINED,
-                                VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL};
-  }
+  colorTarget =
+      VkAttachmentDescription{0,
+                              VK_FORMAT_R32G32B32A32_SFLOAT,
+                              VK_SAMPLE_COUNT_1_BIT,
+                              VK_ATTACHMENT_LOAD_OP_CLEAR,
+                              VK_ATTACHMENT_STORE_OP_STORE,
+                              VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                              VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                              VK_IMAGE_LAYOUT_UNDEFINED,
+                              VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
+  depthTarget =
+      VkAttachmentDescription{0,
+                              VK_FORMAT_D32_SFLOAT,
+                              VK_SAMPLE_COUNT_1_BIT,
+                              VK_ATTACHMENT_LOAD_OP_CLEAR,
+                              VK_ATTACHMENT_STORE_OP_STORE,
+                              VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                              VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                              VK_IMAGE_LAYOUT_UNDEFINED,
+                              VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL};
 
   VkAttachmentReference colorReference{}, depthReference{};
   colorReference.attachment = 0;
@@ -102,9 +77,9 @@ void vk_render_texture::prepare(int width, int height, bool depth_only) {
   vkCreateFramebuffer(m_vkrenderer.get_base().m_device, &fbci, nullptr, &fb);
   prepare_descriptor_set();
 }
-vk_image_object vk_render_texture::create_image_object(int width, int height,
-                                                       VkFormat format,
-                                                       bool isdepth) {
+vk_image_object vk_depth_texture::create_image_object(int width, int height,
+                                                      VkFormat format,
+                                                      bool isdepth) {
   vk_image_object tex{};
   {
     // Create VkImage texture
@@ -120,8 +95,7 @@ vk_image_object vk_render_texture::create_image_object(int width, int height,
       ci.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
                  VK_IMAGE_USAGE_SAMPLED_BIT;
     else
-      ci.usage =
-          VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+      ci.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
     ci.tiling = VK_IMAGE_TILING_OPTIMAL;
     ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -154,7 +128,7 @@ vk_image_object vk_render_texture::create_image_object(int width, int height,
   }
   return tex;
 }
-void vk_render_texture::prepare_descriptor_set() {
+void vk_depth_texture::prepare_descriptor_set() {
   prepare_descriptor_set_layout();
   for (auto &v : drawer.uniformBuffers) {
     VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
@@ -197,23 +171,14 @@ void vk_render_texture::prepare_descriptor_set() {
     ubo.pBufferInfo = &descUBO;
     ubo.dstSet = drawer.descriptor_sets[i];
 
-    VkWriteDescriptorSet tex{};
-    tex.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    tex.dstBinding = 1;
-    tex.descriptorCount = 1;
-    tex.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    tex.pImageInfo = &descImage;
-    tex.dstSet = drawer.descriptor_sets[i];
-
     std::vector<VkWriteDescriptorSet> writeSets;
     writeSets.push_back(ubo);
-    writeSets.push_back(tex);
     vkUpdateDescriptorSets(m_vkrenderer.get_base().get_vk_device(),
                            uint32_t(writeSets.size()), writeSets.data(), 0,
                            nullptr);
   }
 }
-VkSampler vk_render_texture::create_sampler() {
+VkSampler vk_depth_texture::create_sampler() {
   VkSampler sampler;
   VkSamplerCreateInfo ci{
       VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
@@ -239,7 +204,7 @@ VkSampler vk_render_texture::create_sampler() {
                   &sampler);
   return sampler;
 }
-void vk_render_texture::prepare_descriptor_set_layout() {
+void vk_depth_texture::prepare_descriptor_set_layout() {
   std::vector<VkDescriptorSetLayoutBinding> bindings;
   VkDescriptorSetLayoutBinding bindingUBO{}, bindingTex{}, bindingInstance{};
   bindingUBO.binding = 0;
@@ -247,12 +212,6 @@ void vk_render_texture::prepare_descriptor_set_layout() {
   bindingUBO.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
   bindingUBO.descriptorCount = 1;
   bindings.push_back(bindingUBO);
-
-  bindingTex.binding = 1;
-  bindingTex.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-  bindingTex.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-  bindingTex.descriptorCount = 1;
-  bindings.push_back(bindingTex);
 
   bindingInstance.binding = 2;
   bindingInstance.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;

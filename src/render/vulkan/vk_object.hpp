@@ -17,9 +17,8 @@ public:
 };
 class vk_drawable {
 public:
-  std::vector<VkDescriptorSet> descriptor_set;
-  std::vector<vk_buffer_object> uniformBuffers;
-  bool isInstance = false;
+  std::array<VkDescriptorSet, 2> descriptor_sets;
+  std::array<vk_buffer_object, 2> uniformBuffers;
   std::shared_ptr<drawable> drawable_obj;
   drawable::parameter get_parameter() { return drawable_obj->param; }
   shader get_shader() { return drawable_obj->shade; }

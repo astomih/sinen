@@ -1,5 +1,6 @@
 #ifndef VK_PIPELINE_BUILDER_HPP
 #define VK_PIPELINE_BUILDER_HPP
+#include "vk_depth_texture.hpp"
 #include "vk_pipeline.hpp"
 #include "vk_render_texture.hpp"
 
@@ -8,7 +9,7 @@ class vk_pipeline_builder {
 public:
   vk_pipeline_builder(VkDevice device, vk_pipeline_layout &pipeline_layout,
                       vk_render_texture &render_texture,
-                      vk_render_texture &depth_texture,
+                      vk_depth_texture &depth_texture,
                       VkRenderPass &render_pass)
       : device(device), pipeline_layout(pipeline_layout),
         render_texture(render_texture), depth_texture(depth_texture),
@@ -29,7 +30,7 @@ private:
   VkDevice device;
   vk_pipeline_layout &pipeline_layout;
   vk_render_texture &render_texture;
-  vk_render_texture &depth_texture;
+  vk_depth_texture &depth_texture;
   VkRenderPass &render_pass;
 };
 

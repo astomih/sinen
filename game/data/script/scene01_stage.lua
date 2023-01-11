@@ -6,7 +6,6 @@ local world = require "world"
 local map_size_x = 64
 local map_size_y = 64
 local map = grid(map_size_x, map_size_y)
-collision_space_division = map_size_x / 10 * 2 + 1
 local map_chip = {
     floor = 0,
     wall = 1,
@@ -65,7 +64,7 @@ local key_drawer2d = draw2d(key_texture_2d)
 key_drawer2d.scale = key_texture_2d:size()
 key_drawer2d.scale.x = key_drawer2d.scale.x / 6
 key_drawer2d.scale.y = key_drawer2d.scale.y / 6
-key_drawer2d.position = vector2(-window.size().x / 2 + key_drawer2d.scale.x / 2, -window.size().y / 3)
+key_drawer2d.position = vector2(-window.size().x / tile_size + key_drawer2d.scale.x / tile_size, -window.size().y / 3)
 local key_drawer = draw3d(key_texture)
 key_drawer.scale = vector3(0.25, 0.25, 0.25)
 key_drawer.position = vector3(0, 0, 1)
@@ -104,8 +103,9 @@ function setup()
         map_draw3ds[y] = {}
         for x = 1, map_size_x do
             map_draw3ds[y][x] = world()
-            map_draw3ds[y][x].position.x = x * 2
-            map_draw3ds[y][x].position.y = y * 2
+            map_draw3ds[y][x].position.x = x * tile_size
+            map_draw3ds[y][x].position.y = y * tile_size
+            map_draw3ds[y][x].scale = vector3(tile_size / 2.0, tile_size / 2.0, 1)
             if map:at(x, y) ~= map_chip.stair then
                 sprite:add(map_draw3ds[y][x].position, map_draw3ds[y][x].rotation,
                     map_draw3ds[y][x].scale)
@@ -117,32 +117,25 @@ function setup()
                 map_draw3ds[y][x].position:add(map_draw3ds[y][x].scale)
                 map_draw3ds[y][x].aabb.min =
                 map_draw3ds[y][x].position:sub(map_draw3ds[y][x].scale)
-                map_draw3ds[y][x].scale = vector3(1, 1, 3)
+                map_draw3ds[y][x].scale.z = 3
 
                 box:add(map_draw3ds[y][x].position, map_draw3ds[y][x].rotation,
                     map_draw3ds[y][x].scale)
-                local collision_space_x = math.floor(x /
-                    collision_space_division)
-                local collision_space_y = math.floor(y /
-                    collision_space_division)
-                table.insert(
-                    collision_space[collision_space_y + 2][collision_space_x + 2],
-                    map_draw3ds[y][x])
 
             end
             if map:at(x, y) == map_chip.stair then
-                stair.position.x = x * 2
-                stair.position.y = y * 2 + 0.5
+                stair.position.x = x * tile_size
+                stair.position.y = y * tile_size + 0.5
                 stair.position.z = 100
             end
             -- key object
             if map:at(x, y) == map_chip.key then
-                key_drawer.position.x = x * 2
-                key_drawer.position.y = y * 2
+                key_drawer.position.x = x * tile_size
+                key_drawer.position.y = y * tile_size
             end
             if map:at(x, y) == map_chip.player then
-                player.drawer.position.x = x * 2
-                player.drawer.position.y = y * 2
+                player.drawer.position.x = x * tile_size
+                player.drawer.position.y = y * tile_size
             end
         end
     end
@@ -211,8 +204,8 @@ function update()
         end
         if map:at(math.floor(v.drawer
             .position
-            .x / 2 +
-            0.5), math.floor(v.drawer.position.y / 2 + 0.5)) ==
+            .x / tile_size +
+            0.5), math.floor(v.drawer.position.y / tile_size + 0.5)) ==
             1 then table.remove(player.bullets, i) end
     end
     player:update(map, map_draw3ds, map_size_x, map_size_y)

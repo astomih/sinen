@@ -80,12 +80,13 @@ else()
   add_subdirectory(./external/SDL2_mixer)
   add_subdirectory(./external/SDL2_net)
   add_subdirectory(./external/SDL2_ttf)
+  else()
+  find_package(SDL2 REQUIRED)
   endif()
   set(CMAKE_EXPORT_COMPILE_COMMANDS true)
   find_package(Vulkan REQUIRED)
   find_package(OpenGL REQUIRED)
   find_package(GLEW REQUIRED)
-  find_package(SDL2 REQUIRED)
   file(
     GLOB
     SOURCE_FILES
@@ -103,6 +104,7 @@ else()
   target_link_libraries(
     sinen
     SDL2
+    SDL2main
     SDL2_image
     SDL2_mixer
     SDL2_ttf

@@ -4,7 +4,7 @@ local function gui_list()
     local object = {
         num = 5,
         list_space = 100,
-        scale = vector2(1280 / 2, 50),
+        scale = vector2(window.size().x / 2, 50),
         start_pos = vector2(0, 0),
 
         tex = {},
@@ -23,7 +23,7 @@ local function gui_list()
         setup = function(self)
             self.tex = texture()
             self.font = font()
-            self.font:load(DEFAULT_FONT, 32)
+            self.font:load("x16y32pxGridGazer.ttf", 32)
             self.start_pos.y = (self.scale.y + self.list_space) * self.num / 4
             for i = 1, self.num do
                 for i = #self.texts + 1, self.num do

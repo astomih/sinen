@@ -4,6 +4,7 @@ local is_collision = require "is_collision"
 local input_vector = {}
 local speed = 2.0
 local effect = require "effect"
+local orbit = require "orbit"
 local r1 = 0
 local r2 = 0
 local function decide_pos(map, map_size_x, map_size_y)
@@ -34,6 +35,7 @@ local player = {
     boost_timer = 0.0,
     boost_mag = 5,
     is_boost = false,
+    orbits = {},
     setup = function(self, map, map_size_x, map_size_y)
         self.model = model()
         self.model:load("triangle.sim", "player")
@@ -52,7 +54,7 @@ local player = {
         r2 = 0
         while decide_pos(map, map_size_x, map_size_y) == true do end
         self.drawer.position = vector3(r1 * 2, r2 * 2, 0)
-        self.drawer.scale = vector3(0.06, 0.06, 0.06)
+        self.drawer.scale = vector3(0.05, 0.05, 0.05)
         self.hp_drawer.position.x = 0
         self.hp_drawer.position.y = 300
         self.tex_scope = texture()
@@ -104,8 +106,13 @@ local player = {
             speed = speed / math.sqrt(2)
         end
         -- bullet
-        if keyboard:key_state(keyE) == buttonPRESSED then
-            self.is_shot = not self.is_shot
+        if keyboard:is_key_pressed(keyTAB) then
+            local o = orbit(self)
+            o:setup()
+            table.insert(self.orbits, o)
+        end
+        for i, j in ipairs(self.orbits) do
+            j:update()
         end
         self.bullet_timer = self.bullet_timer + delta_time
         if self.bullet_timer >
@@ -182,28 +189,8 @@ local player = {
             end
         end
         local mouse_pos = mouse:position()
-        local speed = 1000 * delta_time
-        local pressed = false
-        if keyboard:is_key_down(keyUP) then
-            self.drawer_scope.position.y = self.drawer_scope.position.y + speed
-            pressed = true
-        end
-        if keyboard:is_key_down(keyDOWN) then
-            self.drawer_scope.position.y = self.drawer_scope.position.y - speed
-            pressed = true
-        end
-        if keyboard:is_key_down(keyLEFT) then
-            self.drawer_scope.position.x = self.drawer_scope.position.x - speed
-            pressed = true
-        end
-        if keyboard:is_key_down(keyRIGHT) then
-            self.drawer_scope.position.x = self.drawer_scope.position.x + speed
-            pressed = true
-        end
-        if not pressed then
-            self.drawer_scope.position.x = mouse_pos.x - window.size().x / 2
-            self.drawer_scope.position.y = -(mouse_pos.y - window.size().y / 2)
-        end
+        self.drawer_scope.position.x = mouse_pos.x - window.size().x / 2
+        self.drawer_scope.position.y = -(mouse_pos.y - window.size().y / 2)
         local r = 200
         -- Make the coordinates fit in a circle of radius r
         local x = self.drawer_scope.position.x
@@ -227,6 +214,9 @@ local player = {
         self.hp_drawer:draw()
         self.drawer_scope_big:draw()
         self.drawer_scope:draw()
+        for i, j in ipairs(self.orbits) do
+            j:draw()
+        end
     end,
     render_text = function(self)
         self.hp_font:render_text(self.hp_font_texture, "HP: " .. self.hp, color(1, 1, 1, 1))

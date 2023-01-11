@@ -2,9 +2,6 @@
 #define SINEN_MAIN_HPP
 #include <string>
 namespace sinen {
-#ifdef main
-#undef main
-#endif
 /**
  * @brief Engine main
  *

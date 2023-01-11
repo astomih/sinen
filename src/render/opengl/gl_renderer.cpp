@@ -2,6 +2,9 @@
 #include "../../script/script_system.hpp"
 #include "../../texture/texture_system.hpp"
 #include "../../window/window_system.hpp"
+#ifndef SDL_MAIN_HANDLED
+#define SDL_MAIN_HANDLED
+#endif
 #include <SDL.h>
 #include <SDL_image.h>
 #include <scene/scene.hpp>

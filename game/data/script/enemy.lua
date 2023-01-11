@@ -54,7 +54,7 @@ local enemy = function()
             r1 = 0
             r2 = 0
             while decide_pos(_map, map_size_x, map_size_y) == true do end
-            self.drawer.position = vector3(r1 * 2, r2 * 2, 0.5)
+            self.drawer.position = vector3(r1 * tile_size, r2 * tile_size, 0.5)
             self.is_collision_first = true
             self.collision_time = 1.0
             self.collision_timer = 0.0
@@ -72,23 +72,23 @@ local enemy = function()
                         player.drawer.position.y -
                         self.drawer.position.y)))
             local start = point2i(
-                self.drawer.position.x / 2
+                self.drawer.position.x / tile_size
                 ,
-                self.drawer.position.y / 2
+                self.drawer.position.y / tile_size
             )
             local goal = point2i(
-                player.drawer.position.x / 2,
-                player.drawer.position.y / 2
+                player.drawer.position.x / tile_size,
+                player.drawer.position.y / tile_size
             )
             if self.bfs:find_path(start, goal) then
                 local path = self.bfs:trace()
                 path = self.bfs:trace()
                 self.drawer.position.x =
                 self.drawer.position.x +
-                    (path.x * 2 - self.drawer.position.x) * delta_time * self.speed
+                    (path.x * tile_size - self.drawer.position.x) * delta_time * self.speed
                 self.drawer.position.y =
                 self.drawer.position.y +
-                    (path.y * 2 - self.drawer.position.y) * delta_time * self.speed
+                    (path.y * tile_size - self.drawer.position.y) * delta_time * self.speed
 
             else
                 self.drawer.position.x =

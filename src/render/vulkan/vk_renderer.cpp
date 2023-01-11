@@ -37,8 +37,7 @@ namespace sinen {
 constexpr int maxpoolSize = 65535;
 vk_renderer::vk_renderer()
     : m_descriptor_pool(), m_descriptor_set_layout(), m_sampler(),
-      m_base(std::make_unique<vk_base>(this)), m_render_texture(*this),
-      m_depth_texture(*this) {}
+      m_base(std::make_unique<vk_base>(this)), m_render_texture(*this) {}
 vk_renderer::~vk_renderer() = default;
 void vk_renderer::initialize() {
   m_base->initialize();
@@ -62,38 +61,11 @@ void vk_renderer::render() {
       {color.r, color.g, color.b, 1.f}, // for Color
       {1.f, 0.f}                        // for Depth
   }};
-  auto &lua = (*(sol::state *)script_system::get_state());
-  lua["light_eye"] = [&](const vector3 &v) { eye = v; };
-  lua["light_at"] = [&](const vector3 &v) { at = v; };
-  lua["light_width"] = [&](float v) { width = v; };
-  lua["light_height"] = [&](float v) { height = v; };
-  light_view = matrix4::lookat(eye, at, vector3(0, 0, 1));
-  light_projection = matrix4::ortho(width, height, 0.5, 10);
   VkCommandBufferBeginInfo commandBI{};
   commandBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   auto &command = m_base->m_commands[nextImageIndex];
   // Begin Command Buffer
   vkBeginCommandBuffer(command, &commandBI);
-  {
-    VkRenderPassBeginInfo renderPassShadowBI{};
-    renderPassShadowBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassShadowBI.renderPass = m_depth_texture.render_pass;
-    renderPassShadowBI.framebuffer = m_depth_texture.fb;
-    renderPassShadowBI.renderArea.offset = VkOffset2D{0, 0};
-    renderPassShadowBI.renderArea.extent =
-        m_base->mSwapchain->GetSurfaceExtent();
-    renderPassShadowBI.pClearValues = clearValue.data();
-    renderPassShadowBI.clearValueCount = uint32_t(clearValue.size());
-
-    m_base->m_imageIndex = nextImageIndex;
-    vkCmdBeginRenderPass(command, &renderPassShadowBI,
-                         VK_SUBPASS_CONTENTS_INLINE);
-    draw_depth(command);
-    vkCmdEndRenderPass(command);
-    set_image_memory_barrier(command, m_depth_texture.color_target.image,
-                             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-  }
   {
     VkRenderPassBeginInfo renderPassBI{};
     renderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -104,27 +76,6 @@ void vk_renderer::render() {
     renderPassBI.pClearValues = clearValue.data();
     renderPassBI.clearValueCount = uint32_t(clearValue.size());
     vkCmdBeginRenderPass(command, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
-    m_depth_texture.pipeline.Bind(command);
-    VkDeviceSize offset = 0;
-    auto &sprite = m_depth_texture.drawer;
-    vkCmdBindVertexBuffers(
-        command, 0, 1, &m_vertex_arrays["SPRITE"].vertexBuffer.buffer, &offset);
-    vkCmdBindIndexBuffer(command, m_vertex_arrays["SPRITE"].indexBuffer.buffer,
-                         offset, VK_INDEX_TYPE_UINT32);
-
-    // Set descriptors
-    vkCmdBindDescriptorSets(
-        command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
-        0, 1, &sprite.descriptor_sets[m_base->m_imageIndex], 0, nullptr);
-    auto allocation = sprite.uniformBuffers[m_base->m_imageIndex].allocation;
-
-    sprite.drawable_obj->param.proj = matrix4::identity;
-    sprite.drawable_obj->param.view = matrix4::identity;
-    sprite.drawable_obj->param.world = matrix4::identity;
-    write_memory(allocation, &sprite.drawable_obj->param,
-                 sizeof(sprite.drawable_obj->param));
-
-    vkCmdDrawIndexed(command, m_vertex_arrays["SPRITE"].indexCount, 1, 0, 0, 0);
     make_command(command);
     vkCmdEndRenderPass(command);
     set_image_memory_barrier(command, m_render_texture.color_target.image,
@@ -318,8 +269,6 @@ void vk_renderer::draw_instancing_3d(VkCommandBuffer command,
             .allocation;
     vk_shader_parameter param;
     param.param = _instancing.m_vk_draw_object->drawable_obj->param;
-    param.light_proj = light_projection;
-    param.light_view = light_view;
     auto *ptr = _instancing.ins.object->shade.get_parameter().get();
     write_memory(allocation, &param, sizeof(vk_shader_parameter));
     write_memory(allocation, ptr,
@@ -381,15 +330,13 @@ void vk_renderer::prepare() {
                                m_base->mSwapchain->GetSurfaceExtent());
   m_pipeline_layout.prepare(m_base->get_vk_device());
   m_render_texture.prepare(window::size().x, window::size().y, false);
-  m_depth_texture.prepare(window::size().x, window::size().y);
 
+  vk_depth_texture depth(*this);
   vk_pipeline_builder pipeline_builder(m_base->get_vk_device(),
                                        m_pipeline_layout, m_render_texture,
-                                       m_depth_texture, m_base->m_renderPass);
+                                       depth, m_base->m_renderPass);
   // render texture pipeline
   pipeline_builder.render_texture_pipeline(m_render_texture.pipeline);
-  // depth texture pipeline
-  pipeline_builder.depth_texture_pipeline(m_depth_texture.pipeline);
   vk_pipeline pipeline_skybox;
   vk_pipeline pipeline_opaque;
   vk_pipeline pipeline_alpha;
@@ -397,8 +344,6 @@ void vk_renderer::prepare() {
   vk_pipeline pipeline_instancing_opaque;
   vk_pipeline pipeline_instancing_alpha;
   vk_pipeline pipeline_instancing_2d;
-  vk_pipeline pipeline_depth;
-  vk_pipeline pipeline_depth_instancing;
 
   // Opaque pipeline
   pipeline_builder.opaque(pipeline_opaque);
@@ -413,10 +358,6 @@ void vk_renderer::prepare() {
   pipeline_builder.instancing_alpha(pipeline_instancing_alpha);
   // 2D pipeline
   pipeline_builder.instancing_alpha_2d(pipeline_instancing_2d);
-  // depth pipeline
-  pipeline_builder.depth(pipeline_depth);
-  // depth instanced pipeline
-  pipeline_builder.depth_instancing(pipeline_depth_instancing);
   m_pipelines["skybox"] = pipeline_skybox;
   m_pipelines["opaque"] = pipeline_opaque;
   m_pipelines["alpha"] = pipeline_alpha;
@@ -424,8 +365,6 @@ void vk_renderer::prepare() {
   m_pipelines["instancing_opaque"] = pipeline_instancing_opaque;
   m_pipelines["instancing_alpha"] = pipeline_instancing_alpha;
   m_pipelines["instancing_2d"] = pipeline_instancing_2d;
-  m_pipelines["depth"] = pipeline_depth;
-  m_pipelines["depth_instancing"] = pipeline_depth_instancing;
 
   prepare_imgui();
 }
@@ -564,8 +503,6 @@ void vk_renderer::draw3d(VkCommandBuffer command, bool is_change_pipeline) {
     auto allocation = sprite->uniformBuffers[m_base->m_imageIndex].allocation;
     vk_shader_parameter param;
     param.param = sprite->drawable_obj->param;
-    param.light_proj = light_projection;
-    param.light_view = light_view;
     auto *ptr = sprite->drawable_obj->shade.get_parameter().get();
     write_memory(allocation, &param, sizeof(vk_shader_parameter));
     write_memory(allocation, ptr,
@@ -640,6 +577,8 @@ void vk_renderer::render_to_display(VkCommandBuffer command) {
 
 void vk_renderer::write_memory(VmaAllocation allocation, const void *data,
                                std::size_t size, std::size_t offset) {
+  if (size == 0)
+    return;
   void *p = nullptr;
   char *pc;
   vmaMapMemory(allocator, allocation, &p);
@@ -737,13 +676,7 @@ void vk_renderer::prepare_descriptor_set_layout() {
   tex.descriptorCount = 1;
   bindings.push_back(tex);
 
-  shadow.binding = 2;
-  shadow.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-  shadow.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-  shadow.descriptorCount = 1;
-  bindings.push_back(shadow);
-
-  instance.binding = 3;
+  instance.binding = 2;
   instance.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
   instance.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
   instance.descriptorCount = 1;
@@ -796,9 +729,6 @@ void vk_renderer::prepare_descriptor_set(std::shared_ptr<vk_drawable> sprite) {
         m_image_object[sprite->drawable_obj->binding_texture.handle].view;
     descImage[0].sampler = m_sampler;
     descImage[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    descImage[1].imageView = m_depth_texture.color_target.view;
-    descImage[1].sampler = m_depth_texture.sampler;
-    descImage[1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     VkWriteDescriptorSet ubo{};
     ubo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -815,15 +745,8 @@ void vk_renderer::prepare_descriptor_set(std::shared_ptr<vk_drawable> sprite) {
     tex.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     tex.pImageInfo = &descImage[0];
     tex.dstSet = sprite->descriptor_sets[i];
-    VkWriteDescriptorSet shadowTex{};
-    shadowTex.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    shadowTex.dstBinding = 2;
-    shadowTex.descriptorCount = 1;
-    shadowTex.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    shadowTex.pImageInfo = &descImage[1];
-    shadowTex.dstSet = sprite->descriptor_sets[i];
 
-    std::vector<VkWriteDescriptorSet> writeSets = {ubo, tex, shadowTex};
+    std::vector<VkWriteDescriptorSet> writeSets = {ubo, tex};
     vkUpdateDescriptorSets(m_base->get_vk_device(), uint32_t(writeSets.size()),
                            writeSets.data(), 0, nullptr);
   }

@@ -3,7 +3,6 @@ in vec2 outUV;
 in vec4 outRgba;
 out vec4 outColor;
 uniform sampler2D diffuseMap;
-uniform sampler2D shadowMap;
 vec4 GetRadialBlurredColor(sampler2D texture, vec2 uv_coord,
                            vec2 center_uv_coord, float blur_length,
                            int blur_sample_count) {

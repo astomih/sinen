@@ -1,5 +1,4 @@
 #include "../../render/render_system.hpp"
-#include "../../script/script_system.hpp"
 #include "../../texture/texture_system.hpp"
 #include "../../window/window_system.hpp"
 #ifndef SDL_MAIN_HANDLED
@@ -38,25 +37,15 @@
 #include <window/window.hpp>
 
 #ifdef _WIN32
-#define USE_SHADOWMAP 1
+#define USE_RENDER_TEXTURE 1
 #else
-#define USE_SHADOWMAP 0
+#define USE_RENDER_TEXTURE 0
 #endif
 
 namespace sinen {
 static constexpr int SHADOWMAP_SIZE = 2048;
 gl_renderer::gl_renderer() {}
 gl_renderer::~gl_renderer() = default;
-
-auto light_view =
-    matrix4::lookat(vector3(0.5, 2, 2), vector3(0), vector3(0, 1, 0));
-
-auto light_projection = matrix4::ortho(20, 20, 0.5, 100);
-// auto light_projection = matrix4::perspective(math::to_radians(90), 1, 0.5,
-// 10);
-vector3 eye;
-vector3 at;
-float width, height;
 
 void gl_renderer::initialize() {
   mContext = SDL_GL_CreateContext(window_system::get_sdl_window());
@@ -104,13 +93,6 @@ void gl_renderer::shutdown() {
 }
 
 void gl_renderer::render() {
-  auto &lua = (*(sol::state *)script_system::get_state());
-  lua["light_eye"] = [&](const vector3 &v) { eye = v; };
-  lua["light_at"] = [&](const vector3 &v) { at = v; };
-  lua["light_width"] = [&](float v) { width = v; };
-  lua["light_height"] = [&](float v) { height = v; };
-  light_view = matrix4::lookat(eye, at, vector3(0, 1, 0));
-  light_projection = matrix4::ortho(width, height, 0.5, 10);
 
   auto w = window_system::size();
   if (w.x != prev_window_x || w.y != prev_window_y) {
@@ -121,53 +103,11 @@ void gl_renderer::render() {
   auto color = render_system::get_clear_color();
   glClearColor(color.r, color.g, color.b, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-#if USE_SHADOWMAP
-  glBindFramebuffer(GL_FRAMEBUFFER, shadowframebuffer);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glViewport(0, 0, SHADOWMAP_SIZE, SHADOWMAP_SIZE);
-  glEnable(GL_DEPTH_TEST);
-  for (auto &i : m_drawer_3ds) {
-    if (!i.drawable_object->is_draw_depth)
-      continue;
-    auto &va = m_VertexArrays[i.drawable_object->vertexIndex];
-    glBindVertexArray(va.vao);
-    gl_shader_parameter param;
-    param.param = i.drawable_object->param;
-    param.projection = light_projection;
-    param.view = light_view;
-    m_depth_texture_shader.active(0);
-    i.ubo.bind(m_depth_texture_shader.program(), 0);
-    i.ubo.update(0, sizeof(gl_shader_parameter), &param, 0);
-    disable_vertex_attrib_array();
-    glDrawElements(
-        GL_TRIANGLES,
-        m_VertexArrays[i.drawable_object->vertexIndex].indices.size(),
-        GL_UNSIGNED_INT, nullptr);
-  }
-  for (auto &i : m_instancing_3d) {
-    if (!i.ins.object->is_draw_depth)
-      continue;
-    gl_shader_parameter param;
-    param.param = i.ins.object->param;
-    param.projection = light_projection;
-    param.view = light_view;
-    m_depth_texture_instanced_shader.active(0);
-    i.ubo.bind(m_depth_texture_instanced_shader.program(), 0);
-    i.ubo.update(0, sizeof(gl_shader_parameter), &param, 0);
-
-    auto &va = m_VertexArrays[i.ins.object->vertexIndex];
-    glBindVertexArray(i.vao);
-
-    enable_vertex_attrib_array();
-    glDrawElementsInstanced(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT,
-                            nullptr, i.ins.data.size());
-  }
-  glFlush();
-  glDisable(GL_DEPTH_TEST);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#if USE_RENDER_TEXTURE
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glViewport(0, 0, 1280, 720); // Render on the whole framebuffer, complete
+  glViewport(0, 0, window::size().x,
+             window::size().y); // Render on the whole framebuffer, complete
 #endif
   glEnable(GL_BLEND);
   glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
@@ -189,7 +129,7 @@ void gl_renderer::render() {
   draw_2d();
   enable_vertex_attrib_array();
   draw_instancing_2d();
-#if USE_SHADOWMAP
+#if USE_RENDER_TEXTURE
   glFlush();
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glBindVertexArray(m_VertexArrays["SPRITE"].vao);
@@ -198,9 +138,6 @@ void gl_renderer::render() {
   glUniform1i(
       glGetUniformLocation(m_render_texture_shader.program(), "diffuseMap"), 0);
   glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, shadowdepthtexture);
-  glUniform1i(
-      glGetUniformLocation(m_render_texture_shader.program(), "shadowMap"), 1);
   m_render_texture_shader.active(0);
 
   render_texture_ubo.bind(m_render_texture_shader.program(), 0);
@@ -275,11 +212,6 @@ void gl_renderer::draw_skybox() {
   mAlphaShader.active(0);
   gl_shader_parameter param;
   matrix4 w = matrix4::identity;
-  param.projection = scene::main_camera().projection();
-  param.view = matrix4::lookat(vector3(0, 0, 0),
-                               scene::main_camera().target() -
-                                   scene::main_camera().position(),
-                               scene::main_camera().up());
   mAlphaShader.active(0);
   ubo.create(0, sizeof(drawable::parameter), &param);
   glBindTexture(GL_TEXTURE_2D,
@@ -295,8 +227,6 @@ void gl_renderer::draw_3d() {
     glBindVertexArray(va.vao);
     gl_shader_parameter param;
     param.param = i.drawable_object->param;
-    param.projection = light_projection;
-    param.view = light_view;
     mSpriteShader.active(0);
     i.ubo.bind(mSpriteShader.program(), 0);
     i.ubo.update(0, sizeof(gl_shader_parameter), &param, 0);
@@ -306,7 +236,7 @@ void gl_renderer::draw_3d() {
                    sizeof(gl_shader_parameter));
     }
     disable_vertex_attrib_array();
-#if USE_SHADOWMAP
+#if USE_RENDER_TEXTURE
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, shadowdepthtexture);
     glUniform1i(glGetUniformLocation(mSpriteShader.program(), "shadowMap"), 0);
@@ -314,11 +244,11 @@ void gl_renderer::draw_3d() {
 #endif
     glBindTexture(GL_TEXTURE_2D,
                   mTextureIDs[i.drawable_object->binding_texture.handle]);
-#if USE_SHADOWMAP
+#if USE_RENDER_TEXTURE
     glUniform1i(glGetUniformLocation(mSpriteShader.program(), "diffuseMap"), 1);
 #endif
     glDrawElements(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT, nullptr);
-#if USE_SHADOWMAP
+#if USE_RENDER_TEXTURE
     glActiveTexture(GL_TEXTURE0);
 #endif
   }
@@ -327,8 +257,6 @@ void gl_renderer::draw_instancing_3d() {
   for (auto &i : m_instancing_3d) {
     gl_shader_parameter param;
     param.param = i.ins.object->param;
-    param.projection = light_projection;
-    param.view = light_view;
     mSpriteInstanceShader.active(0);
     i.ubo.bind(mSpriteInstanceShader.program(), 0);
     i.ubo.update(0, sizeof(gl_shader_parameter), &param, 0);
@@ -340,7 +268,7 @@ void gl_renderer::draw_instancing_3d() {
 
     auto &va = m_VertexArrays[i.ins.object->vertexIndex];
     glBindVertexArray(i.vao);
-#if USE_SHADOWMAP
+#if USE_RENDER_TEXTURE
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, shadowdepthtexture);
     glUniform1i(
@@ -349,14 +277,14 @@ void gl_renderer::draw_instancing_3d() {
 #endif
     glBindTexture(GL_TEXTURE_2D,
                   mTextureIDs[i.ins.object->binding_texture.handle]);
-#if USE_SHADOWMAP
+#if USE_RENDER_TEXTURE
     glUniform1i(
         glGetUniformLocation(mSpriteInstanceShader.program(), "diffuseMap"), 1);
 #endif
     enable_vertex_attrib_array();
     glDrawElementsInstanced(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT,
                             nullptr, i.ins.data.size());
-#if USE_SHADOWMAP
+#if USE_RENDER_TEXTURE
     glActiveTexture(GL_TEXTURE0);
 #endif
   }
@@ -658,7 +586,7 @@ void gl_renderer::prepare() {
 }
 
 void gl_renderer::prepare_render_texture() {
-#if USE_SHADOWMAP
+#if USE_RENDER_TEXTURE
   glGenFramebuffers(1, &framebuffer);
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
@@ -684,7 +612,7 @@ void gl_renderer::prepare_render_texture() {
 #endif
 }
 void gl_renderer::prepare_depth_texture() {
-#if USE_SHADOWMAP
+#if USE_RENDER_TEXTURE
   glGenFramebuffers(1, &shadowframebuffer);
   glBindFramebuffer(GL_FRAMEBUFFER, shadowframebuffer);
   glGenTextures(1, &shadowdepthtexture);

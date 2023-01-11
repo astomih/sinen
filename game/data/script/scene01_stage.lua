@@ -163,10 +163,6 @@ local function draw()
 end
 
 function update()
-    light_eye(vector3(player.drawer.position.x, player.drawer.position.y - 2.0, player.drawer.position.z - 3.0))
-    light_at(player.drawer.position)
-    light_width(400)
-    light_height(400)
     menu_object:update()
     if not menu_object.hide then
         draw()

@@ -10,7 +10,6 @@
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
 
 #include "vk_base.hpp"
-#include "vk_depth_texture.hpp"
 #include "vk_object.hpp"
 #include "vk_pipeline.hpp"
 #include "vk_pipeline_layout.hpp"
@@ -20,7 +19,6 @@
 #include <string_view>
 #include <unordered_map>
 #include <vk_mem_alloc.h>
-
 
 namespace sinen {
 
@@ -39,8 +37,6 @@ public:
 class vk_shader_parameter {
 public:
   drawable::parameter param;
-  matrix4 light_proj;
-  matrix4 light_view;
 };
 
 class vk_renderer {
@@ -97,15 +93,8 @@ public:
 
   VmaAllocator allocator{};
   vk_render_texture m_render_texture;
-  vk_depth_texture m_depth_texture;
 
 private:
-  vector3 eye;
-  vector3 at;
-  float width, height;
-  matrix4 light_view;
-
-  matrix4 light_projection;
   std::unique_ptr<class vk_base> m_base;
   void prepare_descriptor_set_layout();
   void prepare_descriptor_pool();

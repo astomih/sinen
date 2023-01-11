@@ -13,14 +13,11 @@ uniform Matrices {
   mat4 world;
   mat4 view;
   mat4 proj;
-  mat4 light_view;
-  mat4 light_proj;
 };
 // Normal (in world space)
 out vec3 fragNormal;
 // Position (in world space)
 out vec3 fragWorldPos;
-out vec4 ShadowCoord;
 void main() {
   mat4 inworldmat;
   inworldmat[0] = m1;
@@ -39,7 +36,6 @@ void main() {
   fragWorldPos = worldpos.xyz;
   gl_Position = proj * view * inworldmat * vec4(inPos, 1.0);
   fragNormal = (inworldmat * vec4(inNormal, 0.0)).xyz;
-  ShadowCoord = bias * light_proj * light_view * inworldmat * vec4(inPos, 1.0);
   outUV = inUV;
   outRgba = inRgba;
 }

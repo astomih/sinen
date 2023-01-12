@@ -26,6 +26,14 @@
       "program": "${workspaceFolder}/debug/editor/editor.exe",
       "args": [],
       "cwd": "${workspaceFolder}/editor"
-    }
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Game(Release)",
+      "program": "${workspaceFolder}/build/game/game.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}/game"
+    },
   ]
 }

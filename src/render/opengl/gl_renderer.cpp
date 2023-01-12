@@ -36,14 +36,9 @@
 #include <sstream>
 #include <window/window.hpp>
 
-#ifdef _WIN32
 #define USE_RENDER_TEXTURE 1
-#else
-#define USE_RENDER_TEXTURE 0
-#endif
 
 namespace sinen {
-static constexpr int SHADOWMAP_SIZE = 2048;
 gl_renderer::gl_renderer() {}
 gl_renderer::~gl_renderer() = default;
 
@@ -236,12 +231,6 @@ void gl_renderer::draw_3d() {
                    sizeof(gl_shader_parameter));
     }
     disable_vertex_attrib_array();
-#if USE_RENDER_TEXTURE
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, shadowdepthtexture);
-    glUniform1i(glGetUniformLocation(mSpriteShader.program(), "shadowMap"), 0);
-    glActiveTexture(GL_TEXTURE1);
-#endif
     glBindTexture(GL_TEXTURE_2D,
                   mTextureIDs[i.drawable_object->binding_texture.handle]);
 #if USE_RENDER_TEXTURE
@@ -613,6 +602,7 @@ void gl_renderer::prepare_render_texture() {
 }
 void gl_renderer::prepare_depth_texture() {
 #if USE_RENDER_TEXTURE
+  constexpr int SHADOWMAP_SIZE = 1024;
   glGenFramebuffers(1, &shadowframebuffer);
   glBindFramebuffer(GL_FRAMEBUFFER, shadowframebuffer);
   glGenTextures(1, &shadowdepthtexture);
@@ -669,13 +659,6 @@ void gl_renderer::destroy_texture(texture handle) {
 
 bool gl_renderer::load_shader() {
   gl_shader_parameter param{};
-  if (!m_depth_texture_shader.load("depth.vert", "depth.frag")) {
-    return false;
-  }
-  if (!m_depth_texture_instanced_shader.load("depth_instanced.vert",
-                                             "depth.frag")) {
-    return false;
-  }
   if (!m_render_texture_shader.load("render_texture.vert",
                                     "render_texture.frag")) {
     return false;

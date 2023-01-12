@@ -48,7 +48,8 @@
     "keyLEFT",
     "dts",
     "keyV",
-    "keyTAB"
+    "keyTAB",
+    "keyQ"
   ],
   "Lua.completion.autoRequire": false
 }

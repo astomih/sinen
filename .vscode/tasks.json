@@ -15,6 +15,11 @@
       "label": "ReleaseBuild",
       "type": "shell",
       "command": "cd build && cmake .. -DALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release && ninja"
+    },
+    {
+      "label": "WebBuild",
+      "type": "shell",
+      "command": "cd web && emcmake cmake ..  && emmake make -j8"
     }
   ]
 }

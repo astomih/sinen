@@ -122,8 +122,6 @@ private:
   gl_shader mSpriteInstanceShader;
   gl_shader mAlphaInstanceShader;
   gl_shader m_render_texture_shader;
-  gl_shader m_depth_texture_shader;
-  gl_shader m_depth_texture_instanced_shader;
   std::vector<std::pair<shader, gl_shader>> m_user_pipelines;
   GLuint mTextureID;
   std::unordered_map<handle_t, GLuint> mTextureIDs;

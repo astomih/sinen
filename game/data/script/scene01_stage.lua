@@ -204,6 +204,38 @@ function update()
             0.5), math.floor(v.drawer.position.y / tile_size + 0.5)) ==
             1 then table.remove(player.bullets, i) end
     end
+    for a, b in ipairs(player.orbits) do
+        for i, v in ipairs(b.bullets) do
+            for j, w in ipairs(enemies) do
+                if collision.aabb_aabb(v.aabb, w.aabb) then
+                    local efk = effect()
+                    efk:setup()
+                    for k = 1, efk.max_particles do
+                        efk.worlds[k].position = w.drawer.position:copy()
+                    end
+                    efk:play()
+                    table.insert(b.efks, efk)
+
+                    table.remove(b.bullets, i)
+                    -- hp
+                    w.hp = w.hp - 10
+                    if w.hp < 0 then
+                        score = score + 10
+                        table.remove(enemies, j)
+                    end
+                    if #enemies <= 0 then
+                        stair.position.z = -2
+
+                    end
+                end
+            end
+            if map:at(math.floor(v.drawer
+                .position
+                .x / tile_size +
+                0.5), math.floor(v.drawer.position.y / tile_size + 0.5)) ==
+                1 then table.remove(b.bullets, i) end
+        end
+    end
     player:update(map, map_draw3ds, map_size_x, map_size_y)
     -- Player hit key
     if math.floor(player.drawer.position.x + 0.5) == math.floor(key_drawer.position.x) and

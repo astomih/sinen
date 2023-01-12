@@ -36,6 +36,7 @@ local player = {
     boost_mag = 5,
     is_boost = false,
     orbits = {},
+    orbit_toggle = true,
     setup = function(self, map, map_size_x, map_size_y)
         self.model = model()
         self.model:load("triangle.sim", "player")
@@ -106,13 +107,19 @@ local player = {
             speed = speed / math.sqrt(2)
         end
         -- bullet
-        if keyboard:is_key_pressed(keyTAB) then
-            local o = orbit(self)
-            o:setup()
-            table.insert(self.orbits, o)
+        if keyboard:is_key_pressed(keyQ) then
+            if self.orbit_toggle then
+                self.orbit_toggle = false
+                local o = orbit(self)
+                o:setup()
+                table.insert(self.orbits, o)
+            else
+                self.orbit_toggle = true
+                self.orbits = {}
+            end
         end
         for i, j in ipairs(self.orbits) do
-            j:update()
+            j:update(map_draw3ds)
         end
         self.bullet_timer = self.bullet_timer + delta_time
         if self.bullet_timer >

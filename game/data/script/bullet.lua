@@ -18,7 +18,7 @@ local function bullet(map_draw3ds)
             self.texture = texture()
             self.texture:fill_color(color(1, 0.25, 0.25, 1))
             self.drawer = draw3d(self.texture)
-            self.drawer.vertex_name = "bullet"
+            self.drawer.vertex_name = "BOX"
             self.drawer.position = vector3(owner.position.x, owner.position.y,
                 0)
             self.drawer.rotation = owner.rotation

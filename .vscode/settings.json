@@ -51,5 +51,9 @@
     "keyTAB",
     "keyQ"
   ],
-  "Lua.completion.autoRequire": false
+  "Lua.completion.autoRequire": false,
+  "Lua.diagnostics.disable": [
+    "unused-local",
+    "unused-function"
+  ]
 }

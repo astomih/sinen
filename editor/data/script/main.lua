@@ -1,7 +1,7 @@
-function setup()
+function Setup()
 
 end
 
-function update()
+function Update()
 
 end

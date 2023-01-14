@@ -34,13 +34,14 @@ local player = {
     boost_time = 0.3,
     boost_timer = 0.0,
     boost_mag = 5,
+    boost_sound = {},
     is_boost = false,
     orbits = {},
     orbit_toggle = true,
     setup = function(self, map, map_size_x, map_size_y)
         self.model = model()
         self.model:load("triangle.sim", "player")
-        self.drawer = draw3d(tex)
+        self.drawer = draw3d(DEFAULT_TEXTURE)
         self.drawer.vertex_name = "player"
         self.aabb = aabb()
         self.bullet_time = 0.1
@@ -74,6 +75,9 @@ local player = {
             self.efk.worlds[j].position = p
         end
         self.efk:play()
+        self.boost_sound = sound()
+        self.boost_sound:load("boost.wav")
+
 
 
     end,
@@ -140,6 +144,7 @@ local player = {
             end
         else
             if keyboard:key_state(keySPACE) == buttonPRESSED then
+                self.boost_sound:play()
                 self.boost = self.boost + self.boost_mag
                 self.is_boost = true
                 self.boost_timer = 0.0
@@ -162,8 +167,7 @@ local player = {
             v:update()
             if v.is_stop then table.remove(self.efks, i) end
         end
-        scale = self.drawer.scale.x * 2.0
-        before_pos = vector3(self.drawer.position.x, self.drawer.position.y,
+        local before_pos = vector3(self.drawer.position.x, self.drawer.position.y,
             self.drawer.position.z)
         if input_vector.y ~= 0 then
             before_pos = self.drawer.position:copy()
@@ -217,7 +221,7 @@ local player = {
     end,
 
     draw = function(self)
-        if not fps_mode then self.drawer:draw() end
+        if not FPS_MODE then self.drawer:draw() end
         self.hp_drawer:draw()
         self.drawer_scope_big:draw()
         self.drawer_scope:draw()

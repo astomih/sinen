@@ -4,7 +4,7 @@ local hello_drawer = {}
 
 local F3_texture = {}
 local F3_drawer = {}
-function setup()
+function Setup()
     hello_texture = texture()
     F3_texture = texture()
     hello_drawer = draw2d(hello_texture)
@@ -21,7 +21,7 @@ function setup()
     F3_drawer.position = vector2(0, -60)
 end
 
-function update()
+function Update()
     hello_drawer:draw()
     F3_drawer:draw()
 end

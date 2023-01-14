@@ -217,6 +217,7 @@ void gl_renderer::draw_skybox() {
 }
 
 void gl_renderer::draw_3d() {
+  glActiveTexture(GL_TEXTURE0);
   for (auto &i : m_drawer_3ds) {
     auto &va = m_VertexArrays[i.drawable_object->vertexIndex];
     glBindVertexArray(va.vao);
@@ -258,10 +259,6 @@ void gl_renderer::draw_instancing_3d() {
     auto &va = m_VertexArrays[i.ins.object->vertexIndex];
     glBindVertexArray(i.vao);
 #if USE_RENDER_TEXTURE
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, shadowdepthtexture);
-    glUniform1i(
-        glGetUniformLocation(mSpriteInstanceShader.program(), "shadowMap"), 0);
     glActiveTexture(GL_TEXTURE1);
 #endif
     glBindTexture(GL_TEXTURE_2D,
@@ -470,12 +467,7 @@ void gl_renderer::draw2d(std::shared_ptr<class drawable> sprite) {
 
 void gl_renderer::draw3d(std::shared_ptr<class drawable> sprite) {
   create_texture(sprite->binding_texture);
-  auto iter = m_drawer_3ds.begin();
-  for (; iter != m_drawer_3ds.end(); ++iter) {
-    if (sprite->drawOrder < (*iter).drawable_object->drawOrder) {
-      break;
-    }
-  }
+  auto iter = m_drawer_3ds.end();
   gl_uniform_buffer ubo;
   ubo.create(0,
              sizeof(gl_shader_parameter) + sprite->shade.get_parameter_size(),
@@ -595,7 +587,8 @@ void gl_renderer::prepare_render_texture() {
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                             GL_RENDERBUFFER, depthbuffer);
 
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rendertexture, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                         rendertexture, 0);
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 #endif
@@ -617,8 +610,8 @@ void gl_renderer::prepare_depth_texture() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE,
                   GL_COMPARE_R_TO_TEXTURE);
 
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, shadowdepthtexture,
-                       0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                         shadowdepthtexture, 0);
   glDrawBuffer(GL_NONE);
 #endif
 }

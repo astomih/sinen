@@ -1,7 +1,7 @@
 local player = require "player"
 local enemy = require "enemy"
 local enemies = {}
-local enemy_max_num = 10
+local enemy_max_num = 100
 local world = require "world"
 local map_size_x = 64
 local map_size_y = 64
@@ -22,33 +22,17 @@ local stair = {}
 -- assets
 local tree = model()
 local music = music()
-local iseki_wall = texture()
-local bright = 1.0
-local dark = 1.0
 local tile = texture()
-local texture_brown_color = {}
 
 local score_font = font()
 local score_texture = texture()
 local score_drawer = draw2d(score_texture)
 tile:load("tile.png")
-if now_stage == 1 then
-    iseki_wall:fill_color(color(dark, bright, dark, 1))
-else
-    if now_stage == 2 then
-        iseki_wall:fill_color(color(bright, dark, dark, 1))
-    else
-        if now_stage == 3 then
-            iseki_wall:fill_color(color(dark, dark, bright, 1))
-        end
-    end
-
-end
 tree:load("tree.sim", "tree")
 local stair_model = model()
 stair_model:load("stair.sim", "stair")
 
-local menu = require("menu")
+local menu = require("gui/menu")
 local menu_object = menu()
 
 
@@ -64,7 +48,7 @@ local key_drawer2d = draw2d(key_texture_2d)
 key_drawer2d.scale = key_texture_2d:size()
 key_drawer2d.scale.x = key_drawer2d.scale.x / 6
 key_drawer2d.scale.y = key_drawer2d.scale.y / 6
-key_drawer2d.position = vector2(-window.size().x / tile_size + key_drawer2d.scale.x / tile_size, -window.size().y / 3)
+key_drawer2d.position = vector2(-window.size().x / TILE_SIZE + key_drawer2d.scale.x / TILE_SIZE, -window.size().y / 3)
 local key_drawer = draw3d(key_texture)
 key_drawer.scale = vector3(0.25, 0.25, 0.25)
 key_drawer.position = vector3(0, 0, 1)
@@ -72,28 +56,26 @@ key_drawer.rotation = vector3(90, 0, 0)
 key_drawer.vertex_name = "key"
 local key_hit = false
 
-function setup()
+function Setup()
     score_font:load("x16y32pxGridGazer.ttf", 64)
     menu_object:setup()
     music:load("Stage1.ogg")
     music:play()
-    tex = texture()
-    texture_brown_color = texture()
-    tex:fill_color(color(1, 1, 1, 1))
-    texture_brown_color:fill_color(color(0.843, 0.596, 0.043, 1))
+    DEFAULT_TEXTURE = texture()
+    DEFAULT_TEXTURE:fill_color(color(1, 1, 1, 1))
     map:fill(0)
     dts.dungeon_generator(map)
 
-    box = draw3d_instanced(iseki_wall)
+    box = draw3d_instanced(DEFAULT_TEXTURE)
     box.vertex_name = "tree"
     sprite = draw3d_instanced(tile)
     sprite.is_draw_depth = false
-    stair = draw3d(tex)
+    stair = draw3d(DEFAULT_TEXTURE)
     stair.vertex_name = "stair"
-    for i = 1, collision_space_division + 2 do
-        collision_space[i] = {}
-        for j = 1, collision_space_division + 2 do
-            collision_space[i][j] = {}
+    for i = 1, COLLISION_SPACE_DIVISION + 2 do
+        COLLISION_SPACE[i] = {}
+        for j = 1, COLLISION_SPACE_DIVISION + 2 do
+            COLLISION_SPACE[i][j] = {}
         end
     end
     for i = 1, enemy_max_num do table.insert(enemies, enemy()) end
@@ -103,9 +85,9 @@ function setup()
         map_draw3ds[y] = {}
         for x = 1, map_size_x do
             map_draw3ds[y][x] = world()
-            map_draw3ds[y][x].position.x = x * tile_size
-            map_draw3ds[y][x].position.y = y * tile_size
-            map_draw3ds[y][x].scale = vector3(tile_size / 2.0, tile_size / 2.0, 1)
+            map_draw3ds[y][x].position.x = x * TILE_SIZE
+            map_draw3ds[y][x].position.y = y * TILE_SIZE
+            map_draw3ds[y][x].scale = vector3(TILE_SIZE / 2.0, TILE_SIZE / 2.0, 1)
             if map:at(x, y) ~= map_chip.stair then
                 sprite:add(map_draw3ds[y][x].position, map_draw3ds[y][x].rotation,
                     map_draw3ds[y][x].scale)
@@ -119,23 +101,21 @@ function setup()
                 map_draw3ds[y][x].position:sub(map_draw3ds[y][x].scale)
                 map_draw3ds[y][x].scale.z = 3
 
-                box:add(map_draw3ds[y][x].position, map_draw3ds[y][x].rotation,
-                    map_draw3ds[y][x].scale)
 
             end
             if map:at(x, y) == map_chip.stair then
-                stair.position.x = x * tile_size
-                stair.position.y = y * tile_size + 0.5
+                stair.position.x = x * TILE_SIZE
+                stair.position.y = y * TILE_SIZE + 0.5
                 stair.position.z = 100
             end
             -- key object
             if map:at(x, y) == map_chip.key then
-                key_drawer.position.x = x * tile_size
-                key_drawer.position.y = y * tile_size
+                key_drawer.position.x = x * TILE_SIZE
+                key_drawer.position.y = y * TILE_SIZE
             end
             if map:at(x, y) == map_chip.player then
-                player.drawer.position.x = x * tile_size
-                player.drawer.position.y = y * tile_size
+                player.drawer.position.x = x * TILE_SIZE
+                player.drawer.position.y = y * TILE_SIZE
             end
         end
     end
@@ -149,7 +129,32 @@ end
 local function draw()
     player:draw()
     for i, v in ipairs(enemies) do v:draw() end
+    box:clear()
+    local px = math.floor(player.drawer.position.x / TILE_SIZE + 0.5)
+    local py = math.floor(player.drawer.position.y / TILE_SIZE + 0.5)
+    local size = 5
+    for y = py - size, py + size do
+        for x = px - size, px + size do
+            if (1 <= x and x <= map_size_x and 1 <= y and y <= map_size_y) then
+                if map:at(x, y) == map_chip.wall then
+                    box:add(map_draw3ds[y][x].position, map_draw3ds[y][x].rotation,
+                        map_draw3ds[y][x].scale)
+                end
+            end
+        end
+    end
     box:draw()
+    sprite:clear()
+    for y = py - size, py + size do
+        for x = px - size, px + size do
+            if (1 <= x and x <= map_size_x and 1 <= y and y <= map_size_y) then
+                local p = map_draw3ds[y][x].position:copy()
+                p.z = 0.0
+                sprite:add(p, map_draw3ds[y][x].rotation,
+                    map_draw3ds[y][x].scale)
+            end
+        end
+    end
     sprite:draw()
     stair:draw()
     if not key_hit then
@@ -162,14 +167,14 @@ local function draw()
     menu_object:draw()
 end
 
-function update()
+function Update()
     menu_object:update()
     if not menu_object.hide then
         draw()
         return
     end
     key_drawer.rotation.y = key_drawer.rotation.y + delta_time * 100
-    score_font:render_text(score_texture, "SCORE: " .. score,
+    score_font:render_text(score_texture, "SCORE: " .. SCORE,
         color(1, 1, 1, 1))
     score_drawer.scale = score_texture:size()
     score_drawer.position.x = -300
@@ -189,7 +194,7 @@ function update()
                 -- hp
                 w.hp = w.hp - 10
                 if w.hp < 0 then
-                    score = score + 10
+                    SCORE = SCORE + 10
                     table.remove(enemies, j)
                 end
                 if #enemies <= 0 then
@@ -200,8 +205,8 @@ function update()
         end
         if map:at(math.floor(v.drawer
             .position
-            .x / tile_size +
-            0.5), math.floor(v.drawer.position.y / tile_size + 0.5)) ==
+            .x / TILE_SIZE +
+            0.5), math.floor(v.drawer.position.y / TILE_SIZE + 0.5)) ==
             1 then table.remove(player.bullets, i) end
     end
     for a, b in ipairs(player.orbits) do
@@ -220,7 +225,7 @@ function update()
                     -- hp
                     w.hp = w.hp - 10
                     if w.hp < 0 then
-                        score = score + 10
+                        SCORE = SCORE + 10
                         table.remove(enemies, j)
                     end
                     if #enemies <= 0 then
@@ -231,8 +236,8 @@ function update()
             end
             if map:at(math.floor(v.drawer
                 .position
-                .x / tile_size +
-                0.5), math.floor(v.drawer.position.y / tile_size + 0.5)) ==
+                .x / TILE_SIZE +
+                0.5), math.floor(v.drawer.position.y / TILE_SIZE + 0.5)) ==
                 1 then table.remove(b.bullets, i) end
         end
     end
@@ -253,8 +258,8 @@ function update()
 
         if keyboard:key_state(keyENTER) == buttonPRESSED and stair.position.z ==
             -2 then
-            now_stage = now_stage + 1
-            if now_stage == 4 then
+            NOW_STAGE = NOW_STAGE + 1
+            if NOW_STAGE == 4 then
                 change_scene("scene02_clear")
             else
                 change_scene("scene01_stage")

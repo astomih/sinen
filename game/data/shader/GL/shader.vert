@@ -15,14 +15,6 @@ out vec3 fragNormal;
 // Position (in world space)
 out vec3 fragWorldPos;
 void main() {
-  mat4 bias;
-  bias[0][0] = 0.5;
-  bias[1][1] = 0.5;
-  bias[2][2] = 0.5;
-  bias[3][0] = 0.5;
-  bias[3][1] = 0.5;
-  bias[3][2] = 0.5;
-  bias[3][3] = 1.0;
   fragWorldPos = (vec4(inPos, 1.0) * world).xyz;
   gl_Position = proj * view * world * vec4(inPos, 1.0);
   fragNormal = (world * vec4(inNormal, 0.0)).xyz;

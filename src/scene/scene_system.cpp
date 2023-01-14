@@ -2,7 +2,6 @@
 #include "../audio/sound_system.hpp"
 #include "../event/event_system.hpp"
 #include "../input/input_system.hpp"
-#include "../main/main_system.hpp"
 #include "../render/render_system.hpp"
 #include "../script/script_system.hpp"
 #include "../window/window_system.hpp"
@@ -63,7 +62,7 @@ void scene_system::setup() {
     std::string str = data_stream::open_as_string(
         asset_type::Script, main::get_current_scene_number() + ".lua");
     lua->do_string(str.data());
-    (*lua)["setup"]();
+    (*lua)["Setup"]();
   }
   m_impl->setup();
   m_game_state = scene::state::running;
@@ -113,7 +112,7 @@ void scene_system::update_scene() {
                       data_stream::open_as_string(asset_type::Script,
                                                   (*itr)->get_script_name()))
                    .as<sol::table>();
-      r["update"]();
+      r["Update"]();
       (*itr)->update(deltaTime);
 
       itr++;
@@ -129,7 +128,7 @@ void scene_system::update_scene() {
     (*lua)["delta_time"] = deltaTime;
     (*lua)["keyboard"] = input::keyboard;
     (*lua)["mouse"] = input::mouse;
-    (*lua)["update"]();
+    (*lua)["Update"]();
   }
   m_impl->update(deltaTime);
   sound_system::update(deltaTime);

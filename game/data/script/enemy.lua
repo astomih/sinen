@@ -12,6 +12,7 @@ local enemy = function()
     local object = {
         drawer = {},
         speed = 4,
+        search_length = 15,
         model = {},
         hp = 100,
         aabb = {},
@@ -26,14 +27,14 @@ local enemy = function()
         bfs = {},
         setup = function(self, _map, map_size_x, map_size_y)
             self.bfs = bfs_grid(_map)
-            self.drawer = draw3d(tex)
+            self.drawer = draw3d(DEFAULT_TEXTURE)
             self.model = model()
-            if now_stage == 1 then
+            if NOW_STAGE == 1 then
                 self.model:load("spider.sim", "spider")
                 self.drawer.vertex_name = "spider"
                 self.drawer.scale = vector3(0.3, 0.3, 0.3)
             end
-            if now_stage == 2 then
+            if NOW_STAGE == 2 then
                 if math.random(0, 1) == 0 then
                     self.model:load("bat.sim", "bat")
                     self.drawer.vertex_name = "bat"
@@ -44,7 +45,7 @@ local enemy = function()
                     self.drawer.scale = vector3(1, 1, 1)
                 end
             end
-            if now_stage == 3 then
+            if NOW_STAGE == 3 then
                 self.model:load("frog.sim", "frog")
                 self.drawer.vertex_name = "frog"
                 self.drawer.scale = vector3(1, 1, 1)
@@ -54,12 +55,16 @@ local enemy = function()
             r1 = 0
             r2 = 0
             while decide_pos(_map, map_size_x, map_size_y) == true do end
-            self.drawer.position = vector3(r1 * tile_size, r2 * tile_size, 0.5)
+            self.drawer.position = vector3(r1 * TILE_SIZE, r2 * TILE_SIZE, 0.5)
             self.is_collision_first = true
             self.collision_time = 1.0
             self.collision_timer = 0.0
         end,
         update = function(self, player)
+            local length = self.drawer.position:sub(player.drawer.position):length()
+            if length > self.search_length then
+                return
+            end
             self.aabb.max = self.drawer.position:add(
                 self.drawer.scale:mul(self.model.aabb.max))
             self.aabb.min = self.drawer.position:add(
@@ -72,23 +77,23 @@ local enemy = function()
                         player.drawer.position.y -
                         self.drawer.position.y)))
             local start = point2i(
-                self.drawer.position.x / tile_size
+                self.drawer.position.x / TILE_SIZE
                 ,
-                self.drawer.position.y / tile_size
+                self.drawer.position.y / TILE_SIZE
             )
             local goal = point2i(
-                player.drawer.position.x / tile_size,
-                player.drawer.position.y / tile_size
+                player.drawer.position.x / TILE_SIZE,
+                player.drawer.position.y / TILE_SIZE
             )
             if self.bfs:find_path(start, goal) then
                 local path = self.bfs:trace()
                 path = self.bfs:trace()
                 self.drawer.position.x =
                 self.drawer.position.x +
-                    (path.x * tile_size - self.drawer.position.x) * delta_time * self.speed
+                    (path.x * TILE_SIZE - self.drawer.position.x) * delta_time * self.speed
                 self.drawer.position.y =
                 self.drawer.position.y +
-                    (path.y * tile_size - self.drawer.position.y) * delta_time * self.speed
+                    (path.y * TILE_SIZE - self.drawer.position.y) * delta_time * self.speed
 
             else
                 self.drawer.position.x =

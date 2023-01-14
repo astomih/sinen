@@ -91,9 +91,9 @@ bool main_system::initialize() {
   SDL_SetMainReady();
   SDL_Init(SDL_INIT_EVERYTHING);
   TTF_Init();
-  IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
+  IMG_Init(IMG_INIT_PNG);
   SDLNet_Init();
-  Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3);
+  Mix_Init(MIX_INIT_OGG);
   Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
   logger::info("Sub system activating");
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)

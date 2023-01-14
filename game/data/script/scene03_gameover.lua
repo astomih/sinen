@@ -2,7 +2,7 @@ local texture_dead = {}
 local font_dead = {}
 local drawer_dead = {}
 
-function setup()
+function Setup()
     texture_dead = texture()
     drawer_dead = draw2d_instanced(texture_dead)
     font_dead = font()
@@ -11,9 +11,9 @@ function setup()
     drawer_dead:add(vector2(0, 0), 0, texture_dead:size())
 end
 
-function update()
+function Update()
     drawer_dead:draw()
-    if keyboard:key_state(keySPACE) == buttonPRESSED then
+    if keyboard:key_state(keyENTER) == buttonPRESSED then
         change_scene("main")
     end
 end

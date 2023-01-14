@@ -5,12 +5,11 @@ local font_title = {}
 local font_press = {}
 local drawer_title = {}
 local drawer_press = {}
-local menu = require("menu")
+local menu = require("gui/menu")
 local menu_object = menu()
-
-function setup()
-    score = 0
-    now_stage = 1
+function Setup()
+    SCORE = 0
+    NOW_STAGE = 1
     menu_object:setup()
     texture_title = texture()
     drawer_title = draw2d(texture_title)
@@ -31,7 +30,7 @@ function setup()
     set_skybox_texture(skybox_tex)
 end
 
-function update()
+function Update()
     drawer_title:draw()
     drawer_press:draw()
     menu_object:update()

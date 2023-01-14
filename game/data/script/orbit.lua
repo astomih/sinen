@@ -16,7 +16,7 @@ local orbit = function(player)
     setup = function(self)
       self.model = model()
       self.model:load("orbit1.sim", "orbit1")
-      self.texture = tex
+      self.texture = DEFAULT_TEXTURE
       self.drawer = draw3d(self.texture)
       self.drawer.scale = vector3(0.125, 0.125, 0.125)
       self.drawer.vertex_name = "orbit1"

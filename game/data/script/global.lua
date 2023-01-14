@@ -1,6 +1,7 @@
-now_stage = 1
-score = 0
-collision_space = {}
-collision_space_division = 0
-fps_mode = false
-tile_size = 4
+NOW_STAGE = 1
+SCORE = 0
+COLLISION_SPACE = {}
+COLLISION_SPACE_DIVISION = 0
+FPS_MODE = false
+TILE_SIZE = 4
+DEFAULT_TEXTURE = {}

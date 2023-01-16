@@ -12,7 +12,7 @@ public:
   vk_pipeline_layout() = default;
   void initialize(VkDevice device,
                   const VkDescriptorSetLayout *descriptorLayout,
-                  const VkExtent2D &extent);
+                  const VkExtent2D &extent, bool instance = true);
   void prepare(VkDevice device);
   void cleanup(VkDevice device);
   const VkPipelineInputAssemblyStateCreateInfo *GetInputAssemblyCI() {

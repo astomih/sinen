@@ -115,6 +115,22 @@ void vk_renderer::render() {
   vkQueueSubmit(m_base->m_deviceQueue, 1, &submitInfo, commandFence);
   m_base->mSwapchain->queue_present(m_base->m_deviceQueue, nextImageIndex,
                                     m_base->m_renderCompletedSem);
+  for (auto &sprite : m_draw_object_3d)
+    destroy_vk_drawable(sprite);
+  m_draw_object_3d.clear();
+  for (auto &sprite : m_draw_object_2d)
+    destroy_vk_drawable(sprite);
+  m_draw_object_2d.clear();
+  for (auto &_instancing : m_instancies_2d) {
+    destroy_vk_drawable(_instancing.m_vk_draw_object);
+    destroy_buffer(_instancing.instance_buffer);
+  }
+  m_instancies_2d.clear();
+  for (auto &_instancing : m_instancies_3d) {
+    destroy_vk_drawable(_instancing.m_vk_draw_object);
+    destroy_buffer(_instancing.instance_buffer);
+  }
+  m_instancies_3d.clear();
 }
 void vk_renderer::add_vertex_array(const vertex_array &vArray,
                                    std::string_view name) {
@@ -415,22 +431,6 @@ void vk_renderer::make_command(VkCommandBuffer command) {
   draw2d(command);
   draw_instancing_2d(command);
   m_pipelines["opaque"].Bind(command);
-  for (auto &sprite : m_draw_object_3d)
-    destroy_vk_drawable(sprite);
-  m_draw_object_3d.clear();
-  for (auto &sprite : m_draw_object_2d)
-    destroy_vk_drawable(sprite);
-  m_draw_object_2d.clear();
-  for (auto &_instancing : m_instancies_2d) {
-    destroy_vk_drawable(_instancing.m_vk_draw_object);
-    destroy_buffer(_instancing.instance_buffer);
-  }
-  m_instancies_2d.clear();
-  for (auto &_instancing : m_instancies_3d) {
-    destroy_vk_drawable(_instancing.m_vk_draw_object);
-    destroy_buffer(_instancing.instance_buffer);
-  }
-  m_instancies_3d.clear();
   render_imgui(command);
 }
 void vk_renderer::draw_skybox(VkCommandBuffer command) {
@@ -580,12 +580,12 @@ void vk_renderer::write_memory(VmaAllocation allocation, const void *data,
   if (size == 0)
     return;
   void *p = nullptr;
-  char *pc;
+  char *pc = nullptr;
   vmaMapMemory(allocator, allocation, &p);
   pc = reinterpret_cast<char *>(p);
   pc += offset;
   p = reinterpret_cast<void *>(pc);
-  memcpy(p, data, size);
+  SDL_memcpy(p, data, size);
   vmaUnmapMemory(allocator, allocation);
 }
 

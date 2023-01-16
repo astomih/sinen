@@ -163,6 +163,9 @@ void render_system::update_model(const model &m) {
   }
 }
 void render_system::add_instancing(const instancing &_instancing) {
+  if (_instancing.data.empty()) {
+    return;
+  }
 #if !defined(EMSCRIPTEN) && !defined(MOBILE)
   if (RendererAPI == graphics_api::Vulkan) {
     m_vk_renderer->add_instancing(_instancing);

@@ -348,15 +348,15 @@ void vk_base::destroy_image_view() {
   vkDestroyImageView(m_device, m_depthBufferView, nullptr);
 }
 void vk_base::destroy_depth_buffer() {
+  vmaFreeMemory(m_vkrenderer->allocator, m_depthBufferAllocation);
   vmaDestroyImage(m_vkrenderer->allocator, m_depthBuffer,
                   m_depthBufferAllocation);
-  vmaFreeMemory(m_vkrenderer->allocator, m_depthBufferAllocation);
 }
 void vk_base::destroy_render_pass() {
   vkDestroyRenderPass(m_device, m_renderPass, nullptr);
 }
 void vk_base::destroy_frame_buffer() {
-  for (auto &v : m_framebuffers) {
+  for (auto v : m_framebuffers) {
     vkDestroyFramebuffer(m_device, v, nullptr);
   }
   m_framebuffers.clear();
@@ -392,19 +392,18 @@ vk_base::get_memory_type_index(uint32_t requestBits,
 
 void vk_base::recreate_swapchain() {
   vkDeviceWaitIdle(m_device);
-
   auto size = window::size();
+  auto format = mSwapchain->GetSurfaceFormat().format;
   mSwapchain->prepare(m_physDev, m_graphicsQueueIndex,
                       static_cast<uint32_t>(size.x),
-                      static_cast<uint32_t>(size.y), VK_FORMAT_B8G8R8A8_UNORM);
+                      static_cast<uint32_t>(size.y), format);
+
   destroy_frame_buffer();
-  destroy_render_pass();
   destroy_image_view();
   destroy_depth_buffer();
 
   create_depth_buffer();
   create_image_view();
-  create_render_pass();
   create_frame_buffer();
 }
 } // namespace sinen

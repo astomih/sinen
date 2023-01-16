@@ -7,6 +7,9 @@ local drawer_title = {}
 local drawer_press = {}
 local menu = require("gui/menu")
 local menu_object = menu()
+local scene_switcher = require("scene_switcher")()
+
+
 function Setup()
     SCORE = 0
     NOW_STAGE = 1
@@ -28,16 +31,35 @@ function Setup()
     local skybox_tex = texture()
     skybox_tex:fill_color(color(0.2, 0.2, 0.2, 1))
     set_skybox_texture(skybox_tex)
+    scene_switcher:setup()
+    scene_switcher:start(true, "")
 end
 
-function Update()
+local function draw()
     drawer_title:draw()
     drawer_press:draw()
-    menu_object:update()
     menu_object:draw()
+end
+
+local toggle = true
+function Update()
+    if keyboard:is_key_pressed(keyF11) then
+        if toggle then
+            window.set_fullscreen(true)
+        else
+            window.set_fullscreen(false)
+        end
+        toggle = not toggle
+    end
+    if scene_switcher.flag then
+        scene_switcher:update(draw)
+        return
+    end
+    menu_object:update()
+    draw()
     if menu_object.hide then
         if keyboard:key_state(keyENTER) == buttonPRESSED then
-            change_scene("scene01_stage")
+            scene_switcher:start(false, "scene00_base")
         end
     end
 end

@@ -34,6 +34,7 @@ stair_model:load("stair.sim", "stair")
 
 local menu = require("gui/menu")
 local menu_object = menu()
+local scene_switcher = require("scene_switcher")()
 
 
 -- key object
@@ -119,6 +120,8 @@ function Setup()
             end
         end
     end
+    scene_switcher:setup()
+    scene_switcher:start(true, "")
 end
 
 local function camera_update()
@@ -168,6 +171,10 @@ local function draw()
 end
 
 function Update()
+    if scene_switcher.flag then
+        scene_switcher:update(draw)
+        return
+    end
     menu_object:update()
     if not menu_object.hide then
         draw()
@@ -245,7 +252,6 @@ function Update()
     -- Player hit key
     if math.floor(player.drawer.position.x + 0.5) == math.floor(key_drawer.position.x) and
         math.floor(player.drawer.position.y + 0.5) == math.floor(key_drawer.position.y) then
-
         key_hit = true
         stair.position.z = -2.0
     end
@@ -260,11 +266,14 @@ function Update()
             -2 then
             NOW_STAGE = NOW_STAGE + 1
             if NOW_STAGE == 4 then
-                change_scene("scene02_clear")
+                scene_switcher:start(false, "scene02_clear")
             else
-                change_scene("scene01_stage")
+                scene_switcher:start(false, "scene01_stage")
             end
         end
+    end
+    if player.hp <= 0 then
+        scene_switcher:start(false, "scene03_gameover")
     end
     camera_update()
     draw()

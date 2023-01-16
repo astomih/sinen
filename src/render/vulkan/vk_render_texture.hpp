@@ -13,9 +13,14 @@ public:
   void prepare_descriptor_set_layout();
   void prepare_descriptor_set();
   void prepare(int width, int height, bool depth_only);
+  void clear();
+  void window_resize(int width, int height);
   VkSampler create_sampler();
   vk_image_object create_image_object(int width, int height, VkFormat format,
                                       bool isdepth);
+  void destroy_image_object(vk_image_object &image_object);
+  void create_frame_buffer(int width, int height);
+  void destroy_frame_buffer();
 
   VkRenderPass render_pass;
   VkFramebuffer fb;

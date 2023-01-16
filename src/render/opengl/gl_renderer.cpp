@@ -217,8 +217,8 @@ void gl_renderer::draw_skybox() {
 }
 
 void gl_renderer::draw_3d() {
-  glActiveTexture(GL_TEXTURE0);
   for (auto &i : m_drawer_3ds) {
+    glActiveTexture(GL_TEXTURE1);
     auto &va = m_VertexArrays[i.drawable_object->vertexIndex];
     glBindVertexArray(va.vao);
     gl_shader_parameter param;
@@ -560,9 +560,8 @@ void gl_renderer::add_instancing(const instancing &_instancing) {
 
 void gl_renderer::prepare() {
   if (!load_shader()) {
-    std::cout << "failed to loads shader" << std::endl;
+    logger::error("failed to loads shader");
   }
-  prepare_depth_texture();
   prepare_render_texture();
 }
 
@@ -612,7 +611,6 @@ void gl_renderer::prepare_depth_texture() {
 
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                          shadowdepthtexture, 0);
-  glDrawBuffer(GL_NONE);
 #endif
 }
 

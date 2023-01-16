@@ -77,6 +77,7 @@ local player = {
         self.efk:play()
         self.boost_sound = sound()
         self.boost_sound:load("boost.wav")
+        self.boost_sound:set_volume(0.2)
 
 
 
@@ -100,7 +101,6 @@ local player = {
             self.drawer.scale:mul(self.model.aabb.max))
         self.aabb.min = self.drawer.position:add(
             self.drawer.scale:mul(self.model.aabb.min))
-        if self.hp <= 0 then change_scene("scene03_gameover") end
         input_vector = calc_input_vector()
         if keyboard:is_key_down(keyLSHIFT) then
             speed = 8.0
@@ -200,8 +200,8 @@ local player = {
             end
         end
         local mouse_pos = mouse:position()
-        self.drawer_scope.position.x = mouse_pos.x - window.size().x / 2
-        self.drawer_scope.position.y = -(mouse_pos.y - window.size().y / 2)
+        self.drawer_scope.position.x = mouse_pos.x - window.center().x
+        self.drawer_scope.position.y = -(mouse_pos.y - window.center().y)
         local r = 200
         -- Make the coordinates fit in a circle of radius r
         local x = self.drawer_scope.position.x
@@ -212,7 +212,7 @@ local player = {
             y = y * r / d
             self.drawer_scope.position.x = x
             self.drawer_scope.position.y = y
-            mouse:set_position(vector2(window.size().x / 2 + x, window.size().y / 2 - y))
+            mouse:set_position(vector2(window.center().x + x, window.center().y - y))
         end
         local drawer_scope_angle = math.atan(self.drawer_scope.position.y, self.drawer_scope.position.x)
         self.drawer.rotation.z = math.deg(drawer_scope_angle) - 90

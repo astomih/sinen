@@ -11,6 +11,10 @@ void register_table(sol::state &lua) {
     v["name"] = &window::name;
     v["state"] = []() { return static_cast<int>(window::state()); };
     v["size"] = &window::size;
+    v["center"] = window::center;
+    v["set_size"] = &window::set_size;
+    v["set_fullscreen"] = &window::set_fullscreen;
+    v["set_name"] = &window::set_name;
   }
   {
     auto v = lua.create_table("renderer");

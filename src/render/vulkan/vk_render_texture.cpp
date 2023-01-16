@@ -13,8 +13,6 @@ void vk_render_texture::prepare(int width, int height, bool depth_only) {
   color_target =
       create_image_object(width, height, VK_FORMAT_R8G8B8A8_UNORM, false);
   depth_target = create_image_object(width, height, VK_FORMAT_D32_SFLOAT, true);
-  VkRenderPassCreateInfo ci{};
-  ci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 
   std::array<VkAttachmentDescription, 2> attachments;
   auto &colorTarget = attachments[0];
@@ -64,43 +62,55 @@ void vk_render_texture::prepare(int width, int height, bool depth_only) {
                                 VK_IMAGE_LAYOUT_UNDEFINED,
                                 VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL};
   }
-
-  VkAttachmentReference colorReference{}, depthReference{};
-  colorReference.attachment = 0;
-  colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-  depthReference.attachment = 1;
-  depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-  VkSubpassDescription subpassDesc{};
-  subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-  subpassDesc.colorAttachmentCount = 1;
-  subpassDesc.pColorAttachments = &colorReference;
-  subpassDesc.pDepthStencilAttachment = &depthReference;
-
-  ci.attachmentCount = uint32_t(attachments.size());
-  ci.pAttachments = attachments.data();
-  ci.subpassCount = 1;
-  ci.pSubpasses = &subpassDesc;
-
-  vkCreateRenderPass(m_vkrenderer.get_base().m_device, &ci, nullptr,
-                     &render_pass);
-  std::vector<VkImageView> views;
-  views.push_back(color_target.view);
-  views.push_back(depth_target.view);
-  VkFramebufferCreateInfo fbci{
-      VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-      nullptr,
-      0,
-      render_pass,
-      (uint32_t)views.size(),
-      views.data(),
-      (uint32_t)width,
-      (uint32_t)height,
-      1,
-  };
-  // VkFramebuffer m_renderTextureFB;
-  vkCreateFramebuffer(m_vkrenderer.get_base().m_device, &fbci, nullptr, &fb);
+  // Render Pass
+  {
+    VkAttachmentReference colorReference{}, depthReference{};
+    colorReference.attachment = 0;
+    colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    depthReference.attachment = 1;
+    depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    VkSubpassDescription subpassDesc{};
+    subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpassDesc.colorAttachmentCount = 1;
+    subpassDesc.pColorAttachments = &colorReference;
+    subpassDesc.pDepthStencilAttachment = &depthReference;
+    VkRenderPassCreateInfo ci{};
+    ci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    ci.attachmentCount = uint32_t(attachments.size());
+    ci.pAttachments = attachments.data();
+    ci.subpassCount = 1;
+    ci.pSubpasses = &subpassDesc;
+    vkCreateRenderPass(m_vkrenderer.get_base().m_device, &ci, nullptr,
+                       &render_pass);
+  }
+  // Frame Buffer
+  create_frame_buffer(width, height);
   prepare_descriptor_set();
+}
+void vk_render_texture::clear() {
+  vkFreeDescriptorSets(m_vkrenderer.get_base().get_vk_device(),
+                       m_vkrenderer.get_descriptor_pool(),
+                       drawer.descriptor_sets.size(),
+                       drawer.descriptor_sets.data());
+  vkDestroyDescriptorSetLayout(m_vkrenderer.get_base().get_vk_device(),
+                               descriptor_set_layout, nullptr);
+  vkDestroyFramebuffer(m_vkrenderer.get_base().get_vk_device(), fb, nullptr);
+  drawer.drawable_obj.reset();
+  vkDestroyRenderPass(m_vkrenderer.get_base().get_vk_device(), render_pass,
+                      nullptr);
+  m_vkrenderer.destroy_image(depth_target);
+  m_vkrenderer.destroy_image(color_target);
+  vkDestroySampler(m_vkrenderer.get_base().get_vk_device(), sampler, nullptr);
+}
+void vk_render_texture::window_resize(int width, int height) {
+  destroy_frame_buffer();
+  m_vkrenderer.destroy_image(depth_target);
+  m_vkrenderer.destroy_image(color_target);
+  color_target =
+      create_image_object(width, height, VK_FORMAT_R8G8B8A8_UNORM, false);
+  depth_target = create_image_object(width, height, VK_FORMAT_D32_SFLOAT, true);
+  // Frame Buffer
+  create_frame_buffer(width, height);
 }
 vk_image_object vk_render_texture::create_image_object(int width, int height,
                                                        VkFormat format,
@@ -254,18 +264,38 @@ void vk_render_texture::prepare_descriptor_set_layout() {
   bindingTex.descriptorCount = 1;
   bindings.push_back(bindingTex);
 
-  bindingInstance.binding = 2;
-  bindingInstance.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  bindingInstance.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-  bindingInstance.descriptorCount = 1;
-  bindings.push_back(bindingInstance);
-
   VkDescriptorSetLayoutCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
   ci.bindingCount = uint32_t(bindings.size());
   ci.pBindings = bindings.data();
   vkCreateDescriptorSetLayout(m_vkrenderer.get_base().get_vk_device(), &ci,
                               nullptr, &descriptor_set_layout);
+}
+void vk_render_texture::destroy_image_object(vk_image_object &image_object) {
+  m_vkrenderer.destroy_image(image_object);
+}
+void vk_render_texture::create_frame_buffer(int width, int height) {
+
+  std::vector<VkImageView> views;
+  views.push_back(color_target.view);
+  views.push_back(depth_target.view);
+  VkFramebufferCreateInfo fbci{
+      VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+      nullptr,
+      0,
+      render_pass,
+      (uint32_t)views.size(),
+      views.data(),
+      (uint32_t)width,
+      (uint32_t)height,
+      1,
+  };
+  // VkFramebuffer m_renderTextureFB;
+  vkCreateFramebuffer(m_vkrenderer.get_base().m_device, &fbci, nullptr, &fb);
+}
+void vk_render_texture::destroy_frame_buffer() {
+  vkDestroyFramebuffer(m_vkrenderer.get_base().get_vk_device(), this->fb,
+                       nullptr);
 }
 
 } // namespace sinen

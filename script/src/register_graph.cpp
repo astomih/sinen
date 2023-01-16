@@ -10,6 +10,9 @@ void register_graph(sol::state &lua) {
   {
     auto v = lua.new_usertype<grid<int>>("", sol::no_construction());
     v["at"] = [](grid<int> &g, int x, int y) { return g.at(x - 1, y - 1); };
+    v["set"] = [](grid<int> &g, int x, int y, int v) {
+      return g.at(x - 1, y - 1) = v;
+    };
     v["width"] = &grid<int>::width;
     v["height"] = &grid<int>::height;
     v["size"] = &grid<int>::size;

@@ -30,7 +30,7 @@ public:
 
   VkSurfaceKHR GetSurface() const { return m_surface; }
 
-  bool is_need_recreate(vector2 current_size) {
+  bool is_need_recreate(const vector2 &current_size) {
     return (GetSurfaceExtent().width != current_size.x ||
             GetSurfaceExtent().height != current_size.y);
   }
@@ -49,7 +49,6 @@ private:
 
   std::vector<VkImage> m_images;
   std::vector<VkImageView> m_imageViews;
-  bool isClean = false;
 };
 } // namespace sinen
 #endif

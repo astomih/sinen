@@ -18,6 +18,30 @@ public:
    */
   static vector2 size();
   /**
+   * @brief Get the window center
+   *
+   * @return vector2
+   */
+  static vector2 center();
+  /**
+   * @brief Set the Window size
+   *
+   * @param size window size
+   */
+  static void set_size(const vector2 &size);
+  /**
+   * @brief Set the fullscreen
+   *
+   * @param fullscreen
+   */
+  static void set_fullscreen(bool fullscreen);
+  /**
+   * @brief Set the name
+   *
+   * @param name
+   */
+  static void set_name(const std::string &name);
+  /**
    * @brief Get the window name
    *
    * @return std::string name

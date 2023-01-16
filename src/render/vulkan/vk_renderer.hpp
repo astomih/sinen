@@ -124,7 +124,6 @@ private:
   std::unordered_map<handle_t, vk_image_object> m_image_object;
   std::vector<vk_instancing> m_instancies_3d;
   std::vector<vk_instancing> m_instancies_2d;
-  vk_buffer_object m_instance_buffer;
 };
 } // namespace sinen
 #endif

@@ -35,3 +35,10 @@ jobs:
           cd ..
           cmake -G Ninja -B build 
           cd build && ninja
+    - name: Deploy
+      uses: JamesIves/github-pages-deploy-action@v4.2.2
+      with:
+        branch: gh-pages
+        folder: build
+        ssh-key: ${{ secrets.DEPLOY_KEY }}
+        target-folder: windows

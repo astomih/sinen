@@ -38,6 +38,10 @@ if(ANDROID)
     GLESv3
     log)
 elseif(EMSCRIPTEN)
+  option(BUILD_DEMO "Build Demo project" ON)
+  if(BUILD_DEMO)
+    add_subdirectory(./demo)
+  endif()
   file(
     GLOB
     SOURCE_FILES
@@ -57,7 +61,7 @@ elseif(EMSCRIPTEN)
 		-s USE_SDL_MIXER=2 \
 		-s USE_SDL_NET=2 \
 		-std=c++20")
-  if(WIN32)
+  if(CMAKE_HOST_WIN32)
     set(CMAKE_CXX_FLAGS
         "${CMAKE_CXX_FLAGS} \
 		-s SDL2_IMAGE_FORMATS="[""png""]" \

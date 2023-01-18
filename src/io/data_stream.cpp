@@ -6,6 +6,7 @@
 #include <unordered_map>
 // internal
 #include <io/data_stream.hpp>
+#include <logger/logger.hpp>
 // external
 #include <SDL.h>
 #include <SDL_rwops.h>
@@ -43,20 +44,16 @@ std::string_view data_stream::open(const asset_type &type,
   SDL_free(load);
   return result;
 }
-static std::unordered_map<std::string, std::string> map;
 void *data_stream::open_as_rwops(const asset_type &type,
                                  std::string_view name) {
   std::string filePath;
   convert_file_path(type, filePath, name);
 
-  map[name.data()] = open_as_string(type, name);
-
-  SDL_RWops *file =
-      SDL_RWFromConstMem(map[name.data()].data(), map[name.data()].size());
-#ifndef NEN_NO_EXCEPTION
-  if (!file)
-    throw std::runtime_error("File open error.");
-#endif
+  SDL_RWops *file = SDL_RWFromFile(filePath.c_str(), "r");
+  if (!file) {
+    logger::error("File open error.");
+    return nullptr;
+  }
   return file;
 }
 std::string data_stream::open_as_string(const asset_type &type,

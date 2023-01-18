@@ -33,6 +33,10 @@ void font::unload() {
 
 void font::render_text(texture &tex, std::string_view text,
                        const color &_color) {
+  if(!is_load || !m_font){
+    logger::error("Font is not loaded");
+    return;
+  }
   *tex.is_need_update = true;
   // My Color to SDL_Color
   SDL_Color sdlColor;
@@ -40,11 +44,13 @@ void font::render_text(texture &tex, std::string_view text,
   sdlColor.g = static_cast<Uint8>(_color.g * 255);
   sdlColor.b = static_cast<Uint8>(_color.b * 255);
   sdlColor.a = static_cast<Uint8>(_color.a * 255);
-  texture_system::remove(tex.handle);
-  texture_system::move(
-      tex.handle,
-      std::unique_ptr<SDL_Surface, SDLObjectCloser>(
-          ::TTF_RenderUTF8_Blended_Wrapped(
-              (::TTF_Font *)m_font, std::string(text).c_str(), sdlColor, 0)));
+  auto *ttf_font = reinterpret_cast<::TTF_Font *>(m_font);
+  auto *p = ::TTF_RenderUTF8_Blended_Wrapped(
+      ttf_font, std::string(text).c_str(), sdlColor, 0);
+  if (!p) {
+    logger::error("Failed to render text: %s", ::TTF_GetError());
+  }
+  texture_system::move(tex.handle,
+                       std::unique_ptr<SDL_Surface, SDLObjectCloser>(p));
 }
 } // namespace sinen

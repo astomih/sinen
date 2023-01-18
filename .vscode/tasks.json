@@ -20,6 +20,11 @@
       "label": "WebBuild",
       "type": "shell",
       "command": "cd web && emcmake cmake ..  && emmake make -j8"
+    },
+    {
+      "label": "WebRun",
+      "type": "shell",
+      "command": "cd web/demo && emrun --port 8080 index.html"
     }
   ]
 }

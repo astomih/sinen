@@ -36,8 +36,6 @@
 #include <sstream>
 #include <window/window.hpp>
 
-#define USE_RENDER_TEXTURE 1
-
 namespace sinen {
 gl_renderer::gl_renderer() {}
 gl_renderer::~gl_renderer() = default;
@@ -50,7 +48,7 @@ void gl_renderer::initialize() {
   }
   prev_window_x = window_system::size().x;
   prev_window_y = window_system::size().y;
-#if !defined EMSCRIPTEN && !defined MOBILE
+#if !defined MOBILE
   glewExperimental = GL_TRUE;
   if (glewInit() != GLEW_OK) {
     logger::error("GLEW Init error.");
@@ -98,12 +96,10 @@ void gl_renderer::render() {
   auto color = render_system::get_clear_color();
   glClearColor(color.r, color.g, color.b, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-#if USE_RENDER_TEXTURE
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glViewport(0, 0, window::size().x,
              window::size().y); // Render on the whole framebuffer, complete
-#endif
   glEnable(GL_BLEND);
   glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
   glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
@@ -124,7 +120,6 @@ void gl_renderer::render() {
   draw_2d();
   enable_vertex_attrib_array();
   draw_instancing_2d();
-#if USE_RENDER_TEXTURE
   glFlush();
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glBindVertexArray(m_VertexArrays["SPRITE"].vao);
@@ -141,7 +136,6 @@ void gl_renderer::render() {
   glDrawElements(GL_TRIANGLES, m_VertexArrays["SPRITE"].indices.size(),
                  GL_UNSIGNED_INT, nullptr);
   glActiveTexture(GL_TEXTURE0);
-#endif
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplSDL2_NewFrame(window_system::get_sdl_window());
   ImGui::NewFrame();
@@ -234,13 +228,9 @@ void gl_renderer::draw_3d() {
     disable_vertex_attrib_array();
     glBindTexture(GL_TEXTURE_2D,
                   mTextureIDs[i.drawable_object->binding_texture.handle]);
-#if USE_RENDER_TEXTURE
     glUniform1i(glGetUniformLocation(mSpriteShader.program(), "diffuseMap"), 1);
-#endif
     glDrawElements(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT, nullptr);
-#if USE_RENDER_TEXTURE
     glActiveTexture(GL_TEXTURE0);
-#endif
   }
 }
 void gl_renderer::draw_instancing_3d() {
@@ -258,21 +248,15 @@ void gl_renderer::draw_instancing_3d() {
 
     auto &va = m_VertexArrays[i.ins.object->vertexIndex];
     glBindVertexArray(i.vao);
-#if USE_RENDER_TEXTURE
     glActiveTexture(GL_TEXTURE1);
-#endif
     glBindTexture(GL_TEXTURE_2D,
                   mTextureIDs[i.ins.object->binding_texture.handle]);
-#if USE_RENDER_TEXTURE
     glUniform1i(
         glGetUniformLocation(mSpriteInstanceShader.program(), "diffuseMap"), 1);
-#endif
     enable_vertex_attrib_array();
     glDrawElementsInstanced(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT,
                             nullptr, i.ins.data.size());
-#if USE_RENDER_TEXTURE
     glActiveTexture(GL_TEXTURE0);
-#endif
   }
 }
 
@@ -566,7 +550,6 @@ void gl_renderer::prepare() {
 }
 
 void gl_renderer::prepare_render_texture() {
-#if USE_RENDER_TEXTURE
   glGenFramebuffers(1, &framebuffer);
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
@@ -581,19 +564,22 @@ void gl_renderer::prepare_render_texture() {
 
   glGenRenderbuffers(1, &depthbuffer);
   glBindRenderbuffer(GL_RENDERBUFFER, depthbuffer);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, window::size().x,
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, window::size().x,
                         window::size().y);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                             GL_RENDERBUFFER, depthbuffer);
 
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                          rendertexture, 0);
+  GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+  glDrawBuffers(1, DrawBuffers);
+  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    logger::error("failed to create framebuffer");
+  }
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-#endif
 }
 void gl_renderer::prepare_depth_texture() {
-#if USE_RENDER_TEXTURE
   constexpr int SHADOWMAP_SIZE = 1024;
   glGenFramebuffers(1, &shadowframebuffer);
   glBindFramebuffer(GL_FRAMEBUFFER, shadowframebuffer);
@@ -611,7 +597,6 @@ void gl_renderer::prepare_depth_texture() {
 
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                          shadowdepthtexture, 0);
-#endif
 }
 
 void gl_renderer::create_texture(texture handle) {

@@ -78,7 +78,7 @@ public:
   void add_texture(texture tex);
   void destroy_image_object(const handle_t &handle);
   VkPipelineLayout get_pipeline_layout() {
-    return m_pipeline_layout.GetLayout();
+    return m_pipeline_layout_instance.GetLayout();
   }
   VkDescriptorSetLayout get_descriptor_set_layout() {
     return m_descriptor_set_layout;
@@ -116,7 +116,8 @@ private:
   VkDescriptorPool m_descriptor_pool;
   VkSampler m_sampler;
   VkPhysicalDeviceMemoryProperties m_physical_mem_props;
-  vk_pipeline_layout m_pipeline_layout;
+  vk_pipeline_layout m_pipeline_layout_normal;
+  vk_pipeline_layout m_pipeline_layout_instance;
   std::unordered_map<std::string, vk_pipeline> m_pipelines;
   std::vector<std::pair<shader, vk_pipeline>> m_user_pipelines;
   std::vector<std::shared_ptr<vk_drawable>> m_draw_object_3d;

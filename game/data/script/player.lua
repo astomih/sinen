@@ -48,7 +48,7 @@ local player = {
         self.bullet_timer = 0.0
         self.hp = 100
         self.hp_font = font()
-        self.hp_font:load("x16y32pxGridGazer.ttf", 64)
+        self.hp_font:load(DEFAULT_FONT_NAME, 64)
         self.hp_font_texture = texture()
         self.hp_drawer = draw2d(self.hp_font_texture)
         self.render_text(self)

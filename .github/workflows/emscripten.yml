@@ -19,26 +19,21 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: mymindstorm/setup-emsdk@v11
-    - run: |
-        cd ${{github.workspace}}/demo/external
-        git clone https://github.com/astomih/sinen
-      
     - name: CMake
       run: |
-        cd ${{github.workspace}}/demo/external/sinen
         git submodule update --init --recursive
-        cd ${{github.workspace}}/demo
         emcmake cmake -B build
+        mkdir build/demo
     - name: Build
       run: |
-        cd ${{github.workspace}}/demo
-        cp -r data ./build
-        cp shell_minimum.html ./build
-        cd ./build && make -j2
-    - name: Deploy 🚀
+        cp -r ${{github.workspace}}/demo/data .
+        cp ${{github.workspace}}/demo/shell_minimum.html .
+        cd ${{github.workspace}}/build
+        make -j2
+    - name: Deploy
       uses: JamesIves/github-pages-deploy-action@v4.2.2
       with:
         branch: gh-pages
-        folder: demo/build
+        folder: build
         ssh-key: ${{ secrets.DEPLOY_KEY }}
         target-folder: web_demo

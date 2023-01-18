@@ -11,7 +11,6 @@ if(ANDROID)
   )
   target_include_directories(main PUBLIC ${INCLUDE_DIRS})
 elseif(EMSCRIPTEN)
-  add_subdirectory(./external/sinen)
   set(CMAKE_C_COMPILER "emcc")
   add_executable(index ${SOURCE_FILES})
   target_link_directories(index PUBLIC .)
@@ -29,7 +28,6 @@ elseif(EMSCRIPTEN)
 		-s FULL_ES3=1 \
 		-s MIN_WEBGL_VERSION=2 \
 		-s MAX_WEBGL_VERSION=2 \
-		-s SDL2_IMAGE_FORMATS='[\"png\"]' \
 		-s USE_SDL_TTF=2 \
 		-s USE_SDL_MIXER=2 \
 		-s USE_SDL_NET=2 \
@@ -39,6 +37,17 @@ elseif(EMSCRIPTEN)
 		--shell-file shell_minimum.html \
 		-s ERROR_ON_UNDEFINED_SYMBOLS=0 \
 		-std=c++20")
+  if(CMAKE_HOST_WIN32)
+    set(CMAKE_CXX_FLAGS
+        "${CMAKE_CXX_FLAGS} \
+		-s SDL2_IMAGE_FORMATS="[""png""]" \
+    ")
+  else()
+    set(CMAKE_CXX_FLAGS
+        "${CMAKE_CXX_FLAGS} \
+		-s SDL2_IMAGE_FORMATS='[\"png\"]' \
+		")
+  endif()
   set(CMAKE_EXECUTABLE_SUFFIX ".html")
 else()
   if(WIN32)

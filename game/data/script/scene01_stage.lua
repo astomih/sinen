@@ -58,7 +58,7 @@ key_drawer.vertex_name = "key"
 local key_hit = false
 
 function Setup()
-    score_font:load("x16y32pxGridGazer.ttf", 64)
+    score_font:load(DEFAULT_FONT_NAME, 64)
     menu_object:setup()
     music:load("Stage1.ogg")
     music:play()

@@ -224,7 +224,7 @@ void vk_renderer::load_shader(const shader &shaderInfo) {
                       shaderInfo.fragment_shader().c_str(),
                       VK_SHADER_STAGE_FRAGMENT_BIT)};
   vk_pipeline pipeline;
-  pipeline.initialize(m_pipeline_layout, m_render_texture.render_pass,
+  pipeline.initialize(m_pipeline_layout_instance, m_render_texture.render_pass,
                       shaderStages);
   pipeline.color_blend_factor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
   pipeline.alpha_blend_factor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
@@ -276,8 +276,8 @@ void vk_renderer::draw_instancing_3d(VkCommandBuffer command,
       m_pipelines["instancing_opaque"].Bind(command);
     }
     vkCmdBindDescriptorSets(
-        command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
-        0, 1,
+        command, VK_PIPELINE_BIND_POINT_GRAPHICS,
+        m_pipeline_layout_instance.GetLayout(), 0, 1,
         &_instancing.m_vk_draw_object->descriptor_sets[m_base->m_imageIndex], 0,
         nullptr);
     auto allocation =
@@ -305,8 +305,8 @@ void vk_renderer::draw_instancing_2d(VkCommandBuffer command) {
   for (auto &_instancing : m_instancies_2d) {
     m_pipelines["instancing_2d"].Bind(command);
     vkCmdBindDescriptorSets(
-        command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
-        0, 1,
+        command, VK_PIPELINE_BIND_POINT_GRAPHICS,
+        m_pipeline_layout_instance.GetLayout(), 0, 1,
         &_instancing.m_vk_draw_object->descriptor_sets[m_base->m_imageIndex], 0,
         nullptr);
     auto allocation =
@@ -341,16 +341,20 @@ void vk_renderer::prepare() {
     i = m_descriptor_set_layout;
   }
 
-  m_pipeline_layout.initialize(m_base->get_vk_device(),
-                               &m_descriptor_set_layout,
-                               m_base->mSwapchain->GetSurfaceExtent());
-  m_pipeline_layout.prepare(m_base->get_vk_device());
+  m_pipeline_layout_instance.initialize(m_base->get_vk_device(),
+                                        &m_descriptor_set_layout,
+                                        m_base->mSwapchain->GetSurfaceExtent());
+  m_pipeline_layout_instance.prepare(m_base->get_vk_device());
+  m_pipeline_layout_normal.initialize(
+      m_base->get_vk_device(), &m_descriptor_set_layout,
+      m_base->mSwapchain->GetSurfaceExtent(), false);
+  m_pipeline_layout_normal.prepare(m_base->get_vk_device());
   m_render_texture.prepare(window::size().x, window::size().y, false);
 
   vk_depth_texture depth(*this);
-  vk_pipeline_builder pipeline_builder(m_base->get_vk_device(),
-                                       m_pipeline_layout, m_render_texture,
-                                       depth, m_base->m_renderPass);
+  vk_pipeline_builder pipeline_builder(
+      m_base->get_vk_device(), m_pipeline_layout_instance, m_render_texture,
+      depth, m_base->m_renderPass);
   // render texture pipeline
   pipeline_builder.render_texture_pipeline(m_render_texture.pipeline);
   vk_pipeline pipeline_skybox;
@@ -392,7 +396,7 @@ void vk_renderer::cleanup() {
   }
   vkutil::destroy_vulkan_object<VkSampler>(device, m_sampler,
                                            &vkDestroySampler);
-  m_pipeline_layout.cleanup(device);
+  m_pipeline_layout_instance.cleanup(device);
   for (auto &i : m_pipelines) {
     i.second.Cleanup(device);
   }
@@ -467,9 +471,10 @@ void vk_renderer::draw_skybox(VkCommandBuffer command) {
   vkCmdBindVertexBuffers(command, 0, 1, &va.vertexBuffer.buffer, &offset);
   vkCmdBindIndexBuffer(command, va.indexBuffer.buffer, offset,
                        VK_INDEX_TYPE_UINT32);
-  vkCmdBindDescriptorSets(
-      command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
-      0, 1, &t->descriptor_sets[m_base->m_imageIndex], 0, nullptr);
+  vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                          m_pipeline_layout_instance.GetLayout(), 0, 1,
+                          &t->descriptor_sets[m_base->m_imageIndex], 0,
+                          nullptr);
   auto allocation = t->uniformBuffers[m_base->m_imageIndex].allocation;
   write_memory(allocation, &param, sizeof(vk_shader_parameter));
   vkCmdDrawIndexed(command, va.indexCount, 1, 0, 0, 0);
@@ -497,9 +502,10 @@ void vk_renderer::draw3d(VkCommandBuffer command, bool is_change_pipeline) {
     ::vkCmdBindIndexBuffer(command, m_vertex_arrays[index].indexBuffer.buffer,
                            offset, VK_INDEX_TYPE_UINT32);
     // Set descriptors
-    vkCmdBindDescriptorSets(
-        command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
-        0, 1, &sprite->descriptor_sets[m_base->m_imageIndex], 0, nullptr);
+    vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            m_pipeline_layout_instance.GetLayout(), 0, 1,
+                            &sprite->descriptor_sets[m_base->m_imageIndex], 0,
+                            nullptr);
     auto allocation = sprite->uniformBuffers[m_base->m_imageIndex].allocation;
     vk_shader_parameter param;
     param.param = sprite->drawable_obj->param;
@@ -534,9 +540,10 @@ void vk_renderer::draw2d(VkCommandBuffer command) {
         offset, VK_INDEX_TYPE_UINT32);
 
     // Set descriptors
-    vkCmdBindDescriptorSets(
-        command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
-        0, 1, &sprite->descriptor_sets[m_base->m_imageIndex], 0, nullptr);
+    vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            m_pipeline_layout_instance.GetLayout(), 0, 1,
+                            &sprite->descriptor_sets[m_base->m_imageIndex], 0,
+                            nullptr);
     auto allocation = sprite->uniformBuffers[m_base->m_imageIndex].allocation;
     auto *ptr = sprite->drawable_obj->shade.get_parameter().get();
     write_memory(allocation, &sprite->drawable_obj->param,
@@ -561,9 +568,10 @@ void vk_renderer::render_to_display(VkCommandBuffer command) {
                        offset, VK_INDEX_TYPE_UINT32);
 
   // Set descriptors
-  vkCmdBindDescriptorSets(
-      command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline_layout.GetLayout(),
-      0, 1, &sprite.descriptor_sets[m_base->m_imageIndex], 0, nullptr);
+  vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                          m_pipeline_layout_instance.GetLayout(), 0, 1,
+                          &sprite.descriptor_sets[m_base->m_imageIndex], 0,
+                          nullptr);
   auto allocation = sprite.uniformBuffers[m_base->m_imageIndex].allocation;
 
   sprite.drawable_obj->param.proj = matrix4::identity;

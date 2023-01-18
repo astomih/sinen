@@ -25,7 +25,6 @@ void register_generator(sol::state &v) {
   };
   v["texture"] = []() -> texture { return texture(); };
   v["font"] = []() -> font { return font(); };
-  v["DEFAULT_FONT"] = "mplus/mplus-1p-medium.ttf";
   v["vector3"] = [](float x, float y, float z) -> vector3 {
     return vector3(x, y, z);
   };

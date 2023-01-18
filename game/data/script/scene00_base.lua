@@ -56,9 +56,13 @@ key_drawer.position = vector3(0, 0, 1)
 key_drawer.rotation = vector3(90, 0, 0)
 key_drawer.vertex_name = "key"
 local key_hit = false
+local function camera_update()
+  scene.main_camera():lookat(vector3(player.drawer.position.x, player.drawer.position.y - 0.5,
+    player.drawer.position.z + 15), player.drawer.position, vector3(0, 0, 1))
+end
 
 function Setup()
-  score_font:load("x16y32pxGridGazer.ttf", 64)
+  score_font:load(DEFAULT_FONT_NAME, 64)
   menu_object:setup()
   music:load("PSYCHO.ogg")
   music:play()
@@ -124,11 +128,12 @@ function Setup()
   end
   scene_switcher:setup()
   scene_switcher:start(true, "")
-end
-
-local function camera_update()
-  scene.main_camera():lookat(vector3(player.drawer.position.x, player.drawer.position.y - 0.5,
-    player.drawer.position.z + 15), player.drawer.position, vector3(0, 0, 1))
+  score_font:render_text(score_texture, "SCORE: " .. SCORE,
+    color(1, 1, 1, 1))
+  score_drawer.scale = score_texture:size()
+  score_drawer.position.x = -300
+  score_drawer.position.y = 300
+  camera_update()
 end
 
 local function draw()

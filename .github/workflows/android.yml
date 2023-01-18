@@ -30,6 +30,7 @@ jobs:
           mv ${{github.workspace}}/external/SDL2_net .
           mv ${{github.workspace}}/external/SDL2_ttf .
           cd ${{github.workspace}}/demo
+          mkdir -p ${{github.workspace}}/demo/android-project/app/src/main/assets && cp -r data ${{github.workspace}}/demo/android-project/app/src/main/assets
     - name: set up JDK 11
 
       uses: actions/setup-java@v2
@@ -49,3 +50,10 @@ jobs:
           pwd
           cd ${{github.workspace}}/demo/android-project
           ./gradlew build
+    - name: Deploy
+      uses: JamesIves/github-pages-deploy-action@v4.2.2
+      with:
+        branch: gh-pages
+        folder: demo/android-project
+        ssh-key: ${{ secrets.DEPLOY_KEY }}
+        target-folder: android

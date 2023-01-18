@@ -31,7 +31,7 @@ if(ANDROID)
   find_library(SDL2_mixer SDL2_mixer)
   find_library(SDL2_ttf SDL2_ttf)
   find_library(SDL2_net SDL2_net)
-  add_library(sinen SHARED ${SOURCE_FILES})
+  add_library(sinen STATIC ${SOURCE_FILES})
   set(SINEN_INCLUDE_DIRS
    ${SINEN_INCLUDE_DIRS}
    external/SDL2

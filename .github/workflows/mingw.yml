@@ -35,6 +35,11 @@ jobs:
           cd ..
           cmake -G Ninja -B build 
           cd build && ninja
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
     - name: Deploy
       uses: JamesIves/github-pages-deploy-action@v4.2.2
       with:

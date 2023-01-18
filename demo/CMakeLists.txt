@@ -8,7 +8,6 @@ if(ANDROID)
   find_library(sinen sinen)
   target_link_libraries(main 
         sinen
-        script_engine
   )
   target_include_directories(main PUBLIC ${INCLUDE_DIRS})
 elseif(EMSCRIPTEN)

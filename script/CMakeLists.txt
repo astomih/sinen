@@ -19,7 +19,7 @@ include_directories(
 link_directories(
 )
 if(ANDROID)
-add_library(script_engine SHARED
+add_library(script_engine STATIC
 	${SOURCE_FILES}
 )
 else()

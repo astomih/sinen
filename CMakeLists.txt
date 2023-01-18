@@ -26,7 +26,7 @@ if(ANDROID)
     external/ImGui/source/gles/*.cpp
     external/mojoAL/mojoal.c
     external/Lua/source/*.c)
-  add_library(sinen STATIC ${SOURCE_FILES})
+  add_library(sinen SHARED ${SOURCE_FILES})
   target_include_directories(sinen PUBLIC ${SINEN_INCLUDE_DIRS})
   target_link_libraries(
     sinen

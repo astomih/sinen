@@ -4,9 +4,10 @@ file(GLOB SOURCE_FILES src/*/*.cpp src/*.cpp)
 file(GLOB INCLUDE_DIRS external/sinen/include external/sinen/include/sinen)
 if(ANDROID)
   set(CMAKE_CXX_FLAGS "-std=c++20")
-  add_library(main STATIC ${SOURCE_FILES})
+  add_library(main SHARED ${SOURCE_FILES})
   find_library(sinen sinen)
-  target_link_libraries(main sinen
+  target_link_libraries(main 
+        sinen
         script_engine
   )
   target_include_directories(main PUBLIC ${INCLUDE_DIRS})

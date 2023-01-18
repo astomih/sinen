@@ -23,9 +23,9 @@ jobs:
       run: |
         git submodule update --init --recursive
         emcmake cmake -B build
-        mkdir build/demo
     - name: Build
       run: |
+        cd ${{github.workspace}}/build/demo
         cp -r ${{github.workspace}}/demo/data .
         cp ${{github.workspace}}/demo/shell_minimum.html .
         cd ${{github.workspace}}/build

@@ -39,6 +39,6 @@ jobs:
       uses: JamesIves/github-pages-deploy-action@v4.2.2
       with:
         branch: gh-pages
-        folder: build
+        folder: demo/build
         ssh-key: ${{ secrets.DEPLOY_KEY }}
         target-folder: windows

@@ -26,7 +26,20 @@ if(ANDROID)
     external/ImGui/source/gles/*.cpp
     external/mojoAL/mojoal.c
     external/Lua/source/*.c)
+  find_library(SDL2 SDL2)
+  find_library(SDL2_image SDL2_image)
+  find_library(SDL2_mixer SDL2_mixer)
+  find_library(SDL2_ttf SDL2_ttf)
+  find_library(SDL2_net SDL2_net)
   add_library(sinen SHARED ${SOURCE_FILES})
+  set(SINEN_INCLUDE_DIRS
+   ${SINEN_INCLUDE_DIRS}
+   external/SDL2
+   external/SDL2_image
+   external/SDL2_mixer
+   external/SDL2_net
+   external/SDL2_ttf
+  )
   target_include_directories(sinen PUBLIC ${SINEN_INCLUDE_DIRS})
   target_link_libraries(
     sinen

@@ -1,5 +1,5 @@
 #pragma once
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include <vector>
 
 #include <SDL_vulkan.h>

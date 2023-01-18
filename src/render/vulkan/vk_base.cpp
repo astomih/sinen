@@ -1,4 +1,4 @@
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 // general
 #include <algorithm>
 #include <array>

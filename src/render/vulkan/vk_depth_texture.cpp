@@ -1,3 +1,4 @@
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include "vk_depth_texture.hpp"
 #include "vk_renderer.hpp"
 #include <array>
@@ -228,3 +229,5 @@ void vk_depth_texture::prepare_descriptor_set_layout() {
 }
 
 } // namespace sinen
+
+#endif

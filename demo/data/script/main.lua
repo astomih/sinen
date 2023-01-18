@@ -10,7 +10,8 @@ function Setup()
     hello_drawer = draw2d(hello_texture)
     F3_drawer = draw2d(F3_texture)
     hello_font = font()
-    hello_font:load(DEFAULT_FONT, 64)
+
+    hello_font:load("mplus/mplus-1p-medium.ttf", 64)
     hello_font:render_text(hello_texture, "Hello Sinen World!",
         color(1, 1, 1, 1))
     hello_font:render_text(F3_texture, "Press F3 to open the window",

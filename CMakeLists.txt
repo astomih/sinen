@@ -48,6 +48,7 @@ if(ANDROID)
     SDL2_mixer
     SDL2_ttf
     SDL2_net
+    script_engine
     GLESv3
     log)
 elseif(EMSCRIPTEN)

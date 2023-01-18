@@ -1,6 +1,6 @@
 #ifndef SINEN_VK_OBJECT_HPP
 #define SINEN_VK_OBJECT_HPP
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include <drawable/drawable.hpp>
 #include <vk_mem_alloc.h>
 namespace sinen {

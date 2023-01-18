@@ -1,4 +1,4 @@
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include "vk_pipeline.hpp"
 #include "vk_base.hpp"
 #include "vk_util.hpp"

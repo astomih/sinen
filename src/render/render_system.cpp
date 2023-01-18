@@ -10,7 +10,7 @@
 namespace sinen {
 color render_system::clearColor = palette::black();
 std::unique_ptr<class gl_renderer> render_system::m_gl_renderer;
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 std::unique_ptr<class vk_renderer> render_system::m_vk_renderer;
 #endif
 // Renderer
@@ -26,7 +26,7 @@ graphics_api render_system::get_graphics_api() { return RendererAPI; }
 void render_system::unload_data() {}
 void render_system::initialize(graphics_api api) {
   RendererAPI = api;
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
   if (RendererAPI == graphics_api::Vulkan) {
     m_vk_renderer = std::make_unique<vk_renderer>();
     m_vk_renderer->initialize();
@@ -40,7 +40,7 @@ void render_system::initialize(graphics_api api) {
 }
 
 void render_system::shutdown() {
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
   if (RendererAPI == graphics_api::Vulkan) {
     m_vk_renderer->shutdown();
   }
@@ -60,7 +60,7 @@ void render_system::render() {
   for (auto &i : m_instancing) {
     add_instancing(*i);
   }
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
   if (RendererAPI == graphics_api::Vulkan) {
     m_vk_renderer->render();
   }
@@ -70,7 +70,7 @@ void render_system::render() {
   }
 }
 void render_system::draw2d(std::shared_ptr<drawable> drawObject) {
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
   if (RendererAPI == graphics_api::Vulkan) {
     m_vk_renderer->draw2d(drawObject);
   }
@@ -81,7 +81,7 @@ void render_system::draw2d(std::shared_ptr<drawable> drawObject) {
 }
 
 void render_system::draw3d(std::shared_ptr<drawable> drawObject) {
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
   if (RendererAPI == graphics_api::Vulkan) {
     m_vk_renderer->draw3d(drawObject);
   }
@@ -121,7 +121,7 @@ void render_system::remove_queue_instancing(
 void render_system::add_vertex_array(const vertex_array &vArray,
                                      std::string_view name) {
 
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
   if (RendererAPI == graphics_api::Vulkan) {
     m_vk_renderer->add_vertex_array(vArray, name);
   }
@@ -133,7 +133,7 @@ void render_system::add_vertex_array(const vertex_array &vArray,
 
 void render_system::update_vertex_array(const vertex_array &vArray,
                                         std::string_view name) {
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
   if (RendererAPI == graphics_api::Vulkan) {
     m_vk_renderer->update_vertex_array(vArray, name);
   }
@@ -143,7 +143,7 @@ void render_system::update_vertex_array(const vertex_array &vArray,
   }
 }
 void render_system::add_model(const model &m) {
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
   if (RendererAPI == graphics_api::Vulkan) {
     m_vk_renderer->add_model(m);
   }
@@ -153,7 +153,7 @@ void render_system::add_model(const model &m) {
   }
 }
 void render_system::update_model(const model &m) {
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
   if (RendererAPI == graphics_api::Vulkan) {
     m_vk_renderer->update_model(m);
   }
@@ -166,7 +166,7 @@ void render_system::add_instancing(const instancing &_instancing) {
   if (_instancing.data.empty()) {
     return;
   }
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
   if (RendererAPI == graphics_api::Vulkan) {
     m_vk_renderer->add_instancing(_instancing);
   }
@@ -177,7 +177,7 @@ void render_system::add_instancing(const instancing &_instancing) {
 }
 
 void render_system::load_shader(const shader &shaderInfo) {
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
   if (RendererAPI == graphics_api::Vulkan) {
     m_vk_renderer->load_shader(shaderInfo);
   }
@@ -188,7 +188,7 @@ void render_system::load_shader(const shader &shaderInfo) {
 }
 
 void render_system::unload_shader(const shader &shaderInfo) {
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
   if (RendererAPI == graphics_api::Vulkan) {
     m_vk_renderer->unload_shader(shaderInfo);
   }

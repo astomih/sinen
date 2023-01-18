@@ -7,7 +7,7 @@
 #include <texture/texture_type.hpp>
 #include <vertex/vertex_array.hpp>
 
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 
 #include "vk_base.hpp"
 #include "vk_object.hpp"

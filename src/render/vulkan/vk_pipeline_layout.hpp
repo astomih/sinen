@@ -1,6 +1,6 @@
 #ifndef SINEN_VK_PIPELINE_LAYOUT
 #define SINEN_VK_PIPELINE_LAYOUT
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include <SDL_vulkan.h>
 #include <array>
 #include <vector>

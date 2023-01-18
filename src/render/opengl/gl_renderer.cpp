@@ -9,13 +9,13 @@
 #include <scene/scene.hpp>
 #include <sol/sol.hpp>
 
-#if defined(EMSCRIPTEN) || defined(MOBILE)
+#if defined(EMSCRIPTEN) || defined(ANDROID)
 #define GL_GLEXT_PROTOTYPES
 #include <GLES3/gl3.h>
 #include <SDL_opengles2.h>
 #endif
 
-#ifndef MOBILE
+#ifndef ANDROID
 #include <GL/glew.h>
 #endif
 
@@ -48,7 +48,7 @@ void gl_renderer::initialize() {
   }
   prev_window_x = window_system::size().x;
   prev_window_y = window_system::size().y;
-#if !defined MOBILE
+#if !defined ANDROID
   glewExperimental = GL_TRUE;
   if (glewInit() != GLEW_OK) {
     logger::error("GLEW Init error.");
@@ -580,6 +580,7 @@ void gl_renderer::prepare_render_texture() {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 void gl_renderer::prepare_depth_texture() {
+  /*
   constexpr int SHADOWMAP_SIZE = 1024;
   glGenFramebuffers(1, &shadowframebuffer);
   glBindFramebuffer(GL_FRAMEBUFFER, shadowframebuffer);
@@ -597,6 +598,7 @@ void gl_renderer::prepare_depth_texture() {
 
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                          shadowdepthtexture, 0);
+  */
 }
 
 void gl_renderer::create_texture(texture handle) {

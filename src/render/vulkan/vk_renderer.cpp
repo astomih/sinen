@@ -1,11 +1,10 @@
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include "../../render/render_system.hpp"
 #include "../../script/script_system.hpp"
 #include <camera/camera.hpp>
 #include <render/renderer.hpp>
 #include <scene/scene.hpp>
 #include <sol/sol.hpp>
-
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
 // general
 #include <array>
 #include <cstdint>

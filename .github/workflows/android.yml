@@ -23,6 +23,7 @@ jobs:
           cd ${{github.workspace}}/demo/android-project/app/jni
           ln -s ${{github.workspace}}/demo ./demo
           ln -s ${{github.workspace}}/demo/external/sinen ./sinen
+          ln -s ${{github.workspace}}/demo/external/sinen/script ./script
           git submodule update --init --recursive
           mv ${{github.workspace}}/external/SDL2 .
           mv ${{github.workspace}}/external/SDL2_image .

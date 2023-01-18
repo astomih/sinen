@@ -1,5 +1,6 @@
 #ifndef SINEN_VK_DEPTH_TEXTURE_HPP
 #define SINEN_VK_DEPTH_TEXTURE_HPP
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include "vk_object.hpp"
 #include "vk_pipeline.hpp"
 #include "vk_pipeline_layout.hpp"
@@ -30,4 +31,5 @@ private:
   class vk_renderer &m_vkrenderer;
 };
 } // namespace sinen
-#endif
+#endif // !defined(EMSCRIPTEN) && !defined(ANDROID)
+#endif // !SINEN_VK_DEPTH_TEXTURE_HPP

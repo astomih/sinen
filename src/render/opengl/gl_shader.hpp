@@ -1,7 +1,7 @@
 #ifndef SINEN_GL_SHADER_HPP
 #define SINEN_GL_SHADER_HPP
 
-#if defined(EMSCRIPTEN) || defined(MOBILE)
+#if defined(EMSCRIPTEN) || defined(ANDROID)
 #include <SDL_opengles2.h>
 #else
 #include <GL/glew.h>

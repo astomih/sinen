@@ -1,6 +1,8 @@
 #include "gl_uniform_buffer.hpp"
-#if defined(EMSCRIPTEN) || defined(MOBILE)
+#if defined(EMSCRIPTEN) || defined(ANDROID)
+#define GL_GLEXT_PROTOTYPES
 #include <GLES3/gl3.h>
+#include <SDL_opengles2.h>
 #endif
 namespace sinen {
 

@@ -18,10 +18,15 @@ include_directories(
 )
 link_directories(
 )
-
+if(ANDROID)
+add_library(script_engine SHARED
+	${SOURCE_FILES}
+)
+else()
 add_library(script_engine STATIC
 	${SOURCE_FILES}
 )
+endif()
 target_link_libraries(script_engine
   sinen 
 )

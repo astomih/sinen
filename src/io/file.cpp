@@ -1,7 +1,7 @@
 // std libraries
 #include <filesystem>
 // Third party libraries
-#include <SDL2/SDL.h>
+#include <SDL.h>
 // Local libraries
 #include <io/file.hpp>
 

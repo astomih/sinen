@@ -1,6 +1,6 @@
 #ifndef SINEN_VK_BASE_HPP
 #define SINEN_VK_BASE_HPP
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #ifdef _WIN32
 #include <windows.h>
 #define VK_USE_PLATFORM_WIN32_KHR
@@ -12,9 +12,9 @@
 #include <vulkan/vulkan_win32.h>
 #endif // _WIN32
 #include "vk_swapchain.hpp"
-#include <vk_mem_alloc.h>
 #include <memory>
 #include <vector>
+#include <vk_mem_alloc.h>
 #include <window/window.hpp>
 
 namespace sinen {

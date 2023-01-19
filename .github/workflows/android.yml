@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-
+    concurrency: ci-${{ github.ref }}
     runs-on: ubuntu-latest
 
     steps:

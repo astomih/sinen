@@ -8,21 +8,21 @@
     android:versionName="1.0"
     android:installLocation="auto">
 
-    <!-- OpenGL ES 2.0 -->
-    <uses-feature android:glEsVersion="0x00020000" />
+    <!-- OpenGL ES 3.0 -->
+    <uses-feature android:glEsVersion="0x00030000" />
 
     <!-- Touchscreen support -->
     <uses-feature
         android:name="android.hardware.touchscreen"
-        android:required="false" />
+        android:required="true" />
 
     <!-- Game controller support -->
     <uses-feature
         android:name="android.hardware.bluetooth"
-        android:required="false" />
+        android:required="true" />
     <uses-feature
         android:name="android.hardware.gamepad"
-        android:required="false" />
+        android:required="true" />
     <uses-feature
         android:name="android.hardware.usb.host"
         android:required="false" />
@@ -30,7 +30,7 @@
     <!-- External mouse input events -->
     <uses-feature
         android:name="android.hardware.type.pc"
-        android:required="false" />
+        android:required="true" />
 
     <!-- Audio recording support -->
     <!-- if you want to capture audio, uncomment this. -->

@@ -34,23 +34,5 @@ jobs:
     - name: Upload Artifacts
       uses: actions/upload-artifact@v1
       with:
-        name: site
+        name: windows
         path: build
-  deploy:
-    concurrency: ci-${{ github.ref }}
-    needs: [build] # The second job must depend on the first one to complete before running and uses ubuntu-latest instead of windows.
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-    - name: Download Artifacts
-      uses: actions/download-artifact@v1
-      with:
-        name: site
-    - name: Deploy
-      uses: JamesIves/github-pages-deploy-action@v4.2.2
-      with:
-        branch: gh-pages
-        folder: 'site'
-        ssh-key: ${{ secrets.DEPLOY_KEY }}
-        target-folder: windows

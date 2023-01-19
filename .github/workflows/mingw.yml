@@ -29,17 +29,13 @@ jobs:
         vulkan-components: Vulkan-Headers, Vulkan-Loader
         vulkan-use-cache: true
     - run: |
-          cd demo/external
-          pwd
-          git clone https://github.com/astomih/sinen
-          cd ..
           cmake -G Ninja -B build 
           cd build && ninja
     - name: Upload Artifacts
       uses: actions/upload-artifact@v1
       with:
         name: site
-        path: demo/build
+        path: build
   deploy:
     concurrency: ci-${{ github.ref }}
     needs: [build] # The second job must depend on the first one to complete before running and uses ubuntu-latest instead of windows.

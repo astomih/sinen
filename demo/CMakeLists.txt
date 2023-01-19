@@ -93,7 +93,6 @@ else()
         GL
         ${CMAKE_DL_LIBS})
   endif(WIN32)
-  add_subdirectory(./external/sinen)
 
   add_executable(sinen_app ${SOURCE_FILES})
   target_include_directories(sinen_app PUBLIC ${INCLUDE_DIRS})

@@ -12,17 +12,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - run: |
-          cd ${{github.workspace}}/demo/external
-          git clone https://github.com/astomih/sinen
-          cd ..
-
     - name: Install libraries
       run: |
           cd ${{github.workspace}}/demo/android-project/app/jni
           ln -s ${{github.workspace}}/demo ./demo
-          ln -s ${{github.workspace}}/demo/external/sinen ./sinen
-          ln -s ${{github.workspace}}/demo/external/sinen/script ./script
+          ln -s ${{github.workspace}} ./sinen
+          ln -s ${{github.workspace}}/script ./script
           git submodule update --init --recursive
           mv ${{github.workspace}}/external/SDL2 .
           mv ${{github.workspace}}/external/SDL2_image .

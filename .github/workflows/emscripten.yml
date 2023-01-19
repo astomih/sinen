@@ -11,7 +11,6 @@ env:
 
 jobs:
   build:
-    concurrency: ci-${{ github.ref }}
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
     # You can convert this to a matrix build if you need cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
@@ -31,10 +30,26 @@ jobs:
         cp ${{github.workspace}}/demo/shell_minimum.html .
         cd ${{github.workspace}}/build
         make -j2
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v1
+      with:
+        name: web
+        path: build/demo
+  deploy:
+    concurrency: ci-${{ github.ref }}
+    needs: [build] # The second job must depend on the first one to complete before running and uses ubuntu-latest instead of windows.
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Download Artifacts
+      uses: actions/download-artifact@v1
+      with:
+        name: web
     - name: Deploy
       uses: JamesIves/github-pages-deploy-action@v4.2.2
       with:
         branch: gh-pages
-        folder: build/demo
+        folder: 'web'
         ssh-key: ${{ secrets.DEPLOY_KEY }}
         target-folder: web_demo

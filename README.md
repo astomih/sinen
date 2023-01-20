@@ -31,22 +31,32 @@ Sinen Engine is a media library for C++20 that is being produced mainly for game
 
 ## Hello world in sinen
 ``` lua
+-- Prepare variables
 local hello_texture = {}
 local hello_font = {}
 local hello_drawer = {}
 
-function setup()
-	hello_texture = texture()
-	hello_drawer = draw2d(hello_texture)
-	hello_drawer.scale = vector2(1, 1)
-	hello_font = font()
-	hello_font:load(DEFAULT_FONT, 128)
-	hello_font:render_text(hello_texture, "Hello Sinen World!", color(1, 1, 1, 1))
+function Setup()
+    -- Create a texture
+    hello_texture = texture()
+    -- Create a draw2D
+    hello_drawer = draw2d(hello_texture)
+    -- Create a font
+    hello_font = font()
+    -- Load a font from file(64px)
+    hello_font:load("mplus/mplus-1p-medium.ttf", 64)
+    -- Render text to texture
+    hello_font:render_text(hello_texture, "Hello Sinen World!",
+        color(1, 1, 1, 1))
+    -- Set scale to texture size
+    hello_drawer.scale = hello_texture:size()
 end
 
-function update() 
-	hello_drawer:draw()
+function Update()
+    -- Draw
+    hello_drawer:draw()
 end
+
 ```
 ## Lisence
  MIT Lisence

@@ -99,7 +99,7 @@ void window_system::set_size(const vector2 &size) {
 }
 void window_system::set_fullscreen(bool fullscreen) {
   SDL_SetWindowFullscreen(m_window,
-                          fullscreen ? SDL_WINDOW_FULLSCREEN: 0);
+                          fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP: 0);
 }
 void window_system::set_name(const std::string &name) {
   m_name = name;

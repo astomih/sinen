@@ -71,8 +71,8 @@ void vk_pipeline_layout::initialize(
   cbCI.attachmentCount = 1;
   cbCI.pAttachments = &blendAttachment;
   // setup dynamic state
-  std::vector<VkDynamicState> dynamicStates{VK_DYNAMIC_STATE_SCISSOR,
-                                            VK_DYNAMIC_STATE_VIEWPORT};
+  dynamicStates.push_back(VK_DYNAMIC_STATE_SCISSOR);
+  dynamicStates.push_back(VK_DYNAMIC_STATE_VIEWPORT);
   pipelineDynamicStateCI = {
       VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO, nullptr, 0,
       uint32_t(dynamicStates.size()), dynamicStates.data()};

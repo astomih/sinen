@@ -19,9 +19,9 @@ layout(set = 0, binding = 0) uniform Matrices {
 out gl_PerVertex { vec4 gl_Position; };
 
 // Normal (in world space)
-layout(location = 3) out vec3 fragNormal;
+layout(location = 2) out vec3 fragNormal;
 // Position (in world space)
-layout(location = 4) out vec3 fragWorldPos;
+layout(location = 3) out vec3 fragWorldPos;
 
 void main() {
   mat4 inworldmat;

@@ -10,7 +10,9 @@
 #if !defined(EMSCRIPTEN) && !defined(ANDROID)
 
 #include "vk_base.hpp"
-#include "vk_object.hpp"
+#include "vk_drawable.hpp"
+#include "vk_buffer.hpp"
+#include "vk_image.hpp"
 #include "vk_pipeline.hpp"
 #include "vk_pipeline_layout.hpp"
 #include "vk_render_texture.hpp"
@@ -23,8 +25,8 @@
 namespace sinen {
 
 struct vk_vertex_array : public vertex_array {
-  vk_buffer_object vertexBuffer;
-  vk_buffer_object indexBuffer;
+  vk_buffer vertexBuffer;
+  vk_buffer indexBuffer;
 };
 
 class vk_instancing {
@@ -32,7 +34,7 @@ public:
   vk_instancing(const instancing &_instancing) : ins(_instancing) {}
   instancing ins;
   std::shared_ptr<class vk_drawable> m_vk_draw_object;
-  vk_buffer_object instance_buffer;
+  vk_buffer instance_buffer;
 };
 class vk_shader_parameter {
 public:
@@ -67,7 +69,7 @@ public:
   void draw_depth(VkCommandBuffer command);
   void draw3d(VkCommandBuffer, bool is_change_pipeline = true);
   void draw2d(VkCommandBuffer);
-  vk_buffer_object create_buffer(
+  vk_buffer create_buffer(
       uint32_t size, VkBufferUsageFlags usage,
       VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
       VmaMemoryUsage vma_usage = VMA_MEMORY_USAGE_GPU_TO_CPU);
@@ -86,8 +88,8 @@ public:
   std::vector<VkDescriptorSetLayout> &get_layouts() { return layouts; };
 
   VkDescriptorPool get_descriptor_pool() const { return m_descriptor_pool; }
-  void destroy_buffer(vk_buffer_object &bufferObj);
-  void destroy_image(vk_image_object &imageObj);
+  void destroy_buffer(vk_buffer &bufferObj);
+  void destroy_image(vk_image &imageObj);
   void write_memory(VmaAllocation, const void *data, std::size_t size,
                     std::size_t offset = 0);
 
@@ -122,7 +124,7 @@ private:
   std::vector<std::pair<shader, vk_pipeline>> m_user_pipelines;
   std::vector<std::shared_ptr<vk_drawable>> m_draw_object_3d;
   std::vector<std::shared_ptr<vk_drawable>> m_draw_object_2d;
-  std::unordered_map<handle_t, vk_image_object> m_image_object;
+  std::unordered_map<handle_t, vk_image> m_image_object;
   std::vector<vk_instancing> m_instancies_3d;
   std::vector<vk_instancing> m_instancies_2d;
 };

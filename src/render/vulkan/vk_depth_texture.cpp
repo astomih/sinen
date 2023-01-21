@@ -78,10 +78,9 @@ void vk_depth_texture::prepare(int width, int height) {
   vkCreateFramebuffer(m_vkrenderer.get_base().m_device, &fbci, nullptr, &fb);
   prepare_descriptor_set();
 }
-vk_image_object vk_depth_texture::create_image_object(int width, int height,
-                                                      VkFormat format,
-                                                      bool isdepth) {
-  vk_image_object tex{};
+vk_image vk_depth_texture::create_image_object(int width, int height,
+                                               VkFormat format, bool isdepth) {
+  vk_image tex{};
   {
     // Create VkImage texture
     VkImageCreateInfo ci{};
@@ -98,7 +97,7 @@ vk_image_object vk_depth_texture::create_image_object(int width, int height,
     else
       ci.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
     ci.tiling = VK_IMAGE_TILING_OPTIMAL;
-    ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    ci.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
     ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     VmaAllocationCreateInfo alloc_info = {};
     alloc_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
@@ -207,18 +206,12 @@ VkSampler vk_depth_texture::create_sampler() {
 }
 void vk_depth_texture::prepare_descriptor_set_layout() {
   std::vector<VkDescriptorSetLayoutBinding> bindings;
-  VkDescriptorSetLayoutBinding bindingUBO{}, bindingTex{}, bindingInstance{};
+  VkDescriptorSetLayoutBinding bindingUBO{};
   bindingUBO.binding = 0;
   bindingUBO.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
   bindingUBO.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
   bindingUBO.descriptorCount = 1;
   bindings.push_back(bindingUBO);
-
-  bindingInstance.binding = 2;
-  bindingInstance.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  bindingInstance.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-  bindingInstance.descriptorCount = 1;
-  bindings.push_back(bindingInstance);
 
   VkDescriptorSetLayoutCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;

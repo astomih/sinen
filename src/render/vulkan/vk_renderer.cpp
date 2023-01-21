@@ -1,6 +1,5 @@
 #if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include "../../render/render_system.hpp"
-#include "../../script/script_system.hpp"
 #include <camera/camera.hpp>
 #include <render/renderer.hpp>
 #include <scene/scene.hpp>
@@ -33,7 +32,7 @@
 
 namespace sinen {
 
-constexpr int maxpoolSize = 65535;
+constexpr int maxpoolSize = 5000;
 vk_renderer::vk_renderer()
     : m_descriptor_pool(), m_descriptor_set_layout(), m_sampler(),
       m_base(std::make_unique<vk_base>(this)), m_render_texture(*this) {}
@@ -48,8 +47,10 @@ void vk_renderer::shutdown() {
   m_base->shutdown();
 }
 void vk_renderer::render() {
-  if (m_base->mSwapchain->is_need_recreate(window::size()))
+  if (m_base->mSwapchain->is_need_recreate(window::size())) {
     m_base->recreate_swapchain();
+    m_render_texture.window_resize(window::size().x, window::size().y);
+  }
   uint32_t nextImageIndex = 0;
   m_base->mSwapchain->acquire_next_image(&nextImageIndex,
                                          m_base->m_presentCompletedSem);
@@ -95,6 +96,7 @@ void vk_renderer::render() {
     // Begin Render Pass
     vkCmdBeginRenderPass(command, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
     render_to_display(command);
+    render_imgui(command);
     // End Render Pass
     vkCmdEndRenderPass(command);
   }
@@ -111,9 +113,11 @@ void vk_renderer::render() {
   submitInfo.pWaitSemaphores = &m_base->m_presentCompletedSem;
   submitInfo.signalSemaphoreCount = 1;
   submitInfo.pSignalSemaphores = &m_base->m_renderCompletedSem;
+  vkResetFences(m_base->m_device, 1, &commandFence);
   vkQueueSubmit(m_base->m_deviceQueue, 1, &submitInfo, commandFence);
   m_base->mSwapchain->queue_present(m_base->m_deviceQueue, nextImageIndex,
                                     m_base->m_renderCompletedSem);
+  vkQueueWaitIdle(m_base->m_deviceQueue);
   for (auto &sprite : m_draw_object_3d)
     destroy_vk_drawable(sprite);
   m_draw_object_3d.clear();
@@ -247,7 +251,8 @@ void vk_renderer::add_instancing(const instancing &_instancing) {
   t->drawable_obj = _instancing.object;
   add_texture(_instancing.object->binding_texture);
   for (auto &v : t->uniformBuffers) {
-    VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+    VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                     VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
     v = create_buffer(sizeof(vk_shader_parameter),
                       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
   }
@@ -255,10 +260,13 @@ void vk_renderer::add_instancing(const instancing &_instancing) {
 
   vk_instancing vi{_instancing};
   vi.m_vk_draw_object = t;
-  vi.instance_buffer = create_buffer(
-      _instancing.size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+  vi.instance_buffer = create_buffer(_instancing.size,
+                                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
+                                         VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 
-      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+                                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                         VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                     VMA_MEMORY_USAGE_GPU_TO_CPU);
   write_memory(vi.instance_buffer.allocation, _instancing.data.data(),
                _instancing.size);
   if (_instancing.type == object_type::_2D) {
@@ -433,8 +441,6 @@ void vk_renderer::make_command(VkCommandBuffer command) {
   draw_instancing_3d(command);
   draw2d(command);
   draw_instancing_2d(command);
-  m_pipelines["opaque"].Bind(command);
-  render_imgui(command);
 }
 void vk_renderer::draw_skybox(VkCommandBuffer command) {
   m_pipelines["skybox"].Bind(command);
@@ -730,12 +736,12 @@ void vk_renderer::prepare_descriptor_set(std::shared_ptr<vk_drawable> sprite) {
     descUBO.offset = 0;
     descUBO.range = VK_WHOLE_SIZE;
 
-    std::array<VkDescriptorImageInfo, 2> descImage;
+    VkDescriptorImageInfo descImage;
 
-    descImage[0].imageView =
+    descImage.imageView =
         m_image_object[sprite->drawable_obj->binding_texture.handle].view;
-    descImage[0].sampler = m_sampler;
-    descImage[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    descImage.sampler = m_sampler;
+    descImage.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     VkWriteDescriptorSet ubo{};
     ubo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -750,27 +756,25 @@ void vk_renderer::prepare_descriptor_set(std::shared_ptr<vk_drawable> sprite) {
     tex.dstBinding = 1;
     tex.descriptorCount = 1;
     tex.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    tex.pImageInfo = &descImage[0];
+    tex.pImageInfo = &descImage;
     tex.dstSet = sprite->descriptor_sets[i];
 
-    std::vector<VkWriteDescriptorSet> writeSets = {ubo, tex};
+    std::array<VkWriteDescriptorSet, 2> writeSets = {ubo, tex};
     vkUpdateDescriptorSets(m_base->get_vk_device(), uint32_t(writeSets.size()),
                            writeSets.data(), 0, nullptr);
   }
 }
-vk_buffer_object vk_renderer::create_buffer(uint32_t size,
-                                            VkBufferUsageFlags usage,
-                                            VkMemoryPropertyFlags flags,
-                                            VmaMemoryUsage vma_usage) {
+vk_buffer vk_renderer::create_buffer(uint32_t size, VkBufferUsageFlags usage,
+                                     VkMemoryPropertyFlags flags,
+                                     VmaMemoryUsage vma_usage) {
 
-  vk_buffer_object obj;
+  vk_buffer obj;
   VkBufferCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
   ci.usage = usage;
   ci.size = size;
   VmaAllocationCreateInfo buffer_alloc_info = {};
   buffer_alloc_info.usage = vma_usage;
-  buffer_alloc_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
   vmaCreateBuffer(allocator, &ci, &buffer_alloc_info, &obj.buffer,
                   &obj.allocation, nullptr);
   return obj;
@@ -812,27 +816,27 @@ void vk_renderer::set_image_memory_barrier(VkCommandBuffer command,
     break;
   case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
     imb.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
     break;
   default:
     break;
   }
-
   switch (newLayout) {
   case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
     imb.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+    dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
     break;
   case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
     imb.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
     break;
   case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
     imb.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     break;
   default:
     break;
   }
-
-  srcStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
-  dstStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 
   vkCmdPipelineBarrier(command, srcStage, dstStage, 0,
                        0, // memoryBarrierCount
@@ -843,11 +847,11 @@ void vk_renderer::set_image_memory_barrier(VkCommandBuffer command,
                        &imb);
 }
 
-void vk_renderer::destroy_buffer(vk_buffer_object &bufferObj) {
+void vk_renderer::destroy_buffer(vk_buffer &bufferObj) {
   vmaDestroyBuffer(allocator, bufferObj.buffer, bufferObj.allocation);
 }
 
-void vk_renderer::destroy_image(vk_image_object &imageObj) {
+void vk_renderer::destroy_image(vk_image &imageObj) {
   vkDestroyImageView(m_base->get_vk_device(), imageObj.view, nullptr);
   vmaDestroyImage(allocator, imageObj.image, imageObj.allocation);
 }
@@ -859,8 +863,8 @@ void vk_renderer::create_image_object(const handle_t &handle) {
   formatbuf->BytesPerPixel = 4;
   auto *imagedata = ::SDL_ConvertSurface(&surf, formatbuf, 0);
   ::SDL_UnlockSurface(&surf);
-  vk_buffer_object stagingBuffer;
-  vk_image_object texture;
+  vk_buffer stagingBuffer;
+  vk_image image;
   int width = imagedata->w, height = imagedata->h;
   auto *pImage = imagedata->pixels;
   {
@@ -875,18 +879,18 @@ void vk_renderer::create_image_object(const handle_t &handle) {
     ci.samples = VK_SAMPLE_COUNT_1_BIT;
     ci.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     ci.tiling = VkImageTiling::VK_IMAGE_TILING_LINEAR;
-    ci.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
+    ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     VmaAllocationCreateInfo alloc_info = {};
     alloc_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-    vmaCreateImage(allocator, &ci, &alloc_info, &texture.image,
-                   &texture.allocation, nullptr);
+    vmaCreateImage(allocator, &ci, &alloc_info, &image.image, &image.allocation,
+                   nullptr);
   }
 
   {
     uint32_t imageSize = imagedata->h * imagedata->w * 4;
     stagingBuffer = create_buffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-                                  VMA_MEMORY_USAGE_CPU_ONLY);
+                                  VMA_MEMORY_USAGE_GPU_TO_CPU);
     write_memory(stagingBuffer.allocation, pImage, imageSize);
   }
 
@@ -906,18 +910,20 @@ void vk_renderer::create_image_object(const handle_t &handle) {
   VkCommandBufferBeginInfo commandBI{};
   commandBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   vkBeginCommandBuffer(command, &commandBI);
-  set_image_memory_barrier(command, texture.image,
-                           VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+  set_image_memory_barrier(command, image.image, VK_IMAGE_LAYOUT_UNDEFINED,
                            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-  vkCmdCopyBufferToImage(command, stagingBuffer.buffer, texture.image,
+  vkCmdCopyBufferToImage(command, stagingBuffer.buffer, image.image,
                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
 
-  set_image_memory_barrier(command, texture.image,
+  set_image_memory_barrier(command, image.image,
                            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   vkEndCommandBuffer(command);
 
   VkSubmitInfo submitInfo{};
+  vkResetFences(m_base->get_vk_device(), 1,
+                &m_base->m_fences[m_base->m_imageIndex]);
+  vkQueueWaitIdle(m_base->get_vk_queue());
   submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
   submitInfo.commandBufferCount = 1;
   submitInfo.pCommandBuffers = &command;
@@ -928,7 +934,7 @@ void vk_renderer::create_image_object(const handle_t &handle) {
   VkImageViewCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
   ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
-  ci.image = texture.image;
+  ci.image = image.image;
   ci.format = VK_FORMAT_R8G8B8A8_UNORM;
   ci.components = {
       .r = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_R,
@@ -938,14 +944,14 @@ void vk_renderer::create_image_object(const handle_t &handle) {
   };
 
   ci.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-  vkCreateImageView(m_base->get_vk_device(), &ci, nullptr, &texture.view);
+  vkCreateImageView(m_base->get_vk_device(), &ci, nullptr, &image.view);
   vkDeviceWaitIdle(m_base->get_vk_device());
   vkFreeCommandBuffers(m_base->get_vk_device(), m_base->m_commandPool, 1,
                        &command);
   destroy_buffer(stagingBuffer);
   SDL_FreeFormat(formatbuf);
   SDL_FreeSurface(imagedata);
-  m_image_object.emplace(handle, texture);
+  m_image_object.emplace(handle, image);
 }
 void vk_renderer::add_texture(texture handle) {
   if (m_image_object.contains(handle.handle)) {

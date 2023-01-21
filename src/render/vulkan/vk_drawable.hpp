@@ -1,24 +1,14 @@
-#ifndef SINEN_VK_OBJECT_HPP
-#define SINEN_VK_OBJECT_HPP
+#ifndef SINEN_VK_DRAWABLE_HPP
+#define SINEN_VK_DRAWABLE_HPP
 #if !defined(EMSCRIPTEN) && !defined(ANDROID)
+#include "vk_buffer.hpp"
 #include <drawable/drawable.hpp>
 #include <vk_mem_alloc.h>
 namespace sinen {
-class vk_buffer_object {
-public:
-  VkBuffer buffer;
-  VmaAllocation allocation;
-};
-struct vk_image_object {
-public:
-  VkImage image;
-  VmaAllocation allocation;
-  VkImageView view;
-};
 class vk_drawable {
 public:
   std::array<VkDescriptorSet, 2> descriptor_sets;
-  std::array<vk_buffer_object, 2> uniformBuffers;
+  std::array<vk_buffer, 2> uniformBuffers;
   std::shared_ptr<drawable> drawable_obj;
   drawable::parameter get_parameter() { return drawable_obj->param; }
   shader get_shader() { return drawable_obj->shade; }
@@ -26,4 +16,4 @@ public:
 };
 } // namespace sinen
 #endif // !defined(EMSCRIPTEN) && !defined(MOBILE)
-#endif // !SINEN_VK_OBJECT_HPP
+#endif // !SINEN_VK_DRAWABLE_HPP

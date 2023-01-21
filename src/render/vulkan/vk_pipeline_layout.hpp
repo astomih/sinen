@@ -63,6 +63,7 @@ private:
   VkPipelineDepthStencilStateCreateInfo depthStencilCI;
   VkPipelineLayoutCreateInfo pipelineLayoutCI;
   VkPipelineDynamicStateCreateInfo pipelineDynamicStateCI;
+  std::vector<VkDynamicState> dynamicStates;
 };
 } // namespace sinen
 #endif // !!defined(EMSCRIPTEN) && !defined(MOBILE)

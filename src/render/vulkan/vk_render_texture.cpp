@@ -30,16 +30,16 @@ void vk_render_texture::prepare(int width, int height, bool depth_only) {
                                 VK_ATTACHMENT_STORE_OP_DONT_CARE,
                                 VK_IMAGE_LAYOUT_UNDEFINED,
                                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
-    depthTarget =
-        VkAttachmentDescription{0,
-                                VK_FORMAT_D32_SFLOAT,
-                                VK_SAMPLE_COUNT_1_BIT,
-                                VK_ATTACHMENT_LOAD_OP_CLEAR,
-                                VK_ATTACHMENT_STORE_OP_STORE,
-                                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                                VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                                VK_IMAGE_LAYOUT_UNDEFINED,
-                                VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL};
+    depthTarget = VkAttachmentDescription{
+        0,
+        VK_FORMAT_D32_SFLOAT,
+        VK_SAMPLE_COUNT_1_BIT,
+        VK_ATTACHMENT_LOAD_OP_CLEAR,
+        VK_ATTACHMENT_STORE_OP_STORE,
+        VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
   } else {
     colorTarget = VkAttachmentDescription{
 
@@ -52,16 +52,16 @@ void vk_render_texture::prepare(int width, int height, bool depth_only) {
         VK_ATTACHMENT_STORE_OP_DONT_CARE,
         VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_PRESENT_SRC_KHR};
-    depthTarget =
-        VkAttachmentDescription{0,
-                                VK_FORMAT_D32_SFLOAT,
-                                VK_SAMPLE_COUNT_1_BIT,
-                                VK_ATTACHMENT_LOAD_OP_CLEAR,
-                                VK_ATTACHMENT_STORE_OP_STORE,
-                                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                                VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                                VK_IMAGE_LAYOUT_UNDEFINED,
-                                VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL};
+    depthTarget = VkAttachmentDescription{
+        0,
+        VK_FORMAT_D32_SFLOAT,
+        VK_SAMPLE_COUNT_1_BIT,
+        VK_ATTACHMENT_LOAD_OP_CLEAR,
+        VK_ATTACHMENT_STORE_OP_STORE,
+        VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
   }
   // Render Pass
   {
@@ -113,10 +113,9 @@ void vk_render_texture::window_resize(int width, int height) {
   // Frame Buffer
   create_frame_buffer(width, height);
 }
-vk_image_object vk_render_texture::create_image_object(int width, int height,
-                                                       VkFormat format,
-                                                       bool isdepth) {
-  vk_image_object tex{};
+vk_image vk_render_texture::create_image_object(int width, int height,
+                                                VkFormat format, bool isdepth) {
+  vk_image tex{};
   {
     // Create VkImage texture
     VkImageCreateInfo ci{};
@@ -137,10 +136,7 @@ vk_image_object vk_render_texture::create_image_object(int width, int height,
     ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     VmaAllocationCreateInfo alloc_info = {};
-    alloc_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-    alloc_info.flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-    alloc_info.requiredFlags =
-        VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+    alloc_info.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
     vmaCreateImage(m_vkrenderer.allocator, &ci, &alloc_info, &tex.image,
                    &tex.allocation, nullptr);
   }
@@ -159,7 +155,11 @@ vk_image_object vk_render_texture::create_image_object(int width, int height,
         .a = VkComponentSwizzle::VK_COMPONENT_SWIZZLE_A,
     };
 
-    ci.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+    if (isdepth) {
+      ci.subresourceRange = {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1};
+    } else {
+      ci.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+    }
     vkCreateImageView(m_vkrenderer.get_base().get_vk_device(), &ci, nullptr,
                       &tex.view);
   }
@@ -272,7 +272,7 @@ void vk_render_texture::prepare_descriptor_set_layout() {
   vkCreateDescriptorSetLayout(m_vkrenderer.get_base().get_vk_device(), &ci,
                               nullptr, &descriptor_set_layout);
 }
-void vk_render_texture::destroy_image_object(vk_image_object &image_object) {
+void vk_render_texture::destroy_image_object(vk_image &image_object) {
   m_vkrenderer.destroy_image(image_object);
 }
 void vk_render_texture::create_frame_buffer(int width, int height) {

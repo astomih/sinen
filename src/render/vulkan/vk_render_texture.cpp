@@ -86,6 +86,7 @@ void vk_render_texture::prepare(int width, int height, bool depth_only) {
   }
   // Frame Buffer
   create_frame_buffer(width, height);
+  prepare_descriptor_set_layout();
   prepare_descriptor_set();
 }
 void vk_render_texture::clear() {
@@ -93,6 +94,9 @@ void vk_render_texture::clear() {
                        m_vkrenderer.get_descriptor_pool(),
                        drawer.descriptor_sets.size(),
                        drawer.descriptor_sets.data());
+  for (auto &ds : drawer.uniformBuffers) {
+    m_vkrenderer.destroy_buffer(ds);
+  }
   vkDestroyDescriptorSetLayout(m_vkrenderer.get_base().get_vk_device(),
                                descriptor_set_layout, nullptr);
   vkDestroyFramebuffer(m_vkrenderer.get_base().get_vk_device(), fb, nullptr);
@@ -102,16 +106,25 @@ void vk_render_texture::clear() {
   m_vkrenderer.destroy_image(depth_target);
   m_vkrenderer.destroy_image(color_target);
   vkDestroySampler(m_vkrenderer.get_base().get_vk_device(), sampler, nullptr);
+  pipeline.Cleanup(m_vkrenderer.get_base().get_vk_device());
 }
 void vk_render_texture::window_resize(int width, int height) {
   destroy_frame_buffer();
   m_vkrenderer.destroy_image(depth_target);
   m_vkrenderer.destroy_image(color_target);
+  vkFreeDescriptorSets(m_vkrenderer.get_base().get_vk_device(),
+                       m_vkrenderer.get_descriptor_pool(),
+                       drawer.descriptor_sets.size(),
+                       drawer.descriptor_sets.data());
+  for (auto &d : drawer.uniformBuffers) {
+    m_vkrenderer.destroy_buffer(d);
+  }
   color_target =
       create_image_object(width, height, VK_FORMAT_R8G8B8A8_UNORM, false);
   depth_target = create_image_object(width, height, VK_FORMAT_D32_SFLOAT, true);
   // Frame Buffer
   create_frame_buffer(width, height);
+  prepare_descriptor_set();
 }
 vk_image vk_render_texture::create_image_object(int width, int height,
                                                 VkFormat format, bool isdepth) {
@@ -166,7 +179,6 @@ vk_image vk_render_texture::create_image_object(int width, int height,
   return tex;
 }
 void vk_render_texture::prepare_descriptor_set() {
-  prepare_descriptor_set_layout();
   for (auto &v : drawer.uniformBuffers) {
     VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                      VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;

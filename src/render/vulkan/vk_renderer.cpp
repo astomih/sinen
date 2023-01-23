@@ -18,8 +18,6 @@
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_vulkan.h>
 #include <vulkan/vulkan_core.h>
-#define VMA_IMPLEMENTATION
-#include "vk_mem_alloc.h"
 
 // internal
 #include "../../texture/texture_system.hpp"
@@ -32,7 +30,7 @@
 
 namespace sinen {
 
-constexpr int maxpoolSize = 5000;
+constexpr int maxpoolSize = 65535;
 vk_renderer::vk_renderer()
     : m_descriptor_pool(), m_descriptor_set_layout(), m_sampler(),
       m_base(std::make_unique<vk_base>(this)), m_render_texture(*this) {}
@@ -51,6 +49,19 @@ void vk_renderer::render() {
     m_base->recreate_swapchain();
     m_render_texture.window_resize(window::size().x, window::size().y);
   }
+  /* Skybox */
+  m_skybox->drawable_obj->binding_texture = render_system::get_skybox_texture();
+  if (m_image_object.contains(m_skybox->drawable_obj->binding_texture.handle)) {
+    destroy_image_object(m_skybox->drawable_obj->binding_texture.handle);
+  }
+  create_image_object(m_skybox->drawable_obj->binding_texture.handle);
+  for (auto &v : m_skybox->uniformBuffers) {
+    VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                     VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+    v = create_buffer(sizeof(vk_shader_parameter),
+                      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
+  }
+  prepare_descriptor_set(m_skybox);
   uint32_t nextImageIndex = 0;
   m_base->mSwapchain->acquire_next_image(&nextImageIndex,
                                          m_base->m_presentCompletedSem);
@@ -76,10 +87,19 @@ void vk_renderer::render() {
     renderPassBI.pClearValues = clearValue.data();
     renderPassBI.clearValueCount = uint32_t(clearValue.size());
     vkCmdBeginRenderPass(command, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
+    VkRect2D scissor = {{0, 0}, m_base->mSwapchain->GetSurfaceExtent()};
+    vkCmdSetScissor(command, 0, 1, &scissor);
+    VkViewport viewport = {0,
+                           0,
+                           float(m_base->mSwapchain->GetSurfaceExtent().width),
+                           float(m_base->mSwapchain->GetSurfaceExtent().height),
+                           0,
+                           1};
+    vkCmdSetViewport(command, 0, 1, &viewport);
     make_command(command);
     vkCmdEndRenderPass(command);
     set_image_memory_barrier(command, m_render_texture.color_target.image,
-                             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   }
 
@@ -118,6 +138,7 @@ void vk_renderer::render() {
   m_base->mSwapchain->queue_present(m_base->m_deviceQueue, nextImageIndex,
                                     m_base->m_renderCompletedSem);
   vkQueueWaitIdle(m_base->m_deviceQueue);
+  destroy_vk_drawable(m_skybox);
   for (auto &sprite : m_draw_object_3d)
     destroy_vk_drawable(sprite);
   m_draw_object_3d.clear();
@@ -137,6 +158,9 @@ void vk_renderer::render() {
 }
 void vk_renderer::add_vertex_array(const vertex_array &vArray,
                                    std::string_view name) {
+  if (m_vertex_arrays.contains(name.data())) {
+    return;
+  }
   vk_vertex_array vArrayVK;
   vArrayVK.indexCount = vArray.indexCount;
   vArrayVK.indices = vArray.indices;
@@ -358,10 +382,9 @@ void vk_renderer::prepare() {
   m_pipeline_layout_normal.prepare(m_base->get_vk_device());
   m_render_texture.prepare(window::size().x, window::size().y, false);
 
-  vk_depth_texture depth(*this);
   vk_pipeline_builder pipeline_builder(
-      m_base->get_vk_device(), m_pipeline_layout_instance, m_render_texture,
-      depth, m_base->m_renderPass);
+      m_base->get_vk_device(), m_pipeline_layout_instance,
+      m_pipeline_layout_normal, m_render_texture, m_base->m_renderPass);
   // render texture pipeline
   pipeline_builder.render_texture_pipeline(m_render_texture.pipeline);
   vk_pipeline pipeline_skybox;
@@ -394,9 +417,35 @@ void vk_renderer::prepare() {
   m_pipelines["instancing_2d"] = pipeline_instancing_2d;
 
   prepare_imgui();
+  m_skybox = std::make_shared<vk_drawable>();
+  m_skybox->drawable_obj = std::make_shared<drawable>();
+  m_skybox->drawable_obj->vertexIndex = "BOX";
 }
 void vk_renderer::cleanup() {
   VkDevice device = m_base->get_vk_device();
+  vkDeviceWaitIdle(device);
+  destroy_vk_drawable(m_skybox);
+  for (auto &sprite : m_draw_object_3d)
+    destroy_vk_drawable(sprite);
+  m_draw_object_3d.clear();
+  for (auto &sprite : m_draw_object_2d)
+    destroy_vk_drawable(sprite);
+  m_draw_object_2d.clear();
+  for (auto &_instancing : m_instancies_2d) {
+    destroy_vk_drawable(_instancing.m_vk_draw_object);
+    destroy_buffer(_instancing.instance_buffer);
+  }
+  m_instancies_2d.clear();
+  for (auto &_instancing : m_instancies_3d) {
+    destroy_vk_drawable(_instancing.m_vk_draw_object);
+    destroy_buffer(_instancing.instance_buffer);
+  }
+  m_instancies_3d.clear();
+  ImGui_ImplVulkan_Shutdown();
+  ImGui_ImplSDL2_Shutdown();
+  ImGui::DestroyContext();
+
+  m_render_texture.clear();
 
   for (auto &i : m_image_object) {
     destroy_image(i.second);
@@ -404,6 +453,7 @@ void vk_renderer::cleanup() {
   vkutil::destroy_vulkan_object<VkSampler>(device, m_sampler,
                                            &vkDestroySampler);
   m_pipeline_layout_instance.cleanup(device);
+  m_pipeline_layout_normal.cleanup(device);
   for (auto &i : m_pipelines) {
     i.second.Cleanup(device);
   }
@@ -411,29 +461,17 @@ void vk_renderer::cleanup() {
     i.second.Cleanup(device);
   }
   for (auto &i : m_vertex_arrays) {
-    vkutil::destroy_vulkan_object<VkBuffer>(
-        device, i.second.vertexBuffer.buffer, &vkDestroyBuffer);
-    vkutil::destroy_vulkan_object<VkBuffer>(device, i.second.indexBuffer.buffer,
-                                            &vkDestroyBuffer);
+    destroy_buffer(i.second.vertexBuffer);
+    destroy_buffer(i.second.indexBuffer);
   }
+  m_vertex_arrays.clear();
   vkutil::destroy_vulkan_object<VkDescriptorPool>(device, m_descriptor_pool,
                                                   &vkDestroyDescriptorPool);
   vkutil::destroy_vulkan_object<VkDescriptorSetLayout>(
       device, m_descriptor_set_layout, &vkDestroyDescriptorSetLayout);
 }
 
-void vk_renderer::draw_depth(VkCommandBuffer command) {
-
-  m_pipelines["depth"].Bind(command);
-  draw3d(command, false);
-  m_pipelines["depth_instancing"].Bind(command);
-  draw_instancing_3d(command, false);
-}
-
 void vk_renderer::make_command(VkCommandBuffer command) {
-
-  /* skybox
-   */
   draw_skybox(command);
   m_pipelines["opaque"].Bind(command);
   draw3d(command);
@@ -444,10 +482,16 @@ void vk_renderer::make_command(VkCommandBuffer command) {
 }
 void vk_renderer::draw_skybox(VkCommandBuffer command) {
   m_pipelines["skybox"].Bind(command);
-  auto t = std::make_shared<vk_drawable>();
-  t->drawable_obj = std::make_shared<drawable>();
-  t->drawable_obj->binding_texture = render_system::get_skybox_texture();
-  t->drawable_obj->vertexIndex = "BOX";
+  auto &va = m_vertex_arrays["BOX"];
+  VkDeviceSize offset = 0;
+  vkCmdBindVertexBuffers(command, 0, 1, &va.vertexBuffer.buffer, &offset);
+  vkCmdBindIndexBuffer(command, va.indexBuffer.buffer, offset,
+                       VK_INDEX_TYPE_UINT32);
+  vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                          m_pipeline_layout_normal.GetLayout(), 0, 1,
+                          &m_skybox->descriptor_sets[m_base->m_imageIndex], 0,
+                          nullptr);
+  auto allocation = m_skybox->uniformBuffers[m_base->m_imageIndex].allocation;
   vk_shader_parameter param;
   matrix4 w = matrix4::identity;
   w[0][0] = 5;
@@ -458,32 +502,8 @@ void vk_renderer::draw_skybox(VkCommandBuffer command) {
                                      scene::main_camera().target() -
                                          scene::main_camera().position(),
                                      scene::main_camera().up());
-  auto &va = m_vertex_arrays["BOX"];
-
-  if (m_image_object.contains(t->drawable_obj->binding_texture.handle)) {
-    destroy_image_object(t->drawable_obj->binding_texture.handle);
-  }
-  create_image_object(t->drawable_obj->binding_texture.handle);
-  for (auto &v : t->uniformBuffers) {
-    VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                     VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-    v = create_buffer(sizeof(vk_shader_parameter),
-                      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
-  }
-  prepare_descriptor_set(t);
-
-  VkDeviceSize offset = 0;
-  vkCmdBindVertexBuffers(command, 0, 1, &va.vertexBuffer.buffer, &offset);
-  vkCmdBindIndexBuffer(command, va.indexBuffer.buffer, offset,
-                       VK_INDEX_TYPE_UINT32);
-  vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                          m_pipeline_layout_instance.GetLayout(), 0, 1,
-                          &t->descriptor_sets[m_base->m_imageIndex], 0,
-                          nullptr);
-  auto allocation = t->uniformBuffers[m_base->m_imageIndex].allocation;
   write_memory(allocation, &param, sizeof(vk_shader_parameter));
   vkCmdDrawIndexed(command, va.indexCount, 1, 0, 0, 0);
-  destroy_vk_drawable(t);
 }
 
 void vk_renderer::draw3d(VkCommandBuffer command, bool is_change_pipeline) {
@@ -508,7 +528,7 @@ void vk_renderer::draw3d(VkCommandBuffer command, bool is_change_pipeline) {
                            offset, VK_INDEX_TYPE_UINT32);
     // Set descriptors
     vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            m_pipeline_layout_instance.GetLayout(), 0, 1,
+                            m_pipeline_layout_normal.GetLayout(), 0, 1,
                             &sprite->descriptor_sets[m_base->m_imageIndex], 0,
                             nullptr);
     auto allocation = sprite->uniformBuffers[m_base->m_imageIndex].allocation;
@@ -546,7 +566,7 @@ void vk_renderer::draw2d(VkCommandBuffer command) {
 
     // Set descriptors
     vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            m_pipeline_layout_instance.GetLayout(), 0, 1,
+                            m_pipeline_layout_normal.GetLayout(), 0, 1,
                             &sprite->descriptor_sets[m_base->m_imageIndex], 0,
                             nullptr);
     auto allocation = sprite->uniformBuffers[m_base->m_imageIndex].allocation;
@@ -574,7 +594,7 @@ void vk_renderer::render_to_display(VkCommandBuffer command) {
 
   // Set descriptors
   vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                          m_pipeline_layout_instance.GetLayout(), 0, 1,
+                          m_pipeline_layout_normal.GetLayout(), 0, 1,
                           &sprite.descriptor_sets[m_base->m_imageIndex], 0,
                           nullptr);
   auto allocation = sprite.uniformBuffers[m_base->m_imageIndex].allocation;
@@ -590,15 +610,16 @@ void vk_renderer::render_to_display(VkCommandBuffer command) {
 
 void vk_renderer::write_memory(VmaAllocation allocation, const void *data,
                                std::size_t size, std::size_t offset) {
-  if (size == 0)
+  if (size <= 0) {
     return;
+  }
   void *p = nullptr;
   char *pc = nullptr;
   vmaMapMemory(allocator, allocation, &p);
   pc = reinterpret_cast<char *>(p);
   pc += offset;
   p = reinterpret_cast<void *>(pc);
-  SDL_memcpy(p, data, size);
+  std::memcpy(p, data, size);
   vmaUnmapMemory(allocator, allocation);
 }
 
@@ -676,7 +697,7 @@ void vk_renderer::render_imgui(VkCommandBuffer command) {
 
 void vk_renderer::prepare_descriptor_set_layout() {
   std::vector<VkDescriptorSetLayoutBinding> bindings;
-  VkDescriptorSetLayoutBinding ubo{}, tex{}, instance{}, shadow{};
+  VkDescriptorSetLayoutBinding ubo{}, tex{};
   ubo.binding = 0;
   ubo.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
   ubo.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
@@ -688,12 +709,6 @@ void vk_renderer::prepare_descriptor_set_layout() {
   tex.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
   tex.descriptorCount = 1;
   bindings.push_back(tex);
-
-  instance.binding = 2;
-  instance.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  instance.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-  instance.descriptorCount = 1;
-  bindings.push_back(instance);
 
   VkDescriptorSetLayoutCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -848,12 +863,24 @@ void vk_renderer::set_image_memory_barrier(VkCommandBuffer command,
 }
 
 void vk_renderer::destroy_buffer(vk_buffer &bufferObj) {
+  if (bufferObj.buffer == VK_NULL_HANDLE ||
+      bufferObj.allocation == VK_NULL_HANDLE) {
+    return;
+  }
   vmaDestroyBuffer(allocator, bufferObj.buffer, bufferObj.allocation);
+  bufferObj.buffer = VK_NULL_HANDLE;
+  bufferObj.allocation = VK_NULL_HANDLE;
 }
 
 void vk_renderer::destroy_image(vk_image &imageObj) {
+  if (imageObj.view == VK_NULL_HANDLE | imageObj.image == VK_NULL_HANDLE) {
+    return;
+  }
   vkDestroyImageView(m_base->get_vk_device(), imageObj.view, nullptr);
   vmaDestroyImage(allocator, imageObj.image, imageObj.allocation);
+  imageObj.image = VK_NULL_HANDLE;
+  imageObj.view = VK_NULL_HANDLE;
+  imageObj.allocation = VK_NULL_HANDLE;
 }
 
 void vk_renderer::create_image_object(const handle_t &handle) {
@@ -881,7 +908,7 @@ void vk_renderer::create_image_object(const handle_t &handle) {
     ci.tiling = VkImageTiling::VK_IMAGE_TILING_LINEAR;
     ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     VmaAllocationCreateInfo alloc_info = {};
-    alloc_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+    alloc_info.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
     vmaCreateImage(allocator, &ci, &alloc_info, &image.image, &image.allocation,
                    nullptr);
   }
@@ -923,12 +950,12 @@ void vk_renderer::create_image_object(const handle_t &handle) {
   VkSubmitInfo submitInfo{};
   vkResetFences(m_base->get_vk_device(), 1,
                 &m_base->m_fences[m_base->m_imageIndex]);
-  vkQueueWaitIdle(m_base->get_vk_queue());
   submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
   submitInfo.commandBufferCount = 1;
   submitInfo.pCommandBuffers = &command;
   vkQueueSubmit(m_base->get_vk_queue(), 1, &submitInfo,
                 m_base->m_fences[m_base->m_imageIndex]);
+  vkQueueWaitIdle(m_base->get_vk_queue());
 
   // Create view for texture reference
   VkImageViewCreateInfo ci{};
@@ -1009,9 +1036,13 @@ void vk_renderer::register_vk_drawable(
 }
 void vk_renderer::destroy_vk_drawable(std::shared_ptr<vk_drawable> texture) {
   auto device = m_base->get_vk_device();
-  vkFreeDescriptorSets(device, m_descriptor_pool,
-                       static_cast<uint32_t>(texture->descriptor_sets.size()),
-                       texture->descriptor_sets.data());
+  if (texture->descriptor_sets[0] != VK_NULL_HANDLE) {
+    vkFreeDescriptorSets(device, m_descriptor_pool,
+                         static_cast<uint32_t>(texture->descriptor_sets.size()),
+                         texture->descriptor_sets.data());
+  }
+  texture->descriptor_sets[0] = VK_NULL_HANDLE;
+  texture->descriptor_sets[1] = VK_NULL_HANDLE;
   for (auto &i : texture->uniformBuffers) {
     destroy_buffer(i);
   }

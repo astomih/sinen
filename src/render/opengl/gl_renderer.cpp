@@ -92,6 +92,8 @@ void gl_renderer::render() {
     glViewport(0, 0, w.x, w.y);
     prev_window_x = w.x;
     prev_window_y = w.y;
+    destroy_render_texture();
+    create_render_texture();
   }
   auto color = render_system::get_clear_color();
   glClearColor(color.r, color.g, color.b, 1.0);
@@ -546,10 +548,10 @@ void gl_renderer::prepare() {
   if (!load_shader()) {
     logger::error("failed to loads shader");
   }
-  prepare_render_texture();
+  create_render_texture();
 }
 
-void gl_renderer::prepare_render_texture() {
+void gl_renderer::create_render_texture() {
   glGenFramebuffers(1, &framebuffer);
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
@@ -579,26 +581,10 @@ void gl_renderer::prepare_render_texture() {
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
-void gl_renderer::prepare_depth_texture() {
-  /*
-  constexpr int SHADOWMAP_SIZE = 1024;
-  glGenFramebuffers(1, &shadowframebuffer);
-  glBindFramebuffer(GL_FRAMEBUFFER, shadowframebuffer);
-  glGenTextures(1, &shadowdepthtexture);
-  glBindTexture(GL_TEXTURE_2D, shadowdepthtexture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, SHADOWMAP_SIZE,
-               SHADOWMAP_SIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE,
-                  GL_COMPARE_R_TO_TEXTURE);
-
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                         shadowdepthtexture, 0);
-  */
+void gl_renderer::destroy_render_texture() {
+  glDeleteFramebuffers(1, &framebuffer);
+  glDeleteTextures(1, &rendertexture);
+  glDeleteRenderbuffers(1, &depthbuffer);
 }
 
 void gl_renderer::create_texture(texture handle) {

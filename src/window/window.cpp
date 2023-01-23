@@ -44,7 +44,7 @@ void window_system::initialize(const std::string &name, graphics_api api) {
     m_window = SDL_CreateWindow(
         std::string(name).c_str(), SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED, static_cast<int>(m_size.x),
-        static_cast<int>(m_size.y), SDL_WINDOW_VULKAN | SDL_WINDOW_SHOWN);
+        static_cast<int>(m_size.y), SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
 
     break;
   }
@@ -63,7 +63,7 @@ void window_system::initialize(const std::string &name, graphics_api api) {
     m_window = SDL_CreateWindow(
         std::string(name).c_str(), SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED, static_cast<int>(m_size.x),
-        static_cast<int>(m_size.y), SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+        static_cast<int>(m_size.y), SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     break;
   }
   default:
@@ -84,7 +84,7 @@ void window_system::initialize(const std::string &name, graphics_api api) {
   m_window = SDL_CreateWindow(
       std::string(m_name).c_str(), SDL_WINDOWPOS_UNDEFINED,
       SDL_WINDOWPOS_UNDEFINED, static_cast<int>(m_size.x),
-      static_cast<int>(m_size.y), SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+      static_cast<int>(m_size.y), SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 #endif
 }
 
@@ -99,7 +99,7 @@ void window_system::set_size(const vector2 &size) {
 }
 void window_system::set_fullscreen(bool fullscreen) {
   SDL_SetWindowFullscreen(m_window,
-                          fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP: 0);
+                          fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 }
 void window_system::set_name(const std::string &name) {
   m_name = name;

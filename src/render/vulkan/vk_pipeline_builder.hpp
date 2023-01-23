@@ -1,20 +1,20 @@
 #ifndef VK_PIPELINE_BUILDER_HPP
 #define VK_PIPELINE_BUILDER_HPP
 #if !defined(EMSCRIPTEN) && !defined(ANDROID)
-#include "vk_depth_texture.hpp"
 #include "vk_pipeline.hpp"
 #include "vk_render_texture.hpp"
 
 namespace sinen {
 class vk_pipeline_builder {
 public:
-  vk_pipeline_builder(VkDevice device, vk_pipeline_layout &pipeline_layout,
+  vk_pipeline_builder(VkDevice device,
+                      vk_pipeline_layout &pipeline_layout_instance,
+                      vk_pipeline_layout &pipeline_layout_normal,
                       vk_render_texture &render_texture,
-                      vk_depth_texture &depth_texture,
                       VkRenderPass &render_pass)
-      : device(device), pipeline_layout(pipeline_layout),
-        render_texture(render_texture), depth_texture(depth_texture),
-        render_pass(render_pass) {}
+      : device(device), pipeline_layout_instance(pipeline_layout_instance),
+        pipeline_layout_normal(pipeline_layout_normal),
+        render_texture(render_texture), render_pass(render_pass) {}
   void skybox(vk_pipeline &pipeline);
   void opaque(vk_pipeline &pipeline);
   void alpha(vk_pipeline &pipeline);
@@ -29,9 +29,9 @@ public:
 
 private:
   VkDevice device;
-  vk_pipeline_layout &pipeline_layout;
+  vk_pipeline_layout &pipeline_layout_instance;
+  vk_pipeline_layout &pipeline_layout_normal;
   vk_render_texture &render_texture;
-  vk_depth_texture &depth_texture;
   VkRenderPass &render_pass;
 };
 

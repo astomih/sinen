@@ -12,9 +12,9 @@
 #include <vulkan/vulkan_win32.h>
 #endif // _WIN32
 #include "vk_swapchain.hpp"
+#include "vma.hpp"
 #include <memory>
 #include <vector>
-#include <vk_mem_alloc.h>
 #include <window/window.hpp>
 
 namespace sinen {

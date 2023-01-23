@@ -9,7 +9,9 @@
 #include "vk_base.hpp"
 #include "vk_renderer.hpp"
 #include <render/renderer.hpp>
-#define ENABLE_VALIDATION 0
+#ifdef DEBUG
+#define ENABLE_VALIDATION 1
+#endif
 namespace sinen {
 #define GetInstanceProcAddr(FuncName)                                          \
   m_##FuncName = reinterpret_cast<PFN_##FuncName>(                             \
@@ -72,6 +74,9 @@ void vk_base::shutdown() {
   destroy_command_pool();
   mSwapchain->cleanup();
   destroy_device();
+#if ENABLE_VALIDATION
+  m_vkDestroyDebugReportCallbackEXT(m_instance, m_debugReport, nullptr);
+#endif
   destroy_instance();
 }
 void vk_base::enable_debug() {
@@ -237,18 +242,6 @@ void vk_base::create_depth_buffer() {
   alloc_info.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
   vmaCreateImage(m_vkrenderer->allocator, &ci, &alloc_info, &m_depthBuffer,
                  &m_depthBufferAllocation, nullptr);
-
-  VkMemoryRequirements reqs;
-  vkGetImageMemoryRequirements(m_device, m_depthBuffer, &reqs);
-  VmaAllocationCreateInfo ai{};
-  ai.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
-  VmaAllocationInfo allocInfo;
-  allocInfo.size = reqs.size;
-
-  vmaAllocateMemory(m_vkrenderer->allocator, &reqs, &ai,
-                    &m_depthBufferAllocation, &allocInfo);
-  vmaBindImageMemory(m_vkrenderer->allocator, m_depthBufferAllocation,
-                     m_depthBuffer);
 }
 void vk_base::create_render_pass() {
   VkRenderPassCreateInfo ci{};
@@ -348,7 +341,6 @@ void vk_base::destroy_image_view() {
   vkDestroyImageView(m_device, m_depthBufferView, nullptr);
 }
 void vk_base::destroy_depth_buffer() {
-  vmaFreeMemory(m_vkrenderer->allocator, m_depthBufferAllocation);
   vmaDestroyImage(m_vkrenderer->allocator, m_depthBuffer,
                   m_depthBufferAllocation);
 }

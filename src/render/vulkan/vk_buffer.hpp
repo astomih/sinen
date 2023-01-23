@@ -1,7 +1,7 @@
 #ifndef SINEN_VK_BUFFER_HPP
 #define SINEN_VK_BUFFER_HPP
 #if !defined(EMSCRIPTEN) && !defined(ANDROID)
-#include <vk_mem_alloc.h>
+#include "vma.hpp"
 namespace sinen {
 struct vk_buffer {
   VkBuffer buffer;

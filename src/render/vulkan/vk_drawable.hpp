@@ -3,7 +3,6 @@
 #if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include "vk_buffer.hpp"
 #include <drawable/drawable.hpp>
-#include <vk_mem_alloc.h>
 namespace sinen {
 class vk_drawable {
 public:

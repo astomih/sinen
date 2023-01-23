@@ -10,17 +10,17 @@
 #if !defined(EMSCRIPTEN) && !defined(ANDROID)
 
 #include "vk_base.hpp"
-#include "vk_drawable.hpp"
 #include "vk_buffer.hpp"
+#include "vk_drawable.hpp"
 #include "vk_image.hpp"
 #include "vk_pipeline.hpp"
 #include "vk_pipeline_layout.hpp"
 #include "vk_render_texture.hpp"
+#include "vma.hpp"
 #include <array>
 #include <drawable/drawable.hpp>
 #include <string_view>
 #include <unordered_map>
-#include <vk_mem_alloc.h>
 
 namespace sinen {
 
@@ -66,7 +66,6 @@ public:
   void prepare();
   void cleanup();
   void make_command(VkCommandBuffer command);
-  void draw_depth(VkCommandBuffer command);
   void draw3d(VkCommandBuffer, bool is_change_pipeline = true);
   void draw2d(VkCommandBuffer);
   vk_buffer create_buffer(
@@ -127,6 +126,7 @@ private:
   std::unordered_map<handle_t, vk_image> m_image_object;
   std::vector<vk_instancing> m_instancies_3d;
   std::vector<vk_instancing> m_instancies_2d;
+  std::shared_ptr<vk_drawable> m_skybox;
 };
 } // namespace sinen
 #endif

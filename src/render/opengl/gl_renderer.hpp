@@ -103,17 +103,14 @@ private:
   void draw_2d();
   void draw_instancing_2d();
   void draw_instancing_3d();
-  void prepare_render_texture();
-  void prepare_depth_texture();
+  void create_render_texture();
+  void destroy_render_texture();
   void enable_vertex_attrib_array();
   void disable_vertex_attrib_array();
 
   uint32_t framebuffer;
   uint32_t rendertexture;
   uint32_t depthbuffer;
-
-  uint32_t shadowframebuffer;
-  uint32_t shadowdepthtexture;
 
   std::string vertexID;
 

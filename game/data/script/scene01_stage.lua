@@ -56,6 +56,7 @@ key_drawer.position = vector3(0, 0, 1)
 key_drawer.rotation = vector3(90, 0, 0)
 key_drawer.vertex_name = "key"
 local key_hit = false
+local camera_controller = require("camera_controller")()
 
 function Setup()
     score_font:load(DEFAULT_FONT_NAME, 64)
@@ -107,7 +108,7 @@ function Setup()
             if map:at(x, y) == map_chip.stair then
                 stair.position.x = x * TILE_SIZE
                 stair.position.y = y * TILE_SIZE + 0.5
-                stair.position.z = 100
+                stair.position.z = 0
             end
             -- key object
             if map:at(x, y) == map_chip.key then
@@ -120,13 +121,15 @@ function Setup()
             end
         end
     end
+    score_font:render_text(score_texture, "SCORE: " .. SCORE,
+        color(1, 1, 1, 1))
+    score_drawer.scale = score_texture:size()
+    score_drawer.position.x = -300
+    score_drawer.position.y = 300
+    camera_controller:setup(player)
+    camera_controller:update()
     scene_switcher:setup()
     scene_switcher:start(true, "")
-end
-
-local function camera_update()
-    scene.main_camera():lookat(vector3(player.drawer.position.x, player.drawer.position.y - 0.5,
-        player.drawer.position.z + 15), player.drawer.position, vector3(0, 0, 1))
 end
 
 local function draw()
@@ -191,6 +194,7 @@ function Update()
             if collision.aabb_aabb(v.aabb, w.aabb) then
                 local efk = effect()
                 efk:setup()
+                efk.texture:fill_color(color(1, 0.2, 0.2, 1))
                 for k = 1, efk.max_particles do
                     efk.worlds[k].position = w.drawer.position:copy()
                 end
@@ -205,7 +209,7 @@ function Update()
                     table.remove(enemies, j)
                 end
                 if #enemies <= 0 then
-                    stair.position.z = -2
+                    stair.position.z = 0
 
                 end
             end
@@ -222,6 +226,7 @@ function Update()
                 if collision.aabb_aabb(v.aabb, w.aabb) then
                     local efk = effect()
                     efk:setup()
+                    efk.texture:fill_color(color(1, 0.2, 0.2, 1))
                     for k = 1, efk.max_particles do
                         efk.worlds[k].position = w.drawer.position:copy()
                     end
@@ -236,7 +241,7 @@ function Update()
                         table.remove(enemies, j)
                     end
                     if #enemies <= 0 then
-                        stair.position.z = -2
+                        stair.position.z = 0
 
                     end
                 end
@@ -253,7 +258,7 @@ function Update()
     if math.floor(player.drawer.position.x + 0.5) == math.floor(key_drawer.position.x) and
         math.floor(player.drawer.position.y + 0.5) == math.floor(key_drawer.position.y) then
         key_hit = true
-        stair.position.z = -2.0
+        stair.position.z = 0.0
     end
     for i, v in ipairs(enemies) do
         v:update(player)
@@ -262,8 +267,8 @@ function Update()
     if math.floor(player.drawer.position.x + 0.5) == math.floor(stair.position.x) and
         math.floor(player.drawer.position.y + 0.5) == math.floor(stair.position.y) then
 
-        if keyboard:key_state(keyENTER) == buttonPRESSED and stair.position.z ==
-            -2 then
+        if keyboard:key_state(keyE) == buttonPRESSED and stair.position.z ==
+            0 then
             NOW_STAGE = NOW_STAGE + 1
             if NOW_STAGE == 4 then
                 scene_switcher:start(false, "scene02_clear")
@@ -275,6 +280,6 @@ function Update()
     if player.hp <= 0 then
         scene_switcher:start(false, "scene03_gameover")
     end
-    camera_update()
+    camera_controller:update()
     draw()
 end

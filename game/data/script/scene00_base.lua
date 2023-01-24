@@ -56,10 +56,7 @@ key_drawer.position = vector3(0, 0, 1)
 key_drawer.rotation = vector3(90, 0, 0)
 key_drawer.vertex_name = "key"
 local key_hit = false
-local function camera_update()
-  scene.main_camera():lookat(vector3(player.drawer.position.x, player.drawer.position.y - 0.5,
-    player.drawer.position.z + 15), player.drawer.position, vector3(0, 0, 1))
-end
+local camera_controller = require("camera_controller")()
 
 function Setup()
   score_font:load(DEFAULT_FONT_NAME, 64)
@@ -79,6 +76,7 @@ function Setup()
     map:set(map_size_x, i, map_chip.wall)
   end
   map:set(map_size_x / 2, map_size_y / 2, map_chip.player)
+  map:set(2, 2, map_chip.stair)
 
   box = draw3d_instanced(DEFAULT_TEXTURE)
   box.vertex_name = "tree"
@@ -86,7 +84,6 @@ function Setup()
   sprite.is_draw_depth = false
   stair = draw3d(DEFAULT_TEXTURE)
   stair.vertex_name = "stair"
-  stair.position = vector3(999, 999, 999)
   key_drawer.position = vector3(999, 999, 999)
 
   for i = 1, COLLISION_SPACE_DIVISION + 2 do
@@ -124,24 +121,30 @@ function Setup()
         player.drawer.position.x = x * TILE_SIZE
         player.drawer.position.y = y * TILE_SIZE
       end
+      if (map:at(x, y) == map_chip.stair) then
+        stair.position.x = x * TILE_SIZE
+        stair.position.y = y * TILE_SIZE
+        stair.position.z = 0.0
+      end
     end
   end
-  scene_switcher:setup()
-  scene_switcher:start(true, "")
   score_font:render_text(score_texture, "SCORE: " .. SCORE,
     color(1, 1, 1, 1))
   score_drawer.scale = score_texture:size()
   score_drawer.position.x = -300
   score_drawer.position.y = 300
-  camera_update()
+  camera_controller:setup(player)
+  camera_controller:update()
+  scene_switcher:setup()
+  scene_switcher:start(true, "")
 end
 
 local function draw()
   player:draw()
   for i, v in ipairs(enemies) do v:draw() end
   box:clear()
-  local px = math.floor(player.drawer.position.x / TILE_SIZE + 0.5)
-  local py = math.floor(player.drawer.position.y / TILE_SIZE + 0.5)
+  local px = math.floor(camera_controller.position.x / TILE_SIZE + 0.5)
+  local py = math.floor(camera_controller.position.y / TILE_SIZE + 0.5)
   local size = 5
   for y = py - size, py + size do
     for x = px - size, px + size do
@@ -187,6 +190,9 @@ function Update()
     draw()
     return
   end
+  local player_on_map = point2i(0, 0)
+  player_on_map.x = math.floor(player.drawer.position.x / TILE_SIZE + 0.5)
+  player_on_map.y = math.floor(player.drawer.position.y / TILE_SIZE + 0.5)
   key_drawer.rotation.y = key_drawer.rotation.y + delta_time * 100
   score_font:render_text(score_texture, "SCORE: " .. SCORE,
     color(1, 1, 1, 1))
@@ -198,6 +204,7 @@ function Update()
       if collision.aabb_aabb(v.aabb, w.aabb) then
         local efk = effect()
         efk:setup()
+        efk.texture:fill_color(color(1, 0.2, 0.2, 1))
         for k = 1, efk.max_particles do
           efk.worlds[k].position = w.drawer.position:copy()
         end
@@ -282,6 +289,9 @@ function Update()
   if player.hp <= 0 then
     scene_switcher:start(false, "scene03_gameover")
   end
-  camera_update()
+  if (keyboard:is_key_down(keyE) and map:at(player_on_map.x, player_on_map.y) == 2) then
+    scene_switcher:start(false, "scene01_stage")
+  end
+  camera_controller:update()
   draw()
 end

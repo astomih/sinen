@@ -25,6 +25,7 @@ local orbit = function(player)
     update = function(self, map_draw3ds)
       self.drawer.position = self.owner.drawer.position
       self.drawer.position.x = self.drawer.position.x - 5.0
+      self.drawer.position.z = 5.0
       self.drawer.rotation = self.owner.drawer.rotation
       self.bullet_timer = self.bullet_timer + delta_time
       if self.bullet_timer >

@@ -25,6 +25,6 @@ function Update()
     end
     draw()
     if keyboard:is_key_pressed(keyENTER) then
-        scene_switcher:start(false, "main")
+        scene_switcher:start(false, "scene00_base")
     end
 end

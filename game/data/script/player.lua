@@ -67,14 +67,6 @@ local player = {
         self.drawer_scope_big = draw2d(big_scope)
         self.drawer_scope.scale = self.tex_scope:size()
         self.drawer_scope_big.scale = vector2(big_scope:size().x * 2, big_scope:size().y * 2)
-        self.efk = effect()
-        self.efk.start_lifetime = 0.3
-        self.efk:setup()
-        local p = self.drawer.position:copy()
-        for j = 1, self.efk.max_particles do
-            self.efk.worlds[j].position = p
-        end
-        self.efk:play()
         self.boost_sound = sound()
         self.boost_sound:load("boost.wav")
         self.boost_sound:set_volume(0.2)
@@ -85,15 +77,7 @@ local player = {
     horizontal = math.pi,
     vertical = 0.0,
     update = function(self, map, map_draw3ds, map_size_x, map_size_y)
-        self.efk:update()
         local p = self.drawer.position:copy()
-        if self.efk.is_stop then
-            self.efk:setup()
-            for j = 1, self.efk.max_particles do
-                self.efk.worlds[j].position = self.drawer.position:copy()
-            end
-            self.efk:play()
-        end
         if keyboard:key_state(keyV) == buttonPRESSED then
             self.drawer.rotation.z = self.drawer.rotation.z + 180
         end
@@ -122,9 +106,6 @@ local player = {
                 self.orbits = {}
             end
         end
-        for i, j in ipairs(self.orbits) do
-            j:update(map_draw3ds)
-        end
         self.bullet_timer = self.bullet_timer + delta_time
         if self.bullet_timer >
             self.bullet_time and (mouse:is_button_down(mouseLEFT)) then
@@ -143,7 +124,27 @@ local player = {
                 self.boost_timer = self.boost_timer + delta_time
             end
         else
-            if keyboard:key_state(keySPACE) == buttonPRESSED then
+            if keyboard:key_state(keySPACE) == buttonPRESSED and (input_vector.x ~= 0 or input_vector.y ~= 0) then
+                local efk = effect()
+                efk:setup()
+                efk.drawer.vertex_name = "SPRITE"
+                efk.texture:fill_color(color(0.6, 0.6, 1.0, 1.0))
+                efk.impl = function(e)
+                    for i = 1, e.max_particles do
+                        local t = delta_time * 2
+                        e.worlds[i].position.x =
+                        e.worlds[i].position.x + math.cos(i) * t
+                        e.worlds[i].position.y =
+                        e.worlds[i].position.y + math.sin(i) * t
+                        e.worlds[i].position.z =
+                        e.worlds[i].position.z + t
+                    end
+                end
+                for j = 1, efk.max_particles do
+                    efk.worlds[j].position = self.drawer.position:copy()
+                end
+                efk:play()
+                table.insert(self.efks, efk)
                 self.boost_sound:play()
                 self.boost = self.boost + self.boost_mag
                 self.is_boost = true
@@ -155,6 +156,7 @@ local player = {
             if v.current_time > v.life_time then
                 local efk = effect()
                 efk:setup()
+                efk.texture:fill_color(color(1.0, 1.0, 1.0, 1.0))
                 for j = 1, efk.max_particles do
                     efk.worlds[j].position = v.drawer.position:copy()
                 end
@@ -202,14 +204,15 @@ local player = {
         local mouse_pos = mouse:position()
         self.drawer_scope.position.x = mouse_pos.x - window.center().x
         self.drawer_scope.position.y = -(mouse_pos.y - window.center().y)
-        local r = 200
+        local r = 200 - self.drawer_scope.scale.x / 2
         -- Make the coordinates fit in a circle of radius r
         local x = self.drawer_scope.position.x
         local y = self.drawer_scope.position.y
         local d = self.drawer_scope.position:length()
         if d > r then
-            x = x * r / d
-            y = y * r / d
+            local r_prime = r / d - 0.01
+            x = x * r_prime
+            y = y * r_prime
             self.drawer_scope.position.x = x
             self.drawer_scope.position.y = y
             mouse:set_position(vector2(window.center().x + x, window.center().y - y))
@@ -217,6 +220,9 @@ local player = {
         local drawer_scope_angle = math.atan(self.drawer_scope.position.y, self.drawer_scope.position.x)
         self.drawer.rotation.z = math.deg(drawer_scope_angle) - 90
         mouse:hide_cursor(true)
+        for i, j in ipairs(self.orbits) do
+            j:update(map_draw3ds)
+        end
 
     end,
 

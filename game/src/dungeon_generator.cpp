@@ -62,5 +62,12 @@ void dungeon_generator(sinen::grid<int> &grid) {
   if (!bfs.find_path(player_start, stairs)) {
     dungeon_generator(grid);
   }
+  // print grid
+  for (int y = 0; y < grid.height(); ++y) {
+    for (int x = 0; x < grid.width(); ++x) {
+      std::cout << grid[y][x];
+    }
+    std::cout << std::endl;
+  }
 }
 } // namespace dts

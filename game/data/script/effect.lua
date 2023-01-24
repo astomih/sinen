@@ -39,10 +39,18 @@ local function effect()
             if self.play_on_awake then self.is_playing = true end
 
         end,
-
+        impl = function(e)
+            for i = 1, e.max_particles do
+                e.worlds[i].position.x =
+                e.worlds[i].position.x + math.cos(i) * delta_time
+                e.worlds[i].position.y =
+                e.worlds[i].position.y + math.sin(i) * delta_time
+                e.worlds[i].position.z =
+                e.worlds[i].position.z + delta_time
+            end
+        end,
         update = function(self)
             --  if not self.is_playing then return end
-            self.texture:fill_color(color(1, 0.2, 0.2, 1))
             self.drawer:clear()
             self.timer = self.timer + delta_time
             if self.timer > self.start_lifetime then
@@ -57,14 +65,7 @@ local function effect()
                     self.is_stop = true
                 end
             end
-            for i = 1, self.max_particles do
-                self.worlds[i].position.x =
-                self.worlds[i].position.x + math.cos(i) * delta_time
-                self.worlds[i].position.y =
-                self.worlds[i].position.y + math.sin(i) * delta_time
-                self.worlds[i].position.z =
-                self.worlds[i].position.z + delta_time
-            end
+            self.impl(self)
             if self.is_playing then
                 for i = 1, self.max_particles do
                     self.drawer:add(self.worlds[i].position,

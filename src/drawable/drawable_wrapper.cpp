@@ -37,7 +37,7 @@ void draw2d::draw() {
   obj->binding_texture = this->texture_handle;
   matrix4 viewproj = matrix4::identity;
 
-  auto windowsize = window::size();
+  auto windowsize = vector2(1280, 720);
   viewproj.mat[0][0] = 2.f / windowsize.x;
   viewproj.mat[1][1] = 2.f / windowsize.y;
   obj->param.proj = viewproj;

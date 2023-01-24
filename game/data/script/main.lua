@@ -41,16 +41,7 @@ local function draw()
     menu_object:draw()
 end
 
-local toggle = true
 function Update()
-    if keyboard:is_key_pressed(keyF11) then
-        if toggle then
-            window.set_fullscreen(true)
-        else
-            window.set_fullscreen(false)
-        end
-        toggle = not toggle
-    end
     if scene_switcher.flag then
         scene_switcher:update(draw)
         return

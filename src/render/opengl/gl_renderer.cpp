@@ -125,19 +125,19 @@ void gl_renderer::render() {
   glFlush();
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glBindVertexArray(m_VertexArrays["SPRITE"].vao);
-  glActiveTexture(GL_TEXTURE0);
+  //  glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, rendertexture);
   glUniform1i(
-      glGetUniformLocation(m_render_texture_shader.program(), "diffuseMap"), 0);
-  glActiveTexture(GL_TEXTURE1);
-  m_render_texture_shader.active(0);
+      glGetUniformLocation(m_shaders["RenderTexture"].program(), "diffuseMap"),
+      0);
+  m_shaders["RenderTexture"].active(0);
 
-  render_texture_ubo.bind(m_render_texture_shader.program(), 0);
+  render_texture_ubo.bind(m_shaders["RenderTexture"].program(), 0);
   render_texture_ubo.update(0, sizeof(gl_shader_parameter), &param, 0);
   disable_vertex_attrib_array();
   glDrawElements(GL_TRIANGLES, m_VertexArrays["SPRITE"].indices.size(),
                  GL_UNSIGNED_INT, nullptr);
-  glActiveTexture(GL_TEXTURE0);
+
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplSDL2_NewFrame(window_system::get_sdl_window());
   ImGui::NewFrame();
@@ -200,10 +200,10 @@ void gl_renderer::draw_skybox() {
   gl_uniform_buffer ubo;
   auto &va = m_VertexArrays["BOX"];
   glBindVertexArray(va.vao);
-  mAlphaShader.active(0);
+  m_shaders["Alpha"].active(0);
   gl_shader_parameter param;
   matrix4 w = matrix4::identity;
-  mAlphaShader.active(0);
+  m_shaders["Alpha"].active(0);
   ubo.create(0, sizeof(drawable::parameter), &param);
   glBindTexture(GL_TEXTURE_2D,
                 mTextureIDs[render_system::get_skybox_texture().handle]);
@@ -214,13 +214,12 @@ void gl_renderer::draw_skybox() {
 
 void gl_renderer::draw_3d() {
   for (auto &i : m_drawer_3ds) {
-    glActiveTexture(GL_TEXTURE1);
     auto &va = m_VertexArrays[i.drawable_object->vertexIndex];
     glBindVertexArray(va.vao);
     gl_shader_parameter param;
     param.param = i.drawable_object->param;
-    mSpriteShader.active(0);
-    i.ubo.bind(mSpriteShader.program(), 0);
+    m_shaders["Normal"].active(0);
+    i.ubo.bind(m_shaders["Normal"].program(), 0);
     i.ubo.update(0, sizeof(gl_shader_parameter), &param, 0);
     if (i.drawable_object->shade.get_parameter_size() > 0) {
       i.ubo.update(0, i.drawable_object->shade.get_parameter_size(),
@@ -230,17 +229,15 @@ void gl_renderer::draw_3d() {
     disable_vertex_attrib_array();
     glBindTexture(GL_TEXTURE_2D,
                   mTextureIDs[i.drawable_object->binding_texture.handle]);
-    glUniform1i(glGetUniformLocation(mSpriteShader.program(), "diffuseMap"), 1);
     glDrawElements(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT, nullptr);
-    glActiveTexture(GL_TEXTURE0);
   }
 }
 void gl_renderer::draw_instancing_3d() {
   for (auto &i : m_instancing_3d) {
     gl_shader_parameter param;
     param.param = i.ins.object->param;
-    mSpriteInstanceShader.active(0);
-    i.ubo.bind(mSpriteInstanceShader.program(), 0);
+    m_shaders["NormalInstance"].active(0);
+    i.ubo.bind(m_shaders["NormalInstance"].program(), 0);
     i.ubo.update(0, sizeof(gl_shader_parameter), &param, 0);
     if (i.ins.object->shade.get_parameter_size() > 0) {
       i.ubo.update(0, i.ins.object->shade.get_parameter_size(),
@@ -250,15 +247,11 @@ void gl_renderer::draw_instancing_3d() {
 
     auto &va = m_VertexArrays[i.ins.object->vertexIndex];
     glBindVertexArray(i.vao);
-    glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D,
                   mTextureIDs[i.ins.object->binding_texture.handle]);
-    glUniform1i(
-        glGetUniformLocation(mSpriteInstanceShader.program(), "diffuseMap"), 1);
     enable_vertex_attrib_array();
     glDrawElementsInstanced(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT,
                             nullptr, i.ins.data.size());
-    glActiveTexture(GL_TEXTURE0);
   }
 }
 
@@ -269,8 +262,8 @@ void gl_renderer::draw_2d() {
                   mTextureIDs[i.drawable_object->binding_texture.handle]);
     if (i.drawable_object->shade.vertex_shader() == "default" &&
         i.drawable_object->shade.fragment_shader() == "default") {
-      mAlphaShader.active(0);
-      i.ubo.bind(mAlphaShader.program(), 0);
+      m_shaders["Alpha"].active(0);
+      i.ubo.bind(m_shaders["Alpha"].program(), 0);
       i.ubo.update(0, sizeof(drawable::parameter), &i.drawable_object->param,
                    0);
       if (i.drawable_object->shade.get_parameter_size() > 0) {
@@ -278,7 +271,6 @@ void gl_renderer::draw_2d() {
                      i.drawable_object->shade.get_parameter().get(),
                      sizeof(gl_shader_parameter));
       }
-
     } else {
       for (auto &j : m_user_pipelines) {
         if (j.first == i.drawable_object->shade) {
@@ -304,8 +296,8 @@ void gl_renderer::draw_2d() {
 
 void gl_renderer::draw_instancing_2d() {
   for (auto &i : m_instancing_2d) {
-    mAlphaInstanceShader.active(0);
-    i.ubo.bind(mAlphaInstanceShader.program(), 0);
+    m_shaders["AlphaInstance"].active(0);
+    i.ubo.bind(m_shaders["AlphaInstance"].program(), 0);
     i.ubo.update(0, sizeof(drawable::parameter), &i.ins.object->param, 0);
     if (i.ins.object->shade.get_parameter_size() > 0) {
       i.ubo.update(0, i.ins.object->shade.get_parameter_size(),
@@ -326,6 +318,9 @@ void gl_renderer::draw_instancing_2d() {
 
 void gl_renderer::add_vertex_array(const vertex_array &vArray,
                                    std::string_view name) {
+  if (m_VertexArrays.contains(name.data())) {
+    return;
+  }
   gl_vertex_array vArrayGL;
   vArrayGL.indexCount = vArray.indexCount;
   vArrayGL.indices = vArray.indices;
@@ -623,21 +618,27 @@ void gl_renderer::destroy_texture(texture handle) {
 
 bool gl_renderer::load_shader() {
   gl_shader_parameter param{};
-  if (!m_render_texture_shader.load("render_texture.vert",
-                                    "render_texture.frag")) {
+  m_shaders["RenderTexture"] = gl_shader();
+  m_shaders["Normal"] = gl_shader();
+  m_shaders["Alpha"] = gl_shader();
+  m_shaders["NormalInstance"] = gl_shader();
+  m_shaders["AlphaInstance"] = gl_shader();
+  if (!m_shaders["RenderTexture"].load("render_texture.vert",
+                                       "render_texture.frag")) {
     return false;
   }
   render_texture_ubo.create(0, sizeof(gl_shader_parameter), &param);
-  if (!mSpriteShader.load("shader.vert", "shader.frag")) {
+  if (!m_shaders["Normal"].load("shader.vert", "shader.frag")) {
     return false;
   }
-  if (!mAlphaShader.load("shader.vert", "alpha.frag")) {
+  if (!m_shaders["Alpha"].load("shader.vert", "alpha.frag")) {
     return false;
   }
-  if (!mSpriteInstanceShader.load("shader_instance.vert", "shader.frag")) {
+  if (!m_shaders["NormalInstance"].load("shader_instance.vert",
+                                        "shader.frag")) {
     return false;
   }
-  if (!mAlphaInstanceShader.load("shader_instance.vert", "alpha.frag")) {
+  if (!m_shaders["AlphaInstance"].load("shader_instance.vert", "alpha.frag")) {
     return false;
   }
   return true;

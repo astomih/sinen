@@ -1,6 +1,7 @@
 #include "../event/event_system.hpp"
 #include "window_system.hpp"
 #include <SDL.h>
+#include <input/input.hpp>
 #include <io/file.hpp>
 #include <io/json.hpp>
 #include <window/window.hpp>
@@ -114,6 +115,11 @@ void window_system::process_input() {
   if (event_system::current_event.type == SDL_WINDOWEVENT) {
     m_state =
         static_cast<window_state>(event_system::current_event.window.event);
+  }
+  if (input::keyboard.is_key_pressed(key_code::F11)) {
+    static bool fullscreen = false;
+    fullscreen = !fullscreen;
+    set_fullscreen(fullscreen);
   }
 }
 } // namespace sinen

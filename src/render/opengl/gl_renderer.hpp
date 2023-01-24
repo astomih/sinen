@@ -1,6 +1,12 @@
 #ifndef SINEN_GL_RENDERER_HPP
 #define SINEN_GL_RENDERER_HPP
+// std
 #include <cstdint>
+#include <memory>
+#include <string>
+#include <unordered_map>
+// external
+#include <SDL.h>
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 #include <emscripten/html5.h>
@@ -8,17 +14,14 @@
 #if defined(EMSCRIPTEN) || defined(MOBILE)
 #include <GLES3/gl3.h>
 #endif
+// internal
 #include "gl_drawable.hpp"
 #include "gl_shader.hpp"
 #include "gl_uniform_buffer.hpp"
-#include <SDL.h>
 #include <drawable/drawable.hpp>
-#include <memory>
 #include <render/renderer.hpp>
-#include <string>
 #include <texture/texture.hpp>
 #include <vertex/vertex_array.hpp>
-
 namespace sinen {
 struct gl_vertex_array : public vertex_array {
   /**
@@ -114,11 +117,7 @@ private:
 
   std::string vertexID;
 
-  gl_shader mSpriteShader;
-  gl_shader mAlphaShader;
-  gl_shader mSpriteInstanceShader;
-  gl_shader mAlphaInstanceShader;
-  gl_shader m_render_texture_shader;
+  std::unordered_map<std::string, gl_shader> m_shaders;
   std::vector<std::pair<shader, gl_shader>> m_user_pipelines;
   GLuint mTextureID;
   std::unordered_map<handle_t, GLuint> mTextureIDs;

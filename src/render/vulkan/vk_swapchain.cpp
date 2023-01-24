@@ -9,7 +9,7 @@ namespace sinen {
 vk_swapchain::vk_swapchain(VkInstance instance, VkDevice device,
                            VkSurfaceKHR surface)
     : m_swapchain(VK_NULL_HANDLE), m_surface(surface), m_vkInstance(instance),
-      m_device(device), m_presentMode(VK_PRESENT_MODE_FIFO_RELAXED_KHR) {}
+      m_device(device), m_presentMode(VK_PRESENT_MODE_IMMEDIATE_KHR) {}
 
 vk_swapchain::~vk_swapchain() {}
 

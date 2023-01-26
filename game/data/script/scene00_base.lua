@@ -3,8 +3,8 @@ local enemy = require "enemy"
 local enemies = {}
 local enemy_max_num = 0
 local world = require "world"
-local map_size_x = 16
-local map_size_y = 16
+local map_size_x = 7
+local map_size_y = 7
 local map = grid(map_size_x, map_size_y)
 local map_chip = {
   floor = 0,
@@ -31,6 +31,8 @@ tile:load("tile.png")
 tree:load("tree.sim", "tree")
 local stair_model = model()
 stair_model:load("stair.sim", "stair")
+local stair_texture = texture()
+stair_texture:fill_color(color(1, 0.5, 0.5, 0.5))
 
 local menu = require("gui/menu")
 local menu_object = menu()
@@ -75,15 +77,15 @@ function Setup()
     map:set(1, i, map_chip.wall)
     map:set(map_size_x, i, map_chip.wall)
   end
-  map:set(map_size_x / 2, map_size_y / 2, map_chip.player)
+  map:set(map_size_x / 2 + 1, map_size_y / 2 + 1, map_chip.player)
   map:set(2, 2, map_chip.stair)
 
   box = draw3d_instanced(DEFAULT_TEXTURE)
   box.vertex_name = "tree"
   sprite = draw3d_instanced(tile)
   sprite.is_draw_depth = false
-  stair = draw3d(DEFAULT_TEXTURE)
-  stair.vertex_name = "stair"
+  stair = draw3d(stair_texture)
+  stair.vertex_name = "SPRITE"
   key_drawer.position = vector3(999, 999, 999)
 
   for i = 1, COLLISION_SPACE_DIVISION + 2 do
@@ -124,7 +126,7 @@ function Setup()
       if (map:at(x, y) == map_chip.stair) then
         stair.position.x = x * TILE_SIZE
         stair.position.y = y * TILE_SIZE
-        stair.position.z = 0.0
+        stair.position.z = 0.1
       end
     end
   end
@@ -145,7 +147,7 @@ local function draw()
   box:clear()
   local px = math.floor(camera_controller.position.x / TILE_SIZE + 0.5)
   local py = math.floor(camera_controller.position.y / TILE_SIZE + 0.5)
-  local size = 5
+  local size = 6
   for y = py - size, py + size do
     for x = px - size, px + size do
       if (1 <= x and x <= map_size_x and 1 <= y and y <= map_size_y) then
@@ -190,6 +192,7 @@ function Update()
     draw()
     return
   end
+  stair.position.z = dts.sin_0_1(1.0)
   local player_on_map = point2i(0, 0)
   player_on_map.x = math.floor(player.drawer.position.x / TILE_SIZE + 0.5)
   player_on_map.y = math.floor(player.drawer.position.y / TILE_SIZE + 0.5)

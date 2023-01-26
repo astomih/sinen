@@ -18,9 +18,19 @@ local player = {
     model = {},
     bullets = {},
     hp = {},
+    hp_max = 100,
     hp_drawer = {},
     hp_font = {},
     hp_font_texture = {},
+    stamina = {},
+    stamina_max = 100,
+    stamina_recover_speed = 20,
+    stamina_boost_cost = 20,
+    stamina_run_cost = 5,
+    stamina_texture = {},
+    stamina_drawer = {},
+    stamina_max_texture = {},
+    stamina_max_drawer = {},
     aabb = {},
     bullet_time = {},
     bullet_timer = {},
@@ -30,7 +40,7 @@ local player = {
     drawer_scope = {},
     drawer_scope_big = {},
     is_shot = true,
-    boost = 1.0,
+    boost = 0.0,
     boost_time = 0.3,
     boost_timer = 0.0,
     boost_mag = 5,
@@ -38,6 +48,8 @@ local player = {
     is_boost = false,
     orbits = {},
     orbit_toggle = true,
+    speed_min = 6.0,
+    speed_max = 16.0,
     setup = function(self, map, map_size_x, map_size_y)
         self.model = model()
         self.model:load("triangle.sim", "player")
@@ -51,12 +63,24 @@ local player = {
         self.hp_font:load(DEFAULT_FONT_NAME, 64)
         self.hp_font_texture = texture()
         self.hp_drawer = draw2d(self.hp_font_texture)
+        self.stamina = self.stamina_max
+        self.stamina_texture = texture()
+        self.stamina_texture:fill_color(color(1.0, 1.0, 1.0, 0.9))
+        self.stamina_max_texture = texture()
+        self.stamina_max_texture:fill_color(color(0.0, 0.0, 0.0, 0.2))
+        self.stamina_drawer = draw2d(self.stamina_texture)
+        self.stamina_drawer.position = vector2(0, 350)
+        self.stamina_drawer.scale = vector2(300, 10)
+        self.stamina_max_drawer = draw2d(self.stamina_max_texture)
+        self.stamina_max_drawer.position = vector2(0, 350)
+        self.stamina_max_drawer.scale = vector2(300, 10)
+
         self.render_text(self)
         r1 = 0
         r2 = 0
         while decide_pos(map, map_size_x, map_size_y) == true do end
         self.drawer.position = vector3(r1 * 2, r2 * 2, 0)
-        self.drawer.scale = vector3(0.05, 0.05, 0.05)
+        self.drawer.scale = vector3(0.05, 0.05, 0.1)
         self.hp_drawer.position.x = 0
         self.hp_drawer.position.y = 300
         self.tex_scope = texture()
@@ -78,21 +102,26 @@ local player = {
     vertical = 0.0,
     update = function(self, map, map_draw3ds, map_size_x, map_size_y)
         local p = self.drawer.position:copy()
-        if keyboard:key_state(keyV) == buttonPRESSED then
-            self.drawer.rotation.z = self.drawer.rotation.z + 180
-        end
         self.aabb.max = self.drawer.position:add(
             self.drawer.scale:mul(self.model.aabb.max))
         self.aabb.min = self.drawer.position:add(
             self.drawer.scale:mul(self.model.aabb.min))
         input_vector = calc_input_vector()
-        if keyboard:is_key_down(keyLSHIFT) then
-            speed = 8.0
+        local is_move = input_vector.x ~= 0 or input_vector.y ~= 0
+
+        if keyboard:is_key_down(keyLSHIFT) and is_move then
+            speed = self.speed_max
+            self.stamina = self.stamina - self.stamina_run_cost * delta_time
+            if self.stamina <= 0.0 then
+                self.stamina = 0.0
+                speed = self.speed_min
+            end
         else
-            speed = 4.0
-        end
-        if input_vector.x ~= 0 and input_vector.y ~= 0 then
-            speed = speed / math.sqrt(2)
+            speed = self.speed_min
+            self.stamina = self.stamina + delta_time * self.stamina_recover_speed
+            if self.stamina > self.stamina_max then
+                self.stamina = self.stamina_max
+            end
         end
         -- bullet
         if keyboard:is_key_pressed(keyQ) then
@@ -118,37 +147,43 @@ local player = {
         if self.is_boost then
             if self.boost_timer >= self.boost_time then
                 self.boost_timer = 0.0
-                self.boost = self.boost - self.boost_mag
+                self.boost = 0.0
                 self.is_boost = false
             else
                 self.boost_timer = self.boost_timer + delta_time
             end
         else
-            if keyboard:key_state(keySPACE) == buttonPRESSED and (input_vector.x ~= 0 or input_vector.y ~= 0) then
-                local efk = effect()
-                efk:setup()
-                efk.drawer.vertex_name = "SPRITE"
-                efk.texture:fill_color(color(0.6, 0.6, 1.0, 1.0))
-                efk.impl = function(e)
-                    for i = 1, e.max_particles do
-                        local t = delta_time * 2
-                        e.worlds[i].position.x =
-                        e.worlds[i].position.x + math.cos(i) * t
-                        e.worlds[i].position.y =
-                        e.worlds[i].position.y + math.sin(i) * t
-                        e.worlds[i].position.z =
-                        e.worlds[i].position.z + t
+            if keyboard:key_state(keySPACE) == buttonPRESSED and is_move then
+                if self.stamina >= self.stamina_boost_cost then
+                    self.stamina = self.stamina - self.stamina_boost_cost
+                    if self.stamina <= 0.0 then
+                        self.stamina = 0.0
                     end
+                    local efk = effect()
+                    efk:setup()
+                    efk.drawer.vertex_name = "SPRITE"
+                    efk.texture:fill_color(color(0.6, 0.6, 1.0, 1.0))
+                    efk.impl = function(e)
+                        for i = 1, e.max_particles do
+                            local t = delta_time * 2
+                            e.worlds[i].position.x =
+                            e.worlds[i].position.x + math.cos(i) * t
+                            e.worlds[i].position.y =
+                            e.worlds[i].position.y + math.sin(i) * t
+                            e.worlds[i].position.z =
+                            e.worlds[i].position.z + t
+                        end
+                    end
+                    for j = 1, efk.max_particles do
+                        efk.worlds[j].position = self.drawer.position:copy()
+                    end
+                    efk:play()
+                    table.insert(self.efks, efk)
+                    self.boost_sound:play()
+                    self.boost = self.boost_mag
+                    self.is_boost = true
+                    self.boost_timer = 0.0
                 end
-                for j = 1, efk.max_particles do
-                    efk.worlds[j].position = self.drawer.position:copy()
-                end
-                efk:play()
-                table.insert(self.efks, efk)
-                self.boost_sound:play()
-                self.boost = self.boost + self.boost_mag
-                self.is_boost = true
-                self.boost_timer = 0.0
             end
         end
         for i, v in ipairs(self.bullets) do
@@ -171,11 +206,20 @@ local player = {
         end
         local before_pos = vector3(self.drawer.position.x, self.drawer.position.y,
             self.drawer.position.z)
+        local final_speed = 0.0
+        if self.is_boost then
+            final_speed = self.speed_max * self.boost
+        else
+            final_speed = speed
+        end
+        if input_vector.x ~= 0 and input_vector.y ~= 0 then
+            final_speed = final_speed / math.sqrt(2)
+        end
         if input_vector.y ~= 0 then
             before_pos = self.drawer.position:copy()
             self.drawer.position = self.drawer.position:add(vector3(0,
                 input_vector.y *
-                speed * self.boost *
+                final_speed *
                 delta_time,
                 0))
             if is_collision(self, map, map_draw3ds, map_size_x, map_size_y) then
@@ -185,7 +229,7 @@ local player = {
         if input_vector.x ~= 0 then
             self.drawer.position = self.drawer.position:add(vector3(
                 input_vector.x *
-                speed * self.boost *
+                final_speed *
                 delta_time,
                 0, 0))
             if is_collision(self, map, map_draw3ds, map_size_x, map_size_y) then
@@ -194,7 +238,7 @@ local player = {
             before_pos = self.drawer.position:copy()
             self.drawer.position = self.drawer.position:add(vector3(0,
                 input_vector.y *
-                speed * self.boost *
+                final_speed *
                 delta_time,
                 0))
             if is_collision(self, map, map_draw3ds, map_size_x, map_size_y) then
@@ -223,12 +267,22 @@ local player = {
         for i, j in ipairs(self.orbits) do
             j:update(map_draw3ds)
         end
+        local s_ratio = self.stamina / self.stamina_max
+        self.stamina_drawer.scale.x = s_ratio * 300
+        if s_ratio <= 0.2 then
+            self.stamina_texture:fill_color(color(1.0, 0.0, 0.0, 0.9))
+        else
+            self.stamina_texture:fill_color(color(1.0, 1.0, 1.0, 0.9))
+        end
+
 
     end,
 
     draw = function(self)
         if not FPS_MODE then self.drawer:draw() end
         self.hp_drawer:draw()
+        self.stamina_max_drawer:draw()
+        self.stamina_drawer:draw()
         self.drawer_scope_big:draw()
         self.drawer_scope:draw()
         for i, j in ipairs(self.orbits) do
@@ -236,7 +290,11 @@ local player = {
         end
     end,
     render_text = function(self)
-        self.hp_font:render_text(self.hp_font_texture, "HP: " .. self.hp, color(1, 1, 1, 1))
+        if self.hp / self.hp_max <= 0.2 then
+            self.hp_font:render_text(self.hp_font_texture, "HP: " .. self.hp, color(1, 0.0, 0.0, 0.8))
+        else
+            self.hp_font:render_text(self.hp_font_texture, "HP: " .. self.hp, color(1, 1, 1, 0.9))
+        end
         self.hp_drawer.scale = self.hp_font_texture:size()
     end
 }

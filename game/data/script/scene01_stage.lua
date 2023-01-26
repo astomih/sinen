@@ -136,9 +136,9 @@ local function draw()
     player:draw()
     for i, v in ipairs(enemies) do v:draw() end
     box:clear()
-    local px = math.floor(player.drawer.position.x / TILE_SIZE + 0.5)
-    local py = math.floor(player.drawer.position.y / TILE_SIZE + 0.5)
-    local size = 5
+    local px = math.floor(camera_controller.target.x / TILE_SIZE + 0.5)
+    local py = math.floor(camera_controller.target.y / TILE_SIZE + 0.5)
+    local size = 6
     for y = py - size, py + size do
         for x = px - size, px + size do
             if (1 <= x and x <= map_size_x and 1 <= y and y <= map_size_y) then

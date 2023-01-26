@@ -11,6 +11,7 @@ local scene_switcher = require("scene_switcher")()
 
 
 function Setup()
+    window.set_name("DIVE TO SINEN")
     SCORE = 0
     NOW_STAGE = 1
     menu_object:setup()
@@ -18,14 +19,14 @@ function Setup()
     drawer_title = draw2d(texture_title)
     font_title = font()
     font_title:load(DEFAULT_FONT_NAME, 64)
-    font_title:render_text(texture_title, "DIVE TO SINEN", color(1, 1, 1, 1))
+    font_title:render_text(texture_title, "DIVE TO SINEN", color(1, 1, 1, 0.9))
     drawer_title.scale = texture_title:size()
 
     texture_press = texture()
     drawer_press = draw2d(texture_press)
     font_press = font()
     font_press:load(DEFAULT_FONT_NAME, 32)
-    font_press:render_text(texture_press, "PRESS ENTER", color(1, 1, 1, 1))
+    font_press:render_text(texture_press, "PRESS ENTER", color(1, 1, 1, 0.9))
     drawer_press.scale = texture_press:size()
     drawer_press.position = vector2(0, -drawer_title.scale.y * 1.5)
     local skybox_tex = texture()

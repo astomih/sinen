@@ -112,6 +112,9 @@ local enemy = function()
                 if self.is_collision_first then
                     bombed:play()
                     player.hp = player.hp - 1
+                    if player.hp <= 0 then
+                        player.hp = 0
+                    end
                     player:render_text()
                     self.is_collision_first = false
                 else
@@ -119,6 +122,9 @@ local enemy = function()
                     if self.collision_timer > self.collision_time then
                         bombed:play()
                         player.hp = player.hp - 10
+                        if player.hp <= 0 then
+                            player.hp = 0
+                        end
                         player:render_text()
                         self.collision_timer = 0.0
                     end

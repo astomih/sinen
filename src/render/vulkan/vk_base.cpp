@@ -166,20 +166,9 @@ void vk_base::create_device() {
   devQueueCI.queueCount = 1;
   devQueueCI.pQueuePriorities = &defaultQueuePriority;
 
-  std::vector<VkExtensionProperties> devExtProps;
-  {
-    // Get extension
-    uint32_t count = 0;
-    vkEnumerateDeviceExtensionProperties(m_physDev, nullptr, &count, nullptr);
-    devExtProps.resize(count);
-    vkEnumerateDeviceExtensionProperties(m_physDev, nullptr, &count,
-                                         devExtProps.data());
-  }
-
-  std::vector<const char *> extensions;
-  for (const auto &v : devExtProps) {
-    extensions.push_back(v.extensionName);
-  }
+  std::vector<const char *> extensions = {
+      VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+  };
   VkDeviceCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
   ci.pQueueCreateInfos = &devQueueCI;

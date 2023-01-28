@@ -9,13 +9,11 @@ local scene_switcher = function()
     scene_name = "",
     is_launch = false,
     setup = function(self)
-      self.drawer = draw2d_instanced(self.texture)
-      self.drawer:add(vector2(0, 0), 0, window:size())
+      self.drawer = drawui(self.texture)
+      self.drawer.scale = window:size()
     end,
     update = function(self, draw_func)
       if self.flag then
-        self.drawer:clear()
-        self.drawer:add(vector2(0, 0), 0, window:size())
         if not self.is_launch then
           if self.timer < self.time then
             draw_func()

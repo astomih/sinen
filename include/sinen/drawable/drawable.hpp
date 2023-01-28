@@ -47,9 +47,7 @@ struct drawable {
    *
    */
   std::string vertexIndex;
-  bool is_draw_depth = true;
   int drawOrder = 100;
-  int nodeNum = 1;
 };
 
 } // namespace sinen

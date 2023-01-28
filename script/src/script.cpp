@@ -98,7 +98,9 @@ bool script_engine::initialize(sol::state &lua) {
     v["is_button_released"] = &mouse_state::is_button_released;
     v["is_button_down"] = &mouse_state::is_button_down;
     v["position"] = &mouse_state::get_position;
+    v["position_on_scene"] = &mouse_state::get_position_on_scene;
     v["set_position"] = &mouse_state::set_position;
+    v["set_position_on_scene"] = &mouse_state::set_position_on_scene;
     v["scroll_wheel"] = &mouse_state::get_scroll_wheel;
     v["hide_cursor"] = &mouse_state::hide_cursor;
   }

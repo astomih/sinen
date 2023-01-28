@@ -113,6 +113,22 @@ void vk_pipeline_builder::instancing_alpha_2d(vk_pipeline &pipeline) {
   pipeline.prepare(device);
   vk_shader::clean(device, shaderStages);
 }
+void vk_pipeline_builder::ui(vk_pipeline &pipeline) {
+  std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
+      vk_shader::load(device, "shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+      vk_shader::load(device, "shaderAlpha.frag.spv",
+                      VK_SHADER_STAGE_FRAGMENT_BIT)};
+  pipeline.initialize(pipeline_layout_normal, render_pass, shaderStages);
+
+  pipeline.color_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
+                              VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+  pipeline.alpha_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
+                              VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+  pipeline.set_depth_test(VK_FALSE);
+  pipeline.set_depth_write(VK_FALSE);
+  pipeline.prepare(device);
+  vk_shader::clean(device, shaderStages);
+}
 void vk_pipeline_builder::render_texture_pipeline(vk_pipeline &pipeline) {
   std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
       vk_shader::load(device, "shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),

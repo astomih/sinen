@@ -16,6 +16,9 @@ void renderer::render() { render_system::render(); }
 void renderer::draw2d(const std::shared_ptr<drawable> draw_object) {
   render_system::draw2d(draw_object);
 }
+void renderer::drawui(const std::shared_ptr<drawable> draw_object) {
+  render_system::drawui(draw_object);
+}
 void renderer::draw3d(const std::shared_ptr<drawable> draw_object) {
   render_system::draw3d(draw_object);
 }

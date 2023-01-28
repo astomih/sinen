@@ -26,6 +26,7 @@ public:
   static void unload_data();
   static void render();
   static void draw2d(const std::shared_ptr<drawable> draw_object);
+  static void drawui(const std::shared_ptr<drawable> draw_object);
   static void draw3d(const std::shared_ptr<drawable> draw_object);
   static void add_queue_2d(const std::shared_ptr<drawable> draw_object);
   static void add_queue_3d(const std::shared_ptr<drawable> draw_object);

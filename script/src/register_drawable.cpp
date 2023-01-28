@@ -7,6 +7,8 @@ namespace sinen {
 void register_drawable(sol::state &lua) {
   lua["draw2d"] = []() -> draw2d { return draw2d(); };
   lua["draw2d"] = [](texture t) -> draw2d { return draw2d(t); };
+  lua["drawui"] = []() -> drawui { return drawui(); };
+  lua["drawui"] = [](texture t) -> drawui { return drawui(t); };
   lua["draw3d"] = []() -> draw3d { return draw3d(); };
   lua["draw3d"] = [](texture t) -> draw3d { return draw3d(t); };
   lua["draw2d_instanced"] = [&](texture t) -> draw2d_instancing {
@@ -23,6 +25,15 @@ void register_drawable(sol::state &lua) {
     v["scale"] = &draw2d::scale;
     v["texture"] = &draw2d::texture_handle;
     v["vertex_name"] = &draw2d::vertex_name;
+  }
+  {
+    auto v = lua.new_usertype<drawui>("", sol::no_construction());
+    v["draw"] = &drawui::draw;
+    v["position"] = &drawui::position;
+    v["rotation"] = &drawui::rotation;
+    v["scale"] = &drawui::scale;
+    v["texture"] = &drawui::texture_handle;
+    v["vertex_name"] = &drawui::vertex_name;
   }
   {
     auto v = lua.new_usertype<draw3d>("", sol::no_construction());

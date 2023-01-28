@@ -1,6 +1,5 @@
 #ifndef SINEN_INPUT_HPP
 #define SINEN_INPUT_HPP
-#include "../event/process_event.hpp"
 #include "../math/vector2.hpp"
 #include "game_controller.hpp"
 #include "game_controller_button.hpp"
@@ -61,8 +60,10 @@ public:
   mouse_state();
   // For mouse position
   void set_position(const vector2 &pos) const;
-  void hide_cursor(bool hide) const;
+  void set_position_on_scene(const vector2 &pos) const;
   const vector2 &get_position() const;
+  const vector2 &get_position_on_scene() const;
+  void hide_cursor(bool hide) const;
   const vector2 &get_scroll_wheel() const;
   bool IsRelative() const;
   // For buttons

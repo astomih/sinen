@@ -37,6 +37,35 @@ public:
   std::shared_ptr<drawable> obj;
 };
 /**
+ * @brief UI draw object class
+ *
+ */
+struct drawui {
+public:
+  /**
+   * @brief Construct a new drawui object
+   *
+   */
+  drawui();
+  /**
+   * @brief Construct a new drawui object
+   * @param texture Texture to use
+   *
+   */
+  drawui(texture);
+  /**
+   * @brief Draw object
+   *
+   */
+  void draw();
+  vector2 position;
+  float rotation;
+  vector2 scale;
+  texture texture_handle;
+  std::string vertex_name = "SPRITE";
+  std::shared_ptr<drawable> obj;
+};
+/**
  * @brief 3D draw object class
  *
  */

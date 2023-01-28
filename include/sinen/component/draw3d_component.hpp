@@ -39,11 +39,6 @@ public:
    */
   void set_texture(const texture &_texture) { texture_handle = _texture; }
   /**
-   * @brief set_draw_depth
-   * @param _is_draw_depth
-   */
-  void set_draw_depth(bool _is_draw_depth) { is_draw_depth = _is_draw_depth; }
-  /**
    * @brief set_vertex_name
    * @param _vertex_name
    */
@@ -54,7 +49,6 @@ public:
 private:
   std::shared_ptr<drawable> draw_object;
   texture texture_handle;
-  bool is_draw_depth = true;
   std::string vertex_name = "SPRITE";
 };
 } // namespace sinen

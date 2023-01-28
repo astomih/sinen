@@ -49,6 +49,12 @@ public:
    */
   static void draw2d(const std::shared_ptr<drawable> draw_object);
   /**
+   * @brief Draw UI drawable object
+   *
+   * @param draw_object
+   */
+  static void drawui(const std::shared_ptr<drawable> draw_object);
+  /**
    * @brief Draw 3d drawable object
    *
    * @param draw_object

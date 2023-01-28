@@ -90,9 +90,9 @@ void vk_renderer::render() {
     VkRect2D scissor = {{0, 0}, m_base->mSwapchain->GetSurfaceExtent()};
     vkCmdSetScissor(command, 0, 1, &scissor);
     VkViewport viewport = {0,
-                           0,
-                           float(m_base->mSwapchain->GetSurfaceExtent().width),
                            float(m_base->mSwapchain->GetSurfaceExtent().height),
+                           float(m_base->mSwapchain->GetSurfaceExtent().width),
+                           -float(m_base->mSwapchain->GetSurfaceExtent().height),
                            0,
                            1};
     vkCmdSetViewport(command, 0, 1, &viewport);
@@ -116,6 +116,15 @@ void vk_renderer::render() {
     // Begin Render Pass
     vkCmdBeginRenderPass(command, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
     render_to_display(command);
+    VkViewport viewport = {
+        0,
+        float(m_base->mSwapchain->GetSurfaceExtent().height),
+        float(m_base->mSwapchain->GetSurfaceExtent().width),
+        -float(m_base->mSwapchain->GetSurfaceExtent().height),
+        0,
+        1};
+    vkCmdSetViewport(command, 0, 1, &viewport);
+    drawui(command);
     render_imgui(command);
     // End Render Pass
     vkCmdEndRenderPass(command);
@@ -145,6 +154,9 @@ void vk_renderer::render() {
   for (auto &sprite : m_draw_object_2d)
     destroy_vk_drawable(sprite);
   m_draw_object_2d.clear();
+  for (auto &sprite : m_draw_object_ui)
+    destroy_vk_drawable(sprite);
+  m_draw_object_ui.clear();
   for (auto &_instancing : m_instancies_2d) {
     destroy_vk_drawable(_instancing.m_vk_draw_object);
     destroy_buffer(_instancing.instance_buffer);
@@ -232,14 +244,20 @@ void vk_renderer::draw2d(std::shared_ptr<class drawable> drawObject) {
   auto t = std::make_shared<vk_drawable>();
   t->drawable_obj = drawObject;
   add_texture(drawObject->binding_texture);
-  register_vk_drawable(t, texture_type::Image2D);
+  register_vk_drawable(t, "2D");
+}
+void vk_renderer::drawui(std::shared_ptr<class drawable> drawObject) {
+  auto t = std::make_shared<vk_drawable>();
+  t->drawable_obj = drawObject;
+  add_texture(drawObject->binding_texture);
+  register_vk_drawable(t, "UI");
 }
 
 void vk_renderer::draw3d(std::shared_ptr<class drawable> sprite) {
   auto t = std::make_shared<vk_drawable>();
   t->drawable_obj = sprite;
   add_texture(sprite->binding_texture);
-  register_vk_drawable(t, texture_type::Image3D);
+  register_vk_drawable(t, "3D");
 }
 
 void vk_renderer::load_shader(const shader &shaderInfo) {
@@ -394,6 +412,7 @@ void vk_renderer::prepare() {
   vk_pipeline pipeline_instancing_opaque;
   vk_pipeline pipeline_instancing_alpha;
   vk_pipeline pipeline_instancing_2d;
+  vk_pipeline pipeline_ui;
 
   // Opaque pipeline
   pipeline_builder.opaque(pipeline_opaque);
@@ -408,6 +427,8 @@ void vk_renderer::prepare() {
   pipeline_builder.instancing_alpha(pipeline_instancing_alpha);
   // 2D pipeline
   pipeline_builder.instancing_alpha_2d(pipeline_instancing_2d);
+  // UI pipeline
+  pipeline_builder.ui(pipeline_ui);
   m_pipelines["skybox"] = pipeline_skybox;
   m_pipelines["opaque"] = pipeline_opaque;
   m_pipelines["alpha"] = pipeline_alpha;
@@ -415,6 +436,7 @@ void vk_renderer::prepare() {
   m_pipelines["instancing_opaque"] = pipeline_instancing_opaque;
   m_pipelines["instancing_alpha"] = pipeline_instancing_alpha;
   m_pipelines["instancing_2d"] = pipeline_instancing_2d;
+  m_pipelines["ui"] = pipeline_ui;
 
   prepare_imgui();
   m_skybox = std::make_shared<vk_drawable>();
@@ -431,6 +453,9 @@ void vk_renderer::cleanup() {
   for (auto &sprite : m_draw_object_2d)
     destroy_vk_drawable(sprite);
   m_draw_object_2d.clear();
+  for (auto &sprite : m_draw_object_ui)
+    destroy_vk_drawable(sprite);
+  m_draw_object_ui.clear();
   for (auto &_instancing : m_instancies_2d) {
     destroy_vk_drawable(_instancing.m_vk_draw_object);
     destroy_buffer(_instancing.instance_buffer);
@@ -555,6 +580,37 @@ void vk_renderer::draw2d(VkCommandBuffer command) {
           i.second.Bind(command);
       }
     }
+    vkCmdBindVertexBuffers(
+        command, 0, 1,
+        &m_vertex_arrays[sprite->drawable_obj->vertexIndex].vertexBuffer.buffer,
+        &offset);
+    vkCmdBindIndexBuffer(
+        command,
+        m_vertex_arrays[sprite->drawable_obj->vertexIndex].indexBuffer.buffer,
+        offset, VK_INDEX_TYPE_UINT32);
+
+    // Set descriptors
+    vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            m_pipeline_layout_normal.GetLayout(), 0, 1,
+                            &sprite->descriptor_sets[m_base->m_imageIndex], 0,
+                            nullptr);
+    auto allocation = sprite->uniformBuffers[m_base->m_imageIndex].allocation;
+    auto *ptr = sprite->drawable_obj->shade.get_parameter().get();
+    write_memory(allocation, &sprite->drawable_obj->param,
+                 sizeof(vk_shader_parameter));
+    write_memory(allocation, ptr,
+                 sprite->drawable_obj->shade.get_parameter_size(),
+                 sizeof(vk_shader_parameter));
+
+    vkCmdDrawIndexed(
+        command, m_vertex_arrays[sprite->drawable_obj->vertexIndex].indexCount,
+        1, 0, 0, 0);
+  }
+}
+void vk_renderer::drawui(VkCommandBuffer command) {
+  VkDeviceSize offset = 0;
+  for (auto &sprite : m_draw_object_ui) {
+    m_pipelines["ui"].Bind(command);
     vkCmdBindVertexBuffers(
         command, 0, 1,
         &m_vertex_arrays[sprite->drawable_obj->vertexIndex].vertexBuffer.buffer,
@@ -999,8 +1055,8 @@ void vk_renderer::destroy_image_object(const handle_t &handle) {
   }
 }
 void vk_renderer::register_vk_drawable(
-    std::shared_ptr<vk_drawable> _vk_drawable, texture_type type) {
-  if (texture_type::Image3D == type) {
+    std::shared_ptr<vk_drawable> _vk_drawable, std::string_view type) {
+  if (type == "3D") {
     m_draw_object_3d.push_back(_vk_drawable);
     for (auto &v : _vk_drawable->uniformBuffers) {
       VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
@@ -1012,7 +1068,7 @@ void vk_renderer::register_vk_drawable(
                         VMA_MEMORY_USAGE_GPU_TO_CPU);
     }
     prepare_descriptor_set(_vk_drawable);
-  } else {
+  } else if (type == "2D") {
     auto iter = m_draw_object_2d.begin();
     for (; iter != m_draw_object_2d.end(); ++iter) {
       if (_vk_drawable->drawable_obj->drawOrder <
@@ -1023,6 +1079,26 @@ void vk_renderer::register_vk_drawable(
 
     // Inserts element before position of iterator
     m_draw_object_2d.insert(iter, _vk_drawable);
+    for (auto &v : _vk_drawable->uniformBuffers) {
+      VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                       VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+      v = create_buffer(
+          sizeof(vk_shader_parameter) +
+              _vk_drawable->drawable_obj->shade.get_parameter_size(),
+          VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
+    }
+    prepare_descriptor_set(_vk_drawable);
+  } else if (type == "UI") {
+    auto iter = m_draw_object_ui.begin();
+    for (; iter != m_draw_object_ui.end(); ++iter) {
+      if (_vk_drawable->drawable_obj->drawOrder <
+          (*iter)->drawable_obj->drawOrder) {
+        break;
+      }
+    }
+
+    // Inserts element before position of iterator
+    m_draw_object_ui.insert(iter, _vk_drawable);
     for (auto &v : _vk_drawable->uniformBuffers) {
       VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;

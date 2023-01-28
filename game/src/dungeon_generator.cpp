@@ -60,9 +60,17 @@ void dungeon_generator(sinen::grid<int> &grid) {
 
     corridor c;
     c.connect(grid, rooms, floor);
-    sinen::bfs_grid bfs(grid);
-    if (!bfs.find_path(player_start, stairs)) {
-      recreate = true;
+    {
+      sinen::bfs_grid bfs(grid);
+      if (!bfs.find_path(player_start, key)) {
+        recreate = true;
+      }
+    }
+    {
+      sinen::bfs_grid bfs(grid);
+      if (!bfs.find_path(key, stairs)) {
+        recreate = true;
+      }
     }
   }
   if (recreate) {

@@ -71,6 +71,7 @@ public:
   void update_model(const model &m);
   void draw2d(std::shared_ptr<class drawable> sprite);
   void draw3d(std::shared_ptr<class drawable> sprite);
+  void drawui(std::shared_ptr<class drawable> sprite);
 
   void load_shader(const shader &shaderInfo);
   void unload_shader(const shader &shaderInfo);
@@ -104,6 +105,7 @@ private:
   void draw_skybox();
   void draw_3d();
   void draw_2d();
+  void draw_ui();
   void draw_instancing_2d();
   void draw_instancing_3d();
   void create_render_texture();
@@ -124,6 +126,7 @@ private:
   std::unordered_map<std::string, gl_vertex_array> m_VertexArrays;
   ::SDL_GLContext mContext;
   std::vector<gl_drawable> m_drawer_2ds;
+  std::vector<gl_drawable> m_drawer_uis;
   std::vector<gl_drawable> m_drawer_3ds;
   std::vector<gl_instancing> m_instancing_2d;
   std::vector<gl_instancing> m_instancing_3d;

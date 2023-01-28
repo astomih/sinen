@@ -50,7 +50,8 @@
     "keyV",
     "keyTAB",
     "keyQ",
-    "keyF11"
+    "keyF11",
+    "drawui"
   ],
   "Lua.completion.autoRequire": false,
   "Lua.diagnostics.disable": [

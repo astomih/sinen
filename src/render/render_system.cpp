@@ -79,6 +79,16 @@ void render_system::draw2d(std::shared_ptr<drawable> drawObject) {
     m_gl_renderer->draw2d(drawObject);
   }
 }
+void render_system::drawui(std::shared_ptr<drawable> drawObject) {
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
+  if (RendererAPI == graphics_api::Vulkan) {
+    m_vk_renderer->drawui(drawObject);
+  }
+#endif
+  if (RendererAPI == graphics_api::OpenGL || RendererAPI == graphics_api::ES) {
+    m_gl_renderer->drawui(drawObject);
+  }
+}
 
 void render_system::draw3d(std::shared_ptr<drawable> drawObject) {
 #if !defined(EMSCRIPTEN) && !defined(ANDROID)

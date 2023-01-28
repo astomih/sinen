@@ -26,7 +26,7 @@ local tile = texture()
 
 local score_font = font()
 local score_texture = texture()
-local score_drawer = draw2d(score_texture)
+local score_drawer = drawui(score_texture)
 tile:load("tile.png")
 tree:load("tree.sim", "tree")
 local stair_model = model()
@@ -197,6 +197,9 @@ function Update()
   player_on_map.x = math.floor(player.drawer.position.x / TILE_SIZE + 0.5)
   player_on_map.y = math.floor(player.drawer.position.y / TILE_SIZE + 0.5)
   key_drawer.rotation.y = key_drawer.rotation.y + delta_time * 100
+  if key_drawer.rotation.y > 360 then
+    key_drawer.rotation.y = key_drawer.rotation.y - 360
+  end
   score_font:render_text(score_texture, "SCORE: " .. SCORE,
     color(1, 1, 1, 1))
   score_drawer.scale = score_texture:size()

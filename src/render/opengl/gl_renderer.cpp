@@ -98,11 +98,11 @@ void gl_renderer::render() {
   auto color = render_system::get_clear_color();
   glClearColor(color.r, color.g, color.b, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glViewport(0, 0, window::size().x, window::size().y);
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glViewport(0, 0, window::size().x,
-             window::size().y); // Render on the whole framebuffer, complete
   glEnable(GL_BLEND);
+  glDisable(GL_DEPTH_TEST);
   glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
   glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
   disable_vertex_attrib_array();
@@ -123,20 +123,20 @@ void gl_renderer::render() {
   enable_vertex_attrib_array();
   draw_instancing_2d();
   glFlush();
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glBindVertexArray(m_VertexArrays["SPRITE"].vao);
-  //  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, rendertexture);
-  glUniform1i(
-      glGetUniformLocation(m_shaders["RenderTexture"].program(), "diffuseMap"),
-      0);
-  m_shaders["RenderTexture"].active(0);
+  glActiveTexture(GL_TEXTURE0);
+  {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindVertexArray(m_VertexArrays["SPRITE"].vao);
+    glBindTexture(GL_TEXTURE_2D, rendertexture);
+    m_shaders["RenderTexture"].active(0);
 
-  render_texture_ubo.bind(m_shaders["RenderTexture"].program(), 0);
-  render_texture_ubo.update(0, sizeof(gl_shader_parameter), &param, 0);
-  disable_vertex_attrib_array();
-  glDrawElements(GL_TRIANGLES, m_VertexArrays["SPRITE"].indices.size(),
-                 GL_UNSIGNED_INT, nullptr);
+    render_texture_ubo.bind(m_shaders["RenderTexture"].program(), 0);
+    render_texture_ubo.update(0, sizeof(gl_shader_parameter), &param, 0);
+    disable_vertex_attrib_array();
+    glDrawElements(GL_TRIANGLES, m_VertexArrays["SPRITE"].indices.size(),
+                   GL_UNSIGNED_INT, nullptr);
+  }
+  draw_ui();
 
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplSDL2_NewFrame(window_system::get_sdl_window());
@@ -151,15 +151,19 @@ void gl_renderer::render() {
 
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+  SDL_GL_SwapWindow(window_system::get_sdl_window());
   for (auto &i : m_drawer_3ds) {
     i.ubo.destroy();
   }
+  m_drawer_3ds.clear();
   for (auto &i : m_drawer_2ds) {
     i.ubo.destroy();
   }
-  m_drawer_3ds.clear();
   m_drawer_2ds.clear();
-  SDL_GL_SwapWindow(window_system::get_sdl_window());
+  for (auto &i : m_drawer_uis) {
+    i.ubo.destroy();
+  }
+  m_drawer_uis.clear();
   for (auto &i : m_instancing_2d) {
     glDeleteBuffers(1, &i.vbo);
     i.ubo.destroy();
@@ -202,11 +206,19 @@ void gl_renderer::draw_skybox() {
   glBindVertexArray(va.vao);
   m_shaders["Alpha"].active(0);
   gl_shader_parameter param;
+  param.param.proj = scene::main_camera().projection();
+  param.param.view = matrix4::lookat(vector3(0, 0, 0),
+                                     scene::main_camera().target() -
+                                         scene::main_camera().position(),
+                                     scene::main_camera().up());
   matrix4 w = matrix4::identity;
-  m_shaders["Alpha"].active(0);
+  w[0][0] = 5;
+  w[1][1] = 5;
+  w[2][2] = 5;
   ubo.create(0, sizeof(drawable::parameter), &param);
   glBindTexture(GL_TEXTURE_2D,
                 mTextureIDs[render_system::get_skybox_texture().handle]);
+  ubo.bind(m_shaders["Alpha"].program(), 0);
   disable_vertex_attrib_array();
   glDrawElements(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT, nullptr);
   ubo.destroy();
@@ -313,6 +325,44 @@ void gl_renderer::draw_instancing_2d() {
     enable_vertex_attrib_array();
     glDrawElementsInstanced(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT,
                             nullptr, i.ins.data.size());
+  }
+}
+void gl_renderer::draw_ui() {
+  for (auto &i : m_drawer_uis) {
+    glBindVertexArray(m_VertexArrays[i.drawable_object->vertexIndex].vao);
+    glBindTexture(GL_TEXTURE_2D,
+                  mTextureIDs[i.drawable_object->binding_texture.handle]);
+    if (i.drawable_object->shade.vertex_shader() == "default" &&
+        i.drawable_object->shade.fragment_shader() == "default") {
+      m_shaders["Alpha"].active(0);
+      i.ubo.bind(m_shaders["Alpha"].program(), 0);
+      i.ubo.update(0, sizeof(drawable::parameter), &i.drawable_object->param,
+                   0);
+      if (i.drawable_object->shade.get_parameter_size() > 0) {
+        i.ubo.update(0, i.drawable_object->shade.get_parameter_size(),
+                     i.drawable_object->shade.get_parameter().get(),
+                     sizeof(gl_shader_parameter));
+      }
+    } else {
+      for (auto &j : m_user_pipelines) {
+        if (j.first == i.drawable_object->shade) {
+          j.second.active(0);
+          i.ubo.bind(j.second.program(), 0);
+          i.ubo.update(0, sizeof(drawable::parameter),
+                       &i.drawable_object->param, 0);
+          if (i.drawable_object->shade.get_parameter_size() > 0) {
+            i.ubo.update(0, i.drawable_object->shade.get_parameter_size(),
+                         i.drawable_object->shade.get_parameter().get(),
+                         sizeof(gl_shader_parameter));
+          }
+        }
+      }
+    }
+    disable_vertex_attrib_array();
+    glDrawElements(
+        GL_TRIANGLES,
+        m_VertexArrays[i.drawable_object->vertexIndex].indices.size(),
+        GL_UNSIGNED_INT, nullptr);
   }
 }
 
@@ -444,6 +494,22 @@ void gl_renderer::draw2d(std::shared_ptr<class drawable> sprite) {
   ubo.update(0, sprite->shade.get_parameter_size(),
              sprite->shade.get_parameter().get(), sizeof(gl_shader_parameter));
   m_drawer_2ds.insert(iter, {sprite, ubo});
+}
+void gl_renderer::drawui(std::shared_ptr<class drawable> sprite) {
+  create_texture(sprite->binding_texture);
+  auto iter = m_drawer_uis.begin();
+  for (; iter != m_drawer_uis.end(); ++iter) {
+    if (sprite->drawOrder < (*iter).drawable_object->drawOrder) {
+      break;
+    }
+  }
+  gl_uniform_buffer ubo;
+  ubo.create(0,
+             sizeof(gl_shader_parameter) + sprite->shade.get_parameter_size(),
+             &sprite->param);
+  ubo.update(0, sprite->shade.get_parameter_size(),
+             sprite->shade.get_parameter().get(), sizeof(gl_shader_parameter));
+  m_drawer_uis.insert(iter, {sprite, ubo});
 }
 
 void gl_renderer::draw3d(std::shared_ptr<class drawable> sprite) {

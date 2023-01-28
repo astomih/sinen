@@ -1,7 +1,7 @@
 local player = require "player"
 local enemy = require "enemy"
 local enemies = {}
-local enemy_max_num = 100
+local enemy_max_num = 1
 local world = require "world"
 local map_size_x = 64
 local map_size_y = 64
@@ -26,7 +26,7 @@ local tile = texture()
 
 local score_font = font()
 local score_texture = texture()
-local score_drawer = draw2d(score_texture)
+local score_drawer = drawui(score_texture)
 tile:load("tile.png")
 tree:load("tree.sim", "tree")
 local stair_model = model()
@@ -45,7 +45,7 @@ local key_texture = texture()
 key_texture:fill_color(color(1, 1, 1, 1))
 local key_texture_2d = texture()
 key_texture_2d:load("key.png")
-local key_drawer2d = draw2d(key_texture_2d)
+local key_drawer2d = drawui(key_texture_2d)
 key_drawer2d.scale = key_texture_2d:size()
 key_drawer2d.scale.x = key_drawer2d.scale.x / 6
 key_drawer2d.scale.y = key_drawer2d.scale.y / 6

@@ -22,10 +22,8 @@ public:
   void instancing_opaque(vk_pipeline &pipeline);
   void instancing_alpha(vk_pipeline &pipeline);
   void instancing_alpha_2d(vk_pipeline &pipeline);
-  void depth(vk_pipeline &pipeline);
-  void depth_instancing(vk_pipeline &pipeline);
+  void ui(vk_pipeline &pipeline);
   void render_texture_pipeline(vk_pipeline &pipeline);
-  void depth_texture_pipeline(vk_pipeline &pipeline);
 
 private:
   VkDevice device;

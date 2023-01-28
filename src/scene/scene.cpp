@@ -9,6 +9,7 @@ camera scene::m_main_camera = []() {
   return c;
 }();
 component_factory scene::m_component_factory;
+vector2 scene::m_screen_size = vector2(1280.0, 720.0);
 
 void scene::reset() {
   scene_system::shutdown();

@@ -29,6 +29,9 @@ void register_table(sol::state &lua) {
     v["load"] = &scene::load;
     v["main_camera"] = &scene::main_camera;
     v["get_actor"] = &scene::get_actor;
+    v["size"] = &scene::size;
+    v["resize"] = &scene::resize;
+    v["center"] = &scene::center;
   }
   {
     auto v = lua.create_table("collision");

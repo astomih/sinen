@@ -5,7 +5,6 @@
 #include <scene/scene.hpp>
 #include <window/window.hpp>
 
-
 namespace sinen {
 draw2d_instancing::draw2d_instancing(texture texture_handle)
     : texture_handle(texture_handle) {
@@ -20,7 +19,7 @@ void draw2d_instancing::draw() {
   obj->vertexIndex = this->vertex_name;
   matrix4 viewproj = matrix4::identity;
 
-  auto windowsize = window::size();
+  auto windowsize = scene::size();
   viewproj.mat[0][0] = 2.f / windowsize.x;
   viewproj.mat[1][1] = 2.f / windowsize.y;
   obj->param.proj = viewproj;
@@ -28,15 +27,15 @@ void draw2d_instancing::draw() {
   obj->vertexIndex = this->vertex_name;
   _instancing.object = obj;
   _instancing.type = object_type::_2D;
-  for (int i = 0; i < this->position.size(); i++) {
+  for (auto &i : worlds) {
     matrix4 t = matrix4::identity;
-    t.mat[3][0] = position[i].x;
-    t.mat[3][1] = position[i].y;
-    quaternion q(vector3::neg_unit_z, rotation[i]);
+    t.mat[3][0] = i.position.x;
+    t.mat[3][1] = i.position.y;
+    quaternion q(vector3::neg_unit_z, i.rotation);
     matrix4 r = matrix4::create_from_quaternion(q);
     matrix4 s = matrix4::identity;
-    s.mat[0][0] = scale[i].x * 0.5f;
-    s.mat[1][1] = scale[i].y * 0.5f;
+    s.mat[0][0] = i.scale.x * 0.5f;
+    s.mat[1][1] = i.scale.y * 0.5f;
     instance_data insdata;
     _instancing.world_to_instance_data(s * r * t, insdata);
     _instancing.data.push_back(insdata);
@@ -48,16 +47,10 @@ void draw2d_instancing::draw() {
 }
 void draw2d_instancing::add(const vector2 &position, const float &rotation,
                             const vector2 &scale) {
-  this->position.push_back(position);
-  this->rotation.push_back(rotation);
-  this->scale.push_back(scale);
+  this->worlds.push_back({position, rotation, scale});
 }
 
-void draw2d_instancing::clear() {
-  this->position.clear();
-  this->rotation.clear();
-  this->scale.clear();
-}
+void draw2d_instancing::clear() { this->worlds.clear(); }
 
 draw3d_instancing::draw3d_instancing(texture texture_handle)
     : texture_handle(texture_handle) {
@@ -70,14 +63,13 @@ void draw3d_instancing::draw() {
   obj->vertexIndex = this->vertex_name;
   obj->param.proj = scene::main_camera().projection();
   obj->param.view = scene::main_camera().view();
-  obj->is_draw_depth = this->is_draw_depth;
   _instancing.object = obj;
   _instancing.type = object_type::_3D;
-  for (int i = 0; i < this->position.size(); i++) {
-    matrix4 t = matrix4::create_translation(position[i]);
+  for (auto &i : worlds) {
+    matrix4 t = matrix4::create_translation(i.position);
     matrix4 r =
-        matrix4::create_from_quaternion(quaternion::from_euler(rotation[i]));
-    matrix4 s = matrix4::create_scale(scale[i]);
+        matrix4::create_from_quaternion(quaternion::from_euler(i.rotation));
+    matrix4 s = matrix4::create_scale(i.scale);
     instance_data insdata;
     _instancing.world_to_instance_data(s * r * t, insdata);
     _instancing.data.push_back(insdata);
@@ -88,13 +80,9 @@ void draw3d_instancing::draw() {
 }
 void draw3d_instancing::add(const vector3 &position, const vector3 &rotation,
                             const vector3 &scale) {
-  this->position.push_back(position);
-  this->rotation.push_back(rotation);
-  this->scale.push_back(scale);
+  this->worlds.push_back({position, rotation, scale});
 }
 void draw3d_instancing::clear() {
-  this->position.clear();
-  this->rotation.clear();
-  this->scale.clear();
+  this->worlds.clear();
 }
 } // namespace sinen

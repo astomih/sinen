@@ -16,9 +16,12 @@ public:
   void add(const vector2 &position, const float &rotation,
            const vector2 &scale);
   void clear();
-  std::vector<vector2> position;
-  std::vector<float> rotation;
-  std::vector<vector2> scale;
+  struct world {
+    vector2 position;
+    float rotation;
+    vector2 scale;
+  };
+  std::vector<world> worlds;
   texture texture_handle;
   std::string vertex_name = "SPRITE";
 };
@@ -31,9 +34,12 @@ public:
   void add(const vector3 &position, const vector3 &rotation,
            const vector3 &scale);
   void clear();
-  std::vector<vector3> position;
-  std::vector<vector3> rotation;
-  std::vector<vector3> scale;
+  struct world {
+    vector3 position;
+    vector3 rotation;
+    vector3 scale;
+  };
+  std::vector<world> worlds;
   texture texture_handle;
   bool is_draw_depth = true;
   std::string vertex_name = "SPRITE";

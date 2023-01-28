@@ -62,16 +62,16 @@ local player = {
         self.hp_font = font()
         self.hp_font:load(DEFAULT_FONT_NAME, 64)
         self.hp_font_texture = texture()
-        self.hp_drawer = draw2d(self.hp_font_texture)
+        self.hp_drawer = drawui(self.hp_font_texture)
         self.stamina = self.stamina_max
         self.stamina_texture = texture()
         self.stamina_texture:fill_color(color(1.0, 1.0, 1.0, 0.9))
         self.stamina_max_texture = texture()
         self.stamina_max_texture:fill_color(color(0.0, 0.0, 0.0, 0.2))
-        self.stamina_drawer = draw2d(self.stamina_texture)
+        self.stamina_drawer = drawui(self.stamina_texture)
         self.stamina_drawer.position = vector2(0, 350)
         self.stamina_drawer.scale = vector2(300, 10)
-        self.stamina_max_drawer = draw2d(self.stamina_max_texture)
+        self.stamina_max_drawer = drawui(self.stamina_max_texture)
         self.stamina_max_drawer.position = vector2(0, 350)
         self.stamina_max_drawer.scale = vector2(300, 10)
 
@@ -87,8 +87,8 @@ local player = {
         self.tex_scope:load("scope.png")
         local big_scope = texture()
         big_scope:load("scope_big.png")
-        self.drawer_scope = draw2d(self.tex_scope)
-        self.drawer_scope_big = draw2d(big_scope)
+        self.drawer_scope = drawui(self.tex_scope)
+        self.drawer_scope_big = drawui(big_scope)
         self.drawer_scope.scale = self.tex_scope:size()
         self.drawer_scope_big.scale = vector2(big_scope:size().x * 2, big_scope:size().y * 2)
         self.boost_sound = sound()
@@ -245,9 +245,9 @@ local player = {
                 self.drawer.position = before_pos
             end
         end
-        local mouse_pos = mouse:position()
-        self.drawer_scope.position.x = mouse_pos.x - window.center().x
-        self.drawer_scope.position.y = -(mouse_pos.y - window.center().y)
+        local mouse_pos = mouse:position_on_scene()
+        self.drawer_scope.position.x = mouse_pos.x - scene.center().x
+        self.drawer_scope.position.y = -(mouse_pos.y - scene.center().y)
         local r = 200 - self.drawer_scope.scale.x / 2
         -- Make the coordinates fit in a circle of radius r
         local x = self.drawer_scope.position.x
@@ -259,7 +259,7 @@ local player = {
             y = y * r_prime
             self.drawer_scope.position.x = x
             self.drawer_scope.position.y = y
-            mouse:set_position(vector2(window.center().x + x, window.center().y - y))
+            mouse:set_position_on_scene(vector2(scene.center().x + x, scene.center().y - y))
         end
         local drawer_scope_angle = math.atan(self.drawer_scope.position.y, self.drawer_scope.position.x)
         self.drawer.rotation.z = math.deg(drawer_scope_angle) - 90

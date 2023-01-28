@@ -98,6 +98,19 @@ void scene_system::process_input() {
 }
 
 void scene_system::update_scene() {
+  {
+    if (input::keyboard.is_key_pressed(key_code::F3)) {
+      static auto once = []() {
+        renderer::add_imgui_function([]() {
+          ImGui::Begin("Debug");
+          ImGui::Text("FPS: %f", ImGui::GetIO().Framerate);
+          ImGui::End();
+        });
+        return true;
+      }();
+      renderer::toggle_show_imgui();
+    }
+  }
   // calc delta time
   float deltaTime = (SDL_GetTicks() - m_prev_tick) / 1000.0f;
   if (deltaTime > 0.05f) {

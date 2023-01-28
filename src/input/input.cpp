@@ -6,6 +6,7 @@
 #include <imgui_impl_sdl.h>
 #include <input/input.hpp>
 #include <input/mouse_code.hpp>
+#include <scene/scene.hpp>
 #include <window/window.hpp>
 
 namespace sinen {
@@ -53,6 +54,13 @@ mouse_state::mouse_state() = default;
 void mouse_state::set_position(const vector2 &pos) const {
   SDL_WarpMouseInWindow(window_system::get_sdl_window(), pos.x, pos.y);
 }
+void mouse_state::set_position_on_scene(const vector2 &pos) const {
+  auto scene_size = scene::size();
+  auto window_size = window::size();
+  auto x = pos.x * window_size.x / scene_size.x;
+  auto y = pos.y * window_size.y / scene_size.y;
+  SDL_WarpMouseInWindow(window_system::get_sdl_window(), x, y);
+}
 
 const vector2 &mouse_state::get_position() const {
 
@@ -64,6 +72,22 @@ const vector2 &mouse_state::get_position() const {
   }
   input_system::m_mouse.mMousePos.x = static_cast<float>(x);
   input_system::m_mouse.mMousePos.y = static_cast<float>(y);
+  return input_system::m_mouse.mMousePos;
+}
+const vector2 &mouse_state::get_position_on_scene() const {
+
+  int x = 0, y = 0;
+  if (input_system::m_mouse.mIsRelative) {
+    SDL_GetRelativeMouseState(&x, &y);
+  } else {
+    SDL_GetMouseState(&x, &y);
+  }
+  auto scene_size = scene::size();
+  auto window_size = window::size();
+  input_system::m_mouse.mMousePos.x =
+      static_cast<float>(x) * scene_size.x / window_size.x;
+  input_system::m_mouse.mMousePos.y =
+      static_cast<float>(y) * scene_size.y / window_size.y;
   return input_system::m_mouse.mMousePos;
 }
 

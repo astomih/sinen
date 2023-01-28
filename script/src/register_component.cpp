@@ -27,7 +27,6 @@ void register_component(sol::state &lua) {
   { auto v = lua.new_usertype<component>("", sol::no_construction()); }
   {
     auto v = lua.new_usertype<draw3d_component>("", sol::no_construction());
-    v["set_draw_depth"] = &draw3d_component::set_draw_depth;
     v["set_texture"] = &draw3d_component::set_texture;
     v["set_vertex_name"] = &draw3d_component::set_vertex_name;
   }

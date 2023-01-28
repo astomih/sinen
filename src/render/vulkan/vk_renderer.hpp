@@ -56,6 +56,7 @@ public:
   void update_model(const model &m);
 
   void draw2d(std::shared_ptr<class drawable> sprite);
+  void drawui(std::shared_ptr<class drawable> sprite);
   void draw3d(std::shared_ptr<class drawable> sprite);
 
   void load_shader(const shader &shaderInfo);
@@ -68,13 +69,14 @@ public:
   void make_command(VkCommandBuffer command);
   void draw3d(VkCommandBuffer, bool is_change_pipeline = true);
   void draw2d(VkCommandBuffer);
+  void drawui(VkCommandBuffer);
   vk_buffer create_buffer(
       uint32_t size, VkBufferUsageFlags usage,
       VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
       VmaMemoryUsage vma_usage = VMA_MEMORY_USAGE_GPU_TO_CPU);
   vk_base &get_base() { return *m_base; }
   void register_vk_drawable(std::shared_ptr<class vk_drawable> texture,
-                            texture_type type);
+                            std::string_view type);
   void destroy_vk_drawable(std::shared_ptr<class vk_drawable> texture);
   void add_texture(texture tex);
   void destroy_image_object(const handle_t &handle);
@@ -123,6 +125,7 @@ private:
   std::vector<std::pair<shader, vk_pipeline>> m_user_pipelines;
   std::vector<std::shared_ptr<vk_drawable>> m_draw_object_3d;
   std::vector<std::shared_ptr<vk_drawable>> m_draw_object_2d;
+  std::vector<std::shared_ptr<vk_drawable>> m_draw_object_ui;
   std::unordered_map<handle_t, vk_image> m_image_object;
   std::vector<vk_instancing> m_instancies_3d;
   std::vector<vk_instancing> m_instancies_2d;

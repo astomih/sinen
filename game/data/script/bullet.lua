@@ -39,6 +39,8 @@ local function bullet(map_draw3ds)
                 self.speed *
                 math.sin(
                     math.rad(self.drawer.rotation.z))
+        end,
+        draw = function(self)
             self.drawer:draw()
         end
     }

@@ -34,7 +34,6 @@ local player = {
     aabb = {},
     bullet_time = {},
     bullet_timer = {},
-    efk = {},
     efks = {},
     tex_scope = {},
     drawer_scope = {},
@@ -153,7 +152,7 @@ local player = {
                 self.boost_timer = self.boost_timer + delta_time
             end
         else
-            if keyboard:key_state(keySPACE) == buttonPRESSED and is_move then
+            if keyboard:is_key_pressed(keySPACE) and is_move then
                 if self.stamina >= self.stamina_boost_cost then
                     self.stamina = self.stamina - self.stamina_boost_cost
                     if self.stamina <= 0.0 then
@@ -279,12 +278,18 @@ local player = {
     end,
 
     draw = function(self)
-        if not FPS_MODE then self.drawer:draw() end
+        self.drawer:draw()
         self.hp_drawer:draw()
         self.stamina_max_drawer:draw()
         self.stamina_drawer:draw()
         self.drawer_scope_big:draw()
         self.drawer_scope:draw()
+        for i, v in ipairs(self.efks) do
+            v:draw()
+        end
+        for i, v in ipairs(self.bullets) do
+            v:draw()
+        end
         for i, j in ipairs(self.orbits) do
             j:draw()
         end

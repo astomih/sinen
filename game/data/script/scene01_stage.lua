@@ -1,7 +1,7 @@
 local player = require "player"
 local enemy = require "enemy"
 local enemies = {}
-local enemy_max_num = 1
+local enemy_max_num = 100
 local world = require "world"
 local map_size_x = 64
 local map_size_y = 64
@@ -49,7 +49,7 @@ local key_drawer2d = drawui(key_texture_2d)
 key_drawer2d.scale = key_texture_2d:size()
 key_drawer2d.scale.x = key_drawer2d.scale.x / 6
 key_drawer2d.scale.y = key_drawer2d.scale.y / 6
-key_drawer2d.position = vector2(-window.size().x / TILE_SIZE + key_drawer2d.scale.x / TILE_SIZE, -window.size().y / 3)
+key_drawer2d.position = vector2(-scene.size().x / TILE_SIZE + key_drawer2d.scale.x / TILE_SIZE, -scene.size().y / 3)
 local key_drawer = draw3d(key_texture)
 key_drawer.scale = vector3(0.25, 0.25, 0.25)
 key_drawer.position = vector3(0, 0, 1)
@@ -61,7 +61,7 @@ local camera_controller = require("camera_controller")()
 function Setup()
     score_font:load(DEFAULT_FONT_NAME, 64)
     menu_object:setup()
-    music:load("Stage1.ogg")
+    music:load("segments.ogg")
     music:play()
     DEFAULT_TEXTURE = texture()
     DEFAULT_TEXTURE:fill_color(color(1, 1, 1, 1))
@@ -267,7 +267,7 @@ function Update()
     if math.floor(player.drawer.position.x + 0.5) == math.floor(stair.position.x) and
         math.floor(player.drawer.position.y + 0.5) == math.floor(stair.position.y) then
 
-        if keyboard:key_state(keyE) == buttonPRESSED and stair.position.z ==
+        if keyboard:is_key_pressed(keyE) and stair.position.z ==
             0 then
             NOW_STAGE = NOW_STAGE + 1
             if NOW_STAGE == 4 then

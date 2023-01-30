@@ -56,8 +56,10 @@ local orbit = function(player)
 
     end,
     draw = function(self)
+      for i, v in ipairs(self.bullets) do
+        v:draw()
+      end
       self.drawer:draw()
-
     end
   }
   return object

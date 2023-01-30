@@ -9,11 +9,6 @@
 #include <cstdint>
 
 namespace sinen {
-/**
- * @brief Button state
- *
- */
-enum class button_state { None, Pressed, Released, Held };
 
 /**
  * @brief Keyboard state
@@ -45,13 +40,6 @@ public:
    * @return false no
    */
   bool is_key_released(key_code _key) const;
-  /**
-   * @brief Get the key state object
-   *
-   * @param _key
-   * @return button_state
-   */
-  button_state get_key_state(key_code _key) const;
 };
 
 // Helper for mouse input
@@ -70,7 +58,6 @@ public:
   bool is_button_down(mouse_code _button) const;
   bool is_button_pressed(mouse_code _button) const;
   bool is_button_released(mouse_code _button) const;
-  button_state get_button_state(mouse_code _button) const;
 };
 
 // Helper for controller input
@@ -80,7 +67,6 @@ public:
   bool is_button_down(joystick_button j_button) const;
   bool is_button_pressed(joystick_button j_button) const;
   bool is_button_released(joystick_button j_button) const;
-  button_state get_button_state(joystick_button j_button) const;
 
   const vector2 &get_left_stick() const;
   const vector2 &get_right_stick() const;

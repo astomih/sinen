@@ -78,7 +78,7 @@ elseif(EMSCRIPTEN)
   if(CMAKE_HOST_WIN32)
     set(CMAKE_CXX_FLAGS
         "${CMAKE_CXX_FLAGS} \
-		-s SDL2_IMAGE_FORMATS="[""png""]" \
+		-s SDL2_IMAGE_FORMATS=[\"png\"] \
     ")
   else()
     set(CMAKE_CXX_FLAGS

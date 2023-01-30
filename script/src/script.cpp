@@ -89,11 +89,9 @@ bool script_engine::initialize(sol::state &lua) {
     v["is_key_pressed"] = &keyboard_state::is_key_pressed;
     v["is_key_released"] = &keyboard_state::is_key_released;
     v["is_key_down"] = &keyboard_state::is_key_down;
-    v["key_state"] = &keyboard_state::get_key_state;
   }
   {
     auto v = lua.new_usertype<mouse_state>("", sol::no_construction());
-    v["button_state"] = &mouse_state::get_button_state;
     v["is_button_pressed"] = &mouse_state::is_button_pressed;
     v["is_button_released"] = &mouse_state::is_button_released;
     v["is_button_down"] = &mouse_state::is_button_down;
@@ -157,13 +155,6 @@ bool script_engine::initialize(sol::state &lua) {
     v["mouseMIDDLE"] = (int)mouse_code::MIDDLE;
     v["mouseX1"] = (int)mouse_code::X1;
     v["mouseX2"] = (int)mouse_code::X2;
-  }
-  {
-    auto &v = lua;
-    v["buttonNONE"] = (int)button_state::None;
-    v["buttonPRESSED"] = (int)button_state::Pressed;
-    v["buttonRELEASED"] = (int)button_state::Released;
-    v["buttonHELD"] = (int)button_state::Held;
   }
   register_graph(lua);
 

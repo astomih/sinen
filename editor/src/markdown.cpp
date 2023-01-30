@@ -99,8 +99,6 @@ void Markdown(const std::string &markdown_) {
 }
 
 void markdown() {
-  ImGui::SetNextWindowPos({0, 360});
-  ImGui::SetNextWindowSize({250, 360});
   ImGui::Begin("Document");
   std::string markdownText;
 

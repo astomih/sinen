@@ -38,10 +38,7 @@ static bool is_save_as = false;
 static char save_as_path[256] = "";
 static bool request_pop_func = false;
 void editor::inspector() {
-  ImGui::SetNextWindowPos({1030, 0});
-  ImGui::SetNextWindowSize({250, 720});
-  ImGui::Begin("Inspector", nullptr,
-               ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+  ImGui::Begin("Inspector");
   ImGuizmo::BeginFrame();
   static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
   static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
@@ -328,11 +325,13 @@ void editor::save_as_scene() {
   }
 }
 void editor::menu() {
-  ImGui::SetNextWindowPos({250, 0});
-  ImGui::SetNextWindowSize({780, 20});
+  ImGui::SetNextWindowPos({0, 2});
+  ImGui::SetNextWindowSize({window::size().x, 20});
   ImGui::Begin("Menu", nullptr,
                ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoMove |
-                   ImGuiWindowFlags_NoResize);
+                   ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoNavFocus |
+                   ImGuiWindowFlags_NoTitleBar |
+                   ImGuiWindowFlags_NoBringToFrontOnFocus);
   if (ImGui::BeginMenuBar()) {
     if (ImGui::BeginMenu("File")) {
       if (ImGui::BeginMenu("Load")) {
@@ -353,11 +352,31 @@ void editor::menu() {
         save_as_scene();
       }
       if (ImGui::MenuItem("Exit", "Alt+F4")) {
+        ImGui::SaveIniSettingsToDisk("layout.ini");
 #if !defined(EMSCRIPTEN)
         std::exit(0);
 #else
         emscripten_force_exit(0);
 #endif
+      }
+      ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Edit")) {
+      if (ImGui::MenuItem("Undo", "Ctrl+Z")) {
+      }
+      if (ImGui::MenuItem("Redo", "Ctrl+Y", false, false)) {
+      } // Disabled item
+      ImGui::Separator();
+      ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Window")) {
+      if (ImGui::MenuItem("Log", "Ctrl+L")) {
+      }
+      if (ImGui::MenuItem("Inspector", "Ctrl+I")) {
+      }
+      if (ImGui::MenuItem("Text Editor", "Ctrl+E")) {
+      }
+      if (ImGui::MenuItem("Document", "Ctrl+D")) {
       }
       ImGui::EndMenu();
     }
@@ -375,6 +394,7 @@ void editor::menu() {
 editor::editor() : m_impl(std::make_unique<editor::implements>()) {}
 editor::~editor() {}
 void editor::setup() {
+  ImGui::LoadIniSettingsFromDisk("layout.ini");
   ImGuiStyle &style = ImGui::GetStyle();
   style.Alpha = 1.0;
   style.ChildRounding = 3;
@@ -443,7 +463,7 @@ void editor::update(float delta_time) {
   }
 
   if (renderer::is_show_imgui() &&
-      input::keyboard.get_key_state(key_code::F5) == button_state::Pressed) {
+      input::keyboard.is_key_pressed(key_code::F5)) {
     m_impl->is_run = true;
   }
   if (m_impl->is_run) {
@@ -451,7 +471,7 @@ void editor::update(float delta_time) {
   }
   if (renderer::is_show_imgui() &&
       input::keyboard.is_key_down(key_code::LCTRL) &&
-      input::keyboard.get_key_state(key_code::S) == button_state::Pressed) {
+      input::keyboard.is_key_pressed(key_code::S)) {
     // m_impl->is_save = true;
   }
   if (m_impl->is_save) {
@@ -463,17 +483,17 @@ void editor::update(float delta_time) {
   }
   if (renderer::is_show_imgui() &&
       input::keyboard.is_key_down(key_code::LCTRL) &&
-      input::keyboard.get_key_state(key_code::S) == button_state::Pressed) {
+      input::keyboard.is_key_pressed(key_code::S)) {
     if (input::keyboard.is_key_down(key_code::LSHIFT)) {
 
     } else if (!current_file_name.empty()) {
       save_scene(this->current_file_name);
     }
   }
-  if (input::keyboard.get_key_state(key_code::F3) == button_state::Pressed) {
+  if (input::keyboard.is_key_pressed(key_code::F3)) {
     renderer::toggle_show_imgui();
   }
-  if (input::keyboard.get_key_state(key_code::F5) == button_state::Pressed) {
+  if (input::keyboard.is_key_pressed(key_code::F5)) {
     run();
   }
 
@@ -487,8 +507,7 @@ void editor::update(float delta_time) {
           vec * input::mouse.get_scroll_wheel().y;
     }
     static vector2 prev = vector2();
-    if (input::mouse.get_button_state(mouse_code::RIGHT) ==
-        button_state::Held) {
+    if (input::mouse.is_button_down(mouse_code::RIGHT)) {
       auto pos = prev - input::mouse.get_position();
       if (input::keyboard.is_key_down(key_code::LSHIFT)) {
         scene::main_camera().position() +=

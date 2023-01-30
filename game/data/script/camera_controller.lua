@@ -6,8 +6,8 @@ local function camera_controller()
     prev_boost = false,
     is_tracking_player = false,
     player = {},
-    py = 3,
-    pz = 15,
+    py = 5,
+    pz = 12,
     track_speed = 15,
     setup = function(self, player)
       self.player = player

@@ -111,19 +111,15 @@ bool main_system::initialize() {
   } else
     str = "Vulkan";
   if (str.compare("Vulkan") == 0) {
-    window_system::initialize(
-        "SinenEngine version:0.0.1, Graphics backends:Vulkan",
-        graphics_api::Vulkan);
+    window_system::initialize("SinenEngine(Vulkan)", graphics_api::Vulkan);
     render_system::initialize(graphics_api::Vulkan);
   } else if (str.compare("OpenGL") == 0) {
-    window_system::initialize(
-        "SinenEngine version:0.0.1, Graphics backends:OpenGL",
-        graphics_api::OpenGL);
+    window_system::initialize("SinenEngine(OpenGL)", graphics_api::OpenGL);
     render_system::initialize(graphics_api::OpenGL);
   }
 
 #else
-  window_system::initialize("sinen engine version:0.0.1", graphics_api::ES);
+  window_system::initialize("SinenEngine", graphics_api::ES);
   render_system::initialize(graphics_api::ES);
 #endif
   if (!sound_system::initialize()) {
@@ -176,9 +172,15 @@ bool main_system::loop() {
   return false;
 }
 void main_system::change_scene_impl(const std::string &scene_name) {
+  if (scene_name.empty()) {
+    scene::set_state(scene::state::quit);
+    is_reset = false;
+  } else {
+    is_reset = true;
+  }
+
   scene_system::shutdown();
   script_system::shutdown();
   m_scene_name = scene_name;
-  is_reset = true;
 }
 } // namespace sinen

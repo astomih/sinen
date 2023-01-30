@@ -24,7 +24,7 @@ function Update()
         return
     end
     draw()
-    if keyboard:is_key_pressed(keyENTER) then
+    if mouse:is_button_pressed(mouseLEFT) then
         scene_switcher:start(false, "scene00_base")
     end
 end

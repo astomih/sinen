@@ -12,6 +12,59 @@
 namespace sinen {
 bool isHide = false;
 SDL_Cursor *g_cursor = nullptr;
+/**
+ * @brief Button state
+ *
+ */
+enum class button_state { None, Pressed, Released, Held };
+static button_state get_key_state(key_code _key_code) {
+  if (input_system::m_keyboard.mPrevState[static_cast<int>(_key_code)] == 0) {
+    if (input_system::m_keyboard.mCurrState[static_cast<int>(_key_code)] == 0) {
+      return button_state::None;
+    } else {
+      return button_state::Pressed;
+    }
+  } else // Prev state must be 1
+  {
+    if (input_system::m_keyboard.mCurrState[static_cast<int>(_key_code)] == 0) {
+      return button_state::Released;
+    } else {
+      return button_state::Held;
+    }
+  }
+}
+static button_state get_button_state(mouse_code _button) {
+  int mask = SDL_BUTTON(static_cast<int>(_button));
+  if ((mask & input_system::m_mouse.mPrevButtons) == 0) {
+    if ((mask & input_system::m_mouse.mCurrButtons) == 0) {
+      return button_state::None;
+    } else {
+      return button_state::Pressed;
+    }
+  } else {
+    if ((mask & input_system::m_mouse.mCurrButtons) == 0) {
+      return button_state::Released;
+    } else {
+      return button_state::Held;
+    }
+  }
+}
+static button_state get_button_state(joystick_button _button) {
+  if (input_system::m_joystick.mPrevButtons[static_cast<int>(_button)] == 0) {
+    if (input_system::m_joystick.mCurrButtons[static_cast<int>(_button)] == 0) {
+      return button_state::None;
+    } else {
+      return button_state::Pressed;
+    }
+  } else // Prev state must be 1
+  {
+    if (input_system::m_joystick.mCurrButtons[static_cast<int>(_button)] == 0) {
+      return button_state::Released;
+    } else {
+      return button_state::Held;
+    }
+  }
+}
 
 keyboard_state input::keyboard = keyboard_state();
 mouse_state input::mouse = mouse_state();
@@ -30,23 +83,6 @@ bool keyboard_state::is_key_pressed(key_code _key_code) const {
 
 bool keyboard_state::is_key_released(key_code _key_code) const {
   return get_key_state(_key_code) == button_state::Released;
-}
-
-button_state keyboard_state::get_key_state(key_code _key_code) const {
-  if (input_system::m_keyboard.mPrevState[static_cast<int>(_key_code)] == 0) {
-    if (input_system::m_keyboard.mCurrState[static_cast<int>(_key_code)] == 0) {
-      return button_state::None;
-    } else {
-      return button_state::Pressed;
-    }
-  } else // Prev state must be 1
-  {
-    if (input_system::m_keyboard.mCurrState[static_cast<int>(_key_code)] == 0) {
-      return button_state::Released;
-    } else {
-      return button_state::Held;
-    }
-  }
 }
 
 mouse_state::mouse_state() = default;
@@ -116,22 +152,6 @@ bool mouse_state::is_button_released(mouse_code _button) const {
   return get_button_state(_button) == button_state::Released;
 }
 
-button_state mouse_state::get_button_state(mouse_code _button) const {
-  int mask = SDL_BUTTON(static_cast<int>(_button));
-  if ((mask & input_system::m_mouse.mPrevButtons) == 0) {
-    if ((mask & input_system::m_mouse.mCurrButtons) == 0) {
-      return button_state::None;
-    } else {
-      return button_state::Pressed;
-    }
-  } else {
-    if ((mask & input_system::m_mouse.mCurrButtons) == 0) {
-      return button_state::Released;
-    } else {
-      return button_state::Held;
-    }
-  }
-}
 bool joystick_state::is_button_down(joystick_button _button) const {
   return get_button_state(_button) == button_state::Held;
 }
@@ -142,23 +162,6 @@ bool joystick_state::is_button_pressed(joystick_button _button) const {
 
 bool joystick_state::is_button_released(joystick_button _button) const {
   return get_button_state(_button) == button_state::Released;
-}
-
-button_state joystick_state::get_button_state(joystick_button _button) const {
-  if (input_system::m_joystick.mPrevButtons[static_cast<int>(_button)] == 0) {
-    if (input_system::m_joystick.mCurrButtons[static_cast<int>(_button)] == 0) {
-      return button_state::None;
-    } else {
-      return button_state::Pressed;
-    }
-  } else // Prev state must be 1
-  {
-    if (input_system::m_joystick.mCurrButtons[static_cast<int>(_button)] == 0) {
-      return button_state::Released;
-    } else {
-      return button_state::Held;
-    }
-  }
 }
 
 joystick input_system::mController;

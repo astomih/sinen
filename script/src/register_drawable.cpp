@@ -49,6 +49,7 @@ void register_drawable(sol::state &lua) {
     auto v = lua.new_usertype<draw2d_instancing>("", sol::no_construction());
     v["draw"] = &draw2d_instancing::draw;
     v["add"] = &draw2d_instancing::add;
+    v["at"] = &draw2d_instancing::at;
     v["clear"] = &draw2d_instancing::clear;
     v["texture"] = &draw2d_instancing::texture_handle;
     v["vertex_name"] = &draw2d_instancing::vertex_name;
@@ -57,6 +58,7 @@ void register_drawable(sol::state &lua) {
     auto v = lua.new_usertype<draw3d_instancing>("", sol::no_construction());
     v["draw"] = &draw3d_instancing::draw;
     v["add"] = &draw3d_instancing::add;
+    v["at"] = &draw3d_instancing::at;
     v["clear"] = &draw3d_instancing::clear;
     v["texture"] = &draw3d_instancing::texture_handle;
     v["vertex_name"] = &draw3d_instancing::vertex_name;

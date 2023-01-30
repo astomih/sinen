@@ -40,8 +40,8 @@ local function text_window()
                 self.text_count = math.floor(self.timer) + 1
             end
 
-            if keyboard:key_state(keySPACE) == buttonPRESSED or
-                mouse:button_state(mouseLEFT) == buttonPRESSED then
+            if keyboard:is_key_pressed(keySPACE) or
+                mouse:is_button_pressed(mouseLEFT) then
                 if self.text_count == len then
                     self.text_number = self.text_number + 1
                     self.text_number = math.min(self.text_number, #self.texts)

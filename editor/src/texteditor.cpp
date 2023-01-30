@@ -10,11 +10,6 @@ namespace sinen {
 std::string texteditor::path;
 TextEditor te;
 void texteditor::display() {
-  ImGui::SetNextWindowPos({0, 0});
-  static auto once = []() {
-    ImGui::SetNextWindowSize({250, 360});
-    return true;
-  }();
   ImGui::Begin("Text Editor", nullptr, ImGuiWindowFlags_MenuBar);
   te.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
   te.SetShowWhitespaces(true);

@@ -73,6 +73,10 @@ local function effect()
                         self.worlds[i].scale)
 
                 end
+            end
+        end,
+        draw = function(self)
+            if self.is_playing then
                 self.drawer:draw()
             end
         end,

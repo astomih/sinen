@@ -49,7 +49,10 @@ void draw2d_instancing::add(const vector2 &position, const float &rotation,
                             const vector2 &scale) {
   this->worlds.push_back({position, rotation, scale});
 }
-
+void draw2d_instancing::at(const int &index, const vector2 &position,
+                           const float &rotation, const vector2 &scale) {
+  this->worlds[index] = {position, rotation, scale};
+}
 void draw2d_instancing::clear() { this->worlds.clear(); }
 
 draw3d_instancing::draw3d_instancing(texture texture_handle)
@@ -82,7 +85,9 @@ void draw3d_instancing::add(const vector3 &position, const vector3 &rotation,
                             const vector3 &scale) {
   this->worlds.push_back({position, rotation, scale});
 }
-void draw3d_instancing::clear() {
-  this->worlds.clear();
+void draw3d_instancing::at(const int &index, const vector3 &position,
+                           const vector3 &rotation, const vector3 &scale) {
+  this->worlds[index] = {position, rotation, scale};
 }
+void draw3d_instancing::clear() { this->worlds.clear(); }
 } // namespace sinen

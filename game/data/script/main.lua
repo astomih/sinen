@@ -11,6 +11,7 @@ local scene_switcher = require("scene_switcher")()
 
 
 function Setup()
+    scene.resize(vector2(1280, 720))
     window.set_name("DIVE TO SINEN")
     SCORE = 0
     NOW_STAGE = 1
@@ -26,9 +27,9 @@ function Setup()
     drawer_press = drawui(texture_press)
     font_press = font()
     font_press:load(DEFAULT_FONT_NAME, 32)
-    font_press:render_text(texture_press, "PRESS ENTER", color(1, 1, 1, 0.9))
+    font_press:render_text(texture_press, "CLICK TO START", color(1, 1, 1, 0.9))
     drawer_press.scale = texture_press:size()
-    drawer_press.position = vector2(0, -drawer_title.scale.y * 1.5)
+    drawer_press.position = vector2(0, -drawer_title.scale.y * 3.0)
     local skybox_tex = texture()
     skybox_tex:fill_color(color(0.2, 0.2, 0.2, 1))
     set_skybox_texture(skybox_tex)
@@ -50,7 +51,7 @@ function Update()
     menu_object:update()
     draw()
     if menu_object.hide then
-        if keyboard:key_state(keyENTER) == buttonPRESSED then
+        if mouse:is_button_pressed(mouseLEFT) then
             scene_switcher:start(false, "scene00_base")
         end
     end

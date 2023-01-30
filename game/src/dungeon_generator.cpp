@@ -72,6 +72,12 @@ void dungeon_generator(sinen::grid<int> &grid) {
         recreate = true;
       }
     }
+    {
+      sinen::bfs_grid bfs(grid);
+      if (!bfs.find_path(player_start, stairs)) {
+        recreate = true;
+      }
+    }
   }
   if (recreate) {
     dungeon_generator(grid);

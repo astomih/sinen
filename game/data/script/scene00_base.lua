@@ -29,8 +29,6 @@ local score_texture = texture()
 local score_drawer = drawui(score_texture)
 tile:load("tile.png")
 tree:load("tree.sim", "tree")
-local stair_model = model()
-stair_model:load("stair.sim", "stair")
 local stair_texture = texture()
 stair_texture:fill_color(color(1, 0.5, 0.5, 0.5))
 
@@ -39,31 +37,12 @@ local menu_object = menu()
 local scene_switcher = require("scene_switcher")()
 
 
--- key object
-local key = {}
-local key_model = model()
-key_model:load("key.sim", "key")
-local key_texture = texture()
-key_texture:fill_color(color(1, 1, 1, 1))
-local key_texture_2d = texture()
-key_texture_2d:load("key.png")
-local key_drawer2d = draw2d(key_texture_2d)
-key_drawer2d.scale = key_texture_2d:size()
-key_drawer2d.scale.x = key_drawer2d.scale.x / 6
-key_drawer2d.scale.y = key_drawer2d.scale.y / 6
-key_drawer2d.position = vector2(-window.size().x / TILE_SIZE + key_drawer2d.scale.x / TILE_SIZE, -window.size().y / 3)
-local key_drawer = draw3d(key_texture)
-key_drawer.scale = vector3(0.25, 0.25, 0.25)
-key_drawer.position = vector3(0, 0, 1)
-key_drawer.rotation = vector3(90, 0, 0)
-key_drawer.vertex_name = "key"
-local key_hit = false
 local camera_controller = require("camera_controller")()
 
 function Setup()
   score_font:load(DEFAULT_FONT_NAME, 64)
   menu_object:setup()
-  music:load("PSYCHO.ogg")
+  music:load("base.ogg")
   music:play()
   DEFAULT_TEXTURE = texture()
   DEFAULT_TEXTURE:fill_color(color(1, 1, 1, 1))
@@ -86,7 +65,6 @@ function Setup()
   sprite.is_draw_depth = false
   stair = draw3d(stair_texture)
   stair.vertex_name = "SPRITE"
-  key_drawer.position = vector3(999, 999, 999)
 
   for i = 1, COLLISION_SPACE_DIVISION + 2 do
     COLLISION_SPACE[i] = {}
@@ -172,12 +150,6 @@ local function draw()
   end
   sprite:draw()
   stair:draw()
-  if not key_hit then
-    key_drawer:draw()
-  end
-  if key_hit then
-    key_drawer2d:draw()
-  end
   score_drawer:draw()
   menu_object:draw()
 end
@@ -196,102 +168,12 @@ function Update()
   local player_on_map = point2i(0, 0)
   player_on_map.x = math.floor(player.drawer.position.x / TILE_SIZE + 0.5)
   player_on_map.y = math.floor(player.drawer.position.y / TILE_SIZE + 0.5)
-  key_drawer.rotation.y = key_drawer.rotation.y + delta_time * 100
-  if key_drawer.rotation.y > 360 then
-    key_drawer.rotation.y = key_drawer.rotation.y - 360
-  end
   score_font:render_text(score_texture, "SCORE: " .. SCORE,
     color(1, 1, 1, 1))
   score_drawer.scale = score_texture:size()
   score_drawer.position.x = -300
   score_drawer.position.y = 300
-  for i, v in ipairs(player.bullets) do
-    for j, w in ipairs(enemies) do
-      if collision.aabb_aabb(v.aabb, w.aabb) then
-        local efk = effect()
-        efk:setup()
-        efk.texture:fill_color(color(1, 0.2, 0.2, 1))
-        for k = 1, efk.max_particles do
-          efk.worlds[k].position = w.drawer.position:copy()
-        end
-        efk:play()
-        table.insert(player.efks, efk)
-
-        table.remove(player.bullets, i)
-        -- hp
-        w.hp = w.hp - 10
-        if w.hp < 0 then
-          SCORE = SCORE + 10
-          table.remove(enemies, j)
-        end
-        if #enemies <= 0 then
-          stair.position.z = -2
-
-        end
-      end
-    end
-    if map:at(math.floor(v.drawer
-      .position
-      .x / TILE_SIZE +
-      0.5), math.floor(v.drawer.position.y / TILE_SIZE + 0.5)) ==
-        1 then table.remove(player.bullets, i) end
-  end
-  for a, b in ipairs(player.orbits) do
-    for i, v in ipairs(b.bullets) do
-      for j, w in ipairs(enemies) do
-        if collision.aabb_aabb(v.aabb, w.aabb) then
-          local efk = effect()
-          efk:setup()
-          for k = 1, efk.max_particles do
-            efk.worlds[k].position = w.drawer.position:copy()
-          end
-          efk:play()
-          table.insert(b.efks, efk)
-
-          table.remove(b.bullets, i)
-          -- hp
-          w.hp = w.hp - 10
-          if w.hp < 0 then
-            SCORE = SCORE + 10
-            table.remove(enemies, j)
-          end
-          if #enemies <= 0 then
-            stair.position.z = -2
-
-          end
-        end
-      end
-      if map:at(math.floor(v.drawer
-        .position
-        .x / TILE_SIZE +
-        0.5), math.floor(v.drawer.position.y / TILE_SIZE + 0.5)) ==
-          1 then table.remove(b.bullets, i) end
-    end
-  end
   player:update(map, map_draw3ds, map_size_x, map_size_y)
-  -- Player hit key
-  if math.floor(player.drawer.position.x + 0.5) == math.floor(key_drawer.position.x) and
-      math.floor(player.drawer.position.y + 0.5) == math.floor(key_drawer.position.y) then
-    key_hit = true
-    stair.position.z = -2.0
-  end
-  for i, v in ipairs(enemies) do
-    v:update(player)
-    v:player_collision(player)
-  end
-  if math.floor(player.drawer.position.x + 0.5) == math.floor(stair.position.x) and
-      math.floor(player.drawer.position.y + 0.5) == math.floor(stair.position.y) then
-
-    if keyboard:key_state(keyENTER) == buttonPRESSED and stair.position.z ==
-        -2 then
-      NOW_STAGE = NOW_STAGE + 1
-      if NOW_STAGE == 4 then
-        scene_switcher:start(false, "scene02_clear")
-      else
-        scene_switcher:start(false, "scene01_stage")
-      end
-    end
-  end
   if player.hp <= 0 then
     scene_switcher:start(false, "scene03_gameover")
   end

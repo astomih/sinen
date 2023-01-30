@@ -4,7 +4,7 @@ local function gui_list()
     local object = {
         num = 5,
         list_space = 100,
-        scale = vector2(window.size().x / 2, 50),
+        scale = vector2(scene.size().x / 2, 50),
         start_pos = vector2(0, 0),
 
         tex = {},
@@ -16,10 +16,9 @@ local function gui_list()
 
         select_frame_tex = {},
         select_frame_drawer = {},
-        selecting_index = 1,
+        selecting_index = 0,
 
         hide = false,
-        selected_index = 0,
         setup = function(self)
             self.tex = texture()
             self.font = font()
@@ -33,10 +32,10 @@ local function gui_list()
                     end
                 end
 
-                local drawer = draw2d(self.tex)
+                local drawer = drawui(self.tex)
                 table.insert(self.drawers, drawer)
                 local text_texture = texture()
-                self.text_drawers[i] = draw2d(text_texture)
+                self.text_drawers[i] = drawui(text_texture)
                 self.font:render_text(text_texture, self.texts[i],
                     color(0, 0, 0, 1))
                 self.text_drawers[i].scale = text_texture:size()
@@ -49,52 +48,41 @@ local function gui_list()
             end
             self.tex:fill_color(color(0.7, 0.7, 0.7, 0.8))
             self.select_frame_tex = texture()
-            self.select_frame_tex:fill_color(color(1, 0.5, 0.5, 1.0))
-            self.select_frame_drawer = draw2d(self.select_frame_tex)
+            self.select_frame_tex:fill_color(color(1, 0.3, 0.3, 0.8))
+            self.select_frame_drawer = drawui(self.select_frame_tex)
             self.select_frame_drawer.scale = self.drawers[1].scale
             self.select_frame_drawer.position = self.drawers[1].position
         end,
         before_len = 1,
         update = function(self)
-            if keyboard:key_state(keyDOWN) == buttonPRESSED then
-                self.selecting_index = self.selecting_index + 1
-                if self.selecting_index > self.num then
-                    self.selecting_index = 1
-                end
-            end
-            if keyboard:key_state(keyUP) == buttonPRESSED then
-                self.selecting_index = self.selecting_index - 1
-                if self.selecting_index < 1 then
-                    self.selecting_index = self.num
-                end
-            end
-            self.select_frame_drawer.position =
-            self.drawers[self.selecting_index].position
-            if keyboard:key_state(keyENTER) == buttonPRESSED then
-                self.selected_index = self.selecting_index
-            else
-                self.selected_index = 0
-            end
 
-            local mpos = mouse:position()
-            mpos.x = mpos.x - 1280 / 2
-            mpos.y = mpos.y - 720 / 2
+            local mpos = mouse:position_on_scene()
+            mpos.x = mpos.x - scene.center().x
+            mpos.y = -(mpos.y - scene.center().y)
+            self.selecting_index = 0
             for i = 1, self.num do
-                if mpos.x > self.drawers[i].position.x - self.drawers[i].scale.x /
-                    2 and mpos.x < self.drawers[i].position.x +
-                    self.drawers[i].scale.x / 2 then
-                    if mpos.y > self.drawers[i].position.y -
-                        self.drawers[i].scale.y / 2 and mpos.y <
-                        self.drawers[i].position.y + self.drawers[i].scale.y / 2 then
-                        self.selecting_index = self.num - i + 1
-                    end
+                local scale = self.drawers[i].scale
+                local pos = self.drawers[i].position
+                if mpos.x >= pos.x - scale.x / 2
+                    and
+                    mpos.x <= pos.x + scale.x / 2
+                    and
+                    mpos.y >= pos.y - scale.y / 2
+                    and
+                    mpos.y <= pos.y + scale.y / 2
+                then
+                    self.selecting_index = i
 
                 end
             end
         end,
         draw = function(self)
             if not self.hide then
-                self.select_frame_drawer:draw()
+                if self.selecting_index > 0 then
+                    self.select_frame_drawer.position =
+                    self.drawers[self.selecting_index].position
+                    self.select_frame_drawer:draw()
+                end
                 for i = 1, self.num do
                     self.drawers[i]:draw()
                     self.text_drawers[i]:draw()

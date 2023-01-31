@@ -33,7 +33,7 @@ void gl_render_texture::prepare() {
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   gl_shader_parameter param{};
-  ubo.create(0, sizeof(gl_shader_parameter), &param);
+  ubo.create(sizeof(gl_shader_parameter), &param);
 }
 void gl_render_texture::bind() {
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);

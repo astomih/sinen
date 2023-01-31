@@ -4,7 +4,7 @@
 #include <emscripten.h>
 #include <emscripten/html5.h>
 #endif
-#if defined(EMSCRIPTEN) || defined(MOBILE)
+#if defined(EMSCRIPTEN) || defined(ANDROID)
 #include <GLES3/gl3.h>
 #include <SDL_opengles2.h>
 #else

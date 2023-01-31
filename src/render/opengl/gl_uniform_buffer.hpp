@@ -10,16 +10,15 @@
 namespace sinen {
 class gl_uniform_buffer {
 public:
-  void create(const GLuint &blockIndex, const GLuint &size, const void *data,
+  void create(const GLuint &size, const void *data,
               const GLsizeiptr &offset = 0,
               const GLenum &usage = GL_DYNAMIC_DRAW);
-  void update(const GLuint &blockIndex, const size_t &size, const void *data,
-              const GLsizeiptr &offset);
-  void bind(const GLuint &program, const GLuint &blockIndex);
+  void update(const size_t &size, const void *data, const GLsizeiptr &offset);
+  void bind(const GLuint &program);
   void destroy();
 
 private:
-  std::unordered_map<GLuint, GLuint> block_index_buffers;
+  GLuint ubo;
 };
 } // namespace sinen
 #endif // GL_UNIFORM_BUFFER_HPP

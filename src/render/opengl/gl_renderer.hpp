@@ -120,7 +120,7 @@ private:
   std::unordered_map<std::string, gl_shader> m_shaders;
   std::vector<std::pair<shader, gl_shader>> m_user_pipelines;
   GLuint mTextureID;
-  std::unordered_map<handle_t, GLuint> mTextureIDs;
+  std::unordered_map<handle_t, GLuint> m_texture_ids;
   std::unordered_map<std::string, gl_vertex_array> m_VertexArrays;
   ::SDL_GLContext mContext;
   std::vector<gl_drawable> m_drawer_2ds;

@@ -92,14 +92,16 @@ void gl_renderer::render() {
     glViewport(0, 0, w.x, w.y);
     prev_window_x = w.x;
     prev_window_y = w.y;
-    destroy_render_texture();
-    create_render_texture();
+    m_present_texture.destroy();
+    m_present_texture.prepare();
+    m_render_texture.destroy();
+    m_render_texture.prepare();
   }
   auto color = render_system::get_clear_color();
   glClearColor(color.r, color.g, color.b, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glViewport(0, 0, window::size().x, window::size().y);
-  glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+  m_render_texture.bind();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glEnable(GL_BLEND);
   glDisable(GL_DEPTH_TEST);
@@ -123,34 +125,48 @@ void gl_renderer::render() {
   enable_vertex_attrib_array();
   draw_instancing_2d();
   glFlush();
-  glActiveTexture(GL_TEXTURE0);
   {
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    m_present_texture.bind();
     glBindVertexArray(m_VertexArrays["SPRITE"].vao);
-    glBindTexture(GL_TEXTURE_2D, rendertexture);
+    glBindTexture(GL_TEXTURE_2D, m_render_texture.rendertexture);
     m_shaders["RenderTexture"].active(0);
 
-    render_texture_ubo.bind(m_shaders["RenderTexture"].program(), 0);
-    render_texture_ubo.update(0, sizeof(gl_shader_parameter), &param, 0);
+    m_render_texture.ubo.bind(m_shaders["RenderTexture"].program(), 0);
+    m_render_texture.ubo.update(0, sizeof(gl_shader_parameter), &param, 0);
     disable_vertex_attrib_array();
     glDrawElements(GL_TRIANGLES, m_VertexArrays["SPRITE"].indices.size(),
                    GL_UNSIGNED_INT, nullptr);
+    draw_ui();
   }
-  draw_ui();
+  glFlush();
+  {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    if (!renderer::offscreen_rendering) {
+      glBindVertexArray(m_VertexArrays["SPRITE"].vao);
+      glBindTexture(GL_TEXTURE_2D, m_present_texture.rendertexture);
+      m_shaders["RenderTexture"].active(0);
 
-  ImGui_ImplOpenGL3_NewFrame();
-  ImGui_ImplSDL2_NewFrame(window_system::get_sdl_window());
-  ImGui::NewFrame();
-  if (renderer::is_show_imgui()) {
-
-    // Draw ImGUI widgets.
-    for (auto &i : renderer::get_imgui_function()) {
-      i();
+      m_present_texture.ubo.bind(m_shaders["RenderTexture"].program(), 0);
+      m_present_texture.ubo.update(0, sizeof(gl_shader_parameter), &param, 0);
+      disable_vertex_attrib_array();
+      glDrawElements(GL_TRIANGLES, m_VertexArrays["SPRITE"].indices.size(),
+                     GL_UNSIGNED_INT, nullptr);
     }
-  }
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL2_NewFrame(window_system::get_sdl_window());
+    ImGui::NewFrame();
+    if (renderer::is_show_imgui()) {
 
-  ImGui::Render();
-  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+      // Draw ImGUIwidgets.
+      for (auto &i : renderer::get_imgui_function()) {
+        i();
+      }
+    }
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+  }
+  glFlush();
   SDL_GL_SwapWindow(window_system::get_sdl_window());
   for (auto &i : m_drawer_3ds) {
     i.ubo.destroy();
@@ -609,43 +625,8 @@ void gl_renderer::prepare() {
   if (!load_shader()) {
     logger::error("failed to loads shader");
   }
-  create_render_texture();
-}
-
-void gl_renderer::create_render_texture() {
-  glGenFramebuffers(1, &framebuffer);
-  glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-
-  glGenTextures(1, &rendertexture);
-  glBindTexture(GL_TEXTURE_2D, rendertexture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, window::size().x, window::size().y, 0,
-               GL_RGBA, GL_UNSIGNED_BYTE, 0);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-  glGenRenderbuffers(1, &depthbuffer);
-  glBindRenderbuffer(GL_RENDERBUFFER, depthbuffer);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, window::size().x,
-                        window::size().y);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                            GL_RENDERBUFFER, depthbuffer);
-
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                         rendertexture, 0);
-  GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
-  glDrawBuffers(1, DrawBuffers);
-  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-    logger::error("failed to create framebuffer");
-  }
-  glBindTexture(GL_TEXTURE_2D, 0);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-void gl_renderer::destroy_render_texture() {
-  glDeleteFramebuffers(1, &framebuffer);
-  glDeleteTextures(1, &rendertexture);
-  glDeleteRenderbuffers(1, &depthbuffer);
+  m_render_texture.prepare();
+  m_present_texture.prepare();
 }
 
 void gl_renderer::create_texture(texture handle) {
@@ -693,7 +674,6 @@ bool gl_renderer::load_shader() {
                                        "render_texture.frag")) {
     return false;
   }
-  render_texture_ubo.create(0, sizeof(gl_shader_parameter), &param);
   if (!m_shaders["Normal"].load("shader.vert", "shader.frag")) {
     return false;
   }

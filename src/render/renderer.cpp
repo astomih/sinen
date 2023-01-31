@@ -5,6 +5,7 @@
 #include <vertex/vertex_array.hpp>
 
 namespace sinen {
+bool renderer::offscreen_rendering = false;
 graphics_api renderer::get_graphics_api() {
   return render_system::get_graphics_api();
 }
@@ -89,4 +90,5 @@ std::list<std::function<void()>> &renderer::get_imgui_function() {
 void renderer::add_imgui_function(std::function<void()> function) {
   render_system::get_imgui_function().push_back(function);
 }
+void *renderer::get_texture_id() { return render_system::get_texture_id(); }
 } // namespace sinen

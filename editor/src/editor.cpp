@@ -38,8 +38,22 @@ static bool is_save_as = false;
 static char save_as_path[256] = "";
 static bool request_pop_func = false;
 void editor::inspector() {
-  ImGui::Begin("Inspector");
+  ImGui::Begin("Scene View");
+  ImVec2 uv_s, uv_e;
+  uv_s = ImVec2(0, 0);
+  uv_e = ImVec2(1, 1);
+  if (renderer::get_graphics_api() != graphics_api::Vulkan) {
+    uv_s = ImVec2(1, 1);
+    uv_e = ImVec2(0, 0);
+  }
+
+  ImGui::Image((void *)renderer::get_texture_id(),
+               ImVec2(ImGui::GetWindowWidth(), ImGui::GetWindowHeight() - 20));
+  ImGui::End();
   ImGuizmo::BeginFrame();
+  ImGuizmo::Enable(true);
+  ImGuizmo::SetRect(0, 0, window::size().x, window::size().y);
+  ImGui::Begin("Inspector");
   static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
   static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
   if (input::keyboard.is_key_pressed(key_code::T))
@@ -57,7 +71,6 @@ void editor::inspector() {
   ImGui::SameLine();
   if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
     mCurrentGizmoOperation = ImGuizmo::SCALE;
-  ImGuizmo::SetRect(0, 0, window::size().x, window::size().y);
   ImGuizmo::AllowAxisFlip(false);
   if (m_matrices.size() > 0) {
     ImGuizmo::Manipulate(scene::main_camera().view().get(),

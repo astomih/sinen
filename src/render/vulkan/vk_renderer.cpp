@@ -33,7 +33,8 @@ namespace sinen {
 constexpr int maxpoolSize = 65535;
 vk_renderer::vk_renderer()
     : m_descriptor_pool(), m_descriptor_set_layout(), m_sampler(),
-      m_base(std::make_unique<vk_base>(this)), m_render_texture(*this) {}
+      m_base(std::make_unique<vk_base>(this)), m_render_texture(*this),
+      m_present_texture(*this) {}
 vk_renderer::~vk_renderer() = default;
 void vk_renderer::initialize() {
   m_base->initialize();
@@ -47,6 +48,9 @@ void vk_renderer::shutdown() {
 void vk_renderer::render() {
   if (m_base->mSwapchain->is_need_recreate(window::size())) {
     m_base->recreate_swapchain();
+    m_present_texture.destroy_descriptor_set_for_imgui();
+    m_present_texture.window_resize(window::size().x, window::size().y);
+    m_present_texture.prepare_descriptor_set_for_imgui();
     m_render_texture.window_resize(window::size().x, window::size().y);
   }
   /* Skybox */
@@ -89,16 +93,46 @@ void vk_renderer::render() {
     vkCmdBeginRenderPass(command, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
     VkRect2D scissor = {{0, 0}, m_base->mSwapchain->GetSurfaceExtent()};
     vkCmdSetScissor(command, 0, 1, &scissor);
-    VkViewport viewport = {0,
-                           float(m_base->mSwapchain->GetSurfaceExtent().height),
-                           float(m_base->mSwapchain->GetSurfaceExtent().width),
-                           -float(m_base->mSwapchain->GetSurfaceExtent().height),
-                           0,
-                           1};
+    VkViewport viewport = {
+        0,
+        float(m_base->mSwapchain->GetSurfaceExtent().height),
+        float(m_base->mSwapchain->GetSurfaceExtent().width),
+        -float(m_base->mSwapchain->GetSurfaceExtent().height),
+        0,
+        1};
     vkCmdSetViewport(command, 0, 1, &viewport);
     make_command(command);
     vkCmdEndRenderPass(command);
     set_image_memory_barrier(command, m_render_texture.color_target.image,
+                             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  }
+
+  {
+    VkRenderPassBeginInfo renderPassBI{};
+    renderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassBI.renderPass = m_present_texture.render_pass;
+    renderPassBI.framebuffer = m_present_texture.fb;
+    renderPassBI.renderArea.offset = VkOffset2D{0, 0};
+    renderPassBI.renderArea.extent = m_base->mSwapchain->GetSurfaceExtent();
+    renderPassBI.pClearValues = clearValue.data();
+    renderPassBI.clearValueCount = uint32_t(clearValue.size());
+    vkCmdBeginRenderPass(command, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
+    VkRect2D scissor = {{0, 0}, m_base->mSwapchain->GetSurfaceExtent()};
+    vkCmdSetScissor(command, 0, 1, &scissor);
+    VkViewport viewport = {
+        0,
+        float(m_base->mSwapchain->GetSurfaceExtent().height),
+        float(m_base->mSwapchain->GetSurfaceExtent().width),
+        -float(m_base->mSwapchain->GetSurfaceExtent().height),
+        0,
+        1};
+    vkCmdSetViewport(command, 0, 1, &viewport);
+    render_to_display(command);
+    drawui(command);
+
+    vkCmdEndRenderPass(command);
+    set_image_memory_barrier(command, m_present_texture.color_target.image,
                              VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   }
@@ -115,7 +149,6 @@ void vk_renderer::render() {
 
     // Begin Render Pass
     vkCmdBeginRenderPass(command, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
-    render_to_display(command);
     VkViewport viewport = {
         0,
         float(m_base->mSwapchain->GetSurfaceExtent().height),
@@ -124,7 +157,33 @@ void vk_renderer::render() {
         0,
         1};
     vkCmdSetViewport(command, 0, 1, &viewport);
-    drawui(command);
+    if (!renderer::offscreen_rendering) {
+      m_present_texture.pipeline.Bind(command);
+      VkDeviceSize offset = 0;
+      auto &sprite = m_present_texture.drawer;
+      vkCmdBindVertexBuffers(command, 0, 1,
+                             &m_vertex_arrays["SPRITE"].vertexBuffer.buffer,
+                             &offset);
+      vkCmdBindIndexBuffer(command,
+                           m_vertex_arrays["SPRITE"].indexBuffer.buffer, offset,
+                           VK_INDEX_TYPE_UINT32);
+
+      // Set descriptors
+      vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                              m_pipeline_layout_normal.GetLayout(), 0, 1,
+                              &sprite.descriptor_sets[m_base->m_imageIndex], 0,
+                              nullptr);
+      auto allocation = sprite.uniformBuffers[m_base->m_imageIndex].allocation;
+
+      sprite.drawable_obj->param.proj = matrix4::identity;
+      sprite.drawable_obj->param.view = matrix4::identity;
+      sprite.drawable_obj->param.world = matrix4::identity;
+      write_memory(allocation, &sprite.drawable_obj->param,
+                   sizeof(vk_shader_parameter));
+
+      vkCmdDrawIndexed(command, m_vertex_arrays["SPRITE"].indexCount, 1, 0, 0,
+                       0);
+    }
     render_imgui(command);
     // End Render Pass
     vkCmdEndRenderPass(command);
@@ -398,12 +457,15 @@ void vk_renderer::prepare() {
       m_base->get_vk_device(), &m_descriptor_set_layout,
       m_base->mSwapchain->GetSurfaceExtent(), false);
   m_pipeline_layout_normal.prepare(m_base->get_vk_device());
+  m_present_texture.prepare(window::size().x, window::size().y, false);
   m_render_texture.prepare(window::size().x, window::size().y, false);
 
   vk_pipeline_builder pipeline_builder(
       m_base->get_vk_device(), m_pipeline_layout_instance,
-      m_pipeline_layout_normal, m_render_texture, m_base->m_renderPass);
+      m_pipeline_layout_normal, m_render_texture, m_present_texture,
+      m_base->m_renderPass);
   // render texture pipeline
+  pipeline_builder.present_texture_pipeline(m_present_texture.pipeline);
   pipeline_builder.render_texture_pipeline(m_render_texture.pipeline);
   vk_pipeline pipeline_skybox;
   vk_pipeline pipeline_opaque;
@@ -466,10 +528,12 @@ void vk_renderer::cleanup() {
     destroy_buffer(_instancing.instance_buffer);
   }
   m_instancies_3d.clear();
+  m_present_texture.prepare_descriptor_set_for_imgui();
   ImGui_ImplVulkan_Shutdown();
   ImGui_ImplSDL2_Shutdown();
   ImGui::DestroyContext();
 
+  m_present_texture.clear();
   m_render_texture.clear();
 
   for (auto &i : m_image_object) {
@@ -735,6 +799,7 @@ void vk_renderer::prepare_imgui() {
   vkDeviceWaitIdle(m_base->get_vk_device());
   vkFreeCommandBuffers(m_base->get_vk_device(), m_base->m_commandPool, 1,
                        &command);
+  m_present_texture.prepare_descriptor_set_for_imgui();
 }
 void vk_renderer::render_imgui(VkCommandBuffer command) {
   ImGui_ImplVulkan_NewFrame();

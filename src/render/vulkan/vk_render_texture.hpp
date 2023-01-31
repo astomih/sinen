@@ -1,8 +1,8 @@
 #ifndef SINEN_VK_RENDER_TEXTURE_HPP
 #define SINEN_VK_RENDER_TEXTURE_HPP
 #if !defined(EMSCRIPTEN) && !defined(ANDROID)
-#include "vk_image.hpp"
 #include "vk_drawable.hpp"
+#include "vk_image.hpp"
 #include "vk_pipeline.hpp"
 #include <vulkan/vulkan.h>
 
@@ -22,6 +22,8 @@ public:
   void destroy_image_object(vk_image &image_object);
   void create_frame_buffer(int width, int height);
   void destroy_frame_buffer();
+  void prepare_descriptor_set_for_imgui();
+  void destroy_descriptor_set_for_imgui();
 
   VkRenderPass render_pass;
   VkFramebuffer fb;
@@ -30,6 +32,7 @@ public:
   vk_image depth_target;
   vk_drawable drawer;
   VkDescriptorSetLayout descriptor_set_layout;
+  VkDescriptorSet imgui_descriptor_set;
   vk_pipeline pipeline;
 
 private:

@@ -93,9 +93,11 @@ public:
   void destroy_image(vk_image &imageObj);
   void write_memory(VmaAllocation, const void *data, std::size_t size,
                     std::size_t offset = 0);
+  void *get_texture_id() { return m_present_texture.imgui_descriptor_set; }
 
   VmaAllocator allocator{};
   vk_render_texture m_render_texture;
+  vk_render_texture m_present_texture;
 
 private:
   std::unique_ptr<class vk_base> m_base;

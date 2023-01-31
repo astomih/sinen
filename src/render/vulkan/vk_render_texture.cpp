@@ -2,6 +2,9 @@
 #include "vk_render_texture.hpp"
 #include "vk_renderer.hpp"
 #include <array>
+#include <imgui.h>
+#include <imgui_impl_sdl.h>
+#include <imgui_impl_vulkan.h>
 #include <vector>
 
 namespace sinen {
@@ -88,6 +91,7 @@ void vk_render_texture::prepare(int width, int height, bool depth_only) {
   create_frame_buffer(width, height);
   prepare_descriptor_set_layout();
   prepare_descriptor_set();
+  imgui_descriptor_set = VK_NULL_HANDLE;
 }
 void vk_render_texture::clear() {
   vkFreeDescriptorSets(m_vkrenderer.get_base().get_vk_device(),
@@ -309,6 +313,15 @@ void vk_render_texture::create_frame_buffer(int width, int height) {
 void vk_render_texture::destroy_frame_buffer() {
   vkDestroyFramebuffer(m_vkrenderer.get_base().get_vk_device(), this->fb,
                        nullptr);
+}
+void vk_render_texture::prepare_descriptor_set_for_imgui() {
+  imgui_descriptor_set = ImGui_ImplVulkan_AddTexture(
+      sampler, color_target.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+}
+void vk_render_texture::destroy_descriptor_set_for_imgui() {
+  if (imgui_descriptor_set != VK_NULL_HANDLE) {
+    ImGui_ImplVulkan_RemoveTexture(imgui_descriptor_set);
+  }
 }
 
 } // namespace sinen

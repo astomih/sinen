@@ -11,10 +11,12 @@ public:
                       vk_pipeline_layout &pipeline_layout_instance,
                       vk_pipeline_layout &pipeline_layout_normal,
                       vk_render_texture &render_texture,
+                      vk_render_texture &present_texture,
                       VkRenderPass &render_pass)
       : device(device), pipeline_layout_instance(pipeline_layout_instance),
         pipeline_layout_normal(pipeline_layout_normal),
-        render_texture(render_texture), render_pass(render_pass) {}
+        render_texture(render_texture), present_texture(present_texture),
+        render_pass(render_pass) {}
   void skybox(vk_pipeline &pipeline);
   void opaque(vk_pipeline &pipeline);
   void alpha(vk_pipeline &pipeline);
@@ -24,12 +26,14 @@ public:
   void instancing_alpha_2d(vk_pipeline &pipeline);
   void ui(vk_pipeline &pipeline);
   void render_texture_pipeline(vk_pipeline &pipeline);
+  void present_texture_pipeline(vk_pipeline &pipeline);
 
 private:
   VkDevice device;
   vk_pipeline_layout &pipeline_layout_instance;
   vk_pipeline_layout &pipeline_layout_normal;
   vk_render_texture &render_texture;
+  vk_render_texture &present_texture;
   VkRenderPass &render_pass;
 };
 

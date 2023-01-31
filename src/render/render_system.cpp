@@ -207,6 +207,16 @@ void render_system::unload_shader(const shader &shaderInfo) {
     m_gl_renderer->unload_shader(shaderInfo);
   }
 }
+void *render_system::get_texture_id() {
+#if !defined(EMSCRIPTEN) && !defined(ANDROID)
+  if (RendererAPI == graphics_api::Vulkan) {
+    return m_vk_renderer->get_texture_id();
+  }
+#endif
+  if (RendererAPI == graphics_api::OpenGL) {
+    return m_gl_renderer->get_texture_id();
+  }
+}
 
 void render_system::setup_shapes() {
   add_vertex_array(create_box_vertices(), vertex_default_shapes::box);

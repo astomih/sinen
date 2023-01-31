@@ -180,6 +180,8 @@ public:
    * @param function
    */
   static void add_imgui_function(std::function<void()> function);
+  static void *get_texture_id();
+  static bool offscreen_rendering;
 };
 
 } // namespace sinen

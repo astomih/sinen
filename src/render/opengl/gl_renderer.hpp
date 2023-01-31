@@ -16,6 +16,7 @@
 #endif
 // internal
 #include "gl_drawable.hpp"
+#include "gl_render_texture.hpp"
 #include "gl_shader.hpp"
 #include "gl_uniform_buffer.hpp"
 #include <drawable/drawable.hpp>
@@ -72,6 +73,9 @@ public:
   void draw2d(std::shared_ptr<class drawable> sprite);
   void draw3d(std::shared_ptr<class drawable> sprite);
   void drawui(std::shared_ptr<class drawable> sprite);
+  void *get_texture_id() {
+    return (void *)(std::intptr_t)m_present_texture.rendertexture;
+  }
 
   void load_shader(const shader &shaderInfo);
   void unload_shader(const shader &shaderInfo);
@@ -108,14 +112,8 @@ private:
   void draw_ui();
   void draw_instancing_2d();
   void draw_instancing_3d();
-  void create_render_texture();
-  void destroy_render_texture();
   void enable_vertex_attrib_array();
   void disable_vertex_attrib_array();
-
-  uint32_t framebuffer;
-  uint32_t rendertexture;
-  uint32_t depthbuffer;
 
   std::string vertexID;
 
@@ -130,9 +128,10 @@ private:
   std::vector<gl_drawable> m_drawer_3ds;
   std::vector<gl_instancing> m_instancing_2d;
   std::vector<gl_instancing> m_instancing_3d;
-  gl_uniform_buffer render_texture_ubo;
   float prev_window_x;
   float prev_window_y;
+  gl_render_texture m_render_texture;
+  gl_render_texture m_present_texture;
 };
 } // namespace sinen
 #endif // !SINEN_GL_RENDE

@@ -60,6 +60,7 @@ public:
   static void add_imgui_function(std::function<void()> function) {
     m_imgui_function.push_back(function);
   }
+  static void *get_texture_id();
 
 private:
   static std::unique_ptr<class gl_renderer> m_gl_renderer;

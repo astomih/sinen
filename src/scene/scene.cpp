@@ -4,7 +4,7 @@
 namespace sinen {
 camera scene::m_main_camera = []() {
   camera c;
-  c.lookat(vector3{0, -1, 10}, vector3{0, 1, 0}, vector3{0, 1, 0});
+  c.lookat(vector3{0, -1, 1}, vector3{0, 0, 0}, vector3{0, 0, 1});
   c.perspective(70.f, window::size().x / window::size().y, .1f, 1000.f);
   return c;
 }();

@@ -33,7 +33,7 @@ void font::unload() {
 
 void font::render_text(texture &tex, std::string_view text,
                        const color &_color) {
-  if(!is_load || !m_font){
+  if (!is_load || !m_font) {
     logger::error("Font is not loaded");
     return;
   }
@@ -44,6 +44,10 @@ void font::render_text(texture &tex, std::string_view text,
   sdlColor.g = static_cast<Uint8>(_color.g * 255);
   sdlColor.b = static_cast<Uint8>(_color.b * 255);
   sdlColor.a = static_cast<Uint8>(_color.a * 255);
+  if (sdlColor.a == 0) {
+    tex.fill_color(_color);
+    return ;
+  }
   auto *ttf_font = reinterpret_cast<::TTF_Font *>(m_font);
   auto *p = ::TTF_RenderUTF8_Blended_Wrapped(
       ttf_font, std::string(text).c_str(), sdlColor, 0);

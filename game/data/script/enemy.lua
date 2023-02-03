@@ -5,13 +5,13 @@ local r2 = 0
 local function decide_pos(map, map_size_x, map_size_y)
     r1 = math.random(1, map_size_x)
     r2 = math.random(1, map_size_y)
-    return map:at(r1, r2) == 1
+    return map:at(r1, r2) < MAP_CHIP_WALKABLE
 end
 
 local enemy = function()
     local object = {
         drawer = {},
-        speed = 4,
+        speed = 10,
         search_length = 15,
         model = {},
         hp = 30,
@@ -88,12 +88,29 @@ local enemy = function()
             if self.bfs:find_path(start, goal) then
                 local path = self.bfs:trace()
                 path = self.bfs:trace()
+
+                local dir = vector2(
+                    path.x * TILE_SIZE - self.drawer.position.x,
+                    path.y * TILE_SIZE - self.drawer.position.y)
+                if dir.x < -1 then
+                    dir.x = -1
+                end
+                if dir.x > 1 then
+                    dir.x = 1
+                end
+                if dir.y < -1 then
+                    dir.y = -1
+                end
+                if dir.y > 1 then
+                    dir.y = 1
+                end
+
                 self.drawer.position.x =
                 self.drawer.position.x +
-                    (path.x * TILE_SIZE - self.drawer.position.x) * delta_time * self.speed
+                    dir.x * delta_time * self.speed
                 self.drawer.position.y =
                 self.drawer.position.y +
-                    (path.y * TILE_SIZE - self.drawer.position.y) * delta_time * self.speed
+                    dir.y * delta_time * self.speed
 
             else
                 self.drawer.position.x =

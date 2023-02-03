@@ -80,18 +80,10 @@ public:
   }
 
   static float sin_0_1(const float periodSec,
-                       const float t = time::get_ticks_as_seconds()) {
-    const auto f = fmod(t, periodSec);
-    const auto x = f / (periodSec * (1.f / (2.f * pi)));
-    return sin(x) * 0.5f + 0.5f;
-  }
+                       const float t = time::get_ticks_as_seconds());
 
   static float cos_0_1(const float periodSec,
-                       const float t = time::get_ticks_as_seconds()) {
-    const auto f = fmod(t, periodSec);
-    const auto x = f / (periodSec * (1.f / (2.f * pi)));
-    return cos(x) * 0.5f + 0.5f;
-  }
+                       const float t = time::get_ticks_as_seconds());
 };
 } // namespace sinen
 #endif // !SINEN_MATH_HPP

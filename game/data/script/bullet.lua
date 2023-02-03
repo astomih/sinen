@@ -7,9 +7,9 @@ local effect = require "effect"
 m:load("bullet.sim", "bullet")
 local function bullet(map_draw3ds)
     local object = {
-        speed = 20,
+        speed = 40,
         drawer = {},
-        life_time = 0.5,
+        life_time = 0.25,
         current_time = 0,
         aabb = {},
         texture = {},

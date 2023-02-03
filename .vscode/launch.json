@@ -7,7 +7,7 @@
       "name": "Game",
       "program": "${workspaceFolder}/debug/game/game.exe",
       "args": [],
-      "cwd": "${workspaceFolder}/game"
+      "cwd": "${workspaceFolder}/demo"
     },
     {
       "type": "lldb",

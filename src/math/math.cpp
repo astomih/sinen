@@ -296,7 +296,16 @@ matrix4 matrix4::ortho(float width, float height, float near, float far) {
                       {0.0f, 0.0f, near / (near - far), 1.0f}};
   return matrix4(temp);
 }
-
+matrix4 matrix4::ortho(float left, float right, float bottom, float top,
+                       float near, float far) {
+  float temp[4][4] = {{2.0f / (right - left), 0.0f, 0.0f, 0.0f},
+                      {0.0f, 2.0f / (top - bottom), 0.0f, 0.0f},
+                      {0.0f, 0.0f, 1.0f / (far - near), 0.0f},
+                      {(left + right) / (left - right),
+                       (bottom + top) / (bottom - top), near / (near - far),
+                       1.0f}};
+  return matrix4(temp);
+}
 matrix4 matrix4::transpose(const matrix4 &m) {
   float mat[4][4];
 
@@ -425,6 +434,17 @@ vector3 quaternion::to_euler(const quaternion &r) {
   }
 
   return vector3(tx, ty, tz);
+}
+float math::sin_0_1(const float periodSec, const float t) {
+  const auto f = fmod(t, periodSec);
+  auto x = f / (periodSec * (1.f / (2.f * pi)));
+  return sin(x) * 0.5f + 0.5f;
+}
+
+float math::cos_0_1(const float periodSec, const float t) {
+  const auto f = fmod(t, periodSec);
+  const auto x = f / (periodSec * (1.f / (2.f * pi)));
+  return cos(x) * 0.5f + 0.5f;
 }
 
 } // namespace sinen

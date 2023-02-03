@@ -55,7 +55,7 @@ bool bfs_grid::find_path(const point2i &start, const point2i &end) {
       if (next_y < 0 || next_y >= height() || next_x < 0 || next_x >= width())
         continue;
       // Not walkable node
-      if (m_field[next_y][next_x] == 1)
+      if (m_field[next_y][next_x] < 0)
         continue;
 
       // If next node is not visited, set as visited and push to queue

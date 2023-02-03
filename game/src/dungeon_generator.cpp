@@ -2,6 +2,8 @@
 #include "corridor.hpp"
 #include "room.hpp"
 #include <sinen/graph/bfs_grid.hpp>
+#include <sinen/script/script.hpp>
+#include <sol/sol.hpp>
 
 namespace dts {
 void dungeon_generator(sinen::grid<int> &grid) {
@@ -11,8 +13,13 @@ void dungeon_generator(sinen::grid<int> &grid) {
       return;
     }
     sinen::point2i grid_size{grid.width(), grid.height()};
-    int floor = 0;
-    int wall = 1;
+    sol::state &lua = *(sol::state *)sinen::script::get_state();
+    auto map_chip = lua["MAP_CHIP"];
+    int floor = map_chip["FLOOR"];
+    int wall = map_chip["WALL"];
+    int player = map_chip["PLAYER"];
+    int key = map_chip["KEY"];
+    int stair = map_chip["STAIR"];
 
     int minimum_room_number = 5;
     int maximum_room_number = 14;
@@ -45,30 +52,30 @@ void dungeon_generator(sinen::grid<int> &grid) {
     sinen::point2i stairs = rooms[rooms.size() - 1].get_position();
     stairs.x += rooms[rooms.size() - 1].get_size().x / 2;
     stairs.y += rooms[rooms.size() - 1].get_size().y / 2;
-    grid[stairs.y][stairs.x] = 2;
+    grid[stairs.y][stairs.x] = stair;
     // Set the key position
-    sinen::point2i key = rooms[rooms.size() / 2].get_position();
-    key.x += rooms[rooms.size() / 2].get_size().x / 2;
-    key.y += rooms[rooms.size() / 2].get_size().y / 2;
-    grid[key.y][key.x] = 3;
+    sinen::point2i keys = rooms[rooms.size() / 2].get_position();
+    keys.x += rooms[rooms.size() / 2].get_size().x / 2;
+    keys.y += rooms[rooms.size() / 2].get_size().y / 2;
+    grid[keys.y][keys.x] = key;
     // Set the player start position
     sinen::point2i player_start = rooms[0].get_position();
     player_start.x += rooms[0].get_size().x / 2;
     player_start.y += rooms[0].get_size().y / 2;
-    grid[player_start.y][player_start.x] = 4;
+    grid[player_start.y][player_start.x] = player;
     ///////////////////////////////////////////////////////
 
     corridor c;
     c.connect(grid, rooms, floor);
     {
       sinen::bfs_grid bfs(grid);
-      if (!bfs.find_path(player_start, key)) {
+      if (!bfs.find_path(player_start, keys)) {
         recreate = true;
       }
     }
     {
       sinen::bfs_grid bfs(grid);
-      if (!bfs.find_path(key, stairs)) {
+      if (!bfs.find_path(keys, stairs)) {
         recreate = true;
       }
     }

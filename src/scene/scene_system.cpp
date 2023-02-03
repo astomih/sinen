@@ -62,7 +62,6 @@ void scene_system::setup() {
     std::string str = data_stream::open_as_string(
         asset_type::Script, main::get_current_scene_number() + ".lua");
     lua->do_string(str.data());
-    (*lua)["Setup"]();
   }
   m_impl->setup();
   m_game_state = scene::state::running;
@@ -74,7 +73,6 @@ void scene_system::run_loop() {
   update_scene();
   input_system::prepare_for_update();
   input_system::update();
-  // Draw sprites, meshes
   render_system::render();
 }
 
@@ -113,8 +111,9 @@ void scene_system::update_scene() {
   }
   // calc delta time
   float deltaTime = (SDL_GetTicks() - m_prev_tick) / 1000.0f;
-  if (deltaTime > 0.05f) {
-    deltaTime = 0.05f;
+  constexpr float MAX_DELTA_TIME = 1.f / 60.f;
+  if (deltaTime > MAX_DELTA_TIME) {
+    deltaTime = MAX_DELTA_TIME;
   }
   m_prev_tick = SDL_GetTicks();
   for (auto itr = m_actors.begin(); itr != m_actors.end();) {
@@ -125,7 +124,7 @@ void scene_system::update_scene() {
                       data_stream::open_as_string(asset_type::Script,
                                                   (*itr)->get_script_name()))
                    .as<sol::table>();
-      r["Update"]();
+      r["update"]();
       (*itr)->update(deltaTime);
 
       itr++;
@@ -141,7 +140,7 @@ void scene_system::update_scene() {
     (*lua)["delta_time"] = deltaTime;
     (*lua)["keyboard"] = input::keyboard;
     (*lua)["mouse"] = input::mouse;
-    (*lua)["Update"]();
+    (*lua)["update"]();
   }
   m_impl->update(deltaTime);
   sound_system::update(deltaTime);

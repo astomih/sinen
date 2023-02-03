@@ -48,23 +48,34 @@ void write_indices(std::string &write_data, sinen::assimp_model &model);
 #ifdef main
 #undef main
 #endif
+void show_help() {
+  std::cout << "Usage: model_converter.exe model_path [options]" << std::endl;
+  std::cout << "Options:" << std::endl;
+  std::cout << "  z: convert to z-up mode" << std::endl;
+  std::cout << "  cpp: convert to cpp mode" << std::endl;
+  std::string s;
+  std::getline(std::cin, s);
+}
 int main(int argc, char *argv[]) {
   if (argc < 2) {
     std::cerr << "Please input model path." << std::endl;
-    std::string s;
-    std::getline(std::cin, s);
+    show_help();
     return -1;
   }
   sinen::assimp_model model;
   if (!model.load_from_file(argv[1])) {
-    std::string s;
-    std::getline(std::cin, s);
+    show_help();
   }
-  if (argc > 2 && std::string(argv[2]) == "z") {
-    z_mode = true;
-  }
-  if (argc > 2 && std::string(argv[2]) == "cpp") {
-    cpp_mode = true;
+  for (int i = 2; i < argc; i++) {
+    if (std::string(argv[i]) == "z") {
+      z_mode = true;
+    } else if (std::string(argv[i]) == "cpp") {
+      cpp_mode = true;
+    } else {
+      std::cerr << "Unknown option: " << argv[i] << std::endl;
+      show_help();
+      return -1;
+    }
   }
 
   std::string write_data;

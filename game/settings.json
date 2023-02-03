@@ -1,5 +1,5 @@
 {
-  "GraphicsAPI": "Vulkan",
+  "GraphicsAPI": "OpenGL",
   "WindowWidth": 1280,
   "WindowHeight": 720
 }

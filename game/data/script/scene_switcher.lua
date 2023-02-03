@@ -22,10 +22,14 @@ local scene_switcher = function()
             if t > 1.0 then
               t = 1.0
             end
+            if t < 0.0 then
+              t = 1.0
+            end
             self.texture:fill_color(color(self.color.r, self.color.g, self.color.b, t))
             self.drawer:draw()
           else
             self.timer = 0
+            self.texture:fill_color(color(self.color.r, self.color.g, self.color.b, 1.0))
             self.flag = false
             self.drawer:draw()
             change_scene(self.scene_name)
@@ -49,8 +53,8 @@ local scene_switcher = function()
         end
       end
     end,
-    start = function(self, is_launch, scene_name)
-      self.is_launch = is_launch
+    start = function(self, scene_name)
+      self.is_launch = string.len(scene_name) == 0
       if self.is_launch then
         self.texture:fill_color(color(self.color.r, self.color.g, self.color.b, 1.0))
         self.flag = false

@@ -51,7 +51,8 @@
     "keyTAB",
     "keyQ",
     "keyF11",
-    "drawui"
+    "drawui",
+    "update"
   ],
   "Lua.completion.autoRequire": false,
   "Lua.diagnostics.disable": [

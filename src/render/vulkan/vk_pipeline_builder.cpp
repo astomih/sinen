@@ -29,7 +29,8 @@ void vk_pipeline_builder::opaque(vk_pipeline &pipeline) {
   pipeline.initialize(pipeline_layout_normal, render_texture.render_pass,
                       shaderStages);
   pipeline.color_blend_factor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
-  pipeline.alpha_blend_factor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
+  pipeline.alpha_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
+                              VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
   pipeline.prepare(device);
   vk_shader::clean(device, shaderStages);
 }
@@ -75,7 +76,8 @@ void vk_pipeline_builder::instancing_opaque(vk_pipeline &pipeline) {
   pipeline.initialize(pipeline_layout_instance, render_texture.render_pass,
                       shaderStages);
   pipeline.color_blend_factor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
-  pipeline.alpha_blend_factor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
+  pipeline.alpha_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
+                              VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
   pipeline.prepare(device);
   vk_shader::clean(device, shaderStages);
 }

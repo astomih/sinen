@@ -48,6 +48,7 @@ bool script_engine::initialize(sol::state &lua) {
           q, quaternion(vector3::unit_x, math::to_radians(rotation.x)));
       return vector3::transform(v, q);
     };
+    v["normalize"] = [](const vector3 &v) { return vector3::normalize(v); };
   }
   {
     auto v = lua.new_usertype<vector2>("", sol::no_construction());
@@ -58,6 +59,7 @@ bool script_engine::initialize(sol::state &lua) {
     v["mul"] = &vector2::mul;
     v["div"] = &vector2::div;
     v["length"] = &vector2::length;
+    v["normalize"] = [](const vector2 &v) { return vector2::normalize(v); };
   }
   {
     auto v = lua.new_usertype<point2i>("", sol::no_construction());

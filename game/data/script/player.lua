@@ -94,8 +94,6 @@ local player = {
         self.boost_sound:load("boost.wav")
         self.boost_sound:set_volume(0.2)
 
-
-
     end,
     horizontal = math.pi,
     vertical = 0.0,

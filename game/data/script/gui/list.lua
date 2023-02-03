@@ -1,6 +1,6 @@
 local sound = sound()
 sound:load("text_sound.wav")
-local function gui_list()
+local function list()
     local object = {
         num = 5,
         list_space = 100,
@@ -16,6 +16,7 @@ local function gui_list()
 
         select_frame_tex = {},
         select_frame_drawer = {},
+        selecting = false,
         selecting_index = 0,
 
         hide = false,
@@ -60,6 +61,7 @@ local function gui_list()
             mpos.x = mpos.x - scene.center().x
             mpos.y = -(mpos.y - scene.center().y)
             self.selecting_index = 0
+            self.selecting = false
             for i = 1, self.num do
                 local scale = self.drawers[i].scale
                 local pos = self.drawers[i].position
@@ -72,13 +74,14 @@ local function gui_list()
                     mpos.y <= pos.y + scale.y / 2
                 then
                     self.selecting_index = i
+                    self.selecting = true
 
                 end
             end
         end,
         draw = function(self)
             if not self.hide then
-                if self.selecting_index > 0 then
+                if self.selecting then
                     self.select_frame_drawer.position =
                     self.drawers[self.selecting_index].position
                     self.select_frame_drawer:draw()
@@ -94,4 +97,4 @@ local function gui_list()
     return object
 end
 
-return gui_list
+return list

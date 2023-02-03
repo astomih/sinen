@@ -201,6 +201,9 @@ public:
 
   static matrix4 ortho(float width, float height, float near, float far);
 
+  static matrix4 ortho(float left, float right, float bottom, float top,
+                       float near, float far);
+
   static const matrix4 identity;
 };
 } // namespace sinen

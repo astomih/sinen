@@ -43,7 +43,7 @@ gl_renderer::~gl_renderer() = default;
 void gl_renderer::initialize() {
   mContext = SDL_GL_CreateContext(window_system::get_sdl_window());
   SDL_GL_MakeCurrent(window_system::get_sdl_window(), mContext);
-  if (!SDL_GL_SetSwapInterval(1)) {
+  if (SDL_GL_SetSwapInterval(1) == -1) {
     SDL_GL_SetSwapInterval(0);
   }
   prev_window_x = window_system::size().x;
@@ -106,7 +106,8 @@ void gl_renderer::render() {
   glEnable(GL_BLEND);
   glDisable(GL_DEPTH_TEST);
   glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-  glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+  glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA,
+                      GL_ONE_MINUS_SRC_ALPHA);
   disable_vertex_attrib_array();
   draw_skybox();
   glDisable(GL_BLEND);

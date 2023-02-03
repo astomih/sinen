@@ -9,6 +9,7 @@ uniform Matrices {
   mat4 world;
   mat4 view;
   mat4 proj;
+  mat4 user;
 };
 // Normal (in world space)
 out vec3 fragNormal;

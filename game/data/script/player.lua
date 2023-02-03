@@ -13,6 +13,16 @@ local function decide_pos(map, map_size_x, map_size_y)
     return map:at(r1, r2) == 1
 end
 
+local function sin01(period_sec, time)
+    local x = math.fmod(time, period_sec)
+    x = x / (period_sec * (1.0 / (2.0 * math.pi)))
+    x = math.sin(x) * 0.5 + 0.5
+    if x < 0.0 then
+        x = 0.0
+    end
+    return x
+end
+
 local player = {
     drawer = {},
     model = {},
@@ -49,6 +59,7 @@ local player = {
     orbit_toggle = true,
     speed_min = 6.0,
     speed_max = 16.0,
+    blur_time = 0.0,
     setup = function(self, map, map_size_x, map_size_y)
         self.model = model()
         self.model:load("triangle.sim", "player")
@@ -146,7 +157,13 @@ local player = {
                 self.boost_timer = 0.0
                 self.boost = 0.0
                 self.is_boost = false
+                renderer.at_render_texture_user_data(0, 0.0)
             else
+                local t = sin01(self.boost_time * 2.0, self.boost_timer) - 0.5
+                t = t * 0.2
+
+                print(t)
+                renderer.at_render_texture_user_data(0, t)
                 self.boost_timer = self.boost_timer + delta_time
             end
         else

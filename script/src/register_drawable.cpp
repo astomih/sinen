@@ -25,6 +25,7 @@ void register_drawable(sol::state &lua) {
     v["scale"] = &draw2d::scale;
     v["texture"] = &draw2d::texture_handle;
     v["vertex_name"] = &draw2d::vertex_name;
+    v["user_data_at"] = &draw2d::user_data_at;
   }
   {
     auto v = lua.new_usertype<drawui>("", sol::no_construction());
@@ -34,6 +35,7 @@ void register_drawable(sol::state &lua) {
     v["scale"] = &drawui::scale;
     v["texture"] = &drawui::texture_handle;
     v["vertex_name"] = &drawui::vertex_name;
+    v["user_data_at"] = &drawui::user_data_at;
   }
   {
     auto v = lua.new_usertype<draw3d>("", sol::no_construction());
@@ -44,6 +46,7 @@ void register_drawable(sol::state &lua) {
     v["draw"] = &draw3d::draw;
     v["vertex_name"] = &draw3d::vertex_name;
     v["is_draw_depth"] = &draw3d::is_draw_depth;
+    v["user_data_at"] = &draw3d::user_data_at;
   }
   {
     auto v = lua.new_usertype<draw2d_instancing>("", sol::no_construction());
@@ -53,6 +56,7 @@ void register_drawable(sol::state &lua) {
     v["clear"] = &draw2d_instancing::clear;
     v["texture"] = &draw2d_instancing::texture_handle;
     v["vertex_name"] = &draw2d_instancing::vertex_name;
+    v["user_data_at"] = &draw2d_instancing::user_data_at;
   }
   {
     auto v = lua.new_usertype<draw3d_instancing>("", sol::no_construction());
@@ -63,6 +67,7 @@ void register_drawable(sol::state &lua) {
     v["texture"] = &draw3d_instancing::texture_handle;
     v["vertex_name"] = &draw3d_instancing::vertex_name;
     v["is_draw_depth"] = &draw3d_instancing::is_draw_depth;
+    v["user_data_at"] = &draw3d_instancing::user_data_at;
   }
 }
 } // namespace sinen

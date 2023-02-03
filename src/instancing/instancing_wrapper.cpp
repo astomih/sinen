@@ -9,12 +9,12 @@ namespace sinen {
 draw2d_instancing::draw2d_instancing(texture texture_handle)
     : texture_handle(texture_handle) {
   vertex_name = "SPRITE";
+  this->obj = std::make_shared<drawable>();
 }
 
 void draw2d_instancing::draw() {
 
   instancing _instancing;
-  auto obj = std::make_shared<drawable>();
   obj->binding_texture = this->texture_handle;
   obj->vertexIndex = this->vertex_name;
   matrix4 viewproj = matrix4::identity;
@@ -54,14 +54,17 @@ void draw2d_instancing::at(const int &index, const vector2 &position,
   this->worlds[index] = {position, rotation, scale};
 }
 void draw2d_instancing::clear() { this->worlds.clear(); }
+void draw2d_instancing::user_data_at(int index, float value) {
+  this->obj->param.user.mat.m16[index] = value;
+}
 
 draw3d_instancing::draw3d_instancing(texture texture_handle)
     : texture_handle(texture_handle) {
   vertex_name = "SPRITE";
+  this->obj = std::make_shared<drawable>();
 }
 void draw3d_instancing::draw() {
   instancing _instancing;
-  auto obj = std::make_shared<drawable>();
   obj->binding_texture = this->texture_handle;
   obj->vertexIndex = this->vertex_name;
   obj->param.proj = scene::main_camera().projection();
@@ -90,4 +93,7 @@ void draw3d_instancing::at(const int &index, const vector3 &position,
   this->worlds[index] = {position, rotation, scale};
 }
 void draw3d_instancing::clear() { this->worlds.clear(); }
+void draw3d_instancing::user_data_at(int index, float value) {
+  this->obj->param.user.mat.m16[index] = value;
+}
 } // namespace sinen

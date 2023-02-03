@@ -354,7 +354,8 @@ void vk_renderer::add_instancing(const instancing &_instancing) {
   for (auto &v : t->uniformBuffers) {
     VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                      VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-    v = create_buffer(sizeof(vk_shader_parameter),
+    v = create_buffer(sizeof(vk_shader_parameter) +
+                          t->get_shader().get_parameter_size(),
                       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
   }
   prepare_descriptor_set(t);
@@ -722,6 +723,7 @@ void vk_renderer::render_to_display(VkCommandBuffer command) {
   sprite.drawable_obj->param.proj = matrix4::identity;
   sprite.drawable_obj->param.view = matrix4::identity;
   sprite.drawable_obj->param.world = matrix4::identity;
+  sprite.drawable_obj->param.user = renderer::render_texture_user_data;
   write_memory(allocation, &sprite.drawable_obj->param,
                sizeof(vk_shader_parameter));
 

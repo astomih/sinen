@@ -6,9 +6,9 @@ layout(location = 1) in vec4 inColor;
 layout(location = 0) out vec4 outColor;
 layout(set = 0, binding = 1) uniform sampler2D diffuseMap;
 // Normal (in world space)
-layout(location = 3) in vec3 fragNormal;
+layout(location = 2) in vec3 fragNormal;
 // Position (in world space)
-layout(location = 4) in vec3 fragWorldPos;
+layout(location = 3) in vec3 fragWorldPos;
 layout(set = 0, binding = 0) uniform Matrices {
   mat4 world;
   mat4 view;

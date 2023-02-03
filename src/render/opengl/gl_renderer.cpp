@@ -116,7 +116,6 @@ void gl_renderer::render() {
   enable_vertex_attrib_array();
   draw_instancing_3d();
   glDisable(GL_DEPTH_TEST);
-  gl_shader_parameter param;
 
   glEnable(GL_BLEND);
   glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
@@ -127,12 +126,14 @@ void gl_renderer::render() {
   draw_instancing_2d();
   glFlush();
   {
+    gl_shader_parameter param;
     m_present_texture.bind();
     glBindVertexArray(m_VertexArrays["SPRITE"].vao);
     glBindTexture(GL_TEXTURE_2D, m_render_texture.rendertexture);
     m_shaders["RenderTexture"].active(0);
 
     m_render_texture.ubo.bind(m_shaders["RenderTexture"].program());
+    param.param.user = renderer::render_texture_user_data;
     m_render_texture.ubo.update(sizeof(gl_shader_parameter), &param, 0);
     disable_vertex_attrib_array();
     glDrawElements(GL_TRIANGLES, m_VertexArrays["SPRITE"].indices.size(),
@@ -141,6 +142,7 @@ void gl_renderer::render() {
   }
   glFlush();
   {
+    gl_shader_parameter param;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     if (!renderer::offscreen_rendering) {
       glBindVertexArray(m_VertexArrays["SPRITE"].vao);

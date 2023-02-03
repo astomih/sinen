@@ -14,9 +14,9 @@ local scene_switcher = function()
     end,
     update = function(self, draw_func)
       if self.flag then
+        draw_func()
         if not self.is_launch then
           if self.timer < self.time then
-            draw_func()
             self.timer = self.timer + delta_time
             local t = self.timer * (1.0 / self.time)
             if t > 1.0 then
@@ -36,7 +36,6 @@ local scene_switcher = function()
           end
         else
           if self.timer > 0.0 then
-            draw_func()
             self.timer = self.timer - delta_time
             local t = self.timer * (1.0 / self.time)
             if t < 0.0 then

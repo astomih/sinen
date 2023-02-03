@@ -3,7 +3,6 @@
 #include "../math/vector2.hpp"
 #include "../math/vector3.hpp"
 #include "../texture/texture.hpp"
-#include "../utility/handle_t.hpp"
 #include "drawable.hpp"
 
 namespace sinen {
@@ -29,6 +28,13 @@ public:
    *
    */
   void draw();
+  /**
+   * @brief Set user data
+   *
+   * @param index Index of user data 0-16
+   * @param value Value of user data
+   */
+  void user_data_at(int index, float value);
   vector2 position;
   float rotation;
   vector2 scale;
@@ -58,6 +64,13 @@ public:
    *
    */
   void draw();
+  /**
+   * @brief Set user data
+   *
+   * @param index Index of user data 0-16
+   * @param value Value of user data
+   */
+  void user_data_at(int index, float value);
   vector2 position;
   float rotation;
   vector2 scale;
@@ -87,6 +100,13 @@ public:
    *
    */
   void draw();
+  /**
+   * @brief Set user data
+   *
+   * @param index Index of user data 0-16
+   * @param value Value of user data
+   */
+  void user_data_at(int index, float value);
   vector3 position;
   vector3 rotation;
   vector3 scale;

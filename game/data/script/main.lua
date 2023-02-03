@@ -35,9 +35,7 @@ scene_switcher:setup()
 scene_switcher:start("")
 
 
-local draw = function()
-
-end
+local draw = function() end
 
 
 function update()

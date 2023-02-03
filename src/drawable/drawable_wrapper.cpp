@@ -89,4 +89,13 @@ void draw3d::draw() {
   renderer::draw3d(obj);
   *this->texture_handle.is_need_update = false;
 }
+void drawui::user_data_at(int index, float value) {
+  obj->param.user.mat.m16[index] = value;
+}
+void draw2d::user_data_at(int index, float value) {
+  obj->param.user.mat.m16[index] = value;
+}
+void draw3d::user_data_at(int index, float value) {
+  obj->param.user.mat.m16[index] = value;
+}
 } // namespace sinen

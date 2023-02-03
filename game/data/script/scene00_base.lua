@@ -16,7 +16,7 @@ local stair = {}
 local tree = model()
 local music = music()
 local tile = texture()
-tile:fill_color(color(0.5, 0.25, 0.25, 1))
+tile:fill_color(color(0.416, 0.204, 0.153, 1))
 
 local score_font = font()
 local score_texture = texture()

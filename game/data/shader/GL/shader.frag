@@ -2,9 +2,7 @@ precision mediump float;
 uniform sampler2D diffuseMap;
 in vec2 outUV;
 in vec4 outRgba;
-// Normal (in world space)
 in vec3 fragNormal;
-// Position (in world space)
 in vec3 fragWorldPos;
 out vec4 outColor;
 

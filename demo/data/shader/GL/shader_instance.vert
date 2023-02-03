@@ -9,15 +9,15 @@ layout(location = 6) in vec4 m3;
 layout(location = 7) in vec4 m4;
 out vec2 outUV;
 out vec4 outRgba;
+out vec3 fragNormal;
+out vec3 fragWorldPos;
+out mat4 outUser;
 uniform Matrices {
   mat4 world;
   mat4 view;
   mat4 proj;
+  mat4 user;
 };
-// Normal (in world space)
-out vec3 fragNormal;
-// Position (in world space)
-out vec3 fragWorldPos;
 void main() {
   mat4 inworldmat;
   inworldmat[0] = m1;
@@ -30,4 +30,5 @@ void main() {
   fragNormal = (inworldmat * vec4(inNormal, 0.0)).xyz;
   outUV = inUV;
   outRgba = inRgba;
+  outUser = user;
 }

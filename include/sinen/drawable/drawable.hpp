@@ -26,9 +26,14 @@ struct drawable {
    *
    */
   struct parameter {
+    parameter() {
+      float data[16] = {};
+      user = matrix4(data);
+    }
     matrix4 world;
     matrix4 view;
     matrix4 proj;
+    matrix4 user;
   };
   // parameter
   parameter param;

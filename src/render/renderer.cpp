@@ -6,6 +6,7 @@
 
 namespace sinen {
 bool renderer::offscreen_rendering = false;
+matrix4 renderer::render_texture_user_data;
 graphics_api renderer::get_graphics_api() {
   return render_system::get_graphics_api();
 }

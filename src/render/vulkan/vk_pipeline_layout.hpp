@@ -24,9 +24,6 @@ public:
   const VkPipelineRasterizationStateCreateInfo *GetRasterizerCI() {
     return &rasterizerCI;
   };
-  const VkPipelineMultisampleStateCreateInfo *GetMultisampleCI() {
-    return &multisampleCI;
-  };
   const VkPipelineDepthStencilStateCreateInfo *GetDepthStencilCI() {
     return &depthStencilCI;
   };
@@ -59,7 +56,6 @@ private:
   VkPipelineViewportStateCreateInfo viewportCI;
   VkPipelineInputAssemblyStateCreateInfo inputAssemblyCI;
   VkPipelineRasterizationStateCreateInfo rasterizerCI;
-  VkPipelineMultisampleStateCreateInfo multisampleCI;
   VkPipelineDepthStencilStateCreateInfo depthStencilCI;
   VkPipelineLayoutCreateInfo pipelineLayoutCI;
   VkPipelineDynamicStateCreateInfo pipelineDynamicStateCI;

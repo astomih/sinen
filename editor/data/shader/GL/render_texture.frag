@@ -4,11 +4,10 @@ in vec4 outRgba;
 in mat4 outUser;
 out vec4 outColor;
 uniform sampler2D diffuseMap;
-vec4 GetRadialBlurredColor(sampler2D texture, vec2 uv_coord,
-                           vec2 center_uv_coord, float blur_length,
-                           int blur_sample_count) {
+vec4 GetRadialBlurredColor(sampler2D t, vec2 uv_coord, vec2 center_uv_coord,
+                           float blur_length, int blur_sample_count) {
   if (blur_length == 0.0)
-    return texture2D(texture, uv_coord);
+    return texture(t, uv_coord);
   vec2 vec_to_center = uv_coord - center_uv_coord;
   float distance =
       sqrt(uv_coord.x * uv_coord.x + center_uv_coord.y * center_uv_coord.y);
@@ -21,7 +20,7 @@ vec4 GetRadialBlurredColor(sampler2D texture, vec2 uv_coord,
     float ratio = float(i) * mult;
     vec2 fetch_uv_coord = uv_coord - vec_to_target * ratio;
     float weight = 1.0 - ratio * ratio;
-    sum_color += texture2D(texture, fetch_uv_coord).rgb * weight;
+    sum_color += texture(t, fetch_uv_coord).rgb * weight;
     sum_weight += weight;
   }
 

@@ -11,6 +11,7 @@ void vk_pipeline_builder::skybox(vk_pipeline &pipeline) {
                       VK_SHADER_STAGE_FRAGMENT_BIT)};
   pipeline.initialize(pipeline_layout_normal, render_texture.render_pass,
                       shaderStages);
+  pipeline.set_sample_count(VK_SAMPLE_COUNT_4_BIT);
 
   pipeline.color_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
                               VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
@@ -28,6 +29,7 @@ void vk_pipeline_builder::opaque(vk_pipeline &pipeline) {
                       VK_SHADER_STAGE_FRAGMENT_BIT)};
   pipeline.initialize(pipeline_layout_normal, render_texture.render_pass,
                       shaderStages);
+  pipeline.set_sample_count(VK_SAMPLE_COUNT_4_BIT);
   pipeline.color_blend_factor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
   pipeline.alpha_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
                               VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
@@ -41,6 +43,7 @@ void vk_pipeline_builder::alpha(vk_pipeline &pipeline) {
                       VK_SHADER_STAGE_FRAGMENT_BIT)};
   pipeline.initialize(pipeline_layout_normal, render_texture.render_pass,
                       shaderStages);
+  pipeline.set_sample_count(VK_SAMPLE_COUNT_4_BIT);
   pipeline.color_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
                               VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
   pipeline.alpha_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
@@ -57,6 +60,7 @@ void vk_pipeline_builder::alpha_2d(vk_pipeline &pipeline) {
                       VK_SHADER_STAGE_FRAGMENT_BIT)};
   pipeline.initialize(pipeline_layout_normal, render_texture.render_pass,
                       shaderStages);
+  pipeline.set_sample_count(VK_SAMPLE_COUNT_4_BIT);
 
   pipeline.color_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
                               VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
@@ -75,6 +79,7 @@ void vk_pipeline_builder::instancing_opaque(vk_pipeline &pipeline) {
                       VK_SHADER_STAGE_FRAGMENT_BIT)};
   pipeline.initialize(pipeline_layout_instance, render_texture.render_pass,
                       shaderStages);
+  pipeline.set_sample_count(VK_SAMPLE_COUNT_4_BIT);
   pipeline.color_blend_factor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
   pipeline.alpha_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
                               VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
@@ -89,6 +94,7 @@ void vk_pipeline_builder::instancing_alpha(vk_pipeline &pipeline) {
                       VK_SHADER_STAGE_FRAGMENT_BIT)};
   pipeline.initialize(pipeline_layout_instance, render_texture.render_pass,
                       shaderStages);
+  pipeline.set_sample_count(VK_SAMPLE_COUNT_4_BIT);
   pipeline.color_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
                               VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
   pipeline.alpha_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
@@ -106,6 +112,7 @@ void vk_pipeline_builder::instancing_alpha_2d(vk_pipeline &pipeline) {
                       VK_SHADER_STAGE_FRAGMENT_BIT)};
   pipeline.initialize(pipeline_layout_instance, render_texture.render_pass,
                       shaderStages);
+  pipeline.set_sample_count(VK_SAMPLE_COUNT_4_BIT);
   pipeline.color_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
                               VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
   pipeline.alpha_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
@@ -120,8 +127,7 @@ void vk_pipeline_builder::ui(vk_pipeline &pipeline) {
       vk_shader::load(device, "shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
       vk_shader::load(device, "shaderAlpha.frag.spv",
                       VK_SHADER_STAGE_FRAGMENT_BIT)};
-  pipeline.initialize(pipeline_layout_normal, present_texture.render_pass,
-                      shaderStages);
+  pipeline.initialize(pipeline_layout_normal, render_pass, shaderStages);
 
   pipeline.color_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
                               VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);

@@ -125,22 +125,11 @@ void gl_renderer::render() {
   enable_vertex_attrib_array();
   draw_instancing_2d();
   glFlush();
-  {
-    gl_shader_parameter param;
-    m_present_texture.bind();
-    glBindVertexArray(m_VertexArrays["SPRITE"].vao);
-    glBindTexture(GL_TEXTURE_2D, m_render_texture.rendertexture);
-    m_shaders["RenderTexture"].active(0);
-
-    m_render_texture.ubo.bind(m_shaders["RenderTexture"].program());
-    param.param.user = renderer::render_texture_user_data;
-    m_render_texture.ubo.update(sizeof(gl_shader_parameter), &param, 0);
-    disable_vertex_attrib_array();
-    glDrawElements(GL_TRIANGLES, m_VertexArrays["SPRITE"].indices.size(),
-                   GL_UNSIGNED_INT, nullptr);
-    draw_ui();
-  }
-  glFlush();
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_present_texture.framebuffer);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_render_texture.framebuffer);
+  auto size = window_system::size();
+  glBlitFramebuffer(0, 0, size.x, size.y, 0, 0, size.x, size.y,
+                    GL_COLOR_BUFFER_BIT, GL_NEAREST);
   {
     gl_shader_parameter param;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -150,11 +139,13 @@ void gl_renderer::render() {
       m_shaders["RenderTexture"].active(0);
 
       m_present_texture.ubo.bind(m_shaders["RenderTexture"].program());
+      param.param.user = renderer::render_texture_user_data;
       m_present_texture.ubo.update(sizeof(gl_shader_parameter), &param, 0);
       disable_vertex_attrib_array();
       glDrawElements(GL_TRIANGLES, m_VertexArrays["SPRITE"].indices.size(),
                      GL_UNSIGNED_INT, nullptr);
     }
+    draw_ui();
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame(window_system::get_sdl_window());
     ImGui::NewFrame();
@@ -622,6 +613,7 @@ void gl_renderer::prepare() {
   if (!load_shader()) {
     logger::error("failed to loads shader");
   }
+  m_render_texture.is_MSAA = true;
   m_render_texture.prepare();
   m_present_texture.prepare();
 }

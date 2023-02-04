@@ -1,6 +1,5 @@
 #include <cstddef>
 #if !defined(EMSCRIPTEN) && !defined(ANDROID)
-#include "vk_base.hpp"
 #include "vk_pipeline.hpp"
 #include "vk_renderer.hpp"
 #include "vk_util.hpp"
@@ -113,12 +112,6 @@ void vk_pipeline_layout::initialize(
   rasterizerCI.cullMode = VK_CULL_MODE_NONE;
   rasterizerCI.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
   rasterizerCI.lineWidth = 1.0f;
-
-  // Setting multisampling
-  multisampleCI = VkPipelineMultisampleStateCreateInfo{};
-  multisampleCI.sType =
-      VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-  multisampleCI.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
   // Setting depth stencil state
   depthStencilCI = VkPipelineDepthStencilStateCreateInfo{};

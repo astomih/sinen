@@ -10,10 +10,10 @@ namespace sinen {
 class vk_render_texture {
 public:
   vk_render_texture(class vk_renderer &);
-
+  void set_MSAA(bool enable);
   void prepare_descriptor_set_layout();
   void prepare_descriptor_set();
-  void prepare(int width, int height, bool depth_only);
+  void prepare(int width, int height);
   void clear();
   void window_resize(int width, int height);
   VkSampler create_sampler();
@@ -37,7 +37,7 @@ public:
 
 private:
   class vk_renderer &m_vkrenderer;
-  bool is_depth_only;
+  bool is_MSAA = false;
 };
 } // namespace sinen
 #endif // !defined(EMSCRIPTEN) && !defined(ANDROID)

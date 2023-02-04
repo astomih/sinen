@@ -10,10 +10,9 @@
 namespace sinen {
 vk_render_texture::vk_render_texture(vk_renderer &r) : m_vkrenderer(r) {}
 
-void vk_render_texture::prepare(int width, int height, bool depth_only) {
+void vk_render_texture::prepare(int width, int height) {
   sampler = create_sampler();
   drawer.drawable_obj = std::make_shared<drawable>();
-  is_depth_only = depth_only;
   color_target =
       create_image_object(width, height, VK_FORMAT_R8G8B8A8_UNORM, false);
   depth_target = create_image_object(width, height, VK_FORMAT_D32_SFLOAT, true);
@@ -22,49 +21,30 @@ void vk_render_texture::prepare(int width, int height, bool depth_only) {
   auto &colorTarget = attachments[0];
   auto &depthTarget = attachments[1];
 
-  if (is_depth_only) {
-    colorTarget =
-        VkAttachmentDescription{0,
-                                VK_FORMAT_R32G32B32A32_SFLOAT,
-                                VK_SAMPLE_COUNT_1_BIT,
-                                VK_ATTACHMENT_LOAD_OP_CLEAR,
-                                VK_ATTACHMENT_STORE_OP_STORE,
-                                VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                                VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                                VK_IMAGE_LAYOUT_UNDEFINED,
-                                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
-    depthTarget = VkAttachmentDescription{
-        0,
-        VK_FORMAT_D32_SFLOAT,
-        VK_SAMPLE_COUNT_1_BIT,
-        VK_ATTACHMENT_LOAD_OP_CLEAR,
-        VK_ATTACHMENT_STORE_OP_STORE,
-        VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-        VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
-  } else {
-    colorTarget = VkAttachmentDescription{
+  colorTarget = VkAttachmentDescription{
 
-        0,                        // Flags
-        VK_FORMAT_R8G8B8A8_UNORM, // Format
-        VK_SAMPLE_COUNT_1_BIT,
-        VK_ATTACHMENT_LOAD_OP_CLEAR,
-        VK_ATTACHMENT_STORE_OP_STORE,
-        VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-        VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR};
-    depthTarget = VkAttachmentDescription{
-        0,
-        VK_FORMAT_D32_SFLOAT,
-        VK_SAMPLE_COUNT_1_BIT,
-        VK_ATTACHMENT_LOAD_OP_CLEAR,
-        VK_ATTACHMENT_STORE_OP_STORE,
-        VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-        VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
+      0,                        // Flags
+      VK_FORMAT_R8G8B8A8_UNORM, // Format
+      VK_SAMPLE_COUNT_1_BIT,
+      VK_ATTACHMENT_LOAD_OP_CLEAR,
+      VK_ATTACHMENT_STORE_OP_STORE,
+      VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+      VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      VK_IMAGE_LAYOUT_UNDEFINED,
+      VK_IMAGE_LAYOUT_PRESENT_SRC_KHR};
+  depthTarget =
+      VkAttachmentDescription{0,
+                              VK_FORMAT_D32_SFLOAT,
+                              VK_SAMPLE_COUNT_1_BIT,
+                              VK_ATTACHMENT_LOAD_OP_CLEAR,
+                              VK_ATTACHMENT_STORE_OP_STORE,
+                              VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                              VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                              VK_IMAGE_LAYOUT_UNDEFINED,
+                              VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
+  if (is_MSAA) {
+    colorTarget.samples = VK_SAMPLE_COUNT_4_BIT;
+    depthTarget.samples = VK_SAMPLE_COUNT_4_BIT;
   }
   // Render Pass
   {
@@ -93,6 +73,7 @@ void vk_render_texture::prepare(int width, int height, bool depth_only) {
   prepare_descriptor_set();
   imgui_descriptor_set = VK_NULL_HANDLE;
 }
+void vk_render_texture::set_MSAA(bool enable) { is_MSAA = enable; }
 void vk_render_texture::clear() {
   vkFreeDescriptorSets(m_vkrenderer.get_base().get_vk_device(),
                        m_vkrenderer.get_descriptor_pool(),
@@ -143,12 +124,19 @@ vk_image vk_render_texture::create_image_object(int width, int height,
     ci.arrayLayers = 1;
     ci.mipLevels = 1;
     ci.samples = VK_SAMPLE_COUNT_1_BIT;
-    if (isdepth)
+    if (isdepth) {
       ci.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
                  VK_IMAGE_USAGE_SAMPLED_BIT;
-    else
+    } else {
       ci.usage =
           VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+    }
+    if (is_MSAA) {
+      ci.samples = VK_SAMPLE_COUNT_4_BIT;
+      ci.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    } else {
+      ci.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    }
     ci.tiling = VK_IMAGE_TILING_OPTIMAL;
     ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;

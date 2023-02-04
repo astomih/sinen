@@ -33,6 +33,12 @@ void vk_pipeline::initialize(
       .depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL,
       .stencilTestEnable = VK_TRUE};
 
+  // Setting multisampling
+  multisampleCI = VkPipelineMultisampleStateCreateInfo{};
+  multisampleCI.sType =
+      VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+  multisampleCI.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
   // Create pipeline
   graphicsCI = VkGraphicsPipelineCreateInfo{
       .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
@@ -44,7 +50,7 @@ void vk_pipeline::initialize(
       .pInputAssemblyState = layout.GetInputAssemblyCI(),
       .pViewportState = layout.GetViewportCI(),
       .pRasterizationState = layout.GetRasterizerCI(),
-      .pMultisampleState = layout.GetMultisampleCI(),
+      .pMultisampleState = &multisampleCI,
       .pDepthStencilState = &depthStencilCI,
       .pColorBlendState = &cbCI,
       .pDynamicState = layout.GetDynamicStateCI(),
@@ -79,6 +85,9 @@ void vk_pipeline::color_blend_factor(VkBlendFactor src, VkBlendFactor dst) {
 void vk_pipeline::alpha_blend_factor(VkBlendFactor src, VkBlendFactor dst) {
   blendAttachment.srcAlphaBlendFactor = src;
   blendAttachment.dstAlphaBlendFactor = dst;
+}
+void vk_pipeline::set_sample_count(VkSampleCountFlagBits sample_count) {
+  multisampleCI.rasterizationSamples = sample_count;
 }
 } // namespace sinen
 #endif

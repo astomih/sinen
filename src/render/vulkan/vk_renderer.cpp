@@ -107,35 +107,65 @@ void vk_renderer::render() {
                              VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   }
+  /*
+    {
+      VkRenderPassBeginInfo renderPassBI{};
+      renderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+      renderPassBI.renderPass = m_present_texture.render_pass;
+      renderPassBI.framebuffer = m_present_texture.fb;
+      renderPassBI.renderArea.offset = VkOffset2D{0, 0};
+      renderPassBI.renderArea.extent = m_base->mSwapchain->GetSurfaceExtent();
+      renderPassBI.pClearValues = clearValue.data();
+      renderPassBI.clearValueCount = uint32_t(clearValue.size());
+      vkCmdBeginRenderPass(command, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
+      VkRect2D scissor = {{0, 0}, m_base->mSwapchain->GetSurfaceExtent()};
+      vkCmdSetScissor(command, 0, 1, &scissor);
+      VkViewport viewport = {
+          0,
+          float(m_base->mSwapchain->GetSurfaceExtent().height),
+          float(m_base->mSwapchain->GetSurfaceExtent().width),
+          -float(m_base->mSwapchain->GetSurfaceExtent().height),
+          0,
+          1};
+      vkCmdSetViewport(command, 0, 1, &viewport);
 
-  {
-    VkRenderPassBeginInfo renderPassBI{};
-    renderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassBI.renderPass = m_present_texture.render_pass;
-    renderPassBI.framebuffer = m_present_texture.fb;
-    renderPassBI.renderArea.offset = VkOffset2D{0, 0};
-    renderPassBI.renderArea.extent = m_base->mSwapchain->GetSurfaceExtent();
-    renderPassBI.pClearValues = clearValue.data();
-    renderPassBI.clearValueCount = uint32_t(clearValue.size());
-    vkCmdBeginRenderPass(command, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
-    VkRect2D scissor = {{0, 0}, m_base->mSwapchain->GetSurfaceExtent()};
-    vkCmdSetScissor(command, 0, 1, &scissor);
-    VkViewport viewport = {
-        0,
-        float(m_base->mSwapchain->GetSurfaceExtent().height),
-        float(m_base->mSwapchain->GetSurfaceExtent().width),
-        -float(m_base->mSwapchain->GetSurfaceExtent().height),
-        0,
-        1};
-    vkCmdSetViewport(command, 0, 1, &viewport);
-    render_to_display(command);
-    drawui(command);
-
-    vkCmdEndRenderPass(command);
-    set_image_memory_barrier(command, m_present_texture.color_target.image,
-                             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-  }
+      vkCmdEndRenderPass(command);
+    }
+    */
+  set_image_memory_barrier(command, m_present_texture.color_target.image,
+                           VK_IMAGE_LAYOUT_UNDEFINED,
+                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+  set_image_memory_barrier(command, m_render_texture.color_target.image,
+                           VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                           VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+  // Resolve
+  VkImageResolve resolveMSAA = {{VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
+                                {0, 0, 0}, // srcOffset
+                                {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
+                                {0, 0, 0}, // dstOffset
+                                {m_base->mSwapchain->GetSurfaceExtent().width,
+                                 m_base->mSwapchain->GetSurfaceExtent().height,
+                                 1}};
+  vkCmdResolveImage(command, m_render_texture.color_target.image,
+                    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                    m_present_texture.color_target.image,
+                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &resolveMSAA);
+  VkImageMemoryBarrier barrier = {
+      VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,   // sType
+      nullptr,                                  // pNext
+      VK_ACCESS_TRANSFER_WRITE_BIT,             // srcAccessMask
+      VK_ACCESS_MEMORY_READ_BIT,                // dstAccessMask
+      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,     // oldLayout
+      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, // newLayout
+      VK_QUEUE_FAMILY_IGNORED,                  // srcQueueFamilyIndex
+      VK_QUEUE_FAMILY_IGNORED,                  // dstQueueFamilyIndex
+      m_present_texture.color_target.image,     // image
+      {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}   // subresourceRange
+  };
+  vkCmdPipelineBarrier(command, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                       VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                       VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 0, nullptr, 1,
+                       &barrier);
 
   {
     VkRenderPassBeginInfo renderPassBI{};
@@ -178,12 +208,14 @@ void vk_renderer::render() {
       sprite.drawable_obj->param.proj = matrix4::identity;
       sprite.drawable_obj->param.view = matrix4::identity;
       sprite.drawable_obj->param.world = matrix4::identity;
+      sprite.drawable_obj->param.user = renderer::render_texture_user_data;
       write_memory(allocation, &sprite.drawable_obj->param,
                    sizeof(vk_shader_parameter));
 
       vkCmdDrawIndexed(command, m_vertex_arrays["SPRITE"].indexCount, 1, 0, 0,
                        0);
     }
+    drawui(command);
     render_imgui(command);
     // End Render Pass
     vkCmdEndRenderPass(command);
@@ -458,8 +490,9 @@ void vk_renderer::prepare() {
       m_base->get_vk_device(), &m_descriptor_set_layout,
       m_base->mSwapchain->GetSurfaceExtent(), false);
   m_pipeline_layout_normal.prepare(m_base->get_vk_device());
-  m_present_texture.prepare(window::size().x, window::size().y, false);
-  m_render_texture.prepare(window::size().x, window::size().y, false);
+  m_present_texture.prepare(window::size().x, window::size().y);
+  m_render_texture.set_MSAA(true);
+  m_render_texture.prepare(window::size().x, window::size().y);
 
   vk_pipeline_builder pipeline_builder(
       m_base->get_vk_device(), m_pipeline_layout_instance,

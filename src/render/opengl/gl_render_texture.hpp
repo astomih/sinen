@@ -21,6 +21,7 @@ public:
   uint32_t rendertexture;
   uint32_t depthbuffer;
   gl_uniform_buffer ubo;
+  bool is_MSAA = false;
 };
 } // namespace sinen
 #endif

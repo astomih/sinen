@@ -79,7 +79,6 @@ private:
   static std::vector<std::shared_ptr<drawable>> m_drawable_2d;
   static std::vector<std::shared_ptr<drawable>> m_drawable_3d;
   static std::vector<std::shared_ptr<instancing>> m_instancing;
-  static pool_allocator<drawable, 2048> m_drawable_pool;
 };
 } // namespace sinen
 #endif // !SINEN_RENDER_SYSTEM_HPP

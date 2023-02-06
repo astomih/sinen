@@ -14,3 +14,5 @@ MAP_CHIP = {
   PLAYER = 4,
 }
 MAP_CHIP_WALKABLE = 0
+
+GUI_MANAGER = require("gui/gui_manager")()

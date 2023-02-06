@@ -8,6 +8,7 @@ local drawer_press = {}
 local menu = require("gui/menu")
 local menu_object = menu()
 local scene_switcher = require("scene_switcher")()
+local button = require("gui/button")()
 
 scene.resize(vector2(1280, 720))
 window.set_name("DIVE TO SINEN")
@@ -47,6 +48,12 @@ function update()
     menu_object:update()
     font_press:render_text(texture_press, "CLICK TO START", color(1, 1, 1, dts.sin_0_1(2.0)))
     draw()
+    if button:show("TEST", vector2(0, 0), vector2(100, 100)) then
+        print(1)
+    end
+    if button:show("TEST2", vector2(200, 0), vector2(100, 100)) then
+        print(2)
+    end
     if menu_object.hide then
         if mouse:is_button_pressed(mouseLEFT) then
             scene_switcher:start("scene00_base")
@@ -59,4 +66,5 @@ draw = function()
     drawer_press:draw()
     menu_object:draw()
 
+    GUI_MANAGER:update()
 end

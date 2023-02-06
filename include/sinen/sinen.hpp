@@ -49,8 +49,6 @@
 #include "shader/shader.hpp"
 #include "time/time.hpp"
 #include "time/timer.hpp"
-#include "utility/handler.hpp"
-#include "utility/non_copyable.hpp"
 #include "vertex/vertex.hpp"
 #include "vertex/vertex_array.hpp"
 #include "window/window.hpp"

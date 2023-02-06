@@ -4,7 +4,7 @@
     {
       "label": "DebugBuild",
       "type": "shell",
-      "command": "cd debug && cmake .. -DALL_BUILD=OFF -DCMAKE_BUILD_TYPE=Debug && ninja",
+      "command": "cd build/debug && cmake ../.. -DALL_BUILD=OFF -DCMAKE_BUILD_TYPE=Debug && ninja",
       "problemMatcher": [],
       "group": {
         "kind": "build",
@@ -14,17 +14,17 @@
     {
       "label": "ReleaseBuild",
       "type": "shell",
-      "command": "cd build && cmake .. -DALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release && ninja"
+      "command": "cd build/release && cmake ../.. -DALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release && ninja"
     },
     {
       "label": "WebBuild",
       "type": "shell",
-      "command": "cd web && emcmake cmake ..  && emmake make -j8"
+      "command": "cd build/web && emcmake cmake ../..  && emmake make -j8"
     },
     {
       "label": "WebRun",
       "type": "shell",
-      "command": "cd web/demo && emrun --port 8080 index.html"
+      "command": "cd build/web/demo && emrun --port 8080 index.html"
     }
   ]
 }

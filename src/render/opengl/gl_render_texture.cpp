@@ -20,7 +20,7 @@ void gl_render_texture::prepare() {
     GLuint rb[2] = {0};
     glGenRenderbuffers(2, rb);
     glBindRenderbuffer(GL_RENDERBUFFER, rb[0]);
-    glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_RGBA,
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_RGBA8,
                                      window::size().x, window::size().y);
     glBindRenderbuffer(GL_RENDERBUFFER, rb[1]);
     glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8,

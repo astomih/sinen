@@ -77,16 +77,22 @@ void gl_renderer::initialize() {
 #else
   ImGui_ImplOpenGL3_Init("#version 330 core");
 #endif
+  gl_shader_parameter param;
+  skybox_ubo.create(sizeof(gl_shader_parameter), &param);
 }
 
 void gl_renderer::shutdown() {
+  skybox_ubo.destroy();
   ImGui_ImplOpenGL3_Shutdown();
   ImGui::DestroyContext();
   SDL_GL_DeleteContext(mContext);
 }
 
 void gl_renderer::render() {
-
+  texture tex = render_system::get_skybox_texture();
+  if (!m_texture_ids.contains(tex.handle)) {
+    create_texture(tex);
+  }
   auto w = window_system::size();
   if (w.x != prev_window_x || w.y != prev_window_y) {
     glViewport(0, 0, w.x, w.y);
@@ -210,8 +216,6 @@ void gl_renderer::disable_vertex_attrib_array() {
 }
 
 void gl_renderer::draw_skybox() {
-  create_texture(render_system::get_skybox_texture());
-  gl_uniform_buffer ubo;
   auto &va = m_VertexArrays["BOX"];
   glBindVertexArray(va.vao);
   m_shaders["Alpha"].active(0);
@@ -225,13 +229,14 @@ void gl_renderer::draw_skybox() {
   w[0][0] = 5;
   w[1][1] = 5;
   w[2][2] = 5;
-  ubo.create(sizeof(drawable::parameter), &param);
-  ubo.bind(m_shaders["Alpha"].program());
-  ubo.update(sizeof(drawable::parameter), &param, 0);
-  glBindTexture(GL_TEXTURE_2D,
-                m_texture_ids[render_system::get_skybox_texture().handle]);
+  skybox_ubo.bind(m_shaders["Alpha"].program());
+  skybox_ubo.update(sizeof(drawable::parameter), &param, 0);
+  disable_vertex_attrib_array();
+  texture tex = render_system::get_skybox_texture();
+  if (m_texture_ids.contains(tex.handle)) {
+    glBindTexture(GL_TEXTURE_2D, m_texture_ids.at(tex.handle));
+  }
   glDrawElements(GL_TRIANGLES, va.indices.size(), GL_UNSIGNED_INT, nullptr);
-  ubo.destroy();
 }
 
 void gl_renderer::draw_3d() {
@@ -619,13 +624,13 @@ void gl_renderer::prepare() {
 }
 
 void gl_renderer::create_texture(texture handle) {
-  ::SDL_Surface &surf = texture_system::get(handle.handle);
   if (m_texture_ids.contains(handle.handle)) {
     if (*handle.is_need_update) {
       destroy_texture(handle);
     } else
       return;
   }
+  ::SDL_Surface &surf = texture_system::get(handle.handle);
   ::SDL_LockSurface(&surf);
   auto formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
   formatbuf->BytesPerPixel = 4;
@@ -643,7 +648,7 @@ void gl_renderer::create_texture(texture handle) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   SDL_FreeFormat(formatbuf);
   SDL_FreeSurface(imagedata);
-  m_texture_ids[handle.handle] = textureId;
+  m_texture_ids.emplace(handle.handle, textureId);
 }
 void gl_renderer::destroy_texture(texture handle) {
   if (m_texture_ids.contains(handle.handle)) {

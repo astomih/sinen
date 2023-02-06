@@ -3,8 +3,7 @@
 #include <memory>
 #include <string_view>
 #include <unordered_map>
-#include <utility/handler.hpp>
-
+#include <utility/handle_t.hpp>
 namespace sinen {
 struct SDLObjectCloser {
   void operator()(::SDL_Surface *surface);
@@ -21,6 +20,8 @@ public:
   static void shutdown();
 
 private:
-  static handler<::SDL_Surface, SDLObjectCloser> m_surfaces;
+  static std::unordered_map<handle_t,
+                            std::unique_ptr<::SDL_Surface, SDLObjectCloser>>
+      m_surfaces;
 };
 } // namespace sinen

@@ -132,6 +132,7 @@ private:
   float prev_window_y;
   gl_render_texture m_render_texture;
   gl_render_texture m_present_texture;
+  gl_uniform_buffer skybox_ubo;
 };
 } // namespace sinen
 #endif // !SINEN_GL_RENDE

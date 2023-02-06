@@ -3,7 +3,6 @@
 #include "../math/vector2.hpp"
 #include "../shader/shader.hpp"
 #include "../texture/texture.hpp"
-#include "../utility/handler.hpp"
 
 namespace sinen {
 /**

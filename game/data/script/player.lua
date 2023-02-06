@@ -162,7 +162,6 @@ local player = {
                 local t = sin01(self.boost_time * 2.0, self.boost_timer) - 0.5
                 t = t * 0.2
 
-                print(t)
                 renderer.at_render_texture_user_data(0, t)
                 self.boost_timer = self.boost_timer + delta_time
             end

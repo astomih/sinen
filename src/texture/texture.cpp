@@ -6,7 +6,8 @@
 #include <texture/texture.hpp>
 
 namespace sinen {
-handler<::SDL_Surface, SDLObjectCloser> texture_system::m_surfaces;
+std::unordered_map<handle_t, std::unique_ptr<SDL_Surface, SDLObjectCloser>>
+    texture_system::m_surfaces;
 texture::texture() {
   handle = texture_system::create();
   is_need_update = std::make_shared<bool>(false);
@@ -79,9 +80,7 @@ void texture::blend_color(const color &color) {
   SDL_SetSurfaceColorMod(&surface, color.r * 255, color.g * 255, color.b * 255);
   SDL_SetSurfaceAlphaMod(&surface, color.a * 255);
   auto *tmp = SDL_CreateRGBSurface(0, surface.w, surface.h, 32, 0, 0, 0, 0);
-  SDL_BlitSurface(&surface, NULL, tmp, NULL);
-  texture_system::move(handle,
-                       std::unique_ptr<SDL_Surface, SDLObjectCloser>(tmp));
+  SDL_BlitSurface(&surface, NULL, (SDL_Surface *)handle, NULL);
 }
 
 texture texture::copy() {

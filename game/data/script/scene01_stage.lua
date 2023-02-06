@@ -6,6 +6,7 @@ local world = require "world"
 local map_size_x = 64
 local map_size_y = 64
 local map = grid(map_size_x, map_size_y)
+local map_z = grid(map_size_x, map_size_y)
 -- draw object
 local map_draw3ds = {}
 local box = {}
@@ -57,6 +58,7 @@ music:play()
 DEFAULT_TEXTURE = texture()
 DEFAULT_TEXTURE:fill_color(color(1, 1, 1, 1))
 map:fill(0)
+map_z:fill(0)
 dts.dungeon_generator(map)
 
 box = draw3d_instanced(DEFAULT_TEXTURE)
@@ -86,12 +88,13 @@ for y = 1, map_size_y do
                 map_draw3ds[y][x].scale)
         end
         if map:at(x, y) == MAP_CHIP.WALL then
-            map_draw3ds[y][x].position.z = 0.5
             map_draw3ds[y][x].aabb = aabb()
             map_draw3ds[y][x].aabb.max =
             map_draw3ds[y][x].position:add(map_draw3ds[y][x].scale)
             map_draw3ds[y][x].aabb.min =
             map_draw3ds[y][x].position:sub(map_draw3ds[y][x].scale)
+            map_z:set(x, y, math.random(0, 20))
+            map_draw3ds[y][x].position.z = map_z:at(x, y) / 10.0
             map_draw3ds[y][x].scale.z = 3
 
 

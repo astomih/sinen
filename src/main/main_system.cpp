@@ -144,7 +144,7 @@ bool main_system::initialize() {
     return false;
   }
   texture tex;
-  tex.fill_color(palette::black());
+  tex.fill_color(palette::light_black());
   render_system::set_skybox_texture(tex);
   scene_system::initialize();
   return true;

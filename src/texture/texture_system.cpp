@@ -10,23 +10,31 @@ void SDLObjectCloser::operator()(::SDL_RWops *rw) { ::SDL_FreeRW(rw); }
 handle_t texture_system::create() {
   auto *surf =
       SDL_CreateRGBSurfaceWithFormat(0, 1, 1, 32, SDL_PIXELFORMAT_RGBA32);
-  auto ptr = std::unique_ptr<SDL_Surface, SDLObjectCloser>(surf);
-  return m_surfaces.move(std::move(ptr));
+  handle_t handle = reinterpret_cast<handle_t>(surf);
+  return handle;
 }
 bool texture_system::contains(handle_t handle) {
-  return m_surfaces.contains(handle);
+  return handle == 0 ? false : true;
 }
-void texture_system::remove(handle_t handle) { m_surfaces.remove(handle); }
+void texture_system::remove(handle_t handle) {
+  if (!handle) {
+    return;
+  }
+  SDL_Surface *surf = reinterpret_cast<SDL_Surface *>(handle);
+  SDL_FreeSurface(surf);
+  surf = nullptr;
+  handle = NULL;
+}
 SDL_Surface &texture_system::get(handle_t handle) {
-  return m_surfaces.get(handle);
+  SDL_Surface *surf = reinterpret_cast<SDL_Surface *>(handle);
+  return *surf;
 }
 SDL_Surface *texture_system::get_raw(handle_t handle) {
-  return m_surfaces.get_raw(handle);
+  SDL_Surface *surf = reinterpret_cast<SDL_Surface *>(handle);
+  return surf;
 }
 void texture_system::move(handle_t handle,
-                          std::unique_ptr<SDL_Surface, SDLObjectCloser> ptr) {
-  return m_surfaces.move(handle, std::move(ptr));
-}
-void texture_system::shutdown() { m_surfaces.clear(); }
+                          std::unique_ptr<SDL_Surface, SDLObjectCloser> ptr) {}
+void texture_system::shutdown() {}
 
 } // namespace sinen

@@ -46,15 +46,21 @@ void font::render_text(texture &tex, std::string_view text,
   sdlColor.a = static_cast<Uint8>(_color.a * 255);
   if (sdlColor.a == 0) {
     tex.fill_color(_color);
-    return ;
+    return;
   }
   auto *ttf_font = reinterpret_cast<::TTF_Font *>(m_font);
-  auto *p = ::TTF_RenderUTF8_Blended_Wrapped(
-      ttf_font, std::string(text).c_str(), sdlColor, 0);
-  if (!p) {
+  auto *surface = (::TTF_RenderUTF8_Blended_Wrapped(
+      ttf_font, std::string(text).c_str(), sdlColor, 0));
+  if (!surface) {
     logger::error("Failed to render text: %s", ::TTF_GetError());
   }
-  texture_system::move(tex.handle,
-                       std::unique_ptr<SDL_Surface, SDLObjectCloser>(p));
+  SDL_Surface *handle = reinterpret_cast<SDL_Surface *>(tex.handle);
+  // swap
+  {
+    SDL_Surface tmp = *handle;
+    *handle = *surface;
+    *surface = tmp;
+  }
+  SDL_FreeSurface(surface);
 }
 } // namespace sinen

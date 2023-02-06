@@ -9,6 +9,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 file(GLOB SOURCE_FILES
 	./src/*/*.cpp 
 	./src/*.cpp
+	./icon.rc
 )
 
 include_directories(

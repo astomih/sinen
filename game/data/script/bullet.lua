@@ -20,16 +20,16 @@ local function bullet(map_draw3ds)
             self.drawer = draw3d(self.texture)
             self.drawer.vertex_name = "BOX"
             self.drawer.position = vector3(owner.position.x, owner.position.y,
-                0)
+                    0)
             self.drawer.rotation = owner.rotation
             self.drawer.scale = vector3(0.2, 0.2, 0.2)
             sound:play()
         end,
         update = function(self)
             self.aabb.max = self.drawer.position:add(
-                self.drawer.scale:mul(m.aabb.max))
+                    self.drawer.scale:mul(m.aabb.max))
             self.aabb.min = self.drawer.position:add(
-                self.drawer.scale:mul(m.aabb.min))
+                    self.drawer.scale:mul(m.aabb.min))
             self.current_time = self.current_time + delta_time
             self.drawer.position.x = self.drawer.position.x + delta_time *
                 self.speed *

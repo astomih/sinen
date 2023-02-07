@@ -1,6 +1,5 @@
 #ifndef SINEN_COMPONENT_HPP
 #define SINEN_COMPONENT_HPP
-#include "../input/input.hpp"
 #include <cstdint>
 #include <memory>
 namespace sinen {

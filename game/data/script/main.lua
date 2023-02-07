@@ -37,7 +37,8 @@ scene_switcher:start("")
 renderer.at_render_texture_user_data(0, 0.0)
 
 
-local draw = function() end
+local draw = function()
+end
 
 
 function update()
@@ -49,14 +50,8 @@ function update()
     menu_object:update()
     font_press:render_text(texture_press, "CLICK TO START", color(1, 1, 1, dts.sin_0_1(2.0)))
     draw()
-    if button:show("TEST", vector2(0, 0), vector2(100, 100)) then
-        print(1)
-    end
-    if button:show("TEST2", vector2(200, 0), vector2(100, 100)) then
-        print(2)
-    end
     if menu_object.hide then
-        if mouse:is_button_pressed(mouseLEFT) then
+        if mouse.is_pressed(mouse.LEFT) then
             scene_switcher:start("scene00_base")
         end
     end

@@ -1,7 +1,7 @@
-#ifndef	SINEN_GAME_CONTROLLER_HPP
-#define	SINEN_GAME_CONTROLLER_HPP
-#include "game_controller_button.hpp"
+#ifndef SINEN_GAME_CONTROLLER_HPP
+#define SINEN_GAME_CONTROLLER_HPP
 #include <cstdint>
+#include <input/gamepad.hpp>
 #include <memory>
 
 namespace sinen {
@@ -23,7 +23,7 @@ public:
 
   bool initialize();
   int16_t get_axis(axis _axis);
-  uint8_t get_button(joystick_button button);
+  uint8_t get_button(gamepad::code button);
 
 private:
   class Impl;

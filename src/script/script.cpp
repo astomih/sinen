@@ -8,7 +8,6 @@
 #include <camera/camera.hpp>
 #include <font/font.hpp>
 #include <functional>
-#include <input/input.hpp>
 #include <io/data_stream.hpp>
 #include <main/main.hpp>
 #include <math/point2.hpp>

@@ -1,7 +1,5 @@
 #ifndef SINEN_SCENE_HPP
 #define SINEN_SCENE_HPP
-#include "../actor/actor.hpp"
-#include "../component/component_factory.hpp"
 #include <cstdint>
 #include <functional>
 #include <list>
@@ -11,7 +9,10 @@
 #include <utility>
 #include <vector>
 
+#include "../actor/actor.hpp"
 #include "../camera/camera.hpp"
+#include "../component/component_factory.hpp"
+#include "../math/vector2.hpp"
 
 namespace sinen {
 /**

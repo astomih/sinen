@@ -11,9 +11,7 @@ local function text_window()
         text_drawer = {},
         text_number = 1,
         text_count = 0,
-
         is_draw_all_texts = false,
-
         setup = function(self)
             self.tex = texture()
             self.drawer = draw2d(self.tex)
@@ -40,8 +38,8 @@ local function text_window()
                 self.text_count = math.floor(self.timer) + 1
             end
 
-            if keyboard:is_key_pressed(keySPACE) or
-                mouse:is_button_pressed(mouseLEFT) then
+            if keyboard.is_pressed(keyboard.SPACE) or
+                mouse.is_pressed(mouse.LEFT) then
                 if self.text_count == len then
                     self.text_number = self.text_number + 1
                     self.text_number = math.min(self.text_number, #self.texts)
@@ -55,20 +53,18 @@ local function text_window()
                 end
             end
             local str = string.sub(self.texts[self.text_number], 1,
-                self.text_count)
+                    self.text_count)
             if self.text_count ~= self.before_len then
                 sound:play()
                 self.before_len = self.text_count
             end
             self.font:render_text(self.text_texture, str, color(1, 1, 1, 1))
             self.text_drawer.scale = self.text_texture:size()
-
         end,
         draw = function(self)
             self.drawer:draw()
             self.text_drawer:draw()
         end
-
     }
     return object
 end

@@ -22,7 +22,7 @@ function update()
         return
     end
     draw()
-    if mouse:is_button_pressed(mouseLEFT) then
+    if mouse.is_pressed(mouse.LEFT) then
         scene_switcher:start("main")
     end
 end

@@ -8,12 +8,24 @@ local function decide_pos(map, map_size_x, map_size_y)
     return map:at(r1, r2) < MAP_CHIP_WALKABLE
 end
 
+local enemy_model = model()
+if NOW_STAGE == 1 then
+    enemy_model:load("enemy1.sim", "spider")
+end
+if NOW_STAGE == 2 then
+    enemy_model:load("bat.sim", "bat")
+    enemy_model:load("lizard.sim", "lizard")
+end
+if NOW_STAGE == 3 then
+    enemy_model:load("frog.sim", "frog")
+end
+enemy_model.aabb.min.z = -2.0
+
 local enemy = function()
     local object = {
         drawer = {},
         speed = 10,
         search_length = 15,
-        model = {},
         hp = 30,
         aabb = {},
         is_collision_first = {},
@@ -28,25 +40,20 @@ local enemy = function()
         setup = function(self, _map, map_size_x, map_size_y)
             self.bfs = bfs_grid(_map)
             self.drawer = draw3d(DEFAULT_TEXTURE)
-            self.model = model()
             if NOW_STAGE == 1 then
-                self.model:load("spider.sim", "spider")
                 self.drawer.vertex_name = "spider"
-                self.drawer.scale = vector3(0.3, 0.3, 0.3)
+                self.drawer.scale = vector3(0.1, 0.1, 0.1)
             end
             if NOW_STAGE == 2 then
                 if math.random(0, 1) == 0 then
-                    self.model:load("bat.sim", "bat")
                     self.drawer.vertex_name = "bat"
                     self.drawer.scale = vector3(0.4, 0.4, 0.4)
                 else
-                    self.model:load("lizard.sim", "lizard")
                     self.drawer.vertex_name = "lizard"
                     self.drawer.scale = vector3(1, 1, 1)
                 end
             end
             if NOW_STAGE == 3 then
-                self.model:load("frog.sim", "frog")
                 self.drawer.vertex_name = "frog"
                 self.drawer.scale = vector3(1, 1, 1)
             end
@@ -54,7 +61,8 @@ local enemy = function()
             self.map = _map
             r1 = 0
             r2 = 0
-            while decide_pos(_map, map_size_x, map_size_y) == true do end
+            while decide_pos(_map, map_size_x, map_size_y) == true do
+            end
             self.drawer.position = vector3(r1 * TILE_SIZE, r2 * TILE_SIZE, 0.5)
             self.is_collision_first = true
             self.collision_time = 1.0
@@ -66,9 +74,9 @@ local enemy = function()
                 return
             end
             self.aabb.max = self.drawer.position:add(
-                self.drawer.scale:mul(self.model.aabb.max))
+                self.drawer.scale:mul(enemy_model.aabb.max))
             self.aabb.min = self.drawer.position:add(
-                self.drawer.scale:mul(self.model.aabb.min))
+                self.drawer.scale:mul(enemy_model.aabb.min))
             self.drawer.rotation = vector3(0, 0,
                 math.deg(
                     -math.atan(
@@ -111,7 +119,6 @@ local enemy = function()
                 self.drawer.position.y =
                 self.drawer.position.y +
                     dir.y * delta_time * self.speed
-
             else
                 self.drawer.position.x =
                 self.drawer.position.x + delta_time * self.speed *
@@ -121,7 +128,6 @@ local enemy = function()
                     self.get_forward_z(self.drawer).y
             end
             self.bfs:reset()
-
         end,
         draw = function(self) self.drawer:draw() end,
         player_collision = function(self, player)

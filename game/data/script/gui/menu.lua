@@ -16,27 +16,27 @@ local function menu()
             if self.hide_next then
                 self.hide = not self.hide
                 self.hide_next = false
-                mouse:hide_cursor(false)
+                mouse.hide_cursor(false)
                 self.list.hide = self.hide
             end
-            if keyboard:is_key_pressed(keyESCAPE) then
+            if keyboard.is_pressed(keyboard.ESCAPE) then
                 self.hide = not self.hide
-                mouse:hide_cursor(false)
+                mouse.hide_cursor(false)
                 self.list.hide = self.hide
             end
             if not self.hide then
                 self.list:update()
                 if self.list.selecting then
                     if self.list.texts[self.list.selecting_index] == "Resume" and
-                        (mouse:is_button_pressed(mouseLEFT)) then
+                        (mouse.is_pressed(mouse.LEFT)) then
                         self.hide_next = true
                     end
                     if self.list.texts[self.list.selecting_index] == "Option"
-                        and (mouse:is_button_pressed(mouseLEFT)) then
+                        and (mouse.is_pressed(mouse.LEFT)) then
                         print("Option")
                     end
                     if self.list.texts[self.list.selecting_index] == "Quit"
-                        and (mouse:is_button_pressed(mouseLEFT)) then
+                        and (mouse.is_pressed(mouse.LEFT)) then
                         change_scene("")
                     end
                 end

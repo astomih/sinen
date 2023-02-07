@@ -88,7 +88,8 @@ local player = {
         self.render_text(self)
         r1 = 0
         r2 = 0
-        while decide_pos(map, map_size_x, map_size_y) == true do end
+        while decide_pos(map, map_size_x, map_size_y) == true do
+        end
         self.drawer.position = vector3(r1 * 2, r2 * 2, 0)
         self.drawer.scale = vector3(0.05, 0.05, 0.1)
         self.hp_drawer.position.x = 0
@@ -104,7 +105,6 @@ local player = {
         self.boost_sound = sound()
         self.boost_sound:load("boost.wav")
         self.boost_sound:set_volume(0.2)
-
     end,
     horizontal = math.pi,
     vertical = 0.0,
@@ -117,7 +117,7 @@ local player = {
         input_vector = calc_input_vector()
         local is_move = input_vector.x ~= 0 or input_vector.y ~= 0
 
-        if keyboard:is_key_down(keyLSHIFT) and is_move then
+        if keyboard.is_down(keyboard.LSHIFT) and is_move then
             speed = self.speed_max
             self.stamina = self.stamina - self.stamina_run_cost * delta_time
             if self.stamina <= 0.0 then
@@ -132,7 +132,7 @@ local player = {
             end
         end
         -- bullet
-        if keyboard:is_key_pressed(keyQ) then
+        if keyboard.is_pressed(keyboard.Q) then
             if self.orbit_toggle then
                 self.orbit_toggle = false
                 local o = orbit(self)
@@ -145,7 +145,7 @@ local player = {
         end
         self.bullet_timer = self.bullet_timer + delta_time
         if self.bullet_timer >
-            self.bullet_time and (mouse:is_button_down(mouseLEFT)) then
+            self.bullet_time and (mouse.is_down(mouse.LEFT)) then
             local b = bullet(map_draw3ds)
             b:setup(self.drawer)
             b.drawer.rotation.z = b.drawer.rotation.z + 90
@@ -166,7 +166,7 @@ local player = {
                 self.boost_timer = self.boost_timer + delta_time
             end
         else
-            if keyboard:is_key_pressed(keySPACE) and is_move then
+            if keyboard.is_pressed(keyboard.SPACE) and is_move then
                 if self.stamina >= self.stamina_boost_cost then
                     self.stamina = self.stamina - self.stamina_boost_cost
                     if self.stamina <= 0.0 then
@@ -258,7 +258,7 @@ local player = {
                 self.drawer.position = before_pos
             end
         end
-        local mouse_pos = mouse:position_on_scene()
+        local mouse_pos = mouse.position_on_scene()
         self.drawer_scope.position.x = mouse_pos.x - scene.center().x
         self.drawer_scope.position.y = -(mouse_pos.y - scene.center().y)
         local r = 200 - self.drawer_scope.scale.x / 2
@@ -272,11 +272,11 @@ local player = {
             y = y * r_prime
             self.drawer_scope.position.x = x
             self.drawer_scope.position.y = y
-            mouse:set_position_on_scene(vector2(scene.center().x + x, scene.center().y - y))
+            mouse.set_position_on_scene(vector2(scene.center().x + x, scene.center().y - y))
         end
         local drawer_scope_angle = math.atan(self.drawer_scope.position.y, self.drawer_scope.position.x)
         self.drawer.rotation.z = math.deg(drawer_scope_angle) - 90
-        mouse:hide_cursor(true)
+        mouse.hide_cursor(true)
         for i, j in ipairs(self.orbits) do
             j:update(map_draw3ds)
         end
@@ -287,10 +287,7 @@ local player = {
         else
             self.stamina_texture:fill_color(color(1.0, 1.0, 1.0, 0.9))
         end
-
-
     end,
-
     draw = function(self)
         self.drawer:draw()
         self.hp_drawer:draw()

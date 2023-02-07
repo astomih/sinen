@@ -6,19 +6,16 @@ local function list()
         list_space = 100,
         scale = vector2(scene.size().x / 2, 50),
         start_pos = vector2(0, 0),
-
         tex = {},
         drawers = {},
         font = {},
         texts = {},
         text_textures = {},
         text_drawers = {},
-
         select_frame_tex = {},
         select_frame_drawer = {},
         selecting = false,
         selecting_index = 0,
-
         hide = false,
         setup = function(self)
             self.tex = texture()
@@ -42,10 +39,9 @@ local function list()
                 self.text_drawers[i].scale = text_texture:size()
                 self.drawers[i].scale = self.scale
                 self.drawers[i].position =
-                vector2(self.start_pos.x,
-                    self.start_pos.y + (i - 1) * -self.list_space)
+                    vector2(self.start_pos.x,
+                        self.start_pos.y + (i - 1) * -self.list_space)
                 self.text_drawers[i].position = self.drawers[i].position
-
             end
             self.tex:fill_color(color(0.7, 0.7, 0.7, 0.8))
             self.select_frame_tex = texture()
@@ -56,8 +52,7 @@ local function list()
         end,
         before_len = 1,
         update = function(self)
-
-            local mpos = mouse:position_on_scene()
+            local mpos = mouse.position_on_scene()
             mpos.x = mpos.x - scene.center().x
             mpos.y = -(mpos.y - scene.center().y)
             self.selecting_index = 0
@@ -75,7 +70,6 @@ local function list()
                 then
                     self.selecting_index = i
                     self.selecting = true
-
                 end
             end
         end,
@@ -83,7 +77,7 @@ local function list()
             if not self.hide then
                 if self.selecting then
                     self.select_frame_drawer.position =
-                    self.drawers[self.selecting_index].position
+                        self.drawers[self.selecting_index].position
                     self.select_frame_drawer:draw()
                 end
                 for i = 1, self.num do
@@ -92,7 +86,6 @@ local function list()
                 end
             end
         end
-
     }
     return object
 end

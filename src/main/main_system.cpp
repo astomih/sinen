@@ -15,7 +15,6 @@
 #include <optional>
 
 #include <camera/camera.hpp>
-#include <input/input.hpp>
 #include <io/file.hpp>
 #include <io/json.hpp>
 #include <logger/logger.hpp>

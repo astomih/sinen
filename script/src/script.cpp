@@ -4,7 +4,6 @@
 #include <camera/camera.hpp>
 #include <font/font.hpp>
 #include <functional>
-#include <input/input.hpp>
 #include <io/data_stream.hpp>
 #include <main/main.hpp>
 #include <math/point2.hpp>
@@ -87,24 +86,6 @@ bool script_engine::initialize(sol::state &lua) {
     v["render_text"] = &font::render_text;
   }
   {
-    auto v = lua.new_usertype<keyboard_state>("", sol::no_construction());
-    v["is_key_pressed"] = &keyboard_state::is_key_pressed;
-    v["is_key_released"] = &keyboard_state::is_key_released;
-    v["is_key_down"] = &keyboard_state::is_key_down;
-  }
-  {
-    auto v = lua.new_usertype<mouse_state>("", sol::no_construction());
-    v["is_button_pressed"] = &mouse_state::is_button_pressed;
-    v["is_button_released"] = &mouse_state::is_button_released;
-    v["is_button_down"] = &mouse_state::is_button_down;
-    v["position"] = &mouse_state::get_position;
-    v["position_on_scene"] = &mouse_state::get_position_on_scene;
-    v["set_position"] = &mouse_state::set_position;
-    v["set_position_on_scene"] = &mouse_state::set_position_on_scene;
-    v["scroll_wheel"] = &mouse_state::get_scroll_wheel;
-    v["hide_cursor"] = &mouse_state::hide_cursor;
-  }
-  {
     auto v = lua.new_usertype<music>("", sol::no_construction());
     v["load"] = &music::load;
     v["play"] = &music::play;
@@ -148,16 +129,7 @@ bool script_engine::initialize(sol::state &lua) {
   }
   register_component(lua);
   register_drawable(lua);
-  register_keycode(lua);
   register_table(lua);
-  {
-    auto &v = lua;
-    v["mouseLEFT"] = (int)mouse_code::LEFT;
-    v["mouseRIGHT"] = (int)mouse_code::RIGHT;
-    v["mouseMIDDLE"] = (int)mouse_code::MIDDLE;
-    v["mouseX1"] = (int)mouse_code::X1;
-    v["mouseX2"] = (int)mouse_code::X2;
-  }
   register_graph(lua);
 
 #endif

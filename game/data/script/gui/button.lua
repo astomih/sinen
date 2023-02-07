@@ -17,7 +17,7 @@ local function button()
       self.drawer.position = pos
       GUI_MANAGER:add(self.drawer)
       -- Mouse in button?
-      local mpos = mouse:position_on_scene()
+      local mpos = mouse.position_on_scene()
       mpos.x = mpos.x - scene.center().x
       mpos.y = -(mpos.y - scene.center().y)
       if mpos.x >= pos.x - scale.x / 2
@@ -29,7 +29,7 @@ local function button()
           mpos.y <= pos.y + scale.y / 2
       then
         back_texture:fill_color(color(0.2, 0.7, 0.2, 1))
-        if mouse:is_button_pressed(mouseLEFT) then
+        if mouse.is_pressed(mouse.LEFT) then
           back_texture:fill_color(color(0.2, 0.2, 0.7, 1))
           return true
         end

@@ -10,7 +10,6 @@
 #include <camera/camera.hpp>
 #include <color/color.hpp>
 #include <color/palette.hpp>
-#include <input/input.hpp>
 #include <io/data_stream.hpp>
 #include <io/json.hpp>
 
@@ -36,7 +35,7 @@
 #include <component/rigidbody_component.hpp>
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
-#include <input/input.hpp>
+#include <input/keyboard.hpp>
 #include <logger/logger.hpp>
 #include <sol/sol.hpp>
 
@@ -97,7 +96,7 @@ void scene_system::process_input() {
 
 void scene_system::update_scene() {
   {
-    if (input::keyboard.is_key_pressed(key_code::F3)) {
+    if (keyboard::is_pressed(keyboard::code::F3)) {
       static auto once = []() {
         renderer::add_imgui_function([]() {
           ImGui::Begin("Debug");
@@ -138,8 +137,6 @@ void scene_system::update_scene() {
   if (is_run_script) {
     sol::state *lua = (sol::state *)script_system::get_state();
     (*lua)["delta_time"] = deltaTime;
-    (*lua)["keyboard"] = input::keyboard;
-    (*lua)["mouse"] = input::mouse;
     (*lua)["update"]();
   }
   m_impl->update(deltaTime);

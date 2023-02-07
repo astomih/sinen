@@ -1,14 +1,20 @@
-#pragma once
-#include <input/input.hpp>
-
+#ifndef SINEN_INPUT_SYSTEM_HPP
+#define SINEN_INPUT_SYSTEM_HPP
+#include "game_controller.hpp"
+#include <array>
+#include <cstdint>
+#include <input/gamepad.hpp>
+#include <input/keyboard.hpp>
+#include <input/mouse.hpp>
 namespace sinen {
-class keyboard_state_impl {
+struct keyboard_state_impl {
 public:
   const uint8_t *mCurrState;
-  std::array<uint8_t, static_cast<int>(key_code::NUM_KEYCODES)> mPrevState;
+  std::array<uint8_t, static_cast<int>(keyboard::code::NUM_KEYCODES)>
+      mPrevState;
 };
 
-class mouse_state_impl {
+struct mouse_state_impl {
 public:
   // Store current mouse position
   vector2 mMousePos;
@@ -21,13 +27,13 @@ public:
   bool mIsRelative;
 };
 
-class joystick_state_impl {
+struct joystick_state_impl {
 public:
   // Current/previous buttons
-  uint8_t mCurrButtons[static_cast<int>(
-      joystick_button::NUM_GAMECONTROLLER_BUTTON)];
-  uint8_t mPrevButtons[static_cast<int>(
-      joystick_button::NUM_GAMECONTROLLER_BUTTON)];
+  uint8_t
+      mCurrButtons[static_cast<int>(gamepad::code::NUM_GAMECONTROLLER_BUTTON)];
+  uint8_t
+      mPrevButtons[static_cast<int>(gamepad::code::NUM_GAMECONTROLLER_BUTTON)];
   // Left/right sticks
   vector2 mLeftStick;
   vector2 mRightStick;
@@ -40,9 +46,6 @@ public:
 
 class input_system {
 public:
-  friend class keyboard_state;
-  friend class mouse_state;
-  friend class joystick_state;
   static bool initialize();
   static void shutdown();
 
@@ -64,3 +67,4 @@ private:
   static joystick mController;
 };
 } // namespace sinen
+#endif // !SINEN_INPUT_SYSTEM_HPP

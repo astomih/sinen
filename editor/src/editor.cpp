@@ -56,11 +56,11 @@ void editor::inspector() {
   ImGui::Begin("Inspector");
   static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
   static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
-  if (input::keyboard.is_key_pressed(key_code::T))
+  if (keyboard::is_pressed(keyboard::code::T))
     mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-  if (input::keyboard.is_key_pressed(key_code::R))
+  if (keyboard::is_pressed(keyboard::code::R))
     mCurrentGizmoOperation = ImGuizmo::ROTATE;
-  if (input::keyboard.is_key_pressed(key_code::S))
+  if (keyboard::is_pressed(keyboard::code::S))
     mCurrentGizmoOperation = ImGuizmo::SCALE;
   if (ImGui::RadioButton("Translate",
                          mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
@@ -475,16 +475,14 @@ void editor::update(float delta_time) {
     lua["update"]();
   }
 
-  if (renderer::is_show_imgui() &&
-      input::keyboard.is_key_pressed(key_code::F5)) {
+  if (renderer::is_show_imgui() && keyboard::is_pressed(keyboard::code::F5)) {
     m_impl->is_run = true;
   }
   if (m_impl->is_run) {
     m_impl->is_run = false;
   }
-  if (renderer::is_show_imgui() &&
-      input::keyboard.is_key_down(key_code::LCTRL) &&
-      input::keyboard.is_key_pressed(key_code::S)) {
+  if (renderer::is_show_imgui() && keyboard::is_down(keyboard::code::LCTRL) &&
+      keyboard::is_pressed(keyboard::code::S)) {
     // m_impl->is_save = true;
   }
   if (m_impl->is_save) {
@@ -494,19 +492,18 @@ void editor::update(float delta_time) {
     std::cout << str << std::endl;
     m_impl->is_save = false;
   }
-  if (renderer::is_show_imgui() &&
-      input::keyboard.is_key_down(key_code::LCTRL) &&
-      input::keyboard.is_key_pressed(key_code::S)) {
-    if (input::keyboard.is_key_down(key_code::LSHIFT)) {
+  if (renderer::is_show_imgui() && keyboard::is_down(keyboard::code::LCTRL) &&
+      keyboard::is_pressed(keyboard::code::S)) {
+    if (keyboard::is_down(keyboard::code::LSHIFT)) {
 
     } else if (!current_file_name.empty()) {
       save_scene(this->current_file_name);
     }
   }
-  if (input::keyboard.is_key_pressed(key_code::F3)) {
+  if (keyboard::is_pressed(keyboard::code::F3)) {
     renderer::toggle_show_imgui();
   }
-  if (input::keyboard.is_key_pressed(key_code::F5)) {
+  if (keyboard::is_pressed(keyboard::code::F5)) {
     run();
   }
 
@@ -516,13 +513,12 @@ void editor::update(float delta_time) {
     auto vec = scene::main_camera().target() - scene::main_camera().position();
     if (vec.length() > 0.1) {
       vec.normalize();
-      scene::main_camera().position() +=
-          vec * input::mouse.get_scroll_wheel().y;
+      scene::main_camera().position() += vec * mouse::get_scroll_wheel().y;
     }
     static vector2 prev = vector2();
-    if (input::mouse.is_button_down(mouse_code::RIGHT)) {
-      auto pos = prev - input::mouse.get_position();
-      if (input::keyboard.is_key_down(key_code::LSHIFT)) {
+    if (mouse::is_down(mouse::code::RIGHT)) {
+      auto pos = prev - mouse::get_position();
+      if (keyboard::is_down(keyboard::code::LSHIFT)) {
         scene::main_camera().position() +=
             scene::main_camera().view().get_x_axis() * pos.x * delta_time;
         scene::main_camera().target() +=
@@ -537,7 +533,7 @@ void editor::update(float delta_time) {
         scene::main_camera().target().y -= pos.y * delta_time;
       }
     }
-    prev = input::mouse.get_position();
+    prev = mouse::get_position();
   }
   scene::main_camera().lookat(scene::main_camera().position(),
                               scene::main_camera().target(),

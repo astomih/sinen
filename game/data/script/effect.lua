@@ -16,14 +16,11 @@ local function effect()
         inherit_velocity = 0.0,
         play_on_awake = false,
         max_particles = 10,
-
         drawer = {},
         texture = {},
         worlds = {},
-
         is_playing = false,
         is_stop = false,
-
         timer = 0.0,
         setup = function(self)
             self.texture = texture()
@@ -37,7 +34,6 @@ local function effect()
                 self.worlds[i].scale = vector3(0.1, 0.1, 0.1)
             end
             if self.play_on_awake then self.is_playing = true end
-
         end,
         impl = function(e)
             for i = 1, e.max_particles do
@@ -71,7 +67,6 @@ local function effect()
                     self.drawer:add(self.worlds[i].position,
                         self.worlds[i].rotation,
                         self.worlds[i].scale)
-
                 end
             end
         end,
@@ -84,7 +79,6 @@ local function effect()
             self.is_playing = true
             self.is_stop = false
         end
-
     }
     return object
 end

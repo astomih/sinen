@@ -2,11 +2,13 @@
 Engine, Editor, Game, Tools, and more.
 <p align="center"><a href="https://astomih.github.io/sinen"><img src="https://raw.githubusercontent.com/astomih/sinen/main/logo/logo_bg_white.png" width="480" alt="Sinen Logo"></a></p>  
 
+# Game
+[https://astomih.github.io/sinen/game](https://astomih.github.io/sinen/game/)
+I named this game 'DIVE TO SINEN'.  
+![Game Sample](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/game_sample.png)
+
 # Engine
 Sinen Engine is a media library for C++20 that is being produced mainly for game development.  
-
-## Game Demo
-[https://astomih.github.io/sinen/web_demo](https://astomih.github.io/sinen/game/)
 
 ## Feature
 - Lua game engine
@@ -52,6 +54,7 @@ function update()
 end
 
 ```
+![Hello World](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/hello_world.png)
 ## Lisence
  MIT Lisence
 
@@ -76,9 +79,6 @@ Editor is a level editor for Engine.
 - imgui_markdown
 - ImGuizmo
 
-# Game
-I named this game 'DIVE TO SINEN'.  
-![Game Sample](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/game_sample.png)
 
 # Tools
 ## Model Converter

@@ -11,10 +11,51 @@ file(GLOB SOURCE_FILES
 	./src/*.cpp
 	./icon.rc
 )
-
+file(GLOB INCLUDE_DIRS
+	./include
+	./include/sinen
+)
+if(EMSCRIPTEN)
+  set(CMAKE_C_COMPILER "emcc")
+  add_executable(index ${SOURCE_FILES})
+  target_link_directories(index PUBLIC .)
+  target_link_libraries(index 
+        sinen
+        script_engine
+  )
+  target_include_directories(index PUBLIC ${INCLUDE_DIRS})
+  set(CMAKE_CXX_FLAGS
+      "${CMAKE_CXX_FLAGS} \
+		-Wno-unused-command-line-argument \
+		-s USE_SDL=2 \
+		-s USE_SDL_IMAGE=2 \
+		-s USE_WEBGL2=1 \
+		-s FULL_ES3=1 \
+		-s MIN_WEBGL_VERSION=2 \
+		-s MAX_WEBGL_VERSION=2 \
+		-s USE_SDL_TTF=2 \
+		-s USE_SDL_MIXER=2 \
+		-s USE_SDL_NET=2 \
+		--preload-file=data \
+		-s ALLOW_MEMORY_GROWTH \
+		--shell-file shell_minimum.html \
+		-s ERROR_ON_UNDEFINED_SYMBOLS=0 \
+		-std=c++20")
+  if(CMAKE_HOST_WIN32)
+    set(CMAKE_CXX_FLAGS
+        "${CMAKE_CXX_FLAGS} \
+		-s SDL2_IMAGE_FORMATS="[""png""]" \
+    ")
+  else()
+    set(CMAKE_CXX_FLAGS
+        "${CMAKE_CXX_FLAGS} \
+		-s SDL2_IMAGE_FORMATS='[\"png\"]' \
+		")
+  endif()
+  set(CMAKE_EXECUTABLE_SUFFIX ".html")
+else()
 include_directories(
-	../include
-	../include/sinen
+	${INCLUDE_DIRS}
 )
 link_directories(
 	..
@@ -43,3 +84,4 @@ add_executable(game
 target_link_libraries(game 
 	${LIBRARIES}
 )
+endif()

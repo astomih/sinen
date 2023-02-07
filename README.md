@@ -5,11 +5,8 @@ Engine, Editor, Game, Tools, and more.
 # Engine
 Sinen Engine is a media library for C++20 that is being produced mainly for game development.  
 
-## Try on Web
-[https://astomih.github.io/sinen/web_demo](https://astomih.github.io/sinen/web_demo/)
-
-## Game demo
-[https://astomih.github.io/game-demo/](https://astomih.github.io/game-demo/)
+## Game Demo
+[https://astomih.github.io/sinen/web_demo](https://astomih.github.io/sinen/game/)
 
 ## Feature
 - Lua game engine

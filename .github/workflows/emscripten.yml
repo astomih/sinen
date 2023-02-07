@@ -26,8 +26,8 @@ jobs:
         emcmake cmake -B build
     - name: Build
       run: |
-        cd ${{github.workspace}}/build/demo
-        cp -r ${{github.workspace}}/demo/data .
+        cd ${{github.workspace}}/build/game
+        cp -r ${{github.workspace}}/game/data .
         cp ${{github.workspace}}/demo/shell_minimum.html .
         cd ${{github.workspace}}/build
         make -j2
@@ -35,7 +35,7 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: web
-        path: build/demo
+        path: build/game
   deploy:
     concurrency: 
       group: ${{ github.workflow }}-${{ github.ref }}
@@ -54,4 +54,4 @@ jobs:
         branch: gh-pages
         folder: 'web'
         ssh-key: ${{ secrets.DEPLOY_KEY }}
-        target-folder: web_demo
+        target-folder: game

@@ -52,9 +52,13 @@ if(ANDROID)
     GLESv3
     log)
 elseif(EMSCRIPTEN)
-  option(BUILD_DEMO "Build Demo project" ON)
+  option(BUILD_DEMO "Build Demo project" OFF)
+  option(BUILD_GAME "Build Game project" ON)
   if(BUILD_DEMO)
     add_subdirectory(./demo)
+  endif()
+  if(BUILD_GAME)
+    add_subdirectory(./game)
   endif()
   file(
     GLOB

@@ -24,7 +24,7 @@
     {
       "label": "WebRun",
       "type": "shell",
-      "command": "cd build/web/demo && emrun --port 8080 index.html"
+      "command": "cd build/web/game && emrun --port 8080 index.html"
     }
   ]
 }

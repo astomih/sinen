@@ -12,13 +12,13 @@ if(ANDROID)
   target_include_directories(main PUBLIC ${INCLUDE_DIRS})
 elseif(EMSCRIPTEN)
   set(CMAKE_C_COMPILER "emcc")
-  add_executable(index ${SOURCE_FILES})
-  target_link_directories(index PUBLIC .)
-  target_link_libraries(index 
+  add_executable(demo ${SOURCE_FILES})
+  target_link_directories(demo PUBLIC .)
+  target_link_libraries(demo 
         sinen
         script_engine
   )
-  target_include_directories(index PUBLIC ${INCLUDE_DIRS})
+  target_include_directories(demo PUBLIC ${INCLUDE_DIRS})
   set(CMAKE_CXX_FLAGS
       "${CMAKE_CXX_FLAGS} \
 		-Wno-unused-command-line-argument \

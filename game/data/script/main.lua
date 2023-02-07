@@ -34,6 +34,7 @@ skybox_tex:fill_color(color(0.2, 0.2, 0.2, 1))
 set_skybox_texture(skybox_tex)
 scene_switcher:setup()
 scene_switcher:start("")
+renderer.at_render_texture_user_data(0, 0.0)
 
 
 local draw = function() end

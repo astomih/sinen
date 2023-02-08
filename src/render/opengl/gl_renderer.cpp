@@ -492,7 +492,7 @@ void gl_renderer::update_model(const model &m) {
                   vArrayGL.indices.size() * sizeof(uint32_t),
                   vArrayGL.indices.data());
 }
-void gl_renderer::draw2d(std::shared_ptr<class drawable> sprite) {
+void gl_renderer::draw2d(std::shared_ptr<struct drawable> sprite) {
   create_texture(sprite->binding_texture);
   auto iter = m_drawer_2ds.begin();
   for (; iter != m_drawer_2ds.end(); ++iter) {
@@ -658,7 +658,6 @@ void gl_renderer::destroy_texture(texture handle) {
 }
 
 bool gl_renderer::load_shader() {
-  gl_shader_parameter param{};
   m_shaders["RenderTexture"] = gl_shader();
   m_shaders["Normal"] = gl_shader();
   m_shaders["Alpha"] = gl_shader();

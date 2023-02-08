@@ -70,9 +70,9 @@ public:
   void update_vertex_array(const vertex_array &vArray, std::string_view name);
   void add_model(const model &m);
   void update_model(const model &m);
-  void draw2d(std::shared_ptr<class drawable> sprite);
-  void draw3d(std::shared_ptr<class drawable> sprite);
-  void drawui(std::shared_ptr<class drawable> sprite);
+  void draw2d(std::shared_ptr<struct drawable> sprite);
+  void draw3d(std::shared_ptr<struct drawable> sprite);
+  void drawui(std::shared_ptr<struct drawable> sprite);
   void *get_texture_id() {
     return (void *)(std::intptr_t)m_present_texture.rendertexture;
   }

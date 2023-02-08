@@ -198,7 +198,7 @@ void scene_system::load_data(std::string_view data_file_name) {
     scale.y = ref["Scale"]["y"].get_float();
     scale.z = ref["Scale"]["z"].get_float();
     act.set_scale(scale);
-    for (int j = 0; j < ref["Components"].get_array().size(); j++) {
+    for (std::size_t j = 0; j < ref["Components"].get_array().size(); j++) {
       auto comp = ref["Components"].get_array()[j];
       auto comp_name = comp.get_string();
       auto c = scene::get_component_factory().create(comp_name, act);

@@ -70,10 +70,10 @@ public:
                    const color &_color = palette::white());
 
 private:
-  int point_size;
-  bool is_load;
-  std::string font_name;
   void *m_font;
+  bool is_load;
+  int point_size;
+  std::string font_name;
 };
 } // namespace sinen
 #endif // !SINEN_FONT_HPP

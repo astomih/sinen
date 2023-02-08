@@ -84,7 +84,7 @@ public:
    * @return std::shared_ptr<parameter> parameter
    */
   std::shared_ptr<parameter> get_parameter() const { return m_parameter; }
-  const std::size_t get_parameter_size() const { return m_parameter_size; }
+  std::size_t get_parameter_size() const { return m_parameter_size; }
 
   bool operator==(const shader &info) const {
     return this->m_vert_name == info.m_vert_name &&

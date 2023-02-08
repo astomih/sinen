@@ -23,7 +23,7 @@ public:
     ~array();
     object operator[](std::size_t index);
     void push_back(object &obj);
-    const std::size_t size() const;
+    std::size_t size() const;
 
   private:
     array();

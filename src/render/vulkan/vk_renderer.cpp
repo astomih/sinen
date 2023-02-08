@@ -107,31 +107,6 @@ void vk_renderer::render() {
                              VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   }
-  /*
-    {
-      VkRenderPassBeginInfo renderPassBI{};
-      renderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-      renderPassBI.renderPass = m_present_texture.render_pass;
-      renderPassBI.framebuffer = m_present_texture.fb;
-      renderPassBI.renderArea.offset = VkOffset2D{0, 0};
-      renderPassBI.renderArea.extent = m_base->mSwapchain->GetSurfaceExtent();
-      renderPassBI.pClearValues = clearValue.data();
-      renderPassBI.clearValueCount = uint32_t(clearValue.size());
-      vkCmdBeginRenderPass(command, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
-      VkRect2D scissor = {{0, 0}, m_base->mSwapchain->GetSurfaceExtent()};
-      vkCmdSetScissor(command, 0, 1, &scissor);
-      VkViewport viewport = {
-          0,
-          float(m_base->mSwapchain->GetSurfaceExtent().height),
-          float(m_base->mSwapchain->GetSurfaceExtent().width),
-          -float(m_base->mSwapchain->GetSurfaceExtent().height),
-          0,
-          1};
-      vkCmdSetViewport(command, 0, 1, &viewport);
-
-      vkCmdEndRenderPass(command);
-    }
-    */
   set_image_memory_barrier(command, m_present_texture.color_target.image,
                            VK_IMAGE_LAYOUT_UNDEFINED,
                            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -331,20 +306,20 @@ void vk_renderer::update_model(const model &m) {
                vArrayVK.indices.data(),
                m.all_indices().size() * sizeof(uint32_t));
 }
-void vk_renderer::draw2d(std::shared_ptr<class drawable> drawObject) {
+void vk_renderer::draw2d(std::shared_ptr<struct drawable> drawObject) {
   auto t = std::make_shared<vk_drawable>();
   t->drawable_obj = drawObject;
   add_texture(drawObject->binding_texture);
   register_vk_drawable(t, "2D");
 }
-void vk_renderer::drawui(std::shared_ptr<class drawable> drawObject) {
+void vk_renderer::drawui(std::shared_ptr<struct drawable> drawObject) {
   auto t = std::make_shared<vk_drawable>();
   t->drawable_obj = drawObject;
   add_texture(drawObject->binding_texture);
   register_vk_drawable(t, "UI");
 }
 
-void vk_renderer::draw3d(std::shared_ptr<class drawable> sprite) {
+void vk_renderer::draw3d(std::shared_ptr<struct drawable> sprite) {
   auto t = std::make_shared<vk_drawable>();
   t->drawable_obj = sprite;
   add_texture(sprite->binding_texture);

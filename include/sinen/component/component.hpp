@@ -2,6 +2,7 @@
 #define SINEN_COMPONENT_HPP
 #include <cstdint>
 #include <memory>
+#include <string>
 namespace sinen {
 /**
  * @brief Component
@@ -16,7 +17,7 @@ public:
    */
   component(class actor &owner);
   /**
-   * @brief Construct a new component object
+   * @brief Copy constructor is deleted
    *
    */
   component(const component &) = delete;
@@ -24,13 +25,13 @@ public:
    * @brief Destroy the component object
    *
    */
-  virtual ~component();
+  virtual ~component() = default;
   /**
    * @brief Update the component
    *
    * @param delta_time delta time
    */
-  virtual void update(float delta_time);
+  virtual void update(float delta_time) {}
   /**
    * @brief Get the name object
    *

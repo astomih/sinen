@@ -14,7 +14,7 @@ set(SINEN_INCLUDE_DIRS
       external/rapidjson/include
       external/mojoAL
 )
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g -O0 -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -march=native")
 if(ANDROID)
   set(CMAKE_CXX_FLAGS "-std=c++20 -DANDROID")

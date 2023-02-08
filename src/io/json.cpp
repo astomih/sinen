@@ -58,7 +58,7 @@ void json::array::push_back(object &obj) {
   pimpl->value.PushBack(obj.pimpl->value,
                         pimpl->m_json->pimpl->doc.GetAllocator());
 }
-const std::size_t json::array::size() const { return pimpl->value.Size(); }
+std::size_t json::array::size() const { return pimpl->value.Size(); }
 json::object::object() {}
 json::object::~object() {
   if (pimpl->is_created_value) {

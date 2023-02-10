@@ -52,7 +52,7 @@ bool texture::load_from_memory(std::vector<char> &buffer) {
   auto rw = std::unique_ptr<::SDL_RWops, SDLObjectCloser>(
       ::SDL_RWFromMem(reinterpret_cast<void *>(buffer.data()), buffer.size()));
   if (!rw) {
-    logger::error("%s", IMG_GetError());
+    logger::error("IMG Error\"%s\"", IMG_GetError());
 
     return false;
   }

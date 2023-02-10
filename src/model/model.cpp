@@ -8,6 +8,7 @@
 // internal
 #include "../render/render_system.hpp"
 #include <io/data_stream.hpp>
+#include <logger/logger.hpp>
 #include <model/model.hpp>
 #include <render/renderer.hpp>
 namespace sinen {

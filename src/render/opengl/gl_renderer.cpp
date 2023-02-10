@@ -79,6 +79,7 @@ void gl_renderer::initialize() {
 #endif
   gl_shader_parameter param;
   skybox_ubo.create(sizeof(gl_shader_parameter), &param);
+  check_error();
 }
 
 void gl_renderer::shutdown() {
@@ -221,28 +222,28 @@ void gl_renderer::disable_vertex_attrib_array() {
   glVertexAttribDivisor(7, 0);
 }
 void gl_renderer::check_error() {
-  auto error = glGetError();
-  if (error != GL_NO_ERROR) {
+  GLenum error;
+  while ((error = glGetError()) != 0) {
     switch (error) {
-    case GL_INVALID_ENUM:
+    case 0x0500:
       logger::error("GL_INVALID_ENUM");
       break;
-    case GL_INVALID_VALUE:
+    case 0x0501:
       logger::error("GL_INVALID_VALUE");
       break;
-    case GL_INVALID_OPERATION:
+    case 0x0502:
       logger::error("GL_INVALID_OPERATION");
       break;
-    case GL_INVALID_FRAMEBUFFER_OPERATION:
+    case 0x0506:
       logger::error("GL_INVALID_FRAMEBUFFER_OPERATION");
       break;
-    case GL_OUT_OF_MEMORY:
+    case 0x0505:
       logger::error("GL_OUT_OF_MEMORY");
       break;
-    case GL_STACK_UNDERFLOW:
+    case 0x0504:
       logger::error("GL_STACK_UNDERFLOW");
       break;
-    case GL_STACK_OVERFLOW:
+    case 0x0503:
       logger::error("GL_STACK_OVERFLOW");
       break;
     default:
@@ -456,7 +457,6 @@ void gl_renderer::add_vertex_array(const vertex_array &vArray,
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,
                vArrayGL.indices.size() * sizeof(uint32_t),
                vArrayGL.indices.data(), GL_DYNAMIC_DRAW);
-  check_error();
   m_VertexArrays.emplace(std::string(name), vArrayGL);
 }
 void gl_renderer::update_vertex_array(const vertex_array &vArray,
@@ -530,7 +530,7 @@ void gl_renderer::update_model(const model &m) {
                   vArrayGL.indices.size() * sizeof(uint32_t),
                   vArrayGL.indices.data());
 }
-void gl_renderer::draw2d(std::shared_ptr<struct drawable> sprite) {
+void gl_renderer::draw2d(std::shared_ptr<drawable> sprite) {
   create_texture(sprite->binding_texture);
   auto iter = m_drawer_2ds.begin();
   for (; iter != m_drawer_2ds.end(); ++iter) {
@@ -541,11 +541,14 @@ void gl_renderer::draw2d(std::shared_ptr<struct drawable> sprite) {
   gl_uniform_buffer ubo;
   ubo.create(sizeof(gl_shader_parameter) + sprite->shade.get_parameter_size(),
              &sprite->param);
-  ubo.update(sprite->shade.get_parameter_size(),
-             sprite->shade.get_parameter().get(), sizeof(gl_shader_parameter));
+  if (sprite->shade.get_parameter_size() > 0) {
+    ubo.update(sprite->shade.get_parameter_size(),
+               sprite->shade.get_parameter().get(),
+               sizeof(gl_shader_parameter));
+  }
   m_drawer_2ds.insert(iter, {sprite, ubo});
 }
-void gl_renderer::drawui(std::shared_ptr<class drawable> sprite) {
+void gl_renderer::drawui(std::shared_ptr<drawable> sprite) {
   create_texture(sprite->binding_texture);
   auto iter = m_drawer_uis.begin();
   for (; iter != m_drawer_uis.end(); ++iter) {
@@ -556,19 +559,25 @@ void gl_renderer::drawui(std::shared_ptr<class drawable> sprite) {
   gl_uniform_buffer ubo;
   ubo.create(sizeof(gl_shader_parameter) + sprite->shade.get_parameter_size(),
              &sprite->param);
-  ubo.update(sprite->shade.get_parameter_size(),
-             sprite->shade.get_parameter().get(), sizeof(gl_shader_parameter));
+  if (sprite->shade.get_parameter_size() > 0) {
+    ubo.update(sprite->shade.get_parameter_size(),
+               sprite->shade.get_parameter().get(),
+               sizeof(gl_shader_parameter));
+  }
   m_drawer_uis.insert(iter, {sprite, ubo});
 }
 
-void gl_renderer::draw3d(std::shared_ptr<class drawable> sprite) {
+void gl_renderer::draw3d(std::shared_ptr<drawable> sprite) {
   create_texture(sprite->binding_texture);
   auto iter = m_drawer_3ds.end();
   gl_uniform_buffer ubo;
   ubo.create(sizeof(gl_shader_parameter) + sprite->shade.get_parameter_size(),
              &sprite->param);
-  ubo.update(sprite->shade.get_parameter_size(),
-             sprite->shade.get_parameter().get(), sizeof(gl_shader_parameter));
+  if (sprite->shade.get_parameter_size() > 0) {
+    ubo.update(sprite->shade.get_parameter_size(),
+               sprite->shade.get_parameter().get(),
+               sizeof(gl_shader_parameter));
+  }
   m_drawer_3ds.insert(iter, {sprite, ubo});
 }
 
@@ -640,9 +649,11 @@ void gl_renderer::add_instancing(const instancing &_instancing) {
   ogl.ubo.create(sizeof(gl_shader_parameter) +
                      _instancing.object->shade.get_parameter_size(),
                  &_instancing.object->param);
-  ogl.ubo.update(_instancing.object->shade.get_parameter_size(),
-                 _instancing.object->shade.get_parameter().get(),
-                 sizeof(gl_shader_parameter));
+  if (_instancing.object->shade.get_parameter_size() > 0) {
+    ogl.ubo.update(_instancing.object->shade.get_parameter_size(),
+                   _instancing.object->shade.get_parameter().get(),
+                   sizeof(gl_shader_parameter));
+  }
 
   if (_instancing.type == object_type::_2D) {
     m_instancing_2d.emplace_back(ogl);
@@ -687,7 +698,6 @@ void gl_renderer::create_texture(texture handle) {
   SDL_FreeFormat(formatbuf);
   SDL_FreeSurface(imagedata);
   m_texture_ids.emplace(handle.handle, textureId);
-  check_error();
 }
 void gl_renderer::destroy_texture(texture handle) {
   if (m_texture_ids.contains(handle.handle)) {

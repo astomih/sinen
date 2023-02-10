@@ -51,7 +51,7 @@ void *data_stream::open_as_rwops(const asset_type &type,
 
   SDL_RWops *file = SDL_RWFromFile(filePath.c_str(), "r");
   if (!file) {
-    logger::error("File open error.");
+    logger::error("File open error %s", filePath.c_str());
     return nullptr;
   }
   return file;
@@ -63,11 +63,13 @@ std::string data_stream::open_as_string(const asset_type &type,
 
   SDL_RWops *file = SDL_RWFromFile(filePath.c_str(), "r");
   if (!file) {
+    logger::error("File open error %s", filePath.c_str());
     return std::string("");
   }
   size_t fileLength;
   void *load = SDL_LoadFile_RW(file, &fileLength, 1);
   if (!load) {
+    logger::error("Load error %s", filePath.c_str());
     return std::string("");
   }
   std::string result{reinterpret_cast<char *>(load), fileLength};

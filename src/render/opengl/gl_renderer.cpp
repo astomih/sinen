@@ -93,8 +93,8 @@ void gl_renderer::render() {
   if (!m_texture_ids.contains(tex.handle)) {
     create_texture(tex);
   }
-  auto w = window_system::size();
-  if (w.x != prev_window_x || w.y != prev_window_y) {
+  if (window::resized()) {
+    auto w = window_system::size();
     glViewport(0, 0, w.x, w.y);
     prev_window_x = w.x;
     prev_window_y = w.y;

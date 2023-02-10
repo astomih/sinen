@@ -22,6 +22,7 @@ public:
   static bool is_pressed(code _button);
   static bool is_released(code _button);
   enum class code { LEFT = 1, MIDDLE = 2, RIGHT = 3, X1 = 4, X2 = 5 };
+  using enum code;
 };
 } // namespace sinen
 #endif // !SINEN_MOUSE_HPP

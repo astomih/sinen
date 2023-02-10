@@ -6,28 +6,28 @@
 #include <render/graphics_api.hpp>
 #include <render/renderer.hpp>
 #include <string>
-#include <window/window_state.hpp>
 
 namespace sinen {
 class window_system {
 public:
   static void initialize(const std::string &name, graphics_api api);
   static void shutdown();
-  static void process_input();
+  static void prepare_frame();
+  static void process_input(SDL_Event &event);
   static SDL_Window *get_sdl_window() { return m_window; }
-  static void set_size(const vector2 &size);
+  static void resize(const vector2 &size);
   static void set_fullscreen(bool fullscreen);
-  static void set_name(const std::string &name);
+  static void rename(const std::string &name);
 
   static vector2 size() { return m_size; }
+  static bool resized() { return m_resized; }
   static vector2 center() { return vector2(m_size.x / 2.0, m_size.y / 2.0); }
   static std::string name() { return m_name; }
-  static const window_state &state() { return m_state; }
 
 private:
+  static bool m_resized;
   static vector2 m_size;
   static std::string m_name;
-  static window_state m_state;
   static ::SDL_Window *m_window;
 };
 } // namespace sinen

@@ -20,7 +20,7 @@ local function list()
         setup = function(self)
             self.tex = texture()
             self.font = font()
-            self.font:load(DEFAULT_FONT_NAME, 32)
+            self.font:load(DEFAULT_FONT_NAME, 32 / scene.size().x * window.size().x)
             self.start_pos.y = (self.scale.y + self.list_space) * self.num / 4
             for i = 1, self.num do
                 for i = #self.texts + 1, self.num do
@@ -39,8 +39,8 @@ local function list()
                 self.text_drawers[i].scale = text_texture:size()
                 self.drawers[i].scale = self.scale
                 self.drawers[i].position =
-                    vector2(self.start_pos.x,
-                        self.start_pos.y + (i - 1) * -self.list_space)
+                vector2(self.start_pos.x,
+                    self.start_pos.y + (i - 1) * -self.list_space)
                 self.text_drawers[i].position = self.drawers[i].position
             end
             self.tex:fill_color(color(0.7, 0.7, 0.7, 0.8))
@@ -52,6 +52,9 @@ local function list()
         end,
         before_len = 1,
         update = function(self)
+            if window.resized() then
+                self.font:load(DEFAULT_FONT_NAME, 32 / scene.size().x * window.size().x)
+            end
             local mpos = mouse.position_on_scene()
             mpos.x = mpos.x - scene.center().x
             mpos.y = -(mpos.y - scene.center().y)
@@ -77,7 +80,7 @@ local function list()
             if not self.hide then
                 if self.selecting then
                     self.select_frame_drawer.position =
-                        self.drawers[self.selecting_index].position
+                    self.drawers[self.selecting_index].position
                     self.select_frame_drawer:draw()
                 end
                 for i = 1, self.num do

@@ -11,7 +11,7 @@ local scene_switcher = require("scene_switcher")()
 local button = require("gui/button")()
 
 scene.resize(vector2(1280, 720))
-window.set_name("DIVE TO SINEN")
+window.rename("DIVE TO SINEN")
 SCORE = 0
 NOW_STAGE = 1
 menu_object:setup()

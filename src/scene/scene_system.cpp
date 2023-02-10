@@ -1,6 +1,5 @@
 #include "scene_system.hpp"
 #include "../audio/sound_system.hpp"
-#include "../event/event_system.hpp"
 #include "../input/input_system.hpp"
 #include "../render/render_system.hpp"
 #include "../script/script_system.hpp"
@@ -68,6 +67,7 @@ void scene_system::setup() {
 }
 
 void scene_system::run_loop() {
+  window_system::prepare_frame();
   process_input();
   update_scene();
   input_system::prepare_for_update();
@@ -77,11 +77,12 @@ void scene_system::run_loop() {
 
 void scene_system::process_input() {
 
-  while (SDL_PollEvent(&event_system::current_event)) {
-    ImGui_ImplSDL2_ProcessEvent(&event_system::current_event);
-    window_system::process_input();
-    input_system::process_event();
-    switch (event_system::current_event.type) {
+  SDL_Event event;
+  while (SDL_PollEvent(&event)) {
+    ImGui_ImplSDL2_ProcessEvent(&event);
+    window_system::process_input(event);
+    input_system::process_event(event);
+    switch (event.type) {
     case SDL_QUIT: {
       m_game_state = scene::state::quit;
     } break;
@@ -89,9 +90,6 @@ void scene_system::process_input() {
       break;
     }
   }
-
-  if (m_game_state == scene::state::quit)
-    return;
 }
 
 void scene_system::update_scene() {

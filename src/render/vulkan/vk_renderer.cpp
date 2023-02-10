@@ -46,7 +46,7 @@ void vk_renderer::shutdown() {
   m_base->shutdown();
 }
 void vk_renderer::render() {
-  if (m_base->mSwapchain->is_need_recreate(window::size())) {
+  if (window::resized()) {
     m_base->recreate_swapchain();
     m_present_texture.destroy_descriptor_set_for_imgui();
     m_present_texture.window_resize(window::size().x, window::size().y);

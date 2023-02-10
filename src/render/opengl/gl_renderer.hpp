@@ -114,6 +114,7 @@ private:
   void draw_instancing_3d();
   void enable_vertex_attrib_array();
   void disable_vertex_attrib_array();
+  void check_error();
 
   std::string vertexID;
 

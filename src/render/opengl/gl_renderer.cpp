@@ -89,6 +89,12 @@ void gl_renderer::shutdown() {
 }
 
 void gl_renderer::render() {
+  {
+    auto error = glGetError();
+    if (error != GL_NO_ERROR) {
+      logger::error("%s", error);
+    }
+  }
   texture tex = render_system::get_skybox_texture();
   if (!m_texture_ids.contains(tex.handle)) {
     create_texture(tex);
@@ -213,6 +219,37 @@ void gl_renderer::disable_vertex_attrib_array() {
   glVertexAttribDivisor(5, 0);
   glVertexAttribDivisor(6, 0);
   glVertexAttribDivisor(7, 0);
+}
+void gl_renderer::check_error() {
+  auto error = glGetError();
+  if (error != GL_NO_ERROR) {
+    switch (error) {
+    case GL_INVALID_ENUM:
+      logger::error("GL_INVALID_ENUM");
+      break;
+    case GL_INVALID_VALUE:
+      logger::error("GL_INVALID_VALUE");
+      break;
+    case GL_INVALID_OPERATION:
+      logger::error("GL_INVALID_OPERATION");
+      break;
+    case GL_INVALID_FRAMEBUFFER_OPERATION:
+      logger::error("GL_INVALID_FRAMEBUFFER_OPERATION");
+      break;
+    case GL_OUT_OF_MEMORY:
+      logger::error("GL_OUT_OF_MEMORY");
+      break;
+    case GL_STACK_UNDERFLOW:
+      logger::error("GL_STACK_UNDERFLOW");
+      break;
+    case GL_STACK_OVERFLOW:
+      logger::error("GL_STACK_OVERFLOW");
+      break;
+    default:
+      logger::error("Unknown error");
+      break;
+    }
+  }
 }
 
 void gl_renderer::draw_skybox() {
@@ -419,6 +456,7 @@ void gl_renderer::add_vertex_array(const vertex_array &vArray,
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,
                vArrayGL.indices.size() * sizeof(uint32_t),
                vArrayGL.indices.data(), GL_DYNAMIC_DRAW);
+  check_error();
   m_VertexArrays.emplace(std::string(name), vArrayGL);
 }
 void gl_renderer::update_vertex_array(const vertex_array &vArray,
@@ -649,6 +687,7 @@ void gl_renderer::create_texture(texture handle) {
   SDL_FreeFormat(formatbuf);
   SDL_FreeSurface(imagedata);
   m_texture_ids.emplace(handle.handle, textureId);
+  check_error();
 }
 void gl_renderer::destroy_texture(texture handle) {
   if (m_texture_ids.contains(handle.handle)) {

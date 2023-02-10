@@ -23,7 +23,7 @@ jobs:
     - name: CMake
       run: |
         git submodule update --init --recursive
-        emcmake cmake -DCMAKE_BUILD_TYPE=Debug -B build
+        emcmake cmake -DCMAKE_BUILD_TYPE=Release -B build
     - name: Build
       run: |
         cd ${{github.workspace}}/build/game

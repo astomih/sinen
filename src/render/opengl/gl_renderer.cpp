@@ -419,7 +419,8 @@ void gl_renderer::draw_ui() {
 
 void gl_renderer::add_vertex_array(const vertex_array &vArray,
                                    std::string_view name) {
-  if (m_VertexArrays.contains(name.data())) {
+  std::string namestr = name.data();
+  if (m_VertexArrays.contains(namestr)) {
     return;
   }
   gl_vertex_array vArrayGL;
@@ -457,7 +458,7 @@ void gl_renderer::add_vertex_array(const vertex_array &vArray,
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,
                vArrayGL.indices.size() * sizeof(uint32_t),
                vArrayGL.indices.data(), GL_DYNAMIC_DRAW);
-  m_VertexArrays.emplace(std::string(name), vArrayGL);
+  m_VertexArrays[namestr] = vArrayGL;
 }
 void gl_renderer::update_vertex_array(const vertex_array &vArray,
                                       std::string_view name) {

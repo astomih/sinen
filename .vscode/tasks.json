@@ -4,7 +4,7 @@
     {
       "label": "DebugBuild",
       "type": "shell",
-      "command": "cd build/debug && cmake ../.. -DALL_BUILD=OFF -DCMAKE_BUILD_TYPE=Debug && ninja",
+      "command": "cd build/debug && cmake ../.. -DALL_BUILD=OFF -DCMAKE_BUILD_TYPE=Release && ninja",
       "problemMatcher": [],
       "group": {
         "kind": "build",

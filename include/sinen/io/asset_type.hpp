@@ -6,7 +6,6 @@ enum class asset_type {
   Model,
   Music,
   Script,
-  gl_shader,
   vk_shader,
   Scene,
   Shader,

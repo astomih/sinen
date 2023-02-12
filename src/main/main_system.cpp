@@ -88,7 +88,9 @@ std::string main::get_current_scene_number() {
 bool main_system::initialize() {
   logger::info("Main system activating");
   SDL_SetMainReady();
-  SDL_Init(SDL_INIT_EVERYTHING);
+  SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_EVENTS |
+           SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER |
+           SDL_INIT_SENSOR);
   TTF_Init();
   IMG_Init(IMG_INIT_PNG);
   SDLNet_Init();

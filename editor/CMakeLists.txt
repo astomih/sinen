@@ -3,6 +3,9 @@ project(editor)
 set(CMAKE_CXX_FLAGS "-std=c++2a")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -march=native")
+if(WIN32)
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -static -mwindows")
+endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 
 

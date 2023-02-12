@@ -17,11 +17,7 @@ set(SINEN_INCLUDE_DIRS
 set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g -O0 -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -march=native")
 if(EMSCRIPTEN)
-  option(BUILD_DEMO "Build Demo project" OFF)
   option(BUILD_GAME "Build Game project" ON)
-  if(BUILD_DEMO)
-    add_subdirectory(./demo)
-  endif()
   if(BUILD_GAME)
     add_subdirectory(./game)
   endif()
@@ -58,10 +54,6 @@ if(EMSCRIPTEN)
 		")
   endif()
 else()
-  option(BUILD_DEMO "Build Demo project" ON)
-  if(BUILD_DEMO)
-    add_subdirectory(./demo)
-  endif()
   add_subdirectory(./tools/model_converter)
   add_subdirectory(./editor)
   add_subdirectory(./game)
@@ -78,14 +70,11 @@ else()
   endif()
   set(CMAKE_EXPORT_COMPILE_COMMANDS true)
   find_package(Vulkan REQUIRED)
-  find_package(OpenGL REQUIRED)
-  find_package(GLEW REQUIRED)
   file(
     GLOB
     SOURCE_FILES
     src/*/*.cpp
     src/render/vulkan/*.cpp
-    src/render/opengl/*.cpp
     external/ImGui/source/*.cpp
     external/Lua/source/*.c
     external/mojoAL/*.c)

@@ -8,7 +8,7 @@ Sinen Engine is a media library for C++20 that is being produced mainly for game
 ## Feature
 - Lua game engine
 - Written in C++20
-- Using OpenGL/Vulkan APIs
+- Using Vulkan API
 - Cross platform
 - Lightweight
 - Incorporates a text editor

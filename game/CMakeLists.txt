@@ -72,11 +72,6 @@ set(COMMON_LIBRARIES
 	SDL2
 	SDL2main
 )
-if(WIN32)
-	set(LIBRARIES ${COMMON_LIBRARIES} glew32 opengl32)
-else()
-	set(LIBRARIES ${COMMON_LIBRARIES} GLEW GL ${CMAKE_DL_LIBS})
-endif()
 
 add_executable(game
 	${SOURCE_FILES}

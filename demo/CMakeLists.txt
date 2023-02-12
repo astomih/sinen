@@ -66,8 +66,7 @@ else()
         SDL2_ttf
         SDL2_net
         openal
-        glew32
-        opengl32)
+        )
   else()
     set(LIBRARIES
         sinen
@@ -80,8 +79,6 @@ else()
         SDL2_ttf
         SDL2_net
         openal
-        GLEW
-        GL
         ${CMAKE_DL_LIBS})
   endif(WIN32)
 

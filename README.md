@@ -58,7 +58,7 @@ end
 - mojoAL
 - rapidjson
 - SDL2(image,mixer,net,ttf)
-- Vulkan 1.2
+- Vulkan 1.1
 - VulkanMemoryAllocator
 
 # Game
@@ -66,7 +66,7 @@ I named this game 'DIVE TO SINEN'.
 ![Game Sample](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/game_sample.png)
 
 # Editor
-![Editor Sample](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/editor_sample.png)
+![Editor Sample](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/editor_sample.png)  
 Editor is a level editor for Engine.  
 ## Dependencies
 - Sinen Engine

@@ -63,10 +63,7 @@ public:
   static void *get_texture_id();
 
 private:
-  static std::unique_ptr<class gl_renderer> m_gl_renderer;
-#if !defined(EMSCRIPTEN) && !defined(ANDROID)
   static std::unique_ptr<class vk_renderer> m_vk_renderer;
-#endif
   static void setup_shapes();
   static color clearColor;
   // Window

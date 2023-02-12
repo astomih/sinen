@@ -9,11 +9,13 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 file(GLOB SOURCE_FILES
 	./src/*/*.cpp 
 	./src/*.cpp
-	./icon.rc
+	./data/icon/icon.rc
 )
 file(GLOB INCLUDE_DIRS
 	./include
-	./include/sinen
+	../include
+	../include/sinen
+	../external/sol2/include
 )
 if(EMSCRIPTEN)
   set(CMAKE_C_COMPILER "emcc")
@@ -61,23 +63,17 @@ link_directories(
 	..
 )
 find_package(Vulkan REQUIRED)
-find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
-find_package(SDL2 REQUIRED)
 
 set(COMMON_LIBRARIES
 	sinen
 	script_engine
 	${Vulkan_LIBRARIES}	
-	SDL2
-	SDL2main
 )
 if(WIN32)
-	set(LIBRARIES ${COMMON_LIBRARIES} glew32 opengl32)
+	set(LIBRARIES ${COMMON_LIBRARIES})
 else()
-	set(LIBRARIES ${COMMON_LIBRARIES} GLEW GL ${CMAKE_DL_LIBS})
+	set(LIBRARIES ${COMMON_LIBRARIES} ${CMAKE_DL_LIBS})
 endif()
-
 add_executable(game
 	${SOURCE_FILES}
 )

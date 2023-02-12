@@ -8,6 +8,7 @@
 // internal
 #include "../render/render_system.hpp"
 #include <io/data_stream.hpp>
+#include <logger/logger.hpp>
 #include <model/model.hpp>
 #include <render/renderer.hpp>
 namespace sinen {
@@ -66,7 +67,7 @@ void model::load(std::string_view str, std::string_view name) {
     }
   }
   v_array.indexCount = v_array.indices.size();
-  render_system::add_vertex_array(v_array, name);
+  render_system::add_vertex_array(v_array, std::string(name));
 }
 
 std::vector<vertex> model::all_vertex() const {

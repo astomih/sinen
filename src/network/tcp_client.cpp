@@ -17,7 +17,7 @@ tcp_client::tcp_client() : m_impl(std::make_unique<impl>()) {}
 tcp_client::~tcp_client() = default;
 bool tcp_client::resolve_host(std::string_view address, uint16_t port) {
   if (SDLNet_ResolveHost(&m_impl->server_ip, address.data(), port) != 0) {
-    logger::error("%s", SDLNet_GetError());
+    logger::error("Resolve Error \"%s\"", SDLNet_GetError());
     return false;
   }
   return true;

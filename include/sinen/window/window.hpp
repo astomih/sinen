@@ -1,7 +1,6 @@
 #ifndef SINEN_WINDOW_HPP
 #define SINEN_WINDOW_HPP
 #include "../math/vector2.hpp"
-#include "window_state.hpp"
 #include <string>
 
 namespace sinen {
@@ -28,7 +27,7 @@ public:
    *
    * @param size window size
    */
-  static void set_size(const vector2 &size);
+  static void resize(const vector2 &size);
   /**
    * @brief Set the fullscreen
    *
@@ -40,7 +39,7 @@ public:
    *
    * @param name
    */
-  static void set_name(const std::string &name);
+  static void rename(const std::string &name);
   /**
    * @brief Get the window name
    *
@@ -48,11 +47,12 @@ public:
    */
   static std::string name();
   /**
-   * @brief Get the state of the window
+   * @brief Check if the window is resized
    *
-   * @return const window_state& state
+   * @return true Resized window
+   * @return false Not resized window
    */
-  static const window_state &state();
+  static bool resized();
   /**
    * @brief Get the sdl window object
    *

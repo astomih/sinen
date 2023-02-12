@@ -1,7 +1,7 @@
-#include "../event/event_system.hpp"
 #include "../window/window_system.hpp"
-#include "input_system.hpp"
 #include <SDL.h>
+
+#include "input_system.hpp"
 #include <cstring>
 #include <imgui_impl_sdl.h>
 #include <scene/scene.hpp>
@@ -244,13 +244,12 @@ void input_system::update() {
 
   mouse::hide_cursor(isHide);
 }
-void input_system::process_event() {
+void input_system::process_event(SDL_Event &event) {
 
-  auto e = event_system::current_event;
-  switch (e.type) {
+  switch (event.type) {
   case SDL_MOUSEWHEEL: {
-    m_mouse.mScrollWheel =
-        vector2(static_cast<float>(e.wheel.x), static_cast<float>(e.wheel.y));
+    m_mouse.mScrollWheel = vector2(static_cast<float>(event.wheel.x),
+                                   static_cast<float>(event.wheel.y));
     break;
   }
   default:

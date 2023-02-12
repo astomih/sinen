@@ -45,6 +45,7 @@ public:
     TOUCHPAD, /* PS4/PS5 touchpad button */
     NUM_GAMECONTROLLER_BUTTON
   };
+  using enum code;
 };
 } // namespace sinen
 

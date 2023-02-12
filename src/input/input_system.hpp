@@ -6,6 +6,8 @@
 #include <input/gamepad.hpp>
 #include <input/keyboard.hpp>
 #include <input/mouse.hpp>
+
+#include <SDL.h>
 namespace sinen {
 struct keyboard_state_impl {
 public:
@@ -53,7 +55,7 @@ public:
   static void prepare_for_update();
   // Called after SDL_PollEvents loop
   static void update();
-  static void process_event();
+  static void process_event(SDL_Event &event);
 
   static void set_relative_mouse_mode(bool value);
 

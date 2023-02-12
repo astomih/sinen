@@ -1,6 +1,5 @@
 local world = require "world"
 local tree = model()
-tree:load("tree.sim", "tree")
 
 local function effect()
     local object = {

@@ -11,6 +11,7 @@ file(GLOB SOURCE_FILES
 	./src/*.cpp
   ../external/ImGuiColorTextEdit/*.cpp
   ../external/ImGuizmo/*.cpp
+	./data/icon/icon.rc
 )
 
 include_directories(
@@ -25,21 +26,16 @@ link_directories(
 	..
 )
 find_package(Vulkan REQUIRED)
-find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
-find_package(SDL2 REQUIRED)
 
 set(COMMON_LIBRARIES
 	sinen
 	script_engine
 	${Vulkan_LIBRARIES}	
-	SDL2
-	SDL2main
 )
 if(WIN32)
-	set(LIBRARIES ${COMMON_LIBRARIES} glew32 opengl32)
+	set(LIBRARIES ${COMMON_LIBRARIES})
 else()
-	set(LIBRARIES ${COMMON_LIBRARIES} GLEW GL ${CMAKE_DL_LIBS})
+	set(LIBRARIES ${COMMON_LIBRARIES} ${CMAKE_DL_LIBS})
 endif()
 
 add_executable(editor

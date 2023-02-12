@@ -26,7 +26,7 @@ void *font_system::load(std::string_view file_name, int32_t point_size) {
       (SDL_RWops *)data_stream::open_as_rwops(asset_type::Font, file_name), 1,
       point_size);
   if (!m_fonts[std::string(file_name)][point_size]) {
-    logger::error("%s", TTF_GetError());
+    logger::error("Font error \"%s\"", TTF_GetError());
     return nullptr;
   }
   return m_fonts[std::string(file_name)][point_size];

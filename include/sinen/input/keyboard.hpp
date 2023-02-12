@@ -295,6 +295,7 @@ public:
     AUDIOFASTFORWARD = 286,
     NUM_KEYCODES = 512
   };
+  using enum code;
 };
 } // namespace sinen
 #endif // !SINEN_KEYBOARD_HPP

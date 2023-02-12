@@ -33,8 +33,6 @@ SDL_Surface *texture_system::get_raw(handle_t handle) {
   SDL_Surface *surf = reinterpret_cast<SDL_Surface *>(handle);
   return surf;
 }
-void texture_system::move(handle_t handle,
-                          std::unique_ptr<SDL_Surface, SDLObjectCloser> ptr) {}
 void texture_system::shutdown() {}
 
 } // namespace sinen

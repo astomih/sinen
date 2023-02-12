@@ -15,7 +15,6 @@ public:
   static bool contains(handle_t);
   static SDL_Surface &get(handle_t);
   static SDL_Surface *get_raw(handle_t);
-  static void move(handle_t, std::unique_ptr<SDL_Surface, SDLObjectCloser>);
   static void remove(handle_t);
   static void shutdown();
 

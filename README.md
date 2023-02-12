@@ -16,9 +16,7 @@ Sinen Engine is a media library for C++20 that is being produced mainly for game
 ## Supported platforms
 [![Windows(MinGW)](https://github.com/astomih/sinen/actions/workflows/mingw.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/mingw.yml)
 [![Linux](https://github.com/astomih/sinen/actions/workflows/linux.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/linux.yml)
-[![Emscripten(Web)](https://github.com/astomih/sinen/actions/workflows/emscripten.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/emscripten.yml)
-[![Android](https://github.com/astomih/sinen/actions/workflows/android.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/android.yml)
-
+We are also starting a new survey on WebGPU.
 ## Documents
 [![Documents](https://github.com/astomih/sinen/actions/workflows/documents.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/documents.yml)  
 [View Documents](https://astomih.github.io/sinen)  
@@ -54,19 +52,16 @@ end
  MIT Lisence
 
 ## Dependencies 
-- GLEW
 - Dear ImGui
 - Lua
 - Sol2
 - mojoAL
-- OpenGL 3.3
 - rapidjson
 - SDL2(image,mixer,net,ttf)
 - Vulkan 1.2
 - VulkanMemoryAllocator
 
 # Game
-[https://astomih.github.io/sinen/game](https://astomih.github.io/sinen/game/)  
 I named this game 'DIVE TO SINEN'.  
 ![Game Sample](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/game_sample.png)
 

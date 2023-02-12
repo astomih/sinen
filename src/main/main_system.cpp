@@ -109,13 +109,8 @@ bool main_system::initialize() {
 
   } else
     str = "Vulkan";
-  if (str.compare("Vulkan") == 0) {
-    window_system::initialize("SinenEngine(Vulkan)", graphics_api::Vulkan);
-    render_system::initialize(graphics_api::Vulkan);
-  } else if (str.compare("OpenGL") == 0) {
-    window_system::initialize("SinenEngine(OpenGL)", graphics_api::OpenGL);
-    render_system::initialize(graphics_api::OpenGL);
-  }
+  window_system::initialize("SinenEngine", graphics_api::Vulkan);
+  render_system::initialize(graphics_api::Vulkan);
 
 #else
   window_system::initialize("SinenEngine", graphics_api::ES);
@@ -155,7 +150,7 @@ void main_system::run() {
   }
 #else
   emscripten_loop = [&]() { loop(); };
-  emscripten_set_main_loop(main_loop, 120, true);
+  emscripten_set_main_loop(main_loop, -1, true);
 #endif
 }
 bool main_system::loop() {

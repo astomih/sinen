@@ -2,7 +2,7 @@ local texture_clear = {}
 local font_clear = {}
 local drawer_clear = {}
 local scene_switcher = require("scene_switcher")()
-
+NOW_STAGE = 1
 texture_clear = texture()
 drawer_clear = drawui(texture_clear)
 font_clear = font()

@@ -16,42 +16,7 @@ set(SINEN_INCLUDE_DIRS
 )
 set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g -O0 -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -march=native")
-if(ANDROID)
-  set(CMAKE_CXX_FLAGS "-std=c++20 -DANDROID")
-  file(
-    GLOB_RECURSE
-    SOURCE_FILES
-    src/*/*.cpp
-    src/render/opengl/*.cpp
-    external/ImGui/source/gles/*.cpp
-    external/mojoAL/mojoal.c
-    external/Lua/source/*.c)
-  find_library(SDL2 SDL2)
-  find_library(SDL2_image SDL2_image)
-  find_library(SDL2_mixer SDL2_mixer)
-  find_library(SDL2_ttf SDL2_ttf)
-  find_library(SDL2_net SDL2_net)
-  add_library(sinen STATIC ${SOURCE_FILES})
-  set(SINEN_INCLUDE_DIRS
-   ${SINEN_INCLUDE_DIRS}
-   external/SDL2
-   external/SDL2_image
-   external/SDL2_mixer
-   external/SDL2_net
-   external/SDL2_ttf
-  )
-  target_include_directories(sinen PUBLIC ${SINEN_INCLUDE_DIRS})
-  target_link_libraries(
-    sinen
-    SDL2
-    SDL2_image
-    SDL2_mixer
-    SDL2_ttf
-    SDL2_net
-    script_engine
-    GLESv3
-    log)
-elseif(EMSCRIPTEN)
+if(EMSCRIPTEN)
   option(BUILD_DEMO "Build Demo project" OFF)
   option(BUILD_GAME "Build Game project" ON)
   if(BUILD_DEMO)
@@ -72,7 +37,9 @@ elseif(EMSCRIPTEN)
     set(CMAKE_CXX_FLAGS
         "${CMAKE_CXX_FLAGS} \
 		-Wno-unused-command-line-argument \
-		-s USE_WEBGL2=1 \
+		-s MIN_WEBGL_VERSION=2 \
+		-s MAX_WEBGL_VERSION=2 \
+    -s FULL_ES3=1 \
 		-s USE_SDL=2 \
 		-s USE_SDL_IMAGE=2 \
 		-s USE_SDL_TTF=2 \

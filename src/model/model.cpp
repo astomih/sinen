@@ -67,7 +67,7 @@ void model::load(std::string_view str, std::string_view name) {
     }
   }
   v_array.indexCount = v_array.indices.size();
-  render_system::add_vertex_array(v_array, name);
+  render_system::add_vertex_array(v_array, std::string(name));
 }
 
 std::vector<vertex> model::all_vertex() const {

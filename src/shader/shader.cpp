@@ -2,10 +2,11 @@
 
 namespace sinen {
 shader::shader()
-    : m_parameter_size(0), m_parameter(nullptr), m_vert_name("default"),
+    : m_parameter(nullptr), m_parameter_size(0), m_vert_name("default"),
       m_frag_name("default") {}
 shader::shader(std::string_view vertex_shader, std::string_view fragment_shader)
-    : m_vert_name(vertex_shader), m_frag_name(fragment_shader) {}
+    : m_parameter(nullptr), m_parameter_size(0), m_vert_name(vertex_shader),
+      m_frag_name(fragment_shader) {}
 void shader::set_vertex_shader(std::string_view vertex_shader) {
   m_vert_name = vertex_shader;
 }

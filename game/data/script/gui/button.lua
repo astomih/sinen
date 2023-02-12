@@ -3,16 +3,18 @@ local function button()
     font = {},
     back_drawer = {},
     drawer = {},
+    bg_color = color(0.7, 0.2, 0.2, 1),
+    fg_color = color(1, 1, 1, 0.9),
     show = function(self, text, pos, scale)
       local back_texture = GUI_MANAGER:get_texture()
       local texture = GUI_MANAGER:get_texture()
-      back_texture:fill_color(color(0.7, 0.2, 0.2, 1))
+      back_texture:fill_color(self.bg_color)
       self.back_drawer = drawui(back_texture)
       self.back_drawer.position = pos
       self.back_drawer.scale = scale
       GUI_MANAGER:add(self.back_drawer)
       self.drawer = drawui(texture)
-      self.font:render_text(texture, text, color(1, 1, 1, 0.9))
+      self.font:render_text(texture, text, self.fg_color)
       self.drawer.scale = texture:size()
       self.drawer.position = pos
       GUI_MANAGER:add(self.drawer)
@@ -34,7 +36,7 @@ local function button()
           return true
         end
       else
-        back_texture:fill_color(color(0.7, 0.2, 0.2, 1))
+        back_texture:fill_color(self.bg_color)
       end
       return false
     end,

@@ -32,6 +32,8 @@ local scene_switcher = require("scene_switcher")()
 
 local camera_controller = require("camera_controller")()
 
+local equipment_menu = require("gui/equipment_menu")()
+
 score_font:load(DEFAULT_FONT_NAME, 64)
 menu_object:setup()
 music:load("base.ogg")
@@ -109,6 +111,7 @@ camera_controller:setup(player)
 camera_controller:update()
 scene_switcher:setup()
 scene_switcher:start("")
+equipment_menu:setup()
 
 local function draw()
   player:draw()
@@ -142,6 +145,8 @@ local function draw()
   sprite:draw()
   stair:draw()
   score_drawer:draw()
+  equipment_menu:draw()
+  GUI_MANAGER:update()
   menu_object:draw()
 end
 
@@ -155,6 +160,7 @@ function update()
     draw()
     return
   end
+  if equipment_menu:update() then draw() return end
   stair.position.z = dts.sin_0_1(1.0)
   local player_on_map = point2i(0, 0)
   player_on_map.x = math.floor(player.drawer.position.x / TILE_SIZE + 0.5)

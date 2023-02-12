@@ -30,6 +30,8 @@ local menu = require("gui/menu")
 local menu_object = menu()
 local scene_switcher = require("scene_switcher")()
 
+local equipment_menu = require("gui/equipment_menu")()
+
 -- key object
 local key = {}
 local key_model = model()
@@ -125,6 +127,8 @@ camera_controller:update()
 scene_switcher:setup()
 scene_switcher:start("")
 
+equipment_menu:setup()
+
 local function draw()
     player:draw()
     local px = math.floor(camera_controller.target.x / TILE_SIZE + 0.5)
@@ -170,6 +174,8 @@ local function draw()
         key_drawer2d:draw()
     end
     score_drawer:draw()
+    equipment_menu:draw()
+    GUI_MANAGER:update()
     menu_object:draw()
 end
 
@@ -180,6 +186,10 @@ function update()
     end
     menu_object:update()
     if not menu_object.hide then
+        draw()
+        return
+    end
+    if equipment_menu:update() then
         draw()
         return
     end

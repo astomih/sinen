@@ -7,7 +7,6 @@ local function gui_manager()
     add = function(self, drawer)
       self.drawers[self.current_drawer_pos].position = drawer.position
       self.drawers[self.current_drawer_pos].scale    = drawer.scale
-      self.drawers[self.current_drawer_pos].rotation = drawer.rotation
       self.drawers[self.current_drawer_pos].texture  = drawer.texture
       self.current_drawer_pos                        = self.current_drawer_pos + 1
     end,
@@ -16,7 +15,7 @@ local function gui_manager()
       return self.textures[self.current_texture_pos - 1]
     end,
     update = function(self)
-      for i = 1, self.current_drawer_pos do
+      for i = 1, self.current_drawer_pos - 1 do
         self.drawers[i]:draw()
       end
       self.current_drawer_pos = 1

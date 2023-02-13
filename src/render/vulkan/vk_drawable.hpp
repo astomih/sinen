@@ -3,12 +3,19 @@
 #if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include "vk_buffer.hpp"
 #include <drawable/drawable.hpp>
+
 namespace sinen {
+class vk_instancing {
+public:
+  vk_instancing() {}
+  vk_buffer instance_buffer;
+};
 class vk_drawable {
 public:
   std::array<VkDescriptorSet, 2> descriptor_sets;
   std::array<vk_buffer, 2> uniformBuffers;
   std::shared_ptr<drawable> drawable_obj;
+  std::unique_ptr<vk_instancing> instancing_obj;
   drawable::parameter get_parameter() { return drawable_obj->param; }
   shader get_shader() { return drawable_obj->shade; }
   texture get_texture() { return drawable_obj->binding_texture; }

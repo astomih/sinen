@@ -22,8 +22,6 @@
 #include "input/gamepad.hpp"
 #include "input/keyboard.hpp"
 #include "input/mouse.hpp"
-#include "instancing/instancing.hpp"
-#include "instancing/instancing_wrapper.hpp"
 #include "io/data_stream.hpp"
 #include "io/file.hpp"
 #include "io/json.hpp"

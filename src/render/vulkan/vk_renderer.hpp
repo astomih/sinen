@@ -1,7 +1,6 @@
 #ifndef SINEN_VK_RENDERER_HPP
 #define SINEN_VK_RENDERER_HPP
 #include <functional>
-#include <instancing/instancing.hpp>
 #include <memory>
 #include <model/model.hpp>
 #include <texture/texture_type.hpp>
@@ -29,13 +28,6 @@ struct vk_vertex_array : public vertex_array {
   vk_buffer indexBuffer;
 };
 
-class vk_instancing {
-public:
-  vk_instancing(const instancing &_instancing) : ins(_instancing) {}
-  instancing ins;
-  std::shared_ptr<class vk_drawable> m_vk_draw_object;
-  vk_buffer instance_buffer;
-};
 class vk_shader_parameter {
 public:
   drawable::parameter param;
@@ -61,8 +53,6 @@ public:
 
   void load_shader(const shader &shaderInfo);
   void unload_shader(const shader &shaderInfo);
-
-  void add_instancing(const instancing &_instancing);
 
   void prepare();
   void cleanup();
@@ -107,9 +97,6 @@ private:
   void prepare_imgui();
   void render_imgui(VkCommandBuffer command);
   void draw_skybox(VkCommandBuffer command);
-  void draw_instancing_3d(VkCommandBuffer command,
-                          bool is_change_pipeline = true);
-  void draw_instancing_2d(VkCommandBuffer command);
   void create_image_object(const handle_t &handle);
   VkSampler create_sampler();
   void set_image_memory_barrier(VkCommandBuffer command, VkImage image,
@@ -120,7 +107,6 @@ private:
   VkDescriptorSetLayout m_descriptor_set_layout;
   VkDescriptorPool m_descriptor_pool;
   VkSampler m_sampler;
-  VkPhysicalDeviceMemoryProperties m_physical_mem_props;
   vk_pipeline_layout m_pipeline_layout_normal;
   vk_pipeline_layout m_pipeline_layout_instance;
   std::unordered_map<std::string, vk_pipeline> m_pipelines;
@@ -129,8 +115,6 @@ private:
   std::vector<std::shared_ptr<vk_drawable>> m_draw_object_2d;
   std::vector<std::shared_ptr<vk_drawable>> m_draw_object_ui;
   std::unordered_map<handle_t, vk_image> m_image_object;
-  std::vector<vk_instancing> m_instancies_3d;
-  std::vector<vk_instancing> m_instancies_2d;
   std::shared_ptr<vk_drawable> m_skybox;
 };
 } // namespace sinen

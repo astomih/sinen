@@ -52,9 +52,32 @@ void draw2d::draw() {
   obj->param.proj = viewproj;
   obj->param.view = matrix4::identity;
   obj->vertexIndex = this->vertex_name;
+  for (auto &i : worlds) {
+    matrix4 t = matrix4::identity;
+    t.mat[3][0] = i.position.x;
+    t.mat[3][1] = i.position.y;
+    quaternion q(vector3::neg_unit_z, i.rotation);
+    matrix4 r = matrix4::create_from_quaternion(q);
+    matrix4 s = matrix4::identity;
+    s.mat[0][0] = i.scale.x * 0.5f;
+    s.mat[1][1] = i.scale.y * 0.5f;
+    instance_data insdata;
+    obj->world_to_instance_data(s * r * t, insdata);
+    obj->data.push_back(insdata);
+  }
+  obj->size = sizeof(instance_data) * obj->data.size();
   renderer::draw2d(obj);
   *this->texture_handle.is_need_update = false;
 }
+void draw2d::add(const vector2 &position, const float &rotation,
+                 const vector2 &scale) {
+  this->worlds.push_back({position, rotation, scale});
+}
+void draw2d::at(const int &index, const vector2 &position,
+                const float &rotation, const vector2 &scale) {
+  this->worlds[index] = {position, rotation, scale};
+}
+void draw2d::clear() { this->worlds.clear(); }
 void drawui::draw() {
   matrix4 t = matrix4::identity;
   t.mat[3][0] = position.x;
@@ -74,9 +97,32 @@ void drawui::draw() {
   obj->param.proj = viewproj;
   obj->param.view = matrix4::identity;
   obj->vertexIndex = this->vertex_name;
+  for (auto &i : worlds) {
+    matrix4 t = matrix4::identity;
+    t.mat[3][0] = i.position.x;
+    t.mat[3][1] = i.position.y;
+    quaternion q(vector3::neg_unit_z, i.rotation);
+    matrix4 r = matrix4::create_from_quaternion(q);
+    matrix4 s = matrix4::identity;
+    s.mat[0][0] = i.scale.x * 0.5f;
+    s.mat[1][1] = i.scale.y * 0.5f;
+    instance_data insdata;
+    obj->world_to_instance_data(s * r * t, insdata);
+    obj->data.push_back(insdata);
+  }
+  obj->size = sizeof(instance_data) * obj->data.size();
   renderer::drawui(obj);
   *this->texture_handle.is_need_update = false;
 }
+void drawui::add(const vector2 &position, const float &rotation,
+                 const vector2 &scale) {
+  this->worlds.push_back({position, rotation, scale});
+}
+void drawui::at(const int &index, const vector2 &position,
+                const float &rotation, const vector2 &scale) {
+  this->worlds[index] = {position, rotation, scale};
+}
+void drawui::clear() { this->worlds.clear(); }
 void draw3d::draw() {
   obj->binding_texture = this->texture_handle;
   matrix4 t = matrix4::create_translation(position);
@@ -86,6 +132,16 @@ void draw3d::draw() {
   obj->param.proj = scene::main_camera().projection();
   obj->param.view = scene::main_camera().view();
   obj->vertexIndex = this->vertex_name;
+  for (auto &i : worlds) {
+    matrix4 t = matrix4::create_translation(i.position);
+    matrix4 r =
+        matrix4::create_from_quaternion(quaternion::from_euler(i.rotation));
+    matrix4 s = matrix4::create_scale(i.scale);
+    instance_data insdata;
+    obj->world_to_instance_data(s * r * t, insdata);
+    obj->data.push_back(insdata);
+  }
+  obj->size = sizeof(instance_data) * obj->data.size();
   renderer::draw3d(obj);
   *this->texture_handle.is_need_update = false;
 }
@@ -97,5 +153,17 @@ void draw2d::user_data_at(int index, float value) {
 }
 void draw3d::user_data_at(int index, float value) {
   obj->param.user.mat.m16[index] = value;
+}
+void draw3d::add(const vector3 &position, const vector3 &rotation,
+                 const vector3 &scale) {
+  this->worlds.push_back({position, rotation, scale});
+}
+void draw3d::at(const int &index, const vector3 &position,
+                const vector3 &rotation, const vector3 &scale) {
+  this->worlds[index] = {position, rotation, scale};
+}
+void draw3d::clear() {
+  this->worlds.clear();
+  this->obj->data.clear();
 }
 } // namespace sinen

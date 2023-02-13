@@ -53,9 +53,9 @@ end
 map:set(map_size_x / 2 + 1, map_size_y / 2 + 1, MAP_CHIP.PLAYER)
 map:set(2, 2, MAP_CHIP.STAIR)
 
-box = draw3d_instanced(DEFAULT_TEXTURE)
+box = draw3d(DEFAULT_TEXTURE)
 box.vertex_name = "tree"
-sprite = draw3d_instanced(tile)
+sprite = draw3d(tile)
 sprite.is_draw_depth = false
 stair = draw3d(stair_texture)
 stair.vertex_name = "SPRITE"

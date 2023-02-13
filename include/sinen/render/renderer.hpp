@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "../color/color.hpp"
-#include "../instancing/instancing.hpp"
+#include "../drawable/drawable.hpp"
 #include "../math/math.hpp"
 #include "../math/matrix4.hpp"
 #include "../math/vector2.hpp"
@@ -73,12 +73,6 @@ public:
    */
   static void add_queue_3d(const std::shared_ptr<drawable> draw_object);
   /**
-   * @brief Add instanced drawable object to queue
-   *
-   * @param object
-   */
-  static void add_queue_instancing(const std::shared_ptr<instancing> object);
-  /**
    * @brief Remove drawable object from queue
    *
    * @param draw_object
@@ -90,12 +84,6 @@ public:
    * @param draw_object
    */
   static void remove_queue_3d(const std::shared_ptr<drawable> draw_object);
-  /**
-   * @brief Remove instanced drawable object from queue
-   *
-   * @param object
-   */
-  static void remove_queue_instancing(const std::shared_ptr<instancing> object);
   /**
    * @brief Add vertex array
    *
@@ -114,12 +102,6 @@ public:
                                   std::string_view name);
   static void add_model(const model &_model);
   static void update_model(const model &_model);
-  /**
-   * @brief Draw instancing
-   *
-   * @param _instancing
-   */
-  static void add_instancing(const instancing &_instancing);
   /**
    * @brief Set the clear color object
    *

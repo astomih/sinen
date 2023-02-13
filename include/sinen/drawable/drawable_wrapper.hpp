@@ -35,6 +35,17 @@ public:
    * @param value Value of user data
    */
   void user_data_at(int index, float value);
+  void add(const vector2 &position, const float &rotation,
+           const vector2 &scale);
+  void at(const int &index, const vector2 &position, const float &rotation,
+          const vector2 &scale);
+  void clear();
+  struct world {
+    vector2 position;
+    float rotation;
+    vector2 scale;
+  };
+  std::vector<world> worlds;
   vector2 position;
   float rotation;
   vector2 scale;
@@ -71,6 +82,17 @@ public:
    * @param value Value of user data
    */
   void user_data_at(int index, float value);
+  void add(const vector2 &position, const float &rotation,
+           const vector2 &scale);
+  void at(const int &index, const vector2 &position, const float &rotation,
+          const vector2 &scale);
+  void clear();
+  struct world {
+    vector2 position;
+    float rotation;
+    vector2 scale;
+  };
+  std::vector<world> worlds;
   vector2 position;
   float rotation;
   vector2 scale;
@@ -107,6 +129,11 @@ public:
    * @param value Value of user data
    */
   void user_data_at(int index, float value);
+  void add(const vector3 &position, const vector3 &rotation,
+           const vector3 &scale);
+  void at(const int &index, const vector3 &position, const vector3 &rotation,
+          const vector3 &scale);
+  void clear();
   vector3 position;
   vector3 rotation;
   vector3 scale;
@@ -114,6 +141,12 @@ public:
   bool is_draw_depth = true;
   std::string vertex_name = "SPRITE";
   std::shared_ptr<drawable> obj;
+  struct world {
+    vector3 position;
+    vector3 rotation;
+    vector3 scale;
+  };
+  std::vector<world> worlds;
 };
 } // namespace sinen
 #endif // !SINEN_DRAW_OBEJCT_WRAPPER_HPP

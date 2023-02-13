@@ -63,9 +63,9 @@ map:fill(0)
 map_z:fill(0)
 dts.dungeon_generator(map)
 
-box = draw3d_instanced(DEFAULT_TEXTURE)
+box = draw3d(DEFAULT_TEXTURE)
 box.vertex_name = "tree"
-sprite = draw3d_instanced(tile)
+sprite = draw3d(tile)
 sprite.is_draw_depth = false
 stair = draw3d(DEFAULT_TEXTURE)
 stair.vertex_name = "stair"

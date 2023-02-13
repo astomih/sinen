@@ -30,18 +30,11 @@ void renderer::add_queue_2d(const std::shared_ptr<drawable> draw_object) {
 void renderer::add_queue_3d(const std::shared_ptr<drawable> draw_object) {
   render_system::add_queue_3d(draw_object);
 }
-void renderer::add_queue_instancing(const std::shared_ptr<instancing> object) {
-  render_system::add_queue_instancing(object);
-}
 void renderer::remove_queue_2d(const std::shared_ptr<drawable> draw_object) {
   render_system::remove_queue_2d(draw_object);
 }
 void renderer::remove_queue_3d(const std::shared_ptr<drawable> draw_object) {
   render_system::remove_queue_3d(draw_object);
-}
-void renderer::remove_queue_instancing(
-    const std::shared_ptr<instancing> object) {
-  render_system::remove_queue_instancing(object);
 }
 void renderer::add_vertex_array(const vertex_array &vArray,
                                 std::string_view name) {
@@ -56,10 +49,6 @@ void renderer::add_model(const model &_model) {
 }
 void renderer::update_model(const model &_model) {
   render_system::update_model(_model);
-}
-
-void renderer::add_instancing(const instancing &_instancing) {
-  render_system::add_instancing(_instancing);
 }
 
 void renderer::set_clear_color(const color &color) {

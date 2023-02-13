@@ -65,7 +65,6 @@ void draw2d::draw() {
     obj->world_to_instance_data(s * r * t, insdata);
     obj->data.push_back(insdata);
   }
-  obj->size = sizeof(instance_data) * obj->data.size();
   renderer::draw2d(obj);
   *this->texture_handle.is_need_update = false;
 }
@@ -110,7 +109,6 @@ void drawui::draw() {
     obj->world_to_instance_data(s * r * t, insdata);
     obj->data.push_back(insdata);
   }
-  obj->size = sizeof(instance_data) * obj->data.size();
   renderer::drawui(obj);
   *this->texture_handle.is_need_update = false;
 }
@@ -141,7 +139,6 @@ void draw3d::draw() {
     obj->world_to_instance_data(s * r * t, insdata);
     obj->data.push_back(insdata);
   }
-  obj->size = sizeof(instance_data) * obj->data.size();
   renderer::draw3d(obj);
   *this->texture_handle.is_need_update = false;
 }

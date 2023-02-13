@@ -1,7 +1,7 @@
 #include <drawable/drawable.hpp>
 
 namespace sinen {
-drawable::drawable() : size(0) {
+drawable::drawable() {
   float f[16] = {};
   this->param.user = matrix4(f);
 }

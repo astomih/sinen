@@ -300,89 +300,20 @@ void vk_renderer::draw2d(std::shared_ptr<struct drawable> drawObject) {
   auto t = std::make_shared<vk_drawable>();
   t->drawable_obj = drawObject;
   add_texture(drawObject->binding_texture);
-  if (drawObject->size > 0) {
-    for (auto &v : t->uniformBuffers) {
-      VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                       VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-      v = create_buffer(sizeof(vk_shader_parameter) +
-                            t->get_shader().get_parameter_size(),
-                        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
-    }
-    prepare_descriptor_set(t);
-
-    t->instancing_obj = std::make_unique<vk_instancing>();
-    t->instancing_obj->instance_buffer = create_buffer(
-        drawObject->size,
-        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-        VMA_MEMORY_USAGE_GPU_TO_CPU);
-    write_memory(t->instancing_obj->instance_buffer.allocation,
-                 drawObject->data.data(), drawObject->size);
-    m_draw_object_2d.push_back(t);
-  } else {
-    register_vk_drawable(t, "2D");
-  }
+  register_vk_drawable(t, "2D");
 }
 void vk_renderer::drawui(std::shared_ptr<struct drawable> drawObject) {
   auto t = std::make_shared<vk_drawable>();
   t->drawable_obj = drawObject;
   add_texture(drawObject->binding_texture);
-  if (drawObject->size > 0) {
-    for (auto &v : t->uniformBuffers) {
-      VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                       VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-      v = create_buffer(sizeof(vk_shader_parameter) +
-                            t->get_shader().get_parameter_size(),
-                        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
-    }
-    prepare_descriptor_set(t);
-
-    t->instancing_obj = std::make_unique<vk_instancing>();
-    t->instancing_obj->instance_buffer = create_buffer(
-        drawObject->size,
-        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-        VMA_MEMORY_USAGE_GPU_TO_CPU);
-    write_memory(t->instancing_obj->instance_buffer.allocation,
-                 drawObject->data.data(), drawObject->size);
-    m_draw_object_ui.push_back(t);
-  } else {
-    register_vk_drawable(t, "UI");
-  }
+  register_vk_drawable(t, "UI");
 }
 
 void vk_renderer::draw3d(std::shared_ptr<struct drawable> drawObject) {
   auto t = std::make_shared<vk_drawable>();
   t->drawable_obj = drawObject;
   add_texture(drawObject->binding_texture);
-  if (drawObject->size > 0) {
-    for (auto &v : t->uniformBuffers) {
-      VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                       VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-      v = create_buffer(sizeof(vk_shader_parameter) +
-                            t->get_shader().get_parameter_size(),
-                        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags);
-    }
-    prepare_descriptor_set(t);
-
-    t->instancing_obj = std::make_unique<vk_instancing>();
-    t->instancing_obj->instance_buffer = create_buffer(
-        drawObject->size,
-        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-        VMA_MEMORY_USAGE_GPU_TO_CPU);
-    write_memory(t->instancing_obj->instance_buffer.allocation,
-                 drawObject->data.data(), drawObject->size);
-    m_draw_object_3d.push_back(t);
-  } else {
-    register_vk_drawable(t, "3D");
-  }
+  register_vk_drawable(t, "3D");
 }
 
 void vk_renderer::load_shader(const shader &shaderInfo) {
@@ -560,7 +491,7 @@ void vk_renderer::draw_skybox(VkCommandBuffer command) {
 void vk_renderer::draw3d(VkCommandBuffer command, bool is_change_pipeline) {
   VkDeviceSize offset = 0;
   for (auto &sprite : m_draw_object_3d) {
-    if (sprite->drawable_obj->size > 0) {
+    if (sprite->drawable_obj->size() > 0) {
       if (is_change_pipeline) {
         m_pipelines["instancing_opaque"].Bind(command);
       }
@@ -578,7 +509,7 @@ void vk_renderer::draw3d(VkCommandBuffer command, bool is_change_pipeline) {
                    sizeof(vk_shader_parameter));
       std::string index = sprite->drawable_obj->vertexIndex;
       VkBuffer buffers[] = {m_vertex_arrays[index].vertexBuffer.buffer,
-                            sprite->instancing_obj->instance_buffer.buffer};
+                            sprite->instance_buffer.buffer};
       VkDeviceSize offsets[] = {0, 0};
       vkCmdBindVertexBuffers(command, 0, 2, buffers, offsets);
       vkCmdBindIndexBuffer(command, m_vertex_arrays[index].indexBuffer.buffer,
@@ -625,7 +556,7 @@ void vk_renderer::draw3d(VkCommandBuffer command, bool is_change_pipeline) {
 void vk_renderer::draw2d(VkCommandBuffer command) {
   VkDeviceSize offset = 0;
   for (auto &sprite : m_draw_object_2d) {
-    if (sprite->drawable_obj->size > 0) {
+    if (sprite->drawable_obj->size() > 0) {
       m_pipelines["instancing_2d"].Bind(command);
       vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS,
                               m_pipeline_layout_instance.GetLayout(), 0, 1,
@@ -640,7 +571,7 @@ void vk_renderer::draw2d(VkCommandBuffer command) {
                    sizeof(vk_shader_parameter));
       std::string index = sprite->drawable_obj->vertexIndex;
       VkBuffer buffers[] = {m_vertex_arrays[index].vertexBuffer.buffer,
-                            sprite->instancing_obj->instance_buffer.buffer};
+                            sprite->instance_buffer.buffer};
       VkDeviceSize offsets[] = {0, 0};
       vkCmdBindVertexBuffers(command, 0, 2, buffers, offsets);
       vkCmdBindIndexBuffer(command, m_vertex_arrays[index].indexBuffer.buffer,
@@ -1137,6 +1068,18 @@ void vk_renderer::destroy_image_object(const handle_t &handle) {
 }
 void vk_renderer::register_vk_drawable(
     std::shared_ptr<vk_drawable> _vk_drawable, std::string_view type) {
+  auto drawObject = _vk_drawable->drawable_obj;
+  if (drawObject->size() > 0) {
+    _vk_drawable->instance_buffer = create_buffer(
+        drawObject->size(),
+        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+        VMA_MEMORY_USAGE_GPU_TO_CPU);
+    write_memory(_vk_drawable->instance_buffer.allocation,
+                 drawObject->data.data(), drawObject->size());
+  }
   if (type == "3D") {
     m_draw_object_3d.push_back(_vk_drawable);
     for (auto &v : _vk_drawable->uniformBuffers) {
@@ -1203,8 +1146,8 @@ void vk_renderer::destroy_vk_drawable(std::shared_ptr<vk_drawable> texture) {
   for (auto &i : texture->uniformBuffers) {
     destroy_buffer(i);
   }
-  if (texture->instancing_obj) {
-    destroy_buffer(texture->instancing_obj->instance_buffer);
+  if (texture->drawable_obj->size() > 0) {
+    destroy_buffer(texture->instance_buffer);
   }
 }
 } // namespace sinen

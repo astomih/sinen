@@ -63,7 +63,7 @@ struct drawable {
    * @brief instance size
    *
    */
-  std::size_t size;
+  std::size_t size() { return sizeof(instance_data) * data.size(); }
   /**
    * @brief instance data
    *

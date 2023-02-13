@@ -23,10 +23,8 @@ void register_table(sol::state &lua) {
   {
     auto v = lua.create_table("renderer");
     v["set_skybox"] = &renderer::set_skybox;
-    v["skybox"] = &renderer::skybox;
     v["clear_color"] = &renderer::clear_color;
     v["set_clear_color"] = &renderer::set_clear_color;
-    v["get_graphics_api"] = &renderer::get_graphics_api;
     v["at_render_texture_user_data"] = &renderer::at_render_texture_user_data;
   }
   {
@@ -73,16 +71,16 @@ void register_table(sol::state &lua) {
     v["X"] = (int)keyboard::X;
     v["Y"] = (int)keyboard::Y;
     v["Z"] = (int)keyboard::Z;
-    v["0"] = (int)keyboard::Key0;
-    v["1"] = (int)keyboard::Key1;
-    v["2"] = (int)keyboard::Key2;
-    v["3"] = (int)keyboard::Key3;
-    v["4"] = (int)keyboard::Key4;
-    v["5"] = (int)keyboard::Key5;
-    v["6"] = (int)keyboard::Key6;
-    v["7"] = (int)keyboard::Key7;
-    v["8"] = (int)keyboard::Key8;
-    v["9"] = (int)keyboard::Key9;
+    v["key0"] = (int)keyboard::Key0;
+    v["key1"] = (int)keyboard::Key1;
+    v["key2"] = (int)keyboard::Key2;
+    v["key3"] = (int)keyboard::Key3;
+    v["key4"] = (int)keyboard::Key4;
+    v["key5"] = (int)keyboard::Key5;
+    v["key6"] = (int)keyboard::Key6;
+    v["key7"] = (int)keyboard::Key7;
+    v["key8"] = (int)keyboard::Key8;
+    v["key9"] = (int)keyboard::Key9;
     v["F1"] = (int)keyboard::F1;
     v["F2"] = (int)keyboard::F2;
     v["F3"] = (int)keyboard::F3;
@@ -109,8 +107,6 @@ void register_table(sol::state &lua) {
     v["LCTRL"] = (int)keyboard::LCTRL;
     v["RCTRL"] = (int)keyboard::RCTRL;
     v["ALT"] = (int)keyboard::ALTERASE;
-    v["LCTRL"] = (int)keyboard::LCTRL;
-    v["RCTRL"] = (int)keyboard::RCTRL;
   }
   {
     auto v = lua.create_table("mouse");
@@ -134,8 +130,8 @@ void register_table(sol::state &lua) {
     v["is_pressed"] = &gamepad::is_pressed;
     v["is_released"] = &gamepad::is_released;
     v["is_down"] = &gamepad::is_down;
-    v["get_left_stick"] = &gamepad::get_left_stick;
-    v["get_right_stick"] = &gamepad::get_right_stick;
+    v["left_stick"] = &gamepad::get_left_stick;
+    v["right_stick"] = &gamepad::get_right_stick;
     v["is_connected"] = &gamepad::is_connected;
     v["INVALID"] = (int)gamepad::INVALID;
     v["A"] = (int)gamepad::A;

@@ -60,6 +60,22 @@ end
 - Vulkan 1.1
 - VulkanMemoryAllocator
 
+## How to build
+### Requirements
+- CMake 3.7 or later
+- Ninja
+- C++20 compiler
+- Vulkan SDK
+### Build commands
+``` bash
+git clone https://github.com/astomih/sinen.git
+git submodule update --init --recursive
+cd sinen
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cd build && ninja
+```
+
+
 # Game
 I named this game 'DIVE TO SINEN'.  
 ![Game Sample](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/game_sample.png)

@@ -32,6 +32,6 @@ jobs:
     - name: Build
       run: cmake -B build && cd build && make 
     - name: Test
-    - run: |
+      run: |
           cd ${{ github.workspace }}/build/test
           ./unit_test

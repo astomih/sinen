@@ -33,6 +33,6 @@ jobs:
           cmake -G Ninja -B build 
           cd build && ninja
     - name: Test
-    - run: |
+      run: |
           cd ${{ github.workspace }}/build/test
           ./unit_test

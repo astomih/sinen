@@ -34,5 +34,6 @@ jobs:
           cd build && ninja
     - name: Test
       run: |
-          cd ${{ github.workspace }}/build/test
+          pwd
+          cd build/test
           ./unit_test

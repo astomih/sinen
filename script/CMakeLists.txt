@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.7)
 project(script_engine)
-set(CMAKE_CXX_FLAGS "-std=c++2a -O2 -DNDEBUG")
+set(CMAKE_CXX_FLAGS "-std=c++20 -O2 -DNDEBUG -march=native")
 set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 
 file(GLOB SOURCE_FILES
 	./src/*/*.cpp 
 	./src/*.cpp
-  ../external/Lua/source/*.c
 )
 
 include_directories(

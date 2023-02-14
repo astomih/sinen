@@ -1,27 +1,12 @@
 cmake_minimum_required(VERSION 3.7)
 project(sinen)
+option(EXTERNAL_ALL_BUILD "Build all external libralies" OFF)
 add_subdirectory(./script)
-set(SINEN_INCLUDE_DIRS
-      .
-      ./include
-      ./include/sinen
-      ./script/include
-      external/ImGui/include
-      external/sol2/include
-      external/Lua/include
-      external/VulkanMemoryAllocator/include
-      external/mojoAL/AL
-      external/rapidjson/include
-      external/mojoAL
-)
-set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g -O0 -DDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -march=native")
 add_subdirectory(./tools/model_converter)
 add_subdirectory(./editor)
 add_subdirectory(./game)
 add_subdirectory(./test)
-option(ALL_BUILD "Build all targets" OFF)
-if(ALL_BUILD)
+if(EXTERNAL_ALL_BUILD)
 add_subdirectory(./external/SDL2)
 add_subdirectory(./external/SDL2_image)
 add_subdirectory(./external/SDL2_mixer)
@@ -36,8 +21,24 @@ set(SDL2_INCLUDE_DIRS
 else()
 find_package(SDL2 REQUIRED)
 endif()
-set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 find_package(Vulkan REQUIRED)
+
+set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g -O0 -DDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -march=native")
+set(CMAKE_EXPORT_COMPILE_COMMANDS true)
+set(SINEN_INCLUDE_DIRS
+      .
+      ./include
+      ./include/sinen
+      ./script/include
+      external/ImGui/include
+      external/sol2/include
+      external/Lua/include
+      external/VulkanMemoryAllocator/include
+      external/mojoAL/AL
+      external/rapidjson/include
+      external/mojoAL
+)
 file(
   GLOB
   SOURCE_FILES

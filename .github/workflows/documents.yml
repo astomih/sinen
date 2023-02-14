@@ -28,26 +28,10 @@ jobs:
       uses: mattnotmitt/doxygen-action@1.9.1
       with:
         doxyfile-path: 'tools/doxygen/Doxyfile'
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v1
-      with:
-        name: documents
-        path: docs/doxygen/html
-  deploy:
-    concurrency: ci-${{ github.ref }}
-    needs: [build] # The second job must depend on the first one to complete before running and uses ubuntu-latest instead of windows.
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-    - name: Download Artifacts
-      uses: actions/download-artifact@v1
-      with:
-        name: documents
     - name: Deploy 🚀
       uses: JamesIves/github-pages-deploy-action@v4.2.2
       with:
         branch: gh-pages
-        folder: documents
+        folder: docs/doxygen/html
         ssh-key: ${{ secrets.DEPLOY_KEY }}
         target-folder: doxygen

@@ -60,11 +60,9 @@ public:
   static void *get_texture_id();
 
 private:
-  static std::unique_ptr<class vk_renderer> m_vk_renderer;
+  static class vk_renderer m_vk_renderer;
   static void setup_shapes();
   static color clearColor;
-  // Window
-  static std::shared_ptr<class window> mWindow;
   // Renderer
   static graphics_api RendererAPI;
   static bool showImGui;

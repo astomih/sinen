@@ -1,61 +1,59 @@
-#include <string>
-#ifdef __ANDROID__
-#include <android/log.h>
-#endif
+#include <SDL.h>
 #include <logger/logger.hpp>
 
 namespace sinen {
-std::unique_ptr<logger::interface> logger::mLogger =
-    logger::default_logger::CreateConsoleLogger();
-
-void logger::change_logger(std::unique_ptr<logger::interface> logger) {
-  mLogger = std::move(logger);
+logger::implements logger::m_logger;
+void logger::implements::verbose(const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  vprintf(format, args);
+  va_end(args);
+  SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, format, args);
 }
 
-void logger::default_logger::console_logger::debug(std::string_view string) {
-#ifdef _DEBUG
-  std::cout << "SINEN_DEBUG: " << string << std::endl;
-#endif
-}
-void logger::default_logger::console_logger::info(std::string_view string) {
-#ifdef __ANDROID__
-  __android_log_print(ANDROID_LOG_INFO, "NEN", "INFO: %s\n", string.data());
-#else
-  std::cout << "SINEN_INFO: " << string << std::endl;
-#endif
-}
-void logger::default_logger::console_logger::error(std::string_view string) {
-
-#ifdef __ANDROID__
-  __android_log_print(ANDROID_LOG_ERROR, "NEN", "ERROR: %s\n", string.data());
-
-#else
-  std::cout << "SINEN_ERROR: " << string << std::endl;
-#endif
-}
-void logger::default_logger::console_logger::warn(std::string_view string) {
-  std::cout << "SINEN_WARNING: " << string << std::endl;
-}
-void logger::default_logger::console_logger::fatal(std::string_view string) {
-  std::cout << "SINEN_FATAL: " << string << std::endl;
+void logger::implements::debug(const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  va_end(args);
+  SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, format, args);
 }
 
-void logger::default_logger::file_logger::debug(std::string_view string) {
-#ifdef _DEBUG
-  std::cout << "SINEN_DEBUG: " << string << std::endl;
-#endif
-}
-void logger::default_logger::file_logger::info(std::string_view string) {
-  std::cout << "SINEN_INFO: " << string << std::endl;
-}
-void logger::default_logger::file_logger::error(std::string_view string) {
-  std::cout << "SINEN_ERROR: " << string << std::endl;
-}
-void logger::default_logger::file_logger::warn(std::string_view string) {
-  std::cout << "SINEN_WARNING: " << string << std::endl;
-}
-void logger::default_logger::file_logger::fatal(std::string_view string) {
-  std::cout << "SINEN_FATAL: " << string << std::endl;
+void logger::implements::info(const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  va_end(args);
+  SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, format, args);
 }
 
+void logger::implements::error(const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  va_end(args);
+  SDL_LogError(SDL_LOG_CATEGORY_ERROR, format, args);
+}
+
+void logger::implements::warn(const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  va_end(args);
+  SDL_LogWarn(SDL_LOG_CATEGORY_ASSERT, format, args);
+}
+
+void logger::implements::critical(const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  va_end(args);
+  SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, format, args);
+}
+
+static std::function<void(logger::priority, std::string_view)> g_func;
+void SDL_LogOutputFunction(void *userdata, int category,
+                           SDL_LogPriority priority, const char *message) {
+  g_func(static_cast<logger::priority>(priority), message);
+}
+void logger::set_output_function(
+    std::function<void(priority, std::string_view)> func) {
+  g_func = func;
+  SDL_LogSetOutputFunction(SDL_LogOutputFunction, nullptr);
+}
 } // namespace sinen

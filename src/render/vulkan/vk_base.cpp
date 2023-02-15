@@ -179,8 +179,8 @@ void vk_base::create_instance(const char *appName) {
   // Create instance
   VkResult result = vkCreateInstance(&ci, nullptr, &m_instance);
   if (result != VK_SUCCESS) {
-    logger::fatal("Failed to create instance : %s",
-                  vkutil::result_to_string(result));
+    logger::critical("Failed to create instance : %s",
+                     vkutil::result_to_string(result));
     exit(1);
   }
 }
@@ -202,8 +202,8 @@ void vk_base::create_device() {
   VkResult result;
   result = vkCreateDevice(m_physDev, &ci, nullptr, &m_device);
   if (result != VK_SUCCESS) {
-    logger::fatal("Failed to create device : %s",
-                  vkutil::result_to_string(result));
+    logger::critical("Failed to create device : %s",
+                     vkutil::result_to_string(result));
     exit(1);
   }
 
@@ -226,8 +226,8 @@ void vk_base::create_image_view() {
   VkResult result;
   result = vkCreateImageView(m_device, &ci, nullptr, &m_depthBufferView);
   if (result != VK_SUCCESS) {
-    logger::fatal("Failed to create image view : %s",
-                  vkutil::result_to_string(result));
+    logger::critical("Failed to create image view : %s",
+                     vkutil::result_to_string(result));
     exit(1);
   }
 }
@@ -237,14 +237,14 @@ void vk_base::create_semaphore() {
   VkResult result;
   result = vkCreateSemaphore(m_device, &ci, nullptr, &m_renderCompletedSem);
   if (result != VK_SUCCESS) {
-    logger::fatal("Failed to create semaphore : %s",
-                  vkutil::result_to_string(result));
+    logger::critical("Failed to create semaphore : %s",
+                     vkutil::result_to_string(result));
     exit(1);
   }
   result = vkCreateSemaphore(m_device, &ci, nullptr, &m_presentCompletedSem);
   if (result != VK_SUCCESS) {
-    logger::fatal("Failed to create semaphore : %s",
-                  vkutil::result_to_string(result));
+    logger::critical("Failed to create semaphore : %s",
+                     vkutil::result_to_string(result));
     exit(1);
   }
 }
@@ -256,7 +256,7 @@ void vk_base::create_command_pool() {
   VkResult result;
   result = vkCreateCommandPool(m_device, &ci, nullptr, &m_commandPool);
   if (result != VK_SUCCESS) {
-    logger::fatal("Failed to create command pool");
+    logger::critical("Failed to create command pool");
     exit(1);
   }
 }
@@ -268,8 +268,8 @@ void vk_base::create_allocator() {
   VkResult result;
   result = vmaCreateAllocator(&allocator_info, &m_vkrenderer->allocator);
   if (result != VK_SUCCESS) {
-    logger::fatal("Failed to create allocator : %s",
-                  vkutil::result_to_string(result));
+    logger::critical("Failed to create allocator : %s",
+                     vkutil::result_to_string(result));
     exit(1);
   }
 }
@@ -299,8 +299,8 @@ void vk_base::create_depth_buffer() {
       vmaCreateImage(m_vkrenderer->allocator, &ci, &alloc_info, &m_depthBuffer,
                      &m_depthBufferAllocation, &alloc_info_out);
   if (result != VK_SUCCESS) {
-    logger::fatal("Failed to create depth buffer : %s",
-                  vkutil::result_to_string(result));
+    logger::critical("Failed to create depth buffer : %s",
+                     vkutil::result_to_string(result));
     exit(1);
   }
 }
@@ -353,8 +353,8 @@ void vk_base::create_render_pass() {
   VkResult result;
   result = vkCreateRenderPass(m_device, &ci, nullptr, &m_renderPass);
   if (result != VK_SUCCESS) {
-    logger::fatal("Failed to create render pass : %s",
-                  vkutil::result_to_string(result));
+    logger::critical("Failed to create render pass : %s",
+                     vkutil::result_to_string(result));
     exit(1);
   }
 }
@@ -377,8 +377,8 @@ void vk_base::create_frame_buffer() {
     VkResult result;
     result = vkCreateFramebuffer(m_device, &ci, nullptr, &framebuffer);
     if (result != VK_SUCCESS) {
-      logger::fatal("Failed to create framebuffer : %s",
-                    vkutil::result_to_string(result));
+      logger::critical("Failed to create framebuffer : %s",
+                       vkutil::result_to_string(result));
       exit(1);
     }
     m_framebuffers.push_back(framebuffer);
@@ -394,8 +394,8 @@ void vk_base::create_command_buffers() {
   VkResult result;
   result = vkAllocateCommandBuffers(m_device, &ai, m_commands.data());
   if (result != VK_SUCCESS) {
-    logger::fatal("Failed to allocate command buffers : %s",
-                  vkutil::result_to_string(result));
+    logger::critical("Failed to allocate command buffers : %s",
+                     vkutil::result_to_string(result));
     exit(1);
   }
 
@@ -406,8 +406,8 @@ void vk_base::create_command_buffers() {
   for (auto &v : m_fences) {
     result = vkCreateFence(m_device, &ci, nullptr, &v);
     if (result != VK_SUCCESS) {
-      logger::fatal("Failed to create fence : %s",
-                    vkutil::result_to_string(result));
+      logger::critical("Failed to create fence : %s",
+                       vkutil::result_to_string(result));
       exit(1);
     }
   }

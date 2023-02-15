@@ -119,24 +119,24 @@ bool main_system::initialize() {
   render_system::initialize(graphics_api::ES);
 #endif
   if (!sound_system::initialize()) {
-    logger::fatal("Failed to initialize audio system");
+    logger::critical("Failed to initialize audio system");
     sound_system::shutdown();
     return false;
   }
   if (!input_system::initialize()) {
-    logger::fatal("Failed to initialize input system");
+    logger::critical("Failed to initialize input system");
     return false;
   }
   if (!script_system::initialize()) {
-    logger::fatal("Failed to initialize script system");
+    logger::critical("Failed to initialize script system");
     return false;
   }
   if (!font_system::initialize()) {
-    logger::fatal("Failed to initialize font system");
+    logger::critical("Failed to initialize font system");
     return false;
   }
   if (!random_system::initialize()) {
-    logger::fatal("Failed to initialize random system");
+    logger::critical("Failed to initialize random system");
     return false;
   }
   texture tex;

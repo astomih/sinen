@@ -7,7 +7,7 @@
 
 // internal
 #include <logger/logger.hpp>
-
+#define VK_VERSION_1_1 1
 #include "vk_base.hpp"
 #include "vk_renderer.hpp"
 #include "vk_util.hpp"
@@ -265,6 +265,7 @@ void vk_base::create_allocator() {
   allocator_info.physicalDevice = get_vk_physical_device();
   allocator_info.device = get_vk_device();
   allocator_info.vulkanApiVersion = VK_API_VERSION_1_1;
+  allocator_info.instance = m_instance;
   VkResult result;
   result = vmaCreateAllocator(&allocator_info, &m_vkrenderer->allocator);
   if (result != VK_SUCCESS) {

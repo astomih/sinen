@@ -1,4 +1,6 @@
 #if !defined(EMSCRIPTEN) && !defined(ANDROID)
+#include <logger/logger.hpp>
+
 #include "../../render/render_system.hpp"
 #include <camera/camera.hpp>
 #include <render/renderer.hpp>

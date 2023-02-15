@@ -45,6 +45,7 @@ public:
     return VkComponentMapping{VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G,
                               VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A};
   }
+  static std::string result_to_string(VkResult code);
 };
 } // namespace sinen
 

@@ -3,7 +3,7 @@
 #include <allocator/pool_allocator.hpp>
 #include <color/color.hpp>
 #include <color/palette.hpp>
-#include <instancing/instancing.hpp>
+#include <drawable/drawable.hpp>
 #include <list>
 #include <math/math.hpp>
 #include <math/matrix4.hpp>
@@ -30,17 +30,14 @@ public:
   static void draw3d(const std::shared_ptr<drawable> draw_object);
   static void add_queue_2d(const std::shared_ptr<drawable> draw_object);
   static void add_queue_3d(const std::shared_ptr<drawable> draw_object);
-  static void add_queue_instancing(const std::shared_ptr<instancing> object);
   static void remove_queue_2d(const std::shared_ptr<drawable> draw_object);
   static void remove_queue_3d(const std::shared_ptr<drawable> draw_object);
-  static void remove_queue_instancing(const std::shared_ptr<instancing> object);
   static void add_vertex_array(const vertex_array &vArray,
                                std::string_view name);
   static void update_vertex_array(const vertex_array &vArray,
                                   std::string_view name);
   static void add_model(const model &m);
   static void update_model(const model &m);
-  static void add_instancing(const instancing &_instancing);
   static void set_clear_color(const color &color) {
     if (color.r >= 0.f && color.g >= 0.f && color.b >= 0.f)
       clearColor = color;
@@ -75,7 +72,6 @@ private:
   static texture m_skybox_texture;
   static std::vector<std::shared_ptr<drawable>> m_drawable_2d;
   static std::vector<std::shared_ptr<drawable>> m_drawable_3d;
-  static std::vector<std::shared_ptr<instancing>> m_instancing;
 };
 } // namespace sinen
 #endif // !SINEN_RENDER_SYSTEM_HPP

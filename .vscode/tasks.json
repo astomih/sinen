@@ -14,7 +14,7 @@
     {
       "label": "ReleaseBuild",
       "type": "shell",
-      "command": "cd build/release && cmake ../.. -DALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release && ninja"
+      "command": "cd build/release && cmake ../.. -DEXTERNAL_ALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release && ninja"
     },
   ]
 }

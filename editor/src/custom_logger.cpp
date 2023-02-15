@@ -4,30 +4,35 @@
 #include <imgui.h>
 
 namespace sinen {
-
-void imgui_logger::debug(std::string_view str) {
-  imguilog::logs.push_back(
-      {ImVec4(0.0f, 0.0f, 1.0f, 1.0f), "SINEN_DEBUG: " + std::string(str)});
-}
-
-void imgui_logger::info(std::string_view str) {
-  imguilog::logs.push_back(
-      {ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "SINEN_INFO: " + std::string(str)});
-}
-
-void imgui_logger::error(std::string_view str) {
-  imguilog::logs.push_back(
-      {ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "SINEN_ERROR: " + std::string(str)});
-}
-
-void imgui_logger::warn(std::string_view str) {
-  imguilog::logs.push_back(
-      {ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "SINEN_WARNING: " + std::string(str)});
-}
-
-void imgui_logger::fatal(std::string_view str) {
-  imguilog::logs.push_back(
-      {ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "SINEN_FATAL: " + std::string(str)});
+void custom_logger() {
+  logger::set_output_function(
+      [](logger::priority priority, std::string_view str) {
+        ImVec4 color;
+        switch (priority) {
+        case logger::priority::verbose:
+          color = ImVec4(0.0f, 1.0f, 1.0f, 1.0f);
+          break;
+        case logger::priority::debug:
+          color = ImVec4(0.0f, 0.0f, 1.0f, 1.0f);
+          break;
+        case logger::priority::info:
+          color = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
+          break;
+        case logger::priority::error:
+          color = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+          break;
+        case logger::priority::warn:
+          color = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
+          break;
+        case logger::priority::critical:
+          color = ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
+          break;
+        default:
+          color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+          break;
+        }
+        imguilog::logs.push_back({color, std::string(str)});
+      });
 }
 
 } // namespace sinen

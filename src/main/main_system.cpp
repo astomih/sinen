@@ -88,7 +88,9 @@ std::string main::get_current_scene_number() {
 bool main_system::initialize() {
   logger::info("Main system activating");
   SDL_SetMainReady();
-  SDL_Init(SDL_INIT_EVERYTHING);
+  SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_EVENTS |
+           SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER |
+           SDL_INIT_SENSOR);
   TTF_Init();
   IMG_Init(IMG_INIT_PNG);
   SDLNet_Init();
@@ -117,24 +119,24 @@ bool main_system::initialize() {
   render_system::initialize(graphics_api::ES);
 #endif
   if (!sound_system::initialize()) {
-    logger::fatal("Failed to initialize audio system");
+    logger::critical("Failed to initialize audio system");
     sound_system::shutdown();
     return false;
   }
   if (!input_system::initialize()) {
-    logger::fatal("Failed to initialize input system");
+    logger::critical("Failed to initialize input system");
     return false;
   }
   if (!script_system::initialize()) {
-    logger::fatal("Failed to initialize script system");
+    logger::critical("Failed to initialize script system");
     return false;
   }
   if (!font_system::initialize()) {
-    logger::fatal("Failed to initialize font system");
+    logger::critical("Failed to initialize font system");
     return false;
   }
   if (!random_system::initialize()) {
-    logger::fatal("Failed to initialize random system");
+    logger::critical("Failed to initialize random system");
     return false;
   }
   texture tex;

@@ -16,7 +16,6 @@ std::list<std::function<void()>> render_system::m_imgui_function;
 texture render_system::m_skybox_texture;
 std::vector<std::shared_ptr<drawable>> render_system::m_drawable_2d;
 std::vector<std::shared_ptr<drawable>> render_system::m_drawable_3d;
-std::vector<std::shared_ptr<instancing>> render_system::m_instancing;
 graphics_api render_system::get_graphics_api() { return RendererAPI; }
 void render_system::unload_data() {}
 void render_system::initialize(graphics_api api) {
@@ -34,9 +33,6 @@ void render_system::render() {
   }
   for (auto &d : m_drawable_2d) {
     draw2d(d);
-  }
-  for (auto &i : m_instancing) {
-    add_instancing(*i);
   }
   m_vk_renderer->render();
 }
@@ -56,10 +52,6 @@ void render_system::add_queue_2d(const std::shared_ptr<drawable> draw_object) {
 void render_system::add_queue_3d(const std::shared_ptr<drawable> draw_object) {
   m_drawable_3d.push_back(draw_object);
 }
-void render_system::add_queue_instancing(
-    const std::shared_ptr<instancing> draw_object) {
-  m_instancing.push_back(draw_object);
-}
 void render_system::remove_queue_2d(
     const std::shared_ptr<drawable> draw_object) {
   m_drawable_2d.erase(
@@ -71,12 +63,6 @@ void render_system::remove_queue_3d(
   m_drawable_3d.erase(
       std::remove(m_drawable_3d.begin(), m_drawable_3d.end(), draw_object),
       m_drawable_3d.end());
-}
-void render_system::remove_queue_instancing(
-    const std::shared_ptr<instancing> draw_object) {
-  m_instancing.erase(
-      std::remove(m_instancing.begin(), m_instancing.end(), draw_object),
-      m_instancing.end());
 }
 void render_system::add_vertex_array(const vertex_array &vArray,
                                      std::string_view name) {
@@ -90,12 +76,6 @@ void render_system::update_vertex_array(const vertex_array &vArray,
 void render_system::add_model(const model &m) { m_vk_renderer->add_model(m); }
 void render_system::update_model(const model &m) {
   m_vk_renderer->update_model(m);
-}
-void render_system::add_instancing(const instancing &_instancing) {
-  if (_instancing.data.empty()) {
-    return;
-  }
-  m_vk_renderer->add_instancing(_instancing);
 }
 
 void render_system::load_shader(const shader &shaderInfo) {

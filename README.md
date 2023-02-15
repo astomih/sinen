@@ -11,15 +11,14 @@ Sinen Engine is a media library for C++20 that is being produced mainly for game
 - Using Vulkan API
 - Cross platform
 - Lightweight
-- Incorporates a text editor
 
 ## Supported platforms
 [![Windows(MinGW)](https://github.com/astomih/sinen/actions/workflows/mingw.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/mingw.yml)
-[![Linux](https://github.com/astomih/sinen/actions/workflows/linux.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/linux.yml)
+[![Linux](https://github.com/astomih/sinen/actions/workflows/linux.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/linux.yml)  
 We are also starting a new survey on WebGPU.
-## Documents
+## [Documents](https://astomih.github.io/sinen)
 [![Documents](https://github.com/astomih/sinen/actions/workflows/documents.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/documents.yml)  
-[View Documents](https://astomih.github.io/sinen)  
+[https://astomih.github.io/sinen](https://astomih.github.io/sinen)  
 
 ## Hello world in sinen
 ``` lua
@@ -61,9 +60,25 @@ end
 - Vulkan 1.1
 - VulkanMemoryAllocator
 
+## How to build
+### Requirements
+- CMake 3.7 or later
+- Ninja
+- C++20 compiler
+- Vulkan SDK
+### Build commands
+``` bash
+git clone https://github.com/astomih/sinen.git
+cd sinen
+git submodule update --init --recursive
+cmake -B build -DEXTERNAL_ALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release
+cd build && ninja
+```
+
+
 # Game
+![Game Sample](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/game_sample.png)  
 I named this game 'DIVE TO SINEN'.  
-![Game Sample](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/game_sample.png)
 
 # Editor
 ![Editor Sample](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/editor_sample.png)  

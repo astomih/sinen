@@ -107,9 +107,6 @@ void data_stream::convert_file_path(const asset_type &type,
   case asset_type::Script:
     filePath = base + std::string{"script/"} + name.data();
     break;
-  case asset_type::gl_shader:
-    filePath = base + std::string{"shader/GL/"} + name.data();
-    break;
   case asset_type::vk_shader:
     filePath = base + std::string{"shader/Vulkan/"} + name.data();
     break;

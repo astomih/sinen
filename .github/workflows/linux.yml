@@ -20,7 +20,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Install libraries
-      run: sudo add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu `lsb_release -sc` main universe restricted multiverse" && sudo apt-get update -y -qq && sudo apt-get update -y -qq &&  sudo apt-get install libassimp-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-net-dev libsdl2-ttf-dev libopenal-dev libgtest-dev
+      run: sudo add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu `lsb_release -sc` main universe restricted multiverse" && sudo apt-get update -y -qq && sudo apt-get update -y -qq &&  sudo apt-get install libassimp-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-net-dev libsdl2-ttf-dev libgtest-dev
 
     - name: Setup Vulkan SDK
       uses: humbletim/setup-vulkan-sdk@v1.2.0
@@ -31,28 +31,7 @@ jobs:
     
     - name: Build
       run: cmake -B build && cd build && make 
-
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v1
-      with:
-        name: linux
-        path: build
-  deploy:
-    concurrency: ci-${{ github.ref }}
-    needs: [build] # The second job must depend on the first one to complete before running and uses ubuntu-latest instead of windows.
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-    - name: Download Artifacts
-      uses: actions/download-artifact@v1
-      with:
-        name: linux
-    - name: Deploy
-      uses: JamesIves/github-pages-deploy-action@v4.2.2
-      with:
-        branch: gh-pages
-        folder: 'linux'
-        ssh-key: ${{ secrets.DEPLOY_KEY }}
-        target-folder: linux
-      
+    - name: Test
+      run: |
+          cd ${{ github.workspace }}/build/test
+          ./unit_test

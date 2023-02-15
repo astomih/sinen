@@ -163,7 +163,7 @@ json::~json() {}
 void json::parse(std::string_view str) {
   pimpl->doc.Parse(str.data());
   if (pimpl->doc.HasParseError()) {
-    logger::fatal("%d", pimpl->doc.GetParseError());
+    logger::critical("%d", pimpl->doc.GetParseError());
   }
 }
 json::object json::operator[](std::string_view key) {

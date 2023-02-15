@@ -44,6 +44,7 @@ local player = {
     aabb = {},
     bullet_time = {},
     bullet_timer = {},
+    bullet_flag = false,
     efks = {},
     tex_scope = {},
     drawer_scope = {},
@@ -143,14 +144,22 @@ local player = {
                 self.orbits = {}
             end
         end
+        if mouse.is_pressed(mouse.LEFT) then
+            self.bullet_flag = true
+        end
         self.bullet_timer = self.bullet_timer + delta_time
-        if self.bullet_timer >
-            self.bullet_time and (mouse.is_down(mouse.LEFT)) then
-            local b = bullet(map_draw3ds)
-            b:setup(self.drawer)
-            b.drawer.rotation.z = b.drawer.rotation.z + 90
-            table.insert(self.bullets, b)
-            self.bullet_timer = 0.0
+        if self.bullet_flag then
+            if self.bullet_timer >
+                self.bullet_time and (mouse.is_down(mouse.LEFT)) then
+                local b = bullet(map_draw3ds)
+                b:setup(self.drawer)
+                b.drawer.rotation.z = b.drawer.rotation.z + 90
+                table.insert(self.bullets, b)
+                self.bullet_timer = 0.0
+            end
+            if mouse.is_released(mouse.LEFT) then
+                self.bullet_flag = false
+            end
         end
         if self.is_boost then
             if self.boost_timer >= self.boost_time then

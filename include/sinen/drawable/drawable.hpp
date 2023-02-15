@@ -1,8 +1,8 @@
 #ifndef SINEN_DRAWABLE_HPP
 #define SINEN_DRAWABLE_HPP
-#include "../math/vector2.hpp"
 #include "../shader/shader.hpp"
 #include "../texture/texture.hpp"
+#include "instance_data.hpp"
 
 namespace sinen {
 /**
@@ -52,6 +52,23 @@ struct drawable {
    */
   std::string vertexIndex;
   int drawOrder = 100;
+  /**
+   * @brief World matrix to instancing data
+   *
+   * @param mat input world matrix
+   * @param data output instancing data
+   */
+  void world_to_instance_data(const matrix4 &mat, instance_data &data);
+  /**
+   * @brief instance size
+   *
+   */
+  std::size_t size() { return sizeof(instance_data) * data.size(); }
+  /**
+   * @brief instance data
+   *
+   */
+  std::vector<instance_data> data;
 };
 
 } // namespace sinen

@@ -48,13 +48,6 @@ void vk_renderer::shutdown() {
   m_base->shutdown();
 }
 void vk_renderer::render() {
-  if (window::resized()) {
-    m_base->recreate_swapchain();
-    m_present_texture.destroy_descriptor_set_for_imgui();
-    m_present_texture.window_resize(window::size().x, window::size().y);
-    m_present_texture.prepare_descriptor_set_for_imgui();
-    m_render_texture.window_resize(window::size().x, window::size().y);
-  }
   /* Skybox */
   m_skybox->drawable_obj->binding_texture = render_system::get_skybox_texture();
   if (m_image_object.contains(m_skybox->drawable_obj->binding_texture.handle)) {
@@ -116,6 +109,8 @@ void vk_renderer::render() {
             sprite->uniformBuffers[m_base->m_imageIndex].allocation;
         vk_shader_parameter param;
         param.param = sprite->drawable_obj->param;
+        param.param.light_proj = renderer::light_projection;
+        param.param.light_view = renderer::light_view;
         auto *ptr = sprite->drawable_obj->shade.get_parameter().get();
         write_memory(allocation, &param, sizeof(vk_shader_parameter));
         write_memory(allocation, ptr,
@@ -151,6 +146,8 @@ void vk_renderer::render() {
             sprite->uniformBuffers[m_base->m_imageIndex].allocation;
         vk_shader_parameter param;
         param.param = sprite->drawable_obj->param;
+        param.param.light_proj = renderer::light_projection;
+        param.param.light_view = renderer::light_view;
         auto *ptr = sprite->drawable_obj->shade.get_parameter().get();
         write_memory(allocation, &param, sizeof(vk_shader_parameter));
         write_memory(allocation, ptr,
@@ -161,8 +158,8 @@ void vk_renderer::render() {
       }
     }
     vkCmdEndRenderPass(command);
-    set_image_memory_barrier(command, m_depth_texture.color_target.image,
-                             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+    set_image_memory_barrier(command, m_depth_texture.depth_target.image,
+                             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   }
   {
@@ -307,6 +304,14 @@ void vk_renderer::render() {
   for (auto &sprite : m_draw_object_ui)
     destroy_vk_drawable(sprite);
   m_draw_object_ui.clear();
+  if (window::resized()) {
+    m_base->recreate_swapchain();
+    m_present_texture.destroy_descriptor_set_for_imgui();
+    m_present_texture.window_resize(window::size().x, window::size().y);
+    m_present_texture.prepare_descriptor_set_for_imgui();
+    m_render_texture.window_resize(window::size().x, window::size().y);
+    m_depth_texture.window_resize(window::size().x, window::size().y);
+  }
 }
 void vk_renderer::add_vertex_array(const vertex_array &vArray,
                                    std::string_view name) {
@@ -605,6 +610,8 @@ void vk_renderer::draw3d(VkCommandBuffer command, bool is_change_pipeline) {
       auto allocation = sprite->uniformBuffers[m_base->m_imageIndex].allocation;
       vk_shader_parameter param;
       param.param = sprite->drawable_obj->param;
+      param.param.light_proj = renderer::light_projection;
+      param.param.light_view = renderer::light_view;
       auto *ptr = sprite->drawable_obj->shade.get_parameter().get();
       write_memory(allocation, &param, sizeof(vk_shader_parameter));
       write_memory(allocation, ptr,
@@ -646,6 +653,8 @@ void vk_renderer::draw3d(VkCommandBuffer command, bool is_change_pipeline) {
       auto allocation = sprite->uniformBuffers[m_base->m_imageIndex].allocation;
       vk_shader_parameter param;
       param.param = sprite->drawable_obj->param;
+      param.param.light_proj = renderer::light_projection;
+      param.param.light_view = renderer::light_view;
       auto *ptr = sprite->drawable_obj->shade.get_parameter().get();
       write_memory(allocation, &param, sizeof(vk_shader_parameter));
       write_memory(allocation, ptr,
@@ -1058,6 +1067,9 @@ void vk_renderer::set_image_memory_barrier(VkCommandBuffer command,
   imb.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
   imb.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
   imb.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+  if (oldLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+    imb.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+  }
   imb.image = image;
 
   VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;

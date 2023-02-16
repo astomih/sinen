@@ -4,16 +4,20 @@ precision mediump float;
 layout(location = 0) in vec2 inUV;
 layout(location = 1) in vec4 inColor;
 layout(location = 0) out vec4 outColor;
-layout(set = 0, binding = 1) uniform sampler2D diffuseMap;
 // Normal (in world space)
 layout(location = 2) in vec3 fragNormal;
 // Position (in world space)
 layout(location = 3) in vec3 fragWorldPos;
-layout(set = 0, binding = 0) uniform Matrices {
-  mat4 world;
-  mat4 view;
-  mat4 proj;
-};
+layout(location = 4) in vec4 shadowCoord;
+layout(binding = 1) uniform sampler2D diffuseMap;
+layout(binding = 2) uniform sampler2D shadowMap;
+float simple_shadow(vec3 proj_pos) {
+  float shadow_distance = max((texture(shadowMap, proj_pos.xy).r), 0.0);
+  float distance = proj_pos.z;
+  if (shadow_distance < distance)
+    return 0.5;
+  return 1.0;
+}
 
 void main() {
   vec3 uCameraPos = vec3(0, 0, 0);
@@ -40,7 +44,8 @@ void main() {
   vec3 Phong = uAmbientLight;
   float NdotL = dot(N, L);
   if (NdotL > 0) {
-    vec3 Diffuse = mDiffuseColor * NdotL;
+    float visibility = simple_shadow(shadowCoord.xyz);
+    vec3 Diffuse = mDiffuseColor * NdotL * visibility;
     Phong += Diffuse;
   }
   vec4 color = vec4(Phong, 1.0) * inColor * texture(diffuseMap, inUV);

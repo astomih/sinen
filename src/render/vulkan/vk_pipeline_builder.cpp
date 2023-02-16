@@ -133,6 +133,8 @@ void vk_pipeline_builder::depth(vk_pipeline &pipeline) {
                               VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
   pipeline.alpha_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
                               VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+  pipeline.set_depth_test(VK_TRUE);
+  pipeline.set_depth_write(VK_TRUE);
   pipeline.prepare(device);
   vk_shader::clean(device, shaderStages);
 }
@@ -148,6 +150,8 @@ void vk_pipeline_builder::depth_instancing(vk_pipeline &pipeline) {
                               VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
   pipeline.alpha_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
                               VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+  pipeline.set_depth_test(VK_TRUE);
+  pipeline.set_depth_write(VK_TRUE);
   pipeline.prepare(device);
   vk_shader::clean(device, shaderStages);
 }

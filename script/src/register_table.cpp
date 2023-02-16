@@ -26,6 +26,8 @@ void register_table(sol::state &lua) {
     v["clear_color"] = &renderer::clear_color;
     v["set_clear_color"] = &renderer::set_clear_color;
     v["at_render_texture_user_data"] = &renderer::at_render_texture_user_data;
+    v["set_light_lookat"] = &renderer::set_light_look_at;
+    v["set_light_ortho"] = &renderer::set_light_ortho;
   }
   {
     auto v = lua.create_table("scene");

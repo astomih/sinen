@@ -1,5 +1,5 @@
 #if !defined(EMSCRIPTEN) && !defined(ANDROID)
-#include "vk_render_texture.hpp"
+#include "vk_depth_texture.hpp"
 #include "vk_renderer.hpp"
 #include <array>
 #include <imgui.h>
@@ -8,9 +8,9 @@
 #include <vector>
 
 namespace sinen {
-vk_render_texture::vk_render_texture(vk_renderer &r) : m_vkrenderer(r) {}
+vk_depth_texture::vk_depth_texture(vk_renderer &r) : m_vkrenderer(r) {}
 
-void vk_render_texture::prepare(int width, int height) {
+void vk_depth_texture::prepare(int width, int height) {
   sampler = create_sampler();
   drawer.drawable_obj = std::make_shared<drawable>();
   color_target =
@@ -70,12 +70,11 @@ void vk_render_texture::prepare(int width, int height) {
   // Frame Buffer
   create_frame_buffer(width, height);
   prepare_descriptor_set_layout();
-  prepare_pipeline_layout();
   prepare_descriptor_set();
   imgui_descriptor_set = VK_NULL_HANDLE;
 }
-void vk_render_texture::set_MSAA(bool enable) { is_MSAA = enable; }
-void vk_render_texture::clear() {
+void vk_depth_texture::set_MSAA(bool enable) { is_MSAA = enable; }
+void vk_depth_texture::clear() {
   vkFreeDescriptorSets(m_vkrenderer.get_base().get_vk_device(),
                        m_vkrenderer.get_descriptor_pool(),
                        drawer.descriptor_sets.size(),
@@ -83,7 +82,6 @@ void vk_render_texture::clear() {
   for (auto &ds : drawer.uniformBuffers) {
     m_vkrenderer.destroy_buffer(ds);
   }
-  destroy_pipeline_layout();
   vkDestroyDescriptorSetLayout(m_vkrenderer.get_base().get_vk_device(),
                                descriptor_set_layout, nullptr);
   vkDestroyFramebuffer(m_vkrenderer.get_base().get_vk_device(), fb, nullptr);
@@ -95,7 +93,7 @@ void vk_render_texture::clear() {
   vkDestroySampler(m_vkrenderer.get_base().get_vk_device(), sampler, nullptr);
   pipeline.Cleanup(m_vkrenderer.get_base().get_vk_device());
 }
-void vk_render_texture::window_resize(int width, int height) {
+void vk_depth_texture::window_resize(int width, int height) {
   destroy_frame_buffer();
   m_vkrenderer.destroy_image(depth_target);
   m_vkrenderer.destroy_image(color_target);
@@ -113,8 +111,8 @@ void vk_render_texture::window_resize(int width, int height) {
   create_frame_buffer(width, height);
   prepare_descriptor_set();
 }
-vk_image vk_render_texture::create_image_object(int width, int height,
-                                                VkFormat format, bool isdepth) {
+vk_image vk_depth_texture::create_image_object(int width, int height,
+                                               VkFormat format, bool isdepth) {
   vk_image tex{};
   {
     // Create VkImage texture
@@ -172,7 +170,7 @@ vk_image vk_render_texture::create_image_object(int width, int height,
   }
   return tex;
 }
-void vk_render_texture::prepare_descriptor_set() {
+void vk_depth_texture::prepare_descriptor_set() {
   for (auto &v : drawer.uniformBuffers) {
     VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                      VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
@@ -230,7 +228,7 @@ void vk_render_texture::prepare_descriptor_set() {
                            nullptr);
   }
 }
-VkSampler vk_render_texture::create_sampler() {
+VkSampler vk_depth_texture::create_sampler() {
   VkSampler sampler;
   VkSamplerCreateInfo ci{
       VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
@@ -256,7 +254,7 @@ VkSampler vk_render_texture::create_sampler() {
                   &sampler);
   return sampler;
 }
-void vk_render_texture::prepare_descriptor_set_layout() {
+void vk_depth_texture::prepare_descriptor_set_layout() {
   std::vector<VkDescriptorSetLayoutBinding> bindings;
   VkDescriptorSetLayoutBinding bindingUBO{}, bindingTex{}, bindingInstance{};
   bindingUBO.binding = 0;
@@ -278,10 +276,10 @@ void vk_render_texture::prepare_descriptor_set_layout() {
   vkCreateDescriptorSetLayout(m_vkrenderer.get_base().get_vk_device(), &ci,
                               nullptr, &descriptor_set_layout);
 }
-void vk_render_texture::destroy_image_object(vk_image &image_object) {
+void vk_depth_texture::destroy_image_object(vk_image &image_object) {
   m_vkrenderer.destroy_image(image_object);
 }
-void vk_render_texture::create_frame_buffer(int width, int height) {
+void vk_depth_texture::create_frame_buffer(int width, int height) {
 
   std::vector<VkImageView> views;
   views.push_back(color_target.view);
@@ -300,27 +298,18 @@ void vk_render_texture::create_frame_buffer(int width, int height) {
   // VkFramebuffer m_renderTextureFB;
   vkCreateFramebuffer(m_vkrenderer.get_base().m_device, &fbci, nullptr, &fb);
 }
-void vk_render_texture::destroy_frame_buffer() {
+void vk_depth_texture::destroy_frame_buffer() {
   vkDestroyFramebuffer(m_vkrenderer.get_base().get_vk_device(), this->fb,
                        nullptr);
 }
-void vk_render_texture::prepare_descriptor_set_for_imgui() {
+void vk_depth_texture::prepare_descriptor_set_for_imgui() {
   imgui_descriptor_set = ImGui_ImplVulkan_AddTexture(
       sampler, color_target.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
-void vk_render_texture::destroy_descriptor_set_for_imgui() {
+void vk_depth_texture::destroy_descriptor_set_for_imgui() {
   if (imgui_descriptor_set != VK_NULL_HANDLE) {
     ImGui_ImplVulkan_RemoveTexture(imgui_descriptor_set);
   }
-}
-void vk_render_texture::prepare_pipeline_layout() {
-  m_pipeline_layout.initialize(
-      m_vkrenderer.get_base().get_vk_device(), &descriptor_set_layout,
-      m_vkrenderer.get_base().mSwapchain->GetSurfaceExtent(),false);
-  m_pipeline_layout.prepare(m_vkrenderer.get_base().get_vk_device());
-}
-void vk_render_texture::destroy_pipeline_layout() {
-  m_pipeline_layout.cleanup(m_vkrenderer.get_base().get_vk_device());
 }
 
 } // namespace sinen

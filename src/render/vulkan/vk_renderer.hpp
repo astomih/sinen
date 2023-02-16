@@ -10,6 +10,7 @@
 
 #include "vk_base.hpp"
 #include "vk_buffer.hpp"
+#include "vk_depth_texture.hpp"
 #include "vk_drawable.hpp"
 #include "vk_image.hpp"
 #include "vk_pipeline.hpp"
@@ -76,8 +77,6 @@ public:
   VkDescriptorSetLayout get_descriptor_set_layout() {
     return m_descriptor_set_layout;
   }
-  std::vector<VkDescriptorSetLayout> &get_layouts() { return layouts; };
-
   VkDescriptorPool get_descriptor_pool() const { return m_descriptor_pool; }
   void destroy_buffer(vk_buffer &bufferObj);
   void destroy_image(vk_image &imageObj);
@@ -88,6 +87,7 @@ public:
   VmaAllocator allocator{};
   vk_render_texture m_render_texture;
   vk_render_texture m_present_texture;
+  vk_depth_texture m_depth_texture;
 
 private:
   std::unique_ptr<class vk_base> m_base;
@@ -103,12 +103,14 @@ private:
                                 VkImageLayout oldLayout,
                                 VkImageLayout newLayout);
   std::unordered_map<std::string, vk_vertex_array> m_vertex_arrays;
-  std::vector<VkDescriptorSetLayout> layouts;
   VkDescriptorSetLayout m_descriptor_set_layout;
+  VkDescriptorSetLayout m_descriptor_set_layout_for_depth;
   VkDescriptorPool m_descriptor_pool;
   VkSampler m_sampler;
   vk_pipeline_layout m_pipeline_layout_normal;
   vk_pipeline_layout m_pipeline_layout_instance;
+  vk_pipeline_layout m_pipeline_layout_depth;
+  vk_pipeline_layout m_pipeline_layout_depth_instance;
   std::unordered_map<std::string, vk_pipeline> m_pipelines;
   std::vector<std::pair<shader, vk_pipeline>> m_user_pipelines;
   std::vector<std::shared_ptr<vk_drawable>> m_draw_object_3d;

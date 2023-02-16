@@ -1,15 +1,14 @@
-#ifndef SINEN_VK_RENDER_TEXTURE_HPP
-#define SINEN_VK_RENDER_TEXTURE_HPP
-#if !defined(EMSCRIPTEN) && !defined(ANDROID)
+#ifndef SINEN_VK_DEPTH_TEXTURE_HPP
+#define SINEN_VK_DEPTH_TEXTURE_HPP
 #include "vk_drawable.hpp"
 #include "vk_image.hpp"
 #include "vk_pipeline.hpp"
 #include <vulkan/vulkan.h>
 
 namespace sinen {
-class vk_render_texture {
+class vk_depth_texture {
 public:
-  vk_render_texture(class vk_renderer &);
+  vk_depth_texture(class vk_renderer &);
   void set_MSAA(bool enable);
   void prepare_descriptor_set_layout();
   void prepare_descriptor_set();
@@ -24,8 +23,6 @@ public:
   void destroy_frame_buffer();
   void prepare_descriptor_set_for_imgui();
   void destroy_descriptor_set_for_imgui();
-  void prepare_pipeline_layout();
-  void destroy_pipeline_layout();
 
   VkRenderPass render_pass;
   VkFramebuffer fb;
@@ -35,7 +32,6 @@ public:
   vk_drawable drawer;
   VkDescriptorSetLayout descriptor_set_layout;
   VkDescriptorSet imgui_descriptor_set;
-  vk_pipeline_layout m_pipeline_layout;
   vk_pipeline pipeline;
 
 private:
@@ -43,5 +39,4 @@ private:
   bool is_MSAA = false;
 };
 } // namespace sinen
-#endif // !defined(EMSCRIPTEN) && !defined(ANDROID)
-#endif // !SINEN_VK_RENDER_TEXTURE_HPP
+#endif // !SINEN_VK_TEPTH_TEXTURE_HPP

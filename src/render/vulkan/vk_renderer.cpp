@@ -36,7 +36,7 @@ constexpr int maxpoolSize = 65535;
 vk_renderer::vk_renderer()
     : m_descriptor_pool(), m_descriptor_set_layout(), m_sampler(),
       m_base(std::make_unique<vk_base>(this)), m_render_texture(*this),
-      m_present_texture(*this) {}
+      m_present_texture(*this), m_depth_texture(*this) {}
 vk_renderer::~vk_renderer() = default;
 void vk_renderer::initialize() {
   m_base->initialize();
@@ -83,6 +83,88 @@ void vk_renderer::render() {
   auto &command = m_base->m_commands[nextImageIndex];
   // Begin Command Buffer
   vkBeginCommandBuffer(command, &commandBI);
+  {
+    VkRenderPassBeginInfo renderPassBI{};
+    renderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassBI.renderPass = m_depth_texture.render_pass;
+    renderPassBI.framebuffer = m_depth_texture.fb;
+    renderPassBI.renderArea.offset = VkOffset2D{0, 0};
+    renderPassBI.renderArea.extent = m_base->mSwapchain->GetSurfaceExtent();
+    renderPassBI.pClearValues = clearValue.data();
+    renderPassBI.clearValueCount = uint32_t(clearValue.size());
+    vkCmdBeginRenderPass(command, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
+    VkRect2D scissor = {{0, 0}, m_base->mSwapchain->GetSurfaceExtent()};
+    vkCmdSetScissor(command, 0, 1, &scissor);
+    VkViewport viewport = {
+        0,
+        float(m_base->mSwapchain->GetSurfaceExtent().height),
+        float(m_base->mSwapchain->GetSurfaceExtent().width),
+        -float(m_base->mSwapchain->GetSurfaceExtent().height),
+        0,
+        1};
+    vkCmdSetViewport(command, 0, 1, &viewport);
+    VkDeviceSize offset = 0;
+    for (auto &sprite : m_draw_object_3d) {
+      if (sprite->drawable_obj->size() > 0) {
+        m_pipelines["depth_instancing"].Bind(command);
+        vkCmdBindDescriptorSets(
+            command, VK_PIPELINE_BIND_POINT_GRAPHICS,
+            m_pipeline_layout_depth_instance.GetLayout(), 0, 1,
+            &sprite->descriptor_sets_for_depth[m_base->m_imageIndex], 0,
+            nullptr);
+        auto allocation =
+            sprite->uniformBuffers[m_base->m_imageIndex].allocation;
+        vk_shader_parameter param;
+        param.param = sprite->drawable_obj->param;
+        auto *ptr = sprite->drawable_obj->shade.get_parameter().get();
+        write_memory(allocation, &param, sizeof(vk_shader_parameter));
+        write_memory(allocation, ptr,
+                     sprite->drawable_obj->shade.get_parameter_size(),
+                     sizeof(vk_shader_parameter));
+        std::string index = sprite->drawable_obj->vertexIndex;
+        VkBuffer buffers[] = {m_vertex_arrays[index].vertexBuffer.buffer,
+                              sprite->instance_buffer.buffer};
+        VkDeviceSize offsets[] = {0, 0};
+        vkCmdBindVertexBuffers(command, 0, 2, buffers, offsets);
+        vkCmdBindIndexBuffer(command, m_vertex_arrays[index].indexBuffer.buffer,
+                             0, VK_INDEX_TYPE_UINT32);
+        vkCmdDrawIndexed(command, m_vertex_arrays[index].indexCount,
+                         sprite->drawable_obj->data.size(), 0, 0, 0);
+      } else {
+
+        m_pipelines["depth"].Bind(command);
+
+        std::string index = sprite->drawable_obj->vertexIndex;
+        ::vkCmdBindVertexBuffers(command, 0, 1,
+                                 &m_vertex_arrays[index].vertexBuffer.buffer,
+                                 &offset);
+        ::vkCmdBindIndexBuffer(command,
+                               m_vertex_arrays[index].indexBuffer.buffer,
+                               offset, VK_INDEX_TYPE_UINT32);
+        // Set descriptors
+        vkCmdBindDescriptorSets(
+            command, VK_PIPELINE_BIND_POINT_GRAPHICS,
+            m_pipeline_layout_depth.GetLayout(), 0, 1,
+            &sprite->descriptor_sets_for_depth[m_base->m_imageIndex], 0,
+            nullptr);
+        auto allocation =
+            sprite->uniformBuffers[m_base->m_imageIndex].allocation;
+        vk_shader_parameter param;
+        param.param = sprite->drawable_obj->param;
+        auto *ptr = sprite->drawable_obj->shade.get_parameter().get();
+        write_memory(allocation, &param, sizeof(vk_shader_parameter));
+        write_memory(allocation, ptr,
+                     sprite->drawable_obj->shade.get_parameter_size(),
+                     sizeof(vk_shader_parameter));
+        vkCmdDrawIndexed(command, m_vertex_arrays[index].indexCount, 1, 0, 0,
+                         0);
+      }
+    }
+    vkCmdEndRenderPass(command);
+    set_image_memory_barrier(command, m_depth_texture.color_target.image,
+                             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  }
   {
     VkRenderPassBeginInfo renderPassBI{};
     renderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -176,10 +258,10 @@ void vk_renderer::render() {
                            VK_INDEX_TYPE_UINT32);
 
       // Set descriptors
-      vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                              m_pipeline_layout_normal.GetLayout(), 0, 1,
-                              &sprite.descriptor_sets[m_base->m_imageIndex], 0,
-                              nullptr);
+      vkCmdBindDescriptorSets(
+          command, VK_PIPELINE_BIND_POINT_GRAPHICS,
+          m_present_texture.m_pipeline_layout.GetLayout(), 0, 1,
+          &sprite.descriptor_sets[m_base->m_imageIndex], 0, nullptr);
       auto allocation = sprite.uniformBuffers[m_base->m_imageIndex].allocation;
 
       sprite.drawable_obj->param.proj = matrix4::identity;
@@ -352,10 +434,14 @@ void vk_renderer::prepare() {
 
   m_sampler = create_sampler();
 
-  layouts.resize(m_base->mSwapchain->GetImageCount());
-  for (auto &i : layouts) {
-    i = m_descriptor_set_layout;
-  }
+  m_pipeline_layout_depth_instance.initialize(
+      m_base->get_vk_device(), &m_descriptor_set_layout_for_depth,
+      m_base->mSwapchain->GetSurfaceExtent());
+  m_pipeline_layout_depth_instance.prepare(m_base->get_vk_device());
+  m_pipeline_layout_depth.initialize(
+      m_base->get_vk_device(), &m_descriptor_set_layout_for_depth,
+      m_base->mSwapchain->GetSurfaceExtent(), false);
+  m_pipeline_layout_depth.prepare(m_base->get_vk_device());
 
   m_pipeline_layout_instance.initialize(m_base->get_vk_device(),
                                         &m_descriptor_set_layout,
@@ -368,11 +454,13 @@ void vk_renderer::prepare() {
   m_present_texture.prepare(window::size().x, window::size().y);
   m_render_texture.set_MSAA(true);
   m_render_texture.prepare(window::size().x, window::size().y);
+  m_depth_texture.prepare(scene::size().x, scene::size().y);
 
   vk_pipeline_builder pipeline_builder(
       m_base->get_vk_device(), m_pipeline_layout_instance,
-      m_pipeline_layout_normal, m_render_texture, m_present_texture,
-      m_base->m_renderPass);
+      m_pipeline_layout_normal, m_pipeline_layout_depth_instance,
+      m_pipeline_layout_depth, m_render_texture, m_present_texture,
+      m_depth_texture, m_base->m_renderPass);
   // render texture pipeline
   pipeline_builder.present_texture_pipeline(m_present_texture.pipeline);
   pipeline_builder.render_texture_pipeline(m_render_texture.pipeline);
@@ -383,6 +471,8 @@ void vk_renderer::prepare() {
   vk_pipeline pipeline_instancing_opaque;
   vk_pipeline pipeline_instancing_alpha;
   vk_pipeline pipeline_instancing_2d;
+  vk_pipeline pipeline_depth;
+  vk_pipeline pipeline_depth_instancing;
   vk_pipeline pipeline_ui;
 
   // Opaque pipeline
@@ -398,6 +488,10 @@ void vk_renderer::prepare() {
   pipeline_builder.instancing_alpha(pipeline_instancing_alpha);
   // 2D pipeline
   pipeline_builder.instancing_alpha_2d(pipeline_instancing_2d);
+  // depth pipeline
+  pipeline_builder.depth(pipeline_depth);
+  // depth instancing pipeline
+  pipeline_builder.depth_instancing(pipeline_depth_instancing);
   // UI pipeline
   pipeline_builder.ui(pipeline_ui);
   m_pipelines["skybox"] = pipeline_skybox;
@@ -407,6 +501,8 @@ void vk_renderer::prepare() {
   m_pipelines["instancing_opaque"] = pipeline_instancing_opaque;
   m_pipelines["instancing_alpha"] = pipeline_instancing_alpha;
   m_pipelines["instancing_2d"] = pipeline_instancing_2d;
+  m_pipelines["depth"] = pipeline_depth;
+  m_pipelines["depth_instancing"] = pipeline_depth_instancing;
   m_pipelines["ui"] = pipeline_ui;
 
   prepare_imgui();
@@ -434,12 +530,15 @@ void vk_renderer::cleanup() {
 
   m_present_texture.clear();
   m_render_texture.clear();
+  m_depth_texture.clear();
 
   for (auto &i : m_image_object) {
     destroy_image(i.second);
   }
   vkutil::destroy_vulkan_object<VkSampler>(device, m_sampler,
                                            &vkDestroySampler);
+  m_pipeline_layout_depth_instance.cleanup(device);
+  m_pipeline_layout_depth.cleanup(device);
   m_pipeline_layout_instance.cleanup(device);
   m_pipeline_layout_normal.cleanup(device);
   for (auto &i : m_pipelines) {
@@ -457,6 +556,8 @@ void vk_renderer::cleanup() {
                                                   &vkDestroyDescriptorPool);
   vkutil::destroy_vulkan_object<VkDescriptorSetLayout>(
       device, m_descriptor_set_layout, &vkDestroyDescriptorSetLayout);
+  vkutil::destroy_vulkan_object<VkDescriptorSetLayout>(
+      device, m_descriptor_set_layout_for_depth, &vkDestroyDescriptorSetLayout);
 }
 
 void vk_renderer::make_command(VkCommandBuffer command) {
@@ -767,7 +868,7 @@ void vk_renderer::render_imgui(VkCommandBuffer command) {
 
 void vk_renderer::prepare_descriptor_set_layout() {
   std::vector<VkDescriptorSetLayoutBinding> bindings;
-  VkDescriptorSetLayoutBinding ubo{}, tex{};
+  VkDescriptorSetLayoutBinding ubo{}, tex{}, depth{};
   ubo.binding = 0;
   ubo.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
   ubo.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
@@ -780,12 +881,25 @@ void vk_renderer::prepare_descriptor_set_layout() {
   tex.descriptorCount = 1;
   bindings.push_back(tex);
 
+  depth.binding = 2;
+  depth.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+  depth.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+  depth.descriptorCount = 1;
+  bindings.push_back(depth);
+
   VkDescriptorSetLayoutCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
   ci.bindingCount = uint32_t(bindings.size());
   ci.pBindings = bindings.data();
   vkCreateDescriptorSetLayout(m_base->get_vk_device(), &ci, nullptr,
                               &m_descriptor_set_layout);
+
+  bindings.clear();
+  bindings.push_back(ubo);
+  ci.bindingCount = uint32_t(bindings.size());
+  ci.pBindings = bindings.data();
+  vkCreateDescriptorSetLayout(m_base->get_vk_device(), &ci, nullptr,
+                              &m_descriptor_set_layout_for_depth);
 }
 
 void vk_renderer::prepare_descriptor_pool() {
@@ -810,43 +924,97 @@ void vk_renderer::prepare_descriptor_set(std::shared_ptr<vk_drawable> sprite) {
   VkDescriptorSetAllocateInfo ai{};
   ai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
   ai.descriptorPool = m_descriptor_pool;
-  ai.descriptorSetCount = uint32_t(m_base->mSwapchain->GetImageCount());
-  ai.pSetLayouts = layouts.data();
-  vkAllocateDescriptorSets(m_base->get_vk_device(), &ai,
-                           sprite->descriptor_sets.data());
-  // Write to descriptor set.
-  for (int i = 0; i < m_base->mSwapchain->GetImageCount(); i++) {
-    VkDescriptorBufferInfo descUBO{};
-    descUBO.buffer = sprite->uniformBuffers[i].buffer;
-    descUBO.offset = 0;
-    descUBO.range = VK_WHOLE_SIZE;
 
-    VkDescriptorImageInfo descImage;
+  {
+    ai.descriptorSetCount = 2;
+    std::array<VkDescriptorSetLayout, 2> layouts;
+    for (auto &i : layouts) {
+      i = m_descriptor_set_layout;
+    }
+    ai.pSetLayouts = layouts.data();
 
-    descImage.imageView =
-        m_image_object[sprite->drawable_obj->binding_texture.handle].view;
-    descImage.sampler = m_sampler;
-    descImage.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    vkAllocateDescriptorSets(m_base->get_vk_device(), &ai,
+                             sprite->descriptor_sets.data());
+    // Write to descriptor set.
+    for (int i = 0; i < m_base->mSwapchain->GetImageCount(); i++) {
+      std::vector<VkWriteDescriptorSet> writeSets;
+      VkDescriptorBufferInfo descUBO{};
+      descUBO.buffer = sprite->uniformBuffers[i].buffer;
+      descUBO.offset = 0;
+      descUBO.range = VK_WHOLE_SIZE;
 
-    VkWriteDescriptorSet ubo{};
-    ubo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    ubo.dstBinding = 0;
-    ubo.descriptorCount = 1;
-    ubo.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    ubo.pBufferInfo = &descUBO;
-    ubo.dstSet = sprite->descriptor_sets[i];
+      VkDescriptorImageInfo descImage;
+      VkDescriptorImageInfo desc_depth;
 
-    VkWriteDescriptorSet tex{};
-    tex.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    tex.dstBinding = 1;
-    tex.descriptorCount = 1;
-    tex.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    tex.pImageInfo = &descImage;
-    tex.dstSet = sprite->descriptor_sets[i];
+      descImage.imageView =
+          m_image_object[sprite->drawable_obj->binding_texture.handle].view;
+      descImage.sampler = m_sampler;
+      descImage.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-    std::array<VkWriteDescriptorSet, 2> writeSets = {ubo, tex};
-    vkUpdateDescriptorSets(m_base->get_vk_device(), uint32_t(writeSets.size()),
-                           writeSets.data(), 0, nullptr);
+      desc_depth.imageView = m_depth_texture.depth_target.view;
+      desc_depth.sampler = m_sampler;
+      desc_depth.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+      VkWriteDescriptorSet ubo{};
+      ubo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+      ubo.dstBinding = 0;
+      ubo.descriptorCount = 1;
+      ubo.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+      ubo.pBufferInfo = &descUBO;
+      ubo.dstSet = sprite->descriptor_sets[i];
+      writeSets.push_back(ubo);
+
+      VkWriteDescriptorSet tex{};
+      tex.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+      tex.dstBinding = 1;
+      tex.descriptorCount = 1;
+      tex.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+      tex.pImageInfo = &descImage;
+      tex.dstSet = sprite->descriptor_sets[i];
+      writeSets.push_back(tex);
+
+      VkWriteDescriptorSet depth{};
+      depth.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+      depth.dstBinding = 2;
+      depth.descriptorCount = 1;
+      depth.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+      depth.pImageInfo = &desc_depth;
+      depth.dstSet = sprite->descriptor_sets[i];
+      writeSets.push_back(depth);
+      vkUpdateDescriptorSets(m_base->get_vk_device(),
+                             uint32_t(writeSets.size()), writeSets.data(), 0,
+                             nullptr);
+    }
+  }
+  {
+    ai.descriptorSetCount = 2;
+    std::array<VkDescriptorSetLayout, 2> layouts;
+    for (auto &i : layouts) {
+      i = m_descriptor_set_layout_for_depth;
+    }
+    ai.pSetLayouts = layouts.data();
+
+    vkAllocateDescriptorSets(m_base->get_vk_device(), &ai,
+                             sprite->descriptor_sets_for_depth.data());
+    // Write to descriptor set.
+    for (int i = 0; i < m_base->mSwapchain->GetImageCount(); i++) {
+      std::vector<VkWriteDescriptorSet> writeSets;
+      VkDescriptorBufferInfo descUBO{};
+      descUBO.buffer = sprite->uniformBuffers[i].buffer;
+      descUBO.offset = 0;
+      descUBO.range = VK_WHOLE_SIZE;
+      VkWriteDescriptorSet ubo{};
+      ubo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+      ubo.dstBinding = 0;
+      ubo.descriptorCount = 1;
+      ubo.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+      ubo.pBufferInfo = &descUBO;
+      ubo.dstSet = sprite->descriptor_sets_for_depth[i];
+      writeSets.push_back(ubo);
+      vkUpdateDescriptorSets(m_base->get_vk_device(),
+                             uint32_t(writeSets.size()), writeSets.data(), 0,
+                             nullptr);
+    }
   }
 }
 vk_buffer vk_renderer::create_buffer(uint32_t size, VkBufferUsageFlags usage,
@@ -1145,6 +1313,14 @@ void vk_renderer::destroy_vk_drawable(std::shared_ptr<vk_drawable> texture) {
   }
   texture->descriptor_sets[0] = VK_NULL_HANDLE;
   texture->descriptor_sets[1] = VK_NULL_HANDLE;
+  if (texture->descriptor_sets_for_depth[0] != VK_NULL_HANDLE) {
+    vkFreeDescriptorSets(
+        device, m_descriptor_pool,
+        static_cast<uint32_t>(texture->descriptor_sets_for_depth.size()),
+        texture->descriptor_sets_for_depth.data());
+  }
+  texture->descriptor_sets_for_depth[0] = VK_NULL_HANDLE;
+  texture->descriptor_sets_for_depth[1] = VK_NULL_HANDLE;
   for (auto &i : texture->uniformBuffers) {
     destroy_buffer(i);
   }

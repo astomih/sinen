@@ -98,23 +98,14 @@ void scene_system::update_scene() {
       static auto once = []() {
         renderer::add_imgui_function([]() {
           ImGui::Begin("Debug");
-          ImGui::Text("FPS: %f", ImGui::GetIO().Framerate);
+          ImGui::Text("FPS: %.3f", ImGui::GetIO().Framerate);
+          ImGui::Text("DeltaTime: %f", ImGui::GetIO().DeltaTime);
+          ImGui::Text("BackendPlatformName: %s",
+                      ImGui::GetIO().BackendPlatformName);
+          ImGui::Text("BackendRendererName: %s",
+                      ImGui::GetIO().BackendRendererName);
+
           ImGui::End();
-          ImGui::Begin("Light");
-          static vector3 pos, target, up;
-          static float left, right, top, bottom, near, far;
-          ImGui::InputFloat3("pos", &pos.x);
-          ImGui::InputFloat3("target", &target.x);
-          ImGui::InputFloat3("up", &up.x);
-          ImGui::InputFloat("left", &left);
-          ImGui::InputFloat("right", &right);
-          ImGui::InputFloat("top", &top);
-          ImGui::InputFloat("bottom", &bottom);
-          ImGui::InputFloat("near", &near);
-          ImGui::InputFloat("far", &far);
-          ImGui::End();
-          renderer::set_light_look_at(pos, target, up);
-          renderer::set_light_ortho(left, right, top, bottom, near, far);
         });
         return true;
       }();
@@ -122,10 +113,10 @@ void scene_system::update_scene() {
     }
   }
   // calc delta time
-  float deltaTime = (SDL_GetTicks() - m_prev_tick) / 1000.0f;
+  float delta_time = (SDL_GetTicks() - m_prev_tick) / 1000.0f;
   constexpr float MAX_DELTA_TIME = 1.f / 60.f;
-  if (deltaTime > MAX_DELTA_TIME) {
-    deltaTime = MAX_DELTA_TIME;
+  if (delta_time > MAX_DELTA_TIME) {
+    delta_time = MAX_DELTA_TIME;
   }
   m_prev_tick = SDL_GetTicks();
   for (auto itr = m_actors.begin(); itr != m_actors.end();) {
@@ -137,7 +128,7 @@ void scene_system::update_scene() {
                                                   (*itr)->get_script_name()))
                    .as<sol::table>();
       r["update"]();
-      (*itr)->update(deltaTime);
+      (*itr)->update(delta_time);
 
       itr++;
     } else if ((*itr)->get_state() == actor::state::dead) {
@@ -149,11 +140,11 @@ void scene_system::update_scene() {
 
   if (is_run_script) {
     sol::state *lua = (sol::state *)script_system::get_state();
-    (*lua)["delta_time"] = deltaTime;
+    (*lua)["delta_time"] = delta_time;
     (*lua)["update"]();
   }
-  m_impl->update(deltaTime);
-  sound_system::update(deltaTime);
+  m_impl->update(delta_time);
+  sound_system::update(delta_time);
 }
 void scene_system::shutdown() {
   m_impl->terminate();

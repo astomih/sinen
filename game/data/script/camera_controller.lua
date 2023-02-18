@@ -28,9 +28,9 @@ local function camera_controller()
         self.position.y + self.py,
         self.position.z - self.pz)
       scene.main_camera():lookat(self.position, self.target, vector3(0, 0, 1))
-      --     local pos = vector3(self.target.x, self.target.y - 2.0, self.target.z - 3.0)
-      --    renderer.set_light_lookat(pos, self.target, vector3(0, 0, 1))
-      --   renderer.set_light_ortho(0, 400, 400, 0, 0.01, 1000)
+      local pos = vector3(self.target.x - 2.0, self.target.y - 2.0, self.target.z - 3.0)
+      renderer.set_light_lookat(pos, self.target, vector3(0, 0, 1))
+      renderer.set_light_ortho(-40, 40, -40, 40, -100, 100)
 
     end
   }

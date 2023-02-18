@@ -91,7 +91,7 @@ local player = {
         r2 = 0
         while decide_pos(map, map_size_x, map_size_y) == true do
         end
-        self.drawer.position = vector3(r1 * 2, r2 * 2, 0)
+        self.drawer.position = vector3(r1 * 2, r2 * 2, 1)
         self.drawer.scale = vector3(0.05, 0.05, 0.1)
         self.hp_drawer.position.x = 0
         self.hp_drawer.position.y = 300

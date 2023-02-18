@@ -33,9 +33,7 @@ void main() {
   inworldmat[1] = m2;
   inworldmat[2] = m3;
   inworldmat[3] = m4;
-
-  vec4 worldpos = vec4(inPos, 1.0) * inworldmat;
-  fragWorldPos = worldpos.xyz;
+  fragWorldPos = (vec4(inPos, 1.0) * inworldmat).xyz;
   gl_Position = proj * view * inworldmat * vec4(inPos, 1.0);
   fragNormal = (inworldmat * vec4(inNormal, 0.0f)).xyz;
   outUV = inUV;

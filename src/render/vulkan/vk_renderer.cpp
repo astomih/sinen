@@ -158,8 +158,8 @@ void vk_renderer::render() {
       }
     }
     vkCmdEndRenderPass(command);
-    set_image_memory_barrier(command, m_depth_texture.depth_target.image,
-                             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+    set_image_memory_barrier(command, m_depth_texture.color_target.image,
+                             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   }
   {
@@ -960,7 +960,7 @@ void vk_renderer::prepare_descriptor_set(std::shared_ptr<vk_drawable> sprite) {
       descImage.sampler = m_sampler;
       descImage.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-      desc_depth.imageView = m_depth_texture.depth_target.view;
+      desc_depth.imageView = m_depth_texture.color_target.view;
       desc_depth.sampler = m_sampler;
       desc_depth.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 

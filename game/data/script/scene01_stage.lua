@@ -1,10 +1,10 @@
 local player = require "player"
 local enemy = require "enemy"
 local enemies = {}
-local enemy_max_num = 10
+local enemy_max_num = 100
 local world = require "world"
-local map_size_x = 32
-local map_size_y = 32
+local map_size_x = 64
+local map_size_y = 64
 local map = grid(map_size_x, map_size_y)
 local map_z = grid(map_size_x, map_size_y)
 -- draw object

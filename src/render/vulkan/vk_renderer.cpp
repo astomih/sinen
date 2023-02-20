@@ -22,7 +22,6 @@
 #include <vulkan/vulkan_core.h>
 
 // internal
-#include "../../texture/texture_system.hpp"
 #include "vk_base.hpp"
 #include "vk_pipeline_builder.hpp"
 #include "vk_renderer.hpp"
@@ -1134,7 +1133,8 @@ void vk_renderer::destroy_image(vk_image &imageObj) {
 }
 
 void vk_renderer::create_image_object(const handle_t &handle) {
-  ::SDL_Surface &surf = texture_system::get(handle);
+  SDL_Surface *surfptr = reinterpret_cast<SDL_Surface *>(handle);
+  ::SDL_Surface &surf = *surfptr;
   ::SDL_LockSurface(&surf);
   auto *formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
   formatbuf->BytesPerPixel = 4;

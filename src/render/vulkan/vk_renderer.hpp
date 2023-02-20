@@ -3,7 +3,6 @@
 #include <functional>
 #include <memory>
 #include <model/model.hpp>
-#include <texture/texture_type.hpp>
 #include <vertex/vertex_array.hpp>
 
 #if !defined(EMSCRIPTEN) && !defined(ANDROID)

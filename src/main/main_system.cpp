@@ -25,13 +25,11 @@
 #include <window/window.hpp>
 
 #include "../audio/sound_system.hpp"
-#include "../font/font_system.hpp"
 #include "../input/input_system.hpp"
 #include "../math/random_system.hpp"
 #include "../render/render_system.hpp"
 #include "../scene/scene_system.hpp"
 #include "../script/script_system.hpp"
-#include "../texture/texture_system.hpp"
 #include "../window/window_system.hpp"
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
@@ -64,9 +62,7 @@ bool main::deactivate() {
   script_system::shutdown();
   input_system::shutdown();
   sound_system::shutdown();
-  font_system::shutdown();
   random_system::shutdown();
-  texture_system::shutdown();
   render_system::shutdown();
   window_system::shutdown();
   logger::info("Main system deactivating");
@@ -129,10 +125,6 @@ bool main_system::initialize() {
   }
   if (!script_system::initialize()) {
     logger::critical("Failed to initialize script system");
-    return false;
-  }
-  if (!font_system::initialize()) {
-    logger::critical("Failed to initialize font system");
     return false;
   }
   if (!random_system::initialize()) {

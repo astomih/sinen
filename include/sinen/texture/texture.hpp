@@ -65,6 +65,10 @@ public:
 
   handle_t handle;
   std::shared_ptr<bool> is_need_update;
+
+private:
+  handle_t create();
+  void destroy();
 };
 } // namespace sinen
 #endif // !SINEN_TEXTURE_HPP

@@ -14,7 +14,6 @@
 #include <render/graphics_api.hpp>
 #include <shader/shader.hpp>
 #include <texture/texture.hpp>
-#include <texture/texture_type.hpp>
 #include <vertex/vertex_array.hpp>
 
 namespace sinen {

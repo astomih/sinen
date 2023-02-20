@@ -84,6 +84,7 @@ bool script_engine::initialize(sol::state &lua) {
     auto v = lua.new_usertype<font>("", sol::no_construction());
     v["load"] = &font::load;
     v["render_text"] = &font::render_text;
+    v["resize"] = &font::resize;
   }
   {
     auto v = lua.new_usertype<music>("", sol::no_construction());

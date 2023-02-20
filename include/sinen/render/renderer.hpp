@@ -15,7 +15,6 @@
 #include "../model/model.hpp"
 #include "../shader/shader.hpp"
 #include "../texture/texture.hpp"
-#include "../texture/texture_type.hpp"
 #include "../vertex/vertex_array.hpp"
 #include "graphics_api.hpp"
 

@@ -42,8 +42,8 @@ public:
   /**
    * @brief font load from filepath
    *
-   * @param fontName file path
-   * @param pointSize font size
+   * @param font_path file path from data/fonts
+   * @param point_size font size
    * @return true success to load
    * @return false failed to load
    */
@@ -59,7 +59,12 @@ public:
    * @brief Unload the font
    */
   void unload();
-
+  /**
+   * @brief resize font
+   *
+   * @param point_size
+   */
+  void resize(int point_size);
   /**
    * @brief render to texture
    *

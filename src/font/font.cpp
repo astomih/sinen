@@ -1,10 +1,9 @@
-#include "../texture/texture_system.hpp"
-#include "font_system.hpp"
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <cassert>
 #include <color/color.hpp>
 #include <font/font.hpp>
+#include <io/data_stream.hpp>
 #include <logger/logger.hpp>
 #include <string_view>
 #include <texture/texture.hpp>
@@ -17,7 +16,10 @@ font::~font() {}
 bool font::load(std::string_view fontName, int pointSize) {
   this->font_name = fontName;
   this->point_size = pointSize;
-  m_font = font_system::load(std::string(fontName), pointSize);
+  m_font = (void *)::TTF_OpenFontRW(
+      (SDL_RWops *)data_stream::open_as_rwops(asset_type::Font, fontName), 1,
+      pointSize);
+
   if (!m_font) {
     return false;
   }
@@ -27,8 +29,16 @@ bool font::load(std::string_view fontName, int pointSize) {
 
 void font::unload() {
   if (is_load) {
-    font_system::unload(font_name, point_size);
+    ::TTF_CloseFont((::TTF_Font *)m_font);
   }
+}
+
+void font::resize(int point_size) {
+  if (!is_load) {
+    logger::error("Font is not loaded");
+    return;
+  }
+  TTF_SetFontSize(reinterpret_cast<TTF_Font *>(this->m_font), point_size);
 }
 
 void font::render_text(texture &tex, std::string_view text,
@@ -38,7 +48,7 @@ void font::render_text(texture &tex, std::string_view text,
     return;
   }
   *tex.is_need_update = true;
-  // My Color to SDL_Color
+  // SinenEngine Color to SDL_Color
   SDL_Color sdlColor;
   sdlColor.r = static_cast<Uint8>(_color.r * 255);
   sdlColor.g = static_cast<Uint8>(_color.g * 255);

@@ -4,6 +4,14 @@ local function gui_manager()
     current_drawer_pos = 1,
     textures = {},
     current_texture_pos = 1,
+    max_object = 1000,
+    add_object_pool = function(self, new_size)
+      for i = self.max_object, self.max_object + new_size do
+        self:add(self.drawers[i])
+        self:add(self.textures[i])
+        self:add(self.textures[i + new_size])
+      end
+    end,
     add = function(self, drawer)
       self.drawers[self.current_drawer_pos].position = drawer.position
       self.drawers[self.current_drawer_pos].scale    = drawer.scale
@@ -22,10 +30,10 @@ local function gui_manager()
       self.current_texture_pos = 1
     end,
   }
-  for i = 1, 100 do
+  for i = 1, object.max_object do
     object.drawers[i] = drawui(texture())
     object.textures[i] = texture()
-    object.textures[i + 100] = texture()
+    object.textures[i + object.max_object] = texture()
   end
   return object
 end

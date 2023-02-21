@@ -8,6 +8,7 @@
 #include <font/font.hpp>
 #include <functional>
 #include <io/data_stream.hpp>
+#include <logger/logger.hpp>
 #include <main/main.hpp>
 #include <math/point2.hpp>
 #include <math/random.hpp>

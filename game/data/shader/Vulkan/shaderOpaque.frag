@@ -17,7 +17,7 @@ float simple_shadow(vec3 proj_pos) {
   vec2 uv = proj_pos.xy;
   uv.y = -uv.y;
   float shadow_distance = max((texture(shadowMap, uv * 0.5 + 0.5).r), 0.0);
-  float distance = proj_pos.z - 0.003;
+  float distance = proj_pos.z - 0.00015;
   if (shadow_distance < distance)
     return 0.6;
   return 1.0;

@@ -95,7 +95,7 @@ for y = 1, map_size_y do
             map_draw3ds[y][x].position:add(map_draw3ds[y][x].scale)
             map_draw3ds[y][x].aabb.min =
             map_draw3ds[y][x].position:sub(map_draw3ds[y][x].scale)
-            map_z:set(x, y, math.random(0, 20))
+            map_z:set(x, y, 0)
             map_draw3ds[y][x].position.z = map_z:at(x, y) / 10.0
             map_draw3ds[y][x].scale.z = 3
 
@@ -189,6 +189,7 @@ function update()
         draw()
         return
     end
+    mouse.hide_cursor(true)
     if equipment_menu:update() then
         draw()
         return

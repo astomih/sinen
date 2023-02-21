@@ -12,6 +12,7 @@ local function scroll()
     t1 = {},
     t2 = {},
     pos = nil,
+    is_drag = false,
     show = function(self, pos, scale)
       self.drawer = drawui(self.t2)
       self.drawer.scale = vector2(scale.x, scale.y * 0.1)
@@ -26,21 +27,32 @@ local function scroll()
       local mpos = mouse.position_on_scene()
       mpos.x = mpos.x - scene.center().x
       mpos.y = -(mpos.y - scene.center().y)
-      if mouse.is_down(mouse.LEFT) then
-        self.pos.y = mpos.y
-        if mpos.x >= pos.x - scale.x / 2
+      if not self.is_drag and mouse.is_pressed(mouse.LEFT) then
+        local dpos = self.drawer.position
+        local dscale = self.drawer.scale
+        if mpos.x >= dpos.x - dscale.x / 2
             and
-            mpos.x <= pos.x + scale.x / 2
+            mpos.x <= dpos.x + dscale.x / 2
             and
-            mpos.y >= pos.y - scale.y * 0.1 / 2
+            mpos.y >= dpos.y - dscale.y / 2
             and
-            mpos.y <= pos.y + scale.y * 0.1 / 2
+            mpos.y <= dpos.y + dscale.y / 2
         then
-          for i, v in ipairs(self.positions) do
-            v.y = mpos.y - self.prev_mpos.y + v.y
-          end
+          self.is_drag = true
         end
-      else
+      end
+      if (mouse.is_released(mouse.LEFT)) then self.is_drag = false end
+      if self.is_drag then
+        self.pos.y = mpos.y
+        if self.pos.y < self.max_drawer.position.y - self.max_drawer.scale.y / 2 + self.drawer.scale.y / 2 then
+          self.pos.y = self.max_drawer.position.y - self.max_drawer.scale.y / 2 + self.drawer.scale.y / 2
+        end
+        if self.pos.y > self.max_drawer.position.y + self.max_drawer.scale.y / 2 - self.drawer.scale.y / 2 then
+          self.pos.y = self.max_drawer.position.y + self.max_drawer.scale.y / 2 - self.drawer.scale.y / 2
+        end
+        for i, v in ipairs(self.positions) do
+          v.y = mpos.y + v.y
+        end
       end
       self.prev_mpos = vector2(mpos.x, mpos.y)
       self.positions = {}

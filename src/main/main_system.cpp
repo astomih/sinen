@@ -168,7 +168,6 @@ void main_system::change_scene_impl(const std::string &scene_name) {
   }
 
   scene_system::shutdown();
-  script_system::shutdown();
   m_scene_name = scene_name;
 }
 } // namespace sinen

@@ -61,6 +61,12 @@ local player = {
     speed_min = 6.0,
     speed_max = 16.0,
     blur_time = 0.0,
+    boost_reset = function(self)
+        self.boost_timer = 0.0
+        self.boost = 0.0
+        self.is_boost = false
+        renderer.at_render_texture_user_data(0, 0.0)
+    end,
     setup = function(self, map, map_size_x, map_size_y)
         self.model = model()
         self.model:load("triangle.sim", "player")
@@ -163,10 +169,7 @@ local player = {
         end
         if self.is_boost then
             if self.boost_timer >= self.boost_time then
-                self.boost_timer = 0.0
-                self.boost = 0.0
-                self.is_boost = false
-                renderer.at_render_texture_user_data(0, 0.0)
+                self:boost_reset()
             else
                 local t = sin01(self.boost_time * 2.0, self.boost_timer) - 0.5
                 t = t * 0.2
@@ -285,7 +288,6 @@ local player = {
         end
         local drawer_scope_angle = math.atan(self.drawer_scope.position.y, self.drawer_scope.position.x)
         self.drawer.rotation.z = math.deg(drawer_scope_angle) - 90
-        mouse.hide_cursor(true)
         for i, j in ipairs(self.orbits) do
             j:update(map_draw3ds)
         end

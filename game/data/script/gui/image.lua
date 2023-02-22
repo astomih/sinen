@@ -3,7 +3,7 @@ local function image()
     drawer = {},
     show = function(self, texture, pos, scale)
       self.drawer = drawui(texture)
-      self.drawer.scale = texture:size()
+      self.drawer.scale = scale
       self.drawer.position = pos
       GUI_MANAGER:add(self.drawer)
     end,

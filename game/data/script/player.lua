@@ -41,6 +41,12 @@ local player = {
     stamina_drawer = {},
     stamina_max_texture = {},
     stamina_max_drawer = {},
+    oil = {},
+    oil_max = 100,
+    oil_texture = {},
+    oil_drawer = {},
+    oil_max_texture = {},
+    oil_max_drawer = {},
     aabb = {},
     bullet_time = {},
     bullet_timer = {},
@@ -91,6 +97,21 @@ local player = {
         self.stamina_max_drawer = drawui(self.stamina_max_texture)
         self.stamina_max_drawer.position = vector2(0, 350)
         self.stamina_max_drawer.scale = vector2(300, 10)
+
+        self.oil = self.oil_max
+        self.oil_texture = texture()
+        self.oil_texture:fill_color(color(1.0, 1.0, 1.0, 0.9))
+        self.oil_max_texture = texture()
+        self.oil_max_texture:fill_color(color(0.0, 0.0, 0.0, 0.2))
+        self.oil_drawer = drawui(self.oil_texture)
+        -- oil drawer position is left bottom
+        self.oil_drawer.position = vector2(-scene.center().x + 20, -scene.center().y + 150)
+        self.oil_drawer.scale = vector2(10, 300)
+        self.oil_max_drawer = drawui(self.oil_max_texture)
+        self.oil_max_drawer.position = vector2(-scene.center().x + 20, -scene.center().y + 150)
+        self.oil_max_drawer.scale = vector2(10, 300)
+
+
 
         self.render_text(self)
         r1 = 0
@@ -162,6 +183,7 @@ local player = {
                 b.drawer.rotation.z = b.drawer.rotation.z + 90
                 table.insert(self.bullets, b)
                 self.bullet_timer = 0.0
+                self.oil = self.oil - 1
             end
             if mouse.is_released(mouse.LEFT) then
                 self.bullet_flag = false
@@ -298,12 +320,21 @@ local player = {
         else
             self.stamina_texture:fill_color(color(1.0, 1.0, 1.0, 0.9))
         end
+        local o_ratio = self.oil / self.oil_max
+        self.oil_drawer.scale.y = o_ratio * 300
+        if o_ratio <= 0.2 then
+            self.oil_texture:fill_color(color(1.0, 0.0, 0.0, 0.9))
+        else
+            self.oil_texture:fill_color(color(1.0, 1.0, 1.0, 0.9))
+        end
     end,
     draw = function(self)
         self.drawer:draw()
         self.hp_drawer:draw()
         self.stamina_max_drawer:draw()
         self.stamina_drawer:draw()
+        self.oil_max_drawer:draw()
+        self.oil_drawer:draw()
         self.drawer_scope_big:draw()
         self.drawer_scope:draw()
         for i, v in ipairs(self.efks) do

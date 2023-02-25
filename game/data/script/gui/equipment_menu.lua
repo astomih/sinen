@@ -24,13 +24,13 @@ local function equipment_menu()
       end
     end,
     update = function(self)
-      mouse.hide_cursor(false)
       if keyboard.is_pressed(keyboard.E) then
         self.hide = not self.hide
       end
       if self.hide then
         return false
       end
+      mouse.hide_cursor(false)
       GUI_MANAGER:add(self.ui_panel)
       button.fg_color = color(1, 1, 1, 0.9)
       button.bg_color = color(1, 0, 0, 1.0)

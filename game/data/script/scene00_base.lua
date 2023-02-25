@@ -160,7 +160,11 @@ function update()
     draw()
     return
   end
-  if equipment_menu:update() then draw() return end
+  if equipment_menu:update() then
+    draw()
+    return
+  end
+  mouse.hide_cursor(true)
   stair.position.z = dts.sin_0_1(1.0)
   local player_on_map = point2i(0, 0)
   player_on_map.x = math.floor(player.drawer.position.x / TILE_SIZE + 0.5)

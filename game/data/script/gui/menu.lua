@@ -17,7 +17,6 @@ local function menu()
             if self.hide_next then
                 self.hide = not self.hide
                 self.hide_next = false
-                mouse.hide_cursor(false)
             else
                 if self.hide and is_esc then
                     self.hide_next = true
@@ -25,18 +24,30 @@ local function menu()
             end
             if self.option_window_size then
                 text:show("Window Size", vector2(0, 200), 50)
-                scroll:show(vector2(200, 0), vector2(20, 200))
-                local offset = scroll.pos.y
-                if button:show("800x600", vector2(0, 100 + offset), vector2(200, 50)) then
-                    window.resize(vector2(800, 600))
+                scroll:show(vector2(200, 0), vector2(20, 400))
+                local offset = scroll.pos.y * 1.5
+                local start = 100
+                if button:show("1120x630", vector2(0, start + offset), vector2(200, 50)) then
+                    window.resize(vector2(1120, 630))
                 end
-                if button:show("1024x768", vector2(0, 0 + offset), vector2(200, 50)) then
-                    window.resize(vector2(1024, 768))
-                end
-                if button:show("1280x720", vector2(0, -100 + offset), vector2(200, 50)) then
+                start = start - 100
+                if button:show("1280x720", vector2(0, start + offset), vector2(200, 50)) then
                     window.resize(vector2(1280, 720))
                 end
-                if button:show("1920x1080", vector2(0, -200 + offset), vector2(200, 50)) then
+                start = start - 100
+                if button:show("1440x810", vector2(0, start + offset), vector2(200, 50)) then
+                    window.resize(vector2(1440, 810))
+                end
+                start = start - 100
+                if button:show("1600x900", vector2(0, start + offset), vector2(200, 50)) then
+                    window.resize(vector2(1600, 900))
+                end
+                start = start - 100
+                if button:show("1760x990", vector2(0, start + offset), vector2(200, 50)) then
+                    window.resize(vector2(1760, 990))
+                end
+                start = start - 100
+                if button:show("1920x1080", vector2(0, start + offset), vector2(200, 50)) then
                     window.resize(vector2(1920, 1080))
                 end
                 if button:show("Back", vector2(0, -300), vector2(200, 50)) or is_esc then
@@ -56,6 +67,7 @@ local function menu()
                 return
             end
             if not self.hide then
+                mouse.hide_cursor(false)
                 text:show("Menu", vector2(0, 200), 50)
                 if button:show("Resume", vector2(0, 70), vector2(150, 50)) or is_esc then
                     self.hide_next = true

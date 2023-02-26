@@ -14,27 +14,21 @@ font::font(std::string_view file_name, int32_t point) {
 }
 font::~font() {}
 bool font::load(std::string_view fontName, int pointSize) {
-  this->font_name = fontName;
-  this->point_size = pointSize;
+  this->m_size = pointSize;
   m_font = (void *)::TTF_OpenFontRW(
       (SDL_RWops *)data_stream::open_as_rwops(asset_type::Font, fontName), 1,
       pointSize);
-
-  if (!m_font) {
-    return false;
-  }
-  is_load = true;
-  return true;
+  return is_loaded();
 }
 
 void font::unload() {
-  if (is_load) {
+  if (is_loaded()) {
     ::TTF_CloseFont((::TTF_Font *)m_font);
   }
 }
 
 void font::resize(int point_size) {
-  if (!is_load) {
+  if (!is_loaded()) {
     logger::error("Font is not loaded");
     return;
   }
@@ -43,7 +37,7 @@ void font::resize(int point_size) {
 
 void font::render_text(texture &tex, std::string_view text,
                        const color &_color) {
-  if (!is_load || !m_font) {
+  if (!is_loaded()) {
     logger::error("Font is not loaded");
     return;
   }

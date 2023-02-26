@@ -1,5 +1,6 @@
 #ifndef SINEN_RENDER_RENDERER_HPP
 #define SINEN_RENDER_RENDERER_HPP
+#include <functional>
 #include <list>
 #include <memory>
 #include <string>
@@ -8,14 +9,11 @@
 
 #include "../color/color.hpp"
 #include "../drawable/drawable.hpp"
-#include "../math/math.hpp"
 #include "../math/matrix4.hpp"
-#include "../math/vector2.hpp"
 #include "../math/vector3.hpp"
 #include "../model/model.hpp"
 #include "../shader/shader.hpp"
 #include "../texture/texture.hpp"
-#include "../texture/texture_type.hpp"
 #include "../vertex/vertex_array.hpp"
 #include "graphics_api.hpp"
 
@@ -162,12 +160,18 @@ public:
    * @param function
    */
   static void add_imgui_function(std::function<void()> function);
+  static void set_light_look_at(const vector3 &position, const vector3 &target,
+                                const vector3 &up);
+  static void set_light_ortho(float left, float right, float bottom, float top,
+                              float near, float far);
   static void *get_texture_id();
   static bool offscreen_rendering;
   static matrix4 render_texture_user_data;
   static void at_render_texture_user_data(int index, float value) {
     render_texture_user_data.mat.m16[index] = value;
   }
+  static matrix4 light_view;
+  static matrix4 light_projection;
 };
 
 } // namespace sinen

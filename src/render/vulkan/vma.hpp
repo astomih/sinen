@@ -7,6 +7,7 @@
 #define VMA_DEBUG_MARGIN 16
 #define VMA_DEBUG_DETECT_CORRUPTION 1
 #endif
+#define VMA_VULKAN_VERSION 1001000
 #include <vk_mem_alloc.h>
 #endif // !defined(EMSCRIPTEN) && !defined(ANDROID)
 #endif // SINEN_VMA_HPP

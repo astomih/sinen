@@ -7,13 +7,12 @@ timer::timer(float time) : m_start(0.f), m_time(0.f), m_is_started(false) {
 }
 timer::~timer() = default;
 void timer::start() {
-  m_start = time::get_ticks_as_milli_seconds();
+  m_start = time::milli();
   m_is_started = true;
 }
 void timer::set_time(float milliSecond) { this->m_time = milliSecond; }
 bool timer::check() {
-  return !m_is_started ? false
-                       : m_time <= time::get_ticks_as_milli_seconds() - m_start;
+  return !m_is_started ? false : m_time <= time::milli() - m_start;
 }
 void timer::stop() { m_is_started = false; }
 } // namespace sinen

@@ -13,7 +13,5 @@ int main(int argc, char *argv[]) {
 
   auto table = lua.create_table("dts");
   table["dungeon_generator"] = dts::dungeon_generator;
-  table["sin_0_1"] = [](float x) { return sinen::math::sin_0_1(x); };
-
   return sinen::main::run();
 }

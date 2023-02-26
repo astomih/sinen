@@ -70,6 +70,7 @@ void vk_render_texture::prepare(int width, int height) {
   // Frame Buffer
   create_frame_buffer(width, height);
   prepare_descriptor_set_layout();
+  prepare_pipeline_layout();
   prepare_descriptor_set();
   imgui_descriptor_set = VK_NULL_HANDLE;
 }
@@ -82,6 +83,7 @@ void vk_render_texture::clear() {
   for (auto &ds : drawer.uniformBuffers) {
     m_vkrenderer.destroy_buffer(ds);
   }
+  destroy_pipeline_layout();
   vkDestroyDescriptorSetLayout(m_vkrenderer.get_base().get_vk_device(),
                                descriptor_set_layout, nullptr);
   vkDestroyFramebuffer(m_vkrenderer.get_base().get_vk_device(), fb, nullptr);
@@ -310,6 +312,15 @@ void vk_render_texture::destroy_descriptor_set_for_imgui() {
   if (imgui_descriptor_set != VK_NULL_HANDLE) {
     ImGui_ImplVulkan_RemoveTexture(imgui_descriptor_set);
   }
+}
+void vk_render_texture::prepare_pipeline_layout() {
+  m_pipeline_layout.initialize(
+      m_vkrenderer.get_base().get_vk_device(), &descriptor_set_layout,
+      m_vkrenderer.get_base().mSwapchain->GetSurfaceExtent(),false);
+  m_pipeline_layout.prepare(m_vkrenderer.get_base().get_vk_device());
+}
+void vk_render_texture::destroy_pipeline_layout() {
+  m_pipeline_layout.cleanup(m_vkrenderer.get_base().get_vk_device());
 }
 
 } // namespace sinen

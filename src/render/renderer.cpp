@@ -7,6 +7,8 @@
 namespace sinen {
 bool renderer::offscreen_rendering = false;
 matrix4 renderer::render_texture_user_data;
+matrix4 renderer::light_view;
+matrix4 renderer::light_projection;
 graphics_api renderer::get_graphics_api() {
   return render_system::get_graphics_api();
 }
@@ -81,4 +83,13 @@ void renderer::add_imgui_function(std::function<void()> function) {
   render_system::get_imgui_function().push_back(function);
 }
 void *renderer::get_texture_id() { return render_system::get_texture_id(); }
+void renderer::set_light_look_at(const vector3 &position, const vector3 &target,
+                                 const vector3 &up) {
+  light_view = matrix4::lookat(position, target, up);
+}
+void renderer::set_light_ortho(float left, float right, float bottom, float top,
+                               float near, float far) {
+  light_projection = matrix4::ortho(left, right, bottom, top, near, far);
+}
+
 } // namespace sinen

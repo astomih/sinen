@@ -17,6 +17,7 @@ local function draw()
 end
 
 function update()
+    mouse.hide_cursor(false)
     if scene_switcher.flag then
         scene_switcher:update(draw)
         return

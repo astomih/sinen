@@ -1,20 +1,22 @@
 #ifndef SINEN_RENDER_SYSTEM_HPP
 #define SINEN_RENDER_SYSTEM_HPP
+// std
+#include <functional>
+#include <list>
+#include <memory>
+// internal
 #include <allocator/pool_allocator.hpp>
 #include <color/color.hpp>
 #include <color/palette.hpp>
 #include <drawable/drawable.hpp>
-#include <list>
 #include <math/math.hpp>
 #include <math/matrix4.hpp>
 #include <math/vector2.hpp>
 #include <math/vector3.hpp>
-#include <memory>
 #include <model/model.hpp>
 #include <render/graphics_api.hpp>
 #include <shader/shader.hpp>
 #include <texture/texture.hpp>
-#include <texture/texture_type.hpp>
 #include <vertex/vertex_array.hpp>
 
 namespace sinen {
@@ -60,11 +62,9 @@ public:
   static void *get_texture_id();
 
 private:
-  static std::unique_ptr<class vk_renderer> m_vk_renderer;
+  static class vk_renderer m_vk_renderer;
   static void setup_shapes();
   static color clearColor;
-  // Window
-  static std::shared_ptr<class window> mWindow;
   // Renderer
   static graphics_api RendererAPI;
   static bool showImGui;

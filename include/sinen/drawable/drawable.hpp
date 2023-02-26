@@ -33,6 +33,8 @@ struct drawable {
     matrix4 view;
     matrix4 proj;
     matrix4 user;
+    matrix4 light_view;
+    matrix4 light_proj;
   };
   // parameter
   parameter param;

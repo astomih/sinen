@@ -1,10 +1,10 @@
 local player = require "player"
 local enemy = require "enemy"
 local enemies = {}
-local enemy_max_num = 10
+local enemy_max_num = 100
 local world = require "world"
-local map_size_x = 32
-local map_size_y = 32
+local map_size_x = 64
+local map_size_y = 64
 local map = grid(map_size_x, map_size_y)
 local map_z = grid(map_size_x, map_size_y)
 -- draw object
@@ -95,7 +95,7 @@ for y = 1, map_size_y do
             map_draw3ds[y][x].position:add(map_draw3ds[y][x].scale)
             map_draw3ds[y][x].aabb.min =
             map_draw3ds[y][x].position:sub(map_draw3ds[y][x].scale)
-            map_z:set(x, y, math.random(0, 20))
+            map_z:set(x, y, 0)
             map_draw3ds[y][x].position.z = map_z:at(x, y) / 10.0
             map_draw3ds[y][x].scale.z = 3
 
@@ -179,6 +179,9 @@ local function draw()
     menu_object:draw()
 end
 
+local function collision_bullets(_bullets)
+end
+
 function update()
     if scene_switcher.flag then
         scene_switcher:update(draw)
@@ -193,76 +196,16 @@ function update()
         draw()
         return
     end
+    mouse.hide_cursor(true)
     key_drawer.rotation.y = key_drawer.rotation.y + delta_time * 100
     score_font:render_text(score_texture, "SCORE: " .. SCORE,
         color(1, 1, 1, 1))
     score_drawer.scale = score_texture:size()
     score_drawer.position.x = -300
     score_drawer.position.y = 300
-    for i, v in ipairs(player.bullets) do
-        for j, w in ipairs(enemies) do
-            if collision.aabb_aabb(v.aabb, w.aabb) then
-                local efk = effect()
-                efk:setup()
-                efk.texture:fill_color(color(1, 0.2, 0.2, 1))
-                for k = 1, efk.max_particles do
-                    efk.worlds[k].position = w.drawer.position:copy()
-                end
-                efk:play()
-                table.insert(player.efks, efk)
-
-                table.remove(player.bullets, i)
-                -- hp
-                w.hp = w.hp - 10
-                if w.hp < 0 then
-                    SCORE = SCORE + 10
-                    table.remove(enemies, j)
-                end
-                if #enemies <= 0 then
-                    stair.position.z = 0
-
-                end
-            end
-        end
-        if map:at(math.floor(v.drawer
-            .position
-            .x / TILE_SIZE +
-            0.5), math.floor(v.drawer.position.y / TILE_SIZE + 0.5)) < MAP_CHIP_WALKABLE then table.remove(player.bullets
-                , i)
-        end
-    end
+    collision_bullets(player.bullets)
     for a, b in ipairs(player.orbits) do
-        for i, v in ipairs(b.bullets) do
-            for j, w in ipairs(enemies) do
-                if collision.aabb_aabb(v.aabb, w.aabb) then
-                    local efk = effect()
-                    efk:setup()
-                    efk.texture:fill_color(color(1, 0.2, 0.2, 1))
-                    for k = 1, efk.max_particles do
-                        efk.worlds[k].position = w.drawer.position:copy()
-                    end
-                    efk:play()
-                    table.insert(b.efks, efk)
-
-                    table.remove(b.bullets, i)
-                    -- hp
-                    w.hp = w.hp - 10
-                    if w.hp < 0 then
-                        SCORE = SCORE + 10
-                        table.remove(enemies, j)
-                    end
-                    if #enemies <= 0 then
-                        stair.position.z = 0
-
-                    end
-                end
-            end
-            if map:at(math.floor(v.drawer
-                .position
-                .x / TILE_SIZE +
-                0.5), math.floor(v.drawer.position.y / TILE_SIZE + 0.5)) <
-                MAP_CHIP_WALKABLE then table.remove(b.bullets, i) end
-        end
+        collision_bullets(b.bullets)
     end
     player:update(map, map_draw3ds, map_size_x, map_size_y)
     -- Player hit key
@@ -292,4 +235,38 @@ function update()
     end
     camera_controller:update()
     draw()
+end
+
+collision_bullets = function(_bullets)
+    for i, v in ipairs(_bullets) do
+        for j, w in ipairs(enemies) do
+            if collision.aabb_aabb(v.aabb, w.aabb) then
+                local efk = effect()
+                efk:setup()
+                efk.texture:fill_color(color(1, 0.2, 0.2, 1))
+                for k = 1, efk.max_particles do
+                    efk.worlds[k].position = w.drawer.position:copy()
+                end
+                efk:play()
+                table.insert(player.efks, efk)
+
+                table.remove(player.bullets, i)
+                -- hp
+                if w:add_damage(10) then
+                    SCORE = SCORE + 10
+                    table.remove(enemies, j)
+                end
+                if #enemies <= 0 then
+                    stair.position.z = 0
+
+                end
+            end
+        end
+        if map:at(math.floor(v.drawer
+            .position
+            .x / TILE_SIZE +
+            0.5), math.floor(v.drawer.position.y / TILE_SIZE + 0.5)) < MAP_CHIP_WALKABLE then table.remove(player.bullets
+                , i)
+        end
+    end
 end

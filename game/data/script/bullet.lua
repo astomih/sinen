@@ -19,7 +19,7 @@ local function bullet(map_draw3ds)
             self.drawer = draw3d(self.texture)
             self.drawer.vertex_name = "BOX"
             self.drawer.position = vector3(owner.position.x, owner.position.y,
-                0)
+                owner.position.z)
             self.drawer.rotation = owner.rotation
             self.drawer.scale = vector3(0.2, 0.2, 0.2)
             sound:play()

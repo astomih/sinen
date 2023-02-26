@@ -81,7 +81,7 @@ for y = 1, map_size_y do
         map_draw3ds[y][x].scale)
     end
     if map:at(x, y) == MAP_CHIP.WALL then
-      map_draw3ds[y][x].position.z = 0.5
+      map_draw3ds[y][x].position.z = 0
       map_draw3ds[y][x].aabb = aabb()
       map_draw3ds[y][x].aabb.max =
       map_draw3ds[y][x].position:add(map_draw3ds[y][x].scale)
@@ -160,8 +160,12 @@ function update()
     draw()
     return
   end
-  if equipment_menu:update() then draw() return end
-  stair.position.z = dts.sin_0_1(1.0)
+  if equipment_menu:update() then
+    draw()
+    return
+  end
+  mouse.hide_cursor(true)
+  stair.position.z = periodic.sin0_1(1.0, time.seconds())
   local player_on_map = point2i(0, 0)
   player_on_map.x = math.floor(player.drawer.position.x / TILE_SIZE + 0.5)
   player_on_map.y = math.floor(player.drawer.position.y / TILE_SIZE + 0.5)
@@ -189,9 +193,11 @@ function update()
   player:update(map, map_draw3ds, map_size_x, map_size_y)
   if player.hp <= 0 then
     scene_switcher:start("scene03_gameover")
+    player:boost_reset()
   end
   if map:at(player_on_map.x, player_on_map.y) == 2 then
     scene_switcher:start("scene01_stage")
+    player:boost_reset()
   end
   camera_controller:update()
   draw()

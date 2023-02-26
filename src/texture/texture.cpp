@@ -1,27 +1,42 @@
-#include "texture_system.hpp"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <io/data_stream.hpp>
 #include <logger/logger.hpp>
+#include <memory>
+#include <string_view>
 #include <texture/texture.hpp>
+#include <unordered_map>
+#include <utility/handle_t.hpp>
 
 namespace sinen {
-std::unordered_map<handle_t, std::unique_ptr<SDL_Surface, SDLObjectCloser>>
-    texture_system::m_surfaces;
+struct SDLObjectCloser {
+  void operator()(::SDL_Surface *surface);
+  void operator()(::SDL_RWops *rw);
+};
+void SDLObjectCloser::operator()(::SDL_Surface *surface) {
+  if (surface) {
+    SDL_FreeSurface(surface);
+  }
+}
+void SDLObjectCloser::operator()(::SDL_RWops *rw) { ::SDL_FreeRW(rw); }
+SDL_Surface &get(handle_t handle) {
+  SDL_Surface *surf = reinterpret_cast<SDL_Surface *>(handle);
+  return *surf;
+}
 texture::texture() {
-  handle = texture_system::create();
+  this->handle = create();
   is_need_update = std::make_shared<bool>(false);
 }
 texture::texture(const texture &other) {
   if (is_need_update.use_count() == 1) {
-    texture_system::remove(handle);
+    destroy();
   }
   handle = other.handle;
   is_need_update = other.is_need_update;
 }
 texture &texture::operator=(const texture &other) {
   if (is_need_update.use_count() == 1) {
-    texture_system::remove(handle);
+    destroy();
   }
   handle = other.handle;
   is_need_update = other.is_need_update;
@@ -29,13 +44,13 @@ texture &texture::operator=(const texture &other) {
 }
 texture::~texture() {
   if (is_need_update.use_count() == 1) {
-    texture_system::remove(handle);
+    destroy();
   }
 }
 
 bool texture::load(std::string_view fileName) {
   *is_need_update = true;
-  auto &surface = texture_system::get(handle);
+  auto &surface = get(handle);
   auto *src_surface = ::IMG_Load_RW(
       (SDL_RWops *)data_stream::open_as_rwops(asset_type::Texture, fileName),
       0);
@@ -48,7 +63,7 @@ bool texture::load(std::string_view fileName) {
 }
 bool texture::load_from_memory(std::vector<char> &buffer) {
   *is_need_update = true;
-  auto &surface = texture_system::get(handle);
+  auto &surface = get(handle);
   auto rw = std::unique_ptr<::SDL_RWops, SDLObjectCloser>(
       ::SDL_RWFromMem(reinterpret_cast<void *>(buffer.data()), buffer.size()));
   if (!rw) {
@@ -68,14 +83,14 @@ bool texture::load_from_memory(std::vector<char> &buffer) {
 
 void texture::fill_color(const color &color) {
   *is_need_update = true;
-  auto &surface = texture_system::get(handle);
+  auto &surface = get(handle);
   ::SDL_FillRect(&surface, NULL,
                  ::SDL_MapRGBA(surface.format, color.r * 255, color.g * 255,
                                color.b * 255, color.a * 255));
 }
 void texture::blend_color(const color &color) {
   *is_need_update = true;
-  auto &surface = texture_system::get(handle);
+  auto &surface = get(handle);
   SDL_SetSurfaceBlendMode(&surface, SDL_BLENDMODE_BLEND);
   SDL_SetSurfaceColorMod(&surface, color.r * 255, color.g * 255, color.b * 255);
   SDL_SetSurfaceAlphaMod(&surface, color.a * 255);
@@ -84,9 +99,9 @@ void texture::blend_color(const color &color) {
 }
 
 texture texture::copy() {
-  auto &src = texture_system::get(handle);
+  auto &src = get(handle);
   texture dst_texture;
-  auto &dst = texture_system::get(dst_texture.handle);
+  auto &dst = get(dst_texture.handle);
   dst.w = src.w;
   dst.h = src.h;
   SDL_BlitSurface(&src, NULL, &dst, NULL);
@@ -95,8 +110,24 @@ texture texture::copy() {
 }
 
 vector2 texture::size() {
-  auto &surface = texture_system::get(handle);
-  return vector2(surface.w, surface.h);
+  auto &surface = get(handle);
+  return vector2(static_cast<float>(surface.w), static_cast<float>(surface.h));
+}
+
+handle_t texture::create() {
+  auto *surf =
+      SDL_CreateRGBSurfaceWithFormat(0, 1, 1, 32, SDL_PIXELFORMAT_RGBA32);
+  handle_t handle = reinterpret_cast<handle_t>(surf);
+  return handle;
+}
+void texture::destroy() {
+  if (!handle) {
+    return;
+  }
+  SDL_Surface *surf = reinterpret_cast<SDL_Surface *>(handle);
+  SDL_FreeSurface(surf);
+  surf = nullptr;
+  handle = NULL;
 }
 
 } // namespace sinen

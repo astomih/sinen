@@ -13,16 +13,6 @@ local function decide_pos(map, map_size_x, map_size_y)
     return map:at(r1, r2) == 1
 end
 
-local function sin01(period_sec, time)
-    local x = math.fmod(time, period_sec)
-    x = x / (period_sec * (1.0 / (2.0 * math.pi)))
-    x = math.sin(x) * 0.5 + 0.5
-    if x < 0.0 then
-        x = 0.0
-    end
-    return x
-end
-
 local player = {
     drawer = {},
     model = {},
@@ -41,6 +31,12 @@ local player = {
     stamina_drawer = {},
     stamina_max_texture = {},
     stamina_max_drawer = {},
+    oil = {},
+    oil_max = 100,
+    oil_texture = {},
+    oil_drawer = {},
+    oil_max_texture = {},
+    oil_max_drawer = {},
     aabb = {},
     bullet_time = {},
     bullet_timer = {},
@@ -61,6 +57,12 @@ local player = {
     speed_min = 6.0,
     speed_max = 16.0,
     blur_time = 0.0,
+    boost_reset = function(self)
+        self.boost_timer = 0.0
+        self.boost = 0.0
+        self.is_boost = false
+        renderer.at_render_texture_user_data(0, 0.0)
+    end,
     setup = function(self, map, map_size_x, map_size_y)
         self.model = model()
         self.model:load("triangle.sim", "player")
@@ -86,12 +88,27 @@ local player = {
         self.stamina_max_drawer.position = vector2(0, 350)
         self.stamina_max_drawer.scale = vector2(300, 10)
 
+        self.oil = self.oil_max
+        self.oil_texture = texture()
+        self.oil_texture:fill_color(color(1.0, 1.0, 1.0, 0.9))
+        self.oil_max_texture = texture()
+        self.oil_max_texture:fill_color(color(0.0, 0.0, 0.0, 0.2))
+        self.oil_drawer = drawui(self.oil_texture)
+        -- oil drawer position is left bottom
+        self.oil_drawer.position = vector2(-scene.center().x + 20, -scene.center().y + 150)
+        self.oil_drawer.scale = vector2(10, 300)
+        self.oil_max_drawer = drawui(self.oil_max_texture)
+        self.oil_max_drawer.position = vector2(-scene.center().x + 20, -scene.center().y + 150)
+        self.oil_max_drawer.scale = vector2(10, 300)
+
+
+
         self.render_text(self)
         r1 = 0
         r2 = 0
         while decide_pos(map, map_size_x, map_size_y) == true do
         end
-        self.drawer.position = vector3(r1 * 2, r2 * 2, 0)
+        self.drawer.position = vector3(r1 * 2, r2 * 2, 1)
         self.drawer.scale = vector3(0.05, 0.05, 0.1)
         self.hp_drawer.position.x = 0
         self.hp_drawer.position.y = 300
@@ -156,6 +173,7 @@ local player = {
                 b.drawer.rotation.z = b.drawer.rotation.z + 90
                 table.insert(self.bullets, b)
                 self.bullet_timer = 0.0
+                self.oil = self.oil - 1
             end
             if mouse.is_released(mouse.LEFT) then
                 self.bullet_flag = false
@@ -163,12 +181,9 @@ local player = {
         end
         if self.is_boost then
             if self.boost_timer >= self.boost_time then
-                self.boost_timer = 0.0
-                self.boost = 0.0
-                self.is_boost = false
-                renderer.at_render_texture_user_data(0, 0.0)
+                self:boost_reset()
             else
-                local t = sin01(self.boost_time * 2.0, self.boost_timer) - 0.5
+                local t = periodic.sin0_1(self.boost_time * 2.0, self.boost_timer) - 0.5
                 t = t * 0.2
 
                 renderer.at_render_texture_user_data(0, t)
@@ -285,7 +300,6 @@ local player = {
         end
         local drawer_scope_angle = math.atan(self.drawer_scope.position.y, self.drawer_scope.position.x)
         self.drawer.rotation.z = math.deg(drawer_scope_angle) - 90
-        mouse.hide_cursor(true)
         for i, j in ipairs(self.orbits) do
             j:update(map_draw3ds)
         end
@@ -296,12 +310,21 @@ local player = {
         else
             self.stamina_texture:fill_color(color(1.0, 1.0, 1.0, 0.9))
         end
+        local o_ratio = self.oil / self.oil_max
+        self.oil_drawer.scale.y = o_ratio * 300
+        if o_ratio <= 0.2 then
+            self.oil_texture:fill_color(color(1.0, 0.0, 0.0, 0.9))
+        else
+            self.oil_texture:fill_color(color(1.0, 1.0, 1.0, 0.9))
+        end
     end,
     draw = function(self)
         self.drawer:draw()
         self.hp_drawer:draw()
         self.stamina_max_drawer:draw()
         self.stamina_drawer:draw()
+        self.oil_max_drawer:draw()
+        self.oil_drawer:draw()
         self.drawer_scope_big:draw()
         self.drawer_scope:draw()
         for i, v in ipairs(self.efks) do

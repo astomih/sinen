@@ -1,24 +1,16 @@
 #ifndef SINEN_MATH_HPP
 #define SINEN_MATH_HPP
-
-#include "../time/time.hpp"
 #include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <iostream>
 #include <limits>
+#include <numbers>
 #include <vector>
-
-// C++20
-// #include <numbers>
-
 namespace sinen {
 class math {
 public:
-  // static constexpr float pi = std::numbers::pi_v<float>;
-
-  // pi
-  static constexpr float pi = 3.141592f;
+  static constexpr float pi = std::numbers::pi_v<float>;
   // 2 * pi
   static constexpr float two_pi = pi * 2.f;
   // pi / 2
@@ -78,12 +70,6 @@ public:
   static inline float fmod(float numer, float denom) {
     return std::fmod(numer, denom);
   }
-
-  static float sin_0_1(const float periodSec,
-                       const float t = time::get_ticks_as_seconds());
-
-  static float cos_0_1(const float periodSec,
-                       const float t = time::get_ticks_as_seconds());
 };
 } // namespace sinen
 #endif // !SINEN_MATH_HPP

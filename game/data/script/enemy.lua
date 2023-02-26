@@ -40,6 +40,17 @@ local enemy = function()
                 math.cos(math.rad(-drawer.rotation.z)))
         end,
         bfs = {},
+        -- Add damage to enemy
+        -- @param damage Damage value
+        -- @return true if enemy is dead
+        -- @return false if enemy is alive
+        add_damage = function(self, damage)
+            self.hp = self.hp - damage
+            if self.hp <= 0 then
+                return true
+            end
+            return false
+        end,
         setup = function(self, _map, map_size_x, map_size_y)
             self.bfs = bfs_grid(_map)
             self.drawer = draw3d(DEFAULT_TEXTURE)
@@ -80,6 +91,31 @@ local enemy = function()
             if length > self.search_length then
                 return
             end
+            -- If there is a wall between the player and the enemy, the enemy will not move.
+            local start = point2i(
+                self.drawer.position.x / TILE_SIZE,
+                self.drawer.position.y / TILE_SIZE
+            )
+            local goal = point2i(
+                player.drawer.position.x / TILE_SIZE,
+                player.drawer.position.y / TILE_SIZE
+            )
+
+            local min_x = math.min(start.x, goal.x)
+            local max_x = math.max(start.x, goal.x)
+            local min_y = math.min(start.y, goal.y)
+            local max_y = math.max(start.y, goal.y)
+            for i = min_x, max_x do
+                if self.map:at(i, start.y) < MAP_CHIP_WALKABLE then
+                    return
+                end
+            end
+            for i = min_y, max_y do
+                if self.map:at(start.x, i) < MAP_CHIP_WALKABLE then
+                    return
+                end
+            end
+
             self.aabb.max = self.drawer.position:add(
                 self.drawer.scale:mul(enemy_model[self.model_index].aabb.max))
             self.aabb.min = self.drawer.position:add(
@@ -91,15 +127,6 @@ local enemy = function()
                         self.drawer.position.x,
                         player.drawer.position.y -
                         self.drawer.position.y)))
-            local start = point2i(
-                self.drawer.position.x / TILE_SIZE
-                ,
-                self.drawer.position.y / TILE_SIZE
-            )
-            local goal = point2i(
-                player.drawer.position.x / TILE_SIZE,
-                player.drawer.position.y / TILE_SIZE
-            )
             if self.bfs:find_path(start, goal) then
                 local path = self.bfs:trace()
                 path = self.bfs:trace()

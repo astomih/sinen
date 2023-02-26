@@ -24,6 +24,8 @@ public:
   void destroy_frame_buffer();
   void prepare_descriptor_set_for_imgui();
   void destroy_descriptor_set_for_imgui();
+  void prepare_pipeline_layout();
+  void destroy_pipeline_layout();
 
   VkRenderPass render_pass;
   VkFramebuffer fb;
@@ -33,6 +35,7 @@ public:
   vk_drawable drawer;
   VkDescriptorSetLayout descriptor_set_layout;
   VkDescriptorSet imgui_descriptor_set;
+  vk_pipeline_layout m_pipeline_layout;
   vk_pipeline pipeline;
 
 private:

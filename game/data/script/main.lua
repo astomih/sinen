@@ -49,7 +49,7 @@ function update()
     menu_object:update()
     draw()
     if menu_object.hide then
-        font_press:render_text(texture_press, "CLICK TO START", color(1, 1, 1, dts.sin_0_1(2.0)))
+        font_press:render_text(texture_press, "CLICK TO START", color(1, 1, 1, periodic.sin0_1(2.0, time.seconds())))
         if mouse.is_pressed(mouse.LEFT) then
             scene_switcher:start("scene00_base")
         end

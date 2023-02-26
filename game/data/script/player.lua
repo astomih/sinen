@@ -13,16 +13,6 @@ local function decide_pos(map, map_size_x, map_size_y)
     return map:at(r1, r2) == 1
 end
 
-local function sin01(period_sec, time)
-    local x = math.fmod(time, period_sec)
-    x = x / (period_sec * (1.0 / (2.0 * math.pi)))
-    x = math.sin(x) * 0.5 + 0.5
-    if x < 0.0 then
-        x = 0.0
-    end
-    return x
-end
-
 local player = {
     drawer = {},
     model = {},
@@ -193,7 +183,7 @@ local player = {
             if self.boost_timer >= self.boost_time then
                 self:boost_reset()
             else
-                local t = sin01(self.boost_time * 2.0, self.boost_timer) - 0.5
+                local t = periodic.sin0_1(self.boost_time * 2.0, self.boost_timer) - 0.5
                 t = t * 0.2
 
                 renderer.at_render_texture_user_data(0, t)

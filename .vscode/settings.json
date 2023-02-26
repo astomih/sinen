@@ -53,7 +53,10 @@
     "keyF11",
     "drawui",
     "update",
-    "renderer"
+    "renderer",
+    "periodic",
+    "time",
+    "timer"
   ],
   "Lua.completion.autoRequire": false,
   "Lua.diagnostics.disable": [

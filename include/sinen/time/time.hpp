@@ -14,12 +14,12 @@ public:
   /**
    * @brief Get time about launch app to now as seconds
    */
-  static float get_ticks_as_seconds();
+  static float seconds();
 
   /**
    * @brief Get time about launch app to now as milli seconds
    */
-  static uint32_t get_ticks_as_milli_seconds();
+  static uint32_t milli();
 
   /**
    * @brief Get the function time object

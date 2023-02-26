@@ -7,6 +7,9 @@
 #include <input/gamepad.hpp>
 #include <input/keyboard.hpp>
 #include <input/mouse.hpp>
+#include <math/periodic.hpp>
+#include <time/time.hpp>
+#include <time/timer.hpp>
 
 namespace sinen {
 void register_table(sol::state &lua) {
@@ -157,6 +160,28 @@ void register_table(sol::state &lua) {
     v["PADDLE3"] = (int)gamepad::PADDLE3;
     v["PADDLE4"] = (int)gamepad::PADDLE4;
     v["TOUCHPAD"] = (int)gamepad::TOUCHPAD;
+  }
+  {
+    auto v = lua.create_table("periodic");
+    v["sin0_1"] = [](float period, float t) {
+      return periodic::sin0_1(period, t);
+    };
+    v["cos0_1"] = [](float period, float t) {
+      return periodic::cos0_1(period, t);
+    };
+  }
+  {
+    auto v = lua.create_table("time");
+    v["seconds"] = &time::seconds;
+    v["milli"] = &time::milli;
+  }
+  {
+    auto v = lua.create_table("timer");
+    v["start"] = &timer::start;
+    v["stop"] = &timer::stop;
+    v["is_started"] = &timer::is_started;
+    v["set_time"] = &timer::set_time;
+    v["check"] = &timer::check;
   }
 }
 } // namespace sinen

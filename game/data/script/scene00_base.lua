@@ -165,7 +165,7 @@ function update()
     return
   end
   mouse.hide_cursor(true)
-  stair.position.z = dts.sin_0_1(1.0)
+  stair.position.z = periodic.sin0_1(1.0, time.seconds())
   local player_on_map = point2i(0, 0)
   player_on_map.x = math.floor(player.drawer.position.x / TILE_SIZE + 0.5)
   player_on_map.y = math.floor(player.drawer.position.y / TILE_SIZE + 0.5)

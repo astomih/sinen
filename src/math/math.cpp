@@ -435,16 +435,4 @@ vector3 quaternion::to_euler(const quaternion &r) {
 
   return vector3(tx, ty, tz);
 }
-float math::sin_0_1(const float periodSec, const float t) {
-  const auto f = fmod(t, periodSec);
-  auto x = f / (periodSec * (1.f / (2.f * pi)));
-  return sin(x) * 0.5f + 0.5f;
-}
-
-float math::cos_0_1(const float periodSec, const float t) {
-  const auto f = fmod(t, periodSec);
-  const auto x = f / (periodSec * (1.f / (2.f * pi)));
-  return cos(x) * 0.5f + 0.5f;
-}
-
 } // namespace sinen

@@ -2,7 +2,9 @@
 #define SINEN_VK_DRAWABLE_HPP
 #if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include "vk_buffer.hpp"
+#include <array>
 #include <drawable/drawable.hpp>
+
 
 namespace sinen {
 class vk_drawable {

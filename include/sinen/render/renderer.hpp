@@ -1,5 +1,6 @@
 #ifndef SINEN_RENDER_RENDERER_HPP
 #define SINEN_RENDER_RENDERER_HPP
+#include <functional>
 #include <list>
 #include <memory>
 #include <string>
@@ -8,9 +9,7 @@
 
 #include "../color/color.hpp"
 #include "../drawable/drawable.hpp"
-#include "../math/math.hpp"
 #include "../math/matrix4.hpp"
-#include "../math/vector2.hpp"
 #include "../math/vector3.hpp"
 #include "../model/model.hpp"
 #include "../shader/shader.hpp"

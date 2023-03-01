@@ -60,6 +60,11 @@ public:
   void destroy_semaphore();
   void destroy_command_buffers();
 
+  VkFormat find_depth_format();
+  VkFormat find_supported_format(const std::vector<VkFormat> &candidates,
+                                 VkImageTiling tiling,
+                                 VkFormatFeatureFlags features);
+
   uint32_t get_memory_type_index(uint32_t requestBits,
                                  VkMemoryPropertyFlags requestProps) const;
   void recreate_swapchain();
@@ -86,11 +91,12 @@ public:
 
   std::vector<VkFence> m_fences;
   VkSemaphore m_renderCompletedSem, m_presentCompletedSem;
-
+#ifdef DEBUG
   PFN_vkCreateDebugReportCallbackEXT m_vkCreateDebugReportCallbackEXT;
   PFN_vkDebugReportMessageEXT m_vkDebugReportMessageEXT;
   PFN_vkDestroyDebugReportCallbackEXT m_vkDestroyDebugReportCallbackEXT;
   VkDebugReportCallbackEXT m_debugReport;
+#endif
 
   std::vector<VkCommandBuffer> m_commands;
   uint32_t m_imageIndex;

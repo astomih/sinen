@@ -39,6 +39,33 @@ static VkBool32 VKAPI_CALL DebugReportCallback(
 
   return ret;
 }
+VkFormat vk_base::find_supported_format(const std::vector<VkFormat> &candidates,
+                                        VkImageTiling tiling,
+                                        VkFormatFeatureFlags features) {
+  for (VkFormat format : candidates) {
+    VkFormatProperties props;
+    vkGetPhysicalDeviceFormatProperties(this->m_physDev, format, &props);
+
+    if ((tiling == VK_IMAGE_TILING_LINEAR) &&
+        ((props.linearTilingFeatures & features) == features)) {
+      return format;
+    } else if ((tiling == VK_IMAGE_TILING_OPTIMAL) &&
+               ((props.optimalTilingFeatures & features) == features)) {
+      return format;
+    }
+  }
+  return VK_FORMAT_UNDEFINED;
+}
+
+VkFormat vk_base::find_depth_format() {
+  std::vector<VkFormat> formats;
+  formats.push_back(VK_FORMAT_D32_SFLOAT);
+  formats.push_back(VK_FORMAT_D32_SFLOAT_S8_UINT);
+  formats.push_back(VK_FORMAT_D24_UNORM_S8_UINT);
+
+  return find_supported_format(formats, VK_IMAGE_TILING_OPTIMAL,
+                               VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+}
 
 vk_base::vk_base(vk_renderer *vkrenderer)
     : m_imageIndex(0), m_vkrenderer(vkrenderer) {}
@@ -278,7 +305,7 @@ void vk_base::create_depth_buffer() {
   VkImageCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
   ci.imageType = VK_IMAGE_TYPE_2D;
-  ci.format = VK_FORMAT_D32_SFLOAT;
+  ci.format = find_depth_format();
   ci.extent.width = mSwapchain->GetSurfaceExtent().width;
   ci.extent.height = mSwapchain->GetSurfaceExtent().height;
   ci.extent.depth = 1;
@@ -287,13 +314,7 @@ void vk_base::create_depth_buffer() {
   ci.samples = VK_SAMPLE_COUNT_1_BIT;
   ci.arrayLayers = 1;
   VmaAllocationCreateInfo alloc_info = {};
-  alloc_info.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
-  alloc_info.memoryTypeBits = 0;
-  alloc_info.flags = 0;
-  alloc_info.requiredFlags = 0;
-  alloc_info.preferredFlags = 0;
-  alloc_info.pool = VK_NULL_HANDLE;
-  alloc_info.pUserData = nullptr;
+  alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
   VmaAllocationInfo alloc_info_out = {};
   VkResult result;
   result =

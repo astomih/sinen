@@ -28,11 +28,6 @@ struct vk_vertex_array : public vertex_array {
   vk_buffer indexBuffer;
 };
 
-class vk_shader_parameter {
-public:
-  drawable::parameter param;
-};
-
 class vk_renderer {
 public:
   vk_renderer();
@@ -65,9 +60,8 @@ public:
       VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
       VmaMemoryUsage vma_usage = VMA_MEMORY_USAGE_GPU_TO_CPU);
   vk_base &get_base() { return *m_base; }
-  void register_vk_drawable(std::shared_ptr<class vk_drawable> texture,
-                            std::string_view type);
-  void destroy_vk_drawable(std::shared_ptr<class vk_drawable> texture);
+  void register_vk_drawable(class vk_drawable, std::string_view type);
+  void destroy_vk_drawable(class vk_drawable &texture);
   void add_texture(texture tex);
   void destroy_image_object(const handle_t &handle);
   VkPipelineLayout get_pipeline_layout() {
@@ -92,7 +86,7 @@ private:
   std::unique_ptr<class vk_base> m_base;
   void prepare_descriptor_set_layout();
   void prepare_descriptor_pool();
-  void prepare_descriptor_set(std::shared_ptr<vk_drawable>);
+  void prepare_descriptor_set(vk_drawable &);
   void prepare_imgui();
   void render_imgui(VkCommandBuffer command);
   void draw_skybox(VkCommandBuffer command);
@@ -112,11 +106,11 @@ private:
   vk_pipeline_layout m_pipeline_layout_depth_instance;
   std::unordered_map<std::string, vk_pipeline> m_pipelines;
   std::vector<std::pair<shader, vk_pipeline>> m_user_pipelines;
-  std::vector<std::shared_ptr<vk_drawable>> m_draw_object_3d;
-  std::vector<std::shared_ptr<vk_drawable>> m_draw_object_2d;
-  std::vector<std::shared_ptr<vk_drawable>> m_draw_object_ui;
+  std::vector<vk_drawable> m_draw_object_3d;
+  std::vector<vk_drawable> m_draw_object_2d;
+  std::vector<vk_drawable> m_draw_object_ui;
   std::unordered_map<handle_t, vk_image> m_image_object;
-  std::shared_ptr<vk_drawable> m_skybox;
+  vk_drawable m_skybox;
 };
 } // namespace sinen
 #endif

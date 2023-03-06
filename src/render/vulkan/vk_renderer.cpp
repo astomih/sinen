@@ -1043,8 +1043,8 @@ VkSampler vk_renderer::create_sampler() {
   VkSampler sampler;
   VkSamplerCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-  ci.minFilter = VK_FILTER_NEAREST;
-  ci.magFilter = VK_FILTER_NEAREST;
+  ci.minFilter = VK_FILTER_LINEAR;
+  ci.magFilter = VK_FILTER_LINEAR;
   ci.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
   ci.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
   ci.maxAnisotropy = 1.0f;

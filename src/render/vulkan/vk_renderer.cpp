@@ -1034,6 +1034,8 @@ vk_buffer vk_renderer::create_buffer(uint32_t size, VkBufferUsageFlags usage,
   ci.size = size;
   VmaAllocationCreateInfo buffer_alloc_info = {};
   buffer_alloc_info.usage = vma_usage;
+  buffer_alloc_info.requiredFlags = flags;
+  buffer_alloc_info.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT;
   vmaCreateBuffer(allocator, &ci, &buffer_alloc_info, &obj.buffer,
                   &obj.allocation, nullptr);
   return obj;
@@ -1156,16 +1158,19 @@ void vk_renderer::create_image_object(const handle_t &handle) {
     ci.tiling = VkImageTiling::VK_IMAGE_TILING_LINEAR;
     ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     VmaAllocationCreateInfo alloc_info = {};
-    alloc_info.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
-    vmaCreateImage(allocator, &ci, &alloc_info, &image.image, &image.allocation,
-                   nullptr);
+    alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
+    auto result = vmaCreateImage(allocator, &ci, &alloc_info, &image.image,
+                                 &image.allocation, nullptr);
+    if (result != VK_SUCCESS) {
+      std::cout << "Failed to create image" << std::endl;
+    }
   }
 
   {
     uint32_t imageSize = imagedata->h * imagedata->w * 4;
     stagingBuffer = create_buffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-                                  VMA_MEMORY_USAGE_GPU_TO_CPU);
+                                  VMA_MEMORY_USAGE_AUTO);
     write_memory(stagingBuffer.allocation, pImage, imageSize);
   }
 
@@ -1256,7 +1261,7 @@ void vk_renderer::register_vk_drawable(vk_drawable _vk_drawable,
 
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
             VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-        VMA_MEMORY_USAGE_GPU_TO_CPU);
+        VMA_MEMORY_USAGE_AUTO);
     write_memory(_vk_drawable.instance_buffer.allocation,
                  drawObject->data.data(), drawObject->size());
   }
@@ -1268,7 +1273,7 @@ void vk_renderer::register_vk_drawable(vk_drawable _vk_drawable,
           _vk_drawable.drawable_obj->shade.get_parameter_size();
       v = create_buffer(sizeof(drawable::parameter) + shader_param_size,
                         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, uboFlags,
-                        VMA_MEMORY_USAGE_GPU_TO_CPU);
+                        VMA_MEMORY_USAGE_AUTO);
     }
     prepare_descriptor_set(_vk_drawable);
     m_draw_object_3d.push_back(_vk_drawable);

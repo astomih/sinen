@@ -141,7 +141,7 @@ vk_image vk_depth_texture::create_image_object(int width, int height,
     ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     VmaAllocationCreateInfo alloc_info = {};
-    alloc_info.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
+    alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
     vmaCreateImage(m_vkrenderer.allocator, &ci, &alloc_info, &tex.image,
                    &tex.allocation, nullptr);
   }

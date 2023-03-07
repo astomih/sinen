@@ -305,7 +305,7 @@ void vk_base::create_depth_buffer() {
   VkImageCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
   ci.imageType = VK_IMAGE_TYPE_2D;
-  ci.format = find_depth_format();
+  ci.format = VK_FORMAT_D32_SFLOAT;
   ci.extent.width = mSwapchain->GetSurfaceExtent().width;
   ci.extent.height = mSwapchain->GetSurfaceExtent().height;
   ci.extent.depth = 1;
@@ -320,7 +320,7 @@ void vk_base::create_depth_buffer() {
   result =
       vmaCreateImage(m_vkrenderer->allocator, &ci, &alloc_info, &m_depthBuffer,
                      &m_depthBufferAllocation, &alloc_info_out);
-  if (result != VK_SUCCESS) {
+  if (result != VK_SUCCESS || m_depthBuffer == VK_NULL_HANDLE) {
     logger::critical("Failed to create depth buffer : %s",
                      vkutil::result_to_string(result));
     exit(1);

@@ -83,10 +83,10 @@ local player = {
         self.stamina_max_texture:fill_color(color(0.0, 0.0, 0.0, 0.2))
         self.stamina_drawer = drawui(self.stamina_texture)
         self.stamina_drawer.position = vector2(0, 350)
-        self.stamina_drawer.scale = vector2(300, 10)
+        self.stamina_drawer.scale = UI_SCALE_VECTOR2(300, 10)
         self.stamina_max_drawer = drawui(self.stamina_max_texture)
         self.stamina_max_drawer.position = vector2(0, 350)
-        self.stamina_max_drawer.scale = vector2(300, 10)
+        self.stamina_max_drawer.scale = UI_SCALE_VECTOR2(300, 10)
 
         self.oil = self.oil_max
         self.oil_texture = texture()
@@ -127,6 +127,8 @@ local player = {
     horizontal = math.pi,
     vertical = 0.0,
     update = function(self, map, map_draw3ds, map_size_x, map_size_y)
+        self.stamina_drawer.position = vector2(0, window.center().y - 20)
+        self.stamina_max_drawer.position = vector2(0, window.center().y - 20)
         local p = self.drawer.position:copy()
         self.aabb.max = self.drawer.position:add(
             self.drawer.scale:mul(self.model.aabb.max))
@@ -204,11 +206,11 @@ local player = {
                         for i = 1, e.max_particles do
                             local t = delta_time * 2
                             e.worlds[i].position.x =
-                            e.worlds[i].position.x + math.cos(i) * t
+                                e.worlds[i].position.x + math.cos(i) * t
                             e.worlds[i].position.y =
-                            e.worlds[i].position.y + math.sin(i) * t
+                                e.worlds[i].position.y + math.sin(i) * t
                             e.worlds[i].position.z =
-                            e.worlds[i].position.z + t
+                                e.worlds[i].position.z + t
                         end
                     end
                     for j = 1, efk.max_particles do

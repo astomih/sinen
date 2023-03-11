@@ -1,3 +1,4 @@
+require("gui/global")
 local function button()
   local object = {
     font = {},
@@ -6,14 +7,13 @@ local function button()
     bg_color = color(0.7, 0.2, 0.2, 1),
     fg_color = color(1, 1, 1, 0.9),
     show = function(self, text, pos, scale)
-      local window_ratio = vector2(window.size().x / scene.size().x, window.size().y / scene.size().y)
-      self.font:resize(32 * window_ratio.x)
+      self.font:resize(32 * UI_SCALE)
       local back_texture = GUI_MANAGER:get_texture()
       local texture = GUI_MANAGER:get_texture()
       back_texture:fill_color(self.bg_color)
       self.back_drawer = drawui(back_texture)
       self.back_drawer.position = pos
-      self.back_drawer.scale = vector2(scale.x * window_ratio.x, scale.y * window_ratio.y)
+      self.back_drawer.scale = vector2(scale.x * UI_SCALE, scale.y * UI_SCALE)
       GUI_MANAGER:add(self.back_drawer)
       self.drawer = drawui(texture)
       self.font:render_text(texture, text, self.fg_color)
@@ -21,9 +21,9 @@ local function button()
       self.drawer.position = pos
       GUI_MANAGER:add(self.drawer)
       -- Mouse in button?
-      local mpos = mouse.position_on_scene()
-      mpos.x = mpos.x - scene.center().x
-      mpos.y = -(mpos.y - scene.center().y)
+      local mpos = mouse.position()
+      mpos.x = mpos.x - window.center().x
+      mpos.y = -(mpos.y - window.center().y)
       if mpos.x >= pos.x - scale.x / 2
           and
           mpos.x <= pos.x + scale.x / 2

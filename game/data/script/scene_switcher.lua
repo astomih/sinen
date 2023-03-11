@@ -10,9 +10,10 @@ local scene_switcher = function()
     is_launch = false,
     setup = function(self)
       self.drawer = drawui(self.texture)
-      self.drawer.scale = scene:size()
+      self.drawer.scale = window:size()
     end,
     update = function(self, draw_func)
+      self.drawer.scale = window:size()
       if self.flag then
         draw_func()
         if not self.is_launch then
@@ -64,7 +65,6 @@ local scene_switcher = function()
       end
       self.scene_name = scene_name
       self.flag = true
-
     end
   }
   return object

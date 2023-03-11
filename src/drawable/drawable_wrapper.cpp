@@ -90,7 +90,7 @@ void drawui::draw() {
   obj->binding_texture = this->texture_handle;
   matrix4 viewproj = matrix4::identity;
 
-  auto screen_size = scene::size();
+  auto screen_size = window::size();
   viewproj.mat[0][0] = 2.f / screen_size.x;
   viewproj.mat[1][1] = 2.f / screen_size.y;
   obj->param.proj = viewproj;

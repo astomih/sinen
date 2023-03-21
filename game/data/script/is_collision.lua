@@ -1,8 +1,5 @@
 local function is_collision(player, map, map_draw3ds, map_size_x, map_size_y)
-    player.aabb.max = player.drawer.position:add(
-            player.drawer.scale:mul(player.model.aabb.max))
-    player.aabb.min = player.drawer.position:add(
-            player.drawer.scale:mul(player.model.aabb.min))
+    player.aabb:update_world(player.drawer.position, player.drawer.scale, player.model.aabb)
     local around = point2i(0, 0)
     for i = 1, 9 do
         around.x = math.floor(player.drawer.position.x / TILE_SIZE + 0.5) - 1 + i % 3

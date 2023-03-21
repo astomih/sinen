@@ -15,7 +15,6 @@ local menu = {}
 local stair = {}
 -- assets
 local tree = model()
-local music = music()
 local tile = texture()
 tile:fill_color(color(0.416, 0.204, 0.153, 1))
 
@@ -55,8 +54,6 @@ local camera_controller = require("camera_controller")()
 
 score_font:load(DEFAULT_FONT_NAME, 64)
 menu_object:setup()
-music:load("segments.ogg")
-music:play()
 DEFAULT_TEXTURE = texture()
 DEFAULT_TEXTURE:fill_color(color(1, 1, 1, 1))
 map:fill(0)

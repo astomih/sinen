@@ -91,6 +91,7 @@ local enemy = function()
             if length > self.search_length then
                 return
             end
+            self.aabb:update_world(self.drawer.position, self.drawer.scale, enemy_model[self.model_index].aabb)
             -- If there is a wall between the player and the enemy, the enemy will not move.
             local start = point2i(
                 self.drawer.position.x / TILE_SIZE,
@@ -115,11 +116,6 @@ local enemy = function()
                     return
                 end
             end
-
-            self.aabb.max = self.drawer.position:add(
-                self.drawer.scale:mul(enemy_model[self.model_index].aabb.max))
-            self.aabb.min = self.drawer.position:add(
-                self.drawer.scale:mul(enemy_model[self.model_index].aabb.min))
             self.drawer.rotation = vector3(0, 0,
                 math.deg(
                     -math.atan(
@@ -148,17 +144,17 @@ local enemy = function()
                 end
 
                 self.drawer.position.x =
-                self.drawer.position.x +
+                    self.drawer.position.x +
                     dir.x * delta_time * self.speed
                 self.drawer.position.y =
-                self.drawer.position.y +
+                    self.drawer.position.y +
                     dir.y * delta_time * self.speed
             else
                 self.drawer.position.x =
-                self.drawer.position.x + delta_time * self.speed *
+                    self.drawer.position.x + delta_time * self.speed *
                     self.get_forward_z(self.drawer).x
                 self.drawer.position.y =
-                self.drawer.position.y + delta_time * self.speed *
+                    self.drawer.position.y + delta_time * self.speed *
                     self.get_forward_z(self.drawer).y
             end
             self.bfs:reset()

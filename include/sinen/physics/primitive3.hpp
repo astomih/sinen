@@ -129,7 +129,14 @@ struct aabb {
   vector3 max;
   aabb() = default;
   ~aabb() = default;
+  /**
+   * @brief Construct a new aabb object
+   *
+   * @param min  min point
+   * @param max  max point
+   */
   aabb(const vector3 &min, const vector3 &max) : min(min), max(max) {}
+  void update_world(const vector3 &p, const vector3 &scale, const aabb &local);
 };
 /**
  * @brief OBBox(Oriented Bounding Box) class

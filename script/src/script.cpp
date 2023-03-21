@@ -122,6 +122,7 @@ bool script_engine::initialize(sol::state &lua) {
     auto v = lua.new_usertype<aabb>("", sol::no_construction());
     v["min"] = &aabb::min;
     v["max"] = &aabb::max;
+    v["update_world"] = &aabb::update_world;
   }
   {
     auto v = lua.new_usertype<random>("", sol::no_construction());

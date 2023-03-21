@@ -130,10 +130,7 @@ local player = {
         self.stamina_drawer.position = vector2(0, window.center().y - 20)
         self.stamina_max_drawer.position = vector2(0, window.center().y - 20)
         local p = self.drawer.position:copy()
-        self.aabb.max = self.drawer.position:add(
-            self.drawer.scale:mul(self.model.aabb.max))
-        self.aabb.min = self.drawer.position:add(
-            self.drawer.scale:mul(self.model.aabb.min))
+        self.aabb:update_world(self.drawer.position, self.drawer.scale, self.model.aabb)
         input_vector = calc_input_vector()
         local is_move = input_vector.x ~= 0 or input_vector.y ~= 0
 

@@ -14,7 +14,6 @@ local menu = {}
 local stair = {}
 -- assets
 local tree = model()
-local music = music()
 local tile = texture()
 tile:fill_color(color(0.416, 0.204, 0.153, 1))
 
@@ -36,8 +35,6 @@ local equipment_menu = require("gui/equipment_menu")()
 
 score_font:load(DEFAULT_FONT_NAME, 64)
 menu_object:setup()
-music:load("base.ogg")
-music:play()
 DEFAULT_TEXTURE = texture()
 DEFAULT_TEXTURE:fill_color(color(1, 1, 1, 1))
 map:fill(MAP_CHIP.FLOOR)
@@ -84,12 +81,10 @@ for y = 1, map_size_y do
       map_draw3ds[y][x].position.z = 0
       map_draw3ds[y][x].aabb = aabb()
       map_draw3ds[y][x].aabb.max =
-      map_draw3ds[y][x].position:add(map_draw3ds[y][x].scale)
+          map_draw3ds[y][x].position:add(map_draw3ds[y][x].scale)
       map_draw3ds[y][x].aabb.min =
-      map_draw3ds[y][x].position:sub(map_draw3ds[y][x].scale)
+          map_draw3ds[y][x].position:sub(map_draw3ds[y][x].scale)
       map_draw3ds[y][x].scale.z = 3
-
-
     end
     if map:at(x, y) == MAP_CHIP.PLAYER then
       player.drawer.position.x = x * TILE_SIZE
@@ -176,18 +171,21 @@ function update()
   score_drawer.position.y = 300
   for i, v in ipairs(player.bullets) do
     if map:at(math.floor(v.drawer
-      .position
-      .x / TILE_SIZE +
-      0.5), math.floor(v.drawer.position.y / TILE_SIZE + 0.5)) < MAP_CHIP_WALKABLE then table.remove(player.bullets
-        , i)
+          .position
+          .x / TILE_SIZE +
+          0.5), math.floor(v.drawer.position.y / TILE_SIZE + 0.5)) < MAP_CHIP_WALKABLE then
+      table.remove(player.bullets
+      , i)
     end
   end
   for a, b in ipairs(player.orbits) do
     for i, v in ipairs(b.bullets) do
       if map:at(math.floor(v.drawer
-        .position
-        .x / TILE_SIZE +
-        0.5), math.floor(v.drawer.position.y / TILE_SIZE + 0.5)) < MAP_CHIP_WALKABLE then table.remove(b.bullets, i) end
+            .position
+            .x / TILE_SIZE +
+            0.5), math.floor(v.drawer.position.y / TILE_SIZE + 0.5)) < MAP_CHIP_WALKABLE then
+        table.remove(b.bullets, i)
+      end
     end
   end
   player:update(map, map_draw3ds, map_size_x, map_size_y)

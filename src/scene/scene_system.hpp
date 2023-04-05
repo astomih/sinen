@@ -20,7 +20,7 @@ public:
    * @brief Update scene system
    *
    */
-  static void run_loop();
+  static bool run_loop();
   /**
    * @brief Terminate scene system
    *
@@ -42,6 +42,8 @@ public:
   static void set_run_script(bool is_run) { is_run_script = is_run; }
 
   static bool is_running() { return m_game_state != scene::state::quit; }
+  static std::string current_name() { return m_scene_name; }
+  static void change(const std::string &scene_file_name);
   static void change_impl(std::unique_ptr<scene::implements> impl) {
     m_impl = std::move(impl);
   }
@@ -59,5 +61,7 @@ private:
   static void update_scene();
   static scene::state m_game_state;
   static uint32_t m_prev_tick;
+  static bool is_reset;
+  static std::string m_scene_name;
 };
 } // namespace sinen

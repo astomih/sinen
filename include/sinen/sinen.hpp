@@ -1,9 +1,5 @@
 #ifndef SINEN_HPP
 #define SINEN_HPP
-#ifdef ANDROID
-#define MOBILE
-#endif
-
 #include "actor/actor.hpp"
 #include "allocator/pool_allocator.hpp"
 #include "allocator/stack_allocator.hpp"
@@ -26,7 +22,6 @@
 #include "io/file.hpp"
 #include "io/json.hpp"
 #include "logger/logger.hpp"
-#include "main/main.hpp"
 #include "math/math.hpp"
 #include "math/matrix3.hpp"
 #include "math/matrix4.hpp"
@@ -53,7 +48,30 @@
 #include "vertex/vertex_array.hpp"
 #include "window/window.hpp"
 
+namespace sinen {
+/**
+ * @brief Initialize sinen engine
+ *
+ * @return true Success to initialize
+ * @return false Failed to initialize
+ */
+bool initialize();
+/**
+ * @brief Run sinen engine
+ *
+ */
+void run();
+/**
+ * @brief Shutdown sinen engine
+ *
+ * @return true Success to shutdown
+ * @return false Failed to shutdown
+ */
+bool shutdown();
+} // namespace sinen
+
 #endif
+
 #ifdef NO_USE_SINEN_NAMESPACE
 using namespace sinen;
 #endif

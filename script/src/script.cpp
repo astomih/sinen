@@ -5,12 +5,12 @@
 #include <font/font.hpp>
 #include <functional>
 #include <io/data_stream.hpp>
-#include <main/main.hpp>
 #include <math/point2.hpp>
 #include <math/random.hpp>
 #include <math/vector3.hpp>
 #include <model/model.hpp>
 #include <render/renderer.hpp>
+#include <scene/scene.hpp>
 #include <script/script.hpp>
 #include <sol/sol.hpp>
 
@@ -48,6 +48,10 @@ bool script_engine::initialize(sol::state &lua) {
       return vector3::transform(v, q);
     };
     v["normalize"] = [](const vector3 &v) { return vector3::normalize(v); };
+    v["dot"] = &vector3::dot;
+    v["cross"] = &vector3::cross;
+    v["lerp"] = &vector3::lerp;
+    v["reflect"] = &vector3::reflect;
   }
   {
     auto v = lua.new_usertype<vector2>("", sol::no_construction());
@@ -59,11 +63,19 @@ bool script_engine::initialize(sol::state &lua) {
     v["div"] = &vector2::div;
     v["length"] = &vector2::length;
     v["normalize"] = [](const vector2 &v) { return vector2::normalize(v); };
+    v["dot"] = &vector2::dot;
+    v["lerp"] = &vector2::lerp;
+    v["reflect"] = &vector2::reflect;
   }
   {
     auto v = lua.new_usertype<point2i>("", sol::no_construction());
     v["x"] = &point2i::x;
     v["y"] = &point2i::y;
+  }
+  {
+    auto v = lua.new_usertype<point2f>("", sol::no_construction());
+    v["x"] = &point2f::x;
+    v["y"] = &point2f::y;
   }
   {
     auto v = lua.new_usertype<color>("", sol::no_construction());
@@ -110,9 +122,7 @@ bool script_engine::initialize(sol::state &lua) {
     v["target"] = &camera::target;
     v["up"] = &camera::up;
   }
-  lua["change_scene"] = [&](const std::string &str) {
-    main::change_scene(str);
-  };
+  lua["change_scene"] = [&](const std::string &str) { scene::change(str); };
   {
     auto v = lua.new_usertype<model>("", sol::no_construction());
     v["aabb"] = &model::local_aabb;

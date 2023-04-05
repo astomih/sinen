@@ -64,6 +64,18 @@ public:
    */
   static void reset();
   /**
+   * @brief Get the current scene name
+   *
+   * @return std::string
+   */
+  static std::string current_name();
+  /**
+   * @brief Change scene
+   *
+   * @param scene_file_name scene file name in Lua
+   */
+  static void change(const std::string &scene_file_name);
+  /**
    * @brief Change implementation of scene
    *
    * @tparam Implements scene implementation class

@@ -65,24 +65,6 @@ void scene_system::setup() {
   m_prev_tick = SDL_GetTicks();
 }
 
-bool scene_system::run_loop() {
-  if (is_running()) {
-    window_system::prepare_frame();
-    process_input();
-    update_scene();
-    input_system::prepare_for_update();
-    input_system::update();
-    render_system::render();
-    return true;
-  }
-  if (is_reset) {
-    scene_system::setup();
-    is_reset = false;
-    return true;
-  }
-  return false;
-}
-
 void scene_system::process_input() {
 
   SDL_Event event;

@@ -23,7 +23,7 @@
 #include <SDL_ttf.h>
 
 namespace sinen {
-bool initialize() {
+bool initialize(int argc, char *argv[]) {
   SDL_SetMainReady();
   SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_EVENTS |
            SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER |
@@ -33,22 +33,8 @@ bool initialize() {
   SDLNet_Init();
   Mix_Init(MIX_INIT_OGG);
   Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
-  std::string str;
-  file f;
-  if (f.open("settings.json", file::mode::r)) {
-    char raw[256] = {};
-    f.read(raw, 256, 1);
-    auto s = std::string(raw);
-    json j;
-    j.parse(s);
-    str = j["GraphicsAPI"].get_string();
-    f.close();
-
-  } else
-    str = "Vulkan";
   window_system::initialize("SinenEngine", graphics_api::Vulkan);
   render_system::initialize(graphics_api::Vulkan);
-
   if (!sound_system::initialize()) {
     logger::critical("Failed to initialize audio system");
     sound_system::shutdown();
@@ -70,10 +56,28 @@ bool initialize() {
   tex.fill_color(palette::light_black());
   render_system::set_skybox_texture(tex);
   scene_system::initialize();
+  if (argc >= 2) {
+    sinen::scene::load(argv[1]);
+  }
   return true;
 }
 void run() {
-  while (scene_system::run_loop()) {
+  while (true) {
+    if (scene_system::is_running()) {
+      window_system::prepare_frame();
+      scene_system::process_input();
+      scene_system::update_scene();
+      input_system::prepare_for_update();
+      input_system::update();
+      render_system::render();
+      continue;
+    }
+    if (scene_system::is_reset) {
+      scene_system::setup();
+      scene_system::is_reset = false;
+      continue;
+    }
+    break;
   }
 }
 bool shutdown() {

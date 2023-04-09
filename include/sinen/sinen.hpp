@@ -55,7 +55,7 @@ namespace sinen {
  * @return true Success to initialize
  * @return false Failed to initialize
  */
-bool initialize();
+bool initialize(int argc, char *argv[]);
 /**
  * @brief Run sinen engine
  *

@@ -5,7 +5,6 @@
 #include <font/font.hpp>
 #include <functional>
 #include <io/data_stream.hpp>
-#include <main/main.hpp>
 #include <math/point2.hpp>
 #include <math/random.hpp>
 #include <model/model.hpp>
@@ -29,6 +28,7 @@ void register_generator(sol::state &v) {
   };
   v["vector2"] = [](float x, float y) -> vector2 { return vector2(x, y); };
   v["point2i"] = [](int x, int y) -> point2i { return point2i(x, y); };
+  v["point2f"] = [](float x, float y) -> point2f { return point2f(x, y); };
   v["quaternion"] = [](sol::this_state s) -> quaternion {
     return quaternion();
   };

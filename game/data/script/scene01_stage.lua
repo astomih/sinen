@@ -15,7 +15,6 @@ local menu = {}
 local stair = {}
 -- assets
 local tree = model()
-local music = music()
 local tile = texture()
 tile:fill_color(color(0.416, 0.204, 0.153, 1))
 
@@ -55,8 +54,6 @@ local camera_controller = require("camera_controller")()
 
 score_font:load(DEFAULT_FONT_NAME, 64)
 menu_object:setup()
-music:load("segments.ogg")
-music:play()
 DEFAULT_TEXTURE = texture()
 DEFAULT_TEXTURE:fill_color(color(1, 1, 1, 1))
 map:fill(0)
@@ -92,14 +89,12 @@ for y = 1, map_size_y do
         if map:at(x, y) == MAP_CHIP.WALL then
             map_draw3ds[y][x].aabb = aabb()
             map_draw3ds[y][x].aabb.max =
-            map_draw3ds[y][x].position:add(map_draw3ds[y][x].scale)
+                map_draw3ds[y][x].position:add(map_draw3ds[y][x].scale)
             map_draw3ds[y][x].aabb.min =
-            map_draw3ds[y][x].position:sub(map_draw3ds[y][x].scale)
+                map_draw3ds[y][x].position:sub(map_draw3ds[y][x].scale)
             map_z:set(x, y, 0)
             map_draw3ds[y][x].position.z = map_z:at(x, y) / 10.0
             map_draw3ds[y][x].scale.z = 3
-
-
         end
         if map:at(x, y) == MAP_CHIP.STAIR then
             stair.position.x = x * TILE_SIZE
@@ -120,8 +115,6 @@ end
 score_font:render_text(score_texture, "SCORE: " .. SCORE,
     color(1, 1, 1, 1))
 score_drawer.scale = score_texture:size()
-score_drawer.position.x = -300
-score_drawer.position.y = 300
 camera_controller:setup(player)
 camera_controller:update()
 scene_switcher:setup()
@@ -140,7 +133,6 @@ local function draw()
         if (px - size <= x and x <= px + size and py - size <= y and y <= py + size) then
             v:draw()
         end
-
     end
     box:clear()
     for y = py - size, py + size do
@@ -183,6 +175,8 @@ local function collision_bullets(_bullets)
 end
 
 function update()
+    local ratio = vector2(window.size().x / scene.size().x, window.size().y / scene.size().y)
+    score_drawer.position = vector2(-300 * ratio.x, 300 * ratio.y)
     if scene_switcher.flag then
         scene_switcher:update(draw)
         return
@@ -201,8 +195,6 @@ function update()
     score_font:render_text(score_texture, "SCORE: " .. SCORE,
         color(1, 1, 1, 1))
     score_drawer.scale = score_texture:size()
-    score_drawer.position.x = -300
-    score_drawer.position.y = 300
     collision_bullets(player.bullets)
     for a, b in ipairs(player.orbits) do
         collision_bullets(b.bullets)
@@ -220,7 +212,6 @@ function update()
     end
     if math.floor(player.drawer.position.x + 0.5) == math.floor(stair.position.x) and
         math.floor(player.drawer.position.y + 0.5) == math.floor(stair.position.y) then
-
         if stair.position.z == 0 then
             NOW_STAGE = NOW_STAGE + 1
             if NOW_STAGE == 4 then
@@ -258,15 +249,15 @@ collision_bullets = function(_bullets)
                 end
                 if #enemies <= 0 then
                     stair.position.z = 0
-
                 end
             end
         end
         if map:at(math.floor(v.drawer
-            .position
-            .x / TILE_SIZE +
-            0.5), math.floor(v.drawer.position.y / TILE_SIZE + 0.5)) < MAP_CHIP_WALKABLE then table.remove(player.bullets
-                , i)
+                .position
+                .x / TILE_SIZE +
+                0.5), math.floor(v.drawer.position.y / TILE_SIZE + 0.5)) < MAP_CHIP_WALKABLE then
+            table.remove(player.bullets
+            , i)
         end
     end
 end

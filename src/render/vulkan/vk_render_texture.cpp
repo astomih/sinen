@@ -143,7 +143,7 @@ vk_image vk_render_texture::create_image_object(int width, int height,
     ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     VmaAllocationCreateInfo alloc_info = {};
-    alloc_info.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
+    alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
     vmaCreateImage(m_vkrenderer.allocator, &ci, &alloc_info, &tex.image,
                    &tex.allocation, nullptr);
   }
@@ -236,8 +236,8 @@ VkSampler vk_render_texture::create_sampler() {
       VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
       nullptr,
       0,
-      VK_FILTER_NEAREST,
-      VK_FILTER_NEAREST,
+      VK_FILTER_LINEAR,
+      VK_FILTER_LINEAR,
       VK_SAMPLER_MIPMAP_MODE_NEAREST,
       VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
       VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
@@ -316,7 +316,7 @@ void vk_render_texture::destroy_descriptor_set_for_imgui() {
 void vk_render_texture::prepare_pipeline_layout() {
   m_pipeline_layout.initialize(
       m_vkrenderer.get_base().get_vk_device(), &descriptor_set_layout,
-      m_vkrenderer.get_base().mSwapchain->GetSurfaceExtent(),false);
+      m_vkrenderer.get_base().mSwapchain->GetSurfaceExtent(), false);
   m_pipeline_layout.prepare(m_vkrenderer.get_base().get_vk_device());
 }
 void vk_render_texture::destroy_pipeline_layout() {

@@ -42,6 +42,7 @@ set(SINEN_INCLUDE_DIRS
 file(
   GLOB
   SOURCE_FILES
+  src/*.cpp
   src/*/*.cpp
   src/render/vulkan/*.cpp
   external/ImGui/source/*.cpp

@@ -16,7 +16,6 @@ local function equipment_menu()
       self.ui_panel.scale = vector2(1120, 630)
       button.fg_color = color(0, 0, 0, 0.9)
       button.bg_color = color(1, 1, 1, 1.0)
-
     end,
     draw = function(self)
       if self.hide then
@@ -78,13 +77,11 @@ local function equipment_menu()
         then
           self.is_list = false
         end
-
       end
 
 
       -- update menu
       return true
-
     end
   }
   return object

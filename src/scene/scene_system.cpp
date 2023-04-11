@@ -12,9 +12,6 @@
 #include <io/data_stream.hpp>
 #include <io/json.hpp>
 
-// For SDL2
-#undef main
-#include <main/main.hpp>
 #include <math/random.hpp>
 #include <render/renderer.hpp>
 #include <scene/scene.hpp>
@@ -44,6 +41,8 @@ std::unique_ptr<scene::implements> scene_system::m_impl =
 scene::state scene_system::m_game_state = scene::state::quit;
 bool scene_system::is_run_script = true;
 uint32_t scene_system::m_prev_tick = 0;
+bool scene_system::is_reset = true;
+std::string scene_system::m_scene_name = "main";
 std::vector<scene_system::actor_ptr> scene_system::m_actors;
 bool scene_system::initialize() {
   scene::get_component_factory().register_component<draw3d_component>("draw3d");
@@ -57,22 +56,13 @@ bool scene_system::initialize() {
 void scene_system::setup() {
   if (is_run_script) {
     sol::state *lua = (sol::state *)script_system::get_state();
-    std::string str = data_stream::open_as_string(
-        asset_type::Script, main::get_current_scene_number() + ".lua");
+    std::string str = data_stream::open_as_string(asset_type::Script,
+                                                  current_name() + ".lua");
     lua->do_string(str.data());
   }
   m_impl->setup();
   m_game_state = scene::state::running;
   m_prev_tick = SDL_GetTicks();
-}
-
-void scene_system::run_loop() {
-  window_system::prepare_frame();
-  process_input();
-  update_scene();
-  input_system::prepare_for_update();
-  input_system::update();
-  render_system::render();
 }
 
 void scene_system::process_input() {
@@ -161,6 +151,17 @@ actor &scene_system::get_actor(const std::string &str) {
   static actor null_actor;
   null_actor.set_name("null");
   return null_actor;
+}
+void scene_system::change(const std::string &scene_file_name) {
+  if (scene_file_name.empty()) {
+    scene::set_state(scene::state::quit);
+    is_reset = false;
+  } else {
+    is_reset = true;
+  }
+
+  scene_system::shutdown();
+  m_scene_name = scene_file_name;
 }
 
 void scene_system::load_data(std::string_view data_file_name) {

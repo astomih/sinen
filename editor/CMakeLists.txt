@@ -10,8 +10,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 
 
 file(GLOB SOURCE_FILES
-	./src/*/*.cpp 
-	./src/*.cpp
+	./native/*/*.cpp 
+	./native/*.cpp
   ../external/ImGuiColorTextEdit/*.cpp
   ../external/ImGuizmo/*.cpp
 	./data/icon/icon.rc

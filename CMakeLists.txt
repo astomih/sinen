@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.7)
 project(sinen)
 option(EXTERNAL_ALL_BUILD "Build all external libralies" OFF)
-add_subdirectory(./script)
 add_subdirectory(./tools/model_converter)
 add_subdirectory(./editor)
 add_subdirectory(./game)
 add_subdirectory(./test)
+add_subdirectory(./usertype)
 if(EXTERNAL_ALL_BUILD)
 add_subdirectory(./external/SDL2)
 add_subdirectory(./external/SDL2_image)
@@ -30,7 +30,7 @@ set(SINEN_INCLUDE_DIRS
       .
       ./include
       ./include/sinen
-      ./script/include
+      ./usertype/include
       external/ImGui/include
       external/sol2/include
       external/Lua/include

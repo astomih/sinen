@@ -1,3 +1,4 @@
+// internal
 #include <component/component.hpp>
 
 namespace sinen {

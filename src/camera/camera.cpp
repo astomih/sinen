@@ -1,3 +1,4 @@
+// internal
 #include <camera/camera.hpp>
 #include <logger/logger.hpp>
 #include <math/matrix4.hpp>

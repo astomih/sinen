@@ -1,4 +1,6 @@
+// internal
 #include <allocator/stack_allocator.hpp>
+
 namespace sinen {
 stack_allocator::stack_allocator(const std::size_t &stack_size) {
   this->marker = (marker_t)std::malloc(stack_size);

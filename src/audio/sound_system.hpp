@@ -1,12 +1,16 @@
-#pragma once
-#include <audio/sound.hpp>
-#include <math/math.hpp>
-#include <math/quaternion.hpp>
-#include <math/vector3.hpp>
+#ifndef SINEN_SOUND_SYSTEM_HPP
+#define SINEN_SOUND_SYSTEM_HPP
+// std
 #include <memory>
 #include <string>
 #include <string_view>
 #include <unordered_map>
+
+// internal
+#include <audio/sound.hpp>
+#include <math/math.hpp>
+#include <math/quaternion.hpp>
+#include <math/vector3.hpp>
 
 namespace sinen {
 class sound_system {
@@ -30,3 +34,4 @@ private:
   static void *context;
 };
 } // namespace sinen
+#endif // SINEN_SOUND_SYSTEM_HPP

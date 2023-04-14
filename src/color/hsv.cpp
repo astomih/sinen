@@ -1,3 +1,4 @@
+// internal
 #include <color/hsv.hpp>
 namespace sinen {
 void hsv::from_color(const color &c) {

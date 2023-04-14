@@ -1,11 +1,16 @@
-#include <SDL.h>
-#include <SDL_ttf.h>
+// std
 #include <cassert>
+#include <string_view>
+
+// internal
 #include <color/color.hpp>
 #include <font/font.hpp>
 #include <io/data_stream.hpp>
 #include <logger/logger.hpp>
-#include <string_view>
+
+// external
+#include <SDL.h>
+#include <SDL_ttf.h>
 #include <texture/texture.hpp>
 
 namespace sinen {

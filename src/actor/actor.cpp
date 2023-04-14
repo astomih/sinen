@@ -1,5 +1,7 @@
+// internal
 #include <actor/actor.hpp>
 #include <scene/scene.hpp>
+
 namespace sinen {
 actor::actor()
     : m_state(actor::state::active), m_name("actor"),

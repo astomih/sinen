@@ -1,25 +1,14 @@
-#include "../audio/sound_system.hpp"
-#include "../render/render_system.hpp"
-#include "math/vector3.hpp"
-#include "script_system.hpp"
-#include <audio/music.hpp>
-#include <audio/sound.hpp>
-#include <camera/camera.hpp>
-#include <font/font.hpp>
+// std
 #include <functional>
+
+// internal
+#include "script_system.hpp"
 #include <io/data_stream.hpp>
-#include <logger/logger.hpp>
-#include <math/point2.hpp>
-#include <math/random.hpp>
-#include <model/model.hpp>
-#include <render/renderer.hpp>
 #include <script/script.hpp>
 #include <script_engine.hpp>
-#include <sol/sol.hpp>
 
-#ifdef main
-#undef main
-#endif
+// external
+#include <sol/sol.hpp>
 
 namespace sinen {
 class script_system::implement {

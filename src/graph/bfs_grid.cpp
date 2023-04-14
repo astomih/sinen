@@ -1,5 +1,8 @@
-#include <graph/bfs_grid.hpp>
+// std
 #include <iostream>
+
+// internal
+#include <graph/bfs_grid.hpp>
 
 namespace sinen {
 bfs_grid::bfs_grid(const graph &field) {

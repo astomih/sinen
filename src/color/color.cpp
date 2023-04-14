@@ -1,3 +1,4 @@
+// internal
 #include <color/color.hpp>
 #include <color/palette.hpp>
 

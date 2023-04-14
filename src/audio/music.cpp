@@ -1,11 +1,14 @@
+// std
 #include <memory>
 #include <string>
 #include <unordered_map>
 
-#include <SDL_mixer.h>
-
+// internal
 #include <audio/music.hpp>
 #include <io/data_stream.hpp>
+
+// external
+#include <SDL_mixer.h>
 
 namespace sinen {
 music::music() {}

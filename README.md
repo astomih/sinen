@@ -82,15 +82,12 @@ I named this game 'DIVE TO SINEN'.
 
 # Editor
 ![Editor Sample](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/editor_sample.png)  
-Editor is a level editor for Engine.  
+Editor is a visual editor.  
 ## Dependencies
 - Sinen Engine
 - ImGuiColorTextEdit
 - imgui_markdown
 - ImGuizmo
-
-# Neon
-Neon is a post-processing library for Sinen Engine.  
 
 # Tools
 ## Model Converter

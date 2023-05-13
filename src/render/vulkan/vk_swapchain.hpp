@@ -1,5 +1,5 @@
-#pragma once
-#if !defined(EMSCRIPTEN) && !defined(ANDROID)
+#ifndef SINEN_VK_SWAPCHAIN_HPP
+#define SINEN_VK_SWAPCHAIN_HPP
 #include <vector>
 
 #include <SDL_vulkan.h>

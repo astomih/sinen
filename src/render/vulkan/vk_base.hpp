@@ -1,6 +1,5 @@
 #ifndef SINEN_VK_BASE_HPP
 #define SINEN_VK_BASE_HPP
-#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #ifdef _WIN32
 #include <windows.h>
 #define VK_USE_PLATFORM_WIN32_KHR
@@ -103,6 +102,4 @@ public:
   vk_renderer *m_vkrenderer;
 };
 } // namespace sinen
-
-#endif // EMSCRIPTEN
 #endif

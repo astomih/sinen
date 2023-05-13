@@ -1,4 +1,3 @@
-#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include "vk_render_texture.hpp"
 #include "vk_renderer.hpp"
 #include <array>
@@ -324,4 +323,3 @@ void vk_render_texture::destroy_pipeline_layout() {
 }
 
 } // namespace sinen
-#endif

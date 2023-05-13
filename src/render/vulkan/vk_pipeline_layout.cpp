@@ -1,9 +1,8 @@
-#include <cstddef>
-#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include "vk_pipeline.hpp"
 #include "vk_renderer.hpp"
 #include "vk_util.hpp"
 #include "vulkan/vulkan_core.h"
+#include <cstddef>
 namespace sinen {
 void vk_pipeline_layout::initialize(
     VkDevice device, const VkDescriptorSetLayout *descriptorLayout,
@@ -139,4 +138,3 @@ void vk_pipeline_layout::cleanup(VkDevice device) {
                                                   &vkDestroyPipelineLayout);
 }
 } // namespace sinen
-#endif

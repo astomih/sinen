@@ -1,4 +1,3 @@
-#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #ifdef DEBUG
 #define VMA_RECORDING_ENABLED 1
 #define VMA_DEBUG_INITIALIZE_ALLOCATIONS 1
@@ -8,4 +7,3 @@
 #define VMA_IMPLEMENTATION
 #define VMA_VULKAN_VERSION 1001000
 #include "vk_mem_alloc.h"
-#endif

@@ -1,7 +1,6 @@
-#include <io/data_stream.hpp>
-#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include "vk_shader.hpp"
 #include <fstream>
+#include <io/data_stream.hpp>
 
 namespace sinen {
 VkPipelineShaderStageCreateInfo vk_shader::load(VkDevice device,
@@ -32,4 +31,3 @@ void vk_shader::clean(
   }
 }
 } // namespace sinen
-#endif

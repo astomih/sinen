@@ -1,4 +1,3 @@
-#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include <logger/logger.hpp>
 
 #include "../../render/render_system.hpp"
@@ -1344,4 +1343,3 @@ void vk_renderer::destroy_vk_drawable(vk_drawable &texture) {
   }
 }
 } // namespace sinen
-#endif

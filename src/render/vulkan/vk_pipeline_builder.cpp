@@ -1,4 +1,3 @@
-#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include "vk_pipeline_builder.hpp"
 #include "vk_shader.hpp"
 
@@ -203,7 +202,4 @@ void vk_pipeline_builder::present_texture_pipeline(vk_pipeline &pipeline) {
   pipeline.prepare(device);
   vk_shader::clean(device, shaderStages);
 }
-
 } // namespace sinen
-
-#endif

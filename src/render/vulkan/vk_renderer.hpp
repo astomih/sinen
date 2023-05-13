@@ -5,8 +5,6 @@
 #include <model/model.hpp>
 #include <vertex/vertex_array.hpp>
 
-#if !defined(EMSCRIPTEN) && !defined(ANDROID)
-
 #include "vk_base.hpp"
 #include "vk_buffer.hpp"
 #include "vk_depth_texture.hpp"
@@ -113,6 +111,4 @@ private:
   vk_drawable m_skybox;
 };
 } // namespace sinen
-#endif
-
 #endif

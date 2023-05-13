@@ -1,5 +1,5 @@
-#pragma once
-#if !defined(EMSCRIPTEN) && !defined(ANDROID)
+#ifndef SINEN_VK_UTIL_HPP
+#define SINEN_VK_UTIL_HPP
 #include <SDL.h>
 #include <vulkan/vulkan.h>
 

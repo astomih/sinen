@@ -1,6 +1,5 @@
 #ifndef SINEN_VK_PIPELINE_LAYOUT
 #define SINEN_VK_PIPELINE_LAYOUT
-#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include <SDL_vulkan.h>
 #include <array>
 #include <vector>
@@ -62,5 +61,4 @@ private:
   std::vector<VkDynamicState> dynamicStates;
 };
 } // namespace sinen
-#endif // !!defined(EMSCRIPTEN) && !defined(MOBILE)
 #endif // !SINEN_VK_PIPELINE_LAYOUT

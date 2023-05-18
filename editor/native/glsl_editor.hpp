@@ -1,9 +1,9 @@
-#ifndef SINEN_TEXTEDITOR_HPP
-#define SINEN_TEXTEDITOR_HPP
+#ifndef SINEN_GLSL_EDITOR_HPP
+#define SINEN_GLSL_EDITOR_HPP
 #include <memory>
 #include <string>
 namespace sinen {
-class texteditor {
+class glsl_editor {
 public:
   static void display();
   static std::string get_text();

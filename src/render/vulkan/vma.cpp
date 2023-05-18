@@ -6,4 +6,6 @@
 #endif
 #define VMA_IMPLEMENTATION
 #define VMA_VULKAN_VERSION 1001000
+#include <cstdio>
+
 #include "vk_mem_alloc.h"

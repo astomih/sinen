@@ -30,14 +30,6 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Neon",
-      "program": "${workspaceFolder}/build/debug/neon/neon.exe",
-      "args": [],
-      "cwd": "${workspaceFolder}/neon"
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
       "name": "Game(Release)",
       "program": "${workspaceFolder}/build/release/game/game.exe",
       "args": [],

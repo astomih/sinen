@@ -1,5 +1,6 @@
 // std libraries
 #include <algorithm>
+#include <cstdint>
 #include <list>
 #include <string>
 #include <string_view>

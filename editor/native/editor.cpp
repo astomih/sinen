@@ -5,6 +5,7 @@
 // Added for ImGui
 #include <ImGuizmo.h>
 
+#include "glsl_editor.hpp"
 #include "log_window.hpp"
 #include "markdown.hpp"
 #include "texteditor.hpp"
@@ -457,6 +458,7 @@ void editor::setup() {
   renderer::add_imgui_function(log_window);
   renderer::add_imgui_function(inspector);
   renderer::add_imgui_function(texteditor::display);
+  renderer::add_imgui_function(glsl_editor::display);
   renderer::toggle_show_imgui();
 }
 void editor::update(float delta_time) {

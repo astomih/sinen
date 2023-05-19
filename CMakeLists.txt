@@ -60,4 +60,7 @@ target_link_libraries(
   SDL2_mixer
   SDL2_ttf
   SDL2_net
+  glslang 
+  SPIRV 
+  glslang-default-resource-limits
 )

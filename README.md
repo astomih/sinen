@@ -9,13 +9,8 @@ Sinen Engine is a media library for C++20 that is being produced mainly for game
 - Lua game engine
 - Written in C++20
 - Using Vulkan API
-- Cross platform
 - Lightweight
 
-## Supported platforms
-[![Windows(MinGW)](https://github.com/astomih/sinen/actions/workflows/mingw.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/mingw.yml)
-[![Linux](https://github.com/astomih/sinen/actions/workflows/linux.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/linux.yml)  
-We are also starting a new survey on WebGPU.
 ## [Documents](https://astomih.github.io/sinen)
 [![Documents](https://github.com/astomih/sinen/actions/workflows/documents.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/documents.yml)  
 [https://astomih.github.io/sinen](https://astomih.github.io/sinen)  

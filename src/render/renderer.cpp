@@ -9,9 +9,6 @@ bool renderer::offscreen_rendering = false;
 matrix4 renderer::render_texture_user_data;
 matrix4 renderer::light_view;
 matrix4 renderer::light_projection;
-graphics_api renderer::get_graphics_api() {
-  return render_system::get_graphics_api();
-}
 
 void renderer::unload_data() { render_system::unload_data(); }
 

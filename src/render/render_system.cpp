@@ -10,16 +10,13 @@ namespace sinen {
 color render_system::clearColor = palette::black();
 vk_renderer render_system::m_vk_renderer;
 // Renderer
-graphics_api render_system::RendererAPI;
 bool render_system::showImGui = false;
 std::list<std::function<void()>> render_system::m_imgui_function;
 texture render_system::m_skybox_texture;
 std::vector<std::shared_ptr<drawable>> render_system::m_drawable_2d;
 std::vector<std::shared_ptr<drawable>> render_system::m_drawable_3d;
-graphics_api render_system::get_graphics_api() { return RendererAPI; }
 void render_system::unload_data() {}
-void render_system::initialize(graphics_api api) {
-  RendererAPI = api;
+void render_system::initialize() {
   m_vk_renderer.initialize();
   setup_shapes();
 }

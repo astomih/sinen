@@ -14,7 +14,6 @@
 #include <math/vector2.hpp>
 #include <math/vector3.hpp>
 #include <model/model.hpp>
-#include <render/graphics_api.hpp>
 #include <shader/shader.hpp>
 #include <texture/texture.hpp>
 #include <vertex/vertex_array.hpp>
@@ -22,9 +21,8 @@
 namespace sinen {
 class render_system {
 public:
-  static void initialize(graphics_api api);
+  static void initialize();
   static void shutdown();
-  static graphics_api get_graphics_api();
   static void unload_data();
   static void render();
   static void draw2d(const std::shared_ptr<drawable> draw_object);
@@ -66,7 +64,6 @@ private:
   static void setup_shapes();
   static color clearColor;
   // Renderer
-  static graphics_api RendererAPI;
   static bool showImGui;
   static std::list<std::function<void()>> m_imgui_function;
   static texture m_skybox_texture;

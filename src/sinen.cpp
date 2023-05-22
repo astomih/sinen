@@ -33,8 +33,8 @@ bool initialize(int argc, char *argv[]) {
   SDLNet_Init();
   Mix_Init(MIX_INIT_OGG);
   Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
-  window_system::initialize("SinenEngine", graphics_api::Vulkan);
-  render_system::initialize(graphics_api::Vulkan);
+  window_system::initialize("SinenEngine");
+  render_system::initialize();
   if (!sound_system::initialize()) {
     logger::critical("Failed to initialize audio system");
     sound_system::shutdown();

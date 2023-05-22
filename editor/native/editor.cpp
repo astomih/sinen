@@ -40,10 +40,6 @@ void editor::inspector() {
   ImVec2 uv_s, uv_e;
   uv_s = ImVec2(0, 0);
   uv_e = ImVec2(1, 1);
-  if (renderer::get_graphics_api() != graphics_api::Vulkan) {
-    uv_s = ImVec2(1, 1);
-    uv_e = ImVec2(0, 0);
-  }
 
   ImGui::Image((void *)renderer::get_texture_id(),
                ImVec2(ImGui::GetWindowWidth(), ImGui::GetWindowHeight() - 20));

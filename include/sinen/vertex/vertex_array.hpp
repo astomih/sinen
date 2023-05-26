@@ -1,7 +1,11 @@
 #ifndef SINEN_VERTEX_ARRAY_HPP
 #define SINEN_VERTEX_ARRAY_HPP
-#include "../vertex/vertex.hpp"
+// std
+#include <cstdint>
 #include <vector>
+
+// internal
+#include "../vertex/vertex.hpp"
 
 namespace sinen {
 /**
@@ -16,7 +20,7 @@ public:
    * @param indiceArray indices
    * @param count count
    */
-  void push_indices(uint32_t indiceArray[], size_t count);
+  void push_indices(std::uint32_t indiceArray[], size_t count);
   std::vector<vertex> vertices;
   std::vector<uint32_t> indices;
   std::string materialName;

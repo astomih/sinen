@@ -2,6 +2,8 @@
 #define COMPONENTS_HPP
 #include "component.hpp"
 #include "draw3d_component.hpp"
-#include "component_convert.hpp"
+#include "move_component.hpp"
+#include "rigidbody_component.hpp"
+#include "shader_component.hpp"
 
 #endif // COMPONENTS_HPP

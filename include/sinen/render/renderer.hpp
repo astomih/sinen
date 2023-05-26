@@ -15,7 +15,6 @@
 #include "../shader/shader.hpp"
 #include "../texture/texture.hpp"
 #include "../vertex/vertex_array.hpp"
-#include "graphics_api.hpp"
 
 namespace sinen {
 /**
@@ -24,12 +23,6 @@ namespace sinen {
  */
 class renderer {
 public:
-  /**
-   * @brief Get the graphics api object
-   *
-   * @return graphics_api
-   */
-  static graphics_api get_graphics_api();
   /**
    * @brief Unload all resources
    *

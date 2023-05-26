@@ -1,4 +1,3 @@
-#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include "vk_pipeline.hpp"
 #include "vk_base.hpp"
 #include "vk_util.hpp"
@@ -59,8 +58,8 @@ void vk_pipeline::initialize(
   };
 }
 void vk_pipeline::prepare(VkDevice device) {
-  VkResult result = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1,
-                                              &graphicsCI, nullptr, &pipeline);
+  vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphicsCI, nullptr,
+                            &pipeline);
 }
 
 void vk_pipeline::Bind(VkCommandBuffer command) {
@@ -90,4 +89,3 @@ void vk_pipeline::set_sample_count(VkSampleCountFlagBits sample_count) {
   multisampleCI.rasterizationSamples = sample_count;
 }
 } // namespace sinen
-#endif

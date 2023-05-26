@@ -1,4 +1,3 @@
-#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include <logger/logger.hpp>
 
 #include "../../render/render_system.hpp"
@@ -405,6 +404,7 @@ void vk_renderer::draw3d(std::shared_ptr<struct drawable> drawObject) {
 }
 
 void vk_renderer::load_shader(const shader &shaderInfo) {
+  unload_shader(shaderInfo);
   std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
       vk_shader::load(m_base->get_vk_device(),
                       shaderInfo.vertex_shader().c_str(),
@@ -1344,4 +1344,3 @@ void vk_renderer::destroy_vk_drawable(vk_drawable &texture) {
   }
 }
 } // namespace sinen
-#endif

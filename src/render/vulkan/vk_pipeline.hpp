@@ -1,6 +1,5 @@
 #ifndef SINEN_VK_PIPELINE_HPP
 #define SINEN_VK_PIPELINE_HPP
-#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include "vk_pipeline_layout.hpp"
 #include <SDL_vulkan.h>
 #include <vector>
@@ -32,4 +31,3 @@ private:
 };
 } // namespace sinen
 #endif
-#endif // !SINEN_VK_PIPELINE_HPP

@@ -1,6 +1,4 @@
-#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include "vk_swapchain.hpp"
-#include "vk_base.hpp"
 #include "vk_util.hpp"
 #include <algorithm>
 
@@ -156,5 +154,3 @@ void vk_swapchain::queue_present(VkQueue queue, uint32_t imageIndex,
 }
 
 } // namespace sinen
-
-#endif

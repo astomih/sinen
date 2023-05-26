@@ -1,3 +1,4 @@
+// internal
 #include <shader/shader.hpp>
 
 namespace sinen {

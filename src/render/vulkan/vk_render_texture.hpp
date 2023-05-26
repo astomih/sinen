@@ -1,6 +1,5 @@
 #ifndef SINEN_VK_RENDER_TEXTURE_HPP
 #define SINEN_VK_RENDER_TEXTURE_HPP
-#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include "vk_drawable.hpp"
 #include "vk_image.hpp"
 #include "vk_pipeline.hpp"
@@ -43,5 +42,4 @@ private:
   bool is_MSAA = false;
 };
 } // namespace sinen
-#endif // !defined(EMSCRIPTEN) && !defined(ANDROID)
 #endif // !SINEN_VK_RENDER_TEXTURE_HPP

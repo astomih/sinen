@@ -1,5 +1,5 @@
-#pragma once
-#if !defined(EMSCRIPTEN) && !defined(ANDROID)
+#ifndef SINEN_VK_SHADER_HPP
+#define SINEN_VK_SHADER_HPP
 #include <vector>
 #include <vulkan/vk_layer.h>
 
@@ -15,4 +15,4 @@ public:
 private:
 };
 } // namespace sinen
-#endif
+#endif // SINEN_VK_SHADER_HPP

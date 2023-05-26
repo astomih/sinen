@@ -105,10 +105,10 @@ void data_stream::convert_file_path(const asset_type &type,
     filePath = base + std::string{"music/"} + name.data();
     break;
   case asset_type::Script:
-    filePath = base + std::string{"script/"} + name.data();
+    filePath = std::string{"script/"} + name.data();
     break;
-  case asset_type::vk_shader:
-    filePath = base + std::string{"shader/Vulkan/"} + name.data();
+  case asset_type::Shader:
+    filePath = base + std::string{"shader/"} + name.data();
     break;
   case asset_type::Scene:
     filePath = base + std::string{"scene/"} + name.data();

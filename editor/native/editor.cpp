@@ -1,13 +1,11 @@
 #include "editor.hpp"
 #include <SDL.h>
-#ifdef main
-#undef main
-#endif
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 // Added for ImGui
 #include <ImGuizmo.h>
 
+#include "glsl_editor.hpp"
 #include "log_window.hpp"
 #include "markdown.hpp"
 #include "texteditor.hpp"
@@ -42,10 +40,6 @@ void editor::inspector() {
   ImVec2 uv_s, uv_e;
   uv_s = ImVec2(0, 0);
   uv_e = ImVec2(1, 1);
-  if (renderer::get_graphics_api() != graphics_api::Vulkan) {
-    uv_s = ImVec2(1, 1);
-    uv_e = ImVec2(0, 0);
-  }
 
   ImGui::Image((void *)renderer::get_texture_id(),
                ImVec2(ImGui::GetWindowWidth(), ImGui::GetWindowHeight() - 20));
@@ -460,6 +454,7 @@ void editor::setup() {
   renderer::add_imgui_function(log_window);
   renderer::add_imgui_function(inspector);
   renderer::add_imgui_function(texteditor::display);
+  renderer::add_imgui_function(glsl_editor::display);
   renderer::toggle_show_imgui();
 }
 void editor::update(float delta_time) {

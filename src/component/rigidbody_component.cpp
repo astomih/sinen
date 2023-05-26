@@ -1,3 +1,4 @@
+// internal
 #include <actor/actor.hpp>
 #include <component/rigidbody_component.hpp>
 namespace sinen {

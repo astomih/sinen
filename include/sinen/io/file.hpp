@@ -160,19 +160,19 @@ public:
    * @param offset Offset
    * @param whence Whence
    */
-  void seek(const std::int64_t &offset, int whence);
+  void seek(const int64_t &offset, int whence);
   /**
    * @brief Get the current position of the file pointer
    *
-   * @return std::int64_t Current position
+   * @return int64_t Current position
    */
-  std::int64_t tell();
+  int64_t tell();
   /**
    * @brief Get the file size
    *
    * @return std::int64_t File size
    */
-  std::int64_t size();
+  int64_t size();
   /**
    * @brief Open mode to string
    *

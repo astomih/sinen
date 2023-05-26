@@ -21,10 +21,10 @@ void window::rename(const std::string &name) { window_system::rename(name); }
 std::string window::name() { return window_system::name(); }
 bool window::resized() { return window_system::resized(); }
 
-void window_system::initialize(const std::string &name, graphics_api api) {
+void window_system::initialize(const std::string &name) {
   m_name = name;
 
-#if !defined(EMSCRIPTEN) && !defined(MOBILE)
+  // Load settings from settings.json
   {
     file f;
     f.open("settings.json", file::mode::r);
@@ -37,19 +37,10 @@ void window_system::initialize(const std::string &name, graphics_api api) {
     m_size.y = j["WindowHeight"].get_float();
   }
 
-  switch (api) {
-  case graphics_api::Vulkan: {
-    m_window = SDL_CreateWindow(
-        std::string(name).c_str(), SDL_WINDOWPOS_UNDEFINED,
-        SDL_WINDOWPOS_UNDEFINED, static_cast<int>(m_size.x),
-        static_cast<int>(m_size.y), SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
-
-    break;
-  }
-  default:
-    break;
-  }
-#endif
+  m_window = SDL_CreateWindow(
+      std::string(name).c_str(), SDL_WINDOWPOS_UNDEFINED,
+      SDL_WINDOWPOS_UNDEFINED, static_cast<int>(m_size.x),
+      static_cast<int>(m_size.y), SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
 }
 
 void window_system::shutdown() {

@@ -1,4 +1,3 @@
-#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 // general
 #include <algorithm>
 #include <array>
@@ -505,4 +504,3 @@ void vk_base::recreate_swapchain() {
   create_frame_buffer();
 }
 } // namespace sinen
-#endif

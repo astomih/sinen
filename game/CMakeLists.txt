@@ -11,8 +11,8 @@ endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 
 file(GLOB SOURCE_FILES
-	./src/*/*.cpp 
-	./src/*.cpp
+	./native/*/*.cpp 
+	./native/*.cpp
 	./data/icon/icon.rc
 )
 file(GLOB INCLUDE_DIRS

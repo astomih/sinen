@@ -1,3 +1,4 @@
+// internal
 #include <actor/actor.hpp>
 #include <camera/camera.hpp>
 #include <color/palette.hpp>

@@ -1,6 +1,5 @@
 #ifndef VK_PIPELINE_BUILDER_HPP
 #define VK_PIPELINE_BUILDER_HPP
-#if !defined(EMSCRIPTEN) && !defined(ANDROID)
 #include "vk_depth_texture.hpp"
 #include "vk_pipeline.hpp"
 #include "vk_render_texture.hpp"
@@ -49,5 +48,4 @@ private:
 };
 
 } // namespace sinen
-#endif // !defined(EMSCRIPTEN) && !defined(ANDROID)
 #endif // VK_PIPELINE_BUILDER_HPP

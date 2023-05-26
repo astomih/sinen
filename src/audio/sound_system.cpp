@@ -1,13 +1,17 @@
+// std
+#include <vector>
+
+// internal
+#include "sound_system.hpp"
+#include <io/data_stream.hpp>
+#include <math/quaternion.hpp>
+
+// external
 #define AL_LIBTYPE_STATIC
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <SDL_log.h>
 #include <SDL_mixer.h>
-#include <vector>
-
-#include "sound_system.hpp"
-#include <io/data_stream.hpp>
-#include <math/quaternion.hpp>
 
 namespace sinen {
 vector3 calculate(const quaternion &r);

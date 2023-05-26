@@ -1,10 +1,13 @@
+// internal
+#include "sound_system.hpp"
+#include <audio/music.hpp>
+#include <audio/sound.hpp>
+
+// external
 #define AL_LIBTYPE_STATIC
 #include <AL/al.h>
 #include <AL/alc.h>
 
-#include "sound_system.hpp"
-#include <audio/music.hpp>
-#include <audio/sound.hpp>
 namespace sinen {
 sound::sound() {}
 void sound::load(std::string_view file_name) {

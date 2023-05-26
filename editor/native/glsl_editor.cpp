@@ -99,6 +99,22 @@ std::unique_ptr<glsl_editor::impl> glsl_editor::pimpl =
     std::make_unique<glsl_editor::impl>();
 void glsl_editor::display() {
   ImGui::Begin("GLSL Editor", nullptr, ImGuiWindowFlags_MenuBar);
+  static char path[256] = {};
+  ImGui::InputText("file", path, 256);
+  ImGui::SameLine();
+  if (ImGui::Button("Open")) {
+    auto text = data_stream::open_as_string(asset_type::Shader, path);
+    pimpl->te.SetText(text);
+  }
+  if (ImGui::Button("Compile")) {
+    if (!pimpl->te.GetText().empty()) {
+      // data_stream::write(asset_type::vk_shader, path, pimpl->te.GetText());
+      shader s;
+      s.set_fragment_shader("shaderOpaque.frag");
+      s.set_vertex_shader("shader.vert");
+      renderer::load_shader(s);
+    }
+  }
   pimpl->te.SetLanguageDefinition(get_glsl());
   pimpl->te.SetShowWhitespaces(true);
   auto cpos = pimpl->te.GetCursorPosition();

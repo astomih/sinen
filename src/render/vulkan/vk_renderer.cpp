@@ -404,6 +404,7 @@ void vk_renderer::draw3d(std::shared_ptr<struct drawable> drawObject) {
 }
 
 void vk_renderer::load_shader(const shader &shaderInfo) {
+  unload_shader(shaderInfo);
   std::vector<VkPipelineShaderStageCreateInfo> shaderStages{
       vk_shader::load(m_base->get_vk_device(),
                       shaderInfo.vertex_shader().c_str(),

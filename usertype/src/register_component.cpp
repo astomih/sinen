@@ -1,12 +1,16 @@
 #include "actor/actor.hpp"
-#include "component/component_convert.hpp"
 #include "component/draw3d_component.hpp"
+#include <component/move_component.hpp>
+#include <component/rigidbody_component.hpp>
+
 #include "register_script.hpp"
 
 namespace sinen {
 void register_component(sol::state &lua) {
   lua["actor"] = []() -> actor { return actor(); };
-  lua["cconvert_draw3d"] = &component_convert::to_draw3d;
+  lua["cconvert_draw3d"] = [](component *c) -> draw3d_component * {
+    return dynamic_cast<draw3d_component *>(c);
+  };
 
   {
     auto v = lua.new_usertype<actor>("", sol::no_construction());

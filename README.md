@@ -1,21 +1,21 @@
-# Sinen Project 
-Engine, Editor, Games, Tools, and more.
+# Sinen Engine 
 <p align="center"><a href="https://astomih.github.io/sinen"><img src="https://raw.githubusercontent.com/astomih/sinen/main/logo/logo_bg_white.png" width="480" alt="Sinen Logo"></a></p>  
 
-# Engine
+# Summary
 Sinen Engine is a media library for C++20 that is being produced mainly for game development.  
 
-## Feature
+[![CI](https://github.com/astomih/sinen/actions/workflows/CI.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/CI.yml)  
+# Feature
 - Lua game engine
 - Written in C++20
 - Using Vulkan API
 - Lightweight
 
-## [Documents](https://astomih.github.io/sinen)
+# Documents
 [![Documents](https://github.com/astomih/sinen/actions/workflows/documents.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/documents.yml)  
 [https://astomih.github.io/sinen](https://astomih.github.io/sinen)  
 
-## Hello world in sinen
+# Hello world in sinen
 ``` lua
 local hello_texture = {}
 local hello_font = {}
@@ -42,10 +42,10 @@ end
 
 ```
 ![Hello World](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/hello_world.png)
-## Lisence
+# Lisence
  MIT Lisence
 
-## Dependencies 
+# Dependencies 
 - Dear ImGui
 - Lua
 - Sol2
@@ -54,14 +54,17 @@ end
 - SDL2(image,mixer,net,ttf)
 - Vulkan 1.1
 - VulkanMemoryAllocator
+- ImGuiColorTextEdit
+- imgui_markdown
+- ImGuizmo
 
-## How to build
-### Requirements
+# How to build
+## Requirements
 - CMake 3.7 or later
 - Ninja
 - C++20 compiler
 - Vulkan SDK
-### Build commands
+## Build commands
 ``` bash
 git clone https://github.com/astomih/sinen.git
 cd sinen
@@ -70,7 +73,6 @@ cmake -B build -DEXTERNAL_ALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release
 cd build && ninja
 ```
 
-
 # Game
 ![Game Sample](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/game_sample.png)  
 I named this game 'DIVE TO SINEN'.  
@@ -78,11 +80,6 @@ I named this game 'DIVE TO SINEN'.
 # Editor
 ![Editor Sample](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/editor_sample.png)  
 Editor is a visual editor.  
-## Dependencies
-- Sinen Engine
-- ImGuiColorTextEdit
-- imgui_markdown
-- ImGuizmo
 
 # Tools
 ## Model Converter

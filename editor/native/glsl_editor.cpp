@@ -108,11 +108,12 @@ void glsl_editor::display() {
   }
   if (ImGui::Button("Compile")) {
     if (!pimpl->te.GetText().empty()) {
-      // data_stream::write(asset_type::vk_shader, path, pimpl->te.GetText());
+      std::string t = pimpl->te.GetText();
+      data_stream::write(asset_type::Shader, path, t);
       shader s;
       s.set_fragment_shader("shaderOpaque.frag");
       s.set_vertex_shader("shader.vert");
-      renderer::load_shader(s);
+      s.load();
     }
   }
   pimpl->te.SetLanguageDefinition(get_glsl());

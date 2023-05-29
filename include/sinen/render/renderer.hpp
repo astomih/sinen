@@ -130,18 +130,6 @@ public:
    */
   static bool is_show_imgui();
   /**
-   * @brief Load shader
-   *
-   * @param shaderinfo
-   */
-  static void load_shader(const shader &shaderinfo);
-  /**
-   * @brief Unload shader
-   *
-   * @param shaderinfo
-   */
-  static void unload_shader(const shader &shaderinfo);
-  /**
    * @brief Get the imgui function object
    *
    * @return std::list<std::function<void()>>&

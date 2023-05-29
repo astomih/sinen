@@ -1,4 +1,5 @@
 // internal
+#include "../render/render_system.hpp"
 #include <shader/shader.hpp>
 
 namespace sinen {
@@ -16,4 +17,7 @@ void shader::set_fragment_shader(std::string_view fragment_shader) {
 }
 const std::string &shader::vertex_shader() const { return m_vert_name; }
 const std::string &shader::fragment_shader() const { return m_frag_name; }
+
+void shader::load() { render_system::load_shader(*this); }
+void shader::unload() { render_system::unload_shader(*this); }
 } // namespace sinen

@@ -1,6 +1,5 @@
 #ifndef SINEN_SHADER_HPP
 #define SINEN_SHADER_HPP
-#include "shader_type.hpp"
 #include <memory>
 #include <string>
 #include <string_view>
@@ -13,6 +12,7 @@ namespace sinen {
  */
 class shader {
 public:
+  enum class type { vert, frag, compute };
   /**
    * @brief Additional shader parameters
    *
@@ -90,6 +90,16 @@ public:
     return this->m_vert_name == info.m_vert_name &&
            this->m_frag_name == info.m_frag_name;
   }
+  /**
+   * @brief Load shader
+   *
+   */
+  void load();
+  /**
+   * @brief Unload shader
+   *
+   */
+  void unload();
 
 private:
   std::shared_ptr<parameter> m_parameter;

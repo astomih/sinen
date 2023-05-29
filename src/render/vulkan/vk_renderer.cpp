@@ -302,6 +302,10 @@ void vk_renderer::render() {
   for (auto &sprite : m_draw_object_ui)
     destroy_vk_drawable(sprite);
   m_draw_object_ui.clear();
+  for (auto &pipelines : m_pipeline_garbage) {
+    pipelines.Cleanup(m_base->get_vk_device());
+  }
+  m_pipeline_garbage.clear();
   if (window::resized()) {
     m_base->recreate_swapchain();
     m_present_texture.destroy_descriptor_set_for_imgui();
@@ -420,8 +424,8 @@ void vk_renderer::load_shader(const shader &shaderInfo) {
   pipeline.alpha_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
                               VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
   pipeline.prepare(m_base->get_vk_device());
-  // vk_shader::clean(m_base->get_vk_device(), shaderStages);
-  //  m_pipelines["opaque"].Cleanup(m_base->get_vk_device());
+  vk_shader::clean(m_base->get_vk_device(), shaderStages);
+  m_pipeline_garbage.push_back(m_pipelines["opaque"]);
   m_pipelines["opaque"] = pipeline;
 }
 void vk_renderer::unload_shader(const shader &shaderInfo) {

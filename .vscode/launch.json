@@ -12,6 +12,14 @@
     {
       "type": "lldb",
       "request": "launch",
+      "name": "Game(Release)",
+      "program": "${workspaceFolder}/build/release/game/game.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}/game"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
       "name": "GameOnEditor",
       "program": "${workspaceFolder}/build/debug/game/game.exe",
       "args": [
@@ -30,10 +38,10 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Game(Release)",
-      "program": "${workspaceFolder}/build/release/game/game.exe",
+      "name": "Editor(Release)",
+      "program": "${workspaceFolder}/build/release/editor/editor.exe",
       "args": [],
-      "cwd": "${workspaceFolder}/game"
-    },
+      "cwd": "${workspaceFolder}/editor"
+    }
   ]
 }

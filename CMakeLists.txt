@@ -12,6 +12,7 @@ add_subdirectory(./external/SDL2_image)
 add_subdirectory(./external/SDL2_mixer)
 add_subdirectory(./external/SDL2_net)
 add_subdirectory(./external/SDL2_ttf)
+add_subdirectory(./external/glslang)
 set(SDL2_INCLUDE_DIRS
       external/SDL2/include
       external/SDL2_mixer/include

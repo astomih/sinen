@@ -1,6 +1,5 @@
-#ifndef SINEN_TCP_CLIENT_HPP
-#define SINEN_TCP_CLIENT_HPP
-#include "tcp_socket.hpp"
+#ifndef SINEN_TCP_HPP
+#define SINEN_TCP_HPP
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -10,18 +9,18 @@ namespace sinen {
  * @brief TCP client class
  *
  */
-class tcp_client {
+class tcp {
 public:
   /**
    * @brief Construct a new tcp client object
    *
    */
-  tcp_client();
+  tcp();
   /**
    * @brief Destroy the tcp client object
    *
    */
-  ~tcp_client();
+  ~tcp();
   /**
    * @brief Resolve host
    *
@@ -47,11 +46,11 @@ public:
    * @brief Receive data
    *
    * @param data data ptr
-   * @param maxLength data max length
+   * @param max_length data max length
    * @return true Success
    * @return false Failed
    */
-  bool receive(void *data, int maxLength);
+  bool receive(void *data, int max_length);
   /**
    * @brief Send data
    *

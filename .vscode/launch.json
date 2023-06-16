@@ -5,17 +5,17 @@
       "type": "lldb",
       "request": "launch",
       "name": "Game",
-      "program": "${workspaceFolder}/build/debug/game/game.exe",
+      "program": "${workspaceFolder}/build/debug/demo/game.exe",
       "args": [],
-      "cwd": "${workspaceFolder}/game"
+      "cwd": "${workspaceFolder}/demo"
     },
     {
       "type": "lldb",
       "request": "launch",
       "name": "Game(Release)",
-      "program": "${workspaceFolder}/build/release/game/game.exe",
+      "program": "${workspaceFolder}/build/release/demo/game.exe",
       "args": [],
-      "cwd": "${workspaceFolder}/game"
+      "cwd": "${workspaceFolder}/demo"
     },
     {
       "type": "lldb",

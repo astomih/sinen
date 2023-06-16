@@ -1,5 +1,5 @@
 # Sinen Engine 
-<p align="center"><a href="https://astomih.github.io/sinen"><img src="https://raw.githubusercontent.com/astomih/sinen/main/logo/logo_bg_white.png" width="480" alt="Sinen Logo"></a></p>  
+<p align="center"><a href="https://astomih.github.io/sinen"><img src="https://raw.githubusercontent.com/astomih/sinen/main/docs/logo/logo_bg_white.png" width="480" alt="Sinen Logo"></a></p>  
 
 # Summary
 Sinen Engine is a media library for C++20 that is being produced mainly for game development.  
@@ -73,14 +73,9 @@ cmake -B build -DEXTERNAL_ALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release
 cd build && ninja
 ```
 
-# Game
-![Game Sample](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/game_sample.png)  
-I named this game 'DIVE TO SINEN'.  
-
 # Editor
 ![Editor Sample](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/editor_sample.png)  
 Editor is a visual editor.  
 
-# Tools
-## Model Converter
+# Converter
 Converts 3D model files to Sinen Engine's model format.

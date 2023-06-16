@@ -4,7 +4,7 @@
 
 int main(int argc, char *argv[]) {
   sinen::scene::change_implements<sinen::editor>();
-  sinen::scene::set_run_script(false);
+  sinen::scene::set_run_script(true);
   sinen::custom_logger();
   if (!sinen::initialize(argc, argv)) {
     return -1;

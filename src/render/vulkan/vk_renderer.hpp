@@ -107,6 +107,7 @@ private:
   std::vector<vk_drawable> m_draw_object_3d;
   std::vector<vk_drawable> m_draw_object_2d;
   std::vector<vk_drawable> m_draw_object_ui;
+  std::vector<vk_pipeline> m_pipeline_garbage;
   std::unordered_map<handle_t, vk_image> m_image_object;
   vk_drawable m_skybox;
 };

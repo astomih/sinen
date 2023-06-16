@@ -65,13 +65,6 @@ texture renderer::skybox() { return render_system::get_skybox_texture(); }
 void renderer::toggle_show_imgui() { render_system::toggle_show_imgui(); }
 bool renderer::is_show_imgui() { return render_system::is_show_imgui(); }
 
-void renderer::load_shader(const shader &shaderinfo) {
-  render_system::load_shader(shaderinfo);
-}
-void renderer::unload_shader(const shader &shaderinfo) {
-  render_system::unload_shader(shaderinfo);
-}
-
 std::list<std::function<void()>> &renderer::get_imgui_function() {
   return render_system::get_imgui_function();
 }

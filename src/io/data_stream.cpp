@@ -87,7 +87,10 @@ void data_stream::write(const asset_type &type, std::string_view name,
   if (!file) {
     return;
   }
-  SDL_RWwrite(file, data.data(), 1, data.size());
+  if (data.size() != SDL_RWwrite(file, data.data(), 1, data.size())) {
+    logger::error("data_stream: Could not write all strings");
+  }
+  SDL_RWclose(file);
 }
 void data_stream::convert_file_path(const asset_type &type,
                                     std::string &filePath,

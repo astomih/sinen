@@ -11,7 +11,7 @@ void shader_component::update(float delta_time) {
   }
   if (m_compile) {
     m_compile = false;
-    renderer::load_shader(this->m_shader);
+    m_shader.load();
   }
 }
 std::string shader_component::get_name() const { return "shader"; }

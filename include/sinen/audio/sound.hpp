@@ -9,20 +9,20 @@
 
 namespace sinen {
 /**
- * @brief  Sound parameters for sound class
- *
- */
-struct sound_prameter {
-  vector3 position;
-  uint32_t source_id;
-  uint32_t buffer_id;
-};
-/**
  * @brief Sound class
  *
  */
 class sound {
 public:
+  /**
+   * @brief  Sound parameters
+   *
+   */
+  struct parameter {
+    vector3 position;
+    uint32_t source_id;
+    uint32_t buffer_id;
+  };
   /**
    * @brief Construct a new sound object
    *
@@ -66,7 +66,7 @@ public:
 
 private:
   std::string mName;
-  sound_prameter param;
+  parameter param;
   float volume = 1.f;
   float pitch = 1.f;
   vector3 pos;

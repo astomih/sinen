@@ -302,6 +302,10 @@ void vk_renderer::render() {
   for (auto &sprite : m_draw_object_ui)
     destroy_vk_drawable(sprite);
   m_draw_object_ui.clear();
+  for (auto &pipelines : m_pipeline_garbage) {
+    pipelines.Cleanup(m_base->get_vk_device());
+  }
+  m_pipeline_garbage.clear();
   if (window::resized()) {
     m_base->recreate_swapchain();
     m_present_texture.destroy_descriptor_set_for_imgui();
@@ -413,14 +417,16 @@ void vk_renderer::load_shader(const shader &shaderInfo) {
                       shaderInfo.fragment_shader().c_str(),
                       VK_SHADER_STAGE_FRAGMENT_BIT)};
   vk_pipeline pipeline;
-  pipeline.initialize(m_pipeline_layout_instance, m_render_texture.render_pass,
+  pipeline.initialize(m_pipeline_layout_normal, m_render_texture.render_pass,
                       shaderStages);
+  pipeline.set_sample_count(VK_SAMPLE_COUNT_4_BIT);
   pipeline.color_blend_factor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
-  pipeline.alpha_blend_factor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
+  pipeline.alpha_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
+                              VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
   pipeline.prepare(m_base->get_vk_device());
   vk_shader::clean(m_base->get_vk_device(), shaderStages);
-  m_user_pipelines.emplace_back(
-      std::pair<shader, vk_pipeline>{shaderInfo, pipeline});
+  m_pipeline_garbage.push_back(m_pipelines["opaque"]);
+  m_pipelines["opaque"] = pipeline;
 }
 void vk_renderer::unload_shader(const shader &shaderInfo) {
   std::erase_if(m_user_pipelines, [&](auto &x) {

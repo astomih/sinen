@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.7)
 project(editor)
-set(CMAKE_CXX_FLAGS "-std=c++2a")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -march=native")
 if(WIN32)
@@ -47,3 +46,5 @@ add_executable(editor
 target_link_libraries(editor 
 	${LIBRARIES}
 )
+
+target_compile_features(editor PUBLIC cxx_std_20)

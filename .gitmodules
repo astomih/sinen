@@ -13,3 +13,6 @@
 [submodule "external/SDL2_ttf"]
 	path = external/SDL2_ttf
 	url = https://github.com/libsdl-org/SDL_ttf.git
+[submodule "external/glslang"]
+	path = external/glslang
+	url = https://github.com/KhronosGroup/glslang

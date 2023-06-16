@@ -93,7 +93,7 @@ void editor::inspector() {
   }
   ImGui::Separator();
 
-  static std::string buf;
+  static std::string buf = "";
   if (ImGui::CollapsingHeader("Actors", ImGuiTreeNodeFlags_DefaultOpen)) {
     if (ImGui::Button("AddActor")) {
       m_actors.push_back(actor{});

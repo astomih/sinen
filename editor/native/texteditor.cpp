@@ -15,9 +15,17 @@ public:
 std::unique_ptr<texteditor::impl> texteditor::pimpl =
     std::make_unique<texteditor::impl>();
 void texteditor::display() {
-  ImGui::Begin("Text Editor", nullptr, ImGuiWindowFlags_MenuBar);
+  ImGui::Begin("Script Editor", nullptr, ImGuiWindowFlags_MenuBar);
   pimpl->te.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
   pimpl->te.SetShowWhitespaces(true);
+  // Editor Settings
+  static char path[256] = {};
+  ImGui::InputText("file", path, 256);
+  ImGui::SameLine();
+  if (ImGui::Button("Open")) {
+    auto text = data_stream::open_as_string(asset_type::Script, path);
+    pimpl->te.SetText(text);
+  }
   auto cpos = pimpl->te.GetCursorPosition();
   ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s ", cpos.mLine + 1,
               cpos.mColumn + 1, pimpl->te.GetTotalLines(),

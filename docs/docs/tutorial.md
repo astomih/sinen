@@ -7,8 +7,6 @@ I have prepared a web version [here](https://astomih.github.io/sinen/web_demo) f
 ### Target Platforms
 - Windows
 - Linux
-- Android
-- Web
 ## Hello World in Sinen
 ``` lua
 local hello_texture = {}

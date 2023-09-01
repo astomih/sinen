@@ -1,12 +1,8 @@
 # Tutorial
 ## Introduction
 ### What is Sinen?
-Sinen is a library for game development.  
-The goal is to be able to write in Lua intuitively.  
-I have prepared a web version [here](https://astomih.github.io/sinen/web_demo) for you to try it out.  
-### Target Platforms
-- Windows
-- Linux
+Sinen Engine is graphics framework for creative coding or games.  
+The goal is to be able to write intuitively in Lua.  
 ## Hello World in Sinen
 ``` lua
 local hello_texture = {}

@@ -6,18 +6,18 @@ add_subdirectory(./editor)
 add_subdirectory(./test)
 add_subdirectory(./usertype)
 if(EXTERNAL_ALL_BUILD)
-add_subdirectory(./external/SDL2)
-add_subdirectory(./external/SDL2_image)
-add_subdirectory(./external/SDL2_mixer)
-add_subdirectory(./external/SDL2_net)
-add_subdirectory(./external/SDL2_ttf)
+add_subdirectory(./external/SDL)
+add_subdirectory(./external/SDL_image)
+add_subdirectory(./external/SDL_mixer)
+add_subdirectory(./external/SDL_net)
+add_subdirectory(./external/SDL_ttf)
 add_subdirectory(./external/glslang)
 set(SDL2_INCLUDE_DIRS
-      external/SDL2/include
-      external/SDL2_mixer/include
-      external/SDL2_image/include
-      external/SDL2_ttf/include
-      external/SDL2_net/include)
+      external/SDL/include
+      external/SDL_mixer/include
+      external/SDL_image/include
+      external/SDL_ttf/include
+      external/SDL_net/include)
 else()
 find_package(SDL2 REQUIRED)
 endif()

@@ -14,10 +14,6 @@
 	path = external/SDL_ttf
 	url = https://github.com/libsdl-org/SDL_ttf
 	branch = release-2.20.x
-[submodule "external/SDL_net"]
-	path = external/SDL_net
-	url = https://github.com/libsdl-org/SDL_net
-	branch = release-2.2.x
 [submodule "external/glslang"]
 	path = external/glslang
 	url = https://github.com/KhronosGroup/glslang

@@ -46,14 +46,18 @@ end
  MIT Lisence
 
 # Dependencies 
+## Sinen Core
 - Dear ImGui
 - Lua
 - Sol2
 - mojoAL
 - rapidjson
-- SDL2(image,mixer,net,ttf)
+- SDL2(image,mixer,ttf)
 - Vulkan 1.1
 - VulkanMemoryAllocator
+- ImGui
+## Sinen Editor
+- Sinen Core
 - ImGuiColorTextEdit
 - imgui_markdown
 - ImGuizmo

@@ -9,15 +9,13 @@ if(EXTERNAL_ALL_BUILD)
 add_subdirectory(./external/SDL)
 add_subdirectory(./external/SDL_image)
 add_subdirectory(./external/SDL_mixer)
-add_subdirectory(./external/SDL_net)
 add_subdirectory(./external/SDL_ttf)
 add_subdirectory(./external/glslang)
 set(SDL2_INCLUDE_DIRS
       external/SDL/include
       external/SDL_mixer/include
       external/SDL_image/include
-      external/SDL_ttf/include
-      external/SDL_net/include)
+      external/SDL_ttf/include)
 else()
 find_package(SDL2 REQUIRED)
 endif()
@@ -58,7 +56,6 @@ target_link_libraries(
   SDL2_image
   SDL2_mixer
   SDL2_ttf
-  SDL2_net
   glslang 
   SPIRV 
   glslang-default-resource-limits

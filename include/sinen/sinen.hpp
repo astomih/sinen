@@ -33,7 +33,6 @@
 #include "math/vector2.hpp"
 #include "math/vector3.hpp"
 #include "model/model.hpp"
-#include "network/tcp.hpp"
 #include "physics/collision.hpp"
 #include "physics/physics.hpp"
 #include "physics/primitive2.hpp"

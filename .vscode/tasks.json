@@ -1,20 +1,20 @@
 {
-  "version": "2.0.0",
   "tasks": [
     {
-      "label": "DebugBuild",
-      "type": "shell",
       "command": "cd build/debug && cmake ../.. -DALL_BUILD=OFF -DCMAKE_BUILD_TYPE=Debug && ninja",
-      "problemMatcher": [],
       "group": {
-        "kind": "build",
-        "isDefault": true
-      }
+        "isDefault": true,
+        "kind": "build"
+      },
+      "label": "Debug",
+      "problemMatcher": [],
+      "type": "shell"
     },
     {
-      "label": "ReleaseBuild",
-      "type": "shell",
-      "command": "cd build/release && cmake ../.. -DEXTERNAL_ALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release && ninja"
+      "command": "cd build/release && cmake ../.. -DEXTERNAL_ALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release && ninja",
+      "label": "Release",
+      "type": "shell"
     }
-  ]
+  ],
+  "version": "2.0.0"
 }

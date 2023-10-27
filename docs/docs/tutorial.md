@@ -1,7 +1,7 @@
 # Tutorial
 ## Introduction
 ### What is Sinen?
-Sinen Engine is graphics framework for creative coding or games.  
+Sinen is toolkit for creative coding.  
 The goal is to be able to write intuitively in Lua.  
 ## Hello World in Sinen
 ``` lua

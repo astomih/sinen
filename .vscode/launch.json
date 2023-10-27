@@ -1,21 +1,21 @@
 {
-  "version": "0.2.0",
   "configurations": [
     {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Editor",
-      "program": "${workspaceFolder}/build/debug/editor/editor.exe",
       "args": [],
-      "cwd": "${workspaceFolder}/editor"
+      "cwd": "${workspaceFolder}/editor",
+      "name": "Debug",
+      "program": "${workspaceFolder}/build/debug/editor/editor.exe",
+      "request": "launch",
+      "type": "lldb"
     },
     {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Editor(Release)",
-      "program": "${workspaceFolder}/build/release/editor/editor.exe",
       "args": [],
-      "cwd": "${workspaceFolder}/editor"
+      "cwd": "${workspaceFolder}/editor",
+      "name": "Release",
+      "program": "${workspaceFolder}/build/release/editor/editor.exe",
+      "request": "launch",
+      "type": "lldb"
     }
-  ]
+  ],
+  "version": "0.2.0"
 }

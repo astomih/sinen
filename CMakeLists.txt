@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.7)
 project(sinen)
 option(EXTERNAL_ALL_BUILD "Build all external libralies" OFF)
-add_subdirectory(./converter)
 add_subdirectory(./editor)
 add_subdirectory(./test)
 add_subdirectory(./usertype)
@@ -36,6 +35,7 @@ set(SINEN_INCLUDE_DIRS
       external/mojoAL/AL
       external/rapidjson/include
       external/mojoAL
+      external/tinygltf
 )
 file(
   GLOB

@@ -78,9 +78,5 @@ cmake -B build -DEXTERNAL_ALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release
 cd build && ninja
 ```
 
-# Editor
+# Visual Editor
 ![Editor Sample](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/editor_sample.png)  
-Editor is a visual editor.  
-
-# Converter
-Converts 3D model files to Sinen Engine's model format.

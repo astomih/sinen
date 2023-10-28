@@ -8,8 +8,6 @@
 // general
 #include <array>
 #include <cstdint>
-#include <fstream>
-#include <sstream>
 #include <string>
 
 // extenal
@@ -567,6 +565,13 @@ void vk_renderer::cleanup() {
       device, m_descriptor_set_layout, &vkDestroyDescriptorSetLayout);
   vkutil::destroy_vulkan_object<VkDescriptorSetLayout>(
       device, m_descriptor_set_layout_for_depth, &vkDestroyDescriptorSetLayout);
+
+  tempBuffer = create_buffer(window::size().x * window::size().y * 4,
+                             VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+  {
+    void *ptr = reinterpret_cast<void *>(tempPixels);
+    vmaMapMemory(allocator, tempBuffer.allocation, &ptr);
+  }
 }
 
 void vk_renderer::make_command(VkCommandBuffer command) {

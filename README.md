@@ -2,12 +2,12 @@
 <p align="center"><a href="https://astomih.github.io/sinen"><img src="https://raw.githubusercontent.com/astomih/sinen/main/docs/logo/logo_bg_white.png" width="480" alt="Sinen Logo"></a></p>  
 
 # Summary
-Sinen Engine is a media library for C++20 that is being produced mainly for game development.  
+Sinen is a toolkit for creative coding.  
 
 [![CI](https://github.com/astomih/sinen/actions/workflows/CI.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/CI.yml)  
 # Feature
-- Lua game engine
-- Written in C++20
+- Intuitive writing in the Lua programming language
+- Sinen is Written in C++
 - Using Vulkan API
 - Lightweight
 
@@ -15,7 +15,7 @@ Sinen Engine is a media library for C++20 that is being produced mainly for game
 [![Documents](https://github.com/astomih/sinen/actions/workflows/documents.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/documents.yml)  
 [https://astomih.github.io/sinen](https://astomih.github.io/sinen)  
 
-# Hello world in sinen
+# Hello world in Sinen as a library
 ``` lua
 local hello_texture = {}
 local hello_font = {}
@@ -46,17 +46,22 @@ end
  MIT Lisence
 
 # Dependencies 
+## Sinen Core
 - Dear ImGui
 - Lua
 - Sol2
 - mojoAL
 - rapidjson
-- SDL2(image,mixer,net,ttf)
+- SDL2(image,mixer,ttf)
 - Vulkan 1.1
 - VulkanMemoryAllocator
+- ImGui
+## Sinen Editor
 - ImGuiColorTextEdit
-- imgui_markdown
 - ImGuizmo
+- imgui-filebrowser
+- imgui_markdown
+- Sinen Core
 
 # How to build
 ## Requirements
@@ -73,9 +78,5 @@ cmake -B build -DEXTERNAL_ALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release
 cd build && ninja
 ```
 
-# Editor
+# Visual Editor
 ![Editor Sample](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/editor_sample.png)  
-Editor is a visual editor.  
-
-# Converter
-Converts 3D model files to Sinen Engine's model format.

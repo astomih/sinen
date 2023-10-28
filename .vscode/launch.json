@@ -1,47 +1,21 @@
 {
-  "version": "0.2.0",
   "configurations": [
     {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Game",
-      "program": "${workspaceFolder}/build/debug/demo/game.exe",
       "args": [],
-      "cwd": "${workspaceFolder}/demo"
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Game(Release)",
-      "program": "${workspaceFolder}/build/release/demo/game.exe",
-      "args": [],
-      "cwd": "${workspaceFolder}/demo"
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "GameOnEditor",
-      "program": "${workspaceFolder}/build/debug/game/game.exe",
-      "args": [
-        "scene01.json"
-      ],
-      "cwd": "${workspaceFolder}/editor"
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Editor",
+      "cwd": "${workspaceFolder}/editor",
+      "name": "Debug",
       "program": "${workspaceFolder}/build/debug/editor/editor.exe",
-      "args": [],
-      "cwd": "${workspaceFolder}/editor"
+      "request": "launch",
+      "type": "lldb"
     },
     {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Editor(Release)",
-      "program": "${workspaceFolder}/build/release/editor/editor.exe",
       "args": [],
-      "cwd": "${workspaceFolder}/editor"
+      "cwd": "${workspaceFolder}/editor",
+      "name": "Release",
+      "program": "${workspaceFolder}/build/release/editor/editor.exe",
+      "request": "launch",
+      "type": "lldb"
     }
-  ]
+  ],
+  "version": "0.2.0"
 }

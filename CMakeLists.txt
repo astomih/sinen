@@ -1,24 +1,20 @@
 cmake_minimum_required(VERSION 3.7)
 project(sinen)
 option(EXTERNAL_ALL_BUILD "Build all external libralies" OFF)
-add_subdirectory(./converter)
-add_subdirectory(./demo)
 add_subdirectory(./editor)
 add_subdirectory(./test)
 add_subdirectory(./usertype)
 if(EXTERNAL_ALL_BUILD)
-add_subdirectory(./external/SDL2)
-add_subdirectory(./external/SDL2_image)
-add_subdirectory(./external/SDL2_mixer)
-add_subdirectory(./external/SDL2_net)
-add_subdirectory(./external/SDL2_ttf)
+add_subdirectory(./external/SDL)
+add_subdirectory(./external/SDL_image)
+add_subdirectory(./external/SDL_mixer)
+add_subdirectory(./external/SDL_ttf)
 add_subdirectory(./external/glslang)
 set(SDL2_INCLUDE_DIRS
-      external/SDL2/include
-      external/SDL2_mixer/include
-      external/SDL2_image/include
-      external/SDL2_ttf/include
-      external/SDL2_net/include)
+      external/SDL/include
+      external/SDL_mixer/include
+      external/SDL_image/include
+      external/SDL_ttf/include)
 else()
 find_package(SDL2 REQUIRED)
 endif()
@@ -39,6 +35,7 @@ set(SINEN_INCLUDE_DIRS
       external/mojoAL/AL
       external/rapidjson/include
       external/mojoAL
+      external/tinygltf
 )
 file(
   GLOB
@@ -59,7 +56,6 @@ target_link_libraries(
   SDL2_image
   SDL2_mixer
   SDL2_ttf
-  SDL2_net
   glslang 
   SPIRV 
   glslang-default-resource-limits

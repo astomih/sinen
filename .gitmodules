@@ -1,18 +1,19 @@
-[submodule "external/SDL2"]
-	path = external/SDL2
-	url = https://github.com/libsdl-org/SDL.git
-[submodule "external/SDL2_image"]
-	path = external/SDL2_image
-	url = https://github.com/libsdl-org/SDL_image.git
-[submodule "external/SDL2_mixer"]
-	path = external/SDL2_mixer
-	url = https://github.com/libsdl-org/SDL_mixer.git
-[submodule "external/SDL2_net"]
-	path = external/SDL2_net
-	url = https://github.com/libsdl-org/SDL_net.git
-[submodule "external/SDL2_ttf"]
-	path = external/SDL2_ttf
-	url = https://github.com/libsdl-org/SDL_ttf.git
+[submodule "external/SDL"]
+	path = external/SDL
+	url = https://github.com/libsdl-org/SDL
+	branch = release-2.28.x
+[submodule "external/SDL_image"]
+	path = external/SDL_image
+	url = https://github.com/libsdl-org/SDL_image
+	branch = release-2.6.x
+[submodule "external/SDL_mixer"]
+	path = external/SDL_mixer
+	url = https://github.com/libsdl-org/SDL_mixer
+	branch = release-2.6.x
+[submodule "external/SDL_ttf"]
+	path = external/SDL_ttf
+	url = https://github.com/libsdl-org/SDL_ttf
+	branch = release-2.20.x
 [submodule "external/glslang"]
 	path = external/glslang
 	url = https://github.com/KhronosGroup/glslang

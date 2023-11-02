@@ -4,6 +4,7 @@
 #include <imgui_impl_sdl.h>
 #include <imgui_markdown.h>
 #include <io/file.hpp>
+#include <logger/logger.hpp>
 #include <string>
 
 #if _WIN32
@@ -82,10 +83,6 @@ void ExampleMarkdownFormatCallback(
 }
 
 void Markdown(const std::string &markdown_) {
-  // You can make your own Markdown function with your prefered string container
-  // and markdown config. > C++14 can use ImGui::MarkdownConfig mdConfig{
-  // LinkCallback, NULL, ImageCallback, ICON_FA_LINK, { { H1, true }, { H2, true
-  // }, { H3, false } }, NULL };
   mdConfig.linkCallback = link_call_back;
   mdConfig.tooltipCallback = NULL;
   mdConfig.imageCallback = ImageCallback;
@@ -104,9 +101,12 @@ void markdown() {
 
   file f;
   if (f.open("../docs/docs/lua_api.md", file::mode::r)) {
-    char buf[2048] = {};
+    char *buf;
+    buf = new char[f.size() + 1];
+    memset(buf, 0, f.size() + 1);
     f.read(buf, f.size(), 1);
     markdownText = buf;
+    delete[] buf;
   }
   f.close();
   Markdown(markdownText);

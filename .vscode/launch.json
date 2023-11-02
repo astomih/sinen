@@ -15,6 +15,14 @@
       "program": "${workspaceFolder}/build/release/editor/editor.exe",
       "request": "launch",
       "type": "lldb"
+    },
+    {
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "name": "Test",
+      "program": "${workspaceFolder}/build/debug/test/unit_test.exe",
+      "request": "launch",
+      "type": "lldb"
     }
   ],
   "version": "0.2.0"

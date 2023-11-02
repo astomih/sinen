@@ -1,7 +1,7 @@
 {
   "tasks": [
     {
-      "command": "cd build/debug && cmake ../.. -DALL_BUILD=OFF -DCMAKE_BUILD_TYPE=Debug && ninja",
+      "command": "cd build/debug && cmake ../.. -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DALL_BUILD=OFF -DCMAKE_BUILD_TYPE=Debug && ninja",
       "group": {
         "isDefault": true,
         "kind": "build"
@@ -11,7 +11,10 @@
       "type": "shell"
     },
     {
-      "command": "cd build/release && cmake ../.. -DEXTERNAL_ALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release && ninja",
+      "command": "cd build/release && cmake ../.. -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++-DEXTERNAL_ALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release && ninja",
+      "group": {
+        "kind": "build"
+      },
       "label": "Release",
       "type": "shell"
     }

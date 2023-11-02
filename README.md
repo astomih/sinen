@@ -55,7 +55,6 @@ end
 - SDL2(image,mixer,ttf)
 - Vulkan 1.1
 - VulkanMemoryAllocator
-- ImGui
 ## Sinen Editor
 - ImGuiColorTextEdit
 - ImGuizmo

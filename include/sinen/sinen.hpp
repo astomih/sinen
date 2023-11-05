@@ -29,6 +29,7 @@
 #include "math/point3.hpp"
 #include "math/quaternion.hpp"
 #include "math/random.hpp"
+#include "math/rect.hpp"
 #include "math/transform.hpp"
 #include "math/vector2.hpp"
 #include "math/vector3.hpp"

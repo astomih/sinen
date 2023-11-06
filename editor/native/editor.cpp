@@ -1,5 +1,6 @@
 #include "editor.hpp"
 #include <SDL.h>
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 // Added for ImGui

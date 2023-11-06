@@ -54,6 +54,7 @@ public:
   static std::list<std::function<void()>> &get_imgui_function() {
     return m_imgui_function;
   }
+  static void prepare_imgui();
   static void add_imgui_function(std::function<void()> function) {
     m_imgui_function.push_back(function);
   }

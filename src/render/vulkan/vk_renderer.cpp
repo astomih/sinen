@@ -813,18 +813,7 @@ void vk_renderer::write_memory(VmaAllocation allocation, const void *data,
 void vk_renderer::prepare_imgui() {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
-  ImGuiIO &io = ImGui::GetIO();
-  (void)io;
-  io.ConfigFlags |=
-      ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-  io.ConfigFlags |=
-      ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
-  io.IniFilename = NULL;
-  io.Fonts->AddFontFromFileTTF(
-      data_stream::convert_file_path(asset_type::Font,
-                                     "mplus/mplus-1p-medium.ttf")
-          .data(),
-      18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
+  render_system::prepare_imgui();
 
   ImGui_ImplSDL2_InitForVulkan((SDL_Window *)window::get_sdl_window());
 

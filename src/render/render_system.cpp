@@ -1,10 +1,14 @@
 #include "render_system.hpp"
 #include "../vertex/default_model_creator.h"
 #include "vulkan/vk_renderer.hpp"
+#include <io/asset_type.hpp>
+#include <io/data_stream.hpp>
 #include <math/vector3.hpp>
 #include <render/renderer.hpp>
 #include <vertex/vertex.hpp>
 #include <vertex/vertex_array.hpp>
+
+#include <imgui.h>
 
 namespace sinen {
 color render_system::clearColor = palette::black();
@@ -86,5 +90,20 @@ void *render_system::get_texture_id() { return m_vk_renderer.get_texture_id(); }
 void render_system::setup_shapes() {
   add_vertex_array(create_box_vertices(), vertex_default_shapes::box);
   add_vertex_array(create_sprite_vertices(), vertex_default_shapes::sprite);
+}
+
+void render_system::prepare_imgui() {
+  ImGuiIO &io = ImGui::GetIO();
+  (void)io;
+  io.ConfigFlags |=
+      ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+  io.ConfigFlags |=
+      ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
+  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+  io.Fonts->AddFontFromFileTTF(
+      data_stream::convert_file_path(asset_type::Font,
+                                     "mplus/mplus-1p-medium.ttf")
+          .data(),
+      18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
 }
 } // namespace sinen

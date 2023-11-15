@@ -37,20 +37,31 @@ static bool is_save_as = false;
 static char save_as_path[256] = "";
 static bool request_pop_func = false;
 void editor::inspector() {
+
   ImGui::Begin("Scene View");
   ImVec2 uv_s, uv_e;
   uv_s = ImVec2(0, 0);
   uv_e = ImVec2(1, 1);
 
   ImGui::Image((void *)renderer::get_texture_id(),
-               ImVec2(ImGui::GetWindowWidth(), ImGui::GetWindowHeight() - 20));
-  ImGui::End();
-  ImGuizmo::BeginFrame();
+               ImVec2(ImGui::GetWindowWidth(), ImGui::GetWindowHeight()));
   ImGuizmo::Enable(true);
-  ImGuizmo::SetRect(0, 0, window::size().x, window::size().y);
+  // Set rect to Gizmo window
+  ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y,
+                    ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
+  ImGuizmo::BeginFrame();
+  ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
+
+  ImGui::End();
   ImGui::Begin("Inspector");
   static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
   static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
+  if (m_matrices.size() > 0) {
+    ImGuizmo::Manipulate(scene::main_camera().view().get(),
+                         scene::main_camera().projection().get(),
+                         mCurrentGizmoOperation, mCurrentGizmoMode,
+                         m_matrices[index_actors].mat.m16);
+  }
   if (keyboard::is_pressed(keyboard::code::T))
     mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
   if (keyboard::is_pressed(keyboard::code::R))
@@ -67,12 +78,6 @@ void editor::inspector() {
   if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
     mCurrentGizmoOperation = ImGuizmo::SCALE;
   ImGuizmo::AllowAxisFlip(false);
-  if (m_matrices.size() > 0) {
-    ImGuizmo::Manipulate(scene::main_camera().view().get(),
-                         scene::main_camera().projection().get(),
-                         mCurrentGizmoOperation, mCurrentGizmoMode,
-                         m_matrices[index_actors].mat.m16);
-  }
   ImGui::Text("Transform");
   vector3 pos, rot, scale;
   if (m_actors.size() > 0) {
@@ -163,7 +168,6 @@ void editor::inspector() {
       }
     }
   }
-
   ImGui::End();
 }
 void editor::load_scene(const std::string &path) {
@@ -333,12 +337,8 @@ void editor::save_as_scene() {
   }
 }
 void editor::menu() {
-  ImGui::SetNextWindowPos({0, 2});
-  ImGui::SetNextWindowSize({window::size().x, 20});
   ImGui::Begin("Menu", nullptr,
-               ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoMove |
-                   ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoNavFocus |
-                   ImGuiWindowFlags_NoTitleBar |
+               ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar |
                    ImGuiWindowFlags_NoBringToFrontOnFocus);
   if (ImGui::BeginMenuBar()) {
     if (ImGui::BeginMenu("File")) {
@@ -450,10 +450,10 @@ void editor::setup() {
   style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.00f, 1.00f, 1.00f, 0.22f);
   style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.04f, 0.10f, 0.09f, 0.51f);
   m_impl->is_run = false;
+  renderer::add_imgui_function(inspector);
   renderer::add_imgui_function(menu);
   renderer::add_imgui_function(markdown);
   renderer::add_imgui_function(log_window);
-  renderer::add_imgui_function(inspector);
   renderer::add_imgui_function(texteditor::display);
   renderer::add_imgui_function(glsl_editor::display);
   renderer::toggle_show_imgui();

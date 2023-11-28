@@ -77,5 +77,9 @@ cmake -B build -DEXTERNAL_ALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release
 cd build && ninja
 ```
 
-# Visual Editor
+# Editor
+Editor is a tool for creating and editing Scene files.
 ![Editor Sample](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/editor_sample.png)  
+
+# Viewer
+Viewer is a tool for viewing Scene files.

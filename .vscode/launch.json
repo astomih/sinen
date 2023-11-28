@@ -3,7 +3,7 @@
     {
       "args": [],
       "cwd": "${workspaceFolder}/editor",
-      "name": "Debug",
+      "name": "[Debug] Editor",
       "program": "${workspaceFolder}/build/debug/editor/editor.exe",
       "request": "launch",
       "type": "lldb"
@@ -11,8 +11,24 @@
     {
       "args": [],
       "cwd": "${workspaceFolder}/editor",
-      "name": "Release",
+      "name": "[Release] Editor",
       "program": "${workspaceFolder}/build/release/editor/editor.exe",
+      "request": "launch",
+      "type": "lldb"
+    },
+    {
+      "args": [],
+      "cwd": "${workspaceFolder}/viewer",
+      "name": "[Debug] Viewer",
+      "program": "${workspaceFolder}/build/debug/viewer/viewer.exe",
+      "request": "launch",
+      "type": "lldb"
+    },
+    {
+      "args": [],
+      "cwd": "${workspaceFolder}/viewer",
+      "name": "[Release] Viewer",
+      "program": "${workspaceFolder}/build/release/viewer/viewer.exe",
       "request": "launch",
       "type": "lldb"
     },

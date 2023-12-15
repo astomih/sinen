@@ -543,22 +543,13 @@ void editor::run() {
     si.cb = sizeof(si);
     ZeroMemory(&pi, sizeof(pi));
     std::string commandlp =
-        std::string(std::string("game.exe ") + std::string(current_file_name));
+        std::string(std::string("app.exe ") + std::string(current_file_name));
     // Start the child process.
     {
-      WINBOOL result =
-          CreateProcess(NULL, // No module name (use command line)
-                        (LPSTR)commandlp.c_str(), // Command line
-                        NULL,  // Process handle not inheritable
-                        NULL,  // Thread handle not inheritable
-                        FALSE, // Set handle inheritance to FALSE
-                        0,     // No creation flags
-                        NULL,  // Use parent's environment block
-                        NULL,  // Use parent's starting directory
-                        &si,   // Pointer to STARTUPINFO structure
-                        &pi);  // Pointer to PROCESS_INFORMATION structure
+      WINBOOL result = CreateProcess(NULL, (LPSTR)commandlp.c_str(), NULL, NULL,
+                                     FALSE, 0, NULL, NULL, &si, &pi);
       if (result == 0) {
-        logger::error("Failed to run the game.");
+        logger::error("Failed to run the application.");
       }
     }
   } else {

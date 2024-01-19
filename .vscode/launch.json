@@ -33,6 +33,23 @@
       "type": "lldb"
     },
     {
+      // demo
+      "args": [],
+      "cwd": "${workspaceFolder}/demo",
+      "name": "[Debug] Demo",
+      "program": "${workspaceFolder}/build/debug/demo/demo.exe",
+      "request": "launch",
+      "type": "lldb"
+    },
+    {
+      "args": [],
+      "cwd": "${workspaceFolder}/demo",
+      "name": "[Release] Demo",
+      "program": "${workspaceFolder}/build/release/demo/demo.exe",
+      "request": "launch",
+      "type": "lldb"
+    },
+    {
       "args": [],
       "cwd": "${workspaceFolder}",
       "name": "Test",

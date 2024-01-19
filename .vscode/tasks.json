@@ -11,7 +11,7 @@
       "type": "shell"
     },
     {
-      "command": "cd build/release && cmake ../.. -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++-DEXTERNAL_ALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release && ninja",
+      "command": "cd build/release && cmake ../.. -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DEXTERNAL_ALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release && ninja",
       "group": {
         "kind": "build"
       },

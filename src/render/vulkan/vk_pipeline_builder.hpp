@@ -15,13 +15,14 @@ public:
                       vk_render_texture &render_texture,
                       vk_render_texture &present_texture,
                       vk_depth_texture &depth_texture,
-                      VkRenderPass &render_pass)
+                      VkRenderPass &render_pass, bool is_MSAA)
       : device(device), pipeline_layout_instance(pipeline_layout_instance),
         pipeline_layout_normal(pipeline_layout_normal),
         pipeline_layout_depth_instance(pipeline_layout_depth_instance),
         pipeline_layout_depth(pipeline_layout_depth),
         render_texture(render_texture), present_texture(present_texture),
-        depth_texture(depth_texture), render_pass(render_pass) {}
+        depth_texture(depth_texture), render_pass(render_pass),
+        is_MSAA(is_MSAA) {}
   void skybox(vk_pipeline &pipeline);
   void opaque(vk_pipeline &pipeline);
   void alpha(vk_pipeline &pipeline);
@@ -45,6 +46,7 @@ private:
   vk_render_texture &present_texture;
   vk_depth_texture &depth_texture;
   VkRenderPass &render_pass;
+  bool is_MSAA;
 };
 
 } // namespace sinen

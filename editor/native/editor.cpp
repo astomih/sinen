@@ -1,5 +1,6 @@
 #include "editor.hpp"
 #include <SDL.h>
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 #include <imgui_impl_sdl.h>
 // Added for ImGui
@@ -36,20 +37,30 @@ static bool is_save_as = false;
 static char save_as_path[256] = "";
 static bool request_pop_func = false;
 void editor::inspector() {
+
   ImGui::Begin("Scene View");
   ImVec2 uv_s, uv_e;
   uv_s = ImVec2(0, 0);
   uv_e = ImVec2(1, 1);
 
   ImGui::Image((void *)renderer::get_texture_id(),
-               ImVec2(ImGui::GetWindowWidth(), ImGui::GetWindowHeight() - 20));
-  ImGui::End();
-  ImGuizmo::BeginFrame();
+               ImVec2(ImGui::GetWindowWidth(), ImGui::GetWindowHeight()));
   ImGuizmo::Enable(true);
-  ImGuizmo::SetRect(0, 0, window::size().x, window::size().y);
+  // Set rect to Gizmo window
+  ImGuizmo::SetRect(0, 0,
+                    window::size().x, window::size().y);
+  ImGuizmo::BeginFrame();
+
+  ImGui::End();
   ImGui::Begin("Inspector");
   static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
   static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
+  if (m_matrices.size() > 0) {
+    ImGuizmo::Manipulate(scene::main_camera().view().get(),
+                         scene::main_camera().projection().get(),
+                         mCurrentGizmoOperation, mCurrentGizmoMode,
+                         m_matrices[index_actors].mat.m16);
+  }
   if (keyboard::is_pressed(keyboard::code::T))
     mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
   if (keyboard::is_pressed(keyboard::code::R))
@@ -66,12 +77,6 @@ void editor::inspector() {
   if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
     mCurrentGizmoOperation = ImGuizmo::SCALE;
   ImGuizmo::AllowAxisFlip(false);
-  if (m_matrices.size() > 0) {
-    ImGuizmo::Manipulate(scene::main_camera().view().get(),
-                         scene::main_camera().projection().get(),
-                         mCurrentGizmoOperation, mCurrentGizmoMode,
-                         m_matrices[index_actors].mat.m16);
-  }
   ImGui::Text("Transform");
   vector3 pos, rot, scale;
   if (m_actors.size() > 0) {
@@ -162,7 +167,6 @@ void editor::inspector() {
       }
     }
   }
-
   ImGui::End();
 }
 void editor::load_scene(const std::string &path) {
@@ -332,12 +336,8 @@ void editor::save_as_scene() {
   }
 }
 void editor::menu() {
-  ImGui::SetNextWindowPos({0, 2});
-  ImGui::SetNextWindowSize({window::size().x, 20});
   ImGui::Begin("Menu", nullptr,
-               ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoMove |
-                   ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoNavFocus |
-                   ImGuiWindowFlags_NoTitleBar |
+               ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar |
                    ImGuiWindowFlags_NoBringToFrontOnFocus);
   if (ImGui::BeginMenuBar()) {
     if (ImGui::BeginMenu("File")) {
@@ -449,10 +449,10 @@ void editor::setup() {
   style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.00f, 1.00f, 1.00f, 0.22f);
   style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.04f, 0.10f, 0.09f, 0.51f);
   m_impl->is_run = false;
+  renderer::add_imgui_function(inspector);
   renderer::add_imgui_function(menu);
   renderer::add_imgui_function(markdown);
   renderer::add_imgui_function(log_window);
-  renderer::add_imgui_function(inspector);
   renderer::add_imgui_function(texteditor::display);
   renderer::add_imgui_function(glsl_editor::display);
   renderer::toggle_show_imgui();
@@ -542,22 +542,13 @@ void editor::run() {
     si.cb = sizeof(si);
     ZeroMemory(&pi, sizeof(pi));
     std::string commandlp =
-        std::string(std::string("game.exe ") + std::string(current_file_name));
+        std::string(std::string("app.exe ") + std::string(current_file_name));
     // Start the child process.
     {
-      WINBOOL result =
-          CreateProcess(NULL, // No module name (use command line)
-                        (LPSTR)commandlp.c_str(), // Command line
-                        NULL,  // Process handle not inheritable
-                        NULL,  // Thread handle not inheritable
-                        FALSE, // Set handle inheritance to FALSE
-                        0,     // No creation flags
-                        NULL,  // Use parent's environment block
-                        NULL,  // Use parent's starting directory
-                        &si,   // Pointer to STARTUPINFO structure
-                        &pi);  // Pointer to PROCESS_INFORMATION structure
+      WINBOOL result = CreateProcess(NULL, (LPSTR)commandlp.c_str(), NULL, NULL,
+                                     FALSE, 0, NULL, NULL, &si, &pi);
       if (result == 0) {
-        logger::error("Failed to run the game.");
+        logger::error("Failed to run the application.");
       }
     }
   } else {

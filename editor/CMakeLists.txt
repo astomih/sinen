@@ -11,18 +11,18 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 file(GLOB SOURCE_FILES
 	./native/*/*.cpp 
 	./native/*.cpp
-  ../external/ImGuiColorTextEdit/*.cpp
-  ../external/ImGuizmo/*.cpp
+	../libs/ImGuiColorTextEdit/*.cpp
+	../libs/ImGuizmo/*.cpp
 	./data/icon/icon.rc
 )
 
 include_directories(
 	../include
 	../include/sinen
-	../external/imgui_markdown
-  ../external/ImGuiColorTextEdit
-	../external/ImGuizmo
-	../external/rapidjson/include
+	../libs/imgui_markdown
+	../libs/ImGuiColorTextEdit
+	../libs/ImGuizmo
+	../libs/rapidjson/include
 )
 link_directories(
 	..

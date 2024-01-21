@@ -3,7 +3,7 @@
     {
       "args": [],
       "cwd": "${workspaceFolder}/editor",
-      "name": "Debug",
+      "name": "[Debug] Editor",
       "program": "${workspaceFolder}/build/debug/editor/editor.exe",
       "request": "launch",
       "type": "lldb"
@@ -11,8 +11,49 @@
     {
       "args": [],
       "cwd": "${workspaceFolder}/editor",
-      "name": "Release",
+      "name": "[Release] Editor",
       "program": "${workspaceFolder}/build/release/editor/editor.exe",
+      "request": "launch",
+      "type": "lldb"
+    },
+    {
+      "args": [],
+      "cwd": "${workspaceFolder}/viewer",
+      "name": "[Debug] Viewer",
+      "program": "${workspaceFolder}/build/debug/viewer/viewer.exe",
+      "request": "launch",
+      "type": "lldb"
+    },
+    {
+      "args": [],
+      "cwd": "${workspaceFolder}/viewer",
+      "name": "[Release] Viewer",
+      "program": "${workspaceFolder}/build/release/viewer/viewer.exe",
+      "request": "launch",
+      "type": "lldb"
+    },
+    {
+      // demo
+      "args": [],
+      "cwd": "${workspaceFolder}/demo",
+      "name": "[Debug] Demo",
+      "program": "${workspaceFolder}/build/debug/demo/demo.exe",
+      "request": "launch",
+      "type": "lldb"
+    },
+    {
+      "args": [],
+      "cwd": "${workspaceFolder}/demo",
+      "name": "[Release] Demo",
+      "program": "${workspaceFolder}/build/release/demo/demo.exe",
+      "request": "launch",
+      "type": "lldb"
+    },
+    {
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "name": "Test",
+      "program": "${workspaceFolder}/build/debug/test/unit_test.exe",
       "request": "launch",
       "type": "lldb"
     }

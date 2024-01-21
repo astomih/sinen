@@ -110,8 +110,7 @@ private:
   std::vector<vk_pipeline> m_pipeline_garbage;
   std::unordered_map<handle_t, vk_image> m_image_object;
   vk_drawable m_skybox;
-  vk_buffer tempBuffer;
-  uint8_t *tempPixels;
+  bool is_MSAA;
 };
 } // namespace sinen
 #endif

@@ -32,7 +32,7 @@ constexpr int maxpoolSize = 65535;
 vk_renderer::vk_renderer()
     : m_descriptor_pool(), m_descriptor_set_layout(), m_sampler(),
       m_base(std::make_unique<vk_base>(this)), m_render_texture(*this),
-      m_present_texture(*this), m_depth_texture(*this) {}
+      m_present_texture(*this), m_depth_texture(*this), is_MSAA(true) {}
 vk_renderer::~vk_renderer() = default;
 void vk_renderer::initialize() {
   m_base->initialize();
@@ -184,42 +184,41 @@ void vk_renderer::render() {
                              VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
   }
-  set_image_memory_barrier(command, m_present_texture.color_target.image,
-                           VK_IMAGE_LAYOUT_UNDEFINED,
-                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-  set_image_memory_barrier(command, m_render_texture.color_target.image,
-                           VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                           VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-  // Resolve
-  VkImageResolve resolveMSAA = {{VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
-                                {0, 0, 0}, // srcOffset
-                                {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
-                                {0, 0, 0}, // dstOffset
-                                {m_base->mSwapchain->GetSurfaceExtent().width,
-                                 m_base->mSwapchain->GetSurfaceExtent().height,
-                                 1}};
-  vkCmdResolveImage(command, m_render_texture.color_target.image,
-                    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                    m_present_texture.color_target.image,
-                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &resolveMSAA);
-  VkImageMemoryBarrier barrier = {
-      VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,   // sType
-      nullptr,                                  // pNext
-      VK_ACCESS_TRANSFER_WRITE_BIT,             // srcAccessMask
-      VK_ACCESS_MEMORY_READ_BIT,                // dstAccessMask
-      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,     // oldLayout
-      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, // newLayout
-      VK_QUEUE_FAMILY_IGNORED,                  // srcQueueFamilyIndex
-      VK_QUEUE_FAMILY_IGNORED,                  // dstQueueFamilyIndex
-      m_present_texture.color_target.image,     // image
-      {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}   // subresourceRange
-  };
-  vkCmdPipelineBarrier(command, VK_PIPELINE_STAGE_TRANSFER_BIT,
-                       VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                       VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 0, nullptr, 1,
-                       &barrier);
-
-  {
+  if (is_MSAA) {
+    set_image_memory_barrier(command, m_present_texture.color_target.image,
+                             VK_IMAGE_LAYOUT_UNDEFINED,
+                             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    set_image_memory_barrier(command, m_render_texture.color_target.image,
+                             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                             VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    // Resolve
+    VkImageResolve resolveMSAA = {
+        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
+        {0, 0, 0}, // srcOffset
+        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
+        {0, 0, 0}, // dstOffset
+        {m_base->mSwapchain->GetSurfaceExtent().width,
+         m_base->mSwapchain->GetSurfaceExtent().height, 1}};
+    vkCmdResolveImage(command, m_render_texture.color_target.image,
+                      VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                      m_present_texture.color_target.image,
+                      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &resolveMSAA);
+    VkImageMemoryBarrier barrier = {
+        VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,   // sType
+        nullptr,                                  // pNext
+        VK_ACCESS_TRANSFER_WRITE_BIT,             // srcAccessMask
+        VK_ACCESS_MEMORY_READ_BIT,                // dstAccessMask
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,     // oldLayout
+        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, // newLayout
+        VK_QUEUE_FAMILY_IGNORED,                  // srcQueueFamilyIndex
+        VK_QUEUE_FAMILY_IGNORED,                  // dstQueueFamilyIndex
+        m_present_texture.color_target.image,     // image
+        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}   // subresourceRange
+    };
+    vkCmdPipelineBarrier(command, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                         VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 0, nullptr, 1,
+                         &barrier);
     VkRenderPassBeginInfo renderPassBI{};
     renderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassBI.renderArea.offset = VkOffset2D{0, 0};
@@ -271,7 +270,90 @@ void vk_renderer::render() {
     render_imgui(command);
     // End Render Pass
     vkCmdEndRenderPass(command);
+  } else {
+    {
+      VkRenderPassBeginInfo renderPassBI{};
+      renderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+      renderPassBI.renderPass = m_present_texture.render_pass;
+      renderPassBI.framebuffer = m_present_texture.fb;
+      renderPassBI.renderArea.offset = VkOffset2D{0, 0};
+      renderPassBI.renderArea.extent = m_base->mSwapchain->GetSurfaceExtent();
+      renderPassBI.pClearValues = clearValue.data();
+      renderPassBI.clearValueCount = uint32_t(clearValue.size());
+      vkCmdBeginRenderPass(command, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
+      VkRect2D scissor = {{0, 0}, m_base->mSwapchain->GetSurfaceExtent()};
+      vkCmdSetScissor(command, 0, 1, &scissor);
+      VkViewport viewport = {
+          0,
+          float(m_base->mSwapchain->GetSurfaceExtent().height),
+          float(m_base->mSwapchain->GetSurfaceExtent().width),
+          -float(m_base->mSwapchain->GetSurfaceExtent().height),
+          0,
+          1};
+      vkCmdSetViewport(command, 0, 1, &viewport);
+      render_to_display(command);
+      drawui(command);
+
+      vkCmdEndRenderPass(command);
+      set_image_memory_barrier(command, m_present_texture.color_target.image,
+                               VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                               VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    }
+
+    {
+      VkRenderPassBeginInfo renderPassBI{};
+      renderPassBI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+      renderPassBI.renderArea.offset = VkOffset2D{0, 0};
+      renderPassBI.renderArea.extent = m_base->mSwapchain->GetSurfaceExtent();
+      renderPassBI.pClearValues = clearValue.data();
+      renderPassBI.clearValueCount = uint32_t(clearValue.size());
+      renderPassBI.renderPass = m_base->m_renderPass;
+      renderPassBI.framebuffer = m_base->m_framebuffers[nextImageIndex];
+
+      // Begin Render Pass
+      vkCmdBeginRenderPass(command, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
+      VkViewport viewport = {
+          0,
+          float(m_base->mSwapchain->GetSurfaceExtent().height),
+          float(m_base->mSwapchain->GetSurfaceExtent().width),
+          -float(m_base->mSwapchain->GetSurfaceExtent().height),
+          0,
+          1};
+      vkCmdSetViewport(command, 0, 1, &viewport);
+      if (!renderer::offscreen_rendering) {
+        m_present_texture.pipeline.Bind(command);
+        VkDeviceSize offset = 0;
+        auto &sprite = m_present_texture.drawer;
+        vkCmdBindVertexBuffers(command, 0, 1,
+                               &m_vertex_arrays["SPRITE"].vertexBuffer.buffer,
+                               &offset);
+        vkCmdBindIndexBuffer(command,
+                             m_vertex_arrays["SPRITE"].indexBuffer.buffer,
+                             offset, VK_INDEX_TYPE_UINT32);
+
+        // Set descriptors
+        vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                m_pipeline_layout_normal.GetLayout(), 0, 1,
+                                &sprite.descriptor_sets[m_base->m_imageIndex],
+                                0, nullptr);
+        auto allocation =
+            sprite.uniformBuffers[m_base->m_imageIndex].allocation;
+
+        sprite.drawable_obj->param.proj = matrix4::identity;
+        sprite.drawable_obj->param.view = matrix4::identity;
+        sprite.drawable_obj->param.world = matrix4::identity;
+        write_memory(allocation, &sprite.drawable_obj->param,
+                     sizeof(drawable::parameter));
+
+        vkCmdDrawIndexed(command, m_vertex_arrays["SPRITE"].indexCount, 1, 0, 0,
+                         0);
+      }
+      render_imgui(command);
+      // End Render Pass
+      vkCmdEndRenderPass(command);
+    }
   }
+
   vkEndCommandBuffer(command);
   // Do command
   VkSubmitInfo submitInfo{};
@@ -417,7 +499,11 @@ void vk_renderer::load_shader(const shader &shaderInfo) {
   vk_pipeline pipeline;
   pipeline.initialize(m_pipeline_layout_normal, m_render_texture.render_pass,
                       shaderStages);
-  pipeline.set_sample_count(VK_SAMPLE_COUNT_4_BIT);
+  if (is_MSAA) {
+    pipeline.set_sample_count(VK_SAMPLE_COUNT_4_BIT);
+  } else {
+    pipeline.set_sample_count(VK_SAMPLE_COUNT_1_BIT);
+  }
   pipeline.color_blend_factor(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO);
   pipeline.alpha_blend_factor(VK_BLEND_FACTOR_SRC_ALPHA,
                               VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
@@ -460,7 +546,7 @@ void vk_renderer::prepare() {
       m_base->mSwapchain->GetSurfaceExtent(), false);
   m_pipeline_layout_normal.prepare(m_base->get_vk_device());
   m_present_texture.prepare(window::size().x, window::size().y);
-  m_render_texture.set_MSAA(true);
+  m_render_texture.set_MSAA(is_MSAA);
   m_render_texture.prepare(window::size().x, window::size().y);
   m_depth_texture.prepare(scene::size().x, scene::size().y);
 
@@ -468,7 +554,7 @@ void vk_renderer::prepare() {
       m_base->get_vk_device(), m_pipeline_layout_instance,
       m_pipeline_layout_normal, m_pipeline_layout_depth_instance,
       m_pipeline_layout_depth, m_render_texture, m_present_texture,
-      m_depth_texture, m_base->m_renderPass);
+      m_depth_texture, m_base->m_renderPass, is_MSAA);
   // render texture pipeline
   pipeline_builder.present_texture_pipeline(m_present_texture.pipeline);
   pipeline_builder.render_texture_pipeline(m_render_texture.pipeline);
@@ -565,13 +651,6 @@ void vk_renderer::cleanup() {
       device, m_descriptor_set_layout, &vkDestroyDescriptorSetLayout);
   vkutil::destroy_vulkan_object<VkDescriptorSetLayout>(
       device, m_descriptor_set_layout_for_depth, &vkDestroyDescriptorSetLayout);
-
-  tempBuffer = create_buffer(window::size().x * window::size().y * 4,
-                             VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-  {
-    void *ptr = reinterpret_cast<void *>(tempPixels);
-    vmaMapMemory(allocator, tempBuffer.allocation, &ptr);
-  }
 }
 
 void vk_renderer::make_command(VkCommandBuffer command) {
@@ -813,18 +892,7 @@ void vk_renderer::write_memory(VmaAllocation allocation, const void *data,
 void vk_renderer::prepare_imgui() {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
-  ImGuiIO &io = ImGui::GetIO();
-  (void)io;
-  io.ConfigFlags |=
-      ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-  io.ConfigFlags |=
-      ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
-  io.IniFilename = NULL;
-  io.Fonts->AddFontFromFileTTF(
-      data_stream::convert_file_path(asset_type::Font,
-                                     "mplus/mplus-1p-medium.ttf")
-          .data(),
-      18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
+  render_system::prepare_imgui();
 
   ImGui_ImplSDL2_InitForVulkan((SDL_Window *)window::get_sdl_window());
 

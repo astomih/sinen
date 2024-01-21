@@ -4,7 +4,7 @@
     "xaver.clang-format",
     "twxs.cmake",
     "vadimcn.vscode-lldb",
-    "yinfei.luahelper",
+    "sumneko.lua",
     "cschlosser.doxdocgen"
   ],
   "unwantedRecommendations": []

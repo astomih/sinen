@@ -12,8 +12,8 @@ include_directories(
   ../include
   ../include/sinen
   ../src
-  ../external/sol2/include
-  ../external/Lua/include
+  ../libs/sol2/include
+  ../libs/Lua/include
 )
 link_directories(
 )

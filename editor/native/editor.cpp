@@ -47,10 +47,9 @@ void editor::inspector() {
                ImVec2(ImGui::GetWindowWidth(), ImGui::GetWindowHeight()));
   ImGuizmo::Enable(true);
   // Set rect to Gizmo window
-  ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y,
-                    ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
+  ImGuizmo::SetRect(0, 0,
+                    window::size().x, window::size().y);
   ImGuizmo::BeginFrame();
-  ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
 
   ImGui::End();
   ImGui::Begin("Inspector");

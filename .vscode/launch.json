@@ -33,19 +33,18 @@
       "type": "lldb"
     },
     {
-      // demo
       "args": [],
       "cwd": "${workspaceFolder}/demo",
-      "name": "[Debug] Demo",
-      "program": "${workspaceFolder}/build/debug/demo/demo.exe",
+      "name": "[Debug] Project",
+      "program": "${workspaceFolder}/build/debug/project/project.exe",
       "request": "launch",
       "type": "lldb"
     },
     {
       "args": [],
       "cwd": "${workspaceFolder}/demo",
-      "name": "[Release] Demo",
-      "program": "${workspaceFolder}/build/release/demo/demo.exe",
+      "name": "[Release] Project",
+      "program": "${workspaceFolder}/build/release/project/project.exe",
       "request": "launch",
       "type": "lldb"
     },

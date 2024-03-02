@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.7)
-project(project)
+project(works)
 set(CMAKE_CXX_FLAGS "-std=c++20")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -march=native")
@@ -39,9 +39,9 @@ if(WIN32)
 else()
 	set(LIBRARIES ${COMMON_LIBRARIES} ${CMAKE_DL_LIBS})
 endif()
-add_executable(project
+add_executable(works
 	${SOURCE_FILES}
 )
-target_link_libraries(project 
+target_link_libraries(works 
 	${LIBRARIES}
 )

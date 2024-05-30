@@ -12,7 +12,7 @@ void dungeon_generator(sinen::grid<int> &grid) {
     if (grid.width() < 3 || grid.height() < 3) {
       return;
     }
-    sinen::point2i grid_size{grid.width(), grid.height()};
+    sinen::point2i grid_size{(int)grid.width(), (int)grid.height()};
     sol::state &lua = *(sol::state *)sinen::script::get_state();
     auto map_chip = lua["MAP_CHIP"];
     int floor = map_chip["FLOOR"];

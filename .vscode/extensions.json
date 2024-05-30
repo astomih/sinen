@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "llvm-vs-code-extensions.vscode-clangd",
+    "xaver.clang-format",
+    "twxs.cmake",
+    "vadimcn.vscode-lldb",
+    "yinfei.luahelper",
+    "cschlosser.doxdocgen"
+  ],
+  "unwantedRecommendations": []
+}

@@ -175,20 +175,20 @@ vector3 calculate(const quaternion &r) {
   float tx, ty, tz;
 
   if (m21 >= 0.99 && m21 <= 1.01) {
-    tx = math::pi / 2.f;
+    tx = Math::pi / 2.f;
     ty = 0;
-    tz = math::atan2(m10, m00);
+    tz = Math::atan2(m10, m00);
   } else if (m21 >= -1.01f && m21 <= -0.99f) {
-    tx = -math::pi / 2.f;
+    tx = -Math::pi / 2.f;
     ty = 0;
-    tz = math::atan2(m10, m00);
+    tz = Math::atan2(m10, m00);
   } else {
     tx = std::asin(-m21);
-    ty = math::atan2(m20, m22);
-    tz = math::atan2(m01, m11);
+    ty = Math::atan2(m20, m22);
+    tz = Math::atan2(m01, m11);
   }
 
-  return vector3(math::to_degrees(tx), math::to_degrees(ty),
-                 math::to_degrees(tz));
+  return vector3(Math::to_degrees(tx), Math::to_degrees(ty),
+                 Math::to_degrees(tz));
 }
 } // namespace sinen

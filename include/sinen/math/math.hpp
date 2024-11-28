@@ -8,7 +8,7 @@
 #include <numbers>
 #include <vector>
 namespace sinen {
-class math {
+class Math {
 public:
   static constexpr float pi = std::numbers::pi_v<float>;
   // 2 * pi
@@ -34,11 +34,11 @@ public:
     }
   }
 
-  template <typename T> static T max(const T &a, const T &b) {
+  template <typename T> static T Max(const T &a, const T &b) {
     return (a < b ? b : a);
   }
 
-  template <typename T> static T min(const T &a, const T &b) {
+  template <typename T> static T Min(const T &a, const T &b) {
     return (a < b ? a : b);
   }
 

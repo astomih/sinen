@@ -40,11 +40,11 @@ bool script_engine::initialize(sol::state &lua) {
     v["forward"] = [](const vector3 v, const vector3 rotation) -> vector3 {
       quaternion q;
       q = quaternion::concatenate(
-          q, quaternion(vector3::unit_z, math::to_radians(rotation.z)));
+          q, quaternion(vector3::unit_z, Math::to_radians(rotation.z)));
       q = quaternion::concatenate(
-          q, quaternion(vector3::unit_y, math::to_radians(rotation.y)));
+          q, quaternion(vector3::unit_y, Math::to_radians(rotation.y)));
       q = quaternion::concatenate(
-          q, quaternion(vector3::unit_x, math::to_radians(rotation.x)));
+          q, quaternion(vector3::unit_x, Math::to_radians(rotation.x)));
       return vector3::transform(v, q);
     };
     v["normalize"] = [](const vector3 &v) { return vector3::normalize(v); };
@@ -130,8 +130,8 @@ bool script_engine::initialize(sol::state &lua) {
   }
   {
     auto v = lua.new_usertype<aabb>("", sol::no_construction());
-    v["min"] = &aabb::min;
-    v["max"] = &aabb::max;
+    v["min"] = &aabb::_min;
+    v["max"] = &aabb::_max;
     v["update_world"] = &aabb::update_world;
   }
   {

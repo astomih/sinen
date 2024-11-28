@@ -98,7 +98,7 @@ public:
   [[nodiscard]] float length_sqrt() const { return (x * x + y * y + z * z); }
 
   // Length of vector
-  [[nodiscard]] float length() const { return (math::sqrt(length_sqrt())); }
+  [[nodiscard]] float length() const { return (Math::sqrt(length_sqrt())); }
 
   // Normalize this vector
   void normalize() {

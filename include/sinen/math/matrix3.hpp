@@ -107,8 +107,8 @@ public:
   // theta is in radians
   static matrix3 create_rotation(float theta) {
     float temp[3][3] = {
-        {math::cos(theta), math::sin(theta), 0.0f},
-        {-math::sin(theta), math::cos(theta), 0.0f},
+        {Math::cos(theta), Math::sin(theta), 0.0f},
+        {-Math::sin(theta), Math::cos(theta), 0.0f},
         {0.0f, 0.0f, 1.0f},
     };
     return matrix3(temp);

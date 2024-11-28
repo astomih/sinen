@@ -155,8 +155,8 @@ public:
   static matrix4 create_rotaion_x(const float theta) {
     float temp[4][4] = {
         {1.0f, 0.0f, 0.0f, 0.0f},
-        {0.0f, math::cos(theta), math::sin(theta), 0.0f},
-        {0.0f, -math::sin(theta), math::cos(theta), 0.0f},
+        {0.0f, Math::cos(theta), Math::sin(theta), 0.0f},
+        {0.0f, -Math::sin(theta), Math::cos(theta), 0.0f},
         {0.0f, 0.0f, 0.0f, 1.0f},
     };
     return matrix4(temp);
@@ -165,9 +165,9 @@ public:
   // Rotation about y-axis
   static matrix4 create_rotation_y(const float theta) {
     float temp[4][4] = {
-        {math::cos(theta), 0.0f, -math::sin(theta), 0.0f},
+        {Math::cos(theta), 0.0f, -Math::sin(theta), 0.0f},
         {0.0f, 1.0f, 0.0f, 0.0f},
-        {math::sin(theta), 0.0f, math::cos(theta), 0.0f},
+        {Math::sin(theta), 0.0f, Math::cos(theta), 0.0f},
         {0.0f, 0.0f, 0.0f, 1.0f},
     };
     return matrix4(temp);
@@ -176,8 +176,8 @@ public:
   // Rotation about z-axis
   static matrix4 create_rotation_z(const float theta) {
     float temp[4][4] = {
-        {math::cos(theta), math::sin(theta), 0.0f, 0.0f},
-        {-math::sin(theta), math::cos(theta), 0.0f, 0.0f},
+        {Math::cos(theta), Math::sin(theta), 0.0f, 0.0f},
+        {-Math::sin(theta), Math::cos(theta), 0.0f, 0.0f},
         {0.0f, 0.0f, 1.0f, 0.0f},
         {0.0f, 0.0f, 0.0f, 1.0f},
     };

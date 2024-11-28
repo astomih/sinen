@@ -7,7 +7,7 @@ namespace sinen {
 class collision {
 public:
   static bool aabb_aabb(const aabb &a, const aabb &b);
-  static bool obb_obb(const obb &a, const obb &b);
+  static bool obb_obb(const OBB &obb1, const OBB &obb2);
 
 private:
   static float segment_length_on_separate_axis(const vector3 &Sep,

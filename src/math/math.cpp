@@ -17,9 +17,9 @@ const vector3 vector3::unit_z(0.0f, 0.0f, 1.0f);
 const vector3 vector3::neg_unit_x(-1.0f, 0.0f, 0.0f);
 const vector3 vector3::neg_unit_y(0.0f, -1.0f, 0.0f);
 const vector3 vector3::neg_unit_z(0.0f, 0.0f, -1.0f);
-const vector3 vector3::infinity(math::infinity, math::infinity, math::infinity);
-const vector3 vector3::neg_infinity(math::neg_infinity, math::neg_infinity,
-                                    math::neg_infinity);
+const vector3 vector3::infinity(Math::infinity, Math::infinity, Math::infinity);
+const vector3 vector3::neg_infinity(Math::neg_infinity, Math::neg_infinity,
+                                    Math::neg_infinity);
 
 static float m3Ident[3][3] = {
     {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}};
@@ -69,7 +69,7 @@ vector3 vector3::transform_with_persp_div(const vector3 &vec,
              vec.z * mat.mat[2][2] + w * mat.mat[3][2];
   float transformedW = vec.x * mat.mat[0][3] + vec.y * mat.mat[1][3] +
                        vec.z * mat.mat[2][3] + w * mat.mat[3][3];
-  if (!math::near_zero(math::abs(transformedW))) {
+  if (!Math::near_zero(Math::abs(transformedW))) {
     transformedW = 1.0f / transformedW;
     retVal *= transformedW;
   }
@@ -230,28 +230,28 @@ quaternion matrix4::to_quaternion(const matrix4 &m) {
   }
   switch (flag) {
   case 0: {
-    auto x = math::sqrt(px) * 0.5f;
+    auto x = Math::sqrt(px) * 0.5f;
     auto d = 1 / (4 * x);
     return quaternion(x, (m.mat[1][0] + m.mat[0][1]) * d,
                       (m.mat[0][2] + m.mat[2][0]) * d,
                       (m.mat[2][1] - m.mat[1][2]) * d);
   }
   case 1: {
-    auto y = math::sqrt(py) * 0.5f;
+    auto y = Math::sqrt(py) * 0.5f;
     auto d = 1 / (4 * y);
     return quaternion((m.mat[1][0] + m.mat[0][1]) * d, y,
                       (m.mat[2][1] + m.mat[1][2]) * d,
                       (m.mat[0][2] - m.mat[2][0]) * d);
   }
   case 2: {
-    auto z = math::sqrt(pz) * 0.5f;
+    auto z = Math::sqrt(pz) * 0.5f;
     auto d = 1 / (4 * z);
     return quaternion((m.mat[0][2] + m.mat[2][0]) * d,
                       (m.mat[2][1] + m.mat[1][2]) * d, z,
                       (m.mat[1][0] - m.mat[0][1]) * d);
   }
   case 3: {
-    auto w = math::sqrt(pw) * 0.5f;
+    auto w = Math::sqrt(pw) * 0.5f;
     auto d = 1 / (4 * w);
     return quaternion((m.mat[2][1] - m.mat[1][2]) * d,
                       (m.mat[0][2] - m.mat[2][0]) * d,
@@ -281,7 +281,7 @@ matrix4 matrix4::lookat(const vector3 &eye, const vector3 &at,
 
 matrix4 matrix4::perspective(const float angle, const float aspect,
                              const float near, const float far) {
-  const auto yScale = math::cot(angle / 2.0f);
+  const auto yScale = Math::cot(angle / 2.0f);
   const auto xScale = yScale / aspect;
   float temp[4][4] = {{xScale, 0.0f, 0.0f, 0.0f},
                       {0.0f, yScale, 0.0f, 0.0f},
@@ -364,11 +364,11 @@ matrix4 matrix4::create_from_quaternion(const class quaternion &q) {
 quaternion quaternion::from_euler(const vector3 &euler) {
   quaternion q;
   q = quaternion::concatenate(
-      q, quaternion(vector3::unit_z, math::to_radians(euler.z)));
+      q, quaternion(vector3::unit_z, Math::to_radians(euler.z)));
   q = quaternion::concatenate(
-      q, quaternion(vector3::unit_y, math::to_radians(euler.y)));
+      q, quaternion(vector3::unit_y, Math::to_radians(euler.y)));
   q = quaternion::concatenate(
-      q, quaternion(vector3::unit_x, math::to_radians(euler.x)));
+      q, quaternion(vector3::unit_x, Math::to_radians(euler.x)));
   return q;
 }
 matrix4 matrix4::create_scale(const vector3 &scale) {
@@ -420,17 +420,17 @@ vector3 quaternion::to_euler(const quaternion &r) {
   float tx, ty, tz;
 
   if (m21 >= 0.99 && m21 <= 1.01) {
-    tx = math::pi / 2.f;
+    tx = Math::pi / 2.f;
     ty = 0;
-    tz = math::atan2(m10, m00);
+    tz = Math::atan2(m10, m00);
   } else if (m21 >= -1.01f && m21 <= -0.99f) {
-    tx = -math::pi / 2.f;
+    tx = -Math::pi / 2.f;
     ty = 0;
-    tz = math::atan2(m10, m00);
+    tz = Math::atan2(m10, m00);
   } else {
     tx = std::asin(-m21);
-    ty = math::atan2(m20, m22);
-    tz = math::atan2(m01, m11);
+    ty = Math::atan2(m20, m22);
+    tz = Math::atan2(m01, m11);
   }
 
   return vector3(tx, ty, tz);

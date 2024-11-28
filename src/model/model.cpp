@@ -59,12 +59,12 @@ void model::load(std::string_view str, std::string_view name) {
                &v.normal.y, &v.normal.z, &v.uv.x, &v.uv.y, &v.rgba.r, &v.rgba.g,
                &v.rgba.b, &v.rgba.a);
 
-        local_aabb.min.x = std::min(local_aabb.min.x, v.position.x);
-        local_aabb.min.y = std::min(local_aabb.min.y, v.position.y);
-        local_aabb.min.z = std::min(local_aabb.min.z, v.position.z);
-        local_aabb.max.x = std::max(local_aabb.max.x, v.position.x);
-        local_aabb.max.y = std::max(local_aabb.max.y, v.position.y);
-        local_aabb.max.z = std::max(local_aabb.max.z, v.position.z);
+        local_aabb._min.x = Math::Min(local_aabb._min.x, v.position.x);
+        local_aabb._min.y = Math::Min(local_aabb._min.y, v.position.y);
+        local_aabb._min.z = Math::Min(local_aabb._min.z, v.position.z);
+        local_aabb._max.x = Math::Max(local_aabb._max.x, v.position.x);
+        local_aabb._max.y = Math::Max(local_aabb._max.y, v.position.y);
+        local_aabb._max.z = Math::Max(local_aabb._max.z, v.position.z);
 
         v_array.vertices.push_back(v);
       } break;

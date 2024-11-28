@@ -281,7 +281,7 @@ float input_system::filter1d(int _input) {
     // Make sure sign matches original value
     retVal = _input > 0 ? retVal : -1.0f * retVal;
     // Clamp between -1.0f and 1.0f
-    retVal = math::clamp(retVal, -1.0f, 1.0f);
+    retVal = Math::clamp(retVal, -1.0f, 1.0f);
   }
 
   return retVal;
@@ -306,7 +306,7 @@ vector2 input_system::filter2d(int inputX, int inputY) {
     // dead zone and max value circles
     float f = (length - deadZone) / (maxValue - deadZone);
     // Clamp f between 0.0f and 1.0f
-    f = math::clamp(f, 0.0f, 1.0f);
+    f = Math::clamp(f, 0.0f, 1.0f);
     // Normalize the vector, and then scale it to the
     // fractional value
     dir *= f / length;

@@ -35,9 +35,9 @@
     {
       // demo
       "args": [],
-      "cwd": "${workspaceFolder}/example",
+      "cwd": "${workspaceFolder}/works",
       "name": "[Debug] Demo",
-      "program": "${workspaceFolder}/build/debug/example/demo.exe",
+      "program": "${workspaceFolder}/build/debug/works/works.exe",
       "request": "launch",
       "type": "lldb"
     },

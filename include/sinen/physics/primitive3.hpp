@@ -125,8 +125,8 @@ struct capsule {
  *
  */
 struct aabb {
-  vector3 min;
-  vector3 max;
+  vector3 _min;
+  vector3 _max;
   aabb() = default;
   ~aabb() = default;
   /**
@@ -135,16 +135,16 @@ struct aabb {
    * @param min  min point
    * @param max  max point
    */
-  aabb(const vector3 &min, const vector3 &max) : min(min), max(max) {}
+  aabb(const vector3 &_min, const vector3 &_max) : _min(_min), _max(_max) {}
   void update_world(const vector3 &p, const vector3 &scale, const aabb &local);
 };
 /**
  * @brief OBBox(Oriented Bounding Box) class
  *
  */
-struct obb {
-  obb() = default;
-  ~obb() = default;
+struct OBB {
+  OBB() = default;
+  ~OBB() = default;
   // Position
   vector3 p;
   // Direct vectors

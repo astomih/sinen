@@ -31,7 +31,7 @@ public:
    * @param owner Owning actor
    * @return std::shared_ptr<component> Component
    */
-  std::shared_ptr<component> create(const std::string &name, actor &owner);
+  std::shared_ptr<component> create(const std::string &name, class actor &owner);
   /**
    * @brief Register a component
    *
@@ -61,7 +61,7 @@ public:
 private:
   // Component map
   std::unordered_map<std::string,
-                     std::function<std::shared_ptr<component>(actor &)>>
+                     std::function<std::shared_ptr<component>(class actor &)>>
       m_component_map;
 };
 } // namespace sinen

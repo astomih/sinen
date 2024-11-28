@@ -30,11 +30,11 @@ public:
     set(inX, inY, inZ, inW);
   }
   explicit quaternion(const vector3 &axis, float angle) {
-    const auto scalar = math::sin(angle / 2.0f);
+    const auto scalar = Math::sin(angle / 2.0f);
     x = axis.x * scalar;
     y = axis.y * scalar;
     z = axis.z * scalar;
-    w = math::cos(angle / 2.0f);
+    w = Math::cos(angle / 2.0f);
   }
   /**
    * @brief Directly set the quaternion values
@@ -58,7 +58,7 @@ public:
   [[nodiscard]] float length_sqrt() const {
     return (x * x + y * y + z * z + w * w);
   }
-  [[nodiscard]] float length() const { return math::sqrt(length_sqrt()); }
+  [[nodiscard]] float length() const { return Math::sqrt(length_sqrt()); }
   void normalize() {
     const auto len = length();
     x /= len;
@@ -75,10 +75,10 @@ public:
   // Linear interpolation
   static quaternion lerp(const quaternion &a, const quaternion &b, float f) {
     quaternion retVal;
-    retVal.x = math::lerp(a.x, b.x, f);
-    retVal.y = math::lerp(a.y, b.y, f);
-    retVal.z = math::lerp(a.z, b.z, f);
-    retVal.w = math::lerp(a.w, b.w, f);
+    retVal.x = Math::lerp(a.x, b.x, f);
+    retVal.y = Math::lerp(a.y, b.y, f);
+    retVal.z = Math::lerp(a.z, b.z, f);
+    retVal.w = Math::lerp(a.w, b.w, f);
     retVal.normalize();
     return retVal;
   }
@@ -94,10 +94,10 @@ public:
     }
     float scale0, scale1;
     if (cosom < 0.9999f) {
-      const auto omega = math::acos(cosom);
-      const auto invSin = 1.f / math::sin(omega);
-      scale0 = math::sin((1.f - f) * omega) * invSin;
-      scale1 = math::sin(f * omega) * invSin;
+      const auto omega = Math::acos(cosom);
+      const auto invSin = 1.f / Math::sin(omega);
+      scale0 = Math::sin((1.f - f) * omega) * invSin;
+      scale1 = Math::sin(f * omega) * invSin;
     } else {
       scale0 = 1.0f - f;
       scale1 = f;

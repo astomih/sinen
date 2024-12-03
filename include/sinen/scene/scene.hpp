@@ -19,7 +19,7 @@ namespace sinen {
  * @brief Base of scene class
  *
  */
-class scene {
+class Scene {
 public:
   /**
    * @brief Scene implementation
@@ -87,15 +87,15 @@ public:
 
   static void load(std::string_view data_file_name);
 
-  template <class Actor = actor, class... Args>
+  template <class Actor = Actor, class... Args>
   static Actor &create_actor(Args &&...args) {
-    actor *ptr = new Actor(std::forward<Args>(args)...);
+    Actor *ptr = new Actor(std::forward<Args>(args)...);
     Actor &ref = *reinterpret_cast<Actor *>(ptr);
     add_actor(ptr);
     return ref;
   }
-  static actor &get_actor(const std::string &name);
-  static camera &main_camera() { return m_main_camera; }
+  static Actor &get_actor(const std::string &name);
+  static Camera &main_camera() { return m_main_camera; }
 
   static component_factory &get_component_factory() {
     return m_component_factory;
@@ -108,15 +108,15 @@ public:
    *
    * @param size
    */
-  static void resize(const vector2 &size) { m_screen_size = size; }
+  static void resize(const Vector2 &size) { m_screen_size = size; }
   /**
    * @brief Get the screen size
    *
    * @return const vector2&
    */
-  static const vector2 &size() { return m_screen_size; }
-  static const vector2 center() {
-    vector2 c = m_screen_size;
+  static const Vector2 &size() { return m_screen_size; }
+  static const Vector2 center() {
+    Vector2 c = m_screen_size;
     c /= 2.f;
     return c;
   }
@@ -124,9 +124,9 @@ public:
 private:
   static component_factory m_component_factory;
   // main camera
-  static camera m_main_camera;
-  static vector2 m_screen_size;
-  static void add_actor(actor *_actor);
+  static Camera m_main_camera;
+  static Vector2 m_screen_size;
+  static void add_actor(Actor *_actor);
   static void change_impl(std::unique_ptr<implements> impl);
 };
 } // namespace sinen

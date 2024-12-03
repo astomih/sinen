@@ -16,7 +16,7 @@ public:
   sol::state state;
 };
 std::unique_ptr<script_system::implement> script_system::impl = nullptr;
-void *script::get_state() { return script_system::get_state(); }
+void *Script::get_state() { return script_system::get_state(); }
 void *script_system::get_state() { return (void *)&impl->state; }
 bool script_system::initialize() {
   impl = std::make_unique<implement>();
@@ -24,7 +24,7 @@ bool script_system::initialize() {
 }
 
 void script_system::do_script(std::string_view fileName) {
-  impl->state.script(data_stream::open_as_string(asset_type::Script, fileName));
+  impl->state.script(DataStream::open_as_string(AssetType::Script, fileName));
 }
 
 void script_system::shutdown() { impl->state.collect_gc(); }
@@ -45,15 +45,15 @@ void script_system::register_function(std::string_view name,
   impl->state[name] = function;
 }
 
-void script::do_script(std::string_view fileName) {
+void Script::do_script(std::string_view fileName) {
   script_system::do_script(fileName);
 }
 
-script::table_handler script::new_table(std::string_view table_name) {
+Script::table_handler Script::new_table(std::string_view table_name) {
   return script_system::new_table(table_name);
 }
 
-void script::register_function(std::string_view name,
+void Script::register_function(std::string_view name,
                                std::function<void()> function,
                                table_handler handler) {
   script_system::register_function(name, function, handler);

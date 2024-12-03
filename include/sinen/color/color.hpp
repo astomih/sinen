@@ -6,7 +6,7 @@ namespace sinen {
  * @brief Color class
  *
  */
-class color {
+class Color {
 public:
   /**
    * @brief Construct a new color object
@@ -16,7 +16,7 @@ public:
    * @param alpha alpha value 0.0 - 1.0
    *
    */
-  constexpr color(const float red, const float green, const float blue,
+  constexpr Color(const float red, const float green, const float blue,
                   const float alpha)
       : r(red), g(green), b(blue), a(alpha) {}
   /**
@@ -24,12 +24,12 @@ public:
    * @param value Set all value 0.0 - 1.0
    *
    */
-  constexpr color(const float value) : r(value), g(value), b(value), a(1.f) {}
+  constexpr Color(const float value) : r(value), g(value), b(value), a(1.f) {}
   /**
    * @brief Construct a new color object
    *
    */
-  color() = default;
+  Color() = default;
   // red value 0.0 - 1.0
   float r;
   // green value 0.0 - 1.0

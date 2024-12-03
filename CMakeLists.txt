@@ -55,7 +55,14 @@ file(
   libs/ImGui/source/*.cpp
   libs/Lua/source/*.c
   libs/mojoAL/*.c)
-add_library(sinen STATIC ${SOURCE_FILES})
+file(
+  GLOB_RECURSE
+  HEADER_FILES
+  include/*.hpp
+  src/*.hpp
+  include/*.inl
+)
+add_library(sinen STATIC ${SOURCE_FILES} ${HEADER_FILES})
 target_include_directories(
   sinen PUBLIC ${SINEN_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS})
 target_link_libraries(

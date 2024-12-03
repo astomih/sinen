@@ -10,19 +10,19 @@ namespace sinen {
  * @brief 2D draw object class
  *
  */
-struct draw2d {
+struct Draw2D {
 public:
   /**
    * @brief Construct a new draw2d object
    *
    */
-  draw2d();
+  Draw2D();
   /**
    * @brief Construct a new draw2d object
    * @param texture Texture to use
    *
    */
-  draw2d(texture);
+  Draw2D(Texture);
   /**
    * @brief Draw object
    *
@@ -35,41 +35,41 @@ public:
    * @param value Value of user data
    */
   void user_data_at(int index, float value);
-  void add(const vector2 &position, const float &rotation,
-           const vector2 &scale);
-  void at(const int &index, const vector2 &position, const float &rotation,
-          const vector2 &scale);
+  void add(const Vector2 &position, const float &rotation,
+           const Vector2 &scale);
+  void at(const int &index, const Vector2 &position, const float &rotation,
+          const Vector2 &scale);
   void clear();
   struct world {
-    vector2 position;
+    Vector2 position;
     float rotation;
-    vector2 scale;
+    Vector2 scale;
   };
   std::vector<world> worlds;
-  vector2 position;
+  Vector2 position;
   float rotation;
-  vector2 scale;
-  texture texture_handle;
+  Vector2 scale;
+  Texture texture_handle;
   std::string vertex_name = "SPRITE";
-  std::shared_ptr<drawable> obj;
+  std::shared_ptr<Drawable> obj;
 };
 /**
  * @brief UI draw object class
  *
  */
-struct drawui {
+struct DrawUI {
 public:
   /**
    * @brief Construct a new drawui object
    *
    */
-  drawui();
+  DrawUI();
   /**
    * @brief Construct a new drawui object
    * @param texture Texture to use
    *
    */
-  drawui(texture);
+  DrawUI(Texture);
   /**
    * @brief Draw object
    *
@@ -82,41 +82,41 @@ public:
    * @param value Value of user data
    */
   void user_data_at(int index, float value);
-  void add(const vector2 &position, const float &rotation,
-           const vector2 &scale);
-  void at(const int &index, const vector2 &position, const float &rotation,
-          const vector2 &scale);
+  void add(const Vector2 &position, const float &rotation,
+           const Vector2 &scale);
+  void at(const int &index, const Vector2 &position, const float &rotation,
+          const Vector2 &scale);
   void clear();
   struct world {
-    vector2 position;
+    Vector2 position;
     float rotation;
-    vector2 scale;
+    Vector2 scale;
   };
   std::vector<world> worlds;
-  vector2 position;
+  Vector2 position;
   float rotation;
-  vector2 scale;
-  texture texture_handle;
+  Vector2 scale;
+  Texture texture_handle;
   std::string vertex_name = "SPRITE";
-  std::shared_ptr<drawable> obj;
+  std::shared_ptr<Drawable> obj;
 };
 /**
  * @brief 3D draw object class
  *
  */
-class draw3d {
+class Draw3D {
 public:
   /**
    * @brief Construct a new draw3d object
    *
    */
-  draw3d();
+  Draw3D();
   /**
    * @brief Construct a new draw3d object
    * @param texture Texture to use
    *
    */
-  draw3d(texture);
+  Draw3D(Texture);
   /**
    * @brief Draw object
    *
@@ -129,22 +129,22 @@ public:
    * @param value Value of user data
    */
   void user_data_at(int index, float value);
-  void add(const vector3 &position, const vector3 &rotation,
-           const vector3 &scale);
-  void at(const int &index, const vector3 &position, const vector3 &rotation,
-          const vector3 &scale);
+  void add(const Vector3 &position, const Vector3 &rotation,
+           const Vector3 &scale);
+  void at(const int &index, const Vector3 &position, const Vector3 &rotation,
+          const Vector3 &scale);
   void clear();
-  vector3 position;
-  vector3 rotation;
-  vector3 scale;
-  texture texture_handle;
+  Vector3 position;
+  Vector3 rotation;
+  Vector3 scale;
+  Texture texture_handle;
   bool is_draw_depth = true;
   std::string vertex_name = "SPRITE";
-  std::shared_ptr<drawable> obj;
+  std::shared_ptr<Drawable> obj;
   struct world {
-    vector3 position;
-    vector3 rotation;
-    vector3 scale;
+    Vector3 position;
+    Vector3 rotation;
+    Vector3 scale;
   };
   std::vector<world> worlds;
 };

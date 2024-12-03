@@ -9,7 +9,7 @@ namespace sinen {
  * @brief About time
  *
  */
-class time {
+class Time {
 public:
   /**
    * @brief Get time about launch app to now as seconds

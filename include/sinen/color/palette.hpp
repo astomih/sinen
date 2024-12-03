@@ -6,18 +6,18 @@ namespace sinen {
  * @brief Color palette
  *
  */
-struct palette {
-  static const color black();
-  static const color light_black();
-  static const color white();
-  static const color red();
-  static const color green();
-  static const color blue();
-  static const color yellow();
-  static const color light_yellow();
-  static const color light_blue();
-  static const color light_pink();
-  static const color light_green();
+struct Palette {
+  static const Color black();
+  static const Color light_black();
+  static const Color white();
+  static const Color red();
+  static const Color green();
+  static const Color blue();
+  static const Color yellow();
+  static const Color light_yellow();
+  static const Color light_blue();
+  static const Color light_pink();
+  static const Color light_green();
 };
 } // namespace sinen
 #endif // !SINEN_PALETTE_HPP

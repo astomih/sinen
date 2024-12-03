@@ -11,7 +11,7 @@ vk_render_texture::vk_render_texture(vk_renderer &r) : m_vkrenderer(r) {}
 
 void vk_render_texture::prepare(int width, int height) {
   sampler = create_sampler();
-  drawer.drawable_obj = std::make_shared<drawable>();
+  drawer.drawable_obj = std::make_shared<Drawable>();
   color_target =
       create_image_object(width, height, VK_FORMAT_R8G8B8A8_UNORM, false);
   depth_target = create_image_object(width, height, VK_FORMAT_D32_SFLOAT, true);
@@ -175,7 +175,7 @@ void vk_render_texture::prepare_descriptor_set() {
   for (auto &v : drawer.uniformBuffers) {
     VkMemoryPropertyFlags uboFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                      VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-    v = m_vkrenderer.create_buffer(sizeof(drawable::parameter),
+    v = m_vkrenderer.create_buffer(sizeof(Drawable::parameter),
                                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                    uboFlags);
   }

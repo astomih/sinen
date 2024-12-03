@@ -8,26 +8,26 @@ namespace sinen {
  * @brief Window class
  *
  */
-class window {
+class Window {
 public:
   /**
    * @brief Get the window size
    *
    * @return vector2 size
    */
-  static vector2 size();
+  static Vector2 size();
   /**
    * @brief Get the window center
    *
    * @return vector2
    */
-  static vector2 center();
+  static Vector2 center();
   /**
    * @brief Set the Window size
    *
    * @param size window size
    */
-  static void resize(const vector2 &size);
+  static void resize(const Vector2 &size);
   /**
    * @brief Set the fullscreen
    *

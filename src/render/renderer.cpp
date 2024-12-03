@@ -5,79 +5,79 @@
 #include <vertex/vertex_array.hpp>
 
 namespace sinen {
-bool renderer::offscreen_rendering = false;
-matrix4 renderer::render_texture_user_data;
-matrix4 renderer::light_view;
-matrix4 renderer::light_projection;
+bool Renderer::offscreen_rendering = false;
+matrix4 Renderer::render_texture_user_data;
+matrix4 Renderer::light_view;
+matrix4 Renderer::light_projection;
 
-void renderer::unload_data() { render_system::unload_data(); }
+void Renderer::unload_data() { RendererImpl::unload_data(); }
 
-void renderer::render() { render_system::render(); }
+void Renderer::render() { RendererImpl::render(); }
 
-void renderer::draw2d(const std::shared_ptr<drawable> draw_object) {
-  render_system::draw2d(draw_object);
+void Renderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
+  RendererImpl::draw2d(draw_object);
 }
-void renderer::drawui(const std::shared_ptr<drawable> draw_object) {
-  render_system::drawui(draw_object);
+void Renderer::drawui(const std::shared_ptr<Drawable> draw_object) {
+  RendererImpl::drawui(draw_object);
 }
-void renderer::draw3d(const std::shared_ptr<drawable> draw_object) {
-  render_system::draw3d(draw_object);
+void Renderer::draw3d(const std::shared_ptr<Drawable> draw_object) {
+  RendererImpl::draw3d(draw_object);
 }
-void renderer::add_queue_2d(const std::shared_ptr<drawable> draw_object) {
-  render_system::add_queue_2d(draw_object);
+void Renderer::add_queue_2d(const std::shared_ptr<Drawable> draw_object) {
+  RendererImpl::add_queue_2d(draw_object);
 }
-void renderer::add_queue_3d(const std::shared_ptr<drawable> draw_object) {
-  render_system::add_queue_3d(draw_object);
+void Renderer::add_queue_3d(const std::shared_ptr<Drawable> draw_object) {
+  RendererImpl::add_queue_3d(draw_object);
 }
-void renderer::remove_queue_2d(const std::shared_ptr<drawable> draw_object) {
-  render_system::remove_queue_2d(draw_object);
+void Renderer::remove_queue_2d(const std::shared_ptr<Drawable> draw_object) {
+  RendererImpl::remove_queue_2d(draw_object);
 }
-void renderer::remove_queue_3d(const std::shared_ptr<drawable> draw_object) {
-  render_system::remove_queue_3d(draw_object);
+void Renderer::remove_queue_3d(const std::shared_ptr<Drawable> draw_object) {
+  RendererImpl::remove_queue_3d(draw_object);
 }
-void renderer::add_vertex_array(const vertex_array &vArray,
+void Renderer::add_vertex_array(const VertexArray &vArray,
                                 std::string_view name) {
-  render_system::add_vertex_array(vArray, name);
+  RendererImpl::add_vertex_array(vArray, name);
 }
-void renderer::update_vertex_array(const vertex_array &vArray,
+void Renderer::update_vertex_array(const VertexArray &vArray,
                                    std::string_view name) {
-  render_system::update_vertex_array(vArray, name);
+  RendererImpl::update_vertex_array(vArray, name);
 }
-void renderer::add_model(const model &_model) {
-  render_system::add_model(_model);
+void Renderer::add_model(const Model &_model) {
+  RendererImpl::add_model(_model);
 }
-void renderer::update_model(const model &_model) {
-  render_system::update_model(_model);
-}
-
-void renderer::set_clear_color(const color &color) {
-  render_system::set_clear_color(color);
+void Renderer::update_model(const Model &_model) {
+  RendererImpl::update_model(_model);
 }
 
-color renderer::clear_color() { return render_system::get_clear_color(); }
-
-void renderer::set_skybox(texture _skybox_texture) {
-  render_system::set_skybox_texture(_skybox_texture);
+void Renderer::set_clear_color(const Color &color) {
+  RendererImpl::set_clear_color(color);
 }
 
-texture renderer::skybox() { return render_system::get_skybox_texture(); }
+Color Renderer::clear_color() { return RendererImpl::get_clear_color(); }
 
-void renderer::toggle_show_imgui() { render_system::toggle_show_imgui(); }
-bool renderer::is_show_imgui() { return render_system::is_show_imgui(); }
-
-std::list<std::function<void()>> &renderer::get_imgui_function() {
-  return render_system::get_imgui_function();
+void Renderer::set_skybox(Texture _skybox_texture) {
+  RendererImpl::set_skybox_texture(_skybox_texture);
 }
 
-void renderer::add_imgui_function(std::function<void()> function) {
-  render_system::get_imgui_function().push_back(function);
+Texture Renderer::skybox() { return RendererImpl::get_skybox_texture(); }
+
+void Renderer::toggle_show_imgui() { RendererImpl::toggle_show_imgui(); }
+bool Renderer::is_show_imgui() { return RendererImpl::is_show_imgui(); }
+
+std::list<std::function<void()>> &Renderer::get_imgui_function() {
+  return RendererImpl::get_imgui_function();
 }
-void *renderer::get_texture_id() { return render_system::get_texture_id(); }
-void renderer::set_light_look_at(const vector3 &position, const vector3 &target,
-                                 const vector3 &up) {
+
+void Renderer::add_imgui_function(std::function<void()> function) {
+  RendererImpl::get_imgui_function().push_back(function);
+}
+void *Renderer::get_texture_id() { return RendererImpl::get_texture_id(); }
+void Renderer::set_light_look_at(const Vector3 &position, const Vector3 &target,
+                                 const Vector3 &up) {
   light_view = matrix4::lookat(position, target, up);
 }
-void renderer::set_light_ortho(float left, float right, float bottom, float top,
+void Renderer::set_light_ortho(float left, float right, float bottom, float top,
                                float near, float far) {
   light_projection = matrix4::ortho(left, right, bottom, top, near, far);
 }

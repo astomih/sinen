@@ -9,17 +9,17 @@ namespace sinen {
  * @brief Drawable object class
  *
  */
-struct drawable {
+struct Drawable {
   /**
    * @brief Construct a new draw object object
    *
    */
-  drawable();
+  Drawable();
   /**
    * @brief Destroy the draw object object
    *
    */
-  ~drawable();
+  ~Drawable();
   /**
    * @brief Shader parameter
    *
@@ -42,12 +42,12 @@ struct drawable {
    * @brief Shader data
    *
    */
-  shader shade;
+  Shader shade;
   /**
    * @brief Use texture
    *
    */
-  texture binding_texture;
+  Texture binding_texture;
   /**
    * @brief Vertex index
    *
@@ -60,17 +60,17 @@ struct drawable {
    * @param mat input world matrix
    * @param data output instancing data
    */
-  void world_to_instance_data(const matrix4 &mat, instance_data &data);
+  void world_to_instance_data(const matrix4 &mat, InstanceData &data);
   /**
    * @brief instance size
    *
    */
-  std::size_t size() { return sizeof(instance_data) * data.size(); }
+  std::size_t size() { return sizeof(InstanceData) * data.size(); }
   /**
    * @brief instance data
    *
    */
-  std::vector<instance_data> data;
+  std::vector<InstanceData> data;
 };
 
 } // namespace sinen

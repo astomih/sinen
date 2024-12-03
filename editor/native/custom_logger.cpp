@@ -5,26 +5,26 @@
 
 namespace sinen {
 void custom_logger() {
-  logger::set_output_function(
-      [](logger::priority priority, std::string_view str) {
+  Logger::set_output_function(
+      [](Logger::priority priority, std::string_view str) {
         ImVec4 color;
         switch (priority) {
-        case logger::priority::verbose:
+        case Logger::priority::verbose:
           color = ImVec4(0.0f, 1.0f, 1.0f, 1.0f);
           break;
-        case logger::priority::debug:
+        case Logger::priority::debug:
           color = ImVec4(0.0f, 0.0f, 1.0f, 1.0f);
           break;
-        case logger::priority::info:
+        case Logger::priority::info:
           color = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
           break;
-        case logger::priority::error:
+        case Logger::priority::error:
           color = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
           break;
-        case logger::priority::warn:
+        case Logger::priority::warn:
           color = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
           break;
-        case logger::priority::critical:
+        case Logger::priority::critical:
           color = ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
           break;
         default:

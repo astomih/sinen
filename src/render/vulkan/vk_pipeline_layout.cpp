@@ -11,33 +11,33 @@ void vk_pipeline_layout::initialize(
   if (instance) {
     vibDesc = {{
         // position 3, normal 3, uv 2, color4 = 12
-        {0, sizeof(vertex), VK_VERTEX_INPUT_RATE_VERTEX},
-        {1, sizeof(instance_data), VK_VERTEX_INPUT_RATE_INSTANCE},
+        {0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX},
+        {1, sizeof(InstanceData), VK_VERTEX_INPUT_RATE_INSTANCE},
     }};
 
     inputAttribs = {{
-        {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(vertex, position)},
-        {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(vertex, normal)},
-        {2, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(vertex, uv)},
-        {3, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(vertex, rgba)},
+        {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)},
+        {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal)},
+        {2, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)},
+        {3, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, rgba)},
         {4, 1, VK_FORMAT_R32G32B32A32_SFLOAT,
-         offsetof(instance_data, world_matrix_1)},
+         offsetof(InstanceData, world_matrix_1)},
         {5, 1, VK_FORMAT_R32G32B32A32_SFLOAT,
-         offsetof(instance_data, world_matrix_2)},
+         offsetof(InstanceData, world_matrix_2)},
         {6, 1, VK_FORMAT_R32G32B32A32_SFLOAT,
-         offsetof(instance_data, world_matrix_3)},
+         offsetof(InstanceData, world_matrix_3)},
         {7, 1, VK_FORMAT_R32G32B32A32_SFLOAT,
-         offsetof(instance_data, world_matrix_4)},
+         offsetof(InstanceData, world_matrix_4)},
     }};
   } else {
     vibDesc = {{// position 3, normal 3, uv 2, color4 = 12
-                {0, sizeof(vertex), VK_VERTEX_INPUT_RATE_VERTEX}}};
+                {0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX}}};
 
     inputAttribs = {
-        {{0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(vertex, position)},
-         {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(vertex, normal)},
-         {2, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(vertex, uv)},
-         {3, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(vertex, rgba)}}};
+        {{0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)},
+         {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal)},
+         {2, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)},
+         {3, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, rgba)}}};
   }
 
   vertexInputCI = VkPipelineVertexInputStateCreateInfo{

@@ -52,7 +52,7 @@ public:
 
   float *operator[](const size_t index) { return mat[index]; }
 
-  vector3 operator*(const vector3 &vec) const;
+  Vector3 operator*(const Vector3 &vec) const;
 
   // Matrix multiplication (a * b)
   friend matrix4 operator*(const matrix4 &a, const matrix4 &b) {
@@ -121,31 +121,31 @@ public:
   void invert();
 
   // Get the translation component of the matrix
-  [[nodiscard]] vector3 get_translation() const {
-    return vector3(mat[3][0], mat[3][1], mat[3][2]);
+  [[nodiscard]] Vector3 get_translation() const {
+    return Vector3(mat[3][0], mat[3][1], mat[3][2]);
   }
 
   // Get the X axis of the matrix (forward)
-  [[nodiscard]] vector3 get_x_axis() const {
-    return vector3::normalize(vector3(mat[0][0], mat[0][1], mat[0][2]));
+  [[nodiscard]] Vector3 get_x_axis() const {
+    return Vector3::normalize(Vector3(mat[0][0], mat[0][1], mat[0][2]));
   }
 
   // Get the Y axis of the matrix (left)
-  [[nodiscard]] vector3 get_y_axis() const {
-    return vector3::normalize(vector3(mat[1][0], mat[1][1], mat[1][2]));
+  [[nodiscard]] Vector3 get_y_axis() const {
+    return Vector3::normalize(Vector3(mat[1][0], mat[1][1], mat[1][2]));
   }
 
   // Get the Z axis of the matrix (up)
-  [[nodiscard]] vector3 get_z_axis() const {
-    return vector3::normalize(vector3(mat[2][0], mat[2][1], mat[2][2]));
+  [[nodiscard]] Vector3 get_z_axis() const {
+    return Vector3::normalize(Vector3(mat[2][0], mat[2][1], mat[2][2]));
   }
 
   // Extract the scale component from the matrix
-  [[nodiscard]] vector3 get_scale() const {
-    vector3 retVal;
-    retVal.x = vector3(mat[0][0], mat[0][1], mat[0][2]).length();
-    retVal.y = vector3(mat[1][0], mat[1][1], mat[1][2]).length();
-    retVal.z = vector3(mat[2][0], mat[2][1], mat[2][2]).length();
+  [[nodiscard]] Vector3 get_scale() const {
+    Vector3 retVal;
+    retVal.x = Vector3(mat[0][0], mat[0][1], mat[0][2]).length();
+    retVal.y = Vector3(mat[1][0], mat[1][1], mat[1][2]).length();
+    retVal.z = Vector3(mat[2][0], mat[2][1], mat[2][2]).length();
     return retVal;
   }
 
@@ -186,15 +186,15 @@ public:
   static matrix4 transpose(const matrix4 &m);
 
   // Create a rotation matrix from a quaternion
-  static matrix4 create_from_quaternion(const class quaternion &q);
+  static matrix4 create_from_quaternion(const class Quaternion &q);
 
-  static matrix4 create_translation(const vector3 &trans);
+  static matrix4 create_translation(const Vector3 &trans);
 
-  static quaternion to_quaternion(const matrix4 &m);
-  static matrix4 create_scale(const vector3 &scale);
+  static Quaternion to_quaternion(const matrix4 &m);
+  static matrix4 create_scale(const Vector3 &scale);
 
-  static matrix4 lookat(const vector3 &eye, const vector3 &at,
-                        const vector3 &up);
+  static matrix4 lookat(const Vector3 &eye, const Vector3 &at,
+                        const Vector3 &up);
 
   static matrix4 perspective(const float angle, const float aspect,
                              const float near, const float far);

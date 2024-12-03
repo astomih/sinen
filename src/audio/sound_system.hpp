@@ -23,7 +23,7 @@ public:
   static uint32_t new_source(std::string_view name);
   static void delete_source(uint32_t sourceID);
   // For positional audio
-  static void set_listener(const vector3 &pos, const quaternion &direction);
+  static void set_listener(const Vector3 &pos, const Quaternion &direction);
   static std::unordered_map<std::string, uint32_t> &get_buffers() {
     return buffers;
   }

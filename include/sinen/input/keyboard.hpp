@@ -5,7 +5,7 @@ namespace sinen {
  * @brief Keyboard
  *
  */
-class keyboard {
+class Keyboard {
 public:
   enum class code;
   /**

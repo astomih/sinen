@@ -9,13 +9,13 @@ namespace sinen {
  * @tparam T type of pool_allocator
  * @tparam MAXSIZE max size of pool_allocator
  */
-template <class T, std::size_t MAXSIZE = 128> class pool_allocator {
+template <class T, std::size_t MAXSIZE = 128> class PoolAllocator {
 public:
   /**
    * @brief Construct a new memory allocator object
    *
    */
-  pool_allocator() {
+  PoolAllocator() {
     this->head = reinterpret_cast<element_type *>(
         std::malloc(sizeof(T) * (MAXSIZE + 1)));
     this->free_list = this->head;
@@ -33,7 +33,7 @@ public:
    * @brief Destroy the memory allocator object
    *
    */
-  ~pool_allocator() { std::free(this->head); }
+  ~PoolAllocator() { std::free(this->head); }
   /**
    * @brief Allocate new memory
    *

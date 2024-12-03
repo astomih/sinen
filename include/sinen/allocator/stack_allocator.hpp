@@ -7,19 +7,19 @@ namespace sinen {
  * @brief Simple stack allocator
  *
  */
-class stack_allocator {
+class StackAllocator {
 public:
   /**
    * @brief Construct a new stack allocator object
    *
    * @param stack_size Stack size
    */
-  explicit stack_allocator(const std::size_t &stack_size);
+  explicit StackAllocator(const std::size_t &stack_size);
   /**
    * @brief Destroy the stack allocator object
    *
    */
-  virtual ~stack_allocator();
+  virtual ~StackAllocator();
   /**
    * @brief Allocate memory
    *

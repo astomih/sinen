@@ -12,7 +12,7 @@ namespace sinen {
  * @brief Vertex array for drawing
  *
  */
-struct vertex_array {
+struct VertexArray {
 public:
   /**
    * @brief Push the ndices of the vertex array
@@ -21,7 +21,7 @@ public:
    * @param count count
    */
   void push_indices(std::uint32_t indiceArray[], size_t count);
-  std::vector<vertex> vertices;
+  std::vector<Vertex> vertices;
   std::vector<uint32_t> indices;
   std::string materialName;
   uint32_t indexCount;

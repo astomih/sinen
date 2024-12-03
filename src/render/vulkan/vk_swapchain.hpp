@@ -30,7 +30,7 @@ public:
 
   VkSurfaceKHR GetSurface() const { return m_surface; }
 
-  bool is_need_recreate(const vector2 &current_size) {
+  bool is_need_recreate(const Vector2 &current_size) {
     return (GetSurfaceExtent().width != current_size.x ||
             GetSurfaceExtent().height != current_size.y);
   }

@@ -1,7 +1,7 @@
 // internal
 #include <color/hsv.hpp>
 namespace sinen {
-void hsv::from_color(const color &c) {
+void Hsv::from_color(const Color &c) {
 
   float r = c.r;
   float g = c.g;
@@ -29,7 +29,7 @@ void hsv::from_color(const color &c) {
   v = max;
 }
 
-color hsv::to_color() const {
+Color Hsv::to_color() const {
   float r, g, b;
   float c = v * s;
   float h_ = h / 60;
@@ -60,6 +60,6 @@ color hsv::to_color() const {
     b = x;
   }
   float m = v - c;
-  return color((r + m), (g + m), (b + m), 1);
+  return Color((r + m), (g + m), (b + m), 1);
 }
 } // namespace sinen

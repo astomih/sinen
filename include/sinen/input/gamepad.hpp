@@ -6,15 +6,15 @@ namespace sinen {
  * @brief Gamepad
  *
  */
-class gamepad {
+class GamePad {
 public:
   // For buttons
   enum class code;
   static bool is_down(code j_button);
   static bool is_pressed(code j_button);
   static bool is_released(code j_button);
-  static const vector2 &get_left_stick();
-  static const vector2 &get_right_stick();
+  static const Vector2 &get_left_stick();
+  static const Vector2 &get_right_stick();
   static float get_left_trigger();
   static float get_right_trigger();
 

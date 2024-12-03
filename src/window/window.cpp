@@ -6,32 +6,32 @@
 #include <window/window.hpp>
 
 namespace sinen {
-vector2 window_system::m_size = vector2(1280.f, 720.f);
-std::string window_system::m_name = "Sinen Engine";
-::SDL_Window *window_system::m_window = nullptr;
-bool window_system::m_resized = false;
-const void *window::get_sdl_window() { return window_system::get_sdl_window(); }
-vector2 window::size() { return window_system::size(); }
-vector2 window::center() { return window_system::center(); }
-void window::resize(const vector2 &size) { window_system::resize(size); }
-void window::set_fullscreen(bool fullscreen) {
-  window_system::set_fullscreen(fullscreen);
+Vector2 WindowImpl::m_size = Vector2(1280.f, 720.f);
+std::string WindowImpl::m_name = "Sinen Engine";
+::SDL_Window *WindowImpl::m_window = nullptr;
+bool WindowImpl::m_resized = false;
+const void *Window::get_sdl_window() { return WindowImpl::get_sdl_window(); }
+Vector2 Window::size() { return WindowImpl::size(); }
+Vector2 Window::center() { return WindowImpl::center(); }
+void Window::resize(const Vector2 &size) { WindowImpl::resize(size); }
+void Window::set_fullscreen(bool fullscreen) {
+  WindowImpl::set_fullscreen(fullscreen);
 }
-void window::rename(const std::string &name) { window_system::rename(name); }
-std::string window::name() { return window_system::name(); }
-bool window::resized() { return window_system::resized(); }
+void Window::rename(const std::string &name) { WindowImpl::rename(name); }
+std::string Window::name() { return WindowImpl::name(); }
+bool Window::resized() { return WindowImpl::resized(); }
 
-void window_system::initialize(const std::string &name) {
+void WindowImpl::initialize(const std::string &name) {
   m_name = name;
 
   // Load settings from settings.json
   {
-    file f;
-    f.open("settings.json", file::mode::r);
+    File f;
+    f.open("settings.json", File::mode::r);
     void *buffer = calloc(f.size() + 10, 1);
     f.read(buffer, f.size(), 1);
     f.close();
-    json j;
+    Json j;
     j.parse((char *)buffer);
     m_size.x = j["WindowWidth"].get_float();
     m_size.y = j["WindowHeight"].get_float();
@@ -43,25 +43,25 @@ void window_system::initialize(const std::string &name) {
       static_cast<int>(m_size.y), SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
 }
 
-void window_system::shutdown() {
+void WindowImpl::shutdown() {
   SDL_DestroyWindow(m_window);
   m_window = nullptr;
 }
-void window_system::resize(const vector2 &size) {
+void WindowImpl::resize(const Vector2 &size) {
   m_size = size;
   SDL_SetWindowSize(m_window, static_cast<int>(m_size.x),
                     static_cast<int>(m_size.y));
 }
-void window_system::set_fullscreen(bool fullscreen) {
+void WindowImpl::set_fullscreen(bool fullscreen) {
   SDL_SetWindowFullscreen(m_window,
                           fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 }
-void window_system::rename(const std::string &name) {
+void WindowImpl::rename(const std::string &name) {
   m_name = name;
   SDL_SetWindowTitle(m_window, m_name.c_str());
 }
-void window_system::prepare_frame() { m_resized = false; }
-void window_system::process_input(SDL_Event &event) {
+void WindowImpl::prepare_frame() { m_resized = false; }
+void WindowImpl::process_input(SDL_Event &event) {
   int x, y;
   SDL_GetWindowSize(m_window, &x, &y);
   m_size.x = static_cast<float>(x);
@@ -71,7 +71,7 @@ void window_system::process_input(SDL_Event &event) {
       m_resized = true;
     }
   }
-  if (keyboard::is_pressed(keyboard::code::F11)) {
+  if (Keyboard::is_pressed(Keyboard::code::F11)) {
     static bool fullscreen = false;
     fullscreen = !fullscreen;
     set_fullscreen(fullscreen);

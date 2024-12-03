@@ -6,7 +6,7 @@ namespace sinen {
  * @brief 2D coordinate class
  *
  */
-template <typename T> struct point3 {
+template <typename T> struct Point3 {
   /**
    * @brief x coordinate
    *
@@ -29,29 +29,29 @@ template <typename T> struct point3 {
    * @param y y coordinate
    * @param z z coordinate
    */
-  point3(const T &x, const T &y, const T &z) : x(x), y(y), z(z) {}
+  Point3(const T &x, const T &y, const T &z) : x(x), y(y), z(z) {}
   /**
    * @brief Construct a new point3 object
    *
    */
-  point3() : x(0), y(0), z(0) {}
+  Point3() : x(0), y(0), z(0) {}
   /**
    * @brief Construct a new point3 object
    *
    * @param p lvalue point3 object
    */
-  point3(const point3 &p) = default;
+  Point3(const Point3 &p) = default;
   /**
    * @brief Construct a new point3 object
    *
    * @param p rvalue reference
    */
-  point3(point3 &&p) = default;
+  Point3(Point3 &&p) = default;
   /**
    * @brief Destroy the point3 object
    *
    */
-  ~point3() = default;
+  ~Point3() = default;
   /**
    * @brief Length of the point3 object
    *
@@ -64,31 +64,31 @@ template <typename T> struct point3 {
    * @param p The other point3 object
    * @return float Distance
    */
-  float distance(const point3 &p) {
+  float distance(const Point3 &p) {
     return sqrt((x - p.x) * (x - p.x) + (y - p.y) * (y - p.y) +
                 (z - p.z) * (z - p.z));
   }
-  point3 operator+(const point3 &p) {
+  Point3 operator+(const Point3 &p) {
     return point3(x + p.x, y + p.y, z + p.z);
   }
-  point3 &operator+=(const point3 &p) {
+  Point3 &operator+=(const Point3 &p) {
     x += p.x;
     y += p.y;
     z += p.z;
     return *this;
   }
-  point3 operator-(const point3 &p) {
+  Point3 operator-(const Point3 &p) {
     return point3(x - p.x, y - p.y, z - p.z);
   }
-  point3 &operator-=(const point3 &p) {
+  Point3 &operator-=(const Point3 &p) {
     x -= p.x;
     y -= p.y;
     z -= p.z;
     return *this;
   }
 };
-using point3i = point3<int>;
-using point3f = point3<float>;
-using point3d = point3<double>;
+using Point3i = Point3<int>;
+using Point3f = Point3<float>;
+using Point3d = Point3<double>;
 } // namespace sinen
 #endif

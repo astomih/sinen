@@ -6,7 +6,7 @@ namespace sinen {
  * @brief Physics class
  *
  */
-class physics {};
+class Physics {};
 } // namespace sinen
 
 #endif // !SINEN_PHYSICS_HPP

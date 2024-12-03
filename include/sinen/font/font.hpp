@@ -10,11 +10,11 @@ namespace sinen {
  * @brief font load and render to texture.
  *
  */
-class font {
+class Font {
 public:
-  font() : m_font(nullptr), m_size(0){};
-  font(std::string_view file_name, int32_t point);
-  ~font();
+  Font() : m_font(nullptr), m_size(0){};
+  Font(std::string_view file_name, int32_t point);
+  ~Font();
   /**
    * @brief font load from filepath
    *
@@ -53,8 +53,8 @@ public:
    * @param text require UTF-8
    * @param _color font color
    */
-  void render_text(texture &tex, std::string_view text,
-                   const color &_color = palette::white());
+  void render_text(Texture &tex, std::string_view text,
+                   const Color &_color = Palette::white());
 
 private:
   void *m_font;

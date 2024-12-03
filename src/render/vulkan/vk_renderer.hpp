@@ -21,7 +21,7 @@
 
 namespace sinen {
 
-struct vk_vertex_array : public vertex_array {
+struct vk_vertex_array : public VertexArray {
   vk_buffer vertexBuffer;
   vk_buffer indexBuffer;
 };
@@ -35,17 +35,17 @@ public:
   void render();
   void render_to_display(VkCommandBuffer command);
 
-  void add_vertex_array(const vertex_array &vArray, std::string_view name);
-  void update_vertex_array(const vertex_array &vArray, std::string_view name);
-  void add_model(const model &m);
-  void update_model(const model &m);
+  void add_vertex_array(const VertexArray &vArray, std::string_view name);
+  void update_vertex_array(const VertexArray &vArray, std::string_view name);
+  void add_model(const Model &m);
+  void update_model(const Model &m);
 
-  void draw2d(std::shared_ptr<struct drawable> sprite);
-  void drawui(std::shared_ptr<struct drawable> sprite);
-  void draw3d(std::shared_ptr<struct drawable> sprite);
+  void draw2d(std::shared_ptr<struct Drawable> sprite);
+  void drawui(std::shared_ptr<struct Drawable> sprite);
+  void draw3d(std::shared_ptr<struct Drawable> sprite);
 
-  void load_shader(const shader &shaderInfo);
-  void unload_shader(const shader &shaderInfo);
+  void load_shader(const Shader &shaderInfo);
+  void unload_shader(const Shader &shaderInfo);
 
   void prepare();
   void cleanup();
@@ -60,8 +60,8 @@ public:
   vk_base &get_base() { return *m_base; }
   void register_vk_drawable(class vk_drawable, std::string_view type);
   void destroy_vk_drawable(class vk_drawable &texture);
-  void add_texture(texture tex);
-  void destroy_image_object(const handle_t &handle);
+  void add_texture(Texture tex);
+  void destroy_image_object(const HandleT &handle);
   VkPipelineLayout get_pipeline_layout() {
     return m_pipeline_layout_instance.GetLayout();
   }
@@ -88,7 +88,7 @@ private:
   void prepare_imgui();
   void render_imgui(VkCommandBuffer command);
   void draw_skybox(VkCommandBuffer command);
-  void create_image_object(const handle_t &handle);
+  void create_image_object(const HandleT &handle);
   VkSampler create_sampler();
   void set_image_memory_barrier(VkCommandBuffer command, VkImage image,
                                 VkImageLayout oldLayout,
@@ -103,12 +103,12 @@ private:
   vk_pipeline_layout m_pipeline_layout_depth;
   vk_pipeline_layout m_pipeline_layout_depth_instance;
   std::unordered_map<std::string, vk_pipeline> m_pipelines;
-  std::vector<std::pair<shader, vk_pipeline>> m_user_pipelines;
+  std::vector<std::pair<Shader, vk_pipeline>> m_user_pipelines;
   std::vector<vk_drawable> m_draw_object_3d;
   std::vector<vk_drawable> m_draw_object_2d;
   std::vector<vk_drawable> m_draw_object_ui;
   std::vector<vk_pipeline> m_pipeline_garbage;
-  std::unordered_map<handle_t, vk_image> m_image_object;
+  std::unordered_map<HandleT, vk_image> m_image_object;
   vk_drawable m_skybox;
   bool is_MSAA;
 };

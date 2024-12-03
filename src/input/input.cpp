@@ -19,7 +19,7 @@ SDL_Cursor *g_cursor = nullptr;
  *
  */
 enum class button_state { None, Pressed, Released, Held };
-static button_state get_key_state(keyboard::code _key_code) {
+static button_state get_key_state(Keyboard::code _key_code) {
   if (input_system::m_keyboard.mPrevState[static_cast<int>(_key_code)] == 0) {
     if (input_system::m_keyboard.mCurrState[static_cast<int>(_key_code)] == 0) {
       return button_state::None;
@@ -35,7 +35,7 @@ static button_state get_key_state(keyboard::code _key_code) {
     }
   }
 }
-static button_state get_button_state(mouse::code _button) {
+static button_state get_button_state(Mouse::code _button) {
   int mask = SDL_BUTTON(static_cast<int>(_button));
   if ((mask & input_system::m_mouse.mPrevButtons) == 0) {
     if ((mask & input_system::m_mouse.mCurrButtons) == 0) {
@@ -51,7 +51,7 @@ static button_state get_button_state(mouse::code _button) {
     }
   }
 }
-static button_state get_button_state(gamepad::code _button) {
+static button_state get_button_state(GamePad::code _button) {
   if (input_system::m_joystick.mPrevButtons[static_cast<int>(_button)] == 0) {
     if (input_system::m_joystick.mCurrButtons[static_cast<int>(_button)] == 0) {
       return button_state::None;
@@ -72,30 +72,30 @@ keyboard_state_impl input_system::m_keyboard = keyboard_state_impl();
 mouse_state_impl input_system::m_mouse = mouse_state_impl();
 joystick_state_impl input_system::m_joystick = joystick_state_impl();
 
-bool keyboard::is_down(keyboard::code _key_code) {
+bool Keyboard::is_down(Keyboard::code _key_code) {
   return get_key_state(_key_code) == button_state::Held;
 }
 
-bool keyboard::is_pressed(keyboard::code _key_code) {
+bool Keyboard::is_pressed(Keyboard::code _key_code) {
   return get_key_state(_key_code) == button_state::Pressed;
 }
 
-bool keyboard::is_released(keyboard::code _key_code) {
+bool Keyboard::is_released(Keyboard::code _key_code) {
   return get_key_state(_key_code) == button_state::Released;
 }
 
-void mouse::set_position(const vector2 &pos) {
-  SDL_WarpMouseInWindow(window_system::get_sdl_window(), pos.x, pos.y);
+void Mouse::set_position(const Vector2 &pos) {
+  SDL_WarpMouseInWindow(WindowImpl::get_sdl_window(), pos.x, pos.y);
 }
-void mouse::set_position_on_scene(const vector2 &pos) {
-  auto scene_size = scene::size();
-  auto window_size = window::size();
+void Mouse::set_position_on_scene(const Vector2 &pos) {
+  auto scene_size = Scene::size();
+  auto window_size = Window::size();
   auto x = pos.x * window_size.x / scene_size.x;
   auto y = pos.y * window_size.y / scene_size.y;
-  SDL_WarpMouseInWindow(window_system::get_sdl_window(), x, y);
+  SDL_WarpMouseInWindow(WindowImpl::get_sdl_window(), x, y);
 }
 
-const vector2 &mouse::get_position() {
+const Vector2 &Mouse::get_position() {
 
   int x = 0, y = 0;
   if (input_system::m_mouse.mIsRelative) {
@@ -107,7 +107,7 @@ const vector2 &mouse::get_position() {
   input_system::m_mouse.mMousePos.y = static_cast<float>(y);
   return input_system::m_mouse.mMousePos;
 }
-const vector2 &mouse::get_position_on_scene() {
+const Vector2 &Mouse::get_position_on_scene() {
 
   int x = 0, y = 0;
   if (input_system::m_mouse.mIsRelative) {
@@ -115,8 +115,8 @@ const vector2 &mouse::get_position_on_scene() {
   } else {
     SDL_GetMouseState(&x, &y);
   }
-  auto scene_size = scene::size();
-  auto window_size = window::size();
+  auto scene_size = Scene::size();
+  auto window_size = Window::size();
   input_system::m_mouse.mMousePos.x =
       static_cast<float>(x) * scene_size.x / window_size.x;
   input_system::m_mouse.mMousePos.y =
@@ -124,11 +124,11 @@ const vector2 &mouse::get_position_on_scene() {
   return input_system::m_mouse.mMousePos;
 }
 
-const vector2 &mouse::get_scroll_wheel() {
+const Vector2 &Mouse::get_scroll_wheel() {
   return input_system::m_mouse.mScrollWheel;
 }
 
-void mouse::hide_cursor(bool hide) {
+void Mouse::hide_cursor(bool hide) {
   isHide = hide;
   if (hide) {
     SDL_ShowCursor(SDL_DISABLE);
@@ -137,36 +137,36 @@ void mouse::hide_cursor(bool hide) {
     SDL_ShowCursor(SDL_ENABLE);
   }
 }
-bool mouse::is_down(mouse::code _button) {
+bool Mouse::is_down(Mouse::code _button) {
   return get_button_state(_button) == button_state::Held;
 }
 
-bool mouse::is_pressed(mouse::code _button) {
+bool Mouse::is_pressed(Mouse::code _button) {
   return get_button_state(_button) == button_state::Pressed;
 }
 
-bool mouse::is_released(mouse::code _button) {
+bool Mouse::is_released(Mouse::code _button) {
   return get_button_state(_button) == button_state::Released;
 }
 
-bool gamepad::is_down(gamepad::code _button) {
+bool GamePad::is_down(GamePad::code _button) {
   return get_button_state(_button) == button_state::Held;
 }
 
-bool gamepad::is_pressed(gamepad::code _button) {
+bool GamePad::is_pressed(GamePad::code _button) {
   return get_button_state(_button) == button_state::Pressed;
 }
 
-bool gamepad::is_released(gamepad::code _button) {
+bool GamePad::is_released(GamePad::code _button) {
   return get_button_state(_button) == button_state::Released;
 }
-const vector2 &gamepad::get_left_stick() {
+const Vector2 &GamePad::get_left_stick() {
   return input_system::m_joystick.mLeftStick;
 }
-const vector2 &gamepad::get_right_stick() {
+const Vector2 &GamePad::get_right_stick() {
   return input_system::m_joystick.mRightStick;
 }
-bool gamepad::is_connected() { return input_system::m_joystick.mIsConnected; }
+bool GamePad::is_connected() { return input_system::m_joystick.mIsConnected; }
 
 joystick input_system::mController;
 bool input_system::initialize() {
@@ -204,7 +204,7 @@ void input_system::prepare_for_update() {
   // Mouse
   m_mouse.mPrevButtons = m_mouse.mCurrButtons;
   m_mouse.mIsRelative = false;
-  m_mouse.mScrollWheel = vector2::zero;
+  m_mouse.mScrollWheel = Vector2::zero;
 
   // Controller
   memcpy(m_joystick.mPrevButtons, m_joystick.mCurrButtons,
@@ -224,7 +224,7 @@ void input_system::update() {
   // Buttons
   for (int i = 0; i < SDL_CONTROLLER_BUTTON_MAX; i++) {
     m_joystick.mCurrButtons[i] =
-        mController.get_button(static_cast<gamepad::code>(i));
+        mController.get_button(static_cast<GamePad::code>(i));
   }
 
   // Triggers
@@ -242,13 +242,13 @@ void input_system::update() {
   y = -mController.get_axis(joystick::axis::RIGHTY);
   m_joystick.mRightStick = filter2d(x, y);
 
-  mouse::hide_cursor(isHide);
+  Mouse::hide_cursor(isHide);
 }
 void input_system::process_event(SDL_Event &event) {
 
   switch (event.type) {
   case SDL_MOUSEWHEEL: {
-    m_mouse.mScrollWheel = vector2(static_cast<float>(event.wheel.x),
+    m_mouse.mScrollWheel = Vector2(static_cast<float>(event.wheel.x),
                                    static_cast<float>(event.wheel.y));
     break;
   }
@@ -287,12 +287,12 @@ float input_system::filter1d(int _input) {
   return retVal;
 }
 
-vector2 input_system::filter2d(int inputX, int inputY) {
+Vector2 input_system::filter2d(int inputX, int inputY) {
   const float deadZone = 8000.0f;
   const float maxValue = 30000.0f;
 
   // Make into 2D vector
-  vector2 dir;
+  Vector2 dir;
   dir.x = static_cast<float>(inputX);
   dir.y = static_cast<float>(inputY);
 
@@ -300,7 +300,7 @@ vector2 input_system::filter2d(int inputX, int inputY) {
 
   // If length < deadZone, should be no input
   if (length < deadZone) {
-    dir = vector2::zero;
+    dir = Vector2::zero;
   } else {
     // Calculate fractional value between
     // dead zone and max value circles

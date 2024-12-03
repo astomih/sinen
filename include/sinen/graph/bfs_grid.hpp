@@ -15,20 +15,20 @@ namespace sinen {
  * @brief Breadth First Search Algorithm
  *
  */
-class bfs_grid {
+class BFSGrid {
 public:
-  using graph = grid<int>;
+  using graph = Grid<int>;
   /**
    * @brief Construct a new bfs object
    *
    * @param field trace field
    */
-  bfs_grid(const graph &field);
+  BFSGrid(const graph &field);
   /**
    * @brief Destroy the bfs object
    *
    */
-  ~bfs_grid() = default;
+  ~BFSGrid() = default;
   /**
    * @brief Find the shortest path from start to end
    *
@@ -37,13 +37,13 @@ public:
    * @return true
    * @return false
    */
-  bool find_path(const point2i &start, const point2i &end);
+  bool find_path(const Point2i &start, const Point2i &end);
   /**
    * @brief Trace the shortest path
    *
    * @return point2i Next point
    */
-  point2i trace();
+  Point2i trace();
   /**
    * @brief Check if the path is traceable
    *
@@ -75,13 +75,13 @@ private:
    *
    * @param end Trace end point
    */
-  void backtrace(const point2i &end);
+  void backtrace(const Point2i &end);
   graph m_field;
   graph m_dist;
   graph m_prev_x;
   graph m_prev_y;
-  std::stack<point2i> shortest;
-  std::queue<point2i> queue;
+  std::stack<Point2i> shortest;
+  std::queue<Point2i> queue;
 };
 } // namespace sinen
 #endif // !SINEN_BFS_HPP

@@ -3,7 +3,7 @@
 #include <sinen/graph/grid.hpp>
 
 namespace dts {
-void dungeon_generator(sinen::grid<int> &grid);
+void dungeon_generator(sinen::Grid<int> &grid);
 } // namespace dts
 
 #endif

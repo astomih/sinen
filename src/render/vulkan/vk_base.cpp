@@ -70,19 +70,19 @@ vk_base::vk_base(vk_renderer *vkrenderer)
     : m_imageIndex(0), m_vkrenderer(vkrenderer) {}
 
 void vk_base::initialize() {
-  create_instance(window::name().c_str());
+  create_instance(Window::name().c_str());
   select_physical_device();
   m_graphicsQueueIndex = search_graphics_queue_index();
   enable_debug();
   create_device();
   create_command_pool();
   VkSurfaceKHR surface;
-  SDL_Vulkan_CreateSurface((SDL_Window *)window::get_sdl_window(), m_instance,
+  SDL_Vulkan_CreateSurface((SDL_Window *)Window::get_sdl_window(), m_instance,
                            &surface);
   mSwapchain = std::make_unique<vk_swapchain>(m_instance, m_device, surface);
   mSwapchain->prepare(
-      m_physDev, m_graphicsQueueIndex, static_cast<uint32_t>(window::size().x),
-      static_cast<uint32_t>(window::size().y), VK_FORMAT_B8G8R8A8_UNORM);
+      m_physDev, m_graphicsQueueIndex, static_cast<uint32_t>(Window::size().x),
+      static_cast<uint32_t>(Window::size().y), VK_FORMAT_B8G8R8A8_UNORM);
   create_allocator();
   create_depth_buffer();
   create_image_view();
@@ -140,18 +140,18 @@ void vk_base::select_physical_device() {
   // Print device name
   VkPhysicalDeviceProperties props;
   vkGetPhysicalDeviceProperties(m_physDev, &props);
-  logger::info("Vulkan version: %d.%d.%d", VK_VERSION_MAJOR(props.apiVersion),
+  Logger::info("Vulkan version: %d.%d.%d", VK_VERSION_MAJOR(props.apiVersion),
                VK_VERSION_MINOR(props.apiVersion),
                VK_VERSION_PATCH(props.apiVersion));
-  logger::info("Driver version: %d.%d.%d",
+  Logger::info("Driver version: %d.%d.%d",
                VK_VERSION_MAJOR(props.driverVersion),
                VK_VERSION_MINOR(props.driverVersion),
                VK_VERSION_PATCH(props.driverVersion));
-  logger::info("Vendor ID: %d", props.vendorID);
-  logger::info("Device ID: %d", props.deviceID);
-  logger::info("Device type: %d", props.deviceType);
-  logger::info("Device limits: %d", props.limits.maxImageDimension2D);
-  logger::info("Physical device: %s", props.deviceName);
+  Logger::info("Vendor ID: %d", props.vendorID);
+  Logger::info("Device ID: %d", props.deviceID);
+  Logger::info("Device type: %d", props.deviceType);
+  Logger::info("Device limits: %d", props.limits.maxImageDimension2D);
+  Logger::info("Physical device: %s", props.deviceName);
 }
 
 uint32_t vk_base::search_graphics_queue_index() {
@@ -205,7 +205,7 @@ void vk_base::create_instance(const char *appName) {
   // Create instance
   VkResult result = vkCreateInstance(&ci, nullptr, &m_instance);
   if (result != VK_SUCCESS) {
-    logger::critical("Failed to create instance : %s",
+    Logger::critical("Failed to create instance : %s",
                      vkutil::result_to_string(result));
     exit(1);
   }
@@ -228,7 +228,7 @@ void vk_base::create_device() {
   VkResult result;
   result = vkCreateDevice(m_physDev, &ci, nullptr, &m_device);
   if (result != VK_SUCCESS) {
-    logger::critical("Failed to create device : %s",
+    Logger::critical("Failed to create device : %s",
                      vkutil::result_to_string(result));
     exit(1);
   }
@@ -252,7 +252,7 @@ void vk_base::create_image_view() {
   VkResult result;
   result = vkCreateImageView(m_device, &ci, nullptr, &m_depthBufferView);
   if (result != VK_SUCCESS) {
-    logger::critical("Failed to create image view : %s",
+    Logger::critical("Failed to create image view : %s",
                      vkutil::result_to_string(result));
     exit(1);
   }
@@ -263,13 +263,13 @@ void vk_base::create_semaphore() {
   VkResult result;
   result = vkCreateSemaphore(m_device, &ci, nullptr, &m_renderCompletedSem);
   if (result != VK_SUCCESS) {
-    logger::critical("Failed to create semaphore : %s",
+    Logger::critical("Failed to create semaphore : %s",
                      vkutil::result_to_string(result));
     exit(1);
   }
   result = vkCreateSemaphore(m_device, &ci, nullptr, &m_presentCompletedSem);
   if (result != VK_SUCCESS) {
-    logger::critical("Failed to create semaphore : %s",
+    Logger::critical("Failed to create semaphore : %s",
                      vkutil::result_to_string(result));
     exit(1);
   }
@@ -282,7 +282,7 @@ void vk_base::create_command_pool() {
   VkResult result;
   result = vkCreateCommandPool(m_device, &ci, nullptr, &m_commandPool);
   if (result != VK_SUCCESS) {
-    logger::critical("Failed to create command pool");
+    Logger::critical("Failed to create command pool");
     exit(1);
   }
 }
@@ -295,7 +295,7 @@ void vk_base::create_allocator() {
   VkResult result;
   result = vmaCreateAllocator(&allocator_info, &m_vkrenderer->allocator);
   if (result != VK_SUCCESS) {
-    logger::critical("Failed to create allocator : %s",
+    Logger::critical("Failed to create allocator : %s",
                      vkutil::result_to_string(result));
     exit(1);
   }
@@ -320,7 +320,7 @@ void vk_base::create_depth_buffer() {
       vmaCreateImage(m_vkrenderer->allocator, &ci, &alloc_info, &m_depthBuffer,
                      &m_depthBufferAllocation, &alloc_info_out);
   if (result != VK_SUCCESS || m_depthBuffer == VK_NULL_HANDLE) {
-    logger::critical("Failed to create depth buffer : %s",
+    Logger::critical("Failed to create depth buffer : %s",
                      vkutil::result_to_string(result));
     exit(1);
   }
@@ -374,7 +374,7 @@ void vk_base::create_render_pass() {
   VkResult result;
   result = vkCreateRenderPass(m_device, &ci, nullptr, &m_renderPass);
   if (result != VK_SUCCESS) {
-    logger::critical("Failed to create render pass : %s",
+    Logger::critical("Failed to create render pass : %s",
                      vkutil::result_to_string(result));
     exit(1);
   }
@@ -398,7 +398,7 @@ void vk_base::create_frame_buffer() {
     VkResult result;
     result = vkCreateFramebuffer(m_device, &ci, nullptr, &framebuffer);
     if (result != VK_SUCCESS) {
-      logger::critical("Failed to create framebuffer : %s",
+      Logger::critical("Failed to create framebuffer : %s",
                        vkutil::result_to_string(result));
       exit(1);
     }
@@ -415,7 +415,7 @@ void vk_base::create_command_buffers() {
   VkResult result;
   result = vkAllocateCommandBuffers(m_device, &ai, m_commands.data());
   if (result != VK_SUCCESS) {
-    logger::critical("Failed to allocate command buffers : %s",
+    Logger::critical("Failed to allocate command buffers : %s",
                      vkutil::result_to_string(result));
     exit(1);
   }
@@ -427,7 +427,7 @@ void vk_base::create_command_buffers() {
   for (auto &v : m_fences) {
     result = vkCreateFence(m_device, &ci, nullptr, &v);
     if (result != VK_SUCCESS) {
-      logger::critical("Failed to create fence : %s",
+      Logger::critical("Failed to create fence : %s",
                        vkutil::result_to_string(result));
       exit(1);
     }
@@ -489,7 +489,7 @@ vk_base::get_memory_type_index(uint32_t requestBits,
 
 void vk_base::recreate_swapchain() {
   vkDeviceWaitIdle(m_device);
-  auto size = window::size();
+  auto size = Window::size();
   auto format = mSwapchain->GetSurfaceFormat().format;
   mSwapchain->prepare(m_physDev, m_graphicsQueueIndex,
                       static_cast<uint32_t>(size.x),

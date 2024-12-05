@@ -27,14 +27,20 @@ void WindowImpl::initialize(const std::string &name) {
   // Load settings from settings.json
   {
     File f;
-    f.open("settings.json", File::mode::r);
-    void *buffer = calloc(f.size() + 10, 1);
-    f.read(buffer, f.size(), 1);
-    f.close();
-    Json j;
-    j.parse((char *)buffer);
-    m_size.x = j["WindowWidth"].get_float();
-    m_size.y = j["WindowHeight"].get_float();
+    if (f.open("settings.json", File::mode::r)) {
+
+      void *buffer = calloc(f.size() + 10, 1);
+      f.read(buffer, f.size(), 1);
+      f.close();
+      Json j;
+      j.parse((char *)buffer);
+      m_size.x = j["WindowWidth"].get_float();
+      m_size.y = j["WindowHeight"].get_float();
+    } else {
+      f.close();
+      m_size.x = 1280;
+      m_size.y = 720;
+    }
   }
 
   m_window = SDL_CreateWindow(

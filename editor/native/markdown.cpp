@@ -99,8 +99,8 @@ void markdown() {
   ImGui::Begin("Document");
   std::string markdownText;
 
-  file f;
-  if (f.open("../docs/docs/lua_api.md", file::mode::r)) {
+  File f;
+  if (f.open("docs/docs/lua_api.md", File::mode::r)) {
     char *buf;
     buf = new char[f.size() + 1];
     memset(buf, 0, f.size() + 1);

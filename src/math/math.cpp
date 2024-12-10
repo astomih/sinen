@@ -4,26 +4,26 @@
 #include <math/vector2.hpp>
 #include <math/vector3.hpp>
 namespace sinen {
-const vector2 vector2::zero(0.0f, 0.0f);
-const vector2 vector2::unit_x(1.0f, 0.0f);
-const vector2 vector2::unit_y(0.0f, 1.0f);
-const vector2 vector2::neg_unit_x(-1.0f, 0.0f);
-const vector2 vector2::neg_unit_y(0.0f, -1.0f);
+const Vector2 Vector2::zero(0.0f, 0.0f);
+const Vector2 Vector2::unit_x(1.0f, 0.0f);
+const Vector2 Vector2::unit_y(0.0f, 1.0f);
+const Vector2 Vector2::neg_unit_x(-1.0f, 0.0f);
+const Vector2 Vector2::neg_unit_y(0.0f, -1.0f);
 
-const vector3 vector3::zero(0.0f, 0.0f, 0.f);
-const vector3 vector3::unit_x(1.0f, 0.0f, 0.0f);
-const vector3 vector3::unit_y(0.0f, 1.0f, 0.0f);
-const vector3 vector3::unit_z(0.0f, 0.0f, 1.0f);
-const vector3 vector3::neg_unit_x(-1.0f, 0.0f, 0.0f);
-const vector3 vector3::neg_unit_y(0.0f, -1.0f, 0.0f);
-const vector3 vector3::neg_unit_z(0.0f, 0.0f, -1.0f);
-const vector3 vector3::infinity(math::infinity, math::infinity, math::infinity);
-const vector3 vector3::neg_infinity(math::neg_infinity, math::neg_infinity,
-                                    math::neg_infinity);
+const Vector3 Vector3::zero(0.0f, 0.0f, 0.f);
+const Vector3 Vector3::unit_x(1.0f, 0.0f, 0.0f);
+const Vector3 Vector3::unit_y(0.0f, 1.0f, 0.0f);
+const Vector3 Vector3::unit_z(0.0f, 0.0f, 1.0f);
+const Vector3 Vector3::neg_unit_x(-1.0f, 0.0f, 0.0f);
+const Vector3 Vector3::neg_unit_y(0.0f, -1.0f, 0.0f);
+const Vector3 Vector3::neg_unit_z(0.0f, 0.0f, -1.0f);
+const Vector3 Vector3::infinity(Math::infinity, Math::infinity, Math::infinity);
+const Vector3 Vector3::neg_infinity(Math::neg_infinity, Math::neg_infinity,
+                                    Math::neg_infinity);
 
 static float m3Ident[3][3] = {
     {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}};
-const matrix3 matrix3::identity(m3Ident);
+const Matrix3 Matrix3::identity(m3Ident);
 
 static float m4Ident[4][4] = {{1.0f, 0.0f, 0.0f, 0.0f},
                               {0.0f, 1.0f, 0.0f, 0.0f},
@@ -32,20 +32,20 @@ static float m4Ident[4][4] = {{1.0f, 0.0f, 0.0f, 0.0f},
 
 const matrix4 matrix4::identity(m4Ident);
 
-const quaternion quaternion::Identity(0.0f, 0.0f, 0.0f, 1.0f);
+const Quaternion Quaternion::Identity(0.0f, 0.0f, 0.0f, 1.0f);
 
-vector2 vector2::transform(const vector2 &vec, const matrix3 &mat,
+Vector2 Vector2::transform(const Vector2 &vec, const Matrix3 &mat,
                            float w /*= 1.0f*/) {
-  vector2 retVal;
+  Vector2 retVal;
   retVal.x = vec.x * mat.mat[0][0] + vec.y * mat.mat[1][0] + w * mat.mat[2][0];
   retVal.y = vec.x * mat.mat[0][1] + vec.y * mat.mat[1][1] + w * mat.mat[2][1];
   // ignore w since we aren't returning a new value for it...
   return retVal;
 }
 
-vector3 vector3::transform(const vector3 &vec, const matrix4 &mat,
+Vector3 Vector3::transform(const Vector3 &vec, const matrix4 &mat,
                            float w /*= 1.0f*/) {
-  vector3 retVal;
+  Vector3 retVal;
   retVal.x = vec.x * mat.mat[0][0] + vec.y * mat.mat[1][0] +
              vec.z * mat.mat[2][0] + w * mat.mat[3][0];
   retVal.y = vec.x * mat.mat[0][1] + vec.y * mat.mat[1][1] +
@@ -57,10 +57,10 @@ vector3 vector3::transform(const vector3 &vec, const matrix4 &mat,
 }
 
 // This will transform the vector and renormalize the w component
-vector3 vector3::transform_with_persp_div(const vector3 &vec,
+Vector3 Vector3::transform_with_persp_div(const Vector3 &vec,
                                           const matrix4 &mat,
                                           float w /*= 1.0f*/) {
-  vector3 retVal;
+  Vector3 retVal;
   retVal.x = vec.x * mat.mat[0][0] + vec.y * mat.mat[1][0] +
              vec.z * mat.mat[2][0] + w * mat.mat[3][0];
   retVal.y = vec.x * mat.mat[0][1] + vec.y * mat.mat[1][1] +
@@ -69,7 +69,7 @@ vector3 vector3::transform_with_persp_div(const vector3 &vec,
              vec.z * mat.mat[2][2] + w * mat.mat[3][2];
   float transformedW = vec.x * mat.mat[0][3] + vec.y * mat.mat[1][3] +
                        vec.z * mat.mat[2][3] + w * mat.mat[3][3];
-  if (!math::near_zero(math::abs(transformedW))) {
+  if (!Math::near_zero(Math::abs(transformedW))) {
     transformedW = 1.0f / transformedW;
     retVal *= transformedW;
   }
@@ -77,14 +77,14 @@ vector3 vector3::transform_with_persp_div(const vector3 &vec,
 }
 
 // Transform a Vector3 by a quaternion
-vector3 vector3::transform(const vector3 &v, const quaternion &q) {
+Vector3 Vector3::transform(const Vector3 &v, const Quaternion &q) {
   // v + 2.0*cross(q.xyz, cross(q.xyz,v) + q.w*v);
-  vector3 qv(q.x, q.y, q.z);
-  vector3 retVal = v;
-  retVal += 2.0f * vector3::cross(qv, vector3::cross(qv, v) + q.w * v);
+  Vector3 qv(q.x, q.y, q.z);
+  Vector3 retVal = v;
+  retVal += 2.0f * Vector3::cross(qv, Vector3::cross(qv, v) + q.w * v);
   return retVal;
 }
-vector3 matrix4::operator*(const vector3 &vec) const {
+Vector3 matrix4::operator*(const Vector3 &vec) const {
 
   float x =
       mat[0][0] * vec.x + mat[1][0] * vec.y + mat[2][0] * vec.z + mat[3][0];
@@ -95,7 +95,7 @@ vector3 matrix4::operator*(const vector3 &vec) const {
   float w =
       mat[0][3] * vec.x + mat[1][3] * vec.y + mat[2][3] * vec.z + mat[3][3];
 
-  return vector3(x / w, y / w, z / w);
+  return Vector3(x / w, y / w, z / w);
 }
 
 void matrix4::invert() {
@@ -208,7 +208,7 @@ void matrix4::invert() {
     }
   }
 }
-quaternion matrix4::to_quaternion(const matrix4 &m) {
+Quaternion matrix4::to_quaternion(const matrix4 &m) {
   auto px = m.mat[0][0] - m.mat[1][1] - m.mat[2][2] + 1;
   auto py = -m.mat[0][0] + m.mat[1][1] - m.mat[2][2] + 1;
   auto pz = -m.mat[0][0] - m.mat[1][1] + m.mat[2][2] + 1;
@@ -230,47 +230,47 @@ quaternion matrix4::to_quaternion(const matrix4 &m) {
   }
   switch (flag) {
   case 0: {
-    auto x = math::sqrt(px) * 0.5f;
+    auto x = Math::sqrt(px) * 0.5f;
     auto d = 1 / (4 * x);
-    return quaternion(x, (m.mat[1][0] + m.mat[0][1]) * d,
+    return Quaternion(x, (m.mat[1][0] + m.mat[0][1]) * d,
                       (m.mat[0][2] + m.mat[2][0]) * d,
                       (m.mat[2][1] - m.mat[1][2]) * d);
   }
   case 1: {
-    auto y = math::sqrt(py) * 0.5f;
+    auto y = Math::sqrt(py) * 0.5f;
     auto d = 1 / (4 * y);
-    return quaternion((m.mat[1][0] + m.mat[0][1]) * d, y,
+    return Quaternion((m.mat[1][0] + m.mat[0][1]) * d, y,
                       (m.mat[2][1] + m.mat[1][2]) * d,
                       (m.mat[0][2] - m.mat[2][0]) * d);
   }
   case 2: {
-    auto z = math::sqrt(pz) * 0.5f;
+    auto z = Math::sqrt(pz) * 0.5f;
     auto d = 1 / (4 * z);
-    return quaternion((m.mat[0][2] + m.mat[2][0]) * d,
+    return Quaternion((m.mat[0][2] + m.mat[2][0]) * d,
                       (m.mat[2][1] + m.mat[1][2]) * d, z,
                       (m.mat[1][0] - m.mat[0][1]) * d);
   }
   case 3: {
-    auto w = math::sqrt(pw) * 0.5f;
+    auto w = Math::sqrt(pw) * 0.5f;
     auto d = 1 / (4 * w);
-    return quaternion((m.mat[2][1] - m.mat[1][2]) * d,
+    return Quaternion((m.mat[2][1] - m.mat[1][2]) * d,
                       (m.mat[0][2] - m.mat[2][0]) * d,
                       (m.mat[1][0] - m.mat[0][1]) * d, w);
   }
   default:
-    return quaternion();
+    return Quaternion();
   }
 }
 
-matrix4 matrix4::lookat(const vector3 &eye, const vector3 &at,
-                        const vector3 &up) {
-  const auto FRONT = vector3::normalize(eye - at);
-  const auto RIGHT = vector3::normalize(vector3::cross(up, FRONT));
-  const auto UP = vector3::normalize(vector3::cross(FRONT, RIGHT));
-  vector3 trans;
-  trans.x = -vector3::dot(RIGHT, eye);
-  trans.y = -vector3::dot(UP, eye);
-  trans.z = -vector3::dot(FRONT, eye);
+matrix4 matrix4::lookat(const Vector3 &eye, const Vector3 &at,
+                        const Vector3 &up) {
+  const auto FRONT = Vector3::normalize(eye - at);
+  const auto RIGHT = Vector3::normalize(Vector3::cross(up, FRONT));
+  const auto UP = Vector3::normalize(Vector3::cross(FRONT, RIGHT));
+  Vector3 trans;
+  trans.x = -Vector3::dot(RIGHT, eye);
+  trans.y = -Vector3::dot(UP, eye);
+  trans.z = -Vector3::dot(FRONT, eye);
 
   float temp[4][4] = {{RIGHT.x, UP.x, FRONT.x, 0.0f},
                       {RIGHT.y, UP.y, FRONT.y, 0.0f},
@@ -281,7 +281,7 @@ matrix4 matrix4::lookat(const vector3 &eye, const vector3 &at,
 
 matrix4 matrix4::perspective(const float angle, const float aspect,
                              const float near, const float far) {
-  const auto yScale = math::cot(angle / 2.0f);
+  const auto yScale = Math::cot(angle / 2.0f);
   const auto xScale = yScale / aspect;
   float temp[4][4] = {{xScale, 0.0f, 0.0f, 0.0f},
                       {0.0f, yScale, 0.0f, 0.0f},
@@ -328,7 +328,7 @@ matrix4 matrix4::transpose(const matrix4 &m) {
   return matrix4(mat);
 }
 
-matrix4 matrix4::create_translation(const vector3 &trans) {
+matrix4 matrix4::create_translation(const Vector3 &trans) {
   float temp[4][4] = {{1.0f, 0.0f, 0.0f, 0.0f},
                       {0.0f, 1.0f, 0.0f, 0.0f},
                       {0.0f, 0.0f, 1.0f, 0.0f},
@@ -336,7 +336,7 @@ matrix4 matrix4::create_translation(const vector3 &trans) {
   return matrix4(temp);
 }
 
-matrix4 matrix4::create_from_quaternion(const class quaternion &q) {
+matrix4 matrix4::create_from_quaternion(const class Quaternion &q) {
   float mat[4][4];
 
   mat[0][0] = 1.0f - 2.0f * q.y * q.y - 2.0f * q.z * q.z;
@@ -361,17 +361,17 @@ matrix4 matrix4::create_from_quaternion(const class quaternion &q) {
 
   return matrix4(mat);
 }
-quaternion quaternion::from_euler(const vector3 &euler) {
-  quaternion q;
-  q = quaternion::concatenate(
-      q, quaternion(vector3::unit_z, math::to_radians(euler.z)));
-  q = quaternion::concatenate(
-      q, quaternion(vector3::unit_y, math::to_radians(euler.y)));
-  q = quaternion::concatenate(
-      q, quaternion(vector3::unit_x, math::to_radians(euler.x)));
+Quaternion Quaternion::from_euler(const Vector3 &euler) {
+  Quaternion q;
+  q = Quaternion::concatenate(
+      q, Quaternion(Vector3::unit_z, Math::to_radians(euler.z)));
+  q = Quaternion::concatenate(
+      q, Quaternion(Vector3::unit_y, Math::to_radians(euler.y)));
+  q = Quaternion::concatenate(
+      q, Quaternion(Vector3::unit_x, Math::to_radians(euler.x)));
   return q;
 }
-matrix4 matrix4::create_scale(const vector3 &scale) {
+matrix4 matrix4::create_scale(const Vector3 &scale) {
   float temp[4][4] = {{scale.x, 0.0f, 0.0f, 0.0f},
                       {0.0f, scale.y, 0.0f, 0.0f},
                       {0.0f, 0.0f, scale.z, 0.0f},
@@ -379,7 +379,7 @@ matrix4 matrix4::create_scale(const vector3 &scale) {
   return matrix4(temp);
 }
 
-vector3 quaternion::to_euler(const quaternion &r) {
+Vector3 Quaternion::to_euler(const Quaternion &r) {
   float x = r.x;
   float y = r.y;
   float z = r.z;
@@ -420,19 +420,19 @@ vector3 quaternion::to_euler(const quaternion &r) {
   float tx, ty, tz;
 
   if (m21 >= 0.99 && m21 <= 1.01) {
-    tx = math::pi / 2.f;
+    tx = Math::pi / 2.f;
     ty = 0;
-    tz = math::atan2(m10, m00);
+    tz = Math::atan2(m10, m00);
   } else if (m21 >= -1.01f && m21 <= -0.99f) {
-    tx = -math::pi / 2.f;
+    tx = -Math::pi / 2.f;
     ty = 0;
-    tz = math::atan2(m10, m00);
+    tz = Math::atan2(m10, m00);
   } else {
     tx = std::asin(-m21);
-    ty = math::atan2(m20, m22);
-    tz = math::atan2(m01, m11);
+    ty = Math::atan2(m20, m22);
+    tz = Math::atan2(m01, m11);
   }
 
-  return vector3(tx, ty, tz);
+  return Vector3(tx, ty, tz);
 }
 } // namespace sinen

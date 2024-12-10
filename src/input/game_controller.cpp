@@ -26,7 +26,7 @@ int16_t joystick::get_axis(joystick::axis _axis) {
   return ::SDL_GameControllerGetAxis(
       this->impl->controller, static_cast<SDL_GameControllerAxis>(_axis));
 }
-uint8_t joystick::get_button(gamepad::code button) {
+uint8_t joystick::get_button(GamePad::code button) {
   return SDL_GameControllerGetButton(
       impl->controller, static_cast<SDL_GameControllerButton>(button));
 }

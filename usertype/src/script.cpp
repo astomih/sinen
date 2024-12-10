@@ -27,117 +27,117 @@ bool script_engine::initialize(sol::state &lua) {
                      sol::lib::string, sol::lib::debug, sol::lib::table);
   register_generator(lua);
   {
-    auto v = lua.new_usertype<vector3>("", sol::no_construction());
-    v["x"] = &vector3::x;
-    v["y"] = &vector3::y;
-    v["z"] = &vector3::z;
-    v["add"] = &vector3::add;
-    v["sub"] = &vector3::sub;
-    v["mul"] = &vector3::mul;
-    v["div"] = &vector3::div;
-    v["copy"] = &vector3::copy;
-    v["length"] = &vector3::length;
-    v["forward"] = [](const vector3 v, const vector3 rotation) -> vector3 {
-      quaternion q;
-      q = quaternion::concatenate(
-          q, quaternion(vector3::unit_z, math::to_radians(rotation.z)));
-      q = quaternion::concatenate(
-          q, quaternion(vector3::unit_y, math::to_radians(rotation.y)));
-      q = quaternion::concatenate(
-          q, quaternion(vector3::unit_x, math::to_radians(rotation.x)));
-      return vector3::transform(v, q);
+    auto v = lua.new_usertype<Vector3>("", sol::no_construction());
+    v["x"] = &Vector3::x;
+    v["y"] = &Vector3::y;
+    v["z"] = &Vector3::z;
+    v["add"] = &Vector3::add;
+    v["sub"] = &Vector3::sub;
+    v["mul"] = &Vector3::mul;
+    v["div"] = &Vector3::div;
+    v["copy"] = &Vector3::copy;
+    v["length"] = &Vector3::length;
+    v["forward"] = [](const Vector3 v, const Vector3 rotation) -> Vector3 {
+      Quaternion q;
+      q = Quaternion::concatenate(
+          q, Quaternion(Vector3::unit_z, Math::to_radians(rotation.z)));
+      q = Quaternion::concatenate(
+          q, Quaternion(Vector3::unit_y, Math::to_radians(rotation.y)));
+      q = Quaternion::concatenate(
+          q, Quaternion(Vector3::unit_x, Math::to_radians(rotation.x)));
+      return Vector3::transform(v, q);
     };
-    v["normalize"] = [](const vector3 &v) { return vector3::normalize(v); };
-    v["dot"] = &vector3::dot;
-    v["cross"] = &vector3::cross;
-    v["lerp"] = &vector3::lerp;
-    v["reflect"] = &vector3::reflect;
+    v["normalize"] = [](const Vector3 &v) { return Vector3::normalize(v); };
+    v["dot"] = &Vector3::dot;
+    v["cross"] = &Vector3::cross;
+    v["lerp"] = &Vector3::lerp;
+    v["reflect"] = &Vector3::reflect;
   }
   {
-    auto v = lua.new_usertype<vector2>("", sol::no_construction());
-    v["x"] = &vector2::x;
-    v["y"] = &vector2::y;
-    v["add"] = &vector2::add;
-    v["sub"] = &vector2::sub;
-    v["mul"] = &vector2::mul;
-    v["div"] = &vector2::div;
-    v["length"] = &vector2::length;
-    v["normalize"] = [](const vector2 &v) { return vector2::normalize(v); };
-    v["dot"] = &vector2::dot;
-    v["lerp"] = &vector2::lerp;
-    v["reflect"] = &vector2::reflect;
+    auto v = lua.new_usertype<Vector2>("", sol::no_construction());
+    v["x"] = &Vector2::x;
+    v["y"] = &Vector2::y;
+    v["add"] = &Vector2::add;
+    v["sub"] = &Vector2::sub;
+    v["mul"] = &Vector2::mul;
+    v["div"] = &Vector2::div;
+    v["length"] = &Vector2::length;
+    v["normalize"] = [](const Vector2 &v) { return Vector2::normalize(v); };
+    v["dot"] = &Vector2::dot;
+    v["lerp"] = &Vector2::lerp;
+    v["reflect"] = &Vector2::reflect;
   }
   {
-    auto v = lua.new_usertype<point2i>("", sol::no_construction());
-    v["x"] = &point2i::x;
-    v["y"] = &point2i::y;
+    auto v = lua.new_usertype<Point2i>("", sol::no_construction());
+    v["x"] = &Point2i::x;
+    v["y"] = &Point2i::y;
   }
   {
-    auto v = lua.new_usertype<point2f>("", sol::no_construction());
-    v["x"] = &point2f::x;
-    v["y"] = &point2f::y;
+    auto v = lua.new_usertype<Point2f>("", sol::no_construction());
+    v["x"] = &Point2f::x;
+    v["y"] = &Point2f::y;
   }
   {
-    auto v = lua.new_usertype<color>("", sol::no_construction());
-    v["r"] = &color::r;
-    v["g"] = &color::g;
-    v["b"] = &color::b;
-    v["a"] = &color::a;
+    auto v = lua.new_usertype<Color>("", sol::no_construction());
+    v["r"] = &Color::r;
+    v["g"] = &Color::g;
+    v["b"] = &Color::b;
+    v["a"] = &Color::a;
   }
   {
-    auto v = lua.new_usertype<texture>("", sol::no_construction());
-    v["fill_color"] = &texture::fill_color;
-    v["blend_color"] = &texture::blend_color;
-    v["copy"] = &texture::copy;
-    v["load"] = &texture::load;
-    v["size"] = &texture::size;
+    auto v = lua.new_usertype<Texture>("", sol::no_construction());
+    v["fill_color"] = &Texture::fill_color;
+    v["blend_color"] = &Texture::blend_color;
+    v["copy"] = &Texture::copy;
+    v["load"] = &Texture::load;
+    v["size"] = &Texture::size;
   }
   {
-    auto v = lua.new_usertype<font>("", sol::no_construction());
-    v["load"] = &font::load;
-    v["render_text"] = &font::render_text;
-    v["resize"] = &font::resize;
+    auto v = lua.new_usertype<Font>("", sol::no_construction());
+    v["load"] = &Font::load;
+    v["render_text"] = &Font::render_text;
+    v["resize"] = &Font::resize;
   }
   {
-    auto v = lua.new_usertype<music>("", sol::no_construction());
-    v["load"] = &music::load;
-    v["play"] = &music::play;
-    v["set_volume"] = &music::set_volume;
+    auto v = lua.new_usertype<Music>("", sol::no_construction());
+    v["load"] = &Music::load;
+    v["play"] = &Music::play;
+    v["set_volume"] = &Music::set_volume;
   }
   {
-    auto v = lua.new_usertype<sound>("", sol::no_construction());
-    v["load"] = &sound::load;
-    v["play"] = &sound::play;
-    v["set_volume"] = &sound::set_volume;
-    v["set_pitch"] = &sound::set_pitch;
-    v["set_listener"] = &sound::set_listener;
-    v["set_position"] = &sound::set_position;
+    auto v = lua.new_usertype<Sound>("", sol::no_construction());
+    v["load"] = &Sound::load;
+    v["play"] = &Sound::play;
+    v["set_volume"] = &Sound::set_volume;
+    v["set_pitch"] = &Sound::set_pitch;
+    v["set_listener"] = &Sound::set_listener;
+    v["set_position"] = &Sound::set_position;
   }
   {
-    auto v = lua.new_usertype<camera>("", sol::no_construction());
-    v["lookat"] = &camera::lookat;
-    v["perspective"] = &camera::perspective;
-    v["orthographic"] = &camera::orthographic;
-    v["position"] = &camera::position;
-    v["target"] = &camera::target;
-    v["up"] = &camera::up;
+    auto v = lua.new_usertype<Camera>("", sol::no_construction());
+    v["lookat"] = &Camera::lookat;
+    v["perspective"] = &Camera::perspective;
+    v["orthographic"] = &Camera::orthographic;
+    v["position"] = &Camera::position;
+    v["target"] = &Camera::target;
+    v["up"] = &Camera::up;
   }
-  lua["change_scene"] = [&](const std::string &str) { scene::change(str); };
+  lua["change_scene"] = [&](const std::string &str) { Scene::change(str); };
   {
-    auto v = lua.new_usertype<model>("", sol::no_construction());
-    v["aabb"] = &model::local_aabb;
-    v["load"] = &model::load;
-  }
-  {
-    auto v = lua.new_usertype<aabb>("", sol::no_construction());
-    v["min"] = &aabb::min;
-    v["max"] = &aabb::max;
-    v["update_world"] = &aabb::update_world;
+    auto v = lua.new_usertype<Model>("", sol::no_construction());
+    v["aabb"] = &Model::local_aabb;
+    v["load"] = &Model::load;
   }
   {
-    auto v = lua.new_usertype<random>("", sol::no_construction());
-    v["get_int_range"] = random::get_int_range;
-    v["get_float_range"] = random::get_float_range;
+    auto v = lua.new_usertype<AABB>("", sol::no_construction());
+    v["min"] = &AABB::_min;
+    v["max"] = &AABB::_max;
+    v["update_world"] = &AABB::update_world;
+  }
+  {
+    auto v = lua.new_usertype<Random>("", sol::no_construction());
+    v["get_int_range"] = Random::get_int_range;
+    v["get_float_range"] = Random::get_float_range;
   }
   register_component(lua);
   register_drawable(lua);

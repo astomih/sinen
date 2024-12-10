@@ -17,3 +17,6 @@
 	path = libs/SDL_ttf
 	url = https://github.com/libsdl-org/SDL_ttf
 	branch = release-2.20.x
+[submodule "libs/VulkanMemoryAllocator"]
+	path = libs/VulkanMemoryAllocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator

@@ -6,24 +6,24 @@ namespace sinen {
  * @brief Timer class
  *
  */
-class timer {
+class Timer {
 public:
   /**
    * @brief Construct a new timer object
    *
    */
-  timer();
+  Timer();
   /**
    * @brief Construct a new timer object
    *
    * @param time Set the time in seconds
    */
-  timer(float time);
+  Timer(float time);
   /**
    * @brief Destroy the timer object
    *
    */
-  ~timer();
+  ~Timer();
   /**
    * @brief Start the timer
    *

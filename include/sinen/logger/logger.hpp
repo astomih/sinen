@@ -7,7 +7,7 @@
 
 namespace sinen {
 
-class logger {
+class Logger {
 private:
 public:
   enum class priority { verbose = 1, debug, info, warn, error, critical };

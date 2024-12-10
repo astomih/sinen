@@ -339,11 +339,11 @@ ASALocalRun/
 # BeatPulse healthcheck temp database
 healthchecksdb
 
-#user
-nen-cppcheck-build-dir/
+# User directories
 Debug/
 Release/
 packages/
+
 *.srctrlbm
 *.srctrldb
 *.srctrlprj
@@ -363,9 +363,8 @@ _deps
 .ninja_deps
 .ninja_log
 *.ninja
-build
-web
-
+build/msvc/*
+!build/msvc/.gitkeep
 
 
 *.lnk

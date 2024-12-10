@@ -10,7 +10,7 @@ namespace sinen {
  * @brief Script class
  *
  */
-class script {
+class Script {
 public:
   /**
    * @brief Get the state object

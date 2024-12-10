@@ -11,12 +11,12 @@
 #include "../math/matrix4.hpp"
 #include "../math/vector3.hpp"
 namespace sinen {
-class scene;
+class Scene;
 /**
  * @brief Base of all actors
  *
  */
-class actor {
+class Actor {
 public:
   /**
    * @brief State of the actor
@@ -28,13 +28,13 @@ public:
    * @brief Construct a new base actor object
    *
    */
-  actor();
+  Actor();
 
   /**
    * @brief Destroy the base actor object
    *
    */
-  virtual ~actor();
+  virtual ~Actor();
   /**
    * @brief Update Actor
    * @details This function is called every frame by the scene.
@@ -47,13 +47,13 @@ public:
    *
    * @return const Vector3& Position vector
    */
-  const vector3 &get_position() const noexcept { return m_position; }
+  const Vector3 &get_position() const noexcept { return m_position; }
   /**
    * @brief Set the position vector
    *
    * @param pos Vector3
    */
-  void set_position(const vector3 &pos) noexcept { m_position = pos; }
+  void set_position(const Vector3 &pos) noexcept { m_position = pos; }
   /**
    * @brief Add to the position vector by float
    *
@@ -71,33 +71,33 @@ public:
    *
    * @param vec
    */
-  void move(const vector3 &vec) noexcept { m_position += vec; }
+  void move(const Vector3 &vec) noexcept { m_position += vec; }
 
   /**
    * @brief Get the scale vector
    *
    * @return const Vector3& Scale vector
    */
-  const vector3 &get_scale() const { return m_scale; }
+  const Vector3 &get_scale() const { return m_scale; }
 
   /**
    * @brief Set the scale vector
    *
    * @param scale Vector3
    */
-  void set_scale(const vector3 &scale) { m_scale = scale; }
+  void set_scale(const Vector3 &scale) { m_scale = scale; }
   /**
    * @brief Get the rotation quaternion
    *
    * @return const Quaternion&
    */
-  const vector3 &get_rotation() const { return m_rotation; }
+  const Vector3 &get_rotation() const { return m_rotation; }
   /**
    * @brief Set the rotation object
    *
    * @param rotation  Quaternion
    */
-  void set_rotation(const vector3 &rotation) { m_rotation = rotation; }
+  void set_rotation(const Vector3 &rotation) { m_rotation = rotation; }
   /**
    * @brief Get the world transform matrix
    *
@@ -110,8 +110,8 @@ public:
    * @param up Up vector
    * @return vector3 Forward vector
    */
-  vector3 get_forward(const vector3 &up) const {
-    return vector3();
+  Vector3 get_forward(const Vector3 &up) const {
+    return Vector3();
     // return vector3::transform(up, m_rotation);
   }
   /**
@@ -252,11 +252,11 @@ private:
   // Actor state
   state m_state;
   // Transform
-  vector3 m_position;
+  Vector3 m_position;
   // Rotation for quaternion;
-  vector3 m_rotation;
+  Vector3 m_rotation;
   // Scale vector
-  vector3 m_scale;
+  Vector3 m_scale;
   // Name
   std::string m_name;
   // Script name

@@ -22,7 +22,7 @@
 #include <SDL_ttf.h>
 
 namespace sinen {
-bool initialize(int argc, char *argv[]) {
+bool Initialize(int argc, char *argv[]) {
   SDL_SetMainReady();
   SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_EVENTS |
            SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER |
@@ -31,43 +31,43 @@ bool initialize(int argc, char *argv[]) {
   IMG_Init(IMG_INIT_PNG);
   Mix_Init(MIX_INIT_OGG);
   Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
-  window_system::initialize("SinenEngine");
-  render_system::initialize();
+  WindowImpl::initialize("SinenEngine");
+  RendererImpl::initialize();
   if (!sound_system::initialize()) {
-    logger::critical("Failed to initialize audio system");
+    Logger::critical("Failed to initialize audio system");
     sound_system::shutdown();
     return false;
   }
   if (!input_system::initialize()) {
-    logger::critical("Failed to initialize input system");
+    Logger::critical("Failed to initialize input system");
     return false;
   }
   if (!script_system::initialize()) {
-    logger::critical("Failed to initialize script system");
+    Logger::critical("Failed to initialize script system");
     return false;
   }
   if (!random_system::initialize()) {
-    logger::critical("Failed to initialize random system");
+    Logger::critical("Failed to initialize random system");
     return false;
   }
-  texture tex;
-  tex.fill_color(palette::light_black());
-  render_system::set_skybox_texture(tex);
+  Texture tex;
+  tex.fill_color(Palette::light_black());
+  RendererImpl::set_skybox_texture(tex);
   scene_system::initialize();
   if (argc >= 2) {
-    sinen::scene::load(argv[1]);
+    sinen::Scene::load(argv[1]);
   }
   return true;
 }
-void run() {
+void Run() {
   while (true) {
     if (scene_system::is_running()) {
-      window_system::prepare_frame();
+      WindowImpl::prepare_frame();
       scene_system::process_input();
       scene_system::update_scene();
       input_system::prepare_for_update();
       input_system::update();
-      render_system::render();
+      RendererImpl::render();
       continue;
     }
     if (scene_system::is_reset) {
@@ -78,14 +78,14 @@ void run() {
     break;
   }
 }
-bool shutdown() {
+bool Shutdown() {
   scene_system::shutdown();
   script_system::shutdown();
   input_system::shutdown();
   sound_system::shutdown();
   random_system::shutdown();
-  render_system::shutdown();
-  window_system::shutdown();
+  RendererImpl::shutdown();
+  WindowImpl::shutdown();
   Mix_CloseAudio();
   TTF_Quit();
   Mix_Quit();

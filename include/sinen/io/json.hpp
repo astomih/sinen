@@ -9,7 +9,7 @@ namespace sinen {
  * @brief Json read/write class
  *
  */
-class json {
+class Json {
 public:
   class object;
   /**
@@ -17,7 +17,7 @@ public:
    *
    */
   class array {
-    friend json;
+    friend Json;
 
   public:
     ~array();
@@ -35,7 +35,7 @@ public:
    *
    */
   class object {
-    friend json;
+    friend Json;
 
   public:
     ~object();
@@ -75,12 +75,12 @@ public:
    * @brief Construct a new json object
    *
    */
-  json();
+  Json();
   /**
    * @brief Destroy the json object
    *
    */
-  ~json();
+  ~Json();
   /**
    * @brief Parse json string
    *

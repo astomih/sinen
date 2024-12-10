@@ -14,24 +14,24 @@ namespace sinen {
  * @brief Texture
  *
  */
-class texture {
+class Texture {
 public:
   /**
    * @brief Construct a new texture object
    *
    */
-  texture();
+  Texture();
   /**
    * @brief Copy constructor
    *
    * @param other
    */
-  texture(const texture &other);
+  Texture(const Texture &other);
   /**
    * @brief Destroy the texture object
    *
    */
-  ~texture();
+  ~Texture();
   /**
    * @brief Load texture from file
    *
@@ -54,20 +54,20 @@ public:
    *
    * @return texture
    */
-  texture copy();
+  Texture copy();
 
-  void fill_color(const color &color);
-  void blend_color(const color &color);
+  void fill_color(const Color &color);
+  void blend_color(const Color &color);
 
-  vector2 size();
+  Vector2 size();
 
-  texture &operator=(const texture &other);
+  Texture &operator=(const Texture &other);
 
-  handle_t handle;
+  HandleT handle;
   std::shared_ptr<bool> is_need_update;
 
 private:
-  handle_t create();
+  HandleT create();
   void destroy();
 };
 } // namespace sinen

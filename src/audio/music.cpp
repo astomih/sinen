@@ -11,26 +11,26 @@
 #include <SDL_mixer.h>
 
 namespace sinen {
-music::music() {}
+Music::Music() {}
 
-music::~music() {}
+Music::~Music() {}
 
-void music::set_volume(int value) { ::Mix_VolumeMusic(value); }
+void Music::set_volume(int value) { ::Mix_VolumeMusic(value); }
 
-void music::play() { ::Mix_PlayMusic((::Mix_Music *)buffer, -1); }
+void Music::play() { ::Mix_PlayMusic((::Mix_Music *)buffer, -1); }
 
-void music::stop() { ::Mix_HaltMusic(); }
+void Music::stop() { ::Mix_HaltMusic(); }
 
-void music::load(std::string_view fileName) {
+void Music::load(std::string_view fileName) {
   auto rwops =
-      (SDL_RWops *)data_stream::open_as_rwops(asset_type::Music, fileName);
+      (SDL_RWops *)DataStream::open_as_rwops(AssetType::Music, fileName);
   ::Mix_Music *m = ::Mix_LoadMUS_RW(rwops, 1);
   if (m) {
     buffer = (void *)m;
   }
 }
 
-void music::unload() {
+void Music::unload() {
   if (buffer) {
     ::Mix_FreeMusic((::Mix_Music *)buffer);
     buffer = nullptr;

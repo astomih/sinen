@@ -36,32 +36,32 @@
 #include <sol/sol.hpp>
 
 namespace sinen {
-std::unique_ptr<scene::implements> scene_system::m_impl =
-    std::make_unique<scene::implements>();
-scene::state scene_system::m_game_state = scene::state::quit;
+std::unique_ptr<Scene::implements> scene_system::m_impl =
+    std::make_unique<Scene::implements>();
+Scene::state scene_system::m_game_state = Scene::state::quit;
 bool scene_system::is_run_script = true;
 uint32_t scene_system::m_prev_tick = 0;
 bool scene_system::is_reset = true;
 std::string scene_system::m_scene_name = "main";
 std::vector<scene_system::actor_ptr> scene_system::m_actors;
 bool scene_system::initialize() {
-  scene::get_component_factory().register_component<draw3d_component>("draw3d");
+  Scene::get_component_factory().register_component<draw3d_component>("draw3d");
 
-  scene::get_component_factory().register_component<move_component>("move");
+  Scene::get_component_factory().register_component<move_component>("move");
 
-  scene::get_component_factory().register_component<rigidbody_component>(
+  Scene::get_component_factory().register_component<rigidbody_component>(
       "rigidbody");
   return true;
 }
 void scene_system::setup() {
   if (is_run_script) {
     sol::state *lua = (sol::state *)script_system::get_state();
-    std::string str = data_stream::open_as_string(asset_type::Script,
+    std::string str = DataStream::open_as_string(AssetType::Script,
                                                   current_name() + ".lua");
     lua->do_string(str.data());
   }
   m_impl->setup();
-  m_game_state = scene::state::running;
+  m_game_state = Scene::state::running;
   m_prev_tick = SDL_GetTicks();
 }
 
@@ -70,11 +70,11 @@ void scene_system::process_input() {
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
     ImGui_ImplSDL2_ProcessEvent(&event);
-    window_system::process_input(event);
+    WindowImpl::process_input(event);
     input_system::process_event(event);
     switch (event.type) {
     case SDL_QUIT: {
-      m_game_state = scene::state::quit;
+      m_game_state = Scene::state::quit;
     } break;
     default:
       break;
@@ -84,9 +84,9 @@ void scene_system::process_input() {
 
 void scene_system::update_scene() {
   {
-    if (keyboard::is_pressed(keyboard::code::F3)) {
+    if (Keyboard::is_pressed(Keyboard::code::F3)) {
       static auto once = []() {
-        renderer::add_imgui_function([]() {
+        Renderer::add_imgui_function([]() {
           ImGui::Begin("Debug");
           ImGui::Text("FPS: %.3f", ImGui::GetIO().Framerate);
           ImGui::Text("DeltaTime: %f", ImGui::GetIO().DeltaTime);
@@ -99,7 +99,7 @@ void scene_system::update_scene() {
         });
         return true;
       }();
-      renderer::toggle_show_imgui();
+      Renderer::toggle_show_imgui();
     }
   }
   // calc delta time
@@ -110,18 +110,18 @@ void scene_system::update_scene() {
   }
   m_prev_tick = SDL_GetTicks();
   for (auto itr = m_actors.begin(); itr != m_actors.end();) {
-    if ((*itr)->get_state() == actor::state::active) {
+    if ((*itr)->get_state() == Actor::state::active) {
       sol::state *lua = (sol::state *)script_system::get_state();
       auto r = lua->require_script(
                       (*itr)->get_script_name(),
-                      data_stream::open_as_string(asset_type::Script,
+                      DataStream::open_as_string(AssetType::Script,
                                                   (*itr)->get_script_name()))
                    .as<sol::table>();
       r["update"]();
       (*itr)->update(delta_time);
 
       itr++;
-    } else if ((*itr)->get_state() == actor::state::dead) {
+    } else if ((*itr)->get_state() == Actor::state::dead) {
       itr = m_actors.erase(itr);
     } else {
       itr++;
@@ -138,23 +138,23 @@ void scene_system::update_scene() {
 }
 void scene_system::shutdown() {
   m_impl->terminate();
-  m_game_state = scene::state::quit;
+  m_game_state = Scene::state::quit;
 }
 
 void scene_system::add_actor(actor_ptr _actor) { m_actors.push_back(_actor); }
-actor &scene_system::get_actor(const std::string &str) {
+Actor &scene_system::get_actor(const std::string &str) {
   for (auto actor : m_actors) {
     if (actor->get_name() == str) {
       return *actor;
     }
   }
-  static actor null_actor;
+  static Actor null_actor;
   null_actor.set_name("null");
   return null_actor;
 }
 void scene_system::change(const std::string &scene_file_name) {
   if (scene_file_name.empty()) {
-    scene::set_state(scene::state::quit);
+    Scene::set_state(Scene::state::quit);
     is_reset = false;
   } else {
     is_reset = true;
@@ -165,11 +165,11 @@ void scene_system::change(const std::string &scene_file_name) {
 }
 
 void scene_system::load_data(std::string_view data_file_name) {
-  json doc;
-  auto str = data_stream::open_as_string(asset_type::Scene, data_file_name);
+  Json doc;
+  auto str = DataStream::open_as_string(AssetType::Scene, data_file_name);
   doc.parse(str.data());
   {
-    vector3 cp, ct, cu;
+    Vector3 cp, ct, cu;
     auto camera_data = doc["Camera"];
     cp.x = camera_data["Position"]["x"].get_float();
     cp.y = camera_data["Position"]["y"].get_float();
@@ -180,17 +180,17 @@ void scene_system::load_data(std::string_view data_file_name) {
     cu.x = camera_data["Up"]["x"].get_float();
     cu.y = camera_data["Up"]["y"].get_float();
     cu.z = camera_data["Up"]["z"].get_float();
-    scene::main_camera().lookat(cp, ct, cu);
+    Scene::main_camera().lookat(cp, ct, cu);
   }
-  texture tex;
-  tex.fill_color(palette::white());
+  Texture tex;
+  tex.fill_color(Palette::white());
   for (int i = 0; i < doc["Actors"].get_array().size(); i++) {
     // Actor setting
-    auto &act = scene::create_actor();
+    auto &act = Scene::create_actor();
     auto ref = doc["Actors"].get_array()[i];
     act.set_name(ref["Name"].get_string());
     act.set_script_name(ref["Script"].get_string());
-    vector3 pos, rotation, scale;
+    Vector3 pos, rotation, scale;
     pos.x = ref["Position"]["x"].get_float();
     pos.y = ref["Position"]["y"].get_float();
     pos.z = ref["Position"]["z"].get_float();
@@ -206,7 +206,7 @@ void scene_system::load_data(std::string_view data_file_name) {
     for (std::size_t j = 0; j < ref["Components"].get_array().size(); j++) {
       auto comp = ref["Components"].get_array()[j];
       auto comp_name = comp.get_string();
-      auto c = scene::get_component_factory().create(comp_name, act);
+      auto c = Scene::get_component_factory().create(comp_name, act);
       act.add_component(c);
     }
   }

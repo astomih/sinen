@@ -6,7 +6,7 @@
 #include <string>
 
 namespace sinen {
-class transform {
+class Transform {
 public:
   /*
   explicit transform(class base_actor &owner) : mOwner(owner) {}

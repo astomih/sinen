@@ -19,22 +19,22 @@ void SDLObjectCloser::operator()(::SDL_Surface *surface) {
   }
 }
 void SDLObjectCloser::operator()(::SDL_RWops *rw) { ::SDL_FreeRW(rw); }
-SDL_Surface &get(handle_t handle) {
+SDL_Surface &get(HandleT handle) {
   SDL_Surface *surf = reinterpret_cast<SDL_Surface *>(handle);
   return *surf;
 }
-texture::texture() {
+Texture::Texture() {
   this->handle = create();
   is_need_update = std::make_shared<bool>(false);
 }
-texture::texture(const texture &other) {
+Texture::Texture(const Texture &other) {
   if (is_need_update.use_count() == 1) {
     destroy();
   }
   handle = other.handle;
   is_need_update = other.is_need_update;
 }
-texture &texture::operator=(const texture &other) {
+Texture &Texture::operator=(const Texture &other) {
   if (is_need_update.use_count() == 1) {
     destroy();
   }
@@ -42,38 +42,38 @@ texture &texture::operator=(const texture &other) {
   is_need_update = other.is_need_update;
   return *this;
 }
-texture::~texture() {
+Texture::~Texture() {
   if (is_need_update.use_count() == 1) {
     destroy();
   }
 }
 
-bool texture::load(std::string_view fileName) {
+bool Texture::load(std::string_view fileName) {
   *is_need_update = true;
   auto &surface = get(handle);
   auto *src_surface = ::IMG_Load_RW(
-      (SDL_RWops *)data_stream::open_as_rwops(asset_type::Texture, fileName),
+      (SDL_RWops *)DataStream::open_as_rwops(AssetType::Texture, fileName),
       0);
   if (!src_surface) {
-    logger::error("%s", IMG_GetError());
+    Logger::error("%s", IMG_GetError());
     return false;
   }
   memcpy(&surface, src_surface, sizeof(SDL_Surface));
   return true;
 }
-bool texture::load_from_memory(std::vector<char> &buffer) {
+bool Texture::load_from_memory(std::vector<char> &buffer) {
   *is_need_update = true;
   auto &surface = get(handle);
   auto rw = std::unique_ptr<::SDL_RWops, SDLObjectCloser>(
       ::SDL_RWFromMem(reinterpret_cast<void *>(buffer.data()), buffer.size()));
   if (!rw) {
-    logger::error("IMG Error\"%s\"", IMG_GetError());
+    Logger::error("IMG Error\"%s\"", IMG_GetError());
 
     return false;
   }
   auto *src_surface = ::IMG_Load_RW(rw.get(), 0);
   if (!src_surface) {
-    logger::error("%s", IMG_GetError());
+    Logger::error("%s", IMG_GetError());
     return false;
   }
   memcpy(&surface, src_surface, sizeof(SDL_Surface));
@@ -81,14 +81,14 @@ bool texture::load_from_memory(std::vector<char> &buffer) {
   return true;
 }
 
-void texture::fill_color(const color &color) {
+void Texture::fill_color(const Color &color) {
   *is_need_update = true;
   auto &surface = get(handle);
   ::SDL_FillRect(&surface, NULL,
                  ::SDL_MapRGBA(surface.format, color.r * 255, color.g * 255,
                                color.b * 255, color.a * 255));
 }
-void texture::blend_color(const color &color) {
+void Texture::blend_color(const Color &color) {
   *is_need_update = true;
   auto &surface = get(handle);
   SDL_SetSurfaceBlendMode(&surface, SDL_BLENDMODE_BLEND);
@@ -98,9 +98,9 @@ void texture::blend_color(const color &color) {
   SDL_BlitSurface(&surface, NULL, (SDL_Surface *)handle, NULL);
 }
 
-texture texture::copy() {
+Texture Texture::copy() {
   auto &src = get(handle);
-  texture dst_texture;
+  Texture dst_texture;
   auto &dst = get(dst_texture.handle);
   dst.w = src.w;
   dst.h = src.h;
@@ -109,18 +109,18 @@ texture texture::copy() {
   return dst_texture;
 }
 
-vector2 texture::size() {
+Vector2 Texture::size() {
   auto &surface = get(handle);
-  return vector2(static_cast<float>(surface.w), static_cast<float>(surface.h));
+  return Vector2(static_cast<float>(surface.w), static_cast<float>(surface.h));
 }
 
-handle_t texture::create() {
+HandleT Texture::create() {
   auto *surf =
       SDL_CreateRGBSurfaceWithFormat(0, 1, 1, 32, SDL_PIXELFORMAT_RGBA32);
-  handle_t handle = reinterpret_cast<handle_t>(surf);
+  HandleT handle = reinterpret_cast<HandleT>(surf);
   return handle;
 }
-void texture::destroy() {
+void Texture::destroy() {
   if (!handle) {
     return;
   }

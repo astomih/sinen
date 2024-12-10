@@ -27,9 +27,9 @@
 namespace sinen {
 enum class load_state { version, vertex, indices };
 
-void model::load(std::string_view str, std::string_view name) {
+void Model::load(std::string_view str, std::string_view name) {
   std::stringstream data;
-  data << data_stream::open_as_string(asset_type::Model, str);
+  data << DataStream::open_as_string(AssetType::Model, str);
   std::string str_name = str.data();
   if (str_name.ends_with(".sim")) {
     std::string line;
@@ -53,18 +53,18 @@ void model::load(std::string_view str, std::string_view name) {
         if (line.starts_with("begin indices"))
           state = load_state::indices;
 
-        vertex v;
+        Vertex v;
         sscanf(line.data(), "%f %f %f %f %f %f %f %f %f %f %f %f\n",
                &v.position.x, &v.position.y, &v.position.z, &v.normal.x,
                &v.normal.y, &v.normal.z, &v.uv.x, &v.uv.y, &v.rgba.r, &v.rgba.g,
                &v.rgba.b, &v.rgba.a);
 
-        local_aabb.min.x = std::min(local_aabb.min.x, v.position.x);
-        local_aabb.min.y = std::min(local_aabb.min.y, v.position.y);
-        local_aabb.min.z = std::min(local_aabb.min.z, v.position.z);
-        local_aabb.max.x = std::max(local_aabb.max.x, v.position.x);
-        local_aabb.max.y = std::max(local_aabb.max.y, v.position.y);
-        local_aabb.max.z = std::max(local_aabb.max.z, v.position.z);
+        local_aabb._min.x = Math::Min(local_aabb._min.x, v.position.x);
+        local_aabb._min.y = Math::Min(local_aabb._min.y, v.position.y);
+        local_aabb._min.z = Math::Min(local_aabb._min.z, v.position.z);
+        local_aabb._max.x = Math::Max(local_aabb._max.x, v.position.x);
+        local_aabb._max.y = Math::Max(local_aabb._max.y, v.position.y);
+        local_aabb._max.z = Math::Max(local_aabb._max.z, v.position.z);
 
         v_array.vertices.push_back(v);
       } break;
@@ -90,13 +90,13 @@ void model::load(std::string_view str, std::string_view name) {
     bool ret = gltf_ctx.LoadASCIIFromString(
         &gltf_model, &err, &warn, data.str().c_str(), data.str().size(), "", 0);
     if (!warn.empty()) {
-      logger::warn(warn);
+      Logger::warn(warn);
     }
     if (!err.empty()) {
-      logger::error(err);
+      Logger::error(err);
     }
     if (!ret) {
-      logger::error("Failed to parse glTF");
+      Logger::error("Failed to parse glTF");
     }
 
     v_array.vertices.clear();
@@ -115,8 +115,8 @@ void model::load(std::string_view str, std::string_view name) {
         auto data_size = accessor.count * accessor.ByteStride(bufferView);
         auto data = reinterpret_cast<float *>(data_ptr);
         for (int i = 0; i < accessor.count; i++) {
-          vertex v;
-          v.position = vector3(data[0], data[1], data[2]);
+          Vertex v;
+          v.position = Vector3(data[0], data[1], data[2]);
           v_array.vertices.push_back(v);
           data += accessor.ByteStride(bufferView) / sizeof(float);
         }
@@ -140,15 +140,15 @@ void model::load(std::string_view str, std::string_view name) {
       }
     }
   } else {
-    logger::error("invalid formats.");
+    Logger::error("invalid formats.");
   }
 
   v_array.indexCount = v_array.indices.size();
-  render_system::add_vertex_array(v_array, std::string(name));
+  RendererImpl::add_vertex_array(v_array, std::string(name));
 }
 
-std::vector<vertex> model::all_vertex() const {
-  std::vector<vertex> all;
+std::vector<Vertex> Model::all_vertex() const {
+  std::vector<Vertex> all;
   all.insert(all.end(), v_array.vertices.begin(), v_array.vertices.end());
   for (auto &child : children) {
     auto child_all = child->all_vertex();
@@ -156,7 +156,7 @@ std::vector<vertex> model::all_vertex() const {
   }
   return all;
 }
-std::vector<std::uint32_t> model::all_indices() const {
+std::vector<std::uint32_t> Model::all_indices() const {
   std::vector<std::uint32_t> all;
   all.insert(all.end(), v_array.indices.begin(), v_array.indices.end());
   for (auto &child : children) {

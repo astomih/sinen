@@ -14,7 +14,7 @@
 #include <SDL_mixer.h>
 
 namespace sinen {
-vector3 calculate(const quaternion &r);
+Vector3 calculate(const Quaternion &r);
 std::unordered_map<std::string, uint32_t> sound_system::buffers;
 void *sound_system::device = nullptr;
 void *sound_system::context = nullptr;
@@ -82,11 +82,11 @@ void sound_system::shutdown() {
 
 void sound_system::update(float deltaTime) {}
 
-void sound_system::set_listener(const vector3 &pos,
-                                const quaternion &direction) {
+void sound_system::set_listener(const Vector3 &pos,
+                                const Quaternion &direction) {
   alListener3f(AL_POSITION, pos.x, pos.y, pos.z);
-  auto at = vector3::transform(vector3::neg_unit_z, direction);
-  auto up = vector3::transform(vector3::unit_y, direction);
+  auto at = Vector3::transform(Vector3::neg_unit_z, direction);
+  auto up = Vector3::transform(Vector3::unit_y, direction);
   float ori[6] = {at.x, at.y, at.z, up.x, up.y, up.z};
   alListenerfv(AL_ORIENTATION, ori);
 }
@@ -102,7 +102,7 @@ void sound_system::load(std::string_view fileName) {
   uint32_t bid = 0;
 
   if (!SDL_LoadWAV(
-          data_stream::convert_file_path(asset_type::Sound, fileName).c_str(),
+          DataStream::convert_file_path(AssetType::Sound, fileName).c_str(),
           &spec, &buffer, &buffer_length)) {
     printf("Loading '%s' failed! %s\n", fileName.data(), SDL_GetError());
     return;
@@ -134,7 +134,7 @@ uint32_t sound_system::new_source(std::string_view name) {
 void sound_system::delete_source(uint32_t sourceID) {
   alDeleteBuffers(1, &sourceID);
 }
-vector3 calculate(const quaternion &r) {
+Vector3 calculate(const Quaternion &r) {
   float x = r.x;
   float y = r.y;
   float z = r.z;
@@ -175,20 +175,20 @@ vector3 calculate(const quaternion &r) {
   float tx, ty, tz;
 
   if (m21 >= 0.99 && m21 <= 1.01) {
-    tx = math::pi / 2.f;
+    tx = Math::pi / 2.f;
     ty = 0;
-    tz = math::atan2(m10, m00);
+    tz = Math::atan2(m10, m00);
   } else if (m21 >= -1.01f && m21 <= -0.99f) {
-    tx = -math::pi / 2.f;
+    tx = -Math::pi / 2.f;
     ty = 0;
-    tz = math::atan2(m10, m00);
+    tz = Math::atan2(m10, m00);
   } else {
     tx = std::asin(-m21);
-    ty = math::atan2(m20, m22);
-    tz = math::atan2(m01, m11);
+    ty = Math::atan2(m20, m22);
+    tz = Math::atan2(m01, m11);
   }
 
-  return vector3(math::to_degrees(tx), math::to_degrees(ty),
-                 math::to_degrees(tz));
+  return Vector3(Math::to_degrees(tx), Math::to_degrees(ty),
+                 Math::to_degrees(tz));
 }
 } // namespace sinen

@@ -13,7 +13,7 @@ VkPipelineShaderStageCreateInfo vk_shader::load(VkDevice device,
   if (std::string(fileName).ends_with(".spv")) {
 
     std::string filedata =
-        data_stream::open_as_string(asset_type::Shader, fileName);
+        DataStream::open_as_string(AssetType::Shader, fileName);
 
     VkShaderModule shaderModule;
     VkShaderModuleCreateInfo ci{};
@@ -30,7 +30,7 @@ VkPipelineShaderStageCreateInfo vk_shader::load(VkDevice device,
   } else {
     // Compile glsl to SPIR-V
     std::string filedata =
-        data_stream::open_as_string(asset_type::Shader, fileName);
+        DataStream::open_as_string(AssetType::Shader, fileName);
 
     glslang::InitializeProcess();
     EShLanguage lang;

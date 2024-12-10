@@ -7,7 +7,7 @@ namespace sinen {
  * @brief Quaternion class
  *
  */
-class quaternion {
+class Quaternion {
 public:
   float x{};
   float y{};
@@ -17,7 +17,7 @@ public:
    * @brief Construct a new quaternion object
    *
    */
-  constexpr quaternion() { *this = quaternion::Identity; }
+  constexpr Quaternion() { *this = Quaternion::Identity; }
   /**
    * @brief Construct a new quaternion object
    *
@@ -26,15 +26,15 @@ public:
    * @param inZ
    * @param inW
    */
-  explicit quaternion(float inX, float inY, float inZ, float inW) {
+  explicit Quaternion(float inX, float inY, float inZ, float inW) {
     set(inX, inY, inZ, inW);
   }
-  explicit quaternion(const vector3 &axis, float angle) {
-    const auto scalar = math::sin(angle / 2.0f);
+  explicit Quaternion(const Vector3 &axis, float angle) {
+    const auto scalar = Math::sin(angle / 2.0f);
     x = axis.x * scalar;
     y = axis.y * scalar;
     z = axis.z * scalar;
-    w = math::cos(angle / 2.0f);
+    w = Math::cos(angle / 2.0f);
   }
   /**
    * @brief Directly set the quaternion values
@@ -58,7 +58,7 @@ public:
   [[nodiscard]] float length_sqrt() const {
     return (x * x + y * y + z * z + w * w);
   }
-  [[nodiscard]] float length() const { return math::sqrt(length_sqrt()); }
+  [[nodiscard]] float length() const { return Math::sqrt(length_sqrt()); }
   void normalize() {
     const auto len = length();
     x /= len;
@@ -67,37 +67,37 @@ public:
     w /= len;
   }
   // Normalize the provided quaternion
-  static quaternion normalize(const quaternion &q) {
+  static Quaternion normalize(const Quaternion &q) {
     auto retVal = q;
     retVal.normalize();
     return retVal;
   }
   // Linear interpolation
-  static quaternion lerp(const quaternion &a, const quaternion &b, float f) {
-    quaternion retVal;
-    retVal.x = math::lerp(a.x, b.x, f);
-    retVal.y = math::lerp(a.y, b.y, f);
-    retVal.z = math::lerp(a.z, b.z, f);
-    retVal.w = math::lerp(a.w, b.w, f);
+  static Quaternion lerp(const Quaternion &a, const Quaternion &b, float f) {
+    Quaternion retVal;
+    retVal.x = Math::lerp(a.x, b.x, f);
+    retVal.y = Math::lerp(a.y, b.y, f);
+    retVal.z = Math::lerp(a.z, b.z, f);
+    retVal.w = Math::lerp(a.w, b.w, f);
     retVal.normalize();
     return retVal;
   }
-  static float dot(const quaternion &a, const quaternion &b) {
+  static float dot(const Quaternion &a, const Quaternion &b) {
     return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
   }
   // Spherical Linear Interpolation
-  static quaternion slerp(const quaternion &a, const quaternion &b, float f) {
-    const auto rawCosm = quaternion::dot(a, b);
+  static Quaternion slerp(const Quaternion &a, const Quaternion &b, float f) {
+    const auto rawCosm = Quaternion::dot(a, b);
     auto cosom = -rawCosm;
     if (rawCosm >= 0.0f) {
       cosom = rawCosm;
     }
     float scale0, scale1;
     if (cosom < 0.9999f) {
-      const auto omega = math::acos(cosom);
-      const auto invSin = 1.f / math::sin(omega);
-      scale0 = math::sin((1.f - f) * omega) * invSin;
-      scale1 = math::sin(f * omega) * invSin;
+      const auto omega = Math::acos(cosom);
+      const auto invSin = 1.f / Math::sin(omega);
+      scale0 = Math::sin((1.f - f) * omega) * invSin;
+      scale1 = Math::sin(f * omega) * invSin;
     } else {
       scale0 = 1.0f - f;
       scale1 = f;
@@ -105,7 +105,7 @@ public:
     if (rawCosm < 0.0f) {
       scale1 = -scale1;
     }
-    quaternion retVal;
+    Quaternion retVal;
     retVal.x = scale0 * a.x + scale1 * b.x;
     retVal.y = scale0 * a.y + scale1 * b.y;
     retVal.z = scale0 * a.z + scale1 * b.z;
@@ -116,17 +116,17 @@ public:
 
   // Concatenate
   // Rotate by q FOLLOWED BY p
-  static quaternion concatenate(const quaternion &q, const quaternion &p) {
-    quaternion retVal;
+  static Quaternion concatenate(const Quaternion &q, const Quaternion &p) {
+    Quaternion retVal;
 
-    const vector3 qv(q.x, q.y, q.z);
-    const vector3 pv(p.x, p.y, p.z);
-    const auto newVec = p.w * qv + q.w * pv + vector3::cross(pv, qv);
+    const Vector3 qv(q.x, q.y, q.z);
+    const Vector3 pv(p.x, p.y, p.z);
+    const auto newVec = p.w * qv + q.w * pv + Vector3::cross(pv, qv);
     retVal.x = newVec.x;
     retVal.y = newVec.y;
     retVal.z = newVec.z;
 
-    retVal.w = p.w * q.w - vector3::dot(pv, qv);
+    retVal.w = p.w * q.w - Vector3::dot(pv, qv);
 
     return retVal;
   }
@@ -136,15 +136,15 @@ public:
    * @param euler Angles
    * @return quaternion Output
    */
-  static quaternion from_euler(const vector3 &euler);
+  static Quaternion from_euler(const Vector3 &euler);
   /**
    * @brief Quaternion to Euler angles
    *
    * @param r rotation quaternion
    * @return vector3 euler angles
    */
-  static vector3 to_euler(const quaternion &r);
-  static const quaternion Identity;
+  static Vector3 to_euler(const Quaternion &r);
+  static const Quaternion Identity;
 };
 } // namespace sinen
 #endif // !SINEN_QUATERNION_HPP

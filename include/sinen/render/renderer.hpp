@@ -21,7 +21,7 @@ namespace sinen {
  * @brief Renderer class
  *
  */
-class renderer {
+class Renderer {
 public:
   /**
    * @brief Unload all resources
@@ -38,50 +38,50 @@ public:
    *
    * @param draw_object
    */
-  static void draw2d(const std::shared_ptr<drawable> draw_object);
+  static void draw2d(const std::shared_ptr<Drawable> draw_object);
   /**
    * @brief Draw UI drawable object
    *
    * @param draw_object
    */
-  static void drawui(const std::shared_ptr<drawable> draw_object);
+  static void drawui(const std::shared_ptr<Drawable> draw_object);
   /**
    * @brief Draw 3d drawable object
    *
    * @param draw_object
    */
-  static void draw3d(const std::shared_ptr<drawable> draw_object);
+  static void draw3d(const std::shared_ptr<Drawable> draw_object);
   /**
    * @brief Add drawable object to queue
    *
    * @param draw_object
    */
-  static void add_queue_2d(const std::shared_ptr<drawable> draw_object);
+  static void add_queue_2d(const std::shared_ptr<Drawable> draw_object);
   /**
    * @brief Add drawable object to queue
    *
    * @param draw_object
    */
-  static void add_queue_3d(const std::shared_ptr<drawable> draw_object);
+  static void add_queue_3d(const std::shared_ptr<Drawable> draw_object);
   /**
    * @brief Remove drawable object from queue
    *
    * @param draw_object
    */
-  static void remove_queue_2d(const std::shared_ptr<drawable> draw_object);
+  static void remove_queue_2d(const std::shared_ptr<Drawable> draw_object);
   /**
    * @brief Remove drawable object from queue
    *
    * @param draw_object
    */
-  static void remove_queue_3d(const std::shared_ptr<drawable> draw_object);
+  static void remove_queue_3d(const std::shared_ptr<Drawable> draw_object);
   /**
    * @brief Add vertex array
    *
    * @param vArray
    * @param name
    */
-  static void add_vertex_array(const vertex_array &vArray,
+  static void add_vertex_array(const VertexArray &vArray,
                                std::string_view name);
   /**
    * @brief Update vertex array
@@ -89,34 +89,34 @@ public:
    * @param vArray
    * @param name
    */
-  static void update_vertex_array(const vertex_array &vArray,
+  static void update_vertex_array(const VertexArray &vArray,
                                   std::string_view name);
-  static void add_model(const model &_model);
-  static void update_model(const model &_model);
+  static void add_model(const Model &_model);
+  static void update_model(const Model &_model);
   /**
    * @brief Set the clear color object
    *
    * @param color
    */
-  static void set_clear_color(const color &color);
+  static void set_clear_color(const Color &color);
   /**
    * @brief Get the clear color object
    *
    * @return color
    */
-  static color clear_color();
+  static Color clear_color();
   /**
    * @brief Set the skybox object
    *
    * @param _skybox_texture
    */
-  static void set_skybox(texture _skybox_texture);
+  static void set_skybox(Texture _skybox_texture);
   /**
    * @brief Get the skybox object
    *
    * @return texture
    */
-  static texture skybox();
+  static Texture skybox();
   /**
    * @brief Toggle show imgui
    *
@@ -141,8 +141,8 @@ public:
    * @param function
    */
   static void add_imgui_function(std::function<void()> function);
-  static void set_light_look_at(const vector3 &position, const vector3 &target,
-                                const vector3 &up);
+  static void set_light_look_at(const Vector3 &position, const Vector3 &target,
+                                const Vector3 &up);
   static void set_light_ortho(float left, float right, float bottom, float top,
                               float near, float far);
   static void *get_texture_id();

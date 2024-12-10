@@ -5,7 +5,7 @@ namespace sinen {
  * @brief HSV color
  *
  */
-struct hsv {
+struct Hsv {
   // Hue
   float h;
   // Saturation
@@ -19,11 +19,11 @@ struct hsv {
    * @param s Saturation
    * @param v Value(Brightness)
    */
-  hsv(float h, float s, float v) : h(h), s(s), v(v) {}
-  hsv() : hsv(0, 0, 0) {}
-  hsv(const color &c) { from_color(c); }
-  void from_color(const color &c);
-  color to_color() const;
-  operator color() const { return to_color(); }
+  Hsv(float h, float s, float v) : h(h), s(s), v(v) {}
+  Hsv() : Hsv(0, 0, 0) {}
+  Hsv(const Color &c) { from_color(c); }
+  void from_color(const Color &c);
+  Color to_color() const;
+  operator Color() const { return to_color(); }
 };
 } // namespace sinen

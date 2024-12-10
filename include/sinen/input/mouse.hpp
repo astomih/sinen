@@ -6,16 +6,16 @@ namespace sinen {
  * @brief Mouse
  *
  */
-class mouse {
+class Mouse {
 public:
   enum class code;
   // For mouse position
-  static void set_position(const vector2 &pos);
-  static void set_position_on_scene(const vector2 &pos);
-  static const vector2 &get_position();
-  static const vector2 &get_position_on_scene();
+  static void set_position(const Vector2 &pos);
+  static void set_position_on_scene(const Vector2 &pos);
+  static const Vector2 &get_position();
+  static const Vector2 &get_position_on_scene();
   static void hide_cursor(bool hide);
-  static const vector2 &get_scroll_wheel();
+  static const Vector2 &get_scroll_wheel();
   static bool IsRelative();
   // For buttons
   static bool is_down(code _button);

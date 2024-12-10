@@ -8,7 +8,7 @@ namespace sinen {
  * @brief Editor
  *
  */
-class editor : public scene::implements {
+class editor : public Scene::implements {
 public:
   /**
    * @brief Construct a new editor object
@@ -40,7 +40,7 @@ private:
   static void gizmo();
   static void inspector();
   static void menu();
-  static std::vector<actor> m_actors;
+  static std::vector<Actor> m_actors;
   static std::vector<matrix4> m_matrices;
   static int index_actors;
   static int index_components;

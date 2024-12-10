@@ -8,18 +8,18 @@
 #include "../vertex/vertex_array.hpp"
 
 namespace sinen {
-struct model {
+struct Model {
 public:
   /**
    * @brief Construct a new model object
    *
    */
-  model() : parent(nullptr){};
+  Model() : parent(nullptr){};
   /**
    * @brief Destroy the model object
    *
    */
-  ~model() = default;
+  ~Model() = default;
   /**
    * @brief Load the model from a file
    *
@@ -28,14 +28,14 @@ public:
    * @param name
    */
   void load(std::string_view str, std::string_view name);
-  std::vector<vertex> all_vertex() const;
+  std::vector<Vertex> all_vertex() const;
   std::vector<std::uint32_t> all_indices() const;
 
-  aabb local_aabb;
-  model *parent;
-  std::vector<model *> children;
+  AABB local_aabb;
+  Model *parent;
+  std::vector<Model *> children;
   std::string name;
-  vertex_array v_array;
+  VertexArray v_array;
 };
 } // namespace sinen
 #endif // !SINEN_MODEL_HPP

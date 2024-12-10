@@ -9,18 +9,18 @@ namespace sinen {
  * @details Long sound data
  *
  */
-class music {
+class Music {
 public:
   /**
    * @brief Construct a new music object
    *
    */
-  music();
+  Music();
   /**
    * @brief Destroy the music object
    *
    */
-  ~music();
+  ~Music();
   /**
    * @brief Play the music
    *

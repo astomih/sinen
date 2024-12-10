@@ -23,7 +23,7 @@ void texteditor::display() {
   ImGui::InputText("file", path, 256);
   ImGui::SameLine();
   if (ImGui::Button("Open")) {
-    auto text = data_stream::open_as_string(asset_type::Script, path);
+    auto text = DataStream::open_as_string(AssetType::Script, path);
     pimpl->te.SetText(text);
   }
   auto cpos = pimpl->te.GetCursorPosition();
@@ -35,7 +35,7 @@ void texteditor::display() {
   if (ImGui::BeginMenuBar()) {
     if (ImGui::BeginMenu("File")) {
       if (ImGui::MenuItem("Save")) {
-        data_stream::write(asset_type::Script, path, pimpl->te.GetText());
+        DataStream::write(AssetType::Script, path, pimpl->te.GetText());
       }
       ImGui::EndMenu();
     }

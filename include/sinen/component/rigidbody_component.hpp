@@ -8,7 +8,7 @@ namespace sinen {
  */
 class rigidbody_component : public component {
 public:
-  rigidbody_component(actor &owner);
+  rigidbody_component(Actor &owner);
   virtual ~rigidbody_component();
   virtual void update(float delta_time) override;
   virtual std::string get_name() const override { return "rigidbody"; }

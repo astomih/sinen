@@ -1,23 +1,23 @@
-#include "default_model_creator.h"
+#include "default_model_creator.hpp"
 using namespace sinen;
-vertex_array create_sprite_vertices() {
-  vertex_array v_array;
-  v_array.vertices.push_back({vector3(-1.000000, -1.000000, 0.000000),
-                              vector3(0.000000, 0.000000, 1.000000),
-                              vector2(0.000000, 1.000000),
-                              color{1.000000, 1.000000, 1.000000, 1.000000}});
-  v_array.vertices.push_back({vector3(1.000000, -1.000000, 0.000000),
-                              vector3(0.000000, 0.000000, 1.000000),
-                              vector2(1.000000, 1.000000),
-                              color{1.000000, 1.000000, 1.000000, 1.000000}});
-  v_array.vertices.push_back({vector3(1.000000, 1.000000, 0.000000),
-                              vector3(0.000000, 0.000000, 1.000000),
-                              vector2(1.000000, 0.000000),
-                              color{1.000000, 1.000000, 1.000000, 1.000000}});
-  v_array.vertices.push_back({vector3(-1.000000, 1.000000, 0.000000),
-                              vector3(0.000000, 0.000000, 1.000000),
-                              vector2(0.000000, 0.000000),
-                              color{1.000000, 1.000000, 1.000000, 1.000000}});
+VertexArray create_sprite_vertices() {
+  VertexArray v_array;
+  v_array.vertices.push_back({Vector3(-1.000000, -1.000000, 0.000000),
+                              Vector3(0.000000, 0.000000, 1.000000),
+                              Vector2(0.000000, 1.000000),
+                              Color{1.000000, 1.000000, 1.000000, 1.000000}});
+  v_array.vertices.push_back({Vector3(1.000000, -1.000000, 0.000000),
+                              Vector3(0.000000, 0.000000, 1.000000),
+                              Vector2(1.000000, 1.000000),
+                              Color{1.000000, 1.000000, 1.000000, 1.000000}});
+  v_array.vertices.push_back({Vector3(1.000000, 1.000000, 0.000000),
+                              Vector3(0.000000, 0.000000, 1.000000),
+                              Vector2(1.000000, 0.000000),
+                              Color{1.000000, 1.000000, 1.000000, 1.000000}});
+  v_array.vertices.push_back({Vector3(-1.000000, 1.000000, 0.000000),
+                              Vector3(0.000000, 0.000000, 1.000000),
+                              Vector2(0.000000, 0.000000),
+                              Color{1.000000, 1.000000, 1.000000, 1.000000}});
   uint32_t indices[] = {
       0, 1, 2, 0, 2, 3,
   };

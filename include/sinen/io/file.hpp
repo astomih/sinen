@@ -1,7 +1,9 @@
 #ifndef SINEN_FILE_HPP
 #define SINEN_FILE_HPP
+
 #include <list>
 #include <memory>
+#include <string>
 #include <string_view>
 
 namespace sinen {

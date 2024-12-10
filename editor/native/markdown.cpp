@@ -100,7 +100,7 @@ void markdown() {
   std::string markdownText;
 
   File f;
-  if (f.open("../docs/docs/lua_api.md", File::mode::r)) {
+  if (f.open("docs/docs/lua_api.md", File::mode::r)) {
     char *buf;
     buf = new char[f.size() + 1];
     memset(buf, 0, f.size() + 1);

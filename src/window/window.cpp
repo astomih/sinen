@@ -7,7 +7,7 @@
 
 namespace sinen {
 Vector2 WindowImpl::m_size = Vector2(1280.f, 720.f);
-std::string WindowImpl::m_name = "Sinen Engine";
+std::string WindowImpl::m_name = "";
 ::SDL_Window *WindowImpl::m_window = nullptr;
 bool WindowImpl::m_resized = false;
 const void *Window::get_sdl_window() { return WindowImpl::get_sdl_window(); }

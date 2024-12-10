@@ -584,10 +584,10 @@ void editor::run() {
     si.cb = sizeof(si);
     ZeroMemory(&pi, sizeof(pi));
     std::string commandlp =
-        std::string(std::string("app.exe ") + std::string(current_file_name));
+        std::string(std::string("Debug/Editor.exe ") + std::string(current_file_name));
     // Start the child process.
     {
-      WINBOOL result = CreateProcess(NULL, (LPSTR)commandlp.c_str(), NULL, NULL,
+      auto result = CreateProcess(NULL, (LPSTR)commandlp.c_str(), NULL, NULL,
                                      FALSE, 0, NULL, NULL, &si, &pi);
       if (result == 0) {
         Logger::error("Failed to run the application.");

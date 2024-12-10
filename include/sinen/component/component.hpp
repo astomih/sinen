@@ -15,7 +15,7 @@ public:
    *
    * @param owner The actor that owns this component
    */
-  component(class actor &owner);
+  component(class Actor &owner);
   /**
    * @brief Copy constructor is deleted
    *
@@ -43,11 +43,11 @@ public:
    *
    * @return actor& actor
    */
-  actor &get_actor() { return m_owner; }
+  Actor &get_actor() { return m_owner; }
 
 protected:
   // Owning actor
-  actor &m_owner;
+  Actor &m_owner;
 };
 } // namespace sinen
 #endif // !SINEN_COMPONENT_HPP

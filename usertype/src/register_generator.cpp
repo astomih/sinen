@@ -19,28 +19,28 @@ void register_generator(sol::state &v) {
 
   v["require"] = [&](const std::string &str) -> sol::object {
     return v.require_script(
-        str, data_stream::open_as_string(asset_type::Script, str + ".lua"));
+        str, DataStream::open_as_string(AssetType::Script, str + ".lua"));
   };
-  v["texture"] = []() -> texture { return texture(); };
-  v["font"] = []() -> font { return font(); };
-  v["vector3"] = [](float x, float y, float z) -> vector3 {
-    return vector3(x, y, z);
+  v["texture"] = []() -> Texture { return Texture(); };
+  v["font"] = []() -> Font { return Font(); };
+  v["vector3"] = [](float x, float y, float z) -> Vector3 {
+    return Vector3(x, y, z);
   };
-  v["vector2"] = [](float x, float y) -> vector2 { return vector2(x, y); };
-  v["point2i"] = [](int x, int y) -> point2i { return point2i(x, y); };
-  v["point2f"] = [](float x, float y) -> point2f { return point2f(x, y); };
-  v["quaternion"] = [](sol::this_state s) -> quaternion {
-    return quaternion();
+  v["vector2"] = [](float x, float y) -> Vector2 { return Vector2(x, y); };
+  v["point2i"] = [](int x, int y) -> Point2i { return Point2i(x, y); };
+  v["point2f"] = [](float x, float y) -> Point2f { return Point2f(x, y); };
+  v["quaternion"] = [](sol::this_state s) -> Quaternion {
+    return Quaternion();
   };
-  v["color"] = [](float r, float g, float b, float a) -> color {
-    return color(r, g, b, a);
+  v["color"] = [](float r, float g, float b, float a) -> Color {
+    return Color(r, g, b, a);
   };
-  v["model"] = []() -> model { return model(); };
-  v["music"] = []() -> music { return music(); };
-  v["sound"] = []() -> sound { return sound(); };
-  v["set_skybox_texture"] = [&](texture tex) -> void {
-    render_system::set_skybox_texture(tex);
+  v["model"] = []() -> Model { return Model(); };
+  v["music"] = []() -> Music { return Music(); };
+  v["sound"] = []() -> Sound { return Sound(); };
+  v["set_skybox_texture"] = [&](Texture tex) -> void {
+    RendererImpl::set_skybox_texture(tex);
   };
-  v["aabb"] = []() -> aabb { return aabb(); };
+  v["aabb"] = []() -> AABB { return AABB(); };
 }
 } // namespace sinen

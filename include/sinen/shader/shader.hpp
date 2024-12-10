@@ -10,7 +10,7 @@ namespace sinen {
  * @brief Shader
  *
  */
-class shader {
+class Shader {
 public:
   enum class type { vert, frag, compute };
   /**
@@ -22,19 +22,19 @@ public:
    * @brief Construct a new shader object
    *
    */
-  shader();
+  Shader();
   /**
    * @brief Construct a new shader object
    *
    * @param vertex_shader vertex shader file name
    * @param fragment_shader fragment shader file name
    */
-  shader(std::string_view vertex_shader, std::string_view fragment_shader);
+  Shader(std::string_view vertex_shader, std::string_view fragment_shader);
   /**
    * @brief Destroy the shader object
    *
    */
-  ~shader() = default;
+  ~Shader() = default;
   /**
    * @brief Set the vertex shader name
    *
@@ -86,7 +86,7 @@ public:
   std::shared_ptr<parameter> get_parameter() const { return m_parameter; }
   std::size_t get_parameter_size() const { return m_parameter_size; }
 
-  bool operator==(const shader &info) const {
+  bool operator==(const Shader &info) const {
     return this->m_vert_name == info.m_vert_name &&
            this->m_frag_name == info.m_frag_name;
   }

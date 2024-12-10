@@ -8,7 +8,7 @@ namespace sinen {
  */
 class move_component : public component {
 public:
-  move_component(actor &owner);
+  move_component(Actor &owner);
   virtual void update(float delta_time) override;
   virtual std::string get_name() const override { return "move"; }
 };

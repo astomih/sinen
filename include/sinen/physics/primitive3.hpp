@@ -8,55 +8,55 @@ namespace sinen {
  * @brief Line3D class
  *
  */
-struct line3 {
-  line3() = default;
-  line3(const vector3 &p, const vector3 &v) : p(p), v(v) {}
-  vector3 get_point(float t) const { return v * t; }
+struct Line3 {
+  Line3() = default;
+  Line3(const Vector3 &p, const Vector3 &v) : p(p), v(v) {}
+  Vector3 get_point(float t) const { return v * t; }
 
-  vector3 p;
-  vector3 v;
+  Vector3 p;
+  Vector3 v;
 };
 /**
  * @brief Segment3D class
  *
  */
-struct segment3 : public line3 {
-  segment3();
-  segment3(const line3 &l) : line3(l) {}
-  segment3(const vector3 &p, const vector3 &v);
+struct Segment3 : public Line3 {
+  Segment3();
+  Segment3(const Line3 &l) : Line3(l) {}
+  Segment3(const Vector3 &p, const Vector3 &v);
   /**
    * @brief Get end point of segment
    *
    */
-  point3f get_end_point() const;
+  Point3f get_end_point() const;
 };
 /**
  * @brief Ray3D class
  *
  */
-struct ray3 : public line3 {
-  ray3();
-  ray3(const line3 &l) : line3(l) {}
-  ray3(const segment3 &s) : line3(s) {}
-  ray3(const vector3 &p, const vector3 &v);
+struct Ray3 : public Line3 {
+  Ray3();
+  Ray3(const Line3 &l) : Line3(l) {}
+  Ray3(const Segment3 &s) : Line3(s) {}
+  Ray3(const Vector3 &p, const Vector3 &v);
   /**
    * @brief Get end point of ray
    *
    */
-  point3f get_end_point() const;
+  Point3f get_end_point() const;
 };
 /**
  * @brief Triangle3D class
  *
  */
-struct triangle3 {
-  triangle3();
-  triangle3(const vector3 &a, const vector3 &b, const vector3 &c);
+struct Triangle3 {
+  Triangle3();
+  Triangle3(const Vector3 &a, const Vector3 &b, const Vector3 &c);
   /**
    * @brief Get normal of triangle
    *
    */
-  vector3 get_normal() const;
+  Vector3 get_normal() const;
   /**
    * @brief Get area of triangle
    *
@@ -66,42 +66,42 @@ struct triangle3 {
    * @brief Get centroid of triangle
    *
    */
-  point3f get_centroid() const;
+  Point3f get_centroid() const;
   /**
    * @brief Get barycentric coordinates of point
    *
    */
-  vector3 get_barycentric(const vector3 &p) const;
+  Vector3 get_barycentric(const Vector3 &p) const;
 
   // vertices
-  vector3 a;
-  vector3 b;
-  vector3 c;
+  Vector3 a;
+  Vector3 b;
+  Vector3 c;
 };
 /**
  * @brief Plane3D class
  *
  */
-struct plane3 {
-  plane3() = default;
-  plane3(const vector3 &p, const vector3 &n) : p(p), n(n) {}
+struct Plane3 {
+  Plane3() = default;
+  Plane3(const Vector3 &p, const Vector3 &n) : p(p), n(n) {}
 
   // point on plane
-  vector3 p;
+  Vector3 p;
   // normal of plane
-  vector3 n;
+  Vector3 n;
 };
 /**
  * @brief Sphere class
  *
  */
-struct sphere {
-  sphere() : r(0.f){};
-  ~sphere() = default;
-  sphere(const vector3 &p, float r) : p(p), r(r) {}
+struct Sphere {
+  Sphere() : r(0.f){};
+  ~Sphere() = default;
+  Sphere(const Vector3 &p, float r) : p(p), r(r) {}
 
   // position
-  vector3 p;
+  Vector3 p;
   // radius
   float r;
 };
@@ -109,14 +109,14 @@ struct sphere {
  * @brief Capsule class
  *
  */
-struct capsule {
-  capsule() : r(0.f) {}
-  capsule(const segment3 &s, float r) : s(s), r(r) {}
-  capsule(const vector3 &p1, const vector3 &p2, float r) : s(p1, p2), r(r) {}
-  ~capsule() {}
+struct Capsule {
+  Capsule() : r(0.f) {}
+  Capsule(const Segment3 &s, float r) : s(s), r(r) {}
+  Capsule(const Vector3 &p1, const Vector3 &p2, float r) : s(p1, p2), r(r) {}
+  ~Capsule() {}
 
   // segment
-  segment3 s;
+  Segment3 s;
   // radius
   float r;
 };
@@ -124,19 +124,19 @@ struct capsule {
  * @brief AABB(Axis-Aligned Bounding Box) class
  *
  */
-struct aabb {
-  vector3 _min;
-  vector3 _max;
-  aabb() = default;
-  ~aabb() = default;
+struct AABB {
+  Vector3 _min;
+  Vector3 _max;
+  AABB() = default;
+  ~AABB() = default;
   /**
    * @brief Construct a new aabb object
    *
    * @param min  min point
    * @param max  max point
    */
-  aabb(const vector3 &_min, const vector3 &_max) : _min(_min), _max(_max) {}
-  void update_world(const vector3 &p, const vector3 &scale, const aabb &local);
+  AABB(const Vector3 &_min, const Vector3 &_max) : _min(_min), _max(_max) {}
+  void update_world(const Vector3 &p, const Vector3 &scale, const AABB &local);
 };
 /**
  * @brief OBBox(Oriented Bounding Box) class
@@ -146,9 +146,9 @@ struct OBB {
   OBB() = default;
   ~OBB() = default;
   // Position
-  vector3 p;
+  Vector3 p;
   // Direct vectors
-  vector3 v[3];
+  Vector3 v[3];
   // Axis lengths
   float a[3];
 };

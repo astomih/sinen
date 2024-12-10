@@ -15,7 +15,7 @@ public:
    *
    * @param owner The actor that owns this component
    */
-  draw3d_component(actor &owner);
+  draw3d_component(Actor &owner);
   /**
    * @brief Destroy the draw component object
    *
@@ -37,7 +37,7 @@ public:
    * @brief set_texture Use texture
    * @param _texture texture instance
    */
-  void set_texture(const texture &_texture) { texture_handle = _texture; }
+  void set_texture(const Texture &_texture) { texture_handle = _texture; }
   /**
    * @brief set_vertex_name
    * @param _vertex_name
@@ -47,8 +47,8 @@ public:
   }
 
 private:
-  std::shared_ptr<drawable> draw_object;
-  texture texture_handle;
+  std::shared_ptr<Drawable> draw_object;
+  Texture texture_handle;
   std::string vertex_name = "SPRITE";
 };
 } // namespace sinen

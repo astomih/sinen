@@ -3,6 +3,6 @@
 #include <cstdint>
 namespace sinen {
 // Handle type
-using handle_t = std::intptr_t;
+using HandleT = std::intptr_t;
 } // namespace sinen
 #endif // !SINEN_HANDLE_T_HPP

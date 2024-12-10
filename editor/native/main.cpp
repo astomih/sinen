@@ -3,14 +3,15 @@
 #include <sinen/sinen.hpp>
 
 int main(int argc, char *argv[]) {
-  sinen::scene::change_implements<sinen::editor>();
-  sinen::scene::set_run_script(true);
+  sinen::Scene::change_implements<sinen::editor>();
+  sinen::Scene::set_run_script(true);
   sinen::custom_logger();
-  if (!sinen::initialize(argc, argv)) {
+  if (!sinen::Initialize(argc, argv)) {
     return -1;
   }
-  sinen::run();
-  if (!sinen::shutdown()) {
+  sinen::Window::rename("");
+  sinen::Run();
+  if (!sinen::Shutdown()) {
     return -1;
   }
   return 0;

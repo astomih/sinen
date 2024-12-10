@@ -5,7 +5,7 @@ namespace sinen {
  * @brief 2D point class
  *
  */
-template <typename T> struct point2 {
+template <typename T> struct Point2 {
   /**
    * @brief x coordinate
    *
@@ -22,13 +22,13 @@ template <typename T> struct point2 {
    * @param x x coordinate
    * @param y y coordinate
    */
-  point2(const T &x, const T &y) : x(x), y(y) {}
+  Point2(const T &x, const T &y) : x(x), y(y) {}
   /**
    * @brief Construct a new point2 object
    *
    */
-  point2() : x(0), y(0) {}
-  ~point2() = default;
+  Point2() : x(0), y(0) {}
+  ~Point2() = default;
   /**
    * @brief Length of the point2 object
    *
@@ -41,24 +41,24 @@ template <typename T> struct point2 {
    * @param p The other point2 object
    * @return float Distance
    */
-  float distance(const point2 &p) {
+  float distance(const Point2 &p) {
     return sqrt((x - p.x) * (x - p.x) + (y - p.y) * (y - p.y));
   }
-  point2 operator+(const point2 &p) { return point2(x + p.x, y + p.y); }
-  point2 &operator+=(const point2 &p) {
+  Point2 operator+(const Point2 &p) { return point2(x + p.x, y + p.y); }
+  Point2 &operator+=(const Point2 &p) {
     x += p.x;
     y += p.y;
     return *this;
   }
-  point2 operator-(const point2 &p) { return point2(x - p.x, y - p.y); }
-  point2 &operator-=(const point2 &p) {
+  Point2 operator-(const Point2 &p) { return point2(x - p.x, y - p.y); }
+  Point2 &operator-=(const Point2 &p) {
     x -= p.x;
     y -= p.y;
     return *this;
   }
 };
-using point2i = point2<int>;
-using point2f = point2<float>;
-using point2d = point2<double>;
+using Point2i = Point2<int>;
+using Point2f = Point2<float>;
+using Point2d = Point2<double>;
 } // namespace sinen
 #endif

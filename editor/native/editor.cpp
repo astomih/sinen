@@ -23,7 +23,7 @@
 #endif
 #include <filesystem>
 namespace sinen {
-std::vector<actor> editor::m_actors;
+std::vector<Actor> editor::m_actors;
 std::vector<matrix4> editor::m_matrices;
 int editor::index_actors = 0;
 int editor::index_components = 0;
@@ -43,12 +43,12 @@ void editor::inspector() {
   uv_s = ImVec2(0, 0);
   uv_e = ImVec2(1, 1);
 
-  ImGui::Image((void *)renderer::get_texture_id(),
+  ImGui::Image((void *)Renderer::get_texture_id(),
                ImVec2(ImGui::GetWindowWidth(), ImGui::GetWindowHeight()));
   ImGuizmo::Enable(true);
   // Set rect to Gizmo window
   ImGuizmo::SetRect(0, 0,
-                    window::size().x, window::size().y);
+                    Window::size().x, Window::size().y);
   ImGuizmo::BeginFrame();
 
   ImGui::End();
@@ -56,16 +56,16 @@ void editor::inspector() {
   static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
   static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
   if (m_matrices.size() > 0) {
-    ImGuizmo::Manipulate(scene::main_camera().view().get(),
-                         scene::main_camera().projection().get(),
+    ImGuizmo::Manipulate(Scene::main_camera().view().get(),
+                         Scene::main_camera().projection().get(),
                          mCurrentGizmoOperation, mCurrentGizmoMode,
                          m_matrices[index_actors].mat.m16);
   }
-  if (keyboard::is_pressed(keyboard::code::T))
+  if (Keyboard::is_pressed(Keyboard::code::T))
     mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-  if (keyboard::is_pressed(keyboard::code::R))
+  if (Keyboard::is_pressed(Keyboard::code::R))
     mCurrentGizmoOperation = ImGuizmo::ROTATE;
-  if (keyboard::is_pressed(keyboard::code::S))
+  if (Keyboard::is_pressed(Keyboard::code::S))
     mCurrentGizmoOperation = ImGuizmo::SCALE;
   if (ImGui::RadioButton("Translate",
                          mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
@@ -78,7 +78,7 @@ void editor::inspector() {
     mCurrentGizmoOperation = ImGuizmo::SCALE;
   ImGuizmo::AllowAxisFlip(false);
   ImGui::Text("Transform");
-  vector3 pos, rot, scale;
+  Vector3 pos, rot, scale;
   if (m_actors.size() > 0) {
     ImGuizmo::DecomposeMatrixToComponents(m_matrices[index_actors].mat.m16,
                                           &pos.x, &rot.x, &scale.x);
@@ -101,7 +101,7 @@ void editor::inspector() {
   static std::string buf = "";
   if (ImGui::CollapsingHeader("Actors", ImGuiTreeNodeFlags_DefaultOpen)) {
     if (ImGui::Button("AddActor")) {
-      m_actors.push_back(actor{});
+      m_actors.push_back(Actor{});
       auto m = matrix4::identity;
       m_matrices.push_back(m);
       if (m_actors.size() == 1) {
@@ -130,8 +130,8 @@ void editor::inspector() {
         if (!m_actors.empty()) {
           texteditor::set_script_name(buf);
           texteditor::set_text(
-              data_stream::open_as_string(asset_type::Script, buf));
-          script::do_script(buf);
+              DataStream::open_as_string(AssetType::Script, buf));
+          Script::do_script(buf);
         }
       }
     }
@@ -146,7 +146,7 @@ void editor::inspector() {
     if (m_actors.size() > 0) {
       std::vector<const char *> listbox_items;
       static int listbox_item_current = 0;
-      auto comp_names = scene::get_component_factory().get_component_names();
+      auto comp_names = Scene::get_component_factory().get_component_names();
       for (auto &c : comp_names) {
         listbox_items.push_back(c.c_str());
       }
@@ -171,26 +171,26 @@ void editor::inspector() {
 }
 void editor::load_scene(const std::string &path) {
   index_actors = 0;
-  auto str = data_stream::open_as_string(asset_type::Scene, path);
-  json j;
+  auto str = DataStream::open_as_string(AssetType::Scene, path);
+  Json j;
   j.parse(str);
   // Camera
   {
     auto camera_data = j["Camera"];
-    scene::main_camera().position() =
-        vector3(camera_data["Position"]["x"].get_float(),
+    Scene::main_camera().position() =
+        Vector3(camera_data["Position"]["x"].get_float(),
                 camera_data["Position"]["y"].get_float(),
                 camera_data["Position"]["z"].get_float());
-    scene::main_camera().target() =
-        vector3(camera_data["Target"]["x"].get_float(),
+    Scene::main_camera().target() =
+        Vector3(camera_data["Target"]["x"].get_float(),
                 camera_data["Target"]["y"].get_float(),
                 camera_data["Target"]["z"].get_float());
-    scene::main_camera().up() = vector3(camera_data["Up"]["x"].get_float(),
+    Scene::main_camera().up() = Vector3(camera_data["Up"]["x"].get_float(),
                                         camera_data["Up"]["y"].get_float(),
                                         camera_data["Up"]["z"].get_float());
-    scene::main_camera().lookat(scene::main_camera().position(),
-                                scene::main_camera().target(),
-                                scene::main_camera().up());
+    Scene::main_camera().lookat(Scene::main_camera().position(),
+                                Scene::main_camera().target(),
+                                Scene::main_camera().up());
   }
   // Actors
   {
@@ -198,22 +198,22 @@ void editor::load_scene(const std::string &path) {
     m_matrices.clear();
     m_actors.resize(j["Actors"].get_array().size());
     m_matrices.resize(j["Actors"].get_array().size());
-    texture tex;
-    tex.fill_color(palette::white());
+    Texture tex;
+    tex.fill_color(Palette::white());
     for (int i = 0; i < m_actors.size(); i++) {
       auto act = j["Actors"].get_array()[i];
       m_actors[i].set_name(act["Name"].get_string());
       m_actors[i].set_script_name(act["Script"].get_string());
-      m_actors[i].set_position(vector3(act["Position"]["x"].get_float(),
+      m_actors[i].set_position(Vector3(act["Position"]["x"].get_float(),
                                        act["Position"]["y"].get_float(),
                                        act["Position"]["z"].get_float()));
-      m_actors[i].set_rotation(vector3(act["Rotation"]["x"].get_float(),
+      m_actors[i].set_rotation(Vector3(act["Rotation"]["x"].get_float(),
                                        act["Rotation"]["y"].get_float(),
                                        act["Rotation"]["z"].get_float()));
-      m_actors[i].set_scale(vector3(act["Scale"]["x"].get_float(),
+      m_actors[i].set_scale(Vector3(act["Scale"]["x"].get_float(),
                                     act["Scale"]["y"].get_float(),
                                     act["Scale"]["z"].get_float()));
-      vector3 pos, rot, scale;
+      Vector3 pos, rot, scale;
       pos = m_actors[i].get_position();
       rot = m_actors[i].get_rotation();
       scale = m_actors[i].get_scale();
@@ -222,23 +222,23 @@ void editor::load_scene(const std::string &path) {
       for (int j = 0; j < act["Components"].get_array().size(); j++) {
         auto comp = act["Components"].get_array()[j];
         auto comp_name = comp.get_string();
-        auto c = scene::get_component_factory().create(comp_name, m_actors[i]);
+        auto c = Scene::get_component_factory().create(comp_name, m_actors[i]);
         m_actors[i].add_component(c);
       }
     }
   }
-  logger::info(
+  Logger::info(
       std::string("Scene " + std::string(current_file_name) + " loaded"));
 }
 void editor::save_scene(const std::string &path) {
   std::string str;
   str = "{}";
-  json j;
+  Json j;
   j.parse(str);
   auto camera_data = j.create_object();
   {
     {
-      auto &pos = scene::main_camera().position();
+      auto &pos = Scene::main_camera().position();
       auto position = j.create_object();
       position.add_member("x", pos.x);
       position.add_member("y", pos.y);
@@ -246,7 +246,7 @@ void editor::save_scene(const std::string &path) {
       camera_data.add_member("Position", position);
     }
     {
-      auto &target = scene::main_camera().target();
+      auto &target = Scene::main_camera().target();
       auto targetobj = j.create_object();
       targetobj.add_member("x", target.x);
       targetobj.add_member("y", target.y);
@@ -254,7 +254,7 @@ void editor::save_scene(const std::string &path) {
       camera_data.add_member("Target", targetobj);
     }
     {
-      auto &up = scene::main_camera().up();
+      auto &up = Scene::main_camera().up();
       auto upobj = j.create_object();
       upobj.add_member("x", up.x);
       upobj.add_member("y", up.y);
@@ -271,7 +271,7 @@ void editor::save_scene(const std::string &path) {
         { act.add_member("Name", m_actors[i].get_name()); }
         { act.add_member("Script", m_actors[i].get_script_name()); }
         {
-          vector3 pos = m_actors[i].get_position();
+          Vector3 pos = m_actors[i].get_position();
           auto position = j.create_object();
           position.add_member("x", pos.x);
           position.add_member("y", pos.y);
@@ -279,7 +279,7 @@ void editor::save_scene(const std::string &path) {
           act.add_member("Position", position);
         }
         {
-          vector3 rot = m_actors[i].get_rotation();
+          Vector3 rot = m_actors[i].get_rotation();
           auto rotation = j.create_object();
           rotation.add_member("x", rot.x);
           rotation.add_member("y", rot.y);
@@ -287,7 +287,7 @@ void editor::save_scene(const std::string &path) {
           act.add_member("Rotation", rotation);
         }
         {
-          vector3 scale = m_actors[i].get_scale();
+          Vector3 scale = m_actors[i].get_scale();
           auto s = j.create_object();
           s.add_member("x", scale.x);
           s.add_member("y", scale.y);
@@ -310,22 +310,22 @@ void editor::save_scene(const std::string &path) {
   }
   j.add_member("Actors", actors);
   auto s = j.to_string();
-  file f;
-  f.open("data/scene/" + path, file::mode::w);
+  File f;
+  f.open("data/scene/" + path, File::mode::w);
   f.write(s.c_str(), s.size(), 1);
   f.close();
-  logger::info("Scene saved");
+  Logger::info("Scene saved");
 }
 void editor::save_as_scene() {
   if (!is_save_as) {
-    renderer::add_imgui_function([&]() {
+    Renderer::add_imgui_function([&]() {
       ImGui::Begin("Input File Name");
       is_save_as = true;
       ImGui::InputText("File Name", save_as_path, 256);
       if (ImGui::Button("Save")) {
         current_file_name = save_as_path;
-        file f;
-        f.open("data/scene/" + current_file_name, file::mode::wp);
+        File f;
+        f.open("data/scene/" + current_file_name, File::mode::wp);
         f.close();
         save_scene(current_file_name);
         is_save_as = false;
@@ -491,89 +491,89 @@ void editor::setup() {
 	style.Colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.800000011920929f, 0.800000011920929f, 0.800000011920929f, 1.0f);
 	style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.800000011920929f, 0.800000011920929f, 0.800000011920929f, 0.300000011920929f);
   m_impl->is_run = false;
-  renderer::add_imgui_function(inspector);
-  renderer::add_imgui_function(menu);
-  renderer::add_imgui_function(markdown);
-  renderer::add_imgui_function(log_window);
-  renderer::add_imgui_function(texteditor::display);
-  renderer::add_imgui_function(glsl_editor::display);
-  renderer::toggle_show_imgui();
+  Renderer::add_imgui_function(inspector);
+  Renderer::add_imgui_function(menu);
+  Renderer::add_imgui_function(markdown);
+  Renderer::add_imgui_function(log_window);
+  Renderer::add_imgui_function(texteditor::display);
+  Renderer::add_imgui_function(glsl_editor::display);
+  Renderer::toggle_show_imgui();
 }
 void editor::update(float delta_time) {
   if (request_pop_func) {
-    renderer::get_imgui_function().pop_back();
+    Renderer::get_imgui_function().pop_back();
     request_pop_func = false;
   }
   for (auto &act : m_actors) {
     act.update(delta_time);
-    sol::state &lua = *(sol::state *)script::get_state();
+    sol::state &lua = *(sol::state *)Script::get_state();
     lua.do_string(
-        data_stream::open_as_string(asset_type::Script, act.get_script_name()));
+        DataStream::open_as_string(AssetType::Script, act.get_script_name()));
     lua["update"]();
   }
 
-  if (renderer::is_show_imgui() && keyboard::is_pressed(keyboard::code::F5)) {
+  if (Renderer::is_show_imgui() && Keyboard::is_pressed(Keyboard::code::F5)) {
     m_impl->is_run = true;
   }
   if (m_impl->is_run) {
     m_impl->is_run = false;
   }
-  if (renderer::is_show_imgui() && keyboard::is_down(keyboard::code::LCTRL) &&
-      keyboard::is_pressed(keyboard::code::S)) {
+  if (Renderer::is_show_imgui() && Keyboard::is_down(Keyboard::code::LCTRL) &&
+      Keyboard::is_pressed(Keyboard::code::S)) {
     // m_impl->is_save = true;
   }
   if (m_impl->is_save) {
     auto str = texteditor::get_text();
-    data_stream::write(asset_type::Script, scene::current_name() + ".lua", str);
+    DataStream::write(AssetType::Script, Scene::current_name() + ".lua", str);
     std::cout << str << std::endl;
     m_impl->is_save = false;
   }
-  if (renderer::is_show_imgui() && keyboard::is_down(keyboard::code::LCTRL) &&
-      keyboard::is_pressed(keyboard::code::S)) {
-    if (keyboard::is_down(keyboard::code::LSHIFT)) {
+  if (Renderer::is_show_imgui() && Keyboard::is_down(Keyboard::code::LCTRL) &&
+      Keyboard::is_pressed(Keyboard::code::S)) {
+    if (Keyboard::is_down(Keyboard::code::LSHIFT)) {
 
     } else if (!current_file_name.empty()) {
       save_scene(this->current_file_name);
     }
   }
-  if (keyboard::is_pressed(keyboard::code::F3)) {
-    renderer::toggle_show_imgui();
+  if (Keyboard::is_pressed(Keyboard::code::F3)) {
+    Renderer::toggle_show_imgui();
   }
-  if (keyboard::is_pressed(keyboard::code::F5)) {
+  if (Keyboard::is_pressed(Keyboard::code::F5)) {
     run();
   }
 
   // Camera moved by mouse
   {
     // Normalize camera angle vector
-    auto vec = scene::main_camera().target() - scene::main_camera().position();
+    auto vec = Scene::main_camera().target() - Scene::main_camera().position();
     if (vec.length() > 0.1) {
       vec.normalize();
-      scene::main_camera().position() += vec * mouse::get_scroll_wheel().y;
+      Scene::main_camera().position() += vec * Mouse::get_scroll_wheel().y;
     }
-    static vector2 prev = vector2();
-    if (mouse::is_down(mouse::code::RIGHT)) {
-      auto pos = prev - mouse::get_position();
-      if (keyboard::is_down(keyboard::code::LSHIFT)) {
-        scene::main_camera().position() +=
-            scene::main_camera().view().get_x_axis() * pos.x * delta_time;
-        scene::main_camera().target() +=
-            scene::main_camera().view().get_x_axis() * pos.x * delta_time;
-        scene::main_camera().position() -=
-            scene::main_camera().view().get_z_axis() * pos.y * delta_time;
-        scene::main_camera().target() -=
-            scene::main_camera().view().get_z_axis() * pos.y * delta_time;
+    static Vector2 prev = Vector2();
+    if (Mouse::is_down(Mouse::code::RIGHT)) {
+      auto pos = prev - Mouse::get_position();
+      if (Keyboard::is_down(Keyboard::code::LSHIFT)) {
+        Scene::main_camera().position() +=
+            Scene::main_camera().view().get_x_axis() * pos.x * delta_time;
+        Scene::main_camera().target() +=
+            Scene::main_camera().view().get_x_axis() * pos.x * delta_time;
+        Scene::main_camera().position() -=
+            Scene::main_camera().view().get_z_axis() * pos.y * delta_time;
+        Scene::main_camera().target() -=
+            Scene::main_camera().view().get_z_axis() * pos.y * delta_time;
 
       } else {
-        scene::main_camera().target().x += pos.x * delta_time;
-        scene::main_camera().target().y -= pos.y * delta_time;
+        Scene::main_camera().target().x += pos.x * delta_time;
+        Scene::main_camera().target().y -= pos.y * delta_time;
       }
     }
-    prev = mouse::get_position();
+    prev = Mouse::get_position();
   }
-  scene::main_camera().lookat(scene::main_camera().position(),
-                              scene::main_camera().target(),
-                              scene::main_camera().up());
+  Scene::main_camera().lookat(Scene::main_camera().position(),
+                              Scene::main_camera().target(),
+                              Scene::main_camera().up());
 }
 void editor::run() {
 #ifdef _WIN32
@@ -584,17 +584,17 @@ void editor::run() {
     si.cb = sizeof(si);
     ZeroMemory(&pi, sizeof(pi));
     std::string commandlp =
-        std::string(std::string("app.exe ") + std::string(current_file_name));
+        std::string(std::string("Debug/Editor.exe ") + std::string(current_file_name));
     // Start the child process.
     {
-      WINBOOL result = CreateProcess(NULL, (LPSTR)commandlp.c_str(), NULL, NULL,
+      auto result = CreateProcess(NULL, (LPSTR)commandlp.c_str(), NULL, NULL,
                                      FALSE, 0, NULL, NULL, &si, &pi);
       if (result == 0) {
-        logger::error("Failed to run the application.");
+        Logger::error("Failed to run the application.");
       }
     }
   } else {
-    logger::error("The scene has not yet loaded anything.");
+    Logger::error("The scene has not yet loaded anything.");
   }
 
 #endif // _WIN32

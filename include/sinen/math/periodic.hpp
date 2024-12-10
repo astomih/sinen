@@ -2,11 +2,11 @@
 #define SINEN_PERIODIC_HPP
 #include "../time/time.hpp"
 namespace sinen {
-class periodic {
+class Periodic {
 public:
-  static float sin0_1(const float periodSec, const float t = time::seconds());
+  static float sin0_1(const float periodSec, const float t = Time::seconds());
 
-  static float cos0_1(const float periodSec, const float t = time::milli());
+  static float cos0_1(const float periodSec, const float t = Time::milli());
 };
 } // namespace sinen
 #endif // SINEN_PERIODIC_HPP

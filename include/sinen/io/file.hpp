@@ -1,22 +1,24 @@
 #ifndef SINEN_FILE_HPP
 #define SINEN_FILE_HPP
+
 #include <list>
 #include <memory>
+#include <string>
 #include <string_view>
 
 namespace sinen {
-class file {
+class File {
 public:
   /**
    * @brief Construct a new file object
    *
    */
-  file();
+  File();
   /**
    * @brief Destroy the file object
    *
    */
-  ~file();
+  ~File();
   enum class mode {
     /**
      * @brief Open a file for reading. The file must exist.

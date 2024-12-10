@@ -8,7 +8,7 @@ namespace sinen {
  * @brief Camera class
  *
  */
-class camera {
+class Camera {
 public:
   /**
    * @brief Move to position, look at a target, and set up vector
@@ -17,8 +17,8 @@ public:
    * @param target
    * @param up
    */
-  void lookat(const vector3 &position, const vector3 &target,
-              const vector3 &up);
+  void lookat(const Vector3 &position, const Vector3 &target,
+              const Vector3 &up);
   /**
    * @brief Set Perspective projection
    *
@@ -42,19 +42,19 @@ public:
    *
    * @return vector3&
    */
-  vector3 &position() { return m_position; }
+  Vector3 &position() { return m_position; }
   /**
    * @brief Get the target of camera
    *
    * @return vector3&
    */
-  vector3 &target() { return m_target; }
+  Vector3 &target() { return m_target; }
   /**
    * @brief Get the up vector of camera
    *
    * @return vector3&
    */
-  vector3 &up() { return m_up; }
+  Vector3 &up() { return m_up; }
   /**
    * @brief Get the view matrix of camera
    *
@@ -70,11 +70,11 @@ public:
 
 private:
   // Position of camera
-  vector3 m_position;
+  Vector3 m_position;
   // Camera target vector
-  vector3 m_target;
+  Vector3 m_target;
   // Up vector
-  vector3 m_up;
+  Vector3 m_up;
   // view
   matrix4 m_view;
   // projection

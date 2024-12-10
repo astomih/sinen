@@ -1,7 +1,7 @@
 #ifndef SINEN_ASSET_TYPE_HPP
 #define SINEN_ASSET_TYPE_HPP
 namespace sinen {
-enum class asset_type {
+enum class AssetType {
   Font,
   Model,
   Music,

@@ -7,24 +7,24 @@
 
 namespace sinen {
 void register_component(sol::state &lua) {
-  lua["actor"] = []() -> actor { return actor(); };
+  lua["actor"] = []() -> Actor { return Actor(); };
   lua["cconvert_draw3d"] = [](component *c) -> draw3d_component * {
     return dynamic_cast<draw3d_component *>(c);
   };
 
   {
-    auto v = lua.new_usertype<actor>("", sol::no_construction());
-    v["get_position"] = &actor::get_position;
-    v["set_position"] = &actor::set_position;
-    v["get_rotation"] = &actor::get_rotation;
-    v["set_rotation"] = &actor::set_rotation;
-    v["get_scale"] = &actor::get_scale;
-    v["set_scale"] = &actor::set_scale;
-    v["has_component"] = [](actor &a, std::string_view str) {
+    auto v = lua.new_usertype<Actor>("", sol::no_construction());
+    v["get_position"] = &Actor::get_position;
+    v["set_position"] = &Actor::set_position;
+    v["get_rotation"] = &Actor::get_rotation;
+    v["set_rotation"] = &Actor::set_rotation;
+    v["get_scale"] = &Actor::get_scale;
+    v["set_scale"] = &Actor::set_scale;
+    v["has_component"] = [](Actor &a, std::string_view str) {
       return a.has_component(str);
     };
-    v["get_component"] = &actor::get_component;
-    v["add_component"] = [](actor &a, std::string_view str) {
+    v["get_component"] = &Actor::get_component;
+    v["add_component"] = [](Actor &a, std::string_view str) {
       return a.add_component(str);
     };
   };

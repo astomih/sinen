@@ -11,7 +11,7 @@ namespace sinen {
  * @tparam T Type of grid
  * @tparam Allocator allocator
  */
-template <class T, class Allocator = std::allocator<T>> class grid {
+template <class T, class Allocator = std::allocator<T>> class Grid {
 public:
   class const_iterator;
   class iterator;
@@ -23,7 +23,7 @@ public:
    * @param width  Width of grid
    * @param height  Height of grid
    */
-  grid(std::size_t width, std::size_t height);
+  Grid(std::size_t width, std::size_t height);
   /**
    * @brief Construct a new grid object
    *
@@ -31,23 +31,23 @@ public:
    * @param height Height of grid
    * @param value Initial value of grid
    */
-  grid(std::size_t width, std::size_t height, const T &value);
+  Grid(std::size_t width, std::size_t height, const T &value);
   /**
    * @brief Builds a grid from an initializer list
    *
    * @param list An initializer_list
    */
-  grid(std::initializer_list<std::initializer_list<T>> list);
+  Grid(std::initializer_list<std::initializer_list<T>> list);
   /**
    * @brief Construct a new grid object
    *
    */
-  grid();
+  Grid();
   /**
    * @brief Destroy the grid object
    *
    */
-  ~grid() = default;
+  ~Grid() = default;
 
   /**
    * @brief Get the width of grid
@@ -175,10 +175,10 @@ public:
   const_reverse_iterator crend() {
     return const_reverse_iterator(m_data.crend());
   }
-  bool operator==(const grid &other) const noexcept {
+  bool operator==(const Grid &other) const noexcept {
     return m_data == other.m_data;
   }
-  bool operator!=(const grid &other) const noexcept {
+  bool operator!=(const Grid &other) const noexcept {
     return m_data != other.m_data;
   }
   /**

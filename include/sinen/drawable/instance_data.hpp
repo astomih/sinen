@@ -6,7 +6,7 @@ namespace sinen {
  * @brief Instance data for Instancing draw
  *
  */
-struct instance_data {
+struct InstanceData {
   float world_matrix_1[4];
   float world_matrix_2[4];
   float world_matrix_3[4];

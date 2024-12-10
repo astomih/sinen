@@ -8,55 +8,55 @@ namespace sinen {
  * @brief Line2D class
  *
  */
-struct line2 {
-  line2() = default;
-  line2(const vector2 &p, const vector2 &v) : p(p), v(v) {}
-  vector2 get_point(float t) const { return v * t; }
+struct Line2 {
+  Line2() = default;
+  Line2(const Vector2 &p, const Vector2 &v) : p(p), v(v) {}
+  Vector2 get_point(float t) const { return v * t; }
 
-  vector2 p;
-  vector2 v;
+  Vector2 p;
+  Vector2 v;
 };
 /**
  * @brief Segment2D class
  *
  */
-struct segment2 : public line2 {
-  segment2();
-  segment2(const line2 &l) : line2(l) {}
-  segment2(const vector2 &p, const vector2 &v);
+struct Segment2 : public Line2 {
+  Segment2();
+  Segment2(const Line2 &l) : Line2(l) {}
+  Segment2(const Vector2 &p, const Vector2 &v);
   /**
    * @brief Get end point of segment
    *
    */
-  point2f get_end_point() const;
+  Point2f get_end_point() const;
 };
 /**
  * @brief Ray2D class
  *
  */
-struct ray2 : public line2 {
-  ray2();
-  ray2(const line2 &l) : line2(l) {}
-  ray2(const segment2 &s) : line2(s) {}
-  ray2(const vector2 &p, const vector2 &v);
+struct Ray2 : public Line2 {
+  Ray2();
+  Ray2(const Line2 &l) : Line2(l) {}
+  Ray2(const Segment2 &s) : Line2(s) {}
+  Ray2(const Vector2 &p, const Vector2 &v);
   /**
    * @brief Get end point of ray
    *
    */
-  point2f get_end_point() const;
+  Point2f get_end_point() const;
 };
 /**
  * @brief Triangle3D class
  *
  */
-struct triangle2 {
-  triangle2();
-  triangle2(const vector2 &a, const vector2 &b, const vector2 &c);
+struct Triangle2 {
+  Triangle2();
+  Triangle2(const Vector2 &a, const Vector2 &b, const Vector2 &c);
   /**
    * @brief Get normal of triangle
    *
    */
-  vector2 get_normal() const;
+  Vector2 get_normal() const;
   /**
    * @brief Get area of triangle
    *
@@ -66,52 +66,52 @@ struct triangle2 {
    * @brief Get centroid of triangle
    *
    */
-  point2f get_centroid() const;
+  Point2f get_centroid() const;
   /**
    * @brief Get barycentric coordinates of point
    *
    */
-  vector2 get_barycentric(const vector2 &p) const;
+  Vector2 get_barycentric(const Vector2 &p) const;
 
   // vertices
-  vector2 a;
-  vector2 b;
-  vector2 c;
+  Vector2 a;
+  Vector2 b;
+  Vector2 c;
 };
 /**
  * @brief Plane2D class
  *
  */
-struct plane2 {
-  plane2() = default;
-  plane2(const vector2 &p, const vector2 &n) : p(p), n(n) {}
+struct Plane2 {
+  Plane2() = default;
+  Plane2(const Vector2 &p, const Vector2 &n) : p(p), n(n) {}
 
   // point on plane
-  vector2 p;
+  Vector2 p;
   // normal of plane
-  vector2 n;
+  Vector2 n;
 };
 /**
  * @brief Rectangle class
  *
  */
-struct rectangle {
-  rectangle() = default;
-  rectangle(const vector2 &p, const vector2 &s) : p(p), s(s) {}
+struct Rectangle {
+  Rectangle() = default;
+  Rectangle(const Vector2 &p, const Vector2 &s) : p(p), s(s) {}
   // point on rectangle
-  vector2 p;
+  Vector2 p;
   // size of rectangle
-  vector2 s;
+  Vector2 s;
 };
 /**
  * @brief Circle class
  *
  */
-struct circle {
-  circle() = default;
-  circle(const vector2 &p, float r) : p(p), r(r) {}
+struct Circle {
+  Circle() = default;
+  Circle(const Vector2 &p, float r) : p(p), r(r) {}
   // point on circle
-  vector2 p;
+  Vector2 p;
   // radius of circle
   float r;
 };

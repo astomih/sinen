@@ -54,19 +54,19 @@ namespace sinen {
  * @return true Success to initialize
  * @return false Failed to initialize
  */
-bool initialize(int argc, char *argv[]);
+bool Initialize(int argc, char *argv[]);
 /**
  * @brief Run sinen engine
  *
  */
-void run();
+void Run();
 /**
  * @brief Shutdown sinen engine
  *
  * @return true Success to shutdown
  * @return false Failed to shutdown
  */
-bool shutdown();
+bool Shutdown();
 } // namespace sinen
 
 #endif

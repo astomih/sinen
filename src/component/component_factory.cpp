@@ -5,7 +5,7 @@ namespace sinen {
 component_factory::component_factory() = default;
 component_factory::~component_factory() = default;
 std::shared_ptr<component> component_factory::create(const std::string &name,
-                                                     actor &owner) {
+                                                     Actor &owner) {
   if (m_component_map.contains(name)) {
     return m_component_map[name](owner);
   }

@@ -2,5 +2,5 @@
 #include <component/component.hpp>
 
 namespace sinen {
-component::component(actor &owner) : m_owner(owner) {}
+component::component(Actor &owner) : m_owner(owner) {}
 } // namespace sinen

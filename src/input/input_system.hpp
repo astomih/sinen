@@ -12,16 +12,16 @@ namespace sinen {
 struct keyboard_state_impl {
 public:
   const uint8_t *mCurrState;
-  std::array<uint8_t, static_cast<int>(keyboard::code::NUM_KEYCODES)>
+  std::array<uint8_t, static_cast<int>(Keyboard::code::NUM_KEYCODES)>
       mPrevState;
 };
 
 struct mouse_state_impl {
 public:
   // Store current mouse position
-  vector2 mMousePos;
+  Vector2 mMousePos;
   // Motion of scroll wheel
-  vector2 mScrollWheel;
+  Vector2 mScrollWheel;
   // Store button data
   uint32_t mCurrButtons;
   uint32_t mPrevButtons;
@@ -33,12 +33,12 @@ struct joystick_state_impl {
 public:
   // Current/previous buttons
   uint8_t
-      mCurrButtons[static_cast<int>(gamepad::code::NUM_GAMECONTROLLER_BUTTON)];
+      mCurrButtons[static_cast<int>(GamePad::code::NUM_GAMECONTROLLER_BUTTON)];
   uint8_t
-      mPrevButtons[static_cast<int>(gamepad::code::NUM_GAMECONTROLLER_BUTTON)];
+      mPrevButtons[static_cast<int>(GamePad::code::NUM_GAMECONTROLLER_BUTTON)];
   // Left/right sticks
-  vector2 mLeftStick;
-  vector2 mRightStick;
+  Vector2 mLeftStick;
+  Vector2 mRightStick;
   // Left/right trigger
   float mLeftTrigger;
   float mRightTrigger;
@@ -65,7 +65,7 @@ public:
 
 private:
   static float filter1d(int input);
-  static vector2 filter2d(int inputX, int inputY);
+  static Vector2 filter2d(int inputX, int inputY);
   static joystick mController;
 };
 } // namespace sinen

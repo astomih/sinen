@@ -12,14 +12,14 @@ namespace sinen {
  * @brief Sound class
  *
  */
-class sound {
+class Sound {
 public:
   /**
    * @brief  Sound parameters
    *
    */
   struct parameter {
-    vector3 position;
+    Vector3 position;
     uint32_t source_id;
     uint32_t buffer_id;
   };
@@ -27,7 +27,7 @@ public:
    * @brief Construct a new sound object
    *
    */
-  sound();
+  Sound();
   /**
    * @brief Load the sound data from file
    *
@@ -54,22 +54,22 @@ public:
   void set_paused(bool pause);
   void set_volume(float value);
   void set_pitch(float value);
-  void set_position(vector3 pos);
+  void set_position(Vector3 pos);
   // Getters
   bool get_paused();
   float get_volume();
   float get_pitch();
   std::string get_name();
-  const vector3 &get_position();
+  const Vector3 &get_position();
 
-  void set_listener(vector3 pos, vector3 direction);
+  void set_listener(Vector3 pos, Vector3 direction);
 
 private:
   std::string mName;
   parameter param;
   float volume = 1.f;
   float pitch = 1.f;
-  vector3 pos;
+  Vector3 pos;
   bool isPlaying = true;
   bool isPaused = false;
 };

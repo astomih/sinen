@@ -3,16 +3,16 @@
 #include <algorithm>
 namespace sinen {
 template <class T, class Allocator>
-inline grid<T, Allocator>::grid(std::size_t width, std::size_t height)
+inline Grid<T, Allocator>::Grid(std::size_t width, std::size_t height)
     : m_width(width), m_data(width * height) {}
 template <class T, class Allocator>
-inline grid<T, Allocator>::grid(std::size_t width, std::size_t height,
+inline Grid<T, Allocator>::Grid(std::size_t width, std::size_t height,
                                 const T &value)
     : m_width(width), m_data(width * height, value) {}
 template <class T, class Allocator>
-inline grid<T, Allocator>::grid(
+inline Grid<T, Allocator>::Grid(
     std::initializer_list<std::initializer_list<T>> list)
-    : grid(std::max_element(
+    : Grid(std::max_element(
                list.begin(), list.end(),
                [](auto &lhs, auto &rhs) { return lhs.size() < rhs.size(); })
                ->size(),
@@ -25,13 +25,13 @@ inline grid<T, Allocator>::grid(
   }
 }
 template <class T, class Allocator>
-inline grid<T, Allocator>::grid() : m_width(0), m_data() {}
+inline Grid<T, Allocator>::Grid() : m_width(0), m_data() {}
 template <class T, class Allocator>
-inline std::size_t grid<T, Allocator>::width() const {
+inline std::size_t Grid<T, Allocator>::width() const {
   return m_width;
 }
 template <class T, class Allocator>
-inline std::size_t grid<T, Allocator>::height() const {
+inline std::size_t Grid<T, Allocator>::height() const {
   if (m_width == 0) {
     return 0;
   }
@@ -43,7 +43,7 @@ inline std::size_t grid<T, Allocator>::height() const {
 */
 
 template <class T, class Allocator>
-inline void grid<T, Allocator>::push_column() {
+inline void Grid<T, Allocator>::push_column() {
   if (m_width == 0) {
     m_data.push_back(T{});
     m_width++;
@@ -56,7 +56,7 @@ inline void grid<T, Allocator>::push_column() {
 }
 #include <iostream>
 template <class T, class Allocator>
-inline void grid<T, Allocator>::push_column(const T &value) {
+inline void Grid<T, Allocator>::push_column(const T &value) {
   if (m_width == 0) {
     m_data.push_back(value);
     m_width++;
@@ -68,7 +68,7 @@ inline void grid<T, Allocator>::push_column(const T &value) {
   m_width++;
 }
 template <class T, class Allocator>
-inline void grid<T, Allocator>::pop_column() {
+inline void Grid<T, Allocator>::pop_column() {
   if (m_width == 0) {
     return;
   }
@@ -81,7 +81,7 @@ inline void grid<T, Allocator>::pop_column() {
 /*
   Row
 */
-template <class T, class Allocator> inline void grid<T, Allocator>::push_row() {
+template <class T, class Allocator> inline void Grid<T, Allocator>::push_row() {
   if (width() == 0) {
     m_data.push_back(T{});
     m_width++;
@@ -90,7 +90,7 @@ template <class T, class Allocator> inline void grid<T, Allocator>::push_row() {
   m_data.resize(m_data.size() + width());
 }
 template <class T, class Allocator>
-inline void grid<T, Allocator>::push_row(const T &value) {
+inline void Grid<T, Allocator>::push_row(const T &value) {
   if (width() == 0) {
     m_data.push_back(value);
     m_width++;
@@ -98,12 +98,12 @@ inline void grid<T, Allocator>::push_row(const T &value) {
   }
   m_data.resize(m_data.size() + width(), value);
 }
-template <class T, class Allocator> inline void grid<T, Allocator>::pop_row() {
+template <class T, class Allocator> inline void Grid<T, Allocator>::pop_row() {
   m_data.resize(m_data.size() - width());
 }
 
 template <class T, class Allocator>
-inline void grid<T, Allocator>::resize(const std::size_t &w,
+inline void Grid<T, Allocator>::resize(const std::size_t &w,
                                        const std::size_t &h) {
   if (w < 2 || h < 2) {
     if (w == 0 || h == 0) {

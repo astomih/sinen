@@ -2,12 +2,12 @@
 #include <drawable/drawable.hpp>
 
 namespace sinen {
-drawable::drawable() {
+Drawable::Drawable() {
   float f[16] = {};
   this->param.user = matrix4(f);
 }
-drawable::~drawable() {}
-void drawable::world_to_instance_data(const matrix4 &mat, instance_data &data) {
+Drawable::~Drawable() {}
+void Drawable::world_to_instance_data(const matrix4 &mat, InstanceData &data) {
 
   int l = 0;
   for (int i = 0; i < 4; i++) {

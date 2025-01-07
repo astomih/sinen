@@ -90,7 +90,8 @@ public:
 
   std::vector<VkFence> m_fences;
   VkSemaphore m_renderCompletedSem, m_presentCompletedSem;
-#ifdef DEBUG
+  // TODO: Prepare SINEN_BUILD_DEBUG
+#if defined(DEBUG) || defined(_DEBUG)
   PFN_vkCreateDebugReportCallbackEXT m_vkCreateDebugReportCallbackEXT;
   PFN_vkDebugReportMessageEXT m_vkDebugReportMessageEXT;
   PFN_vkDestroyDebugReportCallbackEXT m_vkDestroyDebugReportCallbackEXT;

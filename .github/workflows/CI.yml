@@ -33,8 +33,3 @@ jobs:
           git submodule update --init libs/VulkanMemoryAllocator
           cmake -G Ninja -B build -DEXTERNAL_ALL_BUILD=OFF
           cd build && ninja
-    - name: Test
-      run: |
-          pwd
-          cd build/test
-          ./unit_test

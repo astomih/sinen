@@ -12,7 +12,7 @@
 #include "vk_util.hpp"
 #include <render/renderer.hpp>
 
-#ifdef DEBUG
+#if defined(DEBUG) || defined(_DEBUG)
 #define ENABLE_VALIDATION 1
 #endif
 namespace sinen {
@@ -180,27 +180,42 @@ void vk_base::create_instance(const char *appName) {
   appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
 
   // Get all extensions
-  std::vector<VkExtensionProperties> props;
+  std::vector<VkExtensionProperties> extensionProps;
   {
     uint32_t count = 0;
     vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr);
-    props.resize(count);
-    vkEnumerateInstanceExtensionProperties(nullptr, &count, props.data());
+    extensionProps.resize(count);
+    vkEnumerateInstanceExtensionProperties(nullptr, &count, extensionProps.data());
 
-    for (const auto &v : props) {
+    for (const auto &v : extensionProps) {
       extensions.push_back(v.extensionName);
     }
   }
+
+  // Get all available layers
+  std::vector<VkLayerProperties> layerProps;
+  std::vector<const char *> layers;
+  {
+    uint32_t count = 0;
+    vkEnumerateInstanceLayerProperties(&count, nullptr);
+    layerProps.resize(count);
+    vkEnumerateInstanceLayerProperties(&count, layerProps.data());
+    #if ENABLE_VALIDATION
+    for (int i = 0; i < layerProps.size(); i++)
+    {
+      if(std::string(layerProps[i].layerName) == "VK_LAYER_KHRONOS_validation")
+          layers.push_back(layerProps[i].layerName);
+    }
+    #endif
+  }
+
   VkInstanceCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
   ci.enabledExtensionCount = extensions.size();
   ci.ppEnabledExtensionNames = extensions.data();
   ci.pApplicationInfo = &appInfo;
-#if ENABLE_VALIDATION
-  const char *layers[] = {"VK_LAYER_KHRONOS_validation"};
-  ci.enabledLayerCount = 1;
-  ci.ppEnabledLayerNames = layers;
-#endif
+  ci.enabledLayerCount = layers.size();
+  ci.ppEnabledLayerNames = layers.data();
 
   // Create instance
   VkResult result = vkCreateInstance(&ci, nullptr, &m_instance);

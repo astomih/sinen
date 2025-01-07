@@ -23,29 +23,23 @@ void decoding(std::string &str, std::vector<uint8_t> &key) {
 }
 std::vector<uint8_t> DataStream::key = {0};
 std::string_view DataStream::open(const AssetType &type,
-                                   std::string_view name) {
+                                  std::string_view name) {
   std::string filePath;
   convert_file_path(type, filePath, name);
 
   SDL_RWops *file = SDL_RWFromFile(filePath.c_str(), "r");
-#ifndef NEN_NO_EXCEPTION
-  if (!file)
-    throw std::runtime_error("File open error.");
-#else
-  std::cerr << "File open error" << std::endl;
-#endif
+  Logger::error("File open error %s: %s", filePath.c_str(), SDL_GetError());
   size_t fileLength;
   void *load = SDL_LoadFile_RW(file, &fileLength, 1);
-#ifndef NEN_NO_EXCEPTION
-  if (!load)
-    throw std::runtime_error("convert error.");
-#endif
+  if (!load) {
+    Logger::error("File load error %s: %s", filePath.c_str(), SDL_GetError());
+    return "";
+  }
   std::string_view result(reinterpret_cast<char *>(load), fileLength);
   SDL_free(load);
   return result;
 }
-void *DataStream::open_as_rwops(const AssetType &type,
-                                 std::string_view name) {
+void *DataStream::open_as_rwops(const AssetType &type, std::string_view name) {
   std::string filePath;
   convert_file_path(type, filePath, name);
 
@@ -57,19 +51,21 @@ void *DataStream::open_as_rwops(const AssetType &type,
   return file;
 }
 std::string DataStream::open_as_string(const AssetType &type,
-                                        std::string_view name) {
+                                       std::string_view name) {
   std::string filePath;
   convert_file_path(type, filePath, name);
 
   SDL_RWops *file = SDL_RWFromFile(filePath.c_str(), "r");
   if (!file) {
-    Logger::error("File open error %s", filePath.c_str());
+    Logger::critical("File open error %s: %s", filePath.c_str(),
+                     SDL_GetError());
     return std::string("");
   }
   size_t fileLength;
   void *load = SDL_LoadFile_RW(file, &fileLength, 1);
   if (!load) {
-    Logger::error("Load error %s", filePath.c_str());
+    Logger::critical("File load error %s: %s", filePath.c_str(),
+                     SDL_GetError());
     return std::string("");
   }
   std::string result{reinterpret_cast<char *>(load), fileLength};
@@ -80,7 +76,7 @@ std::string DataStream::open_as_string(const AssetType &type,
 }
 
 void DataStream::write(const AssetType &type, std::string_view name,
-                        std::string_view data) {
+                       std::string_view data) {
   std::string filePath;
   convert_file_path(type, filePath, name);
   SDL_RWops *file = SDL_RWFromFile(filePath.c_str(), "w");
@@ -92,9 +88,8 @@ void DataStream::write(const AssetType &type, std::string_view name,
   }
   SDL_RWclose(file);
 }
-void DataStream::convert_file_path(const AssetType &type,
-                                    std::string &filePath,
-                                    std::string_view name) {
+void DataStream::convert_file_path(const AssetType &type, std::string &filePath,
+                                   std::string_view name) {
   std::string base = "data/";
   switch (type) {
   case AssetType::Font:
@@ -128,7 +123,7 @@ void DataStream::convert_file_path(const AssetType &type,
   }
 }
 std::string DataStream::convert_file_path(const AssetType &type,
-                                           std::string_view name) {
+                                          std::string_view name) {
   std::string filePath;
   convert_file_path(type, filePath, name);
   return filePath;

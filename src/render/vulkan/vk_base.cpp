@@ -134,24 +134,35 @@ void vk_base::select_physical_device() {
   }
   std::vector<VkPhysicalDevice> physDevs(devCount);
   vkEnumeratePhysicalDevices(m_instance, &devCount, physDevs.data());
-  // Use first device
-  m_physDev = physDevs[0];
-  vkGetPhysicalDeviceMemoryProperties(m_physDev, &m_physMemProps);
-  // Print device name
-  VkPhysicalDeviceProperties props;
-  vkGetPhysicalDeviceProperties(m_physDev, &props);
-  Logger::info("Vulkan version: %d.%d.%d", VK_VERSION_MAJOR(props.apiVersion),
-               VK_VERSION_MINOR(props.apiVersion),
-               VK_VERSION_PATCH(props.apiVersion));
-  Logger::info("Driver version: %d.%d.%d",
-               VK_VERSION_MAJOR(props.driverVersion),
-               VK_VERSION_MINOR(props.driverVersion),
-               VK_VERSION_PATCH(props.driverVersion));
-  Logger::info("Vendor ID: %d", props.vendorID);
-  Logger::info("Device ID: %d", props.deviceID);
-  Logger::info("Device type: %d", props.deviceType);
-  Logger::info("Device limits: %d", props.limits.maxImageDimension2D);
-  Logger::info("Physical device: %s", props.deviceName);
+  m_physDev = VK_NULL_HANDLE;
+  for (int i = 0; i < physDevs.size(); i++) {
+    m_physDev = physDevs[i];
+    vkGetPhysicalDeviceMemoryProperties(m_physDev, &m_physMemProps);
+    // Print device name
+    VkPhysicalDeviceProperties props;
+    vkGetPhysicalDeviceProperties(m_physDev, &props);
+
+    Logger::info("Physical Device index: %d", i);
+    Logger::info("Vulkan version: %d.%d.%d", VK_VERSION_MAJOR(props.apiVersion),
+                 VK_VERSION_MINOR(props.apiVersion),
+                 VK_VERSION_PATCH(props.apiVersion));
+    Logger::info("Driver version: %d.%d.%d",
+                 VK_VERSION_MAJOR(props.driverVersion),
+                 VK_VERSION_MINOR(props.driverVersion),
+                 VK_VERSION_PATCH(props.driverVersion));
+    Logger::info("Vendor ID: %d", props.vendorID);
+    Logger::info("Device ID: %d", props.deviceID);
+    Logger::info("Device type: %d", props.deviceType);
+    Logger::info("Device limits: %d", props.limits.maxImageDimension2D);
+    Logger::info("Physical device: %s\n", props.deviceName);
+
+    if (props.apiVersion >= VK_API_VERSION_1_0) {
+      break;
+    }
+  }
+  if (m_physDev == VK_NULL_HANDLE) {
+    Logger::critical("This device does not support Vulkan!");
+  }
 }
 
 uint32_t vk_base::search_graphics_queue_index() {
@@ -185,7 +196,8 @@ void vk_base::create_instance(const char *appName) {
     uint32_t count = 0;
     vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr);
     extensionProps.resize(count);
-    vkEnumerateInstanceExtensionProperties(nullptr, &count, extensionProps.data());
+    vkEnumerateInstanceExtensionProperties(nullptr, &count,
+                                           extensionProps.data());
 
     for (const auto &v : extensionProps) {
       extensions.push_back(v.extensionName);
@@ -200,17 +212,20 @@ void vk_base::create_instance(const char *appName) {
     vkEnumerateInstanceLayerProperties(&count, nullptr);
     layerProps.resize(count);
     vkEnumerateInstanceLayerProperties(&count, layerProps.data());
-    #if ENABLE_VALIDATION
-    for (int i = 0; i < layerProps.size(); i++)
-    {
-      if(std::string(layerProps[i].layerName) == "VK_LAYER_KHRONOS_validation")
-          layers.push_back(layerProps[i].layerName);
+#if ENABLE_VALIDATION
+    for (int i = 0; i < layerProps.size(); i++) {
+      if (std::string(layerProps[i].layerName) == "VK_LAYER_KHRONOS_validation")
+        layers.push_back(layerProps[i].layerName);
     }
-    #endif
+#endif
   }
 
   VkInstanceCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+#ifdef __APPLE__
+  // Use portability
+  ci.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+#endif
   ci.enabledExtensionCount = extensions.size();
   ci.ppEnabledExtensionNames = extensions.data();
   ci.pApplicationInfo = &appInfo;
@@ -234,6 +249,9 @@ void vk_base::create_device() {
   devQueueCI.pQueuePriorities = &defaultQueuePriority;
 
   std::vector<const char *> extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+#ifdef __APPLE__
+  extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+#endif
   VkDeviceCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
   ci.pQueueCreateInfos = &devQueueCI;

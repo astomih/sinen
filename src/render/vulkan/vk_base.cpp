@@ -251,6 +251,7 @@ void vk_base::create_device() {
   std::vector<const char *> extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 #ifdef __APPLE__
   extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+  extensions.push_back("VK_KHR_PORTABILITY_subset");
 #endif
   VkDeviceCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

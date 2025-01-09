@@ -200,6 +200,13 @@ void vk_base::create_instance(const char *appName) {
                                            extensionProps.data());
 
     for (const auto &v : extensionProps) {
+#ifdef __APPLE__
+      if (std::string(v.extensionName) ==
+          std::string(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME)) {
+        Logger::info("VK_KHR_portability_enumeration found");
+      }
+#endif
+
       extensions.push_back(v.extensionName);
     }
   }
@@ -250,7 +257,6 @@ void vk_base::create_device() {
 
   std::vector<const char *> extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 #ifdef __APPLE__
-  extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
   extensions.push_back("VK_KHR_PORTABILITY_subset");
 #endif
   VkDeviceCreateInfo ci{};

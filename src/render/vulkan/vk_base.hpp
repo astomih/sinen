@@ -74,6 +74,8 @@ public:
   VkDevice m_device;
   VkPhysicalDevice m_physDev;
 
+  VkPhysicalDeviceProperties m_physDeviceProps;
+
   VkPhysicalDeviceMemoryProperties m_physMemProps;
 
   uint32_t m_graphicsQueueIndex;

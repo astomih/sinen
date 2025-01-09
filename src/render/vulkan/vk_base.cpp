@@ -130,7 +130,7 @@ void vk_base::select_physical_device() {
   uint32_t devCount = 0;
   vkEnumeratePhysicalDevices(m_instance, &devCount, nullptr);
   if (devCount == 0) {
-    throw std::runtime_error("No physical device found");
+    Logger::critical("No physical device found");
   }
   std::vector<VkPhysicalDevice> physDevs(devCount);
   vkEnumeratePhysicalDevices(m_instance, &devCount, physDevs.data());
@@ -173,7 +173,7 @@ uint32_t vk_base::search_graphics_queue_index() {
 
   uint32_t graphicsQueue = ~0u;
   for (uint32_t i = 0; i < propCount; ++i) {
-    if (props[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+    if (props[i].queueFlags & VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT) {
       graphicsQueue = i;
       break;
     }

@@ -75,8 +75,8 @@ cd sinen
 git submodule update --init --recursive
 ```
 ### Windows
+#### Visual Studio 2022
 Run "build/generate_vs2022.bat" and open&build the generated solution file(build/msvc/.).
-
 ### MacOS
 WIP
 

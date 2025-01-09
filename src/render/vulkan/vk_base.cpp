@@ -139,24 +139,25 @@ void vk_base::select_physical_device() {
     m_physDev = physDevs[i];
     vkGetPhysicalDeviceMemoryProperties(m_physDev, &m_physMemProps);
     // Print device name
-    VkPhysicalDeviceProperties props;
-    vkGetPhysicalDeviceProperties(m_physDev, &props);
+    vkGetPhysicalDeviceProperties(m_physDev, &m_physDeviceProps);
 
     Logger::info("Physical Device index: %d", i);
-    Logger::info("Vulkan version: %d.%d.%d", VK_VERSION_MAJOR(props.apiVersion),
-                 VK_VERSION_MINOR(props.apiVersion),
-                 VK_VERSION_PATCH(props.apiVersion));
+    Logger::info("Vulkan version: %d.%d.%d",
+                 VK_VERSION_MAJOR(m_physDeviceProps.apiVersion),
+                 VK_VERSION_MINOR(m_physDeviceProps.apiVersion),
+                 VK_VERSION_PATCH(m_physDeviceProps.apiVersion));
     Logger::info("Driver version: %d.%d.%d",
-                 VK_VERSION_MAJOR(props.driverVersion),
-                 VK_VERSION_MINOR(props.driverVersion),
-                 VK_VERSION_PATCH(props.driverVersion));
-    Logger::info("Vendor ID: %d", props.vendorID);
-    Logger::info("Device ID: %d", props.deviceID);
-    Logger::info("Device type: %d", props.deviceType);
-    Logger::info("Device limits: %d", props.limits.maxImageDimension2D);
-    Logger::info("Physical device: %s\n", props.deviceName);
+                 VK_VERSION_MAJOR(m_physDeviceProps.driverVersion),
+                 VK_VERSION_MINOR(m_physDeviceProps.driverVersion),
+                 VK_VERSION_PATCH(m_physDeviceProps.driverVersion));
+    Logger::info("Vendor ID: %d", m_physDeviceProps.vendorID);
+    Logger::info("Device ID: %d", m_physDeviceProps.deviceID);
+    Logger::info("Device type: %d", m_physDeviceProps.deviceType);
+    Logger::info("Device limits: %d",
+                 m_physDeviceProps.limits.maxImageDimension2D);
+    Logger::info("Physical device: %s\n", m_physDeviceProps.deviceName);
 
-    if (props.apiVersion >= VK_API_VERSION_1_0) {
+    if (m_physDeviceProps.apiVersion >= VK_API_VERSION_1_0) {
       break;
     }
   }
@@ -257,7 +258,9 @@ void vk_base::create_device() {
 
   std::vector<const char *> extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 #ifdef __APPLE__
-  extensions.push_back("VK_KHR_PORTABILITY_subset");
+  if (m_physDeviceProps.apiVersion > VK_MAKE_API_VERSION(0, 1, 3, 216)) {
+    extensions.push_back("VK_KHR_PORTABILITY_subset");
+  }
 #endif
   VkDeviceCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

@@ -73,10 +73,20 @@ end
 git clone https://github.com/astomih/sinen.git
 cd sinen
 git submodule update --init --recursive
-cmake -B build -DEXTERNAL_ALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release
+```
+### Windows
+#### Visual Studio 2022
+Run "build/generate_vs2022.bat" and open&build the generated solution file(build/msvc/.).
+### MacOS
+WIP
+
+### Linux
+``` bash
+cmake -B build/linux -DEXTERNAL_ALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release
 cd build && ninja
 ```
 
-# Editor
+
+# Editor(Experimental)
 Editor is a tool for creating and editing Scene files.
 ![Editor Sample](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/editor_sample.png)  

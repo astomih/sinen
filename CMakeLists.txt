@@ -9,20 +9,20 @@ add_subdirectory(./works)
 
 if(EXTERNAL_ALL_BUILD)
   add_subdirectory(./libs/SDL)
-  set(SDL2IMAGE_INSTALL OFF)
-  set(SDL2MIXER_INSTALL OFF)
-  set(SDL2TTF_INSTALL OFF)
+  set(SDL3IMAGE_INSTALL OFF)
+  set(SDL3MIXER_INSTALL OFF)
+  set(SDL3TTF_INSTALL OFF)
   add_subdirectory(./libs/SDL_image)
   add_subdirectory(./libs/SDL_mixer)
   add_subdirectory(./libs/SDL_ttf)
   add_subdirectory(./libs/glslang)
-  set(SDL2_INCLUDE_DIRS
+  set(SDL3_INCLUDE_DIRS
     libs/SDL/include
     libs/SDL_mixer/include
     libs/SDL_image/include
     libs/SDL_ttf/include)
 else()
-  find_package(SDL2 REQUIRED)
+  find_package(SDL3 REQUIRED)
 endif()
 
 find_package(Vulkan REQUIRED)
@@ -64,14 +64,14 @@ file(
 )
 add_library(sinen STATIC ${SOURCE_FILES} ${HEADER_FILES})
 target_include_directories(
-  sinen PUBLIC ${SINEN_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS})
+  sinen PUBLIC ${SINEN_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS} ${SDL3_INCLUDE_DIRS})
 target_link_libraries(
   sinen
-  SDL2::SDL2
-  SDL2main
-  SDL2_image
-  SDL2_mixer
-  SDL2_ttf
+  SDL3::SDL3
+  SDL3main
+  SDL3_image
+  SDL3_mixer
+  SDL3_ttf
   glslang
   SPIRV
   glslang-default-resource-limits

@@ -1215,9 +1215,8 @@ void vk_renderer::create_image_object(const HandleT &handle) {
   SDL_Surface *surfptr = reinterpret_cast<SDL_Surface *>(handle);
   ::SDL_Surface &surf = *surfptr;
   ::SDL_LockSurface(&surf);
-  auto *formatbuf = ::SDL_AllocFormat(SDL_PIXELFORMAT_ABGR8888);
-  formatbuf->BytesPerPixel = 4;
-  auto *imagedata = ::SDL_ConvertSurface(&surf, formatbuf, 0);
+  auto *formatbuf = ::SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_ABGR8888);
+  auto *imagedata = ::SDL_ConvertSurface(&surf, formatbuf->format);
   ::SDL_UnlockSurface(&surf);
   vk_buffer stagingBuffer;
   vk_image image;
@@ -1308,8 +1307,7 @@ void vk_renderer::create_image_object(const HandleT &handle) {
   vkFreeCommandBuffers(m_base->get_vk_device(), m_base->m_commandPool, 1,
                        &command);
   destroy_buffer(stagingBuffer);
-  SDL_FreeFormat(formatbuf);
-  SDL_FreeSurface(imagedata);
+  SDL_DestroySurface(imagedata);
   m_image_object.emplace(handle, image);
 }
 void vk_renderer::add_texture(Texture handle) {

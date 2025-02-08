@@ -44,8 +44,7 @@ void WindowImpl::initialize(const std::string &name) {
   }
 
   m_window = SDL_CreateWindow(
-      std::string(name).c_str(), SDL_WINDOWPOS_UNDEFINED,
-      SDL_WINDOWPOS_UNDEFINED, static_cast<int>(m_size.x),
+      std::string(name).c_str(), static_cast<int>(m_size.x),
       static_cast<int>(m_size.y), SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
 }
 
@@ -59,8 +58,7 @@ void WindowImpl::resize(const Vector2 &size) {
                     static_cast<int>(m_size.y));
 }
 void WindowImpl::set_fullscreen(bool fullscreen) {
-  SDL_SetWindowFullscreen(m_window,
-                          fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+  SDL_SetWindowFullscreen(m_window, fullscreen);
 }
 void WindowImpl::rename(const std::string &name) {
   m_name = name;
@@ -72,10 +70,8 @@ void WindowImpl::process_input(SDL_Event &event) {
   SDL_GetWindowSize(m_window, &x, &y);
   m_size.x = static_cast<float>(x);
   m_size.y = static_cast<float>(y);
-  if (event.type == SDL_WINDOWEVENT) {
-    if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-      m_resized = true;
-    }
+  if (event.window.type == SDL_EventType::SDL_EVENT_WINDOW_RESIZED) {
+    m_resized = true;
   }
   if (Keyboard::is_pressed(Keyboard::code::F11)) {
     static bool fullscreen = false;

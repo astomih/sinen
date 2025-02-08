@@ -8,19 +8,22 @@ add_subdirectory(./usertype)
 add_subdirectory(./works)
 
 if(EXTERNAL_ALL_BUILD)
-  add_subdirectory(./libs/SDL)
-  set(SDL3IMAGE_INSTALL OFF)
-  set(SDL3MIXER_INSTALL OFF)
-  set(SDL3TTF_INSTALL OFF)
-  add_subdirectory(./libs/SDL_image)
-  add_subdirectory(./libs/SDL_mixer)
-  add_subdirectory(./libs/SDL_ttf)
-  add_subdirectory(./libs/glslang)
+  add_subdirectory(./libs/SDL EXCLUDE_FROM_ALL)
+  set(DAV1D_ASM OFF)
+  add_subdirectory(./libs/SDL_image EXCLUDE_FROM_ALL)
+  add_subdirectory(./libs/SDL_mixer EXCLUDE_FROM_ALL)
+  add_subdirectory(./libs/SDL_ttf EXCLUDE_FROM_ALL)
+  add_subdirectory(./libs/glslang EXCLUDE_FROM_ALL)
   set(SDL3_INCLUDE_DIRS
     libs/SDL/include
+    libs/SDL/include/SDL3
     libs/SDL_mixer/include
+    libs/SDL_mixer/include/SDL3_mixer
     libs/SDL_image/include
-    libs/SDL_ttf/include)
+    libs/SDL_image/include/SDL3_image
+    libs/SDL_ttf/include
+    libs/SDL_ttf/include/SDL3_ttf
+  )
 else()
   find_package(SDL3 REQUIRED)
 endif()
@@ -68,10 +71,9 @@ target_include_directories(
 target_link_libraries(
   sinen
   SDL3::SDL3
-  SDL3main
-  SDL3_image
-  SDL3_mixer
-  SDL3_ttf
+  SDL3_image::SDL3_image
+  SDL3_mixer::SDL3_mixer
+  SDL3_ttf::SDL3_ttf
   glslang
   SPIRV
   glslang-default-resource-limits

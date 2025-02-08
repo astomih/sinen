@@ -54,6 +54,6 @@ void SDL_LogOutputFunction(void *userdata, int category,
 void Logger::set_output_function(
     std::function<void(priority, std::string_view)> func) {
   g_func = func;
-  SDL_LogSetOutputFunction(SDL_LogOutputFunction, nullptr);
+  SDL_SetLogOutputFunction(SDL_LogOutputFunction, nullptr);
 }
 } // namespace sinen

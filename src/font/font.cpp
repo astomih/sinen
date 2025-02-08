@@ -20,8 +20,8 @@ Font::Font(std::string_view file_name, int32_t point) {
 Font::~Font() {}
 bool Font::load(std::string_view fontName, int pointSize) {
   this->m_size = pointSize;
-  m_font = (void *)::TTF_OpenFontRW(
-      (SDL_RWops *)DataStream::open_as_rwops(AssetType::Font, fontName), 1,
+  m_font = (void *)::TTF_OpenFontIO(
+      (SDL_IOStream *)DataStream::open_as_rwops(AssetType::Font, fontName), 1,
       pointSize);
   return is_loaded();
 }
@@ -58,10 +58,11 @@ void Font::render_text(Texture &tex, std::string_view text,
     return;
   }
   auto *ttf_font = reinterpret_cast<::TTF_Font *>(m_font);
-  auto *surface = (::TTF_RenderUTF8_Blended_Wrapped(
-      ttf_font, std::string(text).c_str(), sdlColor, 0));
+  auto *surface =
+      (::TTF_RenderText_Blended_Wrapped(ttf_font, std::string(text).c_str(),
+                                        std::string(text).size(), sdlColor, 0));
   if (!surface) {
-    Logger::error("Failed to render text: %s", ::TTF_GetError());
+    Logger::error("Failed to render text");
   }
   SDL_Surface *handle = reinterpret_cast<SDL_Surface *>(tex.handle);
   // swap
@@ -70,6 +71,6 @@ void Font::render_text(Texture &tex, std::string_view text,
     *handle = *surface;
     *surface = tmp;
   }
-  SDL_FreeSurface(surface);
+  SDL_DestroySurface(surface);
 }
 } // namespace sinen

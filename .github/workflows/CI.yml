@@ -31,5 +31,5 @@ jobs:
         vulkan-use-cache: true
     - name: Build
       run: |
-          git submodule update --init libs/VulkanMemoryAllocator libs/imgui libs/mojoAL-SDL3 libs/SDL_mixer libs/SDL_ttf libs/sol2 --recursive
+          git submodule update --init --recursive libs/VulkanMemoryAllocator libs/imgui libs/mojoAL-SDL3 libs/SDL_mixer libs/SDL_ttf libs/sol2
           cd build && ./generate_clang_minimum.bat && ./build_clang.bat

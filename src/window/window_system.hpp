@@ -1,6 +1,6 @@
 #ifndef SINEN_WINDOW_SYSTEM_HPP
 #define SINEN_WINDOW_SYSTEM_HPP
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <math/vector2.hpp>
 #include <memory>
 #include <render/renderer.hpp>

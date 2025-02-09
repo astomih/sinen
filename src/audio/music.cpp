@@ -8,7 +8,7 @@
 #include <io/data_stream.hpp>
 
 // external
-#include <SDL_mixer.h>
+#include <SDL3_mixer/SDL_mixer.h>
 
 namespace sinen {
 Music::Music() {}

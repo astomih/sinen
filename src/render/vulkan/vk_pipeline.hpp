@@ -1,7 +1,7 @@
 #ifndef SINEN_VK_PIPELINE_HPP
 #define SINEN_VK_PIPELINE_HPP
 #include "vk_pipeline_layout.hpp"
-#include <SDL_vulkan.h>
+#include <SDL3/SDL_vulkan.h>
 #include <vector>
 #include <vulkan/vk_layer.h>
 

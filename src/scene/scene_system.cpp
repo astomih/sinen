@@ -4,8 +4,8 @@
 #include "../render/render_system.hpp"
 #include "../script/script_system.hpp"
 #include "../window/window_system.hpp"
-#include <SDL.h>
-#include <SDL_ttf.h>
+#include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include <camera/camera.hpp>
 #include <color/color.hpp>
 #include <color/palette.hpp>

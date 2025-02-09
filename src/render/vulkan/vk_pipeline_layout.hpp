@@ -1,6 +1,6 @@
 #ifndef SINEN_VK_PIPELINE_LAYOUT
 #define SINEN_VK_PIPELINE_LAYOUT
-#include <SDL_vulkan.h>
+#include <SDL3/SDL_vulkan.h>
 #include <array>
 #include <vector>
 #include <vulkan/vk_layer.h>

@@ -1,5 +1,5 @@
-#include <SDL.h>
-#include <SDL_gamepad.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_gamepad.h>
 
 #include "game_controller.hpp"
 

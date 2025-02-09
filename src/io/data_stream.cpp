@@ -8,7 +8,7 @@
 #include <io/data_stream.hpp>
 #include <logger/logger.hpp>
 // external
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 namespace sinen {
 void decoding(std::string &str, std::vector<uint8_t> &key) {

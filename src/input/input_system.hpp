@@ -7,7 +7,7 @@
 #include <input/keyboard.hpp>
 #include <input/mouse.hpp>
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 namespace sinen {
 struct keyboard_state_impl {
 public:

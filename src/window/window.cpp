@@ -1,5 +1,5 @@
 #include "window_system.hpp"
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <input/keyboard.hpp>
 #include <io/file.hpp>
 #include <io/json.hpp>

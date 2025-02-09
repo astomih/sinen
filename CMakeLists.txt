@@ -13,26 +13,17 @@ if(EXTERNAL_ALL_BUILD)
   add_subdirectory(./libs/SDL EXCLUDE_FROM_ALL)
   set(DAV1D_ASM OFF)
   add_subdirectory(./libs/SDL_image EXCLUDE_FROM_ALL)
-  set(SDL3_INCLUDE_DIRS
+  set(SDL3_INCLUDE_PATHS
     libs/SDL/include
-    libs/SDL/include/SDL3
     libs/SDL_image/include
-    libs/SDL_image/include/SDL3_image
   )
 else()
-  find_package(SDL3 REQUIRED)
+  find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
 endif()
 
 add_subdirectory(./libs/SDL_mixer EXCLUDE_FROM_ALL)
 set(SDLTTF_VENDORED ON)
 add_subdirectory(./libs/SDL_ttf EXCLUDE_FROM_ALL)
-set(SDL3_INCLUDE_DIRS
-  ${SDL3_INCLUDE_DIRS}
-  libs/SDL_mixer/include
-  libs/SDL_mixer/include/SDL3_mixer
-  libs/SDL_ttf/include
-  libs/SDL_ttf/include/SDL3_ttf
-)
 add_subdirectory(./libs/sol2 EXCLUDE_FROM_ALL)
 
 find_package(Vulkan REQUIRED)
@@ -56,6 +47,9 @@ set(SINEN_INCLUDE_DIRS
   libs/rapidjson/include
   libs/mojoAL-SDL3
   libs/tinygltf
+  ${SDL3_INCLUDE_FILES}
+  libs/SDL_mixer/include
+  libs/SDL_ttf/include
 )
 file(
   GLOB
@@ -77,11 +71,11 @@ file(
 )
 add_library(sinen STATIC ${SOURCE_FILES} ${HEADER_FILES})
 target_include_directories(
-  sinen PUBLIC ${SINEN_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS} ${SDL3_INCLUDE_DIRS})
+  sinen PUBLIC ${SINEN_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS} ${SDL3_INCLUDE_PATHS})
 target_link_libraries(
   sinen
   SDL3::SDL3
-  SDL3_image::SDL3_image
+  SDL3_image
   SDL3_mixer::SDL3_mixer
   SDL3_ttf::SDL3_ttf
 )

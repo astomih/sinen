@@ -10,8 +10,8 @@
 #define AL_LIBTYPE_STATIC
 #include <AL/al.h>
 #include <AL/alc.h>
-#include <SDL_log.h>
-#include <SDL_mixer.h>
+#include <SDL3/SDL_log.h>
+#include <SDL3_mixer/SDL_mixer.h>
 
 namespace sinen {
 Vector3 calculate(const Quaternion &r);

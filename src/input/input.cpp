@@ -3,7 +3,7 @@
 
 #include "input_system.hpp"
 #include <cstring>
-#include <imgui_impl_sdl.h>
+#include <imgui_impl_sdl3.h>
 #include <scene/scene.hpp>
 #include <window/window.hpp>
 

@@ -14,7 +14,7 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <imgui.h>
-#include <imgui_impl_sdl.h>
+#include <imgui_impl_sdl3.h>
 #include <imgui_impl_vulkan.h>
 #include <vulkan/vulkan_core.h>
 
@@ -618,7 +618,7 @@ void vk_renderer::cleanup() {
   m_draw_object_ui.clear();
   m_present_texture.prepare_descriptor_set_for_imgui();
   ImGui_ImplVulkan_Shutdown();
-  ImGui_ImplSDL2_Shutdown();
+  ImGui_ImplSDL3_Shutdown();
   ImGui::DestroyContext();
 
   m_present_texture.clear();
@@ -894,7 +894,7 @@ void vk_renderer::prepare_imgui() {
   ImGui::CreateContext();
   RendererImpl::prepare_imgui();
 
-  ImGui_ImplSDL2_InitForVulkan((SDL_Window *)Window::get_sdl_window());
+  ImGui_ImplSDL3_InitForVulkan((SDL_Window *)Window::get_sdl_window());
 
   uint32_t imageCount = m_base->mSwapchain->GetImageCount();
   ImGui_ImplVulkan_InitInfo info{};
@@ -906,7 +906,8 @@ void vk_renderer::prepare_imgui() {
   info.DescriptorPool = m_descriptor_pool;
   info.MinImageCount = 2;
   info.ImageCount = imageCount;
-  if (!ImGui_ImplVulkan_Init(&info, m_base->m_renderPass)) {
+  info.RenderPass = m_base->m_renderPass;
+  if (!ImGui_ImplVulkan_Init(&info)) {
     std::exit(1);
   }
 
@@ -918,27 +919,12 @@ void vk_renderer::prepare_imgui() {
       VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
   };
 
-  VkCommandBuffer command;
-  vkAllocateCommandBuffers(m_base->get_vk_device(), &commandAI, &command);
-  vkBeginCommandBuffer(command, &beginInfo);
-  ImGui_ImplVulkan_CreateFontsTexture(command);
-  vkEndCommandBuffer(command);
-
-  VkSubmitInfo submitInfo{VK_STRUCTURE_TYPE_SUBMIT_INFO, nullptr};
-  submitInfo.pCommandBuffers = &command;
-  submitInfo.commandBufferCount = 1;
-
-  vkQueueSubmit(m_base->get_vk_queue(), 1, &submitInfo, VK_NULL_HANDLE);
-
-  // Wait for transfar font texture
-  vkDeviceWaitIdle(m_base->get_vk_device());
-  vkFreeCommandBuffers(m_base->get_vk_device(), m_base->m_commandPool, 1,
-                       &command);
+  ImGui_ImplVulkan_CreateFontsTexture();
   m_present_texture.prepare_descriptor_set_for_imgui();
 }
 void vk_renderer::render_imgui(VkCommandBuffer command) {
   ImGui_ImplVulkan_NewFrame();
-  ImGui_ImplSDL2_NewFrame((SDL_Window *)Window::get_sdl_window());
+  ImGui_ImplSDL3_NewFrame();
   ImGui::NewFrame();
 
   if (Renderer::is_show_imgui()) {

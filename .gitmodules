@@ -19,3 +19,6 @@
 [submodule "libs/imgui"]
 	path = libs/imgui
 	url = https://github.com/ocornut/imgui
+[submodule "libs/mojoAL-SDL3"]
+	path = libs/mojoAL-SDL3
+	url = https://github.com/r-lyeh/mojoAL-SDL3

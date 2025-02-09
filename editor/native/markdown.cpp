@@ -1,7 +1,7 @@
 #include "markdown.hpp"
 #include <SDL.h>
 #include <imgui.h>
-#include <imgui_impl_sdl.h>
+#include <imgui_impl_sdl3.h>
 #include <imgui_markdown.h>
 #include <io/file.hpp>
 #include <logger/logger.hpp>

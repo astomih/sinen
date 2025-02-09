@@ -30,7 +30,7 @@
 #include <component/move_component.hpp>
 #include <component/rigidbody_component.hpp>
 #include <imgui.h>
-#include <imgui_impl_sdl.h>
+#include <imgui_impl_sdl3.h>
 #include <input/keyboard.hpp>
 #include <logger/logger.hpp>
 #include <sol/sol.hpp>
@@ -56,8 +56,8 @@ bool scene_system::initialize() {
 void scene_system::setup() {
   if (is_run_script) {
     sol::state *lua = (sol::state *)script_system::get_state();
-    std::string str = DataStream::open_as_string(AssetType::Script,
-                                                  current_name() + ".lua");
+    std::string str =
+        DataStream::open_as_string(AssetType::Script, current_name() + ".lua");
     lua->do_string(str.data());
   }
   m_impl->setup();
@@ -69,11 +69,11 @@ void scene_system::process_input() {
 
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
-    ImGui_ImplSDL2_ProcessEvent(&event);
+    ImGui_ImplSDL3_ProcessEvent(&event);
     WindowImpl::process_input(event);
     input_system::process_event(event);
     switch (event.type) {
-    case SDL_QUIT: {
+    case SDL_EVENT_QUIT: {
       m_game_state = Scene::state::quit;
     } break;
     default:
@@ -112,11 +112,11 @@ void scene_system::update_scene() {
   for (auto itr = m_actors.begin(); itr != m_actors.end();) {
     if ((*itr)->get_state() == Actor::state::active) {
       sol::state *lua = (sol::state *)script_system::get_state();
-      auto r = lua->require_script(
-                      (*itr)->get_script_name(),
-                      DataStream::open_as_string(AssetType::Script,
-                                                  (*itr)->get_script_name()))
-                   .as<sol::table>();
+      auto r =
+          lua->require_script((*itr)->get_script_name(),
+                              DataStream::open_as_string(
+                                  AssetType::Script, (*itr)->get_script_name()))
+              .as<sol::table>();
       r["update"]();
       (*itr)->update(delta_time);
 

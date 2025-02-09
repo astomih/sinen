@@ -2,7 +2,7 @@
 #include "vk_renderer.hpp"
 #include <array>
 #include <imgui.h>
-#include <imgui_impl_sdl.h>
+#include <imgui_impl_sdl3.h>
 #include <imgui_impl_vulkan.h>
 #include <vector>
 

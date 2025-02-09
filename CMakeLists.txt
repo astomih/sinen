@@ -40,13 +40,14 @@ set(SINEN_INCLUDE_DIRS
   ./include
   ./include/sinen
   ./usertype/include
-  libs/ImGui/include
+  libs/imgui
+  libs/imgui/backends
   libs/sol2/include
   libs/Lua/include
   libs/VulkanMemoryAllocator/include
-  libs/mojoAL/AL
+  libs/mojoAL-SDL3/AL
   libs/rapidjson/include
-  libs/mojoAL
+  libs/mojoAL-SDL3
   libs/tinygltf
 )
 file(
@@ -55,9 +56,10 @@ file(
   src/*.cpp
   src/*/*.cpp
   src/render/vulkan/*.cpp
-  libs/ImGui/source/*.cpp
+  libs/imgui/*.cpp
+  libs/imgui/backends/imgui_impl_sdl3.cpp
   libs/Lua/source/*.c
-  libs/mojoAL/*.c)
+  libs/mojoAL-SDL3/*.c)
 file(
   GLOB_RECURSE
   HEADER_FILES

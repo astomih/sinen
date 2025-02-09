@@ -49,9 +49,9 @@
 				"type": "lldb",
 				"request": "launch",
 				"name": "Launch clang",
-				"program": "${workspaceFolder}/build/clang/test/paranoixa_test",
+				"program": "${workspaceFolder}/build/clang/works/works",
 				"args": [],
-				"cwd": "${workspaceFolder}/test"
+				"cwd": "${workspaceFolder}/works"
 			},
 			{
 				"type": "cppvsdbg",

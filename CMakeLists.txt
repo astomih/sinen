@@ -51,6 +51,7 @@ set(SINEN_INCLUDE_DIRS
   ${SDL3_INCLUDE_FILES}
   libs/SDL_mixer/include
   libs/SDL_ttf/include
+  libs/paranoixa/include
 )
 file(
   GLOB

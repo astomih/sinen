@@ -82,10 +82,11 @@ bool Texture::load_from_memory(std::vector<char> &buffer) {
 void Texture::fill_color(const Color &color) {
   *is_need_update = true;
   auto &surface = get(handle);
-  ::SDL_FillSurfaceRect(&surface, NULL,
-                        ::SDL_MapRGBA(SDL_GetPixelFormatDetails(surface.format),
-                                      nullptr, color.r * 255, color.g * 255,
-                                      color.b * 255, color.a * 255));
+  ::SDL_FillSurfaceRect(
+      &surface, NULL,
+      ::SDL_MapRGBA(SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_RGBA32), nullptr,
+                    color.r * 255, color.g * 255, color.b * 255,
+                    color.a * 255));
 }
 void Texture::blend_color(const Color &color) {
   *is_need_update = true;

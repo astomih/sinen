@@ -26,9 +26,9 @@
 				"type": "cppvsdbg",
 				"request": "launch",
 				"name": "Launch vs2022",
-				"program": "${workspaceFolder}/build/vs2022/test/debug/paranoixa_test",
+				"program": "${workspaceFolder}/build/vs2022/works/debug/works",
 				"args": [],
-				"cwd": "${workspaceFolder}/test"
+				"cwd": "${workspaceFolder}/works"
 			}
 		]
 	},

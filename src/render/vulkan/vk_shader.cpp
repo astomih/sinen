@@ -2,9 +2,11 @@
 #include <fstream>
 #include <io/data_stream.hpp>
 
+/*
 #include <glslang/Public/ResourceLimits.h>
 #include <glslang/Public/ShaderLang.h>
 #include <glslang/SPIRV/GlslangToSpv.h>
+*/
 
 namespace sinen {
 VkPipelineShaderStageCreateInfo vk_shader::load(VkDevice device,
@@ -28,6 +30,7 @@ VkPipelineShaderStageCreateInfo vk_shader::load(VkDevice device,
     shaderStageCI.pName = "main";
     return shaderStageCI;
   } else {
+    /*
     // Compile glsl to SPIR-V
     std::string filedata =
         DataStream::open_as_string(AssetType::Shader, fileName);
@@ -80,6 +83,7 @@ VkPipelineShaderStageCreateInfo vk_shader::load(VkDevice device,
     shaderStageCI.module = shaderModule;
     shaderStageCI.pName = "main";
     return shaderStageCI;
+  */
   }
 }
 void vk_shader::clean(

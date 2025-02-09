@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.7)
 project(sinen)
 option(EXTERNAL_ALL_BUILD "Build all external libralies" ON)
-add_subdirectory(./editor)
+
+# Still in development
+# add_subdirectory(./editor)
 
 # add_subdirectory(./test)
 add_subdirectory(./usertype)
@@ -13,7 +15,6 @@ if(EXTERNAL_ALL_BUILD)
   add_subdirectory(./libs/SDL_image EXCLUDE_FROM_ALL)
   add_subdirectory(./libs/SDL_mixer EXCLUDE_FROM_ALL)
   add_subdirectory(./libs/SDL_ttf EXCLUDE_FROM_ALL)
-  add_subdirectory(./libs/glslang EXCLUDE_FROM_ALL)
   set(SDL3_INCLUDE_DIRS
     libs/SDL/include
     libs/SDL/include/SDL3
@@ -58,6 +59,7 @@ file(
   src/render/vulkan/*.cpp
   libs/imgui/*.cpp
   libs/imgui/backends/imgui_impl_sdl3.cpp
+  libs/imgui/backends/imgui_impl_vulkan.cpp
   libs/Lua/source/*.c
   libs/mojoAL-SDL3/*.c)
 file(
@@ -76,8 +78,5 @@ target_link_libraries(
   SDL3_image::SDL3_image
   SDL3_mixer::SDL3_mixer
   SDL3_ttf::SDL3_ttf
-  glslang
-  SPIRV
-  glslang-default-resource-limits
 )
 target_compile_features(sinen PUBLIC cxx_std_20)

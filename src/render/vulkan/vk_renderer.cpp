@@ -1201,7 +1201,7 @@ void vk_renderer::create_image_object(const HandleT &handle) {
   SDL_Surface *surfptr = reinterpret_cast<SDL_Surface *>(handle);
   ::SDL_Surface &surf = *surfptr;
   ::SDL_LockSurface(&surf);
-  auto *formatbuf = ::SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_ABGR8888);
+  auto *formatbuf = ::SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_RGBA8888);
   auto *imagedata = ::SDL_ConvertSurface(&surf, formatbuf->format);
   ::SDL_UnlockSurface(&surf);
   vk_buffer stagingBuffer;

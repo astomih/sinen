@@ -13,21 +13,26 @@ if(EXTERNAL_ALL_BUILD)
   add_subdirectory(./libs/SDL EXCLUDE_FROM_ALL)
   set(DAV1D_ASM OFF)
   add_subdirectory(./libs/SDL_image EXCLUDE_FROM_ALL)
-  add_subdirectory(./libs/SDL_mixer EXCLUDE_FROM_ALL)
-  add_subdirectory(./libs/SDL_ttf EXCLUDE_FROM_ALL)
   set(SDL3_INCLUDE_DIRS
     libs/SDL/include
     libs/SDL/include/SDL3
-    libs/SDL_mixer/include
-    libs/SDL_mixer/include/SDL3_mixer
     libs/SDL_image/include
     libs/SDL_image/include/SDL3_image
-    libs/SDL_ttf/include
-    libs/SDL_ttf/include/SDL3_ttf
   )
 else()
   find_package(SDL3 REQUIRED)
 endif()
+
+add_subdirectory(./libs/SDL_mixer EXCLUDE_FROM_ALL)
+set(SDLTTF_VENDORED ON)
+add_subdirectory(./libs/SDL_ttf EXCLUDE_FROM_ALL)
+set(SDL3_INCLUDE_DIRS
+  ${SDL3_INCLUDE_DIRS}
+  libs/SDL_mixer/include
+  libs/SDL_mixer/include/SDL3_mixer
+  libs/SDL_ttf/include
+  libs/SDL_ttf/include/SDL3_ttf
+)
 
 find_package(Vulkan REQUIRED)
 

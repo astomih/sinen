@@ -1,6 +1,3 @@
-[submodule "libs/glslang"]
-	path = libs/glslang
-	url = https://github.com/KhronosGroup/glslang
 [submodule "libs/SDL_image"]
 	path = libs/SDL_image
 	url = https://github.com/libsdl-org/SDL_image

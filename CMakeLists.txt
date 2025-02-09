@@ -33,6 +33,7 @@ set(SDL3_INCLUDE_DIRS
   libs/SDL_ttf/include
   libs/SDL_ttf/include/SDL3_ttf
 )
+add_subdirectory(./libs/sol2 EXCLUDE_FROM_ALL)
 
 find_package(Vulkan REQUIRED)
 

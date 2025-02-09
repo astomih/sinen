@@ -22,3 +22,6 @@
 [submodule "libs/sol2"]
 	path = libs/sol2
 	url = https://github.com/ThePhD/sol2
+[submodule "libs/paranoixa"]
+	path = libs/paranoixa
+	url = https://github.com/astomih/paranoixa

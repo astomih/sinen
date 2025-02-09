@@ -9,8 +9,9 @@ option(EXTERNAL_ALL_BUILD "Build all external libralies" ON)
 add_subdirectory(./usertype)
 add_subdirectory(./works)
 
+add_subdirectory(./libs/paranoixa EXCLUDE_FROM_ALL)
+
 if(EXTERNAL_ALL_BUILD)
-  add_subdirectory(./libs/SDL EXCLUDE_FROM_ALL)
   set(DAV1D_ASM OFF)
   add_subdirectory(./libs/SDL_image EXCLUDE_FROM_ALL)
   set(SDL3_INCLUDE_PATHS
@@ -72,11 +73,23 @@ file(
 add_library(sinen STATIC ${SOURCE_FILES} ${HEADER_FILES})
 target_include_directories(
   sinen PUBLIC ${SINEN_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS} ${SDL3_INCLUDE_PATHS})
-target_link_libraries(
-  sinen
-  SDL3::SDL3
-  SDL3_image
-  SDL3_mixer::SDL3_mixer
-  SDL3_ttf::SDL3_ttf
-)
+
+if(MSVC)
+  target_link_libraries(
+    sinen
+    paranoixa
+    SDL3_image::SDL3_image
+    SDL3_mixer::SDL3_mixer
+    SDL3_ttf::SDL3_ttf
+  )
+else()
+  target_link_libraries(
+    sinen
+    paranoixa
+    SDL3_image
+    SDL3_mixer::SDL3_mixer
+    SDL3_ttf::SDL3_ttf
+  )
+endif()
+
 target_compile_features(sinen PUBLIC cxx_std_20)

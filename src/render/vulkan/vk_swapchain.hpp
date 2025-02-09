@@ -2,7 +2,7 @@
 #define SINEN_VK_SWAPCHAIN_HPP
 #include <vector>
 
-#include <SDL_vulkan.h>
+#include <SDL3/SDL_vulkan.h>
 #include <math/vector2.hpp>
 #include <vulkan/vk_layer.h>
 

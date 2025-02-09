@@ -16,21 +16,22 @@
 
 // external
 #define SDL_MAIN_HANDLED
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_mixer.h>
-#include <SDL_ttf.h>
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_mixer/SDL_mixer.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
 namespace sinen {
 bool Initialize(int argc, char *argv[]) {
-  SDL_SetMainReady();
-  SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_EVENTS |
-           SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER |
-           SDL_INIT_SENSOR);
+  SDL_Init(SDL_INIT_AUDIO | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK |
+           SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD | SDL_INIT_SENSOR);
   TTF_Init();
-  IMG_Init(IMG_INIT_PNG);
   Mix_Init(MIX_INIT_OGG);
-  Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
+  SDL_AudioSpec desired;
+  desired.freq = 44100;
+  desired.format = MIX_DEFAULT_FORMAT;
+  desired.channels = 2;
+  Mix_OpenAudio(44100, &desired);
   WindowImpl::initialize("SinenEngine");
   RendererImpl::initialize();
   if (!sound_system::initialize()) {
@@ -89,7 +90,6 @@ bool Shutdown() {
   Mix_CloseAudio();
   TTF_Quit();
   Mix_Quit();
-  IMG_Quit();
   SDL_Quit();
   return true;
 }

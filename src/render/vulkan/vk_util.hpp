@@ -1,6 +1,6 @@
 #ifndef SINEN_VK_UTIL_HPP
 #define SINEN_VK_UTIL_HPP
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <vulkan/vulkan.h>
 
 #include <array>

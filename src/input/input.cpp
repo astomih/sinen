@@ -1,9 +1,9 @@
 #include "../window/window_system.hpp"
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #include "input_system.hpp"
 #include <cstring>
-#include <imgui_impl_sdl.h>
+#include <imgui_impl_sdl3.h>
 #include <scene/scene.hpp>
 #include <window/window.hpp>
 
@@ -36,7 +36,7 @@ static button_state get_key_state(Keyboard::code _key_code) {
   }
 }
 static button_state get_button_state(Mouse::code _button) {
-  int mask = SDL_BUTTON(static_cast<int>(_button));
+  int mask = SDL_BUTTON_MASK(static_cast<int>(_button));
   if ((mask & input_system::m_mouse.mPrevButtons) == 0) {
     if ((mask & input_system::m_mouse.mCurrButtons) == 0) {
       return button_state::None;
@@ -97,7 +97,7 @@ void Mouse::set_position_on_scene(const Vector2 &pos) {
 
 const Vector2 &Mouse::get_position() {
 
-  int x = 0, y = 0;
+  float x = 0, y = 0;
   if (input_system::m_mouse.mIsRelative) {
     SDL_GetRelativeMouseState(&x, &y);
   } else {
@@ -109,7 +109,7 @@ const Vector2 &Mouse::get_position() {
 }
 const Vector2 &Mouse::get_position_on_scene() {
 
-  int x = 0, y = 0;
+  float x = 0, y = 0;
   if (input_system::m_mouse.mIsRelative) {
     SDL_GetRelativeMouseState(&x, &y);
   } else {
@@ -131,10 +131,10 @@ const Vector2 &Mouse::get_scroll_wheel() {
 void Mouse::hide_cursor(bool hide) {
   isHide = hide;
   if (hide) {
-    SDL_ShowCursor(SDL_DISABLE);
+    SDL_HideCursor();
     ImGui::SetMouseCursor(ImGuiMouseCursor_None);
   } else {
-    SDL_ShowCursor(SDL_ENABLE);
+    SDL_ShowCursor();
   }
 }
 bool Mouse::is_down(Mouse::code _button) {
@@ -173,9 +173,9 @@ bool input_system::initialize() {
 
   m_keyboard.mCurrState = SDL_GetKeyboardState(NULL);
   memcpy(m_keyboard.mPrevState.data(), m_keyboard.mCurrState,
-         SDL_NUM_SCANCODES);
+         SDL_SCANCODE_COUNT);
 
-  int x = 0, y = 0;
+  float x = 0, y = 0;
   if (m_mouse.mIsRelative) {
     m_mouse.mCurrButtons = SDL_GetRelativeMouseState(&x, &y);
   } else {
@@ -187,8 +187,8 @@ bool input_system::initialize() {
 
   // Initialize controller state
   m_joystick.mIsConnected = mController.initialize();
-  memset(m_joystick.mCurrButtons, 0, SDL_CONTROLLER_BUTTON_MAX);
-  memset(m_joystick.mPrevButtons, 0, SDL_CONTROLLER_BUTTON_MAX);
+  memset(m_joystick.mCurrButtons, 0, SDL_GAMEPAD_BUTTON_COUNT);
+  memset(m_joystick.mPrevButtons, 0, SDL_GAMEPAD_BUTTON_COUNT);
 
   return true;
 }
@@ -199,7 +199,7 @@ void input_system::prepare_for_update() {
   // Copy current state to previous
   // Keyboard
   memcpy(m_keyboard.mPrevState.data(), m_keyboard.mCurrState,
-         SDL_NUM_SCANCODES);
+         SDL_SCANCODE_COUNT);
 
   // Mouse
   m_mouse.mPrevButtons = m_mouse.mCurrButtons;
@@ -208,12 +208,12 @@ void input_system::prepare_for_update() {
 
   // Controller
   memcpy(m_joystick.mPrevButtons, m_joystick.mCurrButtons,
-         SDL_CONTROLLER_BUTTON_MAX);
+         SDL_GAMEPAD_BUTTON_COUNT);
 }
 
 void input_system::update() {
   // Mouse
-  int x = 0, y = 0;
+  float x = 0, y = 0;
   if (m_mouse.mIsRelative) {
     m_mouse.mCurrButtons = SDL_GetRelativeMouseState(&x, &y);
   } else {
@@ -222,7 +222,7 @@ void input_system::update() {
 
   // Controller
   // Buttons
-  for (int i = 0; i < SDL_CONTROLLER_BUTTON_MAX; i++) {
+  for (int i = 0; i < SDL_GAMEPAD_BUTTON_COUNT; i++) {
     m_joystick.mCurrButtons[i] =
         mController.get_button(static_cast<GamePad::code>(i));
   }
@@ -247,7 +247,7 @@ void input_system::update() {
 void input_system::process_event(SDL_Event &event) {
 
   switch (event.type) {
-  case SDL_MOUSEWHEEL: {
+  case SDL_EVENT_MOUSE_WHEEL: {
     m_mouse.mScrollWheel = Vector2(static_cast<float>(event.wheel.x),
                                    static_cast<float>(event.wheel.y));
     break;
@@ -258,8 +258,8 @@ void input_system::process_event(SDL_Event &event) {
 }
 
 void input_system::set_relative_mouse_mode(bool _value) {
-  SDL_bool set = _value ? SDL_TRUE : SDL_FALSE;
-  SDL_SetRelativeMouseMode(set);
+  bool set = _value ? true : false;
+  SDL_SetWindowRelativeMouseMode(WindowImpl::get_sdl_window(), set);
 
   m_mouse.mIsRelative = _value;
 }

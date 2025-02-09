@@ -8,8 +8,7 @@
 #include <io/data_stream.hpp>
 #include <logger/logger.hpp>
 // external
-#include <SDL.h>
-#include <SDL_rwops.h>
+#include <SDL3/SDL.h>
 
 namespace sinen {
 void decoding(std::string &str, std::vector<uint8_t> &key) {
@@ -27,10 +26,10 @@ std::string_view DataStream::open(const AssetType &type,
   std::string filePath;
   convert_file_path(type, filePath, name);
 
-  SDL_RWops *file = SDL_RWFromFile(filePath.c_str(), "r");
+  auto *file = SDL_IOFromFile(filePath.c_str(), "r");
   Logger::error("File open error %s: %s", filePath.c_str(), SDL_GetError());
   size_t fileLength;
-  void *load = SDL_LoadFile_RW(file, &fileLength, 1);
+  void *load = SDL_LoadFile_IO(file, &fileLength, 1);
   if (!load) {
     Logger::error("File load error %s: %s", filePath.c_str(), SDL_GetError());
     return "";
@@ -43,7 +42,7 @@ void *DataStream::open_as_rwops(const AssetType &type, std::string_view name) {
   std::string filePath;
   convert_file_path(type, filePath, name);
 
-  SDL_RWops *file = SDL_RWFromFile(filePath.c_str(), "r");
+  SDL_IOStream *file = SDL_IOFromFile(filePath.c_str(), "r");
   if (!file) {
     Logger::error("File open error %s", filePath.c_str());
     return nullptr;
@@ -55,14 +54,14 @@ std::string DataStream::open_as_string(const AssetType &type,
   std::string filePath;
   convert_file_path(type, filePath, name);
 
-  SDL_RWops *file = SDL_RWFromFile(filePath.c_str(), "r");
+  auto *file = SDL_IOFromFile(filePath.c_str(), "r");
   if (!file) {
     Logger::critical("File open error %s: %s", filePath.c_str(),
                      SDL_GetError());
     return std::string("");
   }
   size_t fileLength;
-  void *load = SDL_LoadFile_RW(file, &fileLength, 1);
+  void *load = SDL_LoadFile_IO(file, &fileLength, 1);
   if (!load) {
     Logger::critical("File load error %s: %s", filePath.c_str(),
                      SDL_GetError());
@@ -79,14 +78,14 @@ void DataStream::write(const AssetType &type, std::string_view name,
                        std::string_view data) {
   std::string filePath;
   convert_file_path(type, filePath, name);
-  SDL_RWops *file = SDL_RWFromFile(filePath.c_str(), "w");
+  auto *file = SDL_IOFromFile(filePath.c_str(), "w");
   if (!file) {
     return;
   }
-  if (data.size() != SDL_RWwrite(file, data.data(), 1, data.size())) {
+  if (data.size() != SDL_WriteIO(file, data.data(), data.size())) {
     Logger::error("data_stream: Could not write all strings");
   }
-  SDL_RWclose(file);
+  SDL_CloseIO(file);
 }
 void DataStream::convert_file_path(const AssetType &type, std::string &filePath,
                                    std::string_view name) {

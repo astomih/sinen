@@ -1,0 +1,91 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"memory": "cpp",
+			"unordered_map": "cpp",
+			"xmemory": "cpp",
+			"*.rh": "cpp",
+			"algorithm": "cpp",
+			"any": "cpp",
+			"bitset": "cpp",
+			"deque": "cpp",
+			"exception": "cpp",
+			"filesystem": "cpp",
+			"forward_list": "cpp",
+			"future": "cpp",
+			"list": "cpp",
+			"locale": "cpp",
+			"mutex": "cpp",
+			"random": "cpp",
+			"regex": "cpp",
+			"shared_mutex": "cpp",
+			"span": "cpp",
+			"system_error": "cpp",
+			"tuple": "cpp",
+			"utility": "cpp",
+			"variant": "cpp",
+			"vector": "cpp",
+			"xhash": "cpp",
+			"xiosbase": "cpp",
+			"xlocale": "cpp",
+			"xlocbuf": "cpp",
+			"xlocmes": "cpp",
+			"xlocmon": "cpp",
+			"xlocnum": "cpp",
+			"xloctime": "cpp",
+			"xstring": "cpp",
+			"xtree": "cpp"
+		}
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"type": "lldb",
+				"request": "launch",
+				"name": "Launch clang",
+				"program": "${workspaceFolder}/build/clang/test/paranoixa_test",
+				"args": [],
+				"cwd": "${workspaceFolder}/test"
+			},
+			{
+				"type": "cppvsdbg",
+				"request": "launch",
+				"name": "Launch vs2022",
+				"program": "${workspaceFolder}/build/vs2022/works/debug/works",
+				"args": [],
+				"cwd": "${workspaceFolder}/works"
+			}
+		]
+	},
+	"tasks": {
+		"version": "2.0.0",
+		"tasks": [
+			{
+				"label": "clang",
+				"command": "${workspaceFolder}/build/build_clang.bat",
+				"problemMatcher": [],
+				"group": {
+					"kind": "build",
+				},
+			},
+			{
+				"label": "vs2022",
+				"type": "shell",
+				"command": "${workspaceFolder}/build/build_vs2022.bat",
+				"problemMatcher": [],
+				"group": {
+					"kind": "build",
+				},
+			}
+		],
+	},
+	"extensions": {
+		"recommendations": []
+	}
+}

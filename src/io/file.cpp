@@ -1,7 +1,7 @@
 // std libraries
 #include <filesystem>
 // Third party libraries
-#include <SDL.h>
+#include <SDL3/SDL.h>
 // Local libraries
 #include <io/file.hpp>
 
@@ -59,7 +59,7 @@ public:
     return open(filename, open_mode_to_string(mode).c_str());
   };
   bool open(const char *filename, const char *mode) {
-    rwops = SDL_RWFromFile(filename, mode);
+    rwops = SDL_IOFromFile(filename, mode);
     if (rwops == nullptr) {
       return false;
     }
@@ -67,21 +67,23 @@ public:
   };
   void close() {
     if (rwops) {
-      SDL_RWclose(rwops);
+      SDL_CloseIO(rwops);
     }
   }
   void read(void *ptr, size_t size, size_t maxnum) {
-    SDL_RWread(rwops, ptr, size, maxnum);
+    SDL_ReadIO(rwops, ptr, size);
   }
   void write(const void *ptr, size_t size, size_t num) {
-    SDL_RWwrite(rwops, ptr, size, num);
+    SDL_WriteIO(rwops, ptr, size);
   }
-  void seek(long offset, int whence) { SDL_RWseek(rwops, offset, whence); }
-  std::int64_t tell() { return SDL_RWtell(rwops); }
-  std::int64_t size() { return SDL_RWsize(rwops); }
+  void seek(long offset, SDL_IOWhence whence) {
+    SDL_SeekIO(rwops, offset, whence);
+  }
+  std::int64_t tell() { return SDL_TellIO(rwops); }
+  std::int64_t size() { return SDL_GetIOSize(rwops); }
 
 private:
-  SDL_RWops *rwops;
+  SDL_IOStream *rwops;
 };
 File::File() : m_impl(new impl()) {}
 File::~File() = default;
@@ -109,7 +111,7 @@ void File::write(const void *buffer, size_t size, size_t num) {
   m_impl->write(buffer, size, num);
 }
 void File::seek(const std::int64_t &offset, int whence) {
-  m_impl->seek(offset, whence);
+  m_impl->seek(offset, static_cast<SDL_IOWhence>(whence));
 }
 std::int64_t File::tell() { return m_impl->tell(); }
 std::int64_t File::size() { return m_impl->size(); }

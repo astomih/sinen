@@ -8,7 +8,7 @@
 #include <io/data_stream.hpp>
 
 // external
-#include <SDL_mixer.h>
+#include <SDL3_mixer/SDL_mixer.h>
 
 namespace sinen {
 Music::Music() {}
@@ -23,8 +23,8 @@ void Music::stop() { ::Mix_HaltMusic(); }
 
 void Music::load(std::string_view fileName) {
   auto rwops =
-      (SDL_RWops *)DataStream::open_as_rwops(AssetType::Music, fileName);
-  ::Mix_Music *m = ::Mix_LoadMUS_RW(rwops, 1);
+      (SDL_IOStream *)DataStream::open_as_rwops(AssetType::Music, fileName);
+  ::Mix_Music *m = ::Mix_LoadMUS_IO(rwops, 1);
   if (m) {
     buffer = (void *)m;
   }

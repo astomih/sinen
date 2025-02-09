@@ -4,8 +4,8 @@
 #include <windows.h>
 #define VK_USE_PLATFORM_WIN32_KHR
 #endif // _WIN32
-#include <SDL.h>
-#include <SDL_vulkan.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_vulkan.h>
 #include <vulkan/vk_layer.h>
 #ifdef _WIN32
 #include <vulkan/vulkan_win32.h>

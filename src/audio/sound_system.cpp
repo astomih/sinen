@@ -10,8 +10,8 @@
 #define AL_LIBTYPE_STATIC
 #include <AL/al.h>
 #include <AL/alc.h>
-#include <SDL_log.h>
-#include <SDL_mixer.h>
+#include <SDL3/SDL_log.h>
+#include <SDL3_mixer/SDL_mixer.h>
 
 namespace sinen {
 Vector3 calculate(const Quaternion &r);
@@ -29,19 +29,19 @@ static int check_openal_error(const char *where) {
   return 0;
 }
 static ALenum get_openal_format(const SDL_AudioSpec *spec) {
-  if ((spec->channels == 1) && (spec->format == AUDIO_U8)) {
+  if ((spec->channels == 1) && (spec->format == SDL_AUDIO_U8)) {
     return AL_FORMAT_MONO8;
-  } else if ((spec->channels == 1) && (spec->format == AUDIO_S16SYS)) {
+  } else if ((spec->channels == 1) && (spec->format == SDL_AUDIO_S16)) {
     return AL_FORMAT_MONO16;
-  } else if ((spec->channels == 2) && (spec->format == AUDIO_U8)) {
+  } else if ((spec->channels == 2) && (spec->format == SDL_AUDIO_U8)) {
     return AL_FORMAT_STEREO8;
-  } else if ((spec->channels == 2) && (spec->format == AUDIO_S16SYS)) {
+  } else if ((spec->channels == 2) && (spec->format == SDL_AUDIO_S16)) {
     return AL_FORMAT_STEREO16;
-  } else if ((spec->channels == 1) && (spec->format == AUDIO_F32SYS)) {
+  } else if ((spec->channels == 1) && (spec->format == SDL_AUDIO_F32)) {
     return alIsExtensionPresent("AL_EXT_FLOAT32")
                ? alGetEnumValue("AL_FORMAT_MONO_FLOAT32")
                : AL_NONE;
-  } else if ((spec->channels == 2) && (spec->format == AUDIO_F32SYS)) {
+  } else if ((spec->channels == 2) && (spec->format == SDL_AUDIO_F32)) {
     return alIsExtensionPresent("AL_EXT_FLOAT32")
                ? alGetEnumValue("AL_FORMAT_STEREO_FLOAT32")
                : AL_NONE;
@@ -112,7 +112,7 @@ void sound_system::load(std::string_view fileName) {
   alBufferData(bid, detail::get_openal_format(&spec), buffer, buffer_length,
                spec.freq);
   buffers.emplace(fileName.data(), bid);
-  SDL_FreeWAV(buffer);
+  SDL_free(buffer);
 }
 
 void sound_system::unload(std::string_view fileName) {

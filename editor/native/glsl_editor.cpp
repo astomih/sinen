@@ -2,7 +2,7 @@
 #include <sinen/sinen.hpp>
 // imgui
 #include <imgui.h>
-#include <imgui_impl_sdl.h>
+#include <imgui_impl_sdl3.h>
 // Added for ImGui
 #include <TextEditor.h>
 

@@ -78,7 +78,7 @@ void vk_base::initialize() {
   create_command_pool();
   VkSurfaceKHR surface;
   SDL_Vulkan_CreateSurface((SDL_Window *)Window::get_sdl_window(), m_instance,
-                           &surface);
+                           nullptr, &surface);
   mSwapchain = std::make_unique<vk_swapchain>(m_instance, m_device, surface);
   mSwapchain->prepare(
       m_physDev, m_graphicsQueueIndex, static_cast<uint32_t>(Window::size().x),

@@ -1,29 +1,30 @@
 cmake_minimum_required(VERSION 3.7)
 project(sinen)
 option(EXTERNAL_ALL_BUILD "Build all external libralies" ON)
-add_subdirectory(./editor)
+
+# Still in development
+# add_subdirectory(./editor)
 
 # add_subdirectory(./test)
 add_subdirectory(./usertype)
 add_subdirectory(./works)
 
 if(EXTERNAL_ALL_BUILD)
-  add_subdirectory(./libs/SDL)
-  set(SDL2IMAGE_INSTALL OFF)
-  set(SDL2MIXER_INSTALL OFF)
-  set(SDL2TTF_INSTALL OFF)
-  add_subdirectory(./libs/SDL_image)
-  add_subdirectory(./libs/SDL_mixer)
-  add_subdirectory(./libs/SDL_ttf)
-  add_subdirectory(./libs/glslang)
-  set(SDL2_INCLUDE_DIRS
+  add_subdirectory(./libs/SDL EXCLUDE_FROM_ALL)
+  set(DAV1D_ASM OFF)
+  add_subdirectory(./libs/SDL_image EXCLUDE_FROM_ALL)
+  set(SDL3_INCLUDE_PATHS
     libs/SDL/include
-    libs/SDL_mixer/include
     libs/SDL_image/include
-    libs/SDL_ttf/include)
+  )
 else()
-  find_package(SDL2 REQUIRED)
+  find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
 endif()
+
+add_subdirectory(./libs/SDL_mixer EXCLUDE_FROM_ALL)
+set(SDLTTF_VENDORED ON)
+add_subdirectory(./libs/SDL_ttf EXCLUDE_FROM_ALL)
+add_subdirectory(./libs/sol2 EXCLUDE_FROM_ALL)
 
 find_package(Vulkan REQUIRED)
 
@@ -37,14 +38,18 @@ set(SINEN_INCLUDE_DIRS
   ./include
   ./include/sinen
   ./usertype/include
-  libs/ImGui/include
+  libs/imgui
+  libs/imgui/backends
   libs/sol2/include
   libs/Lua/include
   libs/VulkanMemoryAllocator/include
-  libs/mojoAL/AL
+  libs/mojoAL-SDL3/AL
   libs/rapidjson/include
-  libs/mojoAL
+  libs/mojoAL-SDL3
   libs/tinygltf
+  ${SDL3_INCLUDE_FILES}
+  libs/SDL_mixer/include
+  libs/SDL_ttf/include
 )
 file(
   GLOB
@@ -52,9 +57,11 @@ file(
   src/*.cpp
   src/*/*.cpp
   src/render/vulkan/*.cpp
-  libs/ImGui/source/*.cpp
+  libs/imgui/*.cpp
+  libs/imgui/backends/imgui_impl_sdl3.cpp
+  libs/imgui/backends/imgui_impl_vulkan.cpp
   libs/Lua/source/*.c
-  libs/mojoAL/*.c)
+  libs/mojoAL-SDL3/*.c)
 file(
   GLOB_RECURSE
   HEADER_FILES
@@ -64,16 +71,12 @@ file(
 )
 add_library(sinen STATIC ${SOURCE_FILES} ${HEADER_FILES})
 target_include_directories(
-  sinen PUBLIC ${SINEN_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS})
+  sinen PUBLIC ${SINEN_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS} ${SDL3_INCLUDE_PATHS})
 target_link_libraries(
   sinen
-  SDL2::SDL2
-  SDL2main
-  SDL2_image
-  SDL2_mixer
-  SDL2_ttf
-  glslang
-  SPIRV
-  glslang-default-resource-limits
+  SDL3::SDL3
+  SDL3_image
+  SDL3_mixer::SDL3_mixer
+  SDL3_ttf::SDL3_ttf
 )
 target_compile_features(sinen PUBLIC cxx_std_20)

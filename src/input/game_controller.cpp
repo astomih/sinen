@@ -1,5 +1,5 @@
-#include <SDL.h>
-#include <SDL_gamecontroller.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_gamepad.h>
 
 #include "game_controller.hpp"
 
@@ -8,7 +8,7 @@ class joystick::Impl {
 public:
   Impl() : controller(nullptr) {}
   ~Impl() = default;
-  ::SDL_GameController *controller;
+  ::SDL_Gamepad *controller;
 };
 joystick::joystick() : impl(nullptr) {}
 
@@ -16,18 +16,18 @@ joystick::~joystick() = default;
 
 bool joystick::initialize() {
   impl = std::make_unique<joystick::Impl>();
-  impl->controller = SDL_GameControllerOpen(0);
+  impl->controller = SDL_OpenGamepad(0);
   if (impl->controller)
     return true;
   return false;
 }
 
 int16_t joystick::get_axis(joystick::axis _axis) {
-  return ::SDL_GameControllerGetAxis(
-      this->impl->controller, static_cast<SDL_GameControllerAxis>(_axis));
+  return ::SDL_GetGamepadAxis(this->impl->controller,
+                              static_cast<SDL_GamepadAxis>(_axis));
 }
 uint8_t joystick::get_button(GamePad::code button) {
-  return SDL_GameControllerGetButton(
-      impl->controller, static_cast<SDL_GameControllerButton>(button));
+  return SDL_GetGamepadButton(impl->controller,
+                              static_cast<SDL_GamepadButton>(button));
 }
 } // namespace sinen

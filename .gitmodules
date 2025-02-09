@@ -19,3 +19,6 @@
 [submodule "libs/mojoAL-SDL3"]
 	path = libs/mojoAL-SDL3
 	url = https://github.com/r-lyeh/mojoAL-SDL3
+[submodule "libs/sol2"]
+	path = libs/sol2
+	url = https://github.com/ThePhD/sol2

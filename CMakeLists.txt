@@ -85,10 +85,11 @@ add_library(sinen STATIC ${SOURCE_FILES} ${HEADER_FILES})
 target_include_directories(
   sinen PUBLIC ${SINEN_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS} ${SDL3_INCLUDE_PATHS})
 
-if(SINEN_EXTERNAL_ALL_BUILD EQUAL OFF)
+if(NOT SINEN_EXTERNAL_ALL_BUILD)
   target_link_libraries(
     sinen
     paranoixa
+    SDL3::SDL3
     SDL3_image
     SDL3_mixer::SDL3_mixer
     SDL3_ttf::SDL3_ttf
@@ -97,6 +98,7 @@ else()
   target_link_libraries(
     sinen
     paranoixa
+    SDL3::SDL3
     SDL3_image::SDL3_image
     SDL3_mixer::SDL3_mixer
     SDL3_ttf::SDL3_ttf

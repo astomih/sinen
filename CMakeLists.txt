@@ -1,19 +1,27 @@
 cmake_minimum_required(VERSION 3.20)
 project(sinen)
-option(SINEN_EXTERNAL_ALL_BUILD "Build all external libralies" ON)
+option(EXTERNAL_ALL_BUILD "Build all external libralies" ON)
 
-if(SINEN_EXTERNAL_ALL_BUILD)
-  # set(SDL_SHARED OFF)
-  # set(SDL_STATIC ON)
-  # add_subdirectory(./libs/paranoixa/library/SDL EXCLUDE_FROM_ALL)
-  # set(CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/libs/SDL")
+# Still in development
+# add_subdirectory(./editor)
+
+# add_subdirectory(./test)
+add_subdirectory(./usertype)
+add_subdirectory(./works)
+
+if(EXTERNAL_ALL_BUILD)
+  add_subdirectory(./libs/SDL EXCLUDE_FROM_ALL)
 endif()
 
-set(PARANOIXA_BUILD_SDL3 ON)
+set(PARANOIXA_BUILD_SDL3 OFF)
 add_subdirectory(./libs/paranoixa EXCLUDE_FROM_ALL)
-set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${CMAKE_BINARY_DIR}/libs/paranoixa/library/SDL")
 
-if(SINEN_EXTERNAL_ALL_BUILD)
+if(EXTERNAL_ALL_BUILD)
+  # add prefix
+  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
+    ${CMAKE_BINARY_DIR}/libs/paranoixa/library/SDL
+    ${CMAKE_SOURCE_DIR}/libs/paranoixa/library/SDL/cmake
+  )
   set(DAV1D_ASM OFF)
   add_subdirectory(./libs/SDL_image EXCLUDE_FROM_ALL)
   set(SDL3_INCLUDE_PATHS
@@ -21,6 +29,7 @@ if(SINEN_EXTERNAL_ALL_BUILD)
     libs/SDL_image/include
   )
 else()
+  find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
 endif()
 
 add_subdirectory(./libs/SDL_mixer EXCLUDE_FROM_ALL)
@@ -29,13 +38,6 @@ add_subdirectory(./libs/SDL_ttf EXCLUDE_FROM_ALL)
 add_subdirectory(./libs/sol2 EXCLUDE_FROM_ALL)
 
 find_package(Vulkan REQUIRED)
-
-# Still in development
-# add_subdirectory(./editor)
-
-# add_subdirectory(./test)
-add_subdirectory(./usertype)
-add_subdirectory(./works)
 
 if(NOT MSVC)
   set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g -O0 -DDEBUG")

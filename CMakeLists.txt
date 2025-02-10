@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 project(sinen)
-option(EXTERNAL_ALL_BUILD "Build all external libralies" ON)
+option(SINEN_EXTERNAL_ALL_BUILD "Build all external libralies" ON)
 
 # Still in development
 # add_subdirectory(./editor)
@@ -9,14 +9,14 @@ option(EXTERNAL_ALL_BUILD "Build all external libralies" ON)
 add_subdirectory(./usertype)
 add_subdirectory(./works)
 
-if(EXTERNAL_ALL_BUILD)
+if(SINEN_EXTERNAL_ALL_BUILD)
   add_subdirectory(./libs/SDL EXCLUDE_FROM_ALL)
 endif()
 
 set(PARANOIXA_BUILD_SDL3 OFF)
 add_subdirectory(./libs/paranoixa EXCLUDE_FROM_ALL)
 
-if(EXTERNAL_ALL_BUILD)
+if(SINEN_EXTERNAL_ALL_BUILD)
   # add prefix
   set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
     ${CMAKE_BINARY_DIR}/libs/paranoixa/library/SDL
@@ -85,11 +85,11 @@ add_library(sinen STATIC ${SOURCE_FILES} ${HEADER_FILES})
 target_include_directories(
   sinen PUBLIC ${SINEN_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS} ${SDL3_INCLUDE_PATHS})
 
-if(MSVC)
+if(SINEN_EXTERNAL_ALL_BUILD EQUAL OFF)
   target_link_libraries(
     sinen
     paranoixa
-    SDL3_image::SDL3_image
+    SDL3_image
     SDL3_mixer::SDL3_mixer
     SDL3_ttf::SDL3_ttf
   )
@@ -97,7 +97,7 @@ else()
   target_link_libraries(
     sinen
     paranoixa
-    SDL3_image
+    SDL3_image::SDL3_image
     SDL3_mixer::SDL3_mixer
     SDL3_ttf::SDL3_ttf
   )

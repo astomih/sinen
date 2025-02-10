@@ -22,3 +22,6 @@
 [submodule "libs/paranoixa"]
 	path = libs/paranoixa
 	url = https://github.com/astomih/paranoixa
+[submodule "libs/SDL"]
+	path = libs/SDL
+	url = https://github.com/libsdl-org/SDL

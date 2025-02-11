@@ -7,8 +7,25 @@
 #include <vertex/vertex_array.hpp>
 
 namespace sinen {
+template <typename T> using Ptr = px::Ptr<T>;
+template <typename T> using Array = px::Array<T>;
+struct PxDrawable {
+  PxDrawable(px::AllocatorPtr allocator)
+      : allocator(allocator), vertexBuffers(allocator),
+        textureSamplers(allocator) {}
+  px::AllocatorPtr allocator;
+  Array<px::BufferBinding> vertexBuffers;
+  px::BufferBinding indexBuffer;
+  Array<px::TextureSamplerBinding> textureSamplers;
+  Drawable drawable;
+};
+struct PxVertexArray : public VertexArray {
+  Ptr<px::Buffer> vertexBuffer;
+  Ptr<px::Buffer> indexBuffer;
+};
 class PxRenderer {
 public:
+  PxRenderer(px::AllocatorPtr allocator);
   void initialize();
   void shutdown();
   void unload_data();
@@ -26,9 +43,24 @@ public:
   void *get_texture_id();
 
 private:
+  Ptr<px::Texture> CreateNativeTexture(const HandleT &handle);
   px::AllocatorPtr allocator;
-  px::Ptr<px::Backend> backend;
-  px::Ptr<px::Device> device;
+  Ptr<px::Backend> backend;
+  Ptr<px::Device> device;
+
+  Ptr<px::GraphicsPipeline> pipelineRenderTexture;
+  Ptr<px::GraphicsPipeline> pipelinePresentTexture;
+  Ptr<px::GraphicsPipeline> pipelineOpaque;
+  Ptr<px::GraphicsPipeline> pipelineAlpha;
+  Ptr<px::GraphicsPipeline> pipeline2D;
+  Ptr<px::GraphicsPipeline> pipelineInstancingOpaque;
+  Ptr<px::GraphicsPipeline> pipelineInstancingAlpha;
+  Ptr<px::GraphicsPipeline> pipelineInstancing2D;
+  Ptr<px::GraphicsPipeline> pipelineUI;
+
+  px::Array<PxDrawable> drawables2D;
+  px::HashMap<std::string, PxVertexArray> vertexArrays;
+  px::HashMap<HandleT, px::TextureSamplerBinding> textureSamplers;
 };
 } // namespace sinen
 

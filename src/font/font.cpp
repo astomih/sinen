@@ -71,6 +71,6 @@ void Font::render_text(Texture &tex, std::string_view text,
     *handle = *surface;
     *surface = tmp;
   }
-  SDL_DestroySurface(surface);
+  // SDL_DestroySurface(surface);
 }
 } // namespace sinen

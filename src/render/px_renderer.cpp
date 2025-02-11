@@ -158,7 +158,7 @@ void PxRenderer::initialize() {
 
   pipelineInfo.targetInfo.colorTargetDescriptions.emplace_back(
       px::ColorTargetDescription{
-          .format = px::TextureFormat::B8G8R8A8_UNORM,
+          .format = device->GetSwapchainFormat(),
           .blendState =
               px::ColorTargetBlendState{
                   .srcColorBlendFactor = px::BlendFactor::SrcAlpha,

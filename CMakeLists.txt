@@ -2,28 +2,15 @@ cmake_minimum_required(VERSION 3.20)
 project(sinen)
 option(SINEN_EXTERNAL_ALL_BUILD "Build all external libralies" ON)
 
-# Still in development
-# add_subdirectory(./editor)
-
-# add_subdirectory(./test)
-add_subdirectory(./usertype)
-add_subdirectory(./works)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(SINEN_EXTERNAL_ALL_BUILD)
+  set(SDL_SHARED ${BUILD_SHARED_LIBS})
+  set(SDL_STATIC NOT ${BUILD_SHARED_LIBS})
   add_subdirectory(./libs/SDL EXCLUDE_FROM_ALL)
 endif()
 
-set(PARANOIXA_BUILD_SDL3 OFF)
-add_subdirectory(./libs/paranoixa EXCLUDE_FROM_ALL)
-
 if(SINEN_EXTERNAL_ALL_BUILD)
-  # add prefix
-  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
-    ${CMAKE_BINARY_DIR}/libs/paranoixa/library/SDL
-    ${CMAKE_SOURCE_DIR}/libs/paranoixa/library/SDL/cmake
-  )
-
   set(SDLIMAGE_AVIF OFF)
   set(SDLIMAGE_JXL OFF)
   set(SDLIMAGE_WEBP OFF)
@@ -50,10 +37,21 @@ endif()
 
 add_subdirectory(./libs/SDL_mixer EXCLUDE_FROM_ALL)
 set(SDLTTF_VENDORED ON)
+set(SDLTTF_PLUTOSVG OFF)
 add_subdirectory(./libs/SDL_ttf EXCLUDE_FROM_ALL)
 add_subdirectory(./libs/sol2 EXCLUDE_FROM_ALL)
 
+set(PARANOIXA_BUILD_SDL3 OFF)
+add_subdirectory(./libs/paranoixa EXCLUDE_FROM_ALL)
+
 find_package(Vulkan REQUIRED)
+
+# Still in development
+# add_subdirectory(./editor)
+
+# add_subdirectory(./test)
+add_subdirectory(./usertype)
+add_subdirectory(./works)
 
 if(NOT MSVC)
   set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g -O0 -DDEBUG")

@@ -8,6 +8,7 @@ option(SINEN_EXTERNAL_ALL_BUILD "Build all external libralies" ON)
 # add_subdirectory(./test)
 add_subdirectory(./usertype)
 add_subdirectory(./works)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(SINEN_EXTERNAL_ALL_BUILD)
   add_subdirectory(./libs/SDL EXCLUDE_FROM_ALL)
@@ -22,6 +23,21 @@ if(SINEN_EXTERNAL_ALL_BUILD)
     ${CMAKE_BINARY_DIR}/libs/paranoixa/library/SDL
     ${CMAKE_SOURCE_DIR}/libs/paranoixa/library/SDL/cmake
   )
+
+  set(SDLIMAGE_AVIF OFF)
+  set(SDLIMAGE_JXL OFF)
+  set(SDLIMAGE_WEBP OFF)
+  set(SDLIMAGE_TIF OFF)
+  set(SDLIMAGE_LBM OFF)
+  set(SDLIMAGE_PCX OFF)
+  set(SDLIMAGE_PNM OFF)
+  set(SDLIMAGE_XCF OFF)
+  set(SDLIMAGE_XPM OFF)
+  set(SDLIMAGE_XV OFF)
+  set(SDLIMAGE_QOI OFF)
+  set(SDLIMAGE_TGA OFF)
+  set(SDLIMAGE_VENDORED ON)
+
   set(DAV1D_ASM OFF)
   add_subdirectory(./libs/SDL_image EXCLUDE_FROM_ALL)
   set(SDL3_INCLUDE_PATHS

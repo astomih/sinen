@@ -136,7 +136,7 @@ void PxRenderer::initialize() {
   fsInfo.numSamplers = 1;
   fsInfo.numStorageBuffers = 0;
   fsInfo.numStorageTextures = 0;
-  fsInfo.numUniformBuffers = 1;
+  fsInfo.numUniformBuffers = 0;
   auto fs = device->CreateShader(fsInfo);
   px::GraphicsPipeline::CreateInfo pipelineInfo{allocator};
   pipelineInfo.vertexShader = vs;
@@ -200,9 +200,6 @@ void PxRenderer::render() {
                                 px::IndexElementSize::Uint32);
 
     auto param = drawables2D[i].drawable.param;
-    param.world = matrix4::identity;
-    param.proj = matrix4::identity;
-    param.view = matrix4::identity;
     commandBuffer->PushVertexUniformData(0, &param,
                                          sizeof(Drawable::parameter));
     renderPass->DrawIndexedPrimitives(vertexArrays["SPRITE"].indexCount, 1, 0,
@@ -210,6 +207,7 @@ void PxRenderer::render() {
   }
   commandBuffer->EndRenderPass(renderPass);
   device->SubmitCommandBuffer(commandBuffer);
+  drawables2D.clear();
 }
 Ptr<px::Texture> PxRenderer::CreateNativeTexture(const HandleT &handle) {
   SDL_Surface *pSurface = reinterpret_cast<SDL_Surface *>(handle);

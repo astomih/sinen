@@ -76,6 +76,7 @@ set(SINEN_INCLUDE_DIRS
   libs/SDL_mixer/include
   libs/SDL_ttf/include
   libs/paranoixa/include
+  libs/paranoixa/source/imgui_backend
 )
 file(
   GLOB
@@ -103,6 +104,7 @@ if(NOT SINEN_EXTERNAL_ALL_BUILD)
   target_link_libraries(
     sinen
     paranoixa
+    paranoixa_imgui_backend
     SDL3::SDL3
     SDL3_image
     SDL3_mixer::SDL3_mixer

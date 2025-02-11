@@ -11,9 +11,7 @@ namespace sinen {
 template <typename T> using Ptr = px::Ptr<T>;
 template <typename T> using Array = px::Array<T>;
 struct PxDrawable {
-  PxDrawable(px::AllocatorPtr allocator)
-      : allocator(allocator), vertexBuffers(allocator),
-        textureSamplers(allocator) {}
+  PxDrawable(px::AllocatorPtr allocator);
   px::AllocatorPtr allocator;
   Array<px::BufferBinding> vertexBuffers;
   px::BufferBinding indexBuffer;

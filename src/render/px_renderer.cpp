@@ -5,7 +5,14 @@
 #include <io/data_stream.hpp>
 #include <window/window.hpp>
 
+#include <imgui.h>
+#include <imgui_impl_paranoixa.hpp>
+#include <imgui_impl_sdl3.h>
+
 namespace sinen {
+PxDrawable::PxDrawable(px::AllocatorPtr allocator)
+    : allocator(allocator), vertexBuffers(allocator),
+      textureSamplers(allocator) {}
 px::VertexInputState CreateVertexInputState(px::AllocatorPtr allocator,
                                             bool isInstance) {
   px::VertexInputState vertexInputState{allocator};
@@ -150,6 +157,7 @@ void PxRenderer::initialize() {
   rasterizerState.frontFace = px::FrontFace::CounterClockwise;
 
   pipelineInfo.rasterizerState = rasterizerState;
+  pipelineInfo.multiSampleState = {};
   pipelineInfo.multiSampleState.sampleCount = px::SampleCount::x1;
   pipelineInfo.depthStencilState.enableDepthTest = false;
   pipelineInfo.depthStencilState.enableDepthWrite = false;
@@ -167,7 +175,9 @@ void PxRenderer::initialize() {
                   .srcAlphaBlendFactor = px::BlendFactor::One,
                   .dstAlphaBlendFactor = px::BlendFactor::OneMinusSrcAlpha,
                   .alphaBlendOp = px::BlendOp::Add,
-                  .colorWriteMask = px::ColorComponent::RGBA,
+                  .colorWriteMask =
+                      px::ColorComponent::R | px::ColorComponent::G |
+                      px::ColorComponent::B | px::ColorComponent::A,
                   .enableBlend = true,
               },
       });

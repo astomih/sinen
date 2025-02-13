@@ -188,7 +188,7 @@ void PxRenderer::initialize() {
 void PxRenderer::shutdown() {}
 void PxRenderer::unload_data() {}
 void PxRenderer::render() {
-  auto commandBuffer = device->CreateCommandBuffer({allocator});
+  auto commandBuffer = device->AcquireCommandBuffer({allocator});
   px::Array<px::ColorTargetInfo> colorTargets{allocator};
   auto swapchainTexture = device->AcquireSwapchainTexture(commandBuffer);
   colorTargets.push_back(px::ColorTargetInfo{
@@ -257,7 +257,7 @@ Ptr<px::Texture> PxRenderer::CreateNativeTexture(const HandleT &handle) {
   {
     px::CommandBuffer::CreateInfo info{};
     info.allocator = allocator;
-    auto commandBuffer = device->CreateCommandBuffer(info);
+    auto commandBuffer = device->AcquireCommandBuffer(info);
     auto copyPass = commandBuffer->BeginCopyPass();
     px::TextureTransferInfo src{};
     src.offset = 0;
@@ -369,7 +369,7 @@ void PxRenderer::add_vertex_array(const VertexArray &vArray,
     {
       px::CommandBuffer::CreateInfo info{};
       info.allocator = allocator;
-      auto commandBuffer = device->CreateCommandBuffer(info);
+      auto commandBuffer = device->AcquireCommandBuffer(info);
       {
 
         auto copyPass = commandBuffer->BeginCopyPass();
@@ -403,7 +403,7 @@ void PxRenderer::add_vertex_array(const VertexArray &vArray,
     {
       px::CommandBuffer::CreateInfo info{};
       info.allocator = allocator;
-      auto commandBuffer = device->CreateCommandBuffer(info);
+      auto commandBuffer = device->AcquireCommandBuffer(info);
       {
 
         auto copyPass = commandBuffer->BeginCopyPass();
@@ -462,7 +462,7 @@ void PxRenderer::add_model(const Model &m) {
   {
     px::CommandBuffer::CreateInfo info{};
     info.allocator = allocator;
-    auto commandBuffer = device->CreateCommandBuffer(info);
+    auto commandBuffer = device->AcquireCommandBuffer(info);
     auto copyPass = commandBuffer->BeginCopyPass();
     px::BufferTransferInfo src{};
     src.offset = 0;

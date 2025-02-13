@@ -1,7 +1,6 @@
 #ifndef SINEN_PX_RENDERER_HPP
 #define SINEN_PX_RENDERER_HPP
 
-#include "paranoixa/define.hpp"
 #include <drawable/drawable.hpp>
 #include <model/model.hpp>
 #include <paranoixa/paranoixa.hpp>

@@ -1,1 +1,1 @@
-cmake --build %~dp0vs2022 --config Debug
+cmake --build %~dp0vs2022 --config Debug --parallel %NUMBER_OF_PROCESSORS%

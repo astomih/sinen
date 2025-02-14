@@ -15,7 +15,7 @@ struct PxDrawable {
   Array<px::BufferBinding> vertexBuffers;
   px::BufferBinding indexBuffer;
   Array<px::TextureSamplerBinding> textureSamplers;
-  Drawable drawable;
+  Ptr<Drawable> drawable;
 };
 struct PxVertexArray : public VertexArray {
   Ptr<px::Buffer> vertexBuffer;
@@ -46,17 +46,11 @@ private:
   Ptr<px::Backend> backend;
   Ptr<px::Device> device;
 
-  Ptr<px::GraphicsPipeline> pipelineRenderTexture;
-  Ptr<px::GraphicsPipeline> pipelinePresentTexture;
-  Ptr<px::GraphicsPipeline> pipelineOpaque;
-  Ptr<px::GraphicsPipeline> pipelineAlpha;
   Ptr<px::GraphicsPipeline> pipeline2D;
-  Ptr<px::GraphicsPipeline> pipelineInstancingOpaque;
-  Ptr<px::GraphicsPipeline> pipelineInstancingAlpha;
-  Ptr<px::GraphicsPipeline> pipelineInstancing2D;
-  Ptr<px::GraphicsPipeline> pipelineUI;
+  Ptr<px::GraphicsPipeline> pipeline3D;
 
   px::Array<PxDrawable> drawables2D;
+  px::Array<PxDrawable> drawables3D;
   px::HashMap<std::string, PxVertexArray> vertexArrays;
   px::HashMap<HandleT, px::TextureSamplerBinding> textureSamplers;
 };

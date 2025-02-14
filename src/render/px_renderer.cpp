@@ -1,6 +1,8 @@
 #include "px_renderer.hpp"
 
 #include "../window/window_system.hpp"
+#include "drawable/instance_data.hpp"
+#include "paranoixa/paranoixa.hpp"
 #include <SDL3/SDL.h>
 #include <io/data_stream.hpp>
 #include <window/window.hpp>
@@ -104,8 +106,10 @@ px::VertexInputState CreateVertexInputState(px::AllocatorPtr allocator,
   return vertexInputState;
 }
 PxRenderer::PxRenderer(px::AllocatorPtr allocator)
-    : allocator(allocator), drawables2D(allocator), drawables3D(allocator),
-      vertexArrays(allocator), textureSamplers(allocator) {}
+    : allocator(allocator), drawables2D(allocator),
+      drawables2DInstanced(allocator), drawables3DInstanced(allocator),
+      drawables3D(allocator), vertexArrays(allocator),
+      textureSamplers(allocator) {}
 void PxRenderer::initialize() {
   backend = px::Paranoixa::CreateBackend(allocator, px::GraphicsAPI::SDLGPU);
   px::Device::CreateInfo info{};
@@ -188,7 +192,42 @@ void PxRenderer::initialize() {
   pipelineInfo.depthStencilState.enableDepthTest = true;
   pipelineInfo.depthStencilState.enableDepthWrite = true;
   pipelineInfo.depthStencilState.enableStencilTest = false;
+  pipelineInfo.depthStencilState.compareOp = px::CompareOp::LessOrEqual;
+  pipelineInfo.targetInfo.hasDepthStencilTarget = true;
+  pipelineInfo.targetInfo.depthStencilTargetFormat =
+      px::TextureFormat::D32_FLOAT_S8_UINT;
   pipeline3D = device->CreateGraphicsPipeline(pipelineInfo);
+
+  vsStr =
+      DataStream::open_as_string(AssetType::Shader, "shader_instance.vert.spv");
+
+  vsInfo.allocator = allocator;
+  vsInfo.size = vsStr.size();
+  vsInfo.data = vsStr.data();
+  vsInfo.entrypoint = "main";
+  vsInfo.format = px::ShaderFormat::SPIRV;
+  vsInfo.stage = px::ShaderStage::Vertex;
+  vsInfo.numSamplers = 0;
+  vsInfo.numStorageBuffers = 0;
+  vsInfo.numStorageTextures = 0;
+  vsInfo.numUniformBuffers = 1;
+  vs = device->CreateShader(vsInfo);
+  pipelineInfo.vertexInputState = CreateVertexInputState(allocator, true);
+  pipelineInfo.vertexShader = vs;
+  pipeline3DInstanced = device->CreateGraphicsPipeline(pipelineInfo);
+
+  // Create depth stencil target
+  px::Texture::CreateInfo depthStencilInfo{};
+  depthStencilInfo.allocator = allocator;
+  depthStencilInfo.width = Window::size().x;
+  depthStencilInfo.height = Window::size().y;
+  depthStencilInfo.layerCountOrDepth = 1;
+  depthStencilInfo.type = px::TextureType::Texture2D;
+  depthStencilInfo.usage = px::TextureUsage::DepthStencilTarget;
+  depthStencilInfo.format = px::TextureFormat::D32_FLOAT_S8_UINT;
+  depthStencilInfo.numLevels = 1;
+  depthStencilInfo.sampleCount = px::SampleCount::x1;
+  depthTexture = device->CreateTexture(depthStencilInfo);
 }
 void PxRenderer::shutdown() {}
 void PxRenderer::unload_data() {}
@@ -201,7 +240,17 @@ void PxRenderer::render() {
       .loadOp = px::LoadOp::Clear,
       .storeOp = px::StoreOp::Store,
   });
-  auto renderPass = commandBuffer->BeginRenderPass(colorTargets);
+  px::DepthStencilTargetInfo depthStencilInfo{};
+  depthStencilInfo.texture = depthTexture;
+  depthStencilInfo.loadOp = px::LoadOp::Clear;
+  depthStencilInfo.storeOp = px::StoreOp::Store;
+  depthStencilInfo.clearDepth = 1.0f;
+  depthStencilInfo.clearStencil = 0;
+  depthStencilInfo.cycle = 0;
+  depthStencilInfo.stencilLoadOp = px::LoadOp::Clear;
+  depthStencilInfo.stencilStoreOp = px::StoreOp::Store;
+  auto renderPass =
+      commandBuffer->BeginRenderPass(colorTargets, depthStencilInfo);
   for (auto &drawable : drawables3D) {
     renderPass->SetViewport(
         px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
@@ -217,6 +266,22 @@ void PxRenderer::render() {
     renderPass->DrawIndexedPrimitives(
         this->vertexArrays[drawable.drawable->vertexIndex].indexCount, 1, 0, 0,
         0);
+  }
+  for (auto &drawable : drawables3DInstanced) {
+    renderPass->SetViewport(
+        px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
+    renderPass->BindGraphicsPipeline(pipeline3DInstanced);
+    renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
+    renderPass->BindVertexBuffers(0, drawable.vertexBuffers);
+    renderPass->BindIndexBuffer(drawable.indexBuffer,
+                                px::IndexElementSize::Uint32);
+
+    auto param = drawable.drawable->param;
+    commandBuffer->PushVertexUniformData(0, &param,
+                                         sizeof(Drawable::parameter));
+    renderPass->DrawIndexedPrimitives(
+        this->vertexArrays[drawable.drawable->vertexIndex].indexCount,
+        drawable.drawable->data.size(), 0, 0, 0);
   }
 
   for (int i = 0; i < drawables2D.size(); i++) {
@@ -239,6 +304,7 @@ void PxRenderer::render() {
   commandBuffer->EndRenderPass(renderPass);
   device->SubmitCommandBuffer(commandBuffer);
   drawables3D.clear();
+  drawables3DInstanced.clear();
   drawables2D.clear();
 }
 Ptr<px::Texture> PxRenderer::CreateNativeTexture(const HandleT &handle) {
@@ -379,13 +445,71 @@ void PxRenderer::draw3d(const std::shared_ptr<Drawable> draw_object) {
         textureSamplers[draw_object->binding_texture.handle]);
   }
 
-  drawable.vertexBuffers.emplace_back(px::BufferBinding{
-      .buffer = vertexArrays[draw_object->vertexIndex].vertexBuffer,
-      .offset = 0});
-  drawable.indexBuffer = px::BufferBinding{
-      .buffer = vertexArrays[draw_object->vertexIndex].indexBuffer,
-      .offset = 0};
-  drawables3D.push_back(drawable);
+  if (drawable.drawable->size() > 0) {
+    px::Buffer::CreateInfo instanceBufferInfo{};
+    instanceBufferInfo.allocator = allocator;
+    instanceBufferInfo.size = drawable.drawable->size();
+    instanceBufferInfo.usage = px::BufferUsage::Vertex;
+    auto instanceBuffer = device->CreateBuffer(instanceBufferInfo);
+    Ptr<px::TransferBuffer> transferBuffer;
+    {
+      px::TransferBuffer::CreateInfo info{};
+      info.allocator = allocator;
+      info.size = drawable.drawable->size();
+      info.usage = px::TransferBufferUsage::Upload;
+      transferBuffer = device->CreateTransferBuffer(info);
+      auto *pMapped = transferBuffer->Map(false);
+      if (pMapped) {
+
+        memcpy(pMapped, drawable.drawable->data.data(),
+               drawable.drawable->size());
+      }
+      transferBuffer->Unmap();
+    }
+    {
+      px::CommandBuffer::CreateInfo info{};
+      info.allocator = allocator;
+      auto commandBuffer = device->AcquireCommandBuffer(info);
+      {
+
+        auto copyPass = commandBuffer->BeginCopyPass();
+        {
+
+          px::BufferTransferInfo src{};
+          src.offset = 0;
+          src.transferBuffer = transferBuffer;
+          px::BufferRegion dst{};
+          dst.offset = 0;
+          dst.size = drawable.drawable->size();
+          dst.buffer = instanceBuffer;
+          copyPass->UploadBuffer(src, dst, false);
+        }
+        commandBuffer->EndCopyPass(copyPass);
+      }
+      device->SubmitCommandBuffer(commandBuffer);
+    }
+
+    drawable.vertexBuffers.emplace_back(px::BufferBinding{
+        .buffer = vertexArrays[draw_object->vertexIndex].vertexBuffer,
+        .offset = 0});
+    drawable.indexBuffer = px::BufferBinding{
+        .buffer = vertexArrays[draw_object->vertexIndex].indexBuffer,
+        .offset = 0};
+    drawable.vertexBuffers.emplace_back(
+        px::BufferBinding{.buffer = instanceBuffer, .offset = 0
+
+        });
+    drawables3DInstanced.push_back(drawable);
+  } else {
+
+    drawable.vertexBuffers.emplace_back(px::BufferBinding{
+        .buffer = vertexArrays[draw_object->vertexIndex].vertexBuffer,
+        .offset = 0});
+    drawable.indexBuffer = px::BufferBinding{
+        .buffer = vertexArrays[draw_object->vertexIndex].indexBuffer,
+        .offset = 0};
+    drawables3D.push_back(drawable);
+  }
 }
 
 void PxRenderer::add_vertex_array(const VertexArray &vArray,

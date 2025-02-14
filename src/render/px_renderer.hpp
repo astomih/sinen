@@ -46,11 +46,16 @@ private:
   Ptr<px::Backend> backend;
   Ptr<px::Device> device;
 
+  Ptr<px::Texture> depthTexture;
   Ptr<px::GraphicsPipeline> pipeline2D;
+  Ptr<px::GraphicsPipeline> pipeline2DInstanced;
   Ptr<px::GraphicsPipeline> pipeline3D;
+  Ptr<px::GraphicsPipeline> pipeline3DInstanced;
 
   px::Array<PxDrawable> drawables2D;
+  px::Array<PxDrawable> drawables2DInstanced;
   px::Array<PxDrawable> drawables3D;
+  px::Array<PxDrawable> drawables3DInstanced;
   px::HashMap<std::string, PxVertexArray> vertexArrays;
   px::HashMap<HandleT, px::TextureSamplerBinding> textureSamplers;
 };

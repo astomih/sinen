@@ -11,6 +11,10 @@
 #include <imgui_impl_paranoixa.hpp>
 #include <imgui_impl_sdl3.h>
 
+// TODO:
+// - Refactoring
+// - Shadow mapping
+
 namespace sinen {
 PxDrawable::PxDrawable(px::AllocatorPtr allocator)
     : allocator(allocator), vertexBuffers(allocator),
@@ -249,60 +253,66 @@ void PxRenderer::render() {
   depthStencilInfo.cycle = 0;
   depthStencilInfo.stencilLoadOp = px::LoadOp::Clear;
   depthStencilInfo.stencilStoreOp = px::StoreOp::Store;
-  auto renderPass =
-      commandBuffer->BeginRenderPass(colorTargets, depthStencilInfo);
-  for (auto &drawable : drawables3D) {
+  {
+
+    auto renderPass =
+        commandBuffer->BeginRenderPass(colorTargets, depthStencilInfo);
     renderPass->SetViewport(
         px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
     renderPass->BindGraphicsPipeline(pipeline3D);
-    renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
-    renderPass->BindVertexBuffers(0, drawable.vertexBuffers);
-    renderPass->BindIndexBuffer(drawable.indexBuffer,
-                                px::IndexElementSize::Uint32);
+    for (auto &drawable : drawables3D) {
+      renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
+      renderPass->BindVertexBuffers(0, drawable.vertexBuffers);
+      renderPass->BindIndexBuffer(drawable.indexBuffer,
+                                  px::IndexElementSize::Uint32);
 
-    auto param = drawable.drawable->param;
-    commandBuffer->PushVertexUniformData(0, &param,
-                                         sizeof(Drawable::parameter));
-    renderPass->DrawIndexedPrimitives(
-        this->vertexArrays[drawable.drawable->vertexIndex].indexCount, 1, 0, 0,
-        0);
-  }
-  for (auto &drawable : drawables3DInstanced) {
-    renderPass->SetViewport(
-        px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
+      auto param = drawable.drawable->param;
+      commandBuffer->PushVertexUniformData(0, &param,
+                                           sizeof(Drawable::parameter));
+      renderPass->DrawIndexedPrimitives(
+          this->vertexArrays[drawable.drawable->vertexIndex].indexCount, 1, 0,
+          0, 0);
+    }
     renderPass->BindGraphicsPipeline(pipeline3DInstanced);
-    renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
-    renderPass->BindVertexBuffers(0, drawable.vertexBuffers);
-    renderPass->BindIndexBuffer(drawable.indexBuffer,
-                                px::IndexElementSize::Uint32);
+    for (auto &drawable : drawables3DInstanced) {
+      renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
+      renderPass->BindVertexBuffers(0, drawable.vertexBuffers);
+      renderPass->BindIndexBuffer(drawable.indexBuffer,
+                                  px::IndexElementSize::Uint32);
 
-    auto param = drawable.drawable->param;
-    commandBuffer->PushVertexUniformData(0, &param,
-                                         sizeof(Drawable::parameter));
-    renderPass->DrawIndexedPrimitives(
-        this->vertexArrays[drawable.drawable->vertexIndex].indexCount,
-        drawable.drawable->data.size(), 0, 0, 0);
+      auto param = drawable.drawable->param;
+      commandBuffer->PushVertexUniformData(0, &param,
+                                           sizeof(Drawable::parameter));
+      renderPass->DrawIndexedPrimitives(
+          this->vertexArrays[drawable.drawable->vertexIndex].indexCount,
+          drawable.drawable->data.size(), 0, 0, 0);
+    }
+    commandBuffer->EndRenderPass(renderPass);
   }
 
-  for (int i = 0; i < drawables2D.size(); i++) {
-    renderPass->SetViewport(
-        px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
+  {
+
+    colorTargets[0].loadOp = px::LoadOp::Load;
+    auto renderPass = commandBuffer->BeginRenderPass(colorTargets, {});
     renderPass->BindGraphicsPipeline(pipeline2D);
-    renderPass->BindFragmentSamplers(0, drawables2D[i].textureSamplers);
-    Array<px::BufferBinding> vertexBuffers{allocator};
-    vertexBuffers.push_back({vertexArrays["SPRITE"].vertexBuffer, 0});
-    renderPass->BindVertexBuffers(0, vertexBuffers);
-    renderPass->BindIndexBuffer({vertexArrays["SPRITE"].indexBuffer, 0},
-                                px::IndexElementSize::Uint32);
+    for (int i = 0; i < drawables2D.size(); i++) {
+      renderPass->BindFragmentSamplers(0, drawables2D[i].textureSamplers);
+      Array<px::BufferBinding> vertexBuffers{allocator};
+      vertexBuffers.push_back({vertexArrays["SPRITE"].vertexBuffer, 0});
+      renderPass->BindVertexBuffers(0, vertexBuffers);
+      renderPass->BindIndexBuffer({vertexArrays["SPRITE"].indexBuffer, 0},
+                                  px::IndexElementSize::Uint32);
 
-    auto param = drawables2D[i].drawable->param;
-    commandBuffer->PushVertexUniformData(0, &param,
-                                         sizeof(Drawable::parameter));
-    renderPass->DrawIndexedPrimitives(vertexArrays["SPRITE"].indexCount, 1, 0,
-                                      0, 0);
+      auto param = drawables2D[i].drawable->param;
+      commandBuffer->PushVertexUniformData(0, &param,
+                                           sizeof(Drawable::parameter));
+      renderPass->DrawIndexedPrimitives(vertexArrays["SPRITE"].indexCount, 1, 0,
+                                        0, 0);
+    }
+    commandBuffer->EndRenderPass(renderPass);
   }
-  commandBuffer->EndRenderPass(renderPass);
   device->SubmitCommandBuffer(commandBuffer);
+  device->WaitForGPUIdle();
   drawables3D.clear();
   drawables3DInstanced.clear();
   drawables2D.clear();
@@ -323,7 +333,7 @@ Ptr<px::Texture> PxRenderer::CreateNativeTexture(const HandleT &handle) {
     info.size = width * height * 4;
     info.usage = px::TransferBufferUsage::Upload;
     transferBuffer = device->CreateTransferBuffer(info);
-    auto *pMapped = transferBuffer->Map(false);
+    auto *pMapped = transferBuffer->Map(true);
     auto *pImage = pImageDataSurface->pixels;
     memcpy(pMapped, pImage, info.size);
     transferBuffer->Unmap();
@@ -357,24 +367,70 @@ Ptr<px::Texture> PxRenderer::CreateNativeTexture(const HandleT &handle) {
     dst.height = height;
     dst.depth = 1;
     dst.texture = texture;
-    copyPass->UploadTexture(src, dst, false);
+    copyPass->UploadTexture(src, dst, true);
     commandBuffer->EndCopyPass(copyPass);
     device->SubmitCommandBuffer(commandBuffer);
   }
   return texture;
 }
 void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
-
   PxDrawable drawable{allocator};
-  auto texture = CreateNativeTexture(draw_object->binding_texture.handle);
-  px::Sampler::CreateInfo samplerInfo{};
-  samplerInfo.allocator = allocator;
-  samplerInfo.minFilter = px::Filter::Nearest;
-  samplerInfo.magFilter = px::Filter::Nearest;
-  samplerInfo.addressModeU = px::AddressMode::Repeat;
-  samplerInfo.addressModeV = px::AddressMode::Repeat;
-  samplerInfo.maxAnisotropy = 1.f;
-  auto sampler = device->CreateSampler(samplerInfo);
+  drawable.drawable = draw_object;
+  if (this->textureSamplers.contains(draw_object->binding_texture.handle)) {
+    auto texture = CreateNativeTexture(draw_object->binding_texture.handle);
+    px::Sampler::CreateInfo samplerInfo{};
+    samplerInfo.allocator = allocator;
+    samplerInfo.minFilter = px::Filter::Nearest;
+    samplerInfo.magFilter = px::Filter::Nearest;
+    samplerInfo.addressModeU = px::AddressMode::Repeat;
+    samplerInfo.addressModeV = px::AddressMode::Repeat;
+    samplerInfo.maxAnisotropy = 1.f;
+    auto sampler = device->CreateSampler(samplerInfo);
+    textureSamplers.insert(std::pair<HandleT, px::TextureSamplerBinding>(
+        draw_object->binding_texture.handle,
+        px::TextureSamplerBinding{.sampler = sampler, .texture = texture}));
+
+    drawable.textureSamplers.push_back(
+        textureSamplers[draw_object->binding_texture.handle]);
+  } else {
+    if (*drawable.drawable->binding_texture.is_need_update) {
+      SDL_Surface *pSurface = reinterpret_cast<SDL_Surface *>(
+          drawable.drawable->binding_texture.handle);
+      SDL_Surface &surface = *pSurface;
+      ::SDL_LockSurface(&surface);
+      auto *pFormat = ::SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_RGBA8888);
+      auto *pImageDataSurface = ::SDL_ConvertSurface(&surface, pFormat->format);
+      ::SDL_UnlockSurface(&surface);
+      px::TransferBuffer::CreateInfo info{};
+      info.allocator = allocator;
+      info.size = draw_object->binding_texture.size().x *
+                  draw_object->binding_texture.size().y * 4;
+      info.usage = px::TransferBufferUsage::Upload;
+      auto transferBuffer = device->CreateTransferBuffer(info);
+      auto *pMapped = transferBuffer->Map(false);
+      memcpy(pMapped, pImageDataSurface->pixels, info.size);
+      transferBuffer->Unmap();
+
+      px::TextureTransferInfo src{};
+      src.offset = 0;
+      src.transferBuffer = transferBuffer;
+      px::TextureRegion dst{};
+      dst.x = 0;
+      dst.y = 0;
+      dst.width = draw_object->binding_texture.size().x;
+      dst.height = draw_object->binding_texture.size().y;
+      dst.depth = 1;
+      dst.texture =
+          textureSamplers[draw_object->binding_texture.handle].texture;
+      auto commandBuffer = device->AcquireCommandBuffer({allocator});
+      auto copyPass = commandBuffer->BeginCopyPass();
+      copyPass->UploadTexture(src, dst, false);
+      commandBuffer->EndCopyPass(copyPass);
+      device->SubmitCommandBuffer(commandBuffer);
+    }
+    drawable.textureSamplers.push_back(
+        textureSamplers[draw_object->binding_texture.handle]);
+  }
 
   drawable.vertexBuffers.emplace_back(px::BufferBinding{
       .buffer = vertexArrays[draw_object->vertexIndex].vertexBuffer,
@@ -383,8 +439,7 @@ void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
       .buffer = vertexArrays[draw_object->vertexIndex].indexBuffer,
       .offset = 0};
 
-  drawable.textureSamplers.emplace_back(
-      px::TextureSamplerBinding{.sampler = sampler, .texture = texture});
+  drawables2D.push_back(drawable);
 }
 void PxRenderer::drawui(const std::shared_ptr<Drawable> draw_object) {
   PxDrawable drawable{allocator};
@@ -407,6 +462,10 @@ void PxRenderer::drawui(const std::shared_ptr<Drawable> draw_object) {
     drawable.textureSamplers.push_back(
         textureSamplers[draw_object->binding_texture.handle]);
   } else {
+    if (*drawable.drawable->binding_texture.is_need_update) {
+      textureSamplers[draw_object->binding_texture.handle].texture =
+          CreateNativeTexture(draw_object->binding_texture.handle);
+    }
     drawable.textureSamplers.push_back(
         textureSamplers[draw_object->binding_texture.handle]);
   }

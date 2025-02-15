@@ -44,8 +44,6 @@ add_subdirectory(./libs/sol2 EXCLUDE_FROM_ALL)
 set(PARANOIXA_BUILD_SDL3 OFF)
 add_subdirectory(./libs/paranoixa EXCLUDE_FROM_ALL)
 
-find_package(Vulkan REQUIRED)
-
 # Still in development
 # add_subdirectory(./editor)
 
@@ -63,11 +61,10 @@ set(SINEN_INCLUDE_DIRS
   ./include
   ./include/sinen
   ./usertype/include
-  libs/imgui
-  libs/imgui/backends
+  libs/paranoixa/library/imgui
+  libs/paranoixa/library/imgui/backends
   libs/sol2/include
   libs/Lua/include
-  libs/VulkanMemoryAllocator/include
   libs/mojoAL-SDL3/AL
   libs/rapidjson/include
   libs/mojoAL-SDL3
@@ -83,10 +80,6 @@ file(
   SOURCE_FILES
   src/*.cpp
   src/*/*.cpp
-  src/render/vulkan/*.cpp
-  libs/imgui/*.cpp
-  libs/imgui/backends/imgui_impl_sdl3.cpp
-  libs/imgui/backends/imgui_impl_vulkan.cpp
   libs/Lua/source/*.c
   libs/mojoAL-SDL3/*.c)
 file(
@@ -98,7 +91,7 @@ file(
 )
 add_library(sinen STATIC ${SOURCE_FILES} ${HEADER_FILES})
 target_include_directories(
-  sinen PUBLIC ${SINEN_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS} ${SDL3_INCLUDE_PATHS})
+  sinen PUBLIC ${SINEN_INCLUDE_DIRS} ${SDL3_INCLUDE_PATHS})
 
 if(NOT SINEN_EXTERNAL_ALL_BUILD)
   target_link_libraries(

@@ -1,7 +1,6 @@
 #include "render_system.hpp"
 #include "../vertex/default_model_creator.hpp"
 #include "px_renderer.hpp"
-#include "vulkan/vk_renderer.hpp"
 #include <io/asset_type.hpp>
 #include <io/data_stream.hpp>
 #include <math/vector3.hpp>
@@ -102,7 +101,7 @@ void RendererImpl::prepare_imgui() {
       ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
   io.ConfigFlags |=
       ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
-  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+  // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
   io.Fonts->AddFontFromFileTTF(DataStream::convert_file_path(
                                    AssetType::Font, "mplus/mplus-1p-medium.ttf")
                                    .data(),

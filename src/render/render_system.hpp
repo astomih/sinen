@@ -61,7 +61,7 @@ public:
   static void *get_texture_id();
 
 private:
-  static class PxRenderer pxRenderer;
+  static std::shared_ptr<class PxRenderer> pxRenderer;
   static void setup_shapes();
   static Color clearColor;
   // Renderer

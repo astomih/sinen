@@ -13,8 +13,8 @@
 
 namespace sinen {
 Color RendererImpl::clearColor = Palette::black();
-PxRenderer RendererImpl::pxRenderer =
-    PxRenderer(px::Paranoixa::CreateAllocator(65536));
+std::shared_ptr<PxRenderer> RendererImpl::pxRenderer =
+    std::make_shared<PxRenderer>(px::Paranoixa::CreateAllocator(65536));
 // Renderer
 bool RendererImpl::showImGui = false;
 std::list<std::function<void()>> RendererImpl::m_imgui_function;
@@ -23,11 +23,14 @@ std::vector<std::shared_ptr<Drawable>> RendererImpl::m_drawable_2d;
 std::vector<std::shared_ptr<Drawable>> RendererImpl::m_drawable_3d;
 void RendererImpl::unload_data() {}
 void RendererImpl::initialize() {
-  pxRenderer.initialize();
+  pxRenderer->initialize();
   setup_shapes();
 }
 
-void RendererImpl::shutdown() { pxRenderer.shutdown(); }
+void RendererImpl::shutdown() {
+  pxRenderer->shutdown();
+  pxRenderer.reset();
+}
 
 void RendererImpl::render() {
   for (auto &d : m_drawable_3d) {
@@ -36,17 +39,17 @@ void RendererImpl::render() {
   for (auto &d : m_drawable_2d) {
     draw2d(d);
   }
-  pxRenderer.render();
+  pxRenderer->render();
 }
 void RendererImpl::draw2d(std::shared_ptr<Drawable> drawObject) {
-  pxRenderer.draw2d(drawObject);
+  pxRenderer->draw2d(drawObject);
 }
 void RendererImpl::drawui(std::shared_ptr<Drawable> drawObject) {
-  pxRenderer.drawui(drawObject);
+  pxRenderer->drawui(drawObject);
 }
 
 void RendererImpl::draw3d(std::shared_ptr<Drawable> drawObject) {
-  pxRenderer.draw3d(drawObject);
+  pxRenderer->draw3d(drawObject);
 }
 void RendererImpl::add_queue_2d(const std::shared_ptr<Drawable> draw_object) {
   m_drawable_2d.push_back(draw_object);
@@ -68,24 +71,24 @@ void RendererImpl::remove_queue_3d(
 }
 void RendererImpl::add_vertex_array(const VertexArray &vArray,
                                     std::string_view name) {
-  pxRenderer.add_vertex_array(vArray, name);
+  pxRenderer->add_vertex_array(vArray, name);
 }
 
 void RendererImpl::update_vertex_array(const VertexArray &vArray,
                                        std::string_view name) {
-  pxRenderer.update_vertex_array(vArray, name);
+  pxRenderer->update_vertex_array(vArray, name);
 }
-void RendererImpl::add_model(const Model &m) { pxRenderer.add_model(m); }
-void RendererImpl::update_model(const Model &m) { pxRenderer.update_model(m); }
+void RendererImpl::add_model(const Model &m) { pxRenderer->add_model(m); }
+void RendererImpl::update_model(const Model &m) { pxRenderer->update_model(m); }
 
 void RendererImpl::load_shader(const Shader &shaderInfo) {
-  pxRenderer.load_shader(shaderInfo);
+  pxRenderer->load_shader(shaderInfo);
 }
 
 void RendererImpl::unload_shader(const Shader &shaderInfo) {
-  pxRenderer.unload_shader(shaderInfo);
+  pxRenderer->unload_shader(shaderInfo);
 }
-void *RendererImpl::get_texture_id() { return pxRenderer.get_texture_id(); }
+void *RendererImpl::get_texture_id() { return pxRenderer->get_texture_id(); }
 
 void RendererImpl::setup_shapes() {
   add_vertex_array(create_box_vertices(), VertexDefaultShapes::box);

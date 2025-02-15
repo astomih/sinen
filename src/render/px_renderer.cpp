@@ -233,7 +233,16 @@ void PxRenderer::initialize() {
   depthStencilInfo.sampleCount = px::SampleCount::x1;
   depthTexture = device->CreateTexture(depthStencilInfo);
 }
-void PxRenderer::shutdown() {}
+void PxRenderer::shutdown() {
+  this->drawables2D.clear();
+  this->drawables2DInstanced.clear();
+  this->drawables3D.clear();
+  this->drawables3DInstanced.clear();
+  this->vertexArrays.clear();
+  this->textureSamplers.clear();
+  this->device.reset();
+  this->backend.reset();
+}
 void PxRenderer::unload_data() {}
 void PxRenderer::render() {
   auto commandBuffer = device->AcquireCommandBuffer({allocator});

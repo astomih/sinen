@@ -52,9 +52,9 @@ end
 - Sol2
 - mojoAL
 - rapidjson
-- SDL2(image,mixer,ttf)
-- Vulkan 1.1
-- VulkanMemoryAllocator
+- ImGui
+- SDL3(image,mixer,ttf)
+- Paranoixa
 ## Sinen Editor
 - ImGuiColorTextEdit
 - ImGuizmo
@@ -64,10 +64,11 @@ end
 
 # How to build
 ## Requirements
-- CMake 3.7 or later
+- CMake 3.20 or later
 - Ninja
-- C++20 compiler
+- C++23 compiler
 - Vulkan SDK
+- [yasm](https://github.com/yasm/yasm)(for SDL3_Image )
 ## Build commands
 ``` bash
 git clone https://github.com/astomih/sinen.git
@@ -76,7 +77,7 @@ git submodule update --init --recursive
 ```
 ### Windows
 #### Visual Studio 2022
-Run "build/generate_vs2022.bat" and open&build the generated solution file(build/msvc/.).
+Run "build/generate_vs2022.bat" and open&build the generated solution file(build/vs2022/.).
 ### MacOS
 WIP
 

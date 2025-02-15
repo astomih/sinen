@@ -1,24 +1,21 @@
 [submodule "libs/SDL_image"]
 	path = libs/SDL_image
 	url = https://github.com/libsdl-org/SDL_image
-[submodule "libs/SDL"]
-	path = libs/SDL
-	url = https://github.com/libsdl-org/SDL
 [submodule "libs/SDL_mixer"]
 	path = libs/SDL_mixer
 	url = https://github.com/libsdl-org/SDL_mixer
 [submodule "libs/SDL_ttf"]
 	path = libs/SDL_ttf
 	url = https://github.com/libsdl-org/SDL_ttf
-[submodule "libs/VulkanMemoryAllocator"]
-	path = libs/VulkanMemoryAllocator
-	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-[submodule "libs/imgui"]
-	path = libs/imgui
-	url = https://github.com/ocornut/imgui
 [submodule "libs/mojoAL-SDL3"]
 	path = libs/mojoAL-SDL3
 	url = https://github.com/r-lyeh/mojoAL-SDL3
 [submodule "libs/sol2"]
 	path = libs/sol2
 	url = https://github.com/ThePhD/sol2
+[submodule "libs/paranoixa"]
+	path = libs/paranoixa
+	url = https://github.com/astomih/paranoixa
+[submodule "libs/SDL"]
+	path = libs/SDL
+	url = https://github.com/libsdl-org/SDL

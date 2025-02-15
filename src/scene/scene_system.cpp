@@ -69,7 +69,7 @@ void scene_system::process_input() {
 
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
-    ImGui_ImplSDL3_ProcessEvent(&event);
+    //    ImGui_ImplSDL3_ProcessEvent(&event);
     WindowImpl::process_input(event);
     input_system::process_event(event);
     switch (event.type) {

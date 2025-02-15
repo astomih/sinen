@@ -7,12 +7,6 @@
 [submodule "libs/SDL_ttf"]
 	path = libs/SDL_ttf
 	url = https://github.com/libsdl-org/SDL_ttf
-[submodule "libs/VulkanMemoryAllocator"]
-	path = libs/VulkanMemoryAllocator
-	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-[submodule "libs/imgui"]
-	path = libs/imgui
-	url = https://github.com/ocornut/imgui
 [submodule "libs/mojoAL-SDL3"]
 	path = libs/mojoAL-SDL3
 	url = https://github.com/r-lyeh/mojoAL-SDL3

@@ -10,8 +10,8 @@ namespace sinen {
 template <typename T> using Ptr = px::Ptr<T>;
 template <typename T> using Array = px::Array<T>;
 struct PxDrawable {
-  PxDrawable(px::AllocatorPtr allocator);
-  px::AllocatorPtr allocator;
+  PxDrawable(px::Allocator *allocator);
+  px::Allocator *allocator;
   Array<px::BufferBinding> vertexBuffers;
   px::BufferBinding indexBuffer;
   Array<px::TextureSamplerBinding> textureSamplers;
@@ -23,7 +23,7 @@ struct PxVertexArray : public VertexArray {
 };
 class PxRenderer {
 public:
-  PxRenderer(px::AllocatorPtr allocator);
+  PxRenderer(px::Allocator *allocator);
   void initialize();
   void shutdown();
   void unload_data();
@@ -42,7 +42,7 @@ public:
 
 private:
   Ptr<px::Texture> CreateNativeTexture(const HandleT &handle);
-  px::AllocatorPtr allocator;
+  px::Allocator *allocator;
   Ptr<px::Backend> backend;
   Ptr<px::Device> device;
 

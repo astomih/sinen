@@ -61,9 +61,7 @@ void Font::render_text(Texture &tex, std::string_view text,
   auto *surface =
       (::TTF_RenderText_Blended_Wrapped(ttf_font, std::string(text).c_str(),
                                         std::string(text).size(), sdlColor, 0));
-  if (!surface) {
-    Logger::error("Failed to render text");
-  }
+  assert(surface != nullptr && "Failed to render text");
   SDL_Surface *handle = reinterpret_cast<SDL_Surface *>(tex.handle);
   // swap
   {

@@ -1,6 +1,7 @@
 #include "render_system.hpp"
 #include "../vertex/default_model_creator.hpp"
 #include "px_renderer.hpp"
+#include <cstdint>
 #include <io/asset_type.hpp>
 #include <io/data_stream.hpp>
 #include <math/vector3.hpp>
@@ -13,7 +14,7 @@
 namespace sinen {
 Color RendererImpl::clearColor = Palette::black();
 std::shared_ptr<PxRenderer> RendererImpl::pxRenderer =
-    std::make_shared<PxRenderer>(px::Paranoixa::CreateAllocator(65536));
+    std::make_shared<PxRenderer>(px::Paranoixa::CreateAllocator(0xffff));
 // Renderer
 bool RendererImpl::showImGui = false;
 std::list<std::function<void()>> RendererImpl::m_imgui_function;

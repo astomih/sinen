@@ -16,10 +16,10 @@
 // - Shadow mapping
 
 namespace sinen {
-PxDrawable::PxDrawable(px::AllocatorPtr allocator)
+PxDrawable::PxDrawable(px::Allocator *allocator)
     : allocator(allocator), vertexBuffers(allocator),
       textureSamplers(allocator) {}
-px::VertexInputState CreateVertexInputState(px::AllocatorPtr allocator,
+px::VertexInputState CreateVertexInputState(px::Allocator *allocator,
                                             bool isInstance) {
   px::VertexInputState vertexInputState{allocator};
   if (isInstance) {
@@ -109,7 +109,7 @@ px::VertexInputState CreateVertexInputState(px::AllocatorPtr allocator,
   }
   return vertexInputState;
 }
-PxRenderer::PxRenderer(px::AllocatorPtr allocator)
+PxRenderer::PxRenderer(px::Allocator *allocator)
     : allocator(allocator), drawables2D(allocator),
       drawables2DInstanced(allocator), drawables3DInstanced(allocator),
       drawables3D(allocator), vertexArrays(allocator),
@@ -380,6 +380,8 @@ Ptr<px::Texture> PxRenderer::CreateNativeTexture(const HandleT &handle) {
     commandBuffer->EndCopyPass(copyPass);
     device->SubmitCommandBuffer(commandBuffer);
   }
+  device->WaitForGPUIdle();
+  SDL_DestroySurface(pImageDataSurface);
   return texture;
 }
 void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
@@ -471,10 +473,13 @@ void PxRenderer::drawui(const std::shared_ptr<Drawable> draw_object) {
     drawable.textureSamplers.push_back(
         textureSamplers[draw_object->binding_texture.handle]);
   } else {
+#if 1
     if (*drawable.drawable->binding_texture.is_need_update) {
+      textureSamplers[draw_object->binding_texture.handle].texture = nullptr;
       textureSamplers[draw_object->binding_texture.handle].texture =
           CreateNativeTexture(draw_object->binding_texture.handle);
     }
+#endif
     drawable.textureSamplers.push_back(
         textureSamplers[draw_object->binding_texture.handle]);
   }

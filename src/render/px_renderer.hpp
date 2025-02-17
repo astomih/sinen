@@ -29,7 +29,6 @@ public:
   void unload_data();
   void render();
   void draw2d(const std::shared_ptr<Drawable> draw_object);
-  void drawui(const std::shared_ptr<Drawable> draw_object);
   void draw3d(const std::shared_ptr<Drawable> draw_object);
   void add_vertex_array(const VertexArray &vArray, std::string_view name);
   void update_vertex_array(const VertexArray &vArray, std::string_view name);

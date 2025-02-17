@@ -19,8 +19,6 @@ std::shared_ptr<PxRenderer> RendererImpl::pxRenderer =
 bool RendererImpl::showImGui = false;
 std::list<std::function<void()>> RendererImpl::m_imgui_function;
 Texture RendererImpl::m_skybox_texture;
-std::vector<std::shared_ptr<Drawable>> RendererImpl::m_drawable_2d;
-std::vector<std::shared_ptr<Drawable>> RendererImpl::m_drawable_3d;
 void RendererImpl::unload_data() {}
 void RendererImpl::initialize() {
   pxRenderer->initialize();
@@ -32,42 +30,13 @@ void RendererImpl::shutdown() {
   pxRenderer.reset();
 }
 
-void RendererImpl::render() {
-  for (auto &d : m_drawable_3d) {
-    draw3d(d);
-  }
-  for (auto &d : m_drawable_2d) {
-    draw2d(d);
-  }
-  pxRenderer->render();
-}
+void RendererImpl::render() { pxRenderer->render(); }
 void RendererImpl::draw2d(std::shared_ptr<Drawable> drawObject) {
   pxRenderer->draw2d(drawObject);
-}
-void RendererImpl::drawui(std::shared_ptr<Drawable> drawObject) {
-  pxRenderer->drawui(drawObject);
 }
 
 void RendererImpl::draw3d(std::shared_ptr<Drawable> drawObject) {
   pxRenderer->draw3d(drawObject);
-}
-void RendererImpl::add_queue_2d(const std::shared_ptr<Drawable> draw_object) {
-  m_drawable_2d.push_back(draw_object);
-}
-void RendererImpl::add_queue_3d(const std::shared_ptr<Drawable> draw_object) {
-  m_drawable_3d.push_back(draw_object);
-}
-void RendererImpl::remove_queue_2d(
-    const std::shared_ptr<Drawable> draw_object) {
-  m_drawable_2d.erase(
-      std::remove(m_drawable_2d.begin(), m_drawable_2d.end(), draw_object),
-      m_drawable_2d.end());
-}
-void RendererImpl::remove_queue_3d(
-    const std::shared_ptr<Drawable> draw_object) {
-  m_drawable_3d.erase(
-      std::remove(m_drawable_3d.begin(), m_drawable_3d.end(), draw_object),
-      m_drawable_3d.end());
 }
 void RendererImpl::add_vertex_array(const VertexArray &vArray,
                                     std::string_view name) {

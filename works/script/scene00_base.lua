@@ -19,7 +19,7 @@ tile:fill_color(color(0.416, 0.204, 0.153, 1))
 
 local score_font = font()
 local score_texture = texture()
-local score_drawer = drawui(score_texture)
+local score_drawer = draw2d(score_texture)
 tree:load("tree.sim", "tree")
 local stair_texture = texture()
 stair_texture:fill_color(color(1, 0.5, 0.5, 0.5))

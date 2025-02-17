@@ -9,7 +9,7 @@ local scene_switcher = function()
     scene_name = "",
     is_launch = false,
     setup = function(self)
-      self.drawer = drawui(self.texture)
+      self.drawer = draw2d(self.texture)
       self.drawer.scale = window:size()
     end,
     update = function(self, draw_func)

@@ -20,7 +20,7 @@ tile:fill_color(color(0.416, 0.204, 0.153, 1))
 
 local score_font = font()
 local score_texture = texture()
-local score_drawer = drawui(score_texture)
+local score_drawer = draw2d(score_texture)
 tree:load("tree.sim", "tree")
 local stair_model = model()
 stair_model:load("stair.sim", "stair")
@@ -39,7 +39,7 @@ local key_texture = texture()
 key_texture:fill_color(color(1, 1, 1, 1))
 local key_texture_2d = texture()
 key_texture_2d:load("key.png")
-local key_drawer2d = drawui(key_texture_2d)
+local key_drawer2d = draw2d(key_texture_2d)
 key_drawer2d.scale = key_texture_2d:size()
 key_drawer2d.scale.x = key_drawer2d.scale.x / 6
 key_drawer2d.scale.y = key_drawer2d.scale.y / 6

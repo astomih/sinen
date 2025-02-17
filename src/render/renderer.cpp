@@ -17,23 +17,8 @@ void Renderer::render() { RendererImpl::render(); }
 void Renderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
   RendererImpl::draw2d(draw_object);
 }
-void Renderer::drawui(const std::shared_ptr<Drawable> draw_object) {
-  RendererImpl::drawui(draw_object);
-}
 void Renderer::draw3d(const std::shared_ptr<Drawable> draw_object) {
   RendererImpl::draw3d(draw_object);
-}
-void Renderer::add_queue_2d(const std::shared_ptr<Drawable> draw_object) {
-  RendererImpl::add_queue_2d(draw_object);
-}
-void Renderer::add_queue_3d(const std::shared_ptr<Drawable> draw_object) {
-  RendererImpl::add_queue_3d(draw_object);
-}
-void Renderer::remove_queue_2d(const std::shared_ptr<Drawable> draw_object) {
-  RendererImpl::remove_queue_2d(draw_object);
-}
-void Renderer::remove_queue_3d(const std::shared_ptr<Drawable> draw_object) {
-  RendererImpl::remove_queue_3d(draw_object);
 }
 void Renderer::add_vertex_array(const VertexArray &vArray,
                                 std::string_view name) {

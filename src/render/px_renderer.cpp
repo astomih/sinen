@@ -387,74 +387,6 @@ Ptr<px::Texture> PxRenderer::CreateNativeTexture(const HandleT &handle) {
 void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
   PxDrawable drawable{allocator};
   drawable.drawable = draw_object;
-  if (this->textureSamplers.contains(draw_object->binding_texture.handle)) {
-    auto texture = CreateNativeTexture(draw_object->binding_texture.handle);
-    px::Sampler::CreateInfo samplerInfo{};
-    samplerInfo.allocator = allocator;
-    samplerInfo.minFilter = px::Filter::Nearest;
-    samplerInfo.magFilter = px::Filter::Nearest;
-    samplerInfo.addressModeU = px::AddressMode::Repeat;
-    samplerInfo.addressModeV = px::AddressMode::Repeat;
-    samplerInfo.maxAnisotropy = 1.f;
-    auto sampler = device->CreateSampler(samplerInfo);
-    textureSamplers.insert(std::pair<HandleT, px::TextureSamplerBinding>(
-        draw_object->binding_texture.handle,
-        px::TextureSamplerBinding{.sampler = sampler, .texture = texture}));
-
-    drawable.textureSamplers.push_back(
-        textureSamplers[draw_object->binding_texture.handle]);
-  } else {
-    if (*drawable.drawable->binding_texture.is_need_update) {
-      SDL_Surface *pSurface = reinterpret_cast<SDL_Surface *>(
-          drawable.drawable->binding_texture.handle);
-      SDL_Surface &surface = *pSurface;
-      ::SDL_LockSurface(&surface);
-      auto *pFormat = ::SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_RGBA8888);
-      auto *pImageDataSurface = ::SDL_ConvertSurface(&surface, pFormat->format);
-      ::SDL_UnlockSurface(&surface);
-      px::TransferBuffer::CreateInfo info{};
-      info.allocator = allocator;
-      info.size = draw_object->binding_texture.size().x *
-                  draw_object->binding_texture.size().y * 4;
-      info.usage = px::TransferBufferUsage::Upload;
-      auto transferBuffer = device->CreateTransferBuffer(info);
-      auto *pMapped = transferBuffer->Map(false);
-      memcpy(pMapped, pImageDataSurface->pixels, info.size);
-      transferBuffer->Unmap();
-
-      px::TextureTransferInfo src{};
-      src.offset = 0;
-      src.transferBuffer = transferBuffer;
-      px::TextureRegion dst{};
-      dst.x = 0;
-      dst.y = 0;
-      dst.width = draw_object->binding_texture.size().x;
-      dst.height = draw_object->binding_texture.size().y;
-      dst.depth = 1;
-      dst.texture =
-          textureSamplers[draw_object->binding_texture.handle].texture;
-      auto commandBuffer = device->AcquireCommandBuffer({allocator});
-      auto copyPass = commandBuffer->BeginCopyPass();
-      copyPass->UploadTexture(src, dst, false);
-      commandBuffer->EndCopyPass(copyPass);
-      device->SubmitCommandBuffer(commandBuffer);
-    }
-    drawable.textureSamplers.push_back(
-        textureSamplers[draw_object->binding_texture.handle]);
-  }
-
-  drawable.vertexBuffers.emplace_back(px::BufferBinding{
-      .buffer = vertexArrays[draw_object->vertexIndex].vertexBuffer,
-      .offset = 0});
-  drawable.indexBuffer = px::BufferBinding{
-      .buffer = vertexArrays[draw_object->vertexIndex].indexBuffer,
-      .offset = 0};
-
-  drawables2D.push_back(drawable);
-}
-void PxRenderer::drawui(const std::shared_ptr<Drawable> draw_object) {
-  PxDrawable drawable{allocator};
-  drawable.drawable = draw_object;
   if (this->textureSamplers.find(draw_object->binding_texture.handle) ==
       this->textureSamplers.end()) {
     auto texture = CreateNativeTexture(draw_object->binding_texture.handle);
@@ -473,13 +405,11 @@ void PxRenderer::drawui(const std::shared_ptr<Drawable> draw_object) {
     drawable.textureSamplers.push_back(
         textureSamplers[draw_object->binding_texture.handle]);
   } else {
-#if 1
     if (*drawable.drawable->binding_texture.is_need_update) {
       textureSamplers[draw_object->binding_texture.handle].texture = nullptr;
       textureSamplers[draw_object->binding_texture.handle].texture =
           CreateNativeTexture(draw_object->binding_texture.handle);
     }
-#endif
     drawable.textureSamplers.push_back(
         textureSamplers[draw_object->binding_texture.handle]);
   }

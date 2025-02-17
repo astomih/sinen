@@ -132,7 +132,7 @@ void Mouse::hide_cursor(bool hide) {
   isHide = hide;
   if (hide) {
     SDL_HideCursor();
-    // ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+    ImGui::SetMouseCursor(ImGuiMouseCursor_None);
   } else {
     SDL_ShowCursor();
   }

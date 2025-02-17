@@ -3,6 +3,7 @@
 #include "../window/window_system.hpp"
 #include "drawable/instance_data.hpp"
 #include "paranoixa/paranoixa.hpp"
+#include "render_system.hpp"
 #include <SDL3/SDL.h>
 #include <io/data_stream.hpp>
 #include <window/window.hpp>
@@ -122,6 +123,16 @@ void PxRenderer::initialize() {
   device = backend->CreateDevice(info);
   auto *window = WindowImpl::get_sdl_window();
   device->ClaimWindow(window);
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGui_ImplSDL3_InitForSDLGPU(window);
+  ImGui_ImplParanoixa_InitInfo init_info = {};
+  init_info.Allocator = allocator;
+  init_info.Device = device;
+  init_info.ColorTargetFormat = px::TextureFormat::B8G8R8A8_UNORM;
+  init_info.MSAASamples = px::SampleCount::x1;
+  RendererImpl::prepare_imgui();
+  ImGui_ImplParanoixa_Init(&init_info);
 
   std::string vsStr =
       DataStream::open_as_string(AssetType::Shader, "shader.vert.spv");
@@ -262,6 +273,18 @@ void PxRenderer::render() {
   depthStencilInfo.cycle = 0;
   depthStencilInfo.stencilLoadOp = px::LoadOp::Clear;
   depthStencilInfo.stencilStoreOp = px::StoreOp::Store;
+
+  ImGui_ImplParanoixa_NewFrame();
+  ImGui_ImplSDL3_NewFrame();
+  ImGui::NewFrame();
+  for (auto &func : RendererImpl::get_imgui_function()) {
+    func();
+  }
+  // Rendering
+  ImGui::Render();
+  ImDrawData *draw_data = ImGui::GetDrawData();
+
+  Imgui_ImplParanoixa_PrepareDrawData(draw_data, commandBuffer);
   {
 
     auto renderPass =
@@ -318,6 +341,8 @@ void PxRenderer::render() {
       renderPass->DrawIndexedPrimitives(vertexArrays["SPRITE"].indexCount, 1, 0,
                                         0, 0);
     }
+    // Render ImGui
+    ImGui_ImplParanoixa_RenderDrawData(draw_data, commandBuffer, renderPass);
     commandBuffer->EndRenderPass(renderPass);
   }
   device->SubmitCommandBuffer(commandBuffer);

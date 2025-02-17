@@ -41,8 +41,8 @@ void editor::inspector() {
   uv_s = ImVec2(0, 0);
   uv_e = ImVec2(1, 1);
 
-  ImGui::Image((ImTextureID)Renderer::get_texture_id(),
-               ImVec2(ImGui::GetWindowWidth(), ImGui::GetWindowHeight()));
+  // ImGui::Image((ImTextureID)Renderer::get_texture_id(),
+  //              ImVec2(ImGui::GetWindowWidth(), ImGui::GetWindowHeight()));
   ImGuizmo::Enable(true);
   // Set rect to Gizmo window
   ImGuizmo::SetRect(0, 0, Window::size().x, Window::size().y);

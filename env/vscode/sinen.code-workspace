@@ -74,6 +74,14 @@
 				"cwd": "${workspaceFolder}/works"
 			},
 			{
+				"type": "lldb",
+				"request": "launch",
+				"name": "Launch editor clang",
+				"program": "${workspaceFolder}/build/clang/editor/editor",
+				"args": [],
+				"cwd": "${workspaceFolder}/editor"
+			},
+			{
 				"type": "cppvsdbg",
 				"request": "launch",
 				"name": "Launch works vs2022",

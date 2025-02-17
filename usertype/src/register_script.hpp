@@ -6,6 +6,5 @@ void register_table(sol::state &lua);
 void register_drawable(sol::state &lua);
 void register_graph(sol::state &lua);
 void register_generator(sol::state &lua);
-void register_component(sol::state &lua);
 } // namespace sinen
 #endif

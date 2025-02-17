@@ -4,8 +4,8 @@ set(CMAKE_CXX_FLAGS "-std=c++20 -O2 -DNDEBUG -march=native")
 set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 
 file(GLOB SOURCE_FILES
-	./src/*/*.cpp 
-	./src/*.cpp
+  ./src/*/*.cpp
+  ./src/*.cpp
 )
 
 include_directories(
@@ -18,9 +18,8 @@ include_directories(
 link_directories(
 )
 add_library(script_engine STATIC
-	${SOURCE_FILES}
+  ${SOURCE_FILES}
 )
 target_link_libraries(script_engine
-  sinen 
+  sinen
 )
-

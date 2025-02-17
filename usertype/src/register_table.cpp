@@ -34,9 +34,7 @@ void register_table(sol::state &lua) {
   }
   {
     auto v = lua.create_table("scene");
-    v["load"] = &Scene::load;
     v["main_camera"] = &Scene::main_camera;
-    v["get_actor"] = &Scene::get_actor;
     v["size"] = &Scene::size;
     v["resize"] = &Scene::resize;
     v["center"] = &Scene::center;

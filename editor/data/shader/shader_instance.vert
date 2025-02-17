@@ -16,7 +16,7 @@ layout(location = 3) out vec3 fragWorldPos;
 layout(location = 4) out vec4 shadowCoord;
 layout(location = 5) out mat4 outUser;
 
-layout(binding = 0) uniform Matrices {
+layout(set=1,binding = 0) uniform Matrices {
   mat4 world;
   mat4 view;
   mat4 proj;

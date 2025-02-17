@@ -40,7 +40,6 @@ private:
   static void gizmo();
   static void inspector();
   static void menu();
-  static std::vector<Actor> m_actors;
   static std::vector<matrix4> m_matrices;
   static int index_actors;
   static int index_components;

@@ -68,7 +68,7 @@
 			{
 				"type": "lldb",
 				"request": "launch",
-				"name": "Launch clang",
+				"name": "Launch works clang",
 				"program": "${workspaceFolder}/build/clang/works/works",
 				"args": [],
 				"cwd": "${workspaceFolder}/works"
@@ -76,11 +76,19 @@
 			{
 				"type": "cppvsdbg",
 				"request": "launch",
-				"name": "Launch vs2022",
+				"name": "Launch works vs2022",
 				"program": "${workspaceFolder}/build/vs2022/works/debug/works",
 				"args": [],
 				"cwd": "${workspaceFolder}/works"
-			}
+			},
+			{
+				"type": "cppvsdbg",
+				"request": "launch",
+				"name": "Launch editor vs2022",
+				"program": "${workspaceFolder}/build/vs2022/editor/debug/editor",
+				"args": [],
+				"cwd": "${workspaceFolder}/editor"
+			},
 		]
 	},
 	"tasks": {

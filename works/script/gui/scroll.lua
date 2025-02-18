@@ -14,13 +14,13 @@ local function scroll()
     pos = nil,
     is_drag = false,
     show = function(self, pos, scale)
-      self.drawer = drawui(self.t2)
+      self.drawer = draw2d(self.t2)
       self.drawer.scale = vector2(scale.x, scale.y * 0.1)
       if self.pos == nil then
         self.pos = vector2(pos.x, pos.y)
       end
       self.drawer.position = self.pos
-      self.max_drawer = drawui(self.t1)
+      self.max_drawer = draw2d(self.t1)
       self.max_drawer.scale = scale
       self.max_drawer.position = pos
       -- Mouse
@@ -61,7 +61,7 @@ local function scroll()
       GUI_MANAGER:add(self.max_drawer)
     end,
   }
-  object.drawer = drawui(texture())
+  object.drawer = draw2d(texture())
   object.t1 = texture()
   object.t1:fill_color(color(0, 0, 0, 0.5))
   object.t2 = texture()

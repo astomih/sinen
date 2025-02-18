@@ -8,7 +8,6 @@ Camera Scene::m_main_camera = []() {
   c.perspective(70.f, Window::size().x / Window::size().y, .1f, 1000.f);
   return c;
 }();
-component_factory Scene::m_component_factory;
 Vector2 Scene::m_screen_size = Vector2(1280.0, 720.0);
 
 void Scene::reset() {
@@ -31,13 +30,6 @@ void Scene::change_impl(std::unique_ptr<Scene::implements> impl) {
 }
 void Scene::set_run_script(bool is_run) {
   scene_system::set_run_script(is_run);
-}
-void Scene::add_actor(Actor *_actor) { scene_system::add_actor(_actor); }
-Actor &Scene::get_actor(const std::string &name) {
-  return scene_system::get_actor(name);
-}
-void Scene::load(std::string_view data_file_name) {
-  scene_system::load_data(data_file_name);
 }
 
 } // namespace sinen

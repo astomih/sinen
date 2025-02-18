@@ -31,7 +31,7 @@ local function gui_manager()
     end,
   }
   for i = 1, object.max_object do
-    object.drawers[i] = drawui(texture())
+    object.drawers[i] = draw2d(texture())
     object.textures[i] = texture()
     object.textures[i + object.max_object] = texture()
   end

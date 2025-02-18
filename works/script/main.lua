@@ -16,14 +16,14 @@ SCORE = 0
 NOW_STAGE = 1
 menu_object:setup()
 texture_title = texture()
-drawer_title = drawui(texture_title)
+drawer_title = draw2d(texture_title)
 font_title = font()
 font_title:load(DEFAULT_FONT_NAME, 64)
 font_title:render_text(texture_title, "SINEN DEMO", color(1, 1, 1, 0.9))
 drawer_title.scale = texture_title:size()
 
 texture_press = texture()
-drawer_press = drawui(texture_press)
+drawer_press = draw2d(texture_press)
 font_press = font()
 font_press:load(DEFAULT_FONT_NAME, 32)
 font_press:render_text(texture_press, "CLICK TO START", color(1, 1, 1, 0.9))

@@ -1,6 +1,5 @@
 #ifndef SINEN_HPP
 #define SINEN_HPP
-#include "actor/actor.hpp"
 #include "allocator/pool_allocator.hpp"
 #include "allocator/stack_allocator.hpp"
 #include "audio/music.hpp"
@@ -9,7 +8,6 @@
 #include "color/color.hpp"
 #include "color/hsv.hpp"
 #include "color/palette.hpp"
-#include "component/components.hpp"
 #include "drawable/drawable.hpp"
 #include "drawable/drawable_wrapper.hpp"
 #include "font/font.hpp"

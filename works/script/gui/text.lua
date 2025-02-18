@@ -5,7 +5,7 @@ local function text()
     color = color(1, 1, 1, 0.9),
     show = function(self, text, pos, scale)
       local texture = GUI_MANAGER:get_texture()
-      self.drawer = drawui(texture)
+      self.drawer = draw2d(texture)
       self.font:render_text(texture, text, self.color)
       self.drawer.scale = texture:size()
       self.drawer.position = pos
@@ -14,7 +14,7 @@ local function text()
   }
   object.font = font()
   object.font:load(DEFAULT_FONT_NAME, 32)
-  object.drawer = drawui(texture())
+  object.drawer = draw2d(texture())
 
   return object
 end

@@ -11,11 +11,11 @@ local function button()
       local back_texture = GUI_MANAGER:get_texture()
       local texture = GUI_MANAGER:get_texture()
       back_texture:fill_color(self.bg_color)
-      self.back_drawer = drawui(back_texture)
+      self.back_drawer = draw2d(back_texture)
       self.back_drawer.position = pos
       self.back_drawer.scale = vector2(scale.x * UI_SCALE, scale.y * UI_SCALE)
       GUI_MANAGER:add(self.back_drawer)
-      self.drawer = drawui(texture)
+      self.drawer = draw2d(texture)
       self.font:render_text(texture, text, self.fg_color)
       self.drawer.scale = texture:size()
       self.drawer.position = pos
@@ -43,10 +43,10 @@ local function button()
       return false
     end,
   }
-  object.back_drawer = drawui(texture())
+  object.back_drawer = draw2d(texture())
   object.font = font()
   object.font:load(DEFAULT_FONT_NAME, 32)
-  object.drawer = drawui(texture())
+  object.drawer = draw2d(texture())
 
   return object
 end

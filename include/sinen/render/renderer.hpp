@@ -52,30 +52,6 @@ public:
    */
   static void draw3d(const std::shared_ptr<Drawable> draw_object);
   /**
-   * @brief Add drawable object to queue
-   *
-   * @param draw_object
-   */
-  static void add_queue_2d(const std::shared_ptr<Drawable> draw_object);
-  /**
-   * @brief Add drawable object to queue
-   *
-   * @param draw_object
-   */
-  static void add_queue_3d(const std::shared_ptr<Drawable> draw_object);
-  /**
-   * @brief Remove drawable object from queue
-   *
-   * @param draw_object
-   */
-  static void remove_queue_2d(const std::shared_ptr<Drawable> draw_object);
-  /**
-   * @brief Remove drawable object from queue
-   *
-   * @param draw_object
-   */
-  static void remove_queue_3d(const std::shared_ptr<Drawable> draw_object);
-  /**
    * @brief Add vertex array
    *
    * @param vArray

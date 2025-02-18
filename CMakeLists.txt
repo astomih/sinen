@@ -45,7 +45,7 @@ set(PARANOIXA_BUILD_SDL3 OFF)
 add_subdirectory(./libs/paranoixa EXCLUDE_FROM_ALL)
 
 # Still in development
-# add_subdirectory(./editor)
+add_subdirectory(./editor)
 
 # add_subdirectory(./test)
 add_subdirectory(./usertype)

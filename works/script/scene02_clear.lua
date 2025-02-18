@@ -4,7 +4,7 @@ local drawer_clear = {}
 local scene_switcher = require("scene_switcher")()
 NOW_STAGE = 1
 texture_clear = texture()
-drawer_clear = drawui(texture_clear)
+drawer_clear = draw2d(texture_clear)
 font_clear = font()
 font_clear:load(DEFAULT_FONT_NAME, 64)
 font_clear:render_text(texture_clear, "STAGE CLEAR", color(1, 1, 1, 1))

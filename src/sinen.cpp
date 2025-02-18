@@ -1,7 +1,4 @@
 // std
-#include <fstream>
-#include <memory>
-#include <optional>
 
 // internal
 #include <sinen.hpp>
@@ -55,9 +52,6 @@ bool Initialize(int argc, char *argv[]) {
   tex.fill_color(Palette::light_black());
   RendererImpl::set_skybox_texture(tex);
   scene_system::initialize();
-  if (argc >= 2) {
-    sinen::Scene::load(argv[1]);
-  }
   return true;
 }
 void Run() {

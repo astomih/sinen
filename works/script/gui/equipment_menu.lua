@@ -12,7 +12,7 @@ local function equipment_menu()
       -- setup menu
       self.ui_panel_texture = texture()
       self.ui_panel_texture:fill_color(color(1, 1, 1, 0.5))
-      self.ui_panel = drawui(self.ui_panel_texture)
+      self.ui_panel = draw2d(self.ui_panel_texture)
       self.ui_panel.scale = vector2(1120, 630)
       button.fg_color = color(0, 0, 0, 0.9)
       button.bg_color = color(1, 1, 1, 1.0)

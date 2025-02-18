@@ -1,17 +1,9 @@
 #ifndef SINEN_SCENE_HPP
 #define SINEN_SCENE_HPP
-#include <cstdint>
-#include <functional>
-#include <list>
 #include <memory>
 #include <string>
-#include <unordered_map>
-#include <utility>
-#include <vector>
 
-#include "../actor/actor.hpp"
 #include "../camera/camera.hpp"
-#include "../component/component_factory.hpp"
 #include "../math/vector2.hpp"
 
 namespace sinen {
@@ -85,24 +77,8 @@ public:
   }
   static void set_run_script(bool is_run);
 
-  static void load(std::string_view data_file_name);
-
-  template <class Actor = Actor, class... Args>
-  static Actor &create_actor(Args &&...args) {
-    Actor *ptr = new Actor(std::forward<Args>(args)...);
-    Actor &ref = *reinterpret_cast<Actor *>(ptr);
-    add_actor(ptr);
-    return ref;
-  }
-  static Actor &get_actor(const std::string &name);
   static Camera &main_camera() { return m_main_camera; }
 
-  static component_factory &get_component_factory() {
-    return m_component_factory;
-  }
-  static void set_component_factory(const component_factory &factory) {
-    m_component_factory = factory;
-  }
   /**
    * @brief Set the screen size
    *
@@ -122,11 +98,9 @@ public:
   }
 
 private:
-  static component_factory m_component_factory;
   // main camera
   static Camera m_main_camera;
   static Vector2 m_screen_size;
-  static void add_actor(Actor *_actor);
   static void change_impl(std::unique_ptr<implements> impl);
 };
 } // namespace sinen

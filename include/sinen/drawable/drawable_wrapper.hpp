@@ -54,53 +54,6 @@ public:
   std::shared_ptr<Drawable> obj;
 };
 /**
- * @brief UI draw object class
- *
- */
-struct DrawUI {
-public:
-  /**
-   * @brief Construct a new drawui object
-   *
-   */
-  DrawUI();
-  /**
-   * @brief Construct a new drawui object
-   * @param texture Texture to use
-   *
-   */
-  DrawUI(Texture);
-  /**
-   * @brief Draw object
-   *
-   */
-  void draw();
-  /**
-   * @brief Set user data
-   *
-   * @param index Index of user data 0-16
-   * @param value Value of user data
-   */
-  void user_data_at(int index, float value);
-  void add(const Vector2 &position, const float &rotation,
-           const Vector2 &scale);
-  void at(const int &index, const Vector2 &position, const float &rotation,
-          const Vector2 &scale);
-  void clear();
-  struct world {
-    Vector2 position;
-    float rotation;
-    Vector2 scale;
-  };
-  std::vector<world> worlds;
-  Vector2 position;
-  float rotation;
-  Vector2 scale;
-  Texture texture_handle;
-  std::string vertex_name = "SPRITE";
-  std::shared_ptr<Drawable> obj;
-};
-/**
  * @brief 3D draw object class
  *
  */

@@ -44,9 +44,6 @@ public:
     m_impl = std::move(impl);
   }
 
-  static void add_actor(Actor *_actor);
-  static Actor &get_actor(const std::string &name);
-  static void load_data(std::string_view data_file_name);
   static void process_input();
   static void update_scene();
   static bool is_reset;
@@ -54,8 +51,6 @@ public:
 private:
   static bool is_run_script;
   static std::unique_ptr<Scene::implements> m_impl;
-  using actor_ptr = Actor *;
-  static std::vector<actor_ptr> m_actors;
   static Scene::state m_game_state;
   static uint32_t m_prev_tick;
   static std::string m_scene_name;

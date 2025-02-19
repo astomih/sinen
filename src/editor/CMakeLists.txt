@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 3.7)
 project(editor)
+
+set(SINEN_SOURCE_DIR ${SINEN_SOURCE_DIR} PARENT_SCOPE)
+
 if(NOT MSVC)
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -march=native")
+	set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DDEBUG")
+	set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -march=native")
 endif()
 
 if(WIN32)
@@ -11,33 +14,16 @@ if(WIN32)
 	endif()
 endif()
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS true)
+set(CMAKE_EXPORT_COFMPILE_COMMANDS true)
 
 file(GLOB_RECURSE SOURCE_FILES
 	./native/*.cpp
-	../libs/ImGuiColorTextEdit/*.cpp
-	../libs/ImGuizmo/*.cpp
+	${SINEN_SOURCE_DIR}/libs/ImGuiColorTextEdit/*.cpp
+	${SINEN_SOURCE_DIR}/libs/ImGuizmo/*.cpp
 	./data/icon/icon.rc
 )
 
-file(GLOB_RECURSE HEADER_FILES
-	./native/*.hpp
-	../libs/ImGuiColorTextEdit/*.h
-	../libs/ImGuiColorTextEdit/*.hpp
-	../libs/ImGuizmo/*.h
-	../libs/ImGuizmo/*.hpp
-)
-
-include_directories(
-	../include
-	../include/sinen
-	../libs/imgui_markdown
-	../libs/ImGuiColorTextEdit
-	../libs/ImGuizmo
-	../libs/rapidjson/include
-)
 link_directories(
-	..
 )
 find_package(Vulkan REQUIRED)
 
@@ -55,7 +41,15 @@ endif()
 
 add_executable(editor
 	${SOURCE_FILES}
-	${HEADER_FILES}
+)
+target_include_directories(editor
+	PUBLIC
+	${SINEN_SOURCE_DIR}/include
+	${SINEN_SOURCE_DIR}/include/sinen
+	${SINEN_SOURCE_DIR}/libs/imgui_markdown
+	${SINEN_SOURCE_DIR}/libs/ImGuiColorTextEdit
+	${SINEN_SOURCE_DIR}/libs/ImGuizmo
+	${SINEN_SOURCE_DIR}/libs/rapidjson/include
 )
 target_link_libraries(editor
 	${LIBRARIES}

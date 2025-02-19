@@ -9,11 +9,10 @@ file(GLOB SOURCE_FILES
 )
 
 include_directories(
-  ../include
-  ../include/sinen
-  ../src
-  ../libs/sol2/include
-  ../libs/Lua/include
+  ${SINEN_SOURCE_DIR}/include
+  ${SINEN_SOURCE_DIR}/include/sinen
+  ${SINEN_SOURCE_DIR}/libs/sol2/include
+  ${SINEN_SOURCE_DIR}/libs/Lua/include
 )
 link_directories(
 )

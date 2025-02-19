@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 3.20)
+include(CMakePrintHelpers)
 project(sinen)
 option(SINEN_EXTERNAL_ALL_BUILD "Build all external libralies" ON)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set(SINEN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(SINEN_EXTERNAL_ALL_BUILD)
   set(SDL_SHARED ${BUILD_SHARED_LIBS})
@@ -45,11 +48,11 @@ set(PARANOIXA_BUILD_SDL3 OFF)
 add_subdirectory(./libs/paranoixa EXCLUDE_FROM_ALL)
 
 # Still in development
-add_subdirectory(./editor)
+add_subdirectory(./src/editor)
 
 # add_subdirectory(./test)
-add_subdirectory(./usertype)
-add_subdirectory(./works)
+add_subdirectory(./src/usertype EXCLUDE_FROM_ALL)
+add_subdirectory(./src/works)
 
 if(NOT MSVC)
   set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g -O0 -DDEBUG")
@@ -74,12 +77,13 @@ set(SINEN_INCLUDE_DIRS
   libs/SDL_ttf/include
   libs/paranoixa/include
   libs/paranoixa/source/imgui_backend
+  src/usertype/include
 )
 file(
   GLOB
   SOURCE_FILES
-  src/*.cpp
-  src/*/*.cpp
+  src/sinen/*.cpp
+  src/sinen/*/*.cpp
   libs/Lua/source/*.c
   libs/mojoAL-SDL3/*.c)
 file(

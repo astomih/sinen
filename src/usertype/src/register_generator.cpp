@@ -1,9 +1,7 @@
-#include "../../src/render/render_system.hpp"
 #include <audio/music.hpp>
 #include <audio/sound.hpp>
 #include <camera/camera.hpp>
 #include <font/font.hpp>
-#include <functional>
 #include <io/data_stream.hpp>
 #include <math/point2.hpp>
 #include <math/random.hpp>
@@ -39,7 +37,7 @@ void register_generator(sol::state &v) {
   v["music"] = []() -> Music { return Music(); };
   v["sound"] = []() -> Sound { return Sound(); };
   v["set_skybox_texture"] = [&](Texture tex) -> void {
-    RendererImpl::set_skybox_texture(tex);
+    Renderer::set_skybox(tex);
   };
   v["aabb"] = []() -> AABB { return AABB(); };
 }

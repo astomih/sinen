@@ -9,7 +9,10 @@
 #include <unordered_map>
 #include <utility/handle_t.hpp>
 
+#include "texture_container.hpp"
+
 namespace sinen {
+
 struct SDLObjectCloser {
   void operator()(::SDL_Surface *surface);
   void operator()(::SDL_IOStream *rw);
@@ -60,6 +63,9 @@ bool Texture::load(std::string_view fileName) {
     return false;
   }
   memcpy(&surface, src_surface, sizeof(SDL_Surface));
+
+  auto texture = CreateNativeTexture(handle);
+  TextureContainer::at(handle) = texture;
   return true;
 }
 bool Texture::load_from_memory(std::vector<char> &buffer) {
@@ -75,6 +81,8 @@ bool Texture::load_from_memory(std::vector<char> &buffer) {
     return false;
   }
   memcpy(&surface, src_surface, sizeof(SDL_Surface));
+  auto texture = CreateNativeTexture(handle);
+  TextureContainer::at(handle) = texture;
 
   return true;
 }
@@ -87,6 +95,7 @@ void Texture::fill_color(const Color &color) {
       ::SDL_MapRGBA(SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_RGBA32), nullptr,
                     color.r * 255, color.g * 255, color.b * 255,
                     color.a * 255));
+  TextureContainer::hashMap[handle] = CreateNativeTexture(handle);
 }
 void Texture::blend_color(const Color &color) {
   *is_need_update = true;
@@ -94,9 +103,8 @@ void Texture::blend_color(const Color &color) {
   SDL_SetSurfaceBlendMode(&surface, SDL_BLENDMODE_BLEND);
   SDL_SetSurfaceColorMod(&surface, color.r * 255, color.g * 255, color.b * 255);
   SDL_SetSurfaceAlphaMod(&surface, color.a * 255);
-  auto *tmp = SDL_CreateSurface(surface.w, surface.h,
-                                SDL_PixelFormat::SDL_PIXELFORMAT_RGBA8888);
   SDL_BlitSurface(&surface, NULL, (SDL_Surface *)handle, NULL);
+  UpdateNativeTexture(TextureContainer::at(handle), handle);
 }
 
 Texture Texture::copy() {
@@ -107,6 +115,8 @@ Texture Texture::copy() {
   dst.h = src.h;
   SDL_BlitSurface(&src, NULL, &dst, NULL);
   *dst_texture.is_need_update = true;
+  TextureContainer::at(dst_texture.handle) =
+      CreateNativeTexture(dst_texture.handle);
   return dst_texture;
 }
 
@@ -124,6 +134,8 @@ void Texture::destroy() {
   if (!handle) {
     return;
   }
+  if (!TextureContainer::hashMap.empty())
+    TextureContainer::hashMap.erase(handle);
   SDL_Surface *surf = reinterpret_cast<SDL_Surface *>(handle);
   SDL_DestroySurface(surf);
   surf = nullptr;

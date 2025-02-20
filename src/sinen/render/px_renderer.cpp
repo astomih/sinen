@@ -12,6 +12,8 @@
 #include <imgui_impl_paranoixa.hpp>
 #include <imgui_impl_sdl3.h>
 
+#include "../texture/texture_container.hpp"
+
 // TODO:
 // - Refactoring
 // - Shadow mapping
@@ -245,6 +247,7 @@ void PxRenderer::initialize() {
   depthTexture = device->CreateTexture(depthStencilInfo);
 }
 void PxRenderer::shutdown() {
+  TextureContainer::hashMap.clear();
   this->drawables2D.clear();
   this->drawables2DInstanced.clear();
   this->drawables3D.clear();
@@ -351,70 +354,11 @@ void PxRenderer::render() {
   drawables3DInstanced.clear();
   drawables2D.clear();
 }
-Ptr<px::Texture> PxRenderer::CreateNativeTexture(const HandleT &handle) {
-  SDL_Surface *pSurface = reinterpret_cast<SDL_Surface *>(handle);
-  SDL_Surface &surface = *pSurface;
-  ::SDL_LockSurface(&surface);
-  auto *pFormat = ::SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_RGBA8888);
-  auto *pImageDataSurface = ::SDL_ConvertSurface(&surface, pFormat->format);
-  ::SDL_UnlockSurface(&surface);
-
-  Ptr<px::TransferBuffer> transferBuffer;
-  int width = pImageDataSurface->w, height = pImageDataSurface->h;
-  {
-    px::TransferBuffer::CreateInfo info{};
-    info.allocator = allocator;
-    info.size = width * height * 4;
-    info.usage = px::TransferBufferUsage::Upload;
-    transferBuffer = device->CreateTransferBuffer(info);
-    auto *pMapped = transferBuffer->Map(true);
-    auto *pImage = pImageDataSurface->pixels;
-    memcpy(pMapped, pImage, info.size);
-    transferBuffer->Unmap();
-  }
-  Ptr<px::Texture> texture;
-  {
-    px::Texture::CreateInfo info{};
-    info.allocator = allocator;
-    info.width = width;
-    info.height = height;
-    info.layerCountOrDepth = 1;
-    info.format = px::TextureFormat::R8G8B8A8_UNORM;
-    info.usage = px::TextureUsage::Sampler;
-    info.numLevels = 1;
-    info.sampleCount = px::SampleCount::x1;
-    info.type = px::TextureType::Texture2D;
-    texture = device->CreateTexture(info);
-  }
-  {
-    px::CommandBuffer::CreateInfo info{};
-    info.allocator = allocator;
-    auto commandBuffer = device->AcquireCommandBuffer(info);
-    auto copyPass = commandBuffer->BeginCopyPass();
-    px::TextureTransferInfo src{};
-    src.offset = 0;
-    src.transferBuffer = transferBuffer;
-    px::TextureRegion dst{};
-    dst.x = 0;
-    dst.y = 0;
-    dst.width = width;
-    dst.height = height;
-    dst.depth = 1;
-    dst.texture = texture;
-    copyPass->UploadTexture(src, dst, true);
-    commandBuffer->EndCopyPass(copyPass);
-    device->SubmitCommandBuffer(commandBuffer);
-  }
-  device->WaitForGPUIdle();
-  SDL_DestroySurface(pImageDataSurface);
-  return texture;
-}
 void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
   PxDrawable drawable{allocator};
   drawable.drawable = draw_object;
   if (this->textureSamplers.find(draw_object->binding_texture.handle) ==
       this->textureSamplers.end()) {
-    auto texture = CreateNativeTexture(draw_object->binding_texture.handle);
     px::Sampler::CreateInfo samplerInfo{};
     samplerInfo.allocator = allocator;
     samplerInfo.minFilter = px::Filter::Nearest;
@@ -423,6 +367,8 @@ void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
     samplerInfo.addressModeV = px::AddressMode::Repeat;
     samplerInfo.maxAnisotropy = 1.f;
     auto sampler = device->CreateSampler(samplerInfo);
+    auto texture = TextureContainer::at(draw_object->binding_texture.handle);
+    assert(texture);
     textureSamplers.insert(std::pair<HandleT, px::TextureSamplerBinding>(
         draw_object->binding_texture.handle,
         px::TextureSamplerBinding{.sampler = sampler, .texture = texture}));
@@ -430,11 +376,8 @@ void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
     drawable.textureSamplers.push_back(
         textureSamplers[draw_object->binding_texture.handle]);
   } else {
-    if (*drawable.drawable->binding_texture.is_need_update) {
-      textureSamplers[draw_object->binding_texture.handle].texture = nullptr;
-      textureSamplers[draw_object->binding_texture.handle].texture =
-          CreateNativeTexture(draw_object->binding_texture.handle);
-    }
+    textureSamplers[draw_object->binding_texture.handle].texture =
+        TextureContainer::at(draw_object->binding_texture.handle);
     drawable.textureSamplers.push_back(
         textureSamplers[draw_object->binding_texture.handle]);
   }
@@ -453,7 +396,6 @@ void PxRenderer::draw3d(const std::shared_ptr<Drawable> draw_object) {
   drawable.drawable = draw_object;
   if (this->textureSamplers.find(draw_object->binding_texture.handle) ==
       this->textureSamplers.end()) {
-    auto texture = CreateNativeTexture(draw_object->binding_texture.handle);
     px::Sampler::CreateInfo samplerInfo{};
     samplerInfo.allocator = allocator;
     samplerInfo.minFilter = px::Filter::Nearest;
@@ -464,11 +406,15 @@ void PxRenderer::draw3d(const std::shared_ptr<Drawable> draw_object) {
     auto sampler = device->CreateSampler(samplerInfo);
     textureSamplers.insert(std::pair<HandleT, px::TextureSamplerBinding>(
         draw_object->binding_texture.handle,
-        px::TextureSamplerBinding{.sampler = sampler, .texture = texture}));
+        px::TextureSamplerBinding{.sampler = sampler,
+                                  .texture = TextureContainer::at(
+                                      draw_object->binding_texture.handle)}));
 
     drawable.textureSamplers.push_back(
         textureSamplers[draw_object->binding_texture.handle]);
   } else {
+    textureSamplers[draw_object->binding_texture.handle].texture =
+        TextureContainer::at(draw_object->binding_texture.handle);
     drawable.textureSamplers.push_back(
         textureSamplers[draw_object->binding_texture.handle]);
   }

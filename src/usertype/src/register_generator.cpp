@@ -36,9 +36,6 @@ void register_generator(sol::state &v) {
   v["model"] = []() -> Model { return Model(); };
   v["music"] = []() -> Music { return Music(); };
   v["sound"] = []() -> Sound { return Sound(); };
-  v["set_skybox_texture"] = [&](Texture tex) -> void {
-    Renderer::set_skybox(tex);
-  };
   v["aabb"] = []() -> AABB { return AABB(); };
 }
 } // namespace sinen

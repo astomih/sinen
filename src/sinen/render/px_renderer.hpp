@@ -39,6 +39,9 @@ public:
   void prepare_imgui();
   void *get_texture_id();
 
+  px::Allocator *GetAllocator() { return allocator; }
+  px::Ptr<px::Device> GetDevice() { return device; }
+
 private:
   Ptr<px::Texture> CreateNativeTexture(const HandleT &handle);
   px::Allocator *allocator;

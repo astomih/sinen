@@ -38,10 +38,6 @@ public:
       clearColor = color;
   }
   static Color get_clear_color() { return clearColor; }
-  static void set_skybox_texture(Texture _skybox_texture) {
-    m_skybox_texture = _skybox_texture;
-  }
-  static Texture get_skybox_texture() { return m_skybox_texture; }
   static void toggle_show_imgui() { showImGui = !showImGui; }
   static bool is_show_imgui() { return showImGui; }
   static void load_shader(const Shader &shaderinfo);
@@ -55,6 +51,10 @@ public:
   }
   static void *get_texture_id();
 
+  static std::shared_ptr<class PxRenderer> GetPxRenderer() {
+    return pxRenderer;
+  }
+
 private:
   static std::shared_ptr<class PxRenderer> pxRenderer;
   static void setup_shapes();
@@ -62,7 +62,6 @@ private:
   // Renderer
   static bool showImGui;
   static std::list<std::function<void()>> m_imgui_function;
-  static Texture m_skybox_texture;
 };
 } // namespace sinen
 #endif // !SINEN_RENDER_SYSTEM_HPP

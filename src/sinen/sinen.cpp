@@ -50,7 +50,6 @@ bool Initialize(int argc, char *argv[]) {
   }
   Texture tex;
   tex.fill_color(Palette::light_black());
-  RendererImpl::set_skybox_texture(tex);
   scene_system::initialize();
   return true;
 }

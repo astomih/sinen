@@ -18,7 +18,6 @@ std::shared_ptr<PxRenderer> RendererImpl::pxRenderer =
 // Renderer
 bool RendererImpl::showImGui = false;
 std::list<std::function<void()>> RendererImpl::m_imgui_function;
-Texture RendererImpl::m_skybox_texture;
 void RendererImpl::unload_data() {}
 void RendererImpl::initialize() {
   pxRenderer->initialize();

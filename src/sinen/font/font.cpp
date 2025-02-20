@@ -3,15 +3,16 @@
 #include <string_view>
 
 // internal
+#include "../texture/texture_container.hpp"
 #include <color/color.hpp>
 #include <font/font.hpp>
 #include <io/data_stream.hpp>
 #include <logger/logger.hpp>
+#include <texture/texture.hpp>
 
 // external
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
-#include <texture/texture.hpp>
 
 namespace sinen {
 Font::Font(std::string_view file_name, int32_t point) {
@@ -69,6 +70,9 @@ void Font::render_text(Texture &tex, std::string_view text,
     *handle = *surface;
     *surface = tmp;
   }
+  auto texture = CreateNativeTexture(tex.handle);
+  assert(texture != nullptr && "Failed to create texture");
+  TextureContainer::hashMap[tex.handle] = texture;
   SDL_DestroySurface(surface);
 }
 } // namespace sinen

@@ -95,7 +95,11 @@ void Texture::fill_color(const Color &color) {
       ::SDL_MapRGBA(SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_RGBA32), nullptr,
                     color.r * 255, color.g * 255, color.b * 255,
                     color.a * 255));
-  TextureContainer::hashMap[handle] = CreateNativeTexture(handle);
+  if (TextureContainer::hashMap.find(handle) ==
+      TextureContainer::hashMap.end()) {
+    TextureContainer::hashMap[handle] = CreateNativeTexture(handle);
+  } else
+    UpdateNativeTexture(TextureContainer::at(handle), handle);
 }
 void Texture::blend_color(const Color &color) {
   *is_need_update = true;

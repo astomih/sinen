@@ -49,6 +49,7 @@ private:
   Ptr<px::Device> device;
 
   Ptr<px::Texture> depthTexture;
+  Ptr<px::Sampler> sampler;
   Ptr<px::GraphicsPipeline> pipeline2D;
   Ptr<px::GraphicsPipeline> pipeline2DInstanced;
   Ptr<px::GraphicsPipeline> pipeline3D;

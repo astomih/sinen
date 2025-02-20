@@ -245,6 +245,16 @@ void PxRenderer::initialize() {
   depthStencilInfo.numLevels = 1;
   depthStencilInfo.sampleCount = px::SampleCount::x1;
   depthTexture = device->CreateTexture(depthStencilInfo);
+
+  // Default sampler
+  px::Sampler::CreateInfo samplerInfo{};
+  samplerInfo.allocator = allocator;
+  samplerInfo.minFilter = px::Filter::Nearest;
+  samplerInfo.magFilter = px::Filter::Nearest;
+  samplerInfo.addressModeU = px::AddressMode::Repeat;
+  samplerInfo.addressModeV = px::AddressMode::Repeat;
+  samplerInfo.maxAnisotropy = 1.f;
+  sampler = device->CreateSampler(samplerInfo);
 }
 void PxRenderer::shutdown() {
   TextureContainer::hashMap.clear();
@@ -357,30 +367,10 @@ void PxRenderer::render() {
 void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
   PxDrawable drawable{allocator};
   drawable.drawable = draw_object;
-  if (this->textureSamplers.find(draw_object->binding_texture.handle) ==
-      this->textureSamplers.end()) {
-    px::Sampler::CreateInfo samplerInfo{};
-    samplerInfo.allocator = allocator;
-    samplerInfo.minFilter = px::Filter::Nearest;
-    samplerInfo.magFilter = px::Filter::Nearest;
-    samplerInfo.addressModeU = px::AddressMode::Repeat;
-    samplerInfo.addressModeV = px::AddressMode::Repeat;
-    samplerInfo.maxAnisotropy = 1.f;
-    auto sampler = device->CreateSampler(samplerInfo);
-    auto texture = TextureContainer::at(draw_object->binding_texture.handle);
-    assert(texture);
-    textureSamplers.insert(std::pair<HandleT, px::TextureSamplerBinding>(
-        draw_object->binding_texture.handle,
-        px::TextureSamplerBinding{.sampler = sampler, .texture = texture}));
 
-    drawable.textureSamplers.push_back(
-        textureSamplers[draw_object->binding_texture.handle]);
-  } else {
-    textureSamplers[draw_object->binding_texture.handle].texture =
-        TextureContainer::at(draw_object->binding_texture.handle);
-    drawable.textureSamplers.push_back(
-        textureSamplers[draw_object->binding_texture.handle]);
-  }
+  drawable.textureSamplers.push_back(px::TextureSamplerBinding{
+      .sampler = sampler,
+      .texture = TextureContainer::at(draw_object->binding_texture.handle)});
 
   drawable.vertexBuffers.emplace_back(px::BufferBinding{
       .buffer = vertexArrays[draw_object->vertexIndex].vertexBuffer,
@@ -394,30 +384,9 @@ void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
 void PxRenderer::draw3d(const std::shared_ptr<Drawable> draw_object) {
   PxDrawable drawable{allocator};
   drawable.drawable = draw_object;
-  if (this->textureSamplers.find(draw_object->binding_texture.handle) ==
-      this->textureSamplers.end()) {
-    px::Sampler::CreateInfo samplerInfo{};
-    samplerInfo.allocator = allocator;
-    samplerInfo.minFilter = px::Filter::Nearest;
-    samplerInfo.magFilter = px::Filter::Nearest;
-    samplerInfo.addressModeU = px::AddressMode::Repeat;
-    samplerInfo.addressModeV = px::AddressMode::Repeat;
-    samplerInfo.maxAnisotropy = 1.f;
-    auto sampler = device->CreateSampler(samplerInfo);
-    textureSamplers.insert(std::pair<HandleT, px::TextureSamplerBinding>(
-        draw_object->binding_texture.handle,
-        px::TextureSamplerBinding{.sampler = sampler,
-                                  .texture = TextureContainer::at(
-                                      draw_object->binding_texture.handle)}));
-
-    drawable.textureSamplers.push_back(
-        textureSamplers[draw_object->binding_texture.handle]);
-  } else {
-    textureSamplers[draw_object->binding_texture.handle].texture =
-        TextureContainer::at(draw_object->binding_texture.handle);
-    drawable.textureSamplers.push_back(
-        textureSamplers[draw_object->binding_texture.handle]);
-  }
+  drawable.textureSamplers.push_back(px::TextureSamplerBinding{
+      .sampler = sampler,
+      .texture = TextureContainer::at(draw_object->binding_texture.handle)});
 
   if (drawable.drawable->size() > 0) {
     px::Buffer::CreateInfo instanceBufferInfo{};

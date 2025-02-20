@@ -70,9 +70,14 @@ void Font::render_text(Texture &tex, std::string_view text,
     *handle = *surface;
     *surface = tmp;
   }
-  auto texture = CreateNativeTexture(tex.handle);
-  assert(texture != nullptr && "Failed to create texture");
-  TextureContainer::hashMap[tex.handle] = texture;
+  if (handle->w == surface->w && handle->h == surface->h) {
+    UpdateNativeTexture(TextureContainer::at(tex.handle), tex.handle);
+  } else {
+    TextureContainer::hashMap.erase(tex.handle);
+    auto texture = CreateNativeTexture(tex.handle);
+    assert(texture != nullptr && "Failed to create texture");
+    TextureContainer::hashMap[tex.handle] = texture;
+  }
   SDL_DestroySurface(surface);
 }
 } // namespace sinen

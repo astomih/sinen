@@ -29,12 +29,12 @@ local function bullet(map_draw3ds)
                 self.drawer.scale:mul(m.aabb.max))
             self.aabb.min = self.drawer.position:add(
                 self.drawer.scale:mul(m.aabb.min))
-            self.current_time = self.current_time + delta_time
-            self.drawer.position.x = self.drawer.position.x + delta_time *
+            self.current_time = self.current_time + scene.delta_time()
+            self.drawer.position.x = self.drawer.position.x + scene.delta_time() *
                 self.speed *
                 math.cos(
                     math.rad(self.drawer.rotation.z))
-            self.drawer.position.y = self.drawer.position.y + delta_time *
+            self.drawer.position.y = self.drawer.position.y + scene.delta_time() *
                 self.speed *
                 math.sin(
                     math.rad(self.drawer.rotation.z))

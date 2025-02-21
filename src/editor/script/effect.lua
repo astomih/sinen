@@ -37,17 +37,17 @@ local function effect()
         impl = function(e)
             for i = 1, e.max_particles do
                 e.worlds[i].position.x =
-                e.worlds[i].position.x + math.cos(i) * delta_time
+                    e.worlds[i].position.x + math.cos(i) * scene.delta_time()
                 e.worlds[i].position.y =
-                e.worlds[i].position.y + math.sin(i) * delta_time
+                    e.worlds[i].position.y + math.sin(i) * scene.delta_time()
                 e.worlds[i].position.z =
-                e.worlds[i].position.z + delta_time
+                    e.worlds[i].position.z + scene.delta_time()
             end
         end,
         update = function(self)
             --  if not self.is_playing then return end
             self.drawer:clear()
-            self.timer = self.timer + delta_time
+            self.timer = self.timer + scene.delta_time()
             if self.timer > self.start_lifetime then
                 self.timer = 0.0
                 for i = 1, self.max_particles do

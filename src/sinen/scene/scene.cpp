@@ -32,4 +32,6 @@ void Scene::set_run_script(bool is_run) {
   scene_system::set_run_script(is_run);
 }
 
+float Scene::delta_time() { return scene_system::delta_time(); }
+
 } // namespace sinen

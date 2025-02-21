@@ -12,18 +12,20 @@ drawer_clear.scale = texture_clear:size()
 scene_switcher:setup()
 scene_switcher:start("")
 
-local function draw()
-    drawer_clear:draw()
-end
-
-function update()
+function Update()
+    GUI_MANAGER:update()
     mouse.hide_cursor(false)
     if scene_switcher.flag then
-        scene_switcher:update(draw)
+        scene_switcher:update()
         return
     end
-    draw()
     if mouse.is_pressed(mouse.LEFT) then
         scene_switcher:start("scene00_base")
     end
+end
+
+function Draw()
+    drawer_clear:draw()
+    scene_switcher:draw()
+    GUI_MANAGER:draw()
 end

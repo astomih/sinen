@@ -34,17 +34,14 @@ scene_switcher:start("")
 renderer.at_render_texture_user_data(0, 0.0)
 
 
-local draw = function()
-end
 
-
-function update()
+function Update()
+    GUI_MANAGER:update()
     if scene_switcher.flag then
-        scene_switcher:update(draw)
+        scene_switcher:update()
         return
     end
     menu_object:update()
-    draw()
     if menu_object.hide then
         font_press:render_text(texture_press, "CLICK TO START", color(1, 1, 1, periodic.sin0_1(2.0, time.seconds())))
         if mouse.is_pressed(mouse.LEFT) then
@@ -53,10 +50,11 @@ function update()
     end
 end
 
-draw = function()
+function Draw()
     drawer_title:draw()
     drawer_press:draw()
     menu_object:draw()
 
-    GUI_MANAGER:update()
+    scene_switcher:draw()
+    GUI_MANAGER:draw()
 end

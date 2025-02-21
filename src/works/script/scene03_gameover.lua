@@ -12,18 +12,20 @@ drawer_dead.scale = texture_dead:size()
 scene_switcher:setup()
 scene_switcher:start("")
 
-local function draw()
-    drawer_dead:draw()
-end
-
-function update()
+function Update()
+    GUI_MANAGER:update()
     mouse.hide_cursor(false)
     if scene_switcher.flag then
-        scene_switcher:update(draw)
+        scene_switcher:update()
         return
     end
-    draw()
     if mouse.is_pressed(mouse.LEFT) then
         scene_switcher:start("main")
     end
+end
+
+function Draw()
+    drawer_dead:draw()
+    scene_switcher:draw()
+    GUI_MANAGER:draw()
 end

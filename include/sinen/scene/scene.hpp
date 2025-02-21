@@ -97,6 +97,8 @@ public:
     return c;
   }
 
+  static float delta_time();
+
 private:
   // main camera
   static Camera m_main_camera;

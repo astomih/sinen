@@ -103,12 +103,15 @@ score_drawer.scale = score_texture:size()
 score_drawer.position.x = -300
 score_drawer.position.y = 300
 camera_controller:setup(player)
-camera_controller:update()
+camera_controller:update(0.0)
 scene_switcher:setup()
 scene_switcher:start("")
 equipment_menu:setup()
 
-local function draw()
+function Draw()
+  if scene_switcher.flag then
+    return
+  end
   player:draw()
   for i, v in ipairs(enemies) do v:draw() end
   box:clear()
@@ -141,22 +144,22 @@ local function draw()
   stair:draw()
   score_drawer:draw()
   equipment_menu:draw()
-  GUI_MANAGER:update()
   menu_object:draw()
+  scene_switcher:draw()
+  GUI_MANAGER:draw()
 end
 
-function update()
+function Update()
+  GUI_MANAGER:update()
   if scene_switcher.flag then
-    scene_switcher:update(draw)
+    scene_switcher:update()
     return
   end
   menu_object:update()
   if not menu_object.hide then
-    draw()
     return
   end
   if equipment_menu:update() then
-    draw()
     return
   end
   mouse.hide_cursor(true)
@@ -198,5 +201,4 @@ function update()
     player:boost_reset()
   end
   camera_controller:update()
-  draw()
 end

@@ -122,7 +122,7 @@ scene_switcher:start("")
 
 equipment_menu:setup()
 
-local function draw()
+function Draw()
     player:draw()
     local px = math.floor(camera_controller.target.x / TILE_SIZE + 0.5)
     local py = math.floor(camera_controller.target.y / TILE_SIZE + 0.5)
@@ -167,14 +167,16 @@ local function draw()
     end
     score_drawer:draw()
     equipment_menu:draw()
-    GUI_MANAGER:update()
     menu_object:draw()
+    scene_switcher:draw()
+    GUI_MANAGER:draw()
 end
 
 local function collision_bullets(_bullets)
 end
 
-function update()
+function Update()
+    GUI_MANAGER:update()
     local ratio = vector2(window.size().x / scene.size().x, window.size().y / scene.size().y)
     score_drawer.position = vector2(-300 * ratio.x, 300 * ratio.y)
     if scene_switcher.flag then
@@ -183,15 +185,14 @@ function update()
     end
     menu_object:update()
     if not menu_object.hide then
-        draw()
         return
     end
     if equipment_menu:update() then
-        draw()
         return
     end
+
     mouse.hide_cursor(true)
-    key_drawer.rotation.y = key_drawer.rotation.y + delta_time * 100
+    key_drawer.rotation.y = key_drawer.rotation.y + scene.delta_time() * 100
     score_font:render_text(score_texture, "SCORE: " .. SCORE,
         color(1, 1, 1, 1))
     score_drawer.scale = score_texture:size()
@@ -225,7 +226,6 @@ function update()
         scene_switcher:start("scene03_gameover")
     end
     camera_controller:update()
-    draw()
 end
 
 collision_bullets = function(_bullets)

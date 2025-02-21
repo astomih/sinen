@@ -145,16 +145,16 @@ local enemy = function()
 
                 self.drawer.position.x =
                     self.drawer.position.x +
-                    dir.x * delta_time * self.speed
+                    dir.x * scene.delta_time() * self.speed
                 self.drawer.position.y =
                     self.drawer.position.y +
-                    dir.y * delta_time * self.speed
+                    dir.y * scene.delta_time() * self.speed
             else
                 self.drawer.position.x =
-                    self.drawer.position.x + delta_time * self.speed *
+                    self.drawer.position.x + scene.delta_time() * self.speed *
                     self.get_forward_z(self.drawer).x
                 self.drawer.position.y =
-                    self.drawer.position.y + delta_time * self.speed *
+                    self.drawer.position.y + scene.delta_time() * self.speed *
                     self.get_forward_z(self.drawer).y
             end
             self.bfs:reset()
@@ -171,7 +171,7 @@ local enemy = function()
                     player:render_text()
                     self.is_collision_first = false
                 else
-                    self.collision_timer = self.collision_timer + delta_time
+                    self.collision_timer = self.collision_timer + scene.delta_time()
                     if self.collision_timer > self.collision_time then
                         bombed:play()
                         player.hp = player.hp - 10

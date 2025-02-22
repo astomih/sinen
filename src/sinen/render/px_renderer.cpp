@@ -1,6 +1,7 @@
 #include "px_renderer.hpp"
 
 #include "../window/window_system.hpp"
+#include "SDL3/SDL_video.h"
 #include "drawable/instance_data.hpp"
 #include "paranoixa/paranoixa.hpp"
 #include "render/renderer.hpp"
@@ -275,6 +276,12 @@ void PxRenderer::render() {
   auto commandBuffer = device->AcquireCommandBuffer({allocator});
   px::Array<px::ColorTargetInfo> colorTargets{allocator};
   auto swapchainTexture = device->AcquireSwapchainTexture(commandBuffer);
+  if (swapchainTexture == nullptr) {
+    drawables3D.clear();
+    drawables3DInstanced.clear();
+    drawables2D.clear();
+    return;
+  }
   colorTargets.push_back(px::ColorTargetInfo{
       .texture = swapchainTexture,
       .loadOp = px::LoadOp::Clear,

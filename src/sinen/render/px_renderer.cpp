@@ -6,13 +6,14 @@
 #include "render_system.hpp"
 #include <SDL3/SDL.h>
 #include <io/data_stream.hpp>
+#include <memory>
 #include <window/window.hpp>
 
 #include <imgui.h>
 #include <imgui_impl_paranoixa.hpp>
 #include <imgui_impl_sdl3.h>
 
-#include "../texture/texture_container.hpp"
+#include "../texture/texture_data.hpp"
 
 // TODO:
 // - Refactoring
@@ -257,7 +258,6 @@ void PxRenderer::initialize() {
   sampler = device->CreateSampler(samplerInfo);
 }
 void PxRenderer::shutdown() {
-  TextureContainer::hashMap.clear();
   this->drawables2D.clear();
   this->drawables2DInstanced.clear();
   this->drawables3D.clear();
@@ -365,12 +365,14 @@ void PxRenderer::render() {
   drawables2D.clear();
 }
 void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
+
   PxDrawable drawable{allocator};
   drawable.drawable = draw_object;
 
-  drawable.textureSamplers.push_back(px::TextureSamplerBinding{
-      .sampler = sampler,
-      .texture = TextureContainer::at(draw_object->binding_texture.handle)});
+  auto texture = std::static_pointer_cast<px::Texture>(
+      GetTexData(draw_object->binding_texture.textureData)->texture);
+  drawable.textureSamplers.push_back(
+      px::TextureSamplerBinding{.sampler = sampler, .texture = texture});
 
   drawable.vertexBuffers.emplace_back(px::BufferBinding{
       .buffer = vertexArrays[draw_object->vertexIndex].vertexBuffer,
@@ -384,9 +386,10 @@ void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
 void PxRenderer::draw3d(const std::shared_ptr<Drawable> draw_object) {
   PxDrawable drawable{allocator};
   drawable.drawable = draw_object;
-  drawable.textureSamplers.push_back(px::TextureSamplerBinding{
-      .sampler = sampler,
-      .texture = TextureContainer::at(draw_object->binding_texture.handle)});
+  auto texture = std::static_pointer_cast<px::Texture>(
+      GetTexData(draw_object->binding_texture.textureData)->texture);
+  drawable.textureSamplers.push_back(
+      px::TextureSamplerBinding{.sampler = sampler, .texture = texture});
 
   if (drawable.drawable->size() > 0) {
     px::Buffer::CreateInfo instanceBufferInfo{};

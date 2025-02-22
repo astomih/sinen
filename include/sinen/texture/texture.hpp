@@ -1,5 +1,7 @@
 #ifndef SINEN_TEXTURE_HPP
 #define SINEN_TEXTURE_HPP
+#include <any>
+
 #include "../color/color.hpp"
 #include "../math/matrix4.hpp"
 #include "../utility/handle_t.hpp"
@@ -21,12 +23,6 @@ public:
    *
    */
   Texture();
-  /**
-   * @brief Copy constructor
-   *
-   * @param other
-   */
-  Texture(const Texture &other);
   /**
    * @brief Destroy the texture object
    *
@@ -61,14 +57,10 @@ public:
 
   Vector2 size();
 
-  Texture &operator=(const Texture &other);
-
-  HandleT handle;
-  std::shared_ptr<bool> is_need_update;
+  std::shared_ptr<void> textureData;
 
 private:
   HandleT create();
-  void destroy();
 };
 } // namespace sinen
 #endif // !SINEN_TEXTURE_HPP

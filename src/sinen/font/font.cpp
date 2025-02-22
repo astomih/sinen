@@ -1,9 +1,11 @@
 // std
 #include <cassert>
+#include <memory>
 #include <string_view>
 
 // internal
-#include "../texture/texture_container.hpp"
+#include "../texture/texture_data.hpp"
+#include "paranoixa/paranoixa.hpp"
 #include <color/color.hpp>
 #include <font/font.hpp>
 #include <io/data_stream.hpp>
@@ -47,7 +49,6 @@ void Font::render_text(Texture &tex, std::string_view text,
     Logger::error("Font is not loaded");
     return;
   }
-  *tex.is_need_update = true;
   // SinenEngine Color to SDL_Color
   SDL_Color sdlColor;
   sdlColor.r = static_cast<Uint8>(_color.r * 255);
@@ -63,20 +64,18 @@ void Font::render_text(Texture &tex, std::string_view text,
       (::TTF_RenderText_Blended_Wrapped(ttf_font, std::string(text).c_str(),
                                         std::string(text).size(), sdlColor, 0));
   assert(surface != nullptr && "Failed to render text");
-  SDL_Surface *handle = reinterpret_cast<SDL_Surface *>(tex.handle);
+  auto texdata = GetTexData(tex.textureData);
+  SDL_Surface *handle = reinterpret_cast<SDL_Surface *>(texdata->handle);
   // swap
   {
     SDL_Surface tmp = *handle;
     *handle = *surface;
     *surface = tmp;
   }
-  if (handle->w == surface->w && handle->h == surface->h) {
-    UpdateNativeTexture(TextureContainer::at(tex.handle), tex.handle);
+  if (texdata->texture && handle->w == surface->w && handle->h == surface->h) {
+    UpdateNativeTexture(texdata->texture, texdata->handle);
   } else {
-    TextureContainer::hashMap.erase(tex.handle);
-    auto texture = CreateNativeTexture(tex.handle);
-    assert(texture != nullptr && "Failed to create texture");
-    TextureContainer::hashMap[tex.handle] = texture;
+    texdata->texture = CreateNativeTexture(texdata->handle);
   }
   SDL_DestroySurface(surface);
 }

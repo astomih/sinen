@@ -1,14 +1,15 @@
-#include "texture_container.hpp"
+#include "texture_data.hpp"
 #include "../render/px_renderer.hpp"
 #include "../render/render_system.hpp"
-#include "SDL3/SDL_stdinc.h"
-#include "SDL3/SDL_surface.h"
 #include <SDL3/SDL.h>
 namespace sinen {
-std::unordered_map<HandleT, px::Ptr<px::Texture>> TextureContainer::hashMap =
-    {};
+TextureData::~TextureData() {
+  SDL_Surface *surf = reinterpret_cast<SDL_Surface *>(handle);
+  SDL_DestroySurface(surf);
+}
 template <typename T> using Ptr = px::Ptr<T>;
 Ptr<px::Texture> CreateNativeTexture(const HandleT &handle) {
+  assert(handle);
   auto allocator = RendererImpl::GetPxRenderer()->GetAllocator();
   auto device = RendererImpl::GetPxRenderer()->GetDevice();
   SDL_Surface *pSurface = reinterpret_cast<SDL_Surface *>(handle);

@@ -58,7 +58,6 @@ void Draw2D::draw() {
     obj->data.push_back(insdata);
   }
   Renderer::draw2d(obj);
-  *this->texture_handle.is_need_update = false;
 }
 void Draw2D::add(const Vector2 &position, const float &rotation,
                  const Vector2 &scale) {
@@ -88,7 +87,6 @@ void Draw3D::draw() {
     obj->data.push_back(insdata);
   }
   Renderer::draw3d(obj);
-  *this->texture_handle.is_need_update = false;
 }
 void Draw2D::user_data_at(int index, float value) {
   obj->param.user.mat.m16[index] = value;

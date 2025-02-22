@@ -24,10 +24,10 @@ local function bullet(map_draw3ds)
             sound:play()
         end,
         update = function(self)
-            self.aabb.max = self.drawer.position:add(
-                self.drawer.scale:mul(m:aabb().max))
-            self.aabb.min = self.drawer.position:add(
-                self.drawer.scale:mul(m:aabb().min))
+            self.aabb.max = self.drawer.position + (
+                self.drawer.scale * m:aabb().max)
+            self.aabb.min = self.drawer.position + (
+                self.drawer.scale * m:aabb().min)
             self.current_time = self.current_time + scene.delta_time()
             self.drawer.position.x = self.drawer.position.x + scene.delta_time() *
                 self.speed *

@@ -84,9 +84,9 @@ for y = 1, map_size_y do
       map_draw3ds[y][x].position.z = 0
       map_draw3ds[y][x].aabb = aabb()
       map_draw3ds[y][x].aabb.max =
-          map_draw3ds[y][x].position:add(map_draw3ds[y][x].scale)
+          map_draw3ds[y][x].position + map_draw3ds[y][x].scale
       map_draw3ds[y][x].aabb.min =
-          map_draw3ds[y][x].position:sub(map_draw3ds[y][x].scale)
+          map_draw3ds[y][x].position - map_draw3ds[y][x].scale
       map_draw3ds[y][x].scale.z = 3
     end
     if map:at(x, y) == MAP_CHIP.PLAYER then

@@ -87,7 +87,7 @@ local enemy = function()
             self.collision_timer = 0.0
         end,
         update = function(self, player)
-            local length = self.drawer.position:sub(player.drawer.position):length()
+            local length = (self.drawer.position - player.drawer.position):length()
             if length > self.search_length then
                 return
             end

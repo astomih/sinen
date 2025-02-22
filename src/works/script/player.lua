@@ -252,30 +252,30 @@ local player = {
         end
         if input_vector.y ~= 0 then
             before_pos = self.drawer.position:copy()
-            self.drawer.position = self.drawer.position:add(vector3(0,
+            self.drawer.position = self.drawer.position + vector3(0,
                 input_vector.y *
                 final_speed *
                 scene.delta_time(),
-                0))
+                0)
             if is_collision(self, map, map_draw3ds, map_size_x, map_size_y) then
                 self.drawer.position = before_pos
             end
         end
         if input_vector.x ~= 0 then
-            self.drawer.position = self.drawer.position:add(vector3(
+            self.drawer.position = self.drawer.position + vector3(
                 input_vector.x *
                 final_speed *
                 scene.delta_time(),
-                0, 0))
+                0, 0)
             if is_collision(self, map, map_draw3ds, map_size_x, map_size_y) then
                 self.drawer.position = before_pos
             end
             before_pos = self.drawer.position:copy()
-            self.drawer.position = self.drawer.position:add(vector3(0,
+            self.drawer.position = self.drawer.position + vector3(0,
                 input_vector.y *
                 final_speed *
                 scene.delta_time(),
-                0))
+                0)
             if is_collision(self, map, map_draw3ds, map_size_x, map_size_y) then
                 self.drawer.position = before_pos
             end

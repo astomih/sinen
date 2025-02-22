@@ -18,6 +18,8 @@ std::shared_ptr<PxRenderer> RendererImpl::pxRenderer =
 // Renderer
 bool RendererImpl::showImGui = false;
 std::list<std::function<void()>> RendererImpl::m_imgui_function;
+Model RendererImpl::box = Model();
+Model RendererImpl::sprite = Model();
 void RendererImpl::unload_data() {}
 void RendererImpl::initialize() {
   pxRenderer->initialize();
@@ -59,8 +61,8 @@ void RendererImpl::unload_shader(const Shader &shaderInfo) {
 void *RendererImpl::get_texture_id() { return pxRenderer->get_texture_id(); }
 
 void RendererImpl::setup_shapes() {
-  add_vertex_array(create_box_vertices(), VertexDefaultShapes::box);
-  add_vertex_array(create_sprite_vertices(), VertexDefaultShapes::sprite);
+  box.load_from_vertex_array(create_box_vertices());
+  sprite.load_from_vertex_array(create_sprite_vertices());
 }
 
 void RendererImpl::prepare_imgui() {

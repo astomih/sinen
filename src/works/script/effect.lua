@@ -25,7 +25,6 @@ local function effect()
             self.texture = texture()
             self.texture:fill_color(self.start_color)
             self.drawer = draw3d(self.texture)
-            self.drawer.vertex_name = "BOX"
             for i = 1, self.max_particles do
                 self.worlds[i] = world()
                 self.worlds[i].position = vector3(0, 0, 0)

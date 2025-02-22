@@ -55,6 +55,9 @@ public:
     return pxRenderer;
   }
 
+  static Model box;
+  static Model sprite;
+
 private:
   static std::shared_ptr<class PxRenderer> pxRenderer;
   static void setup_shapes();

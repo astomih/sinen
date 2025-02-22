@@ -3,8 +3,10 @@
 #include "../window/window_system.hpp"
 #include "drawable/instance_data.hpp"
 #include "paranoixa/paranoixa.hpp"
+#include "render/renderer.hpp"
 #include "render_system.hpp"
 #include <SDL3/SDL.h>
+#include <cassert>
 #include <io/data_stream.hpp>
 #include <memory>
 #include <window/window.hpp>
@@ -13,6 +15,7 @@
 #include <imgui_impl_paranoixa.hpp>
 #include <imgui_impl_sdl3.h>
 
+#include "../model/model_data.hpp"
 #include "../texture/texture_data.hpp"
 
 // TODO:
@@ -315,7 +318,7 @@ void PxRenderer::render() {
       commandBuffer->PushVertexUniformData(0, &param,
                                            sizeof(Drawable::parameter));
       renderPass->DrawIndexedPrimitives(
-          this->vertexArrays[drawable.drawable->vertexIndex].indexCount, 1, 0,
+          GetModelData(drawable.drawable->model.data)->v_array.indexCount, 1, 0,
           0, 0);
     }
     renderPass->BindGraphicsPipeline(pipeline3DInstanced);
@@ -329,7 +332,7 @@ void PxRenderer::render() {
       commandBuffer->PushVertexUniformData(0, &param,
                                            sizeof(Drawable::parameter));
       renderPass->DrawIndexedPrimitives(
-          this->vertexArrays[drawable.drawable->vertexIndex].indexCount,
+          GetModelData(drawable.drawable->model.data)->v_array.indexCount,
           drawable.drawable->data.size(), 0, 0, 0);
     }
     commandBuffer->EndRenderPass(renderPass);
@@ -342,17 +345,16 @@ void PxRenderer::render() {
     renderPass->BindGraphicsPipeline(pipeline2D);
     for (int i = 0; i < drawables2D.size(); i++) {
       renderPass->BindFragmentSamplers(0, drawables2D[i].textureSamplers);
-      Array<px::BufferBinding> vertexBuffers{allocator};
-      vertexBuffers.push_back({vertexArrays["SPRITE"].vertexBuffer, 0});
-      renderPass->BindVertexBuffers(0, vertexBuffers);
-      renderPass->BindIndexBuffer({vertexArrays["SPRITE"].indexBuffer, 0},
+      renderPass->BindVertexBuffers(0, drawables2D[i].vertexBuffers);
+      renderPass->BindIndexBuffer(drawables2D[i].indexBuffer,
                                   px::IndexElementSize::Uint32);
 
       auto param = drawables2D[i].drawable->param;
       commandBuffer->PushVertexUniformData(0, &param,
                                            sizeof(Drawable::parameter));
-      renderPass->DrawIndexedPrimitives(vertexArrays["SPRITE"].indexCount, 1, 0,
-                                        0, 0);
+      renderPass->DrawIndexedPrimitives(
+          GetModelData(drawables2D[i].drawable->model.data)->v_array.indexCount,
+          1, 0, 0, 0);
     }
     // Render ImGui
     ImGui_ImplParanoixa_RenderDrawData(draw_data, commandBuffer, renderPass);
@@ -374,12 +376,14 @@ void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
   drawable.textureSamplers.push_back(
       px::TextureSamplerBinding{.sampler = sampler, .texture = texture});
 
-  drawable.vertexBuffers.emplace_back(px::BufferBinding{
-      .buffer = vertexArrays[draw_object->vertexIndex].vertexBuffer,
-      .offset = 0});
-  drawable.indexBuffer = px::BufferBinding{
-      .buffer = vertexArrays[draw_object->vertexIndex].indexBuffer,
-      .offset = 0};
+  auto modelData = GetModelData(draw_object->model.data);
+  assert(modelData->vertexBuffer != nullptr);
+  assert(modelData->indexBuffer != nullptr);
+
+  drawable.vertexBuffers.emplace_back(
+      px::BufferBinding{.buffer = modelData->vertexBuffer, .offset = 0});
+  drawable.indexBuffer =
+      px::BufferBinding{.buffer = modelData->indexBuffer, .offset = 0};
 
   drawables2D.push_back(drawable);
 }
@@ -436,10 +440,10 @@ void PxRenderer::draw3d(const std::shared_ptr<Drawable> draw_object) {
     }
 
     drawable.vertexBuffers.emplace_back(px::BufferBinding{
-        .buffer = vertexArrays[draw_object->vertexIndex].vertexBuffer,
+        .buffer = GetModelData(draw_object->model.data)->vertexBuffer,
         .offset = 0});
     drawable.indexBuffer = px::BufferBinding{
-        .buffer = vertexArrays[draw_object->vertexIndex].indexBuffer,
+        .buffer = GetModelData(draw_object->model.data)->indexBuffer,
         .offset = 0};
     drawable.vertexBuffers.emplace_back(
         px::BufferBinding{.buffer = instanceBuffer, .offset = 0
@@ -449,10 +453,10 @@ void PxRenderer::draw3d(const std::shared_ptr<Drawable> draw_object) {
   } else {
 
     drawable.vertexBuffers.emplace_back(px::BufferBinding{
-        .buffer = vertexArrays[draw_object->vertexIndex].vertexBuffer,
+        .buffer = GetModelData(draw_object->model.data)->vertexBuffer,
         .offset = 0});
     drawable.indexBuffer = px::BufferBinding{
-        .buffer = vertexArrays[draw_object->vertexIndex].indexBuffer,
+        .buffer = GetModelData(draw_object->model.data)->indexBuffer,
         .offset = 0};
     drawables3D.push_back(drawable);
   }
@@ -553,56 +557,7 @@ void PxRenderer::add_vertex_array(const VertexArray &vArray,
 }
 void PxRenderer::update_vertex_array(const VertexArray &vArray,
                                      std::string_view name) {}
-void PxRenderer::add_model(const Model &m) {
-  PxVertexArray vertexArray;
-  vertexArray.indexCount = m.all_indices().size();
-  vertexArray.indices = m.all_indices();
-  vertexArray.vertices = m.all_vertex();
-  vertexArray.materialName = m.v_array.materialName;
-  auto vertexBufferSize = m.all_vertex().size() * sizeof(Vertex);
-
-  px::Buffer::CreateInfo vertexBufferInfo{};
-  vertexBufferInfo.allocator = allocator;
-  vertexBufferInfo.size = vertexBufferSize;
-  vertexBufferInfo.usage = px::BufferUsage::Vertex;
-  vertexArray.vertexBuffer = device->CreateBuffer(vertexBufferInfo);
-
-  px::Buffer::CreateInfo indexBufferInfo{};
-  indexBufferInfo.allocator = allocator;
-  indexBufferInfo.size = m.all_indices().size() * sizeof(uint32_t);
-  indexBufferInfo.usage = px::BufferUsage::Index;
-  vertexArray.indexBuffer = device->CreateBuffer(indexBufferInfo);
-
-  Ptr<px::TransferBuffer> transferBuffer;
-  {
-    px::TransferBuffer::CreateInfo info{};
-    info.allocator = allocator;
-    info.size = vertexBufferSize;
-    info.usage = px::TransferBufferUsage::Upload;
-    transferBuffer = device->CreateTransferBuffer(info);
-    auto *pMapped = transferBuffer->Map(false);
-    memcpy(pMapped, m.all_vertex().data(), vertexBufferSize);
-    transferBuffer->Unmap();
-  }
-  {
-    px::CommandBuffer::CreateInfo info{};
-    info.allocator = allocator;
-    auto commandBuffer = device->AcquireCommandBuffer(info);
-    auto copyPass = commandBuffer->BeginCopyPass();
-    px::BufferTransferInfo src{};
-    src.offset = 0;
-    src.transferBuffer = transferBuffer;
-    px::BufferRegion dst{};
-    dst.offset = 0;
-    dst.size = vertexBufferSize;
-    dst.buffer = vertexArray.vertexBuffer;
-    copyPass->UploadBuffer(src, dst, false);
-    commandBuffer->EndCopyPass(copyPass);
-    device->SubmitCommandBuffer(commandBuffer);
-  }
-  vertexArrays.insert(
-      std::pair<std::string, PxVertexArray>(m.name.data(), vertexArray));
-}
+void PxRenderer::add_model(const Model &m) {}
 void PxRenderer::update_model(const Model &m) {}
 void PxRenderer::load_shader(const Shader &shaderinfo) {}
 void PxRenderer::unload_shader(const Shader &shaderinfo) {}

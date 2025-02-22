@@ -21,9 +21,9 @@ tile:fill_color(color(0.416, 0.204, 0.153, 1))
 local score_font = font()
 local score_texture = texture()
 local score_drawer = draw2d(score_texture)
-tree:load("tree.sim", "tree")
+tree:load("tree.sim")
 local stair_model = model()
-stair_model:load("stair.sim", "stair")
+stair_model:load("stair.sim")
 
 local menu = require("gui/menu")
 local menu_object = menu()
@@ -34,7 +34,7 @@ local equipment_menu = require("gui/equipment_menu")()
 -- key object
 local key = {}
 local key_model = model()
-key_model:load("key.sim", "key")
+key_model:load("key.sim")
 local key_texture = texture()
 key_texture:fill_color(color(1, 1, 1, 1))
 local key_texture_2d = texture()
@@ -48,7 +48,7 @@ local key_drawer = draw3d(key_texture)
 key_drawer.scale = vector3(0.25, 0.25, 0.25)
 key_drawer.position = vector3(0, 0, 1)
 key_drawer.rotation = vector3(90, 0, 0)
-key_drawer.vertex_name = "key"
+key_drawer.model = key_model
 local key_hit = false
 local camera_controller = require("camera_controller")()
 
@@ -61,11 +61,14 @@ map_z:fill(0)
 dts.dungeon_generator(map)
 
 box = draw3d(DEFAULT_TEXTURE)
-box.vertex_name = "tree"
+box.model = tree
+local sprite_model = model()
+sprite_model:load_sprite()
 sprite = draw3d(tile)
 sprite.is_draw_depth = false
+sprite.model = sprite_model
 stair = draw3d(DEFAULT_TEXTURE)
-stair.vertex_name = "stair"
+stair.model = stair_model
 for i = 1, COLLISION_SPACE_DIVISION + 2 do
     COLLISION_SPACE[i] = {}
     for j = 1, COLLISION_SPACE_DIVISION + 2 do

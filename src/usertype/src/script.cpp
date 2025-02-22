@@ -125,8 +125,10 @@ bool script_engine::initialize(sol::state &lua) {
   lua["change_scene"] = [&](const std::string &str) { Scene::change(str); };
   {
     auto v = lua.new_usertype<Model>("", sol::no_construction());
-    v["aabb"] = &Model::local_aabb;
+    v["aabb"] = &Model::aabb;
     v["load"] = &Model::load;
+    v["load_sprite"] = &Model::load_sprite;
+    v["load_box"] = &Model::load_box;
   }
   {
     auto v = lua.new_usertype<AABB>("", sol::no_construction());

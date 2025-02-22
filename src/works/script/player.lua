@@ -65,9 +65,9 @@ local player = {
     end,
     setup = function(self, map, map_size_x, map_size_y)
         self.model = model()
-        self.model:load("triangle.sim", "player")
+        self.model:load("triangle.sim")
         self.drawer = draw3d(DEFAULT_TEXTURE)
-        self.drawer.vertex_name = "player"
+        self.drawer.model = self.model
         self.aabb = aabb()
         self.bullet_time = 0.1
         self.bullet_timer = 0.0
@@ -130,7 +130,7 @@ local player = {
         self.stamina_drawer.position = vector2(0, window.center().y - 20)
         self.stamina_max_drawer.position = vector2(0, window.center().y - 20)
         local p = self.drawer.position:copy()
-        self.aabb:update_world(self.drawer.position, self.drawer.scale, self.model.aabb)
+        self.aabb:update_world(self.drawer.position, self.drawer.scale, self.model:aabb())
         input_vector = calc_input_vector()
         local is_move = input_vector.x ~= 0 or input_vector.y ~= 0
 
@@ -197,7 +197,6 @@ local player = {
                     end
                     local efk = effect()
                     efk:setup()
-                    efk.drawer.vertex_name = "SPRITE"
                     efk.texture:fill_color(color(0.6, 0.6, 1.0, 1.0))
                     efk.impl = function(e)
                         for i = 1, e.max_particles do

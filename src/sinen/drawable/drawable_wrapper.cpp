@@ -1,4 +1,6 @@
 // internal
+#include "../model/model_data.hpp"
+#include "../render/render_system.hpp"
 #include <camera/camera.hpp>
 #include <drawable/drawable_wrapper.hpp>
 #include <render/renderer.hpp>
@@ -43,7 +45,10 @@ void Draw2D::draw() {
   viewproj.mat[1][1] = 2.f / screen_size.y;
   obj->param.proj = viewproj;
   obj->param.view = matrix4::identity;
-  obj->vertexIndex = this->vertex_name;
+  if (GetModelData(this->model.data)->vertexBuffer == nullptr) {
+    obj->model = RendererImpl::sprite;
+  } else
+    obj->model = this->model;
   for (auto &i : worlds) {
     matrix4 t = matrix4::identity;
     t.mat[3][0] = i.position.x;
@@ -76,7 +81,10 @@ void Draw3D::draw() {
   obj->param.world = s * r * t;
   obj->param.proj = Scene::main_camera().projection();
   obj->param.view = Scene::main_camera().view();
-  obj->vertexIndex = this->vertex_name;
+  if (GetModelData(this->model.data)->vertexBuffer == nullptr) {
+    obj->model = RendererImpl::box;
+  } else
+    obj->model = this->model;
   for (auto &i : worlds) {
     matrix4 t = matrix4::create_translation(i.position);
     matrix4 r =

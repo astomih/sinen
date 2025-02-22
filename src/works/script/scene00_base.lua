@@ -20,7 +20,7 @@ tile:fill_color(color(0.416, 0.204, 0.153, 1))
 local score_font = font()
 local score_texture = texture()
 local score_drawer = draw2d(score_texture)
-tree:load("tree.sim", "tree")
+tree:load("tree.sim")
 local stair_texture = texture()
 stair_texture:fill_color(color(1, 0.5, 0.5, 0.5))
 
@@ -51,11 +51,14 @@ map:set(map_size_x / 2 + 1, map_size_y / 2 + 1, MAP_CHIP.PLAYER)
 map:set(2, 2, MAP_CHIP.STAIR)
 
 box = draw3d(DEFAULT_TEXTURE)
-box.vertex_name = "tree"
+box.model = tree
 sprite = draw3d(tile)
 sprite.is_draw_depth = false
+local sprite_model = model()
+sprite_model:load_sprite()
+sprite.model = sprite_model
 stair = draw3d(stair_texture)
-stair.vertex_name = "SPRITE"
+stair.model = sprite_model
 
 for i = 1, COLLISION_SPACE_DIVISION + 2 do
   COLLISION_SPACE[i] = {}

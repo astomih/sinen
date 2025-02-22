@@ -10,16 +10,16 @@ end
 
 local enemy_model = {}
 enemy_model[1] = model()
-enemy_model[1]:load("enemy1.sim", "spider")
+enemy_model[1]:load("enemy1.sim")
 enemy_model[2] = model()
-enemy_model[2]:load("bat.sim", "bat")
+enemy_model[2]:load("bat.sim")
 enemy_model[3] = model()
-enemy_model[3]:load("lizard.sim", "lizard")
+enemy_model[3]:load("lizard.sim")
 enemy_model[4] = model()
-enemy_model[4]:load("frog.sim", "frog")
+enemy_model[4]:load("frog.sim")
 for i = 1, 4 do
-    enemy_model[i].aabb.max.z = 10.0
-    enemy_model[i].aabb.min.z = -10.0
+    enemy_model[i]:aabb().max.z = 10.0
+    enemy_model[i]:aabb().min.z = -10.0
 end
 
 
@@ -55,23 +55,23 @@ local enemy = function()
             self.bfs = bfs_grid(_map)
             self.drawer = draw3d(DEFAULT_TEXTURE)
             if NOW_STAGE == 1 then
-                self.drawer.vertex_name = "spider"
+                self.drawer.model = enemy_model[1]
                 self.drawer.scale = vector3(0.1, 0.1, 0.1)
                 self.model_index = 1
             end
             if NOW_STAGE == 2 then
                 if math.random(0, 1) == 0 then
-                    self.drawer.vertex_name = "bat"
+                    self.drawer.model = enemy_model[2]
                     self.drawer.scale = vector3(0.4, 0.4, 0.4)
                     self.model_index = 2
                 else
-                    self.drawer.vertex_name = "lizard"
+                    self.drawer.model = enemy_model[3]
                     self.drawer.scale = vector3(1, 1, 1)
                     self.model_index = 3
                 end
             end
             if NOW_STAGE == 3 then
-                self.drawer.vertex_name = "frog"
+                self.drawer.model = enemy_model[4]
                 self.drawer.scale = vector3(1, 1, 1)
                 self.model_index = 4
             end
@@ -91,7 +91,7 @@ local enemy = function()
             if length > self.search_length then
                 return
             end
-            self.aabb:update_world(self.drawer.position, self.drawer.scale, enemy_model[self.model_index].aabb)
+            self.aabb:update_world(self.drawer.position, self.drawer.scale, enemy_model[self.model_index]:aabb())
             -- If there is a wall between the player and the enemy, the enemy will not move.
             local start = point2i(
                 self.drawer.position.x / TILE_SIZE,

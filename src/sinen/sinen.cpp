@@ -25,10 +25,11 @@ bool Initialize(int argc, char *argv[]) {
   TTF_Init();
   Mix_Init(MIX_INIT_OGG);
   SDL_AudioSpec desired;
-  desired.freq = 44100;
+  desired.freq = 48000;
   desired.format = MIX_DEFAULT_FORMAT;
   desired.channels = 2;
-  Mix_OpenAudio(44100, &desired);
+  auto devid = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desired);
+  Mix_OpenAudio(devid, &desired);
   WindowImpl::initialize("SinenEngine");
   RendererImpl::initialize();
   if (!sound_system::initialize()) {
@@ -50,7 +51,6 @@ bool Initialize(int argc, char *argv[]) {
   }
   Texture tex;
   tex.fill_color(Palette::light_black());
-  RendererImpl::set_skybox_texture(tex);
   scene_system::initialize();
   return true;
 }

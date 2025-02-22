@@ -15,6 +15,7 @@
 #include <sol/sol.hpp>
 
 #include "register_script.hpp"
+#include "sol/types.hpp"
 #ifdef main
 #undef main
 #endif
@@ -31,10 +32,10 @@ bool script_engine::initialize(sol::state &lua) {
     v["x"] = &Vector3::x;
     v["y"] = &Vector3::y;
     v["z"] = &Vector3::z;
-    v["add"] = &Vector3::add;
-    v["sub"] = &Vector3::sub;
-    v["mul"] = &Vector3::mul;
-    v["div"] = &Vector3::div;
+    v["__add"] = &Vector3::add;
+    v["__sub"] = &Vector3::sub;
+    v["__mul"] = &Vector3::mul;
+    v["__div"] = &Vector3::div;
     v["copy"] = &Vector3::copy;
     v["length"] = &Vector3::length;
     v["forward"] = [](const Vector3 v, const Vector3 rotation) -> Vector3 {
@@ -57,10 +58,10 @@ bool script_engine::initialize(sol::state &lua) {
     auto v = lua.new_usertype<Vector2>("", sol::no_construction());
     v["x"] = &Vector2::x;
     v["y"] = &Vector2::y;
-    v["add"] = &Vector2::add;
-    v["sub"] = &Vector2::sub;
-    v["mul"] = &Vector2::mul;
-    v["div"] = &Vector2::div;
+    v["__add"] = &Vector2::add;
+    v["__sub"] = &Vector2::sub;
+    v["__mul"] = &Vector2::mul;
+    v["__div"] = &Vector2::div;
     v["length"] = &Vector2::length;
     v["normalize"] = [](const Vector2 &v) { return Vector2::normalize(v); };
     v["dot"] = &Vector2::dot;
@@ -125,8 +126,10 @@ bool script_engine::initialize(sol::state &lua) {
   lua["change_scene"] = [&](const std::string &str) { Scene::change(str); };
   {
     auto v = lua.new_usertype<Model>("", sol::no_construction());
-    v["aabb"] = &Model::local_aabb;
+    v["aabb"] = &Model::aabb;
     v["load"] = &Model::load;
+    v["load_sprite"] = &Model::load_sprite;
+    v["load_box"] = &Model::load_box;
   }
   {
     auto v = lua.new_usertype<AABB>("", sol::no_construction());

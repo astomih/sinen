@@ -28,7 +28,7 @@ void register_drawable(sol::state &lua) {
     v["scale"] = &Draw3D::scale;
     v["texture"] = &Draw3D::texture_handle;
     v["draw"] = &Draw3D::draw;
-    v["vertex_name"] = &Draw3D::vertex_name;
+    v["model"] = &Draw3D::model;
     v["is_draw_depth"] = &Draw3D::is_draw_depth;
     v["user_data_at"] = &Draw3D::user_data_at;
     v["add"] = &Draw3D::add;

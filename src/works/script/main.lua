@@ -10,6 +10,14 @@ local menu_object = menu()
 local scene_switcher = require("scene_switcher")()
 local button = require("gui/button")()
 
+local a = vector3(0, 0, 0)
+local b = vector3(1, 2, 3)
+
+local c = a + b
+
+print(c.x, c.y, c.z)
+
+
 scene.resize(vector2(1280, 720))
 window.rename("Sinen Engine")
 SCORE = 0
@@ -29,25 +37,19 @@ font_press:load(DEFAULT_FONT_NAME, 32)
 font_press:render_text(texture_press, "CLICK TO START", color(1, 1, 1, 0.9))
 drawer_press.scale = texture_press:size()
 drawer_press.position = vector2(0, -drawer_title.scale.y * 3.0)
-local skybox_tex = texture()
-skybox_tex:fill_color(color(0.2, 0.2, 0.2, 1))
-set_skybox_texture(skybox_tex)
 scene_switcher:setup()
 scene_switcher:start("")
 renderer.at_render_texture_user_data(0, 0.0)
 
 
-local draw = function()
-end
 
-
-function update()
+function Update()
+    GUI_MANAGER:update()
     if scene_switcher.flag then
-        scene_switcher:update(draw)
+        scene_switcher:update()
         return
     end
     menu_object:update()
-    draw()
     if menu_object.hide then
         font_press:render_text(texture_press, "CLICK TO START", color(1, 1, 1, periodic.sin0_1(2.0, time.seconds())))
         if mouse.is_pressed(mouse.LEFT) then
@@ -56,10 +58,11 @@ function update()
     end
 end
 
-draw = function()
+function Draw()
     drawer_title:draw()
     drawer_press:draw()
     menu_object:draw()
 
-    GUI_MANAGER:update()
+    scene_switcher:draw()
+    GUI_MANAGER:draw()
 end

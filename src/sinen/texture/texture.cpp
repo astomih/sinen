@@ -1,15 +1,24 @@
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
+#include <any>
 #include <cassert>
+#include <d3d10.h>
 #include <io/data_stream.hpp>
 #include <logger/logger.hpp>
 #include <memory>
+#include <optional>
 #include <string_view>
 #include <texture/texture.hpp>
 #include <unordered_map>
 #include <utility/handle_t.hpp>
 
+#include "../render/render_system.hpp"
+#include "texture_data.hpp"
+
+#include <paranoixa/paranoixa.hpp>
+
 namespace sinen {
+
 struct SDLObjectCloser {
   void operator()(::SDL_Surface *surface);
   void operator()(::SDL_IOStream *rw);
@@ -25,33 +34,16 @@ SDL_Surface &get(HandleT handle) {
   return *surf;
 }
 Texture::Texture() {
-  this->handle = create();
-  is_need_update = std::make_shared<bool>(false);
+  auto data = std::make_shared<TextureData>();
+  data->handle = create();
+  data->texture = nullptr;
+  this->textureData = data;
 }
-Texture::Texture(const Texture &other) {
-  if (is_need_update.use_count() == 1) {
-    destroy();
-  }
-  handle = other.handle;
-  is_need_update = other.is_need_update;
-}
-Texture &Texture::operator=(const Texture &other) {
-  if (is_need_update.use_count() == 1) {
-    destroy();
-  }
-  handle = other.handle;
-  is_need_update = other.is_need_update;
-  return *this;
-}
-Texture::~Texture() {
-  if (is_need_update.use_count() == 1) {
-    destroy();
-  }
-}
+Texture::~Texture() {}
 
 bool Texture::load(std::string_view fileName) {
-  *is_need_update = true;
-  auto &surface = get(handle);
+  auto texdata = GetTexData(textureData);
+  auto &surface = get(texdata->handle);
   auto *src_surface = ::IMG_Load_IO(
       (SDL_IOStream *)DataStream::open_as_rwops(AssetType::Texture, fileName),
       0);
@@ -60,11 +52,13 @@ bool Texture::load(std::string_view fileName) {
     return false;
   }
   memcpy(&surface, src_surface, sizeof(SDL_Surface));
+
+  texdata->texture = CreateNativeTexture(texdata->handle);
   return true;
 }
 bool Texture::load_from_memory(std::vector<char> &buffer) {
-  *is_need_update = true;
-  auto &surface = get(handle);
+  auto texdata = GetTexData(textureData);
+  auto &surface = get(texdata->handle);
   auto rw = std::unique_ptr<::SDL_IOStream, SDLObjectCloser>(
       ::SDL_IOFromMem(reinterpret_cast<void *>(buffer.data()), buffer.size()));
   if (!rw) {
@@ -75,43 +69,52 @@ bool Texture::load_from_memory(std::vector<char> &buffer) {
     return false;
   }
   memcpy(&surface, src_surface, sizeof(SDL_Surface));
-
+  texdata->texture = CreateNativeTexture(texdata->handle);
   return true;
 }
 
 void Texture::fill_color(const Color &color) {
-  *is_need_update = true;
-  auto &surface = get(handle);
+  auto texdata = GetTexData(textureData);
+  auto &surface = get(texdata->handle);
   ::SDL_FillSurfaceRect(
       &surface, NULL,
       ::SDL_MapRGBA(SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_RGBA32), nullptr,
                     color.r * 255, color.g * 255, color.b * 255,
                     color.a * 255));
+  if (texdata->texture) {
+    UpdateNativeTexture(texdata->texture, texdata->handle);
+  } else {
+    texdata->texture = CreateNativeTexture(texdata->handle);
+  }
 }
 void Texture::blend_color(const Color &color) {
-  *is_need_update = true;
-  auto &surface = get(handle);
+  auto texdata = GetTexData(textureData);
+  auto &surface = get(texdata->handle);
   SDL_SetSurfaceBlendMode(&surface, SDL_BLENDMODE_BLEND);
   SDL_SetSurfaceColorMod(&surface, color.r * 255, color.g * 255, color.b * 255);
   SDL_SetSurfaceAlphaMod(&surface, color.a * 255);
-  auto *tmp = SDL_CreateSurface(surface.w, surface.h,
-                                SDL_PixelFormat::SDL_PIXELFORMAT_RGBA8888);
-  SDL_BlitSurface(&surface, NULL, (SDL_Surface *)handle, NULL);
+  SDL_BlitSurface(&surface, NULL, (SDL_Surface *)texdata->handle, NULL);
+  if (texdata->texture) {
+    UpdateNativeTexture(texdata->texture, texdata->handle);
+  } else {
+    texdata->texture = CreateNativeTexture(texdata->handle);
+  }
 }
 
 Texture Texture::copy() {
-  auto &src = get(handle);
+  auto texdata = GetTexData(textureData);
+  auto &src = get(texdata->handle);
   Texture dst_texture;
-  auto &dst = get(dst_texture.handle);
+  auto &dst = get(GetTexData(dst_texture.textureData)->handle);
   dst.w = src.w;
   dst.h = src.h;
   SDL_BlitSurface(&src, NULL, &dst, NULL);
-  *dst_texture.is_need_update = true;
+  GetTexData(dst_texture.textureData)->texture = texdata->texture;
   return dst_texture;
 }
 
 Vector2 Texture::size() {
-  auto &surface = get(handle);
+  auto &surface = get(GetTexData(textureData)->handle);
   return Vector2(static_cast<float>(surface.w), static_cast<float>(surface.h));
 }
 
@@ -119,15 +122,6 @@ HandleT Texture::create() {
   auto *surf = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_RGBA8888);
   HandleT handle = reinterpret_cast<HandleT>(surf);
   return handle;
-}
-void Texture::destroy() {
-  if (!handle) {
-    return;
-  }
-  SDL_Surface *surf = reinterpret_cast<SDL_Surface *>(handle);
-  SDL_DestroySurface(surf);
-  surf = nullptr;
-  handle = NULL;
 }
 
 } // namespace sinen

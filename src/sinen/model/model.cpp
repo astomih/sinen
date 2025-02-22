@@ -3,10 +3,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <memory>
 #include <sstream>
 #include <string>
 // internal
+#include "../render/px_renderer.hpp"
 #include "../render/render_system.hpp"
+#include "model_data.hpp"
 #include <io/data_stream.hpp>
 #include <logger/logger.hpp>
 #include <model/model.hpp>
@@ -27,7 +30,11 @@
 namespace sinen {
 enum class load_state { version, vertex, indices };
 
-void Model::load(std::string_view str, std::string_view name) {
+Model::Model() { data = std::make_shared<ModelData>(); };
+void Model::load(std::string_view str) {
+  auto modelData = GetModelData(this->data);
+  auto &local_aabb = modelData->local_aabb;
+  auto &v_array = modelData->v_array;
   std::stringstream data;
   data << DataStream::open_as_string(AssetType::Model, str);
   std::string str_name = str.data();
@@ -144,10 +151,41 @@ void Model::load(std::string_view str, std::string_view name) {
   }
 
   v_array.indexCount = v_array.indices.size();
-  RendererImpl::add_vertex_array(v_array, std::string(name));
+  auto viBuffer = CreateVertexIndexBuffer(v_array);
+  modelData->vertexBuffer = viBuffer.first;
+  modelData->indexBuffer = viBuffer.second;
+}
+
+void Model::load_from_vertex_array(const VertexArray &vArray) {
+  auto modelData = GetModelData(this->data);
+  modelData->v_array = vArray;
+  auto &local_aabb = modelData->local_aabb;
+  for (auto &v : vArray.vertices) {
+    local_aabb._min.x = Math::Min(local_aabb._min.x, v.position.x);
+    local_aabb._min.y = Math::Min(local_aabb._min.y, v.position.y);
+    local_aabb._min.z = Math::Min(local_aabb._min.z, v.position.z);
+    local_aabb._max.x = Math::Max(local_aabb._max.x, v.position.x);
+    local_aabb._max.y = Math::Max(local_aabb._max.y, v.position.y);
+    local_aabb._max.z = Math::Max(local_aabb._max.z, v.position.z);
+  }
+  auto viBuffer = CreateVertexIndexBuffer(vArray);
+  modelData->vertexBuffer = viBuffer.first;
+  modelData->indexBuffer = viBuffer.second;
+}
+
+void Model::load_sprite() { *this = RendererImpl::sprite; }
+void Model::load_box() { *this = RendererImpl::box; }
+
+AABB &Model::aabb() const {
+  auto modelData = GetModelData(this->data);
+  return modelData->local_aabb;
 }
 
 std::vector<Vertex> Model::all_vertex() const {
+  auto modelData = GetModelData(this->data);
+  auto &local_aabb = modelData->local_aabb;
+  auto &v_array = modelData->v_array;
+  auto &children = modelData->children;
   std::vector<Vertex> all;
   all.insert(all.end(), v_array.vertices.begin(), v_array.vertices.end());
   for (auto &child : children) {
@@ -157,6 +195,10 @@ std::vector<Vertex> Model::all_vertex() const {
   return all;
 }
 std::vector<std::uint32_t> Model::all_indices() const {
+  auto modelData = GetModelData(this->data);
+  auto &local_aabb = modelData->local_aabb;
+  auto &v_array = modelData->v_array;
+  auto &children = modelData->children;
   std::vector<std::uint32_t> all;
   all.insert(all.end(), v_array.indices.begin(), v_array.indices.end());
   for (auto &child : children) {
@@ -165,6 +207,98 @@ std::vector<std::uint32_t> Model::all_indices() const {
   }
   return all;
 }
+
+std::pair<px::Ptr<px::Buffer>, px::Ptr<px::Buffer>>
+CreateVertexIndexBuffer(const VertexArray &vArray) {
+  auto allocator = RendererImpl::GetPxRenderer()->GetAllocator();
+  auto device = RendererImpl::GetPxRenderer()->GetDevice();
+  auto vertexBufferSize = vArray.vertices.size() * sizeof(Vertex);
+
+  px::Ptr<px::Buffer> vertexBuffer, indexBuffer;
+  px::Buffer::CreateInfo vertexBufferInfo{};
+  vertexBufferInfo.allocator = allocator;
+  vertexBufferInfo.size = vertexBufferSize;
+  vertexBufferInfo.usage = px::BufferUsage::Vertex;
+  vertexBuffer = device->CreateBuffer(vertexBufferInfo);
+
+  px::Buffer::CreateInfo indexBufferInfo{};
+  indexBufferInfo.allocator = allocator;
+  indexBufferInfo.size = vArray.indices.size() * sizeof(uint32_t);
+  indexBufferInfo.usage = px::BufferUsage::Index;
+  indexBuffer = device->CreateBuffer(indexBufferInfo);
+
+  px::Ptr<px::TransferBuffer> transferBuffer;
+  {
+    {
+      px::TransferBuffer::CreateInfo info{};
+      info.allocator = allocator;
+      info.size = vertexBufferSize;
+      info.usage = px::TransferBufferUsage::Upload;
+      transferBuffer = device->CreateTransferBuffer(info);
+      auto *pMapped = transferBuffer->Map(false);
+      memcpy(pMapped, vArray.vertices.data(), vertexBufferSize);
+      transferBuffer->Unmap();
+    }
+    {
+      px::CommandBuffer::CreateInfo info{};
+      info.allocator = allocator;
+      auto commandBuffer = device->AcquireCommandBuffer(info);
+      {
+
+        auto copyPass = commandBuffer->BeginCopyPass();
+        {
+
+          px::BufferTransferInfo src{};
+          src.offset = 0;
+          src.transferBuffer = transferBuffer;
+          px::BufferRegion dst{};
+          dst.offset = 0;
+          dst.size = vertexBufferSize;
+          dst.buffer = vertexBuffer;
+          copyPass->UploadBuffer(src, dst, false);
+        }
+        commandBuffer->EndCopyPass(copyPass);
+      }
+      device->SubmitCommandBuffer(commandBuffer);
+    }
+  }
+  {
+    px::TransferBuffer::CreateInfo info{};
+    info.allocator = allocator;
+    info.size = indexBufferInfo.size;
+    info.usage = px::TransferBufferUsage::Upload;
+    transferBuffer = device->CreateTransferBuffer(info);
+    auto *pMapped = transferBuffer->Map(false);
+    memcpy(pMapped, vArray.indices.data(), indexBufferInfo.size);
+    transferBuffer->Unmap();
+  }
+  {
+    {
+      px::CommandBuffer::CreateInfo info{};
+      info.allocator = allocator;
+      auto commandBuffer = device->AcquireCommandBuffer(info);
+      {
+
+        auto copyPass = commandBuffer->BeginCopyPass();
+        {
+
+          px::BufferTransferInfo src{};
+          src.offset = 0;
+          src.transferBuffer = transferBuffer;
+          px::BufferRegion dst{};
+          dst.offset = 0;
+          dst.size = indexBufferInfo.size;
+          dst.buffer = indexBuffer;
+          copyPass->UploadBuffer(src, dst, false);
+        }
+        commandBuffer->EndCopyPass(copyPass);
+      }
+      device->SubmitCommandBuffer(commandBuffer);
+    }
+  }
+  return std::make_pair(vertexBuffer, indexBuffer);
+}
+
 } // namespace sinen
 
 namespace tinygltf {

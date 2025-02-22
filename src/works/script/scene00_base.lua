@@ -20,7 +20,7 @@ tile:fill_color(color(0.416, 0.204, 0.153, 1))
 local score_font = font()
 local score_texture = texture()
 local score_drawer = draw2d(score_texture)
-tree:load("tree.sim", "tree")
+tree:load("tree.sim")
 local stair_texture = texture()
 stair_texture:fill_color(color(1, 0.5, 0.5, 0.5))
 
@@ -51,11 +51,14 @@ map:set(map_size_x / 2 + 1, map_size_y / 2 + 1, MAP_CHIP.PLAYER)
 map:set(2, 2, MAP_CHIP.STAIR)
 
 box = draw3d(DEFAULT_TEXTURE)
-box.vertex_name = "tree"
+box.model = tree
 sprite = draw3d(tile)
 sprite.is_draw_depth = false
+local sprite_model = model()
+sprite_model:load_sprite()
+sprite.model = sprite_model
 stair = draw3d(stair_texture)
-stair.vertex_name = "SPRITE"
+stair.model = sprite_model
 
 for i = 1, COLLISION_SPACE_DIVISION + 2 do
   COLLISION_SPACE[i] = {}
@@ -81,9 +84,9 @@ for y = 1, map_size_y do
       map_draw3ds[y][x].position.z = 0
       map_draw3ds[y][x].aabb = aabb()
       map_draw3ds[y][x].aabb.max =
-          map_draw3ds[y][x].position:add(map_draw3ds[y][x].scale)
+          map_draw3ds[y][x].position + map_draw3ds[y][x].scale
       map_draw3ds[y][x].aabb.min =
-          map_draw3ds[y][x].position:sub(map_draw3ds[y][x].scale)
+          map_draw3ds[y][x].position - map_draw3ds[y][x].scale
       map_draw3ds[y][x].scale.z = 3
     end
     if map:at(x, y) == MAP_CHIP.PLAYER then
@@ -103,12 +106,15 @@ score_drawer.scale = score_texture:size()
 score_drawer.position.x = -300
 score_drawer.position.y = 300
 camera_controller:setup(player)
-camera_controller:update()
+camera_controller:update(0.0)
 scene_switcher:setup()
 scene_switcher:start("")
 equipment_menu:setup()
 
-local function draw()
+function Draw()
+  if scene_switcher.flag then
+    return
+  end
   player:draw()
   for i, v in ipairs(enemies) do v:draw() end
   box:clear()
@@ -141,22 +147,22 @@ local function draw()
   stair:draw()
   score_drawer:draw()
   equipment_menu:draw()
-  GUI_MANAGER:update()
   menu_object:draw()
+  scene_switcher:draw()
+  GUI_MANAGER:draw()
 end
 
-function update()
+function Update()
+  GUI_MANAGER:update()
   if scene_switcher.flag then
-    scene_switcher:update(draw)
+    scene_switcher:update()
     return
   end
   menu_object:update()
   if not menu_object.hide then
-    draw()
     return
   end
   if equipment_menu:update() then
-    draw()
     return
   end
   mouse.hide_cursor(true)
@@ -198,5 +204,4 @@ function update()
     player:boost_reset()
   end
   camera_controller:update()
-  draw()
 end

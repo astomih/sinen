@@ -41,12 +41,6 @@ void Renderer::set_clear_color(const Color &color) {
 
 Color Renderer::clear_color() { return RendererImpl::get_clear_color(); }
 
-void Renderer::set_skybox(Texture _skybox_texture) {
-  RendererImpl::set_skybox_texture(_skybox_texture);
-}
-
-Texture Renderer::skybox() { return RendererImpl::get_skybox_texture(); }
-
 void Renderer::toggle_show_imgui() { RendererImpl::toggle_show_imgui(); }
 bool Renderer::is_show_imgui() { return RendererImpl::is_show_imgui(); }
 

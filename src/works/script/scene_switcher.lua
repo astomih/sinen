@@ -12,13 +12,12 @@ local scene_switcher = function()
       self.drawer = draw2d(self.texture)
       self.drawer.scale = window:size()
     end,
-    update = function(self, draw_func)
+    update = function(self)
       self.drawer.scale = window:size()
       if self.flag then
-        draw_func()
         if not self.is_launch then
           if self.timer < self.time then
-            self.timer = self.timer + delta_time
+            self.timer = self.timer + scene.delta_time()
             local t = self.timer * (1.0 / self.time)
             if t > 1.0 then
               t = 1.0
@@ -27,31 +26,30 @@ local scene_switcher = function()
               t = 1.0
             end
             self.texture:fill_color(color(self.color.r, self.color.g, self.color.b, t))
-            self.drawer:draw()
           else
             self.timer = 0
             self.texture:fill_color(color(self.color.r, self.color.g, self.color.b, 1.0))
             self.flag = false
-            self.drawer:draw()
             change_scene(self.scene_name)
           end
         else
           if self.timer > 0.0 then
-            self.timer = self.timer - delta_time
+            self.timer = self.timer - scene.delta_time()
             local t = self.timer * (1.0 / self.time)
             if t < 0.0 then
               t = 0.0
             end
             self.texture:fill_color(color(self.color.r, self.color.g, self.color.b, t))
-            self.drawer:draw()
           else
             self.flag = false
             self.texture:fill_color(color(self.color.r, self.color.g, self.color.b, 0.0))
             self.timer = 0.0
-            self.drawer:draw()
           end
         end
       end
+    end,
+    draw = function(self)
+      self.drawer:draw()
     end,
     start = function(self, scene_name)
       self.is_launch = string.len(scene_name) == 0

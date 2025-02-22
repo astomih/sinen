@@ -4,6 +4,7 @@
 #include "../math/vector3.hpp"
 #include "../texture/texture.hpp"
 #include "drawable.hpp"
+#include "model/model.hpp"
 
 namespace sinen {
 /**
@@ -51,6 +52,7 @@ public:
   Vector2 scale;
   Texture texture_handle;
   std::string vertex_name = "SPRITE";
+  Model model;
   std::shared_ptr<Drawable> obj;
 };
 /**
@@ -92,7 +94,7 @@ public:
   Vector3 scale;
   Texture texture_handle;
   bool is_draw_depth = true;
-  std::string vertex_name = "SPRITE";
+  Model model;
   std::shared_ptr<Drawable> obj;
   struct world {
     Vector3 position;

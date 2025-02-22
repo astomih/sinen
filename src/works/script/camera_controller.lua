@@ -19,7 +19,7 @@ local function camera_controller()
         self.player.drawer.position.z)
     end,
     update = function(self)
-      local t = delta_time * self.track_speed
+      local t = scene.delta_time() * self.track_speed
       local dx = (self.player.drawer.position.x - self.target.x)
       self.position.x = self.position.x + dx * t
       local dy = (self.player.drawer.position.y - self.target.y)

@@ -39,6 +39,9 @@ public:
   void prepare_imgui();
   void *get_texture_id();
 
+  px::Allocator *GetAllocator() { return allocator; }
+  px::Ptr<px::Device> GetDevice() { return device; }
+
 private:
   Ptr<px::Texture> CreateNativeTexture(const HandleT &handle);
   px::Allocator *allocator;
@@ -46,6 +49,7 @@ private:
   Ptr<px::Device> device;
 
   Ptr<px::Texture> depthTexture;
+  Ptr<px::Sampler> sampler;
   Ptr<px::GraphicsPipeline> pipeline2D;
   Ptr<px::GraphicsPipeline> pipeline2DInstanced;
   Ptr<px::GraphicsPipeline> pipeline3D;

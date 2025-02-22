@@ -23,12 +23,14 @@ local function gui_manager()
       return self.textures[self.current_texture_pos - 1]
     end,
     update = function(self)
-      for i = 1, self.current_drawer_pos - 1 do
-        self.drawers[i]:draw()
-      end
       self.current_drawer_pos = 1
       self.current_texture_pos = 1
     end,
+    draw = function(self)
+      for i = 1, self.current_drawer_pos - 1 do
+        self.drawers[i]:draw()
+      end
+    end
   }
   for i = 1, object.max_object do
     object.drawers[i] = draw2d(texture())

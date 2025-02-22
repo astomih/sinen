@@ -25,7 +25,6 @@ void register_table(sol::state &lua) {
   }
   {
     auto v = lua.create_table("renderer");
-    v["set_skybox"] = &Renderer::set_skybox;
     v["clear_color"] = &Renderer::clear_color;
     v["set_clear_color"] = &Renderer::set_clear_color;
     v["at_render_texture_user_data"] = &Renderer::at_render_texture_user_data;
@@ -38,6 +37,7 @@ void register_table(sol::state &lua) {
     v["size"] = &Scene::size;
     v["resize"] = &Scene::resize;
     v["center"] = &Scene::center;
+    v["delta_time"] = &Scene::delta_time;
   }
   {
     auto v = lua.create_table("collision");

@@ -15,19 +15,18 @@ local orbit = function(player)
     efks = {},
     setup = function(self)
       self.model = model()
-      self.model:load("orbit1.sim", "orbit1")
+      self.model:load("orbit1.sim")
       self.texture = DEFAULT_TEXTURE
       self.drawer = draw3d(self.texture)
       self.drawer.scale = vector3(0.125, 0.125, 0.125)
-      self.drawer.vertex_name = "orbit1"
-
+      self.drawer.model = self.model
     end,
     update = function(self, map_draw3ds)
       self.drawer.position = self.owner.drawer.position
       self.drawer.position.x = self.drawer.position.x - 5.0
       self.drawer.position.z = 5.0
       self.drawer.rotation = self.owner.drawer.rotation
-      self.bullet_timer = self.bullet_timer + delta_time
+      self.bullet_timer = self.bullet_timer + scene.delta_time()
       if self.bullet_timer >
           self.bullet_time then
         local b = bullet(map_draw3ds)
@@ -53,7 +52,6 @@ local orbit = function(player)
         v:update()
         if v.is_stop then table.remove(self.efks, i) end
       end
-
     end,
     draw = function(self)
       for i, v in ipairs(self.bullets) do
@@ -63,6 +61,5 @@ local orbit = function(player)
     end
   }
   return object
-
 end
 return orbit

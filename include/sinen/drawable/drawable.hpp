@@ -1,8 +1,10 @@
 #ifndef SINEN_DRAWABLE_HPP
 #define SINEN_DRAWABLE_HPP
+#include "../model/model.hpp"
 #include "../shader/shader.hpp"
 #include "../texture/texture.hpp"
 #include "instance_data.hpp"
+
 
 namespace sinen {
 /**
@@ -48,11 +50,7 @@ struct Drawable {
    *
    */
   Texture binding_texture;
-  /**
-   * @brief Vertex index
-   *
-   */
-  std::string vertexIndex;
+  Model model;
   int drawOrder = 100;
   /**
    * @brief World matrix to instancing data

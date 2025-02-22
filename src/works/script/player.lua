@@ -65,9 +65,9 @@ local player = {
     end,
     setup = function(self, map, map_size_x, map_size_y)
         self.model = model()
-        self.model:load("triangle.sim", "player")
+        self.model:load("triangle.sim")
         self.drawer = draw3d(DEFAULT_TEXTURE)
-        self.drawer.vertex_name = "player"
+        self.drawer.model = self.model
         self.aabb = aabb()
         self.bullet_time = 0.1
         self.bullet_timer = 0.0
@@ -130,20 +130,20 @@ local player = {
         self.stamina_drawer.position = vector2(0, window.center().y - 20)
         self.stamina_max_drawer.position = vector2(0, window.center().y - 20)
         local p = self.drawer.position:copy()
-        self.aabb:update_world(self.drawer.position, self.drawer.scale, self.model.aabb)
+        self.aabb:update_world(self.drawer.position, self.drawer.scale, self.model:aabb())
         input_vector = calc_input_vector()
         local is_move = input_vector.x ~= 0 or input_vector.y ~= 0
 
         if keyboard.is_down(keyboard.LSHIFT) and is_move then
             speed = self.speed_max
-            self.stamina = self.stamina - self.stamina_run_cost * delta_time
+            self.stamina = self.stamina - self.stamina_run_cost * scene.delta_time()
             if self.stamina <= 0.0 then
                 self.stamina = 0.0
                 speed = self.speed_min
             end
         else
             speed = self.speed_min
-            self.stamina = self.stamina + delta_time * self.stamina_recover_speed
+            self.stamina = self.stamina + scene.delta_time() * self.stamina_recover_speed
             if self.stamina > self.stamina_max then
                 self.stamina = self.stamina_max
             end
@@ -163,7 +163,7 @@ local player = {
         if mouse.is_pressed(mouse.LEFT) then
             self.bullet_flag = true
         end
-        self.bullet_timer = self.bullet_timer + delta_time
+        self.bullet_timer = self.bullet_timer + scene.delta_time()
         if self.bullet_flag then
             if self.bullet_timer >
                 self.bullet_time and (mouse.is_down(mouse.LEFT)) then
@@ -186,7 +186,7 @@ local player = {
                 t = t * 0.2
 
                 renderer.at_render_texture_user_data(0, t)
-                self.boost_timer = self.boost_timer + delta_time
+                self.boost_timer = self.boost_timer + scene.delta_time()
             end
         else
             if keyboard.is_pressed(keyboard.SPACE) and is_move then
@@ -197,11 +197,10 @@ local player = {
                     end
                     local efk = effect()
                     efk:setup()
-                    efk.drawer.vertex_name = "SPRITE"
                     efk.texture:fill_color(color(0.6, 0.6, 1.0, 1.0))
                     efk.impl = function(e)
                         for i = 1, e.max_particles do
-                            local t = delta_time * 2
+                            local t = scene.delta_time() * 2
                             e.worlds[i].position.x =
                                 e.worlds[i].position.x + math.cos(i) * t
                             e.worlds[i].position.y =
@@ -253,30 +252,30 @@ local player = {
         end
         if input_vector.y ~= 0 then
             before_pos = self.drawer.position:copy()
-            self.drawer.position = self.drawer.position:add(vector3(0,
+            self.drawer.position = self.drawer.position + vector3(0,
                 input_vector.y *
                 final_speed *
-                delta_time,
-                0))
+                scene.delta_time(),
+                0)
             if is_collision(self, map, map_draw3ds, map_size_x, map_size_y) then
                 self.drawer.position = before_pos
             end
         end
         if input_vector.x ~= 0 then
-            self.drawer.position = self.drawer.position:add(vector3(
+            self.drawer.position = self.drawer.position + vector3(
                 input_vector.x *
                 final_speed *
-                delta_time,
-                0, 0))
+                scene.delta_time(),
+                0, 0)
             if is_collision(self, map, map_draw3ds, map_size_x, map_size_y) then
                 self.drawer.position = before_pos
             end
             before_pos = self.drawer.position:copy()
-            self.drawer.position = self.drawer.position:add(vector3(0,
+            self.drawer.position = self.drawer.position + vector3(0,
                 input_vector.y *
                 final_speed *
-                delta_time,
-                0))
+                scene.delta_time(),
+                0)
             if is_collision(self, map, map_draw3ds, map_size_x, map_size_y) then
                 self.drawer.position = before_pos
             end

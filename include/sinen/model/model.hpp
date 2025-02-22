@@ -6,6 +6,7 @@
 
 #include "../physics/collision.hpp"
 #include "../vertex/vertex_array.hpp"
+#include "physics/primitive3.hpp"
 
 namespace sinen {
 struct Model {
@@ -14,7 +15,7 @@ public:
    * @brief Construct a new model object
    *
    */
-  Model() : parent(nullptr){};
+  Model();
   /**
    * @brief Destroy the model object
    *
@@ -25,17 +26,15 @@ public:
    *
    * @brief Model format is a custom format(.sim)
    * @param str
-   * @param name
    */
-  void load(std::string_view str, std::string_view name);
+  void load(std::string_view str);
+  void load_from_vertex_array(const VertexArray &vArray);
+  void load_sprite();
+  void load_box();
+  AABB &aabb() const;
+  std::shared_ptr<void> data;
   std::vector<Vertex> all_vertex() const;
   std::vector<std::uint32_t> all_indices() const;
-
-  AABB local_aabb;
-  Model *parent;
-  std::vector<Model *> children;
-  std::string name;
-  VertexArray v_array;
 };
 } // namespace sinen
 #endif // !SINEN_MODEL_HPP

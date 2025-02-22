@@ -40,6 +40,7 @@ bool scene_system::is_run_script = true;
 uint32_t scene_system::m_prev_tick = 0;
 bool scene_system::is_reset = true;
 std::string scene_system::m_scene_name = "main";
+float scene_system::deltaTime = 0.f;
 bool scene_system::initialize() { return true; }
 void scene_system::setup() {
   if (is_run_script) {
@@ -91,20 +92,20 @@ void scene_system::update_scene() {
     }
   }
   // calc delta time
-  float delta_time = (SDL_GetTicks() - m_prev_tick) / 1000.0f;
+  deltaTime = (SDL_GetTicks() - m_prev_tick) / 1000.0f;
   constexpr float MAX_DELTA_TIME = 1.f / 60.f;
-  if (delta_time > MAX_DELTA_TIME) {
-    delta_time = MAX_DELTA_TIME;
+  if (deltaTime > MAX_DELTA_TIME) {
+    deltaTime = MAX_DELTA_TIME;
   }
   m_prev_tick = SDL_GetTicks();
 
   if (is_run_script) {
     sol::state *lua = (sol::state *)script_system::get_state();
-    (*lua)["delta_time"] = delta_time;
-    (*lua)["update"]();
+    (*lua)["Update"]();
+    (*lua)["Draw"]();
   }
-  m_impl->update(delta_time);
-  sound_system::update(delta_time);
+  m_impl->update(deltaTime);
+  sound_system::update(deltaTime);
 }
 void scene_system::shutdown() {
   m_impl->terminate();

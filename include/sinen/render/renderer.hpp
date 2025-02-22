@@ -82,18 +82,6 @@ public:
    */
   static Color clear_color();
   /**
-   * @brief Set the skybox object
-   *
-   * @param _skybox_texture
-   */
-  static void set_skybox(Texture _skybox_texture);
-  /**
-   * @brief Get the skybox object
-   *
-   * @return texture
-   */
-  static Texture skybox();
-  /**
    * @brief Toggle show imgui
    *
    */

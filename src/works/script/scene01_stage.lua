@@ -21,9 +21,9 @@ tile:fill_color(color(0.416, 0.204, 0.153, 1))
 local score_font = font()
 local score_texture = texture()
 local score_drawer = draw2d(score_texture)
-tree:load("tree.sim", "tree")
+tree:load("tree.sim")
 local stair_model = model()
-stair_model:load("stair.sim", "stair")
+stair_model:load("stair.sim")
 
 local menu = require("gui/menu")
 local menu_object = menu()
@@ -34,7 +34,7 @@ local equipment_menu = require("gui/equipment_menu")()
 -- key object
 local key = {}
 local key_model = model()
-key_model:load("key.sim", "key")
+key_model:load("key.sim")
 local key_texture = texture()
 key_texture:fill_color(color(1, 1, 1, 1))
 local key_texture_2d = texture()
@@ -48,7 +48,7 @@ local key_drawer = draw3d(key_texture)
 key_drawer.scale = vector3(0.25, 0.25, 0.25)
 key_drawer.position = vector3(0, 0, 1)
 key_drawer.rotation = vector3(90, 0, 0)
-key_drawer.vertex_name = "key"
+key_drawer.model = key_model
 local key_hit = false
 local camera_controller = require("camera_controller")()
 
@@ -61,11 +61,14 @@ map_z:fill(0)
 dts.dungeon_generator(map)
 
 box = draw3d(DEFAULT_TEXTURE)
-box.vertex_name = "tree"
+box.model = tree
+local sprite_model = model()
+sprite_model:load_sprite()
 sprite = draw3d(tile)
 sprite.is_draw_depth = false
+sprite.model = sprite_model
 stair = draw3d(DEFAULT_TEXTURE)
-stair.vertex_name = "stair"
+stair.model = stair_model
 for i = 1, COLLISION_SPACE_DIVISION + 2 do
     COLLISION_SPACE[i] = {}
     for j = 1, COLLISION_SPACE_DIVISION + 2 do
@@ -89,9 +92,9 @@ for y = 1, map_size_y do
         if map:at(x, y) == MAP_CHIP.WALL then
             map_draw3ds[y][x].aabb = aabb()
             map_draw3ds[y][x].aabb.max =
-                map_draw3ds[y][x].position:add(map_draw3ds[y][x].scale)
+                map_draw3ds[y][x].position + map_draw3ds[y][x].scale
             map_draw3ds[y][x].aabb.min =
-                map_draw3ds[y][x].position:sub(map_draw3ds[y][x].scale)
+                map_draw3ds[y][x].position - map_draw3ds[y][x].scale
             map_z:set(x, y, 0)
             map_draw3ds[y][x].position.z = map_z:at(x, y) / 10.0
             map_draw3ds[y][x].scale.z = 3
@@ -122,7 +125,7 @@ scene_switcher:start("")
 
 equipment_menu:setup()
 
-local function draw()
+function Draw()
     player:draw()
     local px = math.floor(camera_controller.target.x / TILE_SIZE + 0.5)
     local py = math.floor(camera_controller.target.y / TILE_SIZE + 0.5)
@@ -167,14 +170,16 @@ local function draw()
     end
     score_drawer:draw()
     equipment_menu:draw()
-    GUI_MANAGER:update()
     menu_object:draw()
+    scene_switcher:draw()
+    GUI_MANAGER:draw()
 end
 
 local function collision_bullets(_bullets)
 end
 
-function update()
+function Update()
+    GUI_MANAGER:update()
     local ratio = vector2(window.size().x / scene.size().x, window.size().y / scene.size().y)
     score_drawer.position = vector2(-300 * ratio.x, 300 * ratio.y)
     if scene_switcher.flag then
@@ -183,15 +188,14 @@ function update()
     end
     menu_object:update()
     if not menu_object.hide then
-        draw()
         return
     end
     if equipment_menu:update() then
-        draw()
         return
     end
+
     mouse.hide_cursor(true)
-    key_drawer.rotation.y = key_drawer.rotation.y + delta_time * 100
+    key_drawer.rotation.y = key_drawer.rotation.y + scene.delta_time() * 100
     score_font:render_text(score_texture, "SCORE: " .. SCORE,
         color(1, 1, 1, 1))
     score_drawer.scale = score_texture:size()
@@ -225,7 +229,6 @@ function update()
         scene_switcher:start("scene03_gameover")
     end
     camera_controller:update()
-    draw()
 end
 
 collision_bullets = function(_bullets)

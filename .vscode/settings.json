@@ -1,0 +1,10 @@
+{
+  "Lua.diagnostics.globals": [
+    "texture",
+    "draw2d",
+    "font",
+    "color",
+    "periodic",
+    "time"
+  ]
+}

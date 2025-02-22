@@ -29,15 +29,18 @@ hello_drawer = draw2d(hello_texture)
 hello_font = font()
 -- Load a font from file(96px)
 hello_font:load("mplus/mplus-1p-medium.ttf", 96)
--- Render text to texture
-hello_font:render_text(hello_texture, "Hello Sinen World!",
-    color(1, 1, 1, 1))
--- Set scale to texture size
-hello_drawer.scale = hello_texture:size()
 
-function update()
-    -- Draw
-    hello_drawer:draw()
+function Update()
+  -- Render text to texture with blinking
+  hello_font:render_text(hello_texture, "Hello Sinen World!",
+    color(1, 1, 1, periodic.sin0_1(1.0, time.seconds())))
+  -- Set scale to texture size
+  hello_drawer.scale = hello_texture:size()
+end
+
+function Draw()
+  -- Draw texture
+  hello_drawer:draw()
 end
 
 ```

@@ -9,6 +9,7 @@
 // internal
 #include "../render/px_renderer.hpp"
 #include "../render/render_system.hpp"
+#include "io/asset_type.hpp"
 #include "model_data.hpp"
 #include <io/data_stream.hpp>
 #include <logger/logger.hpp>
@@ -94,55 +95,64 @@ void Model::load(std::string_view str) {
     tinygltf::TinyGLTF gltf_ctx;
     std::string err;
     std::string warn;
-    bool ret = gltf_ctx.LoadASCIIFromString(
-        &gltf_model, &err, &warn, data.str().c_str(), data.str().size(), "", 0);
-    if (!warn.empty()) {
-      Logger::warn(warn);
+    if (str_name.ends_with(".gltf")) {
+      auto baseDir = DataStream::convert_file_path(AssetType::Model, "");
+      bool ret = gltf_ctx.LoadASCIIFromString(
+          &gltf_model, &err, &warn, data.str().c_str(), data.str().size(),
+          baseDir.data(), 0);
+      if (!warn.empty()) {
+        Logger::warn(warn);
+      }
+      if (!err.empty()) {
+        Logger::error(err);
+      }
+      if (!ret) {
+        Logger::error("Failed to parse glTF");
+      }
     }
-    if (!err.empty()) {
-      Logger::error(err);
+    if (str_name.ends_with(".glb")) {
+      bool ret = gltf_ctx.LoadBinaryFromFile(
+          &gltf_model, &err, &warn,
+          DataStream::convert_file_path(AssetType::Model, str_name));
+      if (!warn.empty()) {
+        Logger::warn(warn);
+      }
+      if (!err.empty()) {
+        Logger::error(err);
+      }
+      if (!ret) {
+        Logger::error("Failed to parse glTF");
+      }
     }
-    if (!ret) {
-      Logger::error("Failed to parse glTF");
-    }
-
-    v_array.vertices.clear();
-    v_array.indices.clear();
-    v_array.indexCount = 0;
 
     for (auto &mesh : gltf_model.meshes) {
       for (auto &primitive : mesh.primitives) {
         // Vertices
-        auto &accessor = gltf_model.accessors[primitive.attributes["POSITION"]];
-        auto &bufferView =
-            gltf_model.bufferViews[accessor.bufferView]; // TODO: check
-        auto &buffer = gltf_model.buffers[bufferView.buffer];
-        auto data_ptr = buffer.data.data() + bufferView.byteOffset +
-                        accessor.byteOffset; // TODO: check
-        auto data_size = accessor.count * accessor.ByteStride(bufferView);
-        auto data = reinterpret_cast<float *>(data_ptr);
-        for (int i = 0; i < accessor.count; i++) {
-          Vertex v;
-          v.position = Vector3(data[0], data[1], data[2]);
-          v_array.vertices.push_back(v);
-          data += accessor.ByteStride(bufferView) / sizeof(float);
+        {
+          auto &accessor =
+              gltf_model.accessors[primitive.attributes["POSITION"]];
+          auto &bufferView = gltf_model.bufferViews[accessor.bufferView];
+          auto &buffer = gltf_model.buffers[bufferView.buffer];
+          const float *positions = reinterpret_cast<const float *>(
+              &buffer.data[bufferView.byteOffset + accessor.byteOffset]);
+          for (size_t i = 0; i < accessor.count; ++i) {
+            v_array.vertices.push_back(
+                Vertex{Vector3(positions[3 * i + 0], positions[3 * i + 1],
+                               positions[3 * i + 2])});
+          }
         }
 
         // Indices
-        auto &indices_accessor = gltf_model.accessors[primitive.indices];
-        auto &indices_bufferView =
-            gltf_model.bufferViews[indices_accessor.bufferView]; // TODO: check
-        auto &indices_buffer =
-            gltf_model.buffers[indices_bufferView.buffer]; // TODO: check
-        auto indices_data_ptr = indices_buffer.data.data() +
-                                indices_bufferView.byteOffset +
-                                indices_accessor.byteOffset; // TODO: check
-        auto indices_data_size =
-            indices_accessor.count *
-            indices_accessor.ByteStride(indices_bufferView);
-        auto indices_data = reinterpret_cast<std::uint32_t *>(indices_data_ptr);
-        for (int i = 0; i < indices_accessor.count; i++) {
-          v_array.indices.push_back(indices_data[i]);
+        {
+          auto &accessor = gltf_model.accessors[primitive.indices];
+          auto buffer_view = gltf_model.bufferViews[accessor.bufferView];
+          auto buffer = gltf_model.buffers[buffer_view.buffer];
+          const unsigned short *indices_data_fromgltf =
+              reinterpret_cast<const unsigned short *>(
+                  &buffer.data[buffer_view.byteOffset + accessor.byteOffset]);
+          for (size_t i = 0; i < accessor.count; ++i) {
+            v_array.indices.push_back(indices_data_fromgltf[i]);
+          }
         }
       }
     }

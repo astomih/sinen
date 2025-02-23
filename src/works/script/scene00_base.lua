@@ -106,7 +106,7 @@ score_drawer.scale = score_texture:size()
 score_drawer.position.x = -300
 score_drawer.position.y = 300
 camera_controller:setup(player)
-camera_controller:update(0.0)
+camera_controller:update()
 scene_switcher:setup()
 scene_switcher:start("")
 equipment_menu:setup()

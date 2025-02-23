@@ -5,6 +5,20 @@
     "font",
     "color",
     "periodic",
-    "time"
-  ]
+    "time",
+    "draw3d",
+    "model",
+    "aabb",
+    "mouse",
+    "grid",
+    "vector3",
+    "vector2",
+    "scene",
+    "window",
+    "collision",
+    "sound",
+    "keyboard",
+    "renderer"
+  ],
+  "Lua.completion.autoRequire": false
 }

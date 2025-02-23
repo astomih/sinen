@@ -282,6 +282,19 @@ void PxRenderer::render() {
     drawables2D.clear();
     return;
   }
+  if (WindowImpl::resized()) {
+    px::Texture::CreateInfo depthStencilInfo{};
+    depthStencilInfo.allocator = allocator;
+    depthStencilInfo.width = Window::size().x;
+    depthStencilInfo.height = Window::size().y;
+    depthStencilInfo.layerCountOrDepth = 1;
+    depthStencilInfo.type = px::TextureType::Texture2D;
+    depthStencilInfo.usage = px::TextureUsage::DepthStencilTarget;
+    depthStencilInfo.format = px::TextureFormat::D32_FLOAT_S8_UINT;
+    depthStencilInfo.numLevels = 1;
+    depthStencilInfo.sampleCount = px::SampleCount::x1;
+    depthTexture = device->CreateTexture(depthStencilInfo);
+  }
   colorTargets.push_back(px::ColorTargetInfo{
       .texture = swapchainTexture,
       .loadOp = px::LoadOp::Clear,
@@ -314,6 +327,7 @@ void PxRenderer::render() {
         commandBuffer->BeginRenderPass(colorTargets, depthStencilInfo);
     renderPass->SetViewport(
         px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
+    renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
     renderPass->BindGraphicsPipeline(pipeline3D);
     for (auto &drawable : drawables3D) {
       renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
@@ -349,6 +363,9 @@ void PxRenderer::render() {
 
     colorTargets[0].loadOp = px::LoadOp::Load;
     auto renderPass = commandBuffer->BeginRenderPass(colorTargets, {});
+    renderPass->SetViewport(
+        px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
+    renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
     renderPass->BindGraphicsPipeline(pipeline2D);
     for (int i = 0; i < drawables2D.size(); i++) {
       renderPass->BindFragmentSamplers(0, drawables2D[i].textureSamplers);

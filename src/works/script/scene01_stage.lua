@@ -180,10 +180,9 @@ end
 
 function Update()
     GUI_MANAGER:update()
-    local ratio = vector2(window.size().x / scene.size().x, window.size().y / scene.size().y)
-    score_drawer.position = vector2(-300 * ratio.x, 300 * ratio.y)
+    score_drawer.position = vector2(-300, 300)
     if scene_switcher.flag then
-        scene_switcher:update(draw)
+        scene_switcher:update()
         return
     end
     menu_object:update()

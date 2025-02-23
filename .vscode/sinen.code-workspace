@@ -87,7 +87,7 @@
 				"name": "Launch works vs2022",
 				"program": "${workspaceFolder}/build/vs2022/src/works/debug/works",
 				"args": [],
-				"cwd": "${workspaceFolder}/examples/02_texture"
+				"cwd": "${workspaceFolder}/src/works"
 			},
 			{
 				"type": "cppvsdbg",

@@ -44,6 +44,7 @@ local player = {
     efks = {},
     tex_scope = {},
     drawer_scope = {},
+    big_scope = {},
     drawer_scope_big = {},
     is_shot = true,
     boost = 0.0,
@@ -114,12 +115,12 @@ local player = {
         self.hp_drawer.position.y = 300
         self.tex_scope = texture()
         self.tex_scope:load("scope.png")
-        local big_scope = texture()
-        big_scope:load("scope_big.png")
+        self.big_scope = texture()
+        self.big_scope:load("scope_big.png")
         self.drawer_scope = draw2d(self.tex_scope)
-        self.drawer_scope_big = draw2d(big_scope)
+        self.drawer_scope_big = draw2d(self.big_scope)
         self.drawer_scope.scale = self.tex_scope:size()
-        self.drawer_scope_big.scale = vector2(big_scope:size().x * 2, big_scope:size().y * 2)
+        self.drawer_scope_big.scale = vector2(self.big_scope:size().x * 2, self.big_scope:size().y * 2)
         self.boost_sound = sound()
         self.boost_sound:load("boost.wav")
         self.boost_sound:set_volume(0.2)
@@ -127,8 +128,6 @@ local player = {
     horizontal = math.pi,
     vertical = 0.0,
     update = function(self, map, map_draw3ds, map_size_x, map_size_y)
-        self.stamina_drawer.position = vector2(0, window.center().y - 20)
-        self.stamina_max_drawer.position = vector2(0, window.center().y - 20)
         local p = self.drawer.position:copy()
         self.aabb:update_world(self.drawer.position, self.drawer.scale, self.model:aabb())
         input_vector = calc_input_vector()
@@ -288,6 +287,9 @@ local player = {
         local x = self.drawer_scope.position.x
         local y = self.drawer_scope.position.y
         local d = self.drawer_scope.position:length()
+        local ratio = scene.ratio()
+        self.drawer_scope_big.scale = vector2(self.big_scope:size().x * 2 * ratio.x, self.big_scope:size().y * 2 *
+            ratio.y)
         if d > r then
             local r_prime = r / d - 0.01
             x = x * r_prime

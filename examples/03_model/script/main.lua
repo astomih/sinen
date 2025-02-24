@@ -8,16 +8,16 @@ hello_drawer.position = vector3(0, 0, 0)
 hello_drawer.model = hello_model
 
 
-local pos = vector3(1, 1, 1)
+local pos = vector3(1, 1, 3)
 local speed = 0.1
 
 function Update()
   if keyboard.is_down(keyboard.W) then
-    pos.z = pos.z + speed
+    pos.z = pos.z - speed
   end
 
   if keyboard.is_down(keyboard.S) then
-    pos.z = pos.z - speed
+    pos.z = pos.z + speed
   end
 
   if keyboard.is_down(keyboard.A) then
@@ -35,8 +35,6 @@ function Update()
   if keyboard.is_down(keyboard.LSHIFT) then
     pos.y = pos.y - speed
   end
-
-  print(pos.x, pos.y, pos.z)
 
   scene.main_camera():lookat(pos, vector3(0, 0, 0), vector3(0, 1, 0))
 end

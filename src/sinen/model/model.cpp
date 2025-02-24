@@ -129,16 +129,39 @@ void Model::load(std::string_view str) {
       for (auto &primitive : mesh.primitives) {
         // Vertices
         {
-          auto &accessor =
+          auto &positionAccessor =
               gltf_model.accessors[primitive.attributes["POSITION"]];
-          auto &bufferView = gltf_model.bufferViews[accessor.bufferView];
-          auto &buffer = gltf_model.buffers[bufferView.buffer];
+          auto &positionBufferView =
+              gltf_model.bufferViews[positionAccessor.bufferView];
+          auto &positionBuffer = gltf_model.buffers[positionBufferView.buffer];
           const float *positions = reinterpret_cast<const float *>(
-              &buffer.data[bufferView.byteOffset + accessor.byteOffset]);
-          for (size_t i = 0; i < accessor.count; ++i) {
-            v_array.vertices.push_back(
-                Vertex{Vector3(positions[3 * i + 0], positions[3 * i + 1],
-                               positions[3 * i + 2])});
+              &positionBuffer.data[positionBufferView.byteOffset +
+                                   positionAccessor.byteOffset]);
+
+          auto &normalAccessor =
+              gltf_model.accessors[primitive.attributes["NORMAL"]];
+          auto &normalBufferView =
+              gltf_model.bufferViews[normalAccessor.bufferView];
+          auto &normalBuffer = gltf_model.buffers[normalBufferView.buffer];
+          const float *normals = reinterpret_cast<const float *>(
+              &normalBuffer.data[normalBufferView.byteOffset +
+                                 normalAccessor.byteOffset]);
+
+          auto &uvAccessor =
+              gltf_model.accessors[primitive.attributes["TEXCOORD_0"]];
+          auto &uvBufferView = gltf_model.bufferViews[uvAccessor.bufferView];
+          auto &uvBuffer = gltf_model.buffers[uvBufferView.buffer];
+          const float *uvs = reinterpret_cast<const float *>(
+              &uvBuffer.data[uvBufferView.byteOffset + uvAccessor.byteOffset]);
+
+          for (size_t i = 0; i < positionAccessor.count; ++i) {
+            v_array.vertices.push_back(Vertex{
+                .position = Vector3(positions[3 * i + 0], positions[3 * i + 1],
+                                    positions[3 * i + 2]),
+                .normal = Vector3(normals[3 * i + 0], normals[3 * i + 1],
+                                  normals[3 * i + 2]),
+                .uv = Vector2(uvs[2 * i + 0], uvs[2 * i + 1]),
+            });
           }
         }
 

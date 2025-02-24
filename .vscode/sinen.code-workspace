@@ -87,7 +87,7 @@
 				"name": "Launch works vs2022",
 				"program": "${workspaceFolder}/build/vs2022/src/works/debug/works",
 				"args": [],
-				"cwd": "${workspaceFolder}/src/works"
+				"cwd": "${workspaceFolder}/examples/04_sound"
 			},
 			{
 				"type": "cppvsdbg",

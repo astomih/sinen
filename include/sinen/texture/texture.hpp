@@ -4,7 +4,6 @@
 
 #include "../color/color.hpp"
 #include "../math/matrix4.hpp"
-#include "../utility/handle_t.hpp"
 #include "../vertex/vertex.hpp"
 #include <memory>
 #include <string>
@@ -58,9 +57,6 @@ public:
   Vector2 size();
 
   std::shared_ptr<void> textureData;
-
-private:
-  HandleT create();
 };
 } // namespace sinen
 #endif // !SINEN_TEXTURE_HPP

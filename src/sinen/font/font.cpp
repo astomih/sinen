@@ -60,23 +60,19 @@ void Font::render_text(Texture &tex, std::string_view text,
     return;
   }
   auto *ttf_font = reinterpret_cast<::TTF_Font *>(m_font);
-  auto *surface =
+  auto *pSurface =
       (::TTF_RenderText_Blended_Wrapped(ttf_font, std::string(text).c_str(),
                                         std::string(text).size(), sdlColor, 0));
-  assert(surface != nullptr && "Failed to render text");
+  assert(pSurface != nullptr && "Failed to render text");
   auto texdata = GetTexData(tex.textureData);
-  SDL_Surface *handle = reinterpret_cast<SDL_Surface *>(texdata->handle);
-  // swap
-  {
-    SDL_Surface tmp = *handle;
-    *handle = *surface;
-    *surface = tmp;
-  }
-  if (texdata->texture && handle->w == surface->w && handle->h == surface->h) {
-    UpdateNativeTexture(texdata->texture, texdata->handle);
+  SDL_Surface *temp = (texdata->pSurface);
+  bool isUpdate = temp->w == pSurface->w && temp->h == pSurface->h;
+  texdata->pSurface = pSurface;
+  if (texdata->texture && isUpdate) {
+    UpdateNativeTexture(texdata->texture, pSurface);
   } else {
-    texdata->texture = CreateNativeTexture(texdata->handle);
+    texdata->texture = CreateNativeTexture(pSurface);
   }
-  SDL_DestroySurface(surface);
+  SDL_DestroySurface(temp);
 }
 } // namespace sinen

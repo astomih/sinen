@@ -3,11 +3,11 @@ local font_clear = {}
 local drawer_clear = {}
 local scene_switcher = require("scene_switcher")()
 NOW_STAGE = 1
-texture_clear = texture()
-drawer_clear = draw2d(texture_clear)
-font_clear = font()
+texture_clear = Texture()
+drawer_clear = Draw2D(texture_clear)
+font_clear = Font()
 font_clear:load(DEFAULT_FONT_NAME, 64)
-font_clear:render_text(texture_clear, "STAGE CLEAR", color(1, 1, 1, 1))
+font_clear:render_text(texture_clear, "STAGE CLEAR", Color(1, 1, 1, 1))
 drawer_clear.scale = texture_clear:size()
 scene_switcher:setup()
 scene_switcher:start("")

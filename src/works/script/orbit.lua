@@ -14,11 +14,11 @@ local orbit = function(player)
     efk = {},
     efks = {},
     setup = function(self)
-      self.model = model()
+      self.model = Model()
       self.model:load("orbit1.sim")
       self.texture = DEFAULT_TEXTURE
-      self.drawer = draw3d(self.texture)
-      self.drawer.scale = vector3(0.125, 0.125, 0.125)
+      self.drawer = Draw3D(self.texture)
+      self.drawer.scale = Vector3(0.125, 0.125, 0.125)
       self.drawer.model = self.model
     end,
     update = function(self, map_draw3ds)

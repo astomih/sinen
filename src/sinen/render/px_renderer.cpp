@@ -120,8 +120,7 @@ px::VertexInputState CreateVertexInputState(px::Allocator *allocator,
 PxRenderer::PxRenderer(px::Allocator *allocator)
     : allocator(allocator), drawables2D(allocator),
       drawables2DInstanced(allocator), drawables3DInstanced(allocator),
-      drawables3D(allocator), vertexArrays(allocator),
-      textureSamplers(allocator) {}
+      drawables3D(allocator), vertexArrays(allocator) {}
 void PxRenderer::initialize() {
   backend = px::Paranoixa::CreateBackend(allocator, px::GraphicsAPI::SDLGPU);
   px::Device::CreateInfo info{};
@@ -267,7 +266,6 @@ void PxRenderer::shutdown() {
   this->drawables3D.clear();
   this->drawables3DInstanced.clear();
   this->vertexArrays.clear();
-  this->textureSamplers.clear();
   this->device.reset();
   this->backend.reset();
 }

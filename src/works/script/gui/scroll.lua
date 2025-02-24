@@ -11,16 +11,14 @@ local function scroll()
     prev_mpos = {},
     t1 = {},
     t2 = {},
-    pos = nil,
+    pos = Vector2(0, 0),
     is_drag = false,
     show = function(self, pos, scale)
-      self.drawer = draw2d(self.t2)
-      self.drawer.scale = vector2(scale.x, scale.y * 0.1)
-      if self.pos == nil then
-        self.pos = vector2(pos.x, pos.y)
-      end
+      self.drawer = Draw2D(self.t2)
+      self.drawer.scale = Vector2(scale.x, scale.y * 0.1)
+      self.pos = Vector2(pos.x, pos.y)
       self.drawer.position = self.pos
-      self.max_drawer = draw2d(self.t1)
+      self.max_drawer = Draw2D(self.t1)
       self.max_drawer.scale = scale
       self.max_drawer.position = pos
       -- Mouse
@@ -55,18 +53,18 @@ local function scroll()
           v.y = mpos.y + v.y
         end
       end
-      self.prev_mpos = vector2(mpos.x, mpos.y)
+      self.prev_mpos = Vector2(mpos.x, mpos.y)
       self.positions = {}
       self.current_pos = 1
       GUI_MANAGER:add(self.drawer)
       GUI_MANAGER:add(self.max_drawer)
     end,
   }
-  object.drawer = draw2d(texture())
-  object.t1 = texture()
-  object.t1:fill_color(color(0, 0, 0, 0.5))
-  object.t2 = texture()
-  object.t2:fill_color(color(1, 1, 1, 0.5))
+  object.drawer = Draw2D(Texture())
+  object.t1 = Texture()
+  object.t1:fill_color(Color(0, 0, 0, 0.5))
+  object.t2 = Texture()
+  object.t2:fill_color(Color(1, 1, 1, 0.5))
 
   return object
 end

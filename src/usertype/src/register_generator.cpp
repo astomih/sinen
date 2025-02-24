@@ -9,6 +9,7 @@
 #include <render/renderer.hpp>
 #include <script/script.hpp>
 #include <sol/sol.hpp>
+#include <time/timer.hpp>
 
 #include "register_script.hpp"
 
@@ -19,23 +20,24 @@ void register_generator(sol::state &v) {
     return v.require_script(
         str, DataStream::open_as_string(AssetType::Script, str + ".lua"));
   };
-  v["texture"] = []() -> Texture { return Texture(); };
-  v["font"] = []() -> Font { return Font(); };
-  v["vector3"] = [](float x, float y, float z) -> Vector3 {
+  v["Texture"] = []() -> Texture { return Texture(); };
+  v["Font"] = []() -> Font { return Font(); };
+  v["Vector3"] = [](float x, float y, float z) -> Vector3 {
     return Vector3(x, y, z);
   };
-  v["vector2"] = [](float x, float y) -> Vector2 { return Vector2(x, y); };
-  v["point2i"] = [](int x, int y) -> Point2i { return Point2i(x, y); };
-  v["point2f"] = [](float x, float y) -> Point2f { return Point2f(x, y); };
-  v["quaternion"] = [](sol::this_state s) -> Quaternion {
+  v["Vector2"] = [](float x, float y) -> Vector2 { return Vector2(x, y); };
+  v["Point2i"] = [](int x, int y) -> Point2i { return Point2i(x, y); };
+  v["Point2f"] = [](float x, float y) -> Point2f { return Point2f(x, y); };
+  v["Quaternion"] = [](sol::this_state s) -> Quaternion {
     return Quaternion();
   };
-  v["color"] = [](float r, float g, float b, float a) -> Color {
+  v["Color"] = [](float r, float g, float b, float a) -> Color {
     return Color(r, g, b, a);
   };
-  v["model"] = []() -> Model { return Model(); };
-  v["music"] = []() -> Music { return Music(); };
-  v["sound"] = []() -> Sound { return Sound(); };
-  v["aabb"] = []() -> AABB { return AABB(); };
+  v["Model"] = []() -> Model { return Model(); };
+  v["Music"] = []() -> Music { return Music(); };
+  v["Sound"] = []() -> Sound { return Sound(); };
+  v["AABB"] = []() -> AABB { return AABB(); };
+  v["Timer"] = []() -> Timer { return Timer(); };
 }
 } // namespace sinen

@@ -43,7 +43,6 @@ public:
   px::Ptr<px::Device> GetDevice() { return device; }
 
 private:
-  Ptr<px::Texture> CreateNativeTexture(const HandleT &handle);
   px::Allocator *allocator;
   Ptr<px::Backend> backend;
   Ptr<px::Device> device;
@@ -60,7 +59,6 @@ private:
   px::Array<PxDrawable> drawables3D;
   px::Array<PxDrawable> drawables3DInstanced;
   px::HashMap<std::string, PxVertexArray> vertexArrays;
-  px::HashMap<HandleT, px::TextureSamplerBinding> textureSamplers;
 };
 } // namespace sinen
 

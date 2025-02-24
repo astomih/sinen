@@ -1,23 +1,15 @@
 #include "texture_data.hpp"
 #include "../render/px_renderer.hpp"
 #include "../render/render_system.hpp"
+#include "SDL3/SDL_pixels.h"
 #include <SDL3/SDL.h>
 namespace sinen {
-TextureData::~TextureData() {
-  SDL_Surface *surf = reinterpret_cast<SDL_Surface *>(handle);
-  SDL_DestroySurface(surf);
-}
+TextureData::~TextureData() { SDL_DestroySurface(pSurface); }
 template <typename T> using Ptr = px::Ptr<T>;
-Ptr<px::Texture> CreateNativeTexture(const HandleT &handle) {
-  assert(handle);
+Ptr<px::Texture> CreateNativeTexture(SDL_Surface *pSurface) {
   auto allocator = RendererImpl::GetPxRenderer()->GetAllocator();
   auto device = RendererImpl::GetPxRenderer()->GetDevice();
-  SDL_Surface *pSurface = reinterpret_cast<SDL_Surface *>(handle);
-  SDL_Surface &surface = *pSurface;
-  ::SDL_LockSurface(&surface);
-  auto *pFormat = ::SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_RGBA8888);
-  auto *pImageDataSurface = ::SDL_ConvertSurface(&surface, pFormat->format);
-  ::SDL_UnlockSurface(&surface);
+  auto *pImageDataSurface = ::SDL_ConvertSurface(pSurface, pSurface->format);
 
   Ptr<px::TransferBuffer> transferBuffer;
   int width = pImageDataSurface->w, height = pImageDataSurface->h;
@@ -69,15 +61,10 @@ Ptr<px::Texture> CreateNativeTexture(const HandleT &handle) {
   SDL_DestroySurface(pImageDataSurface);
   return texture;
 }
-void UpdateNativeTexture(Ptr<px::Texture> texture, const HandleT &handle) {
+void UpdateNativeTexture(Ptr<px::Texture> texture, SDL_Surface *pSurface) {
   auto allocator = RendererImpl::GetPxRenderer()->GetAllocator();
   auto device = RendererImpl::GetPxRenderer()->GetDevice();
-  SDL_Surface *pSurface = reinterpret_cast<SDL_Surface *>(handle);
-  SDL_Surface &surface = *pSurface;
-  ::SDL_LockSurface(&surface);
-  auto *pFormat = ::SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_RGBA8888);
-  auto *pImageDataSurface = ::SDL_ConvertSurface(&surface, pFormat->format);
-  ::SDL_UnlockSurface(&surface);
+  auto *pImageDataSurface = ::SDL_ConvertSurface(pSurface, pSurface->format);
 
   Ptr<px::TransferBuffer> transferBuffer;
   int width = pImageDataSurface->w, height = pImageDataSurface->h;

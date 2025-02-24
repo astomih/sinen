@@ -1,8 +1,7 @@
-local m = model()
-local sound = sound()
+local m = Model()
+local sound = Sound()
 sound:load("shot.wav")
 sound:set_volume(0.3)
-local effect = require "effect"
 
 local function bullet(map_draw3ds)
     local object = {
@@ -13,14 +12,14 @@ local function bullet(map_draw3ds)
         aabb = {},
         texture = {},
         setup = function(self, owner)
-            self.aabb = aabb()
-            self.texture = texture()
-            self.texture:fill_color(color(1.0, 1.0, 1.0, 1.0))
-            self.drawer = draw3d(self.texture)
-            self.drawer.position = vector3(owner.position.x, owner.position.y,
+            self.aabb = AABB()
+            self.texture = Texture()
+            self.texture:fill_color(Color(1.0, 1.0, 1.0, 1.0))
+            self.drawer = Draw3D(self.texture)
+            self.drawer.position = Vector3(owner.position.x, owner.position.y,
                 owner.position.z)
             self.drawer.rotation = owner.rotation
-            self.drawer.scale = vector3(0.2, 0.2, 0.2)
+            self.drawer.scale = Vector3(0.2, 0.2, 0.2)
             sound:play()
         end,
         update = function(self)

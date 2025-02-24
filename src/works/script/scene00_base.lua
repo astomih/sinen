@@ -5,7 +5,7 @@ local enemy_max_num = 0
 local world = require "world"
 local map_size_x = 7
 local map_size_y = 7
-local map = grid(map_size_x, map_size_y)
+local map = Grid(map_size_x, map_size_y)
 -- draw object
 local map_draw3ds = {}
 local box = {}
@@ -13,16 +13,16 @@ local sprite = {}
 local menu = {}
 local stair = {}
 -- assets
-local tree = model()
-local tile = texture()
-tile:fill_color(color(0.416, 0.204, 0.153, 1))
+local tree = Model()
+local tile = Texture()
+tile:fill_color(Color(0.416, 0.204, 0.153, 1))
 
-local score_font = font()
-local score_texture = texture()
-local score_drawer = draw2d(score_texture)
+local score_font = Font()
+local score_texture = Texture()
+local score_drawer = Draw2D(score_texture)
 tree:load("tree.sim")
-local stair_texture = texture()
-stair_texture:fill_color(color(1, 0.5, 0.5, 0.5))
+local stair_texture = Texture()
+stair_texture:fill_color(Color(1, 0.5, 0.5, 0.5))
 
 local menu = require("gui/menu")
 local menu_object = menu()
@@ -35,8 +35,8 @@ local equipment_menu = require("gui/equipment_menu")()
 
 score_font:load(DEFAULT_FONT_NAME, 64)
 menu_object:setup()
-DEFAULT_TEXTURE = texture()
-DEFAULT_TEXTURE:fill_color(color(1, 1, 1, 1))
+DEFAULT_TEXTURE = Texture()
+DEFAULT_TEXTURE:fill_color(Color(1, 1, 1, 1))
 map:fill(MAP_CHIP.FLOOR)
 -- fill around
 for i = 1, map_size_x do
@@ -50,14 +50,14 @@ end
 map:set(map_size_x / 2 + 1, map_size_y / 2 + 1, MAP_CHIP.PLAYER)
 map:set(2, 2, MAP_CHIP.STAIR)
 
-box = draw3d(DEFAULT_TEXTURE)
+box = Draw3D(DEFAULT_TEXTURE)
 box.model = tree
-sprite = draw3d(tile)
+sprite = Draw3D(tile)
 sprite.is_draw_depth = false
-local sprite_model = model()
+local sprite_model = Model()
 sprite_model:load_sprite()
 sprite.model = sprite_model
-stair = draw3d(stair_texture)
+stair = Draw3D(stair_texture)
 stair.model = sprite_model
 
 for i = 1, COLLISION_SPACE_DIVISION + 2 do
@@ -75,14 +75,14 @@ for y = 1, map_size_y do
     map_draw3ds[y][x] = world()
     map_draw3ds[y][x].position.x = x * TILE_SIZE
     map_draw3ds[y][x].position.y = y * TILE_SIZE
-    map_draw3ds[y][x].scale = vector3(TILE_SIZE / 2.0, TILE_SIZE / 2.0, 1)
+    map_draw3ds[y][x].scale = Vector3(TILE_SIZE / 2.0, TILE_SIZE / 2.0, 1)
     if map:at(x, y) ~= MAP_CHIP.STAIR then
       sprite:add(map_draw3ds[y][x].position, map_draw3ds[y][x].rotation,
         map_draw3ds[y][x].scale)
     end
     if map:at(x, y) == MAP_CHIP.WALL then
       map_draw3ds[y][x].position.z = 0
-      map_draw3ds[y][x].aabb = aabb()
+      map_draw3ds[y][x].aabb = AABB()
       map_draw3ds[y][x].aabb.max =
           map_draw3ds[y][x].position + map_draw3ds[y][x].scale
       map_draw3ds[y][x].aabb.min =
@@ -101,7 +101,7 @@ for y = 1, map_size_y do
   end
 end
 score_font:render_text(score_texture, "SCORE: " .. SCORE,
-  color(1, 1, 1, 1))
+  Color(1, 1, 1, 1))
 score_drawer.scale = score_texture:size()
 score_drawer.position.x = -300
 score_drawer.position.y = 300
@@ -126,7 +126,7 @@ function Draw()
       if (1 <= x and x <= map_size_x and 1 <= y and y <= map_size_y) then
         if map:at(x, y) == MAP_CHIP.WALL then
           box:add(map_draw3ds[y][x].position, map_draw3ds[y][x].rotation,
-            vector3(0.5, 0.5, 0.5))
+            Vector3(0.5, 0.5, 0.5))
         end
       end
     end
@@ -167,11 +167,11 @@ function Update()
   end
   mouse.hide_cursor(true)
   stair.position.z = periodic.sin0_1(1.0, time.seconds())
-  local player_on_map = point2i(0, 0)
+  local player_on_map = Point2i(0, 0)
   player_on_map.x = math.floor(player.drawer.position.x / TILE_SIZE + 0.5)
   player_on_map.y = math.floor(player.drawer.position.y / TILE_SIZE + 0.5)
   score_font:render_text(score_texture, "SCORE: " .. SCORE,
-    color(1, 1, 1, 1))
+    Color(1, 1, 1, 1))
   score_drawer.scale = score_texture:size()
   score_drawer.position.x = -300
   score_drawer.position.y = 300

@@ -1,3 +1,4 @@
+#include "math/vector2.hpp"
 #include "scene_system.hpp"
 #include <window/window.hpp>
 
@@ -30,6 +31,10 @@ void Scene::change_impl(std::unique_ptr<Scene::implements> impl) {
 }
 void Scene::set_run_script(bool is_run) {
   scene_system::set_run_script(is_run);
+}
+Vector2 Scene::ratio() {
+  return Vector2(Window::size().x / Scene::size().x,
+                 Window::size().y / Scene::size().y);
 }
 
 float Scene::delta_time() { return scene_system::delta_time(); }

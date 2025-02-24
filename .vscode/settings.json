@@ -1,0 +1,24 @@
+{
+  "Lua.diagnostics.globals": [
+    "texture",
+    "draw2d",
+    "font",
+    "color",
+    "periodic",
+    "time",
+    "draw3d",
+    "model",
+    "aabb",
+    "mouse",
+    "grid",
+    "vector3",
+    "vector2",
+    "scene",
+    "window",
+    "collision",
+    "sound",
+    "keyboard",
+    "renderer"
+  ],
+  "Lua.completion.autoRequire": false
+}

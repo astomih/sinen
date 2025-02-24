@@ -10,14 +10,6 @@ local menu_object = menu()
 local scene_switcher = require("scene_switcher")()
 local button = require("gui/button")()
 
-local a = vector3(0, 0, 0)
-local b = vector3(1, 2, 3)
-
-local c = a + b
-
-print(c.x, c.y, c.z)
-
-
 scene.resize(vector2(1280, 720))
 window.rename("Sinen Engine")
 SCORE = 0

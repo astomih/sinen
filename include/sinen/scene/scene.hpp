@@ -96,6 +96,7 @@ public:
     c /= 2.f;
     return c;
   }
+  static Vector2 ratio();
 
   static float delta_time();
 

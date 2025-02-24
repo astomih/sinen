@@ -29,8 +29,10 @@ Draw3D::Draw3D(Texture texture_handle)
 }
 void Draw2D::draw() {
   matrix4 t = matrix4::identity;
-  t.mat[3][0] = position.x;
-  t.mat[3][1] = position.y;
+  auto ratio = Vector2(Window::size().x / Scene::size().x,
+                       Window::size().y / Scene::size().y);
+  t.mat[3][0] = position.x * ratio.x;
+  t.mat[3][1] = position.y * ratio.y;
   Quaternion q(Vector3::neg_unit_z, rotation);
   matrix4 r = matrix4::create_from_quaternion(q);
   matrix4 s = matrix4::identity;
@@ -41,8 +43,8 @@ void Draw2D::draw() {
   matrix4 viewproj = matrix4::identity;
 
   auto screen_size = Scene::size();
-  viewproj.mat[0][0] = 2.f / screen_size.x;
-  viewproj.mat[1][1] = 2.f / screen_size.y;
+  viewproj.mat[0][0] = 2.f / Window::size().x;
+  viewproj.mat[1][1] = 2.f / Window::size().y;
   obj->param.proj = viewproj;
   obj->param.view = matrix4::identity;
   if (GetModelData(this->model.data)->vertexBuffer == nullptr) {

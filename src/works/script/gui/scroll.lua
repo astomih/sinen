@@ -25,8 +25,9 @@ local function scroll()
       self.max_drawer.position = pos
       -- Mouse
       local mpos = mouse.position()
-      mpos.x = mpos.x - window.center().x
-      mpos.y = -(mpos.y - window.center().y)
+      local ratio = scene.ratio()
+      mpos.x = mpos.x / ratio.x - scene.center().x
+      mpos.y = -(mpos.y / ratio.y - scene.center().y)
       if not self.is_drag and mouse.is_pressed(mouse.LEFT) then
         local dpos = self.drawer.position
         local dscale = self.drawer.scale

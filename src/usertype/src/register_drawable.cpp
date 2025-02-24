@@ -4,10 +4,10 @@
 
 namespace sinen {
 void register_drawable(sol::state &lua) {
-  lua["draw2d"] = []() -> Draw2D { return Draw2D(); };
-  lua["draw2d"] = [](Texture t) -> Draw2D { return Draw2D(t); };
-  lua["draw3d"] = []() -> Draw3D { return Draw3D(); };
-  lua["draw3d"] = [](Texture t) -> Draw3D { return Draw3D(t); };
+  lua["Draw2D"] = []() -> Draw2D { return Draw2D(); };
+  lua["Draw2D"] = [](Texture t) -> Draw2D { return Draw2D(t); };
+  lua["Draw3D"] = []() -> Draw3D { return Draw3D(); };
+  lua["Draw3D"] = [](Texture t) -> Draw3D { return Draw3D(t); };
   {
     auto v = lua.new_usertype<Draw2D>("", sol::no_construction());
     v["draw"] = &Draw2D::draw;

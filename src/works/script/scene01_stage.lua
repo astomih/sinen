@@ -3,10 +3,11 @@ local enemy = require "enemy"
 local enemies = {}
 local enemy_max_num = 100
 local world = require "world"
+local effect = require "effect"
 local map_size_x = 64
 local map_size_y = 64
-local map = grid(map_size_x, map_size_y)
-local map_z = grid(map_size_x, map_size_y)
+local map = Grid(map_size_x, map_size_y)
+local map_z = Grid(map_size_x, map_size_y)
 -- draw object
 local map_draw3ds = {}
 local box = {}
@@ -14,15 +15,15 @@ local sprite = {}
 local menu = {}
 local stair = {}
 -- assets
-local tree = model()
-local tile = texture()
-tile:fill_color(color(0.416, 0.204, 0.153, 1))
+local tree = Model()
+local tile = Texture()
+tile:fill_color(Color(0.416, 0.204, 0.153, 1))
 
-local score_font = font()
-local score_texture = texture()
-local score_drawer = draw2d(score_texture)
+local score_font = Font()
+local score_texture = Texture()
+local score_drawer = Draw2D(score_texture)
 tree:load("tree.sim")
-local stair_model = model()
+local stair_model = Model()
 stair_model:load("stair.sim")
 
 local menu = require("gui/menu")
@@ -33,41 +34,41 @@ local equipment_menu = require("gui/equipment_menu")()
 
 -- key object
 local key = {}
-local key_model = model()
+local key_model = Model()
 key_model:load("key.sim")
-local key_texture = texture()
-key_texture:fill_color(color(1, 1, 1, 1))
-local key_texture_2d = texture()
+local key_texture = Texture()
+key_texture:fill_color(Color(1, 1, 1, 1))
+local key_texture_2d = Texture()
 key_texture_2d:load("key.png")
-local key_drawer2d = draw2d(key_texture_2d)
+local key_drawer2d = Draw2D(key_texture_2d)
 key_drawer2d.scale = key_texture_2d:size()
 key_drawer2d.scale.x = key_drawer2d.scale.x / 6
 key_drawer2d.scale.y = key_drawer2d.scale.y / 6
-key_drawer2d.position = vector2(-scene.size().x / TILE_SIZE + key_drawer2d.scale.x / TILE_SIZE, -scene.size().y / 3)
-local key_drawer = draw3d(key_texture)
-key_drawer.scale = vector3(0.25, 0.25, 0.25)
-key_drawer.position = vector3(0, 0, 1)
-key_drawer.rotation = vector3(90, 0, 0)
+key_drawer2d.position = Vector2(-scene.size().x / TILE_SIZE + key_drawer2d.scale.x / TILE_SIZE, -scene.size().y / 3)
+local key_drawer = Draw3D(key_texture)
+key_drawer.scale = Vector3(0.25, 0.25, 0.25)
+key_drawer.position = Vector3(0, 0, 1)
+key_drawer.rotation = Vector3(90, 0, 0)
 key_drawer.model = key_model
 local key_hit = false
 local camera_controller = require("camera_controller")()
 
 score_font:load(DEFAULT_FONT_NAME, 64)
 menu_object:setup()
-DEFAULT_TEXTURE = texture()
-DEFAULT_TEXTURE:fill_color(color(1, 1, 1, 1))
+DEFAULT_TEXTURE = Texture()
+DEFAULT_TEXTURE:fill_color(Color(1, 1, 1, 1))
 map:fill(0)
 map_z:fill(0)
 dts.dungeon_generator(map)
 
-box = draw3d(DEFAULT_TEXTURE)
+box = Draw3D(DEFAULT_TEXTURE)
 box.model = tree
-local sprite_model = model()
+local sprite_model = Model()
 sprite_model:load_sprite()
-sprite = draw3d(tile)
+sprite = Draw3D(tile)
 sprite.is_draw_depth = false
 sprite.model = sprite_model
-stair = draw3d(DEFAULT_TEXTURE)
+stair = Draw3D(DEFAULT_TEXTURE)
 stair.model = stair_model
 for i = 1, COLLISION_SPACE_DIVISION + 2 do
     COLLISION_SPACE[i] = {}
@@ -84,13 +85,13 @@ for y = 1, map_size_y do
         map_draw3ds[y][x] = world()
         map_draw3ds[y][x].position.x = x * TILE_SIZE
         map_draw3ds[y][x].position.y = y * TILE_SIZE
-        map_draw3ds[y][x].scale = vector3(TILE_SIZE / 2.0, TILE_SIZE / 2.0, 1)
+        map_draw3ds[y][x].scale = Vector3(TILE_SIZE / 2.0, TILE_SIZE / 2.0, 1)
         if map:at(x, y) ~= MAP_CHIP.STAIR then
             sprite:add(map_draw3ds[y][x].position, map_draw3ds[y][x].rotation,
                 map_draw3ds[y][x].scale)
         end
         if map:at(x, y) == MAP_CHIP.WALL then
-            map_draw3ds[y][x].aabb = aabb()
+            map_draw3ds[y][x].aabb = AABB()
             map_draw3ds[y][x].aabb.max =
                 map_draw3ds[y][x].position + map_draw3ds[y][x].scale
             map_draw3ds[y][x].aabb.min =
@@ -116,7 +117,7 @@ for y = 1, map_size_y do
     end
 end
 score_font:render_text(score_texture, "SCORE: " .. SCORE,
-    color(1, 1, 1, 1))
+    Color(1, 1, 1, 1))
 score_drawer.scale = score_texture:size()
 camera_controller:setup(player)
 camera_controller:update()
@@ -143,7 +144,7 @@ function Draw()
             if (1 <= x and x <= map_size_x and 1 <= y and y <= map_size_y) then
                 if map:at(x, y) == MAP_CHIP.WALL then
                     box:add(map_draw3ds[y][x].position, map_draw3ds[y][x].rotation,
-                        vector3(0.5, 0.5, 0.5))
+                        Vector3(0.5, 0.5, 0.5))
                 end
             end
         end
@@ -180,7 +181,7 @@ end
 
 function Update()
     GUI_MANAGER:update()
-    score_drawer.position = vector2(-300, 300)
+    score_drawer.position = Vector2(-300, 300)
     if scene_switcher.flag then
         scene_switcher:update()
         return
@@ -196,7 +197,7 @@ function Update()
     mouse.hide_cursor(true)
     key_drawer.rotation.y = key_drawer.rotation.y + scene.delta_time() * 100
     score_font:render_text(score_texture, "SCORE: " .. SCORE,
-        color(1, 1, 1, 1))
+        Color(1, 1, 1, 1))
     score_drawer.scale = score_texture:size()
     collision_bullets(player.bullets)
     for a, b in ipairs(player.orbits) do
@@ -236,7 +237,7 @@ collision_bullets = function(_bullets)
             if collision.aabb_aabb(v.aabb, w.aabb) then
                 local efk = effect()
                 efk:setup()
-                efk.texture:fill_color(color(1, 0.2, 0.2, 1))
+                efk.texture:fill_color(Color(1, 0.2, 0.2, 1))
                 for k = 1, efk.max_particles do
                     efk.worlds[k].position = w.drawer.position:copy()
                 end

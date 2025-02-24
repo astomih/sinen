@@ -1,25 +1,25 @@
-local hello_texture = {}
-local hello_font = {}
-local hello_drawer = {}
+local texture = {}
+local font = {}
+local draw2d = {}
 
 -- Create a texture
-hello_texture = texture()
+texture = Texture()
 -- Create a draw2D
-hello_drawer = draw2d(hello_texture)
+draw2d = Draw2D(texture)
 -- Create a font
-hello_font = font()
+font = Font()
 -- Load a font from file(96px)
-hello_font:load("mplus/mplus-1p-medium.ttf", 96)
+font:load("mplus/mplus-1p-medium.ttf", 96)
 
 function Update()
   -- Render text to texture with blinking
-  hello_font:render_text(hello_texture, "Hello Sinen World!",
-    color(1, 1, 1, periodic.sin0_1(1.0, time.seconds())))
+  font:render_text(texture, "Hello Sinen World!",
+    Color(1, 1, 1, periodic.sin0_1(1.0, time.seconds())))
   -- Set scale to texture size
-  hello_drawer.scale = hello_texture:size()
+  draw2d.scale = texture:size()
 end
 
 function Draw()
   -- Draw texture
-  hello_drawer:draw()
+  draw2d:draw()
 end

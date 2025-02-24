@@ -1,14 +1,14 @@
 -- TODO: Shading
-local hello_texture = texture()
-hello_texture:fill_color(color(1, 1, 1, 1))
-local hello_model = model()
-hello_model:load("Suzanne.gltf")
-local hello_drawer = draw3d(hello_texture)
-hello_drawer.position = vector3(0, 0, 0)
-hello_drawer.model = hello_model
+local texture = Texture()
+texture:fill_color(Color(1, 1, 1, 1))
+local model = Model()
+model:load("Suzanne.gltf")
+local draw3d = Draw3D(texture)
+draw3d.position = Vector3(0, 0, 0)
+draw3d.model = model
 
 
-local pos = vector3(1, 1, 3)
+local pos = Vector3(1, 1, 3)
 local speed = 0.1
 
 function Update()
@@ -36,10 +36,10 @@ function Update()
     pos.y = pos.y - speed
   end
 
-  scene.main_camera():lookat(pos, vector3(0, 0, 0), vector3(0, 1, 0))
+  scene.main_camera():lookat(pos, Vector3(0, 0, 0), Vector3(0, 1, 0))
 end
 
 function Draw()
   -- Draw texture
-  hello_drawer:draw()
+  draw3d:draw()
 end

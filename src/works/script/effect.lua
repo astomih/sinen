@@ -1,5 +1,5 @@
 local world = require "world"
-local tree = model()
+local tree = Model()
 
 local function effect()
     local object = {
@@ -10,7 +10,7 @@ local function effect()
         start_speed = 5.0,
         start_size = 1.0,
         start_rotation = 0.0,
-        start_color = color(1, 1, 1, 1),
+        start_color = Color(1, 1, 1, 1),
         gravity_multiplier = 0.0,
         inherit_velocity = 0.0,
         play_on_awake = false,
@@ -22,14 +22,14 @@ local function effect()
         is_stop = false,
         timer = 0.0,
         setup = function(self)
-            self.texture = texture()
+            self.texture = Texture()
             self.texture:fill_color(self.start_color)
-            self.drawer = draw3d(self.texture)
+            self.drawer = Draw3D(self.texture)
             for i = 1, self.max_particles do
                 self.worlds[i] = world()
-                self.worlds[i].position = vector3(0, 0, 0)
-                self.worlds[i].rotation = vector3(0, 0, 0)
-                self.worlds[i].scale = vector3(0.1, 0.1, 0.1)
+                self.worlds[i].position = Vector3(0, 0, 0)
+                self.worlds[i].rotation = Vector3(0, 0, 0)
+                self.worlds[i].scale = Vector3(0.1, 0.1, 0.1)
             end
             if self.play_on_awake then self.is_playing = true end
         end,
@@ -50,9 +50,9 @@ local function effect()
             if self.timer > self.start_lifetime then
                 self.timer = 0.0
                 for i = 1, self.max_particles do
-                    self.worlds[i].position = vector3(0, 0, 0)
-                    self.worlds[i].rotation = vector3(0, 0, 0)
-                    self.worlds[i].scale = vector3(1, 1, 1)
+                    self.worlds[i].position = Vector3(0, 0, 0)
+                    self.worlds[i].rotation = Vector3(0, 0, 0)
+                    self.worlds[i].scale = Vector3(1, 1, 1)
                 end
                 if not self.looping then
                     self.is_playing = false

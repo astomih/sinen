@@ -1,20 +1,19 @@
-local hello_texture = {}
-local hello_font = {}
-local hello_drawer = {}
+local texture = {}
+local draw2d = {}
 
 -- Create a texture
-hello_texture = texture()
-hello_texture:load("logo.png")
+texture = Texture()
+texture:load("logo.png")
 -- Create a draw2D
-hello_drawer = draw2d(hello_texture)
+draw2d = Draw2D(texture)
 
 -- Set scale to texture size
-hello_drawer.scale = hello_texture:size()
+draw2d.scale = texture:size()
 
 function Update()
 end
 
 function Draw()
   -- Draw texture
-  hello_drawer:draw()
+  draw2d:draw()
 end

@@ -13,8 +13,10 @@
 #include <scene/scene.hpp>
 #include <script/script.hpp>
 #include <sol/sol.hpp>
+#include <time/timer.hpp>
 
 #include "register_script.hpp"
+#include "sol/raii.hpp"
 #include "sol/types.hpp"
 #ifdef main
 #undef main
@@ -123,7 +125,6 @@ bool script_engine::initialize(sol::state &lua) {
     v["target"] = &Camera::target;
     v["up"] = &Camera::up;
   }
-  lua["change_scene"] = [&](const std::string &str) { Scene::change(str); };
   {
     auto v = lua.new_usertype<Model>("", sol::no_construction());
     v["aabb"] = &Model::aabb;
@@ -141,6 +142,14 @@ bool script_engine::initialize(sol::state &lua) {
     auto v = lua.new_usertype<Random>("", sol::no_construction());
     v["get_int_range"] = Random::get_int_range;
     v["get_float_range"] = Random::get_float_range;
+  }
+  {
+    auto v = lua.new_usertype<Timer>("", sol::no_construction());
+    v["start"] = &Timer::start;
+    v["stop"] = &Timer::stop;
+    v["is_started"] = &Timer::is_started;
+    v["set_time"] = &Timer::set_time;
+    v["check"] = &Timer::check;
   }
   register_drawable(lua);
   register_table(lua);

@@ -4,7 +4,7 @@
 
 namespace sinen {
 void register_graph(sol::state &lua) {
-  lua["grid"] = [](int width, int height) -> Grid<int> {
+  lua["Grid"] = [](int width, int height) -> Grid<int> {
     return Grid<int>(width, height);
   };
   {
@@ -24,7 +24,7 @@ void register_graph(sol::state &lua) {
       }
     };
   };
-  lua["bfs_grid"] = [](const Grid<int> &g) { return BFSGrid(g); };
+  lua["BFSGrid"] = [](const Grid<int> &g) { return BFSGrid(g); };
   {
     auto v = lua.new_usertype<BFSGrid>("", sol::no_construction());
     v["width"] = &BFSGrid::width;

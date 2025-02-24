@@ -3,11 +3,11 @@ local font_dead = {}
 local drawer_dead = {}
 local scene_switcher = require("scene_switcher")()
 
-texture_dead = texture()
-drawer_dead = draw2d(texture_dead)
-font_dead = font()
+texture_dead = Texture()
+drawer_dead = Draw2D(texture_dead)
+font_dead = Font()
 font_dead:load(DEFAULT_FONT_NAME, 64)
-font_dead:render_text(texture_dead, "YOU DIED", color(1, 0.25, 0.25, 1))
+font_dead:render_text(texture_dead, "YOU DIED", Color(1, 0.25, 0.25, 1))
 drawer_dead.scale = texture_dead:size()
 scene_switcher:setup()
 scene_switcher:start("")

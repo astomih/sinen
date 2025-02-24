@@ -1,4 +1,4 @@
-local bombed = sound()
+local bombed = Sound()
 bombed:load("bombed.wav")
 local r1 = 0
 local r2 = 0
@@ -9,13 +9,13 @@ local function decide_pos(map, map_size_x, map_size_y)
 end
 
 local enemy_model = {}
-enemy_model[1] = model()
+enemy_model[1] = Model()
 enemy_model[1]:load("enemy1.sim")
-enemy_model[2] = model()
+enemy_model[2] = Model()
 enemy_model[2]:load("bat.sim")
-enemy_model[3] = model()
+enemy_model[3] = Model()
 enemy_model[3]:load("lizard.sim")
-enemy_model[4] = model()
+enemy_model[4] = Model()
 enemy_model[4]:load("frog.sim")
 for i = 1, 4 do
     enemy_model[i]:aabb().max.z = 10.0
@@ -36,7 +36,7 @@ local enemy = function()
         map = {},
         model_index = 1,
         get_forward_z = function(drawer)
-            return vector2(-math.sin(math.rad(drawer.rotation.z)),
+            return Vector2(-math.sin(math.rad(drawer.rotation.z)),
                 math.cos(math.rad(-drawer.rotation.z)))
         end,
         bfs = {},
@@ -52,36 +52,36 @@ local enemy = function()
             return false
         end,
         setup = function(self, _map, map_size_x, map_size_y)
-            self.bfs = bfs_grid(_map)
-            self.drawer = draw3d(DEFAULT_TEXTURE)
+            self.bfs = BFSGrid(_map)
+            self.drawer = Draw3D(DEFAULT_TEXTURE)
             if NOW_STAGE == 1 then
                 self.drawer.model = enemy_model[1]
-                self.drawer.scale = vector3(0.1, 0.1, 0.1)
+                self.drawer.scale = Vector3(0.1, 0.1, 0.1)
                 self.model_index = 1
             end
             if NOW_STAGE == 2 then
                 if math.random(0, 1) == 0 then
                     self.drawer.model = enemy_model[2]
-                    self.drawer.scale = vector3(0.4, 0.4, 0.4)
+                    self.drawer.scale = Vector3(0.4, 0.4, 0.4)
                     self.model_index = 2
                 else
                     self.drawer.model = enemy_model[3]
-                    self.drawer.scale = vector3(1, 1, 1)
+                    self.drawer.scale = Vector3(1, 1, 1)
                     self.model_index = 3
                 end
             end
             if NOW_STAGE == 3 then
                 self.drawer.model = enemy_model[4]
-                self.drawer.scale = vector3(1, 1, 1)
+                self.drawer.scale = Vector3(1, 1, 1)
                 self.model_index = 4
             end
-            self.aabb = aabb()
+            self.aabb = AABB()
             self.map = _map
             r1 = 0
             r2 = 0
             while decide_pos(_map, map_size_x, map_size_y) == true do
             end
-            self.drawer.position = vector3(r1 * TILE_SIZE, r2 * TILE_SIZE, 0.5)
+            self.drawer.position = Vector3(r1 * TILE_SIZE, r2 * TILE_SIZE, 0.5)
             self.is_collision_first = true
             self.collision_time = 1.0
             self.collision_timer = 0.0
@@ -93,11 +93,11 @@ local enemy = function()
             end
             self.aabb:update_world(self.drawer.position, self.drawer.scale, enemy_model[self.model_index]:aabb())
             -- If there is a wall between the player and the enemy, the enemy will not move.
-            local start = point2i(
+            local start = Point2i(
                 self.drawer.position.x / TILE_SIZE,
                 self.drawer.position.y / TILE_SIZE
             )
-            local goal = point2i(
+            local goal = Point2i(
                 player.drawer.position.x / TILE_SIZE,
                 player.drawer.position.y / TILE_SIZE
             )
@@ -116,7 +116,7 @@ local enemy = function()
                     return
                 end
             end
-            self.drawer.rotation = vector3(0, 0,
+            self.drawer.rotation = Vector3(0, 0,
                 math.deg(
                     -math.atan(
                         player.drawer.position.x -
@@ -127,7 +127,7 @@ local enemy = function()
                 local path = self.bfs:trace()
                 path = self.bfs:trace()
 
-                local dir = vector2(
+                local dir = Vector2(
                     path.x * TILE_SIZE - self.drawer.position.x,
                     path.y * TILE_SIZE - self.drawer.position.y)
                 if dir.x < -1 then

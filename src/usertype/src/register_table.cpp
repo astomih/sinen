@@ -9,7 +9,6 @@
 #include <input/mouse.hpp>
 #include <math/periodic.hpp>
 #include <time/time.hpp>
-#include <time/timer.hpp>
 
 namespace sinen {
 void register_table(sol::state &lua) {
@@ -39,6 +38,7 @@ void register_table(sol::state &lua) {
     v["center"] = &Scene::center;
     v["ratio"] = &Scene::ratio;
     v["delta_time"] = &Scene::delta_time;
+    v["change"] = &Scene::change;
   }
   {
     auto v = lua.create_table("collision");
@@ -173,14 +173,6 @@ void register_table(sol::state &lua) {
     auto v = lua.create_table("time");
     v["seconds"] = &Time::seconds;
     v["milli"] = &Time::milli;
-  }
-  {
-    auto v = lua.create_table("timer");
-    v["start"] = &Timer::start;
-    v["stop"] = &Timer::stop;
-    v["is_started"] = &Timer::is_started;
-    v["set_time"] = &Timer::set_time;
-    v["check"] = &Timer::check;
   }
 }
 } // namespace sinen

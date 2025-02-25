@@ -8,10 +8,16 @@
 #include <input/keyboard.hpp>
 #include <input/mouse.hpp>
 #include <math/periodic.hpp>
+#include <math/random.hpp>
 #include <time/time.hpp>
 
 namespace sinen {
 void register_table(sol::state &lua) {
+  {
+    auto v = lua.create_table("random");
+    v["get_int_range"] = &Random::get_int_range;
+    v["get_float_range"] = &Random::get_float_range;
+  }
   {
     auto v = lua.create_table("window");
     v["name"] = &Window::name;

@@ -20,7 +20,7 @@ public:
 
   static Vector2 size() { return m_size; }
   static bool resized() { return m_resized; }
-  static Vector2 center() { return Vector2(m_size.x / 2.0, m_size.y / 2.0); }
+  static Vector2 half() { return Vector2(m_size.x / 2.0, m_size.y / 2.0); }
   static std::string name() { return m_name; }
 
 private:

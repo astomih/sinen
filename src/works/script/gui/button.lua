@@ -21,11 +21,7 @@ local function button()
       self.drawer.position = pos
       GUI_MANAGER:add(self.drawer)
       -- Mouse in button?
-      local mpos = mouse.position()
-      local ratio = scene.ratio()
-
-      mpos.x = mpos.x / ratio.x - scene.center().x
-      mpos.y = -(mpos.y / ratio.y - scene.center().y)
+      local mpos = mouse.position_on_scene()
       if mpos.x >= pos.x - scale.x / 2
           and
           mpos.x <= pos.x + scale.x / 2

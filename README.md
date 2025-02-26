@@ -1,4 +1,4 @@
-# Sinen Engine 
+# Sinen
 <p align="center"><a href="https://astomih.github.io/sinen"><img src="https://raw.githubusercontent.com/astomih/sinen/main/docs/logo/logo_bg_white.png" width="480" alt="Sinen Logo"></a></p>  
 
 # Summary
@@ -70,8 +70,8 @@ end
 - CMake 3.20 or later
 - Ninja
 - C++23 compiler
-- Vulkan SDK
-- [yasm](https://github.com/yasm/yasm)(for SDL3_Image )
+- Vulkan SDK(In MacOS, MoltenVK)
+- [yasm](https://github.com/yasm/yasm)(for SDL3_Image , add to PATH)
 ## Build commands
 ``` bash
 git clone https://github.com/astomih/sinen.git
@@ -82,12 +82,15 @@ git submodule update --init --recursive
 #### Visual Studio 2022
 Run "build/generate_vs2022.bat" and open&build the generated solution file(build/vs2022/.).
 ### MacOS
-WIP
+``` bash
+cmake -B build/macos -DEXTERNAL_ALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release
+cmake --build build/macos
+```
 
 ### Linux
 ``` bash
 cmake -B build/linux -DEXTERNAL_ALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release
-cd build && ninja
+cmake --build build/linux
 ```
 
 

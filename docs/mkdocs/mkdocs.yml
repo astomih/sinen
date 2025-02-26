@@ -1,0 +1,4 @@
+site_name: Sinen Docs
+theme:
+  language: en
+  name: material

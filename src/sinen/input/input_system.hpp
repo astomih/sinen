@@ -19,7 +19,8 @@ public:
 struct mouse_state_impl {
 public:
   // Store current mouse position
-  Vector2 mMousePos;
+  Vector2 mousePosOnWindow;
+  Vector2 mousePosOnScene;
   // Motion of scroll wheel
   Vector2 mScrollWheel;
   // Store button data

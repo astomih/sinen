@@ -139,11 +139,6 @@ bool script_engine::initialize(sol::state &lua) {
     v["update_world"] = &AABB::update_world;
   }
   {
-    auto v = lua.new_usertype<Random>("", sol::no_construction());
-    v["get_int_range"] = Random::get_int_range;
-    v["get_float_range"] = Random::get_float_range;
-  }
-  {
     auto v = lua.new_usertype<Timer>("", sol::no_construction());
     v["start"] = &Timer::start;
     v["stop"] = &Timer::stop;

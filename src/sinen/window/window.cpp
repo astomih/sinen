@@ -12,7 +12,7 @@ std::string WindowImpl::m_name = "";
 bool WindowImpl::m_resized = false;
 const void *Window::get_sdl_window() { return WindowImpl::get_sdl_window(); }
 Vector2 Window::size() { return WindowImpl::size(); }
-Vector2 Window::center() { return WindowImpl::center(); }
+Vector2 Window::half() { return WindowImpl::half(); }
 void Window::resize(const Vector2 &size) { WindowImpl::resize(size); }
 void Window::set_fullscreen(bool fullscreen) {
   WindowImpl::set_fullscreen(fullscreen);

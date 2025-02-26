@@ -6,4 +6,7 @@ Sinenはクリエイティブコーディングのためのライブラリです
 
 [![CI](https://github.com/astomih/sinen/actions/workflows/CI.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/CI.yml)  
 
+# コミュニティ
+[Discord](https://discord.gg/7U7VDwWjfy)
+
 # 整備中...

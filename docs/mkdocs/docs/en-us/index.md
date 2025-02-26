@@ -4,4 +4,7 @@
 # Summary
 Sinen is a toolkit for creative coding.  
 
+# Community
+[Discord](https://discord.gg/7U7VDwWjfy)
+
 # Under Construction...

@@ -134,7 +134,8 @@ Creates a 2D object for rendering.
 #### Draw2D:draw()
 Renders a 2D object.
 #### Draw2D.position = Vector2
-Position.
+Position.  
+Sinen uses the center of the screen as the origin.
 #### Draw2D.scale = Vector2
 Scale.
 #### Draw2D.rotation = float
@@ -273,8 +274,8 @@ Returns the window size.
 Changes the window size.
 #### window.resized() -> bool
 Returns whether the window was resized in the current frame.
-#### window.center() -> Vector2
-Returns the center coordinates of the window.
+#### window.half() -> Vector2
+Returns the half size of the window.
 #### window.set_fullscreen(bool)
 - bool: Whether to set the window to fullscreen.
 Toggles fullscreen or windowed mode.
@@ -294,8 +295,8 @@ Returns the size of the scene.
 #### scene.resize(Vector2)
 - Vector2: New scene size.
 Changes the scene size.
-#### scene.center() -> Vector2
-Returns the center coordinates of the scene.
+#### scene.half() -> Vector2
+Returns the half size of the scene.
 
 ### collision
 #### collision.aabb_aabb(AABB, AABB) -> bool

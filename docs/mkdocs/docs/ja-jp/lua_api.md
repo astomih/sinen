@@ -124,7 +124,8 @@ modelは未指定の場合、四角形が割り当てられます
 #### Draw2D:draw()
 2Dオブジェクトを描画します
 #### Draw2D.position = Vector2
-位置情報
+位置情報  
+Sinenのウィンドウの中心が(0, 0)です
 #### Draw2D.scale = Vector2
 拡大率
 #### Draw2D.rotation = float
@@ -266,8 +267,8 @@ AABBの最大点
 ウィンドウのサイズを変更します
 #### window.resized() -> bool
 ウィンドウが今のフレームでリサイズされたかどうかを取得します
-#### window.center() -> Vector2
-ウィンドウの中心座標を取得します
+#### window.half() -> Vector2
+ウィンドウの半分のサイズを取得します
 #### window.set_fullscreen(bool)
 - bool: ウィンドウをフルスクリーンにするかどうか
 ウィンドウをフルスクリーン、またはウィンドウモードにします
@@ -285,8 +286,8 @@ AABBの最大点
 #### scene.resize(Vector2)
 - Vector2: シーンのサイズ
 シーンのサイズを変更します
-#### scene.center() -> Vector2
-シーンの中心座標を取得します
+#### scene.half() -> Vector2
+シーンの半分のサイズを取得します
 ### collision
 #### collision.aabb_aabb(AABB, AABB) -> bool
 - AABB: AABB

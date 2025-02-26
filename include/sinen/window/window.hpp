@@ -17,11 +17,11 @@ public:
    */
   static Vector2 size();
   /**
-   * @brief Get the window center
+   * @brief Get the window half size
    *
    * @return vector2
    */
-  static Vector2 center();
+  static Vector2 half();
   /**
    * @brief Set the Window size
    *

@@ -22,7 +22,7 @@ void register_table(sol::state &lua) {
     auto v = lua.create_table("window");
     v["name"] = &Window::name;
     v["size"] = &Window::size;
-    v["center"] = Window::center;
+    v["half"] = Window::half;
     v["resize"] = &Window::resize;
     v["set_fullscreen"] = &Window::set_fullscreen;
     v["rename"] = &Window::rename;
@@ -41,7 +41,7 @@ void register_table(sol::state &lua) {
     v["main_camera"] = &Scene::main_camera;
     v["size"] = &Scene::size;
     v["resize"] = &Scene::resize;
-    v["center"] = &Scene::center;
+    v["half"] = &Scene::half;
     v["ratio"] = &Scene::ratio;
     v["delta_time"] = &Scene::delta_time;
     v["change"] = &Scene::change;

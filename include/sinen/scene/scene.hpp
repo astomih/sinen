@@ -91,7 +91,7 @@ public:
    * @return const vector2&
    */
   static const Vector2 &size() { return m_screen_size; }
-  static const Vector2 center() {
+  static const Vector2 half() {
     Vector2 c = m_screen_size;
     c /= 2.f;
     return c;

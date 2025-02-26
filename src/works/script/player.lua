@@ -96,10 +96,10 @@ local player = {
         self.oil_max_texture:fill_color(Color(0.0, 0.0, 0.0, 0.2))
         self.oil_drawer = Draw2D(self.oil_texture)
         -- oil drawer position is left bottom
-        self.oil_drawer.position = Vector2(-scene.center().x + 20, -scene.center().y + 150)
+        self.oil_drawer.position = Vector2(-scene.half().x + 20, -scene.half().y + 150)
         self.oil_drawer.scale = Vector2(10, 300)
         self.oil_max_drawer = Draw2D(self.oil_max_texture)
-        self.oil_max_drawer.position = Vector2(-scene.center().x + 20, -scene.center().y + 150)
+        self.oil_max_drawer.position = Vector2(-scene.half().x + 20, -scene.half().y + 150)
         self.oil_max_drawer.scale = Vector2(10, 300)
 
 
@@ -280,8 +280,8 @@ local player = {
             end
         end
         local mouse_pos = mouse.position_on_scene()
-        self.drawer_scope.position.x = mouse_pos.x - scene.center().x
-        self.drawer_scope.position.y = -(mouse_pos.y - scene.center().y)
+        self.drawer_scope.position.x = mouse_pos.x - scene.half().x
+        self.drawer_scope.position.y = -(mouse_pos.y - scene.half().y)
         local r = 200 - self.drawer_scope.scale.x / 2
         -- Make the coordinates fit in a circle of radius r
         local x = self.drawer_scope.position.x
@@ -296,7 +296,7 @@ local player = {
             y = y * r_prime
             self.drawer_scope.position.x = x
             self.drawer_scope.position.y = y
-            mouse.set_position_on_scene(Vector2(scene.center().x + x, scene.center().y - y))
+            mouse.set_position_on_scene(Vector2(scene.half().x + x, scene.half().y - y))
         end
         local drawer_scope_angle = math.atan(self.drawer_scope.position.y, self.drawer_scope.position.x)
         self.drawer.rotation.z = math.deg(drawer_scope_angle) - 90

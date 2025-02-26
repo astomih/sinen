@@ -279,9 +279,7 @@ local player = {
                 self.drawer.position = before_pos
             end
         end
-        local mouse_pos = mouse.position_on_scene()
-        self.drawer_scope.position.x = mouse_pos.x - scene.half().x
-        self.drawer_scope.position.y = -(mouse_pos.y - scene.half().y)
+        self.drawer_scope.position = mouse.position_on_scene()
         local r = 200 - self.drawer_scope.scale.x / 2
         -- Make the coordinates fit in a circle of radius r
         local x = self.drawer_scope.position.x
@@ -296,7 +294,7 @@ local player = {
             y = y * r_prime
             self.drawer_scope.position.x = x
             self.drawer_scope.position.y = y
-            mouse.set_position_on_scene(Vector2(scene.half().x + x, scene.half().y - y))
+            mouse.set_position_on_scene(Vector2(x, y))
         end
         local drawer_scope_angle = math.atan(self.drawer_scope.position.y, self.drawer_scope.position.x)
         self.drawer.rotation.z = math.deg(drawer_scope_angle) - 90

@@ -18,17 +18,17 @@ Luaにはクラスはありませんが、テーブルで代用します
 Sinenでは、あらかじめ幾つかのクラスを用意しています
 ### 命名規則
 Sinenでは、Luaのクラスは大文字で始まります  
-インスタンスの生成はクラス名()で行います(例: `a = Vector2()`)  
+インスタンスの生成はクラス名()で行います(例: `a = Vector2(1.0, 2.0)`)  
 関数はコロン(:)で呼び出し可能です(例: `a:length()`)  
 ### Vector2
 #### メタテーブル
-`__add`: ベクトルの加算を行います (a + b)  
-`__sub`: ベクトルの減算を行います (a - b)  
-`__mul`: ベクトルの乗算を行います (a * b)  
-`__div`: ベクトルの除算を行います (a / b)  
+- `__add`: ベクトルの加算を行います (a + b)
+- `__sub`: ベクトルの減算を行います (a - b)
+- `__mul`: ベクトルの乗算を行います (a * b)
+- `__div`: ベクトルの除算を行います (a / b)
 #### Vector2(x, y) -> Vector2
-- x: ベクトルのx成分。
-- y: ベクトルのy成分。
+- `x`: ベクトルのx成分
+- `y`: ベクトルのy成分  
 Vector2オブジェクトを作成します。
 #### Vector2.x = float
 Vector2のx成分。
@@ -40,14 +40,14 @@ Vector2のy成分。
 ベクトルを正規化します
 ### Vector3
 #### メタテーブル
-`__add`: ベクトルの加算を行います (a + b)  
-`__sub`: ベクトルの減算を行います (a - b)  
-`__mul`: ベクトルの乗算を行います (a * b)  
-`__div`: ベクトルの除算を行います (a / b)  
+- `__add`: ベクトルの加算を行います (a + b)
+- `__sub`: ベクトルの減算を行います (a - b)
+- `__mul`: ベクトルの乗算を行います (a * b)
+- `__div`: ベクトルの除算を行います (a / b)
 #### Vector3(x, y, z) -> Vector3
-- x: ベクトルのx成分
-- y: ベクトルのy成分
-- z: ベクトルのz成分
+- `x`: ベクトルのx成分
+- `y`: ベクトルのy成分
+- `z`: ベクトルのz成分  
 Vector3オブジェクトを作成します
 #### Vector3.x = float
 Vector3のx成分
@@ -67,18 +67,18 @@ Luaでは基本的に参照渡しのため、コピーが必要な場合に使�
 ### Point2i
 2次元の整数
 #### Point2i(x, y) -> Point2i
-- x: Point2iのx成分
-- y: Point2iのy成分
+- `x`: Point2iのx成分
+- `y`: Point2iのy成分
 #### Point2i.x = int
 Point2iのx成分
 #### Point2i.y = int
 Point2iのy成分
 ### Color
 #### Color(r, g, b, a) -> color
-- r: 色の赤成分(0.0~1.0)
-- g: 色の緑成分(0.0~1.0)
-- b: 色の青成分(0.0~1.0)
-- a: 色のアルファ成分(0.0~1.0)
+- `r`: 色の赤成分(0.0~1.0)
+- `g`: 色の緑成分(0.0~1.0)
+- `b`: 色の青成分(0.0~1.0)
+- `a`: 色のアルファ成分(0.0~1.0)  
 色オブジェクトを作成します
 #### Color.r = float
 色の赤成分(0.0~1.0)
@@ -90,20 +90,21 @@ Point2iのy成分
 色のアルファ成分(0.0~1.0)
 ### Texture
 #### Texture()
-Create a Texture object.
+テクスチャオブジェクトを作成します
 #### Texture:load(string)
-string: The path to the Texture.
-Load a Texture from a file.
-#### Texture:fill_color(color)
-color: The color to fill the Texture with.
-Fill the Texture with a color.
-#### Texture:blend_color(color)
-color: The color to blend the Texture with.
-Blend the Texture with a color.
+- `string`: data/texture/にあるテクスチャファイルの名前  
+テクスチャファイルを読み込みます
+#### Texture:fill_color(Color)
+- `Color`: テクスチャを塗りつぶす色  
+テクスチャを塗りつぶします
+#### Texture:blend_color(Color)
+- `Color`: テクスチャをブレンドする色  
+テクスチャをブレンドします
 #### Texture:copy() -> Texture
-Copy the Texture.
+テクスチャをコピーします  
+Luaでは基本的に参照渡しのため、コピーが必要な場合に使用します
 #### Texture:size() -> Vector2
-Get the size of the Texture.
+テクスチャのサイズを取得します
 ### Font
 #### Font() -> Font
 フォントオブジェクトを作成します
@@ -111,14 +112,14 @@ Get the size of the Texture.
 string: data/font/にあるフォントファイルの名前
 .ttfファイルを読み込みます  
 #### Font:render_text(Texture, string, color)
-- Texture: 描画先のテクスチャ
-- string: 描画する文字列
-- color: テキストの色
+- `Texture`: 描画先のテクスチャ
+- `string`: 描画する文字列
+- `Color`: テキストの色
 CPUでテキストを描画します  
 テクスチャは描画結果に合わせてリサイズされます
 ### Draw2D
 #### Draw2D(Texture) -> Draw2D
-- Texture: テクスチャ
+- `Texture`: テクスチャ
 Draw2Dオブジェクトを作成します  
 modelは未指定の場合、四角形が割り当てられます  
 #### Draw2D:draw()
@@ -135,9 +136,9 @@ Sinenのウィンドウの中心が(0, 0)です
 #### Draw2D.model = Model
 モデル
 #### Draw2D:add(Vector2, float, Vector2)
-- Vector2: 位置情報
-- float: 時計回りの回転角度
-- Vector2: 拡大率  
+- `Vector2`: 位置情報
+- `float`: 時計回りの回転角度
+- `Vector2`: 拡大率  
 同じテクスチャ、モデルで複数のオブジェクトを追加して描画します  
 インスタンス生成時点で既に一つのオブジェクトが存在しています
 #### Draw2D:clear()
@@ -145,7 +146,7 @@ Sinenのウィンドウの中心が(0, 0)です
 ただし、インスタンス生成時点で存在しているオブジェクトはクリアされません
 ### Draw3D
 #### Draw3D(Texture) -> Draw3D
-- Texture: テクスチャ
+- `Texture`: テクスチャ
 Draw3Dオブジェクトを作成します  
 modelは未指定の場合、立方体が割り当てられます
 #### Draw3D:draw()
@@ -161,9 +162,9 @@ modelは未指定の場合、立方体が割り当てられます
 #### Draw3D.model = Model
 モデル
 #### Draw3D:add(Vector3,Vector3,Vector3)
-- Vector3: 位置情報
-- Vector3: 回転角度
-- Vector3: 拡大率  
+- `Vector3`: 位置情報
+- `Vector3`: 回転角度
+- `Vector3`: 拡大率  
 同じテクスチャ、モデルで複数のオブジェクトを追加して描画します  
 インスタンス生成時点で既に一つのオブジェクトが存在しています
 #### Draw3D:clear()
@@ -173,23 +174,23 @@ modelは未指定の場合、立方体が割り当てられます
 #### Camera() -> Camera
 3D空間のカメラオブジェクトを作成します
 #### Camera:look_at(Vector3, Vector3, Vector3)
-- Vector3: 位置
-- Vector3: 注視点
-- Vector3: 上方向
+- `Vector3`: 位置
+- `Vector3`: 注視点
+- `Vector3`: 上方向  
 カメラの位置、注視点、上方向を設定します
 #### Camera:perspective(float, float, float, float)
-- float: 視野角
-- float: アスペクト比
-- float: 近面
-- float: 遠面
+- `float`: 視野角
+- `float`: アスペクト比
+- `float`: 近面
+- `float`: 遠面  
 カメラの透視投影を設定します
 #### Camera:orthographic(float, float, float, float, float, float)
-- float: 左
-- float: 右
-- float: 下
-- float: 上
-- float: 近面
-- float: 遠面
+- `float`: 左
+- `float`: 右
+- `float`: 下
+- `float`: 上
+- `float`: 近面
+- `float`: 遠面  
 カメラの正射影投影を設定します
 #### Camera.position = Vector3
 カメラの位置
@@ -200,33 +201,33 @@ modelは未指定の場合、立方体が割り当てられます
 ### Music
 #### Music() -> Music
 #### Music:load(string)
-- string: data/music/にある音楽ファイルの名前
+- `string`: data/music/にある音楽ファイルの名前  
 音楽をファイルから読み込みます  
 .ogg, .wav, .mp3形式に対応しています
 #### Music:play()
 音楽を再生します
 #### Music:set_volume(float)
-- float: 音量
+- `float`: 音量  
 音楽の音量を設定します
 ### Sound
 #### Sound() -> Sound
 #### Sound:load(string)
-- string: data/sound/にある音声ファイルの名前
+- `string`: data/sound/にある音声ファイルの名前  
 音声をファイルから読み込みます  
 .wav形式に対応しています
 #### Sound:play()
 音声を再生します
 #### Sound:set_volume(float)
-- float: 音量
+- `float`: 音量  
 音声の音量を設定します
 #### Sound:set_pitch(float)
-- float: ピッチ
+- `float`: ピッチ  
 音声のピッチを設定します
 #### Sound:set_listener(Vector3)
-- Vector3: リスナーの位置
+- `Vector3`: リスナーの位置  
 リスナーの位置を設定します
 #### Sound:set_position(Vector3)
-- Vector3: 音源の位置
+- `Vector3`: 音源の位置  
 音源の位置を設定します
 ### AABB
 #### AABB.min = Vector3
@@ -235,7 +236,7 @@ AABBの最小点
 AABBの最大点
 ### Model
 #### Model:load(string)
-- string: data/model/にあるモデルファイルの名前
+- `string`: data/model/にあるモデルファイルの名前  
 .gltf, .glb形式に対応しています
 #### Model.AABB = AABB
 モデルのAABB
@@ -247,36 +248,36 @@ AABBの最大点
 関数はドット(.)で呼び出し可能です(例: `random.get_int_range(0, 10)`)
 ### random
 #### random:get_int_range(integer, integer) -> integer
-- integer: 最小値
-- integer: 最大値
+- `integer`: 最小値
+- `integer`: 最大値  
 指定された範囲の整数の乱数を取得します
 #### random:get_float_range(float, float) -> float
-- float: 最小値
-- float: 最大値
+- `float`: 最小値
+- `float`: 最大値  
 指定された範囲の浮動小数点数の乱数を取得します
 ### window
 #### window.name() -> string
 ウィンドウの名前を取得します
 #### window.rename(string)
-- string: ウィンドウの名前
+- `string`: ウィンドウの名前  
 ウィンドウの名前を変更します
 #### window.size() -> Vector2
 ウィンドウのサイズを取得します
 #### window.resize(Vector2)
-- Vector2: ウィンドウのサイズ
+- `Vector2`: ウィンドウのサイズ  
 ウィンドウのサイズを変更します
 #### window.resized() -> bool
 ウィンドウが今のフレームでリサイズされたかどうかを取得します
 #### window.half() -> Vector2
 ウィンドウの半分のサイズを取得します
 #### window.set_fullscreen(bool)
-- bool: ウィンドウをフルスクリーンにするかどうか
+- `bool`: ウィンドウをフルスクリーンにするかどうか  
 ウィンドウをフルスクリーン、またはウィンドウモードにします
 ### renderer
 #### renderer.clear_color() -> color
 画面クリアの色を取得します
 #### renderer.set_clear_color(color)
-- color: 画面クリアの色
+- `Color`: 画面クリアの色  
 画面クリアの色を設定します
 ### scene
 #### scene.main_Camera() -> Camera
@@ -284,25 +285,25 @@ AABBの最大点
 #### scene.size() -> Vector2
 シーンのサイズを取得します
 #### scene.resize(Vector2)
-- Vector2: シーンのサイズ
+- `Vector2`: シーンのサイズ  
 シーンのサイズを変更します
 #### scene.half() -> Vector2
 シーンの半分のサイズを取得します
 ### collision
 #### collision.aabb_aabb(AABB, AABB) -> bool
-- AABB: AABB
-- AABB: AABB
+- `AABB`: AABB
+- `AABB`: AABB  
 AABB同士の衝突判定を行います
 
 ### keyboard
 #### keyboard.is_pressed(code) -> bool
-- code: キーコード
+- `code`: キーコード  
 キーが現在のフレームで押されたかどうかを確認します
 #### keyboard.is_released(code) -> bool
-- code: キーコード
+- `code`: キーコード  
 キーが現在のフレームで離されたかどうかを確認します
 #### keyboard.is_down(code) -> bool
-- code: キーコード
+- `code`: キーコード  
 キーが押されているかどうかを確認します
 #### keyboard.A = code
 #### keyboard.B = code
@@ -368,28 +369,32 @@ AABB同士の衝突判定を行います
 #### keyboard.ALT = code
 ### mouse
 #### mouse.position() -> Vector2
-マウスの位置を取得します
+マウスのウィンドウ内の位置を取得します  
+ウィンドウの中心が原点(0, 0)です
 #### mouse.position_on_scene() -> Vector2
-マウスのシーン上の位置を取得します
+マウスのシーン内の位置を取得します  
+シーンの中心が原点(0, 0)です
 #### mouse.set_position(Vector2)
-- Vector2: マウスの位置
-マウスの位置を設定します
+- `Vector2`: マウスのウィンドウ上の位置  
+マウスのウィンドウ上の位置を設定します  
+ウィンドウの中心が原点(0, 0)です
 #### mouse.set_position_on_scene(Vector2)
-- Vector2: シーン上のマウスの位置
-マウスのシーン上の位置を設定します
+- `Vector2`: シーン上のマウスの位置  
+マウスのシーン上の位置を設定します  
+シーンの中心が原点(0, 0)です
 #### mouse.is_pressed(code) -> bool
-- code: マウスのボタンコード
+- `code`: マウスのボタンコード  
 ボタンが現在のフレームで押されたかどうかを確認します
 #### mouse.is_released(code) -> bool
-- code: マウスのボタンコード
+- `code`: マウスのボタンコード  
 ボタンが現在のフレームで離されたかどうかを確認します
 #### mouse.is_down(code) -> bool
-- code: マウスのボタンコード
+- `code`: マウスのボタンコード  
 ボタンが押されているかどうかを確認します
 #### mouse.scroll_wheel() -> Vector2
 マウスのスクロールの変化量を取得します
 #### mouse.hide_cursor(bool)
-- bool: マウスカーソルを隠すかどうか
+- `bool`: マウスカーソルを隠すかどうか  
 カーソルを表示、または非表示にします
 #### mouse.LEFT = code
 #### mouse.RIGHT = code
@@ -400,13 +405,13 @@ AABB同士の衝突判定を行います
 #### gamepad.is_connected() -> bool
 ゲームパッドが接続されているかどうかを確認します
 #### gamepad.is_pressed(code) -> bool
-- code: ゲームパッドのボタンコード
+- `code`: ゲームパッドのボタンコード  
 ボタンが現在のフレームで押されたかどうかを確認します
 #### gamepad.is_released(code) -> bool
-- code: ゲームパッドのボタンコード
+- `code`: ゲームパッドのボタンコード  
 ボタンが現在のフレームで離されたかどうかを確認します
 #### gamepad.is_down(code) -> bool
-- code: ゲームパッドのボタンコード
+- `code`: ゲームパッドのボタンコード  
 ボタンが押されているかどうかを確認します  
 #### gamepad.left_stick() -> Vector2
 左スティックの変化量を取得します

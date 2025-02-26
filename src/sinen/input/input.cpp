@@ -85,14 +85,17 @@ bool Keyboard::is_released(Keyboard::code _key_code) {
 }
 
 void Mouse::set_position(const Vector2 &pos) {
-  SDL_WarpMouseInWindow(WindowImpl::get_sdl_window(), pos.x, pos.y);
+  const auto half = Window::half();
+  SDL_WarpMouseInWindow(WindowImpl::get_sdl_window(), half.x + pos.x,
+                        half.y - pos.y);
 }
 void Mouse::set_position_on_scene(const Vector2 &pos) {
   auto scene_size = Scene::size();
   auto window_size = Window::size();
   auto x = pos.x * window_size.x / scene_size.x;
   auto y = pos.y * window_size.y / scene_size.y;
-  SDL_WarpMouseInWindow(WindowImpl::get_sdl_window(), x, y);
+  const auto half = Scene::half();
+  SDL_WarpMouseInWindow(WindowImpl::get_sdl_window(), half.x + x, half.y - y);
 }
 
 const Vector2 &Mouse::get_position() {
@@ -103,9 +106,13 @@ const Vector2 &Mouse::get_position() {
   } else {
     SDL_GetMouseState(&x, &y);
   }
-  input_system::m_mouse.mMousePos.x = static_cast<float>(x);
-  input_system::m_mouse.mMousePos.y = static_cast<float>(y);
-  return input_system::m_mouse.mMousePos;
+  input_system::m_mouse.mousePosOnWindow.x = static_cast<float>(x);
+  input_system::m_mouse.mousePosOnWindow.y = static_cast<float>(y);
+  const auto half = Window::half();
+  input_system::m_mouse.mousePosOnWindow -= half;
+  input_system::m_mouse.mousePosOnWindow.y *= -1.f;
+
+  return input_system::m_mouse.mousePosOnWindow;
 }
 const Vector2 &Mouse::get_position_on_scene() {
 
@@ -117,11 +124,14 @@ const Vector2 &Mouse::get_position_on_scene() {
   }
   auto scene_size = Scene::size();
   auto window_size = Window::size();
-  input_system::m_mouse.mMousePos.x =
+  input_system::m_mouse.mousePosOnScene.x =
       static_cast<float>(x) * scene_size.x / window_size.x;
-  input_system::m_mouse.mMousePos.y =
+  input_system::m_mouse.mousePosOnScene.y =
       static_cast<float>(y) * scene_size.y / window_size.y;
-  return input_system::m_mouse.mMousePos;
+  input_system::m_mouse.mousePosOnScene -= Scene::half();
+  input_system::m_mouse.mousePosOnScene.y *= -1.f;
+
+  return input_system::m_mouse.mousePosOnScene;
 }
 
 const Vector2 &Mouse::get_scroll_wheel() {
@@ -181,9 +191,6 @@ bool input_system::initialize() {
   } else {
     m_mouse.mCurrButtons = SDL_GetMouseState(&x, &y);
   }
-
-  m_mouse.mMousePos.x = static_cast<float>(x);
-  m_mouse.mMousePos.y = static_cast<float>(y);
 
   // Initialize controller state
   m_joystick.mIsConnected = mController.initialize();

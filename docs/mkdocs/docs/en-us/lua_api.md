@@ -147,7 +147,7 @@ Model.
 #### Draw2D:add(Vector2, float, Vector2)
 - Vector2: Position.
 - float: Clockwise rotation angle.
-- Vector2: Scale.
+- Vector2: Scale.  
 Adds multiple objects with the same texture and model for rendering. One object already exists at the time of instance creation.
 #### Draw2D:clear()
 Clears added objects. However, the initially created object is not cleared.
@@ -169,7 +169,7 @@ Model.
 #### Draw3D:add(Vector3, Vector3, Vector3)
 - Vector3: Position.
 - Vector3: Rotation.
-- Vector3: Scale.
+- Vector3: Scale.  
 Adds multiple objects with the same texture and model for rendering. One object already exists at the time of instance creation.
 #### Draw3D:clear()
 Clears added objects. However, the initially created object is not cleared.
@@ -421,7 +421,9 @@ Checks if a gamepad button was released in the current frame.
 - code: Gamepad button code.
 Checks if a gamepad button is currently being held down.
 #### gamepad.left_stick() -> Vector2
+Gets the left stick delta movement.
 #### gamepad.right_stick() -> Vector2
+Gets the right stick delta movement.
 #### gamepad.INVALID = code
 #### gamepad.A = code
 #### gamepad.B = code

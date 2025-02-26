@@ -137,7 +137,7 @@ Sinenのウィンドウの中心が(0, 0)です
 #### Draw2D:add(Vector2, float, Vector2)
 - Vector2: 位置情報
 - float: 時計回りの回転角度
-- Vector2: 拡大率
+- Vector2: 拡大率  
 同じテクスチャ、モデルで複数のオブジェクトを追加して描画します  
 インスタンス生成時点で既に一つのオブジェクトが存在しています
 #### Draw2D:clear()
@@ -163,7 +163,7 @@ modelは未指定の場合、立方体が割り当てられます
 #### Draw3D:add(Vector3,Vector3,Vector3)
 - Vector3: 位置情報
 - Vector3: 回転角度
-- Vector3: 拡大率
+- Vector3: 拡大率  
 同じテクスチャ、モデルで複数のオブジェクトを追加して描画します  
 インスタンス生成時点で既に一つのオブジェクトが存在しています
 #### Draw3D:clear()
@@ -409,7 +409,9 @@ AABB同士の衝突判定を行います
 - code: ゲームパッドのボタンコード
 ボタンが押されているかどうかを確認します  
 #### gamepad.left_stick() -> Vector2
+左スティックの変化量を取得します
 #### gamepad.right_stick() -> Vector2
+右スティックの変化量を取得します
 #### gamepad.INVALID = code
 #### gamepad.A = code
 #### gamepad.B = code

@@ -39,22 +39,9 @@ void RendererImpl::draw2d(std::shared_ptr<Drawable> drawObject) {
 void RendererImpl::draw3d(std::shared_ptr<Drawable> drawObject) {
   pxRenderer->draw3d(drawObject);
 }
-void RendererImpl::add_vertex_array(const VertexArray &vArray,
-                                    std::string_view name) {
-  pxRenderer->add_vertex_array(vArray, name);
-}
-
-void RendererImpl::update_vertex_array(const VertexArray &vArray,
-                                       std::string_view name) {
-  pxRenderer->update_vertex_array(vArray, name);
-}
-void RendererImpl::add_model(const Model &m) { pxRenderer->add_model(m); }
-void RendererImpl::update_model(const Model &m) { pxRenderer->update_model(m); }
-
 void RendererImpl::load_shader(const Shader &shaderInfo) {
   pxRenderer->load_shader(shaderInfo);
 }
-
 void RendererImpl::unload_shader(const Shader &shaderInfo) {
   pxRenderer->unload_shader(shaderInfo);
 }

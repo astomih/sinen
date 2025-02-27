@@ -5,7 +5,6 @@
 #include "../texture/texture.hpp"
 #include "instance_data.hpp"
 
-
 namespace sinen {
 /**
  * @brief Drawable object class
@@ -35,8 +34,6 @@ struct Drawable {
     matrix4 view;
     matrix4 proj;
     matrix4 user;
-    matrix4 light_view;
-    matrix4 light_proj;
   };
   // parameter
   parameter param;

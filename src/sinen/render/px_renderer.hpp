@@ -30,10 +30,6 @@ public:
   void render();
   void draw2d(const std::shared_ptr<Drawable> draw_object);
   void draw3d(const std::shared_ptr<Drawable> draw_object);
-  void add_vertex_array(const VertexArray &vArray, std::string_view name);
-  void update_vertex_array(const VertexArray &vArray, std::string_view name);
-  void add_model(const Model &m);
-  void update_model(const Model &m);
   void load_shader(const Shader &shaderinfo);
   void unload_shader(const Shader &shaderinfo);
   void prepare_imgui();

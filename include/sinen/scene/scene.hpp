@@ -97,6 +97,7 @@ public:
     return c;
   }
   static Vector2 ratio();
+  static Vector2 inv_ratio();
 
   static float delta_time();
 

@@ -43,6 +43,7 @@ void register_table(sol::state &lua) {
     v["resize"] = &Scene::resize;
     v["half"] = &Scene::half;
     v["ratio"] = &Scene::ratio;
+    v["inv_ratio"] = &Scene::inv_ratio;
     v["delta_time"] = &Scene::delta_time;
     v["change"] = &Scene::change;
   }

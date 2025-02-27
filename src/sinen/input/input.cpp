@@ -1,6 +1,7 @@
 #include "../window/window_system.hpp"
 #include <SDL3/SDL.h>
 
+#include "SDL3/SDL_mouse.h"
 #include "input_system.hpp"
 #include <cstring>
 #include <imgui_impl_sdl3.h>
@@ -90,53 +91,20 @@ void Mouse::set_position(const Vector2 &pos) {
                         half.y - pos.y);
 }
 void Mouse::set_position_on_scene(const Vector2 &pos) {
-  auto scene_size = Scene::size();
-  auto window_size = Window::size();
-  auto x = pos.x * window_size.x / scene_size.x;
-  auto y = pos.y * window_size.y / scene_size.y;
-  const auto half = Scene::half();
-  SDL_WarpMouseInWindow(WindowImpl::get_sdl_window(), half.x + x, half.y - y);
+  Mouse::set_position(pos * Scene::ratio());
+}
+Vector2 Mouse::get_position() {
+  Vector2 pos;
+  SDL_GetMouseState(&pos.x, &pos.y);
+  pos -= Window::half();
+  pos.y *= -1.f;
+  return pos;
+}
+Vector2 Mouse::get_position_on_scene() {
+  return Mouse::get_position() * Scene::inv_ratio();
 }
 
-const Vector2 &Mouse::get_position() {
-
-  float x = 0, y = 0;
-  if (input_system::m_mouse.mIsRelative) {
-    SDL_GetRelativeMouseState(&x, &y);
-  } else {
-    SDL_GetMouseState(&x, &y);
-  }
-  input_system::m_mouse.mousePosOnWindow.x = static_cast<float>(x);
-  input_system::m_mouse.mousePosOnWindow.y = static_cast<float>(y);
-  const auto half = Window::half();
-  input_system::m_mouse.mousePosOnWindow -= half;
-  input_system::m_mouse.mousePosOnWindow.y *= -1.f;
-
-  return input_system::m_mouse.mousePosOnWindow;
-}
-const Vector2 &Mouse::get_position_on_scene() {
-
-  float x = 0, y = 0;
-  if (input_system::m_mouse.mIsRelative) {
-    SDL_GetRelativeMouseState(&x, &y);
-  } else {
-    SDL_GetMouseState(&x, &y);
-  }
-  auto scene_size = Scene::size();
-  auto window_size = Window::size();
-  input_system::m_mouse.mousePosOnScene.x =
-      static_cast<float>(x) * scene_size.x / window_size.x;
-  input_system::m_mouse.mousePosOnScene.y =
-      static_cast<float>(y) * scene_size.y / window_size.y;
-  input_system::m_mouse.mousePosOnScene -= Scene::half();
-  input_system::m_mouse.mousePosOnScene.y *= -1.f;
-
-  return input_system::m_mouse.mousePosOnScene;
-}
-
-const Vector2 &Mouse::get_scroll_wheel() {
-  return input_system::m_mouse.mScrollWheel;
-}
+Vector2 Mouse::get_scroll_wheel() { return input_system::m_mouse.mScrollWheel; }
 
 void Mouse::hide_cursor(bool hide) {
   isHide = hide;
@@ -186,11 +154,7 @@ bool input_system::initialize() {
          SDL_SCANCODE_COUNT);
 
   float x = 0, y = 0;
-  if (m_mouse.mIsRelative) {
-    m_mouse.mCurrButtons = SDL_GetRelativeMouseState(&x, &y);
-  } else {
-    m_mouse.mCurrButtons = SDL_GetMouseState(&x, &y);
-  }
+  m_mouse.mCurrButtons = SDL_GetMouseState(&x, &y);
 
   // Initialize controller state
   m_joystick.mIsConnected = mController.initialize();
@@ -210,7 +174,6 @@ void input_system::prepare_for_update() {
 
   // Mouse
   m_mouse.mPrevButtons = m_mouse.mCurrButtons;
-  m_mouse.mIsRelative = false;
   m_mouse.mScrollWheel = Vector2::zero;
 
   // Controller
@@ -221,11 +184,7 @@ void input_system::prepare_for_update() {
 void input_system::update() {
   // Mouse
   float x = 0, y = 0;
-  if (m_mouse.mIsRelative) {
-    m_mouse.mCurrButtons = SDL_GetRelativeMouseState(&x, &y);
-  } else {
-    m_mouse.mCurrButtons = SDL_GetMouseState(&x, &y);
-  }
+  m_mouse.mCurrButtons = SDL_GetMouseState(&x, &y);
 
   // Controller
   // Buttons
@@ -267,8 +226,6 @@ void input_system::process_event(SDL_Event &event) {
 void input_system::set_relative_mouse_mode(bool _value) {
   bool set = _value ? true : false;
   SDL_SetWindowRelativeMouseMode(WindowImpl::get_sdl_window(), set);
-
-  m_mouse.mIsRelative = _value;
 }
 
 float input_system::filter1d(int _input) {

@@ -1,8 +1,9 @@
 #include "render_system.hpp"
 #include <math/vector3.hpp>
+#include <model/vertex.hpp>
+#include <model/vertex_array.hpp>
 #include <render/renderer.hpp>
-#include <vertex/vertex.hpp>
-#include <vertex/vertex_array.hpp>
+
 
 namespace sinen {
 bool Renderer::offscreen_rendering = false;

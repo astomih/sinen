@@ -1,10 +1,8 @@
 #ifndef SINEN_TEXTURE_HPP
 #define SINEN_TEXTURE_HPP
-#include <any>
-
 #include "../color/color.hpp"
 #include "../math/matrix4.hpp"
-#include "../vertex/vertex.hpp"
+#include "../math/vector2.hpp"
 #include <memory>
 #include <string>
 #include <string_view>

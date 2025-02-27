@@ -1,9 +1,10 @@
 #ifndef SINEN_MODEL_DATA_HPP
 #define SINEN_MODEL_DATA_HPP
 #include <model/model.hpp>
+#include <model/vertex_array.hpp>
 #include <paranoixa/paranoixa.hpp>
 #include <physics/collision.hpp>
-#include <vertex/vertex_array.hpp>
+
 namespace sinen {
 struct ModelData {
   AABB local_aabb;

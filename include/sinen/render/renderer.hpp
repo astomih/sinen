@@ -12,9 +12,10 @@
 #include "../math/matrix4.hpp"
 #include "../math/vector3.hpp"
 #include "../model/model.hpp"
+#include "../model/vertex_array.hpp"
 #include "../shader/shader.hpp"
 #include "../texture/texture.hpp"
-#include "../vertex/vertex_array.hpp"
+
 
 namespace sinen {
 /**

@@ -3,8 +3,9 @@
 
 #include <drawable/drawable.hpp>
 #include <model/model.hpp>
+#include <model/vertex_array.hpp>
 #include <paranoixa/paranoixa.hpp>
-#include <vertex/vertex_array.hpp>
+
 
 namespace sinen {
 template <typename T> using Ptr = px::Ptr<T>;

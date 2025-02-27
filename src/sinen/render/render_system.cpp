@@ -1,13 +1,14 @@
 #include "render_system.hpp"
-#include "../vertex/default_model_creator.hpp"
+#include "../model/default_model_creator.hpp"
 #include "px_renderer.hpp"
 #include <cstdint>
 #include <io/asset_type.hpp>
 #include <io/data_stream.hpp>
 #include <math/vector3.hpp>
+#include <model/vertex.hpp>
+#include <model/vertex_array.hpp>
 #include <render/renderer.hpp>
-#include <vertex/vertex.hpp>
-#include <vertex/vertex_array.hpp>
+
 
 #include <imgui.h>
 

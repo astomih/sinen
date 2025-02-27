@@ -5,7 +5,7 @@
 #include <vector>
 
 // internal
-#include "../vertex/vertex.hpp"
+#include "vertex.hpp"
 
 namespace sinen {
 /**

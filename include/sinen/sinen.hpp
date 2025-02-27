@@ -32,6 +32,8 @@
 #include "math/vector2.hpp"
 #include "math/vector3.hpp"
 #include "model/model.hpp"
+#include "model/vertex.hpp"
+#include "model/vertex_array.hpp"
 #include "physics/collision.hpp"
 #include "physics/physics.hpp"
 #include "physics/primitive2.hpp"
@@ -41,9 +43,8 @@
 #include "shader/shader.hpp"
 #include "time/time.hpp"
 #include "time/timer.hpp"
-#include "vertex/vertex.hpp"
-#include "vertex/vertex_array.hpp"
 #include "window/window.hpp"
+
 
 namespace sinen {
 /**

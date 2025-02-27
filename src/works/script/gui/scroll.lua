@@ -13,10 +13,14 @@ local function scroll()
     t2 = {},
     pos = Vector2(0, 0),
     is_drag = false,
+    initial = true,
     show = function(self, pos, scale)
       self.drawer = Draw2D(self.t2)
       self.drawer.scale = Vector2(scale.x, scale.y * 0.1)
-      self.pos = Vector2(pos.x, pos.y)
+      if self.initial then
+        self.pos = Vector2(pos.x, pos.y)
+        self.initial = false
+      end
       self.drawer.position = self.pos
       self.max_drawer = Draw2D(self.t1)
       self.max_drawer.scale = scale

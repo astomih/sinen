@@ -18,16 +18,11 @@ public:
 
 struct mouse_state_impl {
 public:
-  // Store current mouse position
-  Vector2 mousePosOnWindow;
-  Vector2 mousePosOnScene;
   // Motion of scroll wheel
   Vector2 mScrollWheel;
   // Store button data
   uint32_t mCurrButtons;
   uint32_t mPrevButtons;
-  // Are we in relative mouse mode
-  bool mIsRelative;
 };
 
 struct joystick_state_impl {

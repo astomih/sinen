@@ -14,9 +14,10 @@
 #include <math/vector2.hpp>
 #include <math/vector3.hpp>
 #include <model/model.hpp>
+#include <model/vertex_array.hpp>
 #include <shader/shader.hpp>
 #include <texture/texture.hpp>
-#include <vertex/vertex_array.hpp>
+
 
 namespace sinen {
 class RendererImpl {
@@ -27,12 +28,6 @@ public:
   static void render();
   static void draw2d(const std::shared_ptr<Drawable> draw_object);
   static void draw3d(const std::shared_ptr<Drawable> draw_object);
-  static void add_vertex_array(const VertexArray &vArray,
-                               std::string_view name);
-  static void update_vertex_array(const VertexArray &vArray,
-                                  std::string_view name);
-  static void add_model(const Model &m);
-  static void update_model(const Model &m);
   static void set_clear_color(const Color &color) {
     if (color.r >= 0.f && color.g >= 0.f && color.b >= 0.f)
       clearColor = color;

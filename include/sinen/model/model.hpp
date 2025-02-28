@@ -5,8 +5,9 @@
 #include <vector>
 
 #include "../physics/collision.hpp"
-#include "../vertex/vertex_array.hpp"
 #include "physics/primitive3.hpp"
+#include "vertex_array.hpp"
+
 
 namespace sinen {
 struct Model {

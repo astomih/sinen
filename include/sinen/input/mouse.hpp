@@ -12,10 +12,10 @@ public:
   // For mouse position
   static void set_position(const Vector2 &pos);
   static void set_position_on_scene(const Vector2 &pos);
-  static const Vector2 &get_position();
-  static const Vector2 &get_position_on_scene();
+  static Vector2 get_position();
+  static Vector2 get_position_on_scene();
   static void hide_cursor(bool hide);
-  static const Vector2 &get_scroll_wheel();
+  static Vector2 get_scroll_wheel();
   static bool IsRelative();
   // For buttons
   static bool is_down(code _button);

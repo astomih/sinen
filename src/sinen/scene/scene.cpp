@@ -36,6 +36,10 @@ Vector2 Scene::ratio() {
   return Vector2(Window::size().x / Scene::size().x,
                  Window::size().y / Scene::size().y);
 }
+Vector2 Scene::inv_ratio() {
+  return Vector2(Scene::size().x / Window::size().x,
+                 Scene::size().y / Window::size().y);
+}
 
 float Scene::delta_time() { return scene_system::delta_time(); }
 

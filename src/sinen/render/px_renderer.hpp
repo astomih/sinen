@@ -3,8 +3,9 @@
 
 #include <drawable/drawable.hpp>
 #include <model/model.hpp>
+#include <model/vertex_array.hpp>
 #include <paranoixa/paranoixa.hpp>
-#include <vertex/vertex_array.hpp>
+
 
 namespace sinen {
 template <typename T> using Ptr = px::Ptr<T>;
@@ -30,10 +31,6 @@ public:
   void render();
   void draw2d(const std::shared_ptr<Drawable> draw_object);
   void draw3d(const std::shared_ptr<Drawable> draw_object);
-  void add_vertex_array(const VertexArray &vArray, std::string_view name);
-  void update_vertex_array(const VertexArray &vArray, std::string_view name);
-  void add_model(const Model &m);
-  void update_model(const Model &m);
   void load_shader(const Shader &shaderinfo);
   void unload_shader(const Shader &shaderinfo);
   void prepare_imgui();

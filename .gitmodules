@@ -19,3 +19,6 @@
 [submodule "libs/SDL"]
 	path = libs/SDL
 	url = https://github.com/libsdl-org/SDL
+[submodule "libs/slang"]
+	path = libs/slang
+	url = https://github.com/shader-slang/slang

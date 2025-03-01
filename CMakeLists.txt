@@ -44,6 +44,10 @@ set(SDLTTF_PLUTOSVG OFF)
 add_subdirectory(./libs/SDL_ttf EXCLUDE_FROM_ALL)
 add_subdirectory(./libs/sol2 EXCLUDE_FROM_ALL)
 
+set(SLANG_ENABLE_TESTS OFF)
+set(SLANG_ENABLE_SLANG_RHI OFF)
+add_subdirectory(./libs/slang EXCLUDE_FROM_ALL)
+
 set(PARANOIXA_BUILD_SDL3 OFF)
 add_subdirectory(./libs/paranoixa EXCLUDE_FROM_ALL)
 

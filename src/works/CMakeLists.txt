@@ -37,6 +37,7 @@ find_package(Vulkan REQUIRED)
 set(COMMON_LIBRARIES
 	sinen
 	script_engine
+	rt_shader_compiler
 	${Vulkan_LIBRARIES}
 )
 

@@ -5,11 +5,16 @@
 #include <vector>
 
 #include <rt_shader_compiler.hpp>
+
+#ifdef _MSC_VER
+#define popen _popen
+#define pclose _pclose
+#endif
 namespace rsc {
 
 std::vector<char> ShaderCompiler::compile(const std::string &source, Type type,
                                           Language lang) {
-
+#ifndef __EMSCRIPTEN__
   std::vector<char> spirvBinary;
 
   std::string input{};
@@ -25,7 +30,7 @@ std::vector<char> ShaderCompiler::compile(const std::string &source, Type type,
 
   std::array<char, 2048> buffer;
   while (true) {
-    size_t bytesRead = fread(buffer.data(), 1, buffer.size(), pipeOut);
+    size_t bytesRead = std::fread(buffer.data(), 1, buffer.size(), pipeOut);
     if (bytesRead == 0)
       break;
     spirvBinary.insert(spirvBinary.end(), buffer.data(),
@@ -34,5 +39,6 @@ std::vector<char> ShaderCompiler::compile(const std::string &source, Type type,
   pclose(pipeOut);
 
   return spirvBinary;
+#endif
 }
 } // namespace rsc

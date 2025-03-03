@@ -52,6 +52,7 @@ add_subdirectory(./src/editor)
 
 # add_subdirectory(./test)
 add_subdirectory(./src/usertype EXCLUDE_FROM_ALL)
+add_subdirectory(./src/rt_shader_compiler EXCLUDE_FROM_ALL)
 add_subdirectory(./src/works)
 
 if(NOT MSVC)

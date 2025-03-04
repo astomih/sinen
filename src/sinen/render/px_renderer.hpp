@@ -6,7 +6,7 @@
 #include <model/model.hpp>
 #include <model/vertex_array.hpp>
 #include <paranoixa/paranoixa.hpp>
-
+#include <render/render_pipeline.hpp>
 namespace sinen {
 template <typename T> using Ptr = px::Ptr<T>;
 template <typename T> using Array = px::Array<T>;
@@ -46,10 +46,8 @@ private:
 
   Ptr<px::Texture> depthTexture;
   Ptr<px::Sampler> sampler;
-  Ptr<px::GraphicsPipeline> pipeline2D;
-  Ptr<px::GraphicsPipeline> pipeline2DInstanced;
-  Ptr<px::GraphicsPipeline> pipeline3D;
-  Ptr<px::GraphicsPipeline> pipeline3DInstanced;
+  RenderPipeline2D pipeline2D;
+  RenderPipeline3D pipeline3D;
 
   px::Ptr<px::CommandBuffer> currentCommandBuffer;
   px::Ptr<px::RenderPass> currentRenderPass;

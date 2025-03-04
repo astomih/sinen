@@ -111,9 +111,6 @@ void glsl_editor::display() {
       std::string t = pimpl->te.GetText();
       DataStream::write(AssetType::Shader, path, t);
       Shader s;
-      s.set_fragment_shader("shaderOpaque.frag");
-      s.set_vertex_shader("shader.vert");
-      s.load();
     }
   }
   pimpl->te.SetLanguageDefinition(get_glsl());

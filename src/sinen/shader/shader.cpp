@@ -1,23 +1,58 @@
 // internal
+#include "../render/px_renderer.hpp"
 #include "../render/render_system.hpp"
+#include "io/asset_type.hpp"
+#include "libs/paranoixa/library/SDL/include/SDL3/SDL_iostream.h"
 #include <shader/shader.hpp>
 
-namespace sinen {
-Shader::Shader()
-    : m_parameter(nullptr), m_parameter_size(0), m_vert_name("default"),
-      m_frag_name("default") {}
-Shader::Shader(std::string_view vertex_shader, std::string_view fragment_shader)
-    : m_parameter(nullptr), m_parameter_size(0), m_vert_name(vertex_shader),
-      m_frag_name(fragment_shader) {}
-void Shader::set_vertex_shader(std::string_view vertex_shader) {
-  m_vert_name = vertex_shader;
-}
-void Shader::set_fragment_shader(std::string_view fragment_shader) {
-  m_frag_name = fragment_shader;
-}
-const std::string &Shader::vertex_shader() const { return m_vert_name; }
-const std::string &Shader::fragment_shader() const { return m_frag_name; }
+#include <io/data_stream.hpp>
 
-void Shader::load() { RendererImpl::load_shader(*this); }
-void Shader::unload() { RendererImpl::unload_shader(*this); }
+#include <SDL3/SDL.h>
+
+namespace sinen {
+void Shader::load_vertex_shader(std::string_view vertex_shader) {
+  auto pxRenderer = RendererImpl::GetPxRenderer();
+  auto *allocator = pxRenderer->GetAllocator();
+  auto device = pxRenderer->GetDevice();
+
+  SDL_IOStream *file = (SDL_IOStream *)DataStream::open_as_rwops(
+      AssetType::Shader, vertex_shader);
+
+  std::string vsStr =
+      DataStream::open_as_string(AssetType::Shader, vertex_shader);
+
+  px::Shader::CreateInfo vsInfo{};
+  vsInfo.allocator = allocator;
+  vsInfo.size = vsStr.size();
+  vsInfo.data = vsStr.data();
+  vsInfo.entrypoint = "main";
+  vsInfo.format = px::ShaderFormat::SPIRV;
+  vsInfo.stage = px::ShaderStage::Vertex;
+  vsInfo.numSamplers = 0;
+  vsInfo.numStorageBuffers = 0;
+  vsInfo.numStorageTextures = 0;
+  vsInfo.numUniformBuffers = 1;
+  shader = device->CreateShader(vsInfo);
+}
+void Shader::load_fragment_shader(std::string_view fragment_shader) {
+  auto pxRenderer = RendererImpl::GetPxRenderer();
+  auto *allocator = pxRenderer->GetAllocator();
+  auto device = pxRenderer->GetDevice();
+
+  std::string fsStr =
+      DataStream::open_as_string(AssetType::Shader, fragment_shader);
+
+  px::Shader::CreateInfo fsInfo{};
+  fsInfo.allocator = allocator;
+  fsInfo.size = fsStr.size();
+  fsInfo.data = fsStr.data();
+  fsInfo.entrypoint = "main";
+  fsInfo.format = px::ShaderFormat::SPIRV;
+  fsInfo.stage = px::ShaderStage::Fragment;
+  fsInfo.numSamplers = 1;
+  fsInfo.numStorageBuffers = 0;
+  fsInfo.numStorageTextures = 0;
+  fsInfo.numUniformBuffers = 0;
+  shader = device->CreateShader(fsInfo);
+}
 } // namespace sinen

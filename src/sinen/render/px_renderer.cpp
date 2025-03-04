@@ -3,6 +3,7 @@
 #include "../window/window_system.hpp"
 #include "SDL3/SDL_video.h"
 #include "drawable/instance_data.hpp"
+#include "math/matrix4.hpp"
 #include "paranoixa/paranoixa.hpp"
 #include "render/renderer.hpp"
 #include "render_system.hpp"
@@ -31,96 +32,6 @@ namespace sinen {
 PxDrawable::PxDrawable(px::Allocator *allocator)
     : allocator(allocator), vertexBuffers(allocator),
       textureSamplers(allocator) {}
-px::VertexInputState CreateVertexInputState(px::Allocator *allocator,
-                                            bool isInstance) {
-  px::VertexInputState vertexInputState{allocator};
-  if (isInstance) {
-    vertexInputState.vertexBufferDescriptions.emplace_back(
-        px::VertexBufferDescription{
-            .slot = 0,
-            .pitch = sizeof(Vertex),
-            .inputRate = px::VertexInputRate::Vertex,
-            .instanceStepRate = 0,
-        });
-    vertexInputState.vertexBufferDescriptions.emplace_back(
-        px::VertexBufferDescription{
-            .slot = 1,
-            .pitch = sizeof(InstanceData),
-            .inputRate = px::VertexInputRate::Instance,
-            .instanceStepRate = 1,
-        });
-    vertexInputState.vertexAttributes.emplace_back(
-        px::VertexAttribute{.location = 0,
-                            .bufferSlot = 0,
-                            .format = px::VertexElementFormat::Float3,
-                            .offset = offsetof(Vertex, position)});
-    vertexInputState.vertexAttributes.emplace_back(
-        px::VertexAttribute{.location = 1,
-                            .bufferSlot = 0,
-                            .format = px::VertexElementFormat::Float3,
-                            .offset = offsetof(Vertex, normal)});
-    vertexInputState.vertexAttributes.emplace_back(
-        px::VertexAttribute{.location = 2,
-                            .bufferSlot = 0,
-                            .format = px::VertexElementFormat::Float2,
-                            .offset = offsetof(Vertex, uv)});
-    vertexInputState.vertexAttributes.emplace_back(
-        px::VertexAttribute{.location = 3,
-                            .bufferSlot = 0,
-                            .format = px::VertexElementFormat::Float4,
-                            .offset = offsetof(Vertex, rgba)});
-
-    vertexInputState.vertexAttributes.emplace_back(
-        px::VertexAttribute{.location = 4,
-                            .bufferSlot = 1,
-                            .format = px::VertexElementFormat::Float4,
-                            .offset = offsetof(InstanceData, world_matrix_1)});
-    vertexInputState.vertexAttributes.emplace_back(
-        px::VertexAttribute{.location = 5,
-                            .bufferSlot = 1,
-                            .format = px::VertexElementFormat::Float4,
-                            .offset = offsetof(InstanceData, world_matrix_2)});
-    vertexInputState.vertexAttributes.emplace_back(
-        px::VertexAttribute{.location = 6,
-                            .bufferSlot = 1,
-                            .format = px::VertexElementFormat::Float4,
-                            .offset = offsetof(InstanceData, world_matrix_3)});
-    vertexInputState.vertexAttributes.emplace_back(
-        px::VertexAttribute{.location = 7,
-                            .bufferSlot = 1,
-                            .format = px::VertexElementFormat::Float4,
-                            .offset = offsetof(InstanceData, world_matrix_4)});
-  } else {
-    vertexInputState.vertexBufferDescriptions.emplace_back(
-        px::VertexBufferDescription{
-            .slot = 0,
-            .pitch = sizeof(Vertex),
-            .inputRate = px::VertexInputRate::Vertex,
-            .instanceStepRate = 0,
-        });
-    vertexInputState.vertexAttributes.emplace_back(
-        px::VertexAttribute{.location = 0,
-                            .bufferSlot = 0,
-                            .format = px::VertexElementFormat::Float3,
-                            .offset = offsetof(Vertex, position)});
-    vertexInputState.vertexAttributes.emplace_back(
-        px::VertexAttribute{.location = 1,
-                            .bufferSlot = 0,
-                            .format = px::VertexElementFormat::Float3,
-                            .offset = offsetof(Vertex, normal)});
-    vertexInputState.vertexAttributes.emplace_back(
-        px::VertexAttribute{.location = 2,
-                            .bufferSlot = 0,
-                            .format = px::VertexElementFormat::Float2,
-                            .offset = offsetof(Vertex, uv)});
-    vertexInputState.vertexAttributes.emplace_back(
-        px::VertexAttribute{.location = 3,
-                            .bufferSlot = 0,
-                            .format = px::VertexElementFormat::Float4,
-                            .offset = offsetof(Vertex, rgba)});
-  }
-  return vertexInputState;
-}
 PxRenderer::PxRenderer(px::Allocator *allocator)
     : allocator(allocator), vertexArrays(allocator), colorTargets(allocator) {}
 void PxRenderer::initialize() {
@@ -142,102 +53,21 @@ void PxRenderer::initialize() {
   RendererImpl::prepare_imgui();
   ImGui_ImplParanoixa_Init(&init_info);
 
-  std::string vsStr =
-      DataStream::open_as_string(AssetType::Shader, "shader.vert.spv");
-  std::string fsStr =
-      DataStream::open_as_string(AssetType::Shader, "shaderAlpha.frag.spv");
+  Shader vs;
+  vs.load_vertex_shader("shader.vert.spv");
+  Shader vsInstanced;
+  vsInstanced.load_vertex_shader("shader_instance.vert.spv");
+  Shader fs;
+  fs.load_fragment_shader("shaderAlpha.frag.spv");
 
-  px::Shader::CreateInfo vsInfo{};
-  vsInfo.allocator = allocator;
-  vsInfo.size = vsStr.size();
-  vsInfo.data = vsStr.data();
-  vsInfo.entrypoint = "main";
-  vsInfo.format = px::ShaderFormat::SPIRV;
-  vsInfo.stage = px::ShaderStage::Vertex;
-  vsInfo.numSamplers = 0;
-  vsInfo.numStorageBuffers = 0;
-  vsInfo.numStorageTextures = 0;
-  vsInfo.numUniformBuffers = 1;
-  auto vs = device->CreateShader(vsInfo);
+  this->pipeline3D.set_vertex_shader(vs);
+  this->pipeline3D.set_vertex_instanced_shader(vsInstanced);
+  this->pipeline3D.set_fragment_shader(fs);
+  this->pipeline3D.build();
 
-  px::Shader::CreateInfo fsInfo{};
-  fsInfo.allocator = allocator;
-  fsInfo.size = fsStr.size();
-  fsInfo.data = fsStr.data();
-  fsInfo.entrypoint = "main";
-  fsInfo.format = px::ShaderFormat::SPIRV;
-  fsInfo.stage = px::ShaderStage::Fragment;
-  fsInfo.numSamplers = 1;
-  fsInfo.numStorageBuffers = 0;
-  fsInfo.numStorageTextures = 0;
-  fsInfo.numUniformBuffers = 0;
-  auto fs = device->CreateShader(fsInfo);
-  px::GraphicsPipeline::CreateInfo pipelineInfo{allocator};
-  pipelineInfo.vertexShader = vs;
-  pipelineInfo.fragmentShader = fs;
-  pipelineInfo.vertexInputState = CreateVertexInputState(allocator, false);
-  pipelineInfo.primitiveType = px::PrimitiveType::TriangleList;
-
-  px::RasterizerState rasterizerState{};
-  rasterizerState.fillMode = px::FillMode::Fill;
-  rasterizerState.cullMode = px::CullMode::None;
-  rasterizerState.frontFace = px::FrontFace::CounterClockwise;
-
-  pipelineInfo.rasterizerState = rasterizerState;
-  pipelineInfo.multiSampleState = {};
-  pipelineInfo.multiSampleState.sampleCount = px::SampleCount::x1;
-  pipelineInfo.depthStencilState.enableDepthTest = false;
-  pipelineInfo.depthStencilState.enableDepthWrite = false;
-  pipelineInfo.depthStencilState.enableStencilTest = false;
-  pipelineInfo.depthStencilState.compareOp = px::CompareOp::LessOrEqual;
-
-  pipelineInfo.targetInfo.colorTargetDescriptions.emplace_back(
-      px::ColorTargetDescription{
-          .format = device->GetSwapchainFormat(),
-          .blendState =
-              px::ColorTargetBlendState{
-                  .srcColorBlendFactor = px::BlendFactor::SrcAlpha,
-                  .dstColorBlendFactor = px::BlendFactor::OneMinusSrcAlpha,
-                  .colorBlendOp = px::BlendOp::Add,
-                  .srcAlphaBlendFactor = px::BlendFactor::One,
-                  .dstAlphaBlendFactor = px::BlendFactor::OneMinusSrcAlpha,
-                  .alphaBlendOp = px::BlendOp::Add,
-                  .colorWriteMask =
-                      px::ColorComponent::R | px::ColorComponent::G |
-                      px::ColorComponent::B | px::ColorComponent::A,
-                  .enableBlend = true,
-              },
-      });
-  pipelineInfo.targetInfo.hasDepthStencilTarget = false;
-
-  pipeline2D = device->CreateGraphicsPipeline(pipelineInfo);
-
-  pipelineInfo.depthStencilState.enableDepthTest = true;
-  pipelineInfo.depthStencilState.enableDepthWrite = true;
-  pipelineInfo.depthStencilState.enableStencilTest = false;
-  pipelineInfo.depthStencilState.compareOp = px::CompareOp::LessOrEqual;
-  pipelineInfo.targetInfo.hasDepthStencilTarget = true;
-  pipelineInfo.targetInfo.depthStencilTargetFormat =
-      px::TextureFormat::D32_FLOAT_S8_UINT;
-  pipeline3D = device->CreateGraphicsPipeline(pipelineInfo);
-
-  vsStr =
-      DataStream::open_as_string(AssetType::Shader, "shader_instance.vert.spv");
-
-  vsInfo.allocator = allocator;
-  vsInfo.size = vsStr.size();
-  vsInfo.data = vsStr.data();
-  vsInfo.entrypoint = "main";
-  vsInfo.format = px::ShaderFormat::SPIRV;
-  vsInfo.stage = px::ShaderStage::Vertex;
-  vsInfo.numSamplers = 0;
-  vsInfo.numStorageBuffers = 0;
-  vsInfo.numStorageTextures = 0;
-  vsInfo.numUniformBuffers = 1;
-  vs = device->CreateShader(vsInfo);
-  pipelineInfo.vertexInputState = CreateVertexInputState(allocator, true);
-  pipelineInfo.vertexShader = vs;
-  pipeline3DInstanced = device->CreateGraphicsPipeline(pipelineInfo);
+  this->pipeline2D.set_vertex_shader(vs);
+  this->pipeline2D.set_fragment_shader(fs);
+  this->pipeline2D.build();
 
   // Create depth stencil target
   {
@@ -352,7 +182,7 @@ void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
     renderPass->SetViewport(
         px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
     renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
-    renderPass->BindGraphicsPipeline(pipeline2D);
+    renderPass->BindGraphicsPipeline(pipeline2D.get());
     isFrameStarted = false;
     isDraw2D = true;
   } else if (!isDraw2D) {
@@ -363,7 +193,7 @@ void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
     renderPass->SetViewport(
         px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
     renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
-    renderPass->BindGraphicsPipeline(pipeline2D);
+    renderPass->BindGraphicsPipeline(pipeline2D.get());
     isDraw2D = true;
   }
 
@@ -427,7 +257,8 @@ void PxRenderer::draw3d(const std::shared_ptr<Drawable> draw_object) {
   drawable.textureSamplers.push_back(
       px::TextureSamplerBinding{.sampler = sampler, .texture = texture});
 
-  if (drawable.drawable->size() > 0) {
+  bool isInstance = drawable.drawable->size() > 0;
+  if (isInstance) {
     px::Buffer::CreateInfo instanceBufferInfo{};
     instanceBufferInfo.allocator = allocator;
     instanceBufferInfo.size = drawable.drawable->size();
@@ -483,7 +314,7 @@ void PxRenderer::draw3d(const std::shared_ptr<Drawable> draw_object) {
         });
     auto commandBuffer = currentCommandBuffer;
     auto renderPass = currentRenderPass;
-    renderPass->BindGraphicsPipeline(pipeline3DInstanced);
+    renderPass->BindGraphicsPipeline(pipeline3D.get_instanced());
     renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
     renderPass->BindVertexBuffers(0, drawable.vertexBuffers);
     renderPass->BindIndexBuffer(drawable.indexBuffer,
@@ -505,7 +336,7 @@ void PxRenderer::draw3d(const std::shared_ptr<Drawable> draw_object) {
         .offset = 0};
     auto commandBuffer = currentCommandBuffer;
     auto renderPass = currentRenderPass;
-    renderPass->BindGraphicsPipeline(pipeline3D);
+    renderPass->BindGraphicsPipeline(pipeline3D.get_instanced());
     renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
     renderPass->BindVertexBuffers(0, drawable.vertexBuffers);
     renderPass->BindIndexBuffer(drawable.indexBuffer,

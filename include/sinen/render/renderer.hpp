@@ -15,7 +15,7 @@
 #include "../model/vertex_array.hpp"
 #include "../shader/shader.hpp"
 #include "../texture/texture.hpp"
-
+#include "render_pipeline.hpp"
 
 namespace sinen {
 /**

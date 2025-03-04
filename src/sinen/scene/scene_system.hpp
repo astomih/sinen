@@ -47,11 +47,11 @@ public:
   static void process_input();
   static void update_scene();
   static bool is_reset;
+  static bool is_run_script;
 
   static inline float delta_time() { return deltaTime; }
 
 private:
-  static bool is_run_script;
   static std::unique_ptr<Scene::implements> m_impl;
   static Scene::state m_game_state;
   static uint32_t m_prev_tick;

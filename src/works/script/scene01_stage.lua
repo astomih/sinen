@@ -127,7 +127,7 @@ scene_switcher:start("")
 equipment_menu:setup()
 
 function Draw()
-    player:draw()
+    player:draw3()
     local px = math.floor(camera_controller.target.x / TILE_SIZE + 0.5)
     local py = math.floor(camera_controller.target.y / TILE_SIZE + 0.5)
     local size = 6
@@ -166,9 +166,12 @@ function Draw()
     if not key_hit then
         key_drawer:draw()
     end
+
+    -- 2D
     if key_hit then
         key_drawer2d:draw()
     end
+    player:draw2()
     score_drawer:draw()
     equipment_menu:draw()
     menu_object:draw()

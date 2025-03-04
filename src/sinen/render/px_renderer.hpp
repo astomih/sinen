@@ -1,11 +1,11 @@
 #ifndef SINEN_PX_RENDERER_HPP
 #define SINEN_PX_RENDERER_HPP
 
+#include <cstdint>
 #include <drawable/drawable.hpp>
 #include <model/model.hpp>
 #include <model/vertex_array.hpp>
 #include <paranoixa/paranoixa.hpp>
-
 
 namespace sinen {
 template <typename T> using Ptr = px::Ptr<T>;
@@ -51,10 +51,13 @@ private:
   Ptr<px::GraphicsPipeline> pipeline3D;
   Ptr<px::GraphicsPipeline> pipeline3DInstanced;
 
-  px::Array<PxDrawable> drawables2D;
-  px::Array<PxDrawable> drawables2DInstanced;
-  px::Array<PxDrawable> drawables3D;
-  px::Array<PxDrawable> drawables3DInstanced;
+  px::Ptr<px::CommandBuffer> currentCommandBuffer;
+  px::Ptr<px::RenderPass> currentRenderPass;
+  bool isFrameStarted = true;
+  bool isDraw2D = true;
+  uint32_t objectCount = 0;
+  px::Array<px::ColorTargetInfo> colorTargets;
+  px::DepthStencilTargetInfo depthStencilInfo;
   px::HashMap<std::string, PxVertexArray> vertexArrays;
 };
 } // namespace sinen

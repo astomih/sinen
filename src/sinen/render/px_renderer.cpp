@@ -17,8 +17,12 @@
 #include <imgui_impl_sdl3.h>
 
 #include "../model/model_data.hpp"
+#include "../script/script_system.hpp"
 #include "../texture/texture_data.hpp"
+#include "script/script.hpp"
+#include <sol/sol.hpp>
 
+#include "../scene/scene_system.hpp"
 // TODO:
 // - Refactoring
 // - Shadow mapping
@@ -118,9 +122,7 @@ px::VertexInputState CreateVertexInputState(px::Allocator *allocator,
   return vertexInputState;
 }
 PxRenderer::PxRenderer(px::Allocator *allocator)
-    : allocator(allocator), drawables2D(allocator),
-      drawables2DInstanced(allocator), drawables3DInstanced(allocator),
-      drawables3D(allocator), vertexArrays(allocator) {}
+    : allocator(allocator), vertexArrays(allocator), colorTargets(allocator) {}
 void PxRenderer::initialize() {
   backend = px::Paranoixa::CreateBackend(allocator, px::GraphicsAPI::SDLGPU);
   px::Device::CreateInfo info{};
@@ -238,17 +240,20 @@ void PxRenderer::initialize() {
   pipeline3DInstanced = device->CreateGraphicsPipeline(pipelineInfo);
 
   // Create depth stencil target
-  px::Texture::CreateInfo depthStencilInfo{};
-  depthStencilInfo.allocator = allocator;
-  depthStencilInfo.width = Window::size().x;
-  depthStencilInfo.height = Window::size().y;
-  depthStencilInfo.layerCountOrDepth = 1;
-  depthStencilInfo.type = px::TextureType::Texture2D;
-  depthStencilInfo.usage = px::TextureUsage::DepthStencilTarget;
-  depthStencilInfo.format = px::TextureFormat::D32_FLOAT_S8_UINT;
-  depthStencilInfo.numLevels = 1;
-  depthStencilInfo.sampleCount = px::SampleCount::x1;
-  depthTexture = device->CreateTexture(depthStencilInfo);
+  {
+
+    px::Texture::CreateInfo depthStencilCreateInfo{};
+    depthStencilCreateInfo.allocator = allocator;
+    depthStencilCreateInfo.width = Window::size().x;
+    depthStencilCreateInfo.height = Window::size().y;
+    depthStencilCreateInfo.layerCountOrDepth = 1;
+    depthStencilCreateInfo.type = px::TextureType::Texture2D;
+    depthStencilCreateInfo.usage = px::TextureUsage::DepthStencilTarget;
+    depthStencilCreateInfo.format = px::TextureFormat::D32_FLOAT_S8_UINT;
+    depthStencilCreateInfo.numLevels = 1;
+    depthStencilCreateInfo.sampleCount = px::SampleCount::x1;
+    depthTexture = device->CreateTexture(depthStencilCreateInfo);
+  }
 
   // Default sampler
   px::Sampler::CreateInfo samplerInfo{};
@@ -259,46 +264,8 @@ void PxRenderer::initialize() {
   samplerInfo.addressModeV = px::AddressMode::Repeat;
   samplerInfo.maxAnisotropy = 1.f;
   sampler = device->CreateSampler(samplerInfo);
-}
-void PxRenderer::shutdown() {
-  this->drawables2D.clear();
-  this->drawables2DInstanced.clear();
-  this->drawables3D.clear();
-  this->drawables3DInstanced.clear();
-  this->vertexArrays.clear();
-  this->device.reset();
-  this->backend.reset();
-}
-void PxRenderer::unload_data() {}
-void PxRenderer::render() {
-  auto commandBuffer = device->AcquireCommandBuffer({allocator});
-  px::Array<px::ColorTargetInfo> colorTargets{allocator};
-  auto swapchainTexture = device->AcquireSwapchainTexture(commandBuffer);
-  if (swapchainTexture == nullptr) {
-    drawables3D.clear();
-    drawables3DInstanced.clear();
-    drawables2D.clear();
-    return;
-  }
-  if (WindowImpl::resized()) {
-    px::Texture::CreateInfo depthStencilInfo{};
-    depthStencilInfo.allocator = allocator;
-    depthStencilInfo.width = Window::size().x;
-    depthStencilInfo.height = Window::size().y;
-    depthStencilInfo.layerCountOrDepth = 1;
-    depthStencilInfo.type = px::TextureType::Texture2D;
-    depthStencilInfo.usage = px::TextureUsage::DepthStencilTarget;
-    depthStencilInfo.format = px::TextureFormat::D32_FLOAT_S8_UINT;
-    depthStencilInfo.numLevels = 1;
-    depthStencilInfo.sampleCount = px::SampleCount::x1;
-    depthTexture = device->CreateTexture(depthStencilInfo);
-  }
-  colorTargets.push_back(px::ColorTargetInfo{
-      .texture = swapchainTexture,
-      .loadOp = px::LoadOp::Clear,
-      .storeOp = px::StoreOp::Store,
-  });
-  px::DepthStencilTargetInfo depthStencilInfo{};
+
+  colorTargets.push_back({});
   depthStencilInfo.texture = depthTexture;
   depthStencilInfo.loadOp = px::LoadOp::Clear;
   depthStencilInfo.storeOp = px::StoreOp::Store;
@@ -307,6 +274,34 @@ void PxRenderer::render() {
   depthStencilInfo.cycle = 0;
   depthStencilInfo.stencilLoadOp = px::LoadOp::Clear;
   depthStencilInfo.stencilStoreOp = px::StoreOp::Store;
+}
+void PxRenderer::shutdown() {
+  this->vertexArrays.clear();
+  this->device.reset();
+  this->backend.reset();
+}
+void PxRenderer::unload_data() {}
+void PxRenderer::render() {
+  auto commandBuffer = device->AcquireCommandBuffer({allocator});
+  auto swapchainTexture = device->AcquireSwapchainTexture(commandBuffer);
+  if (swapchainTexture == nullptr) {
+    return;
+  }
+  colorTargets[0].texture = swapchainTexture;
+  if (WindowImpl::resized()) {
+    px::Texture::CreateInfo depthStencilCreateInfo{};
+    depthStencilCreateInfo.allocator = allocator;
+    depthStencilCreateInfo.width = Window::size().x;
+    depthStencilCreateInfo.height = Window::size().y;
+    depthStencilCreateInfo.layerCountOrDepth = 1;
+    depthStencilCreateInfo.type = px::TextureType::Texture2D;
+    depthStencilCreateInfo.usage = px::TextureUsage::DepthStencilTarget;
+    depthStencilCreateInfo.format = px::TextureFormat::D32_FLOAT_S8_UINT;
+    depthStencilCreateInfo.numLevels = 1;
+    depthStencilCreateInfo.sampleCount = px::SampleCount::x1;
+    depthTexture = device->CreateTexture(depthStencilCreateInfo);
+    this->depthStencilInfo.texture = depthTexture;
+  }
 
   ImGui_ImplParanoixa_NewFrame();
   ImGui_ImplSDL3_NewFrame();
@@ -318,77 +313,59 @@ void PxRenderer::render() {
   ImGui::Render();
   ImDrawData *draw_data = ImGui::GetDrawData();
 
+  currentCommandBuffer = commandBuffer;
   Imgui_ImplParanoixa_PrepareDrawData(draw_data, commandBuffer);
-  {
+  isFrameStarted = true;
+  objectCount = 0;
+  if (scene_system::is_run_script) {
 
-    auto renderPass =
-        commandBuffer->BeginRenderPass(colorTargets, depthStencilInfo);
-    renderPass->SetViewport(
-        px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
-    renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
-    renderPass->BindGraphicsPipeline(pipeline3D);
-    for (auto &drawable : drawables3D) {
-      renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
-      renderPass->BindVertexBuffers(0, drawable.vertexBuffers);
-      renderPass->BindIndexBuffer(drawable.indexBuffer,
-                                  px::IndexElementSize::Uint32);
-
-      auto param = drawable.drawable->param;
-      commandBuffer->PushVertexUniformData(0, &param,
-                                           sizeof(Drawable::parameter));
-      renderPass->DrawIndexedPrimitives(
-          GetModelData(drawable.drawable->model.data)->v_array.indexCount, 1, 0,
-          0, 0);
-    }
-    renderPass->BindGraphicsPipeline(pipeline3DInstanced);
-    for (auto &drawable : drawables3DInstanced) {
-      renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
-      renderPass->BindVertexBuffers(0, drawable.vertexBuffers);
-      renderPass->BindIndexBuffer(drawable.indexBuffer,
-                                  px::IndexElementSize::Uint32);
-
-      auto param = drawable.drawable->param;
-      commandBuffer->PushVertexUniformData(0, &param,
-                                           sizeof(Drawable::parameter));
-      renderPass->DrawIndexedPrimitives(
-          GetModelData(drawable.drawable->model.data)->v_array.indexCount,
-          drawable.drawable->data.size(), 0, 0, 0);
-    }
-    commandBuffer->EndRenderPass(renderPass);
+    sol::state *lua = (sol::state *)script_system::get_state();
+    (*lua)["Draw"]();
+  }
+  if (objectCount > 0 && !isDraw2D) {
+    commandBuffer->EndRenderPass(currentRenderPass);
   }
 
   {
 
-    colorTargets[0].loadOp = px::LoadOp::Load;
-    auto renderPass = commandBuffer->BeginRenderPass(colorTargets, {});
+    if (isFrameStarted || (objectCount > 0 && !isDraw2D)) {
+      colorTargets[0].loadOp = px::LoadOp::Load;
+      currentRenderPass = commandBuffer->BeginRenderPass(colorTargets, {});
+    }
+    auto renderPass = currentRenderPass;
     renderPass->SetViewport(
         px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
     renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
-    renderPass->BindGraphicsPipeline(pipeline2D);
-    for (int i = 0; i < drawables2D.size(); i++) {
-      renderPass->BindFragmentSamplers(0, drawables2D[i].textureSamplers);
-      renderPass->BindVertexBuffers(0, drawables2D[i].vertexBuffers);
-      renderPass->BindIndexBuffer(drawables2D[i].indexBuffer,
-                                  px::IndexElementSize::Uint32);
-
-      auto param = drawables2D[i].drawable->param;
-      commandBuffer->PushVertexUniformData(0, &param,
-                                           sizeof(Drawable::parameter));
-      renderPass->DrawIndexedPrimitives(
-          GetModelData(drawables2D[i].drawable->model.data)->v_array.indexCount,
-          1, 0, 0, 0);
-    }
     // Render ImGui
     ImGui_ImplParanoixa_RenderDrawData(draw_data, commandBuffer, renderPass);
     commandBuffer->EndRenderPass(renderPass);
   }
   device->SubmitCommandBuffer(commandBuffer);
   device->WaitForGPUIdle();
-  drawables3D.clear();
-  drawables3DInstanced.clear();
-  drawables2D.clear();
 }
 void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
+  objectCount++;
+  if (isFrameStarted) {
+    colorTargets[0].loadOp = px::LoadOp::Clear;
+    currentRenderPass = currentCommandBuffer->BeginRenderPass(colorTargets, {});
+    auto renderPass = currentRenderPass;
+    renderPass->SetViewport(
+        px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
+    renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
+    renderPass->BindGraphicsPipeline(pipeline2D);
+    isFrameStarted = false;
+    isDraw2D = true;
+  } else if (!isDraw2D) {
+    currentCommandBuffer->EndRenderPass(currentRenderPass);
+    colorTargets[0].loadOp = px::LoadOp::Load;
+    currentRenderPass = currentCommandBuffer->BeginRenderPass(colorTargets, {});
+    auto renderPass = currentRenderPass;
+    renderPass->SetViewport(
+        px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
+    renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
+    renderPass->BindGraphicsPipeline(pipeline2D);
+    isDraw2D = true;
+  }
 
   PxDrawable drawable{allocator};
   drawable.drawable = draw_object;
@@ -407,9 +384,42 @@ void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
   drawable.indexBuffer =
       px::BufferBinding{.buffer = modelData->indexBuffer, .offset = 0};
 
-  drawables2D.push_back(drawable);
+  auto commandBuffer = currentCommandBuffer;
+  auto renderPass = currentRenderPass;
+  renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
+  renderPass->BindVertexBuffers(0, drawable.vertexBuffers);
+  renderPass->BindIndexBuffer(drawable.indexBuffer,
+                              px::IndexElementSize::Uint32);
+
+  auto param = drawable.drawable->param;
+  commandBuffer->PushVertexUniformData(0, &param, sizeof(Drawable::parameter));
+  renderPass->DrawIndexedPrimitives(
+      GetModelData(drawable.drawable->model.data)->v_array.indexCount, 1, 0, 0,
+      0);
 }
 void PxRenderer::draw3d(const std::shared_ptr<Drawable> draw_object) {
+  objectCount++;
+  if (isFrameStarted) {
+    colorTargets[0].loadOp = px::LoadOp::Clear;
+    currentRenderPass =
+        currentCommandBuffer->BeginRenderPass(colorTargets, depthStencilInfo);
+    auto renderPass = currentRenderPass;
+    renderPass->SetViewport(
+        px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
+    renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
+    isFrameStarted = false;
+    isDraw2D = false;
+  } else if (isDraw2D) {
+    currentCommandBuffer->EndRenderPass(currentRenderPass);
+    colorTargets[0].loadOp = px::LoadOp::Load;
+    currentRenderPass =
+        currentCommandBuffer->BeginRenderPass(colorTargets, depthStencilInfo);
+    auto renderPass = currentRenderPass;
+    renderPass->SetViewport(
+        px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
+    renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
+    isDraw2D = false;
+  }
   PxDrawable drawable{allocator};
   drawable.drawable = draw_object;
   auto texture = std::static_pointer_cast<px::Texture>(
@@ -471,7 +481,20 @@ void PxRenderer::draw3d(const std::shared_ptr<Drawable> draw_object) {
         px::BufferBinding{.buffer = instanceBuffer, .offset = 0
 
         });
-    drawables3DInstanced.push_back(drawable);
+    auto commandBuffer = currentCommandBuffer;
+    auto renderPass = currentRenderPass;
+    renderPass->BindGraphicsPipeline(pipeline3DInstanced);
+    renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
+    renderPass->BindVertexBuffers(0, drawable.vertexBuffers);
+    renderPass->BindIndexBuffer(drawable.indexBuffer,
+                                px::IndexElementSize::Uint32);
+
+    auto param = drawable.drawable->param;
+    commandBuffer->PushVertexUniformData(0, &param,
+                                         sizeof(Drawable::parameter));
+    renderPass->DrawIndexedPrimitives(
+        GetModelData(drawable.drawable->model.data)->v_array.indexCount,
+        drawable.drawable->data.size(), 0, 0, 0);
   } else {
 
     drawable.vertexBuffers.emplace_back(px::BufferBinding{
@@ -480,7 +503,20 @@ void PxRenderer::draw3d(const std::shared_ptr<Drawable> draw_object) {
     drawable.indexBuffer = px::BufferBinding{
         .buffer = GetModelData(draw_object->model.data)->indexBuffer,
         .offset = 0};
-    drawables3D.push_back(drawable);
+    auto commandBuffer = currentCommandBuffer;
+    auto renderPass = currentRenderPass;
+    renderPass->BindGraphicsPipeline(pipeline3D);
+    renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
+    renderPass->BindVertexBuffers(0, drawable.vertexBuffers);
+    renderPass->BindIndexBuffer(drawable.indexBuffer,
+                                px::IndexElementSize::Uint32);
+
+    auto param = drawable.drawable->param;
+    commandBuffer->PushVertexUniformData(0, &param,
+                                         sizeof(Drawable::parameter));
+    renderPass->DrawIndexedPrimitives(
+        GetModelData(drawable.drawable->model.data)->v_array.indexCount, 1, 0,
+        0, 0);
   }
 }
 

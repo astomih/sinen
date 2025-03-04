@@ -316,15 +316,8 @@ local player = {
             self.oil_texture:fill_color(Color(1.0, 1.0, 1.0, 0.9))
         end
     end,
-    draw = function(self)
+    draw3 = function(self)
         self.drawer:draw()
-        self.hp_drawer:draw()
-        self.stamina_max_drawer:draw()
-        self.stamina_drawer:draw()
-        self.oil_max_drawer:draw()
-        self.oil_drawer:draw()
-        self.drawer_scope_big:draw()
-        self.drawer_scope:draw()
         for i, v in ipairs(self.efks) do
             v:draw()
         end
@@ -334,6 +327,15 @@ local player = {
         for i, j in ipairs(self.orbits) do
             j:draw()
         end
+    end,
+    draw2 = function(self)
+        self.hp_drawer:draw()
+        self.stamina_max_drawer:draw()
+        self.stamina_drawer:draw()
+        self.oil_max_drawer:draw()
+        self.oil_drawer:draw()
+        self.drawer_scope_big:draw()
+        self.drawer_scope:draw()
     end,
     render_text = function(self)
         if self.hp / self.hp_max <= 0.2 then

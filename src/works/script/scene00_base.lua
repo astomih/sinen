@@ -115,7 +115,7 @@ function Draw()
   if scene_switcher.flag then
     return
   end
-  player:draw()
+  player:draw3()
   for i, v in ipairs(enemies) do v:draw() end
   box:clear()
   local px = math.floor(camera_controller.position.x / TILE_SIZE + 0.5)
@@ -145,6 +145,7 @@ function Draw()
   end
   sprite:draw()
   stair:draw()
+  player:draw2()
   score_drawer:draw()
   equipment_menu:draw()
   menu_object:draw()

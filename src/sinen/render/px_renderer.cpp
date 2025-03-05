@@ -336,7 +336,7 @@ void PxRenderer::draw3d(const std::shared_ptr<Drawable> draw_object) {
         .offset = 0};
     auto commandBuffer = currentCommandBuffer;
     auto renderPass = currentRenderPass;
-    renderPass->BindGraphicsPipeline(pipeline3D.get_instanced());
+    renderPass->BindGraphicsPipeline(pipeline3D.get());
     renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
     renderPass->BindVertexBuffers(0, drawable.vertexBuffers);
     renderPass->BindIndexBuffer(drawable.indexBuffer,

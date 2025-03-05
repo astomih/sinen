@@ -10,7 +10,8 @@
 #include <SDL3/SDL.h>
 
 namespace sinen {
-void Shader::load_vertex_shader(std::string_view vertex_shader) {
+void Shader::load_vertex_shader(std::string_view vertex_shader,
+                                int numUniformData) {
   auto pxRenderer = RendererImpl::GetPxRenderer();
   auto *allocator = pxRenderer->GetAllocator();
   auto device = pxRenderer->GetDevice();
@@ -31,10 +32,11 @@ void Shader::load_vertex_shader(std::string_view vertex_shader) {
   vsInfo.numSamplers = 0;
   vsInfo.numStorageBuffers = 0;
   vsInfo.numStorageTextures = 0;
-  vsInfo.numUniformBuffers = 1;
+  vsInfo.numUniformBuffers = numUniformData + 1;
   shader = device->CreateShader(vsInfo);
 }
-void Shader::load_fragment_shader(std::string_view fragment_shader) {
+void Shader::load_fragment_shader(std::string_view fragment_shader,
+                                  int numUniformData) {
   auto pxRenderer = RendererImpl::GetPxRenderer();
   auto *allocator = pxRenderer->GetAllocator();
   auto device = pxRenderer->GetDevice();
@@ -52,7 +54,7 @@ void Shader::load_fragment_shader(std::string_view fragment_shader) {
   fsInfo.numSamplers = 1;
   fsInfo.numStorageBuffers = 0;
   fsInfo.numStorageTextures = 0;
-  fsInfo.numUniformBuffers = 0;
+  fsInfo.numUniformBuffers = numUniformData + 1;
   shader = device->CreateShader(fsInfo);
 }
 } // namespace sinen

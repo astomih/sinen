@@ -16,6 +16,7 @@
 #include <time/timer.hpp>
 
 #include "register_script.hpp"
+#include "render/render_pipeline.hpp"
 #include "sol/raii.hpp"
 #include "sol/types.hpp"
 #ifdef main
@@ -145,6 +146,30 @@ bool script_engine::initialize(sol::state &lua) {
     v["is_started"] = &Timer::is_started;
     v["set_time"] = &Timer::set_time;
     v["check"] = &Timer::check;
+  }
+  {
+    auto v = lua.new_usertype<UniformData>("", sol::no_construction());
+    v["add"] = &UniformData::add;
+    v["change"] = &UniformData::change;
+  }
+  {
+    auto v = lua.new_usertype<Shader>("", sol::no_construction());
+    v["load_vertex_shader"] = &Shader::load_vertex_shader;
+    v["load_fragment_shader"] = &Shader::load_fragment_shader;
+  }
+  {
+    auto v = lua.new_usertype<RenderPipeline2D>("", sol::no_construction());
+    v["set_vertex_shader"] = &RenderPipeline2D::set_vertex_shader;
+    v["set_fragment_shader"] = &RenderPipeline2D::set_fragment_shader;
+    v["build"] = &RenderPipeline2D::build;
+  }
+  {
+    auto v = lua.new_usertype<RenderPipeline3D>("", sol::no_construction());
+    v["set_vertex_shader"] = &RenderPipeline3D::set_vertex_shader;
+    v["set_vertex_instanced_shader"] =
+        &RenderPipeline3D::set_vertex_instanced_shader;
+    v["set_fragment_shader"] = &RenderPipeline3D::set_fragment_shader;
+    v["build"] = &RenderPipeline3D::build;
   }
   register_drawable(lua);
   register_table(lua);

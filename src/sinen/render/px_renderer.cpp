@@ -54,11 +54,11 @@ void PxRenderer::initialize() {
   ImGui_ImplParanoixa_Init(&init_info);
 
   Shader vs;
-  vs.load_vertex_shader("shader.vert.spv");
+  vs.load_vertex_shader("shader.vert.spv", 0);
   Shader vsInstanced;
-  vsInstanced.load_vertex_shader("shader_instance.vert.spv");
+  vsInstanced.load_vertex_shader("shader_instance.vert.spv", 0);
   Shader fs;
-  fs.load_fragment_shader("shaderAlpha.frag.spv");
+  fs.load_fragment_shader("shaderAlpha.frag.spv", 0);
 
   this->pipeline3D.set_vertex_shader(vs);
   this->pipeline3D.set_vertex_instanced_shader(vsInstanced);
@@ -366,6 +366,6 @@ void PxRenderer::begin_pipeline2d(const RenderPipeline2D &pipeline) {
 void PxRenderer::end_pipeline2d() { currentPipeline2D = pipeline2D; }
 void PxRenderer::set_uniform_data(uint32_t slot, const UniformData &data) {
   currentCommandBuffer->PushVertexUniformData(slot, data.data.data(),
-                                              data.data.size());
+                                              data.data.size() * sizeof(float));
 }
 } // namespace sinen

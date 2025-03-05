@@ -1,6 +1,7 @@
 #ifndef SINEN_PX_RENDERER_HPP
 #define SINEN_PX_RENDERER_HPP
 
+#include "render/renderer.hpp"
 #include <cstdint>
 #include <drawable/drawable.hpp>
 #include <model/model.hpp>
@@ -42,6 +43,7 @@ public:
   void end_pipeline3d();
   void begin_pipeline2d(const RenderPipeline2D &pipeline);
   void end_pipeline2d();
+  void set_uniform_data(uint32_t slot, const UniformData &data);
 
   px::Allocator *GetAllocator() { return allocator; }
   px::Ptr<px::Device> GetDevice() { return device; }

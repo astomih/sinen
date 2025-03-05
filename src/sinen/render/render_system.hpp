@@ -15,8 +15,10 @@
 #include <math/vector3.hpp>
 #include <model/model.hpp>
 #include <model/vertex_array.hpp>
+#include <render/renderer.hpp>
 #include <shader/shader.hpp>
 #include <texture/texture.hpp>
+
 
 namespace sinen {
 class RendererImpl {
@@ -53,6 +55,7 @@ public:
   static void end_pipeline3d();
   static void begin_pipeline2d(const RenderPipeline2D &pipeline);
   static void end_pipeline2d();
+  static void set_uniform_data(uint32_t slot, const UniformData &data);
 
   static Model box;
   static Model sprite;

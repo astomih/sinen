@@ -19,6 +19,12 @@
 #include "render_pipeline.hpp"
 
 namespace sinen {
+struct UniformData {
+  UniformData() : data() {}
+  void add(float value) { data.push_back(value); }
+  void change(float value, int index) { data[index] = value; }
+  std::vector<float> data;
+};
 /**
  * @brief Renderer class
  *
@@ -94,6 +100,7 @@ public:
   static void end_pipeline3d();
   static void begin_pipeline2d(const RenderPipeline2D &pipeline);
   static void end_pipeline2d();
+  static void set_uniform_data(uint32_t slot, const UniformData &data);
 };
 
 } // namespace sinen

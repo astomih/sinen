@@ -364,4 +364,8 @@ void PxRenderer::begin_pipeline2d(const RenderPipeline2D &pipeline) {
   currentPipeline2D = pipeline;
 }
 void PxRenderer::end_pipeline2d() { currentPipeline2D = pipeline2D; }
+void PxRenderer::set_uniform_data(uint32_t slot, const UniformData &data) {
+  currentCommandBuffer->PushVertexUniformData(slot, data.data.data(),
+                                              data.data.size());
+}
 } // namespace sinen

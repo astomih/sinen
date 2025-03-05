@@ -74,4 +74,7 @@ void RendererImpl::begin_pipeline2d(const RenderPipeline2D &pipeline) {
   pxRenderer->begin_pipeline2d(pipeline);
 }
 void RendererImpl::end_pipeline2d() { pxRenderer->end_pipeline2d(); }
+void RendererImpl::set_uniform_data(uint32_t slot, const UniformData &data) {
+  pxRenderer->set_uniform_data(slot, data);
+}
 } // namespace sinen

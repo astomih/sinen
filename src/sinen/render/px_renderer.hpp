@@ -7,6 +7,8 @@
 #include <model/vertex_array.hpp>
 #include <paranoixa/paranoixa.hpp>
 #include <render/render_pipeline.hpp>
+
+#include <optional>
 namespace sinen {
 template <typename T> using Ptr = px::Ptr<T>;
 template <typename T> using Array = px::Array<T>;
@@ -36,6 +38,11 @@ public:
   void prepare_imgui();
   void *get_texture_id();
 
+  void begin_pipeline3d(const RenderPipeline3D &pipeline);
+  void end_pipeline3d();
+  void begin_pipeline2d(const RenderPipeline2D &pipeline);
+  void end_pipeline2d();
+
   px::Allocator *GetAllocator() { return allocator; }
   px::Ptr<px::Device> GetDevice() { return device; }
 
@@ -48,6 +55,9 @@ private:
   Ptr<px::Sampler> sampler;
   RenderPipeline2D pipeline2D;
   RenderPipeline3D pipeline3D;
+
+  RenderPipeline2D currentPipeline2D;
+  RenderPipeline3D currentPipeline3D;
 
   px::Ptr<px::CommandBuffer> currentCommandBuffer;
   px::Ptr<px::RenderPass> currentRenderPass;

@@ -64,10 +64,12 @@ void PxRenderer::initialize() {
   this->pipeline3D.set_vertex_instanced_shader(vsInstanced);
   this->pipeline3D.set_fragment_shader(fs);
   this->pipeline3D.build();
+  this->currentPipeline3D = this->pipeline3D;
 
   this->pipeline2D.set_vertex_shader(vs);
   this->pipeline2D.set_fragment_shader(fs);
   this->pipeline2D.build();
+  this->currentPipeline2D = this->pipeline2D;
 
   // Create depth stencil target
   {
@@ -182,7 +184,6 @@ void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
     renderPass->SetViewport(
         px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
     renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
-    renderPass->BindGraphicsPipeline(pipeline2D.get());
     isFrameStarted = false;
     isDraw2D = true;
   } else if (!isDraw2D) {
@@ -193,7 +194,6 @@ void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
     renderPass->SetViewport(
         px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
     renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
-    renderPass->BindGraphicsPipeline(pipeline2D.get());
     isDraw2D = true;
   }
 
@@ -216,6 +216,7 @@ void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
 
   auto commandBuffer = currentCommandBuffer;
   auto renderPass = currentRenderPass;
+  renderPass->BindGraphicsPipeline(currentPipeline2D.get());
   renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
   renderPass->BindVertexBuffers(0, drawable.vertexBuffers);
   renderPass->BindIndexBuffer(drawable.indexBuffer,
@@ -314,7 +315,7 @@ void PxRenderer::draw3d(const std::shared_ptr<Drawable> draw_object) {
         });
     auto commandBuffer = currentCommandBuffer;
     auto renderPass = currentRenderPass;
-    renderPass->BindGraphicsPipeline(pipeline3D.get_instanced());
+    renderPass->BindGraphicsPipeline(currentPipeline3D.get_instanced());
     renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
     renderPass->BindVertexBuffers(0, drawable.vertexBuffers);
     renderPass->BindIndexBuffer(drawable.indexBuffer,
@@ -336,7 +337,7 @@ void PxRenderer::draw3d(const std::shared_ptr<Drawable> draw_object) {
         .offset = 0};
     auto commandBuffer = currentCommandBuffer;
     auto renderPass = currentRenderPass;
-    renderPass->BindGraphicsPipeline(pipeline3D.get());
+    renderPass->BindGraphicsPipeline(currentPipeline3D.get());
     renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
     renderPass->BindVertexBuffers(0, drawable.vertexBuffers);
     renderPass->BindIndexBuffer(drawable.indexBuffer,
@@ -355,4 +356,12 @@ void PxRenderer::load_shader(const Shader &shaderinfo) {}
 void PxRenderer::unload_shader(const Shader &shaderinfo) {}
 void PxRenderer::prepare_imgui() {}
 void *PxRenderer::get_texture_id() { return nullptr; }
+void PxRenderer::begin_pipeline3d(const RenderPipeline3D &pipeline) {
+  currentPipeline3D = pipeline;
+}
+void PxRenderer::end_pipeline3d() { currentPipeline3D = pipeline3D; }
+void PxRenderer::begin_pipeline2d(const RenderPipeline2D &pipeline) {
+  currentPipeline2D = pipeline;
+}
+void PxRenderer::end_pipeline2d() { currentPipeline2D = pipeline2D; }
 } // namespace sinen

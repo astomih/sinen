@@ -31,8 +31,8 @@ public:
 
   void build();
 
-  px::Ptr<px::GraphicsPipeline> get() { return pipeline; }
-  px::Ptr<px::GraphicsPipeline> get_instanced() { return instanced; }
+  px::Ptr<px::GraphicsPipeline> get() const { return pipeline; }
+  px::Ptr<px::GraphicsPipeline> get_instanced() const { return instanced; }
 
 private:
   Shader vertexShader;

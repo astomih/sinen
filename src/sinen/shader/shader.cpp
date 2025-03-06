@@ -61,11 +61,14 @@ void Shader::load_fragment_shader(std::string_view fragment_shader,
 }
 void Shader::compile_and_load_vertex_shader(std::string_view vertex_shader,
                                             int numUniformData) {
+
+  std::string vsStr =
+      DataStream::convert_file_path(AssetType::Shader, vertex_shader);
+
   // TODO: add support for other languages
   rsc::ShaderCompiler compiler;
-  auto spirv =
-      compiler.compile(vertex_shader, rsc::ShaderCompiler::Type::VERTEX,
-                       rsc::ShaderCompiler::Language::SPIRV);
+  auto spirv = compiler.compile(vsStr, rsc::ShaderCompiler::Type::VERTEX,
+                                rsc::ShaderCompiler::Language::SPIRV);
 
   auto pxRenderer = RendererImpl::GetPxRenderer();
   auto *allocator = pxRenderer->GetAllocator();
@@ -86,10 +89,11 @@ void Shader::compile_and_load_vertex_shader(std::string_view vertex_shader,
 }
 void Shader::compile_and_load_fragment_shader(std::string_view fragment_shader,
                                               int numUniformData) {
+  std::string fsStr =
+      DataStream::convert_file_path(AssetType::Shader, fragment_shader);
   rsc::ShaderCompiler compiler;
-  auto spirv =
-      compiler.compile(fragment_shader, rsc::ShaderCompiler::Type::FRAGMENT,
-                       rsc::ShaderCompiler::Language::SPIRV);
+  auto spirv = compiler.compile(fsStr, rsc::ShaderCompiler::Type::FRAGMENT,
+                                rsc::ShaderCompiler::Language::SPIRV);
 
   auto pxRenderer = RendererImpl::GetPxRenderer();
   auto *allocator = pxRenderer->GetAllocator();

@@ -8,15 +8,12 @@ on:
 
 jobs:
   build:
-    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
-    # You can convert this to a matrix build if you need cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: windows-latest
     defaults:
       run:
         shell: msys2 {0}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: msys2/setup-msys2@v2
       with:
         update: true
@@ -28,7 +25,7 @@ jobs:
       with:
         vulkan-query-version: 1.3.204.0
         vulkan-components: Vulkan-Headers, Vulkan-Loader
-        vulkan-use-cache: true
+        vulkan-use-cache: false
     - name: Build
       run: |
           git submodule update --init --recursive libs/mojoAL-SDL3 libs/SDL_mixer libs/SDL_ttf libs/sol2 libs/paranoixa

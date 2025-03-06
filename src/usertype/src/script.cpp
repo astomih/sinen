@@ -156,6 +156,10 @@ bool script_engine::initialize(sol::state &lua) {
     auto v = lua.new_usertype<Shader>("", sol::no_construction());
     v["load_vertex_shader"] = &Shader::load_vertex_shader;
     v["load_fragment_shader"] = &Shader::load_fragment_shader;
+    v["compile_and_load_vertex_shader"] =
+        &Shader::compile_and_load_vertex_shader;
+    v["compile_and_load_fragment_shader"] =
+        &Shader::compile_and_load_fragment_shader;
   }
   {
     auto v = lua.new_usertype<RenderPipeline2D>("", sol::no_construction());

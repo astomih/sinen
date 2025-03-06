@@ -18,6 +18,11 @@ public:
   void load_fragment_shader(std::string_view fragment_shader,
                             int numUniformData);
 
+  void compile_and_load_vertex_shader(std::string_view vertex_shader,
+                                      int numUniformData);
+  void compile_and_load_fragment_shader(std::string_view fragment_shader,
+                                        int numUniformData);
+
 private:
   friend class RenderPipeline2D;
   friend class RenderPipeline3D;

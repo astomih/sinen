@@ -79,6 +79,7 @@ set(SINEN_INCLUDE_DIRS
   libs/paranoixa/include
   libs/paranoixa/source/imgui_backend
   src/usertype/include
+  src/rt_shader_compiler/include
 )
 file(
   GLOB
@@ -107,6 +108,7 @@ if(NOT SINEN_EXTERNAL_ALL_BUILD)
     SDL3_image
     SDL3_mixer::SDL3_mixer
     SDL3_ttf::SDL3_ttf
+    rt_shader_compiler
   )
 else()
   target_link_libraries(
@@ -117,6 +119,7 @@ else()
     SDL3_image::SDL3_image
     SDL3_mixer::SDL3_mixer
     SDL3_ttf::SDL3_ttf
+    rt_shader_compiler
   )
 endif()
 

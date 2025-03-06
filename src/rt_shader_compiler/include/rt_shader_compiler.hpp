@@ -1,6 +1,6 @@
 #ifndef RT_SHADER_COMPILER_HPP
 #define RT_SHADER_COMPILER_HPP
-#include <string>
+#include <string_view>
 #include <vector>
 
 namespace rsc {
@@ -15,8 +15,7 @@ public:
   };
   ShaderCompiler() = default;
 
-  std::vector<char> compile(const std::string &source, Type type,
-                            Language lang);
+  std::vector<char> compile(std::string_view source, Type type, Language lang);
 };
 } // namespace rsc
 

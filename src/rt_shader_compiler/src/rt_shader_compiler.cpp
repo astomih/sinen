@@ -12,16 +12,32 @@
 #endif
 namespace rsc {
 
-std::vector<char> ShaderCompiler::compile(const std::string &source, Type type,
+std::vector<char> ShaderCompiler::compile(std::string_view source, Type type,
                                           Language lang) {
 #ifndef __EMSCRIPTEN__
   std::vector<char> spirvBinary;
 
   std::string input{};
   input += "slangc ";
-  input += " -profile glsl_450";
-  input += " -entry vertexMain";
-  input += "\"" + source + "\"";
+  switch (lang) {
+  case Language::SPIRV:
+    input += "-profile glsl_450";
+    break;
+  default:
+    break;
+  }
+  switch (type) {
+  case Type::VERTEX:
+    input += " -entry vertexMain";
+    break;
+  case Type::FRAGMENT:
+    input += " -entry fragmentMain";
+    break;
+  case Type::COMPUTE:
+    input += " -entry computeMain";
+    break;
+  }
+  input += "\"" + std::string(source) + "\"";
 
   auto *pipeOut = popen(input.c_str(), "r");
   if (!pipeOut) {

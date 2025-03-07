@@ -191,6 +191,16 @@ modelは未指定の場合、立方体が割り当てられます
 - `string`: data/shader/にあるフラグメントシェーダファイルの名前
 - `int`: UniformDataの数  
 フラグメントシェーダを読み込みます
+#### Shader:compile_and_load_vertex_shader(string,int)
+- `string`: 頂点シェーダのソースコード
+- `int`: UniformDataの数
+頂点シェーダをコンパイルして読み込みます  
+`slangc`がインストールされている必要があります
+#### Shader:compile_and_load_fragment_shader(string,int)
+- `string`: フラグメントシェーダのソースコード
+- `int`: UniformDataの数
+フラグメントシェーダをコンパイルして読み込みます  
+`slangc`がインストールされている必要があります
 ### RenderPipeline2D
 #### RenderPipeline2D() -> RenderPipeline2D
 2Dレンダーパイプラインオブジェクトを作成します

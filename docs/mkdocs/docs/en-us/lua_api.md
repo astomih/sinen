@@ -194,6 +194,16 @@ Loads a vertex shader.
 - `string`: Name of the fragment shader file located in data/shader/.
 - `int`: Number of UniformData.
 Loads a fragment shader.
+#### Shader:compile_and_load_vertex_shader(string,int)
+- `string`: Vertex shader source code
+- `int`: Number of UniformData
+Compile and load vertex shader  
+`slangc` must be installed
+#### Shader:compile_and_load_fragment_shader(string,int)
+- `string`: Fragment shader source code
+- `int`: Number of UniformData
+Compile and load fragment shader  
+`slangc` must be installed
 ### RenderPipeline2D
 #### RenderPipeline2D() -> RenderPipeline2D
 Creates a 2D render pipeline object.

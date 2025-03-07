@@ -173,7 +173,59 @@ Model.
 Adds multiple objects with the same texture and model for rendering. One object already exists at the time of instance creation.
 #### Draw3D:clear()
 Clears added objects. However, the initially created object is not cleared.
-
+### UniformData
+#### UniformData() -> UniformData
+Creates a uniform data object.
+#### UniformData:add(float)
+- float: Data  
+Adds uniform data.
+#### UniformData:at(float, int)
+- `float`: Data
+- `int`: Index  
+Adds uniform data at the specified index.
+### Shader
+#### Shader() -> Shader
+Creates a shader object.
+#### Shader:load_vertex_shader(string, int)
+- `string`: Name of the vertex shader file located in data/shader/.
+- `int`: Number of UniformData.
+Loads a vertex shader.
+#### Shader:load_fragment_shader(string, int)
+- `string`: Name of the fragment shader file located in data/shader/.
+- `int`: Number of UniformData.
+Loads a fragment shader.
+#### Shader:compile_and_load_vertex_shader(string,int)
+- `string`: Vertex shader source code
+- `int`: Number of UniformData
+Compile and load vertex shader  
+`slangc` must be installed
+#### Shader:compile_and_load_fragment_shader(string,int)
+- `string`: Fragment shader source code
+- `int`: Number of UniformData
+Compile and load fragment shader  
+`slangc` must be installed
+### RenderPipeline2D
+#### RenderPipeline2D() -> RenderPipeline2D
+Creates a 2D render pipeline object.
+#### RenderPipeline2D:set_vertex_shader(Shader)
+- `Shader`: Vertex shader
+Sets the vertex shader.
+#### RenderPipeline2D:set_fragment_shader(Shader)
+- `Shader`: Fragment shader
+Sets the fragment shader.
+#### RenderPipeline2D:build()
+Builds the render pipeline.
+### RenderPipeline3D
+#### RenderPipeline3D() -> RenderPipeline3D
+Creates a 3D render pipeline object.
+#### RenderPipeline3D:set_vertex_shader(Shader)
+- `Shader`: Vertex shader
+Sets the vertex shader.
+#### RenderPipeline3D:set_fragment_shader(Shader)
+- `Shader`: Fragment shader  
+Sets the fragment shader.
+#### RenderPipeline3D:build()
+Builds the render pipeline.
 ### Camera
 #### Camera:look_at(Vector3, Vector3, Vector3)
 - `Vector3`: Position.

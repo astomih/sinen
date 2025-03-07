@@ -33,6 +33,11 @@ void register_table(sol::state &lua) {
     v["clear_color"] = &Renderer::clear_color;
     v["set_clear_color"] = &Renderer::set_clear_color;
     v["at_render_texture_user_data"] = &Renderer::at_render_texture_user_data;
+    v["begin_pipeline2d"] = &Renderer::begin_pipeline2d;
+    v["end_pipeline2d"] = &Renderer::end_pipeline2d;
+    v["begin_pipeline3d"] = &Renderer::begin_pipeline3d;
+    v["end_pipeline3d"] = &Renderer::end_pipeline3d;
+    v["set_uniform_data"] = &Renderer::set_uniform_data;
   }
   {
     auto v = lua.create_table("scene");

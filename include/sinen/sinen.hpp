@@ -1,5 +1,9 @@
 #ifndef SINEN_HPP
 #define SINEN_HPP
+
+// RHI
+#include <paranoixa/paranoixa.hpp>
+
 #include "allocator/pool_allocator.hpp"
 #include "allocator/stack_allocator.hpp"
 #include "audio/music.hpp"
@@ -44,7 +48,6 @@
 #include "time/time.hpp"
 #include "time/timer.hpp"
 #include "window/window.hpp"
-
 
 namespace sinen {
 /**

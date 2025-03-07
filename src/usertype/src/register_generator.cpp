@@ -39,5 +39,13 @@ void register_generator(sol::state &v) {
   v["Sound"] = []() -> Sound { return Sound(); };
   v["AABB"] = []() -> AABB { return AABB(); };
   v["Timer"] = []() -> Timer { return Timer(); };
+  v["Shader"] = []() -> Shader { return Shader(); };
+  v["UniformData"] = []() -> UniformData { return UniformData(); };
+  v["RenderPipeline2D"] = []() -> RenderPipeline2D {
+    return RenderPipeline2D();
+  };
+  v["RenderPipeline3D"] = []() -> RenderPipeline3D {
+    return RenderPipeline3D();
+  };
 }
 } // namespace sinen

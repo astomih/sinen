@@ -21,6 +21,9 @@
     "keyboard",
     "renderer",
     "periodic",
+    "RenderPipeline2D",
+    "Shader",
+    "UniformData"
   ],
   "Lua.completion.autoRequire": false
 }

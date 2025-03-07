@@ -368,6 +368,7 @@ build/vs2022/*
 build/clang/*
 !build/clang/.gitkeep
 *.dll
+*.temp
 imgui.ini
 
 

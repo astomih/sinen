@@ -4,7 +4,6 @@
 #include <model/vertex_array.hpp>
 #include <render/renderer.hpp>
 
-
 namespace sinen {
 bool Renderer::offscreen_rendering = false;
 matrix4 Renderer::render_texture_user_data;
@@ -34,4 +33,15 @@ void Renderer::add_imgui_function(std::function<void()> function) {
 }
 void *Renderer::get_texture_id() { return RendererImpl::get_texture_id(); }
 
+void Renderer::begin_pipeline3d(const RenderPipeline3D &pipeline) {
+  RendererImpl::begin_pipeline3d(pipeline);
+}
+void Renderer::end_pipeline3d() { RendererImpl::end_pipeline3d(); }
+void Renderer::begin_pipeline2d(const RenderPipeline2D &pipeline) {
+  RendererImpl::begin_pipeline2d(pipeline);
+}
+void Renderer::end_pipeline2d() { RendererImpl::end_pipeline2d(); }
+void Renderer::set_uniform_data(uint32_t slot, const UniformData &data) {
+  RendererImpl::set_uniform_data(slot, data);
+}
 } // namespace sinen

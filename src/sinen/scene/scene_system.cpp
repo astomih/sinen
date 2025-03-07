@@ -102,7 +102,6 @@ void scene_system::update_scene() {
   if (is_run_script) {
     sol::state *lua = (sol::state *)script_system::get_state();
     (*lua)["Update"]();
-    (*lua)["Draw"]();
   }
   m_impl->update(deltaTime);
   sound_system::update(deltaTime);

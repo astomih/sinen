@@ -3,6 +3,7 @@
 #include "../color/color.hpp"
 #include "../color/palette.hpp"
 #include "../texture/texture.hpp"
+#include <string_view>
 #include <memory>
 
 namespace sinen {

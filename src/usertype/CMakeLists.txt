@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.7)
 project(script_engine)
-set(CMAKE_CXX_FLAGS "-std=c++20 -O2 -DNDEBUG -march=native")
+set(CMAKE_CXX_FLAGS "-O2 -DNDEBUG -march=native")
 set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 
 file(GLOB SOURCE_FILES
@@ -22,3 +22,5 @@ add_library(script_engine STATIC
 target_link_libraries(script_engine
   sinen
 )
+
+set_property(TARGET script_engine PROPERTY CXX_STANDARD 23)

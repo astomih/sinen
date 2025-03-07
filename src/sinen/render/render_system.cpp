@@ -9,7 +9,6 @@
 #include <model/vertex_array.hpp>
 #include <render/renderer.hpp>
 
-
 #include <imgui.h>
 
 namespace sinen {
@@ -66,5 +65,16 @@ void RendererImpl::prepare_imgui() {
                                    .data(),
                                18.0f, nullptr,
                                io.Fonts->GetGlyphRangesJapanese());
+}
+void RendererImpl::begin_pipeline3d(const RenderPipeline3D &pipeline) {
+  pxRenderer->begin_pipeline3d(pipeline);
+}
+void RendererImpl::end_pipeline3d() { pxRenderer->end_pipeline3d(); }
+void RendererImpl::begin_pipeline2d(const RenderPipeline2D &pipeline) {
+  pxRenderer->begin_pipeline2d(pipeline);
+}
+void RendererImpl::end_pipeline2d() { pxRenderer->end_pipeline2d(); }
+void RendererImpl::set_uniform_data(uint32_t slot, const UniformData &data) {
+  pxRenderer->set_uniform_data(slot, data);
 }
 } // namespace sinen

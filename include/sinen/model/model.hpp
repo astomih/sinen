@@ -1,13 +1,13 @@
 #ifndef SINEN_MODEL_HPP
 #define SINEN_MODEL_HPP
 #include <cstdint>
+#include <memory>
 #include <string_view>
 #include <vector>
 
 #include "../physics/collision.hpp"
 #include "physics/primitive3.hpp"
 #include "vertex_array.hpp"
-
 
 namespace sinen {
 struct Model {

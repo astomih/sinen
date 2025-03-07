@@ -37,6 +37,7 @@ find_package(Vulkan REQUIRED)
 set(COMMON_LIBRARIES
 	sinen
 	script_engine
+	rt_shader_compiler
 	${Vulkan_LIBRARIES}
 )
 
@@ -52,3 +53,4 @@ add_executable(works
 target_link_libraries(works
 	${LIBRARIES}
 )
+set_property(TARGET works PROPERTY CXX_STANDARD 23)

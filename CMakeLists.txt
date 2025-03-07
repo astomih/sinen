@@ -52,6 +52,7 @@ add_subdirectory(./src/editor)
 
 # add_subdirectory(./test)
 add_subdirectory(./src/usertype EXCLUDE_FROM_ALL)
+add_subdirectory(./src/rt_shader_compiler EXCLUDE_FROM_ALL)
 add_subdirectory(./src/works)
 
 if(NOT MSVC)
@@ -78,6 +79,7 @@ set(SINEN_INCLUDE_DIRS
   libs/paranoixa/include
   libs/paranoixa/source/imgui_backend
   src/usertype/include
+  src/rt_shader_compiler/include
 )
 file(
   GLOB
@@ -106,6 +108,7 @@ if(NOT SINEN_EXTERNAL_ALL_BUILD)
     SDL3_image
     SDL3_mixer::SDL3_mixer
     SDL3_ttf::SDL3_ttf
+    rt_shader_compiler
   )
 else()
   target_link_libraries(
@@ -116,7 +119,8 @@ else()
     SDL3_image::SDL3_image
     SDL3_mixer::SDL3_mixer
     SDL3_ttf::SDL3_ttf
+    rt_shader_compiler
   )
 endif()
 
-target_compile_features(sinen PUBLIC cxx_std_20)
+set_property(TARGET sinen PROPERTY CXX_STANDARD 23)

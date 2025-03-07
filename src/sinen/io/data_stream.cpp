@@ -83,7 +83,7 @@ void DataStream::write(const AssetType &type, std::string_view name,
     return;
   }
   if (data.size() != SDL_WriteIO(file, data.data(), data.size())) {
-    Logger::error("data_stream: Could not write all strings");
+    Logger::error<>("data_stream: Could not write all strings");
   }
   SDL_CloseIO(file);
 }

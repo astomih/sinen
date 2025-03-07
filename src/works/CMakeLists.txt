@@ -53,3 +53,4 @@ add_executable(works
 target_link_libraries(works
 	${LIBRARIES}
 )
+set_property(TARGET works PROPERTY CXX_STANDARD 23)

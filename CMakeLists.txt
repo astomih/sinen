@@ -123,4 +123,4 @@ else()
   )
 endif()
 
-target_compile_features(sinen PUBLIC cxx_std_20)
+set_property(TARGET sinen PROPERTY CXX_STANDARD 23)

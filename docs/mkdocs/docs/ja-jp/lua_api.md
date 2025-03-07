@@ -170,6 +170,49 @@ modelは未指定の場合、立方体が割り当てられます
 #### Draw3D:clear()
 追加されたオブジェクトをクリアします  
 ただし、インスタンス生成時点で存在しているオブジェクトはクリアされません
+### UniformData
+#### UniformData() -> UniformData
+ユニフォームデータオブジェクトを作成します
+#### UniformData:add(float)
+- `float`: データ  
+ユニフォームデータを追加します
+#### UniformData:at(float, int)
+- `float`: データ
+- `int`: インデックス  
+ユニフォームデータを指定したインデックスに追加します
+### Shader
+#### Shader() -> Shader
+シェーダオブジェクトを作成します
+#### Shader:load_vertex_shader(string,int)
+- `string`: data/shader/にある頂点シェーダファイルの名前
+- `int`: UniformDataの数  
+頂点シェーダを読み込みます
+#### Shader:load_fragment_shader(string,int)
+- `string`: data/shader/にあるフラグメントシェーダファイルの名前
+- `int`: UniformDataの数  
+フラグメントシェーダを読み込みます
+### RenderPipeline2D
+#### RenderPipeline2D() -> RenderPipeline2D
+2Dレンダーパイプラインオブジェクトを作成します
+#### RenderPipeline2D:set_vertex_shader(Shader)
+- `Shader`: 頂点シェーダ  
+頂点シェーダを設定します
+#### RenderPipeline2D:set_fragment_shader(Shader)
+- `Shader`: フラグメントシェーダ  
+フラグメントシェーダを設定します
+#### RenderPipeline2D:build()
+レンダーパイプラインを構築します
+### RenderPipeline3D
+#### RenderPipeline3D() -> RenderPipeline3D
+3Dレンダーパイプラインオブジェクトを作成します
+#### RenderPipeline3D:set_vertex_shader(Shader)
+- `Shader`: 頂点シェーダ
+頂点シェーダを設定します
+#### RenderPipeline3D:set_fragment_shader(Shader)
+- `Shader`: フラグメントシェーダ
+フラグメントシェーダを設定します
+#### RenderPipeline3D:build()
+レンダーパイプラインを構築します
 ### Camera
 #### Camera() -> Camera
 3D空間のカメラオブジェクトを作成します

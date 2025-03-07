@@ -71,7 +71,7 @@
 				"name": "Launch works clang",
 				"program": "${workspaceFolder}/build/clang/src/works/works",
 				"args": [],
-				"cwd": "${workspaceFolder}/examples/06_shader_rt"
+				"cwd": "${workspaceFolder}/src/works"
 			},
 			{
 				"type": "lldb",
@@ -87,7 +87,7 @@
 				"name": "Launch works vs2022",
 				"program": "${workspaceFolder}/build/vs2022/src/works/debug/works",
 				"args": [],
-				"cwd": "${workspaceFolder}/examples/06_shader_rt"
+				"cwd": "${workspaceFolder}/src/works"
 			},
 			{
 				"type": "cppvsdbg",

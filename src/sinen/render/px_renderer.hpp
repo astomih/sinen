@@ -45,6 +45,12 @@ public:
   void end_pipeline2d();
   void set_uniform_data(uint32_t slot, const UniformData &data);
 
+  void begin_render_texture2d(const Texture &texture);
+  void end_render_texture2d();
+  void begin_render_texture3d(const Texture &texture,
+                              const DepthStencilTexture &depth_texture);
+  void end_render_texture3d();
+
   px::Allocator *GetAllocator() { return allocator; }
   px::Ptr<px::Device> GetDevice() { return device; }
 
@@ -65,9 +71,14 @@ private:
   px::Ptr<px::RenderPass> currentRenderPass;
   bool isFrameStarted = true;
   bool isDraw2D = true;
+  bool isDefaultPipeline = true;
   uint32_t objectCount = 0;
   px::Array<px::ColorTargetInfo> colorTargets;
   px::DepthStencilTargetInfo depthStencilInfo;
+
+  px::Array<px::ColorTargetInfo> currentColorTargets;
+  px::DepthStencilTargetInfo currentDepthStencilInfo;
+
   px::HashMap<std::string, PxVertexArray> vertexArrays;
 };
 } // namespace sinen

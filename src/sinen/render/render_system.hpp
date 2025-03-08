@@ -19,7 +19,6 @@
 #include <shader/shader.hpp>
 #include <texture/texture.hpp>
 
-
 namespace sinen {
 class RendererImpl {
 public:
@@ -56,6 +55,12 @@ public:
   static void begin_pipeline2d(const RenderPipeline2D &pipeline);
   static void end_pipeline2d();
   static void set_uniform_data(uint32_t slot, const UniformData &data);
+
+  static void begin_render_texture2d(const Texture &texture);
+  static void end_render_texture2d();
+  static void begin_render_texture3d(const Texture &texture,
+                                     const DepthStencilTexture &depth_texture);
+  static void end_render_texture3d();
 
   static Model box;
   static Model sprite;

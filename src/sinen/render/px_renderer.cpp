@@ -33,7 +33,8 @@ PxDrawable::PxDrawable(px::Allocator *allocator)
     : allocator(allocator), vertexBuffers(allocator),
       textureSamplers(allocator) {}
 PxRenderer::PxRenderer(px::Allocator *allocator)
-    : allocator(allocator), vertexArrays(allocator), colorTargets(allocator) {}
+    : allocator(allocator), vertexArrays(allocator), colorTargets(allocator),
+      currentColorTargets(allocator) {}
 void PxRenderer::initialize() {
   backend = px::Paranoixa::CreateBackend(allocator, px::GraphicsAPI::SDLGPU);
   px::Device::CreateInfo info{};
@@ -120,6 +121,7 @@ void PxRenderer::render() {
     return;
   }
   colorTargets[0].texture = swapchainTexture;
+  currentColorTargets = colorTargets;
   if (WindowImpl::resized()) {
     px::Texture::CreateInfo depthStencilCreateInfo{};
     depthStencilCreateInfo.allocator = allocator;
@@ -177,24 +179,30 @@ void PxRenderer::render() {
 }
 void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
   objectCount++;
-  if (isFrameStarted) {
+  if (isFrameStarted || currentRenderPass == nullptr) {
     colorTargets[0].loadOp = px::LoadOp::Clear;
-    currentRenderPass = currentCommandBuffer->BeginRenderPass(colorTargets, {});
+    currentColorTargets = colorTargets;
+    currentRenderPass =
+        currentCommandBuffer->BeginRenderPass(currentColorTargets, {});
     auto renderPass = currentRenderPass;
     renderPass->SetViewport(
         px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
     renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
     isFrameStarted = false;
     isDraw2D = true;
-  } else if (!isDraw2D) {
+    isDefaultPipeline = true;
+  } else if (isDefaultPipeline && !isDraw2D) {
     currentCommandBuffer->EndRenderPass(currentRenderPass);
     colorTargets[0].loadOp = px::LoadOp::Load;
-    currentRenderPass = currentCommandBuffer->BeginRenderPass(colorTargets, {});
+    currentColorTargets = colorTargets;
+    currentRenderPass =
+        currentCommandBuffer->BeginRenderPass(currentColorTargets, {});
     auto renderPass = currentRenderPass;
     renderPass->SetViewport(
         px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
     renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
     isDraw2D = true;
+    isDefaultPipeline = true;
   }
 
   PxDrawable drawable{allocator};
@@ -230,26 +238,32 @@ void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
 }
 void PxRenderer::draw3d(const std::shared_ptr<Drawable> draw_object) {
   objectCount++;
-  if (isFrameStarted) {
+  if (isFrameStarted || currentRenderPass == nullptr) {
     colorTargets[0].loadOp = px::LoadOp::Clear;
-    currentRenderPass =
-        currentCommandBuffer->BeginRenderPass(colorTargets, depthStencilInfo);
+    currentColorTargets = colorTargets;
+    currentDepthStencilInfo = depthStencilInfo;
+    currentRenderPass = currentCommandBuffer->BeginRenderPass(
+        currentColorTargets, currentDepthStencilInfo);
     auto renderPass = currentRenderPass;
     renderPass->SetViewport(
         px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
     renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
     isFrameStarted = false;
     isDraw2D = false;
-  } else if (isDraw2D) {
+    isDefaultPipeline = true;
+  } else if (isDefaultPipeline && isDraw2D) {
     currentCommandBuffer->EndRenderPass(currentRenderPass);
     colorTargets[0].loadOp = px::LoadOp::Load;
-    currentRenderPass =
-        currentCommandBuffer->BeginRenderPass(colorTargets, depthStencilInfo);
+    currentColorTargets = colorTargets;
+    currentDepthStencilInfo = depthStencilInfo;
+    currentRenderPass = currentCommandBuffer->BeginRenderPass(
+        currentColorTargets, currentDepthStencilInfo);
     auto renderPass = currentRenderPass;
     renderPass->SetViewport(
         px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
     renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
     isDraw2D = false;
+    isDefaultPipeline = true;
   }
   PxDrawable drawable{allocator};
   drawable.drawable = draw_object;
@@ -367,5 +381,46 @@ void PxRenderer::end_pipeline2d() { currentPipeline2D = pipeline2D; }
 void PxRenderer::set_uniform_data(uint32_t slot, const UniformData &data) {
   currentCommandBuffer->PushVertexUniformData(slot, data.data.data(),
                                               data.data.size() * sizeof(float));
+}
+void PxRenderer::begin_render_texture2d(const Texture &texture) {
+  auto tex = std::static_pointer_cast<px::Texture>(
+      GetTexData(texture.textureData)->texture);
+  if (currentRenderPass) {
+    currentCommandBuffer->EndRenderPass(currentRenderPass);
+  }
+  currentColorTargets[0].loadOp = px::LoadOp::Clear;
+  currentColorTargets[0].texture = tex;
+  currentRenderPass =
+      currentCommandBuffer->BeginRenderPass(currentColorTargets, {});
+  currentRenderPass->SetViewport(
+      px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
+  currentRenderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
+  isDefaultPipeline = false;
+}
+void PxRenderer::end_render_texture2d() {
+  currentCommandBuffer->EndRenderPass(currentRenderPass);
+  currentRenderPass = nullptr;
+}
+void PxRenderer::begin_render_texture3d(
+    const Texture &texture, const DepthStencilTexture &depth_texture) {
+  auto tex = std::static_pointer_cast<px::Texture>(
+      GetTexData(texture.textureData)->texture);
+  auto depthTex = depth_texture.get_texture();
+  if (currentRenderPass) {
+    currentCommandBuffer->EndRenderPass(currentRenderPass);
+  }
+  currentColorTargets[0].loadOp = px::LoadOp::Clear;
+  currentColorTargets[0].texture = tex;
+  currentDepthStencilInfo.texture = depthTex;
+  currentRenderPass = currentCommandBuffer->BeginRenderPass(
+      currentColorTargets, currentDepthStencilInfo);
+  currentRenderPass->SetViewport(
+      px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
+  currentRenderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
+  isDefaultPipeline = false;
+}
+void PxRenderer::end_render_texture3d() {
+  currentCommandBuffer->EndRenderPass(currentRenderPass);
+  currentRenderPass = nullptr;
 }
 } // namespace sinen

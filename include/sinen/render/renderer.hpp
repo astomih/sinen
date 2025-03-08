@@ -14,6 +14,7 @@
 #include "../model/model.hpp"
 #include "../model/vertex_array.hpp"
 #include "../shader/shader.hpp"
+#include "../texture/depth_stencil_texture.hpp"
 #include "../texture/texture.hpp"
 #include "render/render_pipeline.hpp"
 #include "render_pipeline.hpp"
@@ -101,6 +102,12 @@ public:
   static void begin_pipeline2d(const RenderPipeline2D &pipeline);
   static void end_pipeline2d();
   static void set_uniform_data(uint32_t slot, const UniformData &data);
+
+  static void begin_render_texture2d(const Texture &texture);
+  static void end_render_texture2d();
+  static void begin_render_texture3d(const Texture &texture,
+                                     const DepthStencilTexture &depth_texture);
+  static void end_render_texture3d();
 };
 
 } // namespace sinen

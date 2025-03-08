@@ -77,4 +77,17 @@ void RendererImpl::end_pipeline2d() { pxRenderer->end_pipeline2d(); }
 void RendererImpl::set_uniform_data(uint32_t slot, const UniformData &data) {
   pxRenderer->set_uniform_data(slot, data);
 }
+void RendererImpl::begin_render_texture2d(const Texture &texture) {
+  pxRenderer->begin_render_texture2d(texture);
+}
+void RendererImpl::end_render_texture2d() {
+  pxRenderer->end_render_texture2d();
+}
+void RendererImpl::begin_render_texture3d(
+    const Texture &texture, const DepthStencilTexture &depth_texture) {
+  pxRenderer->begin_render_texture3d(texture, depth_texture);
+}
+void RendererImpl::end_render_texture3d() {
+  pxRenderer->end_render_texture3d();
+}
 } // namespace sinen

@@ -97,6 +97,10 @@ bool script_engine::initialize(sol::state &lua) {
     v["size"] = &Texture::size;
   }
   {
+    auto v = lua.new_usertype<RenderTexture>("", sol::no_construction());
+    v["create"] = &RenderTexture::create;
+  }
+  {
     auto v = lua.new_usertype<Font>("", sol::no_construction());
     v["load"] = &Font::load;
     v["render_text"] = &Font::render_text;

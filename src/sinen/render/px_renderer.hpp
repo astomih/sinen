@@ -2,6 +2,7 @@
 #define SINEN_PX_RENDERER_HPP
 
 #include "render/renderer.hpp"
+#include "texture/render_texture.hpp"
 #include <cstdint>
 #include <drawable/drawable.hpp>
 #include <model/model.hpp>
@@ -45,11 +46,10 @@ public:
   void end_pipeline2d();
   void set_uniform_data(uint32_t slot, const UniformData &data);
 
-  void begin_render_texture2d(const Texture &texture);
+  void begin_render_texture2d(const RenderTexture &texture);
   void end_render_texture2d();
-  void begin_render_texture3d(const Texture &texture,
-                              const DepthStencilTexture &depth_texture);
-  void end_render_texture3d();
+  void begin_render_texture3d(const RenderTexture &texture);
+  void end_render_texture3d(const RenderTexture &texture, Texture &out);
 
   px::Allocator *GetAllocator() { return allocator; }
   px::Ptr<px::Device> GetDevice() { return device; }
@@ -67,6 +67,7 @@ private:
   RenderPipeline2D currentPipeline2D;
   RenderPipeline3D currentPipeline3D;
 
+  px::Ptr<px::CommandBuffer> mainCommandBuffer;
   px::Ptr<px::CommandBuffer> currentCommandBuffer;
   px::Ptr<px::RenderPass> currentRenderPass;
   bool isFrameStarted = true;

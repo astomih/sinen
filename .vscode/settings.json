@@ -23,7 +23,10 @@
     "periodic",
     "RenderPipeline2D",
     "Shader",
-    "UniformData"
+    "UniformData",
+    "depthStencilTexture",
+    "DepthStencilTexture",
+    "RenderTexture"
   ],
   "Lua.completion.autoRequire": false
 }

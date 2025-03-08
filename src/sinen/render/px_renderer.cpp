@@ -24,6 +24,7 @@
 #include <sol/sol.hpp>
 
 #include "../scene/scene_system.hpp"
+#include "texture/render_texture.hpp"
 // TODO:
 // - Refactoring
 // - Shadow mapping
@@ -120,6 +121,8 @@ void PxRenderer::render() {
   if (swapchainTexture == nullptr) {
     return;
   }
+  mainCommandBuffer = commandBuffer;
+  currentCommandBuffer = commandBuffer;
   colorTargets[0].texture = swapchainTexture;
   currentColorTargets = colorTargets;
   if (WindowImpl::resized()) {
@@ -136,6 +139,7 @@ void PxRenderer::render() {
     depthTexture = device->CreateTexture(depthStencilCreateInfo);
     this->depthStencilInfo.texture = depthTexture;
   }
+  currentDepthStencilInfo = depthStencilInfo;
 
   ImGui_ImplParanoixa_NewFrame();
   ImGui_ImplSDL3_NewFrame();
@@ -147,7 +151,6 @@ void PxRenderer::render() {
   ImGui::Render();
   ImDrawData *draw_data = ImGui::GetDrawData();
 
-  currentCommandBuffer = commandBuffer;
   Imgui_ImplParanoixa_PrepareDrawData(draw_data, commandBuffer);
   isFrameStarted = true;
   objectCount = 0;
@@ -238,7 +241,7 @@ void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
 }
 void PxRenderer::draw3d(const std::shared_ptr<Drawable> draw_object) {
   objectCount++;
-  if (isFrameStarted || currentRenderPass == nullptr) {
+  if (isDefaultPipeline && (isFrameStarted || currentRenderPass == nullptr)) {
     colorTargets[0].loadOp = px::LoadOp::Clear;
     currentColorTargets = colorTargets;
     currentDepthStencilInfo = depthStencilInfo;
@@ -382,9 +385,8 @@ void PxRenderer::set_uniform_data(uint32_t slot, const UniformData &data) {
   currentCommandBuffer->PushVertexUniformData(slot, data.data.data(),
                                               data.data.size() * sizeof(float));
 }
-void PxRenderer::begin_render_texture2d(const Texture &texture) {
-  auto tex = std::static_pointer_cast<px::Texture>(
-      GetTexData(texture.textureData)->texture);
+void PxRenderer::begin_render_texture2d(const RenderTexture &texture) {
+  auto tex = texture.get_texture();
   if (currentRenderPass) {
     currentCommandBuffer->EndRenderPass(currentRenderPass);
   }
@@ -401,26 +403,60 @@ void PxRenderer::end_render_texture2d() {
   currentCommandBuffer->EndRenderPass(currentRenderPass);
   currentRenderPass = nullptr;
 }
-void PxRenderer::begin_render_texture3d(
-    const Texture &texture, const DepthStencilTexture &depth_texture) {
-  auto tex = std::static_pointer_cast<px::Texture>(
-      GetTexData(texture.textureData)->texture);
-  auto depthTex = depth_texture.get_texture();
-  if (currentRenderPass) {
-    currentCommandBuffer->EndRenderPass(currentRenderPass);
-  }
+void PxRenderer::begin_render_texture3d(const RenderTexture &texture) {
+  auto tex = texture.get_texture();
+  auto depthTex = texture.get_depth_stencil();
+  currentCommandBuffer = device->AcquireCommandBuffer({allocator});
   currentColorTargets[0].loadOp = px::LoadOp::Clear;
   currentColorTargets[0].texture = tex;
   currentDepthStencilInfo.texture = depthTex;
   currentRenderPass = currentCommandBuffer->BeginRenderPass(
       currentColorTargets, currentDepthStencilInfo);
   currentRenderPass->SetViewport(
-      px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
-  currentRenderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
+      px::Viewport{0, 0, (float)texture.width, (float)texture.height, 0, 1});
+  currentRenderPass->SetScissor(0, 0, (float)texture.width,
+                                (float)texture.height);
   isDefaultPipeline = false;
 }
-void PxRenderer::end_render_texture3d() {
+void PxRenderer::end_render_texture3d(const RenderTexture &texture,
+                                      Texture &out) {
   currentCommandBuffer->EndRenderPass(currentRenderPass);
+  device->SubmitCommandBuffer(currentCommandBuffer);
+  device->WaitForGPUIdle();
+  currentCommandBuffer = mainCommandBuffer;
+
+  auto tex = texture.get_texture();
+  auto outTextureData = GetTexData(out.textureData);
+
+  // Copy
+  px::TransferBuffer::CreateInfo info2{};
+  info2.allocator = allocator;
+  info2.size = texture.width * texture.height * 4;
+  info2.usage = px::TransferBufferUsage::Download;
+  auto transferBuffer = device->CreateTransferBuffer(info2);
+  {
+    px::CommandBuffer::CreateInfo info{};
+    info.allocator = allocator;
+    auto commandBuffer = device->AcquireCommandBuffer(info);
+    {
+      auto copyPass = commandBuffer->BeginCopyPass();
+      {
+        px::TextureLocation src{};
+        src.texture = tex;
+        src.layer = 0;
+        src.mipLevel = 0;
+        px::TextureLocation dst{};
+        dst.texture = outTextureData->texture;
+        dst.layer = 0;
+        dst.mipLevel = 0;
+        copyPass->CopyTexture(src, dst, texture.width, texture.height, 1,
+                              false);
+      }
+      commandBuffer->EndCopyPass(copyPass);
+    }
+    device->SubmitCommandBuffer(commandBuffer);
+    device->WaitForGPUIdle();
+  }
   currentRenderPass = nullptr;
 }
 } // namespace sinen

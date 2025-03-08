@@ -21,6 +21,7 @@ void register_generator(sol::state &v) {
         str, DataStream::open_as_string(AssetType::Script, str + ".lua"));
   };
   v["Texture"] = []() -> Texture { return Texture(); };
+  v["RenderTexture"] = []() -> RenderTexture { return RenderTexture(); };
   v["Font"] = []() -> Font { return Font(); };
   v["Vector3"] = [](float x, float y, float z) -> Vector3 {
     return Vector3(x, y, z);

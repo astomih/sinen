@@ -115,6 +115,14 @@ Copies the texture.
 #### Texture:size() -> Vector2
 Gets the size of the texture.
 
+### RenderTexture
+#### RenderTexture()
+Creates a RenderTexture object.
+#### RenderTexture:create(int, int)
+- `int`: Width.
+- `int`: Height.  
+Creates a render texture.
+
 ### Font
 #### Font() -> Font
 Creates a font object.
@@ -338,6 +346,27 @@ Returns the screen clear color.
 #### renderer.set_clear_color(color)
 - `Color`: New clear color.
 Sets the screen clear color.
+#### renderer.begin_pipeline2D(RenderPipeline2D)
+- `RenderPipeline2D`: Render pipeline.
+Begins rendering with a 2D render pipeline.
+#### renderer.end_pipeline2D()
+Ends rendering with a 2D render pipeline.
+#### renderer.begin_pipeline3D(RenderPipeline3D)
+- `RenderPipeline3D`: Render pipeline.
+Begins rendering with a 3D render pipeline.
+#### renderer.end_pipeline3D()
+Ends rendering with a 3D render pipeline.
+#### renderer.begin_render_texture2d(RenderTexture)
+- `RenderTexture`: Render texture.  
+Begins rendering to a render texture 2d.
+#### renderer.begin_render_texture3d(RenderTexture)
+- `RenderTexture`: Render texture.  
+Begins rendering to a render texture 3d.
+#### renderer.end_render_texture(RenderTexture, Texture)
+- `RenderTexture`: Render texture.
+- `Texture`: Texture.
+Ends rendering to a render texture.  
+`Texture` is must be the same size as `RenderTexture`.
 
 ### scene
 #### scene.main_Camera() -> Camera

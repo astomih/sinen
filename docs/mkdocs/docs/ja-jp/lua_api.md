@@ -105,6 +105,13 @@ Point2iのy成分
 Luaでは基本的に参照渡しのため、コピーが必要な場合に使用します
 #### Texture:size() -> Vector2
 テクスチャのサイズを取得します
+### RenderTexture
+#### RenderTexture()
+レンダーテクスチャオブジェクトを作成します
+#### RenderTexture:create(int, int)
+- `int`: 幅
+- `int`: 高さ  
+レンダーテクスチャを作成します
 ### Font
 #### Font() -> Font
 フォントオブジェクトを作成します
@@ -332,6 +339,26 @@ AABBの最大点
 #### renderer.set_clear_color(color)
 - `Color`: 画面クリアの色  
 画面クリアの色を設定します
+#### renderer.begin_pipeline2d(RenderPipeline2D)
+- `RenderPipeline2D`: レンダーパイプライン  
+2Dレンダリングを開始します
+#### renderer.end_pipeline2d()
+2Dレンダリングを終了します
+#### renderer.begin_pipeline3d(RenderPipeline3D)
+- `RenderPipeline3D`: レンダーパイプライン  
+3Dレンダリングを開始します
+#### renderer.end_pipeline3d()
+3Dレンダリングを終了します
+#### renderer.begin_render_texture2d(RenderTexture)
+- `RenderTexture`: レンダーテクスチャ
+レンダーテクスチャの描画を開始します
+#### renderer.begin_render_texture3d(RenderTexture)
+- `RenderTexture`: レンダーテクスチャ
+#### renderer.end_render_texture(RenderTexture, Texture)
+- `RenderTexture`: レンダーテクスチャ
+- `Texture`: 描画結果  
+レンダーテクスチャの描画を終了します  
+`Texture`は`RenderTexture`と同じサイズである必要があります
 ### scene
 #### scene.main_Camera() -> Camera
 シーンのメインカメラを取得します

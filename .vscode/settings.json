@@ -24,8 +24,6 @@
     "RenderPipeline2D",
     "Shader",
     "UniformData",
-    "depthStencilTexture",
-    "DepthStencilTexture",
     "RenderTexture"
   ],
   "Lua.completion.autoRequire": false

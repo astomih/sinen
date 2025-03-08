@@ -387,21 +387,17 @@ void PxRenderer::set_uniform_data(uint32_t slot, const UniformData &data) {
 }
 void PxRenderer::begin_render_texture2d(const RenderTexture &texture) {
   auto tex = texture.get_texture();
-  if (currentRenderPass) {
-    currentCommandBuffer->EndRenderPass(currentRenderPass);
-  }
+  auto depthTex = texture.get_depth_stencil();
+  currentCommandBuffer = device->AcquireCommandBuffer({allocator});
   currentColorTargets[0].loadOp = px::LoadOp::Clear;
   currentColorTargets[0].texture = tex;
   currentRenderPass =
       currentCommandBuffer->BeginRenderPass(currentColorTargets, {});
   currentRenderPass->SetViewport(
-      px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
-  currentRenderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
+      px::Viewport{0, 0, (float)texture.width, (float)texture.height, 0, 1});
+  currentRenderPass->SetScissor(0, 0, (float)texture.width,
+                                (float)texture.height);
   isDefaultPipeline = false;
-}
-void PxRenderer::end_render_texture2d() {
-  currentCommandBuffer->EndRenderPass(currentRenderPass);
-  currentRenderPass = nullptr;
 }
 void PxRenderer::begin_render_texture3d(const RenderTexture &texture) {
   auto tex = texture.get_texture();
@@ -418,8 +414,8 @@ void PxRenderer::begin_render_texture3d(const RenderTexture &texture) {
                                 (float)texture.height);
   isDefaultPipeline = false;
 }
-void PxRenderer::end_render_texture3d(const RenderTexture &texture,
-                                      Texture &out) {
+void PxRenderer::end_render_texture(const RenderTexture &texture,
+                                    Texture &out) {
   currentCommandBuffer->EndRenderPass(currentRenderPass);
   device->SubmitCommandBuffer(currentCommandBuffer);
   device->WaitForGPUIdle();

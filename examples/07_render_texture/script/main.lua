@@ -51,7 +51,7 @@ function Draw()
   renderer.begin_render_texture3d(render_texture)
   -- Draw texture
   draw3d:draw()
-  renderer.end_render_texture3d(render_texture, outTexture)
+  renderer.end_render_texture(render_texture, outTexture)
 
   -- Draw render texture
   draw2d:draw()

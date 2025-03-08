@@ -104,9 +104,8 @@ public:
   static void set_uniform_data(uint32_t slot, const UniformData &data);
 
   static void begin_render_texture2d(const RenderTexture &texture);
-  static void end_render_texture2d();
   static void begin_render_texture3d(const RenderTexture &texture);
-  static void end_render_texture3d(const RenderTexture &texture, Texture &out);
+  static void end_render_texture(const RenderTexture &texture, Texture &out);
 };
 
 } // namespace sinen

@@ -81,14 +81,11 @@ void RendererImpl::set_uniform_data(uint32_t slot, const UniformData &data) {
 void RendererImpl::begin_render_texture2d(const RenderTexture &texture) {
   pxRenderer->begin_render_texture2d(texture);
 }
-void RendererImpl::end_render_texture2d() {
-  pxRenderer->end_render_texture2d();
-}
 void RendererImpl::begin_render_texture3d(const RenderTexture &texture) {
   pxRenderer->begin_render_texture3d(texture);
 }
-void RendererImpl::end_render_texture3d(const RenderTexture &texture,
-                                        Texture &out) {
-  pxRenderer->end_render_texture3d(texture, out);
+void RendererImpl::end_render_texture(const RenderTexture &texture,
+                                      Texture &out) {
+  pxRenderer->end_render_texture(texture, out);
 }
 } // namespace sinen

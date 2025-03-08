@@ -39,9 +39,8 @@ void register_table(sol::state &lua) {
     v["end_pipeline3d"] = &Renderer::end_pipeline3d;
     v["set_uniform_data"] = &Renderer::set_uniform_data;
     v["begin_render_texture2d"] = &Renderer::begin_render_texture2d;
-    v["end_render_texture2d"] = &Renderer::end_render_texture2d;
     v["begin_render_texture3d"] = &Renderer::begin_render_texture3d;
-    v["end_render_texture3d"] = &Renderer::end_render_texture3d;
+    v["end_render_texture"] = &Renderer::end_render_texture;
   }
   {
     auto v = lua.create_table("scene");

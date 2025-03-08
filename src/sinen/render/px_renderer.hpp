@@ -47,9 +47,8 @@ public:
   void set_uniform_data(uint32_t slot, const UniformData &data);
 
   void begin_render_texture2d(const RenderTexture &texture);
-  void end_render_texture2d();
   void begin_render_texture3d(const RenderTexture &texture);
-  void end_render_texture3d(const RenderTexture &texture, Texture &out);
+  void end_render_texture(const RenderTexture &texture, Texture &out);
 
   px::Allocator *GetAllocator() { return allocator; }
   px::Ptr<px::Device> GetDevice() { return device; }

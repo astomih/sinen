@@ -1,6 +1,7 @@
 #include "render_system.hpp"
 #include "../model/default_model_creator.hpp"
 #include "px_renderer.hpp"
+#include "texture/render_texture.hpp"
 #include <cstdint>
 #include <io/asset_type.hpp>
 #include <io/data_stream.hpp>
@@ -76,5 +77,15 @@ void RendererImpl::begin_pipeline2d(const RenderPipeline2D &pipeline) {
 void RendererImpl::end_pipeline2d() { pxRenderer->end_pipeline2d(); }
 void RendererImpl::set_uniform_data(uint32_t slot, const UniformData &data) {
   pxRenderer->set_uniform_data(slot, data);
+}
+void RendererImpl::begin_render_texture2d(const RenderTexture &texture) {
+  pxRenderer->begin_render_texture2d(texture);
+}
+void RendererImpl::begin_render_texture3d(const RenderTexture &texture) {
+  pxRenderer->begin_render_texture3d(texture);
+}
+void RendererImpl::end_render_texture(const RenderTexture &texture,
+                                      Texture &out) {
+  pxRenderer->end_render_texture(texture, out);
 }
 } // namespace sinen

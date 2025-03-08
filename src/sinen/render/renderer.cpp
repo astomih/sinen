@@ -1,4 +1,5 @@
 #include "render_system.hpp"
+#include "texture/render_texture.hpp"
 #include <math/vector3.hpp>
 #include <model/vertex.hpp>
 #include <model/vertex_array.hpp>
@@ -43,5 +44,14 @@ void Renderer::begin_pipeline2d(const RenderPipeline2D &pipeline) {
 void Renderer::end_pipeline2d() { RendererImpl::end_pipeline2d(); }
 void Renderer::set_uniform_data(uint32_t slot, const UniformData &data) {
   RendererImpl::set_uniform_data(slot, data);
+}
+void Renderer::begin_render_texture2d(const RenderTexture &texture) {
+  RendererImpl::begin_render_texture2d(texture);
+}
+void Renderer::begin_render_texture3d(const RenderTexture &texture) {
+  RendererImpl::begin_render_texture3d(texture);
+}
+void Renderer::end_render_texture(const RenderTexture &texture, Texture &out) {
+  RendererImpl::end_render_texture(texture, out);
 }
 } // namespace sinen

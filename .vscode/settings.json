@@ -23,7 +23,8 @@
     "periodic",
     "RenderPipeline2D",
     "Shader",
-    "UniformData"
+    "UniformData",
+    "RenderTexture"
   ],
   "Lua.completion.autoRequire": false
 }

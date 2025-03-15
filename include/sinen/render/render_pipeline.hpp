@@ -28,6 +28,7 @@ public:
   void set_vertex_shader(const Shader &shader);
   void set_vertex_instanced_shader(const Shader &shader);
   void set_fragment_shader(const Shader &shader);
+  void set_animation(bool animation);
 
   void build();
 
@@ -40,6 +41,7 @@ private:
   Shader fragmentShader;
   px::Ptr<px::GraphicsPipeline> pipeline;
   px::Ptr<px::GraphicsPipeline> instanced;
+  bool isAnimation = false;
 };
 } // namespace sinen
 

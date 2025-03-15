@@ -4,7 +4,8 @@
 namespace sinen {
 
 static px::VertexInputState CreateVertexInputState(px::Allocator *allocator,
-                                                   bool isInstance);
+                                                   bool isInstance,
+                                                   bool isAnimation);
 void RenderPipeline2D::set_vertex_shader(const Shader &shader) {
   this->vertexShader = shader;
 }
@@ -20,7 +21,8 @@ void RenderPipeline2D::build() {
   px::GraphicsPipeline::CreateInfo pipelineInfo{allocator};
   pipelineInfo.vertexShader = this->vertexShader.shader;
   pipelineInfo.fragmentShader = this->fragmentShader.shader;
-  pipelineInfo.vertexInputState = CreateVertexInputState(allocator, false);
+  pipelineInfo.vertexInputState =
+      CreateVertexInputState(allocator, false, false);
   pipelineInfo.primitiveType = px::PrimitiveType::TriangleList;
 
   px::RasterizerState rasterizerState{};
@@ -65,7 +67,9 @@ void RenderPipeline3D::set_vertex_instanced_shader(const Shader &shader) {
 void RenderPipeline3D::set_fragment_shader(const Shader &shader) {
   this->fragmentShader = shader;
 }
-
+void RenderPipeline3D::set_animation(bool animation) {
+  this->isAnimation = animation;
+}
 void RenderPipeline3D::build() {
   auto pxRenderer = RendererImpl::GetPxRenderer();
   auto *allocator = pxRenderer->GetAllocator();
@@ -74,7 +78,8 @@ void RenderPipeline3D::build() {
   px::GraphicsPipeline::CreateInfo pipelineInfo{allocator};
   pipelineInfo.vertexShader = this->vertexShader.shader;
   pipelineInfo.fragmentShader = this->fragmentShader.shader;
-  pipelineInfo.vertexInputState = CreateVertexInputState(allocator, false);
+  pipelineInfo.vertexInputState =
+      CreateVertexInputState(allocator, false, isAnimation);
   pipelineInfo.primitiveType = px::PrimitiveType::TriangleList;
 
   px::RasterizerState rasterizerState{};
@@ -112,11 +117,12 @@ void RenderPipeline3D::build() {
       px::TextureFormat::D32_FLOAT_S8_UINT;
   this->pipeline = device->CreateGraphicsPipeline(pipelineInfo);
   pipelineInfo.vertexShader = this->instancedShader.shader;
-  pipelineInfo.vertexInputState = CreateVertexInputState(allocator, true);
+  pipelineInfo.vertexInputState =
+      CreateVertexInputState(allocator, true, isAnimation);
   this->instanced = device->CreateGraphicsPipeline(pipelineInfo);
 }
 px::VertexInputState CreateVertexInputState(px::Allocator *allocator,
-                                            bool isInstance) {
+                                            bool isInstance, bool isAnimation) {
   px::VertexInputState vertexInputState{allocator};
   if (isInstance) {
     vertexInputState.vertexBufferDescriptions.emplace_back(
@@ -174,6 +180,18 @@ px::VertexInputState CreateVertexInputState(px::Allocator *allocator,
                             .bufferSlot = 1,
                             .format = px::VertexElementFormat::Float4,
                             .offset = offsetof(InstanceData, world_matrix_4)});
+    if (isAnimation) {
+      vertexInputState.vertexAttributes.emplace_back(
+          px::VertexAttribute{.location = 8,
+                              .bufferSlot = 0,
+                              .format = px::VertexElementFormat::Float4,
+                              .offset = sizeof(Vertex)});
+      vertexInputState.vertexAttributes.emplace_back(
+          px::VertexAttribute{.location = 9,
+                              .bufferSlot = 0,
+                              .format = px::VertexElementFormat::Float4,
+                              .offset = sizeof(Vertex) + sizeof(float) * 4});
+    }
   } else {
     vertexInputState.vertexBufferDescriptions.emplace_back(
         px::VertexBufferDescription{
@@ -202,6 +220,18 @@ px::VertexInputState CreateVertexInputState(px::Allocator *allocator,
                             .bufferSlot = 0,
                             .format = px::VertexElementFormat::Float4,
                             .offset = offsetof(Vertex, rgba)});
+    if (isAnimation) {
+      vertexInputState.vertexAttributes.emplace_back(
+          px::VertexAttribute{.location = 4,
+                              .bufferSlot = 0,
+                              .format = px::VertexElementFormat::Float4,
+                              .offset = sizeof(Vertex)});
+      vertexInputState.vertexAttributes.emplace_back(
+          px::VertexAttribute{.location = 5,
+                              .bufferSlot = 0,
+                              .format = px::VertexElementFormat::Float4,
+                              .offset = sizeof(Vertex) + sizeof(float) * 4});
+    }
   }
   return vertexInputState;
 }

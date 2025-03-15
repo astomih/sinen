@@ -10,6 +10,7 @@
 #include "../render/px_renderer.hpp"
 #include "../render/render_system.hpp"
 #include "io/asset_type.hpp"
+#include "math/matrix4.hpp"
 #include "model_data.hpp"
 #include <io/data_stream.hpp>
 #include <logger/logger.hpp>
@@ -31,12 +32,52 @@
 namespace sinen {
 enum class load_state { version, vertex, indices };
 
+void LoadSkinningData(const tinygltf::Model &model,
+                      const tinygltf::Primitive &primitive,
+                      std::vector<Vector4> &boneIDs,
+                      std::vector<Vector4> &boneWeights) {
+  // JOINTS_0（ボーンのインデックス）
+  if (primitive.attributes.find("JOINTS_0") != primitive.attributes.end()) {
+    const tinygltf::Accessor &accessor =
+        model.accessors[primitive.attributes.at("JOINTS_0")];
+    const tinygltf::BufferView &bufferView =
+        model.bufferViews[accessor.bufferView];
+    const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
+
+    const uint8_t *jointData =
+        reinterpret_cast<const uint8_t *>(&buffer.data[bufferView.byteOffset]);
+
+    for (size_t i = 0; i < accessor.count; ++i) {
+      boneIDs.push_back(Vector4(jointData[i * 4 + 0], jointData[i * 4 + 1],
+                                jointData[i * 4 + 2], jointData[i * 4 + 3]));
+    }
+  }
+
+  // WEIGHTS_0（ボーンの影響度）
+  if (primitive.attributes.find("WEIGHTS_0") != primitive.attributes.end()) {
+    const tinygltf::Accessor &accessor =
+        model.accessors[primitive.attributes.at("WEIGHTS_0")];
+    const tinygltf::BufferView &bufferView =
+        model.bufferViews[accessor.bufferView];
+    const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
+
+    const float *weightData =
+        reinterpret_cast<const float *>(&buffer.data[bufferView.byteOffset]);
+
+    for (size_t i = 0; i < accessor.count; ++i) {
+      boneWeights.push_back(
+          Vector4(weightData[i * 4 + 0], weightData[i * 4 + 1],
+                  weightData[i * 4 + 2], weightData[i * 4 + 3]));
+    }
+  }
+}
 Model::Model() { data = std::make_shared<ModelData>(); };
 void Model::load(std::string_view str) {
   auto modelData = GetModelData(this->data);
   auto &local_aabb = modelData->local_aabb;
   auto &v_array = modelData->v_array;
   std::stringstream data;
+  Bone bone;
   data << DataStream::open_as_string(AssetType::Model, str);
   std::string str_name = str.data();
   if (str_name.ends_with(".sim")) {
@@ -179,12 +220,56 @@ void Model::load(std::string_view str) {
         }
       }
     }
+
+    std::vector<matrix4> matrices;
+    // Skin
+    for (auto &skin : gltf_model.skins) {
+      for (auto &joint : skin.joints) {
+        auto &node = gltf_model.nodes[joint];
+        auto &matrix = node.matrix;
+        matrix4 m;
+        for (size_t i = 0; i < 16; ++i) {
+          m.mat.m16[i] = static_cast<float>(matrix[i]);
+        }
+        matrices.push_back(m);
+      }
+    }
+
+    // input, output
+    std::vector<float> input, output;
+
+    // Animation
+    for (auto &animation : gltf_model.animations) {
+      for (auto &channel : animation.channels) {
+        auto &sampler = animation.samplers[channel.sampler];
+        auto &inputAccessor = gltf_model.accessors[sampler.input];
+        auto &outputAccessor = gltf_model.accessors[sampler.output];
+        auto &inputBufferView =
+            gltf_model.bufferViews[inputAccessor.bufferView];
+        auto &outputBufferView =
+            gltf_model.bufferViews[outputAccessor.bufferView];
+        auto &inputBuffer = gltf_model.buffers[inputBufferView.buffer];
+        auto &outputBuffer = gltf_model.buffers[outputBufferView.buffer];
+        const float *inputData = reinterpret_cast<const float *>(
+            &inputBuffer
+                 .data[inputBufferView.byteOffset + inputAccessor.byteOffset]);
+        const float *outputData = reinterpret_cast<const float *>(
+            &outputBuffer.data[outputBufferView.byteOffset +
+                               outputAccessor.byteOffset]);
+        for (size_t i = 0; i < inputAccessor.count; ++i) {
+          input.push_back(inputData[i]);
+          output.push_back(outputData[i]);
+        }
+      }
+    }
+    UniformData uniformData;
+    uniformData.add_matrices(matrices);
   } else {
     Logger::error("invalid formats.");
   }
 
   v_array.indexCount = v_array.indices.size();
-  auto viBuffer = CreateVertexIndexBuffer(v_array);
+  auto viBuffer = CreateVertexIndexBuffer(v_array, bone);
   modelData->vertexBuffer = viBuffer.first;
   modelData->indexBuffer = viBuffer.second;
 }
@@ -201,7 +286,7 @@ void Model::load_from_vertex_array(const VertexArray &vArray) {
     local_aabb._max.y = Math::Max(local_aabb._max.y, v.position.y);
     local_aabb._max.z = Math::Max(local_aabb._max.z, v.position.z);
   }
-  auto viBuffer = CreateVertexIndexBuffer(vArray);
+  auto viBuffer = CreateVertexIndexBuffer(vArray, Bone{});
   modelData->vertexBuffer = viBuffer.first;
   modelData->indexBuffer = viBuffer.second;
 }
@@ -242,10 +327,14 @@ std::vector<std::uint32_t> Model::all_indices() const {
 }
 
 std::pair<px::Ptr<px::Buffer>, px::Ptr<px::Buffer>>
-CreateVertexIndexBuffer(const VertexArray &vArray) {
+CreateVertexIndexBuffer(const VertexArray &vArray, const Bone &bone) {
   auto allocator = RendererImpl::GetPxRenderer()->GetAllocator();
   auto device = RendererImpl::GetPxRenderer()->GetDevice();
   auto vertexBufferSize = vArray.vertices.size() * sizeof(Vertex);
+  if (bone.boneIDs.size() > 0 && bone.boneWeights.size() > 0) {
+    vertexBufferSize += bone.boneIDs.size() * sizeof(Vector4);
+    vertexBufferSize += bone.boneWeights.size() * sizeof(Vector4);
+  }
 
   px::Ptr<px::Buffer> vertexBuffer, indexBuffer;
   px::Buffer::CreateInfo vertexBufferInfo{};

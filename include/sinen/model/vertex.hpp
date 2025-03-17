@@ -5,6 +5,7 @@
 #include "../color/color.hpp"
 #include "../math/vector2.hpp"
 #include "../math/vector3.hpp"
+#include "../math/vector4.hpp"
 
 namespace sinen {
 /**
@@ -24,6 +25,14 @@ struct Vertex {
   Vector3 normal;
   Vector2 uv;
   Color rgba = Color(Color(1, 1, 1, 1));
+};
+struct AnimationVertex {
+  Vector3 position;
+  Vector3 normal;
+  Vector2 uv;
+  Color rgba = Color(Color(1, 1, 1, 1));
+  Vector4 boneIDs;
+  Vector4 boneWeights;
 };
 } // namespace sinen
 #endif // !SINEN_VERTEX_HPP

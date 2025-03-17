@@ -6,11 +6,13 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <variant>
 // internal
 #include "../render/px_renderer.hpp"
 #include "../render/render_system.hpp"
 #include "io/asset_type.hpp"
 #include "math/matrix4.hpp"
+#include "math/quaternion.hpp"
 #include "model_data.hpp"
 #include <io/data_stream.hpp>
 #include <logger/logger.hpp>
@@ -36,7 +38,6 @@ void LoadSkinningData(const tinygltf::Model &model,
                       const tinygltf::Primitive &primitive,
                       std::vector<Vector4> &boneIDs,
                       std::vector<Vector4> &boneWeights) {
-  // JOINTS_0（ボーンのインデックス）
   if (primitive.attributes.find("JOINTS_0") != primitive.attributes.end()) {
     const tinygltf::Accessor &accessor =
         model.accessors[primitive.attributes.at("JOINTS_0")];
@@ -44,16 +45,16 @@ void LoadSkinningData(const tinygltf::Model &model,
         model.bufferViews[accessor.bufferView];
     const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
 
-    const uint8_t *jointData =
-        reinterpret_cast<const uint8_t *>(&buffer.data[bufferView.byteOffset]);
+    const auto *jointData = reinterpret_cast<const int *>(
+        &buffer.data[bufferView.byteOffset + accessor.byteOffset]);
 
     for (size_t i = 0; i < accessor.count; ++i) {
-      boneIDs.push_back(Vector4(jointData[i * 4 + 0], jointData[i * 4 + 1],
-                                jointData[i * 4 + 2], jointData[i * 4 + 3]));
+      boneIDs.push_back(
+          Vector4((float)jointData[i * 4 + 0], (float)jointData[i * 4 + 1],
+                  (float)jointData[i * 4 + 2], (float)jointData[i * 4 + 3]));
     }
   }
 
-  // WEIGHTS_0（ボーンの影響度）
   if (primitive.attributes.find("WEIGHTS_0") != primitive.attributes.end()) {
     const tinygltf::Accessor &accessor =
         model.accessors[primitive.attributes.at("WEIGHTS_0")];
@@ -61,8 +62,8 @@ void LoadSkinningData(const tinygltf::Model &model,
         model.bufferViews[accessor.bufferView];
     const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
 
-    const float *weightData =
-        reinterpret_cast<const float *>(&buffer.data[bufferView.byteOffset]);
+    const float *weightData = reinterpret_cast<const float *>(
+        &buffer.data[bufferView.byteOffset + accessor.byteOffset]);
 
     for (size_t i = 0; i < accessor.count; ++i) {
       boneWeights.push_back(
@@ -76,8 +77,8 @@ void Model::load(std::string_view str) {
   auto modelData = GetModelData(this->data);
   auto &local_aabb = modelData->local_aabb;
   auto &v_array = modelData->v_array;
+  auto &boneUniformData = modelData->boneUniformData;
   std::stringstream data;
-  Bone bone;
   data << DataStream::open_as_string(AssetType::Model, str);
   std::string str_name = str.data();
   if (str_name.ends_with(".sim")) {
@@ -166,6 +167,25 @@ void Model::load(std::string_view str) {
       }
     }
 
+    std::vector<Vector4> boneIDs, boneWeights;
+    // Load skinning data
+    for (auto &mesh : gltf_model.meshes) {
+      for (auto &primitive : mesh.primitives) {
+        LoadSkinningData(gltf_model, primitive, boneIDs, boneWeights);
+      }
+    }
+
+    bool isAnimation = false;
+    if (!boneIDs.empty() && !boneWeights.empty()) {
+      isAnimation = true;
+      v_array.animationVertices.resize(boneIDs.size());
+
+      for (size_t i = 0; i < boneIDs.size(); ++i) {
+        v_array.animationVertices[i].boneIDs = boneIDs[i];
+        v_array.animationVertices[i].boneWeights = boneWeights[i];
+      }
+    }
+
     for (auto &mesh : gltf_model.meshes) {
       for (auto &primitive : mesh.primitives) {
         // Vertices
@@ -196,13 +216,25 @@ void Model::load(std::string_view str) {
               &uvBuffer.data[uvBufferView.byteOffset + uvAccessor.byteOffset]);
 
           for (size_t i = 0; i < positionAccessor.count; ++i) {
-            v_array.vertices.push_back(Vertex{
-                .position = Vector3(positions[3 * i + 0], positions[3 * i + 1],
-                                    positions[3 * i + 2]),
-                .normal = Vector3(normals[3 * i + 0], normals[3 * i + 1],
-                                  normals[3 * i + 2]),
-                .uv = Vector2(uvs[2 * i + 0], uvs[2 * i + 1]),
-            });
+            if (isAnimation) {
+              v_array.animationVertices[i].position =
+                  Vector3(positions[3 * i + 0], positions[3 * i + 1],
+                          positions[3 * i + 2]);
+              v_array.animationVertices[i].normal = Vector3(
+                  normals[3 * i + 0], normals[3 * i + 1], normals[3 * i + 2]);
+              v_array.animationVertices[i].uv =
+                  Vector2(uvs[2 * i + 0], uvs[2 * i + 1]);
+            } else {
+
+              v_array.vertices.push_back(Vertex{
+                  .position =
+                      Vector3(positions[3 * i + 0], positions[3 * i + 1],
+                              positions[3 * i + 2]),
+                  .normal = Vector3(normals[3 * i + 0], normals[3 * i + 1],
+                                    normals[3 * i + 2]),
+                  .uv = Vector2(uvs[2 * i + 0], uvs[2 * i + 1]),
+              });
+            }
           }
         }
 
@@ -226,14 +258,39 @@ void Model::load(std::string_view str) {
     for (auto &skin : gltf_model.skins) {
       for (auto &joint : skin.joints) {
         auto &node = gltf_model.nodes[joint];
-        auto &matrix = node.matrix;
-        matrix4 m;
-        for (size_t i = 0; i < 16; ++i) {
-          m.mat.m16[i] = static_cast<float>(matrix[i]);
+        auto &rotation = node.rotation;
+        auto &scale = node.scale;
+        auto &translation = node.translation;
+
+        Vector3 scale3;
+        if (scale.size() == 0) {
+          scale3 = Vector3(1, 1, 1);
+        } else {
+          scale3 = Vector3(scale[0], scale[1], scale[2]);
         }
+        Quaternion rotation4;
+        if (rotation.size() == 0) {
+          rotation4 = Quaternion::Identity;
+        } else {
+          rotation4 =
+              Quaternion(rotation[0], rotation[1], rotation[2], rotation[3]);
+        }
+        Vector3 translation3;
+        if (translation.size() == 0) {
+          translation3 = Vector3(0, 0, 0);
+        } else {
+          translation3 =
+              Vector3(translation[0], translation[1], translation[2]);
+        }
+
+        matrix4 m;
+        m = matrix4::create_scale(scale3) *
+            matrix4::create_from_quaternion(rotation4) *
+            matrix4::create_translation(translation3);
         matrices.push_back(m);
       }
     }
+    boneUniformData.add_matrices(matrices);
 
     // input, output
     std::vector<float> input, output;
@@ -262,14 +319,12 @@ void Model::load(std::string_view str) {
         }
       }
     }
-    UniformData uniformData;
-    uniformData.add_matrices(matrices);
   } else {
     Logger::error("invalid formats.");
   }
 
   v_array.indexCount = v_array.indices.size();
-  auto viBuffer = CreateVertexIndexBuffer(v_array, bone);
+  auto viBuffer = CreateVertexIndexBuffer(v_array);
   modelData->vertexBuffer = viBuffer.first;
   modelData->indexBuffer = viBuffer.second;
 }
@@ -286,7 +341,7 @@ void Model::load_from_vertex_array(const VertexArray &vArray) {
     local_aabb._max.y = Math::Max(local_aabb._max.y, v.position.y);
     local_aabb._max.z = Math::Max(local_aabb._max.z, v.position.z);
   }
-  auto viBuffer = CreateVertexIndexBuffer(vArray, Bone{});
+  auto viBuffer = CreateVertexIndexBuffer(vArray);
   modelData->vertexBuffer = viBuffer.first;
   modelData->indexBuffer = viBuffer.second;
 }
@@ -327,15 +382,18 @@ std::vector<std::uint32_t> Model::all_indices() const {
 }
 
 std::pair<px::Ptr<px::Buffer>, px::Ptr<px::Buffer>>
-CreateVertexIndexBuffer(const VertexArray &vArray, const Bone &bone) {
+CreateVertexIndexBuffer(const VertexArray &vArray) {
   auto allocator = RendererImpl::GetPxRenderer()->GetAllocator();
   auto device = RendererImpl::GetPxRenderer()->GetDevice();
-  auto vertexBufferSize = vArray.vertices.size() * sizeof(Vertex);
-  if (bone.boneIDs.size() > 0 && bone.boneWeights.size() > 0) {
-    vertexBufferSize += bone.boneIDs.size() * sizeof(Vector4);
-    vertexBufferSize += bone.boneWeights.size() * sizeof(Vector4);
+  size_t vertexBufferSize;
+  bool isAnimation = false;
+  if (vArray.animationVertices.size() > 0) {
+    vertexBufferSize =
+        vArray.animationVertices.size() * sizeof(AnimationVertex);
+    isAnimation = true;
+  } else {
+    vertexBufferSize = vArray.vertices.size() * sizeof(Vertex);
   }
-
   px::Ptr<px::Buffer> vertexBuffer, indexBuffer;
   px::Buffer::CreateInfo vertexBufferInfo{};
   vertexBufferInfo.allocator = allocator;
@@ -358,7 +416,13 @@ CreateVertexIndexBuffer(const VertexArray &vArray, const Bone &bone) {
       info.usage = px::TransferBufferUsage::Upload;
       transferBuffer = device->CreateTransferBuffer(info);
       auto *pMapped = transferBuffer->Map(false);
-      memcpy(pMapped, vArray.vertices.data(), vertexBufferSize);
+      if (isAnimation) {
+        memcpy(pMapped, vArray.animationVertices.data(),
+               vArray.animationVertices.size() * sizeof(AnimationVertex));
+      } else {
+        memcpy(pMapped, vArray.vertices.data(),
+               vArray.vertices.size() * sizeof(Vertex));
+      }
       transferBuffer->Unmap();
     }
     {
@@ -421,6 +485,10 @@ CreateVertexIndexBuffer(const VertexArray &vArray, const Bone &bone) {
   return std::make_pair(vertexBuffer, indexBuffer);
 }
 
+UniformData Model::bone_uniform_data() const {
+  auto modelData = GetModelData(this->data);
+  return modelData->boneUniformData;
+}
 } // namespace sinen
 
 namespace tinygltf {

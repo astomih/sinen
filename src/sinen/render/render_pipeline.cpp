@@ -116,6 +116,8 @@ void RenderPipeline3D::build() {
   pipelineInfo.targetInfo.depthStencilTargetFormat =
       px::TextureFormat::D32_FLOAT_S8_UINT;
   this->pipeline = device->CreateGraphicsPipeline(pipelineInfo);
+  if (instancedShader.shader == nullptr)
+    return;
   pipelineInfo.vertexShader = this->instancedShader.shader;
   pipelineInfo.vertexInputState =
       CreateVertexInputState(allocator, true, isAnimation);

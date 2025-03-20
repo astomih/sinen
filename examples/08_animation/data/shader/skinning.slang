@@ -4,8 +4,8 @@ struct VSInput
     float3 normal : NORMAL;
     float2 uv : TEXCOORD0;
     float4 color : COLOR;
-    float4 bone_index : JOINT;
-    float4 bone_weight : WEIGHT;
+    float4 bone_index;
+    float4 bone_weight;
 };
 
 struct VSOutput
@@ -38,11 +38,18 @@ UNIFORM(skinning, 1)
 VSOutput VSMain(VSInput input)
 {
     VSOutput output;
-    float4x4 skin = bone[int(input.bone_index.x)] * input.bone_weight.x +
-                    bone[int(input.bone_index.y)] * input.bone_weight.y +
-                    bone[int(input.bone_index.z)] * input.bone_weight.z +
-                    bone[int(input.bone_index.w)] * input.bone_weight.w;
-    output.out = mul(proj * view * world * skin, float4(input.position, 1.0));
+    float4x4 skin = float4x4(1, 0, 0, 0,
+                             0, 1, 0, 0,
+                             0, 0, 1, 0,
+                             0, 0, 0, 1);
+
+    for (int i = 0; i < 4; i++)
+    {
+        skin +=
+            bone[int(input.bone_index[i])] *
+            input.bone_weight[i];
+    }
+    output.out = mul(proj, mul(view, mul(world, mul(skin, float4(input.position, 1.0)))));
     output.uv = input.uv;
     output.color = input.color;
     return output;
@@ -58,11 +65,11 @@ struct FSOutput
 {
     float4 color : COLOR;
 };
-#define COMBINED_IMAGE_SAMPLER(name, bind, set) \
-    [[vk::binding(bind, set)]]                  \
-    Sampler2D name : register(t##bind, space##set) : register(s##bind, space##set);
+#define COMBINED_IMAGE_SAMPLER(name, bind) \
+    [[vk::binding(bind, 2)]]               \
+    Sampler2D name : register(t##bind, space2) : register(s##bind, space2);
 
-COMBINED_IMAGE_SAMPLER(sampledTexture, 0, 2)
+COMBINED_IMAGE_SAMPLER(sampledTexture, 0)
 
 [shader("fragment")]
 FSOutput FSMain(FSInput input)

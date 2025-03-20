@@ -2,7 +2,7 @@
 local texture = Texture()
 texture:fill_color(Color(1, 1, 1, 1))
 local model = Model()
-model:load("brainstem.glb")
+model:load("SimpleSkin.gltf")
 local draw3d = Draw3D(texture)
 draw3d.position = Vector3(0, 0, 0)
 draw3d.model = model
@@ -20,7 +20,7 @@ pipeline:build()
 
 
 local pos = Vector3(1, 1, 3)
-local speed = 100
+local speed = 0.01
 
 function Update()
   if keyboard.is_down(keyboard.W) then
@@ -55,5 +55,5 @@ function Draw()
   renderer.set_uniform_data(1, model:bone_uniform_data())
   -- Draw texture
   draw3d:draw()
-  renderer.end_pipeline()
+  renderer.end_pipeline3d()
 end

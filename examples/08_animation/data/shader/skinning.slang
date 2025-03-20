@@ -49,7 +49,9 @@ VSOutput VSMain(VSInput input)
             bone[int(input.bone_index[i])] *
             input.bone_weight[i];
     }
-    output.out = mul(proj, mul(view, mul(world, mul(skin, float4(input.position, 1.0)))));
+    float4x4 pvw = mul(proj, mul(view, world));
+    float4 pos = mul(skin, float4(input.position, 1.0));
+    output.out = mul(pvw, pos);
     output.uv = input.uv;
     output.color = input.color;
     return output;

@@ -137,6 +137,8 @@ bool script_engine::initialize(sol::state &lua) {
     v["load_sprite"] = &Model::load_sprite;
     v["load_box"] = &Model::load_box;
     v["bone_uniform_data"] = &Model::bone_uniform_data;
+    v["play"] = &Model::play;
+    v["update"] = &Model::update;
   }
   {
     auto v = lua.new_usertype<AABB>("", sol::no_construction());

@@ -21,6 +21,7 @@ struct UniformData {
     data.push_back(vector.z);
   }
   void change(float value, int index) { data[index] = value; }
+  void clear() { data.clear(); }
   std::vector<float> data;
 };
 } // namespace sinen

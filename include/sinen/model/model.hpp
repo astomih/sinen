@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "../physics/collision.hpp"
+#include "math/matrix4.hpp"
 #include "physics/primitive3.hpp"
 #include "render/uniform_data.hpp"
 #include "vertex_array.hpp"
@@ -33,11 +34,15 @@ public:
   void load_from_vertex_array(const VertexArray &vArray);
   void load_sprite();
   void load_box();
+  void play(float start);
+  void update(float delta_time);
   AABB &aabb() const;
   std::shared_ptr<void> data;
   std::vector<Vertex> all_vertex() const;
   std::vector<std::uint32_t> all_indices() const;
   UniformData bone_uniform_data() const;
+  std::vector<matrix4> inverse_bind_matrices;
+  float time = 0.0f;
 };
 } // namespace sinen
 #endif // !SINEN_MODEL_HPP

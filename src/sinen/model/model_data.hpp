@@ -5,6 +5,7 @@
 #include <paranoixa/paranoixa.hpp>
 #include <physics/collision.hpp>
 #include <render/renderer.hpp>
+#include <tiny_gltf.h>
 
 namespace sinen {
 struct ModelData {
@@ -17,6 +18,7 @@ struct ModelData {
 
   px::Ptr<px::Buffer> vertexBuffer;
   px::Ptr<px::Buffer> indexBuffer;
+  tinygltf::Model model;
 };
 inline std::shared_ptr<ModelData> GetModelData(std::shared_ptr<void> model) {
   return std::static_pointer_cast<ModelData>(model);

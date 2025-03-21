@@ -37,25 +37,33 @@ namespace sinen {
 enum class load_state { version, vertex, indices };
 static matrix4 GetLocalTransform(const tinygltf::Node &node) {
   matrix4 m = matrix4::identity;
+  if (node.matrix.size() == 16) {
+    memcpy(&m.mat, node.matrix.data(), sizeof(matrix4));
+    return m;
+  }
+
   matrix4 t = matrix4::identity, r = matrix4::identity, s = matrix4::identity;
 
   if (node.scale.size() == 3) {
-    s = matrix4::create_scale(
-        Vector3(node.scale[0], node.scale[1], node.scale[2]));
+    float x = static_cast<float>(node.scale[0]);
+    float y = static_cast<float>(node.scale[1]);
+    float z = static_cast<float>(node.scale[2]);
+    s = matrix4::create_scale(Vector3(x, y, z));
   }
   if (node.rotation.size() == 4) {
-    r = matrix4::create_from_quaternion(
-        Quaternion(node.rotation[0], node.rotation[1], node.rotation[2],
-                   node.rotation[3]));
+    float x = static_cast<float>(node.rotation[0]);
+    float y = static_cast<float>(node.rotation[1]);
+    float z = static_cast<float>(node.rotation[2]);
+    float w = static_cast<float>(node.rotation[3]);
+    r = matrix4::create_from_quaternion(Quaternion(x, y, z, w));
   }
   if (node.translation.size() == 3) {
-    t = matrix4::create_translation(
-        Vector3(node.translation[0], node.translation[1], node.translation[2]));
+    float x = static_cast<float>(node.translation[0]);
+    float y = static_cast<float>(node.translation[1]);
+    float z = static_cast<float>(node.translation[2]);
+    t = matrix4::create_translation(Vector3(x, y, z));
   }
   m = s * r * t;
-  if (node.matrix.size() == 16) {
-    memcpy(&m.mat, node.matrix.data(), sizeof(matrix4));
-  }
 
   return m;
 }
@@ -78,31 +86,48 @@ void LoadSkinningData(const tinygltf::Model &model,
                       std::vector<Vector4> &boneIDs,
                       std::vector<Vector4> &boneWeights) {
   if (primitive.attributes.find("JOINTS_0") != primitive.attributes.end()) {
-    const tinygltf::Accessor &accessor =
+    const tinygltf::Accessor &jointAccessor =
         model.accessors[primitive.attributes.at("JOINTS_0")];
-    const tinygltf::BufferView &bufferView =
-        model.bufferViews[accessor.bufferView];
-    const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
+    const tinygltf::BufferView &jointBufferView =
+        model.bufferViews[jointAccessor.bufferView];
+    const tinygltf::Buffer &jointBuffer = model.buffers[jointBufferView.buffer];
+    assert(jointAccessor.type == TINYGLTF_TYPE_VEC4);
+    size_t byteStride = jointAccessor.ByteStride(jointBufferView);
 
-    if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
+    if (jointAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
 
-      const auto *jointData = reinterpret_cast<const uint16_t *>(
-          &buffer.data[bufferView.byteOffset + accessor.byteOffset]);
+      const auto *jointData = reinterpret_cast<const unsigned short *>(
+          &jointBuffer
+               .data[jointBufferView.byteOffset + jointAccessor.byteOffset]);
 
-      for (size_t i = 0; i < accessor.count; ++i) {
-        boneIDs.push_back(
-            Vector4((float)jointData[i * 4 + 0], (float)jointData[i * 4 + 1],
-                    (float)jointData[i * 4 + 2], (float)jointData[i * 4 + 3]));
+      if (byteStride == 0) {
+        byteStride = sizeof(uint16_t) * 4;
       }
-    } else if (accessor.componentType ==
-               TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
-      const auto *jointData = reinterpret_cast<const uint8_t *>(
-          &buffer.data[bufferView.byteOffset + accessor.byteOffset]);
 
-      for (size_t i = 0; i < accessor.count; ++i) {
-        boneIDs.push_back(
-            Vector4((float)jointData[i * 4 + 0], (float)jointData[i * 4 + 1],
-                    (float)jointData[i * 4 + 2], (float)jointData[i * 4 + 3]));
+      for (size_t i = 0; i < jointAccessor.count; ++i) {
+        size_t index = i * (byteStride / sizeof(uint16_t));
+        float j0 = static_cast<float>(jointData[index + 0]);
+        float j1 = static_cast<float>(jointData[index + 1]);
+        float j2 = static_cast<float>(jointData[index + 2]);
+        float j3 = static_cast<float>(jointData[index + 3]);
+        boneIDs.push_back(Vector4(j0, j1, j2, j3));
+      }
+    } else if (jointAccessor.componentType ==
+               TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
+      if (byteStride == 0) {
+        byteStride = sizeof(uint8_t) * 4;
+      }
+      const auto *jointData = reinterpret_cast<const uint8_t *>(
+          &jointBuffer
+               .data[jointBufferView.byteOffset + jointAccessor.byteOffset]);
+
+      for (size_t i = 0; i < jointAccessor.count; ++i) {
+        size_t index = i * (byteStride / sizeof(uint8_t));
+        float j0 = static_cast<float>(jointData[index + 0]);
+        float j1 = static_cast<float>(jointData[index + 1]);
+        float j2 = static_cast<float>(jointData[index + 2]);
+        float j3 = static_cast<float>(jointData[index + 3]);
+        boneIDs.push_back(Vector4(j0, j1, j2, j3));
       }
     }
   }
@@ -115,6 +140,7 @@ void LoadSkinningData(const tinygltf::Model &model,
     const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
 
     assert(accessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT);
+    assert(accessor.type == TINYGLTF_TYPE_VEC4);
 
     const float *weightData = reinterpret_cast<const float *>(
         &buffer.data[bufferView.byteOffset + accessor.byteOffset]);
@@ -221,18 +247,9 @@ void Model::load(std::string_view str) {
       }
     }
 
-    std::vector<Vector4> boneIDs, boneWeights;
-    // Load skinning data
-    for (auto &mesh : model.meshes) {
-      for (auto &primitive : mesh.primitives) {
-        LoadSkinningData(model, primitive, boneIDs, boneWeights);
-      }
-    }
-
     bool isAnimation = false;
-    if (!boneIDs.empty() && !boneWeights.empty()) {
+    if (!model.animations.empty()) {
       isAnimation = true;
-      v_array.animationVertices.resize(boneIDs.size());
     }
 
     for (auto &mesh : model.meshes) {
@@ -276,26 +293,27 @@ void Model::load(std::string_view str) {
                 &uvBuffer
                      .data[uvBufferView.byteOffset + uvAccessor.byteOffset]);
           }
+          std::vector<Vector4> boneIDs, boneWeights;
+          LoadSkinningData(model, primitive, boneIDs, boneWeights);
 
           for (size_t i = 0; i < positionAccessor.count; ++i) {
             if (isAnimation) {
-              v_array.animationVertices[i].position =
-                  Vector3(positions[3 * i + 0], positions[3 * i + 1],
-                          positions[3 * i + 2]);
-              v_array.animationVertices[i].normal = Vector3(
-                  normals[3 * i + 0], normals[3 * i + 1], normals[3 * i + 2]);
+              AnimationVertex v;
+              v.position = Vector3(positions[3 * i + 0], positions[3 * i + 1],
+                                   positions[3 * i + 2]);
+              v.normal = Vector3(normals[3 * i + 0], normals[3 * i + 1],
+                                 normals[3 * i + 2]);
               if (uvAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT) {
                 auto uv = std::get<const float *>(uvs);
-                v_array.animationVertices[i].uv =
-                    Vector2(uv[2 * i + 0], uv[2 * i + 1]);
+                v.uv = Vector2(uv[2 * i + 0], uv[2 * i + 1]);
               } else if (uvAccessor.componentType ==
                          TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
                 auto uv = std::get<const uint16_t *>(uvs);
-                v_array.animationVertices[i].uv =
-                    Vector2(uv[2 * i + 0], uv[2 * i + 1]);
+                v.uv = Vector2(uv[2 * i + 0], uv[2 * i + 1]);
               }
-              v_array.animationVertices[i].boneIDs = boneIDs[i];
-              v_array.animationVertices[i].boneWeights = boneWeights[i];
+              v.boneIDs = boneIDs[i];
+              v.boneWeights = boneWeights[i];
+              v_array.animationVertices.push_back(v);
             } else {
               Vertex v;
               v.position = Vector3(positions[3 * i + 0], positions[3 * i + 1],
@@ -330,7 +348,6 @@ void Model::load(std::string_view str) {
       }
     }
 
-    // Skin
     std::vector<matrix4> invBindMatrices;
     for (auto &skin : model.skins) {
       const tinygltf::Accessor &invAccessor =
@@ -366,27 +383,19 @@ void Model::load(std::string_view str) {
         const float *inputData = reinterpret_cast<const float *>(
             &inputBuffer
                  .data[inputBufferView.byteOffset + inputAccessor.byteOffset]);
+        const auto *outputData = reinterpret_cast<const float *>(
+            &outputBuffer.data[outputBufferView.byteOffset +
+                               outputAccessor.byteOffset]);
         int frame = 2;
         if (channel.target_path == "rotation") {
-          const auto *outputData = reinterpret_cast<const float *>(
-              &outputBuffer.data[outputBufferView.byteOffset +
-                                 outputAccessor.byteOffset]);
           node.rotation = {outputData[frame * 4 + 0], outputData[frame * 4 + 1],
                            outputData[frame * 4 + 2],
                            outputData[frame * 4 + 3]};
-        }
-        if (channel.target_path == "translation") {
-          const auto *outputData = reinterpret_cast<const float *>(
-              &outputBuffer.data[outputBufferView.byteOffset +
-                                 outputAccessor.byteOffset]);
+        } else if (channel.target_path == "translation") {
           node.translation = {outputData[frame * 3 + 0],
                               outputData[frame * 3 + 1],
                               outputData[frame * 3 + 2]};
-        }
-        if (channel.target_path == "scale") {
-          const auto *outputData = reinterpret_cast<const float *>(
-              &outputBuffer.data[outputBufferView.byteOffset +
-                                 outputAccessor.byteOffset]);
+        } else if (channel.target_path == "scale") {
           node.scale = {outputData[frame * 3 + 0], outputData[frame * 3 + 1],
                         outputData[frame * 3 + 2]};
         }
@@ -394,21 +403,22 @@ void Model::load(std::string_view str) {
     }
 
     // Compute node matrices
-    std::vector<matrix4> matrices(model.nodes.size());
+    std::vector<matrix4> nodeMatrices(model.nodes.size());
     auto &scene = model.scenes[model.defaultScene];
     for (size_t i = 0; i < scene.nodes.size(); i++) {
-      ComputeNodeMatrices(model, scene.nodes[i], matrix4::identity, matrices);
+      ComputeNodeMatrices(model, scene.nodes[i], matrix4::identity,
+                          nodeMatrices);
     }
-    const tinygltf::Skin &gltfSkin = model.skins[0];
+    const tinygltf::Skin &skin = model.skins[0];
     std::vector<int> joints = {};
-    joints.reserve(gltfSkin.joints.size());
-    for (auto j : gltfSkin.joints) {
+    joints.reserve(skin.joints.size());
+    for (auto j : skin.joints) {
       joints.push_back(j);
     }
     std::vector<matrix4> jointMatrices(joints.size());
     for (size_t i = 0; i < joints.size(); i++) {
       int jointNodeIndex = joints[i];
-      auto nodeMat = matrices[jointNodeIndex];
+      auto nodeMat = nodeMatrices[jointNodeIndex];
       auto ibm = invBindMatrices[i];
       auto jointMat = nodeMat * ibm;
       jointMatrices[i] = jointMat;

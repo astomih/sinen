@@ -43,12 +43,10 @@ VSOutput VSMain(VSInput input)
                              0, 0, 1, 0,
                              0, 0, 0, 1);
 
-    for (int i = 0; i < 4; i++)
-    {
-        skin +=
-            bone[int(input.bone_index[i])] *
-            input.bone_weight[i];
-    }
+    skin += bone[int(input.bone_index.x)] * input.bone_weight.x;
+    skin += bone[int(input.bone_index.y)] * input.bone_weight.y;
+    skin += bone[int(input.bone_index.z)] * input.bone_weight.z;
+    skin += bone[int(input.bone_index.w)] * input.bone_weight.w;
     float4x4 pvw = mul(proj, mul(view, world));
     float4 pos = mul(skin, float4(input.position, 1.0));
     output.out = mul(pvw, pos);

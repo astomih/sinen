@@ -5,6 +5,10 @@
 #include <paranoixa/paranoixa.hpp>
 #include <physics/collision.hpp>
 #include <render/renderer.hpp>
+#define TINYGLTF_USE_RAPIDJSON
+#define TINYGLTF_NO_INCLUDE_RAPIDJSON
+#define TINYGLTF_NO_STB_IMAGE
+#define TINYGLTF_NO_STB_IMAGE_WRITE
 #include <tiny_gltf.h>
 
 namespace sinen {

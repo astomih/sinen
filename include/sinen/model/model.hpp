@@ -41,8 +41,11 @@ public:
   std::vector<Vertex> all_vertex() const;
   std::vector<std::uint32_t> all_indices() const;
   UniformData bone_uniform_data() const;
-  std::vector<matrix4> inverse_bind_matrices;
+
+private:
+  void load_bone_uniform(float time);
   float time = 0.0f;
+  std::vector<matrix4> inverse_bind_matrices;
 };
 } // namespace sinen
 #endif // !SINEN_MODEL_HPP

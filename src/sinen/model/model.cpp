@@ -7,7 +7,9 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <unordered_set>
 #include <variant>
+
 // internal
 #include "../render/px_renderer.hpp"
 #include "../render/render_system.hpp"
@@ -43,6 +45,9 @@ static matrix4 GetLocalTransform(const tinygltf::Node &node) {
   }
 
   matrix4 t = matrix4::identity, r = matrix4::identity, s = matrix4::identity;
+  assert(node.scale.size() <= 3);
+  assert(node.rotation.size() <= 4);
+  assert(node.translation.size() <= 3);
 
   if (node.scale.size() == 3) {
     float x = static_cast<float>(node.scale[0]);
@@ -68,8 +73,13 @@ static matrix4 GetLocalTransform(const tinygltf::Node &node) {
   return m;
 }
 static void ComputeNodeMatrices(const tinygltf::Model &model, int nodeIndex,
+                                std::unordered_set<int> &nodesToUpdate,
                                 const matrix4 &parentTransform,
                                 std::vector<matrix4> &outModelMats) {
+  if (nodesToUpdate.contains(nodeIndex)) {
+    return;
+  }
+  nodesToUpdate.insert(nodeIndex);
   const tinygltf::Node &node = model.nodes[nodeIndex];
   auto localMat = GetLocalTransform(node);
   auto globalMat = parentTransform * localMat;
@@ -77,7 +87,8 @@ static void ComputeNodeMatrices(const tinygltf::Model &model, int nodeIndex,
   outModelMats[nodeIndex] = globalMat;
 
   for (size_t i = 0; i < node.children.size(); i++) {
-    ComputeNodeMatrices(model, node.children[i], globalMat, outModelMats);
+    ComputeNodeMatrices(model, node.children[i], nodesToUpdate, globalMat,
+                        outModelMats);
   }
 }
 
@@ -149,6 +160,15 @@ void LoadSkinningData(const tinygltf::Model &model,
       boneWeights.push_back(
           Vector4(weightData[i * 4 + 0], weightData[i * 4 + 1],
                   weightData[i * 4 + 2], weightData[i * 4 + 3]));
+    }
+  }
+
+  if (boneIDs.empty() && boneWeights.empty()) {
+    auto &positionAccessor =
+        model.accessors[primitive.attributes.at("POSITION")];
+    for (size_t i = 0; i < positionAccessor.count; ++i) {
+      boneIDs.push_back(Vector4(0, 0, 0, 0));
+      boneWeights.push_back(Vector4(1,1,1,1));
     }
   }
 }
@@ -292,8 +312,10 @@ void Model::load(std::string_view str) {
                 &uvBuffer
                      .data[uvBufferView.byteOffset + uvAccessor.byteOffset]);
           }
+
           std::vector<Vector4> boneIDs, boneWeights;
-          LoadSkinningData(model, primitive, boneIDs, boneWeights);
+          if (isAnimation)
+            LoadSkinningData(model, primitive, boneIDs, boneWeights);
 
           for (size_t i = 0; i < positionAccessor.count; ++i) {
             if (isAnimation) {
@@ -539,6 +561,14 @@ UniformData Model::bone_uniform_data() const {
   return modelData->boneUniformData;
 }
 void Model::play(float start) {
+  time = start;
+  load_bone_uniform(time);
+}
+void Model::update(float delta_time) {
+  time += delta_time;
+  load_bone_uniform(time);
+}
+void Model::load_bone_uniform(float start) {
   auto modelData = GetModelData(this->data);
   auto &model = modelData->model;
 
@@ -546,6 +576,7 @@ void Model::play(float start) {
   for (auto &animation : model.animations) {
     for (auto &channel : animation.channels) {
       auto &sampler = animation.samplers[channel.sampler];
+      assert(sampler.interpolation == "LINEAR");
       auto &inputAccessor = model.accessors[sampler.input];
 
       auto &outputAccessor = model.accessors[sampler.output];
@@ -554,6 +585,9 @@ void Model::play(float start) {
       auto &inputBuffer = model.buffers[inputBufferView.buffer];
       auto &outputBuffer = model.buffers[outputBufferView.buffer];
       auto &node = model.nodes[channel.target_node];
+      assert(inputAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT);
+      assert(inputAccessor.type == TINYGLTF_TYPE_SCALAR);
+      assert(outputAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT);
       const float *inputData = reinterpret_cast<const float *>(
           &inputBuffer
                .data[inputBufferView.byteOffset + inputAccessor.byteOffset]);
@@ -611,114 +645,27 @@ void Model::play(float start) {
   }
 
   // Compute node matrices
-  std::vector<matrix4> nodeMatrices(model.nodes.size());
-  auto &scene = model.scenes[model.defaultScene];
-  for (size_t i = 0; i < scene.nodes.size(); i++) {
-    ComputeNodeMatrices(model, scene.nodes[i], matrix4::identity, nodeMatrices);
-  }
-  const tinygltf::Skin &skin = model.skins[0];
-  std::vector<int> joints = {};
-  joints.reserve(skin.joints.size());
-  for (auto j : skin.joints) {
-    joints.push_back(j);
-  }
-  std::vector<matrix4> jointMatrices(joints.size());
-  for (size_t i = 0; i < joints.size(); i++) {
-    int jointNodeIndex = joints[i];
-    auto nodeMat = nodeMatrices[jointNodeIndex];
-    auto ibm = inverse_bind_matrices[i];
-    auto jointMat = nodeMat * ibm;
-    jointMatrices[i] = jointMat;
-  }
-
   auto &boneUniformData = modelData->boneUniformData;
   boneUniformData.clear();
-  boneUniformData.add_matrices(jointMatrices);
-  time = start;
-}
-void Model::update(float delta_time) {
-  time += delta_time;
-  float start = time;
-  auto modelData = GetModelData(this->data);
-  auto &model = modelData->model;
-  // Animation
-  for (auto &animation : model.animations) {
-    for (auto &channel : animation.channels) {
-      auto &sampler = animation.samplers[channel.sampler];
-      auto &inputAccessor = model.accessors[sampler.input];
 
-      auto &outputAccessor = model.accessors[sampler.output];
-      auto &inputBufferView = model.bufferViews[inputAccessor.bufferView];
-      auto &outputBufferView = model.bufferViews[outputAccessor.bufferView];
-      auto &inputBuffer = model.buffers[inputBufferView.buffer];
-      auto &outputBuffer = model.buffers[outputBufferView.buffer];
-      auto &node = model.nodes[channel.target_node];
-      const float *inputData = reinterpret_cast<const float *>(
-          &inputBuffer
-               .data[inputBufferView.byteOffset + inputAccessor.byteOffset]);
-      const auto *outputData = reinterpret_cast<const float *>(
-          &outputBuffer
-               .data[outputBufferView.byteOffset + outputAccessor.byteOffset]);
-      // Find the frame
-      size_t t0, t1;
-      for (t0 = 0; t0 < inputAccessor.count - 1; t0++) {
-        if (inputData[t0] <= start && start < inputData[t0 + 1]) {
-          break;
-        }
-      }
-      if (t0 >= inputAccessor.count - 2) {
-        t0 = 0;
-        time = 0.f;
-      }
-      t1 = t0 + 1;
-
-      if (channel.target_path == "rotation") {
-        Quaternion q0(outputData[4 * t0 + 0], outputData[4 * t0 + 1],
-                      outputData[4 * t0 + 2], outputData[4 * t0 + 3]);
-        Quaternion q1(outputData[4 * t1 + 0], outputData[4 * t1 + 1],
-                      outputData[4 * t1 + 2], outputData[4 * t1 + 3]);
-        float t = (start - inputData[t0]) / (inputData[t1] - inputData[t0]);
-        Quaternion q = Quaternion::slerp(q0, q1, t);
-        node.rotation[0] = q.x;
-        node.rotation[1] = q.y;
-        node.rotation[2] = q.z;
-        node.rotation[3] = q.w;
-      } else if (channel.target_path == "translation") {
-        Vector3 v0(outputData[3 * t0 + 0], outputData[3 * t0 + 1],
-                   outputData[3 * t0 + 2]);
-        Vector3 v1(outputData[3 * t1 + 0], outputData[3 * t1 + 1],
-                   outputData[3 * t1 + 2]);
-        float t = (start - inputData[t0]) / (inputData[t1] - inputData[t0]);
-        Vector3 v = Vector3::lerp(v0, v1, t);
-        node.translation[0] = v.x;
-        node.translation[1] = v.y;
-        node.translation[2] = v.z;
-      } else if (channel.target_path == "scale") {
-        Vector3 s0(outputData[3 * t0 + 0], outputData[3 * t0 + 1],
-                   outputData[3 * t0 + 2]);
-        Vector3 s1(outputData[3 * t1 + 0], outputData[3 * t1 + 1],
-                   outputData[3 * t1 + 2]);
-        float t = (start - inputData[t0]) / (inputData[t1] - inputData[t0]);
-        Vector3 s = Vector3::lerp(s0, s1, t);
-        node.scale[0] = s.x;
-        node.scale[1] = s.y;
-        node.scale[2] = s.z;
-      }
+  std::vector<matrix4> nodeMatrices(model.nodes.size(), matrix4::identity);
+  std::unordered_set<int> nodesToUpdate;
+  if (model.skins.empty()) {
+    for (int i = 0; i < model.nodes.size(); i++) {
+      ComputeNodeMatrices(model, i, nodesToUpdate, matrix4::identity,
+                          nodeMatrices);
     }
-  }
-
-  // Compute node matrices
-  std::vector<matrix4> nodeMatrices(model.nodes.size());
-  auto &scene = model.scenes[model.defaultScene];
-  for (size_t i = 0; i < scene.nodes.size(); i++) {
-    ComputeNodeMatrices(model, scene.nodes[i], matrix4::identity, nodeMatrices);
+    boneUniformData.add_matrices(nodeMatrices);
+    return;
   }
   const tinygltf::Skin &skin = model.skins[0];
-  std::vector<int> joints = {};
-  joints.reserve(skin.joints.size());
-  for (auto j : skin.joints) {
-    joints.push_back(j);
+
+  for (int jointNode : skin.joints) {
+    ComputeNodeMatrices(model, jointNode, nodesToUpdate, matrix4::identity,
+                        nodeMatrices);
   }
+
+  auto &joints = skin.joints;
   std::vector<matrix4> jointMatrices(joints.size());
   for (size_t i = 0; i < joints.size(); i++) {
     int jointNodeIndex = joints[i];
@@ -728,8 +675,6 @@ void Model::update(float delta_time) {
     jointMatrices[i] = jointMat;
   }
 
-  auto &boneUniformData = modelData->boneUniformData;
-  boneUniformData.clear();
   boneUniformData.add_matrices(jointMatrices);
 }
 } // namespace sinen

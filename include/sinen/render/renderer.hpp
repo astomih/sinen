@@ -20,12 +20,6 @@
 #include "render_pipeline.hpp"
 
 namespace sinen {
-struct UniformData {
-  UniformData() : data() {}
-  void add(float value) { data.push_back(value); }
-  void change(float value, int index) { data[index] = value; }
-  std::vector<float> data;
-};
 /**
  * @brief Renderer class
  *

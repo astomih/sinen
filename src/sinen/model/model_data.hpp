@@ -4,6 +4,12 @@
 #include <model/vertex_array.hpp>
 #include <paranoixa/paranoixa.hpp>
 #include <physics/collision.hpp>
+#include <render/renderer.hpp>
+#define TINYGLTF_USE_RAPIDJSON
+#define TINYGLTF_NO_INCLUDE_RAPIDJSON
+#define TINYGLTF_NO_STB_IMAGE
+#define TINYGLTF_NO_STB_IMAGE_WRITE
+#include <tiny_gltf.h>
 
 namespace sinen {
 struct ModelData {
@@ -12,9 +18,11 @@ struct ModelData {
   std::vector<Model *> children;
   std::string name;
   VertexArray v_array;
+  UniformData boneUniformData;
 
   px::Ptr<px::Buffer> vertexBuffer;
   px::Ptr<px::Buffer> indexBuffer;
+  tinygltf::Model model;
 };
 inline std::shared_ptr<ModelData> GetModelData(std::shared_ptr<void> model) {
   return std::static_pointer_cast<ModelData>(model);

@@ -24,7 +24,8 @@
     "RenderPipeline2D",
     "Shader",
     "UniformData",
-    "RenderTexture"
+    "RenderTexture",
+    "RenderPipeline3D"
   ],
   "Lua.completion.autoRequire": false
 }

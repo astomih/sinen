@@ -136,6 +136,9 @@ bool script_engine::initialize(sol::state &lua) {
     v["load"] = &Model::load;
     v["load_sprite"] = &Model::load_sprite;
     v["load_box"] = &Model::load_box;
+    v["bone_uniform_data"] = &Model::bone_uniform_data;
+    v["play"] = &Model::play;
+    v["update"] = &Model::update;
   }
   {
     auto v = lua.new_usertype<AABB>("", sol::no_construction());
@@ -177,6 +180,7 @@ bool script_engine::initialize(sol::state &lua) {
     v["set_vertex_instanced_shader"] =
         &RenderPipeline3D::set_vertex_instanced_shader;
     v["set_fragment_shader"] = &RenderPipeline3D::set_fragment_shader;
+    v["set_animation"] = &RenderPipeline3D::set_animation;
     v["build"] = &RenderPipeline3D::build;
   }
   register_drawable(lua);

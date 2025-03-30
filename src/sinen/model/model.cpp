@@ -86,9 +86,8 @@ static void ComputeNodeMatrices(const tinygltf::Model &model, int nodeIndex,
 
   outModelMats[nodeIndex] = globalMat;
 
-  for (size_t i = 0; i < node.children.size(); i++) {
-    ComputeNodeMatrices(model, node.children[i], nodesToUpdate, globalMat,
-                        outModelMats);
+  for (auto &child : node.children) {
+    ComputeNodeMatrices(model, child, nodesToUpdate, globalMat, outModelMats);
   }
 }
 
@@ -116,12 +115,12 @@ void LoadSkinningData(const tinygltf::Model &model,
       }
 
       for (size_t i = 0; i < jointAccessor.count; ++i) {
-        size_t index = i * (byteStride / sizeof(uint16_t));
-        float j0 = static_cast<float>(jointData[index + 0]);
-        float j1 = static_cast<float>(jointData[index + 1]);
-        float j2 = static_cast<float>(jointData[index + 2]);
-        float j3 = static_cast<float>(jointData[index + 3]);
-        boneIDs.push_back(Vector4(j0, j1, j2, j3));
+        size_t index = i * (byteStride / sizeof(unsigned short));
+        float x = static_cast<float>(jointData[index + 0]);
+        float y = static_cast<float>(jointData[index + 1]);
+        float z = static_cast<float>(jointData[index + 2]);
+        float w = static_cast<float>(jointData[index + 3]);
+        boneIDs.push_back(Vector4(x, y, z, w));
       }
     } else if (jointAccessor.componentType ==
                TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
@@ -134,11 +133,11 @@ void LoadSkinningData(const tinygltf::Model &model,
 
       for (size_t i = 0; i < jointAccessor.count; ++i) {
         size_t index = i * (byteStride / sizeof(uint8_t));
-        float j0 = static_cast<float>(jointData[index + 0]);
-        float j1 = static_cast<float>(jointData[index + 1]);
-        float j2 = static_cast<float>(jointData[index + 2]);
-        float j3 = static_cast<float>(jointData[index + 3]);
-        boneIDs.push_back(Vector4(j0, j1, j2, j3));
+        float x = static_cast<float>(jointData[index + 0]);
+        float y = static_cast<float>(jointData[index + 1]);
+        float z = static_cast<float>(jointData[index + 2]);
+        float w = static_cast<float>(jointData[index + 3]);
+        boneIDs.push_back(Vector4(x, y, z, w));
       }
     }
   }
@@ -156,10 +155,18 @@ void LoadSkinningData(const tinygltf::Model &model,
     const float *weightData = reinterpret_cast<const float *>(
         &buffer.data[bufferView.byteOffset + accessor.byteOffset]);
 
+    size_t byteStride = accessor.ByteStride(bufferView);
+    if (byteStride == 0) {
+      byteStride = sizeof(float) * 4;
+    }
+
     for (size_t i = 0; i < accessor.count; ++i) {
-      boneWeights.push_back(
-          Vector4(weightData[i * 4 + 0], weightData[i * 4 + 1],
-                  weightData[i * 4 + 2], weightData[i * 4 + 3]));
+      size_t index = i * (byteStride / sizeof(float));
+      float x = weightData[index + 0];
+      float y = weightData[index + 1];
+      float z = weightData[index + 2];
+      float w = weightData[index + 3];
+      boneWeights.push_back(Vector4(x, y, z, w));
     }
   }
 
@@ -168,7 +175,7 @@ void LoadSkinningData(const tinygltf::Model &model,
         model.accessors[primitive.attributes.at("POSITION")];
     for (size_t i = 0; i < positionAccessor.count; ++i) {
       boneIDs.push_back(Vector4(0, 0, 0, 0));
-      boneWeights.push_back(Vector4(1,1,1,1));
+      boneWeights.push_back(Vector4(1, 1, 1, 1));
     }
   }
 }
@@ -288,6 +295,8 @@ void Model::load(std::string_view str) {
           const float *positions = reinterpret_cast<const float *>(
               &positionBuffer.data[positionBufferView.byteOffset +
                                    positionAccessor.byteOffset]);
+          size_t byteStride = positionAccessor.ByteStride(positionBufferView);
+          assert(byteStride == sizeof(float) * 3);
 
           auto &normalAccessor =
               model.accessors[primitive.attributes["NORMAL"]];
@@ -357,13 +366,16 @@ void Model::load(std::string_view str) {
         // Indices
         {
           auto &accessor = model.accessors[primitive.indices];
+          assert(accessor.componentType ==
+                 TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT);
           auto buffer_view = model.bufferViews[accessor.bufferView];
           auto buffer = model.buffers[buffer_view.buffer];
-          const unsigned short *indices_data_fromgltf =
-              reinterpret_cast<const unsigned short *>(
+          const auto *indices_data_fromgltf =
+              reinterpret_cast<const uint16_t *>(
                   &buffer.data[buffer_view.byteOffset + accessor.byteOffset]);
           for (size_t i = 0; i < accessor.count; ++i) {
-            v_array.indices.push_back(indices_data_fromgltf[i]);
+            v_array.indices.push_back(
+                static_cast<uint32_t>(indices_data_fromgltf[i]));
           }
         }
       }
@@ -582,6 +594,7 @@ void Model::load_bone_uniform(float start) {
       auto &outputAccessor = model.accessors[sampler.output];
       auto &inputBufferView = model.bufferViews[inputAccessor.bufferView];
       auto &outputBufferView = model.bufferViews[outputAccessor.bufferView];
+      auto outputStride = outputAccessor.ByteStride(outputBufferView);
       auto &inputBuffer = model.buffers[inputBufferView.buffer];
       auto &outputBuffer = model.buffers[outputBufferView.buffer];
       auto &node = model.nodes[channel.target_node];
@@ -607,10 +620,13 @@ void Model::load_bone_uniform(float start) {
         t1 = t0;
 
       if (channel.target_path == "rotation") {
-        Quaternion q0(outputData[4 * t0 + 0], outputData[4 * t0 + 1],
-                      outputData[4 * t0 + 2], outputData[4 * t0 + 3]);
-        Quaternion q1(outputData[4 * t1 + 0], outputData[4 * t1 + 1],
-                      outputData[4 * t1 + 2], outputData[4 * t1 + 3]);
+        assert(outputStride == sizeof(float) * 4);
+        size_t index = t0 * (outputStride / sizeof(float));
+        Quaternion q0(outputData[index + 0], outputData[index + 1],
+                      outputData[index + 2], outputData[index + 3]);
+        index = t1 * (outputStride / sizeof(float));
+        Quaternion q1(outputData[index + 0], outputData[index + 1],
+                      outputData[index + 2], outputData[index + 3]);
         float t = (start - inputData[t0]) / (inputData[t1] - inputData[t0]);
         Quaternion q = Quaternion::slerp(q0, q1, t);
         node.rotation[0] = q.x;
@@ -650,29 +666,18 @@ void Model::load_bone_uniform(float start) {
 
   std::vector<matrix4> nodeMatrices(model.nodes.size(), matrix4::identity);
   std::unordered_set<int> nodesToUpdate;
-  if (model.skins.empty()) {
-    for (int i = 0; i < model.nodes.size(); i++) {
-      ComputeNodeMatrices(model, i, nodesToUpdate, matrix4::identity,
-                          nodeMatrices);
-    }
-    boneUniformData.add_matrices(nodeMatrices);
-    return;
-  }
   const tinygltf::Skin &skin = model.skins[0];
 
-  for (int jointNode : skin.joints) {
+  for (int jointNode : model.scenes[model.defaultScene].nodes) {
     ComputeNodeMatrices(model, jointNode, nodesToUpdate, matrix4::identity,
                         nodeMatrices);
   }
 
   auto &joints = skin.joints;
-  std::vector<matrix4> jointMatrices(joints.size());
+  std::vector<matrix4> jointMatrices;
+  jointMatrices.resize(joints.size());
   for (size_t i = 0; i < joints.size(); i++) {
-    int jointNodeIndex = joints[i];
-    auto nodeMat = nodeMatrices[jointNodeIndex];
-    auto ibm = inverse_bind_matrices[i];
-    auto jointMat = nodeMat * ibm;
-    jointMatrices[i] = jointMat;
+    jointMatrices[i] = inverse_bind_matrices[i] * nodeMatrices[joints[i]];
   }
 
   boneUniformData.add_matrices(jointMatrices);

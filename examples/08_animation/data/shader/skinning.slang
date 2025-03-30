@@ -24,32 +24,24 @@ UNIFORM(Mat, 0)
     float4x4 world;
     float4x4 view;
     float4x4 proj;
-    float4x4 user;
-    float4x4 light_view;
-    float4x4 light_proj;
 }
 
 UNIFORM(skinning, 1)
 {
-    float4x4 bone[256];
+    float4x4 bone[2];
 }
 
 [shader("vertex")]
 VSOutput VSMain(VSInput input)
 {
     VSOutput output;
-    float4x4 skin = float4x4(1, 0, 0, 0,
-                             0, 1, 0, 0,
-                             0, 0, 1, 0,
-                             0, 0, 0, 1);
-
-    skin += bone[int(input.bone_index.x)] * input.bone_weight.x;
-    skin += bone[int(input.bone_index.y)] * input.bone_weight.y;
-    skin += bone[int(input.bone_index.z)] * input.bone_weight.z;
-    skin += bone[int(input.bone_index.w)] * input.bone_weight.w;
     float4x4 pvw = mul(proj, mul(view, world));
-    float4 pos = mul(skin, float4(input.position, 1.0));
-    output.out = mul(pvw, pos);
+    float4 skin =
+        mul(bone[int(input.bone_index.x)], float4(input.position, 1.0)) * input.bone_weight.x +
+        mul(bone[int(input.bone_index.y)], float4(input.position, 1.0)) * input.bone_weight.y +
+        mul(bone[int(input.bone_index.z)], float4(input.position, 1.0)) * input.bone_weight.z +
+        mul(bone[int(input.bone_index.w)], float4(input.position, 1.0)) * input.bone_weight.w;
+    output.out = mul(pvw, skin);
     output.uv = input.uv;
     output.color = input.color;
     return output;
@@ -75,7 +67,7 @@ COMBINED_IMAGE_SAMPLER(sampledTexture, 0)
 FSOutput FSMain(FSInput input)
 {
     FSOutput output;
-    output.color = sampledTexture.Sample(input.uv) * input.color;
+    output.color = input.color;
     return output;
 }
 

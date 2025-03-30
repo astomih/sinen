@@ -28,7 +28,7 @@ UNIFORM(Mat, 0)
 
 UNIFORM(skinning, 1)
 {
-    float4x4 bone[2];
+    float4x4 bone[256];
 }
 
 [shader("vertex")]

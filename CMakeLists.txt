@@ -34,6 +34,7 @@ if(SINEN_EXTERNAL_ALL_BUILD)
     libs/SDL/include
     libs/SDL_image/include
   )
+  set(ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF)
   add_subdirectory(./libs/assimp EXCLUDE_FROM_ALL)
 else()
   find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)

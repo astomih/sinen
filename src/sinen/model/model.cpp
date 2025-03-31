@@ -13,6 +13,7 @@
 // internal
 #include "../render/px_renderer.hpp"
 #include "../render/render_system.hpp"
+#include "assimp/postprocess.h"
 #include "io/asset_type.hpp"
 #include "math/matrix4.hpp"
 #include "math/quaternion.hpp"
@@ -23,162 +24,14 @@
 #include <model/model.hpp>
 #include <render/renderer.hpp>
 
-// gltf
-#define TINYGLTF_IMPLEMENTATION
-#define TINYGLTF_USE_RAPIDJSON
-#define TINYGLTF_NO_INCLUDE_RAPIDJSON
-#define TINYGLTF_NO_STB_IMAGE
-#define TINYGLTF_NO_STB_IMAGE_WRITE
-#include <rapidjson/document.h>
-#include <rapidjson/prettywriter.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
-#include <tiny_gltf.h>
+#include <assimp/DefaultLogger.hpp>
+#include <assimp/IOStream.hpp>
+#include <assimp/IOSystem.hpp>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
 
 namespace sinen {
 enum class load_state { version, vertex, indices };
-static matrix4 GetLocalTransform(const tinygltf::Node &node) {
-  matrix4 m = matrix4::identity;
-  if (node.matrix.size() == 16) {
-    memcpy(&m.mat, node.matrix.data(), sizeof(matrix4));
-    return m;
-  }
-
-  matrix4 t = matrix4::identity, r = matrix4::identity, s = matrix4::identity;
-  assert(node.scale.size() <= 3);
-  assert(node.rotation.size() <= 4);
-  assert(node.translation.size() <= 3);
-
-  if (node.scale.size() == 3) {
-    float x = static_cast<float>(node.scale[0]);
-    float y = static_cast<float>(node.scale[1]);
-    float z = static_cast<float>(node.scale[2]);
-    s = matrix4::create_scale(Vector3(x, y, z));
-  }
-  if (node.rotation.size() == 4) {
-    float x = static_cast<float>(node.rotation[0]);
-    float y = static_cast<float>(node.rotation[1]);
-    float z = static_cast<float>(node.rotation[2]);
-    float w = static_cast<float>(node.rotation[3]);
-    r = matrix4::create_from_quaternion(Quaternion(x, y, z, w));
-  }
-  if (node.translation.size() == 3) {
-    float x = static_cast<float>(node.translation[0]);
-    float y = static_cast<float>(node.translation[1]);
-    float z = static_cast<float>(node.translation[2]);
-    t = matrix4::create_translation(Vector3(x, y, z));
-  }
-  m = s * r * t;
-
-  return m;
-}
-static void ComputeNodeMatrices(const tinygltf::Model &model, int nodeIndex,
-                                std::unordered_set<int> &nodesToUpdate,
-                                const matrix4 &parentTransform,
-                                std::vector<matrix4> &outModelMats) {
-  if (nodesToUpdate.contains(nodeIndex)) {
-    return;
-  }
-  nodesToUpdate.insert(nodeIndex);
-  const tinygltf::Node &node = model.nodes[nodeIndex];
-  auto localMat = GetLocalTransform(node);
-  auto globalMat = parentTransform * localMat;
-
-  outModelMats[nodeIndex] = globalMat;
-
-  for (auto &child : node.children) {
-    ComputeNodeMatrices(model, child, nodesToUpdate, globalMat, outModelMats);
-  }
-}
-
-void LoadSkinningData(const tinygltf::Model &model,
-                      const tinygltf::Primitive &primitive,
-                      std::vector<Vector4> &boneIDs,
-                      std::vector<Vector4> &boneWeights) {
-  if (primitive.attributes.find("JOINTS_0") != primitive.attributes.end()) {
-    const tinygltf::Accessor &jointAccessor =
-        model.accessors[primitive.attributes.at("JOINTS_0")];
-    const tinygltf::BufferView &jointBufferView =
-        model.bufferViews[jointAccessor.bufferView];
-    const tinygltf::Buffer &jointBuffer = model.buffers[jointBufferView.buffer];
-    assert(jointAccessor.type == TINYGLTF_TYPE_VEC4);
-    size_t byteStride = jointAccessor.ByteStride(jointBufferView);
-
-    if (jointAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
-
-      const auto *jointData = reinterpret_cast<const unsigned short *>(
-          &jointBuffer
-               .data[jointBufferView.byteOffset + jointAccessor.byteOffset]);
-
-      if (byteStride == 0) {
-        byteStride = sizeof(uint16_t) * 4;
-      }
-
-      for (size_t i = 0; i < jointAccessor.count; ++i) {
-        size_t index = i * (byteStride / sizeof(unsigned short));
-        float x = static_cast<float>(jointData[index + 0]);
-        float y = static_cast<float>(jointData[index + 1]);
-        float z = static_cast<float>(jointData[index + 2]);
-        float w = static_cast<float>(jointData[index + 3]);
-        boneIDs.push_back(Vector4(x, y, z, w));
-      }
-    } else if (jointAccessor.componentType ==
-               TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
-      if (byteStride == 0) {
-        byteStride = sizeof(uint8_t) * 4;
-      }
-      const auto *jointData = reinterpret_cast<const uint8_t *>(
-          &jointBuffer
-               .data[jointBufferView.byteOffset + jointAccessor.byteOffset]);
-
-      for (size_t i = 0; i < jointAccessor.count; ++i) {
-        size_t index = i * (byteStride / sizeof(uint8_t));
-        float x = static_cast<float>(jointData[index + 0]);
-        float y = static_cast<float>(jointData[index + 1]);
-        float z = static_cast<float>(jointData[index + 2]);
-        float w = static_cast<float>(jointData[index + 3]);
-        boneIDs.push_back(Vector4(x, y, z, w));
-      }
-    }
-  }
-
-  if (primitive.attributes.find("WEIGHTS_0") != primitive.attributes.end()) {
-    const tinygltf::Accessor &accessor =
-        model.accessors[primitive.attributes.at("WEIGHTS_0")];
-    const tinygltf::BufferView &bufferView =
-        model.bufferViews[accessor.bufferView];
-    const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
-
-    assert(accessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT);
-    assert(accessor.type == TINYGLTF_TYPE_VEC4);
-
-    const float *weightData = reinterpret_cast<const float *>(
-        &buffer.data[bufferView.byteOffset + accessor.byteOffset]);
-
-    size_t byteStride = accessor.ByteStride(bufferView);
-    if (byteStride == 0) {
-      byteStride = sizeof(float) * 4;
-    }
-
-    for (size_t i = 0; i < accessor.count; ++i) {
-      size_t index = i * (byteStride / sizeof(float));
-      float x = weightData[index + 0];
-      float y = weightData[index + 1];
-      float z = weightData[index + 2];
-      float w = weightData[index + 3];
-      boneWeights.push_back(Vector4(x, y, z, w));
-    }
-  }
-
-  if (boneIDs.empty() && boneWeights.empty()) {
-    auto &positionAccessor =
-        model.accessors[primitive.attributes.at("POSITION")];
-    for (size_t i = 0; i < positionAccessor.count; ++i) {
-      boneIDs.push_back(Vector4(0, 0, 0, 0));
-      boneWeights.push_back(Vector4(1, 1, 1, 1));
-    }
-  }
-}
 Model::Model() { data = std::make_shared<ModelData>(); };
 void Model::load(std::string_view str) {
   auto modelData = GetModelData(this->data);
@@ -238,168 +91,134 @@ void Model::load(std::string_view str) {
       }
     }
   } else if (str_name.ends_with(".gltf") || str_name.ends_with(".glb")) {
-    auto &model = modelData->model;
-    // Load gltf
-    tinygltf::TinyGLTF gltf_ctx;
-    std::string err;
-    std::string warn;
-    if (str_name.ends_with(".gltf")) {
-      auto baseDir = DataStream::convert_file_path(AssetType::Model, "");
-      bool ret =
-          gltf_ctx.LoadASCIIFromString(&model, &err, &warn, data.str().c_str(),
-                                       data.str().size(), baseDir.data(), 0);
-      if (!warn.empty()) {
-        Logger::warn(warn);
-      }
-      if (!err.empty()) {
-        Logger::error(err);
-      }
-      if (!ret) {
-        Logger::error("Failed to parse glTF");
-      }
+
+    auto fileName = DataStream::convert_file_path(AssetType::Model, str_name);
+    // Assimp
+    auto &importer = modelData->importer;
+    modelData->scene =
+        importer.ReadFile(fileName.c_str(), aiProcess_ValidateDataStructure);
+    auto &scene = modelData->scene;
+    if (!scene) {
+      std::cerr << "Error loading model: " << importer.GetErrorString()
+                << std::endl;
+      return;
     }
-    if (str_name.ends_with(".glb")) {
-      bool ret = gltf_ctx.LoadBinaryFromFile(
-          &model, &err, &warn,
-          DataStream::convert_file_path(AssetType::Model, str_name));
-      if (!warn.empty()) {
-        Logger::warn(warn);
-      }
-      if (!err.empty()) {
-        Logger::error(err);
-      }
-      if (!ret) {
-        Logger::error("Failed to parse glTF");
-      }
-    }
+    if (scene->HasAnimations()) {
+      modelData->skeletalAnimation.Load(modelData->scene);
+      uint32_t vertexOffset = 0;
+      for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
+        const aiMesh *mesh = scene->mMeshes[i];
+        std::vector<AnimationVertex> vertices(mesh->mNumVertices);
+        std::unordered_map<std::string, unsigned int> boneNameToIndex;
+        unsigned int boneIndex = 0;
 
-    bool isAnimation = false;
-    if (!model.animations.empty()) {
-      isAnimation = true;
-    }
+        // 頂点ごとにボーンIDとウェイトを追加する一時構造体
+        struct TempBoneData {
+          std::vector<unsigned int> ids;
+          std::vector<float> weights;
+        };
+        std::vector<TempBoneData> tempBoneData(mesh->mNumVertices);
 
-    for (auto &mesh : model.meshes) {
-      for (auto &primitive : mesh.primitives) {
-        // Vertices
-        {
-          auto &positionAccessor =
-              model.accessors[primitive.attributes["POSITION"]];
-          assert(positionAccessor.componentType ==
-                 TINYGLTF_COMPONENT_TYPE_FLOAT);
-          assert(positionAccessor.type == TINYGLTF_TYPE_VEC3);
-          auto &positionBufferView =
-              model.bufferViews[positionAccessor.bufferView];
-          assert(positionAccessor.componentType ==
-                 TINYGLTF_COMPONENT_TYPE_FLOAT);
-          auto &positionBuffer = model.buffers[positionBufferView.buffer];
-          const float *positions = reinterpret_cast<const float *>(
-              &positionBuffer.data[positionBufferView.byteOffset +
-                                   positionAccessor.byteOffset]);
-          size_t byteStride = positionAccessor.ByteStride(positionBufferView);
-          assert(byteStride == sizeof(float) * 3);
+        for (unsigned int i = 0; i < mesh->mNumBones; ++i) {
+          aiBone *bone = mesh->mBones[i];
+          std::string boneName = bone->mName.C_Str();
 
-          auto &normalAccessor =
-              model.accessors[primitive.attributes["NORMAL"]];
-          auto &normalBufferView = model.bufferViews[normalAccessor.bufferView];
-          auto &normalBuffer = model.buffers[normalBufferView.buffer];
-          const float *normals = reinterpret_cast<const float *>(
-              &normalBuffer.data[normalBufferView.byteOffset +
-                                 normalAccessor.byteOffset]);
-
-          auto &uvAccessor =
-              model.accessors[primitive.attributes["TEXCOORD_0"]];
-          auto &uvBufferView = model.bufferViews[uvAccessor.bufferView];
-          auto &uvBuffer = model.buffers[uvBufferView.buffer];
-          std::variant<const float *, const uint16_t *> uvs;
-          if (uvAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT) {
-            uvs = reinterpret_cast<const float *>(
-                &uvBuffer
-                     .data[uvBufferView.byteOffset + uvAccessor.byteOffset]);
-          } else if (uvAccessor.componentType ==
-                     TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
-            uvs = reinterpret_cast<const uint16_t *>(
-                &uvBuffer
-                     .data[uvBufferView.byteOffset + uvAccessor.byteOffset]);
+          if (boneNameToIndex.find(boneName) == boneNameToIndex.end()) {
+            boneNameToIndex[boneName] = boneIndex++;
           }
 
-          std::vector<Vector4> boneIDs, boneWeights;
-          if (isAnimation)
-            LoadSkinningData(model, primitive, boneIDs, boneWeights);
+          unsigned int index = boneNameToIndex[boneName];
 
-          for (size_t i = 0; i < positionAccessor.count; ++i) {
-            if (isAnimation) {
-              AnimationVertex v;
-              v.position = Vector3(positions[3 * i + 0], positions[3 * i + 1],
-                                   positions[3 * i + 2]);
-              v.normal = Vector3(normals[3 * i + 0], normals[3 * i + 1],
-                                 normals[3 * i + 2]);
-              if (uvAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT) {
-                auto uv = std::get<const float *>(uvs);
-                v.uv = Vector2(uv[2 * i + 0], uv[2 * i + 1]);
-              } else if (uvAccessor.componentType ==
-                         TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
-                auto uv = std::get<const uint16_t *>(uvs);
-                v.uv = Vector2(uv[2 * i + 0], uv[2 * i + 1]);
-              }
-              v.boneIDs = boneIDs[i];
-              v.boneWeights = boneWeights[i];
-              v_array.animationVertices.push_back(v);
-            } else {
-              Vertex v;
-              v.position = Vector3(positions[3 * i + 0], positions[3 * i + 1],
-                                   positions[3 * i + 2]);
-              v.normal = Vector3(normals[3 * i + 0], normals[3 * i + 1],
-                                 normals[3 * i + 2]);
-              if (uvAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT) {
-                auto uv = std::get<const float *>(uvs);
-                v.uv = Vector2(uv[2 * i + 0], uv[2 * i + 1]);
-              } else if (uvAccessor.componentType ==
-                         TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
-                auto uv = std::get<const uint16_t *>(uvs);
-                v.uv = Vector2(uv[2 * i + 0], uv[2 * i + 1]);
-              }
-              v_array.vertices.push_back(v);
-            }
+          for (unsigned int j = 0; j < bone->mNumWeights; ++j) {
+            unsigned int vertexId = bone->mWeights[j].mVertexId;
+            float weight = bone->mWeights[j].mWeight;
+
+            tempBoneData[vertexId].ids.push_back(index);
+            tempBoneData[vertexId].weights.push_back(weight);
           }
         }
 
-        // Indices
-        {
-          auto &accessor = model.accessors[primitive.indices];
-          assert(accessor.componentType ==
-                 TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT);
-          auto buffer_view = model.bufferViews[accessor.bufferView];
-          auto buffer = model.buffers[buffer_view.buffer];
-          const auto *indices_data_fromgltf =
-              reinterpret_cast<const uint16_t *>(
-                  &buffer.data[buffer_view.byteOffset + accessor.byteOffset]);
-          for (size_t i = 0; i < accessor.count; ++i) {
-            v_array.indices.push_back(
-                static_cast<uint32_t>(indices_data_fromgltf[i]));
+        for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
+          AnimationVertex v;
+          aiVector3D pos = mesh->mVertices[i];
+          aiVector3D norm = aiVector3D(0, 1, 0);
+          if (mesh->HasNormals())
+            norm = mesh->mNormals[i];
+          aiVector3D tex = mesh->HasTextureCoords(0)
+                               ? mesh->mTextureCoords[0][i]
+                               : aiVector3D();
+
+          v.position = Vector3(pos.x, pos.y, pos.z);
+          v.normal = Vector3(norm.x, norm.y, norm.z);
+          v.uv = Vector2(tex.x, tex.y);
+          v.rgba = Color(1, 1, 1, 1);
+
+          const auto &ids = tempBoneData[i].ids;
+          const auto &ws = tempBoneData[i].weights;
+          for (int j = 0; j < 4; ++j) {
+            v.boneIDs[j] = (j < ids.size()) ? float(ids[j]) : 0.0f;
+            v.boneWeights[j] = (j < ws.size()) ? ws[j] : 0.0f;
+          }
+
+          vertices[i] = v;
+        }
+        // indices
+        for (unsigned int j = 0; j < mesh->mNumFaces; j++) {
+          const aiFace &face = mesh->mFaces[j];
+          for (unsigned int k = 0; k < face.mNumIndices; k++) {
+            uint32_t index = face.mIndices[k];
+            v_array.indices.push_back(vertexOffset + index);
+          }
+        }
+        vertexOffset += mesh->mNumVertices;
+        v_array.animationVertices.insert(v_array.animationVertices.end(),
+                                         vertices.begin(), vertices.end());
+      }
+    } else if (scene->HasMeshes()) {
+      // Iterate through the meshes
+      for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
+        const aiMesh *mesh = scene->mMeshes[i];
+        // Process the mesh data
+        for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
+          const aiVector3D &pos = mesh->mVertices[j];
+          const aiVector3D &norm = mesh->mNormals[j];
+          const aiVector3D &uv = mesh->mTextureCoords[0][j];
+
+          Vertex v;
+          v.position.x = pos.x;
+          v.position.y = pos.y;
+          v.position.z = pos.z;
+          v.normal.x = norm.x;
+          v.normal.y = norm.y;
+          v.normal.z = norm.z;
+          v.uv.x = uv.x;
+          v.uv.y = uv.y;
+
+          local_aabb._min.x =
+              Math::Min(local_aabb._min.x, static_cast<float>(pos.x));
+          local_aabb._min.y =
+              Math::Min(local_aabb._min.y, static_cast<float>(pos.y));
+          local_aabb._min.z =
+              Math::Min(local_aabb._min.z, static_cast<float>(pos.z));
+          local_aabb._max.x =
+              Math::Max(local_aabb._max.x, static_cast<float>(pos.x));
+          local_aabb._max.y =
+              Math::Max(local_aabb._max.y, static_cast<float>(pos.y));
+          local_aabb._max.z =
+              Math::Max(local_aabb._max.z, static_cast<float>(pos.z));
+
+          v_array.vertices.push_back(v);
+        }
+        // Process the indices
+        for (unsigned int j = 0; j < mesh->mNumFaces; j++) {
+          const aiFace &face = mesh->mFaces[j];
+          for (unsigned int k = 0; k < face.mNumIndices; k++) {
+            uint32_t index = face.mIndices[k];
+            v_array.indices.push_back(index);
           }
         }
       }
     }
-
-    for (auto &skin : model.skins) {
-      const tinygltf::Accessor &invAccessor =
-          model.accessors[skin.inverseBindMatrices];
-      const tinygltf::BufferView &invBufferView =
-          model.bufferViews[invAccessor.bufferView];
-      const tinygltf::Buffer &invBuffer = model.buffers[invBufferView.buffer];
-
-      const float *matrixData = reinterpret_cast<const float *>(
-          &invBuffer.data[invBufferView.byteOffset]);
-      assert(invAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT);
-      assert(invAccessor.type == TINYGLTF_TYPE_MAT4);
-
-      for (size_t i = 0; i < invAccessor.count; ++i) {
-        matrix4 m;
-        memcpy(&m.mat, &matrixData[i * 16], sizeof(matrix4));
-        inverse_bind_matrices.push_back(m);
-      }
-    }
-
   } else {
     Logger::error("invalid formats.");
   }
@@ -580,122 +399,32 @@ void Model::update(float delta_time) {
   time += delta_time;
   load_bone_uniform(time);
 }
+
 void Model::load_bone_uniform(float start) {
   auto modelData = GetModelData(this->data);
-  auto &model = modelData->model;
-
-  // Animation
-  for (auto &animation : model.animations) {
-    for (auto &channel : animation.channels) {
-      auto &sampler = animation.samplers[channel.sampler];
-      assert(sampler.interpolation == "LINEAR");
-      auto &inputAccessor = model.accessors[sampler.input];
-
-      auto &outputAccessor = model.accessors[sampler.output];
-      auto &inputBufferView = model.bufferViews[inputAccessor.bufferView];
-      auto &outputBufferView = model.bufferViews[outputAccessor.bufferView];
-      auto outputStride = outputAccessor.ByteStride(outputBufferView);
-      auto &inputBuffer = model.buffers[inputBufferView.buffer];
-      auto &outputBuffer = model.buffers[outputBufferView.buffer];
-      auto &node = model.nodes[channel.target_node];
-      assert(inputAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT);
-      assert(inputAccessor.type == TINYGLTF_TYPE_SCALAR);
-      assert(outputAccessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT);
-      const float *inputData = reinterpret_cast<const float *>(
-          &inputBuffer
-               .data[inputBufferView.byteOffset + inputAccessor.byteOffset]);
-      const auto *outputData = reinterpret_cast<const float *>(
-          &outputBuffer
-               .data[outputBufferView.byteOffset + outputAccessor.byteOffset]);
-      // Find the frame
-      size_t t0, t1;
-      for (t0 = 0; t0 < inputAccessor.count - 1; t0++) {
-        if (inputData[t0] <= start && start < inputData[t0 + 1]) {
-          break;
-        }
-      }
-      if (inputAccessor.count > 2) {
-        t1 = t0 + 1;
-      } else
-        t1 = t0;
-
-      if (channel.target_path == "rotation") {
-        assert(outputStride == sizeof(float) * 4);
-        size_t index = t0 * (outputStride / sizeof(float));
-        Quaternion q0(outputData[index + 0], outputData[index + 1],
-                      outputData[index + 2], outputData[index + 3]);
-        index = t1 * (outputStride / sizeof(float));
-        Quaternion q1(outputData[index + 0], outputData[index + 1],
-                      outputData[index + 2], outputData[index + 3]);
-        float t = (start - inputData[t0]) / (inputData[t1] - inputData[t0]);
-        Quaternion q = Quaternion::slerp(q0, q1, t);
-        node.rotation[0] = q.x;
-        node.rotation[1] = q.y;
-        node.rotation[2] = q.z;
-        node.rotation[3] = q.w;
-      } else if (channel.target_path == "translation") {
-        Vector3 v0(outputData[3 * t0 + 0], outputData[3 * t0 + 1],
-                   outputData[3 * t0 + 2]);
-        Vector3 v1(outputData[3 * t1 + 0], outputData[3 * t1 + 1],
-                   outputData[3 * t1 + 2]);
-        float t = (start - inputData[t0]) / (inputData[t1] - inputData[t0]);
-        Vector3 v = Vector3::lerp(v0, v1, t);
-        node.translation[0] = v.x;
-        node.translation[1] = v.y;
-        node.translation[2] = v.z;
-      } else if (channel.target_path == "scale") {
-        Vector3 s0(outputData[3 * t0 + 0], outputData[3 * t0 + 1],
-                   outputData[3 * t0 + 2]);
-        Vector3 s1(outputData[3 * t1 + 0], outputData[3 * t1 + 1],
-                   outputData[3 * t1 + 2]);
-        float t = (start - inputData[t0]) / (inputData[t1] - inputData[t0]);
-        Vector3 s = Vector3::lerp(s0, s1, t);
-        if (node.scale.size() < 3) {
-          node.scale.resize(3);
-        }
-        node.scale[0] = s.x;
-        node.scale[1] = s.y;
-        node.scale[2] = s.z;
-      }
-    }
-  }
-
-  // Compute node matrices
+  auto &skeletalAnimation = modelData->skeletalAnimation;
+  modelData->skeletalAnimation.Update(start);
+  auto matrices = skeletalAnimation.GetFinalBoneMatrices();
   auto &boneUniformData = modelData->boneUniformData;
   boneUniformData.clear();
 
-  std::vector<matrix4> nodeMatrices(model.nodes.size(), matrix4::identity);
-  std::unordered_set<int> nodesToUpdate;
-  const tinygltf::Skin &skin = model.skins[0];
-
-  for (int jointNode : model.scenes[model.defaultScene].nodes) {
-    ComputeNodeMatrices(model, jointNode, nodesToUpdate, matrix4::identity,
-                        nodeMatrices);
+  for (auto &m : matrices) {
+    boneUniformData.add(m.a1);
+    boneUniformData.add(m.a2);
+    boneUniformData.add(m.a3);
+    boneUniformData.add(m.a4);
+    boneUniformData.add(m.b1);
+    boneUniformData.add(m.b2);
+    boneUniformData.add(m.b3);
+    boneUniformData.add(m.b4);
+    boneUniformData.add(m.c1);
+    boneUniformData.add(m.c2);
+    boneUniformData.add(m.c3);
+    boneUniformData.add(m.c4);
+    boneUniformData.add(m.d1);
+    boneUniformData.add(m.d2);
+    boneUniformData.add(m.d3);
+    boneUniformData.add(m.d4);
   }
-
-  auto &joints = skin.joints;
-  std::vector<matrix4> jointMatrices;
-  jointMatrices.resize(joints.size());
-  for (size_t i = 0; i < joints.size(); i++) {
-    jointMatrices[i] = inverse_bind_matrices[i] * nodeMatrices[joints[i]];
-  }
-
-  boneUniformData.add_matrices(jointMatrices);
 }
 } // namespace sinen
-
-namespace tinygltf {
-bool LoadImageData(Image *image, const int image_idx, std::string *err,
-                   std::string *warn, int req_width, int req_height,
-                   const unsigned char *bytes, int size, void *) {
-  bool result = false;
-  return result;
-}
-
-bool WriteImageData(const std::string *basepath, const std::string *filename,
-                    Image *image, bool embedImages, void *) {
-  bool result = false;
-  return result;
-}
-
-} // namespace tinygltf

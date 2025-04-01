@@ -13,6 +13,7 @@
 // internal
 #include "../render/px_renderer.hpp"
 #include "../render/render_system.hpp"
+#include "assimp/matrix4x4.h"
 #include "assimp/postprocess.h"
 #include "io/asset_type.hpp"
 #include "math/matrix4.hpp"
@@ -106,25 +107,26 @@ void Model::load(std::string_view str) {
     if (scene->HasAnimations()) {
       modelData->skeletalAnimation.Load(modelData->scene);
       uint32_t vertexOffset = 0;
+      uint32_t numBone = 0;
       for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
         const aiMesh *mesh = scene->mMeshes[i];
         std::vector<AnimationVertex> vertices(mesh->mNumVertices);
-        std::unordered_map<std::string, unsigned int> boneNameToIndex;
-        unsigned int boneIndex = 0;
 
-        // 頂点ごとにボーンIDとウェイトを追加する一時構造体
         struct TempBoneData {
           std::vector<unsigned int> ids;
           std::vector<float> weights;
         };
         std::vector<TempBoneData> tempBoneData(mesh->mNumVertices);
 
+        auto &boneNameToIndex = modelData->skeletalAnimation.boneNameToIndex;
+        auto &boneMap = modelData->skeletalAnimation.boneMap;
         for (unsigned int i = 0; i < mesh->mNumBones; ++i) {
           aiBone *bone = mesh->mBones[i];
           std::string boneName = bone->mName.C_Str();
 
-          if (boneNameToIndex.find(boneName) == boneNameToIndex.end()) {
-            boneNameToIndex[boneName] = boneIndex++;
+          if (!boneNameToIndex.contains(boneName)) {
+            boneNameToIndex[boneName] = numBone++;
+            boneMap[boneName].offsetMatrix = bone->mOffsetMatrix;
           }
 
           unsigned int index = boneNameToIndex[boneName];
@@ -163,14 +165,17 @@ void Model::load(std::string_view str) {
           vertices[i] = v;
         }
         // indices
+        std::vector<uint32_t> indices;
         for (unsigned int j = 0; j < mesh->mNumFaces; j++) {
           const aiFace &face = mesh->mFaces[j];
           for (unsigned int k = 0; k < face.mNumIndices; k++) {
             uint32_t index = face.mIndices[k];
-            v_array.indices.push_back(vertexOffset + index);
+            indices.push_back(vertexOffset + index);
           }
         }
         vertexOffset += mesh->mNumVertices;
+        v_array.indices.insert(v_array.indices.end(), indices.begin(),
+                               indices.end());
         v_array.animationVertices.insert(v_array.animationVertices.end(),
                                          vertices.begin(), vertices.end());
       }
@@ -408,23 +413,136 @@ void Model::load_bone_uniform(float start) {
   auto &boneUniformData = modelData->boneUniformData;
   boneUniformData.clear();
 
+  std::vector<matrix4> boneMatrices(matrices.size());
+  int index = 0;
   for (auto &m : matrices) {
-    boneUniformData.add(m.a1);
-    boneUniformData.add(m.a2);
-    boneUniformData.add(m.a3);
-    boneUniformData.add(m.a4);
-    boneUniformData.add(m.b1);
-    boneUniformData.add(m.b2);
-    boneUniformData.add(m.b3);
-    boneUniformData.add(m.b4);
-    boneUniformData.add(m.c1);
-    boneUniformData.add(m.c2);
-    boneUniformData.add(m.c3);
-    boneUniformData.add(m.c4);
-    boneUniformData.add(m.d1);
-    boneUniformData.add(m.d2);
-    boneUniformData.add(m.d3);
-    boneUniformData.add(m.d4);
+    matrix4 mat;
+    memcpy(&mat, &m, sizeof(matrix4));
+    boneMatrices[index] = mat;
+    index++;
   }
+  boneUniformData.add_matrices(boneMatrices);
+}
+void SkeletalAnimation::Load(const aiScene *scn) {
+  scene = scn;
+  globalInverseTransform = scene->mRootNode->mTransformation;
+  globalInverseTransform.Inverse();
+
+  // for (unsigned int meshIndex = 0; meshIndex < scene->mNumMeshes;
+  // ++meshIndex) {
+  //   aiMesh *mesh = scene->mMeshes[meshIndex];
+  //   for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones;
+  //   ++boneIndex) {
+  //     aiBone *bone = mesh->mBones[boneIndex];
+  //     boneMap[bone->mName.C_Str()].offsetMatrix = bone->mOffsetMatrix;
+  //   }
+  // }
+
+  if (scene->mNumAnimations > 0) {
+    aiAnimation *anim = scene->mAnimations[0];
+    for (unsigned int i = 0; i < anim->mNumChannels; ++i) {
+      aiNodeAnim *channel = anim->mChannels[i];
+      nodeAnimMap[channel->mNodeName.C_Str()] = channel;
+    }
+  }
+}
+void SkeletalAnimation::Update(float timeInSeconds) {
+  aiAnimation *anim = scene->mAnimations[0];
+  float ticksPerSecond =
+      anim->mTicksPerSecond != 0 ? anim->mTicksPerSecond : 25.0f;
+  float timeInTicks = timeInSeconds * ticksPerSecond;
+  float animationTime = Math::fmod(timeInTicks, anim->mDuration);
+
+  ReadNodeHierarchy(animationTime, scene->mRootNode, aiMatrix4x4());
+  for (int i = 0; i < boneMap.size(); ++i) {
+  }
+}
+void SkeletalAnimation::ReadNodeHierarchy(float animTime, aiNode *node,
+                                          const aiMatrix4x4 &parentTransform) {
+  std::string nodeName = node->mName.C_Str();
+
+  aiMatrix4x4 nodeTransform = node->mTransformation;
+  if (nodeAnimMap.contains(nodeName)) {
+    nodeTransform = InterpolateTransform(nodeAnimMap[nodeName], animTime);
+  }
+
+  aiMatrix4x4 globalTransform = parentTransform * nodeTransform;
+
+  if (boneMap.contains(nodeName)) {
+    auto offset = boneMap[nodeName].offsetMatrix;
+    auto t = globalInverseTransform * globalTransform * offset;
+    boneMap[nodeName].finalTransform = t;
+  }
+
+  for (unsigned int i = 0; i < node->mNumChildren; ++i) {
+    ReadNodeHierarchy(animTime, node->mChildren[i], globalTransform);
+  }
+}
+aiMatrix4x4 SkeletalAnimation::InterpolateTransform(aiNodeAnim *channel,
+                                                    float time) {
+  auto InterpolateVector3 = [&](const aiVectorKey *keys, unsigned int count,
+                                float time) {
+    if (count == 0) {
+      return aiVector3D(0.f, 0.f, 0.f);
+    }
+    if (count == 1) {
+      return keys[0].mValue;
+    }
+
+    for (unsigned int i = 0; i < count - 1; ++i) {
+      if (time < keys[i + 1].mTime) {
+        float t =
+            float((time - keys[i].mTime) / (keys[i + 1].mTime - keys[i].mTime));
+        return keys[i].mValue * (1.f - t) + keys[i + 1].mValue * t;
+      }
+    }
+    return keys[count - 1].mValue;
+  };
+
+  auto InterpolateQuat = [&](const aiQuatKey *keys, unsigned int count,
+                             float time) {
+    if (count == 0) {
+      return aiQuaternion(1, 0, 0, 0);
+    }
+    if (count == 1) {
+      return keys[0].mValue;
+    }
+
+    for (unsigned int i = 0; i < count - 1; ++i) {
+      if (time < keys[i + 1].mTime) {
+        float t =
+            float((time - keys[i].mTime) / (keys[i + 1].mTime - keys[i].mTime));
+        aiQuaternion out;
+        aiQuaternion::Interpolate(out, keys[i].mValue, keys[i + 1].mValue, t);
+        out = out.Normalize();
+        return out;
+      }
+    }
+    return keys[count - 1].mValue;
+  };
+
+  aiVector3D scaling =
+      InterpolateVector3(channel->mScalingKeys, channel->mNumScalingKeys, time);
+  aiQuaternion rotation =
+      InterpolateQuat(channel->mRotationKeys, channel->mNumRotationKeys, time);
+  aiVector3D translation = InterpolateVector3(channel->mPositionKeys,
+                                              channel->mNumPositionKeys, time);
+
+  aiMatrix4x4 s;
+  aiMatrix4x4::Scaling(scaling, s);
+  aiMatrix4x4 r(rotation.GetMatrix());
+  r = r.Transpose();
+  aiMatrix4x4 t;
+  aiMatrix4x4::Translation(translation, t);
+
+  auto a = s * r * t;
+  return a;
+}
+std::vector<aiMatrix4x4> SkeletalAnimation::GetFinalBoneMatrices() const {
+  std::vector<aiMatrix4x4> result;
+  for (const auto &[name, info] : boneMap) {
+    result.push_back(info.finalTransform);
+  }
+  return result;
 }
 } // namespace sinen

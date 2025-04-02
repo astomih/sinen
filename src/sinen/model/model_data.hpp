@@ -2,6 +2,7 @@
 #define SINEN_MODEL_DATA_HPP
 #include "assimp/anim.h"
 #include "assimp/matrix4x4.h"
+#include "math/matrix4.hpp"
 #include "math/quaternion.hpp"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -13,8 +14,8 @@
 
 namespace sinen {
 struct BoneInfo {
-  aiMatrix4x4 offsetMatrix;
-  aiMatrix4x4 finalTransform;
+  matrix4 offsetMatrix;
+  matrix4 finalTransform;
 };
 
 class SkeletalAnimation {
@@ -22,7 +23,7 @@ public:
   std::unordered_map<std::string, BoneInfo> boneMap;
   std::unordered_map<std::string, aiNodeAnim *> nodeAnimMap;
   std::unordered_map<std::string, unsigned int> boneNameToIndex;
-  aiMatrix4x4 globalInverseTransform;
+  matrix4 globalInverseTransform;
   const aiScene *scene = nullptr;
 
   void Load(const aiScene *scn);
@@ -30,11 +31,11 @@ public:
   void Update(float timeInSeconds);
 
   void ReadNodeHierarchy(float animTime, aiNode *node,
-                         const aiMatrix4x4 &parentTransform);
+                         const matrix4 &parentTransform);
 
-  aiMatrix4x4 InterpolateTransform(aiNodeAnim *channel, float time);
+  matrix4 InterpolateTransform(aiNodeAnim *channel, float time);
 
-  std::vector<aiMatrix4x4> GetFinalBoneMatrices() const;
+  std::vector<matrix4> GetFinalBoneMatrices() const;
 };
 struct ModelData {
   AABB local_aabb;

@@ -19,6 +19,7 @@
 #include "io/asset_type.hpp"
 #include "math/matrix4.hpp"
 #include "math/quaternion.hpp"
+#include "math/vector3.hpp"
 #include "model/vertex.hpp"
 #include "model_data.hpp"
 #include <io/data_stream.hpp>
@@ -35,6 +36,26 @@
 namespace sinen {
 enum class load_state { version, vertex, indices };
 Model::Model() { data = std::make_shared<ModelData>(); };
+matrix4 convert(const aiMatrix4x4 &m) {
+  matrix4 mat;
+  mat[0][0] = m.a1;
+  mat[0][1] = m.a2;
+  mat[0][2] = m.a3;
+  mat[0][3] = m.a4;
+  mat[1][0] = m.b1;
+  mat[1][1] = m.b2;
+  mat[1][2] = m.b3;
+  mat[1][3] = m.b4;
+  mat[2][0] = m.c1;
+  mat[2][1] = m.c2;
+  mat[2][2] = m.c3;
+  mat[2][3] = m.c4;
+  mat[3][0] = m.d1;
+  mat[3][1] = m.d2;
+  mat[3][2] = m.d3;
+  mat[3][3] = m.d4;
+  return mat;
+}
 void Model::load(std::string_view str) {
   auto modelData = GetModelData(this->data);
   auto &local_aabb = modelData->local_aabb;
@@ -109,16 +130,16 @@ void Model::load(std::string_view str) {
       modelData->skeletalAnimation.Load(modelData->scene);
       uint32_t vertexOffset = 0;
       uint32_t numBone = 0;
+      struct BoneData {
+        std::vector<uint32_t> ids;
+        std::vector<float> weights;
+      };
+      std::unordered_map<uint32_t, BoneData> boneData;
+
+      std::unordered_map<std::string, unsigned int> boneNameToIndex;
       for (int i = 0; i < scene->mNumMeshes; i++) {
         const aiMesh *mesh = scene->mMeshes[i];
 
-        struct BoneData {
-          std::vector<uint32_t> ids;
-          std::vector<float> weights;
-        };
-        std::unordered_map<uint32_t, BoneData> boneData;
-
-        std::unordered_map<std::string, unsigned int> boneNameToIndex;
         auto &boneMap = modelData->skeletalAnimation.boneMap;
         for (unsigned int j = 0; j < mesh->mNumBones; j++) {
           aiBone *bone = mesh->mBones[j];
@@ -126,7 +147,8 @@ void Model::load(std::string_view str) {
 
           if (!boneNameToIndex.contains(boneName)) {
             boneNameToIndex[boneName] = numBone++;
-            boneMap[boneName].offsetMatrix = bone->mOffsetMatrix;
+            bone->mOffsetMatrix.Transpose();
+            boneMap[boneName].offsetMatrix = convert(bone->mOffsetMatrix);
           }
 
           unsigned int index = boneNameToIndex[boneName];
@@ -422,8 +444,8 @@ void Model::load_bone_uniform(float start) {
 }
 void SkeletalAnimation::Load(const aiScene *scn) {
   scene = scn;
-  globalInverseTransform = scene->mRootNode->mTransformation;
-  globalInverseTransform.Inverse();
+  globalInverseTransform = convert(scene->mRootNode->mTransformation);
+  globalInverseTransform.invert();
 
   if (scene->mNumAnimations > 0) {
     aiAnimation *anim = scene->mAnimations[0];
@@ -440,18 +462,18 @@ void SkeletalAnimation::Update(float timeInSeconds) {
   float timeInTicks = timeInSeconds * ticksPerSecond;
   float animationTime = Math::fmod(timeInTicks, anim->mDuration);
 
-  ReadNodeHierarchy(animationTime, scene->mRootNode, aiMatrix4x4());
+  ReadNodeHierarchy(animationTime, scene->mRootNode, matrix4::identity);
 }
 void SkeletalAnimation::ReadNodeHierarchy(float animTime, aiNode *node,
-                                          const aiMatrix4x4 &parentTransform) {
+                                          const matrix4 &parentTransform) {
   std::string nodeName = node->mName.C_Str();
 
-  aiMatrix4x4 nodeTransform = node->mTransformation;
+  matrix4 nodeTransform = convert(node->mTransformation);
   if (nodeAnimMap.contains(nodeName)) {
     nodeTransform = InterpolateTransform(nodeAnimMap[nodeName], animTime);
   }
 
-  aiMatrix4x4 globalTransform = parentTransform * nodeTransform;
+  auto globalTransform = parentTransform * nodeTransform;
 
   assert(boneMap.contains(nodeName) ||
          "Bone not found in boneMap. This may be due to a missing bone in the "
@@ -459,74 +481,78 @@ void SkeletalAnimation::ReadNodeHierarchy(float animTime, aiNode *node,
   auto &offset = boneMap[nodeName].offsetMatrix;
   auto &inverse = globalInverseTransform;
   auto &transform = globalTransform;
-  boneMap[nodeName].finalTransform = inverse * transform * offset;
+  boneMap[nodeName].finalTransform = offset * inverse * transform;
 
   for (unsigned int i = 0; i < node->mNumChildren; ++i) {
     ReadNodeHierarchy(animTime, node->mChildren[i], globalTransform);
   }
 }
-aiMatrix4x4 SkeletalAnimation::InterpolateTransform(aiNodeAnim *channel,
-                                                    float time) {
+matrix4 SkeletalAnimation::InterpolateTransform(aiNodeAnim *channel,
+                                                float time) {
   auto InterpolateVector3 = [&](const aiVectorKey *keys, unsigned int count,
                                 float time) {
     if (count == 0) {
-      return aiVector3D(0.f, 0.f, 0.f);
+      return Vector3(0, 0, 0);
     }
     if (count == 1) {
-      return keys[0].mValue;
+      return Vector3(keys[0].mValue.x, keys[0].mValue.y, keys[0].mValue.z);
     }
 
     for (unsigned int i = 0; i < count - 1; ++i) {
       if (time < keys[i + 1].mTime) {
         float t =
             float((time - keys[i].mTime) / (keys[i + 1].mTime - keys[i].mTime));
-        return keys[i].mValue * (1.f - t) + keys[i + 1].mValue * t;
+        auto k0 = Vector3(keys[i].mValue.x, keys[i].mValue.y, keys[i].mValue.z);
+        auto k1 = Vector3(keys[i + 1].mValue.x, keys[i + 1].mValue.y,
+                          keys[i + 1].mValue.z);
+        return Vector3::lerp(k0, k1, t);
       }
     }
-    return keys[count - 1].mValue;
+    return Vector3(keys[count - 1].mValue.x, keys[count - 1].mValue.y,
+                   keys[count - 1].mValue.z);
   };
 
   auto InterpolateQuat = [&](const aiQuatKey *keys, unsigned int count,
                              float time) {
     if (count == 0) {
-      return aiQuaternion(1, 0, 0, 0);
+      return Quaternion(0, 0, 0, 1);
     }
     if (count == 1) {
-      return keys[0].mValue;
+      return Quaternion(keys[0].mValue.x, keys[0].mValue.y, keys[0].mValue.z,
+                        keys[0].mValue.w);
     }
 
     for (unsigned int i = 0; i < count - 1; ++i) {
       if (time < keys[i + 1].mTime) {
         float t =
             float((time - keys[i].mTime) / (keys[i + 1].mTime - keys[i].mTime));
-        aiQuaternion out;
-        aiQuaternion::Interpolate(out, keys[i].mValue, keys[i + 1].mValue, t);
-        out = out.Normalize();
-        return out;
+        Quaternion k0(keys[i].mValue.x, keys[i].mValue.y, keys[i].mValue.z,
+                      keys[i].mValue.w);
+        Quaternion k1(keys[i + 1].mValue.x, keys[i + 1].mValue.y,
+                      keys[i + 1].mValue.z, keys[i + 1].mValue.w);
+        return Quaternion::slerp(k0, k1, t);
       }
     }
-    return keys[count - 1].mValue;
+    return Quaternion(keys[count - 1].mValue.x, keys[count - 1].mValue.y,
+                      keys[count - 1].mValue.z, keys[count - 1].mValue.w);
   };
 
-  aiVector3D scaling =
+  Vector3 scaling =
       InterpolateVector3(channel->mScalingKeys, channel->mNumScalingKeys, time);
-  aiQuaternion rotation =
+  Quaternion rotation =
       InterpolateQuat(channel->mRotationKeys, channel->mNumRotationKeys, time);
-  aiVector3D translation = InterpolateVector3(channel->mPositionKeys,
-                                              channel->mNumPositionKeys, time);
+  Vector3 translation = InterpolateVector3(channel->mPositionKeys,
+                                           channel->mNumPositionKeys, time);
 
-  aiMatrix4x4 s;
-  aiMatrix4x4::Scaling(scaling, s);
-  aiMatrix4x4 r(rotation.GetMatrix());
-  r = r.Transpose();
-  aiMatrix4x4 t;
-  aiMatrix4x4::Translation(translation, t);
+  auto s = matrix4::create_scale(scaling);
+  auto r = matrix4::create_from_quaternion(rotation);
+  auto t = matrix4::create_translation(translation);
 
-  auto a = s * r * t;
-  return a;
+  auto m = s * r * t;
+  return m;
 }
-std::vector<aiMatrix4x4> SkeletalAnimation::GetFinalBoneMatrices() const {
-  std::vector<aiMatrix4x4> result;
+std::vector<matrix4> SkeletalAnimation::GetFinalBoneMatrices() const {
+  std::vector<matrix4> result;
   for (const auto &[name, info] : boneMap) {
     result.push_back(info.finalTransform);
   }

@@ -7,6 +7,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <variant>
 
@@ -108,20 +109,19 @@ void Model::load(std::string_view str) {
       modelData->skeletalAnimation.Load(modelData->scene);
       uint32_t vertexOffset = 0;
       uint32_t numBone = 0;
-      for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
+      for (int i = 0; i < scene->mNumMeshes; i++) {
         const aiMesh *mesh = scene->mMeshes[i];
-        std::vector<AnimationVertex> vertices(mesh->mNumVertices);
 
-        struct TempBoneData {
-          std::vector<unsigned int> ids;
+        struct BoneData {
+          std::vector<uint32_t> ids;
           std::vector<float> weights;
         };
-        std::vector<TempBoneData> tempBoneData(mesh->mNumVertices);
+        std::unordered_map<uint32_t, BoneData> boneData;
 
-        auto &boneNameToIndex = modelData->skeletalAnimation.boneNameToIndex;
+        std::unordered_map<std::string, unsigned int> boneNameToIndex;
         auto &boneMap = modelData->skeletalAnimation.boneMap;
-        for (unsigned int i = 0; i < mesh->mNumBones; ++i) {
-          aiBone *bone = mesh->mBones[i];
+        for (unsigned int j = 0; j < mesh->mNumBones; j++) {
+          aiBone *bone = mesh->mBones[j];
           std::string boneName = bone->mName.C_Str();
 
           if (!boneNameToIndex.contains(boneName)) {
@@ -131,23 +131,24 @@ void Model::load(std::string_view str) {
 
           unsigned int index = boneNameToIndex[boneName];
 
-          for (unsigned int j = 0; j < bone->mNumWeights; ++j) {
-            unsigned int vertexId = bone->mWeights[j].mVertexId;
-            float weight = bone->mWeights[j].mWeight;
-
-            tempBoneData[vertexId].ids.push_back(index);
-            tempBoneData[vertexId].weights.push_back(weight);
+          for (unsigned int k = 0; k < bone->mNumWeights; ++k) {
+            unsigned int vertexId = bone->mWeights[k].mVertexId;
+            float weight = bone->mWeights[k].mWeight;
+            auto &data = boneData[vertexId];
+            data.ids.push_back(index);
+            data.weights.push_back(weight);
           }
         }
 
-        for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
+        for (unsigned int j = 0; j < mesh->mNumVertices; ++j) {
           AnimationVertex v;
-          aiVector3D pos = mesh->mVertices[i];
+          aiVector3D pos = mesh->mVertices[j];
           aiVector3D norm = aiVector3D(0, 1, 0);
-          if (mesh->HasNormals())
-            norm = mesh->mNormals[i];
+          if (mesh->HasNormals()) {
+            norm = mesh->mNormals[j];
+          }
           aiVector3D tex = mesh->HasTextureCoords(0)
-                               ? mesh->mTextureCoords[0][i]
+                               ? mesh->mTextureCoords[0][j]
                                : aiVector3D();
 
           v.position = Vector3(pos.x, pos.y, pos.z);
@@ -155,29 +156,25 @@ void Model::load(std::string_view str) {
           v.uv = Vector2(tex.x, tex.y);
           v.rgba = Color(1, 1, 1, 1);
 
-          const auto &ids = tempBoneData[i].ids;
-          const auto &ws = tempBoneData[i].weights;
-          for (int j = 0; j < 4; ++j) {
-            v.boneIDs[j] = (j < ids.size()) ? float(ids[j]) : 0.0f;
-            v.boneWeights[j] = (j < ws.size()) ? ws[j] : 0.0f;
+          assert(boneData.contains(j));
+          const auto &ids = boneData[j].ids;
+          const auto &ws = boneData[j].weights;
+          for (int k = 0; k < 4; ++k) {
+            v.boneIDs[k] = (k < ids.size()) ? float(ids[k]) : 0.0f;
+            v.boneWeights[k] = (k < ws.size()) ? ws[k] : 0.0f;
           }
 
-          vertices[i] = v;
+          v_array.animationVertices.push_back(v);
         }
         // indices
-        std::vector<uint32_t> indices;
         for (unsigned int j = 0; j < mesh->mNumFaces; j++) {
           const aiFace &face = mesh->mFaces[j];
           for (unsigned int k = 0; k < face.mNumIndices; k++) {
             uint32_t index = face.mIndices[k];
-            indices.push_back(vertexOffset + index);
+            v_array.indices.push_back(vertexOffset + index);
           }
         }
         vertexOffset += mesh->mNumVertices;
-        v_array.indices.insert(v_array.indices.end(), indices.begin(),
-                               indices.end());
-        v_array.animationVertices.insert(v_array.animationVertices.end(),
-                                         vertices.begin(), vertices.end());
       }
     } else if (scene->HasMeshes()) {
       // Iterate through the meshes
@@ -428,16 +425,6 @@ void SkeletalAnimation::Load(const aiScene *scn) {
   globalInverseTransform = scene->mRootNode->mTransformation;
   globalInverseTransform.Inverse();
 
-  // for (unsigned int meshIndex = 0; meshIndex < scene->mNumMeshes;
-  // ++meshIndex) {
-  //   aiMesh *mesh = scene->mMeshes[meshIndex];
-  //   for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones;
-  //   ++boneIndex) {
-  //     aiBone *bone = mesh->mBones[boneIndex];
-  //     boneMap[bone->mName.C_Str()].offsetMatrix = bone->mOffsetMatrix;
-  //   }
-  // }
-
   if (scene->mNumAnimations > 0) {
     aiAnimation *anim = scene->mAnimations[0];
     for (unsigned int i = 0; i < anim->mNumChannels; ++i) {
@@ -454,8 +441,6 @@ void SkeletalAnimation::Update(float timeInSeconds) {
   float animationTime = Math::fmod(timeInTicks, anim->mDuration);
 
   ReadNodeHierarchy(animationTime, scene->mRootNode, aiMatrix4x4());
-  for (int i = 0; i < boneMap.size(); ++i) {
-  }
 }
 void SkeletalAnimation::ReadNodeHierarchy(float animTime, aiNode *node,
                                           const aiMatrix4x4 &parentTransform) {
@@ -468,11 +453,13 @@ void SkeletalAnimation::ReadNodeHierarchy(float animTime, aiNode *node,
 
   aiMatrix4x4 globalTransform = parentTransform * nodeTransform;
 
-  if (boneMap.contains(nodeName)) {
-    auto offset = boneMap[nodeName].offsetMatrix;
-    auto t = globalInverseTransform * globalTransform * offset;
-    boneMap[nodeName].finalTransform = t;
-  }
+  assert(boneMap.contains(nodeName) ||
+         "Bone not found in boneMap. This may be due to a missing bone in the "
+         "animation or a mismatch between the model and animation data.");
+  auto &offset = boneMap[nodeName].offsetMatrix;
+  auto &inverse = globalInverseTransform;
+  auto &transform = globalTransform;
+  boneMap[nodeName].finalTransform = inverse * transform * offset;
 
   for (unsigned int i = 0; i < node->mNumChildren; ++i) {
     ReadNodeHierarchy(animTime, node->mChildren[i], globalTransform);

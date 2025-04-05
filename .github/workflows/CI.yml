@@ -18,7 +18,7 @@ jobs:
       with:
         update: true
         msystem: CLANG64
-        install: git mingw-w64-clang-x86_64-cmake mingw-w64-clang-x86_64-ninja mingw-w64-clang-x86_64-clang mingw-w64-clang-x86_64-lua mingw-w64-clang-x86_64-sdl3 mingw-w64-clang-x86_64-sdl3-image mingw-w64-clang-x86_64-gtest
+        install: git mingw-w64-clang-x86_64-cmake mingw-w64-clang-x86_64-ninja mingw-w64-clang-x86_64-clang mingw-w64-clang-x86_64-lua mingw-w64-clang-x86_64-sdl3 mingw-w64-clang-x86_64-sdl3-image mingw-w64-clang-x86_64-gtest mingw-w64-clang-x86_64-assimp
 
     - name: Setup Vulkan SDK
       uses: humbletim/setup-vulkan-sdk@523828e49cd4afabce369c39c7ee6543a2b7a735

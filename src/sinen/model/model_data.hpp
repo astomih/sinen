@@ -1,17 +1,43 @@
 #ifndef SINEN_MODEL_DATA_HPP
 #define SINEN_MODEL_DATA_HPP
+#include "assimp/anim.h"
+#include "assimp/matrix4x4.h"
+#include "math/matrix4.hpp"
+#include "math/quaternion.hpp"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
 #include <model/model.hpp>
 #include <model/vertex_array.hpp>
 #include <paranoixa/paranoixa.hpp>
 #include <physics/collision.hpp>
 #include <render/renderer.hpp>
-#define TINYGLTF_USE_RAPIDJSON
-#define TINYGLTF_NO_INCLUDE_RAPIDJSON
-#define TINYGLTF_NO_STB_IMAGE
-#define TINYGLTF_NO_STB_IMAGE_WRITE
-#include <tiny_gltf.h>
 
 namespace sinen {
+struct BoneInfo {
+  matrix4 offsetMatrix;
+  matrix4 finalTransform;
+};
+
+class SkeletalAnimation {
+public:
+  std::unordered_map<std::string, BoneInfo> boneMap;
+  std::unordered_map<std::string, aiNodeAnim *> nodeAnimMap;
+  std::unordered_map<std::string, unsigned int> boneNameToIndex;
+  matrix4 globalInverseTransform;
+  const aiScene *scene = nullptr;
+  aiNode *root;
+
+  void Load(const aiScene *scn);
+
+  void Update(float timeInSeconds);
+
+  void ReadNodeHierarchy(float animTime, aiNode *node,
+                         const matrix4 &parentTransform);
+
+  matrix4 InterpolateTransform(aiNodeAnim *channel, float time);
+
+  std::vector<matrix4> GetFinalBoneMatrices() const;
+};
 struct ModelData {
   AABB local_aabb;
   Model *parent;
@@ -22,7 +48,10 @@ struct ModelData {
 
   px::Ptr<px::Buffer> vertexBuffer;
   px::Ptr<px::Buffer> indexBuffer;
-  tinygltf::Model model;
+
+  const aiScene *scene = nullptr;
+  Assimp::Importer importer;
+  SkeletalAnimation skeletalAnimation;
 };
 inline std::shared_ptr<ModelData> GetModelData(std::shared_ptr<void> model) {
   return std::static_pointer_cast<ModelData>(model);

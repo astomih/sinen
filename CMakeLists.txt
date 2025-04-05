@@ -34,6 +34,8 @@ if(SINEN_EXTERNAL_ALL_BUILD)
     libs/SDL/include
     libs/SDL_image/include
   )
+  set(ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF)
+  add_subdirectory(./libs/assimp EXCLUDE_FROM_ALL)
 else()
   find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
 endif()
@@ -80,6 +82,7 @@ set(SINEN_INCLUDE_DIRS
   libs/paranoixa/source/imgui_backend
   src/usertype/include
   src/rt_shader_compiler/include
+  libs/assimp/include
 )
 file(
   GLOB
@@ -109,6 +112,7 @@ if(NOT SINEN_EXTERNAL_ALL_BUILD)
     SDL3_mixer::SDL3_mixer
     SDL3_ttf::SDL3_ttf
     rt_shader_compiler
+    assimp
   )
 else()
   target_link_libraries(
@@ -120,6 +124,7 @@ else()
     SDL3_mixer::SDL3_mixer
     SDL3_ttf::SDL3_ttf
     rt_shader_compiler
+    assimp
   )
 endif()
 

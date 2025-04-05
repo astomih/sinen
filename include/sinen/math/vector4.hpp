@@ -61,6 +61,8 @@ public:
                    vec.w * scalar);
   }
 
+  float &operator[](int index) { return *(&x + index); }
+
   // Scalar *=
   Vector4 &operator*=(float scalar) {
     x *= scalar;

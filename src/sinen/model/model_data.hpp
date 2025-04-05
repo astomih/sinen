@@ -25,6 +25,7 @@ public:
   std::unordered_map<std::string, unsigned int> boneNameToIndex;
   matrix4 globalInverseTransform;
   const aiScene *scene = nullptr;
+  aiNode *root;
 
   void Load(const aiScene *scn);
 

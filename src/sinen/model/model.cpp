@@ -16,6 +16,7 @@
 #include "../render/render_system.hpp"
 #include "assimp/matrix4x4.h"
 #include "assimp/postprocess.h"
+#include "color/color.hpp"
 #include "io/asset_type.hpp"
 #include "math/matrix4.hpp"
 #include "math/quaternion.hpp"
@@ -24,6 +25,7 @@
 #include "model_data.hpp"
 #include <io/data_stream.hpp>
 #include <logger/logger.hpp>
+#include <math/random.hpp>
 #include <model/model.hpp>
 #include <render/renderer.hpp>
 
@@ -113,13 +115,15 @@ void Model::load(std::string_view str) {
         break;
       }
     }
-  } else if (str_name.ends_with(".gltf") || str_name.ends_with(".glb")) {
+  } else {
 
     auto fileName = DataStream::convert_file_path(AssetType::Model, str_name);
     // Assimp
     auto &importer = modelData->importer;
     modelData->scene =
-        importer.ReadFile(fileName.c_str(), aiProcess_ValidateDataStructure);
+        importer.ReadFile(fileName.c_str(), aiProcess_ValidateDataStructure |
+                                                aiProcess_LimitBoneWeights |
+                                                aiProcess_Triangulate);
     auto &scene = modelData->scene;
     if (!scene) {
       std::cerr << "Error loading model: " << importer.GetErrorString()
@@ -133,36 +137,40 @@ void Model::load(std::string_view str) {
       struct BoneData {
         std::vector<uint32_t> ids;
         std::vector<float> weights;
+        Color color;
       };
-      std::unordered_map<uint32_t, BoneData> boneData;
-
-      std::unordered_map<std::string, unsigned int> boneNameToIndex;
+      std::unordered_map<std::string, uint32_t> boneNameToIndex;
       for (int i = 0; i < scene->mNumMeshes; i++) {
         const aiMesh *mesh = scene->mMeshes[i];
+        std::unordered_map<uint32_t, BoneData> boneData;
 
         auto &boneMap = modelData->skeletalAnimation.boneMap;
-        for (unsigned int j = 0; j < mesh->mNumBones; j++) {
+        for (uint32_t j = 0; j < mesh->mNumBones; j++) {
           aiBone *bone = mesh->mBones[j];
           std::string boneName = bone->mName.C_Str();
 
           if (!boneNameToIndex.contains(boneName)) {
-            boneNameToIndex[boneName] = numBone++;
-            bone->mOffsetMatrix.Transpose();
+            boneNameToIndex[boneName] = j;
             boneMap[boneName].offsetMatrix = convert(bone->mOffsetMatrix);
+            boneMap[boneName].offsetMatrix =
+                matrix4::transpose(boneMap[boneName].offsetMatrix);
           }
 
-          unsigned int index = boneNameToIndex[boneName];
+          uint32_t index = boneNameToIndex[boneName];
 
-          for (unsigned int k = 0; k < bone->mNumWeights; ++k) {
-            unsigned int vertexId = bone->mWeights[k].mVertexId;
+          auto rgba = Color(Random::get_float_range(0.5f, 1.0f),
+                            Random::get_float_range(0.5f, 1.0f),
+                            Random::get_float_range(0.5f, 1.0f), 1.0f);
+          for (uint32_t k = 0; k < bone->mNumWeights; ++k) {
+            uint32_t vertexId = bone->mWeights[k].mVertexId;
             float weight = bone->mWeights[k].mWeight;
-            auto &data = boneData[vertexId];
-            data.ids.push_back(index);
-            data.weights.push_back(weight);
+            boneData[vertexId].ids.push_back(index);
+            boneData[vertexId].weights.push_back(weight);
+            boneData[vertexId].color = rgba;
           }
         }
 
-        for (unsigned int j = 0; j < mesh->mNumVertices; ++j) {
+        for (uint32_t j = 0; j < mesh->mNumVertices; ++j) {
           AnimationVertex v;
           aiVector3D pos = mesh->mVertices[j];
           aiVector3D norm = aiVector3D(0, 1, 0);
@@ -176,11 +184,12 @@ void Model::load(std::string_view str) {
           v.position = Vector3(pos.x, pos.y, pos.z);
           v.normal = Vector3(norm.x, norm.y, norm.z);
           v.uv = Vector2(tex.x, tex.y);
-          v.rgba = Color(1, 1, 1, 1);
 
-          assert(boneData.contains(j));
+          assert(boneData.contains(j) && "Bone data not found for vertex.");
+          v.rgba = boneData[j].color;
           const auto &ids = boneData[j].ids;
           const auto &ws = boneData[j].weights;
+          float temp = 0.f;
           for (int k = 0; k < 4; ++k) {
             v.boneIDs[k] = (k < ids.size()) ? float(ids[k]) : 0.0f;
             v.boneWeights[k] = (k < ws.size()) ? ws[k] : 0.0f;
@@ -189,9 +198,9 @@ void Model::load(std::string_view str) {
           v_array.animationVertices.push_back(v);
         }
         // indices
-        for (unsigned int j = 0; j < mesh->mNumFaces; j++) {
+        for (uint32_t j = 0; j < mesh->mNumFaces; j++) {
           const aiFace &face = mesh->mFaces[j];
-          for (unsigned int k = 0; k < face.mNumIndices; k++) {
+          for (uint32_t k = 0; k < face.mNumIndices; k++) {
             uint32_t index = face.mIndices[k];
             v_array.indices.push_back(vertexOffset + index);
           }
@@ -200,10 +209,10 @@ void Model::load(std::string_view str) {
       }
     } else if (scene->HasMeshes()) {
       // Iterate through the meshes
-      for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
+      for (uint32_t i = 0; i < scene->mNumMeshes; i++) {
         const aiMesh *mesh = scene->mMeshes[i];
         // Process the mesh data
-        for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
+        for (uint32_t j = 0; j < mesh->mNumVertices; j++) {
           const aiVector3D &pos = mesh->mVertices[j];
           const aiVector3D &norm = mesh->mNormals[j];
           const aiVector3D &uv = mesh->mTextureCoords[0][j];
@@ -234,17 +243,15 @@ void Model::load(std::string_view str) {
           v_array.vertices.push_back(v);
         }
         // Process the indices
-        for (unsigned int j = 0; j < mesh->mNumFaces; j++) {
+        for (uint32_t j = 0; j < mesh->mNumFaces; j++) {
           const aiFace &face = mesh->mFaces[j];
-          for (unsigned int k = 0; k < face.mNumIndices; k++) {
+          for (uint32_t k = 0; k < face.mNumIndices; k++) {
             uint32_t index = face.mIndices[k];
             v_array.indices.push_back(index);
           }
         }
       }
     }
-  } else {
-    Logger::error("invalid formats.");
   }
 
   v_array.indexCount = v_array.indices.size();
@@ -444,12 +451,13 @@ void Model::load_bone_uniform(float start) {
 }
 void SkeletalAnimation::Load(const aiScene *scn) {
   scene = scn;
-  globalInverseTransform = convert(scene->mRootNode->mTransformation);
+  root = scene->mRootNode;
+  globalInverseTransform = convert(root->mTransformation);
   globalInverseTransform.invert();
 
   if (scene->mNumAnimations > 0) {
     aiAnimation *anim = scene->mAnimations[0];
-    for (unsigned int i = 0; i < anim->mNumChannels; ++i) {
+    for (uint32_t i = 0; i < anim->mNumChannels; ++i) {
       aiNodeAnim *channel = anim->mChannels[i];
       nodeAnimMap[channel->mNodeName.C_Str()] = channel;
     }
@@ -462,7 +470,10 @@ void SkeletalAnimation::Update(float timeInSeconds) {
   float timeInTicks = timeInSeconds * ticksPerSecond;
   float animationTime = Math::fmod(timeInTicks, anim->mDuration);
 
-  ReadNodeHierarchy(animationTime, scene->mRootNode, matrix4::identity);
+  ReadNodeHierarchy(animationTime, root, matrix4::identity);
+  for (auto &[name, info] : boneMap) {
+    info.finalTransform = info.offsetMatrix * info.finalTransform;
+  }
 }
 void SkeletalAnimation::ReadNodeHierarchy(float animTime, aiNode *node,
                                           const matrix4 &parentTransform) {
@@ -473,72 +484,82 @@ void SkeletalAnimation::ReadNodeHierarchy(float animTime, aiNode *node,
     nodeTransform = InterpolateTransform(nodeAnimMap[nodeName], animTime);
   }
 
-  auto globalTransform = parentTransform * nodeTransform;
+  auto globalTransform = nodeTransform * parentTransform;
 
   assert(boneMap.contains(nodeName) ||
          "Bone not found in boneMap. This may be due to a missing bone in the "
          "animation or a mismatch between the model and animation data.");
-  auto &offset = boneMap[nodeName].offsetMatrix;
   auto &inverse = globalInverseTransform;
   auto &transform = globalTransform;
-  boneMap[nodeName].finalTransform = offset * inverse * transform;
+  boneMap[nodeName].finalTransform = transform * inverse;
 
-  for (unsigned int i = 0; i < node->mNumChildren; ++i) {
+  for (uint32_t i = 0; i < node->mNumChildren; ++i) {
     ReadNodeHierarchy(animTime, node->mChildren[i], globalTransform);
   }
 }
+
+uint32_t GetIndex(float time, const aiVectorKey *keys, uint32_t count) {
+  for (uint32_t i = 0; i < count - 1; ++i) {
+    if (time < keys[i + 1].mTime) {
+      return i;
+    }
+  }
+  return count - 1;
+}
+
+uint32_t GetIndex(float time, const aiQuatKey *keys, uint32_t count) {
+  for (uint32_t i = 0; i < count - 1; ++i) {
+    if (time < keys[i + 1].mTime) {
+      return i;
+    }
+  }
+  return count - 1;
+}
+
+Vector3 InterpolateVector3(const aiVectorKey *keys, uint32_t count, float time,
+                           bool isScaling = false) {
+  if (count == 0) {
+    if (isScaling) {
+      return Vector3(1, 1, 1);
+    }
+    return Vector3(0, 0, 0);
+  }
+  if (count == 1) {
+    return Vector3(keys[0].mValue.x, keys[0].mValue.y, keys[0].mValue.z);
+  }
+
+  uint32_t i = GetIndex(time, keys, count);
+  float t = float((time - keys[i].mTime) / (keys[i + 1].mTime - keys[i].mTime));
+  auto k0 = Vector3(keys[i].mValue.x, keys[i].mValue.y, keys[i].mValue.z);
+  auto k1 =
+      Vector3(keys[i + 1].mValue.x, keys[i + 1].mValue.y, keys[i + 1].mValue.z);
+  return Vector3::lerp(k0, k1, t);
+};
+Quaternion InterpolateQuat(const aiQuatKey *keys, uint32_t count, float time) {
+  if (count == 0) {
+    return Quaternion(0, 0, 0, 1);
+  }
+  if (count == 1) {
+    return Quaternion(keys[0].mValue.x, keys[0].mValue.y, keys[0].mValue.z,
+                      keys[0].mValue.w);
+  }
+
+  uint32_t i = GetIndex(time, keys, count);
+  float t = float((time - keys[i].mTime) / (keys[i + 1].mTime - keys[i].mTime));
+  Quaternion k0(keys[i].mValue.x, keys[i].mValue.y, keys[i].mValue.z,
+                keys[i].mValue.w);
+  Quaternion k1(keys[i + 1].mValue.x, keys[i + 1].mValue.y,
+                keys[i + 1].mValue.z, keys[i + 1].mValue.w);
+  auto q = Quaternion::slerp(k0, k1, t);
+  q.normalize();
+  return q;
+};
+
 matrix4 SkeletalAnimation::InterpolateTransform(aiNodeAnim *channel,
                                                 float time) {
-  auto InterpolateVector3 = [&](const aiVectorKey *keys, unsigned int count,
-                                float time) {
-    if (count == 0) {
-      return Vector3(0, 0, 0);
-    }
-    if (count == 1) {
-      return Vector3(keys[0].mValue.x, keys[0].mValue.y, keys[0].mValue.z);
-    }
 
-    for (unsigned int i = 0; i < count - 1; ++i) {
-      if (time < keys[i + 1].mTime) {
-        float t =
-            float((time - keys[i].mTime) / (keys[i + 1].mTime - keys[i].mTime));
-        auto k0 = Vector3(keys[i].mValue.x, keys[i].mValue.y, keys[i].mValue.z);
-        auto k1 = Vector3(keys[i + 1].mValue.x, keys[i + 1].mValue.y,
-                          keys[i + 1].mValue.z);
-        return Vector3::lerp(k0, k1, t);
-      }
-    }
-    return Vector3(keys[count - 1].mValue.x, keys[count - 1].mValue.y,
-                   keys[count - 1].mValue.z);
-  };
-
-  auto InterpolateQuat = [&](const aiQuatKey *keys, unsigned int count,
-                             float time) {
-    if (count == 0) {
-      return Quaternion(0, 0, 0, 1);
-    }
-    if (count == 1) {
-      return Quaternion(keys[0].mValue.x, keys[0].mValue.y, keys[0].mValue.z,
-                        keys[0].mValue.w);
-    }
-
-    for (unsigned int i = 0; i < count - 1; ++i) {
-      if (time < keys[i + 1].mTime) {
-        float t =
-            float((time - keys[i].mTime) / (keys[i + 1].mTime - keys[i].mTime));
-        Quaternion k0(keys[i].mValue.x, keys[i].mValue.y, keys[i].mValue.z,
-                      keys[i].mValue.w);
-        Quaternion k1(keys[i + 1].mValue.x, keys[i + 1].mValue.y,
-                      keys[i + 1].mValue.z, keys[i + 1].mValue.w);
-        return Quaternion::slerp(k0, k1, t);
-      }
-    }
-    return Quaternion(keys[count - 1].mValue.x, keys[count - 1].mValue.y,
-                      keys[count - 1].mValue.z, keys[count - 1].mValue.w);
-  };
-
-  Vector3 scaling =
-      InterpolateVector3(channel->mScalingKeys, channel->mNumScalingKeys, time);
+  Vector3 scaling = InterpolateVector3(channel->mScalingKeys,
+                                       channel->mNumScalingKeys, time, true);
   Quaternion rotation =
       InterpolateQuat(channel->mRotationKeys, channel->mNumRotationKeys, time);
   Vector3 translation = InterpolateVector3(channel->mPositionKeys,

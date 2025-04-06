@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.20)
 project(editor)
 
 set(SINEN_SOURCE_DIR ${SINEN_SOURCE_DIR} PARENT_SCOPE)

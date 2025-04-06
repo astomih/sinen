@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.20)
 project(script_engine)
 set(CMAKE_CXX_FLAGS "-O2 -DNDEBUG -march=native")
 set(CMAKE_EXPORT_COMPILE_COMMANDS true)

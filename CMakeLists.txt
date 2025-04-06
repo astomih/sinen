@@ -34,14 +34,16 @@ if(SINEN_EXTERNAL_ALL_BUILD)
     libs/SDL/include
     libs/SDL_image/include
   )
+  set(SDLTTF_VENDORED ON)
+  set(SDLTTF_PLUTOSVG OFF)
+  add_subdirectory(./libs/SDL_ttf EXCLUDE_FROM_ALL)
+  set(ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF)
+  add_subdirectory(./libs/assimp EXCLUDE_FROM_ALL)
 else()
   find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
 endif()
 
 add_subdirectory(./libs/SDL_mixer EXCLUDE_FROM_ALL)
-set(SDLTTF_VENDORED ON)
-set(SDLTTF_PLUTOSVG OFF)
-add_subdirectory(./libs/SDL_ttf EXCLUDE_FROM_ALL)
 add_subdirectory(./libs/sol2 EXCLUDE_FROM_ALL)
 
 set(PARANOIXA_BUILD_SDL3 OFF)
@@ -80,6 +82,7 @@ set(SINEN_INCLUDE_DIRS
   libs/paranoixa/source/imgui_backend
   src/usertype/include
   src/rt_shader_compiler/include
+  libs/assimp/include
 )
 file(
   GLOB
@@ -107,8 +110,9 @@ if(NOT SINEN_EXTERNAL_ALL_BUILD)
     SDL3::SDL3
     SDL3_image
     SDL3_mixer::SDL3_mixer
-    SDL3_ttf::SDL3_ttf
+    SDL3_ttf
     rt_shader_compiler
+    assimp
   )
 else()
   target_link_libraries(
@@ -120,6 +124,7 @@ else()
     SDL3_mixer::SDL3_mixer
     SDL3_ttf::SDL3_ttf
     rt_shader_compiler
+    assimp
   )
 endif()
 

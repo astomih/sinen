@@ -18,7 +18,7 @@ jobs:
       with:
         update: true
         msystem: CLANG64
-        install: git mingw-w64-clang-x86_64-cmake mingw-w64-clang-x86_64-ninja mingw-w64-clang-x86_64-clang mingw-w64-clang-x86_64-lua mingw-w64-clang-x86_64-sdl3 mingw-w64-clang-x86_64-sdl3-image mingw-w64-clang-x86_64-gtest mingw-w64-clang-x86_64-assimp
+        install: git mingw-w64-clang-x86_64-cmake mingw-w64-clang-x86_64-ninja mingw-w64-clang-x86_64-clang mingw-w64-clang-x86_64-lua mingw-w64-clang-x86_64-sdl3 mingw-w64-clang-x86_64-sdl3-image mingw-w64-clang-x86_64-sdl3-ttf mingw-w64-clang-x86_64-gtest mingw-w64-clang-x86_64-assimp
 
     - name: Setup Vulkan SDK
       uses: humbletim/setup-vulkan-sdk@523828e49cd4afabce369c39c7ee6543a2b7a735
@@ -28,5 +28,5 @@ jobs:
         vulkan-use-cache: true
     - name: Build
       run: |
-          git submodule update --init --recursive libs/mojoAL-SDL3 libs/SDL_mixer libs/SDL_ttf libs/sol2 libs/paranoixa
+          git submodule update --init --recursive libs/mojoAL-SDL3 libs/SDL_mixer libs/sol2 libs/paranoixa
           cd build && ./generate_clang_minimum.bat && ./build_clang.bat

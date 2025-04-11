@@ -1,7 +1,7 @@
 local texture = Texture()
 texture:fill_color(Color(1, 1, 1, 1))
 local model = Model()
-model:load("SimpleSkin.gltf")
+model:load("BrainStem.glb")
 local draw3d = Draw3D(texture)
 draw3d.position = Vector3(0, 0, 0)
 draw3d.model = model

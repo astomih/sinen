@@ -14,8 +14,8 @@
 
 namespace sinen {
 struct BoneInfo {
-  matrix4 offsetMatrix;
-  matrix4 finalTransform;
+  glm::mat4 offsetMatrix;
+  glm::mat4 finalTransform;
 };
 
 class SkeletalAnimation {
@@ -23,7 +23,7 @@ public:
   std::unordered_map<std::string, BoneInfo> boneMap;
   std::unordered_map<std::string, aiNodeAnim *> nodeAnimMap;
   std::unordered_map<std::string, unsigned int> boneNameToIndex;
-  matrix4 globalInverseTransform;
+  glm::mat4 globalInverseTransform;
   const aiScene *scene = nullptr;
   aiNode *root;
 
@@ -32,11 +32,11 @@ public:
   void Update(float timeInSeconds);
 
   void ReadNodeHierarchy(float animTime, aiNode *node,
-                         const matrix4 &parentTransform);
+                         const glm::mat4 &parentTransform);
 
-  matrix4 InterpolateTransform(aiNodeAnim *channel, float time);
+  glm::mat4 InterpolateTransform(aiNodeAnim *channel, float time);
 
-  std::vector<matrix4> GetFinalBoneMatrices() const;
+  std::vector<glm::mat4> GetFinalBoneMatrices() const;
 };
 struct ModelData {
   AABB local_aabb;

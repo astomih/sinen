@@ -17,6 +17,8 @@
 #include "assimp/matrix4x4.h"
 #include "assimp/postprocess.h"
 #include "color/color.hpp"
+#include "glm/ext/quaternion_common.hpp"
+#include "glm/fwd.hpp"
 #include "io/asset_type.hpp"
 #include "math/matrix4.hpp"
 #include "math/quaternion.hpp"
@@ -35,27 +37,20 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include "glm/ext/matrix_transform.hpp"
+#include "glm/ext/quaternion_common.hpp"
+#include <glm/ext/vector_common.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+
 namespace sinen {
 enum class load_state { version, vertex, indices };
 Model::Model() { data = std::make_shared<ModelData>(); };
-matrix4 convert(const aiMatrix4x4 &m) {
-  matrix4 mat;
-  mat[0][0] = m.a1;
-  mat[0][1] = m.a2;
-  mat[0][2] = m.a3;
-  mat[0][3] = m.a4;
-  mat[1][0] = m.b1;
-  mat[1][1] = m.b2;
-  mat[1][2] = m.b3;
-  mat[1][3] = m.b4;
-  mat[2][0] = m.c1;
-  mat[2][1] = m.c2;
-  mat[2][2] = m.c3;
-  mat[2][3] = m.c4;
-  mat[3][0] = m.d1;
-  mat[3][1] = m.d2;
-  mat[3][2] = m.d3;
-  mat[3][3] = m.d4;
+glm::mat4 convert(const aiMatrix4x4 &m) {
+  glm::mat4 mat;
+  memcpy(&mat, &m, sizeof(glm::mat4));
   return mat;
 }
 void Model::load(std::string_view str) {
@@ -152,8 +147,8 @@ void Model::load(std::string_view str) {
           if (!boneNameToIndex.contains(boneName)) {
             boneNameToIndex[boneName] = j;
             boneMap[boneName].offsetMatrix = convert(bone->mOffsetMatrix);
-            boneMap[boneName].offsetMatrix =
-                matrix4::transpose(boneMap[boneName].offsetMatrix);
+            boneMap[boneName].offsetMatrix = glm::transpose(
+                boneMap[boneName].offsetMatrix); // Assimp is column major
           }
 
           uint32_t index = boneNameToIndex[boneName];
@@ -439,12 +434,10 @@ void Model::load_bone_uniform(float start) {
   auto &boneUniformData = modelData->boneUniformData;
   boneUniformData.clear();
 
-  std::vector<matrix4> boneMatrices(matrices.size());
+  std::vector<glm::mat4> boneMatrices(matrices.size());
   int index = 0;
   for (auto &m : matrices) {
-    matrix4 mat;
-    memcpy(&mat, &m, sizeof(matrix4));
-    boneMatrices[index] = mat;
+    boneMatrices[index] = m;
     index++;
   }
   boneUniformData.add_matrices(boneMatrices);
@@ -453,7 +446,7 @@ void SkeletalAnimation::Load(const aiScene *scn) {
   scene = scn;
   root = scene->mRootNode;
   globalInverseTransform = convert(root->mTransformation);
-  globalInverseTransform.invert();
+  globalInverseTransform = glm::inverse(globalInverseTransform);
 
   if (scene->mNumAnimations > 0) {
     aiAnimation *anim = scene->mAnimations[0];
@@ -470,28 +463,26 @@ void SkeletalAnimation::Update(float timeInSeconds) {
   float timeInTicks = timeInSeconds * ticksPerSecond;
   float animationTime = Math::fmod(timeInTicks, anim->mDuration);
 
-  ReadNodeHierarchy(animationTime, root, matrix4::identity);
-  for (auto &[name, info] : boneMap) {
-    info.finalTransform = info.offsetMatrix * info.finalTransform;
-  }
+  ReadNodeHierarchy(animationTime, root, glm::mat4(1.0f));
 }
 void SkeletalAnimation::ReadNodeHierarchy(float animTime, aiNode *node,
-                                          const matrix4 &parentTransform) {
+                                          const glm::mat4 &parentTransform) {
   std::string nodeName = node->mName.C_Str();
 
-  matrix4 nodeTransform = convert(node->mTransformation);
+  auto nodeTransform = convert(node->mTransformation);
   if (nodeAnimMap.contains(nodeName)) {
     nodeTransform = InterpolateTransform(nodeAnimMap[nodeName], animTime);
   }
 
-  auto globalTransform = nodeTransform * parentTransform;
+  auto globalTransform = parentTransform * nodeTransform;
 
   assert(boneMap.contains(nodeName) ||
          "Bone not found in boneMap. This may be due to a missing bone in the "
          "animation or a mismatch between the model and animation data.");
   auto &inverse = globalInverseTransform;
   auto &transform = globalTransform;
-  boneMap[nodeName].finalTransform = transform * inverse;
+  boneMap[nodeName].finalTransform =
+      inverse * transform * boneMap[nodeName].offsetMatrix;
 
   for (uint32_t i = 0; i < node->mNumChildren; ++i) {
     ReadNodeHierarchy(animTime, node->mChildren[i], globalTransform);
@@ -516,64 +507,64 @@ uint32_t GetIndex(float time, const aiQuatKey *keys, uint32_t count) {
   return count - 1;
 }
 
-Vector3 InterpolateVector3(const aiVectorKey *keys, uint32_t count, float time,
-                           bool isScaling = false) {
+glm::vec3 InterpolateVector3(const aiVectorKey *keys, uint32_t count,
+                             float time, bool isScaling = false) {
   if (count == 0) {
     if (isScaling) {
-      return Vector3(1, 1, 1);
+      return glm::vec3(1, 1, 1);
     }
-    return Vector3(0, 0, 0);
+    return glm::vec3(0, 0, 0);
   }
   if (count == 1) {
-    return Vector3(keys[0].mValue.x, keys[0].mValue.y, keys[0].mValue.z);
+    return glm::vec3(keys[0].mValue.x, keys[0].mValue.y, keys[0].mValue.z);
   }
 
   uint32_t i = GetIndex(time, keys, count);
   float t = float((time - keys[i].mTime) / (keys[i + 1].mTime - keys[i].mTime));
-  auto k0 = Vector3(keys[i].mValue.x, keys[i].mValue.y, keys[i].mValue.z);
-  auto k1 =
-      Vector3(keys[i + 1].mValue.x, keys[i + 1].mValue.y, keys[i + 1].mValue.z);
-  return Vector3::lerp(k0, k1, t);
+  auto k0 = glm::vec3(keys[i].mValue.x, keys[i].mValue.y, keys[i].mValue.z);
+  auto k1 = glm::vec3(keys[i + 1].mValue.x, keys[i + 1].mValue.y,
+                      keys[i + 1].mValue.z);
+  return glm::mix(k0, k1, t);
 };
-Quaternion InterpolateQuat(const aiQuatKey *keys, uint32_t count, float time) {
+glm::quat InterpolateQuat(const aiQuatKey *keys, uint32_t count, float time) {
   if (count == 0) {
-    return Quaternion(0, 0, 0, 1);
+    return glm::quat(1, 0, 0, 0);
   }
   if (count == 1) {
-    return Quaternion(keys[0].mValue.x, keys[0].mValue.y, keys[0].mValue.z,
-                      keys[0].mValue.w);
+    return glm::quat(keys[0].mValue.w, keys[0].mValue.x, keys[0].mValue.y,
+                     keys[0].mValue.z);
   }
 
   uint32_t i = GetIndex(time, keys, count);
   float t = float((time - keys[i].mTime) / (keys[i + 1].mTime - keys[i].mTime));
-  Quaternion k0(keys[i].mValue.x, keys[i].mValue.y, keys[i].mValue.z,
-                keys[i].mValue.w);
-  Quaternion k1(keys[i + 1].mValue.x, keys[i + 1].mValue.y,
-                keys[i + 1].mValue.z, keys[i + 1].mValue.w);
-  auto q = Quaternion::slerp(k0, k1, t);
-  q.normalize();
+  glm::quat k0(keys[i].mValue.w, keys[i].mValue.x, keys[i].mValue.y,
+               keys[i].mValue.z);
+  glm::quat k1(keys[i + 1].mValue.w, keys[i + 1].mValue.x, keys[i + 1].mValue.y,
+               keys[i + 1].mValue.z);
+  auto q = glm::slerp(k0, k1, t);
+  q = glm::normalize(q);
   return q;
 };
 
-matrix4 SkeletalAnimation::InterpolateTransform(aiNodeAnim *channel,
-                                                float time) {
+glm::mat4 SkeletalAnimation::InterpolateTransform(aiNodeAnim *channel,
+                                                  float time) {
 
-  Vector3 scaling = InterpolateVector3(channel->mScalingKeys,
-                                       channel->mNumScalingKeys, time, true);
-  Quaternion rotation =
+  auto scaling = InterpolateVector3(channel->mScalingKeys,
+                                    channel->mNumScalingKeys, time, true);
+  auto rotation =
       InterpolateQuat(channel->mRotationKeys, channel->mNumRotationKeys, time);
-  Vector3 translation = InterpolateVector3(channel->mPositionKeys,
-                                           channel->mNumPositionKeys, time);
+  auto translation = InterpolateVector3(channel->mPositionKeys,
+                                        channel->mNumPositionKeys, time);
 
-  auto s = matrix4::create_scale(scaling);
-  auto r = matrix4::create_from_quaternion(rotation);
-  auto t = matrix4::create_translation(translation);
+  auto t = glm::translate(glm::mat4(1.0f), translation);
+  auto r = glm::toMat4(rotation);
+  auto s = glm::scale(glm::mat4(1.0f), scaling);
 
-  auto m = s * r * t;
+  auto m = t * r * s;
   return m;
 }
-std::vector<matrix4> SkeletalAnimation::GetFinalBoneMatrices() const {
-  std::vector<matrix4> result;
+std::vector<glm::mat4> SkeletalAnimation::GetFinalBoneMatrices() const {
+  std::vector<glm::mat4> result;
   for (const auto &[name, info] : boneMap) {
     result.push_back(info.finalTransform);
   }

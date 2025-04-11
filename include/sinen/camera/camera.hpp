@@ -3,6 +3,8 @@
 #include "../math/matrix4.hpp"
 #include "../math/vector3.hpp"
 
+#include <glm/mat4x4.hpp>
+
 namespace sinen {
 /**
  * @brief Camera class
@@ -60,13 +62,13 @@ public:
    *
    * @return matrix4&
    */
-  matrix4 &view() { return m_view; }
+  glm::mat4 &view() { return m_view; }
   /**
    * @brief Get the projection matrix of camera
    *
    * @return matrix4&
    */
-  matrix4 &projection() { return m_projection; }
+  glm::mat4 &projection() { return m_projection; }
 
 private:
   // Position of camera
@@ -76,9 +78,9 @@ private:
   // Up vector
   Vector3 m_up;
   // view
-  matrix4 m_view;
+  glm::mat4 m_view;
   // projection
-  matrix4 m_projection;
+  glm::mat4 m_projection;
 };
 } // namespace sinen
 #endif

@@ -48,16 +48,15 @@ void Draw2D::draw() {
   auto s = glm::scale(glm::mat4(1.0f),
                       glm::vec3(scale.x * 0.5f, scale.y * 0.5f, 1.0f));
 
-  auto world = t * r * s;
-  memcpy(obj->param.world.get(), &world[0][0], sizeof(float) * 16);
+  obj->param.world = t * r * s;
   obj->binding_texture = this->texture_handle;
   auto viewproj = glm::mat4(1.0f);
 
   auto screen_size = Scene::size();
   viewproj[0][0] = 2.f / Window::size().x;
   viewproj[1][1] = 2.f / Window::size().y;
-  memcpy(obj->param.proj.get(), &viewproj[0][0], sizeof(float) * 16);
-  obj->param.view = matrix4::identity;
+  obj->param.proj = viewproj;
+  obj->param.view = glm::mat4(1.f);
   if (GetModelData(this->model.data)->vertexBuffer == nullptr) {
     obj->model = RendererImpl::sprite;
   } else
@@ -106,7 +105,7 @@ void Draw3D::draw() {
   auto s = glm::scale(glm::mat4(1.0f), glm::vec3(scale.x, scale.y, scale.z));
 
   auto world = t * r * s;
-  memcpy(obj->param.world.get(), &world[0][0], sizeof(float) * 16);
+  obj->param.world = world;
   obj->param.proj = Scene::main_camera().projection();
   obj->param.view = Scene::main_camera().view();
   if (GetModelData(this->model.data)->vertexBuffer == nullptr) {
@@ -136,12 +135,8 @@ void Draw3D::draw() {
   }
   Renderer::draw3d(obj);
 }
-void Draw2D::user_data_at(int index, float value) {
-  obj->param.user.mat.m16[index] = value;
-}
-void Draw3D::user_data_at(int index, float value) {
-  obj->param.user.mat.m16[index] = value;
-}
+void Draw2D::user_data_at(int index, float value) {}
+void Draw3D::user_data_at(int index, float value) {}
 void Draw3D::add(const Vector3 &position, const Vector3 &rotation,
                  const Vector3 &scale) {
   this->worlds.push_back({position, rotation, scale});

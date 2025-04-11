@@ -315,14 +315,14 @@ void editor::update(float delta_time) {
     if (Mouse::is_down(Mouse::code::RIGHT)) {
       auto pos = prev - Mouse::get_position();
       if (Keyboard::is_down(Keyboard::code::LSHIFT)) {
-        Scene::main_camera().position() +=
-            Scene::main_camera().view().get_x_axis() * pos.x * delta_time;
-        Scene::main_camera().target() +=
-            Scene::main_camera().view().get_x_axis() * pos.x * delta_time;
-        Scene::main_camera().position() -=
-            Scene::main_camera().view().get_z_axis() * pos.y * delta_time;
-        Scene::main_camera().target() -=
-            Scene::main_camera().view().get_z_axis() * pos.y * delta_time;
+        // Scene::main_camera().position() +=
+        //     Scene::main_camera().view().get_x_axis() * pos.x * delta_time;
+        // Scene::main_camera().target() +=
+        //     Scene::main_camera().view().get_x_axis() * pos.x * delta_time;
+        // Scene::main_camera().position() -=
+        //     Scene::main_camera().view().get_z_axis() * pos.y * delta_time;
+        // Scene::main_camera().target() -=
+        //     Scene::main_camera().view().get_z_axis() * pos.y * delta_time;
 
       } else {
         Scene::main_camera().target().x += pos.x * delta_time;

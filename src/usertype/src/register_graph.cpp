@@ -1,3 +1,4 @@
+#include "glm/ext/vector_int2.hpp"
 #include "register_script.hpp"
 #include <graph/bfs_grid.hpp>
 #include <graph/grid.hpp>
@@ -29,12 +30,13 @@ void register_graph(sol::state &lua) {
     auto v = lua.new_usertype<BFSGrid>("", sol::no_construction());
     v["width"] = &BFSGrid::width;
     v["height"] = &BFSGrid::height;
-    v["find_path"] = [](BFSGrid &g, const Point2i &start, const Point2i &end) {
+    v["find_path"] = [](BFSGrid &g, const glm::ivec2 &start,
+                        const glm::ivec2 &end) {
       return g.find_path({start.x - 1, start.y - 1}, {end.x - 1, end.y - 1});
     };
     v["trace"] = [](BFSGrid &g) {
       auto t = g.trace();
-      return Point2i{t.x + 1, t.y + 1};
+      return glm::ivec2{t.x + 1, t.y + 1};
     };
     v["traceable"] = &BFSGrid::traceable;
     v["reset"] = &BFSGrid::reset;

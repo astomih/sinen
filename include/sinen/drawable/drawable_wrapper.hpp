@@ -1,7 +1,5 @@
 #ifndef SINEN_DRAW_OBJECT_WRAPPER_HPP
 #define SINEN_DRAW_OBJECT_WRAPPER_HPP
-#include "../math/vector2.hpp"
-#include "../math/vector3.hpp"
 #include "../texture/texture.hpp"
 #include "drawable.hpp"
 #include "model/model.hpp"
@@ -36,20 +34,20 @@ public:
    * @param value Value of user data
    */
   void user_data_at(int index, float value);
-  void add(const Vector2 &position, const float &rotation,
-           const Vector2 &scale);
-  void at(const int &index, const Vector2 &position, const float &rotation,
-          const Vector2 &scale);
+  void add(const glm::vec2 &position, const float &rotation,
+           const glm::vec2 &scale);
+  void at(const int &index, const glm::vec2 &position, const float &rotation,
+          const glm::vec2 &scale);
   void clear();
   struct world {
-    Vector2 position;
+    glm::vec2 position;
     float rotation;
-    Vector2 scale;
+    glm::vec2 scale;
   };
   std::vector<world> worlds;
-  Vector2 position;
+  glm::vec2 position;
   float rotation;
-  Vector2 scale;
+  glm::vec2 scale;
   Texture texture_handle;
   std::string vertex_name = "SPRITE";
   Model model;
@@ -84,22 +82,22 @@ public:
    * @param value Value of user data
    */
   void user_data_at(int index, float value);
-  void add(const Vector3 &position, const Vector3 &rotation,
-           const Vector3 &scale);
-  void at(const int &index, const Vector3 &position, const Vector3 &rotation,
-          const Vector3 &scale);
+  void add(const glm::vec3 &position, const glm::vec3 &rotation,
+           const glm::vec3 &scale);
+  void at(const int &index, const glm::vec3 &position,
+          const glm::vec3 &rotation, const glm::vec3 &scale);
   void clear();
-  Vector3 position;
-  Vector3 rotation;
-  Vector3 scale;
+  glm::vec3 position;
+  glm::vec3 rotation;
+  glm::vec3 scale;
   Texture texture_handle;
   bool is_draw_depth = true;
   Model model;
   std::shared_ptr<Drawable> obj;
   struct world {
-    Vector3 position;
-    Vector3 rotation;
-    Vector3 scale;
+    glm::vec3 position;
+    glm::vec3 rotation;
+    glm::vec3 scale;
   };
   std::vector<world> worlds;
 };

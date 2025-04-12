@@ -6,8 +6,6 @@
 #include <vector>
 
 #include "../physics/collision.hpp"
-#include "math/matrix4.hpp"
-#include "physics/primitive3.hpp"
 #include "render/uniform_data.hpp"
 #include "vertex_array.hpp"
 
@@ -45,7 +43,7 @@ public:
 private:
   void load_bone_uniform(float time);
   float time = 0.0f;
-  std::vector<matrix4> inverse_bind_matrices;
+  std::vector<glm::mat4> inverse_bind_matrices;
 };
 } // namespace sinen
 #endif // !SINEN_MODEL_HPP

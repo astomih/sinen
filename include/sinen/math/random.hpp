@@ -1,8 +1,7 @@
 #ifndef SINEN_RANDOM_HPP
 #define SINEN_RANDOM_HPP
-#include "math.hpp"
-#include "vector2.hpp"
-#include "vector3.hpp"
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 
 namespace sinen {
 class Random {
@@ -21,8 +20,8 @@ public:
   static int get_int_range(int min, int max);
 
   // Get a random vector given the min/max bounds
-  static Vector2 get_vector(const Vector2 &min, const Vector2 &max);
-  static Vector3 get_vector(const Vector3 &min, const Vector3 &max);
+  static glm::vec2 get_vector(const glm::vec2 &min, const glm::vec2 &max);
+  static glm::vec3 get_vector(const glm::vec3 &min, const glm::vec3 &max);
 };
 } // namespace sinen
 #endif // !SINEN_RANDOM_HPP

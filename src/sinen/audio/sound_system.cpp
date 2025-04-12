@@ -2,9 +2,10 @@
 #include <vector>
 
 // internal
+#include "glm/trigonometric.hpp"
 #include "sound_system.hpp"
 #include <io/data_stream.hpp>
-#include <math/quaternion.hpp>
+#include <math/math.hpp>
 
 // external
 #define AL_LIBTYPE_STATIC
@@ -14,7 +15,7 @@
 #include <SDL3_mixer/SDL_mixer.h>
 
 namespace sinen {
-Vector3 calculate(const Quaternion &r);
+glm::vec3 calculate(const glm::quat &r);
 std::unordered_map<std::string, uint32_t> sound_system::buffers;
 void *sound_system::device = nullptr;
 void *sound_system::context = nullptr;
@@ -82,11 +83,12 @@ void sound_system::shutdown() {
 
 void sound_system::update(float deltaTime) {}
 
-void sound_system::set_listener(const Vector3 &pos,
-                                const Quaternion &direction) {
+void sound_system::set_listener(const glm::vec3 &pos,
+                                const glm::quat &direction) {
   alListener3f(AL_POSITION, pos.x, pos.y, pos.z);
-  auto at = Vector3::transform(Vector3::neg_unit_z, direction);
-  auto up = Vector3::transform(Vector3::unit_y, direction);
+
+  auto at = glm::vec3(0, 0, -1) * direction;
+  auto up = glm::vec3(0, 1, 0) * direction;
   float ori[6] = {at.x, at.y, at.z, up.x, up.y, up.z};
   alListenerfv(AL_ORIENTATION, ori);
 }
@@ -134,7 +136,7 @@ uint32_t sound_system::new_source(std::string_view name) {
 void sound_system::delete_source(uint32_t sourceID) {
   alDeleteBuffers(1, &sourceID);
 }
-Vector3 calculate(const Quaternion &r) {
+glm::vec3 calculate(const glm::quat &r) {
   float x = r.x;
   float y = r.y;
   float z = r.z;
@@ -188,7 +190,6 @@ Vector3 calculate(const Quaternion &r) {
     tz = Math::atan2(m01, m11);
   }
 
-  return Vector3(Math::to_degrees(tx), Math::to_degrees(ty),
-                 Math::to_degrees(tz));
+  return glm::vec3(glm::degrees(tx), glm::degrees(ty), glm::degrees(tz));
 }
 } // namespace sinen

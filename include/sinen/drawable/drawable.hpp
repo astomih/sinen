@@ -1,5 +1,7 @@
 #ifndef SINEN_DRAWABLE_HPP
 #define SINEN_DRAWABLE_HPP
+#include <glm/mat4x4.hpp>
+
 #include "../model/model.hpp"
 #include "../shader/shader.hpp"
 #include "../texture/texture.hpp"
@@ -26,14 +28,9 @@ struct Drawable {
    *
    */
   struct parameter {
-    parameter() {
-      float data[16] = {};
-      user = matrix4(data);
-    }
-    matrix4 world;
-    matrix4 view;
-    matrix4 proj;
-    matrix4 user;
+    glm::mat4 world;
+    glm::mat4 view;
+    glm::mat4 proj;
   };
   // parameter
   parameter param;
@@ -55,7 +52,7 @@ struct Drawable {
    * @param mat input world matrix
    * @param data output instancing data
    */
-  void world_to_instance_data(const matrix4 &mat, InstanceData &data);
+  void world_to_instance_data(const glm::mat4 &mat, InstanceData &data);
   /**
    * @brief instance size
    *

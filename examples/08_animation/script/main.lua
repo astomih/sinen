@@ -1,7 +1,7 @@
 local texture = Texture()
 texture:fill_color(Color(1, 1, 1, 1))
 local model = Model()
-model:load("SimpleSkin.gltf")
+model:load("BrainStem.glb")
 local draw3d = Draw3D(texture)
 draw3d.position = Vector3(0, 0, 0)
 draw3d.model = model
@@ -18,7 +18,7 @@ pipeline:set_animation(true)
 pipeline:build()
 
 
-local pos = Vector3(0, 1, 5)
+local pos = Vector3(0, -5, 1)
 local speed = 0.01
 
 model:play(0)
@@ -49,7 +49,7 @@ function Update()
     pos.y = pos.y - speed
   end
 
-  scene.main_camera():lookat(pos, Vector3(0, 1, 0), Vector3(0, 1, 0))
+  scene.main_camera():lookat(pos, Vector3(0, 0, 1), Vector3(0, 0, 1))
 end
 
 function Draw()

@@ -19,7 +19,7 @@ public:
 struct mouse_state_impl {
 public:
   // Motion of scroll wheel
-  Vector2 mScrollWheel;
+  glm::vec2 mScrollWheel;
   // Store button data
   uint32_t mCurrButtons;
   uint32_t mPrevButtons;
@@ -33,8 +33,8 @@ public:
   uint8_t
       mPrevButtons[static_cast<int>(GamePad::code::NUM_GAMECONTROLLER_BUTTON)];
   // Left/right sticks
-  Vector2 mLeftStick;
-  Vector2 mRightStick;
+  glm::vec2 mLeftStick;
+  glm::vec2 mRightStick;
   // Left/right trigger
   float mLeftTrigger;
   float mRightTrigger;
@@ -61,7 +61,7 @@ public:
 
 private:
   static float filter1d(int input);
-  static Vector2 filter2d(int inputX, int inputY);
+  static glm::vec2 filter2d(int inputX, int inputY);
   static joystick mController;
 };
 } // namespace sinen

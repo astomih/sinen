@@ -3,7 +3,6 @@
 #include <camera/camera.hpp>
 #include <font/font.hpp>
 #include <io/data_stream.hpp>
-#include <math/point2.hpp>
 #include <math/random.hpp>
 #include <model/model.hpp>
 #include <render/renderer.hpp>
@@ -11,6 +10,8 @@
 #include <sol/sol.hpp>
 #include <time/timer.hpp>
 
+#include "glm/ext/vector_float2.hpp"
+#include "glm/ext/vector_int2.hpp"
 #include "register_script.hpp"
 
 namespace sinen {
@@ -23,15 +24,13 @@ void register_generator(sol::state &v) {
   v["Texture"] = []() -> Texture { return Texture(); };
   v["RenderTexture"] = []() -> RenderTexture { return RenderTexture(); };
   v["Font"] = []() -> Font { return Font(); };
-  v["Vector3"] = [](float x, float y, float z) -> Vector3 {
-    return Vector3(x, y, z);
+  v["Vector3"] = [](float x, float y, float z) -> glm::vec3 {
+    return glm::vec3(x, y, z);
   };
-  v["Vector2"] = [](float x, float y) -> Vector2 { return Vector2(x, y); };
-  v["Point2i"] = [](int x, int y) -> Point2i { return Point2i(x, y); };
-  v["Point2f"] = [](float x, float y) -> Point2f { return Point2f(x, y); };
-  v["Quaternion"] = [](sol::this_state s) -> Quaternion {
-    return Quaternion();
-  };
+  v["Vector2"] = [](float x, float y) -> glm::vec2 { return glm::vec2(x, y); };
+  v["Point2i"] = [](int x, int y) -> glm::ivec2 { return glm::ivec2(x, y); };
+  v["Point2f"] = [](float x, float y) -> glm::vec2 { return glm::vec2(x, y); };
+  v["Quaternion"] = [](sol::this_state s) -> glm::quat { return glm::quat(); };
   v["Color"] = [](float r, float g, float b, float a) -> Color {
     return Color(r, g, b, a);
   };

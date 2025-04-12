@@ -25,13 +25,13 @@ int Random::get_int_range(int min, int max) {
   return a;
 }
 
-Vector2 Random::get_vector(const Vector2 &min, const Vector2 &max) {
-  Vector2 r = Vector2(get_float(), get_float());
+glm::vec2 Random::get_vector(const glm::vec2 &min, const glm::vec2 &max) {
+  glm::vec2 r = glm::vec2(get_float(), get_float());
   return min + (max - min) * r;
 }
 
-Vector3 Random::get_vector(const Vector3 &min, const Vector3 &max) {
-  Vector3 r = Vector3(get_float(), get_float(), get_float());
+glm::vec3 Random::get_vector(const glm::vec3 &min, const glm::vec3 &max) {
+  glm::vec3 r = glm::vec3(get_float(), get_float(), get_float());
   return min + (max - min) * r;
 }
 

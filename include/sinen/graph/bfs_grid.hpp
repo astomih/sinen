@@ -6,8 +6,11 @@
 #include <stack>
 #include <vector>
 
+// external library
+#include <glm/vec2.hpp>
+
 // internal library
-#include "../math/point2.hpp"
+#include "glm/ext/vector_int2.hpp"
 #include "grid.hpp"
 
 namespace sinen {
@@ -37,13 +40,13 @@ public:
    * @return true
    * @return false
    */
-  bool find_path(const Point2i &start, const Point2i &end);
+  bool find_path(const glm::ivec2 &start, const glm::ivec2 &end);
   /**
    * @brief Trace the shortest path
    *
    * @return point2i Next point
    */
-  Point2i trace();
+  glm::ivec2 trace();
   /**
    * @brief Check if the path is traceable
    *
@@ -75,13 +78,13 @@ private:
    *
    * @param end Trace end point
    */
-  void backtrace(const Point2i &end);
+  void backtrace(const glm::ivec2 &end);
   graph m_field;
   graph m_dist;
   graph m_prev_x;
   graph m_prev_y;
-  std::stack<Point2i> shortest;
-  std::queue<Point2i> queue;
+  std::stack<glm::ivec2> shortest;
+  std::queue<glm::ivec2> queue;
 };
 } // namespace sinen
 #endif // !SINEN_BFS_HPP

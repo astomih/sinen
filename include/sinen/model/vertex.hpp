@@ -3,9 +3,9 @@
 #include <string_view>
 
 #include "../color/color.hpp"
-#include "../math/vector2.hpp"
-#include "../math/vector3.hpp"
-#include "../math/vector4.hpp"
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
 namespace sinen {
 /**
@@ -21,18 +21,18 @@ struct VertexDefaultShapes {
  *
  */
 struct Vertex {
-  Vector3 position;
-  Vector3 normal;
-  Vector2 uv;
+  glm::vec3 position;
+  glm::vec3 normal;
+  glm::vec2 uv;
   Color rgba = Color(Color(1, 1, 1, 1));
 };
 struct AnimationVertex {
-  Vector3 position;
-  Vector3 normal;
-  Vector2 uv;
+  glm::vec3 position;
+  glm::vec3 normal;
+  glm::vec2 uv;
   Color rgba = Color(Color(1, 1, 1, 1));
-  Vector4 boneIDs;
-  Vector4 boneWeights;
+  glm::vec4 boneIDs;
+  glm::vec4 boneWeights;
 };
 } // namespace sinen
 #endif // !SINEN_VERTEX_HPP

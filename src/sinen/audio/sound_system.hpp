@@ -8,9 +8,6 @@
 
 // internal
 #include <audio/sound.hpp>
-#include <math/math.hpp>
-#include <math/quaternion.hpp>
-#include <math/vector3.hpp>
 
 namespace sinen {
 class sound_system {
@@ -23,7 +20,7 @@ public:
   static uint32_t new_source(std::string_view name);
   static void delete_source(uint32_t sourceID);
   // For positional audio
-  static void set_listener(const Vector3 &pos, const Quaternion &direction);
+  static void set_listener(const glm::vec3 &pos, const glm::quat &direction);
   static std::unordered_map<std::string, uint32_t> &get_buffers() {
     return buffers;
   }

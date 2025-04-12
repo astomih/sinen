@@ -1,9 +1,7 @@
 #include "px_renderer.hpp"
 
 #include "../window/window_system.hpp"
-#include "SDL3/SDL_video.h"
 #include "drawable/instance_data.hpp"
-#include "math/matrix4.hpp"
 #include "paranoixa/paranoixa.hpp"
 #include "render/renderer.hpp"
 #include "render_system.hpp"

@@ -2,21 +2,21 @@
 namespace sinen {
 VertexArray create_sprite_vertices() {
   VertexArray v_array;
-  v_array.vertices.push_back({Vector3(-1.000000, -1.000000, 0.000000),
-                              Vector3(0.000000, 0.000000, 1.000000),
-                              Vector2(0.000000, 1.000000),
+  v_array.vertices.push_back({glm::vec3(-1.000000, -1.000000, 0.000000),
+                              glm::vec3(0.000000, 0.000000, 1.000000),
+                              glm::vec2(0.000000, 1.000000),
                               Color{1.000000, 1.000000, 1.000000, 1.000000}});
-  v_array.vertices.push_back({Vector3(1.000000, -1.000000, 0.000000),
-                              Vector3(0.000000, 0.000000, 1.000000),
-                              Vector2(1.000000, 1.000000),
+  v_array.vertices.push_back({glm::vec3(1.000000, -1.000000, 0.000000),
+                              glm::vec3(0.000000, 0.000000, 1.000000),
+                              glm::vec2(1.000000, 1.000000),
                               Color{1.000000, 1.000000, 1.000000, 1.000000}});
-  v_array.vertices.push_back({Vector3(1.000000, 1.000000, 0.000000),
-                              Vector3(0.000000, 0.000000, 1.000000),
-                              Vector2(1.000000, 0.000000),
+  v_array.vertices.push_back({glm::vec3(1.000000, 1.000000, 0.000000),
+                              glm::vec3(0.000000, 0.000000, 1.000000),
+                              glm::vec2(1.000000, 0.000000),
                               Color{1.000000, 1.000000, 1.000000, 1.000000}});
-  v_array.vertices.push_back({Vector3(-1.000000, 1.000000, 0.000000),
-                              Vector3(0.000000, 0.000000, 1.000000),
-                              Vector2(0.000000, 0.000000),
+  v_array.vertices.push_back({glm::vec3(-1.000000, 1.000000, 0.000000),
+                              glm::vec3(0.000000, 0.000000, 1.000000),
+                              glm::vec2(0.000000, 0.000000),
                               Color{1.000000, 1.000000, 1.000000, 1.000000}});
   uint32_t indices[] = {
       0, 1, 2, 0, 2, 3,

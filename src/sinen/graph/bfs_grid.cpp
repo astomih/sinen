@@ -1,4 +1,5 @@
 // std
+#include "glm/ext/vector_int2.hpp"
 #include <iostream>
 
 // internal
@@ -29,7 +30,7 @@ void BFSGrid::reset() {
     queue.pop();
   }
 }
-bool BFSGrid::find_path(const Point2i &start, const Point2i &end) {
+bool BFSGrid::find_path(const glm::ivec2 &start, const glm::ivec2 &end) {
   constexpr int dx[4] = {0, 1, 0, -1};
   constexpr int dy[4] = {1, 0, -1, 0};
   // start or end is not in field
@@ -45,7 +46,7 @@ bool BFSGrid::find_path(const Point2i &start, const Point2i &end) {
 
   // Start finding path
   while (!queue.empty()) {
-    Point2i current_pos = queue.front();
+    glm::ivec2 current_pos = queue.front();
     int x = current_pos.x;
     int y = current_pos.y;
     queue.pop();
@@ -80,8 +81,8 @@ bool BFSGrid::find_path(const Point2i &start, const Point2i &end) {
   // If there is no path, return false
   return false;
 }
-void BFSGrid::backtrace(const Point2i &end) {
-  Point2i p = end;
+void BFSGrid::backtrace(const glm::ivec2 &end) {
+  auto p = end;
   while (p.x != -1 && p.y != -1) {
     // Add passed node to shortest_path
     this->shortest.push(p);
@@ -91,8 +92,8 @@ void BFSGrid::backtrace(const Point2i &end) {
     p.x = px, p.y = py;
   }
 }
-Point2i BFSGrid::trace() {
-  Point2i next = shortest.top();
+glm::ivec2 BFSGrid::trace() {
+  glm::ivec2 next = shortest.top();
   shortest.pop();
   return next;
 }

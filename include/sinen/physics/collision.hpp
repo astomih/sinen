@@ -1,22 +1,50 @@
 #ifndef SINEN_COLLISION_HPP
 #define SINEN_COLLISION_HPP
-#include "../math/vector3.hpp"
-#include "primitive3.hpp"
+#include <glm/vec3.hpp>
 
 namespace sinen {
+struct AABB {
+  glm::vec3 min;
+  glm::vec3 max;
+  AABB() = default;
+  ~AABB() = default;
+  /**
+   * @brief Construct a new aabb object
+   *
+   * @param min  min point
+   * @param max  max point
+   */
+  AABB(const glm::vec3 &min, const glm::vec3 max) : min(min), max(max) {}
+  void update_world(const glm::vec3 &p, const glm::vec3 &scale,
+                    const AABB &local);
+};
+/**
+ * @brief OBBox(Oriented Bounding Box) class
+ *
+ */
+struct OBB {
+  OBB() = default;
+  ~OBB() = default;
+  // Position
+  glm::vec3 p;
+  // Direct vectors
+  glm::vec3 v[3];
+  // Axis lengths
+  float a[3];
+};
 class Collision {
 public:
   static bool aabb_aabb(const AABB &a, const AABB &b);
   static bool obb_obb(const OBB &obb1, const OBB &obb2);
 
 private:
-  static float segment_length_on_separate_axis(const Vector3 &Sep,
-                                               const Vector3 &e1,
-                                               const Vector3 &e2,
-                                               const Vector3 &e3);
-  static float segment_length_on_separate_axis(const Vector3 &Sep,
-                                               const Vector3 &e1,
-                                               const Vector3 &e2);
+  static float segment_length_on_separate_axis(const glm::vec3 &Sep,
+                                               const glm::vec3 &e1,
+                                               const glm::vec3 &e2,
+                                               const glm::vec3 &e3);
+  static float segment_length_on_separate_axis(const glm::vec3 &Sep,
+                                               const glm::vec3 &e1,
+                                               const glm::vec3 &e2);
 };
 } // namespace sinen
 #endif // !SINEN_COLLISION_HPP

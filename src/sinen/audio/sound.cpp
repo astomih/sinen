@@ -1,4 +1,6 @@
 // internal
+#include "glm/ext/quaternion_trigonometric.hpp"
+#include "glm/ext/vector_float3.hpp"
 #include "sound_system.hpp"
 #include <audio/music.hpp>
 #include <audio/sound.hpp>
@@ -27,10 +29,11 @@ void Sound::new_source() {
   param.source_id = sourceID;
   param.buffer_id = buf;
 }
-void Sound::set_listener(Vector3 pos, Vector3 rotation) {
-  Quaternion q(Vector3::neg_unit_z, rotation.z);
-  q = Quaternion::concatenate(q, Quaternion(Vector3::unit_y, rotation.y));
-  q = Quaternion::concatenate(q, Quaternion(Vector3::unit_x, rotation.x));
+void Sound::set_listener(glm::vec3 pos, glm::vec3 rotation) {
+  glm::quat q = glm::angleAxis(rotation.z, glm::vec3(0, 0, -1));
+  q = q * glm::angleAxis(rotation.y, glm::vec3(0, 1, 0));
+  q = q * glm::angleAxis(rotation.x, glm::vec3(1, 0, 0));
+
   sound_system::set_listener(pos, q);
 }
 void Sound::delete_source() { sound_system::delete_source(param.source_id); }
@@ -64,7 +67,7 @@ void Sound::set_pitch(float value) {
   alSourcef(param.source_id, AL_PITCH, value);
 }
 
-void Sound::set_position(Vector3 pos) {
+void Sound::set_position(glm::vec3 pos) {
   this->pos = pos;
   alSource3f(param.source_id, AL_POSITION, pos.x, pos.y, pos.z);
 }
@@ -75,7 +78,7 @@ float Sound::get_volume() { return volume; }
 
 float Sound::get_pitch() { return pitch; }
 
-const Vector3 &Sound::get_position() { return pos; }
+const glm::vec3 &Sound::get_position() { return pos; }
 
 std::string Sound::get_name() { return mName; }
 

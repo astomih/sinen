@@ -1,86 +1,113 @@
 // internal
 #include "../model/model_data.hpp"
 #include "../render/render_system.hpp"
+#include "glm/ext/vector_float2.hpp"
+#include "glm/ext/vector_float3.hpp"
+#include <SDL3/SDL_events.h>
 #include <camera/camera.hpp>
+#include <cstring>
 #include <drawable/drawable_wrapper.hpp>
 #include <render/renderer.hpp>
 #include <scene/scene.hpp>
 #include <window/window.hpp>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include "glm/ext/matrix_transform.hpp"
+#include "glm/gtc/quaternion.hpp"
+#include "glm/gtx/quaternion.hpp"
+#include <glm/mat4x4.hpp>
+
 namespace sinen {
 Draw2D::Draw2D()
-    : position(Vector2(0.f, 0.f)), rotation(0.0f), scale(Vector2(1.f, 1.f)) {
+    : position(glm::vec2(0.f, 0.f)), rotation(0.0f),
+      scale(glm::vec2(1.f, 1.f)) {
   obj = std::make_shared<Drawable>();
 }
 Draw2D::Draw2D(Texture texture_handle)
-    : position(Vector2(0.f, 0.f)), rotation(0.0f), scale(Vector2(1.f, 1.f)),
+    : position(glm::vec2(0.f, 0.f)), rotation(0.0f), scale(glm::vec2(1.f, 1.f)),
       texture_handle(texture_handle) {
   obj = std::make_shared<Drawable>();
 }
 Draw3D::Draw3D()
-    : position(Vector3(0.f, 0.f, 0.f)), rotation(Vector3(0.f, 0.f, 0.f)),
-      scale(Vector3(1.f, 1.f, 1.f)) {
+    : position(glm::vec3(0.f, 0.f, 0.f)), rotation(glm::vec3(0.f, 0.f, 0.f)),
+      scale(glm::vec3(1.f, 1.f, 1.f)) {
   obj = std::make_shared<Drawable>();
 }
 Draw3D::Draw3D(Texture texture_handle)
-    : position(Vector3(0.f, 0.f, 0.f)), rotation(Vector3(0.f, 0.f, 0.f)),
-      scale(Vector3(1.f, 1.f, 1.f)), texture_handle(texture_handle) {
+    : position(glm::vec3(0.f, 0.f, 0.f)), rotation(glm::vec3(0.f, 0.f, 0.f)),
+      scale(glm::vec3(1.f, 1.f, 1.f)), texture_handle(texture_handle) {
   obj = std::make_shared<Drawable>();
 }
 void Draw2D::draw() {
-  matrix4 t = matrix4::identity;
-  auto ratio = Vector2(Window::size().x / Scene::size().x,
-                       Window::size().y / Scene::size().y);
-  t.mat[3][0] = position.x * ratio.x;
-  t.mat[3][1] = position.y * ratio.y;
-  Quaternion q(Vector3::neg_unit_z, rotation);
-  matrix4 r = matrix4::create_from_quaternion(q);
-  matrix4 s = matrix4::identity;
-  s.mat[0][0] = scale.x * 0.5f;
-  s.mat[1][1] = scale.y * 0.5f;
-  obj->param.world = s * r * t;
+  auto ratio = glm::vec2(Window::size().x / Scene::size().x,
+                         Window::size().y / Scene::size().y);
+
+  auto t =
+      glm::translate(glm::mat4(1.0f), glm::vec3(position.x * ratio.x,
+                                                position.y * ratio.y, 0.0f));
+  auto quaternion =
+      glm::angleAxis(glm::radians(rotation), glm::vec3(0.0f, 0.0f, -1.0f));
+  auto r = glm::toMat4(quaternion);
+
+  auto s = glm::scale(glm::mat4(1.0f),
+                      glm::vec3(scale.x * 0.5f, scale.y * 0.5f, 1.0f));
+
+  obj->param.world = t * r * s;
   obj->binding_texture = this->texture_handle;
-  matrix4 viewproj = matrix4::identity;
+  auto viewproj = glm::mat4(1.0f);
 
   auto screen_size = Scene::size();
-  viewproj.mat[0][0] = 2.f / Window::size().x;
-  viewproj.mat[1][1] = 2.f / Window::size().y;
+  viewproj[0][0] = 2.f / Window::size().x;
+  viewproj[1][1] = 2.f / Window::size().y;
   obj->param.proj = viewproj;
-  obj->param.view = matrix4::identity;
+  obj->param.view = glm::mat4(1.f);
   if (GetModelData(this->model.data)->vertexBuffer == nullptr) {
     obj->model = RendererImpl::sprite;
   } else
     obj->model = this->model;
   for (auto &i : worlds) {
-    matrix4 t = matrix4::identity;
-    t.mat[3][0] = i.position.x;
-    t.mat[3][1] = i.position.y;
-    Quaternion q(Vector3::neg_unit_z, i.rotation);
-    matrix4 r = matrix4::create_from_quaternion(q);
-    matrix4 s = matrix4::identity;
-    s.mat[0][0] = i.scale.x * 0.5f;
-    s.mat[1][1] = i.scale.y * 0.5f;
+    auto t = glm::translate(
+        glm::mat4(1.0f),
+        glm::vec3(i.position.x * ratio.x, i.position.y * ratio.y, 0.0f));
+    auto quaternion =
+        glm::angleAxis(glm::radians(i.rotation), glm::vec3(0.0f, 0.0f, -1.0f));
+    auto r = glm::toMat4(quaternion);
+    auto s = glm::scale(glm::mat4(1.0f),
+                        glm::vec3(i.scale.x * 0.5f, i.scale.y * 0.5f, 1.0f));
+
+    auto world = t * r * s;
+
     InstanceData insdata;
-    obj->world_to_instance_data(s * r * t, insdata);
+    obj->world_to_instance_data(world, insdata);
     obj->data.push_back(insdata);
   }
   Renderer::draw2d(obj);
 }
-void Draw2D::add(const Vector2 &position, const float &rotation,
-                 const Vector2 &scale) {
+void Draw2D::add(const glm::vec2 &position, const float &rotation,
+                 const glm::vec2 &scale) {
   this->worlds.push_back({position, rotation, scale});
 }
-void Draw2D::at(const int &index, const Vector2 &position,
-                const float &rotation, const Vector2 &scale) {
+void Draw2D::at(const int &index, const glm::vec2 &position,
+                const float &rotation, const glm::vec2 &scale) {
   this->worlds[index] = {position, rotation, scale};
 }
 void Draw2D::clear() { this->worlds.clear(); }
 void Draw3D::draw() {
   obj->binding_texture = this->texture_handle;
-  matrix4 t = matrix4::create_translation(position);
-  matrix4 r = matrix4::create_from_quaternion(Quaternion::from_euler(rotation));
-  matrix4 s = matrix4::create_scale(scale);
-  obj->param.world = s * r * t;
+  auto t = glm::translate(glm::mat4(1.0f),
+                          glm::vec3(position.x, position.y, position.z));
+  auto rotationX =
+      glm::angleAxis(glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+  auto rotationY =
+      glm::angleAxis(glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+  auto rotationZ =
+      glm::angleAxis(glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+  auto r = glm::toMat4(rotationX * rotationY * rotationZ);
+
+  auto s = glm::scale(glm::mat4(1.0f), glm::vec3(scale.x, scale.y, scale.z));
+
+  auto world = t * r * s;
+  obj->param.world = world;
   obj->param.proj = Scene::main_camera().projection();
   obj->param.view = Scene::main_camera().view();
   if (GetModelData(this->model.data)->vertexBuffer == nullptr) {
@@ -88,28 +115,35 @@ void Draw3D::draw() {
   } else
     obj->model = this->model;
   for (auto &i : worlds) {
-    matrix4 t = matrix4::create_translation(i.position);
-    matrix4 r =
-        matrix4::create_from_quaternion(Quaternion::from_euler(i.rotation));
-    matrix4 s = matrix4::create_scale(i.scale);
     InstanceData insdata;
-    obj->world_to_instance_data(s * r * t, insdata);
+    auto t = glm::translate(
+        glm::mat4(1.0f), glm::vec3(i.position.x, i.position.y, i.position.z));
+    auto rotationX =
+        glm::angleAxis(glm::radians(i.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+    auto rotationY =
+        glm::angleAxis(glm::radians(i.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    auto rotationZ =
+        glm::angleAxis(glm::radians(i.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+    auto r = glm::toMat4(rotationX * rotationY * rotationZ);
+
+    auto s =
+        glm::scale(glm::mat4(1.0f), glm::vec3(i.scale.x, i.scale.y, i.scale.z));
+
+    auto world = t * r * s;
+
+    obj->world_to_instance_data(world, insdata);
     obj->data.push_back(insdata);
   }
   Renderer::draw3d(obj);
 }
-void Draw2D::user_data_at(int index, float value) {
-  obj->param.user.mat.m16[index] = value;
-}
-void Draw3D::user_data_at(int index, float value) {
-  obj->param.user.mat.m16[index] = value;
-}
-void Draw3D::add(const Vector3 &position, const Vector3 &rotation,
-                 const Vector3 &scale) {
+void Draw2D::user_data_at(int index, float value) {}
+void Draw3D::user_data_at(int index, float value) {}
+void Draw3D::add(const glm::vec3 &position, const glm::vec3 &rotation,
+                 const glm::vec3 &scale) {
   this->worlds.push_back({position, rotation, scale});
 }
-void Draw3D::at(const int &index, const Vector3 &position,
-                const Vector3 &rotation, const Vector3 &scale) {
+void Draw3D::at(const int &index, const glm::vec3 &position,
+                const glm::vec3 &rotation, const glm::vec3 &scale) {
   this->worlds[index] = {position, rotation, scale};
 }
 void Draw3D::clear() {

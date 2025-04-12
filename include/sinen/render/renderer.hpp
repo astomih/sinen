@@ -9,8 +9,6 @@
 
 #include "../color/color.hpp"
 #include "../drawable/drawable.hpp"
-#include "../math/matrix4.hpp"
-#include "../math/vector3.hpp"
 #include "../model/model.hpp"
 #include "../model/vertex_array.hpp"
 #include "../shader/shader.hpp"
@@ -86,10 +84,8 @@ public:
   static void add_imgui_function(std::function<void()> function);
   static void *get_texture_id();
   static bool offscreen_rendering;
-  static matrix4 render_texture_user_data;
-  static void at_render_texture_user_data(int index, float value) {
-    render_texture_user_data.mat.m16[index] = value;
-  }
+  static glm::mat4 render_texture_user_data;
+  static void at_render_texture_user_data(int index, float value) {}
 
   static void begin_pipeline3d(const RenderPipeline3D &pipeline);
   static void end_pipeline3d();

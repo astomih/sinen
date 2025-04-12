@@ -83,6 +83,7 @@ set(SINEN_INCLUDE_DIRS
   src/usertype/include
   src/rt_shader_compiler/include
   libs/assimp/include
+  libs/glm
 )
 file(
   GLOB

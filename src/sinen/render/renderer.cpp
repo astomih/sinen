@@ -1,13 +1,12 @@
 #include "render_system.hpp"
 #include "texture/render_texture.hpp"
-#include <math/vector3.hpp>
 #include <model/vertex.hpp>
 #include <model/vertex_array.hpp>
 #include <render/renderer.hpp>
 
 namespace sinen {
 bool Renderer::offscreen_rendering = false;
-matrix4 Renderer::render_texture_user_data;
+glm::mat4 Renderer::render_texture_user_data;
 
 void Renderer::unload_data() { RendererImpl::unload_data(); }
 

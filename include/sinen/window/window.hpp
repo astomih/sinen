@@ -1,6 +1,7 @@
 #ifndef SINEN_WINDOW_HPP
 #define SINEN_WINDOW_HPP
-#include "../math/vector2.hpp"
+#include <glm/vec2.hpp>
+
 #include <string>
 
 namespace sinen {
@@ -15,19 +16,19 @@ public:
    *
    * @return vector2 size
    */
-  static Vector2 size();
+  static glm::vec2 size();
   /**
    * @brief Get the window half size
    *
    * @return vector2
    */
-  static Vector2 half();
+  static glm::vec2 half();
   /**
    * @brief Set the Window size
    *
    * @param size window size
    */
-  static void resize(const Vector2 &size);
+  static void resize(const glm::vec2 &size);
   /**
    * @brief Set the fullscreen
    *

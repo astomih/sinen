@@ -5,9 +5,7 @@
 #include <font/font.hpp>
 #include <functional>
 #include <io/data_stream.hpp>
-#include <math/point2.hpp>
 #include <math/random.hpp>
-#include <math/vector3.hpp>
 #include <model/model.hpp>
 #include <render/renderer.hpp>
 #include <scene/scene.hpp>
@@ -15,10 +13,15 @@
 #include <sol/sol.hpp>
 #include <time/timer.hpp>
 
+#include "glm/ext/vector_float3.hpp"
+// glm::rotate
+#include "glm/ext/vector_int3.hpp"
 #include "register_script.hpp"
 #include "render/render_pipeline.hpp"
 #include "sol/raii.hpp"
 #include "sol/types.hpp"
+#include <glm/glm.hpp>
+
 #ifdef main
 #undef main
 #endif
@@ -31,55 +34,80 @@ bool script_engine::initialize(sol::state &lua) {
                      sol::lib::string, sol::lib::debug, sol::lib::table);
   register_generator(lua);
   {
-    auto v = lua.new_usertype<Vector3>("", sol::no_construction());
-    v["x"] = &Vector3::x;
-    v["y"] = &Vector3::y;
-    v["z"] = &Vector3::z;
-    v["__add"] = &Vector3::add;
-    v["__sub"] = &Vector3::sub;
-    v["__mul"] = &Vector3::mul;
-    v["__div"] = &Vector3::div;
-    v["copy"] = &Vector3::copy;
-    v["length"] = &Vector3::length;
-    v["forward"] = [](const Vector3 v, const Vector3 rotation) -> Vector3 {
-      Quaternion q;
-      q = Quaternion::concatenate(
-          q, Quaternion(Vector3::unit_z, Math::to_radians(rotation.z)));
-      q = Quaternion::concatenate(
-          q, Quaternion(Vector3::unit_y, Math::to_radians(rotation.y)));
-      q = Quaternion::concatenate(
-          q, Quaternion(Vector3::unit_x, Math::to_radians(rotation.x)));
-      return Vector3::transform(v, q);
+    auto v = lua.new_usertype<glm::vec3>("", sol::no_construction());
+    v["x"] = &glm::vec3::x;
+    v["y"] = &glm::vec3::y;
+    v["z"] = &glm::vec3::z;
+    v["__add"] = [](const glm::vec3 &a, const glm::vec3 &b) { return a + b; };
+    v["__sub"] = [](const glm::vec3 &a, const glm::vec3 &b) { return a - b; };
+    v["__mul"] = [](const glm::vec3 &a, const glm::vec3 &b) { return a * b; };
+    v["__div"] = [](const glm::vec3 &a, const glm::vec3 &b) { return a / b; };
+    v["copy"] = [](const glm::vec3 &a) { return a; };
+    v["length"] = [](const glm::vec3 &a) { return glm::length(a); };
+    v["forward"] = [](const glm::vec3 v,
+                      const glm::vec3 rotation) -> glm::vec3 {
+      // rotation to mat
+      glm::mat4 m =
+          glm::rotate(glm::mat4(1.0f), rotation.x, glm::vec3(1, 0, 0));
+      m = glm::rotate(m, rotation.y, glm::vec3(0, 1, 0));
+      m = glm::rotate(m, rotation.z, glm::vec3(0, 0, 1));
+      // forward
+      glm::vec4 forward = m * glm::vec4(v.x, v.y, v.z, 1.0f);
+      forward.x = forward.x / forward.w;
+      forward.y = forward.y / forward.w;
+      forward.z = forward.z / forward.w;
+
+      return glm::vec3(forward.x, forward.y, forward.z);
     };
-    v["normalize"] = [](const Vector3 &v) { return Vector3::normalize(v); };
-    v["dot"] = &Vector3::dot;
-    v["cross"] = &Vector3::cross;
-    v["lerp"] = &Vector3::lerp;
-    v["reflect"] = &Vector3::reflect;
+    v["normalize"] = [](const glm::vec3 &v) { return glm::normalize(v); };
+    v["dot"] = [](const glm::vec3 &a, const glm::vec3 &b) {
+      return glm::dot(a, b);
+    };
+    v["cross"] = [](const glm::vec3 &a, const glm::vec3 &b) {
+      return glm::cross(a, b);
+    };
+    v["lerp"] = [](const glm::vec3 &a, const glm::vec3 &b, float t) {
+      return glm::mix(a, b, t);
+    };
+    v["reflect"] = [](const glm::vec3 &v, const glm::vec3 &n) {
+      return glm::reflect(v, n);
+    };
   }
   {
-    auto v = lua.new_usertype<Vector2>("", sol::no_construction());
-    v["x"] = &Vector2::x;
-    v["y"] = &Vector2::y;
-    v["__add"] = &Vector2::add;
-    v["__sub"] = &Vector2::sub;
-    v["__mul"] = &Vector2::mul;
-    v["__div"] = &Vector2::div;
-    v["length"] = &Vector2::length;
-    v["normalize"] = [](const Vector2 &v) { return Vector2::normalize(v); };
-    v["dot"] = &Vector2::dot;
-    v["lerp"] = &Vector2::lerp;
-    v["reflect"] = &Vector2::reflect;
+    auto v = lua.new_usertype<glm::vec2>("", sol::no_construction());
+    v["x"] = &glm::vec2::x;
+    v["y"] = &glm::vec2::y;
+    v["__add"] = [](const glm::vec2 &a, const glm::vec2 &b) { return a + b; };
+    v["__sub"] = [](const glm::vec2 &a, const glm::vec2 &b) { return a - b; };
+    v["__mul"] = [](const glm::vec2 &a, const glm::vec2 &b) { return a * b; };
+    v["__div"] = [](const glm::vec2 &a, const glm::vec2 &b) { return a / b; };
+    v["copy"] = [](const glm::vec2 &a) { return a; };
+    v["length"] = [](const glm::vec2 &a) { return glm::length(a); };
+    v["normalize"] = [](const glm::vec2 &v) { return glm::normalize(v); };
+    v["dot"] = [](const glm::vec2 &a, const glm::vec2 &b) {
+      return glm::dot(a, b);
+    };
+    v["lerp"] = [](const glm::vec2 &a, const glm::vec2 &b, float t) {
+      return glm::mix(a, b, t);
+    };
+    v["reflect"] = [](const glm::vec2 &v, const glm::vec2 &n) {
+      return glm::reflect(v, n);
+    };
   }
   {
-    auto v = lua.new_usertype<Point2i>("", sol::no_construction());
-    v["x"] = &Point2i::x;
-    v["y"] = &Point2i::y;
+    auto v = lua.new_usertype<glm::ivec2>("", sol::no_construction());
+    v["x"] = &glm::ivec2::x;
+    v["y"] = &glm::ivec2::y;
+    v["__add"] = [](const glm::ivec2 &a, const glm::ivec2 &b) { return a + b; };
+    v["__sub"] = [](const glm::ivec2 &a, const glm::ivec2 &b) { return a - b; };
   }
   {
-    auto v = lua.new_usertype<Point2f>("", sol::no_construction());
-    v["x"] = &Point2f::x;
-    v["y"] = &Point2f::y;
+    auto v = lua.new_usertype<glm::ivec3>("", sol::no_construction());
+    v["x"] = &glm::ivec3::x;
+    v["y"] = &glm::ivec3::y;
+    v["z"] = &glm::ivec3::z;
+    v["__add"] = [](const glm::ivec3 &a, const glm::ivec3 &b) { return a + b; };
+    v["__sub"] = [](const glm::ivec3 &a, const glm::ivec3 &b) { return a - b; };
   }
   {
     auto v = lua.new_usertype<Color>("", sol::no_construction());
@@ -142,8 +170,8 @@ bool script_engine::initialize(sol::state &lua) {
   }
   {
     auto v = lua.new_usertype<AABB>("", sol::no_construction());
-    v["min"] = &AABB::_min;
-    v["max"] = &AABB::_max;
+    v["min"] = &AABB::min;
+    v["max"] = &AABB::max;
     v["update_world"] = &AABB::update_world;
   }
   {

@@ -104,10 +104,10 @@ Texture Texture::copy() {
   return dst_texture;
 }
 
-Vector2 Texture::size() {
+glm::vec2 Texture::size() {
   auto *surface = GetTexData(textureData)->pSurface;
-  return Vector2(static_cast<float>(surface->w),
-                 static_cast<float>(surface->h));
+  return glm::vec2(static_cast<float>(surface->w),
+                   static_cast<float>(surface->h));
 }
 
 } // namespace sinen

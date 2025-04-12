@@ -18,7 +18,7 @@ struct UniformData {
       add_matrix(m);
     }
   }
-  void add_vector3(const Vector3 &vector) {
+  void add_vector3(const glm::vec3 &vector) {
     data.push_back(vector.x);
     data.push_back(vector.y);
     data.push_back(vector.z);

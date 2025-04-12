@@ -1,6 +1,5 @@
 #ifndef SINEN_COLOR_HPP
 #define SINEN_COLOR_HPP
-#include "../math/vector3.hpp"
 namespace sinen {
 /**
  * @brief Color class

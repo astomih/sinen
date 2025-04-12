@@ -2,6 +2,7 @@
 #define SINEN_VERTEX_ARRAY_HPP
 // std
 #include <cstdint>
+#include <string>
 #include <vector>
 
 // internal

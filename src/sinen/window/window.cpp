@@ -6,14 +6,14 @@
 #include <window/window.hpp>
 
 namespace sinen {
-Vector2 WindowImpl::m_size = Vector2(1280.f, 720.f);
+glm::vec2 WindowImpl::m_size = glm::vec2(1280.f, 720.f);
 std::string WindowImpl::m_name = "";
 ::SDL_Window *WindowImpl::m_window = nullptr;
 bool WindowImpl::m_resized = false;
 const void *Window::get_sdl_window() { return WindowImpl::get_sdl_window(); }
-Vector2 Window::size() { return WindowImpl::size(); }
-Vector2 Window::half() { return WindowImpl::half(); }
-void Window::resize(const Vector2 &size) { WindowImpl::resize(size); }
+glm::vec2 Window::size() { return WindowImpl::size(); }
+glm::vec2 Window::half() { return WindowImpl::half(); }
+void Window::resize(const glm::vec2 &size) { WindowImpl::resize(size); }
 void Window::set_fullscreen(bool fullscreen) {
   WindowImpl::set_fullscreen(fullscreen);
 }
@@ -52,7 +52,7 @@ void WindowImpl::shutdown() {
   SDL_DestroyWindow(m_window);
   m_window = nullptr;
 }
-void WindowImpl::resize(const Vector2 &size) {
+void WindowImpl::resize(const glm::vec2 &size) {
   m_size = size;
   SDL_SetWindowSize(m_window, static_cast<int>(m_size.x),
                     static_cast<int>(m_size.y));

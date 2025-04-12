@@ -1,3 +1,4 @@
+#include "glm/ext/vector_float3.hpp"
 #include "glm/trigonometric.hpp"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
@@ -5,13 +6,12 @@
 // internal
 #include <camera/camera.hpp>
 #include <logger/logger.hpp>
-#include <math/matrix4.hpp>
 #include <render/renderer.hpp>
 #include <window/window.hpp>
 
 namespace sinen {
-void Camera::lookat(const Vector3 &position, const Vector3 &target,
-                    const Vector3 &up) {
+void Camera::lookat(const glm::vec3 &position, const glm::vec3 &target,
+                    const glm::vec3 &up) {
   m_position = position;
   m_target = target;
   m_up = up;

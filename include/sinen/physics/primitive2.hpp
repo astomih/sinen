@@ -1,8 +1,6 @@
 #ifndef SINEN_PRIMITIVE2_HPP
 #define SINEN_PRIMITIVE2_HPP
-#include "../math/point2.hpp"
-#include "../math/vector2.hpp"
-
+#include <glm/vec2.hpp>
 namespace sinen {
 /**
  * @brief Line2D class
@@ -10,11 +8,11 @@ namespace sinen {
  */
 struct Line2 {
   Line2() = default;
-  Line2(const Vector2 &p, const Vector2 &v) : p(p), v(v) {}
-  Vector2 get_point(float t) const { return v * t; }
+  Line2(const glm::vec2 &p, const glm::vec2 &v) : p(p), v(v) {}
+  glm::vec2 get_point(float t) const { return v * t; }
 
-  Vector2 p;
-  Vector2 v;
+  glm::vec2 p;
+  glm::vec2 v;
 };
 /**
  * @brief Segment2D class
@@ -23,12 +21,12 @@ struct Line2 {
 struct Segment2 : public Line2 {
   Segment2();
   Segment2(const Line2 &l) : Line2(l) {}
-  Segment2(const Vector2 &p, const Vector2 &v);
+  Segment2(const glm::vec2 &p, const glm::vec2 &v);
   /**
    * @brief Get end point of segment
    *
    */
-  Point2f get_end_point() const;
+  glm::vec2 get_end_point() const;
 };
 /**
  * @brief Ray2D class
@@ -38,12 +36,12 @@ struct Ray2 : public Line2 {
   Ray2();
   Ray2(const Line2 &l) : Line2(l) {}
   Ray2(const Segment2 &s) : Line2(s) {}
-  Ray2(const Vector2 &p, const Vector2 &v);
+  Ray2(const glm::vec2 &p, const glm::vec2 &v);
   /**
    * @brief Get end point of ray
    *
    */
-  Point2f get_end_point() const;
+  glm::vec2 get_end_point() const;
 };
 /**
  * @brief Triangle3D class
@@ -51,12 +49,12 @@ struct Ray2 : public Line2 {
  */
 struct Triangle2 {
   Triangle2();
-  Triangle2(const Vector2 &a, const Vector2 &b, const Vector2 &c);
+  Triangle2(const glm::vec2 &a, const glm::vec2 &b, const glm::vec2 &c);
   /**
    * @brief Get normal of triangle
    *
    */
-  Vector2 get_normal() const;
+  glm::vec2 get_normal() const;
   /**
    * @brief Get area of triangle
    *
@@ -66,17 +64,17 @@ struct Triangle2 {
    * @brief Get centroid of triangle
    *
    */
-  Point2f get_centroid() const;
+  glm::vec2 get_centroid() const;
   /**
    * @brief Get barycentric coordinates of point
    *
    */
-  Vector2 get_barycentric(const Vector2 &p) const;
+  glm::vec2 get_barycentric(const glm::vec2 &p) const;
 
   // vertices
-  Vector2 a;
-  Vector2 b;
-  Vector2 c;
+  glm::vec2 a;
+  glm::vec2 b;
+  glm::vec2 c;
 };
 /**
  * @brief Plane2D class
@@ -84,12 +82,12 @@ struct Triangle2 {
  */
 struct Plane2 {
   Plane2() = default;
-  Plane2(const Vector2 &p, const Vector2 &n) : p(p), n(n) {}
+  Plane2(const glm::vec2 &p, const glm::vec2 &n) : p(p), n(n) {}
 
   // point on plane
-  Vector2 p;
+  glm::vec2 p;
   // normal of plane
-  Vector2 n;
+  glm::vec2 n;
 };
 /**
  * @brief Rectangle class
@@ -97,11 +95,11 @@ struct Plane2 {
  */
 struct Rectangle {
   Rectangle() = default;
-  Rectangle(const Vector2 &p, const Vector2 &s) : p(p), s(s) {}
+  Rectangle(const glm::vec2 &p, const glm::vec2 &s) : p(p), s(s) {}
   // point on rectangle
-  Vector2 p;
+  glm::vec2 p;
   // size of rectangle
-  Vector2 s;
+  glm::vec2 s;
 };
 /**
  * @brief Circle class
@@ -109,9 +107,9 @@ struct Rectangle {
  */
 struct Circle {
   Circle() = default;
-  Circle(const Vector2 &p, float r) : p(p), r(r) {}
+  Circle(const glm::vec2 &p, float r) : p(p), r(r) {}
   // point on circle
-  Vector2 p;
+  glm::vec2 p;
   // radius of circle
   float r;
 };

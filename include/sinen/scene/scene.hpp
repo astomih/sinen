@@ -4,7 +4,7 @@
 #include <string>
 
 #include "../camera/camera.hpp"
-#include "../math/vector2.hpp"
+#include <glm/vec2.hpp>
 
 namespace sinen {
 /**
@@ -84,27 +84,27 @@ public:
    *
    * @param size
    */
-  static void resize(const Vector2 &size) { m_screen_size = size; }
+  static void resize(const glm::vec2 &size) { m_screen_size = size; }
   /**
    * @brief Get the screen size
    *
    * @return const vector2&
    */
-  static const Vector2 &size() { return m_screen_size; }
-  static const Vector2 half() {
-    Vector2 c = m_screen_size;
+  static const glm::vec2 &size() { return m_screen_size; }
+  static const glm::vec2 half() {
+    glm::vec2 c = m_screen_size;
     c /= 2.f;
     return c;
   }
-  static Vector2 ratio();
-  static Vector2 inv_ratio();
+  static glm::vec2 ratio();
+  static glm::vec2 inv_ratio();
 
   static float delta_time();
 
 private:
   // main camera
   static Camera m_main_camera;
-  static Vector2 m_screen_size;
+  static glm::vec2 m_screen_size;
   static void change_impl(std::unique_ptr<implements> impl);
 };
 } // namespace sinen

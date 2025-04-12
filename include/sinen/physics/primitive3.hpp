@@ -1,7 +1,6 @@
 #ifndef SINEN_PRIMITIVE3_HPP
 #define SINEN_PRIMITIVE3_HPP
-#include "../math/point3.hpp"
-#include "../math/vector3.hpp"
+#include <glm/vec3.hpp>
 
 namespace sinen {
 /**
@@ -10,11 +9,11 @@ namespace sinen {
  */
 struct Line3 {
   Line3() = default;
-  Line3(const Vector3 &p, const Vector3 &v) : p(p), v(v) {}
-  Vector3 get_point(float t) const { return v * t; }
+  Line3(const glm::vec3 &p, const glm::vec3 &v) : p(p), v(v) {}
+  glm::vec3 get_point(float t) const { return v * t; }
 
-  Vector3 p;
-  Vector3 v;
+  glm::vec3 p;
+  glm::vec3 v;
 };
 /**
  * @brief Segment3D class
@@ -23,12 +22,12 @@ struct Line3 {
 struct Segment3 : public Line3 {
   Segment3();
   Segment3(const Line3 &l) : Line3(l) {}
-  Segment3(const Vector3 &p, const Vector3 &v);
+  Segment3(const glm::vec3 &p, const glm::vec3 &v);
   /**
    * @brief Get end point of segment
    *
    */
-  Point3f get_end_point() const;
+  glm::vec3 get_end_point() const;
 };
 /**
  * @brief Ray3D class
@@ -38,12 +37,12 @@ struct Ray3 : public Line3 {
   Ray3();
   Ray3(const Line3 &l) : Line3(l) {}
   Ray3(const Segment3 &s) : Line3(s) {}
-  Ray3(const Vector3 &p, const Vector3 &v);
+  Ray3(const glm::vec3 &p, const glm::vec3 &v);
   /**
    * @brief Get end point of ray
    *
    */
-  Point3f get_end_point() const;
+  glm::vec3 get_end_point() const;
 };
 /**
  * @brief Triangle3D class
@@ -51,12 +50,12 @@ struct Ray3 : public Line3 {
  */
 struct Triangle3 {
   Triangle3();
-  Triangle3(const Vector3 &a, const Vector3 &b, const Vector3 &c);
+  Triangle3(const glm::vec3 &a, const glm::vec3 &b, const glm::vec3 &c);
   /**
    * @brief Get normal of triangle
    *
    */
-  Vector3 get_normal() const;
+  glm::vec3 get_normal() const;
   /**
    * @brief Get area of triangle
    *
@@ -66,17 +65,17 @@ struct Triangle3 {
    * @brief Get centroid of triangle
    *
    */
-  Point3f get_centroid() const;
+  glm::vec3 get_centroid() const;
   /**
    * @brief Get barycentric coordinates of point
    *
    */
-  Vector3 get_barycentric(const Vector3 &p) const;
+  glm::vec3 get_barycentric(const glm::vec3 &p) const;
 
   // vertices
-  Vector3 a;
-  Vector3 b;
-  Vector3 c;
+  glm::vec3 a;
+  glm::vec3 b;
+  glm::vec3 c;
 };
 /**
  * @brief Plane3D class
@@ -84,12 +83,12 @@ struct Triangle3 {
  */
 struct Plane3 {
   Plane3() = default;
-  Plane3(const Vector3 &p, const Vector3 &n) : p(p), n(n) {}
+  Plane3(const glm::vec3 &p, const glm::vec3 &n) : p(p), n(n) {}
 
   // point on plane
-  Vector3 p;
+  glm::vec3 p;
   // normal of plane
-  Vector3 n;
+  glm::vec3 n;
 };
 /**
  * @brief Sphere class
@@ -98,10 +97,10 @@ struct Plane3 {
 struct Sphere {
   Sphere() : r(0.f) {};
   ~Sphere() = default;
-  Sphere(const Vector3 &p, float r) : p(p), r(r) {}
+  Sphere(const glm::vec3 &p, float r) : p(p), r(r) {}
 
   // position
-  Vector3 p;
+  glm::vec3 p;
   // radius
   float r;
 };
@@ -112,7 +111,8 @@ struct Sphere {
 struct Capsule {
   Capsule() : r(0.f) {}
   Capsule(const Segment3 &s, float r) : s(s), r(r) {}
-  Capsule(const Vector3 &p1, const Vector3 &p2, float r) : s(p1, p2), r(r) {}
+  Capsule(const glm::vec3 &p1, const glm::vec3 &p2, float r)
+      : s(p1, p2), r(r) {}
   ~Capsule() {}
 
   // segment

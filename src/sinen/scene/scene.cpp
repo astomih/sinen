@@ -1,15 +1,14 @@
-#include "math/vector2.hpp"
 #include "scene_system.hpp"
 #include <window/window.hpp>
 
 namespace sinen {
 Camera Scene::m_main_camera = []() {
   Camera c;
-  c.lookat(Vector3{0, -1, 1}, Vector3{0, 0, 0}, Vector3{0, 0, 1});
+  c.lookat(glm::vec3{0, -1, 1}, glm::vec3{0, 0, 0}, glm::vec3{0, 0, 1});
   c.perspective(70.f, Window::size().x / Window::size().y, .1f, 1000.f);
   return c;
 }();
-Vector2 Scene::m_screen_size = Vector2(1280.0, 720.0);
+glm::vec2 Scene::m_screen_size = glm::vec2(1280.0, 720.0);
 
 void Scene::reset() {
   scene_system::shutdown();
@@ -32,13 +31,13 @@ void Scene::change_impl(std::unique_ptr<Scene::implements> impl) {
 void Scene::set_run_script(bool is_run) {
   scene_system::set_run_script(is_run);
 }
-Vector2 Scene::ratio() {
-  return Vector2(Window::size().x / Scene::size().x,
-                 Window::size().y / Scene::size().y);
+glm::vec2 Scene::ratio() {
+  return glm::vec2(Window::size().x / Scene::size().x,
+                   Window::size().y / Scene::size().y);
 }
-Vector2 Scene::inv_ratio() {
-  return Vector2(Scene::size().x / Window::size().x,
-                 Scene::size().y / Window::size().y);
+glm::vec2 Scene::inv_ratio() {
+  return glm::vec2(Scene::size().x / Window::size().x,
+                   Scene::size().y / Window::size().y);
 }
 
 float Scene::delta_time() { return scene_system::delta_time(); }

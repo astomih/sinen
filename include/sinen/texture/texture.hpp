@@ -8,6 +8,8 @@
 #include <string_view>
 #include <unordered_map>
 
+#include <glm/vec2.hpp>
+
 namespace sinen {
 /**
  * @brief Texture
@@ -52,7 +54,7 @@ public:
   void fill_color(const Color &color);
   void blend_color(const Color &color);
 
-  Vector2 size();
+  glm::vec2 size();
 
   std::shared_ptr<void> textureData;
 };

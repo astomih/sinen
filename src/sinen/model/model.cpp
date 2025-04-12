@@ -20,9 +20,6 @@
 #include "glm/ext/quaternion_common.hpp"
 #include "glm/fwd.hpp"
 #include "io/asset_type.hpp"
-#include "math/matrix4.hpp"
-#include "math/quaternion.hpp"
-#include "math/vector3.hpp"
 #include "model/vertex.hpp"
 #include "model_data.hpp"
 #include <io/data_stream.hpp>
@@ -175,9 +172,9 @@ void Model::load(std::string_view str) {
                                ? mesh->mTextureCoords[0][j]
                                : aiVector3D();
 
-          v.position = Vector3(pos.x, pos.y, pos.z);
-          v.normal = Vector3(norm.x, norm.y, norm.z);
-          v.uv = Vector2(tex.x, tex.y);
+          v.position = glm::vec3(pos.x, pos.y, pos.z);
+          v.normal = glm::vec3(norm.x, norm.y, norm.z);
+          v.uv = glm::vec2(tex.x, tex.y);
 
           v.rgba = boneData[j].color;
           const auto &ids = boneData[j].ids;

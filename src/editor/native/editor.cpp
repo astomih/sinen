@@ -1,4 +1,5 @@
 #include "editor.hpp"
+#include "glm/ext/vector_float2.hpp"
 #include <SDL3/SDL.h>
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
@@ -22,7 +23,7 @@
 #endif
 #include <filesystem>
 namespace sinen {
-std::vector<matrix4> editor::m_matrices;
+std::vector<glm::mat4> editor::m_matrices;
 int editor::index_actors = 0;
 int editor::index_components = 0;
 std::string editor::current_file_name = "";
@@ -308,10 +309,10 @@ void editor::update(float delta_time) {
     // Normalize camera angle vector
     auto vec = Scene::main_camera().target() - Scene::main_camera().position();
     if (vec.length() > 0.1) {
-      vec.normalize();
+      vec = glm::normalize(vec);
       Scene::main_camera().position() += vec * Mouse::get_scroll_wheel().y;
     }
-    static Vector2 prev = Vector2();
+    static glm::vec2 prev;
     if (Mouse::is_down(Mouse::code::RIGHT)) {
       auto pos = prev - Mouse::get_position();
       if (Keyboard::is_down(Keyboard::code::LSHIFT)) {

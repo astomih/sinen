@@ -52,7 +52,7 @@ struct Drawable {
    * @param mat input world matrix
    * @param data output instancing data
    */
-  void world_to_instance_data(const matrix4 &mat, InstanceData &data);
+  void world_to_instance_data(const glm::mat4 &mat, InstanceData &data);
   /**
    * @brief instance size
    *

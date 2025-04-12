@@ -38,21 +38,24 @@
 #include <assimp/scene.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
+#include "glm/ext/matrix_common.hpp"
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/quaternion_common.hpp"
 #include <glm/ext/vector_common.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/quaternion.hpp>
 
 namespace sinen {
 enum class load_state { version, vertex, indices };
 Model::Model() { data = std::make_shared<ModelData>(); };
-glm::mat4 convert(const aiMatrix4x4 &m) {
-  glm::mat4 mat;
-  memcpy(&mat, &m, sizeof(glm::mat4));
+glm::mat4 ConvertMatrix(const aiMatrix4x4 &m) {
+  glm::mat4 mat = glm::make_mat4(&m.a1);
+  mat = glm::transpose(mat); // Assimp is column major
   return mat;
 }
+
 void Model::load(std::string_view str) {
   auto modelData = GetModelData(this->data);
   auto &local_aabb = modelData->local_aabb;
@@ -115,10 +118,10 @@ void Model::load(std::string_view str) {
     auto fileName = DataStream::convert_file_path(AssetType::Model, str_name);
     // Assimp
     auto &importer = modelData->importer;
-    modelData->scene =
-        importer.ReadFile(fileName.c_str(), aiProcess_ValidateDataStructure |
-                                                aiProcess_LimitBoneWeights |
-                                                aiProcess_Triangulate);
+    modelData->scene = importer.ReadFile(
+        fileName.c_str(),
+        aiProcess_ValidateDataStructure | aiProcess_LimitBoneWeights |
+            aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
     auto &scene = modelData->scene;
     if (!scene) {
       std::cerr << "Error loading model: " << importer.GetErrorString()
@@ -128,13 +131,11 @@ void Model::load(std::string_view str) {
     if (scene->HasAnimations()) {
       modelData->skeletalAnimation.Load(modelData->scene);
       uint32_t vertexOffset = 0;
-      uint32_t numBone = 0;
       struct BoneData {
         std::vector<uint32_t> ids;
         std::vector<float> weights;
         Color color;
       };
-      std::unordered_map<std::string, uint32_t> boneNameToIndex;
       for (int i = 0; i < scene->mNumMeshes; i++) {
         const aiMesh *mesh = scene->mMeshes[i];
         std::unordered_map<uint32_t, BoneData> boneData;
@@ -144,14 +145,12 @@ void Model::load(std::string_view str) {
           aiBone *bone = mesh->mBones[j];
           std::string boneName = bone->mName.C_Str();
 
-          if (!boneNameToIndex.contains(boneName)) {
-            boneNameToIndex[boneName] = j;
-            boneMap[boneName].offsetMatrix = convert(bone->mOffsetMatrix);
-            boneMap[boneName].offsetMatrix = glm::transpose(
-                boneMap[boneName].offsetMatrix); // Assimp is column major
+          if (!boneMap.contains(boneName)) {
+            boneMap[boneName].offsetMatrix = ConvertMatrix(bone->mOffsetMatrix);
+            boneMap[boneName].index = static_cast<uint32_t>(boneMap.size());
           }
 
-          uint32_t index = boneNameToIndex[boneName];
+          uint32_t index = boneMap[boneName].index;
 
           auto rgba = Color(Random::get_float_range(0.5f, 1.0f),
                             Random::get_float_range(0.5f, 1.0f),
@@ -180,11 +179,12 @@ void Model::load(std::string_view str) {
           v.normal = Vector3(norm.x, norm.y, norm.z);
           v.uv = Vector2(tex.x, tex.y);
 
-          assert(boneData.contains(j) && "Bone data not found for vertex.");
           v.rgba = boneData[j].color;
           const auto &ids = boneData[j].ids;
           const auto &ws = boneData[j].weights;
           float temp = 0.f;
+          assert(ids.size() <= 4);
+          assert(ws.size() <= 4);
           for (int k = 0; k < 4; ++k) {
             v.boneIDs[k] = (k < ids.size()) ? float(ids[k]) : 0.0f;
             v.boneWeights[k] = (k < ws.size()) ? ws[k] : 0.0f;
@@ -445,7 +445,7 @@ void Model::load_bone_uniform(float start) {
 void SkeletalAnimation::Load(const aiScene *scn) {
   scene = scn;
   root = scene->mRootNode;
-  globalInverseTransform = convert(root->mTransformation);
+  globalInverseTransform = ConvertMatrix(root->mTransformation);
   globalInverseTransform = glm::inverse(globalInverseTransform);
 
   if (scene->mNumAnimations > 0) {
@@ -469,20 +469,18 @@ void SkeletalAnimation::ReadNodeHierarchy(float animTime, aiNode *node,
                                           const glm::mat4 &parentTransform) {
   std::string nodeName = node->mName.C_Str();
 
-  auto nodeTransform = convert(node->mTransformation);
+  auto nodeTransform = ConvertMatrix(node->mTransformation);
   if (nodeAnimMap.contains(nodeName)) {
     nodeTransform = InterpolateTransform(nodeAnimMap[nodeName], animTime);
   }
 
   auto globalTransform = parentTransform * nodeTransform;
 
-  assert(boneMap.contains(nodeName) ||
-         "Bone not found in boneMap. This may be due to a missing bone in the "
-         "animation or a mismatch between the model and animation data.");
-  auto &inverse = globalInverseTransform;
-  auto &transform = globalTransform;
-  boneMap[nodeName].finalTransform =
-      inverse * transform * boneMap[nodeName].offsetMatrix;
+  if (boneMap.contains(nodeName)) {
+    boneMap[nodeName].finalTransform = globalInverseTransform *
+                                       globalTransform *
+                                       boneMap[nodeName].offsetMatrix;
+  }
 
   for (uint32_t i = 0; i < node->mNumChildren; ++i) {
     ReadNodeHierarchy(animTime, node->mChildren[i], globalTransform);
@@ -564,9 +562,10 @@ glm::mat4 SkeletalAnimation::InterpolateTransform(aiNodeAnim *channel,
   return m;
 }
 std::vector<glm::mat4> SkeletalAnimation::GetFinalBoneMatrices() const {
-  std::vector<glm::mat4> result;
+  std::vector<glm::mat4> result(boneMap.size(), glm::mat4(1.0f));
   for (const auto &[name, info] : boneMap) {
-    result.push_back(info.finalTransform);
+    if (info.index < result.size())
+      result[info.index] = info.finalTransform;
   }
   return result;
 }

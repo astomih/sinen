@@ -16,13 +16,13 @@ namespace sinen {
 struct BoneInfo {
   glm::mat4 offsetMatrix;
   glm::mat4 finalTransform;
+  uint32_t index;
 };
 
 class SkeletalAnimation {
 public:
   std::unordered_map<std::string, BoneInfo> boneMap;
   std::unordered_map<std::string, aiNodeAnim *> nodeAnimMap;
-  std::unordered_map<std::string, unsigned int> boneNameToIndex;
   glm::mat4 globalInverseTransform;
   const aiScene *scene = nullptr;
   aiNode *root;

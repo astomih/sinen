@@ -96,7 +96,7 @@ struct Plane3 {
  *
  */
 struct Sphere {
-  Sphere() : r(0.f){};
+  Sphere() : r(0.f) {};
   ~Sphere() = default;
   Sphere(const Vector3 &p, float r) : p(p), r(r) {}
 
@@ -124,33 +124,5 @@ struct Capsule {
  * @brief AABB(Axis-Aligned Bounding Box) class
  *
  */
-struct AABB {
-  Vector3 _min;
-  Vector3 _max;
-  AABB() = default;
-  ~AABB() = default;
-  /**
-   * @brief Construct a new aabb object
-   *
-   * @param min  min point
-   * @param max  max point
-   */
-  AABB(const Vector3 &_min, const Vector3 &_max) : _min(_min), _max(_max) {}
-  void update_world(const Vector3 &p, const Vector3 &scale, const AABB &local);
-};
-/**
- * @brief OBBox(Oriented Bounding Box) class
- *
- */
-struct OBB {
-  OBB() = default;
-  ~OBB() = default;
-  // Position
-  Vector3 p;
-  // Direct vectors
-  Vector3 v[3];
-  // Axis lengths
-  float a[3];
-};
 } // namespace sinen
 #endif // !SINEN_PRIMITIVE_HPP

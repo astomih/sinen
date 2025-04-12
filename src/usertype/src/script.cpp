@@ -142,8 +142,8 @@ bool script_engine::initialize(sol::state &lua) {
   }
   {
     auto v = lua.new_usertype<AABB>("", sol::no_construction());
-    v["min"] = &AABB::_min;
-    v["max"] = &AABB::_max;
+    v["min"] = &AABB::min;
+    v["max"] = &AABB::max;
     v["update_world"] = &AABB::update_world;
   }
   {

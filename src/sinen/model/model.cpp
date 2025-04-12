@@ -91,12 +91,12 @@ void Model::load(std::string_view str) {
                &v.normal.y, &v.normal.z, &v.uv.x, &v.uv.y, &v.rgba.r, &v.rgba.g,
                &v.rgba.b, &v.rgba.a);
 
-        local_aabb._min.x = Math::Min(local_aabb._min.x, v.position.x);
-        local_aabb._min.y = Math::Min(local_aabb._min.y, v.position.y);
-        local_aabb._min.z = Math::Min(local_aabb._min.z, v.position.z);
-        local_aabb._max.x = Math::Max(local_aabb._max.x, v.position.x);
-        local_aabb._max.y = Math::Max(local_aabb._max.y, v.position.y);
-        local_aabb._max.z = Math::Max(local_aabb._max.z, v.position.z);
+        local_aabb.min.x = Math::Min(local_aabb.min.x, v.position.x);
+        local_aabb.min.y = Math::Min(local_aabb.min.y, v.position.y);
+        local_aabb.min.z = Math::Min(local_aabb.min.z, v.position.z);
+        local_aabb.max.x = Math::Max(local_aabb.max.x, v.position.x);
+        local_aabb.max.y = Math::Max(local_aabb.max.y, v.position.y);
+        local_aabb.max.z = Math::Max(local_aabb.max.z, v.position.z);
 
         v_array.vertices.push_back(v);
       } break;
@@ -136,18 +136,18 @@ void Model::load(std::string_view str) {
         std::vector<float> weights;
         Color color;
       };
+      auto &boneMap = modelData->skeletalAnimation.boneMap;
       for (int i = 0; i < scene->mNumMeshes; i++) {
         const aiMesh *mesh = scene->mMeshes[i];
         std::unordered_map<uint32_t, BoneData> boneData;
 
-        auto &boneMap = modelData->skeletalAnimation.boneMap;
         for (uint32_t j = 0; j < mesh->mNumBones; j++) {
           aiBone *bone = mesh->mBones[j];
           std::string boneName = bone->mName.C_Str();
 
           if (!boneMap.contains(boneName)) {
-            boneMap[boneName].offsetMatrix = ConvertMatrix(bone->mOffsetMatrix);
             boneMap[boneName].index = static_cast<uint32_t>(boneMap.size());
+            boneMap[boneName].offsetMatrix = ConvertMatrix(bone->mOffsetMatrix);
           }
 
           uint32_t index = boneMap[boneName].index;
@@ -222,18 +222,18 @@ void Model::load(std::string_view str) {
           v.uv.x = uv.x;
           v.uv.y = uv.y;
 
-          local_aabb._min.x =
-              Math::Min(local_aabb._min.x, static_cast<float>(pos.x));
-          local_aabb._min.y =
-              Math::Min(local_aabb._min.y, static_cast<float>(pos.y));
-          local_aabb._min.z =
-              Math::Min(local_aabb._min.z, static_cast<float>(pos.z));
-          local_aabb._max.x =
-              Math::Max(local_aabb._max.x, static_cast<float>(pos.x));
-          local_aabb._max.y =
-              Math::Max(local_aabb._max.y, static_cast<float>(pos.y));
-          local_aabb._max.z =
-              Math::Max(local_aabb._max.z, static_cast<float>(pos.z));
+          local_aabb.min.x =
+              Math::Min(local_aabb.min.x, static_cast<float>(pos.x));
+          local_aabb.min.y =
+              Math::Min(local_aabb.min.y, static_cast<float>(pos.y));
+          local_aabb.min.z =
+              Math::Min(local_aabb.min.z, static_cast<float>(pos.z));
+          local_aabb.max.x =
+              Math::Max(local_aabb.max.x, static_cast<float>(pos.x));
+          local_aabb.max.y =
+              Math::Max(local_aabb.max.y, static_cast<float>(pos.y));
+          local_aabb.max.z =
+              Math::Max(local_aabb.max.z, static_cast<float>(pos.z));
 
           v_array.vertices.push_back(v);
         }
@@ -260,12 +260,12 @@ void Model::load_from_vertex_array(const VertexArray &vArray) {
   modelData->v_array = vArray;
   auto &local_aabb = modelData->local_aabb;
   for (auto &v : vArray.vertices) {
-    local_aabb._min.x = Math::Min(local_aabb._min.x, v.position.x);
-    local_aabb._min.y = Math::Min(local_aabb._min.y, v.position.y);
-    local_aabb._min.z = Math::Min(local_aabb._min.z, v.position.z);
-    local_aabb._max.x = Math::Max(local_aabb._max.x, v.position.x);
-    local_aabb._max.y = Math::Max(local_aabb._max.y, v.position.y);
-    local_aabb._max.z = Math::Max(local_aabb._max.z, v.position.z);
+    local_aabb.min.x = Math::Min(local_aabb.min.x, v.position.x);
+    local_aabb.min.y = Math::Min(local_aabb.min.y, v.position.y);
+    local_aabb.min.z = Math::Min(local_aabb.min.z, v.position.z);
+    local_aabb.max.x = Math::Max(local_aabb.max.x, v.position.x);
+    local_aabb.max.y = Math::Max(local_aabb.max.y, v.position.y);
+    local_aabb.max.z = Math::Max(local_aabb.max.z, v.position.z);
   }
   auto viBuffer = CreateVertexIndexBuffer(vArray);
   modelData->vertexBuffer = viBuffer.first;
@@ -429,7 +429,13 @@ void Model::update(float delta_time) {
 void Model::load_bone_uniform(float start) {
   auto modelData = GetModelData(this->data);
   auto &skeletalAnimation = modelData->skeletalAnimation;
+  for (auto &bone : skeletalAnimation.boneMap) {
+    assert(bone.second.index <= skeletalAnimation.boneMap.size());
+  }
   modelData->skeletalAnimation.Update(start);
+  for (auto &bone : skeletalAnimation.boneMap) {
+    assert(bone.second.index <= skeletalAnimation.boneMap.size());
+  }
   auto matrices = skeletalAnimation.GetFinalBoneMatrices();
   auto &boneUniformData = modelData->boneUniformData;
   boneUniformData.clear();
@@ -564,8 +570,12 @@ glm::mat4 SkeletalAnimation::InterpolateTransform(aiNodeAnim *channel,
 std::vector<glm::mat4> SkeletalAnimation::GetFinalBoneMatrices() const {
   std::vector<glm::mat4> result(boneMap.size(), glm::mat4(1.0f));
   for (const auto &[name, info] : boneMap) {
-    if (info.index < result.size())
+    if (boneMap.contains(name)) {
       result[info.index] = info.finalTransform;
+    } else {
+      std::cerr << "[Warning] bone '" << name
+                << "' has no finalTransform. Using identity.\n";
+    }
   }
   return result;
 }

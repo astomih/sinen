@@ -10,9 +10,6 @@
 #include <color/palette.hpp>
 #include <drawable/drawable.hpp>
 #include <math/math.hpp>
-#include <math/matrix4.hpp>
-#include <math/vector2.hpp>
-#include <math/vector3.hpp>
 #include <model/model.hpp>
 #include <model/vertex_array.hpp>
 #include <render/renderer.hpp>

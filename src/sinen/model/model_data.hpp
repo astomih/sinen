@@ -1,9 +1,6 @@
 #ifndef SINEN_MODEL_DATA_HPP
 #define SINEN_MODEL_DATA_HPP
 #include "assimp/anim.h"
-#include "assimp/matrix4x4.h"
-#include "math/matrix4.hpp"
-#include "math/quaternion.hpp"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <model/model.hpp>

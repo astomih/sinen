@@ -3,7 +3,6 @@
 #include <camera/camera.hpp>
 #include <font/font.hpp>
 #include <io/data_stream.hpp>
-#include <math/point2.hpp>
 #include <math/random.hpp>
 #include <model/model.hpp>
 #include <render/renderer.hpp>

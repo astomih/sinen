@@ -1,7 +1,5 @@
 #ifndef UNIFORM_DATA_HPP
 #define UNIFORM_DATA_HPP
-#include <math/matrix4.hpp>
-#include <math/vector3.hpp>
 
 #include <glm/mat4x4.hpp>
 #include <vector>

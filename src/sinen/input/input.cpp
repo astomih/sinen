@@ -12,6 +12,8 @@
 #include <input/keyboard.hpp>
 #include <input/mouse.hpp>
 
+#include <math/math.hpp>
+
 namespace sinen {
 bool isHide = false;
 SDL_Cursor *g_cursor = nullptr;

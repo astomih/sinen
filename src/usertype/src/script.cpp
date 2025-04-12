@@ -5,9 +5,7 @@
 #include <font/font.hpp>
 #include <functional>
 #include <io/data_stream.hpp>
-#include <math/point2.hpp>
 #include <math/random.hpp>
-#include <math/vector3.hpp>
 #include <model/model.hpp>
 #include <render/renderer.hpp>
 #include <scene/scene.hpp>

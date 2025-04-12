@@ -2,7 +2,6 @@
 #define DTS_ROOM_HPP
 #include "glm/ext/vector_int2.hpp"
 #include <sinen/graph/grid.hpp>
-#include <sinen/math/point2.hpp>
 #include <sinen/math/random.hpp>
 
 namespace dts {

@@ -9,8 +9,6 @@
 
 #include "../color/color.hpp"
 #include "../drawable/drawable.hpp"
-#include "../math/matrix4.hpp"
-#include "../math/vector3.hpp"
 #include "../model/model.hpp"
 #include "../model/vertex_array.hpp"
 #include "../shader/shader.hpp"

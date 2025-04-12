@@ -1,8 +1,6 @@
 #ifndef SINEN_SOUND_HPP
 #define SINEN_SOUND_HPP
 
-#include "../math/math.hpp"
-#include "../math/vector3.hpp"
 #include <cstdint>
 #include <memory>
 #include <string>

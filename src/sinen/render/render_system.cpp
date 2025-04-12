@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <io/asset_type.hpp>
 #include <io/data_stream.hpp>
-#include <math/vector3.hpp>
 #include <model/vertex.hpp>
 #include <model/vertex_array.hpp>
 #include <render/renderer.hpp>

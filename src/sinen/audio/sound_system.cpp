@@ -5,8 +5,7 @@
 #include "glm/trigonometric.hpp"
 #include "sound_system.hpp"
 #include <io/data_stream.hpp>
-#include <math/quaternion.hpp>
-
+#include <math/math.hpp>
 
 // external
 #define AL_LIBTYPE_STATIC

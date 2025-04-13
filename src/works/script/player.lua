@@ -66,7 +66,7 @@ local player = {
     end,
     setup = function(self, map, map_size_x, map_size_y)
         self.model = Model()
-        self.model:load("triangle.sim")
+        self.model:load("triangle.glb")
         self.drawer = Draw3D(DEFAULT_TEXTURE)
         self.drawer.model = self.model
         self.aabb = AABB()
@@ -110,7 +110,7 @@ local player = {
         while decide_pos(map, map_size_x, map_size_y) == true do
         end
         self.drawer.position = Vector3(r1 * 2, r2 * 2, 1)
-        self.drawer.scale = Vector3(0.05, 0.05, 0.1)
+        self.drawer.scale = Vector3(1, 1, 1)
         self.hp_drawer.position.x = 0
         self.hp_drawer.position.y = 300
         self.tex_scope = Texture()

@@ -60,187 +60,135 @@ void Model::load(std::string_view str) {
   std::stringstream data;
   data << DataStream::open_as_string(AssetType::Model, str);
   std::string str_name = str.data();
-  if (str_name.ends_with(".sim")) {
-    std::string line;
-    load_state state = load_state::version;
-    std::string version;
-    std::size_t index;
-    while (std::getline(data, line)) {
-      switch (state) {
-      case load_state::version:
-        if (line.starts_with("version ")) {
-          version = line.substr(8, 5);
-        } else if (line.starts_with("begin vertex")) {
-          state = load_state::vertex;
-        } else {
-          std::cerr << "invalid formats." << std::endl;
+
+  auto fileName = DataStream::convert_file_path(AssetType::Model, str_name);
+  // Assimp
+  auto &importer = modelData->importer;
+  modelData->scene =
+      importer.ReadFile(fileName.c_str(), aiProcess_ValidateDataStructure |
+                                              aiProcess_LimitBoneWeights |
+                                              aiProcess_JoinIdenticalVertices |
+                                              aiProcess_Triangulate);
+  auto &scene = modelData->scene;
+  if (!scene) {
+    std::cerr << "Error loading model: " << importer.GetErrorString()
+              << std::endl;
+    return;
+  }
+  if (scene->HasAnimations()) {
+    modelData->skeletalAnimation.Load(modelData->scene);
+    uint32_t vertexOffset = 0;
+    struct BoneData {
+      std::vector<uint32_t> ids;
+      std::vector<float> weights;
+      Color color;
+    };
+    auto &boneMap = modelData->skeletalAnimation.boneMap;
+    for (int i = 0; i < scene->mNumMeshes; i++) {
+      const aiMesh *mesh = scene->mMeshes[i];
+      std::unordered_map<uint32_t, BoneData> boneData;
+
+      for (uint32_t j = 0; j < mesh->mNumBones; j++) {
+        aiBone *bone = mesh->mBones[j];
+        std::string boneName = bone->mName.C_Str();
+
+        if (!boneMap.contains(boneName)) {
+          boneMap[boneName].index = static_cast<uint32_t>(boneMap.size());
+          boneMap[boneName].offsetMatrix = ConvertMatrix(bone->mOffsetMatrix);
         }
-        break;
-      case load_state::vertex: {
-        if (line.starts_with("end vertex"))
-          break;
-        if (line.starts_with("begin indices"))
-          state = load_state::indices;
+
+        uint32_t index = boneMap[boneName].index;
+
+        auto rgba = Color(Random::get_float_range(0.5f, 1.0f),
+                          Random::get_float_range(0.5f, 1.0f),
+                          Random::get_float_range(0.5f, 1.0f), 1.0f);
+        for (uint32_t k = 0; k < bone->mNumWeights; ++k) {
+          uint32_t vertexId = bone->mWeights[k].mVertexId;
+          float weight = bone->mWeights[k].mWeight;
+          boneData[vertexId].ids.push_back(index);
+          boneData[vertexId].weights.push_back(weight);
+          boneData[vertexId].color = rgba;
+        }
+      }
+
+      for (uint32_t j = 0; j < mesh->mNumVertices; ++j) {
+        AnimationVertex v;
+        aiVector3D pos = mesh->mVertices[j];
+        aiVector3D norm = aiVector3D(0, 1, 0);
+        if (mesh->HasNormals()) {
+          norm = mesh->mNormals[j];
+        }
+        aiVector3D tex = mesh->HasTextureCoords(0) ? mesh->mTextureCoords[0][j]
+                                                   : aiVector3D();
+
+        v.position = glm::vec3(pos.x, pos.y, pos.z);
+        v.normal = glm::vec3(norm.x, norm.y, norm.z);
+        v.uv = glm::vec2(tex.x, tex.y);
+
+        v.rgba = boneData[j].color;
+        const auto &ids = boneData[j].ids;
+        const auto &ws = boneData[j].weights;
+        float temp = 0.f;
+        assert(ids.size() <= 4);
+        assert(ws.size() <= 4);
+        for (int k = 0; k < 4; ++k) {
+          v.boneIDs[k] = (k < ids.size()) ? float(ids[k]) : 0.0f;
+          v.boneWeights[k] = (k < ws.size()) ? ws[k] : 0.0f;
+        }
+
+        v_array.animationVertices.push_back(v);
+      }
+      // indices
+      for (uint32_t j = 0; j < mesh->mNumFaces; j++) {
+        const aiFace &face = mesh->mFaces[j];
+        for (uint32_t k = 0; k < face.mNumIndices; k++) {
+          uint32_t index = face.mIndices[k];
+          v_array.indices.push_back(vertexOffset + index);
+        }
+      }
+      vertexOffset += mesh->mNumVertices;
+    }
+  } else if (scene->HasMeshes()) {
+    // Iterate through the meshes
+    for (uint32_t i = 0; i < scene->mNumMeshes; i++) {
+      const aiMesh *mesh = scene->mMeshes[i];
+      // Process the mesh data
+      for (uint32_t j = 0; j < mesh->mNumVertices; j++) {
+        const aiVector3D &pos = mesh->mVertices[j];
+        const aiVector3D &norm = mesh->mNormals[j];
+        const aiVector3D &uv = mesh->mTextureCoords[0][j];
 
         Vertex v;
-        sscanf(line.data(), "%f %f %f %f %f %f %f %f %f %f %f %f\n",
-               &v.position.x, &v.position.y, &v.position.z, &v.normal.x,
-               &v.normal.y, &v.normal.z, &v.uv.x, &v.uv.y, &v.rgba.r, &v.rgba.g,
-               &v.rgba.b, &v.rgba.a);
+        v.position.x = pos.x;
+        v.position.y = pos.y;
+        v.position.z = pos.z;
+        v.normal.x = norm.x;
+        v.normal.y = norm.y;
+        v.normal.z = norm.z;
+        v.uv.x = uv.x;
+        v.uv.y = uv.y;
 
-        local_aabb.min.x = Math::Min(local_aabb.min.x, v.position.x);
-        local_aabb.min.y = Math::Min(local_aabb.min.y, v.position.y);
-        local_aabb.min.z = Math::Min(local_aabb.min.z, v.position.z);
-        local_aabb.max.x = Math::Max(local_aabb.max.x, v.position.x);
-        local_aabb.max.y = Math::Max(local_aabb.max.y, v.position.y);
-        local_aabb.max.z = Math::Max(local_aabb.max.z, v.position.z);
+        local_aabb.min.x =
+            Math::Min(local_aabb.min.x, static_cast<float>(pos.x));
+        local_aabb.min.y =
+            Math::Min(local_aabb.min.y, static_cast<float>(pos.y));
+        local_aabb.min.z =
+            Math::Min(local_aabb.min.z, static_cast<float>(pos.z));
+        local_aabb.max.x =
+            Math::Max(local_aabb.max.x, static_cast<float>(pos.x));
+        local_aabb.max.y =
+            Math::Max(local_aabb.max.y, static_cast<float>(pos.y));
+        local_aabb.max.z =
+            Math::Max(local_aabb.max.z, static_cast<float>(pos.z));
 
         v_array.vertices.push_back(v);
-      } break;
-      case load_state::indices: {
-
-        if (line.starts_with("end vertex"))
-          break;
-
-        uint32_t i;
-        sscanf(line.data(), "%u\n", &i);
-        v_array.indices.push_back(i);
-      } break;
-      default:
-        break;
       }
-    }
-  } else {
-
-    auto fileName = DataStream::convert_file_path(AssetType::Model, str_name);
-    // Assimp
-    auto &importer = modelData->importer;
-    modelData->scene = importer.ReadFile(
-        fileName.c_str(),
-        aiProcess_ValidateDataStructure | aiProcess_LimitBoneWeights |
-            aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
-    auto &scene = modelData->scene;
-    if (!scene) {
-      std::cerr << "Error loading model: " << importer.GetErrorString()
-                << std::endl;
-      return;
-    }
-    if (scene->HasAnimations()) {
-      modelData->skeletalAnimation.Load(modelData->scene);
-      uint32_t vertexOffset = 0;
-      struct BoneData {
-        std::vector<uint32_t> ids;
-        std::vector<float> weights;
-        Color color;
-      };
-      auto &boneMap = modelData->skeletalAnimation.boneMap;
-      for (int i = 0; i < scene->mNumMeshes; i++) {
-        const aiMesh *mesh = scene->mMeshes[i];
-        std::unordered_map<uint32_t, BoneData> boneData;
-
-        for (uint32_t j = 0; j < mesh->mNumBones; j++) {
-          aiBone *bone = mesh->mBones[j];
-          std::string boneName = bone->mName.C_Str();
-
-          if (!boneMap.contains(boneName)) {
-            boneMap[boneName].index = static_cast<uint32_t>(boneMap.size());
-            boneMap[boneName].offsetMatrix = ConvertMatrix(bone->mOffsetMatrix);
-          }
-
-          uint32_t index = boneMap[boneName].index;
-
-          auto rgba = Color(Random::get_float_range(0.5f, 1.0f),
-                            Random::get_float_range(0.5f, 1.0f),
-                            Random::get_float_range(0.5f, 1.0f), 1.0f);
-          for (uint32_t k = 0; k < bone->mNumWeights; ++k) {
-            uint32_t vertexId = bone->mWeights[k].mVertexId;
-            float weight = bone->mWeights[k].mWeight;
-            boneData[vertexId].ids.push_back(index);
-            boneData[vertexId].weights.push_back(weight);
-            boneData[vertexId].color = rgba;
-          }
-        }
-
-        for (uint32_t j = 0; j < mesh->mNumVertices; ++j) {
-          AnimationVertex v;
-          aiVector3D pos = mesh->mVertices[j];
-          aiVector3D norm = aiVector3D(0, 1, 0);
-          if (mesh->HasNormals()) {
-            norm = mesh->mNormals[j];
-          }
-          aiVector3D tex = mesh->HasTextureCoords(0)
-                               ? mesh->mTextureCoords[0][j]
-                               : aiVector3D();
-
-          v.position = glm::vec3(pos.x, pos.y, pos.z);
-          v.normal = glm::vec3(norm.x, norm.y, norm.z);
-          v.uv = glm::vec2(tex.x, tex.y);
-
-          v.rgba = boneData[j].color;
-          const auto &ids = boneData[j].ids;
-          const auto &ws = boneData[j].weights;
-          float temp = 0.f;
-          assert(ids.size() <= 4);
-          assert(ws.size() <= 4);
-          for (int k = 0; k < 4; ++k) {
-            v.boneIDs[k] = (k < ids.size()) ? float(ids[k]) : 0.0f;
-            v.boneWeights[k] = (k < ws.size()) ? ws[k] : 0.0f;
-          }
-
-          v_array.animationVertices.push_back(v);
-        }
-        // indices
-        for (uint32_t j = 0; j < mesh->mNumFaces; j++) {
-          const aiFace &face = mesh->mFaces[j];
-          for (uint32_t k = 0; k < face.mNumIndices; k++) {
-            uint32_t index = face.mIndices[k];
-            v_array.indices.push_back(vertexOffset + index);
-          }
-        }
-        vertexOffset += mesh->mNumVertices;
-      }
-    } else if (scene->HasMeshes()) {
-      // Iterate through the meshes
-      for (uint32_t i = 0; i < scene->mNumMeshes; i++) {
-        const aiMesh *mesh = scene->mMeshes[i];
-        // Process the mesh data
-        for (uint32_t j = 0; j < mesh->mNumVertices; j++) {
-          const aiVector3D &pos = mesh->mVertices[j];
-          const aiVector3D &norm = mesh->mNormals[j];
-          const aiVector3D &uv = mesh->mTextureCoords[0][j];
-
-          Vertex v;
-          v.position.x = pos.x;
-          v.position.y = pos.y;
-          v.position.z = pos.z;
-          v.normal.x = norm.x;
-          v.normal.y = norm.y;
-          v.normal.z = norm.z;
-          v.uv.x = uv.x;
-          v.uv.y = uv.y;
-
-          local_aabb.min.x =
-              Math::Min(local_aabb.min.x, static_cast<float>(pos.x));
-          local_aabb.min.y =
-              Math::Min(local_aabb.min.y, static_cast<float>(pos.y));
-          local_aabb.min.z =
-              Math::Min(local_aabb.min.z, static_cast<float>(pos.z));
-          local_aabb.max.x =
-              Math::Max(local_aabb.max.x, static_cast<float>(pos.x));
-          local_aabb.max.y =
-              Math::Max(local_aabb.max.y, static_cast<float>(pos.y));
-          local_aabb.max.z =
-              Math::Max(local_aabb.max.z, static_cast<float>(pos.z));
-
-          v_array.vertices.push_back(v);
-        }
-        // Process the indices
-        for (uint32_t j = 0; j < mesh->mNumFaces; j++) {
-          const aiFace &face = mesh->mFaces[j];
-          for (uint32_t k = 0; k < face.mNumIndices; k++) {
-            uint32_t index = face.mIndices[k];
-            v_array.indices.push_back(index);
-          }
+      // Process the indices
+      for (uint32_t j = 0; j < mesh->mNumFaces; j++) {
+        const aiFace &face = mesh->mFaces[j];
+        for (uint32_t k = 0; k < face.mNumIndices; k++) {
+          uint32_t index = face.mIndices[k];
+          v_array.indices.push_back(index);
         }
       }
     }

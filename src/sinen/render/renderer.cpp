@@ -1,7 +1,5 @@
 #include "render_system.hpp"
-#include "texture/render_texture.hpp"
-#include <model/vertex.hpp>
-#include <model/vertex_array.hpp>
+#include <asset/asset.hpp>
 #include <render/renderer.hpp>
 
 namespace sinen {

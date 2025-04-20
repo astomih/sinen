@@ -7,14 +7,13 @@
 #include <unordered_map>
 #include <vector>
 
-#include "../color/color.hpp"
-#include "../drawable/drawable.hpp"
-#include "../model/model.hpp"
-#include "../model/vertex_array.hpp"
-#include "../shader/shader.hpp"
-#include "../texture/render_texture.hpp"
-#include "../texture/texture.hpp"
-#include "render/render_pipeline.hpp"
+#include "../asset/model/model.hpp"
+#include "../asset/model/vertex_array.hpp"
+#include "../asset/shader/shader.hpp"
+#include "../asset/texture/render_texture.hpp"
+#include "../asset/texture/texture.hpp"
+#include "../math/color/color.hpp"
+#include "drawable/drawable.hpp"
 #include "render_pipeline.hpp"
 
 namespace sinen {

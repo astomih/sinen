@@ -3,13 +3,14 @@
 // internal
 #include <sinen.hpp>
 
-#include "audio/sound_system.hpp"
-#include "input/input_system.hpp"
+#include "asset/audio/sound_system.hpp"
+#include "asset/script/script_system.hpp"
+#include "logic/scene/scene_system.hpp"
 #include "math/random_system.hpp"
+#include "platform/input/input_system.hpp"
+#include "platform/window/window_system.hpp"
 #include "render/render_system.hpp"
-#include "scene/scene_system.hpp"
-#include "script/script_system.hpp"
-#include "window/window_system.hpp"
+
 
 // external
 #define SDL_MAIN_HANDLED

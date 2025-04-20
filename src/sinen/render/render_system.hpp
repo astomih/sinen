@@ -5,16 +5,13 @@
 #include <list>
 #include <memory>
 // internal
-#include <allocator/pool_allocator.hpp>
-#include <color/color.hpp>
-#include <color/palette.hpp>
-#include <drawable/drawable.hpp>
+#include <asset/asset.hpp>
+#include <core/allocator/pool_allocator.hpp>
+#include <math/color/color.hpp>
+#include <math/color/palette.hpp>
 #include <math/math.hpp>
-#include <model/model.hpp>
-#include <model/vertex_array.hpp>
+#include <render/drawable/drawable.hpp>
 #include <render/renderer.hpp>
-#include <shader/shader.hpp>
-#include <texture/texture.hpp>
 
 namespace sinen {
 class RendererImpl {

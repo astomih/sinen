@@ -1,6 +1,6 @@
 #ifndef SINEN_PERIODIC_HPP
 #define SINEN_PERIODIC_HPP
-#include "../time/time.hpp"
+#include <core/time/time.hpp>
 namespace sinen {
 class Periodic {
 public:

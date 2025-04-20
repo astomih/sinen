@@ -1,17 +1,13 @@
 #include "../include/script_engine.hpp"
-#include <audio/music.hpp>
-#include <audio/sound.hpp>
-#include <camera/camera.hpp>
-#include <font/font.hpp>
 #include <functional>
-#include <io/data_stream.hpp>
-#include <math/random.hpp>
-#include <model/model.hpp>
-#include <render/renderer.hpp>
-#include <scene/scene.hpp>
-#include <script/script.hpp>
 #include <sol/sol.hpp>
-#include <time/timer.hpp>
+
+#include <asset/asset.hpp>
+#include <core/core.hpp>
+#include <logic/logic.hpp>
+#include <math/math.hpp>
+#include <render/render.hpp>
+
 
 #include "glm/ext/vector_float3.hpp"
 // glm::rotate

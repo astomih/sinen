@@ -1,28 +1,30 @@
 #include "px_renderer.hpp"
 
-#include "../window/window_system.hpp"
-#include "drawable/instance_data.hpp"
+#include "../platform/window/window_system.hpp"
 #include "paranoixa/paranoixa.hpp"
 #include "render/renderer.hpp"
 #include "render_system.hpp"
 #include <SDL3/SDL.h>
 #include <cassert>
-#include <io/data_stream.hpp>
+#include <core/io/data_stream.hpp>
 #include <memory>
-#include <window/window.hpp>
+#include <platform/window/window.hpp>
+#include <render/drawable/instance_data.hpp>
 
 #include <imgui.h>
 #include <imgui_impl_paranoixa.hpp>
 #include <imgui_impl_sdl3.h>
 
-#include "../model/model_data.hpp"
-#include "../script/script_system.hpp"
-#include "../texture/texture_data.hpp"
-#include "script/script.hpp"
+#include "../asset/model/model_data.hpp"
+#include "../asset/script/script_system.hpp"
+#include "../asset/texture/texture_data.hpp"
+#include <asset/script/script.hpp>
 #include <sol/sol.hpp>
 
-#include "../scene/scene_system.hpp"
-#include "texture/render_texture.hpp"
+#include "../logic/scene/scene_system.hpp"
+#include <asset/texture/render_texture.hpp>
+
+
 // TODO:
 // - Refactoring
 // - Shadow mapping

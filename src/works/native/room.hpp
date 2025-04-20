@@ -1,8 +1,8 @@
 #ifndef DTS_ROOM_HPP
 #define DTS_ROOM_HPP
 #include "glm/ext/vector_int2.hpp"
-#include <sinen/graph/grid.hpp>
-#include <sinen/math/random.hpp>
+#include <math/graph/grid.hpp>
+#include <math/random.hpp>
 
 namespace dts {
 class room {

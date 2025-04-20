@@ -1,8 +1,9 @@
-#include "model/vertex.hpp"
 #include "px_renderer.hpp"
 #include "render_system.hpp"
+#include <asset/model/vertex.hpp>
 #include <cstddef>
 #include <render/render_pipeline.hpp>
+
 namespace sinen {
 
 static px::VertexInputState CreateVertexInputState(px::Allocator *allocator,

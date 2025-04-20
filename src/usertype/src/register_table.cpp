@@ -1,15 +1,11 @@
 #include "register_script.hpp"
 
-#include <render/renderer.hpp>
-#include <scene/scene.hpp>
-#include <window/window.hpp>
-
-#include <input/gamepad.hpp>
-#include <input/keyboard.hpp>
-#include <input/mouse.hpp>
-#include <math/periodic.hpp>
-#include <math/random.hpp>
-#include <time/time.hpp>
+#include <asset/asset.hpp>
+#include <core/core.hpp>
+#include <logic/logic.hpp>
+#include <math/math.hpp>
+#include <platform/platform.hpp>
+#include <render/render.hpp>
 
 namespace sinen {
 void register_table(sol::state &lua) {

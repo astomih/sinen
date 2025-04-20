@@ -1,12 +1,12 @@
 #include "render_system.hpp"
-#include "../model/default_model_creator.hpp"
+#include "../asset/model/default_model_creator.hpp"
 #include "px_renderer.hpp"
-#include "texture/render_texture.hpp"
+#include <asset/model/vertex.hpp>
+#include <asset/model/vertex_array.hpp>
+#include <asset/texture/render_texture.hpp>
+#include <core/io/asset_type.hpp>
+#include <core/io/data_stream.hpp>
 #include <cstdint>
-#include <io/asset_type.hpp>
-#include <io/data_stream.hpp>
-#include <model/vertex.hpp>
-#include <model/vertex_array.hpp>
 #include <render/renderer.hpp>
 
 #include <imgui.h>

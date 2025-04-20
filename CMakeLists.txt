@@ -86,7 +86,7 @@ set(SINEN_INCLUDE_DIRS
   libs/glm
 )
 file(
-  GLOB
+  GLOB_RECURSE
   SOURCE_FILES
   src/sinen/*.cpp
   src/sinen/*/*.cpp

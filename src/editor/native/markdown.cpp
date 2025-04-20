@@ -3,8 +3,8 @@
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 #include <imgui_markdown.h>
-#include <io/file.hpp>
-#include <logger/logger.hpp>
+#include <core/io/file.hpp>
+#include <core/logger/logger.hpp>
 #include <string>
 
 #if _WIN32

@@ -1,7 +1,7 @@
 #include "glm/ext/vector_int2.hpp"
 #include "register_script.hpp"
-#include <graph/bfs_grid.hpp>
-#include <graph/grid.hpp>
+#include <math/graph/bfs_grid.hpp>
+#include <math/graph/grid.hpp>
 
 namespace sinen {
 void register_graph(sol::state &lua) {

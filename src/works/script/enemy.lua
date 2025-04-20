@@ -10,13 +10,13 @@ end
 
 local enemy_model = {}
 enemy_model[1] = Model()
-enemy_model[1]:load("enemy1.sim")
+enemy_model[1]:load("enemy.glb")
 enemy_model[2] = Model()
-enemy_model[2]:load("bat.sim")
+enemy_model[2]:load("enemy.glb")
 enemy_model[3] = Model()
-enemy_model[3]:load("lizard.sim")
+enemy_model[3]:load("enemy.glb")
 enemy_model[4] = Model()
-enemy_model[4]:load("frog.sim")
+enemy_model[4]:load("enemy.glb")
 for i = 1, 4 do
     enemy_model[i]:aabb().max.z = 10.0
     enemy_model[i]:aabb().min.z = -10.0
@@ -56,13 +56,13 @@ local enemy = function()
             self.drawer = Draw3D(DEFAULT_TEXTURE)
             if NOW_STAGE == 1 then
                 self.drawer.model = enemy_model[1]
-                self.drawer.scale = Vector3(0.1, 0.1, 0.1)
+                self.drawer.scale = Vector3(1, 1, 1)
                 self.model_index = 1
             end
             if NOW_STAGE == 2 then
                 if math.random(0, 1) == 0 then
                     self.drawer.model = enemy_model[2]
-                    self.drawer.scale = Vector3(0.4, 0.4, 0.4)
+                    self.drawer.scale = Vector3(1, 1, 1)
                     self.model_index = 2
                 else
                     self.drawer.model = enemy_model[3]

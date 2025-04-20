@@ -4,41 +4,23 @@
 // RHI
 #include <paranoixa/paranoixa.hpp>
 
-#include "allocator/pool_allocator.hpp"
-#include "allocator/stack_allocator.hpp"
-#include "audio/music.hpp"
-#include "audio/sound.hpp"
-#include "camera/camera.hpp"
-#include "color/color.hpp"
-#include "color/hsv.hpp"
-#include "color/palette.hpp"
-#include "drawable/drawable.hpp"
-#include "drawable/drawable_wrapper.hpp"
-#include "font/font.hpp"
-#include "graph/bfs_grid.hpp"
-#include "graph/grid.hpp"
-#include "input/gamepad.hpp"
-#include "input/keyboard.hpp"
-#include "input/mouse.hpp"
-#include "io/data_stream.hpp"
-#include "io/file.hpp"
-#include "io/json.hpp"
-#include "logger/logger.hpp"
+// Asset
+#include "asset/asset.hpp"
+
+// Core
+#include "core/core.hpp"
+
+// Logic
+#include "logic/logic.hpp"
+
+// Math
 #include "math/math.hpp"
-#include "math/random.hpp"
-#include "model/model.hpp"
-#include "model/vertex.hpp"
-#include "model/vertex_array.hpp"
-#include "physics/collision.hpp"
-#include "physics/physics.hpp"
-#include "physics/primitive2.hpp"
-#include "render/renderer.hpp"
-#include "scene/scene.hpp"
-#include "script/script.hpp"
-#include "shader/shader.hpp"
-#include "time/time.hpp"
-#include "time/timer.hpp"
-#include "window/window.hpp"
+
+// Platform
+#include "platform/platform.hpp"
+
+// Render
+#include "render/render.hpp"
 
 namespace sinen {
 /**

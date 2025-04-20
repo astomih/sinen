@@ -13,14 +13,12 @@ local sprite = {}
 local menu = {}
 local stair = {}
 -- assets
-local tree = Model()
 local tile = Texture()
 tile:fill_color(Color(0.416, 0.204, 0.153, 1))
 
 local score_font = Font()
 local score_texture = Texture()
 local score_drawer = Draw2D(score_texture)
-tree:load("tree.sim")
 local stair_texture = Texture()
 stair_texture:fill_color(Color(1, 0.5, 0.5, 0.5))
 
@@ -51,7 +49,6 @@ map:set(map_size_x / 2 + 1, map_size_y / 2 + 1, MAP_CHIP.PLAYER)
 map:set(2, 2, MAP_CHIP.STAIR)
 
 box = Draw3D(DEFAULT_TEXTURE)
-box.model = tree
 sprite = Draw3D(tile)
 sprite.is_draw_depth = false
 local sprite_model = Model()
@@ -81,7 +78,7 @@ for y = 1, map_size_y do
         map_draw3ds[y][x].scale)
     end
     if map:at(x, y) == MAP_CHIP.WALL then
-      map_draw3ds[y][x].position.z = 0
+      map_draw3ds[y][x].position.z = 0.5
       map_draw3ds[y][x].aabb = AABB()
       map_draw3ds[y][x].aabb.max =
           map_draw3ds[y][x].position + map_draw3ds[y][x].scale
@@ -126,7 +123,7 @@ function Draw()
       if (1 <= x and x <= map_size_x and 1 <= y and y <= map_size_y) then
         if map:at(x, y) == MAP_CHIP.WALL then
           box:add(map_draw3ds[y][x].position, map_draw3ds[y][x].rotation,
-            Vector3(0.5, 0.5, 0.5))
+            Vector3(1.5, 1.5, 1.5))
         end
       end
     end

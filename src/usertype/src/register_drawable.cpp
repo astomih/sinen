@@ -1,6 +1,6 @@
 #include "register_script.hpp"
 
-#include <drawable/drawable_wrapper.hpp>
+#include <render/drawable/drawable_wrapper.hpp>
 
 namespace sinen {
 void register_drawable(sol::state &lua) {

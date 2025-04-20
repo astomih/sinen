@@ -1,6 +1,6 @@
 #ifndef SINEN_RENDER_PIPELINE_HPP
 #define SINEN_RENDER_PIPELINE_HPP
-#include "../shader/shader.hpp"
+#include "../asset/shader/shader.hpp"
 #include "paranoixa/paranoixa.hpp"
 
 namespace sinen {

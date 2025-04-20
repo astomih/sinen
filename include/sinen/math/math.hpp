@@ -1,5 +1,8 @@
 #ifndef SINEN_MATH_HPP
 #define SINEN_MATH_HPP
+#include "color/color.hpp"
+#include "periodic.hpp"
+#include "random.hpp"
 #include <algorithm>
 #include <cmath>
 #include <cstring>
@@ -7,6 +10,7 @@
 #include <limits>
 #include <numbers>
 #include <vector>
+
 namespace sinen {
 class Math {
 public:

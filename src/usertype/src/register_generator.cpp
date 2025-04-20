@@ -1,14 +1,9 @@
-#include <audio/music.hpp>
-#include <audio/sound.hpp>
-#include <camera/camera.hpp>
-#include <font/font.hpp>
-#include <io/data_stream.hpp>
-#include <math/random.hpp>
-#include <model/model.hpp>
-#include <render/renderer.hpp>
-#include <script/script.hpp>
+#include <asset/asset.hpp>
+#include <core/core.hpp>
+#include <logic/logic.hpp>
+#include <render/render.hpp>
 #include <sol/sol.hpp>
-#include <time/timer.hpp>
+
 
 #include "glm/ext/vector_float2.hpp"
 #include "glm/ext/vector_int2.hpp"

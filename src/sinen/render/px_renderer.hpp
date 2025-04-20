@@ -2,12 +2,12 @@
 #define SINEN_PX_RENDERER_HPP
 
 #include "render/renderer.hpp"
-#include "texture/render_texture.hpp"
+#include <asset/model/model.hpp>
+#include <asset/model/vertex_array.hpp>
+#include <asset/texture/render_texture.hpp>
 #include <cstdint>
-#include <drawable/drawable.hpp>
-#include <model/model.hpp>
-#include <model/vertex_array.hpp>
 #include <paranoixa/paranoixa.hpp>
+#include <render/drawable/drawable.hpp>
 #include <render/render_pipeline.hpp>
 
 #include <optional>

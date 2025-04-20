@@ -2,8 +2,8 @@
 #include "corridor.hpp"
 #include "glm/ext/vector_int2.hpp"
 #include "room.hpp"
-#include <sinen/graph/bfs_grid.hpp>
-#include <sinen/script/script.hpp>
+#include <math/graph/bfs_grid.hpp>
+#include <asset/script/script.hpp>
 #include <sol/sol.hpp>
 
 namespace dts {

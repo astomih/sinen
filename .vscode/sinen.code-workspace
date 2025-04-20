@@ -92,6 +92,14 @@
 			{
 				"type": "cppvsdbg",
 				"request": "launch",
+				"name": "Launch private vs2022",
+				"program": "${workspaceFolder}/build/vs2022/src/private/debug/private",
+				"args": [],
+				"cwd": "${workspaceFolder}/src/private"
+			},
+			{
+				"type": "cppvsdbg",
+				"request": "launch",
 				"name": "Launch editor vs2022",
 				"program": "${workspaceFolder}/build/vs2022/src/editor/debug/editor",
 				"args": [],

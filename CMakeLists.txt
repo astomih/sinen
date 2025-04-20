@@ -57,6 +57,13 @@ add_subdirectory(./src/usertype EXCLUDE_FROM_ALL)
 add_subdirectory(./src/rt_shader_compiler EXCLUDE_FROM_ALL)
 add_subdirectory(./src/works)
 
+# private
+option(SINEN_BUILD_PRIVATE "Build private project" OFF)
+
+if(SINEN_BUILD_PRIVATE)
+  add_subdirectory(./src/private)
+endif()
+
 if(NOT MSVC)
   set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g -O0 -DDEBUG")
   set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -march=native")

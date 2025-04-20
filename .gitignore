@@ -373,3 +373,7 @@ imgui.ini
 
 
 *.lnk
+
+
+# Private hobby project
+[Pp]rivate/

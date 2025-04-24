@@ -4,7 +4,12 @@
 
 #include <glm/mat4x4.hpp>
 
+#include "../physics/collision.hpp"
+
 namespace sinen {
+struct Frustum {
+  glm::vec4 planes[6]; // x, y, z, w: ax + by + cz + d = 0
+};
 /**
  * @brief Camera class
  *
@@ -38,6 +43,15 @@ public:
    * @param far Far plane
    */
   void orthographic(float width, float height, float near, float far);
+
+  /**
+   * @brief Check if AABB is in frustum
+   *
+   * @param aabb AABB to check world space AABB
+   * @return true AABB is in frustum
+   * @return false AABB is not in frustum
+   */
+  bool is_aabb_in_frustum(const AABB &aabb);
   /**
    * @brief Get the position of camera
    *
@@ -80,6 +94,9 @@ private:
   glm::mat4 m_view;
   // projection
   glm::mat4 m_projection;
+
+  bool update_frustum = false;
+  Frustum frustum;
 };
 } // namespace sinen
 #endif

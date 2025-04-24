@@ -16,7 +16,8 @@ public:
   static glm::vec2 get_position_on_scene();
   static void hide_cursor(bool hide);
   static glm::vec2 get_scroll_wheel();
-  static bool IsRelative();
+  static void set_relative(bool is_relative);
+  static bool is_relative();
   // For buttons
   static bool is_down(code _button);
   static bool is_pressed(code _button);

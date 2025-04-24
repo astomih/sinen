@@ -3,6 +3,8 @@
 
 #include "SDL3/SDL_mouse.h"
 #include "input_system.hpp"
+#include "platform/input/mouse.hpp"
+#include "platform/window/window.hpp"
 #include <cstring>
 #include <imgui_impl_sdl3.h>
 #include <logic/scene/scene.hpp>
@@ -104,6 +106,14 @@ glm::vec2 Mouse::get_position_on_scene() {
 
 glm::vec2 Mouse::get_scroll_wheel() {
   return input_system::m_mouse.mScrollWheel;
+}
+
+void Mouse::set_relative(bool is_relative) {
+  SDL_SetWindowRelativeMouseMode(WindowImpl::get_sdl_window(), is_relative);
+}
+
+bool Mouse::is_relative() {
+  return SDL_GetWindowRelativeMouseMode(WindowImpl::get_sdl_window());
 }
 
 void Mouse::hide_cursor(bool hide) {

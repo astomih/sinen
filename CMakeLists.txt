@@ -4,8 +4,7 @@ project(sinen)
 option(SINEN_EXTERNAL_ALL_BUILD "Build all external libralies" ON)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-set(SINEN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(SINEN_SOURCE_DIR ${CMAKE_SOURCE_DIR})
 
 if(SINEN_EXTERNAL_ALL_BUILD)
   set(SDL_SHARED ${BUILD_SHARED_LIBS})
@@ -46,6 +45,8 @@ endif()
 add_subdirectory(./libs/SDL_mixer EXCLUDE_FROM_ALL)
 add_subdirectory(./libs/sol2 EXCLUDE_FROM_ALL)
 
+add_subdirectory(./src/sinen)
+
 set(PARANOIXA_BUILD_SDL3 OFF)
 add_subdirectory(./libs/paranoixa EXCLUDE_FROM_ALL)
 
@@ -69,50 +70,15 @@ if(NOT MSVC)
   set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -march=native")
 endif()
 
-set(SINEN_INCLUDE_DIRS
-  .
-  ./include
-  ./include/sinen
-  ./usertype/include
-  libs/paranoixa/library/imgui
-  libs/paranoixa/library/imgui/backends
-  libs/sol2/include
-  libs/Lua/include
-  libs/mojoAL-SDL3/AL
-  libs/rapidjson/include
-  libs/mojoAL-SDL3
-  libs/tinygltf
-  ${SDL3_INCLUDE_FILES}
-  libs/SDL_mixer/include
-  libs/SDL_ttf/include
-  libs/paranoixa/include
-  libs/paranoixa/source/imgui_backend
-  src/usertype/include
-  src/rt_shader_compiler/include
-  libs/assimp/include
-  libs/glm
-)
-file(
-  GLOB_RECURSE
-  SOURCE_FILES
-  src/sinen/*.cpp
-  src/sinen/*/*.cpp
-  libs/Lua/source/*.c
-  libs/mojoAL-SDL3/*.c)
-file(
-  GLOB_RECURSE
-  HEADER_FILES
-  include/*.hpp
-  src/*.hpp
-  include/*.inl
-)
-add_library(sinen STATIC ${SOURCE_FILES} ${HEADER_FILES})
+add_library(sinen STATIC src/dummy.cpp)
 target_include_directories(
-  sinen PUBLIC ${SINEN_INCLUDE_DIRS} ${SDL3_INCLUDE_PATHS})
+  sinen PUBLIC ${SINEN_CORE_INCLUDE_DIRS} ${SDL3_INCLUDE_PATHS})
 
 if(NOT SINEN_EXTERNAL_ALL_BUILD)
   target_link_libraries(
     sinen
+    PRIVATE
+    sinen_core
     paranoixa
     paranoixa_imgui_backend
     SDL3::SDL3

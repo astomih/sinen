@@ -77,7 +77,7 @@ public:
   }
   static void set_run_script(bool is_run);
 
-  static Camera &main_camera() { return m_main_camera; }
+  static Camera &camera() { return m_main_camera; }
 
   /**
    * @brief Set the screen size

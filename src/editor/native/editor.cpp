@@ -307,10 +307,10 @@ void editor::update(float delta_time) {
   // Camera moved by mouse
   {
     // Normalize camera angle vector
-    auto vec = Scene::main_camera().target() - Scene::main_camera().position();
+    auto vec = Scene::camera().target() - Scene::camera().position();
     if (vec.length() > 0.1) {
       vec = glm::normalize(vec);
-      Scene::main_camera().position() += vec * Mouse::get_scroll_wheel().y;
+      Scene::camera().position() += vec * Mouse::get_scroll_wheel().y;
     }
     static glm::vec2 prev;
     if (Mouse::is_down(Mouse::code::RIGHT)) {
@@ -326,15 +326,14 @@ void editor::update(float delta_time) {
         //     Scene::main_camera().view().get_z_axis() * pos.y * delta_time;
 
       } else {
-        Scene::main_camera().target().x += pos.x * delta_time;
-        Scene::main_camera().target().y -= pos.y * delta_time;
+        Scene::camera().target().x += pos.x * delta_time;
+        Scene::camera().target().y -= pos.y * delta_time;
       }
     }
     prev = Mouse::get_position();
   }
-  Scene::main_camera().lookat(Scene::main_camera().position(),
-                              Scene::main_camera().target(),
-                              Scene::main_camera().up());
+  Scene::camera().lookat(Scene::camera().position(), Scene::camera().target(),
+                         Scene::camera().up());
 }
 void editor::run() {
 #ifdef _WIN32

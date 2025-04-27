@@ -27,7 +27,7 @@ local function camera_controller()
       self.target = Vector3(self.position.x,
         self.position.y + self.py,
         self.position.z - self.pz)
-      scene.main_camera():lookat(self.position, self.target, Vector3(0, 0, 1))
+      scene.camera():lookat(self.position, self.target, Vector3(0, 0, 1))
     end
   }
   return object

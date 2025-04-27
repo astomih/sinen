@@ -44,7 +44,7 @@ function Update()
     pos.y = pos.y - speed
   end
 
-  scene.main_camera():lookat(pos, Vector3(0, 0, 0), Vector3(0, 1, 0))
+  scene.camera():lookat(pos, Vector3(0, 0, 0), Vector3(0, 1, 0))
 end
 
 function Draw()

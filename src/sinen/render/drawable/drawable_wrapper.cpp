@@ -108,8 +108,8 @@ void Draw3D::draw() {
 
   auto world = t * r * s;
   obj->param.world = world;
-  obj->param.proj = Scene::main_camera().projection();
-  obj->param.view = Scene::main_camera().view();
+  obj->param.proj = Scene::camera().projection();
+  obj->param.view = Scene::camera().view();
   if (GetModelData(this->model.data)->vertexBuffer == nullptr) {
     obj->model = RendererImpl::box;
   } else

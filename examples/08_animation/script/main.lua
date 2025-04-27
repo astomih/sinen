@@ -19,8 +19,7 @@ pipeline:build()
 
 
 local pos = Vector3(0, -3, 1)
-local speed = 0.01
-scene.main_camera():lookat(pos, Vector3(0, 0, 1), Vector3(0, 0, 1))
+scene.camera():lookat(pos, Vector3(0, 0, 1), Vector3(0, 0, 1))
 
 model:play(0)
 function Update()

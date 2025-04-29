@@ -36,9 +36,8 @@ file(
   GLOB_RECURSE
   SOURCE_FILES
   ${SINEN_SOURCE_DIR}/src/sinen/*.cpp
-  ${SINEN_SOURCE_DIR}/src/sinen/*/*.cpp
-  ${SINEN_SOURCE_DIR}/libs/Lua/source/*.c
-  ${SINEN_SOURCE_DIR}/libs/mojoAL-SDL3/*.c)
+  ${SINEN_SOURCE_DIR}/libs/mojoAL-SDL3/*.c
+)
 file(
   GLOB_RECURSE
   HEADER_FILES
@@ -61,6 +60,7 @@ if(NOT SINEN_EXTERNAL_ALL_BUILD)
     SDL3_ttf
     rt_shader_compiler
     assimp
+    lua
   )
 else()
   target_link_libraries(
@@ -73,6 +73,7 @@ else()
     SDL3_ttf::SDL3_ttf
     rt_shader_compiler
     assimp
+    lua
   )
 endif()
 

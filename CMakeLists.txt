@@ -43,6 +43,7 @@ else()
 endif()
 
 add_subdirectory(./libs/SDL_mixer EXCLUDE_FROM_ALL)
+add_subdirectory(./libs/Lua)
 add_subdirectory(./libs/sol2 EXCLUDE_FROM_ALL)
 
 add_subdirectory(./src/sinen)
@@ -56,29 +57,22 @@ add_subdirectory(./src/editor)
 # add_subdirectory(./test)
 add_subdirectory(./src/usertype EXCLUDE_FROM_ALL)
 add_subdirectory(./src/rt_shader_compiler EXCLUDE_FROM_ALL)
-add_subdirectory(./src/works)
-
-# private
-option(SINEN_BUILD_PRIVATE "Build private project" OFF)
-
-if(SINEN_BUILD_PRIVATE)
-  add_subdirectory(./src/private)
-endif()
 
 if(NOT MSVC)
   set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g -O0 -DDEBUG")
   set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -march=native")
 endif()
 
-add_library(sinen STATIC src/dummy.cpp)
+add_executable(sinen src/main.cpp)
 target_include_directories(
   sinen PUBLIC ${SINEN_CORE_INCLUDE_DIRS} ${SDL3_INCLUDE_PATHS})
 
 if(NOT SINEN_EXTERNAL_ALL_BUILD)
   target_link_libraries(
     sinen
-    PRIVATE
+    PUBLIC
     sinen_core
+    script_engine
     paranoixa
     paranoixa_imgui_backend
     SDL3::SDL3
@@ -87,10 +81,14 @@ if(NOT SINEN_EXTERNAL_ALL_BUILD)
     SDL3_ttf
     rt_shader_compiler
     assimp
+    lua
   )
 else()
   target_link_libraries(
     sinen
+    PUBLIC
+    sinen_core
+    script_engine
     paranoixa
     paranoixa_imgui_backend
     SDL3::SDL3
@@ -99,6 +97,7 @@ else()
     SDL3_ttf::SDL3_ttf
     rt_shader_compiler
     assimp
+    lua
   )
 endif()
 

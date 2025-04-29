@@ -15,15 +15,22 @@ public:
   /**
    * @brief Get the state object
    *
-   * @return void* sol::state
+   * @return void* lua_State*
    */
-  static void *get_state();
+  void *get_state();
+
+  /**
+   * @brief Get the sol library state object
+   *
+   * @return void* sol::state*
+   */
+  void *get_sol_state();
   /**
    * @brief Do lua script
    *
    * @param fileName lua script file
    */
-  static void do_script(std::string_view fileName);
+  void do_script(std::string_view fileName);
   // Table handler
   using table_handler = void *;
   /**
@@ -32,7 +39,7 @@ public:
    * @param table_name table name string
    * @return table_handler table handler
    */
-  static table_handler new_table(std::string_view tableName);
+  table_handler new_table(std::string_view tableName);
   /**
    * @brief Register function
    *
@@ -40,9 +47,8 @@ public:
    * @param function function ptr
    * @param table table handler
    */
-  static void register_function(std::string_view name,
-                                std::function<void()> function,
-                                table_handler = nullptr);
+  void register_function(std::string_view name, std::function<void()> function,
+                         table_handler = nullptr);
 
 private:
 };

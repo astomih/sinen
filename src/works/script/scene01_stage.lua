@@ -1,3 +1,4 @@
+local dungeon_generator = require("dungeon_generator/dungeon_generator")
 local player = require "player"
 local enemy = require "enemy"
 local enemies = {}
@@ -38,7 +39,7 @@ DEFAULT_TEXTURE = Texture()
 DEFAULT_TEXTURE:fill_color(Color(1, 1, 1, 1))
 map:fill(0)
 map_z:fill(0)
-dts.dungeon_generator(map)
+dungeon_generator(map, MAP_CHIP.FLOOR, MAP_CHIP.WALL, MAP_CHIP.PLAYER, MAP_CHIP.KEY, MAP_CHIP.STAIR)
 
 box = Draw3D(DEFAULT_TEXTURE)
 local sprite_model = Model()

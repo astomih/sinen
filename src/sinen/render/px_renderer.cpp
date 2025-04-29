@@ -24,7 +24,6 @@
 #include "../logic/scene/scene_system.hpp"
 #include <asset/texture/render_texture.hpp>
 
-
 // TODO:
 // - Refactoring
 // - Shadow mapping
@@ -156,8 +155,8 @@ void PxRenderer::render() {
   objectCount = 0;
   if (scene_system::is_run_script) {
 
-    sol::state *lua = (sol::state *)script_system::get_state();
-    (*lua)["Draw"]();
+    sol::state_view lua((lua_State *)script_system::get_state());
+    lua["Draw"]();
   }
   if (objectCount > 0 && !isDraw2D) {
     commandBuffer->EndRenderPass(currentRenderPass);

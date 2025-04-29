@@ -7,7 +7,6 @@
 #include <core/io/data_stream.hpp>
 #include <script_engine.hpp>
 
-
 // external
 #include <sol/sol.hpp>
 
@@ -18,7 +17,9 @@ public:
 };
 std::unique_ptr<script_system::implement> script_system::impl = nullptr;
 void *Script::get_state() { return script_system::get_state(); }
-void *script_system::get_state() { return (void *)&impl->state; }
+void *Script::get_sol_state() { return script_system::get_sol_state(); }
+void *script_system::get_state() { return impl->state.lua_state(); }
+void *script_system::get_sol_state() { return &impl->state; }
 bool script_system::initialize() {
   impl = std::make_unique<implement>();
   return script_engine::initialize(impl->state);

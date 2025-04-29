@@ -2,9 +2,10 @@
 #include "corridor.hpp"
 #include "glm/ext/vector_int2.hpp"
 #include "room.hpp"
-#include <math/graph/bfs_grid.hpp>
 #include <asset/script/script.hpp>
+#include <math/graph/bfs_grid.hpp>
 #include <sol/sol.hpp>
+
 
 namespace dts {
 void dungeon_generator(sinen::Grid<int> &grid) {
@@ -14,7 +15,8 @@ void dungeon_generator(sinen::Grid<int> &grid) {
       return;
     }
     glm::ivec2 grid_size{(int)grid.width(), (int)grid.height()};
-    sol::state &lua = *(sol::state *)sinen::Script::get_state();
+    sinen::Script script;
+    sol::state &lua = *(sol::state *)script.get_state();
     auto map_chip = lua["MAP_CHIP"];
     int floor = map_chip["FLOOR"];
     int wall = map_chip["WALL"];

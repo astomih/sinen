@@ -63,7 +63,7 @@ if(NOT MSVC)
   set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -march=native")
 endif()
 
-add_executable(sinen src/main.cpp)
+add_executable(sinen src/main.cpp docs/icon/icon.rc)
 target_include_directories(
   sinen PUBLIC ${SINEN_CORE_INCLUDE_DIRS} ${SDL3_INCLUDE_PATHS})
 

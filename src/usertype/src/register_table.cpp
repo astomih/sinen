@@ -40,7 +40,7 @@ void register_table(sol::state &lua) {
   }
   {
     auto v = lua.create_table("scene");
-    v["main_camera"] = &Scene::main_camera;
+    v["camera"] = &Scene::camera;
     v["size"] = &Scene::size;
     v["resize"] = &Scene::resize;
     v["half"] = &Scene::half;
@@ -123,6 +123,8 @@ void register_table(sol::state &lua) {
   }
   {
     auto v = lua.create_table("mouse");
+    v["set_relative"] = &Mouse::set_relative;
+    v["is_relative"] = &Mouse::is_relative;
     v["is_pressed"] = &Mouse::is_pressed;
     v["is_released"] = &Mouse::is_released;
     v["is_down"] = &Mouse::is_down;

@@ -4,7 +4,6 @@
 #include <render/render.hpp>
 #include <sol/sol.hpp>
 
-
 #include "glm/ext/vector_float2.hpp"
 #include "glm/ext/vector_int2.hpp"
 #include "register_script.hpp"
@@ -19,10 +18,10 @@ void register_generator(sol::state &v) {
   v["Texture"] = []() -> Texture { return Texture(); };
   v["RenderTexture"] = []() -> RenderTexture { return RenderTexture(); };
   v["Font"] = []() -> Font { return Font(); };
-  v["Vector3"] = [](float x, float y, float z) -> glm::vec3 {
+  v["Vec3"] = [](float x, float y, float z) -> glm::vec3 {
     return glm::vec3(x, y, z);
   };
-  v["Vector2"] = [](float x, float y) -> glm::vec2 { return glm::vec2(x, y); };
+  v["Vec2"] = [](float x, float y) -> glm::vec2 { return glm::vec2(x, y); };
   v["Point2i"] = [](int x, int y) -> glm::ivec2 { return glm::ivec2(x, y); };
   v["Point2f"] = [](float x, float y) -> glm::vec2 { return glm::vec2(x, y); };
   v["Quaternion"] = [](sol::this_state s) -> glm::quat { return glm::quat(); };

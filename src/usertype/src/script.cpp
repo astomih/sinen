@@ -8,7 +8,6 @@
 #include <math/math.hpp>
 #include <render/render.hpp>
 
-
 #include "glm/ext/vector_float3.hpp"
 // glm::rotate
 #include "glm/ext/vector_int3.hpp"
@@ -153,6 +152,7 @@ bool script_engine::initialize(sol::state &lua) {
     v["position"] = &Camera::position;
     v["target"] = &Camera::target;
     v["up"] = &Camera::up;
+    v["is_aabb_in_frustum"] = &Camera::is_aabb_in_frustum;
   }
   {
     auto v = lua.new_usertype<Model>("", sol::no_construction());

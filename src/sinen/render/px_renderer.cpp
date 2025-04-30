@@ -16,14 +16,12 @@
 #include <imgui_impl_sdl3.h>
 
 #include "../asset/model/model_data.hpp"
-#include "../asset/script/script_system.hpp"
 #include "../asset/texture/texture_data.hpp"
-#include <asset/script/script.hpp>
+#include "../logic/script/script_system.hpp"
 #include <sol/sol.hpp>
 
 #include "../logic/scene/scene_system.hpp"
 #include <asset/texture/render_texture.hpp>
-
 
 // TODO:
 // - Refactoring
@@ -117,6 +115,9 @@ void PxRenderer::shutdown() {
 void PxRenderer::unload_data() {}
 void PxRenderer::render() {
   auto commandBuffer = device->AcquireCommandBuffer({allocator});
+  if (commandBuffer == nullptr) {
+    return;
+  }
   auto swapchainTexture = device->AcquireSwapchainTexture(commandBuffer);
   if (swapchainTexture == nullptr) {
     return;
@@ -156,8 +157,8 @@ void PxRenderer::render() {
   objectCount = 0;
   if (scene_system::is_run_script) {
 
-    sol::state *lua = (sol::state *)script_system::get_state();
-    (*lua)["Draw"]();
+    sol::state_view lua((lua_State *)script_system::get_state());
+    lua["Draw"]();
   }
   if (objectCount > 0 && !isDraw2D) {
     commandBuffer->EndRenderPass(currentRenderPass);

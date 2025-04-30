@@ -9,14 +9,14 @@ render_texture:create(outTexture:size().x, outTexture:size().y)
 local model = Model()
 model:load("Suzanne.gltf")
 local draw3d = Draw3D(texture)
-draw3d.position = Vector3(0, 0, 0)
+draw3d.position = Vec3(0, 0, 0)
 draw3d.model = model
 
 local draw2d = Draw2D(outTexture)
 draw2d.scale = outTexture:size()
 
 
-local pos = Vector3(1, 1, 3)
+local pos = Vec3(1, 1, 3)
 local speed = 0.1
 
 function Update()
@@ -44,7 +44,7 @@ function Update()
     pos.y = pos.y - speed
   end
 
-  scene.main_camera():lookat(pos, Vector3(0, 0, 0), Vector3(0, 1, 0))
+  scene.camera():lookat(pos, Vec3(0, 0, 0), Vec3(0, 1, 0))
 end
 
 function Draw()

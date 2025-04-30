@@ -22,3 +22,19 @@ I will add minimal executable binary.
 
 ## 04 Sound
 ![](screenshot/04.png)
+
+## 05 Shader
+![](screenshot/05.png)
+
+## 06 Shader runtime
+![](screenshot/06.png)
+
+## 07 Render texture
+![](screenshot/07.png)
+
+## 08 Animation
+![](screenshot/08.png)
+
+  
+## Top down shooting
+![](screenshot/top_down_stg.png)

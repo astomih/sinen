@@ -1,9 +1,9 @@
 #include "scene_system.hpp"
 #include "../../asset/audio/sound_system.hpp"
-#include "../../asset/script/script_system.hpp"
 #include "../../platform/input/input_system.hpp"
 #include "../../platform/window/window_system.hpp"
 #include "../../render/render_system.hpp"
+#include "../script/script_system.hpp"
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <core/io/data_stream.hpp>
@@ -32,7 +32,6 @@
 #include <platform/input/keyboard.hpp>
 #include <sol/sol.hpp>
 
-
 namespace sinen {
 std::unique_ptr<Scene::implements> scene_system::m_impl =
     std::make_unique<Scene::implements>();
@@ -45,7 +44,7 @@ float scene_system::deltaTime = 0.f;
 bool scene_system::initialize() { return true; }
 void scene_system::setup() {
   if (is_run_script) {
-    sol::state *lua = (sol::state *)script_system::get_state();
+    sol::state *lua = ((sol::state *)script_system::get_sol_state());
     std::string str =
         DataStream::open_as_string(AssetType::Script, current_name() + ".lua");
     lua->do_string(str.data());
@@ -101,8 +100,8 @@ void scene_system::update_scene() {
   m_prev_tick = SDL_GetTicks();
 
   if (is_run_script) {
-    sol::state *lua = (sol::state *)script_system::get_state();
-    (*lua)["Update"]();
+    sol::state_view lua((lua_State *)script_system::get_state());
+    lua["Update"]();
   }
   m_impl->update(deltaTime);
   sound_system::update(deltaTime);

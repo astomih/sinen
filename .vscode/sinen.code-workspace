@@ -85,7 +85,7 @@
 				"type": "cppvsdbg",
 				"request": "launch",
 				"name": "Launch works vs2022",
-				"program": "${workspaceFolder}/build/vs2022/src/works/debug/works",
+				"program": "${workspaceFolder}/build/vs2022/Debug/sinen",
 				"args": [],
 				"cwd": "${workspaceFolder}/src/works"
 			},
@@ -93,7 +93,15 @@
 				"type": "cppvsdbg",
 				"request": "launch",
 				"name": "Launch private vs2022",
-				"program": "${workspaceFolder}/build/vs2022/src/private/debug/private",
+				"program": "${workspaceFolder}/build/vs2022/Debug/sinen",
+				"args": [],
+				"cwd": "${workspaceFolder}/src/private"
+			},
+			{
+				"type": "cppvsdbg",
+				"request": "launch",
+				"name": "Launch private clang",
+				"program": "${workspaceFolder}/build/clang/sinen",
 				"args": [],
 				"cwd": "${workspaceFolder}/src/private"
 			},

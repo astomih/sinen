@@ -20,7 +20,7 @@ add_library(script_engine STATIC
   ${SOURCE_FILES}
 )
 target_link_libraries(script_engine
-  sinen
+  sinen_core
 )
 
 set_property(TARGET script_engine PROPERTY CXX_STANDARD 23)

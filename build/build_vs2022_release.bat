@@ -1,0 +1,1 @@
+cmake --build %~dp0vs2022 --config Release --parallel %NUMBER_OF_PROCESSORS%

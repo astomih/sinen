@@ -28,7 +28,7 @@ link_directories(
 find_package(Vulkan REQUIRED)
 
 set(COMMON_LIBRARIES
-	sinen
+	sinen_core
 	script_engine
 	${Vulkan_LIBRARIES}
 )

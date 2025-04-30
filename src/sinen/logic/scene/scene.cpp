@@ -5,7 +5,7 @@ namespace sinen {
 Camera Scene::m_main_camera = []() {
   Camera c;
   c.lookat(glm::vec3{0, -1, 1}, glm::vec3{0, 0, 0}, glm::vec3{0, 0, 1});
-  c.perspective(70.f, Window::size().x / Window::size().y, .1f, 1000.f);
+  c.perspective(90.f, Window::size().x / Window::size().y, .1f, 100.f);
   return c;
 }();
 glm::vec2 Scene::m_screen_size = glm::vec2(1280.0, 720.0);

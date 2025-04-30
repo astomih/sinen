@@ -142,7 +142,7 @@ px::VertexInputState CreateVertexInputState(px::Allocator *allocator,
             .slot = 1,
             .pitch = sizeof(InstanceData),
             .inputRate = px::VertexInputRate::Instance,
-            .instanceStepRate = 1,
+            .instanceStepRate = 0,
         });
     vertexInputState.vertexAttributes.emplace_back(
         px::VertexAttribute{.location = 0,

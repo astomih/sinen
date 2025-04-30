@@ -115,6 +115,9 @@ void PxRenderer::shutdown() {
 void PxRenderer::unload_data() {}
 void PxRenderer::render() {
   auto commandBuffer = device->AcquireCommandBuffer({allocator});
+  if (commandBuffer == nullptr) {
+    return;
+  }
   auto swapchainTexture = device->AcquireSwapchainTexture(commandBuffer);
   if (swapchainTexture == nullptr) {
     return;

@@ -1,6 +1,6 @@
 # Lua API
 ## About call
-Lua scripts placed in the `executable/script` directory are executed in the order they are loaded.
+Lua scripts placed in the `sinen.exe exists directory /script` directory are executed in the order they are loaded.
 ```lua
 
 -- setup
@@ -41,7 +41,21 @@ Y component of the Vector2.
 Returns the length of the vector.
 #### Vector2:normalize() -> Vector2
 Normalizes the vector.
-
+#### Vector2:copy() -> Vector2
+Copies the vector.
+#### Vector2:dot(Vector2, Vector2) -> float
+- `Vector2`: Vector 1
+- `Vector2`: Vector 2 
+Gets the dot product of two vectors.
+#### Vector2:lerp(Vector2, Vector2, float) -> Vector2
+- `Vector2`: Vector 1
+- `Vector2`: Vector 2
+- `float`: Interpolation factor (0.0~1.0)
+Gets the linear interpolation between two vectors.
+#### Vector2:reflect(Vector2, Vector2) -> Vector2
+- `Vector2`: Incident vector
+- `Vector2`: Normal vector
+Gets the reflection vector of the incident vector based on the normal vector.
 ### Vector3
 #### Metatable
 - `__add`: Performs vector addition (`a + b`).  
@@ -67,8 +81,26 @@ Returns the length of the vector.
 Normalizes the vector.
 #### Vector3:copy() -> Vector3
 Copies the vector. Since Lua primarily passes references, use this method if a copy is needed.
-#### Vector3:forward() -> Vector3
-Returns the forward vector.
+#### Vector3:forward(Vector3) -> Vector3
+- `Vector3`: Axis vector  
+Gets the forward vector of the specified axis vector.
+#### Vector3:dot(Vector3, Vector3) -> float
+- `Vector3`: Vector 1
+- `Vector3`: Vector 2
+Gets the dot product of two vectors.
+#### Vector3:cross(Vector3, Vector3) -> Vector3
+- `Vector3`: Vector 1
+- `Vector3`: Vector 2
+Gets the cross product of two vectors.
+#### Vector3:lerp(Vector3, Vector3, float) -> Vector3
+- `Vector3`: Vector 1
+- `Vector3`: Vector 2
+- `float`: Interpolation factor (0.0~1.0)
+Gets the linear interpolation between two vectors.
+#### Vector3:reflect(Vector3, Vector3) -> Vector3
+- `Vector3`: Incident vector
+- `Vector3`: Normal vector
+Gets the reflection vector of the incident vector based on the normal vector.
 
 ### Point2i
 Represents a 2D integer point.
@@ -254,6 +286,9 @@ Sets the camera's perspective projection.
 - `float`: Near plane.
 - `float`: Far plane.
 Sets the camera's orthographic projection.
+#### Camera:is_aabb_in_frustum(AABB) -> bool
+- `AABB`: AABB  
+Checks if an AABB is within the camera's frustum.
 #### Camera.position = Vector3
 Camera position.
 #### Camera.target = Vector3
@@ -369,7 +404,7 @@ Ends rendering to a render texture.
 `Texture` is must be the same size as `RenderTexture`.
 
 ### scene
-#### scene.main_Camera() -> Camera
+#### scene.camera() -> Camera
 Returns the main camera of the scene.
 #### scene.size() -> Vector2
 Returns the size of the scene.
@@ -484,6 +519,11 @@ Returns the scroll wheel movement.
 #### mouse.hide_cursor(bool)
 - `bool`: Whether to hide the mouse cursor.
 Toggles cursor visibility.
+#### mouse.set_relative(bool)
+- `bool`: Whether to set relative coordinates.  
+Sets the mouse position relative to the window size.
+#### mouse.is_relative() -> bool
+Returns whether the mouse is in relative coordinates.
 #### mouse.LEFT = code
 #### mouse.RIGHT = code
 #### mouse.MIDDLE = code

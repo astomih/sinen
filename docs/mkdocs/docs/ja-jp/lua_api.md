@@ -1,6 +1,6 @@
 # Lua言語 API
 ## 呼び出しについて
-Luaスクリプトは`${executable}/script/`に配置します  
+Luaスクリプトは`sinen.exeが存在するディレクトリ/script/`に配置します  
 ```lua
 
 -- セットアップ
@@ -38,6 +38,21 @@ Vector2のy成分。
 ベクトルの長さを取得します
 #### Vector2:normalize() -> Vector2
 ベクトルを正規化します
+#### Vector2:copy() -> Vector2
+ベクトルをコピーします
+#### Vector2:dot(Vector2, Vector2) -> float
+- `Vector2`: ベクトル1
+- `Vector2`: ベクトル2
+内積を取得します
+#### Vector2:lerp(Vector2, Vector2, float) -> Vector2
+- `Vector2`: ベクトル1
+- `Vector2`: ベクトル2
+- `float`: 補間係数
+線形補間を取得します
+#### Vector2:reflect(Vector2, Vector2) -> Vector2
+- `Vector2`: ベクトル
+- `Vector2`: 法線ベクトル
+反射ベクトルを取得します
 ### Vector3
 #### メタテーブル
 - `__add`: ベクトルの加算を行います (a + b)
@@ -62,8 +77,26 @@ Vector3のz成分
 #### Vector3:copy() -> Vector3
 ベクトルをコピーします  
 Luaでは基本的に参照渡しのため、コピーが必要な場合に使用します
-#### Vector3:forward() -> Vector3
+#### Vector3:forward(Vector3) -> Vector3
+- `Vector3`: 軸ベクトル  
 前方ベクトルを取得します
+#### Vector3:dot(Vector3, Vector3) -> float
+- `Vector3`: ベクトル1
+- `Vector3`: ベクトル2
+内積を取得します
+#### Vector3:cross(Vector3, Vector3) -> Vector3
+- `Vector3`: ベクトル1
+- `Vector3`: ベクトル2
+外積を取得します
+#### Vector3:lerp(Vector3, Vector3, float) -> Vector3
+- `Vector3`: ベクトル1
+- `Vector3`: ベクトル2
+- `float`: 補間係数
+線形補間を取得します
+#### Vector3:reflect(Vector3, Vector3) -> Vector3
+- `Vector3`: ベクトル
+- `Vector3`: 法線ベクトル
+反射ベクトルを取得します
 ### Point2i
 2次元の整数
 #### Point2i(x, y) -> Point2i
@@ -252,6 +285,9 @@ modelは未指定の場合、立方体が割り当てられます
 - `float`: 近面
 - `float`: 遠面  
 カメラの正射影投影を設定します
+#### Camera:is_aabb_in_frustum(AABB) -> bool
+- `AABB`: AABB  
+AABBがカメラの視錐台に含まれているかどうかを確認します
 #### Camera.position = Vector3
 カメラの位置
 #### Camera.target = Vector3
@@ -360,7 +396,7 @@ AABBの最大点
 レンダーテクスチャの描画を終了します  
 `Texture`は`RenderTexture`と同じサイズである必要があります
 ### scene
-#### scene.main_Camera() -> Camera
+#### scene.camera() -> Camera
 シーンのメインカメラを取得します
 #### scene.size() -> Vector2
 シーンのサイズを取得します
@@ -476,6 +512,11 @@ AABB同士の衝突判定を行います
 #### mouse.hide_cursor(bool)
 - `bool`: マウスカーソルを隠すかどうか  
 カーソルを表示、または非表示にします
+#### mouse.set_relative(bool)
+- `bool`: マウスを相対座標として取得するかどうか  
+相対座標でマウスの位置を取得するかどうかを設定します。
+#### mouse.is_relative() -> bool
+相対座標でマウスの位置を取得しているかどうかを確認します
 #### mouse.LEFT = code
 #### mouse.RIGHT = code
 #### mouse.MIDDLE = code

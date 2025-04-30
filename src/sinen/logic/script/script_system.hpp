@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SINEN_SCRIPT_SYSTEM_HPP
+#define SINEN_SCRIPT_SYSTEM_HPP
 #include <functional>
 #include <memory>
 #include <string_view>
@@ -19,3 +20,5 @@ private:
   static std::unique_ptr<implement> impl;
 };
 } // namespace sinen
+
+#endif // !SINEN_SCRIPT_SYSTEM_HPP

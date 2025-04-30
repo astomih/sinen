@@ -1,9 +1,9 @@
 #include "scene_system.hpp"
 #include "../../asset/audio/sound_system.hpp"
-#include "../../asset/script/script_system.hpp"
 #include "../../platform/input/input_system.hpp"
 #include "../../platform/window/window_system.hpp"
 #include "../../render/render_system.hpp"
+#include "../script/script_system.hpp"
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <core/io/data_stream.hpp>

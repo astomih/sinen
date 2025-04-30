@@ -16,9 +16,8 @@
 #include <imgui_impl_sdl3.h>
 
 #include "../asset/model/model_data.hpp"
-#include "../asset/script/script_system.hpp"
 #include "../asset/texture/texture_data.hpp"
-#include <asset/script/script.hpp>
+#include "../logic/script/script_system.hpp"
 #include <sol/sol.hpp>
 
 #include "../logic/scene/scene_system.hpp"

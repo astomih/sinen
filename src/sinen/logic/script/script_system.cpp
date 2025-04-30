@@ -3,7 +3,6 @@
 
 // internal
 #include "script_system.hpp"
-#include <asset/script/script.hpp>
 #include <core/io/data_stream.hpp>
 #include <script_engine.hpp>
 
@@ -16,8 +15,6 @@ public:
   sol::state state;
 };
 std::unique_ptr<script_system::implement> script_system::impl = nullptr;
-void *Script::get_state() { return script_system::get_state(); }
-void *Script::get_sol_state() { return script_system::get_sol_state(); }
 void *script_system::get_state() { return impl->state.lua_state(); }
 void *script_system::get_sol_state() { return &impl->state; }
 bool script_system::initialize() {
@@ -45,20 +42,6 @@ void script_system::register_function(std::string_view name,
     return;
   }
   impl->state[name] = function;
-}
-
-void Script::do_script(std::string_view fileName) {
-  script_system::do_script(fileName);
-}
-
-Script::table_handler Script::new_table(std::string_view table_name) {
-  return script_system::new_table(table_name);
-}
-
-void Script::register_function(std::string_view name,
-                               std::function<void()> function,
-                               table_handler handler) {
-  script_system::register_function(name, function, handler);
 }
 
 } // namespace sinen

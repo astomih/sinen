@@ -21,10 +21,10 @@ local function text_window()
             self.text_drawer = Draw2D(self.text_texture)
             self.font:render_text(self.text_texture, "test", Color(1, 1, 1, 1))
             self.text_drawer.scale = self.text_texture:size()
-            self.text_drawer.position = Vector2(0, -720 / 3)
+            self.text_drawer.position = Vec2(0, -720 / 3)
             self.tex:fill_color(Color(0.2, 0.2, 1, 0.5))
-            self.drawer.scale = Vector2(1280, 720 / 2)
-            self.drawer.position = Vector2(0, -720 / 2)
+            self.drawer.scale = Vec2(1280, 720 / 2)
+            self.drawer.position = Vec2(0, -720 / 2)
 
             self.texts = { "Text is null." }
         end,

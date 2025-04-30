@@ -36,7 +36,7 @@ local enemy = function()
         map = {},
         model_index = 1,
         get_forward_z = function(drawer)
-            return Vector2(-math.sin(math.rad(drawer.rotation.z)),
+            return Vec2(-math.sin(math.rad(drawer.rotation.z)),
                 math.cos(math.rad(-drawer.rotation.z)))
         end,
         bfs = {},
@@ -56,23 +56,23 @@ local enemy = function()
             self.drawer = Draw3D(DEFAULT_TEXTURE)
             if NOW_STAGE == 1 then
                 self.drawer.model = enemy_model[1]
-                self.drawer.scale = Vector3(1, 1, 1)
+                self.drawer.scale = Vec3(1, 1, 1)
                 self.model_index = 1
             end
             if NOW_STAGE == 2 then
                 if math.random(0, 1) == 0 then
                     self.drawer.model = enemy_model[2]
-                    self.drawer.scale = Vector3(1, 1, 1)
+                    self.drawer.scale = Vec3(1, 1, 1)
                     self.model_index = 2
                 else
                     self.drawer.model = enemy_model[3]
-                    self.drawer.scale = Vector3(1, 1, 1)
+                    self.drawer.scale = Vec3(1, 1, 1)
                     self.model_index = 3
                 end
             end
             if NOW_STAGE == 3 then
                 self.drawer.model = enemy_model[4]
-                self.drawer.scale = Vector3(1, 1, 1)
+                self.drawer.scale = Vec3(1, 1, 1)
                 self.model_index = 4
             end
             self.aabb = AABB()
@@ -81,7 +81,7 @@ local enemy = function()
             r2 = 0
             while decide_pos(_map, map_size_x, map_size_y) == true do
             end
-            self.drawer.position = Vector3(r1 * TILE_SIZE, r2 * TILE_SIZE, 0.5)
+            self.drawer.position = Vec3(r1 * TILE_SIZE, r2 * TILE_SIZE, 0.5)
             self.is_collision_first = true
             self.collision_time = 1.0
             self.collision_timer = 0.0
@@ -116,7 +116,7 @@ local enemy = function()
                     return
                 end
             end
-            self.drawer.rotation = Vector3(0, 0,
+            self.drawer.rotation = Vec3(0, 0,
                 math.deg(
                     -math.atan(
                         player.drawer.position.x -
@@ -127,7 +127,7 @@ local enemy = function()
                 local path = self.bfs:trace()
                 path = self.bfs:trace()
 
-                local dir = Vector2(
+                local dir = Vec2(
                     path.x * TILE_SIZE - self.drawer.position.x,
                     path.y * TILE_SIZE - self.drawer.position.y)
                 if dir.x < -1 then

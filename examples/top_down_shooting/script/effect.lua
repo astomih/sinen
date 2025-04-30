@@ -27,9 +27,9 @@ local function effect()
             self.drawer = Draw3D(self.texture)
             for i = 1, self.max_particles do
                 self.worlds[i] = world()
-                self.worlds[i].position = Vector3(0, 0, 0)
-                self.worlds[i].rotation = Vector3(0, 0, 0)
-                self.worlds[i].scale = Vector3(0.1, 0.1, 0.1)
+                self.worlds[i].position = Vec3(0, 0, 0)
+                self.worlds[i].rotation = Vec3(0, 0, 0)
+                self.worlds[i].scale = Vec3(0.1, 0.1, 0.1)
             end
             if self.play_on_awake then self.is_playing = true end
         end,
@@ -50,9 +50,9 @@ local function effect()
             if self.timer > self.start_lifetime then
                 self.timer = 0.0
                 for i = 1, self.max_particles do
-                    self.worlds[i].position = Vector3(0, 0, 0)
-                    self.worlds[i].rotation = Vector3(0, 0, 0)
-                    self.worlds[i].scale = Vector3(1, 1, 1)
+                    self.worlds[i].position = Vec3(0, 0, 0)
+                    self.worlds[i].rotation = Vec3(0, 0, 0)
+                    self.worlds[i].scale = Vec3(1, 1, 1)
                 end
                 if not self.looping then
                     self.is_playing = false

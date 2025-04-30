@@ -3,7 +3,7 @@ texture:fill_color(Color(1, 1, 1, 1))
 local model = Model()
 model:load("BrainStem.glb")
 local draw3d = Draw3D(texture)
-draw3d.position = Vector3(0, 0, 0)
+draw3d.position = Vec3(0, 0, 0)
 draw3d.model = model
 
 local vertex_shader = Shader()
@@ -18,8 +18,8 @@ pipeline:set_animation(true)
 pipeline:build()
 
 
-local pos = Vector3(0, -3, 1)
-scene.camera():lookat(pos, Vector3(0, 0, 1), Vector3(0, 0, 1))
+local pos = Vec3(0, -3, 1)
+scene.camera():lookat(pos, Vec3(0, 0, 1), Vec3(0, 0, 1))
 
 model:play(0)
 function Update()

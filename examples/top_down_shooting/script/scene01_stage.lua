@@ -64,7 +64,7 @@ for y = 1, map_size_y do
         map_draw3ds[y][x] = world()
         map_draw3ds[y][x].position.x = x * TILE_SIZE
         map_draw3ds[y][x].position.y = y * TILE_SIZE
-        map_draw3ds[y][x].scale = Vector3(TILE_SIZE / 2.0, TILE_SIZE / 2.0, 1)
+        map_draw3ds[y][x].scale = Vec3(TILE_SIZE / 2.0, TILE_SIZE / 2.0, 1)
         if map:at(x, y) ~= MAP_CHIP.STAIR then
             sprite:add(map_draw3ds[y][x].position, map_draw3ds[y][x].rotation,
                 map_draw3ds[y][x].scale)
@@ -124,7 +124,7 @@ function Draw()
             if (1 <= x and x <= map_size_x and 1 <= y and y <= map_size_y) then
                 if map:at(x, y) == MAP_CHIP.WALL then
                     box:add(map_draw3ds[y][x].position, map_draw3ds[y][x].rotation,
-                        Vector3(1.5, 1.5, 1.5))
+                        Vec3(1.5, 1.5, 1.5))
                 end
             end
         end
@@ -157,7 +157,7 @@ end
 
 function Update()
     GUI_MANAGER:update()
-    score_drawer.position = Vector2(-300, 300)
+    score_drawer.position = Vec2(-300, 300)
     if scene_switcher.flag then
         scene_switcher:update()
         return

@@ -13,7 +13,7 @@ local function equipment_menu()
       self.ui_panel_texture = Texture()
       self.ui_panel_texture:fill_color(Color(1, 1, 1, 0.5))
       self.ui_panel = Draw2D(self.ui_panel_texture)
-      self.ui_panel.scale = Vector2(1120, 630)
+      self.ui_panel.scale = Vec2(1120, 630)
       button.fg_color = Color(0, 0, 0, 0.9)
       button.bg_color = Color(1, 1, 1, 1.0)
     end,
@@ -33,47 +33,47 @@ local function equipment_menu()
       GUI_MANAGER:add(self.ui_panel)
       button.fg_color = Color(1, 1, 1, 0.9)
       button.bg_color = Color(1, 0, 0, 1.0)
-      if button:show("BACK", Vector2(500, 270), Vector2(100, 50)) then
+      if button:show("BACK", Vec2(500, 270), Vec2(100, 50)) then
         self.hide = true
       end
       button.fg_color = Color(0, 0, 0, 0.9)
       button.bg_color = Color(1, 1, 1, 1.0)
-      text:show("MHP: ", Vector2(-400, 200), 50)
-      text:show("STM: ", Vector2(-400, 175), 50)
-      text:show("OIL: ", Vector2(-400, 150), 50)
+      text:show("MHP: ", Vec2(-400, 200), 50)
+      text:show("STM: ", Vec2(-400, 175), 50)
+      text:show("OIL: ", Vec2(-400, 150), 50)
 
-      if button:show("SP1", Vector2(-400, 100), Vector2(150, 50)) then
+      if button:show("SP1", Vec2(-400, 100), Vec2(150, 50)) then
         self.is_list = true
       end
-      if button:show("SP2", Vector2(-400, 0), Vector2(150, 50)) then
+      if button:show("SP2", Vec2(-400, 0), Vec2(150, 50)) then
         self.is_list = true
       end
-      if button:show("ORBIT", Vector2(-400, -100), Vector2(150, 50)) then
+      if button:show("ORBIT", Vec2(-400, -100), Vec2(150, 50)) then
         self.is_list = true
       end
-      if button:show("BOOSTER", Vector2(-400, -200), Vector2(150, 50)) then
+      if button:show("BOOSTER", Vec2(-400, -200), Vec2(150, 50)) then
         self.is_list = true
       end
       if self.is_list then
-        scroll:show(Vector2(200, 0), Vector2(20, 200))
+        scroll:show(Vec2(200, 0), Vec2(20, 200))
         local offset = scroll.pos.y
         local tex = Texture()
         tex:fill_color(Color(0, 0, 0, 0.5))
-        image:show(tex, Vector2(0, 0), Vector2(250, 500))
-        if button:show("a", Vector2(0, 100 + offset), Vector2(200, 50)) then
+        image:show(tex, Vec2(0, 0), Vec2(250, 500))
+        if button:show("a", Vec2(0, 100 + offset), Vec2(200, 50)) then
           -- do
         end
-        if button:show("b", Vector2(0, 50 + offset), Vector2(200, 50)) then
+        if button:show("b", Vec2(0, 50 + offset), Vec2(200, 50)) then
           -- do
         end
-        if button:show("c", Vector2(0, 0 + offset), Vector2(200, 50)) then
+        if button:show("c", Vec2(0, 0 + offset), Vec2(200, 50)) then
           -- do
         end
-        image:show(tex, Vector2(0, 200), Vector2(250, 50))
-        text:show("EQUIPMENT LIST", Vector2(0, 200), 50)
+        image:show(tex, Vec2(0, 200), Vec2(250, 50))
+        text:show("EQUIPMENT LIST", Vec2(0, 200), 50)
         button.fg_color = Color(1, 1, 1, 0.9)
         button.bg_color = Color(1, 0, 0, 1.0)
-        if button:show("Close", Vector2(0, -150), Vector2(200, 50))
+        if button:show("Close", Vec2(0, -150), Vec2(200, 50))
         then
           self.is_list = false
         end

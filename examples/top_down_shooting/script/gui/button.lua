@@ -13,7 +13,7 @@ local function button()
       back_texture:fill_color(self.bg_color)
       self.back_drawer = Draw2D(back_texture)
       self.back_drawer.position = pos
-      self.back_drawer.scale = Vector2(scale.x * UI_SCALE, scale.y * UI_SCALE)
+      self.back_drawer.scale = Vec2(scale.x * UI_SCALE, scale.y * UI_SCALE)
       GUI_MANAGER:add(self.back_drawer)
       self.drawer = Draw2D(texture)
       self.font:render_text(texture, text, self.fg_color)

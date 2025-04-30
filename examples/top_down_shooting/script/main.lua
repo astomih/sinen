@@ -10,7 +10,7 @@ local menu_object = menu()
 local scene_switcher = require("scene_switcher")()
 local button = require("gui/button")()
 
-scene.resize(Vector2(1280, 720))
+scene.resize(Vec2(1280, 720))
 window.rename("Sinen Engine")
 SCORE = 0
 NOW_STAGE = 1
@@ -28,7 +28,7 @@ font_press = Font()
 font_press:load(DEFAULT_FONT_NAME, 32)
 font_press:render_text(texture_press, "CLICK TO START", Color(1, 1, 1, 0.9))
 drawer_press.scale = texture_press:size()
-drawer_press.position = Vector2(0, -drawer_title.scale.y * 3.0)
+drawer_press.position = Vec2(0, -drawer_title.scale.y * 3.0)
 scene_switcher:setup()
 scene_switcher:start("")
 renderer.at_render_texture_user_data(0, 0.0)

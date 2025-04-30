@@ -16,10 +16,10 @@ local function bullet(map_draw3ds)
             self.texture = Texture()
             self.texture:fill_color(Color(1.0, 1.0, 1.0, 1.0))
             self.drawer = Draw3D(self.texture)
-            self.drawer.position = Vector3(owner.position.x, owner.position.y,
+            self.drawer.position = Vec3(owner.position.x, owner.position.y,
                 owner.position.z)
             self.drawer.rotation = owner.rotation
-            self.drawer.scale = Vector3(0.2, 0.2, 0.2)
+            self.drawer.scale = Vec3(0.2, 0.2, 0.2)
             sound:play()
         end,
         update = function(self)

@@ -83,11 +83,11 @@ local player = {
         self.stamina_max_texture = Texture()
         self.stamina_max_texture:fill_color(Color(0.0, 0.0, 0.0, 0.2))
         self.stamina_drawer = Draw2D(self.stamina_texture)
-        self.stamina_drawer.position = Vector2(0, 350)
-        self.stamina_drawer.scale = UI_SCALE_VECTOR2(300, 10)
+        self.stamina_drawer.position = Vec2(0, 350)
+        self.stamina_drawer.scale = UI_SCALE_Vec2(300, 10)
         self.stamina_max_drawer = Draw2D(self.stamina_max_texture)
-        self.stamina_max_drawer.position = Vector2(0, 350)
-        self.stamina_max_drawer.scale = UI_SCALE_VECTOR2(300, 10)
+        self.stamina_max_drawer.position = Vec2(0, 350)
+        self.stamina_max_drawer.scale = UI_SCALE_Vec2(300, 10)
 
         self.oil = self.oil_max
         self.oil_texture = Texture()
@@ -96,11 +96,11 @@ local player = {
         self.oil_max_texture:fill_color(Color(0.0, 0.0, 0.0, 0.2))
         self.oil_drawer = Draw2D(self.oil_texture)
         -- oil drawer position is left bottom
-        self.oil_drawer.position = Vector2(-scene.half().x + 20, -scene.half().y + 150)
-        self.oil_drawer.scale = Vector2(10, 300)
+        self.oil_drawer.position = Vec2(-scene.half().x + 20, -scene.half().y + 150)
+        self.oil_drawer.scale = Vec2(10, 300)
         self.oil_max_drawer = Draw2D(self.oil_max_texture)
-        self.oil_max_drawer.position = Vector2(-scene.half().x + 20, -scene.half().y + 150)
-        self.oil_max_drawer.scale = Vector2(10, 300)
+        self.oil_max_drawer.position = Vec2(-scene.half().x + 20, -scene.half().y + 150)
+        self.oil_max_drawer.scale = Vec2(10, 300)
 
 
 
@@ -109,8 +109,8 @@ local player = {
         r2 = 0
         while decide_pos(map, map_size_x, map_size_y) == true do
         end
-        self.drawer.position = Vector3(r1 * 2, r2 * 2, 1)
-        self.drawer.scale = Vector3(1, 1, 1)
+        self.drawer.position = Vec3(r1 * 2, r2 * 2, 1)
+        self.drawer.scale = Vec3(1, 1, 1)
         self.hp_drawer.position.x = 0
         self.hp_drawer.position.y = 300
         self.tex_scope = Texture()
@@ -120,7 +120,7 @@ local player = {
         self.drawer_scope = Draw2D(self.tex_scope)
         self.drawer_scope_big = Draw2D(self.big_scope)
         self.drawer_scope.scale = self.tex_scope:size()
-        self.drawer_scope_big.scale = Vector2(self.big_scope:size().x * 2, self.big_scope:size().y * 2)
+        self.drawer_scope_big.scale = Vec2(self.big_scope:size().x * 2, self.big_scope:size().y * 2)
         self.boost_sound = Sound()
         self.boost_sound:load("boost.wav")
         self.boost_sound:set_volume(0.2)
@@ -238,7 +238,7 @@ local player = {
             v:update()
             if v.is_stop then table.remove(self.efks, i) end
         end
-        local before_pos = Vector3(self.drawer.position.x, self.drawer.position.y,
+        local before_pos = Vec3(self.drawer.position.x, self.drawer.position.y,
             self.drawer.position.z)
         local final_speed = 0.0
         if self.is_boost then
@@ -251,7 +251,7 @@ local player = {
         end
         if input_vector.y ~= 0 then
             before_pos = self.drawer.position:copy()
-            self.drawer.position = self.drawer.position + Vector3(0,
+            self.drawer.position = self.drawer.position + Vec3(0,
                 input_vector.y *
                 final_speed *
                 scene.delta_time(),
@@ -261,7 +261,7 @@ local player = {
             end
         end
         if input_vector.x ~= 0 then
-            self.drawer.position = self.drawer.position + Vector3(
+            self.drawer.position = self.drawer.position + Vec3(
                 input_vector.x *
                 final_speed *
                 scene.delta_time(),
@@ -270,7 +270,7 @@ local player = {
                 self.drawer.position = before_pos
             end
             before_pos = self.drawer.position:copy()
-            self.drawer.position = self.drawer.position + Vector3(0,
+            self.drawer.position = self.drawer.position + Vec3(0,
                 input_vector.y *
                 final_speed *
                 scene.delta_time(),
@@ -286,7 +286,7 @@ local player = {
         local y = self.drawer_scope.position.y
         local d = self.drawer_scope.position:length()
         local ratio = scene.ratio()
-        self.drawer_scope_big.scale = Vector2(self.big_scope:size().x * 2 * ratio.x, self.big_scope:size().y * 2 *
+        self.drawer_scope_big.scale = Vec2(self.big_scope:size().x * 2 * ratio.x, self.big_scope:size().y * 2 *
             ratio.y)
         if d > r then
             local r_prime = r / d - 0.01
@@ -294,7 +294,7 @@ local player = {
             y = y * r_prime
             self.drawer_scope.position.x = x
             self.drawer_scope.position.y = y
-            mouse.set_position_on_scene(Vector2(x, y))
+            mouse.set_position_on_scene(Vec2(x, y))
         end
         local drawer_scope_angle = math.atan(self.drawer_scope.position.y, self.drawer_scope.position.x)
         self.drawer.rotation.z = math.deg(drawer_scope_angle) - 90

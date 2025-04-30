@@ -23,59 +23,59 @@ local function menu()
                 end
             end
             if self.option_window_size then
-                text:show("Window Size", Vector2(0, 200), 50)
-                scroll:show(Vector2(200, 0), Vector2(20, 400))
+                text:show("Window Size", Vec2(0, 200), 50)
+                scroll:show(Vec2(200, 0), Vec2(20, 400))
                 local offset = scroll.pos.y * 1.5
                 local start = 100
-                if button:show("1120x630", Vector2(0, start + offset), Vector2(200, 50)) then
-                    window.resize(Vector2(1120, 630))
+                if button:show("1120x630", Vec2(0, start + offset), Vec2(200, 50)) then
+                    window.resize(Vec2(1120, 630))
                 end
                 start = start - 100
-                if button:show("1280x720", Vector2(0, start + offset), Vector2(200, 50)) then
-                    window.resize(Vector2(1280, 720))
+                if button:show("1280x720", Vec2(0, start + offset), Vec2(200, 50)) then
+                    window.resize(Vec2(1280, 720))
                 end
                 start = start - 100
-                if button:show("1440x810", Vector2(0, start + offset), Vector2(200, 50)) then
-                    window.resize(Vector2(1440, 810))
+                if button:show("1440x810", Vec2(0, start + offset), Vec2(200, 50)) then
+                    window.resize(Vec2(1440, 810))
                 end
                 start = start - 100
-                if button:show("1600x900", Vector2(0, start + offset), Vector2(200, 50)) then
-                    window.resize(Vector2(1600, 900))
+                if button:show("1600x900", Vec2(0, start + offset), Vec2(200, 50)) then
+                    window.resize(Vec2(1600, 900))
                 end
                 start = start - 100
-                if button:show("1760x990", Vector2(0, start + offset), Vector2(200, 50)) then
-                    window.resize(Vector2(1760, 990))
+                if button:show("1760x990", Vec2(0, start + offset), Vec2(200, 50)) then
+                    window.resize(Vec2(1760, 990))
                 end
                 start = start - 100
-                if button:show("1920x1080", Vector2(0, start + offset), Vector2(200, 50)) then
-                    window.resize(Vector2(1920, 1080))
+                if button:show("1920x1080", Vec2(0, start + offset), Vec2(200, 50)) then
+                    window.resize(Vec2(1920, 1080))
                 end
-                if button:show("Back", Vector2(0, -300), Vector2(200, 50)) or is_esc then
+                if button:show("Back", Vec2(0, -300), Vec2(200, 50)) or is_esc then
                     self.option_window_size = false
                 end
 
                 return
             end
             if self.option then
-                text:show("Option", Vector2(0, 200), 50)
-                if button:show("Window Size", Vector2(0, 100), Vector2(200, 50)) then
+                text:show("Option", Vec2(0, 200), 50)
+                if button:show("Window Size", Vec2(0, 100), Vec2(200, 50)) then
                     self.option_window_size = true
                 end
-                if button:show("Back", Vector2(0, -100), Vector2(200, 50)) or is_esc then
+                if button:show("Back", Vec2(0, -100), Vec2(200, 50)) or is_esc then
                     self.option = false
                 end
                 return
             end
             if not self.hide then
                 mouse.hide_cursor(false)
-                text:show("Menu", Vector2(0, 200), 50)
-                if button:show("Resume", Vector2(0, 70), Vector2(150, 50)) or is_esc then
+                text:show("Menu", Vec2(0, 200), 50)
+                if button:show("Resume", Vec2(0, 70), Vec2(150, 50)) or is_esc then
                     self.hide_next = true
                 end
-                if button:show("Option", Vector2(0, 0), Vector2(150, 50)) then
+                if button:show("Option", Vec2(0, 0), Vec2(150, 50)) then
                     self.option = true
                 end
-                if button:show("Quit", Vector2(0, -70), Vector2(150, 50)) then
+                if button:show("Quit", Vec2(0, -70), Vec2(150, 50)) then
                     scene.change("")
                 end
             end

@@ -11,14 +11,14 @@ local function scroll()
     prev_mpos = {},
     t1 = {},
     t2 = {},
-    pos = Vector2(0, 0),
+    pos = Vec2(0, 0),
     is_drag = false,
     initial = true,
     show = function(self, pos, scale)
       self.drawer = Draw2D(self.t2)
-      self.drawer.scale = Vector2(scale.x, scale.y * 0.1)
+      self.drawer.scale = Vec2(scale.x, scale.y * 0.1)
       if self.initial then
-        self.pos = Vector2(pos.x, pos.y)
+        self.pos = Vec2(pos.x, pos.y)
         self.initial = false
       end
       self.drawer.position = self.pos
@@ -54,7 +54,7 @@ local function scroll()
           v.y = mpos.y + v.y
         end
       end
-      self.prev_mpos = Vector2(mpos.x, mpos.y)
+      self.prev_mpos = Vec2(mpos.x, mpos.y)
       self.positions = {}
       self.current_pos = 1
       GUI_MANAGER:add(self.drawer)

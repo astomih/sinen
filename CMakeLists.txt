@@ -101,4 +101,12 @@ else()
   )
 endif()
 
+if(WIN32)
+  set(SUBSYSTEM_LINKER_OPTIONS "/SUBSYSTEM:WINDOWS")
+else()
+  set(SUBSYSTEM_LINKER_OPTIONS "-mwindows")
+endif()
+
+target_link_options(sinen PRIVATE ${SUBSYSTEM_LINKER_OPTIONS})
+
 set_property(TARGET sinen PROPERTY CXX_STANDARD 23)

@@ -101,7 +101,7 @@ else()
   )
 endif()
 
-if(WIN32)
+if(MSVC)
   set(SUBSYSTEM_LINKER_OPTIONS "/SUBSYSTEM:WINDOWS")
 else()
   set(SUBSYSTEM_LINKER_OPTIONS "-mwindows")

@@ -41,7 +41,50 @@ uint32_t scene_system::m_prev_tick = 0;
 bool scene_system::is_reset = true;
 std::string scene_system::m_scene_name = "main";
 float scene_system::deltaTime = 0.f;
-bool scene_system::initialize() { return true; }
+struct ImGuiLog {
+  struct Type {
+    ImVec4 color;
+    std::string str;
+  };
+  static std::vector<Type> logs;
+};
+std::vector<ImGuiLog::Type> ImGuiLog::logs;
+bool scene_system::initialize() {
+  Logger::set_output_function([&](Logger::priority p, std::string_view str) {
+    ImVec4 color;
+    switch (p) {
+    case Logger::priority::verbose:
+      color = ImVec4(0.0f, 1.0f, 1.0f, 1.0f);
+      std::cout << "VERBOSE: " << str << std::endl;
+      break;
+    case Logger::priority::debug:
+      color = ImVec4(0.0f, 0.0f, 1.0f, 1.0f);
+      std::cout << "DEBUG: " << str << std::endl;
+      break;
+    case Logger::priority::info:
+      color = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
+      std::cout << "INFO: " << str << std::endl;
+      break;
+    case Logger::priority::error:
+      color = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+      std::cout << "ERROR: " << str << std::endl;
+      break;
+    case Logger::priority::warn:
+      color = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
+      std::cout << "WARNING: " << str << std::endl;
+      break;
+    case Logger::priority::critical:
+      color = ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
+      std::cout << "CRITICAL: " << str << std::endl;
+      break;
+    default:
+      color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+      break;
+    }
+    ImGuiLog::logs.push_back({color, std::string(str)});
+  });
+  return true;
+}
 void scene_system::setup() {
   if (is_run_script) {
     sol::state *lua = ((sol::state *)script_system::get_sol_state());
@@ -74,7 +117,8 @@ void scene_system::process_input() {
 void scene_system::update_scene() {
   {
     if (Keyboard::is_pressed(Keyboard::code::F3)) {
-      static auto once = []() {
+      Renderer::toggle_show_imgui();
+      if (Renderer::is_show_imgui()) {
         Renderer::add_imgui_function([]() {
           ImGui::Begin("Debug");
           ImGui::Text("FPS: %.3f", ImGui::GetIO().Framerate);
@@ -85,10 +129,16 @@ void scene_system::update_scene() {
                       ImGui::GetIO().BackendRendererName);
 
           ImGui::End();
+
+          ImGui::Begin("Log");
+          for (auto &log : ImGuiLog::logs) {
+            ImGui::TextColored(log.color, "%s", (log.str).c_str());
+          }
+          ImGui::End();
         });
-        return true;
-      }();
-      Renderer::toggle_show_imgui();
+      } else {
+        Renderer::get_imgui_function().clear();
+      }
     }
   }
   // calc delta time

@@ -6,6 +6,7 @@
 #include <math/math.hpp>
 #include <platform/platform.hpp>
 #include <render/render.hpp>
+#include <string_view>
 
 namespace sinen {
 void register_table(sol::state &lua) {
@@ -184,6 +185,16 @@ void register_table(sol::state &lua) {
     auto v = lua.create_table("time");
     v["seconds"] = &Time::seconds;
     v["milli"] = &Time::milli;
+  }
+  {
+    // logger
+    auto v = lua.create_table("logger");
+    v["verbose"] = [](std::string str) { Logger::verbose("%s",str.data()); };
+    v["debug"] = [](std::string str) { Logger::debug("%s",str.data()); };
+    v["info"] = [](std::string str) { Logger::info("%s",str.data()); };
+    v["error"] = [](std::string str) { Logger::error("%s",str.data()); };
+    v["warn"] = [](std::string str) { Logger::warn("%s",str.data()); };
+    v["critical"] = [](std::string str) { Logger::critical("%s",str.data()); };
   }
 }
 } // namespace sinen

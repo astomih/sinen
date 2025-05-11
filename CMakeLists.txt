@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 include(CMakePrintHelpers)
 project(sinen)
-option(SINEN_EXTERNAL_ALL_BUILD "Build all external libralies" ON)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(SINEN_SOURCE_DIR ${CMAKE_SOURCE_DIR})
@@ -68,39 +67,21 @@ add_executable(sinen src/main.cpp docs/icon/icon.rc)
 target_include_directories(
   sinen PUBLIC ${SINEN_CORE_INCLUDE_DIRS} ${SDL3_INCLUDE_PATHS})
 
-if(NOT SINEN_EXTERNAL_ALL_BUILD)
-  target_link_libraries(
-    sinen
-    PUBLIC
-    sinen_core
-    script
-    paranoixa
-    paranoixa_imgui_backend
-    SDL3::SDL3
-    SDL3_image
-    SDL3_mixer::SDL3_mixer
-    SDL3_ttf
-    rt_shader_compiler
-    assimp
-    lua
-  )
-else()
-  target_link_libraries(
-    sinen
-    PUBLIC
-    sinen_core
-    script
-    paranoixa
-    paranoixa_imgui_backend
-    SDL3::SDL3
-    SDL3_image::SDL3_image
-    SDL3_mixer::SDL3_mixer
-    SDL3_ttf::SDL3_ttf
-    rt_shader_compiler
-    assimp
-    lua
-  )
-endif()
+target_link_libraries(
+  sinen
+  PUBLIC
+  sinen_core
+  script
+  paranoixa
+  paranoixa_imgui_backend
+  SDL3::SDL3
+  SDL3_image::SDL3_image
+  SDL3_mixer::SDL3_mixer
+  SDL3_ttf::SDL3_ttf
+  rt_shader_compiler
+  assimp
+  lua
+)
 
 if(MSVC)
   set(SUBSYSTEM_LINKER_OPTIONS "/SUBSYSTEM:WINDOWS")

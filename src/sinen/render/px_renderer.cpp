@@ -156,11 +156,7 @@ void PxRenderer::render() {
   isFrameStarted = true;
   objectCount = 0;
   if (scene_system::is_run_script) {
-
-    // sol::state_view lua((lua_State *)script_system::get_state());
-    // lua["Draw"]();
-    // script_system::accessor->attr("Draw")();
-    py_exec("draw()", "<string>", EVAL_MODE, nullptr);
+    ScriptSystem::DrawScene();
   }
   if (objectCount > 0 && !isDraw2D) {
     commandBuffer->EndRenderPass(currentRenderPass);

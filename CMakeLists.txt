@@ -56,7 +56,7 @@ add_subdirectory(./libs/paranoixa EXCLUDE_FROM_ALL)
 add_subdirectory(./src/editor)
 
 # add_subdirectory(./test)
-add_subdirectory(./src/usertype EXCLUDE_FROM_ALL)
+add_subdirectory(./src/script EXCLUDE_FROM_ALL)
 add_subdirectory(./src/rt_shader_compiler EXCLUDE_FROM_ALL)
 
 if(NOT MSVC)
@@ -73,7 +73,7 @@ if(NOT SINEN_EXTERNAL_ALL_BUILD)
     sinen
     PUBLIC
     sinen_core
-    script_engine
+    script
     paranoixa
     paranoixa_imgui_backend
     SDL3::SDL3
@@ -89,7 +89,7 @@ else()
     sinen
     PUBLIC
     sinen_core
-    script_engine
+    script
     paranoixa
     paranoixa_imgui_backend
     SDL3::SDL3

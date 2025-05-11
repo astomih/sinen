@@ -26,7 +26,7 @@ set(SINEN_INCLUDE_DIRS
   ${SINEN_SOURCE_DIR}/libs/SDL_ttf/include
   ${SINEN_SOURCE_DIR}/libs/paranoixa/include
   ${SINEN_SOURCE_DIR}/libs/paranoixa/source/imgui_backend
-  ${SINEN_SOURCE_DIR}/src/usertype/include
+  ${SINEN_SOURCE_DIR}/src/script/include
   ${SINEN_SOURCE_DIR}/src/rt_shader_compiler/include
   ${SINEN_SOURCE_DIR}/libs/assimp/include
   ${SINEN_SOURCE_DIR}/libs/glm

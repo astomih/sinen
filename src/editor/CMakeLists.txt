@@ -29,7 +29,7 @@ find_package(Vulkan REQUIRED)
 
 set(COMMON_LIBRARIES
 	sinen_core
-	script_engine
+	script
 	${Vulkan_LIBRARIES}
 )
 

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(script_engine)
+project(script)
 set(CMAKE_CXX_FLAGS "-O2 -DNDEBUG -march=native")
 set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 
@@ -17,11 +17,11 @@ include_directories(
 )
 link_directories(
 )
-add_library(script_engine STATIC
+add_library(script STATIC
   ${SOURCE_FILES}
 )
-target_link_libraries(script_engine
+target_link_libraries(script
   sinen_core
 )
 
-set_property(TARGET script_engine PROPERTY CXX_STANDARD 23)
+set_property(TARGET script PROPERTY CXX_STANDARD 23)

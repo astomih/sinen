@@ -1,8 +1,11 @@
 #ifndef SINEN_SCRIPT_SYSTEM_HPP
 #define SINEN_SCRIPT_SYSTEM_HPP
+#include "pybind11/internal/object.h"
 #include <functional>
 #include <memory>
 #include <string_view>
+
+#include <pybind11/pybind11.h>
 namespace sinen {
 class script_system {
 public:

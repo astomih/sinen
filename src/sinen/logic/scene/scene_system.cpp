@@ -4,17 +4,20 @@
 #include "../../platform/window/window_system.hpp"
 #include "../../render/render_system.hpp"
 #include "../script/script_system.hpp"
+#include "pocketpy/pocketpy.h"
+#include "pybind11/internal/builtins.h"
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <core/io/data_stream.hpp>
 #include <core/io/json.hpp>
 #include <logic/camera/camera.hpp>
+#include <logic/scene/scene.hpp>
 #include <math/color/color.hpp>
 #include <math/color/palette.hpp>
-
-#include <logic/scene/scene.hpp>
 #include <math/random.hpp>
 #include <platform/window/window.hpp>
+#include <pybind11/operators.h>
+#include <pybind11/pkbind.h>
 #include <render/renderer.hpp>
 
 #include <algorithm>
@@ -31,6 +34,7 @@
 #include <logic/camera/camera.hpp>
 #include <platform/input/keyboard.hpp>
 #include <sol/sol.hpp>
+namespace py = pybind11;
 
 namespace sinen {
 std::unique_ptr<Scene::implements> scene_system::m_impl =
@@ -87,10 +91,18 @@ bool scene_system::initialize() {
 }
 void scene_system::setup() {
   if (is_run_script) {
-    sol::state *lua = ((sol::state *)script_system::get_sol_state());
+    // sol::state *lua = ((sol::state *)script_system::get_sol_state());
+    // std::string str =
+    //     DataStream::open_as_string(AssetType::Script, current_name() +
+    //     ".lua");
+    // lua->do_string(str.data());
     std::string str =
-        DataStream::open_as_string(AssetType::Script, current_name() + ".lua");
-    lua->do_string(str.data());
+        DataStream::open_as_string(AssetType::Script, current_name() + ".py");
+
+    bool ok = py_exec(str.data(), "<string>", EXEC_MODE, NULL);
+    if (!ok) {
+      py_printexc();
+    }
   }
   m_impl->setup();
   m_game_state = Scene::state::running;
@@ -150,8 +162,13 @@ void scene_system::update_scene() {
   m_prev_tick = SDL_GetTicks();
 
   if (is_run_script) {
-    sol::state_view lua((lua_State *)script_system::get_state());
-    lua["Update"]();
+    // sol::state_view lua((lua_State *)script_system::get_state());
+    // lua["Update"]();
+    // auto accessor = *script_system::accessor;
+    // auto attr = accessor["Update"];
+    // attr();
+
+    py_exec("update()", "<string>", EXEC_MODE, nullptr);
   }
   m_impl->update(deltaTime);
   sound_system::update(deltaTime);

@@ -15,6 +15,7 @@ set(SINEN_INCLUDE_DIRS
   ${SINEN_SOURCE_DIR}/libs/paranoixa/library/imgui/backends
   ${SINEN_SOURCE_DIR}/libs/sol2/include
   ${SINEN_SOURCE_DIR}/libs/Lua/include
+  ${SINEN_SOURCE_DIR}/libs/pocketpy/include
   ${SINEN_SOURCE_DIR}/libs/mojoAL-SDL3/AL
   ${SINEN_SOURCE_DIR}/libs/rapidjson/include
   ${SINEN_SOURCE_DIR}/libs/mojoAL-SDL3
@@ -74,6 +75,7 @@ else()
     rt_shader_compiler
     assimp
     lua
+    pocketpy
   )
 endif()
 

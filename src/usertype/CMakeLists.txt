@@ -13,6 +13,7 @@ include_directories(
   ${SINEN_SOURCE_DIR}/include/sinen
   ${SINEN_SOURCE_DIR}/libs/sol2/include
   ${SINEN_SOURCE_DIR}/libs/Lua/include
+  ${SINEN_SOURCE_DIR}/libs/pocketpy/include
 )
 link_directories(
 )

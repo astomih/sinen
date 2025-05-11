@@ -2,6 +2,10 @@
 #include <functional>
 
 // internal
+#include "pocketpy/pocketpy.h"
+#include "pybind11/internal/builtins.h"
+#include "pybind11/internal/object.h"
+#include "pybind11/pybind11.h"
 #include "script_system.hpp"
 #include <core/io/data_stream.hpp>
 #include <script_engine.hpp>
@@ -19,6 +23,7 @@ void *script_system::get_state() { return impl->state.lua_state(); }
 void *script_system::get_sol_state() { return &impl->state; }
 bool script_system::initialize() {
   impl = std::make_unique<implement>();
+  py::initialize();
   return script_engine::initialize(impl->state);
 }
 

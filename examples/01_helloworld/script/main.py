@@ -1,11 +1,11 @@
-import sinen
-texture = sinen.Texture()
-draw2d = sinen.Draw2D(texture)
-font = sinen.Font()
+import sinen as sn
+texture = sn.Texture()
+draw2d = sn.Draw2D(texture)
+font = sn.Font()
 font.load("mplus/mplus-1p-medium.ttf", 96)
 
 def update():
-  font.render_text(texture, "Hello Sinen World!", sinen.Color(1, 1, 1, 1))
+  font.render_text(texture, "Hello Sinen World!", sn.Color(1, 1, 1, 1))
   draw2d.scale = texture.size()
 
 def draw():

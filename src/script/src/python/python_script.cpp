@@ -40,7 +40,6 @@ std::unique_ptr<IScript> Script::CreatePython() {
 PYBIND11_EMBEDDED_MODULE(sinen, m) {
   py::class_<glm::vec3>(m, "Vec3")
       .def(py::init<>())
-      .def(py::init<float>())
       .def(py::init<float, float, float>())
       .def_readwrite("x", &glm::vec3::x)
       .def_readwrite("y", &glm::vec3::y)
@@ -297,142 +296,73 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
   auto collision = m.def_submodule("collision");
   collision.def("aabb_aabb", &Collision::aabb_aabb);
 
-  auto keyboard = m.def_submodule("keyboard");
-  keyboard.def("is_pressed", &Keyboard::is_pressed);
-  keyboard.def("is_released", &Keyboard::is_released);
-  keyboard.def("is_down", &Keyboard::is_down);
-  keyboard.def("UNKNOWN", []() -> int {
-    return static_cast<int>(Keyboard::code::UNKNOWN);
-  });
-  keyboard.def("A",
-               []() -> int { return static_cast<int>(Keyboard::code::A); });
-  keyboard.def("B",
-               []() -> int { return static_cast<int>(Keyboard::code::B); });
-  keyboard.def("C",
-               []() -> int { return static_cast<int>(Keyboard::code::C); });
-  keyboard.def("D",
-               []() -> int { return static_cast<int>(Keyboard::code::D); });
-  keyboard.def("E",
-               []() -> int { return static_cast<int>(Keyboard::code::E); });
-  keyboard.def("F",
-               []() -> int { return static_cast<int>(Keyboard::code::F); });
-  keyboard.def("G",
-               []() -> int { return static_cast<int>(Keyboard::code::G); });
-  keyboard.def("H",
-               []() -> int { return static_cast<int>(Keyboard::code::H); });
-  keyboard.def("I",
-               []() -> int { return static_cast<int>(Keyboard::code::I); });
-  keyboard.def("J",
-               []() -> int { return static_cast<int>(Keyboard::code::J); });
-  keyboard.def("K",
-               []() -> int { return static_cast<int>(Keyboard::code::K); });
-  keyboard.def("L",
-               []() -> int { return static_cast<int>(Keyboard::code::L); });
-  keyboard.def("M",
-               []() -> int { return static_cast<int>(Keyboard::code::M); });
-  keyboard.def("N",
-               []() -> int { return static_cast<int>(Keyboard::code::N); });
-  keyboard.def("O",
-               []() -> int { return static_cast<int>(Keyboard::code::O); });
-  keyboard.def("P",
-               []() -> int { return static_cast<int>(Keyboard::code::P); });
-  keyboard.def("Q",
-               []() -> int { return static_cast<int>(Keyboard::code::Q); });
-  keyboard.def("R",
-               []() -> int { return static_cast<int>(Keyboard::code::R); });
-  keyboard.def("S",
-               []() -> int { return static_cast<int>(Keyboard::code::S); });
-  keyboard.def("T",
-               []() -> int { return static_cast<int>(Keyboard::code::T); });
-  keyboard.def("U",
-               []() -> int { return static_cast<int>(Keyboard::code::U); });
-  keyboard.def("V",
-               []() -> int { return static_cast<int>(Keyboard::code::V); });
-  keyboard.def("W",
-               []() -> int { return static_cast<int>(Keyboard::code::W); });
-  keyboard.def("X",
-               []() -> int { return static_cast<int>(Keyboard::code::X); });
-  keyboard.def("Y",
-               []() -> int { return static_cast<int>(Keyboard::code::Y); });
-  keyboard.def("Z",
-               []() -> int { return static_cast<int>(Keyboard::code::Z); });
-  keyboard.def("Key0",
-               []() -> int { return static_cast<int>(Keyboard::code::Key0); });
-  keyboard.def("Key1",
-               []() -> int { return static_cast<int>(Keyboard::code::Key1); });
-  keyboard.def("Key2",
-               []() -> int { return static_cast<int>(Keyboard::code::Key2); });
-  keyboard.def("Key3",
-               []() -> int { return static_cast<int>(Keyboard::code::Key3); });
-  keyboard.def("Key4",
-               []() -> int { return static_cast<int>(Keyboard::code::Key4); });
-  keyboard.def("Key5",
-               []() -> int { return static_cast<int>(Keyboard::code::Key5); });
-  keyboard.def("Key6",
-               []() -> int { return static_cast<int>(Keyboard::code::Key6); });
-  keyboard.def("Key7",
-               []() -> int { return static_cast<int>(Keyboard::code::Key7); });
-  keyboard.def("Key8",
-               []() -> int { return static_cast<int>(Keyboard::code::Key8); });
-  keyboard.def("Key9",
-               []() -> int { return static_cast<int>(Keyboard::code::Key9); });
-  keyboard.def("F1",
-               []() -> int { return static_cast<int>(Keyboard::code::F1); });
-  keyboard.def("F2",
-               []() -> int { return static_cast<int>(Keyboard::code::F2); });
-  keyboard.def("F3",
-               []() -> int { return static_cast<int>(Keyboard::code::F3); });
-  keyboard.def("F4",
-               []() -> int { return static_cast<int>(Keyboard::code::F4); });
-  keyboard.def("F5",
-               []() -> int { return static_cast<int>(Keyboard::code::F5); });
-  keyboard.def("F6",
-               []() -> int { return static_cast<int>(Keyboard::code::F6); });
-  keyboard.def("F7",
-               []() -> int { return static_cast<int>(Keyboard::code::F7); });
-  keyboard.def("F8",
-               []() -> int { return static_cast<int>(Keyboard::code::F8); });
-  keyboard.def("F9",
-               []() -> int { return static_cast<int>(Keyboard::code::F9); });
-  keyboard.def("F10",
-               []() -> int { return static_cast<int>(Keyboard::code::F10); });
-  keyboard.def("F11",
-               []() -> int { return static_cast<int>(Keyboard::code::F11); });
-  keyboard.def("F12",
-               []() -> int { return static_cast<int>(Keyboard::code::F12); });
-  keyboard.def("UP",
-               []() -> int { return static_cast<int>(Keyboard::code::UP); });
-  keyboard.def("DOWN",
-               []() -> int { return static_cast<int>(Keyboard::code::DOWN); });
-  keyboard.def("LEFT",
-               []() -> int { return static_cast<int>(Keyboard::code::LEFT); });
-  keyboard.def("RIGHT",
-               []() -> int { return static_cast<int>(Keyboard::code::RIGHT); });
-  keyboard.def("ESCAPE", []() -> int {
-    return static_cast<int>(Keyboard::code::ESCAPE);
-  });
-  keyboard.def("SPACE",
-               []() -> int { return static_cast<int>(Keyboard::code::SPACE); });
-  keyboard.def("BACKSPACE", []() -> int {
-    return static_cast<int>(Keyboard::code::BACKSPACE);
-  });
-  keyboard.def("TAB",
-               []() -> int { return static_cast<int>(Keyboard::code::TAB); });
-  keyboard.def("RETURN", []() -> int {
-    return static_cast<int>(Keyboard::code::RETURN);
-  });
-  keyboard.def("LSHIFT", []() -> int {
-    return static_cast<int>(Keyboard::code::LSHIFT);
-  });
-  keyboard.def("RSHIFT", []() -> int {
-    return static_cast<int>(Keyboard::code::RSHIFT);
-  });
-  keyboard.def("LCTRL",
-               []() -> int { return static_cast<int>(Keyboard::code::LCTRL); });
-  keyboard.def("RCTRL",
-               []() -> int { return static_cast<int>(Keyboard::code::RCTRL); });
-  keyboard.def("LALT",
-               []() -> int { return static_cast<int>(Keyboard::code::LALT); });
+  py::enum_<Keyboard::code>(m, "Keyboard")
+      .value("A", Keyboard::A)
+      .value("B", Keyboard::B)
+      .value("C", Keyboard::C)
+      .value("D", Keyboard::D)
+      .value("E", Keyboard::E)
+      .value("F", Keyboard::F)
+      .value("G", Keyboard::G)
+      .value("H", Keyboard::H)
+      .value("I", Keyboard::I)
+      .value("J", Keyboard::J)
+      .value("K", Keyboard::K)
+      .value("L", Keyboard::L)
+      .value("M", Keyboard::M)
+      .value("N", Keyboard::N)
+      .value("O", Keyboard::O)
+      .value("P", Keyboard::P)
+      .value("Q", Keyboard::Q)
+      .value("R", Keyboard::R)
+      .value("S", Keyboard::S)
+      .value("T", Keyboard::T)
+      .value("U", Keyboard::U)
+      .value("V", Keyboard::V)
+      .value("W", Keyboard::W)
+      .value("X", Keyboard::X)
+      .value("Y", Keyboard::Y)
+      .value("Z", Keyboard::Z)
+      .value("Key0", Keyboard::Key0)
+      .value("Key1", Keyboard::Key1)
+      .value("Key2", Keyboard::Key2)
+      .value("Key3", Keyboard::Key3)
+      .value("Key4", Keyboard::Key4)
+      .value("Key5", Keyboard::Key5)
+      .value("Key6", Keyboard::Key6)
+      .value("Key7", Keyboard::Key7)
+      .value("Key8", Keyboard::Key8)
+      .value("Key9", Keyboard::Key9)
+      .value("F1", Keyboard::F1)
+      .value("F2", Keyboard::F2)
+      .value("F3", Keyboard::F3)
+      .value("F4", Keyboard::F4)
+      .value("F5", Keyboard::F5)
+      .value("F6", Keyboard::F6)
+      .value("F7", Keyboard::F7)
+      .value("F8", Keyboard::F8)
+      .value("F9", Keyboard::F9)
+      .value("F10", Keyboard::F10)
+      .value("F11", Keyboard::F11)
+      .value("F12", Keyboard::F12)
+      .value("UP", Keyboard::UP)
+      .value("DOWN", Keyboard::DOWN)
+      .value("LEFT", Keyboard::LEFT)
+      .value("RIGHT", Keyboard::RIGHT)
+      .value("ESCAPE", Keyboard::ESCAPE)
+      .value("SPACE", Keyboard::SPACE)
+      .value("BACKSPACE", Keyboard::BACKSPACE)
+      .value("TAB", Keyboard::TAB)
+      .value("RETURN", Keyboard::RETURN)
+      .value("LSHIFT", Keyboard::LSHIFT)
+      .value("RSHIFT", Keyboard::RSHIFT)
+      .value("LCTRL", Keyboard::LCTRL)
+      .value("RCTRL", Keyboard::RCTRL)
+      .value("LALT", Keyboard::LALT)
+      .def(py::init<>())
+      .def("is_pressed", &Keyboard::is_pressed)
+      .def("is_released", &Keyboard::is_released)
+      .def("is_down", &Keyboard::is_down);
 
   auto mouse = m.def_submodule("mouse");
   mouse.def("set_relative", &Mouse::set_relative);

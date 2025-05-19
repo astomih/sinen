@@ -8,12 +8,15 @@ draw3d.position = sn.Vec3(0, 0, 0)
 draw3d.model = model
 
 
-pos = sn.Vec3(0.0, 1.0, 3.0)
+pos = sn.Vec3(1.0, 1.0, 3.0)
+at = sn.Vec3(0, 0, 0)
+up = sn.Vec3(0, 1, 0)
 speed = 0.1
 
 def update():
   if sn.Keyboard.is_down(sn.Keyboard.W): 
-    pos.z = pos.z - speed
+    sn.logger.info(str(pos.z))
+    pos.z -= speed
 
   if sn.Keyboard.is_down(sn.Keyboard.S):
     pos.z = pos.z + speed
@@ -30,7 +33,7 @@ def update():
   if sn.Keyboard.is_down(sn.Keyboard.SPACE):
     pos.y = pos.y + speed
 
-  sn.scene.camera().lookat(pos, sn.Vec3(0, 0, 0), sn.Vec3(0, 1, 0))
+  sn.Scene.camera().lookat(pos, at, up)
 
 def draw():
   # Draw texture

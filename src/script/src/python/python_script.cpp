@@ -24,11 +24,15 @@ public:
   void Finalize() override { py::finalize(); }
 
   void RunScene(const std::string_view source) override {
-    py_exec(std::string(source).data(), "<string>", EXEC_MODE, nullptr);
+    if (!py_exec(std::string(source).data(), "<string>", EXEC_MODE, nullptr)) {
+      py_printexc();
+    }
   }
 
   void Update() override {
-    py_exec("update()", "<string>", EVAL_MODE, nullptr);
+    if (!py_exec("update()", "<string>", EVAL_MODE, nullptr)) {
+      py_printexc();
+    }
   }
   void Draw() override { py_exec("draw()", "<string>", EVAL_MODE, nullptr); }
 };
@@ -283,15 +287,16 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
   renderer.def("begin_render_texture3d", &Renderer::begin_render_texture3d);
   renderer.def("end_render_texture", &Renderer::end_render_texture);
 
-  auto scene = m.def_submodule("scene");
-  scene.def("camera", &Scene::camera);
-  scene.def("size", &Scene::size);
-  scene.def("resize", &Scene::resize);
-  scene.def("half", &Scene::half);
-  scene.def("ratio", &Scene::ratio);
-  scene.def("inv_ratio", &Scene::inv_ratio);
-  scene.def("delta_time", &Scene::delta_time);
-  scene.def("change", &Scene::change);
+  py::class_<Scene>(m, "Scene")
+      .def(py::init<>())
+      .def_static("camera", &Scene::camera, py::return_value_policy::reference)
+      .def_static("size", &Scene::size)
+      .def_static("resize", &Scene::resize)
+      .def_static("half", &Scene::half)
+      .def_static("ratio", &Scene::ratio)
+      .def_static("inv_ratio", &Scene::inv_ratio)
+      .def_static("delta_time", &Scene::delta_time)
+      .def_static("change", &Scene::change);
 
   auto collision = m.def_submodule("collision");
   collision.def("aabb_aabb", &Collision::aabb_aabb);
@@ -364,81 +369,52 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def("is_released", &Keyboard::is_released)
       .def("is_down", &Keyboard::is_down);
 
-  auto mouse = m.def_submodule("mouse");
-  mouse.def("set_relative", &Mouse::set_relative);
-  mouse.def("is_relative", &Mouse::is_relative);
-  mouse.def("is_pressed", &Mouse::is_pressed);
-  mouse.def("is_released", &Mouse::is_released);
-  mouse.def("is_down", &Mouse::is_down);
-  mouse.def("position", &Mouse::get_position);
-  mouse.def("position_on_scene", &Mouse::get_position_on_scene);
-  mouse.def("set_position", &Mouse::set_position);
-  mouse.def("set_position_on_scene", &Mouse::set_position_on_scene);
-  mouse.def("scroll_wheel", &Mouse::get_scroll_wheel);
-  mouse.def("hide_cursor", &Mouse::hide_cursor);
-  mouse.def("LEFT",
-            []() -> int { return static_cast<int>(Mouse::code::LEFT); });
-  mouse.def("RIGHT",
-            []() -> int { return static_cast<int>(Mouse::code::RIGHT); });
-  mouse.def("MIDDLE",
-            []() -> int { return static_cast<int>(Mouse::code::MIDDLE); });
-  mouse.def("X1", []() -> int { return static_cast<int>(Mouse::code::X1); });
-  mouse.def("X2", []() -> int { return static_cast<int>(Mouse::code::X2); });
-  auto gamepad = m.def_submodule("gamepad");
-  gamepad.def("is_pressed", &GamePad::is_pressed);
-  gamepad.def("is_released", &GamePad::is_released);
-  gamepad.def("is_down", &GamePad::is_down);
-  gamepad.def("left_stick", &GamePad::get_left_stick);
-  gamepad.def("right_stick", &GamePad::get_right_stick);
-  gamepad.def("is_connected", &GamePad::is_connected);
-  gamepad.def("INVALID",
-              []() -> int { return static_cast<int>(GamePad::code::INVALID); });
-  gamepad.def("A", []() -> int { return static_cast<int>(GamePad::code::A); });
-  gamepad.def("B", []() -> int { return static_cast<int>(GamePad::code::B); });
-  gamepad.def("X", []() -> int { return static_cast<int>(GamePad::code::X); });
-  gamepad.def("Y", []() -> int { return static_cast<int>(GamePad::code::Y); });
-  gamepad.def("BACK",
-              []() -> int { return static_cast<int>(GamePad::code::BACK); });
-  gamepad.def("GUIDE",
-              []() -> int { return static_cast<int>(GamePad::code::GUIDE); });
-  gamepad.def("START",
-              []() -> int { return static_cast<int>(GamePad::code::START); });
-  gamepad.def("LEFTSTICK", []() -> int {
-    return static_cast<int>(GamePad::code::LEFTSTICK);
-  });
-  gamepad.def("RIGHTSTICK", []() -> int {
-    return static_cast<int>(GamePad::code::RIGHTSTICK);
-  });
-  gamepad.def("LEFTSHOULDER", []() -> int {
-    return static_cast<int>(GamePad::code::LEFTSHOULDER);
-  });
-  gamepad.def("RIGHTSHOULDER", []() -> int {
-    return static_cast<int>(GamePad::code::RIGHTSHOULDER);
-  });
-  gamepad.def("DPAD_UP",
-              []() -> int { return static_cast<int>(GamePad::code::DPAD_UP); });
-  gamepad.def("DPAD_DOWN", []() -> int {
-    return static_cast<int>(GamePad::code::DPAD_DOWN);
-  });
-  gamepad.def("DPAD_LEFT", []() -> int {
-    return static_cast<int>(GamePad::code::DPAD_LEFT);
-  });
-  gamepad.def("DPAD_RIGHT", []() -> int {
-    return static_cast<int>(GamePad::code::DPAD_RIGHT);
-  });
-  gamepad.def("MISC1",
-              []() -> int { return static_cast<int>(GamePad::code::MISC1); });
-  gamepad.def("PADDLE1",
-              []() -> int { return static_cast<int>(GamePad::code::PADDLE1); });
-  gamepad.def("PADDLE2",
-              []() -> int { return static_cast<int>(GamePad::code::PADDLE2); });
-  gamepad.def("PADDLE3",
-              []() -> int { return static_cast<int>(GamePad::code::PADDLE3); });
-  gamepad.def("PADDLE4",
-              []() -> int { return static_cast<int>(GamePad::code::PADDLE4); });
-  gamepad.def("TOUCHPAD", []() -> int {
-    return static_cast<int>(GamePad::code::TOUCHPAD);
-  });
+  py::enum_<Mouse::code>(m, "Mouse")
+      .value("LEFT", Mouse::LEFT)
+      .value("RIGHT", Mouse::RIGHT)
+      .value("MIDDLE", Mouse::MIDDLE)
+      .value("X1", Mouse::X1)
+      .value("X2", Mouse::X2)
+      .def_static("is_pressed", &Mouse::is_pressed)
+      .def_static("is_released", &Mouse::is_released)
+      .def_static("is_down", &Mouse::is_down)
+      .def_static("position", &Mouse::get_position)
+      .def_static("position_on_scene", &Mouse::get_position_on_scene)
+      .def_static("set_position", &Mouse::set_position)
+      .def_static("set_position_on_scene", &Mouse::set_position_on_scene)
+      .def_static("scroll_wheel", &Mouse::get_scroll_wheel)
+      .def_static("hide_cursor", &Mouse::hide_cursor);
+
+  py::enum_<GamePad::code>(m, "GamePad")
+      .value("INVALID", GamePad::INVALID)
+      .value("A", GamePad::A)
+      .value("B", GamePad::B)
+      .value("X", GamePad::X)
+      .value("Y", GamePad::Y)
+      .value("BACK", GamePad::BACK)
+      .value("GUIDE", GamePad::GUIDE)
+      .value("START", GamePad::START)
+      .value("LEFTSTICK", GamePad::LEFTSTICK)
+      .value("RIGHTSTICK", GamePad::RIGHTSTICK)
+      .value("LEFTSHOULDER", GamePad::LEFTSHOULDER)
+      .value("RIGHTSHOULDER", GamePad::RIGHTSHOULDER)
+      .value("DPAD_UP", GamePad::DPAD_UP)
+      .value("DPAD_DOWN", GamePad::DPAD_DOWN)
+      .value("DPAD_LEFT", GamePad::DPAD_LEFT)
+      .value("DPAD_RIGHT", GamePad::DPAD_RIGHT)
+      .value("MISC1", GamePad::MISC1)
+      .value("PADDLE1", GamePad::PADDLE1)
+      .value("PADDLE2", GamePad::PADDLE2)
+      .value("PADDLE3", GamePad::PADDLE3)
+      .value("PADDLE4", GamePad::PADDLE4)
+      .value("TOUCHPAD", GamePad::TOUCHPAD)
+      .def(py::init<>())
+      .def_static("is_pressed", &GamePad::is_pressed)
+      .def_static("is_released", &GamePad::is_released)
+      .def_static("is_down", &GamePad::is_down)
+      .def_static("left_stick", &GamePad::get_left_stick)
+      .def_static("right_stick", &GamePad::get_right_stick)
+      .def_static("is_connected", &GamePad::is_connected);
 
   auto periodic = m.def_submodule("periodic");
   periodic.def("sin0_1", [](float period, float t) {

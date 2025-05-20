@@ -42,8 +42,6 @@ else ()
 endif ()
 
 add_subdirectory(./libs/SDL_mixer EXCLUDE_FROM_ALL)
-add_subdirectory(./libs/Lua)
-add_subdirectory(./libs/sol2 EXCLUDE_FROM_ALL)
 add_subdirectory(./libs/pocketpy EXCLUDE_FROM_ALL)
 
 add_subdirectory(./src/sinen)
@@ -77,7 +75,6 @@ target_link_libraries(
         SDL3_ttf::SDL3_ttf
         rt_shader_compiler
         assimp
-        lua
 )
 
 if (MSVC)

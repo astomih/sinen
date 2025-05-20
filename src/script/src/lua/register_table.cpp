@@ -1,3 +1,4 @@
+/*
 #include "register_script.hpp"
 
 #include <asset/asset.hpp>
@@ -198,3 +199,5 @@ void register_table(sol::state &lua) {
   }
 }
 } // namespace sinen
+
+*/

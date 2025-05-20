@@ -1,3 +1,4 @@
+/*
 #include "register_script.hpp"
 
 #include <render/drawable/drawable_wrapper.hpp>
@@ -37,3 +38,4 @@ void register_drawable(sol::state &lua) {
   }
 }
 } // namespace sinen
+*/

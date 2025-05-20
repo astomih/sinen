@@ -18,7 +18,6 @@
 #include "../asset/model/model_data.hpp"
 #include "../asset/texture/texture_data.hpp"
 #include "../logic/script/script_system.hpp"
-#include <sol/sol.hpp>
 
 #include "../logic/scene/scene_system.hpp"
 #include <asset/texture/render_texture.hpp>

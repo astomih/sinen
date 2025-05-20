@@ -7,10 +7,7 @@
 
 namespace sinen {
 
-enum class ScriptType {
-  Lua = 0,
-  Python = 1,
-};
+enum class ScriptType { Python };
 class ScriptSystem {
 public:
   static bool Initialize(const ScriptType &type);

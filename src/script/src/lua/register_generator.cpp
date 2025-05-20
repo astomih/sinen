@@ -1,3 +1,4 @@
+/*
 #include <asset/asset.hpp>
 #include <core/core.hpp>
 #include <logic/logic.hpp>
@@ -43,3 +44,5 @@ void register_generator(sol::state &v) {
   };
 }
 } // namespace sinen
+
+*/

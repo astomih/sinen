@@ -5,14 +5,10 @@
 
 namespace sinen {
 std::unique_ptr<IScript> ScriptSystem::script = nullptr;
-ScriptType ScriptSystem::type = ScriptType::Lua;
+ScriptType ScriptSystem::type = ScriptType::Python;
 
 bool ScriptSystem::Initialize(const ScriptType &type) {
   switch (type) {
-  case ScriptType::Lua:
-    script = Script::CreateLua();
-    ScriptSystem::type = ScriptType::Lua;
-    break;
   case ScriptType::Python:
     script = Script::CreatePython();
     ScriptSystem::type = ScriptType::Python;
@@ -33,10 +29,6 @@ void ScriptSystem::RunScene(std::string_view sceneName) {
   if (script) {
     std::string source;
     switch (ScriptSystem::type) {
-    case ScriptType::Lua: {
-      source = DataStream::open_as_string(AssetType::Script,
-                                          std::string(sceneName) + ".lua");
-    } break;
     case ScriptType::Python: {
       source = DataStream::open_as_string(AssetType::Script,
                                           std::string(sceneName) + ".py");

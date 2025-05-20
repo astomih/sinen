@@ -1,3 +1,4 @@
+/*
 #include "glm/ext/vector_int2.hpp"
 #include "register_script.hpp"
 #include <math/graph/bfs_grid.hpp>
@@ -43,3 +44,5 @@ void register_graph(sol::state &lua) {
   }
 };
 } // namespace sinen
+
+*/

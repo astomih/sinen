@@ -1,3 +1,6 @@
+/*
+ * Lua  is not supported yet
+
 #include "../../include/script.hpp"
 #include <functional>
 #include <sol/sol.hpp>
@@ -251,3 +254,5 @@ void LuaScript::Update() { lua["update"](); }
 void LuaScript::Draw() { lua["draw"](); }
 
 } // namespace sinen
+
+*/

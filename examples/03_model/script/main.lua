@@ -11,7 +11,7 @@ draw3d.model = model
 local pos = Vec3(1, 1, 3)
 local speed = 0.1
 
-function Update()
+function update()
   if keyboard.is_down(keyboard.W) then
     pos.z = pos.z - speed
   end
@@ -39,7 +39,7 @@ function Update()
   scene.camera():lookat(pos, Vec3(0, 0, 0), Vec3(0, 1, 0))
 end
 
-function Draw()
+function draw()
   -- Draw texture
   draw3d:draw()
 end

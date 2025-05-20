@@ -156,9 +156,7 @@ void PxRenderer::render() {
   isFrameStarted = true;
   objectCount = 0;
   if (scene_system::is_run_script) {
-
-    sol::state_view lua((lua_State *)script_system::get_state());
-    lua["Draw"]();
+    ScriptSystem::DrawScene();
   }
   if (objectCount > 0 && !isDraw2D) {
     commandBuffer->EndRenderPass(currentRenderPass);

@@ -9,10 +9,9 @@
 #include <core/io/data_stream.hpp>
 #include <core/io/json.hpp>
 #include <logic/camera/camera.hpp>
+#include <logic/scene/scene.hpp>
 #include <math/color/color.hpp>
 #include <math/color/palette.hpp>
-
-#include <logic/scene/scene.hpp>
 #include <math/random.hpp>
 #include <platform/window/window.hpp>
 #include <render/renderer.hpp>
@@ -30,7 +29,6 @@
 #include <imgui_impl_sdl3.h>
 #include <logic/camera/camera.hpp>
 #include <platform/input/keyboard.hpp>
-#include <sol/sol.hpp>
 
 namespace sinen {
 std::unique_ptr<Scene::implements> scene_system::m_impl =
@@ -87,10 +85,7 @@ bool scene_system::initialize() {
 }
 void scene_system::setup() {
   if (is_run_script) {
-    sol::state *lua = ((sol::state *)script_system::get_sol_state());
-    std::string str =
-        DataStream::open_as_string(AssetType::Script, current_name() + ".lua");
-    lua->do_string(str.data());
+    ScriptSystem::RunScene(current_name());
   }
   m_impl->setup();
   m_game_state = Scene::state::running;
@@ -150,8 +145,7 @@ void scene_system::update_scene() {
   m_prev_tick = SDL_GetTicks();
 
   if (is_run_script) {
-    sol::state_view lua((lua_State *)script_system::get_state());
-    lua["Update"]();
+    ScriptSystem::UpdateScene();
   }
   m_impl->update(deltaTime);
   sound_system::update(deltaTime);

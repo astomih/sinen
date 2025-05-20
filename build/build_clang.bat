@@ -1,1 +1,0 @@
-cmake --build %~dp0clang --config Debug

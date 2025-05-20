@@ -22,24 +22,23 @@ pos = Vec3(1, 1, 3)
 speed = 0.1
 
 def update():
-  if Keyboard.is_down(Keyboard.W):
-    pos.z = pos.z - speed
+  if Keyboard.is_down(Keyboard.W): 
+    pos.z -= speed
 
   if Keyboard.is_down(Keyboard.S):
-    pos.z = pos.z + speed
-  
+    pos.z += speed
 
   if Keyboard.is_down(Keyboard.A):
-    pos.x = pos.x - speed
-
+    pos.x -= speed
+  
   if Keyboard.is_down(Keyboard.D):
-    pos.x = pos.x + speed
-
-  if Keyboard.is_down(Keyboard.SPACE):
-    pos.y = pos.y + speed
+    pos.x += speed
 
   if Keyboard.is_down(Keyboard.LSHIFT):
-    pos.y = pos.y - speed
+    pos.y -= speed
+
+  if Keyboard.is_down(Keyboard.SPACE):
+    pos.y += speed
 
   Scene.camera().lookat(pos, Vec3(0, 0, 0), Vec3(0, 1, 0))
 

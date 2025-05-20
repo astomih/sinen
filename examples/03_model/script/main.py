@@ -15,23 +15,22 @@ speed = 0.1
 
 def update():
   if sn.Keyboard.is_down(sn.Keyboard.W): 
-    sn.logger.info(str(pos.z))
     pos.z -= speed
 
   if sn.Keyboard.is_down(sn.Keyboard.S):
-    pos.z = pos.z + speed
+    pos.z += speed
 
   if sn.Keyboard.is_down(sn.Keyboard.A):
-    pos.x = pos.x - speed
+    pos.x -= speed
   
   if sn.Keyboard.is_down(sn.Keyboard.D):
-    pos.x = pos.x + speed
+    pos.x += speed
 
   if sn.Keyboard.is_down(sn.Keyboard.LSHIFT):
-    pos.y = pos.y - speed
+    pos.y -= speed
 
   if sn.Keyboard.is_down(sn.Keyboard.SPACE):
-    pos.y = pos.y + speed
+    pos.y += speed
 
   sn.Scene.camera().lookat(pos, at, up)
 

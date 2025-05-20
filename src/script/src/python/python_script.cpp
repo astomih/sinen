@@ -258,34 +258,46 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def("traceable", &BFSGrid::traceable)
       .def("reset", &BFSGrid::reset);
 
-  // submodules
+  py::class_<RenderPipeline2D>(m, "RenderPipeline2D")
+      .def(py::init<>())
+      .def("set_vertex_shader", &RenderPipeline2D::set_vertex_shader)
+      .def("set_fragment_shader", &RenderPipeline2D::set_fragment_shader)
+      .def("build", &RenderPipeline2D::build);
+  py::class_<RenderPipeline3D>(m, "RenderPipeline3D")
+      .def(py::init<>())
+      .def("set_vertex_shader", &RenderPipeline3D::set_vertex_shader)
+      .def("set_vertex_instanced_shader",
+           &RenderPipeline3D::set_vertex_instanced_shader)
+      .def("set_fragment_shader", &RenderPipeline3D::set_fragment_shader)
+      .def("set_animation", &RenderPipeline3D::set_animation)
+      .def("build", &RenderPipeline3D::build);
 
-  auto random = m.def_submodule("random");
-  random.def("get_int_range", &Random::get_int_range);
-  random.def("get_float_range", &Random::get_float_range);
+  py::class_<Random>(m, "Random")
+      .def_static("get_int_range", &Random::get_int_range)
+      .def_static("get_float_range", &Random::get_float_range);
 
-  auto window = m.def_submodule("window");
-  window.def("name", &Window::name);
-  window.def("size", &Window::size);
-  window.def("half", &Window::half);
-  window.def("resize", &Window::resize);
-  window.def("set_fullscreen", &Window::set_fullscreen);
-  window.def("rename", &Window::rename);
-  window.def("resized", &Window::resized);
+  py::class_<Window>(m, "Window")
+      .def_static("name", &Window::name)
+      .def_static("size", &Window::size)
+      .def_static("half", &Window::half)
+      .def_static("resize", &Window::resize)
+      .def_static("set_fullscreen", &Window::set_fullscreen)
+      .def_static("rename", &Window::rename)
+      .def_static("resized", &Window::resized);
 
-  auto renderer = m.def_submodule("renderer");
-  renderer.def("clear_color", &Renderer::clear_color);
-  renderer.def("set_clear_color", &Renderer::set_clear_color);
-  renderer.def("at_render_texture_user_data",
-               &Renderer::at_render_texture_user_data);
-  renderer.def("begin_pipeline2d", &Renderer::begin_pipeline2d);
-  renderer.def("end_pipeline2d", &Renderer::end_pipeline2d);
-  renderer.def("begin_pipeline3d", &Renderer::begin_pipeline3d);
-  renderer.def("end_pipeline3d", &Renderer::end_pipeline3d);
-  renderer.def("set_uniform_data", &Renderer::set_uniform_data);
-  renderer.def("begin_render_texture2d", &Renderer::begin_render_texture2d);
-  renderer.def("begin_render_texture3d", &Renderer::begin_render_texture3d);
-  renderer.def("end_render_texture", &Renderer::end_render_texture);
+  py::class_<Renderer>(m, "Renderer")
+      .def_static("clear_color", &Renderer::clear_color)
+      .def_static("set_clear_color", &Renderer::set_clear_color)
+      .def_static("at_render_texture_user_data",
+                  &Renderer::at_render_texture_user_data)
+      .def_static("begin_pipeline2d", &Renderer::begin_pipeline2d)
+      .def_static("end_pipeline2d", &Renderer::end_pipeline2d)
+      .def_static("begin_pipeline3d", &Renderer::begin_pipeline3d)
+      .def_static("end_pipeline3d", &Renderer::end_pipeline3d)
+      .def_static("set_uniform_data", &Renderer::set_uniform_data)
+      .def_static("begin_render_texture2d", &Renderer::begin_render_texture2d)
+      .def_static("begin_render_texture3d", &Renderer::begin_render_texture3d)
+      .def_static("end_render_texture", &Renderer::end_render_texture);
 
   py::class_<Scene>(m, "Scene")
       .def(py::init<>())
@@ -298,8 +310,8 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def_static("delta_time", &Scene::delta_time)
       .def_static("change", &Scene::change);
 
-  auto collision = m.def_submodule("collision");
-  collision.def("aabb_aabb", &Collision::aabb_aabb);
+  py::class_<Collision>(m, "Collision")
+      .def_static("aabb_aabb", &Collision::aabb_aabb);
 
   py::enum_<Keyboard::code>(m, "Keyboard")
       .value("A", Keyboard::A)
@@ -416,26 +428,24 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def_static("right_stick", &GamePad::get_right_stick)
       .def_static("is_connected", &GamePad::is_connected);
 
-  auto periodic = m.def_submodule("periodic");
-  periodic.def("sin0_1", [](float period, float t) {
-    return Periodic::sin0_1(period, t);
-  });
-  periodic.def("cos0_1", [](float period, float t) {
-    return Periodic::cos0_1(period, t);
-  });
+  py::class_<Periodic>(m, "Periodic")
+      .def(py::init<>())
+      .def_static("sin0_1", &Periodic::sin0_1)
+      .def_static("cos0_1", &Periodic::cos0_1);
 
-  auto time = m.def_submodule("time");
-  time.def("seconds", &Time::seconds);
-  time.def("milli", &Time::milli);
+  py::class_<Time>(m, "Time")
+      .def(py::init<>())
+      .def_static("seconds", &Time::seconds)
+      .def_static("milli", &Time::milli);
 
-  auto logger = m.def_submodule("logger");
-  logger.def("verbose",
-             [](std::string str) { Logger::verbose("%s", str.data()); });
-  logger.def("debug", [](std::string str) { Logger::debug("%s", str.data()); });
-  logger.def("info", [](std::string str) { Logger::info("%s", str.data()); });
-  logger.def("error", [](std::string str) { Logger::error("%s", str.data()); });
-  logger.def("warn", [](std::string str) { Logger::warn("%s", str.data()); });
-  logger.def("critical",
-             [](std::string str) { Logger::critical("%s", str.data()); });
+  py::class_<Logger>(m, "Logger")
+      .def_static("verbose",
+                  [](const std::string &str) { Logger::verbose(str); })
+      .def_static("debug", [](const std::string &str) { Logger::debug(str); })
+      .def_static("info", [](const std::string &str) { Logger::info(str); })
+      .def_static("error", [](const std::string &str) { Logger::error(str); })
+      .def_static("warn", [](const std::string &str) { Logger::warn(str); })
+      .def_static("critical",
+                  [](const std::string &str) { Logger::critical(str); });
 }
 } // namespace sinen

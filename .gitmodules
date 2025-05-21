@@ -28,6 +28,3 @@
 [submodule "libs/imgui"]
 	path = libs/imgui
 	url = https://github.com/ocornut/imgui
-[submodule "libs/rapidjson"]
-	path = libs/rapidjson
-	url = https://github.com/Tencent/rapidjson

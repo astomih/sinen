@@ -10,7 +10,7 @@ namespace sinen {
 class Logger {
 private:
 public:
-  enum class priority { verbose = 1, debug, info, warn, error, critical };
+  enum class priority : int { verbose = 2, debug, info, warn, error, critical };
   static void
       set_output_function(std::function<void(priority, std::string_view)>);
   template <typename... Args>

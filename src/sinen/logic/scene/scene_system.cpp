@@ -49,37 +49,39 @@ struct ImGuiLog {
 std::vector<ImGuiLog::Type> ImGuiLog::logs;
 bool scene_system::initialize() {
   Logger::set_output_function([&](Logger::priority p, std::string_view str) {
+    std::string newStr;
     ImVec4 color;
     switch (p) {
     case Logger::priority::verbose:
       color = ImVec4(0.0f, 1.0f, 1.0f, 1.0f);
-      std::cout << "VERBOSE: " << str << std::endl;
+      newStr = "VERBOSE: " + std::string(str);
       break;
     case Logger::priority::debug:
       color = ImVec4(0.0f, 0.0f, 1.0f, 1.0f);
-      std::cout << "DEBUG: " << str << std::endl;
+      newStr = "DEBUG: " + std::string(str);
       break;
     case Logger::priority::info:
       color = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
-      std::cout << "INFO: " << str << std::endl;
+      newStr = "INFO: " + std::string(str);
       break;
     case Logger::priority::error:
       color = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
-      std::cout << "ERROR: " << str << std::endl;
+      newStr = "ERROR: " + std::string(str);
       break;
     case Logger::priority::warn:
       color = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
-      std::cout << "WARNING: " << str << std::endl;
+      newStr = "WARN: " + std::string(str);
       break;
     case Logger::priority::critical:
       color = ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
-      std::cout << "CRITICAL: " << str << std::endl;
+      newStr = "CRITICAL: " + std::string(str);
       break;
     default:
       color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
       break;
     }
-    ImGuiLog::logs.push_back({color, std::string(str)});
+    std::cout << newStr << std::endl;
+    ImGuiLog::logs.push_back({color, newStr});
   });
   return true;
 }

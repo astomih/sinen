@@ -1,23 +1,25 @@
 #ifndef SINEN_SCRIPT_SYSTEM_HPP
 #define SINEN_SCRIPT_SYSTEM_HPP
-#include <functional>
 #include <memory>
 #include <string_view>
+
+#include <script.hpp>
+
 namespace sinen {
-class script_system {
+
+enum class ScriptType { Python };
+class ScriptSystem {
 public:
-  static bool initialize();
-  static void shutdown();
-  static void *get_state();
-  static void *get_sol_state();
-  static void do_script(std::string_view fileName);
-  static void *new_table(std::string_view table_name);
-  static void register_function(std::string_view name,
-                                std::function<void()> function, void *table);
+  static bool Initialize(const ScriptType &type);
+  static void Shutdown();
+
+  static void RunScene(std::string_view sceneName);
+  static void UpdateScene();
+  static void DrawScene();
 
 private:
-  class implement;
-  static std::unique_ptr<implement> impl;
+  static std::unique_ptr<IScript> script;
+  static ScriptType type;
 };
 } // namespace sinen
 

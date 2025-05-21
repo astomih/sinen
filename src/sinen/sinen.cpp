@@ -11,7 +11,6 @@
 #include "platform/window/window_system.hpp"
 #include "render/render_system.hpp"
 
-
 // external
 #define SDL_MAIN_HANDLED
 #include <SDL3/SDL.h>
@@ -42,7 +41,7 @@ bool Initialize(int argc, char *argv[]) {
     Logger::critical("Failed to initialize input system");
     return false;
   }
-  if (!script_system::initialize()) {
+  if (!ScriptSystem::Initialize(ScriptType::Python)) {
     Logger::critical("Failed to initialize script system");
     return false;
   }
@@ -76,7 +75,7 @@ void Run() {
 }
 bool Shutdown() {
   scene_system::shutdown();
-  script_system::shutdown();
+  ScriptSystem::Shutdown();
   input_system::shutdown();
   sound_system::shutdown();
   random_system::shutdown();

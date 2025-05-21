@@ -18,7 +18,6 @@
 #include "../asset/model/model_data.hpp"
 #include "../asset/texture/texture_data.hpp"
 #include "../logic/script/script_system.hpp"
-#include <sol/sol.hpp>
 
 #include "../logic/scene/scene_system.hpp"
 #include <asset/texture/render_texture.hpp>
@@ -156,9 +155,7 @@ void PxRenderer::render() {
   isFrameStarted = true;
   objectCount = 0;
   if (scene_system::is_run_script) {
-
-    sol::state_view lua((lua_State *)script_system::get_state());
-    lua["Draw"]();
+    ScriptSystem::DrawScene();
   }
   if (objectCount > 0 && !isDraw2D) {
     commandBuffer->EndRenderPass(currentRenderPass);

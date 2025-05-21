@@ -9,10 +9,9 @@
 #include <core/io/data_stream.hpp>
 #include <core/io/json.hpp>
 #include <logic/camera/camera.hpp>
+#include <logic/scene/scene.hpp>
 #include <math/color/color.hpp>
 #include <math/color/palette.hpp>
-
-#include <logic/scene/scene.hpp>
 #include <math/random.hpp>
 #include <platform/window/window.hpp>
 #include <render/renderer.hpp>
@@ -30,7 +29,6 @@
 #include <imgui_impl_sdl3.h>
 #include <logic/camera/camera.hpp>
 #include <platform/input/keyboard.hpp>
-#include <sol/sol.hpp>
 
 namespace sinen {
 std::unique_ptr<Scene::implements> scene_system::m_impl =
@@ -41,13 +39,55 @@ uint32_t scene_system::m_prev_tick = 0;
 bool scene_system::is_reset = true;
 std::string scene_system::m_scene_name = "main";
 float scene_system::deltaTime = 0.f;
-bool scene_system::initialize() { return true; }
+struct ImGuiLog {
+  struct Type {
+    ImVec4 color;
+    std::string str;
+  };
+  static std::vector<Type> logs;
+};
+std::vector<ImGuiLog::Type> ImGuiLog::logs;
+bool scene_system::initialize() {
+  Logger::set_output_function([&](Logger::priority p, std::string_view str) {
+    std::string newStr;
+    ImVec4 color;
+    switch (p) {
+    case Logger::priority::verbose:
+      color = ImVec4(0.0f, 1.0f, 1.0f, 1.0f);
+      newStr = "VERBOSE: " + std::string(str);
+      break;
+    case Logger::priority::debug:
+      color = ImVec4(0.0f, 0.0f, 1.0f, 1.0f);
+      newStr = "DEBUG: " + std::string(str);
+      break;
+    case Logger::priority::info:
+      color = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
+      newStr = "INFO: " + std::string(str);
+      break;
+    case Logger::priority::error:
+      color = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+      newStr = "ERROR: " + std::string(str);
+      break;
+    case Logger::priority::warn:
+      color = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
+      newStr = "WARN: " + std::string(str);
+      break;
+    case Logger::priority::critical:
+      color = ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
+      newStr = "CRITICAL: " + std::string(str);
+      break;
+    default:
+      color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+      break;
+    }
+    std::cout << newStr << std::endl;
+    ImGuiLog::logs.push_back({color, newStr});
+  });
+  return true;
+}
 void scene_system::setup() {
   if (is_run_script) {
-    sol::state *lua = ((sol::state *)script_system::get_sol_state());
-    std::string str =
-        DataStream::open_as_string(AssetType::Script, current_name() + ".lua");
-    lua->do_string(str.data());
+    ScriptSystem::RunScene(current_name());
   }
   m_impl->setup();
   m_game_state = Scene::state::running;
@@ -74,7 +114,8 @@ void scene_system::process_input() {
 void scene_system::update_scene() {
   {
     if (Keyboard::is_pressed(Keyboard::code::F3)) {
-      static auto once = []() {
+      Renderer::toggle_show_imgui();
+      if (Renderer::is_show_imgui()) {
         Renderer::add_imgui_function([]() {
           ImGui::Begin("Debug");
           ImGui::Text("FPS: %.3f", ImGui::GetIO().Framerate);
@@ -85,10 +126,16 @@ void scene_system::update_scene() {
                       ImGui::GetIO().BackendRendererName);
 
           ImGui::End();
+
+          ImGui::Begin("Log");
+          for (auto &log : ImGuiLog::logs) {
+            ImGui::TextColored(log.color, "%s", (log.str).c_str());
+          }
+          ImGui::End();
         });
-        return true;
-      }();
-      Renderer::toggle_show_imgui();
+      } else {
+        Renderer::get_imgui_function().clear();
+      }
     }
   }
   // calc delta time
@@ -100,8 +147,7 @@ void scene_system::update_scene() {
   m_prev_tick = SDL_GetTicks();
 
   if (is_run_script) {
-    sol::state_view lua((lua_State *)script_system::get_state());
-    lua["Update"]();
+    ScriptSystem::UpdateScene();
   }
   m_impl->update(deltaTime);
   sound_system::update(deltaTime);

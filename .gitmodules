@@ -10,9 +10,6 @@
 [submodule "libs/mojoAL-SDL3"]
 	path = libs/mojoAL-SDL3
 	url = https://github.com/r-lyeh/mojoAL-SDL3
-[submodule "libs/sol2"]
-	path = libs/sol2
-	url = https://github.com/ThePhD/sol2
 [submodule "libs/paranoixa"]
 	path = libs/paranoixa
 	url = https://github.com/astomih/paranoixa
@@ -25,3 +22,12 @@
 [submodule "libs/glm"]
 	path = libs/glm
 	url = https://github.com/g-truc/glm
+[submodule "libs/pocketpy"]
+	path = libs/pocketpy
+	url = https://github.com/pocketpy/pocketpy
+[submodule "libs/imgui"]
+	path = libs/imgui
+	url = https://github.com/ocornut/imgui
+[submodule "libs/rapidjson"]
+	path = libs/rapidjson
+	url = https://github.com/Tencent/rapidjson/

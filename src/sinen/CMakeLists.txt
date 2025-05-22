@@ -60,5 +60,9 @@ target_link_libraries(
         pocketpy
         Zep::Zep
 )
+target_compile_definitions(sinen_core PUBLIC
+    ZEP_FEATURE_CPP_FILE_SYSTEM
+    ZEP_USE_SDL
+)
 
 set_property(TARGET sinen_core PROPERTY CXX_STANDARD 23)

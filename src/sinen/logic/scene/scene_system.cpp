@@ -123,7 +123,7 @@ void scene_system::update_scene() {
         Renderer::add_imgui_function([&]() {
           if (!z_init) {
             zep_init(Zep::NVec2f(1.0f, 1.0f));
-            zep_load("./script/main.py");
+            zep_load(std::filesystem::path("main.py").string());
             z_init = true;
           }
           zep_update();

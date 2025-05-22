@@ -31,3 +31,6 @@
 [submodule "libs/rapidjson"]
 	path = libs/rapidjson
 	url = https://github.com/Tencent/rapidjson/
+[submodule "libs/zep"]
+	path = libs/zep
+	url = https://github.com/Rezonality/zep

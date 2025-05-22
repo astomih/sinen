@@ -33,4 +33,4 @@
 	url = https://github.com/Tencent/rapidjson/
 [submodule "libs/zep"]
 	path = libs/zep
-	url = https://github.com/Rezonality/zep
+	url = https://github.com/astomih/zep

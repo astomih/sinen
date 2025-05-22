@@ -30,6 +30,9 @@
 #include <logic/camera/camera.hpp>
 #include <platform/input/keyboard.hpp>
 
+#include "editor.h"
+#include <zep.h>
+
 namespace sinen {
 std::unique_ptr<Scene::implements> scene_system::m_impl =
     std::make_unique<Scene::implements>();
@@ -115,8 +118,17 @@ void scene_system::update_scene() {
   {
     if (Keyboard::is_pressed(Keyboard::code::F3)) {
       Renderer::toggle_show_imgui();
+      static bool z_init = false;
       if (Renderer::is_show_imgui()) {
-        Renderer::add_imgui_function([]() {
+        Renderer::add_imgui_function([&]() {
+          if (!z_init) {
+            zep_init(Zep::NVec2f(1.0f, 1.0f));
+            zep_load("./script/main.py");
+            z_init = true;
+          }
+          zep_update();
+          static Zep::NVec2i size = Zep::NVec2i(640, 480);
+          zep_show(size);
           ImGui::Begin("Debug");
           ImGui::Text("FPS: %.3f", ImGui::GetIO().Framerate);
           ImGui::Text("DeltaTime: %f", ImGui::GetIO().DeltaTime);

@@ -19,7 +19,6 @@ set(SINEN_INCLUDE_DIRS
         ${SINEN_SOURCE_DIR}/libs/mojoAL-SDL3
         ${SINEN_SOURCE_DIR}/libs/SDL/include
         ${SINEN_SOURCE_DIR}/libs/SDL_image/include
-        ${SINEN_SOURCE_DIR}/libs/tinygltf
         ${SINEN_SOURCE_DIR}/libs/SDL_mixer/include
         ${SINEN_SOURCE_DIR}/libs/SDL_ttf/include
         ${SINEN_SOURCE_DIR}/libs/paranoixa/include
@@ -30,6 +29,7 @@ set(SINEN_INCLUDE_DIRS
         ${SINEN_SOURCE_DIR}/libs/glm
         ${SINEN_SOURCE_DIR}/libs/SDL/include
         ${SINEN_SOURCE_DIR}/libs/SDL_image/include
+        ${SINEN_SOURCE_DIR}/libs/zep/include
 )
 file(
         GLOB_RECURSE
@@ -58,6 +58,7 @@ target_link_libraries(
         rt_shader_compiler
         assimp
         pocketpy
+        Zep::Zep
 )
 
 set_property(TARGET sinen_core PROPERTY CXX_STANDARD 23)

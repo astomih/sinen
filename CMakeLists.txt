@@ -53,6 +53,8 @@ add_subdirectory(./libs/paranoixa EXCLUDE_FROM_ALL)
 add_subdirectory(./src/script EXCLUDE_FROM_ALL)
 add_subdirectory(./src/rt_shader_compiler EXCLUDE_FROM_ALL)
 
+add_subdirectory(./libs/zep EXCLUDE_FROM_ALL)
+
 if (NOT MSVC)
     set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g -O0 -DDEBUG")
     set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -march=native")

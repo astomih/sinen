@@ -4,6 +4,10 @@
 
 // #define ZEP_CONSOLE
 #include "editor.h"
+
+#include "platform/input/keyboard.hpp"
+#include "src/sinen/platform/input/input_system.hpp"
+
 #include <filesystem>
 #include <functional>
 #ifdef ZEP_CONSOLE
@@ -55,14 +59,15 @@ struct ZepWrapper : public Zep::IZepComponent {
 };
 
 #ifdef ZEP_CONSOLE
-std::shared_ptr<ImGui::ZepConsole> spZep;
+std::shared_ptr<Zep::ZepConsole> spZep;
 #else
 std::shared_ptr<ZepWrapper> spZep;
 #endif
 
 void zep_init(const Zep::NVec2f &pixelScale) {
 #ifdef ZEP_CONSOLE
-  spZep = std::make_shared<ImGui::ZepConsole>(Zep::ZepPath(APP_ROOT));
+  auto path = std::filesystem::path(".");
+  spZep = std::make_shared<Zep::ZepConsole>(path);
 #else
   // Initialize the editor and watch for changes
   spZep = std::make_shared<ZepWrapper>(
@@ -92,8 +97,8 @@ void zep_init(const Zep::NVec2f &pixelScale) {
 }
 
 void zep_update() {
-  // This is required to make the editor cursor blink, and for the :ZTestFlash
-  // example
+  // This is required to make the editor cursor blink, and for the
+  // :ZTestFlash example
   if (spZep) {
     spZep->GetEditor().RefreshRequired();
   }
@@ -103,9 +108,11 @@ void zep_destroy() { spZep.reset(); }
 
 ZepEditor &zep_get_editor() { return spZep->GetEditor(); }
 
-void zep_load(const std::string& file) {
+void zep_load(const std::string &data) {
 #ifndef ZEP_CONSOLE
-  auto pBuffer = zep_get_editor().InitWithFileOrDir(file);
+  auto pBuffer = zep_get_editor().InitWithText("main.py", data);
+  assert(pBuffer != nullptr);
+
 #endif
 }
 

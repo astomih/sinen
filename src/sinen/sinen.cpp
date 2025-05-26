@@ -58,10 +58,10 @@ void Run() {
   while (true) {
     if (scene_system::is_running()) {
       WindowImpl::prepare_frame();
-      scene_system::process_input();
-      scene_system::update_scene();
       input_system::prepare_for_update();
+      scene_system::process_input();
       input_system::update();
+      scene_system::update_scene();
       RendererImpl::render();
       continue;
     }

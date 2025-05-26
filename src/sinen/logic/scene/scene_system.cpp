@@ -123,7 +123,7 @@ void scene_system::update_scene() {
         Renderer::add_imgui_function([&]() {
           if (!z_init) {
             zep_init(Zep::NVec2f(1.0f, 1.0f));
-            zep_load(std::filesystem::path("main.py").string());
+            zep_load(DataStream::open_as_string(AssetType::Script, "main.py"));
             z_init = true;
           }
           zep_update();
@@ -131,12 +131,6 @@ void scene_system::update_scene() {
           zep_show(size);
           ImGui::Begin("Debug");
           ImGui::Text("FPS: %.3f", ImGui::GetIO().Framerate);
-          ImGui::Text("DeltaTime: %f", ImGui::GetIO().DeltaTime);
-          ImGui::Text("BackendPlatformName: %s",
-                      ImGui::GetIO().BackendPlatformName);
-          ImGui::Text("BackendRendererName: %s",
-                      ImGui::GetIO().BackendRendererName);
-
           ImGui::End();
 
           ImGui::Begin("Log");

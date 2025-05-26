@@ -1,7 +1,14 @@
-// std
-
 // internal
+#include <SDL3/SDL_main.h>
 #include <sinen.hpp>
+int main(const int argc, char *argv[]) {
+  if (!sinen::Initialize(argc, argv)) {
+    return -1;
+  }
+  sinen::Run();
+  sinen::Shutdown();
+  return 0;
+}
 
 #include "asset/audio/sound_system.hpp"
 #include "logic/scene/scene_system.hpp"
@@ -73,7 +80,7 @@ void Run() {
     break;
   }
 }
-bool Shutdown() {
+void Shutdown() {
   scene_system::shutdown();
   ScriptSystem::Shutdown();
   input_system::shutdown();
@@ -85,6 +92,5 @@ bool Shutdown() {
   TTF_Quit();
   Mix_Quit();
   SDL_Quit();
-  return true;
 }
 } // namespace sinen

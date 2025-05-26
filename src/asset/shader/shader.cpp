@@ -8,7 +8,7 @@
 
 #include <SDL3/SDL.h>
 
-#include <rt_shader_compiler.hpp>
+#include "rt_shader_compiler.hpp"
 
 namespace sinen {
 void Shader::load_vertex_shader(std::string_view vertex_shader,

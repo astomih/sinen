@@ -8,7 +8,6 @@
 #include <math/math.hpp>
 
 // external
-#define AL_LIBTYPE_STATIC
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <SDL3/SDL_log.h>

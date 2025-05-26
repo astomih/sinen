@@ -3,7 +3,7 @@
 #include <memory>
 #include <string_view>
 
-#include <script.hpp>
+#include "script.hpp"
 
 namespace sinen {
 

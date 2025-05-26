@@ -1,7 +1,7 @@
 // internal
 #include "script_system.hpp"
+#include "script.hpp"
 #include <core/io/data_stream.hpp>
-#include <script.hpp>
 
 namespace sinen {
 std::unique_ptr<IScript> ScriptSystem::script = nullptr;

@@ -41,7 +41,7 @@ void Run();
  * @return true Success to shutdown
  * @return false Failed to shutdown
  */
-bool Shutdown();
+void Shutdown();
 } // namespace sinen
 
 #endif

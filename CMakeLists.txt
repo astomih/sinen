@@ -44,14 +44,12 @@ endif ()
 add_subdirectory(./libs/SDL_mixer EXCLUDE_FROM_ALL)
 add_subdirectory(./libs/pocketpy EXCLUDE_FROM_ALL)
 
-add_subdirectory(./src/sinen)
+include(./cmake/include_dir.cmake)
 
 set(PARANOIXA_BUILD_SDL3 OFF)
 add_subdirectory(./libs/paranoixa EXCLUDE_FROM_ALL)
 
 # add_subdirectory(./test)
-add_subdirectory(./src/script EXCLUDE_FROM_ALL)
-add_subdirectory(./src/rt_shader_compiler EXCLUDE_FROM_ALL)
 
 add_subdirectory(./libs/zep EXCLUDE_FROM_ALL)
 
@@ -60,23 +58,42 @@ if (NOT MSVC)
     set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -march=native")
 endif ()
 
-add_executable(sinen src/main.cpp docs/icon/icon.rc)
+file(
+        GLOB_RECURSE
+        SINEN_SOURCE_FILES
+        ${SINEN_SOURCE_DIR}/src/*.cpp
+        ${SINEN_SOURCE_DIR}/libs/mojoAL-SDL3/mojoal.c
+)
+file(
+        GLOB_RECURSE
+        SINEN_HEADER_FILES
+        ${SINEN_SOURCE_DIR}/include/*.hpp
+        ${SINEN_SOURCE_DIR}/include/*.inl
+        ${SINEN_SOURCE_DIR}/*.hpp
+)
+
+add_executable(sinen docs/icon/icon.rc
+        ${SINEN_SOURCE_FILES} ${SINEN_HEADER_FILES})
+
 target_include_directories(
-        sinen PUBLIC ${SINEN_CORE_INCLUDE_DIRS} ${SDL3_INCLUDE_PATHS})
+        sinen PUBLIC ${SINEN_INCLUDE_DIRS} ${SDL3_INCLUDE_PATHS})
 
 target_link_libraries(
         sinen
         PUBLIC
-        sinen_core
-        script
         paranoixa
         paranoixa_imgui_backend
         SDL3::SDL3
         SDL3_image::SDL3_image
         SDL3_mixer::SDL3_mixer
         SDL3_ttf::SDL3_ttf
-        rt_shader_compiler
         assimp
+        pocketpy
+        Zep::Zep
+)
+target_compile_definitions(sinen PUBLIC
+        AL_LIBTYPE_STATIC
+        ZEP_USE_SDL
 )
 
 if (MSVC)

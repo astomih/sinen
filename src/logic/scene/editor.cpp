@@ -5,8 +5,8 @@
 // #define ZEP_CONSOLE
 #include "editor.h"
 
+#include "../../platform/input/input_system.hpp"
 #include "platform/input/keyboard.hpp"
-#include "src/sinen/platform/input/input_system.hpp"
 
 #include <filesystem>
 #include <functional>

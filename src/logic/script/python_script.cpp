@@ -1,4 +1,4 @@
-#include "../../include/script.hpp"
+#include "script.hpp"
 
 #include <asset/asset.hpp>
 #include <core/core.hpp>

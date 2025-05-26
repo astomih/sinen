@@ -5,7 +5,7 @@
 #include <iostream>
 #include <vector>
 
-#include <rt_shader_compiler.hpp>
+#include "rt_shader_compiler.hpp"
 
 #ifdef _MSC_VER
 #define popen _popen

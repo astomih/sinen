@@ -62,7 +62,7 @@ file(
         GLOB_RECURSE
         SINEN_SOURCE_FILES
         ${SINEN_SOURCE_DIR}/src/*.cpp
-        ${SINEN_SOURCE_DIR}/libs/mojoAL-SDL3/mojoal.c
+        ${SINEN_SOURCE_DIR}/libs/mojoAL/mojoal.c
 )
 file(
         GLOB_RECURSE

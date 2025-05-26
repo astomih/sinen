@@ -7,9 +7,6 @@
 [submodule "libs/SDL_ttf"]
 	path = libs/SDL_ttf
 	url = https://github.com/libsdl-org/SDL_ttf
-[submodule "libs/mojoAL-SDL3"]
-	path = libs/mojoAL-SDL3
-	url = https://github.com/r-lyeh/mojoAL-SDL3
 [submodule "libs/paranoixa"]
 	path = libs/paranoixa
 	url = https://github.com/astomih/paranoixa
@@ -34,3 +31,6 @@
 [submodule "libs/zep"]
 	path = libs/zep
 	url = https://github.com/astomih/zep
+[submodule "libs/mojoAL"]
+	path = libs/mojoAL
+	url = https://github.com/icculus/mojoAL

@@ -54,7 +54,7 @@ void RendererImpl::setup_shapes() {
 
 void RendererImpl::prepare_imgui() {
   ImGuiIO &io = ImGui::GetIO();
-  (void)io;
+  io.WantTextInput = true;
   io.ConfigFlags |=
       ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
   io.ConfigFlags |=

@@ -1,6 +1,7 @@
 #include "px_renderer.hpp"
 
 #include "../platform/window/window_system.hpp"
+#include "imgui_internal.h"
 #include "paranoixa/paranoixa.hpp"
 #include "render/renderer.hpp"
 #include "render_system.hpp"
@@ -42,7 +43,9 @@ void PxRenderer::initialize() {
   auto *window = WindowImpl::get_sdl_window();
   device->ClaimWindow(window);
   IMGUI_CHECKVERSION();
-  ImGui::CreateContext();
+  auto *context = ImGui::CreateContext();
+  auto *ime_data = &context->PlatformImeData;
+  ime_data->WantVisible = true;
   ImGui_ImplSDL3_InitForSDLGPU(window);
   ImGui_ImplParanoixa_InitInfo init_info = {};
   init_info.Allocator = allocator;

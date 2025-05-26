@@ -12,6 +12,8 @@
 
 #include <math/math.hpp>
 
+#include <core/logger/logger.hpp>
+
 namespace sinen {
 bool isHide = false;
 SDL_Cursor *g_cursor = nullptr;
@@ -36,6 +38,27 @@ static button_state get_key_state(Keyboard::code _key_code) {
     }
   }
 }
+
+static button_state get_key_state(KeyInput::KeyCode _key) {
+  if (!input_system::keyInputState.previousKeys.contains(
+          static_cast<std::uint32_t>(_key))) {
+    if (!input_system::keyInputState.currentKeys.contains(
+            static_cast<std::uint32_t>(_key))) {
+      return button_state::None;
+    } else {
+      return button_state::Pressed;
+    }
+  } else // Prev state must be 1
+  {
+    if (!input_system::keyInputState.currentKeys.contains(
+            static_cast<std::uint32_t>(_key))) {
+      return button_state::Released;
+    } else {
+      return button_state::Held;
+    }
+  }
+}
+
 static button_state get_button_state(Mouse::code _button) {
   int mask = SDL_BUTTON_MASK(static_cast<int>(_button));
   if ((mask & input_system::m_mouse.mPrevButtons) == 0) {
@@ -70,6 +93,7 @@ static button_state get_button_state(GamePad::code _button) {
 }
 
 keyboard_state_impl input_system::m_keyboard = keyboard_state_impl();
+KeyInputState input_system::keyInputState = KeyInputState();
 mouse_state_impl input_system::m_mouse = mouse_state_impl();
 joystick_state_impl input_system::m_joystick = joystick_state_impl();
 
@@ -83,6 +107,16 @@ bool Keyboard::is_pressed(Keyboard::code _key_code) {
 
 bool Keyboard::is_released(Keyboard::code _key_code) {
   return get_key_state(_key_code) == button_state::Released;
+}
+
+bool KeyInput::is_pressed(const KeyCode key) {
+  return get_key_state(key) == button_state::Pressed;
+}
+bool KeyInput::is_down(const KeyCode key) {
+  return get_key_state(key) == button_state::Held;
+}
+bool KeyInput::is_released(const KeyCode key) {
+  return get_key_state(key) == button_state::Released;
 }
 
 void Mouse::set_position(const glm::vec2 &pos) {
@@ -189,6 +223,8 @@ void input_system::prepare_for_update() {
   // Controller
   memcpy(m_joystick.mPrevButtons, m_joystick.mCurrButtons,
          SDL_GAMEPAD_BUTTON_COUNT);
+  keyInputState.previousKeys = keyInputState.currentKeys;
+  keyInputState.currentKeys.clear();
 }
 
 void input_system::update() {
@@ -226,6 +262,13 @@ void input_system::process_event(SDL_Event &event) {
   case SDL_EVENT_MOUSE_WHEEL: {
     m_mouse.mScrollWheel = glm::vec2(static_cast<float>(event.wheel.x),
                                      static_cast<float>(event.wheel.y));
+    break;
+  }
+  case SDL_EVENT_KEY_DOWN: {
+    keyInputState.currentKeys.insert(event.key.key);
+    break;
+  }
+  case SDL_EVENT_TEXT_INPUT: {
     break;
   }
   default:

@@ -4,6 +4,7 @@
 #include <array>
 #include <cstdint>
 #include <platform/platform.hpp>
+#include <unordered_set>
 
 #include <SDL3/SDL.h>
 namespace sinen {
@@ -12,6 +13,11 @@ public:
   const bool *mCurrState;
   std::array<uint8_t, static_cast<int>(Keyboard::code::NUM_KEYCODES)>
       mPrevState;
+};
+
+struct KeyInputState {
+  std::unordered_set<std::uint32_t> previousKeys;
+  std::unordered_set<std::uint32_t> currentKeys;
 };
 
 struct mouse_state_impl {
@@ -54,6 +60,7 @@ public:
   static void set_relative_mouse_mode(bool value);
 
   static keyboard_state_impl m_keyboard;
+  static KeyInputState keyInputState;
   static mouse_state_impl m_mouse;
   static joystick_state_impl m_joystick;
 

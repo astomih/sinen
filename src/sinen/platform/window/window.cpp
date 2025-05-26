@@ -46,6 +46,7 @@ void WindowImpl::initialize(const std::string &name) {
   m_window = SDL_CreateWindow(
       std::string(name).c_str(), static_cast<int>(m_size.x),
       static_cast<int>(m_size.y), SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
+  SDL_StartTextInput(m_window);
 }
 
 void WindowImpl::shutdown() {

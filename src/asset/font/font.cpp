@@ -12,17 +12,25 @@
 #include <core/logger/logger.hpp>
 #include <math/color/color.hpp>
 
-
 // external
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 
+#include "default/mplus-1p-medium.ttf.h"
+
 namespace sinen {
-Font::Font(std::string_view file_name, int32_t point) {
-  load(file_name, point);
+Font::Font(int32_t point, std::string_view file_name) {
+  load(point, file_name);
 }
 Font::~Font() {}
-bool Font::load(std::string_view fontName, int pointSize) {
+bool Font::load(int pointSize) {
+  this->m_size = pointSize;
+  // Load the default font from the embedded resource
+  auto *rw = SDL_IOFromConstMem(mplus_1p_medium_ttf, mplus_1p_medium_ttf_len);
+  m_font = (void *)::TTF_OpenFontIO(rw, 1, pointSize);
+  return is_loaded();
+}
+bool Font::load(int pointSize, std::string_view fontName) {
   this->m_size = pointSize;
   m_font = (void *)::TTF_OpenFontIO(
       (SDL_IOStream *)DataStream::open_as_rwops(AssetType::Font, fontName), 1,

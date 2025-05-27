@@ -6,7 +6,7 @@ hello_sound = Sound()
 hello_sound.load("shot.wav")
 
 # Create a texture
-font.load("mplus/mplus-1p-medium.ttf", 16)
+font.load(16)
 font.render_text(texture, "Press SPACE key to play sound", Color(1, 1, 1, 1))
 
 # Create a draw2D

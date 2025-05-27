@@ -11,6 +11,8 @@
 
 #include <imgui.h>
 
+#include "../asset/font/default/mplus-1p-medium.ttf.h"
+
 namespace sinen {
 Color RendererImpl::clearColor = Palette::black();
 std::shared_ptr<PxRenderer> RendererImpl::pxRenderer =
@@ -60,11 +62,9 @@ void RendererImpl::prepare_imgui() {
   io.ConfigFlags |=
       ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
   // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-  io.Fonts->AddFontFromFileTTF(DataStream::convert_file_path(
-                                   AssetType::Font, "mplus/mplus-1p-medium.ttf")
-                                   .data(),
-                               18.0f, nullptr,
-                               io.Fonts->GetGlyphRangesJapanese());
+  io.Fonts->AddFontFromMemoryTTF((void *)mplus_1p_medium_ttf,
+                                 mplus_1p_medium_ttf_len, 18.0f, nullptr,
+                                 io.Fonts->GetGlyphRangesJapanese());
 }
 void RendererImpl::begin_pipeline3d(const RenderPipeline3D &pipeline) {
   pxRenderer->begin_pipeline3d(pipeline);

@@ -186,7 +186,9 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
   // Font
   py::class_<Font>(m, "Font")
       .def(py::init<>())
-      .def("load", &Font::load)
+      // Overload Font::load
+      .def("load", py::overload_cast<int>(&Font::load))
+      .def("load", py::overload_cast<int, std::string_view>(&Font::load))
       .def("render_text", &Font::render_text)
       .def("resize", &Font::resize);
   // Color

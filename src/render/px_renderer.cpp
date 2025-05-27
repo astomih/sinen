@@ -56,11 +56,11 @@ void PxRenderer::initialize() {
   ImGui_ImplParanoixa_Init(&init_info);
 
   Shader vs;
-  vs.load_vertex_shader("shader.vert.spv", 0);
+  vs.load_default_vertex_shader();
   Shader vsInstanced;
-  vsInstanced.load_vertex_shader("shader_instance.vert.spv", 0);
+  vsInstanced.load_default_vertex_instance_shader();
   Shader fs;
-  fs.load_fragment_shader("shaderAlpha.frag.spv", 0);
+  fs.load_default_fragment_shader();
 
   this->pipeline3D.set_vertex_shader(vs);
   this->pipeline3D.set_vertex_instanced_shader(vsInstanced);

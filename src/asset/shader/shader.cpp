@@ -10,7 +10,65 @@
 
 #include "rt_shader_compiler.hpp"
 
+#include "default/shader.frag.spv.h"
+#include "default/shader.vert.spv.h"
+#include "default/shader_instance.vert.spv.h"
+
 namespace sinen {
+void Shader::load_default_vertex_shader() {
+  auto pxRenderer = RendererImpl::GetPxRenderer();
+  auto *allocator = pxRenderer->GetAllocator();
+  auto device = pxRenderer->GetDevice();
+
+  px::Shader::CreateInfo vsInfo{};
+  vsInfo.allocator = allocator;
+  vsInfo.size = shader_vert_spv_len;
+  vsInfo.data = shader_vert_spv;
+  vsInfo.entrypoint = "main";
+  vsInfo.format = px::ShaderFormat::SPIRV;
+  vsInfo.stage = px::ShaderStage::Vertex;
+  vsInfo.numSamplers = 0;
+  vsInfo.numStorageBuffers = 0;
+  vsInfo.numStorageTextures = 0;
+  vsInfo.numUniformBuffers = 1; // only one uniform buffer for vertex shader
+  shader = device->CreateShader(vsInfo);
+}
+void Shader::load_default_vertex_instance_shader() {
+  auto pxRenderer = RendererImpl::GetPxRenderer();
+  auto *allocator = pxRenderer->GetAllocator();
+  auto device = pxRenderer->GetDevice();
+
+  px::Shader::CreateInfo vsInfo{};
+  vsInfo.allocator = allocator;
+  vsInfo.size = shader_instance_vert_spv_len;
+  vsInfo.data = shader_instance_vert_spv;
+  vsInfo.entrypoint = "main";
+  vsInfo.format = px::ShaderFormat::SPIRV;
+  vsInfo.stage = px::ShaderStage::Vertex;
+  vsInfo.numSamplers = 0;
+  vsInfo.numStorageBuffers = 0;
+  vsInfo.numStorageTextures = 0;
+  vsInfo.numUniformBuffers = 1; // only one uniform buffer for vertex shader
+  shader = device->CreateShader(vsInfo);
+}
+void Shader::load_default_fragment_shader() {
+  auto pxRenderer = RendererImpl::GetPxRenderer();
+  auto *allocator = pxRenderer->GetAllocator();
+  auto device = pxRenderer->GetDevice();
+
+  px::Shader::CreateInfo fsInfo{};
+  fsInfo.allocator = allocator;
+  fsInfo.size = shader_frag_spv_len;
+  fsInfo.data = shader_frag_spv;
+  fsInfo.entrypoint = "main";
+  fsInfo.format = px::ShaderFormat::SPIRV;
+  fsInfo.stage = px::ShaderStage::Fragment;
+  fsInfo.numSamplers = 1; // one sampler for fragment shader
+  fsInfo.numStorageBuffers = 0;
+  fsInfo.numStorageTextures = 0;
+  fsInfo.numUniformBuffers = 1; // only one uniform buffer for fragment shader
+  shader = device->CreateShader(fsInfo);
+}
 void Shader::load_vertex_shader(std::string_view vertex_shader,
                                 int numUniformData) {
   auto pxRenderer = RendererImpl::GetPxRenderer();

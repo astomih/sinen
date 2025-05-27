@@ -35,7 +35,7 @@ def draw():
   draw2d.draw()
 ```
 
-![Hello World](https://raw.githubusercontent.com/astomih/sinen/main/docs/image/hello_world.png)
+![Hello World](https://raw.githubusercontent.com/astomih/sinen/refs/heads/main/examples/screenshot/01.png)
 
 # Lisence
 

@@ -14,6 +14,9 @@ namespace sinen {
  */
 class Shader {
 public:
+  void load_default_vertex_shader();
+  void load_default_vertex_instance_shader();
+  void load_default_fragment_shader();
   void load_vertex_shader(std::string_view vertex_shader, int numUniformData);
   void load_fragment_shader(std::string_view fragment_shader,
                             int numUniformData);

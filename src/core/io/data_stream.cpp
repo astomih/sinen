@@ -56,16 +56,14 @@ std::string DataStream::open_as_string(const AssetType &type,
 
   auto *file = SDL_IOFromFile(filePath.c_str(), "r");
   if (!file) {
-    Logger::critical("File open error %s: %s", filePath.c_str(),
-                     SDL_GetError());
-    return std::string("");
+    Logger::warn("File not found %s: %s", filePath.c_str(), SDL_GetError());
+    return "";
   }
   size_t fileLength;
   void *load = SDL_LoadFile_IO(file, &fileLength, 1);
   if (!load) {
-    Logger::critical("File load error %s: %s", filePath.c_str(),
-                     SDL_GetError());
-    return std::string("");
+    Logger::error("File load error %s: %s", filePath.c_str(), SDL_GetError());
+    return "";
   }
   std::string result{reinterpret_cast<char *>(load), fileLength};
   SDL_free(load);

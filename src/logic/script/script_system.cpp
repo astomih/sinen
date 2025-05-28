@@ -24,6 +24,20 @@ void ScriptSystem::Shutdown() {
     script.reset();
   }
 }
+static const char *nothingScene = R"(
+from sinen import *
+texture = Texture()
+draw2d = Draw2D(texture)
+font = Font()
+font.load(96)
+
+def update():
+  font.render_text(texture, "NO SCENE", Color(1, 1, 1, 1))
+  draw2d.scale = texture.size()
+
+def draw():
+  draw2d.draw()
+)";
 
 void ScriptSystem::RunScene(std::string_view sceneName) {
   if (script) {
@@ -35,6 +49,9 @@ void ScriptSystem::RunScene(std::string_view sceneName) {
     } break;
     default:
       break;
+    }
+    if (source.empty()) {
+      source = nothingScene;
     }
     script->RunScene(source);
   }

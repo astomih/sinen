@@ -3,7 +3,7 @@
 #include <random>
 
 namespace sinen {
-class random_system {
+class RandomSystem {
 public:
   static bool initialize();
   static void shutdown();

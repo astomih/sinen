@@ -32,7 +32,7 @@ font = Font()
 font.load(96)
 
 def update():
-  font.render_text(texture, "NO SCENE", Color(1, 1, 1, 1))
+  font.render_text(texture, "NO DATA", Color(1, 1, 1, 1))
   draw2d.scale = texture.size()
 
 def draw():

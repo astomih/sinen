@@ -14,7 +14,7 @@
 #include <render/renderer.hpp>
 
 namespace sinen {
-class RendererImpl {
+class RendererSystem {
 public:
   static void initialize();
   static void shutdown();

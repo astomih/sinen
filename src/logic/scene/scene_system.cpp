@@ -34,14 +34,14 @@
 #include <zep.h>
 
 namespace sinen {
-std::unique_ptr<Scene::implements> scene_system::m_impl =
+std::unique_ptr<Scene::implements> SceneSystem::m_impl =
     std::make_unique<Scene::implements>();
-Scene::state scene_system::m_game_state = Scene::state::quit;
-bool scene_system::is_run_script = true;
-uint32_t scene_system::m_prev_tick = 0;
-bool scene_system::is_reset = true;
-std::string scene_system::m_scene_name = "main";
-float scene_system::deltaTime = 0.f;
+Scene::state SceneSystem::m_game_state = Scene::state::quit;
+bool SceneSystem::is_run_script = true;
+uint32_t SceneSystem::m_prev_tick = 0;
+bool SceneSystem::is_reset = true;
+std::string SceneSystem::m_scene_name = "main";
+float SceneSystem::deltaTime = 0.f;
 struct ImGuiLog {
   struct Type {
     ImVec4 color;
@@ -50,7 +50,7 @@ struct ImGuiLog {
   static std::vector<Type> logs;
 };
 std::vector<ImGuiLog::Type> ImGuiLog::logs;
-bool scene_system::initialize() {
+bool SceneSystem::initialize() {
   Logger::set_output_function([&](Logger::priority p, std::string_view str) {
     std::string newStr;
     ImVec4 color;
@@ -88,7 +88,7 @@ bool scene_system::initialize() {
   });
   return true;
 }
-void scene_system::setup() {
+void SceneSystem::setup() {
   if (is_run_script) {
     ScriptSystem::RunScene(current_name());
   }
@@ -97,13 +97,13 @@ void scene_system::setup() {
   m_prev_tick = SDL_GetTicks();
 }
 
-void scene_system::process_input() {
+void SceneSystem::process_input() {
 
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
     ImGui_ImplSDL3_ProcessEvent(&event);
-    WindowImpl::process_input(event);
-    input_system::process_event(event);
+    WindowSystem::process_input(event);
+    InputSystem::process_event(event);
     switch (event.type) {
     case SDL_EVENT_QUIT: {
       m_game_state = Scene::state::quit;
@@ -114,7 +114,7 @@ void scene_system::process_input() {
   }
 }
 
-void scene_system::update_scene() {
+void SceneSystem::update_scene() {
   {
     if (Keyboard::is_pressed(Keyboard::code::F3)) {
       Renderer::toggle_show_imgui();
@@ -156,14 +156,14 @@ void scene_system::update_scene() {
     ScriptSystem::UpdateScene();
   }
   m_impl->update(deltaTime);
-  sound_system::update(deltaTime);
+  SoundSystem::update(deltaTime);
 }
-void scene_system::shutdown() {
+void SceneSystem::shutdown() {
   m_impl->terminate();
   m_game_state = Scene::state::quit;
 }
 
-void scene_system::change(const std::string &scene_file_name) {
+void SceneSystem::change(const std::string &scene_file_name) {
   if (scene_file_name.empty()) {
     Scene::set_state(Scene::state::quit);
     is_reset = false;
@@ -171,7 +171,7 @@ void scene_system::change(const std::string &scene_file_name) {
     is_reset = true;
   }
 
-  scene_system::shutdown();
+  SceneSystem::shutdown();
   m_scene_name = scene_file_name;
 }
 

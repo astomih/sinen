@@ -62,7 +62,7 @@ void Draw2D::draw() {
   obj->param.proj = viewproj;
   obj->param.view = glm::mat4(1.f);
   if (GetModelData(this->model.data)->vertexBuffer == nullptr) {
-    obj->model = RendererImpl::sprite;
+    obj->model = RendererSystem::sprite;
   } else
     obj->model = this->model;
   for (auto &i : worlds) {
@@ -111,7 +111,7 @@ void Draw3D::draw() {
   obj->param.proj = Scene::camera().projection();
   obj->param.view = Scene::camera().view();
   if (GetModelData(this->model.data)->vertexBuffer == nullptr) {
-    obj->model = RendererImpl::box;
+    obj->model = RendererSystem::box;
   } else
     obj->model = this->model;
   for (auto &i : worlds) {

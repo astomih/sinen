@@ -7,8 +7,8 @@ namespace sinen {
 RenderTexture::RenderTexture() : texture(nullptr) {}
 
 void RenderTexture::create(int width, int height) {
-  auto allocator = RendererImpl::GetPxRenderer()->GetAllocator();
-  auto device = RendererImpl::GetPxRenderer()->GetDevice();
+  auto allocator = RendererSystem::GetPxRenderer()->GetAllocator();
+  auto device = RendererSystem::GetPxRenderer()->GetDevice();
   px::Texture::CreateInfo info{};
   info.allocator = allocator;
   info.width = width;

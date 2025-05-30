@@ -7,7 +7,7 @@
 #include <string>
 
 namespace sinen {
-class WindowImpl {
+class WindowSystem {
 public:
   static void initialize(const std::string &name);
   static void shutdown();

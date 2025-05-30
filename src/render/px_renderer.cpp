@@ -40,7 +40,7 @@ void PxRenderer::initialize() {
   info.allocator = allocator;
   info.debugMode = true;
   device = backend->CreateDevice(info);
-  auto *window = WindowImpl::get_sdl_window();
+  auto *window = WindowSystem::get_sdl_window();
   device->ClaimWindow(window);
   IMGUI_CHECKVERSION();
   auto *context = ImGui::CreateContext();
@@ -52,7 +52,7 @@ void PxRenderer::initialize() {
   init_info.Device = device;
   init_info.ColorTargetFormat = px::TextureFormat::B8G8R8A8_UNORM;
   init_info.MSAASamples = px::SampleCount::x1;
-  RendererImpl::prepare_imgui();
+  RendererSystem::prepare_imgui();
   ImGui_ImplParanoixa_Init(&init_info);
 
   Shader vs;
@@ -128,7 +128,7 @@ void PxRenderer::render() {
   currentCommandBuffer = commandBuffer;
   colorTargets[0].texture = swapchainTexture;
   currentColorTargets = colorTargets;
-  if (WindowImpl::resized()) {
+  if (WindowSystem::resized()) {
     px::Texture::CreateInfo depthStencilCreateInfo{};
     depthStencilCreateInfo.allocator = allocator;
     depthStencilCreateInfo.width = Window::size().x;
@@ -147,7 +147,7 @@ void PxRenderer::render() {
   ImGui_ImplParanoixa_NewFrame();
   ImGui_ImplSDL3_NewFrame();
   ImGui::NewFrame();
-  for (auto &func : RendererImpl::get_imgui_function()) {
+  for (auto &func : RendererSystem::get_imgui_function()) {
     func();
   }
   // Rendering
@@ -157,7 +157,7 @@ void PxRenderer::render() {
   Imgui_ImplParanoixa_PrepareDrawData(draw_data, commandBuffer);
   isFrameStarted = true;
   objectCount = 0;
-  if (scene_system::is_run_script) {
+  if (SceneSystem::is_run_script) {
     ScriptSystem::DrawScene();
   }
   if (objectCount > 0 && !isDraw2D) {

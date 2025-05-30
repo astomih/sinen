@@ -15,9 +15,9 @@
 
 namespace sinen {
 glm::vec3 calculate(const glm::quat &r);
-std::unordered_map<std::string, uint32_t> sound_system::buffers;
-void *sound_system::device = nullptr;
-void *sound_system::context = nullptr;
+std::unordered_map<std::string, uint32_t> SoundSystem::buffers;
+void *SoundSystem::device = nullptr;
+void *SoundSystem::context = nullptr;
 namespace detail {
 static int check_openal_error(const char *where) {
   const ALenum err = alGetError();
@@ -50,7 +50,7 @@ static ALenum get_openal_format(const SDL_AudioSpec *spec) {
 }
 } // namespace detail
 
-bool sound_system::initialize() {
+bool SoundSystem::initialize() {
   device = (void *)alcOpenDevice(NULL);
   if (!device) {
     printf("Couldn't open OpenAL default device.\n");
@@ -71,7 +71,7 @@ bool sound_system::initialize() {
   return true;
 }
 
-void sound_system::shutdown() {
+void SoundSystem::shutdown() {
   for (auto &i : buffers) {
     alDeleteBuffers(1, &i.second);
   }
@@ -80,10 +80,10 @@ void sound_system::shutdown() {
   alcCloseDevice((ALCdevice *)device);
 }
 
-void sound_system::update(float deltaTime) {}
+void SoundSystem::update(float deltaTime) {}
 
-void sound_system::set_listener(const glm::vec3 &pos,
-                                const glm::quat &direction) {
+void SoundSystem::set_listener(const glm::vec3 &pos,
+                               const glm::quat &direction) {
   alListener3f(AL_POSITION, pos.x, pos.y, pos.z);
 
   auto at = glm::vec3(0, 0, -1) * direction;
@@ -92,7 +92,7 @@ void sound_system::set_listener(const glm::vec3 &pos,
   alListenerfv(AL_ORIENTATION, ori);
 }
 
-void sound_system::load(std::string_view fileName) {
+void SoundSystem::load(std::string_view fileName) {
   if (buffers.contains(fileName.data())) {
     return;
   }
@@ -116,7 +116,7 @@ void sound_system::load(std::string_view fileName) {
   SDL_free(buffer);
 }
 
-void sound_system::unload(std::string_view fileName) {
+void SoundSystem::unload(std::string_view fileName) {
   std::string name = fileName.data();
   if (buffers.contains(name)) {
     alDeleteBuffers(1, &buffers[fileName.data()]);
@@ -125,14 +125,14 @@ void sound_system::unload(std::string_view fileName) {
   }
 }
 
-uint32_t sound_system::new_source(std::string_view name) {
+uint32_t SoundSystem::new_source(std::string_view name) {
   ALuint source;
   alGenSources(1, &source);
   alSourcei(source, AL_BUFFER, buffers[name.data()]);
   return source;
 }
 
-void sound_system::delete_source(uint32_t sourceID) {
+void SoundSystem::delete_source(uint32_t sourceID) {
   alDeleteBuffers(1, &sourceID);
 }
 glm::vec3 calculate(const glm::quat &r) {

@@ -17,7 +17,7 @@ void RenderPipeline2D::set_fragment_shader(const Shader &shader) {
 }
 
 void RenderPipeline2D::build() {
-  auto pxRenderer = RendererImpl::GetPxRenderer();
+  auto pxRenderer = RendererSystem::GetPxRenderer();
   auto *allocator = pxRenderer->GetAllocator();
   auto device = pxRenderer->GetDevice();
 
@@ -74,7 +74,7 @@ void RenderPipeline3D::set_animation(bool animation) {
   this->isAnimation = animation;
 }
 void RenderPipeline3D::build() {
-  auto pxRenderer = RendererImpl::GetPxRenderer();
+  auto pxRenderer = RendererSystem::GetPxRenderer();
   auto *allocator = pxRenderer->GetAllocator();
   auto device = pxRenderer->GetDevice();
 

@@ -11,26 +11,24 @@ Camera Scene::m_main_camera = []() {
 glm::vec2 Scene::m_screen_size = glm::vec2(1280.0, 720.0);
 
 void Scene::reset() {
-  scene_system::shutdown();
-  scene_system::set_state(Scene::state::quit);
+  SceneSystem::shutdown();
+  SceneSystem::set_state(Scene::state::quit);
 }
 
-bool Scene::is_running() { return scene_system::is_running(); }
+bool Scene::is_running() { return SceneSystem::is_running(); }
 
 void Scene::set_state(const Scene::state &state) {
-  scene_system::set_state(state);
+  SceneSystem::set_state(state);
 }
-const Scene::state &Scene::get_state() { return scene_system::get_state(); }
+const Scene::state &Scene::get_state() { return SceneSystem::get_state(); }
 void Scene::change(const std::string &scene_file_name) {
-  scene_system::change(scene_file_name);
+  SceneSystem::change(scene_file_name);
 }
-std::string Scene::current_name() { return scene_system::current_name(); }
+std::string Scene::current_name() { return SceneSystem::current_name(); }
 void Scene::change_impl(std::unique_ptr<Scene::implements> impl) {
-  scene_system::change_impl(std::move(impl));
+  SceneSystem::change_impl(std::move(impl));
 }
-void Scene::set_run_script(bool is_run) {
-  scene_system::set_run_script(is_run);
-}
+void Scene::set_run_script(bool is_run) { SceneSystem::set_run_script(is_run); }
 glm::vec2 Scene::ratio() {
   return glm::vec2(Window::size().x / Scene::size().x,
                    Window::size().y / Scene::size().y);
@@ -40,6 +38,6 @@ glm::vec2 Scene::inv_ratio() {
                    Scene::size().y / Window::size().y);
 }
 
-float Scene::delta_time() { return scene_system::delta_time(); }
+float Scene::delta_time() { return SceneSystem::delta_time(); }
 
 } // namespace sinen

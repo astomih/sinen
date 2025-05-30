@@ -213,8 +213,8 @@ void Model::load_from_vertex_array(const VertexArray &vArray) {
   modelData->indexBuffer = viBuffer.second;
 }
 
-void Model::load_sprite() { *this = RendererImpl::sprite; }
-void Model::load_box() { *this = RendererImpl::box; }
+void Model::load_sprite() { *this = RendererSystem::sprite; }
+void Model::load_box() { *this = RendererSystem::box; }
 
 AABB &Model::aabb() const {
   auto modelData = GetModelData(this->data);
@@ -250,8 +250,8 @@ std::vector<std::uint32_t> Model::all_indices() const {
 
 std::pair<px::Ptr<px::Buffer>, px::Ptr<px::Buffer>>
 CreateVertexIndexBuffer(const VertexArray &vArray) {
-  auto allocator = RendererImpl::GetPxRenderer()->GetAllocator();
-  auto device = RendererImpl::GetPxRenderer()->GetDevice();
+  auto allocator = RendererSystem::GetPxRenderer()->GetAllocator();
+  auto device = RendererSystem::GetPxRenderer()->GetDevice();
   size_t vertexBufferSize;
   bool isAnimation = false;
   if (vArray.animationVertices.size() > 0) {

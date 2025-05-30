@@ -16,7 +16,7 @@
 
 namespace sinen {
 void Shader::load_default_vertex_shader() {
-  auto pxRenderer = RendererImpl::GetPxRenderer();
+  auto pxRenderer = RendererSystem::GetPxRenderer();
   auto *allocator = pxRenderer->GetAllocator();
   auto device = pxRenderer->GetDevice();
 
@@ -34,7 +34,7 @@ void Shader::load_default_vertex_shader() {
   shader = device->CreateShader(vsInfo);
 }
 void Shader::load_default_vertex_instance_shader() {
-  auto pxRenderer = RendererImpl::GetPxRenderer();
+  auto pxRenderer = RendererSystem::GetPxRenderer();
   auto *allocator = pxRenderer->GetAllocator();
   auto device = pxRenderer->GetDevice();
 
@@ -52,7 +52,7 @@ void Shader::load_default_vertex_instance_shader() {
   shader = device->CreateShader(vsInfo);
 }
 void Shader::load_default_fragment_shader() {
-  auto pxRenderer = RendererImpl::GetPxRenderer();
+  auto pxRenderer = RendererSystem::GetPxRenderer();
   auto *allocator = pxRenderer->GetAllocator();
   auto device = pxRenderer->GetDevice();
 
@@ -71,7 +71,7 @@ void Shader::load_default_fragment_shader() {
 }
 void Shader::load_vertex_shader(std::string_view vertex_shader,
                                 int numUniformData) {
-  auto pxRenderer = RendererImpl::GetPxRenderer();
+  auto pxRenderer = RendererSystem::GetPxRenderer();
   auto *allocator = pxRenderer->GetAllocator();
   auto device = pxRenderer->GetDevice();
 
@@ -96,7 +96,7 @@ void Shader::load_vertex_shader(std::string_view vertex_shader,
 }
 void Shader::load_fragment_shader(std::string_view fragment_shader,
                                   int numUniformData) {
-  auto pxRenderer = RendererImpl::GetPxRenderer();
+  auto pxRenderer = RendererSystem::GetPxRenderer();
   auto *allocator = pxRenderer->GetAllocator();
   auto device = pxRenderer->GetDevice();
 
@@ -127,7 +127,7 @@ void Shader::compile_and_load_vertex_shader(std::string_view vertex_shader,
   auto spirv = compiler.compile(vsStr, rsc::ShaderCompiler::Type::VERTEX,
                                 rsc::ShaderCompiler::Language::SPIRV);
 
-  auto pxRenderer = RendererImpl::GetPxRenderer();
+  auto pxRenderer = RendererSystem::GetPxRenderer();
   auto *allocator = pxRenderer->GetAllocator();
   auto device = pxRenderer->GetDevice();
 
@@ -152,7 +152,7 @@ void Shader::compile_and_load_fragment_shader(std::string_view fragment_shader,
   auto spirv = compiler.compile(fsStr, rsc::ShaderCompiler::Type::FRAGMENT,
                                 rsc::ShaderCompiler::Language::SPIRV);
 
-  auto pxRenderer = RendererImpl::GetPxRenderer();
+  auto pxRenderer = RendererSystem::GetPxRenderer();
   auto *allocator = pxRenderer->GetAllocator();
   auto device = pxRenderer->GetDevice();
 

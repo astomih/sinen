@@ -6,10 +6,10 @@
 #include <vector>
 
 namespace sinen {
-class scene_system {
+class SceneSystem {
 public:
-  scene_system() = default;
-  ~scene_system() = default;
+  SceneSystem() = default;
+  ~SceneSystem() = default;
   /**
    * @brief Initialize scene system
    *

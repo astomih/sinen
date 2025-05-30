@@ -6,22 +6,22 @@
 #include <platform/window/window.hpp>
 
 namespace sinen {
-glm::vec2 WindowImpl::m_size = glm::vec2(1280.f, 720.f);
-std::string WindowImpl::m_name = "";
-::SDL_Window *WindowImpl::m_window = nullptr;
-bool WindowImpl::m_resized = false;
-const void *Window::get_sdl_window() { return WindowImpl::get_sdl_window(); }
-glm::vec2 Window::size() { return WindowImpl::size(); }
-glm::vec2 Window::half() { return WindowImpl::half(); }
-void Window::resize(const glm::vec2 &size) { WindowImpl::resize(size); }
+glm::vec2 WindowSystem::m_size = glm::vec2(1280.f, 720.f);
+std::string WindowSystem::m_name = "";
+::SDL_Window *WindowSystem::m_window = nullptr;
+bool WindowSystem::m_resized = false;
+const void *Window::get_sdl_window() { return WindowSystem::get_sdl_window(); }
+glm::vec2 Window::size() { return WindowSystem::size(); }
+glm::vec2 Window::half() { return WindowSystem::half(); }
+void Window::resize(const glm::vec2 &size) { WindowSystem::resize(size); }
 void Window::set_fullscreen(bool fullscreen) {
-  WindowImpl::set_fullscreen(fullscreen);
+  WindowSystem::set_fullscreen(fullscreen);
 }
-void Window::rename(const std::string &name) { WindowImpl::rename(name); }
-std::string Window::name() { return WindowImpl::name(); }
-bool Window::resized() { return WindowImpl::resized(); }
+void Window::rename(const std::string &name) { WindowSystem::rename(name); }
+std::string Window::name() { return WindowSystem::name(); }
+bool Window::resized() { return WindowSystem::resized(); }
 
-void WindowImpl::initialize(const std::string &name) {
+void WindowSystem::initialize(const std::string &name) {
   m_name = name;
 
   // Load settings from settings.json
@@ -49,24 +49,24 @@ void WindowImpl::initialize(const std::string &name) {
   SDL_StartTextInput(m_window);
 }
 
-void WindowImpl::shutdown() {
+void WindowSystem::shutdown() {
   SDL_DestroyWindow(m_window);
   m_window = nullptr;
 }
-void WindowImpl::resize(const glm::vec2 &size) {
+void WindowSystem::resize(const glm::vec2 &size) {
   m_size = size;
   SDL_SetWindowSize(m_window, static_cast<int>(m_size.x),
                     static_cast<int>(m_size.y));
 }
-void WindowImpl::set_fullscreen(bool fullscreen) {
+void WindowSystem::set_fullscreen(bool fullscreen) {
   SDL_SetWindowFullscreen(m_window, fullscreen);
 }
-void WindowImpl::rename(const std::string &name) {
+void WindowSystem::rename(const std::string &name) {
   m_name = name;
   SDL_SetWindowTitle(m_window, m_name.c_str());
 }
-void WindowImpl::prepare_frame() { m_resized = false; }
-void WindowImpl::process_input(SDL_Event &event) {
+void WindowSystem::prepare_frame() { m_resized = false; }
+void WindowSystem::process_input(SDL_Event &event) {
   int x, y;
   SDL_GetWindowSize(m_window, &x, &y);
   m_size.x = static_cast<float>(x);

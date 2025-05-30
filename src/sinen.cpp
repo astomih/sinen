@@ -2,11 +2,12 @@
 #include <SDL3/SDL_main.h>
 #include <sinen.hpp>
 int main(const int argc, char *argv[]) {
-  if (!sinen::Initialize(argc, argv)) {
+  using namespace sinen;
+  if (!Sinen::initialize(argc, argv)) {
     return -1;
   }
-  sinen::Run();
-  sinen::Shutdown();
+  Sinen::run();
+  Sinen::shutdown();
   return 0;
 }
 
@@ -26,7 +27,7 @@ int main(const int argc, char *argv[]) {
 #include <SDL3_ttf/SDL_ttf.h>
 
 namespace sinen {
-bool Initialize(int argc, char *argv[]) {
+bool Sinen::initialize(int argc, char *argv[]) {
   SDL_Init(SDL_INIT_AUDIO | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK |
            SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD | SDL_INIT_SENSOR);
   TTF_Init();
@@ -37,14 +38,14 @@ bool Initialize(int argc, char *argv[]) {
   desired.channels = 2;
   auto devid = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desired);
   Mix_OpenAudio(devid, &desired);
-  WindowImpl::initialize("SinenEngine");
-  RendererImpl::initialize();
-  if (!sound_system::initialize()) {
+  WindowSystem::initialize("Sinen");
+  RendererSystem::initialize();
+  if (!SoundSystem::initialize()) {
     Logger::critical("Failed to initialize audio system");
-    sound_system::shutdown();
+    SoundSystem::shutdown();
     return false;
   }
-  if (!input_system::initialize()) {
+  if (!InputSystem::initialize()) {
     Logger::critical("Failed to initialize input system");
     return false;
   }
@@ -52,42 +53,40 @@ bool Initialize(int argc, char *argv[]) {
     Logger::critical("Failed to initialize script system");
     return false;
   }
-  if (!random_system::initialize()) {
+  if (!RandomSystem::initialize()) {
     Logger::critical("Failed to initialize random system");
     return false;
   }
-  Texture tex;
-  tex.fill_color(Palette::light_black());
-  scene_system::initialize();
+  SceneSystem::initialize();
   return true;
 }
-void Run() {
+void Sinen::run() {
   while (true) {
-    if (scene_system::is_running()) {
-      WindowImpl::prepare_frame();
-      input_system::prepare_for_update();
-      scene_system::process_input();
-      input_system::update();
-      scene_system::update_scene();
-      RendererImpl::render();
+    if (SceneSystem::is_running()) {
+      WindowSystem::prepare_frame();
+      InputSystem::prepare_for_update();
+      SceneSystem::process_input();
+      InputSystem::update();
+      SceneSystem::update_scene();
+      RendererSystem::render();
       continue;
     }
-    if (scene_system::is_reset) {
-      scene_system::setup();
-      scene_system::is_reset = false;
+    if (SceneSystem::is_reset) {
+      SceneSystem::setup();
+      SceneSystem::is_reset = false;
       continue;
     }
     break;
   }
 }
-void Shutdown() {
-  scene_system::shutdown();
+void Sinen::shutdown() {
+  SceneSystem::shutdown();
   ScriptSystem::Shutdown();
-  input_system::shutdown();
-  sound_system::shutdown();
-  random_system::shutdown();
-  RendererImpl::shutdown();
-  WindowImpl::shutdown();
+  InputSystem::shutdown();
+  SoundSystem::shutdown();
+  RandomSystem::shutdown();
+  RendererSystem::shutdown();
+  WindowSystem::shutdown();
   Mix_CloseAudio();
   TTF_Quit();
   Mix_Quit();

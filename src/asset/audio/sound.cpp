@@ -13,8 +13,8 @@
 namespace sinen {
 Sound::Sound() {}
 void Sound::load(std::string_view file_name) {
-  sound_system::load(file_name);
-  auto sourceID = sound_system::new_source(file_name);
+  SoundSystem::load(file_name);
+  auto sourceID = SoundSystem::new_source(file_name);
   ALint buf;
   alGetSourcei(sourceID, AL_BUFFER, &buf);
   param.source_id = sourceID;
@@ -23,7 +23,7 @@ void Sound::load(std::string_view file_name) {
 }
 void Sound::play() { alSourcePlay(param.source_id); }
 void Sound::new_source() {
-  auto sourceID = sound_system::new_source(mName);
+  auto sourceID = SoundSystem::new_source(mName);
   ALint buf;
   alGetSourcei(sourceID, AL_BUFFER, &buf);
   param.source_id = sourceID;
@@ -34,11 +34,11 @@ void Sound::set_listener(glm::vec3 pos, glm::vec3 rotation) {
   q = q * glm::angleAxis(rotation.y, glm::vec3(0, 1, 0));
   q = q * glm::angleAxis(rotation.x, glm::vec3(1, 0, 0));
 
-  sound_system::set_listener(pos, q);
+  SoundSystem::set_listener(pos, q);
 }
-void Sound::delete_source() { sound_system::delete_source(param.source_id); }
+void Sound::delete_source() { SoundSystem::delete_source(param.source_id); }
 bool Sound::is_valid() {
-  return sound_system::get_buffers().contains(mName.data());
+  return SoundSystem::get_buffers().contains(mName.data());
 }
 
 void Sound::restart() {

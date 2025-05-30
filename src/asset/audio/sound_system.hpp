@@ -10,7 +10,7 @@
 #include <asset/audio/sound.hpp>
 
 namespace sinen {
-class sound_system {
+class SoundSystem {
 public:
   static bool initialize();
   static void shutdown();

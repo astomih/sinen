@@ -4,7 +4,6 @@
 #include "../../asset/texture/texture.hpp"
 #include "drawable.hpp"
 
-
 namespace sinen {
 /**
  * @brief 2D draw object class
@@ -49,8 +48,7 @@ public:
   glm::vec2 position;
   float rotation;
   glm::vec2 scale;
-  Texture texture_handle;
-  std::string vertex_name = "SPRITE";
+  Material material;
   Model model;
   std::shared_ptr<Drawable> obj;
 };
@@ -65,12 +63,6 @@ public:
    *
    */
   Draw3D();
-  /**
-   * @brief Construct a new draw3d object
-   * @param texture Texture to use
-   *
-   */
-  Draw3D(Texture);
   /**
    * @brief Draw object
    *
@@ -91,7 +83,7 @@ public:
   glm::vec3 position;
   glm::vec3 rotation;
   glm::vec3 scale;
-  Texture texture_handle;
+  Material material;
   bool is_draw_depth = true;
   Model model;
   std::shared_ptr<Drawable> obj;

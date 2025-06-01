@@ -111,6 +111,14 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def("load", &Texture::load)
       .def("size", &Texture::size);
 
+  // Material
+  py::class_<Material>(m, "Material")
+      .def(py::init<>())
+      .def("append", &Material::append)
+      .def("clear", &Material::clear)
+      .def("get_texture", &Material::get_texture,
+           py::return_value_policy::reference);
+
   py::class_<RenderTexture>(m, "RenderTexture")
       .def(py::init<>())
       .def("create", &RenderTexture::create);
@@ -202,7 +210,6 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
   // Draw2D
   py::class_<Draw2D>(m, "Draw2D")
       .def(py::init<>())
-      .def(py::init<Texture>())
       .def("draw", &Draw2D::draw)
       .def("add", &Draw2D::add)
       .def("at", &Draw2D::at)
@@ -210,13 +217,11 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def_readwrite("scale", &Draw2D::scale)
       .def_readwrite("position", &Draw2D::position)
       .def_readwrite("rotation", &Draw2D::rotation)
-      .def_readwrite("texture", &Draw2D::texture_handle)
-      .def_readwrite("vertex_name", &Draw2D::vertex_name);
+      .def_readwrite("material", &Draw2D::material);
 
   // Draw3D
   py::class_<Draw3D>(m, "Draw3D")
       .def(py::init<>())
-      .def(py::init<Texture>())
       .def("draw", &Draw3D::draw)
       .def("add", &Draw3D::add)
       .def("at", &Draw3D::at)
@@ -224,7 +229,7 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def_readwrite("scale", &Draw3D::scale)
       .def_readwrite("position", &Draw3D::position)
       .def_readwrite("rotation", &Draw3D::rotation)
-      .def_readwrite("texture", &Draw3D::texture_handle)
+      .def_readwrite("material", &Draw3D::material)
       .def_readwrite("model", &Draw3D::model)
       .def_readwrite("is_draw_depth", &Draw3D::is_draw_depth);
 

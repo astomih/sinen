@@ -4,7 +4,7 @@
 
 #include "../../asset/model/model.hpp"
 #include "../../asset/shader/shader.hpp"
-#include "../../asset/texture/texture.hpp"
+#include "../../asset/texture/material.hpp"
 #include "instance_data.hpp"
 
 namespace sinen {
@@ -40,10 +40,10 @@ struct Drawable {
    */
   Shader shade;
   /**
-   * @brief Use texture
+   * @brief Use material
    *
    */
-  Texture binding_texture;
+  Material material;
   Model model;
   int drawOrder = 100;
   /**

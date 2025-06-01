@@ -27,7 +27,8 @@ void ScriptSystem::Shutdown() {
 static const char *nothingScene = R"(
 from sinen import *
 texture = Texture()
-draw2d = Draw2D(texture)
+draw2d = Draw2D()
+draw2d.material.append(texture)
 font = Font()
 font.load(96)
 

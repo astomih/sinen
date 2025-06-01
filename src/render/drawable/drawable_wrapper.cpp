@@ -23,19 +23,9 @@ Draw2D::Draw2D()
       scale(glm::vec2(1.f, 1.f)) {
   obj = std::make_shared<Drawable>();
 }
-Draw2D::Draw2D(Texture texture_handle)
-    : position(glm::vec2(0.f, 0.f)), rotation(0.0f), scale(glm::vec2(1.f, 1.f)),
-      texture_handle(texture_handle) {
-  obj = std::make_shared<Drawable>();
-}
 Draw3D::Draw3D()
     : position(glm::vec3(0.f, 0.f, 0.f)), rotation(glm::vec3(0.f, 0.f, 0.f)),
       scale(glm::vec3(1.f, 1.f, 1.f)) {
-  obj = std::make_shared<Drawable>();
-}
-Draw3D::Draw3D(Texture texture_handle)
-    : position(glm::vec3(0.f, 0.f, 0.f)), rotation(glm::vec3(0.f, 0.f, 0.f)),
-      scale(glm::vec3(1.f, 1.f, 1.f)), texture_handle(texture_handle) {
   obj = std::make_shared<Drawable>();
 }
 void Draw2D::draw() {
@@ -53,7 +43,7 @@ void Draw2D::draw() {
                       glm::vec3(scale.x * 0.5f, scale.y * 0.5f, 1.0f));
 
   obj->param.world = t * r * s;
-  obj->binding_texture = this->texture_handle;
+  obj->material = this->material;
   auto viewproj = glm::mat4(1.0f);
 
   auto screen_size = Scene::size();
@@ -93,7 +83,7 @@ void Draw2D::at(const int &index, const glm::vec2 &position,
 }
 void Draw2D::clear() { this->worlds.clear(); }
 void Draw3D::draw() {
-  obj->binding_texture = this->texture_handle;
+  obj->material = this->material;
   auto t = glm::translate(glm::mat4(1.0f),
                           glm::vec3(position.x, position.y, position.z));
   auto rotationX =

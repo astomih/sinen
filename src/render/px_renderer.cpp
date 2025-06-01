@@ -212,10 +212,12 @@ void PxRenderer::draw2d(const std::shared_ptr<Drawable> draw_object) {
   PxDrawable drawable{allocator};
   drawable.drawable = draw_object;
 
-  auto texture = std::static_pointer_cast<px::Texture>(
-      GetTexData(draw_object->binding_texture.textureData)->texture);
-  drawable.textureSamplers.push_back(
-      px::TextureSamplerBinding{.sampler = sampler, .texture = texture});
+  for (const auto &texture : draw_object->material.get_textures()) {
+    auto nativeTexture = std::static_pointer_cast<px::Texture>(
+        GetTexData(texture.textureData)->texture);
+    drawable.textureSamplers.push_back(px::TextureSamplerBinding{
+        .sampler = sampler, .texture = nativeTexture});
+  }
 
   auto modelData = GetModelData(draw_object->model.data);
   assert(modelData->vertexBuffer != nullptr);
@@ -271,10 +273,12 @@ void PxRenderer::draw3d(const std::shared_ptr<Drawable> draw_object) {
   }
   PxDrawable drawable{allocator};
   drawable.drawable = draw_object;
-  auto texture = std::static_pointer_cast<px::Texture>(
-      GetTexData(draw_object->binding_texture.textureData)->texture);
-  drawable.textureSamplers.push_back(
-      px::TextureSamplerBinding{.sampler = sampler, .texture = texture});
+  for (const auto &texture : draw_object->material.get_textures()) {
+    auto nativeTexture = std::static_pointer_cast<px::Texture>(
+        GetTexData(texture.textureData)->texture);
+    drawable.textureSamplers.push_back(px::TextureSamplerBinding{
+        .sampler = sampler, .texture = nativeTexture});
+  }
 
   bool isInstance = drawable.drawable->size() > 0;
   if (isInstance) {

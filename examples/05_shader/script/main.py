@@ -1,6 +1,7 @@
 from sinen import *
 texture = Texture()
-draw2d = Draw2D(texture)
+draw2d = Draw2D()
+draw2d.material.append(texture)
 
 vertex_shader = Shader()
 vertex_shader.load_vertex_shader("shader_custom.vert.spv", 1)

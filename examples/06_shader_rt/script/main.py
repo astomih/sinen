@@ -1,7 +1,8 @@
 from sinen import *
 texture = Texture()
 texture.load("logo.png")
-draw2d = Draw2D(texture)
+draw2d = Draw2D()
+draw2d.material.append(texture)
 
 draw2d.scale = texture.size()
 

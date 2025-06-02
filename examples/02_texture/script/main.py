@@ -11,8 +11,7 @@ draw2d.material.append(texture)
 draw2d.scale = texture.size()
 
 def update():
-  if sn.Keyboard.is_pressed(sn.Keyboard.A):
-    sn.logger.info("Hello")
+    pass
 def draw():
     # Draw texture
     draw2d.draw()

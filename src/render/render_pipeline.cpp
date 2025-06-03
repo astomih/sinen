@@ -1,4 +1,3 @@
-#include "px_renderer.hpp"
 #include "render_system.hpp"
 #include <asset/model/vertex.hpp>
 #include <cstddef>
@@ -17,9 +16,8 @@ void RenderPipeline2D::set_fragment_shader(const Shader &shader) {
 }
 
 void RenderPipeline2D::build() {
-  auto pxRenderer = RendererSystem::GetPxRenderer();
-  auto *allocator = pxRenderer->GetAllocator();
-  auto device = pxRenderer->GetDevice();
+  auto *allocator = RendererSystem::GetAllocator();
+  auto device = RendererSystem::GetDevice();
 
   px::GraphicsPipeline::CreateInfo pipelineInfo{allocator};
   pipelineInfo.vertexShader = this->vertexShader.shader;
@@ -74,9 +72,8 @@ void RenderPipeline3D::set_animation(bool animation) {
   this->isAnimation = animation;
 }
 void RenderPipeline3D::build() {
-  auto pxRenderer = RendererSystem::GetPxRenderer();
-  auto *allocator = pxRenderer->GetAllocator();
-  auto device = pxRenderer->GetDevice();
+  auto *allocator = RendererSystem::GetAllocator();
+  auto device = RendererSystem::GetDevice();
 
   px::GraphicsPipeline::CreateInfo pipelineInfo{allocator};
   pipelineInfo.vertexShader = this->vertexShader.shader;

@@ -297,14 +297,14 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def_static("set_clear_color", &Renderer::set_clear_color)
       .def_static("at_render_texture_user_data",
                   &Renderer::at_render_texture_user_data)
-      .def_static("begin_pipeline2d", &Renderer::begin_pipeline2d)
-      .def_static("end_pipeline2d", &Renderer::end_pipeline2d)
-      .def_static("begin_pipeline3d", &Renderer::begin_pipeline3d)
-      .def_static("end_pipeline3d", &Renderer::end_pipeline3d)
+      .def_static("bind_pipeline2d", &Renderer::bind_pipeline2d)
+      .def_static("bind_default_pipeline2d", &Renderer::bind_default_pipeline2d)
+      .def_static("bind_pipeline3d", &Renderer::bind_pipeline3d)
+      .def_static("bind_default_pipeline3d", &Renderer::bind_default_pipeline3d)
       .def_static("set_uniform_data", &Renderer::set_uniform_data)
-      .def_static("begin_render_texture2d", &Renderer::begin_render_texture2d)
-      .def_static("begin_render_texture3d", &Renderer::begin_render_texture3d)
-      .def_static("end_render_texture", &Renderer::end_render_texture);
+      .def_static("begin_target2d", &Renderer::begin_target2d)
+      .def_static("begin_target3d", &Renderer::begin_target3d)
+      .def_static("end_target", &Renderer::end_target);
 
   py::class_<Scene>(m, "Scene")
       .def(py::init<>())

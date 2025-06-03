@@ -31,24 +31,28 @@ void Renderer::add_imgui_function(std::function<void()> function) {
 }
 void *Renderer::get_texture_id() { return RendererSystem::get_texture_id(); }
 
-void Renderer::begin_pipeline3d(const RenderPipeline3D &pipeline) {
-  RendererSystem::begin_pipeline3d(pipeline);
+void Renderer::bind_pipeline3d(const RenderPipeline3D &pipeline) {
+  RendererSystem::bind_pipeline3d(pipeline);
 }
-void Renderer::end_pipeline3d() { RendererSystem::end_pipeline3d(); }
-void Renderer::begin_pipeline2d(const RenderPipeline2D &pipeline) {
-  RendererSystem::begin_pipeline2d(pipeline);
+void Renderer::bind_default_pipeline3d() {
+  RendererSystem::bind_default_pipeline3d();
 }
-void Renderer::end_pipeline2d() { RendererSystem::end_pipeline2d(); }
+void Renderer::bind_pipeline2d(const RenderPipeline2D &pipeline) {
+  RendererSystem::bind_pipeline2d(pipeline);
+}
+void Renderer::bind_default_pipeline2d() {
+  RendererSystem::bind_default_pipeline2d();
+}
 void Renderer::set_uniform_data(uint32_t slot, const UniformData &data) {
   RendererSystem::set_uniform_data(slot, data);
 }
-void Renderer::begin_render_texture2d(const RenderTexture &texture) {
-  RendererSystem::begin_render_texture2d(texture);
+void Renderer::begin_target2d(const RenderTexture &texture) {
+  RendererSystem::begin_target2d(texture);
 }
-void Renderer::begin_render_texture3d(const RenderTexture &texture) {
-  RendererSystem::begin_render_texture3d(texture);
+void Renderer::begin_target3d(const RenderTexture &texture) {
+  RendererSystem::begin_target3d(texture);
 }
-void Renderer::end_render_texture(const RenderTexture &texture, Texture &out) {
-  RendererSystem::end_render_texture(texture, out);
+void Renderer::end_target(const RenderTexture &texture, Texture &out) {
+  RendererSystem::end_target(texture, out);
 }
 } // namespace sinen

@@ -1,5 +1,4 @@
 // internal
-#include "../../render/px_renderer.hpp"
 #include "../../render/render_system.hpp"
 #include "libs/paranoixa/library/SDL/include/SDL3/SDL_iostream.h"
 #include <asset/shader/shader.hpp>
@@ -16,9 +15,8 @@
 
 namespace sinen {
 void Shader::load_default_vertex_shader() {
-  auto pxRenderer = RendererSystem::GetPxRenderer();
-  auto *allocator = pxRenderer->GetAllocator();
-  auto device = pxRenderer->GetDevice();
+  auto *allocator = RendererSystem::GetAllocator();
+  auto device = RendererSystem::GetDevice();
 
   px::Shader::CreateInfo vsInfo{};
   vsInfo.allocator = allocator;
@@ -34,9 +32,8 @@ void Shader::load_default_vertex_shader() {
   shader = device->CreateShader(vsInfo);
 }
 void Shader::load_default_vertex_instance_shader() {
-  auto pxRenderer = RendererSystem::GetPxRenderer();
-  auto *allocator = pxRenderer->GetAllocator();
-  auto device = pxRenderer->GetDevice();
+  auto *allocator = RendererSystem::GetAllocator();
+  auto device = RendererSystem::GetDevice();
 
   px::Shader::CreateInfo vsInfo{};
   vsInfo.allocator = allocator;
@@ -52,9 +49,8 @@ void Shader::load_default_vertex_instance_shader() {
   shader = device->CreateShader(vsInfo);
 }
 void Shader::load_default_fragment_shader() {
-  auto pxRenderer = RendererSystem::GetPxRenderer();
-  auto *allocator = pxRenderer->GetAllocator();
-  auto device = pxRenderer->GetDevice();
+  auto *allocator = RendererSystem::GetAllocator();
+  auto device = RendererSystem::GetDevice();
 
   px::Shader::CreateInfo fsInfo{};
   fsInfo.allocator = allocator;
@@ -71,9 +67,8 @@ void Shader::load_default_fragment_shader() {
 }
 void Shader::load_vertex_shader(std::string_view vertex_shader,
                                 int numUniformData) {
-  auto pxRenderer = RendererSystem::GetPxRenderer();
-  auto *allocator = pxRenderer->GetAllocator();
-  auto device = pxRenderer->GetDevice();
+  auto *allocator = RendererSystem::GetAllocator();
+  auto device = RendererSystem::GetDevice();
 
   SDL_IOStream *file = (SDL_IOStream *)DataStream::open_as_rwops(
       AssetType::Shader, vertex_shader);
@@ -96,9 +91,8 @@ void Shader::load_vertex_shader(std::string_view vertex_shader,
 }
 void Shader::load_fragment_shader(std::string_view fragment_shader,
                                   int numUniformData) {
-  auto pxRenderer = RendererSystem::GetPxRenderer();
-  auto *allocator = pxRenderer->GetAllocator();
-  auto device = pxRenderer->GetDevice();
+  auto *allocator = RendererSystem::GetAllocator();
+  auto device = RendererSystem::GetDevice();
 
   std::string fsStr =
       DataStream::open_as_string(AssetType::Shader, fragment_shader);
@@ -127,9 +121,8 @@ void Shader::compile_and_load_vertex_shader(std::string_view vertex_shader,
   auto spirv = compiler.compile(vsStr, rsc::ShaderCompiler::Type::VERTEX,
                                 rsc::ShaderCompiler::Language::SPIRV);
 
-  auto pxRenderer = RendererSystem::GetPxRenderer();
-  auto *allocator = pxRenderer->GetAllocator();
-  auto device = pxRenderer->GetDevice();
+  auto *allocator = RendererSystem::GetAllocator();
+  auto device = RendererSystem::GetDevice();
 
   px::Shader::CreateInfo vsInfo{};
   vsInfo.allocator = allocator;
@@ -152,9 +145,8 @@ void Shader::compile_and_load_fragment_shader(std::string_view fragment_shader,
   auto spirv = compiler.compile(fsStr, rsc::ShaderCompiler::Type::FRAGMENT,
                                 rsc::ShaderCompiler::Language::SPIRV);
 
-  auto pxRenderer = RendererSystem::GetPxRenderer();
-  auto *allocator = pxRenderer->GetAllocator();
-  auto device = pxRenderer->GetDevice();
+  auto *allocator = RendererSystem::GetAllocator();
+  auto device = RendererSystem::GetDevice();
 
   px::Shader::CreateInfo fsInfo{};
   fsInfo.allocator = allocator;

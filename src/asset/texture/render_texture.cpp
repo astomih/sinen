@@ -1,4 +1,3 @@
-#include "../../render/px_renderer.hpp"
 #include "../../render/render_system.hpp"
 #include <asset/texture/render_texture.hpp>
 
@@ -7,8 +6,8 @@ namespace sinen {
 RenderTexture::RenderTexture() : texture(nullptr) {}
 
 void RenderTexture::create(int width, int height) {
-  auto allocator = RendererSystem::GetPxRenderer()->GetAllocator();
-  auto device = RendererSystem::GetPxRenderer()->GetDevice();
+  auto allocator = RendererSystem::GetAllocator();
+  auto device = RendererSystem::GetDevice();
   px::Texture::CreateInfo info{};
   info.allocator = allocator;
   info.width = width;

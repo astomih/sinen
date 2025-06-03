@@ -12,7 +12,6 @@
 #include <variant>
 
 // internal
-#include "../../render/px_renderer.hpp"
 #include "../../render/render_system.hpp"
 #include "assimp/matrix4x4.h"
 #include "assimp/postprocess.h"
@@ -250,8 +249,8 @@ std::vector<std::uint32_t> Model::all_indices() const {
 
 std::pair<px::Ptr<px::Buffer>, px::Ptr<px::Buffer>>
 CreateVertexIndexBuffer(const VertexArray &vArray) {
-  auto allocator = RendererSystem::GetPxRenderer()->GetAllocator();
-  auto device = RendererSystem::GetPxRenderer()->GetDevice();
+  auto allocator = RendererSystem::GetAllocator();
+  auto device = RendererSystem::GetDevice();
   size_t vertexBufferSize;
   bool isAnimation = false;
   if (vArray.animationVertices.size() > 0) {

@@ -86,15 +86,15 @@ public:
   static glm::mat4 render_texture_user_data;
   static void at_render_texture_user_data(int index, float value) {}
 
-  static void begin_pipeline3d(const RenderPipeline3D &pipeline);
-  static void end_pipeline3d();
-  static void begin_pipeline2d(const RenderPipeline2D &pipeline);
-  static void end_pipeline2d();
+  static void bind_pipeline3d(const RenderPipeline3D &pipeline);
+  static void bind_default_pipeline3d();
+  static void bind_pipeline2d(const RenderPipeline2D &pipeline);
+  static void bind_default_pipeline2d();
   static void set_uniform_data(uint32_t slot, const UniformData &data);
 
-  static void begin_render_texture2d(const RenderTexture &texture);
-  static void begin_render_texture3d(const RenderTexture &texture);
-  static void end_render_texture(const RenderTexture &texture, Texture &out);
+  static void begin_target2d(const RenderTexture &texture);
+  static void begin_target3d(const RenderTexture &texture);
+  static void end_target(const RenderTexture &texture, Texture &out);
 };
 
 } // namespace sinen

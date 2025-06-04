@@ -1,20 +1,20 @@
 #include "scene_system.hpp"
 #include "../../asset/audio/sound_system.hpp"
+#include "../../graphics/graphics_system.hpp"
 #include "../../platform/input/input_system.hpp"
 #include "../../platform/window/window_system.hpp"
-#include "../../render/render_system.hpp"
 #include "../script/script_system.hpp"
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <core/io/data_stream.hpp>
 #include <core/io/json.hpp>
+#include <graphics/graphics.hpp>
 #include <logic/camera/camera.hpp>
 #include <logic/scene/scene.hpp>
 #include <math/color/color.hpp>
 #include <math/color/palette.hpp>
 #include <math/random.hpp>
 #include <platform/window/window.hpp>
-#include <render/renderer.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -117,10 +117,10 @@ void SceneSystem::process_input() {
 void SceneSystem::update_scene() {
   {
     if (Keyboard::is_pressed(Keyboard::code::F3)) {
-      Renderer::toggle_show_imgui();
+      Graphics::toggle_show_imgui();
       static bool z_init = false;
-      if (Renderer::is_show_imgui()) {
-        Renderer::add_imgui_function([&]() {
+      if (Graphics::is_show_imgui()) {
+        Graphics::add_imgui_function([&]() {
           if (!z_init) {
             zep_init(Zep::NVec2f(1.0f, 1.0f));
             zep_load(DataStream::open_as_string(AssetType::Script, "main.py"));
@@ -140,7 +140,7 @@ void SceneSystem::update_scene() {
           ImGui::End();
         });
       } else {
-        Renderer::get_imgui_function().clear();
+        Graphics::get_imgui_function().clear();
       }
     }
   }

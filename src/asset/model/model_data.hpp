@@ -5,9 +5,9 @@
 #include <asset/model/vertex_array.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
+#include <graphics/graphics.hpp>
 #include <logic/physics/collision.hpp>
 #include <paranoixa/paranoixa.hpp>
-#include <render/renderer.hpp>
 
 namespace sinen {
 struct BoneInfo {

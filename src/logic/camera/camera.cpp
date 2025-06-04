@@ -5,9 +5,9 @@
 
 // internal
 #include <core/logger/logger.hpp>
+#include <graphics/graphics.hpp>
 #include <logic/camera/camera.hpp>
 #include <platform/window/window.hpp>
-#include <render/renderer.hpp>
 
 namespace sinen {
 void Camera::lookat(const glm::vec3 &position, const glm::vec3 &target,

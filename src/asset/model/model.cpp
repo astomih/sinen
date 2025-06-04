@@ -12,7 +12,7 @@
 #include <variant>
 
 // internal
-#include "../../render/render_system.hpp"
+#include "../../graphics/graphics_system.hpp"
 #include "assimp/matrix4x4.h"
 #include "assimp/postprocess.h"
 #include "glm/ext/quaternion_common.hpp"
@@ -20,8 +20,8 @@
 #include "model_data.hpp"
 #include <asset/asset.hpp>
 #include <core/core.hpp>
+#include <graphics/graphics.hpp>
 #include <math/math.hpp>
-#include <render/renderer.hpp>
 
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/IOStream.hpp>
@@ -212,8 +212,8 @@ void Model::load_from_vertex_array(const VertexArray &vArray) {
   modelData->indexBuffer = viBuffer.second;
 }
 
-void Model::load_sprite() { *this = RendererSystem::sprite; }
-void Model::load_box() { *this = RendererSystem::box; }
+void Model::load_sprite() { *this = GraphicsSystem::sprite; }
+void Model::load_box() { *this = GraphicsSystem::box; }
 
 AABB &Model::aabb() const {
   auto modelData = GetModelData(this->data);
@@ -249,8 +249,8 @@ std::vector<std::uint32_t> Model::all_indices() const {
 
 std::pair<px::Ptr<px::Buffer>, px::Ptr<px::Buffer>>
 CreateVertexIndexBuffer(const VertexArray &vArray) {
-  auto allocator = RendererSystem::GetAllocator();
-  auto device = RendererSystem::GetDevice();
+  auto allocator = GraphicsSystem::GetAllocator();
+  auto device = GraphicsSystem::GetDevice();
   size_t vertexBufferSize;
   bool isAnimation = false;
   if (vArray.animationVertices.size() > 0) {

@@ -14,14 +14,15 @@
 #include "../asset/texture/texture.hpp"
 #include "../math/color/color.hpp"
 #include "drawable/drawable.hpp"
-#include "render_pipeline.hpp"
+#include "drawable/drawable_wrapper.hpp"
+#include "graphics_pipeline.hpp"
 
 namespace sinen {
 /**
  * @brief Renderer class
  *
  */
-class Renderer {
+class Graphics {
 public:
   /**
    * @brief Unload all resources
@@ -86,9 +87,9 @@ public:
   static glm::mat4 render_texture_user_data;
   static void at_render_texture_user_data(int index, float value) {}
 
-  static void bind_pipeline3d(const RenderPipeline3D &pipeline);
+  static void bind_pipeline3d(const GraphicsPipeline3D &pipeline);
   static void bind_default_pipeline3d();
-  static void bind_pipeline2d(const RenderPipeline2D &pipeline);
+  static void bind_pipeline2d(const GraphicsPipeline2D &pipeline);
   static void bind_default_pipeline2d();
   static void set_uniform_data(uint32_t slot, const UniformData &data);
 

@@ -27,8 +27,8 @@ public:
                                         int numUniformData);
 
 private:
-  friend class RenderPipeline2D;
-  friend class RenderPipeline3D;
+  friend class GraphicsPipeline2D;
+  friend class GraphicsPipeline3D;
   px::Ptr<px::Shader> shader;
 };
 } // namespace sinen

@@ -10,6 +10,9 @@
 // Core
 #include "core/core.hpp"
 
+// Graphics
+#include "graphics/graphics.hpp"
+
 // Logic
 #include "logic/logic.hpp"
 
@@ -18,9 +21,6 @@
 
 // Platform
 #include "platform/platform.hpp"
-
-// Render
-#include "render/render.hpp"
 
 namespace sinen {
 class Sinen {

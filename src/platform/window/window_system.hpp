@@ -2,8 +2,8 @@
 #define SINEN_WINDOW_SYSTEM_HPP
 #include "glm/ext/vector_float2.hpp"
 #include <SDL3/SDL.h>
+#include <graphics/graphics.hpp>
 #include <memory>
-#include <render/renderer.hpp>
 #include <string>
 
 namespace sinen {

@@ -1,6 +1,5 @@
+#include <graphics/drawable/drawable_wrapper.hpp>
 #include <logic/scene/scene.hpp>
-#include <render/drawable/drawable_wrapper.hpp>
-
 
 #include <list>
 #include <vector>

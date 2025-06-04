@@ -4,9 +4,9 @@
 #include "paranoixa/paranoixa.hpp"
 
 namespace sinen {
-class RenderPipeline2D {
+class GraphicsPipeline2D {
 public:
-  RenderPipeline2D() = default;
+  GraphicsPipeline2D() = default;
 
   void set_vertex_shader(const Shader &shader);
   void set_fragment_shader(const Shader &shader);
@@ -21,9 +21,9 @@ private:
   px::Ptr<px::GraphicsPipeline> pipeline;
 };
 
-class RenderPipeline3D {
+class GraphicsPipeline3D {
 public:
-  RenderPipeline3D() = default;
+  GraphicsPipeline3D() = default;
 
   void set_vertex_shader(const Shader &shader);
   void set_vertex_instanced_shader(const Shader &shader);

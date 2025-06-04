@@ -12,12 +12,12 @@ int main(const int argc, char *argv[]) {
 }
 
 #include "asset/audio/sound_system.hpp"
+#include "graphics/graphics_system.hpp"
 #include "logic/scene/scene_system.hpp"
 #include "logic/script/script_system.hpp"
 #include "math/random_system.hpp"
 #include "platform/input/input_system.hpp"
 #include "platform/window/window_system.hpp"
-#include "render/render_system.hpp"
 
 // external
 #define SDL_MAIN_HANDLED
@@ -39,7 +39,7 @@ bool Sinen::initialize(int argc, char *argv[]) {
   auto devid = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desired);
   Mix_OpenAudio(devid, &desired);
   WindowSystem::initialize("Sinen");
-  RendererSystem::initialize();
+  GraphicsSystem::initialize();
   if (!SoundSystem::initialize()) {
     Logger::critical("Failed to initialize audio system");
     SoundSystem::shutdown();
@@ -68,7 +68,7 @@ void Sinen::run() {
       SceneSystem::process_input();
       InputSystem::update();
       SceneSystem::update_scene();
-      RendererSystem::render();
+      GraphicsSystem::render();
       continue;
     }
     if (SceneSystem::is_reset) {
@@ -85,7 +85,7 @@ void Sinen::shutdown() {
   InputSystem::shutdown();
   SoundSystem::shutdown();
   RandomSystem::shutdown();
-  RendererSystem::shutdown();
+  GraphicsSystem::shutdown();
   WindowSystem::shutdown();
   Mix_CloseAudio();
   TTF_Quit();

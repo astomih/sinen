@@ -1,9 +1,9 @@
-#include "render_system.hpp"
+#include "graphics_system.hpp"
 #include "../asset/model/default_model_creator.hpp"
 #include "../platform/window/window_system.hpp"
+#include "graphics/graphics.hpp"
 #include "imgui_internal.h"
 #include "paranoixa/paranoixa.hpp"
-#include "render/renderer.hpp"
 #include <SDL3/SDL.h>
 #include <asset/model/vertex.hpp>
 #include <asset/model/vertex_array.hpp>
@@ -12,11 +12,11 @@
 #include <core/io/asset_type.hpp>
 #include <core/io/data_stream.hpp>
 #include <cstdint>
+#include <graphics/drawable/instance_data.hpp>
+#include <graphics/graphics.hpp>
 #include <memory>
 #include <platform/platform.hpp>
 #include <platform/window/window.hpp>
-#include <render/drawable/instance_data.hpp>
-#include <render/renderer.hpp>
 
 #include <imgui.h>
 #include <imgui_impl_paranoixa.hpp>
@@ -37,14 +37,14 @@ namespace sinen {
 PxDrawable::PxDrawable(px::Allocator *allocator)
     : allocator(allocator), vertexBuffers(allocator),
       textureSamplers(allocator) {}
-Color RendererSystem::clearColor = Palette::black();
+Color GraphicsSystem::clearColor = Palette::black();
 // Renderer
-bool RendererSystem::showImGui = false;
-std::list<std::function<void()>> RendererSystem::m_imgui_function;
-Model RendererSystem::box = Model();
-Model RendererSystem::sprite = Model();
-void RendererSystem::unload_data() {}
-void RendererSystem::initialize() {
+bool GraphicsSystem::showImGui = false;
+std::list<std::function<void()>> GraphicsSystem::m_imgui_function;
+Model GraphicsSystem::box = Model();
+Model GraphicsSystem::sprite = Model();
+void GraphicsSystem::unload_data() {}
+void GraphicsSystem::initialize() {
   backend = px::Paranoixa::CreateBackend(allocator, px::GraphicsAPI::SDLGPU);
   px::Device::CreateInfo info{};
   info.allocator = allocator;
@@ -62,7 +62,7 @@ void RendererSystem::initialize() {
   init_info.Device = device;
   init_info.ColorTargetFormat = px::TextureFormat::B8G8R8A8_UNORM;
   init_info.MSAASamples = px::SampleCount::x1;
-  RendererSystem::prepare_imgui();
+  GraphicsSystem::prepare_imgui();
   ImGui_ImplParanoixa_Init(&init_info);
 
   Shader vs;
@@ -121,13 +121,13 @@ void RendererSystem::initialize() {
   setup_shapes();
 }
 
-void RendererSystem::shutdown() {
+void GraphicsSystem::shutdown() {
   vertexArrays.clear();
   device.reset();
   backend.reset();
 }
 
-void RendererSystem::render() {
+void GraphicsSystem::render() {
   auto commandBuffer = device->AcquireCommandBuffer({allocator});
   if (commandBuffer == nullptr) {
     return;
@@ -159,7 +159,7 @@ void RendererSystem::render() {
   ImGui_ImplParanoixa_NewFrame();
   ImGui_ImplSDL3_NewFrame();
   ImGui::NewFrame();
-  for (auto &func : RendererSystem::get_imgui_function()) {
+  for (auto &func : GraphicsSystem::get_imgui_function()) {
     func();
   }
   // Rendering
@@ -193,7 +193,7 @@ void RendererSystem::render() {
   device->SubmitCommandBuffer(commandBuffer);
   device->WaitForGPUIdle();
 }
-void RendererSystem::draw2d(const std::shared_ptr<Drawable> &drawObject) {
+void GraphicsSystem::draw2d(const std::shared_ptr<Drawable> &drawObject) {
   objectCount++;
   if (isFrameStarted || currentRenderPass == nullptr) {
     colorTargets[0].loadOp = px::LoadOp::Clear;
@@ -255,7 +255,7 @@ void RendererSystem::draw2d(const std::shared_ptr<Drawable> &drawObject) {
       0);
 }
 
-void RendererSystem::draw3d(const std::shared_ptr<Drawable> &drawObject) {
+void GraphicsSystem::draw3d(const std::shared_ptr<Drawable> &drawObject) {
   objectCount++;
   if (isDefaultPipeline && (isFrameStarted || currentRenderPass == nullptr)) {
     colorTargets[0].loadOp = px::LoadOp::Clear;
@@ -386,16 +386,16 @@ void RendererSystem::draw3d(const std::shared_ptr<Drawable> &drawObject) {
         0, 0);
   }
 }
-void RendererSystem::load_shader(const Shader &shaderInfo) {}
-void RendererSystem::unload_shader(const Shader &shaderInfo) {}
-void *RendererSystem::get_texture_id() { return nullptr; }
+void GraphicsSystem::load_shader(const Shader &shaderInfo) {}
+void GraphicsSystem::unload_shader(const Shader &shaderInfo) {}
+void *GraphicsSystem::get_texture_id() { return nullptr; }
 
-void RendererSystem::setup_shapes() {
+void GraphicsSystem::setup_shapes() {
   box.load_from_vertex_array(create_box_vertices());
   sprite.load_from_vertex_array(create_sprite_vertices());
 }
 
-void RendererSystem::prepare_imgui() {
+void GraphicsSystem::prepare_imgui() {
   ImGuiIO &io = ImGui::GetIO();
   io.WantTextInput = true;
   io.ConfigFlags |=
@@ -407,23 +407,23 @@ void RendererSystem::prepare_imgui() {
                                  mplus_1p_medium_ttf_len, 18.0f, nullptr,
                                  io.Fonts->GetGlyphRangesJapanese());
 }
-void RendererSystem::bind_pipeline3d(const RenderPipeline3D &pipeline) {
+void GraphicsSystem::bind_pipeline3d(const GraphicsPipeline3D &pipeline) {
   currentPipeline3D = pipeline;
 }
-void RendererSystem::bind_default_pipeline3d() {
+void GraphicsSystem::bind_default_pipeline3d() {
   currentPipeline3D = pipeline3D;
 }
-void RendererSystem::bind_pipeline2d(const RenderPipeline2D &pipeline) {
+void GraphicsSystem::bind_pipeline2d(const GraphicsPipeline2D &pipeline) {
   currentPipeline2D = pipeline;
 }
-void RendererSystem::bind_default_pipeline2d() {
+void GraphicsSystem::bind_default_pipeline2d() {
   currentPipeline2D = pipeline2D;
 }
-void RendererSystem::set_uniform_data(uint32_t slot, const UniformData &data) {
+void GraphicsSystem::set_uniform_data(uint32_t slot, const UniformData &data) {
   currentCommandBuffer->PushVertexUniformData(slot, data.data.data(),
                                               data.data.size() * sizeof(float));
 }
-void RendererSystem::begin_target2d(const RenderTexture &texture) {
+void GraphicsSystem::begin_target2d(const RenderTexture &texture) {
   auto tex = texture.get_texture();
   auto depthTex = texture.get_depth_stencil();
   currentCommandBuffer = device->AcquireCommandBuffer({allocator});
@@ -437,7 +437,7 @@ void RendererSystem::begin_target2d(const RenderTexture &texture) {
                                 (float)texture.height);
   isDefaultPipeline = false;
 }
-void RendererSystem::begin_target3d(const RenderTexture &texture) {
+void GraphicsSystem::begin_target3d(const RenderTexture &texture) {
   auto tex = texture.get_texture();
   auto depthTex = texture.get_depth_stencil();
   currentCommandBuffer = device->AcquireCommandBuffer({allocator});
@@ -452,7 +452,7 @@ void RendererSystem::begin_target3d(const RenderTexture &texture) {
                                 (float)texture.height);
   isDefaultPipeline = false;
 }
-void RendererSystem::end_target(const RenderTexture &texture, Texture &out) {
+void GraphicsSystem::end_target(const RenderTexture &texture, Texture &out) {
   currentCommandBuffer->EndRenderPass(currentRenderPass);
   device->SubmitCommandBuffer(currentCommandBuffer);
   device->WaitForGPUIdle();

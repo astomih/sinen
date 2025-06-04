@@ -2,12 +2,12 @@
 
 #include <asset/asset.hpp>
 #include <core/core.hpp>
+#include <graphics/graphics.hpp>
 #include <logic/logic.hpp>
 #include <math/graph/bfs_grid.hpp>
 #include <math/graph/grid.hpp>
 #include <math/math.hpp>
 #include <platform/platform.hpp>
-#include <render/render.hpp>
 
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
@@ -265,19 +265,19 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def("traceable", &BFSGrid::traceable)
       .def("reset", &BFSGrid::reset);
 
-  py::class_<RenderPipeline2D>(m, "RenderPipeline2D")
+  py::class_<GraphicsPipeline2D>(m, "GraphicsPipeline2D")
       .def(py::init<>())
-      .def("set_vertex_shader", &RenderPipeline2D::set_vertex_shader)
-      .def("set_fragment_shader", &RenderPipeline2D::set_fragment_shader)
-      .def("build", &RenderPipeline2D::build);
-  py::class_<RenderPipeline3D>(m, "RenderPipeline3D")
+      .def("set_vertex_shader", &GraphicsPipeline2D::set_vertex_shader)
+      .def("set_fragment_shader", &GraphicsPipeline2D::set_fragment_shader)
+      .def("build", &GraphicsPipeline2D::build);
+  py::class_<GraphicsPipeline3D>(m, "GraphicsPipeline3D")
       .def(py::init<>())
-      .def("set_vertex_shader", &RenderPipeline3D::set_vertex_shader)
+      .def("set_vertex_shader", &GraphicsPipeline3D::set_vertex_shader)
       .def("set_vertex_instanced_shader",
-           &RenderPipeline3D::set_vertex_instanced_shader)
-      .def("set_fragment_shader", &RenderPipeline3D::set_fragment_shader)
-      .def("set_animation", &RenderPipeline3D::set_animation)
-      .def("build", &RenderPipeline3D::build);
+           &GraphicsPipeline3D::set_vertex_instanced_shader)
+      .def("set_fragment_shader", &GraphicsPipeline3D::set_fragment_shader)
+      .def("set_animation", &GraphicsPipeline3D::set_animation)
+      .def("build", &GraphicsPipeline3D::build);
 
   py::class_<Random>(m, "Random")
       .def_static("get_int_range", &Random::get_int_range)
@@ -292,19 +292,19 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def_static("rename", &Window::rename)
       .def_static("resized", &Window::resized);
 
-  py::class_<Renderer>(m, "Renderer")
-      .def_static("clear_color", &Renderer::clear_color)
-      .def_static("set_clear_color", &Renderer::set_clear_color)
+  py::class_<Graphics>(m, "Graphics")
+      .def_static("clear_color", &Graphics::clear_color)
+      .def_static("set_clear_color", &Graphics::set_clear_color)
       .def_static("at_render_texture_user_data",
-                  &Renderer::at_render_texture_user_data)
-      .def_static("bind_pipeline2d", &Renderer::bind_pipeline2d)
-      .def_static("bind_default_pipeline2d", &Renderer::bind_default_pipeline2d)
-      .def_static("bind_pipeline3d", &Renderer::bind_pipeline3d)
-      .def_static("bind_default_pipeline3d", &Renderer::bind_default_pipeline3d)
-      .def_static("set_uniform_data", &Renderer::set_uniform_data)
-      .def_static("begin_target2d", &Renderer::begin_target2d)
-      .def_static("begin_target3d", &Renderer::begin_target3d)
-      .def_static("end_target", &Renderer::end_target);
+                  &Graphics::at_render_texture_user_data)
+      .def_static("bind_pipeline2d", &Graphics::bind_pipeline2d)
+      .def_static("bind_default_pipeline2d", &Graphics::bind_default_pipeline2d)
+      .def_static("bind_pipeline3d", &Graphics::bind_pipeline3d)
+      .def_static("bind_default_pipeline3d", &Graphics::bind_default_pipeline3d)
+      .def_static("set_uniform_data", &Graphics::set_uniform_data)
+      .def_static("begin_target2d", &Graphics::begin_target2d)
+      .def_static("begin_target3d", &Graphics::begin_target3d)
+      .def_static("end_target", &Graphics::end_target);
 
   py::class_<Scene>(m, "Scene")
       .def(py::init<>())

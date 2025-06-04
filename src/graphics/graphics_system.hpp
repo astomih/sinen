@@ -7,11 +7,12 @@
 // internal
 #include <asset/asset.hpp>
 #include <core/allocator/pool_allocator.hpp>
+#include <graphics/drawable/drawable.hpp>
+#include <graphics/graphics.hpp>
+#include <graphics/uniform_data.hpp>
 #include <math/color/color.hpp>
 #include <math/color/palette.hpp>
 #include <math/math.hpp>
-#include <render/drawable/drawable.hpp>
-#include <render/renderer.hpp>
 
 namespace sinen {
 template <typename T> using Ptr = px::Ptr<T>;
@@ -28,7 +29,7 @@ struct PxVertexArray : public VertexArray {
   Ptr<px::Buffer> vertexBuffer;
   Ptr<px::Buffer> indexBuffer;
 };
-class RendererSystem {
+class GraphicsSystem {
 public:
   static void initialize();
   static void shutdown();
@@ -54,9 +55,9 @@ public:
   }
   static void *get_texture_id();
 
-  static void bind_pipeline3d(const RenderPipeline3D &pipeline);
+  static void bind_pipeline3d(const GraphicsPipeline3D &pipeline);
   static void bind_default_pipeline3d();
-  static void bind_pipeline2d(const RenderPipeline2D &pipeline);
+  static void bind_pipeline2d(const GraphicsPipeline2D &pipeline);
   static void bind_default_pipeline2d();
   static void set_uniform_data(uint32_t slot, const UniformData &data);
 
@@ -86,10 +87,10 @@ private:
   inline static Ptr<px::Device> device;
   inline static Ptr<px::Texture> depthTexture;
   inline static Ptr<px::Sampler> sampler;
-  inline static RenderPipeline2D pipeline2D;
-  inline static RenderPipeline3D pipeline3D;
-  inline static RenderPipeline2D currentPipeline2D;
-  inline static RenderPipeline3D currentPipeline3D;
+  inline static GraphicsPipeline2D pipeline2D;
+  inline static GraphicsPipeline3D pipeline3D;
+  inline static GraphicsPipeline2D currentPipeline2D;
+  inline static GraphicsPipeline3D currentPipeline3D;
   inline static px::Ptr<px::CommandBuffer> mainCommandBuffer;
   inline static px::Ptr<px::CommandBuffer> currentCommandBuffer;
   inline static px::Ptr<px::RenderPass> currentRenderPass;

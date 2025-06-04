@@ -1,6 +1,6 @@
 // internal
 #include "glm/ext/matrix_float4x4.hpp"
-#include <render/drawable/drawable.hpp>
+#include <graphics/drawable/drawable.hpp>
 
 namespace sinen {
 Drawable::Drawable() {}

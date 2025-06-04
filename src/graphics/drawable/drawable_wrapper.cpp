@@ -1,15 +1,15 @@
 // internal
 #include "../../asset/model/model_data.hpp"
-#include "../../render/render_system.hpp"
+#include "../../graphics/graphics_system.hpp"
 #include "glm/ext/vector_float2.hpp"
 #include "glm/ext/vector_float3.hpp"
 #include <SDL3/SDL_events.h>
 #include <cstring>
+#include <graphics/drawable/drawable_wrapper.hpp>
+#include <graphics/graphics.hpp>
 #include <logic/camera/camera.hpp>
 #include <logic/scene/scene.hpp>
 #include <platform/window/window.hpp>
-#include <render/drawable/drawable_wrapper.hpp>
-#include <render/renderer.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include "glm/ext/matrix_transform.hpp"
@@ -52,7 +52,7 @@ void Draw2D::draw() {
   obj->param.proj = viewproj;
   obj->param.view = glm::mat4(1.f);
   if (GetModelData(this->model.data)->vertexBuffer == nullptr) {
-    obj->model = RendererSystem::sprite;
+    obj->model = GraphicsSystem::sprite;
   } else
     obj->model = this->model;
   for (auto &i : worlds) {
@@ -71,7 +71,7 @@ void Draw2D::draw() {
     obj->world_to_instance_data(world, insdata);
     obj->data.push_back(insdata);
   }
-  Renderer::draw2d(obj);
+  Graphics::draw2d(obj);
 }
 void Draw2D::add(const glm::vec2 &position, const float &rotation,
                  const glm::vec2 &scale) {
@@ -101,7 +101,7 @@ void Draw3D::draw() {
   obj->param.proj = Scene::camera().projection();
   obj->param.view = Scene::camera().view();
   if (GetModelData(this->model.data)->vertexBuffer == nullptr) {
-    obj->model = RendererSystem::box;
+    obj->model = GraphicsSystem::box;
   } else
     obj->model = this->model;
   for (auto &i : worlds) {
@@ -124,7 +124,7 @@ void Draw3D::draw() {
     obj->world_to_instance_data(world, insdata);
     obj->data.push_back(insdata);
   }
-  Renderer::draw3d(obj);
+  Graphics::draw3d(obj);
 }
 void Draw2D::user_data_at(int index, float value) {}
 void Draw3D::user_data_at(int index, float value) {}

@@ -1,0 +1,1058 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../cpp_api/">
+      
+      
+        <link rel="next" href="../tutorial/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+    
+    
+      
+        <title>Python API - Sinen Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.342714a4.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#python-api" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Sinen Docs" class="md-header__button md-logo" aria-label="Sinen Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Sinen Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Python API
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Sinen Docs" class="md-nav__button md-logo" aria-label="Sinen Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Sinen Docs
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    En us
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            En us
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../en-us/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Sinen
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../en-us/cpp_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    C++ API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../en-us/python_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Python API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../en-us/tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Under construction...
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Ja jp
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Ja jp
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Sinen
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    C++ API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Python API
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Python API
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      呼び出しについて
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    整備中...
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      呼び出しについて
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="python-api">Python API</h1>
+<h2 id="_1">呼び出しについて</h2>
+<p>スクリプトは<code>sinen.exeが存在するディレクトリ/script/</code>に配置します  </p>
+<pre><code class="language-python">
+# セットアップ
+
+def update()
+ # 毎フレーム呼び出される関数
+
+def draw()
+  # 毎フレーム呼び出される描画関数
+</code></pre>
+<pre><code class="language-python">''' Sinen is still in ALPHA stage, so the API may change in the future.'''
+
+from typing import Any, Optional, overload
+
+class Vec3:
+    x: float
+    y: float
+    z: float
+
+    def __init__(self, x: float = 0, y: float = 0, z: float = 0): ...
+    def __add__(self, other: 'Vec3') -&gt; 'Vec3': ...
+    def __sub__(self, other: 'Vec3') -&gt; 'Vec3': ...
+    def __mul__(self, other: 'Vec3') -&gt; 'Vec3': ...
+    def __truediv__(self, other: 'Vec3') -&gt; 'Vec3': ...
+    def copy(self) -&gt; 'Vec3': ...
+    def length(self) -&gt; float: ...
+    def forward(self, rotation: 'Vec3') -&gt; 'Vec3': ...
+    def normalize(self) -&gt; 'Vec3': ...
+    def dot(self, other: 'Vec3') -&gt; float: ...
+    def cross(self, other: 'Vec3') -&gt; 'Vec3': ...
+    def lerp(self, other: 'Vec3', t: float) -&gt; 'Vec3': ...
+    def reflect(self, n: 'Vec3') -&gt; 'Vec3': ...
+
+class Vec2:
+    x: float
+    y: float
+
+    def __init__(self, x: float = 0, y: float = 0): ...
+    def __add__(self, other: 'Vec2') -&gt; 'Vec2': ...
+    def __sub__(self, other: 'Vec2') -&gt; 'Vec2': ...
+    def __mul__(self, other: 'Vec2') -&gt; 'Vec2': ...
+    def __truediv__(self, other: 'Vec2') -&gt; 'Vec2': ...
+    def copy(self) -&gt; 'Vec2': ...
+    def length(self) -&gt; float: ...
+    def normalize(self) -&gt; 'Vec2': ...
+    def dot(self, other: 'Vec2') -&gt; float: ...
+    def lerp(self, other: 'Vec2', t: float) -&gt; 'Vec2': ...
+    def reflect(self, n: 'Vec2') -&gt; 'Vec2': ...
+
+class Texture:
+    def __init__(self): ...
+    def fill_color(self, color: 'Color') -&gt; None: ...
+    def blend_color(self, color: 'Color') -&gt; None: ...
+    def copy(self) -&gt; 'Texture': ...
+    def load(self, path: str) -&gt; None: ...
+    def size(self) -&gt; Vec2: ...
+
+class Material:
+    def __init__(self): ...
+    def append(self, texture: Texture) -&gt; None: ...
+    def clear(self) -&gt; None: ...
+    def get_texture(self, index: int) -&gt; Texture: ...
+
+class RenderTexture:
+    def __init__(self): ...
+    def create(self, x:int,y:int) -&gt; None: ...
+
+class Music:
+    def __init__(self): ...
+    def load(self, path: str) -&gt; None: ...
+    def play(self) -&gt; None: ...
+    def set_volume(self, volume: float) -&gt; None: ...
+
+class Sound:
+    def __init__(self): ...
+    def load(self, path: str) -&gt; None: ...
+    def play(self) -&gt; None: ...
+    def set_volume(self, volume: float) -&gt; None: ...
+    def set_pitch(self, pitch: float) -&gt; None: ...
+    def set_listener(self, position: Vec3) -&gt; None: ...
+    def set_position(self, position: Vec3) -&gt; None: ...
+
+class Camera:
+    def __init__(self): ...
+    def lookat(self, position: Vec3, target: Vec3, up: Vec3) -&gt; None: ...
+    def perspective(self, fov: float, aspect: float, near: float, far: float) -&gt; None: ...
+    def orthographic(self, left: float, right: float, bottom: float, top: float, near: float, far: float) -&gt; None: ...
+    def position(self) -&gt; Vec3: ...
+    def target(self) -&gt; Vec3: ...
+    def up(self) -&gt; Vec3: ...
+    def is_aabb_in_frustum(self, aabb: 'AABB') -&gt; bool: ...
+
+class Model:
+    def __init__(self): ...
+    def aabb(self) -&gt; 'AABB': ...
+    def load(self, path: str) -&gt; None: ...
+    def load_sprite(self, path: str) -&gt; None: ...
+    def load_box(self, size: Vec3) -&gt; None: ...
+    def bone_uniform_data(self) -&gt; 'UniformData': ...
+    def play(self, name: float) -&gt; None: ...
+    def update(self, delta: float) -&gt; None: ...
+
+class AABB:
+    min: Vec3
+    max: Vec3
+    def __init__(self): ...
+    def update_world(self, mat: Any) -&gt; None: ...
+
+class Timer:
+    def __init__(self): ...
+    def start(self) -&gt; None: ...
+    def stop(self) -&gt; None: ...
+    def is_started(self) -&gt; bool: ...
+    def set_time(self, time: float) -&gt; None: ...
+    def check(self) -&gt; bool: ...
+
+class UniformData:
+    def __init__(self): ...
+    def add(self, value: Any) -&gt; None: ...
+    def change(self, index:int, value: float) -&gt; None: ...
+
+class Shader:
+    def __init__(self): ...
+    def load_vertex_shader(self, path: str,uniform_count:int) -&gt; None: ...
+    def load_fragment_shader(self, path: str,uniform_count:int) -&gt; None: ...
+    def compile_and_load_vertex_shader(self, source: str,uniform_count:int) -&gt; None: ...
+    def compile_and_load_fragment_shader(self, source: str,uniform_count:int) -&gt; None: ...
+
+class Font:
+    def __init__(self): ...
+    @overload
+    def load(self, size: int) -&gt; None: ...
+    @overload
+    def load(self, size: int, path: str) -&gt; None: ...
+    def render_text(self, texture: Texture, text: str, color: 'Color') -&gt; Texture: ...
+    def resize(self, size: int) -&gt; None: ...
+
+class Color:
+    r: float
+    g: float
+    b: float
+    a: float
+    def __init__(self, r: float = 0, g: float = 0, b: float = 0, a: float = 1): ...
+
+class Draw2D:
+    scale: Vec2
+    position: Vec2 # 2D position in center of the screen
+    rotation: float
+    material: Material
+    def __init__(self): ...
+    def draw(self) -&gt; None: ...
+    def add(self, drawable: Any) -&gt; None: ...
+    def at(self, x: float, y: float) -&gt; None: ...
+    def clear(self) -&gt; None: ...
+
+class Draw3D:
+    scale: Vec3
+    position: Vec3
+    rotation: Vec3
+    material: Material
+    model: Model
+    is_draw_depth: bool
+    def __init__(self): ...
+    def draw(self) -&gt; None: ...
+    def add(self, drawable: Any) -&gt; None: ...
+    def at(self, x: float, y: float, z: float) -&gt; None: ...
+    def clear(self) -&gt; None: ...
+
+class Grid:
+    def __init__(self, w: int, h: int): ...
+    def at(self, x: int, y: int) -&gt; int: ...
+    def set(self, x: int, y: int, v: int) -&gt; None: ...
+    def width(self) -&gt; int: ...
+    def height(self) -&gt; int: ...
+    def size(self) -&gt; int: ...
+    def clear(self) -&gt; None: ...
+    def resize(self, w: int, h: int) -&gt; None: ...
+    def fill(self, value: int) -&gt; None: ...
+
+class BFSGrid:
+    def __init__(self, grid: Grid): ...
+    def width(self) -&gt; int: ...
+    def height(self) -&gt; int: ...
+    def find_path(self, start: Vec2, end: Vec2) -&gt; Any: ...
+    def trace(self) -&gt; Vec2: ...
+    def traceable(self) -&gt; bool: ...
+    def reset(self) -&gt; None: ...
+
+class GraphicsPipeline2D:
+    def __init__(self): ...
+    def set_vertex_shader(self, shader: Shader) -&gt; None: ...
+    def set_fragment_shader(self, shader: Shader) -&gt; None: ...
+    def build(self) -&gt; None: ...
+
+class GraphicsPipeline3D:
+    def __init__(self): ...
+    def set_vertex_shader(self, shader: Shader) -&gt; None: ...
+    def set_vertex_instanced_shader(self, shader: Shader) -&gt; None: ...
+    def set_fragment_shader(self, shader: Shader) -&gt; None: ...
+    def set_animation(self, anim: Any) -&gt; None: ...
+    def build(self) -&gt; None: ...
+
+class Random:
+    @staticmethod
+    def get_int_range(a: int, b: int) -&gt; int: ...
+    @staticmethod
+    def get_float_range(a: float, b: float) -&gt; float: ...
+
+class Window:
+    @staticmethod
+    def name() -&gt; str: ...
+    @staticmethod
+    def size() -&gt; Vec2: ...
+    @staticmethod
+    def half() -&gt; Vec2: ...
+    @staticmethod
+    def resize(size: Vec2) -&gt; None: ...
+    @staticmethod
+    def set_fullscreen(full: bool) -&gt; None: ...
+    @staticmethod
+    def rename(name: str) -&gt; None: ...
+    @staticmethod
+    def resized() -&gt; bool: ...
+
+class Graphics:
+    @staticmethod
+    def clear_color() -&gt; Color: ...
+    @staticmethod
+    def set_clear_color(c: Color) -&gt; None: ...
+    @staticmethod
+    def at_render_texture_user_data(rt: RenderTexture) -&gt; Any: ...
+    @staticmethod
+    def bind_pipeline2d(pipe: GraphicsPipeline2D) -&gt; None: ...
+    @staticmethod
+    def bind_default_pipeline2d() -&gt; None: ...
+    @staticmethod
+    def bind_pipeline3d(pipe: GraphicsPipeline3D) -&gt; None: ...
+    @staticmethod
+    def bind_default_pipeline3d() -&gt; None: ...
+    @staticmethod
+    def set_uniform_data(binding: int, data: UniformData) -&gt; None: ...
+    @staticmethod
+    def begin_target2d(rt: RenderTexture) -&gt; None: ...
+    @staticmethod
+    def begin_target3d(rt: RenderTexture) -&gt; None: ...
+    @staticmethod
+    def end_target(rt: RenderTexture, texture_ref: Texture) -&gt; None: ...
+
+class Scene:
+    def __init__(self): ...
+    @staticmethod
+    def camera() -&gt; Camera: ...
+    @staticmethod
+    def size() -&gt; Vec2: ...
+    @staticmethod
+    def resize(size: Vec2) -&gt; None: ...
+    @staticmethod
+    def half() -&gt; Vec2: ...
+    @staticmethod
+    def ratio() -&gt; float: ...
+    @staticmethod
+    def inv_ratio() -&gt; float: ...
+    @staticmethod
+    def delta_time() -&gt; float: ...
+    @staticmethod
+    def change(name: str) -&gt; None: ...
+
+class Collision:
+    @staticmethod
+    def aabb_aabb(a: AABB, b: AABB) -&gt; bool: ...
+
+class Keyboard:
+    A: int
+    B: int
+    C: int
+    D: int
+    E: int
+    F: int
+    G: int
+    H: int
+    I: int
+    J: int
+    K: int
+    L: int
+    M: int
+    N: int
+    O: int
+    P: int
+    Q: int
+    R: int
+    S: int
+    T: int
+    U: int
+    V: int
+    W: int
+    X: int
+    Y: int
+    Z: int
+    Key0: int
+    Key1: int
+    Key2: int
+    Key3: int
+    Key4: int
+    Key5: int
+    Key6: int
+    Key7: int
+    Key8: int
+    Key9: int
+    F1: int
+    F2: int
+    F3: int
+    F4: int
+    F5: int
+    F6: int
+    F7: int
+    F8: int
+    F9: int
+    F10: int
+    F11: int
+    F12: int
+    UP: int
+    DOWN: int
+    LEFT: int
+    RIGHT: int
+    ESCAPE: int
+    SPACE: int
+    BACKSPACE: int
+    TAB: int
+    RETURN: int
+    LSHIFT: int
+    RSHIFT: int
+    LCTRL: int
+    RCTRL: int
+    LALT: int
+    def __init__(self): ...
+    @staticmethod
+    def is_pressed(scancode: int) -&gt; bool: ...
+    @staticmethod
+    def is_released(scancode: int) -&gt; bool: ...
+    @staticmethod
+    def is_down(scancode: int) -&gt; bool: ...
+
+class Mouse:
+    LEFT: int
+    RIGHT: int
+    MIDDLE: int
+    X1: int
+    X2: int
+    @staticmethod
+    def is_pressed(btn: int) -&gt; bool: ...
+    @staticmethod
+    def is_released(btn: int) -&gt; bool: ...
+    @staticmethod
+    def is_down(btn: int) -&gt; bool: ...
+    @staticmethod
+    def position() -&gt; Vec2: ...
+    @staticmethod
+    def position_on_scene() -&gt; Vec2: ...
+    @staticmethod
+    def set_position(pos: Vec2) -&gt; None: ...
+    @staticmethod
+    def set_position_on_scene(pos: Vec2) -&gt; None: ...
+    @staticmethod
+    def scroll_wheel() -&gt; float: ...
+    @staticmethod
+    def hide_cursor() -&gt; None: ...
+
+class GamePad:
+    INVALID: int
+    A: int
+    B: int
+    X: int
+    Y: int
+    BACK: int
+    GUIDE: int
+    START: int
+    LEFTSTICK: int
+    RIGHTSTICK: int
+    LEFTSHOULDER: int
+    RIGHTSHOULDER: int
+    DPAD_UP: int
+    DPAD_DOWN: int
+    DPAD_LEFT: int
+    DPAD_RIGHT: int
+    MISC1: int
+    PADDLE1: int
+    PADDLE2: int
+    PADDLE3: int
+    PADDLE4: int
+    TOUCHPAD: int
+    def __init__(self): ...
+    @staticmethod
+    def is_pressed(btn: int) -&gt; bool: ...
+    @staticmethod
+    def is_released(btn: int) -&gt; bool: ...
+    @staticmethod
+    def is_down(btn: int) -&gt; bool: ...
+    @staticmethod
+    def left_stick() -&gt; Vec2: ...
+    @staticmethod
+    def right_stick() -&gt; Vec2: ...
+    @staticmethod
+    def is_connected() -&gt; bool: ...
+
+class Periodic:
+    def __init__(self): ...
+    @staticmethod
+    def sin0_1(time: float) -&gt; float: ...
+    @staticmethod
+    def cos0_1(time: float) -&gt; float: ...
+
+class Time:
+    def __init__(self): ...
+    @staticmethod
+    def seconds() -&gt; float: ...
+    @staticmethod
+    def milli() -&gt; int: ...
+
+class Logger:
+    @staticmethod
+    def verbose(msg: str) -&gt; None: ...
+    @staticmethod
+    def debug(msg: str) -&gt; None: ...
+    @staticmethod
+    def info(msg: str) -&gt; None: ...
+    @staticmethod
+    def error(msg: str) -&gt; None: ...
+    @staticmethod
+    def warn(msg: str) -&gt; None: ...
+    @staticmethod
+    def critical(msg: str) -&gt; None: ...
+
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      
+    
+  </body>
+</html>

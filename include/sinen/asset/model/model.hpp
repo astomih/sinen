@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "../../logic/physics/collision.hpp"
-#include "render/uniform_data.hpp"
+#include "graphics/uniform_data.hpp"
 #include "vertex_array.hpp"
 
 namespace sinen {

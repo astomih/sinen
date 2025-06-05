@@ -1,0 +1,24 @@
+set(SINEN_INCLUDE_DIRS
+        ${SINEN_SOURCE_DIR}
+        ${SINEN_SOURCE_DIR}/include
+        ${SINEN_SOURCE_DIR}/include/sinen
+        ${SINEN_SOURCE_DIR}/libs/paranoixa/library/imgui
+        ${SINEN_SOURCE_DIR}/libs/paranoixa/library/imgui/backends
+        ${SINEN_SOURCE_DIR}/libs/pocketpy/include
+        ${SINEN_SOURCE_DIR}/libs/mojoAL
+        ${SINEN_SOURCE_DIR}/libs/mojoAL/AL
+        ${SINEN_SOURCE_DIR}/libs/rapidjson/include
+        ${SINEN_SOURCE_DIR}/libs/SDL/include
+        ${SINEN_SOURCE_DIR}/libs/SDL_image/include
+        ${SINEN_SOURCE_DIR}/libs/SDL_mixer/include
+        ${SINEN_SOURCE_DIR}/libs/SDL_ttf/include
+        ${SINEN_SOURCE_DIR}/libs/paranoixa/include
+        ${SINEN_SOURCE_DIR}/libs/paranoixa/source/imgui_backend
+        ${SINEN_SOURCE_DIR}/src/script/include
+        ${SINEN_SOURCE_DIR}/src/rt_shader_compiler/include
+        ${SINEN_SOURCE_DIR}/libs/assimp/include
+        ${SINEN_SOURCE_DIR}/libs/glm
+        ${SINEN_SOURCE_DIR}/libs/SDL/include
+        ${SINEN_SOURCE_DIR}/libs/SDL_image/include
+        ${SINEN_SOURCE_DIR}/libs/zep/include
+)

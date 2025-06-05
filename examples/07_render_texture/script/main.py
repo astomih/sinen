@@ -10,11 +10,13 @@ render_texture.create(int(s.x), int(s.y))
 
 model = Model()
 model.load("Suzanne.gltf")
-draw3d = Draw3D(texture)
+draw3d = Draw3D()
+draw3d.material.append(texture)
 draw3d.position = Vec3(0, 0, 0)
 draw3d.model = model
 
-draw2d = Draw2D(outTexture)
+draw2d = Draw2D()
+draw2d.material.append(outTexture)
 draw2d.scale = outTexture.size()
 
 
@@ -43,10 +45,10 @@ def update():
   Scene.camera().lookat(pos, Vec3(0, 0, 0), Vec3(0, 1, 0))
 
 def draw():
-  Renderer.begin_render_texture3d(render_texture)
+  Graphics.begin_target2d(render_texture)
   # Draw texture
   draw3d.draw()
-  Renderer.end_render_texture(render_texture, outTexture)
+  Graphics.end_target(render_texture, outTexture)
 
   # Draw render texture
   draw2d.draw()

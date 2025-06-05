@@ -14,8 +14,10 @@ namespace sinen {
 class Font {
 public:
   Font() : m_font(nullptr), m_size(0) {};
-  Font(std::string_view file_name, int32_t point);
+  Font(int32_t point, std::string_view file_name);
   ~Font();
+
+  bool load(int point_size);
   /**
    * @brief font load from filepath
    *
@@ -24,7 +26,7 @@ public:
    * @return true success to load
    * @return false failed to load
    */
-  bool load(std::string_view fontName, int pointSize);
+  bool load(int pointSize, std::string_view path);
   /**
    * @brief return already loaded font
    *

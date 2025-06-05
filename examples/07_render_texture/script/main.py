@@ -45,10 +45,10 @@ def update():
   Scene.camera().lookat(pos, Vec3(0, 0, 0), Vec3(0, 1, 0))
 
 def draw():
-  Renderer.begin_render_texture3d(render_texture)
+  Graphics.begin_target2d(render_texture)
   # Draw texture
   draw3d.draw()
-  Renderer.end_render_texture(render_texture, outTexture)
+  Graphics.end_target(render_texture, outTexture)
 
   # Draw render texture
   draw2d.draw()

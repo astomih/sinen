@@ -1,532 +1,438 @@
 # Python API
-## About call
-## Classes
+## About Invocation
+Scripts should be placed in the `scripts` directory under the same folder as "sinen.exe".
 
-### Vector2
-#### Vector2(x, y) -> Vector2
-- `x`: X component of the vector.
-- `y`: Y component of the vector.
-Creates a Vector2 object.
+```python
+# Setup
 
-#### Vector2.x = float
-X component of the Vector2.
-#### Vector2.y = float
-Y component of the Vector2.
-#### Vector2.length() -> float
-Returns the length of the vector.
-#### Vector2.normalize() -> Vector2
-Normalizes the vector.
-#### Vector2.copy() -> Vector2
-Copies the vector.
-#### Vector2.dot(Vector2, Vector2) -> float
-- `Vector2`: Vector 1
-- `Vector2`: Vector 2 
-Gets the dot product of two vectors.
-#### Vector2.lerp(Vector2, Vector2, float) -> Vector2
-- `Vector2`: Vector 1
-- `Vector2`: Vector 2
-- `float`: Interpolation factor (0.0~1.0)
-Gets the linear interpolation between two vectors.
-#### Vector2.reflect(Vector2, Vector2) -> Vector2
-- `Vector2`: Incident vector
-- `Vector2`: Normal vector
-Gets the reflection vector of the incident vector based on the normal vector.
-### Vector3
-#### Vector3(x, y, z) -> Vector3
-- `x`: X component of the vector.
-- `y`: Y component of the vector.
-- z: Z component of the vector.
-Creates a Vector3 object.
+def update():
+    # This function is called every frame
 
-#### Vector3.x = float
-X component of the Vector3.
-#### Vector3.y = float
-Y component of the Vector3.
-#### Vector3.z = float
-Z component of the Vector3.
-#### Vector3.length() -> float
-Returns the length of the vector.
-#### Vector3.normalize() -> Vector3
-Normalizes the vector.
-#### Vector3.copy() -> Vector3
-Copies the vector. Since Lua primarily passes references, use this method if a copy is needed.
-#### Vector3.forward(Vector3) -> Vector3
-- `Vector3`: Axis vector  
-Gets the forward vector of the specified axis vector.
-#### Vector3.dot(Vector3, Vector3) -> float
-- `Vector3`: Vector 1
-- `Vector3`: Vector 2
-Gets the dot product of two vectors.
-#### Vector3.cross(Vector3, Vector3) -> Vector3
-- `Vector3`: Vector 1
-- `Vector3`: Vector 2
-Gets the cross product of two vectors.
-#### Vector3.lerp(Vector3, Vector3, float) -> Vector3
-- `Vector3`: Vector 1
-- `Vector3`: Vector 2
-- `float`: Interpolation factor (0.0~1.0)
-Gets the linear interpolation between two vectors.
-#### Vector3.reflect(Vector3, Vector3) -> Vector3
-- `Vector3`: Incident vector
-- `Vector3`: Normal vector
-Gets the reflection vector of the incident vector based on the normal vector.
+def draw():
+    # This function is called every frame for rendering
+```
 
-### Point2i
-Represents a 2D integer point.
-#### Point2i(x, y) -> Point2i
-- `x`: X component of Point2i.
-- `y`: Y component of Point2i.
-#### Point2i.x = int
-X component of Point2i.
-#### Point2i.y = int
-Y component of Point2i.
+```python
+''' Sinen is still in ALPHA stage, so the API may change in the future.'''
 
-### Color
-Represents a color.
-#### Color(r, g, b, a) -> Color
-- `r`: Red component (0.0~1.0).
-- `g`: Green component (0.0~1.0).
-- `b`: Blue component (0.0~1.0).
-- `a`: Alpha component (0.0~1.0).
-Creates a Color object.
+from typing import Any, Optional, overload
 
-#### Color.r = float
-Red component (0.0~1.0).
-#### Color.g = float
-Green component (0.0~1.0).
-#### Color.b = float
-Blue component (0.0~1.0).
-#### Color.a = float
-Alpha component (0.0~1.0).
+class Vec3:
+    x: float
+    y: float
+    z: float
 
-### Texture
-#### Texture()
-Creates a Texture object.
-#### Texture.load(string)
-- `string`: Path to the texture.
-Loads a texture from a file.
-#### Texture.fill_color(Color)
-- `Color`: Color to fill the texture with.
-Fills the texture with a color.
-#### Texture.blend_color(Color)
-- `Color`: Color to blend the texture with.
-Blends the texture with a color.
-#### Texture.copy() -> Texture
-Copies the texture.
-#### Texture.size() -> Vector2
-Gets the size of the texture.
+    def __init__(self, x: float = 0, y: float = 0, z: float = 0): ...
+    def __add__(self, other: 'Vec3') -> 'Vec3': ...
+    def __sub__(self, other: 'Vec3') -> 'Vec3': ...
+    def __mul__(self, other: 'Vec3') -> 'Vec3': ...
+    def __truediv__(self, other: 'Vec3') -> 'Vec3': ...
+    def copy(self) -> 'Vec3': ...
+    def length(self) -> float: ...
+    def forward(self, rotation: 'Vec3') -> 'Vec3': ...
+    def normalize(self) -> 'Vec3': ...
+    def dot(self, other: 'Vec3') -> float: ...
+    def cross(self, other: 'Vec3') -> 'Vec3': ...
+    def lerp(self, other: 'Vec3', t: float) -> 'Vec3': ...
+    def reflect(self, n: 'Vec3') -> 'Vec3': ...
 
-### RenderTexture
-#### RenderTexture()
-Creates a RenderTexture object.
-#### RenderTexture:create(int, int)
-- `int`: Width.
-- `int`: Height.  
-Creates a render texture.
+class Vec2:
+    x: float
+    y: float
 
-### Font
-#### Font() -> Font
-Creates a font object.
-#### Font:load(string)
-- `string`: Name of the font file in `data/font/`.
-Loads a .ttf font file.
-#### Font:render_text(Texture, string, color)
-- `Texture`: Target texture.
-- `string`: Text to render.
-- `Color`: Text color.
-Renders text on the CPU.
+    def __init__(self, x: float = 0, y: float = 0): ...
+    def __add__(self, other: 'Vec2') -> 'Vec2': ...
+    def __sub__(self, other: 'Vec2') -> 'Vec2': ...
+    def __mul__(self, other: 'Vec2') -> 'Vec2': ...
+    def __truediv__(self, other: 'Vec2') -> 'Vec2': ...
+    def copy(self) -> 'Vec2': ...
+    def length(self) -> float: ...
+    def normalize(self) -> 'Vec2': ...
+    def dot(self, other: 'Vec2') -> float: ...
+    def lerp(self, other: 'Vec2', t: float) -> 'Vec2': ...
+    def reflect(self, n: 'Vec2') -> 'Vec2': ...
 
-### Draw2D
-#### Draw2D(Texture) -> Draw2D
-- `Texture`: Texture to render.
-Creates a 2D object for rendering.
-#### Draw2D:draw()
-Renders a 2D object.
-#### Draw2D.position = Vector2
-Position.  
-Sinen uses the center of the screen as the origin.
-#### Draw2D.scale = Vector2
-Scale.
-#### Draw2D.rotation = float
-Clockwise rotation angle.
-#### Draw2D.texture = Texture
-Texture.
-#### Draw2D.model = Model
-Model.
-#### Draw2D.add(Vector2, float, Vector2)
-- `Vector2`: Position.
-- `float`: Clockwise rotation angle.
-- `Vector2`: Scale.  
-Adds multiple objects with the same texture and model for rendering. One object already exists at the time of instance creation.
-#### Draw2D.clear()
-Clears added objects. However, the initially created object is not cleared.
+class Texture:
+    def __init__(self): ...
+    def fill_color(self, color: 'Color') -> None: ...
+    def blend_color(self, color: 'Color') -> None: ...
+    def copy(self) -> 'Texture': ...
+    def load(self, path: str) -> None: ...
+    def size(self) -> Vec2: ...
 
-### Draw3D
-#### Draw3D.draw(Texture)
-- `Texture`: Texture to render.
-Renders a 3D object.
-#### Draw3D.position = Vector3
-World position.
-#### Draw3D.scale = Vector3
-Scale.
-#### Draw3D.rotation = Vector3
-Euler angle rotation.
-#### Draw3D.texture = Texture
-Texture.
-#### Draw3D.model = Model
-Model.
-#### Draw3D.add(Vector3, Vector3, Vector3)
-- `Vector3`: Position.
-- `Vector3`: Rotation.
-- `Vector3`: Scale.  
-Adds multiple objects with the same texture and model for rendering. One object already exists at the time of instance creation.
-#### Draw3D.clear()
-Clears added objects. However, the initially created object is not cleared.
-### UniformData
-#### UniformData() -> UniformData
-Creates a uniform data object.
-#### UniformData.add(float)
-- float: Data  
-Adds uniform data.
-#### UniformData.at(float, int)
-- `float`: Data
-- `int`: Index  
-Adds uniform data at the specified index.
-### Shader
-#### Shader() -> Shader
-Creates a shader object.
-#### Shader.load_vertex_shader(string, int)
-- `string`: Name of the vertex shader file located in data/shader/.
-- `int`: Number of UniformData.
-Loads a vertex shader.
-#### Shader.load_fragment_shader(string, int)
-- `string`: Name of the fragment shader file located in data/shader/.
-- `int`: Number of UniformData.
-Loads a fragment shader.
-#### Shader.compile_and_load_vertex_shader(string,int)
-- `string`: Vertex shader source code
-- `int`: Number of UniformData
-Compile and load vertex shader  
-`slangc` must be installed
-#### Shader.compile_and_load_fragment_shader(string,int)
-- `string`: Fragment shader source code
-- `int`: Number of UniformData
-Compile and load fragment shader  
-`slangc` must be installed
-### RenderPipeline2D
-#### RenderPipeline2D() -> RenderPipeline2D
-Creates a 2D render pipeline object.
-#### RenderPipeline2D.set_vertex_shader(Shader)
-- `Shader`: Vertex shader
-Sets the vertex shader.
-#### RenderPipeline2D.set_fragment_shader(Shader)
-- `Shader`: Fragment shader
-Sets the fragment shader.
-#### RenderPipeline2D.build()
-Builds the render pipeline.
-### RenderPipeline3D
-#### RenderPipeline3D() -> RenderPipeline3D
-Creates a 3D render pipeline object.
-#### RenderPipeline3D.set_vertex_shader(Shader)
-- `Shader`: Vertex shader
-Sets the vertex shader.
-#### RenderPipeline3D.set_fragment_shader(Shader)
-- `Shader`: Fragment shader  
-Sets the fragment shader.
-#### RenderPipeline3D.build()
-Builds the render pipeline.
-### Camera
-#### Camera.lookat(Vector3, Vector3, Vector3)
-- `Vector3`: Position.
-- `Vector3`: Target.
-- `Vector3`: Up direction.
-Sets the camera's position, target, and up direction.
-#### Camera.perspective(float, float, float, float)
-- `float`: Field of view.
-- `float`: Aspect ratio.
-- `float`: Near plane.
-- `float`: Far plane.
-Sets the camera's perspective projection.
-#### Camera.orthographic(float, float, float, float, float, float)
-- `float`: Left.
-- `float`: Right.
-- `float`: Bottom.
-- `float`: Top.
-- `float`: Near plane.
-- `float`: Far plane.
-Sets the camera's orthographic projection.
-#### Camera.is_aabb_in_frustum(AABB) -> bool
-- `AABB`: AABB  
-Checks if an AABB is within the camera's frustum.
-#### Camera.position = Vector3
-Camera position.
-#### Camera.target = Vector3
-Camera target.
-#### Camera.up = Vector3
-Camera up direction.
-### Music
-#### Music() -> Music
-Creates a Music object.
-#### Music.load(string)
-- `string`: Name of the music file located in `data/music/`.
-Loads a music file. Supports .ogg, .wav, and .mp3 formats.
-#### Music.play()
-Plays the music.
-#### Music.set_volume(float)
-- `float`: Volume level.
-Sets the music volume.
-### Sound
-#### Sound() -> Sound
-Creates a Sound object.
-#### Sound.load(string)
-- `string`: Name of the sound file located in `data/sound/`.
-Loads a sound file. Supports .wav format.
-#### Sound.play()
-Plays the sound.
-#### Sound.set_volume(float)
-- `float`: Volume level.
-Sets the sound volume.
-#### Sound.set_pitch(float)
-- `float`: Pitch level.
-Sets the sound pitch.
-#### Sound.set_listener(Vector3)
-- `Vector3`: Listener position.
-Sets the listener position.
-#### Sound.set_position(Vector3)
-- `Vector3`: Sound source position.
-Sets the sound source position.
-### AABB
-#### AABB.min = Vector3
-Minimum point of the AABB.
-#### AABB.max = Vector3
-Maximum point of the AABB.
-### Model
-#### Model.load(string)
-- `string`: Name of the model file located in `data/model/`.
-Supports .gltf and .glb formats.
-#### Model.AABB = AABB
-AABB of the model.
+class Material:
+    def __init__(self): ...
+    def append(self, texture: Texture) -> None: ...
+    def clear(self) -> None: ...
+    def get_texture(self, index: int) -> Texture: ...
 
-## Static classes
-### Random
-#### Random.get_int_range(integer, integer) -> integer
-- `integer`: Minimum value.
-- `integer`: Maximum value.
-Returns a random integer within the specified range.
-#### Random.get_float_range(float, float) -> float
-- `float`: Minimum value.
-- `float`: Maximum value.
-Returns a random floating-point number within the specified range.
+class RenderTexture:
+    def __init__(self): ...
+    def create(self, x:int,y:int) -> None: ...
 
-### Window
-#### Window.name() -> string
-Returns the window name.
-#### Window.rename(string)
-- `string`: New window name.
-Changes the window name.
-#### Window.size() -> Vector2
-Returns the window size.
-#### Window.resize(Vector2)
-- `Vector2`: New window size.
-Changes the window size.
-#### Window.resized() -> bool
-Returns whether the window was resized in the current frame.
-#### Window.half() -> Vector2
-Returns the half size of the window.
-#### Window.set_fullscreen(bool)
-- `bool`: Whether to set the window to fullscreen.
-Toggles fullscreen or windowed mode.
+class Music:
+    def __init__(self): ...
+    def load(self, path: str) -> None: ...
+    def play(self) -> None: ...
+    def set_volume(self, volume: float) -> None: ...
 
-### Renderer
-#### Renderer.clear_color() -> color
-Returns the screen clear color.
-#### Renderer.set_clear_color(color)
-- `Color`: New clear color.
-Sets the screen clear color.
-#### Renderer.begin_pipeline2D(RenderPipeline2D)
-- `RenderPipeline2D`: Render pipeline.
-Begins rendering with a 2D render pipeline.
-#### Renderer.end_pipeline2D()
-Ends rendering with a 2D render pipeline.
-#### Renderer.begin_pipeline3D(RenderPipeline3D)
-- `RenderPipeline3D`: Render pipeline.
-Begins rendering with a 3D render pipeline.
-#### Renderer.end_pipeline3D()
-Ends rendering with a 3D render pipeline.
-#### Renderer.begin_render_texture2d(RenderTexture)
-- `RenderTexture`: Render texture.  
-Begins rendering to a render texture 2d.
-#### Renderer.begin_render_texture3d(RenderTexture)
-- `RenderTexture`: Render texture.  
-Begins rendering to a render texture 3d.
-#### Renderer.end_render_texture(RenderTexture, Texture)
-- `RenderTexture`: Render texture.
-- `Texture`: Texture.
-Ends rendering to a render texture.  
-`Texture` is must be the same size as `RenderTexture`.
+class Sound:
+    def __init__(self): ...
+    def load(self, path: str) -> None: ...
+    def play(self) -> None: ...
+    def set_volume(self, volume: float) -> None: ...
+    def set_pitch(self, pitch: float) -> None: ...
+    def set_listener(self, position: Vec3) -> None: ...
+    def set_position(self, position: Vec3) -> None: ...
 
-### Scene
-#### Scene.camera() -> Camera
-Returns the main camera of the scene.
-#### Scene.size() -> Vector2
-Returns the size of the scene.
-#### Scene.resize(Vector2)
-- `Vector2`: New scene size.
-Changes the scene size.
-#### Scene.half() -> Vector2
-Returns the half size of the scene.
+class Camera:
+    def __init__(self): ...
+    def lookat(self, position: Vec3, target: Vec3, up: Vec3) -> None: ...
+    def perspective(self, fov: float, aspect: float, near: float, far: float) -> None: ...
+    def orthographic(self, left: float, right: float, bottom: float, top: float, near: float, far: float) -> None: ...
+    def position(self) -> Vec3: ...
+    def target(self) -> Vec3: ...
+    def up(self) -> Vec3: ...
+    def is_aabb_in_frustum(self, aabb: 'AABB') -> bool: ...
 
-### Collision
-#### Collison.aabb_aabb(AABB, AABB) -> bool
-- `AABB`: First AABB.
-- `AABB`: Second AABB.
-Checks for a collision between two AABBs.
+class Model:
+    def __init__(self): ...
+    def aabb(self) -> 'AABB': ...
+    def load(self, path: str) -> None: ...
+    def load_sprite(self, path: str) -> None: ...
+    def load_box(self, size: Vec3) -> None: ...
+    def bone_uniform_data(self) -> 'UniformData': ...
+    def play(self, name: float) -> None: ...
+    def update(self, delta: float) -> None: ...
 
-### Keyboard
-#### Keyboard.is_pressed(code) -> bool
-- `code`: Key code.
-Checks if a key was pressed in the current frame.
-#### Keyboard.is_released(code) -> bool
-- `code`: Key code.
-Checks if a key was released in the current frame.
-#### Keyboard.is_down(code) -> bool
-- `code`: Key code.
-Checks if a key is currently being held down.
-#### Keyboard.A = code
-#### Keyboard.B = code
-#### Keyboard.C = code
-#### Keyboard.D = code
-#### Keyboard.E = code
-#### Keyboard.F = code
-#### Keyboard.G = code
-#### Keyboard.H = code
-#### Keyboard.I = code
-#### Keyboard.J = code
-#### Keyboard.K = code
-#### Keyboard.L = code
-#### Keyboard.M = code
-#### Keyboard.N = code
-#### Keyboard.O = code
-#### Keyboard.P = code
-#### Keyboard.Q = code
-#### Keyboard.R = code
-#### Keyboard.S = code
-#### Keyboard.T = code
-#### Keyboard.U = code
-#### Keyboard.V = code
-#### Keyboard.W = code
-#### Keyboard.X = code
-#### Keyboard.Y = code
-#### Keyboard.Z = code
-#### Keyboard.key0 = code
-#### Keyboard.key1 = code
-#### Keyboard.key2 = code
-#### Keyboard.key3 = code
-#### Keyboard.key4 = code
-#### Keyboard.key5 = code
-#### Keyboard.key6 = code
-#### Keyboard.key7 = code
-#### Keyboard.key8 = code
-#### Keyboard.key9 = code
-#### Keyboard.F1 = code
-#### Keyboard.F2 = code
-#### Keyboard.F3 = code
-#### Keyboard.F4 = code
-#### Keyboard.F5 = code
-#### Keyboard.F6 = code
-#### Keyboard.F7 = code
-#### Keyboard.F8 = code
-#### Keyboard.F9 = code
-#### Keyboard.F10 = code
-#### Keyboard.F11 = code
-#### Keyboard.F12 = code
-#### Keyboard.UP = code
-#### Keyboard.DOWN = code
-#### Keyboard.LEFT = code
-#### Keyboard.RIGHT = code
-#### Keyboard.ESCAPE = code
-#### Keyboard.SPACE = code
-#### Keyboard.ENTER = code
-#### Keyboard.BACKSPACE = code
-#### Keyboard.TAB = code
-#### Keyboard.LSHIFT = code
-#### Keyboard.RSHIFT = code
-#### Keyboard.LCTRL = code
-#### Keyboard.RCTRL = code
-#### Keyboard.ALT = code
+class AABB:
+    min: Vec3
+    max: Vec3
+    def __init__(self): ...
+    def update_world(self, mat: Any) -> None: ...
 
-### Mouse
-Center of the window/scene is the origin.
-#### Mouse.position() -> Vector2
-Returns the mouse position.
-#### Mouse.position_on_scene() -> Vector2
-Returns the mouse position in the scene.
-#### Mouse.set_position(Vector2)
-- `Vector2`: New mouse position.
-Sets the mouse position.
-#### Mouse.set_position_on_scene(Vector2)
-- `Vector2`: New mouse position in the scene.
-Sets the mouse position within the scene.
-#### Mouse.is_pressed(code) -> bool
-- `code`: Mouse button code.
-Checks if a mouse button was pressed in the current frame.
-#### Mouse.is_released(code) -> bool
-- `code`: Mouse button code.
-Checks if a mouse button was released in the current frame.
-#### Mouse.is_down(code) -> bool
-- `code`: Mouse button code.
-Checks if a mouse button is currently being held down.
-#### Mouse.scroll_wheel() -> Vector2
-Returns the scroll wheel movement.
-#### Mouse.hide_cursor(bool)
-- `bool`: Whether to hide the mouse cursor.
-Toggles cursor visibility.
-#### Mouse.set_relative(bool)
-- `bool`: Whether to set relative coordinates.  
-Sets the mouse position relative to the window size.
-#### Mouse.is_relative() -> bool
-Returns whether the mouse is in relative coordinates.
-#### Mouse.LEFT = code
-#### Mouse.RIGHT = code
-#### Mouse.MIDDLE = code
-#### Mouse.X1 = code
-#### Mouse.X2 = code
+class Timer:
+    def __init__(self): ...
+    def start(self) -> None: ...
+    def stop(self) -> None: ...
+    def is_started(self) -> bool: ...
+    def set_time(self, time: float) -> None: ...
+    def check(self) -> bool: ...
 
-### Gamepad
-#### Gamepad.is_connected() -> bool
-Checks if a gamepad is connected.
-#### Gamepad.is_pressed(code) -> bool
-- `code`: Gamepad button code.
-Checks if a gamepad button was pressed in the current frame.
-#### Gamepad.is_released(code) -> bool
-- `code`: Gamepad button code.
-Checks if a gamepad button was released in the current frame.
-#### Gamepad.is_down(code) -> bool
-- `code`: Gamepad button code.
-Checks if a gamepad button is currently being held down.
-#### Gamepad.left_stick() -> Vector2
-Gets the left stick delta movement.
-#### Gamepad.right_stick() -> Vector2
-Gets the right stick delta movement.
-#### Gamepad.INVALID = code
-#### Gamepad.A = code
-#### Gamepad.B = code
-#### Gamepad.X = code
-#### Gamepad.Y = code
-#### Gamepad.BACK = code
-#### Gamepad.START = code
-#### Gamepad.GUIDE = code
-#### Gamepad.LEFTSTICK = code
-#### Gamepad.RIGHTSTICK = code
-#### Gamepad.LEFTSHOULDER = code
-#### Gamepad.RIGHTSHOULDER = code
-#### Gamepad.DPAD_UP = code
-#### Gamepad.DPAD_DOWN = code
-#### Gamepad.DPAD_LEFT = code
-#### Gamepad.DPAD_RIGHT = code
-#### Gamepad.MISC1 = code
-#### Gamepad.PADDLE1 = code
-#### Gamepad.PADDLE2 = code
-#### Gamepad.PADDLE3 = code
-#### Gamepad.PADDLE4 = code
-#### Gamepad.TOUCHPAD = code
+class UniformData:
+    def __init__(self): ...
+    def add(self, value: Any) -> None: ...
+    def change(self, index:int, value: float) -> None: ...
+
+class Shader:
+    def __init__(self): ...
+    def load_vertex_shader(self, path: str,uniform_count:int) -> None: ...
+    def load_fragment_shader(self, path: str,uniform_count:int) -> None: ...
+    def compile_and_load_vertex_shader(self, source: str,uniform_count:int) -> None: ...
+    def compile_and_load_fragment_shader(self, source: str,uniform_count:int) -> None: ...
+
+class Font:
+    def __init__(self): ...
+    @overload
+    def load(self, size: int) -> None: ...
+    @overload
+    def load(self, size: int, path: str) -> None: ...
+    def render_text(self, texture: Texture, text: str, color: 'Color') -> Texture: ...
+    def resize(self, size: int) -> None: ...
+
+class Color:
+    r: float
+    g: float
+    b: float
+    a: float
+    def __init__(self, r: float = 0, g: float = 0, b: float = 0, a: float = 1): ...
+
+class Draw2D:
+    scale: Vec2
+    position: Vec2 # 2D position in center of the screen
+    rotation: float
+    material: Material
+    def __init__(self): ...
+    def draw(self) -> None: ...
+    def add(self, drawable: Any) -> None: ...
+    def at(self, x: float, y: float) -> None: ...
+    def clear(self) -> None: ...
+
+class Draw3D:
+    scale: Vec3
+    position: Vec3
+    rotation: Vec3
+    material: Material
+    model: Model
+    is_draw_depth: bool
+    def __init__(self): ...
+    def draw(self) -> None: ...
+    def add(self, drawable: Any) -> None: ...
+    def at(self, x: float, y: float, z: float) -> None: ...
+    def clear(self) -> None: ...
+
+class Grid:
+    def __init__(self, w: int, h: int): ...
+    def at(self, x: int, y: int) -> int: ...
+    def set(self, x: int, y: int, v: int) -> None: ...
+    def width(self) -> int: ...
+    def height(self) -> int: ...
+    def size(self) -> int: ...
+    def clear(self) -> None: ...
+    def resize(self, w: int, h: int) -> None: ...
+    def fill(self, value: int) -> None: ...
+
+class BFSGrid:
+    def __init__(self, grid: Grid): ...
+    def width(self) -> int: ...
+    def height(self) -> int: ...
+    def find_path(self, start: Vec2, end: Vec2) -> Any: ...
+    def trace(self) -> Vec2: ...
+    def traceable(self) -> bool: ...
+    def reset(self) -> None: ...
+
+class GraphicsPipeline2D:
+    def __init__(self): ...
+    def set_vertex_shader(self, shader: Shader) -> None: ...
+    def set_fragment_shader(self, shader: Shader) -> None: ...
+    def build(self) -> None: ...
+
+class GraphicsPipeline3D:
+    def __init__(self): ...
+    def set_vertex_shader(self, shader: Shader) -> None: ...
+    def set_vertex_instanced_shader(self, shader: Shader) -> None: ...
+    def set_fragment_shader(self, shader: Shader) -> None: ...
+    def set_animation(self, anim: Any) -> None: ...
+    def build(self) -> None: ...
+
+class Random:
+    @staticmethod
+    def get_int_range(a: int, b: int) -> int: ...
+    @staticmethod
+    def get_float_range(a: float, b: float) -> float: ...
+
+class Window:
+    @staticmethod
+    def name() -> str: ...
+    @staticmethod
+    def size() -> Vec2: ...
+    @staticmethod
+    def half() -> Vec2: ...
+    @staticmethod
+    def resize(size: Vec2) -> None: ...
+    @staticmethod
+    def set_fullscreen(full: bool) -> None: ...
+    @staticmethod
+    def rename(name: str) -> None: ...
+    @staticmethod
+    def resized() -> bool: ...
+
+class Graphics:
+    @staticmethod
+    def clear_color() -> Color: ...
+    @staticmethod
+    def set_clear_color(c: Color) -> None: ...
+    @staticmethod
+    def at_render_texture_user_data(rt: RenderTexture) -> Any: ...
+    @staticmethod
+    def bind_pipeline2d(pipe: GraphicsPipeline2D) -> None: ...
+    @staticmethod
+    def bind_default_pipeline2d() -> None: ...
+    @staticmethod
+    def bind_pipeline3d(pipe: GraphicsPipeline3D) -> None: ...
+    @staticmethod
+    def bind_default_pipeline3d() -> None: ...
+    @staticmethod
+    def set_uniform_data(binding: int, data: UniformData) -> None: ...
+    @staticmethod
+    def begin_target2d(rt: RenderTexture) -> None: ...
+    @staticmethod
+    def begin_target3d(rt: RenderTexture) -> None: ...
+    @staticmethod
+    def end_target(rt: RenderTexture, texture_ref: Texture) -> None: ...
+
+class Scene:
+    def __init__(self): ...
+    @staticmethod
+    def camera() -> Camera: ...
+    @staticmethod
+    def size() -> Vec2: ...
+    @staticmethod
+    def resize(size: Vec2) -> None: ...
+    @staticmethod
+    def half() -> Vec2: ...
+    @staticmethod
+    def ratio() -> float: ...
+    @staticmethod
+    def inv_ratio() -> float: ...
+    @staticmethod
+    def delta_time() -> float: ...
+    @staticmethod
+    def change(name: str) -> None: ...
+
+class Collision:
+    @staticmethod
+    def aabb_aabb(a: AABB, b: AABB) -> bool: ...
+
+class Keyboard:
+    A: int
+    B: int
+    C: int
+    D: int
+    E: int
+    F: int
+    G: int
+    H: int
+    I: int
+    J: int
+    K: int
+    L: int
+    M: int
+    N: int
+    O: int
+    P: int
+    Q: int
+    R: int
+    S: int
+    T: int
+    U: int
+    V: int
+    W: int
+    X: int
+    Y: int
+    Z: int
+    Key0: int
+    Key1: int
+    Key2: int
+    Key3: int
+    Key4: int
+    Key5: int
+    Key6: int
+    Key7: int
+    Key8: int
+    Key9: int
+    F1: int
+    F2: int
+    F3: int
+    F4: int
+    F5: int
+    F6: int
+    F7: int
+    F8: int
+    F9: int
+    F10: int
+    F11: int
+    F12: int
+    UP: int
+    DOWN: int
+    LEFT: int
+    RIGHT: int
+    ESCAPE: int
+    SPACE: int
+    BACKSPACE: int
+    TAB: int
+    RETURN: int
+    LSHIFT: int
+    RSHIFT: int
+    LCTRL: int
+    RCTRL: int
+    LALT: int
+    def __init__(self): ...
+    @staticmethod
+    def is_pressed(scancode: int) -> bool: ...
+    @staticmethod
+    def is_released(scancode: int) -> bool: ...
+    @staticmethod
+    def is_down(scancode: int) -> bool: ...
+
+class Mouse:
+    LEFT: int
+    RIGHT: int
+    MIDDLE: int
+    X1: int
+    X2: int
+    @staticmethod
+    def is_pressed(btn: int) -> bool: ...
+    @staticmethod
+    def is_released(btn: int) -> bool: ...
+    @staticmethod
+    def is_down(btn: int) -> bool: ...
+    @staticmethod
+    def position() -> Vec2: ...
+    @staticmethod
+    def position_on_scene() -> Vec2: ...
+    @staticmethod
+    def set_position(pos: Vec2) -> None: ...
+    @staticmethod
+    def set_position_on_scene(pos: Vec2) -> None: ...
+    @staticmethod
+    def scroll_wheel() -> float: ...
+    @staticmethod
+    def hide_cursor() -> None: ...
+
+class GamePad:
+    INVALID: int
+    A: int
+    B: int
+    X: int
+    Y: int
+    BACK: int
+    GUIDE: int
+    START: int
+    LEFTSTICK: int
+    RIGHTSTICK: int
+    LEFTSHOULDER: int
+    RIGHTSHOULDER: int
+    DPAD_UP: int
+    DPAD_DOWN: int
+    DPAD_LEFT: int
+    DPAD_RIGHT: int
+    MISC1: int
+    PADDLE1: int
+    PADDLE2: int
+    PADDLE3: int
+    PADDLE4: int
+    TOUCHPAD: int
+    def __init__(self): ...
+    @staticmethod
+    def is_pressed(btn: int) -> bool: ...
+    @staticmethod
+    def is_released(btn: int) -> bool: ...
+    @staticmethod
+    def is_down(btn: int) -> bool: ...
+    @staticmethod
+    def left_stick() -> Vec2: ...
+    @staticmethod
+    def right_stick() -> Vec2: ...
+    @staticmethod
+    def is_connected() -> bool: ...
+
+class Periodic:
+    def __init__(self): ...
+    @staticmethod
+    def sin0_1(time: float) -> float: ...
+    @staticmethod
+    def cos0_1(time: float) -> float: ...
+
+class Time:
+    def __init__(self): ...
+    @staticmethod
+    def seconds() -> float: ...
+    @staticmethod
+    def milli() -> int: ...
+
+class Logger:
+    @staticmethod
+    def verbose(msg: str) -> None: ...
+    @staticmethod
+    def debug(msg: str) -> None: ...
+    @staticmethod
+    def info(msg: str) -> None: ...
+    @staticmethod
+    def error(msg: str) -> None: ...
+    @staticmethod
+    def warn(msg: str) -> None: ...
+    @staticmethod
+    def critical(msg: str) -> None: ...
+
+```

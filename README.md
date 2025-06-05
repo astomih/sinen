@@ -2,30 +2,20 @@
 
 <p align="center"><a href="https://astomih.github.io/sinen"><img src="https://raw.githubusercontent.com/astomih/sinen/main/docs/logo/logo_bg_white.png" width="480" alt="Sinen Logo"></a></p>  
 
-# Summary
-
-Sinen is a toolkit for creative coding.
-
-# Feature
-
-- Intuitive writing in the Python
-- Sinen is Written in C++
-- Using Vulkan API
-- Lightweight
-
 # Documents
 
 [![Documents](https://github.com/astomih/sinen/actions/workflows/documents.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/documents.yml)  
 [https://astomih.github.io/sinen](https://astomih.github.io/sinen)
 
-# Hello world in Sinen as a library
+
+# Hello World in Sinen
 
 ``` python
 from sinen import *
 texture = Texture()
 draw2d = Draw2D(texture)
 font = Font()
-font.load("mplus/mplus-1p-medium.ttf", 96)
+font.load(96)
 
 def update():
   font.render_text(texture, "Hello Sinen World!", Color(1, 1, 1, 1))
@@ -37,26 +27,7 @@ def draw():
 
 ![Hello World](https://raw.githubusercontent.com/astomih/sinen/refs/heads/main/examples/screenshot/01.png)
 
-# Lisence
-
-MIT Lisence
-
-# Dependencies
-
-## Sinen Core
-
-- Dear ImGui
-- mojoAL
-- rapidjson
-- ImGui
-- SDL3(image,mixer,ttf)
-- Paranoixa
-
-## Script
-
-- PocketPy
-
-# How to build
+# How to build from source
 
 ## Requirements
 
@@ -93,3 +64,9 @@ cmake --build build/macos
 cmake -B build/linux -DEXTERNAL_ALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release
 cmake --build build/linux
 ```
+
+# Lisence
+MIT Lisence
+
+# Community
+[Discord](https://discord.gg/7U7VDwWjfy)

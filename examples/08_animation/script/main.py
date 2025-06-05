@@ -13,7 +13,7 @@ vertex_shader.compile_and_load_vertex_shader("skinning.slang", 1)
 fragment_shader = Shader()
 fragment_shader.compile_and_load_fragment_shader("skinning.slang", 0)
 
-pipeline = RenderPipeline3D()
+pipeline = GraphicsPipeline3D()
 pipeline.set_vertex_shader(vertex_shader)
 pipeline.set_fragment_shader(fragment_shader)
 pipeline.set_animation(True)
@@ -28,9 +28,8 @@ def update():
   model.update(Scene.delta_time())
 
 def draw():
-  Renderer.begin_pipeline3d(pipeline)
-  Renderer.set_uniform_data(1, model.bone_uniform_data())
+  Graphics.bind_pipeline3d(pipeline)
+  Graphics.set_uniform_data(1, model.bone_uniform_data())
   # Draw texture
   draw3d.draw()
-  Renderer.end_pipeline3d()
 

@@ -16,8 +16,12 @@ add_subdirectory(${SINEN_SOURCE_DIR}/libs/SDL_mixer EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/pocketpy EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/paranoixa EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/zep EXCLUDE_FROM_ALL)
+add_subdirectory(${SINEN_SOURCE_DIR}/libs/sol2 EXCLUDE_FROM_ALL)
+add_subdirectory(${SINEN_SOURCE_DIR}/libs/luajit-cmake EXCLUDE_FROM_ALL)
 
-if (NOT MSVC)
+if (MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
+else ()
     set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g -O0 -DDEBUG")
     set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -march=native")
 endif ()
@@ -53,6 +57,8 @@ target_link_libraries(
         assimp
         pocketpy
         Zep::Zep
+        luajit::lib
+        luajit::header
 )
 target_compile_definitions(sinen PUBLIC
         AL_LIBTYPE_STATIC

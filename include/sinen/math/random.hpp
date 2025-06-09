@@ -14,10 +14,10 @@ public:
   static float get_float();
 
   // Get a float from the specified range
-  static float get_float_range(float min, float max);
+  static float GetRange(float min, float max);
 
   // Get an int from the specified range
-  static int get_int_range(int min, int max);
+  static int GetIntRange(int min, int max);
 
   // Get a random vector given the min/max bounds
   static glm::vec2 get_vector(const glm::vec2 &min, const glm::vec2 &max);

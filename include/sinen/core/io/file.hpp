@@ -19,7 +19,7 @@ public:
    *
    */
   ~File();
-  enum class mode {
+  enum class Mode {
     /**
      * @brief Open a file for reading. The file must exist.
      *
@@ -107,7 +107,7 @@ public:
    * @return true Success to open
    * @return false Failed to open
    */
-  bool open(const char *filename, const mode &mode);
+  bool Open(const char *filename, const Mode &mode);
   /**
    * @brief Open a file
    *
@@ -116,7 +116,7 @@ public:
    * @return true Success to open
    * @return false Failed to open
    */
-  bool open(std::string_view filename, const mode &mode);
+  bool Open(std::string_view filename, const Mode &mode);
   /**
    * @brief Open a file
    *
@@ -125,7 +125,7 @@ public:
    * @return true Success to open
    * @return false Failed to open
    */
-  bool open(const char *filename, const char *mode);
+  bool Open(const char *filename, const char *mode);
   /**
    * @brief Open a file
    *
@@ -134,7 +134,7 @@ public:
    * @return true Success to open
    * @return false Failed to open
    */
-  bool open(std::string_view filename, const char *mode);
+  bool Open(std::string_view filename, const char *mode);
   /**
    * @brief Close a file
    *
@@ -147,7 +147,7 @@ public:
    * @param size Read size
    * @param maxnum Max read size
    */
-  void read(void *buffer, std::size_t size, std::size_t maxnum);
+  void Read(void *buffer, std::size_t size, std::size_t maxnum);
   /**
    * @brief Write data to a file
    *
@@ -155,33 +155,33 @@ public:
    * @param size Write size
    * @param num Write num
    */
-  void write(const void *buffer, std::size_t size, std::size_t num);
+  void Write(const void *buffer, std::size_t size, std::size_t num);
   /**
    * @brief Seek to a position in a file
    *
    * @param offset Offset
    * @param whence Whence
    */
-  void seek(const int64_t &offset, int whence);
+  void Seek(const int64_t &offset, int whence);
   /**
    * @brief Get the current position of the file pointer
    *
    * @return int64_t Current position
    */
-  int64_t tell();
+  int64_t Tell();
   /**
    * @brief Get the file size
    *
    * @return std::int64_t File size
    */
-  int64_t size();
+  int64_t Size();
   /**
    * @brief Open mode to string
    *
    * @param mode mode
    * @return std::string string
    */
-  std::string open_mode_to_string(const mode &mode);
+  std::string OpenModeToString(const Mode &mode);
 
 private:
   class impl;

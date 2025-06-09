@@ -10,7 +10,7 @@
 #include <platform/window/window.hpp>
 
 namespace sinen {
-void Camera::lookat(const glm::vec3 &position, const glm::vec3 &target,
+void Camera::LookAt(const glm::vec3 &position, const glm::vec3 &target,
                     const glm::vec3 &up) {
   m_position = position;
   m_target = target;
@@ -20,11 +20,11 @@ void Camera::lookat(const glm::vec3 &position, const glm::vec3 &target,
                        glm::vec3(m_up.x, m_up.y, m_up.z));
   update_frustum = true;
 }
-void Camera::perspective(float fov, float aspect, float near, float far) {
+void Camera::Perspective(float fov, float aspect, float near, float far) {
   m_projection = glm::perspective(glm::radians(fov), aspect, near, far);
   update_frustum = true;
 }
-void Camera::orthographic(float width, float height, float near, float far) {
+void Camera::Orthographic(float width, float height, float near, float far) {
   m_projection = glm::ortho(0.f, width, 0.f, height, near, far);
   update_frustum = true;
 }
@@ -53,7 +53,7 @@ static Frustum ExtractFrustumPlanes(const glm::mat4 &vp) {
 
   return f;
 }
-bool Camera::is_aabb_in_frustum(const AABB &aabb) {
+bool Camera::IsAABBInFrustum(const AABB &aabb) {
   if (update_frustum) {
     frustum = ExtractFrustumPlanes(m_projection * m_view);
     update_frustum = false;

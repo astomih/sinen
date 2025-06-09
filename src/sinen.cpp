@@ -41,20 +41,20 @@ bool Sinen::initialize(int argc, char *argv[]) {
   WindowSystem::initialize("Sinen");
   GraphicsSystem::initialize();
   if (!SoundSystem::initialize()) {
-    Logger::critical("Failed to initialize audio system");
+    Logger::Critical("Failed to initialize audio system");
     SoundSystem::shutdown();
     return false;
   }
   if (!InputSystem::initialize()) {
-    Logger::critical("Failed to initialize input system");
+    Logger::Critical("Failed to initialize input system");
     return false;
   }
   if (!ScriptSystem::Initialize(ScriptType::Lua)) {
-    Logger::critical("Failed to initialize script system");
+    Logger::Critical("Failed to initialize script system");
     return false;
   }
   if (!RandomSystem::initialize()) {
-    Logger::critical("Failed to initialize random system");
+    Logger::Critical("Failed to initialize random system");
     return false;
   }
   SceneSystem::initialize();

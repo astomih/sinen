@@ -51,13 +51,13 @@ public:
    *
    * @param color
    */
-  static void set_clear_color(const Color &color);
+  static void SetClearColor(const Color &color);
   /**
    * @brief Get the clear color object
    *
    * @return color
    */
-  static Color clear_color();
+  static Color GetClearColor();
   /**
    * @brief Toggle show imgui
    *
@@ -87,15 +87,15 @@ public:
   static glm::mat4 render_texture_user_data;
   static void at_render_texture_user_data(int index, float value) {}
 
-  static void bind_pipeline3d(const GraphicsPipeline3D &pipeline);
-  static void bind_default_pipeline3d();
-  static void bind_pipeline2d(const GraphicsPipeline2D &pipeline);
-  static void bind_default_pipeline2d();
-  static void set_uniform_data(uint32_t slot, const UniformData &data);
+  static void BindPipeline3D(const GraphicsPipeline3D &pipeline);
+  static void BindDefaultPipeline3D();
+  static void BindPipeline2D(const GraphicsPipeline2D &pipeline);
+  static void BindDefaultPipeline2D();
+  static void SetUniformData(uint32_t slot, const UniformData &data);
 
-  static void begin_target2d(const RenderTexture &texture);
-  static void begin_target3d(const RenderTexture &texture);
-  static void end_target(const RenderTexture &texture, Texture &out);
+  static void BeginTarget2D(const RenderTexture &texture);
+  static void BeginTarget3D(const RenderTexture &texture);
+  static void EndTarget(const RenderTexture &texture, Texture &out);
 };
 
 } // namespace sinen

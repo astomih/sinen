@@ -47,15 +47,15 @@ def draw():
 static const char *nothingSceneLua = R"(
 local texture = Texture()
 local draw2d = Draw2D()
-draw2d.material:append(texture)
+draw2d.material:AppendTexture(texture)
 local font = Font()
-font:load(96)
-function update()
-  font:render_text(texture, "NO DATA", Color(1, 1, 1, 1))
-  draw2d.scale = texture:size()
+font:Load(96)
+function Update()
+  font:RenderText(texture, "NO DATA", Color(1, 1, 1, 1))
+  draw2d.scale = texture:Size()
 end
-function draw()
-  draw2d:draw()
+function Draw()
+  draw2d:Draw()
 end
 )";
 
@@ -64,15 +64,15 @@ void ScriptSystem::RunScene(std::string_view sceneName) {
     std::string source;
     switch (ScriptSystem::type) {
     case ScriptType::Lua: {
-      source = DataStream::open_as_string(AssetType::Script,
-                                          std::string(sceneName) + ".lua");
+      source = DataStream::OpenAsString(AssetType::Script,
+                                        std::string(sceneName) + ".lua");
       if (source.empty()) {
         source = nothingSceneLua;
       }
     } break;
     case ScriptType::Python: {
-      source = DataStream::open_as_string(AssetType::Script,
-                                          std::string(sceneName) + ".py");
+      source = DataStream::OpenAsString(AssetType::Script,
+                                        std::string(sceneName) + ".py");
       if (source.empty()) {
         source = nothingScenePython;
       }

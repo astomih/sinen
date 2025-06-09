@@ -28,9 +28,9 @@ Draw3D::Draw3D()
       scale(glm::vec3(1.f, 1.f, 1.f)) {
   obj = std::make_shared<Drawable>();
 }
-void Draw2D::draw() {
-  auto ratio = glm::vec2(Window::size().x / Scene::size().x,
-                         Window::size().y / Scene::size().y);
+void Draw2D::Draw() {
+  auto ratio = glm::vec2(Window::Size().x / Scene::Size().x,
+                         Window::Size().y / Scene::Size().y);
 
   auto t =
       glm::translate(glm::mat4(1.0f), glm::vec3(position.x * ratio.x,
@@ -46,9 +46,9 @@ void Draw2D::draw() {
   obj->material = this->material;
   auto viewproj = glm::mat4(1.0f);
 
-  auto screen_size = Scene::size();
-  viewproj[0][0] = 2.f / Window::size().x;
-  viewproj[1][1] = 2.f / Window::size().y;
+  auto screen_size = Scene::Size();
+  viewproj[0][0] = 2.f / Window::Size().x;
+  viewproj[1][1] = 2.f / Window::Size().y;
   obj->param.proj = viewproj;
   obj->param.view = glm::mat4(1.f);
   if (GetModelData(this->model.data)->vertexBuffer == nullptr) {
@@ -73,16 +73,16 @@ void Draw2D::draw() {
   }
   Graphics::draw2d(obj);
 }
-void Draw2D::add(const glm::vec2 &position, const float &rotation,
+void Draw2D::Add(const glm::vec2 &position, const float &rotation,
                  const glm::vec2 &scale) {
   this->worlds.push_back({position, rotation, scale});
 }
-void Draw2D::at(const int &index, const glm::vec2 &position,
+void Draw2D::At(const int &index, const glm::vec2 &position,
                 const float &rotation, const glm::vec2 &scale) {
   this->worlds[index] = {position, rotation, scale};
 }
-void Draw2D::clear() { this->worlds.clear(); }
-void Draw3D::draw() {
+void Draw2D::Clear() { this->worlds.clear(); }
+void Draw3D::Draw() {
   obj->material = this->material;
   auto t = glm::translate(glm::mat4(1.0f),
                           glm::vec3(position.x, position.y, position.z));
@@ -98,8 +98,8 @@ void Draw3D::draw() {
 
   auto world = t * r * s;
   obj->param.world = world;
-  obj->param.proj = Scene::camera().projection();
-  obj->param.view = Scene::camera().view();
+  obj->param.proj = Scene::GetCamera().Projection();
+  obj->param.view = Scene::GetCamera().GetView();
   if (GetModelData(this->model.data)->vertexBuffer == nullptr) {
     obj->model = GraphicsSystem::box;
   } else
@@ -126,17 +126,17 @@ void Draw3D::draw() {
   }
   Graphics::draw3d(obj);
 }
-void Draw2D::user_data_at(int index, float value) {}
-void Draw3D::user_data_at(int index, float value) {}
-void Draw3D::add(const glm::vec3 &position, const glm::vec3 &rotation,
+void Draw2D::UserDataAt(int index, float value) {}
+void Draw3D::UserDataAt(int index, float value) {}
+void Draw3D::Add(const glm::vec3 &position, const glm::vec3 &rotation,
                  const glm::vec3 &scale) {
   this->worlds.push_back({position, rotation, scale});
 }
-void Draw3D::at(const int &index, const glm::vec3 &position,
+void Draw3D::At(const int &index, const glm::vec3 &position,
                 const glm::vec3 &rotation, const glm::vec3 &scale) {
   this->worlds[index] = {position, rotation, scale};
 }
-void Draw3D::clear() {
+void Draw3D::Clear() {
   this->worlds.clear();
   this->obj->data.clear();
 }

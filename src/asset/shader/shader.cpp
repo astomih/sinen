@@ -14,7 +14,7 @@
 #include "default/shader_instance.vert.spv.h"
 
 namespace sinen {
-void Shader::load_default_vertex_shader() {
+void Shader::LoadDefaultVertexShader() {
   auto *allocator = GraphicsSystem::GetAllocator();
   auto device = GraphicsSystem::GetDevice();
 
@@ -31,7 +31,7 @@ void Shader::load_default_vertex_shader() {
   vsInfo.numUniformBuffers = 1; // only one uniform buffer for vertex shader
   shader = device->CreateShader(vsInfo);
 }
-void Shader::load_default_vertex_instance_shader() {
+void Shader::LoadDefaultVertexInstanceShader() {
   auto *allocator = GraphicsSystem::GetAllocator();
   auto device = GraphicsSystem::GetDevice();
 
@@ -48,7 +48,7 @@ void Shader::load_default_vertex_instance_shader() {
   vsInfo.numUniformBuffers = 1; // only one uniform buffer for vertex shader
   shader = device->CreateShader(vsInfo);
 }
-void Shader::load_default_fragment_shader() {
+void Shader::LoadDefaultFragmentShader() {
   auto *allocator = GraphicsSystem::GetAllocator();
   auto device = GraphicsSystem::GetDevice();
 
@@ -65,16 +65,16 @@ void Shader::load_default_fragment_shader() {
   fsInfo.numUniformBuffers = 1; // only one uniform buffer for fragment shader
   shader = device->CreateShader(fsInfo);
 }
-void Shader::load_vertex_shader(std::string_view vertex_shader,
+void Shader::LoadVertexShader(std::string_view vertex_shader,
                                 int numUniformData) {
   auto *allocator = GraphicsSystem::GetAllocator();
   auto device = GraphicsSystem::GetDevice();
 
-  SDL_IOStream *file = (SDL_IOStream *)DataStream::open_as_rwops(
+  SDL_IOStream *file = (SDL_IOStream *)DataStream::OpenAsRWOps(
       AssetType::Shader, vertex_shader);
 
   std::string vsStr =
-      DataStream::open_as_string(AssetType::Shader, vertex_shader);
+      DataStream::OpenAsString(AssetType::Shader, vertex_shader);
 
   px::Shader::CreateInfo vsInfo{};
   vsInfo.allocator = allocator;
@@ -89,13 +89,13 @@ void Shader::load_vertex_shader(std::string_view vertex_shader,
   vsInfo.numUniformBuffers = numUniformData + 1;
   shader = device->CreateShader(vsInfo);
 }
-void Shader::load_fragment_shader(std::string_view fragment_shader,
+void Shader::LoadFragmentShader(std::string_view fragment_shader,
                                   int numUniformData) {
   auto *allocator = GraphicsSystem::GetAllocator();
   auto device = GraphicsSystem::GetDevice();
 
   std::string fsStr =
-      DataStream::open_as_string(AssetType::Shader, fragment_shader);
+      DataStream::OpenAsString(AssetType::Shader, fragment_shader);
 
   px::Shader::CreateInfo fsInfo{};
   fsInfo.allocator = allocator;
@@ -110,11 +110,11 @@ void Shader::load_fragment_shader(std::string_view fragment_shader,
   fsInfo.numUniformBuffers = numUniformData + 1;
   shader = device->CreateShader(fsInfo);
 }
-void Shader::compile_and_load_vertex_shader(std::string_view vertex_shader,
+void Shader::CompileAndLoadVertexShader(std::string_view vertex_shader,
                                             int numUniformData) {
 
   std::string vsStr =
-      DataStream::convert_file_path(AssetType::Shader, vertex_shader);
+      DataStream::ConvertFilePath(AssetType::Shader, vertex_shader);
 
   // TODO: add support for other languages
   rsc::ShaderCompiler compiler;
@@ -137,10 +137,10 @@ void Shader::compile_and_load_vertex_shader(std::string_view vertex_shader,
   vsInfo.numUniformBuffers = numUniformData + 1;
   shader = device->CreateShader(vsInfo);
 }
-void Shader::compile_and_load_fragment_shader(std::string_view fragment_shader,
+void Shader::CompileAndLoadFragmentShader(std::string_view fragment_shader,
                                               int numUniformData) {
   std::string fsStr =
-      DataStream::convert_file_path(AssetType::Shader, fragment_shader);
+      DataStream::ConvertFilePath(AssetType::Shader, fragment_shader);
   rsc::ShaderCompiler compiler;
   auto spirv = compiler.compile(fsStr, rsc::ShaderCompiler::Type::FRAGMENT,
                                 rsc::ShaderCompiler::Language::SPIRV);

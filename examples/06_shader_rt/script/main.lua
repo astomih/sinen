@@ -1,34 +1,34 @@
 local texture = Texture()
-texture:load("logo.png")
-draw2d = Draw2D()
-draw2d.material:append(texture)
+texture:Load("logo.png")
+local draw2d = Draw2D()
+draw2d.material:AppendTexture(texture)
 
-draw2d.scale = texture:size()
+draw2d.scale = texture:Size()
 
 local vertex_shader = Shader()
-vertex_shader:compile_and_load_vertex_shader("shader_custom.slang", 1)
+vertex_shader:CompileAndLoadVertexShader("shader_custom.slang", 1)
 local fragment_shader = Shader()
-fragment_shader:compile_and_load_fragment_shader("shader_custom.slang", 0)
+fragment_shader:CompileAndLoadFragmentShader("shader_custom.slang", 0)
 
 local pipeline2d = GraphicsPipeline2D()
-pipeline2d:set_vertex_shader(vertex_shader)
-pipeline2d:set_fragment_shader(fragment_shader)
-pipeline2d:build()
+pipeline2d:SetVertexShader(vertex_shader)
+pipeline2d:SetFragmentShader(fragment_shader)
+pipeline2d:Build()
 
 local uniform_data = UniformData()
-uniform_data:add(2.0)
-uniform_data:add(0.5)
-uniform_data:add(0.5)
-uniform_data:add(1.0)
+uniform_data:Add(2.0)
+uniform_data:Add(0.5)
+uniform_data:Add(0.5)
+uniform_data:Add(1.0)
 
 
-function update()
+function Update()
 
 end
 
-function draw()
-    Graphics.bind_pipeline2d(pipeline2d)
-    Graphics.set_uniform_data(1, uniform_data)
+function Draw()
+    Graphics.BindPipeline2D(pipeline2d)
+    Graphics.SetUniformData(1, uniform_data)
     -- Draw texture
-    draw2d:draw()
+    draw2d:Draw()
 end

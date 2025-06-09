@@ -14,12 +14,12 @@ public:
   /**
    * @brief Get time about launch app to now as seconds
    */
-  static float seconds();
+  static float Seconds();
 
   /**
    * @brief Get time about launch app to now as milli seconds
    */
-  static uint32_t milli();
+  static uint32_t Milli();
 
   /**
    * @brief Get the function time object
@@ -27,8 +27,7 @@ public:
    * @param function
    * @return double time
    */
-  static inline double
-  get_function_time(const std::function<void()> &function) {
+  static inline double GetFunctionTime(const std::function<void()> &function) {
     std::chrono::system_clock::time_point start, end;
     start = std::chrono::system_clock::now();
     function();

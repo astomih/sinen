@@ -14,17 +14,16 @@ namespace sinen {
  */
 class Shader {
 public:
-  void load_default_vertex_shader();
-  void load_default_vertex_instance_shader();
-  void load_default_fragment_shader();
-  void load_vertex_shader(std::string_view vertex_shader, int numUniformData);
-  void load_fragment_shader(std::string_view fragment_shader,
-                            int numUniformData);
+  void LoadDefaultVertexShader();
+  void LoadDefaultVertexInstanceShader();
+  void LoadDefaultFragmentShader();
+  void LoadVertexShader(std::string_view vertex_shader, int numUniformData);
+  void LoadFragmentShader(std::string_view fragment_shader, int numUniformData);
 
-  void compile_and_load_vertex_shader(std::string_view vertex_shader,
-                                      int numUniformData);
-  void compile_and_load_fragment_shader(std::string_view fragment_shader,
-                                        int numUniformData);
+  void CompileAndLoadVertexShader(std::string_view vertex_shader,
+                                  int numUniformData);
+  void CompileAndLoadFragmentShader(std::string_view fragment_shader,
+                                    int numUniformData);
 
 private:
   friend class GraphicsPipeline2D;

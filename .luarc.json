@@ -1,5 +1,3 @@
 {
-    "diagnostics.disable": [
-        "lowercase-global"
-    ]
+    "diagnostics.disable": []
 }

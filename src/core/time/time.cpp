@@ -2,7 +2,7 @@
 #include <core/time/time.hpp>
 
 namespace sinen {
-float Time::seconds() { return static_cast<float>(SDL_GetTicks() / 1000.f); }
+float Time::Seconds() { return static_cast<float>(SDL_GetTicks() / 1000.f); }
 
-uint32_t Time::milli() { return SDL_GetTicks(); }
+uint32_t Time::Milli() { return SDL_GetTicks(); }
 } // namespace sinen

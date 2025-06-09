@@ -6,23 +6,23 @@
 namespace sinen {
 struct UniformData {
   UniformData() : data() {}
-  void add(float value) { data.push_back(value); }
-  void add_matrix(const glm::mat4 &matrix) {
+  void Add(float value) { data.push_back(value); }
+  void AddMatrix(const glm::mat4 &matrix) {
     data.resize(data.size() + 16);
     memcpy(&data[data.size() - 16], &matrix, sizeof(glm::mat4));
   }
-  void add_matrices(const std::vector<glm::mat4> &matrices) {
+  void AddMatrices(const std::vector<glm::mat4> &matrices) {
     for (auto &m : matrices) {
-      add_matrix(m);
+      AddMatrix(m);
     }
   }
-  void add_vector3(const glm::vec3 &vector) {
+  void AddVector3(const glm::vec3 &vector) {
     data.push_back(vector.x);
     data.push_back(vector.y);
     data.push_back(vector.z);
   }
-  void change(float value, int index) { data[index] = value; }
-  void clear() { data.clear(); }
+  void Change(float value, int index) { data[index] = value; }
+  void Clear() { data.clear(); }
   std::vector<float> data;
 };
 } // namespace sinen

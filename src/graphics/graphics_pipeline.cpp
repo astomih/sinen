@@ -8,14 +8,14 @@ namespace sinen {
 static px::VertexInputState CreateVertexInputState(px::Allocator *allocator,
                                                    bool isInstance,
                                                    bool isAnimation);
-void GraphicsPipeline2D::set_vertex_shader(const Shader &shader) {
+void GraphicsPipeline2D::SetVertexShader(const Shader &shader) {
   this->vertexShader = shader;
 }
-void GraphicsPipeline2D::set_fragment_shader(const Shader &shader) {
+void GraphicsPipeline2D::SetFragmentShader(const Shader &shader) {
   this->fragmentShader = shader;
 }
 
-void GraphicsPipeline2D::build() {
+void GraphicsPipeline2D::Build() {
   auto *allocator = GraphicsSystem::GetAllocator();
   auto device = GraphicsSystem::GetDevice();
 
@@ -59,16 +59,16 @@ void GraphicsPipeline2D::build() {
   pipelineInfo.targetInfo.hasDepthStencilTarget = false;
   this->pipeline = device->CreateGraphicsPipeline(pipelineInfo);
 }
-void GraphicsPipeline3D::set_vertex_shader(const Shader &shader) {
+void GraphicsPipeline3D::SetVertexShader(const Shader &shader) {
   this->vertexShader = shader;
 }
-void GraphicsPipeline3D::set_vertex_instanced_shader(const Shader &shader) {
+void GraphicsPipeline3D::SetVertexInstancedShader(const Shader &shader) {
   this->instancedShader = shader;
 }
-void GraphicsPipeline3D::set_fragment_shader(const Shader &shader) {
+void GraphicsPipeline3D::SetFragmentShader(const Shader &shader) {
   this->fragmentShader = shader;
 }
-void GraphicsPipeline3D::set_animation(bool animation) {
+void GraphicsPipeline3D::SetAnimation(bool animation) {
   this->isAnimation = animation;
 }
 void GraphicsPipeline3D::build() {

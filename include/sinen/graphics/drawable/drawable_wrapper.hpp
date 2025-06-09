@@ -26,19 +26,19 @@ public:
    * @brief Draw object
    *
    */
-  void draw();
+  void Draw();
   /**
    * @brief Set user data
    *
    * @param index Index of user data 0-16
    * @param value Value of user data
    */
-  void user_data_at(int index, float value);
-  void add(const glm::vec2 &position, const float &rotation,
+  void UserDataAt(int index, float value);
+  void Add(const glm::vec2 &position, const float &rotation,
            const glm::vec2 &scale);
-  void at(const int &index, const glm::vec2 &position, const float &rotation,
+  void At(const int &index, const glm::vec2 &position, const float &rotation,
           const glm::vec2 &scale);
-  void clear();
+  void Clear();
   struct world {
     glm::vec2 position;
     float rotation;
@@ -67,24 +67,24 @@ public:
    * @brief Draw object
    *
    */
-  void draw();
+  void Draw();
   /**
    * @brief Set user data
    *
    * @param index Index of user data 0-16
    * @param value Value of user data
    */
-  void user_data_at(int index, float value);
-  void add(const glm::vec3 &position, const glm::vec3 &rotation,
+  void UserDataAt(int index, float value);
+  void Add(const glm::vec3 &position, const glm::vec3 &rotation,
            const glm::vec3 &scale);
-  void at(const int &index, const glm::vec3 &position,
+  void At(const int &index, const glm::vec3 &position,
           const glm::vec3 &rotation, const glm::vec3 &scale);
-  void clear();
+  void Clear();
   glm::vec3 position;
   glm::vec3 rotation;
   glm::vec3 scale;
   Material material;
-  bool is_draw_depth = true;
+  bool isDrawDepth = true;
   Model model;
   std::shared_ptr<Drawable> obj;
   struct world {

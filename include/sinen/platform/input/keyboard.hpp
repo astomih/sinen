@@ -15,7 +15,7 @@ public:
    * @return true yes
    * @return false no
    */
-  static bool is_pressed(code _key);
+  static bool IsPressed(code _key);
   /**
    * @brief Is key down?
    *
@@ -23,7 +23,7 @@ public:
    * @return true yes
    * @return false no
    */
-  static bool is_down(code _key);
+  static bool IsDown(code _key);
   /**
    * @brief Is key released?
    *
@@ -31,7 +31,7 @@ public:
    * @return true yes
    * @return false no
    */
-  static bool is_released(code _key);
+  static bool IsReleased(code _key);
   /**
    * @brief Key code
    *

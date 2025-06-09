@@ -1,35 +1,35 @@
 local texture = Texture()
-texture:fill_color(Color(1, 1, 1, 1))
+texture:FillColor(Color(1, 1, 1, 1))
 local model = Model()
-model:load("BrainStem.glb")
+model:Load("BrainStem.glb")
 local draw3d = Draw3D()
-draw3d.material:append(texture)
+draw3d.material:AppendTexture(texture)
 draw3d.position = Vec3(0, 0, 0)
 draw3d.model = model
 
 local vertex_shader = Shader()
-vertex_shader:compile_and_load_vertex_shader("skinning.slang", 1)
-fragment_shader = Shader()
-fragment_shader:compile_and_load_fragment_shader("skinning.slang", 0)
+vertex_shader:CompileAndLoadVertexShader("skinning.slang", 1)
+local fragment_shader = Shader()
+fragment_shader:CompileAndLoadFragmentShader("skinning.slang", 0)
 
 local pipeline = GraphicsPipeline3D()
-pipeline:set_vertex_shader(vertex_shader)
-pipeline:set_fragment_shader(fragment_shader)
-pipeline:set_animation(true)
-pipeline:build()
+pipeline:SetVertexShader(vertex_shader)
+pipeline:SetFragmentShader(fragment_shader)
+pipeline:SetAnimation(true)
+pipeline:Build()
 
 
-pos = Vec3(0, -3, 1)
-Scene.camera():lookat(pos, Vec3(0, 0, 1), Vec3(0, 0, 1))
+local pos = Vec3(0, -3, 1)
+Scene.GetCamera():LookAt(pos, Vec3(0, 0, 1), Vec3(0, 0, 1))
 
-model:play(0)
-function update()
-    model:update(Scene.delta_time())
+model:Play(0)
+function Update()
+    model:Update(Scene.dT())
 end
 
-function draw()
-    Graphics.bind_pipeline3d(pipeline)
-    Graphics.set_uniform_data(1, model:bone_uniform_data())
+function Draw()
+    Graphics.BindPipeline3D(pipeline)
+    Graphics.SetUniformData(1, model:GetBoneUniformData())
     -- Draw texture
-    draw3d:draw()
+    draw3d:Draw()
 end

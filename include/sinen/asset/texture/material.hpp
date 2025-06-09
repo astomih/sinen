@@ -13,15 +13,15 @@ public:
 
   ~Material() = default;
 
-  void append(const Texture &texture) { textures.push_back(texture); }
+  void AppendTexture(const Texture &texture) { textures.push_back(texture); }
 
-  [[nodiscard]] const std::vector<Texture> &get_textures() const {
+  [[nodiscard]] const std::vector<Texture> &GetTextures() const {
     return textures;
   }
 
-  void clear() { textures.clear(); }
+  void Clear() { textures.clear(); }
 
-  const Texture &get_texture(const size_t index) { return textures[index]; }
+  const Texture &GetTexture(const size_t index) { return textures[index]; }
 
 private:
   std::vector<Texture> textures;

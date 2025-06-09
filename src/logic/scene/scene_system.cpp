@@ -116,14 +116,14 @@ void SceneSystem::process_input() {
 
 void SceneSystem::update_scene() {
   {
-    if (Keyboard::is_pressed(Keyboard::code::F3)) {
+    if (Keyboard::IsPressed(Keyboard::code::F3)) {
       Graphics::toggle_show_imgui();
       static bool z_init = false;
       if (Graphics::is_show_imgui()) {
         Graphics::add_imgui_function([&]() {
           if (!z_init) {
             zep_init(Zep::NVec2f(1.0f, 1.0f));
-            zep_load(DataStream::open_as_string(AssetType::Script, "main.py"));
+            zep_load(DataStream::OpenAsString(AssetType::Script, "main.py"));
             z_init = true;
           }
           zep_update();
@@ -165,7 +165,7 @@ void SceneSystem::shutdown() {
 
 void SceneSystem::change(const std::string &scene_file_name) {
   if (scene_file_name.empty()) {
-    Scene::set_state(Scene::state::quit);
+    Scene::SetState(Scene::state::quit);
     is_reset = false;
   } else {
     is_reset = true;

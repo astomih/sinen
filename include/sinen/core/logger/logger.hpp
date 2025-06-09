@@ -14,37 +14,37 @@ public:
   static void
       set_output_function(std::function<void(priority, std::string_view)>);
   template <typename... Args>
-  static void verbose(std::string_view format, Args &&...args) {
+  static void Verbose(std::string_view format, Args &&...args) {
     m_logger.verbose(
         string_format_logger(std::string(format), std::forward<Args>(args)...)
             .c_str());
   }
   template <typename... Args>
-  static void debug(std::string_view format, Args &&...args) {
+  static void Debug(std::string_view format, Args &&...args) {
     m_logger.debug(
         string_format_logger(std::string(format), std::forward<Args>(args)...)
             .c_str());
   }
   template <typename... Args>
-  static void info(std::string_view format, Args &&...args) {
+  static void Info(std::string_view format, Args &&...args) {
     m_logger.info(
         string_format_logger(std::string(format), std::forward<Args>(args)...)
             .c_str());
   }
   template <typename... Args>
-  static void error(std::string_view format, Args &&...args) {
+  static void Error(std::string_view format, Args &&...args) {
     m_logger.error(
         string_format_logger(std::string(format), std::forward<Args>(args)...)
             .c_str());
   }
   template <typename... Args>
-  static void warn(std::string_view format, Args &&...args) {
+  static void Warn(std::string_view format, Args &&...args) {
     m_logger.warn(
         string_format_logger(std::string(format), std::forward<Args>(args)...)
             .c_str());
   }
   template <typename... Args>
-  static void critical(std::string_view format, Args &&...args) {
+  static void Critical(std::string_view format, Args &&...args) {
     m_logger.critical(
         string_format_logger(std::string(format), std::forward<Args>(args)...)
             .c_str());

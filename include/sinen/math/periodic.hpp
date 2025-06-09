@@ -4,9 +4,9 @@
 namespace sinen {
 class Periodic {
 public:
-  static float sin0_1(const float periodSec, const float t = Time::seconds());
+  static float sin0_1(const float periodSec, const float t = Time::Seconds());
 
-  static float cos0_1(const float periodSec, const float t = Time::milli());
+  static float cos0_1(const float periodSec, const float t = Time::Milli());
 };
 } // namespace sinen
 #endif // SINEN_PERIODIC_HPP

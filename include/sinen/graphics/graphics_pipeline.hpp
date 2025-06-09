@@ -8,12 +8,12 @@ class GraphicsPipeline2D {
 public:
   GraphicsPipeline2D() = default;
 
-  void set_vertex_shader(const Shader &shader);
-  void set_fragment_shader(const Shader &shader);
+  void SetVertexShader(const Shader &shader);
+  void SetFragmentShader(const Shader &shader);
 
-  void build();
+  void Build();
 
-  px::Ptr<px::GraphicsPipeline> get() { return pipeline; }
+  px::Ptr<px::GraphicsPipeline> Get() { return pipeline; }
 
 private:
   Shader vertexShader;
@@ -25,10 +25,10 @@ class GraphicsPipeline3D {
 public:
   GraphicsPipeline3D() = default;
 
-  void set_vertex_shader(const Shader &shader);
-  void set_vertex_instanced_shader(const Shader &shader);
-  void set_fragment_shader(const Shader &shader);
-  void set_animation(bool animation);
+  void SetVertexShader(const Shader &shader);
+  void SetVertexInstancedShader(const Shader &shader);
+  void SetFragmentShader(const Shader &shader);
+  void SetAnimation(bool animation);
 
   void build();
 

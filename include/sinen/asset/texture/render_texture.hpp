@@ -6,13 +6,13 @@ class RenderTexture {
 public:
   RenderTexture();
 
-  void create(int width, int height);
+  void Create(int width, int height);
 
   int width;
   int height;
 
-  px::Ptr<px::Texture> get_texture() const;
-  px::Ptr<px::Texture> get_depth_stencil() const;
+  px::Ptr<px::Texture> GetTexture() const;
+  px::Ptr<px::Texture> GetDepthStencil() const;
 
 private:
   px::Ptr<px::Texture> texture;

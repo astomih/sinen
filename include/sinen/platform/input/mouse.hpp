@@ -10,18 +10,18 @@ class Mouse {
 public:
   enum class code;
   // For mouse position
-  static void set_position(const glm::vec2 &pos);
-  static void set_position_on_scene(const glm::vec2 &pos);
-  static glm::vec2 get_position();
-  static glm::vec2 get_position_on_scene();
-  static void hide_cursor(bool hide);
-  static glm::vec2 get_scroll_wheel();
-  static void set_relative(bool is_relative);
-  static bool is_relative();
+  static void SetPosition(const glm::vec2 &pos);
+  static void SetPositionOnScene(const glm::vec2 &pos);
+  static glm::vec2 GetPosition();
+  static glm::vec2 GetPositionOnScene();
+  static void HideCursor(bool hide);
+  static glm::vec2 GetScrollWheel();
+  static void SetRelative(bool is_relative);
+  static bool IsRelative();
   // For buttons
-  static bool is_down(code _button);
-  static bool is_pressed(code _button);
-  static bool is_released(code _button);
+  static bool IsDown(code _button);
+  static bool IsPressed(code _button);
+  static bool IsReleased(code _button);
   enum class code { LEFT = 1, MIDDLE = 2, RIGHT = 3, X1 = 4, X2 = 5 };
   using enum code;
 };

@@ -20,7 +20,7 @@ public:
    * @brief  Sound parameters
    *
    */
-  struct parameter {
+  struct Parameter {
     glm::vec3 position;
     uint32_t source_id;
     uint32_t buffer_id;
@@ -35,40 +35,40 @@ public:
    *
    * @param file_name File name
    */
-  void load(std::string_view file_name);
+  void Load(std::string_view file_name);
   /**
    * @brief Create the source
    *
    */
-  void new_source();
+  void NewSource();
   /**
    * @brief Delete the source
    *
    */
-  void delete_source();
-  void play();
-  bool is_valid();
+  void DeleteSource();
+  void Play();
+  bool IsValid();
   // Restart event from begining
-  void restart();
+  void Restart();
   // Stop this event
-  void stop(bool allowFadeOut = true);
+  void Stop(bool allowFadeOut = true);
   // Setters
-  void set_paused(bool pause);
-  void set_volume(float value);
-  void set_pitch(float value);
-  void set_position(glm::vec3 pos);
+  void SetPaused(bool pause);
+  void SetVolume(float value);
+  void SetPitch(float value);
+  void SetPosition(glm::vec3 pos);
   // Getters
-  bool get_paused();
-  float get_volume();
-  float get_pitch();
-  std::string get_name();
-  const glm::vec3 &get_position();
+  bool GetPaused();
+  float GetVolume();
+  float GetPitch();
+  std::string GetName();
+  const glm::vec3 &GetPosition();
 
-  void set_listener(glm::vec3 pos, glm::vec3 direction);
+  void SetListener(glm::vec3 pos, glm::vec3 direction);
 
 private:
   std::string mName;
-  parameter param;
+  Parameter param;
   float volume = 1.f;
   float pitch = 1.f;
   glm::vec3 pos;

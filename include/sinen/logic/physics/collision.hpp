@@ -34,17 +34,17 @@ struct OBB {
 };
 class Collision {
 public:
-  static bool aabb_aabb(const AABB &a, const AABB &b);
-  static bool obb_obb(const OBB &obb1, const OBB &obb2);
+  static bool AABBvsAABB(const AABB &a, const AABB &b);
+  static bool OBBvsOBB(const OBB &obb1, const OBB &obb2);
 
 private:
-  static float segment_length_on_separate_axis(const glm::vec3 &Sep,
-                                               const glm::vec3 &e1,
-                                               const glm::vec3 &e2,
-                                               const glm::vec3 &e3);
-  static float segment_length_on_separate_axis(const glm::vec3 &Sep,
-                                               const glm::vec3 &e1,
-                                               const glm::vec3 &e2);
+  static float SegmentLengthOnSeparateAxis(const glm::vec3 &Sep,
+                                           const glm::vec3 &e1,
+                                           const glm::vec3 &e2,
+                                           const glm::vec3 &e3);
+  static float SegmentLengthOnSeparateAxis(const glm::vec3 &Sep,
+                                           const glm::vec3 &e1,
+                                           const glm::vec3 &e2);
 };
 } // namespace sinen
 #endif // !SINEN_COLLISION_HPP

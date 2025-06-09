@@ -8,12 +8,12 @@
 namespace sinen {
 BFSGrid::BFSGrid(const graph &field) {
   this->m_field = field;
-  m_dist = graph{width(), height(), -1};
+  m_dist = graph{Width(), Height(), -1};
   m_prev_y = m_dist;
   m_prev_x = m_dist;
-  reset();
+  Reset();
 }
-void BFSGrid::reset() {
+void BFSGrid::Reset() {
   for (auto &i : m_dist) {
     i = -1;
   }
@@ -30,14 +30,14 @@ void BFSGrid::reset() {
     queue.pop();
   }
 }
-bool BFSGrid::find_path(const glm::ivec2 &start, const glm::ivec2 &end) {
+bool BFSGrid::FindPath(const glm::ivec2 &start, const glm::ivec2 &end) {
   constexpr int dx[4] = {0, 1, 0, -1};
   constexpr int dy[4] = {1, 0, -1, 0};
   // start or end is not in field
-  if (start.x < 0 || start.x >= width() || start.y < 0 || start.y >= height()) {
+  if (start.x < 0 || start.x >= Width() || start.y < 0 || start.y >= Height()) {
     return false;
   }
-  if (end.x < 0 || end.x >= width() || end.y < 0 || end.y >= height()) {
+  if (end.x < 0 || end.x >= Width() || end.y < 0 || end.y >= Height()) {
     return false;
   }
   // Start position set as visited
@@ -56,7 +56,7 @@ bool BFSGrid::find_path(const glm::ivec2 &start, const glm::ivec2 &end) {
       int next_x = x + dx[direction];
       int next_y = y + dy[direction];
       // Next_x or next_y is out of field
-      if (next_y < 0 || next_y >= height() || next_x < 0 || next_x >= width())
+      if (next_y < 0 || next_y >= Height() || next_x < 0 || next_x >= Width())
         continue;
       // Not walkable node
       if (m_field[next_y][next_x] < 0)
@@ -92,10 +92,10 @@ void BFSGrid::backtrace(const glm::ivec2 &end) {
     p.x = px, p.y = py;
   }
 }
-glm::ivec2 BFSGrid::trace() {
+glm::ivec2 BFSGrid::Trace() {
   glm::ivec2 next = shortest.top();
   shortest.pop();
   return next;
 }
-bool BFSGrid::traceable() const { return !shortest.empty(); }
+bool BFSGrid::Traceable() const { return !shortest.empty(); }
 } // namespace sinen

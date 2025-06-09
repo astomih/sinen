@@ -54,13 +54,13 @@ public:
    *
    * @return std::size_t Width of grid
    */
-  inline std::size_t width() const;
+  inline std::size_t Width() const;
   /**
    * @brief Get the height of grid
    *
    * @return std::size_t Height of grid
    */
-  inline std::size_t height() const;
+  inline std::size_t Height() const;
   /**
    * @brief Push a column to the right
    *
@@ -98,12 +98,12 @@ public:
    *
    * @return std::size_t Size of grid
    */
-  inline std::size_t size() const noexcept { return m_data.size(); }
+  inline std::size_t Size() const noexcept { return m_data.size(); }
   /**
    * @brief Erases all elements from the grid
    *
    */
-  inline void clear() noexcept {
+  inline void Clear() noexcept {
     m_data.clear();
     m_width = 0;
   }
@@ -113,7 +113,7 @@ public:
    * @param w New width
    * @param h New Height
    */
-  void resize(const std::size_t &w, const std::size_t &h);
+  void Resize(const std::size_t &w, const std::size_t &h);
   /**
    * @brief Capacity of grid
    *
@@ -135,7 +135,7 @@ public:
    * @return T& Object
    */
   inline T &at(const std::size_t &x, const std::size_t &y) {
-    if (x < 0 || y < 0 || x >= width() || y >= height()) {
+    if (x < 0 || y < 0 || x >= Width() || y >= Height()) {
       throw std::out_of_range("grid::at(): Out of range");
     }
     return m_data[y * m_width + x];

@@ -28,22 +28,22 @@ public:
    * @brief Model format is a custom format(.sim)
    * @param str
    */
-  void load(std::string_view str);
-  void load_from_vertex_array(const VertexArray &vArray);
-  void load_sprite();
-  void load_box();
-  void play(float start);
-  void update(float delta_time);
-  AABB &aabb() const;
+  void Load(std::string_view str);
+  void LoadFromVertexArray(const VertexArray &vArray);
+  void LoadSprite();
+  void LoadBox();
+  void Play(float start);
+  void Update(float delta_time);
+  AABB &GetAABB() const;
   std::shared_ptr<void> data;
-  std::vector<Vertex> all_vertex() const;
-  std::vector<std::uint32_t> all_indices() const;
-  UniformData bone_uniform_data() const;
+  std::vector<Vertex> AllVertex() const;
+  std::vector<std::uint32_t> AllIndices() const;
+  UniformData GetBoneUniformData() const;
 
 private:
-  void load_bone_uniform(float time);
+  void LoadBoneUniform(float time);
   float time = 0.0f;
-  std::vector<glm::mat4> inverse_bind_matrices;
+  std::vector<glm::mat4> inverseBindMatrices;
 };
 } // namespace sinen
 #endif // !SINEN_MODEL_HPP

@@ -66,21 +66,21 @@ void GraphicsSystem::initialize() {
   ImGui_ImplParanoixa_Init(&init_info);
 
   Shader vs;
-  vs.load_default_vertex_shader();
+  vs.LoadDefaultVertexShader();
   Shader vsInstanced;
-  vsInstanced.load_default_vertex_instance_shader();
+  vsInstanced.LoadDefaultVertexInstanceShader();
   Shader fs;
-  fs.load_default_fragment_shader();
+  fs.LoadDefaultFragmentShader();
 
-  pipeline3D.set_vertex_shader(vs);
-  pipeline3D.set_vertex_instanced_shader(vsInstanced);
-  pipeline3D.set_fragment_shader(fs);
+  pipeline3D.SetVertexShader(vs);
+  pipeline3D.SetVertexInstancedShader(vsInstanced);
+  pipeline3D.SetFragmentShader(fs);
   pipeline3D.build();
   currentPipeline3D = pipeline3D;
 
-  pipeline2D.set_vertex_shader(vs);
-  pipeline2D.set_fragment_shader(fs);
-  pipeline2D.build();
+  pipeline2D.SetVertexShader(vs);
+  pipeline2D.SetFragmentShader(fs);
+  pipeline2D.Build();
   currentPipeline2D = pipeline2D;
 
   // Create depth stencil target
@@ -88,8 +88,8 @@ void GraphicsSystem::initialize() {
 
     px::Texture::CreateInfo depthStencilCreateInfo{};
     depthStencilCreateInfo.allocator = allocator;
-    depthStencilCreateInfo.width = Window::size().x;
-    depthStencilCreateInfo.height = Window::size().y;
+    depthStencilCreateInfo.width = Window::Size().x;
+    depthStencilCreateInfo.height = Window::Size().y;
     depthStencilCreateInfo.layerCountOrDepth = 1;
     depthStencilCreateInfo.type = px::TextureType::Texture2D;
     depthStencilCreateInfo.usage = px::TextureUsage::DepthStencilTarget;
@@ -143,8 +143,8 @@ void GraphicsSystem::render() {
   if (WindowSystem::resized()) {
     px::Texture::CreateInfo depthStencilCreateInfo{};
     depthStencilCreateInfo.allocator = allocator;
-    depthStencilCreateInfo.width = Window::size().x;
-    depthStencilCreateInfo.height = Window::size().y;
+    depthStencilCreateInfo.width = Window::Size().x;
+    depthStencilCreateInfo.height = Window::Size().y;
     depthStencilCreateInfo.layerCountOrDepth = 1;
     depthStencilCreateInfo.type = px::TextureType::Texture2D;
     depthStencilCreateInfo.usage = px::TextureUsage::DepthStencilTarget;
@@ -184,8 +184,8 @@ void GraphicsSystem::render() {
     }
     auto renderPass = currentRenderPass;
     renderPass->SetViewport(
-        px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
-    renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
+        px::Viewport{0, 0, Window::Size().x, Window::Size().y, 0, 1});
+    renderPass->SetScissor(0, 0, Window::Size().x, Window::Size().y);
     // Render ImGui
     ImGui_ImplParanoixa_RenderDrawData(draw_data, commandBuffer, renderPass);
     commandBuffer->EndRenderPass(renderPass);
@@ -202,8 +202,8 @@ void GraphicsSystem::draw2d(const std::shared_ptr<Drawable> &drawObject) {
         currentCommandBuffer->BeginRenderPass(currentColorTargets, {});
     auto renderPass = currentRenderPass;
     renderPass->SetViewport(
-        px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
-    renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
+        px::Viewport{0, 0, Window::Size().x, Window::Size().y, 0, 1});
+    renderPass->SetScissor(0, 0, Window::Size().x, Window::Size().y);
     isFrameStarted = false;
     isDraw2D = true;
     isDefaultPipeline = true;
@@ -215,8 +215,8 @@ void GraphicsSystem::draw2d(const std::shared_ptr<Drawable> &drawObject) {
         currentCommandBuffer->BeginRenderPass(currentColorTargets, {});
     auto renderPass = currentRenderPass;
     renderPass->SetViewport(
-        px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
-    renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
+        px::Viewport{0, 0, Window::Size().x, Window::Size().y, 0, 1});
+    renderPass->SetScissor(0, 0, Window::Size().x, Window::Size().y);
     isDraw2D = true;
     isDefaultPipeline = true;
   }
@@ -224,7 +224,7 @@ void GraphicsSystem::draw2d(const std::shared_ptr<Drawable> &drawObject) {
   PxDrawable drawable{allocator};
   drawable.drawable = drawObject;
 
-  for (const auto &texture : drawObject->material.get_textures()) {
+  for (const auto &texture : drawObject->material.GetTextures()) {
     auto nativeTexture = std::static_pointer_cast<px::Texture>(
         GetTexData(texture.textureData)->texture);
     drawable.textureSamplers.push_back(px::TextureSamplerBinding{
@@ -242,7 +242,7 @@ void GraphicsSystem::draw2d(const std::shared_ptr<Drawable> &drawObject) {
 
   auto commandBuffer = currentCommandBuffer;
   auto renderPass = currentRenderPass;
-  renderPass->BindGraphicsPipeline(currentPipeline2D.get());
+  renderPass->BindGraphicsPipeline(currentPipeline2D.Get());
   renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
   renderPass->BindVertexBuffers(0, drawable.vertexBuffers);
   renderPass->BindIndexBuffer(drawable.indexBuffer,
@@ -265,8 +265,8 @@ void GraphicsSystem::draw3d(const std::shared_ptr<Drawable> &drawObject) {
         currentColorTargets, currentDepthStencilInfo);
     auto renderPass = currentRenderPass;
     renderPass->SetViewport(
-        px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
-    renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
+        px::Viewport{0, 0, Window::Size().x, Window::Size().y, 0, 1});
+    renderPass->SetScissor(0, 0, Window::Size().x, Window::Size().y);
     isFrameStarted = false;
     isDraw2D = false;
     isDefaultPipeline = true;
@@ -279,14 +279,14 @@ void GraphicsSystem::draw3d(const std::shared_ptr<Drawable> &drawObject) {
         currentColorTargets, currentDepthStencilInfo);
     auto renderPass = currentRenderPass;
     renderPass->SetViewport(
-        px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
-    renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
+        px::Viewport{0, 0, Window::Size().x, Window::Size().y, 0, 1});
+    renderPass->SetScissor(0, 0, Window::Size().x, Window::Size().y);
     isDraw2D = false;
     isDefaultPipeline = true;
   }
   PxDrawable drawable{allocator};
   drawable.drawable = drawObject;
-  for (const auto &texture : drawObject->material.get_textures()) {
+  for (const auto &texture : drawObject->material.GetTextures()) {
     auto nativeTexture = std::static_pointer_cast<px::Texture>(
         GetTexData(texture.textureData)->texture);
     drawable.textureSamplers.push_back(px::TextureSamplerBinding{
@@ -391,8 +391,8 @@ void GraphicsSystem::unload_shader(const Shader &shaderInfo) {}
 void *GraphicsSystem::get_texture_id() { return nullptr; }
 
 void GraphicsSystem::setup_shapes() {
-  box.load_from_vertex_array(create_box_vertices());
-  sprite.load_from_vertex_array(create_sprite_vertices());
+  box.LoadFromVertexArray(create_box_vertices());
+  sprite.LoadFromVertexArray(create_sprite_vertices());
 }
 
 void GraphicsSystem::prepare_imgui() {
@@ -424,8 +424,8 @@ void GraphicsSystem::set_uniform_data(uint32_t slot, const UniformData &data) {
                                               data.data.size() * sizeof(float));
 }
 void GraphicsSystem::begin_target2d(const RenderTexture &texture) {
-  auto tex = texture.get_texture();
-  auto depthTex = texture.get_depth_stencil();
+  auto tex = texture.GetTexture();
+  auto depthTex = texture.GetDepthStencil();
   currentCommandBuffer = device->AcquireCommandBuffer({allocator});
   currentColorTargets[0].loadOp = px::LoadOp::Clear;
   currentColorTargets[0].texture = tex;
@@ -438,8 +438,8 @@ void GraphicsSystem::begin_target2d(const RenderTexture &texture) {
   isDefaultPipeline = false;
 }
 void GraphicsSystem::begin_target3d(const RenderTexture &texture) {
-  auto tex = texture.get_texture();
-  auto depthTex = texture.get_depth_stencil();
+  auto tex = texture.GetTexture();
+  auto depthTex = texture.GetDepthStencil();
   currentCommandBuffer = device->AcquireCommandBuffer({allocator});
   currentColorTargets[0].loadOp = px::LoadOp::Clear;
   currentColorTargets[0].texture = tex;
@@ -458,7 +458,7 @@ void GraphicsSystem::end_target(const RenderTexture &texture, Texture &out) {
   device->WaitForGPUIdle();
   currentCommandBuffer = mainCommandBuffer;
 
-  auto tex = texture.get_texture();
+  auto tex = texture.GetTexture();
   auto outTextureData = GetTexData(out.textureData);
 
   // Copy

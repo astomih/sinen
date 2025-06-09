@@ -16,19 +16,18 @@ namespace sinen {
 class DataStream {
 public:
   static std::vector<uint8_t> key;
-  static std::string_view open(const AssetType &type, std::string_view name);
+  static std::string_view Open(const AssetType &type, std::string_view name);
 
-  static void *open_as_rwops(const AssetType &type, std::string_view name);
+  static void *OpenAsRWOps(const AssetType &type, std::string_view name);
 
-  static std::string open_as_string(const AssetType &type,
-                                    std::string_view name);
-  static void write(const AssetType &type, std::string_view name,
+  static std::string OpenAsString(const AssetType &type, std::string_view name);
+  static void Write(const AssetType &type, std::string_view name,
                     std::string_view data);
 
-  static void convert_file_path(const AssetType &type, std::string &filePath,
-                                std::string_view name);
-  static std::string convert_file_path(const AssetType &type,
-                                       std::string_view name);
+  static void ConvertFilePath(const AssetType &type, std::string &filePath,
+                              std::string_view name);
+  static std::string ConvertFilePath(const AssetType &type,
+                                     std::string_view name);
 };
 } // namespace sinen
 #endif // !SINEN_DATA_STREAM_HPP

@@ -103,7 +103,7 @@ void SoundSystem::load(std::string_view fileName) {
   uint32_t bid = 0;
 
   if (!SDL_LoadWAV(
-          DataStream::convert_file_path(AssetType::Sound, fileName).c_str(),
+          DataStream::ConvertFilePath(AssetType::Sound, fileName).c_str(),
           &spec, &buffer, &buffer_length)) {
     printf("Loading '%s' failed! %s\n", fileName.data(), SDL_GetError());
     return;

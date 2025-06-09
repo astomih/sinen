@@ -27,15 +27,15 @@ inline Grid<T, Allocator>::Grid(
 template <class T, class Allocator>
 inline Grid<T, Allocator>::Grid() : m_width(0), m_data() {}
 template <class T, class Allocator>
-inline std::size_t Grid<T, Allocator>::width() const {
+inline std::size_t Grid<T, Allocator>::Width() const {
   return m_width;
 }
 template <class T, class Allocator>
-inline std::size_t Grid<T, Allocator>::height() const {
+inline std::size_t Grid<T, Allocator>::Height() const {
   if (m_width == 0) {
     return 0;
   }
-  return size() / m_width;
+  return Size() / m_width;
 }
 
 /*
@@ -50,7 +50,7 @@ inline void Grid<T, Allocator>::push_column() {
     return;
   }
   for (auto it = m_data.begin(); it != m_data.end(); it++) {
-    it = m_data.insert(it + width(), T{});
+    it = m_data.insert(it + Width(), T{});
   }
   m_width++;
 }
@@ -63,7 +63,7 @@ inline void Grid<T, Allocator>::push_column(const T &value) {
     return;
   }
   for (auto it = m_data.begin(); it != m_data.end(); it++) {
-    it = m_data.insert(it + width(), value);
+    it = m_data.insert(it + Width(), value);
   }
   m_width++;
 }
@@ -73,7 +73,7 @@ inline void Grid<T, Allocator>::pop_column() {
     return;
   }
   for (auto it = m_data.begin(); it != m_data.end(); it++) {
-    it = --m_data.erase(it + width() - 1);
+    it = --m_data.erase(it + Width() - 1);
   }
   m_width--;
 }
@@ -82,28 +82,28 @@ inline void Grid<T, Allocator>::pop_column() {
   Row
 */
 template <class T, class Allocator> inline void Grid<T, Allocator>::push_row() {
-  if (width() == 0) {
+  if (Width() == 0) {
     m_data.push_back(T{});
     m_width++;
     return;
   }
-  m_data.resize(m_data.size() + width());
+  m_data.resize(m_data.size() + Width());
 }
 template <class T, class Allocator>
 inline void Grid<T, Allocator>::push_row(const T &value) {
-  if (width() == 0) {
+  if (Width() == 0) {
     m_data.push_back(value);
     m_width++;
     return;
   }
-  m_data.resize(m_data.size() + width(), value);
+  m_data.resize(m_data.size() + Width(), value);
 }
 template <class T, class Allocator> inline void Grid<T, Allocator>::pop_row() {
-  m_data.resize(m_data.size() - width());
+  m_data.resize(m_data.size() - Width());
 }
 
 template <class T, class Allocator>
-inline void Grid<T, Allocator>::resize(const std::size_t &w,
+inline void Grid<T, Allocator>::Resize(const std::size_t &w,
                                        const std::size_t &h) {
   if (w < 2 || h < 2) {
     if (w == 0 || h == 0) {
@@ -122,7 +122,7 @@ inline void Grid<T, Allocator>::resize(const std::size_t &w,
       return;
     }
   }
-  auto width = this->width();
+  auto width = this->Width();
   if (w < width) {
     for (std::size_t i = 0; i < width - w; i++) {
       pop_column();
@@ -132,7 +132,7 @@ inline void Grid<T, Allocator>::resize(const std::size_t &w,
       push_column();
     }
   }
-  auto height = this->height();
+  auto height = this->Height();
   if (h < height) {
     for (std::size_t i = 0; i < height - h; i++) {
       pop_row();

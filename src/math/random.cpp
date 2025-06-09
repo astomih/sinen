@@ -12,14 +12,14 @@ void RandomSystem::shutdown() {}
 
 void Random::seed(unsigned int seed) { RandomSystem::sGenerator.seed(seed); }
 
-float Random::get_float() { return get_float_range(0.0f, 1.0f); }
+float Random::get_float() { return GetRange(0.0f, 1.0f); }
 
-float Random::get_float_range(float min, float max) {
+float Random::GetRange(float min, float max) {
   std::uniform_real_distribution<float> dist(min, max);
   return dist(RandomSystem::sGenerator);
 }
 
-int Random::get_int_range(int min, int max) {
+int Random::GetIntRange(int min, int max) {
   std::uniform_int_distribution<int> dist(min, max);
   int a = dist(RandomSystem::sGenerator);
   return a;

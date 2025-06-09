@@ -33,7 +33,7 @@ public:
    * @return true success
    * @return false failed
    */
-  bool load(std::string_view fileName);
+  bool Load(std::string_view fileName);
   /**
    * @brief Load texture from memory
    *
@@ -42,18 +42,18 @@ public:
    * @return true
    * @return false
    */
-  bool load_from_memory(std::vector<char> &buffer);
+  bool LoadFromMemory(std::vector<char> &buffer);
   /**
    * @brief Copy texture from another texture
    *
    * @return texture
    */
-  Texture copy();
+  Texture Copy();
 
-  void fill_color(const Color &color);
-  void blend_color(const Color &color);
+  void FillColor(const Color &color);
+  void BlendColor(const Color &color);
 
-  glm::vec2 size();
+  glm::vec2 Size();
 
   std::shared_ptr<void> textureData;
 };

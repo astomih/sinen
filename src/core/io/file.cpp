@@ -11,43 +11,43 @@ class File::impl {
 public:
   impl() : rwops(nullptr) {}
   ~impl() = default;
-  std::string open_mode_to_string(const mode &mode) {
+  std::string open_mode_to_string(const Mode &mode) {
     std::string m;
     switch (mode) {
-    case mode::r:
+    case Mode::r:
       m = "r";
       break;
-    case mode::w:
+    case Mode::w:
       m = "w";
       break;
-    case mode::a:
+    case Mode::a:
       m = "a";
       break;
-    case mode::rp:
+    case Mode::rp:
       m = "r+";
       break;
-    case mode::wp:
+    case Mode::wp:
       m = "w+";
       break;
-    case mode::ap:
+    case Mode::ap:
       m = "a+";
       break;
-    case mode::rb:
+    case Mode::rb:
       m = "rb";
       break;
-    case mode::wb:
+    case Mode::wb:
       m = "wb";
       break;
-    case mode::ab:
+    case Mode::ab:
       m = "ab";
       break;
-    case mode::rpb:
+    case Mode::rpb:
       m = "r+b";
       break;
-    case mode::wpb:
+    case Mode::wpb:
       m = "w+b";
       break;
-    case mode::apb:
+    case Mode::apb:
       m = "a+b";
       break;
     default:
@@ -55,7 +55,7 @@ public:
     }
     return m;
   }
-  bool open(const char *filename, const mode &mode) {
+  bool open(const char *filename, const Mode &mode) {
     return open(filename, open_mode_to_string(mode).c_str());
   };
   bool open(const char *filename, const char *mode) {
@@ -87,32 +87,32 @@ private:
 };
 File::File() : m_impl(new impl()) {}
 File::~File() = default;
-std::string File::open_mode_to_string(const mode &mode) {
+std::string File::OpenModeToString(const Mode &mode) {
   return m_impl->open_mode_to_string(mode);
 }
-bool File::open(const char *filename, const mode &mode) {
+bool File::Open(const char *filename, const Mode &mode) {
   return m_impl->open(filename, mode);
 }
-bool File::open(std::string_view filename, const mode &mode) {
+bool File::Open(std::string_view filename, const Mode &mode) {
   return m_impl->open(filename.data(), mode);
 }
-bool File::open(const char *filename, const char *mode) {
+bool File::Open(const char *filename, const char *mode) {
   return m_impl->open(filename, mode);
 }
-bool File::open(std::string_view filename, const char *mode) {
+bool File::Open(std::string_view filename, const char *mode) {
   return m_impl->open(filename.data(), mode);
 }
 void File::close() { m_impl->close(); }
 
-void File::read(void *ptr, size_t size, size_t maxnum) {
+void File::Read(void *ptr, size_t size, size_t maxnum) {
   m_impl->read(ptr, size, maxnum);
 }
-void File::write(const void *buffer, size_t size, size_t num) {
+void File::Write(const void *buffer, size_t size, size_t num) {
   m_impl->write(buffer, size, num);
 }
-void File::seek(const std::int64_t &offset, int whence) {
+void File::Seek(const std::int64_t &offset, int whence) {
   m_impl->seek(offset, static_cast<SDL_IOWhence>(whence));
 }
-std::int64_t File::tell() { return m_impl->tell(); }
-std::int64_t File::size() { return m_impl->size(); }
+std::int64_t File::Tell() { return m_impl->tell(); }
+std::int64_t File::Size() { return m_impl->size(); }
 } // namespace sinen

@@ -23,7 +23,7 @@ public:
    * @param target
    * @param up
    */
-  void lookat(const glm::vec3 &position, const glm::vec3 &target,
+  void LookAt(const glm::vec3 &position, const glm::vec3 &target,
               const glm::vec3 &up);
   /**
    * @brief Set Perspective projection
@@ -33,7 +33,7 @@ public:
    * @param near Near plane
    * @param far Far plane
    */
-  void perspective(float fov, float aspect, float near, float far);
+  void Perspective(float fov, float aspect, float near, float far);
   /**
    * @brief Set Orthographic projection
    *
@@ -42,7 +42,7 @@ public:
    * @param near Near plane
    * @param far Far plane
    */
-  void orthographic(float width, float height, float near, float far);
+  void Orthographic(float width, float height, float near, float far);
 
   /**
    * @brief Check if AABB is in frustum
@@ -51,37 +51,37 @@ public:
    * @return true AABB is in frustum
    * @return false AABB is not in frustum
    */
-  bool is_aabb_in_frustum(const AABB &aabb);
+  bool IsAABBInFrustum(const AABB &aabb);
   /**
    * @brief Get the position of camera
    *
    * @return glm::vec3&
    */
-  glm::vec3 &position() { return m_position; }
+  glm::vec3 &GetPosition() { return m_position; }
   /**
    * @brief Get the target of camera
    *
    * @return glm::vec3&
    */
-  glm::vec3 &target() { return m_target; }
+  glm::vec3 &GetTarget() { return m_target; }
   /**
    * @brief Get the up vector of camera
    *
    * @return glm::vec3&
    */
-  glm::vec3 &up() { return m_up; }
+  glm::vec3 &GetUp() { return m_up; }
   /**
    * @brief Get the view matrix of camera
    *
    * @return matrix4&
    */
-  glm::mat4 &view() { return m_view; }
+  glm::mat4 &GetView() { return m_view; }
   /**
    * @brief Get the projection matrix of camera
    *
    * @return matrix4&
    */
-  glm::mat4 &projection() { return m_projection; }
+  glm::mat4 &Projection() { return m_projection; }
 
 private:
   // Position of camera

@@ -17,7 +17,7 @@ public:
   Font(int32_t point, std::string_view file_name);
   ~Font();
 
-  bool load(int point_size);
+  bool Load(int point_size);
   /**
    * @brief font load from filepath
    *
@@ -26,38 +26,38 @@ public:
    * @return true success to load
    * @return false failed to load
    */
-  bool load_from_file(int pointSize, std::string_view path);
+  bool LoadFromFile(int pointSize, std::string_view path);
   /**
    * @brief return already loaded font
    *
    * @return true loaded
    * @return false not load yet
    */
-  bool is_loaded() { return this->m_font != nullptr; }
+  bool IsLoaded() { return this->m_font != nullptr; }
   /**
    * @brief Unload the font
    */
-  void unload();
+  void Unload();
   /**
    * @brief Font size
    *
    * @return int
    */
-  int size() { return m_size; }
+  int Size() { return m_size; }
   /**
    * @brief resize font
    *
    * @param point_size
    */
-  void resize(int point_size);
+  void Resize(int point_size);
   /**
    * @brief render to texture
    *
    * @param text require UTF-8
    * @param _color font color
    */
-  void render_text(Texture &tex, std::string_view text,
-                   const Color &_color = Palette::white());
+  void RenderText(Texture &tex, std::string_view text,
+                  const Color &_color = Palette::white());
 
 private:
   void *m_font;

@@ -4,40 +4,40 @@
 namespace sinen {
 Camera Scene::m_main_camera = []() {
   Camera c;
-  c.lookat(glm::vec3{0, -1, 1}, glm::vec3{0, 0, 0}, glm::vec3{0, 0, 1});
-  c.perspective(90.f, Window::size().x / Window::size().y, .1f, 100.f);
+  c.LookAt(glm::vec3{0, -1, 1}, glm::vec3{0, 0, 0}, glm::vec3{0, 0, 1});
+  c.Perspective(90.f, Window::Size().x / Window::Size().y, .1f, 100.f);
   return c;
 }();
 glm::vec2 Scene::m_screen_size = glm::vec2(1280.0, 720.0);
 
-void Scene::reset() {
+void Scene::Reset() {
   SceneSystem::shutdown();
   SceneSystem::set_state(Scene::state::quit);
 }
 
-bool Scene::is_running() { return SceneSystem::is_running(); }
+bool Scene::IsRunning() { return SceneSystem::is_running(); }
 
-void Scene::set_state(const Scene::state &state) {
+void Scene::SetState(const Scene::state &state) {
   SceneSystem::set_state(state);
 }
-const Scene::state &Scene::get_state() { return SceneSystem::get_state(); }
-void Scene::change(const std::string &scene_file_name) {
+const Scene::state &Scene::GetState() { return SceneSystem::get_state(); }
+void Scene::Change(const std::string &scene_file_name) {
   SceneSystem::change(scene_file_name);
 }
-std::string Scene::current_name() { return SceneSystem::current_name(); }
+std::string Scene::GetCurrentName() { return SceneSystem::current_name(); }
 void Scene::change_impl(std::unique_ptr<Scene::implements> impl) {
   SceneSystem::change_impl(std::move(impl));
 }
 void Scene::set_run_script(bool is_run) { SceneSystem::set_run_script(is_run); }
-glm::vec2 Scene::ratio() {
-  return glm::vec2(Window::size().x / Scene::size().x,
-                   Window::size().y / Scene::size().y);
+glm::vec2 Scene::Ratio() {
+  return glm::vec2(Window::Size().x / Scene::Size().x,
+                   Window::Size().y / Scene::Size().y);
 }
-glm::vec2 Scene::inv_ratio() {
-  return glm::vec2(Scene::size().x / Window::size().x,
-                   Scene::size().y / Window::size().y);
+glm::vec2 Scene::InvRatio() {
+  return glm::vec2(Scene::Size().x / Window::Size().x,
+                   Scene::Size().y / Window::Size().y);
 }
 
-float Scene::delta_time() { return SceneSystem::delta_time(); }
+float Scene::dT() { return SceneSystem::delta_time(); }
 
 } // namespace sinen

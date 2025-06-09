@@ -104,7 +104,7 @@ VertexArray create_box_vertices() {
       12, 13, 14, 12, 14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23,
   };
   v_array.indexCount = sizeof(indices) / sizeof(uint32_t);
-  v_array.push_indices(indices, v_array.indexCount);
+  v_array.PushIndices(indices, v_array.indexCount);
   return v_array;
 }
 } // namespace sinen

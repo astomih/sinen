@@ -12,7 +12,7 @@
 
 namespace sinen {
 Sound::Sound() {}
-void Sound::load(std::string_view file_name) {
+void Sound::Load(std::string_view file_name) {
   SoundSystem::load(file_name);
   auto sourceID = SoundSystem::new_source(file_name);
   ALint buf;
@@ -21,65 +21,65 @@ void Sound::load(std::string_view file_name) {
   param.buffer_id = buf;
   mName = file_name.data();
 }
-void Sound::play() { alSourcePlay(param.source_id); }
-void Sound::new_source() {
+void Sound::Play() { alSourcePlay(param.source_id); }
+void Sound::NewSource() {
   auto sourceID = SoundSystem::new_source(mName);
   ALint buf;
   alGetSourcei(sourceID, AL_BUFFER, &buf);
   param.source_id = sourceID;
   param.buffer_id = buf;
 }
-void Sound::set_listener(glm::vec3 pos, glm::vec3 rotation) {
+void Sound::SetListener(glm::vec3 pos, glm::vec3 rotation) {
   glm::quat q = glm::angleAxis(rotation.z, glm::vec3(0, 0, -1));
   q = q * glm::angleAxis(rotation.y, glm::vec3(0, 1, 0));
   q = q * glm::angleAxis(rotation.x, glm::vec3(1, 0, 0));
 
   SoundSystem::set_listener(pos, q);
 }
-void Sound::delete_source() { SoundSystem::delete_source(param.source_id); }
-bool Sound::is_valid() {
+void Sound::DeleteSource() { SoundSystem::delete_source(param.source_id); }
+bool Sound::IsValid() {
   return SoundSystem::get_buffers().contains(mName.data());
 }
 
-void Sound::restart() {
+void Sound::Restart() {
   isPlaying = true;
-  stop();
+  Stop();
   alSourcePlay(param.source_id);
 }
 
-void Sound::stop(bool allowFadeOut /* true */) {
+void Sound::Stop(bool allowFadeOut /* true */) {
   isPlaying = false;
   alSourceStop(param.source_id);
 }
 
-void Sound::set_paused(bool pause) {
+void Sound::SetPaused(bool pause) {
   isPaused = pause;
   alSourcePause(param.source_id);
 }
 
-void Sound::set_volume(float value) {
+void Sound::SetVolume(float value) {
   volume = value;
   alSourcef(param.source_id, AL_GAIN, value);
 }
 
-void Sound::set_pitch(float value) {
+void Sound::SetPitch(float value) {
   pitch = value;
   alSourcef(param.source_id, AL_PITCH, value);
 }
 
-void Sound::set_position(glm::vec3 pos) {
+void Sound::SetPosition(glm::vec3 pos) {
   this->pos = pos;
   alSource3f(param.source_id, AL_POSITION, pos.x, pos.y, pos.z);
 }
 
-bool Sound::get_paused() { return isPaused; }
+bool Sound::GetPaused() { return isPaused; }
 
-float Sound::get_volume() { return volume; }
+float Sound::GetVolume() { return volume; }
 
-float Sound::get_pitch() { return pitch; }
+float Sound::GetPitch() { return pitch; }
 
-const glm::vec3 &Sound::get_position() { return pos; }
+const glm::vec3 &Sound::GetPosition() { return pos; }
 
-std::string Sound::get_name() { return mName; }
+std::string Sound::GetName() { return mName; }
 
 } // namespace sinen

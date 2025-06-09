@@ -105,59 +105,59 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
   // Texture
   py::class_<Texture>(m, "Texture")
       .def(py::init<>())
-      .def("fill_color", &Texture::fill_color)
-      .def("blend_color", &Texture::blend_color)
-      .def("copy", &Texture::copy)
-      .def("load", &Texture::load)
-      .def("size", &Texture::size);
+      .def("fill_color", &Texture::FillColor)
+      .def("blend_color", &Texture::BlendColor)
+      .def("copy", &Texture::Copy)
+      .def("load", &Texture::Load)
+      .def("size", &Texture::Size);
 
   // Material
   py::class_<Material>(m, "Material")
       .def(py::init<>())
-      .def("append", &Material::append)
-      .def("clear", &Material::clear)
-      .def("get_texture", &Material::get_texture,
+      .def("append", &Material::AppendTexture)
+      .def("clear", &Material::Clear)
+      .def("get_texture", &Material::GetTexture,
            py::return_value_policy::reference);
 
   py::class_<RenderTexture>(m, "RenderTexture")
       .def(py::init<>())
-      .def("create", &RenderTexture::create);
+      .def("create", &RenderTexture::Create);
 
   py::class_<Music>(m, "Music")
       .def(py::init<>())
-      .def("load", &Music::load)
-      .def("play", &Music::play)
-      .def("set_volume", &Music::set_volume);
+      .def("load", &Music::Load)
+      .def("play", &Music::Play)
+      .def("set_volume", &Music::SetVolume);
 
   py::class_<Sound>(m, "Sound")
       .def(py::init<>())
-      .def("load", &Sound::load)
-      .def("play", &Sound::play)
-      .def("set_volume", &Sound::set_volume)
-      .def("set_pitch", &Sound::set_pitch)
-      .def("set_listener", &Sound::set_listener)
-      .def("set_position", &Sound::set_position);
+      .def("load", &Sound::Load)
+      .def("play", &Sound::Play)
+      .def("set_volume", &Sound::SetVolume)
+      .def("set_pitch", &Sound::SetPitch)
+      .def("set_listener", &Sound::SetListener)
+      .def("set_position", &Sound::SetPosition);
 
   py::class_<Camera>(m, "Camera")
       .def(py::init<>())
-      .def("lookat", &Camera::lookat)
-      .def("perspective", &Camera::perspective)
-      .def("orthographic", &Camera::orthographic)
-      .def("position", &Camera::position)
-      .def("target", &Camera::target)
-      .def("up", &Camera::up)
-      .def("is_aabb_in_frustum", &Camera::is_aabb_in_frustum);
+      .def("lookat", &Camera::LookAt)
+      .def("perspective", &Camera::Perspective)
+      .def("orthographic", &Camera::Orthographic)
+      .def("position", &Camera::GetPosition)
+      .def("target", &Camera::GetTarget)
+      .def("up", &Camera::GetUp)
+      .def("is_aabb_in_frustum", &Camera::IsAABBInFrustum);
 
   // Model
   py::class_<Model>(m, "Model")
       .def(py::init<>())
-      .def("aabb", &Model::aabb)
-      .def("load", &Model::load)
-      .def("load_sprite", &Model::load_sprite)
-      .def("load_box", &Model::load_box)
-      .def("bone_uniform_data", &Model::bone_uniform_data)
-      .def("play", &Model::play)
-      .def("update", &Model::update);
+      .def("aabb", &Model::GetAABB)
+      .def("load", &Model::Load)
+      .def("load_sprite", &Model::LoadSprite)
+      .def("load_box", &Model::LoadBox)
+      .def("bone_uniform_data", &Model::GetBoneUniformData)
+      .def("play", &Model::Play)
+      .def("update", &Model::Update);
 
   // AABB
   py::class_<AABB>(m, "AABB")
@@ -169,36 +169,36 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
   // Timer
   py::class_<Timer>(m, "Timer")
       .def(py::init<>())
-      .def("start", &Timer::start)
-      .def("stop", &Timer::stop)
-      .def("is_started", &Timer::is_started)
-      .def("set_time", &Timer::set_time)
-      .def("check", &Timer::check);
+      .def("start", &Timer::Start)
+      .def("stop", &Timer::Stop)
+      .def("is_started", &Timer::IsStarted)
+      .def("set_time", &Timer::SetTime)
+      .def("check", &Timer::Check);
 
   // Uniform Data
   py::class_<UniformData>(m, "UniformData")
       .def(py::init<>())
-      .def("add", &UniformData::add)
-      .def("change", &UniformData::change);
+      .def("add", &UniformData::Add)
+      .def("change", &UniformData::Change);
 
   // Shader
   py::class_<Shader>(m, "Shader")
       .def(py::init<>())
-      .def("load_vertex_shader", &Shader::load_vertex_shader)
-      .def("load_fragment_shader", &Shader::load_fragment_shader)
+      .def("load_vertex_shader", &Shader::LoadVertexShader)
+      .def("load_fragment_shader", &Shader::LoadFragmentShader)
       .def("compile_and_load_vertex_shader",
-           &Shader::compile_and_load_vertex_shader)
+           &Shader::CompileAndLoadVertexShader)
       .def("compile_and_load_fragment_shader",
-           &Shader::compile_and_load_fragment_shader);
+           &Shader::CompileAndLoadFragmentShader);
 
   // Font
   py::class_<Font>(m, "Font")
       .def(py::init<>())
       // Overload Font::load
-      .def("load", py::overload_cast<int>(&Font::load))
-      .def("load", py::overload_cast<int, std::string_view>(&Font::load_from_file))
-      .def("render_text", &Font::render_text)
-      .def("resize", &Font::resize);
+      .def("load", py::overload_cast<int>(&Font::Load))
+      .def("load", py::overload_cast<int, std::string_view>(&Font::LoadFromFile))
+      .def("render_text", &Font::RenderText)
+      .def("resize", &Font::Resize);
   // Color
   py::class_<Color>(m, "Color")
       .def(py::init<>())
@@ -210,10 +210,10 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
   // Draw2D
   py::class_<Draw2D>(m, "Draw2D")
       .def(py::init<>())
-      .def("draw", &Draw2D::draw)
-      .def("add", &Draw2D::add)
-      .def("at", &Draw2D::at)
-      .def("clear", &Draw2D::clear)
+      .def("draw", &Draw2D::Draw)
+      .def("add", &Draw2D::Add)
+      .def("at", &Draw2D::At)
+      .def("clear", &Draw2D::Clear)
       .def_readwrite("scale", &Draw2D::scale)
       .def_readwrite("position", &Draw2D::position)
       .def_readwrite("rotation", &Draw2D::rotation)
@@ -222,27 +222,27 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
   // Draw3D
   py::class_<Draw3D>(m, "Draw3D")
       .def(py::init<>())
-      .def("draw", &Draw3D::draw)
-      .def("add", &Draw3D::add)
-      .def("at", &Draw3D::at)
-      .def("clear", &Draw3D::clear)
+      .def("draw", &Draw3D::Draw)
+      .def("add", &Draw3D::Add)
+      .def("at", &Draw3D::At)
+      .def("clear", &Draw3D::Clear)
       .def_readwrite("scale", &Draw3D::scale)
       .def_readwrite("position", &Draw3D::position)
       .def_readwrite("rotation", &Draw3D::rotation)
       .def_readwrite("material", &Draw3D::material)
       .def_readwrite("model", &Draw3D::model)
-      .def_readwrite("is_draw_depth", &Draw3D::is_draw_depth);
+      .def_readwrite("is_draw_depth", &Draw3D::isDrawDepth);
 
   py::class_<Grid<int>>(m, "Grid")
       .def(py::init<int, int>())
       .def("at", &Grid<int>::at)
       .def("set",
            [](Grid<int> &g, int x, int y, int v) { return g.at(x, y) = v; })
-      .def("width", &Grid<int>::width)
-      .def("height", &Grid<int>::height)
-      .def("size", &Grid<int>::size)
-      .def("clear", &Grid<int>::clear)
-      .def("resize", &Grid<int>::resize)
+      .def("width", &Grid<int>::Width)
+      .def("height", &Grid<int>::Height)
+      .def("size", &Grid<int>::Size)
+      .def("clear", &Grid<int>::Clear)
+      .def("resize", &Grid<int>::Resize)
       .def("fill", [](Grid<int> &g, int value) {
         for (auto &i : g) {
           i = value;
@@ -251,74 +251,74 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
 
   py::class_<BFSGrid>(m, "BFSGrid")
       .def(py::init<const Grid<int> &>())
-      .def("width", &BFSGrid::width)
-      .def("height", &BFSGrid::height)
+      .def("width", &BFSGrid::Width)
+      .def("height", &BFSGrid::Height)
       .def("find_path",
            [](BFSGrid &g, const glm::ivec2 &start, const glm::ivec2 &end) {
-             return g.find_path({start.x, start.y}, {end.x, end.y});
+             return g.FindPath({start.x, start.y}, {end.x, end.y});
            })
       .def("trace",
            [](BFSGrid &g) {
-             auto t = g.trace();
+             auto t = g.Trace();
              return glm::ivec2{t.x, t.y};
            })
-      .def("traceable", &BFSGrid::traceable)
-      .def("reset", &BFSGrid::reset);
+      .def("traceable", &BFSGrid::Traceable)
+      .def("reset", &BFSGrid::Reset);
 
   py::class_<GraphicsPipeline2D>(m, "GraphicsPipeline2D")
       .def(py::init<>())
-      .def("set_vertex_shader", &GraphicsPipeline2D::set_vertex_shader)
-      .def("set_fragment_shader", &GraphicsPipeline2D::set_fragment_shader)
-      .def("build", &GraphicsPipeline2D::build);
+      .def("set_vertex_shader", &GraphicsPipeline2D::SetVertexShader)
+      .def("set_fragment_shader", &GraphicsPipeline2D::SetFragmentShader)
+      .def("build", &GraphicsPipeline2D::Build);
   py::class_<GraphicsPipeline3D>(m, "GraphicsPipeline3D")
       .def(py::init<>())
-      .def("set_vertex_shader", &GraphicsPipeline3D::set_vertex_shader)
+      .def("set_vertex_shader", &GraphicsPipeline3D::SetVertexShader)
       .def("set_vertex_instanced_shader",
-           &GraphicsPipeline3D::set_vertex_instanced_shader)
-      .def("set_fragment_shader", &GraphicsPipeline3D::set_fragment_shader)
-      .def("set_animation", &GraphicsPipeline3D::set_animation)
+           &GraphicsPipeline3D::SetVertexInstancedShader)
+      .def("set_fragment_shader", &GraphicsPipeline3D::SetFragmentShader)
+      .def("set_animation", &GraphicsPipeline3D::SetAnimation)
       .def("build", &GraphicsPipeline3D::build);
 
   py::class_<Random>(m, "Random")
-      .def_static("get_int_range", &Random::get_int_range)
-      .def_static("get_float_range", &Random::get_float_range);
+      .def_static("get_int_range", &Random::GetIntRange)
+      .def_static("get_float_range", &Random::GetRange);
 
   py::class_<Window>(m, "Window")
-      .def_static("name", &Window::name)
-      .def_static("size", &Window::size)
-      .def_static("half", &Window::half)
-      .def_static("resize", &Window::resize)
-      .def_static("set_fullscreen", &Window::set_fullscreen)
-      .def_static("rename", &Window::rename)
-      .def_static("resized", &Window::resized);
+      .def_static("name", &Window::GetName)
+      .def_static("size", &Window::Size)
+      .def_static("half", &Window::Half)
+      .def_static("resize", &Window::Resize)
+      .def_static("set_fullscreen", &Window::SetFullscreen)
+      .def_static("rename", &Window::Rename)
+      .def_static("resized", &Window::Resized);
 
   py::class_<Graphics>(m, "Graphics")
-      .def_static("clear_color", &Graphics::clear_color)
-      .def_static("set_clear_color", &Graphics::set_clear_color)
+      .def_static("clear_color", &Graphics::GetClearColor)
+      .def_static("set_clear_color", &Graphics::SetClearColor)
       .def_static("at_render_texture_user_data",
                   &Graphics::at_render_texture_user_data)
-      .def_static("bind_pipeline2d", &Graphics::bind_pipeline2d)
-      .def_static("bind_default_pipeline2d", &Graphics::bind_default_pipeline2d)
-      .def_static("bind_pipeline3d", &Graphics::bind_pipeline3d)
-      .def_static("bind_default_pipeline3d", &Graphics::bind_default_pipeline3d)
-      .def_static("set_uniform_data", &Graphics::set_uniform_data)
-      .def_static("begin_target2d", &Graphics::begin_target2d)
-      .def_static("begin_target3d", &Graphics::begin_target3d)
-      .def_static("end_target", &Graphics::end_target);
+      .def_static("bind_pipeline2d", &Graphics::BindPipeline2D)
+      .def_static("bind_default_pipeline2d", &Graphics::BindDefaultPipeline2D)
+      .def_static("bind_pipeline3d", &Graphics::BindPipeline3D)
+      .def_static("bind_default_pipeline3d", &Graphics::BindDefaultPipeline3D)
+      .def_static("set_uniform_data", &Graphics::SetUniformData)
+      .def_static("begin_target2d", &Graphics::BeginTarget2D)
+      .def_static("begin_target3d", &Graphics::BeginTarget3D)
+      .def_static("end_target", &Graphics::EndTarget);
 
   py::class_<Scene>(m, "Scene")
       .def(py::init<>())
-      .def_static("camera", &Scene::camera, py::return_value_policy::reference)
-      .def_static("size", &Scene::size)
-      .def_static("resize", &Scene::resize)
-      .def_static("half", &Scene::half)
-      .def_static("ratio", &Scene::ratio)
-      .def_static("inv_ratio", &Scene::inv_ratio)
-      .def_static("delta_time", &Scene::delta_time)
-      .def_static("change", &Scene::change);
+      .def_static("camera", &Scene::GetCamera, py::return_value_policy::reference)
+      .def_static("size", &Scene::Size)
+      .def_static("resize", &Scene::Resize)
+      .def_static("half", &Scene::Half)
+      .def_static("ratio", &Scene::Ratio)
+      .def_static("inv_ratio", &Scene::InvRatio)
+      .def_static("delta_time", &Scene::dT)
+      .def_static("change", &Scene::Change);
 
   py::class_<Collision>(m, "Collision")
-      .def_static("aabb_aabb", &Collision::aabb_aabb);
+      .def_static("aabb_aabb", &Collision::AABBvsAABB);
 
   py::enum_<Keyboard::code>(m, "Keyboard")
       .value("A", Keyboard::A)
@@ -384,9 +384,9 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .value("RCTRL", Keyboard::RCTRL)
       .value("LALT", Keyboard::LALT)
       .def(py::init<>())
-      .def("is_pressed", &Keyboard::is_pressed)
-      .def("is_released", &Keyboard::is_released)
-      .def("is_down", &Keyboard::is_down);
+      .def("is_pressed", &Keyboard::IsPressed)
+      .def("is_released", &Keyboard::IsReleased)
+      .def("is_down", &Keyboard::IsDown);
 
   py::enum_<Mouse::code>(m, "Mouse")
       .value("LEFT", Mouse::LEFT)
@@ -394,15 +394,15 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .value("MIDDLE", Mouse::MIDDLE)
       .value("X1", Mouse::X1)
       .value("X2", Mouse::X2)
-      .def_static("is_pressed", &Mouse::is_pressed)
-      .def_static("is_released", &Mouse::is_released)
-      .def_static("is_down", &Mouse::is_down)
-      .def_static("position", &Mouse::get_position)
-      .def_static("position_on_scene", &Mouse::get_position_on_scene)
-      .def_static("set_position", &Mouse::set_position)
-      .def_static("set_position_on_scene", &Mouse::set_position_on_scene)
-      .def_static("scroll_wheel", &Mouse::get_scroll_wheel)
-      .def_static("hide_cursor", &Mouse::hide_cursor);
+      .def_static("is_pressed", &Mouse::IsPressed)
+      .def_static("is_released", &Mouse::IsReleased)
+      .def_static("is_down", &Mouse::IsDown)
+      .def_static("position", &Mouse::GetPosition)
+      .def_static("position_on_scene", &Mouse::GetPositionOnScene)
+      .def_static("set_position", &Mouse::SetPosition)
+      .def_static("set_position_on_scene", &Mouse::SetPositionOnScene)
+      .def_static("scroll_wheel", &Mouse::GetScrollWheel)
+      .def_static("hide_cursor", &Mouse::HideCursor);
 
   py::enum_<GamePad::code>(m, "GamePad")
       .value("INVALID", GamePad::INVALID)
@@ -428,12 +428,12 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .value("PADDLE4", GamePad::PADDLE4)
       .value("TOUCHPAD", GamePad::TOUCHPAD)
       .def(py::init<>())
-      .def_static("is_pressed", &GamePad::is_pressed)
-      .def_static("is_released", &GamePad::is_released)
-      .def_static("is_down", &GamePad::is_down)
-      .def_static("left_stick", &GamePad::get_left_stick)
-      .def_static("right_stick", &GamePad::get_right_stick)
-      .def_static("is_connected", &GamePad::is_connected);
+      .def_static("is_pressed", &GamePad::IsPressed)
+      .def_static("is_released", &GamePad::IsReleased)
+      .def_static("is_down", &GamePad::IsDown)
+      .def_static("left_stick", &GamePad::GetLeftStick)
+      .def_static("right_stick", &GamePad::GetRightStick)
+      .def_static("is_connected", &GamePad::IsConnected);
 
   py::class_<Periodic>(m, "Periodic")
       .def(py::init<>())
@@ -442,17 +442,17 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
 
   py::class_<Time>(m, "Time")
       .def(py::init<>())
-      .def_static("seconds", &Time::seconds)
-      .def_static("milli", &Time::milli);
+      .def_static("seconds", &Time::Seconds)
+      .def_static("milli", &Time::Milli);
 
   py::class_<Logger>(m, "Logger")
       .def_static("verbose",
-                  [](const std::string &str) { Logger::verbose(str); })
-      .def_static("debug", [](const std::string &str) { Logger::debug(str); })
-      .def_static("info", [](const std::string &str) { Logger::info(str); })
-      .def_static("error", [](const std::string &str) { Logger::error(str); })
-      .def_static("warn", [](const std::string &str) { Logger::warn(str); })
+                  [](const std::string &str) { Logger::Verbose(str); })
+      .def_static("debug", [](const std::string &str) { Logger::Debug(str); })
+      .def_static("info", [](const std::string &str) { Logger::Info(str); })
+      .def_static("error", [](const std::string &str) { Logger::Error(str); })
+      .def_static("warn", [](const std::string &str) { Logger::Warn(str); })
       .def_static("critical",
-                  [](const std::string &str) { Logger::critical(str); });
+                  [](const std::string &str) { Logger::Critical(str); });
 }
 } // namespace sinen

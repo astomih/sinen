@@ -22,7 +22,7 @@ VertexArray create_sprite_vertices() {
       0, 1, 2, 0, 2, 3,
   };
   v_array.indexCount = sizeof(indices) / sizeof(uint32_t);
-  v_array.push_indices(indices, v_array.indexCount);
+  v_array.PushIndices(indices, v_array.indexCount);
   return v_array;
 }
 

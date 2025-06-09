@@ -36,37 +36,37 @@ public:
    * @return true
    * @return false
    */
-  static bool is_running();
+  static bool IsRunning();
   /**
    * @brief Get the State object
    *
    * @return game_state
    */
-  static const state &get_state();
+  static const state &GetState();
   /**
    * @brief Set the State object
    *
    * @param state
    */
-  static void set_state(const state &state);
+  static void SetState(const state &state);
 
   /**
    * @brief Reset scene
    *
    */
-  static void reset();
+  static void Reset();
   /**
    * @brief Get the current scene name
    *
    * @return std::string
    */
-  static std::string current_name();
+  static std::string GetCurrentName();
   /**
    * @brief Change scene
    *
    * @param scene_file_name scene file name in Lua
    */
-  static void change(const std::string &scene_file_name);
+  static void Change(const std::string &scene_file_name);
   /**
    * @brief Change implementation of scene
    *
@@ -77,29 +77,29 @@ public:
   }
   static void set_run_script(bool is_run);
 
-  static Camera &camera() { return m_main_camera; }
+  static Camera &GetCamera() { return m_main_camera; }
 
   /**
    * @brief Set the screen size
    *
    * @param size
    */
-  static void resize(const glm::vec2 &size) { m_screen_size = size; }
+  static void Resize(const glm::vec2 &size) { m_screen_size = size; }
   /**
    * @brief Get the screen size
    *
    * @return const vector2&
    */
-  static const glm::vec2 &size() { return m_screen_size; }
-  static const glm::vec2 half() {
+  static const glm::vec2 &Size() { return m_screen_size; }
+  static const glm::vec2 Half() {
     glm::vec2 c = m_screen_size;
     c /= 2.f;
     return c;
   }
-  static glm::vec2 ratio();
-  static glm::vec2 inv_ratio();
+  static glm::vec2 Ratio();
+  static glm::vec2 InvRatio();
 
-  static float delta_time();
+  static float dT();
 
 private:
   // main camera

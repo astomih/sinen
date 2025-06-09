@@ -2,21 +2,21 @@
 local texture = Texture()
 -- Create a draw2D
 local draw2d = Draw2D()
-draw2d.material:append(texture)
+draw2d.material:AppendTexture(texture)
 -- Create a font
 local font = Font()
 -- Load a font (96px)
-font:load(96)
+font:Load(96)
 
-function update()
+function Update()
     -- Render text to texture
-    font:render_text(texture, "Hello Sinen World!",
+    font:RenderText(texture, "Hello Sinen World!",
         Color(1, 1, 1, 1))
     -- Set scale to texture size
-    draw2d.scale = texture:size()
+    draw2d.scale = texture:Size()
 end
 
-function draw()
+function Draw()
     -- Draw texture
-    draw2d:draw()
+    draw2d:Draw()
 end

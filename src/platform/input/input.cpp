@@ -97,60 +97,60 @@ KeyInputState InputSystem::keyInputState = KeyInputState();
 mouse_state_impl InputSystem::m_mouse = mouse_state_impl();
 joystick_state_impl InputSystem::m_joystick = joystick_state_impl();
 
-bool Keyboard::is_down(Keyboard::code _key_code) {
+bool Keyboard::IsDown(Keyboard::code _key_code) {
   return get_key_state(_key_code) == button_state::Held;
 }
 
-bool Keyboard::is_pressed(Keyboard::code _key_code) {
+bool Keyboard::IsPressed(Keyboard::code _key_code) {
   return get_key_state(_key_code) == button_state::Pressed;
 }
 
-bool Keyboard::is_released(Keyboard::code _key_code) {
+bool Keyboard::IsReleased(Keyboard::code _key_code) {
   return get_key_state(_key_code) == button_state::Released;
 }
 
-bool KeyInput::is_pressed(const KeyCode key) {
+bool KeyInput::IsPressed(const KeyCode key) {
   return get_key_state(key) == button_state::Pressed;
 }
-bool KeyInput::is_down(const KeyCode key) {
+bool KeyInput::IsDown(const KeyCode key) {
   return get_key_state(key) == button_state::Held;
 }
-bool KeyInput::is_released(const KeyCode key) {
+bool KeyInput::IsReleased(const KeyCode key) {
   return get_key_state(key) == button_state::Released;
 }
 
-void Mouse::set_position(const glm::vec2 &pos) {
-  const auto half = Window::half();
+void Mouse::SetPosition(const glm::vec2 &pos) {
+  const auto half = Window::Half();
   SDL_WarpMouseInWindow(WindowSystem::get_sdl_window(), half.x + pos.x,
                         half.y - pos.y);
 }
-void Mouse::set_position_on_scene(const glm::vec2 &pos) {
-  Mouse::set_position(pos * Scene::ratio());
+void Mouse::SetPositionOnScene(const glm::vec2 &pos) {
+  Mouse::SetPosition(pos * Scene::Ratio());
 }
-glm::vec2 Mouse::get_position() {
+glm::vec2 Mouse::GetPosition() {
   glm::vec2 pos;
   SDL_GetMouseState(&pos.x, &pos.y);
-  pos -= Window::half();
+  pos -= Window::Half();
   pos.y *= -1.f;
   return pos;
 }
-glm::vec2 Mouse::get_position_on_scene() {
-  return Mouse::get_position() * Scene::inv_ratio();
+glm::vec2 Mouse::GetPositionOnScene() {
+  return Mouse::GetPosition() * Scene::InvRatio();
 }
 
-glm::vec2 Mouse::get_scroll_wheel() {
+glm::vec2 Mouse::GetScrollWheel() {
   return InputSystem::m_mouse.mScrollWheel;
 }
 
-void Mouse::set_relative(bool is_relative) {
+void Mouse::SetRelative(bool is_relative) {
   SDL_SetWindowRelativeMouseMode(WindowSystem::get_sdl_window(), is_relative);
 }
 
-bool Mouse::is_relative() {
+bool Mouse::IsRelative() {
   return SDL_GetWindowRelativeMouseMode(WindowSystem::get_sdl_window());
 }
 
-void Mouse::hide_cursor(bool hide) {
+void Mouse::HideCursor(bool hide) {
   isHide = hide;
   if (hide) {
     SDL_HideCursor();
@@ -159,36 +159,36 @@ void Mouse::hide_cursor(bool hide) {
     SDL_ShowCursor();
   }
 }
-bool Mouse::is_down(Mouse::code _button) {
+bool Mouse::IsDown(Mouse::code _button) {
   return get_button_state(_button) == button_state::Held;
 }
 
-bool Mouse::is_pressed(Mouse::code _button) {
+bool Mouse::IsPressed(Mouse::code _button) {
   return get_button_state(_button) == button_state::Pressed;
 }
 
-bool Mouse::is_released(Mouse::code _button) {
+bool Mouse::IsReleased(Mouse::code _button) {
   return get_button_state(_button) == button_state::Released;
 }
 
-bool GamePad::is_down(GamePad::code _button) {
+bool GamePad::IsDown(GamePad::code _button) {
   return get_button_state(_button) == button_state::Held;
 }
 
-bool GamePad::is_pressed(GamePad::code _button) {
+bool GamePad::IsPressed(GamePad::code _button) {
   return get_button_state(_button) == button_state::Pressed;
 }
 
-bool GamePad::is_released(GamePad::code _button) {
+bool GamePad::IsReleased(GamePad::code _button) {
   return get_button_state(_button) == button_state::Released;
 }
-const glm::vec2 &GamePad::get_left_stick() {
+const glm::vec2 &GamePad::GetLeftStick() {
   return InputSystem::m_joystick.mLeftStick;
 }
-const glm::vec2 &GamePad::get_right_stick() {
+const glm::vec2 &GamePad::GetRightStick() {
   return InputSystem::m_joystick.mRightStick;
 }
-bool GamePad::is_connected() { return InputSystem::m_joystick.mIsConnected; }
+bool GamePad::IsConnected() { return InputSystem::m_joystick.mIsConnected; }
 
 joystick InputSystem::mController;
 bool InputSystem::initialize() {
@@ -254,7 +254,7 @@ void InputSystem::update() {
   y = -mController.get_axis(joystick::axis::RIGHTY);
   m_joystick.mRightStick = filter2d(x, y);
 
-  Mouse::hide_cursor(isHide);
+  Mouse::HideCursor(isHide);
 }
 void InputSystem::process_event(SDL_Event &event) {
 

@@ -22,7 +22,7 @@ local pos = Vec3(1, 1, 3)
 local speed = 0.1
 
 function update()
-    scene.camera():lookat(pos, Vec3(0, 0, 0), Vec3(0, 1, 0))
+    Scene.camera():lookat(pos, Vec3(0, 0, 0), Vec3(0, 1, 0))
 end
 
 function draw()

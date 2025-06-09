@@ -4,7 +4,6 @@ texture:load("logo.png")
 -- Create a draw2D
 local draw2d = Draw2D()
 draw2d.material:append(texture)
-
 -- Set scale to texture size
 draw2d.scale = texture:size()
 

@@ -20,11 +20,11 @@ pipeline:build()
 
 
 pos = Vec3(0, -3, 1)
-scene.camera():lookat(pos, Vec3(0, 0, 1), Vec3(0, 0, 1))
+Scene.camera():lookat(pos, Vec3(0, 0, 1), Vec3(0, 0, 1))
 
 model:play(0)
 function update()
-    model:update(scene.delta_time())
+    model:update(Scene.delta_time())
 end
 
 function draw()

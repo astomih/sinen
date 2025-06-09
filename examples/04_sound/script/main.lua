@@ -14,7 +14,7 @@ draw2d.material:append(texture)
 draw2d.scale = texture:size()
 
 function update()
-    if keyboard.is_pressed(keyboard.SPACE) then
+    if Keyboard.is_pressed(Keyboard.SPACE) then
         hello_sound:play()
     end
 end

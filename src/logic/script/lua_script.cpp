@@ -303,12 +303,12 @@ bool LuaScript::Initialize() {
     v["clear"] = &Draw3D::clear;
   }
   {
-    auto v = lua.create_table("random");
+    auto v = lua.create_table("Random");
     v["get_int_range"] = &Random::get_int_range;
     v["get_float_range"] = &Random::get_float_range;
   }
   {
-    auto v = lua.create_table("window");
+    auto v = lua.create_table("Window");
     v["name"] = &Window::name;
     v["size"] = &Window::size;
     v["half"] = Window::half;
@@ -332,7 +332,7 @@ bool LuaScript::Initialize() {
     v["end_target"] = &Graphics::end_target;
   }
   {
-    auto v = lua.create_table("scene");
+    auto v = lua.create_table("Scene");
     v["camera"] = &Scene::camera;
     v["size"] = &Scene::size;
     v["resize"] = &Scene::resize;
@@ -343,11 +343,11 @@ bool LuaScript::Initialize() {
     v["change"] = &Scene::change;
   }
   {
-    auto v = lua.create_table("collision");
+    auto v = lua.create_table("Collision");
     v["aabb_aabb"] = &Collision::aabb_aabb;
   }
   {
-    auto v = lua.create_table("keyboard");
+    auto v = lua.create_table("Keyboard");
     v["is_pressed"] = &Keyboard::is_pressed;
     v["is_released"] = &Keyboard::is_released;
     v["is_down"] = &Keyboard::is_down;
@@ -415,7 +415,7 @@ bool LuaScript::Initialize() {
     v["ALT"] = (int)Keyboard::ALTERASE;
   }
   {
-    auto v = lua.create_table("mouse");
+    auto v = lua.create_table("Mouse");
     v["set_relative"] = &Mouse::set_relative;
     v["is_relative"] = &Mouse::is_relative;
     v["is_pressed"] = &Mouse::is_pressed;
@@ -434,7 +434,7 @@ bool LuaScript::Initialize() {
     v["X2"] = (int)Mouse::X2;
   }
   {
-    auto v = lua.create_table("gamepad");
+    auto v = lua.create_table("Gamepad");
     v["is_pressed"] = &GamePad::is_pressed;
     v["is_released"] = &GamePad::is_released;
     v["is_down"] = &GamePad::is_down;
@@ -465,7 +465,7 @@ bool LuaScript::Initialize() {
     v["TOUCHPAD"] = (int)GamePad::TOUCHPAD;
   }
   {
-    auto v = lua.create_table("periodic");
+    auto v = lua.create_table("Periodic");
     v["sin0_1"] = [](float period, float t) {
       return Periodic::sin0_1(period, t);
     };
@@ -474,13 +474,13 @@ bool LuaScript::Initialize() {
     };
   }
   {
-    auto v = lua.create_table("time");
+    auto v = lua.create_table("Time");
     v["seconds"] = &Time::seconds;
     v["milli"] = &Time::milli;
   }
   {
     // logger
-    auto v = lua.create_table("logger");
+    auto v = lua.create_table("Logger");
     v["verbose"] = [](std::string str) { Logger::verbose("%s", str.data()); };
     v["debug"] = [](std::string str) { Logger::debug("%s", str.data()); };
     v["info"] = [](std::string str) { Logger::info("%s", str.data()); };

@@ -20,6 +20,11 @@
 ---@return Vec3
 function Vec3(x, y, z) return {} end
 
+---@param value number
+---@return Vec3
+---Initializes a Vec3 with the same value for x, y, z.
+function Vec3(value) return {} end
+
 ---@class Vec2
 ---@field x number
 ---@field y number
@@ -37,6 +42,11 @@ function Vec3(x, y, z) return {} end
 ---@param y number?
 ---@return Vec2
 function Vec2(x, y) return {} end
+
+---@param value number
+---@return Vec2
+---Initializes a Vec2 with the same value for x, y.
+function Vec2(value) return {} end
 
 ---@class Texture
 ---@field FillColor fun(self: Texture, color: Color)
@@ -139,12 +149,15 @@ function Font() return {} end
 ---@field g number
 ---@field b number
 ---@field a number
----@param r number?
----@param g number?
----@param b number?
----@param a number?
+---@param r number
+---@param g number
+---@param b number
+---@param a number
 ---@return Color
 function Color(r, g, b, a) return {} end
+
+---@return Color
+function Color() return {} end
 
 ---@class Draw2D
 ---@field scale Vec2
@@ -215,10 +228,12 @@ function GraphicsPipeline2D() return {} end
 ---@return GraphicsPipeline3D
 function GraphicsPipeline3D() return {} end
 
+---Static class
 ---@class Random
 ---@field GetRange fun(a: number, b: number): number
 Random = {}
 
+---Static class
 ---@class Window
 ---@field GetName fun(): string
 ---@field Size fun(): Vec2
@@ -229,6 +244,7 @@ Random = {}
 ---@field Resized fun(): boolean
 Window = {}
 
+---Static class
 ---@class Graphics
 ---@field GetClearColor fun(): Color
 ---@field SetClearColor fun(c: Color)
@@ -242,6 +258,7 @@ Window = {}
 ---@field EndTarget fun(rt: RenderTexture, texture_ref: Texture)
 Graphics = {}
 
+---Static class
 ---@class Scene
 ---@field GetCamera fun(): Camera
 ---@field Size fun(): Vec2
@@ -249,14 +266,16 @@ Graphics = {}
 ---@field Half fun(): Vec2
 ---@field Ratio fun(): number
 ---@field InvRatio fun(): number
----@field dT fun(): number
+---@field DeltaTime fun(): number
 ---@field Change fun(name: string)
 Scene = {}
 
+---Static class
 ---@class Collision
 ---@field AABBvsAABB fun(a: AABB, b: AABB): boolean
 Collision = {}
 
+---Static class
 ---@class Keyboard
 ---@field A integer
 ---@field B integer
@@ -325,6 +344,7 @@ Collision = {}
 ---@field IsDown fun(scancode: integer): boolean
 Keyboard = {}
 
+---Static class
 ---@class Mouse
 ---@field LEFT integer
 ---@field RIGHT integer
@@ -342,6 +362,7 @@ Keyboard = {}
 ---@field HideCursor fun()
 Mouse = {}
 
+---Static class
 ---@class GamePad
 ---@field INVALID integer
 ---@field A integer
@@ -373,16 +394,19 @@ Mouse = {}
 ---@field IsConnected fun(): boolean
 Gamepad = {}
 
+---Static class
 ---@class Periodic
 ---@field Sin0_1 fun(time: number): number
 ---@field Cos0_1 fun(time: number): number
 Periodic = {}
 
+---Static class
 ---@class Time
 ---@field Seconds fun(): number
 ---@field Milli fun(): integer
 Time = {}
 
+---Static class
 ---@class Logger
 ---@field Verbose fun(msg: string)
 ---@field Debug fun(msg: string)

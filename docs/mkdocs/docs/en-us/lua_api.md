@@ -1,570 +1,855 @@
 # Lua API
-## About call
-Lua scripts placed in the `sinen.exe exists directory /script` directory are executed in the order they are loaded.
-```lua
 
--- setup
+There may be discrepancies with the main branch.  
+For type information, refer to the sinen.lua file.
+
+## About Invocation
+
+Place Lua scripts in the `/script/` directory where `sinen.exe` exists.
+
+```lua
+-- Setup
 
 function Update()
+  -- Function called every frame
 end
 
 function Draw()
+  -- Function called every frame for rendering
 end
 ```
-
 ## Classes
-Lua does not have classes, but tables are used instead. 
-Sinen provides several predefined classes.
+
+Lua does not have classes, but tables are used instead.  
+Sinen provides several built-in classes.
 
 ### Naming Conventions
-In Sinen, Lua classes start with an uppercase letter. 
-Instances are created using the class name followed by parentheses (e.g., `a = Vector2(1.0, 2.0)`). 
-Functions can be called using a colon (`:`) (e.g., `a:length()`).
 
-### Vector2
+Sinen uses the following naming conventions:  
+- Class names: CamelCase (e.g., `Vec2`, `Vec3`, `Color`)
+- Method names: CamelCase (e.g., `Length`, `Normalize`, `Copy`)
+- Property names: lowerCase (e.g., `x`, `y`, `z`, `r`, `g`, `b`, `a`)
+
+Instances are created using the class name (e.g., `a = Vec2(1, 2)`).  
+Instance methods can be called with a colon (e.g., `a:Length()`).
+
+### Vec2
+
 #### Metatable
-- `__add`: Performs vector addition (`a + b`).  
-- `__sub`: Performs vector subtraction (`a - b`).  
-- `__mul`: Performs vector multiplication (`a * b`).  
-- `__div`: Performs vector division (`a / b`).  
 
-#### Vector2(x, y) -> Vector2
-- `x`: X component of the vector.
-- `y`: Y component of the vector.
-Creates a Vector2 object.
+- `__add`: Vector addition (a + b)
+- `__sub`: Vector subtraction (a - b)
+- `__mul`: Vector multiplication (a * b)
+- `__div`: Vector division (a / b)
 
-#### Vector2.x = float
-X component of the Vector2.
-#### Vector2.y = float
-Y component of the Vector2.
-#### Vector2:length() -> float
+#### Vec2(x, y) -> Vec2
+
+- `x`: The x component of the vector
+- `y`: The y component of the vector  
+Creates a Vec2 object.
+
+#### Vec2(value) -> Vec2
+
+- `value`: A number or a Vec2 object  
+Creates a Vec2 object where both x and y components are set to the same value.
+
+#### Vec2.x = number
+
+The x component of the Vec2.
+
+#### Vec2.y = number
+
+The y component of the Vec2.
+
+#### Vec2:Length() -> number
+
 Returns the length of the vector.
-#### Vector2:normalize() -> Vector2
-Normalizes the vector.
-#### Vector2:copy() -> Vector2
-Copies the vector.
-#### Vector2:dot(Vector2, Vector2) -> float
-- `Vector2`: Vector 1
-- `Vector2`: Vector 2 
-Gets the dot product of two vectors.
-#### Vector2:lerp(Vector2, Vector2, float) -> Vector2
-- `Vector2`: Vector 1
-- `Vector2`: Vector 2
-- `float`: Interpolation factor (0.0~1.0)
-Gets the linear interpolation between two vectors.
-#### Vector2:reflect(Vector2, Vector2) -> Vector2
-- `Vector2`: Incident vector
-- `Vector2`: Normal vector
-Gets the reflection vector of the incident vector based on the normal vector.
-### Vector3
+
+#### Vec2:Normalize() -> Vec2
+
+Returns a normalized version of the vector.
+
+#### Vec2:Copy() -> Vec2
+
+Returns a copy of the vector.
+
+#### Vec2:Dot(Vec2, Vec2) -> number
+
+- `Vec2`: Vector 1
+- `Vec2`: Vector 2  
+Returns the dot product.
+
+#### Vec2:Lerp(Vec2, Vec2, number) -> Vec2
+
+- `Vec2`: Vector 1
+- `Vec2`: Vector 2
+- `number`: Interpolation factor  
+Returns the linear interpolation.
+
+#### Vec2:Reflect(Vec2, Vec2) -> Vec2
+
+- `Vec2`: Vector
+- `Vec2`: Normal vector  
+Returns the reflection vector.
+
+### Vec3
+
 #### Metatable
-- `__add`: Performs vector addition (`a + b`).  
-- `__sub`: Performs vector subtraction (`a - b`).  
-- `__mul`: Performs vector multiplication (`a * b`).  
-- `__div`: Performs vector division (`a / b`).  
 
-#### Vector3(x, y, z) -> Vector3
-- `x`: X component of the vector.
-- `y`: Y component of the vector.
-- z: Z component of the vector.
-Creates a Vector3 object.
+- `__add`: Vector addition (a + b)
+- `__sub`: Vector subtraction (a - b)
+- `__mul`: Vector multiplication (a * b)
+- `__div`: Vector division (a / b)
 
-#### Vector3.x = float
-X component of the Vector3.
-#### Vector3.y = float
-Y component of the Vector3.
-#### Vector3.z = float
-Z component of the Vector3.
-#### Vector3:length() -> float
+#### Vec3(x, y, z) -> Vec3
+
+- `x`: x component
+- `y`: y component
+- `z`: z component  
+Creates a Vec3 object.
+
+#### Vec3(value) -> Vec3
+
+- `value`: A number or a Vec3 object  
+Creates a Vec3 object where all x, y, z components are set to the same value.
+
+#### Vec3.x = number
+
+The x component of the Vec3.
+
+#### Vec3.y = number
+
+The y component of the Vec3.
+
+#### Vec3.z = number
+
+The z component of the Vec3.
+
+#### Vec3:Length() -> number
+
 Returns the length of the vector.
-#### Vector3:normalize() -> Vector3
-Normalizes the vector.
-#### Vector3:copy() -> Vector3
-Copies the vector. Since Lua primarily passes references, use this method if a copy is needed.
-#### Vector3:forward(Vector3) -> Vector3
-- `Vector3`: Axis vector  
-Gets the forward vector of the specified axis vector.
-#### Vector3:dot(Vector3, Vector3) -> float
-- `Vector3`: Vector 1
-- `Vector3`: Vector 2
-Gets the dot product of two vectors.
-#### Vector3:cross(Vector3, Vector3) -> Vector3
-- `Vector3`: Vector 1
-- `Vector3`: Vector 2
-Gets the cross product of two vectors.
-#### Vector3:lerp(Vector3, Vector3, float) -> Vector3
-- `Vector3`: Vector 1
-- `Vector3`: Vector 2
-- `float`: Interpolation factor (0.0~1.0)
-Gets the linear interpolation between two vectors.
-#### Vector3:reflect(Vector3, Vector3) -> Vector3
-- `Vector3`: Incident vector
-- `Vector3`: Normal vector
-Gets the reflection vector of the incident vector based on the normal vector.
 
-### Point2i
-Represents a 2D integer point.
-#### Point2i(x, y) -> Point2i
-- `x`: X component of Point2i.
-- `y`: Y component of Point2i.
-#### Point2i.x = int
-X component of Point2i.
-#### Point2i.y = int
-Y component of Point2i.
+#### Vec3:Normalize() -> Vec3
+
+Returns a normalized version of the vector.
+
+#### Vec3:Copy() -> Vec3
+
+Returns a copy of the vector.  
+Because Lua passes by reference, use this when you need an actual copy.
+
+#### Vec3:Forward(Vec3) -> Vec3
+
+- `Vec3`: Axis vector  
+Returns the forward vector.
+
+#### Vec3:Dot(Vec3, Vec3) -> number
+
+- `Vec3`: Vector 1
+- `Vec3`: Vector 2  
+Returns the dot product.
+
+#### Vec3:Cross(Vec3, Vec3) -> Vec3
+
+- `Vec3`: Vector 1
+- `Vec3`: Vector 2  
+Returns the cross product.
+
+#### Vec3:Lerp(Vec3, Vec3, number) -> Vec3
+
+- `Vec3`: Vector 1
+- `Vec3`: Vector 2
+- `number`: Interpolation factor  
+Returns the linear interpolation.
+
+#### Vec3:Reflect(Vec3, Vec3) -> Vec3
+
+- `Vec3`: Vector
+- `Vec3`: Normal vector  
+Returns the reflection vector.
 
 ### Color
-Represents a color.
-#### Color(r, g, b, a) -> Color
-- `r`: Red component (0.0~1.0).
-- `g`: Green component (0.0~1.0).
-- `b`: Blue component (0.0~1.0).
-- `a`: Alpha component (0.0~1.0).
+
+#### Color() -> Color
+
 Creates a Color object.
 
-#### Color.r = float
-Red component (0.0~1.0).
-#### Color.g = float
-Green component (0.0~1.0).
-#### Color.b = float
-Blue component (0.0~1.0).
-#### Color.a = float
-Alpha component (0.0~1.0).
+#### Color(r, g, b, a) -> Color
+
+- `r`: Red component (0.0~1.0)
+- `g`: Green component (0.0~1.0)
+- `b`: Blue component (0.0~1.0)
+- `a`: Alpha component (0.0~1.0)  
+Creates a color object.
+
+#### Color.r = number
+
+Red component (0.0~1.0)
+
+#### Color.g = number
+
+Green component (0.0~1.0)
+
+#### Color.b = number
+
+Blue component (0.0~1.0)
+
+#### Color.a = number
+
+Alpha component (0.0~1.0)
 
 ### Texture
+
 #### Texture()
-Creates a Texture object.
-#### Texture:load(string)
-- `string`: Path to the texture.
-Loads a texture from a file.
-#### Texture:fill_color(Color)
-- `Color`: Color to fill the texture with.
+
+Creates a texture object.
+
+#### Texture:Load(string)
+
+- `string`: The name of a texture file in `data/texture/`  
+Loads a texture file.
+
+#### Texture:FillColor(Color)
+
+- `Color`: The color to fill the texture  
 Fills the texture with a color.
-#### Texture:blend_color(Color)
-- `Color`: Color to blend the texture with.
+
+#### Texture:BlendColor(Color)
+
+- `Color`: The color to blend with the texture  
 Blends the texture with a color.
-#### Texture:copy() -> Texture
-Copies the texture.
-#### Texture:size() -> Vector2
-Gets the size of the texture.
+
+#### Texture:Copy() -> Texture
+
+Returns a copy of the texture.  
+Because Lua passes by reference, use this when you need an actual copy.
+
+#### Texture:Size() -> Vec2
+
+Returns the size of the texture.
 
 ### RenderTexture
+
 #### RenderTexture()
-Creates a RenderTexture object.
-#### RenderTexture:create(int, int)
-- `int`: Width.
-- `int`: Height.  
+
+Creates a render texture object.
+
+#### RenderTexture:Create(number, number)
+
+- `number`: Width
+- `number`: Height  
 Creates a render texture.
 
+### Material
+
+#### Material() -> Material
+
+Creates a material object.
+
+#### Material:AppendTexture(Texture)
+
+- `Texture`: Texture  
+Appends a texture to the material.
+
 ### Font
+
 #### Font() -> Font
+
 Creates a font object.
-#### Font:load(string)
-- `string`: Name of the font file in `data/font/`.
-Loads a .ttf font file.
-#### Font:render_text(Texture, string, color)
-- `Texture`: Target texture.
-- `string`: Text to render.
-- `Color`: Text color.
-Renders text on the CPU.
+
+#### Font:Load(string, number)
+
+- `string`: Name of a font file in `data/font/`
+- `number`: Font size (in pixels)  
+Loads a .ttf file.
+
+#### Font:RenderText(Texture, string, Color)
+
+- `Texture`: Target texture
+- `string`: Text to render
+- `Color`: Text color  
+Renders text on the CPU.  
+The texture is resized according to the rendering result.
 
 ### Draw2D
-#### Draw2D(Texture) -> Draw2D
-- `Texture`: Texture to render.
-Creates a 2D object for rendering.
-#### Draw2D:draw()
-Renders a 2D object.
-#### Draw2D.position = Vector2
-Position.  
-Sinen uses the center of the screen as the origin.
-#### Draw2D.scale = Vector2
+
+#### Draw2D() -> Draw2D
+
+Creates a Draw2D object.
+
+#### Draw2D.position = Vec2
+
+Position information.  
+The center of the Sinen window is (0, 0).
+
+#### Draw2D.scale = Vec2
+
 Scale.
-#### Draw2D.rotation = float
+
+#### Draw2D.rotation = number
+
 Clockwise rotation angle.
-#### Draw2D.texture = Texture
-Texture.
+
+#### Draw2D.material = Material
+
+Material.
+
 #### Draw2D.model = Model
+
 Model.
-#### Draw2D:add(Vector2, float, Vector2)
-- `Vector2`: Position.
-- `float`: Clockwise rotation angle.
-- `Vector2`: Scale.  
-Adds multiple objects with the same texture and model for rendering. One object already exists at the time of instance creation.
-#### Draw2D:clear()
-Clears added objects. However, the initially created object is not cleared.
+
+#### Draw2D:Draw()
+
+Draws the 2D object.
+
+#### Draw2D:Add(Vec2, number, Vec2)
+
+- `Vec2`: Position
+- `number`: Clockwise rotation angle
+- `Vec2`: Scale  
+Adds and draws multiple objects with the same texture/model.  
+A single object already exists at instantiation.
+
+#### Draw2D:Clear()
+
+Clears the added objects.  
+However, the object created at instantiation is not cleared.
 
 ### Draw3D
-#### Draw3D:draw(Texture)
-- `Texture`: Texture to render.
-Renders a 3D object.
-#### Draw3D.position = Vector3
-World position.
-#### Draw3D.scale = Vector3
+
+#### Draw3D() -> Draw3D
+
+Creates a Draw3D object.
+
+#### Draw3D.position = Vec3
+
+Position information (world coordinates).
+
+#### Draw3D.scale = Vec3
+
 Scale.
-#### Draw3D.rotation = Vector3
-Euler angle rotation.
-#### Draw3D.texture = Texture
-Texture.
+
+#### Draw3D.rotation = Vec3
+
+Rotation angle (Euler angles).
+
+#### Draw3D.material = Material
+
+Material.
+
 #### Draw3D.model = Model
+
 Model.
-#### Draw3D:add(Vector3, Vector3, Vector3)
-- `Vector3`: Position.
-- `Vector3`: Rotation.
-- `Vector3`: Scale.  
-Adds multiple objects with the same texture and model for rendering. One object already exists at the time of instance creation.
-#### Draw3D:clear()
-Clears added objects. However, the initially created object is not cleared.
+
+#### Draw3D:Draw()
+
+Draws the 3D object.
+
+#### Draw3D:Add(Vec3, Vec3, Vec3)
+
+- `Vec3`: Position
+- `Vec3`: Rotation
+- `Vec3`: Scale  
+Adds and draws multiple objects with the same texture/model.  
+A single object already exists at instantiation.
+
+#### Draw3D:Clear()
+
+Clears the added objects.  
+However, the object created at instantiation is not cleared.
+
 ### UniformData
+
 #### UniformData() -> UniformData
-Creates a uniform data object.
-#### UniformData:add(float)
-- float: Data  
+
+Creates a UniformData object.
+
+#### UniformData:Add(number)
+
+- `number`: Data  
 Adds uniform data.
-#### UniformData:at(float, int)
-- `float`: Data
-- `int`: Index  
+
+#### UniformData:At(number, number)
+
+- `number`: Data
+- `number`: Index  
 Adds uniform data at the specified index.
+
 ### Shader
+
 #### Shader() -> Shader
+
 Creates a shader object.
-#### Shader:load_vertex_shader(string, int)
-- `string`: Name of the vertex shader file located in data/shader/.
-- `int`: Number of UniformData.
+
+#### Shader:LoadVertexShader(string, number)
+
+- `string`: Name of the vertex shader file in `data/shader/`
+- `number`: Number of UniformData  
 Loads a vertex shader.
-#### Shader:load_fragment_shader(string, int)
-- `string`: Name of the fragment shader file located in data/shader/.
-- `int`: Number of UniformData.
+
+#### Shader:LoadFragmentShader(string, number)
+
+- `string`: Name of the fragment shader file in `data/shader/`
+- `number`: Number of UniformData  
 Loads a fragment shader.
-#### Shader:compile_and_load_vertex_shader(string,int)
+
+#### Shader:CompileAndLoadVertexShader(string, number)
+
 - `string`: Vertex shader source code
-- `int`: Number of UniformData
-Compile and load vertex shader  
-`slangc` must be installed
-#### Shader:compile_and_load_fragment_shader(string,int)
+- `number`: Number of UniformData  
+Compiles and loads a vertex shader.  
+Requires `slangc` to be installed.
+
+#### Shader:CompileAndLoadFragmentShader(string, number)
+
 - `string`: Fragment shader source code
-- `int`: Number of UniformData
-Compile and load fragment shader  
-`slangc` must be installed
+- `number`: Number of UniformData  
+Compiles and loads a fragment shader.  
+Requires `slangc` to be installed.
+
 ### RenderPipeline2D
+
 #### RenderPipeline2D() -> RenderPipeline2D
+
 Creates a 2D render pipeline object.
-#### RenderPipeline2D:set_vertex_shader(Shader)
-- `Shader`: Vertex shader
+
+#### RenderPipeline2D:SetVertexShader(Shader)
+
+- `Shader`: Vertex shader  
 Sets the vertex shader.
-#### RenderPipeline2D:set_fragment_shader(Shader)
-- `Shader`: Fragment shader
-Sets the fragment shader.
-#### RenderPipeline2D:build()
-Builds the render pipeline.
-### RenderPipeline3D
-#### RenderPipeline3D() -> RenderPipeline3D
-Creates a 3D render pipeline object.
-#### RenderPipeline3D:set_vertex_shader(Shader)
-- `Shader`: Vertex shader
-Sets the vertex shader.
-#### RenderPipeline3D:set_fragment_shader(Shader)
+
+#### RenderPipeline2D:SetFragmentShader(Shader)
+
 - `Shader`: Fragment shader  
 Sets the fragment shader.
-#### RenderPipeline3D:build()
+
+#### RenderPipeline2D:Build()
+
 Builds the render pipeline.
+
+### RenderPipeline3D
+
+#### RenderPipeline3D() -> RenderPipeline3D
+
+Creates a 3D render pipeline object.
+
+#### RenderPipeline3D:SetVertexShader(Shader)
+
+- `Shader`: Vertex shader  
+Sets the vertex shader.
+
+#### RenderPipeline3D:SetFragmentShader(Shader)
+
+- `Shader`: Fragment shader  
+Sets the fragment shader.
+
+#### RenderPipeline3D:Build()
+
+Builds the render pipeline.
+
 ### Camera
-#### Camera:look_at(Vector3, Vector3, Vector3)
-- `Vector3`: Position.
-- `Vector3`: Target.
-- `Vector3`: Up direction.
-Sets the camera's position, target, and up direction.
-#### Camera:perspective(float, float, float, float)
-- `float`: Field of view.
-- `float`: Aspect ratio.
-- `float`: Near plane.
-- `float`: Far plane.
-Sets the camera's perspective projection.
-#### Camera:orthographic(float, float, float, float, float, float)
-- `float`: Left.
-- `float`: Right.
-- `float`: Bottom.
-- `float`: Top.
-- `float`: Near plane.
-- `float`: Far plane.
-Sets the camera's orthographic projection.
-#### Camera:is_aabb_in_frustum(AABB) -> bool
+
+#### Camera() -> Camera
+
+Creates a camera object for 3D space.
+
+#### Camera:LookAt(Vec3, Vec3, Vec3)
+
+- `Vec3`: Position
+- `Vec3`: Target
+- `Vec3`: Up direction  
+Sets the camera position, target, and up direction.
+
+#### Camera:Perspective(number, number, number, number)
+
+- `number`: Field of view
+- `number`: Aspect ratio
+- `number`: Near plane
+- `number`: Far plane  
+Sets perspective projection.
+
+#### Camera:Orthographic(number, number, number, number, number, number)
+
+- `number`: Left
+- `number`: Right
+- `number`: Bottom
+- `number`: Top
+- `number`: Near plane
+- `number`: Far plane  
+Sets orthographic projection.
+
+#### Camera:IsAABBInFrustum(AABB) -> bool
+
 - `AABB`: AABB  
-Checks if an AABB is within the camera's frustum.
-#### Camera.position = Vector3
+Checks if the AABB is inside the camera frustum.
+
+#### Camera:GetPosition = Vec3
+
 Camera position.
-#### Camera.target = Vector3
+
+#### Camera:GetTarget = Vec3
+
 Camera target.
-#### Camera.up = Vector3
+
+#### Camera.GetUp = Vec3
+
 Camera up direction.
+
 ### Music
+
 #### Music() -> Music
-Creates a Music object.
-#### Music:load(string)
-- `string`: Name of the music file located in `data/music/`.
-Loads a music file. Supports .ogg, .wav, and .mp3 formats.
-#### Music:play()
-Plays the music.
-#### Music:set_volume(float)
-- `float`: Volume level.
-Sets the music volume.
+
+Creates a music object.
+
+#### Music:Load(string)
+
+- `string`: Name of a music file in `data/music/`  
+Loads music from a file.  
+Supports .ogg, .wav, .mp3 formats.
+
+#### Music:Play()
+
+Plays music.
+
+#### Music:SetVolume(number)
+
+- `number`: Volume  
+Sets music volume.
+
 ### Sound
+
 #### Sound() -> Sound
-Creates a Sound object.
-#### Sound:load(string)
-- `string`: Name of the sound file located in `data/sound/`.
-Loads a sound file. Supports .wav format.
-#### Sound:play()
-Plays the sound.
-#### Sound:set_volume(float)
-- `float`: Volume level.
-Sets the sound volume.
-#### Sound:set_pitch(float)
-- `float`: Pitch level.
-Sets the sound pitch.
-#### Sound:set_listener(Vector3)
-- `Vector3`: Listener position.
-Sets the listener position.
-#### Sound:set_position(Vector3)
-- `Vector3`: Sound source position.
-Sets the sound source position.
+
+Creates a sound object.
+
+#### Sound:Load(string)
+
+- `string`: Name of a sound file in `data/sound/`  
+Loads sound from a file.  
+Supports .wav format.
+
+#### Sound:Play()
+
+Plays sound.
+
+#### Sound:SetVolume(number)
+
+- `number`: Volume  
+Sets sound volume.
+
+#### Sound:SetPitch(number)
+
+- `number`: Pitch  
+Sets sound pitch.
+
+#### Sound:SetListener(Vec3)
+
+- `Vec3`: Listener position  
+Sets the position of the listener.
+
+#### Sound:SetPosition(Vec3)
+
+- `Vec3`: Sound source position  
+Sets the position of the sound source.
+
 ### AABB
-#### AABB.min = Vector3
+
+#### AABB.min = Vec3
+
 Minimum point of the AABB.
-#### AABB.max = Vector3
+
+#### AABB.max = Vec3
+
 Maximum point of the AABB.
+
 ### Model
-#### Model:load(string)
-- `string`: Name of the model file located in `data/model/`.
-Supports .gltf and .glb formats.
+
 #### Model.AABB = AABB
+
 AABB of the model.
 
-# Lua API
+#### Model:Load(string)
+
+- `string`: Name of a model file in `data/model/`  
+Supports .gltf and .glb formats.
+
 ## Global Functions
+
 Functions that can be called directly without creating an instance.
 
-## Naming Conventions
-Global functions belong to tables that start with lowercase letters (e.g., `random`).
-Functions are called using a dot (`.`) (e.g., `random.get_int_range(0, 10)`).
+### Random
 
-### random
-#### random:get_int_range(integer, integer) -> integer
-- `integer`: Minimum value.
-- `integer`: Maximum value.
-Returns a random integer within the specified range.
-#### random:get_float_range(float, float) -> float
-- `float`: Minimum value.
-- `float`: Maximum value.
+#### Random:GetRange(number, number) -> number
+
+- `number`: Minimum value
+- `number`: Maximum value  
 Returns a random floating-point number within the specified range.
 
-### window
-#### window.name() -> string
-Returns the window name.
-#### window.rename(string)
-- `string`: New window name.
-Changes the window name.
-#### window.size() -> Vector2
-Returns the window size.
-#### window.resize(Vector2)
-- `Vector2`: New window size.
-Changes the window size.
-#### window.resized() -> bool
-Returns whether the window was resized in the current frame.
-#### window.half() -> Vector2
-Returns the half size of the window.
-#### window.set_fullscreen(bool)
-- `bool`: Whether to set the window to fullscreen.
-Toggles fullscreen or windowed mode.
+### Window
 
-### renderer
-#### renderer.clear_color() -> color
-Returns the screen clear color.
-#### renderer.set_clear_color(color)
-- `Color`: New clear color.
-Sets the screen clear color.
-#### renderer.begin_pipeline2D(RenderPipeline2D)
-- `RenderPipeline2D`: Render pipeline.
-Begins rendering with a 2D render pipeline.
-#### renderer.end_pipeline2D()
-Ends rendering with a 2D render pipeline.
-#### renderer.begin_pipeline3D(RenderPipeline3D)
-- `RenderPipeline3D`: Render pipeline.
-Begins rendering with a 3D render pipeline.
-#### renderer.end_pipeline3D()
-Ends rendering with a 3D render pipeline.
-#### renderer.begin_render_texture2d(RenderTexture)
-- `RenderTexture`: Render texture.  
-Begins rendering to a render texture 2d.
-#### renderer.begin_render_texture3d(RenderTexture)
-- `RenderTexture`: Render texture.  
-Begins rendering to a render texture 3d.
-#### renderer.end_render_texture(RenderTexture, Texture)
-- `RenderTexture`: Render texture.
-- `Texture`: Texture.
+#### Window:Name() -> string
+
+Gets the window name.
+
+#### Window:Rename(string)
+
+- `string`: Window name  
+Sets the window name.
+
+#### Window:Size() -> Vec2
+
+Gets the window size.
+
+#### Window:Resize(Vec2)
+
+- `Vec2`: Window size  
+Sets the window size.
+
+#### Window:Resized() -> bool
+
+Checks if the window was resized this frame.
+
+#### Window:Half() -> Vec2
+
+Gets half the window size.
+
+#### Window:SetFullscreen(bool)
+
+- `bool`: Set fullscreen mode  
+Sets window to fullscreen or windowed mode.
+
+### Graphics
+
+#### Graphics:SetClearColor() -> Color
+
+Gets the clear color for the screen.
+
+#### Graphics:SetClearColor(Color)
+
+- `Color`: Clear color  
+Sets the clear color for the screen.
+
+#### Graphics:BeginPipeline2D(RenderPipeline2D)
+
+- `RenderPipeline2D`: Render pipeline  
+Begins 2D rendering.
+
+#### Graphics:EndPipeline2D()
+
+Ends 2D rendering.
+
+#### Graphics:BeginPipeline3D(RenderPipeline3D)
+
+- `RenderPipeline3D`: Render pipeline  
+Begins 3D rendering.
+
+#### Graphics:EndPipeline3D()
+
+Ends 3D rendering.
+
+#### Graphics:BeginRenderTexture2D(RenderTexture)
+
+- `RenderTexture`: Render texture  
+Begins rendering to a render texture.
+
+#### Graphics:BeginRenderTexture3D(RenderTexture)
+
+- `RenderTexture`: Render texture
+
+#### Graphics:EndRenderTexture(RenderTexture, Texture)
+
+- `RenderTexture`: Render texture
+- `Texture`: Result texture  
 Ends rendering to a render texture.  
-`Texture` is must be the same size as `RenderTexture`.
+`Texture` must be the same size as `RenderTexture`.
 
-### scene
-#### scene.camera() -> Camera
-Returns the main camera of the scene.
-#### scene.size() -> Vector2
-Returns the size of the scene.
-#### scene.resize(Vector2)
-- `Vector2`: New scene size.
-Changes the scene size.
-#### scene.half() -> Vector2
-Returns the half size of the scene.
+### Scene
 
-### collision
-#### collision.aabb_aabb(AABB, AABB) -> bool
-- `AABB`: First AABB.
-- `AABB`: Second AABB.
-Checks for a collision between two AABBs.
+#### Scene:Camera() -> Camera
 
-### keyboard
-#### keyboard.is_pressed(code) -> bool
-- `code`: Key code.
-Checks if a key was pressed in the current frame.
-#### keyboard.is_released(code) -> bool
-- `code`: Key code.
-Checks if a key was released in the current frame.
-#### keyboard.is_down(code) -> bool
-- `code`: Key code.
-Checks if a key is currently being held down.
-#### keyboard.A = code
-#### keyboard.B = code
-#### keyboard.C = code
-#### keyboard.D = code
-#### keyboard.E = code
-#### keyboard.F = code
-#### keyboard.G = code
-#### keyboard.H = code
-#### keyboard.I = code
-#### keyboard.J = code
-#### keyboard.K = code
-#### keyboard.L = code
-#### keyboard.M = code
-#### keyboard.N = code
-#### keyboard.O = code
-#### keyboard.P = code
-#### keyboard.Q = code
-#### keyboard.R = code
-#### keyboard.S = code
-#### keyboard.T = code
-#### keyboard.U = code
-#### keyboard.V = code
-#### keyboard.W = code
-#### keyboard.X = code
-#### keyboard.Y = code
-#### keyboard.Z = code
-#### keyboard.key0 = code
-#### keyboard.key1 = code
-#### keyboard.key2 = code
-#### keyboard.key3 = code
-#### keyboard.key4 = code
-#### keyboard.key5 = code
-#### keyboard.key6 = code
-#### keyboard.key7 = code
-#### keyboard.key8 = code
-#### keyboard.key9 = code
-#### keyboard.F1 = code
-#### keyboard.F2 = code
-#### keyboard.F3 = code
-#### keyboard.F4 = code
-#### keyboard.F5 = code
-#### keyboard.F6 = code
-#### keyboard.F7 = code
-#### keyboard.F8 = code
-#### keyboard.F9 = code
-#### keyboard.F10 = code
-#### keyboard.F11 = code
-#### keyboard.F12 = code
-#### keyboard.UP = code
-#### keyboard.DOWN = code
-#### keyboard.LEFT = code
-#### keyboard.RIGHT = code
-#### keyboard.ESCAPE = code
-#### keyboard.SPACE = code
-#### keyboard.ENTER = code
-#### keyboard.BACKSPACE = code
-#### keyboard.TAB = code
-#### keyboard.LSHIFT = code
-#### keyboard.RSHIFT = code
-#### keyboard.LCTRL = code
-#### keyboard.RCTRL = code
-#### keyboard.ALT = code
+Gets the main camera of the scene.
 
-### mouse
-Center of the window/scene is the origin.
-#### mouse.position() -> Vector2
-Returns the mouse position.
-#### mouse.position_on_scene() -> Vector2
-Returns the mouse position in the scene.
-#### mouse.set_position(Vector2)
-- `Vector2`: New mouse position.
-Sets the mouse position.
-#### mouse.set_position_on_scene(Vector2)
-- `Vector2`: New mouse position in the scene.
-Sets the mouse position within the scene.
-#### mouse.is_pressed(code) -> bool
-- `code`: Mouse button code.
-Checks if a mouse button was pressed in the current frame.
-#### mouse.is_released(code) -> bool
-- `code`: Mouse button code.
-Checks if a mouse button was released in the current frame.
-#### mouse.is_down(code) -> bool
-- `code`: Mouse button code.
-Checks if a mouse button is currently being held down.
-#### mouse.scroll_wheel() -> Vector2
-Returns the scroll wheel movement.
-#### mouse.hide_cursor(bool)
-- `bool`: Whether to hide the mouse cursor.
-Toggles cursor visibility.
-#### mouse.set_relative(bool)
-- `bool`: Whether to set relative coordinates.  
-Sets the mouse position relative to the window size.
-#### mouse.is_relative() -> bool
-Returns whether the mouse is in relative coordinates.
-#### mouse.LEFT = code
-#### mouse.RIGHT = code
-#### mouse.MIDDLE = code
-#### mouse.X1 = code
-#### mouse.X2 = code
+#### Scene:Size() -> Vec2
 
-### gamepad
-#### gamepad.is_connected() -> bool
+Gets the size of the scene.
+
+#### Scene:Resize(Vec2)
+
+- `Vec2`: Scene size  
+Sets the size of the scene.
+
+#### Scene:Half() -> Vec2
+
+Gets half the scene size.
+
+### Collision
+
+#### Collision:AABBvsAABB(AABB, AABB) -> bool
+
+- `AABB`: AABB
+- `AABB`: AABB  
+Performs collision detection between AABBs.
+
+### Keyboard
+
+#### Keyboard:IsPressed(code) -> bool
+
+- `code`: Key code  
+Checks if the key was pressed this frame.
+
+#### Keyboard:IsReleased(code) -> bool
+
+- `code`: Key code  
+Checks if the key was released this frame.
+
+#### Keyboard:IsDown(code) -> bool
+
+- `code`: Key code  
+Checks if the key is currently pressed.
+
+#### Keyboard.[A-Z, 0-9, F1-F12, UP, DOWN, LEFT, RIGHT, ESCAPE, SPACE, ENTER, BACKSPACE, TAB, LSHIFT, RSHIFT, LCTRL, RCTRL, ALT]
+
+Various key code constants.
+
+### Mouse
+
+#### Mouse.GetPosition() -> Vec2
+
+Gets the mouse position within the window.  
+The center of the window is the origin (0, 0).
+
+#### Mouse.GetPositionOnScene() -> Vec2
+
+Gets the mouse position within the scene.  
+The center of the scene is the origin (0, 0).
+
+#### Mouse.SetPosition(Vec2)
+
+- `Vec2`: Position within the window  
+Sets the mouse position within the window.  
+The center of the window is the origin (0, 0).
+
+#### Mouse.SetPositionOnScene(Vec2)
+
+- `Vec2`: Position on the scene  
+Sets the mouse position within the scene.  
+The center of the scene is the origin (0, 0).
+
+#### Mouse.IsPressed(code) -> bool
+
+- `code`: Mouse button code  
+Checks if the button was pressed this frame.
+
+#### Mouse.IsReleased(code) -> bool
+
+- `code`: Mouse button code  
+Checks if the button was released this frame.
+
+#### Mouse.IsDown(code) -> bool
+
+- `code`: Mouse button code  
+Checks if the button is currently pressed.
+
+#### Mouse.ScrollWheel() -> Vec2
+
+Gets the scroll wheel delta.
+
+#### Mouse.HideCursor(bool)
+
+- `bool`: Hide the mouse cursor  
+Shows or hides the cursor.
+
+#### Mouse.SetRelative(bool)
+
+- `bool`: Get mouse position as relative  
+Sets whether to obtain mouse position in relative mode.
+
+#### Mouse.IsRelative() -> bool
+
+Checks if the mouse position is being obtained in relative mode.
+
+#### Mouse.[LEFT, RIGHT, MIDDLE, X1, X2]
+
+Various mouse button code constants.
+
+### Gamepad
+
+#### Gamepad.IsConnected() -> bool
+
 Checks if a gamepad is connected.
-#### gamepad.is_pressed(code) -> bool
-- `code`: Gamepad button code.
-Checks if a gamepad button was pressed in the current frame.
-#### gamepad.is_released(code) -> bool
-- `code`: Gamepad button code.
-Checks if a gamepad button was released in the current frame.
-#### gamepad.is_down(code) -> bool
-- `code`: Gamepad button code.
-Checks if a gamepad button is currently being held down.
-#### gamepad.left_stick() -> Vector2
-Gets the left stick delta movement.
-#### gamepad.right_stick() -> Vector2
-Gets the right stick delta movement.
-#### gamepad.INVALID = code
-#### gamepad.A = code
-#### gamepad.B = code
-#### gamepad.X = code
-#### gamepad.Y = code
-#### gamepad.BACK = code
-#### gamepad.START = code
-#### gamepad.GUIDE = code
-#### gamepad.LEFTSTICK = code
-#### gamepad.RIGHTSTICK = code
-#### gamepad.LEFTSHOULDER = code
-#### gamepad.RIGHTSHOULDER = code
-#### gamepad.DPAD_UP = code
-#### gamepad.DPAD_DOWN = code
-#### gamepad.DPAD_LEFT = code
-#### gamepad.DPAD_RIGHT = code
-#### gamepad.MISC1 = code
-#### gamepad.PADDLE1 = code
-#### gamepad.PADDLE2 = code
-#### gamepad.PADDLE3 = code
-#### gamepad.PADDLE4 = code
-#### gamepad.TOUCHPAD = code
+
+#### Gamepad.IsPressed(code) -> bool
+
+- `code`: Gamepad button code  
+Checks if the button was pressed this frame.
+
+#### Gamepad.IsReleased(code) -> bool
+
+- `code`: Gamepad button code  
+Checks if the button was released this frame.
+
+#### Gamepad.IsDown(code) -> bool
+
+- `code`: Gamepad button code  
+Checks if the button is currently pressed.
+
+#### Gamepad.GetLeftStick() -> Vec2
+
+Gets the delta of the left stick.
+
+#### Gamepad.GetRightStick() -> Vec2
+
+Gets the delta of the right stick.
+
+#### Gamepad.[INVALID, A, B, X, Y, BACK, START, GUIDE, LEFTSTICK, RIGHTSTICK, LEFTSHOULDER, RIGHTSHOULDER, DPAD_UP, DPAD_DOWN, DPAD_LEFT, DPAD_RIGHT, MISC1, PADDLE1, PADDLE2, PADDLE3, PADDLE4, TOUCHPAD]
+
+Various gamepad button code constants.
+
+### Periodic
+
+#### Periodic.Sin0_1(time: number) -> number
+
+- `time`: Time in seconds  
+Returns a value oscillating between 0.0 and 1.0 periodically.
+
+#### Periodic.Cos0_1(time: number) -> number
+
+- `time`: Time in seconds  
+Returns a value oscillating between 0.0 and 1.0 periodically.
+
+### Time
+
+#### Time.Seconds() -> number
+
+Gets the elapsed time of the current frame in seconds.
+
+#### Time.Milli() -> number
+
+Gets the elapsed time of the current frame in milliseconds.
+
+### Logger
+
+#### Logger.Info(string)
+
+- `string`: Log message  
+Outputs an info level log.
+
+#### Logger.Warn(string)
+
+- `string`: Log message  
+Outputs a warning level log.
+
+#### Logger.Error(string)
+
+- `string`: Log message  
+Outputs an error level log.
+
+#### Logger.Critical(string)
+
+- `string`: Log message  
+Outputs a critical error level log.
+
+#### Logger.Debug(string)
+
+- `string`: Log message  
+Outputs a debug level log.

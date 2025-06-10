@@ -314,7 +314,7 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def_static("half", &Scene::Half)
       .def_static("ratio", &Scene::Ratio)
       .def_static("inv_ratio", &Scene::InvRatio)
-      .def_static("delta_time", &Scene::dT)
+      .def_static("delta_time", &Scene::DeltaTime)
       .def_static("change", &Scene::Change);
 
   py::class_<Collision>(m, "Collision")

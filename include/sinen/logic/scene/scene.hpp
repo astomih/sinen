@@ -99,7 +99,7 @@ public:
   static glm::vec2 Ratio();
   static glm::vec2 InvRatio();
 
-  static float dT();
+  static float DeltaTime();
 
 private:
   // main camera

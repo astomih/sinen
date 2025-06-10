@@ -15,42 +15,23 @@
 local texture = Texture()
 -- Create a draw2D
 local draw2d = Draw2D()
-draw2d.material:append(texture)
+draw2d.material:AppendTexture(texture)
 -- Create a font
 local font = Font()
--- Load a font (96px)
-font:load(96)
+-- Load a default font (96px)
+font:Load(96)
 
-function update()
+function Update()
     -- Render text to texture
-    font:render_text(texture, "Hello Sinen World!",
-        Color(1, 1, 1, 1))
+    font:RenderText(texture, "Hello World!", Color(1, 1, 1, 1))
     -- Set scale to texture size
-    draw2d.scale = texture:size()
+    draw2d.scale = texture:Size()
 end
 
-function draw()
+function Draw()
     -- Draw texture
-    draw2d:draw()
+    draw2d:Draw()
 end
-
-```
-
-## Python(Experimental)
-``` python
-from sinen import *
-texture = Texture()
-draw2d = Draw2D(texture)
-font = Font()
-font.load(96)
-
-def update():
-  font.render_text(texture, "Hello Sinen World!", Color(1, 1, 1, 1))
-  draw2d.scale = texture.size()
-
-def draw():
-  draw2d.draw()
-```
 
 ![Hello World](https://raw.githubusercontent.com/astomih/sinen/refs/heads/main/examples/screenshot/01.png)
 

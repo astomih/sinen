@@ -24,7 +24,7 @@ Scene.GetCamera():LookAt(pos, Vec3(0, 0, 1), Vec3(0, 0, 1))
 
 model:Play(0)
 function Update()
-    model:Update(Scene.dT())
+    model:Update(Scene.DeltaTime())
 end
 
 function Draw()

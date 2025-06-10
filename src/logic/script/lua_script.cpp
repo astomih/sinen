@@ -61,20 +61,18 @@ bool LuaScript::Initialize() {
     v["Material"] = []() -> Material { return Material(); };
     v["RenderTexture"] = []() -> RenderTexture { return RenderTexture(); };
     v["Font"] = []() -> Font { return Font(); };
-    v["Vec3"] = [](float x, float y, float z) -> glm::vec3 {
-      return glm::vec3(x, y, z);
-    };
-    v["Vec2"] = [](float x, float y) -> glm::vec2 { return glm::vec2(x, y); };
-    v["Point2i"] = [](int x, int y) -> glm::ivec2 { return glm::ivec2(x, y); };
-    v["Point2f"] = [](float x, float y) -> glm::vec2 {
-      return glm::vec2(x, y);
-    };
-    v["Quaternion"] = [](sol::this_state s) -> glm::quat {
-      return glm::quat();
-    };
-    v["Color"] = [](float r, float g, float b, float a) -> Color {
-      return Color(r, g, b, a);
-    };
+    v["Vec3"] = sol::overload(
+        [](const float x, const float y, const float z) -> glm::vec3 {
+          return {x, y, z};
+        },
+        [](const float value) -> glm::vec3 { return glm::vec3(value); });
+    v["Vec2"] = sol::overload(
+        [](const float x, const float y) -> glm::vec2 { return {x, y}; },
+        [](const float value) -> glm::vec2 { return glm::vec2{value}; });
+    v["Color"] =
+        sol::overload([](const float r, const float g, const float b,
+                         const float a) -> Color { return {r, g, b, a}; },
+                      []() -> Color { return Color{}; });
     v["Model"] = []() -> Model { return Model(); };
     v["Music"] = []() -> Music { return Music(); };
     v["Sound"] = []() -> Sound { return Sound(); };
@@ -88,6 +86,8 @@ bool LuaScript::Initialize() {
     v["GraphicsPipeline3D"] = []() -> GraphicsPipeline3D {
       return GraphicsPipeline3D();
     };
+    lua["Draw2D"] = []() -> Draw2D { return Draw2D(); };
+    lua["Draw3D"] = []() -> Draw3D { return Draw3D(); };
   }
   {
     auto v = lua.new_usertype<glm::vec3>("", sol::no_construction());
@@ -272,8 +272,6 @@ bool LuaScript::Initialize() {
     v["SetAnimation"] = &GraphicsPipeline3D::SetAnimation;
     v["Build"] = &GraphicsPipeline3D::build;
   }
-  lua["Draw2D"] = []() -> Draw2D { return Draw2D(); };
-  lua["Draw3D"] = []() -> Draw3D { return Draw3D(); };
   {
     auto v = lua.new_usertype<Draw2D>("", sol::no_construction());
     v["Draw"] = &Draw2D::Draw;
@@ -335,7 +333,7 @@ bool LuaScript::Initialize() {
     v["Half"] = &Scene::Half;
     v["Ratio"] = &Scene::Ratio;
     v["InvRatio"] = &Scene::InvRatio;
-    v["dT"] = &Scene::dT;
+    v["DeltaTime"] = &Scene::DeltaTime;
     v["Change"] = &Scene::Change;
   }
   {

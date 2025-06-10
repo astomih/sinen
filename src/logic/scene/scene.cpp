@@ -38,6 +38,6 @@ glm::vec2 Scene::InvRatio() {
                    Scene::Size().y / Window::Size().y);
 }
 
-float Scene::dT() { return SceneSystem::delta_time(); }
+float Scene::DeltaTime() { return SceneSystem::delta_time(); }
 
 } // namespace sinen

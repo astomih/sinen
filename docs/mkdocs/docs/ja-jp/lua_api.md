@@ -1,4 +1,6 @@
-# Lua言語 API
+# Lua API
+mainブランチと乖離している場合があります。  
+型情報は、sinen.luaファイルを参照してください。
 ## 呼び出しについて
 Luaスクリプトは`sinen.exeが存在するディレクトリ/script/`に配置します  
 ```lua
@@ -17,546 +19,579 @@ end
 Luaにはクラスはありませんが、テーブルで代用します  
 Sinenでは、あらかじめ幾つかのクラスを用意しています
 ### 命名規則
-Sinenでは、Luaのクラスは大文字で始まります  
-インスタンスの生成はクラス名()で行います(例: `a = Vector2(1.0, 2.0)`)  
-関数はコロン(:)で呼び出し可能です(例: `a:length()`)  
-### Vector2
+Sinenでは、以下の命名規則を使用しています  
+- クラス名: CamelCase(例: `Vec2`, `Vec3`, `Color`)
+- メソッド名: CamelCase(例: `Length`, `Normalize`, `Copy`)
+- プロパティ名: lowerCase(例: `x`, `y`, `z`, `r`, `g`, `b`, `a`)
+インスタンスの生成はクラス名()で行います(例: `a = Vec2(1, 2)`)  
+インスタンス内の関数はコロン(:)で呼び出し可能です(例: `a:Length()`)  
+### Vec2
 #### メタテーブル
 - `__add`: ベクトルの加算を行います (a + b)
 - `__sub`: ベクトルの減算を行います (a - b)
 - `__mul`: ベクトルの乗算を行います (a * b)
 - `__div`: ベクトルの除算を行います (a / b)
-#### Vector2(x, y) -> Vector2
+#### Vec2(x, y) -> Vec2
 - `x`: ベクトルのx成分
 - `y`: ベクトルのy成分  
-Vector2オブジェクトを作成します。
-#### Vector2.x = float
-Vector2のx成分。
-#### Vector2.y = float
-Vector2のy成分。
-#### Vector2:length() -> float
+Vec2オブジェクトを作成します。
+#### Vec2(value) -> Vec2
+- `value`: 数値またはVec2オブジェクト
+Vec2オブジェクトをx, y成分に同じvalueを持つベクトルとして作成します 
+#### Vec2.x = number
+Vec2のx成分。
+#### Vec2.y = number
+Vec2のy成分。
+#### Vec2:Length() -> number
 ベクトルの長さを取得します
-#### Vector2:normalize() -> Vector2
+#### Vec2:Normalize() -> Vec2
 ベクトルを正規化します
-#### Vector2:copy() -> Vector2
+#### Vec2:Copy() -> Vec2
 ベクトルをコピーします
-#### Vector2:dot(Vector2, Vector2) -> float
-- `Vector2`: ベクトル1
-- `Vector2`: ベクトル2
+#### Vec2:Dot(Vec2, Vec2) -> number
+- `Vec2`: ベクトル1
+- `Vec2`: ベクトル2
 内積を取得します
-#### Vector2:lerp(Vector2, Vector2, float) -> Vector2
-- `Vector2`: ベクトル1
-- `Vector2`: ベクトル2
-- `float`: 補間係数
+#### Vec2:Lerp(Vec2, Vec2, number) -> Vec2
+- `Vec2`: ベクトル1
+- `Vec2`: ベクトル2
+- `number`: 補間係数
 線形補間を取得します
-#### Vector2:reflect(Vector2, Vector2) -> Vector2
-- `Vector2`: ベクトル
-- `Vector2`: 法線ベクトル
+#### Vec2:Reflect(Vec2, Vec2) -> Vec2
+- `Vec2`: ベクトル
+- `Vec2`: 法線ベクトル
 反射ベクトルを取得します
-### Vector3
+### Vec3
 #### メタテーブル
 - `__add`: ベクトルの加算を行います (a + b)
 - `__sub`: ベクトルの減算を行います (a - b)
 - `__mul`: ベクトルの乗算を行います (a * b)
 - `__div`: ベクトルの除算を行います (a / b)
-#### Vector3(x, y, z) -> Vector3
+#### Vec3(x, y, z) -> Vec3
 - `x`: ベクトルのx成分
 - `y`: ベクトルのy成分
 - `z`: ベクトルのz成分  
-Vector3オブジェクトを作成します
-#### Vector3.x = float
-Vector3のx成分
-#### Vector3.y = float
-Vector3のy成分
-#### Vector3.z = float
-Vector3のz成分
-#### Vector3:length() -> float
+Vec3オブジェクトを作成します
+#### Vec3(value) -> Vec3
+- `value`: 数値またはVec3オブジェクト
+Vec3オブジェクトをx, y, z成分に同じvalueを持つベクトルとして作成します
+#### Vec3.x = number
+Vec3のx成分
+#### Vec3.y = number
+Vec3のy成分
+#### Vec3.z = number
+Vec3のz成分
+#### Vec3:Length() -> number
 ベクトルの長さを取得します
-#### Vector3:normalize() -> Vector3
+#### Vec3:Normalize() -> Vec3
 ベクトルを正規化します
-#### Vector3:copy() -> Vector3
+#### Vec3:Copy() -> Vec3
 ベクトルをコピーします  
 Luaでは基本的に参照渡しのため、コピーが必要な場合に使用します
-#### Vector3:forward(Vector3) -> Vector3
-- `Vector3`: 軸ベクトル  
+#### Vec3:Forward(Vec3) -> Vec3
+- `Vec3`: 軸ベクトル  
 前方ベクトルを取得します
-#### Vector3:dot(Vector3, Vector3) -> float
-- `Vector3`: ベクトル1
-- `Vector3`: ベクトル2
+#### Vec3:Dot(Vec3, Vec3) -> number
+- `Vec3`: ベクトル1
+- `Vec3`: ベクトル2
 内積を取得します
-#### Vector3:cross(Vector3, Vector3) -> Vector3
-- `Vector3`: ベクトル1
-- `Vector3`: ベクトル2
+#### Vec3:Cross(Vec3, Vec3) -> Vec3
+- `Vec3`: ベクトル1
+- `Vec3`: ベクトル2
 外積を取得します
-#### Vector3:lerp(Vector3, Vector3, float) -> Vector3
-- `Vector3`: ベクトル1
-- `Vector3`: ベクトル2
-- `float`: 補間係数
+#### Vec3:Lerp(Vec3, Vec3, number) -> Vec3
+- `Vec3`: ベクトル1
+- `Vec3`: ベクトル2
+- `number`: 補間係数
 線形補間を取得します
-#### Vector3:reflect(Vector3, Vector3) -> Vector3
-- `Vector3`: ベクトル
-- `Vector3`: 法線ベクトル
+#### Vec3:Reflect(Vec3, Vec3) -> Vec3
+- `Vec3`: ベクトル
+- `Vec3`: 法線ベクトル
 反射ベクトルを取得します
-### Point2i
-2次元の整数
-#### Point2i(x, y) -> Point2i
-- `x`: Point2iのx成分
-- `y`: Point2iのy成分
-#### Point2i.x = int
-Point2iのx成分
-#### Point2i.y = int
-Point2iのy成分
 ### Color
+#### Color() -> Color
+Colorオブジェクトを作成します
 #### Color(r, g, b, a) -> color
 - `r`: 色の赤成分(0.0~1.0)
 - `g`: 色の緑成分(0.0~1.0)
 - `b`: 色の青成分(0.0~1.0)
 - `a`: 色のアルファ成分(0.0~1.0)  
 色オブジェクトを作成します
-#### Color.r = float
+#### Color.r = number
 色の赤成分(0.0~1.0)
-#### Color.g = float
+#### Color.g = number
 色の緑成分(0.0~1.0)
-#### Color.b = float
+#### Color.b = number
 色の青成分(0.0~1.0)
-#### Color.a = float
+#### Color.a = number
 色のアルファ成分(0.0~1.0)
 ### Texture
 #### Texture()
 テクスチャオブジェクトを作成します
-#### Texture:load(string)
+#### Texture:Load(string)
 - `string`: data/texture/にあるテクスチャファイルの名前  
 テクスチャファイルを読み込みます
-#### Texture:fill_color(Color)
+#### Texture:FillColor(Color)
 - `Color`: テクスチャを塗りつぶす色  
 テクスチャを塗りつぶします
-#### Texture:blend_color(Color)
+#### Texture:BlendColor(Color)
 - `Color`: テクスチャをブレンドする色  
 テクスチャをブレンドします
-#### Texture:copy() -> Texture
+#### Texture:Copy() -> Texture
 テクスチャをコピーします  
 Luaでは基本的に参照渡しのため、コピーが必要な場合に使用します
-#### Texture:size() -> Vector2
+#### Texture:Size() -> Vec2
 テクスチャのサイズを取得します
 ### RenderTexture
 #### RenderTexture()
 レンダーテクスチャオブジェクトを作成します
-#### RenderTexture:create(int, int)
-- `int`: 幅
-- `int`: 高さ  
+#### RenderTexture:Create(number, number)
+- `number`: 幅
+- `number`: 高さ  
 レンダーテクスチャを作成します
+### Material
+#### Material() -> Material
+マテリアルオブジェクトを作成します
+#### Material:AppendTexture(Texture)
+- `Texture`: テクスチャ  
+テクスチャをマテリアルに追加します
 ### Font
 #### Font() -> Font
 フォントオブジェクトを作成します
-#### Font:load(string)
-string: data/font/にあるフォントファイルの名前
+#### Font:Load(string, number)
+- `string`: data/font/にあるフォントファイルの名前
+- `number`: フォントのサイズ(ピクセル)
 .ttfファイルを読み込みます  
-#### Font:render_text(Texture, string, color)
+#### Font:RenderText(Texture, string, color)
 - `Texture`: 描画先のテクスチャ
 - `string`: 描画する文字列
 - `Color`: テキストの色
 CPUでテキストを描画します  
 テクスチャは描画結果に合わせてリサイズされます
 ### Draw2D
-#### Draw2D(Texture) -> Draw2D
-- `Texture`: テクスチャ
+#### Draw2D() -> Draw2D
 Draw2Dオブジェクトを作成します  
-modelは未指定の場合、四角形が割り当てられます  
-#### Draw2D:draw()
-2Dオブジェクトを描画します
-#### Draw2D.position = Vector2
+#### Draw2D.position = Vec2
 位置情報  
 Sinenのウィンドウの中心が(0, 0)です
-#### Draw2D.scale = Vector2
+#### Draw2D.scale = Vec2
 拡大率
-#### Draw2D.rotation = float
+#### Draw2D.rotation = number
 時計回りの回転角度
-#### Draw2D.texture = Texture
-テクスチャ
+#### Draw2D.material = Material
+マテリアル
 #### Draw2D.model = Model
 モデル
-#### Draw2D:add(Vector2, float, Vector2)
-- `Vector2`: 位置情報
-- `float`: 時計回りの回転角度
-- `Vector2`: 拡大率  
+#### Draw2D:Draw()
+2Dオブジェクトを描画します
+#### Draw2D:Add(Vec2, number, Vec2)
+- `Vec2`: 位置情報
+- `number`: 時計回りの回転角度
+- `Vec2`: 拡大率  
 同じテクスチャ、モデルで複数のオブジェクトを追加して描画します  
 インスタンス生成時点で既に一つのオブジェクトが存在しています
-#### Draw2D:clear()
+#### Draw2D:Clear()
 追加されたオブジェクトをクリアします  
 ただし、インスタンス生成時点で存在しているオブジェクトはクリアされません
 ### Draw3D
-#### Draw3D(Texture) -> Draw3D
-- `Texture`: テクスチャ
+#### Draw3D() -> Draw3D
 Draw3Dオブジェクトを作成します  
-modelは未指定の場合、立方体が割り当てられます
-#### Draw3D:draw()
-3Dオブジェクトを描画します
-#### Draw3D.position = Vector3
+#### Draw3D.position = Vec3
 位置情報(ワールド座標)
-#### Draw3D.scale = Vector3
+#### Draw3D.scale = Vec3
 拡大率
-#### Draw3D.rotation = Vector3
+#### Draw3D.rotation = Vec3
 回転角度(オイラー角)
-#### Draw3D.Texture = Texture
-テクスチャ
+#### Draw3D.material = Material
+マテリアル
 #### Draw3D.model = Model
 モデル
-#### Draw3D:add(Vector3,Vector3,Vector3)
-- `Vector3`: 位置情報
-- `Vector3`: 回転角度
-- `Vector3`: 拡大率  
+#### Draw3D:Draw()
+3Dオブジェクトを描画します
+#### Draw3D:Add(Vec3,Vec3,Vec3)
+- `Vec3`: 位置情報
+- `Vec3`: 回転角度
+- `Vec3`: 拡大率  
 同じテクスチャ、モデルで複数のオブジェクトを追加して描画します  
 インスタンス生成時点で既に一つのオブジェクトが存在しています
-#### Draw3D:clear()
+#### Draw3D:Clear()
 追加されたオブジェクトをクリアします  
 ただし、インスタンス生成時点で存在しているオブジェクトはクリアされません
 ### UniformData
 #### UniformData() -> UniformData
 ユニフォームデータオブジェクトを作成します
-#### UniformData:add(float)
-- `float`: データ  
+#### UniformData:Add(number)
+- `number`: データ  
 ユニフォームデータを追加します
-#### UniformData:at(float, int)
-- `float`: データ
-- `int`: インデックス  
+#### UniformData:At(number, number)
+- `number`: データ
+- `number`: インデックス  
 ユニフォームデータを指定したインデックスに追加します
 ### Shader
 #### Shader() -> Shader
 シェーダオブジェクトを作成します
-#### Shader:load_vertex_shader(string,int)
+#### Shader:LoadVertexShader(string,number)
 - `string`: data/shader/にある頂点シェーダファイルの名前
-- `int`: UniformDataの数  
+- `number`: UniformDataの数  
 頂点シェーダを読み込みます
-#### Shader:load_fragment_shader(string,int)
+#### Shader:LoadFragmentShader(string,number)
 - `string`: data/shader/にあるフラグメントシェーダファイルの名前
-- `int`: UniformDataの数  
+- `number`: UniformDataの数  
 フラグメントシェーダを読み込みます
-#### Shader:compile_and_load_vertex_shader(string,int)
+#### Shader:CompileAndLoadVertexShader(string,number)
 - `string`: 頂点シェーダのソースコード
-- `int`: UniformDataの数
+- `number`: UniformDataの数
 頂点シェーダをコンパイルして読み込みます  
 `slangc`がインストールされている必要があります
-#### Shader:compile_and_load_fragment_shader(string,int)
+#### Shader:CompileAndLoadFragmentShader(string,number)
 - `string`: フラグメントシェーダのソースコード
-- `int`: UniformDataの数
+- `number`: UniformDataの数
 フラグメントシェーダをコンパイルして読み込みます  
 `slangc`がインストールされている必要があります
 ### RenderPipeline2D
 #### RenderPipeline2D() -> RenderPipeline2D
 2Dレンダーパイプラインオブジェクトを作成します
-#### RenderPipeline2D:set_vertex_shader(Shader)
+#### RenderPipeline2D:SetVertexShader(Shader)
 - `Shader`: 頂点シェーダ  
 頂点シェーダを設定します
-#### RenderPipeline2D:set_fragment_shader(Shader)
+#### RenderPipeline2D:SetFragmentShader(Shader)
 - `Shader`: フラグメントシェーダ  
 フラグメントシェーダを設定します
-#### RenderPipeline2D:build()
+#### RenderPipeline2D:Build()
 レンダーパイプラインを構築します
 ### RenderPipeline3D
 #### RenderPipeline3D() -> RenderPipeline3D
 3Dレンダーパイプラインオブジェクトを作成します
-#### RenderPipeline3D:set_vertex_shader(Shader)
+#### RenderPipeline3D:SetVertexShader(Shader)
 - `Shader`: 頂点シェーダ
 頂点シェーダを設定します
-#### RenderPipeline3D:set_fragment_shader(Shader)
+#### RenderPipeline3D:SetFragmentShader(Shader)
 - `Shader`: フラグメントシェーダ
 フラグメントシェーダを設定します
-#### RenderPipeline3D:build()
+#### RenderPipeline3D:Build()
 レンダーパイプラインを構築します
 ### Camera
 #### Camera() -> Camera
 3D空間のカメラオブジェクトを作成します
-#### Camera:look_at(Vector3, Vector3, Vector3)
-- `Vector3`: 位置
-- `Vector3`: 注視点
-- `Vector3`: 上方向  
+#### Camera:LookAt(Vec3, Vec3, Vec3)
+- `Vec3`: 位置
+- `Vec3`: 注視点
+- `Vec3`: 上方向  
 カメラの位置、注視点、上方向を設定します
-#### Camera:perspective(float, float, float, float)
-- `float`: 視野角
-- `float`: アスペクト比
-- `float`: 近面
-- `float`: 遠面  
+#### Camera:Perspective(number, number, number, number)
+- `number`: 視野角
+- `number`: アスペクト比
+- `number`: 近面
+- `number`: 遠面  
 カメラの透視投影を設定します
-#### Camera:orthographic(float, float, float, float, float, float)
-- `float`: 左
-- `float`: 右
-- `float`: 下
-- `float`: 上
-- `float`: 近面
-- `float`: 遠面  
+#### Camera:Orthographic(number, number, number, number, number, number)
+- `number`: 左
+- `number`: 右
+- `number`: 下
+- `number`: 上
+- `number`: 近面
+- `number`: 遠面  
 カメラの正射影投影を設定します
-#### Camera:is_aabb_in_frustum(AABB) -> bool
+#### Camera:IsAABBInFrustum(AABB) -> bool
 - `AABB`: AABB  
 AABBがカメラの視錐台に含まれているかどうかを確認します
-#### Camera.position = Vector3
+#### Camera:GetPosition = Vec3
 カメラの位置
-#### Camera.target = Vector3
+#### Camera:GetTarget = Vec3
 カメラの注視点
-#### Camera.up = Vector3
+#### Camera.GetUp = Vec3
 カメラの上方向
 ### Music
 #### Music() -> Music
-#### Music:load(string)
+#### Music:Load(string)
 - `string`: data/music/にある音楽ファイルの名前  
 音楽をファイルから読み込みます  
 .ogg, .wav, .mp3形式に対応しています
-#### Music:play()
+#### Music:Play()
 音楽を再生します
-#### Music:set_volume(float)
-- `float`: 音量  
+#### Music:SetVolume(number)
+- `number`: 音量  
 音楽の音量を設定します
 ### Sound
 #### Sound() -> Sound
-#### Sound:load(string)
+#### Sound:Load(string)
 - `string`: data/sound/にある音声ファイルの名前  
 音声をファイルから読み込みます  
 .wav形式に対応しています
-#### Sound:play()
+#### Sound:Play()
 音声を再生します
-#### Sound:set_volume(float)
-- `float`: 音量  
+#### Sound:SetVolume(number)
+- `number`: 音量  
 音声の音量を設定します
-#### Sound:set_pitch(float)
-- `float`: ピッチ  
+#### Sound:SetPitch(number)
+- `number`: ピッチ  
 音声のピッチを設定します
-#### Sound:set_listener(Vector3)
-- `Vector3`: リスナーの位置  
+#### Sound:SetListener(Vec3)
+- `Vec3`: リスナーの位置  
 リスナーの位置を設定します
-#### Sound:set_position(Vector3)
-- `Vector3`: 音源の位置  
+#### Sound:SetPosition(Vec3)
+- `Vec3`: 音源の位置  
 音源の位置を設定します
 ### AABB
-#### AABB.min = Vector3
+#### AABB.min = Vec3
 AABBの最小点
-#### AABB.max = Vector3
+#### AABB.max = Vec3
 AABBの最大点
 ### Model
-#### Model:load(string)
-- `string`: data/model/にあるモデルファイルの名前  
-.gltf, .glb形式に対応しています
 #### Model.AABB = AABB
 モデルのAABB
+#### Model:Load(string)
+- `string`: data/model/にあるモデルファイルの名前  
+.gltf, .glb形式に対応しています
 
 ## グローバル関数
 インスタンスを生成せず、直接呼び出せる関数です
-## 命名規則
-グローバル関数は小文字から始まる各テーブルに属しています(テーブル例: `random`)  
-関数はドット(.)で呼び出し可能です(例: `random.get_int_range(0, 10)`)
-### random
-#### random:get_int_range(integer, integer) -> integer
-- `integer`: 最小値
-- `integer`: 最大値  
-指定された範囲の整数の乱数を取得します
-#### random:get_float_range(float, float) -> float
-- `float`: 最小値
-- `float`: 最大値  
+### Random
+#### Random:GetRange(number, number) -> number
+- `number`: 最小値
+- `number`: 最大値  
 指定された範囲の浮動小数点数の乱数を取得します
-### window
-#### window.name() -> string
+
+### Window
+#### Window:Name() -> string
 ウィンドウの名前を取得します
-#### window.rename(string)
+#### Window:Rename(string)
 - `string`: ウィンドウの名前  
 ウィンドウの名前を変更します
-#### window.size() -> Vector2
+#### Window:Size() -> Vec2
 ウィンドウのサイズを取得します
-#### window.resize(Vector2)
-- `Vector2`: ウィンドウのサイズ  
+#### Window:Resize(Vec2)
+- `Vec2`: ウィンドウのサイズ  
 ウィンドウのサイズを変更します
-#### window.resized() -> bool
+#### Window:Resized() -> bool
 ウィンドウが今のフレームでリサイズされたかどうかを取得します
-#### window.half() -> Vector2
+#### Window:Half() -> Vec2
 ウィンドウの半分のサイズを取得します
-#### window.set_fullscreen(bool)
+#### Window:SetFullscreen(bool)
 - `bool`: ウィンドウをフルスクリーンにするかどうか  
 ウィンドウをフルスクリーン、またはウィンドウモードにします
-### renderer
-#### renderer.clear_color() -> color
+
+### Graphics
+#### Graphics:SetClearColor() -> Color
 画面クリアの色を取得します
-#### renderer.set_clear_color(color)
+#### Graphics:SetClearColor(Color)
 - `Color`: 画面クリアの色  
 画面クリアの色を設定します
-#### renderer.begin_pipeline2d(RenderPipeline2D)
+#### Graphics:BeginPipeline2D(RenderPipeline2D)
 - `RenderPipeline2D`: レンダーパイプライン  
 2Dレンダリングを開始します
-#### renderer.end_pipeline2d()
+#### Graphics:EndPipeline2D()
 2Dレンダリングを終了します
-#### renderer.begin_pipeline3d(RenderPipeline3D)
+#### Graphics:BeginPipeline3D(RenderPipeline3D)
 - `RenderPipeline3D`: レンダーパイプライン  
 3Dレンダリングを開始します
-#### renderer.end_pipeline3d()
+#### Graphics:EndPipeline3D()
 3Dレンダリングを終了します
-#### renderer.begin_render_texture2d(RenderTexture)
+#### Graphics:BeginRenderTexture2D(RenderTexture)
 - `RenderTexture`: レンダーテクスチャ
 レンダーテクスチャの描画を開始します
-#### renderer.begin_render_texture3d(RenderTexture)
+#### Graphics:BeginRenderTexture3D(RenderTexture)
 - `RenderTexture`: レンダーテクスチャ
-#### renderer.end_render_texture(RenderTexture, Texture)
+#### Graphics:EndRenderTexture(RenderTexture, Texture)
 - `RenderTexture`: レンダーテクスチャ
 - `Texture`: 描画結果  
 レンダーテクスチャの描画を終了します  
 `Texture`は`RenderTexture`と同じサイズである必要があります
-### scene
-#### scene.camera() -> Camera
+
+### Scene
+#### Scene:Camera() -> Camera
 シーンのメインカメラを取得します
-#### scene.size() -> Vector2
+#### Scene:Size() -> Vec2
 シーンのサイズを取得します
-#### scene.resize(Vector2)
-- `Vector2`: シーンのサイズ  
+#### Scene:Resize(Vec2)
+- `Vec2`: シーンのサイズ  
 シーンのサイズを変更します
-#### scene.half() -> Vector2
+#### Scene:Half() -> Vec2
 シーンの半分のサイズを取得します
-### collision
-#### collision.aabb_aabb(AABB, AABB) -> bool
+
+### Collision
+#### Collision:AABBvsAABB(AABB, AABB) -> bool
 - `AABB`: AABB
 - `AABB`: AABB  
 AABB同士の衝突判定を行います
 
-### keyboard
-#### keyboard.is_pressed(code) -> bool
+### Keyboard
+#### Keyboard:IsPressed(code) -> bool
 - `code`: キーコード  
 キーが現在のフレームで押されたかどうかを確認します
-#### keyboard.is_released(code) -> bool
+#### Keyboard:IsReleased(code) -> bool
 - `code`: キーコード  
 キーが現在のフレームで離されたかどうかを確認します
-#### keyboard.is_down(code) -> bool
+#### Keyboard:IsDown(code) -> bool
 - `code`: キーコード  
 キーが押されているかどうかを確認します
-#### keyboard.A = code
-#### keyboard.B = code
-#### keyboard.C = code
-#### keyboard.D = code
-#### keyboard.E = code
-#### keyboard.F = code
-#### keyboard.G = code
-#### keyboard.H = code
-#### keyboard.I = code
-#### keyboard.J = code
-#### keyboard.K = code
-#### keyboard.L = code
-#### keyboard.M = code
-#### keyboard.N = code
-#### keyboard.O = code
-#### keyboard.P = code
-#### keyboard.Q = code
-#### keyboard.R = code
-#### keyboard.S = code
-#### keyboard.T = code
-#### keyboard.U = code
-#### keyboard.V = code
-#### keyboard.W = code
-#### keyboard.X = code
-#### keyboard.Y = code
-#### keyboard.Z = code
-#### keyboard.key0 = code
-#### keyboard.key1 = code
-#### keyboard.key2 = code
-#### keyboard.key3 = code
-#### keyboard.key4 = code
-#### keyboard.key5 = code
-#### keyboard.key6 = code
-#### keyboard.key7 = code
-#### keyboard.key8 = code
-#### keyboard.key9 = code
-#### keyboard.F1 = code
-#### keyboard.F2 = code
-#### keyboard.F3 = code
-#### keyboard.F4 = code
-#### keyboard.F5 = code
-#### keyboard.F6 = code
-#### keyboard.F7 = code
-#### keyboard.F8 = code
-#### keyboard.F9 = code
-#### keyboard.F10 = code
-#### keyboard.F11 = code
-#### keyboard.F12 = code
-#### keyboard.UP = code
-#### keyboard.DOWN = code
-#### keyboard.LEFT = code
-#### keyboard.RIGHT = code
-#### keyboard.ESCAPE = code
-#### keyboard.SPACE = code
-#### keyboard.ENTER = code
-#### keyboard.BACKSPACE = code
-#### keyboard.TAB = code
-#### keyboard.LSHIFT = code
-#### keyboard.RSHIFT = code
-#### keyboard.LCTRL = code
-#### keyboard.RCTRL = code
-#### keyboard.ALT = code
-### mouse
-#### mouse.position() -> Vector2
+#### Keyboard.A = code
+#### Keyboard.B = code
+#### Keyboard.C = code
+#### Keyboard.D = code
+#### Keyboard.E = code
+#### Keyboard.F = code
+#### Keyboard.G = code
+#### Keyboard.H = code
+#### Keyboard.I = code
+#### Keyboard.J = code
+#### Keyboard.K = code
+#### Keyboard.L = code
+#### Keyboard.M = code
+#### Keyboard.N = code
+#### Keyboard.O = code
+#### Keyboard.P = code
+#### Keyboard.Q = code
+#### Keyboard.R = code
+#### Keyboard.S = code
+#### Keyboard.T = code
+#### Keyboard.U = code
+#### Keyboard.V = code
+#### Keyboard.W = code
+#### Keyboard.X = code
+#### Keyboard.Y = code
+#### Keyboard.Z = code
+#### Keyboard.key0 = code
+#### Keyboard.key1 = code
+#### Keyboard.key2 = code
+#### Keyboard.key3 = code
+#### Keyboard.key4 = code
+#### Keyboard.key5 = code
+#### Keyboard.key6 = code
+#### Keyboard.key7 = code
+#### Keyboard.key8 = code
+#### Keyboard.key9 = code
+#### Keyboard.F1 = code
+#### Keyboard.F2 = code
+#### Keyboard.F3 = code
+#### Keyboard.F4 = code
+#### Keyboard.F5 = code
+#### Keyboard.F6 = code
+#### Keyboard.F7 = code
+#### Keyboard.F8 = code
+#### Keyboard.F9 = code
+#### Keyboard.F10 = code
+#### Keyboard.F11 = code
+#### Keyboard.F12 = code
+#### Keyboard.UP = code
+#### Keyboard.DOWN = code
+#### Keyboard.LEFT = code
+#### Keyboard.RIGHT = code
+#### Keyboard.ESCAPE = code
+#### Keyboard.SPACE = code
+#### Keyboard.ENTER = code
+#### Keyboard.BACKSPACE = code
+#### Keyboard.TAB = code
+#### Keyboard.LSHIFT = code
+#### Keyboard.RSHIFT = code
+#### Keyboard.LCTRL = code
+#### Keyboard.RCTRL = code
+#### Keyboard.ALT = code
+### Mouse
+#### Mouse.GetPosition() -> Vec2
 マウスのウィンドウ内の位置を取得します  
 ウィンドウの中心が原点(0, 0)です
-#### mouse.position_on_scene() -> Vector2
+#### Mouse.GetPositionOnScene() -> Vec2
 マウスのシーン内の位置を取得します  
 シーンの中心が原点(0, 0)です
-#### mouse.set_position(Vector2)
-- `Vector2`: マウスのウィンドウ上の位置  
+#### Mouse.SetPosition(Vec2)
+- `Vec2`: マウスのウィンドウ上の位置  
 マウスのウィンドウ上の位置を設定します  
 ウィンドウの中心が原点(0, 0)です
-#### mouse.set_position_on_scene(Vector2)
-- `Vector2`: シーン上のマウスの位置  
+#### Mouse.SetPositionOnScene(Vec2)
+- `Vec2`: シーン上のマウスの位置  
 マウスのシーン上の位置を設定します  
 シーンの中心が原点(0, 0)です
-#### mouse.is_pressed(code) -> bool
+#### Mouse.IsPressed(code) -> bool
 - `code`: マウスのボタンコード  
 ボタンが現在のフレームで押されたかどうかを確認します
-#### mouse.is_released(code) -> bool
+#### Mouse.IsPressed(code) -> bool
 - `code`: マウスのボタンコード  
 ボタンが現在のフレームで離されたかどうかを確認します
-#### mouse.is_down(code) -> bool
+#### Mouse.IsDown(code) -> bool
 - `code`: マウスのボタンコード  
 ボタンが押されているかどうかを確認します
-#### mouse.scroll_wheel() -> Vector2
+#### Mouse.ScrollWheel() -> Vec2
 マウスのスクロールの変化量を取得します
-#### mouse.hide_cursor(bool)
+#### Mouse.HideCursor(bool)
 - `bool`: マウスカーソルを隠すかどうか  
 カーソルを表示、または非表示にします
-#### mouse.set_relative(bool)
+#### Mouse.SetRelative(bool)
 - `bool`: マウスを相対座標として取得するかどうか  
 相対座標でマウスの位置を取得するかどうかを設定します。
-#### mouse.is_relative() -> bool
+#### Mouse.IsRelative() -> bool
 相対座標でマウスの位置を取得しているかどうかを確認します
-#### mouse.LEFT = code
-#### mouse.RIGHT = code
-#### mouse.MIDDLE = code
-#### mouse.X1 = code
-#### mouse.X2 = code
-### gamepad
-#### gamepad.is_connected() -> bool
+#### Mouse.LEFT = code
+#### Mouse.RIGHT = code
+#### Mouse.MIDDLE = code
+#### Mouse.X1 = code
+#### Mouse.X2 = code
+### Gamepad
+#### Gamepad.IsConnected() -> bool
 ゲームパッドが接続されているかどうかを確認します
-#### gamepad.is_pressed(code) -> bool
+#### Gamepad.IsPressed(code) -> bool
 - `code`: ゲームパッドのボタンコード  
 ボタンが現在のフレームで押されたかどうかを確認します
-#### gamepad.is_released(code) -> bool
+#### Gamepad.IsReleased(code) -> bool
 - `code`: ゲームパッドのボタンコード  
 ボタンが現在のフレームで離されたかどうかを確認します
-#### gamepad.is_down(code) -> bool
+#### Gamepad.IsDown(code) -> bool
 - `code`: ゲームパッドのボタンコード  
 ボタンが押されているかどうかを確認します  
-#### gamepad.left_stick() -> Vector2
+#### Gamepad.GetLeftStick() -> Vec2
 左スティックの変化量を取得します
-#### gamepad.right_stick() -> Vector2
+#### Gamepad.GetRightStick() -> Vec2
 右スティックの変化量を取得します
-#### gamepad.INVALID = code
-#### gamepad.A = code
-#### gamepad.B = code
-#### gamepad.X = code
-#### gamepad.Y = code
-#### gamepad.BACK = code
-#### gamepad.START = code
-#### gamepad.GUIDE = code
-#### gamepad.LEFTSTICK = code
-#### gamepad.RIGHTSTICK = code
-#### gamepad.LEFTSHOULDER = code
-#### gamepad.RIGHTSHOULDER = code
-#### gamepad.DPAD_UP = code
-#### gamepad.DPAD_DOWN = code
-#### gamepad.DPAD_LEFT = code
-#### gamepad.DPAD_RIGHT = code
-#### gamepad.MISC1 = code
-#### gamepad.PADDLE1 = code
-#### gamepad.PADDLE2 = code
-#### gamepad.PADDLE3 = code
-#### gamepad.PADDLE4 = code
-#### gamepad.TOUCHPAD = code
+#### Gamepad.INVALID = code
+#### Gamepad.A = code
+#### Gamepad.B = code
+#### Gamepad.X = code
+#### Gamepad.Y = code
+#### Gamepad.BACK = code
+#### Gamepad.START = code
+#### Gamepad.GUIDE = code
+#### Gamepad.LEFTSTICK = code
+#### Gamepad.RIGHTSTICK = code
+#### Gamepad.LEFTSHOULDER = code
+#### Gamepad.RIGHTSHOULDER = code
+#### Gamepad.DPAD_UP = code
+#### Gamepad.DPAD_DOWN = code
+#### Gamepad.DPAD_LEFT = code
+#### Gamepad.DPAD_RIGHT = code
+#### Gamepad.MISC1 = code
+#### Gamepad.PADDLE1 = code
+#### Gamepad.PADDLE2 = code
+#### Gamepad.PADDLE3 = code
+#### Gamepad.PADDLE4 = code
+#### Gamepad.TOUCHPAD = code
+
+### Periodic
+#### Periodic.Sin0_1(time: number) -> number
+- `time`: 時間(秒)  
+0.0から1.0の間で周期的に変化する値を取得します
+#### Periodic.Cos0_1(time: number) -> number
+- `time`: 時間(秒)  
+0.0から1.0の間で周期的に変化する値を取得します
+
+### Time
+#### Time.Seconds() -> number
+現在のフレームの経過時間を秒単位で取得します
+#### Time.Milli() -> number
+現在のフレームの経過時間をミリ秒単位で取得します
+
+### Logger
+#### Logger.Info(string)
+- `string`: ログメッセージ  
+情報レベルのログを出力します
+#### Logger.Warn(string)
+- `string`: ログメッセージ  
+警告レベルのログを出力します
+#### Logger.Error(string)
+- `string`: ログメッセージ  
+エラーレベルのログを出力します
+#### Logger.Critical(string)
+- `string`: ログメッセージ  
+致命的なエラーレベルのログを出力します
+#### Logger.Debug(string)
+- `string`: ログメッセージ  
+デバッグレベルのログを出力します

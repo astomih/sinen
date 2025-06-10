@@ -32,6 +32,7 @@ function Draw()
     -- Draw texture
     draw2d:Draw()
 end
+```
 
 ![Hello World](https://raw.githubusercontent.com/astomih/sinen/refs/heads/main/examples/screenshot/01.png)
 

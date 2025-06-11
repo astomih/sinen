@@ -123,7 +123,7 @@ void SceneSystem::update_scene() {
         Graphics::add_imgui_function([&]() {
           if (!z_init) {
             zep_init(Zep::NVec2f(1.0f, 1.0f));
-            zep_load(DataStream::OpenAsString(AssetType::Script, "main.py"));
+            zep_load(DataStream::OpenAsString(AssetType::Script, "main.lua"));
             z_init = true;
           }
           zep_update();

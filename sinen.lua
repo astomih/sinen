@@ -202,7 +202,7 @@ function Grid(w, h) return {} end
 ---@class BFSGrid
 ---@field Width fun(self: BFSGrid): integer
 ---@field Height fun(self: BFSGrid): integer
----@field Find_path fun(self: BFSGrid, start: Vec2, end_: Vec2): any
+---@field FindPath fun(self: BFSGrid, start: Vec2, end_: Vec2): any
 ---@field Trace fun(self: BFSGrid): Vec2
 ---@field Traceable fun(self: BFSGrid): boolean
 ---@field Reset fun(self: BFSGrid)

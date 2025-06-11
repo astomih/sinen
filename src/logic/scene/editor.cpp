@@ -110,7 +110,7 @@ ZepEditor &zep_get_editor() { return spZep->GetEditor(); }
 
 void zep_load(const std::string &data) {
 #ifndef ZEP_CONSOLE
-  auto pBuffer = zep_get_editor().InitWithText("main.py", data);
+  auto pBuffer = zep_get_editor().InitWithText("main.lua", data);
   assert(pBuffer != nullptr);
 
 #endif
@@ -124,7 +124,7 @@ void zep_show(const Zep::NVec2i &displaySize) {
 #else
   ImGui::SetNextWindowSize(ImVec2(displaySize.x, displaySize.y),
                            ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("Zep", &show,
+  if (!ImGui::Begin("Script Editor", &show,
                     ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_MenuBar)) {
     ImGui::End();
     return;

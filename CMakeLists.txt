@@ -13,7 +13,6 @@ add_subdirectory(${SINEN_SOURCE_DIR}/libs/SDL_image EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/SDL_ttf EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/assimp EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/SDL_mixer EXCLUDE_FROM_ALL)
-add_subdirectory(${SINEN_SOURCE_DIR}/libs/pocketpy EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/paranoixa EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/zep EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/sol2 EXCLUDE_FROM_ALL)
@@ -55,7 +54,6 @@ target_link_libraries(
         SDL3_mixer::SDL3_mixer
         SDL3_ttf::SDL3_ttf
         assimp
-        pocketpy
         Zep::Zep
         luajit::lib
         luajit::header

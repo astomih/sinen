@@ -5,17 +5,13 @@
 
 namespace sinen {
 std::unique_ptr<IScript> ScriptSystem::script = nullptr;
-ScriptType ScriptSystem::type = ScriptType::Python;
+ScriptType ScriptSystem::type = ScriptType::Lua;
 
 bool ScriptSystem::Initialize(const ScriptType &type) {
   switch (type) {
   case ScriptType::Lua:
     script = Script::CreateLua();
     ScriptSystem::type = ScriptType::Lua;
-    break;
-  case ScriptType::Python:
-    script = Script::CreatePython();
-    ScriptSystem::type = ScriptType::Python;
     break;
   default:
     return false;
@@ -28,21 +24,6 @@ void ScriptSystem::Shutdown() {
     script.reset();
   }
 }
-static const char *nothingScenePython = R"(
-from sinen import *
-texture = Texture()
-draw2d = Draw2D()
-draw2d.material.append(texture)
-font = Font()
-font.load(96)
-
-def update():
-  font.render_text(texture, "NO DATA", Color(1, 1, 1, 1))
-  draw2d.scale = texture.size()
-
-def draw():
-  draw2d.draw()
-)";
 
 static const char *nothingSceneLua = R"(
 local texture = Texture()
@@ -68,13 +49,6 @@ void ScriptSystem::RunScene(std::string_view sceneName) {
                                         std::string(sceneName) + ".lua");
       if (source.empty()) {
         source = nothingSceneLua;
-      }
-    } break;
-    case ScriptType::Python: {
-      source = DataStream::OpenAsString(AssetType::Script,
-                                        std::string(sceneName) + ".py");
-      if (source.empty()) {
-        source = nothingScenePython;
       }
     } break;
     default:

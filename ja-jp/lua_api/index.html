@@ -1,0 +1,6652 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../cpp_api/">
+      
+      
+        <link rel="next" href="../tutorial/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+    
+    
+      
+        <title>Lua API - Sinen Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.342714a4.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#lua-api" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Sinen Docs" class="md-header__button md-logo" aria-label="Sinen Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Sinen Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Lua API
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Sinen Docs" class="md-nav__button md-logo" aria-label="Sinen Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Sinen Docs
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    En us
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            En us
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../en-us/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Sinen
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../en-us/cpp_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    C++ API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../en-us/lua_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Lua API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../en-us/tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Under construction...
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Ja jp
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Ja jp
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Sinen
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    C++ API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Lua API
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Lua API
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      呼び出しについて
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      クラス
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="クラス">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      命名規則
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec2
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Vec2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      メタテーブル
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec2x-y-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec2(x, y) -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec2value-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec2(value) -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec2x-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec2.x = number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec2y-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec2.y = number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec2length-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec2:Length() -&gt; number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec2normalize-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec2:Normalize() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec2copy-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec2:Copy() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec2dotvec2-vec2-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec2:Dot(Vec2, Vec2) -&gt; number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec2lerpvec2-vec2-number-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec2:Lerp(Vec2, Vec2, number) -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec2reflectvec2-vec2-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec2:Reflect(Vec2, Vec2) -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Vec3">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      メタテーブル
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3x-y-z-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3(x, y, z) -&gt; Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3value-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3(value) -&gt; Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3x-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3.x = number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3y-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3.y = number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3z-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3.z = number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3length-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3:Length() -&gt; number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3normalize-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3:Normalize() -&gt; Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3copy-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3:Copy() -&gt; Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3forwardvec3-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3:Forward(Vec3) -&gt; Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3dotvec3-vec3-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3:Dot(Vec3, Vec3) -&gt; number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3crossvec3-vec3-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3:Cross(Vec3, Vec3) -&gt; Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3lerpvec3-vec3-number-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3:Lerp(Vec3, Vec3, number) -&gt; Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3reflectvec3-vec3-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3:Reflect(Vec3, Vec3) -&gt; Vec3
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#color" class="md-nav__link">
+    <span class="md-ellipsis">
+      Color
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Color">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#color-color" class="md-nav__link">
+    <span class="md-ellipsis">
+      Color() -&gt; Color
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#colorr-g-b-a-color" class="md-nav__link">
+    <span class="md-ellipsis">
+      Color(r, g, b, a) -&gt; color
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#colorr-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Color.r = number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#colorg-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Color.g = number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#colorb-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Color.b = number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#colora-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Color.a = number
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#texture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Texture
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Texture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#texture_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Texture()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#textureloadstring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Texture:Load(string)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#texturefillcolorcolor" class="md-nav__link">
+    <span class="md-ellipsis">
+      Texture:FillColor(Color)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#textureblendcolorcolor" class="md-nav__link">
+    <span class="md-ellipsis">
+      Texture:BlendColor(Color)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#texturecopy-texture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Texture:Copy() -&gt; Texture
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#texturesize-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Texture:Size() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rendertexture" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderTexture
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="RenderTexture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rendertexture_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderTexture()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rendertexturecreatenumber-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderTexture:Create(number, number)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#material" class="md-nav__link">
+    <span class="md-ellipsis">
+      Material
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Material">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#material-material" class="md-nav__link">
+    <span class="md-ellipsis">
+      Material() -&gt; Material
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#materialappendtexturetexture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Material:AppendTexture(Texture)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#font" class="md-nav__link">
+    <span class="md-ellipsis">
+      Font
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Font">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#font-font" class="md-nav__link">
+    <span class="md-ellipsis">
+      Font() -&gt; Font
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fontloadstring-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Font:Load(string, number)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fontrendertexttexture-string-color" class="md-nav__link">
+    <span class="md-ellipsis">
+      Font:RenderText(Texture, string, color)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw2D
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Draw2D">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#draw2d-draw2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw2D() -&gt; Draw2D
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw2dposition-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw2D.position = Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw2dscale-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw2D.scale = Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw2drotation-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw2D.rotation = number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw2dmaterial-material" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw2D.material = Material
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw2dmodel-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw2D.model = Model
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw2ddraw" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw2D:Draw()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw2daddvec2-number-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw2D:Add(Vec2, number, Vec2)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw2dclear" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw2D:Clear()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw3D
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Draw3D">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#draw3d-draw3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw3D() -&gt; Draw3D
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw3dposition-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw3D.position = Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw3dscale-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw3D.scale = Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw3drotation-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw3D.rotation = Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw3dmaterial-material" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw3D.material = Material
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw3dmodel-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw3D.model = Model
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw3ddraw" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw3D:Draw()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw3daddvec3vec3vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw3D:Add(Vec3,Vec3,Vec3)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw3dclear" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw3D:Clear()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#uniformdata" class="md-nav__link">
+    <span class="md-ellipsis">
+      UniformData
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="UniformData">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#uniformdata-uniformdata" class="md-nav__link">
+    <span class="md-ellipsis">
+      UniformData() -&gt; UniformData
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#uniformdataaddnumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      UniformData:Add(number)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#uniformdataatnumber-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      UniformData:At(number, number)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shader" class="md-nav__link">
+    <span class="md-ellipsis">
+      Shader
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Shader">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#shader-shader" class="md-nav__link">
+    <span class="md-ellipsis">
+      Shader() -&gt; Shader
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shaderloadvertexshaderstringnumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      Shader:LoadVertexShader(string,number)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shaderloadfragmentshaderstringnumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      Shader:LoadFragmentShader(string,number)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shadercompileandloadvertexshaderstringnumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      Shader:CompileAndLoadVertexShader(string,number)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shadercompileandloadfragmentshaderstringnumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      Shader:CompileAndLoadFragmentShader(string,number)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#renderpipeline2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderPipeline2D
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="RenderPipeline2D">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#renderpipeline2d-renderpipeline2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderPipeline2D() -&gt; RenderPipeline2D
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#renderpipeline2dsetvertexshadershader" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderPipeline2D:SetVertexShader(Shader)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#renderpipeline2dsetfragmentshadershader" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderPipeline2D:SetFragmentShader(Shader)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#renderpipeline2dbuild" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderPipeline2D:Build()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#renderpipeline3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderPipeline3D
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="RenderPipeline3D">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#renderpipeline3d-renderpipeline3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderPipeline3D() -&gt; RenderPipeline3D
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#renderpipeline3dsetvertexshadershader" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderPipeline3D:SetVertexShader(Shader)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#renderpipeline3dsetfragmentshadershader" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderPipeline3D:SetFragmentShader(Shader)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#renderpipeline3dbuild" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderPipeline3D:Build()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#camera" class="md-nav__link">
+    <span class="md-ellipsis">
+      Camera
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Camera">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#camera-camera" class="md-nav__link">
+    <span class="md-ellipsis">
+      Camera() -&gt; Camera
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cameralookatvec3-vec3-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Camera:LookAt(Vec3, Vec3, Vec3)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cameraperspectivenumber-number-number-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Camera:Perspective(number, number, number, number)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cameraorthographicnumber-number-number-number-number-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Camera:Orthographic(number, number, number, number, number, number)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cameraisaabbinfrustumaabb-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Camera:IsAABBInFrustum(AABB) -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cameragetposition-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Camera:GetPosition = Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cameragettarget-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Camera:GetTarget = Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cameragetup-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Camera.GetUp = Vec3
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#music" class="md-nav__link">
+    <span class="md-ellipsis">
+      Music
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Music">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#music-music" class="md-nav__link">
+    <span class="md-ellipsis">
+      Music() -&gt; Music
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#musicloadstring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Music:Load(string)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#musicplay" class="md-nav__link">
+    <span class="md-ellipsis">
+      Music:Play()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#musicsetvolumenumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      Music:SetVolume(number)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sound" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sound
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sound">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sound-sound" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sound() -&gt; Sound
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#soundloadstring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sound:Load(string)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#soundplay" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sound:Play()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#soundsetvolumenumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sound:SetVolume(number)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#soundsetpitchnumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sound:SetPitch(number)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#soundsetlistenervec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sound:SetListener(Vec3)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#soundsetpositionvec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sound:SetPosition(Vec3)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aabb" class="md-nav__link">
+    <span class="md-ellipsis">
+      AABB
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="AABB">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aabbmin-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      AABB.min = Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aabbmax-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      AABB.max = Vec3
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Model
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#modelaabb-aabb" class="md-nav__link">
+    <span class="md-ellipsis">
+      Model.AABB = AABB
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modelloadstring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Model:Load(string)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      グローバル関数
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="グローバル関数">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#random" class="md-nav__link">
+    <span class="md-ellipsis">
+      Random
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Random">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#randomgetrangenumber-number-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Random:GetRange(number, number) -&gt; number
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#window" class="md-nav__link">
+    <span class="md-ellipsis">
+      Window
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Window">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#windowname-string" class="md-nav__link">
+    <span class="md-ellipsis">
+      Window:Name() -&gt; string
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windowrenamestring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Window:Rename(string)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windowsize-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Window:Size() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windowresizevec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Window:Resize(Vec2)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windowresized-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Window:Resized() -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windowhalf-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Window:Half() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windowsetfullscreenbool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Window:SetFullscreen(bool)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphics
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Graphics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#graphicssetclearcolor-color" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphics:SetClearColor() -&gt; Color
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphicssetclearcolorcolor" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphics:SetClearColor(Color)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphicsbeginpipeline2drenderpipeline2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphics:BeginPipeline2D(RenderPipeline2D)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphicsendpipeline2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphics:EndPipeline2D()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphicsbeginpipeline3drenderpipeline3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphics:BeginPipeline3D(RenderPipeline3D)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphicsendpipeline3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphics:EndPipeline3D()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphicsbeginrendertexture2drendertexture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphics:BeginRenderTexture2D(RenderTexture)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphicsbeginrendertexture3drendertexture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphics:BeginRenderTexture3D(RenderTexture)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphicsendrendertexturerendertexture-texture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphics:EndRenderTexture(RenderTexture, Texture)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scene" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scene
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Scene">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scenecamera-camera" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scene:Camera() -&gt; Camera
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scenesize-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scene:Size() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sceneresizevec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scene:Resize(Vec2)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scenehalf-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scene:Half() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#collision" class="md-nav__link">
+    <span class="md-ellipsis">
+      Collision
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Collision">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#collisionaabbvsaabbaabb-aabb-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Collision:AABBvsAABB(AABB, AABB) -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Keyboard">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#keyboardispressedcode-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard:IsPressed(code) -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardisreleasedcode-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard:IsReleased(code) -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardisdowncode-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard:IsDown(code) -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboarda-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.A = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardb-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.B = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardc-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.C = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardd-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.D = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboarde-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.E = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardg-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.G = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardh-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.H = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardi-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.I = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardj-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.J = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardk-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.K = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardl-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.L = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardm-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.M = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardn-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.N = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardo-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.O = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardp-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.P = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardq-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.Q = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardr-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.R = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboards-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.S = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardt-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.T = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardu-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.U = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardv-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.V = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardw-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.W = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardx-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.X = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardy-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.Y = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardz-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.Z = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardkey0-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.key0 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardkey1-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.key1 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardkey2-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.key2 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardkey3-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.key3 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardkey4-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.key4 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardkey5-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.key5 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardkey6-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.key6 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardkey7-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.key7 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardkey8-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.key8 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardkey9-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.key9 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf1-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F1 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf2-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F2 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf3-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F3 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf4-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F4 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf5-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F5 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf6-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F6 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf7-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F7 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf8-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F8 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf9-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F9 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf10-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F10 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf11-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F11 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf12-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F12 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardup-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.UP = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboarddown-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.DOWN = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardleft-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.LEFT = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardright-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.RIGHT = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardescape-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.ESCAPE = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardspace-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.SPACE = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardenter-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.ENTER = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardbackspace-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.BACKSPACE = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardtab-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.TAB = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardlshift-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.LSHIFT = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardrshift-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.RSHIFT = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardlctrl-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.LCTRL = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardrctrl-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.RCTRL = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardalt-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.ALT = code
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mouse" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Mouse">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mousegetposition-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.GetPosition() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mousegetpositiononscene-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.GetPositionOnScene() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mousesetpositionvec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.SetPosition(Vec2)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mousesetpositiononscenevec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.SetPositionOnScene(Vec2)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mouseispressedcode-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.IsPressed(code) -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mouseispressedcode-bool_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.IsPressed(code) -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mouseisdowncode-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.IsDown(code) -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mousescrollwheel-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.ScrollWheel() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mousehidecursorbool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.HideCursor(bool)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mousesetrelativebool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.SetRelative(bool)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mouseisrelative-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.IsRelative() -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mouseleft-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.LEFT = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mouseright-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.RIGHT = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mousemiddle-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.MIDDLE = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mousex1-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.X1 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mousex2-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.X2 = code
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepad" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Gamepad">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gamepadisconnected-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.IsConnected() -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadispressedcode-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.IsPressed(code) -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadisreleasedcode-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.IsReleased(code) -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadisdowncode-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.IsDown(code) -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadgetleftstick-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.GetLeftStick() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadgetrightstick-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.GetRightStick() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadinvalid-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.INVALID = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepada-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.A = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadb-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.B = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadx-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.X = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepady-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.Y = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadback-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.BACK = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadstart-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.START = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadguide-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.GUIDE = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadleftstick-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.LEFTSTICK = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadrightstick-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.RIGHTSTICK = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadleftshoulder-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.LEFTSHOULDER = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadrightshoulder-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.RIGHTSHOULDER = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepaddpad_up-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.DPAD_UP = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepaddpad_down-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.DPAD_DOWN = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepaddpad_left-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.DPAD_LEFT = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepaddpad_right-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.DPAD_RIGHT = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadmisc1-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.MISC1 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadpaddle1-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.PADDLE1 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadpaddle2-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.PADDLE2 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadpaddle3-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.PADDLE3 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadpaddle4-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.PADDLE4 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadtouchpad-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.TOUCHPAD = code
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#periodic" class="md-nav__link">
+    <span class="md-ellipsis">
+      Periodic
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Periodic">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#periodicsin0_1time-number-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Periodic.Sin0_1(time: number) -&gt; number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#periodiccos0_1time-number-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Periodic.Cos0_1(time: number) -&gt; number
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#time" class="md-nav__link">
+    <span class="md-ellipsis">
+      Time
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Time">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#timeseconds-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Time.Seconds() -&gt; number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timemilli-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Time.Milli() -&gt; number
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logger" class="md-nav__link">
+    <span class="md-ellipsis">
+      Logger
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Logger">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#loggerinfostring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Logger.Info(string)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loggerwarnstring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Logger.Warn(string)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loggererrorstring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Logger.Error(string)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loggercriticalstring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Logger.Critical(string)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loggerdebugstring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Logger.Debug(string)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    整備中...
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      呼び出しについて
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      クラス
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="クラス">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      命名規則
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec2
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Vec2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      メタテーブル
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec2x-y-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec2(x, y) -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec2value-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec2(value) -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec2x-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec2.x = number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec2y-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec2.y = number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec2length-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec2:Length() -&gt; number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec2normalize-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec2:Normalize() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec2copy-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec2:Copy() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec2dotvec2-vec2-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec2:Dot(Vec2, Vec2) -&gt; number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec2lerpvec2-vec2-number-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec2:Lerp(Vec2, Vec2, number) -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec2reflectvec2-vec2-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec2:Reflect(Vec2, Vec2) -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Vec3">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      メタテーブル
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3x-y-z-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3(x, y, z) -&gt; Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3value-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3(value) -&gt; Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3x-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3.x = number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3y-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3.y = number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3z-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3.z = number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3length-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3:Length() -&gt; number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3normalize-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3:Normalize() -&gt; Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3copy-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3:Copy() -&gt; Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3forwardvec3-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3:Forward(Vec3) -&gt; Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3dotvec3-vec3-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3:Dot(Vec3, Vec3) -&gt; number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3crossvec3-vec3-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3:Cross(Vec3, Vec3) -&gt; Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3lerpvec3-vec3-number-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3:Lerp(Vec3, Vec3, number) -&gt; Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vec3reflectvec3-vec3-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vec3:Reflect(Vec3, Vec3) -&gt; Vec3
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#color" class="md-nav__link">
+    <span class="md-ellipsis">
+      Color
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Color">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#color-color" class="md-nav__link">
+    <span class="md-ellipsis">
+      Color() -&gt; Color
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#colorr-g-b-a-color" class="md-nav__link">
+    <span class="md-ellipsis">
+      Color(r, g, b, a) -&gt; color
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#colorr-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Color.r = number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#colorg-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Color.g = number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#colorb-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Color.b = number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#colora-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Color.a = number
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#texture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Texture
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Texture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#texture_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Texture()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#textureloadstring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Texture:Load(string)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#texturefillcolorcolor" class="md-nav__link">
+    <span class="md-ellipsis">
+      Texture:FillColor(Color)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#textureblendcolorcolor" class="md-nav__link">
+    <span class="md-ellipsis">
+      Texture:BlendColor(Color)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#texturecopy-texture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Texture:Copy() -&gt; Texture
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#texturesize-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Texture:Size() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rendertexture" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderTexture
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="RenderTexture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rendertexture_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderTexture()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rendertexturecreatenumber-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderTexture:Create(number, number)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#material" class="md-nav__link">
+    <span class="md-ellipsis">
+      Material
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Material">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#material-material" class="md-nav__link">
+    <span class="md-ellipsis">
+      Material() -&gt; Material
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#materialappendtexturetexture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Material:AppendTexture(Texture)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#font" class="md-nav__link">
+    <span class="md-ellipsis">
+      Font
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Font">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#font-font" class="md-nav__link">
+    <span class="md-ellipsis">
+      Font() -&gt; Font
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fontloadstring-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Font:Load(string, number)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fontrendertexttexture-string-color" class="md-nav__link">
+    <span class="md-ellipsis">
+      Font:RenderText(Texture, string, color)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw2D
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Draw2D">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#draw2d-draw2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw2D() -&gt; Draw2D
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw2dposition-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw2D.position = Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw2dscale-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw2D.scale = Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw2drotation-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw2D.rotation = number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw2dmaterial-material" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw2D.material = Material
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw2dmodel-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw2D.model = Model
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw2ddraw" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw2D:Draw()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw2daddvec2-number-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw2D:Add(Vec2, number, Vec2)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw2dclear" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw2D:Clear()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw3D
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Draw3D">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#draw3d-draw3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw3D() -&gt; Draw3D
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw3dposition-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw3D.position = Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw3dscale-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw3D.scale = Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw3drotation-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw3D.rotation = Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw3dmaterial-material" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw3D.material = Material
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw3dmodel-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw3D.model = Model
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw3ddraw" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw3D:Draw()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw3daddvec3vec3vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw3D:Add(Vec3,Vec3,Vec3)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#draw3dclear" class="md-nav__link">
+    <span class="md-ellipsis">
+      Draw3D:Clear()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#uniformdata" class="md-nav__link">
+    <span class="md-ellipsis">
+      UniformData
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="UniformData">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#uniformdata-uniformdata" class="md-nav__link">
+    <span class="md-ellipsis">
+      UniformData() -&gt; UniformData
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#uniformdataaddnumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      UniformData:Add(number)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#uniformdataatnumber-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      UniformData:At(number, number)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shader" class="md-nav__link">
+    <span class="md-ellipsis">
+      Shader
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Shader">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#shader-shader" class="md-nav__link">
+    <span class="md-ellipsis">
+      Shader() -&gt; Shader
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shaderloadvertexshaderstringnumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      Shader:LoadVertexShader(string,number)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shaderloadfragmentshaderstringnumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      Shader:LoadFragmentShader(string,number)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shadercompileandloadvertexshaderstringnumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      Shader:CompileAndLoadVertexShader(string,number)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shadercompileandloadfragmentshaderstringnumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      Shader:CompileAndLoadFragmentShader(string,number)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#renderpipeline2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderPipeline2D
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="RenderPipeline2D">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#renderpipeline2d-renderpipeline2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderPipeline2D() -&gt; RenderPipeline2D
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#renderpipeline2dsetvertexshadershader" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderPipeline2D:SetVertexShader(Shader)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#renderpipeline2dsetfragmentshadershader" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderPipeline2D:SetFragmentShader(Shader)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#renderpipeline2dbuild" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderPipeline2D:Build()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#renderpipeline3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderPipeline3D
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="RenderPipeline3D">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#renderpipeline3d-renderpipeline3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderPipeline3D() -&gt; RenderPipeline3D
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#renderpipeline3dsetvertexshadershader" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderPipeline3D:SetVertexShader(Shader)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#renderpipeline3dsetfragmentshadershader" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderPipeline3D:SetFragmentShader(Shader)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#renderpipeline3dbuild" class="md-nav__link">
+    <span class="md-ellipsis">
+      RenderPipeline3D:Build()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#camera" class="md-nav__link">
+    <span class="md-ellipsis">
+      Camera
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Camera">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#camera-camera" class="md-nav__link">
+    <span class="md-ellipsis">
+      Camera() -&gt; Camera
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cameralookatvec3-vec3-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Camera:LookAt(Vec3, Vec3, Vec3)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cameraperspectivenumber-number-number-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Camera:Perspective(number, number, number, number)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cameraorthographicnumber-number-number-number-number-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Camera:Orthographic(number, number, number, number, number, number)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cameraisaabbinfrustumaabb-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Camera:IsAABBInFrustum(AABB) -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cameragetposition-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Camera:GetPosition = Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cameragettarget-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Camera:GetTarget = Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cameragetup-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Camera.GetUp = Vec3
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#music" class="md-nav__link">
+    <span class="md-ellipsis">
+      Music
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Music">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#music-music" class="md-nav__link">
+    <span class="md-ellipsis">
+      Music() -&gt; Music
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#musicloadstring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Music:Load(string)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#musicplay" class="md-nav__link">
+    <span class="md-ellipsis">
+      Music:Play()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#musicsetvolumenumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      Music:SetVolume(number)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sound" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sound
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sound">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sound-sound" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sound() -&gt; Sound
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#soundloadstring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sound:Load(string)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#soundplay" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sound:Play()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#soundsetvolumenumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sound:SetVolume(number)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#soundsetpitchnumber" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sound:SetPitch(number)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#soundsetlistenervec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sound:SetListener(Vec3)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#soundsetpositionvec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sound:SetPosition(Vec3)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aabb" class="md-nav__link">
+    <span class="md-ellipsis">
+      AABB
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="AABB">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aabbmin-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      AABB.min = Vec3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aabbmax-vec3" class="md-nav__link">
+    <span class="md-ellipsis">
+      AABB.max = Vec3
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Model
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#modelaabb-aabb" class="md-nav__link">
+    <span class="md-ellipsis">
+      Model.AABB = AABB
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modelloadstring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Model:Load(string)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      グローバル関数
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="グローバル関数">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#random" class="md-nav__link">
+    <span class="md-ellipsis">
+      Random
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Random">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#randomgetrangenumber-number-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Random:GetRange(number, number) -&gt; number
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#window" class="md-nav__link">
+    <span class="md-ellipsis">
+      Window
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Window">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#windowname-string" class="md-nav__link">
+    <span class="md-ellipsis">
+      Window:Name() -&gt; string
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windowrenamestring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Window:Rename(string)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windowsize-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Window:Size() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windowresizevec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Window:Resize(Vec2)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windowresized-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Window:Resized() -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windowhalf-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Window:Half() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windowsetfullscreenbool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Window:SetFullscreen(bool)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphics
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Graphics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#graphicssetclearcolor-color" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphics:SetClearColor() -&gt; Color
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphicssetclearcolorcolor" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphics:SetClearColor(Color)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphicsbeginpipeline2drenderpipeline2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphics:BeginPipeline2D(RenderPipeline2D)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphicsendpipeline2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphics:EndPipeline2D()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphicsbeginpipeline3drenderpipeline3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphics:BeginPipeline3D(RenderPipeline3D)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphicsendpipeline3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphics:EndPipeline3D()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphicsbeginrendertexture2drendertexture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphics:BeginRenderTexture2D(RenderTexture)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphicsbeginrendertexture3drendertexture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphics:BeginRenderTexture3D(RenderTexture)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphicsendrendertexturerendertexture-texture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphics:EndRenderTexture(RenderTexture, Texture)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scene" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scene
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Scene">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scenecamera-camera" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scene:Camera() -&gt; Camera
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scenesize-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scene:Size() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sceneresizevec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scene:Resize(Vec2)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scenehalf-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scene:Half() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#collision" class="md-nav__link">
+    <span class="md-ellipsis">
+      Collision
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Collision">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#collisionaabbvsaabbaabb-aabb-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Collision:AABBvsAABB(AABB, AABB) -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Keyboard">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#keyboardispressedcode-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard:IsPressed(code) -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardisreleasedcode-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard:IsReleased(code) -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardisdowncode-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard:IsDown(code) -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboarda-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.A = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardb-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.B = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardc-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.C = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardd-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.D = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboarde-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.E = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardg-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.G = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardh-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.H = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardi-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.I = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardj-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.J = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardk-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.K = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardl-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.L = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardm-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.M = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardn-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.N = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardo-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.O = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardp-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.P = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardq-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.Q = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardr-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.R = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboards-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.S = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardt-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.T = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardu-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.U = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardv-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.V = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardw-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.W = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardx-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.X = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardy-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.Y = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardz-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.Z = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardkey0-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.key0 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardkey1-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.key1 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardkey2-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.key2 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardkey3-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.key3 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardkey4-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.key4 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardkey5-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.key5 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardkey6-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.key6 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardkey7-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.key7 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardkey8-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.key8 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardkey9-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.key9 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf1-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F1 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf2-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F2 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf3-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F3 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf4-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F4 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf5-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F5 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf6-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F6 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf7-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F7 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf8-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F8 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf9-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F9 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf10-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F10 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf11-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F11 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardf12-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.F12 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardup-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.UP = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboarddown-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.DOWN = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardleft-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.LEFT = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardright-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.RIGHT = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardescape-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.ESCAPE = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardspace-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.SPACE = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardenter-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.ENTER = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardbackspace-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.BACKSPACE = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardtab-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.TAB = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardlshift-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.LSHIFT = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardrshift-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.RSHIFT = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardlctrl-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.LCTRL = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardrctrl-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.RCTRL = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboardalt-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keyboard.ALT = code
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mouse" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Mouse">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mousegetposition-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.GetPosition() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mousegetpositiononscene-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.GetPositionOnScene() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mousesetpositionvec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.SetPosition(Vec2)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mousesetpositiononscenevec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.SetPositionOnScene(Vec2)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mouseispressedcode-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.IsPressed(code) -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mouseispressedcode-bool_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.IsPressed(code) -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mouseisdowncode-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.IsDown(code) -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mousescrollwheel-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.ScrollWheel() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mousehidecursorbool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.HideCursor(bool)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mousesetrelativebool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.SetRelative(bool)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mouseisrelative-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.IsRelative() -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mouseleft-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.LEFT = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mouseright-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.RIGHT = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mousemiddle-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.MIDDLE = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mousex1-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.X1 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mousex2-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mouse.X2 = code
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepad" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Gamepad">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gamepadisconnected-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.IsConnected() -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadispressedcode-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.IsPressed(code) -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadisreleasedcode-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.IsReleased(code) -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadisdowncode-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.IsDown(code) -&gt; bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadgetleftstick-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.GetLeftStick() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadgetrightstick-vec2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.GetRightStick() -&gt; Vec2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadinvalid-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.INVALID = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepada-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.A = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadb-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.B = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadx-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.X = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepady-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.Y = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadback-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.BACK = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadstart-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.START = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadguide-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.GUIDE = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadleftstick-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.LEFTSTICK = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadrightstick-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.RIGHTSTICK = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadleftshoulder-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.LEFTSHOULDER = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadrightshoulder-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.RIGHTSHOULDER = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepaddpad_up-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.DPAD_UP = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepaddpad_down-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.DPAD_DOWN = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepaddpad_left-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.DPAD_LEFT = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepaddpad_right-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.DPAD_RIGHT = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadmisc1-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.MISC1 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadpaddle1-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.PADDLE1 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadpaddle2-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.PADDLE2 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadpaddle3-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.PADDLE3 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadpaddle4-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.PADDLE4 = code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gamepadtouchpad-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gamepad.TOUCHPAD = code
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#periodic" class="md-nav__link">
+    <span class="md-ellipsis">
+      Periodic
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Periodic">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#periodicsin0_1time-number-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Periodic.Sin0_1(time: number) -&gt; number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#periodiccos0_1time-number-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Periodic.Cos0_1(time: number) -&gt; number
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#time" class="md-nav__link">
+    <span class="md-ellipsis">
+      Time
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Time">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#timeseconds-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Time.Seconds() -&gt; number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timemilli-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      Time.Milli() -&gt; number
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logger" class="md-nav__link">
+    <span class="md-ellipsis">
+      Logger
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Logger">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#loggerinfostring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Logger.Info(string)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loggerwarnstring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Logger.Warn(string)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loggererrorstring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Logger.Error(string)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loggercriticalstring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Logger.Critical(string)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loggerdebugstring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Logger.Debug(string)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="lua-api">Lua API</h1>
+<p>mainブランチと乖離している場合があります。<br />
+型情報は、sinen.luaファイルを参照してください。</p>
+<h2 id="_1">呼び出しについて</h2>
+<p>Luaスクリプトは<code>sinen.exeが存在するディレクトリ/script/</code>に配置します  </p>
+<pre><code class="language-lua">
+-- セットアップ
+
+function Update()
+ -- 毎フレーム呼び出される関数
+end
+
+function Draw()
+  -- 毎フレーム呼び出される描画関数
+end
+</code></pre>
+<h2 id="_2">クラス</h2>
+<p>Luaにはクラスはありませんが、テーブルで代用します<br />
+Sinenでは、あらかじめ幾つかのクラスを用意しています</p>
+<h3 id="_3">命名規則</h3>
+<p>Sinenでは、以下の命名規則を使用しています<br />
+- クラス名: CamelCase(例: <code>Vec2</code>, <code>Vec3</code>, <code>Color</code>)
+- メソッド名: CamelCase(例: <code>Length</code>, <code>Normalize</code>, <code>Copy</code>)
+- プロパティ名: lowerCase(例: <code>x</code>, <code>y</code>, <code>z</code>, <code>r</code>, <code>g</code>, <code>b</code>, <code>a</code>)
+インスタンスの生成はクラス名()で行います(例: <code>a = Vec2(1, 2)</code>)<br />
+インスタンス内の関数はコロン(:)で呼び出し可能です(例: <code>a:Length()</code>)  </p>
+<h3 id="vec2">Vec2</h3>
+<h4 id="_4">メタテーブル</h4>
+<ul>
+<li><code>__add</code>: ベクトルの加算を行います (a + b)</li>
+<li><code>__sub</code>: ベクトルの減算を行います (a - b)</li>
+<li><code>__mul</code>: ベクトルの乗算を行います (a * b)</li>
+<li><code>__div</code>: ベクトルの除算を行います (a / b)</li>
+</ul>
+<h4 id="vec2x-y-vec2">Vec2(x, y) -&gt; Vec2</h4>
+<ul>
+<li><code>x</code>: ベクトルのx成分</li>
+<li><code>y</code>: ベクトルのy成分<br />
+Vec2オブジェクトを作成します。</li>
+</ul>
+<h4 id="vec2value-vec2">Vec2(value) -&gt; Vec2</h4>
+<ul>
+<li><code>value</code>: 数値またはVec2オブジェクト
+Vec2オブジェクトをx, y成分に同じvalueを持つベクトルとして作成します </li>
+</ul>
+<h4 id="vec2x-number">Vec2.x = number</h4>
+<p>Vec2のx成分。</p>
+<h4 id="vec2y-number">Vec2.y = number</h4>
+<p>Vec2のy成分。</p>
+<h4 id="vec2length-number">Vec2:Length() -&gt; number</h4>
+<p>ベクトルの長さを取得します</p>
+<h4 id="vec2normalize-vec2">Vec2:Normalize() -&gt; Vec2</h4>
+<p>ベクトルを正規化します</p>
+<h4 id="vec2copy-vec2">Vec2:Copy() -&gt; Vec2</h4>
+<p>ベクトルをコピーします</p>
+<h4 id="vec2dotvec2-vec2-number">Vec2:Dot(Vec2, Vec2) -&gt; number</h4>
+<ul>
+<li><code>Vec2</code>: ベクトル1</li>
+<li><code>Vec2</code>: ベクトル2
+内積を取得します</li>
+</ul>
+<h4 id="vec2lerpvec2-vec2-number-vec2">Vec2:Lerp(Vec2, Vec2, number) -&gt; Vec2</h4>
+<ul>
+<li><code>Vec2</code>: ベクトル1</li>
+<li><code>Vec2</code>: ベクトル2</li>
+<li><code>number</code>: 補間係数
+線形補間を取得します</li>
+</ul>
+<h4 id="vec2reflectvec2-vec2-vec2">Vec2:Reflect(Vec2, Vec2) -&gt; Vec2</h4>
+<ul>
+<li><code>Vec2</code>: ベクトル</li>
+<li><code>Vec2</code>: 法線ベクトル
+反射ベクトルを取得します</li>
+</ul>
+<h3 id="vec3">Vec3</h3>
+<h4 id="_5">メタテーブル</h4>
+<ul>
+<li><code>__add</code>: ベクトルの加算を行います (a + b)</li>
+<li><code>__sub</code>: ベクトルの減算を行います (a - b)</li>
+<li><code>__mul</code>: ベクトルの乗算を行います (a * b)</li>
+<li><code>__div</code>: ベクトルの除算を行います (a / b)</li>
+</ul>
+<h4 id="vec3x-y-z-vec3">Vec3(x, y, z) -&gt; Vec3</h4>
+<ul>
+<li><code>x</code>: ベクトルのx成分</li>
+<li><code>y</code>: ベクトルのy成分</li>
+<li><code>z</code>: ベクトルのz成分<br />
+Vec3オブジェクトを作成します</li>
+</ul>
+<h4 id="vec3value-vec3">Vec3(value) -&gt; Vec3</h4>
+<ul>
+<li><code>value</code>: 数値またはVec3オブジェクト
+Vec3オブジェクトをx, y, z成分に同じvalueを持つベクトルとして作成します</li>
+</ul>
+<h4 id="vec3x-number">Vec3.x = number</h4>
+<p>Vec3のx成分</p>
+<h4 id="vec3y-number">Vec3.y = number</h4>
+<p>Vec3のy成分</p>
+<h4 id="vec3z-number">Vec3.z = number</h4>
+<p>Vec3のz成分</p>
+<h4 id="vec3length-number">Vec3:Length() -&gt; number</h4>
+<p>ベクトルの長さを取得します</p>
+<h4 id="vec3normalize-vec3">Vec3:Normalize() -&gt; Vec3</h4>
+<p>ベクトルを正規化します</p>
+<h4 id="vec3copy-vec3">Vec3:Copy() -&gt; Vec3</h4>
+<p>ベクトルをコピーします<br />
+Luaでは基本的に参照渡しのため、コピーが必要な場合に使用します</p>
+<h4 id="vec3forwardvec3-vec3">Vec3:Forward(Vec3) -&gt; Vec3</h4>
+<ul>
+<li><code>Vec3</code>: 軸ベクトル<br />
+前方ベクトルを取得します</li>
+</ul>
+<h4 id="vec3dotvec3-vec3-number">Vec3:Dot(Vec3, Vec3) -&gt; number</h4>
+<ul>
+<li><code>Vec3</code>: ベクトル1</li>
+<li><code>Vec3</code>: ベクトル2
+内積を取得します</li>
+</ul>
+<h4 id="vec3crossvec3-vec3-vec3">Vec3:Cross(Vec3, Vec3) -&gt; Vec3</h4>
+<ul>
+<li><code>Vec3</code>: ベクトル1</li>
+<li><code>Vec3</code>: ベクトル2
+外積を取得します</li>
+</ul>
+<h4 id="vec3lerpvec3-vec3-number-vec3">Vec3:Lerp(Vec3, Vec3, number) -&gt; Vec3</h4>
+<ul>
+<li><code>Vec3</code>: ベクトル1</li>
+<li><code>Vec3</code>: ベクトル2</li>
+<li><code>number</code>: 補間係数
+線形補間を取得します</li>
+</ul>
+<h4 id="vec3reflectvec3-vec3-vec3">Vec3:Reflect(Vec3, Vec3) -&gt; Vec3</h4>
+<ul>
+<li><code>Vec3</code>: ベクトル</li>
+<li><code>Vec3</code>: 法線ベクトル
+反射ベクトルを取得します</li>
+</ul>
+<h3 id="color">Color</h3>
+<h4 id="color-color">Color() -&gt; Color</h4>
+<p>Colorオブジェクトを作成します</p>
+<h4 id="colorr-g-b-a-color">Color(r, g, b, a) -&gt; color</h4>
+<ul>
+<li><code>r</code>: 色の赤成分(0.0~1.0)</li>
+<li><code>g</code>: 色の緑成分(0.0~1.0)</li>
+<li><code>b</code>: 色の青成分(0.0~1.0)</li>
+<li><code>a</code>: 色のアルファ成分(0.0~1.0)<br />
+色オブジェクトを作成します</li>
+</ul>
+<h4 id="colorr-number">Color.r = number</h4>
+<p>色の赤成分(0.0~1.0)</p>
+<h4 id="colorg-number">Color.g = number</h4>
+<p>色の緑成分(0.0~1.0)</p>
+<h4 id="colorb-number">Color.b = number</h4>
+<p>色の青成分(0.0~1.0)</p>
+<h4 id="colora-number">Color.a = number</h4>
+<p>色のアルファ成分(0.0~1.0)</p>
+<h3 id="texture">Texture</h3>
+<h4 id="texture_1">Texture()</h4>
+<p>テクスチャオブジェクトを作成します</p>
+<h4 id="textureloadstring">Texture:Load(string)</h4>
+<ul>
+<li><code>string</code>: data/texture/にあるテクスチャファイルの名前<br />
+テクスチャファイルを読み込みます</li>
+</ul>
+<h4 id="texturefillcolorcolor">Texture:FillColor(Color)</h4>
+<ul>
+<li><code>Color</code>: テクスチャを塗りつぶす色<br />
+テクスチャを塗りつぶします</li>
+</ul>
+<h4 id="textureblendcolorcolor">Texture:BlendColor(Color)</h4>
+<ul>
+<li><code>Color</code>: テクスチャをブレンドする色<br />
+テクスチャをブレンドします</li>
+</ul>
+<h4 id="texturecopy-texture">Texture:Copy() -&gt; Texture</h4>
+<p>テクスチャをコピーします<br />
+Luaでは基本的に参照渡しのため、コピーが必要な場合に使用します</p>
+<h4 id="texturesize-vec2">Texture:Size() -&gt; Vec2</h4>
+<p>テクスチャのサイズを取得します</p>
+<h3 id="rendertexture">RenderTexture</h3>
+<h4 id="rendertexture_1">RenderTexture()</h4>
+<p>レンダーテクスチャオブジェクトを作成します</p>
+<h4 id="rendertexturecreatenumber-number">RenderTexture:Create(number, number)</h4>
+<ul>
+<li><code>number</code>: 幅</li>
+<li><code>number</code>: 高さ<br />
+レンダーテクスチャを作成します</li>
+</ul>
+<h3 id="material">Material</h3>
+<h4 id="material-material">Material() -&gt; Material</h4>
+<p>マテリアルオブジェクトを作成します</p>
+<h4 id="materialappendtexturetexture">Material:AppendTexture(Texture)</h4>
+<ul>
+<li><code>Texture</code>: テクスチャ<br />
+テクスチャをマテリアルに追加します</li>
+</ul>
+<h3 id="font">Font</h3>
+<h4 id="font-font">Font() -&gt; Font</h4>
+<p>フォントオブジェクトを作成します</p>
+<h4 id="fontloadstring-number">Font:Load(string, number)</h4>
+<ul>
+<li><code>string</code>: data/font/にあるフォントファイルの名前</li>
+<li><code>number</code>: フォントのサイズ(ピクセル)
+.ttfファイルを読み込みます  </li>
+</ul>
+<h4 id="fontrendertexttexture-string-color">Font:RenderText(Texture, string, color)</h4>
+<ul>
+<li><code>Texture</code>: 描画先のテクスチャ</li>
+<li><code>string</code>: 描画する文字列</li>
+<li><code>Color</code>: テキストの色
+CPUでテキストを描画します<br />
+テクスチャは描画結果に合わせてリサイズされます</li>
+</ul>
+<h3 id="draw2d">Draw2D</h3>
+<h4 id="draw2d-draw2d">Draw2D() -&gt; Draw2D</h4>
+<p>Draw2Dオブジェクトを作成します  </p>
+<h4 id="draw2dposition-vec2">Draw2D.position = Vec2</h4>
+<p>位置情報<br />
+Sinenのウィンドウの中心が(0, 0)です</p>
+<h4 id="draw2dscale-vec2">Draw2D.scale = Vec2</h4>
+<p>拡大率</p>
+<h4 id="draw2drotation-number">Draw2D.rotation = number</h4>
+<p>時計回りの回転角度</p>
+<h4 id="draw2dmaterial-material">Draw2D.material = Material</h4>
+<p>マテリアル</p>
+<h4 id="draw2dmodel-model">Draw2D.model = Model</h4>
+<p>モデル</p>
+<h4 id="draw2ddraw">Draw2D:Draw()</h4>
+<p>2Dオブジェクトを描画します</p>
+<h4 id="draw2daddvec2-number-vec2">Draw2D:Add(Vec2, number, Vec2)</h4>
+<ul>
+<li><code>Vec2</code>: 位置情報</li>
+<li><code>number</code>: 時計回りの回転角度</li>
+<li><code>Vec2</code>: 拡大率<br />
+同じテクスチャ、モデルで複数のオブジェクトを追加して描画します<br />
+インスタンス生成時点で既に一つのオブジェクトが存在しています</li>
+</ul>
+<h4 id="draw2dclear">Draw2D:Clear()</h4>
+<p>追加されたオブジェクトをクリアします<br />
+ただし、インスタンス生成時点で存在しているオブジェクトはクリアされません</p>
+<h3 id="draw3d">Draw3D</h3>
+<h4 id="draw3d-draw3d">Draw3D() -&gt; Draw3D</h4>
+<p>Draw3Dオブジェクトを作成します  </p>
+<h4 id="draw3dposition-vec3">Draw3D.position = Vec3</h4>
+<p>位置情報(ワールド座標)</p>
+<h4 id="draw3dscale-vec3">Draw3D.scale = Vec3</h4>
+<p>拡大率</p>
+<h4 id="draw3drotation-vec3">Draw3D.rotation = Vec3</h4>
+<p>回転角度(オイラー角)</p>
+<h4 id="draw3dmaterial-material">Draw3D.material = Material</h4>
+<p>マテリアル</p>
+<h4 id="draw3dmodel-model">Draw3D.model = Model</h4>
+<p>モデル</p>
+<h4 id="draw3ddraw">Draw3D:Draw()</h4>
+<p>3Dオブジェクトを描画します</p>
+<h4 id="draw3daddvec3vec3vec3">Draw3D:Add(Vec3,Vec3,Vec3)</h4>
+<ul>
+<li><code>Vec3</code>: 位置情報</li>
+<li><code>Vec3</code>: 回転角度</li>
+<li><code>Vec3</code>: 拡大率<br />
+同じテクスチャ、モデルで複数のオブジェクトを追加して描画します<br />
+インスタンス生成時点で既に一つのオブジェクトが存在しています</li>
+</ul>
+<h4 id="draw3dclear">Draw3D:Clear()</h4>
+<p>追加されたオブジェクトをクリアします<br />
+ただし、インスタンス生成時点で存在しているオブジェクトはクリアされません</p>
+<h3 id="uniformdata">UniformData</h3>
+<h4 id="uniformdata-uniformdata">UniformData() -&gt; UniformData</h4>
+<p>ユニフォームデータオブジェクトを作成します</p>
+<h4 id="uniformdataaddnumber">UniformData:Add(number)</h4>
+<ul>
+<li><code>number</code>: データ<br />
+ユニフォームデータを追加します</li>
+</ul>
+<h4 id="uniformdataatnumber-number">UniformData:At(number, number)</h4>
+<ul>
+<li><code>number</code>: データ</li>
+<li><code>number</code>: インデックス<br />
+ユニフォームデータを指定したインデックスに追加します</li>
+</ul>
+<h3 id="shader">Shader</h3>
+<h4 id="shader-shader">Shader() -&gt; Shader</h4>
+<p>シェーダオブジェクトを作成します</p>
+<h4 id="shaderloadvertexshaderstringnumber">Shader:LoadVertexShader(string,number)</h4>
+<ul>
+<li><code>string</code>: data/shader/にある頂点シェーダファイルの名前</li>
+<li><code>number</code>: UniformDataの数<br />
+頂点シェーダを読み込みます</li>
+</ul>
+<h4 id="shaderloadfragmentshaderstringnumber">Shader:LoadFragmentShader(string,number)</h4>
+<ul>
+<li><code>string</code>: data/shader/にあるフラグメントシェーダファイルの名前</li>
+<li><code>number</code>: UniformDataの数<br />
+フラグメントシェーダを読み込みます</li>
+</ul>
+<h4 id="shadercompileandloadvertexshaderstringnumber">Shader:CompileAndLoadVertexShader(string,number)</h4>
+<ul>
+<li><code>string</code>: 頂点シェーダのソースコード</li>
+<li><code>number</code>: UniformDataの数
+頂点シェーダをコンパイルして読み込みます<br />
+<code>slangc</code>がインストールされている必要があります</li>
+</ul>
+<h4 id="shadercompileandloadfragmentshaderstringnumber">Shader:CompileAndLoadFragmentShader(string,number)</h4>
+<ul>
+<li><code>string</code>: フラグメントシェーダのソースコード</li>
+<li><code>number</code>: UniformDataの数
+フラグメントシェーダをコンパイルして読み込みます<br />
+<code>slangc</code>がインストールされている必要があります</li>
+</ul>
+<h3 id="renderpipeline2d">RenderPipeline2D</h3>
+<h4 id="renderpipeline2d-renderpipeline2d">RenderPipeline2D() -&gt; RenderPipeline2D</h4>
+<p>2Dレンダーパイプラインオブジェクトを作成します</p>
+<h4 id="renderpipeline2dsetvertexshadershader">RenderPipeline2D:SetVertexShader(Shader)</h4>
+<ul>
+<li><code>Shader</code>: 頂点シェーダ<br />
+頂点シェーダを設定します</li>
+</ul>
+<h4 id="renderpipeline2dsetfragmentshadershader">RenderPipeline2D:SetFragmentShader(Shader)</h4>
+<ul>
+<li><code>Shader</code>: フラグメントシェーダ<br />
+フラグメントシェーダを設定します</li>
+</ul>
+<h4 id="renderpipeline2dbuild">RenderPipeline2D:Build()</h4>
+<p>レンダーパイプラインを構築します</p>
+<h3 id="renderpipeline3d">RenderPipeline3D</h3>
+<h4 id="renderpipeline3d-renderpipeline3d">RenderPipeline3D() -&gt; RenderPipeline3D</h4>
+<p>3Dレンダーパイプラインオブジェクトを作成します</p>
+<h4 id="renderpipeline3dsetvertexshadershader">RenderPipeline3D:SetVertexShader(Shader)</h4>
+<ul>
+<li><code>Shader</code>: 頂点シェーダ
+頂点シェーダを設定します</li>
+</ul>
+<h4 id="renderpipeline3dsetfragmentshadershader">RenderPipeline3D:SetFragmentShader(Shader)</h4>
+<ul>
+<li><code>Shader</code>: フラグメントシェーダ
+フラグメントシェーダを設定します</li>
+</ul>
+<h4 id="renderpipeline3dbuild">RenderPipeline3D:Build()</h4>
+<p>レンダーパイプラインを構築します</p>
+<h3 id="camera">Camera</h3>
+<h4 id="camera-camera">Camera() -&gt; Camera</h4>
+<p>3D空間のカメラオブジェクトを作成します</p>
+<h4 id="cameralookatvec3-vec3-vec3">Camera:LookAt(Vec3, Vec3, Vec3)</h4>
+<ul>
+<li><code>Vec3</code>: 位置</li>
+<li><code>Vec3</code>: 注視点</li>
+<li><code>Vec3</code>: 上方向<br />
+カメラの位置、注視点、上方向を設定します</li>
+</ul>
+<h4 id="cameraperspectivenumber-number-number-number">Camera:Perspective(number, number, number, number)</h4>
+<ul>
+<li><code>number</code>: 視野角</li>
+<li><code>number</code>: アスペクト比</li>
+<li><code>number</code>: 近面</li>
+<li><code>number</code>: 遠面<br />
+カメラの透視投影を設定します</li>
+</ul>
+<h4 id="cameraorthographicnumber-number-number-number-number-number">Camera:Orthographic(number, number, number, number, number, number)</h4>
+<ul>
+<li><code>number</code>: 左</li>
+<li><code>number</code>: 右</li>
+<li><code>number</code>: 下</li>
+<li><code>number</code>: 上</li>
+<li><code>number</code>: 近面</li>
+<li><code>number</code>: 遠面<br />
+カメラの正射影投影を設定します</li>
+</ul>
+<h4 id="cameraisaabbinfrustumaabb-bool">Camera:IsAABBInFrustum(AABB) -&gt; bool</h4>
+<ul>
+<li><code>AABB</code>: AABB<br />
+AABBがカメラの視錐台に含まれているかどうかを確認します</li>
+</ul>
+<h4 id="cameragetposition-vec3">Camera:GetPosition = Vec3</h4>
+<p>カメラの位置</p>
+<h4 id="cameragettarget-vec3">Camera:GetTarget = Vec3</h4>
+<p>カメラの注視点</p>
+<h4 id="cameragetup-vec3">Camera.GetUp = Vec3</h4>
+<p>カメラの上方向</p>
+<h3 id="music">Music</h3>
+<h4 id="music-music">Music() -&gt; Music</h4>
+<h4 id="musicloadstring">Music:Load(string)</h4>
+<ul>
+<li><code>string</code>: data/music/にある音楽ファイルの名前<br />
+音楽をファイルから読み込みます<br />
+.ogg, .wav, .mp3形式に対応しています</li>
+</ul>
+<h4 id="musicplay">Music:Play()</h4>
+<p>音楽を再生します</p>
+<h4 id="musicsetvolumenumber">Music:SetVolume(number)</h4>
+<ul>
+<li><code>number</code>: 音量<br />
+音楽の音量を設定します</li>
+</ul>
+<h3 id="sound">Sound</h3>
+<h4 id="sound-sound">Sound() -&gt; Sound</h4>
+<h4 id="soundloadstring">Sound:Load(string)</h4>
+<ul>
+<li><code>string</code>: data/sound/にある音声ファイルの名前<br />
+音声をファイルから読み込みます<br />
+.wav形式に対応しています</li>
+</ul>
+<h4 id="soundplay">Sound:Play()</h4>
+<p>音声を再生します</p>
+<h4 id="soundsetvolumenumber">Sound:SetVolume(number)</h4>
+<ul>
+<li><code>number</code>: 音量<br />
+音声の音量を設定します</li>
+</ul>
+<h4 id="soundsetpitchnumber">Sound:SetPitch(number)</h4>
+<ul>
+<li><code>number</code>: ピッチ<br />
+音声のピッチを設定します</li>
+</ul>
+<h4 id="soundsetlistenervec3">Sound:SetListener(Vec3)</h4>
+<ul>
+<li><code>Vec3</code>: リスナーの位置<br />
+リスナーの位置を設定します</li>
+</ul>
+<h4 id="soundsetpositionvec3">Sound:SetPosition(Vec3)</h4>
+<ul>
+<li><code>Vec3</code>: 音源の位置<br />
+音源の位置を設定します</li>
+</ul>
+<h3 id="aabb">AABB</h3>
+<h4 id="aabbmin-vec3">AABB.min = Vec3</h4>
+<p>AABBの最小点</p>
+<h4 id="aabbmax-vec3">AABB.max = Vec3</h4>
+<p>AABBの最大点</p>
+<h3 id="model">Model</h3>
+<h4 id="modelaabb-aabb">Model.AABB = AABB</h4>
+<p>モデルのAABB</p>
+<h4 id="modelloadstring">Model:Load(string)</h4>
+<ul>
+<li><code>string</code>: data/model/にあるモデルファイルの名前<br />
+.gltf, .glb形式に対応しています</li>
+</ul>
+<h2 id="_6">グローバル関数</h2>
+<p>インスタンスを生成せず、直接呼び出せる関数です</p>
+<h3 id="random">Random</h3>
+<h4 id="randomgetrangenumber-number-number">Random:GetRange(number, number) -&gt; number</h4>
+<ul>
+<li><code>number</code>: 最小値</li>
+<li><code>number</code>: 最大値<br />
+指定された範囲の浮動小数点数の乱数を取得します</li>
+</ul>
+<h3 id="window">Window</h3>
+<h4 id="windowname-string">Window:Name() -&gt; string</h4>
+<p>ウィンドウの名前を取得します</p>
+<h4 id="windowrenamestring">Window:Rename(string)</h4>
+<ul>
+<li><code>string</code>: ウィンドウの名前<br />
+ウィンドウの名前を変更します</li>
+</ul>
+<h4 id="windowsize-vec2">Window:Size() -&gt; Vec2</h4>
+<p>ウィンドウのサイズを取得します</p>
+<h4 id="windowresizevec2">Window:Resize(Vec2)</h4>
+<ul>
+<li><code>Vec2</code>: ウィンドウのサイズ<br />
+ウィンドウのサイズを変更します</li>
+</ul>
+<h4 id="windowresized-bool">Window:Resized() -&gt; bool</h4>
+<p>ウィンドウが今のフレームでリサイズされたかどうかを取得します</p>
+<h4 id="windowhalf-vec2">Window:Half() -&gt; Vec2</h4>
+<p>ウィンドウの半分のサイズを取得します</p>
+<h4 id="windowsetfullscreenbool">Window:SetFullscreen(bool)</h4>
+<ul>
+<li><code>bool</code>: ウィンドウをフルスクリーンにするかどうか<br />
+ウィンドウをフルスクリーン、またはウィンドウモードにします</li>
+</ul>
+<h3 id="graphics">Graphics</h3>
+<h4 id="graphicssetclearcolor-color">Graphics:SetClearColor() -&gt; Color</h4>
+<p>画面クリアの色を取得します</p>
+<h4 id="graphicssetclearcolorcolor">Graphics:SetClearColor(Color)</h4>
+<ul>
+<li><code>Color</code>: 画面クリアの色<br />
+画面クリアの色を設定します</li>
+</ul>
+<h4 id="graphicsbeginpipeline2drenderpipeline2d">Graphics:BeginPipeline2D(RenderPipeline2D)</h4>
+<ul>
+<li><code>RenderPipeline2D</code>: レンダーパイプライン<br />
+2Dレンダリングを開始します</li>
+</ul>
+<h4 id="graphicsendpipeline2d">Graphics:EndPipeline2D()</h4>
+<p>2Dレンダリングを終了します</p>
+<h4 id="graphicsbeginpipeline3drenderpipeline3d">Graphics:BeginPipeline3D(RenderPipeline3D)</h4>
+<ul>
+<li><code>RenderPipeline3D</code>: レンダーパイプライン<br />
+3Dレンダリングを開始します</li>
+</ul>
+<h4 id="graphicsendpipeline3d">Graphics:EndPipeline3D()</h4>
+<p>3Dレンダリングを終了します</p>
+<h4 id="graphicsbeginrendertexture2drendertexture">Graphics:BeginRenderTexture2D(RenderTexture)</h4>
+<ul>
+<li><code>RenderTexture</code>: レンダーテクスチャ
+レンダーテクスチャの描画を開始します</li>
+</ul>
+<h4 id="graphicsbeginrendertexture3drendertexture">Graphics:BeginRenderTexture3D(RenderTexture)</h4>
+<ul>
+<li><code>RenderTexture</code>: レンダーテクスチャ</li>
+</ul>
+<h4 id="graphicsendrendertexturerendertexture-texture">Graphics:EndRenderTexture(RenderTexture, Texture)</h4>
+<ul>
+<li><code>RenderTexture</code>: レンダーテクスチャ</li>
+<li><code>Texture</code>: 描画結果<br />
+レンダーテクスチャの描画を終了します<br />
+<code>Texture</code>は<code>RenderTexture</code>と同じサイズである必要があります</li>
+</ul>
+<h3 id="scene">Scene</h3>
+<h4 id="scenecamera-camera">Scene:Camera() -&gt; Camera</h4>
+<p>シーンのメインカメラを取得します</p>
+<h4 id="scenesize-vec2">Scene:Size() -&gt; Vec2</h4>
+<p>シーンのサイズを取得します</p>
+<h4 id="sceneresizevec2">Scene:Resize(Vec2)</h4>
+<ul>
+<li><code>Vec2</code>: シーンのサイズ<br />
+シーンのサイズを変更します</li>
+</ul>
+<h4 id="scenehalf-vec2">Scene:Half() -&gt; Vec2</h4>
+<p>シーンの半分のサイズを取得します</p>
+<h3 id="collision">Collision</h3>
+<h4 id="collisionaabbvsaabbaabb-aabb-bool">Collision:AABBvsAABB(AABB, AABB) -&gt; bool</h4>
+<ul>
+<li><code>AABB</code>: AABB</li>
+<li><code>AABB</code>: AABB<br />
+AABB同士の衝突判定を行います</li>
+</ul>
+<h3 id="keyboard">Keyboard</h3>
+<h4 id="keyboardispressedcode-bool">Keyboard:IsPressed(code) -&gt; bool</h4>
+<ul>
+<li><code>code</code>: キーコード<br />
+キーが現在のフレームで押されたかどうかを確認します</li>
+</ul>
+<h4 id="keyboardisreleasedcode-bool">Keyboard:IsReleased(code) -&gt; bool</h4>
+<ul>
+<li><code>code</code>: キーコード<br />
+キーが現在のフレームで離されたかどうかを確認します</li>
+</ul>
+<h4 id="keyboardisdowncode-bool">Keyboard:IsDown(code) -&gt; bool</h4>
+<ul>
+<li><code>code</code>: キーコード<br />
+キーが押されているかどうかを確認します</li>
+</ul>
+<h4 id="keyboarda-code">Keyboard.A = code</h4>
+<h4 id="keyboardb-code">Keyboard.B = code</h4>
+<h4 id="keyboardc-code">Keyboard.C = code</h4>
+<h4 id="keyboardd-code">Keyboard.D = code</h4>
+<h4 id="keyboarde-code">Keyboard.E = code</h4>
+<h4 id="keyboardf-code">Keyboard.F = code</h4>
+<h4 id="keyboardg-code">Keyboard.G = code</h4>
+<h4 id="keyboardh-code">Keyboard.H = code</h4>
+<h4 id="keyboardi-code">Keyboard.I = code</h4>
+<h4 id="keyboardj-code">Keyboard.J = code</h4>
+<h4 id="keyboardk-code">Keyboard.K = code</h4>
+<h4 id="keyboardl-code">Keyboard.L = code</h4>
+<h4 id="keyboardm-code">Keyboard.M = code</h4>
+<h4 id="keyboardn-code">Keyboard.N = code</h4>
+<h4 id="keyboardo-code">Keyboard.O = code</h4>
+<h4 id="keyboardp-code">Keyboard.P = code</h4>
+<h4 id="keyboardq-code">Keyboard.Q = code</h4>
+<h4 id="keyboardr-code">Keyboard.R = code</h4>
+<h4 id="keyboards-code">Keyboard.S = code</h4>
+<h4 id="keyboardt-code">Keyboard.T = code</h4>
+<h4 id="keyboardu-code">Keyboard.U = code</h4>
+<h4 id="keyboardv-code">Keyboard.V = code</h4>
+<h4 id="keyboardw-code">Keyboard.W = code</h4>
+<h4 id="keyboardx-code">Keyboard.X = code</h4>
+<h4 id="keyboardy-code">Keyboard.Y = code</h4>
+<h4 id="keyboardz-code">Keyboard.Z = code</h4>
+<h4 id="keyboardkey0-code">Keyboard.key0 = code</h4>
+<h4 id="keyboardkey1-code">Keyboard.key1 = code</h4>
+<h4 id="keyboardkey2-code">Keyboard.key2 = code</h4>
+<h4 id="keyboardkey3-code">Keyboard.key3 = code</h4>
+<h4 id="keyboardkey4-code">Keyboard.key4 = code</h4>
+<h4 id="keyboardkey5-code">Keyboard.key5 = code</h4>
+<h4 id="keyboardkey6-code">Keyboard.key6 = code</h4>
+<h4 id="keyboardkey7-code">Keyboard.key7 = code</h4>
+<h4 id="keyboardkey8-code">Keyboard.key8 = code</h4>
+<h4 id="keyboardkey9-code">Keyboard.key9 = code</h4>
+<h4 id="keyboardf1-code">Keyboard.F1 = code</h4>
+<h4 id="keyboardf2-code">Keyboard.F2 = code</h4>
+<h4 id="keyboardf3-code">Keyboard.F3 = code</h4>
+<h4 id="keyboardf4-code">Keyboard.F4 = code</h4>
+<h4 id="keyboardf5-code">Keyboard.F5 = code</h4>
+<h4 id="keyboardf6-code">Keyboard.F6 = code</h4>
+<h4 id="keyboardf7-code">Keyboard.F7 = code</h4>
+<h4 id="keyboardf8-code">Keyboard.F8 = code</h4>
+<h4 id="keyboardf9-code">Keyboard.F9 = code</h4>
+<h4 id="keyboardf10-code">Keyboard.F10 = code</h4>
+<h4 id="keyboardf11-code">Keyboard.F11 = code</h4>
+<h4 id="keyboardf12-code">Keyboard.F12 = code</h4>
+<h4 id="keyboardup-code">Keyboard.UP = code</h4>
+<h4 id="keyboarddown-code">Keyboard.DOWN = code</h4>
+<h4 id="keyboardleft-code">Keyboard.LEFT = code</h4>
+<h4 id="keyboardright-code">Keyboard.RIGHT = code</h4>
+<h4 id="keyboardescape-code">Keyboard.ESCAPE = code</h4>
+<h4 id="keyboardspace-code">Keyboard.SPACE = code</h4>
+<h4 id="keyboardenter-code">Keyboard.ENTER = code</h4>
+<h4 id="keyboardbackspace-code">Keyboard.BACKSPACE = code</h4>
+<h4 id="keyboardtab-code">Keyboard.TAB = code</h4>
+<h4 id="keyboardlshift-code">Keyboard.LSHIFT = code</h4>
+<h4 id="keyboardrshift-code">Keyboard.RSHIFT = code</h4>
+<h4 id="keyboardlctrl-code">Keyboard.LCTRL = code</h4>
+<h4 id="keyboardrctrl-code">Keyboard.RCTRL = code</h4>
+<h4 id="keyboardalt-code">Keyboard.ALT = code</h4>
+<h3 id="mouse">Mouse</h3>
+<h4 id="mousegetposition-vec2">Mouse.GetPosition() -&gt; Vec2</h4>
+<p>マウスのウィンドウ内の位置を取得します<br />
+ウィンドウの中心が原点(0, 0)です</p>
+<h4 id="mousegetpositiononscene-vec2">Mouse.GetPositionOnScene() -&gt; Vec2</h4>
+<p>マウスのシーン内の位置を取得します<br />
+シーンの中心が原点(0, 0)です</p>
+<h4 id="mousesetpositionvec2">Mouse.SetPosition(Vec2)</h4>
+<ul>
+<li><code>Vec2</code>: マウスのウィンドウ上の位置<br />
+マウスのウィンドウ上の位置を設定します<br />
+ウィンドウの中心が原点(0, 0)です</li>
+</ul>
+<h4 id="mousesetpositiononscenevec2">Mouse.SetPositionOnScene(Vec2)</h4>
+<ul>
+<li><code>Vec2</code>: シーン上のマウスの位置<br />
+マウスのシーン上の位置を設定します<br />
+シーンの中心が原点(0, 0)です</li>
+</ul>
+<h4 id="mouseispressedcode-bool">Mouse.IsPressed(code) -&gt; bool</h4>
+<ul>
+<li><code>code</code>: マウスのボタンコード<br />
+ボタンが現在のフレームで押されたかどうかを確認します</li>
+</ul>
+<h4 id="mouseispressedcode-bool_1">Mouse.IsPressed(code) -&gt; bool</h4>
+<ul>
+<li><code>code</code>: マウスのボタンコード<br />
+ボタンが現在のフレームで離されたかどうかを確認します</li>
+</ul>
+<h4 id="mouseisdowncode-bool">Mouse.IsDown(code) -&gt; bool</h4>
+<ul>
+<li><code>code</code>: マウスのボタンコード<br />
+ボタンが押されているかどうかを確認します</li>
+</ul>
+<h4 id="mousescrollwheel-vec2">Mouse.ScrollWheel() -&gt; Vec2</h4>
+<p>マウスのスクロールの変化量を取得します</p>
+<h4 id="mousehidecursorbool">Mouse.HideCursor(bool)</h4>
+<ul>
+<li><code>bool</code>: マウスカーソルを隠すかどうか<br />
+カーソルを表示、または非表示にします</li>
+</ul>
+<h4 id="mousesetrelativebool">Mouse.SetRelative(bool)</h4>
+<ul>
+<li><code>bool</code>: マウスを相対座標として取得するかどうか<br />
+相対座標でマウスの位置を取得するかどうかを設定します。</li>
+</ul>
+<h4 id="mouseisrelative-bool">Mouse.IsRelative() -&gt; bool</h4>
+<p>相対座標でマウスの位置を取得しているかどうかを確認します</p>
+<h4 id="mouseleft-code">Mouse.LEFT = code</h4>
+<h4 id="mouseright-code">Mouse.RIGHT = code</h4>
+<h4 id="mousemiddle-code">Mouse.MIDDLE = code</h4>
+<h4 id="mousex1-code">Mouse.X1 = code</h4>
+<h4 id="mousex2-code">Mouse.X2 = code</h4>
+<h3 id="gamepad">Gamepad</h3>
+<h4 id="gamepadisconnected-bool">Gamepad.IsConnected() -&gt; bool</h4>
+<p>ゲームパッドが接続されているかどうかを確認します</p>
+<h4 id="gamepadispressedcode-bool">Gamepad.IsPressed(code) -&gt; bool</h4>
+<ul>
+<li><code>code</code>: ゲームパッドのボタンコード<br />
+ボタンが現在のフレームで押されたかどうかを確認します</li>
+</ul>
+<h4 id="gamepadisreleasedcode-bool">Gamepad.IsReleased(code) -&gt; bool</h4>
+<ul>
+<li><code>code</code>: ゲームパッドのボタンコード<br />
+ボタンが現在のフレームで離されたかどうかを確認します</li>
+</ul>
+<h4 id="gamepadisdowncode-bool">Gamepad.IsDown(code) -&gt; bool</h4>
+<ul>
+<li><code>code</code>: ゲームパッドのボタンコード<br />
+ボタンが押されているかどうかを確認します  </li>
+</ul>
+<h4 id="gamepadgetleftstick-vec2">Gamepad.GetLeftStick() -&gt; Vec2</h4>
+<p>左スティックの変化量を取得します</p>
+<h4 id="gamepadgetrightstick-vec2">Gamepad.GetRightStick() -&gt; Vec2</h4>
+<p>右スティックの変化量を取得します</p>
+<h4 id="gamepadinvalid-code">Gamepad.INVALID = code</h4>
+<h4 id="gamepada-code">Gamepad.A = code</h4>
+<h4 id="gamepadb-code">Gamepad.B = code</h4>
+<h4 id="gamepadx-code">Gamepad.X = code</h4>
+<h4 id="gamepady-code">Gamepad.Y = code</h4>
+<h4 id="gamepadback-code">Gamepad.BACK = code</h4>
+<h4 id="gamepadstart-code">Gamepad.START = code</h4>
+<h4 id="gamepadguide-code">Gamepad.GUIDE = code</h4>
+<h4 id="gamepadleftstick-code">Gamepad.LEFTSTICK = code</h4>
+<h4 id="gamepadrightstick-code">Gamepad.RIGHTSTICK = code</h4>
+<h4 id="gamepadleftshoulder-code">Gamepad.LEFTSHOULDER = code</h4>
+<h4 id="gamepadrightshoulder-code">Gamepad.RIGHTSHOULDER = code</h4>
+<h4 id="gamepaddpad_up-code">Gamepad.DPAD_UP = code</h4>
+<h4 id="gamepaddpad_down-code">Gamepad.DPAD_DOWN = code</h4>
+<h4 id="gamepaddpad_left-code">Gamepad.DPAD_LEFT = code</h4>
+<h4 id="gamepaddpad_right-code">Gamepad.DPAD_RIGHT = code</h4>
+<h4 id="gamepadmisc1-code">Gamepad.MISC1 = code</h4>
+<h4 id="gamepadpaddle1-code">Gamepad.PADDLE1 = code</h4>
+<h4 id="gamepadpaddle2-code">Gamepad.PADDLE2 = code</h4>
+<h4 id="gamepadpaddle3-code">Gamepad.PADDLE3 = code</h4>
+<h4 id="gamepadpaddle4-code">Gamepad.PADDLE4 = code</h4>
+<h4 id="gamepadtouchpad-code">Gamepad.TOUCHPAD = code</h4>
+<h3 id="periodic">Periodic</h3>
+<h4 id="periodicsin0_1time-number-number">Periodic.Sin0_1(time: number) -&gt; number</h4>
+<ul>
+<li><code>time</code>: 時間(秒)<br />
+0.0から1.0の間で周期的に変化する値を取得します</li>
+</ul>
+<h4 id="periodiccos0_1time-number-number">Periodic.Cos0_1(time: number) -&gt; number</h4>
+<ul>
+<li><code>time</code>: 時間(秒)<br />
+0.0から1.0の間で周期的に変化する値を取得します</li>
+</ul>
+<h3 id="time">Time</h3>
+<h4 id="timeseconds-number">Time.Seconds() -&gt; number</h4>
+<p>現在のフレームの経過時間を秒単位で取得します</p>
+<h4 id="timemilli-number">Time.Milli() -&gt; number</h4>
+<p>現在のフレームの経過時間をミリ秒単位で取得します</p>
+<h3 id="logger">Logger</h3>
+<h4 id="loggerinfostring">Logger.Info(string)</h4>
+<ul>
+<li><code>string</code>: ログメッセージ<br />
+情報レベルのログを出力します</li>
+</ul>
+<h4 id="loggerwarnstring">Logger.Warn(string)</h4>
+<ul>
+<li><code>string</code>: ログメッセージ<br />
+警告レベルのログを出力します</li>
+</ul>
+<h4 id="loggererrorstring">Logger.Error(string)</h4>
+<ul>
+<li><code>string</code>: ログメッセージ<br />
+エラーレベルのログを出力します</li>
+</ul>
+<h4 id="loggercriticalstring">Logger.Critical(string)</h4>
+<ul>
+<li><code>string</code>: ログメッセージ<br />
+致命的なエラーレベルのログを出力します</li>
+</ul>
+<h4 id="loggerdebugstring">Logger.Debug(string)</h4>
+<ul>
+<li><code>string</code>: ログメッセージ<br />
+デバッグレベルのログを出力します</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      
+    
+  </body>
+</html>

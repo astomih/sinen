@@ -31,7 +31,7 @@
 
 #include <imgui.h>
 
-#include "../asset/font/default/mplus-1p-medium.ttf.h"
+#include "../asset/font/default/mplus-1p-medium.ttf.hpp"
 
 namespace sinen {
 PxDrawable::PxDrawable(px::Allocator *allocator)

@@ -9,9 +9,9 @@
 
 #include "rt_shader_compiler.hpp"
 
-#include "default/shader.frag.spv.h"
-#include "default/shader.vert.spv.h"
-#include "default/shader_instance.vert.spv.h"
+#include "default/shader.frag.spv.hpp"
+#include "default/shader.vert.spv.hpp"
+#include "default/shader_instance.vert.spv.hpp"
 
 namespace sinen {
 void Shader::LoadDefaultVertexShader() {

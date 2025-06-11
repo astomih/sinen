@@ -30,7 +30,7 @@
 #include <logic/camera/camera.hpp>
 #include <platform/input/keyboard.hpp>
 
-#include "editor.h"
+#include "editor.hpp"
 #include <zep.h>
 
 namespace sinen {

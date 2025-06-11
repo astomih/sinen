@@ -3,7 +3,7 @@
 #endif
 
 // #define ZEP_CONSOLE
-#include "editor.h"
+#include "editor.hpp"
 
 #include "../../platform/input/input_system.hpp"
 #include "platform/input/keyboard.hpp"

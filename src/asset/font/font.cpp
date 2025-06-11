@@ -16,7 +16,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 
-#include "default/mplus-1p-medium.ttf.h"
+#include "default/mplus-1p-medium.ttf.hpp"
 
 namespace sinen {
 Font::Font(int32_t point, std::string_view file_name) {

@@ -1,5 +1,5 @@
-#ifndef SINEN_DRAW_OBJECT_WRAPPER_HPP
-#define SINEN_DRAW_OBJECT_WRAPPER_HPP
+#ifndef SINEN_DRAWABLE_WRAPPER_HPP
+#define SINEN_DRAWABLE_WRAPPER_HPP
 #include "../../asset/model/model.hpp"
 #include "../../asset/texture/texture.hpp"
 #include "drawable.hpp"
@@ -21,19 +21,12 @@ public:
    * @param texture Texture to use
    *
    */
-  Draw2D(Texture);
+  explicit Draw2D(const Texture &texture);
   /**
    * @brief Draw object
    *
    */
-  void Draw();
-  /**
-   * @brief Set user data
-   *
-   * @param index Index of user data 0-16
-   * @param value Value of user data
-   */
-  void UserDataAt(int index, float value);
+  void Draw() const;
   void Add(const glm::vec2 &position, const float &rotation,
            const glm::vec2 &scale);
   void At(const int &index, const glm::vec2 &position, const float &rotation,
@@ -64,17 +57,16 @@ public:
    */
   Draw3D();
   /**
+   * @brief Construct a new draw3d object
+   * @param texture Texture to use
+   *
+   */
+  explicit Draw3D(const Texture &texture);
+  /**
    * @brief Draw object
    *
    */
-  void Draw();
-  /**
-   * @brief Set user data
-   *
-   * @param index Index of user data 0-16
-   * @param value Value of user data
-   */
-  void UserDataAt(int index, float value);
+  void Draw() const;
   void Add(const glm::vec3 &position, const glm::vec3 &rotation,
            const glm::vec3 &scale);
   void At(const int &index, const glm::vec3 &position,
@@ -95,4 +87,4 @@ public:
   std::vector<world> worlds;
 };
 } // namespace sinen
-#endif // !SINEN_DRAW_OBEJCT_WRAPPER_HPP
+#endif // !SINEN_DRAWABLE_WRAPPER_HPP

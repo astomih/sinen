@@ -23,12 +23,20 @@ Draw2D::Draw2D()
       scale(glm::vec2(1.f, 1.f)) {
   obj = std::make_shared<Drawable>();
 }
+Draw2D::Draw2D(const Texture &texture) : position(), rotation(), scale() {
+  this->material.SetTexture(texture);
+  obj = std::make_shared<Drawable>();
+}
 Draw3D::Draw3D()
     : position(glm::vec3(0.f, 0.f, 0.f)), rotation(glm::vec3(0.f, 0.f, 0.f)),
       scale(glm::vec3(1.f, 1.f, 1.f)) {
   obj = std::make_shared<Drawable>();
 }
-void Draw2D::Draw() {
+Draw3D::Draw3D(const Texture &texture) : position(), rotation(), scale() {
+  this->material.SetTexture(texture);
+  obj = std::make_shared<Drawable>();
+}
+void Draw2D::Draw() const {
   auto ratio = glm::vec2(Window::Size().x / Scene::Size().x,
                          Window::Size().y / Scene::Size().y);
 
@@ -82,7 +90,7 @@ void Draw2D::At(const int &index, const glm::vec2 &position,
   this->worlds[index] = {position, rotation, scale};
 }
 void Draw2D::Clear() { this->worlds.clear(); }
-void Draw3D::Draw() {
+void Draw3D::Draw() const {
   obj->material = this->material;
   auto t = glm::translate(glm::mat4(1.0f),
                           glm::vec3(position.x, position.y, position.z));
@@ -126,8 +134,6 @@ void Draw3D::Draw() {
   }
   Graphics::draw3d(obj);
 }
-void Draw2D::UserDataAt(int index, float value) {}
-void Draw3D::UserDataAt(int index, float value) {}
 void Draw3D::Add(const glm::vec3 &position, const glm::vec3 &rotation,
                  const glm::vec3 &scale) {
   this->worlds.push_back({position, rotation, scale});

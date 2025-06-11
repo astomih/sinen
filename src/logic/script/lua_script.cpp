@@ -86,8 +86,12 @@ bool LuaScript::Initialize() {
     v["GraphicsPipeline3D"] = []() -> GraphicsPipeline3D {
       return GraphicsPipeline3D();
     };
-    lua["Draw2D"] = []() -> Draw2D { return Draw2D(); };
-    lua["Draw3D"] = []() -> Draw3D { return Draw3D(); };
+    lua["Draw2D"] = sol::overload(
+        []() -> Draw2D { return Draw2D(); },
+        [](const Texture &texture) -> Draw2D { return Draw2D(texture); });
+    lua["Draw3D"] = sol::overload(
+        []() -> Draw3D { return Draw3D(); },
+        [](const Texture &texture) -> Draw3D { return Draw3D(texture); });
   }
   {
     auto v = lua.new_usertype<glm::vec3>("", sol::no_construction());
@@ -183,6 +187,12 @@ bool LuaScript::Initialize() {
   {
     auto v = lua.new_usertype<Material>("", sol::no_construction());
     v["AppendTexture"] = &Material::AppendTexture;
+    v["SetTexture"] = sol::overload(
+        [](Material &m, const Texture &texture) { m.SetTexture(texture); },
+        [](Material &m, const Texture &texture, size_t index) {
+          m.SetTexture(texture, index - 1);
+        });
+    v["GetTexture"] = &Material::GetTexture;
     v["Clear"] = &Material::Clear;
   }
   {
@@ -191,8 +201,11 @@ bool LuaScript::Initialize() {
   }
   {
     auto v = lua.new_usertype<Font>("", sol::no_construction());
-    v["Load"] = &Font::Load;
-    v["LoadFromFile"] = &Font::LoadFromFile;
+    v["Load"] = sol::overload(
+        [](Font &f, int point_size) { return f.Load(point_size); },
+        [](Font &f, int point_size, std::string_view path) {
+          return f.Load(point_size, path);
+        });
     v["RenderText"] = &Font::RenderText;
     v["Resize"] = &Font::Resize;
   }
@@ -279,7 +292,6 @@ bool LuaScript::Initialize() {
     v["rotation"] = &Draw2D::rotation;
     v["scale"] = &Draw2D::scale;
     v["material"] = &Draw2D::material;
-    v["UserDataAt"] = &Draw2D::UserDataAt;
     v["Add"] = &Draw2D::Add;
     v["At"] = &Draw2D::At;
     v["Clear"] = &Draw2D::Clear;
@@ -293,7 +305,6 @@ bool LuaScript::Initialize() {
     v["model"] = &Draw3D::model;
     v["isDrawDepth"] = &Draw3D::isDrawDepth;
     v["Draw"] = &Draw3D::Draw;
-    v["UserDataAt"] = &Draw3D::UserDataAt;
     v["Add"] = &Draw3D::Add;
     v["At"] = &Draw3D::At;
     v["Clear"] = &Draw3D::Clear;

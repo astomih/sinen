@@ -20,7 +20,7 @@
 
 namespace sinen {
 Font::Font(int32_t point, std::string_view file_name) {
-  LoadFromFile(point, file_name);
+  Load(point, file_name);
 }
 Font::~Font() {}
 bool Font::Load(int pointSize) {
@@ -30,7 +30,7 @@ bool Font::Load(int pointSize) {
   m_font = (void *)::TTF_OpenFontIO(rw, 1, pointSize);
   return IsLoaded();
 }
-bool Font::LoadFromFile(int pointSize, std::string_view fontName) {
+bool Font::Load(int pointSize, std::string_view fontName) {
   this->m_size = pointSize;
   m_font = (void *)::TTF_OpenFontIO(
       (SDL_IOStream *)DataStream::OpenAsRWOps(AssetType::Font, fontName), 1,
@@ -53,7 +53,7 @@ void Font::Resize(int point_size) {
 }
 
 void Font::RenderText(Texture &tex, std::string_view text,
-                       const Color &_color) {
+                      const Color &_color) {
   if (!IsLoaded()) {
     Logger::Error("Font is not loaded");
     return;

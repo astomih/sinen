@@ -26,7 +26,7 @@ public:
    * @return true success to load
    * @return false failed to load
    */
-  bool LoadFromFile(int pointSize, std::string_view path);
+  bool Load(int pointSize, std::string_view path);
   /**
    * @brief return already loaded font
    *

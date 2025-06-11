@@ -1,8 +1,7 @@
 -- Create a texture
 local texture = Texture()
 -- Create a draw2D
-local draw2d = Draw2D()
-draw2d.material:AppendTexture(texture)
+local draw2d = Draw2D(texture)
 -- Create a font
 local font = Font()
 -- Load a default font (96px)

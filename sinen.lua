@@ -25,6 +25,27 @@ function Vec3(x, y, z) return {} end
 ---Initializes a Vec3 with the same value for x, y, z.
 function Vec3(value) return {} end
 
+---@class Vec3i
+---@field x integer
+---@field y integer
+---@field z integer
+---@operator add(Vec3i): Vec3i
+---@operator sub(Vec3i): Vec3i
+---@param x integer?
+---@param y integer?
+---@param z integer?
+---@return Vec3i
+function Vec3i(x, y, z)
+    return {}
+end
+
+---@param value integer
+---@return Vec3i
+---Initializes a Vec3i with the same value for x, y, z.
+function Vec3i(value)
+    return {}
+end
+
 ---@class Vec2
 ---@field x number
 ---@field y number
@@ -48,6 +69,21 @@ function Vec2(x, y) return {} end
 ---Initializes a Vec2 with the same value for x, y.
 function Vec2(value) return {} end
 
+---@class Vec2i
+---@field x integer
+---@field y integer
+---@operator add(Vec2i): Vec2i
+---@operator sub(Vec2i): Vec2i
+---@param x integer?
+---@param y integer?
+---@return Vec2i
+function Vec2i(x, y) return {} end
+
+---@param value integer
+---@return Vec2i
+---Initializes a Vec2i with the same value for x, y.
+function Vec2i(value) return {} end
+
 ---@class Texture
 ---@field FillColor fun(self: Texture, color: Color)
 ---@field BlendColor fun(self: Texture, color: Color)
@@ -58,6 +94,8 @@ function Vec2(value) return {} end
 function Texture() return {} end
 
 ---@class Material
+---Set Texture. index is 1-based, optional.
+---@field SetTexture fun(self:Material, texture: Texture, index: integer?)
 ---@field AppendTexture fun(self: Material, texture: Texture)
 ---@field Clear fun(self: Material)
 ---@field GetTexture fun(self: Material, index: integer): Texture
@@ -99,8 +137,8 @@ function Camera() end
 ---@class Model
 ---@field GetAABB fun(self: Model): AABB
 ---@field Load fun(self: Model, path: string)
----@field LoadSprite fun(self: Model, path: string)
----@field LoadBox fun(self: Model, size: Vec3)
+---@field LoadSprite fun(self: Model)
+---@field LoadBox fun(self: Model)
 ---@field GetBoneUniformData fun(self: Model): UniformData
 ---@field Play fun(self: Model, positon: number)
 ---@field Update fun(self: Model, delta: number)
@@ -110,7 +148,7 @@ function Model() return {} end
 ---@class AABB
 ---@field min Vec3
 ---@field max Vec3
----@field UpdateWorld fun(self: AABB, mat: any)
+---@field UpdateWorld fun(self: AABB, position: Vec3, scale: Vec3, modelAABB: AABB)
 ---@return AABB
 function AABB() return {} end
 
@@ -137,8 +175,7 @@ function UniformData() return {} end
 function Shader() return {} end
 
 ---@class Font
----@field Load fun(self: Font, size: integer): nil
----@field LoadFromFile fun(self: Font, size: integer, path: string): nil
+---@field Load fun(self: Font, size: integer, path: string?): nil
 ---@field RenderText fun(self: Font, texture: Texture, text: string, color: Color): Texture
 ---@field Resize fun(self: Font, size: integer)
 ---@return Font
@@ -168,8 +205,9 @@ function Color() return {} end
 ---@field Add fun(self: Draw2D, drawable: any)
 ---@field At fun(self: Draw2D, x: number, y: number)
 ---@field Clear fun(self: Draw2D)
+---@param texture Texture?
 ---@return Draw2D
-function Draw2D() return {} end
+function Draw2D(texture) return {} end
 
 ---@class Draw3D
 ---@field scale Vec3
@@ -179,11 +217,12 @@ function Draw2D() return {} end
 ---@field model Model
 ---@field isDrawDepth boolean
 ---@field Draw fun(self: Draw3D)
----@field Add fun(self: Draw3D, drawable: any)
+---@field Add fun(self: Draw3D, positon: Vec3, rotation: Vec3, scale: Vec3)
 ---@field At fun(self: Draw3D, x: number, y: number, z: number)
 ---@field Clear fun(self: Draw3D)
+---@param texture Texture?
 ---@return Draw3D
-function Draw3D() return {} end
+function Draw3D(texture) return {} end
 
 ---@class Grid
 ---@field At fun(self: Grid, x: integer, y: integer): integer
@@ -231,6 +270,7 @@ function GraphicsPipeline3D() return {} end
 ---Static class
 ---@class Random
 ---@field GetRange fun(a: number, b: number): number
+---@field GetIntRange fun(a: number, b: number): number
 Random = {}
 
 ---Static class
@@ -359,7 +399,8 @@ Keyboard = {}
 ---@field SetPosition fun(pos: Vec2)
 ---@field SetPositionOnScene fun(pos: Vec2)
 ---@field GetScrollWheel fun(): number
----@field HideCursor fun()
+---@field HideCursor fun(isHide: boolean)
+---@field SetRelative fun(isRelative: boolean)
 Mouse = {}
 
 ---Static class
@@ -396,8 +437,8 @@ Gamepad = {}
 
 ---Static class
 ---@class Periodic
----@field Sin0_1 fun(time: number): number
----@field Cos0_1 fun(time: number): number
+---@field Sin0_1 fun(t1: number,t2:number): number
+---@field Cos0_1 fun(t1: number,t2:number): number
 Periodic = {}
 
 ---Static class
@@ -409,7 +450,6 @@ Time = {}
 ---Static class
 ---@class Logger
 ---@field Verbose fun(msg: string)
----@field Debug fun(msg: string)
 ---@field Info fun(msg: string)
 ---@field Error fun(msg: string)
 ---@field Warn fun(msg: string)

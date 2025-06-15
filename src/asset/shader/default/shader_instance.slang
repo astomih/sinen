@@ -7,10 +7,7 @@ struct VSInput {
   float3 normal : NORMAL;
   float2 uv : TEXCOORD0;
   float4 color : COLOR;
-  float4 m1;
-  float4 m2;
-  float4 m3;
-  float4 m4;
+  float4x4 m : INSTANCE;
 };
 
 struct VSOutput {
@@ -32,8 +29,8 @@ UNIFORM(Mat, 0) {
 VSOutput VSMain(VSInput input) {
   VSOutput output;
   float4x4 inWorldPos;
-  inWorldPos = float4x4(input.m1, input.m2, input.m3, input.m4);
-  output.out = mul(proj * view * inWorldPos, float4(input.position, 1.0));
+  output.out =
+      mul(mul(proj, mul(view, input.m, )), float4(input.position, 1.0));
   output.uv = input.uv;
   output.color = input.color;
   return output;

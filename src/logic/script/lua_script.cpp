@@ -66,9 +66,17 @@ bool LuaScript::Initialize() {
           return {x, y, z};
         },
         [](const float value) -> glm::vec3 { return glm::vec3(value); });
+    v["Vec3i"] = sol::overload(
+        [](const int x, const int y, const int z) -> glm::ivec3 {
+          return {x, y, z};
+        },
+        [](const int value) -> glm::ivec3 { return glm::ivec3(value); });
     v["Vec2"] = sol::overload(
         [](const float x, const float y) -> glm::vec2 { return {x, y}; },
         [](const float value) -> glm::vec2 { return glm::vec2{value}; });
+    v["Vec2i"] = sol::overload(
+        [](const int x, const int y) -> glm::ivec2 { return {x, y}; },
+        [](const int value) -> glm::ivec2 { return glm::ivec2{value}; });
     v["Color"] =
         sol::overload([](const float r, const float g, const float b,
                          const float a) -> Color { return {r, g, b, a}; },
@@ -132,6 +140,14 @@ bool LuaScript::Initialize() {
     v["Reflect"] = [](const glm::vec3 &v, const glm::vec3 &n) {
       return glm::reflect(v, n);
     };
+  }
+  {
+    auto v = lua.new_usertype<glm::ivec3>("", sol::no_construction());
+    v["x"] = &glm::ivec3::x;
+    v["y"] = &glm::ivec3::y;
+    v["z"] = &glm::ivec3::z;
+    v["__add"] = [](const glm::ivec3 &a, const glm::ivec3 &b) { return a + b; };
+    v["__sub"] = [](const glm::ivec3 &a, const glm::ivec3 &b) { return a - b; };
   }
   {
     auto v = lua.new_usertype<glm::vec2>("", sol::no_construction());
@@ -312,6 +328,7 @@ bool LuaScript::Initialize() {
   {
     auto v = lua.create_table("Random");
     v["GetRange"] = &Random::GetRange;
+    v["GetIntRange"] = &Random::GetIntRange;
   }
   {
     auto v = lua.create_table("Window");
@@ -487,7 +504,6 @@ bool LuaScript::Initialize() {
     // logger
     auto v = lua.create_table("Logger");
     v["Verbose"] = [](std::string str) { Logger::Verbose("%s", str.data()); };
-    v["Debug"] = [](std::string str) { Logger::Debug("%s", str.data()); };
     v["Info"] = [](std::string str) { Logger::Info("%s", str.data()); };
     v["Error"] = [](std::string str) { Logger::Error("%s", str.data()); };
     v["Warn"] = [](std::string str) { Logger::Warn("%s", str.data()); };

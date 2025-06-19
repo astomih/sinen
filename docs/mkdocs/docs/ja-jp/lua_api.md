@@ -1,5 +1,4 @@
 # Lua API
-mainブランチと乖離している場合があります。  
 型情報は、sinen.luaファイルを参照してください。
 ## 呼び出しについて
 Luaスクリプトは`sinen.exeが存在するディレクトリ/script/`に配置します  
@@ -48,19 +47,32 @@ Vec2のy成分。
 ベクトルを正規化します
 #### Vec2:Copy() -> Vec2
 ベクトルをコピーします
-#### Vec2:Dot(Vec2, Vec2) -> number
-- `Vec2`: ベクトル1
-- `Vec2`: ベクトル2
+#### Vec2:Dot(other) -> number
+- `other`: Vec2オブジェクト
 内積を取得します
-#### Vec2:Lerp(Vec2, Vec2, number) -> Vec2
-- `Vec2`: ベクトル1
-- `Vec2`: ベクトル2
-- `number`: 補間係数
+#### Vec2:Lerp(other, t) -> Vec2
+- `other`: Vec2オブジェクト
+- `t`: 補間係数
 線形補間を取得します
-#### Vec2:Reflect(Vec2, Vec2) -> Vec2
-- `Vec2`: ベクトル
-- `Vec2`: 法線ベクトル
+#### Vec2:Reflect(n) -> Vec2
+- `n`: 法線ベクトル
 反射ベクトルを取得します
+
+### Vec2i
+#### メタテーブル
+- `__add`: ベクトルの加算を行います (a + b)
+- `__sub`: ベクトルの減算を行います (a - b)
+#### Vec2i(x, y) -> Vec2i
+- `x`: ベクトルのx成分(整数)
+- `y`: ベクトルのy成分(整数)  
+Vec2iオブジェクトを作成します。
+#### Vec2i(value) -> Vec2i
+- `value`: 整数値
+Vec2iオブジェクトをx, y成分に同じvalueを持つベクトルとして作成します 
+#### Vec2i.x = integer
+Vec2iのx成分。
+#### Vec2i.y = integer
+Vec2iのy成分。
 ### Vec3
 #### メタテーブル
 - `__add`: ベクトルの加算を行います (a + b)
@@ -88,26 +100,41 @@ Vec3のz成分
 #### Vec3:Copy() -> Vec3
 ベクトルをコピーします  
 Luaでは基本的に参照渡しのため、コピーが必要な場合に使用します
-#### Vec3:Forward(Vec3) -> Vec3
-- `Vec3`: 軸ベクトル  
+#### Vec3:Forward(rotation) -> Vec3
+- `rotation`: 回転角度ベクトル  
 前方ベクトルを取得します
-#### Vec3:Dot(Vec3, Vec3) -> number
-- `Vec3`: ベクトル1
-- `Vec3`: ベクトル2
+#### Vec3:Dot(other) -> number
+- `other`: Vec3オブジェクト
 内積を取得します
-#### Vec3:Cross(Vec3, Vec3) -> Vec3
-- `Vec3`: ベクトル1
-- `Vec3`: ベクトル2
+#### Vec3:Cross(other) -> Vec3
+- `other`: Vec3オブジェクト
 外積を取得します
-#### Vec3:Lerp(Vec3, Vec3, number) -> Vec3
-- `Vec3`: ベクトル1
-- `Vec3`: ベクトル2
-- `number`: 補間係数
+#### Vec3:Lerp(other, t) -> Vec3
+- `other`: Vec3オブジェクト
+- `t`: 補間係数
 線形補間を取得します
-#### Vec3:Reflect(Vec3, Vec3) -> Vec3
-- `Vec3`: ベクトル
-- `Vec3`: 法線ベクトル
+#### Vec3:Reflect(n) -> Vec3
+- `n`: 法線ベクトル
 反射ベクトルを取得します
+
+### Vec3i
+#### メタテーブル
+- `__add`: ベクトルの加算を行います (a + b)
+- `__sub`: ベクトルの減算を行います (a - b)
+#### Vec3i(x, y, z) -> Vec3i
+- `x`: ベクトルのx成分(整数)
+- `y`: ベクトルのy成分(整数)  
+- `z`: ベクトルのz成分(整数)
+Vec3iオブジェクトを作成します
+#### Vec3i(value) -> Vec3i
+- `value`: 整数値
+Vec3iオブジェクトをx, y, z成分に同じvalueを持つベクトルとして作成します
+#### Vec3i.x = integer
+Vec3iのx成分
+#### Vec3i.y = integer
+Vec3iのy成分
+#### Vec3i.z = integer
+Vec3iのz成分
 ### Color
 #### Color() -> Color
 Colorオブジェクトを作成します
@@ -152,22 +179,99 @@ Luaでは基本的に参照渡しのため、コピーが必要な場合に使�
 ### Material
 #### Material() -> Material
 マテリアルオブジェクトを作成します
-#### Material:AppendTexture(Texture)
-- `Texture`: テクスチャ  
+#### Material:SetTexture(texture, index)
+- `texture`: テクスチャ
+- `index`: インデックス(1ベース、オプション)
+テクスチャをマテリアルに設定します
+#### Material:AppendTexture(texture)
+- `texture`: テクスチャ  
 テクスチャをマテリアルに追加します
+#### Material:Clear()
+マテリアル内のテクスチャをすべてクリアします
+#### Material:GetTexture(index) -> Texture
+- `index`: インデックス
+指定したインデックスのテクスチャを取得します
 ### Font
 #### Font() -> Font
 フォントオブジェクトを作成します
-#### Font:Load(string, number)
-- `string`: data/font/にあるフォントファイルの名前
-- `number`: フォントのサイズ(ピクセル)
+#### Font:Load(size, path)
+- `size`: フォントのサイズ(ピクセル)
+- `path`: data/font/にあるフォントファイルの名前(オプション)
 .ttfファイルを読み込みます  
-#### Font:RenderText(Texture, string, color)
-- `Texture`: 描画先のテクスチャ
-- `string`: 描画する文字列
-- `Color`: テキストの色
+#### Font:RenderText(texture, text, color) -> Texture
+- `texture`: 描画先のテクスチャ
+- `text`: 描画する文字列
+- `color`: テキストの色
 CPUでテキストを描画します  
 テクスチャは描画結果に合わせてリサイズされます
+#### Font:Resize(size)
+- `size`: フォントのサイズ(ピクセル)
+フォントのサイズを変更します
+
+### Timer
+#### Timer() -> Timer
+タイマーオブジェクトを作成します
+#### Timer:Start()
+タイマーを開始します
+#### Timer:Stop()
+タイマーを停止します
+#### Timer:IsStarted() -> boolean
+タイマーが開始されているかどうかを確認します
+#### Timer:SetTime(time)
+- `time`: 時間(秒)
+タイマーの時間を設定します
+#### Timer:Check() -> boolean
+タイマーが設定した時間に達したかどうかを確認します
+
+### Grid
+#### Grid(w, h) -> Grid
+- `w`: 幅
+- `h`: 高さ
+グリッドオブジェクトを作成します
+#### Grid:At(x, y) -> integer
+- `x`: x座標
+- `y`: y座標
+指定した座標の値を取得します
+#### Grid:Set(x, y, v)
+- `x`: x座標
+- `y`: y座標
+- `v`: 値
+指定した座標に値を設定します
+#### Grid:Width() -> integer
+グリッドの幅を取得します
+#### Grid:Height() -> integer
+グリッドの高さを取得します
+#### Grid:Size() -> integer
+グリッドのサイズ(幅×高さ)を取得します
+#### Grid:Clear()
+グリッドをクリアします
+#### Grid:Resize(w, h)
+- `w`: 幅
+- `h`: 高さ
+グリッドのサイズを変更します
+#### Grid:Fill(value)
+- `value`: 値
+グリッドを指定した値で埋めます
+
+### BFSGrid
+#### BFSGrid(grid) -> BFSGrid
+- `grid`: Gridオブジェクト
+BFS(幅優先探索)グリッドオブジェクトを作成します
+#### BFSGrid:Width() -> integer
+グリッドの幅を取得します
+#### BFSGrid:Height() -> integer
+グリッドの高さを取得します
+#### BFSGrid:FindPath(start, end_) -> any
+- `start`: 開始位置(Vec2)
+- `end_`: 終了位置(Vec2)
+パスを検索します
+#### BFSGrid:Trace() -> Vec2
+次の位置を取得します
+#### BFSGrid:Traceable() -> boolean
+トレース可能かどうかを確認します
+#### BFSGrid:Reset()
+検索状態をリセットします
+
 ### Draw2D
 #### Draw2D() -> Draw2D
 Draw2Dオブジェクトを作成します  
@@ -184,12 +288,14 @@ Sinenのウィンドウの中心が(0, 0)です
 モデル
 #### Draw2D:Draw()
 2Dオブジェクトを描画します
-#### Draw2D:Add(Vec2, number, Vec2)
-- `Vec2`: 位置情報
-- `number`: 時計回りの回転角度
-- `Vec2`: 拡大率  
+#### Draw2D:Add(drawable)
+- `drawable`: 描画可能オブジェクト
 同じテクスチャ、モデルで複数のオブジェクトを追加して描画します  
 インスタンス生成時点で既に一つのオブジェクトが存在しています
+#### Draw2D:At(x, y)
+- `x`: x座標
+- `y`: y座標
+オブジェクトの位置を設定します
 #### Draw2D:Clear()
 追加されたオブジェクトをクリアします  
 ただし、インスタンス生成時点で存在しているオブジェクトはクリアされません
@@ -206,27 +312,34 @@ Draw3Dオブジェクトを作成します
 マテリアル
 #### Draw3D.model = Model
 モデル
+#### Draw3D.isDrawDepth = boolean
+深度描画を行うかどうか
 #### Draw3D:Draw()
 3Dオブジェクトを描画します
-#### Draw3D:Add(Vec3,Vec3,Vec3)
-- `Vec3`: 位置情報
-- `Vec3`: 回転角度
-- `Vec3`: 拡大率  
+#### Draw3D:Add(position, rotation, scale)
+- `position`: 位置情報(Vec3)
+- `rotation`: 回転角度(Vec3)
+- `scale`: 拡大率(Vec3)  
 同じテクスチャ、モデルで複数のオブジェクトを追加して描画します  
 インスタンス生成時点で既に一つのオブジェクトが存在しています
+#### Draw3D:At(x, y, z)
+- `x`: x座標
+- `y`: y座標
+- `z`: z座標
+オブジェクトの位置を設定します
 #### Draw3D:Clear()
 追加されたオブジェクトをクリアします  
 ただし、インスタンス生成時点で存在しているオブジェクトはクリアされません
 ### UniformData
 #### UniformData() -> UniformData
 ユニフォームデータオブジェクトを作成します
-#### UniformData:Add(number)
-- `number`: データ  
+#### UniformData:Add(value)
+- `value`: データ  
 ユニフォームデータを追加します
-#### UniformData:At(number, number)
-- `number`: データ
-- `number`: インデックス  
-ユニフォームデータを指定したインデックスに追加します
+#### UniformData:Change(index, value)
+- `index`: インデックス
+- `value`: データ
+ユニフォームデータを指定したインデックスで変更します
 ### Shader
 #### Shader() -> Shader
 シェーダオブジェクトを作成します
@@ -248,28 +361,35 @@ Draw3Dオブジェクトを作成します
 - `number`: UniformDataの数
 フラグメントシェーダをコンパイルして読み込みます  
 `slangc`がインストールされている必要があります
-### RenderPipeline2D
-#### RenderPipeline2D() -> RenderPipeline2D
-2Dレンダーパイプラインオブジェクトを作成します
-#### RenderPipeline2D:SetVertexShader(Shader)
-- `Shader`: 頂点シェーダ  
+### GraphicsPipeline2D
+#### GraphicsPipeline2D() -> GraphicsPipeline2D
+2Dグラフィックスパイプラインオブジェクトを作成します
+#### GraphicsPipeline2D:SetVertexShader(shader)
+- `shader`: Shaderオブジェクト  
 頂点シェーダを設定します
-#### RenderPipeline2D:SetFragmentShader(Shader)
-- `Shader`: フラグメントシェーダ  
+#### GraphicsPipeline2D:SetFragmentShader(shader)
+- `shader`: Shaderオブジェクト  
 フラグメントシェーダを設定します
-#### RenderPipeline2D:Build()
-レンダーパイプラインを構築します
-### RenderPipeline3D
-#### RenderPipeline3D() -> RenderPipeline3D
-3Dレンダーパイプラインオブジェクトを作成します
-#### RenderPipeline3D:SetVertexShader(Shader)
-- `Shader`: 頂点シェーダ
+#### GraphicsPipeline2D:Build()
+グラフィックスパイプラインを構築します
+
+### GraphicsPipeline3D
+#### GraphicsPipeline3D() -> GraphicsPipeline3D
+3Dグラフィックスパイプラインオブジェクトを作成します
+#### GraphicsPipeline3D:SetVertexShader(shader)
+- `shader`: Shaderオブジェクト
 頂点シェーダを設定します
-#### RenderPipeline3D:SetFragmentShader(Shader)
-- `Shader`: フラグメントシェーダ
+#### GraphicsPipeline3D:SetVertexInstancedShader(shader)
+- `shader`: Shaderオブジェクト
+インスタンス化頂点シェーダを設定します
+#### GraphicsPipeline3D:SetFragmentShader(shader)
+- `shader`: Shaderオブジェクト
 フラグメントシェーダを設定します
-#### RenderPipeline3D:Build()
-レンダーパイプラインを構築します
+#### GraphicsPipeline3D:SetAnimation(anim)
+- `anim`: アニメーション
+アニメーションを設定します
+#### GraphicsPipeline3D:Build()
+グラフィックスパイプラインを構築します
 ### Camera
 #### Camera() -> Camera
 3D空間のカメラオブジェクトを作成します
@@ -292,15 +412,15 @@ Draw3Dオブジェクトを作成します
 - `number`: 近面
 - `number`: 遠面  
 カメラの正射影投影を設定します
-#### Camera:IsAABBInFrustum(AABB) -> bool
-- `AABB`: AABB  
+#### Camera:IsAABBInFrustum(aabb) -> boolean
+- `aabb`: AABBオブジェクト  
 AABBがカメラの視錐台に含まれているかどうかを確認します
-#### Camera:GetPosition = Vec3
-カメラの位置
-#### Camera:GetTarget = Vec3
-カメラの注視点
-#### Camera.GetUp = Vec3
-カメラの上方向
+#### Camera:GetPosition() -> Vec3
+カメラの位置を取得します
+#### Camera:GetTarget() -> Vec3
+カメラの注視点を取得します
+#### Camera:GetUp() -> Vec3
+カメラの上方向を取得します
 ### Music
 #### Music() -> Music
 #### Music:Load(string)
@@ -333,97 +453,136 @@ AABBがカメラの視錐台に含まれているかどうかを確認します
 - `Vec3`: 音源の位置  
 音源の位置を設定します
 ### AABB
+#### AABB() -> AABB
+AABBオブジェクトを作成します
 #### AABB.min = Vec3
 AABBの最小点
 #### AABB.max = Vec3
 AABBの最大点
+#### AABB:UpdateWorld(position, scale, modelAABB)
+- `position`: 位置(Vec3)
+- `scale`: スケール(Vec3)
+- `modelAABB`: モデルのAABB
+ワールド座標でAABBを更新します
+
 ### Model
-#### Model.AABB = AABB
-モデルのAABB
-#### Model:Load(string)
-- `string`: data/model/にあるモデルファイルの名前  
+#### Model() -> Model
+モデルオブジェクトを作成します
+#### Model:GetAABB() -> AABB
+モデルのAABBを取得します
+#### Model:Load(path)
+- `path`: data/model/にあるモデルファイルの名前  
 .gltf, .glb形式に対応しています
+#### Model:LoadSprite()
+スプライト用のモデルを読み込みます
+#### Model:LoadBox()
+ボックス形状のモデルを読み込みます
+#### Model:GetBoneUniformData() -> UniformData
+ボーンのユニフォームデータを取得します
+#### Model:Play(position)
+- `position`: 再生位置
+アニメーションを再生します
+#### Model:Update(delta)
+- `delta`: デルタ時間
+モデルを更新します
 
 ## グローバル関数
 インスタンスを生成せず、直接呼び出せる関数です
 ### Random
-#### Random:GetRange(number, number) -> number
-- `number`: 最小値
-- `number`: 最大値  
+#### Random.GetRange(a, b) -> number
+- `a`: 最小値
+- `b`: 最大値  
 指定された範囲の浮動小数点数の乱数を取得します
+#### Random.GetIntRange(a, b) -> number
+- `a`: 最小値(整数)
+- `b`: 最大値(整数)  
+指定された範囲の整数の乱数を取得します
 
 ### Window
-#### Window:Name() -> string
+#### Window.GetName() -> string
 ウィンドウの名前を取得します
-#### Window:Rename(string)
-- `string`: ウィンドウの名前  
+#### Window.Rename(name)
+- `name`: ウィンドウの名前  
 ウィンドウの名前を変更します
-#### Window:Size() -> Vec2
+#### Window.Size() -> Vec2
 ウィンドウのサイズを取得します
-#### Window:Resize(Vec2)
-- `Vec2`: ウィンドウのサイズ  
+#### Window.Resize(size)
+- `size`: ウィンドウのサイズ(Vec2)  
 ウィンドウのサイズを変更します
-#### Window:Resized() -> bool
+#### Window.Resized() -> boolean
 ウィンドウが今のフレームでリサイズされたかどうかを取得します
-#### Window:Half() -> Vec2
+#### Window.Half() -> Vec2
 ウィンドウの半分のサイズを取得します
-#### Window:SetFullscreen(bool)
-- `bool`: ウィンドウをフルスクリーンにするかどうか  
+#### Window.SetFullscreen(full)
+- `full`: ウィンドウをフルスクリーンにするかどうか  
 ウィンドウをフルスクリーン、またはウィンドウモードにします
 
 ### Graphics
-#### Graphics:SetClearColor() -> Color
+#### Graphics.GetClearColor() -> Color
 画面クリアの色を取得します
-#### Graphics:SetClearColor(Color)
-- `Color`: 画面クリアの色  
+#### Graphics.SetClearColor(c)
+- `c`: 画面クリアの色(Color)  
 画面クリアの色を設定します
-#### Graphics:BeginPipeline2D(RenderPipeline2D)
-- `RenderPipeline2D`: レンダーパイプライン  
-2Dレンダリングを開始します
-#### Graphics:EndPipeline2D()
-2Dレンダリングを終了します
-#### Graphics:BeginPipeline3D(RenderPipeline3D)
-- `RenderPipeline3D`: レンダーパイプライン  
-3Dレンダリングを開始します
-#### Graphics:EndPipeline3D()
-3Dレンダリングを終了します
-#### Graphics:BeginRenderTexture2D(RenderTexture)
-- `RenderTexture`: レンダーテクスチャ
-レンダーテクスチャの描画を開始します
-#### Graphics:BeginRenderTexture3D(RenderTexture)
-- `RenderTexture`: レンダーテクスチャ
-#### Graphics:EndRenderTexture(RenderTexture, Texture)
-- `RenderTexture`: レンダーテクスチャ
-- `Texture`: 描画結果  
-レンダーテクスチャの描画を終了します  
-`Texture`は`RenderTexture`と同じサイズである必要があります
+#### Graphics.BindPipeline2D(pipe)
+- `pipe`: GraphicsPipeline2D  
+2Dグラフィックスパイプラインをバインドします
+#### Graphics.BindDefaultPipeline2D()
+デフォルトの2Dグラフィックスパイプラインをバインドします
+#### Graphics.BindPipeline3D(pipe)
+- `pipe`: GraphicsPipeline3D  
+3Dグラフィックスパイプラインをバインドします
+#### Graphics.BindDefaultPipeline3D()
+デフォルトの3Dグラフィックスパイプラインをバインドします
+#### Graphics.SetUniformData(binding, data)
+- `binding`: バインディング番号(整数)
+- `data`: UniformDataオブジェクト
+ユニフォームデータを設定します
+#### Graphics.BeginTarget2D(rt)
+- `rt`: RenderTextureオブジェクト
+2Dレンダーターゲットを開始します
+#### Graphics.BeginTarget3D(rt)
+- `rt`: RenderTextureオブジェクト
+3Dレンダーターゲットを開始します
+#### Graphics.EndTarget(rt, texture_ref)
+- `rt`: RenderTextureオブジェクト
+- `texture_ref`: 描画結果のTextureオブジェクト  
+レンダーターゲットを終了します
 
 ### Scene
-#### Scene:Camera() -> Camera
+#### Scene.GetCamera() -> Camera
 シーンのメインカメラを取得します
-#### Scene:Size() -> Vec2
+#### Scene.Size() -> Vec2
 シーンのサイズを取得します
-#### Scene:Resize(Vec2)
-- `Vec2`: シーンのサイズ  
+#### Scene.Resize(size)
+- `size`: シーンのサイズ(Vec2)  
 シーンのサイズを変更します
-#### Scene:Half() -> Vec2
+#### Scene.Half() -> Vec2
 シーンの半分のサイズを取得します
+#### Scene.Ratio() -> number
+シーンのアスペクト比を取得します
+#### Scene.InvRatio() -> number
+シーンの逆アスペクト比を取得します
+#### Scene.DeltaTime() -> number
+デルタ時間を取得します
+#### Scene.Change(name)
+- `name`: シーン名
+シーンを変更します
 
 ### Collision
-#### Collision:AABBvsAABB(AABB, AABB) -> bool
-- `AABB`: AABB
-- `AABB`: AABB  
+#### Collision.AABBvsAABB(a, b) -> boolean
+- `a`: AABBオブジェクト
+- `b`: AABBオブジェクト  
 AABB同士の衝突判定を行います
 
 ### Keyboard
-#### Keyboard:IsPressed(code) -> bool
-- `code`: キーコード  
+#### Keyboard.IsPressed(scancode) -> boolean
+- `scancode`: キーコード  
 キーが現在のフレームで押されたかどうかを確認します
-#### Keyboard:IsReleased(code) -> bool
-- `code`: キーコード  
+#### Keyboard.IsReleased(scancode) -> boolean
+- `scancode`: キーコード  
 キーが現在のフレームで離されたかどうかを確認します
-#### Keyboard:IsDown(code) -> bool
-- `code`: キーコード  
+#### Keyboard.IsDown(scancode) -> boolean
+- `scancode`: キーコード  
 キーが押されているかどうかを確認します
 #### Keyboard.A = code
 #### Keyboard.B = code
@@ -451,16 +610,16 @@ AABB同士の衝突判定を行います
 #### Keyboard.X = code
 #### Keyboard.Y = code
 #### Keyboard.Z = code
-#### Keyboard.key0 = code
-#### Keyboard.key1 = code
-#### Keyboard.key2 = code
-#### Keyboard.key3 = code
-#### Keyboard.key4 = code
-#### Keyboard.key5 = code
-#### Keyboard.key6 = code
-#### Keyboard.key7 = code
-#### Keyboard.key8 = code
-#### Keyboard.key9 = code
+#### Keyboard.Key0 = code
+#### Keyboard.Key1 = code
+#### Keyboard.Key2 = code
+#### Keyboard.Key3 = code
+#### Keyboard.Key4 = code
+#### Keyboard.Key5 = code
+#### Keyboard.Key6 = code
+#### Keyboard.Key7 = code
+#### Keyboard.Key8 = code
+#### Keyboard.Key9 = code
 #### Keyboard.F1 = code
 #### Keyboard.F2 = code
 #### Keyboard.F3 = code
@@ -479,14 +638,14 @@ AABB同士の衝突判定を行います
 #### Keyboard.RIGHT = code
 #### Keyboard.ESCAPE = code
 #### Keyboard.SPACE = code
-#### Keyboard.ENTER = code
+#### Keyboard.RETURN = code
 #### Keyboard.BACKSPACE = code
 #### Keyboard.TAB = code
 #### Keyboard.LSHIFT = code
 #### Keyboard.RSHIFT = code
 #### Keyboard.LCTRL = code
 #### Keyboard.RCTRL = code
-#### Keyboard.ALT = code
+#### Keyboard.LALT = code
 ### Mouse
 #### Mouse.GetPosition() -> Vec2
 マウスのウィンドウ内の位置を取得します  
@@ -502,41 +661,39 @@ AABB同士の衝突判定を行います
 - `Vec2`: シーン上のマウスの位置  
 マウスのシーン上の位置を設定します  
 シーンの中心が原点(0, 0)です
-#### Mouse.IsPressed(code) -> bool
-- `code`: マウスのボタンコード  
+#### Mouse.IsPressed(btn) -> boolean
+- `btn`: マウスのボタンコード  
 ボタンが現在のフレームで押されたかどうかを確認します
-#### Mouse.IsPressed(code) -> bool
-- `code`: マウスのボタンコード  
+#### Mouse.IsReleased(btn) -> boolean
+- `btn`: マウスのボタンコード  
 ボタンが現在のフレームで離されたかどうかを確認します
-#### Mouse.IsDown(code) -> bool
-- `code`: マウスのボタンコード  
+#### Mouse.IsDown(btn) -> boolean
+- `btn`: マウスのボタンコード  
 ボタンが押されているかどうかを確認します
-#### Mouse.ScrollWheel() -> Vec2
-マウスのスクロールの変化量を取得します
-#### Mouse.HideCursor(bool)
-- `bool`: マウスカーソルを隠すかどうか  
+#### Mouse.GetScrollWheel() -> number
+マウスのスクロールホイールの変化量を取得します
+#### Mouse.HideCursor(isHide)
+- `isHide`: マウスカーソルを隠すかどうか  
 カーソルを表示、または非表示にします
-#### Mouse.SetRelative(bool)
-- `bool`: マウスを相対座標として取得するかどうか  
-相対座標でマウスの位置を取得するかどうかを設定します。
-#### Mouse.IsRelative() -> bool
-相対座標でマウスの位置を取得しているかどうかを確認します
+#### Mouse.SetRelative(isRelative)
+- `isRelative`: マウスを相対座標として取得するかどうか  
+相対座標でマウスの位置を取得するかどうかを設定します
 #### Mouse.LEFT = code
 #### Mouse.RIGHT = code
 #### Mouse.MIDDLE = code
 #### Mouse.X1 = code
 #### Mouse.X2 = code
 ### Gamepad
-#### Gamepad.IsConnected() -> bool
+#### Gamepad.IsConnected() -> boolean
 ゲームパッドが接続されているかどうかを確認します
-#### Gamepad.IsPressed(code) -> bool
-- `code`: ゲームパッドのボタンコード  
+#### Gamepad.IsPressed(btn) -> boolean
+- `btn`: ゲームパッドのボタンコード  
 ボタンが現在のフレームで押されたかどうかを確認します
-#### Gamepad.IsReleased(code) -> bool
-- `code`: ゲームパッドのボタンコード  
+#### Gamepad.IsReleased(btn) -> boolean
+- `btn`: ゲームパッドのボタンコード  
 ボタンが現在のフレームで離されたかどうかを確認します
-#### Gamepad.IsDown(code) -> bool
-- `code`: ゲームパッドのボタンコード  
+#### Gamepad.IsDown(btn) -> boolean
+- `btn`: ゲームパッドのボタンコード  
 ボタンが押されているかどうかを確認します  
 #### Gamepad.GetLeftStick() -> Vec2
 左スティックの変化量を取得します
@@ -566,32 +723,34 @@ AABB同士の衝突判定を行います
 #### Gamepad.TOUCHPAD = code
 
 ### Periodic
-#### Periodic.Sin0_1(time: number) -> number
-- `time`: 時間(秒)  
-0.0から1.0の間で周期的に変化する値を取得します
-#### Periodic.Cos0_1(time: number) -> number
-- `time`: 時間(秒)  
-0.0から1.0の間で周期的に変化する値を取得します
+#### Periodic.Sin0_1(t1, t2) -> number
+- `t1`: 時間パラメータ1
+- `t2`: 時間パラメータ2  
+0.0から1.0の間で正弦波で周期的に変化する値を取得します
+#### Periodic.Cos0_1(t1, t2) -> number
+- `t1`: 時間パラメータ1
+- `t2`: 時間パラメータ2  
+0.0から1.0の間で余弦波で周期的に変化する値を取得します
 
 ### Time
 #### Time.Seconds() -> number
-現在のフレームの経過時間を秒単位で取得します
-#### Time.Milli() -> number
-現在のフレームの経過時間をミリ秒単位で取得します
+アプリケーション開始からの経過時間を秒単位で取得します
+#### Time.Milli() -> integer
+アプリケーション開始からの経過時間をミリ秒単位で取得します
 
 ### Logger
-#### Logger.Info(string)
-- `string`: ログメッセージ  
+#### Logger.Verbose(msg)
+- `msg`: ログメッセージ  
+詳細レベルのログを出力します
+#### Logger.Info(msg)
+- `msg`: ログメッセージ  
 情報レベルのログを出力します
-#### Logger.Warn(string)
-- `string`: ログメッセージ  
+#### Logger.Warn(msg)
+- `msg`: ログメッセージ  
 警告レベルのログを出力します
-#### Logger.Error(string)
-- `string`: ログメッセージ  
+#### Logger.Error(msg)
+- `msg`: ログメッセージ  
 エラーレベルのログを出力します
-#### Logger.Critical(string)
-- `string`: ログメッセージ  
+#### Logger.Critical(msg)
+- `msg`: ログメッセージ  
 致命的なエラーレベルのログを出力します
-#### Logger.Debug(string)
-- `string`: ログメッセージ  
-デバッグレベルのログを出力します

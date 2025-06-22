@@ -2,8 +2,7 @@
 local texture = Texture()
 texture:Load("logo.png")
 -- Create a draw2D
-local draw2d = Draw2D()
-draw2d.material:AppendTexture(texture)
+local draw2d = Draw2D(texture)
 -- Set scale to texture size
 draw2d.scale = texture:Size()
 

@@ -7,15 +7,13 @@
 [![Documents](https://github.com/astomih/sinen/actions/workflows/documents.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/documents.yml)  
 [https://astomih.github.io/sinen](https://astomih.github.io/sinen)
 
-
 # Hello World in Sinen
-## Lua
+
 ``` lua
 -- Create a texture
 local texture = Texture()
 -- Create a draw2D
-local draw2d = Draw2D()
-draw2d.material:AppendTexture(texture)
+local draw2d = Draw2D(texture)
 -- Create a font
 local font = Font()
 -- Load a default font (96px)
@@ -75,7 +73,9 @@ cmake --build build/linux
 ```
 
 # Lisence
+
 MIT Lisence
 
 # Community
+
 [Discord](https://discord.gg/7U7VDwWjfy)

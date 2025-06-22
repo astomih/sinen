@@ -8,13 +8,11 @@ renderTexture:Create(s.x, s.y)
 
 local model = Model()
 model:Load("Suzanne.gltf")
-local draw3d = Draw3D()
-draw3d.material:AppendTexture(texture)
+local draw3d = Draw3D(texture)
 draw3d.position = Vec3(0)
 draw3d.model = model
 
-local draw2d = Draw2D()
-draw2d.material:AppendTexture(outTexture)
+local draw2d = Draw2D(outTexture)
 draw2d.scale = outTexture:Size()
 
 

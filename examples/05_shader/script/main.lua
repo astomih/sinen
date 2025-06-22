@@ -1,6 +1,5 @@
 local texture = Texture()
-local draw2d = Draw2D()
-draw2d.material:AppendTexture(texture)
+local draw2d = Draw2D(texture)
 
 local vertex_shader = Shader()
 vertex_shader:LoadVertexShader("shader_custom.vert.spv", 1)

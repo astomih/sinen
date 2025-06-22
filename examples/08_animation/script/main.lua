@@ -2,8 +2,7 @@ local texture = Texture()
 texture:FillColor(Color(1, 1, 1, 1))
 local model = Model()
 model:Load("BrainStem.glb")
-local draw3d = Draw3D()
-draw3d.material:AppendTexture(texture)
+local draw3d = Draw3D(texture)
 draw3d.position = Vec3(0, 0, 0)
 draw3d.model = model
 

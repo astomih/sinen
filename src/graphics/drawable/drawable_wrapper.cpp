@@ -23,7 +23,9 @@ Draw2D::Draw2D()
       scale(glm::vec2(1.f, 1.f)) {
   obj = std::make_shared<Drawable>();
 }
-Draw2D::Draw2D(const Texture &texture) : position(), rotation(), scale() {
+Draw2D::Draw2D(const Texture &texture)
+    : position(glm::vec2(0.f, 0.f)), rotation(0.0f),
+      scale(glm::vec2(1.f, 1.f)) {
   this->material.SetTexture(texture);
   obj = std::make_shared<Drawable>();
 }
@@ -32,7 +34,9 @@ Draw3D::Draw3D()
       scale(glm::vec3(1.f, 1.f, 1.f)) {
   obj = std::make_shared<Drawable>();
 }
-Draw3D::Draw3D(const Texture &texture) : position(), rotation(), scale() {
+Draw3D::Draw3D(const Texture &texture)
+    : position(glm::vec3(0.f, 0.f, 0.f)), rotation(glm::vec3(0.f, 0.f, 0.f)),
+      scale(glm::vec3(1.f, 1.f, 1.f)) {
   this->material.SetTexture(texture);
   obj = std::make_shared<Drawable>();
 }

@@ -39,7 +39,7 @@ public:
   void Draw() override;
 
 private:
-  sol::state lua;
+  sol::state state;
 };
 
 std::unique_ptr<IScript> Script::CreateLua() {
@@ -48,13 +48,14 @@ std::unique_ptr<IScript> Script::CreateLua() {
 
 bool LuaScript::Initialize() {
 #ifndef SINEN_NO_USE_SCRIPT
-  lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math,
-                     sol::lib::bit32, sol::lib::io, sol::lib::os,
-                     sol::lib::string, sol::lib::debug, sol::lib::table);
+  state.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math,
+                       sol::lib::bit32, sol::lib::io, sol::lib::os,
+                       sol::lib::string, sol::lib::debug, sol::lib::table);
+  auto lua = state.create_table("sn");
   {
     auto &v = lua;
     v["require"] = [&](const std::string &str) -> sol::object {
-      return v.require_script(
+      return state.require_script(
           str, DataStream::OpenAsString(AssetType::Script, str + ".lua"));
     };
     v["Texture"] = []() -> Texture { return Texture(); };
@@ -326,12 +327,12 @@ bool LuaScript::Initialize() {
     v["Clear"] = &Draw3D::Clear;
   }
   {
-    auto v = lua.create_table("Random");
+    auto v = lua.create_named("Random");
     v["GetRange"] = &Random::GetRange;
     v["GetIntRange"] = &Random::GetIntRange;
   }
   {
-    auto v = lua.create_table("Window");
+    auto v = lua.create_named("Window");
     v["GetName"] = &Window::GetName;
     v["Size"] = &Window::Size;
     v["Half"] = Window::Half;
@@ -341,7 +342,7 @@ bool LuaScript::Initialize() {
     v["Resized"] = &Window::Resized;
   }
   {
-    auto v = lua.create_table("Graphics");
+    auto v = lua.create_named("Graphics");
     v["GetClearColor"] = &Graphics::GetClearColor;
     v["SetClearColor"] = &Graphics::SetClearColor;
     v["BindPipeline2D"] = &Graphics::BindPipeline2D;
@@ -354,7 +355,7 @@ bool LuaScript::Initialize() {
     v["EndTarget"] = &Graphics::EndTarget;
   }
   {
-    auto v = lua.create_table("Scene");
+    auto v = lua.create_named("Scene");
     v["GetCamera"] = &Scene::GetCamera;
     v["Size"] = &Scene::Size;
     v["Resize"] = &Scene::Resize;
@@ -365,11 +366,11 @@ bool LuaScript::Initialize() {
     v["Change"] = &Scene::Change;
   }
   {
-    auto v = lua.create_table("Collision");
+    auto v = lua.create_named("Collision");
     v["AABBvsAABB"] = &Collision::AABBvsAABB;
   }
   {
-    auto v = lua.create_table("Keyboard");
+    auto v = lua.create_named("Keyboard");
     v["IsPressed"] = &Keyboard::IsPressed;
     v["IsReleased"] = &Keyboard::IsReleased;
     v["IsDown"] = &Keyboard::IsDown;
@@ -437,7 +438,7 @@ bool LuaScript::Initialize() {
     v["ALT"] = (int)Keyboard::ALTERASE;
   }
   {
-    auto v = lua.create_table("Mouse");
+    auto v = lua.create_named("Mouse");
     v["SetRelative"] = &Mouse::SetRelative;
     v["IsRelative"] = &Mouse::IsRelative;
     v["IsPressed"] = &Mouse::IsPressed;
@@ -456,7 +457,7 @@ bool LuaScript::Initialize() {
     v["X2"] = (int)Mouse::X2;
   }
   {
-    auto v = lua.create_table("Gamepad");
+    auto v = lua.create_named("Gamepad");
     v["IsPressed"] = &GamePad::IsPressed;
     v["IsReleased"] = &GamePad::IsReleased;
     v["IsDown"] = &GamePad::IsDown;
@@ -487,7 +488,7 @@ bool LuaScript::Initialize() {
     v["TOUCHPAD"] = (int)GamePad::TOUCHPAD;
   }
   {
-    auto v = lua.create_table("Periodic");
+    auto v = lua.create_named("Periodic");
     v["Sin0_1"] = [](float period, float t) {
       return Periodic::sin0_1(period, t);
     };
@@ -496,13 +497,13 @@ bool LuaScript::Initialize() {
     };
   }
   {
-    auto v = lua.create_table("Time");
+    auto v = lua.create_named("Time");
     v["Seconds"] = &Time::Seconds;
     v["Milli"] = &Time::Milli;
   }
   {
     // logger
-    auto v = lua.create_table("Logger");
+    auto v = lua.create_named("Logger");
     v["Verbose"] = [](std::string str) { Logger::Verbose("%s", str.data()); };
     v["Info"] = [](std::string str) { Logger::Info("%s", str.data()); };
     v["Error"] = [](std::string str) { Logger::Error("%s", str.data()); };
@@ -551,16 +552,16 @@ bool LuaScript::Initialize() {
 
 void LuaScript::Finalize() {
 #ifndef SINEN_NO_USE_SCRIPT
-  lua.collect_garbage();
+  state.collect_garbage();
 #endif // SINEN_NO_USE_SCRIPT
 }
 
 void LuaScript::RunScene(const std::string_view source) {
-  lua.script(source.data());
+  state.script(source.data());
 }
 
-void LuaScript::Update() { lua["Update"](); }
+void LuaScript::Update() { state["Update"](); }
 
-void LuaScript::Draw() { lua["Draw"](); }
+void LuaScript::Draw() { state["Draw"](); }
 
 } // namespace sinen

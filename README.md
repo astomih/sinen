@@ -11,17 +11,17 @@
 
 ``` lua
 -- Create a texture
-local texture = Texture()
+local texture = sn.Texture()
 -- Create a draw2D
-local draw2d = Draw2D(texture)
+local draw2d = sn.Draw2D(texture)
 -- Create a font
-local font = Font()
+local font = sn.Font()
 -- Load a default font (96px)
 font:Load(96)
 
 function Update()
     -- Render text to texture
-    font:RenderText(texture, "Hello World!", Color(1, 1, 1, 1))
+    font:RenderText(texture, "Hello World!", sn.Color(1, 1, 1, 1))
     -- Set scale to texture size
     draw2d.scale = texture:Size()
 end

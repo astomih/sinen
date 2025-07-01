@@ -1,10 +1,10 @@
-local texture = Texture()
-local font = Font()
+local texture = sn.Texture()
+local font = sn.Font()
 font:Load(16)
-font:RenderText(texture, "Press SPACE key to play sound", Color(1, 1, 1, 1))
-local draw2d = Draw2D(texture)
+font:RenderText(texture, "Press SPACE key to play sound", sn.Color(1, 1, 1, 1))
+local draw2d = sn.Draw2D(texture)
 draw2d.scale = texture:Size()
-local sound = Sound()
+local sound = sn.Sound()
 sound:Load("shot.wav")
 
 
@@ -12,7 +12,7 @@ sound:Load("shot.wav")
 -- Set scale to texture size
 
 function Update()
-    if Keyboard.IsPressed(Keyboard.SPACE) then
+    if sn.Keyboard.IsPressed(sn.Keyboard.SPACE) then
         sound:Play()
     end
 end

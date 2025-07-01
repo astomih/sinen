@@ -26,13 +26,12 @@ void ScriptSystem::Shutdown() {
 }
 
 static const char *nothingSceneLua = R"(
-local texture = Texture()
-local draw2d = Draw2D()
-draw2d.material:AppendTexture(texture)
-local font = Font()
+local texture = sn.Texture()
+local draw2d = sn.Draw2D(texture)
+local font = sn.Font()
 font:Load(96)
 function Update()
-  font:RenderText(texture, "NO DATA", Color(1, 1, 1, 1))
+  font:RenderText(texture, "NO DATA", sn.Color(1, 1, 1, 1))
   draw2d.scale = texture:Size()
 end
 function Draw()

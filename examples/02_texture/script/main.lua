@@ -1,8 +1,8 @@
 -- Create a texture
-local texture = Texture()
+local texture = sn.Texture()
 texture:Load("logo.png")
 -- Create a draw2D
-local draw2d = Draw2D(texture)
+local draw2d = sn.Draw2D(texture)
 -- Set scale to texture size
 draw2d.scale = texture:Size()
 

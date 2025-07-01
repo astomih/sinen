@@ -28,7 +28,7 @@ public:
    * @brief Model format is a custom format(.sim)
    * @param str
    */
-  void Load(std::string_view str);
+  void Load(std::string_view str) const;
   void LoadFromVertexArray(const VertexArray &vArray);
   void LoadSprite();
   void LoadBox();

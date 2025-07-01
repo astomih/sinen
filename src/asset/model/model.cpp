@@ -40,7 +40,7 @@
 #include <glm/gtx/quaternion.hpp>
 
 namespace sinen {
-enum class load_state { version, vertex, indices };
+enum class LoadState { Version, Vertex, Indices };
 Model::Model() { data = std::make_shared<ModelData>(); };
 glm::mat4 ConvertMatrix(const aiMatrix4x4 &m) {
   glm::mat4 mat = glm::make_mat4(&m.a1);
@@ -48,7 +48,7 @@ glm::mat4 ConvertMatrix(const aiMatrix4x4 &m) {
   return mat;
 }
 
-void Model::Load(std::string_view str) {
+void Model::Load(std::string_view str) const {
   auto modelData = GetModelData(this->data);
   auto &local_aabb = modelData->local_aabb;
   auto &v_array = modelData->v_array;
@@ -74,6 +74,7 @@ void Model::Load(std::string_view str) {
     modelData->skeletalAnimation.Load(modelData->scene);
     uint32_t vertexOffset = 0;
     struct BoneData {
+      BoneData() : ids(), weights(), color() {}
       std::vector<uint32_t> ids;
       std::vector<float> weights;
       Color color;
@@ -94,15 +95,12 @@ void Model::Load(std::string_view str) {
 
         uint32_t index = boneMap[boneName].index;
 
-        auto rgba = Color(Random::GetRange(0.5f, 1.0f),
-                          Random::GetRange(0.5f, 1.0f),
-                          Random::GetRange(0.5f, 1.0f), 1.0f);
         for (uint32_t k = 0; k < bone->mNumWeights; ++k) {
           uint32_t vertexId = bone->mWeights[k].mVertexId;
           float weight = bone->mWeights[k].mWeight;
           boneData[vertexId].ids.push_back(index);
           boneData[vertexId].weights.push_back(weight);
-          boneData[vertexId].color = rgba;
+          boneData[vertexId].color = Color(1.f, 1.f, 1.f, 1.f);
         }
       }
 

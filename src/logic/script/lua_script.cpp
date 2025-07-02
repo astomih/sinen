@@ -54,7 +54,7 @@ bool LuaScript::Initialize() {
   auto lua = state.create_table("sn");
   {
     auto &v = lua;
-    v["require"] = [&](const std::string &str) -> sol::object {
+    state["require"] = [&](const std::string &str) -> sol::object {
       return state.require_script(
           str, DataStream::OpenAsString(AssetType::Script, str + ".lua"));
     };

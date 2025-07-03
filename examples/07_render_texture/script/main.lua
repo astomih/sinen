@@ -24,9 +24,9 @@ end
 function Draw()
     sn.Graphics.BeginTarget2D(renderTexture)
     -- Draw texture
-    draw3d:Draw()
+    sn.Graphics.Draw3D(draw3d)
     sn.Graphics.EndTarget(renderTexture, outTexture)
 
     -- Draw render texture
-    draw2d:Draw()
+    sn.Graphics.Draw2D(draw2d)
 end

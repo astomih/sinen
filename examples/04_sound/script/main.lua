@@ -19,5 +19,5 @@ end
 
 function Draw()
     -- Draw texture
-    draw2d:Draw()
+    sn.Graphics.Draw2D(draw2d)
 end

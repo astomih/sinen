@@ -203,7 +203,6 @@ sn = {
     ---@field position Vec2
     ---@field rotation number
     ---@field material Material
-    ---@field Draw fun(self: Draw2D)
     ---@field Add fun(self: Draw2D, drawable: any)
     ---@field At fun(self: Draw2D, x: number, y: number)
     ---@field Clear fun(self: Draw2D)
@@ -218,7 +217,6 @@ sn = {
     ---@field material Material
     ---@field model Model
     ---@field isDrawDepth boolean
-    ---@field Draw fun(self: Draw3D)
     ---@field Add fun(self: Draw3D, positon: Vec3, rotation: Vec3, scale: Vec3)
     ---@field At fun(self: Draw3D, x: number, y: number, z: number)
     ---@field Clear fun(self: Draw3D)
@@ -288,6 +286,8 @@ sn = {
 
     ---Static class
     ---@class Graphics
+    ---@field Draw2D fun(draw2D: Draw2D)
+    ---@field Draw3D fun(draw3D: Draw3D)
     ---@field GetClearColor fun(): Color
     ---@field SetClearColor fun(c: Color)
     ---@field BindPipeline2D fun(pipe: GraphicsPipeline2D)

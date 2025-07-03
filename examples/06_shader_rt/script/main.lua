@@ -29,5 +29,5 @@ function Draw()
     sn.Graphics.BindPipeline2D(pipeline2d)
     sn.Graphics.SetUniformData(1, uniform_data)
     -- Draw texture
-    draw2d:Draw()
+    sn.Graphics.Draw2D(draw2d)
 end

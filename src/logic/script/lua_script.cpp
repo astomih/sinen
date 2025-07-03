@@ -81,25 +81,21 @@ bool LuaScript::Initialize() {
     v["Color"] =
         sol::overload([](const float r, const float g, const float b,
                          const float a) -> Color { return {r, g, b, a}; },
-                      []() -> Color { return Color{}; });
-    v["Model"] = []() -> Model { return Model(); };
-    v["Music"] = []() -> Music { return Music(); };
-    v["Sound"] = []() -> Sound { return Sound(); };
-    v["AABB"] = []() -> AABB { return AABB(); };
-    v["Timer"] = []() -> Timer { return Timer(); };
-    v["Shader"] = []() -> Shader { return Shader(); };
-    v["UniformData"] = []() -> UniformData { return UniformData(); };
-    v["GraphicsPipeline2D"] = []() -> GraphicsPipeline2D {
-      return GraphicsPipeline2D();
-    };
-    v["GraphicsPipeline3D"] = []() -> GraphicsPipeline3D {
-      return GraphicsPipeline3D();
-    };
+                      []() -> Color { return {}; });
+    v["Model"] = []() -> Model { return {}; };
+    v["Music"] = []() -> Music { return {}; };
+    v["Sound"] = []() -> Sound { return {}; };
+    v["AABB"] = []() -> AABB { return {}; };
+    v["Timer"] = []() -> Timer { return {}; };
+    v["Shader"] = []() -> Shader { return {}; };
+    v["UniformData"] = []() -> UniformData { return {}; };
+    v["GraphicsPipeline2D"] = []() -> GraphicsPipeline2D { return {}; };
+    v["GraphicsPipeline3D"] = []() -> GraphicsPipeline3D { return {}; };
     lua["Draw2D"] = sol::overload(
-        []() -> Draw2D { return Draw2D(); },
+        []() -> Draw2D { return {}; },
         [](const Texture &texture) -> Draw2D { return Draw2D(texture); });
     lua["Draw3D"] = sol::overload(
-        []() -> Draw3D { return Draw3D(); },
+        []() -> Draw3D { return {}; },
         [](const Texture &texture) -> Draw3D { return Draw3D(texture); });
   }
   {
@@ -304,7 +300,6 @@ bool LuaScript::Initialize() {
   }
   {
     auto v = lua.new_usertype<Draw2D>("", sol::no_construction());
-    v["Draw"] = &Draw2D::Draw;
     v["position"] = &Draw2D::position;
     v["rotation"] = &Draw2D::rotation;
     v["scale"] = &Draw2D::scale;
@@ -321,7 +316,6 @@ bool LuaScript::Initialize() {
     v["material"] = &Draw3D::material;
     v["model"] = &Draw3D::model;
     v["isDrawDepth"] = &Draw3D::isDrawDepth;
-    v["Draw"] = &Draw3D::Draw;
     v["Add"] = &Draw3D::Add;
     v["At"] = &Draw3D::At;
     v["Clear"] = &Draw3D::Clear;
@@ -343,6 +337,8 @@ bool LuaScript::Initialize() {
   }
   {
     auto v = lua.create_named("Graphics");
+    v["Draw2D"] = &Graphics::Draw2D;
+    v["Draw3D"] = &Graphics::Draw3D;
     v["GetClearColor"] = &Graphics::GetClearColor;
     v["SetClearColor"] = &Graphics::SetClearColor;
     v["BindPipeline2D"] = &Graphics::BindPipeline2D;

@@ -30,5 +30,5 @@ function Draw()
     sn.Graphics.BindPipeline3D(pipeline)
     sn.Graphics.SetUniformData(1, model:GetBoneUniformData())
     -- Draw texture
-    draw3d:Draw()
+    sn.Graphics.Draw3D(draw3d)
 end

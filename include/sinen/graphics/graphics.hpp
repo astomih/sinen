@@ -34,18 +34,9 @@ public:
    *
    */
   static void render();
-  /**
-   * @brief Draw 2d drawable object
-   *
-   * @param draw_object
-   */
-  static void draw2d(const std::shared_ptr<Drawable> draw_object);
-  /**
-   * @brief Draw 3d drawable object
-   *
-   * @param draw_object
-   */
-  static void draw3d(const std::shared_ptr<Drawable> draw_object);
+
+  static void Draw2D(const Draw2D &draw2d);
+  static void Draw3D(const Draw3D &draw3d);
   /**
    * @brief Set the clear color object
    *

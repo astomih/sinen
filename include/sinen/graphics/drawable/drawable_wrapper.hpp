@@ -2,6 +2,7 @@
 #define SINEN_DRAWABLE_WRAPPER_HPP
 #include "../../asset/model/model.hpp"
 #include "../../asset/texture/texture.hpp"
+#include "../../math/transform/transform.hpp"
 #include "drawable.hpp"
 
 namespace sinen {
@@ -22,11 +23,6 @@ public:
    *
    */
   explicit Draw2D(const Texture &texture);
-  /**
-   * @brief Draw object
-   *
-   */
-  void Draw() const;
   void Add(const glm::vec2 &position, const float &rotation,
            const glm::vec2 &scale);
   void At(const int &index, const glm::vec2 &position, const float &rotation,
@@ -62,11 +58,6 @@ public:
    *
    */
   explicit Draw3D(const Texture &texture);
-  /**
-   * @brief Draw object
-   *
-   */
-  void Draw() const;
   void Add(const glm::vec3 &position, const glm::vec3 &rotation,
            const glm::vec3 &scale);
   void At(const int &index, const glm::vec3 &position,
@@ -79,12 +70,7 @@ public:
   bool isDrawDepth = true;
   Model model;
   std::shared_ptr<Drawable> obj;
-  struct world {
-    glm::vec3 position;
-    glm::vec3 rotation;
-    glm::vec3 scale;
-  };
-  std::vector<world> worlds;
+  std::vector<Transform3D> worlds;
 };
 } // namespace sinen
 #endif // !SINEN_DRAWABLE_WRAPPER_HPP

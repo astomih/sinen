@@ -530,10 +530,6 @@ Model
 
 Whether to perform depth drawing
 
-#### Draw3D:Draw()
-
-Draws the 3D object
-
 #### Draw3D:Add(position, rotation, scale)
 
 - `position`: Position information (Vec3)
@@ -864,6 +860,18 @@ Gets half the window size
   Sets the window to fullscreen or windowed mode
 
 ### Graphics
+
+#### Graphics.Draw2D(draw2d)
+
+- `draw2d`: Draw2D object  
+  Draws a 2D object
+
+#### Draw3D:Draw3D(draw3d)
+
+- `draw3d`: Draw3D object  
+  Draws a 3D object
+
+Draws the 3D object
 
 #### Graphics.GetClearColor() -> Color
 

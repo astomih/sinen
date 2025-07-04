@@ -479,10 +479,6 @@ Sinenのウィンドウの中心が(0, 0)です
 
 モデル
 
-#### Draw2D:Draw()
-
-2Dオブジェクトを描画します
-
 #### Draw2D:Add(drawable)
 
 - `drawable`: 描画可能オブジェクト
@@ -501,10 +497,6 @@ Sinenのウィンドウの中心が(0, 0)です
 ただし、インスタンス生成時点で存在しているオブジェクトはクリアされません
 
 ### Draw3D
-
-#### Draw3D() -> Draw3D
-
-Draw3Dオブジェクトを作成します
 
 #### Draw3D.position = Vec3
 
@@ -864,6 +856,16 @@ AABBの最大点
   ウィンドウをフルスクリーン、またはウィンドウモードにします
 
 ### Graphics
+
+#### Graphics.Draw2D(draw2D)
+
+- `draw2D`: Draw2Dオブジェクト  
+  2Dオブジェクトを描画します
+
+#### Graphics.Draw3D(draw3D)
+
+- `draw3D`: Draw3Dオブジェクト
+  3Dオブジェクトを描画します
 
 #### Graphics.GetClearColor() -> Color
 

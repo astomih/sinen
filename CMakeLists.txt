@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 include(CMakePrintHelpers)
 project(sinen)
 
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(SINEN_SOURCE_DIR ${CMAKE_SOURCE_DIR})
 

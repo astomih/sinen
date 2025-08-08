@@ -25,99 +25,11 @@ glm::mat4 Graphics::render_texture_user_data;
 void Graphics::unload_data() { GraphicsSystem::unload_data(); }
 
 void Graphics::render() { GraphicsSystem::render(); }
-void Graphics::Draw2D(const sinen::Draw2D &draw2d) {
-  auto ratio = glm::vec2(Window::Size().x / Scene::Size().x,
-                         Window::Size().y / Scene::Size().y);
-
-  auto t = glm::translate(glm::mat4(1.0f),
-                          glm::vec3(draw2d.position.x * ratio.x,
-                                    draw2d.position.y * ratio.y, 0.0f));
-  auto quaternion = glm::angleAxis(glm::radians(draw2d.rotation),
-                                   glm::vec3(0.0f, 0.0f, -1.0f));
-  auto r = glm::toMat4(quaternion);
-
-  auto s = glm::scale(glm::mat4(1.0f), glm::vec3(draw2d.scale.x * 0.5f,
-                                                 draw2d.scale.y * 0.5f, 1.0f));
-
-  draw2d.obj->param.world = t * r * s;
-  draw2d.obj->material = draw2d.material;
-  auto viewproj = glm::mat4(1.0f);
-
-  auto screen_size = Scene::Size();
-  viewproj[0][0] = 2.f / Window::Size().x;
-  viewproj[1][1] = 2.f / Window::Size().y;
-  draw2d.obj->param.proj = viewproj;
-  draw2d.obj->param.view = glm::mat4(1.f);
-  if (GetModelData(draw2d.model.data)->vertexBuffer == nullptr) {
-    draw2d.obj->model = GraphicsSystem::sprite;
-  } else
-    draw2d.obj->model = draw2d.model;
-  for (auto &i : draw2d.worlds) {
-    auto t = glm::translate(
-        glm::mat4(1.0f),
-        glm::vec3(i.position.x * ratio.x, i.position.y * ratio.y, 0.0f));
-    auto quaternion =
-        glm::angleAxis(glm::radians(i.rotation), glm::vec3(0.0f, 0.0f, -1.0f));
-    auto r = glm::toMat4(quaternion);
-    auto s = glm::scale(glm::mat4(1.0f),
-                        glm::vec3(i.scale.x * 0.5f, i.scale.y * 0.5f, 1.0f));
-
-    auto world = t * r * s;
-
-    InstanceData insdata;
-    draw2d.obj->world_to_instance_data(world, insdata);
-    draw2d.obj->data.push_back(insdata);
-  }
-  GraphicsSystem::draw2d(draw2d.obj);
+void Graphics::Draw2D(const sinen::Draw2D &draw2D) {
+  GraphicsSystem::Draw2D(draw2D);
 }
-void Graphics::Draw3D(const sinen::Draw3D &draw3d) {
-  draw3d.obj->material = draw3d.material;
-  {
-    const auto t = glm::translate(
-        glm::mat4(1.0f),
-        glm::vec3(draw3d.position.x, draw3d.position.y, draw3d.position.z));
-    const auto rotationX = glm::angleAxis(glm::radians(draw3d.rotation.x),
-                                          glm::vec3(1.0f, 0.0f, 0.0f));
-    const auto rotationY = glm::angleAxis(glm::radians(draw3d.rotation.y),
-                                          glm::vec3(0.0f, 1.0f, 0.0f));
-    const auto rotationZ = glm::angleAxis(glm::radians(draw3d.rotation.z),
-                                          glm::vec3(0.0f, 0.0f, 1.0f));
-    const auto r = glm::toMat4(rotationX * rotationY * rotationZ);
-
-    const auto s =
-        glm::scale(glm::mat4(1.0f),
-                   glm::vec3(draw3d.scale.x, draw3d.scale.y, draw3d.scale.z));
-
-    auto world = t * r * s;
-    draw3d.obj->param.world = world;
-    draw3d.obj->param.proj = Scene::GetCamera().Projection();
-    draw3d.obj->param.view = Scene::GetCamera().GetView();
-  }
-  if (GetModelData(draw3d.model.data)->vertexBuffer == nullptr) {
-    draw3d.obj->model = GraphicsSystem::box;
-  } else
-    draw3d.obj->model = draw3d.model;
-  for (auto &i : draw3d.worlds) {
-    InstanceData insdata{};
-    auto t = glm::translate(
-        glm::mat4(1.0f), glm::vec3(i.position.x, i.position.y, i.position.z));
-    auto rotationX =
-        glm::angleAxis(glm::radians(i.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-    auto rotationY =
-        glm::angleAxis(glm::radians(i.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-    auto rotationZ =
-        glm::angleAxis(glm::radians(i.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-    auto r = glm::toMat4(rotationX * rotationY * rotationZ);
-
-    auto s =
-        glm::scale(glm::mat4(1.0f), glm::vec3(i.scale.x, i.scale.y, i.scale.z));
-
-    auto world = t * r * s;
-
-    draw3d.obj->world_to_instance_data(world, insdata);
-    draw3d.obj->data.push_back(insdata);
-  }
-  GraphicsSystem::draw3d(draw3d.obj);
+void Graphics::Draw3D(const sinen::Draw3D &draw3D) {
+  GraphicsSystem::Draw3D(draw3D);
 }
 void Graphics::SetClearColor(const Color &color) {
   GraphicsSystem::set_clear_color(color);

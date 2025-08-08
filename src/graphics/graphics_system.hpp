@@ -35,8 +35,8 @@ public:
   static void shutdown();
   static void unload_data();
   static void render();
-  static void draw2d(const std::shared_ptr<Drawable> &drawObject);
-  static void draw3d(const std::shared_ptr<Drawable> &drawObject);
+  static void Draw2D(const sinen::Draw2D &draw2D);
+  static void Draw3D(const sinen::Draw3D &draw3D);
   static void set_clear_color(const Color &color) {
     if (color.r >= 0.f && color.g >= 0.f && color.b >= 0.f)
       clearColor = color;

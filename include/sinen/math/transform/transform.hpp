@@ -8,15 +8,11 @@ class Transform2D {
 public:
   Transform2D() : position(0.0f, 0.0f), rotation(0.0f), scale(1.0f, 1.0f) {}
   ~Transform2D() = default;
-  void SetPosition(const glm::vec2 &position) { this->position = position; }
-  [[nodiscard]] const glm::vec2 &GetPosition() const { return this->position; }
-  void SetRotation(float rotation) { this->rotation = rotation; }
-  [[nodiscard]] float GetRotation() const { return this->rotation; }
-
-  void SetScale(const glm::vec2 &scale) { this->scale = scale; }
-  [[nodiscard]] const glm::vec2 &GetScale() const { return this->scale; }
-
   [[nodiscard]] glm::mat4 GetWorldMatrix() const;
+
+  void SetPosition(glm::vec2 position) { this->position = position; }
+  void SetRotation(float rotation) { this->rotation = rotation; } // in degrees
+  void SetScale(glm::vec2 scale) { this->scale = scale; }
 
   glm::vec2 position;
   float rotation; // in degrees
@@ -26,16 +22,15 @@ class Transform3D {
 public:
   Transform3D() : position(0.0f), rotation(0.0f), scale(1.0f) {}
   ~Transform3D() = default;
-  void SetPosition(const glm::vec3 &position) { this->position = position; }
-  [[nodiscard]] const glm::vec3 &GetPosition() const { return this->position; }
-
-  void SetRotation(const glm::vec3 &rotation) { this->rotation = rotation; }
-  [[nodiscard]] const glm::vec3 &GetRotation() const { return rotation; }
-
-  void SetScale(const glm::vec3 &scale) { this->scale = scale; }
-  [[nodiscard]] const glm::vec3 &GetScale() const { return this->scale; }
-
   [[nodiscard]] glm::mat4 GetWorldMatrix() const;
+
+  void SetPosition(glm::vec3 position) { this->position = position; }
+  void SetRotation(glm::vec3 rotation) { this->rotation = rotation; }
+  void SetScale(glm::vec3 scale) { this->scale = scale; }
+
+  [[nodiscard]] glm::vec3 GetPosition() const { return position; }
+  [[nodiscard]] glm::vec3 GetRotation() const { return rotation; }
+  [[nodiscard]] glm::vec3 GetScale() const { return scale; }
 
   glm::vec3 position;
   glm::vec3 rotation;

@@ -35,7 +35,7 @@
 
 namespace sinen {
 PxDrawable::PxDrawable(px::Allocator *allocator)
-    : allocator(allocator), vertexBuffers(allocator),
+    : allocator(allocator), vertexBuffers(allocator), indexBuffer(),
       textureSamplers(allocator) {}
 Color GraphicsSystem::clearColor = Palette::black();
 // Renderer
@@ -88,8 +88,8 @@ void GraphicsSystem::initialize() {
 
     px::Texture::CreateInfo depthStencilCreateInfo{};
     depthStencilCreateInfo.allocator = allocator;
-    depthStencilCreateInfo.width = Window::Size().x;
-    depthStencilCreateInfo.height = Window::Size().y;
+    depthStencilCreateInfo.width = static_cast<uint32_t>(Window::Size().x);
+    depthStencilCreateInfo.height = static_cast<uint32_t>(Window::Size().y);
     depthStencilCreateInfo.layerCountOrDepth = 1;
     depthStencilCreateInfo.type = px::TextureType::Texture2D;
     depthStencilCreateInfo.usage = px::TextureUsage::DepthStencilTarget;
@@ -115,7 +115,7 @@ void GraphicsSystem::initialize() {
   depthStencilInfo.storeOp = px::StoreOp::Store;
   depthStencilInfo.clearDepth = 1.0f;
   depthStencilInfo.clearStencil = 0;
-  depthStencilInfo.cycle = 0;
+  depthStencilInfo.cycle = false;
   depthStencilInfo.stencilLoadOp = px::LoadOp::Clear;
   depthStencilInfo.stencilStoreOp = px::StoreOp::Store;
   setup_shapes();
@@ -193,7 +193,51 @@ void GraphicsSystem::render() {
   device->SubmitCommandBuffer(commandBuffer);
   device->WaitForGPUIdle();
 }
-void GraphicsSystem::draw2d(const std::shared_ptr<Drawable> &drawObject) {
+void GraphicsSystem::Draw2D(const sinen::Draw2D &draw2D) {
+  auto ratio = glm::vec2(Window::Size().x / Scene::Size().x,
+                         Window::Size().y / Scene::Size().y);
+  {
+    auto t = glm::translate(glm::mat4(1.0f),
+                            glm::vec3(draw2D.position.x * ratio.x,
+                                      draw2D.position.y * ratio.y, 0.0f));
+    auto quaternion = glm::angleAxis(glm::radians(draw2D.rotation),
+                                     glm::vec3(0.0f, 0.0f, -1.0f));
+    auto r = glm::toMat4(quaternion);
+
+    auto s =
+        glm::scale(glm::mat4(1.0f), glm::vec3(draw2D.scale.x * 0.5f,
+                                              draw2D.scale.y * 0.5f, 1.0f));
+
+    draw2D.obj->param.world = t * r * s;
+  }
+  draw2D.obj->material = draw2D.material;
+  auto viewproj = glm::mat4(1.0f);
+
+  auto screen_size = Scene::Size();
+  viewproj[0][0] = 2.f / Window::Size().x;
+  viewproj[1][1] = 2.f / Window::Size().y;
+  draw2D.obj->param.proj = viewproj;
+  draw2D.obj->param.view = glm::mat4(1.f);
+  if (GetModelData(draw2D.model.data)->vertexBuffer == nullptr) {
+    draw2D.obj->model = GraphicsSystem::sprite;
+  } else
+    draw2D.obj->model = draw2D.model;
+  for (auto &i : draw2D.worlds) {
+    auto t = glm::translate(
+        glm::mat4(1.0f),
+        glm::vec3(i.position.x * ratio.x, i.position.y * ratio.y, 0.0f));
+    auto quaternion =
+        glm::angleAxis(glm::radians(i.rotation), glm::vec3(0.0f, 0.0f, -1.0f));
+    auto r = glm::toMat4(quaternion);
+    auto s = glm::scale(glm::mat4(1.0f),
+                        glm::vec3(i.scale.x * 0.5f, i.scale.y * 0.5f, 1.0f));
+
+    auto world = t * r * s;
+
+    InstanceData insdata{};
+    draw2D.obj->world_to_instance_data(world, insdata);
+    draw2D.obj->data.push_back(insdata);
+  }
   objectCount++;
   if (isFrameStarted || currentRenderPass == nullptr) {
     colorTargets[0].loadOp = px::LoadOp::Clear;
@@ -203,7 +247,8 @@ void GraphicsSystem::draw2d(const std::shared_ptr<Drawable> &drawObject) {
     auto renderPass = currentRenderPass;
     renderPass->SetViewport(
         px::Viewport{0, 0, Window::Size().x, Window::Size().y, 0, 1});
-    renderPass->SetScissor(0, 0, Window::Size().x, Window::Size().y);
+    renderPass->SetScissor(0, 0, static_cast<int32_t>(Window::Size().x),
+                           static_cast<int32_t>(Window::Size().y));
     isFrameStarted = false;
     isDraw2D = true;
     isDefaultPipeline = true;
@@ -216,22 +261,23 @@ void GraphicsSystem::draw2d(const std::shared_ptr<Drawable> &drawObject) {
     auto renderPass = currentRenderPass;
     renderPass->SetViewport(
         px::Viewport{0, 0, Window::Size().x, Window::Size().y, 0, 1});
-    renderPass->SetScissor(0, 0, Window::Size().x, Window::Size().y);
+    renderPass->SetScissor(0, 0, static_cast<int32_t>(Window::Size().x),
+                           static_cast<int32_t>(Window::Size().y));
     isDraw2D = true;
     isDefaultPipeline = true;
   }
 
   PxDrawable drawable{allocator};
-  drawable.drawable = drawObject;
+  drawable.drawable = draw2D.obj;
 
-  for (const auto &texture : drawObject->material.GetTextures()) {
+  for (const auto &texture : draw2D.obj->material.GetTextures()) {
     auto nativeTexture = std::static_pointer_cast<px::Texture>(
         GetTexData(texture.textureData)->texture);
     drawable.textureSamplers.push_back(px::TextureSamplerBinding{
         .sampler = sampler, .texture = nativeTexture});
   }
 
-  auto modelData = GetModelData(drawObject->model.data);
+  auto modelData = GetModelData(draw2D.obj->model.data);
   assert(modelData->vertexBuffer != nullptr);
   assert(modelData->indexBuffer != nullptr);
 
@@ -255,7 +301,53 @@ void GraphicsSystem::draw2d(const std::shared_ptr<Drawable> &drawObject) {
       0);
 }
 
-void GraphicsSystem::draw3d(const std::shared_ptr<Drawable> &drawObject) {
+void GraphicsSystem::Draw3D(const sinen::Draw3D &draw3D) {
+  draw3D.obj->material = draw3D.material;
+  {
+    const auto t = glm::translate(
+        glm::mat4(1.0f),
+        glm::vec3(draw3D.position.x, draw3D.position.y, draw3D.position.z));
+    const auto rotationX = glm::angleAxis(glm::radians(draw3D.rotation.x),
+                                          glm::vec3(1.0f, 0.0f, 0.0f));
+    const auto rotationY = glm::angleAxis(glm::radians(draw3D.rotation.y),
+                                          glm::vec3(0.0f, 1.0f, 0.0f));
+    const auto rotationZ = glm::angleAxis(glm::radians(draw3D.rotation.z),
+                                          glm::vec3(0.0f, 0.0f, 1.0f));
+    const auto r = glm::toMat4(rotationX * rotationY * rotationZ);
+
+    const auto s =
+        glm::scale(glm::mat4(1.0f),
+                   glm::vec3(draw3D.scale.x, draw3D.scale.y, draw3D.scale.z));
+
+    auto world = t * r * s;
+    draw3D.obj->param.world = world;
+    draw3D.obj->param.proj = Scene::GetCamera().Projection();
+    draw3D.obj->param.view = Scene::GetCamera().GetView();
+  }
+  if (GetModelData(draw3D.model.data)->vertexBuffer == nullptr) {
+    draw3D.obj->model = GraphicsSystem::box;
+  } else
+    draw3D.obj->model = draw3D.model;
+  for (auto &i : draw3D.worlds) {
+    InstanceData insdata{};
+    auto t = glm::translate(
+        glm::mat4(1.0f), glm::vec3(i.position.x, i.position.y, i.position.z));
+    auto rotationX =
+        glm::angleAxis(glm::radians(i.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+    auto rotationY =
+        glm::angleAxis(glm::radians(i.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    auto rotationZ =
+        glm::angleAxis(glm::radians(i.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+    auto r = glm::toMat4(rotationX * rotationY * rotationZ);
+
+    auto s =
+        glm::scale(glm::mat4(1.0f), glm::vec3(i.scale.x, i.scale.y, i.scale.z));
+
+    auto world = t * r * s;
+
+    draw3D.obj->world_to_instance_data(world, insdata);
+    draw3D.obj->data.push_back(insdata);
+  }
   objectCount++;
   if (isDefaultPipeline && (isFrameStarted || currentRenderPass == nullptr)) {
     colorTargets[0].loadOp = px::LoadOp::Clear;
@@ -285,8 +377,8 @@ void GraphicsSystem::draw3d(const std::shared_ptr<Drawable> &drawObject) {
     isDefaultPipeline = true;
   }
   PxDrawable drawable{allocator};
-  drawable.drawable = drawObject;
-  for (const auto &texture : drawObject->material.GetTextures()) {
+  drawable.drawable = draw3D.obj;
+  for (const auto &texture : draw3D.obj->material.GetTextures()) {
     auto nativeTexture = std::static_pointer_cast<px::Texture>(
         GetTexData(texture.textureData)->texture);
     drawable.textureSamplers.push_back(px::TextureSamplerBinding{
@@ -339,10 +431,10 @@ void GraphicsSystem::draw3d(const std::shared_ptr<Drawable> &drawObject) {
     }
 
     drawable.vertexBuffers.emplace_back(px::BufferBinding{
-        .buffer = GetModelData(drawObject->model.data)->vertexBuffer,
+        .buffer = GetModelData(draw3D.obj->model.data)->vertexBuffer,
         .offset = 0});
     drawable.indexBuffer = px::BufferBinding{
-        .buffer = GetModelData(drawObject->model.data)->indexBuffer,
+        .buffer = GetModelData(draw3D.obj->model.data)->indexBuffer,
         .offset = 0};
     drawable.vertexBuffers.emplace_back(
         px::BufferBinding{.buffer = instanceBuffer, .offset = 0
@@ -365,10 +457,10 @@ void GraphicsSystem::draw3d(const std::shared_ptr<Drawable> &drawObject) {
   } else {
 
     drawable.vertexBuffers.emplace_back(px::BufferBinding{
-        .buffer = GetModelData(drawObject->model.data)->vertexBuffer,
+        .buffer = GetModelData(draw3D.obj->model.data)->vertexBuffer,
         .offset = 0});
     drawable.indexBuffer = px::BufferBinding{
-        .buffer = GetModelData(drawObject->model.data)->indexBuffer,
+        .buffer = GetModelData(draw3D.obj->model.data)->indexBuffer,
         .offset = 0};
     auto commandBuffer = currentCommandBuffer;
     auto renderPass = currentRenderPass;

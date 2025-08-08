@@ -36,7 +36,7 @@ public:
   static void render();
 
   static void Draw2D(const Draw2D &draw2d);
-  static void Draw3D(const Draw3D &draw3d);
+  static void Draw3D(const Draw3D &draw3D);
   /**
    * @brief Set the clear color object
    *

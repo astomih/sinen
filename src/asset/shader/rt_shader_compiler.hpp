@@ -15,7 +15,7 @@ public:
   };
   ShaderCompiler() = default;
 
-  std::vector<char> compile(std::string_view source, Type type, Language lang);
+  std::vector<char> compile(std::string_view sourcePath, Type type, Language lang);
 };
 } // namespace rsc
 

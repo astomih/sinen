@@ -66,12 +66,12 @@ void Shader::LoadDefaultFragmentShader() {
   shader = device->CreateShader(fsInfo);
 }
 void Shader::LoadVertexShader(std::string_view vertex_shader,
-                                int numUniformData) {
+                              int numUniformData) {
   auto *allocator = GraphicsSystem::GetAllocator();
   auto device = GraphicsSystem::GetDevice();
 
-  SDL_IOStream *file = (SDL_IOStream *)DataStream::OpenAsRWOps(
-      AssetType::Shader, vertex_shader);
+  SDL_IOStream *file =
+      (SDL_IOStream *)DataStream::OpenAsRWOps(AssetType::Shader, vertex_shader);
 
   std::string vsStr =
       DataStream::OpenAsString(AssetType::Shader, vertex_shader);
@@ -90,7 +90,7 @@ void Shader::LoadVertexShader(std::string_view vertex_shader,
   shader = device->CreateShader(vsInfo);
 }
 void Shader::LoadFragmentShader(std::string_view fragment_shader,
-                                  int numUniformData) {
+                                int numUniformData) {
   auto *allocator = GraphicsSystem::GetAllocator();
   auto device = GraphicsSystem::GetDevice();
 
@@ -111,10 +111,9 @@ void Shader::LoadFragmentShader(std::string_view fragment_shader,
   shader = device->CreateShader(fsInfo);
 }
 void Shader::CompileAndLoadVertexShader(std::string_view vertex_shader,
-                                            int numUniformData) {
+                                        int numUniformData) {
 
-  std::string vsStr =
-      DataStream::ConvertFilePath(AssetType::Shader, vertex_shader);
+  std::string vsStr = vertex_shader.data();
 
   // TODO: add support for other languages
   rsc::ShaderCompiler compiler;
@@ -138,9 +137,8 @@ void Shader::CompileAndLoadVertexShader(std::string_view vertex_shader,
   shader = device->CreateShader(vsInfo);
 }
 void Shader::CompileAndLoadFragmentShader(std::string_view fragment_shader,
-                                              int numUniformData) {
-  std::string fsStr =
-      DataStream::ConvertFilePath(AssetType::Shader, fragment_shader);
+                                          int numUniformData) {
+  std::string fsStr = fragment_shader.data();
   rsc::ShaderCompiler compiler;
   auto spirv = compiler.compile(fsStr, rsc::ShaderCompiler::Type::FRAGMENT,
                                 rsc::ShaderCompiler::Language::SPIRV);

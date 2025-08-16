@@ -18,6 +18,7 @@ add_subdirectory(${SINEN_SOURCE_DIR}/libs/paranoixa EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/zep EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/sol2 EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/luajit-cmake EXCLUDE_FROM_ALL)
+add_subdirectory(${SINEN_SOURCE_DIR}/libs/slang EXCLUDE_FROM_ALL)
 
 if (MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
@@ -58,6 +59,7 @@ target_link_libraries(
         Zep::Zep
         luajit::lib
         luajit::header
+        slang
 )
 target_compile_definitions(sinen PUBLIC
         AL_LIBTYPE_STATIC

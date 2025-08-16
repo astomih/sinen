@@ -1,3 +1,4 @@
+#include <array>
 #include <chrono>
 #include <cstdlib>
 #include <filesystem>
@@ -6,77 +7,134 @@
 #include <vector>
 
 #include "rt_shader_compiler.hpp"
+#include <core/io/data_stream.hpp>
+
+#include <slang-com-helper.h>
+#include <slang-com-ptr.h>
+#include <slang.h>
 
 #ifdef _MSC_VER
 #define popen _popen
 #define pclose _pclose
 #endif
 namespace rsc {
-
-std::vector<char> ShaderCompiler::compile(std::string_view source, Type type,
-                                          Language lang) {
-#ifndef __EMSCRIPTEN__
-
-  std::string input{};
-  input += "slangc ";
-  switch (lang) {
-  case Language::SPIRV:
-    input += "-profile glsl_450 ";
-    input += "-target spirv ";
-    break;
-  default:
-    break;
+void diagnoseIfNeeded(slang::IBlob *diagnosticsBlob) {
+  if (diagnosticsBlob != nullptr) {
+    std::cout << (const char *)diagnosticsBlob->getBufferPointer() << std::endl;
   }
-  switch (type) {
-  case Type::VERTEX:
-    input += " -entry VSMain ";
-    break;
-  case Type::FRAGMENT:
-    input += " -entry FSMain ";
-    break;
-  case Type::COMPUTE:
-    input += " -entry CSMain ";
-    break;
-  }
-  input += std::string(source);
+}
 
-  std::string tempSave = ".temp/";
-  // now date/time based name
-  auto now = std::chrono::system_clock::now();
-  auto in_time_t = std::chrono::system_clock::to_time_t(now);
-  tempSave += std::to_string(in_time_t);
-  tempSave += ".spv";
+std::vector<char> ShaderCompiler::compile(std::string_view sourcePath,
+                                          Type type, Language lang) {
+  using namespace slang;
 
-  input += " -o " + tempSave;
+  Slang::ComPtr<IGlobalSession> globalSession;
+  SlangGlobalSessionDesc desc = {};
+  createGlobalSession(&desc, globalSession.writeRef());
 
-  // if temp directory does not exist, create it
-  if (!std::filesystem::exists(".temp"))
-    std::filesystem::create_directory(".temp");
+  SessionDesc sessionDesc = {};
 
-  std::system(input.c_str());
+  std::array<TargetDesc, 1> targetDesc = {};
+  targetDesc[0].format = SLANG_SPIRV;
+  targetDesc[0].profile = globalSession->findProfile("spirv_1_3");
+  sessionDesc.targets = targetDesc.data();
+  sessionDesc.targetCount = targetDesc.size();
+  std::array<slang::CompilerOptionEntry, 1> options = {
+      {slang::CompilerOptionName::EmitSpirvDirectly,
+       {slang::CompilerOptionValueKind::Int, 1, 0, nullptr, nullptr}}};
+  sessionDesc.compilerOptionEntries = options.data();
+  sessionDesc.compilerOptionEntryCount = options.size();
 
-  std::ifstream file(tempSave, std::ios::binary);
-  if (file.is_open()) {
-    std::vector<char> buffer((std::istreambuf_iterator<char>(file)),
-                             std::istreambuf_iterator<char>());
-    file.close();
-    return buffer;
+  Slang::ComPtr<ISession> session;
+  globalSession->createSession(sessionDesc, session.writeRef());
+
+  Slang::ComPtr<slang::IModule> slangModule;
+  {
+    auto source =
+        sinen::DataStream::OpenAsString(sinen::AssetType::Shader, sourcePath);
+    Slang::ComPtr<slang::IBlob> diagnosticsBlob;
+    slangModule = session->loadModuleFromSourceString(
+        "slang_custom", // Module name
+        sinen::DataStream::ConvertFilePath(sinen::AssetType::Shader,
+                                           sourcePath)
+            .c_str(),                // Module path
+        source.data(),               // Shader source code
+        diagnosticsBlob.writeRef()); // Optional diagnostic container
+    if (!slangModule) {
+      diagnoseIfNeeded(diagnosticsBlob);
+      return {};
+    }
   }
 
-  // auto *pipeOut = popen(input.c_str(), "r");
-  // if (!pipeOut) {
-  //   throw std::runtime_error("Failed to open pipe for writing");
-  // }
-  //
-  // int ch;
-  // while ((ch = fgetc(pipeOut)) != EOF) {
-  //   buffer.push_back(ch);
-  // }
-  // pclose(pipeOut);
+  // 4. Query Entry Points
+  Slang::ComPtr<slang::IEntryPoint> entryPoint;
+  {
+    Slang::ComPtr<slang::IBlob> diagnosticsBlob;
+    std::string entryPointName;
+    switch (type) {
+    case Type::VERTEX:
+      entryPointName = "VSMain";
+      break;
+    case Type::FRAGMENT:
+      entryPointName = "FSMain";
+      break;
+    default: // Unsupported type
+      std::cout << "Unsupported shader type" << std::endl;
+      return {};
+    }
+    slangModule->findEntryPointByName(entryPointName.c_str(),
+                                      entryPoint.writeRef());
+    diagnoseIfNeeded(diagnosticsBlob);
+    if (!entryPoint) {
+      std::cout << "Error getting entry point" << std::endl;
+      return {};
+    }
+  }
 
-  std::vector<char> buffer{};
-  return buffer;
+  // 5. Compose Modules + Entry Points
+  std::array<slang::IComponentType *, 2> componentTypes = {slangModule,
+                                                           entryPoint};
 
-#endif
+  Slang::ComPtr<slang::IComponentType> composedProgram;
+  {
+    Slang::ComPtr<slang::IBlob> diagnosticsBlob;
+    SlangResult result = session->createCompositeComponentType(
+        componentTypes.data(), componentTypes.size(),
+        composedProgram.writeRef(), diagnosticsBlob.writeRef());
+    if (SLANG_FAILED(result)) {
+      std::cout << "Error composing program: " << result << std::endl;
+      return {};
+    }
+  }
+
+  // 6. Link
+  Slang::ComPtr<slang::IComponentType> linkedProgram;
+  {
+    Slang::ComPtr<slang::IBlob> diagnosticsBlob;
+    SlangResult result = composedProgram->link(linkedProgram.writeRef(),
+                                               diagnosticsBlob.writeRef());
+    if (SLANG_FAILED(result)) {
+      std::cout << "Error linking program: " << result << std::endl;
+      return {};
+    }
+  }
+
+  // 7. Get Target Kernel Code
+  Slang::ComPtr<slang::IBlob> spirvCode;
+  {
+    Slang::ComPtr<slang::IBlob> diagnosticsBlob;
+    SlangResult result = linkedProgram->getEntryPointCode(
+        0, 0, spirvCode.writeRef(), diagnosticsBlob.writeRef());
+    if (SLANG_FAILED(result)) {
+      std::cout << "Error getting SPIR-V code: " << result << std::endl;
+      return {};
+    }
+  }
+
+  // spirvCode to std::vector<char>
+  std::vector<char> spirvData(spirvCode->getBufferSize());
+  std::memcpy(spirvData.data(), spirvCode->getBufferPointer(),
+              spirvCode->getBufferSize());
+  return spirvData;
 }
 } // namespace rsc

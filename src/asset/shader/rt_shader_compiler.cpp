@@ -26,6 +26,7 @@ void diagnoseIfNeeded(slang::IBlob *diagnosticsBlob) {
 
 std::vector<char> ShaderCompiler::compile(std::string_view sourcePath,
                                           Type type, Language lang) {
+  #ifdef SINEN_USE_SLANG
   using namespace slang;
 
   Slang::ComPtr<IGlobalSession> globalSession;
@@ -136,5 +137,8 @@ std::vector<char> ShaderCompiler::compile(std::string_view sourcePath,
   std::memcpy(spirvData.data(), spirvCode->getBufferPointer(),
               spirvCode->getBufferSize());
   return spirvData;
+  #else
+  return {};
+  #endif
 }
 } // namespace rsc

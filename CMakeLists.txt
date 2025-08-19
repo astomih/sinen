@@ -18,7 +18,11 @@ add_subdirectory(${SINEN_SOURCE_DIR}/libs/paranoixa EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/zep EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/sol2 EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/luajit-cmake EXCLUDE_FROM_ALL)
-add_subdirectory(${SINEN_SOURCE_DIR}/libs/slang EXCLUDE_FROM_ALL)
+option(SINEN_USE_SLANG "Use Slang for shader compilation" OFF)
+
+if (SINEN_USE_SLANG)
+    add_subdirectory(${SINEN_SOURCE_DIR}/libs/slang EXCLUDE_FROM_ALL)
+endif ()
 
 if (MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
@@ -46,9 +50,7 @@ add_executable(sinen docs/icon/icon.rc
 target_include_directories(
         sinen PUBLIC ${SINEN_INCLUDE_DIRS} ${SDL3_INCLUDE_PATHS})
 
-target_link_libraries(
-        sinen
-        PUBLIC
+set(SINEN_LINK_LIBRARIES
         paranoixa
         paranoixa_imgui_backend
         SDL3::SDL3
@@ -59,7 +61,16 @@ target_link_libraries(
         Zep::Zep
         luajit::lib
         luajit::header
-        slang
+)
+
+if (SINEN_USE_SLANG)
+    list(APPEND SINEN_LINK_LIBRARIES slang)
+endif ()
+
+target_link_libraries(
+        sinen
+        PUBLIC
+        ${SINEN_LINK_LIBRARIES}
 )
 target_compile_definitions(sinen PUBLIC
         AL_LIBTYPE_STATIC

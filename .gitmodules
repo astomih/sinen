@@ -43,3 +43,6 @@
 [submodule "libs/slang"]
 	path = libs/slang
 	url = https://github.com/shader-slang/slang
+[submodule "libs/pocketpy"]
+	path = libs/pocketpy
+	url = https://github.com/pocketpy/pocketpy

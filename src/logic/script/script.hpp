@@ -19,6 +19,7 @@ public:
 class Script {
 public:
   static std::unique_ptr<IScript> CreateLua();
+  static std::unique_ptr<IScript> CreatePython();
 };
 
 } // namespace sinen

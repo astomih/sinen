@@ -11,15 +11,6 @@
 #include <SDL3/SDL.h>
 
 namespace sinen {
-void decoding(std::string &str, std::vector<uint8_t> &key) {
-  int i = 0;
-  for (auto &c : str) {
-    uint8_t uc = (uint8_t)c;
-    uc ^= (uint8_t)key[i % key.size()];
-    c = (char)uc;
-    i++;
-  }
-}
 std::vector<uint8_t> DataStream::key = {0};
 std::string_view DataStream::Open(const AssetType &type,
                                   std::string_view name) {
@@ -50,25 +41,21 @@ void *DataStream::OpenAsRWOps(const AssetType &type, std::string_view name) {
   return file;
 }
 std::string DataStream::OpenAsString(const AssetType &type,
-                                       std::string_view name) {
+                                     std::string_view name) {
   std::string filePath;
   ConvertFilePath(type, filePath, name);
 
   auto *file = SDL_IOFromFile(filePath.c_str(), "r");
   if (!file) {
-    Logger::Warn("File not found %s: %s", filePath.c_str(), SDL_GetError());
     return "";
   }
   size_t fileLength;
   void *load = SDL_LoadFile_IO(file, &fileLength, 1);
   if (!load) {
-    Logger::Error("File load error %s: %s", filePath.c_str(), SDL_GetError());
     return "";
   }
   std::string result{reinterpret_cast<char *>(load), fileLength};
   SDL_free(load);
-  if (name.ends_with(".sia"))
-    decoding(result, key);
   return result;
 }
 
@@ -86,7 +73,7 @@ void DataStream::Write(const AssetType &type, std::string_view name,
   SDL_CloseIO(file);
 }
 void DataStream::ConvertFilePath(const AssetType &type, std::string &filePath,
-                                   std::string_view name) {
+                                 std::string_view name) {
   std::string base = "data/";
   switch (type) {
   case AssetType::Font:
@@ -120,7 +107,7 @@ void DataStream::ConvertFilePath(const AssetType &type, std::string &filePath,
   }
 }
 std::string DataStream::ConvertFilePath(const AssetType &type,
-                                          std::string_view name) {
+                                        std::string_view name) {
   std::string filePath;
   ConvertFilePath(type, filePath, name);
   return filePath;

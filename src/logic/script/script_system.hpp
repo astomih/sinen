@@ -17,6 +17,8 @@ public:
   static void UpdateScene();
   static void DrawScene();
 
+  static ScriptType GetType() { return type; }
+
 private:
   static std::unique_ptr<IScript> script;
   static ScriptType type;

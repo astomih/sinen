@@ -1,3 +1,4 @@
+#include "core/io/data_stream.hpp"
 #if ZEP_SINGLE_HEADER == 1
 #define ZEP_SINGLE_HEADER_BUILD
 #endif
@@ -5,6 +6,7 @@
 // #define ZEP_CONSOLE
 #include "editor.hpp"
 
+#include "../../logic/script/script_system.hpp"
 #include "../../platform/input/input_system.hpp"
 #include "platform/input/keyboard.hpp"
 
@@ -108,12 +110,21 @@ void zep_destroy() { spZep.reset(); }
 
 ZepEditor &zep_get_editor() { return spZep->GetEditor(); }
 
-void zep_load(const std::string &data) {
-#ifndef ZEP_CONSOLE
-  auto pBuffer = zep_get_editor().InitWithText("main.lua", data);
-  assert(pBuffer != nullptr);
+void zep_load() {
 
-#endif
+  auto scriptType = sinen::ScriptSystem::GetType();
+  std::string strName;
+  switch (scriptType) {
+  case sinen::ScriptType::Lua:
+    strName = "main.lua";
+    break;
+  case sinen::ScriptType::Python:
+    strName = "main.py";
+  }
+  auto pBuffer = zep_get_editor().InitWithText(
+      strName,
+      sinen::DataStream::OpenAsString(sinen::AssetType::Script, strName));
+  assert(pBuffer != nullptr);
 }
 
 void zep_show(const Zep::NVec2i &displaySize) {

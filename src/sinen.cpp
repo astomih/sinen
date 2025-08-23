@@ -49,7 +49,14 @@ bool Sinen::initialize(int argc, char *argv[]) {
     Logger::Critical("Failed to initialize input system");
     return false;
   }
-  if (!ScriptSystem::Initialize(ScriptType::Python)) {
+  // TODO: Replace OpenAsString
+  ScriptType scriptType;
+  if (!DataStream::OpenAsString(AssetType::Script, "main.lua").empty()) {
+    scriptType = ScriptType::Lua;
+  } else {
+    scriptType = ScriptType::Python;
+  }
+  if (!ScriptSystem::Initialize(scriptType)) {
     Logger::Critical("Failed to initialize script system");
     return false;
   }

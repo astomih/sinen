@@ -1,0 +1,40 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		}
+	],
+	"tasks": {
+		"version": "2.0.0",
+		"tasks": [
+			{
+				"label": "vs2022",
+				"type": "shell",
+				"command": "${workspaceFolder}/build/build_vs2022.bat",
+				"problemMatcher": [],
+				"group": {
+					"kind": "build",
+					"isDefault": true
+				}
+			}
+		]
+	},
+	"settings": {
+		"launch": {
+			"configurations": [
+				{
+					"name": "Debug MSVC",
+					"type": "cppvsdbg",
+					"request": "launch",
+					"program": "${workspaceFolder}/build/vs2022/Debug/sinen.exe",
+					"args": [],
+					"stopAtEntry": false,
+					"cwd": "${workspaceFolder}",
+					"environment": [],
+					"console": "internalConsole"
+				}
+			]
+		},
+		"task.autoDetect": "off",
+	}
+}

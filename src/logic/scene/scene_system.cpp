@@ -127,7 +127,7 @@ void SceneSystem::update_scene() {
             z_init = true;
           }
           zep_update();
-          static Zep::NVec2i size = Zep::NVec2i(640, 480);
+          Zep::NVec2i size = Zep::NVec2i(Window::Half().x, Window::Size().y);
           zep_show(size);
           ImGui::Begin("Debug");
           ImGui::Text("FPS: %.3f", ImGui::GetIO().Framerate);

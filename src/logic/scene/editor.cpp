@@ -80,6 +80,8 @@ void zep_init(const Zep::NVec2f &pixelScale) {
   // This is an example of adding different fonts for text styles.
   // If you ":e test.md" in the editor and type "# Heading 1" you will
   // see that Zep picks a different font size for the heading.
+  auto &editor = spZep->GetEditor();
+  editor.GetConfig().style = EditorStyle::Minimal;
   auto &display = spZep->GetEditor().GetDisplay();
   auto pImFont = ImGui::GetIO().Fonts[0].Fonts[0];
   auto pixelHeight = pImFont->FontSize;
@@ -118,8 +120,6 @@ void zep_load() {
   case sinen::ScriptType::Lua:
     strName = "main.lua";
     break;
-  case sinen::ScriptType::Python:
-    strName = "main.py";
   }
   auto pBuffer = zep_get_editor().InitWithText(
       strName,
@@ -133,10 +133,13 @@ void zep_show(const Zep::NVec2i &displaySize) {
   spZep->Draw("Console", &show, ImVec4(0, 0, 500, 400), true);
   spZep->AddLog("Hello!");
 #else
+  ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
   ImGui::SetNextWindowSize(ImVec2(displaySize.x, displaySize.y),
-                           ImGuiCond_FirstUseEver);
+                           ImGuiCond_Always);
   if (!ImGui::Begin("Script Editor", &show,
-                    ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_MenuBar)) {
+                    ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_MenuBar |
+                        ImGuiWindowFlags_NoTitleBar |
+                        ImGuiWindowFlags_NoResize)) {
     ImGui::End();
     return;
   }

@@ -5,7 +5,7 @@
 
 // internal
 #include <asset/audio/music.hpp>
-#include <core/io/data_stream.hpp>
+#include <core/io/asset_io.hpp>
 
 // external
 #include <SDL3_mixer/SDL_mixer.h>
@@ -22,8 +22,7 @@ void Music::Play() { ::Mix_PlayMusic((::Mix_Music *)buffer, -1); }
 void Music::Stop() { ::Mix_HaltMusic(); }
 
 void Music::Load(std::string_view fileName) {
-  auto rwops =
-      (SDL_IOStream *)DataStream::OpenAsRWOps(AssetType::Music, fileName);
+  auto rwops = (SDL_IOStream *)AssetIO::OpenAsRWOps(AssetType::Music, fileName);
   ::Mix_Music *m = ::Mix_LoadMUS_IO(rwops, 1);
   if (m) {
     buffer = (void *)m;

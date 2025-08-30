@@ -1,4 +1,4 @@
-#include "core/io/data_stream.hpp"
+#include "core/io/asset_io.hpp"
 #if ZEP_SINGLE_HEADER == 1
 #define ZEP_SINGLE_HEADER_BUILD
 #endif
@@ -122,8 +122,7 @@ void zep_load() {
     break;
   }
   auto pBuffer = zep_get_editor().InitWithText(
-      strName,
-      sinen::DataStream::OpenAsString(sinen::AssetType::Script, strName));
+      strName, sinen::AssetIO::OpenAsString(sinen::AssetType::Script, strName));
   assert(pBuffer != nullptr);
 }
 

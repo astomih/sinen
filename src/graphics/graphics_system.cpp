@@ -9,8 +9,8 @@
 #include <asset/model/vertex_array.hpp>
 #include <asset/texture/render_texture.hpp>
 #include <cassert>
+#include <core/io/asset_io.hpp>
 #include <core/io/asset_type.hpp>
-#include <core/io/data_stream.hpp>
 #include <cstdint>
 #include <graphics/drawable/instance_data.hpp>
 #include <graphics/graphics.hpp>

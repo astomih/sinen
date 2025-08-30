@@ -2,12 +2,11 @@
 #include <SDL3_image/SDL_image.h>
 #include <asset/texture/texture.hpp>
 #include <cassert>
-#include <core/io/data_stream.hpp>
+#include <core/io/asset_io.hpp>
 #include <core/logger/logger.hpp>
 #include <cstddef>
 #include <memory>
 #include <string_view>
-
 
 #include "texture_data.hpp"
 
@@ -40,8 +39,7 @@ Texture::~Texture() {}
 bool Texture::Load(std::string_view fileName) {
   auto texdata = GetTexData(textureData);
   auto *pSurface = ::IMG_Load_IO(
-      (SDL_IOStream *)DataStream::OpenAsRWOps(AssetType::Texture, fileName),
-      0);
+      (SDL_IOStream *)AssetIO::OpenAsRWOps(AssetType::Texture, fileName), 0);
   if (!pSurface) {
     Logger::Error("Texture load failed.");
     return false;

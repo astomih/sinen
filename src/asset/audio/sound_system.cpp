@@ -4,7 +4,7 @@
 // internal
 #include "glm/trigonometric.hpp"
 #include "sound_system.hpp"
-#include <core/io/data_stream.hpp>
+#include <core/io/asset_io.hpp>
 #include <math/math.hpp>
 
 // external
@@ -102,9 +102,8 @@ void SoundSystem::load(std::string_view fileName) {
   Uint32 buffer_length = 0;
   uint32_t bid = 0;
 
-  if (!SDL_LoadWAV(
-          DataStream::ConvertFilePath(AssetType::Sound, fileName).c_str(),
-          &spec, &buffer, &buffer_length)) {
+  if (!SDL_LoadWAV(AssetIO::ConvertFilePath(AssetType::Sound, fileName).c_str(),
+                   &spec, &buffer, &buffer_length)) {
     printf("Loading '%s' failed! %s\n", fileName.data(), SDL_GetError());
     return;
   }

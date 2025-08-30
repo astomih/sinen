@@ -8,7 +8,7 @@
 #include "paranoixa/paranoixa.hpp"
 #include <asset/font/font.hpp>
 #include <asset/texture/texture.hpp>
-#include <core/io/data_stream.hpp>
+#include <core/io/asset_io.hpp>
 #include <core/logger/logger.hpp>
 #include <math/color/color.hpp>
 
@@ -33,7 +33,7 @@ bool Font::Load(int pointSize) {
 bool Font::Load(int pointSize, std::string_view fontName) {
   this->m_size = pointSize;
   m_font = (void *)::TTF_OpenFontIO(
-      (SDL_IOStream *)DataStream::OpenAsRWOps(AssetType::Font, fontName), 1,
+      (SDL_IOStream *)AssetIO::OpenAsRWOps(AssetType::Font, fontName), 1,
       pointSize);
   return IsLoaded();
 }

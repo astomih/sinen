@@ -53,10 +53,10 @@ void Model::Load(std::string_view str) const {
   auto &local_aabb = modelData->local_aabb;
   auto &v_array = modelData->v_array;
   std::stringstream data;
-  data << DataStream::OpenAsString(AssetType::Model, str);
+  data << AssetIO::OpenAsString(AssetType::Model, str);
   std::string str_name = str.data();
 
-  auto fileName = DataStream::ConvertFilePath(AssetType::Model, str_name);
+  auto fileName = AssetIO::ConvertFilePath(AssetType::Model, str_name);
   // Assimp
   auto &importer = modelData->importer;
   modelData->scene =

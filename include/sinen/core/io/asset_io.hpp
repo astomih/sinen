@@ -13,7 +13,7 @@ namespace sinen {
  * @brief Data stream class
  *
  */
-class DataStream {
+class AssetIO {
 public:
   static std::vector<uint8_t> key;
   static std::string_view Open(const AssetType &type, std::string_view name);

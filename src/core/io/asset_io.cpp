@@ -5,15 +5,14 @@
 #include <thread>
 #include <unordered_map>
 // internal
-#include <core/io/data_stream.hpp>
+#include <core/io/asset_io.hpp>
 #include <core/logger/logger.hpp>
 // external
 #include <SDL3/SDL.h>
 
 namespace sinen {
-std::vector<uint8_t> DataStream::key = {0};
-std::string_view DataStream::Open(const AssetType &type,
-                                  std::string_view name) {
+std::vector<uint8_t> AssetIO::key = {0};
+std::string_view AssetIO::Open(const AssetType &type, std::string_view name) {
   std::string filePath;
   ConvertFilePath(type, filePath, name);
 
@@ -29,7 +28,7 @@ std::string_view DataStream::Open(const AssetType &type,
   SDL_free(load);
   return result;
 }
-void *DataStream::OpenAsRWOps(const AssetType &type, std::string_view name) {
+void *AssetIO::OpenAsRWOps(const AssetType &type, std::string_view name) {
   std::string filePath;
   ConvertFilePath(type, filePath, name);
 
@@ -40,8 +39,8 @@ void *DataStream::OpenAsRWOps(const AssetType &type, std::string_view name) {
   }
   return file;
 }
-std::string DataStream::OpenAsString(const AssetType &type,
-                                     std::string_view name) {
+std::string AssetIO::OpenAsString(const AssetType &type,
+                                  std::string_view name) {
   std::string filePath;
   ConvertFilePath(type, filePath, name);
 
@@ -59,8 +58,8 @@ std::string DataStream::OpenAsString(const AssetType &type,
   return result;
 }
 
-void DataStream::Write(const AssetType &type, std::string_view name,
-                       std::string_view data) {
+void AssetIO::Write(const AssetType &type, std::string_view name,
+                    std::string_view data) {
   std::string filePath;
   ConvertFilePath(type, filePath, name);
   auto *file = SDL_IOFromFile(filePath.c_str(), "w");
@@ -72,9 +71,9 @@ void DataStream::Write(const AssetType &type, std::string_view name,
   }
   SDL_CloseIO(file);
 }
-void DataStream::ConvertFilePath(const AssetType &type, std::string &filePath,
-                                 std::string_view name) {
-  std::string base = "data/";
+void AssetIO::ConvertFilePath(const AssetType &type, std::string &filePath,
+                              std::string_view name) {
+  std::string base = "asset/";
   switch (type) {
   case AssetType::Font:
     filePath += base + std::string{"font/"} + name.data();
@@ -87,13 +86,10 @@ void DataStream::ConvertFilePath(const AssetType &type, std::string &filePath,
     filePath = base + std::string{"music/"} + name.data();
     break;
   case AssetType::Script:
-    filePath = std::string{"script/"} + name.data();
+    filePath = base + std::string{"script/"} + name.data();
     break;
   case AssetType::Shader:
     filePath = base + std::string{"shader/"} + name.data();
-    break;
-  case AssetType::Scene:
-    filePath = base + std::string{"scene/"} + name.data();
     break;
   case AssetType::Sound:
     filePath = base + std::string{"sound/"} + name.data();
@@ -106,8 +102,8 @@ void DataStream::ConvertFilePath(const AssetType &type, std::string &filePath,
     break;
   }
 }
-std::string DataStream::ConvertFilePath(const AssetType &type,
-                                        std::string_view name) {
+std::string AssetIO::ConvertFilePath(const AssetType &type,
+                                     std::string_view name) {
   std::string filePath;
   ConvertFilePath(type, filePath, name);
   return filePath;

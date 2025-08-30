@@ -1,7 +1,7 @@
 // internal
 #include "script_system.hpp"
 #include "script.hpp"
-#include <core/io/data_stream.hpp>
+#include <core/io/asset_io.hpp>
 
 namespace sinen {
 std::unique_ptr<IScript> ScriptSystem::script = nullptr;
@@ -44,8 +44,8 @@ void ScriptSystem::RunScene(std::string_view sceneName) {
     std::string source;
     switch (ScriptSystem::type) {
     case ScriptType::Lua: {
-      source = DataStream::OpenAsString(AssetType::Script,
-                                        std::string(sceneName) + ".lua");
+      source = AssetIO::OpenAsString(AssetType::Script,
+                                     std::string(sceneName) + ".lua");
       if (source.empty()) {
         source = nothingSceneLua;
       }

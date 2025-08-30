@@ -2,8 +2,8 @@
 #include "../../graphics/graphics_system.hpp"
 #include "libs/paranoixa/library/SDL/include/SDL3/SDL_iostream.h"
 #include <asset/shader/shader.hpp>
+#include <core/io/asset_io.hpp>
 #include <core/io/asset_type.hpp>
-#include <core/io/data_stream.hpp>
 
 #include <SDL3/SDL.h>
 
@@ -71,10 +71,9 @@ void Shader::LoadVertexShader(std::string_view vertex_shader,
   auto device = GraphicsSystem::GetDevice();
 
   SDL_IOStream *file =
-      (SDL_IOStream *)DataStream::OpenAsRWOps(AssetType::Shader, vertex_shader);
+      (SDL_IOStream *)AssetIO::OpenAsRWOps(AssetType::Shader, vertex_shader);
 
-  std::string vsStr =
-      DataStream::OpenAsString(AssetType::Shader, vertex_shader);
+  std::string vsStr = AssetIO::OpenAsString(AssetType::Shader, vertex_shader);
 
   px::Shader::CreateInfo vsInfo{};
   vsInfo.allocator = allocator;
@@ -94,8 +93,7 @@ void Shader::LoadFragmentShader(std::string_view fragment_shader,
   auto *allocator = GraphicsSystem::GetAllocator();
   auto device = GraphicsSystem::GetDevice();
 
-  std::string fsStr =
-      DataStream::OpenAsString(AssetType::Shader, fragment_shader);
+  std::string fsStr = AssetIO::OpenAsString(AssetType::Shader, fragment_shader);
 
   px::Shader::CreateInfo fsInfo{};
   fsInfo.allocator = allocator;

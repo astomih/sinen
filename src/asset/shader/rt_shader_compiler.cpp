@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "rt_shader_compiler.hpp"
-#include <core/io/data_stream.hpp>
+#include <core/io/asset_io.hpp>
 
 #include <slang-com-helper.h>
 #include <slang-com-ptr.h>
@@ -60,12 +60,12 @@ std::vector<char> ShaderCompiler::compile(std::string_view sourcePath,
       moduleName = view.data();
     }
     auto source =
-        sinen::DataStream::OpenAsString(sinen::AssetType::Shader, sourcePath);
+        sinen::AssetIO::OpenAsString(sinen::AssetType::Shader, sourcePath);
     Slang::ComPtr<slang::IBlob> diagnosticsBlob;
     slangModule = session->loadModuleFromSourceString(
         moduleName.c_str(), // Module name
-        sinen::DataStream::ConvertFilePath(sinen::AssetType::Shader,
-                                           sourcePath)
+        sinen::AssetIO::ConvertFilePath(sinen::AssetType::Shader,
+                                        sourcePath)
             .c_str(),                // Module path
         source.data(),               // Shader source code
         diagnosticsBlob.writeRef()); // Optional diagnostic container

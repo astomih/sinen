@@ -56,7 +56,7 @@ bool LuaScript::Initialize() {
     auto &v = lua;
     state["require"] = [&](const std::string &str) -> sol::object {
       return state.require_script(
-          str, DataStream::OpenAsString(AssetType::Script, str + ".lua"));
+          str, AssetIO::OpenAsString(AssetType::Script, str + ".lua"));
     };
     v["Texture"] = []() -> Texture { return Texture(); };
     v["Material"] = []() -> Material { return Material(); };

@@ -6,7 +6,7 @@
 #include "../script/script_system.hpp"
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
-#include <core/io/data_stream.hpp>
+#include <core/io/asset_io.hpp>
 #include <core/io/json.hpp>
 #include <graphics/graphics.hpp>
 #include <logic/camera/camera.hpp>

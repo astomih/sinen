@@ -19,22 +19,60 @@
 			}
 		]
 	},
+	"launch": {
+		"configurations": [
+			{
+				"name": "Debug MSVC",
+				"type": "cppvsdbg",
+				"request": "launch",
+				"program": "${workspaceFolder}/build/vs2022/Debug/sinen.exe",
+				"args": [],
+				"stopAtEntry": false,
+				"cwd": "${workspaceFolder}/examples/06_shader_rt",
+				"environment": [],
+				"console": "internalConsole"
+			},
+		]
+	},
 	"settings": {
-		"launch": {
-			"configurations": [
-				{
-					"name": "Debug MSVC",
-					"type": "cppvsdbg",
-					"request": "launch",
-					"program": "${workspaceFolder}/build/vs2022/Debug/sinen.exe",
-					"args": [],
-					"stopAtEntry": false,
-					"cwd": "${workspaceFolder}",
-					"environment": [],
-					"console": "internalConsole"
-				}
-			]
-		},
 		"task.autoDetect": "off",
+		"files.associations": {
+			"*.inc": "cpp",
+			"any": "cpp",
+			"atomic": "cpp",
+			"charconv": "cpp",
+			"deque": "cpp",
+			"list": "cpp",
+			"vector": "cpp",
+			"xhash": "cpp",
+			"forward_list": "cpp",
+			"functional": "cpp",
+			"ios": "cpp",
+			"locale": "cpp",
+			"memory": "cpp",
+			"memory_resource": "cpp",
+			"optional": "cpp",
+			"random": "cpp",
+			"regex": "cpp",
+			"sstream": "cpp",
+			"streambuf": "cpp",
+			"variant": "cpp",
+			"xiosbase": "cpp",
+			"xlocale": "cpp",
+			"xlocbuf": "cpp",
+			"xlocmes": "cpp",
+			"xlocmon": "cpp",
+			"xlocnum": "cpp",
+			"xloctime": "cpp",
+			"xmemory": "cpp",
+			"xstring": "cpp",
+			"system_error": "cpp"
+		},
+		"C_Cpp.codeAnalysis.exclude": {
+			"build/**": true,
+			"docs/**": true,
+			"test/**": true,
+			"libs/**": true,
+		},
 	}
 }

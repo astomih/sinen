@@ -26,7 +26,7 @@ void diagnoseIfNeeded(slang::IBlob *diagnosticsBlob) {
 
 std::vector<char> ShaderCompiler::compile(std::string_view sourcePath,
                                           Type type, Language lang) {
-  #ifdef SINEN_USE_SLANG
+#if SINEN_USE_SLANG
   using namespace slang;
 
   Slang::ComPtr<IGlobalSession> globalSession;
@@ -51,11 +51,19 @@ std::vector<char> ShaderCompiler::compile(std::string_view sourcePath,
 
   Slang::ComPtr<slang::IModule> slangModule;
   {
+    std::string moduleName;
+    {
+
+      size_t dotPos = sourcePath.find_last_of('.');
+      auto view = (dotPos == std::string::npos) ? sourcePath
+                                                : sourcePath.substr(0, dotPos);
+      moduleName = view.data();
+    }
     auto source =
         sinen::DataStream::OpenAsString(sinen::AssetType::Shader, sourcePath);
     Slang::ComPtr<slang::IBlob> diagnosticsBlob;
     slangModule = session->loadModuleFromSourceString(
-        "slang_custom", // Module name
+        moduleName.c_str(), // Module name
         sinen::DataStream::ConvertFilePath(sinen::AssetType::Shader,
                                            sourcePath)
             .c_str(),                // Module path
@@ -137,8 +145,9 @@ std::vector<char> ShaderCompiler::compile(std::string_view sourcePath,
   std::memcpy(spirvData.data(), spirvCode->getBufferPointer(),
               spirvCode->getBufferSize());
   return spirvData;
-  #else
+#else
+  std::cout << "SLANG is not enabled. Cannot compile shader." << std::endl;
   return {};
-  #endif
+#endif
 }
 } // namespace rsc

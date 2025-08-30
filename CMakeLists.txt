@@ -75,6 +75,7 @@ target_link_libraries(
 target_compile_definitions(sinen PUBLIC
         AL_LIBTYPE_STATIC
         ZEP_USE_SDL
+        $<$<BOOL:${SINEN_USE_SLANG}>:SINEN_USE_SLANG>
 )
 
 if (WIN32)

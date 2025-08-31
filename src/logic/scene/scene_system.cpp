@@ -129,11 +129,59 @@ void SceneSystem::update_scene() {
           zep_update();
           Zep::NVec2i size = Zep::NVec2i(Window::Half().x, Window::Size().y);
           zep_show(size);
-          ImGui::Begin("Debug");
+          ImGui::SetNextWindowPos(ImVec2(Window::Half().x, 0),
+                                  ImGuiCond_Always);
+          ImGui::SetNextWindowSize(
+              ImVec2(Window::Half().x / 2.f, Window::Half().y),
+              ImGuiCond_Always);
+          ImGui::Begin("File", nullptr, ImGuiWindowFlags_NoResize);
+          {
+            ImGui::BeginListBox("Script");
+            if (std::filesystem::exists("asset/script")) {
+              std::filesystem::path path = "asset/script";
+              for (const auto &entry :
+                   std::filesystem::directory_iterator(path)) {
+                if (entry.path().extension() == ".lua") {
+                  if (ImGui::Selectable(
+                          entry.path().filename().string().c_str())) {
+                    zep_get_editor().InitWithFile(
+                        entry.path().string().c_str());
+                  }
+                }
+              }
+            }
+            ImGui::EndListBox();
+
+            ImGui::BeginListBox("Shader");
+            if (std::filesystem::exists("asset/shader")) {
+              std::filesystem::path path = "asset/shader";
+              for (const auto &entry :
+                   std::filesystem::directory_iterator(path)) {
+                if (ImGui::Selectable(
+                        entry.path().filename().string().c_str())) {
+                  zep_get_editor().InitWithFile(entry.path().string().c_str());
+                }
+              }
+            }
+            ImGui::EndListBox();
+          }
+          ImGui::End();
+
+          ImGui::SetNextWindowPos(
+              ImVec2(Window::Half().x + Window::Half().x / 2.f, 0),
+              ImGuiCond_Always);
+          ImGui::SetNextWindowSize(
+              ImVec2(Window::Half().x / 2.f, Window::Half().y),
+              ImGuiCond_Always);
+          ImGui::Begin("Stats", nullptr, ImGuiWindowFlags_NoResize);
           ImGui::Text("FPS: %.3f", ImGui::GetIO().Framerate);
           ImGui::End();
 
-          ImGui::Begin("Log");
+          ImGui::SetNextWindowPos(ImVec2(Window::Half().x, Window::Half().y),
+                                  ImGuiCond_Always);
+          ImGui::SetNextWindowSize(ImVec2(Window::Half().x, Window::Half().y),
+                                   ImGuiCond_Always);
+          ImGui::Begin("Log", nullptr, ImGuiWindowFlags_NoResize);
           for (auto &log : ImGuiLog::logs) {
             ImGui::TextColored(log.color, "%s", (log.str).c_str());
           }

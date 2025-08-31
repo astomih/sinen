@@ -54,6 +54,7 @@ void GraphicsSystem::initialize() {
   device->ClaimWindow(window);
   IMGUI_CHECKVERSION();
   auto *context = ImGui::CreateContext();
+  context->IO.IniFilename = nullptr;
   auto *ime_data = &context->PlatformImeData;
   ime_data->WantVisible = true;
   ImGui_ImplSDL3_InitForSDLGPU(window);

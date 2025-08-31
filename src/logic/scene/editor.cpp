@@ -3,7 +3,6 @@
 #define ZEP_SINGLE_HEADER_BUILD
 #endif
 
-// #define ZEP_CONSOLE
 #include "editor.hpp"
 
 #include "../../logic/script/script_system.hpp"
@@ -12,30 +11,12 @@
 
 #include <filesystem>
 #include <functional>
-#ifdef ZEP_CONSOLE
-#include <zep\imgui\console_imgui.h>
-#endif
+
+namespace sinen {
+
 namespace fs = std::filesystem;
 
 using namespace Zep;
-
-using cmdFunc = std::function<void(const std::vector<std::string> &)>;
-class ZepCmd : public ZepExCommand {
-public:
-  ZepCmd(ZepEditor &editor, const std::string name, cmdFunc fn)
-      : ZepExCommand(editor), m_name(name), m_func(fn) {}
-
-  virtual void Run(const std::vector<std::string> &args) override {
-    m_func(args);
-  }
-
-  virtual const char *ExCommandName() const override { return m_name.c_str(); }
-
-private:
-  std::string m_name;
-  cmdFunc m_func;
-};
-
 struct ZepWrapper : public Zep::IZepComponent {
   ZepWrapper(const fs::path &root_path, const Zep::NVec2f &pixelScale,
              std::function<void(std::shared_ptr<Zep::ZepMessage>)> fnCommandCB)
@@ -60,22 +41,13 @@ struct ZepWrapper : public Zep::IZepComponent {
   std::function<void(std::shared_ptr<Zep::ZepMessage>)> Callback;
 };
 
-#ifdef ZEP_CONSOLE
-std::shared_ptr<Zep::ZepConsole> spZep;
-#else
 std::shared_ptr<ZepWrapper> spZep;
-#endif
 
 void zep_init(const Zep::NVec2f &pixelScale) {
-#ifdef ZEP_CONSOLE
-  auto path = std::filesystem::path(".");
-  spZep = std::make_shared<Zep::ZepConsole>(path);
-#else
   // Initialize the editor and watch for changes
   spZep = std::make_shared<ZepWrapper>(
       ".", Zep::NVec2f(pixelScale.x, pixelScale.y),
       [](std::shared_ptr<ZepMessage> spMessage) -> void {});
-#endif
 
   // This is an example of adding different fonts for text styles.
   // If you ":e test.md" in the editor and type "# Heading 1" you will
@@ -118,27 +90,19 @@ void zep_load() {
   std::string strName;
   switch (scriptType) {
   case sinen::ScriptType::Lua:
-    strName = "main.lua";
+    strName = "asset/script/main.lua";
     break;
   }
-  auto pBuffer = zep_get_editor().InitWithText(
-      strName, sinen::AssetIO::OpenAsString(sinen::AssetType::Script, strName));
+  auto pBuffer = zep_get_editor().InitWithFile(strName);
   assert(pBuffer != nullptr);
 }
 
 void zep_show(const Zep::NVec2i &displaySize) {
   bool show = true;
-#ifdef ZEP_CONSOLE
-  spZep->Draw("Console", &show, ImVec4(0, 0, 500, 400), true);
-  spZep->AddLog("Hello!");
-#else
   ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
   ImGui::SetNextWindowSize(ImVec2(displaySize.x, displaySize.y),
                            ImGuiCond_Always);
-  if (!ImGui::Begin("Script Editor", &show,
-                    ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_MenuBar |
-                        ImGuiWindowFlags_NoTitleBar |
-                        ImGuiWindowFlags_NoResize)) {
+  if (!ImGui::Begin("Script Editor", nullptr, ImGuiWindowFlags_NoResize)) {
     ImGui::End();
     return;
   }
@@ -170,5 +134,5 @@ void zep_show(const Zep::NVec2i &displaySize) {
     ImGui::SetWindowFocus();
   }
   ImGui::End();
-#endif
 }
+} // namespace sinen

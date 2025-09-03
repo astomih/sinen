@@ -70,7 +70,7 @@ public:
   bool isDrawDepth = true;
   Model model;
   std::shared_ptr<Drawable> obj;
-  std::vector<Transform3D> worlds;
+  std::vector<Transform> worlds;
 };
 } // namespace sinen
 #endif // !SINEN_DRAWABLE_WRAPPER_HPP

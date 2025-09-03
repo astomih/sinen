@@ -97,6 +97,14 @@ bool LuaScript::Initialize() {
     lua["Draw3D"] = sol::overload(
         []() -> Draw3D { return {}; },
         [](const Texture &texture) -> Draw3D { return Draw3D(texture); });
+    lua["Rect"] = sol::overload(
+        []() -> Rect { return {}; },
+        [](float x, float y, float width, float height) -> Rect {
+          return Rect(x, y, width, height);
+        },
+        [](const glm::vec2 &p, const glm::vec2 &s) -> Rect {
+          return Rect(p, s);
+        });
   }
   {
     auto v = lua.new_usertype<glm::vec3>("", sol::no_construction());
@@ -321,6 +329,14 @@ bool LuaScript::Initialize() {
     v["Clear"] = &Draw3D::Clear;
   }
   {
+    // Rect
+    auto v = lua.new_usertype<Rect>("", sol::no_construction());
+    v["x"] = &Rect::x;
+    v["y"] = &Rect::y;
+    v["width"] = &Rect::width;
+    v["height"] = &Rect::height;
+  }
+  {
     auto v = lua.create_named("Random");
     v["GetRange"] = &Random::GetRange;
     v["GetIntRange"] = &Random::GetIntRange;
@@ -339,6 +355,34 @@ bool LuaScript::Initialize() {
     auto v = lua.create_named("Graphics");
     v["Draw2D"] = &Graphics::Draw2D;
     v["Draw3D"] = &Graphics::Draw3D;
+    v["DrawRect"] = sol::overload(
+        [](const Rect &rect, const Color &color) {
+          Graphics::DrawRect(rect, color);
+        },
+        [](const Rect &rect, const Color &color, float angle) {
+          Graphics::DrawRect(rect, color, angle);
+        });
+    v["DrawImage"] = sol::overload(
+        [](const Texture &texture, const Rect &rect) {
+          Graphics::DrawImage(texture, rect);
+        },
+        [](const Texture &texture, const Rect &rect, float angle) {
+          Graphics::DrawImage(texture, rect, angle);
+        });
+    v["DrawText"] = sol::overload(
+        [](const std::string &text, const glm::vec2 &position) {
+          Graphics::DrawText(text, position);
+        },
+        [](const std::string &text, const glm::vec2 &position,
+           const Color &color) { Graphics::DrawText(text, position, color); },
+        [](const std::string &text, const glm::vec2 &position,
+           const Color &color, float fontSize) {
+          Graphics::DrawText(text, position, color, fontSize);
+        },
+        [](const std::string &text, const glm::vec2 &position,
+           const Color &color, float fontSize, float angle) {
+          Graphics::DrawText(text, position, color, fontSize, angle);
+        });
     v["GetClearColor"] = &Graphics::GetClearColor;
     v["SetClearColor"] = &Graphics::SetClearColor;
     v["BindPipeline2D"] = &Graphics::BindPipeline2D;

@@ -51,7 +51,7 @@ void Draw2D::At(const int &index, const glm::vec2 &position,
 void Draw2D::Clear() { this->worlds.clear(); }
 void Draw3D::Add(const glm::vec3 &position, const glm::vec3 &rotation,
                  const glm::vec3 &scale) {
-  Transform3D transform;
+  Transform transform;
   transform.position = position;
   transform.rotation = rotation;
   transform.scale = scale;
@@ -59,7 +59,7 @@ void Draw3D::Add(const glm::vec3 &position, const glm::vec3 &rotation,
 }
 void Draw3D::At(const int &index, const glm::vec3 &position,
                 const glm::vec3 &rotation, const glm::vec3 &scale) {
-  Transform3D transform;
+  Transform transform;
   transform.SetPosition(position);
   transform.SetRotation(rotation);
   transform.SetScale(scale);

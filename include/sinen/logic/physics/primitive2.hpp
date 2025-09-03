@@ -93,13 +93,23 @@ struct Plane2 {
  * @brief Rectangle class
  *
  */
-struct Rectangle {
-  Rectangle() = default;
-  Rectangle(const glm::vec2 &p, const glm::vec2 &s) : p(p), s(s) {}
-  // point on rectangle
-  glm::vec2 p;
-  // size of rectangle
-  glm::vec2 s;
+struct Rect {
+  Rect() = default;
+  Rect(float x, float y, float width, float height)
+      : x(x), y(y), width(width), height(height) {}
+  Rect(const glm::vec2 &p, const glm::vec2 &s) : p(p), s(s) {}
+  union {
+    struct {
+      float x;
+      float y;
+      float width;
+      float height;
+    };
+    struct {
+      glm::vec2 p;
+      glm::vec2 s;
+    };
+  };
 };
 /**
  * @brief Circle class

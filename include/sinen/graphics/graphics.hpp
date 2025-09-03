@@ -12,7 +12,10 @@
 #include "../asset/shader/shader.hpp"
 #include "../asset/texture/render_texture.hpp"
 #include "../asset/texture/texture.hpp"
+#include "../logic/physics/primitive2.hpp"
+#include "../logic/physics/primitive3.hpp"
 #include "../math/color/color.hpp"
+#include "../math/color/palette.hpp"
 #include "drawable/drawable.hpp"
 #include "drawable/drawable_wrapper.hpp"
 #include "graphics_pipeline.hpp"
@@ -37,6 +40,14 @@ public:
 
   static void Draw2D(const Draw2D &draw2d);
   static void Draw3D(const Draw3D &draw3D);
+
+  static void DrawRect(const Rect &rect, const Color &color,
+                       float angle = 0.0f);
+  static void DrawImage(const Texture &texture, const Rect &rect,
+                        float angle = 0.0f);
+  static void DrawText(const std::string &text, const glm::vec2 &position,
+                       const Color &color = Palette::white(),
+                       float fontSize = 16.0f, float angle = 0.0f);
   /**
    * @brief Set the clear color object
    *

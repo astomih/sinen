@@ -31,6 +31,19 @@ void Graphics::Draw2D(const sinen::Draw2D &draw2D) {
 void Graphics::Draw3D(const sinen::Draw3D &draw3D) {
   GraphicsSystem::Draw3D(draw3D);
 }
+void Graphics::DrawRect(const Rect &rect, const Color &color, float angle) {
+  GraphicsSystem::DrawRect(rect, color, angle);
+}
+void Graphics::DrawImage(const Texture &texture, const Rect &rect,
+                         float angle) {
+  GraphicsSystem::DrawImage(texture, rect, angle);
+}
+
+void Graphics::DrawText(const std::string &text, const glm::vec2 &position,
+                        const Color &color, float fontSize, float angle) {
+  GraphicsSystem::DrawText(text, position, color, fontSize, angle);
+}
+
 void Graphics::SetClearColor(const Color &color) {
   GraphicsSystem::set_clear_color(color);
 }

@@ -28,7 +28,7 @@
 				"program": "${workspaceFolder}/build/vs2022/Debug/sinen.exe",
 				"args": [],
 				"stopAtEntry": false,
-				"cwd": "${workspaceFolder}/examples/06_shader_rt",
+				"cwd": "${workspaceFolder}/examples/05_shader",
 				"environment": [],
 				"console": "internalConsole"
 			},

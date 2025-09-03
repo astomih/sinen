@@ -267,6 +267,22 @@ sn = {
     ---@return GraphicsPipeline3D
     GraphicsPipeline3D = function() return {} end,
 
+    ---@class Rect
+    ---@field x number
+    ---@field y number
+    ---@field width number
+    ---@field height number
+    ---@param x number?
+    ---@param y number?
+    ---@param width number?
+    ---@param height number?
+    ---@return Rect
+    Rect = function(x, y, width, height) return {} end,
+    ---@param position Vec2
+    ---@param size Vec2
+    ---@return Rect
+    Rect = function(position, size) return {} end,
+
     ---Static class
     ---@class Random
     ---@field GetRange fun(a: number, b: number): number
@@ -288,6 +304,9 @@ sn = {
     ---@class Graphics
     ---@field Draw2D fun(draw2D: Draw2D)
     ---@field Draw3D fun(draw3D: Draw3D)
+    ---@field DrawRect fun(rect: Rect, color: Color, angle: number?)
+    ---@field DrawImage fun(texture: Texture, rect: Rect, angle: number?)
+    ---@field DrawText fun(text: string, position: Vec2, color: Color?, fontSize: number?, angle: number?)
     ---@field GetClearColor fun(): Color
     ---@field SetClearColor fun(c: Color)
     ---@field BindPipeline2D fun(pipe: GraphicsPipeline2D)

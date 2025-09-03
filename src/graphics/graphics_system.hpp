@@ -37,6 +37,11 @@ public:
   static void render();
   static void Draw2D(const sinen::Draw2D &draw2D);
   static void Draw3D(const sinen::Draw3D &draw3D);
+  static void DrawRect(const Rect &rect, const Color &color, float angle);
+  static void DrawImage(const Texture &texture, const Rect &rect, float angle);
+  static void DrawText(const std::string &text, const glm::vec2 &position,
+                       const Color &color = Palette::white(),
+                       float fontSize = 16.0f, float angle = 0.0f);
   static void set_clear_color(const Color &color) {
     if (color.r >= 0.f && color.g >= 0.f && color.b >= 0.f)
       clearColor = color;

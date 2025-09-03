@@ -479,6 +479,46 @@ void GraphicsSystem::Draw3D(const sinen::Draw3D &draw3D) {
         0, 0);
   }
 }
+void GraphicsSystem::DrawRect(const Rect &rect, const Color &color,
+                              float angle) {
+  sinen::Draw2D draw2D;
+  draw2D.position = rect.p;
+  draw2D.scale = rect.s;
+
+  draw2D.rotation = angle;
+  draw2D.material = Material();
+  Texture texture;
+  texture.FillColor(color);
+  draw2D.material.SetTexture(texture);
+  GraphicsSystem::Draw2D(draw2D);
+}
+void GraphicsSystem::DrawImage(const Texture &texture, const Rect &rect,
+                               float angle) {
+  sinen::Draw2D draw2D;
+  draw2D.position = rect.p;
+  draw2D.scale = rect.s;
+
+  draw2D.rotation = angle;
+  draw2D.material = Material();
+  draw2D.material.SetTexture(texture);
+  GraphicsSystem::Draw2D(draw2D);
+}
+void GraphicsSystem::DrawText(const std::string &text,
+                              const glm::vec2 &position, const Color &color,
+                              float fontSize, float angle) {
+  sinen::Draw2D draw2D;
+  draw2D.position = position;
+  Font font;
+  font.Load(fontSize);
+  Texture texture;
+  font.RenderText(texture, text, color);
+  draw2D.scale = texture.Size();
+  draw2D.rotation = angle;
+  draw2D.material = Material();
+  draw2D.material.SetTexture(texture);
+  GraphicsSystem::Draw2D(draw2D);
+}
+
 void GraphicsSystem::load_shader(const Shader &shaderInfo) {}
 void GraphicsSystem::unload_shader(const Shader &shaderInfo) {}
 void *GraphicsSystem::get_texture_id() { return nullptr; }

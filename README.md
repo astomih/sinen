@@ -10,25 +10,11 @@
 # Hello World in Sinen
 
 ``` lua
--- Create a texture
-local texture = sn.Texture()
--- Create a draw2D
-local draw2d = sn.Draw2D(texture)
--- Create a font
-local font = sn.Font()
--- Load a default font (96px)
-font:Load(96)
-
 function Update()
-    -- Render text to texture
-    font:RenderText(texture, "Hello World!", sn.Color(1, 1, 1, 1))
-    -- Set scale to texture size
-    draw2d.scale = texture:Size()
 end
 
 function Draw()
-    -- Draw texture
-    sn.Graphics.Draw2D(draw2d)
+    sn.Graphics.DrawText("Hello World!", sn.Vec2(0, 0), sn.Color(1, 1, 1, 1), 32)
 end
 ```
 

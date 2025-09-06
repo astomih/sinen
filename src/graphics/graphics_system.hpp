@@ -66,9 +66,9 @@ public:
   static void bind_default_pipeline2d();
   static void set_uniform_data(uint32_t slot, const UniformData &data);
 
-  static void begin_target2d(const RenderTexture &texture);
-  static void begin_target3d(const RenderTexture &texture);
-  static void end_target(const RenderTexture &texture, Texture &out);
+  static void SetRenderTarget(const RenderTexture &texture);
+  static void WaitDraw();
+  static Texture ReadbackTexture(const RenderTexture &texture);
 
   static Model box;
   static Model sprite;

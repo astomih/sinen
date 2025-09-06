@@ -97,14 +97,14 @@ bool LuaScript::Initialize() {
     lua["Draw3D"] = sol::overload(
         []() -> Draw3D { return {}; },
         [](const Texture &texture) -> Draw3D { return Draw3D(texture); });
-    lua["Rect"] = sol::overload(
-        []() -> Rect { return {}; },
-        [](float x, float y, float width, float height) -> Rect {
-          return Rect(x, y, width, height);
-        },
-        [](const glm::vec2 &p, const glm::vec2 &s) -> Rect {
-          return Rect(p, s);
-        });
+    lua["Rect"] =
+        sol::overload([]() -> Rect { return {}; },
+                      [](float x, float y, float width, float height) -> Rect {
+                        return Rect(x, y, width, height);
+                      },
+                      [](const glm::vec2 &p, const glm::vec2 &s) -> Rect {
+                        return Rect(p, s);
+                      });
   }
   {
     auto v = lua.new_usertype<glm::vec3>("", sol::no_construction());
@@ -390,9 +390,9 @@ bool LuaScript::Initialize() {
     v["BindPipeline3D"] = &Graphics::BindPipeline3D;
     v["BindDefaultPipeline3D"] = &Graphics::BindDefaultPipeline3D;
     v["SetUniformData"] = &Graphics::SetUniformData;
-    v["BeginTarget2D"] = &Graphics::BeginTarget2D;
-    v["BeginTarget3D"] = &Graphics::BeginTarget3D;
-    v["EndTarget"] = &Graphics::EndTarget;
+    v["SetRenderTarget"] = &Graphics::SetRenderTarget;
+    v["WaitDraw"] = &Graphics::WaitDraw;
+    v["ReadbackTexture"] = &Graphics::ReadbackTexture;
   }
   {
     auto v = lua.create_named("Scene");

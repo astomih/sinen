@@ -95,9 +95,9 @@ public:
   static void BindDefaultPipeline2D();
   static void SetUniformData(uint32_t slot, const UniformData &data);
 
-  static void BeginTarget2D(const RenderTexture &texture);
-  static void BeginTarget3D(const RenderTexture &texture);
-  static void EndTarget(const RenderTexture &texture, Texture &out);
+  static void SetRenderTarget(const RenderTexture &texture);
+  static void WaitDraw();
+  static Texture ReadbackTexture(const RenderTexture &texture);
 };
 
 } // namespace sinen

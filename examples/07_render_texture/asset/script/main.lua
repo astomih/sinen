@@ -1,19 +1,15 @@
 local texture = sn.Texture()
 texture:FillColor(sn.Color(1, 1, 1, 1))
-local outTexture = sn.Texture()
-outTexture:Load("logo.png")
 local renderTexture = sn.RenderTexture()
-local s = outTexture:Size()
-renderTexture:Create(s.x, s.y)
+local sx = sn.Scene.Size().x
+local sy = sn.Scene.Size().y
+renderTexture:Create(sx, sy)
 
 local model = sn.Model()
 model:Load("Suzanne.gltf")
 local draw3d = sn.Draw3D(texture)
 draw3d.position = sn.Vec3(0)
 draw3d.model = model
-
-local draw2d = sn.Draw2D(outTexture)
-draw2d.scale = outTexture:Size()
 
 local pos = sn.Vec3(1, 1, 3)
 
@@ -22,11 +18,9 @@ function Update()
 end
 
 function Draw()
-    sn.Graphics.BeginTarget2D(renderTexture)
-    -- Draw texture
+    sn.Graphics.SetRenderTarget(renderTexture)
     sn.Graphics.Draw3D(draw3d)
-    sn.Graphics.EndTarget(renderTexture, outTexture)
-
-    -- Draw render texture
-    sn.Graphics.Draw2D(draw2d)
+    -- Draw texture
+    sn.Graphics.WaitDraw()
+    sn.Graphics.DrawImage(sn.Graphics.ReadbackTexture(renderTexture), sn.Rect(0, 0, sx, sy))
 end

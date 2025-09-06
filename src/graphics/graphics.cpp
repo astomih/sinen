@@ -74,13 +74,11 @@ void Graphics::BindDefaultPipeline2D() {
 void Graphics::SetUniformData(uint32_t slot, const UniformData &data) {
   GraphicsSystem::set_uniform_data(slot, data);
 }
-void Graphics::BeginTarget2D(const RenderTexture &texture) {
-  GraphicsSystem::begin_target2d(texture);
+void Graphics::SetRenderTarget(const RenderTexture &texture) {
+  GraphicsSystem::SetRenderTarget(texture);
 }
-void Graphics::BeginTarget3D(const RenderTexture &texture) {
-  GraphicsSystem::begin_target3d(texture);
-}
-void Graphics::EndTarget(const RenderTexture &texture, Texture &out) {
-  GraphicsSystem::end_target(texture, out);
+void Graphics::WaitDraw() { GraphicsSystem::WaitDraw(); }
+Texture Graphics::ReadbackTexture(const RenderTexture &texture) {
+  return GraphicsSystem::ReadbackTexture(texture);
 }
 } // namespace sinen

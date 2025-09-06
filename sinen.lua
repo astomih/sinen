@@ -314,9 +314,9 @@ sn = {
     ---@field BindPipeline3D fun(pipe: GraphicsPipeline3D)
     ---@field BindDefaultPipeline3D fun()
     ---@field SetUniformData fun(binding: integer, data: UniformData)
-    ---@field BeginTarget2D fun(rt: RenderTexture)
-    ---@field BeginTarget3D fun(rt: RenderTexture)
-    ---@field EndTarget fun(rt: RenderTexture, texture_ref: Texture)
+    ---@field SetRenderTarget fun(rt: RenderTexture)
+    ---@field WaitDraw fun()
+    ---@field ReadbackTexture fun(rt: RenderTexture): Texture
     Graphics = {},
 
     ---Static class

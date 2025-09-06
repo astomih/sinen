@@ -556,21 +556,7 @@ void GraphicsSystem::set_uniform_data(uint32_t slot, const UniformData &data) {
   currentCommandBuffer->PushVertexUniformData(slot, data.data.data(),
                                               data.data.size() * sizeof(float));
 }
-void GraphicsSystem::begin_target2d(const RenderTexture &texture) {
-  auto tex = texture.GetTexture();
-  auto depthTex = texture.GetDepthStencil();
-  currentCommandBuffer = device->AcquireCommandBuffer({allocator});
-  currentColorTargets[0].loadOp = px::LoadOp::Clear;
-  currentColorTargets[0].texture = tex;
-  currentRenderPass =
-      currentCommandBuffer->BeginRenderPass(currentColorTargets, {});
-  currentRenderPass->SetViewport(
-      px::Viewport{0, 0, (float)texture.width, (float)texture.height, 0, 1});
-  currentRenderPass->SetScissor(0, 0, (float)texture.width,
-                                (float)texture.height);
-  isDefaultPipeline = false;
-}
-void GraphicsSystem::begin_target3d(const RenderTexture &texture) {
+void GraphicsSystem::SetRenderTarget(const RenderTexture &texture) {
   auto tex = texture.GetTexture();
   auto depthTex = texture.GetDepthStencil();
   currentCommandBuffer = device->AcquireCommandBuffer({allocator});
@@ -585,19 +571,36 @@ void GraphicsSystem::begin_target3d(const RenderTexture &texture) {
                                 (float)texture.height);
   isDefaultPipeline = false;
 }
-void GraphicsSystem::end_target(const RenderTexture &texture, Texture &out) {
+void GraphicsSystem::WaitDraw() {
   currentCommandBuffer->EndRenderPass(currentRenderPass);
   device->SubmitCommandBuffer(currentCommandBuffer);
   device->WaitForGPUIdle();
   currentCommandBuffer = mainCommandBuffer;
+}
+Texture GraphicsSystem::ReadbackTexture(const RenderTexture &srcRenderTexture) {
 
-  auto tex = texture.GetTexture();
+  Texture out;
+  auto tex = srcRenderTexture.GetTexture();
   auto outTextureData = GetTexData(out.textureData);
+  SDL_free(outTextureData->pSurface);
+  outTextureData->pSurface = SDL_CreateSurface(
+      srcRenderTexture.width, srcRenderTexture.height, SDL_PIXELFORMAT_RGBA32);
+  px::Texture::CreateInfo info{};
+  info.allocator = allocator;
+  info.width = srcRenderTexture.width;
+  info.height = srcRenderTexture.height;
+  info.layerCountOrDepth = 1;
+  info.format = px::TextureFormat::R8G8B8A8_UNORM;
+  info.usage = px::TextureUsage::Sampler;
+  info.numLevels = 1;
+  info.sampleCount = px::SampleCount::x1;
+  info.type = px::TextureType::Texture2D;
+  outTextureData->texture = device->CreateTexture(info);
 
   // Copy
   px::TransferBuffer::CreateInfo info2{};
   info2.allocator = allocator;
-  info2.size = texture.width * texture.height * 4;
+  info2.size = srcRenderTexture.width * srcRenderTexture.height * 4;
   info2.usage = px::TransferBufferUsage::Download;
   auto transferBuffer = device->CreateTransferBuffer(info2);
   {
@@ -615,8 +618,8 @@ void GraphicsSystem::end_target(const RenderTexture &texture, Texture &out) {
         dst.texture = outTextureData->texture;
         dst.layer = 0;
         dst.mipLevel = 0;
-        copyPass->CopyTexture(src, dst, texture.width, texture.height, 1,
-                              false);
+        copyPass->CopyTexture(src, dst, srcRenderTexture.width,
+                              srcRenderTexture.height, 1, false);
       }
       commandBuffer->EndCopyPass(copyPass);
     }
@@ -624,5 +627,6 @@ void GraphicsSystem::end_target(const RenderTexture &texture, Texture &out) {
     device->WaitForGPUIdle();
   }
   currentRenderPass = nullptr;
+  return out;
 }
 } // namespace sinen

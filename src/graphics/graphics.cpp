@@ -43,6 +43,10 @@ void Graphics::DrawText(const std::string &text, const glm::vec2 &position,
                         const Color &color, float fontSize, float angle) {
   GraphicsSystem::DrawText(text, position, color, fontSize, angle);
 }
+void Graphics::DrawModel(const Model &model, const Transform &transform,
+                         const Material &material) {
+  GraphicsSystem::DrawModel(model, transform, material);
+}
 
 void Graphics::SetClearColor(const Color &color) {
   GraphicsSystem::set_clear_color(color);
@@ -77,7 +81,7 @@ void Graphics::SetUniformData(uint32_t slot, const UniformData &data) {
 void Graphics::SetRenderTarget(const RenderTexture &texture) {
   GraphicsSystem::SetRenderTarget(texture);
 }
-void Graphics::WaitDraw() { GraphicsSystem::WaitDraw(); }
+void Graphics::Flush() { GraphicsSystem::Flush(); }
 Texture Graphics::ReadbackTexture(const RenderTexture &texture) {
   return GraphicsSystem::ReadbackTexture(texture);
 }

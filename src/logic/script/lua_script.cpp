@@ -105,6 +105,7 @@ bool LuaScript::Initialize() {
                       [](const glm::vec2 &p, const glm::vec2 &s) -> Rect {
                         return Rect(p, s);
                       });
+    lua["Transform"] = []() -> Transform { return {}; };
   }
   {
     auto v = lua.new_usertype<glm::vec3>("", sol::no_construction());
@@ -337,6 +338,13 @@ bool LuaScript::Initialize() {
     v["height"] = &Rect::height;
   }
   {
+    // Transform
+    auto v = lua.new_usertype<Transform>("", sol::no_construction());
+    v["position"] = &Transform::position;
+    v["rotation"] = &Transform::rotation;
+    v["scale"] = &Transform::scale;
+  }
+  {
     auto v = lua.create_named("Random");
     v["GetRange"] = &Random::GetRange;
     v["GetIntRange"] = &Random::GetIntRange;
@@ -383,6 +391,7 @@ bool LuaScript::Initialize() {
            const Color &color, float fontSize, float angle) {
           Graphics::DrawText(text, position, color, fontSize, angle);
         });
+    v["DrawModel"] = &Graphics::DrawModel;
     v["GetClearColor"] = &Graphics::GetClearColor;
     v["SetClearColor"] = &Graphics::SetClearColor;
     v["BindPipeline2D"] = &Graphics::BindPipeline2D;
@@ -391,7 +400,7 @@ bool LuaScript::Initialize() {
     v["BindDefaultPipeline3D"] = &Graphics::BindDefaultPipeline3D;
     v["SetUniformData"] = &Graphics::SetUniformData;
     v["SetRenderTarget"] = &Graphics::SetRenderTarget;
-    v["WaitDraw"] = &Graphics::WaitDraw;
+    v["Flush"] = &Graphics::Flush;
     v["ReadbackTexture"] = &Graphics::ReadbackTexture;
   }
   {

@@ -48,6 +48,8 @@ public:
   static void DrawText(const std::string &text, const glm::vec2 &position,
                        const Color &color = Palette::white(),
                        float fontSize = 16.0f, float angle = 0.0f);
+  static void DrawModel(const Model &model, const Transform &transform,
+                        const Material &material);
   /**
    * @brief Set the clear color object
    *
@@ -96,7 +98,7 @@ public:
   static void SetUniformData(uint32_t slot, const UniformData &data);
 
   static void SetRenderTarget(const RenderTexture &texture);
-  static void WaitDraw();
+  static void Flush();
   static Texture ReadbackTexture(const RenderTexture &texture);
 };
 

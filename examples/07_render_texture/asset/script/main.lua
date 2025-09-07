@@ -21,6 +21,6 @@ function Draw()
     sn.Graphics.SetRenderTarget(renderTexture)
     sn.Graphics.Draw3D(draw3d)
     -- Draw texture
-    sn.Graphics.WaitDraw()
+    sn.Graphics.Flush()
     sn.Graphics.DrawImage(sn.Graphics.ReadbackTexture(renderTexture), sn.Rect(0, 0, sx, sy))
 end

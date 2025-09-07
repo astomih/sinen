@@ -42,6 +42,8 @@ public:
   static void DrawText(const std::string &text, const glm::vec2 &position,
                        const Color &color = Palette::white(),
                        float fontSize = 16.0f, float angle = 0.0f);
+  static void DrawModel(const Model &model, const Transform &transform,
+                        const Material &material);
   static void set_clear_color(const Color &color) {
     if (color.r >= 0.f && color.g >= 0.f && color.b >= 0.f)
       clearColor = color;
@@ -67,7 +69,7 @@ public:
   static void set_uniform_data(uint32_t slot, const UniformData &data);
 
   static void SetRenderTarget(const RenderTexture &texture);
-  static void WaitDraw();
+  static void Flush();
   static Texture ReadbackTexture(const RenderTexture &texture);
 
   static Model box;

@@ -518,6 +518,16 @@ void GraphicsSystem::DrawText(const std::string &text,
   draw2D.material.SetTexture(texture);
   GraphicsSystem::Draw2D(draw2D);
 }
+void GraphicsSystem::DrawModel(const Model &model, const Transform &transform,
+                               const Material &material) {
+  sinen::Draw3D draw3D;
+  draw3D.position = transform.position;
+  draw3D.scale = transform.scale;
+  draw3D.rotation = transform.rotation;
+  draw3D.material = material;
+  draw3D.model = model;
+  GraphicsSystem::Draw3D(draw3D);
+}
 
 void GraphicsSystem::load_shader(const Shader &shaderInfo) {}
 void GraphicsSystem::unload_shader(const Shader &shaderInfo) {}
@@ -571,7 +581,7 @@ void GraphicsSystem::SetRenderTarget(const RenderTexture &texture) {
                                 (float)texture.height);
   isDefaultPipeline = false;
 }
-void GraphicsSystem::WaitDraw() {
+void GraphicsSystem::Flush() {
   currentCommandBuffer->EndRenderPass(currentRenderPass);
   device->SubmitCommandBuffer(currentCommandBuffer);
   device->WaitForGPUIdle();

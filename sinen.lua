@@ -283,6 +283,13 @@ sn = {
     ---@return Rect
     Rect = function(position, size) return {} end,
 
+    ---@class Transform
+    ---@field position Vec3
+    ---@field rotation Vec3
+    ---@field scale Vec3
+    ---@return Transform
+    Transform = function() return {} end,
+
     ---Static class
     ---@class Random
     ---@field GetRange fun(a: number, b: number): number
@@ -307,6 +314,7 @@ sn = {
     ---@field DrawRect fun(rect: Rect, color: Color, angle: number?)
     ---@field DrawImage fun(texture: Texture, rect: Rect, angle: number?)
     ---@field DrawText fun(text: string, position: Vec2, color: Color?, fontSize: number?, angle: number?)
+    ---@field DrawModel fun(model: Model, transform: Transform, material: Material)
     ---@field GetClearColor fun(): Color
     ---@field SetClearColor fun(c: Color)
     ---@field BindPipeline2D fun(pipe: GraphicsPipeline2D)
@@ -315,7 +323,7 @@ sn = {
     ---@field BindDefaultPipeline3D fun()
     ---@field SetUniformData fun(binding: integer, data: UniformData)
     ---@field SetRenderTarget fun(rt: RenderTexture)
-    ---@field WaitDraw fun()
+    ---@field Flush fun()
     ---@field ReadbackTexture fun(rt: RenderTexture): Texture
     Graphics = {},
 

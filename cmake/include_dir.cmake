@@ -22,5 +22,6 @@ set(SINEN_INCLUDE_DIRS
         ${SINEN_SOURCE_DIR}/libs/zep/include
         ${SINEN_SOURCE_DIR}/libs/sol2/include
         ${SINEN_SOURCE_DIR}/libs/slang/include
+        ${SINEN_SOURCE_DIR}/libs/JoltPhysics
         ${CMAKE_CURRENT_BINARY_DIR}/libs/luajit-cmake
 )

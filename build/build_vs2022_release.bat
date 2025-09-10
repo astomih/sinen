@@ -1,1 +1,1 @@
-cmake --build %~dp0vs2022 --config MinSizeRel --parallel %NUMBER_OF_PROCESSORS%
+cmake --build %~dp0desktop --config MinSizeRel --parallel %NUMBER_OF_PROCESSORS%

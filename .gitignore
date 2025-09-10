@@ -363,8 +363,8 @@ _deps
 .ninja_deps
 .ninja_log
 *.ninja
-build/vs2022/*
-!build/vs2022/.gitkeep
+build/desktop/*
+!build/desktop/.gitkeep
 build/clang/*
 !build/clang/.gitkeep
 *.dll

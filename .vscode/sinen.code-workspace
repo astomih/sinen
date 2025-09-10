@@ -8,7 +8,7 @@
 		"version": "2.0.0",
 		"tasks": [
 			{
-				"label": "vs2022",
+				"label": "desktop_win",
 				"type": "shell",
 				"command": "${workspaceFolder}/build/build_vs2022.bat",
 				"problemMatcher": [],
@@ -25,7 +25,7 @@
 				"name": "Debug MSVC",
 				"type": "cppvsdbg",
 				"request": "launch",
-				"program": "${workspaceFolder}/build/vs2022/Debug/sinen.exe",
+				"program": "${workspaceFolder}/build/desktop/Debug/sinen.exe",
 				"args": [],
 				"stopAtEntry": false,
 				"cwd": "${workspaceFolder}/examples/05_shader",
@@ -74,5 +74,6 @@
 			"test/**": true,
 			"libs/**": true,
 		},
+		"cmake.buildDirectory": "${workspaceFolder}/build/desktop",
 	}
 }

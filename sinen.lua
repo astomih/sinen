@@ -290,6 +290,10 @@ sn = {
     ---@return Transform
     Transform = function() return {} end,
 
+    ---@class Collider
+    ---@field GetPosition fun(self: Collider): Vec3
+    ---@field GetVelocity fun(self: Collider): Vec3
+
     ---Static class
     ---@class Random
     ---@field GetRange fun(a: number, b: number): number
@@ -326,6 +330,11 @@ sn = {
     ---@field Flush fun()
     ---@field ReadbackTexture fun(rt: RenderTexture): Texture
     Graphics = {},
+
+    ---Static class
+    ---@class Physics
+    ---@field CreateBoxCollider fun(): Collider
+    ---@field CreateSphereCollider fun(): Collider
 
     ---Static class
     ---@class Scene

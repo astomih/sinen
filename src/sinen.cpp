@@ -13,6 +13,7 @@ int main(const int argc, char *argv[]) {
 
 #include "asset/audio/sound_system.hpp"
 #include "graphics/graphics_system.hpp"
+#include "logic/physics/physics_system.hpp"
 #include "logic/scene/scene_system.hpp"
 #include "logic/script/script_system.hpp"
 #include "math/random_system.hpp"
@@ -47,6 +48,10 @@ bool Sinen::initialize(int argc, char *argv[]) {
   }
   if (!InputSystem::initialize()) {
     Logger::Critical("Failed to initialize input system");
+    return false;
+  }
+  if (!PhysicsSystem::Initialize()) {
+    Logger::Critical("Failed to initialize physics system");
     return false;
   }
   // TODO: Replace OpenAsString

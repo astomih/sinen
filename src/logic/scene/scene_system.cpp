@@ -3,6 +3,7 @@
 #include "../../graphics/graphics_system.hpp"
 #include "../../platform/input/input_system.hpp"
 #include "../../platform/window/window_system.hpp"
+#include "../physics/physics_system.hpp"
 #include "../script/script_system.hpp"
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
@@ -91,6 +92,7 @@ bool SceneSystem::initialize() {
 void SceneSystem::setup() {
   if (is_run_script) {
     ScriptSystem::RunScene(current_name());
+    PhysicsSystem::PostSetup();
   }
   m_impl->setup();
   m_game_state = Scene::state::running;
@@ -203,6 +205,7 @@ void SceneSystem::update_scene() {
   if (is_run_script) {
     ScriptSystem::UpdateScene();
   }
+  PhysicsSystem::Update();
   m_impl->update(deltaTime);
   SoundSystem::update(deltaTime);
 }

@@ -8,11 +8,18 @@ glm::vec3 Collider::GetPosition() const {
 glm::vec3 Collider::GetVelocity() const {
   return PhysicsSystem::GetVelocity(*this);
 }
-Collider Physics::CreateBoxCollider() {
-  return PhysicsSystem::CreateBoxCollider();
+void Collider::SetLinearVelocity(const glm::vec3 &velocity) const {
+  PhysicsSystem::SetLinearVelocity(*this, velocity);
+}
+Collider Physics::CreateBoxCollider(const Transform &transform, bool isStatic) {
+  return PhysicsSystem::CreateBoxCollider(transform, isStatic);
 }
 
-Collider Physics::CreateSphereCollider() {
-  return PhysicsSystem::CreateSphereCollider();
+Collider Physics::CreateSphereCollider(const glm::vec3 &position, float radius,
+                                       bool isStatic) {
+  return PhysicsSystem::CreateSphereCollider(position, radius, isStatic);
+}
+void Physics::AddCollider(const Collider &collider, bool active) {
+  PhysicsSystem::AddCollider(collider, active);
 }
 } // namespace sinen

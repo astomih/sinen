@@ -2,7 +2,7 @@
 #define SINEN_TRANSFORM_HPP
 
 #include "../math.hpp"
-
+#include <glm/mat4x4.hpp>
 namespace sinen {
 class Transform {
 public:

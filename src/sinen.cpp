@@ -29,8 +29,7 @@ int main(const int argc, char *argv[]) {
 
 namespace sinen {
 bool Sinen::initialize(int argc, char *argv[]) {
-  SDL_Init(SDL_INIT_AUDIO | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK |
-           SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD | SDL_INIT_SENSOR);
+  SDL_Init(SDL_INIT_EVENTS);
   TTF_Init();
   Mix_Init(MIX_INIT_OGG);
   SDL_AudioSpec desired;
@@ -88,6 +87,7 @@ void Sinen::run() {
 }
 void Sinen::shutdown() {
   SceneSystem::shutdown();
+  PhysicsSystem::Shutdown();
   ScriptSystem::Shutdown();
   InputSystem::shutdown();
   SoundSystem::shutdown();

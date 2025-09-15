@@ -285,6 +285,7 @@ bool LuaScript::Initialize() {
     auto v = lua.new_usertype<Collider>("", sol::no_construction());
     v["GetPosition"] = &Collider::GetPosition;
     v["GetVelocity"] = &Collider::GetVelocity;
+    v["SetLinearVelocity"] = &Collider::SetLinearVelocity;
   }
   {
     auto v = lua.new_usertype<UniformData>("", sol::no_construction());
@@ -369,7 +370,8 @@ bool LuaScript::Initialize() {
     auto v = lua.create_named("Physics");
     v["CreateBoxCollider"] = &Physics::CreateBoxCollider;
     v["CreateSphereCollider"] = &Physics::CreateSphereCollider;
-    }
+    v["AddCollider"] = &Physics::AddCollider;
+  }
   {
     auto v = lua.create_named("Graphics");
     v["Draw2D"] = &Graphics::Draw2D;

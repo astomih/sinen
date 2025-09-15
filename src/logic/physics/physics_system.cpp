@@ -4,74 +4,59 @@
 #include <iostream>
 #include <thread>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include "glm/ext/matrix_transform.hpp"
+#include "glm/gtc/quaternion.hpp"
+#include "glm/gtx/quaternion.hpp"
+#include <glm/mat4x4.hpp>
+
 #include "../scene/scene_system.hpp"
 
-// Disable common warnings triggered by Jolt, you can use
-// JPH_SUPPRESS_WARNING_PUSH / JPH_SUPPRESS_WARNING_POP to store and restore the
-// warning state
 JPH_SUPPRESS_WARNINGS
 
-// All Jolt symbols are in the JPH namespace
 using namespace JPH;
 
-// If you want your code to compile using single or double precision write 0.0_r
-// to get a Real value that compiles to double or float depending if
-// JPH_DOUBLE_PRECISION is set or not.
 using namespace JPH::literals;
 
-// We're also using STL classes in this example
 using namespace std;
 
-// Callback for traces, connect this to your own trace function if you have one
 static void TraceImpl(const char *inFMT, ...) {
-  // Format the message
   va_list list;
   va_start(list, inFMT);
   char buffer[1024];
   vsnprintf(buffer, sizeof(buffer), inFMT, list);
   va_end(list);
 
-  // Print to the TTY
   cout << buffer << endl;
 }
 
 #ifdef JPH_ENABLE_ASSERTS
 
-// Callback for asserts, connect this to your own assert handler if you have one
 static bool AssertFailedImpl(const char *inExpression, const char *inMessage,
                              const char *inFile, uint inLine) {
-  // Print to the TTY
   cout << inFile << ":" << inLine << ": (" << inExpression << ") "
        << (inMessage != nullptr ? inMessage : "") << endl;
 
-  // Breakpoint
   return true;
 };
 
 #endif // JPH_ENABLE_ASSERTS
 
-// Layer that objects can be in, determines which other objects it can collide
-// with Typically you at least want to have 1 layer for moving bodies and 1
-// layer for static bodies, but you can have more layers if you want. E.g. you
-// could have a layer for high detail collision (which is not used by the
-// physics simulation but only if you do collision testing).
 namespace Layers {
 static constexpr ObjectLayer NON_MOVING = 0;
 static constexpr ObjectLayer MOVING = 1;
 static constexpr ObjectLayer NUM_LAYERS = 2;
 }; // namespace Layers
 
-/// Class that determines if two object layers can collide
 class ObjectLayerPairFilterImpl : public ObjectLayerPairFilter {
 public:
   virtual bool ShouldCollide(ObjectLayer inObject1,
                              ObjectLayer inObject2) const override {
     switch (inObject1) {
     case Layers::NON_MOVING:
-      return inObject2 ==
-             Layers::MOVING; // Non moving only collides with moving
+      return inObject2 == Layers::MOVING;
     case Layers::MOVING:
-      return true; // Moving collides with everything
+      return true;
     default:
       JPH_ASSERT(false);
       return false;
@@ -79,22 +64,12 @@ public:
   }
 };
 
-// Each broadphase layer results in a separate bounding volume tree in the broad
-// phase. You at least want to have a layer for non-moving and moving objects to
-// avoid having to update a tree full of static objects every frame. You can
-// have a 1-on-1 mapping between object layers and broadphase layers (like in
-// this case) but if you have many object layers you'll be creating many broad
-// phase trees, which is not efficient. If you want to fine tune your broadphase
-// layers define JPH_TRACK_BROADPHASE_STATS and look at the stats reported on
-// the TTY.
 namespace BroadPhaseLayers {
 static constexpr BroadPhaseLayer NON_MOVING(0);
 static constexpr BroadPhaseLayer MOVING(1);
 static constexpr uint NUM_LAYERS(2);
 }; // namespace BroadPhaseLayers
 
-// BroadPhaseLayerInterface implementation
-// This defines a mapping between object and broadphase layers.
 class BPLayerInterfaceImpl final : public BroadPhaseLayerInterface {
 public:
   BPLayerInterfaceImpl() {
@@ -132,7 +107,6 @@ private:
   BroadPhaseLayer mObjectToBroadPhase[Layers::NUM_LAYERS];
 };
 
-/// Class that determines if an object layer can collide with a broadphase layer
 class ObjectVsBroadPhaseLayerFilterImpl : public ObjectVsBroadPhaseLayerFilter {
 public:
   virtual bool ShouldCollide(ObjectLayer inLayer1,
@@ -149,18 +123,14 @@ public:
   }
 };
 
-// An example contact listener
 class MyContactListener : public ContactListener {
 public:
-  // See: ContactListener
   virtual ValidateResult
   OnContactValidate(const Body &inBody1, const Body &inBody2,
                     RVec3Arg inBaseOffset,
                     const CollideShapeResult &inCollisionResult) override {
     cout << "Contact validate callback" << endl;
 
-    // Allows you to ignore a contact before it is created (using layers to not
-    // make objects collide is cheaper!)
     return ValidateResult::AcceptAllContactsForThisBodyPair;
   }
 
@@ -181,7 +151,6 @@ public:
   }
 };
 
-// An example activation listener
 class MyBodyActivationListener : public BodyActivationListener {
 public:
   virtual void OnBodyActivated(const BodyID &inBodyID,
@@ -196,158 +165,62 @@ public:
 };
 
 namespace sinen {
-inline std::unordered_map<uint32_t, BodyID> body_map = {};
+inline std::unordered_map<uint32_t, BodyID> bodyMap = {};
 bool PhysicsSystem::Initialize() {
-  // Register allocation hook. In this example we'll just let Jolt use malloc
-  // / free but you can override these if you want (see Memory.h). This needs
-  // to be done before any other Jolt function is called.
   RegisterDefaultAllocator();
 
-  // Install trace and assert callbacks
   Trace = TraceImpl;
   JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;)
 
-  // Create a factory, this class is responsible for creating instances of
-  // classes based on their name or hash and is mainly used for
-  // deserialization of saved data. It is not directly used in this example
-  // but still required.
   Factory::sInstance = new Factory();
 
-  // Register all physics types with the factory and install their collision
-  // handlers with the CollisionDispatch class. If you have your own custom
-  // shape types you probably need to register their handlers with the
-  // CollisionDispatch before calling this function. If you implement your own
-  // default material (PhysicsMaterial::sDefault) make sure to initialize it
-  // before this function or else this function will create one for you.
   RegisterTypes();
 
-  // We need a temp allocator for temporary allocations during the physics
-  // update. We're pre-allocating 10 MB to avoid having to do allocations
-  // during the physics update. B.t.w. 10 MB is way too much for this example
-  // but it is a typical value you can use. If you don't want to pre-allocate
-  // you can also use TempAllocatorMalloc to fall back to malloc / free.
-
   raw = std::make_unique<RawData>(10 * 1024 * 1024);
-
-  // This is the max amount of rigid bodies that you can add to the physics
-  // system. If you try to add more you'll get an error. Note: This value is
-  // low because this is a simple test. For a real project use something in
-  // the order of 65536.
   const uint cMaxBodies = 1024;
-
-  // This determines how many mutexes to allocate to protect rigid bodies from
-  // concurrent access. Set it to 0 for the default settings.
   const uint cNumBodyMutexes = 0;
-
-  // This is the max amount of body pairs that can be queued at any time (the
-  // broad phase will detect overlapping body pairs based on their bounding
-  // boxes and will insert them into a queue for the narrowphase). If you make
-  // this buffer too small the queue will fill up and the broad phase jobs
-  // will start to do narrow phase work. This is slightly less efficient.
-  // Note: This value is low because this is a simple test. For a real project
-  // use something in the order of 65536.
   const uint cMaxBodyPairs = 1024;
-
-  // This is the maximum size of the contact constraint buffer. If more
-  // contacts (collisions between bodies) are detected than this number then
-  // these contacts will be ignored and bodies will start interpenetrating /
-  // fall through the world. Note: This value is low because this is a simple
-  // test. For a real project use something in the order of 10240.
   const uint cMaxContactConstraints = 1024;
+  static BPLayerInterfaceImpl broadPhaseLayerInterface;
+  static ObjectVsBroadPhaseLayerFilterImpl objectVSBroadPhaseLayerFilter;
+  static ObjectLayerPairFilterImpl objectVSLayerFilter;
 
-  // Create mapping table from object layer to broadphase layer
-  // Note: As this is an interface, PhysicsSystem will take a reference to
-  // this so this instance needs to stay alive! Also have a look at
-  // BroadPhaseLayerInterfaceTable or BroadPhaseLayerInterfaceMask for a
-  // simpler interface.
-  static BPLayerInterfaceImpl broad_phase_layer_interface;
+  raw->physicsSystem.Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs,
+                          cMaxContactConstraints, broadPhaseLayerInterface,
+                          objectVSBroadPhaseLayerFilter, objectVSLayerFilter);
 
-  // Create class that filters object vs broadphase layers
-  // Note: As this is an interface, PhysicsSystem will take a reference to
-  // this so this instance needs to stay alive! Also have a look at
-  // ObjectVsBroadPhaseLayerFilterTable or ObjectVsBroadPhaseLayerFilterMask
-  // for a simpler interface.
-  static ObjectVsBroadPhaseLayerFilterImpl object_vs_broadphase_layer_filter;
-
-  // Create class that filters object vs object layers
-  // Note: As this is an interface, PhysicsSystem will take a reference to
-  // this so this instance needs to stay alive! Also have a look at
-  // ObjectLayerPairFilterTable or ObjectLayerPairFilterMask for a simpler
-  // interface.
-  static ObjectLayerPairFilterImpl object_vs_object_layer_filter;
-
-  // Now we can create the actual physics system.
-  raw->physics_system.Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs,
-                           cMaxContactConstraints, broad_phase_layer_interface,
-                           object_vs_broadphase_layer_filter,
-                           object_vs_object_layer_filter);
-
-  // A body activation listener gets notified when bodies activate and go to
-  // sleep Note that this is called from a job so whatever you do here needs
-  // to be thread safe. Registering one is entirely optional.
   static MyBodyActivationListener body_activation_listener;
-  raw->physics_system.SetBodyActivationListener(&body_activation_listener);
+  raw->physicsSystem.SetBodyActivationListener(&body_activation_listener);
 
-  // A contact listener gets notified when bodies (are about to) collide, and
-  // when they separate again. Note that this is called from a job so whatever
-  // you do here needs to be thread safe. Registering one is entirely
-  // optional.
   static MyContactListener contact_listener;
-  raw->physics_system.SetContactListener(&contact_listener);
-
-  // Now we're ready to simulate the body, keep simulating until it goes to
-  // sleep
-  // uint step = 0;
-  // while (body_interface.IsActive(sphere_id)) {
-  //   // Next step
-  //   ++step;
-
-  //   // Output current position and velocity of the sphere
-  //   RVec3 position = body_interface.GetCenterOfMassPosition(sphere_id);
-  //   Vec3 velocity = body_interface.GetLinearVelocity(sphere_id);
-  //   cout << "Step " << step << ": Position = (" << position.GetX() << ", "
-  //        << position.GetY() << ", " << position.GetZ() << "), Velocity = ("
-  //        << velocity.GetX() << ", " << velocity.GetY() << ", "
-  //        << velocity.GetZ() << ")" << endl;
-  // }
+  raw->physicsSystem.SetContactListener(&contact_listener);
 
   return true;
 }
 void PhysicsSystem::Shutdown() {
-  // Unregisters all types with the factory and cleans up the default material
   UnregisterTypes();
 
-  // Destroy the factory
   delete Factory::sInstance;
   Factory::sInstance = nullptr;
 }
 
 void PhysicsSystem::PostSetup() {
-  // Optional step: Before starting the physics simulation you can optimize
-  // the broad phase. This improves collision detection performance (it's
-  // pointless here because we only have 2 bodies). You should definitely not
-  // call this every frame or when e.g. streaming in a new level section as it
-  // is an expensive operation. Instead insert all new objects in batches
-  // instead of 1 at a time to keep the broad phase efficient.
-  raw->physics_system.OptimizeBroadPhase();
+  if (raw->physicsSystem.GetNumBodies() == 0) {
+    return;
+  }
+  raw->physicsSystem.OptimizeBroadPhase();
 }
 
 void PhysicsSystem::Update() {
-
-  // If you take larger steps than 1 / 60th of a second you need to do
-  // multiple collision steps in order to keep the simulation stable. Do 1
-  // collision step per 1 / 60th of a second (round up).
   const int cCollisionSteps = 1;
-
-  // Step the world
-  raw->physics_system.Update(SceneSystem::delta_time(), cCollisionSteps,
-                             &raw->temp_allocator, &raw->job_system);
+  raw->physicsSystem.Update(SceneSystem::delta_time(), cCollisionSteps,
+                            &raw->tempAllocator, &raw->jobSystem);
 }
 
 glm::vec3 PhysicsSystem::GetPosition(const Collider &collider) {
-  BodyInterface &body_interface = raw->physics_system.GetBodyInterface();
-  auto it = body_map.find(collider.id);
-  if (it == body_map.end()) {
+  BodyInterface &body_interface = raw->physicsSystem.GetBodyInterface();
+  auto it = bodyMap.find(collider.id);
+  if (it == bodyMap.end()) {
     return glm::vec3(0.0f);
   }
   BodyID body_id = it->second;
@@ -356,72 +229,87 @@ glm::vec3 PhysicsSystem::GetPosition(const Collider &collider) {
 }
 
 glm::vec3 PhysicsSystem::GetVelocity(const Collider &collider) {
-  BodyInterface &body_interface = raw->physics_system.GetBodyInterface();
-  auto it = body_map.find(collider.id);
-  if (it == body_map.end()) {
+  BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
+  auto it = bodyMap.find(collider.id);
+  if (it == bodyMap.end()) {
     return glm::vec3(0.0f);
   }
   BodyID body_id = it->second;
-  Vec3 velocity = body_interface.GetLinearVelocity(body_id);
+  Vec3 velocity = bodyInterface.GetLinearVelocity(body_id);
   return glm::vec3(velocity.GetX(), velocity.GetY(), velocity.GetZ());
 }
+void PhysicsSystem::SetLinearVelocity(const Collider &collider,
+                                      const glm::vec3 &velocity) {
+  BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
+  auto bodyID = bodyMap[collider.id];
+  bodyInterface.SetLinearVelocity(bodyID,
+                                  Vec3(velocity.x, velocity.y, velocity.z));
+}
 
-static uint32_t next_collider_id = 1;
-uint32_t get_next_id() { return next_collider_id++; }
+static uint32_t nextColliderID = 1;
+uint32_t GetNextID() { return nextColliderID++; }
 
-Collider PhysicsSystem::CreateBoxCollider() {
+Collider PhysicsSystem::CreateBoxCollider(const Transform &transform,
+                                          bool isStatic) {
 
-  BodyInterface &body_interface = raw->physics_system.GetBodyInterface();
+  BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
 
-  BoxShapeSettings floor_shape_settings(Vec3(100.0f, 1.0f, 100.0f));
-  floor_shape_settings
-      .SetEmbedded(); // A ref counted object on the stack (base class
-                      // RefTarget) should be marked as such to prevent it from
-                      // being freed when its reference count goes to 0.
+  auto &position = transform.position;
+  auto &rotation = transform.rotation;
+  auto &scale = transform.scale;
+  BoxShapeSettings boxShapeSetting(Vec3(scale.x, scale.y, scale.z));
+  boxShapeSetting.SetEmbedded();
 
   // Create the shape
-  ShapeSettings::ShapeResult floor_shape_result = floor_shape_settings.Create();
-  ShapeRefC floor_shape =
-      floor_shape_result
-          .Get(); // We don't expect an error here, but you can check
-                  // floor_shape_result for HasError() / GetError()
+  ShapeSettings::ShapeResult boxShapeResult = boxShapeSetting.Create();
+  ShapeRefC boxShape = boxShapeResult.Get();
+  const auto rotationX =
+      glm::angleAxis(glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+  const auto rotationY =
+      glm::angleAxis(glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+  const auto rotationZ =
+      glm::angleAxis(glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+  const auto quaternion = rotationX * rotationY * rotationZ;
 
-  BodyCreationSettings floor_settings(floor_shape, RVec3(0.0_r, -1.0_r, 0.0_r),
-                                      Quat::sIdentity(), EMotionType::Static,
-                                      Layers::NON_MOVING);
+  EMotionType motionType =
+      isStatic ? EMotionType::Static : EMotionType::Dynamic;
 
-  // Create the actual rigid body
-  Body *floor = body_interface.CreateBody(
-      floor_settings); // Note that if we run out of bodies this can return
-                       // nullptr
-  // Add it to the world
-  body_interface.AddBody(floor->GetID(), EActivation::DontActivate);
+  ObjectLayer layer = isStatic ? Layers::NON_MOVING : Layers::MOVING;
 
-  Collider collider{get_next_id()};
-  body_map[collider.id] = floor->GetID();
+  BodyCreationSettings boxSettings(
+      boxShape, RVec3(position.x, position.y, position.z),
+      {quaternion.x, quaternion.y, quaternion.z, quaternion.w}, motionType,
+      layer);
+
+  Body *floor = bodyInterface.CreateBody(boxSettings);
+  Collider collider{GetNextID()};
+  bodyMap[collider.id] = floor->GetID();
   return collider;
 }
 
-Collider PhysicsSystem::CreateSphereCollider() {
-  BodyInterface &body_interface = raw->physics_system.GetBodyInterface();
-
-  // Now create a dynamic body to bounce on the floor
-  // Note that this uses the shorthand version of creating and adding a body to
-  // the world
+Collider PhysicsSystem::CreateSphereCollider(const glm::vec3 &position,
+                                             float radius, bool isStatic) {
+  BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
+  EMotionType motionType =
+      isStatic ? EMotionType::Static : EMotionType::Dynamic;
+  ObjectLayer layer = isStatic ? Layers::NON_MOVING : Layers::MOVING;
   BodyCreationSettings sphere_settings(
-      new SphereShape(0.5f), RVec3(0.0_r, 2.0_r, 0.0_r), Quat::sIdentity(),
-      EMotionType::Dynamic, Layers::MOVING);
-  BodyID sphere_id =
-      body_interface.CreateAndAddBody(sphere_settings, EActivation::Activate);
+      new SphereShape(radius), RVec3(position.x, position.y, position.z),
+      Quat::sIdentity(), motionType, layer);
+  auto *body = bodyInterface.CreateBody(sphere_settings);
 
-  // Now you can interact with the dynamic body, in this case we're going to
-  // give it a velocity. (note that if we had used CreateBody then we could have
-  // set the velocity straight on the body before adding it to the physics
-  // system)
-  body_interface.SetLinearVelocity(sphere_id, Vec3(0.0f, -5.0f, 0.0f));
-
-  Collider collider{get_next_id()};
-  body_map[collider.id] = sphere_id;
+  Collider collider{GetNextID()};
+  bodyMap[collider.id] = body->GetID();
   return collider;
+}
+void PhysicsSystem::AddCollider(const Collider &collider, bool active) {
+  BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
+  auto it = bodyMap.find(collider.id);
+  if (it == bodyMap.end()) {
+    return;
+  }
+  BodyID bodyID = it->second;
+  bodyInterface.AddBody(bodyID, active ? EActivation::Activate
+                                       : EActivation::DontActivate);
 }
 } // namespace sinen

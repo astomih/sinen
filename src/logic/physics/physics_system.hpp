@@ -20,6 +20,7 @@
 #include <thread>
 
 #include <logic/physics/physics.hpp>
+#include <math/transform/transform.hpp>
 
 namespace sinen {
 class PhysicsSystem {
@@ -32,21 +33,26 @@ public:
 
   static glm::vec3 GetPosition(const Collider &collider);
   static glm::vec3 GetVelocity(const Collider &collider);
+  static void SetLinearVelocity(const Collider &collider,
+                                const glm::vec3 &velocity);
 
-  static Collider CreateBoxCollider();
-  static Collider CreateSphereCollider();
+  static Collider CreateBoxCollider(const Transform &transform, bool isStatic);
+  static Collider CreateSphereCollider(const glm::vec3 &position, float radius,
+                                       bool isStatic);
+
+  static void AddCollider(const Collider &collider, bool active);
 
 private:
   struct RawData {
 
     RawData(size_t allocatorSize)
-        : temp_allocator(allocatorSize),
-          job_system(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers,
-                     std::thread::hardware_concurrency() - 1) {}
+        : tempAllocator(allocatorSize),
+          jobSystem(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers,
+                    std::thread::hardware_concurrency() - 1) {}
 
-    JPH::PhysicsSystem physics_system;
-    JPH::TempAllocatorImpl temp_allocator;
-    JPH::JobSystemThreadPool job_system;
+    JPH::PhysicsSystem physicsSystem;
+    JPH::TempAllocatorImpl tempAllocator;
+    JPH::JobSystemThreadPool jobSystem;
   };
 
   static inline std::unique_ptr<RawData> raw = nullptr;

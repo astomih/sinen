@@ -293,6 +293,7 @@ sn = {
     ---@class Collider
     ---@field GetPosition fun(self: Collider): Vec3
     ---@field GetVelocity fun(self: Collider): Vec3
+    ---@field SetLinearVelocity fun(self: Collider, velocity: Vec3)
 
     ---Static class
     ---@class Random
@@ -333,8 +334,9 @@ sn = {
 
     ---Static class
     ---@class Physics
-    ---@field CreateBoxCollider fun(): Collider
-    ---@field CreateSphereCollider fun(): Collider
+    ---@field CreateBoxCollider fun(transform: Transform, isStatic: boolean): Collider
+    ---@field CreateSphereCollider fun(position: Vec3, radius: number, isStatic: boolean): Collider
+    ---@field AddCollider fun(collider: Collider, isActive: boolean)
 
     ---Static class
     ---@class Scene

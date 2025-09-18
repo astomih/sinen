@@ -17,7 +17,6 @@ add_subdirectory(${SINEN_SOURCE_DIR}/libs/SDL_mixer EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/paranoixa EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/zep EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/sol2 EXCLUDE_FROM_ALL)
-add_subdirectory(${SINEN_SOURCE_DIR}/libs/luajit-cmake EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/JoltPhysics/Build EXCLUDE_FROM_ALL)
 option(SINEN_USE_SLANG "Use Slang for shader compilation" OFF)
 
@@ -36,6 +35,7 @@ file(
         SINEN_SOURCE_FILES
         ${SINEN_SOURCE_DIR}/src/*.cpp
         ${SINEN_SOURCE_DIR}/libs/mojoAL/mojoal.c
+        ${SINEN_SOURCE_DIR}/libs/lua/onelua.c
 )
 file(
         GLOB_RECURSE
@@ -60,8 +60,6 @@ set(SINEN_LINK_LIBRARIES
         SDL3_ttf::SDL3_ttf
         assimp
         Zep::Zep
-        luajit::lib
-        luajit::header
         Jolt
 )
 
@@ -77,6 +75,7 @@ target_link_libraries(
 target_compile_definitions(sinen PUBLIC
         AL_LIBTYPE_STATIC
         ZEP_USE_SDL
+        MAKE_LIB
         $<$<BOOL:${SINEN_USE_SLANG}>:SINEN_USE_SLANG>
 )
 

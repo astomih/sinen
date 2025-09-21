@@ -1,1295 +1,503 @@
-# Lua API
+``` lua
+sn = {
+    ---@class Vec3
+    ---@field x number
+    ---@field y number
+    ---@field z number
+    ---@field Copy fun(self: Vec3): Vec3
+    ---@field Length fun(self: Vec3): number
+    ---@field Forward fun(self: Vec3, rotation: Vec3): Vec3
+    ---@field Normalize fun(self: Vec3): Vec3
+    ---@field Dot fun(self: Vec3, other: Vec3): number
+    ---@field Cross fun(self: Vec3, other: Vec3): Vec3
+    ---@field Lerp fun(self: Vec3, other: Vec3, t: number): Vec3
+    ---@field Reflect fun(self: Vec3, n: Vec3): Vec3
+    ---@operator add(Vec3): Vec3
+    ---@operator sub(Vec3): Vec3
+    ---@operator mul(Vec3): Vec3
+    ---@operator div(Vec3): Vec3
+    ---@param x number?
+    ---@param y number?
+    ---@param z number?
+    ---@return Vec3
+    Vec3 = function(x, y, z) return {} end,
 
-For type information, refer to the sinen.lua file.
+    ---@param value number
+    ---@return Vec3
+    ---Initializes a Vec3 with the same value for x, y, z.
+    Vec3 = function(value) return {} end,
 
-## About Invocation
+    ---@class Vec3i
+    ---@field x integer
+    ---@field y integer
+    ---@field z integer
+    ---@operator add(Vec3i): Vec3i
+    ---@operator sub(Vec3i): Vec3i
+    ---@param x integer?
+    ---@param y integer?
+    ---@param z integer?
+    ---@return Vec3i
+    Vec3i = function(x, y, z)
+        return {}
+    end,
 
-Place Lua scripts in `sinen.exe directory/script/`
+    ---@param value integer
+    ---@return Vec3i
+    ---Initializes a Vec3i with the same value for x, y, z.
+    Vec3i = function(value)
+        return {}
+    end,
 
-```lua
+    ---@class Vec2
+    ---@field x number
+    ---@field y number
+    ---@field Copy fun(self: Vec2): Vec2
+    ---@field Length fun(self: Vec2): number
+    ---@field Normalize fun(self: Vec2): Vec2
+    ---@field Dot fun(self: Vec2, other: Vec2): number
+    ---@field Lerp fun(self: Vec2, other: Vec2, t: number): Vec2
+    ---@field Reflect fun(self: Vec2, n: Vec2): Vec2
+    ---@operator add(Vec2): Vec2
+    ---@operator sub(Vec2): Vec2
+    ---@operator mul(Vec2): Vec2
+    ---@operator div(Vec2): Vec2
+    ---@param x number?
+    ---@param y number?
+    ---@return Vec2
+    Vec2 = function(x, y) return {} end,
 
--- Setup
+    ---@param value number
+    ---@return Vec2
+    ---Initializes a Vec2 with the same value for x, y.
+    Vec2 = function(value) return {} end,
 
-function Update()
- -- Function called every frame
-end
+    ---@class Vec2i
+    ---@field x integer
+    ---@field y integer
+    ---@operator add(Vec2i): Vec2i
+    ---@operator sub(Vec2i): Vec2i
+    ---@param x integer?
+    ---@param y integer?
+    ---@return Vec2i
+    Vec2i = function(x, y) return {} end,
 
-function Draw()
-  -- Function called every frame for rendering
-end
+    ---@param value integer
+    ---@return Vec2i
+    ---Initializes a Vec2i with the same value for x, y.
+    Vec2i = function(value) return {} end,
+
+    ---@class Texture
+    ---@field FillColor fun(self: Texture, color: Color)
+    ---@field BlendColor fun(self: Texture, color: Color)
+    ---@field Copy fun(self: Texture): Texture
+    ---@field Load fun(self: Texture, path: string)
+    ---@field Size fun(self: Texture): Vec2
+    ---@return Texture
+    Texture = function() return {} end,
+
+    ---@class Material
+    ---Set Texture. index is 1-based, optional.
+    ---@field SetTexture fun(self:Material, texture: Texture, index: integer?)
+    ---@field AppendTexture fun(self: Material, texture: Texture)
+    ---@field Clear fun(self: Material)
+    ---@field GetTexture fun(self: Material, index: integer): Texture
+    ---@return Material
+    Material = function() return {} end,
+
+    ---@class RenderTexture
+    ---@field Create fun(self: RenderTexture, x: integer, y: integer)
+    ---@return RenderTexture
+    RenderTexture = function() return {} end,
+
+    ---@class Music
+    ---@field Load fun(self: Music, path: string)
+    ---@field Play fun(self: Music)
+    ---@field SetVolume fun(self: Music, volume: number)
+    ---@return Music
+    Music = function() return {} end,
+
+    ---@class Sound
+    ---@field Load fun(self: Sound, path: string)
+    ---@field Play fun(self: Sound)
+    ---@field SetVolume fun(self: Sound, volume: number)
+    ---@field SetPitch fun(self: Sound, pitch: number)
+    ---@field SetListener fun(self: Sound, position: Vec3)
+    ---@field SetPosition fun(self: Sound, position: Vec3)
+    ---@return Sound
+    Sound = function() return {} end,
+
+    ---@class Camera
+    ---@field LookAt fun(self: Camera, position: Vec3, target: Vec3, up: Vec3)
+    ---@field Perspective fun(self: Camera, fov: number, aspect: number, near: number, far: number)
+    ---@field Orthographic fun(self: Camera, left: number, right: number, bottom: number, top: number, near: number, far: number)
+    ---@field GetPosition fun(self: Camera): Vec3
+    ---@field GetTarget fun(self: Camera): Vec3
+    ---@field GetUp fun(self: Camera): Vec3
+    ---@field IsAABBInFrustum fun(self: Camera, aabb: AABB): boolean
+    Camera = function() end,
+
+    ---@class Model
+    ---@field GetAABB fun(self: Model): AABB
+    ---@field Load fun(self: Model, path: string)
+    ---@field LoadSprite fun(self: Model)
+    ---@field LoadBox fun(self: Model)
+    ---@field GetBoneUniformData fun(self: Model): UniformData
+    ---@field Play fun(self: Model, positon: number)
+    ---@field Update fun(self: Model, delta: number)
+    ---@return Model
+    Model = function() return {} end,
+
+    ---@class AABB
+    ---@field min Vec3
+    ---@field max Vec3
+    ---@field UpdateWorld fun(self: AABB, position: Vec3, scale: Vec3, modelAABB: AABB)
+    ---@return AABB
+    AABB = function() return {} end,
+
+    ---@class Timer
+    ---@field Start fun(self: Timer)
+    ---@field Stop fun(self: Timer)
+    ---@field IsStarted fun(self: Timer): boolean
+    ---@field SetTime fun(self: Timer, time: number)
+    ---@field Check fun(self: Timer): boolean
+    Timer = function() end,
+
+    ---@class UniformData
+    ---@field Add fun(self: UniformData, value: any)
+    ---@field Change fun(self: UniformData, index: integer, value: number)
+    ---@return UniformData
+    UniformData = function() return {} end,
+
+    ---@class Shader
+    ---@field LoadVertexShader fun(self: Shader, path: string, uniform_count: integer)
+    ---@field LoadFragmentShader fun(self: Shader, path: string, uniform_count: integer)
+    ---@field CompileAndLoadVertexShader fun(self: Shader, source: string, uniform_count: integer)
+    ---@field CompileAndLoadFragmentShader fun(self: Shader, source: string, uniform_count: integer)
+    ---@return Shader
+    Shader = function() return {} end,
+
+    ---@class Font
+    ---@field Load fun(self: Font, size: integer, path: string?): nil
+    ---@field RenderText fun(self: Font, texture: Texture, text: string, color: Color): Texture
+    ---@field Resize fun(self: Font, size: integer)
+    ---@return Font
+    Font = function() return {} end,
+
+    ---@class Color
+    ---@field r number
+    ---@field g number
+    ---@field b number
+    ---@field a number
+    ---@param r number
+    ---@param g number
+    ---@param b number
+    ---@param a number
+    ---@return Color
+    Color = function(r, g, b, a) return {} end,
+
+    ---@return Color
+    Color = function() return {} end,
+
+    ---@class Draw2D
+    ---@field scale Vec2
+    ---@field position Vec2
+    ---@field rotation number
+    ---@field material Material
+    ---@field Add fun(self: Draw2D, drawable: any)
+    ---@field At fun(self: Draw2D, x: number, y: number)
+    ---@field Clear fun(self: Draw2D)
+    ---@param texture Texture?
+    ---@return Draw2D
+    Draw2D = function(texture) return {} end,
+
+    ---@class Draw3D
+    ---@field scale Vec3
+    ---@field position Vec3
+    ---@field rotation Vec3
+    ---@field material Material
+    ---@field model Model
+    ---@field isDrawDepth boolean
+    ---@field Add fun(self: Draw3D, positon: Vec3, rotation: Vec3, scale: Vec3)
+    ---@field At fun(self: Draw3D, x: number, y: number, z: number)
+    ---@field Clear fun(self: Draw3D)
+    ---@param texture Texture?
+    ---@return Draw3D
+    Draw3D = function(texture) return {} end,
+
+    ---@class Grid
+    ---@field At fun(self: Grid, x: integer, y: integer): integer
+    ---@field Set fun(self: Grid, x: integer, y: integer, v: integer)
+    ---@field Width fun(self: Grid): integer
+    ---@field Height fun(self: Grid): integer
+    ---@field Size fun(self: Grid): integer
+    ---@field Clear fun(self: Grid)
+    ---@field Resize fun(self: Grid, w: integer, h: integer)
+    ---@field Fill fun(self: Grid, value: integer)
+    ---@param w integer
+    ---@param h integer
+    ---@return Grid
+    Grid = function(w, h) return {} end,
+
+    ---@class BFSGrid
+    ---@field Width fun(self: BFSGrid): integer
+    ---@field Height fun(self: BFSGrid): integer
+    ---@field FindPath fun(self: BFSGrid, start: Vec2, end_: Vec2): any
+    ---@field Trace fun(self: BFSGrid): Vec2
+    ---@field Traceable fun(self: BFSGrid): boolean
+    ---@field Reset fun(self: BFSGrid)
+    ---@param grid Grid
+    ---@return BFSGrid
+    BFSGrid = function(grid)
+        return {}
+    end,
+
+    ---@class GraphicsPipeline2D
+    ---@field SetVertexShader fun(self: GraphicsPipeline2D, shader: Shader)
+    ---@field SetFragmentShader fun(self: GraphicsPipeline2D, shader: Shader)
+    ---@field Build fun(self: GraphicsPipeline2D)
+    ---@return GraphicsPipeline2D
+    GraphicsPipeline2D = function() return {} end,
+
+    ---@class GraphicsPipeline3D
+    ---@field SetVertexShader fun(self: GraphicsPipeline3D, shader: Shader)
+    ---@field SetVertexInstancedShader fun(self: GraphicsPipeline3D, shader: Shader)
+    ---@field SetFragmentShader fun(self: GraphicsPipeline3D, shader: Shader)
+    ---@field SetAnimation fun(self: GraphicsPipeline3D, anim: any)
+    ---@field Build fun(self: GraphicsPipeline3D)
+    ---@return GraphicsPipeline3D
+    GraphicsPipeline3D = function() return {} end,
+
+    ---@class Rect
+    ---@field x number
+    ---@field y number
+    ---@field width number
+    ---@field height number
+    ---@param x number?
+    ---@param y number?
+    ---@param width number?
+    ---@param height number?
+    ---@return Rect
+    Rect = function(x, y, width, height) return {} end,
+    ---@param position Vec2
+    ---@param size Vec2
+    ---@return Rect
+    Rect = function(position, size) return {} end,
+
+    ---@class Transform
+    ---@field position Vec3
+    ---@field rotation Vec3
+    ---@field scale Vec3
+    ---@return Transform
+    Transform = function() return {} end,
+
+    ---@class Collider
+    ---@field GetPosition fun(self: Collider): Vec3
+    ---@field GetVelocity fun(self: Collider): Vec3
+    ---@field SetLinearVelocity fun(self: Collider, velocity: Vec3)
+
+    ---Static class
+    ---@class FileSystem
+    ---@field EnumerateDirectory fun(path: string): table
+
+    ---Static class
+    ---@class Random
+    ---@field GetRange fun(a: number, b: number): number
+    ---@field GetIntRange fun(a: number, b: number): number
+    Random = {},
+
+    ---Static class
+    ---@class Window
+    ---@field GetName fun(): string
+    ---@field Size fun(): Vec2
+    ---@field Half fun(): Vec2
+    ---@field Resize fun(size: Vec2)
+    ---@field SetFullscreen fun(full: boolean)
+    ---@field Rename fun(name: string)
+    ---@field Resized fun(): boolean
+    Window = {},
+
+    ---Static class
+    ---@class Graphics
+    ---@field Draw2D fun(draw2D: Draw2D)
+    ---@field Draw3D fun(draw3D: Draw3D)
+    ---@field DrawRect fun(rect: Rect, color: Color, angle: number?)
+    ---@field DrawImage fun(texture: Texture, rect: Rect, angle: number?)
+    ---@field DrawText fun(text: string, position: Vec2, color: Color?, fontSize: number?, angle: number?)
+    ---@field DrawModel fun(model: Model, transform: Transform, material: Material)
+    ---@field GetClearColor fun(): Color
+    ---@field SetClearColor fun(c: Color)
+    ---@field BindPipeline2D fun(pipe: GraphicsPipeline2D)
+    ---@field BindDefaultPipeline2D fun()
+    ---@field BindPipeline3D fun(pipe: GraphicsPipeline3D)
+    ---@field BindDefaultPipeline3D fun()
+    ---@field SetUniformData fun(binding: integer, data: UniformData)
+    ---@field SetRenderTarget fun(rt: RenderTexture)
+    ---@field Flush fun()
+    ---@field ReadbackTexture fun(rt: RenderTexture): Texture
+    Graphics = {},
+
+    ---Static class
+    ---@class Physics
+    ---@field CreateBoxCollider fun(transform: Transform, isStatic: boolean): Collider
+    ---@field CreateSphereCollider fun(position: Vec3, radius: number, isStatic: boolean): Collider
+    ---@field AddCollider fun(collider: Collider, isActive: boolean)
+
+    ---Static class
+    ---@class Scene
+    ---@field GetCamera fun(): Camera
+    ---@field Size fun(): Vec2
+    ---@field Resize fun(size: Vec2)
+    ---@field Half fun(): Vec2
+    ---@field Ratio fun(): number
+    ---@field InvRatio fun(): number
+    ---@field DeltaTime fun(): number
+    ---@field Change fun(name: string, basePath?:string)
+    Scene = {},
+
+    ---Static class
+    ---@class Collision
+    ---@field AABBvsAABB fun(a: AABB, b: AABB): boolean
+    Collision = {},
+
+    ---Static class
+    ---@class Keyboard
+    ---@field A integer
+    ---@field B integer
+    ---@field C integer
+    ---@field D integer
+    ---@field E integer
+    ---@field F integer
+    ---@field G integer
+    ---@field H integer
+    ---@field I integer
+    ---@field J integer
+    ---@field K integer
+    ---@field L integer
+    ---@field M integer
+    ---@field N integer
+    ---@field O integer
+    ---@field P integer
+    ---@field Q integer
+    ---@field R integer
+    ---@field S integer
+    ---@field T integer
+    ---@field U integer
+    ---@field V integer
+    ---@field W integer
+    ---@field X integer
+    ---@field Y integer
+    ---@field Z integer
+    ---@field Key0 integer
+    ---@field Key1 integer
+    ---@field Key2 integer
+    ---@field Key3 integer
+    ---@field Key4 integer
+    ---@field Key5 integer
+    ---@field Key6 integer
+    ---@field Key7 integer
+    ---@field Key8 integer
+    ---@field Key9 integer
+    ---@field F1 integer
+    ---@field F2 integer
+    ---@field F3 integer
+    ---@field F4 integer
+    ---@field F5 integer
+    ---@field F6 integer
+    ---@field F7 integer
+    ---@field F8 integer
+    ---@field F9 integer
+    ---@field F10 integer
+    ---@field F11 integer
+    ---@field F12 integer
+    ---@field UP integer
+    ---@field DOWN integer
+    ---@field LEFT integer
+    ---@field RIGHT integer
+    ---@field ESCAPE integer
+    ---@field SPACE integer
+    ---@field BACKSPACE integer
+    ---@field TAB integer
+    ---@field RETURN integer
+    ---@field LSHIFT integer
+    ---@field RSHIFT integer
+    ---@field LCTRL integer
+    ---@field RCTRL integer
+    ---@field LALT integer
+    ---@field IsPressed fun(scancode: integer): boolean
+    ---@field IsReleased fun(scancode: integer): boolean
+    ---@field IsDown fun(scancode: integer): boolean
+    Keyboard = {},
+
+    ---Static class
+    ---@class Mouse
+    ---@field LEFT integer
+    ---@field RIGHT integer
+    ---@field MIDDLE integer
+    ---@field X1 integer
+    ---@field X2 integer
+    ---@field IsPressed fun(btn: integer): boolean
+    ---@field IsReleased fun(btn: integer): boolean
+    ---@field IsDown fun(btn: integer): boolean
+    ---@field GetPosition fun(): Vec2
+    ---@field GetPositionOnScene fun(): Vec2
+    ---@field SetPosition fun(pos: Vec2)
+    ---@field SetPositionOnScene fun(pos: Vec2)
+    ---@field GetScrollWheel fun(): number
+    ---@field HideCursor fun(isHide: boolean)
+    ---@field SetRelative fun(isRelative: boolean)
+    Mouse = {},
+
+    ---Static class
+    ---@class GamePad
+    ---@field INVALID integer
+    ---@field A integer
+    ---@field B integer
+    ---@field X integer
+    ---@field Y integer
+    ---@field BACK integer
+    ---@field GUIDE integer
+    ---@field START integer
+    ---@field LEFTSTICK integer
+    ---@field RIGHTSTICK integer
+    ---@field LEFTSHOULDER integer
+    ---@field RIGHTSHOULDER integer
+    ---@field DPAD_UP integer
+    ---@field DPAD_DOWN integer
+    ---@field DPAD_LEFT integer
+    ---@field DPAD_RIGHT integer
+    ---@field MISC1 integer
+    ---@field PADDLE1 integer
+    ---@field PADDLE2 integer
+    ---@field PADDLE3 integer
+    ---@field PADDLE4 integer
+    ---@field TOUCHPAD integer
+    ---@field IsPressed fun(btn: integer): boolean
+    ---@field IsReleased fun(btn: integer): boolean
+    ---@field IsDown fun(btn: integer): boolean
+    ---@field GetLeftStick fun(): Vec2
+    ---@field GetRightStick fun(): Vec2
+    ---@field IsConnected fun(): boolean
+    Gamepad = {},
+
+    ---Static class
+    ---@class Periodic
+    ---@field Sin0_1 fun(t1: number,t2:number): number
+    ---@field Cos0_1 fun(t1: number,t2:number): number
+    Periodic = {},
+
+    ---Static class
+    ---@class Time
+    ---@field Seconds fun(): number
+    ---@field Milli fun(): integer
+    Time = {},
+
+    ---Static class
+    ---@class Logger
+    ---@field Verbose fun(msg: string)
+    ---@field Info fun(msg: string)
+    ---@field Error fun(msg: string)
+    ---@field Warn fun(msg: string)
+    ---@field Critical fun(msg: string)
+    Logger = {}
+}
 ```
-
-## Classes
-
-Lua does not have classes, but tables are used instead  
-Sinen provides several built-in classes
-
-### Naming Conventions
-
-Sinen uses the following naming conventions:
-
-- Class names: CamelCase (e.g., `Vec2`, `Vec3`, `Color`)
-- Method names: CamelCase (e.g., `Length`, `Normalize`, `Copy`)
-- Property names: lowerCase (e.g., `x`, `y`, `z`, `r`, `g`, `b`, `a`)
-  Instances are created using the class name() (e.g., `a = Vec2(1, 2)`)  
-  Instance methods can be called with a colon(:) (e.g., `a:Length()`)
-
-All classes start with sn. (e.g., `sn.Vec2`, `sn.Color`)
-
-### Vec2
-
-#### Metatable
-
-- `__add`: Vector addition (a + b)
-- `__sub`: Vector subtraction (a - b)
-- `__mul`: Vector multiplication (a * b)
-- `__div`: Vector division (a / b)
-
-#### Vec2(x, y) -> Vec2
-
-- `x`: The x component of the vector
-- `y`: The y component of the vector  
-  Creates a Vec2 object.
-
-#### Vec2(value) -> Vec2
-
-- `value`: A number or Vec2 object
-  Creates a Vec2 object with x, y components set to the same value
-
-#### Vec2.x = number
-
-The x component of Vec2.
-
-#### Vec2.y = number
-
-The y component of Vec2.
-
-#### Vec2:Length() -> number
-
-Gets the length of the vector
-
-#### Vec2:Normalize() -> Vec2
-
-Normalizes the vector
-
-#### Vec2:Copy() -> Vec2
-
-Copies the vector
-
-#### Vec2:Dot(other) -> number
-
-- `other`: Vec2 object
-  Gets the dot product
-
-#### Vec2:Lerp(other, t) -> Vec2
-
-- `other`: Vec2 object
-- `t`: Interpolation factor
-  Gets linear interpolation
-
-#### Vec2:Reflect(n) -> Vec2
-
-- `n`: Normal vector
-  Gets reflection vector
-
-### Vec2i
-
-#### Metatable
-
-- `__add`: Vector addition (a + b)
-- `__sub`: Vector subtraction (a - b)
-
-#### Vec2i(x, y) -> Vec2i
-
-- `x`: The x component of the vector (integer)
-- `y`: The y component of the vector (integer)  
-  Creates a Vec2i object.
-
-#### Vec2i(value) -> Vec2i
-
-- `value`: Integer value
-  Creates a Vec2i object with x, y components set to the same value
-
-#### Vec2i.x = integer
-
-The x component of Vec2i.
-
-#### Vec2i.y = integer
-
-The y component of Vec2i.
-
-### Vec3
-
-#### Metatable
-
-- `__add`: Vector addition (a + b)
-- `__sub`: Vector subtraction (a - b)
-- `__mul`: Vector multiplication (a * b)
-- `__div`: Vector division (a / b)
-
-#### Vec3(x, y, z) -> Vec3
-
-- `x`: The x component of the vector
-- `y`: The y component of the vector
-- `z`: The z component of the vector  
-  Creates a Vec3 object
-
-#### Vec3(value) -> Vec3
-
-- `value`: A number or Vec3 object
-  Creates a Vec3 object with x, y, z components set to the same value
-
-#### Vec3.x = number
-
-The x component of Vec3
-
-#### Vec3.y = number
-
-The y component of Vec3
-
-#### Vec3.z = number
-
-The z component of Vec3
-
-#### Vec3:Length() -> number
-
-Gets the length of the vector
-
-#### Vec3:Normalize() -> Vec3
-
-Normalizes the vector
-
-#### Vec3:Copy() -> Vec3
-
-Copies the vector  
-Since Lua passes by reference, use this when you need a copy
-
-#### Vec3:Forward(rotation) -> Vec3
-
-- `rotation`: Rotation angle vector  
-  Gets the forward vector
-
-#### Vec3:Dot(other) -> number
-
-- `other`: Vec3 object
-  Gets the dot product
-
-#### Vec3:Cross(other) -> Vec3
-
-- `other`: Vec3 object
-  Gets the cross product
-
-#### Vec3:Lerp(other, t) -> Vec3
-
-- `other`: Vec3 object
-- `t`: Interpolation factor
-  Gets linear interpolation
-
-#### Vec3:Reflect(n) -> Vec3
-
-- `n`: Normal vector
-  Gets reflection vector
-
-### Vec3i
-
-#### Metatable
-
-- `__add`: Vector addition (a + b)
-- `__sub`: Vector subtraction (a - b)
-
-#### Vec3i(x, y, z) -> Vec3i
-
-- `x`: The x component of the vector (integer)
-- `y`: The y component of the vector (integer)
-- `z`: The z component of the vector (integer)
-  Creates a Vec3i object
-
-#### Vec3i(value) -> Vec3i
-
-- `value`: Integer value
-  Creates a Vec3i object with x, y, z components set to the same value
-
-#### Vec3i.x = integer
-
-The x component of Vec3i
-
-#### Vec3i.y = integer
-
-The y component of Vec3i
-
-#### Vec3i.z = integer
-
-The z component of Vec3i
-
-### Color
-
-#### Color() -> Color
-
-Creates a Color object
-
-#### Color(r, g, b, a) -> color
-
-- `r`: Red component (0.0~1.0)
-- `g`: Green component (0.0~1.0)
-- `b`: Blue component (0.0~1.0)
-- `a`: Alpha component (0.0~1.0)  
-  Creates a color object
-
-#### Color.r = number
-
-Red component (0.0~1.0)
-
-#### Color.g = number
-
-Green component (0.0~1.0)
-
-#### Color.b = number
-
-Blue component (0.0~1.0)
-
-#### Color.a = number
-
-Alpha component (0.0~1.0)
-
-### Texture
-
-#### Texture()
-
-Creates a texture object
-
-#### Texture:Load(string)
-
-- `string`: Name of texture file in data/texture/  
-  Loads a texture file
-
-#### Texture:FillColor(Color)
-
-- `Color`: Color to fill the texture  
-  Fills the texture
-
-#### Texture:BlendColor(Color)
-
-- `Color`: Color to blend with the texture  
-  Blends the texture
-
-#### Texture:Copy() -> Texture
-
-Copies the texture  
-Since Lua passes by reference, use this when you need a copy
-
-#### Texture:Size() -> Vec2
-
-Gets the size of the texture
-
-### RenderTexture
-
-#### RenderTexture()
-
-Creates a render texture object
-
-#### RenderTexture:Create(number, number)
-
-- `number`: Width
-- `number`: Height  
-  Creates a render texture
-
-### Material
-
-#### Material() -> Material
-
-Creates a material object
-
-#### Material:SetTexture(texture, index)
-
-- `texture`: Texture
-- `index`: Index (1-based, optional)
-  Sets a texture to the material
-
-#### Material:AppendTexture(texture)
-
-- `texture`: Texture  
-  Appends a texture to the material
-
-#### Material:Clear()
-
-Clears all textures in the material
-
-#### Material:GetTexture(index) -> Texture
-
-- `index`: Index
-  Gets the texture at the specified index
-
-### Font
-
-#### Font() -> Font
-
-Creates a font object
-
-#### Font:Load(size, path)
-
-- `size`: Font size in pixels
-- `path`: Name of font file in data/font/ (optional)
-  Loads a .ttf file
-
-#### Font:RenderText(texture, text, color) -> Texture
-
-- `texture`: Target texture
-- `text`: String to render
-- `color`: Text color
-  Renders text on CPU  
-  Texture is resized according to the rendering result
-
-#### Font:Resize(size)
-
-- `size`: Font size in pixels
-  Resizes the font
-
-### Timer
-
-#### Timer() -> Timer
-
-Creates a timer object
-
-#### Timer:Start()
-
-Starts the timer
-
-#### Timer:Stop()
-
-Stops the timer
-
-#### Timer:IsStarted() -> boolean
-
-Checks if the timer is started
-
-#### Timer:SetTime(time)
-
-- `time`: Time in seconds
-  Sets the timer time
-
-#### Timer:Check() -> boolean
-
-Checks if the timer has reached the set time
-
-### Grid
-
-#### Grid(w, h) -> Grid
-
-- `w`: Width
-- `h`: Height
-  Creates a grid object
-
-#### Grid:At(x, y) -> integer
-
-- `x`: X coordinate
-- `y`: Y coordinate
-  Gets the value at the specified coordinates
-
-#### Grid:Set(x, y, v)
-
-- `x`: X coordinate
-- `y`: Y coordinate
-- `v`: Value
-  Sets a value at the specified coordinates
-
-#### Grid:Width() -> integer
-
-Gets the width of the grid
-
-#### Grid:Height() -> integer
-
-Gets the height of the grid
-
-#### Grid:Size() -> integer
-
-Gets the size (width × height) of the grid
-
-#### Grid:Clear()
-
-Clears the grid
-
-#### Grid:Resize(w, h)
-
-- `w`: Width
-- `h`: Height
-  Resizes the grid
-
-#### Grid:Fill(value)
-
-- `value`: Value
-  Fills the grid with the specified value
-
-### BFSGrid
-
-#### BFSGrid(grid) -> BFSGrid
-
-- `grid`: Grid object
-  Creates a BFS (Breadth-First Search) grid object
-
-#### BFSGrid:Width() -> integer
-
-Gets the width of the grid
-
-#### BFSGrid:Height() -> integer
-
-Gets the height of the grid
-
-#### BFSGrid:FindPath(start, end_) -> any
-
-- `start`: Start position (Vec2)
-- `end_`: End position (Vec2)
-  Searches for a path
-
-#### BFSGrid:Trace() -> Vec2
-
-Gets the next position
-
-#### BFSGrid:Traceable() -> boolean
-
-Checks if tracing is possible
-
-#### BFSGrid:Reset()
-
-Resets the search state
-
-### Draw2D
-
-#### Draw2D() -> Draw2D
-
-Creates a Draw2D object
-
-#### Draw2D.position = Vec2
-
-Position information  
-The center of the Sinen window is (0, 0)
-
-#### Draw2D.scale = Vec2
-
-Scale
-
-#### Draw2D.rotation = number
-
-Clockwise rotation angle
-
-#### Draw2D.material = Material
-
-Material
-
-#### Draw2D.model = Model
-
-Model
-
-#### Draw2D:Draw()
-
-Draws the 2D object
-
-#### Draw2D:Add(drawable)
-
-- `drawable`: Drawable object
-  Adds and draws multiple objects with the same texture/model  
-  One object already exists at instantiation
-
-#### Draw2D:At(x, y)
-
-- `x`: X coordinate
-- `y`: Y coordinate
-  Sets the position of the object
-
-#### Draw2D:Clear()
-
-Clears the added objects  
-However, the object that exists at instantiation is not cleared
-
-### Draw3D
-
-#### Draw3D() -> Draw3D
-
-Creates a Draw3D object
-
-#### Draw3D.position = Vec3
-
-Position information (world coordinates)
-
-#### Draw3D.scale = Vec3
-
-Scale
-
-#### Draw3D.rotation = Vec3
-
-Rotation angle (Euler angles)
-
-#### Draw3D.material = Material
-
-Material
-
-#### Draw3D.model = Model
-
-Model
-
-#### Draw3D.isDrawDepth = boolean
-
-Whether to perform depth drawing
-
-#### Draw3D:Add(position, rotation, scale)
-
-- `position`: Position information (Vec3)
-- `rotation`: Rotation angle (Vec3)
-- `scale`: Scale (Vec3)  
-  Adds and draws multiple objects with the same texture/model  
-  One object already exists at instantiation
-
-#### Draw3D:At(x, y, z)
-
-- `x`: X coordinate
-- `y`: Y coordinate
-- `z`: Z coordinate
-  Sets the position of the object
-
-#### Draw3D:Clear()
-
-Clears the added objects  
-However, the object that exists at instantiation is not cleared
-
-### UniformData
-
-#### UniformData() -> UniformData
-
-Creates a uniform data object
-
-#### UniformData:Add(value)
-
-- `value`: Data  
-  Adds uniform data
-
-#### UniformData:Change(index, value)
-
-- `index`: Index
-- `value`: Data
-  Changes uniform data at the specified index
-
-### Shader
-
-#### Shader() -> Shader
-
-Creates a shader object
-
-#### Shader:LoadVertexShader(string,number)
-
-- `string`: Name of vertex shader file in data/shader/
-- `number`: Number of UniformData  
-  Loads a vertex shader
-
-#### Shader:LoadFragmentShader(string,number)
-
-- `string`: Name of fragment shader file in data/shader/
-- `number`: Number of UniformData  
-  Loads a fragment shader
-
-#### Shader:CompileAndLoadVertexShader(string,number)
-
-- `string`: Vertex shader source code
-- `number`: Number of UniformData
-  Compiles and loads a vertex shader  
-  Requires `slangc` to be installed
-
-#### Shader:CompileAndLoadFragmentShader(string,number)
-
-- `string`: Fragment shader source code
-- `number`: Number of UniformData
-  Compiles and loads a fragment shader  
-  Requires `slangc` to be installed
-
-### GraphicsPipeline2D
-
-#### GraphicsPipeline2D() -> GraphicsPipeline2D
-
-Creates a 2D graphics pipeline object
-
-#### GraphicsPipeline2D:SetVertexShader(shader)
-
-- `shader`: Shader object  
-  Sets the vertex shader
-
-#### GraphicsPipeline2D:SetFragmentShader(shader)
-
-- `shader`: Shader object  
-  Sets the fragment shader
-
-#### GraphicsPipeline2D:Build()
-
-Builds the graphics pipeline
-
-### GraphicsPipeline3D
-
-#### GraphicsPipeline3D() -> GraphicsPipeline3D
-
-Creates a 3D graphics pipeline object
-
-#### GraphicsPipeline3D:SetVertexShader(shader)
-
-- `shader`: Shader object
-  Sets the vertex shader
-
-#### GraphicsPipeline3D:SetVertexInstancedShader(shader)
-
-- `shader`: Shader object
-  Sets the instanced vertex shader
-
-#### GraphicsPipeline3D:SetFragmentShader(shader)
-
-- `shader`: Shader object
-  Sets the fragment shader
-
-#### GraphicsPipeline3D:SetAnimation(anim)
-
-- `anim`: Animation
-  Sets the animation
-
-#### GraphicsPipeline3D:Build()
-
-Builds the graphics pipeline
-
-### Camera
-
-#### Camera() -> Camera
-
-Creates a camera object for 3D space
-
-#### Camera:LookAt(Vec3, Vec3, Vec3)
-
-- `Vec3`: Position
-- `Vec3`: Target
-- `Vec3`: Up direction  
-  Sets the camera position, target, and up direction
-
-#### Camera:Perspective(number, number, number, number)
-
-- `number`: Field of view
-- `number`: Aspect ratio
-- `number`: Near plane
-- `number`: Far plane  
-  Sets the camera's perspective projection
-
-#### Camera:Orthographic(number, number, number, number, number, number)
-
-- `number`: Left
-- `number`: Right
-- `number`: Bottom
-- `number`: Top
-- `number`: Near plane
-- `number`: Far plane  
-  Sets the camera's orthographic projection
-
-#### Camera:IsAABBInFrustum(aabb) -> boolean
-
-- `aabb`: AABB object  
-  Checks if the AABB is contained within the camera's frustum
-
-#### Camera:GetPosition() -> Vec3
-
-Gets the camera position
-
-#### Camera:GetTarget() -> Vec3
-
-Gets the camera target
-
-#### Camera:GetUp() -> Vec3
-
-Gets the camera up direction
-
-### Music
-
-#### Music() -> Music
-
-#### Music:Load(string)
-
-- `string`: Name of music file in data/music/  
-  Loads music from file  
-  Supports .ogg, .wav, .mp3 formats
-
-#### Music:Play()
-
-Plays music
-
-#### Music:SetVolume(number)
-
-- `number`: Volume  
-  Sets the music volume
-
-### Sound
-
-#### Sound() -> Sound
-
-#### Sound:Load(string)
-
-- `string`: Name of sound file in data/sound/  
-  Loads sound from file  
-  Supports .wav format
-
-#### Sound:Play()
-
-Plays sound
-
-#### Sound:SetVolume(number)
-
-- `number`: Volume  
-  Sets the sound volume
-
-#### Sound:SetPitch(number)
-
-- `number`: Pitch  
-  Sets the sound pitch
-
-#### Sound:SetListener(Vec3)
-
-- `Vec3`: Listener position  
-  Sets the listener position
-
-#### Sound:SetPosition(Vec3)
-
-- `Vec3`: Sound source position  
-  Sets the sound source position
-
-### AABB
-
-#### AABB() -> AABB
-
-Creates an AABB object
-
-#### AABB.min = Vec3
-
-Minimum point of the AABB
-
-#### AABB.max = Vec3
-
-Maximum point of the AABB
-
-#### AABB:UpdateWorld(position, scale, modelAABB)
-
-- `position`: Position (Vec3)
-- `scale`: Scale (Vec3)
-- `modelAABB`: Model's AABB
-  Updates the AABB in world coordinates
-
-### Model
-
-#### Model() -> Model
-
-Creates a model object
-
-#### Model:GetAABB() -> AABB
-
-Gets the model's AABB
-
-#### Model:Load(path)
-
-- `path`: Name of model file in data/model/  
-  Supports .gltf, .glb formats
-
-#### Model:LoadSprite()
-
-Loads a sprite model
-
-#### Model:LoadBox()
-
-Loads a box-shaped model
-
-#### Model:GetBoneUniformData() -> UniformData
-
-Gets the bone uniform data
-
-#### Model:Play(position)
-
-- `position`: Playback position
-  Plays animation
-
-#### Model:Update(delta)
-
-- `delta`: Delta time
-  Updates the model
-
-## Global Functions
-
-Functions that can be called directly without creating an instance
-
-### Random
-
-#### Random.GetRange(a, b) -> number
-
-- `a`: Minimum value
-- `b`: Maximum value  
-  Gets a random floating-point number within the specified range
-
-#### Random.GetIntRange(a, b) -> number
-
-- `a`: Minimum value (integer)
-- `b`: Maximum value (integer)  
-  Gets a random integer within the specified range
-
-### Window
-
-#### Window.GetName() -> string
-
-Gets the window name
-
-#### Window.Rename(name)
-
-- `name`: Window name  
-  Changes the window name
-
-#### Window.Size() -> Vec2
-
-Gets the window size
-
-#### Window.Resize(size)
-
-- `size`: Window size (Vec2)  
-  Changes the window size
-
-#### Window.Resized() -> boolean
-
-Gets whether the window was resized in the current frame
-
-#### Window.Half() -> Vec2
-
-Gets half the window size
-
-#### Window.SetFullscreen(full)
-
-- `full`: Whether to make the window fullscreen  
-  Sets the window to fullscreen or windowed mode
-
-### Graphics
-
-#### Graphics.Draw2D(draw2d)
-
-- `draw2d`: Draw2D object  
-  Draws a 2D object
-
-#### Draw3D:Draw3D(draw3d)
-
-- `draw3d`: Draw3D object  
-  Draws a 3D object
-
-Draws the 3D object
-
-#### Graphics.GetClearColor() -> Color
-
-Gets the screen clear color
-
-#### Graphics.SetClearColor(c)
-
-- `c`: Screen clear color (Color)  
-  Sets the screen clear color
-
-#### Graphics.BindPipeline2D(pipe)
-
-- `pipe`: GraphicsPipeline2D  
-  Binds a 2D graphics pipeline
-
-#### Graphics.BindDefaultPipeline2D()
-
-Binds the default 2D graphics pipeline
-
-#### Graphics.BindPipeline3D(pipe)
-
-- `pipe`: GraphicsPipeline3D  
-  Binds a 3D graphics pipeline
-
-#### Graphics.BindDefaultPipeline3D()
-
-Binds the default 3D graphics pipeline
-
-#### Graphics.SetUniformData(binding, data)
-
-- `binding`: Binding number (integer)
-- `data`: UniformData object
-  Sets uniform data
-
-#### Graphics.BeginTarget2D(rt)
-
-- `rt`: RenderTexture object
-  Begins 2D render target
-
-#### Graphics.BeginTarget3D(rt)
-
-- `rt`: RenderTexture object
-  Begins 3D render target
-
-#### Graphics.EndTarget(rt, texture_ref)
-
-- `rt`: RenderTexture object
-- `texture_ref`: Result Texture object  
-  Ends render target
-
-### Scene
-
-#### Scene.GetCamera() -> Camera
-
-Gets the scene's main camera
-
-#### Scene.Size() -> Vec2
-
-Gets the scene size
-
-#### Scene.Resize(size)
-
-- `size`: Scene size (Vec2)  
-  Changes the scene size
-
-#### Scene.Half() -> Vec2
-
-Gets half the scene size
-
-#### Scene.Ratio() -> number
-
-Gets the scene aspect ratio
-
-#### Scene.InvRatio() -> number
-
-Gets the scene inverse aspect ratio
-
-#### Scene.DeltaTime() -> number
-
-Gets the delta time
-
-#### Scene.Change(name)
-
-- `name`: Scene name
-  Changes the scene
-
-### Collision
-
-#### Collision.AABBvsAABB(a, b) -> boolean
-
-- `a`: AABB object
-- `b`: AABB object  
-  Performs collision detection between AABBs
-
-### Keyboard
-
-#### Keyboard.IsPressed(scancode) -> boolean
-
-- `scancode`: Key code  
-  Checks if the key was pressed in the current frame
-
-#### Keyboard.IsReleased(scancode) -> boolean
-
-- `scancode`: Key code  
-  Checks if the key was released in the current frame
-
-#### Keyboard.IsDown(scancode) -> boolean
-
-- `scancode`: Key code  
-  Checks if the key is being pressed
-
-#### Keyboard.A = code
-
-#### Keyboard.B = code
-
-#### Keyboard.C = code
-
-#### Keyboard.D = code
-
-#### Keyboard.E = code
-
-#### Keyboard.F = code
-
-#### Keyboard.G = code
-
-#### Keyboard.H = code
-
-#### Keyboard.I = code
-
-#### Keyboard.J = code
-
-#### Keyboard.K = code
-
-#### Keyboard.L = code
-
-#### Keyboard.M = code
-
-#### Keyboard.N = code
-
-#### Keyboard.O = code
-
-#### Keyboard.P = code
-
-#### Keyboard.Q = code
-
-#### Keyboard.R = code
-
-#### Keyboard.S = code
-
-#### Keyboard.T = code
-
-#### Keyboard.U = code
-
-#### Keyboard.V = code
-
-#### Keyboard.W = code
-
-#### Keyboard.X = code
-
-#### Keyboard.Y = code
-
-#### Keyboard.Z = code
-
-#### Keyboard.Key0 = code
-
-#### Keyboard.Key1 = code
-
-#### Keyboard.Key2 = code
-
-#### Keyboard.Key3 = code
-
-#### Keyboard.Key4 = code
-
-#### Keyboard.Key5 = code
-
-#### Keyboard.Key6 = code
-
-#### Keyboard.Key7 = code
-
-#### Keyboard.Key8 = code
-
-#### Keyboard.Key9 = code
-
-#### Keyboard.F1 = code
-
-#### Keyboard.F2 = code
-
-#### Keyboard.F3 = code
-
-#### Keyboard.F4 = code
-
-#### Keyboard.F5 = code
-
-#### Keyboard.F6 = code
-
-#### Keyboard.F7 = code
-
-#### Keyboard.F8 = code
-
-#### Keyboard.F9 = code
-
-#### Keyboard.F10 = code
-
-#### Keyboard.F11 = code
-
-#### Keyboard.F12 = code
-
-#### Keyboard.UP = code
-
-#### Keyboard.DOWN = code
-
-#### Keyboard.LEFT = code
-
-#### Keyboard.RIGHT = code
-
-#### Keyboard.ESCAPE = code
-
-#### Keyboard.SPACE = code
-
-#### Keyboard.RETURN = code
-
-#### Keyboard.BACKSPACE = code
-
-#### Keyboard.TAB = code
-
-#### Keyboard.LSHIFT = code
-
-#### Keyboard.RSHIFT = code
-
-#### Keyboard.LCTRL = code
-
-#### Keyboard.RCTRL = code
-
-#### Keyboard.LALT = code
-
-### Mouse
-
-#### Mouse.GetPosition() -> Vec2
-
-Gets the mouse position within the window  
-The center of the window is the origin (0, 0)
-
-#### Mouse.GetPositionOnScene() -> Vec2
-
-Gets the mouse position within the scene  
-The center of the scene is the origin (0, 0)
-
-#### Mouse.SetPosition(Vec2)
-
-- `Vec2`: Mouse position on the window  
-  Sets the mouse position on the window  
-  The center of the window is the origin (0, 0)
-
-#### Mouse.SetPositionOnScene(Vec2)
-
-- `Vec2`: Mouse position on the scene  
-  Sets the mouse position on the scene  
-  The center of the scene is the origin (0, 0)
-
-#### Mouse.IsPressed(btn) -> boolean
-
-- `btn`: Mouse button code  
-  Checks if the button was pressed in the current frame
-
-#### Mouse.IsReleased(btn) -> boolean
-
-- `btn`: Mouse button code  
-  Checks if the button was released in the current frame
-
-#### Mouse.IsDown(btn) -> boolean
-
-- `btn`: Mouse button code  
-  Checks if the button is being pressed
-
-#### Mouse.GetScrollWheel() -> number
-
-Gets the mouse scroll wheel delta
-
-#### Mouse.HideCursor(isHide)
-
-- `isHide`: Whether to hide the mouse cursor  
-  Shows or hides the cursor
-
-#### Mouse.SetRelative(isRelative)
-
-- `isRelative`: Whether to get mouse position as relative coordinates  
-  Sets whether to get mouse position in relative coordinates
-
-#### Mouse.LEFT = code
-
-#### Mouse.RIGHT = code
-
-#### Mouse.MIDDLE = code
-
-#### Mouse.X1 = code
-
-#### Mouse.X2 = code
-
-### Gamepad
-
-#### Gamepad.IsConnected() -> boolean
-
-Checks if a gamepad is connected
-
-#### Gamepad.IsPressed(btn) -> boolean
-
-- `btn`: Gamepad button code  
-  Checks if the button was pressed in the current frame
-
-#### Gamepad.IsReleased(btn) -> boolean
-
-- `btn`: Gamepad button code  
-  Checks if the button was released in the current frame
-
-#### Gamepad.IsDown(btn) -> boolean
-
-- `btn`: Gamepad button code  
-  Checks if the button is being pressed
-
-#### Gamepad.GetLeftStick() -> Vec2
-
-Gets the left stick delta
-
-#### Gamepad.GetRightStick() -> Vec2
-
-Gets the right stick delta
-
-#### Gamepad.INVALID = code
-
-#### Gamepad.A = code
-
-#### Gamepad.B = code
-
-#### Gamepad.X = code
-
-#### Gamepad.Y = code
-
-#### Gamepad.BACK = code
-
-#### Gamepad.START = code
-
-#### Gamepad.GUIDE = code
-
-#### Gamepad.LEFTSTICK = code
-
-#### Gamepad.RIGHTSTICK = code
-
-#### Gamepad.LEFTSHOULDER = code
-
-#### Gamepad.RIGHTSHOULDER = code
-
-#### Gamepad.DPAD_UP = code
-
-#### Gamepad.DPAD_DOWN = code
-
-#### Gamepad.DPAD_LEFT = code
-
-#### Gamepad.DPAD_RIGHT = code
-
-#### Gamepad.MISC1 = code
-
-#### Gamepad.PADDLE1 = code
-
-#### Gamepad.PADDLE2 = code
-
-#### Gamepad.PADDLE3 = code
-
-#### Gamepad.PADDLE4 = code
-
-#### Gamepad.TOUCHPAD = code
-
-### Periodic
-
-#### Periodic.Sin0_1(t1, t2) -> number
-
-- `t1`: Time parameter 1
-- `t2`: Time parameter 2  
-  Gets a value that changes periodically between 0.0 and 1.0 with sine wave
-
-#### Periodic.Cos0_1(t1, t2) -> number
-
-- `t1`: Time parameter 1
-- `t2`: Time parameter 2  
-  Gets a value that changes periodically between 0.0 and 1.0 with cosine wave
-
-### Time
-
-#### Time.Seconds() -> number
-
-Gets the elapsed time since application start in seconds
-
-#### Time.Milli() -> integer
-
-Gets the elapsed time since application start in milliseconds
-
-### Logger
-
-#### Logger.Verbose(msg)
-
-- `msg`: Log message  
-  Outputs a verbose level log
-
-#### Logger.Info(msg)
-
-- `msg`: Log message  
-  Outputs an info level log
-
-#### Logger.Warn(msg)
-
-- `msg`: Log message  
-  Outputs a warning level log
-
-#### Logger.Error(msg)
-
-- `msg`: Log message  
-  Outputs an error level log
-
-#### Logger.Critical(msg)
-
-- `msg`: Log message  
-  Outputs a critical error level log

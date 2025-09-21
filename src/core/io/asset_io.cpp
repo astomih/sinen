@@ -8,6 +8,8 @@
 #include <core/io/asset_io.hpp>
 #include <core/logger/logger.hpp>
 // external
+#include "src/logic/scene/scene_system.hpp"
+
 #include <SDL3/SDL.h>
 
 namespace sinen {
@@ -73,7 +75,7 @@ void AssetIO::Write(const AssetType &type, std::string_view name,
 }
 void AssetIO::ConvertFilePath(const AssetType &type, std::string &filePath,
                               std::string_view name) {
-  std::string base = "asset/";
+  std::string base = SceneSystem::GetBasePath() + "/asset/";
   switch (type) {
   case AssetType::Font:
     filePath += base + std::string{"font/"} + name.data();

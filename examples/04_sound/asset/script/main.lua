@@ -12,6 +12,9 @@ sound:Load("shot.wav")
 -- Set scale to texture size
 
 function Update()
+    if sn.Keyboard.IsPressed(sn.Keyboard.ESCAPE) then
+        sn.Scene.Change("main", ".")
+    end
     if sn.Keyboard.IsPressed(sn.Keyboard.SPACE) then
         sound:Play()
     end

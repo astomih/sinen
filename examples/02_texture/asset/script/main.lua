@@ -3,6 +3,9 @@ local image = sn.Texture()
 image:Load("logo.png")
 
 function Update()
+    if sn.Keyboard.IsPressed(sn.Keyboard.ESCAPE) then
+        sn.Scene.Change("main", ".")
+    end
 end
 
 function Draw()

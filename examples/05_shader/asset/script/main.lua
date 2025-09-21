@@ -21,6 +21,9 @@ texture:Load("logo.png")
 draw2d.scale = texture:Size()
 
 function Update()
+    if sn.Keyboard.IsPressed(sn.Keyboard.ESCAPE) then
+        sn.Scene.Change("main", ".")
+    end
 end
 
 function Draw()

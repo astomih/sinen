@@ -1,5 +1,7 @@
 #include "script.hpp"
 #include <functional>
+
+#define SOL_NO_CHECK_NUMBER_PRECISION 1
 #include <sol/sol.hpp>
 
 #include <asset/asset.hpp>
@@ -425,11 +427,19 @@ bool LuaScript::Initialize() {
     v["Ratio"] = &Scene::Ratio;
     v["InvRatio"] = &Scene::InvRatio;
     v["DeltaTime"] = &Scene::DeltaTime;
-    v["Change"] = &Scene::Change;
+    v["Change"] = sol::overload(
+        [](const std::string &sceneFileName) { Scene::Change(sceneFileName); },
+        [](const std::string &sceneFileName, const std::string &basePath) {
+          Scene::Change(sceneFileName, basePath);
+        });
   }
   {
     auto v = lua.create_named("Collision");
     v["AABBvsAABB"] = &Collision::AABBvsAABB;
+  }
+  {
+    auto v = lua.create_named("FileSystem");
+    v["EnumerateDirectory"] = &FileSystem::EnumerateDirectory;
   }
   {
     auto v = lua.create_named("Keyboard");

@@ -28,7 +28,7 @@
 				"program": "${workspaceFolder}/build/desktop/Debug/sinen.exe",
 				"args": [],
 				"stopAtEntry": false,
-				"cwd": "${workspaceFolder}/examples/09_physics",
+				"cwd": "${workspaceFolder}/examples",
 				"environment": [],
 				"console": "internalConsole"
 			},

@@ -16,6 +16,9 @@ local up = sn.Vec3(0, 1, 0)
 sn.Scene.GetCamera():LookAt(pos, at, up)
 
 function Update()
+    if sn.Keyboard.IsPressed(sn.Keyboard.ESCAPE) then
+        sn.Scene.Change("main", ".")
+    end
 end
 
 function Draw()

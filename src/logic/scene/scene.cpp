@@ -21,10 +21,10 @@ void Scene::SetState(const Scene::state &state) {
   SceneSystem::set_state(state);
 }
 const Scene::state &Scene::GetState() { return SceneSystem::get_state(); }
-void Scene::Change(const std::string &scene_file_name) {
-  SceneSystem::change(scene_file_name);
+void Scene::Change(const std::string &sceneFileName, const std::string &basePath) {
+  SceneSystem::Change(sceneFileName, basePath);
 }
-std::string Scene::GetCurrentName() { return SceneSystem::current_name(); }
+std::string Scene::GetCurrentName() { return SceneSystem::GetCurrentName(); }
 void Scene::change_impl(std::unique_ptr<Scene::implements> impl) {
   SceneSystem::change_impl(std::move(impl));
 }

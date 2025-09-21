@@ -23,6 +23,9 @@ sn.Scene.GetCamera():LookAt(pos, sn.Vec3(0, 0, 1), sn.Vec3(0, 0, 1))
 
 model:Play(0)
 function Update()
+    if sn.Keyboard.IsPressed(sn.Keyboard.ESCAPE) then
+        sn.Scene.Change("main", ".")
+    end
     model:Update(sn.Scene.DeltaTime())
 end
 

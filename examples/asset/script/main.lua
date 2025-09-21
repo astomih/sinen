@@ -1,0 +1,23 @@
+GUI_MANAGER = require("gui/gui_manager")()
+local exampleDirs = sn.FileSystem.EnumerateDirectory(".")
+local numExamples = 9
+local button = require("gui/button")()
+
+
+local offset = numExamples * 16.0
+function Update()
+    GUI_MANAGER:update()
+
+    for i = 1, numExamples do
+        if button:show(exampleDirs[i], sn.Vec2(0, i * -32.0 + offset
+            ), sn.Vec2(300, 32)) then
+            sn.Scene.Change("main", exampleDirs[i])
+        end
+    end
+end
+
+function Draw()
+    sn.Graphics.BindDefaultPipeline2D()
+    sn.Graphics.DrawText("Example Launcher", sn.Vec2(0, offset), sn.Color(1, 1, 1, 1), 24)
+    GUI_MANAGER:draw()
+end

@@ -42,6 +42,7 @@ bool SceneSystem::is_run_script = true;
 uint32_t SceneSystem::m_prev_tick = 0;
 bool SceneSystem::is_reset = true;
 std::string SceneSystem::m_scene_name = "main";
+std::string SceneSystem::basePath = "./";
 float SceneSystem::deltaTime = 0.f;
 struct ImGuiLog {
   struct Type {
@@ -91,7 +92,7 @@ bool SceneSystem::initialize() {
 }
 void SceneSystem::setup() {
   if (is_run_script) {
-    ScriptSystem::RunScene(current_name());
+    ScriptSystem::RunScene(GetCurrentName());
     PhysicsSystem::PostSetup();
   }
   m_impl->setup();
@@ -214,8 +215,8 @@ void SceneSystem::shutdown() {
   m_game_state = Scene::state::quit;
 }
 
-void SceneSystem::change(const std::string &scene_file_name) {
-  if (scene_file_name.empty()) {
+void SceneSystem::Change(const std::string &sceneFileName, const std::string &basePath) {
+  if (sceneFileName.empty()) {
     Scene::SetState(Scene::state::quit);
     is_reset = false;
   } else {
@@ -223,7 +224,8 @@ void SceneSystem::change(const std::string &scene_file_name) {
   }
 
   SceneSystem::shutdown();
-  m_scene_name = scene_file_name;
+  m_scene_name = sceneFileName;
+  SceneSystem::basePath = basePath;
 }
 
 } // namespace sinen

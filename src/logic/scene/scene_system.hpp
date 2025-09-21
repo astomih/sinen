@@ -38,8 +38,9 @@ public:
 
   static bool is_running() { return m_game_state != Scene::state::quit; }
   static bool is_reset_next() { return is_reset; }
-  static std::string current_name() { return m_scene_name; }
-  static void change(const std::string &scene_file_name);
+  static std::string GetCurrentName() { return m_scene_name; }
+  static std::string GetBasePath() { return basePath; }
+  static void Change(const std::string &sceneFileName ,const std::string &basePath);
   static void change_impl(std::unique_ptr<Scene::implements> impl) {
     m_impl = std::move(impl);
   }
@@ -56,6 +57,7 @@ private:
   static Scene::state m_game_state;
   static uint32_t m_prev_tick;
   static std::string m_scene_name;
+  static std::string basePath;
   static float deltaTime;
 };
 } // namespace sinen

@@ -5,6 +5,7 @@
 #include "io/asset_io.hpp"
 #include "io/asset_type.hpp"
 #include "io/file.hpp"
+#include "io/file_system.hpp"
 #include "io/json.hpp"
 #include "logger/logger.hpp"
 #include "time/time.hpp"

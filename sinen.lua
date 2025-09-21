@@ -296,6 +296,10 @@ sn = {
     ---@field SetLinearVelocity fun(self: Collider, velocity: Vec3)
 
     ---Static class
+    ---@class FileSystem
+    ---@field EnumerateDirectory fun(path: string): table
+
+    ---Static class
     ---@class Random
     ---@field GetRange fun(a: number, b: number): number
     ---@field GetIntRange fun(a: number, b: number): number
@@ -347,7 +351,7 @@ sn = {
     ---@field Ratio fun(): number
     ---@field InvRatio fun(): number
     ---@field DeltaTime fun(): number
-    ---@field Change fun(name: string)
+    ---@field Change fun(name: string, basePath?:string)
     Scene = {},
 
     ---Static class

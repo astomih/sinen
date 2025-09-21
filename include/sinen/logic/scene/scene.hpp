@@ -64,9 +64,10 @@ public:
   /**
    * @brief Change scene
    *
-   * @param scene_file_name scene file name in Lua
+   * @param sceneFileName scene file name in Lua
+   * @param basePath base path of scene file
    */
-  static void Change(const std::string &scene_file_name);
+  static void Change(const std::string &sceneFileName, const std::string &basePath = "./");
   /**
    * @brief Change implementation of scene
    *

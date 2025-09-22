@@ -372,6 +372,7 @@ bool LuaScript::Initialize() {
     auto v = lua.create_named("Physics");
     v["CreateBoxCollider"] = &Physics::CreateBoxCollider;
     v["CreateSphereCollider"] = &Physics::CreateSphereCollider;
+    v["CreateCylinderCollider"] = &Physics::CreateCylinderCollider;
     v["AddCollider"] = &Physics::AddCollider;
   }
   {

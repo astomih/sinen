@@ -19,6 +19,13 @@ Collider Physics::CreateSphereCollider(const glm::vec3 &position, float radius,
                                        bool isStatic) {
   return PhysicsSystem::CreateSphereCollider(position, radius, isStatic);
 }
+Collider Physics::CreateCylinderCollider(const glm::vec3 &position,
+                                         const glm::vec3 &rotation,
+                                         float halfHeight, float radius,
+                                         bool isStatic) {
+  return PhysicsSystem::CreateCylinderCollider(position, rotation, halfHeight,
+                                               radius, isStatic);
+}
 void Physics::AddCollider(const Collider &collider, bool active) {
   PhysicsSystem::AddCollider(collider, active);
 }

@@ -302,6 +302,36 @@ Collider PhysicsSystem::CreateSphereCollider(const glm::vec3 &position,
   bodyMap[collider.id] = body->GetID();
   return collider;
 }
+Collider PhysicsSystem::CreateCylinderCollider(const glm::vec3 &position,
+                                               const glm::vec3 &rotation,
+                                               float halfHeight, float radius,
+                                               bool isStatic) {
+  auto &bodyInterface = raw->physicsSystem.GetBodyInterface();
+  CylinderShapeSettings cylinderShapeSetting(halfHeight, radius);
+  cylinderShapeSetting.SetEmbedded();
+  EMotionType motionType =
+      isStatic ? EMotionType::Static : EMotionType::Dynamic;
+  ObjectLayer layer = isStatic ? Layers::NON_MOVING : Layers::MOVING;
+  ShapeSettings::ShapeResult cylinderShapeResult =
+      cylinderShapeSetting.Create();
+  ShapeRefC cylinderShape = cylinderShapeResult.Get();
+  const auto rotationX =
+      glm::angleAxis(glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+  const auto rotationY =
+
+      glm::angleAxis(glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+  const auto rotationZ =
+      glm::angleAxis(glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+  const auto quaternion = rotationX * rotationY * rotationZ;
+  BodyCreationSettings cylinderSettings(
+      cylinderShape, RVec3(position.x, position.y, position.z),
+      {quaternion.x, quaternion.y, quaternion.z, quaternion.w}, motionType,
+      layer);
+  Body *cylinder = bodyInterface.CreateBody(cylinderSettings);
+  Collider collider{GetNextID()};
+  bodyMap[collider.id] = cylinder->GetID();
+  return collider;
+}
 void PhysicsSystem::AddCollider(const Collider &collider, bool active) {
   BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
   auto it = bodyMap.find(collider.id);

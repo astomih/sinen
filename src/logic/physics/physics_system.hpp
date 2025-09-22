@@ -9,6 +9,7 @@
 #include <Jolt/Physics/Body/BodyActivationListener.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/CylinderShape.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/PhysicsSystem.h>
@@ -39,6 +40,10 @@ public:
   static Collider CreateBoxCollider(const Transform &transform, bool isStatic);
   static Collider CreateSphereCollider(const glm::vec3 &position, float radius,
                                        bool isStatic);
+  static Collider CreateCylinderCollider(const glm::vec3 &position,
+                                         const glm::vec3 &rotation,
+                                         float halfHeight, float radius,
+                                         bool isStatic);
 
   static void AddCollider(const Collider &collider, bool active);
 

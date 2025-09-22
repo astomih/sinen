@@ -22,6 +22,10 @@ public:
   static Collider CreateBoxCollider(const Transform &transform, bool isStatic);
   static Collider CreateSphereCollider(const glm::vec3 &position, float radius,
                                        bool isStatic);
+  static Collider CreateCylinderCollider(const glm::vec3 &position,
+                                         const glm::vec3 &rotation,
+                                         float halfHeight, float radius,
+                                         bool isStatic);
 
   static void AddCollider(const Collider &collider, bool active = true);
 };

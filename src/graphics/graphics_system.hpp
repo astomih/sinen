@@ -13,6 +13,7 @@
 #include <math/color/color.hpp>
 #include <math/color/palette.hpp>
 #include <math/math.hpp>
+#include <platform/window/window.hpp>
 
 namespace sinen {
 template <typename T> using Ptr = px::Ptr<T>;
@@ -35,6 +36,14 @@ public:
   static void shutdown();
   static void unload_data();
   static void render();
+  static void SetCamera2D(const Camera2D &camera) {
+    GraphicsSystem::camera2D = camera;
+  }
+  static Camera2D &GetCamera2D() { return camera2D; }
+  static void SetCamera(const Camera &camera) {
+    GraphicsSystem::camera = camera;
+  }
+  static Camera &GetCamera() { return camera; }
   static void Draw2D(const sinen::Draw2D &draw2D);
   static void Draw3D(const sinen::Draw3D &draw3D);
   static void DrawRect(const Rect &rect, const Color &color, float angle);
@@ -85,6 +94,15 @@ public:
 private:
   static void setup_shapes();
   static Color clearColor;
+
+  inline static Camera2D camera2D = glm::vec2(1280, 720);
+  inline static Camera camera = []() {
+    Camera c;
+    c.LookAt(glm::vec3{0, -1, 1}, glm::vec3{0, 0, 0}, glm::vec3{0, 0, 1});
+    c.Perspective(90.f, Window::Size().x / Window::Size().y, .1f, 100.f);
+    return c;
+  }();
+  ;
   // Renderer
   static bool showImGui;
   static std::list<std::function<void()>> m_imgui_function;

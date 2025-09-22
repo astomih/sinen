@@ -13,11 +13,11 @@ transform.scale = sn.Vec3(1, 1, 1)
 local pos = sn.Vec3(1, 1, 3)
 local at = sn.Vec3(0)
 local up = sn.Vec3(0, 1, 0)
-sn.Scene.GetCamera():LookAt(pos, at, up)
+sn.Graphics.GetCamera():LookAt(pos, at, up)
 
 function Update()
     if sn.Keyboard.IsPressed(sn.Keyboard.ESCAPE) then
-        sn.Scene.Change("main", ".")
+        sn.Script.Load("main", ".")
     end
 end
 

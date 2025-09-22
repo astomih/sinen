@@ -22,9 +22,7 @@
 #include <zep.h>
 
 namespace sinen {
-std::unique_ptr<Scene::implements> SceneSystem::m_impl =
-    std::make_unique<Scene::implements>();
-Scene::state SceneSystem::m_game_state = Scene::state::quit;
+SceneSystem::State SceneSystem::m_game_state = State::quit;
 bool SceneSystem::is_run_script = true;
 uint32_t SceneSystem::m_prev_tick = 0;
 bool SceneSystem::is_reset = true;
@@ -82,8 +80,7 @@ void SceneSystem::setup() {
     ScriptSystem::RunScene(GetCurrentName());
     PhysicsSystem::PostSetup();
   }
-  m_impl->setup();
-  m_game_state = Scene::state::running;
+  m_game_state = State::running;
   m_prev_tick = SDL_GetTicks();
 }
 
@@ -96,7 +93,7 @@ void SceneSystem::process_input() {
     InputSystem::process_event(event);
     switch (event.type) {
     case SDL_EVENT_QUIT: {
-      m_game_state = Scene::state::quit;
+      m_game_state = State::quit;
     } break;
     default:
       break;
@@ -194,18 +191,14 @@ void SceneSystem::update_scene() {
     ScriptSystem::UpdateScene();
   }
   PhysicsSystem::Update();
-  m_impl->update(deltaTime);
   SoundSystem::update(deltaTime);
 }
-void SceneSystem::shutdown() {
-  m_impl->terminate();
-  m_game_state = Scene::state::quit;
-}
+void SceneSystem::shutdown() { m_game_state = State::quit; }
 
 void SceneSystem::Change(const std::string &sceneFileName,
                          const std::string &basePath) {
   if (sceneFileName.empty()) {
-    Scene::SetState(Scene::state::quit);
+    set_state(State::quit);
     is_reset = false;
   } else {
     is_reset = true;

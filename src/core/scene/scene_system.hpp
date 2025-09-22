@@ -1,4 +1,3 @@
-#include <core/scene/scene.hpp>
 #include <graphics/drawable/drawable_wrapper.hpp>
 
 #include <list>
@@ -7,6 +6,7 @@
 namespace sinen {
 class SceneSystem {
 public:
+  enum class State { running, paused, quit };
   SceneSystem() = default;
   ~SceneSystem() = default;
   /**
@@ -27,24 +27,21 @@ public:
    *
    * @param state
    */
-  static void set_state(const Scene::state &state) { m_game_state = state; }
+  static void set_state(const State &state) { m_game_state = state; }
   /**
    * @brief Get the state object
    *
    * @return const scene::state&
    */
-  static const Scene::state &get_state() { return m_game_state; }
+  static const State &get_state() { return m_game_state; }
   static void set_run_script(bool is_run) { is_run_script = is_run; }
 
-  static bool is_running() { return m_game_state != Scene::state::quit; }
+  static bool is_running() { return m_game_state != State::quit; }
   static bool is_reset_next() { return is_reset; }
   static std::string GetCurrentName() { return m_scene_name; }
   static std::string GetBasePath() { return basePath; }
   static void Change(const std::string &sceneFileName,
                      const std::string &basePath);
-  static void change_impl(std::unique_ptr<Scene::implements> impl) {
-    m_impl = std::move(impl);
-  }
 
   static void process_input();
   static void update_scene();
@@ -54,8 +51,7 @@ public:
   static inline float delta_time() { return deltaTime; }
 
 private:
-  static std::unique_ptr<Scene::implements> m_impl;
-  static Scene::state m_game_state;
+  static State m_game_state;
   static uint32_t m_prev_tick;
   static std::string m_scene_name;
   static std::string basePath;

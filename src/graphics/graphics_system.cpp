@@ -170,9 +170,7 @@ void GraphicsSystem::render() {
   Imgui_ImplParanoixa_PrepareDrawData(draw_data, commandBuffer);
   isFrameStarted = true;
   objectCount = 0;
-  if (SceneSystem::is_run_script) {
-    ScriptSystem::DrawScene();
-  }
+  ScriptSystem::DrawScene();
   if (objectCount > 0 && !isDraw2D) {
     commandBuffer->EndRenderPass(currentRenderPass);
   }
@@ -195,8 +193,7 @@ void GraphicsSystem::render() {
   device->WaitForGPUIdle();
 }
 void GraphicsSystem::Draw2D(const sinen::Draw2D &draw2D) {
-  auto ratio = glm::vec2(Window::Size().x / Scene::Size().x,
-                         Window::Size().y / Scene::Size().y);
+  auto ratio = camera2D.WindowRatio();
   {
     auto t = glm::translate(glm::mat4(1.0f),
                             glm::vec3(draw2D.position.x * ratio.x,
@@ -214,7 +211,7 @@ void GraphicsSystem::Draw2D(const sinen::Draw2D &draw2D) {
   draw2D.obj->material = draw2D.material;
   auto viewproj = glm::mat4(1.0f);
 
-  auto screen_size = Scene::Size();
+  auto screen_size = camera2D.Size();
   viewproj[0][0] = 2.f / Window::Size().x;
   viewproj[1][1] = 2.f / Window::Size().y;
   draw2D.obj->param.proj = viewproj;
@@ -322,8 +319,8 @@ void GraphicsSystem::Draw3D(const sinen::Draw3D &draw3D) {
 
     auto world = t * r * s;
     draw3D.obj->param.world = world;
-    draw3D.obj->param.proj = Scene::GetCamera().Projection();
-    draw3D.obj->param.view = Scene::GetCamera().GetView();
+    draw3D.obj->param.proj = camera.Projection();
+    draw3D.obj->param.view = camera.GetView();
   }
   if (GetModelData(draw3D.model.data)->vertexBuffer == nullptr) {
     draw3D.obj->model = GraphicsSystem::box;

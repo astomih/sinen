@@ -7,6 +7,7 @@
 #include "model/model.hpp"
 #include "model/vertex.hpp"
 #include "model/vertex_array.hpp"
+#include "script/script.hpp"
 #include "shader/shader.hpp"
 #include "texture/render_texture.hpp"
 #include "texture/texture.hpp"

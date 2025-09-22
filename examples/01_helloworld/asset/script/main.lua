@@ -1,6 +1,6 @@
 function Update()
     if sn.Keyboard.IsPressed(sn.Keyboard.ESCAPE) then
-        sn.Scene.Change("main", ".")
+        sn.Script.Load("main", ".")
     end
 end
 

@@ -11,7 +11,7 @@ function Update()
     for i = 1, numExamples do
         if button:show(exampleDirs[i], sn.Vec2(0, i * -32.0 + offset
             ), sn.Vec2(300, 32)) then
-            sn.Scene.Change("main", exampleDirs[i])
+            sn.Script.Load("main", exampleDirs[i])
         end
     end
 end

@@ -1,9 +1,9 @@
 local texture = sn.Texture()
 texture:FillColor(sn.Color(1, 1, 1, 1))
 local renderTexture = sn.RenderTexture()
-local sx = sn.Scene.Size().x
-local sy = sn.Scene.Size().y
-renderTexture:Create(math.floor(sx), math.floor(sy))
+local sx = sn.Graphics.GetCamera2D():Size().x
+local sy = sn.Graphics.GetCamera2D():Size().y
+renderTexture:Create(sx, sy)
 
 local model = sn.Model()
 model:Load("Suzanne.gltf")
@@ -15,9 +15,9 @@ local pos = sn.Vec3(1, 1, 3)
 
 function Update()
     if sn.Keyboard.IsPressed(sn.Keyboard.ESCAPE) then
-        sn.Scene.Change("main", ".")
+        sn.Script.Load("main", ".")
     end
-    sn.Scene.GetCamera():LookAt(pos, sn.Vec3(0), sn.Vec3(0, 1, 0))
+    sn.Graphics.GetCamera():LookAt(pos, sn.Vec3(0), sn.Vec3(0, 1, 0))
 end
 
 function Draw()

@@ -2,7 +2,6 @@
 #include "graphics_system.hpp"
 #include <SDL3/SDL_events.h>
 #include <asset/asset.hpp>
-#include <core/scene/scene.hpp>
 #include <cstring>
 #include <graphics/camera/camera.hpp>
 #include <graphics/drawable/drawable_wrapper.hpp>
@@ -16,14 +15,9 @@
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtx/quaternion.hpp"
 #include <glm/mat4x4.hpp>
+#include <graphics/graphics.hpp>
 
 namespace sinen {
-bool Graphics::offscreen_rendering = false;
-glm::mat4 Graphics::render_texture_user_data;
-
-void Graphics::unload_data() { GraphicsSystem::unload_data(); }
-
-void Graphics::render() { GraphicsSystem::render(); }
 void Graphics::Draw2D(const sinen::Draw2D &draw2D) {
   GraphicsSystem::Draw2D(draw2D);
 }
@@ -60,7 +54,16 @@ std::list<std::function<void()>> &Graphics::get_imgui_function() {
 void Graphics::add_imgui_function(std::function<void()> function) {
   GraphicsSystem::get_imgui_function().push_back(function);
 }
-void *Graphics::get_texture_id() { return GraphicsSystem::get_texture_id(); }
+void Graphics::SetCamera(const Camera &camera) {
+  GraphicsSystem::SetCamera(camera);
+}
+Camera &Graphics::GetCamera() { return GraphicsSystem::GetCamera(); }
+
+void Graphics::SetCamera2D(const Camera2D &camera) {
+  GraphicsSystem::SetCamera2D(camera);
+}
+
+Camera2D &Graphics::GetCamera2D() { return GraphicsSystem::GetCamera2D(); }
 
 void Graphics::BindPipeline3D(const GraphicsPipeline3D &pipeline) {
   GraphicsSystem::bind_pipeline3d(pipeline);

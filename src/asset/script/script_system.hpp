@@ -3,7 +3,7 @@
 #include <memory>
 #include <string_view>
 
-#include "script.hpp"
+#include "script_backend.hpp"
 
 namespace sinen {
 
@@ -20,7 +20,7 @@ public:
   static ScriptType GetType() { return type; }
 
 private:
-  static std::unique_ptr<IScript> script;
+  static std::unique_ptr<IScriptBackend> script;
   static ScriptType type;
 };
 } // namespace sinen

@@ -136,6 +136,14 @@ sn = {
     ---@field IsAABBInFrustum fun(self: Camera, aabb: AABB): boolean
     Camera = function() end,
 
+    ---@class Camera2D
+    ---@field Resize fun(self: Camera2D, size: Vec2)
+    ---@field WindowRatio fun(self: Camera2D): Vec2
+    ---@field InvWindowRatio fun(self: Camera2D): Vec2
+    ---@field Size fun(self: Camera2D): Vec2
+    ---@field Half fun(self: Camera2D): Vec2
+    Camera2D = function() end,
+
     ---@class Model
     ---@field GetAABB fun(self: Model): AABB
     ---@field Load fun(self: Model, path: string)
@@ -296,6 +304,10 @@ sn = {
     ---@field SetLinearVelocity fun(self: Collider, velocity: Vec3)
 
     ---Static class
+    ---@class Script
+    ---@field Load fun(path: string, basePath?: string)
+
+    ---Static class
     ---@class FileSystem
     ---@field EnumerateDirectory fun(path: string): table
 
@@ -324,6 +336,10 @@ sn = {
     ---@field DrawImage fun(texture: Texture, rect: Rect, angle: number?)
     ---@field DrawText fun(text: string, position: Vec2, color: Color?, fontSize: number?, angle: number?)
     ---@field DrawModel fun(model: Model, transform: Transform, material: Material)
+    ---@field SetCamera fun(camera: Camera)
+    ---@field GetCamera fun(): Camera
+    ---@field SetCamera2D fun(camera: Camera2D)
+    ---@field GetCamera2D fun(): Camera2D
     ---@field GetClearColor fun(): Color
     ---@field SetClearColor fun(c: Color)
     ---@field BindPipeline2D fun(pipe: GraphicsPipeline2D)
@@ -341,18 +357,6 @@ sn = {
     ---@field CreateBoxCollider fun(transform: Transform, isStatic: boolean): Collider
     ---@field CreateSphereCollider fun(position: Vec3, radius: number, isStatic: boolean): Collider
     ---@field AddCollider fun(collider: Collider, isActive: boolean)
-
-    ---Static class
-    ---@class Scene
-    ---@field GetCamera fun(): Camera
-    ---@field Size fun(): Vec2
-    ---@field Resize fun(size: Vec2)
-    ---@field Half fun(): Vec2
-    ---@field Ratio fun(): number
-    ---@field InvRatio fun(): number
-    ---@field DeltaTime fun(): number
-    ---@field Change fun(name: string, basePath?:string)
-    Scene = {},
 
     ---Static class
     ---@class Collision
@@ -489,6 +493,7 @@ sn = {
     ---@class Time
     ---@field Seconds fun(): number
     ---@field Milli fun(): integer
+    ---@field DeltaTime fun(): number
     Time = {},
 
     ---Static class

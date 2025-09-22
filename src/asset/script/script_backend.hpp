@@ -1,12 +1,12 @@
-#ifndef SINEN_SCRIPT
-#define SINEN_SCRIPT
+#ifndef SINEN_SCRIPT_SYSTEM
+#define SINEN_SCRIPT_SYSTEM
 #include <memory>
 #include <string_view>
 
 namespace sinen {
-class IScript {
+class IScriptBackend {
 public:
-  virtual ~IScript() = default;
+  virtual ~IScriptBackend() = default;
   virtual bool Initialize() = 0;
   virtual void Finalize() = 0;
 
@@ -16,11 +16,11 @@ public:
   virtual void Draw() = 0;
 };
 
-class Script {
+class ScriptBackend {
 public:
-  static std::unique_ptr<IScript> CreateLua();
-  static std::unique_ptr<IScript> CreatePython();
+  static std::unique_ptr<IScriptBackend> CreateLua();
+  static std::unique_ptr<IScriptBackend> CreatePython();
 };
 
 } // namespace sinen
-#endif
+#endif // !SINEN_SCRIPT_SYSTEM

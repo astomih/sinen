@@ -21,6 +21,8 @@ public:
    */
   static uint32_t Milli();
 
+  static float DeltaTime();
+
   /**
    * @brief Get the function time object
    *

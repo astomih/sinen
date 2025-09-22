@@ -1,4 +1,4 @@
-#include "script.hpp"
+#include "script_backend.hpp"
 #include <functional>
 
 #define SOL_NO_CHECK_NUMBER_PRECISION 1
@@ -28,7 +28,7 @@
 #endif
 
 namespace sinen {
-class LuaScript final : public IScript {
+class LuaScript final : public IScriptBackend {
 public:
   LuaScript() = default;
   ~LuaScript() override = default;
@@ -44,7 +44,7 @@ private:
   sol::state state;
 };
 
-std::unique_ptr<IScript> Script::CreateLua() {
+std::unique_ptr<IScriptBackend> ScriptBackend::CreateLua() {
   return std::make_unique<LuaScript>();
 }
 
@@ -108,6 +108,8 @@ bool LuaScript::Initialize() {
                         return Rect(p, s);
                       });
     lua["Transform"] = []() -> Transform { return {}; };
+    lua["Camera"] = []() -> Camera { return {}; };
+    lua["Camera2D"] = []() -> Camera2D { return {}; };
   }
   {
     auto v = lua.new_usertype<glm::vec3>("", sol::no_construction());
@@ -259,6 +261,14 @@ bool LuaScript::Initialize() {
     v["IsAABBInFrustum"] = &Camera::IsAABBInFrustum;
   }
   {
+    auto v = lua.new_usertype<Camera2D>("", sol::no_construction());
+    v["Size"] = &Camera2D::Size;
+    v["Half"] = &Camera2D::Half;
+    v["Resize"] = &Camera2D::Resize;
+    v["WindowRatio"] = &Camera2D::WindowRatio;
+    v["InvWindowRatio"] = &Camera2D::InvWindowRatio;
+  }
+  {
     auto v = lua.new_usertype<Model>("", sol::no_construction());
     v["GetAABB"] = &Model::GetAABB;
     v["Load"] = &Model::Load;
@@ -408,6 +418,10 @@ bool LuaScript::Initialize() {
           Graphics::DrawText(text, position, color, fontSize, angle);
         });
     v["DrawModel"] = &Graphics::DrawModel;
+    v["SetCamera"] = &Graphics::SetCamera;
+    v["GetCamera"] = &Graphics::GetCamera;
+    v["SetCamera2D"] = &Graphics::SetCamera2D;
+    v["GetCamera2D"] = &Graphics::GetCamera2D;
     v["GetClearColor"] = &Graphics::GetClearColor;
     v["SetClearColor"] = &Graphics::SetClearColor;
     v["BindPipeline2D"] = &Graphics::BindPipeline2D;
@@ -420,27 +434,16 @@ bool LuaScript::Initialize() {
     v["ReadbackTexture"] = &Graphics::ReadbackTexture;
   }
   {
-    auto v = lua.create_named("Scene");
-    v["GetCamera"] = &Scene::GetCamera;
-    v["Size"] = &Scene::Size;
-    v["Resize"] = &Scene::Resize;
-    v["Half"] = &Scene::Half;
-    v["Ratio"] = &Scene::Ratio;
-    v["InvRatio"] = &Scene::InvRatio;
-    v["DeltaTime"] = &Scene::DeltaTime;
-    v["Change"] = sol::overload(
-        [](const std::string &sceneFileName) { Scene::Change(sceneFileName); },
-        [](const std::string &sceneFileName, const std::string &basePath) {
-          Scene::Change(sceneFileName, basePath);
-        });
-  }
-  {
     auto v = lua.create_named("Collision");
     v["AABBvsAABB"] = &Collision::AABBvsAABB;
   }
   {
     auto v = lua.create_named("FileSystem");
     v["EnumerateDirectory"] = &FileSystem::EnumerateDirectory;
+  }
+  {
+    auto v = lua.create_named("Script");
+    v["Load"] = &Script::Load;
   }
   {
     auto v = lua.create_named("Keyboard");
@@ -573,6 +576,7 @@ bool LuaScript::Initialize() {
     auto v = lua.create_named("Time");
     v["Seconds"] = &Time::Seconds;
     v["Milli"] = &Time::Milli;
+    v["DeltaTime"] = &Time::DeltaTime;
   }
   {
     // logger

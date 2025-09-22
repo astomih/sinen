@@ -31,13 +31,13 @@ sn.Physics.AddCollider(floorCollider, false)
 sn.Physics.AddCollider(sphereCollider, true)
 
 
-sn.Scene.GetCamera():LookAt(sn.Vec3(0, 10, 25), sn.Vec3(0, 0, 0), sn.Vec3(0, 1, 0))
+sn.Graphics.GetCamera():LookAt(sn.Vec3(0, 10, 25), sn.Vec3(0, 0, 0), sn.Vec3(0, 1, 0))
 
 
 
 function Update()
     if sn.Keyboard.IsPressed(sn.Keyboard.ESCAPE) then
-        sn.Scene.Change("main", ".")
+        sn.Script.Load("main", ".")
     end
     boxTransform.position = floorCollider:GetPosition()
     sphereTransform.position = sphereCollider:GetPosition()

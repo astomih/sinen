@@ -1,16 +1,16 @@
 // internal
 #include "script_system.hpp"
-#include "script.hpp"
+#include "script_backend.hpp"
 #include <core/io/asset_io.hpp>
 
 namespace sinen {
-std::unique_ptr<IScript> ScriptSystem::script = nullptr;
+std::unique_ptr<IScriptBackend> ScriptSystem::script = nullptr;
 ScriptType ScriptSystem::type = ScriptType::Lua;
 
 bool ScriptSystem::Initialize(const ScriptType &type) {
   switch (type) {
   case ScriptType::Lua:
-    script = Script::CreateLua();
+    script = ScriptBackend::CreateLua();
     ScriptSystem::type = ScriptType::Lua;
     break;
   default:

@@ -1,11 +1,11 @@
 #include "../window/window_system.hpp"
 #include <SDL3/SDL.h>
 
+#include "../../graphics/graphics_system.hpp"
 #include "SDL3/SDL_mouse.h"
 #include "input_system.hpp"
 #include "platform/input/mouse.hpp"
 #include "platform/window/window.hpp"
-#include <core/scene/scene.hpp>
 #include <cstring>
 #include <imgui_impl_sdl3.h>
 #include <platform/platform.hpp>
@@ -125,7 +125,7 @@ void Mouse::SetPosition(const glm::vec2 &pos) {
                         half.y - pos.y);
 }
 void Mouse::SetPositionOnScene(const glm::vec2 &pos) {
-  Mouse::SetPosition(pos * Scene::Ratio());
+  Mouse::SetPosition(pos * GraphicsSystem::GetCamera2D().WindowRatio());
 }
 glm::vec2 Mouse::GetPosition() {
   glm::vec2 pos;
@@ -135,7 +135,7 @@ glm::vec2 Mouse::GetPosition() {
   return pos;
 }
 glm::vec2 Mouse::GetPositionOnScene() {
-  return Mouse::GetPosition() * Scene::InvRatio();
+  return Mouse::GetPosition() * GraphicsSystem::GetCamera2D().InvWindowRatio();
 }
 
 glm::vec2 Mouse::GetScrollWheel() { return InputSystem::m_mouse.mScrollWheel; }

@@ -1,4 +1,4 @@
-#include "scene_system.hpp"
+#include "main_system.hpp"
 #include "../../asset/audio/sound_system.hpp"
 #include "../../asset/script/script_system.hpp"
 #include "../../graphics/graphics_system.hpp"
@@ -22,13 +22,13 @@
 #include <zep.h>
 
 namespace sinen {
-SceneSystem::State SceneSystem::m_game_state = State::quit;
-bool SceneSystem::is_run_script = true;
-uint32_t SceneSystem::m_prev_tick = 0;
-bool SceneSystem::is_reset = true;
-std::string SceneSystem::m_scene_name = "main";
-std::string SceneSystem::basePath = "./";
-float SceneSystem::deltaTime = 0.f;
+MainSystem::State MainSystem::m_game_state = State::quit;
+bool MainSystem::is_run_script = true;
+uint32_t MainSystem::m_prev_tick = 0;
+bool MainSystem::is_reset = true;
+std::string MainSystem::m_scene_name = "main";
+std::string MainSystem::basePath = "./";
+float MainSystem::deltaTime = 0.f;
 struct ImGuiLog {
   struct Type {
     ImVec4 color;
@@ -37,7 +37,7 @@ struct ImGuiLog {
   static std::vector<Type> logs;
 };
 std::vector<ImGuiLog::Type> ImGuiLog::logs;
-bool SceneSystem::initialize() {
+bool MainSystem::initialize() {
   Logger::set_output_function([&](Logger::priority p, std::string_view str) {
     std::string newStr;
     ImVec4 color;
@@ -75,7 +75,7 @@ bool SceneSystem::initialize() {
   });
   return true;
 }
-void SceneSystem::setup() {
+void MainSystem::setup() {
   if (is_run_script) {
     ScriptSystem::RunScene(GetCurrentName());
     PhysicsSystem::PostSetup();
@@ -84,7 +84,7 @@ void SceneSystem::setup() {
   m_prev_tick = SDL_GetTicks();
 }
 
-void SceneSystem::process_input() {
+void MainSystem::process_input() {
 
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
@@ -101,7 +101,7 @@ void SceneSystem::process_input() {
   }
 }
 
-void SceneSystem::update_scene() {
+void MainSystem::update_scene() {
   {
     if (Keyboard::IsPressed(Keyboard::code::F3)) {
       Graphics::toggle_show_imgui();
@@ -193,10 +193,10 @@ void SceneSystem::update_scene() {
   PhysicsSystem::Update();
   SoundSystem::update(deltaTime);
 }
-void SceneSystem::shutdown() { m_game_state = State::quit; }
+void MainSystem::shutdown() { m_game_state = State::quit; }
 
-void SceneSystem::Change(const std::string &sceneFileName,
-                         const std::string &basePath) {
+void MainSystem::Change(const std::string &sceneFileName,
+                        const std::string &basePath) {
   if (sceneFileName.empty()) {
     set_state(State::quit);
     is_reset = false;
@@ -204,9 +204,9 @@ void SceneSystem::Change(const std::string &sceneFileName,
     is_reset = true;
   }
 
-  SceneSystem::shutdown();
+  MainSystem::shutdown();
   m_scene_name = sceneFileName;
-  SceneSystem::basePath = basePath;
+  MainSystem::basePath = basePath;
 }
 
 } // namespace sinen

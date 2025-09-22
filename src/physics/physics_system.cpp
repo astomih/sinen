@@ -10,7 +10,7 @@
 #include "glm/gtx/quaternion.hpp"
 #include <glm/mat4x4.hpp>
 
-#include "../core/scene/scene_system.hpp"
+#include "../main_system.hpp"
 
 JPH_SUPPRESS_WARNINGS
 
@@ -213,7 +213,7 @@ void PhysicsSystem::PostSetup() {
 
 void PhysicsSystem::Update() {
   const int cCollisionSteps = 1;
-  raw->physicsSystem.Update(SceneSystem::delta_time(), cCollisionSteps,
+  raw->physicsSystem.Update(MainSystem::delta_time(), cCollisionSteps,
                             &raw->tempAllocator, &raw->jobSystem);
 }
 

@@ -4,11 +4,11 @@
 #include <vector>
 
 namespace sinen {
-class SceneSystem {
+class MainSystem {
 public:
   enum class State { running, paused, quit };
-  SceneSystem() = default;
-  ~SceneSystem() = default;
+  MainSystem() = default;
+  ~MainSystem() = default;
   /**
    * @brief Initialize scene system
    *

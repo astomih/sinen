@@ -26,7 +26,7 @@
 #include "../asset/script/script_system.hpp"
 #include "../asset/texture/texture_data.hpp"
 
-#include "../core/scene/scene_system.hpp"
+#include "../main_system.hpp"
 #include <asset/texture/render_texture.hpp>
 
 #include <imgui.h>

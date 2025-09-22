@@ -8,7 +8,7 @@
 #include <core/io/asset_io.hpp>
 #include <core/logger/logger.hpp>
 // external
-#include "src/core/scene/scene_system.hpp"
+#include "../../main_system.hpp"
 
 #include <SDL3/SDL.h>
 
@@ -75,7 +75,7 @@ void AssetIO::Write(const AssetType &type, std::string_view name,
 }
 void AssetIO::ConvertFilePath(const AssetType &type, std::string &filePath,
                               std::string_view name) {
-  std::string base = SceneSystem::GetBasePath() + "/asset/";
+  std::string base = MainSystem::GetBasePath() + "/asset/";
   switch (type) {
   case AssetType::Font:
     filePath += base + std::string{"font/"} + name.data();

@@ -13,12 +13,13 @@ int main(const int argc, char *argv[]) {
 
 #include "asset/audio/sound_system.hpp"
 #include "asset/script/script_system.hpp"
-#include "core/scene/scene_system.hpp"
 #include "graphics/graphics_system.hpp"
 #include "math/random_system.hpp"
 #include "physics/physics_system.hpp"
 #include "platform/input/input_system.hpp"
 #include "platform/window/window_system.hpp"
+
+#include "main_system.hpp"
 
 // external
 #define SDL_MAIN_HANDLED
@@ -63,30 +64,30 @@ bool Sinen::initialize(int argc, char *argv[]) {
     Logger::Critical("Failed to initialize random system");
     return false;
   }
-  SceneSystem::initialize();
+  MainSystem::initialize();
   return true;
 }
 void Sinen::run() {
   while (true) {
-    if (SceneSystem::is_running()) {
+    if (MainSystem::is_running()) {
       WindowSystem::prepare_frame();
       InputSystem::prepare_for_update();
-      SceneSystem::process_input();
+      MainSystem::process_input();
       InputSystem::update();
-      SceneSystem::update_scene();
+      MainSystem::update_scene();
       GraphicsSystem::render();
       continue;
     }
-    if (SceneSystem::is_reset) {
-      SceneSystem::setup();
-      SceneSystem::is_reset = false;
+    if (MainSystem::is_reset) {
+      MainSystem::setup();
+      MainSystem::is_reset = false;
       continue;
     }
     break;
   }
 }
 void Sinen::shutdown() {
-  SceneSystem::shutdown();
+  MainSystem::shutdown();
   PhysicsSystem::Shutdown();
   ScriptSystem::Shutdown();
   InputSystem::shutdown();

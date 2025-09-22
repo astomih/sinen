@@ -8,7 +8,7 @@
 #include <core/io/asset_io.hpp>
 #include <core/logger/logger.hpp>
 // external
-#include "src/logic/scene/scene_system.hpp"
+#include "src/core/scene/scene_system.hpp"
 
 #include <SDL3/SDL.h>
 

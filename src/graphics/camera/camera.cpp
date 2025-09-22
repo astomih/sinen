@@ -4,9 +4,8 @@
 #include <glm/gtx/transform.hpp>
 
 // internal
-#include <core/logger/logger.hpp>
+#include <graphics/camera/camera.hpp>
 #include <graphics/graphics.hpp>
-#include <logic/camera/camera.hpp>
 #include <platform/window/window.hpp>
 
 namespace sinen {

@@ -1,5 +1,5 @@
+#include <core/scene/scene.hpp>
 #include <graphics/drawable/drawable_wrapper.hpp>
-#include <logic/scene/scene.hpp>
 
 #include <list>
 #include <vector>
@@ -40,7 +40,8 @@ public:
   static bool is_reset_next() { return is_reset; }
   static std::string GetCurrentName() { return m_scene_name; }
   static std::string GetBasePath() { return basePath; }
-  static void Change(const std::string &sceneFileName ,const std::string &basePath);
+  static void Change(const std::string &sceneFileName,
+                     const std::string &basePath);
   static void change_impl(std::unique_ptr<Scene::implements> impl) {
     m_impl = std::move(impl);
   }

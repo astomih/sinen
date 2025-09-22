@@ -8,6 +8,7 @@
 #include "io/file_system.hpp"
 #include "io/json.hpp"
 #include "logger/logger.hpp"
+#include "scene/scene.hpp"
 #include "time/time.hpp"
 #include "time/timer.hpp"
 

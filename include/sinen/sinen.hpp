@@ -13,8 +13,8 @@
 // Graphics
 #include "graphics/graphics.hpp"
 
-// Logic
-#include "logic/logic.hpp"
+// Physics
+#include "physics/physics.hpp"
 
 // Math
 #include "math/math.hpp"

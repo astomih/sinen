@@ -7,8 +7,8 @@
 #include <asset/asset.hpp>
 #include <core/core.hpp>
 #include <graphics/graphics.hpp>
-#include <logic/logic.hpp>
 #include <math/math.hpp>
+#include <physics/physics.hpp>
 
 #include "glm/ext/vector_float3.hpp"
 // glm::rotate

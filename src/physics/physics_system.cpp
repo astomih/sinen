@@ -10,7 +10,7 @@
 #include "glm/gtx/quaternion.hpp"
 #include <glm/mat4x4.hpp>
 
-#include "../scene/scene_system.hpp"
+#include "../core/scene/scene_system.hpp"
 
 JPH_SUPPRESS_WARNINGS
 

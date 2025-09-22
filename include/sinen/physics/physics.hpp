@@ -1,6 +1,9 @@
 #ifndef SINEN_PHYSICS_HPP
 #define SINEN_PHYSICS_HPP
 
+#include "collision.hpp"
+#include "primitive2.hpp"
+#include "primitive3.hpp"
 #include <math/transform/transform.hpp>
 
 #include <glm/vec3.hpp>

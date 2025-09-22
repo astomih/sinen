@@ -1,6 +1,6 @@
 #include <glm/glm.hpp>
 #include <math/math.hpp>
-#include <logic/physics/collision.hpp>
+#include <physics/collision.hpp>
 
 namespace sinen {
 void AABB::update_world(const glm::vec3 &p, const glm::vec3 &scale,
@@ -140,17 +140,17 @@ bool Collision::OBBvsOBB(const OBB &a, const OBB &b) {
   return true;
 }
 float Collision::SegmentLengthOnSeparateAxis(const glm::vec3 &Sep,
-                                                 const glm::vec3 &e1,
-                                                 const glm::vec3 &e2,
-                                                 const glm::vec3 &e3) {
+                                             const glm::vec3 &e1,
+                                             const glm::vec3 &e2,
+                                             const glm::vec3 &e3) {
   float r1 = Math::abs(glm::dot(Sep, e1));
   float r2 = Math::abs(glm::dot(Sep, e2));
   float r3 = Math::abs(glm::dot(Sep, e3));
   return r1 + r2 + r3;
 }
 float Collision::SegmentLengthOnSeparateAxis(const glm::vec3 &Sep,
-                                                 const glm::vec3 &e1,
-                                                 const glm::vec3 &e2) {
+                                             const glm::vec3 &e1,
+                                             const glm::vec3 &e2) {
   float r1 = Math::abs(glm::dot(Sep, e1));
   float r2 = Math::abs(glm::dot(Sep, e2));
   return r1 + r2;

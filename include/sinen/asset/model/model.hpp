@@ -5,7 +5,7 @@
 #include <string_view>
 #include <vector>
 
-#include "../../logic/physics/collision.hpp"
+#include "../../physics/collision.hpp"
 #include "graphics/uniform_data.hpp"
 #include "vertex_array.hpp"
 

@@ -4,7 +4,7 @@
 
 #include <glm/mat4x4.hpp>
 
-#include "../physics/collision.hpp"
+#include "../../physics/collision.hpp"
 
 namespace sinen {
 struct Frustum {

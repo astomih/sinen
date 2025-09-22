@@ -12,11 +12,11 @@ int main(const int argc, char *argv[]) {
 }
 
 #include "asset/audio/sound_system.hpp"
+#include "asset/script/script_system.hpp"
+#include "core/scene/scene_system.hpp"
 #include "graphics/graphics_system.hpp"
-#include "logic/physics/physics_system.hpp"
-#include "logic/scene/scene_system.hpp"
-#include "logic/script/script_system.hpp"
 #include "math/random_system.hpp"
+#include "physics/physics_system.hpp"
 #include "platform/input/input_system.hpp"
 #include "platform/window/window_system.hpp"
 

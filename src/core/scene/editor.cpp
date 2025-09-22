@@ -5,7 +5,7 @@
 
 #include "editor.hpp"
 
-#include "../../logic/script/script_system.hpp"
+#include "../../asset/script/script_system.hpp"
 #include "../../platform/input/input_system.hpp"
 #include "platform/input/keyboard.hpp"
 

@@ -6,8 +6,8 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <graphics/graphics.hpp>
-#include <logic/physics/collision.hpp>
 #include <paranoixa/paranoixa.hpp>
+#include <physics/collision.hpp>
 
 namespace sinen {
 struct BoneInfo {

@@ -1,5 +1,5 @@
 #include "physics_system.hpp"
-#include <logic/physics/physics.hpp>
+#include <physics/physics.hpp>
 
 namespace sinen {
 glm::vec3 Collider::GetPosition() const {

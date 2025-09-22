@@ -1,26 +1,14 @@
 #include "scene_system.hpp"
 #include "../../asset/audio/sound_system.hpp"
+#include "../../asset/script/script_system.hpp"
 #include "../../graphics/graphics_system.hpp"
+#include "../../physics/physics_system.hpp"
 #include "../../platform/input/input_system.hpp"
 #include "../../platform/window/window_system.hpp"
-#include "../physics/physics_system.hpp"
-#include "../script/script_system.hpp"
 #include <SDL3/SDL.h>
-#include <SDL3_ttf/SDL_ttf.h>
-#include <core/io/asset_io.hpp>
-#include <core/io/json.hpp>
 #include <graphics/graphics.hpp>
-#include <logic/camera/camera.hpp>
-#include <logic/scene/scene.hpp>
-#include <math/color/color.hpp>
-#include <math/color/palette.hpp>
-#include <math/random.hpp>
 #include <platform/window/window.hpp>
 
-#include <algorithm>
-#include <cmath>
-#include <cstdint>
-#include <fstream>
 #include <functional>
 #include <iostream>
 #include <string>
@@ -28,7 +16,6 @@
 #include <core/logger/logger.hpp>
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
-#include <logic/camera/camera.hpp>
 #include <platform/input/keyboard.hpp>
 
 #include "editor.hpp"
@@ -215,7 +202,8 @@ void SceneSystem::shutdown() {
   m_game_state = Scene::state::quit;
 }
 
-void SceneSystem::Change(const std::string &sceneFileName, const std::string &basePath) {
+void SceneSystem::Change(const std::string &sceneFileName,
+                         const std::string &basePath) {
   if (sceneFileName.empty()) {
     Scene::SetState(Scene::state::quit);
     is_reset = false;

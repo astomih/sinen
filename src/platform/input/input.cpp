@@ -5,9 +5,9 @@
 #include "input_system.hpp"
 #include "platform/input/mouse.hpp"
 #include "platform/window/window.hpp"
+#include <core/scene/scene.hpp>
 #include <cstring>
 #include <imgui_impl_sdl3.h>
-#include <logic/scene/scene.hpp>
 #include <platform/platform.hpp>
 
 #include <math/math.hpp>
@@ -138,9 +138,7 @@ glm::vec2 Mouse::GetPositionOnScene() {
   return Mouse::GetPosition() * Scene::InvRatio();
 }
 
-glm::vec2 Mouse::GetScrollWheel() {
-  return InputSystem::m_mouse.mScrollWheel;
-}
+glm::vec2 Mouse::GetScrollWheel() { return InputSystem::m_mouse.mScrollWheel; }
 
 void Mouse::SetRelative(bool is_relative) {
   SDL_SetWindowRelativeMouseMode(WindowSystem::get_sdl_window(), is_relative);

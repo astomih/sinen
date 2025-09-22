@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 
-#include "../camera/camera.hpp"
+#include "../../graphics/camera/camera.hpp"
 #include <glm/vec2.hpp>
 
 namespace sinen {
@@ -67,7 +67,8 @@ public:
    * @param sceneFileName scene file name in Lua
    * @param basePath base path of scene file
    */
-  static void Change(const std::string &sceneFileName, const std::string &basePath = "./");
+  static void Change(const std::string &sceneFileName,
+                     const std::string &basePath = "./");
   /**
    * @brief Change implementation of scene
    *

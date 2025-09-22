@@ -20,8 +20,8 @@
 #include <memory>
 #include <thread>
 
-#include <logic/physics/physics.hpp>
 #include <math/transform/transform.hpp>
+#include <physics/physics.hpp>
 
 namespace sinen {
 class PhysicsSystem {

@@ -1,13 +1,12 @@
-#include "../../asset/model/model_data.hpp"
-#include "../../graphics/graphics_system.hpp"
+#include "../asset/model/model_data.hpp"
 #include "graphics_system.hpp"
 #include <SDL3/SDL_events.h>
 #include <asset/asset.hpp>
+#include <core/scene/scene.hpp>
 #include <cstring>
+#include <graphics/camera/camera.hpp>
 #include <graphics/drawable/drawable_wrapper.hpp>
 #include <graphics/graphics.hpp>
-#include <logic/camera/camera.hpp>
-#include <logic/scene/scene.hpp>
 #include <platform/window/window.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL

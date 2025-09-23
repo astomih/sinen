@@ -4,7 +4,8 @@
 namespace sinen {
 class Script {
 public:
-  static void Load(const std::string &filePath, const std::string &baseDirPath);
+  static void Load(const std::string &filePath,
+                   const std::string &baseDirPath = ".");
 };
 } // namespace sinen
 

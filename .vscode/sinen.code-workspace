@@ -75,5 +75,9 @@
 			"libs/**": true,
 		},
 		"cmake.buildDirectory": "${workspaceFolder}/build/desktop",
+		"python.analysis.diagnosticSeverityOverrides": {
+			"reportMissingModuleSource": false,
+			"reportMissingImports": false,
+		}
 	}
 }

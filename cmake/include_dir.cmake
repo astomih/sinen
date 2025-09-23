@@ -24,4 +24,5 @@ set(SINEN_INCLUDE_DIRS
         ${SINEN_SOURCE_DIR}/libs/slang/include
         ${SINEN_SOURCE_DIR}/libs/JoltPhysics
         ${SINEN_SOURCE_DIR}/libs/lua
+        ${SINEN_SOURCE_DIR}/libs/pocketpy/include
 )

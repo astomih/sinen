@@ -43,3 +43,6 @@
 [submodule "libs/lua"]
 	path = libs/lua
 	url = https://github.com/lua/lua
+[submodule "libs/pocketpy"]
+	path = libs/pocketpy
+	url = https://github.com/pocketpy/pocketpy

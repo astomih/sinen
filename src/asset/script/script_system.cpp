@@ -13,6 +13,10 @@ bool ScriptSystem::Initialize(const ScriptType &type) {
     script = ScriptBackend::CreateLua();
     ScriptSystem::type = ScriptType::Lua;
     break;
+  case ScriptType::Python:
+    script = ScriptBackend::CreatePython();
+    ScriptSystem::type = ScriptType::Python;
+    break;
   default:
     return false;
   }
@@ -49,6 +53,10 @@ void ScriptSystem::RunScene(std::string_view sceneName) {
       if (source.empty()) {
         source = nothingSceneLua;
       }
+    } break;
+    case ScriptType::Python: {
+      source = AssetIO::OpenAsString(AssetType::Script,
+                                     std::string(sceneName) + ".py");
     } break;
     default:
       break;

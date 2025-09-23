@@ -1,4 +1,5 @@
 ---@diagnostic disable: duplicate-index, lowercase-global, unused-local
+---@class sn
 sn = {
     ---@class Vec3
     ---@field x number
@@ -249,7 +250,7 @@ sn = {
     ---@class BFSGrid
     ---@field Width fun(self: BFSGrid): integer
     ---@field Height fun(self: BFSGrid): integer
-    ---@field FindPath fun(self: BFSGrid, start: Vec2, end_: Vec2): any
+    ---@field FindPath fun(self: BFSGrid, start: Vec2i, end_: Vec2i): any
     ---@field Trace fun(self: BFSGrid): Vec2
     ---@field Traceable fun(self: BFSGrid): boolean
     ---@field Reset fun(self: BFSGrid)
@@ -302,14 +303,17 @@ sn = {
     ---@field GetPosition fun(self: Collider): Vec3
     ---@field GetVelocity fun(self: Collider): Vec3
     ---@field SetLinearVelocity fun(self: Collider, velocity: Vec3)
+    Collider = {},
 
     ---Static class
     ---@class Script
     ---@field Load fun(path: string, basePath?: string)
+    Script = {},
 
     ---Static class
     ---@class FileSystem
     ---@field EnumerateDirectory fun(path: string): table
+    FileSystem = {},
 
     ---Static class
     ---@class Random
@@ -357,6 +361,7 @@ sn = {
     ---@field CreateBoxCollider fun(transform: Transform, isStatic: boolean): Collider
     ---@field CreateSphereCollider fun(position: Vec3, radius: number, isStatic: boolean): Collider
     ---@field AddCollider fun(collider: Collider, isActive: boolean)
+    Physics = {},
 
     ---Static class
     ---@class Collision

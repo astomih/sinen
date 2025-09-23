@@ -443,7 +443,13 @@ bool LuaScript::Initialize() {
   }
   {
     auto v = lua.create_named("Script");
-    v["Load"] = &Script::Load;
+    v["Load"] = sol::overload(
+        [&](const std::string &filePath) {
+          return Script::Load(filePath, ".");
+        },
+        [&](const std::string &filePath, const std::string &baseDirPath) {
+          return Script::Load(filePath, baseDirPath);
+        });
   }
   {
     auto v = lua.create_named("Keyboard");

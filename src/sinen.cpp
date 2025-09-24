@@ -58,7 +58,7 @@ bool Sinen::initialize(int argc, char *argv[]) {
   ScriptType scriptType = ScriptType::Lua;
   if (!AssetIO::OpenAsString(AssetType::Script, "main.lua").empty()) {
     scriptType = ScriptType::Lua;
-  } else {
+  } else if(!AssetIO::OpenAsString(AssetType::Script, "main.py").empty()) {
     scriptType = ScriptType::Python;
   }
   if (!ScriptSystem::Initialize(scriptType)) {

@@ -34,11 +34,11 @@ local texture = sn.Texture()
 local draw2d = sn.Draw2D(texture)
 local font = sn.Font()
 font:load(96)
-function Update()
-  font:render_text(texture, "NO DATA", sn.Color(1, 1, 1, 1))
-  draw2d.scale = texture:size()
+font:render_text(texture, "NO DATA", sn.Color(1, 1, 1, 1))
+draw2d.scale = texture:size()
+function update()
 end
-function Draw()
+function draw()
   sn.Graphics.draw2d(draw2d)
 end
 )";

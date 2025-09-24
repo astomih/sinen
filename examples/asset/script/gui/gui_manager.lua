@@ -46,7 +46,7 @@ local function gui_manager()
         ---@param self gui_manager
         draw = function(self)
             for i = 1, self.current_drawer_pos - 1 do
-                sn.Graphics.Draw2D(self.drawers[i])
+                sn.Graphics.draw2d(self.drawers[i])
             end
         end
     }

@@ -120,9 +120,9 @@ bool LuaScript::Initialize() {
     v["__sub"] = [](const glm::vec3 &a, const glm::vec3 &b) { return a - b; };
     v["__mul"] = [](const glm::vec3 &a, const glm::vec3 &b) { return a * b; };
     v["__div"] = [](const glm::vec3 &a, const glm::vec3 &b) { return a / b; };
-    v["Copy"] = [](const glm::vec3 &a) { return a; };
-    v["Length"] = [](const glm::vec3 &a) { return glm::length(a); };
-    v["Forward"] = [](const glm::vec3 v,
+    v["copy"] = [](const glm::vec3 &a) { return a; };
+    v["length"] = [](const glm::vec3 &a) { return glm::length(a); };
+    v["forward"] = [](const glm::vec3 v,
                       const glm::vec3 rotation) -> glm::vec3 {
       // rotation to mat
       glm::mat4 m =
@@ -137,17 +137,17 @@ bool LuaScript::Initialize() {
 
       return glm::vec3(forward.x, forward.y, forward.z);
     };
-    v["Normalize"] = [](const glm::vec3 &v) { return glm::normalize(v); };
-    v["Dot"] = [](const glm::vec3 &a, const glm::vec3 &b) {
+    v["normalize"] = [](const glm::vec3 &v) { return glm::normalize(v); };
+    v["dot"] = [](const glm::vec3 &a, const glm::vec3 &b) {
       return glm::dot(a, b);
     };
-    v["Cross"] = [](const glm::vec3 &a, const glm::vec3 &b) {
+    v["cross"] = [](const glm::vec3 &a, const glm::vec3 &b) {
       return glm::cross(a, b);
     };
-    v["Lerp"] = [](const glm::vec3 &a, const glm::vec3 &b, float t) {
+    v["lerp"] = [](const glm::vec3 &a, const glm::vec3 &b, float t) {
       return glm::mix(a, b, t);
     };
-    v["Reflect"] = [](const glm::vec3 &v, const glm::vec3 &n) {
+    v["reflect"] = [](const glm::vec3 &v, const glm::vec3 &n) {
       return glm::reflect(v, n);
     };
   }
@@ -167,16 +167,16 @@ bool LuaScript::Initialize() {
     v["__sub"] = [](const glm::vec2 &a, const glm::vec2 &b) { return a - b; };
     v["__mul"] = [](const glm::vec2 &a, const glm::vec2 &b) { return a * b; };
     v["__div"] = [](const glm::vec2 &a, const glm::vec2 &b) { return a / b; };
-    v["Copy"] = [](const glm::vec2 &a) { return a; };
-    v["Length"] = [](const glm::vec2 &a) { return glm::length(a); };
-    v["Normalize"] = [](const glm::vec2 &v) { return glm::normalize(v); };
-    v["Dot"] = [](const glm::vec2 &a, const glm::vec2 &b) {
+    v["copy"] = [](const glm::vec2 &a) { return a; };
+    v["length"] = [](const glm::vec2 &a) { return glm::length(a); };
+    v["normalize"] = [](const glm::vec2 &v) { return glm::normalize(v); };
+    v["dot"] = [](const glm::vec2 &a, const glm::vec2 &b) {
       return glm::dot(a, b);
     };
-    v["Lerp"] = [](const glm::vec2 &a, const glm::vec2 &b, float t) {
+    v["lerp"] = [](const glm::vec2 &a, const glm::vec2 &b, float t) {
       return glm::mix(a, b, t);
     };
-    v["Reflect"] = [](const glm::vec2 &v, const glm::vec2 &n) {
+    v["reflect"] = [](const glm::vec2 &v, const glm::vec2 &n) {
       return glm::reflect(v, n);
     };
   }
@@ -204,127 +204,127 @@ bool LuaScript::Initialize() {
   }
   {
     auto v = lua.new_usertype<Texture>("", sol::no_construction());
-    v["FillColor"] = &Texture::FillColor;
-    v["BlendColor"] = &Texture::BlendColor;
-    v["Copy"] = &Texture::Copy;
-    v["Load"] = &Texture::Load;
-    v["Size"] = &Texture::Size;
+    v["fill"] = &Texture::FillColor;
+    v["blend"] = &Texture::BlendColor;
+    v["copy"] = &Texture::Copy;
+    v["load"] = &Texture::Load;
+    v["size"] = &Texture::Size;
   }
   {
     auto v = lua.new_usertype<Material>("", sol::no_construction());
-    v["AppendTexture"] = &Material::AppendTexture;
-    v["SetTexture"] = sol::overload(
+    v["append_texture"] = &Material::AppendTexture;
+    v["set_texture"] = sol::overload(
         [](Material &m, const Texture &texture) { m.SetTexture(texture); },
         [](Material &m, const Texture &texture, size_t index) {
           m.SetTexture(texture, index - 1);
         });
-    v["GetTexture"] = &Material::GetTexture;
-    v["Clear"] = &Material::Clear;
+    v["get_texture"] = &Material::GetTexture;
+    v["clear"] = &Material::Clear;
   }
   {
     auto v = lua.new_usertype<RenderTexture>("", sol::no_construction());
-    v["Create"] = &RenderTexture::Create;
+    v["create"] = &RenderTexture::Create;
   }
   {
     auto v = lua.new_usertype<Font>("", sol::no_construction());
-    v["Load"] = sol::overload(
+    v["load"] = sol::overload(
         [](Font &f, int point_size) { return f.Load(point_size); },
         [](Font &f, int point_size, std::string_view path) {
           return f.Load(point_size, path);
         });
-    v["RenderText"] = &Font::RenderText;
-    v["Resize"] = &Font::Resize;
+    v["render_text"] = &Font::RenderText;
+    v["resize"] = &Font::Resize;
   }
   {
     auto v = lua.new_usertype<Music>("", sol::no_construction());
-    v["Load"] = &Music::Load;
-    v["Play"] = &Music::Play;
-    v["SetVolume"] = &Music::SetVolume;
+    v["load"] = &Music::Load;
+    v["play"] = &Music::Play;
+    v["set_volume"] = &Music::SetVolume;
   }
   {
     auto v = lua.new_usertype<Sound>("", sol::no_construction());
-    v["Load"] = &Sound::Load;
-    v["Play"] = &Sound::Play;
-    v["SetVolume"] = &Sound::SetVolume;
-    v["SetPitch"] = &Sound::SetPitch;
-    v["SetListener"] = &Sound::SetListener;
-    v["SetPosition"] = &Sound::SetPosition;
+    v["load"] = &Sound::Load;
+    v["play"] = &Sound::Play;
+    v["set_volume"] = &Sound::SetVolume;
+    v["set_pitch"] = &Sound::SetPitch;
+    v["set_listener"] = &Sound::SetListener;
+    v["set_position"] = &Sound::SetPosition;
   }
   {
     auto v = lua.new_usertype<Camera>("", sol::no_construction());
-    v["LookAt"] = &Camera::LookAt;
-    v["Perspective"] = &Camera::Perspective;
-    v["Orthographic"] = &Camera::Orthographic;
-    v["GetPosition"] = &Camera::GetPosition;
-    v["GetTarget"] = &Camera::GetTarget;
-    v["GetUp"] = &Camera::GetUp;
-    v["IsAABBInFrustum"] = &Camera::IsAABBInFrustum;
+    v["lookat"] = &Camera::LookAt;
+    v["perspective"] = &Camera::Perspective;
+    v["orthographic"] = &Camera::Orthographic;
+    v["get_position"] = &Camera::GetPosition;
+    v["get_target"] = &Camera::GetTarget;
+    v["get_up"] = &Camera::GetUp;
+    v["is_aabb_in_frustum"] = &Camera::IsAABBInFrustum;
   }
   {
     auto v = lua.new_usertype<Camera2D>("", sol::no_construction());
-    v["Size"] = &Camera2D::Size;
-    v["Half"] = &Camera2D::Half;
-    v["Resize"] = &Camera2D::Resize;
-    v["WindowRatio"] = &Camera2D::WindowRatio;
-    v["InvWindowRatio"] = &Camera2D::InvWindowRatio;
+    v["size"] = &Camera2D::Size;
+    v["half"] = &Camera2D::Half;
+    v["resize"] = &Camera2D::Resize;
+    v["windowRatio"] = &Camera2D::WindowRatio;
+    v["inv_window_ratio"] = &Camera2D::InvWindowRatio;
   }
   {
     auto v = lua.new_usertype<Model>("", sol::no_construction());
-    v["GetAABB"] = &Model::GetAABB;
-    v["Load"] = &Model::Load;
-    v["LoadSprite"] = &Model::LoadSprite;
-    v["LoadBox"] = &Model::LoadBox;
-    v["GetBoneUniformData"] = &Model::GetBoneUniformData;
-    v["Play"] = &Model::Play;
-    v["Update"] = &Model::Update;
+    v["get_aabb"] = &Model::GetAABB;
+    v["load"] = &Model::Load;
+    v["load_sprite"] = &Model::LoadSprite;
+    v["load_box"] = &Model::LoadBox;
+    v["get_bone_uniform_data"] = &Model::GetBoneUniformData;
+    v["play"] = &Model::Play;
+    v["update"] = &Model::Update;
   }
   {
     auto v = lua.new_usertype<AABB>("", sol::no_construction());
     v["min"] = &AABB::min;
     v["max"] = &AABB::max;
-    v["UpdateWorld"] = &AABB::update_world;
+    v["update_world"] = &AABB::update_world;
   }
   {
     auto v = lua.new_usertype<Timer>("", sol::no_construction());
-    v["Start"] = &Timer::Start;
-    v["Stop"] = &Timer::Stop;
-    v["IsStarted"] = &Timer::IsStarted;
-    v["SetTime"] = &Timer::SetTime;
-    v["Check"] = &Timer::Check;
+    v["start"] = &Timer::Start;
+    v["stop"] = &Timer::Stop;
+    v["is_started"] = &Timer::IsStarted;
+    v["set_time"] = &Timer::SetTime;
+    v["check"] = &Timer::Check;
   }
   {
     // Collider
     auto v = lua.new_usertype<Collider>("", sol::no_construction());
-    v["GetPosition"] = &Collider::GetPosition;
-    v["GetVelocity"] = &Collider::GetVelocity;
-    v["SetLinearVelocity"] = &Collider::SetLinearVelocity;
+    v["get_position"] = &Collider::GetPosition;
+    v["get_velocity"] = &Collider::GetVelocity;
+    v["set_linear_velocity"] = &Collider::SetLinearVelocity;
   }
   {
     auto v = lua.new_usertype<UniformData>("", sol::no_construction());
-    v["Add"] = &UniformData::Add;
-    v["Change"] = &UniformData::Change;
+    v["add"] = &UniformData::Add;
+    v["change"] = &UniformData::Change;
   }
   {
     auto v = lua.new_usertype<Shader>("", sol::no_construction());
-    v["LoadVertexShader"] = &Shader::LoadVertexShader;
-    v["LoadFragmentShader"] = &Shader::LoadFragmentShader;
-    v["CompileAndLoadVertexShader"] = &Shader::CompileAndLoadVertexShader;
-    v["CompileAndLoadFragmentShader"] = &Shader::CompileAndLoadFragmentShader;
+    v["load_vertex_shader"] = &Shader::LoadVertexShader;
+    v["load_fragment_shader"] = &Shader::LoadFragmentShader;
+    v["compile_load_vertex_shader"] = &Shader::CompileAndLoadVertexShader;
+    v["compile_load_fragment_shader"] = &Shader::CompileAndLoadFragmentShader;
   }
   {
     auto v = lua.new_usertype<GraphicsPipeline2D>("", sol::no_construction());
-    v["SetVertexShader"] = &GraphicsPipeline2D::SetVertexShader;
-    v["SetFragmentShader"] = &GraphicsPipeline2D::SetFragmentShader;
-    v["Build"] = &GraphicsPipeline2D::Build;
+    v["set_vertex_shader"] = &GraphicsPipeline2D::SetVertexShader;
+    v["set_fragment_shader"] = &GraphicsPipeline2D::SetFragmentShader;
+    v["build"] = &GraphicsPipeline2D::Build;
   }
   {
     auto v = lua.new_usertype<GraphicsPipeline3D>("", sol::no_construction());
-    v["SetVertexShader"] = &GraphicsPipeline3D::SetVertexShader;
-    v["SetVertexInstancedShader"] =
+    v["set_vertex_shader"] = &GraphicsPipeline3D::SetVertexShader;
+    v["set_vertex_instanced_shader"] =
         &GraphicsPipeline3D::SetVertexInstancedShader;
-    v["SetFragmentShader"] = &GraphicsPipeline3D::SetFragmentShader;
-    v["SetAnimation"] = &GraphicsPipeline3D::SetAnimation;
-    v["Build"] = &GraphicsPipeline3D::build;
+    v["set_fragment_shader"] = &GraphicsPipeline3D::SetFragmentShader;
+    v["set_animation"] = &GraphicsPipeline3D::SetAnimation;
+    v["build"] = &GraphicsPipeline3D::build;
   }
   {
     auto v = lua.new_usertype<Draw2D>("", sol::no_construction());
@@ -332,9 +332,9 @@ bool LuaScript::Initialize() {
     v["rotation"] = &Draw2D::rotation;
     v["scale"] = &Draw2D::scale;
     v["material"] = &Draw2D::material;
-    v["Add"] = &Draw2D::Add;
-    v["At"] = &Draw2D::At;
-    v["Clear"] = &Draw2D::Clear;
+    v["add"] = &Draw2D::Add;
+    v["at"] = &Draw2D::At;
+    v["clear"] = &Draw2D::Clear;
   }
   {
     auto v = lua.new_usertype<Draw3D>("", sol::no_construction());
@@ -344,9 +344,9 @@ bool LuaScript::Initialize() {
     v["material"] = &Draw3D::material;
     v["model"] = &Draw3D::model;
     v["isDrawDepth"] = &Draw3D::isDrawDepth;
-    v["Add"] = &Draw3D::Add;
-    v["At"] = &Draw3D::At;
-    v["Clear"] = &Draw3D::Clear;
+    v["add"] = &Draw3D::Add;
+    v["at"] = &Draw3D::At;
+    v["clear"] = &Draw3D::Clear;
   }
   {
     // Rect
@@ -365,45 +365,45 @@ bool LuaScript::Initialize() {
   }
   {
     auto v = lua.create_named("Random");
-    v["GetRange"] = &Random::GetRange;
-    v["GetIntRange"] = &Random::GetIntRange;
+    v["get_range"] = &Random::GetRange;
+    v["get_int_range"] = &Random::GetIntRange;
   }
   {
     auto v = lua.create_named("Window");
-    v["GetName"] = &Window::GetName;
-    v["Size"] = &Window::Size;
-    v["Half"] = Window::Half;
-    v["Resize"] = &Window::Resize;
-    v["SetFullscreen"] = &Window::SetFullscreen;
-    v["Rename"] = &Window::Rename;
-    v["Resized"] = &Window::Resized;
+    v["get_name"] = &Window::GetName;
+    v["size"] = &Window::Size;
+    v["half"] = Window::Half;
+    v["resize"] = &Window::Resize;
+    v["set_fullscreen"] = &Window::SetFullscreen;
+    v["rename"] = &Window::Rename;
+    v["resized"] = &Window::Resized;
   }
   {
     auto v = lua.create_named("Physics");
-    v["CreateBoxCollider"] = &Physics::CreateBoxCollider;
-    v["CreateSphereCollider"] = &Physics::CreateSphereCollider;
-    v["CreateCylinderCollider"] = &Physics::CreateCylinderCollider;
-    v["AddCollider"] = &Physics::AddCollider;
+    v["create_box_collider"] = &Physics::CreateBoxCollider;
+    v["create_sphere_collider"] = &Physics::CreateSphereCollider;
+    v["create_cylinder_collider"] = &Physics::CreateCylinderCollider;
+    v["add_collider"] = &Physics::AddCollider;
   }
   {
     auto v = lua.create_named("Graphics");
-    v["Draw2D"] = &Graphics::Draw2D;
-    v["Draw3D"] = &Graphics::Draw3D;
-    v["DrawRect"] = sol::overload(
+    v["draw2d"] = &Graphics::Draw2D;
+    v["draw3d"] = &Graphics::Draw3D;
+    v["draw_rect"] = sol::overload(
         [](const Rect &rect, const Color &color) {
           Graphics::DrawRect(rect, color);
         },
         [](const Rect &rect, const Color &color, float angle) {
           Graphics::DrawRect(rect, color, angle);
         });
-    v["DrawImage"] = sol::overload(
+    v["draw_image"] = sol::overload(
         [](const Texture &texture, const Rect &rect) {
           Graphics::DrawImage(texture, rect);
         },
         [](const Texture &texture, const Rect &rect, float angle) {
           Graphics::DrawImage(texture, rect, angle);
         });
-    v["DrawText"] = sol::overload(
+    v["draw_text"] = sol::overload(
         [](const std::string &text, const glm::vec2 &position) {
           Graphics::DrawText(text, position);
         },
@@ -417,33 +417,33 @@ bool LuaScript::Initialize() {
            const Color &color, float fontSize, float angle) {
           Graphics::DrawText(text, position, color, fontSize, angle);
         });
-    v["DrawModel"] = &Graphics::DrawModel;
-    v["SetCamera"] = &Graphics::SetCamera;
-    v["GetCamera"] = &Graphics::GetCamera;
-    v["SetCamera2D"] = &Graphics::SetCamera2D;
-    v["GetCamera2D"] = &Graphics::GetCamera2D;
-    v["GetClearColor"] = &Graphics::GetClearColor;
-    v["SetClearColor"] = &Graphics::SetClearColor;
-    v["BindPipeline2D"] = &Graphics::BindPipeline2D;
-    v["BindDefaultPipeline2D"] = &Graphics::BindDefaultPipeline2D;
-    v["BindPipeline3D"] = &Graphics::BindPipeline3D;
-    v["BindDefaultPipeline3D"] = &Graphics::BindDefaultPipeline3D;
-    v["SetUniformData"] = &Graphics::SetUniformData;
-    v["SetRenderTarget"] = &Graphics::SetRenderTarget;
-    v["Flush"] = &Graphics::Flush;
-    v["ReadbackTexture"] = &Graphics::ReadbackTexture;
+    v["draw_model"] = &Graphics::DrawModel;
+    v["set_camera"] = &Graphics::SetCamera;
+    v["get_camera"] = &Graphics::GetCamera;
+    v["set_camera2d"] = &Graphics::SetCamera2D;
+    v["get_camera2d"] = &Graphics::GetCamera2D;
+    v["get_clear_color"] = &Graphics::GetClearColor;
+    v["set_clear_color"] = &Graphics::SetClearColor;
+    v["bind_pipeline2d"] = &Graphics::BindPipeline2D;
+    v["bind_default_pipeline2d"] = &Graphics::BindDefaultPipeline2D;
+    v["bind_pipeline3d"] = &Graphics::BindPipeline3D;
+    v["bind_default_pipeline3d"] = &Graphics::BindDefaultPipeline3D;
+    v["set_uniform_data"] = &Graphics::SetUniformData;
+    v["set_render_target"] = &Graphics::SetRenderTarget;
+    v["flush"] = &Graphics::Flush;
+    v["readback_texture"] = &Graphics::ReadbackTexture;
   }
   {
     auto v = lua.create_named("Collision");
-    v["AABBvsAABB"] = &Collision::AABBvsAABB;
+    v["aabb_vs_aabb"] = &Collision::AABBvsAABB;
   }
   {
     auto v = lua.create_named("FileSystem");
-    v["EnumerateDirectory"] = &FileSystem::EnumerateDirectory;
+    v["enumerate_directory"] = &FileSystem::EnumerateDirectory;
   }
   {
     auto v = lua.create_named("Script");
-    v["Load"] = sol::overload(
+    v["load"] = sol::overload(
         [&](const std::string &filePath) {
           return Script::Load(filePath, ".");
         },
@@ -453,9 +453,9 @@ bool LuaScript::Initialize() {
   }
   {
     auto v = lua.create_named("Keyboard");
-    v["IsPressed"] = &Keyboard::IsPressed;
-    v["IsReleased"] = &Keyboard::IsReleased;
-    v["IsDown"] = &Keyboard::IsDown;
+    v["is_pressed"] = &Keyboard::IsPressed;
+    v["is_released"] = &Keyboard::IsReleased;
+    v["is_down"] = &Keyboard::IsDown;
     v["A"] = (int)Keyboard::A;
     v["B"] = (int)Keyboard::B;
     v["C"] = (int)Keyboard::C;
@@ -521,17 +521,17 @@ bool LuaScript::Initialize() {
   }
   {
     auto v = lua.create_named("Mouse");
-    v["SetRelative"] = &Mouse::SetRelative;
-    v["IsRelative"] = &Mouse::IsRelative;
-    v["IsPressed"] = &Mouse::IsPressed;
-    v["IsReleased"] = &Mouse::IsReleased;
-    v["IsDown"] = &Mouse::IsDown;
-    v["GetPosition"] = &Mouse::GetPosition;
-    v["GetPositionOnScene"] = &Mouse::GetPositionOnScene;
-    v["SetPosition"] = &Mouse::SetPosition;
-    v["SetPositionOnScene"] = &Mouse::SetPositionOnScene;
-    v["GetScrollWheel"] = &Mouse::GetScrollWheel;
-    v["HideCursor"] = &Mouse::HideCursor;
+    v["set_relative"] = &Mouse::SetRelative;
+    v["is_relative"] = &Mouse::IsRelative;
+    v["is_pressed"] = &Mouse::IsPressed;
+    v["is_released"] = &Mouse::IsReleased;
+    v["is_down"] = &Mouse::IsDown;
+    v["get_position"] = &Mouse::GetPosition;
+    v["get_position_on_scene"] = &Mouse::GetPositionOnScene;
+    v["set_position"] = &Mouse::SetPosition;
+    v["set_position_on_scene"] = &Mouse::SetPositionOnScene;
+    v["get_scroll_wheel"] = &Mouse::GetScrollWheel;
+    v["hide_cursor"] = &Mouse::HideCursor;
     v["LEFT"] = (int)Mouse::LEFT;
     v["RIGHT"] = (int)Mouse::RIGHT;
     v["MIDDLE"] = (int)Mouse::MIDDLE;
@@ -540,12 +540,12 @@ bool LuaScript::Initialize() {
   }
   {
     auto v = lua.create_named("Gamepad");
-    v["IsPressed"] = &GamePad::IsPressed;
-    v["IsReleased"] = &GamePad::IsReleased;
-    v["IsDown"] = &GamePad::IsDown;
-    v["GetLeftStick"] = &GamePad::GetLeftStick;
-    v["GetRightStick"] = &GamePad::GetRightStick;
-    v["IsConnected"] = &GamePad::IsConnected;
+    v["is_pressed"] = &GamePad::IsPressed;
+    v["is_released"] = &GamePad::IsReleased;
+    v["is_down"] = &GamePad::IsDown;
+    v["get_left_stick"] = &GamePad::GetLeftStick;
+    v["get_right_stick"] = &GamePad::GetRightStick;
+    v["is_connected"] = &GamePad::IsConnected;
     v["INVALID"] = (int)GamePad::INVALID;
     v["A"] = (int)GamePad::A;
     v["B"] = (int)GamePad::B;
@@ -571,7 +571,7 @@ bool LuaScript::Initialize() {
   }
   {
     auto v = lua.create_named("Periodic");
-    v["Sin0_1"] = [](float period, float t) {
+    v["sin0_1"] = [](float period, float t) {
       return Periodic::sin0_1(period, t);
     };
     v["Cos0_1"] = [](float period, float t) {
@@ -580,34 +580,34 @@ bool LuaScript::Initialize() {
   }
   {
     auto v = lua.create_named("Time");
-    v["Seconds"] = &Time::Seconds;
-    v["Milli"] = &Time::Milli;
-    v["DeltaTime"] = &Time::DeltaTime;
+    v["seconds"] = &Time::Seconds;
+    v["milli"] = &Time::Milli;
+    v["deltatime"] = &Time::DeltaTime;
   }
   {
     // logger
     auto v = lua.create_named("Logger");
-    v["Verbose"] = [](std::string str) { Logger::Verbose("%s", str.data()); };
-    v["Info"] = [](std::string str) { Logger::Info("%s", str.data()); };
-    v["Error"] = [](std::string str) { Logger::Error("%s", str.data()); };
-    v["Warn"] = [](std::string str) { Logger::Warn("%s", str.data()); };
-    v["Critical"] = [](std::string str) { Logger::Critical("%s", str.data()); };
+    v["verbose"] = [](std::string str) { Logger::Verbose("%s", str.data()); };
+    v["info"] = [](std::string str) { Logger::Info("%s", str.data()); };
+    v["error"] = [](std::string str) { Logger::Error("%s", str.data()); };
+    v["warn"] = [](std::string str) { Logger::Warn("%s", str.data()); };
+    v["critical"] = [](std::string str) { Logger::Critical("%s", str.data()); };
   }
   lua["Grid"] = [](int width, int height) -> Grid<int> {
     return Grid<int>(width, height);
   };
   {
     auto v = lua.new_usertype<Grid<int>>("", sol::no_construction());
-    v["At"] = [](Grid<int> &g, int x, int y) { return g.at(x - 1, y - 1); };
-    v["Set"] = [](Grid<int> &g, int x, int y, int v) {
+    v["at"] = [](Grid<int> &g, int x, int y) { return g.at(x - 1, y - 1); };
+    v["set"] = [](Grid<int> &g, int x, int y, int v) {
       return g.at(x - 1, y - 1) = v;
     };
-    v["Width"] = &Grid<int>::Width;
-    v["Height"] = &Grid<int>::Height;
-    v["Size"] = &Grid<int>::Size;
-    v["Clear"] = &Grid<int>::Clear;
-    v["Resize"] = &Grid<int>::Resize;
-    v["Fill"] = [](Grid<int> &g, int value) {
+    v["width"] = &Grid<int>::Width;
+    v["height"] = &Grid<int>::Height;
+    v["size"] = &Grid<int>::Size;
+    v["clear"] = &Grid<int>::Clear;
+    v["resize"] = &Grid<int>::Resize;
+    v["fill"] = [](Grid<int> &g, int value) {
       for (auto &i : g) {
         i = value;
       }
@@ -616,18 +616,18 @@ bool LuaScript::Initialize() {
   lua["BFSGrid"] = [](const Grid<int> &g) { return BFSGrid(g); };
   {
     auto v = lua.new_usertype<BFSGrid>("", sol::no_construction());
-    v["Width"] = &BFSGrid::Width;
-    v["Height"] = &BFSGrid::Height;
-    v["FindPath"] = [](BFSGrid &g, const glm::ivec2 &start,
-                       const glm::ivec2 &end) {
+    v["width"] = &BFSGrid::Width;
+    v["height"] = &BFSGrid::Height;
+    v["find_path"] = [](BFSGrid &g, const glm::ivec2 &start,
+                        const glm::ivec2 &end) {
       return g.FindPath({start.x - 1, start.y - 1}, {end.x - 1, end.y - 1});
     };
-    v["Trace"] = [](BFSGrid &g) {
+    v["trace"] = [](BFSGrid &g) {
       auto t = g.Trace();
       return glm::ivec2{t.x + 1, t.y + 1};
     };
-    v["Traceable"] = &BFSGrid::Traceable;
-    v["Reset"] = &BFSGrid::Reset;
+    v["traceable"] = &BFSGrid::Traceable;
+    v["reset"] = &BFSGrid::Reset;
   }
 #endif
   return true;
@@ -643,8 +643,8 @@ void LuaScript::RunScene(const std::string_view source) {
   state.script(source.data());
 }
 
-void LuaScript::Update() { state["Update"](); }
+void LuaScript::Update() { state["update"](); }
 
-void LuaScript::Draw() { state["Draw"](); }
+void LuaScript::Draw() { state["draw"](); }
 
 } // namespace sinen

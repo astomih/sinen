@@ -1,14 +1,14 @@
 -- Create a image
 local image = sn.Texture()
-image:Load("logo.png")
+image:load("logo.png")
 
-function Update()
-    if sn.Keyboard.IsPressed(sn.Keyboard.ESCAPE) then
-        sn.Script.Load("main", ".")
+function update()
+    if sn.Keyboard.is_pressed(sn.Keyboard.ESCAPE) then
+        sn.Script.load("main", ".")
     end
 end
 
-function Draw()
+function draw()
     -- Draw image
-    sn.Graphics.DrawImage(image, sn.Rect(sn.Vec2(0), image:Size()))
+    sn.Graphics.draw_image(image, sn.Rect(sn.Vec2(0), image:size()))
 end

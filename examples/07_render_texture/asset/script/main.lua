@@ -1,29 +1,29 @@
 local texture = sn.Texture()
-texture:FillColor(sn.Color(1, 1, 1, 1))
+texture:fill(sn.Color(1, 1, 1, 1))
 local renderTexture = sn.RenderTexture()
-local sx = sn.Graphics.GetCamera2D():Size().x
-local sy = sn.Graphics.GetCamera2D():Size().y
-renderTexture:Create(sx, sy)
+local sx = sn.Graphics.get_camera2d():size().x
+local sy = sn.Graphics.get_camera2d():size().y
+renderTexture:create(sx, sy)
 
 local model = sn.Model()
-model:Load("Suzanne.gltf")
+model:load("Suzanne.gltf")
 local draw3d = sn.Draw3D(texture)
 draw3d.position = sn.Vec3(0)
 draw3d.model = model
 
 local pos = sn.Vec3(1, 1, 3)
 
-function Update()
-    if sn.Keyboard.IsPressed(sn.Keyboard.ESCAPE) then
-        sn.Script.Load("main", ".")
+function update()
+    if sn.Keyboard.is_pressed(sn.Keyboard.ESCAPE) then
+        sn.Script.load("main", ".")
     end
-    sn.Graphics.GetCamera():LookAt(pos, sn.Vec3(0), sn.Vec3(0, 1, 0))
+    sn.Graphics.get_camera():lookat(pos, sn.Vec3(0), sn.Vec3(0, 1, 0))
 end
 
-function Draw()
-    sn.Graphics.SetRenderTarget(renderTexture)
-    sn.Graphics.Draw3D(draw3d)
+function draw()
+    sn.Graphics.set_render_target(renderTexture)
+    sn.Graphics.draw3d(draw3d)
     -- Draw texture
-    sn.Graphics.Flush()
-    sn.Graphics.DrawImage(sn.Graphics.ReadbackTexture(renderTexture), sn.Rect(0, 0, sx, sy))
+    sn.Graphics.flush()
+    sn.Graphics.draw_image(sn.Graphics.readback_texture(renderTexture), sn.Rect(0, 0, sx, sy))
 end

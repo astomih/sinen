@@ -1,37 +1,37 @@
 local texture = sn.Texture()
-texture:FillColor(sn.Color(1, 1, 1, 1))
+texture:fill(sn.Color(1, 1, 1, 1))
 local model = sn.Model()
-model:Load("BrainStem.glb")
+model:load("BrainStem.glb")
 local draw3d = sn.Draw3D(texture)
 draw3d.position = sn.Vec3(0, 0, 0)
 draw3d.model = model
 
 local vertex_shader = sn.Shader()
-vertex_shader:CompileAndLoadVertexShader("skinning.slang", 1)
+vertex_shader:compile_load_vertex_shader("skinning.slang", 1)
 local fragment_shader = sn.Shader()
-fragment_shader:CompileAndLoadFragmentShader("skinning.slang", 0)
+fragment_shader:compile_load_fragment_shader("skinning.slang", 0)
 
 local pipeline = sn.GraphicsPipeline3D()
-pipeline:SetVertexShader(vertex_shader)
-pipeline:SetFragmentShader(fragment_shader)
-pipeline:SetAnimation(true)
-pipeline:Build()
+pipeline:set_vertex_shader(vertex_shader)
+pipeline:set_fragment_shader(fragment_shader)
+pipeline:set_animation(true)
+pipeline:build()
 
 
 local pos = sn.Vec3(0, -3, 1)
-sn.Graphics.GetCamera():LookAt(pos, sn.Vec3(0, 0, 1), sn.Vec3(0, 0, 1))
+sn.Graphics.get_camera():lookat(pos, sn.Vec3(0, 0, 1), sn.Vec3(0, 0, 1))
 
-model:Play(0)
-function Update()
-    if sn.Keyboard.IsPressed(sn.Keyboard.ESCAPE) then
-        sn.Script.Load("main", ".")
+model:play(0)
+function update()
+    if sn.Keyboard.is_pressed(sn.Keyboard.ESCAPE) then
+        sn.Script.load("main", ".")
     end
-    model:Update(sn.Time.DeltaTime())
+    model:update(sn.Time.deltatime())
 end
 
-function Draw()
-    sn.Graphics.BindPipeline3D(pipeline)
-    sn.Graphics.SetUniformData(1, model:GetBoneUniformData())
+function draw()
+    sn.Graphics.bind_pipeline3d(pipeline)
+    sn.Graphics.set_uniform_data(1, model:get_bone_uniform_data())
     -- Draw texture
-    sn.Graphics.Draw3D(draw3d)
+    sn.Graphics.draw3d(draw3d)
 end

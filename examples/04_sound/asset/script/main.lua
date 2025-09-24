@@ -1,26 +1,27 @@
 local texture = sn.Texture()
 local font = sn.Font()
-font:Load(16)
-font:RenderText(texture, "Press SPACE key to play sound", sn.Color(1, 1, 1, 1))
+font:load(16)
+font:render_text(texture, "Press SPACE key to play sound", sn.Color(1, 1, 1, 1))
 local draw2d = sn.Draw2D(texture)
-draw2d.scale = texture:Size()
+draw2d.scale = texture:size()
 local sound = sn.Sound()
-sound:Load("shot.wav")
+sound:load("shot.wav")
 
 
 
 -- Set scale to texture size
 
-function Update()
-    if sn.Keyboard.IsPressed(sn.Keyboard.ESCAPE) then
-        sn.Script.Load("main", ".")
+function update()
+    if sn.Keyboard.is_pressed(sn.Keyboard.ESCAPE) then
+        sn.Script.load("main", ".")
     end
-    if sn.Keyboard.IsPressed(sn.Keyboard.SPACE) then
-        sound:Play()
+    if sn.Keyboard.is_pressed(sn.Keyboard.SPACE) then
+        sound:play()
     end
 end
 
-function Draw()
+function draw()
     -- Draw texture
-    sn.Graphics.Draw2D(draw2d)
+    sn.Graphics.
+        draw2d(draw2d)
 end

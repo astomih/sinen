@@ -10,13 +10,28 @@
 # Hello World in Sinen
 
 ``` lua
-function Update()
+-- main.lua
+function update()
 end
 
-function Draw()
-    sn.Graphics.DrawText("Hello World!", sn.Vec2(0, 0), sn.Color(1, 1, 1, 1), 32)
+function draw()
+    sn.Graphics.draw_text("Hello World!", sn.Vec2(0, 0), sn.Color(1, 1, 1, 1), 32)
 end
 ```
+
+``` python
+# main.py
+import sinen as sn
+
+
+def update():
+    pass
+
+
+def draw():
+    sn.Graphics.draw_text("Hello World!", sn.Vec2(0, 0), sn.Color(1, 1, 1, 1), 32, 0.0)
+```
+
 
 ![Hello World](https://raw.githubusercontent.com/astomih/sinen/refs/heads/main/examples/screenshot/01.png)
 

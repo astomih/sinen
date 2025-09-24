@@ -33,13 +33,13 @@ static const char *nothingSceneLua = R"(
 local texture = sn.Texture()
 local draw2d = sn.Draw2D(texture)
 local font = sn.Font()
-font:Load(96)
+font:load(96)
 function Update()
-  font:RenderText(texture, "NO DATA", sn.Color(1, 1, 1, 1))
-  draw2d.scale = texture:Size()
+  font:render_text(texture, "NO DATA", sn.Color(1, 1, 1, 1))
+  draw2d.scale = texture:size()
 end
 function Draw()
-  sn.Graphics.Draw2D(draw2d)
+  sn.Graphics.draw2d(draw2d)
 end
 )";
 

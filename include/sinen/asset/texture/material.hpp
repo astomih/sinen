@@ -14,7 +14,7 @@ public:
 
   ~Material() = default;
 
-  void SetTexture(const Texture &texture) {
+  void setTexture(const Texture &texture) {
     if (textures.empty()) {
       textures.push_back(texture);
       return;
@@ -22,30 +22,30 @@ public:
     textures[0] = texture;
   }
 
-  void SetTexture(const Texture &texture, const size_t index) {
+  void setTexture(const Texture &texture, const size_t index) {
     if (index >= textures.size()) {
       textures.resize(index + 1);
     }
     textures[index] = texture;
   }
 
-  [[nodiscard]] size_t GetTextureCount() const { return textures.size(); }
+  [[nodiscard]] size_t getTextureCount() const { return textures.size(); }
 
-  [[nodiscard]] bool HasTexture() const { return !textures.empty(); }
+  [[nodiscard]] bool hasTexture() const { return !textures.empty(); }
 
-  [[nodiscard]] bool HasTexture(const size_t index) const {
+  [[nodiscard]] bool hasTexture(const size_t index) const {
     return index < textures.size();
   }
 
-  void AppendTexture(const Texture &texture) { textures.push_back(texture); }
+  void appendTexture(const Texture &texture) { textures.push_back(texture); }
 
-  [[nodiscard]] const std::vector<Texture> &GetTextures() const {
+  [[nodiscard]] const std::vector<Texture> &getTextures() const {
     return textures;
   }
 
-  void Clear() { textures.clear(); }
+  void clear() { textures.clear(); }
 
-  const Texture &GetTexture(const size_t index) { return textures[index]; }
+  const Texture &getTexture(const size_t index) { return textures[index]; }
 
 private:
   std::vector<Texture> textures;

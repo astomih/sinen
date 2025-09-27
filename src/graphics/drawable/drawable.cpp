@@ -5,7 +5,7 @@
 namespace sinen {
 Drawable::Drawable() {}
 Drawable::~Drawable() {}
-void Drawable::world_to_instance_data(const glm::mat4 &mat,
+void Drawable::worldToInstanceData(const glm::mat4 &mat,
                                       InstanceData &data) {
 
   int l = 0;

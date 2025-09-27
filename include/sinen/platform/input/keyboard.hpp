@@ -7,7 +7,7 @@ namespace sinen {
  */
 class Keyboard {
 public:
-  enum class code;
+  enum class Code;
   /**
    * @brief Is key pressed?
    *
@@ -15,7 +15,7 @@ public:
    * @return true yes
    * @return false no
    */
-  static bool IsPressed(code _key);
+  static bool isPressed(Code _key);
   /**
    * @brief Is key down?
    *
@@ -23,7 +23,7 @@ public:
    * @return true yes
    * @return false no
    */
-  static bool IsDown(code _key);
+  static bool isDown(Code _key);
   /**
    * @brief Is key released?
    *
@@ -31,12 +31,12 @@ public:
    * @return true yes
    * @return false no
    */
-  static bool IsReleased(code _key);
+  static bool isReleased(Code _key);
   /**
    * @brief Key code
    *
    */
-  enum class code : int {
+  enum class Code : int {
     UNKNOWN = 0,
 
     A = 4,
@@ -295,7 +295,7 @@ public:
     AUDIOFASTFORWARD = 286,
     NUM_KEYCODES = 512
   };
-  using enum code;
+  using enum Code;
 };
 } // namespace sinen
 #endif // !SINEN_KEYBOARD_HPP

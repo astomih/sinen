@@ -28,37 +28,37 @@ public:
    * @brief Start the timer
    *
    */
-  void Start();
+  void start();
   /**
    * @brief Set the time object
    *
    * @param milliSecond Set the time in milliseconds
    */
-  void SetTime(float milliseconds);
+  void setTime(float milliseconds);
   /**
    * @brief Is the timer finished
    *
    * @return true The timer is finished
    * @return false The timer is not finished
    */
-  bool Check();
+  bool check();
   /**
    * @brief Is the timer started
    *
    * @return true The timer is started
    * @return false The timer is not started
    */
-  bool IsStarted() { return m_is_started; }
+  bool isStarted() const { return isStartedTimer; }
   /**
    * @brief Stop the timer
    *
    */
-  void Stop();
+  void stop();
 
 private:
-  float m_start;
-  float m_time;
-  bool m_is_started;
+  float startTime;
+  float currentTime;
+  bool isStartedTimer;
 };
 } // namespace sinen
 #endif // SINEN_TIME_TIMER_HPP

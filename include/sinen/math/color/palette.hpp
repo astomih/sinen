@@ -8,16 +8,16 @@ namespace sinen {
  */
 struct Palette {
   static const Color black();
-  static const Color light_black();
+  static const Color gray();
   static const Color white();
   static const Color red();
   static const Color green();
   static const Color blue();
   static const Color yellow();
-  static const Color light_yellow();
-  static const Color light_blue();
-  static const Color light_pink();
-  static const Color light_green();
+  static const Color lightYellow();
+  static const Color lightBlue();
+  static const Color lightPink();
+  static const Color lightGreen();
 };
 } // namespace sinen
 #endif // !SINEN_PALETTE_HPP

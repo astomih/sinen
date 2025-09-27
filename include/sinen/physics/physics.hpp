@@ -11,9 +11,9 @@
 namespace sinen {
 class Collider {
 public:
-  glm::vec3 GetPosition() const;
-  glm::vec3 GetVelocity() const;
-  void SetLinearVelocity(const glm::vec3 &velocity) const;
+  glm::vec3 getPosition() const;
+  glm::vec3 getVelocity() const;
+  void setLinearVelocity(const glm::vec3 &velocity) const;
   uint32_t id;
 };
 /**
@@ -22,15 +22,15 @@ public:
  */
 class Physics {
 public:
-  static Collider CreateBoxCollider(const Transform &transform, bool isStatic);
-  static Collider CreateSphereCollider(const glm::vec3 &position, float radius,
+  static Collider createBoxCollider(const Transform &transform, bool isStatic);
+  static Collider createSphereCollider(const glm::vec3 &position, float radius,
                                        bool isStatic);
-  static Collider CreateCylinderCollider(const glm::vec3 &position,
+  static Collider createCylinderCollider(const glm::vec3 &position,
                                          const glm::vec3 &rotation,
                                          float halfHeight, float radius,
                                          bool isStatic);
 
-  static void AddCollider(const Collider &collider, bool active = true);
+  static void addCollider(const Collider &collider, bool active = true);
 };
 } // namespace sinen
 

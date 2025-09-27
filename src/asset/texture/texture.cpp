@@ -36,12 +36,12 @@ Texture::Texture() {
 }
 Texture::~Texture() {}
 
-bool Texture::Load(std::string_view fileName) {
+bool Texture::load(std::string_view fileName) {
   auto texdata = GetTexData(textureData);
   auto *pSurface = ::IMG_Load_IO(
-      (SDL_IOStream *)AssetIO::OpenAsRWOps(AssetType::Texture, fileName), 0);
+      (SDL_IOStream *)AssetIO::openAsIOStream(AssetType::Texture, fileName), 0);
   if (!pSurface) {
-    Logger::Error("Texture load failed.");
+    Logger::error("Texture load failed.");
     return false;
   }
   texdata->pSurface = pSurface;
@@ -49,7 +49,7 @@ bool Texture::Load(std::string_view fileName) {
   texdata->texture = CreateNativeTexture(texdata->pSurface);
   return true;
 }
-bool Texture::LoadFromMemory(std::vector<char> &buffer) {
+bool Texture::loadFromMemory(std::vector<char> &buffer) {
   auto texdata = GetTexData(textureData);
   auto rw = std::unique_ptr<::SDL_IOStream, SDLObjectCloser>(
       ::SDL_IOFromMem(reinterpret_cast<void *>(buffer.data()), buffer.size()));
@@ -65,7 +65,7 @@ bool Texture::LoadFromMemory(std::vector<char> &buffer) {
   return true;
 }
 
-void Texture::FillColor(const Color &color) {
+void Texture::fillColor(const Color &color) {
   auto texdata = GetTexData(textureData);
   ::SDL_FillSurfaceRect(
       texdata->pSurface, NULL,
@@ -78,7 +78,7 @@ void Texture::FillColor(const Color &color) {
     texdata->texture = CreateNativeTexture(texdata->pSurface);
   }
 }
-void Texture::BlendColor(const Color &color) {
+void Texture::blendColor(const Color &color) {
   auto texdata = GetTexData(textureData);
   SDL_SetSurfaceBlendMode(texdata->pSurface, SDL_BLENDMODE_BLEND);
   SDL_SetSurfaceColorMod(texdata->pSurface, color.r * 255, color.g * 255,
@@ -92,7 +92,7 @@ void Texture::BlendColor(const Color &color) {
   }
 }
 
-Texture Texture::Copy() {
+Texture Texture::copy() {
   auto texdata = GetTexData(textureData);
   Texture dst_texture;
   auto dTexData = GetTexData(dst_texture.textureData);
@@ -103,7 +103,7 @@ Texture Texture::Copy() {
   return dst_texture;
 }
 
-glm::vec2 Texture::Size() {
+glm::vec2 Texture::size() {
   auto *surface = GetTexData(textureData)->pSurface;
   return glm::vec2(static_cast<float>(surface->w),
                    static_cast<float>(surface->h));

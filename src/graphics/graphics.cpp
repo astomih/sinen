@@ -18,73 +18,73 @@
 #include <graphics/graphics.hpp>
 
 namespace sinen {
-void Graphics::Draw2D(const sinen::Draw2D &draw2D) {
+void Graphics::draw2D(const sinen::Draw2D &draw2D) {
   GraphicsSystem::Draw2D(draw2D);
 }
-void Graphics::Draw3D(const sinen::Draw3D &draw3D) {
+void Graphics::draw3D(const sinen::Draw3D &draw3D) {
   GraphicsSystem::Draw3D(draw3D);
 }
-void Graphics::DrawRect(const Rect &rect, const Color &color, float angle) {
+void Graphics::drawRect(const Rect &rect, const Color &color, float angle) {
   GraphicsSystem::DrawRect(rect, color, angle);
 }
-void Graphics::DrawImage(const Texture &texture, const Rect &rect,
+void Graphics::drawImage(const Texture &texture, const Rect &rect,
                          float angle) {
   GraphicsSystem::DrawImage(texture, rect, angle);
 }
 
-void Graphics::DrawText(const std::string &text, const glm::vec2 &position,
+void Graphics::drawText(const std::string &text, const glm::vec2 &position,
                         const Color &color, float fontSize, float angle) {
   GraphicsSystem::DrawText(text, position, color, fontSize, angle);
 }
-void Graphics::DrawModel(const Model &model, const Transform &transform,
+void Graphics::drawModel(const Model &model, const Transform &transform,
                          const Material &material) {
   GraphicsSystem::DrawModel(model, transform, material);
 }
 
-void Graphics::SetClearColor(const Color &color) {
+void Graphics::setClearColor(const Color &color) {
   GraphicsSystem::set_clear_color(color);
 }
-Color Graphics::GetClearColor() { return GraphicsSystem::get_clear_color(); }
-void Graphics::toggle_show_imgui() { GraphicsSystem::toggle_show_imgui(); }
-bool Graphics::is_show_imgui() { return GraphicsSystem::is_show_imgui(); }
-std::list<std::function<void()>> &Graphics::get_imgui_function() {
+Color Graphics::getClearColor() { return GraphicsSystem::get_clear_color(); }
+void Graphics::toggleShowImGui() { GraphicsSystem::toggle_show_imgui(); }
+bool Graphics::isShowImGui() { return GraphicsSystem::is_show_imgui(); }
+std::list<std::function<void()>> &Graphics::getImGuiFunction() {
   return GraphicsSystem::get_imgui_function();
 }
 
-void Graphics::add_imgui_function(std::function<void()> function) {
+void Graphics::addImGuiFunction(std::function<void()> function) {
   GraphicsSystem::get_imgui_function().push_back(function);
 }
-void Graphics::SetCamera(const Camera &camera) {
+void Graphics::setCamera(const Camera &camera) {
   GraphicsSystem::SetCamera(camera);
 }
-Camera &Graphics::GetCamera() { return GraphicsSystem::GetCamera(); }
+Camera &Graphics::getCamera() { return GraphicsSystem::GetCamera(); }
 
-void Graphics::SetCamera2D(const Camera2D &camera) {
+void Graphics::setCamera2D(const Camera2D &camera) {
   GraphicsSystem::SetCamera2D(camera);
 }
 
-Camera2D &Graphics::GetCamera2D() { return GraphicsSystem::GetCamera2D(); }
+Camera2D &Graphics::getCamera2D() { return GraphicsSystem::GetCamera2D(); }
 
-void Graphics::BindPipeline3D(const GraphicsPipeline3D &pipeline) {
+void Graphics::bindPipeline3D(const GraphicsPipeline3D &pipeline) {
   GraphicsSystem::bind_pipeline3d(pipeline);
 }
-void Graphics::BindDefaultPipeline3D() {
+void Graphics::bindDefaultPipeline3D() {
   GraphicsSystem::bind_default_pipeline3d();
 }
-void Graphics::BindPipeline2D(const GraphicsPipeline2D &pipeline) {
+void Graphics::bindPipeline2D(const GraphicsPipeline2D &pipeline) {
   GraphicsSystem::bind_pipeline2d(pipeline);
 }
-void Graphics::BindDefaultPipeline2D() {
+void Graphics::bindDefaultPipeline2D() {
   GraphicsSystem::bind_default_pipeline2d();
 }
-void Graphics::SetUniformData(uint32_t slot, const UniformData &data) {
+void Graphics::setUniformData(uint32_t slot, const UniformData &data) {
   GraphicsSystem::set_uniform_data(slot, data);
 }
-void Graphics::SetRenderTarget(const RenderTexture &texture) {
+void Graphics::setRenderTarget(const RenderTexture &texture) {
   GraphicsSystem::SetRenderTarget(texture);
 }
-void Graphics::Flush() { GraphicsSystem::Flush(); }
-Texture Graphics::ReadbackTexture(const RenderTexture &texture) {
+void Graphics::flush() { GraphicsSystem::Flush(); }
+Texture Graphics::readbackTexture(const RenderTexture &texture) {
   return GraphicsSystem::ReadbackTexture(texture);
 }
 } // namespace sinen

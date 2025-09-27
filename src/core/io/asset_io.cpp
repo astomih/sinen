@@ -14,37 +14,37 @@
 
 namespace sinen {
 std::vector<uint8_t> AssetIO::key = {0};
-std::string_view AssetIO::Open(const AssetType &type, std::string_view name) {
+std::string_view AssetIO::open(const AssetType &type, std::string_view name) {
   std::string filePath;
-  ConvertFilePath(type, filePath, name);
+  convertFilePath(type, filePath, name);
 
   auto *file = SDL_IOFromFile(filePath.c_str(), "r");
-  Logger::Error("File open error %s: %s", filePath.c_str(), SDL_GetError());
+  Logger::error("File open error %s: %s", filePath.c_str(), SDL_GetError());
   size_t fileLength;
   void *load = SDL_LoadFile_IO(file, &fileLength, 1);
   if (!load) {
-    Logger::Error("File load error %s: %s", filePath.c_str(), SDL_GetError());
+    Logger::error("File load error %s: %s", filePath.c_str(), SDL_GetError());
     return "";
   }
   std::string_view result(reinterpret_cast<char *>(load), fileLength);
   SDL_free(load);
   return result;
 }
-void *AssetIO::OpenAsRWOps(const AssetType &type, std::string_view name) {
+void *AssetIO::openAsIOStream(const AssetType &type, std::string_view name) {
   std::string filePath;
-  ConvertFilePath(type, filePath, name);
+  convertFilePath(type, filePath, name);
 
   SDL_IOStream *file = SDL_IOFromFile(filePath.c_str(), "r");
   if (!file) {
-    Logger::Error("File open error %s", filePath.c_str());
+    Logger::error("File open error %s", filePath.c_str());
     return nullptr;
   }
   return file;
 }
-std::string AssetIO::OpenAsString(const AssetType &type,
+std::string AssetIO::openAsString(const AssetType &type,
                                   std::string_view name) {
   std::string filePath;
-  ConvertFilePath(type, filePath, name);
+  convertFilePath(type, filePath, name);
 
   auto *file = SDL_IOFromFile(filePath.c_str(), "r");
   if (!file) {
@@ -60,20 +60,20 @@ std::string AssetIO::OpenAsString(const AssetType &type,
   return result;
 }
 
-void AssetIO::Write(const AssetType &type, std::string_view name,
+void AssetIO::write(const AssetType &type, std::string_view name,
                     std::string_view data) {
   std::string filePath;
-  ConvertFilePath(type, filePath, name);
+  convertFilePath(type, filePath, name);
   auto *file = SDL_IOFromFile(filePath.c_str(), "w");
   if (!file) {
     return;
   }
   if (data.size() != SDL_WriteIO(file, data.data(), data.size())) {
-    Logger::Error<>("data_stream: Could not write all strings");
+    Logger::error<>("data_stream: Could not write all strings");
   }
   SDL_CloseIO(file);
 }
-void AssetIO::ConvertFilePath(const AssetType &type, std::string &filePath,
+void AssetIO::convertFilePath(const AssetType &type, std::string &filePath,
                               std::string_view name) {
   std::string base = MainSystem::GetBasePath() + "/asset/";
   switch (type) {
@@ -104,10 +104,10 @@ void AssetIO::ConvertFilePath(const AssetType &type, std::string &filePath,
     break;
   }
 }
-std::string AssetIO::ConvertFilePath(const AssetType &type,
+std::string AssetIO::convertFilePath(const AssetType &type,
                                      std::string_view name) {
   std::string filePath;
-  ConvertFilePath(type, filePath, name);
+  convertFilePath(type, filePath, name);
   return filePath;
 }
 

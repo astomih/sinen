@@ -4,7 +4,7 @@
 #include <string>
 
 namespace sinen {
-void Script::Load(const std::string &filePath, const std::string &baseDirPath) {
+void Script::load(const std::string &filePath, const std::string &baseDirPath) {
   MainSystem::Change(std::string(filePath.data()),
                      std::string(baseDirPath.data()));
 }

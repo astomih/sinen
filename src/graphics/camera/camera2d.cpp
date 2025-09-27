@@ -3,6 +3,6 @@
 
 namespace sinen {
 
-glm::vec2 Camera2D::WindowRatio() const { return Window::Size() / size; }
-glm::vec2 Camera2D::InvWindowRatio() const { return size / Window::Size(); }
+glm::vec2 Camera2D::windowRatio() const { return Window::size() / cameraSize; }
+glm::vec2 Camera2D::invWindowRatio() const { return cameraSize / Window::size(); }
 } // namespace sinen

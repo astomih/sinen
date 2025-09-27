@@ -3,7 +3,7 @@
 #include <physics/collision.hpp>
 
 namespace sinen {
-void AABB::update_world(const glm::vec3 &p, const glm::vec3 &scale,
+void AABB::updateWorld(const glm::vec3 &p, const glm::vec3 &scale,
                         const AABB &local) {
   this->min = p + scale * local.min;
   this->max = p + scale * local.max;

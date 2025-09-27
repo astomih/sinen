@@ -16,21 +16,17 @@ class Math {
 public:
   static constexpr float pi = std::numbers::pi_v<float>;
   // 2 * pi
-  static constexpr float two_pi = pi * 2.f;
+  static constexpr float twoPi = pi * 2.f;
   // pi / 2
-  static constexpr float pi_over2 = pi / 2.f;
+  static constexpr float piOver2 = pi / 2.f;
   static constexpr float infinity = std::numeric_limits<float>::infinity();
-  static constexpr float neg_infinity = -std::numeric_limits<float>::infinity();
+  static constexpr float negInfinity = -std::numeric_limits<float>::infinity();
 
-  static inline float to_radians(float degrees) {
-    return degrees * pi / 180.0f;
-  }
+  static inline float toRadians(float degrees) { return degrees * pi / 180.0f; }
 
-  static inline float to_degrees(float radians) {
-    return radians * 180.0f / pi;
-  }
+  static inline float toDegrees(float radians) { return radians * 180.0f / pi; }
 
-  static inline bool near_zero(float val, float epsilon = 0.001f) {
+  static inline bool nearZero(float val, float epsilon = 0.001f) {
     if (fabs(val) <= epsilon) {
       return true;
     } else {
@@ -38,11 +34,11 @@ public:
     }
   }
 
-  template <typename T> static T Max(const T &a, const T &b) {
+  template <typename T> static T max(const T &a, const T &b) {
     return (a < b ? b : a);
   }
 
-  template <typename T> static T Min(const T &a, const T &b) {
+  template <typename T> static T min(const T &a, const T &b) {
     return (a < b ? a : b);
   }
 

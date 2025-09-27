@@ -15,8 +15,8 @@ struct AABB {
    * @param max  max point
    */
   AABB(const glm::vec3 &min, const glm::vec3 max) : min(min), max(max) {}
-  void update_world(const glm::vec3 &p, const glm::vec3 &scale,
-                    const AABB &local);
+  void updateWorld(const glm::vec3 &p, const glm::vec3 &scale,
+                   const AABB &local);
 };
 /**
  * @brief OBBox(Oriented Bounding Box) class

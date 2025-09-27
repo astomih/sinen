@@ -48,15 +48,15 @@ glm::mat4 ConvertMatrix(const aiMatrix4x4 &m) {
   return mat;
 }
 
-void Model::Load(std::string_view str) const {
+void Model::load(std::string_view str) const {
   auto modelData = GetModelData(this->data);
   auto &local_aabb = modelData->local_aabb;
   auto &v_array = modelData->v_array;
   std::stringstream data;
-  data << AssetIO::OpenAsString(AssetType::Model, str);
+  data << AssetIO::openAsString(AssetType::Model, str);
   std::string str_name = str.data();
 
-  auto fileName = AssetIO::ConvertFilePath(AssetType::Model, str_name);
+  auto fileName = AssetIO::convertFilePath(AssetType::Model, str_name);
   // Assimp
   auto &importer = modelData->importer;
   modelData->scene =
@@ -162,17 +162,17 @@ void Model::Load(std::string_view str) const {
         v.uv.y = uv.y;
 
         local_aabb.min.x =
-            Math::Min(local_aabb.min.x, static_cast<float>(pos.x));
+            Math::min(local_aabb.min.x, static_cast<float>(pos.x));
         local_aabb.min.y =
-            Math::Min(local_aabb.min.y, static_cast<float>(pos.y));
+            Math::min(local_aabb.min.y, static_cast<float>(pos.y));
         local_aabb.min.z =
-            Math::Min(local_aabb.min.z, static_cast<float>(pos.z));
+            Math::min(local_aabb.min.z, static_cast<float>(pos.z));
         local_aabb.max.x =
-            Math::Max(local_aabb.max.x, static_cast<float>(pos.x));
+            Math::max(local_aabb.max.x, static_cast<float>(pos.x));
         local_aabb.max.y =
-            Math::Max(local_aabb.max.y, static_cast<float>(pos.y));
+            Math::max(local_aabb.max.y, static_cast<float>(pos.y));
         local_aabb.max.z =
-            Math::Max(local_aabb.max.z, static_cast<float>(pos.z));
+            Math::max(local_aabb.max.z, static_cast<float>(pos.z));
 
         v_array.vertices.push_back(v);
       }
@@ -193,32 +193,32 @@ void Model::Load(std::string_view str) const {
   modelData->indexBuffer = viBuffer.second;
 }
 
-void Model::LoadFromVertexArray(const VertexArray &vArray) {
+void Model::loadFromVertexArray(const VertexArray &vArray) {
   auto modelData = GetModelData(this->data);
   modelData->v_array = vArray;
   auto &local_aabb = modelData->local_aabb;
   for (auto &v : vArray.vertices) {
-    local_aabb.min.x = Math::Min(local_aabb.min.x, v.position.x);
-    local_aabb.min.y = Math::Min(local_aabb.min.y, v.position.y);
-    local_aabb.min.z = Math::Min(local_aabb.min.z, v.position.z);
-    local_aabb.max.x = Math::Max(local_aabb.max.x, v.position.x);
-    local_aabb.max.y = Math::Max(local_aabb.max.y, v.position.y);
-    local_aabb.max.z = Math::Max(local_aabb.max.z, v.position.z);
+    local_aabb.min.x = Math::min(local_aabb.min.x, v.position.x);
+    local_aabb.min.y = Math::min(local_aabb.min.y, v.position.y);
+    local_aabb.min.z = Math::min(local_aabb.min.z, v.position.z);
+    local_aabb.max.x = Math::max(local_aabb.max.x, v.position.x);
+    local_aabb.max.y = Math::max(local_aabb.max.y, v.position.y);
+    local_aabb.max.z = Math::max(local_aabb.max.z, v.position.z);
   }
   auto viBuffer = CreateVertexIndexBuffer(vArray);
   modelData->vertexBuffer = viBuffer.first;
   modelData->indexBuffer = viBuffer.second;
 }
 
-void Model::LoadSprite() { *this = GraphicsSystem::sprite; }
-void Model::LoadBox() { *this = GraphicsSystem::box; }
+void Model::loadSprite() { *this = GraphicsSystem::sprite; }
+void Model::loadBox() { *this = GraphicsSystem::box; }
 
-AABB &Model::GetAABB() const {
+AABB &Model::getAABB() const {
   auto modelData = GetModelData(this->data);
   return modelData->local_aabb;
 }
 
-std::vector<Vertex> Model::AllVertex() const {
+std::vector<Vertex> Model::allVertex() const {
   auto modelData = GetModelData(this->data);
   auto &local_aabb = modelData->local_aabb;
   auto &v_array = modelData->v_array;
@@ -226,12 +226,12 @@ std::vector<Vertex> Model::AllVertex() const {
   std::vector<Vertex> all;
   all.insert(all.end(), v_array.vertices.begin(), v_array.vertices.end());
   for (auto &child : children) {
-    auto child_all = child->AllVertex();
+    auto child_all = child->allVertex();
     all.insert(all.end(), child_all.begin(), child_all.end());
   }
   return all;
 }
-std::vector<std::uint32_t> Model::AllIndices() const {
+std::vector<std::uint32_t> Model::allIndices() const {
   auto modelData = GetModelData(this->data);
   auto &local_aabb = modelData->local_aabb;
   auto &v_array = modelData->v_array;
@@ -239,7 +239,7 @@ std::vector<std::uint32_t> Model::AllIndices() const {
   std::vector<std::uint32_t> all;
   all.insert(all.end(), v_array.indices.begin(), v_array.indices.end());
   for (auto &child : children) {
-    auto child_all = child->AllIndices();
+    auto child_all = child->allIndices();
     all.insert(all.end(), child_all.begin(), child_all.end());
   }
   return all;
@@ -351,20 +351,20 @@ CreateVertexIndexBuffer(const VertexArray &vArray) {
   return std::make_pair(vertexBuffer, indexBuffer);
 }
 
-UniformData Model::GetBoneUniformData() const {
+UniformData Model::getBoneUniformData() const {
   auto modelData = GetModelData(this->data);
   return modelData->boneUniformData;
 }
-void Model::Play(float start) {
+void Model::play(float start) {
   time = start;
-  LoadBoneUniform(time);
+  loadBoneUniform(time);
 }
-void Model::Update(float delta_time) {
+void Model::update(float delta_time) {
   time += delta_time;
-  LoadBoneUniform(time);
+  loadBoneUniform(time);
 }
 
-void Model::LoadBoneUniform(float start) {
+void Model::loadBoneUniform(float start) {
   auto modelData = GetModelData(this->data);
   auto &skeletalAnimation = modelData->skeletalAnimation;
   for (auto &bone : skeletalAnimation.boneMap) {
@@ -376,7 +376,7 @@ void Model::LoadBoneUniform(float start) {
   }
   auto matrices = skeletalAnimation.GetFinalBoneMatrices();
   auto &boneUniformData = modelData->boneUniformData;
-  boneUniformData.Clear();
+  boneUniformData.clear();
 
   std::vector<glm::mat4> boneMatrices(matrices.size());
   int index = 0;
@@ -384,7 +384,7 @@ void Model::LoadBoneUniform(float start) {
     boneMatrices[index] = m;
     index++;
   }
-  boneUniformData.AddMatrices(boneMatrices);
+  boneUniformData.addMatrices(boneMatrices);
 }
 void SkeletalAnimation::Load(const aiScene *scn) {
   scene = scn;

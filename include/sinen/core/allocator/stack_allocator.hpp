@@ -33,13 +33,13 @@ public:
    *
    * @return marker_t
    */
-  marker_t get_marker();
+  marker_t getMaker();
   /**
    * @brief Free to marker
    *
    * @param marker marker
    */
-  void free_to_marker(marker_t marker);
+  void freeToMaker(marker_t marker);
   /**
    * @brief Clear the stack
    *

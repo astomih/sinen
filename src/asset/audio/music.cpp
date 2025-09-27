@@ -15,21 +15,21 @@ Music::Music() {}
 
 Music::~Music() {}
 
-void Music::SetVolume(int value) { ::Mix_VolumeMusic(value); }
+void Music::setVolume(int value) { ::Mix_VolumeMusic(value); }
 
-void Music::Play() { ::Mix_PlayMusic((::Mix_Music *)buffer, -1); }
+void Music::play() { ::Mix_PlayMusic((::Mix_Music *)buffer, -1); }
 
-void Music::Stop() { ::Mix_HaltMusic(); }
+void Music::stop() { ::Mix_HaltMusic(); }
 
-void Music::Load(std::string_view fileName) {
-  auto rwops = (SDL_IOStream *)AssetIO::OpenAsRWOps(AssetType::Music, fileName);
+void Music::load(std::string_view fileName) {
+  auto rwops = (SDL_IOStream *)AssetIO::openAsIOStream(AssetType::Music, fileName);
   ::Mix_Music *m = ::Mix_LoadMUS_IO(rwops, 1);
   if (m) {
     buffer = (void *)m;
   }
 }
 
-void Music::Unload() {
+void Music::unload() {
   if (buffer) {
     ::Mix_FreeMusic((::Mix_Music *)buffer);
     buffer = nullptr;

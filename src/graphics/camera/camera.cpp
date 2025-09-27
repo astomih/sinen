@@ -9,22 +9,22 @@
 #include <platform/window/window.hpp>
 
 namespace sinen {
-void Camera::LookAt(const glm::vec3 &position, const glm::vec3 &target,
+void Camera::lookat(const glm::vec3 &position, const glm::vec3 &target,
                     const glm::vec3 &up) {
-  m_position = position;
-  m_target = target;
-  m_up = up;
-  m_view = glm::lookAt(glm::vec3(m_position.x, m_position.y, m_position.z),
-                       glm::vec3(m_target.x, m_target.y, m_target.z),
-                       glm::vec3(m_up.x, m_up.y, m_up.z));
+  this->position = position;
+  this->target = target;
+  this->up = up;
+  view = glm::lookAt(glm::vec3(position.x, position.y, position.z),
+                     glm::vec3(target.x, target.y, target.z),
+                     glm::vec3(up.x, up.y, up.z));
   update_frustum = true;
 }
-void Camera::Perspective(float fov, float aspect, float near, float far) {
-  m_projection = glm::perspective(glm::radians(fov), aspect, near, far);
+void Camera::perspective(float fov, float aspect, float near, float far) {
+  projection = glm::perspective(glm::radians(fov), aspect, near, far);
   update_frustum = true;
 }
-void Camera::Orthographic(float width, float height, float near, float far) {
-  m_projection = glm::ortho(0.f, width, 0.f, height, near, far);
+void Camera::orthographic(float width, float height, float near, float far) {
+  projection = glm::ortho(0.f, width, 0.f, height, near, far);
   update_frustum = true;
 }
 
@@ -52,9 +52,9 @@ static Frustum ExtractFrustumPlanes(const glm::mat4 &vp) {
 
   return f;
 }
-bool Camera::IsAABBInFrustum(const AABB &aabb) {
+bool Camera::isAABBInFrustum(const AABB &aabb) {
   if (update_frustum) {
-    frustum = ExtractFrustumPlanes(m_projection * m_view);
+    frustum = ExtractFrustumPlanes(projection * view);
     update_frustum = false;
   }
   for (int i = 0; i < 6; ++i) {

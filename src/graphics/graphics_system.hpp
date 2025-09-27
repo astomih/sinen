@@ -98,8 +98,8 @@ private:
   inline static Camera2D camera2D = glm::vec2(1280, 720);
   inline static Camera camera = []() {
     Camera c;
-    c.LookAt(glm::vec3{0, -1, 1}, glm::vec3{0, 0, 0}, glm::vec3{0, 0, 1});
-    c.Perspective(90.f, Window::Size().x / Window::Size().y, .1f, 100.f);
+    c.lookat(glm::vec3{0, -1, 1}, glm::vec3{0, 0, 0}, glm::vec3{0, 0, 1});
+    c.perspective(90.f, Window::size().x / Window::size().y, .1f, 100.f);
     return c;
   }();
   ;

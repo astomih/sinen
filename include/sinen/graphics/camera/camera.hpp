@@ -23,7 +23,7 @@ public:
    * @param target
    * @param up
    */
-  void LookAt(const glm::vec3 &position, const glm::vec3 &target,
+  void lookat(const glm::vec3 &position, const glm::vec3 &target,
               const glm::vec3 &up);
   /**
    * @brief Set Perspective projection
@@ -33,7 +33,7 @@ public:
    * @param near Near plane
    * @param far Far plane
    */
-  void Perspective(float fov, float aspect, float near, float far);
+  void perspective(float fov, float aspect, float near, float far);
   /**
    * @brief Set Orthographic projection
    *
@@ -42,7 +42,7 @@ public:
    * @param near Near plane
    * @param far Far plane
    */
-  void Orthographic(float width, float height, float near, float far);
+  void orthographic(float width, float height, float near, float far);
 
   /**
    * @brief Check if AABB is in frustum
@@ -51,49 +51,49 @@ public:
    * @return true AABB is in frustum
    * @return false AABB is not in frustum
    */
-  bool IsAABBInFrustum(const AABB &aabb);
+  bool isAABBInFrustum(const AABB &aabb);
   /**
    * @brief Get the position of camera
    *
    * @return glm::vec3&
    */
-  glm::vec3 &GetPosition() { return m_position; }
+  glm::vec3 &getPosition() { return position; }
   /**
    * @brief Get the target of camera
    *
    * @return glm::vec3&
    */
-  glm::vec3 &GetTarget() { return m_target; }
+  glm::vec3 &getTarget() { return target; }
   /**
    * @brief Get the up vector of camera
    *
    * @return glm::vec3&
    */
-  glm::vec3 &GetUp() { return m_up; }
+  glm::vec3 &getUp() { return up; }
   /**
    * @brief Get the view matrix of camera
    *
    * @return matrix4&
    */
-  glm::mat4 &GetView() { return m_view; }
+  glm::mat4 &getView() { return view; }
   /**
    * @brief Get the projection matrix of camera
    *
    * @return matrix4&
    */
-  glm::mat4 &Projection() { return m_projection; }
+  glm::mat4 &getProjection() { return projection; }
 
 private:
   // Position of camera
-  glm::vec3 m_position;
+  glm::vec3 position;
   // Camera target vector
-  glm::vec3 m_target;
+  glm::vec3 target;
   // Up vector
-  glm::vec3 m_up;
+  glm::vec3 up;
   // view
-  glm::mat4 m_view;
+  glm::mat4 view;
   // projection
-  glm::mat4 m_projection;
+  glm::mat4 projection;
 
   bool update_frustum = false;
   Frustum frustum;

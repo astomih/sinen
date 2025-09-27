@@ -25,29 +25,29 @@ public:
    * @brief Play the music
    *
    */
-  void Play();
+  void play();
   /**
    * @brief Stop the music
    *
    */
-  void Stop();
+  void stop();
   /**
    * @brief Load the music from file
    *
    * @param fileName file name
    */
-  void Load(std::string_view fileName);
+  void load(std::string_view fileName);
   /**
    * @brief Unload the music
    *
    */
-  void Unload();
+  void unload();
   /**
    * @brief Set the volume object
    *
    * @param volume volume 0.0 - 1.0
    */
-  void SetVolume(int volume);
+  void setVolume(int volume);
 
 private:
   void *buffer;

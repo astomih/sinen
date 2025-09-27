@@ -20,42 +20,42 @@
 
 namespace sinen {
 Font::Font(int32_t point, std::string_view file_name) {
-  Load(point, file_name);
+  load(point, file_name);
 }
 Font::~Font() {}
-bool Font::Load(int pointSize) {
+bool Font::load(int pointSize) {
   this->m_size = pointSize;
   // Load the default font from the embedded resource
   auto *rw = SDL_IOFromConstMem(mplus_1p_medium_ttf, mplus_1p_medium_ttf_len);
   m_font = (void *)::TTF_OpenFontIO(rw, 1, pointSize);
-  return IsLoaded();
+  return isLoaded();
 }
-bool Font::Load(int pointSize, std::string_view fontName) {
+bool Font::load(int pointSize, std::string_view fontName) {
   this->m_size = pointSize;
   m_font = (void *)::TTF_OpenFontIO(
-      (SDL_IOStream *)AssetIO::OpenAsRWOps(AssetType::Font, fontName), 1,
+      (SDL_IOStream *)AssetIO::openAsIOStream(AssetType::Font, fontName), 1,
       pointSize);
-  return IsLoaded();
+  return isLoaded();
 }
 
-void Font::Unload() {
-  if (IsLoaded()) {
+void Font::unload() {
+  if (isLoaded()) {
     ::TTF_CloseFont((::TTF_Font *)m_font);
   }
 }
 
-void Font::Resize(int point_size) {
-  if (!IsLoaded()) {
-    Logger::Error("Font is not loaded");
+void Font::resize(int point_size) {
+  if (!isLoaded()) {
+    Logger::error("Font is not loaded");
     return;
   }
   TTF_SetFontSize(reinterpret_cast<TTF_Font *>(this->m_font), point_size);
 }
 
-void Font::RenderText(Texture &tex, std::string_view text,
+void Font::renderText(Texture &tex, std::string_view text,
                       const Color &_color) {
-  if (!IsLoaded()) {
-    Logger::Error("Font is not loaded");
+  if (!isLoaded()) {
+    Logger::error("Font is not loaded");
     return;
   }
   // SinenEngine Color to SDL_Color
@@ -65,7 +65,7 @@ void Font::RenderText(Texture &tex, std::string_view text,
   sdlColor.b = static_cast<Uint8>(_color.b * 255);
   sdlColor.a = static_cast<Uint8>(_color.a * 255);
   if (sdlColor.a == 0) {
-    tex.FillColor(_color);
+    tex.fillColor(_color);
     return;
   }
   auto *ttf_font = reinterpret_cast<::TTF_Font *>(m_font);

@@ -11,7 +11,7 @@ namespace sinen {
  */
 class Json {
 public:
-  class object;
+  class Object;
   /**
    * @brief Json array class
    *
@@ -21,8 +21,8 @@ public:
 
   public:
     ~array();
-    object operator[](std::size_t index);
-    void push_back(object &obj);
+    Object operator[](std::size_t index);
+    void push_back(Object &obj);
     std::size_t size() const;
 
   private:
@@ -34,42 +34,42 @@ public:
    * @brief Json object class
    *
    */
-  class object {
+  class Object {
     friend Json;
 
   public:
-    ~object();
-    object operator[](const std::string_view &key);
-    std::int32_t get_int32();
-    std::uint32_t get_uint32();
-    std::int64_t get_int64();
-    std::uint64_t get_uint64();
-    float get_float();
-    double get_double();
-    std::string get_string();
-    bool get_bool();
-    array get_array();
+    ~Object();
+    Object operator[](const std::string_view &key);
+    std::int32_t getInt32();
+    std::uint32_t getUint32();
+    std::int64_t getInt64();
+    std::uint64_t getUint64();
+    float getFloat();
+    double getDouble();
+    std::string getString();
+    bool getBool();
+    array getArray();
 
-    void set_int32(std::int32_t value);
-    void set_uint32(std::uint32_t value);
-    void set_int64(std::int64_t value);
-    void set_uint64(std::uint64_t value);
-    void set_float(float value);
-    void set_double(double value);
-    void set_string(std::string_view value);
-    void set_bool(bool value);
-    void set_array(array &value);
+    void setInt32(std::int32_t value);
+    void setUint32(std::uint32_t value);
+    void setInt64(std::int64_t value);
+    void setUint64(std::uint64_t value);
+    void setFloat(float value);
+    void setDouble(double value);
+    void setString(std::string_view value);
+    void setBool(bool value);
+    void setArray(array &value);
 
-    void add_member(std::string_view key, int value);
-    void add_member(std::string_view key, float value);
-    void add_member(std::string_view key, std::string_view value);
-    void add_member(std::string_view key, object &value);
-    void add_member(std::string_view key, array &value);
+    void addMember(std::string_view key, int value);
+    void addMember(std::string_view key, float value);
+    void addMember(std::string_view key, std::string_view value);
+    void addMember(std::string_view key, Object &value);
+    void addMember(std::string_view key, array &value);
 
   private:
-    object();
-    class impl;
-    std::shared_ptr<impl> pimpl;
+    Object();
+    class Implements;
+    std::shared_ptr<Implements> pimpl;
   };
   /**
    * @brief Construct a new json object
@@ -88,25 +88,25 @@ public:
    */
   void parse(std::string_view str);
 
-  void add_member(std::string_view key, int value);
-  void add_member(std::string_view key, float value);
-  void add_member(std::string_view key, std::string_view value);
-  void add_member(std::string_view key, object &value);
-  void add_member(std::string_view key, array &value);
+  void addMember(std::string_view key, int value);
+  void addMember(std::string_view key, float value);
+  void addMember(std::string_view key, std::string_view value);
+  void addMember(std::string_view key, Object &value);
+  void addMember(std::string_view key, array &value);
 
-  object create_object();
-  array create_array();
+  Object createObject();
+  array createArray();
 
-  std::string to_string();
+  std::string toString();
 
   std::size_t size();
 
-  object operator[](std::string_view key);
+  Object operator[](std::string_view key);
 
 private:
-  friend object;
-  struct impl;
-  std::unique_ptr<impl> pimpl;
+  friend Object;
+  struct Implements;
+  std::unique_ptr<Implements> pimpl;
 };
 
 } // namespace sinen

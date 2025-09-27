@@ -23,17 +23,17 @@ public:
    *
    */
   explicit Draw2D(const Texture &texture);
-  void Add(const glm::vec2 &position, const float &rotation,
+  void add(const glm::vec2 &position, const float &rotation,
            const glm::vec2 &scale);
-  void At(const int &index, const glm::vec2 &position, const float &rotation,
+  void at(const int &index, const glm::vec2 &position, const float &rotation,
           const glm::vec2 &scale);
-  void Clear();
-  struct world {
+  void clear();
+  struct World {
     glm::vec2 position;
     float rotation;
     glm::vec2 scale;
   };
-  std::vector<world> worlds;
+  std::vector<World> worlds;
   glm::vec2 position;
   float rotation;
   glm::vec2 scale;
@@ -58,16 +58,15 @@ public:
    *
    */
   explicit Draw3D(const Texture &texture);
-  void Add(const glm::vec3 &position, const glm::vec3 &rotation,
+  void add(const glm::vec3 &position, const glm::vec3 &rotation,
            const glm::vec3 &scale);
-  void At(const int &index, const glm::vec3 &position,
+  void at(const int &index, const glm::vec3 &position,
           const glm::vec3 &rotation, const glm::vec3 &scale);
-  void Clear();
+  void clear();
   glm::vec3 position;
   glm::vec3 rotation;
   glm::vec3 scale;
   Material material;
-  bool isDrawDepth = true;
   Model model;
   std::shared_ptr<Drawable> obj;
   std::vector<Transform> worlds;

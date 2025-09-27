@@ -48,14 +48,14 @@ void ScriptSystem::RunScene(std::string_view sceneName) {
     std::string source;
     switch (ScriptSystem::type) {
     case ScriptType::Lua: {
-      source = AssetIO::OpenAsString(AssetType::Script,
+      source = AssetIO::openAsString(AssetType::Script,
                                      std::string(sceneName) + ".lua");
       if (source.empty()) {
         source = nothingSceneLua;
       }
     } break;
     case ScriptType::Python: {
-      source = AssetIO::OpenAsString(AssetType::Script,
+      source = AssetIO::openAsString(AssetType::Script,
                                      std::string(sceneName) + ".py");
     } break;
     default:

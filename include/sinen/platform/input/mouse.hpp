@@ -8,7 +8,7 @@ namespace sinen {
  */
 class Mouse {
 public:
-  enum class code;
+  enum class Code;
   // For mouse position
   static void SetPosition(const glm::vec2 &pos);
   static void SetPositionOnScene(const glm::vec2 &pos);
@@ -19,11 +19,11 @@ public:
   static void SetRelative(bool is_relative);
   static bool IsRelative();
   // For buttons
-  static bool IsDown(code _button);
-  static bool IsPressed(code _button);
-  static bool IsReleased(code _button);
-  enum class code { LEFT = 1, MIDDLE = 2, RIGHT = 3, X1 = 4, X2 = 5 };
-  using enum code;
+  static bool IsDown(Code _button);
+  static bool IsPressed(Code _button);
+  static bool IsReleased(Code _button);
+  enum class Code { LEFT = 1, MIDDLE = 2, RIGHT = 3, X1 = 4, X2 = 5 };
+  using enum Code;
 };
 } // namespace sinen
 #endif // !SINEN_MOUSE_HPP

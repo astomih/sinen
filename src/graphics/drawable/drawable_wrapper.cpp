@@ -25,7 +25,7 @@ Draw2D::Draw2D()
 Draw2D::Draw2D(const Texture &texture)
     : position(glm::vec2(0.f, 0.f)), rotation(0.0f),
       scale(glm::vec2(1.f, 1.f)) {
-  this->material.SetTexture(texture);
+  this->material.setTexture(texture);
   obj = std::make_shared<Drawable>();
 }
 Draw3D::Draw3D()
@@ -36,19 +36,19 @@ Draw3D::Draw3D()
 Draw3D::Draw3D(const Texture &texture)
     : position(glm::vec3(0.f, 0.f, 0.f)), rotation(glm::vec3(0.f, 0.f, 0.f)),
       scale(glm::vec3(1.f, 1.f, 1.f)) {
-  this->material.SetTexture(texture);
+  this->material.setTexture(texture);
   obj = std::make_shared<Drawable>();
 }
-void Draw2D::Add(const glm::vec2 &position, const float &rotation,
+void Draw2D::add(const glm::vec2 &position, const float &rotation,
                  const glm::vec2 &scale) {
   this->worlds.push_back({position, rotation, scale});
 }
-void Draw2D::At(const int &index, const glm::vec2 &position,
+void Draw2D::at(const int &index, const glm::vec2 &position,
                 const float &rotation, const glm::vec2 &scale) {
   this->worlds[index] = {position, rotation, scale};
 }
-void Draw2D::Clear() { this->worlds.clear(); }
-void Draw3D::Add(const glm::vec3 &position, const glm::vec3 &rotation,
+void Draw2D::clear() { this->worlds.clear(); }
+void Draw3D::add(const glm::vec3 &position, const glm::vec3 &rotation,
                  const glm::vec3 &scale) {
   Transform transform;
   transform.position = position;
@@ -56,7 +56,7 @@ void Draw3D::Add(const glm::vec3 &position, const glm::vec3 &rotation,
   transform.scale = scale;
   this->worlds.push_back(transform);
 }
-void Draw3D::At(const int &index, const glm::vec3 &position,
+void Draw3D::at(const int &index, const glm::vec3 &position,
                 const glm::vec3 &rotation, const glm::vec3 &scale) {
   Transform transform;
   transform.SetPosition(position);
@@ -64,7 +64,7 @@ void Draw3D::At(const int &index, const glm::vec3 &position,
   transform.SetScale(scale);
   this->worlds[index] = transform;
 }
-void Draw3D::Clear() {
+void Draw3D::clear() {
   this->worlds.clear();
   this->obj->data.clear();
 }

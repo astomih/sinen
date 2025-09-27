@@ -21,9 +21,9 @@ struct Hsv {
    */
   Hsv(float h, float s, float v) : h(h), s(s), v(v) {}
   Hsv() : Hsv(0, 0, 0) {}
-  Hsv(const Color &c) { FromColor(c); }
-  void FromColor(const Color &c);
-  Color ToColor() const;
-  operator Color() const { return ToColor(); }
+  Hsv(const Color &c) { fromColor(c); }
+  void fromColor(const Color &c);
+  Color toColor() const;
+  operator Color() const { return toColor(); }
 };
 } // namespace sinen

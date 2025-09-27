@@ -3,7 +3,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/common.hpp>
 namespace sinen {
-void Hsv::FromColor(const Color &c) {
+void Hsv::fromColor(const Color &c) {
 
   float r = c.r;
   float g = c.g;
@@ -31,7 +31,7 @@ void Hsv::FromColor(const Color &c) {
   v = max;
 }
 
-Color Hsv::ToColor() const {
+Color Hsv::toColor() const {
   float r, g, b;
   float c = v * s;
   float h_ = h / 60;

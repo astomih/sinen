@@ -87,32 +87,32 @@ private:
 };
 File::File() : m_impl(new impl()) {}
 File::~File() = default;
-std::string File::OpenModeToString(const Mode &mode) {
+std::string File::openModeToString(const Mode &mode) {
   return m_impl->open_mode_to_string(mode);
 }
-bool File::Open(const char *filename, const Mode &mode) {
+bool File::open(const char *filename, const Mode &mode) {
   return m_impl->open(filename, mode);
 }
-bool File::Open(std::string_view filename, const Mode &mode) {
+bool File::open(std::string_view filename, const Mode &mode) {
   return m_impl->open(filename.data(), mode);
 }
-bool File::Open(const char *filename, const char *mode) {
+bool File::open(const char *filename, const char *mode) {
   return m_impl->open(filename, mode);
 }
-bool File::Open(std::string_view filename, const char *mode) {
+bool File::open(std::string_view filename, const char *mode) {
   return m_impl->open(filename.data(), mode);
 }
 void File::close() { m_impl->close(); }
 
-void File::Read(void *ptr, size_t size, size_t maxnum) {
+void File::read(void *ptr, size_t size, size_t maxnum) {
   m_impl->read(ptr, size, maxnum);
 }
-void File::Write(const void *buffer, size_t size, size_t num) {
+void File::write(const void *buffer, size_t size, size_t num) {
   m_impl->write(buffer, size, num);
 }
-void File::Seek(const std::int64_t &offset, int whence) {
+void File::seek(const std::int64_t &offset, int whence) {
   m_impl->seek(offset, static_cast<SDL_IOWhence>(whence));
 }
-std::int64_t File::Tell() { return m_impl->tell(); }
-std::int64_t File::Size() { return m_impl->size(); }
+std::int64_t File::tell() { return m_impl->tell(); }
+std::int64_t File::size() { return m_impl->size(); }
 } // namespace sinen

@@ -28,20 +28,20 @@ public:
    * @brief Model format is a custom format(.sim)
    * @param str
    */
-  void Load(std::string_view str) const;
-  void LoadFromVertexArray(const VertexArray &vArray);
-  void LoadSprite();
-  void LoadBox();
-  void Play(float start);
-  void Update(float delta_time);
-  AABB &GetAABB() const;
+  void load(std::string_view str) const;
+  void loadFromVertexArray(const VertexArray &vArray);
+  void loadSprite();
+  void loadBox();
+  void play(float start);
+  void update(float delta_time);
+  AABB &getAABB() const;
   std::shared_ptr<void> data;
-  std::vector<Vertex> AllVertex() const;
-  std::vector<std::uint32_t> AllIndices() const;
-  UniformData GetBoneUniformData() const;
+  std::vector<Vertex> allVertex() const;
+  std::vector<std::uint32_t> allIndices() const;
+  UniformData getBoneUniformData() const;
 
 private:
-  void LoadBoneUniform(float time);
+  void loadBoneUniform(float time);
   float time = 0.0f;
   std::vector<glm::mat4> inverseBindMatrices;
 };

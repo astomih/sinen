@@ -42,31 +42,31 @@ bool Sinen::initialize(int argc, char *argv[]) {
   WindowSystem::initialize("Sinen");
   GraphicsSystem::initialize();
   if (!SoundSystem::initialize()) {
-    Logger::Critical("Failed to initialize audio system");
+    Logger::critical("Failed to initialize audio system");
     SoundSystem::shutdown();
     return false;
   }
   if (!InputSystem::initialize()) {
-    Logger::Critical("Failed to initialize input system");
+    Logger::critical("Failed to initialize input system");
     return false;
   }
   if (!PhysicsSystem::Initialize()) {
-    Logger::Critical("Failed to initialize physics system");
+    Logger::critical("Failed to initialize physics system");
     return false;
   }
   // TODO: Replace OpenAsString
   ScriptType scriptType = ScriptType::Lua;
-  if (!AssetIO::OpenAsString(AssetType::Script, "main.lua").empty()) {
+  if (!AssetIO::openAsString(AssetType::Script, "main.lua").empty()) {
     scriptType = ScriptType::Lua;
-  } else if(!AssetIO::OpenAsString(AssetType::Script, "main.py").empty()) {
+  } else if (!AssetIO::openAsString(AssetType::Script, "main.py").empty()) {
     scriptType = ScriptType::Python;
   }
   if (!ScriptSystem::Initialize(scriptType)) {
-    Logger::Critical("Failed to initialize script system");
+    Logger::critical("Failed to initialize script system");
     return false;
   }
   if (!RandomSystem::initialize()) {
-    Logger::Critical("Failed to initialize random system");
+    Logger::critical("Failed to initialize random system");
     return false;
   }
   MainSystem::initialize();

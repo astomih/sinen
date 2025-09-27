@@ -40,37 +40,37 @@ public:
    * @return true
    * @return false
    */
-  bool FindPath(const glm::ivec2 &start, const glm::ivec2 &end);
+  bool findPath(const glm::ivec2 &start, const glm::ivec2 &end);
   /**
    * @brief Trace the shortest path
    *
    * @return point2i Next point
    */
-  glm::ivec2 Trace();
+  glm::ivec2 trace();
   /**
    * @brief Check if the path is traceable
    *
    * @return true Traceable
    * @return false Not traceable
    */
-  bool Traceable() const;
+  bool traceable() const;
   /**
    * @brief Reset the bfs object
    *
    */
-  void Reset();
+  void reset();
   /**
    * @brief Get the height of the field
    *
    * @return std::size_t
    */
-  std::size_t Width() const noexcept { return this->m_field.Width(); }
+  std::size_t width() const noexcept { return this->m_field.width(); }
   /**
    * @brief Get the width of the field
    *
    * @return std::size_t
    */
-  std::size_t Height() const noexcept { return this->m_field.Height(); }
+  std::size_t height() const noexcept { return this->m_field.height(); }
 
 private:
   /**

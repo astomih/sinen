@@ -16,17 +16,17 @@ namespace sinen {
 class AssetIO {
 public:
   static std::vector<uint8_t> key;
-  static std::string_view Open(const AssetType &type, std::string_view name);
+  static std::string_view open(const AssetType &type, std::string_view name);
 
-  static void *OpenAsRWOps(const AssetType &type, std::string_view name);
+  static void *openAsIOStream(const AssetType &type, std::string_view name);
 
-  static std::string OpenAsString(const AssetType &type, std::string_view name);
-  static void Write(const AssetType &type, std::string_view name,
+  static std::string openAsString(const AssetType &type, std::string_view name);
+  static void write(const AssetType &type, std::string_view name,
                     std::string_view data);
 
-  static void ConvertFilePath(const AssetType &type, std::string &filePath,
+  static void convertFilePath(const AssetType &type, std::string &filePath,
                               std::string_view name);
-  static std::string ConvertFilePath(const AssetType &type,
+  static std::string convertFilePath(const AssetType &type,
                                      std::string_view name);
 };
 } // namespace sinen

@@ -11,15 +11,15 @@ class GamePad {
 public:
   // For buttons
   enum class code;
-  static bool IsDown(code j_button);
-  static bool IsPressed(code j_button);
-  static bool IsReleased(code j_button);
-  static const glm::vec2 &GetLeftStick();
-  static const glm::vec2 &GetRightStick();
-  static float GetLeftTrigger();
-  static float GetRightTrigger();
+  static bool isDown(code j_button);
+  static bool isPressed(code j_button);
+  static bool isReleased(code j_button);
+  static const glm::vec2 &getLeftStick();
+  static const glm::vec2 &getRightStick();
+  static float getLeftTrigger();
+  static float getRightTrigger();
 
-  static bool IsConnected();
+  static bool isConnected();
   enum class code {
     INVALID = -1,
     A,

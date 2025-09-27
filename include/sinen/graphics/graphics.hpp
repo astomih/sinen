@@ -29,68 +29,68 @@ namespace sinen {
  */
 class Graphics {
 public:
-  static void Draw2D(const Draw2D &draw2d);
-  static void Draw3D(const Draw3D &draw3D);
+  static void draw2D(const Draw2D &draw2d);
+  static void draw3D(const Draw3D &draw3D);
 
-  static void DrawRect(const Rect &rect, const Color &color,
+  static void drawRect(const Rect &rect, const Color &color,
                        float angle = 0.0f);
-  static void DrawImage(const Texture &texture, const Rect &rect,
+  static void drawImage(const Texture &texture, const Rect &rect,
                         float angle = 0.0f);
-  static void DrawText(const std::string &text, const glm::vec2 &position,
+  static void drawText(const std::string &text, const glm::vec2 &position,
                        const Color &color = Palette::white(),
                        float fontSize = 16.0f, float angle = 0.0f);
-  static void DrawModel(const Model &model, const Transform &transform,
+  static void drawModel(const Model &model, const Transform &transform,
                         const Material &material);
   /**
    * @brief Set the clear color object
    *
    * @param color
    */
-  static void SetClearColor(const Color &color);
+  static void setClearColor(const Color &color);
   /**
    * @brief Get the clear color object
    *
    * @return color
    */
-  static Color GetClearColor();
+  static Color getClearColor();
   /**
    * @brief Toggle show imgui
    *
    */
-  static void toggle_show_imgui();
+  static void toggleShowImGui();
   /**
    * @brief Is show ImGui
    *
    * @return true showing
    * @return false not showing
    */
-  static bool is_show_imgui();
+  static bool isShowImGui();
   /**
    * @brief Get the imgui function object
    *
    * @return std::list<std::function<void()>>&
    */
-  static std::list<std::function<void()>> &get_imgui_function();
+  static std::list<std::function<void()>> &getImGuiFunction();
   /**
    * @brief Get the ImGui function object
    *
    * @param function
    */
-  static void add_imgui_function(std::function<void()> function);
+  static void addImGuiFunction(std::function<void()> function);
 
-  static void SetCamera2D(const Camera2D &camera);
-  static Camera2D &GetCamera2D();
-  static void SetCamera(const Camera &camera);
-  static Camera &GetCamera();
-  static void BindPipeline3D(const GraphicsPipeline3D &pipeline);
-  static void BindDefaultPipeline3D();
-  static void BindPipeline2D(const GraphicsPipeline2D &pipeline);
-  static void BindDefaultPipeline2D();
-  static void SetUniformData(uint32_t slot, const UniformData &data);
+  static void setCamera2D(const Camera2D &camera);
+  static Camera2D &getCamera2D();
+  static void setCamera(const Camera &camera);
+  static Camera &getCamera();
+  static void bindPipeline3D(const GraphicsPipeline3D &pipeline);
+  static void bindDefaultPipeline3D();
+  static void bindPipeline2D(const GraphicsPipeline2D &pipeline);
+  static void bindDefaultPipeline2D();
+  static void setUniformData(uint32_t slot, const UniformData &data);
 
-  static void SetRenderTarget(const RenderTexture &texture);
-  static void Flush();
-  static Texture ReadbackTexture(const RenderTexture &texture);
+  static void setRenderTarget(const RenderTexture &texture);
+  static void flush();
+  static Texture readbackTexture(const RenderTexture &texture);
 };
 
 } // namespace sinen

@@ -12,46 +12,46 @@ private:
 public:
   enum class priority : int { verbose = 2, debug, info, warn, error, critical };
   static void
-      set_output_function(std::function<void(priority, std::string_view)>);
+      setOutputFunction(std::function<void(priority, std::string_view)>);
   template <typename... Args>
-  static void Verbose(std::string_view format, Args &&...args) {
-    m_logger.verbose(
-        string_format_logger(std::string(format), std::forward<Args>(args)...)
+  static void verbose(std::string_view format, Args &&...args) {
+    logger.verbose(
+        stringFormatLogger(std::string(format), std::forward<Args>(args)...)
             .c_str());
   }
   template <typename... Args>
-  static void Debug(std::string_view format, Args &&...args) {
-    m_logger.debug(
-        string_format_logger(std::string(format), std::forward<Args>(args)...)
+  static void debug(std::string_view format, Args &&...args) {
+    logger.debug(
+        stringFormatLogger(std::string(format), std::forward<Args>(args)...)
             .c_str());
   }
   template <typename... Args>
-  static void Info(std::string_view format, Args &&...args) {
-    m_logger.info(
-        string_format_logger(std::string(format), std::forward<Args>(args)...)
+  static void info(std::string_view format, Args &&...args) {
+    logger.info(
+        stringFormatLogger(std::string(format), std::forward<Args>(args)...)
             .c_str());
   }
   template <typename... Args>
-  static void Error(std::string_view format, Args &&...args) {
-    m_logger.error(
-        string_format_logger(std::string(format), std::forward<Args>(args)...)
+  static void error(std::string_view format, Args &&...args) {
+    logger.error(
+        stringFormatLogger(std::string(format), std::forward<Args>(args)...)
             .c_str());
   }
   template <typename... Args>
-  static void Warn(std::string_view format, Args &&...args) {
-    m_logger.warn(
-        string_format_logger(std::string(format), std::forward<Args>(args)...)
+  static void warn(std::string_view format, Args &&...args) {
+    logger.warn(
+        stringFormatLogger(std::string(format), std::forward<Args>(args)...)
             .c_str());
   }
   template <typename... Args>
-  static void Critical(std::string_view format, Args &&...args) {
-    m_logger.critical(
-        string_format_logger(std::string(format), std::forward<Args>(args)...)
+  static void critical(std::string_view format, Args &&...args) {
+    logger.critical(
+        stringFormatLogger(std::string(format), std::forward<Args>(args)...)
             .c_str());
   }
 
 private:
-  class implements {
+  class Implements {
   public:
     void verbose(const char *, ...);
     void debug(const char *, ...);
@@ -60,9 +60,9 @@ private:
     void warn(const char *, ...);
     void critical(const char *, ...);
   };
-  static implements m_logger;
+  static Implements logger;
   template <typename... Args>
-  static std::string string_format_internal(const std::string &format,
+  static std::string stringFormatInternal(const std::string &format,
                                             Args &&...args) {
     int str_len =
         std::snprintf(nullptr, 0, format.c_str(), std::forward<Args>(args)...);
@@ -81,9 +81,9 @@ private:
     }
   }
   template <typename... Args>
-  static std::string string_format_logger(const std::string &format,
+  static std::string stringFormatLogger(const std::string &format,
                                           Args &&...args) {
-    return string_format_internal(format, convert(std::forward<Args>(args))...);
+    return stringFormatInternal(format, convert(std::forward<Args>(args))...);
   }
 };
 } // namespace sinen

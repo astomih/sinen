@@ -5,9 +5,9 @@ namespace sinen {
 class KeyInput {
 public:
   enum class KeyCode;
-  static bool IsPressed(KeyCode key);
-  static bool IsDown(KeyCode key);
-  static bool IsReleased(KeyCode key);
+  static bool isPressed(KeyCode key);
+  static bool isDown(KeyCode key);
+  static bool isReleased(KeyCode key);
 
   // Logical Key codes using SDL's keycode system.
   enum class KeyCode {

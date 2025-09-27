@@ -35,36 +35,36 @@ public:
    *
    * @param file_name File name
    */
-  void Load(std::string_view file_name);
+  void load(std::string_view file_name);
   /**
    * @brief Create the source
    *
    */
-  void NewSource();
+  void newSource();
   /**
    * @brief Delete the source
    *
    */
-  void DeleteSource();
-  void Play();
-  bool IsValid();
+  void deleteSource();
+  void play();
+  bool isValid();
   // Restart event from begining
-  void Restart();
+  void restart();
   // Stop this event
-  void Stop(bool allowFadeOut = true);
+  void stop(bool allowFadeOut = true);
   // Setters
-  void SetPaused(bool pause);
-  void SetVolume(float value);
-  void SetPitch(float value);
-  void SetPosition(glm::vec3 pos);
+  void setPaused(bool pause);
+  void setVolume(float value);
+  void setPitch(float value);
+  void setPosition(glm::vec3 pos);
   // Getters
-  bool GetPaused();
-  float GetVolume();
-  float GetPitch();
-  std::string GetName();
-  const glm::vec3 &GetPosition();
+  bool getPaused();
+  float getVolume();
+  float getPitch();
+  std::string getName();
+  const glm::vec3 &getPosition();
 
-  void SetListener(glm::vec3 pos, glm::vec3 direction);
+  void setListener(glm::vec3 pos, glm::vec3 direction);
 
 private:
   std::string mName;

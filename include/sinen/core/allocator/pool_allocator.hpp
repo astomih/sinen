@@ -65,13 +65,13 @@ public:
    *
    * @return const std::size_t
    */
-  const std::size_t max_size() const { return MAXSIZE; }
+  const std::size_t max() const { return MAXSIZE; }
   /**
    * @brief Get the size of pool
    *
    * @return const std::size_t
    */
-  const std::size_t remain_size() const {
+  const std::size_t remain() const {
     std::size_t ret = 0;
     element_type *current = this->free_list;
     while (current->next) {

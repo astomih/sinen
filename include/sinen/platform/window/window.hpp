@@ -16,50 +16,50 @@ public:
    *
    * @return vector2 size
    */
-  static glm::vec2 Size();
+  static glm::vec2 size();
   /**
    * @brief Get the window half size
    *
    * @return vector2
    */
-  static glm::vec2 Half();
+  static glm::vec2 half();
   /**
    * @brief Set the Window size
    *
    * @param size window size
    */
-  static void Resize(const glm::vec2 &size);
+  static void resize(const glm::vec2 &size);
   /**
    * @brief Set the fullscreen
    *
    * @param fullscreen
    */
-  static void SetFullscreen(bool fullscreen);
+  static void setFullscreen(bool fullscreen);
   /**
    * @brief Set the name
    *
    * @param name
    */
-  static void Rename(const std::string &name);
+  static void rename(const std::string &name);
   /**
    * @brief Get the window name
    *
    * @return std::string name
    */
-  static std::string GetName();
+  static std::string getName();
   /**
    * @brief Check if the window is resized
    *
    * @return true Resized window
    * @return false Not resized window
    */
-  static bool Resized();
+  static bool resized();
   /**
    * @brief Get the sdl window object
    *
    * @return const void* SDL_Window
    */
-  static const void *GetSDLWindow();
+  static const void *getSDLWindow();
 };
 } // namespace sinen
 #endif // !SINEN_WINDOW_HPP

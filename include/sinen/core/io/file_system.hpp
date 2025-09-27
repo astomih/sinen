@@ -5,7 +5,7 @@
 namespace sinen {
 class FileSystem {
 public:
-  static std::vector<std::string> EnumerateDirectory(const std::string &path);
+  static std::vector<std::string> enumerateDirectory(const std::string &path);
 };
 } // namespace sinen
 #endif // SINEN_FILE_SYSTEM_HPP

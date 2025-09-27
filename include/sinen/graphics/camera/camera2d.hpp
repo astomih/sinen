@@ -5,17 +5,17 @@ namespace sinen {
 class Camera2D {
 public:
   Camera2D() = default;
-  Camera2D(const glm::vec2 &size) : size(size) {}
+  Camera2D(const glm::vec2 &size) : cameraSize(size) {}
   ~Camera2D() = default;
 
-  void Resize(const glm::vec2 &size) { this->size = size; }
-  glm::vec2 WindowRatio() const;
-  glm::vec2 InvWindowRatio() const;
-  glm::vec2 Size() const { return size; }
-  glm::vec2 Half() const { return size * 0.5f; }
+  void resize(const glm::vec2 &size) { this->cameraSize = size; }
+  glm::vec2 windowRatio() const;
+  glm::vec2 invWindowRatio() const;
+  glm::vec2 size() const { return cameraSize; }
+  glm::vec2 half() const { return cameraSize * 0.5f; }
 
 private:
-  glm::vec2 size;
+  glm::vec2 cameraSize;
 };
 } // namespace sinen
 

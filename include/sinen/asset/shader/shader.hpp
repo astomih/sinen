@@ -14,15 +14,15 @@ namespace sinen {
  */
 class Shader {
 public:
-  void LoadDefaultVertexShader();
-  void LoadDefaultVertexInstanceShader();
-  void LoadDefaultFragmentShader();
-  void LoadVertexShader(std::string_view vertex_shader, int numUniformData);
-  void LoadFragmentShader(std::string_view fragment_shader, int numUniformData);
+  void loadDefaultVertexShader();
+  void loadDefaultVertexInstanceShader();
+  void loadDefaultFragmentShader();
+  void loadVertexShader(std::string_view vertex_shader, int numUniformData);
+  void loadFragmentShader(std::string_view fragment_shader, int numUniformData);
 
-  void CompileAndLoadVertexShader(std::string_view vertex_shader,
+  void compileAndLoadVertexShader(std::string_view vertex_shader,
                                   int numUniformData);
-  void CompileAndLoadFragmentShader(std::string_view fragment_shader,
+  void compileAndLoadFragmentShader(std::string_view fragment_shader,
                                     int numUniformData);
 
 private:

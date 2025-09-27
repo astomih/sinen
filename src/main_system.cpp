@@ -38,7 +38,7 @@ struct ImGuiLog {
 };
 std::vector<ImGuiLog::Type> ImGuiLog::logs;
 bool MainSystem::initialize() {
-  Logger::set_output_function([&](Logger::priority p, std::string_view str) {
+  Logger::setOutputFunction([&](Logger::priority p, std::string_view str) {
     std::string newStr;
     ImVec4 color;
     switch (p) {
@@ -103,23 +103,23 @@ void MainSystem::process_input() {
 
 void MainSystem::update_scene() {
   {
-    if (Keyboard::IsPressed(Keyboard::code::F3)) {
-      Graphics::toggle_show_imgui();
+    if (Keyboard::isPressed(Keyboard::Code::F3)) {
+      Graphics::toggleShowImGui();
       static bool z_init = false;
-      if (Graphics::is_show_imgui()) {
-        Graphics::add_imgui_function([&]() {
+      if (Graphics::isShowImGui()) {
+        Graphics::addImGuiFunction([&]() {
           if (!z_init) {
             zep_init(Zep::NVec2f(1.0f, 1.0f));
             zep_load();
             z_init = true;
           }
           zep_update();
-          Zep::NVec2i size = Zep::NVec2i(Window::Half().x, Window::Size().y);
+          Zep::NVec2i size = Zep::NVec2i(Window::half().x, Window::size().y);
           zep_show(size);
-          ImGui::SetNextWindowPos(ImVec2(Window::Half().x, 0),
+          ImGui::SetNextWindowPos(ImVec2(Window::half().x, 0),
                                   ImGuiCond_Always);
           ImGui::SetNextWindowSize(
-              ImVec2(Window::Half().x / 2.f, Window::Half().y),
+              ImVec2(Window::half().x / 2.f, Window::half().y),
               ImGuiCond_Always);
           ImGui::Begin("File", nullptr, ImGuiWindowFlags_NoResize);
           {
@@ -155,18 +155,18 @@ void MainSystem::update_scene() {
           ImGui::End();
 
           ImGui::SetNextWindowPos(
-              ImVec2(Window::Half().x + Window::Half().x / 2.f, 0),
+              ImVec2(Window::half().x + Window::half().x / 2.f, 0),
               ImGuiCond_Always);
           ImGui::SetNextWindowSize(
-              ImVec2(Window::Half().x / 2.f, Window::Half().y),
+              ImVec2(Window::half().x / 2.f, Window::half().y),
               ImGuiCond_Always);
           ImGui::Begin("Stats", nullptr, ImGuiWindowFlags_NoResize);
           ImGui::Text("FPS: %.3f", ImGui::GetIO().Framerate);
           ImGui::End();
 
-          ImGui::SetNextWindowPos(ImVec2(Window::Half().x, Window::Half().y),
+          ImGui::SetNextWindowPos(ImVec2(Window::half().x, Window::half().y),
                                   ImGuiCond_Always);
-          ImGui::SetNextWindowSize(ImVec2(Window::Half().x, Window::Half().y),
+          ImGui::SetNextWindowSize(ImVec2(Window::half().x, Window::half().y),
                                    ImGuiCond_Always);
           ImGui::Begin("Log", nullptr, ImGuiWindowFlags_NoResize);
           for (auto &log : ImGuiLog::logs) {
@@ -175,7 +175,7 @@ void MainSystem::update_scene() {
           ImGui::End();
         });
       } else {
-        Graphics::get_imgui_function().clear();
+        Graphics::getImGuiFunction().clear();
       }
     }
   }

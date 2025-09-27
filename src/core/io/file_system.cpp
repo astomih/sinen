@@ -6,7 +6,7 @@
 
 namespace sinen {
 std::vector<std::string>
-FileSystem::EnumerateDirectory(const std::string &path) {
+FileSystem::enumerateDirectory(const std::string &path) {
   std::vector<std::string> result;
   SDL_EnumerateDirectory(
       path.c_str(),

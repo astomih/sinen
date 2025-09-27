@@ -11,17 +11,17 @@ public:
   static void seed(unsigned int seed);
 
   // Get a float between 0.0f and 1.0f
-  static float get_float();
+  static float getFloat();
 
   // Get a float from the specified range
-  static float GetRange(float min, float max);
+  static float getRange(float min, float max);
 
   // Get an int from the specified range
-  static int GetIntRange(int min, int max);
+  static int getIntRange(int min, int max);
 
   // Get a random vector given the min/max bounds
-  static glm::vec2 get_vector(const glm::vec2 &min, const glm::vec2 &max);
-  static glm::vec3 get_vector(const glm::vec3 &min, const glm::vec3 &max);
+  static glm::vec2 getVector(const glm::vec2 &min, const glm::vec2 &max);
+  static glm::vec3 getVector(const glm::vec3 &min, const glm::vec3 &max);
 };
 } // namespace sinen
 #endif // !SINEN_RANDOM_HPP

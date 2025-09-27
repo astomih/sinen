@@ -365,6 +365,8 @@ _deps
 *.ninja
 build/desktop/*
 !build/desktop/.gitkeep
+build/android/*
+!build/android/.gitkeep
 build/clang/*
 !build/clang/.gitkeep
 *.dll

@@ -16,6 +16,16 @@
 					"kind": "build",
 					"isDefault": true
 				}
+			},
+			{
+				"label": "android",
+				"type": "shell",
+				"command": "${workspaceFolder}/build/build_android.bat",
+				"problemMatcher": [],
+				"group": {
+					"kind": "build",
+					"isDefault": false
+				}
 			}
 		]
 	},

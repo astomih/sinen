@@ -30,6 +30,8 @@ int main(const int argc, char *argv[]) {
 
 namespace sinen {
 bool Sinen::initialize(int argc, char *argv[]) {
+  SDL_SetHint(SDL_HINT_APP_NAME, "Sinen");
+  SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1");
   SDL_Init(SDL_INIT_EVENTS);
   TTF_Init();
   Mix_Init(MIX_INIT_OGG);

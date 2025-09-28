@@ -29,7 +29,7 @@ if (MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
 else ()
     set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g -O0 -DDEBUG")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -march=native")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 endif ()
 file(
         GLOB_RECURSE
@@ -46,9 +46,13 @@ file(
         ${SINEN_SOURCE_DIR}/*.hpp
 )
 
+if(BUILD_SHARED_LIBS)
+    add_library(sinen SHARED docs/icon/icon.rc
+            ${SINEN_SOURCE_FILES} ${SINEN_HEADER_FILES})
+else()
 add_executable(sinen docs/icon/icon.rc
         ${SINEN_SOURCE_FILES} ${SINEN_HEADER_FILES})
-
+endif()
 target_include_directories(
         sinen PUBLIC ${SINEN_INCLUDE_DIRS} ${SDL3_INCLUDE_PATHS})
 
@@ -68,6 +72,11 @@ set(SINEN_LINK_LIBRARIES
 if (SINEN_USE_SLANG)
     list(APPEND SINEN_LINK_LIBRARIES slang)
 endif ()
+
+if(ANDROID)
+    find_library(ANDROID_LIB android)
+    list(APPEND SINEN_LINK_LIBRARIES ${ANDROID_LIB})
+endif()
 
 target_link_libraries(
         sinen

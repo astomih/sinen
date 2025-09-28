@@ -1,10 +1,10 @@
 #include "main_system.hpp"
-#include "../../asset/audio/sound_system.hpp"
-#include "../../asset/script/script_system.hpp"
-#include "../../graphics/graphics_system.hpp"
-#include "../../physics/physics_system.hpp"
-#include "../../platform/input/input_system.hpp"
-#include "../../platform/window/window_system.hpp"
+#include "asset/audio/sound_system.hpp"
+#include "asset/script/script_system.hpp"
+#include "graphics/graphics_system.hpp"
+#include "physics/physics_system.hpp"
+#include "platform/input/input_system.hpp"
+#include "platform/window/window_system.hpp"
 #include <SDL3/SDL.h>
 #include <graphics/graphics.hpp>
 #include <platform/window/window.hpp>
@@ -13,10 +13,12 @@
 #include <iostream>
 #include <string>
 
+#include <core/io/file_system.hpp>
 #include <core/logger/logger.hpp>
+#include <platform/input/keyboard.hpp>
+
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
-#include <platform/input/keyboard.hpp>
 
 #include "editor.hpp"
 #include <zep.h>
@@ -27,7 +29,7 @@ bool MainSystem::is_run_script = true;
 uint32_t MainSystem::m_prev_tick = 0;
 bool MainSystem::is_reset = true;
 std::string MainSystem::m_scene_name = "main";
-std::string MainSystem::basePath = "./";
+std::string MainSystem::basePath = ".";
 float MainSystem::deltaTime = 0.f;
 struct ImGuiLog {
   struct Type {
@@ -38,6 +40,7 @@ struct ImGuiLog {
 };
 std::vector<ImGuiLog::Type> ImGuiLog::logs;
 bool MainSystem::initialize() {
+#ifndef __ANDROID__
   Logger::setOutputFunction([&](Logger::priority p, std::string_view str) {
     std::string newStr;
     ImVec4 color;
@@ -70,9 +73,9 @@ bool MainSystem::initialize() {
       color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
       break;
     }
-    std::cout << newStr << std::endl;
     ImGuiLog::logs.push_back({color, newStr});
   });
+#endif
   return true;
 }
 void MainSystem::setup() {
@@ -103,7 +106,8 @@ void MainSystem::process_input() {
 
 void MainSystem::update_scene() {
   {
-    if (Keyboard::isPressed(Keyboard::Code::F3)) {
+    if (Keyboard::isPressed(Keyboard::Code::F3) ||
+        KeyInput::isPressed(KeyInput::AC_BACK)) {
       Graphics::toggleShowImGui();
       static bool z_init = false;
       if (Graphics::isShowImGui()) {

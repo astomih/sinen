@@ -11,8 +11,7 @@ namespace sinen {
 struct keyboard_state_impl {
 public:
   const bool *mCurrState;
-  std::array<uint8_t, static_cast<int>(Keyboard::Code::NUM_KEYCODES)>
-      mPrevState;
+  std::array<uint8_t, static_cast<int>(Keyboard::Code::COUNT)> mPrevState;
 };
 
 struct KeyInputState {

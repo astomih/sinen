@@ -63,13 +63,13 @@ private:
   static Implements logger;
   template <typename... Args>
   static std::string stringFormatInternal(const std::string &format,
-                                            Args &&...args) {
-    int str_len =
-        std::snprintf(nullptr, 0, format.c_str(), std::forward<Args>(args)...);
+                                          Args &&...args) {
+    int str_len = std::snprintf(nullptr, 0, "%s", format.c_str(),
+                                std::forward<Args>(args)...);
 
     size_t buffer_size = str_len + sizeof(char);
     std::unique_ptr<char[]> buffer(new char[buffer_size]);
-    std::snprintf(buffer.get(), buffer_size, format.c_str(), args...);
+    std::snprintf(buffer.get(), buffer_size, "%s", format.c_str(), args...);
     return std::string(buffer.get(), buffer.get() + str_len);
   }
   template <typename T> static auto convert(T &&value) {
@@ -82,7 +82,7 @@ private:
   }
   template <typename... Args>
   static std::string stringFormatLogger(const std::string &format,
-                                          Args &&...args) {
+                                        Args &&...args) {
     return stringFormatInternal(format, convert(std::forward<Args>(args))...);
   }
 };

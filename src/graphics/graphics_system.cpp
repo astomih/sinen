@@ -10,6 +10,7 @@
 #include <cassert>
 #include <core/io/asset_io.hpp>
 #include <core/io/asset_type.hpp>
+#include <core/logger/logger.hpp>
 #include <cstdint>
 #include <graphics/drawable/instance_data.hpp>
 #include <graphics/graphics.hpp>
@@ -31,9 +32,7 @@
 
 namespace sinen {
 PxDrawable::PxDrawable(px::Allocator *allocator)
-    : allocator(allocator),
-      vertexBuffers(allocator),
-      indexBuffer(),
+    : allocator(allocator), vertexBuffers(allocator), indexBuffer(),
       textureSamplers(allocator) {}
 Color GraphicsSystem::clearColor = Palette::black();
 // Renderer
@@ -52,6 +51,9 @@ void GraphicsSystem::initialize() {
   device->ClaimWindow(window);
   IMGUI_CHECKVERSION();
   auto *context = ImGui::CreateContext();
+  context->IO.Fonts->AddFontFromMemoryTTF(
+      (void *)mplus_1p_medium_ttf, mplus_1p_medium_ttf_len, 32.0f, nullptr,
+      context->IO.Fonts->GetGlyphRangesJapanese());
   context->IO.IniFilename = nullptr;
   auto *ime_data = &context->PlatformImeData;
   ime_data->WantVisible = true;
@@ -59,7 +61,11 @@ void GraphicsSystem::initialize() {
   ImGui_ImplParanoixa_InitInfo init_info = {};
   init_info.Allocator = allocator;
   init_info.Device = device;
+#ifdef _WIN32
   init_info.ColorTargetFormat = px::TextureFormat::B8G8R8A8_UNORM;
+#else
+  init_info.ColorTargetFormat = px::TextureFormat::R8G8B8A8_UNORM;
+#endif
   init_info.MSAASamples = px::SampleCount::x1;
   GraphicsSystem::prepare_imgui();
   ImGui_ImplParanoixa_Init(&init_info);
@@ -75,11 +81,13 @@ void GraphicsSystem::initialize() {
   pipeline3D.setVertexInstancedShader(vsInstanced);
   pipeline3D.setFragmentShader(fs);
   pipeline3D.build();
+  Logger::info("Sinen 3d pipeline setup done");
   currentPipeline3D = pipeline3D;
 
   pipeline2D.setVertexShader(vs);
   pipeline2D.setFragmentShader(fs);
   pipeline2D.build();
+  Logger::info("Sinen 2d pipeline setup done");
   currentPipeline2D = pipeline2D;
 
   // Create depth stencil target
@@ -178,8 +186,11 @@ void GraphicsSystem::render() {
       currentRenderPass = commandBuffer->BeginRenderPass(colorTargets, {});
     }
     auto renderPass = currentRenderPass;
-    renderPass->SetViewport(
-        px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
+    SDL_Rect safeArea = {};
+    SDL_GetWindowSafeArea(WindowSystem::get_sdl_window(), &safeArea);
+    renderPass->SetViewport(px::Viewport{
+        static_cast<float>(safeArea.x), static_cast<float>(safeArea.y),
+        Window::size().x, Window::size().y, 0, 1});
     renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
     // Render ImGui
     ImGui_ImplParanoixa_RenderDrawData(draw_data, commandBuffer, renderPass);
@@ -198,9 +209,9 @@ void GraphicsSystem::Draw2D(const sinen::Draw2D &draw2D) {
                                      glm::vec3(0.0f, 0.0f, -1.0f));
     auto r = glm::toMat4(quaternion);
 
-    auto s = glm::scale(
-        glm::mat4(1.0f),
-        glm::vec3(draw2D.scale.x * 0.5f, draw2D.scale.y * 0.5f, 1.0f));
+    auto s =
+        glm::scale(glm::mat4(1.0f), glm::vec3(draw2D.scale.x * 0.5f,
+                                              draw2D.scale.y * 0.5f, 1.0f));
 
     draw2D.obj->param.world = t * r * s;
   }
@@ -427,10 +438,10 @@ void GraphicsSystem::Draw3D(const sinen::Draw3D &draw3D) {
     drawable.indexBuffer = px::BufferBinding{
         .buffer = GetModelData(draw3D.obj->model.data)->indexBuffer,
         .offset = 0};
-    drawable.vertexBuffers.emplace_back(px::BufferBinding{
-        .buffer = instanceBuffer, .offset = 0
+    drawable.vertexBuffers.emplace_back(
+        px::BufferBinding{.buffer = instanceBuffer, .offset = 0
 
-    });
+        });
     auto commandBuffer = currentCommandBuffer;
     auto renderPass = currentRenderPass;
     renderPass->BindGraphicsPipeline(currentPipeline3D.getInstanced());
@@ -531,9 +542,9 @@ void GraphicsSystem::prepare_imgui() {
   ImGuiIO &io = ImGui::GetIO();
   io.WantTextInput = true;
   io.ConfigFlags |=
-      ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+      ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
   io.ConfigFlags |=
-      ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+      ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
   // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
   io.Fonts->AddFontFromMemoryTTF((void *)mplus_1p_medium_ttf,
                                  mplus_1p_medium_ttf_len, 18.0f, nullptr,
@@ -627,4 +638,4 @@ Texture GraphicsSystem::ReadbackTexture(const RenderTexture &srcRenderTexture) {
   currentRenderPass = nullptr;
   return out;
 }
-}  // namespace sinen
+} // namespace sinen

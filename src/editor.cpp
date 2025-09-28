@@ -5,9 +5,10 @@
 
 #include "editor.hpp"
 
-#include "../../asset/script/script_system.hpp"
-#include "../../platform/input/input_system.hpp"
+#include "asset/script/script_system.hpp"
+#include "platform/input/input_system.hpp"
 #include "platform/input/keyboard.hpp"
+#include "platform/window/window_system.hpp"
 
 #include <filesystem>
 #include <functional>
@@ -55,7 +56,7 @@ void zep_init(const Zep::NVec2f &pixelScale) {
   auto &editor = spZep->GetEditor();
   editor.GetConfig().style = EditorStyle::Minimal;
   auto &display = spZep->GetEditor().GetDisplay();
-  auto pImFont = ImGui::GetIO().Fonts[0].Fonts[0];
+  auto pImFont = ImGui::GetIO().Fonts->Fonts.front();
   auto pixelHeight = pImFont->FontSize;
   display.SetFont(ZepTextType::UI, std::make_shared<ZepFont_ImGui>(
                                        display, pImFont, int(pixelHeight)));
@@ -106,6 +107,8 @@ void zep_show(const Zep::NVec2i &displaySize) {
     ImGui::End();
     return;
   }
+  if (ImGui::IsWindowFocused())
+    SDL_StartTextInput(WindowSystem::get_sdl_window());
 
   auto min = ImGui::GetCursorScreenPos();
   auto max = ImGui::GetContentRegionAvail();

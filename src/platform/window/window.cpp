@@ -43,10 +43,25 @@ void WindowSystem::initialize(const std::string &name) {
     }
   }
 
-  m_window = SDL_CreateWindow(
-      std::string(name).c_str(), static_cast<int>(m_size.x),
-      static_cast<int>(m_size.y), SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
-  SDL_StartTextInput(m_window);
+  uint64_t windowFlags = SDL_WINDOW_VULKAN;
+
+#ifdef __ANDROID__
+  windowFlags |=
+      SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS | SDL_WINDOW_INPUT_FOCUS;
+
+#else
+  windowFlags |= SDL_WINDOW_RESIZABLE;
+#endif
+
+  m_window =
+      SDL_CreateWindow(std::string(name).c_str(), static_cast<int>(m_size.x),
+                       static_cast<int>(m_size.y), windowFlags);
+
+  // Safe rect
+  SDL_Rect safeArea;
+  SDL_GetWindowSafeArea(m_window, &safeArea);
+  m_size.x = static_cast<float>(safeArea.w);
+  m_size.y = static_cast<float>(safeArea.h);
 }
 
 void WindowSystem::shutdown() {

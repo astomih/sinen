@@ -87,11 +87,51 @@ public:
     EQUALS = 46,
     LEFTBRACKET = 47,
     RIGHTBRACKET = 48,
-    BACKSLASH = 49,
-    NONUSHASH = 50,
+    BACKSLASH = 49, /**< Located at the lower left of the return
+                     *   key on ISO keyboards and at the right end
+                     *   of the QWERTY row on ANSI keyboards.
+                     *   Produces REVERSE SOLIDUS (backslash) and
+                     *   VERTICAL LINE in a US layout, REVERSE
+                     *   SOLIDUS and VERTICAL LINE in a UK Mac
+                     *   layout, NUMBER SIGN and TILDE in a UK
+                     *   Windows layout, DOLLAR SIGN and POUND SIGN
+                     *   in a Swiss German layout, NUMBER SIGN and
+                     *   APOSTROPHE in a German layout, GRAVE
+                     *   ACCENT and POUND SIGN in a French Mac
+                     *   layout, and ASTERISK and MICRO SIGN in a
+                     *   French Windows layout.
+                     */
+    NONUSHASH = 50, /**< ISO USB keyboards actually use this code
+                     *   instead of 49 for the same key, but all
+                     *   OSes I've seen treat the two codes
+                     *   identically. So, as an implementor, unless
+                     *   your keyboard generates both of those
+                     *   codes and your OS treats them differently,
+                     *   you should generate SDL_SCANCODE_BACKSLASH
+                     *   instead of this code. As a user, you
+                     *   should not rely on this code because SDL
+                     *   will never generate it with most (all?)
+                     *   keyboards.
+                     */
     SEMICOLON = 51,
     APOSTROPHE = 52,
-    GRAVE = 53,
+    GRAVE = 53, /**< Located in the top left corner (on both ANSI
+                 *   and ISO keyboards). Produces GRAVE ACCENT and
+                 *   TILDE in a US Windows layout and in US and UK
+                 *   Mac layouts on ANSI keyboards, GRAVE ACCENT
+                 *   and NOT SIGN in a UK Windows layout, SECTION
+                 *   SIGN and PLUS-MINUS SIGN in US and UK Mac
+                 *   layouts on ISO keyboards, SECTION SIGN and
+                 *   DEGREE SIGN in a Swiss German layout (Mac:
+                 *   only on ISO keyboards), CIRCUMFLEX ACCENT and
+                 *   DEGREE SIGN in a German layout (Mac: only on
+                 *   ISO keyboards), SUPERSCRIPT TWO and TILDE in a
+                 *   French Windows layout, COMMERCIAL AT and
+                 *   NUMBER SIGN in a French Mac layout on ISO
+                 *   keyboards, and LESS-THAN SIGN and GREATER-THAN
+                 *   SIGN in a Swiss German, German, or French Mac
+                 *   layout on ANSI keyboards.
+                 */
     COMMA = 54,
     PERIOD = 55,
     SLASH = 56,
@@ -111,20 +151,23 @@ public:
     F11 = 68,
     F12 = 69,
 
-    PrintScreen = 70,
-    ScrollLock = 71,
-    Pause = 72,
-    Insert = 73,
-    Home = 74,
-    PageUp = 75,
-    Delete = 76,
-    End = 77,
-    PageDown = 78,
+    PRINTSCREEN = 70,
+    SCROLLLOCK = 71,
+    PAUSE = 72,
+    INSERT = 73, /**< insert on PC, help on some Mac keyboards (but
+                      does send code 73, not 117) */
+    HOME = 74,
+    PAGEUP = 75,
+    DELETE = 76,
+    END = 77,
+    PAGEDOWN = 78,
     RIGHT = 79,
     LEFT = 80,
     DOWN = 81,
     UP = 82,
-    NUMLOCKCLEAR = 83,
+
+    NUMLOCKCLEAR = 83, /**< num lock on PC, clear on Mac keyboards
+                        */
     KP_DIVIDE = 84,
     KP_MULTIPLY = 85,
     KP_MINUS = 86,
@@ -142,9 +185,20 @@ public:
     KP_0 = 98,
     KP_PERIOD = 99,
 
-    NONUSBACKSLASH = 100,
-    APPLICATION = 101,
-    POWER = 102,
+    NONUSBACKSLASH = 100, /**< This is the additional key that ISO
+                           *   keyboards have over ANSI ones,
+                           *   located between left shift and Z.
+                           *   Produces GRAVE ACCENT and TILDE in a
+                           *   US or UK Mac layout, REVERSE SOLIDUS
+                           *   (backslash) and VERTICAL LINE in a
+                           *   US or UK Windows layout, and
+                           *   LESS-THAN SIGN and GREATER-THAN SIGN
+                           *   in a Swiss German, German, or French
+                           *   layout. */
+    APPLICATION = 101,    /**< windows contextual menu, compose */
+    POWER = 102,          /**< The USB document says this is a status flag,
+                           *   not a physical key - but some Mac keyboards
+                           *   do have a power key. */
     KP_EQUALS = 103,
     F13 = 104,
     F14 = 105,
@@ -159,24 +213,26 @@ public:
     F23 = 114,
     F24 = 115,
     EXECUTE = 116,
-    HELP = 117,
-    MENU = 118,
+    HELP = 117, /**< AL Integrated Help Center */
+    MENU = 118, /**< Menu (show menu) */
     SELECT = 119,
-    STOP = 120,
-    AGAIN = 121,
-    UNDO = 122,
-    CUT = 123,
-    COPY = 124,
-    PASTE = 125,
-    FIND = 126,
+    STOP = 120,  /**< AC Stop */
+    AGAIN = 121, /**< AC Redo/Repeat */
+    UNDO = 122,  /**< AC Undo */
+    CUT = 123,   /**< AC Cut */
+    COPY = 124,  /**< AC Copy */
+    PASTE = 125, /**< AC Paste */
+    FIND = 126,  /**< AC Find */
     MUTE = 127,
     VOLUMEUP = 128,
     VOLUMEDOWN = 129,
     KP_COMMA = 133,
     KP_EQUALSAS400 = 134,
-    INTERNATIONAL1 = 135,
+
+    INTERNATIONAL1 = 135, /**< used on Asian keyboards, see
+                               footnotes in USB doc */
     INTERNATIONAL2 = 136,
-    INTERNATIONAL3 = 137,
+    INTERNATIONAL3 = 137, /**< Yen */
     INTERNATIONAL4 = 138,
     INTERNATIONAL5 = 139,
     INTERNATIONAL6 = 140,
@@ -195,12 +251,12 @@ public:
 
     ALTERASE = 153, /**< Erase-Eaze */
     SYSREQ = 154,
-    CANCEL = 155,
+    CANCEL = 155, /**< AC Cancel */
     CLEAR = 156,
     PRIOR = 157,
     RETURN2 = 158,
     SEPARATOR = 159,
-    Out = 160,
+    OUT = 160,
     OPER = 161,
     CLEARAGAIN = 162,
     CRSEL = 163,
@@ -255,45 +311,54 @@ public:
 
     LCTRL = 224,
     LSHIFT = 225,
-    LALT = 226,
-    LGUI = 227,
+    LALT = 226, /**< alt, option */
+    LGUI = 227, /**< windows, command (apple), meta */
     RCTRL = 228,
     RSHIFT = 229,
-    RALT = 230,
-    RGUI = 231,
-    MODE = 257,
-    AUDIONEXT = 258,
-    AUDIOPREV = 259,
-    AUDIOSTOP = 260,
-    AUDIOPLAY = 261,
-    AUDIOMUTE = 262,
-    MEDIASELECT = 263,
-    WWW = 264,
-    MAIL = 265,
-    CALCULATOR = 266,
-    COMPUTER = 267,
-    AC_SEARCH = 268,
-    AC_HOME = 269,
-    AC_BACK = 270,
-    AC_FORWARD = 271,
-    AC_STOP = 272,
-    AC_REFRESH = 273,
-    AC_BOOKMARKS = 274,
-    BRIGHTNESSDOWN = 275,
-    BRIGHTNESSUP = 276,
-    DISPLAYSWITCH = 277,
-    KBDILLUMTOGGLE = 278,
-    KBDILLUMDOWN = 279,
-    KBDILLUMUP = 280,
-    EJECT = 281,
-    SLEEP = 282,
+    RALT = 230, /**< alt gr, option */
+    RGUI = 231, /**< windows, command (apple), meta */
 
-    APP1 = 283,
-    APP2 = 284,
+    SLEEP = 258, /**< Sleep */
+    WAKE = 259,  /**< Wake */
 
-    AUDIOREWIND = 285,
-    AUDIOFASTFORWARD = 286,
-    NUM_KEYCODES = 512
+    CHANNEL_INCREMENT = 260, /**< Channel Increment */
+    CHANNEL_DECREMENT = 261, /**< Channel Decrement */
+
+    MEDIA_PLAY = 262,           /**< Play */
+    MEDIA_PAUSE = 263,          /**< Pause */
+    MEDIA_RECORD = 264,         /**< Record */
+    MEDIA_FAST_FORWARD = 265,   /**< Fast Forward */
+    MEDIA_REWIND = 266,         /**< Rewind */
+    MEDIA_NEXT_TRACK = 267,     /**< Next Track */
+    MEDIA_PREVIOUS_TRACK = 268, /**< Previous Track */
+    MEDIA_STOP = 269,           /**< Stop */
+    MEDIA_EJECT = 270,          /**< Eject */
+    MEDIA_PLAY_PAUSE = 271,     /**< Play / Pause */
+    MEDIA_SELECT = 272,         /* Media Select */
+
+    AC_NEW = 273,        /**< AC New */
+    AC_OPEN = 274,       /**< AC Open */
+    AC_CLOSE = 275,      /**< AC Close */
+    AC_EXIT = 276,       /**< AC Exit */
+    AC_SAVE = 277,       /**< AC Save */
+    AC_PRINT = 278,      /**< AC Print */
+    AC_PROPERTIES = 279, /**< AC Properties */
+
+    AC_SEARCH = 280,    /**< AC Search */
+    AC_HOME = 281,      /**< AC Home */
+    AC_BACK = 282,      /**< AC Back */
+    AC_FORWARD = 283,   /**< AC Forward */
+    AC_STOP = 284,      /**< AC Stop */
+    AC_REFRESH = 285,   /**< AC Refresh */
+    AC_BOOKMARKS = 286, /**< AC Bookmarks */
+
+    CALL = 289,    /**< Used for accepting phone calls. */
+    ENDCALL = 290, /**< Used for rejecting phone calls. */
+
+    RESERVED = 400, /**< 400-500 reserved for dynamic keycodes */
+
+    COUNT = 512 /**< not a key, just marks the number of scancodes
+                                for array bounds */
   };
   using enum Code;
 };

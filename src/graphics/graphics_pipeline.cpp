@@ -1,6 +1,9 @@
 #include "graphics_system.hpp"
-#include <asset/model/vertex.hpp>
+
 #include <cstddef>
+
+#include <asset/model/vertex.hpp>
+#include <core/logger/logger.hpp>
 #include <graphics/graphics_pipeline.hpp>
 
 namespace sinen {

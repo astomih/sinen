@@ -56,7 +56,7 @@ public:
    * @param text require UTF-8
    * @param _color font color
    */
-  void renderText(Texture &tex, std::string_view text,
+  void renderText(Texture &tex, const std::string& text,
                   const Color &_color = Palette::white());
 
 private:

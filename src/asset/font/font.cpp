@@ -52,10 +52,15 @@ void Font::resize(int point_size) {
   TTF_SetFontSize(reinterpret_cast<TTF_Font *>(this->m_font), point_size);
 }
 
-void Font::renderText(Texture &tex, std::string_view text,
+void Font::renderText(Texture &tex, const std::string &text,
                       const Color &_color) {
   if (!isLoaded()) {
     Logger::error("Font is not loaded");
+    return;
+  }
+  if (text.empty()) {
+    Logger::warn("Sinen Text is empty");
+    tex.fillColor(_color);
     return;
   }
   // SinenEngine Color to SDL_Color
@@ -72,10 +77,13 @@ void Font::renderText(Texture &tex, std::string_view text,
   auto *pSurface =
       (::TTF_RenderText_Blended_Wrapped(ttf_font, std::string(text).c_str(),
                                         std::string(text).size(), sdlColor, 0));
-  assert(pSurface != nullptr && "Failed to render text");
+  SDL_assert(pSurface != NULL && "Failed to render text");
   auto texdata = GetTexData(tex.textureData);
+  SDL_assert(texdata != nullptr && "TextureData is null");
+  SDL_assert(texdata->pSurface != nullptr && "TextureData pSurface is null");
   SDL_Surface *temp = (texdata->pSurface);
-  bool isUpdate = temp->w == pSurface->w && temp->h == pSurface->h;
+  SDL_assert(temp != nullptr && "TextureData pSurface is null");
+  bool isUpdate = (temp->w == pSurface->w) && (temp->h == pSurface->h);
   texdata->pSurface = pSurface;
   if (texdata->texture && isUpdate) {
     UpdateNativeTexture(texdata->texture, pSurface);

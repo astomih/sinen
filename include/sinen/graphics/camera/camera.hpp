@@ -95,7 +95,7 @@ private:
   // projection
   glm::mat4 projection;
 
-  bool update_frustum = false;
+  bool updateFrustum = false;
   Frustum frustum;
 };
 } // namespace sinen

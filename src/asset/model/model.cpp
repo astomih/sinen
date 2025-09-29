@@ -48,26 +48,21 @@ glm::mat4 ConvertMatrix(const aiMatrix4x4 &m) {
   return mat;
 }
 
-void Model::load(std::string_view str) const {
+void Model::load(std::string_view path) const {
   auto modelData = GetModelData(this->data);
   auto &local_aabb = modelData->local_aabb;
-  auto &v_array = modelData->v_array;
-  std::stringstream data;
-  data << AssetIO::openAsString(AssetType::Model, str);
-  std::string str_name = str.data();
+  auto &vertexArray = modelData->v_array;
 
-  auto fileName = AssetIO::convertFilePath(AssetType::Model, str_name);
+  auto fullFilePath = AssetIO::convertFilePath(AssetType::Model, path.data());
   // Assimp
   auto &importer = modelData->importer;
-  modelData->scene =
-      importer.ReadFile(fileName.c_str(), aiProcess_ValidateDataStructure |
-                                              aiProcess_LimitBoneWeights |
-                                              aiProcess_JoinIdenticalVertices |
-                                              aiProcess_Triangulate);
+  modelData->scene = importer.ReadFile(
+      fullFilePath.c_str(),
+      aiProcess_ValidateDataStructure | aiProcess_LimitBoneWeights |
+          aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
   auto &scene = modelData->scene;
   if (!scene) {
-    std::cerr << "Error loading model: " << importer.GetErrorString()
-              << std::endl;
+    Logger::error("Error loading model: %s", importer.GetErrorString());
     return;
   }
   if (scene->HasAnimations()) {
@@ -129,14 +124,14 @@ void Model::load(std::string_view str) const {
           v.boneWeights[k] = (k < ws.size()) ? ws[k] : 0.0f;
         }
 
-        v_array.animationVertices.push_back(v);
+        vertexArray.animationVertices.push_back(v);
       }
       // indices
       for (uint32_t j = 0; j < mesh->mNumFaces; j++) {
         const aiFace &face = mesh->mFaces[j];
         for (uint32_t k = 0; k < face.mNumIndices; k++) {
           uint32_t index = face.mIndices[k];
-          v_array.indices.push_back(vertexOffset + index);
+          vertexArray.indices.push_back(vertexOffset + index);
         }
       }
       vertexOffset += mesh->mNumVertices;
@@ -174,21 +169,21 @@ void Model::load(std::string_view str) const {
         local_aabb.max.z =
             Math::max(local_aabb.max.z, static_cast<float>(pos.z));
 
-        v_array.vertices.push_back(v);
+        vertexArray.vertices.push_back(v);
       }
       // Process the indices
       for (uint32_t j = 0; j < mesh->mNumFaces; j++) {
         const aiFace &face = mesh->mFaces[j];
         for (uint32_t k = 0; k < face.mNumIndices; k++) {
           uint32_t index = face.mIndices[k];
-          v_array.indices.push_back(index);
+          vertexArray.indices.push_back(index);
         }
       }
     }
   }
 
-  v_array.indexCount = v_array.indices.size();
-  auto viBuffer = CreateVertexIndexBuffer(v_array);
+  vertexArray.indexCount = vertexArray.indices.size();
+  auto viBuffer = CreateVertexIndexBuffer(vertexArray);
   modelData->vertexBuffer = viBuffer.first;
   modelData->indexBuffer = viBuffer.second;
 }
@@ -381,7 +376,7 @@ void Model::loadBoneUniform(float start) {
   std::vector<glm::mat4> boneMatrices(matrices.size());
   int index = 0;
   for (auto &m : matrices) {
-    boneMatrices[index] = m;
+    boneMatrices[index] = glm::transpose(m);
     index++;
   }
   boneUniformData.addMatrices(boneMatrices);

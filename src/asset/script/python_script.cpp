@@ -18,6 +18,10 @@ class PythonScript final : public IScriptBackend {
 public:
   bool Initialize() override {
     py::initialize();
+    auto callbacks = py_callbacks();
+    callbacks->importfile = [](const char *name) -> char * {
+      return AssetIO::openAsString(AssetType::Script, name).data();
+    };
     return true;
   }
   void Finalize() override { py::finalize(); }

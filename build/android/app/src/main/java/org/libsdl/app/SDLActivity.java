@@ -300,6 +300,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
              "SDL3_ttf",
                 "assimp",
                 "Jolt",
+                "slang",
+                "miniz",
             "sinen"
         };
     }

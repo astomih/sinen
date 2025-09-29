@@ -18,6 +18,9 @@ end
 
 function draw()
     sn.Graphics.bind_default_pipeline2d()
-    sn.Graphics.draw_text("Example Launcher", sn.Vec2(0, offset), sn.Color(1, 1, 1, 1), 24)
+    sn.Graphics.bind_default_pipeline3d()
+    sn.Graphics.draw_text("Example Launcher",
+        sn.Vec2(0, offset),
+        sn.Color(1, 1, 1, 1), 24)
     GUI_MANAGER:draw()
 end

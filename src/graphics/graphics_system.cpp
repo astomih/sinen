@@ -81,13 +81,11 @@ void GraphicsSystem::initialize() {
   pipeline3D.setVertexInstancedShader(vsInstanced);
   pipeline3D.setFragmentShader(fs);
   pipeline3D.build();
-  Logger::info("Sinen 3d pipeline setup done");
   currentPipeline3D = pipeline3D;
 
   pipeline2D.setVertexShader(vs);
   pipeline2D.setFragmentShader(fs);
   pipeline2D.build();
-  Logger::info("Sinen 2d pipeline setup done");
   currentPipeline2D = pipeline2D;
 
   // Create depth stencil target
@@ -186,11 +184,8 @@ void GraphicsSystem::render() {
       currentRenderPass = commandBuffer->BeginRenderPass(colorTargets, {});
     }
     auto renderPass = currentRenderPass;
-    SDL_Rect safeArea = {};
-    SDL_GetWindowSafeArea(WindowSystem::get_sdl_window(), &safeArea);
-    renderPass->SetViewport(px::Viewport{
-        static_cast<float>(safeArea.x), static_cast<float>(safeArea.y),
-        Window::size().x, Window::size().y, 0, 1});
+    renderPass->SetViewport(
+        px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
     renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
     // Render ImGui
     ImGui_ImplParanoixa_RenderDrawData(draw_data, commandBuffer, renderPass);
@@ -213,7 +208,7 @@ void GraphicsSystem::Draw2D(const sinen::Draw2D &draw2D) {
         glm::scale(glm::mat4(1.0f), glm::vec3(draw2D.scale.x * 0.5f,
                                               draw2D.scale.y * 0.5f, 1.0f));
 
-    draw2D.obj->param.world = t * r * s;
+    draw2D.obj->param.world = glm::transpose(t * r * s);
   }
   draw2D.obj->material = draw2D.material;
   auto viewproj = glm::mat4(1.0f);
@@ -221,7 +216,7 @@ void GraphicsSystem::Draw2D(const sinen::Draw2D &draw2D) {
   auto screen_size = camera2D.size();
   viewproj[0][0] = 2.f / Window::size().x;
   viewproj[1][1] = 2.f / Window::size().y;
-  draw2D.obj->param.proj = viewproj;
+  draw2D.obj->param.proj = glm::transpose(viewproj);
   draw2D.obj->param.view = glm::mat4(1.f);
   if (GetModelData(draw2D.model.data)->vertexBuffer == nullptr) {
     draw2D.obj->model = GraphicsSystem::sprite;
@@ -240,7 +235,7 @@ void GraphicsSystem::Draw2D(const sinen::Draw2D &draw2D) {
     auto world = t * r * s;
 
     InstanceData insdata{};
-    draw2D.obj->worldToInstanceData(world, insdata);
+    draw2D.obj->worldToInstanceData(glm::transpose(world), insdata);
     draw2D.obj->data.push_back(insdata);
   }
   objectCount++;
@@ -325,9 +320,9 @@ void GraphicsSystem::Draw3D(const sinen::Draw3D &draw3D) {
                    glm::vec3(draw3D.scale.x, draw3D.scale.y, draw3D.scale.z));
 
     auto world = t * r * s;
-    draw3D.obj->param.world = world;
-    draw3D.obj->param.proj = camera.getProjection();
-    draw3D.obj->param.view = camera.getView();
+    draw3D.obj->param.world = glm::transpose(world);
+    draw3D.obj->param.proj = glm::transpose(camera.getProjection());
+    draw3D.obj->param.view = glm::transpose(camera.getView());
   }
   if (GetModelData(draw3D.model.data)->vertexBuffer == nullptr) {
     draw3D.obj->model = GraphicsSystem::box;
@@ -350,7 +345,7 @@ void GraphicsSystem::Draw3D(const sinen::Draw3D &draw3D) {
 
     auto world = t * r * s;
 
-    draw3D.obj->worldToInstanceData(world, insdata);
+    draw3D.obj->worldToInstanceData(glm::transpose(world), insdata);
     draw3D.obj->data.push_back(insdata);
   }
   objectCount++;
@@ -599,7 +594,7 @@ Texture GraphicsSystem::ReadbackTexture(const RenderTexture &srcRenderTexture) {
   info.width = srcRenderTexture.width;
   info.height = srcRenderTexture.height;
   info.layerCountOrDepth = 1;
-  info.format = px::TextureFormat::R8G8B8A8_UNORM;
+  info.format = px::TextureFormat::B8G8R8A8_UNORM;
   info.usage = px::TextureUsage::Sampler;
   info.numLevels = 1;
   info.sampleCount = px::SampleCount::x1;

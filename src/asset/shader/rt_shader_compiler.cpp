@@ -45,6 +45,7 @@ std::vector<char> ShaderCompiler::compile(std::string_view sourcePath,
        {slang::CompilerOptionValueKind::Int, 1, 0, nullptr, nullptr}}};
   sessionDesc.compilerOptionEntries = options.data();
   sessionDesc.compilerOptionEntryCount = options.size();
+  sessionDesc.defaultMatrixLayoutMode = SLANG_MATRIX_LAYOUT_ROW_MAJOR;
 
   Slang::ComPtr<ISession> session;
   globalSession->createSession(sessionDesc, session.writeRef());

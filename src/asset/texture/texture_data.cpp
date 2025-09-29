@@ -1,5 +1,7 @@
 #include "texture_data.hpp"
 #include "../../graphics/graphics_system.hpp"
+#include <core/logger/logger.hpp>
+
 #include "SDL3/SDL_pixels.h"
 #include <SDL3/SDL.h>
 namespace sinen {

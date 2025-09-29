@@ -18,8 +18,7 @@ pipeline:set_animation(true)
 pipeline:build()
 
 
-local pos = sn.Vec3(0, -3, 1)
-sn.Graphics.get_camera():lookat(pos, sn.Vec3(0, 0, 1), sn.Vec3(0, 0, 1))
+sn.Graphics.get_camera():lookat(sn.Vec3(0, -3, 1), sn.Vec3(0, 0, 1), sn.Vec3(0, 0, 1))
 
 model:play(0)
 function update()

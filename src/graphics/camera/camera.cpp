@@ -14,18 +14,16 @@ void Camera::lookat(const glm::vec3 &position, const glm::vec3 &target,
   this->position = position;
   this->target = target;
   this->up = up;
-  view = glm::lookAt(glm::vec3(position.x, position.y, position.z),
-                     glm::vec3(target.x, target.y, target.z),
-                     glm::vec3(up.x, up.y, up.z));
-  update_frustum = true;
+  this->view = glm::lookAtRH(position, target, up);
+  this->updateFrustum = true;
 }
 void Camera::perspective(float fov, float aspect, float near, float far) {
-  projection = glm::perspective(glm::radians(fov), aspect, near, far);
-  update_frustum = true;
+  this->projection = glm::perspective(glm::radians(fov), aspect, near, far);
+  this->updateFrustum = true;
 }
 void Camera::orthographic(float width, float height, float near, float far) {
-  projection = glm::ortho(0.f, width, 0.f, height, near, far);
-  update_frustum = true;
+  this->projection = glm::ortho(0.f, width, 0.f, height, near, far);
+  this->updateFrustum = true;
 }
 
 static Frustum ExtractFrustumPlanes(const glm::mat4 &vp) {
@@ -53,9 +51,9 @@ static Frustum ExtractFrustumPlanes(const glm::mat4 &vp) {
   return f;
 }
 bool Camera::isAABBInFrustum(const AABB &aabb) {
-  if (update_frustum) {
-    frustum = ExtractFrustumPlanes(projection * view);
-    update_frustum = false;
+  if (this->updateFrustum) {
+    this->frustum = ExtractFrustumPlanes(this->projection * this->view);
+    this->updateFrustum = false;
   }
   for (int i = 0; i < 6; ++i) {
     const glm::vec4 &plane = frustum.planes[i];

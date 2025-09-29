@@ -7,9 +7,14 @@
 namespace sinen {
 std::vector<std::string>
 FileSystem::enumerateDirectory(const std::string &path) {
+#ifdef __ANDROID__
+  auto p = "/sdcard/Android/media/org.libsdl.app/" + path;
+#else
+  auto p = path;
+#endif
   std::vector<std::string> result;
   SDL_EnumerateDirectory(
-      path.c_str(),
+      p.c_str(),
       [](void *userdata, const char *dirname, const char *fname) {
         auto *vec = reinterpret_cast<std::vector<std::string> *>(userdata);
         vec->emplace_back(fname);

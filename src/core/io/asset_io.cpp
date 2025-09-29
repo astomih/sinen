@@ -51,10 +51,6 @@ std::string AssetIO::openAsString(const AssetType &type,
                                   std::string_view name) {
   std::string filePath;
   convertFilePath(type, filePath, name);
-#ifdef __ANDROID__
-  // TODO: Fix path for Android
-  filePath = "/sdcard/Android/media/org.libsdl.app/" + filePath;
-#endif
   auto *file = SDL_IOFromFile(filePath.c_str(), "r");
   if (!file) {
     Logger::error(std::string("Sinen file open error" + filePath).c_str());
@@ -87,7 +83,13 @@ void AssetIO::write(const AssetType &type, std::string_view name,
 
 void AssetIO::convertFilePath(const AssetType &type, std::string &filePath,
                               std::string_view name) {
+#ifdef __ANDROID__
+  // TODO: Fix path for Android
+  std::string base = "/sdcard/Android/media/org.libsdl.app/" +
+                     MainSystem::GetBasePath() + "/asset/";
+#else
   std::string base = MainSystem::GetBasePath() + "/asset/";
+#endif
   switch (type) {
   case AssetType::Font:
     filePath += base + std::string{"font/"} + name.data();

@@ -61,11 +61,7 @@ void GraphicsSystem::initialize() {
   ImGui_ImplParanoixa_InitInfo init_info = {};
   init_info.Allocator = allocator;
   init_info.Device = device;
-#ifdef _WIN32
-  init_info.ColorTargetFormat = px::TextureFormat::B8G8R8A8_UNORM;
-#else
-  init_info.ColorTargetFormat = px::TextureFormat::R8G8B8A8_UNORM;
-#endif
+  init_info.ColorTargetFormat = device->GetSwapchainFormat();
   init_info.MSAASamples = px::SampleCount::x1;
   GraphicsSystem::prepare_imgui();
   ImGui_ImplParanoixa_Init(&init_info);
@@ -582,25 +578,10 @@ void GraphicsSystem::Flush() {
   device->WaitForGPUIdle();
   currentCommandBuffer = mainCommandBuffer;
 }
-Texture GraphicsSystem::ReadbackTexture(const RenderTexture &srcRenderTexture) {
-  Texture out;
+bool GraphicsSystem::ReadbackTexture(const RenderTexture &srcRenderTexture,
+                                     Texture &out) {
   auto tex = srcRenderTexture.getTexture();
   auto outTextureData = GetTexData(out.textureData);
-  SDL_free(outTextureData->pSurface);
-  outTextureData->pSurface = SDL_CreateSurface(
-      srcRenderTexture.width, srcRenderTexture.height, SDL_PIXELFORMAT_RGBA32);
-  px::Texture::CreateInfo info{};
-  info.allocator = allocator;
-  info.width = srcRenderTexture.width;
-  info.height = srcRenderTexture.height;
-  info.layerCountOrDepth = 1;
-  info.format = px::TextureFormat::B8G8R8A8_UNORM;
-  info.usage = px::TextureUsage::Sampler;
-  info.numLevels = 1;
-  info.sampleCount = px::SampleCount::x1;
-  info.type = px::TextureType::Texture2D;
-  outTextureData->texture = device->CreateTexture(info);
-
   // Copy
   px::TransferBuffer::CreateInfo info2{};
   info2.allocator = allocator;
@@ -614,16 +595,28 @@ Texture GraphicsSystem::ReadbackTexture(const RenderTexture &srcRenderTexture) {
     {
       auto copyPass = commandBuffer->BeginCopyPass();
       {
-        px::TextureLocation src{};
-        src.texture = tex;
-        src.layer = 0;
-        src.mipLevel = 0;
-        px::TextureLocation dst{};
-        dst.texture = outTextureData->texture;
-        dst.layer = 0;
-        dst.mipLevel = 0;
-        copyPass->CopyTexture(src, dst, srcRenderTexture.width,
-                              srcRenderTexture.height, 1, false);
+        px::TextureRegion region{};
+        region.width = srcRenderTexture.width;
+        region.height = srcRenderTexture.height;
+        region.depth = 1;
+        region.texture = tex;
+        px::TextureTransferInfo dst{};
+        dst.offset = 0;
+        dst.transferBuffer = transferBuffer;
+        copyPass->DownloadTexture(region, dst);
+      }
+      {
+        px::TextureTransferInfo src{};
+        src.offset = 0;
+        src.transferBuffer = transferBuffer;
+        px::TextureRegion region{};
+        region.x = 0;
+        region.y = 0;
+        region.width = srcRenderTexture.width;
+        region.height = srcRenderTexture.height;
+        region.depth = 1;
+        region.texture = outTextureData->texture;
+        copyPass->UploadTexture(src, region, false);
       }
       commandBuffer->EndCopyPass(copyPass);
     }
@@ -631,6 +624,6 @@ Texture GraphicsSystem::ReadbackTexture(const RenderTexture &srcRenderTexture) {
     device->WaitForGPUIdle();
   }
   currentRenderPass = nullptr;
-  return out;
+  return true;
 }
 } // namespace sinen

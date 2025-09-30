@@ -1,8 +1,10 @@
 local texture = sn.Texture()
-texture:fill(sn.Color(1, 1, 1, 1))
+texture:fill(sn.Color(1, 0, 1, 1))
 local renderTexture = sn.RenderTexture()
-local sx = sn.Graphics.get_camera2d():size().x
-local sy = sn.Graphics.get_camera2d():size().y
+local out = sn.Texture()
+out:load("logo.png")
+local sx = out:size().x
+local sy = out:size().y
 renderTexture:create(sx, sy)
 
 local model = sn.Model()
@@ -25,5 +27,6 @@ function draw()
     sn.Graphics.draw3d(draw3d)
     -- Draw texture
     sn.Graphics.flush()
-    sn.Graphics.draw_image(sn.Graphics.readback_texture(renderTexture), sn.Rect(0, 0, sx, sy))
+    sn.Graphics.readback_texture(renderTexture, out)
+    sn.Graphics.draw_image(out, sn.Rect(0, 0, sx, sy))
 end

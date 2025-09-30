@@ -13,7 +13,7 @@ void RenderTexture::create(int width, int height) {
   info.width = width;
   info.height = height;
   info.layerCountOrDepth = 1;
-  info.format = px::TextureFormat::B8G8R8A8_UNORM;
+  info.format = GraphicsSystem::GetDevice()->GetSwapchainFormat();
   info.usage = px::TextureUsage::ColorTarget;
   info.numLevels = 1;
   info.sampleCount = px::SampleCount::x1;

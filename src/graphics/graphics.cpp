@@ -84,7 +84,7 @@ void Graphics::setRenderTarget(const RenderTexture &texture) {
   GraphicsSystem::SetRenderTarget(texture);
 }
 void Graphics::flush() { GraphicsSystem::Flush(); }
-Texture Graphics::readbackTexture(const RenderTexture &texture) {
-  return GraphicsSystem::ReadbackTexture(texture);
+bool Graphics::readbackTexture(const RenderTexture &texture, Texture &out) {
+  return GraphicsSystem::ReadbackTexture(texture, out);
 }
 } // namespace sinen

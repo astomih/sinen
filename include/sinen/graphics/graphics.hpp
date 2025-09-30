@@ -90,7 +90,7 @@ public:
 
   static void setRenderTarget(const RenderTexture &texture);
   static void flush();
-  static Texture readbackTexture(const RenderTexture &texture);
+  static bool readbackTexture(const RenderTexture &texture, Texture &out);
 };
 
 } // namespace sinen

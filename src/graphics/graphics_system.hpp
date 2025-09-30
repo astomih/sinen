@@ -79,7 +79,7 @@ public:
 
   static void SetRenderTarget(const RenderTexture &texture);
   static void Flush();
-  static Texture ReadbackTexture(const RenderTexture &texture);
+  static bool ReadbackTexture(const RenderTexture &texture, Texture &out);
 
   static Model box;
   static Model sprite;

@@ -24,7 +24,7 @@ FileSystem::enumerateDirectory(const std::string &path) {
 std::string FileSystem::getAppBaseDirectory() {
 
 #ifdef __ANDROID__
-  std::string base = "/sdcard/Android/media/org.libsdl.app";
+  std::string base = "/sdcard/Android/media/astomih.sinen.app";
 #else
   std::string base = ".";
 #endif

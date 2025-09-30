@@ -7,7 +7,7 @@
     <!-- Touchscreen support -->
     <uses-feature
         android:name="android.hardware.touchscreen"
-        android:required="true" />
+        android:required="false" />
 
     <!-- Game controller support -->
     <uses-feature
@@ -75,7 +75,7 @@
         <meta-data android:name="SDL_ENV.SDL_ANDROID_TRAP_BACK_BUTTON" android:value="1"/>
 
 
-        <activity android:name="SDLActivity"
+        <activity android:name="Sinen"
             android:label="@string/app_name"
             android:alwaysRetainTaskState="true"
             android:launchMode="singleInstance"

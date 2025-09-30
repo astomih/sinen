@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "org.libsdl.app"
+    namespace = "astomih.sinen.app"
     compileSdkVersion 35
     defaultConfig {
         minSdkVersion 26

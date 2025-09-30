@@ -6,14 +6,14 @@ namespace sinen {
 RenderTexture::RenderTexture() : texture(nullptr) {}
 
 void RenderTexture::create(int width, int height) {
-  auto allocator = GraphicsSystem::GetAllocator();
-  auto device = GraphicsSystem::GetDevice();
+  auto allocator = GraphicsSystem::getAllocator();
+  auto device = GraphicsSystem::getDevice();
   px::Texture::CreateInfo info{};
   info.allocator = allocator;
   info.width = width;
   info.height = height;
   info.layerCountOrDepth = 1;
-  info.format = GraphicsSystem::GetDevice()->GetSwapchainFormat();
+  info.format = GraphicsSystem::getDevice()->GetSwapchainFormat();
   info.usage = px::TextureUsage::ColorTarget;
   info.numLevels = 1;
   info.sampleCount = px::SampleCount::x1;

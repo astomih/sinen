@@ -4,9 +4,11 @@
 #include <string_view>
 #include <thread>
 #include <unordered_map>
+
 // internal
 #include "../../main_system.hpp"
 #include <core/io/asset_io.hpp>
+#include <core/io/file_system.hpp>
 #include <core/logger/logger.hpp>
 
 // external
@@ -83,13 +85,8 @@ void AssetIO::write(const AssetType &type, std::string_view name,
 
 void AssetIO::convertFilePath(const AssetType &type, std::string &filePath,
                               std::string_view name) {
-#ifdef __ANDROID__
-  // TODO: Fix path for Android
-  std::string base = "/sdcard/Android/media/org.libsdl.app/" +
+  std::string base = FileSystem::getAppBaseDirectory() + "/" +
                      MainSystem::GetBasePath() + "/asset/";
-#else
-  std::string base = MainSystem::GetBasePath() + "/asset/";
-#endif
   switch (type) {
   case AssetType::Font:
     filePath += base + std::string{"font/"} + name.data();

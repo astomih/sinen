@@ -19,72 +19,72 @@
 
 namespace sinen {
 void Graphics::draw2D(const sinen::Draw2D &draw2D) {
-  GraphicsSystem::Draw2D(draw2D);
+  GraphicsSystem::drawBase2D(draw2D);
 }
 void Graphics::draw3D(const sinen::Draw3D &draw3D) {
-  GraphicsSystem::Draw3D(draw3D);
+  GraphicsSystem::drawBase3D(draw3D);
 }
 void Graphics::drawRect(const Rect &rect, const Color &color, float angle) {
-  GraphicsSystem::DrawRect(rect, color, angle);
+  GraphicsSystem::drawRect(rect, color, angle);
 }
 void Graphics::drawImage(const Texture &texture, const Rect &rect,
                          float angle) {
-  GraphicsSystem::DrawImage(texture, rect, angle);
+  GraphicsSystem::drawImage(texture, rect, angle);
 }
 
 void Graphics::drawText(const std::string &text, const glm::vec2 &position,
                         const Color &color, float fontSize, float angle) {
-  GraphicsSystem::DrawText(text, position, color, fontSize, angle);
+  GraphicsSystem::drawText(text, position, color, fontSize, angle);
 }
 void Graphics::drawModel(const Model &model, const Transform &transform,
                          const Material &material) {
-  GraphicsSystem::DrawModel(model, transform, material);
+  GraphicsSystem::drawModel(model, transform, material);
 }
 
 void Graphics::setClearColor(const Color &color) {
-  GraphicsSystem::set_clear_color(color);
+  GraphicsSystem::setClearColor(color);
 }
-Color Graphics::getClearColor() { return GraphicsSystem::get_clear_color(); }
-void Graphics::toggleShowImGui() { GraphicsSystem::toggle_show_imgui(); }
-bool Graphics::isShowImGui() { return GraphicsSystem::is_show_imgui(); }
+Color Graphics::getClearColor() { return GraphicsSystem::getClearColor(); }
+void Graphics::toggleShowImGui() { GraphicsSystem::toggleShowImGui(); }
+bool Graphics::isShowImGui() { return GraphicsSystem::isShowImGui(); }
 std::list<std::function<void()>> &Graphics::getImGuiFunction() {
-  return GraphicsSystem::get_imgui_function();
+  return GraphicsSystem::getImGuiFunction();
 }
 
 void Graphics::addImGuiFunction(std::function<void()> function) {
-  GraphicsSystem::get_imgui_function().push_back(function);
+  GraphicsSystem::getImGuiFunction().push_back(function);
 }
 void Graphics::setCamera(const Camera &camera) {
-  GraphicsSystem::SetCamera(camera);
+  GraphicsSystem::setCamera(camera);
 }
-Camera &Graphics::getCamera() { return GraphicsSystem::GetCamera(); }
+Camera &Graphics::getCamera() { return GraphicsSystem::getCamera(); }
 
 void Graphics::setCamera2D(const Camera2D &camera) {
-  GraphicsSystem::SetCamera2D(camera);
+  GraphicsSystem::setCamera2D(camera);
 }
 
-Camera2D &Graphics::getCamera2D() { return GraphicsSystem::GetCamera2D(); }
+Camera2D &Graphics::getCamera2D() { return GraphicsSystem::getCamera2D(); }
 
 void Graphics::bindPipeline3D(const GraphicsPipeline3D &pipeline) {
-  GraphicsSystem::bind_pipeline3d(pipeline);
+  GraphicsSystem::bindPipeline3D(pipeline);
 }
 void Graphics::bindDefaultPipeline3D() {
-  GraphicsSystem::bind_default_pipeline3d();
+  GraphicsSystem::bindDefaultPipeline3D();
 }
 void Graphics::bindPipeline2D(const GraphicsPipeline2D &pipeline) {
-  GraphicsSystem::bind_pipeline2d(pipeline);
+  GraphicsSystem::bindPipeline2D(pipeline);
 }
 void Graphics::bindDefaultPipeline2D() {
-  GraphicsSystem::bind_default_pipeline2d();
+  GraphicsSystem::bindDefaultPipeline2D();
 }
 void Graphics::setUniformData(uint32_t slot, const UniformData &data) {
-  GraphicsSystem::set_uniform_data(slot, data);
+  GraphicsSystem::setUniformData(slot, data);
 }
 void Graphics::setRenderTarget(const RenderTexture &texture) {
-  GraphicsSystem::SetRenderTarget(texture);
+  GraphicsSystem::setRenderTarget(texture);
 }
-void Graphics::flush() { GraphicsSystem::Flush(); }
+void Graphics::flush() { GraphicsSystem::flush(); }
 bool Graphics::readbackTexture(const RenderTexture &texture, Texture &out) {
-  return GraphicsSystem::ReadbackTexture(texture, out);
+  return GraphicsSystem::readbackTexture(texture, out);
 }
 } // namespace sinen

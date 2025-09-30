@@ -8,8 +8,8 @@ namespace sinen {
 TextureData::~TextureData() { SDL_DestroySurface(pSurface); }
 template <typename T> using Ptr = px::Ptr<T>;
 Ptr<px::Texture> CreateNativeTexture(SDL_Surface *pSurface) {
-  auto allocator = GraphicsSystem::GetAllocator();
-  auto device = GraphicsSystem::GetDevice();
+  auto allocator = GraphicsSystem::getAllocator();
+  auto device = GraphicsSystem::getDevice();
   auto *pImageDataSurface = ::SDL_ConvertSurface(pSurface, pSurface->format);
 
   Ptr<px::TransferBuffer> transferBuffer;
@@ -63,8 +63,8 @@ Ptr<px::Texture> CreateNativeTexture(SDL_Surface *pSurface) {
   return texture;
 }
 void UpdateNativeTexture(Ptr<px::Texture> texture, SDL_Surface *pSurface) {
-  auto allocator = GraphicsSystem::GetAllocator();
-  auto device = GraphicsSystem::GetDevice();
+  auto allocator = GraphicsSystem::getAllocator();
+  auto device = GraphicsSystem::getDevice();
   auto *pImageDataSurface = ::SDL_ConvertSurface(pSurface, pSurface->format);
 
   Ptr<px::TransferBuffer> transferBuffer;

@@ -34,80 +34,70 @@ class GraphicsSystem {
 public:
   static void initialize();
   static void shutdown();
-  static void unload_data();
   static void render();
-  static void SetCamera2D(const Camera2D &camera) {
+  static void setCamera2D(const Camera2D &camera) {
     GraphicsSystem::camera2D = camera;
   }
-  static Camera2D &GetCamera2D() { return camera2D; }
-  static void SetCamera(const Camera &camera) {
+  static Camera2D &getCamera2D() { return camera2D; }
+  static void setCamera(const Camera &camera) {
     GraphicsSystem::camera = camera;
   }
-  static Camera &GetCamera() { return camera; }
-  static void Draw2D(const sinen::Draw2D &draw2D);
-  static void Draw3D(const sinen::Draw3D &draw3D);
-  static void DrawRect(const Rect &rect, const Color &color, float angle);
-  static void DrawImage(const Texture &texture, const Rect &rect, float angle);
-  static void DrawText(const std::string &text, const glm::vec2 &position,
+  static Camera &getCamera() { return camera; }
+  static void drawBase2D(const sinen::Draw2D &draw2D);
+  static void drawBase3D(const sinen::Draw3D &draw3D);
+  static void drawRect(const Rect &rect, const Color &color, float angle);
+  static void drawImage(const Texture &texture, const Rect &rect, float angle);
+  static void drawText(const std::string &text, const glm::vec2 &position,
                        const Color &color = Palette::white(),
                        float fontSize = 16.0f, float angle = 0.0f);
-  static void DrawModel(const Model &model, const Transform &transform,
+  static void drawModel(const Model &model, const Transform &transform,
                         const Material &material);
-  static void set_clear_color(const Color &color) {
+  static void setClearColor(const Color &color) {
     if (color.r >= 0.f && color.g >= 0.f && color.b >= 0.f)
       clearColor = color;
   }
-  static Color get_clear_color() { return clearColor; }
-  static void toggle_show_imgui() { showImGui = !showImGui; }
-  static bool is_show_imgui() { return showImGui; }
-  static void load_shader(const Shader &shaderinfo);
-  static void unload_shader(const Shader &shaderinfo);
-  static std::list<std::function<void()>> &get_imgui_function() {
-    return m_imgui_function;
+  static Color getClearColor() { return clearColor; }
+  static void toggleShowImGui() { showImGui = !showImGui; }
+  static bool isShowImGui() { return showImGui; }
+  static void loadShader(const Shader &shaderinfo);
+  static void unloadShader(const Shader &shaderinfo);
+  static std::list<std::function<void()>> &getImGuiFunction() {
+    return imguiFunctions;
   }
-  static void prepare_imgui();
-  static void add_imgui_function(std::function<void()> function) {
-    m_imgui_function.push_back(function);
+  static void addImGuiFunction(std::function<void()> function) {
+    imguiFunctions.push_back(function);
   }
-  static void *get_texture_id();
+  static void bindPipeline3D(const GraphicsPipeline3D &pipeline);
+  static void bindDefaultPipeline3D();
+  static void bindPipeline2D(const GraphicsPipeline2D &pipeline);
+  static void bindDefaultPipeline2D();
+  static void setUniformData(uint32_t slot, const UniformData &data);
 
-  static void bind_pipeline3d(const GraphicsPipeline3D &pipeline);
-  static void bind_default_pipeline3d();
-  static void bind_pipeline2d(const GraphicsPipeline2D &pipeline);
-  static void bind_default_pipeline2d();
-  static void set_uniform_data(uint32_t slot, const UniformData &data);
-
-  static void SetRenderTarget(const RenderTexture &texture);
-  static void Flush();
-  static bool ReadbackTexture(const RenderTexture &texture, Texture &out);
+  static void setRenderTarget(const RenderTexture &texture);
+  static void flush();
+  static bool readbackTexture(const RenderTexture &texture, Texture &out);
 
   static Model box;
   static Model sprite;
 
-  static px::Allocator *GetAllocator() {
+  static px::Allocator *getAllocator() {
     static auto allocator = px::Paranoixa::CreateAllocator(0xffff);
     return allocator;
   }
 
-  static px::Ptr<px::Device> GetDevice() { return device; }
+  static px::Ptr<px::Device> getDevice() { return device; }
 
 private:
-  static void setup_shapes();
+  static void setupShapes();
   static Color clearColor;
 
-  inline static Camera2D camera2D = glm::vec2(1280, 720);
-  inline static Camera camera = []() {
-    Camera c;
-    c.lookat(glm::vec3{0, -1, 1}, glm::vec3{0, 0, 0}, glm::vec3{0, 0, 1});
-    c.perspective(90.f, Window::size().x / Window::size().y, .1f, 100.f);
-    return c;
-  }();
-  ;
+  inline static Camera camera;
+  inline static Camera2D camera2D;
   // Renderer
   static bool showImGui;
-  static std::list<std::function<void()>> m_imgui_function;
+  static std::list<std::function<void()>> imguiFunctions;
 
-  inline static px::Allocator *allocator = GetAllocator();
+  inline static px::Allocator *allocator = getAllocator();
   inline static Ptr<px::Backend> backend;
   inline static Ptr<px::Device> device;
   inline static Ptr<px::Texture> depthTexture;
@@ -124,12 +114,12 @@ private:
   inline static bool isDefaultPipeline = true;
   inline static uint32_t objectCount = 0;
   inline static px::Array<px::ColorTargetInfo> colorTargets =
-      px::Array<px::ColorTargetInfo>(GetAllocator());
+      px::Array<px::ColorTargetInfo>(getAllocator());
   inline static px::DepthStencilTargetInfo depthStencilInfo;
   inline static px::Array<px::ColorTargetInfo> currentColorTargets;
   inline static px::DepthStencilTargetInfo currentDepthStencilInfo;
   inline static px::HashMap<std::string, PxVertexArray> vertexArrays =
-      px::HashMap<std::string, PxVertexArray>(GetAllocator());
+      px::HashMap<std::string, PxVertexArray>(getAllocator());
 };
 } // namespace sinen
 #endif // !SINEN_RENDER_SYSTEM_HPP

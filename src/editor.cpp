@@ -1,4 +1,5 @@
 #include "core/io/asset_io.hpp"
+#include "main_system.hpp"
 #if ZEP_SINGLE_HEADER == 1
 #define ZEP_SINGLE_HEADER_BUILD
 #endif
@@ -9,6 +10,7 @@
 #include "platform/input/input_system.hpp"
 #include "platform/input/keyboard.hpp"
 #include "platform/window/window_system.hpp"
+#include <core/io/file_system.hpp>
 
 #include <filesystem>
 #include <functional>
@@ -91,11 +93,78 @@ void zep_load() {
   std::string strName;
   switch (scriptType) {
   case sinen::ScriptType::Lua:
-    strName = "asset/script/main.lua";
+    strName = FileSystem::getAppBaseDirectory() + "/asset/script/main.lua";
+    break;
+  case ScriptType::Python:
+    strName = FileSystem::getAppBaseDirectory() + "/asset/script/main.py";
     break;
   }
   auto pBuffer = zep_get_editor().InitWithFile(strName);
   assert(pBuffer != nullptr);
+#ifdef __ANDROID__
+  spZep->zepEditor.SetGlobalMode(Zep::ZepMode_Standard::StaticName());
+#else
+  spZep->zepEditor.SetGlobalMode(Zep::ZepMode_Vim::StaticName());
+#endif
+}
+
+namespace fs = std::filesystem;
+
+void showLuaScriptsMenu_While(const std::string &rootDir,
+                              decltype(spZep) spZep) {
+  if (!fs::exists(rootDir))
+    return;
+
+  std::stack<fs::path> dirs;
+  dirs.push(rootDir);
+
+  while (!dirs.empty()) {
+    fs::path current = dirs.top();
+    dirs.pop();
+
+    if ((current.filename() == "script" || current.filename() == "shader") &&
+        current.parent_path().filename() == "asset") {
+      std::vector<fs::directory_entry> luaFiles;
+      for (auto &entry : fs::directory_iterator(current)) {
+        if (entry.is_regular_file() && entry.path().extension() == ".lua" ||
+            entry.path().extension() == ".slang") {
+          luaFiles.push_back(entry);
+        }
+      }
+
+      std::sort(luaFiles.begin(), luaFiles.end(), [](auto &a, auto &b) {
+        return a.path().filename().string() > b.path().filename().string();
+      });
+
+      fs::path parent = current.parent_path().parent_path();
+      std::string menuLabel = parent.filename().string();
+
+      if (parent == rootDir || menuLabel.empty()) {
+        for (auto &f : luaFiles) {
+          std::string label = f.path().filename().string();
+          if (ImGui::MenuItem(label.c_str())) {
+            spZep->zepEditor.InitWithFile(f.path().string());
+          }
+        }
+      } else {
+        if (ImGui::BeginMenu(menuLabel.c_str())) {
+          for (auto &f : luaFiles) {
+            std::string label = f.path().filename().string();
+            if (ImGui::MenuItem(label.c_str())) {
+              spZep->zepEditor.InitWithFile(f.path().string());
+            }
+          }
+          ImGui::EndMenu();
+        }
+      }
+    }
+
+    for (auto &entry : fs::directory_iterator(current)) {
+      if (entry.is_directory()) {
+        dirs.push(entry.path());
+      }
+    }
+  }
 }
 
 void zep_show(const Zep::NVec2i &displaySize) {
@@ -103,12 +172,55 @@ void zep_show(const Zep::NVec2i &displaySize) {
   ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
   ImGui::SetNextWindowSize(ImVec2(displaySize.x, displaySize.y),
                            ImGuiCond_Always);
-  if (!ImGui::Begin("Script Editor", nullptr, ImGuiWindowFlags_NoResize)) {
+  static bool preWindowFocus = false;
+  if (!ImGui::Begin("Editor", nullptr,
+                    ImGuiWindowFlags_NoResize | ImGuiWindowFlags_MenuBar |
+                        ImGuiWindowFlags_ChildMenu)) {
     ImGui::End();
     return;
   }
-  if (ImGui::IsWindowFocused())
-    SDL_StartTextInput(WindowSystem::get_sdl_window());
+  if (ImGui::IsWindowFocused()) {
+    if (!preWindowFocus) {
+      SDL_StartTextInput(WindowSystem::get_sdl_window());
+    }
+    preWindowFocus = true;
+  } else {
+    if (preWindowFocus) {
+      SDL_StopTextInput(WindowSystem::get_sdl_window());
+    }
+    preWindowFocus = false;
+  }
+
+  if (ImGui::BeginMenuBar()) {
+
+    if (ImGui::BeginMenu("File")) {
+
+      if (ImGui::MenuItem("New", "Ctrl+N")) {
+      }
+      if (ImGui::BeginMenu("Load")) {
+        showLuaScriptsMenu_While(FileSystem::getAppBaseDirectory(), spZep);
+        ImGui::EndMenu();
+      }
+      if (ImGui::MenuItem("Save")) {
+        auto &editor = spZep->zepEditor;
+        auto &pBuffer =
+            editor.GetActiveTabWindow()->GetActiveWindow()->GetBuffer();
+        editor.SaveBuffer(pBuffer);
+      }
+      if (ImGui::MenuItem("Reload")) {
+        MainSystem::Change("main", ".");
+      }
+      if (ImGui::MenuItem("Close")) {
+        auto &editor = spZep->zepEditor;
+        auto count = editor.GetTabWindows().size();
+        editor.GetActiveTabWindow()->CloseActiveWindow();
+      }
+      ImGui::EndMenu();
+    }
+    ImGui::EndMenuBar();
+  }
+
+  ImGui::Text("FPS: %.3f", ImGui::GetIO().Framerate);
 
   auto min = ImGui::GetCursorScreenPos();
   auto max = ImGui::GetContentRegionAvail();
@@ -125,13 +237,13 @@ void zep_show(const Zep::NVec2i &displaySize) {
   spZep->zepEditor.SetDisplayRegion(Zep::NVec2f(min.x, min.y),
                                     Zep::NVec2f(max.x, max.y));
   spZep->zepEditor.Display();
-  bool zep_focused = ImGui::IsWindowFocused();
-  if (zep_focused) {
+  bool zepFocused = ImGui::IsWindowFocused();
+  if (zepFocused) {
     spZep->zepEditor.HandleInput();
   }
 
-  // TODO: A Better solution for this; I think the audio graph is creating a new
-  // window and stealing focus
+  // TODO: A Better solution for this; I think the audio graph is creating a
+  // new window and stealing focus
   static int focus_count = 0;
   if (focus_count++ < 2) {
     ImGui::SetWindowFocus();

@@ -242,8 +242,8 @@ std::vector<std::uint32_t> Model::allIndices() const {
 
 std::pair<px::Ptr<px::Buffer>, px::Ptr<px::Buffer>>
 CreateVertexIndexBuffer(const VertexArray &vArray) {
-  auto allocator = GraphicsSystem::GetAllocator();
-  auto device = GraphicsSystem::GetDevice();
+  auto allocator = GraphicsSystem::getAllocator();
+  auto device = GraphicsSystem::getDevice();
   size_t vertexBufferSize;
   bool isAnimation = false;
   if (vArray.animationVertices.size() > 0) {

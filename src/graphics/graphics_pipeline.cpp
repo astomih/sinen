@@ -19,8 +19,8 @@ void GraphicsPipeline2D::setFragmentShader(const Shader &shader) {
 }
 
 void GraphicsPipeline2D::build() {
-  auto *allocator = GraphicsSystem::GetAllocator();
-  auto device = GraphicsSystem::GetDevice();
+  auto *allocator = GraphicsSystem::getAllocator();
+  auto device = GraphicsSystem::getDevice();
 
   px::GraphicsPipeline::CreateInfo pipelineInfo{allocator};
   pipelineInfo.vertexShader = this->vertexShader.shader;
@@ -75,8 +75,8 @@ void GraphicsPipeline3D::setAnimation(bool animation) {
   this->isAnimation = animation;
 }
 void GraphicsPipeline3D::build() {
-  auto *allocator = GraphicsSystem::GetAllocator();
-  auto device = GraphicsSystem::GetDevice();
+  auto *allocator = GraphicsSystem::getAllocator();
+  auto device = GraphicsSystem::getDevice();
 
   px::GraphicsPipeline::CreateInfo pipelineInfo{allocator};
   pipelineInfo.vertexShader = this->vertexShader.shader;

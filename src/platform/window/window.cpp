@@ -57,13 +57,17 @@ void WindowSystem::initialize(const std::string &name) {
       SDL_CreateWindow(std::string(name).c_str(), static_cast<int>(m_size.x),
                        static_cast<int>(m_size.y), windowFlags);
 
-// Safe rect
-#ifdef __ANDROID__
-  SDL_Rect safeArea;
-  SDL_GetWindowSafeArea(m_window, &safeArea);
-  m_size.x = static_cast<float>(safeArea.w);
-  m_size.y = static_cast<float>(safeArea.h);
-#endif
+  // Safe rect
+  // #ifdef __ANDROID__
+  //   SDL_Rect safeArea;
+  //   SDL_GetWindowSafeArea(m_window, &safeArea);
+  //   m_size.x = static_cast<float>(safeArea.w);
+  //   m_size.y = static_cast<float>(safeArea.h);
+  // #endif
+  int x, y;
+  SDL_GetWindowSize(m_window, &x, &y);
+  m_size.x = static_cast<float>(x);
+  m_size.y = static_cast<float>(y);
 }
 
 void WindowSystem::shutdown() {

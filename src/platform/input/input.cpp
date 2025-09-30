@@ -125,7 +125,7 @@ void Mouse::SetPosition(const glm::vec2 &pos) {
                         half.y - pos.y);
 }
 void Mouse::SetPositionOnScene(const glm::vec2 &pos) {
-  Mouse::SetPosition(pos * GraphicsSystem::GetCamera2D().windowRatio());
+  Mouse::SetPosition(pos * GraphicsSystem::getCamera2D().windowRatio());
 }
 glm::vec2 Mouse::GetPosition() {
   glm::vec2 pos;
@@ -135,7 +135,7 @@ glm::vec2 Mouse::GetPosition() {
   return pos;
 }
 glm::vec2 Mouse::GetPositionOnScene() {
-  return Mouse::GetPosition() * GraphicsSystem::GetCamera2D().invWindowRatio();
+  return Mouse::GetPosition() * GraphicsSystem::getCamera2D().invWindowRatio();
 }
 
 glm::vec2 Mouse::GetScrollWheel() { return InputSystem::m_mouse.mScrollWheel; }

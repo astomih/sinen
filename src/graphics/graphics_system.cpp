@@ -4,19 +4,15 @@
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 
-#include <asset/model/vertex.hpp>
 #include <asset/model/vertex_array.hpp>
 #include <asset/texture/render_texture.hpp>
 #include <cassert>
 #include <core/io/asset_io.hpp>
-#include <core/io/asset_type.hpp>
 #include <core/logger/logger.hpp>
-#include <cstdint>
 #include <graphics/drawable/instance_data.hpp>
 #include <graphics/graphics.hpp>
 #include <imgui_impl_paranoixa.hpp>
 #include <memory>
-#include <platform/platform.hpp>
 #include <platform/window/window.hpp>
 
 #include "../asset/font/default/mplus-1p-medium.ttf.hpp"
@@ -26,22 +22,47 @@
 #include "../asset/texture/texture_data.hpp"
 #include "../main_system.hpp"
 #include "../platform/window/window_system.hpp"
-#include "graphics/graphics.hpp"
 #include "imgui_internal.h"
 #include "paranoixa/paranoixa.hpp"
 
 namespace sinen {
+void setFullWindowViewport(const px::Ptr<px::RenderPass> &renderPass) {
+  Rect rect;
+  // SDL_Rect safeArea;
+  // SDL_GetWindowSafeArea(WindowSystem::get_sdl_window(), &safeArea);
+  rect.x = 0;
+  rect.y = 0;
+  rect.width = Window::size().x;
+  rect.height = Window::size().y;
+
+  px::Viewport viewport{};
+  viewport.x = rect.x;
+  viewport.y = rect.y;
+  viewport.width = rect.width;
+  viewport.height = rect.height;
+  viewport.minDepth = 0.0f;
+  viewport.maxDepth = 1.0f;
+
+  renderPass->SetViewport(viewport);
+  renderPass->SetScissor(rect.x, rect.y, rect.width, rect.height);
+}
 PxDrawable::PxDrawable(px::Allocator *allocator)
     : allocator(allocator), vertexBuffers(allocator), indexBuffer(),
       textureSamplers(allocator) {}
 Color GraphicsSystem::clearColor = Palette::black();
 // Renderer
 bool GraphicsSystem::showImGui = false;
-std::list<std::function<void()>> GraphicsSystem::m_imgui_function;
+std::list<std::function<void()>> GraphicsSystem::imguiFunctions;
 Model GraphicsSystem::box = Model();
 Model GraphicsSystem::sprite = Model();
-void GraphicsSystem::unload_data() {}
 void GraphicsSystem::initialize() {
+  camera2D = Window::size();
+  camera = []() {
+    Camera c;
+    c.lookat(glm::vec3{0, -1, 1}, glm::vec3{0, 0, 0}, glm::vec3{0, 0, 1});
+    c.perspective(90.f, Window::size().x / Window::size().y, .1f, 100.f);
+    return c;
+  }();
   backend = px::Paranoixa::CreateBackend(allocator, px::GraphicsAPI::SDLGPU);
   px::Device::CreateInfo info{};
   info.allocator = allocator;
@@ -51,10 +72,16 @@ void GraphicsSystem::initialize() {
   device->ClaimWindow(window);
   IMGUI_CHECKVERSION();
   auto *context = ImGui::CreateContext();
+#ifdef __ANDROID__
+  float sizePixels = 64.0f;
+#else
+  float sizePixels = 32.0f;
+#endif
   context->IO.Fonts->AddFontFromMemoryTTF(
-      (void *)mplus_1p_medium_ttf, mplus_1p_medium_ttf_len, 32.0f, nullptr,
+      (void *)mplus_1p_medium_ttf, mplus_1p_medium_ttf_len, sizePixels, nullptr,
       context->IO.Fonts->GetGlyphRangesJapanese());
   context->IO.IniFilename = nullptr;
+  context->IO.WantTextInput = true;
   auto *ime_data = &context->PlatformImeData;
   ime_data->WantVisible = true;
   ImGui_ImplSDL3_InitForSDLGPU(window);
@@ -63,7 +90,6 @@ void GraphicsSystem::initialize() {
   init_info.Device = device;
   init_info.ColorTargetFormat = device->GetSwapchainFormat();
   init_info.MSAASamples = px::SampleCount::x1;
-  GraphicsSystem::prepare_imgui();
   ImGui_ImplParanoixa_Init(&init_info);
 
   Shader vs;
@@ -118,7 +144,7 @@ void GraphicsSystem::initialize() {
   depthStencilInfo.cycle = false;
   depthStencilInfo.stencilLoadOp = px::LoadOp::Clear;
   depthStencilInfo.stencilStoreOp = px::StoreOp::Store;
-  setup_shapes();
+  setupShapes();
 }
 
 void GraphicsSystem::shutdown() {
@@ -159,7 +185,7 @@ void GraphicsSystem::render() {
   ImGui_ImplParanoixa_NewFrame();
   ImGui_ImplSDL3_NewFrame();
   ImGui::NewFrame();
-  for (auto &func : GraphicsSystem::get_imgui_function()) {
+  for (auto &func : GraphicsSystem::getImGuiFunction()) {
     func();
   }
   // Rendering
@@ -180,9 +206,7 @@ void GraphicsSystem::render() {
       currentRenderPass = commandBuffer->BeginRenderPass(colorTargets, {});
     }
     auto renderPass = currentRenderPass;
-    renderPass->SetViewport(
-        px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
-    renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
+    setFullWindowViewport(renderPass);
     // Render ImGui
     ImGui_ImplParanoixa_RenderDrawData(draw_data, commandBuffer, renderPass);
     commandBuffer->EndRenderPass(renderPass);
@@ -190,7 +214,7 @@ void GraphicsSystem::render() {
   device->SubmitCommandBuffer(commandBuffer);
   device->WaitForGPUIdle();
 }
-void GraphicsSystem::Draw2D(const sinen::Draw2D &draw2D) {
+void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
   auto ratio = camera2D.windowRatio();
   {
     auto t = glm::translate(glm::mat4(1.0f),
@@ -241,10 +265,7 @@ void GraphicsSystem::Draw2D(const sinen::Draw2D &draw2D) {
     currentRenderPass =
         currentCommandBuffer->BeginRenderPass(currentColorTargets, {});
     auto renderPass = currentRenderPass;
-    renderPass->SetViewport(
-        px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
-    renderPass->SetScissor(0, 0, static_cast<int32_t>(Window::size().x),
-                           static_cast<int32_t>(Window::size().y));
+    setFullWindowViewport(renderPass);
     isFrameStarted = false;
     isDraw2D = true;
     isDefaultPipeline = true;
@@ -255,10 +276,7 @@ void GraphicsSystem::Draw2D(const sinen::Draw2D &draw2D) {
     currentRenderPass =
         currentCommandBuffer->BeginRenderPass(currentColorTargets, {});
     auto renderPass = currentRenderPass;
-    renderPass->SetViewport(
-        px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
-    renderPass->SetScissor(0, 0, static_cast<int32_t>(Window::size().x),
-                           static_cast<int32_t>(Window::size().y));
+    setFullWindowViewport(renderPass);
     isDraw2D = true;
     isDefaultPipeline = true;
   }
@@ -297,7 +315,7 @@ void GraphicsSystem::Draw2D(const sinen::Draw2D &draw2D) {
       0);
 }
 
-void GraphicsSystem::Draw3D(const sinen::Draw3D &draw3D) {
+void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
   draw3D.obj->material = draw3D.material;
   {
     const auto t = glm::translate(
@@ -352,9 +370,7 @@ void GraphicsSystem::Draw3D(const sinen::Draw3D &draw3D) {
     currentRenderPass = currentCommandBuffer->BeginRenderPass(
         currentColorTargets, currentDepthStencilInfo);
     auto renderPass = currentRenderPass;
-    renderPass->SetViewport(
-        px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
-    renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
+    setFullWindowViewport(renderPass);
     isFrameStarted = false;
     isDraw2D = false;
     isDefaultPipeline = true;
@@ -366,9 +382,7 @@ void GraphicsSystem::Draw3D(const sinen::Draw3D &draw3D) {
     currentRenderPass = currentCommandBuffer->BeginRenderPass(
         currentColorTargets, currentDepthStencilInfo);
     auto renderPass = currentRenderPass;
-    renderPass->SetViewport(
-        px::Viewport{0, 0, Window::size().x, Window::size().y, 0, 1});
-    renderPass->SetScissor(0, 0, Window::size().x, Window::size().y);
+    setFullWindowViewport(renderPass);
     isDraw2D = false;
     isDefaultPipeline = true;
   }
@@ -470,7 +484,7 @@ void GraphicsSystem::Draw3D(const sinen::Draw3D &draw3D) {
         0, 0);
   }
 }
-void GraphicsSystem::DrawRect(const Rect &rect, const Color &color,
+void GraphicsSystem::drawRect(const Rect &rect, const Color &color,
                               float angle) {
   sinen::Draw2D draw2D;
   draw2D.position = rect.p;
@@ -481,9 +495,9 @@ void GraphicsSystem::DrawRect(const Rect &rect, const Color &color,
   Texture texture;
   texture.fillColor(color);
   draw2D.material.setTexture(texture);
-  GraphicsSystem::Draw2D(draw2D);
+  GraphicsSystem::drawBase2D(draw2D);
 }
-void GraphicsSystem::DrawImage(const Texture &texture, const Rect &rect,
+void GraphicsSystem::drawImage(const Texture &texture, const Rect &rect,
                                float angle) {
   sinen::Draw2D draw2D;
   draw2D.position = rect.p;
@@ -492,9 +506,9 @@ void GraphicsSystem::DrawImage(const Texture &texture, const Rect &rect,
   draw2D.rotation = angle;
   draw2D.material = Material();
   draw2D.material.setTexture(texture);
-  GraphicsSystem::Draw2D(draw2D);
+  GraphicsSystem::drawBase2D(draw2D);
 }
-void GraphicsSystem::DrawText(const std::string &text,
+void GraphicsSystem::drawText(const std::string &text,
                               const glm::vec2 &position, const Color &color,
                               float fontSize, float angle) {
   sinen::Draw2D draw2D;
@@ -507,9 +521,9 @@ void GraphicsSystem::DrawText(const std::string &text,
   draw2D.rotation = angle;
   draw2D.material = Material();
   draw2D.material.setTexture(texture);
-  GraphicsSystem::Draw2D(draw2D);
+  GraphicsSystem::drawBase2D(draw2D);
 }
-void GraphicsSystem::DrawModel(const Model &model, const Transform &transform,
+void GraphicsSystem::drawModel(const Model &model, const Transform &transform,
                                const Material &material) {
   sinen::Draw3D draw3D;
   draw3D.position = transform.position;
@@ -517,47 +531,30 @@ void GraphicsSystem::DrawModel(const Model &model, const Transform &transform,
   draw3D.rotation = transform.rotation;
   draw3D.material = material;
   draw3D.model = model;
-  GraphicsSystem::Draw3D(draw3D);
+  GraphicsSystem::drawBase3D(draw3D);
 }
 
-void GraphicsSystem::load_shader(const Shader &shaderInfo) {}
-void GraphicsSystem::unload_shader(const Shader &shaderInfo) {}
-void *GraphicsSystem::get_texture_id() { return nullptr; }
+void GraphicsSystem::loadShader(const Shader &shaderInfo) {}
+void GraphicsSystem::unloadShader(const Shader &shaderInfo) {}
 
-void GraphicsSystem::setup_shapes() {
+void GraphicsSystem::setupShapes() {
   box.loadFromVertexArray(create_box_vertices());
   sprite.loadFromVertexArray(create_sprite_vertices());
 }
 
-void GraphicsSystem::prepare_imgui() {
-  ImGuiIO &io = ImGui::GetIO();
-  io.WantTextInput = true;
-  io.ConfigFlags |=
-      ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-  io.ConfigFlags |=
-      ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
-  // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-  io.Fonts->AddFontFromMemoryTTF((void *)mplus_1p_medium_ttf,
-                                 mplus_1p_medium_ttf_len, 18.0f, nullptr,
-                                 io.Fonts->GetGlyphRangesJapanese());
-}
-void GraphicsSystem::bind_pipeline3d(const GraphicsPipeline3D &pipeline) {
+void GraphicsSystem::bindPipeline3D(const GraphicsPipeline3D &pipeline) {
   currentPipeline3D = pipeline;
 }
-void GraphicsSystem::bind_default_pipeline3d() {
-  currentPipeline3D = pipeline3D;
-}
-void GraphicsSystem::bind_pipeline2d(const GraphicsPipeline2D &pipeline) {
+void GraphicsSystem::bindDefaultPipeline3D() { currentPipeline3D = pipeline3D; }
+void GraphicsSystem::bindPipeline2D(const GraphicsPipeline2D &pipeline) {
   currentPipeline2D = pipeline;
 }
-void GraphicsSystem::bind_default_pipeline2d() {
-  currentPipeline2D = pipeline2D;
-}
-void GraphicsSystem::set_uniform_data(uint32_t slot, const UniformData &data) {
+void GraphicsSystem::bindDefaultPipeline2D() { currentPipeline2D = pipeline2D; }
+void GraphicsSystem::setUniformData(uint32_t slot, const UniformData &data) {
   currentCommandBuffer->PushVertexUniformData(slot, data.data.data(),
                                               data.data.size() * sizeof(float));
 }
-void GraphicsSystem::SetRenderTarget(const RenderTexture &texture) {
+void GraphicsSystem::setRenderTarget(const RenderTexture &texture) {
   auto tex = texture.getTexture();
   auto depthTex = texture.getDepthStencil();
   currentCommandBuffer = device->AcquireCommandBuffer({allocator});
@@ -572,13 +569,13 @@ void GraphicsSystem::SetRenderTarget(const RenderTexture &texture) {
                                 (float)texture.height);
   isDefaultPipeline = false;
 }
-void GraphicsSystem::Flush() {
+void GraphicsSystem::flush() {
   currentCommandBuffer->EndRenderPass(currentRenderPass);
   device->SubmitCommandBuffer(currentCommandBuffer);
   device->WaitForGPUIdle();
   currentCommandBuffer = mainCommandBuffer;
 }
-bool GraphicsSystem::ReadbackTexture(const RenderTexture &srcRenderTexture,
+bool GraphicsSystem::readbackTexture(const RenderTexture &srcRenderTexture,
                                      Texture &out) {
   auto tex = srcRenderTexture.getTexture();
   auto outTextureData = GetTexData(out.textureData);

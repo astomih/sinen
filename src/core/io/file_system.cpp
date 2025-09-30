@@ -7,11 +7,7 @@
 namespace sinen {
 std::vector<std::string>
 FileSystem::enumerateDirectory(const std::string &path) {
-#ifdef __ANDROID__
-  auto p = "/sdcard/Android/media/org.libsdl.app/" + path;
-#else
-  auto p = path;
-#endif
+  auto p = getAppBaseDirectory() + "/" + path;
   std::vector<std::string> result;
   SDL_EnumerateDirectory(
       p.c_str(),
@@ -24,5 +20,14 @@ FileSystem::enumerateDirectory(const std::string &path) {
       },
       &result);
   return result;
+}
+std::string FileSystem::getAppBaseDirectory() {
+
+#ifdef __ANDROID__
+  std::string base = "/sdcard/Android/media/org.libsdl.app";
+#else
+  std::string base = ".";
+#endif
+  return base;
 }
 } // namespace sinen

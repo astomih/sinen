@@ -93,10 +93,12 @@ void zep_load() {
   std::string strName;
   switch (scriptType) {
   case sinen::ScriptType::Lua:
-    strName = FileSystem::getAppBaseDirectory() + "/asset/script/main.lua";
+    strName = FileSystem::getAppBaseDirectory() + "/" +
+              MainSystem::GetBasePath() + "/asset/script/main.lua";
     break;
   case ScriptType::Python:
-    strName = FileSystem::getAppBaseDirectory() + "/asset/script/main.py";
+    strName = FileSystem::getAppBaseDirectory() + "/" +
+              MainSystem::GetBasePath() + "/asset/script/main.py";
     break;
   }
   auto pBuffer = zep_get_editor().InitWithFile(strName);
@@ -122,25 +124,33 @@ void showLuaScriptsMenu_While(const std::string &rootDir,
     fs::path current = dirs.top();
     dirs.pop();
 
-    if ((current.filename() == "script" || current.filename() == "shader") &&
-        current.parent_path().filename() == "asset") {
-      std::vector<fs::directory_entry> luaFiles;
+    if (current.filename() == "script" || current.filename() == "shader" ||
+        current.parent_path().filename() == "script" ||
+        current.parent_path().filename() == "shader") {
+      std::vector<fs::directory_entry> files;
       for (auto &entry : fs::directory_iterator(current)) {
         if (entry.is_regular_file() && entry.path().extension() == ".lua" ||
             entry.path().extension() == ".slang") {
-          luaFiles.push_back(entry);
+          files.push_back(entry);
         }
       }
+      if (files.empty())
+        continue;
 
-      std::sort(luaFiles.begin(), luaFiles.end(), [](auto &a, auto &b) {
-        return a.path().filename().string() > b.path().filename().string();
+      std::sort(files.begin(), files.end(), [](auto &a, auto &b) {
+        return a.path().filename().string() < b.path().filename().string();
       });
 
       fs::path parent = current.parent_path().parent_path();
+      if (current.parent_path().filename() == "script" ||
+          current.parent_path().filename() == "shader") {
+        parent = current;
+      }
+
       std::string menuLabel = parent.filename().string();
 
       if (parent == rootDir || menuLabel.empty()) {
-        for (auto &f : luaFiles) {
+        for (auto &f : files) {
           std::string label = f.path().filename().string();
           if (ImGui::MenuItem(label.c_str())) {
             spZep->zepEditor.InitWithFile(f.path().string());
@@ -148,7 +158,7 @@ void showLuaScriptsMenu_While(const std::string &rootDir,
         }
       } else {
         if (ImGui::BeginMenu(menuLabel.c_str())) {
-          for (auto &f : luaFiles) {
+          for (auto &f : files) {
             std::string label = f.path().filename().string();
             if (ImGui::MenuItem(label.c_str())) {
               spZep->zepEditor.InitWithFile(f.path().string());
@@ -207,15 +217,15 @@ void zep_show(const Zep::NVec2i &displaySize) {
             editor.GetActiveTabWindow()->GetActiveWindow()->GetBuffer();
         editor.SaveBuffer(pBuffer);
       }
-      if (ImGui::MenuItem("Reload")) {
-        MainSystem::Change("main", ".");
-      }
       if (ImGui::MenuItem("Close")) {
         auto &editor = spZep->zepEditor;
         auto count = editor.GetTabWindows().size();
         editor.GetActiveTabWindow()->CloseActiveWindow();
       }
       ImGui::EndMenu();
+    }
+    if (ImGui::MenuItem("Run")) {
+      MainSystem::Change("main", MainSystem::GetBasePath());
     }
     ImGui::EndMenuBar();
   }

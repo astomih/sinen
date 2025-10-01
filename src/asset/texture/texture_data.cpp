@@ -10,7 +10,10 @@ template <typename T> using Ptr = px::Ptr<T>;
 Ptr<px::Texture> CreateNativeTexture(SDL_Surface *pSurface) {
   auto allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
-  auto *pImageDataSurface = ::SDL_ConvertSurface(pSurface, pSurface->format);
+  auto *pImageDataSurface = ::SDL_ConvertSurface(
+      pSurface, pSurface->format == SDL_PIXELFORMAT_RGBA8888
+                    ? pSurface->format
+                    : SDL_PIXELFORMAT_RGBA32);
 
   Ptr<px::TransferBuffer> transferBuffer;
   int width = pImageDataSurface->w, height = pImageDataSurface->h;
@@ -65,7 +68,10 @@ Ptr<px::Texture> CreateNativeTexture(SDL_Surface *pSurface) {
 void UpdateNativeTexture(Ptr<px::Texture> texture, SDL_Surface *pSurface) {
   auto allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
-  auto *pImageDataSurface = ::SDL_ConvertSurface(pSurface, pSurface->format);
+  auto *pImageDataSurface = ::SDL_ConvertSurface(
+      pSurface, pSurface->format == SDL_PIXELFORMAT_RGBA8888
+                    ? pSurface->format
+                    : SDL_PIXELFORMAT_RGBA32);
 
   Ptr<px::TransferBuffer> transferBuffer;
   int width = pImageDataSurface->w, height = pImageDataSurface->h;

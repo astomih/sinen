@@ -1,7 +1,7 @@
 local texture = sn.Texture()
 texture:fill(sn.Color(1, 1, 1, 1))
 local model = sn.Model()
-model:load("CesiumMan.glb")
+model:load("BrainStem.glb")
 local draw3d = sn.Draw3D(texture)
 draw3d.position = sn.Vec3(0, 0, 0)
 draw3d.model = model

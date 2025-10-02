@@ -1,6 +1,7 @@
 #include "window_system.hpp"
 #include <SDL3/SDL.h>
 #include <core/io/file.hpp>
+#include <core/io/file_system.hpp>
 #include <core/io/json.hpp>
 #include <platform/input/keyboard.hpp>
 #include <platform/window/window.hpp>
@@ -27,8 +28,8 @@ void WindowSystem::initialize(const std::string &name) {
   // Load settings from settings.json
   {
     File f;
-    if (f.open("settings.json", File::Mode::r)) {
-
+    if (f.open(FileSystem::getAppBaseDirectory() + "/settings.json",
+               File::Mode::r)) {
       void *buffer = calloc(f.size() + 10, 1);
       f.read(buffer, f.size(), 1);
       f.close();

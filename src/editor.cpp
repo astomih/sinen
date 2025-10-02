@@ -129,9 +129,24 @@ void showLuaScriptsMenu_While(const std::string &rootDir,
         current.parent_path().filename() == "shader") {
       std::vector<fs::directory_entry> files;
       for (auto &entry : fs::directory_iterator(current)) {
-        if (entry.is_regular_file() && entry.path().extension() == ".lua" ||
-            entry.path().extension() == ".slang") {
+        if (entry.is_directory())
+          continue;
+        if (entry.path().extension() == ".slang") {
           files.push_back(entry);
+          continue;
+        }
+        switch (sinen::ScriptSystem::GetType()) {
+        case sinen::ScriptType::Lua:
+          if (entry.path().extension() == ".lua")
+            files.push_back(entry);
+          break;
+        case sinen::ScriptType::Python:
+
+          if (entry.path().extension() == ".py")
+            files.push_back(entry);
+          break;
+        default:
+          break;
         }
       }
       if (files.empty())
@@ -165,6 +180,36 @@ void showLuaScriptsMenu_While(const std::string &rootDir,
             }
           }
           ImGui::EndMenu();
+        }
+      }
+    } else {
+      std::vector<fs::directory_entry> files;
+      for (auto &entry : fs::directory_iterator(current)) {
+        if (entry.is_regular_file()) {
+          if (entry.path().extension() == ".json")
+            files.push_back(entry);
+        }
+      }
+      if (!files.empty()) {
+        std::string menuLabel = current.filename().string();
+
+        if (current == rootDir || menuLabel.empty()) {
+          for (auto &f : files) {
+            std::string label = f.path().filename().string();
+            if (ImGui::MenuItem(label.c_str())) {
+              spZep->zepEditor.InitWithFile(f.path().string());
+            }
+          }
+        } else {
+          if (ImGui::BeginMenu(menuLabel.c_str())) {
+            for (auto &f : files) {
+              std::string label = f.path().filename().string();
+              if (ImGui::MenuItem(label.c_str())) {
+                spZep->zepEditor.InitWithFile(f.path().string());
+              }
+            }
+            ImGui::EndMenu();
+          }
         }
       }
     }

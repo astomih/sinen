@@ -286,7 +286,7 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
 
   for (const auto &texture : draw2D.obj->material.getTextures()) {
     auto nativeTexture = std::static_pointer_cast<px::Texture>(
-        GetTexData(texture.textureData)->texture);
+        getTextureRawData(texture.textureData)->texture);
     drawable.textureSamplers.push_back(px::TextureSamplerBinding{
         .sampler = sampler, .texture = nativeTexture});
   }
@@ -390,7 +390,7 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
   drawable.drawable = draw3D.obj;
   for (const auto &texture : draw3D.obj->material.getTextures()) {
     auto nativeTexture = std::static_pointer_cast<px::Texture>(
-        GetTexData(texture.textureData)->texture);
+        getTextureRawData(texture.textureData)->texture);
     drawable.textureSamplers.push_back(px::TextureSamplerBinding{
         .sampler = sampler, .texture = nativeTexture});
   }
@@ -529,7 +529,10 @@ void GraphicsSystem::drawModel(const Model &model, const Transform &transform,
   draw3D.position = transform.position;
   draw3D.scale = transform.scale;
   draw3D.rotation = transform.rotation;
-  draw3D.material = material;
+  if (model.getMaterial().getTextureCount() < 1)
+    draw3D.material = material;
+  else
+    draw3D.material = model.getMaterial();
   draw3D.model = model;
   GraphicsSystem::drawBase3D(draw3D);
 }
@@ -578,7 +581,7 @@ void GraphicsSystem::flush() {
 bool GraphicsSystem::readbackTexture(const RenderTexture &srcRenderTexture,
                                      Texture &out) {
   auto tex = srcRenderTexture.getTexture();
-  auto outTextureData = GetTexData(out.textureData);
+  auto outTextureData = getTextureRawData(out.textureData);
   // Copy
   px::TransferBuffer::CreateInfo info2{};
   info2.allocator = allocator;

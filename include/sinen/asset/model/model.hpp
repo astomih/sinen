@@ -8,6 +8,7 @@
 #include "../../physics/collision.hpp"
 #include "graphics/uniform_data.hpp"
 #include "vertex_array.hpp"
+#include <asset/texture/material.hpp>
 
 namespace sinen {
 struct Model {
@@ -28,7 +29,7 @@ public:
    * @brief Model format is a custom format(.sim)
    * @param str
    */
-  void load(std::string_view str) const;
+  void load(std::string_view str);
   void loadFromVertexArray(const VertexArray &vArray);
   void loadSprite();
   void loadBox();
@@ -40,10 +41,13 @@ public:
   std::vector<std::uint32_t> allIndices() const;
   UniformData getBoneUniformData() const;
 
+  Material getMaterial() const { return material; }
+
 private:
   void loadBoneUniform(float time);
   float time = 0.0f;
   std::vector<glm::mat4> inverseBindMatrices;
+  Material material;
 };
 } // namespace sinen
 #endif // !SINEN_MODEL_HPP

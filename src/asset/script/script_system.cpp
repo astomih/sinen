@@ -30,17 +30,21 @@ void ScriptSystem::Shutdown() {
 }
 
 static const char *nothingSceneLua = R"(
-local texture = sn.Texture()
-local draw2d = sn.Draw2D(texture)
-local font = sn.Font()
-font:load(96)
-font:render_text(texture, "NO DATA", sn.Color(1, 1, 1, 1))
-draw2d.scale = texture:size()
 function update()
 end
 function draw()
-  sn.Graphics.draw2d(draw2d)
+    sn.Graphics.draw_text("NO DATA", sn.Vec2(0, 0), sn.Color(1, 1, 1, 1), 96, 0.0)
 end
+)";
+
+static const char *nothingScenePython = R"(
+import sinen as sn
+
+def update():
+    pass
+
+def draw():
+    sn.Graphics.draw_text("NO DATA", sn.Vec2(0, 0), sn.Color(1, 1, 1, 1), 96, 0.0)
 )";
 
 void ScriptSystem::RunScene(std::string_view sceneName) {
@@ -57,6 +61,9 @@ void ScriptSystem::RunScene(std::string_view sceneName) {
     case ScriptType::Python: {
       source = AssetIO::openAsString(AssetType::Script,
                                      std::string(sceneName) + ".py");
+      if (source.empty()) {
+        source = nothingScenePython;
+      }
     } break;
     default:
       break;

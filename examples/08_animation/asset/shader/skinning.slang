@@ -10,6 +10,7 @@ struct VSInput {
 struct VSOutput {
   float4 out : SV_Position;
   float2 uv : TEXCOORD0;
+  float3 normal : NORMAL;
   float4 color : COLOR;
 };
 
@@ -24,23 +25,23 @@ UNIFORM(Mat, 0) {
 }
 
 UNIFORM(skinning, 1) { float4x4 bone[256]; }
-
 [shader("vertex")]
 VSOutput VSMain(VSInput input) {
   VSOutput output;
   float4x4 mvp = mul((proj), mul((view), (model)));
-  float4 skin = float4(0);
+  float4x4 skin = float4x4(0);
   for (int i = 0; i < 4; i++)
-    skin += mul((bone[int(input.bone_index[i])]), float4(input.position, 1.0)) *
-            input.bone_weight[i];
-  output.out = mul(mvp, skin);
+    skin += ((bone[int(input.bone_index[i])]) * input.bone_weight[i]);
+  output.out = mul(mvp, mul(skin, float4(input.position, 1.0)));
   output.uv = input.uv;
+  output.normal = normalize(mul(skin, float4(input.normal, 0.0)).xyz);
   output.color = input.color;
   return output;
 };
 
 struct FSInput {
   float2 uv : TEXCOORD0;
+  float3 normal : NORMAL;
   float4 color : COLOR;
 };
 
@@ -56,6 +57,11 @@ COMBINED_IMAGE_SAMPLER(sampledTexture, 0)
 [shader("fragment")]
 FSOutput FSMain(FSInput input) {
   FSOutput output;
-  output.color = input.color;
+  float3 lightDir = float3(-0.5, -0.5, 1.0);
+  float diffuse = max(dot(input.normal, lightDir), 0.0);
+  float3 ambient = float3(0.2);
+  float3 result = diffuse * input.color.rgb + ambient;
+  output.color = float4(result, input.color.a);
+
   return output;
 }

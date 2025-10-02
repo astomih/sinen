@@ -6,6 +6,7 @@
 #include <math/graph/bfs_grid.hpp>
 #include <math/graph/grid.hpp>
 #include <math/math.hpp>
+#include <physics/physics.hpp>
 #include <platform/platform.hpp>
 
 #include <pybind11/operators.h>
@@ -18,10 +19,6 @@ class PythonScript final : public IScriptBackend {
 public:
   bool Initialize() override {
     py::initialize();
-    auto callbacks = py_callbacks();
-    callbacks->importfile = [](const char *name) -> char * {
-      return AssetIO::openAsString(AssetType::Script, name).data();
-    };
     return true;
   }
   void Finalize() override { py::finalize(); }
@@ -196,6 +193,13 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def("add", &UniformData::add)
       .def("change", &UniformData::change);
 
+  // Collider
+  py::class_<Collider>(m, "Collider")
+      .def(py::init<>())
+      .def("get_position", &Collider::getPosition)
+      .def("get_velocity", &Collider::getVelocity)
+      .def("set_linear_velocity", &Collider::setLinearVelocity);
+
   // Shader
   py::class_<Shader>(m, "Shader")
       .def(py::init<>())
@@ -304,6 +308,12 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def_static("set_fullscreen", &Window::setFullscreen)
       .def_static("rename", &Window::rename)
       .def_static("resized", &Window::resized);
+
+  py::class_<Texture>(m, "Physics")
+      .def_static("create_box_collider", &Physics::createBoxCollider)
+      .def_static("create_sphere_collider", &Physics::createSphereCollider)
+      .def_static("cylinder_collider", &Physics::createCylinderCollider)
+      .def_static("add_collider", &Physics::addCollider);
 
   py::class_<Graphics>(m, "Graphics")
       .def_static("clear_color", &Graphics::getClearColor)
@@ -443,7 +453,8 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
   py::class_<Time>(m, "Time")
       .def(py::init<>())
       .def_static("seconds", &Time::seconds)
-      .def_static("milli", &Time::milli);
+      .def_static("milli", &Time::milli)
+      .def_static("deltatime", &Time::deltaTime);
 
   py::class_<Logger>(m, "Logger")
       .def_static("verbose",

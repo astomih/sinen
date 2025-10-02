@@ -57,7 +57,6 @@ bool LuaScript::Initialize() {
   {
     auto &v = lua;
     state["require"] = [&](const std::string &str) -> sol::object {
-      Logger::info("Sinen Lua require: %s", str.c_str());
       return state.require_script(
           str, AssetIO::openAsString(AssetType::Script, str + ".lua"));
     };

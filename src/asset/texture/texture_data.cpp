@@ -7,16 +7,12 @@
 namespace sinen {
 TextureData::~TextureData() { SDL_DestroySurface(pSurface); }
 template <typename T> using Ptr = px::Ptr<T>;
-Ptr<px::Texture> CreateNativeTexture(SDL_Surface *pSurface) {
+static void writeTexture(px::Ptr<px::Texture> texture, void *pPixels) {
   auto allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
-  auto *pImageDataSurface = ::SDL_ConvertSurface(
-      pSurface, pSurface->format == SDL_PIXELFORMAT_RGBA8888
-                    ? pSurface->format
-                    : SDL_PIXELFORMAT_RGBA32);
-
+  uint32_t width = texture->getCreateInfo().width,
+           height = texture->getCreateInfo().height;
   Ptr<px::TransferBuffer> transferBuffer;
-  int width = pImageDataSurface->w, height = pImageDataSurface->h;
   {
     px::TransferBuffer::CreateInfo info{};
     info.allocator = allocator;
@@ -24,10 +20,35 @@ Ptr<px::Texture> CreateNativeTexture(SDL_Surface *pSurface) {
     info.usage = px::TransferBufferUsage::Upload;
     transferBuffer = device->CreateTransferBuffer(info);
     auto *pMapped = transferBuffer->Map(true);
-    auto *pImage = pImageDataSurface->pixels;
-    memcpy(pMapped, pImage, info.size);
+    memcpy(pMapped, pPixels, info.size);
     transferBuffer->Unmap();
   }
+  {
+    px::CommandBuffer::CreateInfo info{};
+    info.allocator = allocator;
+    auto commandBuffer = device->AcquireCommandBuffer(info);
+    auto copyPass = commandBuffer->BeginCopyPass();
+    px::TextureTransferInfo src{};
+    src.offset = 0;
+    src.transferBuffer = transferBuffer;
+    px::TextureRegion dst{};
+    dst.x = 0;
+    dst.y = 0;
+    dst.width = width;
+    dst.height = height;
+    dst.depth = 1;
+    dst.texture = texture;
+    copyPass->UploadTexture(src, dst, true);
+    commandBuffer->EndCopyPass(copyPass);
+    device->SubmitCommandBuffer(commandBuffer);
+  }
+  device->WaitForGPUIdle();
+}
+px::Ptr<px::Texture> CreateNativeTexture(void *pPixels, uint32_t width,
+                                         uint32_t height) {
+  auto allocator = GraphicsSystem::getAllocator();
+  auto device = GraphicsSystem::getDevice();
+
   Ptr<px::Texture> texture;
   {
     px::Texture::CreateInfo info{};
@@ -42,70 +63,30 @@ Ptr<px::Texture> CreateNativeTexture(SDL_Surface *pSurface) {
     info.type = px::TextureType::Texture2D;
     texture = device->CreateTexture(info);
   }
-  {
-    px::CommandBuffer::CreateInfo info{};
-    info.allocator = allocator;
-    auto commandBuffer = device->AcquireCommandBuffer(info);
-    auto copyPass = commandBuffer->BeginCopyPass();
-    px::TextureTransferInfo src{};
-    src.offset = 0;
-    src.transferBuffer = transferBuffer;
-    px::TextureRegion dst{};
-    dst.x = 0;
-    dst.y = 0;
-    dst.width = width;
-    dst.height = height;
-    dst.depth = 1;
-    dst.texture = texture;
-    copyPass->UploadTexture(src, dst, true);
-    commandBuffer->EndCopyPass(copyPass);
-    device->SubmitCommandBuffer(commandBuffer);
-  }
-  device->WaitForGPUIdle();
-  SDL_DestroySurface(pImageDataSurface);
+  writeTexture(texture, pPixels);
   return texture;
 }
-void UpdateNativeTexture(Ptr<px::Texture> texture, SDL_Surface *pSurface) {
+Ptr<px::Texture> CreateNativeTexture(SDL_Surface *pSurface) {
   auto allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
   auto *pImageDataSurface = ::SDL_ConvertSurface(
       pSurface, pSurface->format == SDL_PIXELFORMAT_RGBA8888
                     ? pSurface->format
                     : SDL_PIXELFORMAT_RGBA32);
-
-  Ptr<px::TransferBuffer> transferBuffer;
   int width = pImageDataSurface->w, height = pImageDataSurface->h;
-  {
-    px::TransferBuffer::CreateInfo info{};
-    info.allocator = allocator;
-    info.size = width * height * 4;
-    info.usage = px::TransferBufferUsage::Upload;
-    transferBuffer = device->CreateTransferBuffer(info);
-    auto *pMapped = transferBuffer->Map(true);
-    auto *pImage = pImageDataSurface->pixels;
-    memcpy(pMapped, pImage, info.size);
-    transferBuffer->Unmap();
-  }
-  {
-    px::CommandBuffer::CreateInfo info{};
-    info.allocator = allocator;
-    auto commandBuffer = device->AcquireCommandBuffer(info);
-    auto copyPass = commandBuffer->BeginCopyPass();
-    px::TextureTransferInfo src{};
-    src.offset = 0;
-    src.transferBuffer = transferBuffer;
-    px::TextureRegion dst{};
-    dst.x = 0;
-    dst.y = 0;
-    dst.width = width;
-    dst.height = height;
-    dst.depth = 1;
-    dst.texture = texture;
-    copyPass->UploadTexture(src, dst, true);
-    commandBuffer->EndCopyPass(copyPass);
-    device->SubmitCommandBuffer(commandBuffer);
-  }
-  device->WaitForGPUIdle();
+  auto texture = CreateNativeTexture(pImageDataSurface->pixels, width, height);
+  SDL_DestroySurface(pImageDataSurface);
+  return texture;
+}
+void UpdateNativeTexture(px::Ptr<px::Texture> texture, void *pPixels) {
+  writeTexture(texture, pPixels);
+}
+void UpdateNativeTexture(Ptr<px::Texture> texture, SDL_Surface *pSurface) {
+  auto *pImageDataSurface = ::SDL_ConvertSurface(
+      pSurface, pSurface->format == SDL_PIXELFORMAT_RGBA8888
+                    ? pSurface->format
+                    : SDL_PIXELFORMAT_RGBA32);
+  UpdateNativeTexture(texture, pImageDataSurface->pixels);
   SDL_DestroySurface(pImageDataSurface);
 }
 } // namespace sinen

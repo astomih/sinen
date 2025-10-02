@@ -353,7 +353,7 @@ sn = {
     ---@field set_uniform_data fun(binding: integer, data: UniformData)
     ---@field set_render_target fun(rt: RenderTexture)
     ---@field flush fun()
-    ---@field readback_texture fun(rt: RenderTexture): Texture
+    ---@field readback_texture fun(rt: RenderTexture, out: Texture): Texture
     Graphics = {},
 
     ---Static class

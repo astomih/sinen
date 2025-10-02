@@ -1,7 +1,7 @@
 local texture = sn.Texture()
 texture:fill(sn.Color(1, 1, 1, 1))
 local model = sn.Model()
-model:load("BrainStem.glb")
+model:load("CesiumMan.glb")
 local draw3d = sn.Draw3D(texture)
 draw3d.position = sn.Vec3(0, 0, 0)
 draw3d.model = model
@@ -32,5 +32,5 @@ function draw()
     sn.Graphics.bind_pipeline3d(pipeline)
     sn.Graphics.set_uniform_data(1, model:get_bone_uniform_data())
     -- Draw texture
-    sn.Graphics.draw3d(draw3d)
+    sn.Graphics.draw_model(model, sn.Transform(), draw3d.material)
 end

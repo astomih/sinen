@@ -42,7 +42,8 @@ public:
    * @return true
    * @return false
    */
-  bool loadFromMemory(std::vector<char> &buffer);
+  bool loadFromMemory(std::vector<char> &buffer) const;
+  bool loadFromMemory(void *pPixels, uint32_t width, uint32_t height);
   /**
    * @brief Copy texture from another texture
    *

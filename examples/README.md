@@ -7,9 +7,10 @@ This directory contains examples of how to use the `sinen`.
 Content for this example is currently being prepared.
 
 ## How to run
-Run `works` or `editor` executable binary on the each example directory.
-  
-I will add minimal executable binary.
+- Windows  
+Run `sinen` executable binary on this directory or each example directory.
+- Android  
+Install `sinen-arm64-v8a` apk on your device, and place examples/* directory on /sdcard/Android/media/astomih.sinen.app directory. Then run `Sinen` app.
 
 ## 01 Hello World
 ![](screenshot/01.png)

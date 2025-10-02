@@ -33,6 +33,8 @@
 #include "glm/ext/matrix_common.hpp"
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/quaternion_common.hpp"
+#include "libs/assimp/code/AssetLib/3MF/3MFXmlTags.h"
+
 #include <glm/ext/vector_common.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -48,7 +50,7 @@ glm::mat4 ConvertMatrix(const aiMatrix4x4 &m) {
   return mat;
 }
 
-void Model::load(std::string_view path) const {
+void Model::load(std::string_view path) {
   auto modelData = GetModelData(this->data);
   auto &local_aabb = modelData->local_aabb;
   auto &vertexArray = modelData->v_array;
@@ -69,10 +71,9 @@ void Model::load(std::string_view path) const {
     modelData->skeletalAnimation.Load(modelData->scene);
     uint32_t vertexOffset = 0;
     struct BoneData {
-      BoneData() : ids(), weights(), color() {}
+      BoneData() : ids(), weights() {}
       std::vector<uint32_t> ids;
       std::vector<float> weights;
-      Color color;
     };
     auto &boneMap = modelData->skeletalAnimation.boneMap;
     for (int i = 0; i < scene->mNumMeshes; i++) {
@@ -95,12 +96,16 @@ void Model::load(std::string_view path) const {
           float weight = bone->mWeights[k].mWeight;
           boneData[vertexId].ids.push_back(index);
           boneData[vertexId].weights.push_back(weight);
-          boneData[vertexId].color = Color(1.f, 1.f, 1.f, 1.f);
         }
       }
 
+      aiColor3D acolor(1, 1, 1);
+      if (scene->HasMaterials())
+        scene->mMaterials[mesh->mMaterialIndex]->Get(AI_MATKEY_BASE_COLOR,
+                                                     acolor);
       for (uint32_t j = 0; j < mesh->mNumVertices; ++j) {
         AnimationVertex v;
+        Color color = Color(acolor.r, acolor.g, acolor.b, 1.f);
         aiVector3D pos = mesh->mVertices[j];
         aiVector3D norm = aiVector3D(0, 1, 0);
         if (mesh->HasNormals()) {
@@ -113,7 +118,7 @@ void Model::load(std::string_view path) const {
         v.normal = glm::vec3(norm.x, norm.y, norm.z);
         v.uv = glm::vec2(tex.x, tex.y);
 
-        v.rgba = boneData[j].color;
+        v.rgba = color;
         const auto &ids = boneData[j].ids;
         const auto &ws = boneData[j].weights;
         float temp = 0.f;
@@ -145,6 +150,11 @@ void Model::load(std::string_view path) const {
         const aiVector3D &pos = mesh->mVertices[j];
         const aiVector3D &norm = mesh->mNormals[j];
         const aiVector3D &uv = mesh->mTextureCoords[0][j];
+        Color color = Color(1.f, 1.f, 1.f, 1.f);
+        if (mesh->HasVertexColors(j)) {
+          const aiColor4D &c = mesh->mColors[0][j];
+          color = Color(c.r, c.g, c.b, c.a);
+        }
 
         Vertex v;
         v.position.x = pos.x;
@@ -155,6 +165,7 @@ void Model::load(std::string_view path) const {
         v.normal.z = norm.z;
         v.uv.x = uv.x;
         v.uv.y = uv.y;
+        v.rgba = color;
 
         local_aabb.min.x =
             Math::min(local_aabb.min.x, static_cast<float>(pos.x));
@@ -177,6 +188,32 @@ void Model::load(std::string_view path) const {
         for (uint32_t k = 0; k < face.mNumIndices; k++) {
           uint32_t index = face.mIndices[k];
           vertexArray.indices.push_back(index);
+        }
+      }
+    }
+  }
+
+  if (scene->HasMaterials()) {
+    for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
+      if (scene->mMaterials[i]->GetTextureCount(aiTextureType_BASE_COLOR) > 0) {
+        aiString texPath;
+        if (scene->mMaterials[i]->GetTexture(aiTextureType_BASE_COLOR, 0,
+                                             &texPath) == AI_SUCCESS) {
+          auto *aiTex = scene->GetEmbeddedTexture(texPath.C_Str());
+          if (aiTex) {
+            Texture texture;
+            std::vector<char> buffer;
+            if (aiTex->mHeight == 0) {
+              buffer.resize(aiTex->mWidth);
+              memcpy(buffer.data(), aiTex->pcData, aiTex->mWidth);
+              texture.loadFromMemory(buffer);
+            } else {
+              texture.loadFromMemory(aiTex->pcData, aiTex->mWidth,
+                                     aiTex->mHeight);
+            }
+            this->material.setTexture(texture);
+          } else {
+          }
         }
       }
     }

@@ -78,7 +78,7 @@ void Font::renderText(Texture &tex, const std::string &text,
       (::TTF_RenderText_Blended_Wrapped(ttf_font, std::string(text).c_str(),
                                         std::string(text).size(), sdlColor, 0));
   SDL_assert(pSurface != NULL && "Failed to render text");
-  auto texdata = GetTexData(tex.textureData);
+  auto texdata = getTextureRawData(tex.textureData);
   SDL_assert(texdata != nullptr && "TextureData is null");
   SDL_assert(texdata->pSurface != nullptr && "TextureData pSurface is null");
   SDL_Surface *temp = (texdata->pSurface);

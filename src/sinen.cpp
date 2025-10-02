@@ -55,12 +55,34 @@ bool Sinen::initialize(int argc, char *argv[]) {
     Logger::critical("Failed to initialize physics system");
     return false;
   }
-  // TODO: Replace OpenAsString
   ScriptType scriptType = ScriptType::Lua;
-  if (!AssetIO::openAsString(AssetType::Script, "main.lua").empty()) {
-    scriptType = ScriptType::Lua;
-  } else if (!AssetIO::openAsString(AssetType::Script, "main.py").empty()) {
-    scriptType = ScriptType::Python;
+  {
+    File f;
+    if (f.open(FileSystem::getAppBaseDirectory() + "/settings.json",
+               File::Mode::r)) {
+
+      void *buffer = calloc(f.size() + 10, 1);
+      f.read(buffer, f.size(), 1);
+      f.close();
+      Json j;
+      j.parse((char *)buffer);
+      auto str = j["ScriptLanguage"].getString();
+      if (str == "lua") {
+        scriptType = ScriptType::Lua;
+      } else if (str == "python") {
+        scriptType = ScriptType::Python;
+      } else {
+        Logger::warn(
+            "Unknown script language in settings.json, defaulting to Lua");
+      }
+    } else {
+      f.close();
+      if (!AssetIO::openAsString(AssetType::Script, "main.lua").empty()) {
+        scriptType = ScriptType::Lua;
+      } else if (!AssetIO::openAsString(AssetType::Script, "main.py").empty()) {
+        scriptType = ScriptType::Python;
+      }
+    }
   }
   if (!ScriptSystem::Initialize(scriptType)) {
     Logger::critical("Failed to initialize script system");

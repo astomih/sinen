@@ -1,3 +1,6 @@
+# Python API
+
+```python
 """Sinen is still in ALPHA stage, so the API may change in the future."""
 
 # ignore all missing imports
@@ -452,3 +455,4 @@ class Logger:
     def warn(msg: str) -> None: ...
     @staticmethod
     def critical(msg: str) -> None: ...
+```

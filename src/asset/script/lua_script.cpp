@@ -4,13 +4,14 @@
 #define SOL_NO_CHECK_NUMBER_PRECISION 1
 #include <sol/sol.hpp>
 
+#include "../../main_system.hpp"
+#include "glm/ext/vector_float3.hpp"
 #include <asset/asset.hpp>
 #include <core/core.hpp>
+#include <core/io/file_system.hpp>
 #include <graphics/graphics.hpp>
 #include <math/math.hpp>
 #include <physics/physics.hpp>
-
-#include "glm/ext/vector_float3.hpp"
 // glm::rotate
 #include "glm/ext/vector_int3.hpp"
 #include "math/graph/bfs_grid.hpp"
@@ -48,6 +49,20 @@ std::unique_ptr<IScriptBackend> ScriptBackend::CreateLua() {
   return std::make_unique<LuaScript>();
 }
 
+template <typename T>
+static sol::usertype<T> registerClass(sol::table &namespaceTable,
+                                      const std::string &name) {
+  namespaceTable[name] = []() -> T { return T(); };
+  return namespaceTable.new_usertype<T>("", sol::no_construction());
+}
+
+template <typename T, typename... Args>
+static sol::usertype<T> registerClass(sol::table &namespaceTable,
+                                      const std::string &name, Args &&...args) {
+  namespaceTable[name] =
+      sol::overload_set<std::decay_t<Args>...>(std::forward<Args>(args)...);
+  return namespaceTable.new_usertype<T>("", sol::no_construction());
+}
 bool LuaScript::Initialize() {
 #ifndef SINEN_NO_USE_SCRIPT
   state.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math,
@@ -57,62 +72,18 @@ bool LuaScript::Initialize() {
   {
     auto &v = lua;
     state["require"] = [&](const std::string &str) -> sol::object {
-      return state.require_script(
-          str, AssetIO::openAsString(AssetType::Script, str + ".lua"));
+      return state.require_file(str, FileSystem::getAppBaseDirectory() + "/" +
+                                         MainSystem::GetBasePath() +
+                                         "/asset/script/" + str + ".lua");
     };
-    v["Texture"] = []() -> Texture { return Texture(); };
-    v["Material"] = []() -> Material { return Material(); };
-    v["RenderTexture"] = []() -> RenderTexture { return RenderTexture(); };
-    v["Font"] = []() -> Font { return Font(); };
-    v["Vec3"] = sol::overload(
+  }
+  {
+    auto v = registerClass<glm::vec3>(
+        lua, "Vec3",
         [](const float x, const float y, const float z) -> glm::vec3 {
           return {x, y, z};
         },
         [](const float value) -> glm::vec3 { return glm::vec3(value); });
-    v["Vec3i"] = sol::overload(
-        [](const int x, const int y, const int z) -> glm::ivec3 {
-          return {x, y, z};
-        },
-        [](const int value) -> glm::ivec3 { return glm::ivec3(value); });
-    v["Vec2"] = sol::overload(
-        [](const float x, const float y) -> glm::vec2 { return {x, y}; },
-        [](const float value) -> glm::vec2 { return glm::vec2{value}; });
-    v["Vec2i"] = sol::overload(
-        [](const int x, const int y) -> glm::ivec2 { return {x, y}; },
-        [](const int value) -> glm::ivec2 { return glm::ivec2{value}; });
-    v["Color"] =
-        sol::overload([](const float r, const float g, const float b,
-                         const float a) -> Color { return {r, g, b, a}; },
-                      []() -> Color { return {}; });
-    v["Model"] = []() -> Model { return {}; };
-    v["Music"] = []() -> Music { return {}; };
-    v["Sound"] = []() -> Sound { return {}; };
-    v["AABB"] = []() -> AABB { return {}; };
-    v["Timer"] = []() -> Timer { return {}; };
-    v["Shader"] = []() -> Shader { return {}; };
-    v["UniformData"] = []() -> UniformData { return {}; };
-    v["GraphicsPipeline2D"] = []() -> GraphicsPipeline2D { return {}; };
-    v["GraphicsPipeline3D"] = []() -> GraphicsPipeline3D { return {}; };
-    lua["Draw2D"] = sol::overload(
-        []() -> Draw2D { return {}; },
-        [](const Texture &texture) -> Draw2D { return Draw2D(texture); });
-    lua["Draw3D"] = sol::overload(
-        []() -> Draw3D { return {}; },
-        [](const Texture &texture) -> Draw3D { return Draw3D(texture); });
-    lua["Rect"] =
-        sol::overload([]() -> Rect { return {}; },
-                      [](float x, float y, float width, float height) -> Rect {
-                        return Rect(x, y, width, height);
-                      },
-                      [](const glm::vec2 &p, const glm::vec2 &s) -> Rect {
-                        return Rect(p, s);
-                      });
-    lua["Transform"] = []() -> Transform { return {}; };
-    lua["Camera"] = []() -> Camera { return {}; };
-    lua["Camera2D"] = []() -> Camera2D { return {}; };
-  }
-  {
-    auto v = lua.new_usertype<glm::vec3>("", sol::no_construction());
     v["x"] = &glm::vec3::x;
     v["y"] = &glm::vec3::y;
     v["z"] = &glm::vec3::z;
@@ -152,7 +123,12 @@ bool LuaScript::Initialize() {
     };
   }
   {
-    auto v = lua.new_usertype<glm::ivec3>("", sol::no_construction());
+    auto v = registerClass<glm::ivec3>(
+        lua, "Vec3i",
+        [](const int x, const int y, const int z) -> glm::ivec3 {
+          return {x, y, z};
+        },
+        [](const int value) -> glm::ivec3 { return glm::ivec3(value); });
     v["x"] = &glm::ivec3::x;
     v["y"] = &glm::ivec3::y;
     v["z"] = &glm::ivec3::z;
@@ -160,7 +136,10 @@ bool LuaScript::Initialize() {
     v["__sub"] = [](const glm::ivec3 &a, const glm::ivec3 &b) { return a - b; };
   }
   {
-    auto v = lua.new_usertype<glm::vec2>("", sol::no_construction());
+    auto v = registerClass<glm::vec2>(
+        lua, "Vec2",
+        [](const float x, const float y) -> glm::vec2 { return {x, y}; },
+        [](const float value) -> glm::vec2 { return glm::vec2(value); });
     v["x"] = &glm::vec2::x;
     v["y"] = &glm::vec2::y;
     v["__add"] = [](const glm::vec2 &a, const glm::vec2 &b) { return a + b; };
@@ -181,14 +160,22 @@ bool LuaScript::Initialize() {
     };
   }
   {
-    auto v = lua.new_usertype<glm::ivec2>("", sol::no_construction());
+    auto v = registerClass<glm::ivec2>(
+        lua, "Vec2i",
+        [](const int x, const int y) -> glm::ivec2 { return {x, y}; },
+        [](const int value) -> glm::ivec2 { return glm::ivec2(value); });
     v["x"] = &glm::ivec2::x;
     v["y"] = &glm::ivec2::y;
     v["__add"] = [](const glm::ivec2 &a, const glm::ivec2 &b) { return a + b; };
     v["__sub"] = [](const glm::ivec2 &a, const glm::ivec2 &b) { return a - b; };
   }
   {
-    auto v = lua.new_usertype<glm::ivec3>("", sol::no_construction());
+    auto v = registerClass<glm::ivec3>(
+        lua, "Vec3i",
+        [](const int x, const int y, const int z) -> glm::ivec3 {
+          return {x, y, z};
+        },
+        [](const int value) -> glm::ivec3 { return glm::ivec3(value); });
     v["x"] = &glm::ivec3::x;
     v["y"] = &glm::ivec3::y;
     v["z"] = &glm::ivec3::z;
@@ -196,14 +183,18 @@ bool LuaScript::Initialize() {
     v["__sub"] = [](const glm::ivec3 &a, const glm::ivec3 &b) { return a - b; };
   }
   {
-    auto v = lua.new_usertype<Color>("", sol::no_construction());
+    auto v = registerClass<Color>(
+        lua, "Color",
+        [](const float r, const float g, const float b,
+           const float a) -> Color { return {r, g, b, a}; },
+        []() -> Color { return {}; });
     v["r"] = &Color::r;
     v["g"] = &Color::g;
     v["b"] = &Color::b;
     v["a"] = &Color::a;
   }
   {
-    auto v = lua.new_usertype<Texture>("", sol::no_construction());
+    auto v = registerClass<Texture>(lua, "Texture");
     v["fill"] = &Texture::fillColor;
     v["blend"] = &Texture::blendColor;
     v["copy"] = &Texture::copy;
@@ -211,7 +202,7 @@ bool LuaScript::Initialize() {
     v["size"] = &Texture::size;
   }
   {
-    auto v = lua.new_usertype<Material>("", sol::no_construction());
+    auto v = registerClass<Material>(lua, "Material");
     v["append_texture"] = &Material::appendTexture;
     v["set_texture"] = sol::overload(
         [](Material &m, const Texture &texture) { m.setTexture(texture); },
@@ -222,11 +213,11 @@ bool LuaScript::Initialize() {
     v["clear"] = &Material::clear;
   }
   {
-    auto v = lua.new_usertype<RenderTexture>("", sol::no_construction());
+    auto v = registerClass<RenderTexture>(lua, "RenderTexture");
     v["create"] = &RenderTexture::create;
   }
   {
-    auto v = lua.new_usertype<Font>("", sol::no_construction());
+    auto v = registerClass<Font>(lua, "Font");
     v["load"] = sol::overload(
         [](Font &f, int point_size) { return f.load(point_size); },
         [](Font &f, int point_size, std::string_view path) {
@@ -236,13 +227,13 @@ bool LuaScript::Initialize() {
     v["resize"] = &Font::resize;
   }
   {
-    auto v = lua.new_usertype<Music>("", sol::no_construction());
+    auto v = registerClass<Music>(lua, "Music");
     v["load"] = &Music::load;
     v["play"] = &Music::play;
     v["set_volume"] = &Music::setVolume;
   }
   {
-    auto v = lua.new_usertype<Sound>("", sol::no_construction());
+    auto v = registerClass<Sound>(lua, "Sound");
     v["load"] = &Sound::load;
     v["play"] = &Sound::play;
     v["set_volume"] = &Sound::setVolume;
@@ -251,7 +242,7 @@ bool LuaScript::Initialize() {
     v["set_position"] = &Sound::setPosition;
   }
   {
-    auto v = lua.new_usertype<Camera>("", sol::no_construction());
+    auto v = registerClass<Camera>(lua, "Camera");
     v["lookat"] = &Camera::lookat;
     v["perspective"] = &Camera::perspective;
     v["orthographic"] = &Camera::orthographic;
@@ -261,15 +252,15 @@ bool LuaScript::Initialize() {
     v["is_aabb_in_frustum"] = &Camera::isAABBInFrustum;
   }
   {
-    auto v = lua.new_usertype<Camera2D>("", sol::no_construction());
+    auto v = registerClass<Camera2D>(lua, "Camera2D");
     v["size"] = &Camera2D::size;
     v["half"] = &Camera2D::half;
     v["resize"] = &Camera2D::resize;
-    v["windowRatio"] = &Camera2D::windowRatio;
+    v["window_ratio"] = &Camera2D::windowRatio;
     v["inv_window_ratio"] = &Camera2D::invWindowRatio;
   }
   {
-    auto v = lua.new_usertype<Model>("", sol::no_construction());
+    auto v = registerClass<Model>(lua, "Model");
     v["get_aabb"] = &Model::getAABB;
     v["load"] = &Model::load;
     v["load_sprite"] = &Model::loadSprite;
@@ -279,13 +270,13 @@ bool LuaScript::Initialize() {
     v["update"] = &Model::update;
   }
   {
-    auto v = lua.new_usertype<AABB>("", sol::no_construction());
+    auto v = registerClass<AABB>(lua, "AABB");
     v["min"] = &AABB::min;
     v["max"] = &AABB::max;
     v["update_world"] = &AABB::updateWorld;
   }
   {
-    auto v = lua.new_usertype<Timer>("", sol::no_construction());
+    auto v = registerClass<Timer>(lua, "Timer");
     v["start"] = &Timer::start;
     v["stop"] = &Timer::stop;
     v["is_started"] = &Timer::isStarted;
@@ -294,31 +285,32 @@ bool LuaScript::Initialize() {
   }
   {
     // Collider
-    auto v = lua.new_usertype<Collider>("", sol::no_construction());
+    auto v = registerClass<Collider>(lua, "Collider");
     v["get_position"] = &Collider::getPosition;
     v["get_velocity"] = &Collider::getVelocity;
     v["set_linear_velocity"] = &Collider::setLinearVelocity;
   }
   {
-    auto v = lua.new_usertype<UniformData>("", sol::no_construction());
+    auto v = registerClass<UniformData>(lua, "UniformData");
     v["add"] = &UniformData::add;
     v["change"] = &UniformData::change;
   }
   {
-    auto v = lua.new_usertype<Shader>("", sol::no_construction());
+
+    auto v = registerClass<Shader>(lua, "Shader");
     v["load_vertex_shader"] = &Shader::loadVertexShader;
     v["load_fragment_shader"] = &Shader::loadFragmentShader;
     v["compile_load_vertex_shader"] = &Shader::compileAndLoadVertexShader;
     v["compile_load_fragment_shader"] = &Shader::compileAndLoadFragmentShader;
   }
   {
-    auto v = lua.new_usertype<GraphicsPipeline2D>("", sol::no_construction());
+    auto v = registerClass<GraphicsPipeline2D>(lua, "GraphicsPipeline2D");
     v["set_vertex_shader"] = &GraphicsPipeline2D::setVertexShader;
     v["set_fragment_shader"] = &GraphicsPipeline2D::setFragmentShader;
     v["build"] = &GraphicsPipeline2D::build;
   }
   {
-    auto v = lua.new_usertype<GraphicsPipeline3D>("", sol::no_construction());
+    auto v = registerClass<GraphicsPipeline3D>(lua, "GraphicsPipeline3D");
     v["set_vertex_shader"] = &GraphicsPipeline3D::setVertexShader;
     v["set_vertex_instanced_shader"] =
         &GraphicsPipeline3D::setVertexInstancedShader;
@@ -327,7 +319,10 @@ bool LuaScript::Initialize() {
     v["build"] = &GraphicsPipeline3D::build;
   }
   {
-    auto v = lua.new_usertype<Draw2D>("", sol::no_construction());
+    auto v = registerClass<Draw2D>(
+        lua, "Draw2D",
+        [](const Texture &texture) -> Draw2D { return Draw2D(texture); },
+        []() -> Draw2D { return {}; });
     v["position"] = &Draw2D::position;
     v["rotation"] = &Draw2D::rotation;
     v["scale"] = &Draw2D::scale;
@@ -337,7 +332,10 @@ bool LuaScript::Initialize() {
     v["clear"] = &Draw2D::clear;
   }
   {
-    auto v = lua.new_usertype<Draw3D>("", sol::no_construction());
+    auto v = registerClass<Draw3D>(
+        lua, "Draw3D",
+        [](const Texture &texture) -> Draw3D { return Draw3D(texture); },
+        []() -> Draw3D { return {}; });
     v["position"] = &Draw3D::position;
     v["rotation"] = &Draw3D::rotation;
     v["scale"] = &Draw3D::scale;
@@ -349,7 +347,15 @@ bool LuaScript::Initialize() {
   }
   {
     // Rect
-    auto v = lua.new_usertype<Rect>("", sol::no_construction());
+    auto v = registerClass<Rect>(
+        lua, "Rect",
+        [](float x, float y, float width, float height) -> Rect {
+          return Rect(x, y, width, height);
+        },
+        [](const glm::vec2 &p, const glm::vec2 &s) -> Rect {
+          return Rect(p, s);
+        },
+        []() -> Rect { return {}; });
     v["x"] = &Rect::x;
     v["y"] = &Rect::y;
     v["width"] = &Rect::width;
@@ -357,10 +363,45 @@ bool LuaScript::Initialize() {
   }
   {
     // Transform
-    auto v = lua.new_usertype<Transform>("", sol::no_construction());
+    auto v = registerClass<Transform>(lua, "Transform");
     v["position"] = &Transform::position;
     v["rotation"] = &Transform::rotation;
     v["scale"] = &Transform::scale;
+  }
+  {
+    auto v = registerClass<Grid<int>>(lua, "Grid", [](int width, int height) {
+      return Grid<int>(width, height);
+    });
+    v["at"] = [](Grid<int> &g, int x, int y) { return g.at(x - 1, y - 1); };
+    v["set"] = [](Grid<int> &g, int x, int y, int v) {
+      return g.at(x - 1, y - 1) = v;
+    };
+    v["width"] = &Grid<int>::width;
+    v["height"] = &Grid<int>::height;
+    v["size"] = &Grid<int>::size;
+    v["clear"] = &Grid<int>::clear;
+    v["resize"] = &Grid<int>::resize;
+    v["fill"] = [](Grid<int> &g, int value) {
+      for (auto &i : g) {
+        i = value;
+      }
+    };
+  }
+  {
+    auto v = registerClass<BFSGrid>(
+        lua, "BFSGrid", [](const Grid<int> &g) { return BFSGrid(g); });
+    v["width"] = &BFSGrid::width;
+    v["height"] = &BFSGrid::height;
+    v["find_path"] = [](BFSGrid &g, const glm::ivec2 &start,
+                        const glm::ivec2 &end) {
+      return g.findPath({start.x - 1, start.y - 1}, {end.x - 1, end.y - 1});
+    };
+    v["trace"] = [](BFSGrid &g) {
+      auto t = g.trace();
+      return glm::ivec2{t.x + 1, t.y + 1};
+    };
+    v["traceable"] = &BFSGrid::traceable;
+    v["reset"] = &BFSGrid::reset;
   }
   {
     auto v = lua.create_named("Random");
@@ -581,7 +622,7 @@ bool LuaScript::Initialize() {
     auto v = lua.create_named("Time");
     v["seconds"] = &Time::seconds;
     v["milli"] = &Time::milli;
-    v["deltatime"] = &Time::deltaTime;
+    v["delta"] = &Time::deltaTime;
   }
   {
     // logger
@@ -591,42 +632,6 @@ bool LuaScript::Initialize() {
     v["error"] = [](std::string str) { Logger::error("%s", str.data()); };
     v["warn"] = [](std::string str) { Logger::warn("%s", str.data()); };
     v["critical"] = [](std::string str) { Logger::critical("%s", str.data()); };
-  }
-  lua["Grid"] = [](int width, int height) -> Grid<int> {
-    return Grid<int>(width, height);
-  };
-  {
-    auto v = lua.new_usertype<Grid<int>>("", sol::no_construction());
-    v["at"] = [](Grid<int> &g, int x, int y) { return g.at(x - 1, y - 1); };
-    v["set"] = [](Grid<int> &g, int x, int y, int v) {
-      return g.at(x - 1, y - 1) = v;
-    };
-    v["width"] = &Grid<int>::width;
-    v["height"] = &Grid<int>::height;
-    v["size"] = &Grid<int>::size;
-    v["clear"] = &Grid<int>::clear;
-    v["resize"] = &Grid<int>::resize;
-    v["fill"] = [](Grid<int> &g, int value) {
-      for (auto &i : g) {
-        i = value;
-      }
-    };
-  };
-  lua["BFSGrid"] = [](const Grid<int> &g) { return BFSGrid(g); };
-  {
-    auto v = lua.new_usertype<BFSGrid>("", sol::no_construction());
-    v["width"] = &BFSGrid::width;
-    v["height"] = &BFSGrid::height;
-    v["find_path"] = [](BFSGrid &g, const glm::ivec2 &start,
-                        const glm::ivec2 &end) {
-      return g.findPath({start.x - 1, start.y - 1}, {end.x - 1, end.y - 1});
-    };
-    v["trace"] = [](BFSGrid &g) {
-      auto t = g.trace();
-      return glm::ivec2{t.x + 1, t.y + 1};
-    };
-    v["traceable"] = &BFSGrid::traceable;
-    v["reset"] = &BFSGrid::reset;
   }
 #endif
   return true;

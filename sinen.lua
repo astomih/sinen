@@ -173,7 +173,7 @@ sn = {
 
     ---@class UniformData
     ---@field add fun(self: UniformData, value: any)
-    ---@field change fun(self: UniformData, index: integer, value: number)
+    ---@field change fun(self: UniformData,index: integer,  value: number)
     ---@return UniformData
     UniformData = function() return {} end,
 
@@ -498,7 +498,7 @@ sn = {
     ---@class Time
     ---@field seconds fun(): number
     ---@field milli fun(): integer
-    ---@field deltatime fun(): number
+    ---@field delta fun(): number
     Time = {},
 
     ---Static class

@@ -1,4 +1,5 @@
 import sinen as sn
+import test
 
 
 def update():

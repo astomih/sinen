@@ -11,6 +11,7 @@
 
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 namespace py = pybind11;
 
@@ -114,6 +115,23 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
         return glm::reflect(v, n);
       });
 
+  py::class_<glm::ivec2>(m, "Vec2i")
+      .def(py::init<int, int>())
+      .def(py::init<int>())
+      .def_readwrite("x", &glm::ivec2::x)
+      .def_readwrite("y", &glm::ivec2::y)
+      .def(py::self + py::self)
+      .def(py::self - py::self);
+
+  py::class_<glm::ivec3>(m, "Vec3i")
+      .def(py::init<int, int, int>())
+      .def(py::init<int>())
+      .def_readwrite("x", &glm::ivec3::x)
+      .def_readwrite("y", &glm::ivec3::y)
+      .def_readwrite("z", &glm::ivec3::z)
+      .def(py::self + py::self)
+      .def(py::self - py::self);
+
   // Texture
   py::class_<Texture>(m, "Texture")
       .def(py::init<>())
@@ -160,6 +178,14 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def("up", &Camera::getUp)
       .def("is_aabb_in_frustum", &Camera::isAABBInFrustum);
 
+  py::class_<Camera2D>(m, "Camera2D")
+      .def(py::init<>())
+      .def("size", &Camera2D::size)
+      .def("half", &Camera2D::half)
+      .def("resize", &Camera2D::resize)
+      .def("window_ratio", &Camera2D::windowRatio)
+      .def("inv_window_ratio", &Camera2D::invWindowRatio);
+
   // Model
   py::class_<Model>(m, "Model")
       .def(py::init<>())
@@ -167,7 +193,7 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def("load", &Model::load)
       .def("load_sprite", &Model::loadSprite)
       .def("load_box", &Model::loadBox)
-      .def("bone_uniform_data", &Model::getBoneUniformData)
+      .def("get_bone_uniform_data", &Model::getBoneUniformData)
       .def("play", &Model::play)
       .def("update", &Model::update);
 
@@ -187,18 +213,22 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def("set_time", &Timer::setTime)
       .def("check", &Timer::check);
 
-  // Uniform Data
-  py::class_<UniformData>(m, "UniformData")
-      .def(py::init<>())
-      .def("add", &UniformData::add)
-      .def("change", &UniformData::change);
-
   // Collider
   py::class_<Collider>(m, "Collider")
       .def(py::init<>())
       .def("get_position", &Collider::getPosition)
       .def("get_velocity", &Collider::getVelocity)
       .def("set_linear_velocity", &Collider::setLinearVelocity);
+
+  // FileSystem
+  py::class_<FileSystem>(m, "FileSystem")
+      .def_static("enumerate_directory", &FileSystem::enumerateDirectory);
+
+  // Uniform Data
+  py::class_<UniformData>(m, "UniformData")
+      .def(py::init<>())
+      .def("add", &UniformData::add)
+      .def("change", &UniformData::change);
 
   // Shader
   py::class_<Shader>(m, "Shader")
@@ -249,6 +279,22 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def_readwrite("rotation", &Draw3D::rotation)
       .def_readwrite("material", &Draw3D::material)
       .def_readwrite("model", &Draw3D::model);
+
+  // Rect
+  py::class_<Rect>(m, "Rect")
+      .def(py::init<>())
+      .def(py::init<float, float, float, float>())
+      .def_readwrite("x", &Rect::x)
+      .def_readwrite("y", &Rect::y)
+      .def_readwrite("width", &Rect::width)
+      .def_readwrite("height", &Rect::height);
+
+  // Transform
+  py::class_<Transform>(m, "Transform")
+      .def(py::init<>())
+      .def_readwrite("position", &Transform::position)
+      .def_readwrite("rotation", &Transform::rotation)
+      .def_readwrite("scale", &Transform::scale);
 
   py::class_<Grid<int>>(m, "Grid")
       .def(py::init<int, int>())
@@ -316,16 +362,49 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def_static("add_collider", &Physics::addCollider);
 
   py::class_<Graphics>(m, "Graphics")
-      .def_static("clear_color", &Graphics::getClearColor)
+      .def_static("draw2d", &Graphics::draw2D)
+      .def_static("draw3d", &Graphics::draw3D)
+      .def_static(
+          "draw_rect",
+          [](const Rect &rect, const Color &color) {
+            Graphics::drawRect(rect, color);
+          },
+          [](const Rect &rect, const Color &color, float angle) {
+            Graphics::drawRect(rect, color, angle);
+          })
+      .def_static(
+          "draw_image",
+          [](const Texture &texture, const Rect &rect) {
+            Graphics::drawImage(texture, rect);
+          },
+          [](const Texture &texture, const Rect &rect, float angle) {
+            Graphics::drawImage(texture, rect, angle);
+          })
+      .def_static(
+          "draw_text",
+          [](const std::string &text, const glm::vec2 &position,
+             const Color &color, float fontSize) {
+            Graphics::drawText(text, position, color, fontSize);
+          },
+          [](const std::string &text, const glm::vec2 &position,
+             const Color &color, float fontSize, float angle) {
+            Graphics::drawText(text, position, color, fontSize, angle);
+          })
+      .def_static("draw_model", &Graphics::drawModel)
+      .def_static("set_camera", &Graphics::setCamera)
+      .def_static("get_camera", &Graphics::getCamera)
+      .def_static("set_camera2d", &Graphics::setCamera2D)
+      .def_static("get_camera2d", &Graphics::getCamera2D)
+      .def_static("get_clear_color", &Graphics::getClearColor)
       .def_static("set_clear_color", &Graphics::setClearColor)
       .def_static("bind_pipeline2d", &Graphics::bindPipeline2D)
       .def_static("bind_default_pipeline2d", &Graphics::bindDefaultPipeline2D)
       .def_static("bind_pipeline3d", &Graphics::bindPipeline3D)
       .def_static("bind_default_pipeline3d", &Graphics::bindDefaultPipeline3D)
-      .def_static("draw2d", &Graphics::draw2D)
-      .def_static("draw3d", &Graphics::draw3D)
-      .def_static("draw_text", &Graphics::drawText)
-      .def_static("set_uniform_data", &Graphics::setUniformData);
+      .def_static("set_uniform_data", &Graphics::setUniformData)
+      .def_static("set_render_target", &Graphics::setRenderTarget)
+      .def_static("flush", &Graphics::flush)
+      .def_static("readback_texture", &Graphics::readbackTexture);
 
   py::class_<Collision>(m, "Collision")
       .def_static("aabb_aabb", &Collision::AABBvsAABB);
@@ -454,7 +533,7 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def(py::init<>())
       .def_static("seconds", &Time::seconds)
       .def_static("milli", &Time::milli)
-      .def_static("deltatime", &Time::deltaTime);
+      .def_static("delta", &Time::deltaTime);
 
   py::class_<Logger>(m, "Logger")
       .def_static("verbose",

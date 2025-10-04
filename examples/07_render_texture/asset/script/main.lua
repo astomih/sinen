@@ -1,5 +1,5 @@
 local texture = sn.Texture()
-texture:fill(sn.Color(1, 0, 1, 1))
+texture:fill(sn.Color(1, 1, 1, 1))
 local renderTexture = sn.RenderTexture()
 local out = sn.Texture()
 out:load("logo.png")

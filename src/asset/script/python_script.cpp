@@ -13,6 +13,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include <SDL3/SDL.h>
+
 namespace py = pybind11;
 
 namespace sinen {
@@ -20,6 +22,20 @@ class PythonScript final : public IScriptBackend {
 public:
   bool Initialize() override {
     py::initialize();
+    auto *callback = py_callbacks();
+    callback->importfile = [](const char *path) -> char * {
+      SDL_IOStream *io =
+          (SDL_IOStream *)AssetIO::openAsIOStream(AssetType::Script, path);
+      if (!io) {
+        return nullptr;
+      }
+      size_t fileLength;
+      void *load = SDL_LoadFile_IO(io, &fileLength, true);
+      if (!load) {
+        return nullptr;
+      }
+      return (char *)load;
+    };
     return true;
   }
   void Finalize() override { py::finalize(); }
@@ -223,6 +239,9 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
   // FileSystem
   py::class_<FileSystem>(m, "FileSystem")
       .def_static("enumerate_directory", &FileSystem::enumerateDirectory);
+
+  // Script
+  py::class_<Script>(m, "Script").def_static("load", &Script::load);
 
   // Uniform Data
   py::class_<UniformData>(m, "UniformData")

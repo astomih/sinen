@@ -26,4 +26,3 @@ class GUIManager:
                     self.text_colors[i],
                     16,
                 )
-        sn.Logger.info(f"Drawing {len(self.rects)} GUI elements")

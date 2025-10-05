@@ -1,8 +1,6 @@
 import sinen as sn
 
-
-from .asset.script.gui.button import Button, gm
-
+from gui.button import Button, gm
 
 button = Button()
 
@@ -15,7 +13,7 @@ def update():
     gm.update()
     for i in range(num_examples):
         if button.show(
-            example_dirs[i], sn.Vec2(0, i * -32.0 + offset), sn.Vec2(300, 32)
+                example_dirs[i], sn.Vec2(0, i * -32.0 + offset), sn.Vec2(300, 32)
         ):
             sn.Script.load("main", example_dirs[i])
 

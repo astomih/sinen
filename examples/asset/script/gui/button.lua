@@ -1,5 +1,3 @@
-require("gui/global")
-
 local button = function()
     local _       = {}
 
@@ -17,13 +15,13 @@ local button = function()
     _.fg_color    = sn.Color(1, 1, 1, 0.9)
 
     _.show        = function(self, text, pos, scale)
-        self.font:resize(32 * UI_SCALE)
+        self.font:resize(32)
         local back_texture = GUI_MANAGER:get_texture()
         local texture = GUI_MANAGER:get_texture()
         back_texture:fill(self.bg_color)
         self.back_drawer = sn.Draw2D(back_texture)
         self.back_drawer.position = pos
-        self.back_drawer.scale = sn.Vec2(scale.x * UI_SCALE, scale.y * UI_SCALE)
+        self.back_drawer.scale = sn.Vec2(scale.x, scale.y)
         GUI_MANAGER:add(self.back_drawer)
 
         self.drawer = sn.Draw2D(texture)

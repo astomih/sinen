@@ -15,10 +15,11 @@ class Button:
         rect = sn.Rect(position.x, position.y, size.x, size.y)
 
         hovered = False
-        if mouse_pos.x >= rect.x and mouse_pos.x <= rect.x + rect.width:
-            if mouse_pos.y >= rect.y and mouse_pos.y <= rect.y + rect.height:
-                hovered = True
-
+        top_left = sn.Vec2(rect.x - rect.width / 2, rect.y - rect.height / 2)
+        bottom_right = sn.Vec2(rect.x + rect.width / 2, rect.y + rect.height / 2)
+        hovered = (top_left.x <= mouse_pos.x and mouse_pos.x <= bottom_right.x) and (
+            top_left.y <= mouse_pos.y and mouse_pos.y <= bottom_right.y
+        )
         clicked = hovered and mouse_pressed
 
         gm.rects.append(rect)

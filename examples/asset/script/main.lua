@@ -1,7 +1,8 @@
+local button = require("gui/button")()
 GUI_MANAGER = require("gui/gui_manager")()
+
 local exampleDirs = sn.FileSystem.enumerate_directory(".")
 local numExamples = 9
-local button = require("gui/button")()
 
 
 local offset = numExamples * 16.0

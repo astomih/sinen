@@ -1,5 +1,4 @@
 import sinen as sn
-import test
 
 
 def update():
@@ -7,4 +6,4 @@ def update():
 
 
 def draw():
-    sn.Graphics.draw_text("Hello World!", sn.Vec2(0, 0), sn.Color(1, 1, 1, 1), 32, 0.0)
+    sn.Graphics.draw_text("Hello World!", sn.Vec2(0, 0), sn.Color(1, 1, 1, 1), 32)

@@ -24,10 +24,6 @@
 #include "sol/types.hpp"
 #include <glm/glm.hpp>
 
-#ifdef main
-#undef main
-#endif
-
 namespace sinen {
 class LuaScript final : public IScriptBackend {
 public:
@@ -71,10 +67,20 @@ bool LuaScript::Initialize() {
   auto lua = state.create_table("sn");
   {
     auto &v = lua;
-    state["require"] = [&](const std::string &str) -> sol::object {
-      return state.require_file(str, FileSystem::getAppBaseDirectory() + "/" +
-                                         MainSystem::GetBasePath() +
-                                         "/asset/script/" + str + ".lua");
+    state["__original_require"] = [&](const std::string &path,
+                                      const std::string &base) -> sol::object {
+      std::string cwd = base;
+      if (path.find_last_of('/') != std::string::npos) {
+        cwd += "/" + path.substr(0, path.find_last_of('/'));
+      }
+      std::string header = "local __CWD__ = '" + cwd + "';" +
+                           "local function require(module)"
+                           "    __CWD_global__ = __CWD__"
+                           "    return __original_require(module, __CWD__);"
+                           "end;";
+      return state.require_script(
+          path, header + AssetIO::openAsString(AssetType::Script,
+                                               base + "/" + path + ".lua"));
     };
   }
   {
@@ -644,7 +650,15 @@ void LuaScript::Finalize() {
 }
 
 void LuaScript::RunScene(const std::string_view source) {
-  state.script(source.data());
+  std::string cwd = ".";
+  std::string header = "local __CWD__ = '" + cwd + "' ;" +
+                       "local function require(module) ;"
+                       "    return __original_require(module, __CWD__) ;"
+                       "end ;";
+
+  std::string final = header + std::string(source);
+
+  state.script(final);
 }
 
 void LuaScript::Update() { state["update"](); }

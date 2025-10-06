@@ -62,7 +62,7 @@ bool Texture::loadFromMemory(void *pPixels, uint32_t width, uint32_t height) {
   return true;
 }
 
-void Texture::fillColor(const Color &color) {
+void Texture::fill(const Color &color) {
   auto texdata = getTextureRawData(textureData);
   ::SDL_FillSurfaceRect(
       texdata->pSurface, NULL,
@@ -75,7 +75,7 @@ void Texture::fillColor(const Color &color) {
     texdata->texture = CreateNativeTexture(texdata->pSurface);
   }
 }
-void Texture::blendColor(const Color &color) {
+void Texture::blend(const Color &color) {
   auto texdata = getTextureRawData(textureData);
   SDL_SetSurfaceBlendMode(texdata->pSurface, SDL_BLENDMODE_BLEND);
   SDL_SetSurfaceColorMod(texdata->pSurface, color.r * 255, color.g * 255,

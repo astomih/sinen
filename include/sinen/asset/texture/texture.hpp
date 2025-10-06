@@ -51,8 +51,8 @@ public:
    */
   Texture copy();
 
-  void fillColor(const Color &color);
-  void blendColor(const Color &color);
+  void fill(const Color &color);
+  void blend(const Color &color);
 
   glm::vec2 size();
 

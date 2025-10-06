@@ -2,8 +2,9 @@ import sinen as sn
 
 
 def update():
-    pass
+    if sn.Keyboard.is_pressed(sn.Keyboard.ESCAPE):
+        sn.Script.load("main", ".")
 
 
 def draw():
-    sn.Graphics.draw_text("Hello World!", sn.Vec2(0, 0), sn.Color(1, 1, 1, 1), 32)
+    sn.Graphics.draw_text("Hello World!", sn.Vec2(0), sn.Color(1), 32)

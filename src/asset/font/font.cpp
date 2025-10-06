@@ -60,7 +60,7 @@ void Font::renderText(Texture &tex, const std::string &text,
   }
   if (text.empty()) {
     Logger::warn("Sinen Text is empty");
-    tex.fillColor(_color);
+    tex.fill(_color);
     return;
   }
   // SinenEngine Color to SDL_Color
@@ -70,7 +70,7 @@ void Font::renderText(Texture &tex, const std::string &text,
   sdlColor.b = static_cast<Uint8>(_color.b * 255);
   sdlColor.a = static_cast<Uint8>(_color.a * 255);
   if (sdlColor.a == 0) {
-    tex.fillColor(_color);
+    tex.fill(_color);
     return;
   }
   auto *ttf_font = reinterpret_cast<::TTF_Font *>(m_font);

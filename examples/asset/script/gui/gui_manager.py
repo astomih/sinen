@@ -24,5 +24,5 @@ class GUIManager:
                     self.texts[i],
                     sn.Vec2(self.rects[i].x, self.rects[i].y),
                     self.text_colors[i],
-                    16,
+                    16
                 )

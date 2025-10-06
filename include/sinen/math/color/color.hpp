@@ -24,6 +24,9 @@ public:
    *
    */
   constexpr Color(const float value) : r(value), g(value), b(value), a(1.f) {}
+
+  constexpr Color(const float value, const float alpha)
+      : r(value), g(value), b(value), a(alpha) {}
   /**
    * @brief Construct a new color object
    *

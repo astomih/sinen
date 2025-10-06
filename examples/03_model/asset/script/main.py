@@ -19,6 +19,7 @@ sn.Graphics.get_camera().lookat(pos, at, up)
 
 
 def update():
+    sn.Logger.info("hello")
     if sn.Keyboard.is_pressed(sn.Keyboard.ESCAPE):
         sn.Script.load("main", ".")
 

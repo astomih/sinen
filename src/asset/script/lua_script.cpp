@@ -44,7 +44,6 @@ private:
 std::unique_ptr<IScriptBackend> ScriptBackend::CreateLua() {
   return std::make_unique<LuaScript>();
 }
-
 template <typename T>
 static sol::usertype<T> registerClass(sol::table &namespaceTable,
                                       const std::string &name) {
@@ -193,6 +192,8 @@ bool LuaScript::Initialize() {
         lua, "Color",
         [](const float r, const float g, const float b,
            const float a) -> Color { return {r, g, b, a}; },
+        [](float value) -> Color { return {value}; },
+        [](float value, float alpha) -> Color { return {value, alpha}; },
         []() -> Color { return {}; });
     v["r"] = &Color::r;
     v["g"] = &Color::g;
@@ -201,8 +202,8 @@ bool LuaScript::Initialize() {
   }
   {
     auto v = registerClass<Texture>(lua, "Texture");
-    v["fill"] = &Texture::fillColor;
-    v["blend"] = &Texture::blendColor;
+    v["fill"] = &Texture::fill;
+    v["blend"] = &Texture::blend;
     v["copy"] = &Texture::copy;
     v["load"] = &Texture::load;
     v["size"] = &Texture::size;

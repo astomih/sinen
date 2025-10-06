@@ -32,13 +32,28 @@ public:
   static void draw2D(const Draw2D &draw2d);
   static void draw3D(const Draw3D &draw3D);
 
-  static void drawRect(const Rect &rect, const Color &color,
-                       float angle = 0.0f);
-  static void drawImage(const Texture &texture, const Rect &rect,
-                        float angle = 0.0f);
+  static void drawRect(const Rect &rect, const Color &color, float angle);
+  static void drawRect(const Rect &rect, const Color &color) {
+    drawRect(rect, color, 0.0f);
+  }
+  static void drawImage(const Texture &texture, const Rect &rect, float angle);
+  static void drawImage(const Texture &texture, const Rect &rect) {
+    drawImage(texture, rect, 0.0f);
+  }
   static void drawText(const std::string &text, const glm::vec2 &position,
-                       const Color &color = Palette::white(),
-                       float fontSize = 16.0f, float angle = 0.0f);
+                       const Color &color, float fontSize, float angle);
+  static void drawText(const std::string &text, const glm::vec2 &position,
+                       const Color &color, float fontSize) {
+    drawText(text, position, color, fontSize, 0.0f);
+  }
+  static void drawText(const std::string &text, const glm::vec2 &position,
+                       const Color &color) {
+    drawText(text, position, color, 16.0f, 0.0f);
+  }
+  static void drawText(const std::string &text, const glm::vec2 &position) {
+    drawText(text, position, Palette::white(), 16.0f, 0.0f);
+  }
+
   static void drawModel(const Model &model, const Transform &transform,
                         const Material &material);
   /**

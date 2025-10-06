@@ -493,7 +493,7 @@ void GraphicsSystem::drawRect(const Rect &rect, const Color &color,
   draw2D.rotation = angle;
   draw2D.material = Material();
   Texture texture;
-  texture.fillColor(color);
+  texture.fill(color);
   draw2D.material.setTexture(texture);
   GraphicsSystem::drawBase2D(draw2D);
 }

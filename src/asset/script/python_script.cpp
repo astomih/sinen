@@ -73,6 +73,7 @@ std::unique_ptr<IScriptBackend> ScriptBackend::CreatePython() {
 PYBIND11_EMBEDDED_MODULE(sinen, m) {
   py::class_<glm::vec3>(m, "Vec3")
       .def(py::init<>())
+      .def(py::init<float>())
       .def(py::init<float, float, float>())
       .def_readwrite("x", &glm::vec3::x)
       .def_readwrite("y", &glm::vec3::y)
@@ -151,8 +152,8 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
   // Texture
   py::class_<Texture>(m, "Texture")
       .def(py::init<>())
-      .def("fill_color", &Texture::fillColor)
-      .def("blend_color", &Texture::blendColor)
+      .def("fill", &Texture::fill)
+      .def("blend", &Texture::blend)
       .def("copy", &Texture::copy)
       .def("load", &Texture::load)
       .def("size", &Texture::size);
@@ -270,6 +271,8 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
   // Color
   py::class_<Color>(m, "Color")
       .def(py::init<>())
+      .def(py::init<float>())
+      .def(py::init<float, float>())
       .def(py::init<float, float, float, float>())
       .def_readwrite("r", &Color::r)
       .def_readwrite("g", &Color::g)
@@ -290,6 +293,7 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
   // Draw3D
   py::class_<Draw3D>(m, "Draw3D")
       .def(py::init<>())
+      .def(py::init<Texture>())
       .def("add", &Draw3D::add)
       .def("at", &Draw3D::at)
       .def("clear", &Draw3D::clear)
@@ -303,6 +307,7 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
   py::class_<Rect>(m, "Rect")
       .def(py::init<>())
       .def(py::init<float, float, float, float>())
+      .def(py::init<const glm::vec2 &, const glm::vec2 &>())
       .def_readwrite("x", &Rect::x)
       .def_readwrite("y", &Rect::y)
       .def_readwrite("width", &Rect::width)
@@ -374,7 +379,7 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def_static("rename", &Window::rename)
       .def_static("resized", &Window::resized);
 
-  py::class_<Texture>(m, "Physics")
+  py::class_<Physics>(m, "Physics")
       .def_static("create_box_collider", &Physics::createBoxCollider)
       .def_static("create_sphere_collider", &Physics::createSphereCollider)
       .def_static("cylinder_collider", &Physics::createCylinderCollider)
@@ -383,37 +388,37 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
   py::class_<Graphics>(m, "Graphics")
       .def_static("draw2d", &Graphics::draw2D)
       .def_static("draw3d", &Graphics::draw3D)
-      .def_static(
-          "draw_rect",
-          [](const Rect &rect, const Color &color) {
-            Graphics::drawRect(rect, color);
-          },
-          [](const Rect &rect, const Color &color, float angle) {
-            Graphics::drawRect(rect, color, angle);
-          })
-      .def_static(
-          "draw_image",
-          [](const Texture &texture, const Rect &rect) {
-            Graphics::drawImage(texture, rect);
-          },
-          [](const Texture &texture, const Rect &rect, float angle) {
-            Graphics::drawImage(texture, rect, angle);
-          })
+      .def_static("draw_rect",
+                  py::overload_cast<const Rect &, const Color &, float>(
+                      &Graphics::drawRect))
+      .def_static("draw_rect", py::overload_cast<const Rect &, const Color &>(
+                                   &Graphics::drawRect))
+      .def_static("draw_image",
+                  py::overload_cast<const Texture &, const Rect &, float>(
+                      &Graphics::drawImage))
+      .def_static("draw_image",
+                  py::overload_cast<const Texture &, const Rect &>(
+                      &Graphics::drawImage))
       .def_static(
           "draw_text",
-          [](const std::string &text, const glm::vec2 &position,
-             const Color &color, float fontSize) {
-            Graphics::drawText(text, position, color, fontSize);
-          },
-          [](const std::string &text, const glm::vec2 &position,
-             const Color &color, float fontSize, float angle) {
-            Graphics::drawText(text, position, color, fontSize, angle);
-          })
+          py::overload_cast<const std::string &, const glm::vec2 &,
+                            const Color &, float, float>(&Graphics::drawText))
+      .def_static("draw_text",
+                  py::overload_cast<const std::string &, const glm::vec2 &,
+                                    const Color &, float>(&Graphics::drawText))
+      .def_static("draw_text",
+                  py::overload_cast<const std::string &, const glm::vec2 &,
+                                    const Color &>(&Graphics::drawText))
+      .def_static("draw_text",
+                  py::overload_cast<const std::string &, const glm::vec2 &>(
+                      &Graphics::drawText))
       .def_static("draw_model", &Graphics::drawModel)
       .def_static("set_camera", &Graphics::setCamera)
-      .def_static("get_camera", &Graphics::getCamera)
+      .def_static("get_camera", &Graphics::getCamera,
+                  py::return_value_policy::reference)
       .def_static("set_camera2d", &Graphics::setCamera2D)
-      .def_static("get_camera2d", &Graphics::getCamera2D)
+      .def_static("get_camera2d", &Graphics::getCamera2D,
+                  py::return_value_policy::reference)
       .def_static("get_clear_color", &Graphics::getClearColor)
       .def_static("set_clear_color", &Graphics::setClearColor)
       .def_static("bind_pipeline2d", &Graphics::bindPipeline2D)

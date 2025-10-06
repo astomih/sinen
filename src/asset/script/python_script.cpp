@@ -22,6 +22,7 @@ class PythonScript final : public IScriptBackend {
 public:
   bool Initialize() override {
     py::initialize();
+    pkbind::object_pool::initialize(65535);
     auto *callback = py_callbacks();
     callback->importfile = [](const char *path) -> char * {
       SDL_IOStream *io =

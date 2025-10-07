@@ -78,8 +78,9 @@ bool LuaScript::Initialize() {
                            "    return __original_require(module, __CWD__);"
                            "end;";
       return state.require_script(
-          path, header + AssetIO::openAsString(AssetType::Script,
-                                               base + "/" + path + ".lua"));
+          base + "/" + path,
+          header + AssetIO::openAsString(AssetType::Script,
+                                         base + "/" + path + ".lua"));
     };
   }
   {

@@ -1,5 +1,8 @@
 import sinen as sn
+import gc
 
+
+gc.disable()
 boxTex = sn.Texture()
 boxTex.fill(sn.Color(1, 1, 1, 1))
 boxMat = sn.Material()
@@ -65,3 +68,4 @@ def draw():
             sn.Graphics.draw_model(sphere, t, sphereMat)
         else:
             list.remove(colliders, c)
+    gc.collect()

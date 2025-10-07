@@ -225,7 +225,6 @@ sn = {
     ---@field rotation Vec3
     ---@field material Material
     ---@field model Model
-    ---@field isDrawDepth boolean
     ---@field add fun(self: Draw3D, positon: Vec3, rotation: Vec3, scale: Vec3)
     ---@field at fun(self: Draw3D, x: number, y: number, z: number)
     ---@field clear fun(self: Draw3D)

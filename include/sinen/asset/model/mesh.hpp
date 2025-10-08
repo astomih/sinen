@@ -13,7 +13,7 @@ namespace sinen {
  * @brief Vertex array for drawing
  *
  */
-struct VertexArray {
+struct Mesh {
 public:
   /**
    * @brief Push the ndices of the vertex array

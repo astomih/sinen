@@ -7,7 +7,7 @@
 
 #include "../../physics/collision.hpp"
 #include "graphics/uniform_data.hpp"
-#include "vertex_array.hpp"
+#include "mesh.hpp"
 #include <asset/texture/material.hpp>
 
 namespace sinen {
@@ -30,7 +30,7 @@ public:
    * @param str
    */
   void load(std::string_view str);
-  void loadFromVertexArray(const VertexArray &vArray);
+  void loadFromVertexArray(const Mesh &vArray);
   void loadSprite();
   void loadBox();
   void play(float start);

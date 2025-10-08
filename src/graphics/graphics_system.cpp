@@ -4,7 +4,7 @@
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 
-#include <asset/model/vertex_array.hpp>
+#include <asset/model/mesh.hpp>
 #include <asset/texture/render_texture.hpp>
 #include <cassert>
 #include <core/io/asset_io.hpp>
@@ -100,7 +100,6 @@ void GraphicsSystem::initialize() {
   fs.loadDefaultFragmentShader();
 
   pipeline3D.setVertexShader(vs);
-  pipeline3D.setVertexInstancedShader(vsInstanced);
   pipeline3D.setFragmentShader(fs);
   pipeline3D.build();
   currentPipeline3D = pipeline3D;
@@ -238,7 +237,7 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
   viewproj[1][1] = 2.f / Window::size().y;
   draw2D.obj->param.proj = glm::transpose(viewproj);
   draw2D.obj->param.view = glm::mat4(1.f);
-  if (GetModelData(draw2D.model.data)->vertexBuffer == nullptr) {
+  if (getModelData(draw2D.model.data)->vertexBuffer == nullptr) {
     draw2D.obj->model = GraphicsSystem::sprite;
   } else
     draw2D.obj->model = draw2D.model;
@@ -291,7 +290,7 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
         .sampler = sampler, .texture = nativeTexture});
   }
 
-  auto modelData = GetModelData(draw2D.obj->model.data);
+  auto modelData = getModelData(draw2D.obj->model.data);
   assert(modelData->vertexBuffer != nullptr);
   assert(modelData->indexBuffer != nullptr);
 
@@ -311,8 +310,7 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
   auto param = drawable.drawable->param;
   commandBuffer->PushVertexUniformData(0, &param, sizeof(Drawable::parameter));
   renderPass->DrawIndexedPrimitives(
-      GetModelData(drawable.drawable->model.data)->v_array.indexCount, 1, 0, 0,
-      0);
+      getModelData(drawable.drawable->model.data)->mesh.indexCount, 1, 0, 0, 0);
 }
 
 void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
@@ -338,7 +336,7 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
     draw3D.obj->param.proj = glm::transpose(camera.getProjection());
     draw3D.obj->param.view = glm::transpose(camera.getView());
   }
-  if (GetModelData(draw3D.model.data)->vertexBuffer == nullptr) {
+  if (getModelData(draw3D.model.data)->vertexBuffer == nullptr) {
     draw3D.obj->model = GraphicsSystem::box;
   } else
     draw3D.obj->model = draw3D.model;
@@ -396,12 +394,13 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
   }
 
   bool isInstance = drawable.drawable->size() > 0;
+  px::Ptr<px::Buffer> instanceBuffer = nullptr;
   if (isInstance) {
     px::Buffer::CreateInfo instanceBufferInfo{};
     instanceBufferInfo.allocator = allocator;
     instanceBufferInfo.size = drawable.drawable->size();
     instanceBufferInfo.usage = px::BufferUsage::Vertex;
-    auto instanceBuffer = device->CreateBuffer(instanceBufferInfo);
+    instanceBuffer = device->CreateBuffer(instanceBufferInfo);
     Ptr<px::TransferBuffer> transferBuffer;
     {
       px::TransferBuffer::CreateInfo info{};
@@ -436,53 +435,37 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
       }
       device->SubmitCommandBuffer(commandBuffer);
     }
-
-    drawable.vertexBuffers.emplace_back(px::BufferBinding{
-        .buffer = GetModelData(draw3D.obj->model.data)->vertexBuffer,
-        .offset = 0});
-    drawable.indexBuffer = px::BufferBinding{
-        .buffer = GetModelData(draw3D.obj->model.data)->indexBuffer,
-        .offset = 0};
-    drawable.vertexBuffers.emplace_back(
-        px::BufferBinding{.buffer = instanceBuffer, .offset = 0
-
-        });
-    auto commandBuffer = currentCommandBuffer;
-    auto renderPass = currentRenderPass;
-    renderPass->BindGraphicsPipeline(currentPipeline3D.getInstanced());
-    renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
-    renderPass->BindVertexBuffers(0, drawable.vertexBuffers);
-    renderPass->BindIndexBuffer(drawable.indexBuffer,
-                                px::IndexElementSize::Uint32);
-
-    auto param = drawable.drawable->param;
-    commandBuffer->PushVertexUniformData(0, &param,
-                                         sizeof(Drawable::parameter));
-    renderPass->DrawIndexedPrimitives(
-        GetModelData(drawable.drawable->model.data)->v_array.indexCount,
-        drawable.drawable->data.size(), 0, 0, 0);
-  } else {
-    drawable.vertexBuffers.emplace_back(px::BufferBinding{
-        .buffer = GetModelData(draw3D.obj->model.data)->vertexBuffer,
-        .offset = 0});
-    drawable.indexBuffer = px::BufferBinding{
-        .buffer = GetModelData(draw3D.obj->model.data)->indexBuffer,
-        .offset = 0};
-    auto commandBuffer = currentCommandBuffer;
-    auto renderPass = currentRenderPass;
-    renderPass->BindGraphicsPipeline(currentPipeline3D.get());
-    renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
-    renderPass->BindVertexBuffers(0, drawable.vertexBuffers);
-    renderPass->BindIndexBuffer(drawable.indexBuffer,
-                                px::IndexElementSize::Uint32);
-
-    auto param = drawable.drawable->param;
-    commandBuffer->PushVertexUniformData(0, &param,
-                                         sizeof(Drawable::parameter));
-    renderPass->DrawIndexedPrimitives(
-        GetModelData(drawable.drawable->model.data)->v_array.indexCount, 1, 0,
-        0, 0);
   }
+
+  drawable.vertexBuffers.emplace_back(px::BufferBinding{
+      .buffer = getModelData(draw3D.obj->model.data)->vertexBuffer,
+      .offset = 0});
+  drawable.indexBuffer = px::BufferBinding{
+      .buffer = getModelData(draw3D.obj->model.data)->indexBuffer, .offset = 0};
+  if (isInstance) {
+    drawable.vertexBuffers.emplace_back(
+        px::BufferBinding{.buffer = instanceBuffer, .offset = 0});
+  }
+  auto animationVertexBuffer =
+      getModelData(draw3D.obj->model.data)->animationVertexBuffer;
+  if (animationVertexBuffer) {
+    drawable.vertexBuffers.emplace_back(
+        px::BufferBinding{.buffer = animationVertexBuffer, .offset = 0});
+  }
+  auto commandBuffer = currentCommandBuffer;
+  auto renderPass = currentRenderPass;
+  renderPass->BindGraphicsPipeline(currentPipeline3D.get());
+  renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
+  renderPass->BindVertexBuffers(0, drawable.vertexBuffers);
+  renderPass->BindIndexBuffer(drawable.indexBuffer,
+                              px::IndexElementSize::Uint32);
+
+  auto param = drawable.drawable->param;
+  commandBuffer->PushVertexUniformData(0, &param, sizeof(Drawable::parameter));
+  uint32_t numInstance = isInstance ? drawable.drawable->data.size() : 1;
+  renderPass->DrawIndexedPrimitives(
+      getModelData(drawable.drawable->model.data)->mesh.indexCount, numInstance,
+      0, 0, 0);
 }
 void GraphicsSystem::drawRect(const Rect &rect, const Color &color,
                               float angle) {

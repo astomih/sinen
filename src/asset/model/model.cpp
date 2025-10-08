@@ -34,41 +34,109 @@
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/quaternion_common.hpp"
 #include "libs/assimp/code/AssetLib/3MF/3MFXmlTags.h"
+#include "sol/types.hpp"
 
 #include <glm/ext/vector_common.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <ranges>
 
 namespace sinen {
 enum class LoadState { Version, Vertex, Indices };
-Model::Model() { data = std::make_shared<ModelData>(); };
-glm::mat4 ConvertMatrix(const aiMatrix4x4 &m) {
+std::vector<glm::vec3> getVector3sFromKey(const aiVectorKey *keys,
+                                          uint32_t count) {
+  std::vector<glm::vec3> result;
+  for (uint32_t i = 0; i < count; ++i) {
+    result.push_back(
+        glm::vec3(keys[i].mValue.x, keys[i].mValue.y, keys[i].mValue.z));
+  }
+  return result;
+};
+std::vector<float> getTimesFromVector3Key(const aiVectorKey *keys,
+                                          uint32_t count) {
+  std::vector<float> result;
+  for (uint32_t i = 0; i < count; ++i) {
+    result.push_back(static_cast<float>(keys[i].mTime));
+  }
+  return result;
+};
+std::vector<glm::quat> getRotatesFromKey(const aiQuatKey *keys,
+                                         uint32_t count) {
+  std::vector<glm::quat> result;
+  for (uint32_t i = 0; i < count; ++i) {
+    result.push_back(glm::quat(keys[i].mValue.w, keys[i].mValue.x,
+                               keys[i].mValue.y, keys[i].mValue.z));
+  }
+  return result;
+};
+std::vector<float> getTimesFromQuatKey(const aiQuatKey *keys, uint32_t count) {
+  std::vector<float> result;
+  for (uint32_t i = 0; i < count; ++i) {
+    result.push_back(static_cast<float>(keys[i].mTime));
+  }
+  return result;
+};
+glm::mat4 convertMatrix(const aiMatrix4x4 &m) {
   glm::mat4 mat = glm::make_mat4(&m.a1);
   mat = glm::transpose(mat); // Assimp is column major
   return mat;
 }
 
+Node createNodeFromAiNode(const aiNode *ainode) {
+  Node node;
+  node.name = ainode->mName.C_Str();
+  node.transformation = convertMatrix(ainode->mTransformation);
+  for (uint32_t i = 0; i < ainode->mNumChildren; ++i) {
+    node.children.push_back(createNodeFromAiNode(ainode->mChildren[i]));
+  }
+  return node;
+}
+Model::Model() { data = std::make_shared<ModelData>(); };
+
 void Model::load(std::string_view path) {
-  auto modelData = GetModelData(this->data);
-  auto &local_aabb = modelData->local_aabb;
-  auto &vertexArray = modelData->v_array;
+  auto modelData = getModelData(this->data);
+  auto &local_aabb = modelData->localAABB;
+  auto &mesh = modelData->mesh;
 
   auto fullFilePath = AssetIO::convertFilePath(AssetType::Model, path.data());
   // Assimp
-  auto &importer = modelData->importer;
-  modelData->scene = importer.ReadFile(
+  Assimp::Importer importer;
+  const auto *scene = importer.ReadFile(
       fullFilePath.c_str(),
       aiProcess_ValidateDataStructure | aiProcess_LimitBoneWeights |
           aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
-  auto &scene = modelData->scene;
   if (!scene) {
     Logger::error("Error loading model: %s", importer.GetErrorString());
     return;
   }
   if (scene->HasAnimations()) {
-    modelData->skeletalAnimation.Load(modelData->scene);
+    {
+
+      auto anim = scene->mAnimations[0];
+      std::unordered_map<std::string, NodeAnimation> nodeAnimMap;
+      for (uint32_t i = 0; i < anim->mNumChannels; ++i) {
+        aiNodeAnim *channel = anim->mChannels[i];
+        NodeAnimation nodeAnim;
+        nodeAnim.position = getVector3sFromKey(channel->mPositionKeys,
+                                               channel->mNumPositionKeys);
+        nodeAnim.positionTime = getTimesFromVector3Key(
+            channel->mPositionKeys, channel->mNumPositionKeys);
+        nodeAnim.rotation = getRotatesFromKey(channel->mRotationKeys,
+                                              channel->mNumRotationKeys);
+        nodeAnim.rotationTime = getTimesFromQuatKey(channel->mRotationKeys,
+                                                    channel->mNumRotationKeys);
+        nodeAnim.scale =
+            getVector3sFromKey(channel->mScalingKeys, channel->mNumScalingKeys);
+        nodeAnim.scaleTime = getTimesFromVector3Key(channel->mScalingKeys,
+                                                    channel->mNumScalingKeys);
+        nodeAnimMap[channel->mNodeName.C_Str()] = nodeAnim;
+      }
+      modelData->skeletalAnimation.load(createNodeFromAiNode(scene->mRootNode),
+                                        anim->mTicksPerSecond, anim->mDuration,
+                                        nodeAnimMap);
+    }
     uint32_t vertexOffset = 0;
     struct BoneData {
       BoneData() : ids(), weights() {}
@@ -77,16 +145,16 @@ void Model::load(std::string_view path) {
     };
     auto &boneMap = modelData->skeletalAnimation.boneMap;
     for (int i = 0; i < scene->mNumMeshes; i++) {
-      const aiMesh *mesh = scene->mMeshes[i];
+      const aiMesh *aimesh = scene->mMeshes[i];
       std::unordered_map<uint32_t, BoneData> boneData;
 
-      for (uint32_t j = 0; j < mesh->mNumBones; j++) {
-        aiBone *bone = mesh->mBones[j];
+      for (uint32_t j = 0; j < aimesh->mNumBones; j++) {
+        aiBone *bone = aimesh->mBones[j];
         std::string boneName = bone->mName.C_Str();
 
         if (!boneMap.contains(boneName)) {
           boneMap[boneName].index = static_cast<uint32_t>(boneMap.size());
-          boneMap[boneName].offsetMatrix = ConvertMatrix(bone->mOffsetMatrix);
+          boneMap[boneName].offsetMatrix = convertMatrix(bone->mOffsetMatrix);
         }
 
         uint32_t index = boneMap[boneName].index;
@@ -101,58 +169,61 @@ void Model::load(std::string_view path) {
 
       aiColor3D acolor(1, 1, 1);
       if (scene->HasMaterials())
-        scene->mMaterials[mesh->mMaterialIndex]->Get(AI_MATKEY_BASE_COLOR,
-                                                     acolor);
-      for (uint32_t j = 0; j < mesh->mNumVertices; ++j) {
-        AnimationVertex v;
+        scene->mMaterials[aimesh->mMaterialIndex]->Get(AI_MATKEY_BASE_COLOR,
+                                                       acolor);
+      for (uint32_t j = 0; j < aimesh->mNumVertices; ++j) {
+        Vertex vertex;
+        AnimationVertex animationVertex;
         Color color = Color(acolor.r, acolor.g, acolor.b, 1.f);
-        aiVector3D pos = mesh->mVertices[j];
+        aiVector3D pos = aimesh->mVertices[j];
         aiVector3D norm = aiVector3D(0, 1, 0);
-        if (mesh->HasNormals()) {
-          norm = mesh->mNormals[j];
+        if (aimesh->HasNormals()) {
+          norm = aimesh->mNormals[j];
         }
-        aiVector3D tex = mesh->HasTextureCoords(0) ? mesh->mTextureCoords[0][j]
-                                                   : aiVector3D();
+        aiVector3D tex = aimesh->HasTextureCoords(0)
+                             ? aimesh->mTextureCoords[0][j]
+                             : aiVector3D();
 
-        v.position = glm::vec3(pos.x, pos.y, pos.z);
-        v.normal = glm::vec3(norm.x, norm.y, norm.z);
-        v.uv = glm::vec2(tex.x, tex.y);
+        vertex.position = glm::vec3(pos.x, pos.y, pos.z);
+        vertex.normal = glm::vec3(norm.x, norm.y, norm.z);
+        vertex.uv = glm::vec2(tex.x, tex.y);
 
-        v.rgba = color;
+        vertex.color = color;
         const auto &ids = boneData[j].ids;
         const auto &ws = boneData[j].weights;
         float temp = 0.f;
         assert(ids.size() <= 4);
         assert(ws.size() <= 4);
         for (int k = 0; k < 4; ++k) {
-          v.boneIDs[k] = (k < ids.size()) ? float(ids[k]) : 0.0f;
-          v.boneWeights[k] = (k < ws.size()) ? ws[k] : 0.0f;
+          animationVertex.boneIDs[k] = (k < ids.size()) ? float(ids[k]) : 0.0f;
+          animationVertex.boneWeights[k] = (k < ws.size()) ? ws[k] : 0.0f;
         }
 
-        vertexArray.animationVertices.push_back(v);
+        mesh.vertices.push_back(vertex);
+        mesh.animationVertices.push_back(animationVertex);
       }
       // indices
-      for (uint32_t j = 0; j < mesh->mNumFaces; j++) {
-        const aiFace &face = mesh->mFaces[j];
+      for (uint32_t j = 0; j < aimesh->mNumFaces; j++) {
+        const aiFace &face = aimesh->mFaces[j];
         for (uint32_t k = 0; k < face.mNumIndices; k++) {
           uint32_t index = face.mIndices[k];
-          vertexArray.indices.push_back(vertexOffset + index);
+          mesh.indices.push_back(vertexOffset + index);
         }
       }
-      vertexOffset += mesh->mNumVertices;
+      vertexOffset += aimesh->mNumVertices;
     }
   } else if (scene->HasMeshes()) {
     // Iterate through the meshes
     for (uint32_t i = 0; i < scene->mNumMeshes; i++) {
-      const aiMesh *mesh = scene->mMeshes[i];
+      const aiMesh *aimesh = scene->mMeshes[i];
       // Process the mesh data
-      for (uint32_t j = 0; j < mesh->mNumVertices; j++) {
-        const aiVector3D &pos = mesh->mVertices[j];
-        const aiVector3D &norm = mesh->mNormals[j];
-        const aiVector3D &uv = mesh->mTextureCoords[0][j];
+      for (uint32_t j = 0; j < aimesh->mNumVertices; j++) {
+        const aiVector3D &pos = aimesh->mVertices[j];
+        const aiVector3D &norm = aimesh->mNormals[j];
+        const aiVector3D &uv = aimesh->mTextureCoords[0][j];
         Color color = Color(1.f, 1.f, 1.f, 1.f);
-        if (mesh->HasVertexColors(j)) {
-          const aiColor4D &c = mesh->mColors[0][j];
+        if (aimesh->HasVertexColors(j)) {
+          const aiColor4D &c = aimesh->mColors[0][j];
           color = Color(c.r, c.g, c.b, c.a);
         }
 
@@ -165,7 +236,7 @@ void Model::load(std::string_view path) {
         v.normal.z = norm.z;
         v.uv.x = uv.x;
         v.uv.y = uv.y;
-        v.rgba = color;
+        v.color = color;
 
         local_aabb.min.x =
             Math::min(local_aabb.min.x, static_cast<float>(pos.x));
@@ -180,14 +251,14 @@ void Model::load(std::string_view path) {
         local_aabb.max.z =
             Math::max(local_aabb.max.z, static_cast<float>(pos.z));
 
-        vertexArray.vertices.push_back(v);
+        mesh.vertices.push_back(v);
       }
       // Process the indices
-      for (uint32_t j = 0; j < mesh->mNumFaces; j++) {
-        const aiFace &face = mesh->mFaces[j];
+      for (uint32_t j = 0; j < aimesh->mNumFaces; j++) {
+        const aiFace &face = aimesh->mFaces[j];
         for (uint32_t k = 0; k < face.mNumIndices; k++) {
           uint32_t index = face.mIndices[k];
-          vertexArray.indices.push_back(index);
+          mesh.indices.push_back(index);
         }
       }
     }
@@ -219,16 +290,17 @@ void Model::load(std::string_view path) {
     }
   }
 
-  vertexArray.indexCount = vertexArray.indices.size();
-  auto viBuffer = CreateVertexIndexBuffer(vertexArray);
+  mesh.indexCount = mesh.indices.size();
+  auto viBuffer = createVertexIndexBuffer(mesh);
   modelData->vertexBuffer = viBuffer.first;
+  modelData->animationVertexBuffer = createAnimationVertexBuffer(mesh);
   modelData->indexBuffer = viBuffer.second;
 }
 
-void Model::loadFromVertexArray(const VertexArray &vArray) {
-  auto modelData = GetModelData(this->data);
-  modelData->v_array = vArray;
-  auto &local_aabb = modelData->local_aabb;
+void Model::loadFromVertexArray(const Mesh &vArray) {
+  auto modelData = getModelData(this->data);
+  modelData->mesh = vArray;
+  auto &local_aabb = modelData->localAABB;
   for (auto &v : vArray.vertices) {
     local_aabb.min.x = Math::min(local_aabb.min.x, v.position.x);
     local_aabb.min.y = Math::min(local_aabb.min.y, v.position.y);
@@ -237,7 +309,7 @@ void Model::loadFromVertexArray(const VertexArray &vArray) {
     local_aabb.max.y = Math::max(local_aabb.max.y, v.position.y);
     local_aabb.max.z = Math::max(local_aabb.max.z, v.position.z);
   }
-  auto viBuffer = CreateVertexIndexBuffer(vArray);
+  auto viBuffer = createVertexIndexBuffer(vArray);
   modelData->vertexBuffer = viBuffer.first;
   modelData->indexBuffer = viBuffer.second;
 }
@@ -246,52 +318,24 @@ void Model::loadSprite() { *this = GraphicsSystem::sprite; }
 void Model::loadBox() { *this = GraphicsSystem::box; }
 
 AABB &Model::getAABB() const {
-  auto modelData = GetModelData(this->data);
-  return modelData->local_aabb;
+  auto modelData = getModelData(this->data);
+  return modelData->localAABB;
 }
 
 std::vector<Vertex> Model::allVertex() const {
-  auto modelData = GetModelData(this->data);
-  auto &local_aabb = modelData->local_aabb;
-  auto &v_array = modelData->v_array;
-  auto &children = modelData->children;
-  std::vector<Vertex> all;
-  all.insert(all.end(), v_array.vertices.begin(), v_array.vertices.end());
-  for (auto &child : children) {
-    auto child_all = child->allVertex();
-    all.insert(all.end(), child_all.begin(), child_all.end());
-  }
-  return all;
+  auto modelData = getModelData(this->data);
+  return modelData->mesh.vertices;
 }
 std::vector<std::uint32_t> Model::allIndices() const {
-  auto modelData = GetModelData(this->data);
-  auto &local_aabb = modelData->local_aabb;
-  auto &v_array = modelData->v_array;
-  auto &children = modelData->children;
-  std::vector<std::uint32_t> all;
-  all.insert(all.end(), v_array.indices.begin(), v_array.indices.end());
-  for (auto &child : children) {
-    auto child_all = child->allIndices();
-    all.insert(all.end(), child_all.begin(), child_all.end());
-  }
-  return all;
+  auto modelData = getModelData(this->data);
+  return modelData->mesh.indices;
 }
 
 std::pair<px::Ptr<px::Buffer>, px::Ptr<px::Buffer>>
-CreateVertexIndexBuffer(const VertexArray &vArray) {
+createVertexIndexBuffer(const Mesh &mesh) {
   auto allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
-  size_t vertexBufferSize;
-  bool isAnimation = false;
-  if (vArray.animationVertices.size() > 0) {
-    assert(vArray.vertices.empty());
-    vertexBufferSize =
-        vArray.animationVertices.size() * sizeof(AnimationVertex);
-    isAnimation = true;
-  } else {
-    assert(vArray.animationVertices.empty());
-    vertexBufferSize = vArray.vertices.size() * sizeof(Vertex);
-  }
+  size_t vertexBufferSize = mesh.vertices.size() * sizeof(Vertex);
   px::Ptr<px::Buffer> vertexBuffer, indexBuffer;
   px::Buffer::CreateInfo vertexBufferInfo{};
   vertexBufferInfo.allocator = allocator;
@@ -301,7 +345,7 @@ CreateVertexIndexBuffer(const VertexArray &vArray) {
 
   px::Buffer::CreateInfo indexBufferInfo{};
   indexBufferInfo.allocator = allocator;
-  indexBufferInfo.size = vArray.indices.size() * sizeof(uint32_t);
+  indexBufferInfo.size = mesh.indices.size() * sizeof(uint32_t);
   indexBufferInfo.usage = px::BufferUsage::Index;
   indexBuffer = device->CreateBuffer(indexBufferInfo);
 
@@ -314,13 +358,8 @@ CreateVertexIndexBuffer(const VertexArray &vArray) {
       info.usage = px::TransferBufferUsage::Upload;
       transferBuffer = device->CreateTransferBuffer(info);
       auto *pMapped = transferBuffer->Map(false);
-      if (isAnimation) {
-        memcpy(pMapped, vArray.animationVertices.data(),
-               vArray.animationVertices.size() * sizeof(AnimationVertex));
-      } else {
-        memcpy(pMapped, vArray.vertices.data(),
-               vArray.vertices.size() * sizeof(Vertex));
-      }
+      memcpy(pMapped, mesh.vertices.data(),
+             mesh.vertices.size() * sizeof(Vertex));
       transferBuffer->Unmap();
     }
     {
@@ -353,7 +392,7 @@ CreateVertexIndexBuffer(const VertexArray &vArray) {
     info.usage = px::TransferBufferUsage::Upload;
     transferBuffer = device->CreateTransferBuffer(info);
     auto *pMapped = transferBuffer->Map(false);
-    memcpy(pMapped, vArray.indices.data(), indexBufferInfo.size);
+    memcpy(pMapped, mesh.indices.data(), indexBufferInfo.size);
     transferBuffer->Unmap();
   }
   {
@@ -382,9 +421,61 @@ CreateVertexIndexBuffer(const VertexArray &vArray) {
   }
   return std::make_pair(vertexBuffer, indexBuffer);
 }
+px::Ptr<px::Buffer> createAnimationVertexBuffer(const Mesh &mesh) {
+  if (mesh.animationVertices.empty())
+    return nullptr;
+  auto allocator = GraphicsSystem::getAllocator();
+  auto device = GraphicsSystem::getDevice();
+  size_t vertexBufferSize =
+      mesh.animationVertices.size() * sizeof(AnimationVertex);
+  px::Ptr<px::Buffer> vertexBuffer;
+  px::Buffer::CreateInfo vertexBufferInfo{};
+  vertexBufferInfo.allocator = allocator;
+  vertexBufferInfo.size = vertexBufferSize;
+  vertexBufferInfo.usage = px::BufferUsage::Vertex;
+  vertexBuffer = device->CreateBuffer(vertexBufferInfo);
+
+  px::Ptr<px::TransferBuffer> transferBuffer;
+  {
+    {
+      px::TransferBuffer::CreateInfo info{};
+      info.allocator = allocator;
+      info.size = vertexBufferSize;
+      info.usage = px::TransferBufferUsage::Upload;
+      transferBuffer = device->CreateTransferBuffer(info);
+      auto *pMapped = transferBuffer->Map(false);
+      memcpy(pMapped, mesh.animationVertices.data(),
+             mesh.animationVertices.size() * sizeof(AnimationVertex));
+      transferBuffer->Unmap();
+    }
+    {
+      px::CommandBuffer::CreateInfo info{};
+      info.allocator = allocator;
+      auto commandBuffer = device->AcquireCommandBuffer(info);
+      {
+
+        auto copyPass = commandBuffer->BeginCopyPass();
+        {
+
+          px::BufferTransferInfo src{};
+          src.offset = 0;
+          src.transferBuffer = transferBuffer;
+          px::BufferRegion dst{};
+          dst.offset = 0;
+          dst.size = vertexBufferSize;
+          dst.buffer = vertexBuffer;
+          copyPass->UploadBuffer(src, dst, false);
+        }
+        commandBuffer->EndCopyPass(copyPass);
+      }
+      device->SubmitCommandBuffer(commandBuffer);
+    }
+  }
+  return vertexBuffer;
+}
 
 UniformData Model::getBoneUniformData() const {
-  auto modelData = GetModelData(this->data);
+  auto modelData = getModelData(this->data);
   return modelData->boneUniformData;
 }
 void Model::play(float start) {
@@ -397,16 +488,16 @@ void Model::update(float delta_time) {
 }
 
 void Model::loadBoneUniform(float start) {
-  auto modelData = GetModelData(this->data);
+  auto modelData = getModelData(this->data);
   auto &skeletalAnimation = modelData->skeletalAnimation;
   for (auto &bone : skeletalAnimation.boneMap) {
     assert(bone.second.index <= skeletalAnimation.boneMap.size());
   }
-  modelData->skeletalAnimation.Update(start);
+  modelData->skeletalAnimation.update(start);
   for (auto &bone : skeletalAnimation.boneMap) {
     assert(bone.second.index <= skeletalAnimation.boneMap.size());
   }
-  auto matrices = skeletalAnimation.GetFinalBoneMatrices();
+  auto matrices = skeletalAnimation.getFinalBoneMatrices();
   auto &boneUniformData = modelData->boneUniformData;
   boneUniformData.clear();
 
@@ -418,36 +509,30 @@ void Model::loadBoneUniform(float start) {
   }
   boneUniformData.addMatrices(boneMatrices);
 }
-void SkeletalAnimation::Load(const aiScene *scn) {
-  scene = scn;
-  root = scene->mRootNode;
-  globalInverseTransform = ConvertMatrix(root->mTransformation);
-  globalInverseTransform = glm::inverse(globalInverseTransform);
-
-  if (scene->mNumAnimations > 0) {
-    aiAnimation *anim = scene->mAnimations[0];
-    for (uint32_t i = 0; i < anim->mNumChannels; ++i) {
-      aiNodeAnim *channel = anim->mChannels[i];
-      nodeAnimMap[channel->mNodeName.C_Str()] = channel;
-    }
-  }
+void SkeletalAnimation::load(
+    const Node &root, float ticksPerSecond, float duration,
+    std::unordered_map<std::string, NodeAnimation> &nodeAnimationMap) {
+  this->root = root;
+  this->ticksPerSecond = ticksPerSecond;
+  this->duration = duration;
+  this->globalInverseTransform = glm::inverse(root.transformation);
+  this->nodeAnimMap = nodeAnimationMap;
 }
-void SkeletalAnimation::Update(float timeInSeconds) {
-  aiAnimation *anim = scene->mAnimations[0];
+void SkeletalAnimation::update(float timeInSeconds) {
   float ticksPerSecond =
-      anim->mTicksPerSecond != 0 ? anim->mTicksPerSecond : 25.0f;
+      this->ticksPerSecond != 0 ? this->ticksPerSecond : 25.0f;
   float timeInTicks = timeInSeconds * ticksPerSecond;
-  float animationTime = Math::fmod(timeInTicks, anim->mDuration);
+  float animationTime = Math::fmod(timeInTicks, duration);
 
-  ReadNodeHierarchy(animationTime, root, glm::mat4(1.0f));
+  readNodeHierarchy(animationTime, root, glm::mat4(1.0f));
 }
-void SkeletalAnimation::ReadNodeHierarchy(float animTime, aiNode *node,
+void SkeletalAnimation::readNodeHierarchy(float animTime, const Node &node,
                                           const glm::mat4 &parentTransform) {
-  std::string nodeName = node->mName.C_Str();
+  std::string nodeName = node.name;
 
-  auto nodeTransform = ConvertMatrix(node->mTransformation);
+  auto nodeTransform = node.transformation;
   if (nodeAnimMap.contains(nodeName)) {
-    nodeTransform = InterpolateTransform(nodeAnimMap[nodeName], animTime);
+    nodeTransform = interpolateTransform(nodeAnimMap[nodeName], animTime);
   }
 
   auto globalTransform = parentTransform * nodeTransform;
@@ -458,31 +543,25 @@ void SkeletalAnimation::ReadNodeHierarchy(float animTime, aiNode *node,
                                        boneMap[nodeName].offsetMatrix;
   }
 
-  for (uint32_t i = 0; i < node->mNumChildren; ++i) {
-    ReadNodeHierarchy(animTime, node->mChildren[i], globalTransform);
+  for (const auto &child : node.children) {
+    readNodeHierarchy(animTime, child, globalTransform);
   }
 }
 
-uint32_t GetIndex(float time, const aiVectorKey *keys, uint32_t count) {
+uint32_t getIndex(float time, const std::vector<float> &keys) {
+  auto count = keys.size();
   for (uint32_t i = 0; i < count - 1; ++i) {
-    if (time < keys[i + 1].mTime) {
+    if (time < keys[i + 1]) {
       return i;
     }
   }
   return count - 1;
 }
 
-uint32_t GetIndex(float time, const aiQuatKey *keys, uint32_t count) {
-  for (uint32_t i = 0; i < count - 1; ++i) {
-    if (time < keys[i + 1].mTime) {
-      return i;
-    }
-  }
-  return count - 1;
-}
-
-glm::vec3 InterpolateVector3(const aiVectorKey *keys, uint32_t count,
-                             float time, bool isScaling = false) {
+glm::vec3 interpolateVector3(const std::vector<glm::vec3> &keys,
+                             const std::vector<float> &keyTimes, float time,
+                             bool isScaling = false) {
+  auto count = keys.size();
   if (count == 0) {
     if (isScaling) {
       return glm::vec3(1, 1, 1);
@@ -490,45 +569,42 @@ glm::vec3 InterpolateVector3(const aiVectorKey *keys, uint32_t count,
     return glm::vec3(0, 0, 0);
   }
   if (count == 1) {
-    return glm::vec3(keys[0].mValue.x, keys[0].mValue.y, keys[0].mValue.z);
+    return keys[0];
   }
 
-  uint32_t i = GetIndex(time, keys, count);
-  float t = float((time - keys[i].mTime) / (keys[i + 1].mTime - keys[i].mTime));
-  auto k0 = glm::vec3(keys[i].mValue.x, keys[i].mValue.y, keys[i].mValue.z);
-  auto k1 = glm::vec3(keys[i + 1].mValue.x, keys[i + 1].mValue.y,
-                      keys[i + 1].mValue.z);
+  uint32_t i = getIndex(time, keyTimes);
+  float t = float((time - keyTimes[i]) / (keyTimes[i + 1] - keyTimes[i]));
+  auto k0 = keys[i];
+  auto k1 = keys[i + 1];
   return glm::mix(k0, k1, t);
 };
-glm::quat InterpolateQuat(const aiQuatKey *keys, uint32_t count, float time) {
+glm::quat interpolateQuat(const std::vector<glm::quat> &keys,
+                          const std::vector<float> &keyTimes, float time) {
+  auto count = keys.size();
   if (count == 0) {
     return glm::quat(1, 0, 0, 0);
   }
   if (count == 1) {
-    return glm::quat(keys[0].mValue.w, keys[0].mValue.x, keys[0].mValue.y,
-                     keys[0].mValue.z);
+    return keys[0];
   }
 
-  uint32_t i = GetIndex(time, keys, count);
-  float t = float((time - keys[i].mTime) / (keys[i + 1].mTime - keys[i].mTime));
-  glm::quat k0(keys[i].mValue.w, keys[i].mValue.x, keys[i].mValue.y,
-               keys[i].mValue.z);
-  glm::quat k1(keys[i + 1].mValue.w, keys[i + 1].mValue.x, keys[i + 1].mValue.y,
-               keys[i + 1].mValue.z);
+  uint32_t i = getIndex(time, keyTimes);
+  float t = float((time - keyTimes[i]) / (keyTimes[i + 1] - keyTimes[i]));
+  auto k0 = keys[i];
+  auto k1 = keys[i + 1];
   auto q = glm::slerp(k0, k1, t);
   q = glm::normalize(q);
   return q;
 };
 
-glm::mat4 SkeletalAnimation::InterpolateTransform(aiNodeAnim *channel,
+glm::mat4 SkeletalAnimation::interpolateTransform(const NodeAnimation &channel,
                                                   float time) {
 
-  auto scaling = InterpolateVector3(channel->mScalingKeys,
-                                    channel->mNumScalingKeys, time, true);
-  auto rotation =
-      InterpolateQuat(channel->mRotationKeys, channel->mNumRotationKeys, time);
-  auto translation = InterpolateVector3(channel->mPositionKeys,
-                                        channel->mNumPositionKeys, time);
+  auto scaling =
+      interpolateVector3(channel.scale, channel.scaleTime, time, true);
+  auto rotation = interpolateQuat(channel.rotation, channel.rotationTime, time);
+  auto translation =
+      interpolateVector3(channel.position, channel.positionTime, time);
 
   auto t = glm::translate(glm::mat4(1.0f), translation);
   auto r = glm::toMat4(rotation);
@@ -537,7 +613,7 @@ glm::mat4 SkeletalAnimation::InterpolateTransform(aiNodeAnim *channel,
   auto m = t * r * s;
   return m;
 }
-std::vector<glm::mat4> SkeletalAnimation::GetFinalBoneMatrices() const {
+std::vector<glm::mat4> SkeletalAnimation::getFinalBoneMatrices() const {
   std::vector<glm::mat4> result(boneMap.size(), glm::mat4(1.0f));
   for (const auto &[name, info] : boneMap) {
     if (boneMap.contains(name)) {

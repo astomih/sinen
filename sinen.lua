@@ -268,9 +268,9 @@ sn = {
 
     ---@class GraphicsPipeline3D
     ---@field set_vertex_shader fun(self: GraphicsPipeline3D, shader: Shader)
-    ---@field set_vertex_instanced_shader fun(self: GraphicsPipeline3D, shader: Shader)
     ---@field set_fragment_shader fun(self: GraphicsPipeline3D, shader: Shader)
-    ---@field set_animation fun(self: GraphicsPipeline3D, anim: any)
+    ---@field set_instanced fun(self: GraphicsPipeline3D, instanced: bool)
+    ---@field set_animation fun(self: GraphicsPipeline3D, isAnimation: bool)
     ---@field build fun(self: GraphicsPipeline3D)
     ---@return GraphicsPipeline3D
     GraphicsPipeline3D = function() return {} end,

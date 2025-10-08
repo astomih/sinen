@@ -26,7 +26,7 @@ struct PxDrawable {
   Array<px::TextureSamplerBinding> textureSamplers;
   Ptr<Drawable> drawable;
 };
-struct PxVertexArray : public VertexArray {
+struct PxVertexArray : public Mesh {
   Ptr<px::Buffer> vertexBuffer;
   Ptr<px::Buffer> indexBuffer;
 };

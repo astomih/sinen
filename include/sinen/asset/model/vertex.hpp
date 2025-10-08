@@ -24,13 +24,9 @@ struct Vertex {
   glm::vec3 position;
   glm::vec3 normal;
   glm::vec2 uv;
-  Color rgba = Color(Color(1, 1, 1, 1));
+  Color color = Color(1.0f);
 };
 struct AnimationVertex {
-  glm::vec3 position;
-  glm::vec3 normal;
-  glm::vec2 uv;
-  Color rgba = Color(Color(1, 1, 1, 1));
   glm::vec4 boneIDs;
   glm::vec4 boneWeights;
 };

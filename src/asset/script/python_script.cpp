@@ -361,9 +361,8 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
   py::class_<GraphicsPipeline3D>(m, "GraphicsPipeline3D")
       .def(py::init<>())
       .def("set_vertex_shader", &GraphicsPipeline3D::setVertexShader)
-      .def("set_vertex_instanced_shader",
-           &GraphicsPipeline3D::setVertexInstancedShader)
       .def("set_fragment_shader", &GraphicsPipeline3D::setFragmentShader)
+      .def("set_instanced", &GraphicsPipeline3D::setInstanced)
       .def("set_animation", &GraphicsPipeline3D::setAnimation)
       .def("build", &GraphicsPipeline3D::build);
 

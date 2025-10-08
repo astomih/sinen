@@ -320,9 +320,8 @@ bool LuaScript::Initialize() {
   {
     auto v = registerClass<GraphicsPipeline3D>(lua, "GraphicsPipeline3D");
     v["set_vertex_shader"] = &GraphicsPipeline3D::setVertexShader;
-    v["set_vertex_instanced_shader"] =
-        &GraphicsPipeline3D::setVertexInstancedShader;
     v["set_fragment_shader"] = &GraphicsPipeline3D::setFragmentShader;
+    v["set_instanced"] = &GraphicsPipeline3D::setInstanced;
     v["set_animation"] = &GraphicsPipeline3D::setAnimation;
     v["build"] = &GraphicsPipeline3D::build;
   }

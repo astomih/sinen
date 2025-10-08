@@ -28,19 +28,18 @@ public:
   void setVertexShader(const Shader &shader);
   void setVertexInstancedShader(const Shader &shader);
   void setFragmentShader(const Shader &shader);
+  void setInstanced(bool instanced) { isInstanced = instanced; }
   void setAnimation(bool animation);
 
   void build();
 
   px::Ptr<px::GraphicsPipeline> get() const { return pipeline; }
-  px::Ptr<px::GraphicsPipeline> getInstanced() const { return instanced; }
 
 private:
   Shader vertexShader;
-  Shader instancedShader;
   Shader fragmentShader;
   px::Ptr<px::GraphicsPipeline> pipeline;
-  px::Ptr<px::GraphicsPipeline> instanced;
+  bool isInstanced = false;
   bool isAnimation = false;
 };
 } // namespace sinen

@@ -25,7 +25,7 @@ function update()
     if sn.Keyboard.is_pressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")
     end
-    model:update(sn.Time.deltatime())
+    model:update(sn.Time.delta())
 end
 
 function draw()

@@ -7,8 +7,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "../asset/model/mesh.hpp"
 #include "../asset/model/model.hpp"
-#include "../asset/model/vertex_array.hpp"
 #include "../asset/shader/shader.hpp"
 #include "../asset/texture/render_texture.hpp"
 #include "../asset/texture/texture.hpp"

@@ -1,4 +1,4 @@
-#include <graphics/drawable/drawable_wrapper.hpp>
+#include <graphics/drawable/drawable.hpp>
 
 #include <list>
 #include <vector>

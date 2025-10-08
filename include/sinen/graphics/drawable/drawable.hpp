@@ -1,69 +1,80 @@
-#ifndef SINEN_DRAWABLE_HPP
-#define SINEN_DRAWABLE_HPP
-#include <glm/mat4x4.hpp>
-
+#ifndef SINEN_DRAWABLE_WRAPPER_HPP
+#define SINEN_DRAWABLE_WRAPPER_HPP
 #include "../../asset/model/model.hpp"
-#include "../../asset/shader/shader.hpp"
-#include "../../asset/texture/material.hpp"
-#include "instance_data.hpp"
+#include "../../asset/texture/texture.hpp"
+#include "../../math/transform/transform.hpp"
 
 namespace sinen {
 /**
- * @brief Drawable object class
+ * @brief 2D draw object class
  *
  */
-struct Drawable {
+struct Draw2D {
+public:
   /**
-   * @brief Construct a new draw object object
+   * @brief Construct a new draw2d object
    *
    */
-  Drawable();
+  Draw2D();
   /**
-   * @brief Destroy the draw object object
+   * @brief Construct a new draw2d object
+   * @param texture Texture to use
    *
    */
-  ~Drawable();
-  /**
-   * @brief Shader parameter
-   *
-   */
-  struct parameter {
-    glm::mat4 world;
-    glm::mat4 view;
-    glm::mat4 proj;
+  explicit Draw2D(const Texture &texture);
+  void add(const glm::vec2 &position, const float &rotation,
+           const glm::vec2 &scale);
+  void at(const int &index, const glm::vec2 &position, const float &rotation,
+          const glm::vec2 &scale);
+  void clear();
+  struct World {
+    glm::vec2 position;
+    float rotation;
+    glm::vec2 scale;
   };
-  // parameter
-  parameter param;
-  /**
-   * @brief Shader data
-   *
-   */
-  Shader shade;
-  /**
-   * @brief Use material
-   *
-   */
+  std::vector<World> worlds;
+  glm::vec2 position;
+  float rotation;
+  glm::vec2 scale;
   Material material;
-  Model model;
-  int drawOrder = 100;
-  /**
-   * @brief World matrix to instancing data
-   *
-   * @param mat input world matrix
-   * @param data output instancing data
-   */
-  void worldToInstanceData(const glm::mat4 &mat, InstanceData &data);
-  /**
-   * @brief instance size
-   *
-   */
-  std::size_t size() { return sizeof(InstanceData) * data.size(); }
-  /**
-   * @brief instance data
-   *
-   */
-  std::vector<InstanceData> data;
-};
 
+  const Model &getModel() const;
+
+private:
+  Model model;
+};
+/**
+ * @brief 3D draw object class
+ *
+ */
+class Draw3D {
+public:
+  /**
+   * @brief Construct a new draw3d object
+   *
+   */
+  Draw3D();
+  /**
+   * @brief Construct a new draw3d object
+   * @param texture Texture to use
+   *
+   */
+  explicit Draw3D(const Texture &texture);
+  void add(const glm::vec3 &position, const glm::vec3 &rotation,
+           const glm::vec3 &scale);
+  void at(const int &index, const glm::vec3 &position,
+          const glm::vec3 &rotation, const glm::vec3 &scale);
+  void clear();
+  glm::vec3 position;
+  glm::vec3 rotation;
+  glm::vec3 scale;
+  Material material;
+  std::vector<Transform> worlds;
+  const Model &getModel() const;
+
+  Model model;
+
+private:
+};
 } // namespace sinen
-#endif // !SINEN_DRAWABLE_HPP
+#endif // !SINEN_DRAWABLE_WRAPPER_HPP

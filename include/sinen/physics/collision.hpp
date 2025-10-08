@@ -6,7 +6,7 @@ namespace sinen {
 struct AABB {
   glm::vec3 min;
   glm::vec3 max;
-  AABB() = default;
+  AABB() : min(glm::vec3(0.0f)), max(glm::vec3(0.0f)) {}
   ~AABB() = default;
   /**
    * @brief Construct a new aabb object

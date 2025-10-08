@@ -19,7 +19,6 @@
 #include "camera/camera.hpp"
 #include "camera/camera2d.hpp"
 #include "drawable/drawable.hpp"
-#include "drawable/drawable_wrapper.hpp"
 #include "graphics_pipeline.hpp"
 
 namespace sinen {

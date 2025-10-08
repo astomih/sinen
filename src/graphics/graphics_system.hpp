@@ -18,18 +18,6 @@
 namespace sinen {
 template <typename T> using Ptr = px::Ptr<T>;
 template <typename T> using Array = px::Array<T>;
-struct PxDrawable {
-  PxDrawable(px::Allocator *allocator);
-  px::Allocator *allocator;
-  Array<px::BufferBinding> vertexBuffers;
-  px::BufferBinding indexBuffer;
-  Array<px::TextureSamplerBinding> textureSamplers;
-  Ptr<Drawable> drawable;
-};
-struct PxVertexArray : public Mesh {
-  Ptr<px::Buffer> vertexBuffer;
-  Ptr<px::Buffer> indexBuffer;
-};
 class GraphicsSystem {
 public:
   static void initialize();
@@ -104,6 +92,7 @@ private:
   inline static Ptr<px::Sampler> sampler;
   inline static GraphicsPipeline2D pipeline2D;
   inline static GraphicsPipeline3D pipeline3D;
+  inline static GraphicsPipeline3D pipelineInstanced3D;
   inline static GraphicsPipeline2D currentPipeline2D;
   inline static GraphicsPipeline3D currentPipeline3D;
   inline static px::Ptr<px::CommandBuffer> mainCommandBuffer;
@@ -118,8 +107,6 @@ private:
   inline static px::DepthStencilTargetInfo depthStencilInfo;
   inline static px::Array<px::ColorTargetInfo> currentColorTargets;
   inline static px::DepthStencilTargetInfo currentDepthStencilInfo;
-  inline static px::HashMap<std::string, PxVertexArray> vertexArrays =
-      px::HashMap<std::string, PxVertexArray>(getAllocator());
 };
 } // namespace sinen
 #endif // !SINEN_RENDER_SYSTEM_HPP

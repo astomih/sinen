@@ -154,30 +154,34 @@ px::VertexInputState CreateVertexInputState(px::Allocator *allocator,
     vertexInputState.vertexBufferDescriptions.emplace_back(
         px::VertexBufferDescription{
             .slot = bufferSlot,
-            .pitch = sizeof(InstanceData),
+            .pitch = sizeof(glm::mat4),
             .inputRate = px::VertexInputRate::Instance,
             .instanceStepRate = 0,
         });
+    uint32_t offset = 0;
     vertexInputState.vertexAttributes.emplace_back(
         px::VertexAttribute{.location = location++,
                             .bufferSlot = bufferSlot,
                             .format = px::VertexElementFormat::Float4,
-                            .offset = offsetof(InstanceData, world_matrix_1)});
+                            .offset = offset});
+    offset += sizeof(float) * 4;
     vertexInputState.vertexAttributes.emplace_back(
         px::VertexAttribute{.location = location++,
                             .bufferSlot = bufferSlot,
                             .format = px::VertexElementFormat::Float4,
-                            .offset = offsetof(InstanceData, world_matrix_2)});
+                            .offset = offset});
+    offset += sizeof(float) * 4;
     vertexInputState.vertexAttributes.emplace_back(
         px::VertexAttribute{.location = location++,
                             .bufferSlot = bufferSlot,
                             .format = px::VertexElementFormat::Float4,
-                            .offset = offsetof(InstanceData, world_matrix_3)});
+                            .offset = offset});
+    offset += sizeof(float) * 4;
     vertexInputState.vertexAttributes.emplace_back(
         px::VertexAttribute{.location = location++,
                             .bufferSlot = bufferSlot,
                             .format = px::VertexElementFormat::Float4,
-                            .offset = offsetof(InstanceData, world_matrix_4)});
+                            .offset = offset});
   }
   if (isAnimation) {
     bufferSlot++;

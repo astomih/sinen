@@ -4,7 +4,7 @@
 #include <asset/asset.hpp>
 #include <cstring>
 #include <graphics/camera/camera.hpp>
-#include <graphics/drawable/drawable_wrapper.hpp>
+#include <graphics/drawable/drawable.hpp>
 #include <graphics/graphics.hpp>
 #include <platform/window/window.hpp>
 

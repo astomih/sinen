@@ -10,7 +10,57 @@
 #include "mesh.hpp"
 #include <asset/texture/material.hpp>
 
+#include <paranoixa/paranoixa.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/quaternion.hpp>
+
 namespace sinen {
+struct BoneInfo {
+  glm::mat4 offsetMatrix;
+  glm::mat4 finalTransform;
+  uint32_t index;
+};
+
+class NodeAnimation {
+public:
+  std::vector<glm::vec3> position;
+  std::vector<float> positionTime;
+  std::vector<glm::quat> rotation;
+  std::vector<float> rotationTime;
+  std::vector<glm::vec3> scale;
+  std::vector<float> scaleTime;
+};
+
+class Node {
+public:
+  std::string name;
+  glm::mat4 transformation;
+  std::vector<Node> children;
+};
+
+class SkeletalAnimation {
+public:
+  void load(const Node &root, float ticksPerSecond, float duration,
+            std::unordered_map<std::string, NodeAnimation> &nodeAnimationMap);
+
+  void update(float timeInSeconds);
+
+  void readNodeHierarchy(float animTime, const Node &node,
+                         const glm::mat4 &parentTransform);
+
+  glm::mat4 interpolateTransform(const NodeAnimation &channel, float time);
+
+  std::vector<glm::mat4> getFinalBoneMatrices() const;
+
+  std::unordered_map<std::string, BoneInfo> boneMap;
+  std::unordered_map<std::string, NodeAnimation> nodeAnimMap;
+  glm::mat4 globalInverseTransform;
+  float ticksPerSecond;
+  float duration;
+  Node root;
+};
 struct Model {
 public:
   /**
@@ -35,19 +85,29 @@ public:
   void loadBox();
   void play(float start);
   void update(float delta_time);
-  AABB &getAABB() const;
+  const AABB &getAABB() const;
   std::shared_ptr<void> data;
-  std::vector<Vertex> allVertex() const;
-  std::vector<std::uint32_t> allIndices() const;
   UniformData getBoneUniformData() const;
 
   Material getMaterial() const { return material; }
+
+  const Mesh &getMesh() const { return mesh; }
+
+  px::Ptr<px::Buffer> vertexBuffer;
+  px::Ptr<px::Buffer> animationVertexBuffer;
+  px::Ptr<px::Buffer> indexBuffer;
 
 private:
   void loadBoneUniform(float time);
   float time = 0.0f;
   std::vector<glm::mat4> inverseBindMatrices;
   Material material;
+  AABB localAABB;
+  std::string name;
+  Mesh mesh;
+  UniformData boneUniformData;
+
+  SkeletalAnimation skeletalAnimation;
 };
 } // namespace sinen
 #endif // !SINEN_MODEL_HPP

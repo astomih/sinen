@@ -9,7 +9,6 @@
 #include <cassert>
 #include <core/io/asset_io.hpp>
 #include <core/logger/logger.hpp>
-#include <graphics/drawable/instance_data.hpp>
 #include <graphics/graphics.hpp>
 #include <imgui_impl_paranoixa.hpp>
 #include <memory>
@@ -46,9 +45,6 @@ void setFullWindowViewport(const px::Ptr<px::RenderPass> &renderPass) {
   renderPass->SetViewport(viewport);
   renderPass->SetScissor(rect.x, rect.y, rect.width, rect.height);
 }
-PxDrawable::PxDrawable(px::Allocator *allocator)
-    : allocator(allocator), vertexBuffers(allocator), indexBuffer(),
-      textureSamplers(allocator) {}
 Color GraphicsSystem::clearColor = Palette::black();
 // Renderer
 bool GraphicsSystem::showImGui = false;
@@ -104,6 +100,11 @@ void GraphicsSystem::initialize() {
   pipeline3D.build();
   currentPipeline3D = pipeline3D;
 
+  pipelineInstanced3D.setVertexShader(vsInstanced);
+  pipelineInstanced3D.setFragmentShader(fs);
+  pipelineInstanced3D.setInstanced(true);
+  pipelineInstanced3D.build();
+
   pipeline2D.setVertexShader(vs);
   pipeline2D.setFragmentShader(fs);
   pipeline2D.build();
@@ -147,7 +148,6 @@ void GraphicsSystem::initialize() {
 }
 
 void GraphicsSystem::shutdown() {
-  vertexArrays.clear();
   device.reset();
   backend.reset();
 }
@@ -214,7 +214,12 @@ void GraphicsSystem::render() {
   device->WaitForGPUIdle();
 }
 void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
+  auto vertexBufferBindings = px::Array<px::BufferBinding>{allocator};
+  auto indexBufferBinding = px::BufferBinding{};
+  auto textureSamplers = px::Array<px::TextureSamplerBinding>{allocator};
   auto ratio = camera2D.windowRatio();
+  glm::mat4 mat[3];
+  std::vector<glm::mat4> instanceData;
   {
     auto t = glm::translate(glm::mat4(1.0f),
                             glm::vec3(draw2D.position.x * ratio.x,
@@ -227,20 +232,15 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
         glm::scale(glm::mat4(1.0f), glm::vec3(draw2D.scale.x * 0.5f,
                                               draw2D.scale.y * 0.5f, 1.0f));
 
-    draw2D.obj->param.world = glm::transpose(t * r * s);
+    mat[0] = glm::transpose(t * r * s);
   }
-  draw2D.obj->material = draw2D.material;
   auto viewproj = glm::mat4(1.0f);
 
   auto screen_size = camera2D.size();
   viewproj[0][0] = 2.f / Window::size().x;
   viewproj[1][1] = 2.f / Window::size().y;
-  draw2D.obj->param.proj = glm::transpose(viewproj);
-  draw2D.obj->param.view = glm::mat4(1.f);
-  if (getModelData(draw2D.model.data)->vertexBuffer == nullptr) {
-    draw2D.obj->model = GraphicsSystem::sprite;
-  } else
-    draw2D.obj->model = draw2D.model;
+  mat[1] = glm::transpose(viewproj);
+  mat[2] = glm::mat4(1.f);
   for (auto &i : draw2D.worlds) {
     auto t = glm::translate(
         glm::mat4(1.0f),
@@ -253,9 +253,7 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
 
     auto world = t * r * s;
 
-    InstanceData insdata{};
-    draw2D.obj->worldToInstanceData(glm::transpose(world), insdata);
-    draw2D.obj->data.push_back(insdata);
+    instanceData.push_back(glm::transpose(world));
   }
   objectCount++;
   if (isFrameStarted || currentRenderPass == nullptr) {
@@ -280,41 +278,39 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
     isDefaultPipeline = true;
   }
 
-  PxDrawable drawable{allocator};
-  drawable.drawable = draw2D.obj;
-
-  for (const auto &texture : draw2D.obj->material.getTextures()) {
+  for (const auto &texture : draw2D.material.getTextures()) {
     auto nativeTexture = std::static_pointer_cast<px::Texture>(
         getTextureRawData(texture.textureData)->texture);
-    drawable.textureSamplers.push_back(px::TextureSamplerBinding{
+    textureSamplers.push_back(px::TextureSamplerBinding{
         .sampler = sampler, .texture = nativeTexture});
   }
 
-  auto modelData = getModelData(draw2D.obj->model.data);
-  assert(modelData->vertexBuffer != nullptr);
-  assert(modelData->indexBuffer != nullptr);
+  const auto &model = draw2D.getModel();
+  assert(model.vertexBuffer != nullptr);
+  assert(model.indexBuffer != nullptr);
 
-  drawable.vertexBuffers.emplace_back(
-      px::BufferBinding{.buffer = modelData->vertexBuffer, .offset = 0});
-  drawable.indexBuffer =
-      px::BufferBinding{.buffer = modelData->indexBuffer, .offset = 0};
+  vertexBufferBindings.emplace_back(
+      px::BufferBinding{.buffer = model.vertexBuffer, .offset = 0});
+  indexBufferBinding =
+      px::BufferBinding{.buffer = model.indexBuffer, .offset = 0};
 
   auto commandBuffer = currentCommandBuffer;
   auto renderPass = currentRenderPass;
   renderPass->BindGraphicsPipeline(currentPipeline2D.get());
-  renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
-  renderPass->BindVertexBuffers(0, drawable.vertexBuffers);
-  renderPass->BindIndexBuffer(drawable.indexBuffer,
-                              px::IndexElementSize::Uint32);
+  renderPass->BindFragmentSamplers(0, textureSamplers);
+  renderPass->BindVertexBuffers(0, vertexBufferBindings);
+  renderPass->BindIndexBuffer(indexBufferBinding, px::IndexElementSize::Uint32);
 
-  auto param = drawable.drawable->param;
-  commandBuffer->PushVertexUniformData(0, &param, sizeof(Drawable::parameter));
-  renderPass->DrawIndexedPrimitives(
-      getModelData(drawable.drawable->model.data)->mesh.indexCount, 1, 0, 0, 0);
+  commandBuffer->PushVertexUniformData(0, &mat, sizeof(glm::mat4) * 3);
+  renderPass->DrawIndexedPrimitives(model.getMesh().indexCount, 1, 0, 0, 0);
 }
 
 void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
-  draw3D.obj->material = draw3D.material;
+  auto vertexBufferBindings = px::Array<px::BufferBinding>{allocator};
+  auto indexBufferBinding = px::BufferBinding{};
+  auto textureSamplers = px::Array<px::TextureSamplerBinding>{allocator};
+  glm::mat4 mat[3];
+  std::vector<glm::mat4> instanceData;
   {
     const auto t = glm::translate(
         glm::mat4(1.0f),
@@ -330,18 +326,11 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
     const auto s =
         glm::scale(glm::mat4(1.0f),
                    glm::vec3(draw3D.scale.x, draw3D.scale.y, draw3D.scale.z));
-
-    auto world = t * r * s;
-    draw3D.obj->param.world = glm::transpose(world);
-    draw3D.obj->param.proj = glm::transpose(camera.getProjection());
-    draw3D.obj->param.view = glm::transpose(camera.getView());
+    mat[0] = glm::transpose(t * r * s);
+    mat[1] = glm::transpose(camera.getView());
+    mat[2] = glm::transpose(camera.getProjection());
   }
-  if (getModelData(draw3D.model.data)->vertexBuffer == nullptr) {
-    draw3D.obj->model = GraphicsSystem::box;
-  } else
-    draw3D.obj->model = draw3D.model;
   for (auto &i : draw3D.worlds) {
-    InstanceData insdata{};
     auto t = glm::translate(
         glm::mat4(1.0f), glm::vec3(i.position.x, i.position.y, i.position.z));
     auto rotationX =
@@ -356,9 +345,7 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
         glm::scale(glm::mat4(1.0f), glm::vec3(i.scale.x, i.scale.y, i.scale.z));
 
     auto world = t * r * s;
-
-    draw3D.obj->worldToInstanceData(glm::transpose(world), insdata);
-    draw3D.obj->data.push_back(insdata);
+    instanceData.push_back(glm::transpose(world));
   }
   objectCount++;
   if (isDefaultPipeline && (isFrameStarted || currentRenderPass == nullptr)) {
@@ -384,34 +371,32 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
     isDraw2D = false;
     isDefaultPipeline = true;
   }
-  PxDrawable drawable{allocator};
-  drawable.drawable = draw3D.obj;
-  for (const auto &texture : draw3D.obj->material.getTextures()) {
+  for (const auto &texture : draw3D.material.getTextures()) {
     auto nativeTexture = std::static_pointer_cast<px::Texture>(
         getTextureRawData(texture.textureData)->texture);
-    drawable.textureSamplers.push_back(px::TextureSamplerBinding{
+    textureSamplers.push_back(px::TextureSamplerBinding{
         .sampler = sampler, .texture = nativeTexture});
   }
 
-  bool isInstance = drawable.drawable->size() > 0;
+  auto instanceSize = sizeof(glm::mat4) * instanceData.size();
+  bool isInstance = instanceSize > 0;
   px::Ptr<px::Buffer> instanceBuffer = nullptr;
   if (isInstance) {
     px::Buffer::CreateInfo instanceBufferInfo{};
     instanceBufferInfo.allocator = allocator;
-    instanceBufferInfo.size = drawable.drawable->size();
+    instanceBufferInfo.size = instanceSize;
     instanceBufferInfo.usage = px::BufferUsage::Vertex;
     instanceBuffer = device->CreateBuffer(instanceBufferInfo);
     Ptr<px::TransferBuffer> transferBuffer;
     {
       px::TransferBuffer::CreateInfo info{};
       info.allocator = allocator;
-      info.size = drawable.drawable->size();
+      info.size = instanceSize;
       info.usage = px::TransferBufferUsage::Upload;
       transferBuffer = device->CreateTransferBuffer(info);
       auto *pMapped = transferBuffer->Map(false);
       if (pMapped) {
-        memcpy(pMapped, drawable.drawable->data.data(),
-               drawable.drawable->size());
+        memcpy(pMapped, instanceData.data(), instanceSize);
       }
       transferBuffer->Unmap();
     }
@@ -427,7 +412,7 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
           src.transferBuffer = transferBuffer;
           px::BufferRegion dst{};
           dst.offset = 0;
-          dst.size = drawable.drawable->size();
+          dst.size = instanceSize;
           dst.buffer = instanceBuffer;
           copyPass->UploadBuffer(src, dst, false);
         }
@@ -437,35 +422,33 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
     }
   }
 
-  drawable.vertexBuffers.emplace_back(px::BufferBinding{
-      .buffer = getModelData(draw3D.obj->model.data)->vertexBuffer,
-      .offset = 0});
-  drawable.indexBuffer = px::BufferBinding{
-      .buffer = getModelData(draw3D.obj->model.data)->indexBuffer, .offset = 0};
+  const auto &model = draw3D.getModel();
+  vertexBufferBindings.emplace_back(
+      px::BufferBinding{.buffer = model.vertexBuffer, .offset = 0});
+  indexBufferBinding =
+      px::BufferBinding{.buffer = model.indexBuffer, .offset = 0};
   if (isInstance) {
-    drawable.vertexBuffers.emplace_back(
+    vertexBufferBindings.emplace_back(
         px::BufferBinding{.buffer = instanceBuffer, .offset = 0});
   }
-  auto animationVertexBuffer =
-      getModelData(draw3D.obj->model.data)->animationVertexBuffer;
-  if (animationVertexBuffer) {
-    drawable.vertexBuffers.emplace_back(
+  if (auto animationVertexBuffer = model.animationVertexBuffer) {
+    vertexBufferBindings.emplace_back(
         px::BufferBinding{.buffer = animationVertexBuffer, .offset = 0});
   }
   auto commandBuffer = currentCommandBuffer;
   auto renderPass = currentRenderPass;
-  renderPass->BindGraphicsPipeline(currentPipeline3D.get());
-  renderPass->BindFragmentSamplers(0, drawable.textureSamplers);
-  renderPass->BindVertexBuffers(0, drawable.vertexBuffers);
-  renderPass->BindIndexBuffer(drawable.indexBuffer,
-                              px::IndexElementSize::Uint32);
+  if (isInstance)
+    renderPass->BindGraphicsPipeline(pipelineInstanced3D.get());
+  else
+    renderPass->BindGraphicsPipeline(currentPipeline3D.get());
+  renderPass->BindFragmentSamplers(0, textureSamplers);
+  renderPass->BindVertexBuffers(0, vertexBufferBindings);
+  renderPass->BindIndexBuffer(indexBufferBinding, px::IndexElementSize::Uint32);
 
-  auto param = drawable.drawable->param;
-  commandBuffer->PushVertexUniformData(0, &param, sizeof(Drawable::parameter));
-  uint32_t numInstance = isInstance ? drawable.drawable->data.size() : 1;
-  renderPass->DrawIndexedPrimitives(
-      getModelData(drawable.drawable->model.data)->mesh.indexCount, numInstance,
-      0, 0, 0);
+  commandBuffer->PushVertexUniformData(0, &mat, sizeof(glm::mat4) * 3);
+  uint32_t numIndices = model.getMesh().indexCount;
+  uint32_t numInstance = isInstance ? instanceSize : 1;
+  renderPass->DrawIndexedPrimitives(numIndices, numInstance, 0, 0, 0);
 }
 void GraphicsSystem::drawRect(const Rect &rect, const Color &color,
                               float angle) {

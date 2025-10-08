@@ -93,12 +93,9 @@ Node createNodeFromAiNode(const aiNode *ainode) {
   }
   return node;
 }
-Model::Model() { data = std::make_shared<ModelData>(); };
+Model::Model() {};
 
 void Model::load(std::string_view path) {
-  auto modelData = getModelData(this->data);
-  auto &local_aabb = modelData->localAABB;
-  auto &mesh = modelData->mesh;
 
   auto fullFilePath = AssetIO::convertFilePath(AssetType::Model, path.data());
   // Assimp
@@ -133,9 +130,9 @@ void Model::load(std::string_view path) {
                                                     channel->mNumScalingKeys);
         nodeAnimMap[channel->mNodeName.C_Str()] = nodeAnim;
       }
-      modelData->skeletalAnimation.load(createNodeFromAiNode(scene->mRootNode),
-                                        anim->mTicksPerSecond, anim->mDuration,
-                                        nodeAnimMap);
+      skeletalAnimation.load(createNodeFromAiNode(scene->mRootNode),
+                             anim->mTicksPerSecond, anim->mDuration,
+                             nodeAnimMap);
     }
     uint32_t vertexOffset = 0;
     struct BoneData {
@@ -143,7 +140,7 @@ void Model::load(std::string_view path) {
       std::vector<uint32_t> ids;
       std::vector<float> weights;
     };
-    auto &boneMap = modelData->skeletalAnimation.boneMap;
+    auto &boneMap = skeletalAnimation.boneMap;
     for (int i = 0; i < scene->mNumMeshes; i++) {
       const aiMesh *aimesh = scene->mMeshes[i];
       std::unordered_map<uint32_t, BoneData> boneData;
@@ -213,6 +210,7 @@ void Model::load(std::string_view path) {
       vertexOffset += aimesh->mNumVertices;
     }
   } else if (scene->HasMeshes()) {
+    AABB aabb;
     // Iterate through the meshes
     for (uint32_t i = 0; i < scene->mNumMeshes; i++) {
       const aiMesh *aimesh = scene->mMeshes[i];
@@ -238,18 +236,12 @@ void Model::load(std::string_view path) {
         v.uv.y = uv.y;
         v.color = color;
 
-        local_aabb.min.x =
-            Math::min(local_aabb.min.x, static_cast<float>(pos.x));
-        local_aabb.min.y =
-            Math::min(local_aabb.min.y, static_cast<float>(pos.y));
-        local_aabb.min.z =
-            Math::min(local_aabb.min.z, static_cast<float>(pos.z));
-        local_aabb.max.x =
-            Math::max(local_aabb.max.x, static_cast<float>(pos.x));
-        local_aabb.max.y =
-            Math::max(local_aabb.max.y, static_cast<float>(pos.y));
-        local_aabb.max.z =
-            Math::max(local_aabb.max.z, static_cast<float>(pos.z));
+        aabb.min.x = Math::min(aabb.min.x, static_cast<float>(pos.x));
+        aabb.min.y = Math::min(aabb.min.y, static_cast<float>(pos.y));
+        aabb.min.z = Math::min(aabb.min.z, static_cast<float>(pos.z));
+        aabb.max.x = Math::max(aabb.max.x, static_cast<float>(pos.x));
+        aabb.max.y = Math::max(aabb.max.y, static_cast<float>(pos.y));
+        aabb.max.z = Math::max(aabb.max.z, static_cast<float>(pos.z));
 
         mesh.vertices.push_back(v);
       }
@@ -262,6 +254,7 @@ void Model::load(std::string_view path) {
         }
       }
     }
+    this->localAABB = aabb;
   }
 
   if (scene->HasMaterials()) {
@@ -292,44 +285,32 @@ void Model::load(std::string_view path) {
 
   mesh.indexCount = mesh.indices.size();
   auto viBuffer = createVertexIndexBuffer(mesh);
-  modelData->vertexBuffer = viBuffer.first;
-  modelData->animationVertexBuffer = createAnimationVertexBuffer(mesh);
-  modelData->indexBuffer = viBuffer.second;
+  this->vertexBuffer = viBuffer.first;
+  this->animationVertexBuffer = createAnimationVertexBuffer(mesh);
+  this->indexBuffer = viBuffer.second;
 }
 
 void Model::loadFromVertexArray(const Mesh &vArray) {
-  auto modelData = getModelData(this->data);
-  modelData->mesh = vArray;
-  auto &local_aabb = modelData->localAABB;
+  this->mesh = vArray;
+  AABB aabb;
   for (auto &v : vArray.vertices) {
-    local_aabb.min.x = Math::min(local_aabb.min.x, v.position.x);
-    local_aabb.min.y = Math::min(local_aabb.min.y, v.position.y);
-    local_aabb.min.z = Math::min(local_aabb.min.z, v.position.z);
-    local_aabb.max.x = Math::max(local_aabb.max.x, v.position.x);
-    local_aabb.max.y = Math::max(local_aabb.max.y, v.position.y);
-    local_aabb.max.z = Math::max(local_aabb.max.z, v.position.z);
+    aabb.min.x = Math::min(aabb.min.x, v.position.x);
+    aabb.min.y = Math::min(aabb.min.y, v.position.y);
+    aabb.min.z = Math::min(aabb.min.z, v.position.z);
+    aabb.max.x = Math::max(aabb.max.x, v.position.x);
+    aabb.max.y = Math::max(aabb.max.y, v.position.y);
+    aabb.max.z = Math::max(aabb.max.z, v.position.z);
   }
+  this->localAABB = aabb;
   auto viBuffer = createVertexIndexBuffer(vArray);
-  modelData->vertexBuffer = viBuffer.first;
-  modelData->indexBuffer = viBuffer.second;
+  this->vertexBuffer = viBuffer.first;
+  this->indexBuffer = viBuffer.second;
 }
 
 void Model::loadSprite() { *this = GraphicsSystem::sprite; }
 void Model::loadBox() { *this = GraphicsSystem::box; }
 
-AABB &Model::getAABB() const {
-  auto modelData = getModelData(this->data);
-  return modelData->localAABB;
-}
-
-std::vector<Vertex> Model::allVertex() const {
-  auto modelData = getModelData(this->data);
-  return modelData->mesh.vertices;
-}
-std::vector<std::uint32_t> Model::allIndices() const {
-  auto modelData = getModelData(this->data);
-  return modelData->mesh.indices;
-}
+const AABB &Model::getAABB() const { return this->localAABB; }
 
 std::pair<px::Ptr<px::Buffer>, px::Ptr<px::Buffer>>
 createVertexIndexBuffer(const Mesh &mesh) {
@@ -474,10 +455,7 @@ px::Ptr<px::Buffer> createAnimationVertexBuffer(const Mesh &mesh) {
   return vertexBuffer;
 }
 
-UniformData Model::getBoneUniformData() const {
-  auto modelData = getModelData(this->data);
-  return modelData->boneUniformData;
-}
+UniformData Model::getBoneUniformData() const { return this->boneUniformData; }
 void Model::play(float start) {
   time = start;
   loadBoneUniform(time);
@@ -488,17 +466,14 @@ void Model::update(float delta_time) {
 }
 
 void Model::loadBoneUniform(float start) {
-  auto modelData = getModelData(this->data);
-  auto &skeletalAnimation = modelData->skeletalAnimation;
   for (auto &bone : skeletalAnimation.boneMap) {
     assert(bone.second.index <= skeletalAnimation.boneMap.size());
   }
-  modelData->skeletalAnimation.update(start);
+  skeletalAnimation.update(start);
   for (auto &bone : skeletalAnimation.boneMap) {
     assert(bone.second.index <= skeletalAnimation.boneMap.size());
   }
   auto matrices = skeletalAnimation.getFinalBoneMatrices();
-  auto &boneUniformData = modelData->boneUniformData;
   boneUniformData.clear();
 
   std::vector<glm::mat4> boneMatrices(matrices.size());

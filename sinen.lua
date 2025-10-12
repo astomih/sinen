@@ -153,6 +153,7 @@ sn = {
     ---@field get_bone_uniform_data fun(self: Model): UniformData
     ---@field play fun(self: Model, positon: number)
     ---@field update fun(self: Model, delta: number)
+    ---@field get_material fun(self: Model): Material
     ---@return Model
     Model = function() return {} end,
 
@@ -269,8 +270,8 @@ sn = {
     ---@class GraphicsPipeline3D
     ---@field set_vertex_shader fun(self: GraphicsPipeline3D, shader: Shader)
     ---@field set_fragment_shader fun(self: GraphicsPipeline3D, shader: Shader)
-    ---@field set_instanced fun(self: GraphicsPipeline3D, instanced: bool)
-    ---@field set_animation fun(self: GraphicsPipeline3D, isAnimation: bool)
+    ---@field set_instanced fun(self: GraphicsPipeline3D, instanced: boolean)
+    ---@field set_animation fun(self: GraphicsPipeline3D, isAnimation: boolean)
     ---@field build fun(self: GraphicsPipeline3D)
     ---@return GraphicsPipeline3D
     GraphicsPipeline3D = function() return {} end,
@@ -339,6 +340,7 @@ sn = {
     ---@field draw_image fun(texture: Texture, rect: Rect, angle: number?)
     ---@field draw_text fun(text: string, position: Vec2, color: Color?, fontSize: number?, angle: number?)
     ---@field draw_model fun(model: Model, transform: Transform, material: Material)
+    ---@field draw_model_instanced fun(model: Model, transforms: table, material: Material)
     ---@field set_camera fun(camera: Camera)
     ---@field get_camera fun(): Camera
     ---@field set_camera2d fun(camera: Camera2D)

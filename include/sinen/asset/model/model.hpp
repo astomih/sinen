@@ -54,12 +54,14 @@ public:
 
   std::vector<glm::mat4> getFinalBoneMatrices() const;
 
-  std::unordered_map<std::string, BoneInfo> boneMap;
   std::unordered_map<std::string, NodeAnimation> nodeAnimMap;
+  std::vector<AnimationVertex> animationVertices;
   glm::mat4 globalInverseTransform;
   float ticksPerSecond;
   float duration;
   Node root;
+  std::unordered_map<std::string, glm::mat4> finalBoneMatrices;
+  class Model *owner;
 };
 struct Model {
 public:
@@ -80,7 +82,7 @@ public:
    * @param str
    */
   void load(std::string_view str);
-  void loadFromVertexArray(const Mesh &vArray);
+  void loadFromVertexArray(const Mesh &mesh);
   void loadSprite();
   void loadBox();
   void play(float start);
@@ -97,6 +99,9 @@ public:
   px::Ptr<px::Buffer> animationVertexBuffer;
   px::Ptr<px::Buffer> indexBuffer;
 
+  using BoneMap = std::unordered_map<std::string, BoneInfo>;
+  const BoneMap &getBoneMap() const { return boneMap; }
+
 private:
   void loadBoneUniform(float time);
   float time = 0.0f;
@@ -108,6 +113,7 @@ private:
   UniformData boneUniformData;
 
   SkeletalAnimation skeletalAnimation;
+  BoneMap boneMap;
 };
 } // namespace sinen
 #endif // !SINEN_MODEL_HPP

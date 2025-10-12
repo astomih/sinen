@@ -44,8 +44,9 @@ static void writeTexture(px::Ptr<px::Texture> texture, void *pPixels) {
   }
   device->WaitForGPUIdle();
 }
-px::Ptr<px::Texture> CreateNativeTexture(void *pPixels, uint32_t width,
-                                         uint32_t height) {
+px::Ptr<px::Texture> createNativeTexture(void *pPixels,
+                                         px::TextureFormat textureFormat,
+                                         uint32_t width, uint32_t height) {
   auto allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
 
@@ -56,7 +57,7 @@ px::Ptr<px::Texture> CreateNativeTexture(void *pPixels, uint32_t width,
     info.width = width;
     info.height = height;
     info.layerCountOrDepth = 1;
-    info.format = px::TextureFormat::R8G8B8A8_UNORM;
+    info.format = textureFormat;
     info.usage = px::TextureUsage::Sampler;
     info.numLevels = 1;
     info.sampleCount = px::SampleCount::x1;
@@ -66,15 +67,15 @@ px::Ptr<px::Texture> CreateNativeTexture(void *pPixels, uint32_t width,
   writeTexture(texture, pPixels);
   return texture;
 }
-Ptr<px::Texture> CreateNativeTexture(SDL_Surface *pSurface) {
+Ptr<px::Texture> createNativeTexture(SDL_Surface *pSurface) {
   auto allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
-  auto *pImageDataSurface = ::SDL_ConvertSurface(
-      pSurface, pSurface->format == SDL_PIXELFORMAT_RGBA8888
-                    ? pSurface->format
-                    : SDL_PIXELFORMAT_RGBA32);
+  auto *pImageDataSurface =
+      ::SDL_ConvertSurface(pSurface, SDL_PIXELFORMAT_RGBA32);
   int width = pImageDataSurface->w, height = pImageDataSurface->h;
-  auto texture = CreateNativeTexture(pImageDataSurface->pixels, width, height);
+  auto texture =
+      createNativeTexture(pImageDataSurface->pixels,
+                          px::TextureFormat::R8G8B8A8_UNORM, width, height);
   SDL_DestroySurface(pImageDataSurface);
   return texture;
 }

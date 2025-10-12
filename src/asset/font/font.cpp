@@ -88,7 +88,7 @@ void Font::renderText(Texture &tex, const std::string &text,
   if (texdata->texture && isUpdate) {
     UpdateNativeTexture(texdata->texture, pSurface);
   } else {
-    texdata->texture = CreateNativeTexture(pSurface);
+    texdata->texture = createNativeTexture(pSurface);
   }
   SDL_DestroySurface(temp);
 }

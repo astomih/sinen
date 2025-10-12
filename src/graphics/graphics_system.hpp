@@ -40,6 +40,9 @@ public:
                        float fontSize = 16.0f, float angle = 0.0f);
   static void drawModel(const Model &model, const Transform &transform,
                         const Material &material);
+  static void drawModelInstanced(const Model &model,
+                                 const std::vector<Transform> &transforms,
+                                 const Material &material);
   static void setClearColor(const Color &color) {
     if (color.r >= 0.f && color.g >= 0.f && color.b >= 0.f)
       clearColor = color;

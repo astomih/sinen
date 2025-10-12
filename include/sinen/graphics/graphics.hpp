@@ -55,6 +55,11 @@ public:
 
   static void drawModel(const Model &model, const Transform &transform,
                         const Material &material);
+
+  static void drawModelInstanced(const Model &model,
+                                 const std::vector<Transform> &transforms,
+                                 const Material &material);
+
   /**
    * @brief Set the clear color object
    *

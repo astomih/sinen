@@ -1,12 +1,11 @@
-local texture = sn.Texture()
-texture:fill(sn.Color(1, 1, 1, 1))
-local material = sn.Material()
-material:append_texture(texture)
 local model = sn.Model()
-model:load("Suzanne.gltf")
+model:load("DamagedHelmet.glb")
+local material = model:get_material()
+
 
 local transform = sn.Transform()
 transform.position = sn.Vec3(0, 0, 0)
+transform.rotation = sn.Vec3(90, 0, 0)
 transform.scale = sn.Vec3(1, 1, 1)
 
 

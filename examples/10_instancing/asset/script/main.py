@@ -1,17 +1,20 @@
 import sinen as sn
+import math
 
 model = sn.Model()
 model.load("DamagedHelmet.glb")
 material = model.get_material()
 
-transform = sn.Transform()
-transform.position = sn.Vec3(0, 0, 0)
-transform.rotation = sn.Vec3(90, 0, 0)
-transform.scale = sn.Vec3(1, 1, 1)
+transforms = []
+for i in range(10):
+    for j in range(10):
+        t = sn.Transform()
+        t.position = sn.Vec3(i * 2, 0, j * 2)
+        transforms.append(t)
 
 
-pos = sn.Vec3(1, 1, 3)
-at = sn.Vec3(0)
+pos = sn.Vec3(-3, 5, -3)
+at = sn.Vec3(15, -5, 15)
 up = sn.Vec3(0, 1, 0)
 sn.Graphics.get_camera().lookat(pos, at, up)
 
@@ -23,4 +26,4 @@ def update():
 
 
 def draw():
-    sn.Graphics.draw_model(model, transform, material)
+    sn.Graphics.draw_model_instanced(model, transforms, material)

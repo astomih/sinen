@@ -213,6 +213,7 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def("load_box", &Model::loadBox)
       .def("get_bone_uniform_data", &Model::getBoneUniformData)
       .def("play", &Model::play)
+      .def("get_material", &Model::getMaterial)
       .def("update", &Model::update);
 
   // AABB
@@ -413,6 +414,7 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
                   py::overload_cast<const std::string &, const glm::vec2 &>(
                       &Graphics::drawText))
       .def_static("draw_model", &Graphics::drawModel)
+      .def_static("draw_model_instanced", &Graphics::drawModelInstanced)
       .def_static("set_camera", &Graphics::setCamera)
       .def_static("get_camera", &Graphics::getCamera,
                   py::return_value_policy::reference)

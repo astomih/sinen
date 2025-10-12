@@ -93,21 +93,10 @@ Node createNodeFromAiNode(const aiNode *ainode) {
   }
   return node;
 }
-Model::Model() {};
+Model::Model() {}
 
-void Model::load(std::string_view path) {
-
-  auto fullFilePath = AssetIO::convertFilePath(AssetType::Model, path.data());
-  // Assimp
-  Assimp::Importer importer;
-  const auto *scene = importer.ReadFile(
-      fullFilePath.c_str(),
-      aiProcess_ValidateDataStructure | aiProcess_LimitBoneWeights |
-          aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
-  if (!scene) {
-    Logger::error("Error loading model: %s", importer.GetErrorString());
-    return;
-  }
+void loadAnimation(const aiScene *scene, SkeletalAnimation &skeletalAnimation,
+                   const Model::BoneMap &boneMap) {
   if (scene->HasAnimations()) {
     {
 
@@ -134,13 +123,11 @@ void Model::load(std::string_view path) {
                              anim->mTicksPerSecond, anim->mDuration,
                              nodeAnimMap);
     }
-    uint32_t vertexOffset = 0;
     struct BoneData {
       BoneData() : ids(), weights() {}
       std::vector<uint32_t> ids;
       std::vector<float> weights;
     };
-    auto &boneMap = skeletalAnimation.boneMap;
     for (int i = 0; i < scene->mNumMeshes; i++) {
       const aiMesh *aimesh = scene->mMeshes[i];
       std::unordered_map<uint32_t, BoneData> boneData;
@@ -149,12 +136,7 @@ void Model::load(std::string_view path) {
         aiBone *bone = aimesh->mBones[j];
         std::string boneName = bone->mName.C_Str();
 
-        if (!boneMap.contains(boneName)) {
-          boneMap[boneName].index = static_cast<uint32_t>(boneMap.size());
-          boneMap[boneName].offsetMatrix = convertMatrix(bone->mOffsetMatrix);
-        }
-
-        uint32_t index = boneMap[boneName].index;
+        uint32_t index = boneMap.at(boneName).index;
 
         for (uint32_t k = 0; k < bone->mNumWeights; ++k) {
           uint32_t vertexId = bone->mWeights[k].mVertexId;
@@ -169,23 +151,7 @@ void Model::load(std::string_view path) {
         scene->mMaterials[aimesh->mMaterialIndex]->Get(AI_MATKEY_BASE_COLOR,
                                                        acolor);
       for (uint32_t j = 0; j < aimesh->mNumVertices; ++j) {
-        Vertex vertex;
         AnimationVertex animationVertex;
-        Color color = Color(acolor.r, acolor.g, acolor.b, 1.f);
-        aiVector3D pos = aimesh->mVertices[j];
-        aiVector3D norm = aiVector3D(0, 1, 0);
-        if (aimesh->HasNormals()) {
-          norm = aimesh->mNormals[j];
-        }
-        aiVector3D tex = aimesh->HasTextureCoords(0)
-                             ? aimesh->mTextureCoords[0][j]
-                             : aiVector3D();
-
-        vertex.position = glm::vec3(pos.x, pos.y, pos.z);
-        vertex.normal = glm::vec3(norm.x, norm.y, norm.z);
-        vertex.uv = glm::vec2(tex.x, tex.y);
-
-        vertex.color = color;
         const auto &ids = boneData[j].ids;
         const auto &ws = boneData[j].weights;
         float temp = 0.f;
@@ -195,22 +161,31 @@ void Model::load(std::string_view path) {
           animationVertex.boneIDs[k] = (k < ids.size()) ? float(ids[k]) : 0.0f;
           animationVertex.boneWeights[k] = (k < ws.size()) ? ws[k] : 0.0f;
         }
-
-        mesh.vertices.push_back(vertex);
-        mesh.animationVertices.push_back(animationVertex);
+        skeletalAnimation.animationVertices.push_back(animationVertex);
       }
-      // indices
-      for (uint32_t j = 0; j < aimesh->mNumFaces; j++) {
-        const aiFace &face = aimesh->mFaces[j];
-        for (uint32_t k = 0; k < face.mNumIndices; k++) {
-          uint32_t index = face.mIndices[k];
-          mesh.indices.push_back(vertexOffset + index);
-        }
-      }
-      vertexOffset += aimesh->mNumVertices;
     }
-  } else if (scene->HasMeshes()) {
-    AABB aabb;
+  }
+}
+
+void loadBone(const aiScene *scene, Model::BoneMap &boneMap) {
+  for (int i = 0; i < scene->mNumMeshes; i++) {
+    const aiMesh *aimesh = scene->mMeshes[i];
+    for (uint32_t j = 0; j < aimesh->mNumBones; j++) {
+      aiBone *bone = aimesh->mBones[j];
+      std::string boneName = bone->mName.C_Str();
+
+      if (!boneMap.contains(boneName)) {
+        BoneInfo boneInfo;
+        boneInfo.index = static_cast<uint32_t>(boneMap.size());
+        boneInfo.offsetMatrix = convertMatrix(bone->mOffsetMatrix);
+        boneMap[boneName] = boneInfo;
+      }
+    }
+  }
+}
+
+void loadMesh(const aiScene *scene, Mesh &mesh, AABB &aabb) {
+  if (scene->HasMeshes()) {
     // Iterate through the meshes
     for (uint32_t i = 0; i < scene->mNumMeshes; i++) {
       const aiMesh *aimesh = scene->mMeshes[i];
@@ -233,7 +208,7 @@ void Model::load(std::string_view path) {
         v.normal.y = norm.y;
         v.normal.z = norm.z;
         v.uv.x = uv.x;
-        v.uv.y = uv.y;
+        v.uv.y = 1.f - uv.y;
         v.color = color;
 
         aabb.min.x = Math::min(aabb.min.x, static_cast<float>(pos.x));
@@ -254,46 +229,66 @@ void Model::load(std::string_view path) {
         }
       }
     }
-    this->localAABB = aabb;
   }
+}
 
-  if (scene->HasMaterials()) {
-    for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
-      if (scene->mMaterials[i]->GetTextureCount(aiTextureType_BASE_COLOR) > 0) {
-        aiString texPath;
-        if (scene->mMaterials[i]->GetTexture(aiTextureType_BASE_COLOR, 0,
-                                             &texPath) == AI_SUCCESS) {
-          auto *aiTex = scene->GetEmbeddedTexture(texPath.C_Str());
-          if (aiTex) {
-            Texture texture;
-            std::vector<char> buffer;
-            if (aiTex->mHeight == 0) {
-              buffer.resize(aiTex->mWidth);
-              memcpy(buffer.data(), aiTex->pcData, aiTex->mWidth);
-              texture.loadFromMemory(buffer);
-            } else {
-              texture.loadFromMemory(aiTex->pcData, aiTex->mWidth,
-                                     aiTex->mHeight);
-            }
-            this->material.setTexture(texture);
+void loadMaterial(aiScene *scene, Material &material) {
+  for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
+    if (scene->mMaterials[i]->GetTextureCount(aiTextureType_BASE_COLOR) > 0) {
+      aiString texPath;
+      if (scene->mMaterials[i]->GetTexture(aiTextureType_BASE_COLOR, 0,
+                                           &texPath) == AI_SUCCESS) {
+        auto *aiTex = scene->GetEmbeddedTexture(texPath.C_Str());
+        if (aiTex) {
+          Texture texture;
+          std::vector<char> buffer;
+          if (aiTex->mHeight == 0) {
+            buffer.resize(aiTex->mWidth);
+            memcpy(buffer.data(), aiTex->pcData, aiTex->mWidth);
+            texture.loadFromMemory(buffer);
           } else {
+            texture.loadFromMemory(aiTex->pcData, aiTex->mWidth,
+                                   aiTex->mHeight);
           }
+          material.setTexture(texture);
+        } else {
         }
       }
     }
   }
+}
+
+void Model::load(std::string_view path) {
+
+  auto fullFilePath = AssetIO::convertFilePath(AssetType::Model, path.data());
+  // Assimp
+  Assimp::Importer importer;
+  const auto *scene = importer.ReadFile(
+      fullFilePath.c_str(),
+      aiProcess_ValidateDataStructure | aiProcess_LimitBoneWeights |
+          aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
+  if (!scene) {
+    Logger::error("Error loading model: %s", importer.GetErrorString());
+    return;
+  }
+  skeletalAnimation.owner = this;
+  loadBone(scene, this->boneMap);
+  loadAnimation(scene, this->skeletalAnimation, this->boneMap);
+  loadMesh(scene, this->mesh, this->localAABB);
+  loadMaterial(const_cast<aiScene *>(scene), this->material);
 
   mesh.indexCount = mesh.indices.size();
-  auto viBuffer = createVertexIndexBuffer(mesh);
+  auto viBuffer = createVertexIndexBuffer(mesh.vertices, mesh.indices);
   this->vertexBuffer = viBuffer.first;
-  this->animationVertexBuffer = createAnimationVertexBuffer(mesh);
+  this->animationVertexBuffer =
+      createAnimationVertexBuffer(this->skeletalAnimation.animationVertices);
   this->indexBuffer = viBuffer.second;
 }
 
-void Model::loadFromVertexArray(const Mesh &vArray) {
-  this->mesh = vArray;
+void Model::loadFromVertexArray(const Mesh &mesh) {
+  this->mesh = mesh;
   AABB aabb;
-  for (auto &v : vArray.vertices) {
+  for (auto &v : mesh.vertices) {
     aabb.min.x = Math::min(aabb.min.x, v.position.x);
     aabb.min.y = Math::min(aabb.min.y, v.position.y);
     aabb.min.z = Math::min(aabb.min.z, v.position.z);
@@ -302,7 +297,7 @@ void Model::loadFromVertexArray(const Mesh &vArray) {
     aabb.max.z = Math::max(aabb.max.z, v.position.z);
   }
   this->localAABB = aabb;
-  auto viBuffer = createVertexIndexBuffer(vArray);
+  auto viBuffer = createVertexIndexBuffer(mesh.vertices, mesh.indices);
   this->vertexBuffer = viBuffer.first;
   this->indexBuffer = viBuffer.second;
 }
@@ -313,10 +308,11 @@ void Model::loadBox() { *this = GraphicsSystem::box; }
 const AABB &Model::getAABB() const { return this->localAABB; }
 
 std::pair<px::Ptr<px::Buffer>, px::Ptr<px::Buffer>>
-createVertexIndexBuffer(const Mesh &mesh) {
+createVertexIndexBuffer(const std::vector<Vertex> &vertices,
+                        const std::vector<uint32_t> &indices) {
   auto allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
-  size_t vertexBufferSize = mesh.vertices.size() * sizeof(Vertex);
+  size_t vertexBufferSize = vertices.size() * sizeof(Vertex);
   px::Ptr<px::Buffer> vertexBuffer, indexBuffer;
   px::Buffer::CreateInfo vertexBufferInfo{};
   vertexBufferInfo.allocator = allocator;
@@ -326,7 +322,7 @@ createVertexIndexBuffer(const Mesh &mesh) {
 
   px::Buffer::CreateInfo indexBufferInfo{};
   indexBufferInfo.allocator = allocator;
-  indexBufferInfo.size = mesh.indices.size() * sizeof(uint32_t);
+  indexBufferInfo.size = indices.size() * sizeof(uint32_t);
   indexBufferInfo.usage = px::BufferUsage::Index;
   indexBuffer = device->CreateBuffer(indexBufferInfo);
 
@@ -339,8 +335,7 @@ createVertexIndexBuffer(const Mesh &mesh) {
       info.usage = px::TransferBufferUsage::Upload;
       transferBuffer = device->CreateTransferBuffer(info);
       auto *pMapped = transferBuffer->Map(false);
-      memcpy(pMapped, mesh.vertices.data(),
-             mesh.vertices.size() * sizeof(Vertex));
+      memcpy(pMapped, vertices.data(), vertices.size() * sizeof(Vertex));
       transferBuffer->Unmap();
     }
     {
@@ -373,7 +368,7 @@ createVertexIndexBuffer(const Mesh &mesh) {
     info.usage = px::TransferBufferUsage::Upload;
     transferBuffer = device->CreateTransferBuffer(info);
     auto *pMapped = transferBuffer->Map(false);
-    memcpy(pMapped, mesh.indices.data(), indexBufferInfo.size);
+    memcpy(pMapped, indices.data(), indexBufferInfo.size);
     transferBuffer->Unmap();
   }
   {
@@ -402,13 +397,13 @@ createVertexIndexBuffer(const Mesh &mesh) {
   }
   return std::make_pair(vertexBuffer, indexBuffer);
 }
-px::Ptr<px::Buffer> createAnimationVertexBuffer(const Mesh &mesh) {
-  if (mesh.animationVertices.empty())
+px::Ptr<px::Buffer>
+createAnimationVertexBuffer(const std::vector<AnimationVertex> &vertices) {
+  if (vertices.empty())
     return nullptr;
   auto allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
-  size_t vertexBufferSize =
-      mesh.animationVertices.size() * sizeof(AnimationVertex);
+  size_t vertexBufferSize = vertices.size() * sizeof(AnimationVertex);
   px::Ptr<px::Buffer> vertexBuffer;
   px::Buffer::CreateInfo vertexBufferInfo{};
   vertexBufferInfo.allocator = allocator;
@@ -425,8 +420,8 @@ px::Ptr<px::Buffer> createAnimationVertexBuffer(const Mesh &mesh) {
       info.usage = px::TransferBufferUsage::Upload;
       transferBuffer = device->CreateTransferBuffer(info);
       auto *pMapped = transferBuffer->Map(false);
-      memcpy(pMapped, mesh.animationVertices.data(),
-             mesh.animationVertices.size() * sizeof(AnimationVertex));
+      memcpy(pMapped, vertices.data(),
+             vertices.size() * sizeof(AnimationVertex));
       transferBuffer->Unmap();
     }
     {
@@ -466,12 +461,12 @@ void Model::update(float delta_time) {
 }
 
 void Model::loadBoneUniform(float start) {
-  for (auto &bone : skeletalAnimation.boneMap) {
-    assert(bone.second.index <= skeletalAnimation.boneMap.size());
+  for (auto &bone : boneMap) {
+    assert(bone.second.index <= boneMap.size());
   }
   skeletalAnimation.update(start);
-  for (auto &bone : skeletalAnimation.boneMap) {
-    assert(bone.second.index <= skeletalAnimation.boneMap.size());
+  for (auto &bone : boneMap) {
+    assert(bone.second.index <= boneMap.size());
   }
   auto matrices = skeletalAnimation.getFinalBoneMatrices();
   boneUniformData.clear();
@@ -512,10 +507,10 @@ void SkeletalAnimation::readNodeHierarchy(float animTime, const Node &node,
 
   auto globalTransform = parentTransform * nodeTransform;
 
+  const auto &boneMap = owner->getBoneMap();
   if (boneMap.contains(nodeName)) {
-    boneMap[nodeName].finalTransform = globalInverseTransform *
-                                       globalTransform *
-                                       boneMap[nodeName].offsetMatrix;
+    finalBoneMatrices[nodeName] = globalInverseTransform * globalTransform *
+                                  boneMap.at(nodeName).offsetMatrix;
   }
 
   for (const auto &child : node.children) {
@@ -589,10 +584,10 @@ glm::mat4 SkeletalAnimation::interpolateTransform(const NodeAnimation &channel,
   return m;
 }
 std::vector<glm::mat4> SkeletalAnimation::getFinalBoneMatrices() const {
-  std::vector<glm::mat4> result(boneMap.size(), glm::mat4(1.0f));
-  for (const auto &[name, info] : boneMap) {
-    if (boneMap.contains(name)) {
-      result[info.index] = info.finalTransform;
+  std::vector<glm::mat4> result(finalBoneMatrices.size(), glm::mat4(1.0f));
+  for (const auto &[name, mat] : finalBoneMatrices) {
+    if (finalBoneMatrices.contains(name)) {
+      result[owner->getBoneMap().at(name).index] = mat;
     } else {
       std::cerr << "[Warning] bone '" << name
                 << "' has no finalTransform. Using identity.\n";

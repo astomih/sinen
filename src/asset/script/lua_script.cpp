@@ -276,6 +276,7 @@ bool LuaScript::Initialize() {
     v["get_bone_uniform_data"] = &Model::getBoneUniformData;
     v["play"] = &Model::play;
     v["update"] = &Model::update;
+    v["get_material"] = &Model::getMaterial;
   }
   {
     auto v = registerClass<AABB>(lua, "AABB");
@@ -465,6 +466,15 @@ bool LuaScript::Initialize() {
           Graphics::drawText(text, position, color, fontSize, angle);
         });
     v["draw_model"] = &Graphics::drawModel;
+    v["draw_model_instanced"] = [](const Model &model,
+                                   sol::table transformsTable,
+                                   const Material &material) {
+      std::vector<Transform> transforms;
+      for (auto &item : transformsTable) {
+        transforms.push_back(item.second.as<Transform>());
+      }
+      Graphics::drawModelInstanced(model, transforms, material);
+    };
     v["set_camera"] = &Graphics::setCamera;
     v["get_camera"] = &Graphics::getCamera;
     v["set_camera2d"] = &Graphics::setCamera2D;

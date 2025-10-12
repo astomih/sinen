@@ -35,22 +35,24 @@ bool Texture::load(std::string_view fileName) {
   }
   rawData->pSurface = pSurface;
 
-  rawData->texture = CreateNativeTexture(rawData->pSurface);
+  rawData->texture = createNativeTexture(rawData->pSurface);
   return true;
 }
 bool Texture::loadFromMemory(std::vector<char> &buffer) const {
   auto rawData = getTextureRawData(textureData);
-  auto *io =
-      ::SDL_IOFromMem(reinterpret_cast<void *>(buffer.data()), buffer.size());
+  auto *io = ::SDL_IOFromConstMem(buffer.data(), buffer.size());
   if (!io) {
     return false;
   }
-  auto *src_surface = ::IMG_Load_IO(io, true);
-  if (!src_surface) {
+  auto *pSrcSurface = ::IMG_Load_IO(io, true);
+  if (!pSrcSurface) {
     return false;
   }
-  memcpy(rawData->pSurface, src_surface, sizeof(SDL_Surface));
-  rawData->texture = CreateNativeTexture(rawData->pSurface);
+  rawData->pSurface = ::SDL_CreateSurface(pSrcSurface->w, pSrcSurface->h,
+                                          SDL_PIXELFORMAT_RGBA32);
+  ::SDL_BlitSurface(pSrcSurface, nullptr, rawData->pSurface, nullptr);
+  rawData->texture = createNativeTexture(rawData->pSurface);
+  SDL_DestroySurface(pSrcSurface);
   return true;
 }
 
@@ -58,34 +60,35 @@ bool Texture::loadFromMemory(void *pPixels, uint32_t width, uint32_t height) {
   auto texdata = getTextureRawData(textureData);
   texdata->pSurface = ::SDL_CreateSurfaceFrom(
       width, height, SDL_PIXELFORMAT_RGBA8888, pPixels, width * 4);
-  texdata->texture = CreateNativeTexture(pPixels, width, height);
+  texdata->texture = createNativeTexture(
+      pPixels, px::TextureFormat::R8G8B8A8_UNORM, width, height);
   return true;
 }
 
 void Texture::fill(const Color &color) {
-  auto texdata = getTextureRawData(textureData);
+  auto data = getTextureRawData(textureData);
   ::SDL_FillSurfaceRect(
-      texdata->pSurface, NULL,
+      data->pSurface, nullptr,
       ::SDL_MapRGBA(SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_RGBA32), nullptr,
                     color.r * 255, color.g * 255, color.b * 255,
                     color.a * 255));
-  if (texdata->texture) {
-    UpdateNativeTexture(texdata->texture, texdata->pSurface);
+  if (data->texture) {
+    UpdateNativeTexture(data->texture, data->pSurface);
   } else {
-    texdata->texture = CreateNativeTexture(texdata->pSurface);
+    data->texture = createNativeTexture(data->pSurface);
   }
 }
 void Texture::blend(const Color &color) {
-  auto texdata = getTextureRawData(textureData);
-  SDL_SetSurfaceBlendMode(texdata->pSurface, SDL_BLENDMODE_BLEND);
-  SDL_SetSurfaceColorMod(texdata->pSurface, color.r * 255, color.g * 255,
+  auto data = getTextureRawData(textureData);
+  SDL_SetSurfaceBlendMode(data->pSurface, SDL_BLENDMODE_BLEND);
+  SDL_SetSurfaceColorMod(data->pSurface, color.r * 255, color.g * 255,
                          color.b * 255);
-  SDL_SetSurfaceAlphaMod(texdata->pSurface, color.a * 255);
-  SDL_BlitSurface(texdata->pSurface, NULL, texdata->pSurface, NULL);
-  if (texdata->texture) {
-    UpdateNativeTexture(texdata->texture, texdata->pSurface);
+  SDL_SetSurfaceAlphaMod(data->pSurface, color.a * 255);
+  SDL_BlitSurface(data->pSurface, nullptr, data->pSurface, nullptr);
+  if (data->texture) {
+    UpdateNativeTexture(data->texture, data->pSurface);
   } else {
-    texdata->texture = CreateNativeTexture(texdata->pSurface);
+    data->texture = createNativeTexture(data->pSurface);
   }
 }
 

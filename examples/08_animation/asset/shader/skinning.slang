@@ -61,6 +61,7 @@ FSOutput FSMain(FSInput input) {
   float diffuse = max(dot(input.normal, lightDir), 0.0);
   float3 ambient = float3(0.2);
   float3 result = diffuse * input.color.rgb + ambient;
+  result *= sampledTexture.Sample(input.uv).rgb;
   output.color = float4(result, input.color.a);
 
   return output;

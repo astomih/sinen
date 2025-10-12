@@ -40,6 +40,11 @@ void Graphics::drawModel(const Model &model, const Transform &transform,
                          const Material &material) {
   GraphicsSystem::drawModel(model, transform, material);
 }
+void Graphics::drawModelInstanced(const Model &model,
+                                  const std::vector<Transform> &transforms,
+                                  const Material &material) {
+  GraphicsSystem::drawModelInstanced(model, transforms, material);
+}
 
 void Graphics::setClearColor(const Color &color) {
   GraphicsSystem::setClearColor(color);

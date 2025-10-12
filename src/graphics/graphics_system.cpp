@@ -495,11 +495,20 @@ void GraphicsSystem::drawModel(const Model &model, const Transform &transform,
   draw3D.position = transform.position;
   draw3D.scale = transform.scale;
   draw3D.rotation = transform.rotation;
-  if (model.getMaterial().getTextureCount() < 1)
-    draw3D.material = material;
-  else
-    draw3D.material = model.getMaterial();
+  draw3D.material = material;
   draw3D.model = model;
+  GraphicsSystem::drawBase3D(draw3D);
+}
+void GraphicsSystem::drawModelInstanced(
+    const Model &model, const std::vector<Transform> &transforms,
+    const Material &material) {
+  sinen::Draw3D draw3D;
+  draw3D.position = {0, 0, 0};
+  draw3D.scale = {1, 1, 1};
+  draw3D.rotation = {0, 0, 0};
+  draw3D.material = material;
+  draw3D.model = model;
+  draw3D.worlds = transforms;
   GraphicsSystem::drawBase3D(draw3D);
 }
 

@@ -23,7 +23,6 @@ public:
    */
   void pushIndices(std::uint32_t indiceArray[], size_t count);
   std::vector<Vertex> vertices;
-  std::vector<AnimationVertex> animationVertices;
   std::vector<uint32_t> indices;
   std::string materialName;
   uint32_t indexCount;

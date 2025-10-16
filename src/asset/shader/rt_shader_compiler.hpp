@@ -1,9 +1,9 @@
-#ifndef RT_SHADER_COMPILER_HPP
-#define RT_SHADER_COMPILER_HPP
+#ifndef SINEN_SHADER_COMPILER_HPP
+#define SINEN_SHADER_COMPILER_HPP
 #include <string_view>
 #include <vector>
 
-namespace rsc {
+namespace sinen {
 class ShaderCompiler {
 public:
   enum class Type { VERTEX, FRAGMENT, COMPUTE };
@@ -13,10 +13,17 @@ public:
     DXIL,
     WGSL,
   };
+
+  struct ReflectionData {
+    uint32_t numUniformBuffers;
+    uint32_t numCombinedSamplers;
+  };
+
   ShaderCompiler() = default;
 
-  std::vector<char> compile(std::string_view sourcePath, Type type, Language lang);
+  std::vector<char> compile(std::string_view sourcePath, Type type,
+                            Language lang, ReflectionData &reflectionData);
 };
-} // namespace rsc
+} // namespace sinen
 
-#endif // RT_SHADER_COMPILER_HPP
+#endif // SINEN_SHADER_COMPILER_HPP

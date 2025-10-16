@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <memory>
-#include <sstream>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -186,6 +186,7 @@ void loadBone(const aiScene *scene, Model::BoneMap &boneMap) {
 
 void loadMesh(const aiScene *scene, Mesh &mesh, AABB &aabb) {
   if (scene->HasMeshes()) {
+    uint32_t baseIndex = 0;
     // Iterate through the meshes
     for (uint32_t i = 0; i < scene->mNumMeshes; i++) {
       const aiMesh *aimesh = scene->mMeshes[i];
@@ -221,38 +222,82 @@ void loadMesh(const aiScene *scene, Mesh &mesh, AABB &aabb) {
         mesh.vertices.push_back(v);
       }
       // Process the indices
+      uint32_t maxIndex = 0;
       for (uint32_t j = 0; j < aimesh->mNumFaces; j++) {
         const aiFace &face = aimesh->mFaces[j];
         for (uint32_t k = 0; k < face.mNumIndices; k++) {
           uint32_t index = face.mIndices[k];
-          mesh.indices.push_back(index);
+          maxIndex = Math::max(maxIndex, index);
+          mesh.indices.push_back(baseIndex + index);
         }
       }
+      baseIndex += aimesh->mNumVertices;
     }
   }
 }
-
+std::optional<Texture> loadTexture(aiScene *scene, aiMaterial *material,
+                                   aiTextureType type) {
+  aiString texPath;
+  if (material->GetTexture(type, 0, &texPath) != AI_SUCCESS) {
+    return std::nullopt;
+  }
+  auto *aiTex = scene->GetEmbeddedTexture(texPath.C_Str());
+  if (!aiTex) {
+    return std::nullopt;
+  }
+  Texture texture;
+  std::vector<char> buffer;
+  if (aiTex->mHeight == 0) {
+    buffer.resize(aiTex->mWidth);
+    memcpy(buffer.data(), aiTex->pcData, aiTex->mWidth);
+    texture.loadFromMemory(buffer);
+  } else {
+    texture.loadFromMemory(aiTex->pcData, aiTex->mWidth, aiTex->mHeight);
+  }
+  return texture;
+}
 void loadMaterial(aiScene *scene, Material &material) {
   for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
-    if (scene->mMaterials[i]->GetTextureCount(aiTextureType_BASE_COLOR) > 0) {
-      aiString texPath;
-      if (scene->mMaterials[i]->GetTexture(aiTextureType_BASE_COLOR, 0,
-                                           &texPath) == AI_SUCCESS) {
-        auto *aiTex = scene->GetEmbeddedTexture(texPath.C_Str());
-        if (aiTex) {
-          Texture texture;
-          std::vector<char> buffer;
-          if (aiTex->mHeight == 0) {
-            buffer.resize(aiTex->mWidth);
-            memcpy(buffer.data(), aiTex->pcData, aiTex->mWidth);
-            texture.loadFromMemory(buffer);
-          } else {
-            texture.loadFromMemory(aiTex->pcData, aiTex->mWidth,
-                                   aiTex->mHeight);
-          }
-          material.setTexture(texture);
-        } else {
-        }
+    {
+      auto texture =
+          loadTexture(scene, scene->mMaterials[i], aiTextureType_BASE_COLOR);
+      if (texture.has_value()) {
+        material.appendTexture(texture.value());
+      }
+    }
+    {
+      auto texture =
+          loadTexture(scene, scene->mMaterials[i], aiTextureType_NORMALS);
+      if (texture.has_value()) {
+        material.appendTexture(texture.value());
+      }
+    }
+    {
+      auto texture = loadTexture(scene, scene->mMaterials[i],
+                                 aiTextureType_DIFFUSE_ROUGHNESS);
+      if (texture.has_value()) {
+        material.appendTexture(texture.value());
+      }
+    }
+    {
+      auto texture =
+          loadTexture(scene, scene->mMaterials[i], aiTextureType_METALNESS);
+      if (texture.has_value()) {
+        material.appendTexture(texture.value());
+      }
+    }
+    {
+      auto texture =
+          loadTexture(scene, scene->mMaterials[i], aiTextureType_EMISSIVE);
+      if (texture.has_value()) {
+        material.appendTexture(texture.value());
+      }
+    }
+    {
+      auto texture =
+          loadTexture(scene, scene->mMaterials[i], aiTextureType_LIGHTMAP);
+      if (texture.has_value()) {
+        material.appendTexture(texture.value());
       }
     }
   }

@@ -108,15 +108,16 @@ void Shader::loadFragmentShader(std::string_view fragment_shader,
   fsInfo.numUniformBuffers = numUniformData + 1;
   shader = device->CreateShader(fsInfo);
 }
-void Shader::compileAndLoadVertexShader(std::string_view vertex_shader,
-                                        int numUniformData) {
+void Shader::compileAndLoadVertexShader(std::string_view vertex_shader) {
 
   std::string vsStr = vertex_shader.data();
 
   // TODO: add support for other languages
-  rsc::ShaderCompiler compiler;
-  auto spirv = compiler.compile(vsStr, rsc::ShaderCompiler::Type::VERTEX,
-                                rsc::ShaderCompiler::Language::SPIRV);
+  ShaderCompiler compiler;
+  ShaderCompiler::ReflectionData reflectionData;
+  auto spirv =
+      compiler.compile(vsStr, ShaderCompiler::Type::VERTEX,
+                       ShaderCompiler::Language::SPIRV, reflectionData);
 
   auto *allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
@@ -131,15 +132,17 @@ void Shader::compileAndLoadVertexShader(std::string_view vertex_shader,
   vsInfo.numSamplers = 0;
   vsInfo.numStorageBuffers = 0;
   vsInfo.numStorageTextures = 0;
-  vsInfo.numUniformBuffers = numUniformData + 1;
+  vsInfo.numUniformBuffers = reflectionData.numUniformBuffers;
   shader = device->CreateShader(vsInfo);
 }
-void Shader::compileAndLoadFragmentShader(std::string_view fragment_shader,
-                                          int numUniformData) {
+void Shader::compileAndLoadFragmentShader(std::string_view fragment_shader) {
+
   std::string fsStr = fragment_shader.data();
-  rsc::ShaderCompiler compiler;
-  auto spirv = compiler.compile(fsStr, rsc::ShaderCompiler::Type::FRAGMENT,
-                                rsc::ShaderCompiler::Language::SPIRV);
+  ShaderCompiler compiler;
+  ShaderCompiler::ReflectionData reflectionData;
+  auto spirv =
+      compiler.compile(fsStr, ShaderCompiler::Type::FRAGMENT,
+                       ShaderCompiler::Language::SPIRV, reflectionData);
 
   auto *allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
@@ -151,10 +154,10 @@ void Shader::compileAndLoadFragmentShader(std::string_view fragment_shader,
   fsInfo.entrypoint = "main";
   fsInfo.format = px::ShaderFormat::SPIRV;
   fsInfo.stage = px::ShaderStage::Fragment;
-  fsInfo.numSamplers = 1;
+  fsInfo.numSamplers = reflectionData.numCombinedSamplers;
   fsInfo.numStorageBuffers = 0;
   fsInfo.numStorageTextures = 0;
-  fsInfo.numUniformBuffers = numUniformData + 1;
+  fsInfo.numUniformBuffers = reflectionData.numUniformBuffers;
   shader = device->CreateShader(fsInfo);
 }
 } // namespace sinen

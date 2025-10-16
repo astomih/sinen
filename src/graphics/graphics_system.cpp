@@ -301,7 +301,7 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
   renderPass->BindVertexBuffers(0, vertexBufferBindings);
   renderPass->BindIndexBuffer(indexBufferBinding, px::IndexElementSize::Uint32);
 
-  commandBuffer->PushVertexUniformData(0, &mat, sizeof(glm::mat4) * 3);
+  commandBuffer->PushUniformData(0, &mat, sizeof(glm::mat4) * 3);
   renderPass->DrawIndexedPrimitives(model.getMesh().indexCount, 1, 0, 0, 0);
 }
 
@@ -445,7 +445,7 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
   renderPass->BindVertexBuffers(0, vertexBufferBindings);
   renderPass->BindIndexBuffer(indexBufferBinding, px::IndexElementSize::Uint32);
 
-  commandBuffer->PushVertexUniformData(0, &mat, sizeof(glm::mat4) * 3);
+  commandBuffer->PushUniformData(0, &mat, sizeof(glm::mat4) * 3);
   uint32_t numIndices = model.getMesh().indexCount;
   uint32_t numInstance = isInstance ? instanceSize : 1;
   renderPass->DrawIndexedPrimitives(numIndices, numInstance, 0, 0, 0);
@@ -529,8 +529,8 @@ void GraphicsSystem::bindPipeline2D(const GraphicsPipeline2D &pipeline) {
 }
 void GraphicsSystem::bindDefaultPipeline2D() { currentPipeline2D = pipeline2D; }
 void GraphicsSystem::setUniformData(uint32_t slot, const UniformData &data) {
-  currentCommandBuffer->PushVertexUniformData(slot, data.data.data(),
-                                              data.data.size() * sizeof(float));
+  currentCommandBuffer->PushUniformData(slot, data.data.data(),
+                                        data.data.size() * sizeof(float));
 }
 void GraphicsSystem::setRenderTarget(const RenderTexture &texture) {
   auto tex = texture.getTexture();

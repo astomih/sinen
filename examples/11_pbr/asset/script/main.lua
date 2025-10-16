@@ -1,0 +1,47 @@
+local model = sn.Model()
+model:load("DamagedHelmet.glb")
+local material = model:get_material()
+
+
+local transform = sn.Transform()
+transform.position = sn.Vec3(0, 0, 0)
+transform.rotation = sn.Vec3(90, 0, 0)
+transform.scale = sn.Vec3(1, 1, 1)
+
+
+local pos = sn.Vec3(0.7, 0.7, 2.1)
+local at = sn.Vec3(0)
+local up = sn.Vec3(0, 1, 0)
+sn.Graphics.get_camera():lookat(pos, at, up)
+
+local vertex_shader = sn.Shader()
+vertex_shader:compile_load_vertex_shader("shader_custom.slang")
+local fragment_shader = sn.Shader()
+fragment_shader:compile_load_fragment_shader("shader_custom.slang")
+local pipeline3d = sn.GraphicsPipeline3D()
+pipeline3d:set_vertex_shader(vertex_shader)
+pipeline3d:set_fragment_shader(fragment_shader)
+pipeline3d:build()
+
+local light_pos = sn.Vec3(7, 3, 7)
+
+local uniform_data = sn.UniformData()
+uniform_data:add(pos.x)
+uniform_data:add(pos.y)
+uniform_data:add(pos.z)
+uniform_data:add(light_pos.x)
+uniform_data:add(light_pos.y)
+uniform_data:add(light_pos.z)
+
+function update()
+    if sn.Keyboard.is_pressed(sn.Keyboard.ESCAPE) then
+        sn.Script.load("main", ".")
+    end
+    transform.rotation.z = transform.rotation.z + sn.Time.delta() * 10
+end
+
+function draw()
+    sn.Graphics.bind_pipeline3d(pipeline3d)
+    sn.Graphics.set_uniform_data(1, uniform_data)
+    sn.Graphics.draw_model(model, transform, material)
+end

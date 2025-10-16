@@ -181,8 +181,8 @@ sn = {
     ---@class Shader
     ---@field load_vertex_shader fun(self: Shader, path: string, uniform_count: integer)
     ---@field load_fragment_shader fun(self: Shader, path: string, uniform_count: integer)
-    ---@field compile_load_vertex_shader fun(self: Shader, source: string, uniform_count: integer)
-    ---@field compile_load_fragment_shader fun(self: Shader, source: string, uniform_count: integer)
+    ---@field compile_load_vertex_shader fun(self: Shader, source: string)
+    ---@field compile_load_fragment_shader fun(self: Shader, source: string)
     ---@return Shader
     Shader = function() return {} end,
 

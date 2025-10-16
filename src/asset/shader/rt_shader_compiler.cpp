@@ -7,7 +7,11 @@
 #include <vector>
 
 #include "rt_shader_compiler.hpp"
+
+#include "core/io/file.hpp"
+
 #include <core/io/asset_io.hpp>
+#include <core/logger/logger.hpp>
 
 #include <slang-com-helper.h>
 #include <slang-com-ptr.h>
@@ -17,15 +21,54 @@
 #define popen _popen
 #define pclose _pclose
 #endif
-namespace rsc {
+namespace sinen {
 void diagnoseIfNeeded(slang::IBlob *diagnosticsBlob) {
   if (diagnosticsBlob != nullptr) {
     std::cout << (const char *)diagnosticsBlob->getBufferPointer() << std::endl;
   }
 }
+ShaderCompiler::ReflectionData getReflectionData(slang::IComponentType *program,
+                                                 ShaderCompiler::Type type) {
+  auto *programLayout = program->getLayout();
+  ShaderCompiler::ReflectionData data;
+  data.numUniformBuffers = 0;
+  data.numCombinedSamplers = 0;
+
+  if (!programLayout)
+    return data;
+
+  {
+
+    slang::TypeLayoutReflection *typeLayout =
+        programLayout->getGlobalParamsTypeLayout();
+    const int rangeCount = typeLayout->getBindingRangeCount();
+
+    int numUniformBuffers = 0;
+    for (int i = 0; i < rangeCount; ++i) {
+      auto rangeType = typeLayout->getBindingRangeType(i);
+      if (rangeType == slang::BindingType::CombinedTextureSampler) {
+        data.numCombinedSamplers++;
+      }
+      if (rangeType == slang::BindingType::ConstantBuffer) {
+        data.numUniformBuffers++;
+      }
+    }
+  }
+
+  // Slang::ComPtr<ISlangBlob> blob;
+  // programLayout->toJson(blob.writeRef());
+  // if (blob) {
+  //   File file;
+  //   file.open("slang.json", File::Mode::w);
+  //   file.write(blob->getBufferPointer(), blob->getBufferSize(), 1);
+  //   file.close();
+  // }
+  return data;
+}
 
 std::vector<char> ShaderCompiler::compile(std::string_view sourcePath,
-                                          Type type, Language lang) {
+                                          Type type, Language lang,
+                                          ReflectionData &reflectionData) {
 #if SINEN_USE_SLANG
   using namespace slang;
 
@@ -141,6 +184,8 @@ std::vector<char> ShaderCompiler::compile(std::string_view sourcePath,
     }
   }
 
+  // Get reflection (num bindings, etc.)
+  reflectionData = getReflectionData(linkedProgram, type);
   // spirvCode to std::vector<char>
   std::vector<char> spirvData(spirvCode->getBufferSize());
   std::memcpy(spirvData.data(), spirvCode->getBufferPointer(),
@@ -151,4 +196,4 @@ std::vector<char> ShaderCompiler::compile(std::string_view sourcePath,
   return {};
 #endif
 }
-} // namespace rsc
+} // namespace sinen

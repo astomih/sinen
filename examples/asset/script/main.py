@@ -5,7 +5,7 @@ from gui.button import Button, gm
 button = Button()
 
 example_dirs = sn.FileSystem.enumerate_directory(".")
-num_examples = 10
+num_examples = 11
 offset = num_examples * 16.0
 
 

@@ -7,9 +7,9 @@ draw2d = sn.Draw2D(texture)
 draw2d.scale = texture.size()
 
 vertex_shader = sn.Shader()
-vertex_shader.compile_and_load_vertex_shader("shader_custom.slang", 1)
+vertex_shader.compile_and_load_vertex_shader("shader_custom.slang")
 fragment_shader = sn.Shader()
-fragment_shader.compile_and_load_fragment_shader("shader_custom.slang", 0)
+fragment_shader.compile_and_load_fragment_shader("shader_custom.slang")
 
 pipeline2d = sn.GraphicsPipeline2D()
 pipeline2d.set_vertex_shader(vertex_shader)

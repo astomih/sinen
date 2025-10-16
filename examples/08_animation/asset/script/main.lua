@@ -1,16 +1,16 @@
 local texture = sn.Texture()
 texture:fill(sn.Color(1, 1, 1, 1))
 local model = sn.Model()
-model:load("CesiumMan.glb")
+model:load("BrainStem.glb")
 local draw3d = sn.Draw3D(texture)
 draw3d.position = sn.Vec3(0, 0, 0)
 draw3d.model = model
 draw3d.material = model:get_material()
 
 local vertex_shader = sn.Shader()
-vertex_shader:compile_load_vertex_shader("skinning.slang", 1)
+vertex_shader:compile_load_vertex_shader("skinning.slang")
 local fragment_shader = sn.Shader()
-fragment_shader:compile_load_fragment_shader("skinning.slang", 0)
+fragment_shader:compile_load_fragment_shader("skinning.slang")
 
 local pipeline = sn.GraphicsPipeline3D()
 pipeline:set_vertex_shader(vertex_shader)

@@ -6,9 +6,9 @@ model = sn.Model()
 model.load("BrainStem.glb")
 
 vertex_shader = sn.Shader()
-vertex_shader.compile_and_load_vertex_shader("skinning.slang", 1)
+vertex_shader.compile_and_load_vertex_shader("skinning.slang")
 fragment_shader = sn.Shader()
-fragment_shader.compile_and_load_fragment_shader("skinning.slang", 0)
+fragment_shader.compile_and_load_fragment_shader("skinning.slang")
 
 pipeline = sn.GraphicsPipeline3D()
 pipeline.set_vertex_shader(vertex_shader)

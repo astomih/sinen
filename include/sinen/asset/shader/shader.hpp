@@ -20,10 +20,8 @@ public:
   void loadVertexShader(std::string_view vertex_shader, int numUniformData);
   void loadFragmentShader(std::string_view fragment_shader, int numUniformData);
 
-  void compileAndLoadVertexShader(std::string_view vertex_shader,
-                                  int numUniformData);
-  void compileAndLoadFragmentShader(std::string_view fragment_shader,
-                                    int numUniformData);
+  void compileAndLoadVertexShader(std::string_view vertex_shader);
+  void compileAndLoadFragmentShader(std::string_view fragment_shader);
 
 private:
   friend class GraphicsPipeline2D;

@@ -7,6 +7,7 @@ for i = 0, 10 do
   for j = 0, 10 do
     local t = sn.Transform()
     t.position = sn.Vec3(i * 2, 0, j * 2)
+    t.rotation = sn.Vec3(90, 0, 180)
     table.insert(transforms, t)
   end
 end

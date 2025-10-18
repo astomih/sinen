@@ -10,6 +10,10 @@ transform.position = sn.Vec3(0, 0, 0)
 transform.rotation = sn.Vec3(90, 0, 0)
 transform.scale = sn.Vec3(1, 1, 1)
 
+light_transform = sn.Transform()
+light_transform.position = sn.Vec3(0)
+light_transform.rotation = sn.Vec3(90, 0, 0)
+light_transform.scale = sn.Vec3(1)
 
 pos = sn.Vec3(0.7, 0.7, 2.1)
 at = sn.Vec3(0)
@@ -47,15 +51,22 @@ def update():
         light_pos.x = light_pos.x - sn.Time.delta() * 5
     if sn.Keyboard.is_down(sn.Keyboard.RIGHT):
         light_pos.x = light_pos.x + sn.Time.delta() * 5
-    uniform_data.change(light_pos.x, 3)
     if sn.Keyboard.is_down(sn.Keyboard.UP):
+        if sn.Keyboard.is_down(sn.Keyboard.LSHIFT):
+            light_pos.z = light_pos.z + sn.Time.delta() * 5
         light_pos.y = light_pos.y + sn.Time.delta() * 5
     if sn.Keyboard.is_down(sn.Keyboard.DOWN):
+        if sn.Keyboard.is_down(sn.Keyboard.LSHIFT):
+            light_pos.z = light_pos.z - sn.Time.delta() * 5
         light_pos.y = light_pos.y - sn.Time.delta() * 5
+    uniform_data.change(light_pos.x, 3)
     uniform_data.change(light_pos.y, 4)
+    uniform_data.change(light_pos.z, 5)
+    light_transform.position = light_pos
 
 
 def draw():
     sn.Graphics.bind_pipeline3d(pipeline3d)
     sn.Graphics.set_uniform_data(1, uniform_data)
     sn.Graphics.draw_model(model, transform, material)
+    sn.Graphics.draw_model(model, light_transform, material)

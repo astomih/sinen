@@ -15,7 +15,6 @@ struct VSOutput {
   float3 T : TEXCOORD2;
   float3 B : TEXCOORD3;
   float3 N : TEXCOORD4;
-  float4x4 worldPos : TEXCOORD5;
 };
 
 #define UNIFORM_VERT(name, bind)                                               \
@@ -44,8 +43,7 @@ VSOutput VSMain(VSInput input) {
   VSOutput output;
 
   float4 wpos = mul(world, float4(input.position, 1.0));
-  output.out = (mul(proj, mul(view, wpos)));
-  output.normal = normalize(mul(world, float4(input.normal, 0.0)).xyz);
+  output.out = mul(proj, mul(view, wpos));
   output.uv = input.uv;
   output.color = input.color;
   output.pos = wpos.xyz;
@@ -53,18 +51,16 @@ VSOutput VSMain(VSInput input) {
   float3x3 W3x3 = (float3x3)world;
   float3x3 Nmat = transpose(invert(W3x3));
 
-  float3 N = normalize(mul(input.normal, Nmat));
-  float3 T = normalize(mul(input.tangent.xyz, W3x3));
+  float3 N = normalize(mul(Nmat, input.normal));
+  float3 T = normalize(mul(W3x3, input.tangent.xyz));
 
   T = normalize(T - N * dot(T, N));
-
   float3 B = cross(N, T) * input.tangent.w;
 
+  output.normal = N;
   output.T = T;
   output.B = B;
   output.N = N;
-
-  output.worldPos = world;
 
   return output;
 };
@@ -77,7 +73,6 @@ struct FSInput {
   float3 T : TEXCOORD2;
   float3 B : TEXCOORD3;
   float3 N : TEXCOORD4;
-  float4x4 worldPos : TEXCOORD5;
 };
 
 struct FSOutput {
@@ -134,8 +129,8 @@ UNIFORM_FRAG(Positions, 1) {
   float lightPosz;
   float intensity_;
 }
-float3 computePBR(float3 pos, float3 normal, float2 uv, float3 t, float3 b,
-                  float3 n, Light lights[], int lightCount = 1) {
+float3 computePBR(float3 pos, float2 uv, float3 t, float3 b, float3 n,
+                  Light lights[], int lightCount = 1) {
   float3 albedo = albedoMap.Sample(uv).rgb;
   albedo = float3(albedo.x, albedo.y, albedo.z);
 
@@ -187,17 +182,13 @@ float3 computePBR(float3 pos, float3 normal, float2 uv, float3 t, float3 b,
 FSOutput FSMain(FSInput input) {
   FSOutput output;
   Light light[1];
-
   float3 lightPos = float3(lightPosx, lightPosy, lightPosz);
-
-  light[0].position = mul(input.worldPos, float4(lightPos, 1.0)).xyz;
+  light[0].position = lightPos; // ワールドのまま
   light[0].color = float3(1, 1, 1);
   light[0].intensity = intensity_;
 
-  output.color = float4(computePBR(input.pos, input.normal, input.uv, input.T,
-                                   input.B, input.N, light),
-                        1.0);
-
+  output.color = float4(
+      computePBR(input.pos, input.uv, input.T, input.B, input.N, light), 1.0);
   return output;
 }
 

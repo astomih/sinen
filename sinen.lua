@@ -174,7 +174,7 @@ sn = {
 
     ---@class UniformData
     ---@field add fun(self: UniformData, value: any)
-    ---@field change fun(self: UniformData,index: integer,  value: number)
+    ---@field change fun(self: UniformData, value: number,  index: integer)
     ---@return UniformData
     UniformData = function() return {} end,
 
@@ -272,6 +272,7 @@ sn = {
     ---@field set_fragment_shader fun(self: GraphicsPipeline3D, shader: Shader)
     ---@field set_instanced fun(self: GraphicsPipeline3D, instanced: boolean)
     ---@field set_animation fun(self: GraphicsPipeline3D, isAnimation: boolean)
+    ---@field set_enable_tangent fun(self: GraphicsPipeline3D, enableTangents: boolean)
     ---@field build fun(self: GraphicsPipeline3D)
     ---@return GraphicsPipeline3D
     GraphicsPipeline3D = function() return {} end,

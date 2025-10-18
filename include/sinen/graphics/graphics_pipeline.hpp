@@ -30,6 +30,7 @@ public:
   void setFragmentShader(const Shader &shader);
   void setInstanced(bool instanced) { isInstanced = instanced; }
   void setAnimation(bool animation);
+  void setEnableTangent(bool enable);
 
   void build();
 
@@ -41,6 +42,7 @@ private:
   px::Ptr<px::GraphicsPipeline> pipeline;
   bool isInstanced = false;
   bool isAnimation = false;
+  bool isTangent = false;
 };
 } // namespace sinen
 

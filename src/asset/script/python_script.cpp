@@ -365,6 +365,7 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def("set_fragment_shader", &GraphicsPipeline3D::setFragmentShader)
       .def("set_instanced", &GraphicsPipeline3D::setInstanced)
       .def("set_animation", &GraphicsPipeline3D::setAnimation)
+      .def("set_enable_tangent", &GraphicsPipeline3D::setEnableTangent)
       .def("build", &GraphicsPipeline3D::build);
 
   py::class_<Random>(m, "Random")

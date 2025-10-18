@@ -96,6 +96,7 @@ public:
   const Mesh &getMesh() const { return mesh; }
 
   px::Ptr<px::Buffer> vertexBuffer;
+  px::Ptr<px::Buffer> tangentBuffer;
   px::Ptr<px::Buffer> animationVertexBuffer;
   px::Ptr<px::Buffer> indexBuffer;
 

@@ -235,6 +235,51 @@ void loadMesh(const aiScene *scene, Mesh &mesh, AABB &aabb) {
     }
   }
 }
+
+void calcTangents(const aiScene *scene, Mesh &mesh) {
+  auto vertexCount = mesh.vertices.size();
+  mesh.tangents.resize(vertexCount, glm::vec4(0.0f));
+
+  std::vector tangentAccum(vertexCount, glm::vec3(0.0f));
+  std::vector handedness(vertexCount, 1.0f);
+
+  for (size_t i = 0; i < mesh.indices.size(); i += 3) {
+    Vertex &v0 = mesh.vertices[mesh.indices[i]];
+    Vertex &v1 = mesh.vertices[mesh.indices[i + 1]];
+    Vertex &v2 = mesh.vertices[mesh.indices[i + 2]];
+
+    glm::vec3 edge1 = v1.position - v0.position;
+    glm::vec3 edge2 = v2.position - v0.position;
+    glm::vec2 deltaUV1 = v1.uv - v0.uv;
+    glm::vec2 deltaUV2 = v2.uv - v0.uv;
+
+    float det = deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y;
+    if (fabs(det) < 1e-6f)
+      continue;
+    float f = 1.0f / det;
+
+    glm::vec3 tangent = (edge1 * deltaUV2.y - edge2 * deltaUV1.y) * f;
+    glm::vec3 bitangent = (edge2 * deltaUV1.x - edge1 * deltaUV2.x) * f;
+
+    tangentAccum[mesh.indices[i]] += tangent;
+    tangentAccum[mesh.indices[i + 1]] += tangent;
+    tangentAccum[mesh.indices[i + 2]] += tangent;
+
+    // optional: handedness check
+    glm::vec3 N = glm::normalize(v0.normal);
+    float sign =
+        (glm::dot(glm::cross(N, tangent), bitangent) < 0.0f) ? -1.0f : 1.0f;
+    handedness[mesh.indices[i]] = sign;
+    handedness[mesh.indices[i + 1]] = sign;
+    handedness[mesh.indices[i + 2]] = sign;
+  }
+
+  for (size_t j = 0; j < mesh.vertices.size(); ++j) {
+    glm::vec3 T = glm::normalize(tangentAccum[j]);
+    mesh.tangents[j] = glm::vec4(T, handedness[j]);
+  }
+}
+
 std::optional<Texture> loadTexture(aiScene *scene, aiMaterial *material,
                                    aiTextureType type) {
   aiString texPath;
@@ -321,13 +366,20 @@ void Model::load(std::string_view path) {
   loadAnimation(scene, this->skeletalAnimation, this->boneMap);
   loadMesh(scene, this->mesh, this->localAABB);
   loadMaterial(const_cast<aiScene *>(scene), this->material);
+  calcTangents(scene, this->mesh);
 
   mesh.indexCount = mesh.indices.size();
   auto viBuffer = createVertexIndexBuffer(mesh.vertices, mesh.indices);
-  this->vertexBuffer = viBuffer.first;
+  this->vertexBuffer =
+      createBuffer(mesh.vertices.size() * sizeof(Vertex), mesh.vertices.data(),
+                   px::BufferUsage::Vertex);
   this->animationVertexBuffer =
-      createAnimationVertexBuffer(this->skeletalAnimation.animationVertices);
-  this->indexBuffer = viBuffer.second;
+      createAnimationVertexBuffer(skeletalAnimation.animationVertices);
+  this->tangentBuffer =
+      createBuffer(mesh.tangents.size() * sizeof(glm::vec4),
+                   mesh.tangents.data(), px::BufferUsage::Vertex);
+  this->indexBuffer = createBuffer(mesh.indices.size() * sizeof(uint32_t),
+                                   mesh.indices.data(), px::BufferUsage::Index);
 }
 
 void Model::loadFromVertexArray(const Mesh &mesh) {
@@ -493,6 +545,57 @@ createAnimationVertexBuffer(const std::vector<AnimationVertex> &vertices) {
     }
   }
   return vertexBuffer;
+}
+px::Ptr<px::Buffer> createBuffer(size_t size, void *data,
+                                 px::BufferUsage usage) {
+
+  if (!data)
+    return nullptr;
+  auto allocator = GraphicsSystem::getAllocator();
+  auto device = GraphicsSystem::getDevice();
+  px::Ptr<px::Buffer> buffer;
+  px::Buffer::CreateInfo vertexBufferInfo{};
+  vertexBufferInfo.allocator = allocator;
+  vertexBufferInfo.size = size;
+  vertexBufferInfo.usage = usage;
+  buffer = device->CreateBuffer(vertexBufferInfo);
+
+  px::Ptr<px::TransferBuffer> transferBuffer;
+  {
+    {
+      px::TransferBuffer::CreateInfo info{};
+      info.allocator = allocator;
+      info.size = size;
+      info.usage = px::TransferBufferUsage::Upload;
+      transferBuffer = device->CreateTransferBuffer(info);
+      auto *pMapped = transferBuffer->Map(false);
+      memcpy(pMapped, data, size);
+      transferBuffer->Unmap();
+    }
+    {
+      px::CommandBuffer::CreateInfo info{};
+      info.allocator = allocator;
+      auto commandBuffer = device->AcquireCommandBuffer(info);
+      {
+
+        auto copyPass = commandBuffer->BeginCopyPass();
+        {
+
+          px::BufferTransferInfo src{};
+          src.offset = 0;
+          src.transferBuffer = transferBuffer;
+          px::BufferRegion dst{};
+          dst.offset = 0;
+          dst.size = size;
+          dst.buffer = buffer;
+          copyPass->UploadBuffer(src, dst, false);
+        }
+        commandBuffer->EndCopyPass(copyPass);
+      }
+      device->SubmitCommandBuffer(commandBuffer);
+    }
+  }
+  return buffer;
 }
 
 UniformData Model::getBoneUniformData() const { return this->boneUniformData; }

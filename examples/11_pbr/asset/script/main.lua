@@ -21,9 +21,11 @@ fragment_shader:compile_load_fragment_shader("shader_custom.slang")
 local pipeline3d = sn.GraphicsPipeline3D()
 pipeline3d:set_vertex_shader(vertex_shader)
 pipeline3d:set_fragment_shader(fragment_shader)
+pipeline3d:set_enable_tangent(true)
 pipeline3d:build()
 
-local light_pos = sn.Vec3(7, 3, 7)
+local light_pos = sn.Vec3(2, 0, 0)
+local light_intensity = 5.0
 
 local uniform_data = sn.UniformData()
 uniform_data:add(pos.x)
@@ -32,12 +34,28 @@ uniform_data:add(pos.z)
 uniform_data:add(light_pos.x)
 uniform_data:add(light_pos.y)
 uniform_data:add(light_pos.z)
+uniform_data:add(light_intensity)
+
 
 function update()
     if sn.Keyboard.is_pressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")
     end
     transform.rotation.z = transform.rotation.z + sn.Time.delta() * 10
+    if sn.Keyboard.is_down(sn.Keyboard.LEFT) then
+        light_pos.x = light_pos.x - sn.Time.delta() * 5
+    end
+    if sn.Keyboard.is_down(sn.Keyboard.RIGHT) then
+        light_pos.x = light_pos.x + sn.Time.delta() * 5
+    end
+    uniform_data:change(light_pos.x, 3)
+    if sn.Keyboard.is_down(sn.Keyboard.UP) then
+        light_pos.y = light_pos.y + sn.Time.delta() * 5
+    end
+    if sn.Keyboard.is_down(sn.Keyboard.DOWN) then
+        light_pos.y = light_pos.y - sn.Time.delta() * 5
+    end
+    uniform_data:change(light_pos.y, 4)
 end
 
 function draw()

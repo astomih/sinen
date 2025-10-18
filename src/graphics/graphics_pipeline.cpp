@@ -10,7 +10,8 @@ namespace sinen {
 
 static px::VertexInputState CreateVertexInputState(px::Allocator *allocator,
                                                    bool isInstance,
-                                                   bool isAnimation);
+                                                   bool isAnimation,
+                                                   bool isTangent);
 void GraphicsPipeline2D::setVertexShader(const Shader &shader) {
   this->vertexShader = shader;
 }
@@ -26,7 +27,7 @@ void GraphicsPipeline2D::build() {
   pipelineInfo.vertexShader = this->vertexShader.shader;
   pipelineInfo.fragmentShader = this->fragmentShader.shader;
   pipelineInfo.vertexInputState =
-      CreateVertexInputState(allocator, false, false);
+      CreateVertexInputState(allocator, false, false, false);
   pipelineInfo.primitiveType = px::PrimitiveType::TriangleList;
 
   px::RasterizerState rasterizerState{};
@@ -71,6 +72,9 @@ void GraphicsPipeline3D::setFragmentShader(const Shader &shader) {
 void GraphicsPipeline3D::setAnimation(bool animation) {
   this->isAnimation = animation;
 }
+void GraphicsPipeline3D::setEnableTangent(bool enable) {
+  this->isTangent = enable;
+}
 void GraphicsPipeline3D::build() {
   auto *allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
@@ -79,7 +83,7 @@ void GraphicsPipeline3D::build() {
   pipelineInfo.vertexShader = this->vertexShader.shader;
   pipelineInfo.fragmentShader = this->fragmentShader.shader;
   pipelineInfo.vertexInputState =
-      CreateVertexInputState(allocator, isInstanced, isAnimation);
+      CreateVertexInputState(allocator, isInstanced, isAnimation, isTangent);
   pipelineInfo.primitiveType = px::PrimitiveType::TriangleList;
 
   px::RasterizerState rasterizerState{};
@@ -118,7 +122,8 @@ void GraphicsPipeline3D::build() {
   this->pipeline = device->CreateGraphicsPipeline(pipelineInfo);
 }
 px::VertexInputState CreateVertexInputState(px::Allocator *allocator,
-                                            bool isInstance, bool isAnimation) {
+                                            bool isInstance, bool isAnimation,
+                                            bool isTangent) {
   px::VertexInputState vertexInputState{allocator};
   uint32_t location = 0;
   uint32_t bufferSlot = 0;
@@ -149,6 +154,21 @@ px::VertexInputState CreateVertexInputState(px::Allocator *allocator,
                           .bufferSlot = bufferSlot,
                           .format = px::VertexElementFormat::Float4,
                           .offset = offsetof(Vertex, color)});
+  if (isTangent) {
+    bufferSlot++;
+    vertexInputState.vertexBufferDescriptions.emplace_back(
+        px::VertexBufferDescription{
+            .slot = bufferSlot,
+            .pitch = sizeof(glm::vec4),
+            .inputRate = px::VertexInputRate::Vertex,
+            .instanceStepRate = 0,
+        });
+    vertexInputState.vertexAttributes.emplace_back(
+        px::VertexAttribute{.location = location++,
+                            .bufferSlot = bufferSlot,
+                            .format = px::VertexElementFormat::Float4,
+                            .offset = 0});
+  }
   if (isInstance) {
     bufferSlot++;
     vertexInputState.vertexBufferDescriptions.emplace_back(

@@ -3,6 +3,7 @@ struct VSInput {
   float3 normal : NORMAL;
   float2 uv : TEXCOORD0;
   float4 color : COLOR;
+  float4 tangent : TANGENT;
 };
 
 struct VSOutput {
@@ -11,6 +12,10 @@ struct VSOutput {
   float3 pos : TEXCOORD1;
   float3 normal : NORMAL;
   float4 color : COLOR;
+  float3 T : TEXCOORD2;
+  float3 B : TEXCOORD3;
+  float3 N : TEXCOORD4;
+  float4x4 worldPos : TEXCOORD5;
 };
 
 #define UNIFORM_VERT(name, bind)                                               \
@@ -24,17 +29,43 @@ UNIFORM_VERT(Mat, 0) {
   float4x4 world;
   float4x4 view;
   float4x4 proj;
-  float4x4 user;
 }
-
+float3x3 invert(float3x3 m) {
+  return 1.0 / determinant(m) *
+         float3x3(
+             m._22 * m._33 - m._23 * m._32, -(m._12 * m._33 - m._13 * m._32),
+             m._12 * m._23 - m._13 * m._22, -(m._21 * m._33 - m._23 * m._31),
+             m._11 * m._33 - m._13 * m._31, -(m._11 * m._23 - m._13 * m._21),
+             m._21 * m._32 - m._22 * m._31, -(m._11 * m._32 - m._12 * m._31),
+             m._11 * m._22 - m._12 * m._21);
+}
 [shader("vertex")]
 VSOutput VSMain(VSInput input) {
   VSOutput output;
-  output.out = mul(mul(proj, mul(view, world)), float4(input.position, 1.0));
+
+  float4 wpos = mul(world, float4(input.position, 1.0));
+  output.out = (mul(proj, mul(view, wpos)));
+  output.normal = normalize(mul(world, float4(input.normal, 0.0)).xyz);
   output.uv = input.uv;
   output.color = input.color;
-  output.normal = normalize(mul((float3x3)world, input.normal));
-  output.pos = mul(world, float4(input.position, 1.0)).xyz;
+  output.pos = wpos.xyz;
+
+  float3x3 W3x3 = (float3x3)world;
+  float3x3 Nmat = transpose(invert(W3x3));
+
+  float3 N = normalize(mul(input.normal, Nmat));
+  float3 T = normalize(mul(input.tangent.xyz, W3x3));
+
+  T = normalize(T - N * dot(T, N));
+
+  float3 B = cross(N, T) * input.tangent.w;
+
+  output.T = T;
+  output.B = B;
+  output.N = N;
+
+  output.worldPos = world;
+
   return output;
 };
 
@@ -43,6 +74,10 @@ struct FSInput {
   float3 pos : TEXCOORD1;
   float3 normal : NORMAL;
   float4 color : COLOR;
+  float3 T : TEXCOORD2;
+  float3 B : TEXCOORD3;
+  float3 N : TEXCOORD4;
+  float4x4 worldPos : TEXCOORD5;
 };
 
 struct FSOutput {
@@ -91,11 +126,16 @@ struct Light {
 };
 
 UNIFORM_FRAG(Positions, 1) {
-  float3 camPos;
-  float3 lightPos;
+  float camPosx;
+  float camPosy;
+  float camPosz;
+  float lightPosx;
+  float lightPosy;
+  float lightPosz;
+  float intensity_;
 }
-float3 computePBR(float3 pos, float3 normal, float2 uv, Light lights[],
-                  int lightCount = 1) {
+float3 computePBR(float3 pos, float3 normal, float2 uv, float3 t, float3 b,
+                  float3 n, Light lights[], int lightCount = 1) {
   float3 albedo = albedoMap.Sample(uv).rgb;
   albedo = float3(albedo.x, albedo.y, albedo.z);
 
@@ -104,8 +144,10 @@ float3 computePBR(float3 pos, float3 normal, float2 uv, Light lights[],
 
   float ao = clamp(aoMap.Sample(uv).r, 0.0, 1.0);
 
-  float3 N = normal;
-  // float3 N = normalMap.Sample(uv).xyz;
+  float3 nTS = normalMap.Sample(uv).rgb * 2.0 - 1.0;
+  float3 N = normalize(nTS.x * t + nTS.y * b + nTS.z * n);
+
+  float3 camPos = float3(camPosx, camPosy, camPosz);
   float3 V = normalize(camPos - pos);
   float3 emissive = emissiveMap.Sample(uv).rgb;
 
@@ -136,7 +178,7 @@ float3 computePBR(float3 pos, float3 normal, float2 uv, Light lights[],
     lightAccum += ((kD * albedo.rgb / PI + spec) * radiance * nDotL);
   }
 
-  float3 ambient = albedo.rgb * 0.4 * ao;
+  float3 ambient = albedo.rgb * ao * 0.4;
 
   return (ambient + lightAccum + emissive);
 }
@@ -146,12 +188,15 @@ FSOutput FSMain(FSInput input) {
   FSOutput output;
   Light light[1];
 
-  light[0].position = lightPos;
-  light[0].color = float3(1, 1, 1);
-  light[0].intensity = 50.0;
+  float3 lightPos = float3(lightPosx, lightPosy, lightPosz);
 
-  output.color =
-      float4(computePBR(input.pos, input.normal, input.uv, light), 1.0);
+  light[0].position = mul(input.worldPos, float4(lightPos, 1.0)).xyz;
+  light[0].color = float3(1, 1, 1);
+  light[0].intensity = intensity_;
+
+  output.color = float4(computePBR(input.pos, input.normal, input.uv, input.T,
+                                   input.B, input.N, light),
+                        1.0);
 
   return output;
 }

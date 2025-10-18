@@ -324,6 +324,7 @@ bool LuaScript::Initialize() {
     v["set_fragment_shader"] = &GraphicsPipeline3D::setFragmentShader;
     v["set_instanced"] = &GraphicsPipeline3D::setInstanced;
     v["set_animation"] = &GraphicsPipeline3D::setAnimation;
+    v["set_enable_tangent"] = &GraphicsPipeline3D::setEnableTangent;
     v["build"] = &GraphicsPipeline3D::build;
   }
   {

@@ -427,10 +427,6 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
       px::BufferBinding{.buffer = model.vertexBuffer, .offset = 0});
   indexBufferBinding =
       px::BufferBinding{.buffer = model.indexBuffer, .offset = 0};
-  if (model.tangentBuffer) {
-    vertexBufferBindings.emplace_back(
-        px::BufferBinding{.buffer = model.tangentBuffer, .offset = 0});
-  }
   if (isInstance) {
     vertexBufferBindings.emplace_back(
         px::BufferBinding{.buffer = instanceBuffer, .offset = 0});
@@ -438,6 +434,10 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
   if (auto animationVertexBuffer = model.animationVertexBuffer) {
     vertexBufferBindings.emplace_back(
         px::BufferBinding{.buffer = animationVertexBuffer, .offset = 0});
+  }
+  if (model.tangentBuffer) {
+    vertexBufferBindings.emplace_back(
+        px::BufferBinding{.buffer = model.tangentBuffer, .offset = 0});
   }
   auto commandBuffer = currentCommandBuffer;
   auto renderPass = currentRenderPass;

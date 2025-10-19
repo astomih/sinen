@@ -154,21 +154,6 @@ px::VertexInputState CreateVertexInputState(px::Allocator *allocator,
                           .bufferSlot = bufferSlot,
                           .format = px::VertexElementFormat::Float4,
                           .offset = offsetof(Vertex, color)});
-  if (isTangent) {
-    bufferSlot++;
-    vertexInputState.vertexBufferDescriptions.emplace_back(
-        px::VertexBufferDescription{
-            .slot = bufferSlot,
-            .pitch = sizeof(glm::vec4),
-            .inputRate = px::VertexInputRate::Vertex,
-            .instanceStepRate = 0,
-        });
-    vertexInputState.vertexAttributes.emplace_back(
-        px::VertexAttribute{.location = location++,
-                            .bufferSlot = bufferSlot,
-                            .format = px::VertexElementFormat::Float4,
-                            .offset = 0});
-  }
   if (isInstance) {
     bufferSlot++;
     vertexInputState.vertexBufferDescriptions.emplace_back(
@@ -222,6 +207,21 @@ px::VertexInputState CreateVertexInputState(px::Allocator *allocator,
                             .bufferSlot = bufferSlot,
                             .format = px::VertexElementFormat::Float4,
                             .offset = offsetof(AnimationVertex, boneWeights)});
+  }
+  if (isTangent) {
+    bufferSlot++;
+    vertexInputState.vertexBufferDescriptions.emplace_back(
+        px::VertexBufferDescription{
+            .slot = bufferSlot,
+            .pitch = sizeof(glm::vec4),
+            .inputRate = px::VertexInputRate::Vertex,
+            .instanceStepRate = 0,
+        });
+    vertexInputState.vertexAttributes.emplace_back(
+        px::VertexAttribute{.location = location++,
+                            .bufferSlot = bufferSlot,
+                            .format = px::VertexElementFormat::Float4,
+                            .offset = 0});
   }
   return vertexInputState;
 }

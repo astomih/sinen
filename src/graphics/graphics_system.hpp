@@ -58,9 +58,8 @@ public:
   static void addImGuiFunction(std::function<void()> function) {
     imguiFunctions.push_back(function);
   }
-  static void bindPipeline3D(const GraphicsPipeline3D &pipeline);
+  static void bindPipeline(const GraphicsPipeline &pipeline);
   static void bindDefaultPipeline3D();
-  static void bindPipeline2D(const GraphicsPipeline2D &pipeline);
   static void bindDefaultPipeline2D();
   static void setUniformData(uint32_t slot, const UniformData &data);
 
@@ -78,7 +77,13 @@ public:
 
   static px::Ptr<px::Device> getDevice() { return device; }
 
+  inline static GraphicsPipeline pipeline2D;
+  inline static GraphicsPipeline pipeline3D;
+  inline static GraphicsPipeline pipelineInstanced3D;
+
 private:
+  static void beginRenderPass(bool depthEnabled, px::LoadOp loadOp);
+  static void prepareRenderPassFrame();
   static void setupShapes();
   static Color clearColor;
 
@@ -93,18 +98,13 @@ private:
   inline static Ptr<px::Device> device;
   inline static Ptr<px::Texture> depthTexture;
   inline static Ptr<px::Sampler> sampler;
-  inline static GraphicsPipeline2D pipeline2D;
-  inline static GraphicsPipeline3D pipeline3D;
-  inline static GraphicsPipeline3D pipelineInstanced3D;
-  inline static GraphicsPipeline2D currentPipeline2D;
-  inline static GraphicsPipeline3D currentPipeline3D;
+  inline static GraphicsPipeline currentPipeline;
   inline static px::Ptr<px::CommandBuffer> mainCommandBuffer;
   inline static px::Ptr<px::CommandBuffer> currentCommandBuffer;
   inline static px::Ptr<px::RenderPass> currentRenderPass;
   inline static bool isFrameStarted = true;
-  inline static bool isDraw2D = true;
-  inline static bool isDefaultPipeline = true;
-  inline static uint32_t objectCount = 0;
+  inline static bool isPrevDepthEnabled = true;
+  inline static uint32_t drawCallCountPerFrame = 0;
   inline static px::Array<px::ColorTargetInfo> colorTargets =
       px::Array<px::ColorTargetInfo>(getAllocator());
   inline static px::DepthStencilTargetInfo depthStencilInfo;

@@ -4,6 +4,7 @@ GUI_MANAGER = require("gui/gui_manager")()
 local exampleDirs = sn.FileSystem.enumerate_directory(".")
 local numExamples = 11
 
+sn.Graphics.bind_pipeline(sn.BuiltinPipelines.get_2d())
 
 local offset = numExamples * 16.0
 function update()
@@ -18,8 +19,6 @@ function update()
 end
 
 function draw()
-    sn.Graphics.bind_default_pipeline2d()
-    sn.Graphics.bind_default_pipeline3d()
     sn.Graphics.draw_text("Example Launcher",
         sn.Vec2(0, offset),
         sn.Color(1, 1, 1, 1), 24)

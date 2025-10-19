@@ -17,6 +17,7 @@ local pos = sn.Vec3(-3, 5, -3)
 local at = sn.Vec3(15, -5, 15)
 local up = sn.Vec3(0, 1, 0)
 sn.Graphics.get_camera():lookat(pos, at, up)
+sn.Graphics.bind_pipeline(sn.BuiltinPipelines.get_3d_instanced())
 
 function update()
   if sn.Keyboard.is_pressed(sn.Keyboard.ESCAPE) then

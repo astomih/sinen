@@ -313,19 +313,14 @@ bool LuaScript::Initialize() {
     v["compile_load_fragment_shader"] = &Shader::compileAndLoadFragmentShader;
   }
   {
-    auto v = registerClass<GraphicsPipeline2D>(lua, "GraphicsPipeline2D");
-    v["set_vertex_shader"] = &GraphicsPipeline2D::setVertexShader;
-    v["set_fragment_shader"] = &GraphicsPipeline2D::setFragmentShader;
-    v["build"] = &GraphicsPipeline2D::build;
-  }
-  {
-    auto v = registerClass<GraphicsPipeline3D>(lua, "GraphicsPipeline3D");
-    v["set_vertex_shader"] = &GraphicsPipeline3D::setVertexShader;
-    v["set_fragment_shader"] = &GraphicsPipeline3D::setFragmentShader;
-    v["set_instanced"] = &GraphicsPipeline3D::setInstanced;
-    v["set_animation"] = &GraphicsPipeline3D::setAnimation;
-    v["set_enable_tangent"] = &GraphicsPipeline3D::setEnableTangent;
-    v["build"] = &GraphicsPipeline3D::build;
+    auto v = registerClass<GraphicsPipeline>(lua, "GraphicsPipeline");
+    v["set_vertex_shader"] = &GraphicsPipeline::setVertexShader;
+    v["set_fragment_shader"] = &GraphicsPipeline::setFragmentShader;
+    v["set_enable_depth_test"] = &GraphicsPipeline::setEnableDepthTest;
+    v["set_enable_instanced"] = &GraphicsPipeline::setEnableInstanced;
+    v["set_enable_animation"] = &GraphicsPipeline::setEnableAnimation;
+    v["set_enable_tangent"] = &GraphicsPipeline::setEnableTangent;
+    v["build"] = &GraphicsPipeline::build;
   }
   {
     auto v = registerClass<Draw2D>(
@@ -435,6 +430,12 @@ bool LuaScript::Initialize() {
     v["add_collider"] = &Physics::addCollider;
   }
   {
+    auto v = lua.create_named("BuiltinPipelines");
+    v["get_3d"] = &BuiltinPipelines::get3D;
+    v["get_3d_instanced"] = &BuiltinPipelines::get3DInstanced;
+    v["get_2d"] = &BuiltinPipelines::get2D;
+  }
+  {
     auto v = lua.create_named("Graphics");
     v["draw2d"] = &Graphics::draw2D;
     v["draw3d"] = &Graphics::draw3D;
@@ -482,10 +483,7 @@ bool LuaScript::Initialize() {
     v["get_camera2d"] = &Graphics::getCamera2D;
     v["get_clear_color"] = &Graphics::getClearColor;
     v["set_clear_color"] = &Graphics::setClearColor;
-    v["bind_pipeline2d"] = &Graphics::bindPipeline2D;
-    v["bind_default_pipeline2d"] = &Graphics::bindDefaultPipeline2D;
-    v["bind_pipeline3d"] = &Graphics::bindPipeline3D;
-    v["bind_default_pipeline3d"] = &Graphics::bindDefaultPipeline3D;
+    v["bind_pipeline"] = &Graphics::bindPipeline;
     v["set_uniform_data"] = &Graphics::setUniformData;
     v["set_render_target"] = &Graphics::setRenderTarget;
     v["flush"] = &Graphics::flush;

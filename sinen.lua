@@ -260,22 +260,16 @@ sn = {
         return {}
     end,
 
-    ---@class GraphicsPipeline2D
-    ---@field set_vertex_shader fun(self: GraphicsPipeline2D, shader: Shader)
-    ---@field set_fragment_shader fun(self: GraphicsPipeline2D, shader: Shader)
-    ---@field build fun(self: GraphicsPipeline2D)
-    ---@return GraphicsPipeline2D
-    GraphicsPipeline2D = function() return {} end,
-
-    ---@class GraphicsPipeline3D
-    ---@field set_vertex_shader fun(self: GraphicsPipeline3D, shader: Shader)
-    ---@field set_fragment_shader fun(self: GraphicsPipeline3D, shader: Shader)
-    ---@field set_instanced fun(self: GraphicsPipeline3D, instanced: boolean)
-    ---@field set_animation fun(self: GraphicsPipeline3D, isAnimation: boolean)
-    ---@field set_enable_tangent fun(self: GraphicsPipeline3D, enableTangents: boolean)
-    ---@field build fun(self: GraphicsPipeline3D)
-    ---@return GraphicsPipeline3D
-    GraphicsPipeline3D = function() return {} end,
+    ---@class GraphicsPipeline
+    ---@field set_vertex_shader fun(self: GraphicsPipeline, shader: Shader)
+    ---@field set_fragment_shader fun(self: GraphicsPipeline, shader: Shader)
+    ---@field set_enable_depth_test fun(self: GraphicsPipeline, enable: boolean)
+    ---@field set_enable_instanced fun(self: GraphicsPipeline, enable: boolean)
+    ---@field set_enable_animation fun(self: GraphicsPipeline, enable: boolean)
+    ---@field set_enable_tangent fun(self: GraphicsPipeline, enable: boolean)
+    ---@field build fun(self: GraphicsPipeline)
+    ---@return GraphicsPipeline
+    GraphicsPipeline = function() return {} end,
 
     ---@class Rect
     ---@field x number
@@ -334,6 +328,13 @@ sn = {
     Window = {},
 
     ---Static class
+    ---@class BuiltinPipelines
+    ---@field get_3d fun(): GraphicsPipeline
+    ---@field get_3d_instanced fun(): GraphicsPipeline
+    ---@field get_2d fun(): GraphicsPipeline
+    BuiltinPipelines = {},
+
+    ---Static class
     ---@class Graphics
     ---@field draw2d fun(draw2D: Draw2D)
     ---@field draw3d fun(draw3D: Draw3D)
@@ -348,10 +349,7 @@ sn = {
     ---@field get_camera2d fun(): Camera2D
     ---@field get_clear_color fun(): Color
     ---@field set_clear_color fun(c: Color)
-    ---@field bind_pipeline2d fun(pipe: GraphicsPipeline2D)
-    ---@field bind_default_pipeline2d fun()
-    ---@field bind_pipeline3d fun(pipe: GraphicsPipeline3D)
-    ---@field bind_default_pipeline3d fun()
+    ---@field bind_pipeline fun(pipe: GraphicsPipeline)
     ---@field set_uniform_data fun(binding: integer, data: UniformData)
     ---@field set_render_target fun(rt: RenderTexture)
     ---@field flush fun()

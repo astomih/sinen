@@ -101,10 +101,7 @@ public:
   static Camera2D &getCamera2D();
   static void setCamera(const Camera &camera);
   static Camera &getCamera();
-  static void bindPipeline3D(const GraphicsPipeline3D &pipeline);
-  static void bindDefaultPipeline3D();
-  static void bindPipeline2D(const GraphicsPipeline2D &pipeline);
-  static void bindDefaultPipeline2D();
+  static void bindPipeline(const GraphicsPipeline &pipeline);
   static void setUniformData(uint32_t slot, const UniformData &data);
 
   static void setRenderTarget(const RenderTexture &texture);

@@ -25,7 +25,7 @@ public:
 
 private:
   friend class GraphicsPipeline2D;
-  friend class GraphicsPipeline3D;
+  friend class GraphicsPipeline;
   px::Ptr<px::Shader> shader;
 };
 } // namespace sinen

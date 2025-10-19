@@ -12,11 +12,13 @@ vertex_shader:compile_load_vertex_shader("skinning.slang")
 local fragment_shader = sn.Shader()
 fragment_shader:compile_load_fragment_shader("skinning.slang")
 
-local pipeline = sn.GraphicsPipeline3D()
+local pipeline = sn.GraphicsPipeline()
 pipeline:set_vertex_shader(vertex_shader)
 pipeline:set_fragment_shader(fragment_shader)
-pipeline:set_animation(true)
+pipeline:set_enable_depth_test(true)
+pipeline:set_enable_animation(true)
 pipeline:build()
+sn.Graphics.bind_pipeline(pipeline)
 
 
 sn.Graphics.get_camera():lookat(sn.Vec3(0, -3, 1), sn.Vec3(0, 0, 1), sn.Vec3(0, 0, 1))
@@ -30,7 +32,6 @@ function update()
 end
 
 function draw()
-    sn.Graphics.bind_pipeline3d(pipeline)
     sn.Graphics.set_uniform_data(1, model:get_bone_uniform_data())
     -- Draw texture
     sn.Graphics.draw_model(model, sn.Transform(), draw3d.material)

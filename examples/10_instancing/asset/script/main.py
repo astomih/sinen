@@ -18,6 +18,8 @@ at = sn.Vec3(15, -5, 15)
 up = sn.Vec3(0, 1, 0)
 sn.Graphics.get_camera().lookat(pos, at, up)
 
+sn.Graphics.bind_pipeline(sn.BuiltinPipelines.get_3d())
+
 
 def update():
     sn.Logger.info("hello")

@@ -70,17 +70,8 @@ void Graphics::setCamera2D(const Camera2D &camera) {
 
 Camera2D &Graphics::getCamera2D() { return GraphicsSystem::getCamera2D(); }
 
-void Graphics::bindPipeline3D(const GraphicsPipeline3D &pipeline) {
-  GraphicsSystem::bindPipeline3D(pipeline);
-}
-void Graphics::bindDefaultPipeline3D() {
-  GraphicsSystem::bindDefaultPipeline3D();
-}
-void Graphics::bindPipeline2D(const GraphicsPipeline2D &pipeline) {
-  GraphicsSystem::bindPipeline2D(pipeline);
-}
-void Graphics::bindDefaultPipeline2D() {
-  GraphicsSystem::bindDefaultPipeline2D();
+void Graphics::bindPipeline(const GraphicsPipeline &pipeline) {
+  GraphicsSystem::bindPipeline(pipeline);
 }
 void Graphics::setUniformData(uint32_t slot, const UniformData &data) {
   GraphicsSystem::setUniformData(slot, data);

@@ -97,18 +97,20 @@ void GraphicsSystem::initialize() {
 
   pipeline3D.setVertexShader(vs);
   pipeline3D.setFragmentShader(fs);
+  pipeline3D.setEnableDepthTest(true);
   pipeline3D.build();
-  currentPipeline3D = pipeline3D;
 
   pipelineInstanced3D.setVertexShader(vsInstanced);
   pipelineInstanced3D.setFragmentShader(fs);
-  pipelineInstanced3D.setInstanced(true);
+  pipelineInstanced3D.setEnableInstanced(true);
+  pipelineInstanced3D.setEnableDepthTest(true);
   pipelineInstanced3D.build();
 
   pipeline2D.setVertexShader(vs);
   pipeline2D.setFragmentShader(fs);
+  pipeline2D.setEnableDepthTest(false);
   pipeline2D.build();
-  currentPipeline2D = pipeline2D;
+  currentPipeline = pipeline2D;
 
   // Create depth stencil target
   {
@@ -193,22 +195,20 @@ void GraphicsSystem::render() {
 
   Imgui_ImplParanoixa_PrepareDrawData(draw_data, commandBuffer);
   isFrameStarted = true;
-  objectCount = 0;
+  drawCallCountPerFrame = 0;
   ScriptSystem::DrawScene();
-  if (objectCount > 0 && !isDraw2D) {
-    commandBuffer->EndRenderPass(currentRenderPass);
+  if (drawCallCountPerFrame == 0) {
+    // Clear screen
+    beginRenderPass(true, px::LoadOp::Clear);
   }
+  commandBuffer->EndRenderPass(currentRenderPass);
 
-  {
-    if (isFrameStarted || (objectCount > 0 && !isDraw2D)) {
-      colorTargets[0].loadOp = px::LoadOp::Load;
-      currentRenderPass = commandBuffer->BeginRenderPass(colorTargets, {});
-    }
-    auto renderPass = currentRenderPass;
-    setFullWindowViewport(renderPass);
+  if (showImGui) {
+    beginRenderPass(false, px::LoadOp::Load);
     // Render ImGui
-    ImGui_ImplParanoixa_RenderDrawData(draw_data, commandBuffer, renderPass);
-    commandBuffer->EndRenderPass(renderPass);
+    ImGui_ImplParanoixa_RenderDrawData(draw_data, commandBuffer,
+                                       currentRenderPass);
+    commandBuffer->EndRenderPass(currentRenderPass);
   }
   device->SubmitCommandBuffer(commandBuffer);
   device->WaitForGPUIdle();
@@ -255,28 +255,8 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
 
     instanceData.push_back(glm::transpose(world));
   }
-  objectCount++;
-  if (isFrameStarted || currentRenderPass == nullptr) {
-    colorTargets[0].loadOp = px::LoadOp::Clear;
-    currentColorTargets = colorTargets;
-    currentRenderPass =
-        currentCommandBuffer->BeginRenderPass(currentColorTargets, {});
-    auto renderPass = currentRenderPass;
-    setFullWindowViewport(renderPass);
-    isFrameStarted = false;
-    isDraw2D = true;
-    isDefaultPipeline = true;
-  } else if (isDefaultPipeline && !isDraw2D) {
-    currentCommandBuffer->EndRenderPass(currentRenderPass);
-    colorTargets[0].loadOp = px::LoadOp::Load;
-    currentColorTargets = colorTargets;
-    currentRenderPass =
-        currentCommandBuffer->BeginRenderPass(currentColorTargets, {});
-    auto renderPass = currentRenderPass;
-    setFullWindowViewport(renderPass);
-    isDraw2D = true;
-    isDefaultPipeline = true;
-  }
+  drawCallCountPerFrame++;
+  prepareRenderPassFrame();
 
   for (const auto &texture : draw2D.material.getTextures()) {
     auto nativeTexture = std::static_pointer_cast<px::Texture>(
@@ -296,7 +276,7 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
 
   auto commandBuffer = currentCommandBuffer;
   auto renderPass = currentRenderPass;
-  renderPass->BindGraphicsPipeline(currentPipeline2D.get());
+  renderPass->BindGraphicsPipeline(currentPipeline.get());
   renderPass->BindFragmentSamplers(0, textureSamplers);
   renderPass->BindVertexBuffers(0, vertexBufferBindings);
   renderPass->BindIndexBuffer(indexBufferBinding, px::IndexElementSize::Uint32);
@@ -347,30 +327,8 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
     auto world = t * r * s;
     instanceData.push_back(glm::transpose(world));
   }
-  objectCount++;
-  if (isDefaultPipeline && (isFrameStarted || currentRenderPass == nullptr)) {
-    colorTargets[0].loadOp = px::LoadOp::Clear;
-    currentColorTargets = colorTargets;
-    currentDepthStencilInfo = depthStencilInfo;
-    currentRenderPass = currentCommandBuffer->BeginRenderPass(
-        currentColorTargets, currentDepthStencilInfo);
-    auto renderPass = currentRenderPass;
-    setFullWindowViewport(renderPass);
-    isFrameStarted = false;
-    isDraw2D = false;
-    isDefaultPipeline = true;
-  } else if (isDefaultPipeline && isDraw2D) {
-    currentCommandBuffer->EndRenderPass(currentRenderPass);
-    colorTargets[0].loadOp = px::LoadOp::Load;
-    currentColorTargets = colorTargets;
-    currentDepthStencilInfo = depthStencilInfo;
-    currentRenderPass = currentCommandBuffer->BeginRenderPass(
-        currentColorTargets, currentDepthStencilInfo);
-    auto renderPass = currentRenderPass;
-    setFullWindowViewport(renderPass);
-    isDraw2D = false;
-    isDefaultPipeline = true;
-  }
+  drawCallCountPerFrame++;
+  prepareRenderPassFrame();
   for (const auto &texture : draw3D.material.getTextures()) {
     auto nativeTexture = std::static_pointer_cast<px::Texture>(
         getTextureRawData(texture.textureData)->texture);
@@ -441,10 +399,7 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
   }
   auto commandBuffer = currentCommandBuffer;
   auto renderPass = currentRenderPass;
-  if (isInstance)
-    renderPass->BindGraphicsPipeline(pipelineInstanced3D.get());
-  else
-    renderPass->BindGraphicsPipeline(currentPipeline3D.get());
+  renderPass->BindGraphicsPipeline(currentPipeline.get());
   renderPass->BindFragmentSamplers(0, textureSamplers);
   renderPass->BindVertexBuffers(0, vertexBufferBindings);
   renderPass->BindIndexBuffer(indexBufferBinding, px::IndexElementSize::Uint32);
@@ -518,20 +473,57 @@ void GraphicsSystem::drawModelInstanced(
 
 void GraphicsSystem::loadShader(const Shader &shaderInfo) {}
 void GraphicsSystem::unloadShader(const Shader &shaderInfo) {}
+void GraphicsSystem::beginRenderPass(bool depthEnabled, px::LoadOp loadOp) {
+  colorTargets[0].loadOp = loadOp;
+  currentColorTargets = colorTargets;
+
+  if (depthEnabled) {
+    currentDepthStencilInfo = depthStencilInfo;
+    currentRenderPass = currentCommandBuffer->BeginRenderPass(
+        currentColorTargets, currentDepthStencilInfo);
+  } else {
+    currentRenderPass =
+        currentCommandBuffer->BeginRenderPass(currentColorTargets, {});
+  }
+
+  setFullWindowViewport(currentRenderPass);
+}
+
+void GraphicsSystem::prepareRenderPassFrame() {
+  const bool depthEnabled = currentPipeline.getFeatureFlags().test(
+      GraphicsPipeline::FeatureFlag::DepthTest);
+
+  const bool hasActivePass = (currentRenderPass != nullptr);
+  const bool depthChanged = (isPrevDepthEnabled != depthEnabled);
+
+  const bool needBegin = isFrameStarted || !hasActivePass || depthChanged;
+  if (!needBegin) {
+    return;
+  }
+
+  if (hasActivePass && depthChanged && !isFrameStarted) {
+    currentCommandBuffer->EndRenderPass(currentRenderPass);
+  }
+
+  const px::LoadOp loadOp =
+      (isFrameStarted || !hasActivePass) ? px::LoadOp::Clear : px::LoadOp::Load;
+
+  beginRenderPass(depthEnabled, loadOp);
+
+  isPrevDepthEnabled = depthEnabled;
+  isFrameStarted = false;
+}
 
 void GraphicsSystem::setupShapes() {
   box.loadFromVertexArray(create_box_vertices());
   sprite.loadFromVertexArray(create_sprite_vertices());
 }
 
-void GraphicsSystem::bindPipeline3D(const GraphicsPipeline3D &pipeline) {
-  currentPipeline3D = pipeline;
+void GraphicsSystem::bindPipeline(const GraphicsPipeline &pipeline) {
+  currentPipeline = pipeline;
 }
-void GraphicsSystem::bindDefaultPipeline3D() { currentPipeline3D = pipeline3D; }
-void GraphicsSystem::bindPipeline2D(const GraphicsPipeline2D &pipeline) {
-  currentPipeline2D = pipeline;
-}
-void GraphicsSystem::bindDefaultPipeline2D() { currentPipeline2D = pipeline2D; }
+void GraphicsSystem::bindDefaultPipeline3D() { currentPipeline = pipeline3D; }
+void GraphicsSystem::bindDefaultPipeline2D() { currentPipeline = pipeline2D; }
 void GraphicsSystem::setUniformData(uint32_t slot, const UniformData &data) {
   currentCommandBuffer->PushUniformData(slot, data.data.data(),
                                         data.data.size() * sizeof(float));
@@ -549,7 +541,6 @@ void GraphicsSystem::setRenderTarget(const RenderTexture &texture) {
       px::Viewport{0, 0, (float)texture.width, (float)texture.height, 0, 1});
   currentRenderPass->SetScissor(0, 0, (float)texture.width,
                                 (float)texture.height);
-  isDefaultPipeline = false;
 }
 void GraphicsSystem::flush() {
   currentCommandBuffer->EndRenderPass(currentRenderPass);

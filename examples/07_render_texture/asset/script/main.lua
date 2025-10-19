@@ -24,9 +24,11 @@ end
 
 function draw()
     sn.Graphics.set_render_target(renderTexture)
+    sn.Graphics.bind_pipeline(sn.BuiltinPipelines.get_3d())
     sn.Graphics.draw3d(draw3d)
     -- Draw texture
     sn.Graphics.flush()
     sn.Graphics.readback_texture(renderTexture, out)
+    sn.Graphics.bind_pipeline(sn.BuiltinPipelines.get_2d())
     sn.Graphics.draw_image(out, sn.Rect(0, 0, sx, sy))
 end

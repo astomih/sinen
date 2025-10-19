@@ -1,4 +1,5 @@
 #include "graphics_system.hpp"
+#include "libs/SDL/src/video/khronos/vulkan/vulkan_core.h"
 
 #include <cstddef>
 
@@ -8,18 +9,27 @@
 
 namespace sinen {
 
-static px::VertexInputState CreateVertexInputState(px::Allocator *allocator,
-                                                   bool isInstance,
-                                                   bool isAnimation,
-                                                   bool isTangent);
-void GraphicsPipeline2D::setVertexShader(const Shader &shader) {
+static px::VertexInputState
+CreateVertexInputState(px::Allocator *allocator, std::bitset<32> featureFlags);
+void GraphicsPipeline::setVertexShader(const Shader &shader) {
   this->vertexShader = shader;
 }
-void GraphicsPipeline2D::setFragmentShader(const Shader &shader) {
+void GraphicsPipeline::setFragmentShader(const Shader &shader) {
   this->fragmentShader = shader;
 }
-
-void GraphicsPipeline2D::build() {
+void GraphicsPipeline::setEnableDepthTest(bool enable) {
+  featureFlags.set(DepthTest, enable);
+}
+void GraphicsPipeline::setEnableInstanced(bool enable) {
+  featureFlags.set(Instanced, enable);
+}
+void GraphicsPipeline::setEnableAnimation(bool enable) {
+  featureFlags.set(Animation, enable);
+}
+void GraphicsPipeline::setEnableTangent(bool enable) {
+  featureFlags.set(Tangent, enable);
+}
+void GraphicsPipeline::build() {
   auto *allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
 
@@ -27,7 +37,7 @@ void GraphicsPipeline2D::build() {
   pipelineInfo.vertexShader = this->vertexShader.shader;
   pipelineInfo.fragmentShader = this->fragmentShader.shader;
   pipelineInfo.vertexInputState =
-      CreateVertexInputState(allocator, false, false, false);
+      CreateVertexInputState(allocator, featureFlags);
   pipelineInfo.primitiveType = px::PrimitiveType::TriangleList;
 
   px::RasterizerState rasterizerState{};
@@ -38,8 +48,10 @@ void GraphicsPipeline2D::build() {
   pipelineInfo.rasterizerState = rasterizerState;
   pipelineInfo.multiSampleState = {};
   pipelineInfo.multiSampleState.sampleCount = px::SampleCount::x1;
-  pipelineInfo.depthStencilState.enableDepthTest = false;
-  pipelineInfo.depthStencilState.enableDepthWrite = false;
+  bool enableDepthTest =
+      featureFlags.test(GraphicsPipeline::FeatureFlag::DepthTest);
+  pipelineInfo.depthStencilState.enableDepthTest = enableDepthTest;
+  pipelineInfo.depthStencilState.enableDepthWrite = enableDepthTest;
   pipelineInfo.depthStencilState.enableStencilTest = false;
   pipelineInfo.depthStencilState.compareOp = px::CompareOp::LessOrEqual;
 
@@ -60,70 +72,28 @@ void GraphicsPipeline2D::build() {
                   .enableBlend = true,
               },
       });
-  pipelineInfo.targetInfo.hasDepthStencilTarget = false;
-  this->pipeline = device->CreateGraphicsPipeline(pipelineInfo);
-}
-void GraphicsPipeline3D::setVertexShader(const Shader &shader) {
-  this->vertexShader = shader;
-}
-void GraphicsPipeline3D::setFragmentShader(const Shader &shader) {
-  this->fragmentShader = shader;
-}
-void GraphicsPipeline3D::setAnimation(bool animation) {
-  this->isAnimation = animation;
-}
-void GraphicsPipeline3D::setEnableTangent(bool enable) {
-  this->isTangent = enable;
-}
-void GraphicsPipeline3D::build() {
-  auto *allocator = GraphicsSystem::getAllocator();
-  auto device = GraphicsSystem::getDevice();
-
-  px::GraphicsPipeline::CreateInfo pipelineInfo{allocator};
-  pipelineInfo.vertexShader = this->vertexShader.shader;
-  pipelineInfo.fragmentShader = this->fragmentShader.shader;
-  pipelineInfo.vertexInputState =
-      CreateVertexInputState(allocator, isInstanced, isAnimation, isTangent);
-  pipelineInfo.primitiveType = px::PrimitiveType::TriangleList;
-
-  px::RasterizerState rasterizerState{};
-  rasterizerState.fillMode = px::FillMode::Fill;
-  rasterizerState.cullMode = px::CullMode::None;
-  rasterizerState.frontFace = px::FrontFace::CounterClockwise;
-
-  pipelineInfo.rasterizerState = rasterizerState;
-  pipelineInfo.multiSampleState = {};
-  pipelineInfo.multiSampleState.sampleCount = px::SampleCount::x1;
-  pipelineInfo.depthStencilState.enableDepthTest = true;
-  pipelineInfo.depthStencilState.enableDepthWrite = true;
-  pipelineInfo.depthStencilState.enableStencilTest = false;
-  pipelineInfo.depthStencilState.compareOp = px::CompareOp::LessOrEqual;
-
-  pipelineInfo.targetInfo.colorTargetDescriptions.emplace_back(
-      px::ColorTargetDescription{
-          .format = device->GetSwapchainFormat(),
-          .blendState =
-              px::ColorTargetBlendState{
-                  .srcColorBlendFactor = px::BlendFactor::SrcAlpha,
-                  .dstColorBlendFactor = px::BlendFactor::OneMinusSrcAlpha,
-                  .colorBlendOp = px::BlendOp::Add,
-                  .srcAlphaBlendFactor = px::BlendFactor::One,
-                  .dstAlphaBlendFactor = px::BlendFactor::OneMinusSrcAlpha,
-                  .alphaBlendOp = px::BlendOp::Add,
-                  .colorWriteMask =
-                      px::ColorComponent::R | px::ColorComponent::G |
-                      px::ColorComponent::B | px::ColorComponent::A,
-                  .enableBlend = true,
-              },
-      });
-  pipelineInfo.targetInfo.hasDepthStencilTarget = true;
+  pipelineInfo.targetInfo.hasDepthStencilTarget = enableDepthTest;
   pipelineInfo.targetInfo.depthStencilTargetFormat =
       px::TextureFormat::D32_FLOAT_S8_UINT;
   this->pipeline = device->CreateGraphicsPipeline(pipelineInfo);
 }
+
+GraphicsPipeline BuiltinPipelines::get3D() {
+  return GraphicsSystem::pipeline3D;
+}
+GraphicsPipeline BuiltinPipelines::get3DInstanced() {
+  return GraphicsSystem::pipelineInstanced3D;
+}
+GraphicsPipeline BuiltinPipelines::get2D() {
+  return GraphicsSystem::pipeline2D;
+}
+
 px::VertexInputState CreateVertexInputState(px::Allocator *allocator,
-                                            bool isInstance, bool isAnimation,
-                                            bool isTangent) {
+                                            std::bitset<32> featureFlags) {
+  bool isInstance = featureFlags.test(GraphicsPipeline::FeatureFlag::Instanced);
+  bool isAnimation =
+      featureFlags.test(GraphicsPipeline::FeatureFlag::Animation);
+  bool isTangent = featureFlags.test(GraphicsPipeline::FeatureFlag::Tangent);
   px::VertexInputState vertexInputState{allocator};
   uint32_t location = 0;
   uint32_t bufferSlot = 0;

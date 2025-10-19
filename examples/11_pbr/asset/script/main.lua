@@ -23,11 +23,13 @@ local vertex_shader = sn.Shader()
 vertex_shader:compile_load_vertex_shader("shader_custom.slang")
 local fragment_shader = sn.Shader()
 fragment_shader:compile_load_fragment_shader("shader_custom.slang")
-local pipeline3d = sn.GraphicsPipeline3D()
+local pipeline3d = sn.GraphicsPipeline()
 pipeline3d:set_vertex_shader(vertex_shader)
 pipeline3d:set_fragment_shader(fragment_shader)
 pipeline3d:set_enable_tangent(true)
+pipeline3d:set_enable_depth_test(true)
 pipeline3d:build()
+sn.Graphics.bind_pipeline(pipeline3d)
 
 local light_pos = sn.Vec3(2, 0, 0)
 local light_intensity = 2.5
@@ -74,7 +76,6 @@ function update()
 end
 
 function draw()
-    sn.Graphics.bind_pipeline3d(pipeline3d)
     sn.Graphics.set_uniform_data(1, uniform_data)
     sn.Graphics.draw_model(model, transform, material)
     sn.Graphics.draw_model(model, light_transform, material)

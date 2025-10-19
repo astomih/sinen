@@ -33,6 +33,7 @@ sn.Physics.add_collider(sphereCollider, true)
 
 sn.Graphics.get_camera():lookat(sn.Vec3(0, 10, 25), sn.Vec3(0, 0, 0), sn.Vec3(0, 1, 0))
 
+sn.Graphics.bind_pipeline(sn.BuiltinPipelines.get_3d())
 
 
 function update()

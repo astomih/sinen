@@ -354,19 +354,15 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def("traceable", &BFSGrid::traceable)
       .def("reset", &BFSGrid::reset);
 
-  py::class_<GraphicsPipeline2D>(m, "GraphicsPipeline2D")
+  py::class_<GraphicsPipeline>(m, "GraphicsPipeline")
       .def(py::init<>())
-      .def("set_vertex_shader", &GraphicsPipeline2D::setVertexShader)
-      .def("set_fragment_shader", &GraphicsPipeline2D::setFragmentShader)
-      .def("build", &GraphicsPipeline2D::build);
-  py::class_<GraphicsPipeline3D>(m, "GraphicsPipeline3D")
-      .def(py::init<>())
-      .def("set_vertex_shader", &GraphicsPipeline3D::setVertexShader)
-      .def("set_fragment_shader", &GraphicsPipeline3D::setFragmentShader)
-      .def("set_instanced", &GraphicsPipeline3D::setInstanced)
-      .def("set_animation", &GraphicsPipeline3D::setAnimation)
-      .def("set_enable_tangent", &GraphicsPipeline3D::setEnableTangent)
-      .def("build", &GraphicsPipeline3D::build);
+      .def("set_vertex_shader", &GraphicsPipeline::setVertexShader)
+      .def("set_fragment_shader", &GraphicsPipeline::setFragmentShader)
+      .def("set_enable_depth_test", &GraphicsPipeline::setEnableDepthTest)
+      .def("set_enable_instanced", &GraphicsPipeline::setEnableInstanced)
+      .def("set_enable_animation", &GraphicsPipeline::setEnableAnimation)
+      .def("set_enable_tangent", &GraphicsPipeline::setEnableTangent)
+      .def("build", &GraphicsPipeline::build);
 
   py::class_<Random>(m, "Random")
       .def_static("get_int_range", &Random::getIntRange)
@@ -386,6 +382,14 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
       .def_static("create_sphere_collider", &Physics::createSphereCollider)
       .def_static("cylinder_collider", &Physics::createCylinderCollider)
       .def_static("add_collider", &Physics::addCollider);
+
+  py::class_<BuiltinPipelines>(m, "BuiltinPipelines")
+      .def_static("get_2d", &BuiltinPipelines::get2D,
+                  py::return_value_policy::copy)
+      .def_static("get_3d", &BuiltinPipelines::get3D,
+                  py::return_value_policy::copy)
+      .def_static("get_3d_instanced", &BuiltinPipelines::get3DInstanced,
+                  py::return_value_policy::copy);
 
   py::class_<Graphics>(m, "Graphics")
       .def_static("draw2d", &Graphics::draw2D)
@@ -424,10 +428,7 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
                   py::return_value_policy::reference)
       .def_static("get_clear_color", &Graphics::getClearColor)
       .def_static("set_clear_color", &Graphics::setClearColor)
-      .def_static("bind_pipeline2d", &Graphics::bindPipeline2D)
-      .def_static("bind_default_pipeline2d", &Graphics::bindDefaultPipeline2D)
-      .def_static("bind_pipeline3d", &Graphics::bindPipeline3D)
-      .def_static("bind_default_pipeline3d", &Graphics::bindDefaultPipeline3D)
+      .def_static("bind_pipeline", &Graphics::bindPipeline)
       .def_static("set_uniform_data", &Graphics::setUniformData)
       .def_static("set_render_target", &Graphics::setRenderTarget)
       .def_static("flush", &Graphics::flush)

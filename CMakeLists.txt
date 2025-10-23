@@ -37,6 +37,7 @@ file(
         ${SINEN_SOURCE_DIR}/src/*.cpp
         ${SINEN_SOURCE_DIR}/libs/mojoAL/mojoal.c
         ${SINEN_SOURCE_DIR}/libs/lua/onelua.c
+        ${SINEN_SOURCE_DIR}/libs/tinyexr/deps/miniz/miniz.c
 )
 file(
         GLOB_RECURSE

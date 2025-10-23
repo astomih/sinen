@@ -46,3 +46,6 @@
 [submodule "libs/pocketpy"]
 	path = libs/pocketpy
 	url = https://github.com/pocketpy/pocketpy
+[submodule "libs/tinyexr"]
+	path = libs/tinyexr
+	url = https://github.com/syoyo/tinyexr

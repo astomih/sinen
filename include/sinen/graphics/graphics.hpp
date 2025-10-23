@@ -53,6 +53,8 @@ public:
     drawText(text, position, Palette::white(), 16.0f, 0.0f);
   }
 
+  static void drawCubemap(const Cubemap &cubemap);
+
   static void drawModel(const Model &model, const Transform &transform,
                         const Material &material);
 

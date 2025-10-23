@@ -204,7 +204,6 @@ bool LuaScript::Initialize() {
   {
     auto v = registerClass<Texture>(lua, "Texture");
     v["fill"] = &Texture::fill;
-    v["blend"] = &Texture::blend;
     v["copy"] = &Texture::copy;
     v["load"] = &Texture::load;
     v["size"] = &Texture::size;
@@ -216,6 +215,11 @@ bool LuaScript::Initialize() {
         [](Material &m, const Texture &texture) { m.setTexture(texture); },
         [](Material &m, const Texture &texture, size_t index) {
           m.setTexture(texture, index - 1);
+        });
+    v["set_cubemap"] = sol::overload(
+        [](Material &m, const Cubemap &cubemap) { m.setCubemap(cubemap); },
+        [](Material &m, const Cubemap &cubemap, size_t index) {
+          m.setCubemap(cubemap, index);
         });
     v["get_texture"] = &Material::getTexture;
     v["clear"] = &Material::clear;
@@ -373,6 +377,10 @@ bool LuaScript::Initialize() {
     v["scale"] = &Transform::scale;
   }
   {
+    auto v = registerClass<Cubemap>(lua, "Cubemap");
+    v["load"] = &Cubemap::load;
+  }
+  {
     auto v = registerClass<Grid<int>>(lua, "Grid", [](int width, int height) {
       return Grid<int>(width, height);
     });
@@ -467,6 +475,7 @@ bool LuaScript::Initialize() {
            const Color &color, float fontSize, float angle) {
           Graphics::drawText(text, position, color, fontSize, angle);
         });
+    v["draw_cubemap"] = &Graphics::drawCubemap;
     v["draw_model"] = &Graphics::drawModel;
     v["draw_model_instanced"] = [](const Model &model,
                                    sol::table transformsTable,

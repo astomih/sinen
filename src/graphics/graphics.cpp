@@ -36,6 +36,9 @@ void Graphics::drawText(const std::string &text, const glm::vec2 &position,
                         const Color &color, float fontSize, float angle) {
   GraphicsSystem::drawText(text, position, color, fontSize, angle);
 }
+void Graphics::drawCubemap(const Cubemap &cubemap) {
+  GraphicsSystem::drawCubemap(cubemap);
+}
 void Graphics::drawModel(const Model &model, const Transform &transform,
                          const Material &material) {
   GraphicsSystem::drawModel(model, transform, material);

@@ -14,7 +14,7 @@
 
 namespace sinen {
 SDL_Surface *create() {
-  auto *surf = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_RGBA8888);
+  auto *surf = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_RGBA32);
   return surf;
 }
 Texture::Texture() {
@@ -59,7 +59,7 @@ bool Texture::loadFromMemory(std::vector<char> &buffer) const {
 bool Texture::loadFromMemory(void *pPixels, uint32_t width, uint32_t height) {
   auto texdata = getTextureRawData(textureData);
   texdata->pSurface = ::SDL_CreateSurfaceFrom(
-      width, height, SDL_PIXELFORMAT_RGBA8888, pPixels, width * 4);
+      width, height, SDL_PIXELFORMAT_RGBA32, pPixels, width * 4);
   texdata->texture = createNativeTexture(
       pPixels, px::TextureFormat::R8G8B8A8_UNORM, width, height);
   return true;
@@ -72,19 +72,6 @@ void Texture::fill(const Color &color) {
       ::SDL_MapRGBA(SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_RGBA32), nullptr,
                     color.r * 255, color.g * 255, color.b * 255,
                     color.a * 255));
-  if (data->texture) {
-    UpdateNativeTexture(data->texture, data->pSurface);
-  } else {
-    data->texture = createNativeTexture(data->pSurface);
-  }
-}
-void Texture::blend(const Color &color) {
-  auto data = getTextureRawData(textureData);
-  SDL_SetSurfaceBlendMode(data->pSurface, SDL_BLENDMODE_BLEND);
-  SDL_SetSurfaceColorMod(data->pSurface, color.r * 255, color.g * 255,
-                         color.b * 255);
-  SDL_SetSurfaceAlphaMod(data->pSurface, color.a * 255);
-  SDL_BlitSurface(data->pSurface, nullptr, data->pSurface, nullptr);
   if (data->texture) {
     UpdateNativeTexture(data->texture, data->pSurface);
   } else {

@@ -329,11 +329,18 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
   }
   drawCallCountPerFrame++;
   prepareRenderPassFrame();
+
   for (const auto &texture : draw3D.material.getTextures()) {
     auto nativeTexture = std::static_pointer_cast<px::Texture>(
         getTextureRawData(texture.textureData)->texture);
     textureSamplers.push_back(px::TextureSamplerBinding{
         .sampler = sampler, .texture = nativeTexture});
+  }
+
+  for (const auto &cubemap : draw3D.material.getCubemaps()) {
+    auto nativeCubemap = cubemap.getNativeCubemap();
+    textureSamplers.push_back(px::TextureSamplerBinding{
+        .sampler = sampler, .texture = nativeCubemap});
   }
 
   auto instanceSize = sizeof(glm::mat4) * instanceData.size();
@@ -447,6 +454,21 @@ void GraphicsSystem::drawText(const std::string &text,
   draw2D.material = Material();
   draw2D.material.setTexture(texture);
   GraphicsSystem::drawBase2D(draw2D);
+}
+void GraphicsSystem::drawCubemap(const Cubemap &cubemap) {
+
+  Transform transform;
+  Model model;
+  model.loadBox();
+  Material material;
+  material.setCubemap(cubemap);
+  sinen::Draw3D draw3D;
+  draw3D.position = transform.position;
+  draw3D.scale = transform.scale;
+  draw3D.rotation = transform.rotation;
+  draw3D.material = material;
+  draw3D.model = model;
+  GraphicsSystem::drawBase3D(draw3D);
 }
 void GraphicsSystem::drawModel(const Model &model, const Transform &transform,
                                const Material &material) {

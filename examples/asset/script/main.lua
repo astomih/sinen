@@ -2,7 +2,7 @@ local button = require("gui/button")()
 GUI_MANAGER = require("gui/gui_manager")()
 
 local exampleDirs = sn.FileSystem.enumerate_directory(".")
-local numExamples = 11
+local numExamples = 12
 
 sn.Graphics.bind_pipeline(sn.BuiltinPipelines.get_2d())
 

@@ -183,7 +183,7 @@ FSOutput FSMain(FSInput input) {
   FSOutput output;
   Light light[1];
   float3 lightPos = float3(lightPosx, lightPosy, lightPosz);
-  light[0].position = lightPos; // ワールドのまま
+  light[0].position = lightPos;
   light[0].color = float3(1, 1, 1);
   light[0].intensity = intensity_;
 

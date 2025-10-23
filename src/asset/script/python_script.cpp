@@ -154,7 +154,6 @@ PYBIND11_EMBEDDED_MODULE(sinen, m) {
   py::class_<Texture>(m, "Texture")
       .def(py::init<>())
       .def("fill", &Texture::fill)
-      .def("blend", &Texture::blend)
       .def("copy", &Texture::copy)
       .def("load", &Texture::load)
       .def("size", &Texture::size);

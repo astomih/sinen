@@ -194,7 +194,12 @@ void loadMesh(const aiScene *scene, Mesh &mesh, AABB &aabb) {
       for (uint32_t j = 0; j < aimesh->mNumVertices; j++) {
         const aiVector3D &pos = aimesh->mVertices[j];
         const aiVector3D &norm = aimesh->mNormals[j];
-        const aiVector3D &uv = aimesh->mTextureCoords[0][j];
+        glm::vec2 uv(0.f, 0.f);
+        if (aimesh->HasTextureCoords(0)) {
+          const aiVector3D &aiuv = aimesh->mTextureCoords[0][j];
+          uv.x = aiuv.x;
+          uv.y = aiuv.y;
+        }
         Color color = Color(1.f, 1.f, 1.f, 1.f);
         if (aimesh->HasVertexColors(j)) {
           const aiColor4D &c = aimesh->mColors[0][j];

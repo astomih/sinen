@@ -19,7 +19,7 @@ add_subdirectory(${SINEN_SOURCE_DIR}/libs/zep EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/sol2 EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/JoltPhysics/Build EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/pocketpy EXCLUDE_FROM_ALL)
-option(SINEN_USE_SLANG "Use Slang for shader compilation" OFF)
+option(SINEN_USE_SLANG "Use Slang for shader compilation" ON)
 
 if (SINEN_USE_SLANG)
     add_subdirectory(${SINEN_SOURCE_DIR}/libs/slang EXCLUDE_FROM_ALL)

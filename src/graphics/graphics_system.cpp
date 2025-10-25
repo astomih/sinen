@@ -512,6 +512,10 @@ void GraphicsSystem::beginRenderPass(bool depthEnabled, px::LoadOp loadOp) {
 }
 
 void GraphicsSystem::prepareRenderPassFrame() {
+  if (isChangedRenderTarget) {
+    isChangedRenderTarget = false;
+    return;
+  }
   const bool depthEnabled = currentPipeline.getFeatureFlags().test(
       GraphicsPipeline::FeatureFlag::DepthTest);
 
@@ -523,8 +527,10 @@ void GraphicsSystem::prepareRenderPassFrame() {
     return;
   }
 
-  if (hasActivePass && depthChanged && !isFrameStarted) {
+  if ((hasActivePass && depthChanged && !isFrameStarted) ||
+      isChangedRenderTarget) {
     currentCommandBuffer->EndRenderPass(currentRenderPass);
+    isChangedRenderTarget = false;
   }
 
   const px::LoadOp loadOp =
@@ -552,6 +558,10 @@ void GraphicsSystem::setUniformData(uint32_t slot, const UniformData &data) {
 }
 void GraphicsSystem::setRenderTarget(const RenderTexture &texture) {
   auto tex = texture.getTexture();
+  if (tex == currentColorTargets[0].texture) {
+    return;
+  }
+  isChangedRenderTarget = true;
   auto depthTex = texture.getDepthStencil();
   currentCommandBuffer = device->AcquireCommandBuffer({allocator});
   currentColorTargets[0].loadOp = px::LoadOp::Clear;

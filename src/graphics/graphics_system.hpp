@@ -105,6 +105,7 @@ private:
   inline static px::Ptr<px::RenderPass> currentRenderPass;
   inline static bool isFrameStarted = true;
   inline static bool isPrevDepthEnabled = true;
+  inline static bool isChangedRenderTarget = false;
   inline static uint32_t drawCallCountPerFrame = 0;
   inline static px::Array<px::ColorTargetInfo> colorTargets =
       px::Array<px::ColorTargetInfo>(getAllocator());

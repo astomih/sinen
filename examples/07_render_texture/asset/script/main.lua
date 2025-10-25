@@ -1,5 +1,3 @@
-local texture = sn.Texture()
-texture:fill(sn.Color(1, 1, 1, 1))
 local renderTexture = sn.RenderTexture()
 local out = sn.Texture()
 out:load("logo.png")
@@ -8,10 +6,10 @@ local sy = out:size().y
 renderTexture:create(sx, sy)
 
 local model = sn.Model()
-model:load("Suzanne.gltf")
-local draw3d = sn.Draw3D(texture)
-draw3d.position = sn.Vec3(0)
-draw3d.model = model
+model:load("DamagedHelmet.glb")
+
+local transform = sn.Transform()
+transform.rotation = sn.Vec3(90, 0, 0)
 
 local pos = sn.Vec3(1, 1, 3)
 
@@ -23,9 +21,9 @@ function update()
 end
 
 function draw()
-    sn.Graphics.set_render_target(renderTexture)
     sn.Graphics.bind_pipeline(sn.BuiltinPipelines.get_3d())
-    sn.Graphics.draw3d(draw3d)
+    sn.Graphics.set_render_target(renderTexture)
+    sn.Graphics.draw_model(model, transform, model:get_material())
     -- Draw texture
     sn.Graphics.flush()
     sn.Graphics.readback_texture(renderTexture, out)

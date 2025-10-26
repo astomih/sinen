@@ -19,7 +19,6 @@ public:
 class ScriptBackend {
 public:
   static std::unique_ptr<IScriptBackend> CreateLua();
-  static std::unique_ptr<IScriptBackend> CreatePython();
 };
 
 } // namespace sinen

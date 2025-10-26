@@ -313,6 +313,7 @@ void loadMaterial(aiScene *scene, Material &material) {
           loadTexture(scene, scene->mMaterials[i], aiTextureType_BASE_COLOR);
       if (texture.has_value()) {
         material.appendTexture(texture.value());
+        continue;
       }
     }
     {
@@ -320,6 +321,7 @@ void loadMaterial(aiScene *scene, Material &material) {
           loadTexture(scene, scene->mMaterials[i], aiTextureType_NORMALS);
       if (texture.has_value()) {
         material.appendTexture(texture.value());
+        continue;
       }
     }
     {
@@ -327,6 +329,7 @@ void loadMaterial(aiScene *scene, Material &material) {
                                  aiTextureType_DIFFUSE_ROUGHNESS);
       if (texture.has_value()) {
         material.appendTexture(texture.value());
+        continue;
       }
     }
     {
@@ -334,6 +337,7 @@ void loadMaterial(aiScene *scene, Material &material) {
           loadTexture(scene, scene->mMaterials[i], aiTextureType_METALNESS);
       if (texture.has_value()) {
         material.appendTexture(texture.value());
+        continue;
       }
     }
     {
@@ -341,6 +345,7 @@ void loadMaterial(aiScene *scene, Material &material) {
           loadTexture(scene, scene->mMaterials[i], aiTextureType_EMISSIVE);
       if (texture.has_value()) {
         material.appendTexture(texture.value());
+        continue;
       }
     }
     {
@@ -348,8 +353,14 @@ void loadMaterial(aiScene *scene, Material &material) {
           loadTexture(scene, scene->mMaterials[i], aiTextureType_LIGHTMAP);
       if (texture.has_value()) {
         material.appendTexture(texture.value());
+        continue;
       }
     }
+  }
+  if (material.getTextureCount() == 0) {
+    Texture defaultTexture;
+    defaultTexture.fill(Color(1.f));
+    material.appendTexture(defaultTexture);
   }
 }
 

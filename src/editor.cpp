@@ -96,10 +96,6 @@ void zep_load() {
     strName = FileSystem::getAppBaseDirectory() + "/" +
               MainSystem::GetBasePath() + "/asset/script/main.lua";
     break;
-  case ScriptType::Python:
-    strName = FileSystem::getAppBaseDirectory() + "/" +
-              MainSystem::GetBasePath() + "/asset/script/main.py";
-    break;
   }
   auto pBuffer = zep_get_editor().InitWithFile(strName);
   assert(pBuffer != nullptr);
@@ -138,11 +134,6 @@ void showLuaScriptsMenu_While(const std::string &rootDir,
         switch (sinen::ScriptSystem::GetType()) {
         case sinen::ScriptType::Lua:
           if (entry.path().extension() == ".lua")
-            files.push_back(entry);
-          break;
-        case sinen::ScriptType::Python:
-
-          if (entry.path().extension() == ".py")
             files.push_back(entry);
           break;
         default:

@@ -49,7 +49,6 @@ sn = {
     Vec2 = {},
 
     ---@class Vec2i
-    ---@type Vec2i
     ---@field x integer
     ---@field y integer
     ---@field new fun(x: integer, y: integer): Vec2i

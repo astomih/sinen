@@ -29,7 +29,7 @@ static const char *nothingSceneLua = R"(
 function update()
 end
 function draw()
-    sn.Graphics.draw_text("NO DATA", sn.Vec2(0, 0), sn.Color(1, 1, 1, 1), 96, 0.0)
+    sn.Graphics.drawText("NO DATA", sn.Vec2.new(0, 0), sn.Color.new(1, 1, 1, 1), 96, 0.0)
 end
 )";
 

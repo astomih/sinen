@@ -1,19 +1,19 @@
-local texture = sn.Texture()
-local draw2d = sn.Draw2D(texture)
+local texture = sn.Texture.new()
+local draw2d = sn.Draw2D.new(texture)
 
-local vertex_shader = sn.Shader()
-vertex_shader:load_vertex_shader("shader_custom.vert.spv", 1)
-local fragment_shader = sn.Shader()
-fragment_shader:load_fragment_shader("shaderAlpha.frag.spv", 0)
+local vertex_shader = sn.Shader.new()
+vertex_shader:loadVertexShader("shader_custom.vert.spv", 1)
+local fragment_shader = sn.Shader.new()
+fragment_shader:loadFragmentShader("shaderAlpha.frag.spv", 0)
 
-local pipeline2d = sn.GraphicsPipeline()
-pipeline2d:set_vertex_shader(vertex_shader)
-pipeline2d:set_fragment_shader(fragment_shader)
-pipeline2d:set_enable_depth_test(false)
+local pipeline2d = sn.GraphicsPipeline.new()
+pipeline2d:setVertexShader(vertex_shader)
+pipeline2d:setFragmentShader(fragment_shader)
+pipeline2d:setEnableDepthTest(false)
 pipeline2d:build()
-sn.Graphics.bind_pipeline(pipeline2d)
+sn.Graphics.bindPipeline(pipeline2d)
 
-local uniform_data = sn.UniformData()
+local uniform_data = sn.UniformData.new()
 uniform_data:add(2.0)
 uniform_data:add(0.5)
 uniform_data:add(0.5)
@@ -23,13 +23,13 @@ texture:load("logo.png")
 draw2d.scale = texture:size()
 
 function update()
-    if sn.Keyboard.is_pressed(sn.Keyboard.ESCAPE) then
+    if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")
     end
 end
 
 function draw()
-    sn.Graphics.set_uniform_data(1, uniform_data)
+    sn.Graphics.setUniformData(1, uniform_data)
     -- Draw texture
-    sn.Graphics.draw2d(draw2d)
+    sn.Graphics.draw2D(draw2d)
 end

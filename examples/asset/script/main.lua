@@ -1,26 +1,25 @@
 local button = require("gui/button")()
 GUI_MANAGER = require("gui/gui_manager")()
 
-local exampleDirs = sn.FileSystem.enumerate_directory(".")
+local exampleDirs = sn.FileSystem.enumerateDirectory(".")
 local numExamples = 12
 
-sn.Graphics.bind_pipeline(sn.BuiltinPipelines.get_2d())
+sn.Graphics.bindPipeline(sn.BuiltinPipelines.get2D())
 
 local offset = numExamples * 16.0
 function update()
     GUI_MANAGER:update()
 
     for i = 1, numExamples do
-        if button:show(exampleDirs[i], sn.Vec2(0, i * -32.0 + offset
-            ), sn.Vec2(300, 32)) then
+        if button:show(exampleDirs[i], sn.Vec2.new(0, i * -32.0 + offset
+            ), sn.Vec2.new(300, 32)) then
             sn.Script.load("main", exampleDirs[i])
         end
     end
 end
 
 function draw()
-    sn.Graphics.draw_text("Example Launcher",
-        sn.Vec2(0, offset),
-        sn.Color(1, 1, 1, 1), 24)
+    sn.Graphics.drawText("Example Launcher", sn.Vec2.new(0, offset),
+        sn.Color.new(1, 1, 1, 1), 24)
     GUI_MANAGER:draw()
 end

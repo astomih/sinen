@@ -5,6 +5,8 @@ sn = {
     ---@field x number
     ---@field y number
     ---@field z number
+    ---@field new fun(x: number, y: number, z: number): Vec3
+    ---@field new fun(value: number): Vec3
     ---@field copy fun(self: Vec3): Vec3
     ---@field length fun(self: Vec3): number
     ---@field forward fun(self: Vec3, rotation: Vec3): Vec3
@@ -17,41 +19,23 @@ sn = {
     ---@operator sub(Vec3): Vec3
     ---@operator mul(Vec3): Vec3
     ---@operator div(Vec3): Vec3
-    ---@param x number?
-    ---@param y number?
-    ---@param z number?
-    ---@return Vec3
-    Vec3 = function(x, y, z) return {} end,
-
-    ---@param value number
-    ---@return Vec3
-    ---Initializes a Vec3 with the same value for x, y, z.
-    Vec3 = function(value) return {} end,
+    Vec3 = {},
 
     ---@class Vec3i
     ---@field x integer
     ---@field y integer
     ---@field z integer
+    ---@field new fun(x: integer, y: integer, z: integer): Vec3i
+    ---@field new fun(value: integer): Vec3i
     ---@operator add(Vec3i): Vec3i
     ---@operator sub(Vec3i): Vec3i
-    ---@param x integer?
-    ---@param y integer?
-    ---@param z integer?
-    ---@return Vec3i
-    Vec3i = function(x, y, z)
-        return {}
-    end,
-
-    ---@param value integer
-    ---@return Vec3i
-    ---Initializes a Vec3i with the same value for x, y, z.
-    Vec3i = function(value)
-        return {}
-    end,
+    Vec3i = {},
 
     ---@class Vec2
     ---@field x number
     ---@field y number
+    ---@field new fun(value: number): Vec2
+    ---@field new fun(x: number, y: number): Vec2
     ---@field copy fun(self: Vec2): Vec2
     ---@field length fun(self: Vec2): number
     ---@field normalize fun(self: Vec2): Vec2
@@ -62,153 +46,146 @@ sn = {
     ---@operator sub(Vec2): Vec2
     ---@operator mul(Vec2): Vec2
     ---@operator div(Vec2): Vec2
-    ---@param x number?
-    ---@param y number?
-    ---@return Vec2
-    Vec2 = function(x, y) return {} end,
-
-    ---@param value number
-    ---@return Vec2
-    ---Initializes a Vec2 with the same value for x, y.
-    Vec2 = function(value) return {} end,
+    Vec2 = {},
 
     ---@class Vec2i
+    ---@type Vec2i
     ---@field x integer
     ---@field y integer
+    ---@field new fun(x: integer, y: integer): Vec2i
+    ---@field new fun(value: integer): Vec2i
     ---@operator add(Vec2i): Vec2i
     ---@operator sub(Vec2i): Vec2i
-    ---@param x integer?
-    ---@param y integer?
-    ---@return Vec2i
-    Vec2i = function(x, y) return {} end,
-
-    ---@param value integer
-    ---@return Vec2i
-    ---Initializes a Vec2i with the same value for x, y.
-    Vec2i = function(value) return {} end,
+    Vec2i = {},
 
     ---@class Texture
+    ---@field new fun(): Texture
     ---@field fill fun(self: Texture, color: Color)
     ---@field blend fun(self: Texture, color: Color)
     ---@field copy fun(self: Texture): Texture
     ---@field load fun(self: Texture, path: string)
     ---@field size fun(self: Texture): Vec2
-    ---@return Texture
-    Texture = function() return {} end,
+    Texture = {},
+
+    ---@class Cubemap
+    ---@field new fun(): Cubemap
+    ---@field load fun(self: Cubemap, path: string)
+    Cubemap = {},
 
     ---@class Material
+    ---@field new fun(): Material
     ---Set Texture. index is 1-based, optional.
-    ---@field set_texture fun(self:Material, texture: Texture, index: integer?)
-    ---@field append_texture fun(self: Material, texture: Texture)
+    ---@field setTexture fun(self:Material, texture: Texture, index: integer?)
+    ---@field appendTexture fun(self: Material, texture: Texture)
     ---@field clear fun(self: Material)
-    ---@field get_texture fun(self: Material, index: integer): Texture
-    ---@return Material
-    Material = function() return {} end,
+    ---@field getTexture fun(self: Material, index: integer): Texture
+    ---@field setCubemap fun(self: Material, cubemap: Cubemap, index: integer)
+    Material = {},
 
     ---@class RenderTexture
+    ---@field new fun(): RenderTexture
     ---@field create fun(self: RenderTexture, x: integer, y: integer)
-    ---@return RenderTexture
-    RenderTexture = function() return {} end,
+    RenderTexture = {},
 
     ---@class Music
+    ---@field new fun():Music
     ---@field load fun(self: Music, path: string)
     ---@field play fun(self: Music)
-    ---@field set_volume fun(self: Music, volume: number)
-    ---@return Music
-    Music = function() return {} end,
+    ---@field setVolume fun(self: Music, volume: number)
+    Music = {},
 
     ---@class Sound
+    ---@field new fun(): Sound
     ---@field load fun(self: Sound, path: string)
     ---@field play fun(self: Sound)
-    ---@field set_volume fun(self: Sound, volume: number)
-    ---@field set_pitch fun(self: Sound, pitch: number)
-    ---@field set_listener fun(self: Sound, position: Vec3)
-    ---@field set_position fun(self: Sound, position: Vec3)
-    ---@return Sound
-    Sound = function() return {} end,
+    ---@field setVolume fun(self: Sound, volume: number)
+    ---@field setPitch fun(self: Sound, pitch: number)
+    ---@field setListener fun(self: Sound, position: Vec3)
+    ---@field setPosition fun(self: Sound, position: Vec3)
+    Sound = {},
 
     ---@class Camera
+    ---@field new fun(): Camera
     ---@field lookat fun(self: Camera, position: Vec3, target: Vec3, up: Vec3)
     ---@field perspective fun(self: Camera, fov: number, aspect: number, near: number, far: number)
     ---@field orthographic fun(self: Camera, left: number, right: number, bottom: number, top: number, near: number, far: number)
-    ---@field get_position fun(self: Camera): Vec3
-    ---@field get_target fun(self: Camera): Vec3
-    ---@field get_up fun(self: Camera): Vec3
-    ---@field is_aabb_in_frustum fun(self: Camera, aabb: AABB): boolean
-    Camera = function() end,
+    ---@field getPosition fun(self: Camera): Vec3
+    ---@field getTarget fun(self: Camera): Vec3
+    ---@field getUp fun(self: Camera): Vec3
+    ---@field isAABBInFrustum fun(self: Camera, aabb: AABB): boolean
+    Camera = {},
 
     ---@class Camera2D
+    ---@field new fun(): Camera2D
     ---@field resize fun(self: Camera2D, size: Vec2)
-    ---@field window_ratio fun(self: Camera2D): Vec2
-    ---@field inv_window_ratio fun(self: Camera2D): Vec2
+    ---@field windowRatio fun(self: Camera2D): Vec2
+    ---@field invWindowRatio fun(self: Camera2D): Vec2
     ---@field size fun(self: Camera2D): Vec2
     ---@field half fun(self: Camera2D): Vec2
-    Camera2D = function() end,
+    Camera2D = {},
 
     ---@class Model
-    ---@field get_aabb fun(self: Model): AABB
+    ---@field new fun(): Model
+    ---@field getAABB fun(self: Model): AABB
     ---@field load fun(self: Model, path: string)
-    ---@field load_sprite fun(self: Model)
-    ---@field load_box fun(self: Model)
-    ---@field get_bone_uniform_data fun(self: Model): UniformData
+    ---@field loadSprite fun(self: Model)
+    ---@field loadBox fun(self: Model)
+    ---@field getBoneUniformData fun(self: Model): UniformData
     ---@field play fun(self: Model, positon: number)
     ---@field update fun(self: Model, delta: number)
-    ---@field get_material fun(self: Model): Material
-    ---@return Model
-    Model = function() return {} end,
+    ---@field getMaterial fun(self: Model): Material
+    Model = {},
 
     ---@class AABB
+    ---@field new fun(): AABB
     ---@field min Vec3
     ---@field max Vec3
-    ---@field update_world fun(self: AABB, position: Vec3, scale: Vec3, modelAABB: AABB)
-    ---@return AABB
-    AABB = function() return {} end,
+    ---@field updateWorld fun(self: AABB, position: Vec3, scale: Vec3, modelAABB: AABB)
+    AABB = {},
 
     ---@class Timer
+    ---@field new fun(): Timer
     ---@field start fun(self: Timer)
     ---@field stop fun(self: Timer)
-    ---@field is_started fun(self: Timer): boolean
-    ---@field set_time fun(self: Timer, time: number)
+    ---@field isStarted fun(self: Timer): boolean
+    ---@field setTime fun(self: Timer, time: number)
     ---@field check fun(self: Timer): boolean
-    Timer = function() end,
+    Timer = {},
 
     ---@class UniformData
+    ---@field new fun(): UniformData
     ---@field add fun(self: UniformData, value: any)
     ---@field change fun(self: UniformData, value: number,  index: integer)
-    ---@return UniformData
-    UniformData = function() return {} end,
+    UniformData = {},
 
     ---@class Shader
-    ---@field load_vertex_shader fun(self: Shader, path: string, uniform_count: integer)
-    ---@field load_fragment_shader fun(self: Shader, path: string, uniform_count: integer)
-    ---@field compile_load_vertex_shader fun(self: Shader, source: string)
-    ---@field compile_load_fragment_shader fun(self: Shader, source: string)
-    ---@return Shader
-    Shader = function() return {} end,
+    ---@field new fun(): Shader
+    ---@field loadVertexShader fun(self: Shader, path: string, uniform_count: integer)
+    ---@field loadFragmentShader fun(self: Shader, path: string, uniform_count: integer)
+    ---@field compileLoadVertexShader fun(self: Shader, source: string)
+    ---@field compileLoadFragmentShader fun(self: Shader, source: string)
+    Shader = {},
 
     ---@class Font
+    ---@field new fun(): Font
     ---@field load fun(self: Font, size: integer, path: string?): nil
-    ---@field render_text fun(self: Font, texture: Texture, text: string, color: Color): Texture
+    ---@field renderText fun(self: Font, texture: Texture, text: string, color: Color): Texture
     ---@field resize fun(self: Font, size: integer)
-    ---@return Font
-    Font = function() return {} end,
+    Font = {},
 
     ---@class Color
     ---@field r number
     ---@field g number
     ---@field b number
     ---@field a number
-    ---@param r number
-    ---@param g number
-    ---@param b number
-    ---@param a number
-    ---@return Color
-    Color = function(r, g, b, a) return {} end,
-
-    ---@return Color
-    Color = function() return {} end,
+    ---@field new fun(r: number, g: number, b: number, a: number): Color
+    ---@field new fun(value: number, a: number): Color
+    ---@field new fun(value: number): Color
+    ---@field new fun(): Color
+    Color = {},
 
     ---@class Draw2D
+    ---@field new fun(texture: Texture): Draw2D
     ---@field scale Vec2
     ---@field position Vec2
     ---@field rotation number
@@ -216,11 +193,10 @@ sn = {
     ---@field add fun(self: Draw2D, drawable: any)
     ---@field at fun(self: Draw2D, x: number, y: number)
     ---@field clear fun(self: Draw2D)
-    ---@param texture Texture?
-    ---@return Draw2D
-    Draw2D = function(texture) return {} end,
+    Draw2D = {},
 
     ---@class Draw3D
+    ---@field new fun(texture: Texture): Draw3D
     ---@field scale Vec3
     ---@field position Vec3
     ---@field rotation Vec3
@@ -229,11 +205,10 @@ sn = {
     ---@field add fun(self: Draw3D, positon: Vec3, rotation: Vec3, scale: Vec3)
     ---@field at fun(self: Draw3D, x: number, y: number, z: number)
     ---@field clear fun(self: Draw3D)
-    ---@param texture Texture?
-    ---@return Draw3D
-    Draw3D = function(texture) return {} end,
+    Draw3D = {},
 
     ---@class Grid
+    ---@field new fun(w: integer, h: integer): Grid
     ---@field at fun(self: Grid, x: integer, y: integer): integer
     ---@field set fun(self: Grid, x: integer, y: integer, v: integer)
     ---@field width fun(self: Grid): integer
@@ -242,62 +217,49 @@ sn = {
     ---@field clear fun(self: Grid)
     ---@field resize fun(self: Grid, w: integer, h: integer)
     ---@field fill fun(self: Grid, value: integer)
-    ---@param w integer
-    ---@param h integer
-    ---@return Grid
-    Grid = function(w, h) return {} end,
+    Grid = {},
 
     ---@class BFSGrid
+    ---@field new fun(grid: Grid): BFSGrid
     ---@field width fun(self: BFSGrid): integer
     ---@field height fun(self: BFSGrid): integer
-    ---@field find_path fun(self: BFSGrid, start: Vec2i, end_: Vec2i): any
+    ---@field findPath fun(self: BFSGrid, start: Vec2i, end_: Vec2i): any
     ---@field trace fun(self: BFSGrid): Vec2
     ---@field traceable fun(self: BFSGrid): boolean
     ---@field reset fun(self: BFSGrid)
-    ---@param grid Grid
-    ---@return BFSGrid
-    BFSGrid = function(grid)
-        return {}
-    end,
+    BFSGrid = {},
 
     ---@class GraphicsPipeline
-    ---@field set_vertex_shader fun(self: GraphicsPipeline, shader: Shader)
-    ---@field set_fragment_shader fun(self: GraphicsPipeline, shader: Shader)
-    ---@field set_enable_depth_test fun(self: GraphicsPipeline, enable: boolean)
-    ---@field set_enable_instanced fun(self: GraphicsPipeline, enable: boolean)
-    ---@field set_enable_animation fun(self: GraphicsPipeline, enable: boolean)
-    ---@field set_enable_tangent fun(self: GraphicsPipeline, enable: boolean)
+    ---@field new fun(): GraphicsPipeline
+    ---@field setVertexShader fun(self: GraphicsPipeline, shader: Shader)
+    ---@field setFragmentShader fun(self: GraphicsPipeline, shader: Shader)
+    ---@field setEnableDepthTest fun(self: GraphicsPipeline, enable: boolean)
+    ---@field setEnableInstanced fun(self: GraphicsPipeline, enable: boolean)
+    ---@field setEnableAnimation fun(self: GraphicsPipeline, enable: boolean)
+    ---@field setEnableTangent fun(self: GraphicsPipeline, enable: boolean)
     ---@field build fun(self: GraphicsPipeline)
-    ---@return GraphicsPipeline
-    GraphicsPipeline = function() return {} end,
+    GraphicsPipeline = {},
 
     ---@class Rect
     ---@field x number
     ---@field y number
+    ---@field new fun(x: number, y: number, width: number, height: number): Rect
+    ---@field new fun(position: Vec2, size: Vec2): Rect
     ---@field width number
     ---@field height number
-    ---@param x number?
-    ---@param y number?
-    ---@param width number?
-    ---@param height number?
-    ---@return Rect
-    Rect = function(x, y, width, height) return {} end,
-    ---@param position Vec2
-    ---@param size Vec2
-    ---@return Rect
-    Rect = function(position, size) return {} end,
+    Rect = {},
 
     ---@class Transform
     ---@field position Vec3
     ---@field rotation Vec3
     ---@field scale Vec3
-    ---@return Transform
-    Transform = function() return {} end,
+    ---@field new fun(): Transform
+    Transform = {},
 
     ---@class Collider
-    ---@field get_position fun(self: Collider): Vec3
-    ---@field get_velocity fun(self: Collider): Vec3
-    ---@field set_linear_velocity fun(self: Collider, velocity: Vec3)
+    ---@field getPosition fun(self: Collider): Vec3
+    ---@field getVelocity fun(self: Collider): Vec3
+    ---@field setLinearVelocity fun(self: Collider, velocity: Vec3)
     Collider = {},
 
     ---Static class
@@ -307,65 +269,66 @@ sn = {
 
     ---Static class
     ---@class FileSystem
-    ---@field enumerate_directory fun(path: string): table
+    ---@field enumerateDirectory fun(path: string): table
     FileSystem = {},
 
     ---Static class
     ---@class Random
-    ---@field get_range fun(a: number, b: number): number
-    ---@field get_int_range fun(a: number, b: number): number
+    ---@field getRange fun(a: number, b: number): number
+    ---@field getIntRange fun(a: number, b: number): number
     Random = {},
 
     ---Static class
     ---@class Window
-    ---@field get_name fun(): string
+    ---@field getName fun(): string
     ---@field size fun(): Vec2
     ---@field half fun(): Vec2
     ---@field resize fun(size: Vec2)
-    ---@field set_fullscreen fun(full: boolean)
+    ---@field setFullscreen fun(full: boolean)
     ---@field rename fun(name: string)
     ---@field resized fun(): boolean
     Window = {},
 
     ---Static class
     ---@class BuiltinPipelines
-    ---@field get_3d fun(): GraphicsPipeline
-    ---@field get_3d_instanced fun(): GraphicsPipeline
-    ---@field get_2d fun(): GraphicsPipeline
+    ---@field get3D fun(): GraphicsPipeline
+    ---@field get3DInstanced fun(): GraphicsPipeline
+    ---@field get2D fun(): GraphicsPipeline
     BuiltinPipelines = {},
 
     ---Static class
     ---@class Graphics
-    ---@field draw2d fun(draw2D: Draw2D)
-    ---@field draw3d fun(draw3D: Draw3D)
-    ---@field draw_rect fun(rect: Rect, color: Color, angle: number?)
-    ---@field draw_image fun(texture: Texture, rect: Rect, angle: number?)
-    ---@field draw_text fun(text: string, position: Vec2, color: Color?, fontSize: number?, angle: number?)
-    ---@field draw_model fun(model: Model, transform: Transform, material: Material)
-    ---@field draw_model_instanced fun(model: Model, transforms: table, material: Material)
-    ---@field set_camera fun(camera: Camera)
-    ---@field get_camera fun(): Camera
-    ---@field set_camera2d fun(camera: Camera2D)
-    ---@field get_camera2d fun(): Camera2D
-    ---@field get_clear_color fun(): Color
-    ---@field set_clear_color fun(c: Color)
-    ---@field bind_pipeline fun(pipe: GraphicsPipeline)
-    ---@field set_uniform_data fun(binding: integer, data: UniformData)
-    ---@field set_render_target fun(rt: RenderTexture)
+    ---@field draw2D fun(draw2D: Draw2D)
+    ---@field draw3D fun(draw3D: Draw3D)
+    ---@field drawRect fun(rect: Rect, color: Color, angle: number?)
+    ---@field drawImage fun(texture: Texture, rect: Rect, angle: number?)
+    ---@field drawText fun(text: string, position: Vec2, color: Color?, fontSize: number?, angle: number?)
+    ---@field drawModel fun(model: Model, transform: Transform, material: Material)
+    ---@field drawModelInstanced fun(model: Model, transforms: table, material: Material)
+    ---@field drawCubemap fun(cubemap: Cubemap)
+    ---@field setCamera fun(camera: Camera)
+    ---@field getCamera fun(): Camera
+    ---@field setCamera2d fun(camera: Camera2D)
+    ---@field getCamera2d fun(): Camera2D
+    ---@field getClearColor fun(): Color
+    ---@field setClearColor fun(c: Color)
+    ---@field bindPipeline fun(pipe: GraphicsPipeline)
+    ---@field setUniformData fun(binding: integer, data: UniformData)
+    ---@field setRenderTarget fun(rt: RenderTexture)
     ---@field flush fun()
-    ---@field readback_texture fun(rt: RenderTexture, out: Texture): Texture
+    ---@field readbackTexture fun(rt: RenderTexture, out: Texture): Texture
     Graphics = {},
 
     ---Static class
     ---@class Physics
-    ---@field create_box_collider fun(transform: Transform, isStatic: boolean): Collider
-    ---@field create_sphere_collider fun(position: Vec3, radius: number, isStatic: boolean): Collider
-    ---@field add_collider fun(collider: Collider, isActive: boolean)
+    ---@field createBoxCollider fun(transform: Transform, isStatic: boolean): Collider
+    ---@field createSphereCollider fun(position: Vec3, radius: number, isStatic: boolean): Collider
+    ---@field addCollider fun(collider: Collider, isActive: boolean)
     Physics = {},
 
     ---Static class
     ---@class Collision
-    ---@field aabb_vs_aabb fun(a: AABB, b: AABB): boolean
+    ---@field AABBvsAABB fun(a: AABB, b: AABB): boolean
     Collision = {},
 
     ---Static class
@@ -432,9 +395,9 @@ sn = {
     ---@field LCTRL integer
     ---@field RCTRL integer
     ---@field LALT integer
-    ---@field is_pressed fun(scancode: integer): boolean
-    ---@field is_released fun(scancode: integer): boolean
-    ---@field is_down fun(scancode: integer): boolean
+    ---@field isPressed fun(scancode: integer): boolean
+    ---@field isReleased fun(scancode: integer): boolean
+    ---@field isDown fun(scancode: integer): boolean
     Keyboard = {},
 
     ---Static class
@@ -444,16 +407,16 @@ sn = {
     ---@field MIDDLE integer
     ---@field X1 integer
     ---@field X2 integer
-    ---@field is_pressed fun(btn: integer): boolean
-    ---@field is_released fun(btn: integer): boolean
-    ---@field is_down fun(btn: integer): boolean
-    ---@field get_position fun(): Vec2
-    ---@field get_position_on_scene fun(): Vec2
-    ---@field set_position fun(pos: Vec2)
-    ---@field set_position_on_scene fun(pos: Vec2)
-    ---@field get_scroll_wheel fun(): number
-    ---@field hide_cursor fun(isHide: boolean)
-    ---@field set_relative fun(isRelative: boolean)
+    ---@field isPressed fun(btn: integer): boolean
+    ---@field isReleased fun(btn: integer): boolean
+    ---@field isDown fun(btn: integer): boolean
+    ---@field getPosition fun(): Vec2
+    ---@field getPositionOnScene fun(): Vec2
+    ---@field setPosition fun(pos: Vec2)
+    ---@field setPositionOnScene fun(pos: Vec2)
+    ---@field getScrollWheel fun(): number
+    ---@field hideCursor fun(isHide: boolean)
+    ---@field setRelative fun(isRelative: boolean)
     Mouse = {},
 
     ---Static class
@@ -480,12 +443,12 @@ sn = {
     ---@field PADDLE3 integer
     ---@field PADDLE4 integer
     ---@field TOUCHPAD integer
-    ---@field is_pressed fun(btn: integer): boolean
-    ---@field is_released fun(btn: integer): boolean
-    ---@field is_down fun(btn: integer): boolean
-    ---@field get_left_stick fun(): Vec2
-    ---@field get_right_stick fun(): Vec2
-    ---@field is_connected fun(): boolean
+    ---@field isPressed fun(btn: integer): boolean
+    ---@field isReleased fun(btn: integer): boolean
+    ---@field isDown fun(btn: integer): boolean
+    ---@field getLeftStick fun(): Vec2
+    ---@field getRightStick fun(): Vec2
+    ---@field isConnected fun(): boolean
     Gamepad = {},
 
     ---Static class

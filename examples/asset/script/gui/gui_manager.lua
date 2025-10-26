@@ -33,7 +33,7 @@ local function gui_manager()
             self.current_drawer_pos                        = self.current_drawer_pos + 1
         end,
         ---@param self gui_manager
-        ---@return Texture
+        ---@return Texture?
         get_texture = function(self)
             self.current_texture_pos = self.current_texture_pos + 1
             return self.textures[self.current_texture_pos - 1]
@@ -46,14 +46,16 @@ local function gui_manager()
         ---@param self gui_manager
         draw = function(self)
             for i = 1, self.current_drawer_pos - 1 do
-                sn.Graphics.draw2d(self.drawers[i])
+                if self.drawers[i] ~= nil then
+                    sn.Graphics.draw2D(self.drawers[i])
+                end
             end
         end
     }
     for i = 1, object.max_object do
-        object.drawers[i] = sn.Draw2D(sn.Texture())
-        object.textures[i] = sn.Texture()
-        object.textures[i + object.max_object] = sn.Texture()
+        object.drawers[i] = sn.Draw2D.new(sn.Texture.new())
+        object.textures[i] = sn.Texture.new()
+        object.textures[i + object.max_object] = sn.Texture.new()
     end
     return object
 end

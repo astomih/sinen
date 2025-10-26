@@ -1,26 +1,26 @@
-local model = sn.Model()
+local model = sn.Model.new()
 model:load("DamagedHelmet.glb")
-local material = model:get_material()
+local material = model:getMaterial()
 
 
-local transform = sn.Transform()
-transform.position = sn.Vec3(0, 0, 0)
-transform.rotation = sn.Vec3(90, 0, 0)
-transform.scale = sn.Vec3(1, 1, 1)
+local transform = sn.Transform.new()
+transform.position = sn.Vec3.new(0, 0, 0)
+transform.rotation = sn.Vec3.new(90, 0, 0)
+transform.scale = sn.Vec3.new(1, 1, 1)
 
 
-local pos = sn.Vec3(1, 1, 3)
-local at = sn.Vec3(0)
-local up = sn.Vec3(0, 1, 0)
-sn.Graphics.get_camera():lookat(pos, at, up)
-sn.Graphics.bind_pipeline(sn.BuiltinPipelines.get_3d())
+local pos = sn.Vec3.new(1, 1, 3)
+local at = sn.Vec3.new(0)
+local up = sn.Vec3.new(0, 1, 0)
+sn.Graphics.getCamera():lookat(pos, at, up)
+sn.Graphics.bindPipeline(sn.BuiltinPipelines.get3D())
 
 function update()
-    if sn.Keyboard.is_pressed(sn.Keyboard.ESCAPE) then
+    if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")
     end
 end
 
 function draw()
-    sn.Graphics.draw_model(model, transform, material)
+    sn.Graphics.drawModel(model, transform, material)
 end

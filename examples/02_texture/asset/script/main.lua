@@ -1,14 +1,14 @@
 -- Create a image
-local image = sn.Texture()
+local image = sn.Texture.new()
 image:load("logo.png")
 
 function update()
-    if sn.Keyboard.is_pressed(sn.Keyboard.ESCAPE) then
+    if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")
     end
 end
 
 function draw()
     -- Draw image
-    sn.Graphics.draw_image(image, sn.Rect(sn.Vec2(0), image:size()))
+    sn.Graphics.drawImage(image, sn.Rect.new(sn.Vec2.new(0), image:size()))
 end

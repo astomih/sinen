@@ -512,18 +512,22 @@ void GraphicsSystem::beginRenderPass(bool depthEnabled, px::LoadOp loadOp) {
 }
 
 void GraphicsSystem::prepareRenderPassFrame() {
-  if (isChangedRenderTarget) {
-    isChangedRenderTarget = false;
-    return;
-  }
   const bool depthEnabled = currentPipeline.getFeatureFlags().test(
       GraphicsPipeline::FeatureFlag::DepthTest);
+  if (isChangedRenderTarget) {
+    isChangedRenderTarget = false;
+    isPrevDepthEnabled = depthEnabled;
+    isFrameStarted = false;
+    return;
+  }
 
   const bool hasActivePass = (currentRenderPass != nullptr);
   const bool depthChanged = (isPrevDepthEnabled != depthEnabled);
 
   const bool needBegin = isFrameStarted || !hasActivePass || depthChanged;
   if (!needBegin) {
+    isPrevDepthEnabled = depthEnabled;
+    isFrameStarted = false;
     return;
   }
 

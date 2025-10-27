@@ -13,13 +13,15 @@
 #include <paranoixa/paranoixa.hpp>
 
 namespace sinen {
-SDL_Surface *create() {
-  auto *surf = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_RGBA32);
-  return surf;
-}
 Texture::Texture() {
   auto data = std::make_shared<TextureData>();
-  data->pSurface = create();
+  data->pSurface = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_RGBA32);
+  data->texture = nullptr;
+  this->textureData = data;
+}
+Texture::Texture(int width, int height) {
+  auto data = std::make_shared<TextureData>();
+  data->pSurface = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_RGBA32);
   data->texture = nullptr;
   this->textureData = data;
 }

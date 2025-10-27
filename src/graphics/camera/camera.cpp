@@ -22,7 +22,9 @@ void Camera::perspective(float fov, float aspect, float near, float far) {
   this->updateFrustum = true;
 }
 void Camera::orthographic(float width, float height, float near, float far) {
-  this->projection = glm::ortho(0.f, width, 0.f, height, near, far);
+  float halfW = width * 0.5f;
+  float halfH = height * 0.5f;
+  this->projection = glm::ortho(-halfW, +halfW, -halfH, +halfH, near, far);
   this->updateFrustum = true;
 }
 

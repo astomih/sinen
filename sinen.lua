@@ -71,6 +71,7 @@ sn = {
 
     ---@class Texture
     ---@field new fun(): Texture
+    ---@field new fun(width: integer, height: integer): Texture
     ---@field fill fun(self: Texture, color: Color)
     ---@field blend fun(self: Texture, color: Color)
     ---@field copy fun(self: Texture): Texture
@@ -137,7 +138,7 @@ sn = {
     ---@field new fun(): Camera
     ---@field lookat fun(self: Camera, position: Vec3, target: Vec3, up: Vec3)
     ---@field perspective fun(self: Camera, fov: number, aspect: number, near: number, far: number)
-    ---@field orthographic fun(self: Camera, left: number, right: number, bottom: number, top: number, near: number, far: number)
+    ---@field orthographic fun(self: Camera, width: number, height: number, near: number, far: number)
     ---@field getPosition fun(self: Camera): Vec3
     ---@field getTarget fun(self: Camera): Vec3
     ---@field getUp fun(self: Camera): Vec3
@@ -201,6 +202,8 @@ sn = {
     ---@field new fun(): UniformData
     ---@field add fun(self: UniformData, value: any)
     ---@field change fun(self: UniformData, value: number,  index: integer)
+    ---@field addCamera fun(self: UniformData, camera : Camera)
+    ---@field addVec3 fun(self: UniformData, vec3 : Vec3)
     UniformData = {},
     UniformData = function()
         return nil

@@ -164,7 +164,8 @@ bool LuaScript::Initialize() {
     v["a"] = &Color::a;
   }
   {
-    auto v = lua.new_usertype<Texture>("Texture");
+    auto v = lua.new_usertype<Texture>(
+        "Texture", sol::constructors<sol::types<int, int>, sol::types<>>());
     v["fill"] = &Texture::fill;
     v["copy"] = &Texture::copy;
     v["load"] = &Texture::load;
@@ -269,6 +270,8 @@ bool LuaScript::Initialize() {
     auto v = lua.new_usertype<UniformData>("UniformData");
     v["add"] = &UniformData::add;
     v["change"] = &UniformData::change;
+    v["addCamera"] = &UniformData::addCamera;
+    v["addVec3"] = &UniformData::addVec3;
   }
   {
 

@@ -1,6 +1,9 @@
 #ifndef UNIFORM_DATA_HPP
 #define UNIFORM_DATA_HPP
 
+#include "camera/camera.hpp"
+#include "camera/camera2d.hpp"
+
 #include <glm/mat4x4.hpp>
 #include <vector>
 namespace sinen {
@@ -16,10 +19,15 @@ struct UniformData {
       addMatrix(m);
     }
   }
-  void addVector3(const glm::vec3 &vector) {
+  void addVec3(const glm::vec3 &vector) {
     data.push_back(vector.x);
     data.push_back(vector.y);
     data.push_back(vector.z);
+  }
+
+  void addCamera(const Camera &camera) {
+    addMatrix(glm::transpose(camera.getView()));
+    addMatrix(glm::transpose(camera.getProjection()));
   }
   void change(float value, int index) { data[index] = value; }
   void clear() { data.clear(); }

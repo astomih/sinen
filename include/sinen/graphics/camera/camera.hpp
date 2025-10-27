@@ -63,25 +63,25 @@ public:
    *
    * @return glm::vec3&
    */
-  glm::vec3 &getTarget() { return target; }
+  const glm::vec3 &getTarget() const { return target; }
   /**
    * @brief Get the up vector of camera
    *
    * @return glm::vec3&
    */
-  glm::vec3 &getUp() { return up; }
+  const glm::vec3 &getUp() const { return up; }
   /**
    * @brief Get the view matrix of camera
    *
    * @return matrix4&
    */
-  glm::mat4 &getView() { return view; }
+  const glm::mat4 &getView() const { return view; }
   /**
    * @brief Get the projection matrix of camera
    *
    * @return matrix4&
    */
-  glm::mat4 &getProjection() { return projection; }
+  const glm::mat4 &getProjection() const { return projection; }
 
 private:
   // Position of camera

@@ -21,6 +21,7 @@ public:
    *
    */
   Texture();
+  Texture(int width, int height);
   /**
    * @brief Destroy the texture object
    *

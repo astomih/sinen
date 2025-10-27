@@ -1,4 +1,4 @@
----@diagnostic disable: duplicate-index, lowercase-global, unused-local
+---@diagnostic disable: duplicate-index, unused-local
 ---@class sn
 sn = {
     ---@class Vec3
@@ -20,6 +20,9 @@ sn = {
     ---@operator mul(Vec3): Vec3
     ---@operator div(Vec3): Vec3
     Vec3 = {},
+    Vec3 = function()
+        return nil
+    end,
 
     ---@class Vec3i
     ---@field x integer
@@ -30,6 +33,9 @@ sn = {
     ---@operator add(Vec3i): Vec3i
     ---@operator sub(Vec3i): Vec3i
     Vec3i = {},
+    Vec3i = function()
+        return nil
+    end,
 
     ---@class Vec2
     ---@field x number
@@ -47,6 +53,9 @@ sn = {
     ---@operator mul(Vec2): Vec2
     ---@operator div(Vec2): Vec2
     Vec2 = {},
+    Vec2 = function()
+        return nil
+    end,
 
     ---@class Vec2i
     ---@field x integer
@@ -56,6 +65,9 @@ sn = {
     ---@operator add(Vec2i): Vec2i
     ---@operator sub(Vec2i): Vec2i
     Vec2i = {},
+    Vec2i = function()
+        return nil
+    end,
 
     ---@class Texture
     ---@field new fun(): Texture
@@ -65,11 +77,17 @@ sn = {
     ---@field load fun(self: Texture, path: string)
     ---@field size fun(self: Texture): Vec2
     Texture = {},
+    Texture = function()
+        return nil
+    end,
 
     ---@class Cubemap
     ---@field new fun(): Cubemap
     ---@field load fun(self: Cubemap, path: string)
     Cubemap = {},
+    Cubemap = function()
+        return nil
+    end,
 
     ---@class Material
     ---@field new fun(): Material
@@ -80,11 +98,17 @@ sn = {
     ---@field getTexture fun(self: Material, index: integer): Texture
     ---@field setCubemap fun(self: Material, cubemap: Cubemap, index: integer)
     Material = {},
+    Material = function()
+        return nil
+    end,
 
     ---@class RenderTexture
     ---@field new fun(): RenderTexture
     ---@field create fun(self: RenderTexture, x: integer, y: integer)
     RenderTexture = {},
+    RenderTexture = function()
+        return nil
+    end,
 
     ---@class Music
     ---@field new fun():Music
@@ -92,6 +116,9 @@ sn = {
     ---@field play fun(self: Music)
     ---@field setVolume fun(self: Music, volume: number)
     Music = {},
+    Music = function()
+        return nil
+    end,
 
     ---@class Sound
     ---@field new fun(): Sound
@@ -102,6 +129,9 @@ sn = {
     ---@field setListener fun(self: Sound, position: Vec3)
     ---@field setPosition fun(self: Sound, position: Vec3)
     Sound = {},
+    Sound = function()
+        return nil
+    end,
 
     ---@class Camera
     ---@field new fun(): Camera
@@ -113,6 +143,9 @@ sn = {
     ---@field getUp fun(self: Camera): Vec3
     ---@field isAABBInFrustum fun(self: Camera, aabb: AABB): boolean
     Camera = {},
+    Camera = function()
+        return nil
+    end,
 
     ---@class Camera2D
     ---@field new fun(): Camera2D
@@ -122,6 +155,9 @@ sn = {
     ---@field size fun(self: Camera2D): Vec2
     ---@field half fun(self: Camera2D): Vec2
     Camera2D = {},
+    Camera2D = function()
+        return nil
+    end,
 
     ---@class Model
     ---@field new fun(): Model
@@ -134,13 +170,20 @@ sn = {
     ---@field update fun(self: Model, delta: number)
     ---@field getMaterial fun(self: Model): Material
     Model = {},
+    Model = function()
+        return nil
+    end,
 
     ---@class AABB
+    ---Constructor
     ---@field new fun(): AABB
     ---@field min Vec3
     ---@field max Vec3
     ---@field updateWorld fun(self: AABB, position: Vec3, scale: Vec3, modelAABB: AABB)
     AABB = {},
+    AABB = function()
+        return nil
+    end,
 
     ---@class Timer
     ---@field new fun(): Timer
@@ -150,12 +193,18 @@ sn = {
     ---@field setTime fun(self: Timer, time: number)
     ---@field check fun(self: Timer): boolean
     Timer = {},
+    Timer = function()
+        return nil
+    end,
 
     ---@class UniformData
     ---@field new fun(): UniformData
     ---@field add fun(self: UniformData, value: any)
     ---@field change fun(self: UniformData, value: number,  index: integer)
     UniformData = {},
+    UniformData = function()
+        return nil
+    end,
 
     ---@class Shader
     ---@field new fun(): Shader
@@ -164,6 +213,9 @@ sn = {
     ---@field compileLoadVertexShader fun(self: Shader, source: string)
     ---@field compileLoadFragmentShader fun(self: Shader, source: string)
     Shader = {},
+    Shader = function()
+        return nil
+    end,
 
     ---@class Font
     ---@field new fun(): Font
@@ -171,6 +223,9 @@ sn = {
     ---@field renderText fun(self: Font, texture: Texture, text: string, color: Color): Texture
     ---@field resize fun(self: Font, size: integer)
     Font = {},
+    Font = function()
+        return nil
+    end,
 
     ---@class Color
     ---@field r number
@@ -182,8 +237,12 @@ sn = {
     ---@field new fun(value: number): Color
     ---@field new fun(): Color
     Color = {},
+    Color = function()
+        return nil
+    end,
 
     ---@class Draw2D
+    ---@field new fun(): Draw2D
     ---@field new fun(texture: Texture): Draw2D
     ---@field scale Vec2
     ---@field position Vec2
@@ -193,8 +252,12 @@ sn = {
     ---@field at fun(self: Draw2D, x: number, y: number)
     ---@field clear fun(self: Draw2D)
     Draw2D = {},
+    Draw2D = function()
+        return nil
+    end,
 
     ---@class Draw3D
+    ---@field new fun(): Draw3D
     ---@field new fun(texture: Texture): Draw3D
     ---@field scale Vec3
     ---@field position Vec3
@@ -205,6 +268,9 @@ sn = {
     ---@field at fun(self: Draw3D, x: number, y: number, z: number)
     ---@field clear fun(self: Draw3D)
     Draw3D = {},
+    Draw3D = function()
+        return nil
+    end,
 
     ---@class Grid
     ---@field new fun(w: integer, h: integer): Grid
@@ -217,6 +283,9 @@ sn = {
     ---@field resize fun(self: Grid, w: integer, h: integer)
     ---@field fill fun(self: Grid, value: integer)
     Grid = {},
+    Grid = function()
+        return nil
+    end,
 
     ---@class BFSGrid
     ---@field new fun(grid: Grid): BFSGrid
@@ -227,6 +296,9 @@ sn = {
     ---@field traceable fun(self: BFSGrid): boolean
     ---@field reset fun(self: BFSGrid)
     BFSGrid = {},
+    BFSGrid = function()
+        return nil
+    end,
 
     ---@class GraphicsPipeline
     ---@field new fun(): GraphicsPipeline
@@ -238,6 +310,9 @@ sn = {
     ---@field setEnableTangent fun(self: GraphicsPipeline, enable: boolean)
     ---@field build fun(self: GraphicsPipeline)
     GraphicsPipeline = {},
+    GraphicsPipeline = function()
+        return nil
+    end,
 
     ---@class Rect
     ---@field x number
@@ -247,6 +322,9 @@ sn = {
     ---@field width number
     ---@field height number
     Rect = {},
+    Rect = function()
+        return nil
+    end,
 
     ---@class Transform
     ---@field position Vec3
@@ -254,28 +332,43 @@ sn = {
     ---@field scale Vec3
     ---@field new fun(): Transform
     Transform = {},
+    Transform = function()
+        return nil
+    end,
 
     ---@class Collider
     ---@field getPosition fun(self: Collider): Vec3
     ---@field getVelocity fun(self: Collider): Vec3
     ---@field setLinearVelocity fun(self: Collider, velocity: Vec3)
     Collider = {},
+    Collider = function()
+        return nil
+    end,
 
     ---Static class
     ---@class Script
     ---@field load fun(path: string, basePath?: string)
     Script = {},
+    Script = function()
+        return nil
+    end,
 
     ---Static class
     ---@class FileSystem
     ---@field enumerateDirectory fun(path: string): table
     FileSystem = {},
+    FileSystem = function()
+        return nil
+    end,
 
     ---Static class
     ---@class Random
     ---@field getRange fun(a: number, b: number): number
     ---@field getIntRange fun(a: number, b: number): number
     Random = {},
+    Random = function()
+        return nil
+    end,
 
     ---Static class
     ---@class Window
@@ -287,6 +380,9 @@ sn = {
     ---@field rename fun(name: string)
     ---@field resized fun(): boolean
     Window = {},
+    Window = function()
+        return nil
+    end,
 
     ---Static class
     ---@class BuiltinPipelines
@@ -294,6 +390,9 @@ sn = {
     ---@field get3DInstanced fun(): GraphicsPipeline
     ---@field get2D fun(): GraphicsPipeline
     BuiltinPipelines = {},
+    BuiltinPipelines = function()
+        return nil
+    end,
 
     ---Static class
     ---@class Graphics
@@ -317,6 +416,9 @@ sn = {
     ---@field flush fun()
     ---@field readbackTexture fun(rt: RenderTexture, out: Texture): Texture
     Graphics = {},
+    Graphics = function()
+        return nil
+    end,
 
     ---Static class
     ---@class Physics
@@ -324,11 +426,17 @@ sn = {
     ---@field createSphereCollider fun(position: Vec3, radius: number, isStatic: boolean): Collider
     ---@field addCollider fun(collider: Collider, isActive: boolean)
     Physics = {},
+    Physics = function()
+        return nil
+    end,
 
     ---Static class
     ---@class Collision
     ---@field AABBvsAABB fun(a: AABB, b: AABB): boolean
     Collision = {},
+    Collision = function()
+        return nil
+    end,
 
     ---Static class
     ---@class Keyboard
@@ -398,6 +506,9 @@ sn = {
     ---@field isReleased fun(scancode: integer): boolean
     ---@field isDown fun(scancode: integer): boolean
     Keyboard = {},
+    Keyboard = function()
+        return nil
+    end,
 
     ---Static class
     ---@class Mouse
@@ -417,6 +528,9 @@ sn = {
     ---@field hideCursor fun(isHide: boolean)
     ---@field setRelative fun(isRelative: boolean)
     Mouse = {},
+    Mouse = function()
+        return nil
+    end,
 
     ---Static class
     ---@class GamePad
@@ -449,12 +563,18 @@ sn = {
     ---@field getRightStick fun(): Vec2
     ---@field isConnected fun(): boolean
     Gamepad = {},
+    Gamepad = function()
+        return nil
+    end,
 
     ---Static class
     ---@class Periodic
     ---@field sin0_1 fun(t1: number,t2:number): number
     ---@field cos0_1 fun(t1: number,t2:number): number
     Periodic = {},
+    Periodic = function()
+        return nil
+    end,
 
     ---Static class
     ---@class Time
@@ -462,6 +582,9 @@ sn = {
     ---@field milli fun(): integer
     ---@field delta fun(): number
     Time = {},
+    Time = function()
+        return nil
+    end,
 
     ---Static class
     ---@class Logger
@@ -470,5 +593,8 @@ sn = {
     ---@field error fun(msg: string)
     ---@field warn fun(msg: string)
     ---@field critical fun(msg: string)
-    Logger = {}
+    Logger = {},
+    Logger = function()
+        return nil
+    end
 }

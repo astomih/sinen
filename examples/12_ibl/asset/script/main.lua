@@ -74,7 +74,7 @@ uniform_data:add(light_pos.z)
 uniform_data:add(light_intensity)
 
 
-function update()
+function Update()
     if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")
     end
@@ -105,7 +105,7 @@ function update()
     light_transform.position = light_pos
 end
 
-function draw()
+function Draw()
     sn.Graphics.bindPipeline(cubemapPipeline)
     sn.Graphics.drawCubemap(cubemap)
 

@@ -7,7 +7,7 @@ local numExamples = 12
 sn.Graphics.bindPipeline(sn.BuiltinPipelines.get2D())
 
 local offset = numExamples * 16.0
-function update()
+function Update()
     GUI_MANAGER:update()
 
     for i = 1, numExamples do
@@ -18,7 +18,7 @@ function update()
     end
 end
 
-function draw()
+function Draw()
     sn.Graphics.drawText("Example Launcher", sn.Vec2.new(0, offset),
         sn.Color.new(1, 1, 1, 1), 24)
     GUI_MANAGER:draw()

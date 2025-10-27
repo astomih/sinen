@@ -634,8 +634,8 @@ void LuaScript::RunScene(const std::string_view source) {
   state.script(final);
 }
 
-void LuaScript::Update() { state["update"](); }
+void LuaScript::Update() { state["Update"](); }
 
-void LuaScript::Draw() { state["draw"](); }
+void LuaScript::Draw() { state["Draw"](); }
 
 } // namespace sinen

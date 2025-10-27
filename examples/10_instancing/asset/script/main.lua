@@ -18,12 +18,12 @@ local up = sn.Vec3.new(0, 1, 0)
 sn.Graphics.getCamera():lookat(pos, at, up)
 sn.Graphics.bindPipeline(sn.BuiltinPipelines.get3DInstanced())
 
-function update()
+function Update()
     if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")
     end
 end
 
-function draw()
+function Draw()
     sn.Graphics.drawModelInstanced(model, transforms, material)
 end

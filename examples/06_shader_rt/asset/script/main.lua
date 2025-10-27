@@ -23,13 +23,13 @@ uniform_data:add(0.5)
 uniform_data:add(1.0)
 
 
-function update()
+function Update()
     if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")
     end
 end
 
-function draw()
+function Draw()
     sn.Graphics.setUniformData(1, uniform_data)
     -- Draw texture
     sn.Graphics.draw2D(draw2d)

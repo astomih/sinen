@@ -11,7 +11,7 @@ sound:load("shot.wav")
 
 -- Set scale to texture size
 
-function update()
+function Update()
     if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")
     end
@@ -20,7 +20,7 @@ function update()
     end
 end
 
-function draw()
+function Draw()
     -- Draw texture
     sn.Graphics.draw2D(draw2d)
 end

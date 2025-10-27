@@ -36,7 +36,7 @@ sn.Graphics.getCamera():lookat(sn.Vec3.new(0, 10, 25), sn.Vec3.new(0, 0, 0), sn.
 sn.Graphics.bindPipeline(sn.BuiltinPipelines.get3D())
 
 
-function update()
+function Update()
     if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")
     end
@@ -51,7 +51,7 @@ function update()
     end
 end
 
-function draw()
+function Draw()
     sn.Graphics.drawModel(sphere, sphereTransform, sphereMat)
     sn.Graphics.drawModel(box, boxTransform, boxMat)
     for _, c in ipairs(colliders) do

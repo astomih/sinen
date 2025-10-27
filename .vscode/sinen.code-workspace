@@ -85,10 +85,10 @@
 			"test/**": true,
 			"libs/**": true,
 		},
-		"cmake.buildDirectory": "${workspaceFolder}/build/desktop",
-		"python.analysis.diagnosticSeverityOverrides": {
-			"reportMissingModuleSource": false,
-			"reportMissingImports": false,
-		}
+		"Lua.type.castNumberToInteger": true,
+		"Lua.type.checkTableShape": true,
+		"Lua.type.inferParamType": true,
+		"Lua.type.weakNilCheck": true,
+		"Lua.type.weakUnionCheck": true
 	}
 }

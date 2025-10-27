@@ -13,14 +13,14 @@ transform.rotation = sn.Vec3.new(90, 0, 0)
 
 local pos = sn.Vec3.new(1, 1, 3)
 
-function update()
+function Update()
     if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")
     end
     sn.Graphics.getCamera():lookat(pos, sn.Vec3.new(0), sn.Vec3.new(0, 1, 0))
 end
 
-function draw()
+function Draw()
     sn.Graphics.bindPipeline(sn.BuiltinPipelines.get3D())
     sn.Graphics.setRenderTarget(renderTexture)
     sn.Graphics.drawModel(model, transform, model:getMaterial())

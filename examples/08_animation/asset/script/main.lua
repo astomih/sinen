@@ -24,14 +24,14 @@ sn.Graphics.bindPipeline(pipeline)
 sn.Graphics.getCamera():lookat(sn.Vec3.new(0, -3, 1), sn.Vec3.new(0, 0, 1), sn.Vec3.new(0, 0, 1))
 
 model:play(0)
-function update()
+function Update()
     if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")
     end
     model:update(sn.Time.delta())
 end
 
-function draw()
+function Draw()
     sn.Graphics.setUniformData(1, model:getBoneUniformData())
     -- Draw texture
     sn.Graphics.drawModel(model, sn.Transform.new(), draw3d.material)

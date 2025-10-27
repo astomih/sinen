@@ -26,9 +26,9 @@ void ScriptSystem::Shutdown() {
 }
 
 static const char *nothingSceneLua = R"(
-function update()
+function Update()
 end
-function draw()
+function Draw()
     sn.Graphics.drawText("NO DATA", sn.Vec2.new(0, 0), sn.Color.new(1, 1, 1, 1), 96, 0.0)
 end
 )";

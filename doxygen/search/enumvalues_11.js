@@ -1,0 +1,21 @@
+var searchData=
+[
+  ['r_883',['r',['../classsinen_1_1_file.html#aeed9376ef554014dccbeffbd7311db04a4b43b0aee35624cd95b910189b3dc231',1,'sinen::File']]],
+  ['r_884',['R',['../classsinen_1_1_key_input.html#aea839aa6e29f3458e323e4f47c74d2faae1e1d3d40573127e9ee0480caf1283d6',1,'sinen::KeyInput']]],
+  ['ralt_885',['RALT',['../classsinen_1_1_key_input.html#aea839aa6e29f3458e323e4f47c74d2faadad2745b04899c2c1c0fdb404fce17d8',1,'sinen::KeyInput::RALT()'],['../classsinen_1_1_keyboard.html#a3a2960e843c339a773bf548902657dbaadad2745b04899c2c1c0fdb404fce17d8',1,'sinen::Keyboard::RALT()']]],
+  ['rb_886',['rb',['../classsinen_1_1_file.html#aeed9376ef554014dccbeffbd7311db04a9e3f4f69757d07f6a0d2af4f1f2a1103',1,'sinen::File']]],
+  ['rctrl_887',['RCTRL',['../classsinen_1_1_key_input.html#aea839aa6e29f3458e323e4f47c74d2faa15f63aec610b5a7fb7e4c461e14e6ad9',1,'sinen::KeyInput']]],
+  ['reserved_888',['RESERVED',['../classsinen_1_1_keyboard.html#a3a2960e843c339a773bf548902657dbaa83c7f2aa8c3ac10ed8beb75cad162827',1,'sinen::Keyboard']]],
+  ['return_889',['RETURN',['../classsinen_1_1_key_input.html#aea839aa6e29f3458e323e4f47c74d2faaa2bec276a54439fe011eb523b845dac5',1,'sinen::KeyInput']]],
+  ['return2_890',['RETURN2',['../classsinen_1_1_key_input.html#aea839aa6e29f3458e323e4f47c74d2faa2b206077d79940cac6346b658eebd257',1,'sinen::KeyInput']]],
+  ['rgui_891',['RGUI',['../classsinen_1_1_keyboard.html#a3a2960e843c339a773bf548902657dbaa6007e66644518e3621499c068ff97f08',1,'sinen::Keyboard::RGUI()'],['../classsinen_1_1_key_input.html#aea839aa6e29f3458e323e4f47c74d2faa6007e66644518e3621499c068ff97f08',1,'sinen::KeyInput::RGUI()']]],
+  ['rhyper_892',['RHYPER',['../classsinen_1_1_key_input.html#aea839aa6e29f3458e323e4f47c74d2faa64eede053e5413802170820d7fbd71a6',1,'sinen::KeyInput']]],
+  ['right_893',['RIGHT',['../classsinen_1_1_key_input.html#aea839aa6e29f3458e323e4f47c74d2faa21507b40c80068eda19865706fdc2403',1,'sinen::KeyInput']]],
+  ['rightbrace_894',['RIGHTBRACE',['../classsinen_1_1_key_input.html#aea839aa6e29f3458e323e4f47c74d2faaff9e1443ddcca17c295cf6e6b2723ab6',1,'sinen::KeyInput']]],
+  ['rightbracket_895',['RIGHTBRACKET',['../classsinen_1_1_key_input.html#aea839aa6e29f3458e323e4f47c74d2faaffac168bf7931bbdd83559bff27452d0',1,'sinen::KeyInput']]],
+  ['rightparen_896',['RIGHTPAREN',['../classsinen_1_1_key_input.html#aea839aa6e29f3458e323e4f47c74d2faa25809910f4cf9b4f3e44b58e0ef9afca',1,'sinen::KeyInput']]],
+  ['rmeta_897',['RMETA',['../classsinen_1_1_key_input.html#aea839aa6e29f3458e323e4f47c74d2faaba41031405aed63f975ba6819d682021',1,'sinen::KeyInput']]],
+  ['rp_898',['rp',['../classsinen_1_1_file.html#aeed9376ef554014dccbeffbd7311db04a00639c71ba1dbde84db84b3eb15d6820',1,'sinen::File']]],
+  ['rpb_899',['rpb',['../classsinen_1_1_file.html#aeed9376ef554014dccbeffbd7311db04a559c6a4fd979f18f61d19a81aee0b076',1,'sinen::File']]],
+  ['rshift_900',['RSHIFT',['../classsinen_1_1_key_input.html#aea839aa6e29f3458e323e4f47c74d2faad13eccc8e378c60e2f9620ce4c77f963',1,'sinen::KeyInput']]]
+];

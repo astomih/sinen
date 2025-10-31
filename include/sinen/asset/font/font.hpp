@@ -19,7 +19,7 @@ public:
 
   bool load(int point_size);
   /**
-   * @brief font load from filepath
+   * @brief font load from asset
    *
    * @param font_path file path from data/fonts
    * @param point_size font size
@@ -27,6 +27,7 @@ public:
    * @return false failed to load
    */
   bool load(int pointSize, std::string_view path);
+  bool loadFromPath(int pointSize, std::string_view path);
   /**
    * @brief return already loaded font
    *
@@ -56,7 +57,7 @@ public:
    * @param text require UTF-8
    * @param _color font color
    */
-  void renderText(Texture &tex, const std::string& text,
+  void renderText(Texture &tex, const std::string &text,
                   const Color &_color = Palette::white());
 
 private:

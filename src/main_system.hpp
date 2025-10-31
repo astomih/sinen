@@ -15,7 +15,7 @@ public:
    * @return true success
    * @return false failed
    */
-  static bool initialize();
+  static bool initialize(int argc, char *argv[]);
   /**
    * @brief Terminate scene system
    *
@@ -49,6 +49,9 @@ public:
   static bool is_run_script;
 
   static inline float delta_time() { return deltaTime; }
+
+  static inline int argc = 0;
+  static inline std::vector<std::string> argv;
 
 private:
   static State m_game_state;

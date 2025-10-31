@@ -36,6 +36,7 @@ public:
    * @param file_name File name
    */
   void load(std::string_view file_name);
+  void loadFromPath(std::string_view path);
   /**
    * @brief Create the source
    *

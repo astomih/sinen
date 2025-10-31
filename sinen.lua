@@ -64,6 +64,7 @@ sn = {
     ---@field blend fun(self: sn.Texture, color: sn.Color)
     ---@field copy fun(self: sn.Texture): sn.Texture
     ---@field load fun(self: sn.Texture, path: string)
+    ---@field loadFromPath fun(self: sn.Texture, path: string)
     ---@field size fun(self: sn.Texture): sn.Vec2
     Texture = {},
 
@@ -90,6 +91,7 @@ sn = {
     ---@class sn.Music
     ---@field new fun():sn.Music
     ---@field load fun(self: sn.Music, path: string)
+    ---@field loadFromPath fun(self: sn.Music, path: string)
     ---@field play fun(self: sn.Music)
     ---@field setVolume fun(self: sn.Music, volume: number)
     Music = {},
@@ -97,6 +99,7 @@ sn = {
     ---@class sn.Sound
     ---@field new fun(): sn.Sound
     ---@field load fun(self: sn.Sound, path: string)
+    ---@field loadFromPath fun(self: sn.Sound, path: string)
     ---@field play fun(self: sn.Sound)
     ---@field setVolume fun(self: sn.Sound, volume: number)
     ---@field setPitch fun(self: sn.Sound, pitch: number)
@@ -128,6 +131,7 @@ sn = {
     ---@field new fun(): sn.Model
     ---@field getAABB fun(self: sn.Model): sn.AABB
     ---@field load fun(self: sn.Model, path: string)
+    ---@field loadFromPath fun(self: sn.Model, path: string)
     ---@field loadSprite fun(self: sn.Model)
     ---@field loadBox fun(self: sn.Model)
     ---@field getBoneUniformData fun(self: sn.Model): sn.UniformData
@@ -172,6 +176,7 @@ sn = {
     ---@class sn.Font
     ---@field new fun(): sn.Font
     ---@field load fun(self: sn.Font, size: integer, path: string?): nil
+    ---@field loadFromPath fun(self: sn.Font, size: integer, path: string): nil
     ---@field renderText fun(self: sn.Font, texture: sn.Texture, text: string, color: sn.Color): sn.Texture
     ---@field resize fun(self: sn.Font, size: integer)
     Font = {},
@@ -266,6 +271,11 @@ sn = {
     ---@field getVelocity fun(self: sn.Collider): sn.Vec3
     ---@field setLinearVelocity fun(self: sn.Collider, velocity: sn.Vec3)
     Collider = {},
+
+    ---Static class
+    ---@class sn.Arguments
+    ---@field getArgc fun(): integer
+    ---@field getArgv fun(): string[]
 
     ---Static class
     ---@class sn.Script

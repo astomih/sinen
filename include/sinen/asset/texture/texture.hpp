@@ -35,6 +35,7 @@ public:
    * @return false failed
    */
   bool load(std::string_view fileName);
+  bool loadFromPath(std::string_view path);
   /**
    * @brief Load texture from memory
    *

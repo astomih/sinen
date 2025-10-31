@@ -37,6 +37,7 @@ public:
    * @param fileName file name
    */
   void load(std::string_view fileName);
+  void loadFromPath(std::string_view path);
   /**
    * @brief Unload the music
    *

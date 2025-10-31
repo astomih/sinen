@@ -40,6 +40,19 @@ bool Texture::load(std::string_view fileName) {
   rawData->texture = createNativeTexture(rawData->pSurface);
   return true;
 }
+bool Texture::loadFromPath(std::string_view path) {
+  auto rawData = getTextureRawData(textureData);
+  auto *pSurface = ::IMG_Load(path.data());
+  if (!pSurface) {
+    Logger::error("Texture load failed.");
+    return false;
+  }
+  rawData->pSurface = pSurface;
+
+  rawData->texture = createNativeTexture(rawData->pSurface);
+  return true;
+}
+
 bool Texture::loadFromMemory(std::vector<char> &buffer) const {
   auto rawData = getTextureRawData(textureData);
   auto *io = ::SDL_IOFromConstMem(buffer.data(), buffer.size());

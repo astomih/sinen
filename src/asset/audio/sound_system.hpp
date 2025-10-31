@@ -16,6 +16,7 @@ public:
   static void shutdown();
   static void update(float deltaTime);
   static void load(std::string_view fileName);
+  static void loadFromPath(std::string_view path);
   static void unload(std::string_view fileName);
   static uint32_t new_source(std::string_view name);
   static void delete_source(uint32_t sourceID);

@@ -114,6 +114,27 @@ void SoundSystem::load(std::string_view fileName) {
   buffers.emplace(fileName.data(), bid);
   SDL_free(buffer);
 }
+void SoundSystem::loadFromPath(std::string_view path) {
+  if (buffers.contains(path.data())) {
+    return;
+  }
+  SDL_AudioSpec spec;
+  ALenum alfmt = AL_NONE;
+  Uint8 *buffer = NULL;
+  Uint32 buffer_length = 0;
+  uint32_t bid = 0;
+
+  if (!SDL_LoadWAV(path.data(), &spec, &buffer, &buffer_length)) {
+    printf("Loading '%s' failed! %s\n", path.data(), SDL_GetError());
+    return;
+  }
+
+  alGenBuffers(1, &bid);
+  alBufferData(bid, detail::get_openal_format(&spec), buffer, buffer_length,
+               spec.freq);
+  buffers.emplace(path.data(), bid);
+  SDL_free(buffer);
+}
 
 void SoundSystem::unload(std::string_view fileName) {
   std::string name = fileName.data();

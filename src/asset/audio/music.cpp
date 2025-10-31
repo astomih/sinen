@@ -22,8 +22,15 @@ void Music::play() { ::Mix_PlayMusic((::Mix_Music *)buffer, -1); }
 void Music::stop() { ::Mix_HaltMusic(); }
 
 void Music::load(std::string_view fileName) {
-  auto rwops = (SDL_IOStream *)AssetIO::openAsIOStream(AssetType::Music, fileName);
+  auto rwops =
+      (SDL_IOStream *)AssetIO::openAsIOStream(AssetType::Music, fileName);
   ::Mix_Music *m = ::Mix_LoadMUS_IO(rwops, 1);
+  if (m) {
+    buffer = (void *)m;
+  }
+}
+void Music::loadFromPath(std::string_view path) {
+  ::Mix_Music *m = ::Mix_LoadMUS(path.data());
   if (m) {
     buffer = (void *)m;
   }

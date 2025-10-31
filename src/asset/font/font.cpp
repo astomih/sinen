@@ -37,6 +37,11 @@ bool Font::load(int pointSize, std::string_view fontName) {
       pointSize);
   return isLoaded();
 }
+bool Font::loadFromPath(int pointSize, std::string_view path) {
+  this->m_size = pointSize;
+  m_font = (void *)::TTF_OpenFont(path.data(), pointSize);
+  return isLoaded();
+}
 
 void Font::unload() {
   if (isLoaded()) {

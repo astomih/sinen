@@ -39,7 +39,13 @@ struct ImGuiLog {
   static std::vector<Type> logs;
 };
 std::vector<ImGuiLog::Type> ImGuiLog::logs;
-bool MainSystem::initialize() {
+bool MainSystem::initialize(int argc, char *argv[]) {
+  MainSystem::argc = argc;
+  MainSystem::argv.resize(argc);
+  for (int i = 0; i < argc; i++) {
+    MainSystem::argv[i] = argv[i];
+  }
+
   Logger::setOutputFunction([&](Logger::priority p, std::string_view str) {
     std::string newStr;
     ImVec4 color;

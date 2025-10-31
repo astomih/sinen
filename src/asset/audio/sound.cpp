@@ -21,6 +21,15 @@ void Sound::load(std::string_view file_name) {
   param.buffer_id = buf;
   mName = file_name.data();
 }
+void Sound::loadFromPath(std::string_view path) {
+  SoundSystem::load(path);
+  auto sourceID = SoundSystem::new_source(path);
+  ALint buf;
+  alGetSourcei(sourceID, AL_BUFFER, &buf);
+  param.source_id = sourceID;
+  param.buffer_id = buf;
+  mName = path.data();
+}
 void Sound::play() { alSourcePlay(param.source_id); }
 void Sound::newSource() {
   auto sourceID = SoundSystem::new_source(mName);

@@ -63,7 +63,7 @@ bool Sinen::initialize(int argc, char *argv[]) {
     Logger::critical("Failed to initialize random system");
     return false;
   }
-  MainSystem::initialize();
+  MainSystem::initialize(argc, argv);
   return true;
 }
 void Sinen::run() {

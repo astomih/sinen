@@ -8,6 +8,7 @@
 #include "glm/ext/vector_float3.hpp"
 #include <asset/asset.hpp>
 #include <core/core.hpp>
+#include <core/io/arguments.hpp>
 #include <core/io/file_system.hpp>
 #include <graphics/graphics.hpp>
 #include <math/math.hpp>
@@ -166,9 +167,10 @@ bool LuaScript::Initialize() {
   {
     auto v = lua.new_usertype<Texture>(
         "Texture", sol::constructors<sol::types<int, int>, sol::types<>>());
+    v["load"] = &Texture::load;
+    v["loadFromPath"] = &Texture::loadFromPath;
     v["fill"] = &Texture::fill;
     v["copy"] = &Texture::copy;
-    v["load"] = &Texture::load;
     v["size"] = &Texture::size;
   }
   {
@@ -198,18 +200,21 @@ bool LuaScript::Initialize() {
         [](Font &f, int point_size, std::string_view path) {
           return f.load(point_size, path);
         });
+    v["loadFromPath"] = &Font::loadFromPath;
     v["renderText"] = &Font::renderText;
     v["resize"] = &Font::resize;
   }
   {
     auto v = lua.new_usertype<Music>("Music");
     v["load"] = &Music::load;
+    v["loadFromPath"] = &Music::loadFromPath;
     v["play"] = &Music::play;
     v["setVolume"] = &Music::setVolume;
   }
   {
     auto v = lua.new_usertype<Sound>("Sound");
     v["load"] = &Sound::load;
+    v["loadFromPath"] = &Sound::loadFromPath;
     v["play"] = &Sound::play;
     v["setVolume"] = &Sound::setVolume;
     v["setPitch"] = &Sound::setPitch;
@@ -372,6 +377,11 @@ bool LuaScript::Initialize() {
     };
     v["traceable"] = &BFSGrid::traceable;
     v["reset"] = &BFSGrid::reset;
+  }
+  {
+    auto v = lua.create_named("Arguments");
+    v["getArgc"] = &Arguments::getArgc;
+    v["getArgv"] = &Arguments::getArgv;
   }
   {
     auto v = lua.create_named("Random");

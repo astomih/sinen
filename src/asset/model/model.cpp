@@ -146,10 +146,6 @@ void loadAnimation(const aiScene *scene, SkeletalAnimation &skeletalAnimation,
         }
       }
 
-      aiColor3D acolor(1, 1, 1);
-      if (scene->HasMaterials())
-        scene->mMaterials[aimesh->mMaterialIndex]->Get(AI_MATKEY_BASE_COLOR,
-                                                       acolor);
       for (uint32_t j = 0; j < aimesh->mNumVertices; ++j) {
         AnimationVertex animationVertex;
         const auto &ids = boneData[j].ids;
@@ -189,7 +185,14 @@ void loadMesh(const aiScene *scene, Mesh &mesh, AABB &aabb) {
     uint32_t baseIndex = 0;
     // Iterate through the meshes
     for (uint32_t i = 0; i < scene->mNumMeshes; i++) {
+      bool hasBaseColor = false;
       const aiMesh *aimesh = scene->mMeshes[i];
+      aiColor4D aiColor;
+      if (scene->HasMaterials()) {
+        auto result = scene->mMaterials[aimesh->mMaterialIndex]->Get(
+            AI_MATKEY_BASE_COLOR, aiColor);
+        hasBaseColor = result == aiReturn_SUCCESS;
+      }
       // Process the mesh data
       for (uint32_t j = 0; j < aimesh->mNumVertices; j++) {
         const aiVector3D &pos = aimesh->mVertices[j];
@@ -204,6 +207,11 @@ void loadMesh(const aiScene *scene, Mesh &mesh, AABB &aabb) {
         if (aimesh->HasVertexColors(j)) {
           const aiColor4D &c = aimesh->mColors[0][j];
           color = Color(c.r, c.g, c.b, c.a);
+        } else if (hasBaseColor) {
+          color.r = aiColor.r;
+          color.g = aiColor.g;
+          color.b = aiColor.b;
+          color.a = aiColor.a;
         }
 
         Vertex v;
@@ -367,6 +375,37 @@ void Model::load(std::string_view path) {
       fullFilePath.c_str(),
       aiProcess_ValidateDataStructure | aiProcess_LimitBoneWeights |
           aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
+  if (!scene) {
+    Logger::error("Error loading model: %s", importer.GetErrorString());
+    return;
+  }
+  skeletalAnimation.owner = this;
+  loadBone(scene, this->boneMap);
+  loadAnimation(scene, this->skeletalAnimation, this->boneMap);
+  loadMesh(scene, this->mesh, this->localAABB);
+  loadMaterial(const_cast<aiScene *>(scene), this->material);
+  calcTangents(scene, this->mesh);
+
+  mesh.indexCount = mesh.indices.size();
+  auto viBuffer = createVertexIndexBuffer(mesh.vertices, mesh.indices);
+  this->vertexBuffer =
+      createBuffer(mesh.vertices.size() * sizeof(Vertex), mesh.vertices.data(),
+                   px::BufferUsage::Vertex);
+  this->animationVertexBuffer =
+      createAnimationVertexBuffer(skeletalAnimation.animationVertices);
+  this->tangentBuffer =
+      createBuffer(mesh.tangents.size() * sizeof(glm::vec4),
+                   mesh.tangents.data(), px::BufferUsage::Vertex);
+  this->indexBuffer = createBuffer(mesh.indices.size() * sizeof(uint32_t),
+                                   mesh.indices.data(), px::BufferUsage::Index);
+}
+void Model::loadFromPath(std::string_view path) {
+  // Assimp
+  Assimp::Importer importer;
+  const auto *scene = importer.ReadFile(
+      path.data(), aiProcess_ValidateDataStructure |
+                       aiProcess_LimitBoneWeights |
+                       aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
   if (!scene) {
     Logger::error("Error loading model: %s", importer.GetErrorString());
     return;

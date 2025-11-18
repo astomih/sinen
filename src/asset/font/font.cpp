@@ -24,77 +24,22 @@ Font::Font(int32_t point, std::string_view file_name) {
 }
 Font::~Font() {}
 bool Font::load(int pointSize) {
-  this->m_size = pointSize;
-  // Load the default font from the embedded resource
-  auto *rw = SDL_IOFromConstMem(mplus_1p_medium_ttf, mplus_1p_medium_ttf_len);
-  m_font = (void *)::TTF_OpenFontIO(rw, 1, pointSize);
-  return isLoaded();
+  return true;
 }
 bool Font::load(int pointSize, std::string_view fontName) {
-  this->m_size = pointSize;
-  m_font = (void *)::TTF_OpenFontIO(
-      (SDL_IOStream *)AssetIO::openAsIOStream(AssetType::Font, fontName), 1,
-      pointSize);
-  return isLoaded();
+  return true;
 }
 bool Font::loadFromPath(int pointSize, std::string_view path) {
-  this->m_size = pointSize;
-  m_font = (void *)::TTF_OpenFont(path.data(), pointSize);
-  return isLoaded();
+  return true;
 }
 
 void Font::unload() {
-  if (isLoaded()) {
-    ::TTF_CloseFont((::TTF_Font *)m_font);
-  }
 }
 
 void Font::resize(int point_size) {
-  if (!isLoaded()) {
-    Logger::error("Font is not loaded");
-    return;
-  }
-  TTF_SetFontSize(reinterpret_cast<TTF_Font *>(this->m_font), point_size);
 }
 
 void Font::renderText(Texture &tex, const std::string &text,
                       const Color &_color) {
-  if (!isLoaded()) {
-    Logger::error("Font is not loaded");
-    return;
-  }
-  if (text.empty()) {
-    Logger::warn("Sinen Text is empty");
-    tex.fill(_color);
-    return;
-  }
-  // SinenEngine Color to SDL_Color
-  SDL_Color sdlColor;
-  sdlColor.r = static_cast<Uint8>(_color.r * 255);
-  sdlColor.g = static_cast<Uint8>(_color.g * 255);
-  sdlColor.b = static_cast<Uint8>(_color.b * 255);
-  sdlColor.a = static_cast<Uint8>(_color.a * 255);
-  if (sdlColor.a == 0) {
-    tex.fill(_color);
-    return;
-  }
-  auto *ttf_font = reinterpret_cast<::TTF_Font *>(m_font);
-  auto *pSurface =
-      (::TTF_RenderText_Blended_Wrapped(ttf_font, std::string(text).c_str(),
-                                        std::string(text).size(), sdlColor, 0));
-  SDL_assert(pSurface != NULL && "Failed to render text");
-  auto texdata = getTextureRawData(tex.textureData);
-  SDL_assert(texdata != nullptr && "TextureData is null");
-  SDL_assert(texdata->pSurface != nullptr && "TextureData pSurface is null");
-  SDL_Surface *temp = (texdata->pSurface);
-  SDL_assert(temp != nullptr && "TextureData pSurface is null");
-  bool isUpdate = (temp->w == pSurface->w) && (temp->h == pSurface->h);
-  texdata->pSurface = pSurface;
-  if (texdata->texture && isUpdate) {
-    UpdateNativeTexture(texdata->texture, pSurface);
-  } else {
-    texdata->texture = createNativeTexture(pSurface);
-  }
-  SDL_DestroySurface(temp);
 }
 } // namespace sinen

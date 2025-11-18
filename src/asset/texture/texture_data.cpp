@@ -5,7 +5,6 @@
 #include "SDL3/SDL_pixels.h"
 #include <SDL3/SDL.h>
 namespace sinen {
-TextureData::~TextureData() { SDL_DestroySurface(pSurface); }
 template <typename T> using Ptr = px::Ptr<T>;
 static void writeTexture(px::Ptr<px::Texture> texture, void *pPixels) {
   auto allocator = GraphicsSystem::getAllocator();

@@ -46,3 +46,6 @@
 [submodule "libs/tinyexr"]
 	path = libs/tinyexr
 	url = https://github.com/syoyo/tinyexr
+[submodule "libs/stb"]
+	path = libs/stb
+	url = https://github.com/nothings/stb

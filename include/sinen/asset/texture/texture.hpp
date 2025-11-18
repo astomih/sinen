@@ -1,6 +1,8 @@
 #ifndef SINEN_TEXTURE_HPP
 #define SINEN_TEXTURE_HPP
 #include "../../math/color/color.hpp"
+#include "paranoixa/paranoixa.hpp"
+
 #include <memory>
 #include <string>
 #include <string_view>
@@ -44,7 +46,7 @@ public:
    * @return true
    * @return false
    */
-  bool loadFromMemory(std::vector<char> &buffer) const;
+  bool loadFromMemory(std::vector<char> &buffer);
   bool loadFromMemory(void *pPixels, uint32_t width, uint32_t height);
   /**
    * @brief Copy texture from another texture
@@ -57,7 +59,7 @@ public:
 
   glm::vec2 size();
 
-  std::shared_ptr<void> textureData;
+  px::Ptr<px::Texture> texture;
 };
 } // namespace sinen
 #endif // !SINEN_TEXTURE_HPP

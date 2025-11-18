@@ -259,8 +259,8 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
   prepareRenderPassFrame();
 
   for (const auto &texture : draw2D.material.getTextures()) {
-    auto nativeTexture = std::static_pointer_cast<px::Texture>(
-        getTextureRawData(texture.textureData)->texture);
+    auto nativeTexture =
+        texture.texture;
     textureSamplers.push_back(px::TextureSamplerBinding{
         .sampler = sampler, .texture = nativeTexture});
   }
@@ -331,8 +331,8 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
   prepareRenderPassFrame();
 
   for (const auto &texture : draw3D.material.getTextures()) {
-    auto nativeTexture = std::static_pointer_cast<px::Texture>(
-        getTextureRawData(texture.textureData)->texture);
+    auto nativeTexture =
+        texture.texture;
     textureSamplers.push_back(px::TextureSamplerBinding{
         .sampler = sampler, .texture = nativeTexture});
   }
@@ -587,7 +587,6 @@ void GraphicsSystem::flush() {
 bool GraphicsSystem::readbackTexture(const RenderTexture &srcRenderTexture,
                                      Texture &out) {
   auto tex = srcRenderTexture.getTexture();
-  auto outTextureData = getTextureRawData(out.textureData);
   // Copy
   px::TransferBuffer::CreateInfo info2{};
   info2.allocator = allocator;
@@ -621,7 +620,7 @@ bool GraphicsSystem::readbackTexture(const RenderTexture &srcRenderTexture,
         region.width = srcRenderTexture.width;
         region.height = srcRenderTexture.height;
         region.depth = 1;
-        region.texture = outTextureData->texture;
+        region.texture = out.texture;
         copyPass->UploadTexture(src, region, false);
       }
       commandBuffer->EndCopyPass(copyPass);

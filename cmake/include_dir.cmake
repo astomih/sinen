@@ -21,6 +21,7 @@ set(SINEN_INCLUDE_DIRS
         ${SINEN_SOURCE_DIR}/libs/SDL_image/include
         ${SINEN_SOURCE_DIR}/libs/zep/include
         ${SINEN_SOURCE_DIR}/libs/sol2/include
+        ${SINEN_SOURCE_DIR}/libs/stb
         ${SINEN_SOURCE_DIR}/libs/slang/include
         ${SINEN_SOURCE_DIR}/libs/JoltPhysics
         ${SINEN_SOURCE_DIR}/libs/lua

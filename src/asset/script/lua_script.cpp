@@ -49,7 +49,8 @@ bool LuaScript::Initialize() {
 #ifndef SINEN_NO_USE_SCRIPT
   state.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math,
                        sol::lib::bit32, sol::lib::io, sol::lib::os,
-                       sol::lib::string, sol::lib::debug, sol::lib::table);
+                       sol::lib::string, sol::lib::debug, sol::lib::table,
+                       sol::lib::coroutine);
   auto lua = state.create_table("sn");
   {
     auto &v = lua;
@@ -64,10 +65,9 @@ bool LuaScript::Initialize() {
                            "    __CWD_global__ = __CWD__"
                            "    return __original_require(module, __CWD__);"
                            "end;";
-      return state.require_script(
-          base + "/" + path,
-          header + AssetIO::openAsString(AssetType::Script,
-                                         base + "/" + path + ".lua"));
+      auto str =
+          AssetIO::openAsString(AssetType::Script, base + "/" + path + ".lua");
+      return state.require_script(base + "/" + path, header + str);
     };
   }
   {

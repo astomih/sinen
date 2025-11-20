@@ -3,9 +3,10 @@
 #include "../../math/color/color.hpp"
 #include "../../math/color/palette.hpp"
 #include "../texture/texture.hpp"
+#include <asset/model/mesh.hpp>
+
 #include <memory>
 #include <string_view>
-
 namespace sinen {
 /**
  * @brief font load and render to texture.
@@ -13,7 +14,7 @@ namespace sinen {
  */
 class Font {
 public:
-  Font() : m_font(nullptr), m_size(0) {};
+  Font();
   Font(int32_t point, std::string_view file_name);
   ~Font();
 
@@ -34,7 +35,7 @@ public:
    * @return true loaded
    * @return false not load yet
    */
-  bool isLoaded() { return this->m_font != nullptr; }
+  bool isLoaded() { return font != nullptr; }
   /**
    * @brief Unload the font
    */
@@ -51,17 +52,12 @@ public:
    * @param point_size
    */
   void resize(int point_size);
-  /**
-   * @brief render to texture
-   *
-   * @param text require UTF-8
-   * @param _color font color
-   */
-  void renderText(Texture &tex, const std::string &text,
-                  const Color &_color = Palette::white());
+
+  Mesh getTextMesh(std::string_view text);
 
 private:
-  void *m_font;
+  struct Wrapper;
+  std::unique_ptr<Wrapper> font;
   int m_size;
 };
 } // namespace sinen

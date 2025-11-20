@@ -201,7 +201,6 @@ bool LuaScript::Initialize() {
           return f.load(point_size, path);
         });
     v["loadFromPath"] = &Font::loadFromPath;
-    v["renderText"] = &Font::renderText;
     v["resize"] = &Font::resize;
   }
   {

@@ -259,8 +259,7 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
   prepareRenderPassFrame();
 
   for (const auto &texture : draw2D.material.getTextures()) {
-    auto nativeTexture =
-        texture.texture;
+    auto nativeTexture = texture.texture;
     textureSamplers.push_back(px::TextureSamplerBinding{
         .sampler = sampler, .texture = nativeTexture});
   }
@@ -331,8 +330,7 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
   prepareRenderPassFrame();
 
   for (const auto &texture : draw3D.material.getTextures()) {
-    auto nativeTexture =
-        texture.texture;
+    auto nativeTexture = texture.texture;
     textureSamplers.push_back(px::TextureSamplerBinding{
         .sampler = sampler, .texture = nativeTexture});
   }
@@ -444,15 +442,15 @@ void GraphicsSystem::drawText(const std::string &text,
                               const glm::vec2 &position, const Color &color,
                               float fontSize, float angle) {
   sinen::Draw2D draw2D;
-  draw2D.position = position;
-  Font font;
-  font.load(fontSize);
-  Texture texture;
-  font.renderText(texture, text, color);
-  draw2D.scale = texture.size();
-  draw2D.rotation = angle;
-  draw2D.material = Material();
-  draw2D.material.setTexture(texture);
+  // draw2D.position = position;
+  // Font font;
+  // font.load(fontSize);
+  // Texture texture;
+  // font.renderText(texture, text, color);
+  // draw2D.scale = texture.size();
+  // draw2D.rotation = angle;
+  // draw2D.material = Material();
+  // draw2D.material.setTexture(texture);
   GraphicsSystem::drawBase2D(draw2D);
 }
 void GraphicsSystem::drawCubemap(const Cubemap &cubemap) {

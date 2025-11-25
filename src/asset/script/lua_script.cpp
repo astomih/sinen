@@ -429,18 +429,21 @@ bool LuaScript::Initialize() {
           Graphics::drawImage(texture, rect, angle);
         });
     v["drawText"] = sol::overload(
-        [](const std::string &text, const glm::vec2 &position) {
-          Graphics::drawText(text, position);
+        [](const std::string &text, const Font &font,
+           const glm::vec2 &position) {
+          Graphics::drawText(text, font, position);
         },
-        [](const std::string &text, const glm::vec2 &position,
-           const Color &color) { Graphics::drawText(text, position, color); },
-        [](const std::string &text, const glm::vec2 &position,
+        [](const std::string &text, const Font &font, const glm::vec2 &position,
+           const Color &color) {
+          Graphics::drawText(text, font, position, color);
+        },
+        [](const std::string &text, const Font &font, const glm::vec2 &position,
            const Color &color, float fontSize) {
-          Graphics::drawText(text, position, color, fontSize);
+          Graphics::drawText(text, font, position, color, fontSize, 0);
         },
-        [](const std::string &text, const glm::vec2 &position,
+        [](const std::string &text, const Font &font, const glm::vec2 &position,
            const Color &color, float fontSize, float angle) {
-          Graphics::drawText(text, position, color, fontSize, angle);
+          Graphics::drawText(text, font, position, color, fontSize, angle);
         });
     v["drawCubemap"] = &Graphics::drawCubemap;
     v["drawModel"] = &Graphics::drawModel;

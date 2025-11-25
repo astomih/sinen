@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "../asset/Font/font.hpp"
 #include "../asset/model/mesh.hpp"
 #include "../asset/model/model.hpp"
 #include "../asset/shader/shader.hpp"
@@ -39,18 +40,16 @@ public:
   static void drawImage(const Texture &texture, const Rect &rect) {
     drawImage(texture, rect, 0.0f);
   }
-  static void drawText(const std::string &text, const glm::vec2 &position,
-                       const Color &color, float fontSize, float angle);
-  static void drawText(const std::string &text, const glm::vec2 &position,
-                       const Color &color, float fontSize) {
-    drawText(text, position, color, fontSize, 0.0f);
+  static void drawText(const std::string &text, const Font &font,
+                       const glm::vec2 &position, const Color &color,
+                       float textSize, float angle);
+  static void drawText(const std::string &text, const Font &font,
+                       const glm::vec2 &position, const Color &color) {
+    drawText(text, font, position, color, 32.f, 0.0f);
   }
-  static void drawText(const std::string &text, const glm::vec2 &position,
-                       const Color &color) {
-    drawText(text, position, color, 16.0f, 0.0f);
-  }
-  static void drawText(const std::string &text, const glm::vec2 &position) {
-    drawText(text, position, Palette::white(), 16.0f, 0.0f);
+  static void drawText(const std::string &text, const Font &font,
+                       const glm::vec2 &position) {
+    drawText(text, font, position, Palette::white(), 32.f, 0.0f);
   }
 
   static void drawCubemap(const Cubemap &cubemap);

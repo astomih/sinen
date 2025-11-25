@@ -35,9 +35,9 @@ public:
   static void drawBase3D(const sinen::Draw3D &draw3D);
   static void drawRect(const Rect &rect, const Color &color, float angle);
   static void drawImage(const Texture &texture, const Rect &rect, float angle);
-  static void drawText(const std::string &text, const glm::vec2 &position,
-                       const Color &color = Palette::white(),
-                       float fontSize = 16.0f, float angle = 0.0f);
+  static void drawText(const std::string &text, const Font &font,
+                       const glm::vec2 &position, const Color &color,
+                       float textSize, float angle);
   static void drawCubemap(const Cubemap &cubemap);
   static void drawModel(const Model &model, const Transform &transform,
                         const Material &material);

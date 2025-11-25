@@ -317,7 +317,7 @@ sn = {
     ---@field draw3D fun(draw3D: sn.Draw3D)
     ---@field drawRect fun(rect:sn.Rect, color: sn.Color, angle: number?)
     ---@field drawImage fun(texture: sn.Texture, rect:sn.Rect, angle: number?)
-    ---@field drawText fun(text: string, position: sn.Vec2, color: sn.Color?, fontSize: number?, angle: number?)
+    ---@field drawText fun(text: string, font: sn.Font, position: sn.Vec2, color: sn.Color?, fontSize: number?,angle: number?)
     ---@field drawModel fun(model: sn.Model, transform: sn.Transform, material: sn.Material)
     ---@field drawModelInstanced fun(model: sn.Model, transforms: table, material: sn.Material)
     ---@field drawCubemap fun(cubemap: sn.Cubemap)

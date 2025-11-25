@@ -45,7 +45,7 @@ public:
    *
    * @return int
    */
-  int size() { return m_size; }
+  int size() const { return m_size; }
   /**
    * @brief resize font
    *
@@ -53,8 +53,8 @@ public:
    */
   void resize(int point_size);
 
-  Texture getAtlas();
-  Mesh getTextMesh(std::string_view text);
+  Texture getAtlas() const;
+  Mesh getTextMesh(std::string_view text) const;
 
 private:
   struct Wrapper;

@@ -32,9 +32,10 @@ void Graphics::drawImage(const Texture &texture, const Rect &rect,
   GraphicsSystem::drawImage(texture, rect, angle);
 }
 
-void Graphics::drawText(const std::string &text, const glm::vec2 &position,
-                        const Color &color, float fontSize, float angle) {
-  GraphicsSystem::drawText(text, position, color, fontSize, angle);
+void Graphics::drawText(const std::string &text, const Font &font,
+                        const glm::vec2 &position, const Color &color,
+                        float textSize, float angle) {
+  GraphicsSystem::drawText(text, font, position, color, textSize, angle);
 }
 void Graphics::drawCubemap(const Cubemap &cubemap) {
   GraphicsSystem::drawCubemap(cubemap);

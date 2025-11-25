@@ -33,7 +33,7 @@ bool Texture::load(std::string_view fileName) {
   auto str = AssetIO::openAsString(AssetType::Texture, fileName);
 
   pixels = stbi_load_from_memory(reinterpret_cast<unsigned char *>(str.data()),
-                                 str.length(), &width, &height, &bpp, 8);
+                                 str.size(), &width, &height, &bpp, 4);
 
   texture = createNativeTexture(pixels, px::TextureFormat::R8G8B8A8_UNORM,
                                 width, height);
@@ -44,7 +44,7 @@ bool Texture::loadFromPath(std::string_view path) {
   int width, height;
   int bpp;
 
-  auto *pixels = stbi_load(path.data(), &width, &height, &bpp, 8);
+  auto *pixels = stbi_load(path.data(), &width, &height, &bpp, 4);
   texture = createNativeTexture(pixels, px::TextureFormat::R8G8B8A8_UNORM,
                                 width, height);
   return true;
@@ -57,7 +57,7 @@ bool Texture::loadFromMemory(std::vector<char> &buffer) {
 
   auto *pixels =
       stbi_load_from_memory(reinterpret_cast<unsigned char *>(buffer.data()),
-                            buffer.size(), &width, &height, &bpp, 8);
+                            buffer.size(), &width, &height, &bpp, 4);
 
   this->texture = createNativeTexture(pixels, px::TextureFormat::R8G8B8A8_UNORM,
                                       width, height);

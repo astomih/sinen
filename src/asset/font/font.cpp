@@ -113,7 +113,7 @@ bool Font::loadFromPath(int pointSize, std::string_view path) { return true; }
 void Font::unload() {}
 
 void Font::resize(int point_size) {}
-Texture Font::getAtlas() {
+Texture Font::getAtlas() const {
   Texture texture;
   texture.texture = this->font->texture;
   return texture;
@@ -141,7 +141,7 @@ const char *utf8ToCodepoint(const char *p, uint32_t *out_cp) {
   }
 }
 
-Mesh Font::getTextMesh(std::string_view text) {
+Mesh Font::getTextMesh(std::string_view text) const {
 
   Mesh textMesh;
   float x = 0.f, y = 0.f;

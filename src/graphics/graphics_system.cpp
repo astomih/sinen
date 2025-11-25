@@ -438,13 +438,10 @@ void GraphicsSystem::drawImage(const Texture &texture, const Rect &rect,
   draw2D.material.setTexture(texture);
   GraphicsSystem::drawBase2D(draw2D);
 }
-void GraphicsSystem::drawText(const std::string &text,
+void GraphicsSystem::drawText(const std::string &text, const Font &font,
                               const glm::vec2 &position, const Color &color,
-                              float fontSize, float angle) {
+                              float textSize, float angle) {
   sinen::Draw2D draw2D;
-  Font font;
-  font.load(fontSize);
-
   Model model;
   model.loadFromVertexArray(font.getTextMesh(text));
 
@@ -454,6 +451,7 @@ void GraphicsSystem::drawText(const std::string &text,
   draw2D.material = Material();
   draw2D.material.setTexture(texture);
   draw2D.model = model;
+  draw2D.scale = glm::vec2(textSize / static_cast<float>(font.size()));
   GraphicsSystem::drawBase2D(draw2D);
 }
 void GraphicsSystem::drawCubemap(const Cubemap &cubemap) {

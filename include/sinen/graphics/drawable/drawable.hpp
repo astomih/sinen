@@ -37,10 +37,6 @@ public:
   float rotation;
   glm::vec2 scale;
   Material material;
-
-  const Model &getModel() const;
-
-private:
   Model model;
 };
 /**
@@ -71,10 +67,7 @@ public:
   Material material;
   std::vector<Transform> worlds;
   const Model &getModel() const;
-
   Model model;
-
-private:
 };
 } // namespace sinen
 #endif // !SINEN_DRAWABLE_WRAPPER_HPP

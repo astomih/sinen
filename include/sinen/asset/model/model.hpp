@@ -95,6 +95,7 @@ public:
   Material getMaterial() const { return material; }
 
   const Mesh &getMesh() const { return mesh; }
+  void setMesh(const Mesh &m) { mesh = mesh; }
 
   px::Ptr<px::Buffer> vertexBuffer;
   px::Ptr<px::Buffer> tangentBuffer;

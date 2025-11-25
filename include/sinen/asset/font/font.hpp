@@ -53,6 +53,7 @@ public:
    */
   void resize(int point_size);
 
+  Texture getAtlas();
   Mesh getTextMesh(std::string_view text);
 
 private:

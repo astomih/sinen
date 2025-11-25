@@ -28,7 +28,6 @@ Draw2D::Draw2D(const Texture &texture)
   this->material.setTexture(texture);
   this->model = GraphicsSystem::sprite;
 }
-const Model &Draw2D::getModel() const { return this->model; }
 Draw3D::Draw3D()
     : position(glm::vec3(0.f, 0.f, 0.f)), rotation(glm::vec3(0.f, 0.f, 0.f)),
       scale(glm::vec3(1.f, 1.f, 1.f)) {

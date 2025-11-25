@@ -130,8 +130,8 @@ void GraphicsSystem::initialize() {
   // Default sampler
   px::Sampler::CreateInfo samplerInfo{};
   samplerInfo.allocator = allocator;
-  samplerInfo.minFilter = px::Filter::Nearest;
-  samplerInfo.magFilter = px::Filter::Nearest;
+  samplerInfo.minFilter = px::Filter::Linear;
+  samplerInfo.magFilter = px::Filter::Linear;
   samplerInfo.addressModeU = px::AddressMode::Repeat;
   samplerInfo.addressModeV = px::AddressMode::Repeat;
   samplerInfo.maxAnisotropy = 1.f;
@@ -264,7 +264,7 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
         .sampler = sampler, .texture = nativeTexture});
   }
 
-  const auto &model = draw2D.getModel();
+  const auto &model = draw2D.model;
   assert(model.vertexBuffer != nullptr);
   assert(model.indexBuffer != nullptr);
 
@@ -442,15 +442,18 @@ void GraphicsSystem::drawText(const std::string &text,
                               const glm::vec2 &position, const Color &color,
                               float fontSize, float angle) {
   sinen::Draw2D draw2D;
-  // draw2D.position = position;
-  // Font font;
-  // font.load(fontSize);
-  // Texture texture;
-  // font.renderText(texture, text, color);
-  // draw2D.scale = texture.size();
-  // draw2D.rotation = angle;
-  // draw2D.material = Material();
-  // draw2D.material.setTexture(texture);
+  Font font;
+  font.load(fontSize);
+
+  Model model;
+  model.loadFromVertexArray(font.getTextMesh(text));
+
+  draw2D.position = position;
+  Texture texture = font.getAtlas();
+  draw2D.rotation = angle;
+  draw2D.material = Material();
+  draw2D.material.setTexture(texture);
+  draw2D.model = model;
   GraphicsSystem::drawBase2D(draw2D);
 }
 void GraphicsSystem::drawCubemap(const Cubemap &cubemap) {

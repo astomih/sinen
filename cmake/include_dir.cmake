@@ -8,9 +8,7 @@ set(SINEN_INCLUDE_DIRS
         ${SINEN_SOURCE_DIR}/libs/mojoAL/AL
         ${SINEN_SOURCE_DIR}/libs/rapidjson/include
         ${SINEN_SOURCE_DIR}/libs/SDL/include
-        ${SINEN_SOURCE_DIR}/libs/SDL_image/include
         ${SINEN_SOURCE_DIR}/libs/SDL_mixer/include
-        ${SINEN_SOURCE_DIR}/libs/SDL_ttf/include
         ${SINEN_SOURCE_DIR}/libs/paranoixa/include
         ${SINEN_SOURCE_DIR}/libs/paranoixa/source/imgui_backend
         ${SINEN_SOURCE_DIR}/src/script/include
@@ -18,7 +16,6 @@ set(SINEN_INCLUDE_DIRS
         ${SINEN_SOURCE_DIR}/libs/assimp/include
         ${SINEN_SOURCE_DIR}/libs/glm
         ${SINEN_SOURCE_DIR}/libs/SDL/include
-        ${SINEN_SOURCE_DIR}/libs/SDL_image/include
         ${SINEN_SOURCE_DIR}/libs/zep/include
         ${SINEN_SOURCE_DIR}/libs/sol2/include
         ${SINEN_SOURCE_DIR}/libs/stb

@@ -10,7 +10,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include "SDL3_image/SDL_image.h"
 #include "texture_data.hpp"
 
 #include <paranoixa/paranoixa.hpp>

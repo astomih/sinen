@@ -10,8 +10,6 @@ include(${SINEN_SOURCE_DIR}/cmake/extlibs_settings.cmake)
 include(${SINEN_SOURCE_DIR}/cmake/include_dir.cmake)
 
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/SDL EXCLUDE_FROM_ALL)
-add_subdirectory(${SINEN_SOURCE_DIR}/libs/SDL_image EXCLUDE_FROM_ALL)
-add_subdirectory(${SINEN_SOURCE_DIR}/libs/SDL_ttf EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/assimp EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/SDL_mixer EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/paranoixa EXCLUDE_FROM_ALL)
@@ -46,13 +44,13 @@ file(
         ${SINEN_SOURCE_DIR}/*.hpp
 )
 
-if(BUILD_SHARED_LIBS)
+if (BUILD_SHARED_LIBS)
     add_library(sinen SHARED docs/icon/icon.rc
             ${SINEN_SOURCE_FILES} ${SINEN_HEADER_FILES})
-else()
-add_executable(sinen docs/icon/icon.rc
-        ${SINEN_SOURCE_FILES} ${SINEN_HEADER_FILES})
-endif()
+else ()
+    add_executable(sinen docs/icon/icon.rc
+            ${SINEN_SOURCE_FILES} ${SINEN_HEADER_FILES})
+endif ()
 target_include_directories(
         sinen PUBLIC ${SINEN_INCLUDE_DIRS} ${SDL3_INCLUDE_PATHS})
 
@@ -60,9 +58,7 @@ set(SINEN_LINK_LIBRARIES
         paranoixa
         paranoixa_imgui_backend
         SDL3::SDL3
-        SDL3_image::SDL3_image
         SDL3_mixer::SDL3_mixer
-        SDL3_ttf::SDL3_ttf
         assimp
         Zep::Zep
         Jolt
@@ -72,10 +68,10 @@ if (SINEN_USE_SLANG)
     list(APPEND SINEN_LINK_LIBRARIES slang)
 endif ()
 
-if(ANDROID)
+if (ANDROID)
     find_library(ANDROID_LIB android)
     list(APPEND SINEN_LINK_LIBRARIES ${ANDROID_LIB})
-endif()
+endif ()
 
 target_link_libraries(
         sinen

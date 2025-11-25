@@ -22,6 +22,7 @@ end
 ![Hello World](https://raw.githubusercontent.com/astomih/sinen/refs/heads/main/examples/screenshot/01.png)
 
 ## How to run or asset place
+
 See examples directory.
 
 # How to build from source
@@ -31,7 +32,6 @@ See examples directory.
 - CMake 3.20 or later
 - C++23 compiler
 - Vulkan SDK(In MacOS, MoltenVK)
-- [yasm](https://github.com/yasm/yasm)(for SDL3_Image , add to PATH)
 
 ## Build commands
 
@@ -48,6 +48,7 @@ git submodule update --init --recursive
 Run "build/generate_vs2022.bat" and open&build the generated solution file(build/desktop/.).
 
 ### Android
+
 Run "build/generate_android.bat", "build_android.bat" in build directory.  
 Then open the build/android directory in Android Studio, and build&run.
 

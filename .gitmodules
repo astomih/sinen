@@ -1,12 +1,6 @@
-[submodule "libs/SDL_image"]
-	path = libs/SDL_image
-	url = https://github.com/libsdl-org/SDL_image
 [submodule "libs/SDL_mixer"]
 	path = libs/SDL_mixer
 	url = https://github.com/libsdl-org/SDL_mixer
-[submodule "libs/SDL_ttf"]
-	path = libs/SDL_ttf
-	url = https://github.com/libsdl-org/SDL_ttf
 [submodule "libs/paranoixa"]
 	path = libs/paranoixa
 	url = https://github.com/astomih/paranoixa

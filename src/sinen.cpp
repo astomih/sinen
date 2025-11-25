@@ -23,16 +23,13 @@ int main(const int argc, char *argv[]) {
 
 // external
 #include <SDL3/SDL.h>
-#include <SDL3_image/SDL_image.h>
 #include <SDL3_mixer/SDL_mixer.h>
-#include <SDL3_ttf/SDL_ttf.h>
 
 namespace sinen {
 bool Sinen::initialize(int argc, char *argv[]) {
   SDL_SetHint(SDL_HINT_APP_NAME, "Sinen");
   SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1");
   SDL_Init(SDL_INIT_EVENTS);
-  TTF_Init();
   Mix_Init(MIX_INIT_OGG);
   SDL_AudioSpec desired;
   desired.freq = 48000;
@@ -95,7 +92,6 @@ void Sinen::shutdown() {
   GraphicsSystem::shutdown();
   WindowSystem::shutdown();
   Mix_CloseAudio();
-  TTF_Quit();
   Mix_Quit();
   SDL_Quit();
 }

@@ -1,5 +1,4 @@
-FONT = sn.Font.new()
-FONT:load(24)
+require("global")
 local button = require("gui/button")()
 GUI_MANAGER = require("gui/gui_manager")()
 

@@ -1,5 +1,5 @@
 local texture = sn.Texture.new()
-local draw2d = sn.Draw2D.new(texture)
+local draw2d = sn.Draw2D.new()
 
 local vertex_shader = sn.Shader.new()
 vertex_shader:loadVertexShader("shader_custom.vert.spv", 1)
@@ -20,6 +20,7 @@ uniform_data:add(0.5)
 uniform_data:add(1.0)
 
 texture:load("logo.png")
+draw2d.material:appendTexture(texture)
 draw2d.scale = texture:size()
 
 function Update()

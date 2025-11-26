@@ -26,10 +26,13 @@ void ScriptSystem::Shutdown() {
 }
 
 static const char *nothingSceneLua = R"(
+local font = sn.Font.new()
+font:load(32)
 function Update()
 end
+
 function Draw()
-    sn.Graphics.drawText("NO DATA", sn.Vec2.new(0, 0), sn.Color.new(1, 1, 1, 1), 96, 0.0)
+    sn.Graphics.drawText("NO DATA", font, sn.Vec2.new(0, 0), sn.Color.new(1.0), 32, 0.0)
 end
 )";
 

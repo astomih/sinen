@@ -8,8 +8,6 @@ sphereTex:fill(sn.Color.new(1, 0, 0, 1))
 local sphereMat = sn.Material.new()
 sphereMat:appendTexture(sphereTex)
 
-
-
 local box = sn.Model.new()
 box:loadBox()
 local sphere = sn.Model.new()
@@ -30,11 +28,9 @@ sphereCollider:setLinearVelocity(sn.Vec3.new(0, -5.0, 0))
 sn.Physics.addCollider(floorCollider, false)
 sn.Physics.addCollider(sphereCollider, true)
 
-
 sn.Graphics.getCamera():lookat(sn.Vec3.new(0, 10, 25), sn.Vec3.new(0, 0, 0), sn.Vec3.new(0, 1, 0))
 
 sn.Graphics.bindPipeline(sn.BuiltinPipelines.get3D())
-
 
 function Update()
     if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
@@ -56,7 +52,7 @@ function Draw()
     sn.Graphics.drawModel(box, boxTransform, boxMat)
     for _, c in ipairs(colliders) do
         local transform = sn.Transform.new()
-        transform.position = c:get_position()
+        transform.position = c:getPosition()
         if transform.position.y < -10.0 then
             table.remove(colliders, _)
         else

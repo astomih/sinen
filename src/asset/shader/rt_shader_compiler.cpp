@@ -108,7 +108,7 @@ std::vector<char> ShaderCompiler::compile(std::string_view sourcePath,
     Slang::ComPtr<slang::IBlob> diagnosticsBlob;
     slangModule = session->loadModuleFromSourceString(
         moduleName.c_str(), // Module name
-        sinen::AssetIO::convertFilePath(sinen::AssetType::Shader,
+        sinen::AssetIO::getFilePath(sinen::AssetType::Shader,
                                         sourcePath)
             .c_str(),                // Module path
         source.data(),               // Shader source code

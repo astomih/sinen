@@ -11,7 +11,6 @@ include(${SINEN_SOURCE_DIR}/cmake/include_dir.cmake)
 
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/assimp EXCLUDE_FROM_ALL)
-add_subdirectory(${SINEN_SOURCE_DIR}/libs/SDL_mixer EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/paranoixa EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/zep EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/sol2 EXCLUDE_FROM_ALL)
@@ -32,7 +31,6 @@ file(
         GLOB_RECURSE
         SINEN_SOURCE_FILES
         ${SINEN_SOURCE_DIR}/src/*.cpp
-        ${SINEN_SOURCE_DIR}/libs/mojoAL/mojoal.c
         ${SINEN_SOURCE_DIR}/libs/lua/onelua.c
         ${SINEN_SOURCE_DIR}/libs/tinyexr/deps/miniz/miniz.c
 )
@@ -58,7 +56,6 @@ set(SINEN_LINK_LIBRARIES
         paranoixa
         paranoixa_imgui_backend
         SDL3::SDL3
-        SDL3_mixer::SDL3_mixer
         assimp
         Zep::Zep
         Jolt

@@ -17,25 +17,20 @@ namespace sinen {
 class Sound {
 public:
   /**
-   * @brief  Sound parameters
-   *
-   */
-  struct Parameter {
-    glm::vec3 position;
-    uint32_t source_id;
-    uint32_t buffer_id;
-  };
-  /**
    * @brief Construct a new sound object
    *
    */
   Sound();
   /**
+   * @brief Destruct sound object
+   */
+  ~Sound();
+  /**
    * @brief Load the sound data from file
    *
-   * @param file_name File name
+   * @param fileName File name
    */
-  void load(std::string_view file_name);
+  void load(std::string_view fileName);
   void loadFromPath(std::string_view path);
   /**
    * @brief Create the source
@@ -69,7 +64,8 @@ public:
 
 private:
   std::string mName;
-  Parameter param;
+  struct Data;
+  std::unique_ptr<Data> data;
   float volume = 1.f;
   float pitch = 1.f;
   glm::vec3 pos;

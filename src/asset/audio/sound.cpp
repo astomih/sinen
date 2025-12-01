@@ -1,85 +1,52 @@
 // internal
-#include "glm/ext/quaternion_trigonometric.hpp"
-#include "glm/ext/vector_float3.hpp"
-#include "sound_system.hpp"
-#include <asset/audio/music.hpp>
+#include "audio_system.hpp"
 #include <asset/audio/sound.hpp>
 
 // external
-#define AL_LIBTYPE_STATIC
-#include <AL/al.h>
-#include <AL/alc.h>
+#include "glm/ext/quaternion_trigonometric.hpp"
+#include "glm/ext/vector_float3.hpp"
+#include <miniaudio.h>
 
 namespace sinen {
+struct Sound::Data {
+  ma_sound sound;
+};
 Sound::Sound() {}
-void Sound::load(std::string_view file_name) {
-  SoundSystem::load(file_name);
-  auto sourceID = SoundSystem::new_source(file_name);
-  ALint buf;
-  alGetSourcei(sourceID, AL_BUFFER, &buf);
-  param.source_id = sourceID;
-  param.buffer_id = buf;
-  mName = file_name.data();
+Sound::~Sound() { ma_sound_uninit(&data->sound); }
+
+void Sound::load(std::string_view fileName) {
+  data = std::make_unique<Data>();
+  AudioSystem::load(&data->sound, fileName);
 }
-void Sound::loadFromPath(std::string_view path) {
-  SoundSystem::load(path);
-  auto sourceID = SoundSystem::new_source(path);
-  ALint buf;
-  alGetSourcei(sourceID, AL_BUFFER, &buf);
-  param.source_id = sourceID;
-  param.buffer_id = buf;
-  mName = path.data();
+void Sound::loadFromPath(std::string_view path) {}
+void Sound::play() {
+  ma_sound_stop(&data->sound);
+  ma_sound_start(&data->sound);
 }
-void Sound::play() { alSourcePlay(param.source_id); }
-void Sound::newSource() {
-  auto sourceID = SoundSystem::new_source(mName);
-  ALint buf;
-  alGetSourcei(sourceID, AL_BUFFER, &buf);
-  param.source_id = sourceID;
-  param.buffer_id = buf;
-}
+void Sound::newSource() {}
 void Sound::setListener(glm::vec3 pos, glm::vec3 rotation) {
   glm::quat q = glm::angleAxis(rotation.z, glm::vec3(0, 0, -1));
   q = q * glm::angleAxis(rotation.y, glm::vec3(0, 1, 0));
   q = q * glm::angleAxis(rotation.x, glm::vec3(1, 0, 0));
 
-  SoundSystem::set_listener(pos, q);
+  AudioSystem::setListener(pos, q);
 }
-void Sound::deleteSource() { SoundSystem::delete_source(param.source_id); }
+void Sound::deleteSource() {}
 bool Sound::isValid() {
-  return SoundSystem::get_buffers().contains(mName.data());
+  return AudioSystem::get_buffers().contains(mName.data());
 }
 
-void Sound::restart() {
-  isPlaying = true;
-  stop();
-  alSourcePlay(param.source_id);
-}
+void Sound::restart() {}
 
-void Sound::stop(bool allowFadeOut /* true */) {
-  isPlaying = false;
-  alSourceStop(param.source_id);
-}
+void Sound::stop(bool allowFadeOut /* true */) {}
 
-void Sound::setPaused(bool pause) {
-  isPaused = pause;
-  alSourcePause(param.source_id);
-}
+void Sound::setPaused(bool pause) {}
 
-void Sound::setVolume(float value) {
-  volume = value;
-  alSourcef(param.source_id, AL_GAIN, value);
-}
+void Sound::setVolume(float value) {}
 
-void Sound::setPitch(float value) {
-  pitch = value;
-  alSourcef(param.source_id, AL_PITCH, value);
-}
+void Sound::setPitch(float value) {}
 
-void Sound::setPosition(glm::vec3 pos) {
-  this->pos = pos;
-  alSource3f(param.source_id, AL_POSITION, pos.x, pos.y, pos.z);
-}
+void Sound::setPosition(glm::vec3 pos) {}
 
 bool Sound::getPaused() { return isPaused; }
 

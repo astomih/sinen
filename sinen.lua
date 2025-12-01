@@ -88,14 +88,6 @@ sn = {
     ---@field create fun(self: sn.RenderTexture, x: integer, y: integer)
     RenderTexture = {},
 
-    ---@class sn.Music
-    ---@field new fun():sn.Music
-    ---@field load fun(self: sn.Music, path: string)
-    ---@field loadFromPath fun(self: sn.Music, path: string)
-    ---@field play fun(self: sn.Music)
-    ---@field setVolume fun(self: sn.Music, volume: number)
-    Music = {},
-
     ---@class sn.Sound
     ---@field new fun(): sn.Sound
     ---@field load fun(self: sn.Sound, path: string)

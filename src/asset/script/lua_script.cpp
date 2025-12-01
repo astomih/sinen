@@ -204,13 +204,6 @@ bool LuaScript::Initialize() {
     v["resize"] = &Font::resize;
   }
   {
-    auto v = lua.new_usertype<Music>("Music");
-    v["load"] = &Music::load;
-    v["loadFromPath"] = &Music::loadFromPath;
-    v["play"] = &Music::play;
-    v["setVolume"] = &Music::setVolume;
-  }
-  {
     auto v = lua.new_usertype<Sound>("Sound");
     v["load"] = &Sound::load;
     v["loadFromPath"] = &Sound::loadFromPath;

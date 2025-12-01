@@ -1,7 +1,6 @@
 #ifndef SINEN_ASSET_ASSET_HPP
 #define SINEN_ASSET_ASSET_HPP
 
-#include "audio/music.hpp"
 #include "audio/sound.hpp"
 #include "font/font.hpp"
 #include "model/mesh.hpp"

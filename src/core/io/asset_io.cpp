@@ -22,6 +22,38 @@
 #endif
 
 namespace sinen {
+static void convertFilePath(const AssetType &type, std::string &filePath,
+                            std::string_view name) {
+  std::string base = FileSystem::getAppBaseDirectory() + "/" +
+                     MainSystem::GetBasePath() + "/asset/";
+  switch (type) {
+  case AssetType::Font:
+    filePath += base + std::string{"font/"} + name.data();
+    break;
+
+  case AssetType::Model:
+    filePath += base + std::string{"model/"} + name.data();
+    break;
+  case AssetType::Music:
+    filePath = base + std::string{"music/"} + name.data();
+    break;
+  case AssetType::Script:
+    filePath = base + std::string{"script/"} + name.data();
+    break;
+  case AssetType::Shader:
+    filePath = base + std::string{"shader/"} + name.data();
+    break;
+  case AssetType::Sound:
+    filePath = base + std::string{"sound/"} + name.data();
+    break;
+  case AssetType::Texture:
+    filePath = base + std::string{"texture/"} + name.data();
+    break;
+
+  default:
+    break;
+  }
+}
 std::vector<uint8_t> AssetIO::key = {0};
 std::string_view AssetIO::open(const AssetType &type, std::string_view name) {
   std::string filePath;
@@ -83,40 +115,7 @@ void AssetIO::write(const AssetType &type, std::string_view name,
   SDL_CloseIO(file);
 }
 
-void AssetIO::convertFilePath(const AssetType &type, std::string &filePath,
-                              std::string_view name) {
-  std::string base = FileSystem::getAppBaseDirectory() + "/" +
-                     MainSystem::GetBasePath() + "/asset/";
-  switch (type) {
-  case AssetType::Font:
-    filePath += base + std::string{"font/"} + name.data();
-    break;
-
-  case AssetType::Model:
-    filePath += base + std::string{"model/"} + name.data();
-    break;
-  case AssetType::Music:
-    filePath = base + std::string{"music/"} + name.data();
-    break;
-  case AssetType::Script:
-    filePath = base + std::string{"script/"} + name.data();
-    break;
-  case AssetType::Shader:
-    filePath = base + std::string{"shader/"} + name.data();
-    break;
-  case AssetType::Sound:
-    filePath = base + std::string{"sound/"} + name.data();
-    break;
-  case AssetType::Texture:
-    filePath = base + std::string{"texture/"} + name.data();
-    break;
-
-  default:
-    break;
-  }
-}
-std::string AssetIO::convertFilePath(const AssetType &type,
-                                     std::string_view name) {
+std::string AssetIO::getFilePath(const AssetType &type, std::string_view name) {
   std::string filePath;
   convertFilePath(type, filePath, name);
   return filePath;

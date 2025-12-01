@@ -11,7 +11,7 @@ int main(const int argc, char *argv[]) {
   return 0;
 }
 
-#include "asset/audio/sound_system.hpp"
+#include "asset/audio/audio_system.hpp"
 #include "asset/script/script_system.hpp"
 #include "graphics/graphics_system.hpp"
 #include "math/random_system.hpp"
@@ -23,25 +23,17 @@ int main(const int argc, char *argv[]) {
 
 // external
 #include <SDL3/SDL.h>
-#include <SDL3_mixer/SDL_mixer.h>
 
 namespace sinen {
 bool Sinen::initialize(int argc, char *argv[]) {
   SDL_SetHint(SDL_HINT_APP_NAME, "Sinen");
   SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1");
   SDL_Init(SDL_INIT_EVENTS);
-  Mix_Init(MIX_INIT_OGG);
-  SDL_AudioSpec desired;
-  desired.freq = 48000;
-  desired.format = MIX_DEFAULT_FORMAT;
-  desired.channels = 2;
-  auto devid = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desired);
-  Mix_OpenAudio(devid, &desired);
   WindowSystem::initialize("Sinen");
   GraphicsSystem::initialize();
-  if (!SoundSystem::initialize()) {
+  if (!AudioSystem::initialize()) {
     Logger::critical("Failed to initialize audio system");
-    SoundSystem::shutdown();
+    AudioSystem::shutdown();
     return false;
   }
   if (!InputSystem::initialize()) {
@@ -87,12 +79,10 @@ void Sinen::shutdown() {
   PhysicsSystem::Shutdown();
   ScriptSystem::Shutdown();
   InputSystem::shutdown();
-  SoundSystem::shutdown();
+  AudioSystem::shutdown();
   RandomSystem::shutdown();
   GraphicsSystem::shutdown();
   WindowSystem::shutdown();
-  Mix_CloseAudio();
-  Mix_Quit();
   SDL_Quit();
 }
 } // namespace sinen

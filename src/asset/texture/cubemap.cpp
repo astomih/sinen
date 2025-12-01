@@ -306,7 +306,7 @@ createNativeCubemapTexture(const std::array<std::vector<float>, 6> &faces,
   return texture;
 }
 bool Cubemap::load(std::string_view path) {
-  auto convertedPath = AssetIO::convertFilePath(AssetType::Texture, path);
+  auto convertedPath = AssetIO::getFilePath(AssetType::Texture, path);
 
   std::vector<float> equirect;
   int W = 0, H = 0, C = 0;

@@ -1,5 +1,5 @@
 #include "main_system.hpp"
-#include "asset/audio/sound_system.hpp"
+#include "asset/audio/audio_system.hpp"
 #include "asset/script/script_system.hpp"
 #include "graphics/graphics_system.hpp"
 #include "physics/physics_system.hpp"
@@ -155,7 +155,7 @@ void MainSystem::update_scene() {
     ScriptSystem::UpdateScene();
   }
   PhysicsSystem::Update();
-  SoundSystem::update(deltaTime);
+  AudioSystem::update(deltaTime);
 }
 void MainSystem::shutdown() { m_game_state = State::quit; }
 

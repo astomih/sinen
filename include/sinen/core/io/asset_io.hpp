@@ -23,11 +23,7 @@ public:
   static std::string openAsString(const AssetType &type, std::string_view name);
   static void write(const AssetType &type, std::string_view name,
                     std::string_view data);
-
-  static void convertFilePath(const AssetType &type, std::string &filePath,
-                              std::string_view name);
-  static std::string convertFilePath(const AssetType &type,
-                                     std::string_view name);
+  static std::string getFilePath(const AssetType &type, std::string_view name);
 };
 } // namespace sinen
 #endif // !SINEN_DATA_STREAM_HPP

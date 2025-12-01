@@ -1,6 +1,3 @@
-[submodule "libs/SDL_mixer"]
-	path = libs/SDL_mixer
-	url = https://github.com/libsdl-org/SDL_mixer
 [submodule "libs/paranoixa"]
 	path = libs/paranoixa
 	url = https://github.com/astomih/paranoixa
@@ -22,9 +19,6 @@
 [submodule "libs/zep"]
 	path = libs/zep
 	url = https://github.com/astomih/zep
-[submodule "libs/mojoAL"]
-	path = libs/mojoAL
-	url = https://github.com/icculus/mojoAL
 [submodule "libs/sol2"]
 	path = libs/sol2
 	url = https://github.com/ThePhD/sol2

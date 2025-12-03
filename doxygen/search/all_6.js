@@ -1,0 +1,27 @@
+var searchData=
+[
+  ['g_125',['G',['../classsinen_1_1_key_input.html#aea839aa6e29f3458e323e4f47c74d2faadfcf28d0734569a6a693bc8194de62bf',1,'sinen::KeyInput']]],
+  ['gamepad_126',['GamePad',['../classsinen_1_1_game_pad.html',1,'sinen']]],
+  ['get_5farea_127',['get_area',['../structsinen_1_1_triangle2.html#a383c942f3613e6c86ea308b5a235cdf2',1,'sinen::Triangle2::get_area()'],['../structsinen_1_1_triangle3.html#ac06b22731b39d7941ecedf180db8369d',1,'sinen::Triangle3::get_area()']]],
+  ['get_5fbarycentric_128',['get_barycentric',['../structsinen_1_1_triangle2.html#af1580d1db937a6ac7d01ec9b997fef7f',1,'sinen::Triangle2::get_barycentric()'],['../structsinen_1_1_triangle3.html#ab8acc737daee81c23b3bb48b792b2125',1,'sinen::Triangle3::get_barycentric()']]],
+  ['get_5fcentroid_129',['get_centroid',['../structsinen_1_1_triangle2.html#a8484d206810dcd4291527952f4961347',1,'sinen::Triangle2::get_centroid()'],['../structsinen_1_1_triangle3.html#acf090e58c7944bd6f735f3a0c1398e7a',1,'sinen::Triangle3::get_centroid()']]],
+  ['get_5fend_5fpoint_130',['get_end_point',['../structsinen_1_1_ray2.html#a515a12b4574774dbadc5cac53a028ca5',1,'sinen::Ray2::get_end_point()'],['../structsinen_1_1_ray3.html#a34b6160da864b6fe24fa45819255a22d',1,'sinen::Ray3::get_end_point()'],['../structsinen_1_1_segment3.html#afd3f9b91cae6b34d4612dede9c95ee50',1,'sinen::Segment3::get_end_point()'],['../structsinen_1_1_segment2.html#af01c48b9bcc5d58da1bf3f1ec2d53a6e',1,'sinen::Segment2::get_end_point()']]],
+  ['get_5fnormal_131',['get_normal',['../structsinen_1_1_triangle2.html#a5cad26f99eebf0ec86b7723a7f5c2ea7',1,'sinen::Triangle2::get_normal()'],['../structsinen_1_1_triangle3.html#abc3559eeb63053f0ed443d5cd09dcda5',1,'sinen::Triangle3::get_normal()']]],
+  ['getclearcolor_132',['getClearColor',['../classsinen_1_1_graphics.html#ae50b1c5f12a3c5877cbe9f597afc22ba',1,'sinen::Graphics']]],
+  ['getfunctiontime_133',['getFunctionTime',['../classsinen_1_1_time.html#afda62e381f93c808e472a4c6ebae6f78',1,'sinen::Time']]],
+  ['getimguifunction_134',['getImGuiFunction',['../classsinen_1_1_graphics.html#a2226c0e3ce9c814584b7cb28aabbd867',1,'sinen::Graphics']]],
+  ['getmaker_135',['getMaker',['../classsinen_1_1_stack_allocator.html#a62561c233da66f15512f4a6a02323b5a',1,'sinen::StackAllocator']]],
+  ['getname_136',['getName',['../classsinen_1_1_window.html#a69fa744b1deebf434b5dc02322f1e766',1,'sinen::Window']]],
+  ['getposition_137',['getPosition',['../classsinen_1_1_camera.html#a828fe47960d9c52ad2eaeea88745d86a',1,'sinen::Camera']]],
+  ['getprojection_138',['getProjection',['../classsinen_1_1_camera.html#a67a716eeef7e005d7abc890747f5ac3d',1,'sinen::Camera']]],
+  ['getsdlwindow_139',['getSDLWindow',['../classsinen_1_1_window.html#a2f1e61d0a7e8dcde49158569cfc69495',1,'sinen::Window']]],
+  ['gettarget_140',['getTarget',['../classsinen_1_1_camera.html#afc8d589347bb935fd7f896094eed2ec2',1,'sinen::Camera']]],
+  ['getup_141',['getUp',['../classsinen_1_1_camera.html#a6d1f71dc6bbb35548aa3042bc8e9ceef',1,'sinen::Camera']]],
+  ['getview_142',['getView',['../classsinen_1_1_camera.html#a785745d0f972d7bd6f4b5d4c6b56a475',1,'sinen::Camera']]],
+  ['graphics_143',['Graphics',['../classsinen_1_1_graphics.html',1,'sinen']]],
+  ['graphicspipeline_144',['GraphicsPipeline',['../classsinen_1_1_graphics_pipeline.html',1,'sinen']]],
+  ['grave_145',['GRAVE',['../classsinen_1_1_key_input.html#aea839aa6e29f3458e323e4f47c74d2faa0454988b6250b7e13d8e9222e118c127',1,'sinen::KeyInput::GRAVE()'],['../classsinen_1_1_keyboard.html#a3a2960e843c339a773bf548902657dbaa0454988b6250b7e13d8e9222e118c127',1,'sinen::Keyboard::GRAVE()']]],
+  ['greater_146',['GREATER',['../classsinen_1_1_key_input.html#aea839aa6e29f3458e323e4f47c74d2faae7e72355289e404b762d4cf88824d23b',1,'sinen::KeyInput']]],
+  ['grid_147',['Grid',['../classsinen_1_1_grid.html#a32ec3a41a918b071bca58a3c5554969b',1,'sinen::Grid::Grid(std::size_t width, std::size_t height)'],['../classsinen_1_1_grid.html#afc0e03f4ab6458c00d1e5fa4d5d987c7',1,'sinen::Grid::Grid(std::size_t width, std::size_t height, const T &amp;value)'],['../classsinen_1_1_grid.html#a1295abe72f5012c7aa0e917e42b13e40',1,'sinen::Grid::Grid(std::initializer_list&lt; std::initializer_list&lt; T &gt;&gt; list)'],['../classsinen_1_1_grid.html#a9c7d500f9be2a928c496f0e948593efc',1,'sinen::Grid::Grid()'],['../classsinen_1_1_grid.html',1,'sinen::Grid&lt; T, Allocator &gt;']]],
+  ['grid_3c_20int_20_3e_148',['Grid&lt; int &gt;',['../classsinen_1_1_grid.html',1,'sinen']]]
+];

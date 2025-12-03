@@ -155,7 +155,6 @@ void MainSystem::update_scene() {
     ScriptSystem::UpdateScene();
   }
   PhysicsSystem::Update();
-  AudioSystem::update(deltaTime);
 }
 void MainSystem::shutdown() { m_game_state = State::quit; }
 

@@ -208,10 +208,19 @@ bool LuaScript::Initialize() {
     v["load"] = &Sound::load;
     v["loadFromPath"] = &Sound::loadFromPath;
     v["play"] = &Sound::play;
+    v["restart"] = &Sound::restart;
+    v["stop"] = &Sound::stop;
+    v["setLooping"] = &Sound::setLooping;
     v["setVolume"] = &Sound::setVolume;
     v["setPitch"] = &Sound::setPitch;
-    v["setListener"] = &Sound::setListener;
     v["setPosition"] = &Sound::setPosition;
+    v["setDirection"] = &Sound::setDirection;
+    v["isPlaying"] = &Sound::isPlaying;
+    v["isLooping"] = &Sound::isLooping;
+    v["getVolume"] = &Sound::getVolume;
+    v["getPitch"] = &Sound::getPitch;
+    v["getPosition"] = &Sound::getPosition;
+    v["getDirection"] = &Sound::getDirection;
   }
   {
     auto v = lua.new_usertype<Camera>("Camera");

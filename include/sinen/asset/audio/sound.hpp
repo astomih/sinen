@@ -32,45 +32,28 @@ public:
    */
   void load(std::string_view fileName);
   void loadFromPath(std::string_view path);
-  /**
-   * @brief Create the source
-   *
-   */
-  void newSource();
-  /**
-   * @brief Delete the source
-   *
-   */
-  void deleteSource();
-  void play();
-  bool isValid();
+  void play() const;
   // Restart event from begining
-  void restart();
+  void restart() const;
   // Stop this event
-  void stop(bool allowFadeOut = true);
+  void stop() const;
   // Setters
-  void setPaused(bool pause);
-  void setVolume(float value);
-  void setPitch(float value);
-  void setPosition(glm::vec3 pos);
+  void setLooping(bool looping) const;
+  void setVolume(float value) const;
+  void setPitch(float value) const;
+  void setPosition(const glm::vec3 &pos) const;
+  void setDirection(const glm::vec3 &dir) const;
   // Getters
-  bool getPaused();
-  float getVolume();
-  float getPitch();
-  std::string getName();
-  const glm::vec3 &getPosition();
-
-  void setListener(glm::vec3 pos, glm::vec3 direction);
+  bool isPlaying() const;
+  bool isLooping() const;
+  float getVolume() const;
+  float getPitch() const;
+  glm::vec3 getPosition() const;
+  glm::vec3 getDirection() const;
 
 private:
-  std::string mName;
   struct Data;
   std::unique_ptr<Data> data;
-  float volume = 1.f;
-  float pitch = 1.f;
-  glm::vec3 pos;
-  bool isPlaying = true;
-  bool isPaused = false;
 };
 } // namespace sinen
 #endif // !SINEN_SOUND_HPP

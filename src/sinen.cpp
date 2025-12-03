@@ -28,7 +28,11 @@ namespace sinen {
 bool Sinen::initialize(int argc, char *argv[]) {
   SDL_SetHint(SDL_HINT_APP_NAME, "Sinen");
   SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1");
-  SDL_Init(SDL_INIT_EVENTS);
+  SDL_InitFlags initFlags = SDL_INIT_AUDIO | SDL_INIT_EVENTS;
+  if (!SDL_Init(initFlags)) {
+    Logger::critical("Failed to initialize SDL");
+    return false;
+  }
   WindowSystem::initialize("Sinen");
   GraphicsSystem::initialize();
   if (!AudioSystem::initialize()) {

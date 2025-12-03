@@ -1,10 +1,14 @@
 // internal
 #include "audio_system.hpp"
 #include <asset/audio/sound.hpp>
+#include <core/io/asset_io.hpp>
 
 // external
 #include "glm/ext/quaternion_trigonometric.hpp"
 #include "glm/ext/vector_float3.hpp"
+#if 1
+#define MINIAUDIO_IMPLEMENTATION
+#endif
 #include <miniaudio.h>
 
 namespace sinen {
@@ -16,46 +20,55 @@ Sound::~Sound() { ma_sound_uninit(&data->sound); }
 
 void Sound::load(std::string_view fileName) {
   data = std::make_unique<Data>();
-  AudioSystem::load(&data->sound, fileName);
+  auto path = AssetIO::getFilePath(AssetType::Sound, fileName);
+  ma_sound_init_from_file(AudioSystem::getEngine(), path.c_str(),
+                          MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC, nullptr,
+                          nullptr, &data->sound);
 }
-void Sound::loadFromPath(std::string_view path) {}
-void Sound::play() {
-  ma_sound_stop(&data->sound);
-  ma_sound_start(&data->sound);
+void Sound::loadFromPath(std::string_view path) {
+  data = std::make_unique<Data>();
+  ma_sound_init_from_file(AudioSystem::getEngine(), path.data(),
+                          MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC, nullptr,
+                          nullptr, &data->sound);
 }
-void Sound::newSource() {}
-void Sound::setListener(glm::vec3 pos, glm::vec3 rotation) {
-  glm::quat q = glm::angleAxis(rotation.z, glm::vec3(0, 0, -1));
-  q = q * glm::angleAxis(rotation.y, glm::vec3(0, 1, 0));
-  q = q * glm::angleAxis(rotation.x, glm::vec3(1, 0, 0));
+void Sound::play() const { ma_sound_start(&data->sound); }
 
-  AudioSystem::setListener(pos, q);
-}
-void Sound::deleteSource() {}
-bool Sound::isValid() {
-  return AudioSystem::get_buffers().contains(mName.data());
+void Sound::restart() const {
+  ma_data_source_seek_to_pcm_frame(data->sound.pDataSource, 0);
 }
 
-void Sound::restart() {}
+void Sound::stop() const { ma_sound_stop(&data->sound); }
+void Sound::setLooping(bool looping) const {
+  ma_sound_set_looping(&data->sound, looping);
+}
 
-void Sound::stop(bool allowFadeOut /* true */) {}
+void Sound::setVolume(float value) const {
+  ma_sound_set_volume(&data->sound, value);
+}
 
-void Sound::setPaused(bool pause) {}
+void Sound::setPitch(float value) const {
+  ma_sound_set_pitch(&data->sound, value);
+}
 
-void Sound::setVolume(float value) {}
+void Sound::setPosition(const glm::vec3 &pos) const {
+  ma_sound_set_position(&data->sound, pos.x, pos.y, pos.z);
+}
+void Sound::setDirection(const glm::vec3 &dir) const {
+  ma_sound_set_direction(&data->sound, dir.x, dir.y, dir.z);
+}
+bool Sound::isPlaying() const { return ma_sound_is_playing(&data->sound); }
+bool Sound::isLooping() const { return ma_sound_is_looping(&data->sound); }
 
-void Sound::setPitch(float value) {}
+float Sound::getVolume() const { return ma_sound_get_volume(&data->sound); }
 
-void Sound::setPosition(glm::vec3 pos) {}
+float Sound::getPitch() const { return ma_sound_get_pitch(&data->sound); }
 
-bool Sound::getPaused() { return isPaused; }
-
-float Sound::getVolume() { return volume; }
-
-float Sound::getPitch() { return pitch; }
-
-const glm::vec3 &Sound::getPosition() { return pos; }
-
-std::string Sound::getName() { return mName; }
-
+glm::vec3 Sound::getPosition() const {
+  auto temp = ma_sound_get_position(&data->sound);
+  return {temp.x, temp.y, temp.z};
+}
+glm::vec3 Sound::getDirection() const {
+  auto temp = ma_sound_get_direction(&data->sound);
+  return {temp.x, temp.y, temp.z};
+}
 } // namespace sinen

@@ -60,11 +60,11 @@ bool LuaScript::Initialize() {
       if (path.find_last_of('/') != std::string::npos) {
         cwd += "/" + path.substr(0, path.find_last_of('/'));
       }
-      std::string header = "local __CWD__ = '" + cwd + "';" +
+      std::string header = "local __CWD__ = '" + cwd + "'" +
                            "local function require(module)"
                            "    __CWD_global__ = __CWD__"
-                           "    return __original_require(module, __CWD__);"
-                           "end;";
+                           "    return __original_require(module, __CWD__) "
+                           "end ";
       auto str =
           AssetIO::openAsString(AssetType::Script, base + "/" + path + ".lua");
       return state.require_script(base + "/" + path, header + str);
@@ -641,10 +641,10 @@ void LuaScript::Finalize() {
 
 void LuaScript::RunScene(const std::string_view source) {
   std::string cwd = ".";
-  std::string header = "local __CWD__ = '" + cwd + "' ;" +
-                       "local function require(module) ;"
-                       "    return __original_require(module, __CWD__) ;"
-                       "end ;";
+  std::string header = "local __CWD__ = '" + cwd + "' " +
+                       "local function require(module) "
+                       "    return __original_require(module, __CWD__) "
+                       "end ";
 
   std::string final = header + std::string(source);
 

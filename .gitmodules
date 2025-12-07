@@ -40,3 +40,6 @@
 [submodule "libs/miniaudio"]
 	path = libs/miniaudio
 	url = https://github.com/mackron/miniaudio
+[submodule "luajit"]
+	path = libs/LuaJIT
+	url = https://github.com/WohlSoft/LuaJIT

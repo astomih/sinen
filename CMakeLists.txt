@@ -15,6 +15,14 @@ add_subdirectory(${SINEN_SOURCE_DIR}/libs/paranoixa EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/zep EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/sol2 EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/JoltPhysics/Build EXCLUDE_FROM_ALL)
+if(NOT EMSCRIPTEN)
+    add_subdirectory(${SINEN_SOURCE_DIR}/libs/LuaJIT EXCLUDE_FROM_ALL)
+    if(MSVC)
+      target_compile_definitions(libluajit PRIVATE _CRT_SECURE_NO_WARNINGS)
+      target_compile_definitions(minilua PRIVATE _CRT_SECURE_NO_WARNINGS)
+      target_compile_definitions(buildvm PRIVATE _CRT_SECURE_NO_WARNINGS)
+    endif()
+endif()
 option(SINEN_USE_SLANG "Use Slang for shader compilation" ON)
 
 if (SINEN_USE_SLANG)
@@ -31,9 +39,13 @@ file(
         GLOB_RECURSE
         SINEN_SOURCE_FILES
         ${SINEN_SOURCE_DIR}/src/*.cpp
-        ${SINEN_SOURCE_DIR}/libs/lua/onelua.c
         ${SINEN_SOURCE_DIR}/libs/tinyexr/deps/miniz/miniz.c
 )
+if(EMSCRIPTEN)
+    list(APPEND 
+        SINEN_SOURCE_FILES 
+        ${SINEN_SOURCE_DIR}/libs/lua/onelua.c)
+endif()
 file(
         GLOB_RECURSE
         SINEN_HEADER_FILES
@@ -64,6 +76,10 @@ set(SINEN_LINK_LIBRARIES
 if (SINEN_USE_SLANG)
     list(APPEND SINEN_LINK_LIBRARIES slang)
 endif ()
+
+if(NOT EMSCRIPTEN)
+    list(APPEND SINEN_LINK_LIBRARIES libluajit)
+endif()
 
 if (ANDROID)
     find_library(ANDROID_LIB android)

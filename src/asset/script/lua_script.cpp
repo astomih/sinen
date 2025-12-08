@@ -114,16 +114,6 @@ bool LuaScript::Initialize() {
     };
   }
   {
-    auto v = lua.new_usertype<glm::ivec3>(
-        "Vec3i",
-        sol::constructors<sol::types<int, int, int>, sol::types<int>>());
-    v["x"] = &glm::ivec3::x;
-    v["y"] = &glm::ivec3::y;
-    v["z"] = &glm::ivec3::z;
-    v["__add"] = [](const glm::ivec3 &a, const glm::ivec3 &b) { return a + b; };
-    v["__sub"] = [](const glm::ivec3 &a, const glm::ivec3 &b) { return a - b; };
-  }
-  {
     auto v = lua.new_usertype<glm::vec2>(
         "Vec2",
         sol::constructors<sol::types<float, float>, sol::types<float>>());
@@ -145,14 +135,6 @@ bool LuaScript::Initialize() {
     v["reflect"] = [](const glm::vec2 &v, const glm::vec2 &n) {
       return glm::reflect(v, n);
     };
-  }
-  {
-    auto v = lua.new_usertype<glm::ivec2>(
-        "Vec2i", sol::constructors<sol::types<int, int>, sol::types<int>>());
-    v["x"] = &glm::ivec2::x;
-    v["y"] = &glm::ivec2::y;
-    v["__add"] = [](const glm::ivec2 &a, const glm::ivec2 &b) { return a + b; };
-    v["__sub"] = [](const glm::ivec2 &a, const glm::ivec2 &b) { return a - b; };
   }
   {
     auto v = lua.new_usertype<Color>(
@@ -368,13 +350,13 @@ bool LuaScript::Initialize() {
         "BFSGrid", sol::constructors<sol::types<const Grid<int> &>>());
     v["width"] = &BFSGrid::width;
     v["height"] = &BFSGrid::height;
-    v["findPath"] = [](BFSGrid &g, const glm::ivec2 &start,
-                       const glm::ivec2 &end) {
+    v["findPath"] = [](BFSGrid &g, const glm::vec2 &start,
+                       const glm::vec2 &end) {
       return g.findPath({start.x - 1, start.y - 1}, {end.x - 1, end.y - 1});
     };
     v["trace"] = [](BFSGrid &g) {
       auto t = g.trace();
-      return glm::ivec2{t.x + 1, t.y + 1};
+      return glm::vec2{t.x + 1, t.y + 1};
     };
     v["traceable"] = &BFSGrid::traceable;
     v["reset"] = &BFSGrid::reset;

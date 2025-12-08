@@ -21,16 +21,6 @@ sn = {
     ---@operator div(sn.Vec3): sn.Vec3
     Vec3 = {},
 
-    ---@class sn.Vec3i
-    ---@field x integer
-    ---@field y integer
-    ---@field z integer
-    ---@field new fun(x: integer, y: integer, z: integer): sn.Vec3i
-    ---@field new fun(value: integer): sn.Vec3i
-    ---@operator add(sn.Vec3i): sn.Vec3i
-    ---@operator sub(sn.Vec3i): sn.Vec3i
-    Vec3i = {},
-
     ---@class sn.Vec2
     ---@field x number
     ---@field y number
@@ -47,15 +37,6 @@ sn = {
     ---@operator mul(sn.Vec2): sn.Vec2
     ---@operator div(sn.Vec2): sn.Vec2
     Vec2 = {},
-
-    ---@class sn.Vec2i
-    ---@field x integer
-    ---@field y integer
-    ---@field new fun(x: integer, y: integer): sn.Vec2i
-    ---@field new fun(value: integer): sn.Vec2i
-    ---@operator add(sn.Vec2i): sn.Vec2i
-    ---@operator sub(sn.Vec2i): sn.Vec2i
-    Vec2i = {},
 
     ---@class sn.Texture
     ---@field new fun(): sn.Texture
@@ -225,7 +206,7 @@ sn = {
     ---@field new fun(grid: sn.Grid): sn.BFSGrid
     ---@field width fun(self: sn.BFSGrid): integer
     ---@field height fun(self: sn.BFSGrid): integer
-    ---@field findPath fun(self: sn.BFSGrid, start: sn.Vec2i, end_: sn.Vec2i): any
+    ---@field findPath fun(self: sn.BFSGrid, start: sn.Vec2, end_: sn.Vec2): any
     ---@field trace fun(self: sn.BFSGrid): sn.Vec2
     ---@field traceable fun(self: sn.BFSGrid): boolean
     ---@field reset fun(self: sn.BFSGrid)

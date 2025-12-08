@@ -61,20 +61,22 @@ camera:perspective(70, 16.0 / 9.0, 0.1, 100)
 camera:lookat(sn.Vec3.new(0, 1, 5), sn.Vec3.new(0), sn.Vec3.new(0, 1, 0))
 
 function Update()
-
+    if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
+        sn.Script.load("main", ".")
+    end
 end
 
 function Draw()
-  sn.Graphics.bindPipeline(depthPipeline)
-  sn.Graphics.setRenderTarget(depthRenderTexture)
-  sn.Graphics.setCamera(shadowCamera)
-  sn.Graphics.drawModel(model, transform1, modelMaterial)
-  sn.Graphics.drawModel(floor, transform2, floorMaterial)
-  sn.Graphics.flush()
-  sn.Graphics.readbackTexture(depthRenderTexture, depthTexture)
-  sn.Graphics.bindPipeline(pipeline)
-  sn.Graphics.setCamera(camera)
-  sn.Graphics.setUniformData(1, uniformData)
-  sn.Graphics.drawModel(model, transform1, modelMaterial)
-  sn.Graphics.drawModel(floor, transform2, floorMaterial)
+    sn.Graphics.bindPipeline(depthPipeline)
+    sn.Graphics.setRenderTarget(depthRenderTexture)
+    sn.Graphics.setCamera(shadowCamera)
+    sn.Graphics.drawModel(model, transform1, modelMaterial)
+    sn.Graphics.drawModel(floor, transform2, floorMaterial)
+    sn.Graphics.flush()
+    sn.Graphics.readbackTexture(depthRenderTexture, depthTexture)
+    sn.Graphics.bindPipeline(pipeline)
+    sn.Graphics.setCamera(camera)
+    sn.Graphics.setUniformData(1, uniformData)
+    sn.Graphics.drawModel(model, transform1, modelMaterial)
+    sn.Graphics.drawModel(floor, transform2, floorMaterial)
 end

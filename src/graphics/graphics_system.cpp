@@ -4,13 +4,13 @@
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 
+#include "imgui_backend/imgui_impl_paranoixa.hpp"
 #include <asset/model/mesh.hpp>
 #include <asset/texture/render_texture.hpp>
 #include <cassert>
 #include <core/io/asset_io.hpp>
 #include <core/logger/logger.hpp>
 #include <graphics/graphics.hpp>
-#include <imgui_impl_paranoixa.hpp>
 #include <memory>
 #include <platform/window/window.hpp>
 
@@ -22,7 +22,7 @@
 #include "../main_system.hpp"
 #include "../platform/window/window_system.hpp"
 #include "imgui_internal.h"
-#include "paranoixa/paranoixa.hpp"
+#include <graphics/paranoixa/paranoixa.hpp>
 
 namespace sinen {
 void setFullWindowViewport(const px::Ptr<px::RenderPass> &renderPass) {

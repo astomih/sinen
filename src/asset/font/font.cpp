@@ -7,12 +7,12 @@
 
 // internal
 #include "../texture/texture_data.hpp"
-#include "paranoixa/paranoixa.hpp"
 #include <asset/font/font.hpp>
 #include <asset/model/mesh.hpp>
 #include <asset/texture/texture.hpp>
 #include <core/io/asset_io.hpp>
 #include <core/logger/logger.hpp>
+#include <graphics/paranoixa/paranoixa.hpp>
 #include <math/color/color.hpp>
 
 // external

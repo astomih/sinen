@@ -2,7 +2,7 @@
 #define SINEN_CUBEMAP_HPP
 #include <string_view>
 
-#include <paranoixa/paranoixa.hpp>
+#include <graphics/paranoixa/paranoixa.hpp>
 
 namespace sinen {
 class Cubemap {

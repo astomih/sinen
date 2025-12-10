@@ -2,8 +2,8 @@
 #define SINEN_TEXTURE_TEXTURE_CONTAINER_HPP
 
 #include <SDL3/SDL.h>
+#include <graphics/paranoixa/paranoixa.hpp>
 #include <memory>
-#include <paranoixa/paranoixa.hpp>
 #include <unordered_map>
 
 namespace sinen {

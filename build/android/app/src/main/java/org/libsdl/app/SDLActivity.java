@@ -298,6 +298,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             "Jolt",
             "slang",
             "miniz",
+            "luajit",
             "sinen"
         };
     }

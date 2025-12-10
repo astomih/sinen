@@ -1,6 +1,6 @@
 #ifndef SINEN_SHADER_HPP
 #define SINEN_SHADER_HPP
-#include <paranoixa/paranoixa.hpp>
+#include <graphics/paranoixa/paranoixa.hpp>
 
 #include <memory>
 #include <string>

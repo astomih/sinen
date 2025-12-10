@@ -1,9 +1,6 @@
 #ifndef SINEN_HPP
 #define SINEN_HPP
 
-// RHI
-#include <paranoixa/paranoixa.hpp>
-
 // Asset
 #include "asset/asset.hpp"
 

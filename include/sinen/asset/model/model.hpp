@@ -10,7 +10,7 @@
 #include "mesh.hpp"
 #include <asset/texture/material.hpp>
 
-#include <paranoixa/paranoixa.hpp>
+#include <graphics/paranoixa/paranoixa.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>

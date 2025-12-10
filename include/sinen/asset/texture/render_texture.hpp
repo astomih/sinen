@@ -1,6 +1,6 @@
 #ifndef SINEN_RENDER_TEXTURE_HPP
 #define SINEN_RENDER_TEXTURE_HPP
-#include <paranoixa/paranoixa.hpp>
+#include <graphics/paranoixa/paranoixa.hpp>
 namespace sinen {
 class RenderTexture {
 public:

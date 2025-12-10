@@ -5,30 +5,38 @@ project(sinen)
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(SINEN_SOURCE_DIR ${CMAKE_SOURCE_DIR})
+if (NOT EMSCRIPTEN)
+    find_package(Vulkan REQUIRED)
+endif ()
 
 include(${SINEN_SOURCE_DIR}/cmake/extlibs_settings.cmake)
 include(${SINEN_SOURCE_DIR}/cmake/include_dir.cmake)
 
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/assimp EXCLUDE_FROM_ALL)
-add_subdirectory(${SINEN_SOURCE_DIR}/libs/paranoixa EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/zep EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/sol2 EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/JoltPhysics/Build EXCLUDE_FROM_ALL)
-if(NOT EMSCRIPTEN)
+if (WIN32)
+    set(CMAKE_FOLDER "webgpu")
+    add_subdirectory(${SINEN_SOURCE_DIR}/libs/WebGPU-distribution EXCLUDE_FROM_ALL)
+    unset(CMAKE_FOLDER)
+endif ()
+if (NOT EMSCRIPTEN)
     add_subdirectory(${SINEN_SOURCE_DIR}/libs/LuaJIT EXCLUDE_FROM_ALL)
-    if(MSVC)
-      target_compile_definitions(libluajit PRIVATE _CRT_SECURE_NO_WARNINGS)
-      target_compile_definitions(minilua PRIVATE _CRT_SECURE_NO_WARNINGS)
-      target_compile_definitions(buildvm PRIVATE _CRT_SECURE_NO_WARNINGS)
-    endif()
-endif()
+    if (MSVC)
+        target_compile_definitions(libluajit PRIVATE _CRT_SECURE_NO_WARNINGS)
+        target_compile_definitions(minilua PRIVATE _CRT_SECURE_NO_WARNINGS)
+        target_compile_definitions(buildvm PRIVATE _CRT_SECURE_NO_WARNINGS)
+    endif ()
+endif ()
 option(SINEN_USE_SLANG "Use Slang for shader compilation" ON)
 
 if (SINEN_USE_SLANG)
     add_subdirectory(${SINEN_SOURCE_DIR}/libs/slang EXCLUDE_FROM_ALL)
 endif ()
 
+set(CMAKE_CXX_FLAGS "-DIMGUI_IMPL_VULKAN_NO_PROTOTYPES -DIMGUI_IMPL_WEBGPU_BACKEND_WGPU")
 if (MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
 else ()
@@ -40,12 +48,34 @@ file(
         SINEN_SOURCE_FILES
         ${SINEN_SOURCE_DIR}/src/*.cpp
         ${SINEN_SOURCE_DIR}/libs/tinyexr/deps/miniz/miniz.c
+        ${SINEN_SOURCE_DIR}/libs/tlsf/tlsf.c
+
+        ${SINEN_SOURCE_DIR}/libs/imgui/imgui.cpp
+        ${SINEN_SOURCE_DIR}/libs/imgui/imgui_demo.cpp
+        ${SINEN_SOURCE_DIR}/libs/imgui/imgui_draw.cpp
+        ${SINEN_SOURCE_DIR}/libs/imgui/imgui_tables.cpp
+        ${SINEN_SOURCE_DIR}/libs/imgui/imgui_widgets.cpp
+        ${SINEN_SOURCE_DIR}/libs/imgui/backends/imgui_impl_sdl3.cpp
 )
-if(EMSCRIPTEN)
-    list(APPEND 
-        SINEN_SOURCE_FILES 
-        ${SINEN_SOURCE_DIR}/libs/lua/onelua.c)
-endif()
+if (NOT ANDROID)
+    list(APPEND
+            SINEN_SOURCE_FILES
+            ${SINEN_SOURCE_DIR}/libs/imgui/backends/imgui_impl_wgpu.cpp)
+endif ()
+if (WIN32)
+    list(APPEND
+            SINEN_SOURCE_FILES
+            ${SINEN_SOURCE_DIR}/libs/imgui/backends/imgui_impl_dx12.cpp)
+endif ()
+if (EMSCRIPTEN)
+    list(APPEND
+            SINEN_SOURCE_FILES
+            ${SINEN_SOURCE_DIR}/libs/lua/onelua.c)
+else ()
+    list(APPEND
+            SINEN_SOURCE_FILES
+            ${SINEN_SOURCE_DIR}/libs/imgui/backends/imgui_impl_vulkan.cpp)
+endif ()
 file(
         GLOB_RECURSE
         SINEN_HEADER_FILES
@@ -65,8 +95,6 @@ target_include_directories(
         sinen PUBLIC ${SINEN_INCLUDE_DIRS} ${SDL3_INCLUDE_PATHS})
 
 set(SINEN_LINK_LIBRARIES
-        paranoixa
-        paranoixa_imgui_backend
         SDL3::SDL3
         assimp
         Zep::Zep
@@ -77,13 +105,21 @@ if (SINEN_USE_SLANG)
     list(APPEND SINEN_LINK_LIBRARIES slang)
 endif ()
 
-if(NOT EMSCRIPTEN)
+if (NOT EMSCRIPTEN)
     list(APPEND SINEN_LINK_LIBRARIES libluajit)
-endif()
+endif ()
+
+if (WIN32)
+    list(APPEND SINEN_LINK_LIBRARIES d3d12)
+    list(APPEND SINEN_LINK_LIBRARIES dxgi)
+endif ()
 
 if (ANDROID)
     find_library(ANDROID_LIB android)
     list(APPEND SINEN_LINK_LIBRARIES ${ANDROID_LIB})
+else ()
+    target_copy_webgpu_binaries(sinen)
+    list(APPEND SINEN_LINK_LIBRARIES webgpu)
 endif ()
 
 target_link_libraries(

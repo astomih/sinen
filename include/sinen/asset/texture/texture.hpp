@@ -1,7 +1,7 @@
 #ifndef SINEN_TEXTURE_HPP
 #define SINEN_TEXTURE_HPP
 #include "../../math/color/color.hpp"
-#include "paranoixa/paranoixa.hpp"
+#include <graphics/paranoixa/paranoixa.hpp>
 
 #include <memory>
 #include <string>

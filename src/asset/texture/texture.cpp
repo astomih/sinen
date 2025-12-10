@@ -12,7 +12,7 @@
 
 #include "texture_data.hpp"
 
-#include <paranoixa/paranoixa.hpp>
+#include <graphics/paranoixa/paranoixa.hpp>
 
 namespace sinen {
 Texture::Texture() { this->texture = nullptr; }

@@ -1,17 +1,17 @@
 // internal
 #include "../../graphics/graphics_system.hpp"
-#include "libs/paranoixa/library/SDL/include/SDL3/SDL_iostream.h"
 #include <asset/shader/shader.hpp>
 #include <core/io/asset_io.hpp>
 #include <core/io/asset_type.hpp>
-
-#include <SDL3/SDL.h>
 
 #include "rt_shader_compiler.hpp"
 
 #include "default/shader.frag.spv.hpp"
 #include "default/shader.vert.spv.hpp"
 #include "default/shader_instance.vert.spv.hpp"
+
+// external
+#include <SDL3/SDL.h>
 
 namespace sinen {
 void Shader::loadDefaultVertexShader() {

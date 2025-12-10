@@ -1,6 +1,3 @@
-[submodule "libs/paranoixa"]
-	path = libs/paranoixa
-	url = https://github.com/astomih/paranoixa
 [submodule "libs/SDL"]
 	path = libs/SDL
 	url = https://github.com/libsdl-org/SDL
@@ -43,3 +40,15 @@
 [submodule "luajit"]
 	path = libs/LuaJIT
 	url = https://github.com/WohlSoft/LuaJIT
+[submodule "libs/WebGPU-distribution"]
+	path = libs/WebGPU-distribution
+	url = https://github.com/eliemichel/WebGPU-distribution
+[submodule "libs/tlsf"]
+	path = libs/tlsf
+	url = https://github.com/mattconte/tlsf
+[submodule "libs/volk"]
+	path = libs/volk
+	url = https://github.com/zeux/volk
+[submodule "libs/VulkanMemoryAllocator"]
+	path = libs/VulkanMemoryAllocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator

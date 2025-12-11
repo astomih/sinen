@@ -1,6 +1,6 @@
 #include "std_allocator.hpp"
 
-namespace paranoixa {
+namespace sinen::rhi {
 StdAllocator::StdAllocator(const std::size_t &size) {}
 
 StdAllocator::~StdAllocator() {}
@@ -12,4 +12,4 @@ void StdAllocator::do_deallocate(void *ptr, std::size_t size,
                                  std::size_t alignment) {
   std::pmr::get_default_resource()->deallocate(ptr, size, alignment);
 }
-} // namespace paranoixa
+} // namespace sinen::rhi

@@ -4,7 +4,7 @@
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 
-#include "imgui_backend/imgui_impl_paranoixa.hpp"
+#include "imgui_backend/imgui_impl_sinen.hpp"
 #include <asset/model/mesh.hpp>
 #include <asset/texture/render_texture.hpp>
 #include <cassert>
@@ -22,10 +22,10 @@
 #include "../main_system.hpp"
 #include "../platform/window/window_system.hpp"
 #include "imgui_internal.h"
-#include <graphics/paranoixa/paranoixa.hpp>
+#include <graphics/rhi/rhi.hpp>
 
 namespace sinen {
-void setFullWindowViewport(const px::Ptr<px::RenderPass> &renderPass) {
+void setFullWindowViewport(const rhi::Ptr<rhi::RenderPass> &renderPass) {
   Rect rect;
   // SDL_Rect safeArea;
   // SDL_GetWindowSafeArea(WindowSystem::get_sdl_window(), &safeArea);
@@ -34,7 +34,7 @@ void setFullWindowViewport(const px::Ptr<px::RenderPass> &renderPass) {
   rect.width = Window::size().x;
   rect.height = Window::size().y;
 
-  px::Viewport viewport{};
+  rhi::Viewport viewport{};
   viewport.x = rect.x;
   viewport.y = rect.y;
   viewport.width = rect.width;
@@ -59,8 +59,8 @@ void GraphicsSystem::initialize() {
     c.perspective(90.f, Window::size().x / Window::size().y, .1f, 100.f);
     return c;
   }();
-  backend = px::Paranoixa::CreateBackend(allocator, px::GraphicsAPI::SDLGPU);
-  px::Device::CreateInfo info{};
+  backend = rhi::Paranoixa::CreateBackend(allocator, rhi::GraphicsAPI::SDLGPU);
+  rhi::Device::CreateInfo info{};
   info.allocator = allocator;
   info.debugMode = true;
   device = backend->CreateDevice(info);
@@ -85,7 +85,7 @@ void GraphicsSystem::initialize() {
   init_info.Allocator = allocator;
   init_info.Device = device;
   init_info.ColorTargetFormat = device->GetSwapchainFormat();
-  init_info.MSAASamples = px::SampleCount::x1;
+  init_info.MSAASamples = rhi::SampleCount::x1;
   ImGui_ImplParanoixa_Init(&init_info);
 
   Shader vs;
@@ -114,38 +114,38 @@ void GraphicsSystem::initialize() {
 
   // Create depth stencil target
   {
-    px::Texture::CreateInfo depthStencilCreateInfo{};
+    rhi::Texture::CreateInfo depthStencilCreateInfo{};
     depthStencilCreateInfo.allocator = allocator;
     depthStencilCreateInfo.width = static_cast<uint32_t>(Window::size().x);
     depthStencilCreateInfo.height = static_cast<uint32_t>(Window::size().y);
     depthStencilCreateInfo.layerCountOrDepth = 1;
-    depthStencilCreateInfo.type = px::TextureType::Texture2D;
-    depthStencilCreateInfo.usage = px::TextureUsage::DepthStencilTarget;
-    depthStencilCreateInfo.format = px::TextureFormat::D32_FLOAT_S8_UINT;
+    depthStencilCreateInfo.type = rhi::TextureType::Texture2D;
+    depthStencilCreateInfo.usage = rhi::TextureUsage::DepthStencilTarget;
+    depthStencilCreateInfo.format = rhi::TextureFormat::D32_FLOAT_S8_UINT;
     depthStencilCreateInfo.numLevels = 1;
-    depthStencilCreateInfo.sampleCount = px::SampleCount::x1;
+    depthStencilCreateInfo.sampleCount = rhi::SampleCount::x1;
     depthTexture = device->CreateTexture(depthStencilCreateInfo);
   }
 
   // Default sampler
-  px::Sampler::CreateInfo samplerInfo{};
+  rhi::Sampler::CreateInfo samplerInfo{};
   samplerInfo.allocator = allocator;
-  samplerInfo.minFilter = px::Filter::Linear;
-  samplerInfo.magFilter = px::Filter::Linear;
-  samplerInfo.addressModeU = px::AddressMode::Repeat;
-  samplerInfo.addressModeV = px::AddressMode::Repeat;
+  samplerInfo.minFilter = rhi::Filter::Linear;
+  samplerInfo.magFilter = rhi::Filter::Linear;
+  samplerInfo.addressModeU = rhi::AddressMode::Repeat;
+  samplerInfo.addressModeV = rhi::AddressMode::Repeat;
   samplerInfo.maxAnisotropy = 1.f;
   sampler = device->CreateSampler(samplerInfo);
 
   colorTargets.push_back({});
   depthStencilInfo.texture = depthTexture;
-  depthStencilInfo.loadOp = px::LoadOp::Clear;
-  depthStencilInfo.storeOp = px::StoreOp::Store;
+  depthStencilInfo.loadOp = rhi::LoadOp::Clear;
+  depthStencilInfo.storeOp = rhi::StoreOp::Store;
   depthStencilInfo.clearDepth = 1.0f;
   depthStencilInfo.clearStencil = 0;
   depthStencilInfo.cycle = false;
-  depthStencilInfo.stencilLoadOp = px::LoadOp::Clear;
-  depthStencilInfo.stencilStoreOp = px::StoreOp::Store;
+  depthStencilInfo.stencilLoadOp = rhi::LoadOp::Clear;
+  depthStencilInfo.stencilStoreOp = rhi::StoreOp::Store;
   setupShapes();
 }
 
@@ -168,16 +168,16 @@ void GraphicsSystem::render() {
   colorTargets[0].texture = swapchainTexture;
   currentColorTargets = colorTargets;
   if (WindowSystem::resized()) {
-    px::Texture::CreateInfo depthStencilCreateInfo{};
+    rhi::Texture::CreateInfo depthStencilCreateInfo{};
     depthStencilCreateInfo.allocator = allocator;
     depthStencilCreateInfo.width = Window::size().x;
     depthStencilCreateInfo.height = Window::size().y;
     depthStencilCreateInfo.layerCountOrDepth = 1;
-    depthStencilCreateInfo.type = px::TextureType::Texture2D;
-    depthStencilCreateInfo.usage = px::TextureUsage::DepthStencilTarget;
-    depthStencilCreateInfo.format = px::TextureFormat::D32_FLOAT_S8_UINT;
+    depthStencilCreateInfo.type = rhi::TextureType::Texture2D;
+    depthStencilCreateInfo.usage = rhi::TextureUsage::DepthStencilTarget;
+    depthStencilCreateInfo.format = rhi::TextureFormat::D32_FLOAT_S8_UINT;
     depthStencilCreateInfo.numLevels = 1;
-    depthStencilCreateInfo.sampleCount = px::SampleCount::x1;
+    depthStencilCreateInfo.sampleCount = rhi::SampleCount::x1;
     depthTexture = device->CreateTexture(depthStencilCreateInfo);
     depthStencilInfo.texture = depthTexture;
   }
@@ -199,12 +199,12 @@ void GraphicsSystem::render() {
   ScriptSystem::DrawScene();
   if (drawCallCountPerFrame == 0) {
     // Clear screen
-    beginRenderPass(true, px::LoadOp::Clear);
+    beginRenderPass(true, rhi::LoadOp::Clear);
   }
   commandBuffer->EndRenderPass(currentRenderPass);
 
   if (showImGui) {
-    beginRenderPass(false, px::LoadOp::Load);
+    beginRenderPass(false, rhi::LoadOp::Load);
     // Render ImGui
     ImGui_ImplParanoixa_RenderDrawData(draw_data, commandBuffer,
                                        currentRenderPass);
@@ -214,9 +214,9 @@ void GraphicsSystem::render() {
   device->WaitForGPUIdle();
 }
 void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
-  auto vertexBufferBindings = px::Array<px::BufferBinding>{allocator};
-  auto indexBufferBinding = px::BufferBinding{};
-  auto textureSamplers = px::Array<px::TextureSamplerBinding>{allocator};
+  auto vertexBufferBindings = rhi::Array<rhi::BufferBinding>{allocator};
+  auto indexBufferBinding = rhi::BufferBinding{};
+  auto textureSamplers = rhi::Array<rhi::TextureSamplerBinding>{allocator};
   auto ratio = camera2D.windowRatio();
   glm::mat4 mat[3];
   std::vector<glm::mat4> instanceData;
@@ -260,7 +260,7 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
 
   for (const auto &texture : draw2D.material.getTextures()) {
     auto nativeTexture = texture.texture;
-    textureSamplers.push_back(px::TextureSamplerBinding{
+    textureSamplers.push_back(rhi::TextureSamplerBinding{
         .sampler = sampler, .texture = nativeTexture});
   }
 
@@ -269,25 +269,26 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
   assert(model.indexBuffer != nullptr);
 
   vertexBufferBindings.emplace_back(
-      px::BufferBinding{.buffer = model.vertexBuffer, .offset = 0});
+      rhi::BufferBinding{.buffer = model.vertexBuffer, .offset = 0});
   indexBufferBinding =
-      px::BufferBinding{.buffer = model.indexBuffer, .offset = 0};
+      rhi::BufferBinding{.buffer = model.indexBuffer, .offset = 0};
 
   auto commandBuffer = currentCommandBuffer;
   auto renderPass = currentRenderPass;
   renderPass->BindGraphicsPipeline(currentPipeline.get());
   renderPass->BindFragmentSamplers(0, textureSamplers);
   renderPass->BindVertexBuffers(0, vertexBufferBindings);
-  renderPass->BindIndexBuffer(indexBufferBinding, px::IndexElementSize::Uint32);
+  renderPass->BindIndexBuffer(indexBufferBinding,
+                              rhi::IndexElementSize::Uint32);
 
   commandBuffer->PushUniformData(0, &mat, sizeof(glm::mat4) * 3);
   renderPass->DrawIndexedPrimitives(model.getMesh().indexCount, 1, 0, 0, 0);
 }
 
 void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
-  auto vertexBufferBindings = px::Array<px::BufferBinding>{allocator};
-  auto indexBufferBinding = px::BufferBinding{};
-  auto textureSamplers = px::Array<px::TextureSamplerBinding>{allocator};
+  auto vertexBufferBindings = rhi::Array<rhi::BufferBinding>{allocator};
+  auto indexBufferBinding = rhi::BufferBinding{};
+  auto textureSamplers = rhi::Array<rhi::TextureSamplerBinding>{allocator};
   glm::mat4 mat[3];
   std::vector<glm::mat4> instanceData;
   {
@@ -331,31 +332,31 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
 
   for (const auto &texture : draw3D.material.getTextures()) {
     auto nativeTexture = texture.texture;
-    textureSamplers.push_back(px::TextureSamplerBinding{
+    textureSamplers.push_back(rhi::TextureSamplerBinding{
         .sampler = sampler, .texture = nativeTexture});
   }
 
   for (const auto &cubemap : draw3D.material.getCubemaps()) {
     auto nativeCubemap = cubemap.getNativeCubemap();
-    textureSamplers.push_back(px::TextureSamplerBinding{
+    textureSamplers.push_back(rhi::TextureSamplerBinding{
         .sampler = sampler, .texture = nativeCubemap});
   }
 
   auto instanceSize = sizeof(glm::mat4) * instanceData.size();
   bool isInstance = instanceSize > 0;
-  px::Ptr<px::Buffer> instanceBuffer = nullptr;
+  rhi::Ptr<rhi::Buffer> instanceBuffer = nullptr;
   if (isInstance) {
-    px::Buffer::CreateInfo instanceBufferInfo{};
+    rhi::Buffer::CreateInfo instanceBufferInfo{};
     instanceBufferInfo.allocator = allocator;
     instanceBufferInfo.size = instanceSize;
-    instanceBufferInfo.usage = px::BufferUsage::Vertex;
+    instanceBufferInfo.usage = rhi::BufferUsage::Vertex;
     instanceBuffer = device->CreateBuffer(instanceBufferInfo);
-    Ptr<px::TransferBuffer> transferBuffer;
+    Ptr<rhi::TransferBuffer> transferBuffer;
     {
-      px::TransferBuffer::CreateInfo info{};
+      rhi::TransferBuffer::CreateInfo info{};
       info.allocator = allocator;
       info.size = instanceSize;
-      info.usage = px::TransferBufferUsage::Upload;
+      info.usage = rhi::TransferBufferUsage::Upload;
       transferBuffer = device->CreateTransferBuffer(info);
       auto *pMapped = transferBuffer->Map(false);
       if (pMapped) {
@@ -364,16 +365,16 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
       transferBuffer->Unmap();
     }
     {
-      px::CommandBuffer::CreateInfo info{};
+      rhi::CommandBuffer::CreateInfo info{};
       info.allocator = allocator;
       auto commandBuffer = device->AcquireCommandBuffer(info);
       {
         auto copyPass = commandBuffer->BeginCopyPass();
         {
-          px::BufferTransferInfo src{};
+          rhi::BufferTransferInfo src{};
           src.offset = 0;
           src.transferBuffer = transferBuffer;
-          px::BufferRegion dst{};
+          rhi::BufferRegion dst{};
           dst.offset = 0;
           dst.size = instanceSize;
           dst.buffer = instanceBuffer;
@@ -387,27 +388,28 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
 
   const auto &model = draw3D.getModel();
   vertexBufferBindings.emplace_back(
-      px::BufferBinding{.buffer = model.vertexBuffer, .offset = 0});
+      rhi::BufferBinding{.buffer = model.vertexBuffer, .offset = 0});
   indexBufferBinding =
-      px::BufferBinding{.buffer = model.indexBuffer, .offset = 0};
+      rhi::BufferBinding{.buffer = model.indexBuffer, .offset = 0};
   if (isInstance) {
     vertexBufferBindings.emplace_back(
-        px::BufferBinding{.buffer = instanceBuffer, .offset = 0});
+        rhi::BufferBinding{.buffer = instanceBuffer, .offset = 0});
   }
   if (auto animationVertexBuffer = model.animationVertexBuffer) {
     vertexBufferBindings.emplace_back(
-        px::BufferBinding{.buffer = animationVertexBuffer, .offset = 0});
+        rhi::BufferBinding{.buffer = animationVertexBuffer, .offset = 0});
   }
   if (model.tangentBuffer) {
     vertexBufferBindings.emplace_back(
-        px::BufferBinding{.buffer = model.tangentBuffer, .offset = 0});
+        rhi::BufferBinding{.buffer = model.tangentBuffer, .offset = 0});
   }
   auto commandBuffer = currentCommandBuffer;
   auto renderPass = currentRenderPass;
   renderPass->BindGraphicsPipeline(currentPipeline.get());
   renderPass->BindFragmentSamplers(0, textureSamplers);
   renderPass->BindVertexBuffers(0, vertexBufferBindings);
-  renderPass->BindIndexBuffer(indexBufferBinding, px::IndexElementSize::Uint32);
+  renderPass->BindIndexBuffer(indexBufferBinding,
+                              rhi::IndexElementSize::Uint32);
 
   commandBuffer->PushUniformData(0, &mat, sizeof(glm::mat4) * 3);
   uint32_t numIndices = model.getMesh().indexCount;
@@ -494,7 +496,7 @@ void GraphicsSystem::drawModelInstanced(
 
 void GraphicsSystem::loadShader(const Shader &shaderInfo) {}
 void GraphicsSystem::unloadShader(const Shader &shaderInfo) {}
-void GraphicsSystem::beginRenderPass(bool depthEnabled, px::LoadOp loadOp) {
+void GraphicsSystem::beginRenderPass(bool depthEnabled, rhi::LoadOp loadOp) {
   colorTargets[0].loadOp = loadOp;
   currentColorTargets = colorTargets;
 
@@ -536,8 +538,9 @@ void GraphicsSystem::prepareRenderPassFrame() {
     isChangedRenderTarget = false;
   }
 
-  const px::LoadOp loadOp =
-      (isFrameStarted || !hasActivePass) ? px::LoadOp::Clear : px::LoadOp::Load;
+  const rhi::LoadOp loadOp = (isFrameStarted || !hasActivePass)
+                                 ? rhi::LoadOp::Clear
+                                 : rhi::LoadOp::Load;
 
   beginRenderPass(depthEnabled, loadOp);
 
@@ -567,13 +570,13 @@ void GraphicsSystem::setRenderTarget(const RenderTexture &texture) {
   isChangedRenderTarget = true;
   auto depthTex = texture.getDepthStencil();
   currentCommandBuffer = device->AcquireCommandBuffer({allocator});
-  currentColorTargets[0].loadOp = px::LoadOp::Clear;
+  currentColorTargets[0].loadOp = rhi::LoadOp::Clear;
   currentColorTargets[0].texture = tex;
   currentDepthStencilInfo.texture = depthTex;
   currentRenderPass = currentCommandBuffer->BeginRenderPass(
       currentColorTargets, currentDepthStencilInfo);
   currentRenderPass->SetViewport(
-      px::Viewport{0, 0, (float)texture.width, (float)texture.height, 0, 1});
+      rhi::Viewport{0, 0, (float)texture.width, (float)texture.height, 0, 1});
   currentRenderPass->SetScissor(0, 0, (float)texture.width,
                                 (float)texture.height);
 }
@@ -587,33 +590,33 @@ bool GraphicsSystem::readbackTexture(const RenderTexture &srcRenderTexture,
                                      Texture &out) {
   auto tex = srcRenderTexture.getTexture();
   // Copy
-  px::TransferBuffer::CreateInfo info2{};
+  rhi::TransferBuffer::CreateInfo info2{};
   info2.allocator = allocator;
   info2.size = srcRenderTexture.width * srcRenderTexture.height * 4;
-  info2.usage = px::TransferBufferUsage::Download;
+  info2.usage = rhi::TransferBufferUsage::Download;
   auto transferBuffer = device->CreateTransferBuffer(info2);
   {
-    px::CommandBuffer::CreateInfo info{};
+    rhi::CommandBuffer::CreateInfo info{};
     info.allocator = allocator;
     auto commandBuffer = device->AcquireCommandBuffer(info);
     {
       auto copyPass = commandBuffer->BeginCopyPass();
       {
-        px::TextureRegion region{};
+        rhi::TextureRegion region{};
         region.width = srcRenderTexture.width;
         region.height = srcRenderTexture.height;
         region.depth = 1;
         region.texture = tex;
-        px::TextureTransferInfo dst{};
+        rhi::TextureTransferInfo dst{};
         dst.offset = 0;
         dst.transferBuffer = transferBuffer;
         copyPass->DownloadTexture(region, dst);
       }
       {
-        px::TextureTransferInfo src{};
+        rhi::TextureTransferInfo src{};
         src.offset = 0;
         src.transferBuffer = transferBuffer;
-        px::TextureRegion region{};
+        rhi::TextureRegion region{};
         region.x = 0;
         region.y = 0;
         region.width = srcRenderTexture.width;

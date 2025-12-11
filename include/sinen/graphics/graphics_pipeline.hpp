@@ -1,7 +1,7 @@
 #ifndef SINEN_RENDER_PIPELINE_HPP
 #define SINEN_RENDER_PIPELINE_HPP
 #include "../asset/shader/shader.hpp"
-#include "paranoixa/paranoixa.hpp"
+#include "rhi/rhi.hpp"
 
 #include <bitset>
 
@@ -31,12 +31,12 @@ public:
 
   const std::bitset<32> &getFeatureFlags() const { return featureFlags; }
 
-  px::Ptr<px::GraphicsPipeline> get() const { return pipeline; }
+  rhi::Ptr<rhi::GraphicsPipeline> get() const { return pipeline; }
 
 private:
   Shader vertexShader;
   Shader fragmentShader;
-  px::Ptr<px::GraphicsPipeline> pipeline;
+  rhi::Ptr<rhi::GraphicsPipeline> pipeline;
   std::bitset<32> featureFlags;
 };
 

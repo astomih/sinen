@@ -9,8 +9,8 @@
 
 namespace sinen {
 
-static px::VertexInputState
-CreateVertexInputState(px::Allocator *allocator, std::bitset<32> featureFlags);
+static rhi::VertexInputState
+CreateVertexInputState(rhi::Allocator *allocator, std::bitset<32> featureFlags);
 void GraphicsPipeline::setVertexShader(const Shader &shader) {
   this->vertexShader = shader;
 }
@@ -33,48 +33,48 @@ void GraphicsPipeline::build() {
   auto *allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
 
-  px::GraphicsPipeline::CreateInfo pipelineInfo{allocator};
+  rhi::GraphicsPipeline::CreateInfo pipelineInfo{allocator};
   pipelineInfo.vertexShader = this->vertexShader.shader;
   pipelineInfo.fragmentShader = this->fragmentShader.shader;
   pipelineInfo.vertexInputState =
       CreateVertexInputState(allocator, featureFlags);
-  pipelineInfo.primitiveType = px::PrimitiveType::TriangleList;
+  pipelineInfo.primitiveType = rhi::PrimitiveType::TriangleList;
 
-  px::RasterizerState rasterizerState{};
-  rasterizerState.fillMode = px::FillMode::Fill;
-  rasterizerState.cullMode = px::CullMode::None;
-  rasterizerState.frontFace = px::FrontFace::CounterClockwise;
+  rhi::RasterizerState rasterizerState{};
+  rasterizerState.fillMode = rhi::FillMode::Fill;
+  rasterizerState.cullMode = rhi::CullMode::None;
+  rasterizerState.frontFace = rhi::FrontFace::CounterClockwise;
 
   pipelineInfo.rasterizerState = rasterizerState;
   pipelineInfo.multiSampleState = {};
-  pipelineInfo.multiSampleState.sampleCount = px::SampleCount::x1;
+  pipelineInfo.multiSampleState.sampleCount = rhi::SampleCount::x1;
   bool enableDepthTest =
       featureFlags.test(GraphicsPipeline::FeatureFlag::DepthTest);
   pipelineInfo.depthStencilState.enableDepthTest = enableDepthTest;
   pipelineInfo.depthStencilState.enableDepthWrite = enableDepthTest;
   pipelineInfo.depthStencilState.enableStencilTest = false;
-  pipelineInfo.depthStencilState.compareOp = px::CompareOp::LessOrEqual;
+  pipelineInfo.depthStencilState.compareOp = rhi::CompareOp::LessOrEqual;
 
   pipelineInfo.targetInfo.colorTargetDescriptions.emplace_back(
-      px::ColorTargetDescription{
+      rhi::ColorTargetDescription{
           .format = device->GetSwapchainFormat(),
           .blendState =
-              px::ColorTargetBlendState{
-                  .srcColorBlendFactor = px::BlendFactor::SrcAlpha,
-                  .dstColorBlendFactor = px::BlendFactor::OneMinusSrcAlpha,
-                  .colorBlendOp = px::BlendOp::Add,
-                  .srcAlphaBlendFactor = px::BlendFactor::One,
-                  .dstAlphaBlendFactor = px::BlendFactor::OneMinusSrcAlpha,
-                  .alphaBlendOp = px::BlendOp::Add,
+              rhi::ColorTargetBlendState{
+                  .srcColorBlendFactor = rhi::BlendFactor::SrcAlpha,
+                  .dstColorBlendFactor = rhi::BlendFactor::OneMinusSrcAlpha,
+                  .colorBlendOp = rhi::BlendOp::Add,
+                  .srcAlphaBlendFactor = rhi::BlendFactor::One,
+                  .dstAlphaBlendFactor = rhi::BlendFactor::OneMinusSrcAlpha,
+                  .alphaBlendOp = rhi::BlendOp::Add,
                   .colorWriteMask =
-                      px::ColorComponent::R | px::ColorComponent::G |
-                      px::ColorComponent::B | px::ColorComponent::A,
+                      rhi::ColorComponent::R | rhi::ColorComponent::G |
+                      rhi::ColorComponent::B | rhi::ColorComponent::A,
                   .enableBlend = true,
               },
       });
   pipelineInfo.targetInfo.hasDepthStencilTarget = enableDepthTest;
   pipelineInfo.targetInfo.depthStencilTargetFormat =
-      px::TextureFormat::D32_FLOAT_S8_UINT;
+      rhi::TextureFormat::D32_FLOAT_S8_UINT;
   this->pipeline = device->CreateGraphicsPipeline(pipelineInfo);
 }
 
@@ -88,110 +88,110 @@ GraphicsPipeline BuiltinPipelines::get2D() {
   return GraphicsSystem::pipeline2D;
 }
 
-px::VertexInputState CreateVertexInputState(px::Allocator *allocator,
-                                            std::bitset<32> featureFlags) {
+rhi::VertexInputState CreateVertexInputState(rhi::Allocator *allocator,
+                                             std::bitset<32> featureFlags) {
   bool isInstance = featureFlags.test(GraphicsPipeline::FeatureFlag::Instanced);
   bool isAnimation =
       featureFlags.test(GraphicsPipeline::FeatureFlag::Animation);
   bool isTangent = featureFlags.test(GraphicsPipeline::FeatureFlag::Tangent);
-  px::VertexInputState vertexInputState{allocator};
+  rhi::VertexInputState vertexInputState{allocator};
   uint32_t location = 0;
   uint32_t bufferSlot = 0;
   vertexInputState.vertexBufferDescriptions.emplace_back(
-      px::VertexBufferDescription{
+      rhi::VertexBufferDescription{
           .slot = bufferSlot,
           .pitch = sizeof(Vertex),
-          .inputRate = px::VertexInputRate::Vertex,
+          .inputRate = rhi::VertexInputRate::Vertex,
           .instanceStepRate = 0,
       });
   vertexInputState.vertexAttributes.emplace_back(
-      px::VertexAttribute{.location = location++,
-                          .bufferSlot = bufferSlot,
-                          .format = px::VertexElementFormat::Float3,
-                          .offset = offsetof(Vertex, position)});
+      rhi::VertexAttribute{.location = location++,
+                           .bufferSlot = bufferSlot,
+                           .format = rhi::VertexElementFormat::Float3,
+                           .offset = offsetof(Vertex, position)});
   vertexInputState.vertexAttributes.emplace_back(
-      px::VertexAttribute{.location = location++,
-                          .bufferSlot = bufferSlot,
-                          .format = px::VertexElementFormat::Float3,
-                          .offset = offsetof(Vertex, normal)});
+      rhi::VertexAttribute{.location = location++,
+                           .bufferSlot = bufferSlot,
+                           .format = rhi::VertexElementFormat::Float3,
+                           .offset = offsetof(Vertex, normal)});
   vertexInputState.vertexAttributes.emplace_back(
-      px::VertexAttribute{.location = location++,
-                          .bufferSlot = bufferSlot,
-                          .format = px::VertexElementFormat::Float2,
-                          .offset = offsetof(Vertex, uv)});
+      rhi::VertexAttribute{.location = location++,
+                           .bufferSlot = bufferSlot,
+                           .format = rhi::VertexElementFormat::Float2,
+                           .offset = offsetof(Vertex, uv)});
   vertexInputState.vertexAttributes.emplace_back(
-      px::VertexAttribute{.location = location++,
-                          .bufferSlot = bufferSlot,
-                          .format = px::VertexElementFormat::Float4,
-                          .offset = offsetof(Vertex, color)});
+      rhi::VertexAttribute{.location = location++,
+                           .bufferSlot = bufferSlot,
+                           .format = rhi::VertexElementFormat::Float4,
+                           .offset = offsetof(Vertex, color)});
   if (isInstance) {
     bufferSlot++;
     vertexInputState.vertexBufferDescriptions.emplace_back(
-        px::VertexBufferDescription{
+        rhi::VertexBufferDescription{
             .slot = bufferSlot,
             .pitch = sizeof(glm::mat4),
-            .inputRate = px::VertexInputRate::Instance,
+            .inputRate = rhi::VertexInputRate::Instance,
             .instanceStepRate = 0,
         });
     uint32_t offset = 0;
     vertexInputState.vertexAttributes.emplace_back(
-        px::VertexAttribute{.location = location++,
-                            .bufferSlot = bufferSlot,
-                            .format = px::VertexElementFormat::Float4,
-                            .offset = offset});
+        rhi::VertexAttribute{.location = location++,
+                             .bufferSlot = bufferSlot,
+                             .format = rhi::VertexElementFormat::Float4,
+                             .offset = offset});
     offset += sizeof(float) * 4;
     vertexInputState.vertexAttributes.emplace_back(
-        px::VertexAttribute{.location = location++,
-                            .bufferSlot = bufferSlot,
-                            .format = px::VertexElementFormat::Float4,
-                            .offset = offset});
+        rhi::VertexAttribute{.location = location++,
+                             .bufferSlot = bufferSlot,
+                             .format = rhi::VertexElementFormat::Float4,
+                             .offset = offset});
     offset += sizeof(float) * 4;
     vertexInputState.vertexAttributes.emplace_back(
-        px::VertexAttribute{.location = location++,
-                            .bufferSlot = bufferSlot,
-                            .format = px::VertexElementFormat::Float4,
-                            .offset = offset});
+        rhi::VertexAttribute{.location = location++,
+                             .bufferSlot = bufferSlot,
+                             .format = rhi::VertexElementFormat::Float4,
+                             .offset = offset});
     offset += sizeof(float) * 4;
     vertexInputState.vertexAttributes.emplace_back(
-        px::VertexAttribute{.location = location++,
-                            .bufferSlot = bufferSlot,
-                            .format = px::VertexElementFormat::Float4,
-                            .offset = offset});
+        rhi::VertexAttribute{.location = location++,
+                             .bufferSlot = bufferSlot,
+                             .format = rhi::VertexElementFormat::Float4,
+                             .offset = offset});
   }
   if (isAnimation) {
     bufferSlot++;
     vertexInputState.vertexBufferDescriptions.emplace_back(
-        px::VertexBufferDescription{
+        rhi::VertexBufferDescription{
             .slot = bufferSlot,
             .pitch = sizeof(AnimationVertex),
-            .inputRate = px::VertexInputRate::Vertex,
+            .inputRate = rhi::VertexInputRate::Vertex,
             .instanceStepRate = 0,
         });
     vertexInputState.vertexAttributes.emplace_back(
-        px::VertexAttribute{.location = location++,
-                            .bufferSlot = bufferSlot,
-                            .format = px::VertexElementFormat::Float4,
-                            .offset = offsetof(AnimationVertex, boneIDs)});
+        rhi::VertexAttribute{.location = location++,
+                             .bufferSlot = bufferSlot,
+                             .format = rhi::VertexElementFormat::Float4,
+                             .offset = offsetof(AnimationVertex, boneIDs)});
     vertexInputState.vertexAttributes.emplace_back(
-        px::VertexAttribute{.location = location++,
-                            .bufferSlot = bufferSlot,
-                            .format = px::VertexElementFormat::Float4,
-                            .offset = offsetof(AnimationVertex, boneWeights)});
+        rhi::VertexAttribute{.location = location++,
+                             .bufferSlot = bufferSlot,
+                             .format = rhi::VertexElementFormat::Float4,
+                             .offset = offsetof(AnimationVertex, boneWeights)});
   }
   if (isTangent) {
     bufferSlot++;
     vertexInputState.vertexBufferDescriptions.emplace_back(
-        px::VertexBufferDescription{
+        rhi::VertexBufferDescription{
             .slot = bufferSlot,
             .pitch = sizeof(glm::vec4),
-            .inputRate = px::VertexInputRate::Vertex,
+            .inputRate = rhi::VertexInputRate::Vertex,
             .instanceStepRate = 0,
         });
     vertexInputState.vertexAttributes.emplace_back(
-        px::VertexAttribute{.location = location++,
-                            .bufferSlot = bufferSlot,
-                            .format = px::VertexElementFormat::Float4,
-                            .offset = 0});
+        rhi::VertexAttribute{.location = location++,
+                             .bufferSlot = bufferSlot,
+                             .format = rhi::VertexElementFormat::Float4,
+                             .offset = 0});
   }
   return vertexInputState;
 }

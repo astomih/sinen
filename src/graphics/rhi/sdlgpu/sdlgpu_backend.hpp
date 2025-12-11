@@ -1,15 +1,15 @@
 #include <memory>
 #ifndef EMSCRIPTEN
-#ifndef PARANOIXA_SDLGPU_RENDERER_HPP
-#define PARANOIXA_SDLGPU_RENDERER_HPP
-#include <graphics/paranoixa/paranoixa.hpp>
+#ifndef SINEN_SDLGPU_RENDERER_HPP
+#define SINEN_SDLGPU_RENDERER_HPP
+#include <graphics/rhi/rhi.hpp>
 
 #include <SDL3/SDL_gpu.h>
 
 #include <vector>
 
-namespace paranoixa::sdlgpu {
-namespace px = paranoixa;
+namespace sinen::rhi::sdlgpu {
+namespace px = sinen::rhi;
 class Device : public px::Device {
 public:
   Device(const CreateInfo &createInfo, SDL_GPUDevice *device)
@@ -232,6 +232,6 @@ private:
   SDL_GPUComputePipeline *pipeline;
 };
 
-} // namespace paranoixa::sdlgpu
-#endif // PARANOIXA_SDLGPU_RENDERER_HPP
+} // namespace sinen::rhi::sdlgpu
+#endif // SINEN_SDLGPU_RENDERER_HPP
 #endif // EMSCRIPTEN

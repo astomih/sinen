@@ -1,15 +1,15 @@
 #ifdef _WIN32
-#ifndef PARANOIXA_D3D12U_RENDERER_HPP
-#define PARANOIXA_D3D12U_RENDERER_HPP
+#ifndef SINEN_D3D12U_RENDERER_HPP
+#define SINEN_D3D12U_RENDERER_HPP
 #include <d3d12.h>
 
 #include <SDL3/SDL.h>
 
-#include <graphics/paranoixa/paranoixa.hpp>
+#include <graphics/rhi/rhi.hpp>
 
 #include <dxgi1_6.h>
 
-namespace paranoixa {
+namespace sinen::rhi {
 class D3d12uRenderer {
 public:
   D3d12uRenderer(Allocator *allcator);
@@ -110,6 +110,6 @@ private:
   DescriptorHandle samplerDescriptor;
   std::vector<std::function<void()>> guiCallBacks;
 };
-} // namespace paranoixa
-#endif // PARANOIXA_D3D12U_RENDERER_HPP
+} // namespace sinen::rhi
+#endif // SINEN_D3D12U_RENDERER_HPP
 #endif // EMSCRIPTEN

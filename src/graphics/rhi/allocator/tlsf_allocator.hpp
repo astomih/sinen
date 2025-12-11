@@ -1,9 +1,9 @@
-#ifndef PARANOIXA_TLSF_ALLOCATOR_HPP
-#define PARANOIXA_TLSF_ALLOCATOR_HPP
-#include <graphics/paranoixa/paranoixa.hpp>
+#ifndef SINEN_TLSF_ALLOCATOR_HPP
+#define SINEN_TLSF_ALLOCATOR_HPP
+#include <graphics/rhi/rhi.hpp>
 #include <memory_resource>
 
-namespace paranoixa {
+namespace sinen::rhi {
 class TLSFAllocator : public Allocator {
 public:
   TLSFAllocator(const std::size_t &size);
@@ -20,5 +20,5 @@ private:
   void *tlsf;
 };
 
-} // namespace paranoixa
+} // namespace sinen::rhi
 #endif // PARANOIXA_TLSF_ALLOCATOR_HPP

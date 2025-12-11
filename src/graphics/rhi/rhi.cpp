@@ -3,7 +3,7 @@
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif // __EMSCRIPTEN__
-#include <graphics/paranoixa/paranoixa.hpp>
+#include <graphics/rhi/rhi.hpp>
 
 #include "allocator/std_allocator.hpp"
 #include "allocator/tlsf_allocator.hpp"
@@ -17,7 +17,7 @@
 
 #include <fstream>
 #include <iostream>
-namespace paranoixa {
+namespace sinen::rhi {
 Ptr<Backend> Paranoixa::CreateBackend(Allocator *allocator,
                                       const GraphicsAPI &api) {
 #ifndef __EMSCRIPTEN__
@@ -50,4 +50,4 @@ Allocator *Paranoixa::CreateAllocator(size_t size) {
   return new StdAllocator(size);
 #endif
 }
-} // namespace paranoixa
+} // namespace sinen::rhi

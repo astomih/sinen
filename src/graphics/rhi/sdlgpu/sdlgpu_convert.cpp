@@ -1,6 +1,6 @@
 #include "sdlgpu_convert.hpp"
 #include "SDL3/SDL_gpu.h"
-namespace paranoixa::sdlgpu {
+namespace sinen::rhi::sdlgpu {
 namespace convert {
 SDL_GPULoadOp LoadOpFrom(LoadOp loadOp) {
   switch (loadOp) {
@@ -304,4 +304,4 @@ SDL_GPUBlendOp BlendOpFrom(BlendOp blendOp) {
 }
 
 } // namespace convert
-} // namespace paranoixa::sdlgpu
+} // namespace sinen::rhi::sdlgpu

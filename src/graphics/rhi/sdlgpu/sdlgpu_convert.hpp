@@ -1,8 +1,8 @@
-#ifndef PARANOIXA_SDLGPU_CONVERT_HPP
-#define PARANOIXA_SDLGPU_CONVERT_HPP
+#ifndef SINEN_SDLGPU_CONVERT_HPP
+#define SINEN_SDLGPU_CONVERT_HPP
 #include <SDL3/SDL_gpu.h>
-#include <graphics/paranoixa/paranoixa.hpp>
-namespace paranoixa::sdlgpu {
+#include <graphics/rhi/rhi.hpp>
+namespace sinen::rhi::sdlgpu {
 namespace convert {
 SDL_GPULoadOp LoadOpFrom(LoadOp loadOp);
 SDL_GPUStoreOp StoreOpFrom(StoreOp storeOp);
@@ -28,5 +28,5 @@ TransferBufferUsageFrom(TransferBufferUsage transferBufferUsage);
 SDL_GPUBlendFactor BlendFactorFrom(BlendFactor blendFactor);
 SDL_GPUBlendOp BlendOpFrom(BlendOp blendOp);
 } // namespace convert
-} // namespace paranoixa::sdlgpu
-#endif // !PARANOIXA_SDLGPU_CONVERT_HPP
+} // namespace sinen::rhi::sdlgpu
+#endif // SINEN_SDLGPU_CONVERT_HPP

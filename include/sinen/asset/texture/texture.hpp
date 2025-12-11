@@ -1,7 +1,7 @@
 #ifndef SINEN_TEXTURE_HPP
 #define SINEN_TEXTURE_HPP
 #include "../../math/color/color.hpp"
-#include <graphics/paranoixa/paranoixa.hpp>
+#include <graphics/rhi/rhi.hpp>
 
 #include <memory>
 #include <string>
@@ -59,7 +59,7 @@ public:
 
   glm::vec2 size();
 
-  px::Ptr<px::Texture> texture;
+  rhi::Ptr<rhi::Texture> texture;
 };
 } // namespace sinen
 #endif // !SINEN_TEXTURE_HPP

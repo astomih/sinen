@@ -16,9 +16,9 @@
 
 #include <iostream>
 
-#include <graphics/paranoixa/paranoixa.hpp>
+#include <graphics/rhi/rhi.hpp>
 
-namespace paranoixa {
+namespace sinen::rhi {
 #define QUERY_INTERFACE(from, to)                                              \
   from->QueryInterface(__uuidof(decltype(to)), (void **)&to)
 
@@ -803,5 +803,5 @@ void D3d12uRenderer::PrepareTexture() {
 }
 
 // namespace paranoixa
-} // namespace paranoixa
+} // namespace sinen::rhi
 #endif // _WIN32

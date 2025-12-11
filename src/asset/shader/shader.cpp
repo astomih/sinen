@@ -18,13 +18,13 @@ void Shader::loadDefaultVertexShader() {
   auto *allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
 
-  px::Shader::CreateInfo vsInfo{};
+  rhi::Shader::CreateInfo vsInfo{};
   vsInfo.allocator = allocator;
   vsInfo.size = shader_vert_spv_len;
   vsInfo.data = shader_vert_spv;
   vsInfo.entrypoint = "main";
-  vsInfo.format = px::ShaderFormat::SPIRV;
-  vsInfo.stage = px::ShaderStage::Vertex;
+  vsInfo.format = rhi::ShaderFormat::SPIRV;
+  vsInfo.stage = rhi::ShaderStage::Vertex;
   vsInfo.numSamplers = 0;
   vsInfo.numStorageBuffers = 0;
   vsInfo.numStorageTextures = 0;
@@ -35,13 +35,13 @@ void Shader::loadDefaultVertexInstanceShader() {
   auto *allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
 
-  px::Shader::CreateInfo vsInfo{};
+  rhi::Shader::CreateInfo vsInfo{};
   vsInfo.allocator = allocator;
   vsInfo.size = shader_instance_vert_spv_len;
   vsInfo.data = shader_instance_vert_spv;
   vsInfo.entrypoint = "main";
-  vsInfo.format = px::ShaderFormat::SPIRV;
-  vsInfo.stage = px::ShaderStage::Vertex;
+  vsInfo.format = rhi::ShaderFormat::SPIRV;
+  vsInfo.stage = rhi::ShaderStage::Vertex;
   vsInfo.numSamplers = 0;
   vsInfo.numStorageBuffers = 0;
   vsInfo.numStorageTextures = 0;
@@ -52,13 +52,13 @@ void Shader::loadDefaultFragmentShader() {
   auto *allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
 
-  px::Shader::CreateInfo fsInfo{};
+  rhi::Shader::CreateInfo fsInfo{};
   fsInfo.allocator = allocator;
   fsInfo.size = shader_frag_spv_len;
   fsInfo.data = shader_frag_spv;
   fsInfo.entrypoint = "main";
-  fsInfo.format = px::ShaderFormat::SPIRV;
-  fsInfo.stage = px::ShaderStage::Fragment;
+  fsInfo.format = rhi::ShaderFormat::SPIRV;
+  fsInfo.stage = rhi::ShaderStage::Fragment;
   fsInfo.numSamplers = 1; // one sampler for fragment shader
   fsInfo.numStorageBuffers = 0;
   fsInfo.numStorageTextures = 0;
@@ -75,13 +75,13 @@ void Shader::loadVertexShader(std::string_view vertex_shader,
 
   std::string vsStr = AssetIO::openAsString(AssetType::Shader, vertex_shader);
 
-  px::Shader::CreateInfo vsInfo{};
+  rhi::Shader::CreateInfo vsInfo{};
   vsInfo.allocator = allocator;
   vsInfo.size = vsStr.size();
   vsInfo.data = vsStr.data();
   vsInfo.entrypoint = "main";
-  vsInfo.format = px::ShaderFormat::SPIRV;
-  vsInfo.stage = px::ShaderStage::Vertex;
+  vsInfo.format = rhi::ShaderFormat::SPIRV;
+  vsInfo.stage = rhi::ShaderStage::Vertex;
   vsInfo.numSamplers = 0;
   vsInfo.numStorageBuffers = 0;
   vsInfo.numStorageTextures = 0;
@@ -95,13 +95,13 @@ void Shader::loadFragmentShader(std::string_view fragment_shader,
 
   std::string fsStr = AssetIO::openAsString(AssetType::Shader, fragment_shader);
 
-  px::Shader::CreateInfo fsInfo{};
+  rhi::Shader::CreateInfo fsInfo{};
   fsInfo.allocator = allocator;
   fsInfo.size = fsStr.size();
   fsInfo.data = fsStr.data();
   fsInfo.entrypoint = "main";
-  fsInfo.format = px::ShaderFormat::SPIRV;
-  fsInfo.stage = px::ShaderStage::Fragment;
+  fsInfo.format = rhi::ShaderFormat::SPIRV;
+  fsInfo.stage = rhi::ShaderStage::Fragment;
   fsInfo.numSamplers = 1;
   fsInfo.numStorageBuffers = 0;
   fsInfo.numStorageTextures = 0;
@@ -122,13 +122,13 @@ void Shader::compileAndLoadVertexShader(std::string_view vertex_shader) {
   auto *allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
 
-  px::Shader::CreateInfo vsInfo{};
+  rhi::Shader::CreateInfo vsInfo{};
   vsInfo.allocator = allocator;
   vsInfo.size = spirv.size();
   vsInfo.data = spirv.data();
   vsInfo.entrypoint = "main";
-  vsInfo.format = px::ShaderFormat::SPIRV;
-  vsInfo.stage = px::ShaderStage::Vertex;
+  vsInfo.format = rhi::ShaderFormat::SPIRV;
+  vsInfo.stage = rhi::ShaderStage::Vertex;
   vsInfo.numSamplers = 0;
   vsInfo.numStorageBuffers = 0;
   vsInfo.numStorageTextures = 0;
@@ -147,13 +147,13 @@ void Shader::compileAndLoadFragmentShader(std::string_view fragment_shader) {
   auto *allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
 
-  px::Shader::CreateInfo fsInfo{};
+  rhi::Shader::CreateInfo fsInfo{};
   fsInfo.allocator = allocator;
   fsInfo.size = spirv.size();
   fsInfo.data = spirv.data();
   fsInfo.entrypoint = "main";
-  fsInfo.format = px::ShaderFormat::SPIRV;
-  fsInfo.stage = px::ShaderStage::Fragment;
+  fsInfo.format = rhi::ShaderFormat::SPIRV;
+  fsInfo.stage = rhi::ShaderStage::Fragment;
   fsInfo.numSamplers = reflectionData.numCombinedSamplers;
   fsInfo.numStorageBuffers = 0;
   fsInfo.numStorageTextures = 0;

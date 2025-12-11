@@ -16,7 +16,7 @@
 #define _countof(_Array) (sizeof(_Array) / sizeof(_Array[0]))
 #endif
 
-namespace paranoixa {
+namespace sinen::rhi {
 
 VulkanRenderer::VulkanRenderer()
     : instance(VK_NULL_HANDLE), physicalDevice(VK_NULL_HANDLE),
@@ -1203,5 +1203,5 @@ void VulkanRenderer::TransitionLayoutImage(
     vkCmdPipelineBarrier2KHR(commandBuffer, &info);
   }
 }
-} // namespace paranoixa
+} // namespace sinen::rhi
 #endif

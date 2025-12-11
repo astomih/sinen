@@ -1,9 +1,10 @@
-#include "imgui_impl_paranoixa.hpp"
-#include "imgui_impl_paranoixa_shaders.hpp"
+#include "imgui_impl_sinen.hpp"
+#include "imgui_impl_sinen_shaders.hpp"
 
+namespace sinen {
 struct ImGui_ImplParanoixa_FrameData {
-  px::Ptr<px::Buffer> VertexBuffer = nullptr;
-  px::Ptr<px::Buffer> IndexBuffer = nullptr;
+  rhi::Ptr<rhi::Buffer> VertexBuffer = nullptr;
+  rhi::Ptr<rhi::Buffer> IndexBuffer = nullptr;
   uint32_t VertexBufferSize = 0;
   uint32_t IndexBufferSize = 0;
 };
@@ -12,14 +13,14 @@ struct ImGui_ImplParanoixa_Data {
   ImGui_ImplParanoixa_InitInfo InitInfo;
 
   // Graphics pipeline & shaders
-  px::Ptr<px::Shader> VertexShader = nullptr;
-  px::Ptr<px::Shader> FragmentShader = nullptr;
-  px::Ptr<px::GraphicsPipeline> Pipeline = nullptr;
+  rhi::Ptr<rhi::Shader> VertexShader = nullptr;
+  rhi::Ptr<rhi::Shader> FragmentShader = nullptr;
+  rhi::Ptr<rhi::GraphicsPipeline> Pipeline = nullptr;
 
   // Font data
-  px::Ptr<px::Sampler> FontSampler = nullptr;
-  px::Ptr<px::Texture> FontTexture = nullptr;
-  px::TextureSamplerBinding FontBinding = {nullptr, nullptr};
+  rhi::Ptr<rhi::Sampler> FontSampler = nullptr;
+  rhi::Ptr<rhi::Texture> FontTexture = nullptr;
+  rhi::TextureSamplerBinding FontBinding = {nullptr, nullptr};
 
   // Frame data for main window
   ImGui_ImplParanoixa_FrameData MainWindowFrameData;
@@ -36,29 +37,29 @@ static void Imgui_ImplParanoixa_CreateShaders() {
 
   auto driver = v->Device->GetDriver();
 
-  px::Shader::CreateInfo vertex_shader_info = {};
+  rhi::Shader::CreateInfo vertex_shader_info = {};
   vertex_shader_info.allocator = v->Allocator;
   vertex_shader_info.entrypoint = "main";
-  vertex_shader_info.stage = px::ShaderStage::Vertex;
+  vertex_shader_info.stage = rhi::ShaderStage::Vertex;
   vertex_shader_info.numUniformBuffers = 1;
   vertex_shader_info.numStorageBuffers = 0;
   vertex_shader_info.numStorageTextures = 0;
   vertex_shader_info.numSamplers = 0;
 
-  px::Shader::CreateInfo fragment_shader_info = {};
+  rhi::Shader::CreateInfo fragment_shader_info = {};
   fragment_shader_info.allocator = v->Allocator;
   fragment_shader_info.entrypoint = "main";
-  fragment_shader_info.stage = px::ShaderStage::Fragment;
+  fragment_shader_info.stage = rhi::ShaderStage::Fragment;
   fragment_shader_info.numSamplers = 1;
   fragment_shader_info.numStorageBuffers = 0;
   fragment_shader_info.numStorageTextures = 0;
   fragment_shader_info.numUniformBuffers = 0;
 
   if (driver == "vulkan") {
-    vertex_shader_info.format = px::ShaderFormat::SPIRV;
+    vertex_shader_info.format = rhi::ShaderFormat::SPIRV;
     vertex_shader_info.data = spirv_vertex;
     vertex_shader_info.size = sizeof(spirv_vertex);
-    fragment_shader_info.format = px::ShaderFormat::SPIRV;
+    fragment_shader_info.format = rhi::ShaderFormat::SPIRV;
     fragment_shader_info.data = spirv_fragment;
     fragment_shader_info.size = sizeof(spirv_fragment);
   }
@@ -92,76 +93,76 @@ static void ImGui_ImplParanoixa_CreateGraphicsPipeline() {
   ImGui_ImplParanoixa_InitInfo *v = &bd->InitInfo;
   Imgui_ImplParanoixa_CreateShaders();
 
-  px::Array<px::VertexBufferDescription> vertex_buffer_desc(v->Allocator);
+  rhi::Array<rhi::VertexBufferDescription> vertex_buffer_desc(v->Allocator);
   vertex_buffer_desc.resize(1);
   vertex_buffer_desc[0].slot = 0;
-  vertex_buffer_desc[0].inputRate = px::VertexInputRate::Vertex;
+  vertex_buffer_desc[0].inputRate = rhi::VertexInputRate::Vertex;
   vertex_buffer_desc[0].instanceStepRate = 0;
   vertex_buffer_desc[0].pitch = sizeof(ImDrawVert);
 
-  px::Array<px::VertexAttribute> vertex_attributes(v->Allocator);
+  rhi::Array<rhi::VertexAttribute> vertex_attributes(v->Allocator);
   vertex_attributes.resize(3);
   vertex_attributes[0].bufferSlot = 0;
-  vertex_attributes[0].format = px::VertexElementFormat::Float2;
+  vertex_attributes[0].format = rhi::VertexElementFormat::Float2;
   vertex_attributes[0].location = 0;
   vertex_attributes[0].offset = offsetof(ImDrawVert, pos);
 
   vertex_attributes[1].bufferSlot = 0;
-  vertex_attributes[1].format = px::VertexElementFormat::Float2;
+  vertex_attributes[1].format = rhi::VertexElementFormat::Float2;
   vertex_attributes[1].location = 1;
   vertex_attributes[1].offset = offsetof(ImDrawVert, uv);
 
   vertex_attributes[2].bufferSlot = 0;
-  vertex_attributes[2].format = px::VertexElementFormat::UByte4_NORM;
+  vertex_attributes[2].format = rhi::VertexElementFormat::UByte4_NORM;
   vertex_attributes[2].location = 2;
   vertex_attributes[2].offset = offsetof(ImDrawVert, col);
 
-  px::VertexInputState vertex_input_state{v->Allocator};
+  rhi::VertexInputState vertex_input_state{v->Allocator};
   vertex_input_state.vertexAttributes = vertex_attributes;
   vertex_input_state.vertexBufferDescriptions = vertex_buffer_desc;
 
-  px::RasterizerState rasterizer_state = {};
-  rasterizer_state.fillMode = px::FillMode::Fill;
-  rasterizer_state.cullMode = px::CullMode::None;
-  rasterizer_state.frontFace = px::FrontFace::CounterClockwise;
+  rhi::RasterizerState rasterizer_state = {};
+  rasterizer_state.fillMode = rhi::FillMode::Fill;
+  rasterizer_state.cullMode = rhi::CullMode::None;
+  rasterizer_state.frontFace = rhi::FrontFace::CounterClockwise;
   rasterizer_state.enableDepthBias = false;
   rasterizer_state.enableDepthClip = false;
 
-  px::MultiSampleState multisample_state{};
+  rhi::MultiSampleState multisample_state{};
   multisample_state.sampleCount = v->MSAASamples;
   multisample_state.enableMask = false;
 
-  px::DepthStencilState depth_stencil_state = {};
+  rhi::DepthStencilState depth_stencil_state = {};
   depth_stencil_state.enableDepthTest = false;
   depth_stencil_state.enableDepthWrite = false;
   depth_stencil_state.enableStencilTest = false;
 
-  px::ColorTargetBlendState blend_state = {};
+  rhi::ColorTargetBlendState blend_state = {};
   blend_state.enableBlend = true;
-  blend_state.srcColorBlendFactor = px::BlendFactor::SrcAlpha;
-  blend_state.dstColorBlendFactor = px::BlendFactor::OneMinusSrcAlpha;
-  blend_state.colorBlendOp = px::BlendOp::Add;
-  blend_state.srcAlphaBlendFactor = px::BlendFactor::One;
-  blend_state.dstAlphaBlendFactor = px::BlendFactor::OneMinusSrcAlpha;
-  blend_state.alphaBlendOp = px::BlendOp::Add;
-  blend_state.colorWriteMask = px::ColorComponent::R | px::ColorComponent::G |
-                               px::ColorComponent::B | px::ColorComponent::A;
+  blend_state.srcColorBlendFactor = rhi::BlendFactor::SrcAlpha;
+  blend_state.dstColorBlendFactor = rhi::BlendFactor::OneMinusSrcAlpha;
+  blend_state.colorBlendOp = rhi::BlendOp::Add;
+  blend_state.srcAlphaBlendFactor = rhi::BlendFactor::One;
+  blend_state.dstAlphaBlendFactor = rhi::BlendFactor::OneMinusSrcAlpha;
+  blend_state.alphaBlendOp = rhi::BlendOp::Add;
+  blend_state.colorWriteMask = rhi::ColorComponent::R | rhi::ColorComponent::G |
+                               rhi::ColorComponent::B | rhi::ColorComponent::A;
 
-  px::Array<px::ColorTargetDescription> color_target_desc(v->Allocator);
+  rhi::Array<rhi::ColorTargetDescription> color_target_desc(v->Allocator);
   color_target_desc.resize(1);
   color_target_desc[0].format = v->ColorTargetFormat;
   color_target_desc[0].blendState = blend_state;
 
-  px::TargetInfo target_info = {v->Allocator};
+  rhi::TargetInfo target_info = {v->Allocator};
   target_info.colorTargetDescriptions = color_target_desc;
   target_info.hasDepthStencilTarget = false;
 
-  px::GraphicsPipeline::CreateInfo pipeline_info = {v->Allocator};
+  rhi::GraphicsPipeline::CreateInfo pipeline_info = {v->Allocator};
   pipeline_info.allocator = v->Allocator;
   pipeline_info.vertexShader = bd->VertexShader;
   pipeline_info.fragmentShader = bd->FragmentShader;
   pipeline_info.vertexInputState = vertex_input_state;
-  pipeline_info.primitiveType = px::PrimitiveType::TriangleList;
+  pipeline_info.primitiveType = rhi::PrimitiveType::TriangleList;
   pipeline_info.rasterizerState = rasterizer_state;
   pipeline_info.multiSampleState = multisample_state;
   pipeline_info.depthStencilState = depth_stencil_state;
@@ -187,7 +188,7 @@ ImGui_ImplParanoixa_Init(ImGui_ImplParanoixa_InitInfo *info) {
                                               // allowing for large meshes.
 
   IM_ASSERT(info->Device != nullptr);
-  IM_ASSERT(info->ColorTargetFormat != px::TextureFormat::Invalid);
+  IM_ASSERT(info->ColorTargetFormat != rhi::TextureFormat::Invalid);
 
   bd->InitInfo = *info;
 
@@ -205,16 +206,16 @@ IMGUI_IMPL_API void ImGui_ImplParanoixa_NewFrame() {
   if (!bd->FontTexture)
     ImGui_ImplParanoixa_CreateFontsTexture();
 }
-static void CreateOrResizeBuffer(px::Ptr<px::Buffer> &buffer,
+static void CreateOrResizeBuffer(rhi::Ptr<rhi::Buffer> &buffer,
                                  uint32_t *old_size, uint32_t new_size,
-                                 px::BufferUsage usage) {
+                                 rhi::BufferUsage usage) {
   ImGui_ImplParanoixa_Data *bd = ImGui_ImplParanoixa_GetBackendData();
   ImGui_ImplParanoixa_InitInfo *v = &bd->InitInfo;
 
   // Even though this is fairly rarely called.
   v->Device->WaitForGPUIdle();
 
-  px::Buffer::CreateInfo buffer_info = {};
+  rhi::Buffer::CreateInfo buffer_info = {};
   buffer_info.allocator = v->Allocator;
   buffer_info.usage = usage;
   buffer_info.size = new_size;
@@ -224,9 +225,8 @@ static void CreateOrResizeBuffer(px::Ptr<px::Buffer> &buffer,
   IM_ASSERT(buffer != nullptr && "Failed to create GPU Buffer");
 }
 
-IMGUI_IMPL_API void
-Imgui_ImplParanoixa_PrepareDrawData(ImDrawData *draw_data,
-                                    px::Ptr<px::CommandBuffer> command_buffer) {
+IMGUI_IMPL_API void Imgui_ImplParanoixa_PrepareDrawData(
+    ImDrawData *draw_data, rhi::Ptr<rhi::CommandBuffer> command_buffer) {
   // Avoid rendering when minimized, scale coordinates for retina displays
   // (screen coordinates != framebuffer coordinates)
   int fb_width =
@@ -244,22 +244,22 @@ Imgui_ImplParanoixa_PrepareDrawData(ImDrawData *draw_data,
   uint32_t index_size = draw_data->TotalIdxCount * sizeof(ImDrawIdx);
   if (fd->VertexBuffer == nullptr || fd->VertexBufferSize < vertex_size)
     CreateOrResizeBuffer(fd->VertexBuffer, &fd->VertexBufferSize, vertex_size,
-                         px::BufferUsage::Vertex);
+                         rhi::BufferUsage::Vertex);
   IM_ASSERT(fd->VertexBuffer != nullptr &&
             "Failed to create the vertex buffer");
   if (fd->IndexBuffer == nullptr || fd->IndexBufferSize < index_size)
     CreateOrResizeBuffer(fd->IndexBuffer, &fd->IndexBufferSize, index_size,
-                         px::BufferUsage::Index);
+                         rhi::BufferUsage::Index);
   IM_ASSERT(fd->IndexBuffer != nullptr && "Failed to create the index buffer");
 
   // FIXME: It feels like more code could be shared there.
-  px::TransferBuffer::CreateInfo vertex_transferbuffer_info = {};
+  rhi::TransferBuffer::CreateInfo vertex_transferbuffer_info = {};
   vertex_transferbuffer_info.allocator = v->Allocator;
-  vertex_transferbuffer_info.usage = px::TransferBufferUsage::Upload;
+  vertex_transferbuffer_info.usage = rhi::TransferBufferUsage::Upload;
   vertex_transferbuffer_info.size = vertex_size;
-  px::TransferBuffer::CreateInfo index_transferbuffer_info = {};
+  rhi::TransferBuffer::CreateInfo index_transferbuffer_info = {};
   index_transferbuffer_info.allocator = v->Allocator;
-  index_transferbuffer_info.usage = px::TransferBufferUsage::Upload;
+  index_transferbuffer_info.usage = rhi::TransferBufferUsage::Upload;
   index_transferbuffer_info.size = index_size;
 
   auto vertex_transferbuffer =
@@ -285,19 +285,19 @@ Imgui_ImplParanoixa_PrepareDrawData(ImDrawData *draw_data,
   vertex_transferbuffer->Unmap();
   index_transferbuffer->Unmap();
 
-  px::BufferTransferInfo vertex_buffer_location = {};
+  rhi::BufferTransferInfo vertex_buffer_location = {};
   vertex_buffer_location.offset = 0;
   vertex_buffer_location.transferBuffer = vertex_transferbuffer;
-  px::BufferTransferInfo index_buffer_location = {};
+  rhi::BufferTransferInfo index_buffer_location = {};
   index_buffer_location.offset = 0;
   index_buffer_location.transferBuffer = index_transferbuffer;
 
-  px::BufferRegion vertex_buffer_region = {};
+  rhi::BufferRegion vertex_buffer_region = {};
   vertex_buffer_region.buffer = fd->VertexBuffer;
   vertex_buffer_region.offset = 0;
   vertex_buffer_region.size = vertex_size;
 
-  px::BufferRegion index_buffer_region = {};
+  rhi::BufferRegion index_buffer_region = {};
   index_buffer_region.buffer = fd->IndexBuffer;
   index_buffer_region.offset = 0;
   index_buffer_region.size = index_size;
@@ -308,9 +308,9 @@ Imgui_ImplParanoixa_PrepareDrawData(ImDrawData *draw_data,
   command_buffer->EndCopyPass(copy_pass);
 }
 static void ImGui_ImplParanoixa_SetupRenderState(
-    ImDrawData *draw_data, px::Ptr<px::GraphicsPipeline> pipeline,
-    px::Ptr<px::CommandBuffer> command_buffer,
-    px::Ptr<px::RenderPass> render_pass, ImGui_ImplParanoixa_FrameData *fd,
+    ImDrawData *draw_data, rhi::Ptr<rhi::GraphicsPipeline> pipeline,
+    rhi::Ptr<rhi::CommandBuffer> command_buffer,
+    rhi::Ptr<rhi::RenderPass> render_pass, ImGui_ImplParanoixa_FrameData *fd,
     uint32_t fb_width, uint32_t fb_height) {
   ImGui_ImplParanoixa_Data *bd = ImGui_ImplParanoixa_GetBackendData();
 
@@ -319,26 +319,28 @@ static void ImGui_ImplParanoixa_SetupRenderState(
 
   // Bind Vertex And Index Buffers
   if (draw_data->TotalVtxCount > 0) {
-    px::Array<px::BufferBinding> vertex_buffer_bindings(bd->InitInfo.Allocator);
-    px::BufferBinding vertex_buffer_binding;
+    rhi::Array<rhi::BufferBinding> vertex_buffer_bindings(
+        bd->InitInfo.Allocator);
+    rhi::BufferBinding vertex_buffer_binding;
     vertex_buffer_binding.buffer = fd->VertexBuffer;
     vertex_buffer_binding.offset = 0;
     vertex_buffer_bindings.push_back(vertex_buffer_binding);
 
-    px::Array<px::BufferBinding> index_buffer_bindings(bd->InitInfo.Allocator);
-    px::BufferBinding index_buffer_binding = {};
+    rhi::Array<rhi::BufferBinding> index_buffer_bindings(
+        bd->InitInfo.Allocator);
+    rhi::BufferBinding index_buffer_binding = {};
     index_buffer_binding.buffer = fd->IndexBuffer;
     index_buffer_binding.offset = 0;
     index_buffer_bindings.push_back(index_buffer_binding);
     render_pass->BindVertexBuffers(0, vertex_buffer_bindings);
     render_pass->BindIndexBuffer(index_buffer_binding,
                                  sizeof(ImDrawIdx) == 2
-                                     ? px::IndexElementSize::Uint16
-                                     : px::IndexElementSize::Uint32);
+                                     ? rhi::IndexElementSize::Uint16
+                                     : rhi::IndexElementSize::Uint32);
   }
 
   // Setup viewport
-  px::Viewport viewport = {};
+  rhi::Viewport viewport = {};
   viewport.x = 0;
   viewport.y = 0;
   viewport.width = (float)fb_width;
@@ -364,9 +366,9 @@ static void ImGui_ImplParanoixa_SetupRenderState(
 
 IMGUI_IMPL_API void
 ImGui_ImplParanoixa_RenderDrawData(ImDrawData *draw_data,
-                                   px::Ptr<px::CommandBuffer> command_buffer,
-                                   px::Ptr<px::RenderPass> render_pass,
-                                   px::Ptr<px::GraphicsPipeline> pipeline) {
+                                   rhi::Ptr<rhi::CommandBuffer> command_buffer,
+                                   rhi::Ptr<rhi::RenderPass> render_pass,
+                                   rhi::Ptr<rhi::GraphicsPipeline> pipeline) {
   int fb_width =
       (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
   int fb_height =
@@ -429,8 +431,8 @@ ImGui_ImplParanoixa_RenderDrawData(ImDrawData *draw_data,
                                 clip_max.y - clip_min.y);
 
         // Bind DescriptorSet with font or user texture
-        px::Array<px::TextureSamplerBinding> bindings(bd->InitInfo.Allocator);
-        auto *binding = (px::TextureSamplerBinding *)pcmd->GetTexID();
+        rhi::Array<rhi::TextureSamplerBinding> bindings(bd->InitInfo.Allocator);
+        auto *binding = (rhi::TextureSamplerBinding *)pcmd->GetTexID();
         bindings.push_back(*binding);
         render_pass->BindFragmentSamplers(0, bindings);
 
@@ -454,14 +456,14 @@ IMGUI_IMPL_API void ImGui_ImplParanoixa_CreateDeviceObjects() {
     // Bilinear sampling is required by default. Set 'io.Fonts->Flags |=
     // ImFontAtlasFlags_NoBakedLines' or 'style.AntiAliasedLinesUseTex =
     // false' to allow point/nearest sampling.
-    px::Sampler::CreateInfo sampler_info = {};
+    rhi::Sampler::CreateInfo sampler_info = {};
     sampler_info.allocator = v->Allocator;
-    sampler_info.minFilter = px::Filter::Linear;
-    sampler_info.magFilter = px::Filter::Linear;
-    sampler_info.mipmapMode = px::MipmapMode::Linear;
-    sampler_info.addressModeU = px::AddressMode::ClampToEdge;
-    sampler_info.addressModeV = px::AddressMode::ClampToEdge;
-    sampler_info.addressModeW = px::AddressMode::ClampToEdge;
+    sampler_info.minFilter = rhi::Filter::Linear;
+    sampler_info.magFilter = rhi::Filter::Linear;
+    sampler_info.mipmapMode = rhi::MipmapMode::Linear;
+    sampler_info.addressModeU = rhi::AddressMode::ClampToEdge;
+    sampler_info.addressModeV = rhi::AddressMode::ClampToEdge;
+    sampler_info.addressModeW = rhi::AddressMode::ClampToEdge;
     sampler_info.mipLodBias = 0.0f;
     sampler_info.minLod = -1000.0f;
     sampler_info.maxLod = 1000.0f;
@@ -500,16 +502,16 @@ IMGUI_IMPL_API void ImGui_ImplParanoixa_CreateFontsTexture() {
 
   // Create the Image:
   {
-    px::Texture::CreateInfo texture_info = {};
+    rhi::Texture::CreateInfo texture_info = {};
     texture_info.allocator = bd->InitInfo.Allocator;
-    texture_info.type = px::TextureType::Texture2D;
-    texture_info.format = px::TextureFormat::R8G8B8A8_UNORM;
-    texture_info.usage = px::TextureUsage::Sampler;
+    texture_info.type = rhi::TextureType::Texture2D;
+    texture_info.format = rhi::TextureFormat::R8G8B8A8_UNORM;
+    texture_info.usage = rhi::TextureUsage::Sampler;
     texture_info.width = width;
     texture_info.height = height;
     texture_info.layerCountOrDepth = 1;
     texture_info.numLevels = 1;
-    texture_info.sampleCount = px::SampleCount::x1;
+    texture_info.sampleCount = rhi::SampleCount::x1;
 
     bd->FontTexture = v->Device->CreateTexture(texture_info);
     IM_ASSERT(bd->FontTexture && "Failed to create font texture");
@@ -520,12 +522,12 @@ IMGUI_IMPL_API void ImGui_ImplParanoixa_CreateFontsTexture() {
 
   // Create all the upload structures and upload:
   {
-    px::TransferBuffer::CreateInfo transferbuffer_info = {};
+    rhi::TransferBuffer::CreateInfo transferbuffer_info = {};
     transferbuffer_info.allocator = v->Allocator;
-    transferbuffer_info.usage = px::TransferBufferUsage::Upload;
+    transferbuffer_info.usage = rhi::TransferBufferUsage::Upload;
     transferbuffer_info.size = upload_size;
 
-    px::Ptr<px::TransferBuffer> transferbuffer =
+    rhi::Ptr<rhi::TransferBuffer> transferbuffer =
         v->Device->CreateTransferBuffer(transferbuffer_info);
     IM_ASSERT(transferbuffer != nullptr &&
               "Failed to create font transfer buffer");
@@ -534,19 +536,19 @@ IMGUI_IMPL_API void ImGui_ImplParanoixa_CreateFontsTexture() {
     memcpy(texture_ptr, pixels, upload_size);
     transferbuffer->Unmap();
 
-    px::TextureTransferInfo transfer_info = {};
+    rhi::TextureTransferInfo transfer_info = {};
     transfer_info.offset = 0;
     transfer_info.transferBuffer = transferbuffer;
 
-    px::TextureRegion texture_region = {};
+    rhi::TextureRegion texture_region = {};
     texture_region.texture = bd->FontTexture;
     texture_region.width = width;
     texture_region.height = height;
     texture_region.depth = 1;
 
-    px::Ptr<px::CommandBuffer> cmd =
+    rhi::Ptr<rhi::CommandBuffer> cmd =
         v->Device->AcquireCommandBuffer({bd->InitInfo.Allocator});
-    px::Ptr<px::CopyPass> copy_pass = cmd->BeginCopyPass();
+    rhi::Ptr<rhi::CopyPass> copy_pass = cmd->BeginCopyPass();
     copy_pass->UploadTexture(transfer_info, texture_region, false);
     cmd->EndCopyPass(copy_pass);
     v->Device->SubmitCommandBuffer(cmd);
@@ -559,3 +561,5 @@ IMGUI_IMPL_API void ImGui_ImplParanoixa_CreateFontsTexture() {
 IMGUI_IMPL_API void ImGui_ImplParanoixa_DestroyFontsTexture() {
   return IMGUI_IMPL_API void();
 }
+
+} // namespace sinen

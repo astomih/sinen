@@ -232,7 +232,7 @@ bool saveEXRFloat(const char *path, const float *img, int W, int H, int C) {
   return true;
 }
 
-static void writeTexture(px::Ptr<px::Texture> texture,
+static void writeTexture(rhi::Ptr<rhi::Texture> texture,
                          const std::array<std::vector<float>, 6> &faces) {
   auto allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
@@ -244,28 +244,28 @@ static void writeTexture(px::Ptr<px::Texture> texture,
     data.insert(data.end(), faces[i].begin(), faces[i].end());
   }
 
-  px::Ptr<px::TransferBuffer> transbuffers[6];
+  rhi::Ptr<rhi::TransferBuffer> transbuffers[6];
   for (int i = 0; i < 6; ++i) {
-    px::TransferBuffer::CreateInfo info{};
+    rhi::TransferBuffer::CreateInfo info{};
     info.allocator = allocator;
     info.size = width * height * 4 * sizeof(float);
-    info.usage = px::TransferBufferUsage::Upload;
+    info.usage = rhi::TransferBufferUsage::Upload;
     transbuffers[i] = device->CreateTransferBuffer(info);
     auto *pMapped = transbuffers[i]->Map(true);
     memcpy(pMapped, faces[i].data(), info.size);
     transbuffers[i]->Unmap();
   }
   {
-    px::CommandBuffer::CreateInfo info{};
+    rhi::CommandBuffer::CreateInfo info{};
     info.allocator = allocator;
     auto commandBuffer = device->AcquireCommandBuffer(info);
     auto copyPass = commandBuffer->BeginCopyPass();
 
     for (int i = 0; i < 6; i++) {
-      px::TextureTransferInfo src{};
+      rhi::TextureTransferInfo src{};
       src.offset = 0;
       src.transferBuffer = transbuffers[i];
-      px::TextureRegion dst{};
+      rhi::TextureRegion dst{};
       dst.layer = i;
       dst.x = 0;
       dst.y = 0;
@@ -281,25 +281,25 @@ static void writeTexture(px::Ptr<px::Texture> texture,
   }
   device->WaitForGPUIdle();
 }
-px::Ptr<px::Texture>
+rhi::Ptr<rhi::Texture>
 createNativeCubemapTexture(const std::array<std::vector<float>, 6> &faces,
-                           px::TextureFormat textureFormat, uint32_t width,
+                           rhi::TextureFormat textureFormat, uint32_t width,
                            uint32_t height) {
   auto allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
 
-  Ptr<px::Texture> texture;
+  rhi::Ptr<rhi::Texture> texture;
   {
-    px::Texture::CreateInfo info{};
+    rhi::Texture::CreateInfo info{};
     info.allocator = allocator;
     info.width = width;
     info.height = height;
     info.layerCountOrDepth = 6;
     info.format = textureFormat;
-    info.usage = px::TextureUsage::Sampler;
+    info.usage = rhi::TextureUsage::Sampler;
     info.numLevels = 1;
-    info.sampleCount = px::SampleCount::x1;
-    info.type = px::TextureType::Cube;
+    info.sampleCount = rhi::SampleCount::x1;
+    info.type = rhi::TextureType::Cube;
     texture = device->CreateTexture(info);
   }
   writeTexture(texture, faces);
@@ -320,7 +320,7 @@ bool Cubemap::load(std::string_view path) {
   equirectToCubemap(equirect.data(), W, H, C, faceSize, faces);
 
   this->nativeCubemap = createNativeCubemapTexture(
-      faces, px::TextureFormat::R32G32B32A32_FLOAT, faceSize, faceSize);
+      faces, rhi::TextureFormat::R32G32B32A32_FLOAT, faceSize, faceSize);
   return true;
 }
 } // namespace sinen

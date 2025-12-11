@@ -2,17 +2,17 @@
 #define SINEN_CUBEMAP_HPP
 #include <string_view>
 
-#include <graphics/paranoixa/paranoixa.hpp>
+#include <graphics/rhi/rhi.hpp>
 
 namespace sinen {
 class Cubemap {
 public:
   bool load(std::string_view path);
 
-  px::Ptr<px::Texture> getNativeCubemap() const { return nativeCubemap; }
+  rhi::Ptr<rhi::Texture> getNativeCubemap() const { return nativeCubemap; }
 
 private:
-  px::Ptr<px::Texture> nativeCubemap;
+  rhi::Ptr<rhi::Texture> nativeCubemap;
 };
 } // namespace sinen
 

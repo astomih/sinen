@@ -22,7 +22,7 @@
 #include "webgpu_renderer.hpp"
 #include <iostream>
 
-namespace paranoixa {
+namespace sinen::rhi {
 #define COUNT_OF(x)                                                            \
   ((sizeof(x) / sizeof(0 [x])) / ((size_t)(!(sizeof(x) % sizeof(0 [x])))))
 WebGPURenderer::WebGPURenderer(Allocator *allocator)

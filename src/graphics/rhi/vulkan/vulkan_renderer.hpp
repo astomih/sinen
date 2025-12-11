@@ -13,7 +13,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <memory>
-namespace paranoixa {
+namespace sinen::rhi {
 
 class VulkanRenderer {
 public:
@@ -118,7 +118,7 @@ private:
 
   std::vector<std::function<void()>> guiCallBacks;
 };
-} // namespace paranoixa
+} // namespace sinen::rhi
 #endif // __EMSCRIPTEN__
 #endif // PARANOIXA_VULKAN_RENDERER_HPP
 #endif

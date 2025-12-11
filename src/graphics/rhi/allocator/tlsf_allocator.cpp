@@ -2,7 +2,7 @@
 
 #include <tlsf.h>
 
-namespace paranoixa {
+namespace sinen::rhi {
 TLSFAllocator::TLSFAllocator(const std::size_t &size)
     : mem(nullptr), tlsf(nullptr) {
   mem = malloc(size);
@@ -22,4 +22,4 @@ void TLSFAllocator::do_deallocate(void *ptr, std::size_t size,
   tlsf_free(tlsf, ptr);
 }
 
-} // namespace paranoixa
+} // namespace sinen::rhi

@@ -1,6 +1,6 @@
 #ifndef SINEN_RENDER_TEXTURE_HPP
 #define SINEN_RENDER_TEXTURE_HPP
-#include <graphics/paranoixa/paranoixa.hpp>
+#include <graphics/rhi/rhi.hpp>
 namespace sinen {
 class RenderTexture {
 public:
@@ -11,12 +11,12 @@ public:
   int width;
   int height;
 
-  px::Ptr<px::Texture> getTexture() const;
-  px::Ptr<px::Texture> getDepthStencil() const;
+  rhi::Ptr<rhi::Texture> getTexture() const;
+  rhi::Ptr<rhi::Texture> getDepthStencil() const;
 
 private:
-  px::Ptr<px::Texture> texture;
-  px::Ptr<px::Texture> depthStencil;
+  rhi::Ptr<rhi::Texture> texture;
+  rhi::Ptr<rhi::Texture> depthStencil;
 };
 } // namespace sinen
 #endif // SINEN_RENDER_TEXTURE_HPP

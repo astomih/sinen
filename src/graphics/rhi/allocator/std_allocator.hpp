@@ -1,8 +1,8 @@
-#ifndef PARANOIXA_STD_ALLOCATOR_HPP
-#define PARANOIXA_STD_ALLOCATOR_HPP
-#include <graphics/paranoixa/paranoixa.hpp>
+#ifndef SINEN_STD_ALLOCATOR_HPP
+#define SINEN_STD_ALLOCATOR_HPP
+#include <graphics/rhi/rhi.hpp>
 
-namespace paranoixa {
+namespace sinen::rhi {
 class StdAllocator : public std::pmr::memory_resource {
 public:
   StdAllocator(const std::size_t &size);
@@ -18,5 +18,5 @@ public:
 private:
 };
 
-} // namespace paranoixa
-#endif // PARANOIXA_TLSF_ALLOCATOR_HPP
+} // namespace sinen::rhi
+#endif

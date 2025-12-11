@@ -4,12 +4,12 @@
 #include <asset/model/model.hpp>
 
 namespace sinen {
-std::pair<px::Ptr<px::Buffer>, px::Ptr<px::Buffer>>
+std::pair<rhi::Ptr<rhi::Buffer>, rhi::Ptr<rhi::Buffer>>
 createVertexIndexBuffer(const std::vector<Vertex> &vertices,
                         const std::vector<uint32_t> &indices);
-px::Ptr<px::Buffer>
+rhi::Ptr<rhi::Buffer>
 createAnimationVertexBuffer(const std::vector<AnimationVertex> &vertices);
-px::Ptr<px::Buffer> createBuffer(size_t size, void *data,
-                                 px::BufferUsage usage);
+rhi::Ptr<rhi::Buffer> createBuffer(size_t size, void *data,
+                                   rhi::BufferUsage usage);
 } // namespace sinen
 #endif // SINEN_MODEL_DATA_HPP

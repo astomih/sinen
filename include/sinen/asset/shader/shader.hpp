@@ -1,6 +1,6 @@
 #ifndef SINEN_SHADER_HPP
 #define SINEN_SHADER_HPP
-#include <graphics/paranoixa/paranoixa.hpp>
+#include <graphics/rhi/rhi.hpp>
 
 #include <memory>
 #include <string>
@@ -26,7 +26,7 @@ public:
 private:
   friend class GraphicsPipeline2D;
   friend class GraphicsPipeline;
-  px::Ptr<px::Shader> shader;
+  rhi::Ptr<rhi::Shader> shader;
 };
 } // namespace sinen
 #endif // !SINEN_SHADER_HPP

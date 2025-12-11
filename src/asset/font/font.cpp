@@ -12,7 +12,7 @@
 #include <asset/texture/texture.hpp>
 #include <core/io/asset_io.hpp>
 #include <core/logger/logger.hpp>
-#include <graphics/paranoixa/paranoixa.hpp>
+#include <graphics/rhi/rhi.hpp>
 #include <math/color/color.hpp>
 
 // external
@@ -32,7 +32,7 @@ static constexpr int NUM_KANJI = 0x9FFF - 0x3000 + 1;
 const uint32_t sheetSize = 4096;
 struct Font::Wrapper {
   std::vector<std::vector<stbtt_packedchar>> packedChar;
-  px::Ptr<px::Texture> texture;
+  rhi::Ptr<rhi::Texture> texture;
 };
 Font::Font() = default;
 Font::Font(int32_t point, std::string_view file_name) {
@@ -101,9 +101,9 @@ bool Font::load(int pointSize) {
     }
   }
 
-  this->font->texture =
-      createNativeTexture(atlasBitmap.data(), px::TextureFormat::R8G8B8A8_UNORM,
-                          sheetSize, sheetSize);
+  this->font->texture = createNativeTexture(atlasBitmap.data(),
+                                            rhi::TextureFormat::R8G8B8A8_UNORM,
+                                            sheetSize, sheetSize);
 
   return true;
 }

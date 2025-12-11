@@ -5,32 +5,32 @@
 #include "SDL3/SDL_pixels.h"
 #include <SDL3/SDL.h>
 namespace sinen {
-template <typename T> using Ptr = px::Ptr<T>;
-static void writeTexture(px::Ptr<px::Texture> texture, void *pPixels) {
+template <typename T> using Ptr = rhi::Ptr<T>;
+static void writeTexture(rhi::Ptr<rhi::Texture> texture, void *pPixels) {
   auto allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
   uint32_t width = texture->getCreateInfo().width,
            height = texture->getCreateInfo().height;
-  Ptr<px::TransferBuffer> transferBuffer;
+  Ptr<rhi::TransferBuffer> transferBuffer;
   {
-    px::TransferBuffer::CreateInfo info{};
+    rhi::TransferBuffer::CreateInfo info{};
     info.allocator = allocator;
     info.size = width * height * 4;
-    info.usage = px::TransferBufferUsage::Upload;
+    info.usage = rhi::TransferBufferUsage::Upload;
     transferBuffer = device->CreateTransferBuffer(info);
     auto *pMapped = transferBuffer->Map(true);
     memcpy(pMapped, pPixels, info.size);
     transferBuffer->Unmap();
   }
   {
-    px::CommandBuffer::CreateInfo info{};
+    rhi::CommandBuffer::CreateInfo info{};
     info.allocator = allocator;
     auto commandBuffer = device->AcquireCommandBuffer(info);
     auto copyPass = commandBuffer->BeginCopyPass();
-    px::TextureTransferInfo src{};
+    rhi::TextureTransferInfo src{};
     src.offset = 0;
     src.transferBuffer = transferBuffer;
-    px::TextureRegion dst{};
+    rhi::TextureRegion dst{};
     dst.x = 0;
     dst.y = 0;
     dst.width = width;
@@ -43,30 +43,30 @@ static void writeTexture(px::Ptr<px::Texture> texture, void *pPixels) {
   }
   device->WaitForGPUIdle();
 }
-px::Ptr<px::Texture> createNativeTexture(void *pPixels,
-                                         px::TextureFormat textureFormat,
-                                         uint32_t width, uint32_t height) {
+rhi::Ptr<rhi::Texture> createNativeTexture(void *pPixels,
+                                           rhi::TextureFormat textureFormat,
+                                           uint32_t width, uint32_t height) {
   auto allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
 
-  Ptr<px::Texture> texture;
+  Ptr<rhi::Texture> texture;
   {
-    px::Texture::CreateInfo info{};
+    rhi::Texture::CreateInfo info{};
     info.allocator = allocator;
     info.width = width;
     info.height = height;
     info.layerCountOrDepth = 1;
     info.format = textureFormat;
-    info.usage = px::TextureUsage::Sampler;
+    info.usage = rhi::TextureUsage::Sampler;
     info.numLevels = 1;
-    info.sampleCount = px::SampleCount::x1;
-    info.type = px::TextureType::Texture2D;
+    info.sampleCount = rhi::SampleCount::x1;
+    info.type = rhi::TextureType::Texture2D;
     texture = device->CreateTexture(info);
   }
   writeTexture(texture, pPixels);
   return texture;
 }
-Ptr<px::Texture> createNativeTexture(SDL_Surface *pSurface) {
+Ptr<rhi::Texture> createNativeTexture(SDL_Surface *pSurface) {
   auto allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
   auto *pImageDataSurface =
@@ -74,14 +74,14 @@ Ptr<px::Texture> createNativeTexture(SDL_Surface *pSurface) {
   int width = pImageDataSurface->w, height = pImageDataSurface->h;
   auto texture =
       createNativeTexture(pImageDataSurface->pixels,
-                          px::TextureFormat::R8G8B8A8_UNORM, width, height);
+                          rhi::TextureFormat::R8G8B8A8_UNORM, width, height);
   SDL_DestroySurface(pImageDataSurface);
   return texture;
 }
-void UpdateNativeTexture(px::Ptr<px::Texture> texture, void *pPixels) {
+void UpdateNativeTexture(rhi::Ptr<rhi::Texture> texture, void *pPixels) {
   writeTexture(texture, pPixels);
 }
-void UpdateNativeTexture(Ptr<px::Texture> texture, SDL_Surface *pSurface) {
+void UpdateNativeTexture(Ptr<rhi::Texture> texture, SDL_Surface *pSurface) {
   auto *pImageDataSurface = ::SDL_ConvertSurface(
       pSurface, pSurface->format == SDL_PIXELFORMAT_RGBA8888
                     ? pSurface->format

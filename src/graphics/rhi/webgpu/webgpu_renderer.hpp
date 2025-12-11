@@ -8,7 +8,7 @@
 #include <graphics/paranoixa/paranoixa.hpp>
 #include <webgpu/webgpu.h>
 
-namespace paranoixa {
+namespace sinen::rhi {
 class WebGPURenderer {
 public:
   WebGPURenderer(Allocator *pAllocator);

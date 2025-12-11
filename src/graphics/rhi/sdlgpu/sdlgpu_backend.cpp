@@ -1,4 +1,4 @@
-#include <graphics/paranoixa/paranoixa.hpp>
+#include <graphics/rhi/rhi.hpp>
 #include <memory>
 #ifndef EMSCRIPTEN
 #include "sdlgpu_backend.hpp"
@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-namespace paranoixa::sdlgpu {
+namespace sinen::rhi::sdlgpu {
 Ptr<px::Device> Backend::CreateDevice(const Device::CreateInfo &createInfo) {
   SDL_GPUDevice *device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV,
                                               createInfo.debugMode, nullptr);
@@ -539,5 +539,5 @@ Texture::~Texture() {
 
 Shader::~Shader() { SDL_ReleaseGPUShader(device->GetNative(), shader); }
 Sampler::~Sampler() { SDL_ReleaseGPUSampler(device->GetNative(), sampler); }
-} // namespace paranoixa::sdlgpu
+} // namespace sinen::rhi::sdlgpu
 #endif // EMSCRIPTEN

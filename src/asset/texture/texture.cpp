@@ -12,14 +12,14 @@
 
 #include "texture_data.hpp"
 
-#include <graphics/paranoixa/paranoixa.hpp>
+#include <graphics/rhi/rhi.hpp>
 
 namespace sinen {
 Texture::Texture() { this->texture = nullptr; }
 Texture::Texture(int width, int height) {
   std::vector<uint8_t> pixels(width * height * 4, 0);
   this->texture = createNativeTexture(
-      pixels.data(), px::TextureFormat::R8G8B8A8_UNORM, width, height);
+      pixels.data(), rhi::TextureFormat::R8G8B8A8_UNORM, width, height);
 }
 Texture::~Texture() {}
 
@@ -34,7 +34,7 @@ bool Texture::load(std::string_view fileName) {
   pixels = stbi_load_from_memory(reinterpret_cast<unsigned char *>(str.data()),
                                  str.size(), &width, &height, &bpp, 4);
 
-  texture = createNativeTexture(pixels, px::TextureFormat::R8G8B8A8_UNORM,
+  texture = createNativeTexture(pixels, rhi::TextureFormat::R8G8B8A8_UNORM,
                                 width, height);
   return true;
 }
@@ -44,7 +44,7 @@ bool Texture::loadFromPath(std::string_view path) {
   int bpp;
 
   auto *pixels = stbi_load(path.data(), &width, &height, &bpp, 4);
-  texture = createNativeTexture(pixels, px::TextureFormat::R8G8B8A8_UNORM,
+  texture = createNativeTexture(pixels, rhi::TextureFormat::R8G8B8A8_UNORM,
                                 width, height);
   return true;
 }
@@ -58,13 +58,13 @@ bool Texture::loadFromMemory(std::vector<char> &buffer) {
       stbi_load_from_memory(reinterpret_cast<unsigned char *>(buffer.data()),
                             buffer.size(), &width, &height, &bpp, 4);
 
-  this->texture = createNativeTexture(pixels, px::TextureFormat::R8G8B8A8_UNORM,
-                                      width, height);
+  this->texture = createNativeTexture(
+      pixels, rhi::TextureFormat::R8G8B8A8_UNORM, width, height);
   return true;
 }
 
 bool Texture::loadFromMemory(void *pPixels, uint32_t width, uint32_t height) {
-  texture = createNativeTexture(pPixels, px::TextureFormat::R8G8B8A8_UNORM,
+  texture = createNativeTexture(pPixels, rhi::TextureFormat::R8G8B8A8_UNORM,
                                 width, height);
   return true;
 }
@@ -89,7 +89,7 @@ void Texture::fill(const Color &color) {
     pixels[2] = color.b * 255;
     pixels[3] = color.a * 255;
     texture = createNativeTexture(pixels.data(),
-                                  px::TextureFormat::R8G8B8A8_UNORM, 1, 1);
+                                  rhi::TextureFormat::R8G8B8A8_UNORM, 1, 1);
   }
 }
 

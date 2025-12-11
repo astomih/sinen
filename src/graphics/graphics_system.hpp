@@ -16,8 +16,8 @@
 #include <platform/window/window.hpp>
 
 namespace sinen {
-template <typename T> using Ptr = px::Ptr<T>;
-template <typename T> using Array = px::Array<T>;
+template <typename T> using Ptr = rhi::Ptr<T>;
+template <typename T> using Array = rhi::Array<T>;
 class GraphicsSystem {
 public:
   static void initialize();
@@ -71,19 +71,19 @@ public:
   static Model box;
   static Model sprite;
 
-  static px::Allocator *getAllocator() {
-    static auto allocator = px::Paranoixa::CreateAllocator(0xffff);
+  static rhi::Allocator *getAllocator() {
+    static auto allocator = rhi::Paranoixa::CreateAllocator(0xffff);
     return allocator;
   }
 
-  static px::Ptr<px::Device> getDevice() { return device; }
+  static rhi::Ptr<rhi::Device> getDevice() { return device; }
 
   inline static GraphicsPipeline pipeline2D;
   inline static GraphicsPipeline pipeline3D;
   inline static GraphicsPipeline pipelineInstanced3D;
 
 private:
-  static void beginRenderPass(bool depthEnabled, px::LoadOp loadOp);
+  static void beginRenderPass(bool depthEnabled, rhi::LoadOp loadOp);
   static void prepareRenderPassFrame();
   static void setupShapes();
   static Color clearColor;
@@ -94,24 +94,24 @@ private:
   static bool showImGui;
   static std::list<std::function<void()>> imguiFunctions;
 
-  inline static px::Allocator *allocator = getAllocator();
-  inline static Ptr<px::Backend> backend;
-  inline static Ptr<px::Device> device;
-  inline static Ptr<px::Texture> depthTexture;
-  inline static Ptr<px::Sampler> sampler;
+  inline static rhi::Allocator *allocator = getAllocator();
+  inline static Ptr<rhi::Backend> backend;
+  inline static Ptr<rhi::Device> device;
+  inline static Ptr<rhi::Texture> depthTexture;
+  inline static Ptr<rhi::Sampler> sampler;
   inline static GraphicsPipeline currentPipeline;
-  inline static px::Ptr<px::CommandBuffer> mainCommandBuffer;
-  inline static px::Ptr<px::CommandBuffer> currentCommandBuffer;
-  inline static px::Ptr<px::RenderPass> currentRenderPass;
+  inline static rhi::Ptr<rhi::CommandBuffer> mainCommandBuffer;
+  inline static rhi::Ptr<rhi::CommandBuffer> currentCommandBuffer;
+  inline static rhi::Ptr<rhi::RenderPass> currentRenderPass;
   inline static bool isFrameStarted = true;
   inline static bool isPrevDepthEnabled = true;
   inline static bool isChangedRenderTarget = false;
   inline static uint32_t drawCallCountPerFrame = 0;
-  inline static px::Array<px::ColorTargetInfo> colorTargets =
-      px::Array<px::ColorTargetInfo>(getAllocator());
-  inline static px::DepthStencilTargetInfo depthStencilInfo;
-  inline static px::Array<px::ColorTargetInfo> currentColorTargets;
-  inline static px::DepthStencilTargetInfo currentDepthStencilInfo;
+  inline static rhi::Array<rhi::ColorTargetInfo> colorTargets =
+      rhi::Array<rhi::ColorTargetInfo>(getAllocator());
+  inline static rhi::DepthStencilTargetInfo depthStencilInfo;
+  inline static rhi::Array<rhi::ColorTargetInfo> currentColorTargets;
+  inline static rhi::DepthStencilTargetInfo currentDepthStencilInfo;
 };
 } // namespace sinen
 #endif // !SINEN_RENDER_SYSTEM_HPP

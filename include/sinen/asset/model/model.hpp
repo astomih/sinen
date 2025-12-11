@@ -10,7 +10,7 @@
 #include "mesh.hpp"
 #include <asset/texture/material.hpp>
 
-#include <graphics/paranoixa/paranoixa.hpp>
+#include <graphics/rhi/rhi.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -97,10 +97,10 @@ public:
   const Mesh &getMesh() const { return mesh; }
   void setMesh(const Mesh &m) { mesh = mesh; }
 
-  px::Ptr<px::Buffer> vertexBuffer;
-  px::Ptr<px::Buffer> tangentBuffer;
-  px::Ptr<px::Buffer> animationVertexBuffer;
-  px::Ptr<px::Buffer> indexBuffer;
+  rhi::Ptr<rhi::Buffer> vertexBuffer;
+  rhi::Ptr<rhi::Buffer> tangentBuffer;
+  rhi::Ptr<rhi::Buffer> animationVertexBuffer;
+  rhi::Ptr<rhi::Buffer> indexBuffer;
 
   using BoneMap = std::unordered_map<std::string, BoneInfo>;
   const BoneMap &getBoneMap() const { return boneMap; }

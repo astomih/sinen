@@ -1,5 +1,5 @@
-#ifndef PARANOIXA_HPP
-#define PARANOIXA_HPP
+#ifndef SINEN_RHI_HPP
+#define SINEN_RHI_HPP
 #include <cassert>
 #include <cstdint>
 #include <cstdlib>
@@ -12,7 +12,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace paranoixa {
+namespace sinen::rhi {
 // Macro to define the build type
 #ifdef _DEBUG
 #define PARANOIXA_BUILD_DEBUG
@@ -611,6 +611,5 @@ public:
                                     const GraphicsAPI &api);
   static Allocator *CreateAllocator(size_t size);
 };
-} // namespace paranoixa
-namespace px = paranoixa;
+} // namespace sinen::rhi
 #endif

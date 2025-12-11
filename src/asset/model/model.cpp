@@ -390,14 +390,15 @@ void Model::load(std::string_view path) {
   auto viBuffer = createVertexIndexBuffer(mesh.vertices, mesh.indices);
   this->vertexBuffer =
       createBuffer(mesh.vertices.size() * sizeof(Vertex), mesh.vertices.data(),
-                   px::BufferUsage::Vertex);
+                   rhi::BufferUsage::Vertex);
   this->animationVertexBuffer =
       createAnimationVertexBuffer(skeletalAnimation.animationVertices);
   this->tangentBuffer =
       createBuffer(mesh.tangents.size() * sizeof(glm::vec4),
-                   mesh.tangents.data(), px::BufferUsage::Vertex);
-  this->indexBuffer = createBuffer(mesh.indices.size() * sizeof(uint32_t),
-                                   mesh.indices.data(), px::BufferUsage::Index);
+                   mesh.tangents.data(), rhi::BufferUsage::Vertex);
+  this->indexBuffer =
+      createBuffer(mesh.indices.size() * sizeof(uint32_t), mesh.indices.data(),
+                   rhi::BufferUsage::Index);
 }
 void Model::loadFromPath(std::string_view path) {
   // Assimp
@@ -421,14 +422,15 @@ void Model::loadFromPath(std::string_view path) {
   auto viBuffer = createVertexIndexBuffer(mesh.vertices, mesh.indices);
   this->vertexBuffer =
       createBuffer(mesh.vertices.size() * sizeof(Vertex), mesh.vertices.data(),
-                   px::BufferUsage::Vertex);
+                   rhi::BufferUsage::Vertex);
   this->animationVertexBuffer =
       createAnimationVertexBuffer(skeletalAnimation.animationVertices);
   this->tangentBuffer =
       createBuffer(mesh.tangents.size() * sizeof(glm::vec4),
-                   mesh.tangents.data(), px::BufferUsage::Vertex);
-  this->indexBuffer = createBuffer(mesh.indices.size() * sizeof(uint32_t),
-                                   mesh.indices.data(), px::BufferUsage::Index);
+                   mesh.tangents.data(), rhi::BufferUsage::Vertex);
+  this->indexBuffer =
+      createBuffer(mesh.indices.size() * sizeof(uint32_t), mesh.indices.data(),
+                   rhi::BufferUsage::Index);
 }
 
 void Model::loadFromVertexArray(const Mesh &mesh) {
@@ -453,39 +455,39 @@ void Model::loadBox() { *this = GraphicsSystem::box; }
 
 const AABB &Model::getAABB() const { return this->localAABB; }
 
-std::pair<px::Ptr<px::Buffer>, px::Ptr<px::Buffer>>
+std::pair<rhi::Ptr<rhi::Buffer>, rhi::Ptr<rhi::Buffer>>
 createVertexIndexBuffer(const std::vector<Vertex> &vertices,
                         const std::vector<uint32_t> &indices) {
   auto allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
   size_t vertexBufferSize = vertices.size() * sizeof(Vertex);
-  px::Ptr<px::Buffer> vertexBuffer, indexBuffer;
-  px::Buffer::CreateInfo vertexBufferInfo{};
+  rhi::Ptr<rhi::Buffer> vertexBuffer, indexBuffer;
+  rhi::Buffer::CreateInfo vertexBufferInfo{};
   vertexBufferInfo.allocator = allocator;
   vertexBufferInfo.size = vertexBufferSize;
-  vertexBufferInfo.usage = px::BufferUsage::Vertex;
+  vertexBufferInfo.usage = rhi::BufferUsage::Vertex;
   vertexBuffer = device->CreateBuffer(vertexBufferInfo);
 
-  px::Buffer::CreateInfo indexBufferInfo{};
+  rhi::Buffer::CreateInfo indexBufferInfo{};
   indexBufferInfo.allocator = allocator;
   indexBufferInfo.size = indices.size() * sizeof(uint32_t);
-  indexBufferInfo.usage = px::BufferUsage::Index;
+  indexBufferInfo.usage = rhi::BufferUsage::Index;
   indexBuffer = device->CreateBuffer(indexBufferInfo);
 
-  px::Ptr<px::TransferBuffer> transferBuffer;
+  rhi::Ptr<rhi::TransferBuffer> transferBuffer;
   {
     {
-      px::TransferBuffer::CreateInfo info{};
+      rhi::TransferBuffer::CreateInfo info{};
       info.allocator = allocator;
       info.size = vertexBufferSize;
-      info.usage = px::TransferBufferUsage::Upload;
+      info.usage = rhi::TransferBufferUsage::Upload;
       transferBuffer = device->CreateTransferBuffer(info);
       auto *pMapped = transferBuffer->Map(false);
       memcpy(pMapped, vertices.data(), vertices.size() * sizeof(Vertex));
       transferBuffer->Unmap();
     }
     {
-      px::CommandBuffer::CreateInfo info{};
+      rhi::CommandBuffer::CreateInfo info{};
       info.allocator = allocator;
       auto commandBuffer = device->AcquireCommandBuffer(info);
       {
@@ -493,10 +495,10 @@ createVertexIndexBuffer(const std::vector<Vertex> &vertices,
         auto copyPass = commandBuffer->BeginCopyPass();
         {
 
-          px::BufferTransferInfo src{};
+          rhi::BufferTransferInfo src{};
           src.offset = 0;
           src.transferBuffer = transferBuffer;
-          px::BufferRegion dst{};
+          rhi::BufferRegion dst{};
           dst.offset = 0;
           dst.size = vertexBufferSize;
           dst.buffer = vertexBuffer;
@@ -508,10 +510,10 @@ createVertexIndexBuffer(const std::vector<Vertex> &vertices,
     }
   }
   {
-    px::TransferBuffer::CreateInfo info{};
+    rhi::TransferBuffer::CreateInfo info{};
     info.allocator = allocator;
     info.size = indexBufferInfo.size;
-    info.usage = px::TransferBufferUsage::Upload;
+    info.usage = rhi::TransferBufferUsage::Upload;
     transferBuffer = device->CreateTransferBuffer(info);
     auto *pMapped = transferBuffer->Map(false);
     memcpy(pMapped, indices.data(), indexBufferInfo.size);
@@ -519,7 +521,7 @@ createVertexIndexBuffer(const std::vector<Vertex> &vertices,
   }
   {
     {
-      px::CommandBuffer::CreateInfo info{};
+      rhi::CommandBuffer::CreateInfo info{};
       info.allocator = allocator;
       auto commandBuffer = device->AcquireCommandBuffer(info);
       {
@@ -527,10 +529,10 @@ createVertexIndexBuffer(const std::vector<Vertex> &vertices,
         auto copyPass = commandBuffer->BeginCopyPass();
         {
 
-          px::BufferTransferInfo src{};
+          rhi::BufferTransferInfo src{};
           src.offset = 0;
           src.transferBuffer = transferBuffer;
-          px::BufferRegion dst{};
+          rhi::BufferRegion dst{};
           dst.offset = 0;
           dst.size = indexBufferInfo.size;
           dst.buffer = indexBuffer;
@@ -543,27 +545,27 @@ createVertexIndexBuffer(const std::vector<Vertex> &vertices,
   }
   return std::make_pair(vertexBuffer, indexBuffer);
 }
-px::Ptr<px::Buffer>
+rhi::Ptr<rhi::Buffer>
 createAnimationVertexBuffer(const std::vector<AnimationVertex> &vertices) {
   if (vertices.empty())
     return nullptr;
   auto allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
   size_t vertexBufferSize = vertices.size() * sizeof(AnimationVertex);
-  px::Ptr<px::Buffer> vertexBuffer;
-  px::Buffer::CreateInfo vertexBufferInfo{};
+  rhi::Ptr<rhi::Buffer> vertexBuffer;
+  rhi::Buffer::CreateInfo vertexBufferInfo{};
   vertexBufferInfo.allocator = allocator;
   vertexBufferInfo.size = vertexBufferSize;
-  vertexBufferInfo.usage = px::BufferUsage::Vertex;
+  vertexBufferInfo.usage = rhi::BufferUsage::Vertex;
   vertexBuffer = device->CreateBuffer(vertexBufferInfo);
 
-  px::Ptr<px::TransferBuffer> transferBuffer;
+  rhi::Ptr<rhi::TransferBuffer> transferBuffer;
   {
     {
-      px::TransferBuffer::CreateInfo info{};
+      rhi::TransferBuffer::CreateInfo info{};
       info.allocator = allocator;
       info.size = vertexBufferSize;
-      info.usage = px::TransferBufferUsage::Upload;
+      info.usage = rhi::TransferBufferUsage::Upload;
       transferBuffer = device->CreateTransferBuffer(info);
       auto *pMapped = transferBuffer->Map(false);
       memcpy(pMapped, vertices.data(),
@@ -571,7 +573,7 @@ createAnimationVertexBuffer(const std::vector<AnimationVertex> &vertices) {
       transferBuffer->Unmap();
     }
     {
-      px::CommandBuffer::CreateInfo info{};
+      rhi::CommandBuffer::CreateInfo info{};
       info.allocator = allocator;
       auto commandBuffer = device->AcquireCommandBuffer(info);
       {
@@ -579,10 +581,10 @@ createAnimationVertexBuffer(const std::vector<AnimationVertex> &vertices) {
         auto copyPass = commandBuffer->BeginCopyPass();
         {
 
-          px::BufferTransferInfo src{};
+          rhi::BufferTransferInfo src{};
           src.offset = 0;
           src.transferBuffer = transferBuffer;
-          px::BufferRegion dst{};
+          rhi::BufferRegion dst{};
           dst.offset = 0;
           dst.size = vertexBufferSize;
           dst.buffer = vertexBuffer;
@@ -595,34 +597,34 @@ createAnimationVertexBuffer(const std::vector<AnimationVertex> &vertices) {
   }
   return vertexBuffer;
 }
-px::Ptr<px::Buffer> createBuffer(size_t size, void *data,
-                                 px::BufferUsage usage) {
+rhi::Ptr<rhi::Buffer> createBuffer(size_t size, void *data,
+                                   rhi::BufferUsage usage) {
 
   if (!data)
     return nullptr;
   auto allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
-  px::Ptr<px::Buffer> buffer;
-  px::Buffer::CreateInfo vertexBufferInfo{};
+  rhi::Ptr<rhi::Buffer> buffer;
+  rhi::Buffer::CreateInfo vertexBufferInfo{};
   vertexBufferInfo.allocator = allocator;
   vertexBufferInfo.size = size;
   vertexBufferInfo.usage = usage;
   buffer = device->CreateBuffer(vertexBufferInfo);
 
-  px::Ptr<px::TransferBuffer> transferBuffer;
+  rhi::Ptr<rhi::TransferBuffer> transferBuffer;
   {
     {
-      px::TransferBuffer::CreateInfo info{};
+      rhi::TransferBuffer::CreateInfo info{};
       info.allocator = allocator;
       info.size = size;
-      info.usage = px::TransferBufferUsage::Upload;
+      info.usage = rhi::TransferBufferUsage::Upload;
       transferBuffer = device->CreateTransferBuffer(info);
       auto *pMapped = transferBuffer->Map(false);
       memcpy(pMapped, data, size);
       transferBuffer->Unmap();
     }
     {
-      px::CommandBuffer::CreateInfo info{};
+      rhi::CommandBuffer::CreateInfo info{};
       info.allocator = allocator;
       auto commandBuffer = device->AcquireCommandBuffer(info);
       {
@@ -630,10 +632,10 @@ px::Ptr<px::Buffer> createBuffer(size_t size, void *data,
         auto copyPass = commandBuffer->BeginCopyPass();
         {
 
-          px::BufferTransferInfo src{};
+          rhi::BufferTransferInfo src{};
           src.offset = 0;
           src.transferBuffer = transferBuffer;
-          px::BufferRegion dst{};
+          rhi::BufferRegion dst{};
           dst.offset = 0;
           dst.size = size;
           dst.buffer = buffer;

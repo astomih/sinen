@@ -39,11 +39,12 @@ Font::Font(int32_t point, std::string_view file_name) {
   load(point, file_name);
 }
 Font::~Font() {}
-bool Font::load(int pointSize) {
-  this->font = std::make_unique<Wrapper>();
-  this->font->packedChar.resize(5);
-  auto &pc = this->font->packedChar;
+static bool loadCore(const unsigned char *fontData,
+                     std::vector<std::vector<stbtt_packedchar>> &pc,
+                     rhi::Ptr<rhi::Texture> &texture, int pointSize,
+                     int sheetSize) {
   stbtt_pack_range ranges[5] = {};
+  pc.resize(std::size(ranges));
   // Hiragana
   pc[0].resize(NUM_HIRA);
   ranges[0].font_size = pointSize;
@@ -78,15 +79,12 @@ bool Font::load(int pointSize) {
   ranges[4].num_chars = NUM_ASCII;
   ranges[4].chardata_for_range = pc[4].data();
 
-  this->m_size = pointSize;
   stbtt_pack_context spc;
-  this->font->sheetSize = pointSize * 128;
-  auto &sheetSize = this->font->sheetSize;
   std::vector<unsigned char> atlasBitmap(sheetSize * sheetSize * 4);
   std::vector<unsigned char> temp(sheetSize * sheetSize);
   stbtt_PackBegin(&spc, temp.data(), sheetSize, sheetSize, 0, 1, NULL);
   stbtt_PackSetOversampling(&spc, 2, 2);
-  stbtt_PackFontRanges(&spc, mplus_1p_medium_ttf, 0, ranges, 5);
+  stbtt_PackFontRanges(&spc, fontData, 0, ranges, std::size(ranges));
   stbtt_PackEnd(&spc);
   // 1ch -> 4ch (R8G8B8A8)
   for (int y = 0; y < sheetSize; ++y) {
@@ -103,13 +101,29 @@ bool Font::load(int pointSize) {
     }
   }
 
-  this->font->texture = createNativeTexture(atlasBitmap.data(),
-                                            rhi::TextureFormat::R8G8B8A8_UNORM,
-                                            sheetSize, sheetSize);
+  texture = createNativeTexture(atlasBitmap.data(),
+                                rhi::TextureFormat::R8G8B8A8_UNORM, sheetSize,
+                                sheetSize);
 
   return true;
 }
-bool Font::load(int pointSize, std::string_view fontName) { return true; }
+bool Font::load(int pointSize) {
+  this->font = std::make_unique<Wrapper>();
+  this->m_size = pointSize;
+  this->font->sheetSize = pointSize * 128;
+
+  return loadCore(mplus_1p_medium_ttf, this->font->packedChar,
+                  this->font->texture, pointSize, this->font->sheetSize);
+}
+bool Font::load(int pointSize, std::string_view fontName) {
+  this->font = std::make_unique<Wrapper>();
+  this->m_size = pointSize;
+  this->font->sheetSize = pointSize * 128;
+  return loadCore(reinterpret_cast<const unsigned char *>(
+                      AssetIO::openAsString(AssetType::Font, fontName).data()),
+                  this->font->packedChar, this->font->texture, pointSize,
+                  this->font->sheetSize);
+}
 bool Font::loadFromPath(int pointSize, std::string_view path) { return true; }
 
 void Font::unload() {}
@@ -126,21 +140,23 @@ const char *utf8ToCodepoint(const char *p, uint32_t *out_cp) {
   if (c < 0x80) {
     *out_cp = c;
     return p + 1;
-  } else if ((c & 0xE0) == 0xC0) {
+  }
+  if ((c & 0xE0) == 0xC0) {
     *out_cp = ((uint32_t)(c & 0x1F) << 6) | ((uint32_t)(p[1] & 0x3F));
     return p + 2;
-  } else if ((c & 0xF0) == 0xE0) {
+  }
+  if ((c & 0xF0) == 0xE0) {
     *out_cp = ((uint32_t)(c & 0x0F) << 12) | ((uint32_t)(p[1] & 0x3F) << 6) |
               ((uint32_t)(p[2] & 0x3F));
     return p + 3;
-  } else if ((c & 0xF8) == 0xF0) {
+  }
+  if ((c & 0xF8) == 0xF0) {
     *out_cp = ((uint32_t)(c & 0x07) << 18) | ((uint32_t)(p[1] & 0x3F) << 12) |
               ((uint32_t)(p[2] & 0x3F) << 6) | ((uint32_t)(p[3] & 0x3F));
     return p + 4;
-  } else {
-    *out_cp = 0xFFFD;
-    return p + 1;
   }
+  *out_cp = 0xFFFD;
+  return p + 1;
 }
 
 Mesh Font::getTextMesh(std::string_view text) const {

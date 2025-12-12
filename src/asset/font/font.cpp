@@ -29,10 +29,10 @@ namespace sinen {
 static constexpr int NUM_KANJI = 0x9FFF - 0x3000 + 1;
 #define NUM_ASCII (0x007F - 0x0020 + 1)
 
-const uint32_t sheetSize = 4096;
 struct Font::Wrapper {
   std::vector<std::vector<stbtt_packedchar>> packedChar;
   rhi::Ptr<rhi::Texture> texture;
+  uint32_t sheetSize = 0;
 };
 Font::Font() = default;
 Font::Font(int32_t point, std::string_view file_name) {
@@ -44,14 +44,14 @@ bool Font::load(int pointSize) {
   this->font->packedChar.resize(5);
   auto &pc = this->font->packedChar;
   stbtt_pack_range ranges[5] = {};
-  // ひらがな
+  // Hiragana
   pc[0].resize(NUM_HIRA);
   ranges[0].font_size = pointSize;
   ranges[0].first_unicode_codepoint_in_range = 0x3040;
   ranges[0].num_chars = NUM_HIRA;
   ranges[0].chardata_for_range = pc[0].data();
 
-  // カタカナ
+  // Katakana
   pc[1].resize(NUM_KATA);
   ranges[1].font_size = pointSize;
   ranges[1].first_unicode_codepoint_in_range = 0x30A0;
@@ -64,7 +64,7 @@ bool Font::load(int pointSize) {
   ranges[2].num_chars = NUM_ASCII_FWIDTH;
   ranges[2].chardata_for_range = pc[2].data();
 
-  // 漢字
+  // Kanji
   pc[3].resize(NUM_KANJI);
   ranges[3].font_size = pointSize;
   ranges[3].first_unicode_codepoint_in_range = 0x3000;
@@ -80,13 +80,15 @@ bool Font::load(int pointSize) {
 
   this->m_size = pointSize;
   stbtt_pack_context spc;
+  this->font->sheetSize = pointSize * 128;
+  auto &sheetSize = this->font->sheetSize;
   std::vector<unsigned char> atlasBitmap(sheetSize * sheetSize * 4);
   std::vector<unsigned char> temp(sheetSize * sheetSize);
   stbtt_PackBegin(&spc, temp.data(), sheetSize, sheetSize, 0, 1, NULL);
   stbtt_PackSetOversampling(&spc, 2, 2);
   stbtt_PackFontRanges(&spc, mplus_1p_medium_ttf, 0, ranges, 5);
   stbtt_PackEnd(&spc);
-  // 1ch → 4ch (R8G8B8A8)
+  // 1ch -> 4ch (R8G8B8A8)
   for (int y = 0; y < sheetSize; ++y) {
     for (int x = 0; x < sheetSize; ++x) {
       int idx_gray = y * sheetSize + x;
@@ -143,6 +145,8 @@ const char *utf8ToCodepoint(const char *p, uint32_t *out_cp) {
 
 Mesh Font::getTextMesh(std::string_view text) const {
 
+  assert(this->font);
+
   Mesh textMesh;
   float x = 0.f, y = 0.f;
   const char *p = text.data();
@@ -152,19 +156,19 @@ Mesh Font::getTextMesh(std::string_view text) const {
     stbtt_aligned_quad q;
     uint32_t idx1 = 0, idx2 = 0;
     if (cp >= 0x3040 && cp <= 0x309F) {
-      // ひらがな
+      // Hiragana
       idx1 = 0;
       idx2 = cp - 0x3040;
     } else if (cp >= 0x30A0 && cp <= 0x30FF) {
-      // カタカナ
+      // Katakana
       idx1 = 1;
       idx2 = cp - 0x30A0;
     } else if (cp >= 0xFF01 && cp <= 0xFF5E) {
-      // 全角
+      // Zenkaku
       idx1 = 2;
       idx2 = cp - 0xFF01;
     } else if (cp >= 0x3000 && cp <= 0x9FFF) {
-      // 漢字
+      // Kanji
       idx1 = 3;
       idx2 = cp - 0x3000;
     } else if (cp >= 0x0020 && cp <= 0x007F) {
@@ -173,6 +177,7 @@ Mesh Font::getTextMesh(std::string_view text) const {
       idx2 = cp - 0x0020;
     }
 
+    uint32_t sheetSize = this->font->sheetSize;
     stbtt_GetPackedQuad(this->font->packedChar[idx1].data(), sheetSize,
                         sheetSize, idx2, &x, &y, &q, 1);
     uint32_t startIndex = textMesh.vertices.size();

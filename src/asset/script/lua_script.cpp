@@ -50,7 +50,7 @@ bool LuaScript::Initialize() {
   state.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math,
                        sol::lib::bit32, sol::lib::io, sol::lib::os,
                        sol::lib::string, sol::lib::debug, sol::lib::table,
-                       sol::lib::coroutine);
+                       sol::lib::coroutine, sol::lib::utf8);
   auto lua = state.create_table("sn");
   {
     auto &v = lua;

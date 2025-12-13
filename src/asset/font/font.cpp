@@ -23,11 +23,20 @@
 #include "default/mplus-1p-medium.ttf.hpp"
 
 namespace sinen {
-#define NUM_HIRA (0x309F - 0x3040 + 1)
 #define NUM_KATA (0x30FF - 0x30A0 + 1)
 #define NUM_ASCII_FWIDTH (0xFF5E - 0xFF01 + 1)
 static constexpr int NUM_KANJI = 0x9FFF - 0x3000 + 1;
 #define NUM_ASCII (0x007F - 0x0020 + 1)
+
+struct CodepointRange {
+  constexpr CodepointRange(uint32_t first, uint32_t last)
+      : first(first), last(last), count(last - first + 1) {}
+  uint32_t first;
+  uint32_t last;
+  uint32_t count;
+};
+
+constexpr CodepointRange HIRAGANA = {0x3042, 0x309E};
 
 struct Font::Wrapper {
   std::vector<std::vector<stbtt_packedchar>> packedChar;
@@ -46,10 +55,10 @@ static bool loadCore(const unsigned char *fontData,
   stbtt_pack_range ranges[5] = {};
   pc.resize(std::size(ranges));
   // Hiragana
-  pc[0].resize(NUM_HIRA);
+  pc[0].resize(HIRAGANA.count);
   ranges[0].font_size = pointSize;
-  ranges[0].first_unicode_codepoint_in_range = 0x3040;
-  ranges[0].num_chars = NUM_HIRA;
+  ranges[0].first_unicode_codepoint_in_range = HIRAGANA.first;
+  ranges[0].num_chars = HIRAGANA.count;
   ranges[0].chardata_for_range = pc[0].data();
 
   // Katakana
@@ -83,7 +92,6 @@ static bool loadCore(const unsigned char *fontData,
   std::vector<unsigned char> atlasBitmap(sheetSize * sheetSize * 4);
   std::vector<unsigned char> temp(sheetSize * sheetSize);
   stbtt_PackBegin(&spc, temp.data(), sheetSize, sheetSize, 0, 1, NULL);
-  stbtt_PackSetOversampling(&spc, 2, 2);
   stbtt_PackFontRanges(&spc, fontData, 0, ranges, std::size(ranges));
   stbtt_PackEnd(&spc);
   // 1ch -> 4ch (R8G8B8A8)
@@ -171,10 +179,10 @@ Mesh Font::getTextMesh(std::string_view text) const {
     const auto *next = utf8ToCodepoint(p, &cp);
     stbtt_aligned_quad q;
     uint32_t idx1 = 0, idx2 = 0;
-    if (cp >= 0x3040 && cp <= 0x309F) {
+    if (cp >= HIRAGANA.first && cp <= HIRAGANA.last) {
       // Hiragana
       idx1 = 0;
-      idx2 = cp - 0x3040;
+      idx2 = cp - HIRAGANA.first;
     } else if (cp >= 0x30A0 && cp <= 0x30FF) {
       // Katakana
       idx1 = 1;

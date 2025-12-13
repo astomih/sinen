@@ -56,6 +56,21 @@ file(
         ${SINEN_SOURCE_DIR}/libs/imgui/imgui_tables.cpp
         ${SINEN_SOURCE_DIR}/libs/imgui/imgui_widgets.cpp
         ${SINEN_SOURCE_DIR}/libs/imgui/backends/imgui_impl_sdl3.cpp
+
+        ${SINEN_SOURCE_DIR}/libs/luasocket/auxiliar.c
+        ${SINEN_SOURCE_DIR}/libs/luasocket/buffer.c
+        ${SINEN_SOURCE_DIR}/libs/luasocket/compat.c
+        ${SINEN_SOURCE_DIR}/libs/luasocket/except.c
+        ${SINEN_SOURCE_DIR}/libs/luasocket/inet.c
+        ${SINEN_SOURCE_DIR}/libs/luasocket/io.c
+        ${SINEN_SOURCE_DIR}/libs/luasocket/luasocket.c
+        ${SINEN_SOURCE_DIR}/libs/luasocket/mime.c
+        ${SINEN_SOURCE_DIR}/libs/luasocket/options.c
+        ${SINEN_SOURCE_DIR}/libs/luasocket/select.c
+        ${SINEN_SOURCE_DIR}/libs/luasocket/tcp.c
+        ${SINEN_SOURCE_DIR}/libs/luasocket/timeout.c
+        ${SINEN_SOURCE_DIR}/libs/luasocket/udp.c
+        ${SINEN_SOURCE_DIR}/libs/luasocket/wsocket.c
 )
 if (NOT ANDROID)
     list(APPEND
@@ -112,6 +127,7 @@ endif ()
 if (WIN32)
     list(APPEND SINEN_LINK_LIBRARIES d3d12)
     list(APPEND SINEN_LINK_LIBRARIES dxgi)
+    list(APPEND SINEN_LINK_LIBRARIES Ws2_32)
 endif ()
 
 if (ANDROID)

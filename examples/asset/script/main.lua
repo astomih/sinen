@@ -1,6 +1,6 @@
-require("global")
-local button = require("gui/button").new()
-GUI_MANAGER = require("gui/gui_manager")()
+import("global")
+local button = import("gui/button").new()
+GUI_MANAGER = import("gui/gui_manager")()
 
 local exampleDirs = sn.FileSystem.enumerateDirectory(".")
 local numExamples = 13

@@ -38,7 +38,7 @@ static void convertFilePath(const AssetType &type, std::string &filePath,
     filePath = base + std::string{"music/"} + name.data();
     break;
   case AssetType::Script:
-    filePath = base + std::string{"script/"} + name.data();
+    filePath = /*base + std::string{"script/"} +*/ name.data();
     break;
   case AssetType::Shader:
     filePath = base + std::string{"shader/"} + name.data();

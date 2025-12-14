@@ -128,7 +128,7 @@ bool Font::load(int pointSize, std::string_view fontName) {
   this->m_size = pointSize;
   this->font->sheetSize = pointSize * 128;
   return loadCore(reinterpret_cast<const unsigned char *>(
-                      AssetIO::openAsString(AssetType::Font, fontName).data()),
+                      AssetIO::openAsString(fontName).data()),
                   this->font->packedChar, this->font->texture, pointSize,
                   this->font->sheetSize);
 }

@@ -20,7 +20,7 @@ Sound::~Sound() { ma_sound_uninit(&data->sound); }
 
 void Sound::load(std::string_view fileName) {
   data = std::make_unique<Data>();
-  auto path = AssetIO::getFilePath(AssetType::Sound, fileName);
+  auto path = AssetIO::getFilePath(fileName);
   ma_sound_init_from_file(AudioSystem::getEngine(), path.c_str(),
                           MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC, nullptr,
                           nullptr, &data->sound);

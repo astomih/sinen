@@ -29,7 +29,7 @@ bool Texture::load(std::string_view fileName) {
   int height;
   int bpp;
 
-  auto str = AssetIO::openAsString(AssetType::Texture, fileName);
+  auto str = AssetIO::openAsString(fileName);
 
   pixels = stbi_load_from_memory(reinterpret_cast<unsigned char *>(str.data()),
                                  str.size(), &width, &height, &bpp, 4);

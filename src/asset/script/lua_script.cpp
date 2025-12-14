@@ -24,9 +24,6 @@
 #include "sol/raii.hpp"
 #include "sol/types.hpp"
 #include <glm/glm.hpp>
-extern "C" {
-#include <luasocket.h>
-}
 
 namespace sinen {
 class LuaScript final : public IScriptBackend {
@@ -36,7 +33,7 @@ public:
   bool Initialize() override;
   void Finalize() override;
 
-  void RunScene(const std::string_view source) override;
+  void RunScene(const std::string_view source, std::string_view chunk) override;
 
   void Update() override;
   void Draw() override;
@@ -54,32 +51,12 @@ bool LuaScript::Initialize() {
                        sol::lib::bit32, sol::lib::io, sol::lib::os,
                        sol::lib::string, sol::lib::debug, sol::lib::table,
                        sol::lib::coroutine, sol::lib::utf8);
-  lua_State *L = state.lua_state();
-  int result = luaopen_socket_core(L);
-
-  lua_getglobal(L, "package");
-  lua_getfield(L, -1, "preload");
-  lua_pushcfunction(L, luaopen_socket_core);
-  lua_setfield(L, -2, "socket.core");
-  lua_pop(L, 2); // preload, package
 
   auto lua = state.create_table("sn");
   {
     auto &v = lua;
-    state["__original_import"] = [&](const std::string &path,
-                                     const std::string &base) -> sol::object {
-      std::string cwd = base;
-      if (path.find_last_of('/') != std::string::npos) {
-        cwd += "/" + path.substr(0, path.find_last_of('/'));
-      }
-      std::string header = "local __CWD__ = '" + cwd + "'" +
-                           "local function import(module)"
-                           "    __CWD_global__ = __CWD__"
-                           "    return __original_import(module, __CWD__) "
-                           "end ";
-      auto str =
-          AssetIO::openAsString(AssetType::Script, base + "/" + path + ".lua");
-      return state.require_script(base + "/" + path, header + str);
+    state["import"] = [&](const std::string &path) -> sol::object {
+      return state.require_file(path, path + ".lua");
     };
   }
   {
@@ -633,16 +610,9 @@ void LuaScript::Finalize() {
 #endif // SINEN_NO_USE_SCRIPT
 }
 
-void LuaScript::RunScene(const std::string_view source) {
-  std::string cwd = ".";
-  std::string header = "local __CWD__ = '" + cwd + "' " +
-                       "local function import(module) "
-                       "    return __original_import(module, __CWD__) "
-                       "end ";
-
-  std::string final = header + std::string(source);
-
-  state.script(final);
+void LuaScript::RunScene(const std::string_view source,
+                         std::string_view chunk) {
+  state.script(source.data(), chunk.data());
 }
 
 void LuaScript::Update() { state["Update"](); }

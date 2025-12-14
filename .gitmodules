@@ -52,6 +52,3 @@
 [submodule "libs/VulkanMemoryAllocator"]
 	path = libs/VulkanMemoryAllocator
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-[submodule "libs/luasocket"]
-	path = libs/luasocket
-	url = https://github.com/lunarmodules/luasocket

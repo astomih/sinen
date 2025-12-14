@@ -41,8 +41,7 @@ void ScriptSystem::RunScene(std::string_view sceneName) {
     std::string source;
     switch (ScriptSystem::type) {
     case ScriptType::Lua: {
-      source = AssetIO::openAsString(AssetType::Script,
-                                     std::string(sceneName) + ".lua");
+      source = AssetIO::openAsString(std::string(sceneName) + ".lua");
       if (source.empty()) {
         source = nothingSceneLua;
       }
@@ -50,7 +49,8 @@ void ScriptSystem::RunScene(std::string_view sceneName) {
     default:
       break;
     }
-    script->RunScene(source);
+    script->RunScene(AssetIO::openAsString(std::string(sceneName) + ".lua"),
+                     "@" + AssetIO::getFilePath(sceneName) + ".lua");
   }
 }
 

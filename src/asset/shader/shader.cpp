@@ -2,7 +2,6 @@
 #include "../../graphics/graphics_system.hpp"
 #include <asset/shader/shader.hpp>
 #include <core/io/asset_io.hpp>
-#include <core/io/asset_type.hpp>
 
 #include "rt_shader_compiler.hpp"
 
@@ -70,10 +69,9 @@ void Shader::loadVertexShader(std::string_view vertex_shader,
   auto *allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
 
-  SDL_IOStream *file =
-      (SDL_IOStream *)AssetIO::openAsIOStream(AssetType::Shader, vertex_shader);
+  SDL_IOStream *file = (SDL_IOStream *)AssetIO::openAsIOStream(vertex_shader);
 
-  std::string vsStr = AssetIO::openAsString(AssetType::Shader, vertex_shader);
+  std::string vsStr = AssetIO::openAsString(vertex_shader);
 
   rhi::Shader::CreateInfo vsInfo{};
   vsInfo.allocator = allocator;
@@ -93,7 +91,7 @@ void Shader::loadFragmentShader(std::string_view fragment_shader,
   auto *allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
 
-  std::string fsStr = AssetIO::openAsString(AssetType::Shader, fragment_shader);
+  std::string fsStr = AssetIO::openAsString(fragment_shader);
 
   rhi::Shader::CreateInfo fsInfo{};
   fsInfo.allocator = allocator;

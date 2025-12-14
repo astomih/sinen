@@ -5,8 +5,6 @@
 #include <string>
 #include <string_view>
 #include <vector>
-// internal
-#include "asset_type.hpp"
 namespace sinen {
 
 /**
@@ -16,14 +14,13 @@ namespace sinen {
 class AssetIO {
 public:
   static std::vector<uint8_t> key;
-  static std::string_view open(const AssetType &type, std::string_view name);
+  static std::string_view open(std::string_view name);
 
-  static void *openAsIOStream(const AssetType &type, std::string_view name);
+  static void *openAsIOStream(std::string_view name);
 
-  static std::string openAsString(const AssetType &type, std::string_view name);
-  static void write(const AssetType &type, std::string_view name,
-                    std::string_view data);
-  static std::string getFilePath(const AssetType &type, std::string_view name);
+  static std::string openAsString(std::string_view name);
+  static void write(std::string_view name, std::string_view data);
+  static std::string getFilePath(std::string_view name);
 };
 } // namespace sinen
 #endif // !SINEN_DATA_STREAM_HPP

@@ -103,15 +103,12 @@ std::vector<char> ShaderCompiler::compile(std::string_view sourcePath,
                                                 : sourcePath.substr(0, dotPos);
       moduleName = view.data();
     }
-    auto source =
-        sinen::AssetIO::openAsString(sinen::AssetType::Shader, sourcePath);
+    auto source = sinen::AssetIO::openAsString(sourcePath);
     Slang::ComPtr<slang::IBlob> diagnosticsBlob;
     slangModule = session->loadModuleFromSourceString(
-        moduleName.c_str(), // Module name
-        sinen::AssetIO::getFilePath(sinen::AssetType::Shader,
-                                        sourcePath)
-            .c_str(),                // Module path
-        source.data(),               // Shader source code
+        moduleName.c_str(),                              // Module name
+        sinen::AssetIO::getFilePath(sourcePath).c_str(), // Module path
+        source.data(),                                   // Shader source code
         diagnosticsBlob.writeRef()); // Optional diagnostic container
     if (!slangModule) {
       diagnoseIfNeeded(diagnosticsBlob);

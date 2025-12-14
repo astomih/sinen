@@ -368,7 +368,7 @@ void loadMaterial(aiScene *scene, Material &material) {
 
 void Model::load(std::string_view path) {
 
-  auto fullFilePath = AssetIO::getFilePath(AssetType::Model, path.data());
+  auto fullFilePath = AssetIO::getFilePath(path.data());
   // Assimp
   Assimp::Importer importer;
   const auto *scene = importer.ReadFile(

@@ -10,7 +10,7 @@ public:
   virtual bool Initialize() = 0;
   virtual void Finalize() = 0;
 
-  virtual void RunScene(std::string_view source) = 0;
+  virtual void RunScene(std::string_view source, std::string_view chunk) = 0;
 
   virtual void Update() = 0;
   virtual void Draw() = 0;

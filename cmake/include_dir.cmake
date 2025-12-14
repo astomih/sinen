@@ -24,7 +24,6 @@ set(SINEN_INCLUDE_DIRS
         ${SINEN_SOURCE_DIR}/libs/tlsf
         ${SINEN_SOURCE_DIR}/libs/volk
         ${SINEN_SOURCE_DIR}/libs/VulkanMemoryAllocator/include
-        ${SINEN_SOURCE_DIR}/libs/luasocket/src
 )
 
 if (EMSCRIPTEN)

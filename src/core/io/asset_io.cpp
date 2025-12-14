@@ -22,42 +22,15 @@
 #endif
 
 namespace sinen {
-static void convertFilePath(const AssetType &type, std::string &filePath,
-                            std::string_view name) {
-  std::string base = FileSystem::getAppBaseDirectory() + "/" +
-                     MainSystem::GetBasePath() + "/asset/";
-  switch (type) {
-  case AssetType::Font:
-    filePath += base + std::string{"font/"} + name.data();
-    break;
+static void convertFilePath(std::string &filePath, std::string_view name) {
 
-  case AssetType::Model:
-    filePath += base + std::string{"model/"} + name.data();
-    break;
-  case AssetType::Music:
-    filePath = base + std::string{"music/"} + name.data();
-    break;
-  case AssetType::Script:
-    filePath = /*base + std::string{"script/"} +*/ name.data();
-    break;
-  case AssetType::Shader:
-    filePath = base + std::string{"shader/"} + name.data();
-    break;
-  case AssetType::Sound:
-    filePath = base + std::string{"sound/"} + name.data();
-    break;
-  case AssetType::Texture:
-    filePath = base + std::string{"texture/"} + name.data();
-    break;
-
-  default:
-    break;
-  }
+  filePath = FileSystem::getAppBaseDirectory() + "/" +
+             MainSystem::GetBasePath() + "/" + std::string(name);
 }
 std::vector<uint8_t> AssetIO::key = {0};
-std::string_view AssetIO::open(const AssetType &type, std::string_view name) {
+std::string_view AssetIO::open(std::string_view name) {
   std::string filePath;
-  convertFilePath(type, filePath, name);
+  convertFilePath(filePath, name);
   auto *file = SDL_IOFromFile(filePath.c_str(), "r");
   Logger::error("File open error %s: %s", filePath.c_str(), SDL_GetError());
   size_t fileLength;
@@ -70,9 +43,9 @@ std::string_view AssetIO::open(const AssetType &type, std::string_view name) {
   SDL_free(load);
   return result;
 }
-void *AssetIO::openAsIOStream(const AssetType &type, std::string_view name) {
+void *AssetIO::openAsIOStream(std::string_view name) {
   std::string filePath;
-  convertFilePath(type, filePath, name);
+  convertFilePath(filePath, name);
 
   SDL_IOStream *file = SDL_IOFromFile(filePath.c_str(), "r");
   if (!file) {
@@ -81,10 +54,9 @@ void *AssetIO::openAsIOStream(const AssetType &type, std::string_view name) {
   }
   return file;
 }
-std::string AssetIO::openAsString(const AssetType &type,
-                                  std::string_view name) {
+std::string AssetIO::openAsString(std::string_view name) {
   std::string filePath;
-  convertFilePath(type, filePath, name);
+  convertFilePath(filePath, name);
   auto *file = SDL_IOFromFile(filePath.c_str(), "r");
   if (!file) {
     Logger::error(std::string("Sinen file open error" + filePath).c_str());
@@ -101,10 +73,9 @@ std::string AssetIO::openAsString(const AssetType &type,
   return result;
 }
 
-void AssetIO::write(const AssetType &type, std::string_view name,
-                    std::string_view data) {
+void AssetIO::write(std::string_view name, std::string_view data) {
   std::string filePath;
-  convertFilePath(type, filePath, name);
+  convertFilePath(filePath, name);
   auto *file = SDL_IOFromFile(filePath.c_str(), "w");
   if (!file) {
     return;
@@ -115,9 +86,9 @@ void AssetIO::write(const AssetType &type, std::string_view name,
   SDL_CloseIO(file);
 }
 
-std::string AssetIO::getFilePath(const AssetType &type, std::string_view name) {
+std::string AssetIO::getFilePath(std::string_view name) {
   std::string filePath;
-  convertFilePath(type, filePath, name);
+  convertFilePath(filePath, name);
   return filePath;
 }
 

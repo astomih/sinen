@@ -23,11 +23,6 @@
 #include "default/mplus-1p-medium.ttf.hpp"
 
 namespace sinen {
-#define NUM_KATA (0x30FF - 0x30A0 + 1)
-#define NUM_ASCII_FWIDTH (0xFF5E - 0xFF01 + 1)
-static constexpr int NUM_KANJI = 0x9FFF - 0x3000 + 1;
-#define NUM_ASCII (0x007F - 0x0020 + 1)
-
 struct CodepointRange {
   constexpr CodepointRange(uint32_t first, uint32_t last)
       : first(first), last(last), count(last - first + 1) {}
@@ -37,6 +32,10 @@ struct CodepointRange {
 };
 
 constexpr CodepointRange HIRAGANA = {0x3042, 0x309E};
+constexpr CodepointRange KATAKANA = {0x30A0, 0x30FF};
+constexpr CodepointRange KANJI = {0x3000, 0x9FFF};
+constexpr CodepointRange ASCII_FWIDTH = {0xFF01, 0xFF5E};
+constexpr CodepointRange ASCII = {0x0020, 0x007F};
 
 struct Font::Wrapper {
   std::vector<std::vector<stbtt_packedchar>> packedChar;
@@ -62,30 +61,31 @@ static bool loadCore(const unsigned char *fontData,
   ranges[0].chardata_for_range = pc[0].data();
 
   // Katakana
-  pc[1].resize(NUM_KATA);
+  pc[1].resize(KATAKANA.count);
   ranges[1].font_size = pointSize;
-  ranges[1].first_unicode_codepoint_in_range = 0x30A0;
-  ranges[1].num_chars = NUM_KATA;
+  ranges[1].first_unicode_codepoint_in_range = KATAKANA.first;
+  ranges[1].num_chars = KATAKANA.count;
   ranges[1].chardata_for_range = pc[1].data();
 
-  pc[2].resize(NUM_ASCII_FWIDTH);
+  // ASCII WIDTH
+  pc[2].resize(ASCII_FWIDTH.count);
   ranges[2].font_size = pointSize;
-  ranges[2].first_unicode_codepoint_in_range = 0xFF01;
-  ranges[2].num_chars = NUM_ASCII_FWIDTH;
+  ranges[2].first_unicode_codepoint_in_range = ASCII_FWIDTH.first;
+  ranges[2].num_chars = ASCII_FWIDTH.count;
   ranges[2].chardata_for_range = pc[2].data();
 
   // Kanji
-  pc[3].resize(NUM_KANJI);
+  pc[3].resize(KANJI.count);
   ranges[3].font_size = pointSize;
-  ranges[3].first_unicode_codepoint_in_range = 0x3000;
-  ranges[3].num_chars = NUM_KANJI;
+  ranges[3].first_unicode_codepoint_in_range = KANJI.first;
+  ranges[3].num_chars = KANJI.count;
   ranges[3].chardata_for_range = pc[3].data();
 
   // ASCII
-  pc[4].resize(NUM_ASCII);
+  pc[4].resize(ASCII.count);
   ranges[4].font_size = pointSize;
-  ranges[4].first_unicode_codepoint_in_range = 0x0020;
-  ranges[4].num_chars = NUM_ASCII;
+  ranges[4].first_unicode_codepoint_in_range = ASCII.first;
+  ranges[4].num_chars = ASCII.count;
   ranges[4].chardata_for_range = pc[4].data();
 
   stbtt_pack_context spc;
@@ -184,22 +184,22 @@ Mesh Font::getTextMesh(std::string_view text) const {
       // Hiragana
       idx1 = 0;
       idx2 = cp - HIRAGANA.first;
-    } else if (cp >= 0x30A0 && cp <= 0x30FF) {
+    } else if (cp >= KATAKANA.first && cp <= KATAKANA.last) {
       // Katakana
       idx1 = 1;
-      idx2 = cp - 0x30A0;
-    } else if (cp >= 0xFF01 && cp <= 0xFF5E) {
+      idx2 = cp - KATAKANA.first;
+    } else if (cp >= ASCII_FWIDTH.first && cp <= ASCII_FWIDTH.last) {
       // Zenkaku
       idx1 = 2;
-      idx2 = cp - 0xFF01;
-    } else if (cp >= 0x3000 && cp <= 0x9FFF) {
+      idx2 = cp - ASCII_FWIDTH.first;
+    } else if (cp >= KANJI.first && cp <= KANJI.last) {
       // Kanji
       idx1 = 3;
-      idx2 = cp - 0x3000;
-    } else if (cp >= 0x0020 && cp <= 0x007F) {
+      idx2 = cp - KANJI.first;
+    } else if (cp >= ASCII.first && cp <= ASCII.last) {
       // ASCII
       idx1 = 4;
-      idx2 = cp - 0x0020;
+      idx2 = cp - ASCII.first;
     }
 
     uint32_t sheetSize = this->font->sheetSize;

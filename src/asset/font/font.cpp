@@ -173,6 +173,7 @@ Mesh Font::getTextMesh(std::string_view text) const {
 
   Mesh textMesh;
   float x = 0.f, y = 0.f;
+  glm::vec2 yrange(99999, -99999);
   const char *p = text.data();
   while (*p) {
     uint32_t cp;
@@ -214,6 +215,8 @@ Mesh Font::getTextMesh(std::string_view text) const {
         {q.x1 * 4.f, -q.y0 * 4.f, 0}, {1, 1, 1}, {q.s1, q.t0}, {1, 1, 1, 1}});
     vertices.push_back(Vertex{
         {q.x1 * 4.f, -q.y1 * 4.f, 0}, {1, 1, 1}, {q.s1, q.t1}, {1, 1, 1, 1}});
+    yrange.x = std::min(yrange.x, -q.y1 * 4.f);
+    yrange.y = std::max(yrange.y, -q.y0 * 4.f);
 
     textMesh.indices.push_back(startIndex + 0);
     textMesh.indices.push_back(startIndex + 1);
@@ -225,6 +228,7 @@ Mesh Font::getTextMesh(std::string_view text) const {
   }
   for (auto &v : textMesh.vertices) {
     v.position.x -= x * 2.f;
+    v.position.y -= (yrange.y - yrange.x) / 2.f;
   }
   textMesh.indexCount = textMesh.indices.size();
   return textMesh;

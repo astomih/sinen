@@ -1,6 +1,5 @@
 ---@diagnostic disable: duplicate-index, lowercase-global
 import = function(name) end
----@class sn
 sn = {
     ---@class sn.Vec3
     ---@field x number

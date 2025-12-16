@@ -79,8 +79,8 @@ endif ()
 file(
         GLOB_RECURSE
         SINEN_HEADER_FILES
-        ${SINEN_SOURCE_DIR}/include/*.hpp
-        ${SINEN_SOURCE_DIR}/include/*.inl
+        ${SINEN_SOURCE_DIR}/src/*.hpp
+        ${SINEN_SOURCE_DIR}/src/*.inl
         ${SINEN_SOURCE_DIR}/*.hpp
 )
 

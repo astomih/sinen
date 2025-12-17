@@ -14,7 +14,6 @@ include(${SINEN_SOURCE_DIR}/cmake/include_dir.cmake)
 
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/assimp EXCLUDE_FROM_ALL)
-add_subdirectory(${SINEN_SOURCE_DIR}/libs/zep EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/sol2 EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/JoltPhysics/Build EXCLUDE_FROM_ALL)
 if (WIN32)
@@ -97,7 +96,6 @@ target_include_directories(
 set(SINEN_LINK_LIBRARIES
         SDL3::SDL3
         assimp
-        Zep::Zep
         Jolt
 )
 
@@ -130,7 +128,6 @@ target_link_libraries(
 )
 target_compile_definitions(sinen PUBLIC
         AL_LIBTYPE_STATIC
-        ZEP_USE_SDL
         MAKE_LIB
         $<$<BOOL:${SINEN_USE_SLANG}>:SINEN_USE_SLANG>
 )

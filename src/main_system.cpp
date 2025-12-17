@@ -20,9 +20,6 @@
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 
-#include "editor.hpp"
-#include <zep.h>
-
 namespace sinen {
 MainSystem::State MainSystem::m_game_state = State::quit;
 bool MainSystem::is_run_script = true;
@@ -113,19 +110,8 @@ void MainSystem::update_scene() {
     if (Keyboard::isPressed(Keyboard::Code::F3) ||
         KeyInput::isPressed(KeyInput::AC_BACK)) {
       Graphics::toggleShowImGui();
-      static bool z_init = false;
       if (Graphics::isShowImGui()) {
         Graphics::addImGuiFunction([&]() {
-          if (!z_init) {
-            zep_init(Zep::NVec2f(1.0f, 1.0f));
-            zep_load();
-            z_init = true;
-          }
-          zep_update();
-          Zep::NVec2i size =
-              Zep::NVec2i(Window::size().x, Window::size().y * (3.f / 4.f));
-          zep_show(size);
-
           // Log Window
           ImGui::SetNextWindowPos(ImVec2(0, Window::size().y * (3.f / 4.f)),
                                   ImGuiCond_Always);

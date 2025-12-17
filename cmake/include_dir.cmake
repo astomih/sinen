@@ -12,7 +12,6 @@ set(SINEN_INCLUDE_DIRS
         ${SINEN_SOURCE_DIR}/libs/assimp/include
         ${SINEN_SOURCE_DIR}/libs/glm
         ${SINEN_SOURCE_DIR}/libs/SDL/include
-        ${SINEN_SOURCE_DIR}/libs/zep/include
         ${SINEN_SOURCE_DIR}/libs/sol2/include
         ${SINEN_SOURCE_DIR}/libs/stb
         ${SINEN_SOURCE_DIR}/libs/slang/include

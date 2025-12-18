@@ -13,15 +13,15 @@ void RenderTexture::create(int width, int height) {
   info.width = width;
   info.height = height;
   info.layerCountOrDepth = 1;
-  info.format = GraphicsSystem::getDevice()->GetSwapchainFormat();
+  info.format = GraphicsSystem::getDevice()->getSwapchainFormat();
   info.usage = rhi::TextureUsage::ColorTarget;
   info.numLevels = 1;
   info.sampleCount = rhi::SampleCount::x1;
   info.type = rhi::TextureType::Texture2D;
-  texture = device->CreateTexture(info);
+  texture = device->createTexture(info);
   info.format = rhi::TextureFormat::D32_FLOAT_S8_UINT;
   info.usage = rhi::TextureUsage::DepthStencilTarget;
-  depthStencil = device->CreateTexture(info);
+  depthStencil = device->createTexture(info);
 
   this->width = width;
   this->height = height;

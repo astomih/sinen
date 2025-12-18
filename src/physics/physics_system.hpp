@@ -26,26 +26,26 @@
 namespace sinen {
 class PhysicsSystem {
 public:
-  static bool Initialize();
-  static void Shutdown();
+  static bool initialize();
+  static void shutdown();
 
-  static void PostSetup();
-  static void Update();
+  static void postSetup();
+  static void update();
 
-  static glm::vec3 GetPosition(const Collider &collider);
-  static glm::vec3 GetVelocity(const Collider &collider);
-  static void SetLinearVelocity(const Collider &collider,
+  static glm::vec3 getPosition(const Collider &collider);
+  static glm::vec3 getVelocity(const Collider &collider);
+  static void setLinearVelocity(const Collider &collider,
                                 const glm::vec3 &velocity);
 
-  static Collider CreateBoxCollider(const Transform &transform, bool isStatic);
-  static Collider CreateSphereCollider(const glm::vec3 &position, float radius,
+  static Collider createBoxCollider(const Transform &transform, bool isStatic);
+  static Collider createSphereCollider(const glm::vec3 &position, float radius,
                                        bool isStatic);
-  static Collider CreateCylinderCollider(const glm::vec3 &position,
+  static Collider createCylinderCollider(const glm::vec3 &position,
                                          const glm::vec3 &rotation,
                                          float halfHeight, float radius,
                                          bool isStatic);
 
-  static void AddCollider(const Collider &collider, bool active);
+  static void addCollider(const Collider &collider, bool active);
 
 private:
   struct RawData {

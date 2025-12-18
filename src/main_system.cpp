@@ -21,13 +21,13 @@
 #include <imgui_impl_sdl3.h>
 
 namespace sinen {
-MainSystem::State MainSystem::m_game_state = State::quit;
-bool MainSystem::is_run_script = true;
-uint32_t MainSystem::m_prev_tick = 0;
-bool MainSystem::is_reset = true;
-std::string MainSystem::m_scene_name = "main";
+MainSystem::State MainSystem::mGameState = MainSystem::State::quit;
+bool MainSystem::isRunScript = true;
+uint32_t MainSystem::mPrevTick = 0;
+bool MainSystem::isReset = true;
+std::string MainSystem::mSceneName = "main";
 std::string MainSystem::basePath = ".";
-float MainSystem::deltaTime = 0.f;
+float MainSystem::mDeltaTime = 0.f;
 struct ImGuiLog {
   struct Type {
     ImVec4 color;
@@ -80,24 +80,24 @@ bool MainSystem::initialize(int argc, char *argv[]) {
   return true;
 }
 void MainSystem::setup() {
-  if (is_run_script) {
-    ScriptSystem::RunScene(GetCurrentName());
-    PhysicsSystem::PostSetup();
+  if (isRunScript) {
+    ScriptSystem::runScene(getCurrentName());
+    PhysicsSystem::postSetup();
   }
-  m_game_state = State::running;
-  m_prev_tick = SDL_GetTicks();
+  mGameState = State::running;
+  mPrevTick = SDL_GetTicks();
 }
 
-void MainSystem::process_input() {
+void MainSystem::processInput() {
 
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
     ImGui_ImplSDL3_ProcessEvent(&event);
-    WindowSystem::process_input(event);
-    InputSystem::process_event(event);
+    WindowSystem::processInput(event);
+    InputSystem::processEvent(event);
     switch (event.type) {
     case SDL_EVENT_QUIT: {
-      m_game_state = State::quit;
+      mGameState = MainSystem::State::quit;
     } break;
     default:
       break;
@@ -105,7 +105,7 @@ void MainSystem::process_input() {
   }
 }
 
-void MainSystem::update_scene() {
+void MainSystem::updateScene() {
   {
     if (Keyboard::isPressed(Keyboard::Code::F3) ||
         KeyInput::isPressed(KeyInput::AC_BACK)) {
@@ -130,31 +130,31 @@ void MainSystem::update_scene() {
     }
   }
   // calc delta time
-  deltaTime = (SDL_GetTicks() - m_prev_tick) / 1000.0f;
-  constexpr float MAX_DELTA_TIME = 1.f / 60.f;
-  if (deltaTime > MAX_DELTA_TIME) {
-    deltaTime = MAX_DELTA_TIME;
+  mDeltaTime = (SDL_GetTicks() - mPrevTick) / 1000.0f;
+  constexpr float maxDeltaTime = 1.f / 60.f;
+  if (mDeltaTime > maxDeltaTime) {
+    mDeltaTime = maxDeltaTime;
   }
-  m_prev_tick = SDL_GetTicks();
+  mPrevTick = SDL_GetTicks();
 
-  if (is_run_script) {
-    ScriptSystem::UpdateScene();
+  if (isRunScript) {
+    ScriptSystem::updateScene();
   }
-  PhysicsSystem::Update();
+  PhysicsSystem::update();
 }
-void MainSystem::shutdown() { m_game_state = State::quit; }
+void MainSystem::shutdown() { mGameState = State::quit; }
 
-void MainSystem::Change(const std::string &sceneFileName,
+void MainSystem::change(const std::string &sceneFileName,
                         const std::string &basePath) {
   if (sceneFileName.empty()) {
-    set_state(State::quit);
-    is_reset = false;
+    setState(State::quit);
+    isReset = false;
   } else {
-    is_reset = true;
+    isReset = true;
   }
 
   MainSystem::shutdown();
-  m_scene_name = sceneFileName;
+  mSceneName = sceneFileName;
   MainSystem::basePath = basePath;
 }
 

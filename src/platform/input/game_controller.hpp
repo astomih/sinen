@@ -4,12 +4,11 @@
 #include <memory>
 #include <platform/input/gamepad.hpp>
 
-
 namespace sinen {
-class joystick {
+class Joystick {
 public:
-  joystick();
-  ~joystick();
+  Joystick();
+  ~Joystick();
 
   enum class axis {
     INVALID = -1,
@@ -23,8 +22,8 @@ public:
   };
 
   bool initialize();
-  int16_t get_axis(axis _axis);
-  uint8_t get_button(GamePad::code button);
+  int16_t getAxis(axis _axis);
+  uint8_t getButton(GamePad::code button);
 
 private:
   class Impl;

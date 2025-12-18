@@ -1,7 +1,7 @@
 #include "default_model_creator.hpp"
 namespace sinen {
 
-Mesh create_box_vertices() {
+Mesh createBoxVertices() {
   Mesh v_array;
   v_array.vertices.push_back({glm::vec3(1.000000, 1.000000, 1.000000),
                               glm::vec3(0.000000, 0.000000, 1.000000),

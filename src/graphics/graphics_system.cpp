@@ -42,8 +42,8 @@ void setFullWindowViewport(const rhi::Ptr<rhi::RenderPass> &renderPass) {
   viewport.minDepth = 0.0f;
   viewport.maxDepth = 1.0f;
 
-  renderPass->SetViewport(viewport);
-  renderPass->SetScissor(rect.x, rect.y, rect.width, rect.height);
+  renderPass->setViewport(viewport);
+  renderPass->setScissor(rect.x, rect.y, rect.width, rect.height);
 }
 Color GraphicsSystem::clearColor = Palette::black();
 // Renderer
@@ -59,13 +59,13 @@ void GraphicsSystem::initialize() {
     c.perspective(90.f, Window::size().x / Window::size().y, .1f, 100.f);
     return c;
   }();
-  backend = rhi::Paranoixa::CreateBackend(allocator, rhi::GraphicsAPI::SDLGPU);
+  backend = rhi::Paranoixa::createBackend(allocator, rhi::GraphicsAPI::SDLGPU);
   rhi::Device::CreateInfo info{};
   info.allocator = allocator;
   info.debugMode = true;
-  device = backend->CreateDevice(info);
-  auto *window = WindowSystem::get_sdl_window();
-  device->ClaimWindow(window);
+  device = backend->createDevice(info);
+  auto *window = WindowSystem::getSdlWindow();
+  device->claimWindow(window);
   IMGUI_CHECKVERSION();
   auto *context = ImGui::CreateContext();
 #ifdef __ANDROID__
@@ -74,19 +74,19 @@ void GraphicsSystem::initialize() {
   float sizePixels = 32.0f;
 #endif
   context->IO.Fonts->AddFontFromMemoryTTF(
-      (void *)mplus_1p_medium_ttf, mplus_1p_medium_ttf_len, sizePixels, nullptr,
+      (void *)mplus1pMediumTtf, mplus1pMediumTtfLen, sizePixels, nullptr,
       context->IO.Fonts->GetGlyphRangesJapanese());
   context->IO.IniFilename = nullptr;
   context->IO.WantTextInput = true;
-  auto *ime_data = &context->PlatformImeData;
-  ime_data->WantVisible = true;
+  auto *imeData = &context->PlatformImeData;
+  imeData->WantVisible = true;
   ImGui_ImplSDL3_InitForSDLGPU(window);
-  ImGui_ImplParanoixa_InitInfo init_info = {};
-  init_info.Allocator = allocator;
-  init_info.Device = device;
-  init_info.ColorTargetFormat = device->GetSwapchainFormat();
-  init_info.MSAASamples = rhi::SampleCount::x1;
-  ImGui_ImplParanoixa_Init(&init_info);
+  ImGuiImplParanoixaInitInfo initInfo = {};
+  initInfo.Allocator = allocator;
+  initInfo.Device = device;
+  initInfo.ColorTargetFormat = device->getSwapchainFormat();
+  initInfo.MSAASamples = rhi::SampleCount::x1;
+  imGuiImplParanoixaInit(&initInfo);
 
   Shader vs;
   vs.loadDefaultVertexShader();
@@ -124,7 +124,7 @@ void GraphicsSystem::initialize() {
     depthStencilCreateInfo.format = rhi::TextureFormat::D32_FLOAT_S8_UINT;
     depthStencilCreateInfo.numLevels = 1;
     depthStencilCreateInfo.sampleCount = rhi::SampleCount::x1;
-    depthTexture = device->CreateTexture(depthStencilCreateInfo);
+    depthTexture = device->createTexture(depthStencilCreateInfo);
   }
 
   // Default sampler
@@ -135,7 +135,7 @@ void GraphicsSystem::initialize() {
   samplerInfo.addressModeU = rhi::AddressMode::Repeat;
   samplerInfo.addressModeV = rhi::AddressMode::Repeat;
   samplerInfo.maxAnisotropy = 1.f;
-  sampler = device->CreateSampler(samplerInfo);
+  sampler = device->createSampler(samplerInfo);
 
   colorTargets.push_back({});
   depthStencilInfo.texture = depthTexture;
@@ -155,11 +155,11 @@ void GraphicsSystem::shutdown() {
 }
 
 void GraphicsSystem::render() {
-  auto commandBuffer = device->AcquireCommandBuffer({allocator});
+  auto commandBuffer = device->acquireCommandBuffer({allocator});
   if (commandBuffer == nullptr) {
     return;
   }
-  auto swapchainTexture = device->AcquireSwapchainTexture(commandBuffer);
+  auto swapchainTexture = device->acquireSwapchainTexture(commandBuffer);
   if (swapchainTexture == nullptr) {
     return;
   }
@@ -178,12 +178,12 @@ void GraphicsSystem::render() {
     depthStencilCreateInfo.format = rhi::TextureFormat::D32_FLOAT_S8_UINT;
     depthStencilCreateInfo.numLevels = 1;
     depthStencilCreateInfo.sampleCount = rhi::SampleCount::x1;
-    depthTexture = device->CreateTexture(depthStencilCreateInfo);
+    depthTexture = device->createTexture(depthStencilCreateInfo);
     depthStencilInfo.texture = depthTexture;
   }
   currentDepthStencilInfo = depthStencilInfo;
 
-  ImGui_ImplParanoixa_NewFrame();
+  imGuiImplParanoixaNewFrame();
   ImGui_ImplSDL3_NewFrame();
   ImGui::NewFrame();
   for (auto &func : GraphicsSystem::getImGuiFunction()) {
@@ -191,27 +191,27 @@ void GraphicsSystem::render() {
   }
   // Rendering
   ImGui::Render();
-  ImDrawData *draw_data = ImGui::GetDrawData();
+  ImDrawData *drawData = ImGui::GetDrawData();
 
-  Imgui_ImplParanoixa_PrepareDrawData(draw_data, commandBuffer);
+  imGuiImplParanoixaPrepareDrawData(drawData, commandBuffer);
   isFrameStarted = true;
   drawCallCountPerFrame = 0;
-  ScriptSystem::DrawScene();
+  ScriptSystem::drawScene();
   if (drawCallCountPerFrame == 0) {
     // Clear screen
     beginRenderPass(true, rhi::LoadOp::Clear);
   }
-  commandBuffer->EndRenderPass(currentRenderPass);
+  commandBuffer->endRenderPass(currentRenderPass);
 
   if (showImGui) {
     beginRenderPass(false, rhi::LoadOp::Load);
     // Render ImGui
-    ImGui_ImplParanoixa_RenderDrawData(draw_data, commandBuffer,
-                                       currentRenderPass);
-    commandBuffer->EndRenderPass(currentRenderPass);
+    imGuiImplParanoixaRenderDrawData(drawData, commandBuffer,
+                                     currentRenderPass);
+    commandBuffer->endRenderPass(currentRenderPass);
   }
-  device->SubmitCommandBuffer(commandBuffer);
-  device->WaitForGPUIdle();
+  device->submitCommandBuffer(commandBuffer);
+  device->waitForGpuIdle();
 }
 void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
   auto vertexBufferBindings = rhi::Array<rhi::BufferBinding>{allocator};
@@ -236,7 +236,7 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
   }
   auto viewproj = glm::mat4(1.0f);
 
-  auto screen_size = camera2D.size();
+  auto screenSize = camera2D.size();
   viewproj[0][0] = 2.f / Window::size().x;
   viewproj[1][1] = 2.f / Window::size().y;
   mat[1] = glm::transpose(viewproj);
@@ -275,14 +275,14 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
 
   auto commandBuffer = currentCommandBuffer;
   auto renderPass = currentRenderPass;
-  renderPass->BindGraphicsPipeline(currentPipeline.get());
-  renderPass->BindFragmentSamplers(0, textureSamplers);
-  renderPass->BindVertexBuffers(0, vertexBufferBindings);
-  renderPass->BindIndexBuffer(indexBufferBinding,
+  renderPass->bindGraphicsPipeline(currentPipeline.get());
+  renderPass->bindFragmentSamplers(0, textureSamplers);
+  renderPass->bindVertexBuffers(0, vertexBufferBindings);
+  renderPass->bindIndexBuffer(indexBufferBinding,
                               rhi::IndexElementSize::Uint32);
 
-  commandBuffer->PushUniformData(0, &mat, sizeof(glm::mat4) * 3);
-  renderPass->DrawIndexedPrimitives(model.getMesh().indexCount, 1, 0, 0, 0);
+  commandBuffer->pushUniformData(0, &mat, sizeof(glm::mat4) * 3);
+  renderPass->drawIndexedPrimitives(model.getMesh().indexCount, 1, 0, 0, 0);
 }
 
 void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
@@ -350,26 +350,26 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
     instanceBufferInfo.allocator = allocator;
     instanceBufferInfo.size = instanceSize;
     instanceBufferInfo.usage = rhi::BufferUsage::Vertex;
-    instanceBuffer = device->CreateBuffer(instanceBufferInfo);
+    instanceBuffer = device->createBuffer(instanceBufferInfo);
     Ptr<rhi::TransferBuffer> transferBuffer;
     {
       rhi::TransferBuffer::CreateInfo info{};
       info.allocator = allocator;
       info.size = instanceSize;
       info.usage = rhi::TransferBufferUsage::Upload;
-      transferBuffer = device->CreateTransferBuffer(info);
-      auto *pMapped = transferBuffer->Map(false);
+      transferBuffer = device->createTransferBuffer(info);
+      auto *pMapped = transferBuffer->map(false);
       if (pMapped) {
         memcpy(pMapped, instanceData.data(), instanceSize);
       }
-      transferBuffer->Unmap();
+      transferBuffer->unmap();
     }
     {
       rhi::CommandBuffer::CreateInfo info{};
       info.allocator = allocator;
-      auto commandBuffer = device->AcquireCommandBuffer(info);
+      auto commandBuffer = device->acquireCommandBuffer(info);
       {
-        auto copyPass = commandBuffer->BeginCopyPass();
+        auto copyPass = commandBuffer->beginCopyPass();
         {
           rhi::BufferTransferInfo src{};
           src.offset = 0;
@@ -378,11 +378,11 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
           dst.offset = 0;
           dst.size = instanceSize;
           dst.buffer = instanceBuffer;
-          copyPass->UploadBuffer(src, dst, false);
+          copyPass->uploadBuffer(src, dst, false);
         }
-        commandBuffer->EndCopyPass(copyPass);
+        commandBuffer->endCopyPass(copyPass);
       }
-      device->SubmitCommandBuffer(commandBuffer);
+      device->submitCommandBuffer(commandBuffer);
     }
   }
 
@@ -405,16 +405,16 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
   }
   auto commandBuffer = currentCommandBuffer;
   auto renderPass = currentRenderPass;
-  renderPass->BindGraphicsPipeline(currentPipeline.get());
-  renderPass->BindFragmentSamplers(0, textureSamplers);
-  renderPass->BindVertexBuffers(0, vertexBufferBindings);
-  renderPass->BindIndexBuffer(indexBufferBinding,
+  renderPass->bindGraphicsPipeline(currentPipeline.get());
+  renderPass->bindFragmentSamplers(0, textureSamplers);
+  renderPass->bindVertexBuffers(0, vertexBufferBindings);
+  renderPass->bindIndexBuffer(indexBufferBinding,
                               rhi::IndexElementSize::Uint32);
 
-  commandBuffer->PushUniformData(0, &mat, sizeof(glm::mat4) * 3);
+  commandBuffer->pushUniformData(0, &mat, sizeof(glm::mat4) * 3);
   uint32_t numIndices = model.getMesh().indexCount;
   uint32_t numInstance = isInstance ? instanceSize : 1;
-  renderPass->DrawIndexedPrimitives(numIndices, numInstance, 0, 0, 0);
+  renderPass->drawIndexedPrimitives(numIndices, numInstance, 0, 0, 0);
 }
 void GraphicsSystem::drawRect(const Rect &rect, const Color &color,
                               float angle) {
@@ -502,11 +502,11 @@ void GraphicsSystem::beginRenderPass(bool depthEnabled, rhi::LoadOp loadOp) {
 
   if (depthEnabled) {
     currentDepthStencilInfo = depthStencilInfo;
-    currentRenderPass = currentCommandBuffer->BeginRenderPass(
+    currentRenderPass = currentCommandBuffer->beginRenderPass(
         currentColorTargets, currentDepthStencilInfo);
   } else {
     currentRenderPass =
-        currentCommandBuffer->BeginRenderPass(currentColorTargets, {});
+        currentCommandBuffer->beginRenderPass(currentColorTargets, {});
   }
 
   setFullWindowViewport(currentRenderPass);
@@ -534,7 +534,7 @@ void GraphicsSystem::prepareRenderPassFrame() {
 
   if ((hasActivePass && depthChanged && !isFrameStarted) ||
       isChangedRenderTarget) {
-    currentCommandBuffer->EndRenderPass(currentRenderPass);
+    currentCommandBuffer->endRenderPass(currentRenderPass);
     isChangedRenderTarget = false;
   }
 
@@ -549,8 +549,8 @@ void GraphicsSystem::prepareRenderPassFrame() {
 }
 
 void GraphicsSystem::setupShapes() {
-  box.loadFromVertexArray(create_box_vertices());
-  sprite.loadFromVertexArray(create_sprite_vertices());
+  box.loadFromVertexArray(createBoxVertices());
+  sprite.loadFromVertexArray(createSpriteVertices());
 }
 
 void GraphicsSystem::bindPipeline(const GraphicsPipeline &pipeline) {
@@ -559,7 +559,7 @@ void GraphicsSystem::bindPipeline(const GraphicsPipeline &pipeline) {
 void GraphicsSystem::bindDefaultPipeline3D() { currentPipeline = pipeline3D; }
 void GraphicsSystem::bindDefaultPipeline2D() { currentPipeline = pipeline2D; }
 void GraphicsSystem::setUniformData(uint32_t slot, const UniformData &data) {
-  currentCommandBuffer->PushUniformData(slot, data.data.data(),
+  currentCommandBuffer->pushUniformData(slot, data.data.data(),
                                         data.data.size() * sizeof(float));
 }
 void GraphicsSystem::setRenderTarget(const RenderTexture &texture) {
@@ -569,21 +569,21 @@ void GraphicsSystem::setRenderTarget(const RenderTexture &texture) {
   }
   isChangedRenderTarget = true;
   auto depthTex = texture.getDepthStencil();
-  currentCommandBuffer = device->AcquireCommandBuffer({allocator});
+  currentCommandBuffer = device->acquireCommandBuffer({allocator});
   currentColorTargets[0].loadOp = rhi::LoadOp::Clear;
   currentColorTargets[0].texture = tex;
   currentDepthStencilInfo.texture = depthTex;
-  currentRenderPass = currentCommandBuffer->BeginRenderPass(
+  currentRenderPass = currentCommandBuffer->beginRenderPass(
       currentColorTargets, currentDepthStencilInfo);
-  currentRenderPass->SetViewport(
+  currentRenderPass->setViewport(
       rhi::Viewport{0, 0, (float)texture.width, (float)texture.height, 0, 1});
-  currentRenderPass->SetScissor(0, 0, (float)texture.width,
+  currentRenderPass->setScissor(0, 0, (float)texture.width,
                                 (float)texture.height);
 }
 void GraphicsSystem::flush() {
-  currentCommandBuffer->EndRenderPass(currentRenderPass);
-  device->SubmitCommandBuffer(currentCommandBuffer);
-  device->WaitForGPUIdle();
+  currentCommandBuffer->endRenderPass(currentRenderPass);
+  device->submitCommandBuffer(currentCommandBuffer);
+  device->waitForGpuIdle();
   currentCommandBuffer = mainCommandBuffer;
 }
 bool GraphicsSystem::readbackTexture(const RenderTexture &srcRenderTexture,
@@ -594,13 +594,13 @@ bool GraphicsSystem::readbackTexture(const RenderTexture &srcRenderTexture,
   info2.allocator = allocator;
   info2.size = srcRenderTexture.width * srcRenderTexture.height * 4;
   info2.usage = rhi::TransferBufferUsage::Download;
-  auto transferBuffer = device->CreateTransferBuffer(info2);
+  auto transferBuffer = device->createTransferBuffer(info2);
   {
     rhi::CommandBuffer::CreateInfo info{};
     info.allocator = allocator;
-    auto commandBuffer = device->AcquireCommandBuffer(info);
+    auto commandBuffer = device->acquireCommandBuffer(info);
     {
-      auto copyPass = commandBuffer->BeginCopyPass();
+      auto copyPass = commandBuffer->beginCopyPass();
       {
         rhi::TextureRegion region{};
         region.width = srcRenderTexture.width;
@@ -610,7 +610,7 @@ bool GraphicsSystem::readbackTexture(const RenderTexture &srcRenderTexture,
         rhi::TextureTransferInfo dst{};
         dst.offset = 0;
         dst.transferBuffer = transferBuffer;
-        copyPass->DownloadTexture(region, dst);
+        copyPass->downloadTexture(region, dst);
       }
       {
         rhi::TextureTransferInfo src{};
@@ -623,12 +623,12 @@ bool GraphicsSystem::readbackTexture(const RenderTexture &srcRenderTexture,
         region.height = srcRenderTexture.height;
         region.depth = 1;
         region.texture = out.texture;
-        copyPass->UploadTexture(src, region, false);
+        copyPass->uploadTexture(src, region, false);
       }
-      commandBuffer->EndCopyPass(copyPass);
+      commandBuffer->endCopyPass(copyPass);
     }
-    device->SubmitCommandBuffer(commandBuffer);
-    device->WaitForGPUIdle();
+    device->submitCommandBuffer(commandBuffer);
+    device->waitForGpuIdle();
   }
   currentRenderPass = nullptr;
   return true;

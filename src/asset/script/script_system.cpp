@@ -7,20 +7,20 @@ namespace sinen {
 std::unique_ptr<IScriptBackend> ScriptSystem::script = nullptr;
 ScriptType ScriptSystem::type = ScriptType::Lua;
 
-bool ScriptSystem::Initialize(const ScriptType &type) {
+bool ScriptSystem::initialize(const ScriptType &type) {
   switch (type) {
   case ScriptType::Lua:
-    script = ScriptBackend::CreateLua();
+    script = ScriptBackend::createLua();
     ScriptSystem::type = ScriptType::Lua;
     break;
   default:
     return false;
   }
-  return script->Initialize();
+  return script->initialize();
 }
-void ScriptSystem::Shutdown() {
+void ScriptSystem::shutdown() {
   if (script) {
-    script->Finalize();
+    script->finalize();
     script.reset();
   }
 }
@@ -36,7 +36,7 @@ function Draw()
 end
 )";
 
-void ScriptSystem::RunScene(std::string_view sceneName) {
+void ScriptSystem::runScene(std::string_view sceneName) {
   if (script) {
     std::string source;
     switch (ScriptSystem::type) {
@@ -49,20 +49,20 @@ void ScriptSystem::RunScene(std::string_view sceneName) {
     default:
       break;
     }
-    script->RunScene(AssetIO::openAsString(std::string(sceneName) + ".lua"),
+    script->runScene(AssetIO::openAsString(std::string(sceneName) + ".lua"),
                      "@" + AssetIO::getFilePath(sceneName) + ".lua");
   }
 }
 
-void ScriptSystem::UpdateScene() {
+void ScriptSystem::updateScene() {
   if (script) {
-    script->Update();
+    script->update();
   }
 }
 
-void ScriptSystem::DrawScene() {
+void ScriptSystem::drawScene() {
   if (script) {
-    script->Draw();
+    script->draw();
   }
 }
 

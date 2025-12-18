@@ -8,15 +8,15 @@ class Transform {
 public:
   Transform() : position(0.0f), rotation(0.0f), scale(1.0f) {}
   ~Transform() = default;
-  [[nodiscard]] glm::mat4 GetWorldMatrix() const;
+  [[nodiscard]] glm::mat4 getWorldMatrix() const;
 
-  void SetPosition(glm::vec3 position) { this->position = position; }
-  void SetRotation(glm::vec3 rotation) { this->rotation = rotation; }
-  void SetScale(glm::vec3 scale) { this->scale = scale; }
+  void setPosition(glm::vec3 position) { this->position = position; }
+  void setRotation(glm::vec3 rotation) { this->rotation = rotation; }
+  void setScale(glm::vec3 scale) { this->scale = scale; }
 
-  [[nodiscard]] glm::vec3 GetPosition() const { return position; }
-  [[nodiscard]] glm::vec3 GetRotation() const { return rotation; }
-  [[nodiscard]] glm::vec3 GetScale() const { return scale; }
+  [[nodiscard]] glm::vec3 getPosition() const { return position; }
+  [[nodiscard]] glm::vec3 getRotation() const { return rotation; }
+  [[nodiscard]] glm::vec3 getScale() const { return scale; }
 
   glm::vec3 position;
   glm::vec3 rotation;

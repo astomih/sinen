@@ -18,7 +18,7 @@
 #include <fstream>
 #include <iostream>
 namespace sinen::rhi {
-Ptr<Backend> Paranoixa::CreateBackend(Allocator *allocator,
+Ptr<Backend> Paranoixa::createBackend(Allocator *allocator,
                                       const GraphicsAPI &api) {
 #ifndef __EMSCRIPTEN__
   switch (api) {
@@ -34,7 +34,7 @@ Ptr<Backend> Paranoixa::CreateBackend(Allocator *allocator,
     // TODO
   }
   case GraphicsAPI::SDLGPU: {
-    Ptr<Backend> p = MakePtr<sdlgpu::Backend>(allocator);
+    Ptr<Backend> p = makePtr<sdlgpu::Backend>(allocator);
     return p;
   }
   default:
@@ -43,7 +43,7 @@ Ptr<Backend> Paranoixa::CreateBackend(Allocator *allocator,
 #endif
   return nullptr;
 }
-Allocator *Paranoixa::CreateAllocator(size_t size) {
+Allocator *Paranoixa::createAllocator(size_t size) {
 #ifdef _MSC_VER
   return new TLSFAllocator(size);
 #else

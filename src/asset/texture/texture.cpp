@@ -81,7 +81,7 @@ void Texture::fill(const Color &color) {
       pixels[i + 2] = color.b * 255;
       pixels[i + 3] = color.a * 255;
     }
-    UpdateNativeTexture(texture, pixels.data());
+    updateNativeTexture(texture, pixels.data());
   } else {
     std::vector<uint8_t> pixels(4, 0);
     pixels[0] = color.r * 255;

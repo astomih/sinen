@@ -64,13 +64,13 @@ private:
   template <typename... Args>
   static std::string stringFormatInternal(const std::string &format,
                                           Args &&...args) {
-    int str_len =
+    int strLen =
         std::snprintf(nullptr, 0, format.c_str(), std::forward<Args>(args)...);
 
-    size_t buffer_size = str_len + sizeof(char);
-    std::unique_ptr<char[]> buffer(new char[buffer_size]);
-    std::snprintf(buffer.get(), buffer_size, format.c_str(), args...);
-    return std::string(buffer.get(), buffer.get() + str_len);
+    size_t bufferSize = strLen + sizeof(char);
+    std::unique_ptr<char[]> buffer(new char[bufferSize]);
+    std::snprintf(buffer.get(), bufferSize, format.c_str(), args...);
+    return std::string(buffer.get(), buffer.get() + strLen);
   }
   template <typename T> static auto convert(T &&value) {
     if constexpr (std::is_same<std::remove_cv_t<std::remove_reference_t<T>>,

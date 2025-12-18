@@ -30,22 +30,22 @@ class LuaScript final : public IScriptBackend {
 public:
   LuaScript() = default;
   ~LuaScript() override = default;
-  bool Initialize() override;
-  void Finalize() override;
+  bool initialize() override;
+  void finalize() override;
 
-  void RunScene(const std::string_view source, std::string_view chunk) override;
+  void runScene(const std::string_view source, std::string_view chunk) override;
 
-  void Update() override;
-  void Draw() override;
+  void update() override;
+  void draw() override;
 
 private:
   sol::state state;
 };
 
-std::unique_ptr<IScriptBackend> ScriptBackend::CreateLua() {
+std::unique_ptr<IScriptBackend> ScriptBackend::createLua() {
   return std::make_unique<LuaScript>();
 }
-bool LuaScript::Initialize() {
+bool LuaScript::initialize() {
 #ifndef SINEN_NO_USE_SCRIPT
   state.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math,
                        sol::lib::bit32, sol::lib::io, sol::lib::os,
@@ -442,7 +442,7 @@ bool LuaScript::Initialize() {
   }
   {
     auto v = lua.create_named("Collision");
-    v["AABBvsAABB"] = &Collision::AABBvsAABB;
+    v["AABBvsAABB"] = &Collision::aabBvsAabb;
   }
   {
     auto v = lua.create_named("FileSystem");
@@ -528,17 +528,17 @@ bool LuaScript::Initialize() {
   }
   {
     auto v = lua.create_named("Mouse");
-    v["setRelative"] = &Mouse::SetRelative;
-    v["isRelative"] = &Mouse::IsRelative;
-    v["isPressed"] = &Mouse::IsPressed;
-    v["isReleased"] = &Mouse::IsReleased;
-    v["isDown"] = &Mouse::IsDown;
-    v["getPosition"] = &Mouse::GetPosition;
-    v["getPositionOnScene"] = &Mouse::GetPositionOnScene;
-    v["setPosition"] = &Mouse::SetPosition;
-    v["setPositionOnScene"] = &Mouse::SetPositionOnScene;
-    v["getScrollWheel"] = &Mouse::GetScrollWheel;
-    v["hideCursor"] = &Mouse::HideCursor;
+    v["setRelative"] = &Mouse::setRelative;
+    v["isRelative"] = &Mouse::isRelative;
+    v["isPressed"] = &Mouse::isPressed;
+    v["isReleased"] = &Mouse::isReleased;
+    v["isDown"] = &Mouse::isDown;
+    v["getPosition"] = &Mouse::getPosition;
+    v["getPositionOnScene"] = &Mouse::getPositionOnScene;
+    v["setPosition"] = &Mouse::setPosition;
+    v["setPositionOnScene"] = &Mouse::setPositionOnScene;
+    v["getScrollWheel"] = &Mouse::getScrollWheel;
+    v["hideCursor"] = &Mouse::hideCursor;
     v["LEFT"] = (int)Mouse::LEFT;
     v["RIGHT"] = (int)Mouse::RIGHT;
     v["MIDDLE"] = (int)Mouse::MIDDLE;
@@ -579,10 +579,10 @@ bool LuaScript::Initialize() {
   {
     auto v = lua.create_named("Periodic");
     v["sin0_1"] = [](float period, float t) {
-      return Periodic::sin0_1(period, t);
+      return Periodic::sin01(period, t);
     };
     v["cos0_1"] = [](float period, float t) {
-      return Periodic::cos0_1(period, t);
+      return Periodic::cos01(period, t);
     };
   }
   {
@@ -604,19 +604,19 @@ bool LuaScript::Initialize() {
   return true;
 }
 
-void LuaScript::Finalize() {
+void LuaScript::finalize() {
 #ifndef SINEN_NO_USE_SCRIPT
   state.collect_garbage();
 #endif // SINEN_NO_USE_SCRIPT
 }
 
-void LuaScript::RunScene(const std::string_view source,
+void LuaScript::runScene(const std::string_view source,
                          std::string_view chunk) {
   state.script(source.data(), chunk.data());
 }
 
-void LuaScript::Update() { state["Update"](); }
+void LuaScript::update() { state["Update"](); }
 
-void LuaScript::Draw() { state["Draw"](); }
+void LuaScript::draw() { state["Draw"](); }
 
 } // namespace sinen

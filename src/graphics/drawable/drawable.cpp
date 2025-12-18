@@ -59,9 +59,9 @@ void Draw3D::add(const glm::vec3 &position, const glm::vec3 &rotation,
 void Draw3D::at(const int &index, const glm::vec3 &position,
                 const glm::vec3 &rotation, const glm::vec3 &scale) {
   Transform transform;
-  transform.SetPosition(position);
-  transform.SetRotation(rotation);
-  transform.SetScale(scale);
+  transform.setPosition(position);
+  transform.setRotation(rotation);
+  transform.setScale(scale);
   this->worlds[index] = transform;
 }
 void Draw3D::clear() { this->worlds.clear(); }

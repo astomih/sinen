@@ -16,17 +16,17 @@ public:
    * @brief Json array class
    *
    */
-  class array {
+  class Array {
     friend Json;
 
   public:
-    ~array();
+    ~Array();
     Object operator[](std::size_t index);
-    void push_back(Object &obj);
+    void pushBack(Object &obj);
     std::size_t size() const;
 
   private:
-    array();
+    Array();
     class impl;
     std::shared_ptr<impl> pimpl;
   };
@@ -48,7 +48,7 @@ public:
     double getDouble();
     std::string getString();
     bool getBool();
-    array getArray();
+    Array getArray();
 
     void setInt32(std::int32_t value);
     void setUint32(std::uint32_t value);
@@ -58,13 +58,13 @@ public:
     void setDouble(double value);
     void setString(std::string_view value);
     void setBool(bool value);
-    void setArray(array &value);
+    void setArray(Array &value);
 
     void addMember(std::string_view key, int value);
     void addMember(std::string_view key, float value);
     void addMember(std::string_view key, std::string_view value);
     void addMember(std::string_view key, Object &value);
-    void addMember(std::string_view key, array &value);
+    void addMember(std::string_view key, Array &value);
 
   private:
     Object();
@@ -92,10 +92,10 @@ public:
   void addMember(std::string_view key, float value);
   void addMember(std::string_view key, std::string_view value);
   void addMember(std::string_view key, Object &value);
-  void addMember(std::string_view key, array &value);
+  void addMember(std::string_view key, Array &value);
 
   Object createObject();
-  array createArray();
+  Array createArray();
 
   std::string toString();
 

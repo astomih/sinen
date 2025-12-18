@@ -10,6 +10,6 @@ namespace sinen {
 rhi::Ptr<rhi::Texture> createNativeTexture(void *pPixels,
                                            rhi::TextureFormat textureFormat,
                                            uint32_t width, uint32_t height);
-void UpdateNativeTexture(rhi::Ptr<rhi::Texture> texture, void *pPixels);
+void updateNativeTexture(rhi::Ptr<rhi::Texture> texture, void *pPixels);
 } // namespace sinen
 #endif // SINEN_TEXTURE_TEXTURE_CONTAINER_HPP

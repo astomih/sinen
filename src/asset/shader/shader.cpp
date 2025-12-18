@@ -28,7 +28,7 @@ void Shader::loadDefaultVertexShader() {
   vsInfo.numStorageBuffers = 0;
   vsInfo.numStorageTextures = 0;
   vsInfo.numUniformBuffers = 1; // only one uniform buffer for vertex shader
-  shader = device->CreateShader(vsInfo);
+  shader = device->createShader(vsInfo);
 }
 void Shader::loadDefaultVertexInstanceShader() {
   auto *allocator = GraphicsSystem::getAllocator();
@@ -45,7 +45,7 @@ void Shader::loadDefaultVertexInstanceShader() {
   vsInfo.numStorageBuffers = 0;
   vsInfo.numStorageTextures = 0;
   vsInfo.numUniformBuffers = 1; // only one uniform buffer for vertex shader
-  shader = device->CreateShader(vsInfo);
+  shader = device->createShader(vsInfo);
 }
 void Shader::loadDefaultFragmentShader() {
   auto *allocator = GraphicsSystem::getAllocator();
@@ -62,7 +62,7 @@ void Shader::loadDefaultFragmentShader() {
   fsInfo.numStorageBuffers = 0;
   fsInfo.numStorageTextures = 0;
   fsInfo.numUniformBuffers = 1; // only one uniform buffer for fragment shader
-  shader = device->CreateShader(fsInfo);
+  shader = device->createShader(fsInfo);
 }
 void Shader::loadVertexShader(std::string_view vertex_shader,
                               int numUniformData) {
@@ -84,7 +84,7 @@ void Shader::loadVertexShader(std::string_view vertex_shader,
   vsInfo.numStorageBuffers = 0;
   vsInfo.numStorageTextures = 0;
   vsInfo.numUniformBuffers = numUniformData + 1;
-  shader = device->CreateShader(vsInfo);
+  shader = device->createShader(vsInfo);
 }
 void Shader::loadFragmentShader(std::string_view fragment_shader,
                                 int numUniformData) {
@@ -104,7 +104,7 @@ void Shader::loadFragmentShader(std::string_view fragment_shader,
   fsInfo.numStorageBuffers = 0;
   fsInfo.numStorageTextures = 0;
   fsInfo.numUniformBuffers = numUniformData + 1;
-  shader = device->CreateShader(fsInfo);
+  shader = device->createShader(fsInfo);
 }
 void Shader::compileAndLoadVertexShader(std::string_view vertex_shader) {
 
@@ -131,7 +131,7 @@ void Shader::compileAndLoadVertexShader(std::string_view vertex_shader) {
   vsInfo.numStorageBuffers = 0;
   vsInfo.numStorageTextures = 0;
   vsInfo.numUniformBuffers = reflectionData.numUniformBuffers;
-  shader = device->CreateShader(vsInfo);
+  shader = device->createShader(vsInfo);
 }
 void Shader::compileAndLoadFragmentShader(std::string_view fragment_shader) {
 
@@ -156,6 +156,6 @@ void Shader::compileAndLoadFragmentShader(std::string_view fragment_shader) {
   fsInfo.numStorageBuffers = 0;
   fsInfo.numStorageTextures = 0;
   fsInfo.numUniformBuffers = reflectionData.numUniformBuffers;
-  shader = device->CreateShader(fsInfo);
+  shader = device->createShader(fsInfo);
 }
 } // namespace sinen

@@ -39,11 +39,11 @@ using Allocator = std::pmr::memory_resource;
 
 // Allocation wrapper functions
 template <class T, class... Args>
-Ptr<T> MakePtr(Allocator *allocator, Args &&...args) {
+Ptr<T> makePtr(Allocator *allocator, Args &&...args) {
   return std::allocate_shared<T>(std::pmr::polymorphic_allocator<T>(allocator),
                                  std::forward<Args>(args)...);
 }
-template <class T, class U> Ptr<T> DownCast(Ptr<U> ptr) {
+template <class T, class U> Ptr<T> downCast(Ptr<U> ptr) {
 #ifdef PARANOIXA_BUILD_DEBUG
   return std::dynamic_pointer_cast<T>(ptr);
 #else
@@ -396,10 +396,10 @@ public:
   };
   virtual ~TransferBuffer() = default;
 
-  const CreateInfo &GetCreateInfo() const { return createInfo; }
+  const CreateInfo &getCreateInfo() const { return createInfo; }
 
-  virtual void *Map(bool cycle) = 0;
-  virtual void Unmap() = 0;
+  virtual void *map(bool cycle) = 0;
+  virtual void unmap() = 0;
 
 protected:
   TransferBuffer(const CreateInfo &createInfo) : createInfo(createInfo) {}
@@ -482,16 +482,16 @@ class CopyPass {
 public:
   virtual ~CopyPass() = default;
 
-  virtual void UploadTexture(const TextureTransferInfo &src,
+  virtual void uploadTexture(const TextureTransferInfo &src,
                              const TextureRegion &dst, bool cycle) = 0;
-  virtual void DownloadTexture(const TextureRegion &src,
+  virtual void downloadTexture(const TextureRegion &src,
                                const TextureTransferInfo &dst) = 0;
-  virtual void UploadBuffer(const BufferTransferInfo &src,
+  virtual void uploadBuffer(const BufferTransferInfo &src,
                             const BufferRegion &dst, bool cycle) = 0;
-  virtual void DownloadBuffer(const BufferRegion &src,
+  virtual void downloadBuffer(const BufferRegion &src,
                               const BufferTransferInfo &dst) = 0;
 
-  virtual void CopyTexture(const TextureLocation &src,
+  virtual void copyTexture(const TextureLocation &src,
                            const TextureLocation &dst, uint32 width,
                            uint32 height, uint32 depth, bool cycle) = 0;
 };
@@ -507,19 +507,19 @@ class RenderPass {
 public:
   virtual ~RenderPass() = default;
 
-  virtual void BindGraphicsPipeline(Ptr<GraphicsPipeline> graphicsPipeline) = 0;
-  virtual void BindVertexBuffers(uint32 slot,
+  virtual void bindGraphicsPipeline(Ptr<GraphicsPipeline> graphicsPipeline) = 0;
+  virtual void bindVertexBuffers(uint32 slot,
                                  const Array<BufferBinding> &bindings) = 0;
-  virtual void BindIndexBuffer(const BufferBinding &binding,
+  virtual void bindIndexBuffer(const BufferBinding &binding,
                                IndexElementSize indexElementSize) = 0;
   virtual void
-  BindFragmentSamplers(uint32 slot,
+  bindFragmentSamplers(uint32 slot,
                        const Array<TextureSamplerBinding> &bindings) = 0;
-  virtual void SetViewport(const Viewport &viewport) = 0;
-  virtual void SetScissor(int32 x, int32 y, int32 width, int32 height) = 0;
-  virtual void DrawPrimitives(uint32 numVertices, uint32 numInstances,
+  virtual void setViewport(const Viewport &viewport) = 0;
+  virtual void setScissor(int32 x, int32 y, int32 width, int32 height) = 0;
+  virtual void drawPrimitives(uint32 numVertices, uint32 numInstances,
                               uint32 firstVertex, uint32 firstInstance) = 0;
-  virtual void DrawIndexedPrimitives(uint32 numIndices, uint32 numInstances,
+  virtual void drawIndexedPrimitives(uint32 numIndices, uint32 numInstances,
                                      uint32 firstIndex, uint32 vertexOffset,
                                      uint32 firstInstance) = 0;
 
@@ -534,20 +534,18 @@ public:
   };
   virtual ~CommandBuffer() = default;
 
-  inline CreateInfo GetCreateInfo() const { return createInfo; }
+  inline const CreateInfo &getCreateInfo() const { return createInfo; }
 
-  virtual Ptr<class CopyPass> BeginCopyPass() = 0;
-  virtual void EndCopyPass(Ptr<class CopyPass> copyPass) = 0;
+  virtual Ptr<class CopyPass> beginCopyPass() = 0;
+  virtual void endCopyPass(Ptr<class CopyPass> copyPass) = 0;
 
   virtual Ptr<class RenderPass>
-  BeginRenderPass(const Array<ColorTargetInfo> &infos,
+  beginRenderPass(const Array<ColorTargetInfo> &infos,
                   const DepthStencilTargetInfo &depthStencilInfo, float r = 0.f,
                   float g = 0.f, float b = 0.f, float a = 1.f) = 0;
-  virtual void EndRenderPass(Ptr<RenderPass> renderPass) = 0;
+  virtual void endRenderPass(Ptr<RenderPass> renderPass) = 0;
 
-  virtual void PushUniformData(uint32 slot, const void *data, size_t size) = 0;
-
-  const CreateInfo &getCreateInfo() const { return createInfo; }
+  virtual void pushUniformData(uint32 slot, const void *data, size_t size) = 0;
 
 protected:
   CommandBuffer(const CreateInfo &createInfo) : createInfo(createInfo) {}
@@ -563,36 +561,36 @@ public:
     bool debugMode;
   };
   virtual ~Device() = default;
-  const CreateInfo &GetCreateInfo() const { return createInfo; }
+  const CreateInfo &getCreateInfo() const { return createInfo; }
 
   /**
    * @brief Claim the SDL_Window for the device
    * @param window SDL_Window pointer
    */
-  virtual void ClaimWindow(void *window) = 0;
-  virtual Ptr<Buffer> CreateBuffer(const Buffer::CreateInfo &createInfo) = 0;
-  virtual Ptr<Texture> CreateTexture(const Texture::CreateInfo &createInfo) = 0;
-  virtual Ptr<Sampler> CreateSampler(const Sampler::CreateInfo &createInfo) = 0;
+  virtual void claimWindow(void *window) = 0;
+  virtual Ptr<Buffer> createBuffer(const Buffer::CreateInfo &createInfo) = 0;
+  virtual Ptr<Texture> createTexture(const Texture::CreateInfo &createInfo) = 0;
+  virtual Ptr<Sampler> createSampler(const Sampler::CreateInfo &createInfo) = 0;
   virtual Ptr<TransferBuffer>
-  CreateTransferBuffer(const TransferBuffer::CreateInfo &createInfo) = 0;
-  virtual Ptr<Shader> CreateShader(const Shader::CreateInfo &createInfo) = 0;
+  createTransferBuffer(const TransferBuffer::CreateInfo &createInfo) = 0;
+  virtual Ptr<Shader> createShader(const Shader::CreateInfo &createInfo) = 0;
   virtual Ptr<GraphicsPipeline>
-  CreateGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) = 0;
+  createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) = 0;
   virtual Ptr<ComputePipeline>
-  CreateComputePipeline(const ComputePipeline::CreateInfo &createInfo) = 0;
+  createComputePipeline(const ComputePipeline::CreateInfo &createInfo) = 0;
   virtual Ptr<CommandBuffer>
-  AcquireCommandBuffer(const CommandBuffer::CreateInfo &createInfo) = 0;
-  virtual void SubmitCommandBuffer(Ptr<CommandBuffer> commandBuffer) = 0;
+  acquireCommandBuffer(const CommandBuffer::CreateInfo &createInfo) = 0;
+  virtual void submitCommandBuffer(Ptr<CommandBuffer> commandBuffer) = 0;
   virtual Ptr<Texture>
-  AcquireSwapchainTexture(Ptr<CommandBuffer> commandBuffer) = 0;
-  virtual TextureFormat GetSwapchainFormat() const = 0;
-  virtual void WaitForGPUIdle() = 0;
+  acquireSwapchainTexture(Ptr<CommandBuffer> commandBuffer) = 0;
+  virtual TextureFormat getSwapchainFormat() const = 0;
+  virtual void waitForGpuIdle() = 0;
 
-  virtual String GetDriver() const = 0;
+  virtual String getDriver() const = 0;
 
 protected:
   Device(const CreateInfo &createInfo) : createInfo(createInfo) {}
-  Ptr<Device> GetPtr() { return shared_from_this(); }
+  Ptr<Device> getPtr() { return shared_from_this(); }
 
 private:
   CreateInfo createInfo;
@@ -602,14 +600,14 @@ class Backend {
 public:
   Backend() = default;
   virtual ~Backend() = default;
-  virtual Ptr<Device> CreateDevice(const Device::CreateInfo &createInfo) = 0;
+  virtual Ptr<Device> createDevice(const Device::CreateInfo &createInfo) = 0;
 };
 
 class Paranoixa {
 public:
-  static Ptr<Backend> CreateBackend(Allocator *allocator,
+  static Ptr<Backend> createBackend(Allocator *allocator,
                                     const GraphicsAPI &api);
-  static Allocator *CreateAllocator(size_t size);
+  static Allocator *createAllocator(size_t size);
 };
 } // namespace sinen::rhi
 #endif

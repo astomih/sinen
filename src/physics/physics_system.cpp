@@ -166,7 +166,7 @@ public:
 
 namespace sinen {
 inline std::unordered_map<uint32_t, BodyID> bodyMap = {};
-bool PhysicsSystem::Initialize() {
+bool PhysicsSystem::initialize() {
   RegisterDefaultAllocator();
 
   Trace = TraceImpl;
@@ -197,27 +197,27 @@ bool PhysicsSystem::Initialize() {
 
   return true;
 }
-void PhysicsSystem::Shutdown() {
+void PhysicsSystem::shutdown() {
   UnregisterTypes();
 
   delete Factory::sInstance;
   Factory::sInstance = nullptr;
 }
 
-void PhysicsSystem::PostSetup() {
+void PhysicsSystem::postSetup() {
   if (raw->physicsSystem.GetNumBodies() == 0) {
     return;
   }
   raw->physicsSystem.OptimizeBroadPhase();
 }
 
-void PhysicsSystem::Update() {
+void PhysicsSystem::update() {
   const int cCollisionSteps = 1;
-  raw->physicsSystem.Update(MainSystem::delta_time(), cCollisionSteps,
+  raw->physicsSystem.Update(MainSystem::deltaTime(), cCollisionSteps,
                             &raw->tempAllocator, &raw->jobSystem);
 }
 
-glm::vec3 PhysicsSystem::GetPosition(const Collider &collider) {
+glm::vec3 PhysicsSystem::getPosition(const Collider &collider) {
   BodyInterface &body_interface = raw->physicsSystem.GetBodyInterface();
   auto it = bodyMap.find(collider.id);
   if (it == bodyMap.end()) {
@@ -228,7 +228,7 @@ glm::vec3 PhysicsSystem::GetPosition(const Collider &collider) {
   return {position.GetX(), position.GetY(), position.GetZ()};
 }
 
-glm::vec3 PhysicsSystem::GetVelocity(const Collider &collider) {
+glm::vec3 PhysicsSystem::getVelocity(const Collider &collider) {
   BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
   auto it = bodyMap.find(collider.id);
   if (it == bodyMap.end()) {
@@ -238,7 +238,7 @@ glm::vec3 PhysicsSystem::GetVelocity(const Collider &collider) {
   Vec3 velocity = bodyInterface.GetLinearVelocity(body_id);
   return glm::vec3(velocity.GetX(), velocity.GetY(), velocity.GetZ());
 }
-void PhysicsSystem::SetLinearVelocity(const Collider &collider,
+void PhysicsSystem::setLinearVelocity(const Collider &collider,
                                       const glm::vec3 &velocity) {
   BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
   auto bodyID = bodyMap[collider.id];
@@ -249,7 +249,7 @@ void PhysicsSystem::SetLinearVelocity(const Collider &collider,
 static uint32_t nextColliderID = 1;
 uint32_t GetNextID() { return nextColliderID++; }
 
-Collider PhysicsSystem::CreateBoxCollider(const Transform &transform,
+Collider PhysicsSystem::createBoxCollider(const Transform &transform,
                                           bool isStatic) {
 
   BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
@@ -287,7 +287,7 @@ Collider PhysicsSystem::CreateBoxCollider(const Transform &transform,
   return collider;
 }
 
-Collider PhysicsSystem::CreateSphereCollider(const glm::vec3 &position,
+Collider PhysicsSystem::createSphereCollider(const glm::vec3 &position,
                                              float radius, bool isStatic) {
   BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
   EMotionType motionType =
@@ -302,7 +302,7 @@ Collider PhysicsSystem::CreateSphereCollider(const glm::vec3 &position,
   bodyMap[collider.id] = body->GetID();
   return collider;
 }
-Collider PhysicsSystem::CreateCylinderCollider(const glm::vec3 &position,
+Collider PhysicsSystem::createCylinderCollider(const glm::vec3 &position,
                                                const glm::vec3 &rotation,
                                                float halfHeight, float radius,
                                                bool isStatic) {
@@ -332,7 +332,7 @@ Collider PhysicsSystem::CreateCylinderCollider(const glm::vec3 &position,
   bodyMap[collider.id] = cylinder->GetID();
   return collider;
 }
-void PhysicsSystem::AddCollider(const Collider &collider, bool active) {
+void PhysicsSystem::addCollider(const Collider &collider, bool active) {
   BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
   auto it = bodyMap.find(collider.id);
   if (it == bodyMap.end()) {

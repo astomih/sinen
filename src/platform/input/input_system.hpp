@@ -8,7 +8,7 @@
 
 #include <SDL3/SDL.h>
 namespace sinen {
-struct keyboard_state_impl {
+struct KeyboardStateImpl {
 public:
   const bool *mCurrState;
   std::array<uint8_t, static_cast<int>(Keyboard::Code::COUNT)> mPrevState;
@@ -19,7 +19,7 @@ struct KeyInputState {
   std::unordered_set<std::uint32_t> currentKeys;
 };
 
-struct mouse_state_impl {
+struct MouseStateImpl {
 public:
   // Motion of scroll wheel
   glm::vec2 mScrollWheel;
@@ -28,7 +28,7 @@ public:
   uint32_t mPrevButtons;
 };
 
-struct joystick_state_impl {
+struct JoystickStateImpl {
 public:
   // Current/previous buttons
   uint8_t
@@ -51,22 +51,22 @@ public:
   static void shutdown();
 
   // Called right before SDL_PollEvents loop
-  static void prepare_for_update();
+  static void prepareForUpdate();
   // Called after SDL_PollEvents loop
   static void update();
-  static void process_event(SDL_Event &event);
+  static void processEvent(SDL_Event &event);
 
-  static void set_relative_mouse_mode(bool value);
+  static void setRelativeMouseMode(bool value);
 
-  static keyboard_state_impl m_keyboard;
+  static KeyboardStateImpl mKeyboard;
   static KeyInputState keyInputState;
-  static mouse_state_impl m_mouse;
-  static joystick_state_impl m_joystick;
+  static MouseStateImpl mMouse;
+  static JoystickStateImpl mJoystick;
 
 private:
   static float filter1d(int input);
   static glm::vec2 filter2d(int inputX, int inputY);
-  static joystick mController;
+  static Joystick mController;
 };
 } // namespace sinen
 #endif // !SINEN_INPUT_SYSTEM_HPP

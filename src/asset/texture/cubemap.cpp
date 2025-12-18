@@ -1,5 +1,4 @@
 #include "../../graphics/graphics_system.hpp"
-#include "assimp/Logger.hpp"
 #include "texture_data.hpp"
 #include <asset/texture/cubemap.hpp>
 #include <core/io/asset_io.hpp>
@@ -250,16 +249,16 @@ static void writeTexture(rhi::Ptr<rhi::Texture> texture,
     info.allocator = allocator;
     info.size = width * height * 4 * sizeof(float);
     info.usage = rhi::TransferBufferUsage::Upload;
-    transbuffers[i] = device->CreateTransferBuffer(info);
-    auto *pMapped = transbuffers[i]->Map(true);
+    transbuffers[i] = device->createTransferBuffer(info);
+    auto *pMapped = transbuffers[i]->map(true);
     memcpy(pMapped, faces[i].data(), info.size);
-    transbuffers[i]->Unmap();
+    transbuffers[i]->unmap();
   }
   {
     rhi::CommandBuffer::CreateInfo info{};
     info.allocator = allocator;
-    auto commandBuffer = device->AcquireCommandBuffer(info);
-    auto copyPass = commandBuffer->BeginCopyPass();
+    auto commandBuffer = device->acquireCommandBuffer(info);
+    auto copyPass = commandBuffer->beginCopyPass();
 
     for (int i = 0; i < 6; i++) {
       rhi::TextureTransferInfo src{};
@@ -273,13 +272,13 @@ static void writeTexture(rhi::Ptr<rhi::Texture> texture,
       dst.height = height;
       dst.depth = 1;
       dst.texture = texture;
-      copyPass->UploadTexture(src, dst, false);
+      copyPass->uploadTexture(src, dst, false);
     }
 
-    commandBuffer->EndCopyPass(copyPass);
-    device->SubmitCommandBuffer(commandBuffer);
+    commandBuffer->endCopyPass(copyPass);
+    device->submitCommandBuffer(commandBuffer);
   }
-  device->WaitForGPUIdle();
+  device->waitForGpuIdle();
 }
 rhi::Ptr<rhi::Texture>
 createNativeCubemapTexture(const std::array<std::vector<float>, 6> &faces,
@@ -300,7 +299,7 @@ createNativeCubemapTexture(const std::array<std::vector<float>, 6> &faces,
     info.numLevels = 1;
     info.sampleCount = rhi::SampleCount::x1;
     info.type = rhi::TextureType::Cube;
-    texture = device->CreateTexture(info);
+    texture = device->createTexture(info);
   }
   writeTexture(texture, faces);
   return texture;

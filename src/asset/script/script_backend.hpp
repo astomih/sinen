@@ -7,18 +7,18 @@ namespace sinen {
 class IScriptBackend {
 public:
   virtual ~IScriptBackend() = default;
-  virtual bool Initialize() = 0;
-  virtual void Finalize() = 0;
+  virtual bool initialize() = 0;
+  virtual void finalize() = 0;
 
-  virtual void RunScene(std::string_view source, std::string_view chunk) = 0;
+  virtual void runScene(std::string_view source, std::string_view chunk) = 0;
 
-  virtual void Update() = 0;
-  virtual void Draw() = 0;
+  virtual void update() = 0;
+  virtual void draw() = 0;
 };
 
 class ScriptBackend {
 public:
-  static std::unique_ptr<IScriptBackend> CreateLua();
+  static std::unique_ptr<IScriptBackend> createLua();
 };
 
 } // namespace sinen

@@ -27,37 +27,37 @@ public:
    *
    * @param state
    */
-  static void set_state(const State &state) { m_game_state = state; }
+  static void setState(const State &state) { mGameState = state; }
   /**
    * @brief Get the state object
    *
    * @return const scene::state&
    */
-  static const State &get_state() { return m_game_state; }
-  static void set_run_script(bool is_run) { is_run_script = is_run; }
+  static const State &getState() { return mGameState; }
+  static void setRunScript(bool is_run) { isRunScript = is_run; }
 
-  static bool is_running() { return m_game_state != State::quit; }
-  static bool is_reset_next() { return is_reset; }
-  static std::string GetCurrentName() { return m_scene_name; }
-  static std::string GetBasePath() { return basePath; }
-  static void Change(const std::string &sceneFileName,
+  static bool isRunning() { return mGameState != State::quit; }
+  static bool isResetNext() { return isReset; }
+  static std::string getCurrentName() { return mSceneName; }
+  static std::string getBasePath() { return basePath; }
+  static void change(const std::string &sceneFileName,
                      const std::string &basePath);
 
-  static void process_input();
-  static void update_scene();
-  static bool is_reset;
-  static bool is_run_script;
+  static void processInput();
+  static void updateScene();
+  static bool isReset;
+  static bool isRunScript;
 
-  static inline float delta_time() { return deltaTime; }
+  static inline float deltaTime() { return mDeltaTime; }
 
   static inline int argc = 0;
   static inline std::vector<std::string> argv;
 
 private:
-  static State m_game_state;
-  static uint32_t m_prev_tick;
-  static std::string m_scene_name;
+  static State mGameState;
+  static uint32_t mPrevTick;
+  static std::string mSceneName;
   static std::string basePath;
-  static float deltaTime;
+  static float mDeltaTime;
 };
 } // namespace sinen

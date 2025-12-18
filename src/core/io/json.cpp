@@ -11,12 +11,12 @@
 #include <rapidjson/writer.h>
 
 // internal libraries
+#include "json.hpp"
 #include <core/io/file.hpp>
-#include <core/io/json.hpp>
 #include <core/logger/logger.hpp>
 
 namespace sinen {
-class Json::array::impl {
+class Json::Array::impl {
 public:
   impl(rapidjson::Value &value, Json *_json) : value(value), m_json(_json) {}
   bool is_created_value = false;
@@ -38,8 +38,8 @@ public:
   rapidjson::Document doc;
   std::list<rapidjson::Value *> values;
 };
-Json::array::array() {}
-Json::array::~array() {
+Json::Array::Array() {}
+Json::Array::~Array() {
   if (pimpl->is_created_value) {
     auto itr = std::find(pimpl->m_json->pimpl->values.begin(),
                          pimpl->m_json->pimpl->values.end(), &pimpl->value);
@@ -50,17 +50,17 @@ Json::array::~array() {
     }
   }
 }
-Json::Object Json::array::operator[](std::size_t index) {
+Json::Object Json::Array::operator[](std::size_t index) {
   Object obj;
   obj.pimpl = std::make_shared<Json::Object::Implements>(pimpl->value[index],
                                                          this->pimpl->m_json);
   return obj;
 }
-void Json::array::push_back(Object &obj) {
+void Json::Array::pushBack(Object &obj) {
   pimpl->value.PushBack(obj.pimpl->value,
                         pimpl->m_json->pimpl->doc.GetAllocator());
 }
-std::size_t Json::array::size() const { return pimpl->value.Size(); }
+std::size_t Json::Array::size() const { return pimpl->value.Size(); }
 Json::Object::Object() {}
 Json::Object::~Object() {
   if (pimpl->is_created_value) {
@@ -92,9 +92,9 @@ std::string Json::Object::getString() {
 }
 bool Json::Object::getBool() { return pimpl->value.GetBool(); }
 
-Json::array Json::Object::getArray() {
-  array arr;
-  arr.pimpl = std::make_shared<Json::array::impl>(pimpl->value, pimpl->m_json);
+Json::Array Json::Object::getArray() {
+  Array arr;
+  arr.pimpl = std::make_shared<Json::Array::impl>(pimpl->value, pimpl->m_json);
   return arr;
 }
 
@@ -115,7 +115,7 @@ void Json::Object::setString(std::string_view value) {
 }
 void Json::Object::setBool(bool value) { pimpl->value.SetBool(value); }
 
-void Json::Object::setArray(array &value) {
+void Json::Object::setArray(Array &value) {
   pimpl->value.SetArray();
   for (std::size_t i = 0; i < value.size(); i++) {
     pimpl->value.PushBack(value[i].pimpl->value,
@@ -152,7 +152,7 @@ void Json::Object::addMember(std::string_view key, Object &value) {
                          pimpl->m_json->pimpl->doc.GetAllocator());
 }
 
-void Json::Object::addMember(std::string_view key, array &value) {
+void Json::Object::addMember(std::string_view key, Array &value) {
   rapidjson::Value k(key.data(), key.size(),
                      pimpl->m_json->pimpl->doc.GetAllocator());
   pimpl->value.AddMember(k, value.pimpl->value,
@@ -200,7 +200,7 @@ void Json::addMember(std::string_view key, Object &value) {
   pimpl->doc.AddMember(k, value.pimpl->value, pimpl->doc.GetAllocator());
 }
 
-void Json::addMember(std::string_view key, array &value) {
+void Json::addMember(std::string_view key, Array &value) {
   rapidjson::Value k(key.data(), pimpl->doc.GetAllocator());
   pimpl->doc.AddMember(k, value.pimpl->value, pimpl->doc.GetAllocator());
 }
@@ -211,11 +211,11 @@ Json::Object Json::createObject() {
   obj.pimpl = std::make_shared<Json::Object::Implements>(*v, this);
   return obj;
 }
-Json::array Json::createArray() {
-  array arr;
+Json::Array Json::createArray() {
+  Array arr;
   rapidjson::Value *v = new rapidjson::Value(rapidjson::kArrayType);
   pimpl->values.push_back(v);
-  arr.pimpl = std::make_shared<Json::array::impl>(*v, this);
+  arr.pimpl = std::make_shared<Json::Array::impl>(*v, this);
   return arr;
 }
 

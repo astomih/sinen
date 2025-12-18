@@ -10,14 +10,14 @@ namespace sinen {
 enum class ScriptType { Lua };
 class ScriptSystem {
 public:
-  static bool Initialize(const ScriptType &type);
-  static void Shutdown();
+  static bool initialize(const ScriptType &type);
+  static void shutdown();
 
-  static void RunScene(std::string_view sceneName);
-  static void UpdateScene();
-  static void DrawScene();
+  static void runScene(std::string_view sceneName);
+  static void updateScene();
+  static void drawScene();
 
-  static ScriptType GetType() { return type; }
+  static ScriptType getType() { return type; }
 
 private:
   static std::unique_ptr<IScriptBackend> script;

@@ -14,34 +14,34 @@ class Device : public px::Device {
 public:
   Device(const CreateInfo &createInfo, SDL_GPUDevice *device)
       : px::Device(createInfo), device(device), window(nullptr) {}
-  SDL_GPUDevice *GetNative() { return device; }
+  SDL_GPUDevice *getNative() { return device; }
   virtual ~Device() override;
-  virtual void ClaimWindow(void *window) override;
+  virtual void claimWindow(void *window) override;
   virtual Ptr<px::Buffer>
-  CreateBuffer(const Buffer::CreateInfo &createInfo) override;
+  createBuffer(const Buffer::CreateInfo &createInfo) override;
   virtual Ptr<px::Texture>
-  CreateTexture(const Texture::CreateInfo &createInfo) override;
+  createTexture(const Texture::CreateInfo &createInfo) override;
   virtual Ptr<px::Sampler>
-  CreateSampler(const Sampler::CreateInfo &createInfo) override;
+  createSampler(const Sampler::CreateInfo &createInfo) override;
   virtual Ptr<px::TransferBuffer>
-  CreateTransferBuffer(const TransferBuffer::CreateInfo &createInfo) override;
+  createTransferBuffer(const TransferBuffer::CreateInfo &createInfo) override;
   virtual Ptr<px::Shader>
-  CreateShader(const Shader::CreateInfo &createInfo) override;
+  createShader(const Shader::CreateInfo &createInfo) override;
   virtual Ptr<px::CommandBuffer>
-  AcquireCommandBuffer(const CommandBuffer::CreateInfo &createInfo) override;
-  virtual Ptr<px::GraphicsPipeline> CreateGraphicsPipeline(
+  acquireCommandBuffer(const CommandBuffer::CreateInfo &createInfo) override;
+  virtual Ptr<px::GraphicsPipeline> createGraphicsPipeline(
       const GraphicsPipeline::CreateInfo &createInfo) override;
   virtual Ptr<px::ComputePipeline>
-  CreateComputePipeline(const ComputePipeline::CreateInfo &createInfo) override;
+  createComputePipeline(const ComputePipeline::CreateInfo &createInfo) override;
   virtual void
-  SubmitCommandBuffer(Ptr<px::CommandBuffer> commandBuffer) override;
+  submitCommandBuffer(Ptr<px::CommandBuffer> commandBuffer) override;
   virtual Ptr<px::Texture>
-  AcquireSwapchainTexture(Ptr<px::CommandBuffer> commandBuffer) override;
-  virtual px::TextureFormat GetSwapchainFormat() const override;
-  virtual void WaitForGPUIdle() override;
-  virtual String GetDriver() const override;
-  std::shared_ptr<Device> Get() {
-    return std::dynamic_pointer_cast<Device>(GetPtr());
+  acquireSwapchainTexture(Ptr<px::CommandBuffer> commandBuffer) override;
+  virtual px::TextureFormat getSwapchainFormat() const override;
+  virtual void waitForGpuIdle() override;
+  virtual String getDriver() const override;
+  std::shared_ptr<Device> get() {
+    return std::dynamic_pointer_cast<Device>(getPtr());
   }
 
 private:
@@ -56,7 +56,7 @@ public:
         isSwapchainTexture(isSwapchainTexture) {}
   virtual ~Texture() override;
 
-  inline SDL_GPUTexture *GetNative() const { return texture; }
+  inline SDL_GPUTexture *getNative() const { return texture; }
 
 private:
   Ptr<Device> device;
@@ -71,7 +71,7 @@ public:
       : px::Sampler(createInfo), device(device), sampler(sampler) {}
   ~Sampler() override;
 
-  inline SDL_GPUSampler *GetNative() const { return sampler; }
+  inline SDL_GPUSampler *getNative() const { return sampler; }
 
 private:
   Ptr<Device> device;
@@ -86,10 +86,10 @@ public:
         transferBuffer(transferBuffer) {}
   ~TransferBuffer() override;
 
-  inline SDL_GPUTransferBuffer *GetNative() { return transferBuffer; }
+  inline SDL_GPUTransferBuffer *getNative() { return transferBuffer; }
 
-  void *Map(bool cycle) override;
-  void Unmap() override;
+  void *map(bool cycle) override;
+  void unmap() override;
 
 private:
   Ptr<Device> device;
@@ -102,7 +102,7 @@ public:
       : px::Buffer(createInfo), device(device), buffer(buffer) {}
   ~Buffer() override;
 
-  inline SDL_GPUBuffer *GetNative() { return buffer; }
+  inline SDL_GPUBuffer *getNative() { return buffer; }
 
 private:
   Ptr<Device> device;
@@ -111,7 +111,7 @@ private:
 class Backend : public px::Backend {
 public:
   virtual Ptr<px::Device>
-  CreateDevice(const px::Device::CreateInfo &createInfo) override;
+  createDevice(const px::Device::CreateInfo &createInfo) override;
 };
 class Shader : public px::Shader {
 public:
@@ -120,7 +120,7 @@ public:
       : px::Shader(createInfo), device(device), shader(shader) {}
   ~Shader() override;
 
-  inline SDL_GPUShader *GetNative() { return shader; }
+  inline SDL_GPUShader *getNative() { return shader; }
 
 private:
   Ptr<Device> device;
@@ -132,18 +132,18 @@ public:
   CopyPass(Allocator *allocator, class CommandBuffer &commandBuffer,
            SDL_GPUCopyPass *copyPass)
       : px::CopyPass(), commandBuffer(commandBuffer), copyPass(copyPass) {}
-  inline SDL_GPUCopyPass *GetNative() { return copyPass; }
+  inline SDL_GPUCopyPass *getNative() { return copyPass; }
 
-  virtual void UploadTexture(const TextureTransferInfo &src,
+  virtual void uploadTexture(const TextureTransferInfo &src,
                              const TextureRegion &dst, bool cycle) override;
-  virtual void DownloadTexture(const TextureRegion &src,
+  virtual void downloadTexture(const TextureRegion &src,
                                const TextureTransferInfo &dst) override;
-  virtual void UploadBuffer(const BufferTransferInfo &src,
+  virtual void uploadBuffer(const BufferTransferInfo &src,
                             const BufferRegion &dst, bool cycle) override;
-  virtual void DownloadBuffer(const BufferRegion &src,
+  virtual void downloadBuffer(const BufferRegion &src,
                               const BufferTransferInfo &dst) override;
 
-  virtual void CopyTexture(const TextureLocation &src,
+  virtual void copyTexture(const TextureLocation &src,
                            const TextureLocation &dst, uint32 width,
                            uint32 height, uint32 depth, bool cycle) override;
 
@@ -159,21 +159,21 @@ public:
       : px::RenderPass(), allocator(allocator), commandBuffer(commandBuffer),
         renderPass(renderPass) {}
 
-  inline SDL_GPURenderPass *GetNative() const { return renderPass; }
+  inline SDL_GPURenderPass *getNative() const { return renderPass; }
 
-  void BindGraphicsPipeline(Ptr<px::GraphicsPipeline> pipeline) override;
-  void BindVertexBuffers(uint32 startSlot,
+  void bindGraphicsPipeline(Ptr<px::GraphicsPipeline> pipeline) override;
+  void bindVertexBuffers(uint32 startSlot,
                          const Array<BufferBinding> &bindings) override;
-  void BindIndexBuffer(const BufferBinding &binding,
+  void bindIndexBuffer(const BufferBinding &binding,
                        IndexElementSize indexElementSize) override;
   void
-  BindFragmentSamplers(uint32 startSlot,
+  bindFragmentSamplers(uint32 startSlot,
                        const Array<TextureSamplerBinding> &bindings) override;
-  void SetViewport(const Viewport &viewport) override;
-  void SetScissor(int32 x, int32 y, int32 width, int32 height) override;
-  void DrawPrimitives(uint32 vertexCount, uint32 instanceCount,
+  void setViewport(const Viewport &viewport) override;
+  void setScissor(int32 x, int32 y, int32 width, int32 height) override;
+  void drawPrimitives(uint32 vertexCount, uint32 instanceCount,
                       uint32 firstVertex, uint32 firstInstance) override;
-  void DrawIndexedPrimitives(uint32 indexCount, uint32 instanceCount,
+  void drawIndexedPrimitives(uint32 indexCount, uint32 instanceCount,
                              uint32 firstIndex, uint32 vertexOffset,
                              uint32 firstInstance) override;
 
@@ -189,17 +189,17 @@ public:
                 SDL_GPUCommandBuffer *commandBuffer)
       : px::CommandBuffer(createInfo), commandBuffer(commandBuffer) {}
 
-  SDL_GPUCommandBuffer *GetNative() { return commandBuffer; }
+  SDL_GPUCommandBuffer *getNative() { return commandBuffer; }
 
-  Ptr<px::CopyPass> BeginCopyPass() override;
-  void EndCopyPass(Ptr<px::CopyPass> copyPass) override;
+  Ptr<px::CopyPass> beginCopyPass() override;
+  void endCopyPass(Ptr<px::CopyPass> copyPass) override;
   Ptr<px::RenderPass>
-  BeginRenderPass(const Array<px::ColorTargetInfo> &infos,
+  beginRenderPass(const Array<px::ColorTargetInfo> &infos,
                   const DepthStencilTargetInfo &depthStencilInfo, float r = 0.f,
                   float g = 0.f, float b = 0.f, float a = 1.f) override;
-  void EndRenderPass(Ptr<px::RenderPass> renderPass) override;
+  void endRenderPass(Ptr<px::RenderPass> renderPass) override;
 
-  void PushUniformData(uint32 slot, const void *data, size_t size) override;
+  void pushUniformData(uint32 slot, const void *data, size_t size) override;
 
 private:
   SDL_GPUCommandBuffer *commandBuffer;
@@ -212,7 +212,7 @@ public:
       : px::GraphicsPipeline(createInfo), device(device), pipeline(pipeline) {}
   ~GraphicsPipeline() override;
 
-  inline SDL_GPUGraphicsPipeline *GetNative() { return pipeline; }
+  inline SDL_GPUGraphicsPipeline *getNative() { return pipeline; }
 
 private:
   Ptr<Device> device;

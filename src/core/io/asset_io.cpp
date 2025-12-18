@@ -25,7 +25,7 @@ namespace sinen {
 static void convertFilePath(std::string &filePath, std::string_view name) {
 
   filePath = FileSystem::getAppBaseDirectory() + "/" +
-             MainSystem::GetBasePath() + "/" + std::string(name);
+             MainSystem::getBasePath() + "/" + std::string(name);
 }
 std::vector<uint8_t> AssetIO::key = {0};
 std::string_view AssetIO::open(std::string_view name) {

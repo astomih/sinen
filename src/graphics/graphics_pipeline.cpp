@@ -1,5 +1,4 @@
 #include "graphics_system.hpp"
-#include "libs/SDL/src/video/khronos/vulkan/vulkan_core.h"
 
 #include <cstddef>
 
@@ -57,7 +56,7 @@ void GraphicsPipeline::build() {
 
   pipelineInfo.targetInfo.colorTargetDescriptions.emplace_back(
       rhi::ColorTargetDescription{
-          .format = device->GetSwapchainFormat(),
+          .format = device->getSwapchainFormat(),
           .blendState =
               rhi::ColorTargetBlendState{
                   .srcColorBlendFactor = rhi::BlendFactor::SrcAlpha,
@@ -75,7 +74,7 @@ void GraphicsPipeline::build() {
   pipelineInfo.targetInfo.hasDepthStencilTarget = enableDepthTest;
   pipelineInfo.targetInfo.depthStencilTargetFormat =
       rhi::TextureFormat::D32_FLOAT_S8_UINT;
-  this->pipeline = device->CreateGraphicsPipeline(pipelineInfo);
+  this->pipeline = device->createGraphicsPipeline(pipelineInfo);
 }
 
 GraphicsPipeline BuiltinPipelines::get3D() {

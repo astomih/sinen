@@ -2,15 +2,15 @@
 #include "imgui_impl_sinen_shaders.hpp"
 
 namespace sinen {
-struct ImGui_ImplParanoixa_FrameData {
+struct ImGuiImplParanoixaFrameData {
   rhi::Ptr<rhi::Buffer> VertexBuffer = nullptr;
   rhi::Ptr<rhi::Buffer> IndexBuffer = nullptr;
   uint32_t VertexBufferSize = 0;
   uint32_t IndexBufferSize = 0;
 };
 
-struct ImGui_ImplParanoixa_Data {
-  ImGui_ImplParanoixa_InitInfo InitInfo;
+struct ImGuiImplParanoixaData {
+  ImGuiImplParanoixaInitInfo InitInfo;
 
   // Graphics pipeline & shaders
   rhi::Ptr<rhi::Shader> VertexShader = nullptr;
@@ -23,19 +23,19 @@ struct ImGui_ImplParanoixa_Data {
   rhi::TextureSamplerBinding FontBinding = {nullptr, nullptr};
 
   // Frame data for main window
-  ImGui_ImplParanoixa_FrameData MainWindowFrameData;
+  ImGuiImplParanoixaFrameData MainWindowFrameData;
 };
-static ImGui_ImplParanoixa_Data *ImGui_ImplParanoixa_GetBackendData() {
-  return ImGui::GetCurrentContext() ? (ImGui_ImplParanoixa_Data *)ImGui::GetIO()
-                                          .BackendRendererUserData
-                                    : nullptr;
+static ImGuiImplParanoixaData *imGuiImplParanoixaGetBackendData() {
+  return ImGui::GetCurrentContext()
+             ? (ImGuiImplParanoixaData *)ImGui::GetIO().BackendRendererUserData
+             : nullptr;
 }
-static void Imgui_ImplParanoixa_CreateShaders() {
+static void imguiImplParanoixaCreateShaders() {
   // Create the shader modules
-  ImGui_ImplParanoixa_Data *bd = ImGui_ImplParanoixa_GetBackendData();
-  ImGui_ImplParanoixa_InitInfo *v = &bd->InitInfo;
+  ImGuiImplParanoixaData *bd = imGuiImplParanoixaGetBackendData();
+  ImGuiImplParanoixaInitInfo *v = &bd->InitInfo;
 
-  auto driver = v->Device->GetDriver();
+  auto driver = v->Device->getDriver();
 
   rhi::Shader::CreateInfo vertex_shader_info = {};
   vertex_shader_info.allocator = v->Allocator;
@@ -83,15 +83,15 @@ static void Imgui_ImplParanoixa_CreateShaders() {
   //     fragment_shader_info.code_size = sizeof(metallib_fragment);
   //   }
   // #endif
-  bd->VertexShader = v->Device->CreateShader(vertex_shader_info);
-  bd->FragmentShader = v->Device->CreateShader(fragment_shader_info);
+  bd->VertexShader = v->Device->createShader(vertex_shader_info);
+  bd->FragmentShader = v->Device->createShader(fragment_shader_info);
   IM_ASSERT(bd->VertexShader != nullptr);
   IM_ASSERT(bd->FragmentShader != nullptr);
 }
-static void ImGui_ImplParanoixa_CreateGraphicsPipeline() {
-  ImGui_ImplParanoixa_Data *bd = ImGui_ImplParanoixa_GetBackendData();
-  ImGui_ImplParanoixa_InitInfo *v = &bd->InitInfo;
-  Imgui_ImplParanoixa_CreateShaders();
+static void imGuiImplParanoixaCreateGraphicsPipeline() {
+  ImGuiImplParanoixaData *bd = imGuiImplParanoixaGetBackendData();
+  ImGuiImplParanoixaInitInfo *v = &bd->InitInfo;
+  imguiImplParanoixaCreateShaders();
 
   rhi::Array<rhi::VertexBufferDescription> vertex_buffer_desc(v->Allocator);
   vertex_buffer_desc.resize(1);
@@ -168,18 +168,17 @@ static void ImGui_ImplParanoixa_CreateGraphicsPipeline() {
   pipeline_info.depthStencilState = depth_stencil_state;
   pipeline_info.targetInfo = target_info;
 
-  bd->Pipeline = v->Device->CreateGraphicsPipeline(pipeline_info);
+  bd->Pipeline = v->Device->createGraphicsPipeline(pipeline_info);
   IM_ASSERT(bd->Pipeline != nullptr && "Failed to create graphics pipeline");
 }
-IMGUI_IMPL_API bool
-ImGui_ImplParanoixa_Init(ImGui_ImplParanoixa_InitInfo *info) {
+IMGUI_IMPL_API bool imGuiImplParanoixaInit(ImGuiImplParanoixaInitInfo *info) {
   ImGuiIO &io = ImGui::GetIO();
   IMGUI_CHECKVERSION();
   IM_ASSERT(io.BackendRendererUserData == nullptr &&
             "Already initialized a renderer backend!");
 
   // Setup backend capabilities flags
-  ImGui_ImplParanoixa_Data *bd = IM_NEW(ImGui_ImplParanoixa_Data)();
+  ImGuiImplParanoixaData *bd = IM_NEW(ImGuiImplParanoixaData)();
   io.BackendRendererUserData = (void *)bd;
   io.BackendRendererName = "imgui_impl_paranoixa";
   io.BackendFlags |=
@@ -192,41 +191,42 @@ ImGui_ImplParanoixa_Init(ImGui_ImplParanoixa_InitInfo *info) {
 
   bd->InitInfo = *info;
 
-  ImGui_ImplParanoixa_CreateDeviceObjects();
+  imGuiImplParanoixaCreateDeviceObjects();
   return true;
 }
 
-IMGUI_IMPL_API void ImGui_ImplParanoixa_Shutdown() {}
+IMGUI_IMPL_API void imGuiImplParanoixaShutdown() {}
 
-IMGUI_IMPL_API void ImGui_ImplParanoixa_NewFrame() {
-  ImGui_ImplParanoixa_Data *bd = ImGui_ImplParanoixa_GetBackendData();
+IMGUI_IMPL_API void imGuiImplParanoixaNewFrame() {
+  ImGuiImplParanoixaData *bd = imGuiImplParanoixaGetBackendData();
   IM_ASSERT(bd != nullptr && "Context or backend not initialized! Did you call "
                              "ImGui_ImplParanoixa_Init()?");
 
   if (!bd->FontTexture)
-    ImGui_ImplParanoixa_CreateFontsTexture();
+    imGuiImplParanoixaCreateFontsTexture();
 }
-static void CreateOrResizeBuffer(rhi::Ptr<rhi::Buffer> &buffer,
+static void createOrResizeBuffer(rhi::Ptr<rhi::Buffer> &buffer,
                                  uint32_t *old_size, uint32_t new_size,
                                  rhi::BufferUsage usage) {
-  ImGui_ImplParanoixa_Data *bd = ImGui_ImplParanoixa_GetBackendData();
-  ImGui_ImplParanoixa_InitInfo *v = &bd->InitInfo;
+  ImGuiImplParanoixaData *bd = imGuiImplParanoixaGetBackendData();
+  ImGuiImplParanoixaInitInfo *v = &bd->InitInfo;
 
   // Even though this is fairly rarely called.
-  v->Device->WaitForGPUIdle();
+  v->Device->waitForGpuIdle();
 
   rhi::Buffer::CreateInfo buffer_info = {};
   buffer_info.allocator = v->Allocator;
   buffer_info.usage = usage;
   buffer_info.size = new_size;
   // buffer_info.props = 0;
-  buffer = v->Device->CreateBuffer(buffer_info);
+  buffer = v->Device->createBuffer(buffer_info);
   *old_size = new_size;
   IM_ASSERT(buffer != nullptr && "Failed to create GPU Buffer");
 }
 
-IMGUI_IMPL_API void Imgui_ImplParanoixa_PrepareDrawData(
-    ImDrawData *draw_data, rhi::Ptr<rhi::CommandBuffer> command_buffer) {
+IMGUI_IMPL_API void
+imGuiImplParanoixaPrepareDrawData(ImDrawData *draw_data,
+                                  rhi::Ptr<rhi::CommandBuffer> command_buffer) {
   // Avoid rendering when minimized, scale coordinates for retina displays
   // (screen coordinates != framebuffer coordinates)
   int fb_width =
@@ -236,19 +236,19 @@ IMGUI_IMPL_API void Imgui_ImplParanoixa_PrepareDrawData(
   if (fb_width <= 0 || fb_height <= 0 || draw_data->TotalVtxCount <= 0)
     return;
 
-  ImGui_ImplParanoixa_Data *bd = ImGui_ImplParanoixa_GetBackendData();
-  ImGui_ImplParanoixa_InitInfo *v = &bd->InitInfo;
-  ImGui_ImplParanoixa_FrameData *fd = &bd->MainWindowFrameData;
+  ImGuiImplParanoixaData *bd = imGuiImplParanoixaGetBackendData();
+  ImGuiImplParanoixaInitInfo *v = &bd->InitInfo;
+  ImGuiImplParanoixaFrameData *fd = &bd->MainWindowFrameData;
 
   uint32_t vertex_size = draw_data->TotalVtxCount * sizeof(ImDrawVert);
   uint32_t index_size = draw_data->TotalIdxCount * sizeof(ImDrawIdx);
   if (fd->VertexBuffer == nullptr || fd->VertexBufferSize < vertex_size)
-    CreateOrResizeBuffer(fd->VertexBuffer, &fd->VertexBufferSize, vertex_size,
+    createOrResizeBuffer(fd->VertexBuffer, &fd->VertexBufferSize, vertex_size,
                          rhi::BufferUsage::Vertex);
   IM_ASSERT(fd->VertexBuffer != nullptr &&
             "Failed to create the vertex buffer");
   if (fd->IndexBuffer == nullptr || fd->IndexBufferSize < index_size)
-    CreateOrResizeBuffer(fd->IndexBuffer, &fd->IndexBufferSize, index_size,
+    createOrResizeBuffer(fd->IndexBuffer, &fd->IndexBufferSize, index_size,
                          rhi::BufferUsage::Index);
   IM_ASSERT(fd->IndexBuffer != nullptr && "Failed to create the index buffer");
 
@@ -263,16 +263,16 @@ IMGUI_IMPL_API void Imgui_ImplParanoixa_PrepareDrawData(
   index_transferbuffer_info.size = index_size;
 
   auto vertex_transferbuffer =
-      v->Device->CreateTransferBuffer(vertex_transferbuffer_info);
+      v->Device->createTransferBuffer(vertex_transferbuffer_info);
   IM_ASSERT(vertex_transferbuffer != nullptr &&
             "Failed to create the vertex transfer buffer");
   auto index_transferbuffer =
-      v->Device->CreateTransferBuffer(index_transferbuffer_info);
+      v->Device->createTransferBuffer(index_transferbuffer_info);
   IM_ASSERT(index_transferbuffer != nullptr &&
             "Failed to create the index transfer buffer");
 
-  ImDrawVert *vtx_dst = (ImDrawVert *)vertex_transferbuffer->Map(true);
-  ImDrawIdx *idx_dst = (ImDrawIdx *)index_transferbuffer->Map(true);
+  ImDrawVert *vtx_dst = (ImDrawVert *)vertex_transferbuffer->map(true);
+  ImDrawIdx *idx_dst = (ImDrawIdx *)index_transferbuffer->map(true);
   for (int n = 0; n < draw_data->CmdListsCount; n++) {
     const ImDrawList *draw_list = draw_data->CmdLists[n];
     memcpy(vtx_dst, draw_list->VtxBuffer.Data,
@@ -282,8 +282,8 @@ IMGUI_IMPL_API void Imgui_ImplParanoixa_PrepareDrawData(
     vtx_dst += draw_list->VtxBuffer.Size;
     idx_dst += draw_list->IdxBuffer.Size;
   }
-  vertex_transferbuffer->Unmap();
-  index_transferbuffer->Unmap();
+  vertex_transferbuffer->unmap();
+  index_transferbuffer->unmap();
 
   rhi::BufferTransferInfo vertex_buffer_location = {};
   vertex_buffer_location.offset = 0;
@@ -302,20 +302,20 @@ IMGUI_IMPL_API void Imgui_ImplParanoixa_PrepareDrawData(
   index_buffer_region.offset = 0;
   index_buffer_region.size = index_size;
 
-  auto copy_pass = command_buffer->BeginCopyPass();
-  copy_pass->UploadBuffer(vertex_buffer_location, vertex_buffer_region, false);
-  copy_pass->UploadBuffer(index_buffer_location, index_buffer_region, false);
-  command_buffer->EndCopyPass(copy_pass);
+  auto copy_pass = command_buffer->beginCopyPass();
+  copy_pass->uploadBuffer(vertex_buffer_location, vertex_buffer_region, false);
+  copy_pass->uploadBuffer(index_buffer_location, index_buffer_region, false);
+  command_buffer->endCopyPass(copy_pass);
 }
-static void ImGui_ImplParanoixa_SetupRenderState(
+static void imGuiImplParanoixaSetupRenderState(
     ImDrawData *draw_data, rhi::Ptr<rhi::GraphicsPipeline> pipeline,
     rhi::Ptr<rhi::CommandBuffer> command_buffer,
-    rhi::Ptr<rhi::RenderPass> render_pass, ImGui_ImplParanoixa_FrameData *fd,
+    rhi::Ptr<rhi::RenderPass> render_pass, ImGuiImplParanoixaFrameData *fd,
     uint32_t fb_width, uint32_t fb_height) {
-  ImGui_ImplParanoixa_Data *bd = ImGui_ImplParanoixa_GetBackendData();
+  ImGuiImplParanoixaData *bd = imGuiImplParanoixaGetBackendData();
 
   // Bind graphics pipeline
-  render_pass->BindGraphicsPipeline(pipeline);
+  render_pass->bindGraphicsPipeline(pipeline);
 
   // Bind Vertex And Index Buffers
   if (draw_data->TotalVtxCount > 0) {
@@ -332,8 +332,8 @@ static void ImGui_ImplParanoixa_SetupRenderState(
     index_buffer_binding.buffer = fd->IndexBuffer;
     index_buffer_binding.offset = 0;
     index_buffer_bindings.push_back(index_buffer_binding);
-    render_pass->BindVertexBuffers(0, vertex_buffer_bindings);
-    render_pass->BindIndexBuffer(index_buffer_binding,
+    render_pass->bindVertexBuffers(0, vertex_buffer_bindings);
+    render_pass->bindIndexBuffer(index_buffer_binding,
                                  sizeof(ImDrawIdx) == 2
                                      ? rhi::IndexElementSize::Uint16
                                      : rhi::IndexElementSize::Uint32);
@@ -347,7 +347,7 @@ static void ImGui_ImplParanoixa_SetupRenderState(
   viewport.height = (float)fb_height;
   viewport.minDepth = 0.0f;
   viewport.maxDepth = 1.0f;
-  render_pass->SetViewport(viewport);
+  render_pass->setViewport(viewport);
 
   // Setup scale and translation
   // Our visible imgui space lies from draw_data->DisplayPps (top left) to
@@ -361,14 +361,14 @@ static void ImGui_ImplParanoixa_SetupRenderState(
   ubo.scale[1] = 2.0f / draw_data->DisplaySize.y;
   ubo.translation[0] = -1.0f - draw_data->DisplayPos.x * ubo.scale[0];
   ubo.translation[1] = -1.0f - draw_data->DisplayPos.y * ubo.scale[1];
-  command_buffer->PushUniformData(0, &ubo, sizeof(UBO));
+  command_buffer->pushUniformData(0, &ubo, sizeof(UBO));
 }
 
 IMGUI_IMPL_API void
-ImGui_ImplParanoixa_RenderDrawData(ImDrawData *draw_data,
-                                   rhi::Ptr<rhi::CommandBuffer> command_buffer,
-                                   rhi::Ptr<rhi::RenderPass> render_pass,
-                                   rhi::Ptr<rhi::GraphicsPipeline> pipeline) {
+imGuiImplParanoixaRenderDrawData(ImDrawData *draw_data,
+                                 rhi::Ptr<rhi::CommandBuffer> command_buffer,
+                                 rhi::Ptr<rhi::RenderPass> render_pass,
+                                 rhi::Ptr<rhi::GraphicsPipeline> pipeline) {
   int fb_width =
       (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
   int fb_height =
@@ -376,14 +376,14 @@ ImGui_ImplParanoixa_RenderDrawData(ImDrawData *draw_data,
   if (fb_width <= 0 || fb_height <= 0)
     return;
 
-  ImGui_ImplParanoixa_Data *bd = ImGui_ImplParanoixa_GetBackendData();
-  ImGui_ImplParanoixa_FrameData *fd = &bd->MainWindowFrameData;
+  ImGuiImplParanoixaData *bd = imGuiImplParanoixaGetBackendData();
+  ImGuiImplParanoixaFrameData *fd = &bd->MainWindowFrameData;
 
   if (pipeline == nullptr)
     pipeline = bd->Pipeline;
 
-  ImGui_ImplParanoixa_SetupRenderState(draw_data, pipeline, command_buffer,
-                                       render_pass, fd, fb_width, fb_height);
+  imGuiImplParanoixaSetupRenderState(draw_data, pipeline, command_buffer,
+                                     render_pass, fd, fb_width, fb_height);
 
   // Will project scissor/clipping rectangles into framebuffer space
   ImVec2 clip_off = draw_data->DisplayPos; // (0,0) unless using multi-viewports
@@ -427,17 +427,17 @@ ImGui_ImplParanoixa_RenderDrawData(ImDrawData *draw_data,
           continue;
 
         // Apply scissor/clipping rectangle
-        render_pass->SetScissor(clip_min.x, clip_min.y, clip_max.x - clip_min.x,
+        render_pass->setScissor(clip_min.x, clip_min.y, clip_max.x - clip_min.x,
                                 clip_max.y - clip_min.y);
 
         // Bind DescriptorSet with font or user texture
         rhi::Array<rhi::TextureSamplerBinding> bindings(bd->InitInfo.Allocator);
         auto *binding = (rhi::TextureSamplerBinding *)pcmd->GetTexID();
         bindings.push_back(*binding);
-        render_pass->BindFragmentSamplers(0, bindings);
+        render_pass->bindFragmentSamplers(0, bindings);
 
         // Draw
-        render_pass->DrawIndexedPrimitives(
+        render_pass->drawIndexedPrimitives(
             pcmd->ElemCount, 1, pcmd->IdxOffset + global_idx_offset,
             pcmd->VtxOffset + global_vtx_offset, 0);
       }
@@ -445,12 +445,12 @@ ImGui_ImplParanoixa_RenderDrawData(ImDrawData *draw_data,
     global_idx_offset += draw_list->IdxBuffer.Size;
     global_vtx_offset += draw_list->VtxBuffer.Size;
   }
-  render_pass->SetScissor(0, 0, fb_width, fb_height);
+  render_pass->setScissor(0, 0, fb_width, fb_height);
 }
 
-IMGUI_IMPL_API void ImGui_ImplParanoixa_CreateDeviceObjects() {
-  ImGui_ImplParanoixa_Data *bd = ImGui_ImplParanoixa_GetBackendData();
-  ImGui_ImplParanoixa_InitInfo *v = &bd->InitInfo;
+IMGUI_IMPL_API void imGuiImplParanoixaCreateDeviceObjects() {
+  ImGuiImplParanoixaData *bd = imGuiImplParanoixaGetBackendData();
+  ImGuiImplParanoixaInitInfo *v = &bd->InitInfo;
 
   if (!bd->FontSampler) {
     // Bilinear sampling is required by default. Set 'io.Fonts->Flags |=
@@ -471,28 +471,28 @@ IMGUI_IMPL_API void ImGui_ImplParanoixa_CreateDeviceObjects() {
     sampler_info.maxAnisotropy = 1.0f;
     sampler_info.enableCompare = false;
 
-    bd->FontSampler = v->Device->CreateSampler(sampler_info);
+    bd->FontSampler = v->Device->createSampler(sampler_info);
     bd->FontBinding.sampler = bd->FontSampler;
     IM_ASSERT(bd->FontSampler != nullptr &&
               "Failed to create font sampler, call SDL_GetError() for more "
               "information");
   }
 
-  ImGui_ImplParanoixa_CreateGraphicsPipeline();
-  ImGui_ImplParanoixa_CreateFontsTexture();
+  imGuiImplParanoixaCreateGraphicsPipeline();
+  imGuiImplParanoixaCreateFontsTexture();
 }
 
-IMGUI_IMPL_API void ImGui_ImplParanoixa_DestroyDeviceObjects() {}
+IMGUI_IMPL_API void imGuiImplParanoixaDestroyDeviceObjects() {}
 
-IMGUI_IMPL_API void ImGui_ImplParanoixa_CreateFontsTexture() {
+IMGUI_IMPL_API void imGuiImplParanoixaCreateFontsTexture() {
   ImGuiIO &io = ImGui::GetIO();
-  ImGui_ImplParanoixa_Data *bd = ImGui_ImplParanoixa_GetBackendData();
-  ImGui_ImplParanoixa_InitInfo *v = &bd->InitInfo;
+  ImGuiImplParanoixaData *bd = imGuiImplParanoixaGetBackendData();
+  ImGuiImplParanoixaInitInfo *v = &bd->InitInfo;
 
   // Destroy existing texture (if any)
   if (bd->FontTexture) {
-    v->Device->WaitForGPUIdle();
-    ImGui_ImplParanoixa_DestroyFontsTexture();
+    v->Device->waitForGpuIdle();
+    imGuiImplParanoixaDestroyFontsTexture();
   }
 
   unsigned char *pixels;
@@ -513,7 +513,7 @@ IMGUI_IMPL_API void ImGui_ImplParanoixa_CreateFontsTexture() {
     texture_info.numLevels = 1;
     texture_info.sampleCount = rhi::SampleCount::x1;
 
-    bd->FontTexture = v->Device->CreateTexture(texture_info);
+    bd->FontTexture = v->Device->createTexture(texture_info);
     IM_ASSERT(bd->FontTexture && "Failed to create font texture");
   }
 
@@ -528,13 +528,13 @@ IMGUI_IMPL_API void ImGui_ImplParanoixa_CreateFontsTexture() {
     transferbuffer_info.size = upload_size;
 
     rhi::Ptr<rhi::TransferBuffer> transferbuffer =
-        v->Device->CreateTransferBuffer(transferbuffer_info);
+        v->Device->createTransferBuffer(transferbuffer_info);
     IM_ASSERT(transferbuffer != nullptr &&
               "Failed to create font transfer buffer");
 
-    void *texture_ptr = transferbuffer->Map(false);
+    void *texture_ptr = transferbuffer->map(false);
     memcpy(texture_ptr, pixels, upload_size);
-    transferbuffer->Unmap();
+    transferbuffer->unmap();
 
     rhi::TextureTransferInfo transfer_info = {};
     transfer_info.offset = 0;
@@ -547,18 +547,18 @@ IMGUI_IMPL_API void ImGui_ImplParanoixa_CreateFontsTexture() {
     texture_region.depth = 1;
 
     rhi::Ptr<rhi::CommandBuffer> cmd =
-        v->Device->AcquireCommandBuffer({bd->InitInfo.Allocator});
-    rhi::Ptr<rhi::CopyPass> copy_pass = cmd->BeginCopyPass();
-    copy_pass->UploadTexture(transfer_info, texture_region, false);
-    cmd->EndCopyPass(copy_pass);
-    v->Device->SubmitCommandBuffer(cmd);
+        v->Device->acquireCommandBuffer({bd->InitInfo.Allocator});
+    rhi::Ptr<rhi::CopyPass> copy_pass = cmd->beginCopyPass();
+    copy_pass->uploadTexture(transfer_info, texture_region, false);
+    cmd->endCopyPass(copy_pass);
+    v->Device->submitCommandBuffer(cmd);
   }
 
   // Store our identifier
   io.Fonts->SetTexID((ImTextureID)&bd->FontBinding);
 }
 
-IMGUI_IMPL_API void ImGui_ImplParanoixa_DestroyFontsTexture() {
+IMGUI_IMPL_API void imGuiImplParanoixaDestroyFontsTexture() {
   return IMGUI_IMPL_API void();
 }
 

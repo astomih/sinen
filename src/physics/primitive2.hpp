@@ -9,7 +9,7 @@ namespace sinen {
 struct Line2 {
   Line2() = default;
   Line2(const glm::vec2 &p, const glm::vec2 &v) : p(p), v(v) {}
-  glm::vec2 get_point(float t) const { return v * t; }
+  glm::vec2 getPoint(float t) const { return v * t; }
 
   glm::vec2 p;
   glm::vec2 v;
@@ -26,7 +26,7 @@ struct Segment2 : public Line2 {
    * @brief Get end point of segment
    *
    */
-  glm::vec2 get_end_point() const;
+  glm::vec2 getEndPoint() const;
 };
 /**
  * @brief Ray2D class
@@ -41,7 +41,7 @@ struct Ray2 : public Line2 {
    * @brief Get end point of ray
    *
    */
-  glm::vec2 get_end_point() const;
+  glm::vec2 getEndPoint() const;
 };
 /**
  * @brief Triangle3D class
@@ -54,22 +54,22 @@ struct Triangle2 {
    * @brief Get normal of triangle
    *
    */
-  glm::vec2 get_normal() const;
+  glm::vec2 getNormal() const;
   /**
    * @brief Get area of triangle
    *
    */
-  float get_area() const;
+  float getArea() const;
   /**
    * @brief Get centroid of triangle
    *
    */
-  glm::vec2 get_centroid() const;
+  glm::vec2 getCentroid() const;
   /**
    * @brief Get barycentric coordinates of point
    *
    */
-  glm::vec2 get_barycentric(const glm::vec2 &p) const;
+  glm::vec2 getBarycentric(const glm::vec2 &p) const;
 
   // vertices
   glm::vec2 a;

@@ -44,11 +44,11 @@ bool Sinen::initialize(int argc, char *argv[]) {
     Logger::critical("Failed to initialize input system");
     return false;
   }
-  if (!PhysicsSystem::Initialize()) {
+  if (!PhysicsSystem::initialize()) {
     Logger::critical("Failed to initialize physics system");
     return false;
   }
-  if (!ScriptSystem::Initialize(ScriptType::Lua)) {
+  if (!ScriptSystem::initialize(ScriptType::Lua)) {
     Logger::critical("Failed to initialize script system");
     return false;
   }
@@ -61,18 +61,18 @@ bool Sinen::initialize(int argc, char *argv[]) {
 }
 void Sinen::run() {
   while (true) {
-    if (MainSystem::is_running()) {
-      WindowSystem::prepare_frame();
-      InputSystem::prepare_for_update();
-      MainSystem::process_input();
+    if (MainSystem::isRunning()) {
+      WindowSystem::prepareFrame();
+      InputSystem::prepareForUpdate();
+      MainSystem::processInput();
       InputSystem::update();
-      MainSystem::update_scene();
+      MainSystem::updateScene();
       GraphicsSystem::render();
       continue;
     }
-    if (MainSystem::is_reset) {
+    if (MainSystem::isReset) {
       MainSystem::setup();
-      MainSystem::is_reset = false;
+      MainSystem::isReset = false;
       continue;
     }
     break;
@@ -80,8 +80,8 @@ void Sinen::run() {
 }
 void Sinen::shutdown() {
   MainSystem::shutdown();
-  PhysicsSystem::Shutdown();
-  ScriptSystem::Shutdown();
+  PhysicsSystem::shutdown();
+  ScriptSystem::shutdown();
   InputSystem::shutdown();
   AudioSystem::shutdown();
   RandomSystem::shutdown();

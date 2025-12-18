@@ -34,15 +34,15 @@ struct OBB {
 };
 class Collision {
 public:
-  static bool AABBvsAABB(const AABB &a, const AABB &b);
-  static bool OBBvsOBB(const OBB &obb1, const OBB &obb2);
+  static bool aabBvsAabb(const AABB &a, const AABB &b);
+  static bool obBvsObb(const OBB &obb1, const OBB &obb2);
 
 private:
-  static float SegmentLengthOnSeparateAxis(const glm::vec3 &Sep,
+  static float segmentLengthOnSeparateAxis(const glm::vec3 &Sep,
                                            const glm::vec3 &e1,
                                            const glm::vec3 &e2,
                                            const glm::vec3 &e3);
-  static float SegmentLengthOnSeparateAxis(const glm::vec3 &Sep,
+  static float segmentLengthOnSeparateAxis(const glm::vec3 &Sep,
                                            const glm::vec3 &e1,
                                            const glm::vec3 &e2);
 };

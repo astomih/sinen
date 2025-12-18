@@ -13,35 +13,29 @@
 
 // internal
 #include "../../graphics/graphics_system.hpp"
-#include "assimp/matrix4x4.h"
-#include "assimp/postprocess.h"
-#include "glm/ext/quaternion_common.hpp"
-#include "glm/fwd.hpp"
 #include "model_data.hpp"
 #include <asset/asset.hpp>
 #include <core/core.hpp>
+#include <glm/ext/quaternion_common.hpp>
+#include <glm/fwd.hpp>
 #include <graphics/graphics.hpp>
 #include <math/math.hpp>
 
-#include <assimp/DefaultLogger.hpp>
-#include <assimp/IOStream.hpp>
 #include <assimp/IOSystem.hpp>
 #include <assimp/Importer.hpp>
+#include <assimp/matrix4x4.h>
+#include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include "glm/ext/matrix_common.hpp"
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/quaternion_common.hpp"
-#include "libs/assimp/code/AssetLib/3MF/3MFXmlTags.h"
-#include "sol/types.hpp"
-
 #include <glm/ext/vector_common.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/quaternion.hpp>
-#include <ranges>
 
 namespace sinen {
 enum class LoadState { Version, Vertex, Indices };
@@ -466,13 +460,13 @@ createVertexIndexBuffer(const std::vector<Vertex> &vertices,
   vertexBufferInfo.allocator = allocator;
   vertexBufferInfo.size = vertexBufferSize;
   vertexBufferInfo.usage = rhi::BufferUsage::Vertex;
-  vertexBuffer = device->CreateBuffer(vertexBufferInfo);
+  vertexBuffer = device->createBuffer(vertexBufferInfo);
 
   rhi::Buffer::CreateInfo indexBufferInfo{};
   indexBufferInfo.allocator = allocator;
   indexBufferInfo.size = indices.size() * sizeof(uint32_t);
   indexBufferInfo.usage = rhi::BufferUsage::Index;
-  indexBuffer = device->CreateBuffer(indexBufferInfo);
+  indexBuffer = device->createBuffer(indexBufferInfo);
 
   rhi::Ptr<rhi::TransferBuffer> transferBuffer;
   {
@@ -481,18 +475,18 @@ createVertexIndexBuffer(const std::vector<Vertex> &vertices,
       info.allocator = allocator;
       info.size = vertexBufferSize;
       info.usage = rhi::TransferBufferUsage::Upload;
-      transferBuffer = device->CreateTransferBuffer(info);
-      auto *pMapped = transferBuffer->Map(false);
+      transferBuffer = device->createTransferBuffer(info);
+      auto *pMapped = transferBuffer->map(false);
       memcpy(pMapped, vertices.data(), vertices.size() * sizeof(Vertex));
-      transferBuffer->Unmap();
+      transferBuffer->unmap();
     }
     {
       rhi::CommandBuffer::CreateInfo info{};
       info.allocator = allocator;
-      auto commandBuffer = device->AcquireCommandBuffer(info);
+      auto commandBuffer = device->acquireCommandBuffer(info);
       {
 
-        auto copyPass = commandBuffer->BeginCopyPass();
+        auto copyPass = commandBuffer->beginCopyPass();
         {
 
           rhi::BufferTransferInfo src{};
@@ -502,11 +496,11 @@ createVertexIndexBuffer(const std::vector<Vertex> &vertices,
           dst.offset = 0;
           dst.size = vertexBufferSize;
           dst.buffer = vertexBuffer;
-          copyPass->UploadBuffer(src, dst, false);
+          copyPass->uploadBuffer(src, dst, false);
         }
-        commandBuffer->EndCopyPass(copyPass);
+        commandBuffer->endCopyPass(copyPass);
       }
-      device->SubmitCommandBuffer(commandBuffer);
+      device->submitCommandBuffer(commandBuffer);
     }
   }
   {
@@ -514,19 +508,19 @@ createVertexIndexBuffer(const std::vector<Vertex> &vertices,
     info.allocator = allocator;
     info.size = indexBufferInfo.size;
     info.usage = rhi::TransferBufferUsage::Upload;
-    transferBuffer = device->CreateTransferBuffer(info);
-    auto *pMapped = transferBuffer->Map(false);
+    transferBuffer = device->createTransferBuffer(info);
+    auto *pMapped = transferBuffer->map(false);
     memcpy(pMapped, indices.data(), indexBufferInfo.size);
-    transferBuffer->Unmap();
+    transferBuffer->unmap();
   }
   {
     {
       rhi::CommandBuffer::CreateInfo info{};
       info.allocator = allocator;
-      auto commandBuffer = device->AcquireCommandBuffer(info);
+      auto commandBuffer = device->acquireCommandBuffer(info);
       {
 
-        auto copyPass = commandBuffer->BeginCopyPass();
+        auto copyPass = commandBuffer->beginCopyPass();
         {
 
           rhi::BufferTransferInfo src{};
@@ -536,11 +530,11 @@ createVertexIndexBuffer(const std::vector<Vertex> &vertices,
           dst.offset = 0;
           dst.size = indexBufferInfo.size;
           dst.buffer = indexBuffer;
-          copyPass->UploadBuffer(src, dst, false);
+          copyPass->uploadBuffer(src, dst, false);
         }
-        commandBuffer->EndCopyPass(copyPass);
+        commandBuffer->endCopyPass(copyPass);
       }
-      device->SubmitCommandBuffer(commandBuffer);
+      device->submitCommandBuffer(commandBuffer);
     }
   }
   return std::make_pair(vertexBuffer, indexBuffer);
@@ -557,7 +551,7 @@ createAnimationVertexBuffer(const std::vector<AnimationVertex> &vertices) {
   vertexBufferInfo.allocator = allocator;
   vertexBufferInfo.size = vertexBufferSize;
   vertexBufferInfo.usage = rhi::BufferUsage::Vertex;
-  vertexBuffer = device->CreateBuffer(vertexBufferInfo);
+  vertexBuffer = device->createBuffer(vertexBufferInfo);
 
   rhi::Ptr<rhi::TransferBuffer> transferBuffer;
   {
@@ -566,19 +560,19 @@ createAnimationVertexBuffer(const std::vector<AnimationVertex> &vertices) {
       info.allocator = allocator;
       info.size = vertexBufferSize;
       info.usage = rhi::TransferBufferUsage::Upload;
-      transferBuffer = device->CreateTransferBuffer(info);
-      auto *pMapped = transferBuffer->Map(false);
+      transferBuffer = device->createTransferBuffer(info);
+      auto *pMapped = transferBuffer->map(false);
       memcpy(pMapped, vertices.data(),
              vertices.size() * sizeof(AnimationVertex));
-      transferBuffer->Unmap();
+      transferBuffer->unmap();
     }
     {
       rhi::CommandBuffer::CreateInfo info{};
       info.allocator = allocator;
-      auto commandBuffer = device->AcquireCommandBuffer(info);
+      auto commandBuffer = device->acquireCommandBuffer(info);
       {
 
-        auto copyPass = commandBuffer->BeginCopyPass();
+        auto copyPass = commandBuffer->beginCopyPass();
         {
 
           rhi::BufferTransferInfo src{};
@@ -588,11 +582,11 @@ createAnimationVertexBuffer(const std::vector<AnimationVertex> &vertices) {
           dst.offset = 0;
           dst.size = vertexBufferSize;
           dst.buffer = vertexBuffer;
-          copyPass->UploadBuffer(src, dst, false);
+          copyPass->uploadBuffer(src, dst, false);
         }
-        commandBuffer->EndCopyPass(copyPass);
+        commandBuffer->endCopyPass(copyPass);
       }
-      device->SubmitCommandBuffer(commandBuffer);
+      device->submitCommandBuffer(commandBuffer);
     }
   }
   return vertexBuffer;
@@ -609,7 +603,7 @@ rhi::Ptr<rhi::Buffer> createBuffer(size_t size, void *data,
   vertexBufferInfo.allocator = allocator;
   vertexBufferInfo.size = size;
   vertexBufferInfo.usage = usage;
-  buffer = device->CreateBuffer(vertexBufferInfo);
+  buffer = device->createBuffer(vertexBufferInfo);
 
   rhi::Ptr<rhi::TransferBuffer> transferBuffer;
   {
@@ -618,18 +612,18 @@ rhi::Ptr<rhi::Buffer> createBuffer(size_t size, void *data,
       info.allocator = allocator;
       info.size = size;
       info.usage = rhi::TransferBufferUsage::Upload;
-      transferBuffer = device->CreateTransferBuffer(info);
-      auto *pMapped = transferBuffer->Map(false);
+      transferBuffer = device->createTransferBuffer(info);
+      auto *pMapped = transferBuffer->map(false);
       memcpy(pMapped, data, size);
-      transferBuffer->Unmap();
+      transferBuffer->unmap();
     }
     {
       rhi::CommandBuffer::CreateInfo info{};
       info.allocator = allocator;
-      auto commandBuffer = device->AcquireCommandBuffer(info);
+      auto commandBuffer = device->acquireCommandBuffer(info);
       {
 
-        auto copyPass = commandBuffer->BeginCopyPass();
+        auto copyPass = commandBuffer->beginCopyPass();
         {
 
           rhi::BufferTransferInfo src{};
@@ -639,11 +633,11 @@ rhi::Ptr<rhi::Buffer> createBuffer(size_t size, void *data,
           dst.offset = 0;
           dst.size = size;
           dst.buffer = buffer;
-          copyPass->UploadBuffer(src, dst, false);
+          copyPass->uploadBuffer(src, dst, false);
         }
-        commandBuffer->EndCopyPass(copyPass);
+        commandBuffer->endCopyPass(copyPass);
       }
-      device->SubmitCommandBuffer(commandBuffer);
+      device->submitCommandBuffer(commandBuffer);
     }
   }
   return buffer;

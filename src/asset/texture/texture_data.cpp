@@ -17,16 +17,16 @@ static void writeTexture(rhi::Ptr<rhi::Texture> texture, void *pPixels) {
     info.allocator = allocator;
     info.size = width * height * 4;
     info.usage = rhi::TransferBufferUsage::Upload;
-    transferBuffer = device->CreateTransferBuffer(info);
-    auto *pMapped = transferBuffer->Map(true);
+    transferBuffer = device->createTransferBuffer(info);
+    auto *pMapped = transferBuffer->map(true);
     memcpy(pMapped, pPixels, info.size);
-    transferBuffer->Unmap();
+    transferBuffer->unmap();
   }
   {
     rhi::CommandBuffer::CreateInfo info{};
     info.allocator = allocator;
-    auto commandBuffer = device->AcquireCommandBuffer(info);
-    auto copyPass = commandBuffer->BeginCopyPass();
+    auto commandBuffer = device->acquireCommandBuffer(info);
+    auto copyPass = commandBuffer->beginCopyPass();
     rhi::TextureTransferInfo src{};
     src.offset = 0;
     src.transferBuffer = transferBuffer;
@@ -37,11 +37,11 @@ static void writeTexture(rhi::Ptr<rhi::Texture> texture, void *pPixels) {
     dst.height = height;
     dst.depth = 1;
     dst.texture = texture;
-    copyPass->UploadTexture(src, dst, true);
-    commandBuffer->EndCopyPass(copyPass);
-    device->SubmitCommandBuffer(commandBuffer);
+    copyPass->uploadTexture(src, dst, true);
+    commandBuffer->endCopyPass(copyPass);
+    device->submitCommandBuffer(commandBuffer);
   }
-  device->WaitForGPUIdle();
+  device->waitForGpuIdle();
 }
 rhi::Ptr<rhi::Texture> createNativeTexture(void *pPixels,
                                            rhi::TextureFormat textureFormat,
@@ -61,7 +61,7 @@ rhi::Ptr<rhi::Texture> createNativeTexture(void *pPixels,
     info.numLevels = 1;
     info.sampleCount = rhi::SampleCount::x1;
     info.type = rhi::TextureType::Texture2D;
-    texture = device->CreateTexture(info);
+    texture = device->createTexture(info);
   }
   writeTexture(texture, pPixels);
   return texture;
@@ -78,15 +78,15 @@ Ptr<rhi::Texture> createNativeTexture(SDL_Surface *pSurface) {
   SDL_DestroySurface(pImageDataSurface);
   return texture;
 }
-void UpdateNativeTexture(rhi::Ptr<rhi::Texture> texture, void *pPixels) {
+void updateNativeTexture(rhi::Ptr<rhi::Texture> texture, void *pPixels) {
   writeTexture(texture, pPixels);
 }
-void UpdateNativeTexture(Ptr<rhi::Texture> texture, SDL_Surface *pSurface) {
+void updateNativeTexture(Ptr<rhi::Texture> texture, SDL_Surface *pSurface) {
   auto *pImageDataSurface = ::SDL_ConvertSurface(
       pSurface, pSurface->format == SDL_PIXELFORMAT_RGBA8888
                     ? pSurface->format
                     : SDL_PIXELFORMAT_RGBA32);
-  UpdateNativeTexture(texture, pImageDataSurface->pixels);
+  updateNativeTexture(texture, pImageDataSurface->pixels);
   SDL_DestroySurface(pImageDataSurface);
 }
 } // namespace sinen

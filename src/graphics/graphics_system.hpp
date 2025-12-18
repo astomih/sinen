@@ -72,7 +72,7 @@ public:
   static Model sprite;
 
   static rhi::Allocator *getAllocator() {
-    static auto allocator = rhi::Paranoixa::CreateAllocator(0xffff);
+    static auto allocator = rhi::Paranoixa::createAllocator(0xffff);
     return allocator;
   }
 

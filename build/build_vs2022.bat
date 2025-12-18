@@ -1,1 +1,0 @@
-cmake --build %~dp0desktop --config Debug --parallel %NUMBER_OF_PROCESSORS%

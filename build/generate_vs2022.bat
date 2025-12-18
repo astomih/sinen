@@ -1,1 +1,0 @@
-cmake %~dp0.. -B %~dp0desktop -G "Visual Studio 17 2022"

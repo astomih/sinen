@@ -92,6 +92,24 @@ else ()
 endif ()
 target_include_directories(
         sinen PUBLIC ${SINEN_INCLUDE_DIRS} ${SDL3_INCLUDE_PATHS})
+    if (MSVC)
+  # MSVC STL
+  set(MSVC_STL_INCLUDE
+      "$ENV{VCToolsInstallDir}/include")
+
+  # Windows SDK
+  set(WINSDK_INCLUDE_BASE
+      "$ENV{WindowsSdkDir}/Include/$ENV{WindowsSDKVersion}")
+
+  set(WINSDK_INCLUDES
+      "${WINSDK_INCLUDE_BASE}/ucrt"
+      "${WINSDK_INCLUDE_BASE}/shared"
+      "${WINSDK_INCLUDE_BASE}/um")
+
+  target_include_directories(sinen SYSTEM PRIVATE
+      "${MSVC_STL_INCLUDE}"
+      ${WINSDK_INCLUDES})
+endif()
 
 set(SINEN_LINK_LIBRARIES
         SDL3::SDL3

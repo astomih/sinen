@@ -1,0 +1,4 @@
+CompileFlags:
+  CompilationDatabase: build/msvc2022
+  Add:
+    - "/std:c++latest"

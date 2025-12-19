@@ -1,4 +1,8 @@
+#include "glm/ext/vector_float4.hpp"
+#include "math/color/color.hpp"
+#include "math/transform/transform.hpp"
 #include "script_backend.hpp"
+#include "sol/forward.hpp"
 #include <functional>
 
 #define SOL_NO_CHECK_NUMBER_PRECISION 1
@@ -59,6 +63,13 @@ bool LuaScript::initialize() {
       return state.require_file(path, path + ".lua");
     };
   }
+  auto vec3Debug = [](const glm::vec3 &vec3, sol::this_state ts) {
+    sol::table t(ts, sol::create);
+    t["x"] = vec3.x;
+    t["y"] = vec3.y;
+    t["z"] = vec3.z;
+    return t;
+  };
   {
     auto v = lua.new_usertype<glm::vec3>(
         "Vec3", sol::constructors<sol::types<float, float, float>,
@@ -101,13 +112,23 @@ bool LuaScript::initialize() {
     v["reflect"] = [](const glm::vec3 &v, const glm::vec3 &n) {
       return glm::reflect(v, n);
     };
+    v["debug"] = vec3Debug;
   }
+  auto vec2Debug = [](const glm::vec2 &vec2, sol::this_state ts) {
+    sol::table t(ts, sol::create);
+    t["x"] = vec2.x;
+    t["y"] = vec2.y;
+    return t;
+  };
   {
     auto v = lua.new_usertype<glm::vec2>(
         "Vec2",
-        sol::constructors<sol::types<float, float>, sol::types<float>>());
-    v["x"] = &glm::vec2::x;
-    v["y"] = &glm::vec2::y;
+        sol::constructors<sol::types<float, float>, sol::types<float>>(), "x",
+        &glm::vec2::x, "y", &glm::vec2::y, sol::meta_function::to_string,
+        [](const glm::vec2 &v) {
+          return "vec2(" + std::to_string(v.x) + ", " + std::to_string(v.y) +
+                 ")";
+        });
     v["__add"] = [](const glm::vec2 &a, const glm::vec2 &b) { return a + b; };
     v["__sub"] = [](const glm::vec2 &a, const glm::vec2 &b) { return a - b; };
     v["__mul"] = [](const glm::vec2 &a, const glm::vec2 &b) { return a * b; };
@@ -124,7 +145,17 @@ bool LuaScript::initialize() {
     v["reflect"] = [](const glm::vec2 &v, const glm::vec2 &n) {
       return glm::reflect(v, n);
     };
+    v["debug"] = vec2Debug;
   }
+  auto colorDebug = [](const Color &color, sol::this_state ts) {
+    sol::table t(ts, sol::create);
+    t["r"] = color.r;
+    t["g"] = color.g;
+    t["b"] = color.b;
+    t["a"] = color.a;
+    return t;
+  };
+  glm::vec4 v;
   {
     auto v = lua.new_usertype<Color>(
         "Color", sol::constructors<sol::types<float, float, float, float>,
@@ -134,6 +165,7 @@ bool LuaScript::initialize() {
     v["g"] = &Color::g;
     v["b"] = &Color::b;
     v["a"] = &Color::a;
+    v["debug"] = colorDebug;
   }
   {
     auto v = lua.new_usertype<Texture>(
@@ -294,6 +326,14 @@ bool LuaScript::initialize() {
     v["at"] = &Draw3D::at;
     v["clear"] = &Draw3D::clear;
   }
+  auto rectDebug = [](const Rect &rect, sol::this_state ts) {
+    sol::table t(ts, sol::create);
+    t["x"] = rect.x;
+    t["y"] = rect.y;
+    t["width"] = rect.width;
+    t["height"] = rect.height;
+    return t;
+  };
   {
     // Rect
     auto v = lua.new_usertype<Rect>(
@@ -305,12 +345,21 @@ bool LuaScript::initialize() {
     v["width"] = &Rect::width;
     v["height"] = &Rect::height;
   }
+  auto transformDebug = [vec3Debug](const Transform &transform,
+                                    sol::this_state ts) {
+    sol::table t(ts, sol::create);
+    t["position"] = vec3Debug(transform.position, ts);
+    t["rotation"] = vec3Debug(transform.rotation, ts);
+    t["scale"] = vec3Debug(transform.scale, ts);
+    return t;
+  };
   {
     // Transform
     auto v = lua.new_usertype<Transform>("Transform");
     v["position"] = &Transform::position;
     v["rotation"] = &Transform::rotation;
     v["scale"] = &Transform::scale;
+    v["debug"] = transformDebug;
   }
   {
     auto v = lua.new_usertype<Cubemap>("Cubemap");
@@ -596,6 +645,21 @@ bool LuaScript::initialize() {
     auto v = lua.create_named("Logger");
     v["verbose"] = [](std::string str) { Logger::verbose("%s", str.data()); };
     v["info"] = [](std::string str) { Logger::info("%s", str.data()); };
+    v["info"] = [](sol::object obj, sol::this_state ts) {
+      sol::state_view lua(ts);
+
+      sol::protected_function tostringFn = lua["tostring"];
+      sol::protected_function_result r = tostringFn(obj);
+
+      if (!r.valid()) {
+        sol::error e = r;
+        Logger::info("[tostring error] %s", e.what());
+        return;
+      }
+
+      std::string s = r.get<std::string>();
+      Logger::info("%s", s.c_str());
+    };
     v["error"] = [](std::string str) { Logger::error("%s", str.data()); };
     v["warn"] = [](std::string str) { Logger::warn("%s", str.data()); };
     v["critical"] = [](std::string str) { Logger::critical("%s", str.data()); };

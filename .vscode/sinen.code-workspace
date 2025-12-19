@@ -41,6 +41,15 @@
 				"cwd": "${workspaceFolder}/examples",
 				"environment": [],
 				"console": "internalConsole"
+			},
+			{
+				"name": "test",
+				"type": "lua-local",
+				"cwd": "${workspaceFolder}/utils/test",
+				"program": {
+					"command": "${workspaceFolder}/build/msvc2022/sinen"
+				},
+				"request": "launch"
 			}
 		]
 	},

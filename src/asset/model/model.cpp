@@ -449,30 +449,29 @@ void Model::loadBox() { *this = GraphicsSystem::box; }
 
 const AABB &Model::getAABB() const { return this->localAABB; }
 
-std::pair<rhi::Ptr<rhi::Buffer>, rhi::Ptr<rhi::Buffer>>
+std::pair<Ptr<rhi::Buffer>, Ptr<rhi::Buffer>>
 createVertexIndexBuffer(const std::vector<Vertex> &vertices,
                         const std::vector<uint32_t> &indices) {
-  auto allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
   size_t vertexBufferSize = vertices.size() * sizeof(Vertex);
-  rhi::Ptr<rhi::Buffer> vertexBuffer, indexBuffer;
+  Ptr<rhi::Buffer> vertexBuffer, indexBuffer;
   rhi::Buffer::CreateInfo vertexBufferInfo{};
-  vertexBufferInfo.allocator = allocator;
+  vertexBufferInfo.allocator = gA;
   vertexBufferInfo.size = vertexBufferSize;
   vertexBufferInfo.usage = rhi::BufferUsage::Vertex;
   vertexBuffer = device->createBuffer(vertexBufferInfo);
 
   rhi::Buffer::CreateInfo indexBufferInfo{};
-  indexBufferInfo.allocator = allocator;
+  indexBufferInfo.allocator = gA;
   indexBufferInfo.size = indices.size() * sizeof(uint32_t);
   indexBufferInfo.usage = rhi::BufferUsage::Index;
   indexBuffer = device->createBuffer(indexBufferInfo);
 
-  rhi::Ptr<rhi::TransferBuffer> transferBuffer;
+  Ptr<rhi::TransferBuffer> transferBuffer;
   {
     {
       rhi::TransferBuffer::CreateInfo info{};
-      info.allocator = allocator;
+      info.allocator = gA;
       info.size = vertexBufferSize;
       info.usage = rhi::TransferBufferUsage::Upload;
       transferBuffer = device->createTransferBuffer(info);
@@ -482,7 +481,7 @@ createVertexIndexBuffer(const std::vector<Vertex> &vertices,
     }
     {
       rhi::CommandBuffer::CreateInfo info{};
-      info.allocator = allocator;
+      info.allocator = gA;
       auto commandBuffer = device->acquireCommandBuffer(info);
       {
 
@@ -505,7 +504,7 @@ createVertexIndexBuffer(const std::vector<Vertex> &vertices,
   }
   {
     rhi::TransferBuffer::CreateInfo info{};
-    info.allocator = allocator;
+    info.allocator = gA;
     info.size = indexBufferInfo.size;
     info.usage = rhi::TransferBufferUsage::Upload;
     transferBuffer = device->createTransferBuffer(info);
@@ -516,7 +515,7 @@ createVertexIndexBuffer(const std::vector<Vertex> &vertices,
   {
     {
       rhi::CommandBuffer::CreateInfo info{};
-      info.allocator = allocator;
+      info.allocator = gA;
       auto commandBuffer = device->acquireCommandBuffer(info);
       {
 
@@ -539,25 +538,24 @@ createVertexIndexBuffer(const std::vector<Vertex> &vertices,
   }
   return std::make_pair(vertexBuffer, indexBuffer);
 }
-rhi::Ptr<rhi::Buffer>
+Ptr<rhi::Buffer>
 createAnimationVertexBuffer(const std::vector<AnimationVertex> &vertices) {
   if (vertices.empty())
     return nullptr;
-  auto allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
   size_t vertexBufferSize = vertices.size() * sizeof(AnimationVertex);
-  rhi::Ptr<rhi::Buffer> vertexBuffer;
+  Ptr<rhi::Buffer> vertexBuffer;
   rhi::Buffer::CreateInfo vertexBufferInfo{};
-  vertexBufferInfo.allocator = allocator;
+  vertexBufferInfo.allocator = gA;
   vertexBufferInfo.size = vertexBufferSize;
   vertexBufferInfo.usage = rhi::BufferUsage::Vertex;
   vertexBuffer = device->createBuffer(vertexBufferInfo);
 
-  rhi::Ptr<rhi::TransferBuffer> transferBuffer;
+  Ptr<rhi::TransferBuffer> transferBuffer;
   {
     {
       rhi::TransferBuffer::CreateInfo info{};
-      info.allocator = allocator;
+      info.allocator = gA;
       info.size = vertexBufferSize;
       info.usage = rhi::TransferBufferUsage::Upload;
       transferBuffer = device->createTransferBuffer(info);
@@ -568,7 +566,7 @@ createAnimationVertexBuffer(const std::vector<AnimationVertex> &vertices) {
     }
     {
       rhi::CommandBuffer::CreateInfo info{};
-      info.allocator = allocator;
+      info.allocator = gA;
       auto commandBuffer = device->acquireCommandBuffer(info);
       {
 
@@ -591,25 +589,23 @@ createAnimationVertexBuffer(const std::vector<AnimationVertex> &vertices) {
   }
   return vertexBuffer;
 }
-rhi::Ptr<rhi::Buffer> createBuffer(size_t size, void *data,
-                                   rhi::BufferUsage usage) {
+Ptr<rhi::Buffer> createBuffer(size_t size, void *data, rhi::BufferUsage usage) {
 
   if (!data)
     return nullptr;
-  auto allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
-  rhi::Ptr<rhi::Buffer> buffer;
+  Ptr<rhi::Buffer> buffer;
   rhi::Buffer::CreateInfo vertexBufferInfo{};
-  vertexBufferInfo.allocator = allocator;
+  vertexBufferInfo.allocator = gA;
   vertexBufferInfo.size = size;
   vertexBufferInfo.usage = usage;
   buffer = device->createBuffer(vertexBufferInfo);
 
-  rhi::Ptr<rhi::TransferBuffer> transferBuffer;
+  Ptr<rhi::TransferBuffer> transferBuffer;
   {
     {
       rhi::TransferBuffer::CreateInfo info{};
-      info.allocator = allocator;
+      info.allocator = gA;
       info.size = size;
       info.usage = rhi::TransferBufferUsage::Upload;
       transferBuffer = device->createTransferBuffer(info);
@@ -619,7 +615,7 @@ rhi::Ptr<rhi::Buffer> createBuffer(size_t size, void *data,
     }
     {
       rhi::CommandBuffer::CreateInfo info{};
-      info.allocator = allocator;
+      info.allocator = gA;
       auto commandBuffer = device->acquireCommandBuffer(info);
       {
 

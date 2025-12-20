@@ -9,10 +9,10 @@ class Cubemap {
 public:
   bool load(std::string_view path);
 
-  rhi::Ptr<rhi::Texture> getNativeCubemap() const { return nativeCubemap; }
+  Ptr<rhi::Texture> getNativeCubemap() const { return nativeCubemap; }
 
 private:
-  rhi::Ptr<rhi::Texture> nativeCubemap;
+  Ptr<rhi::Texture> nativeCubemap;
 };
 } // namespace sinen
 

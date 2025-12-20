@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "desktop_win",
+      "label": "build_msvc2022",
       "type": "shell",
       "command": "${workspaceFolder:sinen}/build/build_msvc2022.bat",
       "problemMatcher": [],
@@ -12,13 +12,21 @@
       }
     },
     {
-      "label": "android",
+      "label": "generate_msvc2022",
+      "type": "shell",
+      "command": "${workspaceFolder:sinen}/build/generate_msvc2022.bat",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build"
+      }
+    },
+    {
+      "label": "build_android",
       "type": "shell",
       "command": "${workspaceFolder:sinen}/build/build_android.bat",
       "problemMatcher": [],
       "group": {
-        "kind": "build",
-        "isDefault": false
+        "kind": "build"
       }
     }
   ]

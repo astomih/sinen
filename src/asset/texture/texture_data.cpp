@@ -5,9 +5,8 @@
 #include "SDL3/SDL_pixels.h"
 #include <SDL3/SDL.h>
 namespace sinen {
-template <typename T> using Ptr = rhi::Ptr<T>;
-static void writeTexture(rhi::Ptr<rhi::Texture> texture, void *pPixels) {
-  auto allocator = GraphicsSystem::getAllocator();
+static void writeTexture(Ptr<rhi::Texture> texture, void *pPixels) {
+  auto allocator = gA;
   auto device = GraphicsSystem::getDevice();
   uint32_t width = texture->getCreateInfo().width,
            height = texture->getCreateInfo().height;
@@ -43,10 +42,10 @@ static void writeTexture(rhi::Ptr<rhi::Texture> texture, void *pPixels) {
   }
   device->waitForGpuIdle();
 }
-rhi::Ptr<rhi::Texture> createNativeTexture(void *pPixels,
-                                           rhi::TextureFormat textureFormat,
-                                           uint32_t width, uint32_t height) {
-  auto allocator = GraphicsSystem::getAllocator();
+Ptr<rhi::Texture> createNativeTexture(void *pPixels,
+                                      rhi::TextureFormat textureFormat,
+                                      uint32_t width, uint32_t height) {
+  auto allocator = gA;
   auto device = GraphicsSystem::getDevice();
 
   Ptr<rhi::Texture> texture;
@@ -67,7 +66,7 @@ rhi::Ptr<rhi::Texture> createNativeTexture(void *pPixels,
   return texture;
 }
 Ptr<rhi::Texture> createNativeTexture(SDL_Surface *pSurface) {
-  auto allocator = GraphicsSystem::getAllocator();
+  auto allocator = gA;
   auto device = GraphicsSystem::getDevice();
   auto *pImageDataSurface =
       ::SDL_ConvertSurface(pSurface, SDL_PIXELFORMAT_RGBA32);
@@ -78,7 +77,7 @@ Ptr<rhi::Texture> createNativeTexture(SDL_Surface *pSurface) {
   SDL_DestroySurface(pImageDataSurface);
   return texture;
 }
-void updateNativeTexture(rhi::Ptr<rhi::Texture> texture, void *pPixels) {
+void updateNativeTexture(Ptr<rhi::Texture> texture, void *pPixels) {
   writeTexture(texture, pPixels);
 }
 void updateNativeTexture(Ptr<rhi::Texture> texture, SDL_Surface *pSurface) {

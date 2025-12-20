@@ -3,6 +3,7 @@
 #include <asset/shader/shader.hpp>
 #include <core/io/asset_io.hpp>
 
+#include "core/allocator/global_allocator.hpp"
 #include "rt_shader_compiler.hpp"
 
 #include "default/shader.frag.spv.hpp"
@@ -14,7 +15,7 @@
 
 namespace sinen {
 void Shader::loadDefaultVertexShader() {
-  auto *allocator = GraphicsSystem::getAllocator();
+  auto *allocator = gA;
   auto device = GraphicsSystem::getDevice();
 
   rhi::Shader::CreateInfo vsInfo{};
@@ -31,7 +32,7 @@ void Shader::loadDefaultVertexShader() {
   shader = device->createShader(vsInfo);
 }
 void Shader::loadDefaultVertexInstanceShader() {
-  auto *allocator = GraphicsSystem::getAllocator();
+  auto *allocator = gA;
   auto device = GraphicsSystem::getDevice();
 
   rhi::Shader::CreateInfo vsInfo{};
@@ -48,7 +49,7 @@ void Shader::loadDefaultVertexInstanceShader() {
   shader = device->createShader(vsInfo);
 }
 void Shader::loadDefaultFragmentShader() {
-  auto *allocator = GraphicsSystem::getAllocator();
+  auto *allocator = gA;
   auto device = GraphicsSystem::getDevice();
 
   rhi::Shader::CreateInfo fsInfo{};
@@ -66,7 +67,7 @@ void Shader::loadDefaultFragmentShader() {
 }
 void Shader::loadVertexShader(std::string_view vertex_shader,
                               int numUniformData) {
-  auto *allocator = GraphicsSystem::getAllocator();
+  auto *allocator = gA;
   auto device = GraphicsSystem::getDevice();
 
   SDL_IOStream *file = (SDL_IOStream *)AssetIO::openAsIOStream(vertex_shader);
@@ -88,7 +89,7 @@ void Shader::loadVertexShader(std::string_view vertex_shader,
 }
 void Shader::loadFragmentShader(std::string_view fragment_shader,
                                 int numUniformData) {
-  auto *allocator = GraphicsSystem::getAllocator();
+  auto *allocator = gA;
   auto device = GraphicsSystem::getDevice();
 
   std::string fsStr = AssetIO::openAsString(fragment_shader);
@@ -117,7 +118,7 @@ void Shader::compileAndLoadVertexShader(std::string_view vertex_shader) {
       compiler.compile(vsStr, ShaderCompiler::Type::VERTEX,
                        ShaderCompiler::Language::SPIRV, reflectionData);
 
-  auto *allocator = GraphicsSystem::getAllocator();
+  auto *allocator = gA;
   auto device = GraphicsSystem::getDevice();
 
   rhi::Shader::CreateInfo vsInfo{};
@@ -142,11 +143,10 @@ void Shader::compileAndLoadFragmentShader(std::string_view fragment_shader) {
       compiler.compile(fsStr, ShaderCompiler::Type::FRAGMENT,
                        ShaderCompiler::Language::SPIRV, reflectionData);
 
-  auto *allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
 
   rhi::Shader::CreateInfo fsInfo{};
-  fsInfo.allocator = allocator;
+  fsInfo.allocator = gA;
   fsInfo.size = spirv.size();
   fsInfo.data = spirv.data();
   fsInfo.entrypoint = "main";

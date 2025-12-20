@@ -22,7 +22,7 @@ void Window::rename(const std::string &name) { WindowSystem::rename(name); }
 std::string Window::getName() { return WindowSystem::name(); }
 bool Window::resized() { return WindowSystem::resized(); }
 
-void WindowSystem::initialize(const std::string &name) {
+bool WindowSystem::initialize(const std::string &name) {
   mName = name;
 
   // Load settings from settings.json
@@ -69,6 +69,7 @@ void WindowSystem::initialize(const std::string &name) {
   SDL_GetWindowSize(mWindow, &x, &y);
   mSize.x = static_cast<float>(x);
   mSize.y = static_cast<float>(y);
+  return true;
 }
 
 void WindowSystem::shutdown() {

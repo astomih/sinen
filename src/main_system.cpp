@@ -13,6 +13,8 @@
 #include <iostream>
 #include <string>
 
+#include <core/allocator/global_allocator.hpp>
+#include <core/allocator/tlsf_allocator.hpp>
 #include <core/io/file_system.hpp>
 #include <core/logger/logger.hpp>
 #include <platform/input/keyboard.hpp>
@@ -41,6 +43,14 @@ bool MainSystem::initialize(int argc, char *argv[]) {
   MainSystem::argv.resize(argc);
   for (int i = 0; i < argc; i++) {
     MainSystem::argv[i] = argv[i];
+  }
+
+  SDL_SetHint(SDL_HINT_APP_NAME, "Sinen");
+  SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1");
+  SDL_InitFlags initFlags = SDL_INIT_AUDIO | SDL_INIT_EVENTS;
+  if (!SDL_Init(initFlags)) {
+    Logger::critical("Failed to initialize SDL");
+    return false;
   }
 
   Logger::setOutputFunction([&](Logger::priority p, std::string_view str) {

@@ -59,7 +59,7 @@ public:
 
   glm::vec2 size();
 
-  rhi::Ptr<rhi::Texture> texture;
+  Ptr<rhi::Texture> texture;
 };
 } // namespace sinen
 #endif // !SINEN_TEXTURE_HPP

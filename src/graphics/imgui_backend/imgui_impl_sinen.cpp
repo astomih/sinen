@@ -3,8 +3,8 @@
 
 namespace sinen {
 struct ImGuiImplParanoixaFrameData {
-  rhi::Ptr<rhi::Buffer> VertexBuffer = nullptr;
-  rhi::Ptr<rhi::Buffer> IndexBuffer = nullptr;
+  Ptr<rhi::Buffer> VertexBuffer = nullptr;
+  Ptr<rhi::Buffer> IndexBuffer = nullptr;
   uint32_t VertexBufferSize = 0;
   uint32_t IndexBufferSize = 0;
 };
@@ -13,13 +13,13 @@ struct ImGuiImplParanoixaData {
   ImGuiImplParanoixaInitInfo InitInfo;
 
   // Graphics pipeline & shaders
-  rhi::Ptr<rhi::Shader> VertexShader = nullptr;
-  rhi::Ptr<rhi::Shader> FragmentShader = nullptr;
-  rhi::Ptr<rhi::GraphicsPipeline> Pipeline = nullptr;
+  Ptr<rhi::Shader> VertexShader = nullptr;
+  Ptr<rhi::Shader> FragmentShader = nullptr;
+  Ptr<rhi::GraphicsPipeline> Pipeline = nullptr;
 
   // Font data
-  rhi::Ptr<rhi::Sampler> FontSampler = nullptr;
-  rhi::Ptr<rhi::Texture> FontTexture = nullptr;
+  Ptr<rhi::Sampler> FontSampler = nullptr;
+  Ptr<rhi::Texture> FontTexture = nullptr;
   rhi::TextureSamplerBinding FontBinding = {nullptr, nullptr};
 
   // Frame data for main window
@@ -93,14 +93,14 @@ static void imGuiImplParanoixaCreateGraphicsPipeline() {
   ImGuiImplParanoixaInitInfo *v = &bd->InitInfo;
   imguiImplParanoixaCreateShaders();
 
-  rhi::Array<rhi::VertexBufferDescription> vertex_buffer_desc(v->Allocator);
+  Array<rhi::VertexBufferDescription> vertex_buffer_desc(v->Allocator);
   vertex_buffer_desc.resize(1);
   vertex_buffer_desc[0].slot = 0;
   vertex_buffer_desc[0].inputRate = rhi::VertexInputRate::Vertex;
   vertex_buffer_desc[0].instanceStepRate = 0;
   vertex_buffer_desc[0].pitch = sizeof(ImDrawVert);
 
-  rhi::Array<rhi::VertexAttribute> vertex_attributes(v->Allocator);
+  Array<rhi::VertexAttribute> vertex_attributes(v->Allocator);
   vertex_attributes.resize(3);
   vertex_attributes[0].bufferSlot = 0;
   vertex_attributes[0].format = rhi::VertexElementFormat::Float2;
@@ -148,7 +148,7 @@ static void imGuiImplParanoixaCreateGraphicsPipeline() {
   blend_state.colorWriteMask = rhi::ColorComponent::R | rhi::ColorComponent::G |
                                rhi::ColorComponent::B | rhi::ColorComponent::A;
 
-  rhi::Array<rhi::ColorTargetDescription> color_target_desc(v->Allocator);
+  Array<rhi::ColorTargetDescription> color_target_desc(v->Allocator);
   color_target_desc.resize(1);
   color_target_desc[0].format = v->ColorTargetFormat;
   color_target_desc[0].blendState = blend_state;
@@ -205,9 +205,8 @@ IMGUI_IMPL_API void imGuiImplParanoixaNewFrame() {
   if (!bd->FontTexture)
     imGuiImplParanoixaCreateFontsTexture();
 }
-static void createOrResizeBuffer(rhi::Ptr<rhi::Buffer> &buffer,
-                                 uint32_t *old_size, uint32_t new_size,
-                                 rhi::BufferUsage usage) {
+static void createOrResizeBuffer(Ptr<rhi::Buffer> &buffer, uint32_t *old_size,
+                                 uint32_t new_size, rhi::BufferUsage usage) {
   ImGuiImplParanoixaData *bd = imGuiImplParanoixaGetBackendData();
   ImGuiImplParanoixaInitInfo *v = &bd->InitInfo;
 
@@ -226,7 +225,7 @@ static void createOrResizeBuffer(rhi::Ptr<rhi::Buffer> &buffer,
 
 IMGUI_IMPL_API void
 imGuiImplParanoixaPrepareDrawData(ImDrawData *draw_data,
-                                  rhi::Ptr<rhi::CommandBuffer> command_buffer) {
+                                  Ptr<rhi::CommandBuffer> command_buffer) {
   // Avoid rendering when minimized, scale coordinates for retina displays
   // (screen coordinates != framebuffer coordinates)
   int fb_width =
@@ -308,10 +307,9 @@ imGuiImplParanoixaPrepareDrawData(ImDrawData *draw_data,
   command_buffer->endCopyPass(copy_pass);
 }
 static void imGuiImplParanoixaSetupRenderState(
-    ImDrawData *draw_data, rhi::Ptr<rhi::GraphicsPipeline> pipeline,
-    rhi::Ptr<rhi::CommandBuffer> command_buffer,
-    rhi::Ptr<rhi::RenderPass> render_pass, ImGuiImplParanoixaFrameData *fd,
-    uint32_t fb_width, uint32_t fb_height) {
+    ImDrawData *draw_data, Ptr<rhi::GraphicsPipeline> pipeline,
+    Ptr<rhi::CommandBuffer> command_buffer, Ptr<rhi::RenderPass> render_pass,
+    ImGuiImplParanoixaFrameData *fd, uint32_t fb_width, uint32_t fb_height) {
   ImGuiImplParanoixaData *bd = imGuiImplParanoixaGetBackendData();
 
   // Bind graphics pipeline
@@ -319,15 +317,13 @@ static void imGuiImplParanoixaSetupRenderState(
 
   // Bind Vertex And Index Buffers
   if (draw_data->TotalVtxCount > 0) {
-    rhi::Array<rhi::BufferBinding> vertex_buffer_bindings(
-        bd->InitInfo.Allocator);
+    Array<rhi::BufferBinding> vertex_buffer_bindings(bd->InitInfo.Allocator);
     rhi::BufferBinding vertex_buffer_binding;
     vertex_buffer_binding.buffer = fd->VertexBuffer;
     vertex_buffer_binding.offset = 0;
     vertex_buffer_bindings.push_back(vertex_buffer_binding);
 
-    rhi::Array<rhi::BufferBinding> index_buffer_bindings(
-        bd->InitInfo.Allocator);
+    Array<rhi::BufferBinding> index_buffer_bindings(bd->InitInfo.Allocator);
     rhi::BufferBinding index_buffer_binding = {};
     index_buffer_binding.buffer = fd->IndexBuffer;
     index_buffer_binding.offset = 0;
@@ -364,11 +360,9 @@ static void imGuiImplParanoixaSetupRenderState(
   command_buffer->pushUniformData(0, &ubo, sizeof(UBO));
 }
 
-IMGUI_IMPL_API void
-imGuiImplParanoixaRenderDrawData(ImDrawData *draw_data,
-                                 rhi::Ptr<rhi::CommandBuffer> command_buffer,
-                                 rhi::Ptr<rhi::RenderPass> render_pass,
-                                 rhi::Ptr<rhi::GraphicsPipeline> pipeline) {
+IMGUI_IMPL_API void imGuiImplParanoixaRenderDrawData(
+    ImDrawData *draw_data, Ptr<rhi::CommandBuffer> command_buffer,
+    Ptr<rhi::RenderPass> render_pass, Ptr<rhi::GraphicsPipeline> pipeline) {
   int fb_width =
       (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
   int fb_height =
@@ -431,7 +425,7 @@ imGuiImplParanoixaRenderDrawData(ImDrawData *draw_data,
                                 clip_max.y - clip_min.y);
 
         // Bind DescriptorSet with font or user texture
-        rhi::Array<rhi::TextureSamplerBinding> bindings(bd->InitInfo.Allocator);
+        Array<rhi::TextureSamplerBinding> bindings(bd->InitInfo.Allocator);
         auto *binding = (rhi::TextureSamplerBinding *)pcmd->GetTexID();
         bindings.push_back(*binding);
         render_pass->bindFragmentSamplers(0, bindings);
@@ -527,7 +521,7 @@ IMGUI_IMPL_API void imGuiImplParanoixaCreateFontsTexture() {
     transferbuffer_info.usage = rhi::TransferBufferUsage::Upload;
     transferbuffer_info.size = upload_size;
 
-    rhi::Ptr<rhi::TransferBuffer> transferbuffer =
+    Ptr<rhi::TransferBuffer> transferbuffer =
         v->Device->createTransferBuffer(transferbuffer_info);
     IM_ASSERT(transferbuffer != nullptr &&
               "Failed to create font transfer buffer");
@@ -546,9 +540,9 @@ IMGUI_IMPL_API void imGuiImplParanoixaCreateFontsTexture() {
     texture_region.height = height;
     texture_region.depth = 1;
 
-    rhi::Ptr<rhi::CommandBuffer> cmd =
+    Ptr<rhi::CommandBuffer> cmd =
         v->Device->acquireCommandBuffer({bd->InitInfo.Allocator});
-    rhi::Ptr<rhi::CopyPass> copy_pass = cmd->beginCopyPass();
+    Ptr<rhi::CopyPass> copy_pass = cmd->beginCopyPass();
     copy_pass->uploadTexture(transfer_info, texture_region, false);
     cmd->endCopyPass(copy_pass);
     v->Device->submitCommandBuffer(cmd);

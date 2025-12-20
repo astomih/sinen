@@ -231,9 +231,8 @@ bool saveEXRFloat(const char *path, const float *img, int W, int H, int C) {
   return true;
 }
 
-static void writeTexture(rhi::Ptr<rhi::Texture> texture,
+static void writeTexture(Ptr<rhi::Texture> texture,
                          const std::array<std::vector<float>, 6> &faces) {
-  auto allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
   uint32_t width = texture->getCreateInfo().width,
            height = texture->getCreateInfo().height;
@@ -243,10 +242,10 @@ static void writeTexture(rhi::Ptr<rhi::Texture> texture,
     data.insert(data.end(), faces[i].begin(), faces[i].end());
   }
 
-  rhi::Ptr<rhi::TransferBuffer> transbuffers[6];
+  Ptr<rhi::TransferBuffer> transbuffers[6];
   for (int i = 0; i < 6; ++i) {
     rhi::TransferBuffer::CreateInfo info{};
-    info.allocator = allocator;
+    info.allocator = gA;
     info.size = width * height * 4 * sizeof(float);
     info.usage = rhi::TransferBufferUsage::Upload;
     transbuffers[i] = device->createTransferBuffer(info);
@@ -256,7 +255,7 @@ static void writeTexture(rhi::Ptr<rhi::Texture> texture,
   }
   {
     rhi::CommandBuffer::CreateInfo info{};
-    info.allocator = allocator;
+    info.allocator = gA;
     auto commandBuffer = device->acquireCommandBuffer(info);
     auto copyPass = commandBuffer->beginCopyPass();
 
@@ -280,17 +279,16 @@ static void writeTexture(rhi::Ptr<rhi::Texture> texture,
   }
   device->waitForGpuIdle();
 }
-rhi::Ptr<rhi::Texture>
+Ptr<rhi::Texture>
 createNativeCubemapTexture(const std::array<std::vector<float>, 6> &faces,
                            rhi::TextureFormat textureFormat, uint32_t width,
                            uint32_t height) {
-  auto allocator = GraphicsSystem::getAllocator();
   auto device = GraphicsSystem::getDevice();
 
-  rhi::Ptr<rhi::Texture> texture;
+  Ptr<rhi::Texture> texture;
   {
     rhi::Texture::CreateInfo info{};
-    info.allocator = allocator;
+    info.allocator = gA;
     info.width = width;
     info.height = height;
     info.layerCountOrDepth = 6;

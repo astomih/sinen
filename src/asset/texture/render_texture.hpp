@@ -11,12 +11,12 @@ public:
   int width;
   int height;
 
-  rhi::Ptr<rhi::Texture> getTexture() const;
-  rhi::Ptr<rhi::Texture> getDepthStencil() const;
+  Ptr<rhi::Texture> getTexture() const;
+  Ptr<rhi::Texture> getDepthStencil() const;
 
 private:
-  rhi::Ptr<rhi::Texture> texture;
-  rhi::Ptr<rhi::Texture> depthStencil;
+  Ptr<rhi::Texture> texture;
+  Ptr<rhi::Texture> depthStencil;
 };
 } // namespace sinen
 #endif // SINEN_RENDER_TEXTURE_HPP

@@ -6,7 +6,7 @@ namespace sinen {
 RenderTexture::RenderTexture() : texture(nullptr) {}
 
 void RenderTexture::create(int width, int height) {
-  auto allocator = GraphicsSystem::getAllocator();
+  auto allocator = gA;
   auto device = GraphicsSystem::getDevice();
   rhi::Texture::CreateInfo info{};
   info.allocator = allocator;
@@ -27,9 +27,9 @@ void RenderTexture::create(int width, int height) {
   this->height = height;
 }
 
-rhi::Ptr<rhi::Texture> RenderTexture::getTexture() const { return texture; }
+Ptr<rhi::Texture> RenderTexture::getTexture() const { return texture; }
 
-rhi::Ptr<rhi::Texture> RenderTexture::getDepthStencil() const {
+Ptr<rhi::Texture> RenderTexture::getDepthStencil() const {
   return depthStencil;
 }
 } // namespace sinen

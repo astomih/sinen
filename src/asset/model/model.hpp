@@ -97,10 +97,10 @@ public:
   const Mesh &getMesh() const { return mesh; }
   void setMesh(const Mesh &m) { mesh = mesh; }
 
-  rhi::Ptr<rhi::Buffer> vertexBuffer;
-  rhi::Ptr<rhi::Buffer> tangentBuffer;
-  rhi::Ptr<rhi::Buffer> animationVertexBuffer;
-  rhi::Ptr<rhi::Buffer> indexBuffer;
+  Ptr<rhi::Buffer> vertexBuffer;
+  Ptr<rhi::Buffer> tangentBuffer;
+  Ptr<rhi::Buffer> animationVertexBuffer;
+  Ptr<rhi::Buffer> indexBuffer;
 
   using BoneMap = std::unordered_map<std::string, BoneInfo>;
   const BoneMap &getBoneMap() const { return boneMap; }

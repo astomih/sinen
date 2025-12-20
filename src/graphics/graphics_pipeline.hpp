@@ -31,12 +31,12 @@ public:
 
   const std::bitset<32> &getFeatureFlags() const { return featureFlags; }
 
-  rhi::Ptr<rhi::GraphicsPipeline> get() const { return pipeline; }
+  Ptr<rhi::GraphicsPipeline> get() const { return pipeline; }
 
 private:
   Shader vertexShader;
   Shader fragmentShader;
-  rhi::Ptr<rhi::GraphicsPipeline> pipeline;
+  Ptr<rhi::GraphicsPipeline> pipeline;
   std::bitset<32> featureFlags;
 };
 

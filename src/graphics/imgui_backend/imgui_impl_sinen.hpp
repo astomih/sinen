@@ -7,8 +7,8 @@
 namespace sinen {
 
 struct ImGuiImplParanoixaInitInfo {
-  rhi::Allocator *Allocator = nullptr;
-  rhi::Ptr<rhi::Device> Device = nullptr;
+  Allocator *Allocator = nullptr;
+  Ptr<rhi::Device> Device = nullptr;
   rhi::TextureFormat ColorTargetFormat = rhi::TextureFormat::Invalid;
   rhi::SampleCount MSAASamples = rhi::SampleCount::x1;
 };
@@ -18,11 +18,12 @@ IMGUI_IMPL_API void imGuiImplParanoixaShutdown();
 IMGUI_IMPL_API void imGuiImplParanoixaNewFrame();
 IMGUI_IMPL_API void
 imGuiImplParanoixaPrepareDrawData(ImDrawData *draw_data,
-                                  rhi::Ptr<rhi::CommandBuffer> command_buffer);
-IMGUI_IMPL_API void imGuiImplParanoixaRenderDrawData(
-    ImDrawData *draw_data, rhi::Ptr<rhi::CommandBuffer> command_buffer,
-    rhi::Ptr<rhi::RenderPass> render_pass,
-    rhi::Ptr<rhi::GraphicsPipeline> pipeline = nullptr);
+                                  Ptr<rhi::CommandBuffer> command_buffer);
+IMGUI_IMPL_API void
+imGuiImplParanoixaRenderDrawData(ImDrawData *draw_data,
+                                 Ptr<rhi::CommandBuffer> command_buffer,
+                                 Ptr<rhi::RenderPass> render_pass,
+                                 Ptr<rhi::GraphicsPipeline> pipeline = nullptr);
 
 IMGUI_IMPL_API void imGuiImplParanoixaCreateDeviceObjects();
 IMGUI_IMPL_API void imGuiImplParanoixaDestroyDeviceObjects();

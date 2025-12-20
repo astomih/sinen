@@ -1,6 +1,12 @@
 #ifndef SINEN_RHI_HPP
 #define SINEN_RHI_HPP
 #include <cassert>
+#include <core/data/array.hpp>
+#include <core/data/hashmap.hpp>
+#include <core/data/ptr.hpp>
+#include <core/data/string.hpp>
+#include <core/def/macro.hpp>
+#include <core/def/types.hpp>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -8,70 +14,12 @@
 #include <memory>
 #include <memory_resource>
 #include <print>
-#include <string>
-#include <unordered_map>
-#include <vector>
 
 namespace sinen::rhi {
-// Macro to define the build type
-#ifdef _DEBUG
-#define PARANOIXA_BUILD_DEBUG
-#elif NDEBUG
-#define PARANOIXA_BUILD_RELEASE
-#endif
-
-// Macro to define the platform
-#ifdef _WIN32
-#define PARANOIXA_PLATFORM_WINDOWS
-#elif __linux__
-#define PARANOIXA_PLATFORM_LINUX
-#elif __APPLE__
-#define PARANOIXA_PLATFORM_MACOS
-#elif __EMSCRIPTEN__
-#define PARANOIXA_PLATFORM_EMSCRIPTEN
-#endif
-
-// Shared pointer and reference type aliases
-template <class T> using Ptr = std::shared_ptr<T>;
-template <class T> using Ref = std::weak_ptr<T>;
-
-using Allocator = std::pmr::memory_resource;
-
-// Allocation wrapper functions
-template <class T, class... Args>
-Ptr<T> makePtr(Allocator *allocator, Args &&...args) {
-  return std::allocate_shared<T>(std::pmr::polymorphic_allocator<T>(allocator),
-                                 std::forward<Args>(args)...);
-}
-template <class T, class U> Ptr<T> downCast(Ptr<U> ptr) {
-#ifdef PARANOIXA_BUILD_DEBUG
-  return std::dynamic_pointer_cast<T>(ptr);
-#else
-  return std::static_pointer_cast<T>(ptr);
-#endif
-}
-
-// Type aliases
-using uint32 = std::uint32_t;
-using uint8 = std::uint8_t;
-using int32 = std::int32_t;
-using int8 = std::int8_t;
-using float32 = std::float_t;
-using float64 = std::double_t;
-
-// Array class
-template <typename T> using Array = std::pmr::vector<T>;
-
-using String = std::pmr::string;
-
-// Hash map class
-template <typename K, typename V, typename Hash = std::hash<K>,
-          typename Equal = std::equal_to<K>>
-using HashMap = std::pmr::unordered_map<K, V, Hash, Equal>;
 
 enum class GraphicsAPI {
   Vulkan,
-#ifdef PARANOIXA_PLATFORM_WINDOWS
+#ifdef SINEN_PLATFORM_WINDOWS
   D3D12U,
 #endif
   WebGPU,
@@ -603,11 +551,10 @@ public:
   virtual Ptr<Device> createDevice(const Device::CreateInfo &createInfo) = 0;
 };
 
-class Paranoixa {
+class RHI {
 public:
   static Ptr<Backend> createBackend(Allocator *allocator,
                                     const GraphicsAPI &api);
-  static Allocator *createAllocator(size_t size);
 };
 } // namespace sinen::rhi
 #endif

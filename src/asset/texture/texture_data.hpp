@@ -7,9 +7,9 @@
 #include <unordered_map>
 
 namespace sinen {
-rhi::Ptr<rhi::Texture> createNativeTexture(void *pPixels,
-                                           rhi::TextureFormat textureFormat,
-                                           uint32_t width, uint32_t height);
-void updateNativeTexture(rhi::Ptr<rhi::Texture> texture, void *pPixels);
+Ptr<rhi::Texture> createNativeTexture(void *pPixels,
+                                      rhi::TextureFormat textureFormat,
+                                      uint32_t width, uint32_t height);
+void updateNativeTexture(Ptr<rhi::Texture> texture, void *pPixels);
 } // namespace sinen
 #endif // SINEN_TEXTURE_TEXTURE_CONTAINER_HPP

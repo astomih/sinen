@@ -26,7 +26,7 @@ public:
 private:
   friend class GraphicsPipeline2D;
   friend class GraphicsPipeline;
-  rhi::Ptr<rhi::Shader> shader;
+  Ptr<rhi::Shader> shader;
 };
 } // namespace sinen
 #endif // !SINEN_SHADER_HPP

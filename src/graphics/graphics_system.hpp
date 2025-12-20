@@ -7,6 +7,7 @@
 // internal
 #include <asset/asset.hpp>
 #include <core/allocator/pool_allocator.hpp>
+#include <core/data/ptr.hpp>
 #include <graphics/drawable/drawable.hpp>
 #include <graphics/graphics.hpp>
 #include <graphics/uniform_data.hpp>
@@ -16,8 +17,6 @@
 #include <platform/window/window.hpp>
 
 namespace sinen {
-template <typename T> using Ptr = rhi::Ptr<T>;
-template <typename T> using Array = rhi::Array<T>;
 class GraphicsSystem {
 public:
   static void initialize();
@@ -71,12 +70,7 @@ public:
   static Model box;
   static Model sprite;
 
-  static rhi::Allocator *getAllocator() {
-    static auto allocator = rhi::Paranoixa::createAllocator(0xffff);
-    return allocator;
-  }
-
-  static rhi::Ptr<rhi::Device> getDevice() { return device; }
+  static Ptr<rhi::Device> getDevice() { return device; }
 
   inline static GraphicsPipeline pipeline2D;
   inline static GraphicsPipeline pipeline3D;
@@ -94,23 +88,22 @@ private:
   static bool showImGui;
   static std::list<std::function<void()>> imguiFunctions;
 
-  inline static rhi::Allocator *allocator = getAllocator();
   inline static Ptr<rhi::Backend> backend;
   inline static Ptr<rhi::Device> device;
   inline static Ptr<rhi::Texture> depthTexture;
   inline static Ptr<rhi::Sampler> sampler;
   inline static GraphicsPipeline currentPipeline;
-  inline static rhi::Ptr<rhi::CommandBuffer> mainCommandBuffer;
-  inline static rhi::Ptr<rhi::CommandBuffer> currentCommandBuffer;
-  inline static rhi::Ptr<rhi::RenderPass> currentRenderPass;
+  inline static Ptr<rhi::CommandBuffer> mainCommandBuffer;
+  inline static Ptr<rhi::CommandBuffer> currentCommandBuffer;
+  inline static Ptr<rhi::RenderPass> currentRenderPass;
   inline static bool isFrameStarted = true;
   inline static bool isPrevDepthEnabled = true;
   inline static bool isChangedRenderTarget = false;
   inline static uint32_t drawCallCountPerFrame = 0;
-  inline static rhi::Array<rhi::ColorTargetInfo> colorTargets =
-      rhi::Array<rhi::ColorTargetInfo>(getAllocator());
+  inline static Array<rhi::ColorTargetInfo> colorTargets =
+      Array<rhi::ColorTargetInfo>();
   inline static rhi::DepthStencilTargetInfo depthStencilInfo;
-  inline static rhi::Array<rhi::ColorTargetInfo> currentColorTargets;
+  inline static Array<rhi::ColorTargetInfo> currentColorTargets;
   inline static rhi::DepthStencilTargetInfo currentDepthStencilInfo;
 };
 } // namespace sinen

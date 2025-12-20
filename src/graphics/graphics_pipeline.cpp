@@ -1,3 +1,4 @@
+#include "core/allocator/global_allocator.hpp"
 #include "graphics_system.hpp"
 
 #include <cstddef>
@@ -9,7 +10,7 @@
 namespace sinen {
 
 static rhi::VertexInputState
-CreateVertexInputState(rhi::Allocator *allocator, std::bitset<32> featureFlags);
+CreateVertexInputState(Allocator *allocator, std::bitset<32> featureFlags);
 void GraphicsPipeline::setVertexShader(const Shader &shader) {
   this->vertexShader = shader;
 }
@@ -29,7 +30,7 @@ void GraphicsPipeline::setEnableTangent(bool enable) {
   featureFlags.set(Tangent, enable);
 }
 void GraphicsPipeline::build() {
-  auto *allocator = GraphicsSystem::getAllocator();
+  auto *allocator = gA;
   auto device = GraphicsSystem::getDevice();
 
   rhi::GraphicsPipeline::CreateInfo pipelineInfo{allocator};
@@ -87,7 +88,7 @@ GraphicsPipeline BuiltinPipelines::get2D() {
   return GraphicsSystem::pipeline2D;
 }
 
-rhi::VertexInputState CreateVertexInputState(rhi::Allocator *allocator,
+rhi::VertexInputState CreateVertexInputState(Allocator *allocator,
                                              std::bitset<32> featureFlags) {
   bool isInstance = featureFlags.test(GraphicsPipeline::FeatureFlag::Instanced);
   bool isAnimation =

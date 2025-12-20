@@ -2,7 +2,9 @@
 
 #include <tlsf.h>
 
-namespace sinen::rhi {
+#include <cassert>
+
+namespace sinen {
 TLSFAllocator::TLSFAllocator(const std::size_t &size)
     : mem(nullptr), tlsf(nullptr) {
   mem = malloc(size);
@@ -22,4 +24,4 @@ void TLSFAllocator::do_deallocate(void *ptr, std::size_t size,
   tlsf_free(tlsf, ptr);
 }
 
-} // namespace sinen::rhi
+} // namespace sinen

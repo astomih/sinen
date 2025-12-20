@@ -1,3 +1,4 @@
+#include "core/data/ptr.hpp"
 #include <SDL3/SDL.h>
 #include <memory_resource>
 #ifdef __EMSCRIPTEN__
@@ -5,8 +6,8 @@
 #endif // __EMSCRIPTEN__
 #include <graphics/rhi/rhi.hpp>
 
-#include "allocator/std_allocator.hpp"
-#include "allocator/tlsf_allocator.hpp"
+#include <core/allocator/std_allocator.hpp>
+#include <core/allocator/tlsf_allocator.hpp>
 
 #include "d3d12u/d3d12u_renderer.hpp"
 #include "sdlgpu/sdlgpu_backend.hpp"
@@ -18,9 +19,8 @@
 #include <fstream>
 #include <iostream>
 namespace sinen::rhi {
-Ptr<Backend> Paranoixa::createBackend(Allocator *allocator,
-                                      const GraphicsAPI &api) {
-#ifndef __EMSCRIPTEN__
+Ptr<Backend> RHI::createBackend(Allocator *allocator, const GraphicsAPI &api) {
+#ifndef SINEN_PLATFORM_EMSCRIPTEN
   switch (api) {
   case GraphicsAPI::Vulkan: {
     // TODO
@@ -42,12 +42,5 @@ Ptr<Backend> Paranoixa::createBackend(Allocator *allocator,
   }
 #endif
   return nullptr;
-}
-Allocator *Paranoixa::createAllocator(size_t size) {
-#ifdef _MSC_VER
-  return new TLSFAllocator(size);
-#else
-  return new StdAllocator(size);
-#endif
 }
 } // namespace sinen::rhi

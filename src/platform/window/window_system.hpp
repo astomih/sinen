@@ -9,7 +9,7 @@
 namespace sinen {
 class WindowSystem {
 public:
-  static void initialize(const std::string &name);
+  static bool initialize(const std::string &name);
   static void shutdown();
   static void prepareFrame();
   static void processInput(SDL_Event &event);

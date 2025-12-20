@@ -39,7 +39,7 @@ constexpr CodepointRange ASCII = {0x0020, 0x007F};
 
 struct Font::Wrapper {
   std::vector<std::vector<stbtt_packedchar>> packedChar;
-  rhi::Ptr<rhi::Texture> texture;
+  Ptr<rhi::Texture> texture;
   uint32_t sheetSize = 0;
 };
 Font::Font() = default;
@@ -49,8 +49,7 @@ Font::Font(int32_t point, std::string_view file_name) {
 Font::~Font() {}
 static bool loadCore(const unsigned char *fontData,
                      std::vector<std::vector<stbtt_packedchar>> &pc,
-                     rhi::Ptr<rhi::Texture> &texture, int pointSize,
-                     int sheetSize) {
+                     Ptr<rhi::Texture> &texture, int pointSize, int sheetSize) {
   stbtt_pack_range ranges[5] = {};
   pc.resize(std::size(ranges));
   // Hiragana

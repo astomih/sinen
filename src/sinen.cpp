@@ -26,14 +26,14 @@ int main(const int argc, char *argv[]) {
 
 namespace sinen {
 bool Sinen::initialize(int argc, char *argv[]) {
-  SDL_SetHint(SDL_HINT_APP_NAME, "Sinen");
-  SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1");
-  SDL_InitFlags initFlags = SDL_INIT_AUDIO | SDL_INIT_EVENTS;
-  if (!SDL_Init(initFlags)) {
-    Logger::critical("Failed to initialize SDL");
+  if (!MainSystem::initialize(argc, argv)) {
+    Logger::critical("Failed to initialize main system");
     return false;
   }
-  WindowSystem::initialize("Sinen");
+  if (!WindowSystem::initialize("Sinen")) {
+    Logger::critical("Failed to initialize window system");
+    return false;
+  }
   GraphicsSystem::initialize();
   if (!AudioSystem::initialize()) {
     Logger::critical("Failed to initialize audio system");
@@ -56,7 +56,6 @@ bool Sinen::initialize(int argc, char *argv[]) {
     Logger::critical("Failed to initialize random system");
     return false;
   }
-  MainSystem::initialize(argc, argv);
   return true;
 }
 void Sinen::run() {

@@ -1,0 +1,14 @@
+{
+  "C_Cpp.codeAnalysis.exclude": {
+    "build/**": true,
+    "docs/**": true,
+    "test/**": true,
+    "libs/**": true,
+  },
+  "C_Cpp.codeAnalysis.clangTidy.enabled": true,
+  "Lua.type.castNumberToInteger": true,
+  "Lua.type.checkTableShape": true,
+  "Lua.type.inferParamType": true,
+  "Lua.type.weakNilCheck": true,
+  "Lua.type.weakUnionCheck": true
+}

@@ -454,10 +454,10 @@ sn = {
 
     ---Static class
     ---@class sn.Logger
-    ---@field verbose fun(msg: string)
-    ---@field info fun(msg: string)
-    ---@field error fun(msg: string)
-    ---@field warn fun(msg: string)
-    ---@field critical fun(msg: string)
+    ---@field verbose fun(msg: any)
+    ---@field info fun(msg: any)
+    ---@field error fun(msg: any)
+    ---@field warn fun(msg: any)
+    ---@field critical fun(msg: any)
     Logger = {}
 }

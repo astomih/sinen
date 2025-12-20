@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    {
+      "name": "Debug MSVC",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder:sinen}/build/msvc2022/sinen.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder:sinen}/examples",
+      "environment": [],
+      "console": "internalConsole"
+    },
+    {
+      "name": "test",
+      "type": "lua-local",
+      "cwd": "${workspaceFolder:sinen}/utils/test",
+      "program": {
+        "command": "${workspaceFolder:sinen}/build/msvc2022/sinen"
+      },
+      "request": "launch"
+    }
+  ]
+}

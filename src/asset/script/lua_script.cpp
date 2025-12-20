@@ -3,22 +3,12 @@
 #include "math/transform/transform.hpp"
 #include "script_backend.hpp"
 #include "sol/forward.hpp"
-#include <functional>
 
 #define SOL_NO_CHECK_NUMBER_PRECISION 1
 #include <sol/sol.hpp>
 
 #include "../../main_system.hpp"
 #include "glm/ext/vector_float3.hpp"
-#include <asset/asset.hpp>
-#include <core/core.hpp>
-#include <core/io/arguments.hpp>
-#include <core/io/file_system.hpp>
-#include <graphics/graphics.hpp>
-#include <math/math.hpp>
-#include <physics/physics.hpp>
-// glm::rotate
-#include "glm/ext/vector_int3.hpp"
 #include "math/graph/bfs_grid.hpp"
 #include "math/graph/grid.hpp"
 #include "platform/input/gamepad.hpp"
@@ -27,9 +17,67 @@
 #include "platform/window/window.hpp"
 #include "sol/raii.hpp"
 #include "sol/types.hpp"
+#include <asset/asset.hpp>
+#include <core/core.hpp>
+#include <core/io/arguments.hpp>
+#include <core/io/file_system.hpp>
+#include <format>
 #include <glm/glm.hpp>
+#include <graphics/graphics.hpp>
+#include <math/math.hpp>
+#include <physics/physics.hpp>
+#include <string>
 
 namespace sinen {
+
+static std::string toStringTrim(double value) {
+  std::string s = std::format("{}", value);
+
+  auto dot = s.find('.');
+  if (dot == std::string::npos) {
+    return s + ".0";
+  }
+
+  bool allZero = true;
+  for (size_t i = dot + 1; i < s.size(); ++i) {
+    if (s[i] != '0') {
+      allZero = false;
+      break;
+    }
+  }
+
+  if (allZero) {
+    return s.substr(0, dot + 2);
+  }
+
+  s.erase(s.find_last_not_of('0') + 1);
+  return s;
+}
+using TablePair = std::vector<std::pair<std::string, std::string>>;
+static std::string convert(std::string_view name, const TablePair &p,
+                           bool isReturn) {
+  std::string s;
+  s = name.data();
+  s += "{ ";
+  if (isReturn) {
+    s += "\n";
+  }
+  for (int i = 0; i < p.size(); i++) {
+    auto &v = p[i];
+    if (isReturn) {
+      s += "\t";
+    }
+    s += v.first + " = " + v.second;
+    if (i < p.size() - 1) {
+      s += ", ";
+    }
+    if (isReturn) {
+      s += "\n";
+    }
+  }
+  s += " }";
+  return s;
+}
 class LuaScript final : public IScriptBackend {
 public:
   LuaScript() = default;
@@ -49,6 +97,46 @@ private:
 std::unique_ptr<IScriptBackend> ScriptBackend::createLua() {
   return std::make_unique<LuaScript>();
 }
+static auto vec3Str(const glm::vec3 &v) {
+  TablePair p;
+  p.emplace_back("x", toStringTrim(v.x));
+  p.emplace_back("y", toStringTrim(v.y));
+  p.emplace_back("z", toStringTrim(v.z));
+  return convert("sn.Vec3", p, false);
+};
+static auto vec2Str(const glm::vec2 &v) {
+  TablePair p;
+  p.emplace_back("x", toStringTrim(v.x));
+  p.emplace_back("y", toStringTrim(v.y));
+
+  return convert("sn.Vec2", p, false);
+};
+static auto textureStr(const Texture &v) {
+  TablePair p;
+  p.emplace_back("isLoaded", v.texture ? "true" : "false");
+  return convert("sn.Texture", p, false);
+};
+static auto transformStr(const Transform &v) {
+  TablePair p;
+  p.emplace_back("position", vec3Str(v.position));
+  p.emplace_back("rotation", vec3Str(v.rotation));
+  p.emplace_back("scale", vec3Str(v.scale));
+  return convert("sn.Transform", p, true);
+};
+
+static auto colorStr(const Color &v) {
+  TablePair p;
+  p.emplace_back("r", toStringTrim(v.r));
+  p.emplace_back("g", toStringTrim(v.g));
+  p.emplace_back("b", toStringTrim(v.b));
+  p.emplace_back("a", toStringTrim(v.a));
+  return convert("sn.Color", p, false);
+};
+static auto rectStr(const Rect &rect) {
+  return "sn.Rect{ x = " + toStringTrim(rect.x) +
+         ", y = " + toStringTrim(rect.y) +
+         ", width = " + toStringTrim(rect.width) + ", " + +"}";
+};
 bool LuaScript::initialize() {
 #ifndef SINEN_NO_USE_SCRIPT
   state.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math,
@@ -63,13 +151,6 @@ bool LuaScript::initialize() {
       return state.require_file(path, path + ".lua");
     };
   }
-  auto vec3Debug = [](const glm::vec3 &vec3, sol::this_state ts) {
-    sol::table t(ts, sol::create);
-    t["x"] = vec3.x;
-    t["y"] = vec3.y;
-    t["z"] = vec3.z;
-    return t;
-  };
   {
     auto v = lua.new_usertype<glm::vec3>(
         "Vec3", sol::constructors<sol::types<float, float, float>,
@@ -82,6 +163,7 @@ bool LuaScript::initialize() {
     v["__sub"] = [](const glm::vec3 &a, const glm::vec3 &b) { return a - b; };
     v["__mul"] = [](const glm::vec3 &a, const glm::vec3 &b) { return a * b; };
     v["__div"] = [](const glm::vec3 &a, const glm::vec3 &b) { return a / b; };
+    v["__tostring"] = vec3Str;
     v["copy"] = [](const glm::vec3 &a) { return a; };
     v["length"] = [](const glm::vec3 &a) { return glm::length(a); };
     v["forward"] = [](const glm::vec3 v,
@@ -112,27 +194,18 @@ bool LuaScript::initialize() {
     v["reflect"] = [](const glm::vec3 &v, const glm::vec3 &n) {
       return glm::reflect(v, n);
     };
-    v["debug"] = vec3Debug;
   }
-  auto vec2Debug = [](const glm::vec2 &vec2, sol::this_state ts) {
-    sol::table t(ts, sol::create);
-    t["x"] = vec2.x;
-    t["y"] = vec2.y;
-    return t;
-  };
   {
     auto v = lua.new_usertype<glm::vec2>(
         "Vec2",
-        sol::constructors<sol::types<float, float>, sol::types<float>>(), "x",
-        &glm::vec2::x, "y", &glm::vec2::y, sol::meta_function::to_string,
-        [](const glm::vec2 &v) {
-          return "vec2(" + std::to_string(v.x) + ", " + std::to_string(v.y) +
-                 ")";
-        });
+        sol::constructors<sol::types<float, float>, sol::types<float>>());
+    v["x"] = &glm::vec2::x;
+    v["y"] = &glm::vec2::y;
     v["__add"] = [](const glm::vec2 &a, const glm::vec2 &b) { return a + b; };
     v["__sub"] = [](const glm::vec2 &a, const glm::vec2 &b) { return a - b; };
     v["__mul"] = [](const glm::vec2 &a, const glm::vec2 &b) { return a * b; };
     v["__div"] = [](const glm::vec2 &a, const glm::vec2 &b) { return a / b; };
+    v["__tostring"] = vec2Str;
     v["copy"] = [](const glm::vec2 &a) { return a; };
     v["length"] = [](const glm::vec2 &a) { return glm::length(a); };
     v["normalize"] = [](const glm::vec2 &v) { return glm::normalize(v); };
@@ -145,17 +218,7 @@ bool LuaScript::initialize() {
     v["reflect"] = [](const glm::vec2 &v, const glm::vec2 &n) {
       return glm::reflect(v, n);
     };
-    v["debug"] = vec2Debug;
   }
-  auto colorDebug = [](const Color &color, sol::this_state ts) {
-    sol::table t(ts, sol::create);
-    t["r"] = color.r;
-    t["g"] = color.g;
-    t["b"] = color.b;
-    t["a"] = color.a;
-    return t;
-  };
-  glm::vec4 v;
   {
     auto v = lua.new_usertype<Color>(
         "Color", sol::constructors<sol::types<float, float, float, float>,
@@ -165,7 +228,7 @@ bool LuaScript::initialize() {
     v["g"] = &Color::g;
     v["b"] = &Color::b;
     v["a"] = &Color::a;
-    v["debug"] = colorDebug;
+    v["__tostring"] = colorStr;
   }
   {
     auto v = lua.new_usertype<Texture>(
@@ -175,6 +238,7 @@ bool LuaScript::initialize() {
     v["fill"] = &Texture::fill;
     v["copy"] = &Texture::copy;
     v["size"] = &Texture::size;
+    v["__tostring"] = textureStr;
   }
   {
     auto v = lua.new_usertype<Material>("Material");
@@ -326,14 +390,6 @@ bool LuaScript::initialize() {
     v["at"] = &Draw3D::at;
     v["clear"] = &Draw3D::clear;
   }
-  auto rectDebug = [](const Rect &rect, sol::this_state ts) {
-    sol::table t(ts, sol::create);
-    t["x"] = rect.x;
-    t["y"] = rect.y;
-    t["width"] = rect.width;
-    t["height"] = rect.height;
-    return t;
-  };
   {
     // Rect
     auto v = lua.new_usertype<Rect>(
@@ -345,21 +401,13 @@ bool LuaScript::initialize() {
     v["width"] = &Rect::width;
     v["height"] = &Rect::height;
   }
-  auto transformDebug = [vec3Debug](const Transform &transform,
-                                    sol::this_state ts) {
-    sol::table t(ts, sol::create);
-    t["position"] = vec3Debug(transform.position, ts);
-    t["rotation"] = vec3Debug(transform.rotation, ts);
-    t["scale"] = vec3Debug(transform.scale, ts);
-    return t;
-  };
   {
     // Transform
     auto v = lua.new_usertype<Transform>("Transform");
+    v["__tostring"] = transformStr;
     v["position"] = &Transform::position;
     v["rotation"] = &Transform::rotation;
     v["scale"] = &Transform::scale;
-    v["debug"] = transformDebug;
   }
   {
     auto v = lua.new_usertype<Cubemap>("Cubemap");
@@ -644,7 +692,6 @@ bool LuaScript::initialize() {
     // logger
     auto v = lua.create_named("Logger");
     v["verbose"] = [](std::string str) { Logger::verbose("%s", str.data()); };
-    v["info"] = [](std::string str) { Logger::info("%s", str.data()); };
     v["info"] = [](sol::object obj, sol::this_state ts) {
       sol::state_view lua(ts);
 
@@ -653,7 +700,7 @@ bool LuaScript::initialize() {
 
       if (!r.valid()) {
         sol::error e = r;
-        Logger::info("[tostring error] %s", e.what());
+        Logger::error("[tostring error] %s", e.what());
         return;
       }
 

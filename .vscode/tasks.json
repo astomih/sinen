@@ -1,0 +1,25 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "desktop_win",
+      "type": "shell",
+      "command": "${workspaceFolder:sinen}/build/build_msvc2022.bat",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "android",
+      "type": "shell",
+      "command": "${workspaceFolder:sinen}/build/build_android.bat",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    }
+  ]
+}

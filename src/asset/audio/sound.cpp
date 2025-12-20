@@ -2,8 +2,11 @@
 #include "audio_system.hpp"
 #include <asset/audio/sound.hpp>
 #include <core/io/asset_io.hpp>
+#include <memory>
 
 // external
+#include "core/allocator/allocator.hpp"
+#include "core/data/ptr.hpp"
 #include "glm/ext/quaternion_trigonometric.hpp"
 #include "glm/ext/vector_float3.hpp"
 #if 1
@@ -19,14 +22,15 @@ Sound::Sound() {}
 Sound::~Sound() { ma_sound_uninit(&data->sound); }
 
 void Sound::load(std::string_view fileName) {
-  data = std::make_unique<Data>();
+
+  data = makeUnique<Data>();
   auto path = AssetIO::getFilePath(fileName);
   ma_sound_init_from_file(AudioSystem::getEngine(), path.c_str(),
                           MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC, nullptr,
                           nullptr, &data->sound);
 }
 void Sound::loadFromPath(std::string_view path) {
-  data = std::make_unique<Data>();
+  data = makeUnique<Data>();
   ma_sound_init_from_file(AudioSystem::getEngine(), path.data(),
                           MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC, nullptr,
                           nullptr, &data->sound);

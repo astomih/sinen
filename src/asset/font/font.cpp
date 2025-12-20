@@ -115,7 +115,7 @@ static bool loadCore(const unsigned char *fontData,
   return true;
 }
 bool Font::load(int pointSize) {
-  this->font = std::make_unique<Wrapper>();
+  this->font = makeUnique<Wrapper>();
   this->m_size = pointSize;
   this->font->sheetSize = pointSize * 128;
 
@@ -123,7 +123,7 @@ bool Font::load(int pointSize) {
                   pointSize, this->font->sheetSize);
 }
 bool Font::load(int pointSize, std::string_view fontName) {
-  this->font = std::make_unique<Wrapper>();
+  this->font = makeUnique<Wrapper>();
   this->m_size = pointSize;
   this->font->sheetSize = pointSize * 128;
   return loadCore(reinterpret_cast<const unsigned char *>(

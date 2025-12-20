@@ -1,9 +1,7 @@
 #ifndef SINEN_FONT_HPP
 #define SINEN_FONT_HPP
-#include "../../math/color/color.hpp"
-#include "../../math/color/palette.hpp"
-#include "../texture/texture.hpp"
 #include <asset/model/mesh.hpp>
+#include <asset/texture/texture.hpp>
 
 #include <memory>
 #include <string_view>
@@ -58,7 +56,7 @@ public:
 
 private:
   struct Wrapper;
-  std::unique_ptr<Wrapper> font;
+  UniquePtr<Wrapper> font;
   int m_size;
 };
 } // namespace sinen

@@ -23,7 +23,7 @@ public:
 private:
   Allocator *pA;
 };
-inline static GlobalAllocator *gA = new GlobalAllocator();
+inline static Allocator *gA = new GlobalAllocator();
 } // namespace sinen
 
 #endif // !SINEN_GLOBAL_ALLOCATOR_HPP

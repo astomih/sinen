@@ -5,6 +5,8 @@
 #include <memory>
 #include <string>
 
+#include <core/data/ptr.hpp>
+
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <glm/vec3.hpp>
@@ -53,7 +55,7 @@ public:
 
 private:
   struct Data;
-  std::unique_ptr<Data> data;
+  UniquePtr<Data> data;
 };
 } // namespace sinen
 #endif // !SINEN_SOUND_HPP

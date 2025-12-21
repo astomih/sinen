@@ -1,11 +1,10 @@
 #ifndef SINEN_SCRIPT_HPP
 #define SINEN_SCRIPT_HPP
-#include <string>
+#include <core/data/string.hpp>
 namespace sinen {
 class Script {
 public:
-  static void load(const std::string &filePath,
-                   const std::string &baseDirPath = ".");
+  static void load(StringView filePath, StringView baseDirPath = ".");
 };
 } // namespace sinen
 

@@ -1,13 +1,9 @@
 #ifndef SINEN_TEXTURE_HPP
 #define SINEN_TEXTURE_HPP
-#include "../../math/color/color.hpp"
 #include <graphics/rhi/rhi.hpp>
+#include <math/color/color.hpp>
 
-#include <memory>
-#include <string>
 #include <string_view>
-#include <unordered_map>
-#include <vector>
 
 #include <glm/vec2.hpp>
 
@@ -46,7 +42,7 @@ public:
    * @return true
    * @return false
    */
-  bool loadFromMemory(std::vector<char> &buffer);
+  bool loadFromMemory(Array<char> &buffer);
   bool loadFromMemory(void *pPixels, uint32_t width, uint32_t height);
   /**
    * @brief Copy texture from another texture

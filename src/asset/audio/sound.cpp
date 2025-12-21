@@ -5,9 +5,7 @@
 #include <memory>
 
 // external
-#include "core/allocator/allocator.hpp"
 #include "core/data/ptr.hpp"
-#include "glm/ext/quaternion_trigonometric.hpp"
 #include "glm/ext/vector_float3.hpp"
 #if 1
 #define MINIAUDIO_IMPLEMENTATION

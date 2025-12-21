@@ -1,15 +1,8 @@
 // std
 #include <algorithm>
 #include <cassert>
-#include <cstddef>
-#include <cstdint>
 #include <cstdio>
-#include <memory>
 #include <optional>
-#include <string>
-#include <unordered_map>
-#include <unordered_set>
-#include <variant>
 
 // internal
 #include "../../graphics/graphics_system.hpp"
@@ -38,35 +31,35 @@
 #include <glm/gtx/quaternion.hpp>
 
 namespace sinen {
+static_assert(std::is_copy_assignable_v<std::hash<String>>);
+static_assert(std::is_copy_assignable_v<std::equal_to<String>>);
+
 enum class LoadState { Version, Vertex, Indices };
-std::vector<glm::vec3> getVector3sFromKey(const aiVectorKey *keys,
-                                          uint32_t count) {
-  std::vector<glm::vec3> result;
+Array<glm::vec3> getVector3sFromKey(const aiVectorKey *keys, uint32_t count) {
+  Array<glm::vec3> result;
   for (uint32_t i = 0; i < count; ++i) {
     result.push_back(
         glm::vec3(keys[i].mValue.x, keys[i].mValue.y, keys[i].mValue.z));
   }
   return result;
 };
-std::vector<float> getTimesFromVector3Key(const aiVectorKey *keys,
-                                          uint32_t count) {
-  std::vector<float> result;
+Array<float> getTimesFromVector3Key(const aiVectorKey *keys, uint32_t count) {
+  Array<float> result;
   for (uint32_t i = 0; i < count; ++i) {
     result.push_back(static_cast<float>(keys[i].mTime));
   }
   return result;
 };
-std::vector<glm::quat> getRotatesFromKey(const aiQuatKey *keys,
-                                         uint32_t count) {
-  std::vector<glm::quat> result;
+Array<glm::quat> getRotatesFromKey(const aiQuatKey *keys, uint32_t count) {
+  Array<glm::quat> result;
   for (uint32_t i = 0; i < count; ++i) {
     result.push_back(glm::quat(keys[i].mValue.w, keys[i].mValue.x,
                                keys[i].mValue.y, keys[i].mValue.z));
   }
   return result;
 };
-std::vector<float> getTimesFromQuatKey(const aiQuatKey *keys, uint32_t count) {
-  std::vector<float> result;
+Array<float> getTimesFromQuatKey(const aiQuatKey *keys, uint32_t count) {
+  Array<float> result;
   for (uint32_t i = 0; i < count; ++i) {
     result.push_back(static_cast<float>(keys[i].mTime));
   }
@@ -95,7 +88,7 @@ void loadAnimation(const aiScene *scene, SkeletalAnimation &skeletalAnimation,
     {
 
       auto anim = scene->mAnimations[0];
-      std::unordered_map<std::string, NodeAnimation> nodeAnimMap;
+      Hashmap<String, NodeAnimation> nodeAnimMap;
       for (uint32_t i = 0; i < anim->mNumChannels; ++i) {
         aiNodeAnim *channel = anim->mChannels[i];
         NodeAnimation nodeAnim;
@@ -119,16 +112,16 @@ void loadAnimation(const aiScene *scene, SkeletalAnimation &skeletalAnimation,
     }
     struct BoneData {
       BoneData() : ids(), weights() {}
-      std::vector<uint32_t> ids;
-      std::vector<float> weights;
+      Array<uint32_t> ids;
+      Array<float> weights;
     };
     for (int i = 0; i < scene->mNumMeshes; i++) {
       const aiMesh *aimesh = scene->mMeshes[i];
-      std::unordered_map<uint32_t, BoneData> boneData;
+      Hashmap<uint32_t, BoneData> boneData;
 
       for (uint32_t j = 0; j < aimesh->mNumBones; j++) {
         aiBone *bone = aimesh->mBones[j];
-        std::string boneName = bone->mName.C_Str();
+        String boneName = bone->mName.C_Str();
 
         uint32_t index = boneMap.at(boneName).index;
 
@@ -162,7 +155,7 @@ void loadBone(const aiScene *scene, Model::BoneMap &boneMap) {
     const aiMesh *aimesh = scene->mMeshes[i];
     for (uint32_t j = 0; j < aimesh->mNumBones; j++) {
       aiBone *bone = aimesh->mBones[j];
-      std::string boneName = bone->mName.C_Str();
+      String boneName = bone->mName.C_Str();
 
       if (!boneMap.contains(boneName)) {
         BoneInfo boneInfo;
@@ -247,8 +240,8 @@ void calcTangents(const aiScene *scene, Mesh &mesh) {
   auto vertexCount = mesh.vertices.size();
   mesh.tangents.resize(vertexCount, glm::vec4(0.0f));
 
-  std::vector tangentAccum(vertexCount, glm::vec3(0.0f));
-  std::vector handedness(vertexCount, 1.0f);
+  Array<glm::vec3> tangentAccum(vertexCount, glm::vec3(0.0f));
+  Array<float> handedness(vertexCount, 1.0f);
 
   for (size_t i = 0; i < mesh.indices.size(); i += 3) {
     Vertex &v0 = mesh.vertices[mesh.indices[i]];
@@ -298,7 +291,7 @@ std::optional<Texture> loadTexture(aiScene *scene, aiMaterial *material,
     return std::nullopt;
   }
   Texture texture;
-  std::vector<char> buffer;
+  Array<char> buffer;
   if (aiTex->mHeight == 0) {
     buffer.resize(aiTex->mWidth);
     memcpy(buffer.data(), aiTex->pcData, aiTex->mWidth);
@@ -450,8 +443,8 @@ void Model::loadBox() { *this = GraphicsSystem::box; }
 const AABB &Model::getAABB() const { return this->localAABB; }
 
 std::pair<Ptr<rhi::Buffer>, Ptr<rhi::Buffer>>
-createVertexIndexBuffer(const std::vector<Vertex> &vertices,
-                        const std::vector<uint32_t> &indices) {
+createVertexIndexBuffer(const Array<Vertex> &vertices,
+                        const Array<uint32_t> &indices) {
   auto device = GraphicsSystem::getDevice();
   size_t vertexBufferSize = vertices.size() * sizeof(Vertex);
   Ptr<rhi::Buffer> vertexBuffer, indexBuffer;
@@ -539,7 +532,7 @@ createVertexIndexBuffer(const std::vector<Vertex> &vertices,
   return std::make_pair(vertexBuffer, indexBuffer);
 }
 Ptr<rhi::Buffer>
-createAnimationVertexBuffer(const std::vector<AnimationVertex> &vertices) {
+createAnimationVertexBuffer(const Array<AnimationVertex> &vertices) {
   if (vertices.empty())
     return nullptr;
   auto device = GraphicsSystem::getDevice();
@@ -660,7 +653,7 @@ void Model::loadBoneUniform(float start) {
   auto matrices = skeletalAnimation.getFinalBoneMatrices();
   boneUniformData.clear();
 
-  std::vector<glm::mat4> boneMatrices(matrices.size());
+  Array<glm::mat4> boneMatrices(matrices.size());
   int index = 0;
   for (auto &m : matrices) {
     boneMatrices[index] = glm::transpose(m);
@@ -668,9 +661,9 @@ void Model::loadBoneUniform(float start) {
   }
   boneUniformData.addMatrices(boneMatrices);
 }
-void SkeletalAnimation::load(
-    const Node &root, float ticksPerSecond, float duration,
-    std::unordered_map<std::string, NodeAnimation> &nodeAnimationMap) {
+void SkeletalAnimation::load(const Node &root, float ticksPerSecond,
+                             float duration,
+                             Hashmap<String, NodeAnimation> &nodeAnimationMap) {
   this->root = root;
   this->ticksPerSecond = ticksPerSecond;
   this->duration = duration;
@@ -687,7 +680,7 @@ void SkeletalAnimation::update(float timeInSeconds) {
 }
 void SkeletalAnimation::readNodeHierarchy(float animTime, const Node &node,
                                           const glm::mat4 &parentTransform) {
-  std::string nodeName = node.name;
+  String nodeName = node.name;
 
   auto nodeTransform = node.transformation;
   if (nodeAnimMap.contains(nodeName)) {
@@ -707,7 +700,7 @@ void SkeletalAnimation::readNodeHierarchy(float animTime, const Node &node,
   }
 }
 
-uint32_t getIndex(float time, const std::vector<float> &keys) {
+uint32_t getIndex(float time, const Array<float> &keys) {
   auto count = keys.size();
   for (uint32_t i = 0; i < count - 1; ++i) {
     if (time < keys[i + 1]) {
@@ -717,8 +710,8 @@ uint32_t getIndex(float time, const std::vector<float> &keys) {
   return count - 1;
 }
 
-glm::vec3 interpolateVector3(const std::vector<glm::vec3> &keys,
-                             const std::vector<float> &keyTimes, float time,
+glm::vec3 interpolateVector3(const Array<glm::vec3> &keys,
+                             const Array<float> &keyTimes, float time,
                              bool isScaling = false) {
   auto count = keys.size();
   if (count == 0) {
@@ -737,8 +730,8 @@ glm::vec3 interpolateVector3(const std::vector<glm::vec3> &keys,
   auto k1 = keys[i + 1];
   return glm::mix(k0, k1, t);
 };
-glm::quat interpolateQuat(const std::vector<glm::quat> &keys,
-                          const std::vector<float> &keyTimes, float time) {
+glm::quat interpolateQuat(const Array<glm::quat> &keys,
+                          const Array<float> &keyTimes, float time) {
   auto count = keys.size();
   if (count == 0) {
     return glm::quat(1, 0, 0, 0);
@@ -772,8 +765,8 @@ glm::mat4 SkeletalAnimation::interpolateTransform(const NodeAnimation &channel,
   auto m = t * r * s;
   return m;
 }
-std::vector<glm::mat4> SkeletalAnimation::getFinalBoneMatrices() const {
-  std::vector<glm::mat4> result(finalBoneMatrices.size(), glm::mat4(1.0f));
+Array<glm::mat4> SkeletalAnimation::getFinalBoneMatrices() const {
+  Array<glm::mat4> result(finalBoneMatrices.size(), glm::mat4(1.0f));
   for (const auto &[name, mat] : finalBoneMatrices) {
     if (finalBoneMatrices.contains(name)) {
       result[owner->getBoneMap().at(name).index] = mat;

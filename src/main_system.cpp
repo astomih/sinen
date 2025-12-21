@@ -1,12 +1,14 @@
 #include "main_system.hpp"
 #include "asset/audio/audio_system.hpp"
 #include "asset/script/script_system.hpp"
+#include "core/data/string.hpp"
 #include "graphics/graphics_system.hpp"
 #include "physics/physics_system.hpp"
 #include "platform/input/input_system.hpp"
 #include "platform/window/window_system.hpp"
 #include <SDL3/SDL.h>
 #include <graphics/graphics.hpp>
+#include <memory_resource>
 #include <platform/window/window.hpp>
 
 #include <functional>
@@ -27,17 +29,17 @@ MainSystem::State MainSystem::mGameState = MainSystem::State::quit;
 bool MainSystem::isRunScript = true;
 uint32_t MainSystem::mPrevTick = 0;
 bool MainSystem::isReset = true;
-std::string MainSystem::mSceneName = "main";
-std::string MainSystem::basePath = ".";
+String MainSystem::mSceneName = "main";
+String MainSystem::basePath = ".";
 float MainSystem::mDeltaTime = 0.f;
 struct ImGuiLog {
   struct Type {
     ImVec4 color;
     std::string str;
   };
-  static std::vector<Type> logs;
+  static Array<Type> logs;
 };
-std::vector<ImGuiLog::Type> ImGuiLog::logs;
+Array<ImGuiLog::Type> ImGuiLog::logs = Array<ImGuiLog::Type>(gA);
 bool MainSystem::initialize(int argc, char *argv[]) {
   MainSystem::argc = argc;
   MainSystem::argv.resize(argc);
@@ -154,8 +156,7 @@ void MainSystem::updateScene() {
 }
 void MainSystem::shutdown() { mGameState = State::quit; }
 
-void MainSystem::change(const std::string &sceneFileName,
-                        const std::string &basePath) {
+void MainSystem::change(StringView sceneFileName, StringView basePath) {
   if (sceneFileName.empty()) {
     setState(State::quit);
     isReset = false;
@@ -164,8 +165,8 @@ void MainSystem::change(const std::string &sceneFileName,
   }
 
   MainSystem::shutdown();
-  mSceneName = sceneFileName;
-  MainSystem::basePath = basePath;
+  mSceneName = String(sceneFileName.data());
+  MainSystem::basePath = String(basePath.data());
 }
 
 } // namespace sinen

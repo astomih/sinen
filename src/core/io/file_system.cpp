@@ -5,14 +5,13 @@
 #include <SDL3/SDL.h>
 
 namespace sinen {
-std::vector<std::string>
-FileSystem::enumerateDirectory(const std::string &path) {
-  auto p = getAppBaseDirectory() + "/" + path;
-  std::vector<std::string> result;
+Array<String> FileSystem::enumerateDirectory(StringView path) {
+  auto p = getAppBaseDirectory() + "/" + String(path.data());
+  Array<String> result;
   SDL_EnumerateDirectory(
       p.c_str(),
       [](void *userdata, const char *dirname, const char *fname) {
-        auto *vec = reinterpret_cast<std::vector<std::string> *>(userdata);
+        auto *vec = reinterpret_cast<Array<String> *>(userdata);
         vec->emplace_back(fname);
         if (fname == nullptr)
           return SDL_ENUM_SUCCESS;
@@ -21,12 +20,12 @@ FileSystem::enumerateDirectory(const std::string &path) {
       &result);
   return result;
 }
-std::string FileSystem::getAppBaseDirectory() {
+String FileSystem::getAppBaseDirectory() {
 
 #ifdef __ANDROID__
-  std::string base = "/sdcard/Android/media/astomih.sinen.app";
+  String base = "/sdcard/Android/media/astomih.sinen.app";
 #else
-  std::string base = ".";
+  String base = ".";
 #endif
   return base;
 }

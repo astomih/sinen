@@ -1,12 +1,12 @@
 #ifndef SINEN_FILE_SYSTEM_HPP
 #define SINEN_FILE_SYSTEM_HPP
-#include <string>
-#include <vector>
+#include <core/data/array.hpp>
+#include <core/data/string.hpp>
 namespace sinen {
 class FileSystem {
 public:
-  static std::vector<std::string> enumerateDirectory(const std::string &path);
-  static std::string getAppBaseDirectory();
+  static Array<String> enumerateDirectory(StringView path);
+  static String getAppBaseDirectory();
 };
 } // namespace sinen
 #endif // SINEN_FILE_SYSTEM_HPP

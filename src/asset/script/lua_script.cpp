@@ -1,22 +1,17 @@
+#include "core/allocator/global_allocator.hpp"
+#include "core/data/array.hpp"
+#include "core/data/string.hpp"
 #include "glm/ext/vector_float4.hpp"
 #include "math/color/color.hpp"
 #include "math/transform/transform.hpp"
 #include "script_backend.hpp"
-#include "sol/forward.hpp"
 
-#define SOL_NO_CHECK_NUMBER_PRECISION 1
-#include <sol/sol.hpp>
-
-#include "../../main_system.hpp"
-#include "glm/ext/vector_float3.hpp"
 #include "math/graph/bfs_grid.hpp"
 #include "math/graph/grid.hpp"
 #include "platform/input/gamepad.hpp"
 #include "platform/input/keyboard.hpp"
 #include "platform/input/mouse.hpp"
 #include "platform/window/window.hpp"
-#include "sol/raii.hpp"
-#include "sol/types.hpp"
 #include <asset/asset.hpp>
 #include <core/core.hpp>
 #include <core/io/arguments.hpp>
@@ -24,11 +19,38 @@
 #include <format>
 #include <glm/glm.hpp>
 #include <graphics/graphics.hpp>
+#include <main_system.hpp>
 #include <math/math.hpp>
 #include <physics/physics.hpp>
 #include <string>
 
+#define SOL_NO_CHECK_NUMBER_PRECISION 1
+#include <sol/sol.hpp>
+
 namespace sinen {
+
+auto alloc = [](void *ud, void *ptr, size_t osize, size_t nsize) -> void * {
+  (void)ud;
+  // free
+  if (nsize == 0) {
+    if (ptr)
+      sinen::gA->deallocate(ptr, osize);
+    return nullptr;
+  }
+
+  if (ptr == nullptr) {
+    return sinen::gA->allocate(nsize);
+  }
+
+  void *nptr = sinen::gA->allocate(nsize);
+  if (!nptr) {
+    return nullptr;
+  }
+
+  std::memcpy(nptr, ptr, (osize < nsize) ? osize : nsize);
+  sinen::gA->deallocate(ptr, osize);
+  return nptr;
+};
 
 static std::string toStringTrim(double value) {
   std::string s = std::format("{}", value);
@@ -80,7 +102,7 @@ static std::string convert(std::string_view name, const TablePair &p,
 }
 class LuaScript final : public IScriptBackend {
 public:
-  LuaScript() = default;
+  LuaScript() : state(sol::state(sol::default_at_panic, alloc, nullptr)) {}
   ~LuaScript() override = default;
   bool initialize() override;
   void finalize() override;
@@ -548,10 +570,8 @@ bool LuaScript::initialize() {
   {
     auto v = lua.create_named("Script");
     v["load"] = sol::overload(
-        [&](const std::string &filePath) {
-          return Script::load(filePath, ".");
-        },
-        [&](const std::string &filePath, const std::string &baseDirPath) {
+        [](StringView filePath) { return Script::load(filePath, "."); },
+        [](StringView filePath, StringView baseDirPath) {
           return Script::load(filePath, baseDirPath);
         });
   }

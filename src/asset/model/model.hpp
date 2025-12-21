@@ -1,16 +1,11 @@
 #ifndef SINEN_MODEL_HPP
 #define SINEN_MODEL_HPP
-#include <cstdint>
-#include <memory>
-#include <string_view>
-#include <vector>
-
-#include "../../physics/collision.hpp"
-#include "graphics/uniform_data.hpp"
 #include "mesh.hpp"
 #include <asset/texture/material.hpp>
-
+#include <core/data/hashmap.hpp>
 #include <graphics/rhi/rhi.hpp>
+#include <graphics/uniform_data.hpp>
+
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -25,25 +20,25 @@ struct BoneInfo {
 
 class NodeAnimation {
 public:
-  std::vector<glm::vec3> position;
-  std::vector<float> positionTime;
-  std::vector<glm::quat> rotation;
-  std::vector<float> rotationTime;
-  std::vector<glm::vec3> scale;
-  std::vector<float> scaleTime;
+  Array<glm::vec3> position;
+  Array<float> positionTime;
+  Array<glm::quat> rotation;
+  Array<float> rotationTime;
+  Array<glm::vec3> scale;
+  Array<float> scaleTime;
 };
 
 class Node {
 public:
-  std::string name;
+  String name;
   glm::mat4 transformation;
-  std::vector<Node> children;
+  Array<Node> children;
 };
 
 class SkeletalAnimation {
 public:
   void load(const Node &root, float ticksPerSecond, float duration,
-            std::unordered_map<std::string, NodeAnimation> &nodeAnimationMap);
+            Hashmap<String, NodeAnimation> &nodeAnimationMap);
 
   void update(float timeInSeconds);
 
@@ -52,15 +47,15 @@ public:
 
   glm::mat4 interpolateTransform(const NodeAnimation &channel, float time);
 
-  std::vector<glm::mat4> getFinalBoneMatrices() const;
+  Array<glm::mat4> getFinalBoneMatrices() const;
 
-  std::unordered_map<std::string, NodeAnimation> nodeAnimMap;
-  std::vector<AnimationVertex> animationVertices;
+  Hashmap<String, NodeAnimation> nodeAnimMap;
+  Array<AnimationVertex> animationVertices;
   glm::mat4 globalInverseTransform;
   float ticksPerSecond;
   float duration;
   Node root;
-  std::unordered_map<std::string, glm::mat4> finalBoneMatrices;
+  Hashmap<String, glm::mat4> finalBoneMatrices;
   class Model *owner;
 };
 struct Model {
@@ -89,7 +84,7 @@ public:
   void play(float start);
   void update(float delta_time);
   const AABB &getAABB() const;
-  std::shared_ptr<void> data;
+  Ptr<void> data;
   UniformData getBoneUniformData() const;
 
   Material getMaterial() const { return material; }
@@ -102,16 +97,16 @@ public:
   Ptr<rhi::Buffer> animationVertexBuffer;
   Ptr<rhi::Buffer> indexBuffer;
 
-  using BoneMap = std::unordered_map<std::string, BoneInfo>;
+  using BoneMap = Hashmap<String, BoneInfo>;
   const BoneMap &getBoneMap() const { return boneMap; }
 
 private:
   void loadBoneUniform(float time);
   float time = 0.0f;
-  std::vector<glm::mat4> inverseBindMatrices;
+  Array<glm::mat4> inverseBindMatrices;
   Material material;
   AABB localAABB;
-  std::string name;
+  String name;
   Mesh mesh;
   UniformData boneUniformData;
 

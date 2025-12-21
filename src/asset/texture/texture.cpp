@@ -49,7 +49,7 @@ bool Texture::loadFromPath(std::string_view path) {
   return true;
 }
 
-bool Texture::loadFromMemory(std::vector<char> &buffer) {
+bool Texture::loadFromMemory(Array<char> &buffer) {
   int width;
   int height;
   int bpp;

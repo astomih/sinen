@@ -7,6 +7,7 @@
 
 // internal
 #include "../../main_system.hpp"
+#include "core/data/string.hpp"
 #include <core/io/asset_io.hpp>
 #include <core/io/file_system.hpp>
 #include <core/logger/logger.hpp>
@@ -22,14 +23,14 @@
 #endif
 
 namespace sinen {
-static void convertFilePath(std::string &filePath, std::string_view name) {
+static void convertFilePath(String &filePath, StringView name) {
 
   filePath = FileSystem::getAppBaseDirectory() + "/" +
-             MainSystem::getBasePath() + "/" + std::string(name);
+             MainSystem::getBasePath() + "/" + String(name);
 }
-std::vector<uint8_t> AssetIO::key = {0};
-std::string_view AssetIO::open(std::string_view name) {
-  std::string filePath;
+Array<uint8_t> AssetIO::key = {0};
+StringView AssetIO::open(StringView name) {
+  String filePath;
   convertFilePath(filePath, name);
   auto *file = SDL_IOFromFile(filePath.c_str(), "r");
   Logger::error("File open error %s: %s", filePath.c_str(), SDL_GetError());
@@ -44,7 +45,7 @@ std::string_view AssetIO::open(std::string_view name) {
   return result;
 }
 void *AssetIO::openAsIOStream(std::string_view name) {
-  std::string filePath;
+  String filePath;
   convertFilePath(filePath, name);
 
   SDL_IOStream *file = SDL_IOFromFile(filePath.c_str(), "r");
@@ -54,8 +55,8 @@ void *AssetIO::openAsIOStream(std::string_view name) {
   }
   return file;
 }
-std::string AssetIO::openAsString(std::string_view name) {
-  std::string filePath;
+String AssetIO::openAsString(StringView name) {
+  String filePath;
   convertFilePath(filePath, name);
   auto *file = SDL_IOFromFile(filePath.c_str(), "r");
   if (!file) {
@@ -68,13 +69,13 @@ std::string AssetIO::openAsString(std::string_view name) {
     Logger::error(std::string("Sinen file open error" + filePath).c_str());
     return "";
   }
-  std::string result{reinterpret_cast<char *>(load), fileLength};
+  String result{reinterpret_cast<char *>(load), fileLength};
   SDL_free(load);
   return result;
 }
 
 void AssetIO::write(std::string_view name, std::string_view data) {
-  std::string filePath;
+  String filePath;
   convertFilePath(filePath, name);
   auto *file = SDL_IOFromFile(filePath.c_str(), "w");
   if (!file) {
@@ -86,8 +87,8 @@ void AssetIO::write(std::string_view name, std::string_view data) {
   SDL_CloseIO(file);
 }
 
-std::string AssetIO::getFilePath(std::string_view name) {
-  std::string filePath;
+String AssetIO::getFilePath(StringView name) {
+  String filePath;
   convertFilePath(filePath, name);
   return filePath;
 }

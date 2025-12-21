@@ -1,10 +1,5 @@
 #ifndef SINEN_SOUND_HPP
 #define SINEN_SOUND_HPP
-
-#include <cstdint>
-#include <memory>
-#include <string>
-
 #include <core/data/ptr.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL

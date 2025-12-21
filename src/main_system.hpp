@@ -1,3 +1,4 @@
+#include <core/data/string.hpp>
 #include <graphics/drawable/drawable.hpp>
 
 #include <list>
@@ -38,10 +39,9 @@ public:
 
   static bool isRunning() { return mGameState != State::quit; }
   static bool isResetNext() { return isReset; }
-  static std::string getCurrentName() { return mSceneName; }
-  static std::string getBasePath() { return basePath; }
-  static void change(const std::string &sceneFileName,
-                     const std::string &basePath);
+  static String getCurrentName() { return mSceneName; }
+  static String getBasePath() { return basePath; }
+  static void change(StringView sceneFileName, StringView basePath);
 
   static void processInput();
   static void updateScene();
@@ -56,8 +56,8 @@ public:
 private:
   static State mGameState;
   static uint32_t mPrevTick;
-  static std::string mSceneName;
-  static std::string basePath;
+  static String mSceneName;
+  static String basePath;
   static float mDeltaTime;
 };
 } // namespace sinen

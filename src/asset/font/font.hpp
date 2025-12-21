@@ -3,7 +3,6 @@
 #include <asset/model/mesh.hpp>
 #include <asset/texture/texture.hpp>
 
-#include <memory>
 #include <string_view>
 namespace sinen {
 /**

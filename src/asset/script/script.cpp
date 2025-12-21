@@ -4,9 +4,8 @@
 #include <string>
 
 namespace sinen {
-void Script::load(const std::string &filePath, const std::string &baseDirPath) {
-  MainSystem::change(std::string(filePath.data()),
-                     std::string(baseDirPath.data()));
+void Script::load(StringView filePath, StringView baseDirPath) {
+  MainSystem::change(filePath, baseDirPath);
 }
 
 } // namespace sinen

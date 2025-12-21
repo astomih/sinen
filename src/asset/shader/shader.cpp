@@ -72,7 +72,7 @@ void Shader::loadVertexShader(std::string_view vertex_shader,
 
   SDL_IOStream *file = (SDL_IOStream *)AssetIO::openAsIOStream(vertex_shader);
 
-  std::string vsStr = AssetIO::openAsString(vertex_shader);
+  auto vsStr = AssetIO::openAsString(vertex_shader);
 
   rhi::Shader::CreateInfo vsInfo{};
   vsInfo.allocator = allocator;
@@ -92,7 +92,7 @@ void Shader::loadFragmentShader(std::string_view fragment_shader,
   auto *allocator = gA;
   auto device = GraphicsSystem::getDevice();
 
-  std::string fsStr = AssetIO::openAsString(fragment_shader);
+  auto fsStr = AssetIO::openAsString(fragment_shader);
 
   rhi::Shader::CreateInfo fsInfo{};
   fsInfo.allocator = allocator;

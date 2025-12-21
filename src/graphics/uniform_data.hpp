@@ -3,9 +3,9 @@
 
 #include "camera/camera.hpp"
 #include "camera/camera2d.hpp"
+#include <core/data/array.hpp>
 
 #include <glm/mat4x4.hpp>
-#include <vector>
 namespace sinen {
 struct UniformData {
   UniformData() : data() {}
@@ -14,7 +14,7 @@ struct UniformData {
     data.resize(data.size() + 16);
     memcpy(&data[data.size() - 16], &matrix, sizeof(glm::mat4));
   }
-  void addMatrices(const std::vector<glm::mat4> &matrices) {
+  void addMatrices(const Array<glm::mat4> &matrices) {
     for (auto &m : matrices) {
       addMatrix(m);
     }

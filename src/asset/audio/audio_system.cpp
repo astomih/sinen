@@ -1,9 +1,5 @@
-// std
-#include <vector>
-
 // internal
 #include "audio_system.hpp"
-#include "glm/trigonometric.hpp"
 #include <core/io/asset_io.hpp>
 #include <math/math.hpp>
 

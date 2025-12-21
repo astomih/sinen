@@ -4,13 +4,9 @@
 #include <unordered_map>
 namespace sinen {
 // Hash map class
-template <typename K, typename V, typename Hash = std::hash<K>,
+template <typename K, typename T, typename Hasher = std::hash<K>,
           typename Equal = std::equal_to<K>>
-class Hashmap : public std::pmr::unordered_map<K, V, Hash, Equal> {
-public:
-  Hashmap() : std::pmr::unordered_map<K, V, Hash, Equal>(gA) {}
-  Hashmap(Allocator *pA) : std::pmr::unordered_map<K, V, Hash, Equal>(pA) {}
-};
+using Hashmap = std::pmr::unordered_map<K, T, Hasher, Equal>;
 } // namespace sinen
 
 #endif // !SINEN_HASHMAP_HPP

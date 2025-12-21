@@ -1,11 +1,5 @@
 #ifndef SINEN_SOUND_SYSTEM_HPP
 #define SINEN_SOUND_SYSTEM_HPP
-// std
-#include <memory>
-#include <string>
-#include <string_view>
-#include <unordered_map>
-
 // internal
 #include <asset/audio/sound.hpp>
 

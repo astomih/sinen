@@ -1,6 +1,5 @@
 #ifndef SINEN_GLOBAL_ALLOCATOR_HPP
 #define SINEN_GLOBAL_ALLOCATOR_HPP
-#include "SDL3/SDL_thread.h"
 #include "allocator.hpp"
 
 namespace sinen {
@@ -8,7 +7,10 @@ class GlobalAllocator : public Allocator {
 public:
   GlobalAllocator();
   ~GlobalAllocator() override { pA = nullptr; }
-  void setAllocator(Allocator *allocator) { pA = allocator; }
+  void setAllocator(Allocator *allocator) {
+    pA = allocator;
+    std::pmr::set_default_resource(pA);
+  }
   void *do_allocate(std::size_t bytes, std::size_t alignment) override {
     return pA->allocate(bytes, alignment);
   }

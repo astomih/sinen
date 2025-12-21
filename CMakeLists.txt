@@ -122,9 +122,8 @@ else()
 endif()
 
 target_link_libraries(sinen PUBLIC ${SINEN_LINK_LIBRARIES})
-target_compile_definitions(
-  sinen PUBLIC AL_LIBTYPE_STATIC MAKE_LIB
-               $<$<BOOL:${SINEN_USE_SLANG}>:SINEN_USE_SLANG>)
+set(SINEN_COMPILE_DEFINITIONS $<$<BOOL:${SINEN_USE_SLANG}>:SINEN_USE_SLANG>)
+target_compile_definitions(sinen PUBLIC ${SINEN_COMPILE_DEFINITIONS})
 
 if(WIN32)
   if(MSVC)

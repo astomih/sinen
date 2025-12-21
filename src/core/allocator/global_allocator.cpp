@@ -2,7 +2,7 @@
 #include "tlsf_allocator.hpp"
 namespace sinen {
 GlobalAllocator::GlobalAllocator() {
-  size_t allocatorSize = 0x400000;
+  size_t allocatorSize = 0xFFFFFF;
 
   Allocator *pA;
 #ifdef _MSC_VER

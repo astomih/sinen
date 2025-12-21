@@ -221,6 +221,7 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
   auto ratio = camera2D.windowRatio();
   glm::mat4 mat[3];
   std::vector<glm::mat4> instanceData;
+  auto scale = draw2D.scale * 0.5f * ratio;
   {
     auto t = glm::translate(glm::mat4(1.0f),
                             glm::vec3(draw2D.position.x * ratio.x,
@@ -229,9 +230,7 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
                                      glm::vec3(0.0f, 0.0f, -1.0f));
     auto r = glm::toMat4(quaternion);
 
-    auto s =
-        glm::scale(glm::mat4(1.0f), glm::vec3(draw2D.scale.x * 0.5f,
-                                              draw2D.scale.y * 0.5f, 1.0f));
+    auto s = glm::scale(glm::mat4(1.0f), glm::vec3(scale, 1.0f));
 
     mat[0] = glm::transpose(t * r * s);
   }

@@ -1,7 +1,7 @@
 {
   "configurations": [
     {
-      "name": "Debug MSVC",
+      "name": "Sinen examples C++ Debug",
       "type": "cppvsdbg",
       "request": "launch",
       "program": "${workspaceFolder:sinen}/build/msvc2022/sinen.exe",
@@ -12,7 +12,16 @@
       "console": "internalConsole"
     },
     {
-      "name": "test",
+      "name": "Sinen examples Lua Debug",
+      "type": "lua-local",
+      "request": "launch",
+      "program": {
+        "command": "sinen"
+      },
+      "cwd": "${workspaceFolder:sinen}/examples"
+    },
+    {
+      "name": "Sinen test Lua Debug",
       "type": "lua-local",
       "cwd": "${workspaceFolder:sinen}/utils/test",
       "program": {

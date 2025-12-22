@@ -32,7 +32,7 @@ void Graphics::drawImage(const Texture &texture, const Rect &rect,
   GraphicsSystem::drawImage(texture, rect, angle);
 }
 
-void Graphics::drawText(const std::string &text, const Font &font,
+void Graphics::drawText(StringView text, const Font &font,
                         const glm::vec2 &position, const Color &color,
                         float textSize, float angle) {
   GraphicsSystem::drawText(text, font, position, color, textSize, angle);
@@ -45,7 +45,7 @@ void Graphics::drawModel(const Model &model, const Transform &transform,
   GraphicsSystem::drawModel(model, transform, material);
 }
 void Graphics::drawModelInstanced(const Model &model,
-                                  const std::vector<Transform> &transforms,
+                                  const Array<Transform> &transforms,
                                   const Material &material) {
   GraphicsSystem::drawModelInstanced(model, transforms, material);
 }

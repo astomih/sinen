@@ -65,7 +65,7 @@ public:
   glm::vec3 rotation;
   glm::vec3 scale;
   Material material;
-  std::vector<Transform> worlds;
+  Array<Transform> worlds;
   const Model &getModel() const;
   Model model;
 };

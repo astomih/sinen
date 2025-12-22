@@ -1,9 +1,6 @@
 // std
 #include <cassert>
-#include <fstream>
-#include <memory>
-#include <optional>
-#include <string_view>
+#include <cstddef>
 
 // internal
 #include "../texture/texture_data.hpp"
@@ -31,14 +28,12 @@ struct CodepointRange {
   uint32_t count;
 };
 
-constexpr CodepointRange HIRAGANA = {0x3042, 0x309E};
-constexpr CodepointRange KATAKANA = {0x30A0, 0x30FF};
-constexpr CodepointRange KANJI = {0x3000, 0x9FFF};
-constexpr CodepointRange ASCII_FWIDTH = {0xFF01, 0xFF5E};
-constexpr CodepointRange ASCII = {0x0020, 0x007F};
+constexpr CodepointRange asciiWidthRange = {0xFF01, 0xFF5E};
+constexpr CodepointRange japaneseRange = {0x3000, 0x9FFF};
+constexpr CodepointRange asciiRange = {0x0020, 0x007F};
 
 struct Font::Wrapper {
-  std::vector<std::vector<stbtt_packedchar>> packedChar;
+  Array<Array<stbtt_packedchar>> packedChar;
   Ptr<rhi::Texture> texture;
   uint32_t sheetSize = 0;
 };
@@ -48,63 +43,53 @@ Font::Font(int32_t point, std::string_view file_name) {
 }
 Font::~Font() {}
 static bool loadCore(const unsigned char *fontData,
-                     std::vector<std::vector<stbtt_packedchar>> &pc,
+                     Array<Array<stbtt_packedchar>> &pc,
                      Ptr<rhi::Texture> &texture, int pointSize, int sheetSize) {
-  stbtt_pack_range ranges[5] = {};
+  stbtt_pack_range ranges[3] = {};
   pc.resize(std::size(ranges));
-  // Hiragana
-  pc[0].resize(HIRAGANA.count);
-  ranges[0].font_size = pointSize;
-  ranges[0].first_unicode_codepoint_in_range = HIRAGANA.first;
-  ranges[0].num_chars = HIRAGANA.count;
-  ranges[0].chardata_for_range = pc[0].data();
-
-  // Katakana
-  pc[1].resize(KATAKANA.count);
-  ranges[1].font_size = pointSize;
-  ranges[1].first_unicode_codepoint_in_range = KATAKANA.first;
-  ranges[1].num_chars = KATAKANA.count;
-  ranges[1].chardata_for_range = pc[1].data();
-
+  size_t index = 0;
   // ASCII WIDTH
-  pc[2].resize(ASCII_FWIDTH.count);
-  ranges[2].font_size = pointSize;
-  ranges[2].first_unicode_codepoint_in_range = ASCII_FWIDTH.first;
-  ranges[2].num_chars = ASCII_FWIDTH.count;
-  ranges[2].chardata_for_range = pc[2].data();
+  pc[index].resize(asciiWidthRange.count);
+  ranges[index].font_size = pointSize;
+  ranges[index].first_unicode_codepoint_in_range = asciiWidthRange.first;
+  ranges[index].num_chars = asciiWidthRange.count;
+  ranges[index].chardata_for_range = pc[index].data();
+  index++;
 
-  // Kanji
-  pc[3].resize(KANJI.count);
-  ranges[3].font_size = pointSize;
-  ranges[3].first_unicode_codepoint_in_range = KANJI.first;
-  ranges[3].num_chars = KANJI.count;
-  ranges[3].chardata_for_range = pc[3].data();
+  // Japanese
+  pc[index].resize(japaneseRange.count);
+  ranges[index].font_size = pointSize;
+  ranges[index].first_unicode_codepoint_in_range = japaneseRange.first;
+  ranges[index].num_chars = japaneseRange.count;
+  ranges[index].chardata_for_range = pc[index].data();
+  index++;
 
   // ASCII
-  pc[4].resize(ASCII.count);
-  ranges[4].font_size = pointSize;
-  ranges[4].first_unicode_codepoint_in_range = ASCII.first;
-  ranges[4].num_chars = ASCII.count;
-  ranges[4].chardata_for_range = pc[4].data();
+  pc[index].resize(asciiRange.count);
+  ranges[index].font_size = pointSize;
+  ranges[index].first_unicode_codepoint_in_range = asciiRange.first;
+  ranges[index].num_chars = asciiRange.count;
+  ranges[index].chardata_for_range = pc[index].data();
+  index++;
 
   stbtt_pack_context spc;
-  std::vector<unsigned char> atlasBitmap(sheetSize * sheetSize * 4);
-  std::vector<unsigned char> temp(sheetSize * sheetSize);
+  Array<unsigned char> atlasBitmap(sheetSize * sheetSize * 4);
+  Array<unsigned char> temp(sheetSize * sheetSize);
   stbtt_PackBegin(&spc, temp.data(), sheetSize, sheetSize, 0, 1, NULL);
   stbtt_PackFontRanges(&spc, fontData, 0, ranges, std::size(ranges));
   stbtt_PackEnd(&spc);
   // 1ch -> 4ch (R8G8B8A8)
   for (int y = 0; y < sheetSize; ++y) {
     for (int x = 0; x < sheetSize; ++x) {
-      int idx_gray = y * sheetSize + x;
-      int idx_rgba = (y * sheetSize + x) * 4;
+      int idxGray = y * sheetSize + x;
+      int idxRGBA = (y * sheetSize + x) * 4;
 
-      unsigned char a = temp[idx_gray];
+      unsigned char a = temp[idxGray];
 
-      atlasBitmap[idx_rgba + 0] = 255;
-      atlasBitmap[idx_rgba + 1] = 255;
-      atlasBitmap[idx_rgba + 2] = 255;
-      atlasBitmap[idx_rgba + 3] = a;
+      atlasBitmap[idxRGBA + 0] = 255;
+      atlasBitmap[idxRGBA + 1] = 255;
+      atlasBitmap[idxRGBA + 2] = 255;
+      atlasBitmap[idxRGBA + 3] = a;
     }
   }
 
@@ -179,26 +164,18 @@ Mesh Font::getTextMesh(std::string_view text) const {
     const auto *next = utf8ToCodepoint(p, &cp);
     stbtt_aligned_quad q;
     uint32_t idx1 = 0, idx2 = 0;
-    if (cp >= HIRAGANA.first && cp <= HIRAGANA.last) {
-      // Hiragana
-      idx1 = 0;
-      idx2 = cp - HIRAGANA.first;
-    } else if (cp >= KATAKANA.first && cp <= KATAKANA.last) {
-      // Katakana
-      idx1 = 1;
-      idx2 = cp - KATAKANA.first;
-    } else if (cp >= ASCII_FWIDTH.first && cp <= ASCII_FWIDTH.last) {
+    if (cp >= asciiWidthRange.first && cp <= asciiWidthRange.last) {
       // Zenkaku
-      idx1 = 2;
-      idx2 = cp - ASCII_FWIDTH.first;
-    } else if (cp >= KANJI.first && cp <= KANJI.last) {
-      // Kanji
-      idx1 = 3;
-      idx2 = cp - KANJI.first;
-    } else if (cp >= ASCII.first && cp <= ASCII.last) {
+      idx1 = 0;
+      idx2 = cp - asciiWidthRange.first;
+    } else if (cp >= japaneseRange.first && cp <= japaneseRange.last) {
+      // Japanese
+      idx1 = 1;
+      idx2 = cp - japaneseRange.first;
+    } else if (cp >= asciiRange.first && cp <= asciiRange.last) {
       // ASCII
-      idx1 = 4;
-      idx2 = cp - ASCII.first;
+      idx1 = 2;
+      idx2 = cp - asciiRange.first;
     }
 
     uint32_t sheetSize = this->font->sheetSize;

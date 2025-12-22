@@ -1,10 +1,6 @@
 #include <array>
-#include <chrono>
 #include <cstdlib>
-#include <filesystem>
-#include <fstream>
 #include <iostream>
-#include <vector>
 
 #include "rt_shader_compiler.hpp"
 
@@ -66,9 +62,9 @@ ShaderCompiler::ReflectionData getReflectionData(slang::IComponentType *program,
   return data;
 }
 
-std::vector<char> ShaderCompiler::compile(std::string_view sourcePath,
-                                          Type type, Language lang,
-                                          ReflectionData &reflectionData) {
+Array<char> ShaderCompiler::compile(StringView sourcePath, Type type,
+                                    Language lang,
+                                    ReflectionData &reflectionData) {
 #if SINEN_USE_SLANG
   using namespace slang;
 
@@ -95,7 +91,7 @@ std::vector<char> ShaderCompiler::compile(std::string_view sourcePath,
 
   Slang::ComPtr<slang::IModule> slangModule;
   {
-    std::string moduleName;
+    String moduleName;
     {
 
       size_t dotPos = sourcePath.find_last_of('.');
@@ -184,7 +180,7 @@ std::vector<char> ShaderCompiler::compile(std::string_view sourcePath,
   // Get reflection (num bindings, etc.)
   reflectionData = getReflectionData(linkedProgram, type);
   // spirvCode to std::vector<char>
-  std::vector<char> spirvData(spirvCode->getBufferSize());
+  Array<char> spirvData(spirvCode->getBufferSize());
   std::memcpy(spirvData.data(), spirvCode->getBufferPointer(),
               spirvCode->getBufferSize());
   return spirvData;

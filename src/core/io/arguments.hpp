@@ -1,13 +1,13 @@
 #ifndef SINEN_ARGUMENTS_HPP
 #define SINEN_ARGUMENTS_HPP
-#include <string>
-#include <vector>
+#include <core/data/array.hpp>
+#include <core/data/string.hpp>
 
 namespace sinen {
 class Arguments {
 public:
   static int getArgc();
-  static std::vector<std::string> getArgv();
+  static Array<String> getArgv();
 };
 } // namespace sinen
 

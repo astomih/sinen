@@ -40,14 +40,14 @@ public:
   static void drawImage(const Texture &texture, const Rect &rect) {
     drawImage(texture, rect, 0.0f);
   }
-  static void drawText(const std::string &text, const Font &font,
+  static void drawText(StringView text, const Font &font,
                        const glm::vec2 &position, const Color &color,
                        float textSize, float angle);
-  static void drawText(const std::string &text, const Font &font,
+  static void drawText(StringView text, const Font &font,
                        const glm::vec2 &position, const Color &color) {
     drawText(text, font, position, color, 32.f, 0.0f);
   }
-  static void drawText(const std::string &text, const Font &font,
+  static void drawText(StringView text, const Font &font,
                        const glm::vec2 &position) {
     drawText(text, font, position, Palette::white(), 32.f, 0.0f);
   }
@@ -58,7 +58,7 @@ public:
                         const Material &material);
 
   static void drawModelInstanced(const Model &model,
-                                 const std::vector<Transform> &transforms,
+                                 const Array<Transform> &transforms,
                                  const Material &material);
 
   /**

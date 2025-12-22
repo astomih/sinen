@@ -34,21 +34,21 @@ auto alloc = [](void *ud, void *ptr, size_t osize, size_t nsize) -> void * {
   // free
   if (nsize == 0) {
     if (ptr)
-      sinen::gA->deallocate(ptr, osize);
+      sinen::GlobalAllocator::get()->deallocate(ptr, osize);
     return nullptr;
   }
 
   if (ptr == nullptr) {
-    return sinen::gA->allocate(nsize);
+    return sinen::GlobalAllocator::get()->allocate(nsize);
   }
 
-  void *nptr = sinen::gA->allocate(nsize);
+  void *nptr = sinen::GlobalAllocator::get()->allocate(nsize);
   if (!nptr) {
     return nullptr;
   }
 
   std::memcpy(nptr, ptr, (osize < nsize) ? osize : nsize);
-  sinen::gA->deallocate(ptr, osize);
+  sinen::GlobalAllocator::get()->deallocate(ptr, osize);
   return nptr;
 };
 
@@ -75,9 +75,8 @@ static std::string toStringTrim(double value) {
   s.erase(s.find_last_not_of('0') + 1);
   return s;
 }
-using TablePair = std::vector<std::pair<std::string, std::string>>;
-static std::string convert(std::string_view name, const TablePair &p,
-                           bool isReturn) {
+using TablePair = Array<std::pair<std::string, std::string>>;
+static std::string convert(StringView name, const TablePair &p, bool isReturn) {
   std::string s;
   s = name.data();
   s += "{ ";
@@ -541,7 +540,7 @@ bool LuaScript::initialize() {
     v["drawModel"] = &Graphics::drawModel;
     v["drawModelInstanced"] = [](const Model &model, sol::table transformsTable,
                                  const Material &material) {
-      std::vector<Transform> transforms;
+      Array<Transform> transforms;
       for (auto &item : transformsTable) {
         transforms.push_back(item.second.as<Transform>());
       }

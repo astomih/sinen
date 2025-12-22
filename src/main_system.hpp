@@ -1,8 +1,6 @@
+#include <core/data/array.hpp>
 #include <core/data/string.hpp>
 #include <graphics/drawable/drawable.hpp>
-
-#include <list>
-#include <vector>
 
 namespace sinen {
 class MainSystem {
@@ -51,7 +49,7 @@ public:
   static inline float deltaTime() { return mDeltaTime; }
 
   static inline int argc = 0;
-  static inline std::vector<std::string> argv;
+  static inline Array<String> argv;
 
 private:
   static State mGameState;

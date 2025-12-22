@@ -35,11 +35,12 @@ float MainSystem::mDeltaTime = 0.f;
 struct ImGuiLog {
   struct Type {
     ImVec4 color;
-    std::string str;
+    String str;
   };
   static Array<Type> logs;
 };
-Array<ImGuiLog::Type> ImGuiLog::logs = Array<ImGuiLog::Type>(gA);
+Array<ImGuiLog::Type> ImGuiLog::logs =
+    Array<ImGuiLog::Type>(GlobalAllocator::get());
 bool MainSystem::initialize(int argc, char *argv[]) {
   MainSystem::argc = argc;
   MainSystem::argv.resize(argc);
@@ -55,33 +56,33 @@ bool MainSystem::initialize(int argc, char *argv[]) {
     return false;
   }
 
-  Logger::setOutputFunction([&](Logger::priority p, std::string_view str) {
-    std::string newStr;
+  Logger::setOutputFunction([&](Logger::priority p, StringView str) {
+    String newStr;
     ImVec4 color;
     switch (p) {
     case Logger::priority::verbose:
       color = ImVec4(0.0f, 1.0f, 1.0f, 1.0f);
-      newStr = "VERBOSE: " + std::string(str);
+      newStr = "VERBOSE: " + String(str);
       break;
     case Logger::priority::debug:
       color = ImVec4(0.0f, 0.0f, 1.0f, 1.0f);
-      newStr = "DEBUG: " + std::string(str);
+      newStr = "DEBUG: " + String(str);
       break;
     case Logger::priority::info:
       color = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
-      newStr = "INFO: " + std::string(str);
+      newStr = "INFO: " + String(str);
       break;
     case Logger::priority::error:
       color = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
-      newStr = "ERROR: " + std::string(str);
+      newStr = "ERROR: " + String(str);
       break;
     case Logger::priority::warn:
       color = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
-      newStr = "WARN: " + std::string(str);
+      newStr = "WARN: " + String(str);
       break;
     case Logger::priority::critical:
       color = ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
-      newStr = "CRITICAL: " + std::string(str);
+      newStr = "CRITICAL: " + String(str);
       break;
     default:
       color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);

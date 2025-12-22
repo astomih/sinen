@@ -3,5 +3,5 @@
 
 namespace sinen {
 int Arguments::getArgc() { return MainSystem::argc; }
-std::vector<std::string> Arguments::getArgv() { return MainSystem::argv; }
+Array<String> Arguments::getArgv() { return MainSystem::argv; }
 } // namespace sinen

@@ -30,7 +30,7 @@ void GraphicsPipeline::setEnableTangent(bool enable) {
   featureFlags.set(Tangent, enable);
 }
 void GraphicsPipeline::build() {
-  auto *allocator = gA;
+  auto *allocator = GlobalAllocator::get();
   auto device = GraphicsSystem::getDevice();
 
   rhi::GraphicsPipeline::CreateInfo pipelineInfo{allocator};

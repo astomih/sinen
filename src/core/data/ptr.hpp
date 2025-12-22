@@ -34,8 +34,9 @@ Ptr<T> makePtr(Allocator *allocator, Args &&...args) {
                                  std::forward<Args>(args)...);
 }
 template <class T, class... Args> Ptr<T> makePtr(Args &&...args) {
-  return std::allocate_shared<T>(std::pmr::polymorphic_allocator<T>(gA),
-                                 std::forward<Args>(args)...);
+  return std::allocate_shared<T>(
+      std::pmr::polymorphic_allocator<T>(GlobalAllocator::get()),
+      std::forward<Args>(args)...);
 }
 
 template <class T, class... Args>
@@ -51,14 +52,14 @@ template <class T> UniquePtr<T> makeUnique(Allocator *pA) {
   return UniquePtr<T>(obj, Deleter<T, Allocator>(pA));
 }
 template <class T, class... Args> UniquePtr<T> makeUnique(Args &&...args) {
-  void *mem = gA->allocate(sizeof(T), alignof(T));
+  void *mem = GlobalAllocator::get()->allocate(sizeof(T), alignof(T));
   T *obj = new (mem) T(std::forward<Args>(args)...);
-  return UniquePtr<T>(obj, Deleter<T, Allocator>(gA));
+  return UniquePtr<T>(obj, Deleter<T, Allocator>(GlobalAllocator::get()));
 }
 template <class T, class D = Deleter<T, Allocator>> UniquePtr<T> makeUnique() {
-  void *mem = gA->allocate(sizeof(T), alignof(T));
+  void *mem = GlobalAllocator::get()->allocate(sizeof(T), alignof(T));
   T *obj = new (mem) T();
-  return UniquePtr<T>(obj, Deleter<T, Allocator>(gA));
+  return UniquePtr<T>(obj, Deleter<T, Allocator>(GlobalAllocator::get()));
 }
 
 template <class T, class U> Ptr<T> downCast(Ptr<U> ptr) {

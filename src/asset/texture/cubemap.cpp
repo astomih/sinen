@@ -101,7 +101,7 @@ static inline void faceDir(Face f, float a, float b, float &x, float &y,
 }
 
 void equirectToCubemap(const float *in, int W, int H, int C, int faceSize,
-                       std::array<std::vector<float>, 6> &outFaces) {
+                       std::array<Array<float>, 6> &outFaces) {
   assert(C == 3 || C == 4);
   for (int f = 0; f < 6; ++f) {
     outFaces[f].assign(faceSize * faceSize * C, 0.0f);
@@ -112,7 +112,7 @@ void equirectToCubemap(const float *in, int W, int H, int C, int faceSize,
   const float INV_2PI = 1.0f / (2.0f * PI);
   const float INV_PI = 1.0f / PI;
 
-  std::vector<float> tmp(C, 0.0f);
+  Array<float> tmp(C, 0.0f);
 
   for (int f = 0; f < 6; ++f) {
     float *dst = outFaces[f].data();
@@ -140,8 +140,7 @@ void equirectToCubemap(const float *in, int W, int H, int C, int faceSize,
   }
 }
 
-bool loadEXRFloat(const char *path, std::vector<float> &img, int &W, int &H,
-                  int &C) {
+bool loadEXRFloat(const char *path, Array<float> &img, int &W, int &H, int &C) {
   float *out;
   const char *err = nullptr;
   int w, h;
@@ -169,7 +168,7 @@ bool saveEXRFloat(const char *path, const float *img, int W, int H, int C) {
 
   image.num_channels = C;
 
-  std::vector<float> r(W * H), g(W * H), b(W * H), a;
+  Array<float> r(W * H), g(W * H), b(W * H), a;
   std::array<float *, 4> channels{};
   for (int i = 0; i < W * H; ++i) {
     r[i] = img[i * C + 0];
@@ -182,7 +181,7 @@ bool saveEXRFloat(const char *path, const float *img, int W, int H, int C) {
       a[i] = img[i * C + 3];
   }
 
-  std::vector<float *> img_ptrs;
+  Array<float *> img_ptrs;
   img_ptrs.push_back(b.data());
   img_ptrs.push_back(g.data());
   img_ptrs.push_back(r.data());
@@ -232,12 +231,12 @@ bool saveEXRFloat(const char *path, const float *img, int W, int H, int C) {
 }
 
 static void writeTexture(Ptr<rhi::Texture> texture,
-                         const std::array<std::vector<float>, 6> &faces) {
+                         const std::array<Array<float>, 6> &faces) {
   auto device = GraphicsSystem::getDevice();
   uint32_t width = texture->getCreateInfo().width,
            height = texture->getCreateInfo().height;
 
-  std::vector<float> data;
+  Array<float> data;
   for (int i = 0; i < faces.size(); ++i) {
     data.insert(data.end(), faces[i].begin(), faces[i].end());
   }
@@ -245,7 +244,7 @@ static void writeTexture(Ptr<rhi::Texture> texture,
   Ptr<rhi::TransferBuffer> transbuffers[6];
   for (int i = 0; i < 6; ++i) {
     rhi::TransferBuffer::CreateInfo info{};
-    info.allocator = gA;
+    info.allocator = GlobalAllocator::get();
     info.size = width * height * 4 * sizeof(float);
     info.usage = rhi::TransferBufferUsage::Upload;
     transbuffers[i] = device->createTransferBuffer(info);
@@ -255,7 +254,7 @@ static void writeTexture(Ptr<rhi::Texture> texture,
   }
   {
     rhi::CommandBuffer::CreateInfo info{};
-    info.allocator = gA;
+    info.allocator = GlobalAllocator::get();
     auto commandBuffer = device->acquireCommandBuffer(info);
     auto copyPass = commandBuffer->beginCopyPass();
 
@@ -280,7 +279,7 @@ static void writeTexture(Ptr<rhi::Texture> texture,
   device->waitForGpuIdle();
 }
 Ptr<rhi::Texture>
-createNativeCubemapTexture(const std::array<std::vector<float>, 6> &faces,
+createNativeCubemapTexture(const std::array<Array<float>, 6> &faces,
                            rhi::TextureFormat textureFormat, uint32_t width,
                            uint32_t height) {
   auto device = GraphicsSystem::getDevice();
@@ -288,7 +287,7 @@ createNativeCubemapTexture(const std::array<std::vector<float>, 6> &faces,
   Ptr<rhi::Texture> texture;
   {
     rhi::Texture::CreateInfo info{};
-    info.allocator = gA;
+    info.allocator = GlobalAllocator::get();
     info.width = width;
     info.height = height;
     info.layerCountOrDepth = 6;
@@ -302,10 +301,10 @@ createNativeCubemapTexture(const std::array<std::vector<float>, 6> &faces,
   writeTexture(texture, faces);
   return texture;
 }
-bool Cubemap::load(std::string_view path) {
+bool Cubemap::load(StringView path) {
   auto convertedPath = AssetIO::getFilePath(path);
 
-  std::vector<float> equirect;
+  Array<float> equirect;
   int W = 0, H = 0, C = 0;
   if (!loadEXRFloat(convertedPath.c_str(), equirect, W, H, C)) {
     return false;
@@ -313,7 +312,7 @@ bool Cubemap::load(std::string_view path) {
 
   int faceSize = 1024;
 
-  std::array<std::vector<float>, 6> faces;
+  std::array<Array<float>, 6> faces;
   equirectToCubemap(equirect.data(), W, H, C, faceSize, faces);
 
   this->nativeCubemap = createNativeCubemapTexture(

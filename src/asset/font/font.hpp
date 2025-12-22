@@ -3,7 +3,7 @@
 #include <asset/model/mesh.hpp>
 #include <asset/texture/texture.hpp>
 
-#include <string_view>
+#include <core/data/string.hpp>
 namespace sinen {
 /**
  * @brief font load and render to texture.
@@ -12,46 +12,19 @@ namespace sinen {
 class Font {
 public:
   Font();
-  Font(int32_t point, std::string_view file_name);
+  Font(int32_t point, StringView file_name);
   ~Font();
 
   bool load(int point_size);
-  /**
-   * @brief font load from asset
-   *
-   * @param font_path file path from data/fonts
-   * @param point_size font size
-   * @return true success to load
-   * @return false failed to load
-   */
-  bool load(int pointSize, std::string_view path);
-  bool loadFromPath(int pointSize, std::string_view path);
-  /**
-   * @brief return already loaded font
-   *
-   * @return true loaded
-   * @return false not load yet
-   */
+  bool load(int pointSize, StringView path);
+  bool loadFromPath(int pointSize, StringView path);
   bool isLoaded() { return font != nullptr; }
-  /**
-   * @brief Unload the font
-   */
   void unload();
-  /**
-   * @brief Font size
-   *
-   * @return int
-   */
   int size() const { return m_size; }
-  /**
-   * @brief resize font
-   *
-   * @param point_size
-   */
   void resize(int point_size);
 
   Texture getAtlas() const;
-  Mesh getTextMesh(std::string_view text) const;
+  Mesh getTextMesh(StringView text) const;
 
 private:
   struct Wrapper;

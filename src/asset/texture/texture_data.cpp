@@ -6,7 +6,7 @@
 #include <SDL3/SDL.h>
 namespace sinen {
 static void writeTexture(Ptr<rhi::Texture> texture, void *pPixels) {
-  auto allocator = gA;
+  auto allocator = GlobalAllocator::get();
   auto device = GraphicsSystem::getDevice();
   uint32_t width = texture->getCreateInfo().width,
            height = texture->getCreateInfo().height;
@@ -45,7 +45,7 @@ static void writeTexture(Ptr<rhi::Texture> texture, void *pPixels) {
 Ptr<rhi::Texture> createNativeTexture(void *pPixels,
                                       rhi::TextureFormat textureFormat,
                                       uint32_t width, uint32_t height) {
-  auto allocator = gA;
+  auto allocator = GlobalAllocator::get();
   auto device = GraphicsSystem::getDevice();
 
   Ptr<rhi::Texture> texture;
@@ -66,7 +66,7 @@ Ptr<rhi::Texture> createNativeTexture(void *pPixels,
   return texture;
 }
 Ptr<rhi::Texture> createNativeTexture(SDL_Surface *pSurface) {
-  auto allocator = gA;
+  auto allocator = GlobalAllocator::get();
   auto device = GraphicsSystem::getDevice();
   auto *pImageDataSurface =
       ::SDL_ConvertSurface(pSurface, SDL_PIXELFORMAT_RGBA32);

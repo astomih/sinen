@@ -1,4 +1,5 @@
 #include "../../graphics/graphics_system.hpp"
+#include "core/allocator/global_allocator.hpp"
 #include <asset/texture/render_texture.hpp>
 
 namespace sinen {
@@ -6,7 +7,7 @@ namespace sinen {
 RenderTexture::RenderTexture() : texture(nullptr) {}
 
 void RenderTexture::create(int width, int height) {
-  auto allocator = gA;
+  auto allocator = GlobalAllocator::get();
   auto device = GraphicsSystem::getDevice();
   rhi::Texture::CreateInfo info{};
   info.allocator = allocator;

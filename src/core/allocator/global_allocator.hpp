@@ -7,10 +7,7 @@ class GlobalAllocator : public Allocator {
 public:
   GlobalAllocator();
   ~GlobalAllocator() override { pA = nullptr; }
-  void setAllocator(Allocator *allocator) {
-    pA = allocator;
-    std::pmr::set_default_resource(pA);
-  }
+
   void *do_allocate(std::size_t bytes, std::size_t alignment) override {
     return pA->allocate(bytes, alignment);
   }
@@ -22,10 +19,11 @@ public:
     return this == &other;
   }
 
+  static Allocator *get();
+
 private:
-  Allocator *pA;
+  static Allocator *pA;
 };
-inline static Allocator *gA = new GlobalAllocator();
 } // namespace sinen
 
 #endif // !SINEN_GLOBAL_ALLOCATOR_HPP

@@ -56,13 +56,9 @@ public:
 
   void appendTexture(const Texture &texture) { textures.push_back(texture); }
 
-  [[nodiscard]] const std::vector<Texture> &getTextures() const {
-    return textures;
-  }
+  [[nodiscard]] const Array<Texture> &getTextures() const { return textures; }
 
-  [[nodiscard]] const std::vector<Cubemap> &getCubemaps() const {
-    return cubemaps;
-  }
+  [[nodiscard]] const Array<Cubemap> &getCubemaps() const { return cubemaps; }
 
   void clear() { textures.clear(); }
 
@@ -74,8 +70,8 @@ public:
   }
 
 private:
-  std::vector<Texture> textures;
-  std::vector<Cubemap> cubemaps;
+  Array<Texture> textures;
+  Array<Cubemap> cubemaps;
 };
 } // namespace sinen
 

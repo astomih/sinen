@@ -3,11 +3,11 @@
 // std
 #include <functional>
 #include <list>
-#include <memory>
 // internal
 #include <asset/asset.hpp>
 #include <core/allocator/pool_allocator.hpp>
 #include <core/data/ptr.hpp>
+#include <core/data/string.hpp>
 #include <graphics/drawable/drawable.hpp>
 #include <graphics/graphics.hpp>
 #include <graphics/uniform_data.hpp>
@@ -34,14 +34,14 @@ public:
   static void drawBase3D(const sinen::Draw3D &draw3D);
   static void drawRect(const Rect &rect, const Color &color, float angle);
   static void drawImage(const Texture &texture, const Rect &rect, float angle);
-  static void drawText(const std::string &text, const Font &font,
+  static void drawText(StringView text, const Font &font,
                        const glm::vec2 &position, const Color &color,
                        float textSize, float angle);
   static void drawCubemap(const Cubemap &cubemap);
   static void drawModel(const Model &model, const Transform &transform,
                         const Material &material);
   static void drawModelInstanced(const Model &model,
-                                 const std::vector<Transform> &transforms,
+                                 const Array<Transform> &transforms,
                                  const Material &material);
   static void setClearColor(const Color &color) {
     if (color.r >= 0.f && color.g >= 0.f && color.b >= 0.f)

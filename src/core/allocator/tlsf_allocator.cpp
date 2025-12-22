@@ -19,8 +19,6 @@ void *TLSFAllocator::do_allocate(std::size_t bytes, std::size_t alignment) {
 
 void TLSFAllocator::do_deallocate(void *ptr, std::size_t size,
                                   std::size_t alignment) {
-  assert(ptr != nullptr);
-  assert(size > 0);
   tlsf_free(tlsf, ptr);
 }
 

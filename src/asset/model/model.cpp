@@ -449,13 +449,13 @@ createVertexIndexBuffer(const Array<Vertex> &vertices,
   size_t vertexBufferSize = vertices.size() * sizeof(Vertex);
   Ptr<rhi::Buffer> vertexBuffer, indexBuffer;
   rhi::Buffer::CreateInfo vertexBufferInfo{};
-  vertexBufferInfo.allocator = gA;
+  vertexBufferInfo.allocator = GlobalAllocator::get();
   vertexBufferInfo.size = vertexBufferSize;
   vertexBufferInfo.usage = rhi::BufferUsage::Vertex;
   vertexBuffer = device->createBuffer(vertexBufferInfo);
 
   rhi::Buffer::CreateInfo indexBufferInfo{};
-  indexBufferInfo.allocator = gA;
+  indexBufferInfo.allocator = GlobalAllocator::get();
   indexBufferInfo.size = indices.size() * sizeof(uint32_t);
   indexBufferInfo.usage = rhi::BufferUsage::Index;
   indexBuffer = device->createBuffer(indexBufferInfo);
@@ -464,7 +464,7 @@ createVertexIndexBuffer(const Array<Vertex> &vertices,
   {
     {
       rhi::TransferBuffer::CreateInfo info{};
-      info.allocator = gA;
+      info.allocator = GlobalAllocator::get();
       info.size = vertexBufferSize;
       info.usage = rhi::TransferBufferUsage::Upload;
       transferBuffer = device->createTransferBuffer(info);
@@ -474,7 +474,7 @@ createVertexIndexBuffer(const Array<Vertex> &vertices,
     }
     {
       rhi::CommandBuffer::CreateInfo info{};
-      info.allocator = gA;
+      info.allocator = GlobalAllocator::get();
       auto commandBuffer = device->acquireCommandBuffer(info);
       {
 
@@ -497,7 +497,7 @@ createVertexIndexBuffer(const Array<Vertex> &vertices,
   }
   {
     rhi::TransferBuffer::CreateInfo info{};
-    info.allocator = gA;
+    info.allocator = GlobalAllocator::get();
     info.size = indexBufferInfo.size;
     info.usage = rhi::TransferBufferUsage::Upload;
     transferBuffer = device->createTransferBuffer(info);
@@ -508,7 +508,7 @@ createVertexIndexBuffer(const Array<Vertex> &vertices,
   {
     {
       rhi::CommandBuffer::CreateInfo info{};
-      info.allocator = gA;
+      info.allocator = GlobalAllocator::get();
       auto commandBuffer = device->acquireCommandBuffer(info);
       {
 
@@ -539,7 +539,7 @@ createAnimationVertexBuffer(const Array<AnimationVertex> &vertices) {
   size_t vertexBufferSize = vertices.size() * sizeof(AnimationVertex);
   Ptr<rhi::Buffer> vertexBuffer;
   rhi::Buffer::CreateInfo vertexBufferInfo{};
-  vertexBufferInfo.allocator = gA;
+  vertexBufferInfo.allocator = GlobalAllocator::get();
   vertexBufferInfo.size = vertexBufferSize;
   vertexBufferInfo.usage = rhi::BufferUsage::Vertex;
   vertexBuffer = device->createBuffer(vertexBufferInfo);
@@ -548,7 +548,7 @@ createAnimationVertexBuffer(const Array<AnimationVertex> &vertices) {
   {
     {
       rhi::TransferBuffer::CreateInfo info{};
-      info.allocator = gA;
+      info.allocator = GlobalAllocator::get();
       info.size = vertexBufferSize;
       info.usage = rhi::TransferBufferUsage::Upload;
       transferBuffer = device->createTransferBuffer(info);
@@ -559,7 +559,7 @@ createAnimationVertexBuffer(const Array<AnimationVertex> &vertices) {
     }
     {
       rhi::CommandBuffer::CreateInfo info{};
-      info.allocator = gA;
+      info.allocator = GlobalAllocator::get();
       auto commandBuffer = device->acquireCommandBuffer(info);
       {
 
@@ -589,7 +589,7 @@ Ptr<rhi::Buffer> createBuffer(size_t size, void *data, rhi::BufferUsage usage) {
   auto device = GraphicsSystem::getDevice();
   Ptr<rhi::Buffer> buffer;
   rhi::Buffer::CreateInfo vertexBufferInfo{};
-  vertexBufferInfo.allocator = gA;
+  vertexBufferInfo.allocator = GlobalAllocator::get();
   vertexBufferInfo.size = size;
   vertexBufferInfo.usage = usage;
   buffer = device->createBuffer(vertexBufferInfo);
@@ -598,7 +598,7 @@ Ptr<rhi::Buffer> createBuffer(size_t size, void *data, rhi::BufferUsage usage) {
   {
     {
       rhi::TransferBuffer::CreateInfo info{};
-      info.allocator = gA;
+      info.allocator = GlobalAllocator::get();
       info.size = size;
       info.usage = rhi::TransferBufferUsage::Upload;
       transferBuffer = device->createTransferBuffer(info);
@@ -608,7 +608,7 @@ Ptr<rhi::Buffer> createBuffer(size_t size, void *data, rhi::BufferUsage usage) {
     }
     {
       rhi::CommandBuffer::CreateInfo info{};
-      info.allocator = gA;
+      info.allocator = GlobalAllocator::get();
       auto commandBuffer = device->acquireCommandBuffer(info);
       {
 

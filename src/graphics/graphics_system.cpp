@@ -60,9 +60,10 @@ void GraphicsSystem::initialize() {
     c.perspective(90.f, Window::size().x / Window::size().y, .1f, 100.f);
     return c;
   }();
-  backend = rhi::RHI::createBackend(gA, rhi::GraphicsAPI::SDLGPU);
+  backend =
+      rhi::RHI::createBackend(GlobalAllocator::get(), rhi::GraphicsAPI::SDLGPU);
   rhi::Device::CreateInfo info{};
-  info.allocator = gA;
+  info.allocator = GlobalAllocator::get();
   info.debugMode = true;
   device = backend->createDevice(info);
   auto *window = WindowSystem::getSdlWindow();
@@ -83,7 +84,7 @@ void GraphicsSystem::initialize() {
   imeData->WantVisible = true;
   ImGui_ImplSDL3_InitForSDLGPU(window);
   ImGuiImplParanoixaInitInfo initInfo = {};
-  initInfo.Allocator = gA;
+  initInfo.Allocator = GlobalAllocator::get();
   initInfo.Device = device;
   initInfo.ColorTargetFormat = device->getSwapchainFormat();
   initInfo.MSAASamples = rhi::SampleCount::x1;
@@ -116,7 +117,7 @@ void GraphicsSystem::initialize() {
   // Create depth stencil target
   {
     rhi::Texture::CreateInfo depthStencilCreateInfo{};
-    depthStencilCreateInfo.allocator = gA;
+    depthStencilCreateInfo.allocator = GlobalAllocator::get();
     depthStencilCreateInfo.width = static_cast<uint32_t>(Window::size().x);
     depthStencilCreateInfo.height = static_cast<uint32_t>(Window::size().y);
     depthStencilCreateInfo.layerCountOrDepth = 1;
@@ -130,7 +131,7 @@ void GraphicsSystem::initialize() {
 
   // Default sampler
   rhi::Sampler::CreateInfo samplerInfo{};
-  samplerInfo.allocator = gA;
+  samplerInfo.allocator = GlobalAllocator::get();
   samplerInfo.minFilter = rhi::Filter::Linear;
   samplerInfo.magFilter = rhi::Filter::Linear;
   samplerInfo.addressModeU = rhi::AddressMode::Repeat;
@@ -156,7 +157,7 @@ void GraphicsSystem::shutdown() {
 }
 
 void GraphicsSystem::render() {
-  auto commandBuffer = device->acquireCommandBuffer({gA});
+  auto commandBuffer = device->acquireCommandBuffer({GlobalAllocator::get()});
   if (commandBuffer == nullptr) {
     return;
   }
@@ -170,7 +171,7 @@ void GraphicsSystem::render() {
   currentColorTargets = colorTargets;
   if (WindowSystem::resized()) {
     rhi::Texture::CreateInfo depthStencilCreateInfo{};
-    depthStencilCreateInfo.allocator = gA;
+    depthStencilCreateInfo.allocator = GlobalAllocator::get();
     depthStencilCreateInfo.width = Window::size().x;
     depthStencilCreateInfo.height = Window::size().y;
     depthStencilCreateInfo.layerCountOrDepth = 1;
@@ -220,7 +221,7 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
   auto textureSamplers = Array<rhi::TextureSamplerBinding>{};
   auto ratio = camera2D.windowRatio();
   glm::mat4 mat[3];
-  std::vector<glm::mat4> instanceData;
+  Array<glm::mat4> instanceData;
   auto scale = draw2D.scale * 0.5f * ratio;
   {
     auto t = glm::translate(glm::mat4(1.0f),
@@ -290,7 +291,7 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
   auto indexBufferBinding = rhi::BufferBinding{};
   auto textureSamplers = Array<rhi::TextureSamplerBinding>();
   glm::mat4 mat[3];
-  std::vector<glm::mat4> instanceData;
+  Array<glm::mat4> instanceData;
   {
     const auto t = glm::translate(
         glm::mat4(1.0f),
@@ -347,14 +348,14 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
   Ptr<rhi::Buffer> instanceBuffer = nullptr;
   if (isInstance) {
     rhi::Buffer::CreateInfo instanceBufferInfo{};
-    instanceBufferInfo.allocator = gA;
+    instanceBufferInfo.allocator = GlobalAllocator::get();
     instanceBufferInfo.size = instanceSize;
     instanceBufferInfo.usage = rhi::BufferUsage::Vertex;
     instanceBuffer = device->createBuffer(instanceBufferInfo);
     Ptr<rhi::TransferBuffer> transferBuffer;
     {
       rhi::TransferBuffer::CreateInfo info{};
-      info.allocator = gA;
+      info.allocator = GlobalAllocator::get();
       info.size = instanceSize;
       info.usage = rhi::TransferBufferUsage::Upload;
       transferBuffer = device->createTransferBuffer(info);
@@ -366,7 +367,7 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
     }
     {
       rhi::CommandBuffer::CreateInfo info{};
-      info.allocator = gA;
+      info.allocator = GlobalAllocator::get();
       auto commandBuffer = device->acquireCommandBuffer(info);
       {
         auto copyPass = commandBuffer->beginCopyPass();
@@ -440,7 +441,7 @@ void GraphicsSystem::drawImage(const Texture &texture, const Rect &rect,
   draw2D.material.setTexture(texture);
   GraphicsSystem::drawBase2D(draw2D);
 }
-void GraphicsSystem::drawText(const std::string &text, const Font &font,
+void GraphicsSystem::drawText(StringView text, const Font &font,
                               const glm::vec2 &position, const Color &color,
                               float textSize, float angle) {
   sinen::Draw2D draw2D;
@@ -481,9 +482,9 @@ void GraphicsSystem::drawModel(const Model &model, const Transform &transform,
   draw3D.model = model;
   GraphicsSystem::drawBase3D(draw3D);
 }
-void GraphicsSystem::drawModelInstanced(
-    const Model &model, const std::vector<Transform> &transforms,
-    const Material &material) {
+void GraphicsSystem::drawModelInstanced(const Model &model,
+                                        const Array<Transform> &transforms,
+                                        const Material &material) {
   sinen::Draw3D draw3D;
   draw3D.position = {0, 0, 0};
   draw3D.scale = {1, 1, 1};
@@ -569,7 +570,7 @@ void GraphicsSystem::setRenderTarget(const RenderTexture &texture) {
   }
   isChangedRenderTarget = true;
   auto depthTex = texture.getDepthStencil();
-  currentCommandBuffer = device->acquireCommandBuffer({gA});
+  currentCommandBuffer = device->acquireCommandBuffer({GlobalAllocator::get()});
   currentColorTargets[0].loadOp = rhi::LoadOp::Clear;
   currentColorTargets[0].texture = tex;
   currentDepthStencilInfo.texture = depthTex;
@@ -591,13 +592,13 @@ bool GraphicsSystem::readbackTexture(const RenderTexture &srcRenderTexture,
   auto tex = srcRenderTexture.getTexture();
   // Copy
   rhi::TransferBuffer::CreateInfo info2{};
-  info2.allocator = gA;
+  info2.allocator = GlobalAllocator::get();
   info2.size = srcRenderTexture.width * srcRenderTexture.height * 4;
   info2.usage = rhi::TransferBufferUsage::Download;
   auto transferBuffer = device->createTransferBuffer(info2);
   {
     rhi::CommandBuffer::CreateInfo info{};
-    info.allocator = gA;
+    info.allocator = GlobalAllocator::get();
     auto commandBuffer = device->acquireCommandBuffer(info);
     {
       auto copyPass = commandBuffer->beginCopyPass();

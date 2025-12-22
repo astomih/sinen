@@ -353,7 +353,7 @@ void loadMaterial(aiScene *scene, Material &material) {
   }
 }
 
-void Model::load(std::string_view path) {
+void Model::load(StringView path) {
 
   auto fullFilePath = AssetIO::getFilePath(path.data());
   // Assimp
@@ -387,7 +387,7 @@ void Model::load(std::string_view path) {
       createBuffer(mesh.indices.size() * sizeof(uint32_t), mesh.indices.data(),
                    rhi::BufferUsage::Index);
 }
-void Model::loadFromPath(std::string_view path) {
+void Model::loadFromPath(StringView path) {
   // Assimp
   Assimp::Importer importer;
   const auto *scene = importer.ReadFile(

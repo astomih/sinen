@@ -4,13 +4,13 @@
 #include <core/io/asset_io.hpp>
 
 namespace sinen {
-std::unique_ptr<IScriptBackend> ScriptSystem::script = nullptr;
+UniquePtr<IScriptBackend> ScriptSystem::script = nullptr;
 ScriptType ScriptSystem::type = ScriptType::Lua;
 
 bool ScriptSystem::initialize(const ScriptType &type) {
   switch (type) {
   case ScriptType::Lua:
-    script = ScriptBackend::createLua();
+    script = std::move(ScriptBackend::createLua());
     ScriptSystem::type = ScriptType::Lua;
     break;
   default:
@@ -36,12 +36,12 @@ function Draw()
 end
 )";
 
-void ScriptSystem::runScene(std::string_view sceneName) {
+void ScriptSystem::runScene(StringView sceneName) {
   if (script) {
-    std::string source;
+    String source;
     switch (ScriptSystem::type) {
     case ScriptType::Lua: {
-      source = AssetIO::openAsString(std::string(sceneName) + ".lua");
+      source = AssetIO::openAsString(String(sceneName) + ".lua");
       if (source.empty()) {
         source = nothingSceneLua;
       }
@@ -49,7 +49,7 @@ void ScriptSystem::runScene(std::string_view sceneName) {
     default:
       break;
     }
-    script->runScene(AssetIO::openAsString(std::string(sceneName) + ".lua"),
+    script->runScene(AssetIO::openAsString(String(sceneName) + ".lua"),
                      "@" + AssetIO::getFilePath(sceneName) + ".lua");
   }
 }

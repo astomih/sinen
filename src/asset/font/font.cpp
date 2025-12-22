@@ -107,7 +107,7 @@ bool Font::load(int pointSize) {
   return loadCore(mplus1pMediumTtf, this->font->packedChar, this->font->texture,
                   pointSize, this->font->sheetSize);
 }
-bool Font::load(int pointSize, std::string_view fontName) {
+bool Font::load(int pointSize, StringView fontName) {
   this->font = makeUnique<Wrapper>();
   this->m_size = pointSize;
   this->font->sheetSize = pointSize * 128;
@@ -116,7 +116,7 @@ bool Font::load(int pointSize, std::string_view fontName) {
                   this->font->packedChar, this->font->texture, pointSize,
                   this->font->sheetSize);
 }
-bool Font::loadFromPath(int pointSize, std::string_view path) { return true; }
+bool Font::loadFromPath(int pointSize, StringView path) { return true; }
 
 void Font::unload() {}
 

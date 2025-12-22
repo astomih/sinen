@@ -2,7 +2,6 @@
 #define UNIFORM_DATA_HPP
 
 #include "camera/camera.hpp"
-#include "camera/camera2d.hpp"
 #include <core/data/array.hpp>
 
 #include <glm/mat4x4.hpp>
@@ -31,7 +30,7 @@ struct UniformData {
   }
   void change(float value, int index) { data[index] = value; }
   void clear() { data.clear(); }
-  std::vector<float> data;
+  Array<float> data;
 };
 } // namespace sinen
 

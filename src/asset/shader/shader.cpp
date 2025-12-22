@@ -65,8 +65,7 @@ void Shader::loadDefaultFragmentShader() {
   fsInfo.numUniformBuffers = 1; // only one uniform buffer for fragment shader
   shader = device->createShader(fsInfo);
 }
-void Shader::loadVertexShader(std::string_view vertex_shader,
-                              int numUniformData) {
+void Shader::loadVertexShader(StringView vertex_shader, int numUniformData) {
   auto *allocator = GlobalAllocator::get();
   auto device = GraphicsSystem::getDevice();
 
@@ -87,7 +86,7 @@ void Shader::loadVertexShader(std::string_view vertex_shader,
   vsInfo.numUniformBuffers = numUniformData + 1;
   shader = device->createShader(vsInfo);
 }
-void Shader::loadFragmentShader(std::string_view fragment_shader,
+void Shader::loadFragmentShader(StringView fragment_shader,
                                 int numUniformData) {
   auto *allocator = GlobalAllocator::get();
   auto device = GraphicsSystem::getDevice();
@@ -107,9 +106,9 @@ void Shader::loadFragmentShader(std::string_view fragment_shader,
   fsInfo.numUniformBuffers = numUniformData + 1;
   shader = device->createShader(fsInfo);
 }
-void Shader::compileAndLoadVertexShader(std::string_view vertex_shader) {
+void Shader::compileAndLoadVertexShader(StringView vertex_shader) {
 
-  std::string vsStr = vertex_shader.data();
+  String vsStr = vertex_shader.data();
 
   // TODO: add support for other languages
   ShaderCompiler compiler;
@@ -134,9 +133,9 @@ void Shader::compileAndLoadVertexShader(std::string_view vertex_shader) {
   vsInfo.numUniformBuffers = reflectionData.numUniformBuffers;
   shader = device->createShader(vsInfo);
 }
-void Shader::compileAndLoadFragmentShader(std::string_view fragment_shader) {
+void Shader::compileAndLoadFragmentShader(StringView fragment_shader) {
 
-  std::string fsStr = fragment_shader.data();
+  String fsStr = fragment_shader.data();
   ShaderCompiler compiler;
   ShaderCompiler::ReflectionData reflectionData;
   auto spirv =

@@ -40,11 +40,11 @@ StringView AssetIO::open(StringView name) {
     Logger::error("File load error %s: %s", filePath.c_str(), SDL_GetError());
     return "";
   }
-  std::string_view result(reinterpret_cast<char *>(load), fileLength);
+  StringView result(reinterpret_cast<char *>(load), fileLength);
   SDL_free(load);
   return result;
 }
-void *AssetIO::openAsIOStream(std::string_view name) {
+void *AssetIO::openAsIOStream(StringView name) {
   String filePath;
   convertFilePath(filePath, name);
 
@@ -60,13 +60,13 @@ String AssetIO::openAsString(StringView name) {
   convertFilePath(filePath, name);
   auto *file = SDL_IOFromFile(filePath.c_str(), "r");
   if (!file) {
-    Logger::error(std::string("Sinen file open error" + filePath).c_str());
+    Logger::error("%s", String("Sinen file open error" + filePath).c_str());
     return "";
   }
   size_t fileLength;
   void *load = SDL_LoadFile_IO(file, &fileLength, 1);
   if (!load) {
-    Logger::error(std::string("Sinen file open error" + filePath).c_str());
+    Logger::error("%s", String("Sinen file open error" + filePath).c_str());
     return "";
   }
   String result{reinterpret_cast<char *>(load), fileLength};
@@ -74,7 +74,7 @@ String AssetIO::openAsString(StringView name) {
   return result;
 }
 
-void AssetIO::write(std::string_view name, std::string_view data) {
+void AssetIO::write(StringView name, StringView data) {
   String filePath;
   convertFilePath(filePath, name);
   auto *file = SDL_IOFromFile(filePath.c_str(), "w");
@@ -82,7 +82,7 @@ void AssetIO::write(std::string_view name, std::string_view data) {
     return;
   }
   if (data.size() != SDL_WriteIO(file, data.data(), data.size())) {
-    Logger::error<>("data_stream: Could not write all strings");
+    Logger::error("data_stream: Could not write all strings");
   }
   SDL_CloseIO(file);
 }

@@ -80,12 +80,12 @@ void Sinen::run() {
 void Sinen::shutdown() {
   MainSystem::shutdown();
   PhysicsSystem::shutdown();
-  ScriptSystem::shutdown();
   InputSystem::shutdown();
   AudioSystem::shutdown();
   RandomSystem::shutdown();
   GraphicsSystem::shutdown();
   WindowSystem::shutdown();
+  ScriptSystem::shutdown();
   SDL_Quit();
 }
 } // namespace sinen

@@ -17,11 +17,11 @@ public:
   void loadDefaultVertexShader();
   void loadDefaultVertexInstanceShader();
   void loadDefaultFragmentShader();
-  void loadVertexShader(std::string_view vertex_shader, int numUniformData);
-  void loadFragmentShader(std::string_view fragment_shader, int numUniformData);
+  void loadVertexShader(StringView vertex_shader, int numUniformData);
+  void loadFragmentShader(StringView fragment_shader, int numUniformData);
 
-  void compileAndLoadVertexShader(std::string_view vertex_shader);
-  void compileAndLoadFragmentShader(std::string_view fragment_shader);
+  void compileAndLoadVertexShader(StringView vertex_shader);
+  void compileAndLoadFragmentShader(StringView fragment_shader);
 
 private:
   friend class GraphicsPipeline2D;

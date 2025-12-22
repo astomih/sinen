@@ -1,8 +1,8 @@
 #ifndef SINEN_JSON_HPP
 #define SINEN_JSON_HPP
-#include "file.hpp"
-#include <memory>
-#include <string_view>
+#include <core/data/array.hpp>
+#include <core/data/ptr.hpp>
+#include <core/data/string.hpp>
 
 namespace sinen {
 /**
@@ -28,7 +28,7 @@ public:
   private:
     Array();
     class impl;
-    std::shared_ptr<impl> pimpl;
+    Ptr<impl> pimpl;
   };
   /**
    * @brief Json object class
@@ -39,14 +39,14 @@ public:
 
   public:
     ~Object();
-    Object operator[](const std::string_view &key);
+    Object operator[](const StringView &key);
     std::int32_t getInt32();
     std::uint32_t getUint32();
     std::int64_t getInt64();
     std::uint64_t getUint64();
     float getFloat();
     double getDouble();
-    std::string getString();
+    String getString();
     bool getBool();
     Array getArray();
 
@@ -56,20 +56,20 @@ public:
     void setUint64(std::uint64_t value);
     void setFloat(float value);
     void setDouble(double value);
-    void setString(std::string_view value);
+    void setString(StringView value);
     void setBool(bool value);
     void setArray(Array &value);
 
-    void addMember(std::string_view key, int value);
-    void addMember(std::string_view key, float value);
-    void addMember(std::string_view key, std::string_view value);
-    void addMember(std::string_view key, Object &value);
-    void addMember(std::string_view key, Array &value);
+    void addMember(StringView key, int value);
+    void addMember(StringView key, float value);
+    void addMember(StringView key, StringView value);
+    void addMember(StringView key, Object &value);
+    void addMember(StringView key, Array &value);
 
   private:
     Object();
     class Implements;
-    std::shared_ptr<Implements> pimpl;
+    Ptr<Implements> pimpl;
   };
   /**
    * @brief Construct a new json object
@@ -86,27 +86,27 @@ public:
    *
    * @param str
    */
-  void parse(std::string_view str);
+  void parse(StringView str);
 
-  void addMember(std::string_view key, int value);
-  void addMember(std::string_view key, float value);
-  void addMember(std::string_view key, std::string_view value);
-  void addMember(std::string_view key, Object &value);
-  void addMember(std::string_view key, Array &value);
+  void addMember(StringView key, int value);
+  void addMember(StringView key, float value);
+  void addMember(StringView key, StringView value);
+  void addMember(StringView key, Object &value);
+  void addMember(StringView key, Array &value);
 
   Object createObject();
   Array createArray();
 
-  std::string toString();
+  String toString();
 
   std::size_t size();
 
-  Object operator[](std::string_view key);
+  Object operator[](StringView key);
 
 private:
   friend Object;
   struct Implements;
-  std::unique_ptr<Implements> pimpl;
+  UniquePtr<Implements> pimpl;
 };
 
 } // namespace sinen

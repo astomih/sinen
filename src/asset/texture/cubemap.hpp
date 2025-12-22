@@ -7,7 +7,7 @@
 namespace sinen {
 class Cubemap {
 public:
-  bool load(std::string_view path);
+  bool load(StringView path);
 
   Ptr<rhi::Texture> getNativeCubemap() const { return nativeCubemap; }
 

@@ -1,9 +1,6 @@
 // std libraries
 #include <algorithm>
 #include <cstdint>
-#include <list>
-#include <string>
-#include <string_view>
 
 // external libraries
 #include <rapidjson/document.h>
@@ -52,8 +49,8 @@ Json::Array::~Array() {
 }
 Json::Object Json::Array::operator[](std::size_t index) {
   Object obj;
-  obj.pimpl = std::make_shared<Json::Object::Implements>(pimpl->value[index],
-                                                         this->pimpl->m_json);
+  obj.pimpl = makePtr<Json::Object::Implements>(pimpl->value[index],
+                                                this->pimpl->m_json);
   return obj;
 }
 void Json::Array::pushBack(Object &obj) {
@@ -74,10 +71,10 @@ Json::Object::~Object() {
   }
 }
 
-Json::Object Json::Object::operator[](const std::string_view &key) {
+Json::Object Json::Object::operator[](const StringView &key) {
   Object obj;
-  obj.pimpl = std::make_shared<Implements>(pimpl->value[key.data()],
-                                           this->pimpl->m_json);
+  obj.pimpl =
+      makePtr<Implements>(pimpl->value[key.data()], this->pimpl->m_json);
   return obj;
 }
 
@@ -87,14 +84,12 @@ std::int64_t Json::Object::getInt64() { return pimpl->value.GetInt64(); }
 std::uint64_t Json::Object::getUint64() { return pimpl->value.GetUint64(); }
 float Json::Object::getFloat() { return pimpl->value.GetFloat(); }
 double Json::Object::getDouble() { return pimpl->value.GetDouble(); }
-std::string Json::Object::getString() {
-  return std::string(pimpl->value.GetString());
-}
+String Json::Object::getString() { return pimpl->value.GetString(); }
 bool Json::Object::getBool() { return pimpl->value.GetBool(); }
 
 Json::Array Json::Object::getArray() {
   Array arr;
-  arr.pimpl = std::make_shared<Json::Array::impl>(pimpl->value, pimpl->m_json);
+  arr.pimpl = makePtr<Json::Array::impl>(pimpl->value, pimpl->m_json);
   return arr;
 }
 
@@ -110,7 +105,7 @@ void Json::Object::setUint64(std::uint64_t value) {
 }
 void Json::Object::setDouble(double value) { pimpl->value.SetDouble(value); }
 void Json::Object::setFloat(float value) { pimpl->value.SetFloat(value); }
-void Json::Object::setString(std::string_view value) {
+void Json::Object::setString(StringView value) {
   pimpl->value.SetString(value.data(), value.size());
 }
 void Json::Object::setBool(bool value) { pimpl->value.SetBool(value); }
@@ -123,21 +118,21 @@ void Json::Object::setArray(Array &value) {
   }
 }
 
-void Json::Object::addMember(std::string_view key, int value) {
+void Json::Object::addMember(StringView key, int value) {
   rapidjson::Value k(key.data(), key.size(),
                      pimpl->m_json->pimpl->doc.GetAllocator());
   rapidjson::Value v(value);
   pimpl->value.AddMember(k, v, pimpl->m_json->pimpl->doc.GetAllocator());
 }
 
-void Json::Object::addMember(std::string_view key, float value) {
+void Json::Object::addMember(StringView key, float value) {
   rapidjson::Value k(key.data(), key.size(),
                      pimpl->m_json->pimpl->doc.GetAllocator());
   rapidjson::Value v(value);
   pimpl->value.AddMember(k, v, pimpl->m_json->pimpl->doc.GetAllocator());
 }
 
-void Json::Object::addMember(std::string_view key, std::string_view value) {
+void Json::Object::addMember(StringView key, StringView value) {
   rapidjson::Value k(key.data(), key.size(),
                      pimpl->m_json->pimpl->doc.GetAllocator());
   rapidjson::Value v(value.data(), value.size(),
@@ -145,62 +140,61 @@ void Json::Object::addMember(std::string_view key, std::string_view value) {
   pimpl->value.AddMember(k, v, pimpl->m_json->pimpl->doc.GetAllocator());
 }
 
-void Json::Object::addMember(std::string_view key, Object &value) {
+void Json::Object::addMember(StringView key, Object &value) {
   rapidjson::Value k(key.data(), key.size(),
                      pimpl->m_json->pimpl->doc.GetAllocator());
   pimpl->value.AddMember(k, value.pimpl->value,
                          pimpl->m_json->pimpl->doc.GetAllocator());
 }
 
-void Json::Object::addMember(std::string_view key, Array &value) {
+void Json::Object::addMember(StringView key, Array &value) {
   rapidjson::Value k(key.data(), key.size(),
                      pimpl->m_json->pimpl->doc.GetAllocator());
   pimpl->value.AddMember(k, value.pimpl->value,
                          pimpl->m_json->pimpl->doc.GetAllocator());
 }
 
-Json::Json() : pimpl(std::make_unique<Json::Implements>()) {}
+Json::Json() : pimpl(makeUnique<Json::Implements>()) {}
 
 Json::~Json() {}
-void Json::parse(std::string_view str) {
+void Json::parse(StringView str) {
   pimpl->doc.Parse(str.data());
   if (pimpl->doc.HasParseError()) {
     Logger::critical("%d", pimpl->doc.GetParseError());
   }
 }
-Json::Object Json::operator[](std::string_view key) {
+Json::Object Json::operator[](StringView key) {
   Object obj;
   if (pimpl->doc.HasMember(key.data())) {
-    obj.pimpl = std::make_shared<Json::Object::Implements>(
-        pimpl->doc[key.data()], this);
+    obj.pimpl = makePtr<Json::Object::Implements>(pimpl->doc[key.data()], this);
   }
   return obj;
 }
 
-void Json::addMember(std::string_view key, int value) {
+void Json::addMember(StringView key, int value) {
   rapidjson::Value k(key.data(), pimpl->doc.GetAllocator());
   rapidjson::Value v(value);
   pimpl->doc.AddMember(k, v, pimpl->doc.GetAllocator());
 }
 
-void Json::addMember(std::string_view key, float value) {
+void Json::addMember(StringView key, float value) {
   rapidjson::Value k(key.data(), pimpl->doc.GetAllocator());
   rapidjson::Value v(value);
   pimpl->doc.AddMember(k, v, pimpl->doc.GetAllocator());
 }
 
-void Json::addMember(std::string_view key, std::string_view value) {
+void Json::addMember(StringView key, StringView value) {
   rapidjson::Value k(key.data(), pimpl->doc.GetAllocator());
   rapidjson::Value v(value.data(), pimpl->doc.GetAllocator());
   pimpl->doc.AddMember(k, v, pimpl->doc.GetAllocator());
 }
 
-void Json::addMember(std::string_view key, Object &value) {
+void Json::addMember(StringView key, Object &value) {
   rapidjson::Value k(key.data(), pimpl->doc.GetAllocator());
   pimpl->doc.AddMember(k, value.pimpl->value, pimpl->doc.GetAllocator());
 }
 
-void Json::addMember(std::string_view key, Array &value) {
+void Json::addMember(StringView key, Array &value) {
   rapidjson::Value k(key.data(), pimpl->doc.GetAllocator());
   pimpl->doc.AddMember(k, value.pimpl->value, pimpl->doc.GetAllocator());
 }
@@ -208,22 +202,22 @@ Json::Object Json::createObject() {
   Object obj;
   rapidjson::Value *v = new rapidjson::Value(rapidjson::kObjectType);
   pimpl->values.push_back(v);
-  obj.pimpl = std::make_shared<Json::Object::Implements>(*v, this);
+  obj.pimpl = makePtr<Json::Object::Implements>(*v, this);
   return obj;
 }
 Json::Array Json::createArray() {
   Array arr;
   rapidjson::Value *v = new rapidjson::Value(rapidjson::kArrayType);
   pimpl->values.push_back(v);
-  arr.pimpl = std::make_shared<Json::Array::impl>(*v, this);
+  arr.pimpl = makePtr<Json::Array::impl>(*v, this);
   return arr;
 }
 
-std::string Json::toString() {
+String Json::toString() {
   rapidjson::StringBuffer buffer;
   rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
   pimpl->doc.Accept(writer);
-  return buffer.GetString();
+  return String(buffer.GetString());
 }
 
 std::size_t Json::size() { return pimpl->doc.Size(); }

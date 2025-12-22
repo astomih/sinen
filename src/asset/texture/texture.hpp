@@ -32,8 +32,8 @@ public:
    * @return true success
    * @return false failed
    */
-  bool load(std::string_view fileName);
-  bool loadFromPath(std::string_view path);
+  bool load(StringView fileName);
+  bool loadFromPath(StringView path);
   /**
    * @brief Load texture from memory
    *

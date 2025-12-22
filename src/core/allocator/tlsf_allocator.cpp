@@ -1,8 +1,10 @@
 #include "tlsf_allocator.hpp"
 
+#include <print>
 #include <tlsf.h>
 
 #include <cassert>
+#include <iostream>
 
 namespace sinen {
 TLSFAllocator::TLSFAllocator(const std::size_t &size)

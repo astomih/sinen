@@ -1,10 +1,8 @@
 #ifndef SINEN_FILE_HPP
 #define SINEN_FILE_HPP
 
-#include <list>
-#include <memory>
-#include <string>
-#include <string_view>
+#include <core/data/ptr.hpp>
+#include <core/data/string.hpp>
 
 namespace sinen {
 class File {
@@ -116,7 +114,7 @@ public:
    * @return true Success to open
    * @return false Failed to open
    */
-  bool open(std::string_view filename, const Mode &mode);
+  bool open(StringView filename, const Mode &mode);
   /**
    * @brief Open a file
    *
@@ -134,7 +132,7 @@ public:
    * @return true Success to open
    * @return false Failed to open
    */
-  bool open(std::string_view filename, const char *mode);
+  bool open(StringView filename, const char *mode);
   /**
    * @brief Close a file
    *
@@ -181,11 +179,11 @@ public:
    * @param mode mode
    * @return std::string string
    */
-  std::string openModeToString(const Mode &mode);
+  String openModeToString(const Mode &mode);
 
 private:
   class impl;
-  std::unique_ptr<impl> m_impl;
+  UniquePtr<impl> m_impl;
 };
 } // namespace sinen
 #endif // !SINEN_FILE_HPP

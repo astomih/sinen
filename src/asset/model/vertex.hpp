@@ -9,14 +9,6 @@
 
 namespace sinen {
 /**
- * @brief Default vertices
- *
- */
-struct VertexDefaultShapes {
-  static std::string_view sprite;
-  static std::string_view box;
-};
-/**
  * @brief Vertex struct
  *
  */

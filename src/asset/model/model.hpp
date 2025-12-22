@@ -76,8 +76,8 @@ public:
    * @brief Model format is a custom format(.sim)
    * @param str
    */
-  void load(std::string_view str);
-  void loadFromPath(std::string_view path);
+  void load(StringView str);
+  void loadFromPath(StringView path);
   void loadFromVertexArray(const Mesh &mesh);
   void loadSprite();
   void loadBox();

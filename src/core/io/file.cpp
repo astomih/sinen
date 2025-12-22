@@ -1,8 +1,4 @@
-// std libraries
-#include <filesystem>
-// Third party libraries
 #include <SDL3/SDL.h>
-// Local libraries
 #include <core/io/file.hpp>
 
 namespace sinen {
@@ -11,8 +7,8 @@ class File::impl {
 public:
   impl() : rwops(nullptr) {}
   ~impl() = default;
-  std::string open_mode_to_string(const Mode &mode) {
-    std::string m;
+  String openModeToString(const Mode &mode) {
+    String m;
     switch (mode) {
     case Mode::r:
       m = "r";
@@ -56,7 +52,7 @@ public:
     return m;
   }
   bool open(const char *filename, const Mode &mode) {
-    return open(filename, open_mode_to_string(mode).c_str());
+    return open(filename, openModeToString(mode).c_str());
   };
   bool open(const char *filename, const char *mode) {
     rwops = SDL_IOFromFile(filename, mode);
@@ -85,10 +81,10 @@ public:
 private:
   SDL_IOStream *rwops;
 };
-File::File() : m_impl(new impl()) {}
+File::File() : m_impl(makeUnique<File::impl>()) {}
 File::~File() = default;
-std::string File::openModeToString(const Mode &mode) {
-  return m_impl->open_mode_to_string(mode);
+String File::openModeToString(const Mode &mode) {
+  return m_impl->openModeToString(mode);
 }
 bool File::open(const char *filename, const Mode &mode) {
   return m_impl->open(filename, mode);

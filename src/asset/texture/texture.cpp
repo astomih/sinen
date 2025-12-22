@@ -17,13 +17,13 @@
 namespace sinen {
 Texture::Texture() { this->texture = nullptr; }
 Texture::Texture(int width, int height) {
-  std::vector<uint8_t> pixels(width * height * 4, 0);
+  Array<uint8_t> pixels(width * height * 4, 0);
   this->texture = createNativeTexture(
       pixels.data(), rhi::TextureFormat::R8G8B8A8_UNORM, width, height);
 }
 Texture::~Texture() {}
 
-bool Texture::load(std::string_view fileName) {
+bool Texture::load(StringView fileName) {
   unsigned char *pixels;
   int width;
   int height;
@@ -38,7 +38,7 @@ bool Texture::load(std::string_view fileName) {
                                 width, height);
   return true;
 }
-bool Texture::loadFromPath(std::string_view path) {
+bool Texture::loadFromPath(StringView path) {
 
   int width, height;
   int bpp;
@@ -74,7 +74,7 @@ void Texture::fill(const Color &color) {
 
     auto w = texture->getCreateInfo().width;
     auto h = texture->getCreateInfo().height;
-    std::vector<uint8_t> pixels(w * h * 4, 0);
+    Array<uint8_t> pixels(w * h * 4, 0);
     for (int i = 0; i < w * h * 4; i += 4) {
       pixels[i + 0] = color.r * 255;
       pixels[i + 1] = color.g * 255;
@@ -83,7 +83,7 @@ void Texture::fill(const Color &color) {
     }
     updateNativeTexture(texture, pixels.data());
   } else {
-    std::vector<uint8_t> pixels(4, 0);
+    Array<uint8_t> pixels(4, 0);
     pixels[0] = color.r * 255;
     pixels[1] = color.g * 255;
     pixels[2] = color.b * 255;

@@ -46,13 +46,12 @@ void Logger::Implements::critical(const char *format, ...) {
   SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, format, args);
 }
 
-static std::function<void(Logger::priority, std::string_view)> g_func;
+static std::function<void(Logger::priority, StringView)> g_func;
 void SDL_LogOutputFunction(void *userdata, int category,
                            SDL_LogPriority priority, const char *message) {
   g_func(static_cast<Logger::priority>(priority), message);
 }
-void Logger::setOutputFunction(
-    std::function<void(priority, std::string_view)> func) {
+void Logger::setOutputFunction(std::function<void(priority, StringView)> func) {
   g_func = func;
   SDL_SetLogOutputFunction(SDL_LogOutputFunction, nullptr);
 }

@@ -19,7 +19,7 @@ struct Sound::Data {
 Sound::Sound() {}
 Sound::~Sound() { ma_sound_uninit(&data->sound); }
 
-void Sound::load(std::string_view fileName) {
+void Sound::load(StringView fileName) {
 
   data = makeUnique<Data>();
   auto path = AssetIO::getFilePath(fileName);
@@ -27,7 +27,7 @@ void Sound::load(std::string_view fileName) {
                           MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC, nullptr,
                           nullptr, &data->sound);
 }
-void Sound::loadFromPath(std::string_view path) {
+void Sound::loadFromPath(StringView path) {
   data = makeUnique<Data>();
   ma_sound_init_from_file(AudioSystem::getEngine(), path.data(),
                           MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC, nullptr,

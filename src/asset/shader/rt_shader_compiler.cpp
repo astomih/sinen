@@ -95,8 +95,8 @@ Array<char> ShaderCompiler::compile(StringView sourcePath, Type type,
     {
 
       size_t dotPos = sourcePath.find_last_of('.');
-      auto view = (dotPos == std::string::npos) ? sourcePath
-                                                : sourcePath.substr(0, dotPos);
+      auto view =
+          (dotPos == String::npos) ? sourcePath : sourcePath.substr(0, dotPos);
       moduleName = view.data();
     }
     auto source = sinen::AssetIO::openAsString(sourcePath);
@@ -116,7 +116,7 @@ Array<char> ShaderCompiler::compile(StringView sourcePath, Type type,
   Slang::ComPtr<slang::IEntryPoint> entryPoint;
   {
     Slang::ComPtr<slang::IBlob> diagnosticsBlob;
-    std::string entryPointName;
+    String entryPointName;
     switch (type) {
     case Type::VERTEX:
       entryPointName = "VSMain";
@@ -177,9 +177,8 @@ Array<char> ShaderCompiler::compile(StringView sourcePath, Type type,
     }
   }
 
-  // Get reflection (num bindings, etc.)
+  // TODO: Get reflection (num bindings, etc.)
   reflectionData = getReflectionData(linkedProgram, type);
-  // spirvCode to std::vector<char>
   Array<char> spirvData(spirvCode->getBufferSize());
   std::memcpy(spirvData.data(), spirvCode->getBufferPointer(),
               spirvCode->getBufferSize());

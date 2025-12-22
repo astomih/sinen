@@ -1,9 +1,7 @@
 #ifndef SINEN_SCRIPT_SYSTEM_HPP
 #define SINEN_SCRIPT_SYSTEM_HPP
-#include <memory>
-#include <string_view>
-
 #include "script_backend.hpp"
+#include <core/data/string.hpp>
 
 namespace sinen {
 
@@ -13,14 +11,14 @@ public:
   static bool initialize(const ScriptType &type);
   static void shutdown();
 
-  static void runScene(std::string_view sceneName);
+  static void runScene(StringView sceneName);
   static void updateScene();
   static void drawScene();
 
   static ScriptType getType() { return type; }
 
 private:
-  static std::unique_ptr<IScriptBackend> script;
+  static UniquePtr<IScriptBackend> script;
   static ScriptType type;
 };
 } // namespace sinen

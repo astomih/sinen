@@ -1,9 +1,8 @@
 #ifndef SINEN_LOGGER
 #define SINEN_LOGGER
+#include <core/data/string.hpp>
 #include <functional>
-#include <iostream>
 #include <memory>
-#include <string_view>
 
 namespace sinen {
 
@@ -11,42 +10,37 @@ class Logger {
 private:
 public:
   enum class priority : int { verbose = 2, debug, info, warn, error, critical };
-  static void
-      setOutputFunction(std::function<void(priority, std::string_view)>);
+  static void setOutputFunction(std::function<void(priority, StringView)>);
   template <typename... Args>
-  static void verbose(std::string_view format, Args &&...args) {
+  static void verbose(StringView format, Args &&...args) {
     logger.verbose(
-        stringFormatLogger(std::string(format), std::forward<Args>(args)...)
+        stringFormatLogger(String(format), std::forward<Args>(args)...)
             .c_str());
   }
   template <typename... Args>
-  static void debug(std::string_view format, Args &&...args) {
-    logger.debug(
-        stringFormatLogger(std::string(format), std::forward<Args>(args)...)
-            .c_str());
+  static void debug(StringView format, Args &&...args) {
+    logger.debug(stringFormatLogger(String(format), std::forward<Args>(args)...)
+                     .c_str());
   }
   template <typename... Args>
-  static void info(std::string_view format, Args &&...args) {
-    logger.info(
-        stringFormatLogger(std::string(format), std::forward<Args>(args)...)
-            .c_str());
+  static void info(StringView format, Args &&...args) {
+    logger.info(stringFormatLogger(String(format), std::forward<Args>(args)...)
+                    .c_str());
   }
   template <typename... Args>
-  static void error(std::string_view format, Args &&...args) {
-    logger.error(
-        stringFormatLogger(std::string(format), std::forward<Args>(args)...)
-            .c_str());
+  static void error(StringView format, Args &&...args) {
+    logger.error(stringFormatLogger(String(format), std::forward<Args>(args)...)
+                     .c_str());
   }
   template <typename... Args>
-  static void warn(std::string_view format, Args &&...args) {
-    logger.warn(
-        stringFormatLogger(std::string(format), std::forward<Args>(args)...)
-            .c_str());
+  static void warn(StringView format, Args &&...args) {
+    logger.warn(stringFormatLogger(String(format), std::forward<Args>(args)...)
+                    .c_str());
   }
   template <typename... Args>
-  static void critical(std::string_view format, Args &&...args) {
+  static void critical(StringView format, Args &&...args) {
     logger.critical(
-        stringFormatLogger(std::string(format), std::forward<Args>(args)...)
+        stringFormatLogger(String(format), std::forward<Args>(args)...)
             .c_str());
   }
 
@@ -62,27 +56,25 @@ private:
   };
   static Implements logger;
   template <typename... Args>
-  static std::string stringFormatInternal(const std::string &format,
-                                          Args &&...args) {
+  static String stringFormatInternal(const String &format, Args &&...args) {
     int strLen =
         std::snprintf(nullptr, 0, format.c_str(), std::forward<Args>(args)...);
 
     size_t bufferSize = strLen + sizeof(char);
     std::unique_ptr<char[]> buffer(new char[bufferSize]);
     std::snprintf(buffer.get(), bufferSize, format.c_str(), args...);
-    return std::string(buffer.get(), buffer.get() + strLen);
+    return String(buffer.get(), buffer.get() + strLen);
   }
   template <typename T> static auto convert(T &&value) {
     if constexpr (std::is_same<std::remove_cv_t<std::remove_reference_t<T>>,
-                               std::string>::value) {
+                               String>::value) {
       return std::forward<T>(value).c_str();
     } else {
       return std::forward<T>(value);
     }
   }
   template <typename... Args>
-  static std::string stringFormatLogger(const std::string &format,
-                                        Args &&...args) {
+  static String stringFormatLogger(const String &format, Args &&...args) {
     return stringFormatInternal(format, convert(std::forward<Args>(args))...);
   }
 };

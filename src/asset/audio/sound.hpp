@@ -1,6 +1,7 @@
 #ifndef SINEN_SOUND_HPP
 #define SINEN_SOUND_HPP
 #include <core/data/ptr.hpp>
+#include <core/data/string.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
@@ -27,8 +28,8 @@ public:
    *
    * @param fileName File name
    */
-  void load(std::string_view fileName);
-  void loadFromPath(std::string_view path);
+  void load(StringView fileName);
+  void loadFromPath(StringView path);
   void play() const;
   // Restart event from begining
   void restart() const;

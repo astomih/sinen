@@ -8,7 +8,7 @@
 
 namespace sinen {
 glm::vec2 WindowSystem::mSize = glm::vec2(1280.f, 720.f);
-std::string WindowSystem::mName = "";
+String WindowSystem::mName;
 ::SDL_Window *WindowSystem::mWindow = nullptr;
 bool WindowSystem::mResized = false;
 const void *Window::getSDLWindow() { return WindowSystem::getSdlWindow(); }
@@ -18,11 +18,11 @@ void Window::resize(const glm::vec2 &size) { WindowSystem::resize(size); }
 void Window::setFullscreen(bool fullscreen) {
   WindowSystem::setFullscreen(fullscreen);
 }
-void Window::rename(const std::string &name) { WindowSystem::rename(name); }
-std::string Window::getName() { return WindowSystem::name(); }
+void Window::rename(StringView name) { WindowSystem::rename(name); }
+String Window::getName() { return WindowSystem::name(); }
 bool Window::resized() { return WindowSystem::resized(); }
 
-bool WindowSystem::initialize(const std::string &name) {
+bool WindowSystem::initialize(StringView name) {
   mName = name;
 
   // Load settings from settings.json
@@ -54,9 +54,8 @@ bool WindowSystem::initialize(const std::string &name) {
   windowFlags |= SDL_WINDOW_RESIZABLE;
 #endif
 
-  mWindow =
-      SDL_CreateWindow(std::string(name).c_str(), static_cast<int>(mSize.x),
-                       static_cast<int>(mSize.y), windowFlags);
+  mWindow = SDL_CreateWindow(String(name).c_str(), static_cast<int>(mSize.x),
+                             static_cast<int>(mSize.y), windowFlags);
 
   // Safe rect
   // #ifdef __ANDROID__
@@ -84,7 +83,7 @@ void WindowSystem::resize(const glm::vec2 &size) {
 void WindowSystem::setFullscreen(bool fullscreen) {
   SDL_SetWindowFullscreen(mWindow, fullscreen);
 }
-void WindowSystem::rename(const std::string &name) {
+void WindowSystem::rename(StringView name) {
   mName = name;
   SDL_SetWindowTitle(mWindow, mName.c_str());
 }

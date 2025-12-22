@@ -1,8 +1,7 @@
 #ifndef SINEN_WINDOW_HPP
 #define SINEN_WINDOW_HPP
+#include <core/data/string.hpp>
 #include <glm/vec2.hpp>
-
-#include <string>
 
 namespace sinen {
 /**
@@ -40,13 +39,13 @@ public:
    *
    * @param name
    */
-  static void rename(const std::string &name);
+  static void rename(StringView name);
   /**
    * @brief Get the window name
    *
-   * @return std::string name
+   * @return String name
    */
-  static std::string getName();
+  static String getName();
   /**
    * @brief Check if the window is resized
    *

@@ -32,7 +32,7 @@ public:
     float rotation;
     glm::vec2 scale;
   };
-  std::vector<World> worlds;
+  Array<World> worlds;
   glm::vec2 position;
   float rotation;
   glm::vec2 scale;

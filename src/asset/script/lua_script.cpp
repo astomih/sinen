@@ -1,5 +1,6 @@
 #include "core/allocator/global_allocator.hpp"
 #include "core/data/array.hpp"
+#include "core/data/ptr.hpp"
 #include "core/data/string.hpp"
 #include "glm/ext/vector_float4.hpp"
 #include "math/color/color.hpp"
@@ -102,11 +103,11 @@ static std::string convert(StringView name, const TablePair &p, bool isReturn) {
 class LuaScript final : public IScriptBackend {
 public:
   LuaScript() : state(sol::state(sol::default_at_panic, alloc, nullptr)) {}
-  ~LuaScript() override = default;
+  ~LuaScript() override { state.collect_gc(); }
   bool initialize() override;
   void finalize() override;
 
-  void runScene(const std::string_view source, std::string_view chunk) override;
+  void runScene(StringView source, StringView chunk) override;
 
   void update() override;
   void draw() override;
@@ -115,8 +116,8 @@ private:
   sol::state state;
 };
 
-std::unique_ptr<IScriptBackend> ScriptBackend::createLua() {
-  return std::make_unique<LuaScript>();
+UniquePtr<IScriptBackend> ScriptBackend::createLua() {
+  return makeUnique<LuaScript>();
 }
 static auto vec3Str(const glm::vec3 &v) {
   TablePair p;
@@ -285,7 +286,7 @@ bool LuaScript::initialize() {
     auto v = lua.new_usertype<Font>("Font");
     v["load"] = sol::overload(
         [](Font &f, int point_size) { return f.load(point_size); },
-        [](Font &f, int point_size, std::string_view path) {
+        [](Font &f, int point_size, StringView path) {
           return f.load(point_size, path);
         });
     v["loadFromPath"] = &Font::loadFromPath;
@@ -740,8 +741,7 @@ void LuaScript::finalize() {
 #endif // SINEN_NO_USE_SCRIPT
 }
 
-void LuaScript::runScene(const std::string_view source,
-                         std::string_view chunk) {
+void LuaScript::runScene(StringView source, StringView chunk) {
   state.script(source.data(), chunk.data());
 }
 

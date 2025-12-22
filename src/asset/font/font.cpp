@@ -38,9 +38,7 @@ struct Font::Wrapper {
   uint32_t sheetSize = 0;
 };
 Font::Font() = default;
-Font::Font(int32_t point, std::string_view file_name) {
-  load(point, file_name);
-}
+Font::Font(int32_t point, StringView file_name) { load(point, file_name); }
 Font::~Font() {}
 static bool loadCore(const unsigned char *fontData,
                      Array<Array<stbtt_packedchar>> &pc,
@@ -151,7 +149,7 @@ const char *utf8ToCodepoint(const char *p, uint32_t *out_cp) {
   return p + 1;
 }
 
-Mesh Font::getTextMesh(std::string_view text) const {
+Mesh Font::getTextMesh(StringView text) const {
 
   assert(this->font);
 

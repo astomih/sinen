@@ -304,7 +304,7 @@ sn = {
     ---@field setUniformData fun(binding: integer, data: sn.UniformData)
     ---@field setRenderTarget fun(rt: sn.RenderTexture)
     ---@field flush fun()
-    ---@field readbackTexture fun(rt: sn.RenderTexture, out: sn.Texture): Texture
+    ---@field readbackTexture fun(rt: sn.RenderTexture, out: sn.Texture): sn.Texture
     Graphics = {},
 
     ---Static class

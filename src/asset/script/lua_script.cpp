@@ -53,11 +53,11 @@ auto alloc = [](void *ud, void *ptr, size_t osize, size_t nsize) -> void * {
   return nptr;
 };
 
-static std::string toStringTrim(double value) {
-  std::string s = std::format("{}", value);
+static String toStringTrim(double value) {
+  String s(std::format("{}", value));
 
   auto dot = s.find('.');
-  if (dot == std::string::npos) {
+  if (dot == String::npos) {
     return s + ".0";
   }
 
@@ -76,9 +76,9 @@ static std::string toStringTrim(double value) {
   s.erase(s.find_last_not_of('0') + 1);
   return s;
 }
-using TablePair = Array<std::pair<std::string, std::string>>;
-static std::string convert(StringView name, const TablePair &p, bool isReturn) {
-  std::string s;
+using TablePair = Array<std::pair<String, String>>;
+static String convert(StringView name, const TablePair &p, bool isReturn) {
+  String s;
   s = name.data();
   s += "{ ";
   if (isReturn) {
@@ -169,8 +169,9 @@ bool LuaScript::initialize() {
   auto lua = state.create_table("sn");
   {
     auto &v = lua;
-    state["import"] = [&](const std::string &path) -> sol::object {
-      return state.require_file(path, path + ".lua");
+    state["import"] = [&](StringView path) -> sol::object {
+      return state.require_file(path.data(),
+                                String(String(path) + ".lua").c_str());
     };
   }
   {
@@ -521,19 +522,18 @@ bool LuaScript::initialize() {
           Graphics::drawImage(texture, rect, angle);
         });
     v["drawText"] = sol::overload(
-        [](const std::string &text, const Font &font,
-           const glm::vec2 &position) {
+        [](StringView text, const Font &font, const glm::vec2 &position) {
           Graphics::drawText(text, font, position);
         },
-        [](const std::string &text, const Font &font, const glm::vec2 &position,
+        [](StringView text, const Font &font, const glm::vec2 &position,
            const Color &color) {
           Graphics::drawText(text, font, position, color);
         },
-        [](const std::string &text, const Font &font, const glm::vec2 &position,
+        [](StringView text, const Font &font, const glm::vec2 &position,
            const Color &color, float fontSize) {
           Graphics::drawText(text, font, position, color, fontSize, 0);
         },
-        [](const std::string &text, const Font &font, const glm::vec2 &position,
+        [](StringView text, const Font &font, const glm::vec2 &position,
            const Color &color, float fontSize, float angle) {
           Graphics::drawText(text, font, position, color, fontSize, angle);
         });
@@ -711,7 +711,7 @@ bool LuaScript::initialize() {
   {
     // logger
     auto v = lua.create_named("Logger");
-    v["verbose"] = [](std::string str) { Logger::verbose("%s", str.data()); };
+    v["verbose"] = [](StringView str) { Logger::verbose("%s", str.data()); };
     v["info"] = [](sol::object obj, sol::this_state ts) {
       sol::state_view lua(ts);
 
@@ -724,12 +724,12 @@ bool LuaScript::initialize() {
         return;
       }
 
-      std::string s = r.get<std::string>();
-      Logger::info("%s", s.c_str());
+      auto s = r.get<StringView>();
+      Logger::info("%s", s.data());
     };
-    v["error"] = [](std::string str) { Logger::error("%s", str.data()); };
-    v["warn"] = [](std::string str) { Logger::warn("%s", str.data()); };
-    v["critical"] = [](std::string str) { Logger::critical("%s", str.data()); };
+    v["error"] = [](StringView str) { Logger::error("%s", str.data()); };
+    v["warn"] = [](StringView str) { Logger::warn("%s", str.data()); };
+    v["critical"] = [](StringView str) { Logger::critical("%s", str.data()); };
   }
 #endif
   return true;

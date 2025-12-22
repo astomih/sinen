@@ -89,13 +89,13 @@ String File::openModeToString(const Mode &mode) {
 bool File::open(const char *filename, const Mode &mode) {
   return m_impl->open(filename, mode);
 }
-bool File::open(std::string_view filename, const Mode &mode) {
+bool File::open(StringView filename, const Mode &mode) {
   return m_impl->open(filename.data(), mode);
 }
 bool File::open(const char *filename, const char *mode) {
   return m_impl->open(filename, mode);
 }
-bool File::open(std::string_view filename, const char *mode) {
+bool File::open(StringView filename, const char *mode) {
   return m_impl->open(filename.data(), mode);
 }
 void File::close() { m_impl->close(); }

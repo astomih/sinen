@@ -56,7 +56,7 @@ void GraphicsSystem::initialize() {
   camera2D = Window::size();
   camera = []() {
     Camera c;
-    c.lookat(glm::vec3{0, -1, 1}, glm::vec3{0, 0, 0}, glm::vec3{0, 0, 1});
+    c.lookat({0, -1, 1}, {0, 0, 0}, {0, 0, 1});
     c.perspective(90.f, Window::size().x / Window::size().y, .1f, 100.f);
     return c;
   }();
@@ -220,28 +220,28 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
   auto indexBufferBinding = rhi::BufferBinding{};
   auto textureSamplers = Array<rhi::TextureSamplerBinding>{};
   auto ratio = camera2D.windowRatio();
-  glm::mat4 mat[3];
-  Array<glm::mat4> instanceData;
+  Mat4 mat[3];
+  Array<Mat4> instanceData;
   auto scale = draw2D.scale * 0.5f * ratio;
   {
-    auto t = glm::translate(glm::mat4(1.0f),
-                            glm::vec3(draw2D.position.x * ratio.x,
-                                      draw2D.position.y * ratio.y, 0.0f));
-    auto quaternion = glm::angleAxis(glm::radians(draw2D.rotation),
-                                     glm::vec3(0.0f, 0.0f, -1.0f));
+    auto t =
+        glm::translate(Mat4(1.0f), Vec3(draw2D.position.x * ratio.x,
+                                        draw2D.position.y * ratio.y, 0.0f));
+    auto quaternion =
+        glm::angleAxis(glm::radians(draw2D.rotation), Vec3(0.0f, 0.0f, -1.0f));
     auto r = glm::toMat4(quaternion);
 
-    auto s = glm::scale(glm::mat4(1.0f), glm::vec3(scale, 1.0f));
+    auto s = glm::scale(Mat4(1.0f), Vec3(scale, 1.0f));
 
     mat[0] = glm::transpose(t * r * s);
   }
-  auto viewproj = glm::mat4(1.0f);
+  auto viewproj = Mat4(1.0f);
 
   auto screenSize = camera2D.size();
   viewproj[0][0] = 2.f / Window::size().x;
   viewproj[1][1] = 2.f / Window::size().y;
   mat[1] = glm::transpose(viewproj);
-  mat[2] = glm::mat4(1.f);
+  mat[2] = Mat4(1.f);
   for (auto &i : draw2D.worlds) {
     auto t = glm::translate(
         glm::mat4(1.0f),

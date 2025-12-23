@@ -3,22 +3,23 @@
 
 #include "camera/camera.hpp"
 #include <core/data/array.hpp>
+#include <math/matrix.hpp>
+#include <math/vector.hpp>
 
-#include <glm/mat4x4.hpp>
 namespace sinen {
 struct UniformData {
   UniformData() : data() {}
   void add(float value) { data.push_back(value); }
-  void addMatrix(const glm::mat4 &matrix) {
+  void addMatrix(const Mat4 &matrix) {
     data.resize(data.size() + 16);
-    memcpy(&data[data.size() - 16], &matrix, sizeof(glm::mat4));
+    memcpy(&data[data.size() - 16], &matrix, sizeof(Mat4));
   }
-  void addMatrices(const Array<glm::mat4> &matrices) {
+  void addMatrices(const Array<Mat4> &matrices) {
     for (auto &m : matrices) {
       addMatrix(m);
     }
   }
-  void addVec3(const glm::vec3 &vector) {
+  void addVec3(const Vec3 &vector) {
     data.push_back(vector.x);
     data.push_back(vector.y);
     data.push_back(vector.z);

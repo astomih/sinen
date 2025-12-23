@@ -9,8 +9,6 @@
 #include "model_data.hpp"
 #include <asset/asset.hpp>
 #include <core/core.hpp>
-#include <glm/ext/quaternion_common.hpp>
-#include <glm/fwd.hpp>
 #include <graphics/graphics.hpp>
 #include <math/math.hpp>
 
@@ -20,15 +18,9 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include "glm/ext/matrix_common.hpp"
-#include "glm/ext/matrix_transform.hpp"
-#include "glm/ext/quaternion_common.hpp"
-#include <glm/ext/vector_common.hpp>
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include <math/matrix.hpp>
+#include <math/quaternion.hpp>
+#include <math/vector.hpp>
 
 namespace sinen {
 static_assert(std::is_copy_assignable_v<std::hash<String>>);
@@ -50,11 +42,11 @@ Array<float> getTimesFromVector3Key(const aiVectorKey *keys, uint32_t count) {
   }
   return result;
 };
-Array<glm::quat> getRotatesFromKey(const aiQuatKey *keys, uint32_t count) {
-  Array<glm::quat> result;
+Array<Quaternion> getRotatesFromKey(const aiQuatKey *keys, uint32_t count) {
+  Array<Quaternion> result;
   for (uint32_t i = 0; i < count; ++i) {
-    result.push_back(glm::quat(keys[i].mValue.w, keys[i].mValue.x,
-                               keys[i].mValue.y, keys[i].mValue.z));
+    result.push_back(Quaternion(keys[i].mValue.w, keys[i].mValue.x,
+                                keys[i].mValue.y, keys[i].mValue.z));
   }
   return result;
 };
@@ -65,8 +57,8 @@ Array<float> getTimesFromQuatKey(const aiQuatKey *keys, uint32_t count) {
   }
   return result;
 };
-glm::mat4 convertMatrix(const aiMatrix4x4 &m) {
-  glm::mat4 mat = glm::make_mat4(&m.a1);
+Mat4 convertMatrix(const aiMatrix4x4 &m) {
+  Mat4 mat = glm::make_mat4(&m.a1);
   mat = glm::transpose(mat); // Assimp is column major
   return mat;
 }
@@ -184,7 +176,7 @@ void loadMesh(const aiScene *scene, Mesh &mesh, AABB &aabb) {
       for (uint32_t j = 0; j < aimesh->mNumVertices; j++) {
         const aiVector3D &pos = aimesh->mVertices[j];
         const aiVector3D &norm = aimesh->mNormals[j];
-        glm::vec2 uv(0.f, 0.f);
+        Vec2 uv(0.f, 0.f);
         if (aimesh->HasTextureCoords(0)) {
           const aiVector3D &aiuv = aimesh->mTextureCoords[0][j];
           uv.x = aiuv.x;
@@ -238,9 +230,9 @@ void loadMesh(const aiScene *scene, Mesh &mesh, AABB &aabb) {
 
 void calcTangents(const aiScene *scene, Mesh &mesh) {
   auto vertexCount = mesh.vertices.size();
-  mesh.tangents.resize(vertexCount, glm::vec4(0.0f));
+  mesh.tangents.resize(vertexCount, Vec4(0.0f));
 
-  Array<glm::vec3> tangentAccum(vertexCount, glm::vec3(0.0f));
+  Array<Vec3> tangentAccum(vertexCount, Vec3(0.0f));
   Array<float> handedness(vertexCount, 1.0f);
 
   for (size_t i = 0; i < mesh.indices.size(); i += 3) {
@@ -248,25 +240,25 @@ void calcTangents(const aiScene *scene, Mesh &mesh) {
     Vertex &v1 = mesh.vertices[mesh.indices[i + 1]];
     Vertex &v2 = mesh.vertices[mesh.indices[i + 2]];
 
-    glm::vec3 edge1 = v1.position - v0.position;
-    glm::vec3 edge2 = v2.position - v0.position;
-    glm::vec2 deltaUV1 = v1.uv - v0.uv;
-    glm::vec2 deltaUV2 = v2.uv - v0.uv;
+    Vec3 edge1 = v1.position - v0.position;
+    Vec3 edge2 = v2.position - v0.position;
+    Vec2 deltaUV1 = v1.uv - v0.uv;
+    Vec2 deltaUV2 = v2.uv - v0.uv;
 
     float det = deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y;
     if (fabs(det) < 1e-6f)
       continue;
     float f = 1.0f / det;
 
-    glm::vec3 tangent = (edge1 * deltaUV2.y - edge2 * deltaUV1.y) * f;
-    glm::vec3 bitangent = (edge2 * deltaUV1.x - edge1 * deltaUV2.x) * f;
+    Vec3 tangent = (edge1 * deltaUV2.y - edge2 * deltaUV1.y) * f;
+    Vec3 bitangent = (edge2 * deltaUV1.x - edge1 * deltaUV2.x) * f;
 
     tangentAccum[mesh.indices[i]] += tangent;
     tangentAccum[mesh.indices[i + 1]] += tangent;
     tangentAccum[mesh.indices[i + 2]] += tangent;
 
     // optional: handedness check
-    glm::vec3 N = glm::normalize(v0.normal);
+    Vec3 N = glm::normalize(v0.normal);
     float sign =
         (glm::dot(glm::cross(N, tangent), bitangent) < 0.0f) ? -1.0f : 1.0f;
     handedness[mesh.indices[i]] = sign;
@@ -275,8 +267,8 @@ void calcTangents(const aiScene *scene, Mesh &mesh) {
   }
 
   for (size_t j = 0; j < mesh.vertices.size(); ++j) {
-    glm::vec3 T = glm::normalize(tangentAccum[j]);
-    mesh.tangents[j] = glm::vec4(T, handedness[j]);
+    auto T = glm::normalize(tangentAccum[j]);
+    mesh.tangents[j] = Vec4(T, handedness[j]);
   }
 }
 
@@ -381,8 +373,8 @@ void Model::load(StringView path) {
   this->animationVertexBuffer =
       createAnimationVertexBuffer(skeletalAnimation.animationVertices);
   this->tangentBuffer =
-      createBuffer(mesh.tangents.size() * sizeof(glm::vec4),
-                   mesh.tangents.data(), rhi::BufferUsage::Vertex);
+      createBuffer(mesh.tangents.size() * sizeof(Vec4), mesh.tangents.data(),
+                   rhi::BufferUsage::Vertex);
   this->indexBuffer =
       createBuffer(mesh.indices.size() * sizeof(uint32_t), mesh.indices.data(),
                    rhi::BufferUsage::Index);
@@ -413,8 +405,8 @@ void Model::loadFromPath(StringView path) {
   this->animationVertexBuffer =
       createAnimationVertexBuffer(skeletalAnimation.animationVertices);
   this->tangentBuffer =
-      createBuffer(mesh.tangents.size() * sizeof(glm::vec4),
-                   mesh.tangents.data(), rhi::BufferUsage::Vertex);
+      createBuffer(mesh.tangents.size() * sizeof(Vec4), mesh.tangents.data(),
+                   rhi::BufferUsage::Vertex);
   this->indexBuffer =
       createBuffer(mesh.indices.size() * sizeof(uint32_t), mesh.indices.data(),
                    rhi::BufferUsage::Index);
@@ -653,7 +645,7 @@ void Model::loadBoneUniform(float start) {
   auto matrices = skeletalAnimation.getFinalBoneMatrices();
   boneUniformData.clear();
 
-  Array<glm::mat4> boneMatrices(matrices.size());
+  Array<Mat4> boneMatrices(matrices.size());
   int index = 0;
   for (auto &m : matrices) {
     boneMatrices[index] = glm::transpose(m);
@@ -676,10 +668,10 @@ void SkeletalAnimation::update(float timeInSeconds) {
   float timeInTicks = timeInSeconds * ticksPerSecond;
   float animationTime = Math::fmod(timeInTicks, duration);
 
-  readNodeHierarchy(animationTime, root, glm::mat4(1.0f));
+  readNodeHierarchy(animationTime, root, Mat4(1.0f));
 }
 void SkeletalAnimation::readNodeHierarchy(float animTime, const Node &node,
-                                          const glm::mat4 &parentTransform) {
+                                          const Mat4 &parentTransform) {
   String nodeName = node.name;
 
   auto nodeTransform = node.transformation;
@@ -710,15 +702,14 @@ uint32_t getIndex(float time, const Array<float> &keys) {
   return count - 1;
 }
 
-glm::vec3 interpolateVector3(const Array<glm::vec3> &keys,
-                             const Array<float> &keyTimes, float time,
-                             bool isScaling = false) {
+Vec3 interpolateVector3(const Array<Vec3> &keys, const Array<float> &keyTimes,
+                        float time, bool isScaling = false) {
   auto count = keys.size();
   if (count == 0) {
     if (isScaling) {
-      return glm::vec3(1, 1, 1);
+      return Vec3(1, 1, 1);
     }
-    return glm::vec3(0, 0, 0);
+    return Vec3(0, 0, 0);
   }
   if (count == 1) {
     return keys[0];
@@ -730,11 +721,11 @@ glm::vec3 interpolateVector3(const Array<glm::vec3> &keys,
   auto k1 = keys[i + 1];
   return glm::mix(k0, k1, t);
 };
-glm::quat interpolateQuat(const Array<glm::quat> &keys,
-                          const Array<float> &keyTimes, float time) {
+Quaternion interpolateQuat(const Array<Quaternion> &keys,
+                           const Array<float> &keyTimes, float time) {
   auto count = keys.size();
   if (count == 0) {
-    return glm::quat(1, 0, 0, 0);
+    return Quaternion(1, 0, 0, 0);
   }
   if (count == 1) {
     return keys[0];
@@ -749,8 +740,8 @@ glm::quat interpolateQuat(const Array<glm::quat> &keys,
   return q;
 };
 
-glm::mat4 SkeletalAnimation::interpolateTransform(const NodeAnimation &channel,
-                                                  float time) {
+Mat4 SkeletalAnimation::interpolateTransform(const NodeAnimation &channel,
+                                             float time) {
 
   auto scaling =
       interpolateVector3(channel.scale, channel.scaleTime, time, true);
@@ -758,15 +749,15 @@ glm::mat4 SkeletalAnimation::interpolateTransform(const NodeAnimation &channel,
   auto translation =
       interpolateVector3(channel.position, channel.positionTime, time);
 
-  auto t = glm::translate(glm::mat4(1.0f), translation);
+  auto t = glm::translate(Mat4(1.0f), translation);
   auto r = glm::toMat4(rotation);
-  auto s = glm::scale(glm::mat4(1.0f), scaling);
+  auto s = glm::scale(Mat4(1.0f), scaling);
 
   auto m = t * r * s;
   return m;
 }
-Array<glm::mat4> SkeletalAnimation::getFinalBoneMatrices() const {
-  Array<glm::mat4> result(finalBoneMatrices.size(), glm::mat4(1.0f));
+Array<Mat4> SkeletalAnimation::getFinalBoneMatrices() const {
+  Array<Mat4> result(finalBoneMatrices.size(), Mat4(1.0f));
   for (const auto &[name, mat] : finalBoneMatrices) {
     if (finalBoneMatrices.contains(name)) {
       result[owner->getBoneMap().at(name).index] = mat;

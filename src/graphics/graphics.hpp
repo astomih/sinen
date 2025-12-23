@@ -2,25 +2,24 @@
 #define SINEN_RENDER_RENDERER_HPP
 #include <functional>
 #include <list>
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <vector>
 
-#include "../asset/Font/font.hpp"
-#include "../asset/model/mesh.hpp"
-#include "../asset/model/model.hpp"
-#include "../asset/shader/shader.hpp"
-#include "../asset/texture/render_texture.hpp"
-#include "../asset/texture/texture.hpp"
-#include "../math/color/color.hpp"
-#include "../math/color/palette.hpp"
-#include "../physics/primitive2.hpp"
-#include "../physics/primitive3.hpp"
-#include "camera/camera.hpp"
-#include "camera/camera2d.hpp"
-#include "drawable/drawable.hpp"
-#include "graphics_pipeline.hpp"
+#include <asset/Font/font.hpp>
+#include <asset/model/mesh.hpp>
+#include <asset/model/model.hpp>
+#include <asset/shader/shader.hpp>
+#include <asset/texture/render_texture.hpp>
+#include <asset/texture/texture.hpp>
+#include <graphics/camera/camera.hpp>
+#include <graphics/camera/camera2d.hpp>
+#include <graphics/drawable/drawable.hpp>
+#include <graphics/graphics_pipeline.hpp>
+#include <math/color/color.hpp>
+#include <math/color/palette.hpp>
+#include <math/matrix.hpp>
+#include <math/quaternion.hpp>
+#include <math/vector.hpp>
+#include <physics/primitive2.hpp>
+#include <physics/primitive3.hpp>
 
 namespace sinen {
 /**
@@ -40,15 +39,14 @@ public:
   static void drawImage(const Texture &texture, const Rect &rect) {
     drawImage(texture, rect, 0.0f);
   }
-  static void drawText(StringView text, const Font &font,
-                       const glm::vec2 &position, const Color &color,
-                       float textSize, float angle);
-  static void drawText(StringView text, const Font &font,
-                       const glm::vec2 &position, const Color &color) {
+  static void drawText(StringView text, const Font &font, const Vec2 &position,
+                       const Color &color, float textSize, float angle);
+  static void drawText(StringView text, const Font &font, const Vec2 &position,
+                       const Color &color) {
     drawText(text, font, position, color, 32.f, 0.0f);
   }
   static void drawText(StringView text, const Font &font,
-                       const glm::vec2 &position) {
+                       const Vec2 &position) {
     drawText(text, font, position, Palette::white(), 32.f, 0.0f);
   }
 

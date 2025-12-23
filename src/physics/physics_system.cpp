@@ -4,38 +4,30 @@
 #include <iostream>
 #include <thread>
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include "glm/ext/matrix_transform.hpp"
-#include "glm/gtc/quaternion.hpp"
-#include "glm/gtx/quaternion.hpp"
-#include <glm/mat4x4.hpp>
+#include <core/def/types.hpp>
+#include <math/matrix.hpp>
+#include <math/quaternion.hpp>
+#include <math/vector.hpp>
 
 #include "../main_system.hpp"
 
 JPH_SUPPRESS_WARNINGS
 
-using namespace JPH;
-
-using namespace JPH::literals;
-
-using namespace std;
-
-static void TraceImpl(const char *inFMT, ...) {
+namespace sinen {
+static void traceImplement(const char *inFMT, ...) {
   va_list list;
   va_start(list, inFMT);
   char buffer[1024];
   vsnprintf(buffer, sizeof(buffer), inFMT, list);
   va_end(list);
-
-  cout << buffer << endl;
 }
 
 #ifdef JPH_ENABLE_ASSERTS
 
-static bool AssertFailedImpl(const char *inExpression, const char *inMessage,
-                             const char *inFile, uint inLine) {
-  cout << inFile << ":" << inLine << ": (" << inExpression << ") "
-       << (inMessage != nullptr ? inMessage : "") << endl;
+static bool assertFailedImpl(const char *inExpression, const char *inMessage,
+                             const char *inFile, uint32 inLine) {
+  std::cout << inFile << ":" << inLine << ": (" << inExpression << ") "
+            << (inMessage != nullptr ? inMessage : "") << std::endl;
 
   return true;
 };
@@ -43,15 +35,15 @@ static bool AssertFailedImpl(const char *inExpression, const char *inMessage,
 #endif // JPH_ENABLE_ASSERTS
 
 namespace Layers {
-static constexpr ObjectLayer NON_MOVING = 0;
-static constexpr ObjectLayer MOVING = 1;
-static constexpr ObjectLayer NUM_LAYERS = 2;
+static constexpr JPH::ObjectLayer NON_MOVING = 0;
+static constexpr JPH::ObjectLayer MOVING = 1;
+static constexpr JPH::ObjectLayer NUM_LAYERS = 2;
 }; // namespace Layers
 
-class ObjectLayerPairFilterImpl : public ObjectLayerPairFilter {
+class ObjectLayerPairFilterImpl : public JPH::ObjectLayerPairFilter {
 public:
-  virtual bool ShouldCollide(ObjectLayer inObject1,
-                             ObjectLayer inObject2) const override {
+  virtual bool ShouldCollide(JPH::ObjectLayer inObject1,
+                             JPH::ObjectLayer inObject2) const override {
     switch (inObject1) {
     case Layers::NON_MOVING:
       return inObject2 == Layers::MOVING;
@@ -65,12 +57,12 @@ public:
 };
 
 namespace BroadPhaseLayers {
-static constexpr BroadPhaseLayer NON_MOVING(0);
-static constexpr BroadPhaseLayer MOVING(1);
-static constexpr uint NUM_LAYERS(2);
+static constexpr JPH::BroadPhaseLayer NON_MOVING(0);
+static constexpr JPH::BroadPhaseLayer MOVING(1);
+static constexpr uint32 NUM_LAYERS(2);
 }; // namespace BroadPhaseLayers
 
-class BPLayerInterfaceImpl final : public BroadPhaseLayerInterface {
+class BPLayerInterfaceImpl final : public JPH::BroadPhaseLayerInterface {
 public:
   BPLayerInterfaceImpl() {
     // Create a mapping table from object to broad phase layer
@@ -78,23 +70,23 @@ public:
     mObjectToBroadPhase[Layers::MOVING] = BroadPhaseLayers::MOVING;
   }
 
-  virtual uint GetNumBroadPhaseLayers() const override {
+  virtual uint32 GetNumBroadPhaseLayers() const override {
     return BroadPhaseLayers::NUM_LAYERS;
   }
 
-  virtual BroadPhaseLayer
-  GetBroadPhaseLayer(ObjectLayer inLayer) const override {
+  virtual JPH::BroadPhaseLayer
+  GetBroadPhaseLayer(JPH::ObjectLayer inLayer) const override {
     JPH_ASSERT(inLayer < Layers::NUM_LAYERS);
     return mObjectToBroadPhase[inLayer];
   }
 
 #if defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)
   virtual const char *
-  GetBroadPhaseLayerName(BroadPhaseLayer inLayer) const override {
-    switch ((BroadPhaseLayer::Type)inLayer) {
-    case (BroadPhaseLayer::Type)BroadPhaseLayers::NON_MOVING:
+  GetBroadPhaseLayerName(JPH::BroadPhaseLayer inLayer) const override {
+    switch ((JPH::BroadPhaseLayer::Type)inLayer) {
+    case (JPH::BroadPhaseLayer::Type)BroadPhaseLayers::NON_MOVING:
       return "NON_MOVING";
-    case (BroadPhaseLayer::Type)BroadPhaseLayers::MOVING:
+    case (JPH::BroadPhaseLayer::Type)BroadPhaseLayers::MOVING:
       return "MOVING";
     default:
       JPH_ASSERT(false);
@@ -104,13 +96,14 @@ public:
 #endif // JPH_EXTERNAL_PROFILE || JPH_PROFILE_ENABLED
 
 private:
-  BroadPhaseLayer mObjectToBroadPhase[Layers::NUM_LAYERS];
+  JPH::BroadPhaseLayer mObjectToBroadPhase[Layers::NUM_LAYERS];
 };
 
-class ObjectVsBroadPhaseLayerFilterImpl : public ObjectVsBroadPhaseLayerFilter {
+class ObjectVsBroadPhaseLayerFilterImpl
+    : public JPH::ObjectVsBroadPhaseLayerFilter {
 public:
-  virtual bool ShouldCollide(ObjectLayer inLayer1,
-                             BroadPhaseLayer inLayer2) const override {
+  virtual bool ShouldCollide(JPH::ObjectLayer inLayer1,
+                             JPH::BroadPhaseLayer inLayer2) const override {
     switch (inLayer1) {
     case Layers::NON_MOVING:
       return inLayer2 == BroadPhaseLayers::MOVING;
@@ -123,64 +116,66 @@ public:
   }
 };
 
-class MyContactListener : public ContactListener {
+class MyContactListener : public JPH::ContactListener {
 public:
-  virtual ValidateResult
-  OnContactValidate(const Body &inBody1, const Body &inBody2,
-                    RVec3Arg inBaseOffset,
-                    const CollideShapeResult &inCollisionResult) override {
-    cout << "Contact validate callback" << endl;
+  virtual JPH::ValidateResult
+  OnContactValidate(const JPH::Body &inBody1, const JPH::Body &inBody2,
+                    JPH::RVec3Arg inBaseOffset,
+                    const JPH::CollideShapeResult &inCollisionResult) override {
+    std::cout << "Contact validate callback" << std::endl;
 
-    return ValidateResult::AcceptAllContactsForThisBodyPair;
+    return JPH::ValidateResult::AcceptAllContactsForThisBodyPair;
   }
 
-  virtual void OnContactAdded(const Body &inBody1, const Body &inBody2,
-                              const ContactManifold &inManifold,
-                              ContactSettings &ioSettings) override {
-    cout << "A contact was added" << endl;
+  virtual void OnContactAdded(const JPH::Body &inBody1,
+                              const JPH::Body &inBody2,
+                              const JPH::ContactManifold &inManifold,
+                              JPH::ContactSettings &ioSettings) override {
+    std::cout << "A contact was added" << std::endl;
   }
 
-  virtual void OnContactPersisted(const Body &inBody1, const Body &inBody2,
-                                  const ContactManifold &inManifold,
-                                  ContactSettings &ioSettings) override {
-    cout << "A contact was persisted" << endl;
+  virtual void OnContactPersisted(const JPH::Body &inBody1,
+                                  const JPH::Body &inBody2,
+                                  const JPH::ContactManifold &inManifold,
+                                  JPH::ContactSettings &ioSettings) override {
+    std::cout << "A contact was persisted" << std::endl;
   }
 
-  virtual void OnContactRemoved(const SubShapeIDPair &inSubShapePair) override {
-    cout << "A contact was removed" << endl;
+  virtual void
+  OnContactRemoved(const JPH::SubShapeIDPair &inSubShapePair) override {
+    std::cout << "A contact was removed" << std::endl;
   }
 };
 
-class MyBodyActivationListener : public BodyActivationListener {
+class MyBodyActivationListener : public JPH::BodyActivationListener {
 public:
-  virtual void OnBodyActivated(const BodyID &inBodyID,
+  virtual void OnBodyActivated(const JPH::BodyID &inBodyID,
                                uint64 inBodyUserData) override {
-    cout << "A body got activated" << endl;
+    std::cout << "A body got activated" << std::endl;
   }
 
-  virtual void OnBodyDeactivated(const BodyID &inBodyID,
+  virtual void OnBodyDeactivated(const JPH::BodyID &inBodyID,
                                  uint64 inBodyUserData) override {
-    cout << "A body went to sleep" << endl;
+    std::cout << "A body went to sleep" << std::endl;
   }
 };
 
-namespace sinen {
-inline std::unordered_map<uint32_t, BodyID> bodyMap = {};
+inline std::unordered_map<uint32_t, JPH::BodyID> bodyMap = {};
 bool PhysicsSystem::initialize() {
-  RegisterDefaultAllocator();
+  JPH::RegisterDefaultAllocator();
 
-  Trace = TraceImpl;
-  JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;)
+  JPH::Trace = traceImplement;
+  JPH_IF_ENABLE_ASSERTS(JPH::AssertFailed = assertFailedImpl;)
 
-  Factory::sInstance = new Factory();
+  JPH::Factory::sInstance = new JPH::Factory();
 
-  RegisterTypes();
+  JPH::RegisterTypes();
 
   raw = std::make_unique<RawData>(10 * 1024 * 1024);
-  const uint cMaxBodies = 1024;
-  const uint cNumBodyMutexes = 0;
-  const uint cMaxBodyPairs = 1024;
-  const uint cMaxContactConstraints = 1024;
+  const uint32 cMaxBodies = 1024;
+  const uint32 cNumBodyMutexes = 0;
+  const uint32 cMaxBodyPairs = 1024;
+  const uint32 cMaxContactConstraints = 1024;
   static BPLayerInterfaceImpl broadPhaseLayerInterface;
   static ObjectVsBroadPhaseLayerFilterImpl objectVSBroadPhaseLayerFilter;
   static ObjectLayerPairFilterImpl objectVSLayerFilter;
@@ -198,10 +193,10 @@ bool PhysicsSystem::initialize() {
   return true;
 }
 void PhysicsSystem::shutdown() {
-  UnregisterTypes();
+  JPH::UnregisterTypes();
 
-  delete Factory::sInstance;
-  Factory::sInstance = nullptr;
+  delete JPH::Factory::sInstance;
+  JPH::Factory::sInstance = nullptr;
 }
 
 void PhysicsSystem::postSetup() {
@@ -217,33 +212,32 @@ void PhysicsSystem::update() {
                             &raw->tempAllocator, &raw->jobSystem);
 }
 
-glm::vec3 PhysicsSystem::getPosition(const Collider &collider) {
-  BodyInterface &body_interface = raw->physicsSystem.GetBodyInterface();
+Vec3 PhysicsSystem::getPosition(const Collider &collider) {
+  JPH::BodyInterface &body_interface = raw->physicsSystem.GetBodyInterface();
   auto it = bodyMap.find(collider.id);
   if (it == bodyMap.end()) {
     return glm::vec3(0.0f);
   }
-  BodyID body_id = it->second;
-  RVec3 position = body_interface.GetCenterOfMassPosition(body_id);
+  JPH::BodyID body_id = it->second;
+  JPH::RVec3 position = body_interface.GetCenterOfMassPosition(body_id);
   return {position.GetX(), position.GetY(), position.GetZ()};
 }
 
-glm::vec3 PhysicsSystem::getVelocity(const Collider &collider) {
-  BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
+Vec3 PhysicsSystem::getVelocity(const Collider &collider) {
+  JPH::BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
   auto it = bodyMap.find(collider.id);
   if (it == bodyMap.end()) {
     return glm::vec3(0.0f);
   }
-  BodyID body_id = it->second;
-  Vec3 velocity = bodyInterface.GetLinearVelocity(body_id);
+  JPH::BodyID body_id = it->second;
+  auto velocity = bodyInterface.GetLinearVelocity(body_id);
   return glm::vec3(velocity.GetX(), velocity.GetY(), velocity.GetZ());
 }
 void PhysicsSystem::setLinearVelocity(const Collider &collider,
                                       const glm::vec3 &velocity) {
-  BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
+  JPH::BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
   auto bodyID = bodyMap[collider.id];
-  bodyInterface.SetLinearVelocity(bodyID,
-                                  Vec3(velocity.x, velocity.y, velocity.z));
+  bodyInterface.SetLinearVelocity(bodyID, {velocity.x, velocity.y, velocity.z});
 }
 
 static uint32_t nextColliderID = 1;
@@ -252,17 +246,17 @@ uint32_t GetNextID() { return nextColliderID++; }
 Collider PhysicsSystem::createBoxCollider(const Transform &transform,
                                           bool isStatic) {
 
-  BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
+  JPH::BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
 
   auto &position = transform.position;
   auto &rotation = transform.rotation;
   auto &scale = transform.scale;
-  BoxShapeSettings boxShapeSetting(Vec3(scale.x, scale.y, scale.z));
+  JPH::BoxShapeSettings boxShapeSetting({scale.x, scale.y, scale.z});
   boxShapeSetting.SetEmbedded();
 
   // Create the shape
-  ShapeSettings::ShapeResult boxShapeResult = boxShapeSetting.Create();
-  ShapeRefC boxShape = boxShapeResult.Get();
+  JPH::ShapeSettings::ShapeResult boxShapeResult = boxShapeSetting.Create();
+  JPH::ShapeRefC boxShape = boxShapeResult.Get();
   const auto rotationX =
       glm::angleAxis(glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
   const auto rotationY =
@@ -271,17 +265,17 @@ Collider PhysicsSystem::createBoxCollider(const Transform &transform,
       glm::angleAxis(glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
   const auto quaternion = rotationX * rotationY * rotationZ;
 
-  EMotionType motionType =
-      isStatic ? EMotionType::Static : EMotionType::Dynamic;
+  JPH::EMotionType motionType =
+      isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic;
 
-  ObjectLayer layer = isStatic ? Layers::NON_MOVING : Layers::MOVING;
+  JPH::ObjectLayer layer = isStatic ? Layers::NON_MOVING : Layers::MOVING;
 
-  BodyCreationSettings boxSettings(
-      boxShape, RVec3(position.x, position.y, position.z),
+  JPH::BodyCreationSettings boxSettings(
+      boxShape, JPH::RVec3(position.x, position.y, position.z),
       {quaternion.x, quaternion.y, quaternion.z, quaternion.w}, motionType,
       layer);
 
-  Body *floor = bodyInterface.CreateBody(boxSettings);
+  JPH::Body *floor = bodyInterface.CreateBody(boxSettings);
   Collider collider{GetNextID()};
   bodyMap[collider.id] = floor->GetID();
   return collider;
@@ -289,13 +283,14 @@ Collider PhysicsSystem::createBoxCollider(const Transform &transform,
 
 Collider PhysicsSystem::createSphereCollider(const glm::vec3 &position,
                                              float radius, bool isStatic) {
-  BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
-  EMotionType motionType =
-      isStatic ? EMotionType::Static : EMotionType::Dynamic;
-  ObjectLayer layer = isStatic ? Layers::NON_MOVING : Layers::MOVING;
-  BodyCreationSettings sphere_settings(
-      new SphereShape(radius), RVec3(position.x, position.y, position.z),
-      Quat::sIdentity(), motionType, layer);
+  auto &bodyInterface = raw->physicsSystem.GetBodyInterface();
+  auto motionType =
+      isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic;
+  JPH::ObjectLayer layer = isStatic ? Layers::NON_MOVING : Layers::MOVING;
+  JPH::BodyCreationSettings sphere_settings(
+      new JPH::SphereShape(radius),
+      JPH::RVec3(position.x, position.y, position.z), JPH::Quat::sIdentity(),
+      motionType, layer);
   auto *body = bodyInterface.CreateBody(sphere_settings);
 
   Collider collider{GetNextID()};
@@ -307,14 +302,14 @@ Collider PhysicsSystem::createCylinderCollider(const glm::vec3 &position,
                                                float halfHeight, float radius,
                                                bool isStatic) {
   auto &bodyInterface = raw->physicsSystem.GetBodyInterface();
-  CylinderShapeSettings cylinderShapeSetting(halfHeight, radius);
+  JPH::CylinderShapeSettings cylinderShapeSetting(halfHeight, radius);
   cylinderShapeSetting.SetEmbedded();
-  EMotionType motionType =
-      isStatic ? EMotionType::Static : EMotionType::Dynamic;
-  ObjectLayer layer = isStatic ? Layers::NON_MOVING : Layers::MOVING;
-  ShapeSettings::ShapeResult cylinderShapeResult =
+  JPH::EMotionType motionType =
+      isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic;
+  JPH::ObjectLayer layer = isStatic ? Layers::NON_MOVING : Layers::MOVING;
+  JPH::ShapeSettings::ShapeResult cylinderShapeResult =
       cylinderShapeSetting.Create();
-  ShapeRefC cylinderShape = cylinderShapeResult.Get();
+  JPH::ShapeRefC cylinderShape = cylinderShapeResult.Get();
   const auto rotationX =
       glm::angleAxis(glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
   const auto rotationY =
@@ -323,23 +318,23 @@ Collider PhysicsSystem::createCylinderCollider(const glm::vec3 &position,
   const auto rotationZ =
       glm::angleAxis(glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
   const auto quaternion = rotationX * rotationY * rotationZ;
-  BodyCreationSettings cylinderSettings(
-      cylinderShape, RVec3(position.x, position.y, position.z),
+  JPH::BodyCreationSettings cylinderSettings(
+      cylinderShape, JPH::RVec3(position.x, position.y, position.z),
       {quaternion.x, quaternion.y, quaternion.z, quaternion.w}, motionType,
       layer);
-  Body *cylinder = bodyInterface.CreateBody(cylinderSettings);
+  JPH::Body *cylinder = bodyInterface.CreateBody(cylinderSettings);
   Collider collider{GetNextID()};
   bodyMap[collider.id] = cylinder->GetID();
   return collider;
 }
 void PhysicsSystem::addCollider(const Collider &collider, bool active) {
-  BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
+  JPH::BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
   auto it = bodyMap.find(collider.id);
   if (it == bodyMap.end()) {
     return;
   }
-  BodyID bodyID = it->second;
-  bodyInterface.AddBody(bodyID, active ? EActivation::Activate
-                                       : EActivation::DontActivate);
+  JPH::BodyID bodyID = it->second;
+  bodyInterface.AddBody(bodyID, active ? JPH::EActivation::Activate
+                                       : JPH::EActivation::DontActivate);
 }
 } // namespace sinen

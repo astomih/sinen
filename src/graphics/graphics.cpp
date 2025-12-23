@@ -8,14 +8,10 @@
 #include <graphics/graphics.hpp>
 #include <platform/window/window.hpp>
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include "glm/ext/matrix_transform.hpp"
-#include "glm/ext/vector_float2.hpp"
-#include "glm/ext/vector_float3.hpp"
-#include "glm/gtc/quaternion.hpp"
-#include "glm/gtx/quaternion.hpp"
-#include <glm/mat4x4.hpp>
 #include <graphics/graphics.hpp>
+#include <math/matrix.hpp>
+#include <math/quaternion.hpp>
+#include <math/vector.hpp>
 
 namespace sinen {
 void Graphics::draw2D(const sinen::Draw2D &draw2D) {
@@ -32,9 +28,8 @@ void Graphics::drawImage(const Texture &texture, const Rect &rect,
   GraphicsSystem::drawImage(texture, rect, angle);
 }
 
-void Graphics::drawText(StringView text, const Font &font,
-                        const glm::vec2 &position, const Color &color,
-                        float textSize, float angle) {
+void Graphics::drawText(StringView text, const Font &font, const Vec2 &position,
+                        const Color &color, float textSize, float angle) {
   GraphicsSystem::drawText(text, font, position, color, textSize, angle);
 }
 void Graphics::drawCubemap(const Cubemap &cubemap) {

@@ -5,11 +5,7 @@
 #include <core/data/hashmap.hpp>
 #include <graphics/rhi/rhi.hpp>
 #include <graphics/uniform_data.hpp>
-
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include <math/quaternion.hpp>
 
 namespace sinen {
 struct BoneInfo {
@@ -20,18 +16,18 @@ struct BoneInfo {
 
 class NodeAnimation {
 public:
-  Array<glm::vec3> position;
+  Array<Vec3> position;
   Array<float> positionTime;
-  Array<glm::quat> rotation;
+  Array<Quaternion> rotation;
   Array<float> rotationTime;
-  Array<glm::vec3> scale;
+  Array<Vec3> scale;
   Array<float> scaleTime;
 };
 
 class Node {
 public:
   String name;
-  glm::mat4 transformation;
+  Mat4 transformation;
   Array<Node> children;
 };
 
@@ -43,19 +39,19 @@ public:
   void update(float timeInSeconds);
 
   void readNodeHierarchy(float animTime, const Node &node,
-                         const glm::mat4 &parentTransform);
+                         const Mat4 &parentTransform);
 
-  glm::mat4 interpolateTransform(const NodeAnimation &channel, float time);
+  Mat4 interpolateTransform(const NodeAnimation &channel, float time);
 
-  Array<glm::mat4> getFinalBoneMatrices() const;
+  Array<Mat4> getFinalBoneMatrices() const;
 
   Hashmap<String, NodeAnimation> nodeAnimMap;
   Array<AnimationVertex> animationVertices;
-  glm::mat4 globalInverseTransform;
+  Mat4 globalInverseTransform;
   float ticksPerSecond;
   float duration;
   Node root;
-  Hashmap<String, glm::mat4> finalBoneMatrices;
+  Hashmap<String, Mat4> finalBoneMatrices;
   class Model *owner;
 };
 struct Model {
@@ -103,7 +99,7 @@ public:
 private:
   void loadBoneUniform(float time);
   float time = 0.0f;
-  Array<glm::mat4> inverseBindMatrices;
+  Array<Mat4> inverseBindMatrices;
   Material material;
   AABB localAABB;
   String name;

@@ -363,12 +363,14 @@ _deps
 .ninja_deps
 .ninja_log
 *.ninja
-build/msvc2022/*
-!build/msvc2022/.gitkeep
 build/msvc2022-debug/*
 !build/msvc2022-debug/.gitkeep
 build/msvc2022-release/*
 !build/msvc2022-release/.gitkeep
+build/msvc2026-debug/*
+!build/msvc2026-debug/.gitkeep
+build/msvc2026-release/*
+!build/msvc2026-release/.gitkeep
 
 build/android/arm64-v8a_26_Release/*
 build/android/.gradle/*

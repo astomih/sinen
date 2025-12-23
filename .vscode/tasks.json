@@ -2,9 +2,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "build_msvc2022",
+      "label": "build_msvc2026",
       "type": "shell",
-      "command": "${workspaceFolder:sinen}/build/build_msvc2022.bat",
+      "command": "${workspaceFolder:sinen}/build/build_msvc2026-debug.bat",
       "problemMatcher": [],
       "group": {
         "kind": "build",
@@ -12,9 +12,9 @@
       }
     },
     {
-      "label": "generate_msvc2022",
+      "label": "generate_msvc2026",
       "type": "shell",
-      "command": "${workspaceFolder:sinen}/build/generate_msvc2022.bat",
+      "command": "${workspaceFolder:sinen}/build/generate_msvc2026-debug.bat",
       "problemMatcher": [],
       "group": {
         "kind": "build"

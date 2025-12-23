@@ -4,7 +4,7 @@
       "name": "Sinen examples C++ Debug",
       "type": "cppvsdbg",
       "request": "launch",
-      "program": "${workspaceFolder:sinen}/build/msvc2022/sinen.exe",
+      "program": "${workspaceFolder:sinen}/build/msvc2026-debug/sinen",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder:sinen}/examples",
@@ -16,7 +16,7 @@
       "type": "lua-local",
       "request": "launch",
       "program": {
-        "command": "sinen"
+        "command": "${workspaceFolder:sinen}/build/msvc2026-debug/sinen",
       },
       "cwd": "${workspaceFolder:sinen}/examples"
     },
@@ -25,7 +25,7 @@
       "type": "lua-local",
       "cwd": "${workspaceFolder:sinen}/utils/test",
       "program": {
-        "command": "${workspaceFolder:sinen}/build/msvc2022/sinen"
+        "command": "${workspaceFolder:sinen}/build/msvc2026-debug/sinen",
       },
       "request": "launch"
     }

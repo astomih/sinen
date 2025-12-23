@@ -367,6 +367,7 @@ build/msvc2022-debug/*
 !build/msvc2022-debug/.gitkeep
 build/msvc2022-release/*
 !build/msvc2022-release/.gitkeep
+
 build/msvc2026-debug/*
 !build/msvc2026-debug/.gitkeep
 build/msvc2026-release/*

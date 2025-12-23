@@ -49,8 +49,7 @@ void ScriptSystem::runScene(StringView sceneName) {
     default:
       break;
     }
-    script->runScene(AssetIO::openAsString(String(sceneName) + ".lua"),
-                     "@" + AssetIO::getFilePath(sceneName) + ".lua");
+    script->runScene(source, "@" + AssetIO::getFilePath(sceneName) + ".lua");
   }
 }
 

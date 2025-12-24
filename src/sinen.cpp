@@ -48,7 +48,7 @@ bool Sinen::initialize(int argc, char *argv[]) {
     Logger::critical("Failed to initialize physics system");
     return false;
   }
-  if (!ScriptSystem::initialize(ScriptType::Lua)) {
+  if (!ScriptSystem::initialize()) {
     Logger::critical("Failed to initialize script system");
     return false;
   }

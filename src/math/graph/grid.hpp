@@ -2,7 +2,7 @@
 #define SINEN_GRID_HPP
 #include <cassert>
 #include <core/data/array.hpp>
-
+#include <physics/primitive2.hpp>
 
 namespace sinen {
 /**
@@ -64,34 +64,59 @@ public:
    * @brief Push a column to the right
    *
    */
-  void push_column();
+  void pushColumn();
   /**
    * @brief Push a column to the right
    *
    * @param value Value to push
    */
-  void push_column(const T &value);
+  void pushColumn(const T &value);
   /**
    * @brief Pop column from the right
    *
    */
-  void pop_column();
+  void popColumn();
   /**
    * @brief Push row to the bottom
    *
    */
-  void push_row();
+  void pushRow();
   /**
    * @brief Push row to the bottom
    *
    * @param value Value to push
    */
-  void push_row(const T &value);
+  void pushRow(const T &value);
   /**
    * @brief Pop row from the bottom
    *
    */
-  void pop_row();
+  void popRow();
+
+  inline void fill(const T &value) {
+    for (auto &i : m_data) {
+      i = value;
+    }
+  }
+
+  inline void fillRect(const Rect &rect, const T &value) {
+    for (int y = rect.y; y < rect.y + rect.height; y++) {
+      for (int x = rect.x; x < rect.x + rect.width; x++) {
+        m_data[y * width() + x] = value;
+      }
+    }
+  }
+
+  inline void setRow(int index, const T &value) {
+    for (int x = 0; x < width(); x++)
+      m_data[index * width() + x] = value;
+  }
+
+  inline void setColumn(int index, const T &value) {
+    for (int y = 0; y < height(); y++)
+      m_data[y * width() + index] = value;
+  }
+
   /**
    * @brief Get the size of grid
    *
@@ -284,7 +309,7 @@ template <class T> inline std::size_t Grid<T>::height() const {
   Column
 */
 
-template <class T> inline void Grid<T>::push_column() {
+template <class T> inline void Grid<T>::pushColumn() {
   if (m_width == 0) {
     m_data.push_back(T{});
     m_width++;
@@ -295,7 +320,7 @@ template <class T> inline void Grid<T>::push_column() {
   }
   m_width++;
 }
-template <class T> inline void Grid<T>::push_column(const T &value) {
+template <class T> inline void Grid<T>::pushColumn(const T &value) {
   if (m_width == 0) {
     m_data.push_back(value);
     m_width++;
@@ -306,7 +331,7 @@ template <class T> inline void Grid<T>::push_column(const T &value) {
   }
   m_width++;
 }
-template <class T> inline void Grid<T>::pop_column() {
+template <class T> inline void Grid<T>::popColumn() {
   if (m_width == 0) {
     return;
   }
@@ -319,7 +344,7 @@ template <class T> inline void Grid<T>::pop_column() {
 /*
   Row
 */
-template <class T> inline void Grid<T>::push_row() {
+template <class T> inline void Grid<T>::pushRow() {
   if (width() == 0) {
     m_data.push_back(T{});
     m_width++;
@@ -327,7 +352,7 @@ template <class T> inline void Grid<T>::push_row() {
   }
   m_data.resize(m_data.size() + width());
 }
-template <class T> inline void Grid<T>::push_row(const T &value) {
+template <class T> inline void Grid<T>::pushRow(const T &value) {
   if (width() == 0) {
     m_data.push_back(value);
     m_width++;
@@ -335,7 +360,7 @@ template <class T> inline void Grid<T>::push_row(const T &value) {
   }
   m_data.resize(m_data.size() + width(), value);
 }
-template <class T> inline void Grid<T>::pop_row() {
+template <class T> inline void Grid<T>::popRow() {
   m_data.resize(m_data.size() - width());
 }
 
@@ -361,21 +386,21 @@ inline void Grid<T>::resize(const std::size_t &w, const std::size_t &h) {
   auto width = this->width();
   if (w < width) {
     for (std::size_t i = 0; i < width - w; i++) {
-      pop_column();
+      popColumn();
     }
   } else if (w > width) {
     for (std::size_t i = 0; i < w - width; i++) {
-      push_column();
+      pushColumn();
     }
   }
   auto height = this->height();
   if (h < height) {
     for (std::size_t i = 0; i < height - h; i++) {
-      pop_row();
+      popRow();
     }
   } else if (h > height) {
     for (std::size_t i = 0; i < h - height; i++) {
-      push_row();
+      pushRow();
     }
   }
 }

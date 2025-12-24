@@ -6,7 +6,7 @@
 #include <unordered_map>
 
 // internal
-#include "../../main_system.hpp"
+#include "asset/script/script_system.hpp"
 #include "core/data/string.hpp"
 #include <core/io/asset_io.hpp>
 #include <core/io/file_system.hpp>
@@ -26,7 +26,7 @@ namespace sinen {
 static void convertFilePath(String &filePath, StringView name) {
 
   filePath = FileSystem::getAppBaseDirectory() + "/" +
-             MainSystem::getBasePath() + "/" + String(name);
+             ScriptSystem::getBasePath() + "/" + String(name);
 }
 Array<uint8_t> AssetIO::key = {0};
 StringView AssetIO::open(StringView name) {

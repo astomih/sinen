@@ -8,6 +8,8 @@ class Arguments {
 public:
   static int getArgc();
   static Array<String> getArgv();
+  inline static int argc = 0;
+  inline static Array<String> argv;
 };
 } // namespace sinen
 

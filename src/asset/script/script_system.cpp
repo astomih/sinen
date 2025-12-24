@@ -7,7 +7,6 @@
 #include <core/io/asset_io.hpp>
 #include <core/io/file_system.hpp>
 #include <graphics/graphics.hpp>
-#include <main_system.hpp>
 #include <math/graph/bfs_grid.hpp>
 #include <math/math.hpp>
 #include <physics/physics.hpp>
@@ -735,7 +734,8 @@ function Draw()
 end
 )";
 
-void ScriptSystem::runScene(StringView sceneName) {
+void ScriptSystem::runScene() {
+
   String source;
   source = AssetIO::openAsString(String(sceneName) + ".lua");
   if (source.empty()) {

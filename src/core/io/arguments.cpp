@@ -1,7 +1,6 @@
-#include "../../main_system.hpp"
 #include <core/io/arguments.hpp>
 
 namespace sinen {
-int Arguments::getArgc() { return MainSystem::argc; }
-Array<String> Arguments::getArgv() { return MainSystem::argv; }
+int Arguments::getArgc() { return argc; }
+Array<String> Arguments::getArgv() { return argv; }
 } // namespace sinen

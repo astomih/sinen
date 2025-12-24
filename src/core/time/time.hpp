@@ -1,6 +1,5 @@
 #ifndef SINEN_TIME_HPP
 #define SINEN_TIME_HPP
-#include <chrono>
 #include <cstdint>
 #include <functional>
 
@@ -23,20 +22,11 @@ public:
 
   static float deltaTime();
 
-  /**
-   * @brief Get the function time object
-   *
-   * @param function
-   * @return double time
-   */
-  static inline double getFunctionTime(const std::function<void()> &function) {
-    std::chrono::system_clock::time_point start, end;
-    start = std::chrono::system_clock::now();
-    function();
-    end = std::chrono::system_clock::now();
-    return std::chrono::duration_cast<std::chrono::microseconds>(end - start)
-        .count();
-  }
+  static void update();
+
+private:
+  inline static float delta = 0.f;
+  inline static float prev = 0.f;
 };
 } // namespace sinen
 

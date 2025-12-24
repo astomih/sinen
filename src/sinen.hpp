@@ -19,28 +19,6 @@
 // Platform
 #include "platform/platform.hpp"
 
-namespace sinen {
-class Sinen {
-public:
-  /**
-   * @brief Initialize sinen engine
-   *
-   * @return true Success to initialize
-   * @return false Failed to initialize
-   */
-  static bool initialize(int argc, char *argv[]);
-  /**
-   * @brief Run sinen engine
-   *
-   */
-  static void run();
-  /**
-   * @brief Shutdown sinen engine
-   */
-  static void shutdown();
-};
-} // namespace sinen
-
 #endif
 
 #ifdef NO_USE_SINEN_NAMESPACE

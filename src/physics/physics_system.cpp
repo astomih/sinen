@@ -9,8 +9,6 @@
 #include <math/quaternion.hpp>
 #include <math/vector.hpp>
 
-#include "../main_system.hpp"
-
 JPH_SUPPRESS_WARNINGS
 
 namespace sinen {
@@ -208,7 +206,7 @@ void PhysicsSystem::postSetup() {
 
 void PhysicsSystem::update() {
   const int cCollisionSteps = 1;
-  raw->physicsSystem.Update(MainSystem::deltaTime(), cCollisionSteps,
+  raw->physicsSystem.Update(Time::deltaTime(), cCollisionSteps,
                             &raw->tempAllocator, &raw->jobSystem);
 }
 

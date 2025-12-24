@@ -20,7 +20,6 @@
 #include "../asset/model/model_data.hpp"
 #include "../asset/script/script_system.hpp"
 #include "../asset/texture/texture_data.hpp"
-#include "../main_system.hpp"
 #include "../platform/window/window_system.hpp"
 #include "imgui_internal.h"
 #include <graphics/rhi/rhi.hpp>

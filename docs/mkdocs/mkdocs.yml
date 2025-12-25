@@ -2,3 +2,16 @@ site_name: Sinen Docs
 theme:
   language: en
   name: material
+
+plugins:
+  - search:
+  - i18n:
+      docs_structure: suffix
+      languages:
+          - locale: en
+            default: true
+            name: Engligh
+            build: true
+          - locale: ja
+            name: 日本語
+            build: true

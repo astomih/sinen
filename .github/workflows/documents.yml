@@ -19,5 +19,5 @@ jobs:
         python-version: 3.9
     - run: |
           cd docs/mkdocs
-          pip install mkdocs-material
+          pip install mkdocs-material mkdocs-static-i18n
           mkdocs gh-deploy --force

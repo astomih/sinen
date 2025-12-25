@@ -17,7 +17,6 @@
 #include <platform/input/mouse.hpp>
 #include <platform/window/window.hpp>
 
-
 #include <glm/glm.hpp>
 
 #define SOL_NO_CHECK_NUMBER_PRECISION 1
@@ -26,6 +25,7 @@
 #include <format>
 
 namespace sinen {
+void bindImGui(sol::table &lua);
 auto alloc = [](void *ud, void *ptr, size_t osize, size_t nsize) -> void * {
   (void)ud;
   // free
@@ -720,6 +720,7 @@ bool ScriptSystem::initialize() {
     v["warn"] = [](StringView str) { Logger::warn("%s", str.data()); };
     v["critical"] = [](StringView str) { Logger::critical("%s", str.data()); };
   }
+  bindImGui(lua);
 #endif
   return true;
 }

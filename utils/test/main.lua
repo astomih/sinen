@@ -11,4 +11,6 @@ function Update()
 end
 
 function Draw()
+  sn.ImGui.Begin("Hello ImGui")
+  sn.ImGui.End()
 end

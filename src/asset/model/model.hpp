@@ -1,11 +1,12 @@
 #ifndef SINEN_MODEL_HPP
 #define SINEN_MODEL_HPP
-#include "mesh.hpp"
 #include <asset/texture/material.hpp>
 #include <core/data/hashmap.hpp>
+#include <geometry/mesh.hpp>
 #include <graphics/rhi/rhi.hpp>
 #include <graphics/uniform_data.hpp>
 #include <math/quaternion.hpp>
+
 
 namespace sinen {
 struct BoneInfo {

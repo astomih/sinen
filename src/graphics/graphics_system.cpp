@@ -6,7 +6,6 @@
 
 #include "core/allocator/global_allocator.hpp"
 #include "imgui_backend/imgui_impl_sinen.hpp"
-#include <asset/model/mesh.hpp>
 #include <asset/texture/render_texture.hpp>
 #include <cassert>
 #include <core/io/asset_io.hpp>
@@ -16,7 +15,6 @@
 #include <platform/window/window.hpp>
 
 #include "../asset/font/default/mplus-1p-medium.ttf.hpp"
-#include "../asset/model/default_model_creator.hpp"
 #include "../asset/model/model_data.hpp"
 #include "../asset/script/script_system.hpp"
 #include "../asset/texture/texture_data.hpp"
@@ -243,13 +241,12 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
   mat[2] = Mat4(1.f);
   for (auto &i : draw2D.worlds) {
     auto t = glm::translate(
-        glm::mat4(1.0f),
-        glm::vec3(i.position.x * ratio.x, i.position.y * ratio.y, 0.0f));
+        Mat4(1.0f), Vec3(i.position.x * ratio.x, i.position.y * ratio.y, 0.0f));
     auto quaternion =
-        glm::angleAxis(glm::radians(i.rotation), glm::vec3(0.0f, 0.0f, -1.0f));
+        glm::angleAxis(glm::radians(i.rotation), Vec3(0.0f, 0.0f, -1.0f));
     auto r = glm::toMat4(quaternion);
-    auto s = glm::scale(glm::mat4(1.0f),
-                        glm::vec3(i.scale.x * 0.5f, i.scale.y * 0.5f, 1.0f));
+    auto s =
+        glm::scale(Mat4(1.0f), Vec3(i.scale.x * 0.5f, i.scale.y * 0.5f, 1.0f));
 
     auto world = t * r * s;
 
@@ -281,48 +278,46 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
   renderPass->bindIndexBuffer(indexBufferBinding,
                               rhi::IndexElementSize::Uint32);
 
-  commandBuffer->pushUniformData(0, &mat, sizeof(glm::mat4) * 3);
-  renderPass->drawIndexedPrimitives(model.getMesh().indexCount, 1, 0, 0, 0);
+  commandBuffer->pushUniformData(0, &mat, sizeof(Mat4) * 3);
+  renderPass->drawIndexedPrimitives(model.getMesh().indices.size(), 1, 0, 0, 0);
 }
 
 void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
   auto vertexBufferBindings = Array<rhi::BufferBinding>();
   auto indexBufferBinding = rhi::BufferBinding{};
   auto textureSamplers = Array<rhi::TextureSamplerBinding>();
-  glm::mat4 mat[3];
-  Array<glm::mat4> instanceData;
+  Mat4 mat[3];
+  Array<Mat4> instanceData;
   {
-    const auto t = glm::translate(
-        glm::mat4(1.0f),
-        glm::vec3(draw3D.position.x, draw3D.position.y, draw3D.position.z));
-    const auto rotationX = glm::angleAxis(glm::radians(draw3D.rotation.x),
-                                          glm::vec3(1.0f, 0.0f, 0.0f));
-    const auto rotationY = glm::angleAxis(glm::radians(draw3D.rotation.y),
-                                          glm::vec3(0.0f, 1.0f, 0.0f));
-    const auto rotationZ = glm::angleAxis(glm::radians(draw3D.rotation.z),
-                                          glm::vec3(0.0f, 0.0f, 1.0f));
+    const auto t =
+        glm::translate(Mat4(1.0f), Vec3(draw3D.position.x, draw3D.position.y,
+                                        draw3D.position.z));
+    const auto rotationX =
+        glm::angleAxis(glm::radians(draw3D.rotation.x), Vec3(1.0f, 0.0f, 0.0f));
+    const auto rotationY =
+        glm::angleAxis(glm::radians(draw3D.rotation.y), Vec3(0.0f, 1.0f, 0.0f));
+    const auto rotationZ =
+        glm::angleAxis(glm::radians(draw3D.rotation.z), Vec3(0.0f, 0.0f, 1.0f));
     const auto r = glm::toMat4(rotationX * rotationY * rotationZ);
 
-    const auto s =
-        glm::scale(glm::mat4(1.0f),
-                   glm::vec3(draw3D.scale.x, draw3D.scale.y, draw3D.scale.z));
+    const auto s = glm::scale(
+        Mat4(1.0f), Vec3(draw3D.scale.x, draw3D.scale.y, draw3D.scale.z));
     mat[0] = glm::transpose(t * r * s);
     mat[1] = glm::transpose(camera.getView());
     mat[2] = glm::transpose(camera.getProjection());
   }
   for (auto &i : draw3D.worlds) {
-    auto t = glm::translate(
-        glm::mat4(1.0f), glm::vec3(i.position.x, i.position.y, i.position.z));
+    auto t = glm::translate(Mat4(1.0f),
+                            Vec3(i.position.x, i.position.y, i.position.z));
     auto rotationX =
-        glm::angleAxis(glm::radians(i.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+        glm::angleAxis(glm::radians(i.rotation.x), Vec3(1.0f, 0.0f, 0.0f));
     auto rotationY =
-        glm::angleAxis(glm::radians(i.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::angleAxis(glm::radians(i.rotation.y), Vec3(0.0f, 1.0f, 0.0f));
     auto rotationZ =
-        glm::angleAxis(glm::radians(i.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::angleAxis(glm::radians(i.rotation.z), Vec3(0.0f, 0.0f, 1.0f));
     auto r = glm::toMat4(rotationX * rotationY * rotationZ);
 
-    auto s =
-        glm::scale(glm::mat4(1.0f), glm::vec3(i.scale.x, i.scale.y, i.scale.z));
+    auto s = glm::scale(Mat4(1.0f), Vec3(i.scale.x, i.scale.y, i.scale.z));
 
     auto world = t * r * s;
     instanceData.push_back(glm::transpose(world));
@@ -342,7 +337,7 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
         .sampler = sampler, .texture = nativeCubemap});
   }
 
-  auto instanceSize = sizeof(glm::mat4) * instanceData.size();
+  auto instanceSize = sizeof(Mat4) * instanceData.size();
   bool isInstance = instanceSize > 0;
   Ptr<rhi::Buffer> instanceBuffer = nullptr;
   if (isInstance) {
@@ -411,8 +406,8 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
   renderPass->bindIndexBuffer(indexBufferBinding,
                               rhi::IndexElementSize::Uint32);
 
-  commandBuffer->pushUniformData(0, &mat, sizeof(glm::mat4) * 3);
-  uint32_t numIndices = model.getMesh().indexCount;
+  commandBuffer->pushUniformData(0, &mat, sizeof(Mat4) * 3);
+  uint32_t numIndices = model.getMesh().indices.size();
   uint32_t numInstance = isInstance ? instanceSize : 1;
   renderPass->drawIndexedPrimitives(numIndices, numInstance, 0, 0, 0);
 }
@@ -441,7 +436,7 @@ void GraphicsSystem::drawImage(const Texture &texture, const Rect &rect,
   GraphicsSystem::drawBase2D(draw2D);
 }
 void GraphicsSystem::drawText(StringView text, const Font &font,
-                              const glm::vec2 &position, const Color &color,
+                              const Vec2 &position, const Color &color,
                               float textSize, float angle) {
   sinen::Draw2D draw2D;
   Model model;
@@ -453,11 +448,10 @@ void GraphicsSystem::drawText(StringView text, const Font &font,
   draw2D.material = Material();
   draw2D.material.setTexture(texture);
   draw2D.model = model;
-  draw2D.scale = glm::vec2(textSize / static_cast<float>(font.size()));
+  draw2D.scale = Vec2(textSize / static_cast<float>(font.size()));
   GraphicsSystem::drawBase2D(draw2D);
 }
 void GraphicsSystem::drawCubemap(const Cubemap &cubemap) {
-
   Transform transform;
   Model model;
   model.loadBox();
@@ -549,8 +543,10 @@ void GraphicsSystem::prepareRenderPassFrame() {
 }
 
 void GraphicsSystem::setupShapes() {
-  box.loadFromVertexArray(createBoxVertices());
-  sprite.loadFromVertexArray(createSpriteVertices());
+  AABB aabb;
+  box.loadFromVertexArray(aabb.createMesh());
+  Rect rect;
+  sprite.loadFromVertexArray(rect.createMesh());
 }
 
 void GraphicsSystem::bindPipeline(const GraphicsPipeline &pipeline) {

@@ -3,7 +3,6 @@
 
 #include <cstddef>
 
-#include <asset/model/vertex.hpp>
 #include <core/logger/logger.hpp>
 #include <graphics/graphics_pipeline.hpp>
 

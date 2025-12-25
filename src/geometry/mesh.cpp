@@ -1,0 +1,1 @@
+namespace sinen {} // namespace sinen

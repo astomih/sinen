@@ -3,8 +3,7 @@
 #include <physics/collision.hpp>
 
 namespace sinen {
-void AABB::updateWorld(const glm::vec3 &p, const glm::vec3 &scale,
-                       const AABB &local) {
+void AABB::updateWorld(const Vec3 &p, const Vec3 &scale, const AABB &local) {
   this->min = p + scale * local.min;
   this->max = p + scale * local.max;
 }
@@ -14,13 +13,13 @@ bool Collision::aabBvsAabb(const AABB &a, const AABB &b) {
          (a.min.z <= b.max.z && a.max.z >= b.min.z);
 }
 bool Collision::obBvsObb(const OBB &a, const OBB &b) {
-  glm::vec3 nae1 = a.v[0], ae1 = nae1 * a.a[0];
-  glm::vec3 nae2 = a.v[1], ae2 = nae2 * a.a[1];
-  glm::vec3 nae3 = a.v[2], ae3 = nae3 * a.a[2];
-  glm::vec3 nbe1 = b.v[0], be1 = nbe1 * b.a[0];
-  glm::vec3 nbe2 = b.v[1], be2 = nbe2 * b.a[1];
-  glm::vec3 nbe3 = b.v[2], be3 = nbe3 * b.a[2];
-  glm::vec3 interval = a.p - b.p;
+  Vec3 nae1 = a.v[0], ae1 = nae1 * a.a[0];
+  Vec3 nae2 = a.v[1], ae2 = nae2 * a.a[1];
+  Vec3 nae3 = a.v[2], ae3 = nae3 * a.a[2];
+  Vec3 nbe1 = b.v[0], be1 = nbe1 * b.a[0];
+  Vec3 nbe2 = b.v[1], be2 = nbe2 * b.a[1];
+  Vec3 nbe3 = b.v[2], be3 = nbe3 * b.a[2];
+  Vec3 interval = a.p - b.p;
   // Ae1
   float rA = ae1.length();
   float rB = segmentLengthOnSeparateAxis(nae1, be1, be2, be3);
@@ -63,7 +62,7 @@ bool Collision::obBvsObb(const OBB &a, const OBB &b) {
   if (L > rA + rB)
     return false;
 
-  glm::vec3 cross;
+  Vec3 cross;
   // C11
   cross = glm::cross(nae1, nbe1);
   rA = segmentLengthOnSeparateAxis(cross, ae2, ae3);
@@ -139,18 +138,15 @@ bool Collision::obBvsObb(const OBB &a, const OBB &b) {
   // no separating hyperplane theorem found, so the two OBBs are intersecting
   return true;
 }
-float Collision::segmentLengthOnSeparateAxis(const glm::vec3 &Sep,
-                                             const glm::vec3 &e1,
-                                             const glm::vec3 &e2,
-                                             const glm::vec3 &e3) {
+float Collision::segmentLengthOnSeparateAxis(const Vec3 &Sep, const Vec3 &e1,
+                                             const Vec3 &e2, const Vec3 &e3) {
   float r1 = Math::abs(glm::dot(Sep, e1));
   float r2 = Math::abs(glm::dot(Sep, e2));
   float r3 = Math::abs(glm::dot(Sep, e3));
   return r1 + r2 + r3;
 }
-float Collision::segmentLengthOnSeparateAxis(const glm::vec3 &Sep,
-                                             const glm::vec3 &e1,
-                                             const glm::vec3 &e2) {
+float Collision::segmentLengthOnSeparateAxis(const Vec3 &Sep, const Vec3 &e1,
+                                             const Vec3 &e2) {
   float r1 = Math::abs(glm::dot(Sep, e1));
   float r2 = Math::abs(glm::dot(Sep, e2));
   return r1 + r2;

@@ -1,6 +1,5 @@
 #ifndef SINEN_MODEL_DATA_HPP
 #define SINEN_MODEL_DATA_HPP
-#include <asset/model/mesh.hpp>
 #include <asset/model/model.hpp>
 
 namespace sinen {

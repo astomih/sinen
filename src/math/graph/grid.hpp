@@ -2,7 +2,7 @@
 #define SINEN_GRID_HPP
 #include <cassert>
 #include <core/data/array.hpp>
-#include <physics/primitive2.hpp>
+#include <geometry/rect.hpp>
 
 namespace sinen {
 /**

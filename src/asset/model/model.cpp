@@ -365,7 +365,6 @@ void Model::load(StringView path) {
   loadMaterial(const_cast<aiScene *>(scene), this->material);
   calcTangents(scene, this->mesh);
 
-  mesh.indexCount = mesh.indices.size();
   auto viBuffer = createVertexIndexBuffer(mesh.vertices, mesh.indices);
   this->vertexBuffer =
       createBuffer(mesh.vertices.size() * sizeof(Vertex), mesh.vertices.data(),
@@ -397,7 +396,6 @@ void Model::loadFromPath(StringView path) {
   loadMaterial(const_cast<aiScene *>(scene), this->material);
   calcTangents(scene, this->mesh);
 
-  mesh.indexCount = mesh.indices.size();
   auto viBuffer = createVertexIndexBuffer(mesh.vertices, mesh.indices);
   this->vertexBuffer =
       createBuffer(mesh.vertices.size() * sizeof(Vertex), mesh.vertices.data(),

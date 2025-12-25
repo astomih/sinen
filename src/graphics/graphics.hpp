@@ -4,11 +4,12 @@
 #include <list>
 
 #include <asset/Font/font.hpp>
-#include <asset/model/mesh.hpp>
 #include <asset/model/model.hpp>
 #include <asset/shader/shader.hpp>
 #include <asset/texture/render_texture.hpp>
 #include <asset/texture/texture.hpp>
+#include <geometry/mesh.hpp>
+#include <geometry/rect.hpp>
 #include <graphics/camera/camera.hpp>
 #include <graphics/camera/camera2d.hpp>
 #include <graphics/drawable/drawable.hpp>

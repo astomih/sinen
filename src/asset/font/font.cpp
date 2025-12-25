@@ -5,7 +5,6 @@
 // internal
 #include "../texture/texture_data.hpp"
 #include <asset/font/font.hpp>
-#include <asset/model/mesh.hpp>
 #include <asset/texture/texture.hpp>
 #include <core/io/asset_io.hpp>
 #include <core/logger/logger.hpp>
@@ -204,7 +203,6 @@ Mesh Font::getTextMesh(StringView text) const {
     v.position.x -= x * 2.f;
     v.position.y -= (yrange.y - yrange.x) / 2.f;
   }
-  textMesh.indexCount = textMesh.indices.size();
   return textMesh;
 }
 } // namespace sinen

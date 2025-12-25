@@ -1,6 +1,7 @@
 #ifndef SINEN_RECT_HPP
 #define SINEN_RECT_HPP
 #include "mesh.hpp"
+#include <core/data/ptr.hpp>
 #include <math/vector.hpp>
 namespace sinen {
 
@@ -21,7 +22,7 @@ struct Rect {
       Vec2 s;
     };
   };
-  Mesh createMesh();
+  Ptr<Mesh> createMesh();
 };
 } // namespace sinen
 #endif

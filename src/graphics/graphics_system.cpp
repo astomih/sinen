@@ -279,7 +279,8 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
                               rhi::IndexElementSize::Uint32);
 
   commandBuffer->pushUniformData(0, &mat, sizeof(Mat4) * 3);
-  renderPass->drawIndexedPrimitives(model.getMesh().indices.size(), 1, 0, 0, 0);
+  renderPass->drawIndexedPrimitives(model.getMesh()->indices.size(), 1, 0, 0,
+                                    0);
 }
 
 void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
@@ -407,7 +408,7 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
                               rhi::IndexElementSize::Uint32);
 
   commandBuffer->pushUniformData(0, &mat, sizeof(Mat4) * 3);
-  uint32_t numIndices = model.getMesh().indices.size();
+  uint32_t numIndices = model.getMesh()->indices.size();
   uint32_t numInstance = isInstance ? instanceSize : 1;
   renderPass->drawIndexedPrimitives(numIndices, numInstance, 0, 0, 0);
 }

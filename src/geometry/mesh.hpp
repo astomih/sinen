@@ -16,7 +16,6 @@ public:
   Array<Vertex> vertices;
   Array<Vec4> tangents;
   Array<uint32> indices;
-  String materialName;
 };
 } // namespace sinen
 #endif // !SINEN_VERTEX_ARRAY_HPP

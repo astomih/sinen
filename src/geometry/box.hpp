@@ -1,6 +1,7 @@
 #ifndef SINEN_BOX_HPP
 #define SINEN_BOX_HPP
 #include "mesh.hpp"
+#include <core/data/ptr.hpp>
 #include <math/vector.hpp>
 namespace sinen {
 struct AABB {
@@ -17,7 +18,7 @@ struct AABB {
   AABB(const Vec3 &min, const Vec3 max) : min(min), max(max) {}
   void updateWorld(const Vec3 &p, const Vec3 &scale, const AABB &local);
 
-  Mesh createMesh();
+  Ptr<Mesh> createMesh();
 };
 /**
  * @brief OBBox(Oriented Bounding Box) class

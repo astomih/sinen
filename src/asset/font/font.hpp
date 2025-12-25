@@ -3,7 +3,6 @@
 #include <asset/texture/texture.hpp>
 #include <geometry/mesh.hpp>
 
-
 #include <core/data/string.hpp>
 namespace sinen {
 /**
@@ -25,7 +24,7 @@ public:
   void resize(int point_size);
 
   Texture getAtlas() const;
-  Mesh getTextMesh(StringView text) const;
+  Ptr<Mesh> getTextMesh(StringView text) const;
 
 private:
   struct Wrapper;

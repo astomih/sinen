@@ -2,11 +2,11 @@
 #define SINEN_MODEL_HPP
 #include <asset/texture/material.hpp>
 #include <core/data/hashmap.hpp>
+#include <core/data/ptr.hpp>
 #include <geometry/mesh.hpp>
 #include <graphics/rhi/rhi.hpp>
 #include <graphics/uniform_data.hpp>
 #include <math/quaternion.hpp>
-
 
 namespace sinen {
 struct BoneInfo {
@@ -75,7 +75,7 @@ public:
    */
   void load(StringView str);
   void loadFromPath(StringView path);
-  void loadFromVertexArray(const Mesh &mesh);
+  void loadFromVertexArray(const Ptr<Mesh> &mesh);
   void loadSprite();
   void loadBox();
   void play(float start);
@@ -86,7 +86,7 @@ public:
 
   Material getMaterial() const { return material; }
 
-  const Mesh &getMesh() const { return mesh; }
+  const Ptr<Mesh> &getMesh() const { return mesh; }
   void setMesh(const Mesh &m) { mesh = mesh; }
 
   Ptr<rhi::Buffer> vertexBuffer;
@@ -104,7 +104,7 @@ private:
   Material material;
   AABB localAABB;
   String name;
-  Mesh mesh;
+  Ptr<Mesh> mesh;
   UniformData boneUniformData;
 
   SkeletalAnimation skeletalAnimation;

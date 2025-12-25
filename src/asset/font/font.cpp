@@ -4,6 +4,7 @@
 
 // internal
 #include "../texture/texture_data.hpp"
+#include "geometry/mesh.hpp"
 #include <asset/font/font.hpp>
 #include <asset/texture/texture.hpp>
 #include <core/io/asset_io.hpp>
@@ -148,11 +149,11 @@ const char *utf8ToCodepoint(const char *p, uint32_t *out_cp) {
   return p + 1;
 }
 
-Mesh Font::getTextMesh(StringView text) const {
+Ptr<Mesh> Font::getTextMesh(StringView text) const {
 
   assert(this->font);
 
-  Mesh textMesh;
+  auto textMesh = makePtr<Mesh>();
   float x = 0.f, y = 0.f;
   glm::vec2 yrange(99999, -99999);
   const char *p = text.data();
@@ -178,8 +179,8 @@ Mesh Font::getTextMesh(StringView text) const {
     uint32_t sheetSize = this->font->sheetSize;
     stbtt_GetPackedQuad(this->font->packedChar[idx1].data(), sheetSize,
                         sheetSize, idx2, &x, &y, &q, 1);
-    uint32_t startIndex = textMesh.vertices.size();
-    auto &vertices = textMesh.vertices;
+    uint32_t startIndex = textMesh->vertices.size();
+    auto &vertices = textMesh->vertices;
     vertices.push_back(Vertex{
         {q.x0 * 4.f, -q.y0 * 4.f, 0}, {1, 1, 1}, {q.s0, q.t0}, {1, 1, 1, 1}});
     vertices.push_back(Vertex{
@@ -191,15 +192,15 @@ Mesh Font::getTextMesh(StringView text) const {
     yrange.x = std::min(yrange.x, -q.y1 * 4.f);
     yrange.y = std::max(yrange.y, -q.y0 * 4.f);
 
-    textMesh.indices.push_back(startIndex + 0);
-    textMesh.indices.push_back(startIndex + 1);
-    textMesh.indices.push_back(startIndex + 2);
-    textMesh.indices.push_back(startIndex + 2);
-    textMesh.indices.push_back(startIndex + 1);
-    textMesh.indices.push_back(startIndex + 3);
+    textMesh->indices.push_back(startIndex + 0);
+    textMesh->indices.push_back(startIndex + 1);
+    textMesh->indices.push_back(startIndex + 2);
+    textMesh->indices.push_back(startIndex + 2);
+    textMesh->indices.push_back(startIndex + 1);
+    textMesh->indices.push_back(startIndex + 3);
     p = next;
   }
-  for (auto &v : textMesh.vertices) {
+  for (auto &v : textMesh->vertices) {
     v.position.x -= x * 2.f;
     v.position.y -= (yrange.y - yrange.x) / 2.f;
   }

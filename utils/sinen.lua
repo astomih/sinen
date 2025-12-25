@@ -468,5 +468,40 @@ sn = {
     ---@field error fun(msg: any)
     ---@field warn fun(msg: any)
     ---@field critical fun(msg: any)
-    Logger = {}
+    Logger = {},
+
+    ---Static class
+    ---@class sn.ImGui
+    ---@field Begin fun(name:string , flags:sn.ImGui.WindowFlags?)
+    ---@field End fun()
+    ---@field button fun(name:string)
+    ---@field text fun(name:string)
+    ---@field setNextWindowPos fun(pos:sn.Vec2)
+    ---@field setNextWindowSize fun(size:sn.Vec2)
+    ImGui = {
+        ---@class sn.ImGui.WindowFlags
+        ---@field None integer
+        ---@field NoTitleBar integer
+        ---@field NoResize integer
+        ---@field NoMove integer
+        ---@field NoScrollBar integer
+        ---@field NoScrollWithMouse integer
+        ---@field NoCollapse integer
+        ---@field AlwaysAutoResize integer
+        ---@field NoBackground integer
+        ---@field NoSavedSettings integer
+        ---@field NoMouseInputs integer
+        ---@field MenuBar integer
+        ---@field HorizontalScrollbar integer
+        ---@field NoFocusOnAppearing integer
+        ---@field NoBringToFrontOnFocus integer
+        ---@field AlwaysVerticalScrollbar integer
+        ---@field AlwaysHorizontalScrollbar integer
+        ---@field NoNavInputs integer
+        ---@field NoNavFocus integer
+        ---@field UnsavedDocument integer
+        ---@field NoNav integer
+        ---@field NoDecoration integer
+        ---@field NoInputs integer
+    }
 }

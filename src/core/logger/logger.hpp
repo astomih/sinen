@@ -17,32 +17,38 @@ public:
         stringFormatLogger(String(format), std::forward<Args>(args)...)
             .c_str());
   }
+  static void verbose(StringView str) { logger.verbose(str.data()); }
   template <typename... Args>
   static void debug(StringView format, Args &&...args) {
     logger.debug(stringFormatLogger(String(format), std::forward<Args>(args)...)
                      .c_str());
   }
+  static void debug(StringView str) { logger.debug(str.data()); }
   template <typename... Args>
   static void info(StringView format, Args &&...args) {
     logger.info(stringFormatLogger(String(format), std::forward<Args>(args)...)
                     .c_str());
   }
+  static void info(StringView str) { logger.info(str.data()); }
   template <typename... Args>
   static void error(StringView format, Args &&...args) {
     logger.error(stringFormatLogger(String(format), std::forward<Args>(args)...)
                      .c_str());
   }
+  static void error(StringView str) { logger.error(str.data()); }
   template <typename... Args>
   static void warn(StringView format, Args &&...args) {
     logger.warn(stringFormatLogger(String(format), std::forward<Args>(args)...)
                     .c_str());
   }
+  static void warn(StringView str) { logger.warn(str.data()); }
   template <typename... Args>
   static void critical(StringView format, Args &&...args) {
     logger.critical(
         stringFormatLogger(String(format), std::forward<Args>(args)...)
             .c_str());
   }
+  static void critical(StringView str) { logger.critical(str.data()); }
 
 private:
   class Implements {

@@ -100,7 +100,7 @@ static bool loadCore(const unsigned char *fontData,
 bool Font::load(int pointSize) {
   this->font = makeUnique<Wrapper>();
   this->m_size = pointSize;
-  this->font->sheetSize = pointSize * 128;
+  this->font->sheetSize = pointSize * 64;
 
   return loadCore(mplus1pMediumTtf, this->font->packedChar, this->font->texture,
                   pointSize, this->font->sheetSize);
@@ -108,7 +108,7 @@ bool Font::load(int pointSize) {
 bool Font::load(int pointSize, StringView fontName) {
   this->font = makeUnique<Wrapper>();
   this->m_size = pointSize;
-  this->font->sheetSize = pointSize * 128;
+  this->font->sheetSize = pointSize * 64;
   return loadCore(reinterpret_cast<const unsigned char *>(
                       AssetIO::openAsString(fontName).data()),
                   this->font->packedChar, this->font->texture, pointSize,

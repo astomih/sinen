@@ -15,11 +15,10 @@ public:
 
   static bool hasToReload() { return reload; }
   static void doneReload() { reload = false; }
-  static bool hasToQuit() { return sceneName.empty(); }
 
   static void setSceneName(StringView name) {
     sceneName = name;
-    reload = !sceneName.empty();
+    reload = true;
   }
   static String getSceneName() { return sceneName; }
   static void setBasePath(StringView path) {

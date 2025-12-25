@@ -200,6 +200,9 @@ sn = {
     ---@field clear fun(self: sn.Grid)
     ---@field resize fun(self: sn.Grid, w: integer, h: integer)
     ---@field fill fun(self: sn.Grid, value: integer)
+    ---@field fillRect fun(self: sn.Grid, index: integer, value: integer)
+    ---@field setRow fun(self: sn.Grid, index: integer, value: integer)
+    ---@field setColumn fun(self: sn.Grid, index: integer, value: integer)
     Grid = {},
 
     ---@class sn.BFSGrid
@@ -249,6 +252,12 @@ sn = {
     ---@class sn.Arguments
     ---@field getArgc fun(): integer
     ---@field getArgv fun(): string[]
+    Arguments = {},
+
+    ---Static class
+    ---@class sn.Event
+    ---@field quit fun()
+    Event = {},
 
     ---Static class
     ---@class sn.Script

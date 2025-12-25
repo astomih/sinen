@@ -1,5 +1,7 @@
+#include "core/event/event_system.hpp"
 #include <asset/audio/audio_system.hpp>
 #include <asset/script/script_system.hpp>
+#include <core/event/event_system.hpp>
 #include <graphics/graphics_system.hpp>
 #include <math/random_system.hpp>
 #include <physics/physics_system.hpp>
@@ -17,9 +19,6 @@ using namespace sinen;
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 
-enum class State { running, quit };
-
-State mGameState = State::quit;
 struct ImGuiLog {
   struct Type {
     ImVec4 color;
@@ -29,7 +28,8 @@ struct ImGuiLog {
 };
 Array<ImGuiLog::Type> ImGuiLog::logs =
     Array<ImGuiLog::Type>(GlobalAllocator::get());
-bool initialize(int argc, char *argv[]) {
+
+int main(const int argc, char *argv[]) {
   Arguments::argc = argc;
   Arguments ::argv.resize(argc);
   for (int i = 0; i < argc; i++) {
@@ -78,67 +78,7 @@ bool initialize(int argc, char *argv[]) {
     }
     ImGuiLog::logs.push_back({color, newStr});
   });
-  return true;
-}
-void setup() {
-  ScriptSystem::runScene();
-  PhysicsSystem::postSetup();
-  mGameState = State::running;
-}
 
-void processInput() {
-
-  SDL_Event event;
-  while (SDL_PollEvent(&event)) {
-    ImGui_ImplSDL3_ProcessEvent(&event);
-    WindowSystem::processInput(event);
-    InputSystem::processEvent(event);
-    switch (event.type) {
-    case SDL_EVENT_QUIT: {
-      mGameState = State::quit;
-    } break;
-    default:
-      break;
-    }
-  }
-}
-
-void updateScene() {
-  {
-    if (Keyboard::isPressed(Keyboard::Code::F3) ||
-        KeyInput::isPressed(KeyInput::AC_BACK)) {
-      Graphics::toggleShowImGui();
-      if (Graphics::isShowImGui()) {
-        Graphics::addImGuiFunction([&]() {
-          // Log Window
-          ImGui::SetNextWindowPos(ImVec2(0, Window::size().y * (3.f / 4.f)),
-                                  ImGuiCond_Always);
-          ImGui::SetNextWindowSize(
-              ImVec2(Window::size().x, Window::size().y * (1.f / 4.f)),
-              ImGuiCond_Always);
-          ImGui::Begin("Log", nullptr, ImGuiWindowFlags_NoResize);
-          for (auto &log : ImGuiLog::logs) {
-            ImGui::TextColored(log.color, "%s", (log.str).c_str());
-          }
-          ImGui::End();
-        });
-      } else {
-        Graphics::getImGuiFunction().clear();
-      }
-    }
-  }
-  Time::update();
-  ScriptSystem::updateScene();
-  PhysicsSystem::update();
-  if (ScriptSystem::hasToReload())
-    mGameState = State::quit;
-}
-
-int main(const int argc, char *argv[]) {
-  if (!initialize(argc, argv)) {
-    Logger::critical("Failed to initialize main system");
-    return false;
-  }
   if (!WindowSystem::initialize("Sinen")) {
     Logger::critical("Failed to initialize window system");
     return false;
@@ -165,22 +105,52 @@ int main(const int argc, char *argv[]) {
     Logger::critical("Failed to initialize random system");
     return false;
   }
-  while (true) {
-    if (mGameState != State::quit) {
-      WindowSystem::prepareFrame();
-      InputSystem::prepareForUpdate();
-      processInput();
-      InputSystem::update();
-      updateScene();
-      GraphicsSystem::render();
-      continue;
+  auto setup = []() {
+    ScriptSystem::runScene();
+    PhysicsSystem::postSetup();
+    ScriptSystem::doneReload();
+  };
+  while (!EventSystem::isQuit()) {
+    WindowSystem::prepareFrame();
+    InputSystem::prepareForUpdate();
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+      ImGui_ImplSDL3_ProcessEvent(&event);
+      EventSystem::processEvent(event);
+      WindowSystem::processInput(event);
+      InputSystem::processEvent(event);
     }
-    if (ScriptSystem::hasToReload() && !ScriptSystem::hasToQuit()) {
+    InputSystem::update();
+    {
+      if (Keyboard::isPressed(Keyboard::Code::F3) ||
+          KeyInput::isPressed(KeyInput::AC_BACK)) {
+        Graphics::toggleShowImGui();
+        if (Graphics::isShowImGui()) {
+          Graphics::addImGuiFunction([&]() {
+            // Log Window
+            ImGui::SetNextWindowPos(ImVec2(0, Window::size().y * (3.f / 4.f)),
+                                    ImGuiCond_Always);
+            ImGui::SetNextWindowSize(
+                ImVec2(Window::size().x, Window::size().y * (1.f / 4.f)),
+                ImGuiCond_Always);
+            ImGui::Begin("Log", nullptr, ImGuiWindowFlags_NoResize);
+            for (auto &log : ImGuiLog::logs) {
+              ImGui::TextColored(log.color, "%s", (log.str).c_str());
+            }
+            ImGui::End();
+          });
+        } else {
+          Graphics::getImGuiFunction().clear();
+        }
+      }
+    }
+    Time::update();
+    ScriptSystem::updateScene();
+    PhysicsSystem::update();
+    GraphicsSystem::render();
+    if (ScriptSystem::hasToReload()) {
       setup();
-      ScriptSystem::doneReload();
-      continue;
     }
-    break;
   }
   PhysicsSystem::shutdown();
   InputSystem::shutdown();

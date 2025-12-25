@@ -3,6 +3,7 @@
 #include <asset/asset.hpp>
 #include <core/core.hpp>
 #include <core/data/string.hpp>
+#include <core/event/event.hpp>
 #include <core/io/arguments.hpp>
 #include <core/io/asset_io.hpp>
 #include <core/io/file_system.hpp>
@@ -15,6 +16,7 @@
 #include <platform/input/keyboard.hpp>
 #include <platform/input/mouse.hpp>
 #include <platform/window/window.hpp>
+
 
 #include <glm/glm.hpp>
 
@@ -485,6 +487,10 @@ bool ScriptSystem::initialize() {
     v["get3D"] = &BuiltinPipelines::get3D;
     v["get3DInstanced"] = &BuiltinPipelines::get3DInstanced;
     v["get2D"] = &BuiltinPipelines::get2D;
+  }
+  {
+    auto v = lua.create_named("Event");
+    v["quit"] = &Event::quit;
   }
   {
     auto v = lua.create_named("Graphics");

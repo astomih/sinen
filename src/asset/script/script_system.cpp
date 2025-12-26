@@ -751,10 +751,24 @@ void ScriptSystem::runScene() {
   state.script(
       source.data(),
       StringView("@" + AssetIO::getFilePath(sceneName) + ".lua").data());
+  auto setup = state["Setup"];
+  if (setup.valid()) {
+    setup();
+  }
 }
 
-void ScriptSystem::updateScene() { state["Update"](); }
+void ScriptSystem::updateScene() {
+  auto update = state["Update"];
+  if (update.valid()) {
+    update();
+  }
+}
 
-void ScriptSystem::drawScene() { state["Draw"](); }
+void ScriptSystem::drawScene() {
+  auto draw = state["Draw"];
+  if (draw.valid()) {
+    draw();
+  }
+}
 
 } // namespace sinen

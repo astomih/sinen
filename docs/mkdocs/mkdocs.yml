@@ -10,9 +10,7 @@ plugins:
       docs_structure: folder
       languages:
           - locale: en
-            name: Engligh
             default: true
-            build: true
+            name: Engligh
           - locale: ja
             name: 日本語
-            build: true

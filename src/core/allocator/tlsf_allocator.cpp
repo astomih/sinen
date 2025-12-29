@@ -16,7 +16,7 @@ TLSFAllocator::TLSFAllocator(const std::size_t &size)
 TLSFAllocator::~TLSFAllocator() { free(mem); }
 
 void *TLSFAllocator::do_allocate(std::size_t bytes, std::size_t alignment) {
-  return tlsf_malloc(tlsf, bytes);
+  return tlsf_memalign(tlsf, alignment, bytes);
 }
 
 void TLSFAllocator::do_deallocate(void *ptr, std::size_t size,

@@ -4,8 +4,9 @@ GUI_MANAGER = import("gui/gui_manager")()
 
 local exampleDirs = sn.FileSystem.enumerateDirectory(".")
 local numExamples = 13
-
 sn.Graphics.bindPipeline(sn.BuiltinPipelines.get2D())
+function Setup()
+end
 
 local offset = numExamples * 16.0
 function Update()

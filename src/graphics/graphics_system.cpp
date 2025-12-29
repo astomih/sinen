@@ -188,6 +188,7 @@ void GraphicsSystem::render() {
   for (auto &func : GraphicsSystem::getImGuiFunction()) {
     func();
   }
+
   isFrameStarted = true;
   drawCallCountPerFrame = 0;
   ScriptSystem::drawScene();
@@ -196,18 +197,20 @@ void GraphicsSystem::render() {
   ImGui::Render();
   ImDrawData *drawData = ImGui::GetDrawData();
 
-  imGuiImplParanoixaPrepareDrawData(drawData, commandBuffer);
+
   if (drawCallCountPerFrame == 0) {
     // Clear screen
     beginRenderPass(true, rhi::LoadOp::Clear);
   }
   commandBuffer->endRenderPass(currentRenderPass);
 
-    beginRenderPass(false, rhi::LoadOp::Load);
-    // Render ImGui
-    imGuiImplParanoixaRenderDrawData(drawData, commandBuffer,
-                                     currentRenderPass);
-    commandBuffer->endRenderPass(currentRenderPass);
+  imGuiImplParanoixaPrepareDrawData(drawData, commandBuffer);
+
+  beginRenderPass(false, rhi::LoadOp::Load);
+  // Render ImGui
+  imGuiImplParanoixaRenderDrawData(drawData, commandBuffer, currentRenderPass);
+  commandBuffer->endRenderPass(currentRenderPass);
+
   device->submitCommandBuffer(commandBuffer);
   device->waitForGpuIdle();
 }

@@ -4,6 +4,7 @@
 
 // internal
 #include "../texture/texture_data.hpp"
+#include "core/data/array.hpp"
 #include "geometry/mesh.hpp"
 #include <asset/font/font.hpp>
 #include <asset/texture/texture.hpp>
@@ -19,6 +20,9 @@
 #include <stb_truetype.h>
 
 #include "default/mplus-1p-medium.ttf.hpp"
+
+#include <future>
+#include <thread>
 
 namespace sinen {
 struct CodepointRange {
@@ -37,13 +41,17 @@ struct Font::Wrapper {
   Array<Array<stbtt_packedchar>> packedChar;
   Ptr<rhi::Texture> texture;
   uint32_t sheetSize = 0;
+  std::future<bool> future;
+  Array<unsigned char> atlasBitmap;
+  bool loaded = false;
 };
 Font::Font() = default;
 Font::Font(int32_t point, StringView file_name) { load(point, file_name); }
 Font::~Font() {}
 static bool loadCore(const unsigned char *fontData,
                      Array<Array<stbtt_packedchar>> &pc,
-                     Ptr<rhi::Texture> &texture, int pointSize, int sheetSize) {
+                     Array<unsigned char> &atlasBitmap, int pointSize,
+                     int sheetSize) {
   stbtt_pack_range ranges[3] = {};
   pc.resize(std::size(ranges));
   size_t index = 0;
@@ -72,7 +80,7 @@ static bool loadCore(const unsigned char *fontData,
   index++;
 
   stbtt_pack_context spc;
-  Array<unsigned char> atlasBitmap(sheetSize * sheetSize * 4);
+  atlasBitmap.resize(sheetSize * sheetSize * 4);
   Array<unsigned char> temp(sheetSize * sheetSize);
   stbtt_PackBegin(&spc, temp.data(), sheetSize, sheetSize, 0, 1, NULL);
   stbtt_PackFontRanges(&spc, fontData, 0, ranges, std::size(ranges));
@@ -92,28 +100,32 @@ static bool loadCore(const unsigned char *fontData,
     }
   }
 
-  texture = createNativeTexture(atlasBitmap.data(),
-                                rhi::TextureFormat::R8G8B8A8_UNORM, sheetSize,
-                                sheetSize);
-
   return true;
 }
+int add(int a, int b) { return 0; }
 bool Font::load(int pointSize) {
   this->font = makeUnique<Wrapper>();
   this->m_size = pointSize;
   this->font->sheetSize = pointSize * 64;
 
-  return loadCore(mplus1pMediumTtf, this->font->packedChar, this->font->texture,
-                  pointSize, this->font->sheetSize);
+  this->font->future = std::async(
+      std::launch::async, loadCore, mplus1pMediumTtf,
+      std::ref(this->font->packedChar), std::ref(this->font->atlasBitmap),
+      pointSize, this->font->sheetSize);
+
+  return true;
 }
 bool Font::load(int pointSize, StringView fontName) {
   this->font = makeUnique<Wrapper>();
   this->m_size = pointSize;
   this->font->sheetSize = pointSize * 64;
-  return loadCore(reinterpret_cast<const unsigned char *>(
-                      AssetIO::openAsString(fontName).data()),
-                  this->font->packedChar, this->font->texture, pointSize,
-                  this->font->sheetSize);
+  this->font->future = std::async(std::launch::async, loadCore,
+                                  reinterpret_cast<const unsigned char *>(
+                                      AssetIO::openAsString(fontName).data()),
+                                  std::ref(this->font->packedChar),
+                                  std::ref(this->font->atlasBitmap), pointSize,
+                                  this->font->sheetSize);
+  return true;
 }
 bool Font::loadFromPath(int pointSize, StringView path) { return true; }
 
@@ -153,6 +165,16 @@ const char *utf8ToCodepoint(const char *p, uint32_t *out_cp) {
 Ptr<Mesh> Font::getTextMesh(StringView text) const {
 
   assert(this->font);
+
+  if (!this->font->loaded) {
+    if (this->font->future.valid()) {
+      this->font->future.wait();
+      this->font->texture = createNativeTexture(
+          this->font->atlasBitmap.data(), rhi::TextureFormat::R8G8B8A8_UNORM,
+          this->font->sheetSize, this->font->sheetSize);
+      this->font->loaded = true;
+    }
+  }
 
   auto textMesh = makePtr<Mesh>();
   float x = 0.f, y = 0.f;

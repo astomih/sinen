@@ -11,6 +11,7 @@
 #include <core/logger/logger.hpp>
 #include <graphics/rhi/rhi.hpp>
 #include <math/color/color.hpp>
+#include <math/math.hpp>
 
 // external
 #include <SDL3/SDL.h>
@@ -155,7 +156,7 @@ Ptr<Mesh> Font::getTextMesh(StringView text) const {
 
   auto textMesh = makePtr<Mesh>();
   float x = 0.f, y = 0.f;
-  glm::vec2 yrange(99999, -99999);
+  glm::vec2 yrange(Math::infinity, Math::negInfinity);
   const char *p = text.data();
   while (*p) {
     uint32_t cp;

@@ -6,7 +6,7 @@ class Periodic {
 public:
   static float sin01(const float periodSec, const float t = Time::seconds());
 
-  static float cos01(const float periodSec, const float t = Time::milli());
+  static float cos01(const float periodSec, const float t = Time::seconds());
 };
 } // namespace sinen
 #endif // SINEN_PERIODIC_HPP

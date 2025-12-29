@@ -1,8 +1,8 @@
 #ifndef SINEN_TRANSFORM_HPP
 #define SINEN_TRANSFORM_HPP
 
-#include "../math.hpp"
-#include <glm/mat4x4.hpp>
+#include <math/matrix.hpp>
+#include <math/vector.hpp>
 namespace sinen {
 class Transform {
 public:

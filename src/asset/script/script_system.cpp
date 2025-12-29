@@ -1,5 +1,6 @@
 // internal
 #include "script_system.hpp"
+#include "sol/table_proxy.hpp"
 #include <asset/asset.hpp>
 #include <core/core.hpp>
 #include <core/data/string.hpp>
@@ -22,6 +23,7 @@
 #define SOL_NO_CHECK_NUMBER_PRECISION 1
 #include <sol/sol.hpp>
 
+#include <any>
 #include <format>
 
 namespace sinen {
@@ -740,7 +742,7 @@ function Draw()
     sn.Graphics.drawText("NO DATA", font, sn.Vec2.new(0, 0), sn.Color.new(1.0), 32, 0.0)
 end
 )";
-
+sol::function setup, update, draw;
 void ScriptSystem::runScene() {
 
   String source;
@@ -751,21 +753,21 @@ void ScriptSystem::runScene() {
   state.script(
       source.data(),
       StringView("@" + AssetIO::getFilePath(sceneName) + ".lua").data());
-  auto setup = state["Setup"];
+  setup = state["Setup"];
+  update = state["Update"];
+  draw = state["Draw"];
   if (setup.valid()) {
     setup();
   }
 }
 
 void ScriptSystem::updateScene() {
-  auto update = state["Update"];
   if (update.valid()) {
     update();
   }
 }
 
 void ScriptSystem::drawScene() {
-  auto draw = state["Draw"];
   if (draw.valid()) {
     draw();
   }

@@ -1,13 +1,11 @@
 #include "core/data/ptr.hpp"
 #include <SDL3/SDL.h>
-#include <memory_resource>
-#ifdef __EMSCRIPTEN__
-#include <emscripten.h>
-#endif // __EMSCRIPTEN__
-#include <graphics/rhi/rhi.hpp>
+#include <core/def/macro.hpp>
 
-#include <core/allocator/std_allocator.hpp>
-#include <core/allocator/tlsf_allocator.hpp>
+#ifdef SINEN_PLATFORM_EMSCRIPTEN
+#include <emscripten.h>
+#endif
+#include <graphics/rhi/rhi.hpp>
 
 #include "d3d12u/d3d12u_renderer.hpp"
 #include "sdlgpu/sdlgpu_backend.hpp"
@@ -16,8 +14,6 @@
 
 #include <SDL3/SDL.h>
 
-#include <fstream>
-#include <iostream>
 namespace sinen::rhi {
 Ptr<Backend> RHI::createBackend(Allocator *allocator, const GraphicsAPI &api) {
 #ifndef SINEN_PLATFORM_EMSCRIPTEN
@@ -25,7 +21,7 @@ Ptr<Backend> RHI::createBackend(Allocator *allocator, const GraphicsAPI &api) {
   case GraphicsAPI::Vulkan: {
     // TODO
   }
-#ifdef _WIN32
+#ifdef SINEN_PLATFORM_WINDOWS
   case GraphicsAPI::D3D12U: {
     // TODO
   }

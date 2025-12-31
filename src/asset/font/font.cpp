@@ -17,6 +17,7 @@
 // external
 #include <SDL3/SDL.h>
 #define STB_TRUETYPE_IMPLEMENTATION
+#define STBTT_RASTERIZER_VERSION 2
 #include <stb_truetype.h>
 
 #include "default/mplus-1p-medium.ttf.hpp"
@@ -43,6 +44,7 @@ struct Font::Wrapper {
   uint32_t sheetSize = 0;
   std::future<bool> future;
   Array<unsigned char> atlasBitmap;
+  String data;
   bool loaded = false;
 };
 Font::Font() = default;
@@ -102,8 +104,8 @@ static bool loadCore(const unsigned char *fontData,
 
   return true;
 }
-int add(int a, int b) { return 0; }
 bool Font::load(int pointSize) {
+  pointSize += 16;
   this->font = makeUnique<Wrapper>();
   this->m_size = pointSize;
   this->font->sheetSize = pointSize * 64;
@@ -116,12 +118,14 @@ bool Font::load(int pointSize) {
   return true;
 }
 bool Font::load(int pointSize, StringView fontName) {
+  pointSize += 16;
   this->font = makeUnique<Wrapper>();
   this->m_size = pointSize;
   this->font->sheetSize = pointSize * 64;
+  this->font->data = AssetIO::openAsString(fontName);
   this->font->future = std::async(std::launch::async, loadCore,
                                   reinterpret_cast<const unsigned char *>(
-                                      AssetIO::openAsString(fontName).data()),
+                                      this->font->data.data()),
                                   std::ref(this->font->packedChar),
                                   std::ref(this->font->atlasBitmap), pointSize,
                                   this->font->sheetSize);

@@ -27,11 +27,18 @@ void Sound::load(StringView fileName) {
                           MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC, nullptr,
                           nullptr, &data->sound);
 }
-void Sound::loadFromPath(StringView path) {
+void Sound::load(const Buffer &buffer) {
   data = makeUnique<Data>();
-  ma_sound_init_from_file(AudioSystem::getEngine(), path.data(),
-                          MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC, nullptr,
-                          nullptr, &data->sound);
+  ma_decoder decoder;
+  ma_decoder_config dcfg = ma_decoder_config_init(ma_format_f32, 2, 44100);
+  ma_result r =
+      ma_decoder_init_memory(buffer.data(), buffer.size(), &dcfg, &decoder);
+  if (r != MA_SUCCESS) {
+    return;
+  }
+  ma_sound_init_from_data_source(AudioSystem::getEngine(), &decoder,
+                                 MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC,
+                                 nullptr, &data->sound);
 }
 void Sound::play() const { ma_sound_start(&data->sound); }
 

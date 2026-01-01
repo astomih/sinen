@@ -1,11 +1,9 @@
 #ifndef SINEN_TEXTURE_HPP
 #define SINEN_TEXTURE_HPP
+#include <core/buffer/buffer.hpp>
 #include <graphics/rhi/rhi.hpp>
 #include <math/color/color.hpp>
-
-#include <string_view>
-
-#include <glm/vec2.hpp>
+#include <math/vector.hpp>
 
 namespace sinen {
 /**
@@ -33,7 +31,7 @@ public:
    * @return false failed
    */
   bool load(StringView fileName);
-  bool loadFromPath(StringView path);
+  bool load(const Buffer &buffer);
   /**
    * @brief Load texture from memory
    *

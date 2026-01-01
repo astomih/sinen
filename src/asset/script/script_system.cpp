@@ -315,8 +315,9 @@ bool ScriptSystem::initialize() {
   {
     auto v = lua.new_usertype<Texture>(
         "Texture", sol::constructors<sol::types<int, int>, sol::types<>>());
-    v["load"] = &Texture::load;
-    v["loadFromPath"] = &Texture::loadFromPath;
+    v["load"] = sol::overload(
+        [](Texture &texture, StringView s) { texture.load(s); },
+        [](Texture &texture, const Buffer &buffer) { texture.load(buffer); });
     v["fill"] = &Texture::fill;
     v["copy"] = &Texture::copy;
     v["size"] = &Texture::size;
@@ -348,14 +349,17 @@ bool ScriptSystem::initialize() {
         [](Font &f, int point_size) { return f.load(point_size); },
         [](Font &f, int point_size, StringView path) {
           return f.load(point_size, path);
+        },
+        [](Font &f, int point_size, const Buffer &buffer) {
+          return f.load(point_size, buffer);
         });
-    v["loadFromPath"] = &Font::loadFromPath;
     v["resize"] = &Font::resize;
   }
   {
     auto v = lua.new_usertype<Sound>("Sound");
-    v["load"] = &Sound::load;
-    v["loadFromPath"] = &Sound::loadFromPath;
+    v["load"] = sol::overload(
+        [](Sound &sound, StringView s) { sound.load(s); },
+        [](Sound &sound, const Buffer &buffer) { sound.load(buffer); });
     v["play"] = &Sound::play;
     v["restart"] = &Sound::restart;
     v["stop"] = &Sound::stop;
@@ -392,7 +396,9 @@ bool ScriptSystem::initialize() {
   {
     auto v = lua.new_usertype<Model>("Model");
     v["getAABB"] = &Model::getAABB;
-    v["load"] = &Model::load;
+    v["load"] = sol::overload(
+        [](Model &model, StringView s) { model.load(s); },
+        [](Model &model, const Buffer &buffer) { model.load(buffer); });
     v["loadSprite"] = &Model::loadSprite;
     v["loadBox"] = &Model::loadBox;
     v["getBoneUniformBuffer"] = &Model::getBoneUniformBuffer;

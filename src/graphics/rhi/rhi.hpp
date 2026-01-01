@@ -257,11 +257,6 @@ struct BufferTransferInfo {
   Ptr<class TransferBuffer> transferBuffer;
   uint32 offset;
 };
-struct BufferRegion {
-  Ptr<class Buffer> buffer;
-  uint32 offset;
-  uint32 size;
-};
 struct ColorTargetInfo {
   Ptr<class Texture> texture;
   // clearColor
@@ -277,10 +272,6 @@ struct DepthStencilTargetInfo {
   StoreOp stencilStoreOp;
   bool cycle;
   uint8 clearStencil;
-};
-struct BufferBinding {
-  Ptr<class Buffer> buffer;
-  uint32 offset;
 };
 struct TextureSamplerBinding {
   Ptr<class Sampler> sampler;
@@ -333,6 +324,15 @@ protected:
 
 private:
   CreateInfo createInfo;
+};
+struct BufferRegion {
+  Ptr<Buffer> buffer;
+  uint32 offset;
+  uint32 size;
+};
+struct BufferBinding {
+  Ptr<Buffer> buffer;
+  uint32 offset;
 };
 
 class TransferBuffer {

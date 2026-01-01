@@ -123,15 +123,26 @@ bool Font::load(int pointSize, StringView fontName) {
   this->m_size = pointSize;
   this->font->sheetSize = pointSize * 64;
   this->font->data = AssetIO::openAsString(fontName);
-  this->font->future = std::async(std::launch::async, loadCore,
-                                  reinterpret_cast<const unsigned char *>(
-                                      this->font->data.data()),
-                                  std::ref(this->font->packedChar),
-                                  std::ref(this->font->atlasBitmap), pointSize,
-                                  this->font->sheetSize);
+  this->font->future = std::async(
+      std::launch::async, loadCore,
+      reinterpret_cast<const unsigned char *>(this->font->data.data()),
+      std::ref(this->font->packedChar), std::ref(this->font->atlasBitmap),
+      pointSize, this->font->sheetSize);
   return true;
 }
-bool Font::loadFromPath(int pointSize, StringView path) { return true; }
+bool Font::load(int pointSize, const Buffer &buffer) {
+  pointSize += 16;
+  this->font = makeUnique<Wrapper>();
+  this->m_size = pointSize;
+  this->font->sheetSize = pointSize * 64;
+  this->font->data = (const char *)buffer.data();
+  this->font->future = std::async(
+      std::launch::async, loadCore,
+      reinterpret_cast<const unsigned char *>(this->font->data.data()),
+      std::ref(this->font->packedChar), std::ref(this->font->atlasBitmap),
+      pointSize, this->font->sheetSize);
+  return true;
+}
 
 void Font::unload() {}
 

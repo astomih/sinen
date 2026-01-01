@@ -17,7 +17,7 @@ public:
 
   bool load(int point_size);
   bool load(int pointSize, StringView path);
-  bool loadFromPath(int pointSize, StringView path);
+  bool load(int pointSize, const Buffer &buffer);
   bool isLoaded() { return font != nullptr; }
   void unload();
   int size() const { return m_size; }

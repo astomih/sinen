@@ -10,7 +10,6 @@
 #include <math/matrix.hpp>
 #include <math/quaternion.hpp>
 
-
 namespace sinen {
 struct BoneInfo {
   glm::mat4 offsetMatrix;
@@ -77,7 +76,7 @@ public:
    * @param str
    */
   void load(StringView str);
-  void loadFromPath(StringView path);
+  void load(const Buffer &buffer);
   void loadFromVertexArray(const Ptr<Mesh> &mesh);
   void loadSprite();
   void loadBox();

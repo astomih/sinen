@@ -38,12 +38,14 @@ bool Texture::load(StringView fileName) {
                                 width, height);
   return true;
 }
-bool Texture::loadFromPath(StringView path) {
+bool Texture::load(const Buffer &buffer) {
 
   int width, height;
   int bpp;
 
-  auto *pixels = stbi_load(path.data(), &width, &height, &bpp, 4);
+  auto *pixels =
+      stbi_load_from_memory(reinterpret_cast<unsigned char *>(buffer.data()),
+                            buffer.size(), &width, &height, &bpp, 4);
   texture = createNativeTexture(pixels, rhi::TextureFormat::R8G8B8A8_UNORM,
                                 width, height);
   return true;

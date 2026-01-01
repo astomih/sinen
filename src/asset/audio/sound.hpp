@@ -1,11 +1,9 @@
 #ifndef SINEN_SOUND_HPP
 #define SINEN_SOUND_HPP
+#include <core/buffer/buffer.hpp>
 #include <core/data/ptr.hpp>
 #include <core/data/string.hpp>
-
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/quaternion.hpp>
-#include <glm/vec3.hpp>
+#include <math/vector.hpp>
 
 namespace sinen {
 /**
@@ -29,7 +27,7 @@ public:
    * @param fileName File name
    */
   void load(StringView fileName);
-  void loadFromPath(StringView path);
+  void load(const Buffer &buffer);
   void play() const;
   // Restart event from begining
   void restart() const;
@@ -39,15 +37,15 @@ public:
   void setLooping(bool looping) const;
   void setVolume(float value) const;
   void setPitch(float value) const;
-  void setPosition(const glm::vec3 &pos) const;
-  void setDirection(const glm::vec3 &dir) const;
+  void setPosition(const Vec3 &pos) const;
+  void setDirection(const Vec3 &dir) const;
   // Getters
   bool isPlaying() const;
   bool isLooping() const;
   float getVolume() const;
   float getPitch() const;
-  glm::vec3 getPosition() const;
-  glm::vec3 getDirection() const;
+  Vec3 getPosition() const;
+  Vec3 getDirection() const;
 
 private:
   struct Data;

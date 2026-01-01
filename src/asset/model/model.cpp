@@ -380,13 +380,13 @@ void Model::load(StringView path) {
       createBuffer(mesh->indices.size() * sizeof(uint32_t),
                    mesh->indices.data(), rhi::BufferUsage::Index);
 }
-void Model::loadFromPath(StringView path) {
+void Model::load(const Buffer &buffer) {
   // Assimp
   Assimp::Importer importer;
-  const auto *scene = importer.ReadFile(
-      path.data(), aiProcess_ValidateDataStructure |
-                       aiProcess_LimitBoneWeights |
-                       aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
+  const auto *scene = importer.ReadFileFromMemory(
+      buffer.data(), buffer.size(),
+      aiProcess_ValidateDataStructure | aiProcess_LimitBoneWeights |
+          aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
   if (!scene) {
     Logger::error("Error loading model: %s", importer.GetErrorString());
     return;

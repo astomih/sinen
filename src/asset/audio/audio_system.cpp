@@ -2,6 +2,8 @@
 #include "audio_system.hpp"
 #include <core/io/asset_io.hpp>
 #include <math/math.hpp>
+#include <math/quaternion.hpp>
+
 
 // external
 #include <SDL3/SDL.h>

@@ -2,6 +2,7 @@
 #include "script_system.hpp"
 #include "core/allocator/global_allocator.hpp"
 #include "core/buffer/buffer.hpp"
+#include "core/data/ptr.hpp"
 #include "glm/matrix.hpp"
 #include "sol/raii.hpp"
 #include "sol/table_proxy.hpp"
@@ -35,26 +36,6 @@
 #include <format>
 
 namespace sinen {
-template <typename T> struct Deleter2 {
-  constexpr Deleter2(Allocator *a = nullptr, size_t size = sizeof(T)) noexcept
-      : pA(a), size(size) {}
-  template <typename U,
-            std::enable_if_t<std::is_convertible_v<U *, T *>, int> = 0>
-  Deleter2(const Deleter2<U> &other) noexcept : pA(other.pA) {}
-
-  Deleter2(Deleter2 &&) noexcept = default;
-  Deleter2 &operator=(Deleter2 &&) noexcept = default;
-
-  void operator()(T *ptr) const {
-    if (!ptr)
-      return;
-    ptr->~T();
-    assert(pA);
-    pA->deallocate(ptr, size);
-  }
-  size_t size;
-  Allocator *pA;
-};
 void bindImGui(sol::table &lua);
 auto alloc = [](void *ud, void *ptr, size_t osize, size_t nsize) -> void * {
   (void)ud;
@@ -248,7 +229,8 @@ bool ScriptSystem::initialize() {
 
       return Buffer(
           BufferType::Binary,
-          Ptr<void>(ptr, Deleter2<void>(GlobalAllocator::get(), size)), size);
+          Ptr<void>(ptr, DeleterWithSize<void>(GlobalAllocator::get(), size)),
+          size);
     };
   }
   {

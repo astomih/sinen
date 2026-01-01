@@ -25,6 +25,28 @@ template <typename T> struct Deleter {
   }
   Allocator *pA;
 };
+template <typename T> struct DeleterWithSize {
+  constexpr DeleterWithSize(Allocator *a = nullptr,
+                            size_t size = sizeof(T)) noexcept
+      : pA(a), size(size) {}
+  template <typename U,
+            std::enable_if_t<std::is_convertible_v<U *, T *>, int> = 0>
+  DeleterWithSize(const DeleterWithSize<U> &other) noexcept
+      : pA(other.pA), size(other.size) {}
+
+  DeleterWithSize(DeleterWithSize &&) noexcept = default;
+  DeleterWithSize &operator=(DeleterWithSize &&) noexcept = default;
+
+  void operator()(T *ptr) const {
+    if (!ptr)
+      return;
+    ptr->~T();
+    assert(pA);
+    pA->deallocate(ptr, size);
+  }
+  size_t size;
+  Allocator *pA;
+};
 template <class T> using Ptr = std::shared_ptr<T>;
 template <class T> using UniquePtr = std::unique_ptr<T, Deleter<T>>;
 template <class T> using Ref = std::weak_ptr<T>;

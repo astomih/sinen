@@ -9,6 +9,7 @@
 #include "../../graphics/graphics_system.hpp"
 #include "core/allocator/global_allocator.hpp"
 #include "core/buffer/buffer.hpp"
+#include "core/data/ptr.hpp"
 #include "model_data.hpp"
 #include <asset/asset.hpp>
 #include <core/core.hpp>
@@ -627,7 +628,8 @@ Buffer Model::getBoneUniformBuffer() const {
   auto size = boneMatrices.size() * sizeof(Mat4);
   auto *ptr = (Mat4 *)GlobalAllocator::get()->allocate(size);
   memcpy(ptr, boneMatrices.data(), size);
-  return Buffer(BufferType::Binary, Ptr<void>(ptr), this->boneMatrices.size());
+  auto deleter = DeleterWithSize<void>(GlobalAllocator::get(), size);
+  return Buffer(BufferType::Binary, Ptr<void>(ptr, std::move(deleter)), size);
 }
 void Model::play(float start) {
   time = start;

@@ -13,7 +13,8 @@ local depthTexture = sn.Texture.new(sn.Window.size().x, sn.Window.size().y)
 local vs = sn.Shader.new()
 local fs = sn.Shader.new()
 local pipeline = sn.GraphicsPipeline.new()
-local uniformData = sn.UniformData.new()
+---@type sn.Buffer
+local uniformBuffer
 local modelMaterial = sn.Material.new()
 local floorMaterial = sn.Material.new()
 local floorTexture = sn.Texture.new()
@@ -50,7 +51,7 @@ function Setup()
     pipeline:setFragmentShader(fs)
     pipeline:build()
 
-    uniformData:addCamera(shadowCamera)
+    uniformBuffer = sn.Buffer.new({ shadowCamera })
 
     modelMaterial:appendTexture(model:getMaterial():getTexture(0))
     modelMaterial:appendTexture(depthTexture)
@@ -70,6 +71,7 @@ function Update()
 end
 
 function Draw()
+    -- depth write pipeline
     sn.Graphics.bindPipeline(depthPipeline)
     sn.Graphics.setRenderTarget(depthRenderTexture)
     sn.Graphics.setCamera(shadowCamera)
@@ -77,9 +79,11 @@ function Draw()
     sn.Graphics.drawModel(floor, floorTransform, floorMaterial)
     sn.Graphics.flush()
     sn.Graphics.readbackTexture(depthRenderTexture, depthTexture)
+
+    -- Lighting
     sn.Graphics.bindPipeline(pipeline)
     sn.Graphics.setCamera(camera)
-    sn.Graphics.setUniformData(1, uniformData)
+    sn.Graphics.setUniformBuffer(1, uniformBuffer)
     sn.Graphics.drawModel(model, modelTransform, modelMaterial)
     sn.Graphics.drawModel(floor, floorTransform, floorMaterial)
 end

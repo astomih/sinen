@@ -4,6 +4,7 @@
 #include <cstddef>
 namespace sinen {
 enum class BufferType {
+  Unknown,
   Binary,
   String,
 };
@@ -19,5 +20,10 @@ private:
   BufferType _type;
   Ptr<void> _data;
 };
+Buffer makeBuffer(size_t size, BufferType type = BufferType::Unknown,
+                  Allocator *allocator = GlobalAllocator::get());
+Buffer makeBuffer(void *ptr, size_t size, BufferType type = BufferType::Unknown,
+                  Allocator *allocator = GlobalAllocator::get());
+
 } // namespace sinen
 #endif

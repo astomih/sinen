@@ -7,4 +7,14 @@ Buffer::Buffer(const BufferType &type, Ptr<void> data, size_t size)
 int Buffer::size() const { return _size; }
 BufferType Buffer::type() const { return _type; }
 void *Buffer::data() const { return _data.get(); }
+Buffer makeBuffer(size_t size, BufferType type, Allocator *allocator) {
+  auto *ptr = allocator->allocate(size);
+  auto deleter = DeleterWithSize<void>(allocator, size);
+  return Buffer(type, Ptr<void>(ptr, std::move(deleter)), size);
+}
+Buffer makeBuffer(void *ptr, size_t size, BufferType type,
+                  Allocator *allocator) {
+  auto deleter = DeleterWithSize<void>(allocator, size);
+  return Buffer(type, Ptr<void>(ptr, std::move(deleter)), size);
+}
 } // namespace sinen

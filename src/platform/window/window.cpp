@@ -28,13 +28,12 @@ bool WindowSystem::initialize(StringView name) {
   // Load settings from settings.json
   {
     File f;
-    if (f.open(FileSystem::getAppBaseDirectory() + "/settings.json",
-               File::Mode::r)) {
-      void *buffer = calloc(f.size() + 10, 1);
-      f.read(buffer, f.size(), 1);
+    if (f.open(FileSystem::getAppBaseDirectory() + "/settings.json", "r")) {
+      auto size = f.size();
+      auto buffer = f.read(size+1);
       f.close();
       Json j;
-      j.parse((char *)buffer);
+      j.parse((char *)buffer.data());
       mSize.x = j["WindowWidth"].getFloat();
       mSize.y = j["WindowHeight"].getFloat();
     } else {

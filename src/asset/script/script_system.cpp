@@ -1,6 +1,11 @@
 // internal
 #include "script_system.hpp"
+#include "core/allocator/global_allocator.hpp"
+#include "core/buffer/buffer.hpp"
+#include "glm/matrix.hpp"
+#include "sol/raii.hpp"
 #include "sol/table_proxy.hpp"
+#include "sol/types.hpp"
 #include <asset/asset.hpp>
 #include <core/core.hpp>
 #include <core/data/string.hpp>
@@ -8,9 +13,12 @@
 #include <core/io/arguments.hpp>
 #include <core/io/asset_io.hpp>
 #include <core/io/file_system.hpp>
+#include <cstddef>
+#include <cstdint>
 #include <graphics/graphics.hpp>
 #include <math/graph/bfs_grid.hpp>
 #include <math/math.hpp>
+#include <memory>
 #include <physics/physics.hpp>
 #include <platform/input/gamepad.hpp>
 #include <platform/input/key_input.hpp>
@@ -27,6 +35,26 @@
 #include <format>
 
 namespace sinen {
+template <typename T> struct Deleter2 {
+  constexpr Deleter2(Allocator *a = nullptr, size_t size = sizeof(T)) noexcept
+      : pA(a), size(size) {}
+  template <typename U,
+            std::enable_if_t<std::is_convertible_v<U *, T *>, int> = 0>
+  Deleter2(const Deleter2<U> &other) noexcept : pA(other.pA) {}
+
+  Deleter2(Deleter2 &&) noexcept = default;
+  Deleter2 &operator=(Deleter2 &&) noexcept = default;
+
+  void operator()(T *ptr) const {
+    if (!ptr)
+      return;
+    ptr->~T();
+    assert(pA);
+    pA->deallocate(ptr, size);
+  }
+  size_t size;
+  Allocator *pA;
+};
 void bindImGui(sol::table &lua);
 auto alloc = [](void *ud, void *ptr, size_t osize, size_t nsize) -> void * {
   (void)ud;
@@ -154,6 +182,73 @@ bool ScriptSystem::initialize() {
     state["import"] = [&](StringView path) -> sol::object {
       return state.require_file(path.data(),
                                 String(String(path) + ".lua").c_str());
+    };
+  }
+  {
+
+    auto v = lua.new_usertype<Buffer>("Buffer", sol::no_construction());
+    v["new"] = [](sol::table t) {
+      Array<void *> arr;
+      Array<size_t> arrS;
+      for (auto &i : t) {
+        auto &value = i.second;
+        if (value.get_type() == sol::type::userdata) {
+          if (value.is<Vec3>()) {
+            auto v = value.as<Vec3>();
+            auto s = sizeof(Vec3);
+            auto *p = GlobalAllocator::get()->allocate(s);
+            memcpy(p, &v, s);
+            arr.push_back(p);
+            arrS.push_back(s);
+          } else if (value.is<Vec2>()) {
+            auto v = value.as<Vec2>();
+            auto s = sizeof(Vec2);
+            auto *p = GlobalAllocator::get()->allocate(s);
+            memcpy(p, &v, s);
+            arr.push_back(p);
+            arrS.push_back(s);
+          } else if (value.is<Camera>()) {
+
+            auto v = value.as<Camera>();
+            auto s = sizeof(Mat4) * 2;
+            auto *p = GlobalAllocator::get()->allocate(s);
+            auto view = glm::transpose(v.getView());
+            auto proj = glm::transpose(v.getProjection());
+            memcpy(p, &view, sizeof(Mat4));
+            memcpy((void *)(reinterpret_cast<std::byte *>(p) + sizeof(Mat4)),
+                   &proj, sizeof(Mat4));
+            arr.push_back(p);
+            arrS.push_back(s);
+          }
+        } else if (value.is<double>()) {
+          auto v = value.as<float>();
+          auto s = sizeof(float);
+          auto *p = GlobalAllocator::get()->allocate(s);
+          memcpy(p, &v, s);
+          arr.push_back(p);
+          arrS.push_back(s);
+        }
+      }
+      size_t size = 0;
+      for (auto &i : arrS) {
+        size += i;
+      }
+      auto *ptr = GlobalAllocator::get()->allocate(size);
+      size_t offset = 0;
+      for (int i = 0; i < arr.size(); i++) {
+        memcpy(reinterpret_cast<void *>(reinterpret_cast<std::byte *>(ptr) +
+                                        offset),
+               arr[i], arrS[i]);
+        GlobalAllocator::get()->deallocate(arr[i], arrS[i]);
+        arr[i] = nullptr;
+        offset += arrS[i];
+      }
+      arr.clear();
+      arrS.clear();
+
+      return Buffer(
+          BufferType::Binary,
+          Ptr<void>(ptr, Deleter2<void>(GlobalAllocator::get(), size)), size);
     };
   }
   {
@@ -318,7 +413,7 @@ bool ScriptSystem::initialize() {
     v["load"] = &Model::load;
     v["loadSprite"] = &Model::loadSprite;
     v["loadBox"] = &Model::loadBox;
-    v["getBoneUniformData"] = &Model::getBoneUniformData;
+    v["getBoneUniformBuffer"] = &Model::getBoneUniformBuffer;
     v["play"] = &Model::play;
     v["update"] = &Model::update;
     v["getMaterial"] = &Model::getMaterial;
@@ -343,13 +438,6 @@ bool ScriptSystem::initialize() {
     v["getPosition"] = &Collider::getPosition;
     v["getVelocity"] = &Collider::getVelocity;
     v["setLinearVelocity"] = &Collider::setLinearVelocity;
-  }
-  {
-    auto v = lua.new_usertype<UniformData>("UniformData");
-    v["add"] = &UniformData::add;
-    v["change"] = &UniformData::change;
-    v["addCamera"] = &UniformData::addCamera;
-    v["addVec3"] = &UniformData::addVec3;
   }
   {
 
@@ -545,7 +633,7 @@ bool ScriptSystem::initialize() {
     v["getClearColor"] = &Graphics::getClearColor;
     v["setClearColor"] = &Graphics::setClearColor;
     v["bindPipeline"] = &Graphics::bindPipeline;
-    v["setUniformData"] = &Graphics::setUniformData;
+    v["setUniformBuffer"] = &Graphics::setUniformBuffer;
     v["setRenderTarget"] = &Graphics::setRenderTarget;
     v["flush"] = &Graphics::flush;
     v["readbackTexture"] = &Graphics::readbackTexture;

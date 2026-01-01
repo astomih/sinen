@@ -1,6 +1,10 @@
 ---@diagnostic disable: duplicate-index, lowercase-global
 import = function(name) end
 sn = {
+    ---@class sn.Buffer
+    ---@field new fun(array: table): sn.Buffer
+    Buffer = {},
+
     ---@class sn.Vec3
     ---@field x number
     ---@field y number
@@ -107,7 +111,7 @@ sn = {
     ---@field loadFromPath fun(self: sn.Model, path: string)
     ---@field loadSprite fun(self: sn.Model)
     ---@field loadBox fun(self: sn.Model)
-    ---@field getBoneUniformData fun(self: sn.Model): sn.UniformData
+    ---@field getBoneUniformBuffer fun(self: sn.Model): sn.Buffer
     ---@field play fun(self: sn.Model, positon: number)
     ---@field update fun(self: sn.Model, delta: number)
     ---@field getMaterial fun(self: sn.Model): sn.Material
@@ -129,14 +133,6 @@ sn = {
     ---@field setTime fun(self: sn.Timer, time: number)
     ---@field check fun(self: sn.Timer): boolean
     Timer = {},
-
-    ---@class sn.UniformData
-    ---@field new fun(): sn.UniformData
-    ---@field add fun(self: sn.UniformData, value: any)
-    ---@field change fun(self: sn.UniformData, value: number,  index: integer)
-    ---@field addCamera fun(self: sn.UniformData, camera : sn.Camera)
-    ---@field addVec3 fun(self: sn.UniformData, sn.Vec3 : sn.Vec3)
-    UniformData = {},
 
     ---@class sn.Shader
     ---@field new fun(): sn.Shader
@@ -310,7 +306,7 @@ sn = {
     ---@field getClearColor fun(): sn.Color
     ---@field setClearColor fun(c: sn.Color)
     ---@field bindPipeline fun(pipe: sn.GraphicsPipeline)
-    ---@field setUniformData fun(binding: integer, data: sn.UniformData)
+    ---@field setUniformBuffer fun(binding: integer, data: sn.Buffer)
     ---@field setRenderTarget fun(rt: sn.RenderTexture)
     ---@field flush fun()
     ---@field readbackTexture fun(rt: sn.RenderTexture, out: sn.Texture): sn.Texture

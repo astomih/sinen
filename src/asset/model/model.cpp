@@ -2,10 +2,13 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdio>
+#include <memory>
 #include <optional>
 
 // internal
 #include "../../graphics/graphics_system.hpp"
+#include "core/allocator/global_allocator.hpp"
+#include "core/buffer/buffer.hpp"
 #include "model_data.hpp"
 #include <asset/asset.hpp>
 #include <core/core.hpp>
@@ -620,7 +623,12 @@ Ptr<rhi::Buffer> createBuffer(size_t size, void *data, rhi::BufferUsage usage) {
   return buffer;
 }
 
-UniformData Model::getBoneUniformData() const { return this->boneUniformData; }
+Buffer Model::getBoneUniformBuffer() const {
+  auto size = boneMatrices.size() * sizeof(Mat4);
+  auto *ptr = (Mat4 *)GlobalAllocator::get()->allocate(size);
+  memcpy(ptr, boneMatrices.data(), size);
+  return Buffer(BufferType::Binary, Ptr<void>(ptr), this->boneMatrices.size());
+}
 void Model::play(float start) {
   time = start;
   loadBoneUniform(time);
@@ -639,15 +647,14 @@ void Model::loadBoneUniform(float start) {
     assert(bone.second.index <= boneMap.size());
   }
   auto matrices = skeletalAnimation.getFinalBoneMatrices();
-  boneUniformData.clear();
 
-  Array<Mat4> boneMatrices(matrices.size());
+  boneMatrices.clear();
+  boneMatrices.resize(matrices.size());
   int index = 0;
   for (auto &m : matrices) {
     boneMatrices[index] = glm::transpose(m);
     index++;
   }
-  boneUniformData.addMatrices(boneMatrices);
 }
 void SkeletalAnimation::load(const Node &root, float ticksPerSecond,
                              float duration,

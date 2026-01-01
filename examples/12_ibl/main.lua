@@ -64,14 +64,9 @@ pipeline3d:build()
 local light_pos = sn.Vec3.new(2, 0, 0)
 local light_intensity = 2.5
 
-local uniform_data = sn.UniformData.new()
-uniform_data:add(pos.x)
-uniform_data:add(pos.y)
-uniform_data:add(pos.z)
-uniform_data:add(light_pos.x)
-uniform_data:add(light_pos.y)
-uniform_data:add(light_pos.z)
-uniform_data:add(light_intensity)
+local uniform_data = {
+    pos, light_pos, light_intensity
+}
 
 
 function Update()
@@ -99,9 +94,7 @@ function Update()
             light_pos.y = light_pos.y - sn.Time.delta() * 5
         end
     end
-    uniform_data:change(light_pos.x, 3)
-    uniform_data:change(light_pos.y, 4)
-    uniform_data:change(light_pos.z, 5)
+    uniform_data[2] = light_pos
     light_transform.position = light_pos
 end
 
@@ -110,7 +103,7 @@ function Draw()
     sn.Graphics.drawCubemap(cubemap)
 
     sn.Graphics.bindPipeline(pipeline3d)
-    sn.Graphics.setUniformData(1, uniform_data)
+    sn.Graphics.setUniformBuffer(1, sn.Buffer.new(uniform_data))
     sn.Graphics.drawModel(model, transform, material)
     sn.Graphics.drawModel(model, light_transform, material)
 end

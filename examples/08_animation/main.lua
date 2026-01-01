@@ -32,7 +32,7 @@ function Update()
 end
 
 function Draw()
-    sn.Graphics.setUniformData(1, model:getBoneUniformData())
+    sn.Graphics.setUniformBuffer(1, model:getBoneUniformBuffer())
     -- Draw texture
     sn.Graphics.drawModel(model, sn.Transform.new(), draw3d.material)
 end

@@ -1,12 +1,15 @@
 #ifndef SINEN_MODEL_HPP
 #define SINEN_MODEL_HPP
 #include <asset/texture/material.hpp>
+#include <core/buffer/buffer.hpp>
 #include <core/data/hashmap.hpp>
 #include <core/data/ptr.hpp>
+#include <geometry/box.hpp>
 #include <geometry/mesh.hpp>
 #include <graphics/rhi/rhi.hpp>
-#include <graphics/uniform_data.hpp>
+#include <math/matrix.hpp>
 #include <math/quaternion.hpp>
+
 
 namespace sinen {
 struct BoneInfo {
@@ -82,7 +85,7 @@ public:
   void update(float delta_time);
   const AABB &getAABB() const;
   Ptr<void> data;
-  UniformData getBoneUniformData() const;
+  Buffer getBoneUniformBuffer() const;
 
   Material getMaterial() const { return material; }
 
@@ -105,7 +108,7 @@ private:
   AABB localAABB;
   String name;
   Ptr<Mesh> mesh;
-  UniformData boneUniformData;
+  Array<Mat4> boneMatrices;
 
   SkeletalAnimation skeletalAnimation;
   BoneMap boneMap;

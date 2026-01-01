@@ -8,6 +8,7 @@
 #include <asset/shader/shader.hpp>
 #include <asset/texture/render_texture.hpp>
 #include <asset/texture/texture.hpp>
+#include <core/buffer/buffer.hpp>
 #include <geometry/mesh.hpp>
 #include <geometry/rect.hpp>
 #include <graphics/camera/camera.hpp>
@@ -21,6 +22,7 @@
 #include <math/vector.hpp>
 #include <physics/primitive2.hpp>
 #include <physics/primitive3.hpp>
+
 
 namespace sinen {
 /**
@@ -102,7 +104,7 @@ public:
   static void setCamera(const Camera &camera);
   static Camera &getCamera();
   static void bindPipeline(const GraphicsPipeline &pipeline);
-  static void setUniformData(uint32_t slot, const UniformData &data);
+  static void setUniformBuffer(uint32_t slot, const Buffer &data);
 
   static void setRenderTarget(const RenderTexture &texture);
   static void flush();

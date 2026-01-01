@@ -11,12 +11,10 @@
 #include <geometry/rect.hpp>
 #include <graphics/drawable/drawable.hpp>
 #include <graphics/graphics.hpp>
-#include <graphics/uniform_data.hpp>
 #include <math/color/color.hpp>
 #include <math/color/palette.hpp>
 #include <math/math.hpp>
 #include <platform/window/window.hpp>
-
 
 namespace sinen {
 class GraphicsSystem {
@@ -62,7 +60,7 @@ public:
   static void bindPipeline(const GraphicsPipeline &pipeline);
   static void bindDefaultPipeline3D();
   static void bindDefaultPipeline2D();
-  static void setUniformData(uint32_t slot, const UniformData &data);
+  static void setUniformBuffer(uint32_t slot, const Buffer &data);
 
   static void setRenderTarget(const RenderTexture &texture);
   static void flush();

@@ -197,7 +197,6 @@ void GraphicsSystem::render() {
   ImGui::Render();
   ImDrawData *drawData = ImGui::GetDrawData();
 
-
   if (drawCallCountPerFrame == 0) {
     // Clear screen
     beginRenderPass(true, rhi::LoadOp::Clear);
@@ -557,9 +556,8 @@ void GraphicsSystem::bindPipeline(const GraphicsPipeline &pipeline) {
 }
 void GraphicsSystem::bindDefaultPipeline3D() { currentPipeline = pipeline3D; }
 void GraphicsSystem::bindDefaultPipeline2D() { currentPipeline = pipeline2D; }
-void GraphicsSystem::setUniformData(uint32_t slot, const UniformData &data) {
-  currentCommandBuffer->pushUniformData(slot, data.data.data(),
-                                        data.data.size() * sizeof(float));
+void GraphicsSystem::setUniformBuffer(uint32_t slot, const Buffer &buffer) {
+  currentCommandBuffer->pushUniformData(slot, buffer.data(), buffer.size());
 }
 void GraphicsSystem::setRenderTarget(const RenderTexture &texture) {
   auto tex = texture.getTexture();

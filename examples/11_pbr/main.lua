@@ -1,4 +1,5 @@
 local model = sn.Model.new()
+model:load("DamagedHelmet.glb")
 local material = model:getMaterial()
 local transform = sn.Transform.new()
 local light_transform = sn.Transform.new()
@@ -7,11 +8,9 @@ local fragment_shader = sn.Shader.new()
 local pipeline3d = sn.GraphicsPipeline.new()
 local light_pos = sn.Vec3.new(2, 0, 0)
 local light_intensity = 2.5
-local uniform_data = sn.UniformData.new()
+local uniform_data = {}
 
 function Setup()
-    model:load("DamagedHelmet.glb")
-
     transform.position = sn.Vec3.new(0, 0, 0)
     transform.rotation = sn.Vec3.new(90, 0, 0)
     transform.scale = sn.Vec3.new(1, 1, 1)
@@ -33,15 +32,10 @@ function Setup()
     pipeline3d:setEnableTangent(true)
     pipeline3d:setEnableDepthTest(true)
     pipeline3d:build()
-    sn.Graphics.bindPipeline(pipeline3d)
 
-    uniform_data:add(pos.x)
-    uniform_data:add(pos.y)
-    uniform_data:add(pos.z)
-    uniform_data:add(light_pos.x)
-    uniform_data:add(light_pos.y)
-    uniform_data:add(light_pos.z)
-    uniform_data:add(light_intensity)
+    uniform_data[1] = pos
+    uniform_data[2] = light_pos
+    uniform_data[3] = light_intensity
 end
 
 function Update()
@@ -69,14 +63,13 @@ function Update()
             light_pos.y = light_pos.y - sn.Time.delta() * 5
         end
     end
-    uniform_data:change(light_pos.x, 3)
-    uniform_data:change(light_pos.y, 4)
-    uniform_data:change(light_pos.z, 5)
+    uniform_data[2] = light_pos
     light_transform.position = light_pos
 end
 
 function Draw()
-    sn.Graphics.setUniformData(1, uniform_data)
+    sn.Graphics.bindPipeline(pipeline3d)
+    sn.Graphics.setUniformBuffer(1, sn.Buffer.new(uniform_data))
     sn.Graphics.drawModel(model, transform, material)
     sn.Graphics.drawModel(model, light_transform, material)
 end

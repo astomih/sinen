@@ -16,12 +16,9 @@ pipeline2d:setEnableDepthTest(false)
 pipeline2d:build()
 sn.Graphics.bindPipeline(pipeline2d)
 
-local uniform_data = sn.UniformData.new()
-uniform_data:add(2.0)
-uniform_data:add(0.5)
-uniform_data:add(0.5)
-uniform_data:add(1.0)
-
+local uniformBuffer = sn.Buffer.new({
+    2.0, 0.5, 0.5, 1.0
+})
 
 function Update()
     if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
@@ -30,7 +27,7 @@ function Update()
 end
 
 function Draw()
-    sn.Graphics.setUniformData(1, uniform_data)
+    sn.Graphics.setUniformBuffer(1, uniformBuffer)
     -- Draw texture
     sn.Graphics.draw2D(draw2d)
 end

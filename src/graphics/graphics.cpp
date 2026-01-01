@@ -72,8 +72,8 @@ Camera2D &Graphics::getCamera2D() { return GraphicsSystem::getCamera2D(); }
 void Graphics::bindPipeline(const GraphicsPipeline &pipeline) {
   GraphicsSystem::bindPipeline(pipeline);
 }
-void Graphics::setUniformData(uint32_t slot, const UniformData &data) {
-  GraphicsSystem::setUniformData(slot, data);
+void Graphics::setUniformBuffer(uint32_t slot, const Buffer &data) {
+  GraphicsSystem::setUniformBuffer(slot, data);
 }
 void Graphics::setRenderTarget(const RenderTexture &texture) {
   GraphicsSystem::setRenderTarget(texture);

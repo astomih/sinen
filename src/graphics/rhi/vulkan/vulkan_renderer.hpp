@@ -11,8 +11,7 @@
 
 #include <array>
 #include <cstdint>
-#include <filesystem>
-#include <memory>
+#include <functional>
 namespace sinen::rhi {
 
 class VulkanRenderer {

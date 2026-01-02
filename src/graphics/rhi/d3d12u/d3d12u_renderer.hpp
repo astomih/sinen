@@ -5,7 +5,9 @@
 
 #include <SDL3/SDL.h>
 
+#include <functional>
 #include <graphics/rhi/rhi.hpp>
+
 
 #include <dxgi1_6.h>
 

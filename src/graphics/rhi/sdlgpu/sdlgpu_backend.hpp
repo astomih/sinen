@@ -3,10 +3,9 @@
 #ifndef SINEN_SDLGPU_RENDERER_HPP
 #define SINEN_SDLGPU_RENDERER_HPP
 #include <graphics/rhi/rhi.hpp>
+#include <graphics/rhi/rhi_device.hpp>
 
 #include <SDL3/SDL_gpu.h>
-
-#include <vector>
 
 namespace sinen::rhi::sdlgpu {
 namespace px = sinen::rhi;

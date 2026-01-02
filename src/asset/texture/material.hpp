@@ -1,6 +1,5 @@
 #ifndef SINEN_MATERIAL_HPP
 #define SINEN_MATERIAL_HPP
-#include "cubemap.hpp"
 #include "texture.hpp"
 
 namespace sinen {
@@ -30,25 +29,9 @@ public:
     textures[index] = texture;
   }
 
-  void setCubemap(const Cubemap &cubemap) {
-    if (cubemaps.empty()) {
-      cubemaps.push_back(cubemap);
-      return;
-    }
-    cubemaps[0] = cubemap;
-  }
-
-  void setCubemap(const Cubemap &cubemap, const size_t index) {
-    if (index >= cubemaps.size()) {
-      cubemaps.resize(index + 1);
-    }
-    cubemaps[index] = cubemap;
-  }
-
   [[nodiscard]] size_t getTextureCount() const { return textures.size(); }
 
   [[nodiscard]] bool hasTexture() const { return !textures.empty(); }
-  [[nodiscard]] bool hasCubemap() const { return !cubemaps.empty(); }
 
   [[nodiscard]] bool hasTexture(const size_t index) const {
     return index < textures.size();
@@ -58,20 +41,14 @@ public:
 
   [[nodiscard]] const Array<Texture> &getTextures() const { return textures; }
 
-  [[nodiscard]] const Array<Cubemap> &getCubemaps() const { return cubemaps; }
-
   void clear() { textures.clear(); }
 
   const Texture &getTexture(const size_t index) const {
     return textures[index];
   }
-  const Cubemap &getCubemap(const size_t index) const {
-    return cubemaps[index];
-  }
 
 private:
   Array<Texture> textures;
-  Array<Cubemap> cubemaps;
 };
 } // namespace sinen
 

@@ -6,18 +6,17 @@ local LUT = sn.Texture.new()
 LUT:load("citrus_orchard_road_puresky_2k/brdfLUT.png")
 material:setTexture(LUT, 7)
 
-local cubemap = sn.Cubemap.new()
-cubemap:load("citrus_orchard_road_puresky_2k/citrus_orchard_road_puresky_2k.exr")
-material:setCubemap(cubemap, 0) -- cubemap is set after texture
+local cubemap = sn.Texture.new()
+cubemap:loadCubemap("citrus_orchard_road_puresky_2k/citrus_orchard_road_puresky_2k.exr")
+material:setTexture(cubemap, 8)
 
+local irradiance = sn.Texture.new()
+irradiance:loadCubemap("citrus_orchard_road_puresky_2k/irradiance.exr")
+material:setTexture(irradiance, 9)
 
-local irradiance = sn.Cubemap.new()
-irradiance:load("citrus_orchard_road_puresky_2k/irradiance.exr")
-material:setCubemap(irradiance, 1)
-
-local prefiltered = sn.Cubemap.new()
-prefiltered:load("citrus_orchard_road_puresky_2k/m1.exr")
-material:setCubemap(prefiltered, 2)
+local prefiltered = sn.Texture.new()
+prefiltered:loadCubemap("citrus_orchard_road_puresky_2k/m1.exr")
+material:setTexture(prefiltered, 10)
 
 
 

@@ -32,7 +32,7 @@ void Graphics::drawText(StringView text, const Font &font, const Vec2 &position,
                         const Color &color, float textSize, float angle) {
   GraphicsSystem::drawText(text, font, position, color, textSize, angle);
 }
-void Graphics::drawCubemap(const Cubemap &cubemap) {
+void Graphics::drawCubemap(const Texture &cubemap) {
   GraphicsSystem::drawCubemap(cubemap);
 }
 void Graphics::drawModel(const Model &model, const Transform &transform,

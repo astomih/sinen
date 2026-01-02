@@ -36,7 +36,7 @@ public:
   static void drawImage(const Texture &texture, const Rect &rect, float angle);
   static void drawText(StringView text, const Font &font, const Vec2 &position,
                        const Color &color, float textSize, float angle);
-  static void drawCubemap(const Cubemap &cubemap);
+  static void drawCubemap(const Texture &cubemap);
   static void drawModel(const Model &model, const Transform &transform,
                         const Material &material);
   static void drawModelInstanced(const Model &model,

@@ -333,12 +333,6 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
         .sampler = sampler, .texture = nativeTexture});
   }
 
-  for (const auto &cubemap : draw3D.material.getCubemaps()) {
-    auto nativeCubemap = cubemap.getNativeCubemap();
-    textureSamplers.push_back(rhi::TextureSamplerBinding{
-        .sampler = sampler, .texture = nativeCubemap});
-  }
-
   auto instanceSize = sizeof(Mat4) * instanceData.size();
   bool isInstance = instanceSize > 0;
   Ptr<rhi::Buffer> instanceBuffer = nullptr;
@@ -453,12 +447,12 @@ void GraphicsSystem::drawText(StringView text, const Font &font,
   draw2D.scale = Vec2(textSize / static_cast<float>(font.size()));
   GraphicsSystem::drawBase2D(draw2D);
 }
-void GraphicsSystem::drawCubemap(const Cubemap &cubemap) {
+void GraphicsSystem::drawCubemap(const Texture &cubemap) {
   Transform transform;
   Model model;
   model.loadBox();
   Material material;
-  material.setCubemap(cubemap);
+  material.setTexture(cubemap);
   sinen::Draw3D draw3D;
   draw3D.position = transform.position;
   draw3D.scale = transform.scale;

@@ -1,6 +1,6 @@
 #include "../../graphics/graphics_system.hpp"
 #include "texture_data.hpp"
-#include <asset/texture/cubemap.hpp>
+#include <asset/texture/texture.hpp>
 #include <core/io/asset_io.hpp>
 #include <core/logger/logger.hpp>
 
@@ -301,21 +301,21 @@ createNativeCubemapTexture(const std::array<Array<float>, 6> &faces,
   writeTexture(texture, faces);
   return texture;
 }
-bool Cubemap::load(StringView path) {
+bool Texture::loadCubemap(StringView path) {
   auto convertedPath = AssetIO::getFilePath(path);
 
   Array<float> equirect;
-  int W = 0, H = 0, C = 0;
-  if (!loadEXRFloat(convertedPath.c_str(), equirect, W, H, C)) {
+  int w = 0, h = 0, c = 0;
+  if (!loadEXRFloat(convertedPath.c_str(), equirect, w, h, c)) {
     return false;
   }
 
   int faceSize = 1024;
 
   std::array<Array<float>, 6> faces;
-  equirectToCubemap(equirect.data(), W, H, C, faceSize, faces);
+  equirectToCubemap(equirect.data(), w, h, c, faceSize, faces);
 
-  this->nativeCubemap = createNativeCubemapTexture(
+  this->texture = createNativeCubemapTexture(
       faces, rhi::TextureFormat::R32G32B32A32_FLOAT, faceSize, faceSize);
   return true;
 }

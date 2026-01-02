@@ -32,6 +32,8 @@ public:
    */
   bool load(StringView fileName);
   bool load(const Buffer &buffer);
+
+  bool loadCubemap(StringView fileName);
   /**
    * @brief Load texture from memory
    *

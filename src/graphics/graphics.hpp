@@ -23,7 +23,6 @@
 #include <physics/primitive2.hpp>
 #include <physics/primitive3.hpp>
 
-
 namespace sinen {
 /**
  * @brief Renderer class
@@ -53,7 +52,7 @@ public:
     drawText(text, font, position, Palette::white(), 32.f, 0.0f);
   }
 
-  static void drawCubemap(const Cubemap &cubemap);
+  static void drawCubemap(const Texture &cubemap);
 
   static void drawModel(const Model &model, const Transform &transform,
                         const Material &material);

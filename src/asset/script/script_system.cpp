@@ -318,6 +318,9 @@ bool ScriptSystem::initialize() {
     v["load"] = sol::overload(
         [](Texture &texture, StringView s) { texture.load(s); },
         [](Texture &texture, const Buffer &buffer) { texture.load(buffer); });
+    v["loadCubemap"] = [](Texture &texture, StringView s) {
+      texture.loadCubemap(s);
+    };
     v["fill"] = &Texture::fill;
     v["copy"] = &Texture::copy;
     v["size"] = &Texture::size;
@@ -330,11 +333,6 @@ bool ScriptSystem::initialize() {
         [](Material &m, const Texture &texture) { m.setTexture(texture); },
         [](Material &m, const Texture &texture, size_t index) {
           m.setTexture(texture, index - 1);
-        });
-    v["setCubemap"] = sol::overload(
-        [](Material &m, const Cubemap &cubemap) { m.setCubemap(cubemap); },
-        [](Material &m, const Cubemap &cubemap, size_t index) {
-          m.setCubemap(cubemap, index);
         });
     v["getTexture"] = &Material::getTexture;
     v["clear"] = &Material::clear;
@@ -489,10 +487,6 @@ bool ScriptSystem::initialize() {
     v["position"] = &Transform::position;
     v["rotation"] = &Transform::rotation;
     v["scale"] = &Transform::scale;
-  }
-  {
-    auto v = lua.new_usertype<Cubemap>("Cubemap");
-    v["load"] = &Cubemap::load;
   }
   {
     auto v = lua.new_usertype<Grid<int>>(

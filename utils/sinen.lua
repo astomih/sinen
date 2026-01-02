@@ -49,14 +49,10 @@ sn = {
     ---@field blend fun(self: sn.Texture, color: sn.Color)
     ---@field copy fun(self: sn.Texture): sn.Texture
     ---@field load fun(self: sn.Texture, path: string)
+    ---@field loadCubemap fun(self: sn.Texture, path: string)
     ---@field loadFromPath fun(self: sn.Texture, path: string)
     ---@field size fun(self: sn.Texture): sn.Vec2
     Texture = {},
-
-    ---@class sn.Cubemap
-    ---@field new fun(): sn.Cubemap
-    ---@field load fun(self: sn.Cubemap, path: string)
-    Cubemap = {},
 
     ---@class sn.Material
     ---@field new fun(): sn.Material

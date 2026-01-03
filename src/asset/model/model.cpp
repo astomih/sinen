@@ -28,8 +28,8 @@
 
 namespace sinen {
 enum class LoadState { Version, Vertex, Indices };
-Array<glm::vec3> getVector3sFromKey(const aiVectorKey *keys, uint32_t count) {
-  Array<glm::vec3> result;
+Array<Vec3> getVector3sFromKey(const aiVectorKey *keys, uint32_t count) {
+  Array<Vec3> result;
   for (uint32_t i = 0; i < count; ++i) {
     result.push_back(
         glm::vec3(keys[i].mValue.x, keys[i].mValue.y, keys[i].mValue.z));

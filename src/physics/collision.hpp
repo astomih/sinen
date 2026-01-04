@@ -1,6 +1,6 @@
 #ifndef SINEN_COLLISION_HPP
 #define SINEN_COLLISION_HPP
-#include <geometry/box.hpp>
+#include <geometry/bbox.hpp>
 
 namespace sinen {
 class Collision {

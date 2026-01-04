@@ -1,4 +1,4 @@
-#include "box.hpp"
+#include "bbox.hpp"
 namespace sinen {
 
 Ptr<Mesh> AABB::createMesh() {

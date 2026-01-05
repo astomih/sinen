@@ -1,5 +1,7 @@
 #ifndef SINEN_MODEL_HPP
 #define SINEN_MODEL_HPP
+#include "node.hpp"
+#include "skeletal_animation.hpp"
 #include <asset/texture/material.hpp>
 #include <core/buffer/buffer.hpp>
 #include <core/data/hashmap.hpp>
@@ -7,56 +9,9 @@
 #include <geometry/bbox.hpp>
 #include <geometry/mesh.hpp>
 #include <graphics/rhi/rhi.hpp>
-#include <math/matrix.hpp>
-#include <math/quaternion.hpp>
 
 namespace sinen {
-struct BoneInfo {
-  glm::mat4 offsetMatrix;
-  glm::mat4 finalTransform;
-  uint32_t index;
-};
 
-class NodeAnimation {
-public:
-  Array<Vec3> position;
-  Array<float> positionTime;
-  Array<Quaternion> rotation;
-  Array<float> rotationTime;
-  Array<Vec3> scale;
-  Array<float> scaleTime;
-};
-
-class Node {
-public:
-  String name;
-  Mat4 transformation;
-  Array<Node> children;
-};
-
-class SkeletalAnimation {
-public:
-  void load(const Node &root, float ticksPerSecond, float duration,
-            Hashmap<String, NodeAnimation> &nodeAnimationMap);
-
-  void update(float timeInSeconds);
-
-  void readNodeHierarchy(float animTime, const Node &node,
-                         const Mat4 &parentTransform);
-
-  Mat4 interpolateTransform(const NodeAnimation &channel, float time);
-
-  Array<Mat4> getFinalBoneMatrices() const;
-
-  Hashmap<String, NodeAnimation> nodeAnimMap;
-  Array<AnimationVertex> animationVertices;
-  Mat4 globalInverseTransform;
-  float ticksPerSecond;
-  float duration;
-  Node root;
-  Hashmap<String, Mat4> finalBoneMatrices;
-  class Model *owner;
-};
 struct Model {
 public:
   /**
@@ -89,20 +44,23 @@ public:
   Material getMaterial() const { return material; }
 
   const Ptr<Mesh> &getMesh() const { return mesh; }
-  void setMesh(const Mesh &m) { mesh = mesh; }
 
   Ptr<rhi::Buffer> vertexBuffer;
   Ptr<rhi::Buffer> tangentBuffer;
   Ptr<rhi::Buffer> animationVertexBuffer;
   Ptr<rhi::Buffer> indexBuffer;
 
+  struct BoneInfo {
+    Mat4 offsetMatrix;
+    Mat4 finalTransform;
+    uint32_t index;
+  };
   using BoneMap = Hashmap<String, BoneInfo>;
-  const BoneMap &getBoneMap() const { return boneMap; }
+  const BoneMap &getBoneMap() { return this->boneMap; }
 
 private:
   void loadBoneUniform(float time);
   float time = 0.0f;
-  Array<Mat4> inverseBindMatrices;
   Material material;
   AABB localAABB;
   String name;

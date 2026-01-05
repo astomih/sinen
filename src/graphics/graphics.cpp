@@ -1,8 +1,5 @@
-#include "../asset/model/model_data.hpp"
 #include "graphics_system.hpp"
-#include <SDL3/SDL_events.h>
 #include <asset/asset.hpp>
-#include <cstring>
 #include <graphics/camera/camera.hpp>
 #include <graphics/drawable/drawable.hpp>
 #include <graphics/graphics.hpp>

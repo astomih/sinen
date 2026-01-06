@@ -1,6 +1,5 @@
 // std
 #include "glm/ext/vector_int2.hpp"
-#include <iostream>
 
 // internal
 #include <math/graph/bfs_grid.hpp>
@@ -46,32 +45,32 @@ bool BFSGrid::findPath(const glm::ivec2 &start, const glm::ivec2 &end) {
 
   // Start finding path
   while (!queue.empty()) {
-    glm::ivec2 current_pos = queue.front();
-    int x = current_pos.x;
-    int y = current_pos.y;
+    glm::ivec2 currentPos = queue.front();
+    int x = currentPos.x;
+    int y = currentPos.y;
     queue.pop();
 
     // Find adjacent vertices
     for (int direction = 0; direction < 4; ++direction) {
-      int next_x = x + dx[direction];
-      int next_y = y + dy[direction];
+      int nextX = x + dx[direction];
+      int nextY = y + dy[direction];
       // Next_x or next_y is out of field
-      if (next_y < 0 || next_y >= height() || next_x < 0 || next_x >= width())
+      if (nextY < 0 || nextY >= height() || nextX < 0 || nextX >= width())
         continue;
       // Not walkable node
-      if (m_field[next_y][next_x] < 0)
+      if (m_field[nextY][nextX] < 0)
         continue;
 
       // If next node is not visited, set as visited and push to queue
-      if (m_dist[next_y][next_x] == -1) {
-        queue.push({next_x, next_y});
+      if (m_dist[nextY][nextX] == -1) {
+        queue.push({nextX, nextY});
         // Update distance and previous node
-        m_dist[next_y][next_x] = m_dist[y][x] + 1;
+        m_dist[nextY][nextX] = m_dist[y][x] + 1;
         // Update previous node
-        m_prev_x[next_y][next_x] = x;
-        m_prev_y[next_y][next_x] = y;
+        m_prev_x[nextY][nextX] = x;
+        m_prev_y[nextY][nextX] = y;
         // If next node is end, return true
-        if (next_x == end.x && next_y == end.y) {
+        if (nextX == end.x && nextY == end.y) {
           backtrace(end);
           return true;
         }

@@ -489,31 +489,31 @@ bool ScriptSystem::initialize() {
     v["scale"] = &Transform::scale;
   }
   {
-    auto v = lua.new_usertype<Grid<int>>(
-        "Grid", sol::constructors<sol::types<int, int>>());
-    v["at"] = [](Grid<int> &g, int x, int y) { return g.at(x - 1, y - 1); };
-    v["set"] = [](Grid<int> &g, int x, int y, int v) {
+    auto v = lua.new_usertype<Grid>(
+        "Grid", sol::constructors<sol::types<float, float>>());
+    v["at"] = [](Grid &g, int x, int y) { return g.at(x - 1, y - 1); };
+    v["set"] = [](Grid &g, int x, int y, float v) {
       return g.at(x - 1, y - 1) = v;
     };
-    v["width"] = &Grid<int>::width;
-    v["height"] = &Grid<int>::height;
-    v["size"] = &Grid<int>::size;
-    v["clear"] = &Grid<int>::clear;
-    v["resize"] = &Grid<int>::resize;
-    v["fill"] = &Grid<int>::fill;
-    v["fillRect"] = [](Grid<int> &grid, const Rect &rect, int value) {
+    v["width"] = &Grid::width;
+    v["height"] = &Grid::height;
+    v["size"] = &Grid::size;
+    v["clear"] = &Grid::clear;
+    v["resize"] = &Grid::resize;
+    v["fill"] = &Grid::fill;
+    v["fillRect"] = [](Grid &grid, const Rect &rect, int value) {
       grid.fillRect({rect.x + 1, rect.y + 1, rect.width, rect.height}, value);
     };
-    v["setRow"] = [](Grid<int> &grid, int index, int value) {
+    v["setRow"] = [](Grid &grid, int index, float value) {
       grid.setRow(index + 1, value);
     };
-    v["setColumn"] = [](Grid<int> &grid, int index, int value) {
+    v["setColumn"] = [](Grid &grid, int index, float value) {
       grid.setColumn(index + 1, value);
     };
   }
   {
     auto v = lua.new_usertype<BFSGrid>(
-        "BFSGrid", sol::constructors<sol::types<const Grid<int> &>>());
+        "BFSGrid", sol::constructors<sol::types<const Grid &>>());
     v["width"] = &BFSGrid::width;
     v["height"] = &BFSGrid::height;
     v["findPath"] = [](BFSGrid &g, const glm::vec2 &start,

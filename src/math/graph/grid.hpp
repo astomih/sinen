@@ -5,6 +5,8 @@
 #include <geometry/rect.hpp>
 
 namespace sinen {
+namespace internal {
+
 /**
  * @brief Dynamic 2D Array
  *
@@ -222,7 +224,7 @@ public:
       return *this;
     }
     const_iterator &operator++(int) {
-      auto ret = *this;
+      auto &ret = *this;
       m_itr++;
       return ret;
     }
@@ -231,7 +233,7 @@ public:
       return *this;
     }
     const_iterator &operator--(int) {
-      auto ret = *this;
+      auto &ret = *this;
       m_itr--;
       return ret;
     }
@@ -269,13 +271,10 @@ private:
   std::size_t m_width;
   Array<T> m_data;
 };
-} // namespace sinen
 
 // ---------------
 // implementation
 // ---------------
-namespace sinen {
-
 template <class T>
 inline Grid<T>::Grid(std::size_t width, std::size_t height)
     : m_width(width), m_data(width * height) {}
@@ -404,5 +403,7 @@ inline void Grid<T>::resize(const std::size_t &w, const std::size_t &h) {
     }
   }
 }
+} // namespace internal
+using Grid = internal::Grid<float>;
 } // namespace sinen
-#endif // !SINEN_GRID
+#endif // !SINEN_GRID_HPP

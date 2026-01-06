@@ -20,7 +20,7 @@ namespace sinen {
  */
 class BFSGrid {
 public:
-  using graph = Grid<int>;
+  using graph = Grid;
   /**
    * @brief Construct a new bfs object
    *

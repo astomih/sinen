@@ -3,16 +3,16 @@
 #include <cstddef>
 
 // internal
-#include "../texture/texture_data.hpp"
-#include "core/data/array.hpp"
-#include "geometry/mesh.hpp"
 #include <asset/font/font.hpp>
 #include <asset/texture/texture.hpp>
+#include <core/data/array.hpp>
 #include <core/io/asset_io.hpp>
 #include <core/logger/logger.hpp>
+#include <geometry/mesh.hpp>
 #include <graphics/rhi/rhi.hpp>
 #include <math/color/color.hpp>
 #include <math/math.hpp>
+
 
 // external
 #include <SDL3/SDL.h>
@@ -40,7 +40,7 @@ constexpr CodepointRange asciiRange = {0x0020, 0x007F};
 
 struct Font::Wrapper {
   Array<Array<stbtt_packedchar>> packedChar;
-  Ptr<rhi::Texture> texture;
+  Texture texture;
   uint32_t sheetSize = 0;
   std::future<bool> future;
   Array<unsigned char> atlasBitmap;
@@ -147,11 +147,7 @@ bool Font::load(int pointSize, const Buffer &buffer) {
 void Font::unload() {}
 
 void Font::resize(int point_size) {}
-Texture Font::getAtlas() const {
-  Texture texture;
-  texture.texture = this->font->texture;
-  return texture;
-}
+Texture Font::getAtlas() const { return this->font->texture; }
 
 const char *utf8ToCodepoint(const char *p, uint32_t *out_cp) {
   unsigned char c = (unsigned char)*p;
@@ -184,9 +180,9 @@ Ptr<Mesh> Font::getTextMesh(StringView text) const {
   if (!this->font->loaded) {
     if (this->font->future.valid()) {
       this->font->future.wait();
-      this->font->texture = createNativeTexture(
-          this->font->atlasBitmap.data(), rhi::TextureFormat::R8G8B8A8_UNORM,
-          this->font->sheetSize, this->font->sheetSize);
+      this->font->texture.loadFromMemory(this->font->atlasBitmap.data(),
+                                         this->font->sheetSize,
+                                         this->font->sheetSize);
       this->font->loaded = true;
     }
   }

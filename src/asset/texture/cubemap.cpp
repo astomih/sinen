@@ -1,17 +1,14 @@
-#include "../../graphics/graphics_system.hpp"
-#include "texture_data.hpp"
 #include <asset/texture/texture.hpp>
 #include <core/io/asset_io.hpp>
 #include <core/logger/logger.hpp>
+#include <graphics/graphics_system.hpp>
 
 #include <algorithm>
 #include <array>
 #include <cassert>
-#include <cctype>
 #include <cmath>
 #include <cstring>
 #include <iostream>
-#include <optional>
 #include <string>
 #define TINYEXR_IMPLEMENTATION
 #include <tinyexr.h>

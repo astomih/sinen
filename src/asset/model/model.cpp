@@ -297,7 +297,8 @@ std::optional<Texture> loadTexture(aiScene *scene, aiMaterial *material,
     memcpy(buffer.data(), aiTex->pcData, aiTex->mWidth);
     texture.loadFromMemory(buffer);
   } else {
-    texture.loadFromMemory(aiTex->pcData, aiTex->mWidth, aiTex->mHeight);
+    texture.loadFromMemory(aiTex->pcData, aiTex->mWidth, aiTex->mHeight,
+                           rhi::TextureFormat::R8G8B8A8_UNORM, 4);
   }
   return texture;
 }

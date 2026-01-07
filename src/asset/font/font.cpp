@@ -13,7 +13,6 @@
 #include <math/color/color.hpp>
 #include <math/math.hpp>
 
-
 // external
 #include <SDL3/SDL.h>
 #define STB_TRUETYPE_IMPLEMENTATION
@@ -180,9 +179,9 @@ Ptr<Mesh> Font::getTextMesh(StringView text) const {
   if (!this->font->loaded) {
     if (this->font->future.valid()) {
       this->font->future.wait();
-      this->font->texture.loadFromMemory(this->font->atlasBitmap.data(),
-                                         this->font->sheetSize,
-                                         this->font->sheetSize);
+      this->font->texture.loadFromMemory(
+          this->font->atlasBitmap.data(), this->font->sheetSize,
+          this->font->sheetSize, rhi::TextureFormat::R8G8B8A8_UNORM, 4);
       this->font->loaded = true;
     }
   }

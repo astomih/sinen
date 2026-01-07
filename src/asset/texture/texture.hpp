@@ -43,7 +43,8 @@ public:
    * @return false
    */
   bool loadFromMemory(Array<char> &buffer);
-  bool loadFromMemory(void *pPixels, uint32_t width, uint32_t height);
+  bool loadFromMemory(void *pPixels, uint32_t width, uint32_t height,
+                      rhi::TextureFormat format, int channels);
   /**
    * @brief Copy texture from another texture
    *

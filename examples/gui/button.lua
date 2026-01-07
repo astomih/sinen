@@ -1,24 +1,19 @@
-local button = {
+---@class Button
+---@field font sn.Font
+---@field bg_color sn.Color
+local Button = {}
 
-    font = ({
-        Init = function()
-            local f = sn.Font.new()
-            f:load(24)
-            return f
-        end
-    }).Init(),
+Button.__index = Button
 
-    bg_color = sn.Color.new(0.7, 0.2, 0.2, 1)
-
-}
-
-button.__index = button
-
-button.new = function()
-    return setmetatable({}, button)
+Button.new = function()
+    local self = setmetatable({}, Button)
+    self.font = sn.Font.new()
+    self.font:load(24)
+    self.bg_color = sn.Color.new(0.7, 0.2, 0.2, 1.0)
+    return self
 end
 
-button.show = function(self, text, pos, scale)
+Button.show = function(self, text, pos, scale)
     -- Mouse in _?
     local mpos = sn.Mouse.getPositionOnScene()
     if mpos.x >= pos.x - scale.x / 2 and mpos.x <= pos.x + scale.x / 2 and mpos.y >= pos.y - scale.y / 2 and mpos.y <=
@@ -52,4 +47,4 @@ button.show = function(self, text, pos, scale)
     return false
 end
 
-return button
+return Button

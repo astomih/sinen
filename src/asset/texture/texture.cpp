@@ -14,13 +14,15 @@
 namespace sinen {
 static Ptr<rhi::Texture> createNativeTexture(void *pPixels,
                                              rhi::TextureFormat textureFormat,
-                                             uint32_t width, uint32_t height);
-static void updateNativeTexture(Ptr<rhi::Texture> texture, void *pPixels);
+                                             uint32_t width, uint32_t height,
+                                             int channels);
+static void updateNativeTexture(Ptr<rhi::Texture> texture, void *pPixels,
+                                int channels);
 Texture::Texture() { this->texture = nullptr; }
 Texture::Texture(int width, int height) {
   Array<uint8_t> pixels(width * height * 4, 0);
   this->texture = createNativeTexture(
-      pixels.data(), rhi::TextureFormat::R8G8B8A8_UNORM, width, height);
+      pixels.data(), rhi::TextureFormat::R8G8B8A8_UNORM, width, height, 4);
 }
 Texture::~Texture() {}
 
@@ -36,7 +38,7 @@ bool Texture::load(StringView fileName) {
                                  str.size(), &width, &height, &bpp, 4);
 
   texture = createNativeTexture(pixels, rhi::TextureFormat::R8G8B8A8_UNORM,
-                                width, height);
+                                width, height, 4);
   return true;
 }
 bool Texture::load(const Buffer &buffer) {
@@ -48,7 +50,7 @@ bool Texture::load(const Buffer &buffer) {
       stbi_load_from_memory(reinterpret_cast<unsigned char *>(buffer.data()),
                             buffer.size(), &width, &height, &bpp, 4);
   texture = createNativeTexture(pixels, rhi::TextureFormat::R8G8B8A8_UNORM,
-                                width, height);
+                                width, height, 4);
   return true;
 }
 
@@ -62,13 +64,13 @@ bool Texture::loadFromMemory(Array<char> &buffer) {
                             buffer.size(), &width, &height, &bpp, 4);
 
   this->texture = createNativeTexture(
-      pixels, rhi::TextureFormat::R8G8B8A8_UNORM, width, height);
+      pixels, rhi::TextureFormat::R8G8B8A8_UNORM, width, height, 4);
   return true;
 }
 
-bool Texture::loadFromMemory(void *pPixels, uint32_t width, uint32_t height) {
-  texture = createNativeTexture(pPixels, rhi::TextureFormat::R8G8B8A8_UNORM,
-                                width, height);
+bool Texture::loadFromMemory(void *pPixels, uint32_t width, uint32_t height,
+                             rhi::TextureFormat format, int channels) {
+  texture = createNativeTexture(pPixels, format, width, height, channels);
   return true;
 }
 
@@ -84,7 +86,7 @@ void Texture::fill(const Color &color) {
       pixels[i + 2] = color.b * 255;
       pixels[i + 3] = color.a * 255;
     }
-    updateNativeTexture(texture, pixels.data());
+    updateNativeTexture(texture, pixels.data(), 4);
   } else {
     Array<uint8_t> pixels(4, 0);
     pixels[0] = color.r * 255;
@@ -92,7 +94,7 @@ void Texture::fill(const Color &color) {
     pixels[2] = color.b * 255;
     pixels[3] = color.a * 255;
     texture = createNativeTexture(pixels.data(),
-                                  rhi::TextureFormat::R8G8B8A8_UNORM, 1, 1);
+                                  rhi::TextureFormat::R8G8B8A8_UNORM, 1, 1, 4);
   }
 }
 
@@ -108,7 +110,8 @@ glm::vec2 Texture::size() {
                    static_cast<float>(desc.height));
 }
 
-static void writeTexture(Ptr<rhi::Texture> texture, void *pPixels) {
+static void writeTexture(Ptr<rhi::Texture> texture, void *pPixels,
+                         int channels) {
   auto allocator = GlobalAllocator::get();
   auto device = GraphicsSystem::getDevice();
   uint32_t width = texture->getCreateInfo().width,
@@ -117,7 +120,7 @@ static void writeTexture(Ptr<rhi::Texture> texture, void *pPixels) {
   {
     rhi::TransferBuffer::CreateInfo info{};
     info.allocator = allocator;
-    info.size = width * height * 4;
+    info.size = width * height * channels;
     info.usage = rhi::TransferBufferUsage::Upload;
     transferBuffer = device->createTransferBuffer(info);
     auto *pMapped = transferBuffer->map(true);
@@ -147,7 +150,8 @@ static void writeTexture(Ptr<rhi::Texture> texture, void *pPixels) {
 }
 Ptr<rhi::Texture> createNativeTexture(void *pPixels,
                                       rhi::TextureFormat textureFormat,
-                                      uint32_t width, uint32_t height) {
+                                      uint32_t width, uint32_t height,
+                                      int channels) {
   auto allocator = GlobalAllocator::get();
   auto device = GraphicsSystem::getDevice();
 
@@ -165,30 +169,11 @@ Ptr<rhi::Texture> createNativeTexture(void *pPixels,
     info.type = rhi::TextureType::Texture2D;
     texture = device->createTexture(info);
   }
-  writeTexture(texture, pPixels);
+  writeTexture(texture, pPixels, channels);
   return texture;
 }
-Ptr<rhi::Texture> createNativeTexture(SDL_Surface *pSurface) {
-  auto allocator = GlobalAllocator::get();
-  auto device = GraphicsSystem::getDevice();
-  auto *pImageDataSurface =
-      ::SDL_ConvertSurface(pSurface, SDL_PIXELFORMAT_RGBA32);
-  int width = pImageDataSurface->w, height = pImageDataSurface->h;
-  auto texture =
-      createNativeTexture(pImageDataSurface->pixels,
-                          rhi::TextureFormat::R8G8B8A8_UNORM, width, height);
-  SDL_DestroySurface(pImageDataSurface);
-  return texture;
-}
-void updateNativeTexture(Ptr<rhi::Texture> texture, void *pPixels) {
-  writeTexture(texture, pPixels);
-}
-void updateNativeTexture(Ptr<rhi::Texture> texture, SDL_Surface *pSurface) {
-  auto *pImageDataSurface = ::SDL_ConvertSurface(
-      pSurface, pSurface->format == SDL_PIXELFORMAT_RGBA8888
-                    ? pSurface->format
-                    : SDL_PIXELFORMAT_RGBA32);
-  updateNativeTexture(texture, pImageDataSurface->pixels);
-  SDL_DestroySurface(pImageDataSurface);
+void updateNativeTexture(Ptr<rhi::Texture> texture, void *pPixels,
+                         int channels) {
+  writeTexture(texture, pPixels, channels);
 }
 } // namespace sinen

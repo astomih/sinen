@@ -72,6 +72,10 @@ SDL_GPUTextureFormat TextureFormatFrom(TextureFormat textureFormat) {
   switch (textureFormat) {
   case TextureFormat::Invalid:
     return SDL_GPU_TEXTUREFORMAT_INVALID;
+  case TextureFormat::R8_UNORM:
+    return SDL_GPU_TEXTUREFORMAT_R8_UNORM;
+  case TextureFormat::R8G8_UNORM:
+    return SDL_GPU_TEXTUREFORMAT_R8G8_UNORM;
   case TextureFormat::R8G8B8A8_UNORM:
     return SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
   case TextureFormat::B8G8R8A8_UNORM:

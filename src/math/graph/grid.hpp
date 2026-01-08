@@ -2,7 +2,7 @@
 #define SINEN_GRID_HPP
 #include <cassert>
 #include <core/data/array.hpp>
-#include <geometry/rect.hpp>
+#include <math/geometry/rect.hpp>
 
 namespace sinen {
 namespace internal {

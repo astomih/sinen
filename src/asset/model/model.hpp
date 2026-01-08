@@ -6,9 +6,10 @@
 #include <core/buffer/buffer.hpp>
 #include <core/data/hashmap.hpp>
 #include <core/data/ptr.hpp>
-#include <geometry/bbox.hpp>
-#include <geometry/mesh.hpp>
 #include <graphics/rhi/rhi.hpp>
+#include <math/geometry/bbox.hpp>
+#include <math/geometry/mesh.hpp>
+
 
 namespace sinen {
 

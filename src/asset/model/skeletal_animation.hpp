@@ -2,8 +2,8 @@
 #define SINEN_SKELETAL_ANIMATION_HPP
 #include "node.hpp"
 #include <core/data/hashmap.hpp>
-#include <geometry/skinned_vertex.hpp>
-#include <geometry/vertex.hpp>
+#include <math/geometry/skinned_vertex.hpp>
+#include <math/geometry/vertex.hpp>
 namespace sinen {
 class SkeletalAnimation {
 public:

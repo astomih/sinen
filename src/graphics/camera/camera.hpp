@@ -1,10 +1,9 @@
 #ifndef SINEN_CAMERA_HPP
 #define SINEN_CAMERA_HPP
 
-#include <geometry/bbox.hpp>
+#include <math/geometry/bbox.hpp>
 #include <math/matrix.hpp>
 #include <math/vector.hpp>
-
 
 namespace sinen {
 struct Frustum {

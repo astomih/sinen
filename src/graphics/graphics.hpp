@@ -9,14 +9,15 @@
 #include <core/allocator/pool_allocator.hpp>
 #include <core/data/ptr.hpp>
 #include <core/data/string.hpp>
-#include <geometry/rect.hpp>
 #include <graphics/camera/camera.hpp>
 #include <graphics/camera/camera2d.hpp>
 #include <graphics/drawable/drawable.hpp>
 #include <math/color/color.hpp>
 #include <math/color/palette.hpp>
+#include <math/geometry/rect.hpp>
 #include <math/math.hpp>
 #include <platform/window/window.hpp>
+
 
 namespace sinen {
 class Graphics {

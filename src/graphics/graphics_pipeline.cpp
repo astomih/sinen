@@ -128,7 +128,7 @@ rhi::VertexInputState CreateVertexInputState(Allocator *allocator,
     vertexInputState.vertexBufferDescriptions.emplace_back(
         rhi::VertexBufferDescription{
             .slot = bufferSlot,
-            .pitch = sizeof(glm::mat4),
+            .pitch = sizeof(Mat4),
             .inputRate = rhi::VertexInputRate::Instance,
             .instanceStepRate = 0,
         });
@@ -182,7 +182,7 @@ rhi::VertexInputState CreateVertexInputState(Allocator *allocator,
     vertexInputState.vertexBufferDescriptions.emplace_back(
         rhi::VertexBufferDescription{
             .slot = bufferSlot,
-            .pitch = sizeof(glm::vec4),
+            .pitch = sizeof(Vec4),
             .inputRate = rhi::VertexInputRate::Vertex,
             .instanceStepRate = 0,
         });

@@ -1,4 +1,5 @@
-#include "Quaternion.hpp"
+#include "quaternion.hpp"
+#include <math/vector.hpp>
 
 namespace sinen {
 const Quaternion Quaternion::Identity(0.0f, 0.0f, 0.0f, 1.0f);

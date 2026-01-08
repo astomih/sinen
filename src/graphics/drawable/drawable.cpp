@@ -1,20 +1,12 @@
 // internal
-#include "../../graphics/graphics_system.hpp"
-#include "glm/ext/vector_float2.hpp"
-#include "glm/ext/vector_float3.hpp"
-#include <SDL3/SDL_events.h>
-#include <cstring>
 #include <graphics/camera/camera.hpp>
 #include <graphics/drawable/drawable.hpp>
 #include <graphics/graphics.hpp>
+#include <graphics/graphics_system.hpp>
 #include <platform/window/window.hpp>
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include "glm/ext/matrix_transform.hpp"
-#include "glm/gtc/quaternion.hpp"
-#include "glm/gtx/quaternion.hpp"
-#include <glm/mat4x4.hpp>
 
+#include <SDL3/SDL_events.h>
 namespace sinen {
 Draw2D::Draw2D()
     : position(Vec2(0.f, 0.f)), rotation(0.0f), scale(Vec2(1.f, 1.f)) {

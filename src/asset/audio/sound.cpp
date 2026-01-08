@@ -6,7 +6,6 @@
 
 // external
 #include "core/data/ptr.hpp"
-#include "glm/ext/vector_float3.hpp"
 #if 1
 #define MINIAUDIO_IMPLEMENTATION
 #endif

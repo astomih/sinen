@@ -1,15 +1,14 @@
 // internal
 #include <math/color/hsv.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/common.hpp>
+#include <math/math.hpp>
 namespace sinen {
 void Hsv::fromColor(const Color &c) {
 
   float r = c.r;
   float g = c.g;
   float b = c.b;
-  float max = glm::max(r, glm::max(g, b));
-  float min = glm::min(r, glm::min(g, b));
+  float max = Math::max(r, Math::max(g, b));
+  float min = Math::min(r, Math::min(g, b));
   float delta = max - min;
   if (delta == 0) {
     h = 0;

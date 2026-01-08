@@ -188,7 +188,7 @@ Ptr<Mesh> Font::getTextMesh(StringView text) const {
 
   auto textMesh = makePtr<Mesh>();
   float x = 0.f, y = 0.f;
-  glm::vec2 yrange(Math::infinity, Math::negInfinity);
+  Vec2 yrange(Math::infinity, Math::negInfinity);
   const char *p = text.data();
   while (*p) {
     uint32_t cp;

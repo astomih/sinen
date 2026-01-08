@@ -1,8 +1,3 @@
-#include "glm/ext/vector_float3.hpp"
-#include "glm/trigonometric.hpp"
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/transform.hpp>
-
 // internal
 #include <graphics/camera/camera.hpp>
 #include <graphics/graphics.hpp>

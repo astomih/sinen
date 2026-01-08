@@ -3,9 +3,7 @@
 #include "core/allocator/global_allocator.hpp"
 #include "core/buffer/buffer.hpp"
 #include "core/data/ptr.hpp"
-#include "glm/matrix.hpp"
 #include "sol/raii.hpp"
-#include "sol/table_proxy.hpp"
 #include "sol/types.hpp"
 #include <asset/asset.hpp>
 #include <core/core.hpp>
@@ -26,8 +24,6 @@
 #include <platform/input/keyboard.hpp>
 #include <platform/input/mouse.hpp>
 #include <platform/window/window.hpp>
-
-#include <glm/glm.hpp>
 
 #define SOL_NO_CHECK_NUMBER_PRECISION 1
 #include <sol/sol.hpp>

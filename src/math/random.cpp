@@ -1,5 +1,6 @@
 #include "random_system.hpp"
 #include <math/random.hpp>
+#include <math/vector.hpp>
 #include <random>
 namespace sinen {
 std::mt19937 RandomSystem::sGenerator;
@@ -25,13 +26,13 @@ int Random::getIntRange(int min, int max) {
   return a;
 }
 
-glm::vec2 Random::getVector(const glm::vec2 &min, const glm::vec2 &max) {
-  glm::vec2 r = glm::vec2(getFloat(), getFloat());
+Vec2 Random::getVector(const Vec2 &min, const Vec2 &max) {
+  Vec2 r = Vec2(getFloat(), getFloat());
   return min + (max - min) * r;
 }
 
-glm::vec3 Random::getVector(const glm::vec3 &min, const glm::vec3 &max) {
-  glm::vec3 r = glm::vec3(getFloat(), getFloat(), getFloat());
+Vec3 Random::getVector(const Vec3 &min, const Vec3 &max) {
+  Vec3 r = Vec3(getFloat(), getFloat(), getFloat());
   return min + (max - min) * r;
 }
 

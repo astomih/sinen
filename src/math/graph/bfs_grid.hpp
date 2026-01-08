@@ -1,16 +1,10 @@
 #ifndef SINEN_BFS_GRID_HPP
 #define SINEN_BFS_GRID_HPP
 // std library
-#include <list>
 #include <queue>
 #include <stack>
-#include <vector>
-
-// external library
-#include <glm/vec2.hpp>
 
 // internal library
-#include "glm/ext/vector_int2.hpp"
 #include "grid.hpp"
 
 namespace sinen {

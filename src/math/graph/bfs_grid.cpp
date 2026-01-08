@@ -1,7 +1,3 @@
-// std
-#include "glm/ext/vector_int2.hpp"
-
-// internal
 #include <math/graph/bfs_grid.hpp>
 
 namespace sinen {

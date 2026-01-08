@@ -4,7 +4,6 @@
 #include <math/math.hpp>
 #include <math/quaternion.hpp>
 
-
 // external
 #include <SDL3/SDL.h>
 #if 0
@@ -13,8 +12,6 @@
 #include <miniaudio.h>
 
 namespace sinen {
-glm::vec3 calculate(const glm::quat &r);
-
 bool AudioSystem::initialize() {
 
   auto resourceManagerConfig = ma_resource_manager_config_init();

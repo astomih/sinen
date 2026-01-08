@@ -6,8 +6,6 @@
 #include "primitive3.hpp"
 #include <math/transform/transform.hpp>
 
-#include <glm/vec3.hpp>
-
 namespace sinen {
 class Collider {
 public:

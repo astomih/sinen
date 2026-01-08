@@ -1,14 +1,14 @@
 #ifndef SINEN_CAMERA_HPP
 #define SINEN_CAMERA_HPP
-#include <glm/vec3.hpp>
 
-#include <glm/mat4x4.hpp>
+#include <geometry/bbox.hpp>
+#include <math/matrix.hpp>
+#include <math/vector.hpp>
 
-#include "../../physics/collision.hpp"
 
 namespace sinen {
 struct Frustum {
-  glm::vec4 planes[6]; // x, y, z, w: ax + by + cz + d = 0
+  Vec4 planes[6]; // x, y, z, w: ax + by + cz + d = 0
 };
 /**
  * @brief Camera class
@@ -23,8 +23,7 @@ public:
    * @param target
    * @param up
    */
-  void lookat(const glm::vec3 &position, const glm::vec3 &target,
-              const glm::vec3 &up);
+  void lookat(const Vec3 &position, const Vec3 &target, const Vec3 &up);
   /**
    * @brief Set Perspective projection
    *
@@ -55,45 +54,45 @@ public:
   /**
    * @brief Get the position of camera
    *
-   * @return glm::vec3&
+   * @return Vec3&
    */
-  glm::vec3 &getPosition() { return position; }
+  Vec3 &getPosition() { return position; }
   /**
    * @brief Get the target of camera
    *
-   * @return glm::vec3&
+   * @return Vec3&
    */
-  const glm::vec3 &getTarget() const { return target; }
+  const Vec3 &getTarget() const { return target; }
   /**
    * @brief Get the up vector of camera
    *
-   * @return glm::vec3&
+   * @return Vec3&
    */
-  const glm::vec3 &getUp() const { return up; }
+  const Vec3 &getUp() const { return up; }
   /**
    * @brief Get the view matrix of camera
    *
    * @return matrix4&
    */
-  const glm::mat4 &getView() const { return view; }
+  const Mat4 &getView() const { return view; }
   /**
    * @brief Get the projection matrix of camera
    *
    * @return matrix4&
    */
-  const glm::mat4 &getProjection() const { return projection; }
+  const Mat4 &getProjection() const { return projection; }
 
 private:
   // Position of camera
-  glm::vec3 position;
+  Vec3 position;
   // Camera target vector
-  glm::vec3 target;
+  Vec3 target;
   // Up vector
-  glm::vec3 up;
+  Vec3 up;
   // view
-  glm::mat4 view;
+  Mat4 view;
   // projection
-  glm::mat4 projection;
+  Mat4 projection;
 
   bool updateFrustum = false;
   Frustum frustum;

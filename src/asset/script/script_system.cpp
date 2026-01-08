@@ -108,14 +108,14 @@ static String convert(StringView name, const TablePair &p, bool isReturn) {
   return s;
 }
 sol::state state;
-static auto vec3Str(const glm::vec3 &v) {
+static auto vec3Str(const Vec3 &v) {
   TablePair p;
   p.emplace_back("x", toStringTrim(v.x));
   p.emplace_back("y", toStringTrim(v.y));
   p.emplace_back("z", toStringTrim(v.z));
   return convert("sn.Vec3", p, false);
 };
-static auto vec2Str(const glm::vec2 &v) {
+static auto vec2Str(const Vec2 &v) {
   TablePair p;
   p.emplace_back("x", toStringTrim(v.x));
   p.emplace_back("y", toStringTrim(v.y));
@@ -193,8 +193,8 @@ bool ScriptSystem::initialize() {
             auto v = value.as<Camera>();
             auto s = sizeof(Mat4) * 2;
             auto *p = GlobalAllocator::get()->allocate(s);
-            auto view = glm::transpose(v.getView());
-            auto proj = glm::transpose(v.getProjection());
+            auto view = (v.getView());
+            auto proj = (v.getProjection());
             memcpy(p, &view, sizeof(Mat4));
             memcpy((void *)(reinterpret_cast<std::byte *>(p) + sizeof(Mat4)),
                    &proj, sizeof(Mat4));
@@ -234,71 +234,61 @@ bool ScriptSystem::initialize() {
     };
   }
   {
-    auto v = lua.new_usertype<glm::vec3>(
+    auto v = lua.new_usertype<Vec3>(
         "Vec3", sol::constructors<sol::types<float, float, float>,
                                   sol::types<float>>());
 
-    v["x"] = &glm::vec3::x;
-    v["y"] = &glm::vec3::y;
-    v["z"] = &glm::vec3::z;
-    v["__add"] = [](const glm::vec3 &a, const glm::vec3 &b) { return a + b; };
-    v["__sub"] = [](const glm::vec3 &a, const glm::vec3 &b) { return a - b; };
-    v["__mul"] = [](const glm::vec3 &a, const glm::vec3 &b) { return a * b; };
-    v["__div"] = [](const glm::vec3 &a, const glm::vec3 &b) { return a / b; };
+    v["x"] = &Vec3::x;
+    v["y"] = &Vec3::y;
+    v["z"] = &Vec3::z;
+    v["__add"] = [](const Vec3 &a, const Vec3 &b) { return a + b; };
+    v["__sub"] = [](const Vec3 &a, const Vec3 &b) { return a - b; };
+    v["__mul"] = [](const Vec3 &a, const Vec3 &b) { return a * b; };
+    v["__div"] = [](const Vec3 &a, const Vec3 &b) { return a / b; };
     v["__tostring"] = vec3Str;
-    v["copy"] = [](const glm::vec3 &a) { return a; };
-    v["length"] = [](const glm::vec3 &a) { return glm::length(a); };
-    v["forward"] = [](const glm::vec3 v,
-                      const glm::vec3 rotation) -> glm::vec3 {
+    v["copy"] = [](const Vec3 &a) { return a; };
+    v["length"] = [](const Vec3 &a) { return a.length(); };
+    v["forward"] = [](const Vec3 v, const Vec3 rotation) -> Vec3 {
       // rotation to mat
-      glm::mat4 m =
-          glm::rotate(glm::mat4(1.0f), rotation.x, glm::vec3(1, 0, 0));
-      m = glm::rotate(m, rotation.y, glm::vec3(0, 1, 0));
-      m = glm::rotate(m, rotation.z, glm::vec3(0, 0, 1));
+      auto m = Mat4::create_from_quaternion(Quaternion::from_euler(rotation));
       // forward
-      glm::vec4 forward = m * glm::vec4(v.x, v.y, v.z, 1.0f);
+      Vec4 forward = m * Vec4(v.x, v.y, v.z, 1.0f);
       forward.x = forward.x / forward.w;
       forward.y = forward.y / forward.w;
       forward.z = forward.z / forward.w;
 
-      return glm::vec3(forward.x, forward.y, forward.z);
+      return Vec3(forward.x, forward.y, forward.z);
     };
-    v["normalize"] = [](const glm::vec3 &v) { return glm::normalize(v); };
-    v["dot"] = [](const glm::vec3 &a, const glm::vec3 &b) {
-      return glm::dot(a, b);
+    v["normalize"] = [](const Vec3 &v) { return Vec3::normalize(v); };
+    v["dot"] = [](const Vec3 &a, const Vec3 &b) { return Vec3::dot(a, b); };
+    v["cross"] = [](const Vec3 &a, const Vec3 &b) { return Vec3::cross(a, b); };
+    v["lerp"] = [](const Vec3 &a, const Vec3 &b, float t) {
+      return Vec3::lerp(a, b, t);
     };
-    v["cross"] = [](const glm::vec3 &a, const glm::vec3 &b) {
-      return glm::cross(a, b);
-    };
-    v["lerp"] = [](const glm::vec3 &a, const glm::vec3 &b, float t) {
-      return glm::mix(a, b, t);
-    };
-    v["reflect"] = [](const glm::vec3 &v, const glm::vec3 &n) {
-      return glm::reflect(v, n);
+    v["reflect"] = [](const Vec3 &v, const Vec3 &n) {
+      return Vec3::reflect(v, n);
     };
   }
   {
-    auto v = lua.new_usertype<glm::vec2>(
+    auto v = lua.new_usertype<Vec2>(
         "Vec2",
         sol::constructors<sol::types<float, float>, sol::types<float>>());
-    v["x"] = &glm::vec2::x;
-    v["y"] = &glm::vec2::y;
-    v["__add"] = [](const glm::vec2 &a, const glm::vec2 &b) { return a + b; };
-    v["__sub"] = [](const glm::vec2 &a, const glm::vec2 &b) { return a - b; };
-    v["__mul"] = [](const glm::vec2 &a, const glm::vec2 &b) { return a * b; };
-    v["__div"] = [](const glm::vec2 &a, const glm::vec2 &b) { return a / b; };
+    v["x"] = &Vec2::x;
+    v["y"] = &Vec2::y;
+    v["__add"] = [](const Vec2 &a, const Vec2 &b) { return a + b; };
+    v["__sub"] = [](const Vec2 &a, const Vec2 &b) { return a - b; };
+    v["__mul"] = [](const Vec2 &a, const Vec2 &b) { return a * b; };
+    v["__div"] = [](const Vec2 &a, const Vec2 &b) { return a / b; };
     v["__tostring"] = vec2Str;
-    v["copy"] = [](const glm::vec2 &a) { return a; };
-    v["length"] = [](const glm::vec2 &a) { return glm::length(a); };
-    v["normalize"] = [](const glm::vec2 &v) { return glm::normalize(v); };
-    v["dot"] = [](const glm::vec2 &a, const glm::vec2 &b) {
-      return glm::dot(a, b);
+    v["copy"] = [](const Vec2 &a) { return a; };
+    v["length"] = [](const Vec2 &a) { return a.length(); };
+    v["normalize"] = [](const Vec2 &v) { return Vec2::normalize(v); };
+    v["dot"] = [](const Vec2 &a, const Vec2 &b) { return Vec2::dot(a, b); };
+    v["lerp"] = [](const Vec2 &a, const Vec2 &b, float t) {
+      return Vec2::lerp(a, b, t);
     };
-    v["lerp"] = [](const glm::vec2 &a, const glm::vec2 &b, float t) {
-      return glm::mix(a, b, t);
-    };
-    v["reflect"] = [](const glm::vec2 &v, const glm::vec2 &n) {
-      return glm::reflect(v, n);
+    v["reflect"] = [](const Vec2 &v, const Vec2 &n) {
+      return Vec2::reflect(v, n);
     };
   }
   {
@@ -472,9 +462,8 @@ bool ScriptSystem::initialize() {
   {
     // Rect
     auto v = lua.new_usertype<Rect>(
-        "Rect",
-        sol::constructors<sol::types<float, float, float, float>,
-                          sol::types<glm::vec2, glm::vec2>, sol::types<>>());
+        "Rect", sol::constructors<sol::types<float, float, float, float>,
+                                  sol::types<Vec2, Vec2>, sol::types<>>());
     v["x"] = &Rect::x;
     v["y"] = &Rect::y;
     v["width"] = &Rect::width;
@@ -516,13 +505,12 @@ bool ScriptSystem::initialize() {
         "BFSGrid", sol::constructors<sol::types<const Grid &>>());
     v["width"] = &BFSGrid::width;
     v["height"] = &BFSGrid::height;
-    v["findPath"] = [](BFSGrid &g, const glm::vec2 &start,
-                       const glm::vec2 &end) {
+    v["findPath"] = [](BFSGrid &g, const Vec2 &start, const Vec2 &end) {
       return g.findPath({start.x - 1, start.y - 1}, {end.x - 1, end.y - 1});
     };
     v["trace"] = [](BFSGrid &g) {
       auto t = g.trace();
-      return glm::vec2{t.x + 1, t.y + 1};
+      return Vec2{t.x + 1, t.y + 1};
     };
     v["traceable"] = &BFSGrid::traceable;
     v["reset"] = &BFSGrid::reset;
@@ -583,18 +571,18 @@ bool ScriptSystem::initialize() {
           Graphics::drawImage(texture, rect, angle);
         });
     v["drawText"] = sol::overload(
-        [](StringView text, const Font &font, const glm::vec2 &position) {
+        [](StringView text, const Font &font, const Vec2 &position) {
           Graphics::drawText(text, font, position);
         },
-        [](StringView text, const Font &font, const glm::vec2 &position,
+        [](StringView text, const Font &font, const Vec2 &position,
            const Color &color) {
           Graphics::drawText(text, font, position, color);
         },
-        [](StringView text, const Font &font, const glm::vec2 &position,
+        [](StringView text, const Font &font, const Vec2 &position,
            const Color &color, float fontSize) {
           Graphics::drawText(text, font, position, color, fontSize, 0);
         },
-        [](StringView text, const Font &font, const glm::vec2 &position,
+        [](StringView text, const Font &font, const Vec2 &position,
            const Color &color, float fontSize, float angle) {
           Graphics::drawText(text, font, position, color, fontSize, angle);
         });

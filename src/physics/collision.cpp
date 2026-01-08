@@ -1,4 +1,3 @@
-#include <glm/glm.hpp>
 #include <math/math.hpp>
 #include <physics/collision.hpp>
 
@@ -23,115 +22,115 @@ bool Collision::obBvsObb(const OBB &a, const OBB &b) {
   // Ae1
   float rA = ae1.length();
   float rB = segmentLengthOnSeparateAxis(nae1, be1, be2, be3);
-  float L = Math::abs(glm::dot(interval, nae1));
+  float L = Math::abs(Vec3::dot(interval, nae1));
   if (L > rA + rB)
     return false;
 
   // Ae2
   rA = ae2.length();
   rB = segmentLengthOnSeparateAxis(nae2, be1, be2, be3);
-  L = Math::abs(glm::dot(interval, nae2));
+  L = Math::abs(Vec3::dot(interval, nae2));
   if (L > rA + rB)
     return false;
 
   // Ae3
   rA = ae3.length();
   rB = segmentLengthOnSeparateAxis(nae3, be1, be2, be3);
-  L = Math::abs(glm::dot(interval, nae3));
+  L = Math::abs(Vec3::dot(interval, nae3));
   if (L > rA + rB)
     return false;
 
   // Be1
   rA = segmentLengthOnSeparateAxis(nbe1, ae1, ae2, ae3);
   rB = be1.length();
-  L = Math::abs(glm::dot(interval, nbe1));
+  L = Math::abs(Vec3::dot(interval, nbe1));
   if (L > rA + rB)
     return false;
 
   // Be2
   rA = segmentLengthOnSeparateAxis(nbe2, ae1, ae2, ae3);
   rB = be2.length();
-  L = Math::abs(glm::dot(interval, nbe2));
+  L = Math::abs(Vec3::dot(interval, nbe2));
   if (L > rA + rB)
     return false;
 
   // Be3
   rA = segmentLengthOnSeparateAxis(nbe3, ae1, ae2, ae3);
   rB = be3.length();
-  L = Math::abs(glm::dot(interval, nbe3));
+  L = Math::abs(Vec3::dot(interval, nbe3));
   if (L > rA + rB)
     return false;
 
   Vec3 cross;
   // C11
-  cross = glm::cross(nae1, nbe1);
+  cross = Vec3::cross(nae1, nbe1);
   rA = segmentLengthOnSeparateAxis(cross, ae2, ae3);
   rB = segmentLengthOnSeparateAxis(cross, be2, be3);
-  L = Math::abs(glm::dot(interval, cross));
+  L = Math::abs(Vec3::dot(interval, cross));
   if (L > rA + rB)
     return false;
 
   // C12
-  cross = glm::cross(nae1, nbe2);
+  cross = Vec3::cross(nae1, nbe2);
   rA = segmentLengthOnSeparateAxis(cross, ae2, ae3);
   rB = segmentLengthOnSeparateAxis(cross, be1, be3);
-  L = Math::abs(glm::dot(interval, cross));
+  L = Math::abs(Vec3::dot(interval, cross));
   if (L > rA + rB)
     return false;
 
   // C13
-  cross = glm::cross(nae1, nbe3);
+  cross = Vec3::cross(nae1, nbe3);
   rA = segmentLengthOnSeparateAxis(cross, ae2, ae3);
   rB = segmentLengthOnSeparateAxis(cross, be1, be2);
-  L = Math::abs(glm::dot(interval, cross));
+  L = Math::abs(Vec3::dot(interval, cross));
   if (L > rA + rB)
     return false;
 
   // C21
-  cross = glm::cross(nae2, nbe1);
+  cross = Vec3::cross(nae2, nbe1);
   rA = segmentLengthOnSeparateAxis(cross, ae1, ae3);
   rB = segmentLengthOnSeparateAxis(cross, be2, be3);
-  L = Math::abs(glm::dot(interval, cross));
+  L = Math::abs(Vec3::dot(interval, cross));
   if (L > rA + rB)
     return false;
 
   // C22
-  cross = glm::cross(nae2, nbe2);
+  cross = Vec3::cross(nae2, nbe2);
   rA = segmentLengthOnSeparateAxis(cross, ae1, ae3);
   rB = segmentLengthOnSeparateAxis(cross, be1, be3);
-  L = Math::abs(glm::dot(interval, cross));
+  L = Math::abs(Vec3::dot(interval, cross));
   if (L > rA + rB)
     return false;
 
   // C23
-  cross = glm::cross(nae2, nbe3);
+  cross = Vec3::cross(nae2, nbe3);
   rA = segmentLengthOnSeparateAxis(cross, ae1, ae3);
   rB = segmentLengthOnSeparateAxis(cross, be1, be2);
-  L = Math::abs(glm::dot(interval, cross));
+  L = Math::abs(Vec3::dot(interval, cross));
   if (L > rA + rB)
     return false;
 
   // C31
-  cross = glm::cross(nae3, nbe1);
+  cross = Vec3::cross(nae3, nbe1);
   rA = segmentLengthOnSeparateAxis(cross, ae1, ae2);
   rB = segmentLengthOnSeparateAxis(cross, be2, be3);
-  L = Math::abs(glm::dot(interval, cross));
+  L = Math::abs(Vec3::dot(interval, cross));
   if (L > rA + rB)
     return false;
 
   // C32
-  cross = glm::cross(nae3, nbe2);
+  cross = Vec3::cross(nae3, nbe2);
   rA = segmentLengthOnSeparateAxis(cross, ae1, ae2);
   rB = segmentLengthOnSeparateAxis(cross, be1, be3);
-  L = Math::abs(glm::dot(interval, cross));
+  L = Math::abs(Vec3::dot(interval, cross));
   if (L > rA + rB)
     return false;
 
   // C33
-  cross = glm::cross(nae3, nbe3);
+  cross = Vec3::cross(nae3, nbe3);
   rA = segmentLengthOnSeparateAxis(cross, ae1, ae2);
   rB = segmentLengthOnSeparateAxis(cross, be1, be2);
-  L = Math::abs(glm::dot(interval, cross));
+  L = Math::abs(Vec3::dot(interval, cross));
   if (L > rA + rB)
     return false;
 
@@ -140,15 +139,15 @@ bool Collision::obBvsObb(const OBB &a, const OBB &b) {
 }
 float Collision::segmentLengthOnSeparateAxis(const Vec3 &Sep, const Vec3 &e1,
                                              const Vec3 &e2, const Vec3 &e3) {
-  float r1 = Math::abs(glm::dot(Sep, e1));
-  float r2 = Math::abs(glm::dot(Sep, e2));
-  float r3 = Math::abs(glm::dot(Sep, e3));
+  float r1 = Math::abs(Vec3::dot(Sep, e1));
+  float r2 = Math::abs(Vec3::dot(Sep, e2));
+  float r3 = Math::abs(Vec3::dot(Sep, e3));
   return r1 + r2 + r3;
 }
 float Collision::segmentLengthOnSeparateAxis(const Vec3 &Sep, const Vec3 &e1,
                                              const Vec3 &e2) {
-  float r1 = Math::abs(glm::dot(Sep, e1));
-  float r2 = Math::abs(glm::dot(Sep, e2));
+  float r1 = Math::abs(Vec3::dot(Sep, e1));
+  float r2 = Math::abs(Vec3::dot(Sep, e2));
   return r1 + r2;
 }
 } // namespace sinen

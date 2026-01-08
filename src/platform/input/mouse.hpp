@@ -1,6 +1,6 @@
 #ifndef SINEN_MOUSE_HPP
 #define SINEN_MOUSE_HPP
-#include <glm/vec2.hpp>
+#include <math/vector.hpp>
 namespace sinen {
 /**
  * @brief Mouse
@@ -10,12 +10,12 @@ class Mouse {
 public:
   enum class Code;
   // For mouse position
-  static void setPosition(const glm::vec2 &pos);
-  static void setPositionOnScene(const glm::vec2 &pos);
-  static glm::vec2 getPosition();
-  static glm::vec2 getPositionOnScene();
+  static void setPosition(const Vec2 &pos);
+  static void setPositionOnScene(const Vec2 &pos);
+  static Vec2 getPosition();
+  static Vec2 getPositionOnScene();
   static void hideCursor(bool hide);
-  static glm::vec2 getScrollWheel();
+  static Vec2 getScrollWheel();
   static void setRelative(bool is_relative);
   static bool isRelative();
   // For buttons

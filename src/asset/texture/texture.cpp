@@ -104,10 +104,9 @@ Texture Texture::copy() {
   return dst;
 }
 
-glm::vec2 Texture::size() {
+Vec2 Texture::size() {
   auto desc = texture->getCreateInfo();
-  return glm::vec2(static_cast<float>(desc.width),
-                   static_cast<float>(desc.height));
+  return Vec2(static_cast<float>(desc.width), static_cast<float>(desc.height));
 }
 
 static void writeTexture(Ptr<rhi::Texture> texture, void *pPixels,

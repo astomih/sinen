@@ -22,7 +22,7 @@ struct KeyInputState {
 struct MouseStateImpl {
 public:
   // Motion of scroll wheel
-  glm::vec2 mScrollWheel;
+  Vec2 mScrollWheel;
   // Store button data
   uint32_t mCurrButtons;
   uint32_t mPrevButtons;
@@ -36,8 +36,8 @@ public:
   uint8_t
       mPrevButtons[static_cast<int>(GamePad::code::NUM_GAMECONTROLLER_BUTTON)];
   // Left/right sticks
-  glm::vec2 mLeftStick;
-  glm::vec2 mRightStick;
+  Vec2 mLeftStick;
+  Vec2 mRightStick;
   // Left/right trigger
   float mLeftTrigger;
   float mRightTrigger;
@@ -65,7 +65,7 @@ public:
 
 private:
   static float filter1d(int input);
-  static glm::vec2 filter2d(int inputX, int inputY);
+  static Vec2 filter2d(int inputX, int inputY);
   static Joystick mController;
 };
 } // namespace sinen

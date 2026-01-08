@@ -10,9 +10,9 @@
 #include <glm/ext/vector_float3.hpp>
 #include <glm/ext/vector_float4.hpp>
 
-namespace sinen {
-using Vec2 = glm::vec2;
-using Vec3 = glm::vec3;
-using Vec4 = glm::vec4;
-} // namespace sinen
+#include "math.hpp"
+#include "vector2.hpp"
+#include "vector3.hpp"
+#include "vector4.hpp"
+
 #endif

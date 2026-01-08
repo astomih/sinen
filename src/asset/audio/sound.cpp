@@ -59,10 +59,10 @@ void Sound::setPitch(float value) const {
   ma_sound_set_pitch(&data->sound, value);
 }
 
-void Sound::setPosition(const glm::vec3 &pos) const {
+void Sound::setPosition(const Vec3 &pos) const {
   ma_sound_set_position(&data->sound, pos.x, pos.y, pos.z);
 }
-void Sound::setDirection(const glm::vec3 &dir) const {
+void Sound::setDirection(const Vec3 &dir) const {
   ma_sound_set_direction(&data->sound, dir.x, dir.y, dir.z);
 }
 bool Sound::isPlaying() const { return ma_sound_is_playing(&data->sound); }
@@ -72,12 +72,12 @@ float Sound::getVolume() const { return ma_sound_get_volume(&data->sound); }
 
 float Sound::getPitch() const { return ma_sound_get_pitch(&data->sound); }
 
-glm::vec3 Sound::getPosition() const {
+Vec3 Sound::getPosition() const {
   auto temp = ma_sound_get_position(&data->sound);
-  return {temp.x, temp.y, temp.z};
+  return Vec3{temp.x, temp.y, temp.z};
 }
-glm::vec3 Sound::getDirection() const {
+Vec3 Sound::getDirection() const {
   auto temp = ma_sound_get_direction(&data->sound);
-  return {temp.x, temp.y, temp.z};
+  return Vec3{temp.x, temp.y, temp.z};
 }
 } // namespace sinen

@@ -29,7 +29,7 @@ void BFSGrid::reset() {
     queue.pop();
   }
 }
-bool BFSGrid::findPath(const glm::ivec2 &start, const glm::ivec2 &end) {
+bool BFSGrid::findPath(const Vec2 &start, const Vec2 &end) {
   constexpr int dx[4] = {0, 1, 0, -1};
   constexpr int dy[4] = {1, 0, -1, 0};
   // start or end is not in field
@@ -40,12 +40,12 @@ bool BFSGrid::findPath(const glm::ivec2 &start, const glm::ivec2 &end) {
     return false;
   }
   // Start position set as visited
-  m_dist[start.y][start.x] = 0;
+  m_dist[static_cast<int>(start.y)][static_cast<int>(start.x)] = 0.f;
   queue.push(start);
 
   // Start finding path
   while (!queue.empty()) {
-    glm::ivec2 currentPos = queue.front();
+    Vec2 currentPos = queue.front();
     int x = currentPos.x;
     int y = currentPos.y;
     queue.pop();
@@ -63,7 +63,7 @@ bool BFSGrid::findPath(const glm::ivec2 &start, const glm::ivec2 &end) {
 
       // If next node is not visited, set as visited and push to queue
       if (m_dist[nextY][nextX] == -1) {
-        queue.push({nextX, nextY});
+        queue.push({static_cast<float>(nextX), static_cast<float>(nextY)});
         // Update distance and previous node
         m_dist[nextY][nextX] = m_dist[y][x] + 1;
         // Update previous node
@@ -80,19 +80,19 @@ bool BFSGrid::findPath(const glm::ivec2 &start, const glm::ivec2 &end) {
   // If there is no path, return false
   return false;
 }
-void BFSGrid::backtrace(const glm::ivec2 &end) {
+void BFSGrid::backtrace(const Vec2 &end) {
   auto p = end;
   while (p.x != -1 && p.y != -1) {
     // Add passed node to shortest_path
     this->shortest.push(p);
     // Backtrack previous node
-    int px = m_prev_x[p.y][p.x];
-    int py = m_prev_y[p.y][p.x];
+    int px = m_prev_x[static_cast<int>(p.y)][static_cast<int>(p.x)];
+    int py = m_prev_y[static_cast<int>(p.y)][static_cast<int>(p.x)];
     p.x = px, p.y = py;
   }
 }
-glm::ivec2 BFSGrid::trace() {
-  glm::ivec2 next = shortest.top();
+Vec2 BFSGrid::trace() {
+  Vec2 next = shortest.top();
   shortest.pop();
   return next;
 }

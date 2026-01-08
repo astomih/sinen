@@ -10,7 +10,6 @@
 #include <math/quaternion.hpp>
 #include <math/vector.hpp>
 
-
 JPH_SUPPRESS_WARNINGS
 
 namespace sinen {
@@ -216,7 +215,7 @@ Vec3 PhysicsSystem::getPosition(const Collider &collider) {
   JPH::BodyInterface &body_interface = raw->physicsSystem.GetBodyInterface();
   auto it = bodyMap.find(collider.id);
   if (it == bodyMap.end()) {
-    return glm::vec3(0.0f);
+    return Vec3(0.0f);
   }
   JPH::BodyID body_id = it->second;
   JPH::RVec3 position = body_interface.GetCenterOfMassPosition(body_id);
@@ -227,14 +226,14 @@ Vec3 PhysicsSystem::getVelocity(const Collider &collider) {
   JPH::BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
   auto it = bodyMap.find(collider.id);
   if (it == bodyMap.end()) {
-    return glm::vec3(0.0f);
+    return Vec3(0.0f);
   }
   JPH::BodyID body_id = it->second;
   auto velocity = bodyInterface.GetLinearVelocity(body_id);
-  return glm::vec3(velocity.GetX(), velocity.GetY(), velocity.GetZ());
+  return Vec3(velocity.GetX(), velocity.GetY(), velocity.GetZ());
 }
 void PhysicsSystem::setLinearVelocity(const Collider &collider,
-                                      const glm::vec3 &velocity) {
+                                      const Vec3 &velocity) {
   JPH::BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
   auto bodyID = bodyMap[collider.id];
   bodyInterface.SetLinearVelocity(bodyID, {velocity.x, velocity.y, velocity.z});
@@ -257,13 +256,7 @@ Collider PhysicsSystem::createBoxCollider(const Transform &transform,
   // Create the shape
   JPH::ShapeSettings::ShapeResult boxShapeResult = boxShapeSetting.Create();
   JPH::ShapeRefC boxShape = boxShapeResult.Get();
-  const auto rotationX =
-      glm::angleAxis(glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-  const auto rotationY =
-      glm::angleAxis(glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-  const auto rotationZ =
-      glm::angleAxis(glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-  const auto quaternion = rotationX * rotationY * rotationZ;
+  const auto quaternion = Quaternion::from_euler(rotation);
 
   JPH::EMotionType motionType =
       isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic;
@@ -281,8 +274,8 @@ Collider PhysicsSystem::createBoxCollider(const Transform &transform,
   return collider;
 }
 
-Collider PhysicsSystem::createSphereCollider(const glm::vec3 &position,
-                                             float radius, bool isStatic) {
+Collider PhysicsSystem::createSphereCollider(const Vec3 &position, float radius,
+                                             bool isStatic) {
   auto &bodyInterface = raw->physicsSystem.GetBodyInterface();
   auto motionType =
       isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic;
@@ -297,8 +290,8 @@ Collider PhysicsSystem::createSphereCollider(const glm::vec3 &position,
   bodyMap[collider.id] = body->GetID();
   return collider;
 }
-Collider PhysicsSystem::createCylinderCollider(const glm::vec3 &position,
-                                               const glm::vec3 &rotation,
+Collider PhysicsSystem::createCylinderCollider(const Vec3 &position,
+                                               const Vec3 &rotation,
                                                float halfHeight, float radius,
                                                bool isStatic) {
   auto &bodyInterface = raw->physicsSystem.GetBodyInterface();
@@ -310,14 +303,7 @@ Collider PhysicsSystem::createCylinderCollider(const glm::vec3 &position,
   JPH::ShapeSettings::ShapeResult cylinderShapeResult =
       cylinderShapeSetting.Create();
   JPH::ShapeRefC cylinderShape = cylinderShapeResult.Get();
-  const auto rotationX =
-      glm::angleAxis(glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-  const auto rotationY =
-
-      glm::angleAxis(glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-  const auto rotationZ =
-      glm::angleAxis(glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-  const auto quaternion = rotationX * rotationY * rotationZ;
+  const auto quaternion = Quaternion::from_euler(rotation);
   JPH::BodyCreationSettings cylinderSettings(
       cylinderShape, JPH::RVec3(position.x, position.y, position.z),
       {quaternion.x, quaternion.y, quaternion.z, quaternion.w}, motionType,

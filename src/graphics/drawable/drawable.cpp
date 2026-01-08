@@ -17,46 +17,44 @@
 
 namespace sinen {
 Draw2D::Draw2D()
-    : position(glm::vec2(0.f, 0.f)), rotation(0.0f),
-      scale(glm::vec2(1.f, 1.f)) {
+    : position(Vec2(0.f, 0.f)), rotation(0.0f), scale(Vec2(1.f, 1.f)) {
   this->model = GraphicsSystem::sprite;
 }
 Draw2D::Draw2D(const Texture &texture)
-    : position(glm::vec2(0.f, 0.f)), rotation(0.0f),
-      scale(glm::vec2(1.f, 1.f)) {
+    : position(Vec2(0.f, 0.f)), rotation(0.0f), scale(Vec2(1.f, 1.f)) {
   this->material.setTexture(texture);
   this->model = GraphicsSystem::sprite;
 }
 Draw3D::Draw3D()
-    : position(glm::vec3(0.f, 0.f, 0.f)), rotation(glm::vec3(0.f, 0.f, 0.f)),
-      scale(glm::vec3(1.f, 1.f, 1.f)) {
+    : position(Vec3(0.f, 0.f, 0.f)), rotation(Vec3(0.f, 0.f, 0.f)),
+      scale(Vec3(1.f, 1.f, 1.f)) {
   this->model = GraphicsSystem::box;
 }
 Draw3D::Draw3D(const Texture &texture)
-    : position(glm::vec3(0.f, 0.f, 0.f)), rotation(glm::vec3(0.f, 0.f, 0.f)),
-      scale(glm::vec3(1.f, 1.f, 1.f)) {
+    : position(Vec3(0.f, 0.f, 0.f)), rotation(Vec3(0.f, 0.f, 0.f)),
+      scale(Vec3(1.f, 1.f, 1.f)) {
   this->material.setTexture(texture);
   this->model = GraphicsSystem::box;
 }
-void Draw2D::add(const glm::vec2 &position, const float &rotation,
-                 const glm::vec2 &scale) {
+void Draw2D::add(const Vec2 &position, const float &rotation,
+                 const Vec2 &scale) {
   this->worlds.push_back({position, rotation, scale});
 }
-void Draw2D::at(const int &index, const glm::vec2 &position,
-                const float &rotation, const glm::vec2 &scale) {
+void Draw2D::at(const int &index, const Vec2 &position, const float &rotation,
+                const Vec2 &scale) {
   this->worlds[index] = {position, rotation, scale};
 }
 void Draw2D::clear() { this->worlds.clear(); }
-void Draw3D::add(const glm::vec3 &position, const glm::vec3 &rotation,
-                 const glm::vec3 &scale) {
+void Draw3D::add(const Vec3 &position, const Vec3 &rotation,
+                 const Vec3 &scale) {
   Transform transform;
   transform.position = position;
   transform.rotation = rotation;
   transform.scale = scale;
   this->worlds.push_back(transform);
 }
-void Draw3D::at(const int &index, const glm::vec3 &position,
-                const glm::vec3 &rotation, const glm::vec3 &scale) {
+void Draw3D::at(const int &index, const Vec3 &position, const Vec3 &rotation,
+                const Vec3 &scale) {
   Transform transform;
   transform.setPosition(position);
   transform.setRotation(rotation);

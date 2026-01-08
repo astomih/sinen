@@ -7,14 +7,14 @@
 #include <platform/window/window.hpp>
 
 namespace sinen {
-glm::vec2 WindowSystem::mSize = glm::vec2(1280.f, 720.f);
+Vec2 WindowSystem::mSize = Vec2(1280.f, 720.f);
 String WindowSystem::mName;
 ::SDL_Window *WindowSystem::mWindow = nullptr;
 bool WindowSystem::mResized = false;
 const void *Window::getSDLWindow() { return WindowSystem::getSdlWindow(); }
-glm::vec2 Window::size() { return WindowSystem::size(); }
-glm::vec2 Window::half() { return WindowSystem::half(); }
-void Window::resize(const glm::vec2 &size) { WindowSystem::resize(size); }
+Vec2 Window::size() { return WindowSystem::size(); }
+Vec2 Window::half() { return WindowSystem::half(); }
+void Window::resize(const Vec2 &size) { WindowSystem::resize(size); }
 void Window::setFullscreen(bool fullscreen) {
   WindowSystem::setFullscreen(fullscreen);
 }
@@ -30,7 +30,7 @@ bool WindowSystem::initialize(StringView name) {
     File f;
     if (f.open(FileSystem::getAppBaseDirectory() + "/settings.json", "r")) {
       auto size = f.size();
-      auto buffer = f.read(size+1);
+      auto buffer = f.read(size + 1);
       f.close();
       Json j;
       j.parse((char *)buffer.data());
@@ -74,7 +74,7 @@ void WindowSystem::shutdown() {
   SDL_DestroyWindow(mWindow);
   mWindow = nullptr;
 }
-void WindowSystem::resize(const glm::vec2 &size) {
+void WindowSystem::resize(const Vec2 &size) {
   mSize = size;
   SDL_SetWindowSize(mWindow, static_cast<int>(mSize.x),
                     static_cast<int>(mSize.y));

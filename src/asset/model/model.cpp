@@ -38,7 +38,7 @@ Array<Vec3> getVector3sFromKey(const aiVectorKey *keys, uint32_t count) {
   Array<Vec3> result;
   for (uint32_t i = 0; i < count; ++i) {
     result.push_back(
-        glm::vec3(keys[i].mValue.x, keys[i].mValue.y, keys[i].mValue.z));
+        Vec3(keys[i].mValue.x, keys[i].mValue.y, keys[i].mValue.z));
   }
   return result;
 };
@@ -52,8 +52,8 @@ Array<float> getTimesFromVector3Key(const aiVectorKey *keys, uint32_t count) {
 Array<Quaternion> getRotatesFromKey(const aiQuatKey *keys, uint32_t count) {
   Array<Quaternion> result;
   for (uint32_t i = 0; i < count; ++i) {
-    result.push_back(Quaternion(keys[i].mValue.w, keys[i].mValue.x,
-                                keys[i].mValue.y, keys[i].mValue.z));
+    result.push_back(Quaternion(keys[i].mValue.x, keys[i].mValue.y,
+                                keys[i].mValue.z, keys[i].mValue.w));
   }
   return result;
 };
@@ -65,9 +65,7 @@ Array<float> getTimesFromQuatKey(const aiQuatKey *keys, uint32_t count) {
   return result;
 };
 Mat4 convertMatrix(const aiMatrix4x4 &m) {
-  Mat4 mat = glm::make_mat4(&m.a1);
-  mat = glm::transpose(mat); // Assimp is column major
-  return mat;
+  return (Mat4(&m.a1));
 }
 
 Node createNodeFromAiNode(const aiNode *ainode) {
@@ -266,16 +264,16 @@ void calcTangents(const aiScene *scene, Ptr<Mesh> &mesh) {
     tangentAccum[mesh->indices[i + 2]] += tangent;
 
     // optional: handedness check
-    Vec3 N = glm::normalize(v0.normal);
+    Vec3 N = Vec3::normalize(v0.normal);
     float sign =
-        (glm::dot(glm::cross(N, tangent), bitangent) < 0.0f) ? -1.0f : 1.0f;
+        (Vec3::dot(Vec3::cross(N, tangent), bitangent) < 0.0f) ? -1.0f : 1.0f;
     handedness[mesh->indices[i]] = sign;
     handedness[mesh->indices[i + 1]] = sign;
     handedness[mesh->indices[i + 2]] = sign;
   }
 
   for (size_t j = 0; j < mesh->vertices.size(); ++j) {
-    auto T = glm::normalize(tangentAccum[j]);
+    auto T = Vec3::normalize(tangentAccum[j]);
     mesh->tangents[j] = Vec4(T, handedness[j]);
   }
 }
@@ -661,7 +659,7 @@ void Model::loadBoneUniform(float start) {
   boneMatrices.resize(matrices.size());
   int index = 0;
   for (auto &m : matrices) {
-    boneMatrices[index] = glm::transpose(m);
+    boneMatrices[index] = m;
     index++;
   }
 }

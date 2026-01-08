@@ -1,21 +1,21 @@
 #ifndef SINEN_CAMERA2D_HPP
 #define SINEN_CAMERA2D_HPP
-#include <glm/vec2.hpp>
+#include <math/vector.hpp>
 namespace sinen {
 class Camera2D {
 public:
   Camera2D() = default;
-  Camera2D(const glm::vec2 &size) : cameraSize(size) {}
+  Camera2D(const Vec2 &size) : cameraSize(size) {}
   ~Camera2D() = default;
 
-  void resize(const glm::vec2 &size) { this->cameraSize = size; }
-  glm::vec2 windowRatio() const;
-  glm::vec2 invWindowRatio() const;
-  glm::vec2 size() const { return cameraSize; }
-  glm::vec2 half() const { return cameraSize * 0.5f; }
+  void resize(const Vec2 &size) { this->cameraSize = size; }
+  Vec2 windowRatio() const;
+  Vec2 invWindowRatio() const;
+  Vec2 size() const { return cameraSize; }
+  Vec2 half() const { return cameraSize * 0.5f; }
 
 private:
-  glm::vec2 cameraSize;
+  Vec2 cameraSize;
 };
 } // namespace sinen
 

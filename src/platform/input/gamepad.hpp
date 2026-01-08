@@ -1,7 +1,6 @@
 #ifndef SINEN_GAMEPAD_HPP
 #define SINEN_GAMEPAD_HPP
-#include "glm/ext/vector_float2.hpp"
-#include <glm/vec2.hpp>
+#include <math/vector.hpp>
 namespace sinen {
 /**
  * @brief Gamepad
@@ -14,8 +13,8 @@ public:
   static bool isDown(code j_button);
   static bool isPressed(code j_button);
   static bool isReleased(code j_button);
-  static const glm::vec2 &getLeftStick();
-  static const glm::vec2 &getRightStick();
+  static const Vec2 &getLeftStick();
+  static const Vec2 &getRightStick();
   static float getLeftTrigger();
   static float getRightTrigger();
 

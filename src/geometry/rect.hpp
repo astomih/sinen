@@ -6,7 +6,7 @@
 namespace sinen {
 
 struct Rect {
-  Rect() = default;
+  Rect();
   Rect(float x, float y, float width, float height)
       : x(x), y(y), width(width), height(height) {}
   Rect(const Vec2 &p, const Vec2 &s) : p(p), s(s) {}

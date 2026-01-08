@@ -8,19 +8,19 @@ class Transform {
 public:
   Transform() : position(0.0f), rotation(0.0f), scale(1.0f) {}
   ~Transform() = default;
-  [[nodiscard]] glm::mat4 getWorldMatrix() const;
+  [[nodiscard]] Mat4 getWorldMatrix() const;
 
-  void setPosition(glm::vec3 position) { this->position = position; }
-  void setRotation(glm::vec3 rotation) { this->rotation = rotation; }
-  void setScale(glm::vec3 scale) { this->scale = scale; }
+  void setPosition(Vec3 position) { this->position = position; }
+  void setRotation(Vec3 rotation) { this->rotation = rotation; }
+  void setScale(Vec3 scale) { this->scale = scale; }
 
-  [[nodiscard]] glm::vec3 getPosition() const { return position; }
-  [[nodiscard]] glm::vec3 getRotation() const { return rotation; }
-  [[nodiscard]] glm::vec3 getScale() const { return scale; }
+  [[nodiscard]] Vec3 getPosition() const { return position; }
+  [[nodiscard]] Vec3 getRotation() const { return rotation; }
+  [[nodiscard]] Vec3 getScale() const { return scale; }
 
-  glm::vec3 position;
-  glm::vec3 rotation;
-  glm::vec3 scale;
+  Vec3 position;
+  Vec3 rotation;
+  Vec3 scale;
 };
 
 } // namespace sinen

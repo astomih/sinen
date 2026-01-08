@@ -51,7 +51,7 @@ void GraphicsSystem::initialize() {
   camera2D = Window::size();
   camera = []() {
     Camera c;
-    c.lookat({0, -1, 1}, {0, 0, 0}, {0, 0, 1});
+    c.lookat(Vec3{0, -1, 1}, Vec3{0, 0, 0}, Vec3{0, 0, 1});
     c.perspective(90.f, Window::size().x / Window::size().y, .1f, 100.f);
     return c;
   }();
@@ -220,36 +220,29 @@ void GraphicsSystem::drawBase2D(const sinen::Draw2D &draw2D) {
   Array<Mat4> instanceData;
   auto scale = draw2D.scale * 0.5f * ratio;
   {
-    auto t =
-        glm::translate(Mat4(1.0f), Vec3(draw2D.position.x * ratio.x,
-                                        draw2D.position.y * ratio.y, 0.0f));
-    auto quaternion =
-        glm::angleAxis(glm::radians(draw2D.rotation), Vec3(0.0f, 0.0f, -1.0f));
-    auto r = glm::toMat4(quaternion);
+    Transform transform;
+    transform.setPosition(
+        Vec3(draw2D.position.x * ratio.x, draw2D.position.y * ratio.y, 0.0f));
+    transform.setRotation(Vec3(0, 0, draw2D.rotation));
+    transform.setScale(
+        Vec3(draw2D.scale.x * 0.5f, draw2D.scale.y * 0.5f, 1.0f));
 
-    auto s = glm::scale(Mat4(1.0f), Vec3(scale, 1.0f));
-
-    mat[0] = glm::transpose(t * r * s);
+    mat[0] = transform.getWorldMatrix();
   }
   auto viewproj = Mat4(1.0f);
 
   auto screenSize = camera2D.size();
   viewproj[0][0] = 2.f / Window::size().x;
   viewproj[1][1] = 2.f / Window::size().y;
-  mat[1] = glm::transpose(viewproj);
+  mat[1] = viewproj;
   mat[2] = Mat4(1.f);
   for (auto &i : draw2D.worlds) {
-    auto t = glm::translate(
-        Mat4(1.0f), Vec3(i.position.x * ratio.x, i.position.y * ratio.y, 0.0f));
-    auto quaternion =
-        glm::angleAxis(glm::radians(i.rotation), Vec3(0.0f, 0.0f, -1.0f));
-    auto r = glm::toMat4(quaternion);
-    auto s =
-        glm::scale(Mat4(1.0f), Vec3(i.scale.x * 0.5f, i.scale.y * 0.5f, 1.0f));
-
-    auto world = t * r * s;
-
-    instanceData.push_back(glm::transpose(world));
+    Transform transform;
+    transform.setPosition(
+        Vec3(i.position.x * ratio.x, i.position.y * ratio.y, 0.0f));
+    transform.setRotation(Vec3(0, 0, i.rotation));
+    transform.setScale(Vec3(i.scale.x * 0.5f, i.scale.y * 0.5f, 1.0f));
+    instanceData.push_back(transform.getWorldMatrix());
   }
   drawCallCountPerFrame++;
   prepareRenderPassFrame();
@@ -289,38 +282,16 @@ void GraphicsSystem::drawBase3D(const sinen::Draw3D &draw3D) {
   Mat4 mat[3];
   Array<Mat4> instanceData;
   {
-    const auto t =
-        glm::translate(Mat4(1.0f), Vec3(draw3D.position.x, draw3D.position.y,
-                                        draw3D.position.z));
-    const auto rotationX =
-        glm::angleAxis(glm::radians(draw3D.rotation.x), Vec3(1.0f, 0.0f, 0.0f));
-    const auto rotationY =
-        glm::angleAxis(glm::radians(draw3D.rotation.y), Vec3(0.0f, 1.0f, 0.0f));
-    const auto rotationZ =
-        glm::angleAxis(glm::radians(draw3D.rotation.z), Vec3(0.0f, 0.0f, 1.0f));
-    const auto r = glm::toMat4(rotationX * rotationY * rotationZ);
-
-    const auto s = glm::scale(
-        Mat4(1.0f), Vec3(draw3D.scale.x, draw3D.scale.y, draw3D.scale.z));
-    mat[0] = glm::transpose(t * r * s);
-    mat[1] = glm::transpose(camera.getView());
-    mat[2] = glm::transpose(camera.getProjection());
+    Transform transform;
+    transform.setPosition(draw3D.position);
+    transform.setRotation(draw3D.rotation);
+    transform.setScale(draw3D.scale);
+    mat[0] = transform.getWorldMatrix();
+    mat[1] = camera.getView();
+    mat[2] = camera.getProjection();
   }
   for (auto &i : draw3D.worlds) {
-    auto t = glm::translate(Mat4(1.0f),
-                            Vec3(i.position.x, i.position.y, i.position.z));
-    auto rotationX =
-        glm::angleAxis(glm::radians(i.rotation.x), Vec3(1.0f, 0.0f, 0.0f));
-    auto rotationY =
-        glm::angleAxis(glm::radians(i.rotation.y), Vec3(0.0f, 1.0f, 0.0f));
-    auto rotationZ =
-        glm::angleAxis(glm::radians(i.rotation.z), Vec3(0.0f, 0.0f, 1.0f));
-    auto r = glm::toMat4(rotationX * rotationY * rotationZ);
-
-    auto s = glm::scale(Mat4(1.0f), Vec3(i.scale.x, i.scale.y, i.scale.z));
-
-    auto world = t * r * s;
-    instanceData.push_back(glm::transpose(world));
+    instanceData.push_back(i.getWorldMatrix());
   }
   drawCallCountPerFrame++;
   prepareRenderPassFrame();
@@ -473,9 +444,9 @@ void GraphicsSystem::drawModelInstanced(const Model &model,
                                         const Array<Transform> &transforms,
                                         const Material &material) {
   sinen::Draw3D draw3D;
-  draw3D.position = {0, 0, 0};
-  draw3D.scale = {1, 1, 1};
-  draw3D.rotation = {0, 0, 0};
+  draw3D.position = Vec3{0, 0, 0};
+  draw3D.scale = Vec3{1, 1, 1};
+  draw3D.rotation = Vec3{0, 0, 0};
   draw3D.material = material;
   draw3D.model = model;
   draw3D.worlds = transforms;

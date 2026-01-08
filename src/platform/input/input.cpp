@@ -119,26 +119,26 @@ bool KeyInput::isReleased(const KeyCode key) {
   return getKeyState(key) == button_state::Released;
 }
 
-void Mouse::setPosition(const glm::vec2 &pos) {
+void Mouse::setPosition(const Vec2 &pos) {
   const auto half = Window::half();
   SDL_WarpMouseInWindow(WindowSystem::getSdlWindow(), half.x + pos.x,
                         half.y - pos.y);
 }
-void Mouse::setPositionOnScene(const glm::vec2 &pos) {
+void Mouse::setPositionOnScene(const Vec2 &pos) {
   Mouse::setPosition(pos * GraphicsSystem::getCamera2D().windowRatio());
 }
-glm::vec2 Mouse::getPosition() {
-  glm::vec2 pos;
+Vec2 Mouse::getPosition() {
+  Vec2 pos;
   SDL_GetMouseState(&pos.x, &pos.y);
   pos -= Window::half();
   pos.y *= -1.f;
   return pos;
 }
-glm::vec2 Mouse::getPositionOnScene() {
+Vec2 Mouse::getPositionOnScene() {
   return Mouse::getPosition() * GraphicsSystem::getCamera2D().invWindowRatio();
 }
 
-glm::vec2 Mouse::getScrollWheel() { return InputSystem::mMouse.mScrollWheel; }
+Vec2 Mouse::getScrollWheel() { return InputSystem::mMouse.mScrollWheel; }
 
 void Mouse::setRelative(bool is_relative) {
   SDL_SetWindowRelativeMouseMode(WindowSystem::getSdlWindow(), is_relative);
@@ -180,10 +180,10 @@ bool GamePad::isPressed(GamePad::code _button) {
 bool GamePad::isReleased(GamePad::code _button) {
   return getButtonState(_button) == button_state::Released;
 }
-const glm::vec2 &GamePad::getLeftStick() {
+const Vec2 &GamePad::getLeftStick() {
   return InputSystem::mJoystick.mLeftStick;
 }
-const glm::vec2 &GamePad::getRightStick() {
+const Vec2 &GamePad::getRightStick() {
   return InputSystem::mJoystick.mRightStick;
 }
 bool GamePad::isConnected() { return InputSystem::mJoystick.mIsConnected; }
@@ -214,7 +214,7 @@ void InputSystem::prepareForUpdate() {
 
   // Mouse
   mMouse.mPrevButtons = mMouse.mCurrButtons;
-  mMouse.mScrollWheel = glm::vec2(0.f);
+  mMouse.mScrollWheel = Vec2(0.f);
 
   // Controller
   memcpy(mJoystick.mPrevButtons, mJoystick.mCurrButtons,
@@ -256,8 +256,8 @@ void InputSystem::processEvent(SDL_Event &event) {
 
   switch (event.type) {
   case SDL_EVENT_MOUSE_WHEEL: {
-    mMouse.mScrollWheel = glm::vec2(static_cast<float>(event.wheel.x),
-                                    static_cast<float>(event.wheel.y));
+    mMouse.mScrollWheel = Vec2(static_cast<float>(event.wheel.x),
+                               static_cast<float>(event.wheel.y));
     break;
   }
   case SDL_EVENT_KEY_DOWN: {
@@ -300,12 +300,12 @@ float InputSystem::filter1d(int _input) {
   return retVal;
 }
 
-glm::vec2 InputSystem::filter2d(int inputX, int inputY) {
+Vec2 InputSystem::filter2d(int inputX, int inputY) {
   const float deadZone = 8000.0f;
   const float maxValue = 30000.0f;
 
   // Make into 2D vector
-  glm::vec2 dir;
+  Vec2 dir;
   dir.x = static_cast<float>(inputX);
   dir.y = static_cast<float>(inputY);
 
@@ -313,7 +313,7 @@ glm::vec2 InputSystem::filter2d(int inputX, int inputY) {
 
   // If length < deadZone, should be no input
   if (length < deadZone) {
-    dir = glm::vec2(0.f);
+    dir = Vec2(0.f);
   } else {
     // Calculate fractional value between
     // dead zone and max value circles

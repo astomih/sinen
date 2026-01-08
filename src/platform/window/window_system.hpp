@@ -1,9 +1,9 @@
 #ifndef SINEN_WINDOW_SYSTEM_HPP
 #define SINEN_WINDOW_SYSTEM_HPP
-#include "glm/ext/vector_float2.hpp"
 #include <SDL3/SDL.h>
 #include <core/data/string.hpp>
 #include <graphics/graphics.hpp>
+#include <math/vector.hpp>
 
 namespace sinen {
 class WindowSystem {
@@ -13,18 +13,18 @@ public:
   static void prepareFrame();
   static void processInput(SDL_Event &event);
   static SDL_Window *getSdlWindow() { return mWindow; }
-  static void resize(const glm::vec2 &size);
+  static void resize(const Vec2 &size);
   static void setFullscreen(bool fullscreen);
   static void rename(StringView name);
 
-  static glm::vec2 size() { return mSize; }
+  static Vec2 size() { return mSize; }
   static bool resized() { return mResized; }
-  static glm::vec2 half() { return glm::vec2(mSize.x / 2.0, mSize.y / 2.0); }
+  static Vec2 half() { return Vec2(mSize.x / 2.0, mSize.y / 2.0); }
   static String name() { return mName; }
 
 private:
   static bool mResized;
-  static glm::vec2 mSize;
+  static Vec2 mSize;
   static String mName;
   static ::SDL_Window *mWindow;
 };

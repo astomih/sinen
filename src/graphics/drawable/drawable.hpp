@@ -22,20 +22,19 @@ public:
    *
    */
   explicit Draw2D(const Texture &texture);
-  void add(const glm::vec2 &position, const float &rotation,
-           const glm::vec2 &scale);
-  void at(const int &index, const glm::vec2 &position, const float &rotation,
-          const glm::vec2 &scale);
+  void add(const Vec2 &position, const float &rotation, const Vec2 &scale);
+  void at(const int &index, const Vec2 &position, const float &rotation,
+          const Vec2 &scale);
   void clear();
   struct World {
-    glm::vec2 position;
+    Vec2 position;
     float rotation;
-    glm::vec2 scale;
+    Vec2 scale;
   };
   Array<World> worlds;
-  glm::vec2 position;
+  Vec2 position;
   float rotation;
-  glm::vec2 scale;
+  Vec2 scale;
   Material material;
   Model model;
 };
@@ -56,14 +55,13 @@ public:
    *
    */
   explicit Draw3D(const Texture &texture);
-  void add(const glm::vec3 &position, const glm::vec3 &rotation,
-           const glm::vec3 &scale);
-  void at(const int &index, const glm::vec3 &position,
-          const glm::vec3 &rotation, const glm::vec3 &scale);
+  void add(const Vec3 &position, const Vec3 &rotation, const Vec3 &scale);
+  void at(const int &index, const Vec3 &position, const Vec3 &rotation,
+          const Vec3 &scale);
   void clear();
-  glm::vec3 position;
-  glm::vec3 rotation;
-  glm::vec3 scale;
+  Vec3 position;
+  Vec3 rotation;
+  Vec3 scale;
   Material material;
   Array<Transform> worlds;
   const Model &getModel() const;

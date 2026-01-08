@@ -40,13 +40,13 @@ public:
    * @return true
    * @return false
    */
-  bool findPath(const glm::ivec2 &start, const glm::ivec2 &end);
+  bool findPath(const Vec2 &start, const Vec2 &end);
   /**
    * @brief Trace the shortest path
    *
    * @return point2i Next point
    */
-  glm::ivec2 trace();
+  Vec2 trace();
   /**
    * @brief Check if the path is traceable
    *
@@ -78,13 +78,13 @@ private:
    *
    * @param end Trace end point
    */
-  void backtrace(const glm::ivec2 &end);
+  void backtrace(const Vec2 &end);
   graph m_field;
   graph m_dist;
   graph m_prev_x;
   graph m_prev_y;
-  std::stack<glm::ivec2> shortest;
-  std::queue<glm::ivec2> queue;
+  std::stack<Vec2> shortest;
+  std::queue<Vec2> queue;
 };
 } // namespace sinen
 #endif // !SINEN_BFS_HPP

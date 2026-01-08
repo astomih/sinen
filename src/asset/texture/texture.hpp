@@ -54,7 +54,7 @@ public:
 
   void fill(const Color &color);
 
-  glm::vec2 size();
+  Vec2 size();
 
   Ptr<rhi::Texture> texture;
 };

@@ -6,12 +6,11 @@
 #include <optional>
 
 // internal
-#include "../../graphics/graphics_system.hpp"
-#include "core/allocator/global_allocator.hpp"
-#include "core/buffer/buffer.hpp"
-#include "core/data/ptr.hpp"
 #include <asset/asset.hpp>
+#include <core/allocator/global_allocator.hpp>
+#include <core/buffer/buffer.hpp>
 #include <core/core.hpp>
+#include <core/data/ptr.hpp>
 #include <graphics/graphics.hpp>
 #include <math/math.hpp>
 
@@ -64,9 +63,7 @@ Array<float> getTimesFromQuatKey(const aiQuatKey *keys, uint32_t count) {
   }
   return result;
 };
-Mat4 convertMatrix(const aiMatrix4x4 &m) {
-  return (Mat4(&m.a1));
-}
+Mat4 convertMatrix(const aiMatrix4x4 &m) { return (Mat4(&m.a1)); }
 
 Node createNodeFromAiNode(const aiNode *ainode) {
   Node node;
@@ -434,15 +431,15 @@ void Model::loadFromVertexArray(const Ptr<Mesh> &mesh) {
   this->indexBuffer = viBuffer.second;
 }
 
-void Model::loadSprite() { *this = GraphicsSystem::sprite; }
-void Model::loadBox() { *this = GraphicsSystem::box; }
+void Model::loadSprite() { *this = Graphics::sprite; }
+void Model::loadBox() { *this = Graphics::box; }
 
 const AABB &Model::getAABB() const { return this->localAABB; }
 
 std::pair<Ptr<rhi::Buffer>, Ptr<rhi::Buffer>>
 createVertexIndexBuffer(const Array<Vertex> &vertices,
                         const Array<uint32_t> &indices) {
-  auto device = GraphicsSystem::getDevice();
+  auto device = Graphics::getDevice();
   size_t vertexBufferSize = vertices.size() * sizeof(Vertex);
   Ptr<rhi::Buffer> vertexBuffer, indexBuffer;
   rhi::Buffer::CreateInfo vertexBufferInfo{};
@@ -532,7 +529,7 @@ Ptr<rhi::Buffer>
 createAnimationVertexBuffer(const Array<AnimationVertex> &vertices) {
   if (vertices.empty())
     return nullptr;
-  auto device = GraphicsSystem::getDevice();
+  auto device = Graphics::getDevice();
   size_t vertexBufferSize = vertices.size() * sizeof(AnimationVertex);
   Ptr<rhi::Buffer> vertexBuffer;
   rhi::Buffer::CreateInfo vertexBufferInfo{};
@@ -583,7 +580,7 @@ Ptr<rhi::Buffer> createBuffer(size_t size, void *data, rhi::BufferUsage usage) {
 
   if (!data)
     return nullptr;
-  auto device = GraphicsSystem::getDevice();
+  auto device = Graphics::getDevice();
   Ptr<rhi::Buffer> buffer;
   rhi::Buffer::CreateInfo vertexBufferInfo{};
   vertexBufferInfo.allocator = GlobalAllocator::get();

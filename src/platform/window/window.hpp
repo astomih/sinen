@@ -1,64 +1,32 @@
-#ifndef SINEN_WINDOW_HPP
-#define SINEN_WINDOW_HPP
+#ifndef SINEN_WINDOW_SYSTEM_HPP
+#define SINEN_WINDOW_SYSTEM_HPP
 #include <core/data/string.hpp>
+#include <graphics/graphics.hpp>
 #include <math/vector.hpp>
 
+#include <SDL3/SDL.h>
 namespace sinen {
-/**
- * @brief Window class
- *
- */
 class Window {
 public:
-  /**
-   * @brief Get the window size
-   *
-   * @return vector2 size
-   */
-  static Vec2 size();
-  /**
-   * @brief Get the window half size
-   *
-   * @return vector2
-   */
-  static Vec2 half();
-  /**
-   * @brief Set the Window size
-   *
-   * @param size window size
-   */
+  static bool initialize(StringView name);
+  static void shutdown();
+  static void prepareFrame();
+  static void processInput(SDL_Event &event);
+  static SDL_Window *getSdlWindow() { return mWindow; }
   static void resize(const Vec2 &size);
-  /**
-   * @brief Set the fullscreen
-   *
-   * @param fullscreen
-   */
   static void setFullscreen(bool fullscreen);
-  /**
-   * @brief Set the name
-   *
-   * @param name
-   */
   static void rename(StringView name);
-  /**
-   * @brief Get the window name
-   *
-   * @return String name
-   */
-  static String getName();
-  /**
-   * @brief Check if the window is resized
-   *
-   * @return true Resized window
-   * @return false Not resized window
-   */
-  static bool resized();
-  /**
-   * @brief Get the sdl window object
-   *
-   * @return const void* SDL_Window
-   */
-  static const void *getSDLWindow();
+
+  static Vec2 size() { return mSize; }
+  static bool resized() { return mResized; }
+  static Vec2 half() { return Vec2(mSize.x / 2.0, mSize.y / 2.0); }
+  static String name() { return mName; }
+
+private:
+  static bool mResized;
+  static Vec2 mSize;
+  static String mName;
+  static ::SDL_Window *mWindow;
 };
 } // namespace sinen
-#endif // !SINEN_WINDOW_HPP
+#endif // SINEN_WINDOW_SYSTEM_HPP

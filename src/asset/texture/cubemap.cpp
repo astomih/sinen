@@ -1,7 +1,7 @@
 #include <asset/texture/texture.hpp>
 #include <core/io/asset_io.hpp>
 #include <core/logger/logger.hpp>
-#include <graphics/graphics_system.hpp>
+#include <graphics/graphics.hpp>
 #include <math/math.hpp>
 
 #include <algorithm>
@@ -230,7 +230,7 @@ bool saveEXRFloat(const char *path, const float *img, int W, int H, int C) {
 
 static void writeTexture(Ptr<rhi::Texture> texture,
                          const std::array<Array<float>, 6> &faces) {
-  auto device = GraphicsSystem::getDevice();
+  auto device = Graphics::getDevice();
   uint32_t width = texture->getCreateInfo().width,
            height = texture->getCreateInfo().height;
 
@@ -280,7 +280,7 @@ Ptr<rhi::Texture>
 createNativeCubemapTexture(const std::array<Array<float>, 6> &faces,
                            rhi::TextureFormat textureFormat, uint32_t width,
                            uint32_t height) {
-  auto device = GraphicsSystem::getDevice();
+  auto device = Graphics::getDevice();
 
   Ptr<rhi::Texture> texture;
   {

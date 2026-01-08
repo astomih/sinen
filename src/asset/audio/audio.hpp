@@ -7,7 +7,7 @@
 #include <miniaudio.h>
 
 namespace sinen {
-class AudioSystem {
+class Audio {
 public:
   static bool initialize();
   static void shutdown();

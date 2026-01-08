@@ -1,18 +1,18 @@
-#include "../window/window_system.hpp"
-#include <SDL3/SDL.h>
+#include "input.hpp"
+#include "mouse.hpp"
+#include <platform/window/window.hpp>
 
-#include "../../graphics/graphics_system.hpp"
-#include "SDL3/SDL_mouse.h"
-#include "input_system.hpp"
-#include "platform/input/mouse.hpp"
-#include "platform/window/window.hpp"
 #include <cstring>
 #include <imgui_impl_sdl3.h>
+
 #include <platform/platform.hpp>
+#include <platform/window/window.hpp>
 
 #include <math/math.hpp>
 
 #include <core/logger/logger.hpp>
+
+#include <SDL3/SDL.h>
 
 namespace sinen {
 bool isHide = false;
@@ -23,15 +23,15 @@ SDL_Cursor *gCursor = nullptr;
  */
 enum class button_state { None, Pressed, Released, Held };
 static button_state getKeyState(Keyboard::Code _key_code) {
-  if (InputSystem::mKeyboard.mPrevState[static_cast<int>(_key_code)] == 0) {
-    if (InputSystem::mKeyboard.mCurrState[static_cast<int>(_key_code)] == 0) {
+  if (Input::mKeyboard.mPrevState[static_cast<int>(_key_code)] == 0) {
+    if (Input::mKeyboard.mCurrState[static_cast<int>(_key_code)] == 0) {
       return button_state::None;
     } else {
       return button_state::Pressed;
     }
   } else // Prev state must be 1
   {
-    if (InputSystem::mKeyboard.mCurrState[static_cast<int>(_key_code)] == 0) {
+    if (Input::mKeyboard.mCurrState[static_cast<int>(_key_code)] == 0) {
       return button_state::Released;
     } else {
       return button_state::Held;
@@ -40,9 +40,9 @@ static button_state getKeyState(Keyboard::Code _key_code) {
 }
 
 static button_state getKeyState(KeyInput::KeyCode _key) {
-  if (!InputSystem::keyInputState.previousKeys.contains(
+  if (!Input::keyInputState.previousKeys.contains(
           static_cast<std::uint32_t>(_key))) {
-    if (!InputSystem::keyInputState.currentKeys.contains(
+    if (!Input::keyInputState.currentKeys.contains(
             static_cast<std::uint32_t>(_key))) {
       return button_state::None;
     } else {
@@ -50,7 +50,7 @@ static button_state getKeyState(KeyInput::KeyCode _key) {
     }
   } else // Prev state must be 1
   {
-    if (!InputSystem::keyInputState.currentKeys.contains(
+    if (!Input::keyInputState.currentKeys.contains(
             static_cast<std::uint32_t>(_key))) {
       return button_state::Released;
     } else {
@@ -61,14 +61,14 @@ static button_state getKeyState(KeyInput::KeyCode _key) {
 
 static button_state getButtonState(Mouse::Code _button) {
   int mask = SDL_BUTTON_MASK(static_cast<int>(_button));
-  if ((mask & InputSystem::mMouse.mPrevButtons) == 0) {
-    if ((mask & InputSystem::mMouse.mCurrButtons) == 0) {
+  if ((mask & Input::mMouse.mPrevButtons) == 0) {
+    if ((mask & Input::mMouse.mCurrButtons) == 0) {
       return button_state::None;
     } else {
       return button_state::Pressed;
     }
   } else {
-    if ((mask & InputSystem::mMouse.mCurrButtons) == 0) {
+    if ((mask & Input::mMouse.mCurrButtons) == 0) {
       return button_state::Released;
     } else {
       return button_state::Held;
@@ -76,15 +76,15 @@ static button_state getButtonState(Mouse::Code _button) {
   }
 }
 static button_state getButtonState(GamePad::code _button) {
-  if (InputSystem::mJoystick.mPrevButtons[static_cast<int>(_button)] == 0) {
-    if (InputSystem::mJoystick.mCurrButtons[static_cast<int>(_button)] == 0) {
+  if (Input::mJoystick.mPrevButtons[static_cast<int>(_button)] == 0) {
+    if (Input::mJoystick.mCurrButtons[static_cast<int>(_button)] == 0) {
       return button_state::None;
     } else {
       return button_state::Pressed;
     }
   } else // Prev state must be 1
   {
-    if (InputSystem::mJoystick.mCurrButtons[static_cast<int>(_button)] == 0) {
+    if (Input::mJoystick.mCurrButtons[static_cast<int>(_button)] == 0) {
       return button_state::Released;
     } else {
       return button_state::Held;
@@ -92,10 +92,10 @@ static button_state getButtonState(GamePad::code _button) {
   }
 }
 
-KeyboardStateImpl InputSystem::mKeyboard = KeyboardStateImpl();
-KeyInputState InputSystem::keyInputState = KeyInputState();
-MouseStateImpl InputSystem::mMouse = MouseStateImpl();
-JoystickStateImpl InputSystem::mJoystick = JoystickStateImpl();
+KeyboardStateImpl Input::mKeyboard = KeyboardStateImpl();
+KeyInputState Input::keyInputState = KeyInputState();
+MouseStateImpl Input::mMouse = MouseStateImpl();
+JoystickStateImpl Input::mJoystick = JoystickStateImpl();
 
 bool Keyboard::isDown(Keyboard::Code _key_code) {
   return getKeyState(_key_code) == button_state::Held;
@@ -121,11 +121,10 @@ bool KeyInput::isReleased(const KeyCode key) {
 
 void Mouse::setPosition(const Vec2 &pos) {
   const auto half = Window::half();
-  SDL_WarpMouseInWindow(WindowSystem::getSdlWindow(), half.x + pos.x,
-                        half.y - pos.y);
+  SDL_WarpMouseInWindow(Window::getSdlWindow(), half.x + pos.x, half.y - pos.y);
 }
 void Mouse::setPositionOnScene(const Vec2 &pos) {
-  Mouse::setPosition(pos * GraphicsSystem::getCamera2D().windowRatio());
+  Mouse::setPosition(pos * Graphics::getCamera2D().windowRatio());
 }
 Vec2 Mouse::getPosition() {
   Vec2 pos;
@@ -135,17 +134,17 @@ Vec2 Mouse::getPosition() {
   return pos;
 }
 Vec2 Mouse::getPositionOnScene() {
-  return Mouse::getPosition() * GraphicsSystem::getCamera2D().invWindowRatio();
+  return Mouse::getPosition() * Graphics::getCamera2D().invWindowRatio();
 }
 
-Vec2 Mouse::getScrollWheel() { return InputSystem::mMouse.mScrollWheel; }
+Vec2 Mouse::getScrollWheel() { return Input::mMouse.mScrollWheel; }
 
 void Mouse::setRelative(bool is_relative) {
-  SDL_SetWindowRelativeMouseMode(WindowSystem::getSdlWindow(), is_relative);
+  SDL_SetWindowRelativeMouseMode(Window::getSdlWindow(), is_relative);
 }
 
 bool Mouse::isRelative() {
-  return SDL_GetWindowRelativeMouseMode(WindowSystem::getSdlWindow());
+  return SDL_GetWindowRelativeMouseMode(Window::getSdlWindow());
 }
 
 void Mouse::hideCursor(bool hide) {
@@ -180,16 +179,12 @@ bool GamePad::isPressed(GamePad::code _button) {
 bool GamePad::isReleased(GamePad::code _button) {
   return getButtonState(_button) == button_state::Released;
 }
-const Vec2 &GamePad::getLeftStick() {
-  return InputSystem::mJoystick.mLeftStick;
-}
-const Vec2 &GamePad::getRightStick() {
-  return InputSystem::mJoystick.mRightStick;
-}
-bool GamePad::isConnected() { return InputSystem::mJoystick.mIsConnected; }
+const Vec2 &GamePad::getLeftStick() { return Input::mJoystick.mLeftStick; }
+const Vec2 &GamePad::getRightStick() { return Input::mJoystick.mRightStick; }
+bool GamePad::isConnected() { return Input::mJoystick.mIsConnected; }
 
-Joystick InputSystem::mController;
-bool InputSystem::initialize() {
+Joystick Input::mController;
+bool Input::initialize() {
 
   mKeyboard.mCurrState = SDL_GetKeyboardState(NULL);
   memcpy(mKeyboard.mPrevState.data(), mKeyboard.mCurrState, SDL_SCANCODE_COUNT);
@@ -205,9 +200,9 @@ bool InputSystem::initialize() {
   return true;
 }
 
-void InputSystem::shutdown() {}
+void Input::shutdown() {}
 
-void InputSystem::prepareForUpdate() {
+void Input::prepareForUpdate() {
   // Copy current state to previous
   // Keyboard
   memcpy(mKeyboard.mPrevState.data(), mKeyboard.mCurrState, SDL_SCANCODE_COUNT);
@@ -223,7 +218,7 @@ void InputSystem::prepareForUpdate() {
   keyInputState.currentKeys.clear();
 }
 
-void InputSystem::update() {
+void Input::update() {
   // Mouse
   float x = 0, y = 0;
   mMouse.mCurrButtons = SDL_GetMouseState(&x, &y);
@@ -252,7 +247,7 @@ void InputSystem::update() {
 
   Mouse::hideCursor(isHide);
 }
-void InputSystem::processEvent(SDL_Event &event) {
+void Input::processEvent(SDL_Event &event) {
 
   switch (event.type) {
   case SDL_EVENT_MOUSE_WHEEL: {
@@ -272,12 +267,12 @@ void InputSystem::processEvent(SDL_Event &event) {
   }
 }
 
-void InputSystem::setRelativeMouseMode(bool _value) {
+void Input::setRelativeMouseMode(bool _value) {
   bool set = _value ? true : false;
-  SDL_SetWindowRelativeMouseMode(WindowSystem::getSdlWindow(), set);
+  SDL_SetWindowRelativeMouseMode(Window::getSdlWindow(), set);
 }
 
-float InputSystem::filter1d(int _input) {
+float Input::filter1d(int _input) {
   // A value < dead zone is interpreted as 0%
   const int deadZone = 250;
   // A value > max value is interpreted as 100%
@@ -300,7 +295,7 @@ float InputSystem::filter1d(int _input) {
   return retVal;
 }
 
-Vec2 InputSystem::filter2d(int inputX, int inputY) {
+Vec2 Input::filter2d(int inputX, int inputY) {
   const float deadZone = 8000.0f;
   const float maxValue = 30000.0f;
 

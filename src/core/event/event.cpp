@@ -1,6 +1,16 @@
 #include "event.hpp"
-#include "event_system.hpp"
 
 namespace sinen {
-void Event::quit() { EventSystem::setQuit(true); }
+void Event::setQuit(bool quit) { _quit = quit; }
+bool Event::isQuit() { return _quit; }
+
+void Event::processEvent(SDL_Event &event) {
+  switch (event.type) {
+  case SDL_EVENT_QUIT: {
+    setQuit(true);
+  } break;
+  default:
+    break;
+  }
+}
 } // namespace sinen

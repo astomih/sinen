@@ -1,5 +1,5 @@
 // internal
-#include "audio_system.hpp"
+#include "audio.hpp"
 #include <asset/audio/sound.hpp>
 #include <core/io/asset_io.hpp>
 #include <memory>
@@ -22,7 +22,7 @@ void Sound::load(StringView fileName) {
 
   data = makeUnique<Data>();
   auto path = AssetIO::getFilePath(fileName);
-  ma_sound_init_from_file(AudioSystem::getEngine(), path.c_str(),
+  ma_sound_init_from_file(Audio::getEngine(), path.c_str(),
                           MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC, nullptr,
                           nullptr, &data->sound);
 }
@@ -35,7 +35,7 @@ void Sound::load(const Buffer &buffer) {
   if (r != MA_SUCCESS) {
     return;
   }
-  ma_sound_init_from_data_source(AudioSystem::getEngine(), &decoder,
+  ma_sound_init_from_data_source(Audio::getEngine(), &decoder,
                                  MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC,
                                  nullptr, &data->sound);
 }

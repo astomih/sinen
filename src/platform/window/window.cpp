@@ -1,28 +1,17 @@
-#include "window_system.hpp"
+#include "window.hpp"
+
 #include <SDL3/SDL.h>
 #include <core/io/file.hpp>
 #include <core/io/file_system.hpp>
 #include <core/io/json.hpp>
 #include <platform/input/keyboard.hpp>
-#include <platform/window/window.hpp>
 
 namespace sinen {
-Vec2 WindowSystem::mSize = Vec2(1280.f, 720.f);
-String WindowSystem::mName;
-::SDL_Window *WindowSystem::mWindow = nullptr;
-bool WindowSystem::mResized = false;
-const void *Window::getSDLWindow() { return WindowSystem::getSdlWindow(); }
-Vec2 Window::size() { return WindowSystem::size(); }
-Vec2 Window::half() { return WindowSystem::half(); }
-void Window::resize(const Vec2 &size) { WindowSystem::resize(size); }
-void Window::setFullscreen(bool fullscreen) {
-  WindowSystem::setFullscreen(fullscreen);
-}
-void Window::rename(StringView name) { WindowSystem::rename(name); }
-String Window::getName() { return WindowSystem::name(); }
-bool Window::resized() { return WindowSystem::resized(); }
-
-bool WindowSystem::initialize(StringView name) {
+Vec2 Window::mSize = Vec2(1280.f, 720.f);
+String Window::mName;
+::SDL_Window *Window::mWindow = nullptr;
+bool Window::mResized = false;
+bool Window::initialize(StringView name) {
   mName = name;
 
   // Load settings from settings.json
@@ -70,24 +59,24 @@ bool WindowSystem::initialize(StringView name) {
   return true;
 }
 
-void WindowSystem::shutdown() {
+void Window::shutdown() {
   SDL_DestroyWindow(mWindow);
   mWindow = nullptr;
 }
-void WindowSystem::resize(const Vec2 &size) {
+void Window::resize(const Vec2 &size) {
   mSize = size;
   SDL_SetWindowSize(mWindow, static_cast<int>(mSize.x),
                     static_cast<int>(mSize.y));
 }
-void WindowSystem::setFullscreen(bool fullscreen) {
+void Window::setFullscreen(bool fullscreen) {
   SDL_SetWindowFullscreen(mWindow, fullscreen);
 }
-void WindowSystem::rename(StringView name) {
+void Window::rename(StringView name) {
   mName = name;
   SDL_SetWindowTitle(mWindow, mName.c_str());
 }
-void WindowSystem::prepareFrame() { mResized = false; }
-void WindowSystem::processInput(SDL_Event &event) {
+void Window::prepareFrame() { mResized = false; }
+void Window::processInput(SDL_Event &event) {
   int x, y;
   SDL_GetWindowSize(mWindow, &x, &y);
   mSize.x = static_cast<float>(x);

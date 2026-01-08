@@ -1,11 +1,41 @@
-#ifndef SINEN_SCRIPT_HPP
-#define SINEN_SCRIPT_HPP
+#ifndef SINEN_SCRIPT_SYSTEM_HPP
+#define SINEN_SCRIPT_SYSTEM_HPP
 #include <core/data/string.hpp>
+
 namespace sinen {
+
 class Script {
 public:
-  static void load(StringView filePath, StringView baseDirPath = ".");
+  static bool initialize();
+  static void shutdown();
+
+  static void runScene();
+  static void updateScene();
+  static void drawScene();
+
+  static bool hasToReload() { return reload; }
+  static void doneReload() { reload = false; }
+
+  static void setSceneName(StringView name) {
+    sceneName = name;
+    reload = true;
+  }
+  static String getSceneName() { return sceneName; }
+  static void load(StringView filePath, StringView baseDirPath = ".") {
+    setSceneName(filePath);
+    setBasePath(baseDirPath);
+  }
+  static void setBasePath(StringView path) {
+    basePath = path;
+    reload = true;
+  }
+  static String getBasePath() { return basePath; }
+
+private:
+  inline static String sceneName = "main";
+  inline static String basePath = ".";
+  inline static bool reload = true;
 };
 } // namespace sinen
 
-#endif // SINEN_SCRIPT_HPP
+#endif // !SINEN_SCRIPT_SYSTEM_HPP

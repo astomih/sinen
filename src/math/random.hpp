@@ -1,10 +1,14 @@
 #ifndef SINEN_RANDOM_HPP
 #define SINEN_RANDOM_HPP
+#include <random>
 namespace sinen {
 class Vec2;
 class Vec3;
 class Random {
 public:
+  static bool initialize();
+  static void shutdown();
+
   // Seed the generator with the specified int
   // NOTE: You should generally not need to manually use this
   static void seed(unsigned int seed);
@@ -21,6 +25,8 @@ public:
   // Get a random vector given the min/max bounds
   static Vec2 getVector(const Vec2 &min, const Vec2 &max);
   static Vec3 getVector(const Vec3 &min, const Vec3 &max);
+
+  static std::mt19937 sGenerator;
 };
 } // namespace sinen
 #endif // !SINEN_RANDOM_HPP

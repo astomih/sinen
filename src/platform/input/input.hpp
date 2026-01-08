@@ -45,7 +45,7 @@ public:
   bool mIsConnected;
 };
 
-class InputSystem {
+class Input {
 public:
   static bool initialize();
   static void shutdown();

@@ -1,5 +1,5 @@
 // internal
-#include "audio_system.hpp"
+#include "audio.hpp"
 #include <core/io/asset_io.hpp>
 #include <math/math.hpp>
 #include <math/quaternion.hpp>
@@ -12,7 +12,7 @@
 #include <miniaudio.h>
 
 namespace sinen {
-bool AudioSystem::initialize() {
+bool Audio::initialize() {
 
   auto resourceManagerConfig = ma_resource_manager_config_init();
   resourceManagerConfig.decodedFormat = ma_format_f32;
@@ -63,7 +63,7 @@ bool AudioSystem::initialize() {
   return true;
 }
 
-void AudioSystem::shutdown() {
+void Audio::shutdown() {
   ma_engine_uninit(&data.engine);
   ma_resource_manager_uninit(&data.resouceManager);
 }

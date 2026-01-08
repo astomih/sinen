@@ -1,7 +1,7 @@
 // internal
-#include "../../graphics/graphics_system.hpp"
 #include <asset/shader/shader.hpp>
 #include <core/io/asset_io.hpp>
+#include <graphics/graphics.hpp>
 
 #include "core/allocator/global_allocator.hpp"
 #include "rt_shader_compiler.hpp"
@@ -16,7 +16,7 @@
 namespace sinen {
 void Shader::loadDefaultVertexShader() {
   auto *allocator = GlobalAllocator::get();
-  auto device = GraphicsSystem::getDevice();
+  auto device = Graphics::getDevice();
 
   rhi::Shader::CreateInfo vsInfo{};
   vsInfo.allocator = allocator;
@@ -33,7 +33,7 @@ void Shader::loadDefaultVertexShader() {
 }
 void Shader::loadDefaultVertexInstanceShader() {
   auto *allocator = GlobalAllocator::get();
-  auto device = GraphicsSystem::getDevice();
+  auto device = Graphics::getDevice();
 
   rhi::Shader::CreateInfo vsInfo{};
   vsInfo.allocator = allocator;
@@ -50,7 +50,7 @@ void Shader::loadDefaultVertexInstanceShader() {
 }
 void Shader::loadDefaultFragmentShader() {
   auto *allocator = GlobalAllocator::get();
-  auto device = GraphicsSystem::getDevice();
+  auto device = Graphics::getDevice();
 
   rhi::Shader::CreateInfo fsInfo{};
   fsInfo.allocator = allocator;
@@ -67,7 +67,7 @@ void Shader::loadDefaultFragmentShader() {
 }
 void Shader::loadVertexShader(StringView vertex_shader, int numUniformData) {
   auto *allocator = GlobalAllocator::get();
-  auto device = GraphicsSystem::getDevice();
+  auto device = Graphics::getDevice();
 
   SDL_IOStream *file = (SDL_IOStream *)AssetIO::openAsIOStream(vertex_shader);
 
@@ -89,7 +89,7 @@ void Shader::loadVertexShader(StringView vertex_shader, int numUniformData) {
 void Shader::loadFragmentShader(StringView fragment_shader,
                                 int numUniformData) {
   auto *allocator = GlobalAllocator::get();
-  auto device = GraphicsSystem::getDevice();
+  auto device = Graphics::getDevice();
 
   auto fsStr = AssetIO::openAsString(fragment_shader);
 
@@ -118,7 +118,7 @@ void Shader::compileAndLoadVertexShader(StringView vertex_shader) {
                        ShaderCompiler::Language::SPIRV, reflectionData);
 
   auto *allocator = GlobalAllocator::get();
-  auto device = GraphicsSystem::getDevice();
+  auto device = Graphics::getDevice();
 
   rhi::Shader::CreateInfo vsInfo{};
   vsInfo.allocator = allocator;
@@ -142,7 +142,7 @@ void Shader::compileAndLoadFragmentShader(StringView fragment_shader) {
       compiler.compile(fsStr, ShaderCompiler::Type::FRAGMENT,
                        ShaderCompiler::Language::SPIRV, reflectionData);
 
-  auto device = GraphicsSystem::getDevice();
+  auto device = Graphics::getDevice();
 
   rhi::Shader::CreateInfo fsInfo{};
   fsInfo.allocator = GlobalAllocator::get();

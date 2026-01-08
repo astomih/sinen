@@ -1,11 +1,9 @@
-#include "core/allocator/global_allocator.hpp"
-#include "graphics_system.hpp"
-
-#include <cstddef>
-
+#include "graphics.hpp"
+#include <core/allocator/global_allocator.hpp>
 #include <core/logger/logger.hpp>
 #include <graphics/graphics_pipeline.hpp>
 
+#include <cstddef>
 namespace sinen {
 
 static rhi::VertexInputState
@@ -30,7 +28,7 @@ void GraphicsPipeline::setEnableTangent(bool enable) {
 }
 void GraphicsPipeline::build() {
   auto *allocator = GlobalAllocator::get();
-  auto device = GraphicsSystem::getDevice();
+  auto device = Graphics::getDevice();
 
   rhi::GraphicsPipeline::CreateInfo pipelineInfo{allocator};
   pipelineInfo.vertexShader = this->vertexShader.shader;
@@ -77,15 +75,11 @@ void GraphicsPipeline::build() {
   this->pipeline = device->createGraphicsPipeline(pipelineInfo);
 }
 
-GraphicsPipeline BuiltinPipelines::get3D() {
-  return GraphicsSystem::pipeline3D;
-}
+GraphicsPipeline BuiltinPipelines::get3D() { return Graphics::pipeline3D; }
 GraphicsPipeline BuiltinPipelines::get3DInstanced() {
-  return GraphicsSystem::pipelineInstanced3D;
+  return Graphics::pipelineInstanced3D;
 }
-GraphicsPipeline BuiltinPipelines::get2D() {
-  return GraphicsSystem::pipeline2D;
-}
+GraphicsPipeline BuiltinPipelines::get2D() { return Graphics::pipeline2D; }
 
 rhi::VertexInputState CreateVertexInputState(Allocator *allocator,
                                              std::bitset<32> featureFlags) {

@@ -1,12 +1,11 @@
-#include "core/event/event_system.hpp"
-#include <asset/audio/audio_system.hpp>
-#include <asset/script/script_system.hpp>
-#include <core/event/event_system.hpp>
-#include <graphics/graphics_system.hpp>
-#include <math/random_system.hpp>
-#include <physics/physics_system.hpp>
-#include <platform/input/input_system.hpp>
-#include <platform/window/window_system.hpp>
+#include <asset/audio/audio.hpp>
+#include <asset/script/script.hpp>
+#include <core/event/event.hpp>
+#include <graphics/graphics.hpp>
+#include <math/random.hpp>
+#include <physics/physics.hpp>
+#include <platform/input/input.hpp>
+#include <platform/window/window.hpp>
 
 #include <sinen.hpp>
 
@@ -80,38 +79,41 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     ImGuiLog::logs.push_back({color, newStr});
   });
 
-  if (!WindowSystem::initialize("Sinen")) {
-    Logger::critical("Failed to initialize window system");
+  if (!Window::initialize("Sinen")) {
+    Logger::critical("Failed to initialize window");
     return SDL_APP_FAILURE;
   }
-  GraphicsSystem::initialize();
-  if (!AudioSystem::initialize()) {
-    Logger::critical("Failed to initialize audio system");
-    AudioSystem::shutdown();
+  if (!Graphics::initialize()) {
+    Logger::critical("Failed to initialize graphics");
     return SDL_APP_FAILURE;
   }
-  if (!InputSystem::initialize()) {
-    Logger::critical("Failed to initialize input system");
+  if (!Audio::initialize()) {
+    Logger::critical("Failed to initialize audio");
+    Audio::shutdown();
     return SDL_APP_FAILURE;
   }
-  if (!PhysicsSystem::initialize()) {
-    Logger::critical("Failed to initialize physics system");
+  if (!Input::initialize()) {
+    Logger::critical("Failed to initialize input");
     return SDL_APP_FAILURE;
   }
-  if (!ScriptSystem::initialize()) {
-    Logger::critical("Failed to initialize script system");
+  if (!Physics::initialize()) {
+    Logger::critical("Failed to initialize physics");
     return SDL_APP_FAILURE;
   }
-  if (!RandomSystem::initialize()) {
-    Logger::critical("Failed to initialize random system");
+  if (!Script::initialize()) {
+    Logger::critical("Failed to initialize script");
+    return SDL_APP_FAILURE;
+  }
+  if (!Random::initialize()) {
+    Logger::critical("Failed to initialize random");
     return SDL_APP_FAILURE;
   }
   return SDL_APP_CONTINUE;
 }
 SDL_AppResult SDL_AppIterate(void *appstate) {
-  if (EventSystem::isQuit())
+  if (Event::isQuit())
     return SDL_APP_SUCCESS;
-  InputSystem::update();
+  Input::update();
   {
     if (Keyboard::isPressed(Keyboard::Code::F3) ||
         KeyInput::isPressed(KeyInput::AC_BACK)) {
@@ -136,32 +138,32 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     }
   }
   Time::update();
-  ScriptSystem::updateScene();
-  PhysicsSystem::update();
-  GraphicsSystem::render();
-  if (ScriptSystem::hasToReload()) {
-    ScriptSystem::runScene();
-    PhysicsSystem::postSetup();
-    ScriptSystem::doneReload();
+  Script::updateScene();
+  Physics::update();
+  Graphics::render();
+  if (Script::hasToReload()) {
+    Script::runScene();
+    Physics::postSetup();
+    Script::doneReload();
   }
-  WindowSystem::prepareFrame();
-  InputSystem::prepareForUpdate();
+  Window::prepareFrame();
+  Input::prepareForUpdate();
   return SDL_APP_CONTINUE;
 }
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
   ImGui_ImplSDL3_ProcessEvent(event);
-  EventSystem::processEvent(*event);
-  WindowSystem::processInput(*event);
-  InputSystem::processEvent(*event);
+  Event::processEvent(*event);
+  Window::processInput(*event);
+  Input::processEvent(*event);
   return SDL_APP_CONTINUE;
 }
 void SDL_AppQuit(void *appstate, SDL_AppResult result) {
-  PhysicsSystem::shutdown();
-  InputSystem::shutdown();
-  AudioSystem::shutdown();
-  RandomSystem::shutdown();
-  GraphicsSystem::shutdown();
-  WindowSystem::shutdown();
-  ScriptSystem::shutdown();
+  Physics::shutdown();
+  Input::shutdown();
+  Audio::shutdown();
+  Random::shutdown();
+  Graphics::shutdown();
+  Window::shutdown();
+  Script::shutdown();
   SDL_Quit();
 }

@@ -3,7 +3,7 @@
 #include <cassert>
 #include <core/io/asset_io.hpp>
 #include <core/logger/logger.hpp>
-#include <graphics/graphics_system.hpp>
+#include <graphics/graphics.hpp>
 #include <memory>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -112,7 +112,7 @@ Vec2 Texture::size() {
 static void writeTexture(Ptr<rhi::Texture> texture, void *pPixels,
                          int channels) {
   auto allocator = GlobalAllocator::get();
-  auto device = GraphicsSystem::getDevice();
+  auto device = Graphics::getDevice();
   uint32_t width = texture->getCreateInfo().width,
            height = texture->getCreateInfo().height;
   Ptr<rhi::TransferBuffer> transferBuffer;
@@ -152,7 +152,7 @@ Ptr<rhi::Texture> createNativeTexture(void *pPixels,
                                       uint32_t width, uint32_t height,
                                       int channels) {
   auto allocator = GlobalAllocator::get();
-  auto device = GraphicsSystem::getDevice();
+  auto device = Graphics::getDevice();
 
   Ptr<rhi::Texture> texture;
   {

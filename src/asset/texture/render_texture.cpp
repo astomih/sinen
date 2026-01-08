@@ -1,6 +1,6 @@
-#include "../../graphics/graphics_system.hpp"
-#include "core/allocator/global_allocator.hpp"
 #include <asset/texture/render_texture.hpp>
+#include <core/allocator/global_allocator.hpp>
+#include <graphics/graphics.hpp>
 
 namespace sinen {
 
@@ -8,13 +8,13 @@ RenderTexture::RenderTexture() : texture(nullptr) {}
 
 void RenderTexture::create(int width, int height) {
   auto allocator = GlobalAllocator::get();
-  auto device = GraphicsSystem::getDevice();
+  auto device = Graphics::getDevice();
   rhi::Texture::CreateInfo info{};
   info.allocator = allocator;
   info.width = width;
   info.height = height;
   info.layerCountOrDepth = 1;
-  info.format = GraphicsSystem::getDevice()->getSwapchainFormat();
+  info.format = Graphics::getDevice()->getSwapchainFormat();
   info.usage = rhi::TextureUsage::ColorTarget;
   info.numLevels = 1;
   info.sampleCount = rhi::SampleCount::x1;

@@ -22,7 +22,7 @@ Ptr<Mesh> Rect::createMesh() {
   uint32_t indices[] = {
       0, 1, 2, 0, 2, 3,
   };
-  for (size_t i = 0; i < sizeof(indices) / sizeof(uint32); i++) {
+  for (size_t i = 0; i < sizeof(indices) / sizeof(UInt32); i++) {
     mesh->indices.push_back(indices[i]);
   }
   return mesh;

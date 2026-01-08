@@ -1,23 +1,22 @@
 // internal
 #include "script_system.hpp"
-#include "core/allocator/global_allocator.hpp"
-#include "core/buffer/buffer.hpp"
-#include "core/data/ptr.hpp"
-#include "sol/raii.hpp"
-#include "sol/types.hpp"
+
 #include <asset/asset.hpp>
+#include <core/allocator/global_allocator.hpp>
+#include <core/buffer/buffer.hpp>
 #include <core/core.hpp>
+#include <core/data/ptr.hpp>
 #include <core/data/string.hpp>
+#include <core/def/types.hpp>
 #include <core/event/event.hpp>
 #include <core/io/arguments.hpp>
 #include <core/io/asset_io.hpp>
 #include <core/io/file_system.hpp>
-#include <cstddef>
-#include <cstdint>
 #include <graphics/graphics.hpp>
 #include <math/graph/bfs_grid.hpp>
 #include <math/math.hpp>
-#include <memory>
+#include <math/periodic.hpp>
+#include <math/random.hpp>
 #include <physics/physics.hpp>
 #include <platform/input/gamepad.hpp>
 #include <platform/input/key_input.hpp>
@@ -25,10 +24,12 @@
 #include <platform/input/mouse.hpp>
 #include <platform/window/window.hpp>
 
+#include <sol/raii.hpp>
+#include <sol/types.hpp>
+
 #define SOL_NO_CHECK_NUMBER_PRECISION 1
 #include <sol/sol.hpp>
 
-#include <any>
 #include <format>
 
 namespace sinen {
@@ -741,10 +742,10 @@ bool ScriptSystem::initialize() {
   {
     auto v = lua.create_named("Periodic");
     v["sin0_1"] = [](float period, float t) {
-      return Periodic::sin01(period, t);
+      return Periodic::sineWave(period, t);
     };
     v["cos0_1"] = [](float period, float t) {
-      return Periodic::cos01(period, t);
+      return Periodic::cosWave(period, t);
     };
   }
   {

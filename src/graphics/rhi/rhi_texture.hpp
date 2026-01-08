@@ -33,10 +33,10 @@ public:
     TextureType type;
     TextureFormat format;
     TextureUsage usage;
-    uint32 width;
-    uint32 height;
-    uint32 layerCountOrDepth;
-    uint32 numLevels;
+    UInt32 width;
+    UInt32 height;
+    UInt32 layerCountOrDepth;
+    UInt32 numLevels;
     SampleCount sampleCount;
   };
   virtual ~Texture() = default;

@@ -78,8 +78,8 @@ void CopyPass::downloadBuffer(const BufferRegion &src,
 }
 
 void CopyPass::copyTexture(const TextureLocation &src,
-                           const TextureLocation &dst, uint32 width,
-                           uint32 height, uint32 depth, bool cycle) {
+                           const TextureLocation &dst, UInt32 width,
+                           UInt32 height, UInt32 depth, bool cycle) {
   SDL_GPUTextureLocation srcLocation = {
       .texture = downCast<Texture>(src.texture)->getNative(),
       .mip_level = src.mipLevel,

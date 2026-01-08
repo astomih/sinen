@@ -1,4 +1,5 @@
 #include "model.hpp"
+#include <core/logger/logger.hpp>
 #include <math/math.hpp>
 namespace sinen {
 void SkeletalAnimation::load(const Node &root, float ticksPerSecond,
@@ -110,8 +111,8 @@ Array<Mat4> SkeletalAnimation::getFinalBoneMatrices() const {
     if (finalBoneMatrices.contains(name)) {
       result[owner->getBoneMap().at(name).index] = mat;
     } else {
-      std::cerr << "[Warning] bone '" << name
-                << "' has no finalTransform. Using identity.\n";
+      Logger::error(
+          "[Warning] bone \"%s\" has no finalTransform. Using identity", name);
     }
   }
   return result;

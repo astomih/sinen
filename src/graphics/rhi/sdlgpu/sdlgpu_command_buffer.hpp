@@ -2,8 +2,8 @@
 #ifndef SINEN_SDLGPU_COMMAND_BUFFER_HPP
 #define SINEN_SDLGPU_COMMAND_BUFFER_HPP
 
-#include <graphics/rhi/rhi_command_buffer.hpp>
 #include <SDL3/SDL_gpu.h>
+#include <graphics/rhi/rhi_command_buffer.hpp>
 
 namespace sinen::rhi::sdlgpu {
 class CopyPass;
@@ -25,7 +25,7 @@ public:
                   float g = 0.f, float b = 0.f, float a = 1.f) override;
   void endRenderPass(Ptr<rhi::RenderPass> renderPass) override;
 
-  void pushUniformData(uint32 slot, const void *data, size_t size) override;
+  void pushUniformData(UInt32 slot, const void *data, Size size) override;
 
 private:
   SDL_GPUCommandBuffer *commandBuffer;

@@ -7,7 +7,7 @@
 #include <core/data/ptr.hpp>
 namespace sinen::rhi {
 struct ColorComponent {
-  enum Type : uint8_t {
+  enum Type : UInt8 {
     R = (1u << 0),
     G = (1u << 1),
     B = (1u << 2),
@@ -44,17 +44,17 @@ enum VertexInputRate {
   Instance,
 };
 struct VertexBufferDescription {
-  uint32 slot;
-  uint32 pitch;
+  UInt32 slot;
+  UInt32 pitch;
   VertexInputRate inputRate;
-  uint32 instanceStepRate;
+  UInt32 instanceStepRate;
 };
 enum VertexElementFormat { Float1, Float2, Float3, Float4, UByte4_NORM };
 struct VertexAttribute {
-  uint32 location;
-  uint32 bufferSlot;
+  UInt32 location;
+  UInt32 bufferSlot;
   VertexElementFormat format;
-  uint32 offset;
+  UInt32 offset;
 };
 struct VertexInputState {
   VertexInputState(Allocator *allocator)
@@ -74,7 +74,7 @@ struct RasterizerState {
 };
 struct MultiSampleState {
   SampleCount sampleCount;
-  uint32 sampleMask;
+  UInt32 sampleMask;
   bool enableMask;
 };
 enum class StencilOp {
@@ -98,8 +98,8 @@ struct DepthStencilState {
   CompareOp compareOp;
   StencilOpState backStencilState;
   StencilOpState frontStencilState;
-  uint8 compareMask;
-  uint8 writeMask;
+  UInt8 compareMask;
+  UInt8 writeMask;
   bool enableDepthTest;
   bool enableDepthWrite;
   bool enableStencilTest;

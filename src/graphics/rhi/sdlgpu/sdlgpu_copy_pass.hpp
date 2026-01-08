@@ -2,8 +2,8 @@
 #ifndef SINEN_SDLGPU_COPY_PASS_HPP
 #define SINEN_SDLGPU_COPY_PASS_HPP
 
-#include <graphics/rhi/rhi_copy_pass.hpp>
 #include <SDL3/SDL_gpu.h>
+#include <graphics/rhi/rhi_copy_pass.hpp>
 
 namespace sinen::rhi::sdlgpu {
 class CommandBuffer;
@@ -29,7 +29,7 @@ public:
                       const BufferTransferInfo &dst) override;
 
   void copyTexture(const TextureLocation &src, const TextureLocation &dst,
-                   uint32 width, uint32 height, uint32 depth,
+                   UInt32 width, UInt32 height, UInt32 depth,
                    bool cycle) override;
 
 private:

@@ -24,7 +24,7 @@ static void traceImplement(const char *inFMT, ...) {
 #ifdef JPH_ENABLE_ASSERTS
 
 static bool assertFailedImpl(const char *inExpression, const char *inMessage,
-                             const char *inFile, uint32 inLine) {
+                             const char *inFile, UInt32 inLine) {
   std::cout << inFile << ":" << inLine << ": (" << inExpression << ") "
             << (inMessage != nullptr ? inMessage : "") << std::endl;
 
@@ -58,7 +58,7 @@ public:
 namespace BroadPhaseLayers {
 static constexpr JPH::BroadPhaseLayer NON_MOVING(0);
 static constexpr JPH::BroadPhaseLayer MOVING(1);
-static constexpr uint32 NUM_LAYERS(2);
+static constexpr UInt32 NUM_LAYERS(2);
 }; // namespace BroadPhaseLayers
 
 class BPLayerInterfaceImpl final : public JPH::BroadPhaseLayerInterface {
@@ -69,7 +69,7 @@ public:
     mObjectToBroadPhase[Layers::MOVING] = BroadPhaseLayers::MOVING;
   }
 
-  virtual uint32 GetNumBroadPhaseLayers() const override {
+  virtual UInt32 GetNumBroadPhaseLayers() const override {
     return BroadPhaseLayers::NUM_LAYERS;
   }
 
@@ -149,17 +149,17 @@ public:
 class MyBodyActivationListener : public JPH::BodyActivationListener {
 public:
   virtual void OnBodyActivated(const JPH::BodyID &inBodyID,
-                               uint64 inBodyUserData) override {
+                               UInt64 inBodyUserData) override {
     std::cout << "A body got activated" << std::endl;
   }
 
   virtual void OnBodyDeactivated(const JPH::BodyID &inBodyID,
-                                 uint64 inBodyUserData) override {
+                                 UInt64 inBodyUserData) override {
     std::cout << "A body went to sleep" << std::endl;
   }
 };
 
-inline std::unordered_map<uint32_t, JPH::BodyID> bodyMap = {};
+inline std::unordered_map<UInt32, JPH::BodyID> bodyMap = {};
 bool PhysicsSystem::initialize() {
   JPH::RegisterDefaultAllocator();
 
@@ -171,10 +171,10 @@ bool PhysicsSystem::initialize() {
   JPH::RegisterTypes();
 
   raw = std::make_unique<RawData>(10 * 1024 * 1024);
-  const uint32 cMaxBodies = 1024;
-  const uint32 cNumBodyMutexes = 0;
-  const uint32 cMaxBodyPairs = 1024;
-  const uint32 cMaxContactConstraints = 1024;
+  const UInt32 cMaxBodies = 1024;
+  const UInt32 cNumBodyMutexes = 0;
+  const UInt32 cMaxBodyPairs = 1024;
+  const UInt32 cMaxContactConstraints = 1024;
   static BPLayerInterfaceImpl broadPhaseLayerInterface;
   static ObjectVsBroadPhaseLayerFilterImpl objectVSBroadPhaseLayerFilter;
   static ObjectLayerPairFilterImpl objectVSLayerFilter;
@@ -239,8 +239,8 @@ void PhysicsSystem::setLinearVelocity(const Collider &collider,
   bodyInterface.SetLinearVelocity(bodyID, {velocity.x, velocity.y, velocity.z});
 }
 
-static uint32_t nextColliderID = 1;
-uint32_t GetNextID() { return nextColliderID++; }
+static UInt32 nextColliderID = 1;
+UInt32 GetNextID() { return nextColliderID++; }
 
 Collider PhysicsSystem::createBoxCollider(const Transform &transform,
                                           bool isStatic) {

@@ -10,7 +10,7 @@ public:
   struct CreateInfo {
     Allocator *allocator;
     BufferUsage usage;
-    uint32 size;
+    UInt32 size;
   };
   virtual ~Buffer() = default;
 
@@ -24,12 +24,12 @@ private:
 };
 struct BufferRegion {
   Ptr<Buffer> buffer;
-  uint32 offset;
-  uint32 size;
+  UInt32 offset;
+  UInt32 size;
 };
 struct BufferBinding {
   Ptr<Buffer> buffer;
-  uint32 offset;
+  UInt32 offset;
 };
 } // namespace sinen::rhi
 #endif

@@ -1,8 +1,8 @@
 #include "sdlgpu_command_buffer.hpp"
 
 #ifndef EMSCRIPTEN
-#include "sdlgpu_copy_pass.hpp"
 #include "sdlgpu_convert.hpp"
+#include "sdlgpu_copy_pass.hpp"
 #include "sdlgpu_render_pass.hpp"
 #include "sdlgpu_texture.hpp"
 
@@ -60,7 +60,7 @@ void CommandBuffer::endRenderPass(Ptr<rhi::RenderPass> renderPass) {
   SDL_EndGPURenderPass(downCast<RenderPass>(renderPass)->getNative());
 }
 
-void CommandBuffer::pushUniformData(uint32 slot, const void *data,
+void CommandBuffer::pushUniformData(UInt32 slot, const void *data,
                                     size_t size) {
   SDL_PushGPUVertexUniformData(this->commandBuffer, slot, data, size);
   SDL_PushGPUFragmentUniformData(this->commandBuffer, slot, data, size);

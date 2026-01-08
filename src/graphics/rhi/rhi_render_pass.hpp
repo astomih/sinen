@@ -21,20 +21,20 @@ public:
   virtual ~RenderPass() = default;
 
   virtual void bindGraphicsPipeline(Ptr<GraphicsPipeline> graphicsPipeline) = 0;
-  virtual void bindVertexBuffers(uint32 slot,
+  virtual void bindVertexBuffers(UInt32 slot,
                                  const Array<BufferBinding> &bindings) = 0;
   virtual void bindIndexBuffer(const BufferBinding &binding,
                                IndexElementSize indexElementSize) = 0;
   virtual void
-  bindFragmentSamplers(uint32 slot,
+  bindFragmentSamplers(UInt32 slot,
                        const Array<TextureSamplerBinding> &bindings) = 0;
   virtual void setViewport(const Viewport &viewport) = 0;
-  virtual void setScissor(int32 x, int32 y, int32 width, int32 height) = 0;
-  virtual void drawPrimitives(uint32 numVertices, uint32 numInstances,
-                              uint32 firstVertex, uint32 firstInstance) = 0;
-  virtual void drawIndexedPrimitives(uint32 numIndices, uint32 numInstances,
-                                     uint32 firstIndex, uint32 vertexOffset,
-                                     uint32 firstInstance) = 0;
+  virtual void setScissor(Int32 x, Int32 y, Int32 width, Int32 height) = 0;
+  virtual void drawPrimitives(UInt32 numVertices, UInt32 numInstances,
+                              UInt32 firstVertex, UInt32 firstInstance) = 0;
+  virtual void drawIndexedPrimitives(UInt32 numIndices, UInt32 numInstances,
+                                     UInt32 firstIndex, UInt32 vertexOffset,
+                                     UInt32 firstInstance) = 0;
 
 protected:
   RenderPass() = default;

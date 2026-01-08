@@ -44,9 +44,9 @@ new empty file.
   void close();
   Buffer read(std::size_t size);
   void write(const Buffer &buffer);
-  void seek(const int64 &offset);
-  int64 tell();
-  int64 size();
+  void seek(const Int64 &offset);
+  Int64 tell();
+  Int64 size();
 
 private:
   void *stream;

@@ -15,7 +15,7 @@ struct Mesh {
 public:
   Array<Vertex> vertices;
   Array<Vec4> tangents;
-  Array<uint32> indices;
+  Array<UInt32> indices;
 };
 } // namespace sinen
 #endif // !SINEN_VERTEX_ARRAY_HPP

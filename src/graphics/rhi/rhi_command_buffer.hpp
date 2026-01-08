@@ -11,7 +11,7 @@ struct DepthStencilTargetInfo {
   LoadOp stencilLoadOp;
   StoreOp stencilStoreOp;
   bool cycle;
-  uint8 clearStencil;
+  UInt8 clearStencil;
 };
 class CommandBuffer {
 public:
@@ -31,7 +31,7 @@ public:
                   float g = 0.f, float b = 0.f, float a = 1.f) = 0;
   virtual void endRenderPass(Ptr<RenderPass> renderPass) = 0;
 
-  virtual void pushUniformData(uint32 slot, const void *data, size_t size) = 0;
+  virtual void pushUniformData(UInt32 slot, const void *data, size_t size) = 0;
 
 protected:
   CommandBuffer(const CreateInfo &createInfo) : createInfo(createInfo) {}

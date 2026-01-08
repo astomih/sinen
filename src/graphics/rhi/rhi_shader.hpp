@@ -15,10 +15,10 @@ public:
     const char *entrypoint;
     ShaderFormat format;
     ShaderStage stage;
-    uint32 numSamplers;
-    uint32 numStorageBuffers;
-    uint32 numStorageTextures;
-    uint32 numUniformBuffers;
+    UInt32 numSamplers;
+    UInt32 numStorageBuffers;
+    UInt32 numStorageTextures;
+    UInt32 numUniformBuffers;
   };
   virtual ~Shader() = default;
 

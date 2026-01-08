@@ -7,28 +7,28 @@
 namespace sinen::rhi {
 struct TextureRegion {
   Ptr<class Texture> texture;
-  uint32 mipLevel;
-  uint32 layer;
-  uint32 x, y, z;
-  uint32 width;
-  uint32 height;
-  uint32 depth;
+  UInt32 mipLevel;
+  UInt32 layer;
+  UInt32 x, y, z;
+  UInt32 width;
+  UInt32 height;
+  UInt32 depth;
 };
 struct TextureTransferInfo {
   Ptr<class TransferBuffer> transferBuffer;
-  uint32 offset;
+  UInt32 offset;
 };
 struct TextureLocation {
   Ptr<Texture> texture;
-  uint32 mipLevel;
-  uint32 layer;
-  uint32 x;
-  uint32 y;
-  uint32 z;
+  UInt32 mipLevel;
+  UInt32 layer;
+  UInt32 x;
+  UInt32 y;
+  UInt32 z;
 };
 struct BufferTransferInfo {
   Ptr<class TransferBuffer> transferBuffer;
-  uint32 offset;
+  UInt32 offset;
 };
 class CopyPass {
 public:
@@ -44,8 +44,8 @@ public:
                               const BufferTransferInfo &dst) = 0;
 
   virtual void copyTexture(const TextureLocation &src,
-                           const TextureLocation &dst, uint32 width,
-                           uint32 height, uint32 depth, bool cycle) = 0;
+                           const TextureLocation &dst, UInt32 width,
+                           UInt32 height, UInt32 depth, bool cycle) = 0;
 };
 } // namespace sinen::rhi
 #endif

@@ -2,6 +2,7 @@
 #include <core/io/asset_io.hpp>
 #include <core/logger/logger.hpp>
 #include <graphics/graphics_system.hpp>
+#include <math/math.hpp>
 
 #include <algorithm>
 #include <array>
@@ -31,14 +32,14 @@ static inline void sampleEquirectBilinear(const float *img, int W, int H, int C,
                                           float u, float v,
                                           float *out) // out[C]
 {
-  u = u - std::floor(u);     // wrap
+  u = u - Math::floor(u);    // wrap
   v = clampf(v, 0.0f, 1.0f); // clamp
 
   float x = u * (W - 1);
   float y = v * (H - 1);
 
-  int x0 = (int)std::floor(x);
-  int y0 = (int)std::floor(y);
+  int x0 = (int)Math::floor(x);
+  int y0 = (int)Math::floor(y);
   int x1 = (x0 + 1) % W;            // wrap horizontally
   int y1 = std::min(y0 + 1, H - 1); // clamp vertically
 
@@ -242,7 +243,7 @@ static void writeTexture(Ptr<rhi::Texture> texture,
   for (int i = 0; i < 6; ++i) {
     rhi::TransferBuffer::CreateInfo info{};
     info.allocator = GlobalAllocator::get();
-    info.size = width * height * 4 * sizeof(float);
+    info.size = width * height * 4 * sizeof(Float32);
     info.usage = rhi::TransferBufferUsage::Upload;
     transbuffers[i] = device->createTransferBuffer(info);
     auto *pMapped = transbuffers[i]->map(true);

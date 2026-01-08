@@ -1,15 +1,11 @@
 #ifndef SINEN_MATH_HPP
 #define SINEN_MATH_HPP
-#include "color/color.hpp"
-#include "periodic.hpp"
-#include "random.hpp"
 #include <algorithm>
 #include <cmath>
-#include <cstring>
-#include <iostream>
 #include <limits>
 #include <numbers>
-#include <vector>
+
+#include <core/def/types.hpp>
 
 namespace sinen {
 class Math {
@@ -70,6 +66,8 @@ public:
   static inline float fmod(float numer, float denom) {
     return std::fmod(numer, denom);
   }
+
+  static inline Float32 floor(Float32 value) { return std::floor(value); }
 };
 } // namespace sinen
 #endif // !SINEN_MATH_HPP

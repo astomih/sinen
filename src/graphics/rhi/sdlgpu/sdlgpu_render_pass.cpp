@@ -14,7 +14,7 @@ void RenderPass::bindGraphicsPipeline(Ptr<rhi::GraphicsPipeline> pipeline) {
       this->renderPass, downCast<GraphicsPipeline>(pipeline)->getNative());
 }
 
-void RenderPass::bindVertexBuffers(uint32 startSlot,
+void RenderPass::bindVertexBuffers(UInt32 startSlot,
                                    const Array<BufferBinding> &bindings) {
   Array<SDL_GPUBufferBinding> bufferBindings(allocator);
   bufferBindings.resize(bindings.size());
@@ -50,7 +50,7 @@ void RenderPass::bindIndexBuffer(const BufferBinding &binding,
 }
 
 void RenderPass::bindFragmentSamplers(
-    uint32 startSlot, const Array<TextureSamplerBinding> &bindings) {
+    UInt32 startSlot, const Array<TextureSamplerBinding> &bindings) {
   Array<SDL_GPUTextureSamplerBinding> samplerBindings(allocator);
   samplerBindings.resize(bindings.size());
   for (int i = 0; i < samplerBindings.size(); ++i) {
@@ -70,20 +70,20 @@ void RenderPass::setViewport(const Viewport &viewport) {
   SDL_SetGPUViewport(this->renderPass, &vp);
 }
 
-void RenderPass::setScissor(int32 x, int32 y, int32 width, int32 height) {
+void RenderPass::setScissor(Int32 x, Int32 y, Int32 width, Int32 height) {
   SDL_Rect rect = {x, y, width, height};
   SDL_SetGPUScissor(this->renderPass, &rect);
 }
 
-void RenderPass::drawPrimitives(uint32 vertexCount, uint32 instanceCount,
-                                uint32 firstVertex, uint32 firstInstance) {
+void RenderPass::drawPrimitives(UInt32 vertexCount, UInt32 instanceCount,
+                                UInt32 firstVertex, UInt32 firstInstance) {
   SDL_DrawGPUPrimitives(this->renderPass, vertexCount, instanceCount,
                         firstVertex, firstInstance);
 }
 
-void RenderPass::drawIndexedPrimitives(uint32 indexCount, uint32 instanceCount,
-                                       uint32 firstIndex, uint32 vertexOffset,
-                                       uint32 firstInstance) {
+void RenderPass::drawIndexedPrimitives(UInt32 indexCount, UInt32 instanceCount,
+                                       UInt32 firstIndex, UInt32 vertexOffset,
+                                       UInt32 firstInstance) {
   SDL_DrawGPUIndexedPrimitives(this->renderPass, indexCount, instanceCount,
                                firstIndex, vertexOffset, firstInstance);
 }

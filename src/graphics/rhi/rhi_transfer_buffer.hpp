@@ -10,7 +10,7 @@ public:
   struct CreateInfo {
     Allocator *allocator;
     TransferBufferUsage usage;
-    uint32 size;
+    UInt32 size;
   };
   virtual ~TransferBuffer() = default;
 

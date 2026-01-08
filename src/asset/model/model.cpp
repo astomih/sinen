@@ -29,7 +29,7 @@ std::pair<Ptr<rhi::Buffer>, Ptr<rhi::Buffer>>
 createVertexIndexBuffer(const Array<Vertex> &vertices,
                         const Array<uint32_t> &indices);
 Ptr<rhi::Buffer>
-createAnimationVertexBuffer(const Array<AnimationVertex> &vertices);
+createSkinnedVertexBuffer(const Array<SkinnedVertex> &vertices);
 Ptr<rhi::Buffer> createBuffer(size_t size, void *data, rhi::BufferUsage usage);
 
 enum class LoadState { Version, Vertex, Indices };
@@ -48,11 +48,11 @@ Array<float> getTimesFromVector3Key(const aiVectorKey *keys, uint32_t count) {
   }
   return result;
 };
-Array<Quaternion> getRotatesFromKey(const aiQuatKey *keys, uint32_t count) {
-  Array<Quaternion> result;
+Array<Quat> getRotatesFromKey(const aiQuatKey *keys, uint32_t count) {
+  Array<Quat> result;
   for (uint32_t i = 0; i < count; ++i) {
-    result.push_back(Quaternion(keys[i].mValue.x, keys[i].mValue.y,
-                                keys[i].mValue.z, keys[i].mValue.w));
+    result.push_back(Quat(keys[i].mValue.x, keys[i].mValue.y, keys[i].mValue.z,
+                          keys[i].mValue.w));
   }
   return result;
 };
@@ -128,7 +128,7 @@ void loadAnimation(const aiScene *scene, SkeletalAnimation &skeletalAnimation,
       }
 
       for (uint32_t j = 0; j < aimesh->mNumVertices; ++j) {
-        AnimationVertex animationVertex;
+        SkinnedVertex animationVertex;
         const auto &ids = boneData[j].ids;
         const auto &ws = boneData[j].weights;
         float temp = 0.f;
@@ -138,7 +138,7 @@ void loadAnimation(const aiScene *scene, SkeletalAnimation &skeletalAnimation,
           animationVertex.boneIDs[k] = (k < ids.size()) ? float(ids[k]) : 0.0f;
           animationVertex.boneWeights[k] = (k < ws.size()) ? ws[k] : 0.0f;
         }
-        skeletalAnimation.animationVertices.push_back(animationVertex);
+        skeletalAnimation.skinnedVertices.push_back(animationVertex);
       }
     }
   }
@@ -374,7 +374,7 @@ void Model::load(StringView path) {
       createBuffer(mesh->vertices.size() * sizeof(Vertex),
                    mesh->vertices.data(), rhi::BufferUsage::Vertex);
   this->animationVertexBuffer =
-      createAnimationVertexBuffer(skeletalAnimation.animationVertices);
+      createSkinnedVertexBuffer(skeletalAnimation.skinnedVertices);
   this->tangentBuffer =
       createBuffer(mesh->tangents.size() * sizeof(Vec4), mesh->tangents.data(),
                    rhi::BufferUsage::Vertex);
@@ -405,7 +405,7 @@ void Model::load(const Buffer &buffer) {
       createBuffer(mesh->vertices.size() * sizeof(Vertex),
                    mesh->vertices.data(), rhi::BufferUsage::Vertex);
   this->animationVertexBuffer =
-      createAnimationVertexBuffer(skeletalAnimation.animationVertices);
+      createSkinnedVertexBuffer(skeletalAnimation.skinnedVertices);
   this->tangentBuffer =
       createBuffer(mesh->tangents.size() * sizeof(Vec4), mesh->tangents.data(),
                    rhi::BufferUsage::Vertex);
@@ -526,11 +526,11 @@ createVertexIndexBuffer(const Array<Vertex> &vertices,
   return std::make_pair(vertexBuffer, indexBuffer);
 }
 Ptr<rhi::Buffer>
-createAnimationVertexBuffer(const Array<AnimationVertex> &vertices) {
+createSkinnedVertexBuffer(const Array<SkinnedVertex> &vertices) {
   if (vertices.empty())
     return nullptr;
   auto device = Graphics::getDevice();
-  size_t vertexBufferSize = vertices.size() * sizeof(AnimationVertex);
+  size_t vertexBufferSize = vertices.size() * sizeof(SkinnedVertex);
   Ptr<rhi::Buffer> vertexBuffer;
   rhi::Buffer::CreateInfo vertexBufferInfo{};
   vertexBufferInfo.allocator = GlobalAllocator::get();
@@ -547,8 +547,7 @@ createAnimationVertexBuffer(const Array<AnimationVertex> &vertices) {
       info.usage = rhi::TransferBufferUsage::Upload;
       transferBuffer = device->createTransferBuffer(info);
       auto *pMapped = transferBuffer->map(false);
-      memcpy(pMapped, vertices.data(),
-             vertices.size() * sizeof(AnimationVertex));
+      memcpy(pMapped, vertices.data(), vertices.size() * sizeof(SkinnedVertex));
       transferBuffer->unmap();
     }
     {

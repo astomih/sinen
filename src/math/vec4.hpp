@@ -1,7 +1,7 @@
 #ifndef SINEN_VECTOR4_HPP
 #define SINEN_VECTOR4_HPP
+#include "vec3.hpp"
 namespace sinen {
-class Vec3;
 class Vec4 {
 public:
   float x, y, z, w;

@@ -2,8 +2,8 @@
 #define SINEN_VECTOR_HPP
 
 #include "math.hpp"
-#include "vector2.hpp"
-#include "vector3.hpp"
-#include "vector4.hpp"
+#include "vec2.hpp"
+#include "vec3.hpp"
+#include "vec4.hpp"
 
 #endif

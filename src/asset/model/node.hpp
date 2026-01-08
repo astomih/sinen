@@ -10,7 +10,7 @@ class NodeAnimation {
 public:
   Array<Vec3> position;
   Array<float> positionTime;
-  Array<Quaternion> rotation;
+  Array<Quat> rotation;
   Array<float> rotationTime;
   Array<Vec3> scale;
   Array<float> scaleTime;

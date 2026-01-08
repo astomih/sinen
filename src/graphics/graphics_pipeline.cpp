@@ -156,7 +156,7 @@ rhi::VertexInputState CreateVertexInputState(Allocator *allocator,
     vertexInputState.vertexBufferDescriptions.emplace_back(
         rhi::VertexBufferDescription{
             .slot = bufferSlot,
-            .pitch = sizeof(AnimationVertex),
+            .pitch = sizeof(SkinnedVertex),
             .inputRate = rhi::VertexInputRate::Vertex,
             .instanceStepRate = 0,
         });
@@ -164,12 +164,12 @@ rhi::VertexInputState CreateVertexInputState(Allocator *allocator,
         rhi::VertexAttribute{.location = location++,
                              .bufferSlot = bufferSlot,
                              .format = rhi::VertexElementFormat::Float4,
-                             .offset = offsetof(AnimationVertex, boneIDs)});
+                             .offset = offsetof(SkinnedVertex, boneIDs)});
     vertexInputState.vertexAttributes.emplace_back(
         rhi::VertexAttribute{.location = location++,
                              .bufferSlot = bufferSlot,
                              .format = rhi::VertexElementFormat::Float4,
-                             .offset = offsetof(AnimationVertex, boneWeights)});
+                             .offset = offsetof(SkinnedVertex, boneWeights)});
   }
   if (isTangent) {
     bufferSlot++;

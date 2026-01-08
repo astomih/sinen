@@ -1,13 +1,14 @@
 #include "matrix.hpp"
 #include "quaternion.hpp"
+#include "vector.hpp"
 
 namespace sinen {
-static float m4Ident[4][4] = {{1.0f, 0.0f, 0.0f, 0.0f},
-                              {0.0f, 1.0f, 0.0f, 0.0f},
-                              {0.0f, 0.0f, 1.0f, 0.0f},
-                              {0.0f, 0.0f, 0.0f, 1.0f}};
-
-const Mat4 Mat4::identity(m4Ident);
+constexpr Mat4::Mat4(float a00, float a01, float a02, float a03, float a10,
+                     float a11, float a12, float a13, float a20, float a21,
+                     float a22, float a23, float a30, float a31, float a32,
+                     float a33)
+    : m16(a00, a01, a02, a03, a10, a11, a12, a13, a20, a21, a22, a23, a30, a31,
+          a32, a33) {}
 
 Vec3 Mat4::operator*(const Vec3 &vec) const {
 
@@ -34,6 +35,62 @@ Vec4 Mat4::operator*(const Vec4 &vec) const {
             mat[3][3] * vec.w;
 
   return Vec4(x, y, z, w);
+}
+Mat4 operator*(const Mat4 &a, const Mat4 &b) {
+  Mat4 retVal;
+  // row 0
+  retVal.mat[0][0] = a.mat[0][0] * b.mat[0][0] + a.mat[0][1] * b.mat[1][0] +
+                     a.mat[0][2] * b.mat[2][0] + a.mat[0][3] * b.mat[3][0];
+
+  retVal.mat[0][1] = a.mat[0][0] * b.mat[0][1] + a.mat[0][1] * b.mat[1][1] +
+                     a.mat[0][2] * b.mat[2][1] + a.mat[0][3] * b.mat[3][1];
+
+  retVal.mat[0][2] = a.mat[0][0] * b.mat[0][2] + a.mat[0][1] * b.mat[1][2] +
+                     a.mat[0][2] * b.mat[2][2] + a.mat[0][3] * b.mat[3][2];
+
+  retVal.mat[0][3] = a.mat[0][0] * b.mat[0][3] + a.mat[0][1] * b.mat[1][3] +
+                     a.mat[0][2] * b.mat[2][3] + a.mat[0][3] * b.mat[3][3];
+
+  // row 1
+  retVal.mat[1][0] = a.mat[1][0] * b.mat[0][0] + a.mat[1][1] * b.mat[1][0] +
+                     a.mat[1][2] * b.mat[2][0] + a.mat[1][3] * b.mat[3][0];
+
+  retVal.mat[1][1] = a.mat[1][0] * b.mat[0][1] + a.mat[1][1] * b.mat[1][1] +
+                     a.mat[1][2] * b.mat[2][1] + a.mat[1][3] * b.mat[3][1];
+
+  retVal.mat[1][2] = a.mat[1][0] * b.mat[0][2] + a.mat[1][1] * b.mat[1][2] +
+                     a.mat[1][2] * b.mat[2][2] + a.mat[1][3] * b.mat[3][2];
+
+  retVal.mat[1][3] = a.mat[1][0] * b.mat[0][3] + a.mat[1][1] * b.mat[1][3] +
+                     a.mat[1][2] * b.mat[2][3] + a.mat[1][3] * b.mat[3][3];
+
+  // row 2
+  retVal.mat[2][0] = a.mat[2][0] * b.mat[0][0] + a.mat[2][1] * b.mat[1][0] +
+                     a.mat[2][2] * b.mat[2][0] + a.mat[2][3] * b.mat[3][0];
+
+  retVal.mat[2][1] = a.mat[2][0] * b.mat[0][1] + a.mat[2][1] * b.mat[1][1] +
+                     a.mat[2][2] * b.mat[2][1] + a.mat[2][3] * b.mat[3][1];
+
+  retVal.mat[2][2] = a.mat[2][0] * b.mat[0][2] + a.mat[2][1] * b.mat[1][2] +
+                     a.mat[2][2] * b.mat[2][2] + a.mat[2][3] * b.mat[3][2];
+
+  retVal.mat[2][3] = a.mat[2][0] * b.mat[0][3] + a.mat[2][1] * b.mat[1][3] +
+                     a.mat[2][2] * b.mat[2][3] + a.mat[2][3] * b.mat[3][3];
+
+  // row 3
+  retVal.mat[3][0] = a.mat[3][0] * b.mat[0][0] + a.mat[3][1] * b.mat[1][0] +
+                     a.mat[3][2] * b.mat[2][0] + a.mat[3][3] * b.mat[3][0];
+
+  retVal.mat[3][1] = a.mat[3][0] * b.mat[0][1] + a.mat[3][1] * b.mat[1][1] +
+                     a.mat[3][2] * b.mat[2][1] + a.mat[3][3] * b.mat[3][1];
+
+  retVal.mat[3][2] = a.mat[3][0] * b.mat[0][2] + a.mat[3][1] * b.mat[1][2] +
+                     a.mat[3][2] * b.mat[2][2] + a.mat[3][3] * b.mat[3][2];
+
+  retVal.mat[3][3] = a.mat[3][0] * b.mat[0][3] + a.mat[3][1] * b.mat[1][3] +
+                     a.mat[3][2] * b.mat[2][3] + a.mat[3][3] * b.mat[3][3];
+
+  return retVal;
 }
 
 Mat4 Mat4::invert(const Mat4 &m) {
@@ -149,7 +206,7 @@ Mat4 Mat4::invert(const Mat4 &m) {
   return Mat4(mat);
 }
 void Mat4::inverse() { *this = invert(*this); }
-Quaternion Mat4::to_quaternion(const Mat4 &m) {
+Quat Mat4::toQuat(const Mat4 &m) {
   auto px = m.mat[0][0] - m.mat[1][1] - m.mat[2][2] + 1;
   auto py = -m.mat[0][0] + m.mat[1][1] - m.mat[2][2] + 1;
   auto pz = -m.mat[0][0] - m.mat[1][1] + m.mat[2][2] + 1;
@@ -173,33 +230,33 @@ Quaternion Mat4::to_quaternion(const Mat4 &m) {
   case 0: {
     auto x = Math::sqrt(px) * 0.5f;
     auto d = 1 / (4 * x);
-    return Quaternion(x, (m.mat[1][0] + m.mat[0][1]) * d,
-                      (m.mat[0][2] + m.mat[2][0]) * d,
-                      (m.mat[2][1] - m.mat[1][2]) * d);
+    return Quat(x, (m.mat[1][0] + m.mat[0][1]) * d,
+                (m.mat[0][2] + m.mat[2][0]) * d,
+                (m.mat[2][1] - m.mat[1][2]) * d);
   }
   case 1: {
     auto y = Math::sqrt(py) * 0.5f;
     auto d = 1 / (4 * y);
-    return Quaternion((m.mat[1][0] + m.mat[0][1]) * d, y,
-                      (m.mat[2][1] + m.mat[1][2]) * d,
-                      (m.mat[0][2] - m.mat[2][0]) * d);
+    return Quat((m.mat[1][0] + m.mat[0][1]) * d, y,
+                (m.mat[2][1] + m.mat[1][2]) * d,
+                (m.mat[0][2] - m.mat[2][0]) * d);
   }
   case 2: {
     auto z = Math::sqrt(pz) * 0.5f;
     auto d = 1 / (4 * z);
-    return Quaternion((m.mat[0][2] + m.mat[2][0]) * d,
-                      (m.mat[2][1] + m.mat[1][2]) * d, z,
-                      (m.mat[1][0] - m.mat[0][1]) * d);
+    return Quat((m.mat[0][2] + m.mat[2][0]) * d,
+                (m.mat[2][1] + m.mat[1][2]) * d, z,
+                (m.mat[1][0] - m.mat[0][1]) * d);
   }
   case 3: {
     auto w = Math::sqrt(pw) * 0.5f;
     auto d = 1 / (4 * w);
-    return Quaternion((m.mat[2][1] - m.mat[1][2]) * d,
-                      (m.mat[0][2] - m.mat[2][0]) * d,
-                      (m.mat[1][0] - m.mat[0][1]) * d, w);
+    return Quat((m.mat[2][1] - m.mat[1][2]) * d,
+                (m.mat[0][2] - m.mat[2][0]) * d,
+                (m.mat[1][0] - m.mat[0][1]) * d, w);
   }
   default:
-    return Quaternion();
+    return Quat();
   }
 }
 
@@ -262,14 +319,14 @@ Mat4 Mat4::transpose(const Mat4 &m) {
   return Mat4(mat);
 }
 
-Mat4 Mat4::create_translation(const Vec3 &trans) {
+Mat4 Mat4::translate(const Vec3 &trans) {
   float temp[4][4] = {{1.0f, 0.0f, 0.0f, trans.x},
                       {0.0f, 1.0f, 0.0f, trans.y},
                       {0.0f, 0.0f, 1.0f, trans.z},
                       {0.0f, 0.0f, 0.0f, 1.0f}};
   return Mat4(temp);
 }
-Mat4 Mat4::create_from_quaternion(const Quaternion &q) {
+Mat4 Mat4::fromQuat(const Quat &q) {
   float mat[4][4];
 
   mat[0][0] = 1.0f - 2.0f * q.y * q.y - 2.0f * q.z * q.z;
@@ -295,7 +352,7 @@ Mat4 Mat4::create_from_quaternion(const Quaternion &q) {
   return Mat4(mat);
 }
 
-Mat4 Mat4::create_scale(const Vec3 &scale) {
+Mat4 Mat4::scale(const Vec3 &scale) {
   float temp[4][4] = {{scale.x, 0.0f, 0.0f, 0.0f},
                       {0.0f, scale.y, 0.0f, 0.0f},
                       {0.0f, 0.0f, scale.z, 0.0f},

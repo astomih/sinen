@@ -248,7 +248,7 @@ bool Script::initialize() {
     v["length"] = [](const Vec3 &a) { return a.length(); };
     v["forward"] = [](const Vec3 v, const Vec3 rotation) -> Vec3 {
       // rotation to mat
-      auto m = Mat4::create_from_quaternion(Quaternion::from_euler(rotation));
+      auto m = Mat4::fromQuat(Quat::fromEuler(rotation));
       // forward
       Vec4 forward = m * Vec4(v.x, v.y, v.z, 1.0f);
       forward.x = forward.x / forward.w;

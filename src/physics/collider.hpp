@@ -1,6 +1,6 @@
 #ifndef SINEN_COLLIDER_HPP
 #define SINEN_COLLIDER_HPP
-#include <math/vector3.hpp>
+#include <math/vec3.hpp>
 namespace sinen {
 class Collider {
 public:

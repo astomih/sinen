@@ -286,7 +286,7 @@ Collider Physics::createBoxCollider(const Transform &transform, bool isStatic) {
   // Create the shape
   JPH::ShapeSettings::ShapeResult boxShapeResult = boxShapeSetting.Create();
   JPH::ShapeRefC boxShape = boxShapeResult.Get();
-  const auto quaternion = Quaternion::from_euler(rotation);
+  const auto quaternion = Quat::fromEuler(rotation);
 
   JPH::EMotionType motionType =
       isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic;
@@ -332,7 +332,7 @@ Collider Physics::createCylinderCollider(const Vec3 &position,
   JPH::ShapeSettings::ShapeResult cylinderShapeResult =
       cylinderShapeSetting.Create();
   JPH::ShapeRefC cylinderShape = cylinderShapeResult.Get();
-  const auto quaternion = Quaternion::from_euler(rotation);
+  const auto quaternion = Quat::fromEuler(rotation);
   JPH::BodyCreationSettings cylinderSettings(
       cylinderShape, JPH::RVec3(position.x, position.y, position.z),
       {quaternion.x, quaternion.y, quaternion.z, quaternion.w}, motionType,

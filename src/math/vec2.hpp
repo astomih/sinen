@@ -1,5 +1,5 @@
-#ifndef SINEN_VECTOR2_HPP
-#define SINEN_VECTOR2_HPP
+#ifndef SINEN_VEC2_HPP
+#define SINEN_VEC2_HPP
 #include "math.hpp"
 namespace sinen {
 class Vec2 {
@@ -19,13 +19,6 @@ public:
    */
   constexpr Vec2(float inX, float inY) : x(inX), y(inY) {}
 
-  // Set both components in one line
-  void Set(float inX, float inY) {
-    x = inX;
-    y = inY;
-  }
-
-  const float *get_ptr() const { return reinterpret_cast<const float *>(&x); }
   // Vector addition (a + b)
   friend Vec2 operator+(const Vec2 &a, const Vec2 &b) {
     return Vec2(a.x + b.x, a.y + b.y);
@@ -84,16 +77,11 @@ public:
     return *this;
   }
 
-  Vec2 add(const Vec2 &right) const { return Vec2(x + right.x, y + right.y); }
-  Vec2 sub(const Vec2 &right) const { return Vec2(x - right.x, y - right.y); }
-  Vec2 mul(const Vec2 &right) const { return Vec2(x * right.x, y * right.y); }
-  Vec2 div(const Vec2 &right) const { return Vec2(x / right.x, y / right.y); }
-
   // Length squared of vector
-  [[nodiscard]] float length_sqrt() const { return (x * x + y * y); }
+  [[nodiscard]] float lengthSqrt() const { return (x * x + y * y); }
 
   // Length of vector
-  [[nodiscard]] float length() const { return (Math::sqrt(length_sqrt())); }
+  [[nodiscard]] float length() const { return (Math::sqrt(lengthSqrt())); }
 
   // Normalize this vector
   void normalize() {
@@ -127,12 +115,6 @@ public:
   // Transform vector by matrix
   static Vec2 transform(const Vec2 &vec, const class matrix3 &mat,
                         float w = 1.0f);
-
-  static const Vec2 zero;
-  static const Vec2 unit_x;
-  static const Vec2 unit_y;
-  static const Vec2 neg_unit_x;
-  static const Vec2 neg_unit_y;
 };
 } // namespace sinen
 #endif

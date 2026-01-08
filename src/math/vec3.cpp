@@ -1,24 +1,8 @@
-#include "vector.hpp"
-#include "matrix.hpp"
+#include "vec3.hpp"
+#include "mat4.hpp"
+#include "vec4.hpp"
 
 namespace sinen {
-const Vec2 Vec2::zero(0.0f, 0.0f);
-const Vec2 Vec2::unit_x(1.0f, 0.0f);
-const Vec2 Vec2::unit_y(0.0f, 1.0f);
-const Vec2 Vec2::neg_unit_x(-1.0f, 0.0f);
-const Vec2 Vec2::neg_unit_y(0.0f, -1.0f);
-
-const Vec3 Vec3::zero(0.0f, 0.0f, 0.f);
-const Vec3 Vec3::unit_x(1.0f, 0.0f, 0.0f);
-const Vec3 Vec3::unit_y(0.0f, 1.0f, 0.0f);
-const Vec3 Vec3::unit_z(0.0f, 0.0f, 1.0f);
-const Vec3 Vec3::neg_unit_x(-1.0f, 0.0f, 0.0f);
-const Vec3 Vec3::neg_unit_y(0.0f, -1.0f, 0.0f);
-const Vec3 Vec3::neg_unit_z(0.0f, 0.0f, -1.0f);
-const Vec3 Vec3::infinity(Math::infinity, Math::infinity, Math::infinity);
-const Vec3 Vec3::neg_infinity(Math::negInfinity, Math::negInfinity,
-                              Math::negInfinity);
-
 Vec3::Vec3(const Vec4 &v) : x(v.x), y(v.y), z(v.z) {}
 
 Vec3 Vec3::transform(const Vec3 &vec, const Mat4 &mat, float w /*= 1.0f*/) {
@@ -34,8 +18,8 @@ Vec3 Vec3::transform(const Vec3 &vec, const Mat4 &mat, float w /*= 1.0f*/) {
 }
 
 // This will transform the vector and renormalize the w component
-Vec3 Vec3::transform_with_persp_div(const Vec3 &vec, const Mat4 &mat,
-                                    float w /*= 1.0f*/) {
+Vec3 Vec3::transformWithPerspDiv(const Vec3 &vec, const Mat4 &mat,
+                                 float w /*= 1.0f*/) {
   Vec3 retVal;
   retVal.x = vec.x * mat.mat[0][0] + vec.y * mat.mat[1][0] +
              vec.z * mat.mat[2][0] + w * mat.mat[3][0];
@@ -53,13 +37,11 @@ Vec3 Vec3::transform_with_persp_div(const Vec3 &vec, const Mat4 &mat,
 }
 
 // Transform a Vector3 by a quaternion
-Vec3 Vec3::transform(const Vec3 &v, const Quaternion &q) {
+Vec3 Vec3::transform(const Vec3 &v, const Quat &q) {
   // v + 2.0*cross(q.xyz, cross(q.xyz,v) + q.w*v);
   Vec3 qv(q.x, q.y, q.z);
   Vec3 retVal = v;
   retVal += 2.0f * Vec3::cross(qv, Vec3::cross(qv, v) + q.w * v);
   return retVal;
 }
-Vec4::Vec4(const Vec3 &v, float w) : x(v.x), y(v.y), z(v.z), w(w) {}
-Vec4::Vec4(float x, const Vec3 &v) : x(x), y(v.x), z(v.y), w(v.z) {}
 } // namespace sinen

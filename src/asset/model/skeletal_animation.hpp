@@ -2,6 +2,7 @@
 #define SINEN_SKELETAL_ANIMATION_HPP
 #include "node.hpp"
 #include <core/data/hashmap.hpp>
+#include <geometry/skinned_vertex.hpp>
 #include <geometry/vertex.hpp>
 namespace sinen {
 class SkeletalAnimation {
@@ -19,7 +20,7 @@ public:
   Array<Mat4> getFinalBoneMatrices() const;
 
   Hashmap<String, NodeAnimation> nodeAnimMap;
-  Array<AnimationVertex> animationVertices;
+  Array<SkinnedVertex> skinnedVertices;
   Mat4 globalInverseTransform;
   float ticksPerSecond;
   float duration;

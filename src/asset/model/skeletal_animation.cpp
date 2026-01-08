@@ -70,11 +70,11 @@ Vec3 interpolateVector3(const Array<Vec3> &keys, const Array<float> &keyTimes,
   auto k1 = keys[i + 1];
   return Vec3::lerp(k0, k1, t);
 };
-Quaternion interpolateQuat(const Array<Quaternion> &keys,
-                           const Array<float> &keyTimes, float time) {
+Quat interpolateQuat(const Array<Quat> &keys, const Array<float> &keyTimes,
+                     float time) {
   auto count = keys.size();
   if (count == 0) {
-    return Quaternion(0, 0, 0, 1);
+    return Quat(0, 0, 0, 1);
   }
   if (count == 1) {
     return keys[0];
@@ -84,8 +84,8 @@ Quaternion interpolateQuat(const Array<Quaternion> &keys,
   float t = float((time - keyTimes[i]) / (keyTimes[i + 1] - keyTimes[i]));
   auto k0 = keys[i];
   auto k1 = keys[i + 1];
-  auto q = Quaternion::slerp(k0, k1, t);
-  q = Quaternion::normalize(q);
+  auto q = Quat::slerp(k0, k1, t);
+  q = Quat::normalize(q);
   return q;
 };
 
@@ -98,9 +98,9 @@ Mat4 SkeletalAnimation::interpolateTransform(const NodeAnimation &channel,
   auto translation =
       interpolateVector3(channel.position, channel.positionTime, time);
 
-  auto t = Mat4::create_translation(translation);
-  auto r = Mat4::create_from_quaternion(rotation);
-  auto s = Mat4::create_scale(scaling);
+  auto t = Mat4::translate(translation);
+  auto r = Mat4::fromQuat(rotation);
+  auto s = Mat4::scale(scaling);
 
   auto m = t * r * s;
   return m;

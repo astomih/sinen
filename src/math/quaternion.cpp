@@ -2,19 +2,15 @@
 #include <math/vector.hpp>
 
 namespace sinen {
-const Quaternion Quaternion::Identity(0.0f, 0.0f, 0.0f, 1.0f);
-Quaternion Quaternion::from_euler(const Vec3 &euler) {
-  Quaternion q;
-  q = Quaternion::concatenate(
-      q, Quaternion(Vec3::unit_z, Math::toRadians(euler.z)));
-  q = Quaternion::concatenate(
-      q, Quaternion(Vec3::unit_y, Math::toRadians(euler.y)));
-  q = Quaternion::concatenate(
-      q, Quaternion(Vec3::unit_x, Math::toRadians(euler.x)));
+Quat Quat::fromEuler(const Vec3 &euler) {
+  Quat q;
+  q = Quat::concatenate(q, Quat({0, 0, 1}, Math::toRadians(euler.z)));
+  q = Quat::concatenate(q, Quat({0, 1, 0}, Math::toRadians(euler.y)));
+  q = Quat::concatenate(q, Quat({1, 0, 0}, Math::toRadians(euler.x)));
   return q;
 }
 
-Vec3 Quaternion::to_euler(const Quaternion &r) {
+Vec3 Quat::toEuler(const Quat &r) {
   float x = r.x;
   float y = r.y;
   float z = r.z;

@@ -1,5 +1,5 @@
-#ifndef SINEN_VECTOR3_HPP
-#define SINEN_VECTOR3_HPP
+#ifndef SINEN_VEC3_HPP
+#define SINEN_VEC3_HPP
 #include "math.hpp"
 namespace sinen {
 class Vec4;
@@ -16,18 +16,6 @@ public:
       : x(x), y(y), z(z) {}
 
   Vec3(const Vec4 &v);
-
-  // Cast to a const float pointer
-  [[nodiscard]] const float *get_ptr() const {
-    return reinterpret_cast<const float *>(&x);
-  }
-
-  // Set all three components in one line
-  void set(float inX, float inY, float inZ) {
-    x = inX;
-    y = inY;
-    z = inZ;
-  }
 
   // Vector addition (a + b)
   friend Vec3 operator+(const Vec3 &a, const Vec3 &b) {
@@ -91,10 +79,10 @@ public:
   Vec3 copy() { return Vec3(x, y, z); }
 
   // Length squared of vector
-  [[nodiscard]] float length_sqrt() const { return (x * x + y * y + z * z); }
+  [[nodiscard]] float lengthSqrt() const { return (x * x + y * y + z * z); }
 
   // Length of vector
-  [[nodiscard]] float length() const { return (Math::sqrt(length_sqrt())); }
+  [[nodiscard]] float length() const { return (Math::sqrt(lengthSqrt())); }
 
   // Normalize this vector
   void normalize() {
@@ -137,21 +125,11 @@ public:
 
   static Vec3 transform(const Vec3 &vec, const class Mat4 &mat, float w = 1.0f);
   // This will transform the vector and renormalize the w component
-  static Vec3 transform_with_persp_div(const Vec3 &vec, const class Mat4 &mat,
-                                       float w = 1.0f);
+  static Vec3 transformWithPerspDiv(const Vec3 &vec, const class Mat4 &mat,
+                                    float w = 1.0f);
 
   // Transform a Vec3f by a quaternion
-  static Vec3 transform(const Vec3 &v, const class Quaternion &q);
-
-  static const Vec3 zero;
-  static const Vec3 unit_x;
-  static const Vec3 unit_y;
-  static const Vec3 unit_z;
-  static const Vec3 neg_unit_x;
-  static const Vec3 neg_unit_y;
-  static const Vec3 neg_unit_z;
-  static const Vec3 infinity;
-  static const Vec3 neg_infinity;
+  static Vec3 transform(const Vec3 &v, const class Quat &q);
 };
 } // namespace sinen
 #endif

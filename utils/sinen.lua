@@ -258,9 +258,9 @@ sn = {
     Script = {},
 
     ---Static class
-    ---@class sn.FileSystem
+    ---@class sn.Filesystem
     ---@field enumerateDirectory fun(path: string): table
-    FileSystem = {},
+    Filesystem = {},
 
     ---Static class
     ---@class sn.Random

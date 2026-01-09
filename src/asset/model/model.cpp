@@ -13,6 +13,7 @@
 #include <core/data/ptr.hpp>
 #include <graphics/graphics.hpp>
 #include <math/math.hpp>
+#include <platform/io/asset_io.hpp>
 
 #include <assimp/IOSystem.hpp>
 #include <assimp/Importer.hpp>

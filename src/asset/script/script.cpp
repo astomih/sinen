@@ -9,9 +9,6 @@
 #include <core/data/string.hpp>
 #include <core/def/types.hpp>
 #include <core/event/event.hpp>
-#include <core/io/arguments.hpp>
-#include <core/io/asset_io.hpp>
-#include <core/io/file_system.hpp>
 #include <graphics/graphics.hpp>
 #include <math/graph/bfs_grid.hpp>
 #include <math/math.hpp>
@@ -22,6 +19,9 @@
 #include <platform/input/key_input.hpp>
 #include <platform/input/keyboard.hpp>
 #include <platform/input/mouse.hpp>
+#include <platform/io/arguments.hpp>
+#include <platform/io/asset_io.hpp>
+#include <platform/io/filesystem.hpp>
 #include <platform/window/window.hpp>
 
 #include <sol/raii.hpp>
@@ -396,7 +396,7 @@ bool Script::initialize() {
     v["min"] = &AABB::min;
     v["max"] = &AABB::max;
     v["updateWorld"] = &AABB::updateWorld;
-    v["intersectsAABB"]= &AABB::intersectsAABB;
+    v["intersectsAABB"] = &AABB::intersectsAABB;
   }
   {
     auto v = lua.new_usertype<Timer>("Timer");
@@ -607,8 +607,8 @@ bool Script::initialize() {
     v["readbackTexture"] = &Graphics::readbackTexture;
   }
   {
-    auto v = lua.create_named("FileSystem");
-    v["enumerateDirectory"] = &FileSystem::enumerateDirectory;
+    auto v = lua.create_named("Filesystem");
+    v["enumerateDirectory"] = &Filesystem::enumerateDirectory;
   }
   {
     auto v = lua.create_named("Script");

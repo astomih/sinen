@@ -1,11 +1,11 @@
 #include "core/logger/logger.hpp"
 
-#include <core/io/file_system.hpp>
+#include <platform/io/filesystem.hpp>
 
 #include <SDL3/SDL.h>
 
 namespace sinen {
-Array<String> FileSystem::enumerateDirectory(StringView path) {
+Array<String> Filesystem::enumerateDirectory(StringView path) {
   auto p = getAppBaseDirectory() + "/" + String(path.data());
   Array<String> result;
   SDL_EnumerateDirectory(
@@ -20,7 +20,7 @@ Array<String> FileSystem::enumerateDirectory(StringView path) {
       &result);
   return result;
 }
-String FileSystem::getAppBaseDirectory() {
+String Filesystem::getAppBaseDirectory() {
 
 #ifdef __ANDROID__
   String base = "/sdcard/Android/media/astomih.sinen.app";

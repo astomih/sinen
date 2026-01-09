@@ -8,9 +8,9 @@
 // internal
 #include <asset/script/script.hpp>
 #include <core/data/string.hpp>
-#include <core/io/asset_io.hpp>
-#include <core/io/file_system.hpp>
 #include <core/logger/logger.hpp>
+#include <platform/io/asset_io.hpp>
+#include <platform/io/filesystem.hpp>
 
 // external
 #include <SDL3/SDL.h>
@@ -25,7 +25,7 @@
 namespace sinen {
 static void convertFilePath(String &filePath, StringView name) {
 
-  filePath = FileSystem::getAppBaseDirectory() + "/" + Script::getBasePath() +
+  filePath = Filesystem::getAppBaseDirectory() + "/" + Script::getBasePath() +
              "/" + String(name);
 }
 Array<uint8_t> AssetIO::key = {0};

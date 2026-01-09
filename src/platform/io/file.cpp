@@ -1,8 +1,9 @@
 #include "core/allocator/global_allocator.hpp"
 #include "core/buffer/buffer.hpp"
 #include <SDL3/SDL.h>
-#include <core/io/file.hpp>
 #include <cstring>
+#include <platform/io/file.hpp>
+
 
 namespace sinen {
 File::File() : stream(nullptr) {}

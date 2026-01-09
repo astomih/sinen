@@ -1,4 +1,4 @@
-#include <core/io/arguments.hpp>
+#include <platform/io/arguments.hpp>
 
 namespace sinen {
 int Arguments::getArgc() { return argc; }

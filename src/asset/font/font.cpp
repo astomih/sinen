@@ -6,13 +6,12 @@
 #include <asset/font/font.hpp>
 #include <asset/texture/texture.hpp>
 #include <core/data/array.hpp>
-#include <core/io/asset_io.hpp>
 #include <core/logger/logger.hpp>
 #include <graphics/rhi/rhi.hpp>
 #include <math/color/color.hpp>
 #include <math/geometry/mesh.hpp>
 #include <math/math.hpp>
-
+#include <platform/io/asset_io.hpp>
 
 // external
 #include <SDL3/SDL.h>

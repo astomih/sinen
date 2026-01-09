@@ -3,7 +3,7 @@
 #include <core/data/array.hpp>
 #include <core/data/string.hpp>
 namespace sinen {
-class FileSystem {
+class Filesystem {
 public:
   static Array<String> enumerateDirectory(StringView path);
   static String getAppBaseDirectory();

@@ -4,10 +4,10 @@
 
 #include "rt_shader_compiler.hpp"
 
-#include "core/io/file.hpp"
+#include <platform/io/file.hpp>
 
-#include <core/io/asset_io.hpp>
 #include <core/logger/logger.hpp>
+#include <platform/io/asset_io.hpp>
 
 #include <slang-com-helper.h>
 #include <slang-com-ptr.h>

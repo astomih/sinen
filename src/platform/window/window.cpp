@@ -1,10 +1,10 @@
 #include "window.hpp"
 
 #include <SDL3/SDL.h>
-#include <core/io/file.hpp>
-#include <core/io/file_system.hpp>
-#include <core/io/json.hpp>
+#include <core/parser/json.hpp>
 #include <platform/input/keyboard.hpp>
+#include <platform/io/file.hpp>
+#include <platform/io/filesystem.hpp>
 
 namespace sinen {
 Vec2 Window::mSize = Vec2(1280.f, 720.f);
@@ -13,27 +13,7 @@ String Window::mName;
 bool Window::mResized = false;
 bool Window::initialize(StringView name) {
   mName = name;
-
-  // Load settings from settings.json
-  {
-    File f;
-    if (f.open(FileSystem::getAppBaseDirectory() + "/settings.json", "r")) {
-      auto size = f.size();
-      auto buffer = f.read(size + 1);
-      f.close();
-      Json j;
-      j.parse((char *)buffer.data());
-      mSize.x = j["WindowWidth"].getFloat();
-      mSize.y = j["WindowHeight"].getFloat();
-    } else {
-      f.close();
-      mSize.x = 1280;
-      mSize.y = 720;
-    }
-  }
-
   uint64_t windowFlags = SDL_WINDOW_VULKAN;
-
 #ifdef __ANDROID__
   windowFlags |=
       SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS | SDL_WINDOW_INPUT_FOCUS;

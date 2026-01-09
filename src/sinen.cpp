@@ -5,6 +5,7 @@
 #include <math/random.hpp>
 #include <physics/physics.hpp>
 #include <platform/input/input.hpp>
+#include <platform/io/arguments.hpp>
 #include <platform/window/window.hpp>
 
 #include <sinen.hpp>
@@ -158,7 +159,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
   ImGui_ImplSDL3_ProcessEvent(event);
   Event::processEvent(*event);
-  Window::processInput(*event);
+  Window::processEvent(*event);
   Input::processEvent(*event);
   return SDL_APP_CONTINUE;
 }

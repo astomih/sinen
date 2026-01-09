@@ -146,6 +146,11 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     Physics::postSetup();
     Script::doneReload();
   }
+  if (Keyboard::isPressed(Keyboard::Code::F11)) {
+    static bool fullscreen = false;
+    fullscreen = !fullscreen;
+    Window::setFullscreen(fullscreen);
+  }
   Window::prepareFrame();
   Input::prepareForUpdate();
   return SDL_APP_CONTINUE;

@@ -119,6 +119,7 @@ sn = {
     ---@field min sn.Vec3
     ---@field max sn.Vec3
     ---@field updateWorld fun(self: sn.AABB, position: sn.Vec3, scale: sn.Vec3, modelsn.AABB: sn.AABB)
+    ---@field intersectsAABB fun(self: sn.AABB, aabb: sn.AABB): boolean
     AABB = {},
 
     ---@class sn.Timer
@@ -314,11 +315,6 @@ sn = {
     ---@field createSphereCollider fun(position: sn.Vec3, radius: number, isStatic: boolean): sn.Collider
     ---@field addCollider fun(collider: sn.Collider, isActive: boolean)
     Physics = {},
-
-    ---Static class
-    ---@class sn.Collision
-    ---@field AABBvsAABB fun(a: sn.AABB, b: sn.AABB): boolean
-    Collision = {},
 
     ---Static class
     ---@class sn.Keyboard

@@ -1,7 +1,6 @@
 #ifndef SINEN_PHYSICS_HPP
 #define SINEN_PHYSICS_HPP
 #include "collider.hpp"
-#include "collision.hpp"
 #include "primitive2.hpp"
 #include "primitive3.hpp"
 

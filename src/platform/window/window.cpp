@@ -76,18 +76,13 @@ void Window::rename(StringView name) {
   SDL_SetWindowTitle(mWindow, mName.c_str());
 }
 void Window::prepareFrame() { mResized = false; }
-void Window::processInput(SDL_Event &event) {
-  int x, y;
-  SDL_GetWindowSize(mWindow, &x, &y);
-  mSize.x = static_cast<float>(x);
-  mSize.y = static_cast<float>(y);
+void Window::processEvent(SDL_Event &event) {
   if (event.window.type == SDL_EventType::SDL_EVENT_WINDOW_RESIZED) {
     mResized = true;
-  }
-  if (Keyboard::isPressed(Keyboard::Code::F11)) {
-    static bool fullscreen = false;
-    fullscreen = !fullscreen;
-    setFullscreen(fullscreen);
+    int x, y;
+    SDL_GetWindowSize(mWindow, &x, &y);
+    mSize.x = static_cast<float>(x);
+    mSize.y = static_cast<float>(y);
   }
 }
 } // namespace sinen

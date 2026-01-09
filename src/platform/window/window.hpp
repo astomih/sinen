@@ -11,7 +11,7 @@ public:
   static bool initialize(StringView name);
   static void shutdown();
   static void prepareFrame();
-  static void processInput(SDL_Event &event);
+  static void processEvent(SDL_Event &event);
   static SDL_Window *getSdlWindow() { return mWindow; }
   static void resize(const Vec2 &size);
   static void setFullscreen(bool fullscreen);

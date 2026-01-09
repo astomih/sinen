@@ -17,7 +17,6 @@
 #include <math/math.hpp>
 #include <math/periodic.hpp>
 #include <math/random.hpp>
-#include <physics/collision.hpp>
 #include <physics/physics.hpp>
 #include <platform/input/gamepad.hpp>
 #include <platform/input/key_input.hpp>
@@ -397,6 +396,7 @@ bool Script::initialize() {
     v["min"] = &AABB::min;
     v["max"] = &AABB::max;
     v["updateWorld"] = &AABB::updateWorld;
+    v["intersectsAABB"]= &AABB::intersectsAABB;
   }
   {
     auto v = lua.new_usertype<Timer>("Timer");
@@ -605,10 +605,6 @@ bool Script::initialize() {
     v["setRenderTarget"] = &Graphics::setRenderTarget;
     v["flush"] = &Graphics::flush;
     v["readbackTexture"] = &Graphics::readbackTexture;
-  }
-  {
-    auto v = lua.create_named("Collision");
-    v["AABBvsAABB"] = &Collision::aabBvsAabb;
   }
   {
     auto v = lua.create_named("FileSystem");

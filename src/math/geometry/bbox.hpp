@@ -19,6 +19,7 @@ struct AABB {
   void updateWorld(const Vec3 &p, const Vec3 &scale, const AABB &local);
 
   Ptr<Mesh> createMesh();
+  bool intersectsAABB(const AABB &aabb) const;
 };
 /**
  * @brief OBBox(Oriented Bounding Box) class
@@ -33,6 +34,7 @@ struct OBB {
   Vec3 v[3];
   // Axis lengths
   float a[3];
+  bool intersectsOBB(const OBB &obb) const;
 };
 } // namespace sinen
 #endif

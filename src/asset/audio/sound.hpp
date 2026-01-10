@@ -5,6 +5,8 @@
 #include <core/data/string.hpp>
 #include <math/vector.hpp>
 
+#include <miniaudio.h>
+
 namespace sinen {
 /**
  * @brief Sound class
@@ -28,17 +30,17 @@ public:
    */
   void load(StringView fileName);
   void load(const Buffer &buffer);
-  void play() const;
+  void play();
   // Restart event from begining
-  void restart() const;
+  void restart();
   // Stop this event
-  void stop() const;
+  void stop();
   // Setters
-  void setLooping(bool looping) const;
-  void setVolume(float value) const;
-  void setPitch(float value) const;
-  void setPosition(const Vec3 &pos) const;
-  void setDirection(const Vec3 &dir) const;
+  void setLooping(bool looping);
+  void setVolume(float value);
+  void setPitch(float value);
+  void setPosition(const Vec3 &pos);
+  void setDirection(const Vec3 &dir);
   // Getters
   bool isPlaying() const;
   bool isLooping() const;
@@ -48,8 +50,7 @@ public:
   Vec3 getDirection() const;
 
 private:
-  struct Data;
-  UniquePtr<Data> data;
+  ma_sound sound;
 };
 } // namespace sinen
 #endif // !SINEN_SOUND_HPP

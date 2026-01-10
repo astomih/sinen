@@ -1,9 +1,12 @@
 #ifndef SINEN_FONT_HPP
 #define SINEN_FONT_HPP
 #include <asset/texture/texture.hpp>
+#include <core/data/string.hpp>
 #include <math/geometry/mesh.hpp>
 
-#include <core/data/string.hpp>
+#include <future>
+#include <stb_truetype.h>
+
 namespace sinen {
 /**
  * @brief font load and render to texture.
@@ -18,7 +21,7 @@ public:
   bool load(int point_size);
   bool load(int pointSize, StringView path);
   bool load(int pointSize, const Buffer &buffer);
-  bool isLoaded() { return font != nullptr; }
+  bool isLoaded() { return m_size != 0; }
   void unload();
   int size() const { return m_size; }
   void resize(int point_size);
@@ -27,8 +30,13 @@ public:
   Ptr<Mesh> getTextMesh(StringView text) const;
 
 private:
-  struct Wrapper;
-  UniquePtr<Wrapper> font;
+  Array<Array<stbtt_packedchar>> packedChar;
+  Texture texture;
+  uint32_t sheetSize;
+  std::future<bool> future;
+  Array<unsigned char> atlasBitmap;
+  String data;
+  bool loaded = false;
   int m_size;
 };
 } // namespace sinen

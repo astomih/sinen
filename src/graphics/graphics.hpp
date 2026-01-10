@@ -18,7 +18,6 @@
 #include <math/math.hpp>
 #include <platform/window/window.hpp>
 
-
 namespace sinen {
 class Graphics {
 public:
@@ -69,6 +68,9 @@ public:
   static std::list<std::function<void()>> &getImGuiFunction() {
     return imguiFunctions;
   }
+  static void addPreDrawFunc(std::function<void()> f) {
+    preDrawFuncs.push_back(f);
+  }
   static void addImGuiFunction(std::function<void()> function) {
     imguiFunctions.push_back(function);
   }
@@ -101,6 +103,7 @@ private:
   // Renderer
   static bool showImGui;
   static std::list<std::function<void()>> imguiFunctions;
+  static std::list<std::function<void()>> preDrawFuncs;
 
   inline static Ptr<rhi::Backend> backend;
   inline static Ptr<rhi::Device> device;

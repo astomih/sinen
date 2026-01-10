@@ -7,6 +7,7 @@
 #include <asset/texture/texture.hpp>
 #include <core/data/array.hpp>
 #include <core/logger/logger.hpp>
+#include <graphics/graphics.hpp>
 #include <graphics/rhi/rhi.hpp>
 #include <math/color/color.hpp>
 #include <math/geometry/mesh.hpp>
@@ -37,16 +38,7 @@ constexpr CodepointRange asciiWidthRange = {0xFF01, 0xFF5E};
 constexpr CodepointRange japaneseRange = {0x3000, 0x9FFF};
 constexpr CodepointRange asciiRange = {0x0020, 0x007F};
 
-struct Font::Wrapper {
-  Array<Array<stbtt_packedchar>> packedChar;
-  Texture texture;
-  uint32_t sheetSize = 0;
-  std::future<bool> future;
-  Array<unsigned char> atlasBitmap;
-  String data;
-  bool loaded = false;
-};
-Font::Font() = default;
+Font::Font() : packedChar(), texture(), sheetSize(0) {}
 Font::Font(int32_t point, StringView file_name) { load(point, file_name); }
 Font::~Font() {}
 static bool loadCore(const unsigned char *fontData,
@@ -105,48 +97,77 @@ static bool loadCore(const unsigned char *fontData,
 }
 bool Font::load(int pointSize) {
   pointSize += 16;
-  this->font = makeUnique<Wrapper>();
   this->m_size = pointSize;
-  this->font->sheetSize = pointSize * 64;
+  this->sheetSize = pointSize * 64;
 
-  this->font->future = std::async(
-      std::launch::async, loadCore, mplus1pMediumTtf,
-      std::ref(this->font->packedChar), std::ref(this->font->atlasBitmap),
-      pointSize, this->font->sheetSize);
-
+  this->future =
+      std::async(std::launch::async, loadCore, mplus1pMediumTtf,
+                 std::ref(this->packedChar), std::ref(this->atlasBitmap),
+                 pointSize, this->sheetSize);
+  Graphics::addPreDrawFunc([this]() {
+    if (!this->loaded) {
+      if (this->future.valid()) {
+        this->future.wait();
+        this->texture.loadFromMemory(this->atlasBitmap.data(), this->sheetSize,
+                                     this->sheetSize,
+                                     rhi::TextureFormat::R8G8B8A8_UNORM, 4);
+        this->loaded = true;
+      }
+    }
+  });
   return true;
 }
 bool Font::load(int pointSize, StringView fontName) {
   pointSize += 16;
-  this->font = makeUnique<Wrapper>();
   this->m_size = pointSize;
-  this->font->sheetSize = pointSize * 64;
-  this->font->data = AssetIO::openAsString(fontName);
-  this->font->future = std::async(
-      std::launch::async, loadCore,
-      reinterpret_cast<const unsigned char *>(this->font->data.data()),
-      std::ref(this->font->packedChar), std::ref(this->font->atlasBitmap),
-      pointSize, this->font->sheetSize);
+  this->sheetSize = pointSize * 64;
+  this->data = AssetIO::openAsString(fontName);
+  this->future =
+      std::async(std::launch::async, loadCore,
+                 reinterpret_cast<const unsigned char *>(this->data.data()),
+                 std::ref(this->packedChar), std::ref(this->atlasBitmap),
+                 pointSize, this->sheetSize);
+  Graphics::addPreDrawFunc([this]() {
+    if (!this->loaded) {
+      if (this->future.valid()) {
+        this->future.wait();
+        this->texture.loadFromMemory(this->atlasBitmap.data(), this->sheetSize,
+                                     this->sheetSize,
+                                     rhi::TextureFormat::R8G8B8A8_UNORM, 4);
+        this->loaded = true;
+      }
+    }
+  });
   return true;
 }
 bool Font::load(int pointSize, const Buffer &buffer) {
   pointSize += 16;
-  this->font = makeUnique<Wrapper>();
   this->m_size = pointSize;
-  this->font->sheetSize = pointSize * 64;
-  this->font->data = (const char *)buffer.data();
-  this->font->future = std::async(
-      std::launch::async, loadCore,
-      reinterpret_cast<const unsigned char *>(this->font->data.data()),
-      std::ref(this->font->packedChar), std::ref(this->font->atlasBitmap),
-      pointSize, this->font->sheetSize);
+  this->sheetSize = pointSize * 64;
+  this->data = (const char *)buffer.data();
+  this->future =
+      std::async(std::launch::async, loadCore,
+                 reinterpret_cast<const unsigned char *>(this->data.data()),
+                 std::ref(this->packedChar), std::ref(this->atlasBitmap),
+                 pointSize, this->sheetSize);
+  Graphics::addPreDrawFunc([this]() {
+    if (!this->loaded) {
+      if (this->future.valid()) {
+        this->future.wait();
+        this->texture.loadFromMemory(this->atlasBitmap.data(), this->sheetSize,
+                                     this->sheetSize,
+                                     rhi::TextureFormat::R8G8B8A8_UNORM, 4);
+        this->loaded = true;
+      }
+    }
+  });
   return true;
 }
 
 void Font::unload() {}
 
 void Font::resize(int point_size) {}
-Texture Font::getAtlas() const { return this->font->texture; }
+Texture Font::getAtlas() const { return this->texture; }
 
 const char *utf8ToCodepoint(const char *p, uint32_t *out_cp) {
   unsigned char c = (unsigned char)*p;
@@ -174,18 +195,6 @@ const char *utf8ToCodepoint(const char *p, uint32_t *out_cp) {
 
 Ptr<Mesh> Font::getTextMesh(StringView text) const {
 
-  assert(this->font);
-
-  if (!this->font->loaded) {
-    if (this->font->future.valid()) {
-      this->font->future.wait();
-      this->font->texture.loadFromMemory(
-          this->font->atlasBitmap.data(), this->font->sheetSize,
-          this->font->sheetSize, rhi::TextureFormat::R8G8B8A8_UNORM, 4);
-      this->font->loaded = true;
-    }
-  }
-
   auto textMesh = makePtr<Mesh>();
   float x = 0.f, y = 0.f;
   Vec2 yrange(Math::infinity, Math::negInfinity);
@@ -209,9 +218,9 @@ Ptr<Mesh> Font::getTextMesh(StringView text) const {
       idx2 = cp - asciiRange.first;
     }
 
-    uint32_t sheetSize = this->font->sheetSize;
-    stbtt_GetPackedQuad(this->font->packedChar[idx1].data(), sheetSize,
-                        sheetSize, idx2, &x, &y, &q, 1);
+    uint32_t sheetSize = this->sheetSize;
+    stbtt_GetPackedQuad(this->packedChar[idx1].data(), sheetSize, sheetSize,
+                        idx2, &x, &y, &q, 1);
     uint32_t startIndex = textMesh->vertices.size();
     auto &vertices = textMesh->vertices;
     vertices.push_back(Vertex{

@@ -10,7 +10,6 @@
 #include <platform/io/asset_io.hpp>
 #include <platform/window/window.hpp>
 
-
 #include <asset/font/default/mplus-1p-medium.ttf.hpp>
 #include <asset/script/script.hpp>
 #include <graphics/rhi/rhi.hpp>
@@ -47,6 +46,7 @@ Color Graphics::clearColor = Palette::black();
 // Renderer
 bool Graphics::showImGui = false;
 std::list<std::function<void()>> Graphics::imguiFunctions;
+std::list<std::function<void()>> Graphics::preDrawFuncs;
 Model Graphics::box = Model();
 Model Graphics::sprite = Model();
 
@@ -165,6 +165,11 @@ void Graphics::shutdown() {
 }
 
 void Graphics::render() {
+  for (auto &f : preDrawFuncs) {
+    f();
+  }
+  preDrawFuncs.clear();
+
   auto commandBuffer = device->acquireCommandBuffer({GlobalAllocator::get()});
   if (commandBuffer == nullptr) {
     return;

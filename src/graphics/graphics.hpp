@@ -16,7 +16,6 @@
 #include <math/color/palette.hpp>
 #include <math/geometry/rect.hpp>
 #include <math/math.hpp>
-#include <platform/window/window.hpp>
 
 namespace sinen {
 class Graphics {
@@ -63,8 +62,6 @@ public:
   static Color getClearColor() { return clearColor; }
   static void toggleShowImGui() { showImGui = !showImGui; }
   static bool isShowImGui() { return showImGui; }
-  static void loadShader(const Shader &shaderinfo);
-  static void unloadShader(const Shader &shaderinfo);
   static std::list<std::function<void()>> &getImGuiFunction() {
     return imguiFunctions;
   }
@@ -74,11 +71,6 @@ public:
   static void addImGuiFunction(std::function<void()> function) {
     imguiFunctions.push_back(function);
   }
-  static void bindPipeline(const GraphicsPipeline &pipeline);
-  static void bindDefaultPipeline3D();
-  static void bindDefaultPipeline2D();
-  static void setUniformBuffer(uint32_t slot, const Buffer &data);
-
   static void setRenderTarget(const RenderTexture &texture);
   static void flush();
   static bool readbackTexture(const RenderTexture &texture, Texture &out);
@@ -87,10 +79,6 @@ public:
   static Model sprite;
 
   static Ptr<rhi::Device> getDevice() { return device; }
-
-  inline static GraphicsPipeline pipeline2D;
-  inline static GraphicsPipeline pipeline3D;
-  inline static GraphicsPipeline pipelineInstanced3D;
 
 private:
   static void beginRenderPass(bool depthEnabled, rhi::LoadOp loadOp);

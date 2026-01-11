@@ -4,7 +4,6 @@ GUI_MANAGER = require("gui/gui_manager")()
 
 local exampleDirs = sn.Filesystem.enumerateDirectory(".")
 local numExamples = 13
-sn.Graphics.bindPipeline(sn.BuiltinPipelines.get2D())
 function Setup()
 end
 

@@ -30,8 +30,6 @@ sn.Physics.addCollider(sphereCollider, true)
 
 sn.Graphics.getCamera():lookat(sn.Vec3.new(0, 10, 25), sn.Vec3.new(0, 0, 0), sn.Vec3.new(0, 1, 0))
 
-sn.Graphics.bindPipeline(sn.BuiltinPipelines.get3D())
-
 function Update()
     if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")

@@ -38,20 +38,9 @@ sn.Graphics.getCamera():lookat(pos, at, up)
 
 
 local vertex_shader = sn.Shader.new()
-vertex_shader:compileLoadVertexShader("shader_custom.slang")
+vertex_shader:compileAndLoad("shader_custom.slang", sn.ShaderStage.Vertex)
 local fragment_shader = sn.Shader.new()
-fragment_shader:compileLoadFragmentShader("shader_custom.slang")
-local vsCubemap = sn.Shader.new()
-vsCubemap:compileLoadVertexShader("cubemap.slang")
-local fsCubemap = sn.Shader.new()
-fsCubemap:compileLoadFragmentShader("cubemap.slang")
-
-local cubemapPipeline = sn.GraphicsPipeline.new()
-cubemapPipeline:setVertexShader(vsCubemap)
-cubemapPipeline:setFragmentShader(fsCubemap)
-cubemapPipeline:setEnableDepthTest(false)
-cubemapPipeline:build()
-
+fragment_shader:compileAndLoad("shader_custom.slang", sn.ShaderStage.Fragment)
 
 local pipeline3d = sn.GraphicsPipeline.new()
 pipeline3d:setVertexShader(vertex_shader)
@@ -59,6 +48,7 @@ pipeline3d:setFragmentShader(fragment_shader)
 pipeline3d:setEnableTangent(true)
 pipeline3d:setEnableDepthTest(true)
 pipeline3d:build()
+material:setGraphicsPipeline(pipeline3d)
 
 local light_pos = sn.Vec3.new(2, 0, 0)
 local light_intensity = 2.5
@@ -98,11 +88,9 @@ function Update()
 end
 
 function Draw()
-    sn.Graphics.bindPipeline(cubemapPipeline)
     sn.Graphics.drawCubemap(cubemap)
 
-    sn.Graphics.bindPipeline(pipeline3d)
-    sn.Graphics.setUniformBuffer(1, sn.Buffer.new(uniform_data))
+    material:setUniformBuffer(1, sn.Buffer.new(uniform_data))
     sn.Graphics.drawModel(model, transform, material)
     sn.Graphics.drawModel(model, light_transform, material)
 end

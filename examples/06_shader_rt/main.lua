@@ -5,9 +5,9 @@ local draw2d = sn.Draw2D.new(texture)
 draw2d.scale = texture:size()
 
 local vertex_shader = sn.Shader.new()
-vertex_shader:compileLoadVertexShader("shader_custom.slang")
+vertex_shader:compileAndLoad("shader_custom.slang", sn.ShaderStage.Vertex)
 local fragment_shader = sn.Shader.new()
-fragment_shader:compileLoadFragmentShader("shader_custom.slang")
+fragment_shader:compileAndLoad("shader_custom.slang", sn.ShaderStage.Fragment)
 
 local pipeline2d = sn.GraphicsPipeline.new()
 pipeline2d:setVertexShader(vertex_shader)

@@ -58,10 +58,12 @@ sn = {
     ---@field new fun(): sn.Material
     ---Set Texture. index is 1-based, optional.
     ---@field setTexture fun(self:sn.Material, texture: sn.Texture, index: integer?)
+    ---@field insertTexture fun(self: sn.Material, texture: sn.Texture, index:integer)
     ---@field appendTexture fun(self: sn.Material, texture: sn.Texture)
     ---@field clear fun(self: sn.Material)
     ---@field getTexture fun(self: sn.Material, index: integer): sn.Texture
-    ---@field setCubemap fun(self: sn.Material, cubemap: sn.Cubemap, index: integer)
+    ---@field setGraphicsPipeline fun(self: sn.Material, pipeline:sn.GraphicsPipeline)
+    ---@field setUniformBuffer fun(self:sn.Material,slotIndex : number, uniformBuffer: sn.Buffer)
     Material = {},
 
     ---@class sn.RenderTexture
@@ -133,10 +135,8 @@ sn = {
 
     ---@class sn.Shader
     ---@field new fun(): sn.Shader
-    ---@field loadVertexShader fun(self: sn.Shader, path: string, uniform_count: integer)
-    ---@field loadFragmentShader fun(self: sn.Shader, path: string, uniform_count: integer)
-    ---@field compileLoadVertexShader fun(self: sn.Shader, source: string)
-    ---@field compileLoadFragmentShader fun(self: sn.Shader, source: string)
+    ---@field load fun(self: sn.Shader, path: string, shaderStage: number, uniform_count: integer)
+    ---@field compileAndLoad fun(self: sn.Shader, source: string, shaderStage: number)
     Shader = {},
 
     ---@class sn.Font
@@ -280,10 +280,27 @@ sn = {
     Window = {},
 
     ---Static class
-    ---@class sn.BuiltinPipelines
-    ---@field get3D fun(): sn.GraphicsPipeline
-    ---@field get3DInstanced fun(): sn.GraphicsPipeline
-    ---@field get2D fun(): sn.GraphicsPipeline
+    ---@class sn.ShaderStage
+    ---@field Vertex number
+    ---@field Fragment number
+    ---@field Compute number
+    ShaderStage = {},
+
+    ---Static class
+    ---@class sn.BuiltinShader
+    ---@field getDefaultVS fun():sn.Shader
+    ---@field getDefaultFS fun():sn.Shader
+    ---@field getDefaultInstancedVS fun():sn.Shader
+    ---@field getCubemapVS fun():sn.Shader
+    ---@field getCubemapFS fun():sn.Shader
+    BuiltinShader = {},
+
+    ---Static class
+    ---@class sn.BuiltinPipeline
+    ---@field getDefault3D fun(): sn.GraphicsPipeline
+    ---@field getInstanced3D fun(): sn.GraphicsPipeline
+    ---@field getDefault2D fun(): sn.GraphicsPipeline
+    ---@field getCubemap fun(): sn.GraphicsPipeline
     BuiltinPipelines = {},
 
     ---Static class
@@ -295,7 +312,7 @@ sn = {
     ---@field drawText fun(text: string, font: sn.Font, position: sn.Vec2, color: sn.Color?, fontSize: number?,angle: number?)
     ---@field drawModel fun(model: sn.Model, transform: sn.Transform, material: sn.Material)
     ---@field drawModelInstanced fun(model: sn.Model, transforms: table, material: sn.Material)
-    ---@field drawCubemap fun(cubemap: sn.Cubemap)
+    ---@field drawCubemap fun(cubemap: sn.Texture)
     ---@field setCamera fun(camera: sn.Camera)
     ---@field getCamera fun(): sn.Camera
     ---@field setCamera2d fun(camera: sn.Camera2D)

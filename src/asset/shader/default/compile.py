@@ -9,6 +9,8 @@ shader_tasks = [
         "entry": "VSMain",
         "out": "shader_instance.vert.spv",
     },
+    {"src": "cubemap.slang", "entry": "FSMain", "out": "cubemap.frag.spv"},
+    {"src": "cubemap.slang", "entry": "VSMain", "out": "cubemap.vert.spv"},
 ]
 
 # 2. SPIR-V gen using slangc

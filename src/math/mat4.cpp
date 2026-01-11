@@ -293,7 +293,7 @@ Mat4 Mat4::perspective(const float angle, const float aspect, const float near,
 Mat4 Mat4::ortho(float width, float height, float near, float far) {
   float temp[4][4] = {{2.0f / width, 0.0f, 0.0f, 0.0f},
                       {0.0f, 2.0f / height, 0.0f, 0.0f},
-                      {0.0f, 0.0f, 1.0f / (far - near), near / (near - far)},
+                      {0.0f, 0.0f, -1.0f / (far - near), near / (near - far)},
                       {0.0f, 0.0f, 0.0f, 1.0f}};
   return Mat4(temp);
 }

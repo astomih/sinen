@@ -2,9 +2,9 @@ local texture = sn.Texture.new()
 local draw2d = sn.Draw2D.new()
 
 local vertex_shader = sn.Shader.new()
-vertex_shader:loadVertexShader("shader_custom.vert.spv", 1)
+vertex_shader:load("shader_custom.vert.spv", sn.ShaderStage.Vertex, 1)
 local fragment_shader = sn.Shader.new()
-fragment_shader:loadFragmentShader("shaderAlpha.frag.spv", 0)
+fragment_shader:load("shaderAlpha.frag.spv", sn.ShaderStage.Fragment, 0)
 
 local pipeline2d = sn.GraphicsPipeline.new()
 pipeline2d:setVertexShader(vertex_shader)

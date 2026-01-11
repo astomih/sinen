@@ -16,7 +16,9 @@ local pipeline = sn.GraphicsPipeline.new()
 ---@type sn.Buffer
 local uniformBuffer
 local modelMaterial = sn.Material.new()
+local modelDepthMaterial = sn.Material.new()
 local floorMaterial = sn.Material.new()
+local floorDepthMaterial = sn.Material.new()
 local floorTexture = sn.Texture.new()
 local camera = sn.Camera.new()
 
@@ -32,8 +34,8 @@ function Setup()
     shadowCamera:orthographic(20, 20, -10, 10.0)
     shadowCamera:lookat(sn.Vec3.new(0.5, 2, 2), sn.Vec3.new(0), sn.Vec3.new(0, 1, 0))
 
-    depthVS:compileLoadVertexShader("depth_write.slang")
-    depthFS:compileLoadFragmentShader("depth_write.slang")
+    depthVS:compileAndLoad("depth_write.slang", sn.ShaderStage.Vertex)
+    depthFS:compileAndLoad("depth_write.slang", sn.ShaderStage.Fragment)
 
     depthPipeline:setEnableDepthTest(true)
     depthPipeline:setVertexShader(depthVS)
@@ -44,8 +46,8 @@ function Setup()
     depthTexture:fill(sn.Color.new(1, 1, 1, 1))
 
 
-    vs:compileLoadVertexShader("shader.slang")
-    fs:compileLoadFragmentShader("shader.slang")
+    vs:compileAndLoad("shader.slang", sn.ShaderStage.Vertex)
+    fs:compileAndLoad("shader.slang", sn.ShaderStage.Fragment)
     pipeline:setEnableDepthTest(true)
     pipeline:setVertexShader(vs)
     pipeline:setFragmentShader(fs)
@@ -55,13 +57,20 @@ function Setup()
 
     modelMaterial:appendTexture(model:getMaterial():getTexture(0))
     modelMaterial:appendTexture(depthTexture)
+    modelMaterial:setGraphicsPipeline(pipeline)
+    modelMaterial:setUniformBuffer(1, uniformBuffer)
 
     floorTexture:fill(sn.Color.new(1))
     floorMaterial:appendTexture(floorTexture)
     floorMaterial:appendTexture(depthTexture)
+    floorMaterial:setGraphicsPipeline(pipeline)
+    floorMaterial:setUniformBuffer(1, uniformBuffer)
 
     camera:perspective(70, 16.0 / 9.0, 0.1, 100)
     camera:lookat(sn.Vec3.new(0, 1, 5), sn.Vec3.new(0), sn.Vec3.new(0, 1, 0))
+
+    modelDepthMaterial:setGraphicsPipeline(depthPipeline)
+    floorDepthMaterial:setGraphicsPipeline(depthPipeline)
 end
 
 function Update()
@@ -72,18 +81,15 @@ end
 
 function Draw()
     -- depth write pipeline
-    sn.Graphics.bindPipeline(depthPipeline)
     sn.Graphics.setRenderTarget(depthRenderTexture)
     sn.Graphics.setCamera(shadowCamera)
-    sn.Graphics.drawModel(model, modelTransform, modelMaterial)
-    sn.Graphics.drawModel(floor, floorTransform, floorMaterial)
+    sn.Graphics.drawModel(model, modelTransform, modelDepthMaterial)
+    sn.Graphics.drawModel(floor, floorTransform, floorDepthMaterial)
     sn.Graphics.flush()
     sn.Graphics.readbackTexture(depthRenderTexture, depthTexture)
 
     -- Lighting
-    sn.Graphics.bindPipeline(pipeline)
     sn.Graphics.setCamera(camera)
-    sn.Graphics.setUniformBuffer(1, uniformBuffer)
     sn.Graphics.drawModel(model, modelTransform, modelMaterial)
     sn.Graphics.drawModel(floor, floorTransform, floorMaterial)
 end

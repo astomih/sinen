@@ -25,13 +25,14 @@ function Setup()
     local up = sn.Vec3.new(0, 1, 0)
     sn.Graphics.getCamera():lookat(pos, at, up)
 
-    vertex_shader:compileLoadVertexShader("shader_custom.slang")
-    fragment_shader:compileLoadFragmentShader("shader_custom.slang")
+    vertex_shader:compileAndLoad("shader_custom.slang", sn.ShaderStage.Vertex)
+    fragment_shader:compileAndLoad("shader_custom.slang", sn.ShaderStage.Fragment)
     pipeline3d:setVertexShader(vertex_shader)
     pipeline3d:setFragmentShader(fragment_shader)
     pipeline3d:setEnableTangent(true)
     pipeline3d:setEnableDepthTest(true)
     pipeline3d:build()
+    material:setGraphicsPipeline(pipeline3d)
 
     uniform_data[1] = pos
     uniform_data[2] = light_pos
@@ -68,8 +69,7 @@ function Update()
 end
 
 function Draw()
-    sn.Graphics.bindPipeline(pipeline3d)
-    sn.Graphics.setUniformBuffer(1, sn.Buffer.new(uniform_data))
+    material:setUniformBuffer(1, sn.Buffer.new(uniform_data))
     sn.Graphics.drawModel(model, transform, material)
     sn.Graphics.drawModel(model, light_transform, material)
 end

@@ -12,6 +12,8 @@
 #include <core/core.hpp>
 #include <core/data/ptr.hpp>
 #include <graphics/graphics.hpp>
+#include <math/geometry/skinned_vertex.hpp>
+#include <math/geometry/vertex.hpp>
 #include <math/math.hpp>
 #include <platform/io/asset_io.hpp>
 

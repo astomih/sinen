@@ -11,6 +11,12 @@ enum class BufferType {
 class Buffer {
 public:
   Buffer(const BufferType &type, Ptr<void> data, size_t size);
+
+  Buffer(const Buffer &) = default;
+  Buffer(Buffer &&) = default;
+  Buffer &operator=(const Buffer &) = default;
+  Buffer &operator=(Buffer &&) = default;
+
   int size() const;
   BufferType type() const;
   void *data() const;

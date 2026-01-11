@@ -2,6 +2,7 @@
 #include "script.hpp"
 
 #include <asset/asset.hpp>
+#include <asset/shader/builtin_shader.hpp>
 #include <core/allocator/global_allocator.hpp>
 #include <core/buffer/buffer.hpp>
 #include <core/core.hpp>
@@ -9,6 +10,7 @@
 #include <core/data/string.hpp>
 #include <core/def/types.hpp>
 #include <core/event/event.hpp>
+#include <graphics/builtin_pipeline.hpp>
 #include <graphics/graphics.hpp>
 #include <math/graph/bfs_grid.hpp>
 #include <math/math.hpp>
@@ -316,6 +318,9 @@ bool Script::initialize() {
   {
     auto v = lua.new_usertype<Material>("Material");
     v["appendTexture"] = &Material::appendTexture;
+    v["insertTexture"] = [](Material &m, const Texture &texture, Size index) {
+      m.insertTexture(texture, index - 1);
+    };
     v["setTexture"] = sol::overload(
         [](Material &m, const Texture &texture) { m.setTexture(texture); },
         [](Material &m, const Texture &texture, size_t index) {
@@ -323,6 +328,8 @@ bool Script::initialize() {
         });
     v["getTexture"] = &Material::getTexture;
     v["clear"] = &Material::clear;
+    v["setGraphicsPipeline"] = &Material::setGraphicsPipeline;
+    v["setUniformBuffer"] = &Material::setUniformBuffer;
   }
   {
     auto v = lua.new_usertype<RenderTexture>("RenderTexture");
@@ -414,12 +421,9 @@ bool Script::initialize() {
     v["setLinearVelocity"] = &Collider::setLinearVelocity;
   }
   {
-
     auto v = lua.new_usertype<Shader>("Shader");
-    v["loadVertexShader"] = &Shader::loadVertexShader;
-    v["loadFragmentShader"] = &Shader::loadFragmentShader;
-    v["compileLoadVertexShader"] = &Shader::compileAndLoadVertexShader;
-    v["compileLoadFragmentShader"] = &Shader::compileAndLoadFragmentShader;
+    v["load"] = &Shader::load;
+    v["compileAndLoad"] = &Shader::compileAndLoad;
   }
   {
     auto v = lua.new_usertype<GraphicsPipeline>("GraphicsPipeline");
@@ -541,10 +545,25 @@ bool Script::initialize() {
     v["addCollider"] = &Physics::addCollider;
   }
   {
-    auto v = lua.create_named("BuiltinPipelines");
-    v["get3D"] = &BuiltinPipelines::get3D;
-    v["get3DInstanced"] = &BuiltinPipelines::get3DInstanced;
-    v["get2D"] = &BuiltinPipelines::get2D;
+    auto v = lua.create_named("ShaderStage");
+    v["Vertex"] = static_cast<UInt32>(ShaderStage::Vertex);
+    v["Fragment"] = static_cast<UInt32>(ShaderStage::Fragment);
+    v["Compute"] = static_cast<UInt32>(ShaderStage::Compute);
+  }
+  {
+    auto v = lua.create_named("BuiltinShader");
+    v["getDefaultVS"] = &BuiltinShader::getDefaultVS;
+    v["getDefaultFS"] = &BuiltinShader::getDefaultFS;
+    v["getDefaultInstancedVS"] = &BuiltinShader::getDefaultInstancedVS;
+    v["getCubemapVS"] = &BuiltinShader::getCubemapVS;
+    v["getCubemapFS"] = &BuiltinShader::getCubemapFS;
+  }
+  {
+    auto v = lua.create_named("BuiltinPipeline");
+    v["getDefault3D"] = &BuiltinPipeline::getDefault3D;
+    v["getInstanced3D"] = &BuiltinPipeline::getInstanced3D;
+    v["getDefault2D"] = &BuiltinPipeline::getDefault2D;
+    v["getCubemap"] = &BuiltinPipeline::getCubemap;
   }
   {
     auto v = lua.create_named("Event");
@@ -600,8 +619,6 @@ bool Script::initialize() {
     v["getCamera2d"] = &Graphics::getCamera2D;
     v["getClearColor"] = &Graphics::getClearColor;
     v["setClearColor"] = &Graphics::setClearColor;
-    v["bindPipeline"] = &Graphics::bindPipeline;
-    v["setUniformBuffer"] = &Graphics::setUniformBuffer;
     v["setRenderTarget"] = &Graphics::setRenderTarget;
     v["flush"] = &Graphics::flush;
     v["readbackTexture"] = &Graphics::readbackTexture;

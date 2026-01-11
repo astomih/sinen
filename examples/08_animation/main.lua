@@ -1,38 +1,42 @@
-local texture = sn.Texture.new()
-texture:fill(sn.Color.new(1, 1, 1, 1))
-local model = sn.Model.new()
-model:load("BrainStem.glb")
-local draw3d = sn.Draw3D.new(texture)
-draw3d.position = sn.Vec3.new(0, 0, 0)
-draw3d.model = model
-draw3d.material = model:getMaterial()
+local model
+local material
+function Setup()
+    model = sn.Model.new()
+    model:load("BrainStem.glb")
+    local texture = sn.Texture.new()
+    texture:fill(sn.Color.new(1, 1, 1, 1))
 
-local vertex_shader = sn.Shader.new()
-vertex_shader:compileLoadVertexShader("skinning.slang")
-local fragment_shader = sn.Shader.new()
-fragment_shader:compileLoadFragmentShader("skinning.slang")
+    material = model:getMaterial()
+    material:appendTexture(texture)
 
-local pipeline = sn.GraphicsPipeline.new()
-pipeline:setVertexShader(vertex_shader)
-pipeline:setFragmentShader(fragment_shader)
-pipeline:setEnableDepthTest(true)
-pipeline:setEnableAnimation(true)
-pipeline:build()
-sn.Graphics.bindPipeline(pipeline)
+    local vs = sn.Shader.new()
+    local fs = sn.Shader.new()
 
+    local pipeline = sn.GraphicsPipeline.new()
+    vs:compileAndLoad("skinning.slang", sn.ShaderStage.Vertex)
+    fs:compileAndLoad("skinning.slang", sn.ShaderStage.Fragment)
 
-sn.Graphics.getCamera():lookat(sn.Vec3.new(0, -3, 1), sn.Vec3.new(0, 0, 1), sn.Vec3.new(0, 0, 1))
+    pipeline:setVertexShader(vs)
+    pipeline:setFragmentShader(fs)
+    pipeline:setEnableDepthTest(true)
+    pipeline:setEnableAnimation(true)
+    pipeline:build()
+    material:setGraphicsPipeline(pipeline)
 
-model:play(0)
+    sn.Graphics.getCamera():lookat(sn.Vec3.new(0, -3, 1), sn.Vec3.new(0, 0, 1), sn.Vec3.new(0, 0, 1))
+
+    model:play(0)
+end
+
 function Update()
     if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")
     end
     model:update(sn.Time.delta())
+    material:setUniformBuffer(1, model:getBoneUniformBuffer())
 end
 
 function Draw()
-    sn.Graphics.setUniformBuffer(1, model:getBoneUniformBuffer())
     -- Draw texture
-    sn.Graphics.drawModel(model, sn.Transform.new(), draw3d.material)
+    sn.Graphics.drawModel(model, sn.Transform.new(), material)
 end

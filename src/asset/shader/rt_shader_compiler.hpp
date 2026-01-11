@@ -1,7 +1,9 @@
 #ifndef SINEN_SHADER_COMPILER_HPP
 #define SINEN_SHADER_COMPILER_HPP
+#include "shader_stage.hpp"
 #include <core/data/array.hpp>
 #include <core/data/string.hpp>
+
 
 namespace sinen {
 class ShaderCompiler {
@@ -21,7 +23,7 @@ public:
 
   ShaderCompiler() = default;
 
-  Array<char> compile(StringView sourcePath, Type type, Language lang,
+  Array<char> compile(StringView sourcePath, ShaderStage stage, Language lang,
                       ReflectionData &reflectionData);
 };
 } // namespace sinen

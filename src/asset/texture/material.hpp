@@ -1,6 +1,8 @@
 #ifndef SINEN_MATERIAL_HPP
 #define SINEN_MATERIAL_HPP
 #include "texture.hpp"
+#include <core/data/hashmap.hpp>
+#include <graphics/graphics_pipeline.hpp>
 
 namespace sinen {
 /**
@@ -21,8 +23,9 @@ public:
     }
     textures[0] = texture;
   }
+  void insertTexture(const Texture &texture, Size index);
 
-  void setTexture(const Texture &texture, const size_t index) {
+  void setTexture(const Texture &texture, Size index) {
     if (index >= textures.size()) {
       textures.resize(index + 1);
     }
@@ -33,7 +36,7 @@ public:
 
   [[nodiscard]] bool hasTexture() const { return !textures.empty(); }
 
-  [[nodiscard]] bool hasTexture(const size_t index) const {
+  [[nodiscard]] bool hasTexture(Size index) const {
     return index < textures.size();
   }
 
@@ -47,8 +50,21 @@ public:
     return textures[index];
   }
 
+  void setGraphicsPipeline(const GraphicsPipeline &pipeline);
+  std::optional<GraphicsPipeline> getGraphicsPipeline() const {
+    return gfxPipeline;
+  }
+
+  void setUniformBuffer(UInt32 slotIndex, const Buffer &buffer);
+  std::optional<Buffer> getUniformBuffer(UInt32 slotIndex) const;
+  const Hashmap<UInt32, Buffer> &getUniformBuffers() const {
+    return uniformBuffer;
+  }
+
 private:
   Array<Texture> textures;
+  std::optional<GraphicsPipeline> gfxPipeline;
+  Hashmap<UInt32, Buffer> uniformBuffer;
 };
 } // namespace sinen
 

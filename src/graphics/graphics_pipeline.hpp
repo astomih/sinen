@@ -39,14 +39,6 @@ private:
   Ptr<rhi::GraphicsPipeline> pipeline;
   std::bitset<32> featureFlags;
 };
-
-class BuiltinPipelines {
-public:
-  static GraphicsPipeline get3D();
-  static GraphicsPipeline get3DInstanced();
-  static GraphicsPipeline get2D();
-};
-
 } // namespace sinen
 
 #endif // !SINEN_RENDER_PIPELINE_HPP

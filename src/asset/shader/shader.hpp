@@ -1,11 +1,8 @@
 #ifndef SINEN_SHADER_HPP
 #define SINEN_SHADER_HPP
+#include "shader_stage.hpp"
 #include <graphics/rhi/rhi.hpp>
 
-#include <memory>
-#include <string>
-#include <string_view>
-#include <vector>
 
 namespace sinen {
 /**
@@ -14,18 +11,14 @@ namespace sinen {
  */
 class Shader {
 public:
-  void loadDefaultVertexShader();
-  void loadDefaultVertexInstanceShader();
-  void loadDefaultFragmentShader();
-  void loadVertexShader(StringView vertex_shader, int numUniformData);
-  void loadFragmentShader(StringView fragment_shader, int numUniformData);
+  Shader() = default;
+  Shader(const Ptr<rhi::Shader> &raw) : shader(raw) {}
+  void load(StringView name, ShaderStage stage, int numUniformData);
+  void compileAndLoad(StringView name, ShaderStage stage);
 
-  void compileAndLoadVertexShader(StringView vertex_shader);
-  void compileAndLoadFragmentShader(StringView fragment_shader);
+  Ptr<rhi::Shader> getRaw() { return shader; }
 
 private:
-  friend class GraphicsPipeline2D;
-  friend class GraphicsPipeline;
   Ptr<rhi::Shader> shader;
 };
 } // namespace sinen

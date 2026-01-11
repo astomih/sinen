@@ -31,8 +31,8 @@ void GraphicsPipeline::build() {
   auto device = Graphics::getDevice();
 
   rhi::GraphicsPipeline::CreateInfo pipelineInfo{allocator};
-  pipelineInfo.vertexShader = this->vertexShader.shader;
-  pipelineInfo.fragmentShader = this->fragmentShader.shader;
+  pipelineInfo.vertexShader = this->vertexShader.getRaw();
+  pipelineInfo.fragmentShader = this->fragmentShader.getRaw();
   pipelineInfo.vertexInputState =
       CreateVertexInputState(allocator, featureFlags);
   pipelineInfo.primitiveType = rhi::PrimitiveType::TriangleList;
@@ -74,12 +74,6 @@ void GraphicsPipeline::build() {
       rhi::TextureFormat::D32_FLOAT_S8_UINT;
   this->pipeline = device->createGraphicsPipeline(pipelineInfo);
 }
-
-GraphicsPipeline BuiltinPipelines::get3D() { return Graphics::pipeline3D; }
-GraphicsPipeline BuiltinPipelines::get3DInstanced() {
-  return Graphics::pipelineInstanced3D;
-}
-GraphicsPipeline BuiltinPipelines::get2D() { return Graphics::pipeline2D; }
 
 rhi::VertexInputState CreateVertexInputState(Allocator *allocator,
                                              std::bitset<32> featureFlags) {

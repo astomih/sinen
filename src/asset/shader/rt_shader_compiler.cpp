@@ -23,8 +23,8 @@ void diagnoseIfNeeded(slang::IBlob *diagnosticsBlob) {
     std::cout << (const char *)diagnosticsBlob->getBufferPointer() << std::endl;
   }
 }
-ShaderCompiler::ReflectionData getReflectionData(slang::IComponentType *program,
-                                                 ShaderCompiler::Type type) {
+ShaderCompiler::ReflectionData
+getReflectionData(slang::IComponentType *program) {
   auto *programLayout = program->getLayout();
   ShaderCompiler::ReflectionData data;
   data.numUniformBuffers = 0;
@@ -62,7 +62,7 @@ ShaderCompiler::ReflectionData getReflectionData(slang::IComponentType *program,
   return data;
 }
 
-Array<char> ShaderCompiler::compile(StringView sourcePath, Type type,
+Array<char> ShaderCompiler::compile(StringView sourcePath, ShaderStage stage,
                                     Language lang,
                                     ReflectionData &reflectionData) {
 #if SINEN_USE_SLANG
@@ -117,12 +117,15 @@ Array<char> ShaderCompiler::compile(StringView sourcePath, Type type,
   {
     Slang::ComPtr<slang::IBlob> diagnosticsBlob;
     String entryPointName;
-    switch (type) {
-    case Type::VERTEX:
+    switch (stage) {
+    case ShaderStage::Vertex:
       entryPointName = "VSMain";
       break;
-    case Type::FRAGMENT:
+    case ShaderStage::Fragment:
       entryPointName = "FSMain";
+      break;
+    case ShaderStage::Compute:
+      entryPointName = "CSMain";
       break;
     default: // Unsupported type
       std::cout << "Unsupported shader type" << std::endl;
@@ -178,7 +181,7 @@ Array<char> ShaderCompiler::compile(StringView sourcePath, Type type,
   }
 
   // TODO: Get reflection (num bindings, etc.)
-  reflectionData = getReflectionData(linkedProgram, type);
+  reflectionData = getReflectionData(linkedProgram);
   Array<char> spirvData(spirvCode->getBufferSize());
   std::memcpy(spirvData.data(), spirvCode->getBufferPointer(),
               spirvCode->getBufferSize());

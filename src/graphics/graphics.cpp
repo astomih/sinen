@@ -12,6 +12,8 @@
 
 #include <asset/font/default/mplus-1p-medium.ttf.hpp>
 #include <asset/script/script.hpp>
+#include <asset/shader/builtin_shader.hpp>
+#include <graphics/builtin_pipeline.hpp>
 #include <graphics/rhi/rhi.hpp>
 #include <platform/window/window.hpp>
 
@@ -93,29 +95,8 @@ bool Graphics::initialize() {
   initInfo.MSAASamples = rhi::SampleCount::x1;
   imGuiImplParanoixaInit(&initInfo);
 
-  Shader vs;
-  vs.loadDefaultVertexShader();
-  Shader vsInstanced;
-  vsInstanced.loadDefaultVertexInstanceShader();
-  Shader fs;
-  fs.loadDefaultFragmentShader();
-
-  pipeline3D.setVertexShader(vs);
-  pipeline3D.setFragmentShader(fs);
-  pipeline3D.setEnableDepthTest(true);
-  pipeline3D.build();
-
-  pipelineInstanced3D.setVertexShader(vsInstanced);
-  pipelineInstanced3D.setFragmentShader(fs);
-  pipelineInstanced3D.setEnableInstanced(true);
-  pipelineInstanced3D.setEnableDepthTest(true);
-  pipelineInstanced3D.build();
-
-  pipeline2D.setVertexShader(vs);
-  pipeline2D.setFragmentShader(fs);
-  pipeline2D.setEnableDepthTest(false);
-  pipeline2D.build();
-  currentPipeline = pipeline2D;
+  BuiltinShader::initialize();
+  BuiltinPipeline::initialize();
 
   // Create depth stencil target
   {
@@ -395,6 +376,7 @@ void Graphics::drawBase3D(const sinen::Draw3D &draw3D) {
   renderPass->drawIndexedPrimitives(numIndices, numInstance, 0, 0, 0);
 }
 void Graphics::drawRect(const Rect &rect, const Color &color, float angle) {
+  currentPipeline = BuiltinPipeline::getDefault2D();
   sinen::Draw2D draw2D;
   draw2D.position = rect.p;
   draw2D.scale = rect.s;
@@ -408,6 +390,7 @@ void Graphics::drawRect(const Rect &rect, const Color &color, float angle) {
 }
 void Graphics::drawImage(const Texture &texture, const Rect &rect,
                          float angle) {
+  currentPipeline = BuiltinPipeline::getDefault2D();
   sinen::Draw2D draw2D;
   draw2D.position = rect.p;
   draw2D.scale = rect.s;
@@ -419,6 +402,7 @@ void Graphics::drawImage(const Texture &texture, const Rect &rect,
 }
 void Graphics::drawText(StringView text, const Font &font, const Vec2 &position,
                         const Color &color, float textSize, float angle) {
+  currentPipeline = BuiltinPipeline::getDefault2D();
   sinen::Draw2D draw2D;
   Model model;
   model.loadFromVertexArray(font.getTextMesh(text));
@@ -433,6 +417,7 @@ void Graphics::drawText(StringView text, const Font &font, const Vec2 &position,
   Graphics::drawBase2D(draw2D);
 }
 void Graphics::drawCubemap(const Texture &cubemap) {
+  currentPipeline = BuiltinPipeline::getCubemap();
   Transform transform;
   Model model;
   model.loadBox();
@@ -448,6 +433,17 @@ void Graphics::drawCubemap(const Texture &cubemap) {
 }
 void Graphics::drawModel(const Model &model, const Transform &transform,
                          const Material &material) {
+  const auto &uniformBuffers = material.getUniformBuffers();
+  for (const auto &i : uniformBuffers) {
+    currentCommandBuffer->pushUniformData(i.first, i.second.data(),
+                                          i.second.size());
+  }
+  const auto &pipeline = material.getGraphicsPipeline();
+  if (pipeline.has_value())
+    currentPipeline = pipeline.value();
+  else
+    currentPipeline = BuiltinPipeline::getDefault3D();
+
   sinen::Draw3D draw3D;
   draw3D.position = transform.position;
   draw3D.scale = transform.scale;
@@ -459,6 +455,16 @@ void Graphics::drawModel(const Model &model, const Transform &transform,
 void Graphics::drawModelInstanced(const Model &model,
                                   const Array<Transform> &transforms,
                                   const Material &material) {
+  const auto &uniformBuffers = material.getUniformBuffers();
+  for (const auto &i : uniformBuffers) {
+    currentCommandBuffer->pushUniformData(i.first, i.second.data(),
+                                          i.second.size());
+  }
+  const auto &pipeline = material.getGraphicsPipeline();
+  if (pipeline.has_value())
+    currentPipeline = pipeline.value();
+  else
+    currentPipeline = BuiltinPipeline::getInstanced3D();
   sinen::Draw3D draw3D;
   draw3D.position = Vec3{0, 0, 0};
   draw3D.scale = Vec3{1, 1, 1};
@@ -469,8 +475,6 @@ void Graphics::drawModelInstanced(const Model &model,
   Graphics::drawBase3D(draw3D);
 }
 
-void Graphics::loadShader(const Shader &shaderInfo) {}
-void Graphics::unloadShader(const Shader &shaderInfo) {}
 void Graphics::beginRenderPass(bool depthEnabled, rhi::LoadOp loadOp) {
   colorTargets[0].loadOp = loadOp;
   currentColorTargets = colorTargets;
@@ -530,14 +534,6 @@ void Graphics::setupShapes() {
   sprite.loadFromVertexArray(rect.createMesh());
 }
 
-void Graphics::bindPipeline(const GraphicsPipeline &pipeline) {
-  currentPipeline = pipeline;
-}
-void Graphics::bindDefaultPipeline3D() { currentPipeline = pipeline3D; }
-void Graphics::bindDefaultPipeline2D() { currentPipeline = pipeline2D; }
-void Graphics::setUniformBuffer(uint32_t slot, const Buffer &buffer) {
-  currentCommandBuffer->pushUniformData(slot, buffer.data(), buffer.size());
-}
 void Graphics::setRenderTarget(const RenderTexture &texture) {
   auto tex = texture.getTexture();
   if (tex == currentColorTargets[0].texture) {

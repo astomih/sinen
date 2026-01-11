@@ -14,7 +14,6 @@ local at = sn.Vec3.new(0)
 local up = sn.Vec3.new(0, 1, 0)
 function Setup()
     sn.Graphics.getCamera():lookat(pos, at, up)
-    sn.Graphics.bindPipeline(sn.BuiltinPipelines.get3D())
 end
 
 function Update()

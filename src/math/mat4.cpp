@@ -281,19 +281,17 @@ Mat4 Mat4::perspective(const float angle, const float aspect, const float near,
   const float yScale = Math::cot(angle / 2.0f);
   const float xScale = yScale / aspect;
 
-  const float A = far / (near - far);
-  const float B = (near * far) / (near - far);
-
-  float temp[4][4] = {{xScale, 0.0f, 0.0f, 0.0f},
-                      {0.0f, yScale, 0.0f, 0.0f},
-                      {0.0f, 0.0f, A, B},
-                      {0.0f, 0.0f, -1.0f, 0.0f}};
+  float temp[4][4] = {
+      {xScale, 0.0f, 0.0f, 0.0f},
+      {0.0f, yScale, 0.0f, 0.0f},
+      {0.0f, 0.0f, far / (near - far), (near * far) / (near - far)},
+      {0.0f, 0.0f, -1.0f, 0.0f}};
   return Mat4(temp);
 }
 Mat4 Mat4::ortho(float width, float height, float near, float far) {
   float temp[4][4] = {{2.0f / width, 0.0f, 0.0f, 0.0f},
                       {0.0f, 2.0f / height, 0.0f, 0.0f},
-                      {0.0f, 0.0f, -1.0f / (far - near), near / (near - far)},
+                      {0.0f, 0.0f, 1.0f / (near - far), near / (near - far)},
                       {0.0f, 0.0f, 0.0f, 1.0f}};
   return Mat4(temp);
 }

@@ -1,6 +1,5 @@
 local model = sn.Model.new()
 model:load("DamagedHelmet.glb")
-local material = model:getMaterial()
 local transforms = {}
 function Setup()
     for i = 0, 10 do
@@ -25,5 +24,5 @@ function Update()
 end
 
 function Draw()
-    sn.Graphics.drawModelInstanced(model, transforms, material)
+    sn.Graphics.drawModelInstanced(model, transforms)
 end

@@ -35,7 +35,6 @@ public:
   Vec2 position;
   float rotation;
   Vec2 scale;
-  Material material;
   Model model;
 };
 /**
@@ -62,7 +61,6 @@ public:
   Vec3 position;
   Vec3 rotation;
   Vec3 scale;
-  Material material;
   Array<Transform> worlds;
   const Model &getModel() const;
   Model model;

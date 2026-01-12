@@ -15,10 +15,6 @@ local fs = sn.Shader.new()
 local pipeline = sn.GraphicsPipeline.new()
 ---@type sn.Buffer
 local uniformBuffer
-local modelMaterial = sn.Material.new()
-local modelDepthMaterial = sn.Material.new()
-local floorMaterial = sn.Material.new()
-local floorDepthMaterial = sn.Material.new()
 local floorTexture = sn.Texture.new()
 local camera = sn.Camera.new()
 
@@ -55,22 +51,10 @@ function Setup()
 
     uniformBuffer = sn.Buffer.new({ shadowCamera })
 
-    modelMaterial:appendTexture(model:getMaterial():getTexture(0))
-    modelMaterial:appendTexture(depthTexture)
-    modelMaterial:setGraphicsPipeline(pipeline)
-    modelMaterial:setUniformBuffer(1, uniformBuffer)
-
     floorTexture:fill(sn.Color.new(1))
-    floorMaterial:appendTexture(floorTexture)
-    floorMaterial:appendTexture(depthTexture)
-    floorMaterial:setGraphicsPipeline(pipeline)
-    floorMaterial:setUniformBuffer(1, uniformBuffer)
 
     camera:perspective(70, 16.0 / 9.0, 0.1, 100)
     camera:lookat(sn.Vec3.new(0, 1, 5), sn.Vec3.new(0), sn.Vec3.new(0, 1, 0))
-
-    modelDepthMaterial:setGraphicsPipeline(depthPipeline)
-    floorDepthMaterial:setGraphicsPipeline(depthPipeline)
 end
 
 function Update()
@@ -82,14 +66,20 @@ end
 function Draw()
     -- depth write pipeline
     sn.Graphics.setRenderTarget(depthRenderTexture)
+    sn.Graphics.setGraphicsPipeline(depthPipeline)
     sn.Graphics.setCamera(shadowCamera)
-    sn.Graphics.drawModel(model, modelTransform, modelDepthMaterial)
-    sn.Graphics.drawModel(floor, floorTransform, floorDepthMaterial)
+    sn.Graphics.drawModel(model, modelTransform)
+
+    sn.Graphics.drawModel(floor, floorTransform)
     sn.Graphics.flush()
     sn.Graphics.readbackTexture(depthRenderTexture, depthTexture)
 
     -- Lighting
+    sn.Graphics.setGraphicsPipeline(pipeline)
+    sn.Graphics.setUniformBuffer(1, uniformBuffer)
+    sn.Graphics.setTexture(1, depthTexture)
     sn.Graphics.setCamera(camera)
-    sn.Graphics.drawModel(model, modelTransform, modelMaterial)
-    sn.Graphics.drawModel(floor, floorTransform, floorMaterial)
+    sn.Graphics.drawModel(model, modelTransform)
+    sn.Graphics.setTexture(0, floorTexture)
+    sn.Graphics.drawModel(floor, floorTransform)
 end

@@ -23,12 +23,10 @@ public:
   static bool initialize();
   static void shutdown();
   static void render();
-  static void setCamera2D(const Camera2D &camera) {
-    Graphics::camera2D = camera;
-  }
-  static Camera2D &getCamera2D() { return camera2D; }
-  static void setCamera(const Camera &camera) { Graphics::camera = camera; }
-  static Camera &getCamera() { return camera; }
+  static void setCamera2D(const Camera2D &camera);
+  static Camera2D &getCamera2D();
+  static void setCamera(const Camera &camera);
+  static Camera &getCamera();
   static void drawBase2D(const sinen::Draw2D &draw2D);
   static void drawBase3D(const sinen::Draw3D &draw3D);
   static void drawRect(const Rect &rect, const Color &color, float angle);
@@ -50,27 +48,22 @@ public:
     drawText(text, font, position, Palette::white(), 32.f, 0.0f);
   }
   static void drawCubemap(const Texture &cubemap);
-  static void drawModel(const Model &model, const Transform &transform,
-                        const Material &material);
+  static void drawModel(const Model &model, const Transform &transform);
   static void drawModelInstanced(const Model &model,
-                                 const Array<Transform> &transforms,
-                                 const Material &material);
-  static void setClearColor(const Color &color) {
-    if (color.r >= 0.f && color.g >= 0.f && color.b >= 0.f)
-      clearColor = color;
-  }
-  static Color getClearColor() { return clearColor; }
-  static void toggleShowImGui() { showImGui = !showImGui; }
-  static bool isShowImGui() { return showImGui; }
-  static std::list<std::function<void()>> &getImGuiFunction() {
-    return imguiFunctions;
-  }
-  static void addPreDrawFunc(std::function<void()> f) {
-    preDrawFuncs.push_back(f);
-  }
-  static void addImGuiFunction(std::function<void()> function) {
-    imguiFunctions.push_back(function);
-  }
+                                 const Array<Transform> &transforms);
+  static void setClearColor(const Color &color);
+  static Color getClearColor();
+  static void toggleShowImGui();
+  static bool isShowImGui();
+  static std::list<std::function<void()>> &getImGuiFunction();
+  static void addPreDrawFunc(std::function<void()> f);
+  static void addImGuiFunction(std::function<void()> function);
+  static void setGraphicsPipeline(const GraphicsPipeline &pipeline);
+  static void resetGraphicsPipeline();
+  static void setUniformBuffer(UInt32 slotIndex, const Buffer &buffer);
+  static void setTexture(UInt32 slotIndex, const Texture &texture);
+  static void resetTexture(UInt32 slotIndex);
+  static void resetAllTexture();
   static void setRenderTarget(const RenderTexture &texture);
   static void flush();
   static bool readbackTexture(const RenderTexture &texture, Texture &out);
@@ -78,38 +71,12 @@ public:
   static Model box;
   static Model sprite;
 
-  static Ptr<rhi::Device> getDevice() { return device; }
+  static Ptr<rhi::Device> getDevice();
 
 private:
   static void beginRenderPass(bool depthEnabled, rhi::LoadOp loadOp);
   static void prepareRenderPassFrame();
   static void setupShapes();
-  static Color clearColor;
-
-  inline static Camera camera;
-  inline static Camera2D camera2D;
-  // Renderer
-  static bool showImGui;
-  static std::list<std::function<void()>> imguiFunctions;
-  static std::list<std::function<void()>> preDrawFuncs;
-
-  inline static Ptr<rhi::Backend> backend;
-  inline static Ptr<rhi::Device> device;
-  inline static Ptr<rhi::Texture> depthTexture;
-  inline static Ptr<rhi::Sampler> sampler;
-  inline static GraphicsPipeline currentPipeline;
-  inline static Ptr<rhi::CommandBuffer> mainCommandBuffer;
-  inline static Ptr<rhi::CommandBuffer> currentCommandBuffer;
-  inline static Ptr<rhi::RenderPass> currentRenderPass;
-  inline static bool isFrameStarted = true;
-  inline static bool isPrevDepthEnabled = true;
-  inline static bool isChangedRenderTarget = false;
-  inline static uint32_t drawCallCountPerFrame = 0;
-  inline static Array<rhi::ColorTargetInfo> colorTargets =
-      Array<rhi::ColorTargetInfo>();
-  inline static rhi::DepthStencilTargetInfo depthStencilInfo;
-  inline static Array<rhi::ColorTargetInfo> currentColorTargets;
-  inline static rhi::DepthStencilTargetInfo currentDepthStencilInfo;
 };
 } // namespace sinen
 #endif // !SINEN_RENDER_SYSTEM_HPP

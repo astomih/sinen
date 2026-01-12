@@ -1,6 +1,5 @@
 local model = sn.Model.new()
 model:load("DamagedHelmet.glb")
-local material = model:getMaterial()
 local transform = sn.Transform.new()
 local light_transform = sn.Transform.new()
 local vertex_shader = sn.Shader.new()
@@ -32,7 +31,13 @@ function Setup()
     pipeline3d:setEnableTangent(true)
     pipeline3d:setEnableDepthTest(true)
     pipeline3d:build()
-    material:setGraphicsPipeline(pipeline3d)
+    sn.Graphics.setGraphicsPipeline(pipeline3d)
+
+    sn.Graphics.setTexture(1, model:getNormalTexture())
+    sn.Graphics.setTexture(2, model:getDiffuseRoughnessTexture())
+    sn.Graphics.setTexture(3, model:getMetalnessTexture())
+    sn.Graphics.setTexture(4, model:getEmissiveTexture())
+    sn.Graphics.setTexture(5, model:getLightMapTexture())
 
     uniform_data[1] = pos
     uniform_data[2] = light_pos
@@ -69,7 +74,7 @@ function Update()
 end
 
 function Draw()
-    material:setUniformBuffer(1, sn.Buffer.new(uniform_data))
-    sn.Graphics.drawModel(model, transform, material)
-    sn.Graphics.drawModel(model, light_transform, material)
+    sn.Graphics.setUniformBuffer(1, sn.Buffer.new(uniform_data))
+    sn.Graphics.drawModel(model, transform)
+    sn.Graphics.drawModel(model, light_transform)
 end

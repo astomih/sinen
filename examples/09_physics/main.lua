@@ -1,12 +1,8 @@
 local boxTex = sn.Texture.new()
 boxTex:fill(sn.Color.new(1, 1, 1, 1))
-local boxMat = sn.Material.new()
-boxMat:appendTexture(boxTex)
 
 local sphereTex = sn.Texture.new()
 sphereTex:fill(sn.Color.new(1, 0, 0, 1))
-local sphereMat = sn.Material.new()
-sphereMat:appendTexture(sphereTex)
 
 local box = sn.Model.new()
 box:loadBox()
@@ -46,8 +42,11 @@ function Update()
 end
 
 function Draw()
-    sn.Graphics.drawModel(sphere, sphereTransform, sphereMat)
-    sn.Graphics.drawModel(box, boxTransform, boxMat)
+    sn.Graphics.setTexture(0, boxTex)
+    sn.Graphics.drawModel(box, boxTransform)
+
+    sn.Graphics.setTexture(0, sphereTex)
+    sn.Graphics.drawModel(sphere, sphereTransform)
     for _, c in ipairs(colliders) do
         local transform = sn.Transform.new()
         transform.position = c:getPosition()
@@ -55,7 +54,7 @@ function Draw()
             table.remove(colliders, _)
         else
             transform.scale = sn.Vec3.new(0.5)
-            sn.Graphics.drawModel(sphere, transform, sphereMat)
+            sn.Graphics.drawModel(sphere, transform)
         end
     end
 end

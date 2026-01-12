@@ -36,7 +36,7 @@ void Shader::load(StringView vertex_shader, ShaderStage stage,
     info.stage = rhi::ShaderStage::Vertex; // TODO
     break;
   }
-  info.numSamplers = 0;
+  info.numSamplers = stage==ShaderStage::Fragment?1:0;
   info.numStorageBuffers = 0;
   info.numStorageTextures = 0;
   info.numUniformBuffers = numUniformData + 1;

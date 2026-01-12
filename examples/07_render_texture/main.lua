@@ -21,12 +21,11 @@ function Update()
 end
 
 function Draw()
-    sn.Graphics.bindPipeline(sn.BuiltinPipelines.get3D())
+    sn.Graphics.resetGraphicsPipeline()
     sn.Graphics.setRenderTarget(renderTexture)
-    sn.Graphics.drawModel(model, transform, model:getMaterial())
+    sn.Graphics.drawModel(model, transform)
     -- Draw texture
     sn.Graphics.flush()
     sn.Graphics.readbackTexture(renderTexture, out)
-    sn.Graphics.bindPipeline(sn.BuiltinPipelines.get2D())
     sn.Graphics.drawImage(out, sn.Rect.new(0, 0, sx, sy))
 end

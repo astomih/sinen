@@ -1,8 +1,5 @@
 local texture = sn.Texture.new()
 texture:load("logo.png")
-local draw2d = sn.Draw2D.new(texture)
-
-draw2d.scale = texture:size()
 
 local vertex_shader = sn.Shader.new()
 vertex_shader:compileAndLoad("shader_custom.slang", sn.ShaderStage.Vertex)
@@ -14,7 +11,6 @@ pipeline2d:setVertexShader(vertex_shader)
 pipeline2d:setFragmentShader(fragment_shader)
 pipeline2d:setEnableDepthTest(false)
 pipeline2d:build()
-sn.Graphics.bindPipeline(pipeline2d)
 
 local uniformBuffer = sn.Buffer.new({
     2.0, 0.5, 0.5, 1.0
@@ -27,7 +23,8 @@ function Update()
 end
 
 function Draw()
+    sn.Graphics.setGraphicsPipeline(pipeline2d)
     sn.Graphics.setUniformBuffer(1, uniformBuffer)
     -- Draw texture
-    sn.Graphics.draw2D(draw2d)
+    sn.Graphics.drawImage(texture, sn.Rect.new(sn.Vec2.new(0), texture:size()))
 end

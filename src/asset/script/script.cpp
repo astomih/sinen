@@ -316,22 +316,6 @@ bool Script::initialize() {
     v["__tostring"] = textureStr;
   }
   {
-    auto v = lua.new_usertype<Material>("Material");
-    v["appendTexture"] = &Material::appendTexture;
-    v["insertTexture"] = [](Material &m, const Texture &texture, Size index) {
-      m.insertTexture(texture, index - 1);
-    };
-    v["setTexture"] = sol::overload(
-        [](Material &m, const Texture &texture) { m.setTexture(texture); },
-        [](Material &m, const Texture &texture, size_t index) {
-          m.setTexture(texture, index - 1);
-        });
-    v["getTexture"] = &Material::getTexture;
-    v["clear"] = &Material::clear;
-    v["setGraphicsPipeline"] = &Material::setGraphicsPipeline;
-    v["setUniformBuffer"] = &Material::setUniformBuffer;
-  }
-  {
     auto v = lua.new_usertype<RenderTexture>("RenderTexture");
     v["create"] = &RenderTexture::create;
   }
@@ -396,7 +380,12 @@ bool Script::initialize() {
     v["getBoneUniformBuffer"] = &Model::getBoneUniformBuffer;
     v["play"] = &Model::play;
     v["update"] = &Model::update;
-    v["getMaterial"] = &Model::getMaterial;
+    v["getBaseColorTexture"] = &Model::getBaseColorTexture;
+    v["getNormalTexture"] = &Model::getNormalTexture;
+    v["getDiffuseRoughnessTexture"] = &Model::getDiffuseRoughnessTexture;
+    v["getMetalnessTexture"] = &Model::getMetalnessTexture;
+    v["getEmissiveTexture"] = &Model::getEmissiveTexture;
+    v["getLightMapTexture"] = &Model::getLightMapTexture;
   }
   {
     auto v = lua.new_usertype<AABB>("AABB");
@@ -442,7 +431,6 @@ bool Script::initialize() {
     v["position"] = &Draw2D::position;
     v["rotation"] = &Draw2D::rotation;
     v["scale"] = &Draw2D::scale;
-    v["material"] = &Draw2D::material;
     v["add"] = &Draw2D::add;
     v["at"] = &Draw2D::at;
     v["clear"] = &Draw2D::clear;
@@ -455,7 +443,6 @@ bool Script::initialize() {
     v["position"] = &Draw3D::position;
     v["rotation"] = &Draw3D::rotation;
     v["scale"] = &Draw3D::scale;
-    v["material"] = &Draw3D::material;
     v["model"] = &Draw3D::model;
     v["add"] = &Draw3D::add;
     v["at"] = &Draw3D::at;
@@ -605,13 +592,13 @@ bool Script::initialize() {
         });
     v["drawCubemap"] = &Graphics::drawCubemap;
     v["drawModel"] = &Graphics::drawModel;
-    v["drawModelInstanced"] = [](const Model &model, sol::table transformsTable,
-                                 const Material &material) {
+    v["drawModelInstanced"] = [](const Model &model,
+                                 sol::table transformsTable) {
       Array<Transform> transforms;
       for (auto &item : transformsTable) {
         transforms.push_back(item.second.as<Transform>());
       }
-      Graphics::drawModelInstanced(model, transforms, material);
+      Graphics::drawModelInstanced(model, transforms);
     };
     v["setCamera"] = &Graphics::setCamera;
     v["getCamera"] = &Graphics::getCamera;
@@ -619,6 +606,12 @@ bool Script::initialize() {
     v["getCamera2d"] = &Graphics::getCamera2D;
     v["getClearColor"] = &Graphics::getClearColor;
     v["setClearColor"] = &Graphics::setClearColor;
+    v["setGraphicsPipeline"] = &Graphics::setGraphicsPipeline;
+    v["resetGraphicsPipeline"] = &Graphics::resetGraphicsPipeline;
+    v["setTexture"] = &Graphics::setTexture;
+    v["resetTexture"] = &Graphics::resetTexture;
+    v["resetAllTexture"] = &Graphics::resetAllTexture;
+    v["setUniformBuffer"] = &Graphics::setUniformBuffer;
     v["setRenderTarget"] = &Graphics::setRenderTarget;
     v["flush"] = &Graphics::flush;
     v["readbackTexture"] = &Graphics::readbackTexture;

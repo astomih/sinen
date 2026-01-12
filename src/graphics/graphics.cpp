@@ -1,5 +1,4 @@
 #include "graphics.hpp"
-
 #include <asset/texture/render_texture.hpp>
 #include <cassert>
 #include <core/allocator/global_allocator.hpp>
@@ -24,6 +23,30 @@
 #include <imgui_internal.h>
 
 namespace sinen {
+static Color clearColor = Palette::black();
+static Camera camera;
+static Camera2D camera2D;
+static bool showImGui = false;
+static std::list<std::function<void()>> imguiFunctions;
+static std::list<std::function<void()>> preDrawFuncs;
+static Ptr<rhi::Backend> backend;
+static Ptr<rhi::Device> device;
+static Ptr<rhi::Texture> depthTexture;
+static Ptr<rhi::Sampler> sampler;
+static std::optional<GraphicsPipeline> currentPipeline;
+static std::optional<GraphicsPipeline> customPipeline;
+static Ptr<rhi::CommandBuffer> mainCommandBuffer;
+static Ptr<rhi::CommandBuffer> currentCommandBuffer;
+static Ptr<rhi::RenderPass> currentRenderPass;
+static bool isFrameStarted = true;
+static bool isPrevDepthEnabled = true;
+static bool isChangedRenderTarget = false;
+static uint32_t drawCallCountPerFrame = 0;
+static Array<rhi::ColorTargetInfo> colorTargets = Array<rhi::ColorTargetInfo>();
+static rhi::DepthStencilTargetInfo depthStencilInfo;
+static Array<rhi::ColorTargetInfo> currentColorTargets;
+static rhi::DepthStencilTargetInfo currentDepthStencilInfo;
+static Hashmap<UInt32, rhi::TextureSamplerBinding> currentTextureBindings;
 void setFullWindowViewport(const Ptr<rhi::RenderPass> &renderPass) {
   Rect rect;
   // SDL_Rect safeArea;
@@ -44,14 +67,8 @@ void setFullWindowViewport(const Ptr<rhi::RenderPass> &renderPass) {
   renderPass->setViewport(viewport);
   renderPass->setScissor(rect.x, rect.y, rect.width, rect.height);
 }
-Color Graphics::clearColor = Palette::black();
-// Renderer
-bool Graphics::showImGui = false;
-std::list<std::function<void()>> Graphics::imguiFunctions;
-std::list<std::function<void()>> Graphics::preDrawFuncs;
 Model Graphics::box = Model();
 Model Graphics::sprite = Model();
-
 bool Graphics::initialize() {
   camera2D = Window::size();
   camera = []() {
@@ -211,6 +228,8 @@ void Graphics::render() {
   device->waitForGpuIdle();
 }
 void Graphics::drawBase2D(const sinen::Draw2D &draw2D) {
+  if (!currentPipeline.has_value())
+    currentPipeline = BuiltinPipeline::getDefault2D();
   auto vertexBufferBindings = Array<rhi::BufferBinding>{};
   auto indexBufferBinding = rhi::BufferBinding{};
   auto textureSamplers = Array<rhi::TextureSamplerBinding>{};
@@ -246,12 +265,6 @@ void Graphics::drawBase2D(const sinen::Draw2D &draw2D) {
   drawCallCountPerFrame++;
   prepareRenderPassFrame();
 
-  for (const auto &texture : draw2D.material.getTextures()) {
-    auto nativeTexture = texture.texture;
-    textureSamplers.push_back(rhi::TextureSamplerBinding{
-        .sampler = sampler, .texture = nativeTexture});
-  }
-
   const auto &model = draw2D.model;
   assert(model.vertexBuffer != nullptr);
   assert(model.indexBuffer != nullptr);
@@ -263,8 +276,10 @@ void Graphics::drawBase2D(const sinen::Draw2D &draw2D) {
 
   auto commandBuffer = currentCommandBuffer;
   auto renderPass = currentRenderPass;
-  renderPass->bindGraphicsPipeline(currentPipeline.get());
-  renderPass->bindFragmentSamplers(0, textureSamplers);
+  renderPass->bindGraphicsPipeline(currentPipeline.value().get());
+  for (auto &i : currentTextureBindings) {
+    renderPass->bindFragmentSampler(i.first, i.second);
+  }
   renderPass->bindVertexBuffers(0, vertexBufferBindings);
   renderPass->bindIndexBuffer(indexBufferBinding,
                               rhi::IndexElementSize::Uint32);
@@ -272,12 +287,19 @@ void Graphics::drawBase2D(const sinen::Draw2D &draw2D) {
   commandBuffer->pushUniformData(0, &mat, sizeof(Mat4) * 3);
   renderPass->drawIndexedPrimitives(model.getMesh()->indices.size(), 1, 0, 0,
                                     0);
+  currentPipeline = std::nullopt;
 }
 
 void Graphics::drawBase3D(const sinen::Draw3D &draw3D) {
+  if (!currentPipeline.has_value()) {
+    if (draw3D.worlds.size() > 0) {
+      currentPipeline = BuiltinPipeline::getInstanced3D();
+    } else {
+      currentPipeline = BuiltinPipeline::getDefault3D();
+    }
+  }
   auto vertexBufferBindings = Array<rhi::BufferBinding>();
   auto indexBufferBinding = rhi::BufferBinding{};
-  auto textureSamplers = Array<rhi::TextureSamplerBinding>();
   Mat4 mat[3];
   Array<Mat4> instanceData;
   {
@@ -295,16 +317,12 @@ void Graphics::drawBase3D(const sinen::Draw3D &draw3D) {
   drawCallCountPerFrame++;
   prepareRenderPassFrame();
 
-  for (const auto &texture : draw3D.material.getTextures()) {
-    auto nativeTexture = texture.texture;
-    textureSamplers.push_back(rhi::TextureSamplerBinding{
-        .sampler = sampler, .texture = nativeTexture});
-  }
-
   auto instanceSize = sizeof(Mat4) * instanceData.size();
   bool isInstance = instanceSize > 0;
   Ptr<rhi::Buffer> instanceBuffer = nullptr;
   if (isInstance) {
+    if (!currentPipeline.has_value())
+      currentPipeline = BuiltinPipeline::getInstanced3D();
     rhi::Buffer::CreateInfo instanceBufferInfo{};
     instanceBufferInfo.allocator = GlobalAllocator::get();
     instanceBufferInfo.size = instanceSize;
@@ -364,8 +382,10 @@ void Graphics::drawBase3D(const sinen::Draw3D &draw3D) {
   }
   auto commandBuffer = currentCommandBuffer;
   auto renderPass = currentRenderPass;
-  renderPass->bindGraphicsPipeline(currentPipeline.get());
-  renderPass->bindFragmentSamplers(0, textureSamplers);
+  renderPass->bindGraphicsPipeline(currentPipeline.value().get());
+  for (auto &i : currentTextureBindings) {
+    renderPass->bindFragmentSampler(i.first, i.second);
+  }
   renderPass->bindVertexBuffers(0, vertexBufferBindings);
   renderPass->bindIndexBuffer(indexBufferBinding,
                               rhi::IndexElementSize::Uint32);
@@ -374,35 +394,43 @@ void Graphics::drawBase3D(const sinen::Draw3D &draw3D) {
   uint32_t numIndices = model.getMesh()->indices.size();
   uint32_t numInstance = isInstance ? instanceSize : 1;
   renderPass->drawIndexedPrimitives(numIndices, numInstance, 0, 0, 0);
+  currentPipeline = std::nullopt;
 }
 void Graphics::drawRect(const Rect &rect, const Color &color, float angle) {
-  currentPipeline = BuiltinPipeline::getDefault2D();
+  if (customPipeline.has_value())
+    currentPipeline = customPipeline.value();
+  else
+    currentPipeline = BuiltinPipeline::getDefault2D();
   sinen::Draw2D draw2D;
   draw2D.position = rect.p;
   draw2D.scale = rect.s;
 
   draw2D.rotation = angle;
-  draw2D.material = Material();
   Texture texture;
   texture.fill(color);
-  draw2D.material.setTexture(texture);
+  setTexture(0, texture);
   Graphics::drawBase2D(draw2D);
 }
 void Graphics::drawImage(const Texture &texture, const Rect &rect,
                          float angle) {
-  currentPipeline = BuiltinPipeline::getDefault2D();
+  if (customPipeline.has_value())
+    currentPipeline = customPipeline.value();
+  else
+    currentPipeline = BuiltinPipeline::getDefault2D();
   sinen::Draw2D draw2D;
   draw2D.position = rect.p;
   draw2D.scale = rect.s;
 
   draw2D.rotation = angle;
-  draw2D.material = Material();
-  draw2D.material.setTexture(texture);
+  setTexture(0, texture);
   Graphics::drawBase2D(draw2D);
 }
 void Graphics::drawText(StringView text, const Font &font, const Vec2 &position,
                         const Color &color, float textSize, float angle) {
-  currentPipeline = BuiltinPipeline::getDefault2D();
+  if (customPipeline.has_value())
+    currentPipeline = customPipeline.value();
+  else
+    currentPipeline = BuiltinPipeline::getDefault2D();
   sinen::Draw2D draw2D;
   Model model;
   model.loadFromVertexArray(font.getTextMesh(text));
@@ -410,66 +438,55 @@ void Graphics::drawText(StringView text, const Font &font, const Vec2 &position,
   draw2D.position = position;
   Texture texture = font.getAtlas();
   draw2D.rotation = angle;
-  draw2D.material = Material();
-  draw2D.material.setTexture(texture);
+  setTexture(0, texture);
   draw2D.model = model;
   draw2D.scale = Vec2(textSize / static_cast<float>(font.size()));
   Graphics::drawBase2D(draw2D);
 }
 void Graphics::drawCubemap(const Texture &cubemap) {
-  currentPipeline = BuiltinPipeline::getCubemap();
+  if (customPipeline.has_value())
+    currentPipeline = customPipeline.value();
+  else
+    currentPipeline = BuiltinPipeline::getCubemap();
   Transform transform;
   Model model;
   model.loadBox();
-  Material material;
-  material.setTexture(cubemap);
+  setTexture(0, cubemap);
   sinen::Draw3D draw3D;
   draw3D.position = transform.position;
   draw3D.scale = transform.scale;
   draw3D.rotation = transform.rotation;
-  draw3D.material = material;
   draw3D.model = model;
   Graphics::drawBase3D(draw3D);
 }
-void Graphics::drawModel(const Model &model, const Transform &transform,
-                         const Material &material) {
-  const auto &uniformBuffers = material.getUniformBuffers();
-  for (const auto &i : uniformBuffers) {
-    currentCommandBuffer->pushUniformData(i.first, i.second.data(),
-                                          i.second.size());
-  }
-  const auto &pipeline = material.getGraphicsPipeline();
-  if (pipeline.has_value())
-    currentPipeline = pipeline.value();
+void Graphics::drawModel(const Model &model, const Transform &transform) {
+  if (customPipeline.has_value())
+    currentPipeline = customPipeline.value();
   else
     currentPipeline = BuiltinPipeline::getDefault3D();
+
+  if (model.hasBaseColorTexture())
+    setTexture(0, model.getBaseColorTexture());
 
   sinen::Draw3D draw3D;
   draw3D.position = transform.position;
   draw3D.scale = transform.scale;
   draw3D.rotation = transform.rotation;
-  draw3D.material = material;
   draw3D.model = model;
   Graphics::drawBase3D(draw3D);
 }
 void Graphics::drawModelInstanced(const Model &model,
-                                  const Array<Transform> &transforms,
-                                  const Material &material) {
-  const auto &uniformBuffers = material.getUniformBuffers();
-  for (const auto &i : uniformBuffers) {
-    currentCommandBuffer->pushUniformData(i.first, i.second.data(),
-                                          i.second.size());
-  }
-  const auto &pipeline = material.getGraphicsPipeline();
-  if (pipeline.has_value())
-    currentPipeline = pipeline.value();
+                                  const Array<Transform> &transforms) {
+  if (customPipeline.has_value())
+    currentPipeline = customPipeline.value();
   else
     currentPipeline = BuiltinPipeline::getInstanced3D();
+  if (model.hasBaseColorTexture())
+    setTexture(0, model.getBaseColorTexture());
   sinen::Draw3D draw3D;
   draw3D.position = Vec3{0, 0, 0};
   draw3D.scale = Vec3{1, 1, 1};
   draw3D.rotation = Vec3{0, 0, 0};
-  draw3D.material = material;
   draw3D.model = model;
   draw3D.worlds = transforms;
   Graphics::drawBase3D(draw3D);
@@ -492,7 +509,7 @@ void Graphics::beginRenderPass(bool depthEnabled, rhi::LoadOp loadOp) {
 }
 
 void Graphics::prepareRenderPassFrame() {
-  const bool depthEnabled = currentPipeline.getFeatureFlags().test(
+  const bool depthEnabled = currentPipeline.value().getFeatureFlags().test(
       GraphicsPipeline::FeatureFlag::DepthTest);
   if (isChangedRenderTarget) {
     isChangedRenderTarget = false;
@@ -533,6 +550,23 @@ void Graphics::setupShapes() {
   Rect rect;
   sprite.loadFromVertexArray(rect.createMesh());
 }
+void Graphics::setGraphicsPipeline(const GraphicsPipeline &pipeline) {
+  customPipeline = pipeline;
+}
+void Graphics::resetGraphicsPipeline() { customPipeline = std::nullopt; }
+void Graphics::setUniformBuffer(UInt32 slotIndex, const Buffer &buffer) {
+  currentCommandBuffer->pushUniformData(slotIndex, buffer.data(),
+                                        buffer.size());
+}
+void Graphics::setTexture(UInt32 slotIndex, const Texture &texture) {
+  currentTextureBindings.insert_or_assign(
+      slotIndex, rhi::TextureSamplerBinding{.sampler = sampler,
+                                            .texture = texture.texture});
+}
+void Graphics::resetTexture(UInt32 slotIndex) {
+  currentTextureBindings.erase(slotIndex);
+}
+void Graphics::resetAllTexture() { currentTextureBindings.clear(); }
 
 void Graphics::setRenderTarget(const RenderTexture &texture) {
   auto tex = texture.getTexture();
@@ -605,4 +639,25 @@ bool Graphics::readbackTexture(const RenderTexture &srcRenderTexture,
   currentRenderPass = nullptr;
   return true;
 }
+void Graphics::setCamera2D(const Camera2D &camera) { camera2D = camera; }
+Camera2D &Graphics::getCamera2D() { return camera2D; }
+void Graphics::setCamera(const Camera &_camera) { camera = _camera; }
+Camera &Graphics::getCamera() { return camera; }
+void Graphics::setClearColor(const Color &color) {
+  if (color.r >= 0.f && color.g >= 0.f && color.b >= 0.f)
+    clearColor = color;
+}
+Color Graphics::getClearColor() { return clearColor; }
+void Graphics::toggleShowImGui() { showImGui = !showImGui; }
+bool Graphics::isShowImGui() { return showImGui; }
+std::list<std::function<void()>> &Graphics::getImGuiFunction() {
+  return imguiFunctions;
+}
+void Graphics::addPreDrawFunc(std::function<void()> f) {
+  preDrawFuncs.push_back(f);
+}
+void Graphics::addImGuiFunction(std::function<void()> function) {
+  imguiFunctions.push_back(function);
+}
+Ptr<rhi::Device> Graphics::getDevice() { return device; }
 } // namespace sinen

@@ -63,6 +63,13 @@ void RenderPass::bindFragmentSamplers(
   SDL_BindGPUFragmentSamplers(this->renderPass, startSlot,
                               samplerBindings.data(), samplerBindings.size());
 }
+void RenderPass::bindFragmentSampler(UInt32 startSlot,
+                                     const TextureSamplerBinding &binding) {
+  SDL_GPUTextureSamplerBinding samplerBinding{};
+  samplerBinding.sampler = downCast<Sampler>(binding.sampler)->getNative();
+  samplerBinding.texture = downCast<Texture>(binding.texture)->getNative();
+  SDL_BindGPUFragmentSamplers(this->renderPass, startSlot, &samplerBinding, 1);
+}
 
 void RenderPass::setViewport(const Viewport &viewport) {
   SDL_GPUViewport vp = {viewport.x,      viewport.y,        viewport.width,

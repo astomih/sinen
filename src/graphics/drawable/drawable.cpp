@@ -12,7 +12,6 @@ Draw2D::Draw2D()
 }
 Draw2D::Draw2D(const Texture &texture)
     : position(Vec2(0.f, 0.f)), rotation(0.0f), scale(Vec2(1.f, 1.f)) {
-  this->material.setTexture(texture);
   this->model = Graphics::sprite;
 }
 Draw3D::Draw3D()
@@ -23,7 +22,6 @@ Draw3D::Draw3D()
 Draw3D::Draw3D(const Texture &texture)
     : position(Vec3(0.f, 0.f, 0.f)), rotation(Vec3(0.f, 0.f, 0.f)),
       scale(Vec3(1.f, 1.f, 1.f)) {
-  this->material.setTexture(texture);
   this->model = Graphics::box;
 }
 void Draw2D::add(const Vec2 &position, const float &rotation,

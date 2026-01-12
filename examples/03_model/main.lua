@@ -1,7 +1,5 @@
 local model = sn.Model.new()
 model:load("DamagedHelmet.glb")
-local material = model:getMaterial()
-
 
 local transform = sn.Transform.new()
 transform.position = sn.Vec3.new(0, 0, 0)
@@ -23,5 +21,5 @@ function Update()
 end
 
 function Draw()
-    sn.Graphics.drawModel(model, transform, material)
+    sn.Graphics.drawModel(model, transform)
 end

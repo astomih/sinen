@@ -28,6 +28,8 @@ public:
   virtual void
   bindFragmentSamplers(UInt32 slot,
                        const Array<TextureSamplerBinding> &bindings) = 0;
+  virtual void bindFragmentSampler(UInt32 startSlot,
+                                   const TextureSamplerBinding &binding) = 0;
   virtual void setViewport(const Viewport &viewport) = 0;
   virtual void setScissor(Int32 x, Int32 y, Int32 width, Int32 height) = 0;
   virtual void drawPrimitives(UInt32 numVertices, UInt32 numInstances,

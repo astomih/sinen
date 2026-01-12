@@ -2,14 +2,13 @@
 #define SINEN_MODEL_HPP
 #include "node.hpp"
 #include "skeletal_animation.hpp"
-#include <asset/texture/material.hpp>
+#include <asset/texture/texture.hpp>
 #include <core/buffer/buffer.hpp>
 #include <core/data/hashmap.hpp>
 #include <core/data/ptr.hpp>
 #include <graphics/rhi/rhi.hpp>
 #include <math/geometry/bbox.hpp>
 #include <math/geometry/mesh.hpp>
-
 
 namespace sinen {
 
@@ -42,8 +41,6 @@ public:
   Ptr<void> data;
   Buffer getBoneUniformBuffer() const;
 
-  Material getMaterial() const { return material; }
-
   const Ptr<Mesh> &getMesh() const { return mesh; }
 
   Ptr<rhi::Buffer> vertexBuffer;
@@ -59,10 +56,31 @@ public:
   using BoneMap = Hashmap<String, BoneInfo>;
   const BoneMap &getBoneMap() { return this->boneMap; }
 
+  bool hasBaseColorTexture() const { return baseColor.has_value(); }
+  Texture getBaseColorTexture() const { return baseColor.value(); }
+
+  bool hasNormalTexture() const { return normal.has_value(); }
+  Texture getNormalTexture() const { return normal.value(); }
+
+  bool hasDiffuseRoughnessTexture() const {
+    return diffuseRoughness.has_value();
+  }
+  Texture getDiffuseRoughnessTexture() const {
+    return diffuseRoughness.value();
+  }
+
+  bool hasMetalnessTexture() const { return metalness.has_value(); }
+  Texture getMetalnessTexture() const { return metalness.value(); }
+
+  bool hasEmissiveTexture() const { return emissive.has_value(); }
+  Texture getEmissiveTexture() const { return emissive.value(); }
+
+  bool hasLightMapTexture() const { return lightMap.has_value(); }
+  Texture getLightMapTexture() const { return lightMap.value(); }
+
 private:
   void loadBoneUniform(float time);
   float time = 0.0f;
-  Material material;
   AABB localAABB;
   String name;
   Ptr<Mesh> mesh;
@@ -70,6 +88,12 @@ private:
 
   SkeletalAnimation skeletalAnimation;
   BoneMap boneMap;
+  std::optional<Texture> baseColor;
+  std::optional<Texture> normal;
+  std::optional<Texture> diffuseRoughness;
+  std::optional<Texture> metalness;
+  std::optional<Texture> emissive;
+  std::optional<Texture> lightMap;
 };
 } // namespace sinen
 #endif // !SINEN_MODEL_HPP

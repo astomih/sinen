@@ -1,22 +1,27 @@
 local model = sn.Model.new()
 model:load("DamagedHelmet.glb")
-local material = model:getMaterial()
 
 local LUT = sn.Texture.new()
 LUT:load("citrus_orchard_road_puresky_2k/brdfLUT.png")
-material:setTexture(LUT, 7)
 
 local cubemap = sn.Texture.new()
 cubemap:loadCubemap("citrus_orchard_road_puresky_2k/citrus_orchard_road_puresky_2k.exr")
-material:setTexture(cubemap, 8)
 
 local irradiance = sn.Texture.new()
 irradiance:loadCubemap("citrus_orchard_road_puresky_2k/irradiance.exr")
-material:setTexture(irradiance, 9)
 
 local prefiltered = sn.Texture.new()
 prefiltered:loadCubemap("citrus_orchard_road_puresky_2k/m1.exr")
-material:setTexture(prefiltered, 10)
+
+sn.Graphics.setTexture(1, model:getNormalTexture())
+sn.Graphics.setTexture(2, model:getDiffuseRoughnessTexture())
+sn.Graphics.setTexture(3, model:getMetalnessTexture())
+sn.Graphics.setTexture(4, model:getEmissiveTexture())
+sn.Graphics.setTexture(5, model:getLightMapTexture())
+sn.Graphics.setTexture(6, LUT)
+sn.Graphics.setTexture(7, cubemap)
+sn.Graphics.setTexture(8, irradiance)
+sn.Graphics.setTexture(9, prefiltered)
 
 
 
@@ -48,7 +53,6 @@ pipeline3d:setFragmentShader(fragment_shader)
 pipeline3d:setEnableTangent(true)
 pipeline3d:setEnableDepthTest(true)
 pipeline3d:build()
-material:setGraphicsPipeline(pipeline3d)
 
 local light_pos = sn.Vec3.new(2, 0, 0)
 local light_intensity = 2.5
@@ -88,9 +92,11 @@ function Update()
 end
 
 function Draw()
+    sn.Graphics.resetGraphicsPipeline()
     sn.Graphics.drawCubemap(cubemap)
 
-    material:setUniformBuffer(1, sn.Buffer.new(uniform_data))
-    sn.Graphics.drawModel(model, transform, material)
-    sn.Graphics.drawModel(model, light_transform, material)
+    sn.Graphics.setGraphicsPipeline(pipeline3d)
+    sn.Graphics.setUniformBuffer(1, sn.Buffer.new(uniform_data))
+    sn.Graphics.drawModel(model, transform)
+    sn.Graphics.drawModel(model, light_transform)
 end

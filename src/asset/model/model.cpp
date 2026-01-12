@@ -300,55 +300,36 @@ std::optional<Texture> loadTexture(aiScene *scene, aiMaterial *material,
   }
   return texture;
 }
-void loadMaterial(aiScene *scene, Material &material) {
+void loadMaterial(aiScene *scene, std::optional<Texture> &baseColor,
+                  std::optional<Texture> &normal,
+                  std::optional<Texture> &diffuseRoughness,
+                  std::optional<Texture> &metalness,
+                  std::optional<Texture> &emissive,
+                  std::optional<Texture> &lightMap) {
   for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
-    {
-      auto texture =
+    if (!baseColor.has_value()) {
+      baseColor =
           loadTexture(scene, scene->mMaterials[i], aiTextureType_BASE_COLOR);
-      if (texture.has_value()) {
-        material.appendTexture(texture.value());
-      }
     }
-    {
-      auto texture =
-          loadTexture(scene, scene->mMaterials[i], aiTextureType_NORMALS);
-      if (texture.has_value()) {
-        material.appendTexture(texture.value());
-      }
+    if (!normal.has_value()) {
+      normal = loadTexture(scene, scene->mMaterials[i], aiTextureType_NORMALS);
     }
-    {
-      auto texture = loadTexture(scene, scene->mMaterials[i],
-                                 aiTextureType_DIFFUSE_ROUGHNESS);
-      if (texture.has_value()) {
-        material.appendTexture(texture.value());
-      }
+    if (!diffuseRoughness.has_value()) {
+      diffuseRoughness = loadTexture(scene, scene->mMaterials[i],
+                                     aiTextureType_DIFFUSE_ROUGHNESS);
     }
-    {
-      auto texture =
+    if (!metalness.has_value()) {
+      metalness =
           loadTexture(scene, scene->mMaterials[i], aiTextureType_METALNESS);
-      if (texture.has_value()) {
-        material.appendTexture(texture.value());
-      }
     }
-    {
-      auto texture =
+    if (!emissive.has_value()) {
+      emissive =
           loadTexture(scene, scene->mMaterials[i], aiTextureType_EMISSIVE);
-      if (texture.has_value()) {
-        material.appendTexture(texture.value());
-      }
     }
-    {
-      auto texture =
+    if (!lightMap.has_value()) {
+      lightMap =
           loadTexture(scene, scene->mMaterials[i], aiTextureType_LIGHTMAP);
-      if (texture.has_value()) {
-        material.appendTexture(texture.value());
-      }
     }
-  }
-  if (material.getTextureCount() == 0) {
-    Texture defaultTexture;
-    defaultTexture.fill(Color(1.f));
-    material.appendTexture(defaultTexture);
   }
 }
 
@@ -369,7 +350,8 @@ void Model::load(StringView path) {
   loadBone(scene, this->boneMap);
   loadAnimation(scene, this->skeletalAnimation, this->boneMap);
   loadMesh(scene, this->mesh, this->localAABB);
-  loadMaterial(const_cast<aiScene *>(scene), this->material);
+  loadMaterial(const_cast<aiScene *>(scene), baseColor, normal,
+               diffuseRoughness, metalness, emissive, lightMap);
   calcTangents(scene, this->mesh);
 
   auto viBuffer = createVertexIndexBuffer(mesh->vertices, mesh->indices);
@@ -400,7 +382,8 @@ void Model::load(const Buffer &buffer) {
   loadBone(scene, this->boneMap);
   loadAnimation(scene, this->skeletalAnimation, this->boneMap);
   loadMesh(scene, this->mesh, this->localAABB);
-  loadMaterial(const_cast<aiScene *>(scene), this->material);
+  loadMaterial(const_cast<aiScene *>(scene), baseColor, normal,
+               diffuseRoughness, metalness, emissive, lightMap);
   calcTangents(scene, this->mesh);
 
   auto viBuffer = createVertexIndexBuffer(mesh->vertices, mesh->indices);

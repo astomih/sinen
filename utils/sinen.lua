@@ -54,18 +54,6 @@ sn = {
     ---@field size fun(self: sn.Texture): sn.Vec2
     Texture = {},
 
-    ---@class sn.Material
-    ---@field new fun(): sn.Material
-    ---Set Texture. index is 1-based, optional.
-    ---@field setTexture fun(self:sn.Material, texture: sn.Texture, index: integer?)
-    ---@field insertTexture fun(self: sn.Material, texture: sn.Texture, index:integer)
-    ---@field appendTexture fun(self: sn.Material, texture: sn.Texture)
-    ---@field clear fun(self: sn.Material)
-    ---@field getTexture fun(self: sn.Material, index: integer): sn.Texture
-    ---@field setGraphicsPipeline fun(self: sn.Material, pipeline:sn.GraphicsPipeline)
-    ---@field setUniformBuffer fun(self:sn.Material,slotIndex : number, uniformBuffer: sn.Buffer)
-    Material = {},
-
     ---@class sn.RenderTexture
     ---@field new fun(): sn.RenderTexture
     ---@field create fun(self: sn.RenderTexture, x: integer, y: integer)
@@ -112,7 +100,12 @@ sn = {
     ---@field getBoneUniformBuffer fun(self: sn.Model): sn.Buffer
     ---@field play fun(self: sn.Model, positon: number)
     ---@field update fun(self: sn.Model, delta: number)
-    ---@field getMaterial fun(self: sn.Model): sn.Material
+    ---@field getBaseColorTexture fun(self:sn.Model):sn.Texture
+    ---@field getNormalTexture fun(self:sn.Model):sn.Texture
+    ---@field getDiffuseRoughnessTexture fun(self:sn.Model):sn.Texture
+    ---@field getMetalnessTexture fun(self:sn.Model):sn.Texture
+    ---@field getEmissiveTexture fun(self:sn.Model):sn.Texture
+    ---@field getLightMapTexture fun(self:sn.Model):sn.Texture
     Model = {},
 
     ---@class sn.AABB
@@ -164,7 +157,6 @@ sn = {
     ---@field scale sn.Vec2
     ---@field position sn.Vec2
     ---@field rotation number
-    ---@field material sn.Material
     ---@field add fun(self: sn.Draw2D, drawable: any)
     ---@field at fun(self: sn.Draw2D, x: number, y: number)
     ---@field clear fun(self: sn.Draw2D)
@@ -176,7 +168,6 @@ sn = {
     ---@field scale sn.Vec3
     ---@field position sn.Vec3
     ---@field rotation sn.Vec3
-    ---@field material sn.Material
     ---@field model sn.Model
     ---@field add fun(self: sn.Draw3D, positon: sn.Vec3, rotation: sn.Vec3, scale: sn.Vec3)
     ---@field at fun(self: sn.Draw3D, x: number, y: number, z: number)
@@ -310,8 +301,8 @@ sn = {
     ---@field drawRect fun(rect:sn.Rect, color: sn.Color, angle: number?)
     ---@field drawImage fun(texture: sn.Texture, rect:sn.Rect, angle: number?)
     ---@field drawText fun(text: string, font: sn.Font, position: sn.Vec2, color: sn.Color?, fontSize: number?,angle: number?)
-    ---@field drawModel fun(model: sn.Model, transform: sn.Transform, material: sn.Material)
-    ---@field drawModelInstanced fun(model: sn.Model, transforms: table, material: sn.Material)
+    ---@field drawModel fun(model: sn.Model, transform: sn.Transform)
+    ---@field drawModelInstanced fun(model: sn.Model, transforms: table)
     ---@field drawCubemap fun(cubemap: sn.Texture)
     ---@field setCamera fun(camera: sn.Camera)
     ---@field getCamera fun(): sn.Camera
@@ -319,7 +310,11 @@ sn = {
     ---@field getCamera2d fun(): sn.Camera2D
     ---@field getClearColor fun(): sn.Color
     ---@field setClearColor fun(c: sn.Color)
-    ---@field bindPipeline fun(pipe: sn.GraphicsPipeline)
+    ---@field setGraphicsPipeline fun(pipe: sn.GraphicsPipeline)
+    ---@field resetGraphicsPipeline fun()
+    ---@field setTexture fun(slotIndex : number, texture:sn.Texture)
+    ---@field resetTexture fun(slotIndex : number)
+    ---@field resetAllTexture fun()
     ---@field setUniformBuffer fun(binding: integer, data: sn.Buffer)
     ---@field setRenderTarget fun(rt: sn.RenderTexture)
     ---@field flush fun()

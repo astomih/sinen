@@ -5,6 +5,7 @@ GUI_MANAGER = require("gui/gui_manager")()
 local exampleDirs = sn.Filesystem.enumerateDirectory(".")
 local numExamples = 13
 function Setup()
+    sn.Graphics.resetGraphicsPipeline()
 end
 
 local offset = numExamples * 16.0

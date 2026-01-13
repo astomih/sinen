@@ -1,13 +1,6 @@
 #ifndef SINEN_PHYSICS_HPP
 #define SINEN_PHYSICS_HPP
 #include "collider.hpp"
-#include "primitive2.hpp"
-#include "primitive3.hpp"
-
-#include <cstdarg>
-#include <iostream>
-#include <memory>
-#include <thread>
 
 #include <math/transform/transform.hpp>
 
@@ -32,10 +25,6 @@ public:
                                          float radius, bool isStatic);
 
   static void addCollider(const Collider &collider, bool active);
-
-private:
-  class RawData;
-  static std::unique_ptr<RawData> raw;
 };
 } // namespace sinen
 #endif // SINEN_PHYSICS_HPP

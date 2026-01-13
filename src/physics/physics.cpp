@@ -3,8 +3,10 @@
 // STL includes
 #include <cstdarg>
 #include <iostream>
+#include <memory>
 #include <thread>
 
+#include <core/data/ptr.hpp>
 #include <core/def/types.hpp>
 #include <core/time/time.hpp>
 #include <math/matrix.hpp>
@@ -32,18 +34,9 @@ Vec3 Collider::getVelocity() const { return Physics::getVelocity(*this); }
 void Collider::setLinearVelocity(const Vec3 &velocity) const {
   Physics::setLinearVelocity(*this, velocity);
 }
-struct Physics::RawData {
-
-  RawData(size_t allocatorSize)
-      : tempAllocator(allocatorSize),
-        jobSystem(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers,
-                  std::thread::hardware_concurrency() - 1) {}
-
-  JPH::PhysicsSystem physicsSystem;
-  JPH::TempAllocatorImpl tempAllocator;
-  JPH::JobSystemThreadPool jobSystem;
-};
-std::unique_ptr<Physics::RawData> Physics::raw = nullptr;
+static UniquePtr<JPH::PhysicsSystem> physicsSystem;
+static UniquePtr<JPH::TempAllocatorImpl> tempAllocator;
+static UniquePtr<JPH::JobSystemThreadPool> jobSystem;
 static void traceImplement(const char *inFMT, ...) {
   va_list list;
   va_start(list, inFMT);
@@ -201,7 +194,11 @@ bool Physics::initialize() {
 
   JPH::RegisterTypes();
 
-  raw = std::make_unique<RawData>(10 * 1024 * 1024);
+  physicsSystem = makeUnique<JPH::PhysicsSystem>();
+  tempAllocator = makeUnique<JPH::TempAllocatorImpl>(1024 * 1024 * 10);
+  jobSystem = makeUnique<JPH::JobSystemThreadPool>(
+      JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers,
+      std::thread::hardware_concurrency() - 1);
   const UInt32 cMaxBodies = 1024;
   const UInt32 cNumBodyMutexes = 0;
   const UInt32 cMaxBodyPairs = 1024;
@@ -210,15 +207,15 @@ bool Physics::initialize() {
   static ObjectVsBroadPhaseLayerFilterImpl objectVSBroadPhaseLayerFilter;
   static ObjectLayerPairFilterImpl objectVSLayerFilter;
 
-  raw->physicsSystem.Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs,
-                          cMaxContactConstraints, broadPhaseLayerInterface,
-                          objectVSBroadPhaseLayerFilter, objectVSLayerFilter);
+  physicsSystem->Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs,
+                      cMaxContactConstraints, broadPhaseLayerInterface,
+                      objectVSBroadPhaseLayerFilter, objectVSLayerFilter);
 
   static MyBodyActivationListener body_activation_listener;
-  raw->physicsSystem.SetBodyActivationListener(&body_activation_listener);
+  physicsSystem->SetBodyActivationListener(&body_activation_listener);
 
   static MyContactListener contact_listener;
-  raw->physicsSystem.SetContactListener(&contact_listener);
+  physicsSystem->SetContactListener(&contact_listener);
 
   return true;
 }
@@ -227,23 +224,27 @@ void Physics::shutdown() {
 
   delete JPH::Factory::sInstance;
   JPH::Factory::sInstance = nullptr;
+
+  jobSystem = nullptr;
+  physicsSystem = nullptr;
+  tempAllocator = nullptr;
 }
 
 void Physics::postSetup() {
-  if (raw->physicsSystem.GetNumBodies() == 0) {
+  if (physicsSystem->GetNumBodies() == 0) {
     return;
   }
-  raw->physicsSystem.OptimizeBroadPhase();
+  physicsSystem->OptimizeBroadPhase();
 }
 
 void Physics::update() {
   const int cCollisionSteps = 1;
-  raw->physicsSystem.Update(Time::deltaTime(), cCollisionSteps,
-                            &raw->tempAllocator, &raw->jobSystem);
+  physicsSystem->Update(Time::deltaTime(), cCollisionSteps, tempAllocator.get(),
+                        jobSystem.get());
 }
 
 Vec3 Physics::getPosition(const Collider &collider) {
-  JPH::BodyInterface &body_interface = raw->physicsSystem.GetBodyInterface();
+  JPH::BodyInterface &body_interface = physicsSystem->GetBodyInterface();
   auto it = bodyMap.find(collider.id);
   if (it == bodyMap.end()) {
     return Vec3(0.0f);
@@ -254,7 +255,7 @@ Vec3 Physics::getPosition(const Collider &collider) {
 }
 
 Vec3 Physics::getVelocity(const Collider &collider) {
-  JPH::BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
+  JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
   auto it = bodyMap.find(collider.id);
   if (it == bodyMap.end()) {
     return Vec3(0.0f);
@@ -265,7 +266,7 @@ Vec3 Physics::getVelocity(const Collider &collider) {
 }
 void Physics::setLinearVelocity(const Collider &collider,
                                 const Vec3 &velocity) {
-  JPH::BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
+  JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
   auto bodyID = bodyMap[collider.id];
   bodyInterface.SetLinearVelocity(bodyID, {velocity.x, velocity.y, velocity.z});
 }
@@ -275,7 +276,7 @@ UInt32 GetNextID() { return nextColliderID++; }
 
 Collider Physics::createBoxCollider(const Transform &transform, bool isStatic) {
 
-  JPH::BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
+  JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
 
   auto &position = transform.position;
   auto &rotation = transform.rotation;
@@ -306,7 +307,7 @@ Collider Physics::createBoxCollider(const Transform &transform, bool isStatic) {
 
 Collider Physics::createSphereCollider(const Vec3 &position, float radius,
                                        bool isStatic) {
-  auto &bodyInterface = raw->physicsSystem.GetBodyInterface();
+  auto &bodyInterface = physicsSystem->GetBodyInterface();
   auto motionType =
       isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic;
   JPH::ObjectLayer layer = isStatic ? Layers::NON_MOVING : Layers::MOVING;
@@ -323,7 +324,7 @@ Collider Physics::createSphereCollider(const Vec3 &position, float radius,
 Collider Physics::createCylinderCollider(const Vec3 &position,
                                          const Vec3 &rotation, float halfHeight,
                                          float radius, bool isStatic) {
-  auto &bodyInterface = raw->physicsSystem.GetBodyInterface();
+  auto &bodyInterface = physicsSystem->GetBodyInterface();
   JPH::CylinderShapeSettings cylinderShapeSetting(halfHeight, radius);
   cylinderShapeSetting.SetEmbedded();
   JPH::EMotionType motionType =
@@ -343,7 +344,7 @@ Collider Physics::createCylinderCollider(const Vec3 &position,
   return collider;
 }
 void Physics::addCollider(const Collider &collider, bool active) {
-  JPH::BodyInterface &bodyInterface = raw->physicsSystem.GetBodyInterface();
+  JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
   auto it = bodyMap.find(collider.id);
   if (it == bodyMap.end()) {
     return;

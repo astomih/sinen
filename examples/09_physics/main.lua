@@ -6,8 +6,11 @@ sphereTex:fill(sn.Color.new(1, 0, 0, 1))
 
 local box = sn.Model.new()
 box:loadBox()
+box:setTexture(sn.TextureKey.BaseColor, boxTex)
+
 local sphere = sn.Model.new()
 sphere:load("sphere.glb")
+sphere:setTexture(sn.TextureKey.BaseColor, sphereTex)
 
 local boxTransform = sn.Transform.new()
 boxTransform.rotation = sn.Vec3.new(0, 0, 10)
@@ -42,10 +45,8 @@ function Update()
 end
 
 function Draw()
-    sn.Graphics.setTexture(0, boxTex)
     sn.Graphics.drawModel(box, boxTransform)
 
-    sn.Graphics.setTexture(0, sphereTex)
     sn.Graphics.drawModel(sphere, sphereTransform)
     for _, c in ipairs(colliders) do
         local transform = sn.Transform.new()

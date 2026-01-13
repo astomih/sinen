@@ -33,11 +33,11 @@ function Setup()
     pipeline3d:build()
     sn.Graphics.setGraphicsPipeline(pipeline3d)
 
-    sn.Graphics.setTexture(1, model:getNormalTexture())
-    sn.Graphics.setTexture(2, model:getDiffuseRoughnessTexture())
-    sn.Graphics.setTexture(3, model:getMetalnessTexture())
-    sn.Graphics.setTexture(4, model:getEmissiveTexture())
-    sn.Graphics.setTexture(5, model:getLightMapTexture())
+    sn.Graphics.setTexture(1, model:getTexture(sn.TextureKey.Normal))
+    sn.Graphics.setTexture(2, model:getTexture(sn.TextureKey.DiffuseRoughness))
+    sn.Graphics.setTexture(3, model:getTexture(sn.TextureKey.Metalness))
+    sn.Graphics.setTexture(4, model:getTexture(sn.TextureKey.Emissive))
+    sn.Graphics.setTexture(5, model:getTexture(sn.TextureKey.LightMap))
 
     uniform_data[1] = pos
     uniform_data[2] = light_pos

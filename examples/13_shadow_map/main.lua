@@ -55,6 +55,7 @@ function Setup()
 
     camera:perspective(70, 16.0 / 9.0, 0.1, 100)
     camera:lookat(sn.Vec3.new(0, 1, 5), sn.Vec3.new(0), sn.Vec3.new(0, 1, 0))
+    floor:setTexture(sn.TextureKey.BaseColor, floorTexture)
 end
 
 function Update()
@@ -69,7 +70,6 @@ function Draw()
     sn.Graphics.setGraphicsPipeline(depthPipeline)
     sn.Graphics.setCamera(shadowCamera)
     sn.Graphics.drawModel(model, modelTransform)
-
     sn.Graphics.drawModel(floor, floorTransform)
     sn.Graphics.flush()
     sn.Graphics.readbackTexture(depthRenderTexture, depthTexture)
@@ -80,6 +80,5 @@ function Draw()
     sn.Graphics.setTexture(1, depthTexture)
     sn.Graphics.setCamera(camera)
     sn.Graphics.drawModel(model, modelTransform)
-    sn.Graphics.setTexture(0, floorTexture)
     sn.Graphics.drawModel(floor, floorTransform)
 end

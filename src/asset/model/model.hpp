@@ -11,8 +11,16 @@
 #include <math/geometry/mesh.hpp>
 
 namespace sinen {
+enum class TextureKey : UInt32 {
+  BaseColor,
+  Normal,
+  DiffuseRoughness,
+  Metalness,
+  Emissive,
+  LightMap
+};
 
-struct Model {
+class Model {
 public:
   /**
    * @brief Construct a new model object
@@ -56,27 +64,9 @@ public:
   using BoneMap = Hashmap<String, BoneInfo>;
   const BoneMap &getBoneMap() { return this->boneMap; }
 
-  bool hasBaseColorTexture() const { return baseColor.has_value(); }
-  Texture getBaseColorTexture() const { return baseColor.value(); }
-
-  bool hasNormalTexture() const { return normal.has_value(); }
-  Texture getNormalTexture() const { return normal.value(); }
-
-  bool hasDiffuseRoughnessTexture() const {
-    return diffuseRoughness.has_value();
-  }
-  Texture getDiffuseRoughnessTexture() const {
-    return diffuseRoughness.value();
-  }
-
-  bool hasMetalnessTexture() const { return metalness.has_value(); }
-  Texture getMetalnessTexture() const { return metalness.value(); }
-
-  bool hasEmissiveTexture() const { return emissive.has_value(); }
-  Texture getEmissiveTexture() const { return emissive.value(); }
-
-  bool hasLightMapTexture() const { return lightMap.has_value(); }
-  Texture getLightMapTexture() const { return lightMap.value(); }
+  bool hasTexture(TextureKey type) const;
+  Texture getTexture(TextureKey type) const;
+  void setTexture(TextureKey type, const Texture &texture);
 
 private:
   void loadBoneUniform(float time);
@@ -88,12 +78,7 @@ private:
 
   SkeletalAnimation skeletalAnimation;
   BoneMap boneMap;
-  std::optional<Texture> baseColor;
-  std::optional<Texture> normal;
-  std::optional<Texture> diffuseRoughness;
-  std::optional<Texture> metalness;
-  std::optional<Texture> emissive;
-  std::optional<Texture> lightMap;
+  Array<std::optional<Texture>> textures;
 };
 } // namespace sinen
 #endif // !SINEN_MODEL_HPP

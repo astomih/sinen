@@ -77,7 +77,6 @@ Node createNodeFromAiNode(const aiNode *ainode) {
   }
   return node;
 }
-Model::Model() {}
 
 void loadAnimation(const aiScene *scene, SkeletalAnimation &skeletalAnimation,
                    const Model::BoneMap &boneMap) {
@@ -300,38 +299,35 @@ std::optional<Texture> loadTexture(aiScene *scene, aiMaterial *material,
   }
   return texture;
 }
-void loadMaterial(aiScene *scene, std::optional<Texture> &baseColor,
-                  std::optional<Texture> &normal,
-                  std::optional<Texture> &diffuseRoughness,
-                  std::optional<Texture> &metalness,
-                  std::optional<Texture> &emissive,
-                  std::optional<Texture> &lightMap) {
+void loadMaterial(aiScene *scene, Array<std::optional<Texture>> &textures) {
   for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
-    if (!baseColor.has_value()) {
-      baseColor =
+    if (!textures[0].has_value()) {
+      textures[0] =
           loadTexture(scene, scene->mMaterials[i], aiTextureType_BASE_COLOR);
     }
-    if (!normal.has_value()) {
-      normal = loadTexture(scene, scene->mMaterials[i], aiTextureType_NORMALS);
+    if (!textures[1].has_value()) {
+      textures[1] =
+          loadTexture(scene, scene->mMaterials[i], aiTextureType_NORMALS);
     }
-    if (!diffuseRoughness.has_value()) {
-      diffuseRoughness = loadTexture(scene, scene->mMaterials[i],
-                                     aiTextureType_DIFFUSE_ROUGHNESS);
+    if (!textures[2].has_value()) {
+      textures[2] = loadTexture(scene, scene->mMaterials[i],
+                                aiTextureType_DIFFUSE_ROUGHNESS);
     }
-    if (!metalness.has_value()) {
-      metalness =
+    if (!textures[3].has_value()) {
+      textures[3] =
           loadTexture(scene, scene->mMaterials[i], aiTextureType_METALNESS);
     }
-    if (!emissive.has_value()) {
-      emissive =
+    if (!textures[4].has_value()) {
+      textures[4] =
           loadTexture(scene, scene->mMaterials[i], aiTextureType_EMISSIVE);
     }
-    if (!lightMap.has_value()) {
-      lightMap =
+    if (!textures[5].has_value()) {
+      textures[5] =
           loadTexture(scene, scene->mMaterials[i], aiTextureType_LIGHTMAP);
     }
   }
 }
+Model::Model() : textures(6) {}
 
 void Model::load(StringView path) {
 
@@ -350,8 +346,7 @@ void Model::load(StringView path) {
   loadBone(scene, this->boneMap);
   loadAnimation(scene, this->skeletalAnimation, this->boneMap);
   loadMesh(scene, this->mesh, this->localAABB);
-  loadMaterial(const_cast<aiScene *>(scene), baseColor, normal,
-               diffuseRoughness, metalness, emissive, lightMap);
+  loadMaterial(const_cast<aiScene *>(scene), textures);
   calcTangents(scene, this->mesh);
 
   auto viBuffer = createVertexIndexBuffer(mesh->vertices, mesh->indices);
@@ -382,8 +377,7 @@ void Model::load(const Buffer &buffer) {
   loadBone(scene, this->boneMap);
   loadAnimation(scene, this->skeletalAnimation, this->boneMap);
   loadMesh(scene, this->mesh, this->localAABB);
-  loadMaterial(const_cast<aiScene *>(scene), baseColor, normal,
-               diffuseRoughness, metalness, emissive, lightMap);
+  loadMaterial(const_cast<aiScene *>(scene), textures);
   calcTangents(scene, this->mesh);
 
   auto viBuffer = createVertexIndexBuffer(mesh->vertices, mesh->indices);
@@ -644,5 +638,14 @@ void Model::loadBoneUniform(float start) {
     boneMatrices[index] = m;
     index++;
   }
+}
+bool Model::hasTexture(TextureKey type) const {
+  return textures[static_cast<UInt32>(type)].has_value();
+}
+Texture Model::getTexture(TextureKey type) const {
+  return textures[static_cast<UInt32>(type)].value();
+}
+void Model::setTexture(TextureKey type, const Texture &texture) {
+  textures[static_cast<UInt32>(type)] = texture;
 }
 } // namespace sinen

@@ -465,8 +465,13 @@ void Graphics::drawModel(const Model &model, const Transform &transform) {
   else
     currentPipeline = BuiltinPipeline::getDefault3D();
 
-  if (model.hasBaseColorTexture())
-    setTexture(0, model.getBaseColorTexture());
+  if (model.hasTexture(TextureKey::BaseColor))
+    setTexture(0, model.getTexture(TextureKey::BaseColor));
+  else {
+    Texture t;
+    t.fill(Palette::white());
+    setTexture(0, t);
+  }
 
   sinen::Draw3D draw3D;
   draw3D.position = transform.position;
@@ -481,8 +486,13 @@ void Graphics::drawModelInstanced(const Model &model,
     currentPipeline = customPipeline.value();
   else
     currentPipeline = BuiltinPipeline::getInstanced3D();
-  if (model.hasBaseColorTexture())
-    setTexture(0, model.getBaseColorTexture());
+  if (model.hasTexture(TextureKey::BaseColor))
+    setTexture(0, model.getTexture(TextureKey::BaseColor));
+  else {
+    Texture t;
+    t.fill(Palette::white());
+    setTexture(0, t);
+  }
   sinen::Draw3D draw3D;
   draw3D.position = Vec3{0, 0, 0};
   draw3D.scale = Vec3{1, 1, 1};

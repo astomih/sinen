@@ -370,6 +370,15 @@ bool Script::initialize() {
     v["invWindowRatio"] = &Camera2D::invWindowRatio;
   }
   {
+    auto v = lua.create_named("TextureKey");
+    v["BaseColor"] = TextureKey::BaseColor;
+    v["Normal"] = TextureKey::Normal;
+    v["DiffuseRoughness"] = TextureKey::DiffuseRoughness;
+    v["Metalness"] = TextureKey::Metalness;
+    v["Emissive"] = TextureKey::Emissive;
+    v["LightMap"] = TextureKey::LightMap;
+  }
+  {
     auto v = lua.new_usertype<Model>("Model");
     v["getAABB"] = &Model::getAABB;
     v["load"] = sol::overload(
@@ -380,12 +389,9 @@ bool Script::initialize() {
     v["getBoneUniformBuffer"] = &Model::getBoneUniformBuffer;
     v["play"] = &Model::play;
     v["update"] = &Model::update;
-    v["getBaseColorTexture"] = &Model::getBaseColorTexture;
-    v["getNormalTexture"] = &Model::getNormalTexture;
-    v["getDiffuseRoughnessTexture"] = &Model::getDiffuseRoughnessTexture;
-    v["getMetalnessTexture"] = &Model::getMetalnessTexture;
-    v["getEmissiveTexture"] = &Model::getEmissiveTexture;
-    v["getLightMapTexture"] = &Model::getLightMapTexture;
+    v["hasTexture"] = &Model::hasTexture;
+    v["getTexture"] = &Model::getTexture;
+    v["setTexture"] = &Model::setTexture;
   }
   {
     auto v = lua.new_usertype<AABB>("AABB");

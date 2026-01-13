@@ -90,6 +90,15 @@ sn = {
     ---@field half fun(self: sn.Camera2D): sn.Vec2
     Camera2D = {},
 
+    ---@class sn.TextureKey
+    ---@field BaseColor number
+    ---@field Normal number
+    ---@field DiffuseRoughness number
+    ---@field Metalness number
+    ---@field Emissive number
+    ---@field LightMap number
+    TextureKey = {},
+
     ---@class sn.Model
     ---@field new fun(): sn.Model
     ---@field getAABB fun(self: sn.Model): sn.AABB
@@ -100,12 +109,9 @@ sn = {
     ---@field getBoneUniformBuffer fun(self: sn.Model): sn.Buffer
     ---@field play fun(self: sn.Model, positon: number)
     ---@field update fun(self: sn.Model, delta: number)
-    ---@field getBaseColorTexture fun(self:sn.Model):sn.Texture
-    ---@field getNormalTexture fun(self:sn.Model):sn.Texture
-    ---@field getDiffuseRoughnessTexture fun(self:sn.Model):sn.Texture
-    ---@field getMetalnessTexture fun(self:sn.Model):sn.Texture
-    ---@field getEmissiveTexture fun(self:sn.Model):sn.Texture
-    ---@field getLightMapTexture fun(self:sn.Model):sn.Texture
+    ---@field hasTexture fun(self:sn.Model, textureKey: number):sn.Texture
+    ---@field getTexture fun(self:sn.Model, textureKey:number):sn.Texture
+    ---@field setTexture fun(self:sn.Model, textureKey: number,texture : sn.Texture):sn.Texture
     Model = {},
 
     ---@class sn.AABB

@@ -612,7 +612,7 @@ Buffer Model::getBoneUniformBuffer() const {
   auto size = boneMatrices.size() * sizeof(Mat4);
   auto *ptr = (Mat4 *)GlobalAllocator::get()->allocate(size);
   memcpy(ptr, boneMatrices.data(), size);
-  auto deleter = DeleterWithSize<void>(GlobalAllocator::get(), size);
+  auto deleter = Deleter<void>(GlobalAllocator::get(), size);
   return Buffer(BufferType::Binary, Ptr<void>(ptr, std::move(deleter)), size);
 }
 void Model::play(float start) {

@@ -226,10 +226,9 @@ bool Script::initialize() {
       arr.clear();
       arrS.clear();
 
-      return Buffer(
-          BufferType::Binary,
-          Ptr<void>(ptr, DeleterWithSize<void>(GlobalAllocator::get(), size)),
-          size);
+      return Buffer(BufferType::Binary,
+                    Ptr<void>(ptr, Deleter<void>(GlobalAllocator::get(), size)),
+                    size);
     };
   }
   {

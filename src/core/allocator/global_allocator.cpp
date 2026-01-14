@@ -14,12 +14,8 @@ Allocator *GlobalAllocator::get() {
   if (pA)
     return pA;
   size_t allocatorSize = 0x8FFFFFF;
-#ifndef SINEN_PLATFORM_EMSCRIPTEN
   tlsf = new TLSFAllocator(allocatorSize);
   pA = new std::pmr::synchronized_pool_resource(tlsf);
-#else
-  pA = new std::pmr::synchronized_pool_resource();
-#endif
   if (!pA) {
     Logger::critical("Failed to application memory allocation.");
     std::exit(-1);

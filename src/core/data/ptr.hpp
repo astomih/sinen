@@ -8,34 +8,14 @@
 
 namespace sinen {
 template <typename T> struct Deleter {
-  constexpr Deleter(Allocator *a = nullptr) noexcept : pA(a) {}
-  template <typename U,
-            std::enable_if_t<std::is_convertible_v<U *, T *>, int> = 0>
-  Deleter(const Deleter<U> &other) noexcept : pA(other.pA) {}
-
-  Deleter(Deleter &&) noexcept = default;
-  Deleter &operator=(Deleter &&) noexcept = default;
-
-  void operator()(T *ptr) const {
-    if (!ptr)
-      return;
-    ptr->~T();
-    assert(pA);
-    pA->deallocate(ptr, sizeof(T));
-  }
-  Allocator *pA;
-};
-template <typename T> struct DeleterWithSize {
-  constexpr DeleterWithSize(Allocator *a = nullptr,
-                            size_t size = sizeof(T)) noexcept
+  constexpr Deleter(Allocator *a = nullptr, size_t size = sizeof(T)) noexcept
       : pA(a), size(size) {}
   template <typename U,
             std::enable_if_t<std::is_convertible_v<U *, T *>, int> = 0>
-  DeleterWithSize(const DeleterWithSize<U> &other) noexcept
-      : pA(other.pA), size(other.size) {}
+  Deleter(const Deleter<U> &other) noexcept : pA(other.pA), size(other.size) {}
 
-  DeleterWithSize(DeleterWithSize &&) noexcept = default;
-  DeleterWithSize &operator=(DeleterWithSize &&) noexcept = default;
+  Deleter(Deleter &&) noexcept = default;
+  Deleter &operator=(Deleter &&) noexcept = default;
 
   void operator()(T *ptr) const {
     if (!ptr)

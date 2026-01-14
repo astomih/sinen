@@ -34,8 +34,27 @@ Vec3 Collider::getVelocity() const { return Physics::getVelocity(*this); }
 void Collider::setLinearVelocity(const Vec3 &velocity) const {
   Physics::setLinearVelocity(*this, velocity);
 }
+class TempAllocator : public JPH::TempAllocator {
+public:
+  TempAllocator() = default;
+  /// Destructor
+  ~TempAllocator() {}
+
+  /// Allocates inSize bytes of memory, returned memory address must be
+  /// JPH_RVECTOR_ALIGNMENT byte aligned
+  void *Allocate(JPH::uint inSize) override {
+    return GlobalAllocator::get()->allocate(inSize);
+  }
+
+  /// Frees inSize bytes of memory located at inAddress
+  void Free(void *inAddress, JPH::uint inSize) override {
+    if (inSize == 0)
+      return;
+    GlobalAllocator::get()->deallocate(inAddress, inSize);
+  }
+};
 static UniquePtr<JPH::PhysicsSystem> physicsSystem;
-static UniquePtr<JPH::TempAllocatorImpl> tempAllocator;
+static UniquePtr<JPH::TempAllocator> tempAllocator;
 static UniquePtr<JPH::JobSystemThreadPool> jobSystem;
 static void traceImplement(const char *inFMT, ...) {
   va_list list;
@@ -195,10 +214,11 @@ bool Physics::initialize() {
   JPH::RegisterTypes();
 
   physicsSystem = makeUnique<JPH::PhysicsSystem>();
-  tempAllocator = makeUnique<JPH::TempAllocatorImpl>(1024 * 1024 * 10);
+  tempAllocator = makeUnique<TempAllocator>();
   jobSystem = makeUnique<JPH::JobSystemThreadPool>(
       JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers,
       std::thread::hardware_concurrency() - 1);
+
   const UInt32 cMaxBodies = 1024;
   const UInt32 cNumBodyMutexes = 0;
   const UInt32 cMaxBodyPairs = 1024;

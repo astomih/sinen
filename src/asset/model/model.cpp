@@ -163,9 +163,8 @@ void loadBone(const aiScene *scene, Model::BoneMap &boneMap) {
   }
 }
 
-void loadMesh(const aiScene *scene, Ptr<Mesh> &mesh, AABB &aabb) {
+void loadMesh(const aiScene *scene, Mesh &mesh, AABB &aabb) {
   if (scene->HasMeshes()) {
-    mesh = makePtr<Mesh>();
     uint32_t baseIndex = 0;
     // Iterate through the meshes
     for (uint32_t i = 0; i < scene->mNumMeshes; i++) {
@@ -216,7 +215,7 @@ void loadMesh(const aiScene *scene, Ptr<Mesh> &mesh, AABB &aabb) {
         aabb.max.y = Math::max(aabb.max.y, static_cast<float>(pos.y));
         aabb.max.z = Math::max(aabb.max.z, static_cast<float>(pos.z));
 
-        mesh->vertices.push_back(v);
+        mesh.data()->vertices.push_back(v);
       }
       // Process the indices
       uint32_t maxIndex = 0;
@@ -225,7 +224,7 @@ void loadMesh(const aiScene *scene, Ptr<Mesh> &mesh, AABB &aabb) {
         for (uint32_t k = 0; k < face.mNumIndices; k++) {
           uint32_t index = face.mIndices[k];
           maxIndex = Math::max(maxIndex, index);
-          mesh->indices.push_back(baseIndex + index);
+          mesh.data()->indices.push_back(baseIndex + index);
         }
       }
       baseIndex += aimesh->mNumVertices;
@@ -233,7 +232,8 @@ void loadMesh(const aiScene *scene, Ptr<Mesh> &mesh, AABB &aabb) {
   }
 }
 
-void calcTangents(const aiScene *scene, Ptr<Mesh> &mesh) {
+void calcTangents(const aiScene *scene, Mesh &m) {
+  auto mesh = m.data();
   auto vertexCount = mesh->vertices.size();
   mesh->tangents.resize(vertexCount, Vec4(0.0f));
 
@@ -349,18 +349,19 @@ void Model::load(StringView path) {
   loadMaterial(const_cast<aiScene *>(scene), textures);
   calcTangents(scene, this->mesh);
 
-  auto viBuffer = createVertexIndexBuffer(mesh->vertices, mesh->indices);
+  auto viBuffer =
+      createVertexIndexBuffer(mesh.data()->vertices, mesh.data()->indices);
   this->vertexBuffer =
-      createBuffer(mesh->vertices.size() * sizeof(Vertex),
-                   mesh->vertices.data(), rhi::BufferUsage::Vertex);
+      createBuffer(mesh.data()->vertices.size() * sizeof(Vertex),
+                   mesh.data()->vertices.data(), rhi::BufferUsage::Vertex);
   this->animationVertexBuffer =
       createSkinnedVertexBuffer(skeletalAnimation.skinnedVertices);
   this->tangentBuffer =
-      createBuffer(mesh->tangents.size() * sizeof(Vec4), mesh->tangents.data(),
-                   rhi::BufferUsage::Vertex);
+      createBuffer(mesh.data()->tangents.size() * sizeof(Vec4),
+                   mesh.data()->tangents.data(), rhi::BufferUsage::Vertex);
   this->indexBuffer =
-      createBuffer(mesh->indices.size() * sizeof(uint32_t),
-                   mesh->indices.data(), rhi::BufferUsage::Index);
+      createBuffer(mesh.data()->indices.size() * sizeof(uint32_t),
+                   mesh.data()->indices.data(), rhi::BufferUsage::Index);
 }
 void Model::load(const Buffer &buffer) {
   // Assimp
@@ -380,22 +381,24 @@ void Model::load(const Buffer &buffer) {
   loadMaterial(const_cast<aiScene *>(scene), textures);
   calcTangents(scene, this->mesh);
 
-  auto viBuffer = createVertexIndexBuffer(mesh->vertices, mesh->indices);
+  auto viBuffer =
+      createVertexIndexBuffer(mesh.data()->vertices, mesh.data()->indices);
   this->vertexBuffer =
-      createBuffer(mesh->vertices.size() * sizeof(Vertex),
-                   mesh->vertices.data(), rhi::BufferUsage::Vertex);
+      createBuffer(mesh.data()->vertices.size() * sizeof(Vertex),
+                   mesh.data()->vertices.data(), rhi::BufferUsage::Vertex);
   this->animationVertexBuffer =
       createSkinnedVertexBuffer(skeletalAnimation.skinnedVertices);
   this->tangentBuffer =
-      createBuffer(mesh->tangents.size() * sizeof(Vec4), mesh->tangents.data(),
-                   rhi::BufferUsage::Vertex);
+      createBuffer(mesh.data()->tangents.size() * sizeof(Vec4),
+                   mesh.data()->tangents.data(), rhi::BufferUsage::Vertex);
   this->indexBuffer =
-      createBuffer(mesh->indices.size() * sizeof(uint32_t),
-                   mesh->indices.data(), rhi::BufferUsage::Index);
+      createBuffer(mesh.data()->indices.size() * sizeof(uint32_t),
+                   mesh.data()->indices.data(), rhi::BufferUsage::Index);
 }
 
-void Model::loadFromVertexArray(const Ptr<Mesh> &mesh) {
-  this->mesh = mesh;
+void Model::loadFromVertexArray(const Mesh &m) {
+  this->mesh = m;
+  auto mesh = this->mesh.data();
   AABB aabb;
   for (auto &v : mesh->vertices) {
     aabb.min.x = Math::min(aabb.min.x, v.position.x);

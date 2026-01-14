@@ -27,7 +27,7 @@ public:
   void resize(int point_size);
 
   Texture getAtlas() const;
-  Ptr<Mesh> getTextMesh(StringView text) const;
+  Mesh getTextMesh(StringView text) const;
 
 private:
   Array<Array<stbtt_packedchar>> packedChar;

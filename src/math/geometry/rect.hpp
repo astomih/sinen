@@ -22,7 +22,7 @@ struct Rect {
       Vec2 s;
     };
   };
-  Ptr<Mesh> createMesh();
+  Mesh createMesh();
 };
 } // namespace sinen
 #endif

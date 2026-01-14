@@ -18,7 +18,7 @@ struct AABB {
   AABB(const Vec3 &min, const Vec3 max) : min(min), max(max) {}
   void updateWorld(const Vec3 &p, const Vec3 &scale, const AABB &local);
 
-  Ptr<Mesh> createMesh();
+  Mesh createMesh();
   bool intersectsAABB(const AABB &aabb) const;
 };
 /**

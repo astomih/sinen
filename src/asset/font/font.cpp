@@ -193,9 +193,9 @@ const char *utf8ToCodepoint(const char *p, uint32_t *out_cp) {
   return p + 1;
 }
 
-Ptr<Mesh> Font::getTextMesh(StringView text) const {
+Mesh Font::getTextMesh(StringView text) const {
 
-  auto textMesh = makePtr<Mesh>();
+  auto textMesh = makePtr<Mesh::Data>();
   float x = 0.f, y = 0.f;
   Vec2 yrange(Math::infinity, Math::negInfinity);
   const char *p = text.data();
@@ -246,6 +246,6 @@ Ptr<Mesh> Font::getTextMesh(StringView text) const {
     v.position.x -= x * 2.f;
     v.position.y -= (yrange.y - yrange.x) / 2.f;
   }
-  return textMesh;
+  return Mesh{textMesh};
 }
 } // namespace sinen

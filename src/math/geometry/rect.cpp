@@ -1,8 +1,8 @@
 #include "rect.hpp"
 namespace sinen {
 Rect::Rect() : p(), s() {}
-Ptr<Mesh> Rect::createMesh() {
-  auto mesh = makePtr<Mesh>();
+Mesh Rect::createMesh() {
+  auto mesh = makePtr<Mesh::Data>();
   mesh->vertices.push_back({Vec3(-1.000000, -1.000000, 0.000000),
                             Vec3(0.000000, 0.000000, 1.000000),
                             Vec2(0.000000, 1.000000),
@@ -25,7 +25,7 @@ Ptr<Mesh> Rect::createMesh() {
   for (size_t i = 0; i < sizeof(indices) / sizeof(UInt32); i++) {
     mesh->indices.push_back(indices[i]);
   }
-  return mesh;
+  return Mesh{mesh};
 }
 
 } // namespace sinen

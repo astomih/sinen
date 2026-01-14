@@ -40,7 +40,7 @@ public:
    */
   void load(StringView str);
   void load(const Buffer &buffer);
-  void loadFromVertexArray(const Ptr<Mesh> &mesh);
+  void loadFromVertexArray(const Mesh &mesh);
   void loadSprite();
   void loadBox();
   void play(float start);
@@ -49,7 +49,7 @@ public:
   Ptr<void> data;
   Buffer getBoneUniformBuffer() const;
 
-  const Ptr<Mesh> &getMesh() const { return mesh; }
+  Mesh getMesh() const { return mesh; }
 
   Ptr<rhi::Buffer> vertexBuffer;
   Ptr<rhi::Buffer> tangentBuffer;
@@ -73,7 +73,7 @@ private:
   float time = 0.0f;
   AABB localAABB;
   String name;
-  Ptr<Mesh> mesh;
+  Mesh mesh;
   Array<Mat4> boneMatrices;
 
   SkeletalAnimation skeletalAnimation;

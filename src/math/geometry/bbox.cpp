@@ -6,8 +6,8 @@ void AABB::updateWorld(const Vec3 &p, const Vec3 &scale, const AABB &local) {
   this->max = p + scale * local.max;
 }
 
-Ptr<Mesh> AABB::createMesh() {
-  auto mesh = makePtr<Mesh>();
+Mesh AABB::createMesh() {
+  auto mesh = makePtr<Mesh::Data>();
   mesh->vertices.push_back({Vec3(1.000000, 1.000000, 1.000000),
                             Vec3(0.000000, 0.000000, 1.000000),
                             Vec2(0.625000, 0.500000),
@@ -111,7 +111,7 @@ Ptr<Mesh> AABB::createMesh() {
   for (Size i = 0; i < sizeof(indices) / sizeof(UInt32); i++) {
     mesh->indices.push_back(indices[i]);
   }
-  return mesh;
+  return Mesh{mesh};
 }
 bool AABB::intersectsAABB(const AABB &aabb) const {
   const auto &a = *this;

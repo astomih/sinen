@@ -9,7 +9,7 @@ local light_pos = sn.Vec3.new(2, 0, 0)
 local light_intensity = 2.5
 local uniform_data = {}
 
-function Setup()
+function setup()
     transform.position = sn.Vec3.new(0, 0, 0)
     transform.rotation = sn.Vec3.new(90, 0, 0)
     transform.scale = sn.Vec3.new(1, 1, 1)
@@ -44,7 +44,7 @@ function Setup()
     uniform_data[3] = light_intensity
 end
 
-function Update()
+function update()
     if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")
     end
@@ -73,7 +73,7 @@ function Update()
     light_transform.position = light_pos
 end
 
-function Draw()
+function draw()
     sn.Graphics.setUniformBuffer(1, sn.Buffer.new(uniform_data))
     sn.Graphics.drawModel(model, transform)
     sn.Graphics.drawModel(model, light_transform)

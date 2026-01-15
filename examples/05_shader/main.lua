@@ -20,13 +20,13 @@ local uniformBuffer = sn.Buffer.new({
 
 texture:load("logo.png")
 
-function Update()
+function update()
     if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")
     end
 end
 
-function Draw()
+function draw()
     sn.Graphics.setGraphicsPipeline(pipeline2d)
     sn.Graphics.setUniformBuffer(1, uniformBuffer)
     -- Draw texture

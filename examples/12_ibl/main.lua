@@ -64,7 +64,7 @@ local uniform_data = {
 }
 
 
-function Update()
+function update()
     if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")
     end
@@ -93,7 +93,7 @@ function Update()
     light_transform.position = light_pos
 end
 
-function Draw()
+function draw()
     sn.Graphics.resetGraphicsPipeline()
     sn.Graphics.drawCubemap(cubemap)
 

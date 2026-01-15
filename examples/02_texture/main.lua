@@ -2,13 +2,13 @@
 local image = sn.Texture.new()
 image:load("logo.png")
 
-function Update()
+function update()
     if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")
     end
 end
 
-function Draw()
+function draw()
     -- Draw image
     sn.Graphics.drawImage(image, sn.Rect.new(sn.Vec2.new(0), image:size()))
 end

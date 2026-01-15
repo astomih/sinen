@@ -1,5 +1,5 @@
 local model
-function Setup()
+function setup()
     model = sn.Model.new()
     model:load("BrainStem.glb")
     local texture = sn.Texture.new()
@@ -24,14 +24,14 @@ function Setup()
     model:play(0)
 end
 
-function Update()
+function update()
     if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")
     end
     model:update(sn.Time.delta())
 end
 
-function Draw()
+function draw()
     sn.Graphics.setUniformBuffer(1, model:getBoneUniformBuffer())
     -- Draw texture
     sn.Graphics.drawModel(model, sn.Transform.new())

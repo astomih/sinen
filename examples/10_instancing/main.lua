@@ -1,7 +1,7 @@
 local model = sn.Model.new()
 model:load("DamagedHelmet.glb")
 local transforms = {}
-function Setup()
+function setup()
     for i = 0, 10 do
         for j = 0, 10 do
             local t = sn.Transform.new()
@@ -17,12 +17,12 @@ function Setup()
     sn.Graphics.getCamera():lookat(pos, at, up)
 end
 
-function Update()
+function update()
     if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")
     end
 end
 
-function Draw()
+function draw()
     sn.Graphics.drawModelInstanced(model, transforms)
 end

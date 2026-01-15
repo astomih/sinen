@@ -18,7 +18,7 @@ local uniformBuffer
 local floorTexture = sn.Texture.new()
 local camera = sn.Camera.new()
 
-function Setup()
+function setup()
     model:load("DamagedHelmet.glb")
     modelTransform.position = sn.Vec3.new(0, 0, 0)
     modelTransform.rotation = sn.Vec3.new(90, 0, 0)
@@ -58,13 +58,13 @@ function Setup()
     floor:setTexture(sn.TextureKey.BaseColor, floorTexture)
 end
 
-function Update()
+function update()
     if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")
     end
 end
 
-function Draw()
+function draw()
     -- depth write pipeline
     sn.Graphics.setRenderTarget(depthRenderTexture)
     sn.Graphics.setGraphicsPipeline(depthPipeline)

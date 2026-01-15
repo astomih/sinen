@@ -11,11 +11,13 @@
 
 ``` lua
 -- main.lua
-function Update()
+local font = sn.Font.new()
+font:load(32)
+function update()
 end
 
-function Draw()
-    sn.Graphics.drawText("Hello World!", sn.Vec2.new(0, 0), sn.Color.new(1.0), 32)
+function draw()
+    sn.Graphics.drawText("NO DATA", font, sn.Vec2.new(0, 0), sn.Color.new(1.0), 32, 0.0)
 end
 ```
 
@@ -69,7 +71,3 @@ cmake --build build/linux
 # Lisence
 
 MIT Lisence
-
-# Community
-
-[Discord](https://discord.gg/7U7VDwWjfy)

@@ -10,5 +10,8 @@
   "Lua.type.checkTableShape": true,
   "Lua.type.inferParamType": true,
   "Lua.type.weakNilCheck": true,
-  "Lua.type.weakUnionCheck": true
+  "Lua.type.weakUnionCheck": true,
+  "Lua.diagnostics.disable": [
+    "lowercase-global"
+  ]
 }

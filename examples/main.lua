@@ -4,12 +4,12 @@ GUI_MANAGER = require("gui/gui_manager")()
 
 local exampleDirs = sn.Filesystem.enumerateDirectory(".")
 local numExamples = 13
-function Setup()
+function setup()
     sn.Graphics.resetGraphicsPipeline()
 end
 
 local offset = numExamples * 16.0
-function Update()
+function update()
     GUI_MANAGER:update()
 
     for i = 1, numExamples do
@@ -19,7 +19,7 @@ function Update()
     end
 end
 
-function Draw()
+function draw()
     sn.Graphics.drawText("Example Launcher", FONT, sn.Vec2.new(0, offset), sn.Color.new(1, 1, 1, 1), 24)
     GUI_MANAGER:draw()
 end

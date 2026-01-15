@@ -16,13 +16,13 @@ local uniformBuffer = sn.Buffer.new({
     2.0, 0.5, 0.5, 1.0
 })
 
-function Update()
+function update()
     if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")
     end
 end
 
-function Draw()
+function draw()
     sn.Graphics.setGraphicsPipeline(pipeline2d)
     sn.Graphics.setUniformBuffer(1, uniformBuffer)
     -- Draw texture

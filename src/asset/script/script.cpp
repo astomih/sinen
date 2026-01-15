@@ -430,30 +430,6 @@ bool Script::initialize() {
     v["build"] = &GraphicsPipeline::build;
   }
   {
-    auto v = lua.new_usertype<Draw2D>(
-        "Draw2D",
-        sol::constructors<sol::types<const Texture &>, sol::types<>>());
-    v["position"] = &Draw2D::position;
-    v["rotation"] = &Draw2D::rotation;
-    v["scale"] = &Draw2D::scale;
-    v["add"] = &Draw2D::add;
-    v["at"] = &Draw2D::at;
-    v["clear"] = &Draw2D::clear;
-  }
-  {
-    auto v = lua.new_usertype<Draw3D>(
-        "Draw3D",
-        sol::constructors<sol::types<const Texture &>, sol::types<>>());
-
-    v["position"] = &Draw3D::position;
-    v["rotation"] = &Draw3D::rotation;
-    v["scale"] = &Draw3D::scale;
-    v["model"] = &Draw3D::model;
-    v["add"] = &Draw3D::add;
-    v["at"] = &Draw3D::at;
-    v["clear"] = &Draw3D::clear;
-  }
-  {
     // Rect
     auto v = lua.new_usertype<Rect>(
         "Rect", sol::constructors<sol::types<float, float, float, float>,

@@ -157,29 +157,6 @@ sn = {
     ---@field new fun(): sn.Color
     Color = {},
 
-    ---@class sn.Draw2D
-    ---@field new fun(): sn.Draw2D
-    ---@field new fun(texture: sn.Texture): sn.Draw2D
-    ---@field scale sn.Vec2
-    ---@field position sn.Vec2
-    ---@field rotation number
-    ---@field add fun(self: sn.Draw2D, drawable: any)
-    ---@field at fun(self: sn.Draw2D, x: number, y: number)
-    ---@field clear fun(self: sn.Draw2D)
-    Draw2D = {},
-
-    ---@class sn.Draw3D
-    ---@field new fun(): sn.Draw3D
-    ---@field new fun(texture: sn.Texture): sn.Draw3D
-    ---@field scale sn.Vec3
-    ---@field position sn.Vec3
-    ---@field rotation sn.Vec3
-    ---@field model sn.Model
-    ---@field add fun(self: sn.Draw3D, positon: sn.Vec3, rotation: sn.Vec3, scale: sn.Vec3)
-    ---@field at fun(self: sn.Draw3D, x: number, y: number, z: number)
-    ---@field clear fun(self: sn.Draw3D)
-    Draw3D = {},
-
     ---@class sn.Grid
     ---@field new fun(w: integer, h: integer): sn.Grid
     ---@field at fun(self: sn.Grid, x: integer, y: integer): integer
@@ -302,8 +279,6 @@ sn = {
 
     ---Static class
     ---@class sn.Graphics
-    ---@field draw2D fun(draw2D: sn.Draw2D)
-    ---@field draw3D fun(draw3D: sn.Draw3D)
     ---@field drawRect fun(rect:sn.Rect, color: sn.Color, angle: number?)
     ---@field drawImage fun(texture: sn.Texture, rect:sn.Rect, angle: number?)
     ---@field drawText fun(text: string, font: sn.Font, position: sn.Vec2, color: sn.Color?, fontSize: number?,angle: number?)

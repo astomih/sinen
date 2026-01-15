@@ -228,8 +228,7 @@ void Graphics::render() {
   device->waitForGpuIdle();
 }
 void Graphics::drawBase2D(const sinen::Draw2D &draw2D) {
-  if (!currentPipeline.has_value())
-    currentPipeline = BuiltinPipeline::getDefault2D();
+  assert(currentPipeline.has_value());
   auto vertexBufferBindings = Array<rhi::BufferBinding>{};
   auto indexBufferBinding = rhi::BufferBinding{};
   auto textureSamplers = Array<rhi::TextureSamplerBinding>{};
@@ -291,13 +290,7 @@ void Graphics::drawBase2D(const sinen::Draw2D &draw2D) {
 }
 
 void Graphics::drawBase3D(const sinen::Draw3D &draw3D) {
-  if (!currentPipeline.has_value()) {
-    if (draw3D.worlds.size() > 0) {
-      currentPipeline = BuiltinPipeline::getInstanced3D();
-    } else {
-      currentPipeline = BuiltinPipeline::getDefault3D();
-    }
-  }
+  assert(currentPipeline.has_value());
   auto vertexBufferBindings = Array<rhi::BufferBinding>();
   auto indexBufferBinding = rhi::BufferBinding{};
   Mat4 mat[3];

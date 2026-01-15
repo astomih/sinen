@@ -13,11 +13,9 @@
 -- main.lua
 local font = sn.Font.new()
 font:load(32)
-function update()
-end
 
 function draw()
-    sn.Graphics.drawText("NO DATA", font, sn.Vec2.new(0, 0), sn.Color.new(1.0), 32, 0.0)
+    sn.Graphics.drawText("Hello World!", font, sn.Vec2.new(0, 0), sn.Color.new(1.0), 32, 0.0)
 end
 ```
 

@@ -193,13 +193,31 @@ sn = {
     ---@field build fun(self: sn.GraphicsPipeline)
     GraphicsPipeline = {},
 
+    ---@class sn.Pivot
+    ---@field TopLeft number
+    ---@field TopCenter number
+    ---@field TopRight number
+    ---@field BottomLeft number
+    ---@field BottomCenter number
+    ---@field BottomRight number
+    Pivot = {},
+
     ---@class sn.Rect
     ---@field x number
     ---@field y number
-    ---@field new fun(x: number, y: number, width: number, height: number):sn.Rect
-    ---@field new fun(position: sn.Vec2, size: sn.Vec2):sn.Rect
     ---@field width number
     ---@field height number
+    ---@field new fun(x: number, y: number, width: number, height: number):sn.Rect
+    ---@field new fun(position: sn.Vec2, size: sn.Vec2):sn.Rect
+    ---@field new fun(pivot:sn.Pivot,x:number,y:number,w:number,h:number)
+    ---@field new fun(pivot:sn.Pivot,pos:sn.Vec2,size:sn.Vec2)
+    ---@field topLeft fun(self:sn.Rect) :sn.Rect
+    ---@field topCenter fun(self:sn.Rect) :sn.Rect
+    ---@field topRight fun(self:sn.Rect) :sn.Rect
+    ---@field bottomLeft fun(self:sn.Rect) :sn.Rect
+    ---@field bottomCenter fun(self:sn.Rect) :sn.Rect
+    ---@field bottomRight fun(self:sn.Rect) :sn.Rect
+    ---@field intersectsRect fun(self:sn.Rect,rect:sn.Rect) :sn.Rect
     Rect = {},
 
     ---@class sn.Transform

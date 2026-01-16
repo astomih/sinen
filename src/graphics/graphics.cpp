@@ -395,8 +395,8 @@ void Graphics::drawRect(const Rect &rect, const Color &color, float angle) {
   else
     currentPipeline = BuiltinPipeline::getDefault2D();
   sinen::Draw2D draw2D;
-  draw2D.position = rect.p;
-  draw2D.scale = rect.s;
+  draw2D.position = rect.pos;
+  draw2D.scale = rect.size;
 
   draw2D.rotation = angle;
   Texture texture;
@@ -411,8 +411,8 @@ void Graphics::drawImage(const Texture &texture, const Rect &rect,
   else
     currentPipeline = BuiltinPipeline::getDefault2D();
   sinen::Draw2D draw2D;
-  draw2D.position = rect.p;
-  draw2D.scale = rect.s;
+  draw2D.position = rect.pos;
+  draw2D.scale = rect.size;
 
   draw2D.rotation = angle;
   setTexture(0, texture);

@@ -430,14 +430,32 @@ bool Script::initialize() {
     v["build"] = &GraphicsPipeline::build;
   }
   {
+    auto v = lua.create_named("Pivot");
+    v["TopLeft"] = Pivot::TopLeft;
+    v["TopCenter"] = Pivot::TopCenter;
+    v["TopRight"] = Pivot::TopRight;
+    v["BottomLeft"] = Pivot::BottomLeft;
+    v["BottomCenter"] = Pivot::BottomCenter;
+    v["BottomRight"] = Pivot::BottomRight;
+  }
+  {
     // Rect
     auto v = lua.new_usertype<Rect>(
         "Rect", sol::constructors<sol::types<float, float, float, float>,
-                                  sol::types<Vec2, Vec2>, sol::types<>>());
+                                  sol::types<Vec2, Vec2>, sol::types<>,
+                                  sol::types<Pivot, float, float, float, float>,
+                                  sol::types<Pivot, Vec2, Vec2>>());
     v["x"] = &Rect::x;
     v["y"] = &Rect::y;
     v["width"] = &Rect::width;
     v["height"] = &Rect::height;
+    v["topLeft"] = &Rect::topLeft;
+    v["topCenter"] = &Rect::topCenter;
+    v["topRight"] = &Rect::topRight;
+    v["bottomLeft"] = &Rect::bottomLeft;
+    v["bottomCenter"] = &Rect::bottomCenter;
+    v["bottomRight"] = &Rect::bottomRight;
+    v["intersectsRect"] = &Rect::intersectsRect;
   }
   {
     // Transform
@@ -778,9 +796,6 @@ void Script::shutdown() {
 static const char *nothingSceneLua = R"(
 local font = sn.Font.new()
 font:load(32)
-function update()
-end
-
 function draw()
     sn.Graphics.drawText("NO DATA", font, sn.Vec2.new(0, 0), sn.Color.new(1.0), 32, 0.0)
 end

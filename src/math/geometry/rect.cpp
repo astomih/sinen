@@ -89,7 +89,7 @@ bool Rect::intersectsRect(const Rect &rect) {
   auto own = topLeft();
   auto other = rect.topLeft();
   return (own.x <= other.x + other.width && other.x <= own.x + own.width) &&
-         (own.y <= other.y + other.height && other.y <= own.y + other.height);
+         (other.y <= own.y + own.height && own.y <= other.y + own.height);
 }
 
 Mesh Rect::createMesh() {

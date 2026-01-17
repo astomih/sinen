@@ -254,7 +254,8 @@ TextBounds measureTextUTF32(const stbtt_fontinfo *font, float pixelHeight,
   return b;
 }
 
-Rect Font::region(StringView text, int fontSize, float x, float y) {
+Rect Font::region(StringView text, int fontSize, const Pivot &pivot,
+                  const Vec2 &vec) {
   const char *p = text.data();
   Array<UInt32> cps;
   while (*p) {
@@ -263,7 +264,7 @@ Rect Font::region(StringView text, int fontSize, float x, float y) {
     cps.push_back(cp);
   }
   auto m = measureTextUTF32(&fontInfo, fontSize, cps.data(), cps.size());
-  return Rect(x, y, m.w, m.h);
+  return Rect(pivot, vec.x, vec.y, m.w * 2.f, m.h * 2.f);
 }
 
 Mesh Font::getTextMesh(StringView text) const {

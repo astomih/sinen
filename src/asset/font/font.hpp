@@ -27,7 +27,8 @@ public:
   int size() const { return m_size; }
   void resize(int point_size);
 
-  Rect region(StringView text, int fontSize, float x, float y);
+  Rect region(StringView text, int fontSize, const Pivot &pivot,
+              const Vec2 &vec);
 
   Texture getAtlas() const;
   Mesh getTextMesh(StringView text) const;

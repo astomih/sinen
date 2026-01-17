@@ -144,7 +144,7 @@ sn = {
     ---@field load fun(self: sn.Font, size: integer, path: string)
     ---@field load fun(self: sn.Font, size: integer, buffer: sn.Buffer)
     ---@field resize fun(self: sn.Font, size: integer)
-    ---@field region fun(self: sn.Font, text: string, fontSize: number, x: number, y: number)
+    ---@field region fun(self: sn.Font, text: string, fontSize: number, pivot: number, position: sn.Vec2): sn.Rect
     Font = {},
 
     ---@class sn.Color
@@ -273,6 +273,12 @@ sn = {
     ---@field setFullscreen fun(full: boolean)
     ---@field rename fun(name: string)
     ---@field resized fun(): boolean
+    ---@field topLeft fun() :sn.Vec2
+    ---@field topCenter fun() :sn.Vec2
+    ---@field topRight fun() :sn.Vec2
+    ---@field bottomLeft fun() :sn.Vec2
+    ---@field bottomCenter fun() :sn.Vec2
+    ---@field bottomRight fun() :sn.Vec2
     Window = {},
 
     ---Static class

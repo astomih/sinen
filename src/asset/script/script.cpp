@@ -329,6 +329,7 @@ bool Script::initialize() {
           return f.load(point_size, buffer);
         });
     v["resize"] = &Font::resize;
+    v["region"] = &Font::region;
   }
   {
     auto v = lua.new_usertype<Sound>("Sound");
@@ -456,6 +457,9 @@ bool Script::initialize() {
     v["bottomCenter"] = &Rect::bottomCenter;
     v["bottomRight"] = &Rect::bottomRight;
     v["intersectsRect"] = &Rect::intersectsRect;
+    v["positionFromPivot"] = &Rect::positionfromPivot;
+    v["position"] = &Rect::position;
+    v["size"] = &Rect::size;
   }
   {
     // Transform
@@ -522,6 +526,13 @@ bool Script::initialize() {
     v["setFullscreen"] = &Window::setFullscreen;
     v["rename"] = &Window::rename;
     v["resized"] = &Window::resized;
+    v["rect"] = &Window::rect;
+    v["topLeft"] = &Window::topLeft;
+    v["topCenter"] = &Window::topCenter;
+    v["topRight"] = &Window::topRight;
+    v["bottomLeft"] = &Window::bottomLeft;
+    v["bottomCenter"] = &Window::bottomCenter;
+    v["bottomRight"] = &Window::bottomRight;
   }
   {
     auto v = lua.create_named("Physics");

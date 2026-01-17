@@ -97,6 +97,7 @@ static bool loadCore(const unsigned char *fontData,
 }
 bool Font::load(int pointSize) {
   pointSize += 16;
+  stbtt_InitFont(&fontInfo, mplus1pMediumTtf, 0);
   this->m_size = pointSize;
   this->sheetSize = pointSize * 64;
 
@@ -191,6 +192,78 @@ const char *utf8ToCodepoint(const char *p, uint32_t *out_cp) {
   }
   *out_cp = 0xFFFD;
   return p + 1;
+}
+
+typedef struct {
+  float w, h;
+  float minx, miny, maxx, maxy;
+} TextBounds;
+
+TextBounds measureTextUTF32(const stbtt_fontinfo *font, float pixelHeight,
+                            const UInt32 *cps, int count) {
+  float scale = stbtt_ScaleForPixelHeight(font, pixelHeight);
+
+  int ascent, descent, lineGap;
+  stbtt_GetFontVMetrics(font, &ascent, &descent, &lineGap);
+  float baseline = ascent * scale;
+
+  float x = 0.0f;
+  float minx = 1e30f, miny = 1e30f;
+  float maxx = -1e30f, maxy = -1e30f;
+
+  int prev = 0;
+  for (int i = 0; i < count; i++) {
+    int cp = cps[i];
+
+    // kerning
+    if (prev)
+      x += stbtt_GetCodepointKernAdvance(font, prev, cp) * scale;
+
+    int advance, lsb;
+    stbtt_GetCodepointHMetrics(font, cp, &advance, &lsb);
+
+    int x0, y0, x1, y1;
+    stbtt_GetCodepointBitmapBox(font, cp, scale, scale, &x0, &y0, &x1, &y1);
+
+    float gx0 = x + x0;
+    float gy0 = baseline + y0;
+    float gx1 = x + x1;
+    float gy1 = baseline + y1;
+
+    if (gx0 < minx)
+      minx = gx0;
+    if (gy0 < miny)
+      miny = gy0;
+    if (gx1 > maxx)
+      maxx = gx1;
+    if (gy1 > maxy)
+      maxy = gy1;
+
+    // pen advance
+    x += advance * scale;
+    prev = cp;
+  }
+
+  TextBounds b;
+  b.minx = (count ? minx : 0.0f);
+  b.miny = (count ? miny : 0.0f);
+  b.maxx = (count ? maxx : 0.0f);
+  b.maxy = (count ? maxy : 0.0f);
+  b.w = (count ? (maxx - minx) : 0.0f);
+  b.h = (count ? (maxy - miny) : 0.0f);
+  return b;
+}
+
+Rect Font::region(StringView text, int fontSize, float x, float y) {
+  const char *p = text.data();
+  Array<UInt32> cps;
+  while (*p) {
+    UInt32 cp;
+    p = utf8ToCodepoint(p, &cp);
+    cps.push_back(cp);
+  }
+  auto m = measureTextUTF32(&fontInfo, fontSize, cps.data(), cps.size());
+  return Rect(x, y, m.w, m.h);
 }
 
 Mesh Font::getTextMesh(StringView text) const {

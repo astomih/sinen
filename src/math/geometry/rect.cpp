@@ -1,11 +1,11 @@
 #include "rect.hpp"
 namespace sinen {
-Rect::Rect() : pos(), size() {}
+Rect::Rect() : _pos(), _size() {}
 
 Rect::Rect(float x, float y, float width, float height)
     : x(x), y(y), width(width), height(height) {}
 
-Rect::Rect(const Vec2 &pos, const Vec2 &size) : pos(pos), size(size) {}
+Rect::Rect(const Vec2 &_pos, const Vec2 &_size) : _pos(_pos), _size(_size) {}
 
 Rect::Rect(Pivot pivot, float x, float y, float width, float height) {
   switch (pivot) {
@@ -31,7 +31,7 @@ Rect::Rect(Pivot pivot, float x, float y, float width, float height) {
     *this = Rect(x - width * 0.5f, y + height * 0.5f, width, height);
     break;
   default:
-    assert(false && "Pivot error");
+    assert(false && "Invalid pivot");
     *this = Rect();
   }
 }
@@ -40,32 +40,30 @@ Rect::Rect(Pivot pivot, const Vec2 &pos, const Vec2 &size) {
   *this = Rect(pivot, pos.x, pos.y, size.x, size.y);
 }
 
-Rect Rect::topLeft() const {
-  return Rect(pos.x - size.x * 0.5f, pos.y + size.y * 0.5f, size.x, size.y);
+Vec2 Rect::topLeft() const {
+  return Vec2(_pos.x - _size.x * 0.5f, _pos.y + _size.y * 0.5f);
 }
 
-Rect Rect::topCenter() const {
-  return Rect(pos.x, pos.y + size.y * 0.5f, size.x, size.y);
+Vec2 Rect::topCenter() const { return Vec2(_pos.x, _pos.y + _size.y * 0.5f); }
+
+Vec2 Rect::topRight() const {
+  return Vec2(_pos.x + _size.x * 0.5f, _pos.y + _size.y * 0.5f);
 }
 
-Rect Rect::topRight() const {
-  return Rect(pos.x + size.x * 0.5f, pos.y + size.y * 0.5f, size.x, size.y);
+Vec2 Rect::center() const { return _pos; }
+Vec2 Rect::bottomLeft() const {
+  return Vec2(_pos.x - _size.x * 0.5f, _pos.y - _size.y * 0.5f);
 }
 
-Rect Rect::center() const { return *this; }
-Rect Rect::bottomLeft() const {
-  return Rect(pos.x - size.x * 0.5f, pos.y - size.y * 0.5f, size.x, size.y);
+Vec2 Rect::bottomCenter() const {
+  return Vec2(_pos.x, _pos.y - _size.y * 0.5f);
 }
 
-Rect Rect::bottomCenter() const {
-  return Rect(pos.x, pos.y - size.y * 0.5f, size.x, size.y);
+Vec2 Rect::bottomRight() const {
+  return Vec2(_pos.x + _size.x * 0.5f, _pos.y - _size.y * 0.5f);
 }
 
-Rect Rect::bottomRight() const {
-  return Rect(pos.x + size.x * 0.5f, pos.y - size.y * 0.5f, size.x, size.y);
-}
-
-Rect Rect::fromPivot(Pivot pivot) const {
+Vec2 Rect::positionfromPivot(Pivot pivot) const {
   switch (pivot) {
   case Pivot::TopLeft:
     return topLeft();
@@ -88,8 +86,8 @@ Rect Rect::fromPivot(Pivot pivot) const {
 bool Rect::intersectsRect(const Rect &rect) {
   auto own = topLeft();
   auto other = rect.topLeft();
-  return (own.x <= other.x + other.width && other.x <= own.x + own.width) &&
-         (other.y <= own.y + own.height && own.y <= other.y + own.height);
+  return (own.x <= other.x + width && other.x <= own.x + width) &&
+         (other.y <= own.y + height && own.y <= other.y + height);
 }
 
 Mesh Rect::createMesh() {

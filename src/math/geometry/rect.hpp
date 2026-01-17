@@ -20,19 +20,22 @@ struct Rect {
       float height;
     };
     struct {
-      Vec2 pos;
-      Vec2 size;
+      Vec2 _pos;
+      Vec2 _size;
     };
   };
 
-  Rect topLeft() const;
-  Rect topCenter() const;
-  Rect topRight() const;
-  Rect center() const;
-  Rect bottomLeft() const;
-  Rect bottomCenter() const;
-  Rect bottomRight() const;
-  Rect fromPivot(Pivot pivot) const;
+  Vec2 topLeft() const;
+  Vec2 topCenter() const;
+  Vec2 topRight() const;
+  Vec2 center() const;
+  Vec2 bottomLeft() const;
+  Vec2 bottomCenter() const;
+  Vec2 bottomRight() const;
+
+  Vec2 position() const { return _pos; }
+  Vec2 positionfromPivot(Pivot pivot) const;
+  Vec2 size() const { return _size; }
 
   bool intersectsRect(const Rect &rect);
   Mesh createMesh();

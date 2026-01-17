@@ -55,6 +55,18 @@ void Window::rename(StringView name) {
   mName = name;
   SDL_SetWindowTitle(mWindow, mName.c_str());
 }
+
+Vec2 Window::size() { return mSize; }
+bool Window::resized() { return mResized; }
+String Window::name() { return mName; }
+Rect Window::rect() { return Rect(Vec2(0), size()); }
+Vec2 Window::topLeft() { return rect().topLeft(); }
+Vec2 Window::topCenter() { return rect().topCenter(); }
+Vec2 Window::topRight() { return rect().topRight(); }
+Vec2 Window::bottomLeft() { return rect().bottomLeft(); }
+Vec2 Window::bottomCenter() { return rect().bottomCenter(); }
+Vec2 Window::bottomRight() { return rect().bottomRight(); }
+
 void Window::prepareFrame() { mResized = false; }
 void Window::processEvent(SDL_Event &event) {
   if (event.window.type == SDL_EventType::SDL_EVENT_WINDOW_RESIZED) {

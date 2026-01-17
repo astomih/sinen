@@ -3,6 +3,7 @@
 #include <asset/texture/texture.hpp>
 #include <core/data/string.hpp>
 #include <math/geometry/mesh.hpp>
+#include <math/geometry/rect.hpp>
 
 #include <future>
 #include <stb_truetype.h>
@@ -26,11 +27,14 @@ public:
   int size() const { return m_size; }
   void resize(int point_size);
 
+  Rect region(StringView text, int fontSize, float x, float y);
+
   Texture getAtlas() const;
   Mesh getTextMesh(StringView text) const;
 
 private:
   Array<Array<stbtt_packedchar>> packedChar;
+  stbtt_fontinfo fontInfo;
   Texture texture;
   uint32_t sheetSize;
   std::future<bool> future;

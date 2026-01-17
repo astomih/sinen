@@ -103,7 +103,7 @@ sn = {
     ---@field new fun(): sn.Model
     ---@field getAABB fun(self: sn.Model): sn.AABB
     ---@field load fun(self: sn.Model, path: string)
-    ---@field loadFromPath fun(self: sn.Model, path: string)
+    ---@field load fun(self: sn.Model, buffer: sn.Buffer)
     ---@field loadSprite fun(self: sn.Model)
     ---@field loadBox fun(self: sn.Model)
     ---@field getBoneUniformBuffer fun(self: sn.Model): sn.Buffer
@@ -134,16 +134,17 @@ sn = {
 
     ---@class sn.Shader
     ---@field new fun(): sn.Shader
-    ---@field load fun(self: sn.Shader, path: string, shaderStage: number, uniform_count: integer)
-    ---@field compileAndLoad fun(self: sn.Shader, source: string, shaderStage: number)
+    ---@field load fun(self: sn.Shader, path: string, shaderStage: sn.ShaderStage, uniform_count: integer)
+    ---@field compileAndLoad fun(self: sn.Shader, source: string, shaderStage: sn.ShaderStage)
     Shader = {},
 
     ---@class sn.Font
     ---@field new fun(): sn.Font
-    ---@field load fun(self: sn.Font, size: integer, path: string?): nil
-    ---@field loadFromPath fun(self: sn.Font, size: integer, path: string): nil
-    ---@field renderText fun(self: sn.Font, texture: sn.Texture, text: string, color: sn.Color): sn.Texture
+    ---@field load fun(self: sn.Font, size: integer)
+    ---@field load fun(self: sn.Font, size: integer, path: string)
+    ---@field load fun(self: sn.Font, size: integer, buffer: sn.Buffer)
     ---@field resize fun(self: sn.Font, size: integer)
+    ---@field region fun(self: sn.Font, text: string, fontSize: number, x: number, y: number)
     Font = {},
 
     ---@class sn.Color
@@ -211,12 +212,15 @@ sn = {
     ---@field new fun(position: sn.Vec2, size: sn.Vec2):sn.Rect
     ---@field new fun(pivot:sn.Pivot,x:number,y:number,w:number,h:number)
     ---@field new fun(pivot:sn.Pivot,pos:sn.Vec2,size:sn.Vec2)
-    ---@field topLeft fun(self:sn.Rect) :sn.Rect
-    ---@field topCenter fun(self:sn.Rect) :sn.Rect
-    ---@field topRight fun(self:sn.Rect) :sn.Rect
-    ---@field bottomLeft fun(self:sn.Rect) :sn.Rect
-    ---@field bottomCenter fun(self:sn.Rect) :sn.Rect
-    ---@field bottomRight fun(self:sn.Rect) :sn.Rect
+    ---@field topLeft fun(self:sn.Rect) :sn.Vec2
+    ---@field topCenter fun(self:sn.Rect) :sn.Vec2
+    ---@field topRight fun(self:sn.Rect) :sn.Vec2
+    ---@field bottomLeft fun(self:sn.Rect) :sn.Vec2
+    ---@field bottomCenter fun(self:sn.Rect) :sn.Vec2
+    ---@field bottomRight fun(self:sn.Rect) :sn.Vec2
+    ---@field position fun(self:sn.Rect):sn.Vec2
+    ---@field positionFromPivot fun(self:sn.Rect, pivot: sn.Pivot):sn.Vec2
+    ---@field size fun(self:sn.Rect):sn.Vec2
     ---@field intersectsRect fun(self:sn.Rect,rect:sn.Rect) :sn.Rect
     Rect = {},
 

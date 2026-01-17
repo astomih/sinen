@@ -5,6 +5,7 @@
 #include <math/vector.hpp>
 
 #include <SDL3/SDL.h>
+
 namespace sinen {
 class Window {
 public:
@@ -17,10 +18,17 @@ public:
   static void setFullscreen(bool fullscreen);
   static void rename(StringView name);
 
-  static Vec2 size() { return mSize; }
-  static bool resized() { return mResized; }
+  static Vec2 size();
+  static bool resized();
   static Vec2 half() { return Vec2(mSize.x / 2.0, mSize.y / 2.0); }
-  static String name() { return mName; }
+  static Rect rect();
+  static Vec2 topLeft();
+  static Vec2 topCenter();
+  static Vec2 topRight();
+  static Vec2 bottomLeft();
+  static Vec2 bottomCenter();
+  static Vec2 bottomRight();
+  static String name();
 
 private:
   static bool mResized;

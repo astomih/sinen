@@ -10,9 +10,6 @@
 [submodule "libs/rapidjson"]
 	path = libs/rapidjson
 	url = https://github.com/Tencent/rapidjson/
-[submodule "libs/sol2"]
-	path = libs/sol2
-	url = https://github.com/ThePhD/sol2
 [submodule "libs/slang"]
 	path = libs/slang
 	url = https://github.com/shader-slang/slang

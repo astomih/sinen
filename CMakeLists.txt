@@ -14,7 +14,6 @@ include(${SINEN_SOURCE_DIR}/cmake/include_dir.cmake)
 
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/assimp EXCLUDE_FROM_ALL)
-add_subdirectory(${SINEN_SOURCE_DIR}/libs/sol2 EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/JoltPhysics/Build EXCLUDE_FROM_ALL)
 if(WIN32)
   set(CMAKE_FOLDER "webgpu")

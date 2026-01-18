@@ -32,6 +32,8 @@
 #define SOL_NO_CHECK_NUMBER_PRECISION 1
 #include <sol/sol.hpp>
 
+#include <imgui.h>
+
 #include <format>
 
 namespace sinen {
@@ -472,38 +474,25 @@ bool Script::initialize() {
   {
     auto v = lua.new_usertype<Grid>(
         "Grid", sol::constructors<sol::types<float, float>>());
-    v["at"] = [](Grid &g, int x, int y) { return g.at(x - 1, y - 1); };
-    v["set"] = [](Grid &g, int x, int y, float v) {
-      return g.at(x - 1, y - 1) = v;
-    };
+    v["at"] = &Grid::at;
+    v["set"] = [](Grid &g, int x, int y, float v) { return g.at(x, y) = v; };
     v["width"] = &Grid::width;
     v["height"] = &Grid::height;
     v["size"] = &Grid::size;
     v["clear"] = &Grid::clear;
     v["resize"] = &Grid::resize;
     v["fill"] = &Grid::fill;
-    v["fillRect"] = [](Grid &grid, const Rect &rect, int value) {
-      grid.fillRect({rect.x + 1, rect.y + 1, rect.width, rect.height}, value);
-    };
-    v["setRow"] = [](Grid &grid, int index, float value) {
-      grid.setRow(index + 1, value);
-    };
-    v["setColumn"] = [](Grid &grid, int index, float value) {
-      grid.setColumn(index + 1, value);
-    };
+    v["fillRect"] = &Grid::fillRect;
+    v["setRow"] = &Grid::setRow;
+    v["setColumn"] = &Grid::setColumn;
   }
   {
     auto v = lua.new_usertype<BFSGrid>(
         "BFSGrid", sol::constructors<sol::types<const Grid &>>());
     v["width"] = &BFSGrid::width;
     v["height"] = &BFSGrid::height;
-    v["findPath"] = [](BFSGrid &g, const Vec2 &start, const Vec2 &end) {
-      return g.findPath({start.x - 1, start.y - 1}, {end.x - 1, end.y - 1});
-    };
-    v["trace"] = [](BFSGrid &g) {
-      auto t = g.trace();
-      return Vec2{t.x + 1, t.y + 1};
-    };
+    v["findPath"] = &BFSGrid::findPath;
+    v["trace"] = &BFSGrid::trace;
     v["traceable"] = &BFSGrid::traceable;
     v["reset"] = &BFSGrid::reset;
   }
@@ -794,7 +783,50 @@ bool Script::initialize() {
     v["warn"] = [](StringView str) { Logger::warn("%s", str.data()); };
     v["critical"] = [](StringView str) { Logger::critical("%s", str.data()); };
   }
-  bindImGui(lua);
+  auto imgui = lua.create_named("ImGui");
+  imgui["Begin"] =
+      sol::overload([](StringView name) { return ImGui::Begin(name.data()); },
+                    [](StringView name, int flags) {
+                      ImGui::Begin(name.data(), nullptr, flags);
+                    });
+  imgui["End"] = &ImGui::End;
+  imgui["button"] = [](StringView name) { return ImGui::Button(name.data()); };
+  imgui["text"] = [](StringView text) { ImGui::Text("%s", text.data()); };
+  imgui["setNextWindowPos"] = [](const Vec2 &pos) {
+    ImGui::SetNextWindowPos({pos.x, pos.y});
+  };
+  imgui["setNextWindowSize"] = [](const Vec2 &size) {
+    ImGui::SetNextWindowSize({size.x, size.y});
+  };
+  {
+    auto windowFlags = imgui.create_named("WindowFlags");
+    windowFlags["None"] = ImGuiWindowFlags_None;
+    windowFlags["NoTitleBar"] = ImGuiWindowFlags_NoTitleBar;
+    windowFlags["NoResize"] = ImGuiWindowFlags_NoResize;
+    windowFlags["NoMove"] = ImGuiWindowFlags_NoMove;
+    windowFlags["NoScrollBar"] = ImGuiWindowFlags_NoScrollbar;
+    windowFlags["NoScrollWithMouse"] = ImGuiWindowFlags_NoScrollWithMouse;
+    windowFlags["NoCollapse"] = ImGuiWindowFlags_NoCollapse;
+    windowFlags["AlwaysAutoResize"] = ImGuiWindowFlags_AlwaysAutoResize;
+    windowFlags["NoBackground"] = ImGuiWindowFlags_NoBackground;
+    windowFlags["NoSavedSettings;"] = ImGuiWindowFlags_NoSavedSettings;
+    windowFlags["NoMouseInputs"] = ImGuiWindowFlags_NoMouseInputs;
+    windowFlags["MenuBar"] = ImGuiWindowFlags_MenuBar;
+    windowFlags["HorizontalScrollbar"] = ImGuiWindowFlags_HorizontalScrollbar;
+    windowFlags["NoFocusOnAppearing"] = ImGuiWindowFlags_NoFocusOnAppearing;
+    windowFlags["NoBringToFrontOnFocus"] =
+        ImGuiWindowFlags_NoBringToFrontOnFocus;
+    windowFlags["AlwaysVerticalScrollbar"] =
+        ImGuiWindowFlags_AlwaysVerticalScrollbar;
+    windowFlags["AlwaysHorizontalScrollbar"] =
+        ImGuiWindowFlags_AlwaysHorizontalScrollbar;
+    windowFlags["NoNavInputs"] = ImGuiWindowFlags_NoNavInputs;
+    windowFlags["NoNavFocus"] = ImGuiWindowFlags_NoNavFocus;
+    windowFlags["UnsavedDocument"] = ImGuiWindowFlags_UnsavedDocument;
+    windowFlags["NoNav"] = ImGuiWindowFlags_NoNav;
+    windowFlags["NoDecoration"] = ImGuiWindowFlags_NoDecoration;
+    windowFlags["NoInputs"] = ImGuiWindowFlags_NoInputs;
+  }
 #endif
   return true;
 }

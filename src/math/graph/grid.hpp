@@ -161,8 +161,7 @@ public:
    * @return T& Object
    */
   inline T &at(const std::size_t &x, const std::size_t &y) {
-    assert(x >= 0 && y >= 0 && x < width() && y < height());
-    return m_data[y * m_width + x];
+    return m_data.at(y * m_width + x);
   }
   /**
    * @brief Directly access the specified object

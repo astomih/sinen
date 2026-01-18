@@ -1,5 +1,14 @@
 ---@diagnostic disable: duplicate-index, lowercase-global
+
+-- Custom import(require) function.
+-- Relative read only. But suitable special env(ex. archive, Mobile, Web)
 import = function(name) end
+
+--- Tutorial
+--- Sinen is read lua files that defined setup()/update()/draw(). But these function is optional.
+--- In 2D rendering, screen origin is center. So, +y equals top of screen direction. This is the same as math coordinates.
+---  Of course, some people will not like this, so we provide some helper functions such as sn.Rect:leftTop().
+
 sn = {
     ---@class sn.Buffer
     ---@field new fun(array: table): sn.Buffer
@@ -160,7 +169,9 @@ sn = {
 
     ---@class sn.Grid
     ---@field new fun(w: integer, h: integer): sn.Grid
+    --- index starts 0
     ---@field at fun(self: sn.Grid, x: integer, y: integer): integer
+    --- index starts 0
     ---@field set fun(self: sn.Grid, x: integer, y: integer, v: integer)
     ---@field width fun(self: sn.Grid): integer
     ---@field height fun(self: sn.Grid): integer
@@ -168,8 +179,11 @@ sn = {
     ---@field clear fun(self: sn.Grid)
     ---@field resize fun(self: sn.Grid, w: integer, h: integer)
     ---@field fill fun(self: sn.Grid, value: integer)
+    --- index starts 0
     ---@field fillRect fun(self: sn.Grid, index: integer, value: integer)
+    --- index starts 0
     ---@field setRow fun(self: sn.Grid, index: integer, value: integer)
+    --- index starts 0
     ---@field setColumn fun(self: sn.Grid, index: integer, value: integer)
     Grid = {},
 
@@ -177,6 +191,7 @@ sn = {
     ---@field new fun(grid: sn.Grid): sn.BFSGrid
     ---@field width fun(self: sn.BFSGrid): integer
     ---@field height fun(self: sn.BFSGrid): integer
+    --- index starts 0
     ---@field findPath fun(self: sn.BFSGrid, start: sn.Vec2, end_: sn.Vec2): any
     ---@field trace fun(self: sn.BFSGrid): sn.Vec2
     ---@field traceable fun(self: sn.BFSGrid): boolean

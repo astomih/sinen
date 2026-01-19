@@ -20,16 +20,6 @@ using namespace sinen;
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 
-struct ImGuiLog {
-  struct Type {
-    ImVec4 color;
-    String str;
-  };
-  static Array<Type> logs;
-};
-Array<ImGuiLog::Type> ImGuiLog::logs =
-    Array<ImGuiLog::Type>(GlobalAllocator::get());
-
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
   Arguments::argc = argc;
   Arguments ::argv.resize(argc);
@@ -44,41 +34,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     Logger::critical("Failed to initialize SDL");
     return SDL_APP_FAILURE;
   }
-
-  Logger::setOutputFunction([&](Logger::priority p, StringView str) {
-    String newStr;
-    ImVec4 color;
-    switch (p) {
-    case Logger::priority::verbose:
-      color = ImVec4(0.0f, 1.0f, 1.0f, 1.0f);
-      newStr = "VERBOSE: " + String(str);
-      break;
-    case Logger::priority::debug:
-      color = ImVec4(0.0f, 0.0f, 1.0f, 1.0f);
-      newStr = "DEBUG: " + String(str);
-      break;
-    case Logger::priority::info:
-      color = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
-      newStr = "INFO: " + String(str);
-      break;
-    case Logger::priority::error:
-      color = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
-      newStr = "ERROR: " + String(str);
-      break;
-    case Logger::priority::warn:
-      color = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
-      newStr = "WARN: " + String(str);
-      break;
-    case Logger::priority::critical:
-      color = ImVec4(1.0f, 0.0f, 1.0f, 1.0f);
-      newStr = "CRITICAL: " + String(str);
-      break;
-    default:
-      color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-      break;
-    }
-    ImGuiLog::logs.push_back({color, newStr});
-  });
 
   if (!Window::initialize("Sinen")) {
     Logger::critical("Failed to initialize window");
@@ -115,29 +70,6 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
   if (Event::isQuit())
     return SDL_APP_SUCCESS;
   Input::update();
-  {
-    if (Keyboard::isPressed(Keyboard::Code::F3) ||
-        KeyInput::isPressed(KeyInput::AC_BACK)) {
-      Graphics::toggleShowImGui();
-      if (Graphics::isShowImGui()) {
-        Graphics::addImGuiFunction([&]() {
-          // Log Window
-          ImGui::SetNextWindowPos(ImVec2(0, Window::size().y * (3.f / 4.f)),
-                                  ImGuiCond_Always);
-          ImGui::SetNextWindowSize(
-              ImVec2(Window::size().x, Window::size().y * (1.f / 4.f)),
-              ImGuiCond_Always);
-          ImGui::Begin("Log", nullptr, ImGuiWindowFlags_NoResize);
-          for (auto &log : ImGuiLog::logs) {
-            ImGui::TextColored(log.color, "%s", (log.str).c_str());
-          }
-          ImGui::End();
-        });
-      } else {
-        Graphics::getImGuiFunction().clear();
-      }
-    }
-  }
   Time::update();
   Script::updateScene();
   Physics::update();

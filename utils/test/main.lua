@@ -7,10 +7,10 @@ local v = sn.Transform.new()
 sn.Logger.info(v)
 
 
-function Update()
+function update()
 end
 
-function Draw()
+function draw()
   sn.ImGui.Begin("Hello ImGui")
   sn.ImGui.End()
 end

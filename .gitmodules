@@ -43,3 +43,6 @@
 [submodule "libs/VulkanMemoryAllocator"]
 	path = libs/VulkanMemoryAllocator
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+[submodule "libs/luau"]
+	path = libs/luau
+	url = https://github.com/luau-lang/luau

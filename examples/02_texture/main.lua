@@ -1,7 +1,6 @@
-local image
+local image = sn.Texture.new()
 function setup()
     -- Create a image
-    image = sn.Texture.new()
     image:load("logo.png")
 end
 

@@ -1,6 +1,5 @@
-local model
+local model = sn.Model.new()
 function setup()
-    model = sn.Model.new()
     model:load("BrainStem.glb")
     local texture = sn.Texture.new()
     texture:fill(sn.Color.new(1, 1, 1, 1))

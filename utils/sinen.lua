@@ -1,9 +1,5 @@
 ---@diagnostic disable: duplicate-index, lowercase-global
 
--- Custom import(require) function.
--- Relative read only. But suitable special env(ex. archive, Mobile, Web)
-import = function(name) end
-
 --- Tutorial
 --- Sinen is read lua files that defined setup()/update()/draw(). But these function is optional.
 --- In 2D rendering, screen origin is center. So, +y equals top of screen direction. This is the same as math coordinates.
@@ -53,7 +49,7 @@ sn = {
 
     ---@class sn.Texture
     ---@field new fun(): sn.Texture
-    ---@field new fun(width: integer, height: integer): sn.Texture
+    ---@field new fun(width: number, height: number): sn.Texture
     ---@field fill fun(self: sn.Texture, color: sn.Color)
     ---@field blend fun(self: sn.Texture, color: sn.Color)
     ---@field copy fun(self: sn.Texture): sn.Texture
@@ -65,7 +61,7 @@ sn = {
 
     ---@class sn.RenderTexture
     ---@field new fun(): sn.RenderTexture
-    ---@field create fun(self: sn.RenderTexture, x: integer, y: integer)
+    ---@field create fun(self: sn.RenderTexture, x: number, y: number)
     RenderTexture = {},
 
     ---@class sn.Sound
@@ -143,16 +139,16 @@ sn = {
 
     ---@class sn.Shader
     ---@field new fun(): sn.Shader
-    ---@field load fun(self: sn.Shader, path: string, shaderStage: sn.ShaderStage, uniform_count: integer)
+    ---@field load fun(self: sn.Shader, path: string, shaderStage: sn.ShaderStage, uniform_count: number)
     ---@field compileAndLoad fun(self: sn.Shader, source: string, shaderStage: sn.ShaderStage)
     Shader = {},
 
     ---@class sn.Font
     ---@field new fun(): sn.Font
-    ---@field load fun(self: sn.Font, size: integer)
-    ---@field load fun(self: sn.Font, size: integer, path: string)
-    ---@field load fun(self: sn.Font, size: integer, buffer: sn.Buffer)
-    ---@field resize fun(self: sn.Font, size: integer)
+    ---@field load fun(self: sn.Font, size: number)
+    ---@field load fun(self: sn.Font, size: number, path: string)
+    ---@field load fun(self: sn.Font, size: number, buffer: sn.Buffer)
+    ---@field resize fun(self: sn.Font, size: number)
     ---@field region fun(self: sn.Font, text: string, fontSize: number, pivot: number, position: sn.Vec2): sn.Rect
     Font = {},
 
@@ -168,29 +164,29 @@ sn = {
     Color = {},
 
     ---@class sn.Grid
-    ---@field new fun(w: integer, h: integer): sn.Grid
+    ---@field new fun(w: number, h: number): sn.Grid
     --- index starts 0
-    ---@field at fun(self: sn.Grid, x: integer, y: integer): integer
+    ---@field at fun(self: sn.Grid, x: number, y: number): number
     --- index starts 0
-    ---@field set fun(self: sn.Grid, x: integer, y: integer, v: integer)
-    ---@field width fun(self: sn.Grid): integer
-    ---@field height fun(self: sn.Grid): integer
-    ---@field size fun(self: sn.Grid): integer
+    ---@field set fun(self: sn.Grid, x: number, y: number, v: number)
+    ---@field width fun(self: sn.Grid): number
+    ---@field height fun(self: sn.Grid): number
+    ---@field size fun(self: sn.Grid): number
     ---@field clear fun(self: sn.Grid)
-    ---@field resize fun(self: sn.Grid, w: integer, h: integer)
-    ---@field fill fun(self: sn.Grid, value: integer)
+    ---@field resize fun(self: sn.Grid, w: number, h: number)
+    ---@field fill fun(self: sn.Grid, value: number)
     --- index starts 0
-    ---@field fillRect fun(self: sn.Grid, index: integer, value: integer)
+    ---@field fillRect fun(self: sn.Grid, index: number, value: number)
     --- index starts 0
-    ---@field setRow fun(self: sn.Grid, index: integer, value: integer)
+    ---@field setRow fun(self: sn.Grid, index: number, value: number)
     --- index starts 0
-    ---@field setColumn fun(self: sn.Grid, index: integer, value: integer)
+    ---@field setColumn fun(self: sn.Grid, index: number, value: number)
     Grid = {},
 
     ---@class sn.BFSGrid
     ---@field new fun(grid: sn.Grid): sn.BFSGrid
-    ---@field width fun(self: sn.BFSGrid): integer
-    ---@field height fun(self: sn.BFSGrid): integer
+    ---@field width fun(self: sn.BFSGrid): number
+    ---@field height fun(self: sn.BFSGrid): number
     --- index starts 0
     ---@field findPath fun(self: sn.BFSGrid, start: sn.Vec2, end_: sn.Vec2): any
     ---@field trace fun(self: sn.BFSGrid): sn.Vec2
@@ -254,7 +250,7 @@ sn = {
 
     ---Static class
     ---@class sn.Arguments
-    ---@field getArgc fun(): integer
+    ---@field getArgc fun(): number
     ---@field getArgv fun(): string[]
     Arguments = {},
 
@@ -297,11 +293,12 @@ sn = {
     Window = {},
 
     ---Static class
-    ---@class sn.ShaderStage
-    ---@field Vertex number
-    ---@field Fragment number
-    ---@field Compute number
-    ShaderStage = {},
+    ---@enum sn.ShaderStage
+    ShaderStage = {
+        Vertex = 0,
+        Fragment = 1,
+        Compute = 2,
+    },
 
     ---Static class
     ---@class sn.BuiltinShader
@@ -339,7 +336,7 @@ sn = {
     ---@field setTexture fun(slotIndex : number, texture:sn.Texture)
     ---@field resetTexture fun(slotIndex : number)
     ---@field resetAllTexture fun()
-    ---@field setUniformBuffer fun(binding: integer, data: sn.Buffer)
+    ---@field setUniformBuffer fun(binding: number, data: sn.Buffer)
     ---@field setRenderTarget fun(rt: sn.RenderTexture)
     ---@field flush fun()
     ---@field readbackTexture fun(rt: sn.RenderTexture, out: sn.Texture): sn.Texture
@@ -354,83 +351,83 @@ sn = {
 
     ---Static class
     ---@class sn.Keyboard
-    ---@field A integer
-    ---@field B integer
-    ---@field C integer
-    ---@field D integer
-    ---@field E integer
-    ---@field F integer
-    ---@field G integer
-    ---@field H integer
-    ---@field I integer
-    ---@field J integer
-    ---@field K integer
-    ---@field L integer
-    ---@field M integer
-    ---@field N integer
-    ---@field O integer
-    ---@field P integer
-    ---@field Q integer
-    ---@field R integer
-    ---@field S integer
-    ---@field T integer
-    ---@field U integer
-    ---@field V integer
-    ---@field W integer
-    ---@field X integer
-    ---@field Y integer
-    ---@field Z integer
-    ---@field Key0 integer
-    ---@field Key1 integer
-    ---@field Key2 integer
-    ---@field Key3 integer
-    ---@field Key4 integer
-    ---@field Key5 integer
-    ---@field Key6 integer
-    ---@field Key7 integer
-    ---@field Key8 integer
-    ---@field Key9 integer
-    ---@field F1 integer
-    ---@field F2 integer
-    ---@field F3 integer
-    ---@field F4 integer
-    ---@field F5 integer
-    ---@field F6 integer
-    ---@field F7 integer
-    ---@field F8 integer
-    ---@field F9 integer
-    ---@field F10 integer
-    ---@field F11 integer
-    ---@field F12 integer
-    ---@field UP integer
-    ---@field DOWN integer
-    ---@field LEFT integer
-    ---@field RIGHT integer
-    ---@field ESCAPE integer
-    ---@field SPACE integer
-    ---@field BACKSPACE integer
-    ---@field TAB integer
-    ---@field RETURN integer
-    ---@field LSHIFT integer
-    ---@field RSHIFT integer
-    ---@field LCTRL integer
-    ---@field RCTRL integer
-    ---@field LALT integer
-    ---@field isPressed fun(scancode: integer): boolean
-    ---@field isReleased fun(scancode: integer): boolean
-    ---@field isDown fun(scancode: integer): boolean
+    ---@field A number
+    ---@field B number
+    ---@field C number
+    ---@field D number
+    ---@field E number
+    ---@field F number
+    ---@field G number
+    ---@field H number
+    ---@field I number
+    ---@field J number
+    ---@field K number
+    ---@field L number
+    ---@field M number
+    ---@field N number
+    ---@field O number
+    ---@field P number
+    ---@field Q number
+    ---@field R number
+    ---@field S number
+    ---@field T number
+    ---@field U number
+    ---@field V number
+    ---@field W number
+    ---@field X number
+    ---@field Y number
+    ---@field Z number
+    ---@field Key0 number
+    ---@field Key1 number
+    ---@field Key2 number
+    ---@field Key3 number
+    ---@field Key4 number
+    ---@field Key5 number
+    ---@field Key6 number
+    ---@field Key7 number
+    ---@field Key8 number
+    ---@field Key9 number
+    ---@field F1 number
+    ---@field F2 number
+    ---@field F3 number
+    ---@field F4 number
+    ---@field F5 number
+    ---@field F6 number
+    ---@field F7 number
+    ---@field F8 number
+    ---@field F9 number
+    ---@field F10 number
+    ---@field F11 number
+    ---@field F12 number
+    ---@field UP number
+    ---@field DOWN number
+    ---@field LEFT number
+    ---@field RIGHT number
+    ---@field ESCAPE number
+    ---@field SPACE number
+    ---@field BACKSPACE number
+    ---@field TAB number
+    ---@field RETURN number
+    ---@field LSHIFT number
+    ---@field RSHIFT number
+    ---@field LCTRL number
+    ---@field RCTRL number
+    ---@field LALT number
+    ---@field isPressed fun(scancode: number): boolean
+    ---@field isReleased fun(scancode: number): boolean
+    ---@field isDown fun(scancode: number): boolean
     Keyboard = {},
 
     ---Static class
     ---@class sn.Mouse
-    ---@field LEFT integer
-    ---@field RIGHT integer
-    ---@field MIDDLE integer
-    ---@field X1 integer
-    ---@field X2 integer
-    ---@field isPressed fun(btn: integer): boolean
-    ---@field isReleased fun(btn: integer): boolean
-    ---@field isDown fun(btn: integer): boolean
+    ---@field LEFT number
+    ---@field RIGHT number
+    ---@field MIDDLE number
+    ---@field X1 number
+    ---@field X2 number
+    ---@field isPressed fun(btn: number): boolean
+    ---@field isReleased fun(btn: number): boolean
+    ---@field isDown fun(btn: number): boolean
     ---@field getPosition fun(): sn.Vec2
     ---@field getPositionOnScene fun(): sn.Vec2
     ---@field setPosition fun(pos: sn.Vec2)
@@ -442,31 +439,31 @@ sn = {
 
     ---Static class
     ---@class sn.GamePad
-    ---@field INVALID integer
-    ---@field A integer
-    ---@field B integer
-    ---@field X integer
-    ---@field Y integer
-    ---@field BACK integer
-    ---@field GUIDE integer
-    ---@field START integer
-    ---@field LEFTSTICK integer
-    ---@field RIGHTSTICK integer
-    ---@field LEFTSHOULDER integer
-    ---@field RIGHTSHOULDER integer
-    ---@field DPAD_UP integer
-    ---@field DPAD_DOWN integer
-    ---@field DPAD_LEFT integer
-    ---@field DPAD_RIGHT integer
-    ---@field MISC1 integer
-    ---@field PADDLE1 integer
-    ---@field PADDLE2 integer
-    ---@field PADDLE3 integer
-    ---@field PADDLE4 integer
-    ---@field TOUCHPAD integer
-    ---@field isPressed fun(btn: integer): boolean
-    ---@field isReleased fun(btn: integer): boolean
-    ---@field isDown fun(btn: integer): boolean
+    ---@field INVALID number
+    ---@field A number
+    ---@field B number
+    ---@field X number
+    ---@field Y number
+    ---@field BACK number
+    ---@field GUIDE number
+    ---@field START number
+    ---@field LEFTSTICK number
+    ---@field RIGHTSTICK number
+    ---@field LEFTSHOULDER number
+    ---@field RIGHTSHOULDER number
+    ---@field DPAD_UP number
+    ---@field DPAD_DOWN number
+    ---@field DPAD_LEFT number
+    ---@field DPAD_RIGHT number
+    ---@field MISC1 number
+    ---@field PADDLE1 number
+    ---@field PADDLE2 number
+    ---@field PADDLE3 number
+    ---@field PADDLE4 number
+    ---@field TOUCHPAD number
+    ---@field isPressed fun(btn: number): boolean
+    ---@field isReleased fun(btn: number): boolean
+    ---@field isDown fun(btn: number): boolean
     ---@field getLeftStick fun(): sn.Vec2
     ---@field getRightStick fun(): sn.Vec2
     ---@field isConnected fun(): boolean
@@ -481,7 +478,7 @@ sn = {
     ---Static class
     ---@class sn.Time
     ---@field seconds fun(): number
-    ---@field milli fun(): integer
+    ---@field milli fun(): number
     ---@field delta fun(): number
     Time = {},
 
@@ -504,28 +501,28 @@ sn = {
     ---@field setNextWindowSize fun(size:sn.Vec2)
     ImGui = {
         ---@class sn.ImGui.WindowFlags
-        ---@field None integer
-        ---@field NoTitleBar integer
-        ---@field NoResize integer
-        ---@field NoMove integer
-        ---@field NoScrollBar integer
-        ---@field NoScrollWithMouse integer
-        ---@field NoCollapse integer
-        ---@field AlwaysAutoResize integer
-        ---@field NoBackground integer
-        ---@field NoSavedSettings integer
-        ---@field NoMouseInputs integer
-        ---@field MenuBar integer
-        ---@field HorizontalScrollbar integer
-        ---@field NoFocusOnAppearing integer
-        ---@field NoBringToFrontOnFocus integer
-        ---@field AlwaysVerticalScrollbar integer
-        ---@field AlwaysHorizontalScrollbar integer
-        ---@field NoNavInputs integer
-        ---@field NoNavFocus integer
-        ---@field UnsavedDocument integer
-        ---@field NoNav integer
-        ---@field NoDecoration integer
-        ---@field NoInputs integer
+        ---@field None number
+        ---@field NoTitleBar number
+        ---@field NoResize number
+        ---@field NoMove number
+        ---@field NoScrollBar number
+        ---@field NoScrollWithMouse number
+        ---@field NoCollapse number
+        ---@field AlwaysAutoResize number
+        ---@field NoBackground number
+        ---@field NoSavedSettings number
+        ---@field NoMouseInputs number
+        ---@field MenuBar number
+        ---@field HorizontalScrollbar number
+        ---@field NoFocusOnAppearing number
+        ---@field NoBringToFrontOnFocus number
+        ---@field AlwaysVerticalScrollbar number
+        ---@field AlwaysHorizontalScrollbar number
+        ---@field NoNavInputs number
+        ---@field NoNavFocus number
+        ---@field UnsavedDocument number
+        ---@field NoNav number
+        ---@field NoDecoration number
+        ---@field NoInputs number
     }
 }

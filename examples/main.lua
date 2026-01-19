@@ -1,4 +1,4 @@
-import("global")
+require("global")
 local button = require("gui/button").new()
 GUI_MANAGER = require("gui/gui_manager")()
 

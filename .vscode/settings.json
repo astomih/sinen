@@ -6,4 +6,8 @@
     "libs/**": true,
   },
   "C_Cpp.codeAnalysis.clangTidy.enabled": true,
+  "Lua.diagnostics.disable": [
+    "lowercase-global",
+    "duplicate-doc-field"
+  ],
 }

@@ -21,9 +21,9 @@
       "cwd": "${workspaceFolder:sinen}/examples"
     },
     {
-      "name": "Sinen test Lua Debug",
+      "name": "Sinen editor2D Lua Debug",
       "type": "lua-local",
-      "cwd": "${workspaceFolder:sinen}/utils/test",
+      "cwd": "${workspaceFolder:sinen}/utils/editor2d",
       "program": {
         "command": "${workspaceFolder:sinen}/build/msvc2026-debug/sinen",
       },

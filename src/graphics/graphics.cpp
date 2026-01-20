@@ -233,16 +233,16 @@ void Graphics::drawBase2D(const sinen::Draw2D &draw2D) {
   auto indexBufferBinding = rhi::BufferBinding{};
   auto textureSamplers = Array<rhi::TextureSamplerBinding>{};
   auto ratio = camera2D.windowRatio();
+  auto invRatio = camera2D.invWindowRatio();
   Mat4 mat[3];
   Array<Mat4> instanceData;
+  auto pos = draw2D.position * ratio;
   auto scale = draw2D.scale * 0.5f * ratio;
   {
     Transform transform;
-    transform.setPosition(
-        Vec3(draw2D.position.x * ratio.x, draw2D.position.y * ratio.y, 0.0f));
+    transform.setPosition(Vec3(pos.x, pos.y, 0.0f));
     transform.setRotation(Vec3(0, 0, draw2D.rotation));
-    transform.setScale(
-        Vec3(draw2D.scale.x * 0.5f, draw2D.scale.y * 0.5f, 1.0f));
+    transform.setScale(Vec3(scale.x, scale.y, 1.0f));
 
     mat[0] = transform.getWorldMatrix();
   }

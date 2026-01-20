@@ -27,7 +27,13 @@
 #include <platform/io/filesystem.hpp>
 #include <platform/window/window.hpp>
 
+#ifdef SINEN_USE_LUAU
+#include <Luau/Compiler.h>
+#include <lua.h>
+#include <lualib.h>
+#else
 #include <lua.hpp>
+#endif
 
 #include <imgui.h>
 
@@ -37,6 +43,37 @@
 #include <utility>
 
 namespace sinen {
+void lua_pushcfunction2(lua_State *L, lua_CFunction f) {
+#ifdef SINEN_USE_LUAU
+  lua_pushcfunction(L, f, "sn function");
+#else
+  lua_pushcfunction(L, f);
+#endif
+}
+int luaL_error2(lua_State *L, const char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+#ifdef SINEN_USE_LUAU
+  luaL_error(L, va_list(ap));
+  return 1;
+#else
+  return luaL_error(L, va_list(ap));
+#endif
+}
+static int luaL_ref2(lua_State *L, int idx) {
+#ifdef SINEN_USE_LUAU
+  return lua_ref(L, idx);
+#else
+  return luaL_ref(L, idx);
+#endif
+}
+static void luaL_unref2(lua_State *L, int idx, int r) {
+#ifdef SINEN_USE_LUAU
+  lua_unref(L, r);
+#else
+  luaL_unref(L, idx, r);
+#endif
+}
 auto alloc = [](void *ud, void *ptr, size_t osize, size_t nsize) -> void * {
   (void)ud;
   // free
@@ -155,13 +192,31 @@ template <class T> struct UdBox {
   alignas(T) std::byte storage[sizeof(T)];
 };
 
+static void *luaL_testudata2(lua_State *L, int idx, const char *tname) {
+#ifdef SINEN_USE_LUAU
+  void *p = lua_touserdata(L, idx);
+  if (!p) {
+    return nullptr;
+  }
+  if (!lua_getmetatable(L, idx)) {
+    return nullptr;
+  }
+  luaL_getmetatable(L, tname);
+  bool ok = lua_rawequal(L, -1, -2) != 0;
+  lua_pop(L, 2);
+  return ok ? p : nullptr;
+#else
+  return luaL_testudata(L, idx, tname);
+#endif
+}
+
 template <class T> static T &udValue(lua_State *L, int idx, const char *mt) {
   auto *ud = static_cast<UdBox<T> *>(luaL_checkudata(L, idx, mt));
   return *ud->ptr;
 }
 template <class T>
 static T *udValueOrNull(lua_State *L, int idx, const char *mt) {
-  auto *ud = static_cast<UdBox<T> *>(luaL_testudata(L, idx, mt));
+  auto *ud = static_cast<UdBox<T> *>(luaL_testudata2(L, idx, mt));
   return ud ? ud->ptr : nullptr;
 }
 template <class T> static int udGc(lua_State *L) {
@@ -307,7 +362,7 @@ static int lVec2Newindex(lua_State *L) {
     v.y = value;
     return 0;
   }
-  return luaL_error(L, "sn.Vec2: invalid field '%s'", k);
+  return luaL_error2(L, "sn.Vec2: invalid field '%s'", k);
 }
 static int l_Vec2_add(lua_State *L) {
   auto &a = udValue<Vec2>(L, 1, MT_VEC2);
@@ -351,30 +406,30 @@ static int l_Vec2_length(lua_State *L) {
 }
 static void registerVec2(lua_State *L) {
   luaL_newmetatable(L, MT_VEC2);
-  lua_pushcfunction(L, udGc<Vec2>);
+  lua_pushcfunction2(L, udGc<Vec2>);
   lua_setfield(L, -2, "__gc");
-  lua_pushcfunction(L, l_Vec2_index);
+  lua_pushcfunction2(L, l_Vec2_index);
   lua_setfield(L, -2, "__index");
-  lua_pushcfunction(L, lVec2Newindex);
+  lua_pushcfunction2(L, lVec2Newindex);
   lua_setfield(L, -2, "__newindex");
-  lua_pushcfunction(L, l_Vec2_add);
+  lua_pushcfunction2(L, l_Vec2_add);
   lua_setfield(L, -2, "__add");
-  lua_pushcfunction(L, l_Vec2_sub);
+  lua_pushcfunction2(L, l_Vec2_sub);
   lua_setfield(L, -2, "__sub");
-  lua_pushcfunction(L, l_Vec2_mul);
+  lua_pushcfunction2(L, l_Vec2_mul);
   lua_setfield(L, -2, "__mul");
-  lua_pushcfunction(L, l_Vec2_div);
+  lua_pushcfunction2(L, l_Vec2_div);
   lua_setfield(L, -2, "__div");
-  lua_pushcfunction(L, l_Vec2_tostring);
+  lua_pushcfunction2(L, l_Vec2_tostring);
   lua_setfield(L, -2, "__tostring");
-  lua_pushcfunction(L, l_Vec2_copy);
+  lua_pushcfunction2(L, l_Vec2_copy);
   lua_setfield(L, -2, "copy");
-  lua_pushcfunction(L, l_Vec2_length);
+  lua_pushcfunction2(L, l_Vec2_length);
   lua_setfield(L, -2, "length");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Vec2");
-  lua_pushcfunction(L, l_Vec2_new);
+  lua_pushcfunction2(L, l_Vec2_new);
   lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
@@ -435,7 +490,7 @@ static int l_Vec3_newindex(lua_State *L) {
     v.z = value;
     return 0;
   }
-  return luaL_error(L, "sn.Vec3: invalid field '%s'", k);
+  return luaL_error2(L, "sn.Vec3: invalid field '%s'", k);
 }
 static int l_Vec3_add(lua_State *L) {
   auto &a = udValue<Vec3>(L, 1, MT_VEC3);
@@ -510,40 +565,40 @@ static int lVec3Reflect(lua_State *L) {
 }
 static void registerVec3(lua_State *L) {
   luaL_newmetatable(L, MT_VEC3);
-  lua_pushcfunction(L, udGc<Vec3>);
+  lua_pushcfunction2(L, udGc<Vec3>);
   lua_setfield(L, -2, "__gc");
-  lua_pushcfunction(L, l_Vec3_index);
+  lua_pushcfunction2(L, l_Vec3_index);
   lua_setfield(L, -2, "__index");
-  lua_pushcfunction(L, l_Vec3_newindex);
+  lua_pushcfunction2(L, l_Vec3_newindex);
   lua_setfield(L, -2, "__newindex");
-  lua_pushcfunction(L, l_Vec3_add);
+  lua_pushcfunction2(L, l_Vec3_add);
   lua_setfield(L, -2, "__add");
-  lua_pushcfunction(L, l_Vec3_sub);
+  lua_pushcfunction2(L, l_Vec3_sub);
   lua_setfield(L, -2, "__sub");
-  lua_pushcfunction(L, l_Vec3_mul);
+  lua_pushcfunction2(L, l_Vec3_mul);
   lua_setfield(L, -2, "__mul");
-  lua_pushcfunction(L, l_Vec3_div);
+  lua_pushcfunction2(L, l_Vec3_div);
   lua_setfield(L, -2, "__div");
-  lua_pushcfunction(L, l_Vec3_tostring);
+  lua_pushcfunction2(L, l_Vec3_tostring);
   lua_setfield(L, -2, "__tostring");
-  lua_pushcfunction(L, l_Vec3_copy);
+  lua_pushcfunction2(L, l_Vec3_copy);
   lua_setfield(L, -2, "copy");
-  lua_pushcfunction(L, l_Vec3_length);
+  lua_pushcfunction2(L, l_Vec3_length);
   lua_setfield(L, -2, "length");
-  lua_pushcfunction(L, l_Vec3_normalize);
+  lua_pushcfunction2(L, l_Vec3_normalize);
   lua_setfield(L, -2, "normalize");
-  lua_pushcfunction(L, lVec3Dot);
+  lua_pushcfunction2(L, lVec3Dot);
   lua_setfield(L, -2, "dot");
-  lua_pushcfunction(L, lVec3Cross);
+  lua_pushcfunction2(L, lVec3Cross);
   lua_setfield(L, -2, "cross");
-  lua_pushcfunction(L, lVec3Lerp);
+  lua_pushcfunction2(L, lVec3Lerp);
   lua_setfield(L, -2, "lerp");
-  lua_pushcfunction(L, lVec3Reflect);
+  lua_pushcfunction2(L, lVec3Reflect);
   lua_setfield(L, -2, "reflect");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Vec3");
-  lua_pushcfunction(L, l_Vec3_new);
+  lua_pushcfunction2(L, l_Vec3_new);
   lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
@@ -619,7 +674,7 @@ static int l_Color_newindex(lua_State *L) {
     c.a = value;
     return 0;
   }
-  return luaL_error(L, "sn.Color: invalid field '%s'", k);
+  return luaL_error2(L, "sn.Color: invalid field '%s'", k);
 }
 static int l_Color_tostring(lua_State *L) {
   auto &c = udValue<Color>(L, 1, MT_COLOR);
@@ -629,18 +684,18 @@ static int l_Color_tostring(lua_State *L) {
 }
 static void registerColor(lua_State *L) {
   luaL_newmetatable(L, MT_COLOR);
-  lua_pushcfunction(L, udGc<Color>);
+  lua_pushcfunction2(L, udGc<Color>);
   lua_setfield(L, -2, "__gc");
-  lua_pushcfunction(L, l_Color_index);
+  lua_pushcfunction2(L, l_Color_index);
   lua_setfield(L, -2, "__index");
-  lua_pushcfunction(L, l_Color_newindex);
+  lua_pushcfunction2(L, l_Color_newindex);
   lua_setfield(L, -2, "__newindex");
-  lua_pushcfunction(L, l_Color_tostring);
+  lua_pushcfunction2(L, l_Color_tostring);
   lua_setfield(L, -2, "__tostring");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Color");
-  lua_pushcfunction(L, l_Color_new);
+  lua_pushcfunction2(L, l_Color_new);
   lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
@@ -701,28 +756,28 @@ static int l_Camera_isAABBInFrustum(lua_State *L) {
 }
 static void registerCamera(lua_State *L) {
   luaL_newmetatable(L, MT_CAMERA);
-  lua_pushcfunction(L, udGc<Camera>);
+  lua_pushcfunction2(L, udGc<Camera>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  lua_pushcfunction(L, l_Camera_lookat);
+  lua_pushcfunction2(L, l_Camera_lookat);
   lua_setfield(L, -2, "lookat");
-  lua_pushcfunction(L, l_Camera_perspective);
+  lua_pushcfunction2(L, l_Camera_perspective);
   lua_setfield(L, -2, "perspective");
-  lua_pushcfunction(L, l_Camera_orthographic);
+  lua_pushcfunction2(L, l_Camera_orthographic);
   lua_setfield(L, -2, "orthographic");
-  lua_pushcfunction(L, l_Camera_getPosition);
+  lua_pushcfunction2(L, l_Camera_getPosition);
   lua_setfield(L, -2, "getPosition");
-  lua_pushcfunction(L, l_Camera_getTarget);
+  lua_pushcfunction2(L, l_Camera_getTarget);
   lua_setfield(L, -2, "getTarget");
-  lua_pushcfunction(L, l_Camera_getUp);
+  lua_pushcfunction2(L, l_Camera_getUp);
   lua_setfield(L, -2, "getUp");
-  lua_pushcfunction(L, l_Camera_isAABBInFrustum);
+  lua_pushcfunction2(L, l_Camera_isAABBInFrustum);
   lua_setfield(L, -2, "isAABBInFrustum");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Camera");
-  lua_pushcfunction(L, l_Camera_new);
+  lua_pushcfunction2(L, l_Camera_new);
   lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
@@ -759,24 +814,24 @@ static int l_Camera2D_invWindowRatio(lua_State *L) {
 }
 static void registerCamera2D(lua_State *L) {
   luaL_newmetatable(L, MT_CAMERA2D);
-  lua_pushcfunction(L, udGc<Camera2D>);
+  lua_pushcfunction2(L, udGc<Camera2D>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  lua_pushcfunction(L, l_Camera2D_size);
+  lua_pushcfunction2(L, l_Camera2D_size);
   lua_setfield(L, -2, "size");
-  lua_pushcfunction(L, l_Camera2D_half);
+  lua_pushcfunction2(L, l_Camera2D_half);
   lua_setfield(L, -2, "half");
-  lua_pushcfunction(L, l_Camera2D_resize);
+  lua_pushcfunction2(L, l_Camera2D_resize);
   lua_setfield(L, -2, "resize");
-  lua_pushcfunction(L, l_Camera2D_windowRatio);
+  lua_pushcfunction2(L, l_Camera2D_windowRatio);
   lua_setfield(L, -2, "windowRatio");
-  lua_pushcfunction(L, l_Camera2D_invWindowRatio);
+  lua_pushcfunction2(L, l_Camera2D_invWindowRatio);
   lua_setfield(L, -2, "invWindowRatio");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Camera2D");
-  lua_pushcfunction(L, l_Camera2D_new);
+  lua_pushcfunction2(L, l_Camera2D_new);
   lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
@@ -816,7 +871,7 @@ static int l_AABB_newindex(lua_State *L) {
     aabb.max = v;
     return 0;
   }
-  return luaL_error(L, "sn.AABB: invalid field '%s'", k);
+  return luaL_error2(L, "sn.AABB: invalid field '%s'", k);
 }
 static int l_AABB_updateWorld(lua_State *L) {
   auto &aabb = udValue<AABB>(L, 1, MT_AABB);
@@ -834,20 +889,20 @@ static int l_AABB_intersectsAABB(lua_State *L) {
 }
 static void registerAABB(lua_State *L) {
   luaL_newmetatable(L, MT_AABB);
-  lua_pushcfunction(L, udGc<AABB>);
+  lua_pushcfunction2(L, udGc<AABB>);
   lua_setfield(L, -2, "__gc");
-  lua_pushcfunction(L, l_AABB_index);
+  lua_pushcfunction2(L, l_AABB_index);
   lua_setfield(L, -2, "__index");
-  lua_pushcfunction(L, l_AABB_newindex);
+  lua_pushcfunction2(L, l_AABB_newindex);
   lua_setfield(L, -2, "__newindex");
-  lua_pushcfunction(L, l_AABB_updateWorld);
+  lua_pushcfunction2(L, l_AABB_updateWorld);
   lua_setfield(L, -2, "updateWorld");
-  lua_pushcfunction(L, l_AABB_intersectsAABB);
+  lua_pushcfunction2(L, l_AABB_intersectsAABB);
   lua_setfield(L, -2, "intersectsAABB");
   lua_pop(L, 1);
 
   pushSnNamed(L, "AABB");
-  lua_pushcfunction(L, l_AABB_new);
+  lua_pushcfunction2(L, l_AABB_new);
   lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
@@ -884,24 +939,24 @@ static int l_Timer_check(lua_State *L) {
 }
 static void registerTimer(lua_State *L) {
   luaL_newmetatable(L, MT_TIMER);
-  lua_pushcfunction(L, udGc<Timer>);
+  lua_pushcfunction2(L, udGc<Timer>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  lua_pushcfunction(L, l_Timer_start);
+  lua_pushcfunction2(L, l_Timer_start);
   lua_setfield(L, -2, "start");
-  lua_pushcfunction(L, l_Timer_stop);
+  lua_pushcfunction2(L, l_Timer_stop);
   lua_setfield(L, -2, "stop");
-  lua_pushcfunction(L, l_Timer_isStarted);
+  lua_pushcfunction2(L, l_Timer_isStarted);
   lua_setfield(L, -2, "isStarted");
-  lua_pushcfunction(L, l_Timer_setTime);
+  lua_pushcfunction2(L, l_Timer_setTime);
   lua_setfield(L, -2, "setTime");
-  lua_pushcfunction(L, l_Timer_check);
+  lua_pushcfunction2(L, l_Timer_check);
   lua_setfield(L, -2, "check");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Timer");
-  lua_pushcfunction(L, l_Timer_new);
+  lua_pushcfunction2(L, l_Timer_new);
   lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
@@ -928,20 +983,20 @@ static int l_Collider_setLinearVelocity(lua_State *L) {
 }
 static void registerCollider(lua_State *L) {
   luaL_newmetatable(L, MT_COLLIDER);
-  lua_pushcfunction(L, udGc<Collider>);
+  lua_pushcfunction2(L, udGc<Collider>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  lua_pushcfunction(L, l_Collider_getPosition);
+  lua_pushcfunction2(L, l_Collider_getPosition);
   lua_setfield(L, -2, "getPosition");
-  lua_pushcfunction(L, l_Collider_getVelocity);
+  lua_pushcfunction2(L, l_Collider_getVelocity);
   lua_setfield(L, -2, "getVelocity");
-  lua_pushcfunction(L, l_Collider_setLinearVelocity);
+  lua_pushcfunction2(L, l_Collider_setLinearVelocity);
   lua_setfield(L, -2, "setLinearVelocity");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Collider");
-  lua_pushcfunction(L, l_Collider_new);
+  lua_pushcfunction2(L, l_Collider_new);
   lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
@@ -1026,36 +1081,36 @@ static int l_Grid_setColumn(lua_State *L) {
 }
 static void registerGrid(lua_State *L) {
   luaL_newmetatable(L, MT_GRID);
-  lua_pushcfunction(L, udGc<Grid>);
+  lua_pushcfunction2(L, udGc<Grid>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  lua_pushcfunction(L, l_Grid_at);
+  lua_pushcfunction2(L, l_Grid_at);
   lua_setfield(L, -2, "at");
-  lua_pushcfunction(L, l_Grid_set);
+  lua_pushcfunction2(L, l_Grid_set);
   lua_setfield(L, -2, "set");
-  lua_pushcfunction(L, l_Grid_width);
+  lua_pushcfunction2(L, l_Grid_width);
   lua_setfield(L, -2, "width");
-  lua_pushcfunction(L, l_Grid_height);
+  lua_pushcfunction2(L, l_Grid_height);
   lua_setfield(L, -2, "height");
-  lua_pushcfunction(L, l_Grid_size);
+  lua_pushcfunction2(L, l_Grid_size);
   lua_setfield(L, -2, "size");
-  lua_pushcfunction(L, l_Grid_clear);
+  lua_pushcfunction2(L, l_Grid_clear);
   lua_setfield(L, -2, "clear");
-  lua_pushcfunction(L, l_Grid_resize);
+  lua_pushcfunction2(L, l_Grid_resize);
   lua_setfield(L, -2, "resize");
-  lua_pushcfunction(L, l_Grid_fill);
+  lua_pushcfunction2(L, l_Grid_fill);
   lua_setfield(L, -2, "fill");
-  lua_pushcfunction(L, l_Grid_fillRect);
+  lua_pushcfunction2(L, l_Grid_fillRect);
   lua_setfield(L, -2, "fillRect");
-  lua_pushcfunction(L, l_Grid_setRow);
+  lua_pushcfunction2(L, l_Grid_setRow);
   lua_setfield(L, -2, "setRow");
-  lua_pushcfunction(L, l_Grid_setColumn);
+  lua_pushcfunction2(L, l_Grid_setColumn);
   lua_setfield(L, -2, "setColumn");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Grid");
-  lua_pushcfunction(L, l_Grid_new);
+  lua_pushcfunction2(L, l_Grid_new);
   lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
@@ -1096,26 +1151,26 @@ static int l_BFSGrid_reset(lua_State *L) {
 }
 static void registerBFSGrid(lua_State *L) {
   luaL_newmetatable(L, MT_BFSGRID);
-  lua_pushcfunction(L, udGc<BFSGrid>);
+  lua_pushcfunction2(L, udGc<BFSGrid>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  lua_pushcfunction(L, l_BFSGrid_width);
+  lua_pushcfunction2(L, l_BFSGrid_width);
   lua_setfield(L, -2, "width");
-  lua_pushcfunction(L, l_BFSGrid_height);
+  lua_pushcfunction2(L, l_BFSGrid_height);
   lua_setfield(L, -2, "height");
-  lua_pushcfunction(L, l_BFSGrid_findPath);
+  lua_pushcfunction2(L, l_BFSGrid_findPath);
   lua_setfield(L, -2, "findPath");
-  lua_pushcfunction(L, l_BFSGrid_trace);
+  lua_pushcfunction2(L, l_BFSGrid_trace);
   lua_setfield(L, -2, "trace");
-  lua_pushcfunction(L, l_BFSGrid_traceable);
+  lua_pushcfunction2(L, l_BFSGrid_traceable);
   lua_setfield(L, -2, "traceable");
-  lua_pushcfunction(L, l_BFSGrid_reset);
+  lua_pushcfunction2(L, l_BFSGrid_reset);
   lua_setfield(L, -2, "reset");
   lua_pop(L, 1);
 
   pushSnNamed(L, "BFSGrid");
-  lua_pushcfunction(L, l_BFSGrid_new);
+  lua_pushcfunction2(L, l_BFSGrid_new);
   lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
@@ -1190,14 +1245,14 @@ static int l_Buffer_new(lua_State *L) {
 }
 static void registerBuffer(lua_State *L) {
   luaL_newmetatable(L, MT_BUFFER);
-  lua_pushcfunction(L, udGc<Buffer>);
+  lua_pushcfunction2(L, udGc<Buffer>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Buffer");
-  lua_pushcfunction(L, l_Buffer_new);
+  lua_pushcfunction2(L, l_Buffer_new);
   lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
@@ -1258,7 +1313,7 @@ static int l_Rect_new(lua_State *L) {
     udNewOwned<Rect>(L, MT_RECT, Rect(pivot, pos, size));
     return 1;
   }
-  return luaL_error(L, "sn.Rect.new: invalid arguments");
+  return luaL_error2(L, "sn.Rect.new: invalid arguments");
 }
 
 static int l_Rect_index(lua_State *L) {
@@ -1305,20 +1360,20 @@ static int l_Rect_newindex(lua_State *L) {
     r.height = v;
     return 0;
   }
-  return luaL_error(L, "sn.Rect: invalid field '%s'", k);
+  return luaL_error2(L, "sn.Rect: invalid field '%s'", k);
 }
 static void registerRect(lua_State *L) {
   luaL_newmetatable(L, MT_RECT);
-  lua_pushcfunction(L, udGc<Rect>);
+  lua_pushcfunction2(L, udGc<Rect>);
   lua_setfield(L, -2, "__gc");
-  lua_pushcfunction(L, l_Rect_index);
+  lua_pushcfunction2(L, l_Rect_index);
   lua_setfield(L, -2, "__index");
-  lua_pushcfunction(L, l_Rect_newindex);
+  lua_pushcfunction2(L, l_Rect_newindex);
   lua_setfield(L, -2, "__newindex");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Rect");
-  lua_pushcfunction(L, l_Rect_new);
+  lua_pushcfunction2(L, l_Rect_new);
   lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
@@ -1366,7 +1421,7 @@ static int l_Transform_newindex(lua_State *L) {
     t.scale = v;
     return 0;
   }
-  return luaL_error(L, "sn.Transform: invalid field '%s'", k);
+  return luaL_error2(L, "sn.Transform: invalid field '%s'", k);
 }
 static int l_Transform_tostring(lua_State *L) {
   auto &t = udValue<Transform>(L, 1, MT_TRANSFORM);
@@ -1376,18 +1431,18 @@ static int l_Transform_tostring(lua_State *L) {
 }
 static void registerTransform(lua_State *L) {
   luaL_newmetatable(L, MT_TRANSFORM);
-  lua_pushcfunction(L, udGc<Transform>);
+  lua_pushcfunction2(L, udGc<Transform>);
   lua_setfield(L, -2, "__gc");
-  lua_pushcfunction(L, l_Transform_index);
+  lua_pushcfunction2(L, l_Transform_index);
   lua_setfield(L, -2, "__index");
-  lua_pushcfunction(L, l_Transform_newindex);
+  lua_pushcfunction2(L, l_Transform_newindex);
   lua_setfield(L, -2, "__newindex");
-  lua_pushcfunction(L, l_Transform_tostring);
+  lua_pushcfunction2(L, l_Transform_tostring);
   lua_setfield(L, -2, "__tostring");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Transform");
-  lua_pushcfunction(L, l_Transform_new);
+  lua_pushcfunction2(L, l_Transform_new);
   lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
@@ -1434,20 +1489,20 @@ static int l_Font_region(lua_State *L) {
 }
 static void registerFont(lua_State *L) {
   luaL_newmetatable(L, MT_FONT);
-  lua_pushcfunction(L, udPtrGc<Font>);
+  lua_pushcfunction2(L, udPtrGc<Font>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  lua_pushcfunction(L, l_Font_load);
+  lua_pushcfunction2(L, l_Font_load);
   lua_setfield(L, -2, "load");
-  lua_pushcfunction(L, l_Font_resize);
+  lua_pushcfunction2(L, l_Font_resize);
   lua_setfield(L, -2, "resize");
-  lua_pushcfunction(L, l_Font_region);
+  lua_pushcfunction2(L, l_Font_region);
   lua_setfield(L, -2, "region");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Font");
-  lua_pushcfunction(L, l_Font_new);
+  lua_pushcfunction2(L, l_Font_new);
   lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
@@ -1507,26 +1562,26 @@ static int l_Texture_tostring(lua_State *L) {
 }
 static void registerTexture(lua_State *L) {
   luaL_newmetatable(L, MT_TEXTURE);
-  lua_pushcfunction(L, udPtrGc<Texture>);
+  lua_pushcfunction2(L, udPtrGc<Texture>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  lua_pushcfunction(L, l_Texture_load);
+  lua_pushcfunction2(L, l_Texture_load);
   lua_setfield(L, -2, "load");
-  lua_pushcfunction(L, l_Texture_loadCubemap);
+  lua_pushcfunction2(L, l_Texture_loadCubemap);
   lua_setfield(L, -2, "loadCubemap");
-  lua_pushcfunction(L, l_Texture_fill);
+  lua_pushcfunction2(L, l_Texture_fill);
   lua_setfield(L, -2, "fill");
-  lua_pushcfunction(L, l_Texture_copy);
+  lua_pushcfunction2(L, l_Texture_copy);
   lua_setfield(L, -2, "copy");
-  lua_pushcfunction(L, l_Texture_size);
+  lua_pushcfunction2(L, l_Texture_size);
   lua_setfield(L, -2, "size");
-  lua_pushcfunction(L, l_Texture_tostring);
+  lua_pushcfunction2(L, l_Texture_tostring);
   lua_setfield(L, -2, "__tostring");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Texture");
-  lua_pushcfunction(L, l_Texture_new);
+  lua_pushcfunction2(L, l_Texture_new);
   lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
@@ -1597,34 +1652,34 @@ static int l_Model_setTexture(lua_State *L) {
 }
 static void registerModel(lua_State *L) {
   luaL_newmetatable(L, MT_MODEL);
-  lua_pushcfunction(L, udPtrGc<Model>);
+  lua_pushcfunction2(L, udPtrGc<Model>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  lua_pushcfunction(L, l_Model_load);
+  lua_pushcfunction2(L, l_Model_load);
   lua_setfield(L, -2, "load");
-  lua_pushcfunction(L, l_Model_getAABB);
+  lua_pushcfunction2(L, l_Model_getAABB);
   lua_setfield(L, -2, "getAABB");
-  lua_pushcfunction(L, l_Model_loadSprite);
+  lua_pushcfunction2(L, l_Model_loadSprite);
   lua_setfield(L, -2, "loadSprite");
-  lua_pushcfunction(L, l_Model_loadBox);
+  lua_pushcfunction2(L, l_Model_loadBox);
   lua_setfield(L, -2, "loadBox");
-  lua_pushcfunction(L, l_Model_getBoneUniformBuffer);
+  lua_pushcfunction2(L, l_Model_getBoneUniformBuffer);
   lua_setfield(L, -2, "getBoneUniformBuffer");
-  lua_pushcfunction(L, l_Model_play);
+  lua_pushcfunction2(L, l_Model_play);
   lua_setfield(L, -2, "play");
-  lua_pushcfunction(L, l_Model_update);
+  lua_pushcfunction2(L, l_Model_update);
   lua_setfield(L, -2, "update");
-  lua_pushcfunction(L, l_Model_hasTexture);
+  lua_pushcfunction2(L, l_Model_hasTexture);
   lua_setfield(L, -2, "hasTexture");
-  lua_pushcfunction(L, l_Model_getTexture);
+  lua_pushcfunction2(L, l_Model_getTexture);
   lua_setfield(L, -2, "getTexture");
-  lua_pushcfunction(L, l_Model_setTexture);
+  lua_pushcfunction2(L, l_Model_setTexture);
   lua_setfield(L, -2, "setTexture");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Model");
-  lua_pushcfunction(L, l_Model_new);
+  lua_pushcfunction2(L, l_Model_new);
   lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
@@ -1662,16 +1717,16 @@ static int l_RenderTexture_create(lua_State *L) {
 }
 static void registerRenderTexture(lua_State *L) {
   luaL_newmetatable(L, MT_RENDERTEXTURE);
-  lua_pushcfunction(L, udPtrGc<RenderTexture>);
+  lua_pushcfunction2(L, udPtrGc<RenderTexture>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  lua_pushcfunction(L, l_RenderTexture_create);
+  lua_pushcfunction2(L, l_RenderTexture_create);
   lua_setfield(L, -2, "create");
   lua_pop(L, 1);
 
   pushSnNamed(L, "RenderTexture");
-  lua_pushcfunction(L, l_RenderTexture_new);
+  lua_pushcfunction2(L, l_RenderTexture_new);
   lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
@@ -1759,44 +1814,44 @@ static int l_Sound_getDirection(lua_State *L) {
 }
 static void registerSound(lua_State *L) {
   luaL_newmetatable(L, MT_SOUND);
-  lua_pushcfunction(L, udPtrGc<Sound>);
+  lua_pushcfunction2(L, udPtrGc<Sound>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  lua_pushcfunction(L, l_Sound_load);
+  lua_pushcfunction2(L, l_Sound_load);
   lua_setfield(L, -2, "load");
-  lua_pushcfunction(L, l_Sound_play);
+  lua_pushcfunction2(L, l_Sound_play);
   lua_setfield(L, -2, "play");
-  lua_pushcfunction(L, l_Sound_restart);
+  lua_pushcfunction2(L, l_Sound_restart);
   lua_setfield(L, -2, "restart");
-  lua_pushcfunction(L, l_Sound_stop);
+  lua_pushcfunction2(L, l_Sound_stop);
   lua_setfield(L, -2, "stop");
-  lua_pushcfunction(L, l_Sound_setLooping);
+  lua_pushcfunction2(L, l_Sound_setLooping);
   lua_setfield(L, -2, "setLooping");
-  lua_pushcfunction(L, l_Sound_setVolume);
+  lua_pushcfunction2(L, l_Sound_setVolume);
   lua_setfield(L, -2, "setVolume");
-  lua_pushcfunction(L, l_Sound_setPitch);
+  lua_pushcfunction2(L, l_Sound_setPitch);
   lua_setfield(L, -2, "setPitch");
-  lua_pushcfunction(L, l_Sound_setPosition);
+  lua_pushcfunction2(L, l_Sound_setPosition);
   lua_setfield(L, -2, "setPosition");
-  lua_pushcfunction(L, l_Sound_setDirection);
+  lua_pushcfunction2(L, l_Sound_setDirection);
   lua_setfield(L, -2, "setDirection");
-  lua_pushcfunction(L, l_Sound_isPlaying);
+  lua_pushcfunction2(L, l_Sound_isPlaying);
   lua_setfield(L, -2, "isPlaying");
-  lua_pushcfunction(L, l_Sound_isLooping);
+  lua_pushcfunction2(L, l_Sound_isLooping);
   lua_setfield(L, -2, "isLooping");
-  lua_pushcfunction(L, l_Sound_getVolume);
+  lua_pushcfunction2(L, l_Sound_getVolume);
   lua_setfield(L, -2, "getVolume");
-  lua_pushcfunction(L, l_Sound_getPitch);
+  lua_pushcfunction2(L, l_Sound_getPitch);
   lua_setfield(L, -2, "getPitch");
-  lua_pushcfunction(L, l_Sound_getPosition);
+  lua_pushcfunction2(L, l_Sound_getPosition);
   lua_setfield(L, -2, "getPosition");
-  lua_pushcfunction(L, l_Sound_getDirection);
+  lua_pushcfunction2(L, l_Sound_getDirection);
   lua_setfield(L, -2, "getDirection");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Sound");
-  lua_pushcfunction(L, l_Sound_new);
+  lua_pushcfunction2(L, l_Sound_new);
   lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
@@ -1822,18 +1877,18 @@ static int l_Shader_compileAndLoad(lua_State *L) {
 }
 static void registerShader(lua_State *L) {
   luaL_newmetatable(L, MT_SHADER);
-  lua_pushcfunction(L, udPtrGc<Shader>);
+  lua_pushcfunction2(L, udPtrGc<Shader>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  lua_pushcfunction(L, l_Shader_load);
+  lua_pushcfunction2(L, l_Shader_load);
   lua_setfield(L, -2, "load");
-  lua_pushcfunction(L, l_Shader_compileAndLoad);
+  lua_pushcfunction2(L, l_Shader_compileAndLoad);
   lua_setfield(L, -2, "compileAndLoad");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Shader");
-  lua_pushcfunction(L, l_Shader_new);
+  lua_pushcfunction2(L, l_Shader_new);
   lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
@@ -1884,28 +1939,28 @@ static int l_Pipeline_build(lua_State *L) {
 }
 static void registerPipeline(lua_State *L) {
   luaL_newmetatable(L, MT_PIPELINE);
-  lua_pushcfunction(L, udPtrGc<GraphicsPipeline>);
+  lua_pushcfunction2(L, udPtrGc<GraphicsPipeline>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  lua_pushcfunction(L, l_Pipeline_setVertexShader);
+  lua_pushcfunction2(L, l_Pipeline_setVertexShader);
   lua_setfield(L, -2, "setVertexShader");
-  lua_pushcfunction(L, l_Pipeline_setFragmentShader);
+  lua_pushcfunction2(L, l_Pipeline_setFragmentShader);
   lua_setfield(L, -2, "setFragmentShader");
-  lua_pushcfunction(L, l_Pipeline_setEnableDepthTest);
+  lua_pushcfunction2(L, l_Pipeline_setEnableDepthTest);
   lua_setfield(L, -2, "setEnableDepthTest");
-  lua_pushcfunction(L, l_Pipeline_setEnableInstanced);
+  lua_pushcfunction2(L, l_Pipeline_setEnableInstanced);
   lua_setfield(L, -2, "setEnableInstanced");
-  lua_pushcfunction(L, l_Pipeline_setEnableAnimation);
+  lua_pushcfunction2(L, l_Pipeline_setEnableAnimation);
   lua_setfield(L, -2, "setEnableAnimation");
-  lua_pushcfunction(L, l_Pipeline_setEnableTangent);
+  lua_pushcfunction2(L, l_Pipeline_setEnableTangent);
   lua_setfield(L, -2, "setEnableTangent");
-  lua_pushcfunction(L, l_Pipeline_build);
+  lua_pushcfunction2(L, l_Pipeline_build);
   lua_setfield(L, -2, "build");
   lua_pop(L, 1);
 
   pushSnNamed(L, "GraphicsPipeline");
-  lua_pushcfunction(L, l_Pipeline_new);
+  lua_pushcfunction2(L, l_Pipeline_new);
   lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
@@ -1928,9 +1983,9 @@ static int l_Arguments_getArgv(lua_State *L) {
 }
 static void registerArguments(lua_State *L) {
   pushSnNamed(L, "Arguments");
-  lua_pushcfunction(L, l_Arguments_getArgc);
+  lua_pushcfunction2(L, l_Arguments_getArgc);
   lua_setfield(L, -2, "getArgc");
-  lua_pushcfunction(L, l_Arguments_getArgv);
+  lua_pushcfunction2(L, l_Arguments_getArgv);
   lua_setfield(L, -2, "getArgv");
   lua_pop(L, 1);
 }
@@ -1949,9 +2004,9 @@ static int l_Random_getIntRange(lua_State *L) {
 }
 static void registerRandom(lua_State *L) {
   pushSnNamed(L, "Random");
-  lua_pushcfunction(L, l_Random_getRange);
+  lua_pushcfunction2(L, l_Random_getRange);
   lua_setfield(L, -2, "getRange");
-  lua_pushcfunction(L, l_Random_getIntRange);
+  lua_pushcfunction2(L, l_Random_getIntRange);
   lua_setfield(L, -2, "getIntRange");
   lua_pop(L, 1);
 }
@@ -2018,33 +2073,33 @@ static int l_Window_bottomRight(lua_State *L) {
 }
 static void registerWindow(lua_State *L) {
   pushSnNamed(L, "Window");
-  lua_pushcfunction(L, l_Window_getName);
+  lua_pushcfunction2(L, l_Window_getName);
   lua_setfield(L, -2, "getName");
-  lua_pushcfunction(L, l_Window_size);
+  lua_pushcfunction2(L, l_Window_size);
   lua_setfield(L, -2, "size");
-  lua_pushcfunction(L, l_Window_half);
+  lua_pushcfunction2(L, l_Window_half);
   lua_setfield(L, -2, "half");
-  lua_pushcfunction(L, l_Window_resize);
+  lua_pushcfunction2(L, l_Window_resize);
   lua_setfield(L, -2, "resize");
-  lua_pushcfunction(L, l_Window_setFullscreen);
+  lua_pushcfunction2(L, l_Window_setFullscreen);
   lua_setfield(L, -2, "setFullscreen");
-  lua_pushcfunction(L, l_Window_rename);
+  lua_pushcfunction2(L, l_Window_rename);
   lua_setfield(L, -2, "rename");
-  lua_pushcfunction(L, l_Window_resized);
+  lua_pushcfunction2(L, l_Window_resized);
   lua_setfield(L, -2, "resized");
-  lua_pushcfunction(L, l_Window_rect);
+  lua_pushcfunction2(L, l_Window_rect);
   lua_setfield(L, -2, "rect");
-  lua_pushcfunction(L, l_Window_topLeft);
+  lua_pushcfunction2(L, l_Window_topLeft);
   lua_setfield(L, -2, "topLeft");
-  lua_pushcfunction(L, l_Window_topCenter);
+  lua_pushcfunction2(L, l_Window_topCenter);
   lua_setfield(L, -2, "topCenter");
-  lua_pushcfunction(L, l_Window_topRight);
+  lua_pushcfunction2(L, l_Window_topRight);
   lua_setfield(L, -2, "topRight");
-  lua_pushcfunction(L, l_Window_bottomLeft);
+  lua_pushcfunction2(L, l_Window_bottomLeft);
   lua_setfield(L, -2, "bottomLeft");
-  lua_pushcfunction(L, l_Window_bottomCenter);
+  lua_pushcfunction2(L, l_Window_bottomCenter);
   lua_setfield(L, -2, "bottomCenter");
-  lua_pushcfunction(L, l_Window_bottomRight);
+  lua_pushcfunction2(L, l_Window_bottomRight);
   lua_setfield(L, -2, "bottomRight");
   lua_pop(L, 1);
 }
@@ -2082,13 +2137,13 @@ static int l_Physics_addCollider(lua_State *L) {
 }
 static void registerPhysics(lua_State *L) {
   pushSnNamed(L, "Physics");
-  lua_pushcfunction(L, l_Physics_createBoxCollider);
+  lua_pushcfunction2(L, l_Physics_createBoxCollider);
   lua_setfield(L, -2, "createBoxCollider");
-  lua_pushcfunction(L, l_Physics_createSphereCollider);
+  lua_pushcfunction2(L, l_Physics_createSphereCollider);
   lua_setfield(L, -2, "createSphereCollider");
-  lua_pushcfunction(L, l_Physics_createCylinderCollider);
+  lua_pushcfunction2(L, l_Physics_createCylinderCollider);
   lua_setfield(L, -2, "createCylinderCollider");
-  lua_pushcfunction(L, l_Physics_addCollider);
+  lua_pushcfunction2(L, l_Physics_addCollider);
   lua_setfield(L, -2, "addCollider");
   lua_pop(L, 1);
 }
@@ -2131,15 +2186,15 @@ static int l_BuiltinShader_getCubemapFS(lua_State *L) {
 }
 static void registerBuiltinShader(lua_State *L) {
   pushSnNamed(L, "BuiltinShader");
-  lua_pushcfunction(L, l_BuiltinShader_getDefaultVS);
+  lua_pushcfunction2(L, l_BuiltinShader_getDefaultVS);
   lua_setfield(L, -2, "getDefaultVS");
-  lua_pushcfunction(L, l_BuiltinShader_getDefaultFS);
+  lua_pushcfunction2(L, l_BuiltinShader_getDefaultFS);
   lua_setfield(L, -2, "getDefaultFS");
-  lua_pushcfunction(L, l_BuiltinShader_getDefaultInstancedVS);
+  lua_pushcfunction2(L, l_BuiltinShader_getDefaultInstancedVS);
   lua_setfield(L, -2, "getDefaultInstancedVS");
-  lua_pushcfunction(L, l_BuiltinShader_getCubemapVS);
+  lua_pushcfunction2(L, l_BuiltinShader_getCubemapVS);
   lua_setfield(L, -2, "getCubemapVS");
-  lua_pushcfunction(L, l_BuiltinShader_getCubemapFS);
+  lua_pushcfunction2(L, l_BuiltinShader_getCubemapFS);
   lua_setfield(L, -2, "getCubemapFS");
   lua_pop(L, 1);
 }
@@ -2169,13 +2224,13 @@ static int l_BuiltinPipeline_getCubemap(lua_State *L) {
 }
 static void registerBuiltinPipeline(lua_State *L) {
   pushSnNamed(L, "BuiltinPipeline");
-  lua_pushcfunction(L, l_BuiltinPipeline_getDefault3D);
+  lua_pushcfunction2(L, l_BuiltinPipeline_getDefault3D);
   lua_setfield(L, -2, "getDefault3D");
-  lua_pushcfunction(L, l_BuiltinPipeline_getInstanced3D);
+  lua_pushcfunction2(L, l_BuiltinPipeline_getInstanced3D);
   lua_setfield(L, -2, "getInstanced3D");
-  lua_pushcfunction(L, l_BuiltinPipeline_getDefault2D);
+  lua_pushcfunction2(L, l_BuiltinPipeline_getDefault2D);
   lua_setfield(L, -2, "getDefault2D");
-  lua_pushcfunction(L, l_BuiltinPipeline_getCubemap);
+  lua_pushcfunction2(L, l_BuiltinPipeline_getCubemap);
   lua_setfield(L, -2, "getCubemap");
   lua_pop(L, 1);
 }
@@ -2187,7 +2242,7 @@ static int l_Event_quit(lua_State *L) {
 }
 static void registerEvent(lua_State *L) {
   pushSnNamed(L, "Event");
-  lua_pushcfunction(L, l_Event_quit);
+  lua_pushcfunction2(L, l_Event_quit);
   lua_setfield(L, -2, "quit");
   lua_pop(L, 1);
 }
@@ -2209,11 +2264,11 @@ static int l_Keyboard_isDown(lua_State *L) {
 }
 static void registerKeyboard(lua_State *L) {
   pushSnNamed(L, "Keyboard");
-  lua_pushcfunction(L, l_Keyboard_isPressed);
+  lua_pushcfunction2(L, l_Keyboard_isPressed);
   lua_setfield(L, -2, "isPressed");
-  lua_pushcfunction(L, l_Keyboard_isReleased);
+  lua_pushcfunction2(L, l_Keyboard_isReleased);
   lua_setfield(L, -2, "isReleased");
-  lua_pushcfunction(L, l_Keyboard_isDown);
+  lua_pushcfunction2(L, l_Keyboard_isDown);
   lua_setfield(L, -2, "isDown");
 
   lua_pushinteger(L, static_cast<int>(Keyboard::A));
@@ -2376,17 +2431,17 @@ static int l_Gamepad_isConnected(lua_State *L) {
 }
 static void registerGamepad(lua_State *L) {
   pushSnNamed(L, "Gamepad");
-  lua_pushcfunction(L, l_Gamepad_isPressed);
+  lua_pushcfunction2(L, l_Gamepad_isPressed);
   lua_setfield(L, -2, "isPressed");
-  lua_pushcfunction(L, l_Gamepad_isReleased);
+  lua_pushcfunction2(L, l_Gamepad_isReleased);
   lua_setfield(L, -2, "isReleased");
-  lua_pushcfunction(L, l_Gamepad_isDown);
+  lua_pushcfunction2(L, l_Gamepad_isDown);
   lua_setfield(L, -2, "isDown");
-  lua_pushcfunction(L, l_Gamepad_getLeftStick);
+  lua_pushcfunction2(L, l_Gamepad_getLeftStick);
   lua_setfield(L, -2, "getLeftStick");
-  lua_pushcfunction(L, l_Gamepad_getRightStick);
+  lua_pushcfunction2(L, l_Gamepad_getRightStick);
   lua_setfield(L, -2, "getRightStick");
-  lua_pushcfunction(L, l_Gamepad_isConnected);
+  lua_pushcfunction2(L, l_Gamepad_isConnected);
   lua_setfield(L, -2, "isConnected");
 
   lua_pushinteger(L, static_cast<int>(GamePad::INVALID));
@@ -2577,47 +2632,47 @@ static int l_Graphics_readbackTexture(lua_State *L) {
 }
 static void registerGraphics(lua_State *L) {
   pushSnNamed(L, "Graphics");
-  lua_pushcfunction(L, l_Graphics_drawRect);
+  lua_pushcfunction2(L, l_Graphics_drawRect);
   lua_setfield(L, -2, "drawRect");
-  lua_pushcfunction(L, l_Graphics_drawText);
+  lua_pushcfunction2(L, l_Graphics_drawText);
   lua_setfield(L, -2, "drawText");
-  lua_pushcfunction(L, l_Graphics_drawImage);
+  lua_pushcfunction2(L, l_Graphics_drawImage);
   lua_setfield(L, -2, "drawImage");
-  lua_pushcfunction(L, l_Graphics_drawCubemap);
+  lua_pushcfunction2(L, l_Graphics_drawCubemap);
   lua_setfield(L, -2, "drawCubemap");
-  lua_pushcfunction(L, l_Graphics_drawModel);
+  lua_pushcfunction2(L, l_Graphics_drawModel);
   lua_setfield(L, -2, "drawModel");
-  lua_pushcfunction(L, l_Graphics_drawModelInstanced);
+  lua_pushcfunction2(L, l_Graphics_drawModelInstanced);
   lua_setfield(L, -2, "drawModelInstanced");
-  lua_pushcfunction(L, l_Graphics_setCamera);
+  lua_pushcfunction2(L, l_Graphics_setCamera);
   lua_setfield(L, -2, "setCamera");
-  lua_pushcfunction(L, l_Graphics_getCamera);
+  lua_pushcfunction2(L, l_Graphics_getCamera);
   lua_setfield(L, -2, "getCamera");
-  lua_pushcfunction(L, l_Graphics_setCamera2d);
+  lua_pushcfunction2(L, l_Graphics_setCamera2d);
   lua_setfield(L, -2, "setCamera2d");
-  lua_pushcfunction(L, l_Graphics_getCamera2d);
+  lua_pushcfunction2(L, l_Graphics_getCamera2d);
   lua_setfield(L, -2, "getCamera2d");
-  lua_pushcfunction(L, l_Graphics_getClearColor);
+  lua_pushcfunction2(L, l_Graphics_getClearColor);
   lua_setfield(L, -2, "getClearColor");
-  lua_pushcfunction(L, l_Graphics_setClearColor);
+  lua_pushcfunction2(L, l_Graphics_setClearColor);
   lua_setfield(L, -2, "setClearColor");
-  lua_pushcfunction(L, l_Graphics_setGraphicsPipeline);
+  lua_pushcfunction2(L, l_Graphics_setGraphicsPipeline);
   lua_setfield(L, -2, "setGraphicsPipeline");
-  lua_pushcfunction(L, l_Graphics_resetGraphicsPipeline);
+  lua_pushcfunction2(L, l_Graphics_resetGraphicsPipeline);
   lua_setfield(L, -2, "resetGraphicsPipeline");
-  lua_pushcfunction(L, l_Graphics_setTexture);
+  lua_pushcfunction2(L, l_Graphics_setTexture);
   lua_setfield(L, -2, "setTexture");
-  lua_pushcfunction(L, l_Graphics_resetTexture);
+  lua_pushcfunction2(L, l_Graphics_resetTexture);
   lua_setfield(L, -2, "resetTexture");
-  lua_pushcfunction(L, l_Graphics_resetAllTexture);
+  lua_pushcfunction2(L, l_Graphics_resetAllTexture);
   lua_setfield(L, -2, "resetAllTexture");
-  lua_pushcfunction(L, l_Graphics_setUniformBuffer);
+  lua_pushcfunction2(L, l_Graphics_setUniformBuffer);
   lua_setfield(L, -2, "setUniformBuffer");
-  lua_pushcfunction(L, l_Graphics_setRenderTarget);
+  lua_pushcfunction2(L, l_Graphics_setRenderTarget);
   lua_setfield(L, -2, "setRenderTarget");
-  lua_pushcfunction(L, l_Graphics_flush);
+  lua_pushcfunction2(L, l_Graphics_flush);
   lua_setfield(L, -2, "flush");
-  lua_pushcfunction(L, l_Graphics_readbackTexture);
+  lua_pushcfunction2(L, l_Graphics_readbackTexture);
   lua_setfield(L, -2, "readbackTexture");
   lua_pop(L, 1);
 }
@@ -2675,27 +2730,27 @@ static int l_Mouse_isRelative(lua_State *L) {
 }
 static void registerMouse(lua_State *L) {
   pushSnNamed(L, "Mouse");
-  lua_pushcfunction(L, l_Mouse_setRelative);
+  lua_pushcfunction2(L, l_Mouse_setRelative);
   lua_setfield(L, -2, "setRelative");
-  lua_pushcfunction(L, l_Mouse_isRelative);
+  lua_pushcfunction2(L, l_Mouse_isRelative);
   lua_setfield(L, -2, "isRelative");
-  lua_pushcfunction(L, l_Mouse_getPositionOnScene);
+  lua_pushcfunction2(L, l_Mouse_getPositionOnScene);
   lua_setfield(L, -2, "getPositionOnScene");
-  lua_pushcfunction(L, l_Mouse_getPosition);
+  lua_pushcfunction2(L, l_Mouse_getPosition);
   lua_setfield(L, -2, "getPosition");
-  lua_pushcfunction(L, l_Mouse_isPressed);
+  lua_pushcfunction2(L, l_Mouse_isPressed);
   lua_setfield(L, -2, "isPressed");
-  lua_pushcfunction(L, l_Mouse_isReleased);
+  lua_pushcfunction2(L, l_Mouse_isReleased);
   lua_setfield(L, -2, "isReleased");
-  lua_pushcfunction(L, l_Mouse_isDown);
+  lua_pushcfunction2(L, l_Mouse_isDown);
   lua_setfield(L, -2, "isDown");
-  lua_pushcfunction(L, l_Mouse_setPosition);
+  lua_pushcfunction2(L, l_Mouse_setPosition);
   lua_setfield(L, -2, "setPosition");
-  lua_pushcfunction(L, l_Mouse_setPositionOnScene);
+  lua_pushcfunction2(L, l_Mouse_setPositionOnScene);
   lua_setfield(L, -2, "setPositionOnScene");
-  lua_pushcfunction(L, l_Mouse_getScrollWheel);
+  lua_pushcfunction2(L, l_Mouse_getScrollWheel);
   lua_setfield(L, -2, "getScrollWheel");
-  lua_pushcfunction(L, l_Mouse_hideCursor);
+  lua_pushcfunction2(L, l_Mouse_hideCursor);
   lua_setfield(L, -2, "hideCursor");
   lua_pushinteger(L, static_cast<int>(Mouse::LEFT));
   lua_setfield(L, -2, "LEFT");
@@ -2722,7 +2777,7 @@ static int l_Filesystem_enumerateDirectory(lua_State *L) {
 }
 static void registerFilesystem(lua_State *L) {
   pushSnNamed(L, "Filesystem");
-  lua_pushcfunction(L, l_Filesystem_enumerateDirectory);
+  lua_pushcfunction2(L, l_Filesystem_enumerateDirectory);
   lua_setfield(L, -2, "enumerateDirectory");
   lua_pop(L, 1);
 }
@@ -2740,7 +2795,7 @@ static int l_Script_load(lua_State *L) {
 }
 static void registerScript(lua_State *L) {
   pushSnNamed(L, "Script");
-  lua_pushcfunction(L, l_Script_load);
+  lua_pushcfunction2(L, l_Script_load);
   lua_setfield(L, -2, "load");
   lua_pop(L, 1);
 }
@@ -2778,15 +2833,15 @@ static int l_Logger_critical(lua_State *L) {
 }
 static void registerLogger(lua_State *L) {
   pushSnNamed(L, "Logger");
-  lua_pushcfunction(L, l_Logger_verbose);
+  lua_pushcfunction2(L, l_Logger_verbose);
   lua_setfield(L, -2, "verbose");
-  lua_pushcfunction(L, l_Logger_info);
+  lua_pushcfunction2(L, l_Logger_info);
   lua_setfield(L, -2, "info");
-  lua_pushcfunction(L, l_Logger_error);
+  lua_pushcfunction2(L, l_Logger_error);
   lua_setfield(L, -2, "error");
-  lua_pushcfunction(L, l_Logger_warn);
+  lua_pushcfunction2(L, l_Logger_warn);
   lua_setfield(L, -2, "warn");
-  lua_pushcfunction(L, l_Logger_critical);
+  lua_pushcfunction2(L, l_Logger_critical);
   lua_setfield(L, -2, "critical");
   lua_pop(L, 1);
 }
@@ -2805,9 +2860,9 @@ static int l_Periodic_cos0_1(lua_State *L) {
 }
 static void registerPeriodic(lua_State *L) {
   pushSnNamed(L, "Periodic");
-  lua_pushcfunction(L, l_Periodic_sin0_1);
+  lua_pushcfunction2(L, l_Periodic_sin0_1);
   lua_setfield(L, -2, "sin0_1");
-  lua_pushcfunction(L, l_Periodic_cos0_1);
+  lua_pushcfunction2(L, l_Periodic_cos0_1);
   lua_setfield(L, -2, "cos0_1");
   lua_pop(L, 1);
 }
@@ -2826,11 +2881,11 @@ static int l_Time_delta(lua_State *L) {
 }
 static void registerTime(lua_State *L) {
   pushSnNamed(L, "Time");
-  lua_pushcfunction(L, l_Time_seconds);
+  lua_pushcfunction2(L, l_Time_seconds);
   lua_setfield(L, -2, "seconds");
-  lua_pushcfunction(L, l_Time_milli);
+  lua_pushcfunction2(L, l_Time_milli);
   lua_setfield(L, -2, "milli");
-  lua_pushcfunction(L, l_Time_delta);
+  lua_pushcfunction2(L, l_Time_delta);
   lua_setfield(L, -2, "delta");
   lua_pop(L, 1);
 }
@@ -2873,17 +2928,17 @@ static int l_ImGui_setNextWindowSize(lua_State *L) {
 }
 static void registerImGui(lua_State *L) {
   pushSnNamed(L, "ImGui");
-  lua_pushcfunction(L, l_ImGui_Begin);
+  lua_pushcfunction2(L, l_ImGui_Begin);
   lua_setfield(L, -2, "Begin");
-  lua_pushcfunction(L, l_ImGui_End);
+  lua_pushcfunction2(L, l_ImGui_End);
   lua_setfield(L, -2, "End");
-  lua_pushcfunction(L, l_ImGui_button);
+  lua_pushcfunction2(L, l_ImGui_button);
   lua_setfield(L, -2, "button");
-  lua_pushcfunction(L, l_ImGui_text);
+  lua_pushcfunction2(L, l_ImGui_text);
   lua_setfield(L, -2, "text");
-  lua_pushcfunction(L, l_ImGui_setNextWindowPos);
+  lua_pushcfunction2(L, l_ImGui_setNextWindowPos);
   lua_setfield(L, -2, "setNextWindowPos");
-  lua_pushcfunction(L, l_ImGui_setNextWindowSize);
+  lua_pushcfunction2(L, l_ImGui_setNextWindowSize);
   lua_setfield(L, -2, "setNextWindowSize");
 
   lua_newtable(L);
@@ -2938,6 +2993,24 @@ static void registerImGui(lua_State *L) {
   lua_pop(L, 2); // WindowFlags + ImGui
 }
 
+static int luaLoadSource(lua_State *L, const String &source,
+                         const String &chunkname) {
+#ifdef SINEN_USE_LUAU
+  std::string bytecode =
+      Luau::compile(std::string(source.data(), source.size()));
+  int status =
+      luau_load(L, chunkname.c_str(), bytecode.data(), bytecode.size(), 0);
+  if (status == LUA_OK) {
+    return LUA_OK;
+  }
+  const char *msg = lua_tostring(L, -1);
+  Logger::error("[luau load error] %s", msg ? msg : "(unknown error)");
+  lua_pop(L, 1);
+  return status;
+#else
+  return luaL_loadbuffer(L, source.data(), source.size(), chunkname.c_str());
+#endif
+}
 static int l_import(lua_State *L) {
   const char *name = luaL_checkstring(L, 1);
   String filename = String(name) + ".lua";
@@ -2947,8 +3020,7 @@ static int l_import(lua_State *L) {
     return 1;
   }
   String chunkname = "@" + AssetIO::getFilePath(filename);
-  if (luaL_loadbuffer(L, source.data(), source.size(), chunkname.c_str()) !=
-      LUA_OK) {
+  if (luaLoadSource(L, source, chunkname) != LUA_OK) {
     const char *msg = lua_tostring(L, -1);
     Logger::error("[lua load error] %s", msg ? msg : "(unknown error)");
     lua_pop(L, 1);
@@ -2969,7 +3041,13 @@ static int l_import(lua_State *L) {
 }
 
 static void registerAll(lua_State *L) {
-  lua_pushcfunction(L, l_import);
+
+#ifdef SINEN_USE_LUAU
+  lua_pushcfunction2(L, l_import);
+  lua_setglobal(L, "require");
+#endif
+
+  lua_pushcfunction2(L, l_import);
   lua_setglobal(L, "import");
 
   registerVec2(L);
@@ -3028,11 +3106,21 @@ bool Script::initialize() {
     return false;
   }
   luaL_openlibs(gLua);
+#ifdef SINEN_USE_LUAU
+  if (auto *cb = lua_callbacks(gLua)) {
+    cb->panic = [](lua_State *L, int errcode) {
+      const char *msg = lua_tostring(L, -1);
+      Logger::critical("[luau panic %d] %s", errcode,
+                       msg ? msg : "(unknown error)");
+    };
+  }
+#else
   lua_atpanic(gLua, [](lua_State *L) -> int {
     const char *msg = lua_tostring(L, -1);
     Logger::critical("[lua panic] %s", msg ? msg : "(unknown error)");
     return 0;
   });
+#endif
 
   lua_newtable(gLua);
   lua_setglobal(gLua, "sn");
@@ -3047,15 +3135,15 @@ void Script::shutdown() {
     return;
   }
   if (gSetupRef != LUA_NOREF) {
-    luaL_unref(gLua, LUA_REGISTRYINDEX, gSetupRef);
+    luaL_unref2(gLua, LUA_REGISTRYINDEX, gSetupRef);
     gSetupRef = LUA_NOREF;
   }
   if (gUpdateRef != LUA_NOREF) {
-    luaL_unref(gLua, LUA_REGISTRYINDEX, gUpdateRef);
+    luaL_unref2(gLua, LUA_REGISTRYINDEX, gUpdateRef);
     gUpdateRef = LUA_NOREF;
   }
   if (gDrawRef != LUA_NOREF) {
-    luaL_unref(gLua, LUA_REGISTRYINDEX, gDrawRef);
+    luaL_unref2(gLua, LUA_REGISTRYINDEX, gDrawRef);
     gDrawRef = LUA_NOREF;
   }
   lua_gc(gLua, LUA_GCCOLLECT, 0);
@@ -3090,22 +3178,21 @@ void Script::runScene() {
   }
 
   if (gSetupRef != LUA_NOREF) {
-    luaL_unref(gLua, LUA_REGISTRYINDEX, gSetupRef);
+    luaL_unref2(gLua, LUA_REGISTRYINDEX, gSetupRef);
     gSetupRef = LUA_NOREF;
   }
   if (gUpdateRef != LUA_NOREF) {
-    luaL_unref(gLua, LUA_REGISTRYINDEX, gUpdateRef);
+    luaL_unref2(gLua, LUA_REGISTRYINDEX, gUpdateRef);
     gUpdateRef = LUA_NOREF;
   }
   if (gDrawRef != LUA_NOREF) {
-    luaL_unref(gLua, LUA_REGISTRYINDEX, gDrawRef);
+    luaL_unref2(gLua, LUA_REGISTRYINDEX, gDrawRef);
     gDrawRef = LUA_NOREF;
   }
 
   String filename = String(sceneName) + ".lua";
   String chunkname = "@" + AssetIO::getFilePath(filename);
-  if (luaL_loadbuffer(gLua, source.data(), source.size(), chunkname.c_str()) !=
-      LUA_OK) {
+  if (luaLoadSource(gLua, source, chunkname) != LUA_OK) {
     logPCallError(gLua);
     return;
   }
@@ -3115,20 +3202,24 @@ void Script::runScene() {
   }
 
   lua_getglobal(gLua, "setup");
+  int funcIndex = LUA_REGISTRYINDEX;
+#ifdef SINEN_USE_LUAU
+  funcIndex = -1;
+#endif
   if (lua_isfunction(gLua, -1)) {
-    gSetupRef = luaL_ref(gLua, LUA_REGISTRYINDEX);
+    gSetupRef = luaL_ref2(gLua, funcIndex);
   } else {
     lua_pop(gLua, 1);
   }
   lua_getglobal(gLua, "update");
   if (lua_isfunction(gLua, -1)) {
-    gUpdateRef = luaL_ref(gLua, LUA_REGISTRYINDEX);
+    gUpdateRef = luaL_ref2(gLua, funcIndex);
   } else {
     lua_pop(gLua, 1);
   }
   lua_getglobal(gLua, "draw");
   if (lua_isfunction(gLua, -1)) {
-    gDrawRef = luaL_ref(gLua, LUA_REGISTRYINDEX);
+    gDrawRef = luaL_ref2(gLua, funcIndex);
   } else {
     lua_pop(gLua, 1);
   }

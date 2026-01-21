@@ -9,8 +9,12 @@ if(NOT EMSCRIPTEN)
   find_package(Vulkan REQUIRED)
 endif()
 
-option(SINEN_USE_LUAU "Use Luau instead of Lua/LuaJIT" OFF)
+option(SINEN_USE_LUAU "Use Luau instead of LuaJIT on desktop" OFF)
 option(SINEN_USE_SLANG "Use Slang for shader compilation" ON)
+
+if(EMSCRIPTEN)
+  set(SINEN_USE_LUAU ON)
+endif()
 
 include(${SINEN_SOURCE_DIR}/cmake/include.cmake)
 include(${SINEN_SOURCE_DIR}/cmake/libs.cmake)
@@ -78,9 +82,7 @@ if(WIN32)
   list(APPEND SINEN_SOURCE_FILES
        ${SINEN_SOURCE_DIR}/libs/imgui/backends/imgui_impl_dx12.cpp)
 endif()
-if(EMSCRIPTEN)
-  list(APPEND SINEN_SOURCE_FILES ${SINEN_SOURCE_DIR}/libs/lua/onelua.c)
-else()
+if(NOT EMSCRIPTEN)
   list(APPEND SINEN_SOURCE_FILES
        ${SINEN_SOURCE_DIR}/libs/imgui/backends/imgui_impl_vulkan.cpp)
 endif()

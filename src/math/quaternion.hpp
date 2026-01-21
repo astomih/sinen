@@ -56,10 +56,10 @@ public:
     y *= -1.0f;
     z *= -1.0f;
   }
-  [[nodiscard]] float length_sqrt() const {
+  [[nodiscard]] float lengthSqrt() const {
     return (x * x + y * y + z * z + w * w);
   }
-  [[nodiscard]] float length() const { return Math::sqrt(length_sqrt()); }
+  [[nodiscard]] float length() const { return Math::sqrt(lengthSqrt()); }
   void normalize() {
     const auto len = length();
     x /= len;

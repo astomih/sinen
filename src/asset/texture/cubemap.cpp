@@ -1,9 +1,7 @@
 #include <asset/texture/texture.hpp>
-#include <core/logger/logger.hpp>
 #include <graphics/graphics.hpp>
 #include <math/math.hpp>
 #include <platform/io/asset_io.hpp>
-
 
 #include <algorithm>
 #include <array>

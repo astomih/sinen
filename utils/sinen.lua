@@ -483,13 +483,13 @@ sn = {
     Time = {},
 
     ---Static class
-    ---@class sn.Logger
+    ---@class sn.Log
     ---@field verbose fun(msg: any)
     ---@field info fun(msg: any)
     ---@field error fun(msg: any)
     ---@field warn fun(msg: any)
     ---@field critical fun(msg: any)
-    Logger = {},
+    Log = {},
 
     ---Static class
     ---@class sn.ImGui

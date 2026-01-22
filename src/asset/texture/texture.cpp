@@ -1,11 +1,9 @@
 #include <SDL3/SDL.h>
 #include <asset/texture/texture.hpp>
 #include <cassert>
-#include <core/logger/logger.hpp>
 #include <graphics/graphics.hpp>
 #include <memory>
 #include <platform/io/asset_io.hpp>
-
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>

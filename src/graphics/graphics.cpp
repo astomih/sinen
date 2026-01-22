@@ -2,7 +2,6 @@
 #include <asset/texture/render_texture.hpp>
 #include <cassert>
 #include <core/allocator/global_allocator.hpp>
-#include <core/logger/logger.hpp>
 #include <graphics/graphics.hpp>
 #include <graphics/imgui_backend/imgui_impl_sinen.hpp>
 #include <memory>

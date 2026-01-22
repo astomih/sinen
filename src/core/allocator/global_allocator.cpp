@@ -4,7 +4,7 @@
 #include "tlsf_allocator.hpp"
 
 #include <core/def/macro.hpp>
-#include <core/logger/logger.hpp>
+#include <core/logger/log.hpp>
 #include <memory_resource>
 namespace sinen {
 Allocator *GlobalAllocator::pA = nullptr;
@@ -17,7 +17,7 @@ Allocator *GlobalAllocator::get() {
   tlsf = new TLSFAllocator(allocatorSize);
   pA = new std::pmr::synchronized_pool_resource(tlsf);
   if (!pA) {
-    Logger::critical("Failed to application memory allocation.");
+    Log::critical("Failed to application memory allocation.");
     std::exit(-1);
   }
   return pA;

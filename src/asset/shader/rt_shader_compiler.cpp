@@ -6,7 +6,6 @@
 
 #include <platform/io/file.hpp>
 
-#include <core/logger/logger.hpp>
 #include <platform/io/asset_io.hpp>
 
 #include <slang-com-helper.h>

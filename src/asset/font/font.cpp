@@ -6,7 +6,6 @@
 #include <asset/font/font.hpp>
 #include <asset/texture/texture.hpp>
 #include <core/data/array.hpp>
-#include <core/logger/logger.hpp>
 #include <graphics/graphics.hpp>
 #include <graphics/rhi/rhi.hpp>
 #include <math/color/color.hpp>

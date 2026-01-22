@@ -31,37 +31,37 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
   SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1");
   SDL_InitFlags initFlags = SDL_INIT_AUDIO | SDL_INIT_EVENTS;
   if (!SDL_Init(initFlags)) {
-    Logger::critical("Failed to initialize SDL");
+    Log::critical("Failed to initialize SDL");
     return SDL_APP_FAILURE;
   }
 
   if (!Window::initialize("Sinen")) {
-    Logger::critical("Failed to initialize window");
+    Log::critical("Failed to initialize window");
     return SDL_APP_FAILURE;
   }
   if (!Graphics::initialize()) {
-    Logger::critical("Failed to initialize graphics");
+    Log::critical("Failed to initialize graphics");
     return SDL_APP_FAILURE;
   }
   if (!Audio::initialize()) {
-    Logger::critical("Failed to initialize audio");
+    Log::critical("Failed to initialize audio");
     Audio::shutdown();
     return SDL_APP_FAILURE;
   }
   if (!Input::initialize()) {
-    Logger::critical("Failed to initialize input");
+    Log::critical("Failed to initialize input");
     return SDL_APP_FAILURE;
   }
   if (!Physics::initialize()) {
-    Logger::critical("Failed to initialize physics");
+    Log::critical("Failed to initialize physics");
     return SDL_APP_FAILURE;
   }
   if (!Script::initialize()) {
-    Logger::critical("Failed to initialize script");
+    Log::critical("Failed to initialize script");
     return SDL_APP_FAILURE;
   }
   if (!Random::initialize()) {
-    Logger::critical("Failed to initialize random");
+    Log::critical("Failed to initialize random");
     return SDL_APP_FAILURE;
   }
   return SDL_APP_CONTINUE;

@@ -1,13 +1,12 @@
 #include "graphics.hpp"
 #include <core/allocator/global_allocator.hpp>
-#include <core/logger/logger.hpp>
 #include <graphics/graphics_pipeline.hpp>
 
 #include <cstddef>
 namespace sinen {
 
 static rhi::VertexInputState
-CreateVertexInputState(Allocator *allocator, std::bitset<32> featureFlags);
+createVertexInputState(Allocator *allocator, std::bitset<32> featureFlags);
 void GraphicsPipeline::setVertexShader(const Shader &shader) {
   this->vertexShader = shader;
 }
@@ -34,7 +33,7 @@ void GraphicsPipeline::build() {
   pipelineInfo.vertexShader = this->vertexShader.getRaw();
   pipelineInfo.fragmentShader = this->fragmentShader.getRaw();
   pipelineInfo.vertexInputState =
-      CreateVertexInputState(allocator, featureFlags);
+      createVertexInputState(allocator, featureFlags);
   pipelineInfo.primitiveType = rhi::PrimitiveType::TriangleList;
 
   rhi::RasterizerState rasterizerState{};
@@ -75,7 +74,7 @@ void GraphicsPipeline::build() {
   this->pipeline = device->createGraphicsPipeline(pipelineInfo);
 }
 
-rhi::VertexInputState CreateVertexInputState(Allocator *allocator,
+rhi::VertexInputState createVertexInputState(Allocator *allocator,
                                              std::bitset<32> featureFlags) {
   bool isInstance = featureFlags.test(GraphicsPipeline::FeatureFlag::Instanced);
   bool isAnimation =

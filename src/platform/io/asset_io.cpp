@@ -8,7 +8,7 @@
 // internal
 #include <asset/script/script.hpp>
 #include <core/data/string.hpp>
-#include <core/logger/logger.hpp>
+#include <core/logger/log.hpp>
 #include <platform/io/asset_io.hpp>
 #include <platform/io/filesystem.hpp>
 
@@ -33,11 +33,11 @@ StringView AssetIO::open(StringView name) {
   String filePath;
   convertFilePath(filePath, name);
   auto *file = SDL_IOFromFile(filePath.c_str(), "r");
-  Logger::error("File open error %s: %s", filePath.c_str(), SDL_GetError());
+  LogF::error("File open error {}: {}", filePath.c_str(), SDL_GetError());
   size_t fileLength;
   void *load = SDL_LoadFile_IO(file, &fileLength, 1);
   if (!load) {
-    Logger::error("File load error %s: %s", filePath.c_str(), SDL_GetError());
+    LogF::error("File open error {}: {}", filePath.c_str(), SDL_GetError());
     return "";
   }
   StringView result(reinterpret_cast<char *>(load), fileLength);
@@ -50,7 +50,7 @@ void *AssetIO::openAsIOStream(StringView name) {
 
   SDL_IOStream *file = SDL_IOFromFile(filePath.c_str(), "r");
   if (!file) {
-    Logger::error("File open error %s", filePath.c_str());
+    LogF::error("File open error {}: {}", filePath.c_str(), SDL_GetError());
     return nullptr;
   }
   return file;
@@ -60,13 +60,13 @@ String AssetIO::openAsString(StringView name) {
   convertFilePath(filePath, name);
   auto *file = SDL_IOFromFile(filePath.c_str(), "r");
   if (!file) {
-    Logger::error("%s", String("Sinen file open error" + filePath).c_str());
+    LogF::error("{}", String("Sinen file open error" + filePath).c_str());
     return "";
   }
   size_t fileLength;
   void *load = SDL_LoadFile_IO(file, &fileLength, 1);
   if (!load) {
-    Logger::error("%s", String("Sinen file open error" + filePath).c_str());
+    LogF::error("{}", String("Sinen file open error" + filePath).c_str());
     return "";
   }
   String result{reinterpret_cast<char *>(load), fileLength};
@@ -82,7 +82,7 @@ void AssetIO::write(StringView name, StringView data) {
     return;
   }
   if (data.size() != SDL_WriteIO(file, data.data(), data.size())) {
-    Logger::error("data_stream: Could not write all strings");
+    Log::error("data_stream: Could not write all strings");
   }
   SDL_CloseIO(file);
 }

@@ -1,4 +1,4 @@
-#include "core/logger/logger.hpp"
+#include "core/logger/log.hpp"
 
 #include <platform/io/filesystem.hpp>
 

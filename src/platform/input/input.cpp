@@ -10,8 +10,6 @@
 
 #include <math/math.hpp>
 
-#include <core/logger/logger.hpp>
-
 #include <SDL3/SDL.h>
 
 namespace sinen {

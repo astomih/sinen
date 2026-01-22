@@ -10,7 +10,7 @@
 #include <core/data/string.hpp>
 #include <core/def/types.hpp>
 #include <core/event/event.hpp>
-#include <core/logger/logger.hpp>
+#include <core/logger/log.hpp>
 #include <graphics/builtin_pipeline.hpp>
 #include <graphics/graphics.hpp>
 #include <math/graph/bfs_grid.hpp>
@@ -287,7 +287,7 @@ static int luaPCallLogged(lua_State *L, int nargs, int nresults) {
     return LUA_OK;
   }
   const char *msg = lua_tostring(L, -1);
-  Logger::error("[lua error] %s", msg ? msg : "(unknown error)");
+  LogF::error("[lua error] {}", msg ? msg : "(unknown error)");
   lua_pop(L, 1);
   return LUA_ERRRUN;
 }
@@ -2800,48 +2800,48 @@ static void registerScript(lua_State *L) {
   lua_pop(L, 1);
 }
 
-static int lLoggerInfo(lua_State *L) {
+static int lLogInfo(lua_State *L) {
   lua_getglobal(L, "tostring");
   lua_pushvalue(L, 1);
   if (luaPCallLogged(L, 1, 1) != LUA_OK) {
     return 0;
   }
   const char *s = lua_tostring(L, -1);
-  Logger::info("%s", s ? s : "");
+  Log::info(s);
   lua_pop(L, 1);
   return 0;
 }
-static int lLoggerVerbose(lua_State *L) {
+static int lLogVerbose(lua_State *L) {
   const char *s = luaL_checkstring(L, 1);
-  Logger::verbose("%s", s);
+  Log::verbose(s);
   return 0;
 }
-static int lLoggerError(lua_State *L) {
+static int lLogError(lua_State *L) {
   const char *s = luaL_checkstring(L, 1);
-  Logger::error("%s", s);
+  Log::error(s);
   return 0;
 }
-static int lLoggerWarn(lua_State *L) {
+static int lLogWarn(lua_State *L) {
   const char *s = luaL_checkstring(L, 1);
-  Logger::warn("%s", s);
+  Log::warn(s);
   return 0;
 }
-static int lLoggerCritical(lua_State *L) {
+static int lLogCritical(lua_State *L) {
   const char *s = luaL_checkstring(L, 1);
-  Logger::critical("%s", s);
+  Log::critical(s);
   return 0;
 }
-static void registerLogger(lua_State *L) {
-  pushSnNamed(L, "Logger");
-  luaPushcfunction2(L, lLoggerVerbose);
+static void registerLog(lua_State *L) {
+  pushSnNamed(L, "Log");
+  luaPushcfunction2(L, lLogVerbose);
   lua_setfield(L, -2, "verbose");
-  luaPushcfunction2(L, lLoggerInfo);
+  luaPushcfunction2(L, lLogInfo);
   lua_setfield(L, -2, "info");
-  luaPushcfunction2(L, lLoggerError);
+  luaPushcfunction2(L, lLogError);
   lua_setfield(L, -2, "error");
-  luaPushcfunction2(L, lLoggerWarn);
+  luaPushcfunction2(L, lLogWarn);
   lua_setfield(L, -2, "warn");
-  luaPushcfunction2(L, lLoggerCritical);
+  luaPushcfunction2(L, lLogCritical);
   lua_setfield(L, -2, "critical");
   lua_pop(L, 1);
 }
@@ -3004,7 +3004,7 @@ static int luaLoadSource(lua_State *L, const String &source,
     return LUA_OK;
   }
   const char *msg = lua_tostring(L, -1);
-  Logger::error("[luau load error] %s", msg ? msg : "(unknown error)");
+  Log::error("[luau load error] %s", msg ? msg : "(unknown error)");
   lua_pop(L, 1);
   return status;
 #else
@@ -3022,7 +3022,7 @@ static int lImport(lua_State *L) {
   String chunkname = "@" + AssetIO::getFilePath(filename);
   if (luaLoadSource(L, source, chunkname) != LUA_OK) {
     const char *msg = lua_tostring(L, -1);
-    Logger::error("[lua load error] %s", msg ? msg : "(unknown error)");
+    LogF::error("[lua load error] {}", msg ? msg : "(unknown error)");
     lua_pop(L, 1);
     lua_pushnil(L);
     return 1;
@@ -3089,7 +3089,7 @@ static void registerAll(lua_State *L) {
   registerGamepad(L);
   registerFilesystem(L);
   registerScript(L);
-  registerLogger(L);
+  registerLog(L);
   registerImGui(L);
   registerPeriodic(L);
   registerTime(L);
@@ -3102,7 +3102,7 @@ bool Script::initialize() {
   // bindings are implemented using Lua C API in this file
   gLua = lua_newstate(alloc, nullptr);
   if (!gLua) {
-    Logger::error("lua_newstate failed");
+    Log::error("lua_newstate failed");
     return false;
   }
   luaL_openlibs(gLua);
@@ -3110,14 +3110,14 @@ bool Script::initialize() {
   if (auto *cb = lua_callbacks(gLua)) {
     cb->panic = [](lua_State *L, int errcode) {
       const char *msg = lua_tostring(L, -1);
-      Logger::critical("[luau panic %d] %s", errcode,
-                       msg ? msg : "(unknown error)");
+      Log::critical("[luau panic %d] %s", errcode,
+                    msg ? msg : "(unknown error)");
     };
   }
 #else
   lua_atpanic(gLua, [](lua_State *L) -> int {
     const char *msg = lua_tostring(L, -1);
-    Logger::critical("[lua panic] %s", msg ? msg : "(unknown error)");
+    LogF::critical("[lua panic] {}", msg ? msg : "(unknown error)");
     return 0;
   });
 #endif
@@ -3167,7 +3167,7 @@ void Script::runScene() {
 
   auto logPCallError = [](lua_State *L) {
     const char *msg = lua_tostring(L, -1);
-    Logger::error("[lua error] %s", msg ? msg : "(unknown error)");
+    LogF::error("[lua error] {}", msg ? msg : "(unknown error)");
     lua_pop(L, 1);
   };
 
@@ -3241,7 +3241,7 @@ void Script::updateScene() {
   lua_rawgeti(gLua, LUA_REGISTRYINDEX, gUpdateRef);
   if (lua_pcall(gLua, 0, 0, 0) != LUA_OK) {
     const char *msg = lua_tostring(gLua, -1);
-    Logger::error("[lua error] %s", msg ? msg : "(unknown error)");
+    LogF::error("[lua error] {}", msg ? msg : "(unknown error)");
     lua_pop(gLua, 1);
   }
 #endif
@@ -3255,7 +3255,7 @@ void Script::drawScene() {
   lua_rawgeti(gLua, LUA_REGISTRYINDEX, gDrawRef);
   if (lua_pcall(gLua, 0, 0, 0) != LUA_OK) {
     const char *msg = lua_tostring(gLua, -1);
-    Logger::error("[lua error] %s", msg ? msg : "(unknown error)");
+    LogF::error("[lua error] {}", msg ? msg : "(unknown error)");
     lua_pop(gLua, 1);
   }
 #endif

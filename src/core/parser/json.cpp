@@ -1,6 +1,7 @@
 // std libraries
 #include <algorithm>
 #include <cstdint>
+#include <list>
 
 // external libraries
 #include <rapidjson/document.h>
@@ -9,9 +10,8 @@
 
 // internal libraries
 #include "json.hpp"
-#include <core/logger/logger.hpp>
+#include <core/logger/log.hpp>
 #include <platform/io/file.hpp>
-
 
 namespace sinen {
 class Json::Array::impl {
@@ -161,7 +161,7 @@ Json::~Json() {}
 void Json::parse(StringView str) {
   pimpl->doc.Parse(str.data());
   if (pimpl->doc.HasParseError()) {
-    Logger::critical("%d", pimpl->doc.GetParseError());
+    LogF::critical("{}", static_cast<int>(pimpl->doc.GetParseError()));
   }
 }
 Json::Object Json::operator[](StringView key) {

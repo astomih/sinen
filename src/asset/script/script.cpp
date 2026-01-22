@@ -1015,7 +1015,7 @@ static int lGridAt(lua_State *L) {
   auto &g = udValue<Grid>(L, 1, mtGrid);
   int x = static_cast<int>(luaL_checkinteger(L, 2));
   int y = static_cast<int>(luaL_checkinteger(L, 3));
-  lua_pushnumber(L, g.at(x, y));
+  lua_pushnumber(L, g.at(x - 1, y - 1));
   return 1;
 }
 static int lGridSet(lua_State *L) {
@@ -1023,7 +1023,7 @@ static int lGridSet(lua_State *L) {
   int x = static_cast<int>(luaL_checkinteger(L, 2));
   int y = static_cast<int>(luaL_checkinteger(L, 3));
   float v = static_cast<float>(luaL_checknumber(L, 4));
-  g.at(x, y) = v;
+  g.at(x - 1, y - 1) = v;
   return 0;
 }
 static int lGridWidth(lua_State *L) {
@@ -1069,14 +1069,14 @@ static int lGridSetRow(lua_State *L) {
   auto &g = udValue<Grid>(L, 1, mtGrid);
   int idx = static_cast<int>(luaL_checkinteger(L, 2));
   float v = static_cast<float>(luaL_checknumber(L, 3));
-  g.setRow(idx, v);
+  g.setRow(idx - 1, v);
   return 0;
 }
 static int lGridSetColumn(lua_State *L) {
   auto &g = udValue<Grid>(L, 1, mtGrid);
   int idx = static_cast<int>(luaL_checkinteger(L, 2));
   float v = static_cast<float>(luaL_checknumber(L, 3));
-  g.setColumn(idx, v);
+  g.setColumn(idx - 1, v);
   return 0;
 }
 static void registerGrid(lua_State *L) {

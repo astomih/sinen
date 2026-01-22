@@ -298,6 +298,7 @@ static constexpr const char *mtVec3 = "sn.Vec3";
 static constexpr const char *mtColor = "sn.Color";
 static constexpr const char *mtRect = "sn.Rect";
 static constexpr const char *mtTransform = "sn.Transform";
+static constexpr const char *mtRay = "sn.Ray";
 static constexpr const char *mtFont = "sn.Font";
 static constexpr const char *mtTexture = "sn.Texture";
 static constexpr const char *mtModel = "sn.Model";
@@ -700,6 +701,34 @@ static void registerColor(lua_State *L) {
   lua_pop(L, 1);
 }
 
+static int lRayIndex(lua_State *L) {
+  auto &r = udValue<Ray>(L, 1, mtRay);
+  const char *k = luaL_checkstring(L, 2);
+  if (std::strcmp(k, "origin") == 0) {
+    udNewRef<Vec3>(L, mtRay, &r.origin);
+    return 1;
+  }
+  if (std::strcmp(k, "direction") == 0) {
+    udNewRef<Vec3>(L, mtRay, &r.direction);
+    return 1;
+  }
+  luaL_getmetatable(L, mtRay);
+  lua_pushvalue(L, 2);
+  lua_rawget(L, -2);
+  return 1;
+}
+static void registerRay(lua_State *L) {
+  luaL_newmetatable(L, mtRay);
+  luaPushcfunction2(L, udGc<Ray>);
+  lua_setfield(L, -2, "__gc");
+  luaPushcfunction2(L, lRayIndex);
+  lua_setfield(L, -2, "__index");
+  lua_pop(L, 1);
+
+  pushSnNamed(L, "Ray");
+  lua_pop(L, 1);
+}
+
 // -----------------
 // Camera / Camera2D
 // -----------------
@@ -754,6 +783,13 @@ static int lCameraIsAabbInFrustum(lua_State *L) {
   lua_pushboolean(L, cam.isAABBInFrustum(aabb));
   return 1;
 }
+static int lCameraScreenToWorldRay(lua_State *L) {
+  auto &cam = udValue<Camera>(L, 1, mtCamera);
+  auto &screenPos = udValue<Vec2>(L, 2, mtVec2);
+
+  udNewOwned<Ray>(L, mtRay, cam.screenToWorldRay(screenPos));
+  return 1;
+}
 static void registerCamera(lua_State *L) {
   luaL_newmetatable(L, mtCamera);
   luaPushcfunction2(L, udGc<Camera>);
@@ -774,6 +810,8 @@ static void registerCamera(lua_State *L) {
   lua_setfield(L, -2, "getUp");
   luaPushcfunction2(L, lCameraIsAabbInFrustum);
   lua_setfield(L, -2, "isAABBInFrustum");
+  luaPushcfunction2(L, lCameraScreenToWorldRay);
+  lua_setfield(L, -2, "screenToWorldRay");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Camera");
@@ -3054,6 +3092,7 @@ static void registerAll(lua_State *L) {
   registerVec3(L);
   registerColor(L);
   registerAABB(L);
+  registerRay(L);
   registerTimer(L);
   registerCollider(L);
   registerCamera(L);

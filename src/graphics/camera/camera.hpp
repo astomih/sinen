@@ -9,6 +9,11 @@ namespace sinen {
 struct Frustum {
   Vec4 planes[6]; // x, y, z, w: ax + by + cz + d = 0
 };
+
+struct Ray {
+  Vec3 origin;
+  Vec3 direction;
+};
 /**
  * @brief Camera class
  *
@@ -50,6 +55,26 @@ public:
    * @return false AABB is not in frustum
    */
   bool isAABBInFrustum(const AABB &aabb);
+
+  /**
+   * @brief Convert a screen-space position to a world-space ray.
+   *
+   * Screen-space coordinates are centered at (0, 0) with +Y up, and typically
+   * match values from Mouse::getPosition().
+   *
+   * @param screenPos Screen-space position (center-origin).
+   * @param viewportSize Viewport size in pixels.
+   */
+  Ray screenToWorldRay(const Vec2 &screenPos, const Vec2 &viewportSize) const;
+
+  /**
+   * @brief Convert a screen-space position to a world-space ray.
+   *
+   * Uses the current Window::size() as the viewport.
+   *
+   * @param screenPos Screen-space position (center-origin).
+   */
+  Ray screenToWorldRay(const Vec2 &screenPos) const;
   /**
    * @brief Get the position of camera
    *

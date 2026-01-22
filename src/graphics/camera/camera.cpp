@@ -4,6 +4,13 @@
 #include <platform/window/window.hpp>
 
 namespace sinen {
+static Vec3 perspDiv(const Vec4 &v) {
+  if (v.w == 0.0f) {
+    return Vec3(v.x, v.y, v.z);
+  }
+  return Vec3(v.x / v.w, v.y / v.w, v.z / v.w);
+}
+
 void Camera::lookat(const Vec3 &position, const Vec3 &target, const Vec3 &up) {
   this->position = position;
   this->target = target;
@@ -77,6 +84,30 @@ bool Camera::isAABBInFrustum(const AABB &aabb) {
   }
 
   return true;
+}
+
+Ray Camera::screenToWorldRay(const Vec2 &screenPos,
+                            const Vec2 &viewportSize) const {
+  const Vec2 half = viewportSize * 0.5f;
+  const float ndcX = screenPos.x / half.x;
+  const float ndcY = screenPos.y / half.y;
+
+  const Mat4 invVP = Mat4::invert(this->projection * this->view);
+
+  const Vec4 nearClip(ndcX, ndcY, 0.0f, 1.0f);
+  const Vec4 farClip(ndcX, ndcY, 1.0f, 1.0f);
+
+  const Vec3 nearWorld = perspDiv(invVP * nearClip);
+  const Vec3 farWorld = perspDiv(invVP * farClip);
+
+  Ray ray;
+  ray.origin = nearWorld;
+  ray.direction = Vec3::normalize(farWorld - nearWorld);
+  return ray;
+}
+
+Ray Camera::screenToWorldRay(const Vec2 &screenPos) const {
+  return screenToWorldRay(screenPos, Window::size());
 }
 
 } // namespace sinen

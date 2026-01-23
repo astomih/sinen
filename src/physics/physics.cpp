@@ -77,9 +77,9 @@ static bool assertFailedImpl(const char *inExpression, const char *inMessage,
 #endif // JPH_ENABLE_ASSERTS
 
 namespace Layers {
-static constexpr JPH::ObjectLayer NON_MOVING = 0;
-static constexpr JPH::ObjectLayer MOVING = 1;
-static constexpr JPH::ObjectLayer NUM_LAYERS = 2;
+static constexpr JPH::ObjectLayer nonMoving = 0;
+static constexpr JPH::ObjectLayer moving = 1;
+static constexpr JPH::ObjectLayer numLayers = 2;
 }; // namespace Layers
 
 class ObjectLayerPairFilterImpl : public JPH::ObjectLayerPairFilter {
@@ -87,9 +87,9 @@ public:
   virtual bool ShouldCollide(JPH::ObjectLayer inObject1,
                              JPH::ObjectLayer inObject2) const override {
     switch (inObject1) {
-    case Layers::NON_MOVING:
-      return inObject2 == Layers::MOVING;
-    case Layers::MOVING:
+    case Layers::nonMoving:
+      return inObject2 == Layers::moving;
+    case Layers::moving:
       return true;
     default:
       JPH_ASSERT(false);
@@ -99,26 +99,26 @@ public:
 };
 
 namespace BroadPhaseLayers {
-static constexpr JPH::BroadPhaseLayer NON_MOVING(0);
-static constexpr JPH::BroadPhaseLayer MOVING(1);
-static constexpr UInt32 NUM_LAYERS(2);
+static constexpr JPH::BroadPhaseLayer nonMoving(0);
+static constexpr JPH::BroadPhaseLayer moving(1);
+static constexpr UInt32 numLayers(2);
 }; // namespace BroadPhaseLayers
 
 class BPLayerInterfaceImpl final : public JPH::BroadPhaseLayerInterface {
 public:
   BPLayerInterfaceImpl() {
     // Create a mapping table from object to broad phase layer
-    mObjectToBroadPhase[Layers::NON_MOVING] = BroadPhaseLayers::NON_MOVING;
-    mObjectToBroadPhase[Layers::MOVING] = BroadPhaseLayers::MOVING;
+    mObjectToBroadPhase[Layers::nonMoving] = BroadPhaseLayers::nonMoving;
+    mObjectToBroadPhase[Layers::moving] = BroadPhaseLayers::moving;
   }
 
   virtual UInt32 GetNumBroadPhaseLayers() const override {
-    return BroadPhaseLayers::NUM_LAYERS;
+    return BroadPhaseLayers::numLayers;
   }
 
   virtual JPH::BroadPhaseLayer
   GetBroadPhaseLayer(JPH::ObjectLayer inLayer) const override {
-    JPH_ASSERT(inLayer < Layers::NUM_LAYERS);
+    JPH_ASSERT(inLayer < Layers::numLayers);
     return mObjectToBroadPhase[inLayer];
   }
 
@@ -126,9 +126,9 @@ public:
   virtual const char *
   GetBroadPhaseLayerName(JPH::BroadPhaseLayer inLayer) const override {
     switch ((JPH::BroadPhaseLayer::Type)inLayer) {
-    case (JPH::BroadPhaseLayer::Type)BroadPhaseLayers::NON_MOVING:
+    case (JPH::BroadPhaseLayer::Type)BroadPhaseLayers::nonMoving:
       return "NON_MOVING";
-    case (JPH::BroadPhaseLayer::Type)BroadPhaseLayers::MOVING:
+    case (JPH::BroadPhaseLayer::Type)BroadPhaseLayers::moving:
       return "MOVING";
     default:
       JPH_ASSERT(false);
@@ -138,7 +138,7 @@ public:
 #endif // JPH_EXTERNAL_PROFILE || JPH_PROFILE_ENABLED
 
 private:
-  JPH::BroadPhaseLayer mObjectToBroadPhase[Layers::NUM_LAYERS];
+  JPH::BroadPhaseLayer mObjectToBroadPhase[Layers::numLayers];
 };
 
 class ObjectVsBroadPhaseLayerFilterImpl
@@ -147,9 +147,9 @@ public:
   virtual bool ShouldCollide(JPH::ObjectLayer inLayer1,
                              JPH::BroadPhaseLayer inLayer2) const override {
     switch (inLayer1) {
-    case Layers::NON_MOVING:
-      return inLayer2 == BroadPhaseLayers::MOVING;
-    case Layers::MOVING:
+    case Layers::nonMoving:
+      return inLayer2 == BroadPhaseLayers::moving;
+    case Layers::moving:
       return true;
     default:
       JPH_ASSERT(false);
@@ -231,11 +231,11 @@ bool Physics::initialize() {
                       cMaxContactConstraints, broadPhaseLayerInterface,
                       objectVSBroadPhaseLayerFilter, objectVSLayerFilter);
 
-  static MyBodyActivationListener body_activation_listener;
-  physicsSystem->SetBodyActivationListener(&body_activation_listener);
+  static MyBodyActivationListener bodyActivationListener;
+  physicsSystem->SetBodyActivationListener(&bodyActivationListener);
 
-  static MyContactListener contact_listener;
-  physicsSystem->SetContactListener(&contact_listener);
+  static MyContactListener contactListener;
+  physicsSystem->SetContactListener(&contactListener);
 
   return true;
 }
@@ -264,13 +264,13 @@ void Physics::update() {
 }
 
 Vec3 Physics::getPosition(const Collider &collider) {
-  JPH::BodyInterface &body_interface = physicsSystem->GetBodyInterface();
+  JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
   auto it = bodyMap.find(collider.id);
   if (it == bodyMap.end()) {
     return Vec3(0.0f);
   }
-  JPH::BodyID body_id = it->second;
-  JPH::RVec3 position = body_interface.GetCenterOfMassPosition(body_id);
+  JPH::BodyID bodyId = it->second;
+  JPH::RVec3 position = bodyInterface.GetCenterOfMassPosition(bodyId);
   return {position.GetX(), position.GetY(), position.GetZ()};
 }
 
@@ -280,8 +280,8 @@ Vec3 Physics::getVelocity(const Collider &collider) {
   if (it == bodyMap.end()) {
     return Vec3(0.0f);
   }
-  JPH::BodyID body_id = it->second;
-  auto velocity = bodyInterface.GetLinearVelocity(body_id);
+  JPH::BodyID bodyId = it->second;
+  auto velocity = bodyInterface.GetLinearVelocity(bodyId);
   return Vec3(velocity.GetX(), velocity.GetY(), velocity.GetZ());
 }
 void Physics::setLinearVelocity(const Collider &collider,
@@ -292,7 +292,7 @@ void Physics::setLinearVelocity(const Collider &collider,
 }
 
 static UInt32 nextColliderID = 1;
-UInt32 GetNextID() { return nextColliderID++; }
+UInt32 getNextId() { return nextColliderID++; }
 
 Collider Physics::createBoxCollider(const Transform &transform, bool isStatic) {
 
@@ -312,7 +312,7 @@ Collider Physics::createBoxCollider(const Transform &transform, bool isStatic) {
   JPH::EMotionType motionType =
       isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic;
 
-  JPH::ObjectLayer layer = isStatic ? Layers::NON_MOVING : Layers::MOVING;
+  JPH::ObjectLayer layer = isStatic ? Layers::nonMoving : Layers::moving;
 
   JPH::BodyCreationSettings boxSettings(
       boxShape, JPH::RVec3(position.x, position.y, position.z),
@@ -320,7 +320,7 @@ Collider Physics::createBoxCollider(const Transform &transform, bool isStatic) {
       layer);
 
   JPH::Body *floor = bodyInterface.CreateBody(boxSettings);
-  Collider collider{GetNextID()};
+  Collider collider{getNextId()};
   bodyMap[collider.id] = floor->GetID();
   return collider;
 }
@@ -330,14 +330,14 @@ Collider Physics::createSphereCollider(const Vec3 &position, float radius,
   auto &bodyInterface = physicsSystem->GetBodyInterface();
   auto motionType =
       isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic;
-  JPH::ObjectLayer layer = isStatic ? Layers::NON_MOVING : Layers::MOVING;
-  JPH::BodyCreationSettings sphere_settings(
+  JPH::ObjectLayer layer = isStatic ? Layers::nonMoving : Layers::moving;
+  JPH::BodyCreationSettings sphereSettings(
       new JPH::SphereShape(radius),
       JPH::RVec3(position.x, position.y, position.z), JPH::Quat::sIdentity(),
       motionType, layer);
-  auto *body = bodyInterface.CreateBody(sphere_settings);
+  auto *body = bodyInterface.CreateBody(sphereSettings);
 
-  Collider collider{GetNextID()};
+  Collider collider{getNextId()};
   bodyMap[collider.id] = body->GetID();
   return collider;
 }
@@ -349,7 +349,7 @@ Collider Physics::createCylinderCollider(const Vec3 &position,
   cylinderShapeSetting.SetEmbedded();
   JPH::EMotionType motionType =
       isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic;
-  JPH::ObjectLayer layer = isStatic ? Layers::NON_MOVING : Layers::MOVING;
+  JPH::ObjectLayer layer = isStatic ? Layers::nonMoving : Layers::moving;
   JPH::ShapeSettings::ShapeResult cylinderShapeResult =
       cylinderShapeSetting.Create();
   JPH::ShapeRefC cylinderShape = cylinderShapeResult.Get();
@@ -359,7 +359,7 @@ Collider Physics::createCylinderCollider(const Vec3 &position,
       {quaternion.x, quaternion.y, quaternion.z, quaternion.w}, motionType,
       layer);
   JPH::Body *cylinder = bodyInterface.CreateBody(cylinderSettings);
-  Collider collider{GetNextID()};
+  Collider collider{getNextId()};
   bodyMap[collider.id] = cylinder->GetID();
   return collider;
 }

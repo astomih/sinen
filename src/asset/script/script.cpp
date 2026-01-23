@@ -55,7 +55,7 @@ int luaLError2(lua_State *L, const char *fmt, ...) {
   va_start(ap, fmt);
 #ifdef SINEN_USE_LUAU
   luaL_error(L, va_list(ap));
-  return 1;
+  return 0;
 #else
   return luaL_error(L, va_list(ap));
 #endif
@@ -184,8 +184,6 @@ static auto colorStr(const Color &v) {
   return convert("sn.Color", p, false);
 };
 
-namespace {
-
 template <class T> struct UdBox {
   bool owned = true;
   T *ptr = nullptr;
@@ -306,7 +304,7 @@ static constexpr const char *mtBuffer = "sn.Buffer";
 static constexpr const char *mtRendertexture = "sn.RenderTexture";
 static constexpr const char *mtSound = "sn.Sound";
 static constexpr const char *mtCamera = "sn.Camera";
-static constexpr const char *mtCamerA2D = "sn.Camera2D";
+static constexpr const char *mtCamera2D = "sn.Camera2D";
 static constexpr const char *mtAabb = "sn.AABB";
 static constexpr const char *mtTimer = "sn.Timer";
 static constexpr const char *mtCollider = "sn.Collider";
@@ -705,16 +703,27 @@ static int lRayIndex(lua_State *L) {
   auto &r = udValue<Ray>(L, 1, mtRay);
   const char *k = luaL_checkstring(L, 2);
   if (std::strcmp(k, "origin") == 0) {
-    udNewRef<Vec3>(L, mtRay, &r.origin);
+    udNewRef<Vec3>(L, mtVec3, &r.origin);
     return 1;
   }
   if (std::strcmp(k, "direction") == 0) {
-    udNewRef<Vec3>(L, mtRay, &r.direction);
+    udNewRef<Vec3>(L, mtVec3, &r.direction);
     return 1;
   }
   luaL_getmetatable(L, mtRay);
   lua_pushvalue(L, 2);
   lua_rawget(L, -2);
+  return 1;
+}
+static int lRayNew(lua_State *L) {
+  int n = lua_gettop(L);
+  if (n == 0) {
+    udNewOwned(L, mtRay, Ray{});
+    return 1;
+  }
+  auto origin = udValue<Vec3>(L, 1, mtVec3);
+  auto direction = udValue<Vec3>(L, 2, mtVec3);
+  udNewOwned(L, mtRay, Ray{origin, direction});
   return 1;
 }
 static void registerRay(lua_State *L) {
@@ -726,6 +735,8 @@ static void registerRay(lua_State *L) {
   lua_pop(L, 1);
 
   pushSnNamed(L, "Ray");
+  luaPushcfunction2(L, lRayNew);
+  lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
 
@@ -821,37 +832,37 @@ static void registerCamera(lua_State *L) {
 }
 
 static int lCamera2DNew(lua_State *L) {
-  udNewOwned<Camera2D>(L, mtCamerA2D, Camera2D{});
+  udNewOwned<Camera2D>(L, mtCamera2D, Camera2D{});
   return 1;
 }
 static int lCamera2DSize(lua_State *L) {
-  auto &cam = udValue<Camera2D>(L, 1, mtCamerA2D);
+  auto &cam = udValue<Camera2D>(L, 1, mtCamera2D);
   udNewOwned<Vec2>(L, mtVec2, cam.size());
   return 1;
 }
 static int lCamera2DHalf(lua_State *L) {
-  auto &cam = udValue<Camera2D>(L, 1, mtCamerA2D);
+  auto &cam = udValue<Camera2D>(L, 1, mtCamera2D);
   udNewOwned<Vec2>(L, mtVec2, cam.half());
   return 1;
 }
 static int lCamera2DResize(lua_State *L) {
-  auto &cam = udValue<Camera2D>(L, 1, mtCamerA2D);
+  auto &cam = udValue<Camera2D>(L, 1, mtCamera2D);
   auto &size = udValue<Vec2>(L, 2, mtVec2);
   cam.resize(size);
   return 0;
 }
 static int lCamera2DWindowRatio(lua_State *L) {
-  auto &cam = udValue<Camera2D>(L, 1, mtCamerA2D);
+  auto &cam = udValue<Camera2D>(L, 1, mtCamera2D);
   udNewOwned<Vec2>(L, mtVec2, cam.windowRatio());
   return 1;
 }
 static int lCamera2DInvWindowRatio(lua_State *L) {
-  auto &cam = udValue<Camera2D>(L, 1, mtCamerA2D);
+  auto &cam = udValue<Camera2D>(L, 1, mtCamera2D);
   udNewOwned<Vec2>(L, mtVec2, cam.invWindowRatio());
   return 1;
 }
 static void registerCamera2D(lua_State *L) {
-  luaL_newmetatable(L, mtCamerA2D);
+  luaL_newmetatable(L, mtCamera2D);
   luaPushcfunction2(L, udGc<Camera2D>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
@@ -2602,13 +2613,13 @@ static int lGraphicsGetCamera(lua_State *L) {
   return 1;
 }
 static int lGraphicsSetCamera2d(lua_State *L) {
-  auto &cam = udValue<Camera2D>(L, 1, mtCamerA2D);
+  auto &cam = udValue<Camera2D>(L, 1, mtCamera2D);
   Graphics::setCamera2D(cam);
   return 0;
 }
 static int lGraphicsGetCamera2d(lua_State *L) {
   auto &cam = Graphics::getCamera2D();
-  udNewRef<Camera2D>(L, mtCamerA2D, &cam);
+  udNewRef<Camera2D>(L, mtCamera2D, &cam);
   return 1;
 }
 static int lGraphicsGetClearColor(lua_State *L) {
@@ -3133,8 +3144,6 @@ static void registerAll(lua_State *L) {
   registerPeriodic(L);
   registerTime(L);
 }
-
-} // namespace
 
 bool Script::initialize() {
 #ifndef SINEN_NO_USE_SCRIPT

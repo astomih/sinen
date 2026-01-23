@@ -32,6 +32,9 @@ public:
    *
    */
   Color() = default;
+
+  static constexpr const char *metaTableName() { return "sn.Color"; }
+
   // red value 0.0 - 1.0
   float r;
   // green value 0.0 - 1.0

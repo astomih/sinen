@@ -19,6 +19,8 @@ public:
   Font(int32_t point, StringView file_name);
   ~Font();
 
+  static constexpr const char *metaTableName() { return "sn.Font"; }
+
   bool load(int point_size);
   bool load(int pointSize, StringView path);
   bool load(int pointSize, const Buffer &buffer);

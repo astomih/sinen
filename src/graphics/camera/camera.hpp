@@ -11,6 +11,7 @@ struct Frustum {
 };
 
 struct Ray {
+  static constexpr const char *metaTableName() { return "sn.Ray"; }
   Vec3 origin;
   Vec3 direction;
 };
@@ -20,6 +21,7 @@ struct Ray {
  */
 class Camera {
 public:
+  static constexpr const char *metaTableName() { return "sn.Camera"; }
   /**
    * @brief Move to position, look at a target, and set up vector
    *

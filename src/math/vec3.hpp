@@ -17,6 +17,8 @@ public:
 
   Vec3(const Vec4 &v);
 
+  static constexpr const char *metaTableName() { return "sn.Vec3"; }
+
   // Vector addition (a + b)
   friend Vec3 operator+(const Vec3 &a, const Vec3 &b) {
     return Vec3(a.x + b.x, a.y + b.y, a.z + b.z);

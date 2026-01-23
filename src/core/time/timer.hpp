@@ -13,6 +13,8 @@ public:
    *
    */
   Timer();
+
+  static constexpr const char *metaTableName() { return "sn.Timer"; }
   /**
    * @brief Construct a new timer object
    *

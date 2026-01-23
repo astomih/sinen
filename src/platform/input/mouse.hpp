@@ -9,6 +9,9 @@ namespace sinen {
 class Mouse {
 public:
   enum class Code;
+
+  static constexpr const char *metaTableName() { return "sn.Mouse"; }
+
   // For mouse position
   static void setPosition(const Vec2 &pos);
   static void setPositionOnScene(const Vec2 &pos);

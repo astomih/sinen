@@ -27,6 +27,8 @@ public:
    *
    */
   Model();
+
+  static constexpr const char *metaTableName() { return "sn.Model"; }
   /**
    * @brief Destroy the model object
    *

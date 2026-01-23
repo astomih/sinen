@@ -13,6 +13,9 @@ class Shader {
 public:
   Shader() = default;
   Shader(const Ptr<rhi::Shader> &raw) : shader(raw) {}
+
+  static constexpr const char *metaTableName() { return "sn.Shader"; }
+
   void load(StringView name, ShaderStage stage, int numUniformData);
   void compileAndLoad(StringView name, ShaderStage stage);
 

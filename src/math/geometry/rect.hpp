@@ -12,6 +12,9 @@ struct Rect {
   Rect(const Vec2 &pos, const Vec2 &size);
   Rect(Pivot pivot, float x, float y, float width, float height);
   Rect(Pivot pivot, const Vec2 &pos, const Vec2 &size);
+
+  static constexpr const char *metaTableName() { return "sn.Rect"; }
+
   union {
     struct {
       float x;

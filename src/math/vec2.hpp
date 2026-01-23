@@ -19,6 +19,8 @@ public:
    */
   constexpr Vec2(float inX, float inY) : x(inX), y(inY) {}
 
+  static constexpr const char *metaTableName() { return "sn.Vec2"; }
+
   // Vector addition (a + b)
   friend Vec2 operator+(const Vec2 &a, const Vec2 &b) {
     return Vec2(a.x + b.x, a.y + b.y);

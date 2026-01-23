@@ -9,6 +9,8 @@ namespace sinen {
 
 class GraphicsPipeline {
 public:
+  static constexpr const char *metaTableName() { return "sn.GraphicsPipeline"; }
+
   enum FeatureFlag : uint32_t {
     DepthTest = 1 << 0,
     Instanced = 1 << 1,

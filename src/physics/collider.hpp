@@ -4,6 +4,7 @@
 namespace sinen {
 class Collider {
 public:
+  static constexpr const char *metaTableName() { return "sn.Collider"; }
   Vec3 getPosition() const;
   Vec3 getVelocity() const;
   void setLinearVelocity(const Vec3 &velocity) const;

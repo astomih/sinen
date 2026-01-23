@@ -208,13 +208,14 @@ static void *luaLTestudata2(lua_State *L, int idx, const char *tname) {
 #endif
 }
 
-template <class T> static T &udValue(lua_State *L, int idx, const char *mt) {
-  auto *ud = static_cast<UdBox<T> *>(luaL_checkudata(L, idx, mt));
+template <class T> static T &udValue(lua_State *L, int idx) {
+  auto *ud =
+      static_cast<UdBox<T> *>(luaL_checkudata(L, idx, T::metaTableName()));
   return *ud->ptr;
 }
-template <class T>
-static T *udValueOrNull(lua_State *L, int idx, const char *mt) {
-  auto *ud = static_cast<UdBox<T> *>(luaLTestudata2(L, idx, mt));
+template <class T> static T *udValueOrNull(lua_State *L, int idx) {
+  auto *ud =
+      static_cast<UdBox<T> *>(luaLTestudata2(L, idx, T::metaTableName()));
   return ud ? ud->ptr : nullptr;
 }
 template <class T> static int udGc(lua_State *L) {
@@ -225,40 +226,37 @@ template <class T> static int udGc(lua_State *L) {
   }
   return 0;
 }
-template <class T>
-static UdBox<T> *udNewOwned(lua_State *L, const char *mt, T value) {
+template <class T> static UdBox<T> *udNewOwned(lua_State *L, T value) {
   void *mem = lua_newuserdata(L, sizeof(UdBox<T>));
   auto *ud = new (mem) UdBox<T>();
   ud->owned = true;
   ud->ptr = new (ud->storage) T(std::move(value));
-  luaL_getmetatable(L, mt);
+  luaL_getmetatable(L, T::metaTableName());
   lua_setmetatable(L, -2);
   return ud;
 }
-template <class T>
-static UdBox<T> *udNewRef(lua_State *L, const char *mt, T *ref) {
+template <class T> static UdBox<T> *udNewRef(lua_State *L, T *ref) {
   void *mem = lua_newuserdata(L, sizeof(UdBox<T>));
   auto *ud = new (mem) UdBox<T>();
   ud->owned = false;
   ud->ptr = ref;
-  luaL_getmetatable(L, mt);
+  luaL_getmetatable(L, T::metaTableName());
   lua_setmetatable(L, -2);
   return ud;
 }
 
-template <class T> static Ptr<T> &udPtr(lua_State *L, int idx, const char *mt) {
-  return *static_cast<Ptr<T> *>(luaL_checkudata(L, idx, mt));
+template <class T> static Ptr<T> &udPtr(lua_State *L, int idx) {
+  return *static_cast<Ptr<T> *>(luaL_checkudata(L, idx, T::metaTableName()));
 }
 template <class T> static int udPtrGc(lua_State *L) {
   auto *ud = static_cast<Ptr<T> *>(lua_touserdata(L, 1));
   ud->~Ptr<T>();
   return 0;
 }
-template <class T>
-static void udPushPtr(lua_State *L, const char *mt, Ptr<T> value) {
+template <class T> static void udPushPtr(lua_State *L, Ptr<T> value) {
   void *mem = lua_newuserdata(L, sizeof(Ptr<T>));
   new (mem) Ptr<T>(std::move(value));
-  luaL_getmetatable(L, mt);
+  luaL_getmetatable(L, T::metaTableName());
   lua_setmetatable(L, -2);
 }
 
@@ -290,51 +288,27 @@ static int luaPCallLogged(lua_State *L, int nargs, int nresults) {
   return LUA_ERRRUN;
 }
 
-// metatable names
-static constexpr const char *mtVec2 = "sn.Vec2";
-static constexpr const char *mtVec3 = "sn.Vec3";
-static constexpr const char *mtColor = "sn.Color";
-static constexpr const char *mtRect = "sn.Rect";
-static constexpr const char *mtTransform = "sn.Transform";
-static constexpr const char *mtRay = "sn.Ray";
-static constexpr const char *mtFont = "sn.Font";
-static constexpr const char *mtTexture = "sn.Texture";
-static constexpr const char *mtModel = "sn.Model";
-static constexpr const char *mtBuffer = "sn.Buffer";
-static constexpr const char *mtRendertexture = "sn.RenderTexture";
-static constexpr const char *mtSound = "sn.Sound";
-static constexpr const char *mtCamera = "sn.Camera";
-static constexpr const char *mtCamera2D = "sn.Camera2D";
-static constexpr const char *mtAabb = "sn.AABB";
-static constexpr const char *mtTimer = "sn.Timer";
-static constexpr const char *mtCollider = "sn.Collider";
-static constexpr const char *mtShader = "sn.Shader";
-static constexpr const char *mtPipeline = "sn.GraphicsPipeline";
-static constexpr const char *mtGrid = "sn.Grid";
-static constexpr const char *mtBfsgrid = "sn.BFSGrid";
-static constexpr const char *mtMouse = "sn.Mouse";
-
 // -----------------
 // Vec2
 // -----------------
 static int lVec2New(lua_State *L) {
   int n = lua_gettop(L);
   if (n == 0) {
-    udNewOwned<Vec2>(L, mtVec2, Vec2(0.0f));
+    udNewOwned<Vec2>(L, Vec2(0.0f));
     return 1;
   }
   if (n == 1) {
     float v = static_cast<float>(luaL_checknumber(L, 1));
-    udNewOwned<Vec2>(L, mtVec2, Vec2(v));
+    udNewOwned<Vec2>(L, Vec2(v));
     return 1;
   }
   float x = static_cast<float>(luaL_checknumber(L, 1));
   float y = static_cast<float>(luaL_checknumber(L, 2));
-  udNewOwned<Vec2>(L, mtVec2, Vec2(x, y));
+  udNewOwned<Vec2>(L, Vec2(x, y));
   return 1;
 }
 static int lVec2Index(lua_State *L) {
-  auto &v = udValue<Vec2>(L, 1, mtVec2);
+  auto &v = udValue<Vec2>(L, 1);
   const char *k = luaL_checkstring(L, 2);
   if (std::strcmp(k, "x") == 0) {
     lua_pushnumber(L, v.x);
@@ -344,13 +318,13 @@ static int lVec2Index(lua_State *L) {
     lua_pushnumber(L, v.y);
     return 1;
   }
-  luaL_getmetatable(L, mtVec2);
+  luaL_getmetatable(L, Vec2::metaTableName());
   lua_pushvalue(L, 2);
   lua_rawget(L, -2);
   return 1;
 }
 static int lVec2Newindex(lua_State *L) {
-  auto &v = udValue<Vec2>(L, 1, mtVec2);
+  auto &v = udValue<Vec2>(L, 1);
   const char *k = luaL_checkstring(L, 2);
   float value = static_cast<float>(luaL_checknumber(L, 3));
   if (std::strcmp(k, "x") == 0) {
@@ -364,47 +338,47 @@ static int lVec2Newindex(lua_State *L) {
   return luaLError2(L, "sn.Vec2: invalid field '%s'", k);
 }
 static int lVec2Add(lua_State *L) {
-  auto &a = udValue<Vec2>(L, 1, mtVec2);
-  auto &b = udValue<Vec2>(L, 2, mtVec2);
-  udNewOwned<Vec2>(L, mtVec2, a + b);
+  auto &a = udValue<Vec2>(L, 1);
+  auto &b = udValue<Vec2>(L, 2);
+  udNewOwned<Vec2>(L, a + b);
   return 1;
 }
 static int lVec2Sub(lua_State *L) {
-  auto &a = udValue<Vec2>(L, 1, mtVec2);
-  auto &b = udValue<Vec2>(L, 2, mtVec2);
-  udNewOwned<Vec2>(L, mtVec2, a - b);
+  auto &a = udValue<Vec2>(L, 1);
+  auto &b = udValue<Vec2>(L, 2);
+  udNewOwned<Vec2>(L, a - b);
   return 1;
 }
 static int lVec2Mul(lua_State *L) {
-  auto &a = udValue<Vec2>(L, 1, mtVec2);
-  auto &b = udValue<Vec2>(L, 2, mtVec2);
-  udNewOwned<Vec2>(L, mtVec2, a * b);
+  auto &a = udValue<Vec2>(L, 1);
+  auto &b = udValue<Vec2>(L, 2);
+  udNewOwned<Vec2>(L, a * b);
   return 1;
 }
 static int lVec2Div(lua_State *L) {
-  auto &a = udValue<Vec2>(L, 1, mtVec2);
-  auto &b = udValue<Vec2>(L, 2, mtVec2);
-  udNewOwned<Vec2>(L, mtVec2, a / b);
+  auto &a = udValue<Vec2>(L, 1);
+  auto &b = udValue<Vec2>(L, 2);
+  udNewOwned<Vec2>(L, a / b);
   return 1;
 }
 static int lVec2Tostring(lua_State *L) {
-  auto &v = udValue<Vec2>(L, 1, mtVec2);
+  auto &v = udValue<Vec2>(L, 1);
   String s = vec2Str(v);
   lua_pushlstring(L, s.data(), s.size());
   return 1;
 }
 static int lVec2Copy(lua_State *L) {
-  auto &v = udValue<Vec2>(L, 1, mtVec2);
-  udNewOwned<Vec2>(L, mtVec2, v);
+  auto &v = udValue<Vec2>(L, 1);
+  udNewOwned<Vec2>(L, v);
   return 1;
 }
 static int lVec2Length(lua_State *L) {
-  auto &v = udValue<Vec2>(L, 1, mtVec2);
+  auto &v = udValue<Vec2>(L, 1);
   lua_pushnumber(L, v.length());
   return 1;
 }
 static void registerVec2(lua_State *L) {
-  luaL_newmetatable(L, mtVec2);
+  luaL_newmetatable(L, Vec2::metaTableName());
   luaPushcfunction2(L, udGc<Vec2>);
   lua_setfield(L, -2, "__gc");
   luaPushcfunction2(L, lVec2Index);
@@ -439,22 +413,22 @@ static void registerVec2(lua_State *L) {
 static int lVec3New(lua_State *L) {
   int n = lua_gettop(L);
   if (n == 0) {
-    udNewOwned<Vec3>(L, mtVec3, Vec3(0.0f));
+    udNewOwned<Vec3>(L, Vec3(0.0f));
     return 1;
   }
   if (n == 1) {
     float v = static_cast<float>(luaL_checknumber(L, 1));
-    udNewOwned<Vec3>(L, mtVec3, Vec3(v));
+    udNewOwned<Vec3>(L, Vec3(v));
     return 1;
   }
   float x = static_cast<float>(luaL_checknumber(L, 1));
   float y = static_cast<float>(luaL_checknumber(L, 2));
   float z = static_cast<float>(luaL_checknumber(L, 3));
-  udNewOwned<Vec3>(L, mtVec3, Vec3(x, y, z));
+  udNewOwned<Vec3>(L, Vec3(x, y, z));
   return 1;
 }
 static int lVec3Index(lua_State *L) {
-  auto &v = udValue<Vec3>(L, 1, mtVec3);
+  auto &v = udValue<Vec3>(L, 1);
   const char *k = luaL_checkstring(L, 2);
   if (std::strcmp(k, "x") == 0) {
     lua_pushnumber(L, v.x);
@@ -468,13 +442,13 @@ static int lVec3Index(lua_State *L) {
     lua_pushnumber(L, v.z);
     return 1;
   }
-  luaL_getmetatable(L, mtVec3);
+  luaL_getmetatable(L, Vec3::metaTableName());
   lua_pushvalue(L, 2);
   lua_rawget(L, -2);
   return 1;
 }
 static int lVec3Newindex(lua_State *L) {
-  auto &v = udValue<Vec3>(L, 1, mtVec3);
+  auto &v = udValue<Vec3>(L, 1);
   const char *k = luaL_checkstring(L, 2);
   float value = static_cast<float>(luaL_checknumber(L, 3));
   if (std::strcmp(k, "x") == 0) {
@@ -492,78 +466,78 @@ static int lVec3Newindex(lua_State *L) {
   return luaLError2(L, "sn.Vec3: invalid field '%s'", k);
 }
 static int lVec3Add(lua_State *L) {
-  auto &a = udValue<Vec3>(L, 1, mtVec3);
-  auto &b = udValue<Vec3>(L, 2, mtVec3);
-  udNewOwned<Vec3>(L, mtVec3, a + b);
+  auto &a = udValue<Vec3>(L, 1);
+  auto &b = udValue<Vec3>(L, 2);
+  udNewOwned<Vec3>(L, a + b);
   return 1;
 }
 static int lVec3Sub(lua_State *L) {
-  auto &a = udValue<Vec3>(L, 1, mtVec3);
-  auto &b = udValue<Vec3>(L, 2, mtVec3);
-  udNewOwned<Vec3>(L, mtVec3, a - b);
+  auto &a = udValue<Vec3>(L, 1);
+  auto &b = udValue<Vec3>(L, 2);
+  udNewOwned<Vec3>(L, a - b);
   return 1;
 }
 static int lVec3Mul(lua_State *L) {
-  auto &a = udValue<Vec3>(L, 1, mtVec3);
-  auto &b = udValue<Vec3>(L, 2, mtVec3);
-  udNewOwned<Vec3>(L, mtVec3, a * b);
+  auto &a = udValue<Vec3>(L, 1);
+  auto &b = udValue<Vec3>(L, 2);
+  udNewOwned<Vec3>(L, a * b);
   return 1;
 }
 static int lVec3Div(lua_State *L) {
-  auto &a = udValue<Vec3>(L, 1, mtVec3);
-  auto &b = udValue<Vec3>(L, 2, mtVec3);
-  udNewOwned<Vec3>(L, mtVec3, a / b);
+  auto &a = udValue<Vec3>(L, 1);
+  auto &b = udValue<Vec3>(L, 2);
+  udNewOwned<Vec3>(L, a / b);
   return 1;
 }
 static int lVec3Tostring(lua_State *L) {
-  auto &v = udValue<Vec3>(L, 1, mtVec3);
+  auto &v = udValue<Vec3>(L, 1);
   String s = vec3Str(v);
   lua_pushlstring(L, s.data(), s.size());
   return 1;
 }
 static int lVec3Copy(lua_State *L) {
-  auto &v = udValue<Vec3>(L, 1, mtVec3);
-  udNewOwned<Vec3>(L, mtVec3, v);
+  auto &v = udValue<Vec3>(L, 1);
+  udNewOwned<Vec3>(L, v);
   return 1;
 }
 static int lVec3Length(lua_State *L) {
-  auto &v = udValue<Vec3>(L, 1, mtVec3);
+  auto &v = udValue<Vec3>(L, 1);
   lua_pushnumber(L, v.length());
   return 1;
 }
 static int lVec3Normalize(lua_State *L) {
-  auto v = udValue<Vec3>(L, 1, mtVec3);
+  auto v = udValue<Vec3>(L, 1);
   v.normalize();
-  udNewOwned<Vec3>(L, mtVec3, v);
+  udNewOwned<Vec3>(L, v);
   return 1;
 }
 static int lVec3Dot(lua_State *L) {
-  auto a = udValue<Vec3>(L, 1, mtVec3);
-  auto b = udValue<Vec3>(L, 2, mtVec3);
+  auto a = udValue<Vec3>(L, 1);
+  auto b = udValue<Vec3>(L, 2);
   lua_pushnumber(L, Vec3::dot(a, b));
   return 1;
 }
 static int lVec3Cross(lua_State *L) {
-  auto a = udValue<Vec3>(L, 1, mtVec3);
-  auto b = udValue<Vec3>(L, 2, mtVec3);
-  udNewOwned<Vec3>(L, mtVec3, Vec3::cross(a, b));
+  auto a = udValue<Vec3>(L, 1);
+  auto b = udValue<Vec3>(L, 2);
+  udNewOwned<Vec3>(L, Vec3::cross(a, b));
   return 1;
 }
 static int lVec3Lerp(lua_State *L) {
-  auto a = udValue<Vec3>(L, 1, mtVec3);
-  auto b = udValue<Vec3>(L, 2, mtVec3);
+  auto a = udValue<Vec3>(L, 1);
+  auto b = udValue<Vec3>(L, 2);
   float value = luaL_checknumber(L, 3);
-  udNewOwned<Vec3>(L, mtVec3, Vec3::lerp(a, b, value));
+  udNewOwned<Vec3>(L, Vec3::lerp(a, b, value));
   return 1;
 }
 static int lVec3Reflect(lua_State *L) {
-  auto a = udValue<Vec3>(L, 1, mtVec3);
-  auto b = udValue<Vec3>(L, 2, mtVec3);
-  udNewOwned<Vec3>(L, mtVec3, Vec3::reflect(a, b));
+  auto a = udValue<Vec3>(L, 1);
+  auto b = udValue<Vec3>(L, 2);
+  udNewOwned<Vec3>(L, Vec3::reflect(a, b));
   return 1;
 }
 static void registerVec3(lua_State *L) {
-  luaL_newmetatable(L, mtVec3);
+  luaL_newmetatable(L, Vec3::metaTableName());
   luaPushcfunction2(L, udGc<Vec3>);
   lua_setfield(L, -2, "__gc");
   luaPushcfunction2(L, lVec3Index);
@@ -608,29 +582,29 @@ static void registerVec3(lua_State *L) {
 static int lColorNew(lua_State *L) {
   int n = lua_gettop(L);
   if (n == 0) {
-    udNewOwned<Color>(L, mtColor, Color(0.0f));
+    udNewOwned<Color>(L, Color(0.0f));
     return 1;
   }
   if (n == 1) {
     float v = static_cast<float>(luaL_checknumber(L, 1));
-    udNewOwned<Color>(L, mtColor, Color(v));
+    udNewOwned<Color>(L, Color(v));
     return 1;
   }
   if (n == 2) {
     float v = static_cast<float>(luaL_checknumber(L, 1));
     float a = static_cast<float>(luaL_checknumber(L, 2));
-    udNewOwned<Color>(L, mtColor, Color(v, a));
+    udNewOwned<Color>(L, Color(v, a));
     return 1;
   }
   float r = static_cast<float>(luaL_checknumber(L, 1));
   float g = static_cast<float>(luaL_checknumber(L, 2));
   float b = static_cast<float>(luaL_checknumber(L, 3));
   float a = static_cast<float>(luaL_optnumber(L, 4, 1.0));
-  udNewOwned<Color>(L, mtColor, Color(r, g, b, a));
+  udNewOwned<Color>(L, Color(r, g, b, a));
   return 1;
 }
 static int lColorIndex(lua_State *L) {
-  auto &c = udValue<Color>(L, 1, mtColor);
+  auto &c = udValue<Color>(L, 1);
   const char *k = luaL_checkstring(L, 2);
   if (std::strcmp(k, "r") == 0) {
     lua_pushnumber(L, c.r);
@@ -648,13 +622,13 @@ static int lColorIndex(lua_State *L) {
     lua_pushnumber(L, c.a);
     return 1;
   }
-  luaL_getmetatable(L, mtColor);
+  luaL_getmetatable(L, Color::metaTableName());
   lua_pushvalue(L, 2);
   lua_rawget(L, -2);
   return 1;
 }
 static int lColorNewindex(lua_State *L) {
-  auto &c = udValue<Color>(L, 1, mtColor);
+  auto &c = udValue<Color>(L, 1);
   const char *k = luaL_checkstring(L, 2);
   float value = static_cast<float>(luaL_checknumber(L, 3));
   if (std::strcmp(k, "r") == 0) {
@@ -676,13 +650,13 @@ static int lColorNewindex(lua_State *L) {
   return luaLError2(L, "sn.Color: invalid field '%s'", k);
 }
 static int lColorTostring(lua_State *L) {
-  auto &c = udValue<Color>(L, 1, mtColor);
+  auto &c = udValue<Color>(L, 1);
   String s = colorStr(c);
   lua_pushlstring(L, s.data(), s.size());
   return 1;
 }
 static void registerColor(lua_State *L) {
-  luaL_newmetatable(L, mtColor);
+  luaL_newmetatable(L, Color::metaTableName());
   luaPushcfunction2(L, udGc<Color>);
   lua_setfield(L, -2, "__gc");
   luaPushcfunction2(L, lColorIndex);
@@ -700,17 +674,17 @@ static void registerColor(lua_State *L) {
 }
 
 static int lRayIndex(lua_State *L) {
-  auto &r = udValue<Ray>(L, 1, mtRay);
+  auto &r = udValue<Ray>(L, 1);
   const char *k = luaL_checkstring(L, 2);
   if (std::strcmp(k, "origin") == 0) {
-    udNewRef<Vec3>(L, mtVec3, &r.origin);
+    udNewRef<Vec3>(L, &r.origin);
     return 1;
   }
   if (std::strcmp(k, "direction") == 0) {
-    udNewRef<Vec3>(L, mtVec3, &r.direction);
+    udNewRef<Vec3>(L, &r.direction);
     return 1;
   }
-  luaL_getmetatable(L, mtRay);
+  luaL_getmetatable(L, Ray::metaTableName());
   lua_pushvalue(L, 2);
   lua_rawget(L, -2);
   return 1;
@@ -718,16 +692,16 @@ static int lRayIndex(lua_State *L) {
 static int lRayNew(lua_State *L) {
   int n = lua_gettop(L);
   if (n == 0) {
-    udNewOwned(L, mtRay, Ray{});
+    udNewOwned(L, Ray{});
     return 1;
   }
-  auto origin = udValue<Vec3>(L, 1, mtVec3);
-  auto direction = udValue<Vec3>(L, 2, mtVec3);
-  udNewOwned(L, mtRay, Ray{origin, direction});
+  auto origin = udValue<Vec3>(L, 1);
+  auto direction = udValue<Vec3>(L, 2);
+  udNewOwned(L, Ray{origin, direction});
   return 1;
 }
 static void registerRay(lua_State *L) {
-  luaL_newmetatable(L, mtRay);
+  luaL_newmetatable(L, Ray::metaTableName());
   luaPushcfunction2(L, udGc<Ray>);
   lua_setfield(L, -2, "__gc");
   luaPushcfunction2(L, lRayIndex);
@@ -744,19 +718,19 @@ static void registerRay(lua_State *L) {
 // Camera / Camera2D
 // -----------------
 static int lCameraNew(lua_State *L) {
-  udNewOwned<Camera>(L, mtCamera, Camera{});
+  udNewOwned<Camera>(L, Camera{});
   return 1;
 }
 static int lCameraLookat(lua_State *L) {
-  auto &cam = udValue<Camera>(L, 1, mtCamera);
-  auto &pos = udValue<Vec3>(L, 2, mtVec3);
-  auto &target = udValue<Vec3>(L, 3, mtVec3);
-  auto &up = udValue<Vec3>(L, 4, mtVec3);
+  auto &cam = udValue<Camera>(L, 1);
+  auto &pos = udValue<Vec3>(L, 2);
+  auto &target = udValue<Vec3>(L, 3);
+  auto &up = udValue<Vec3>(L, 4);
   cam.lookat(pos, target, up);
   return 0;
 }
 static int lCameraPerspective(lua_State *L) {
-  auto &cam = udValue<Camera>(L, 1, mtCamera);
+  auto &cam = udValue<Camera>(L, 1);
   float fov = static_cast<float>(luaL_checknumber(L, 2));
   float aspect = static_cast<float>(luaL_checknumber(L, 3));
   float nearZ = static_cast<float>(luaL_checknumber(L, 4));
@@ -765,7 +739,7 @@ static int lCameraPerspective(lua_State *L) {
   return 0;
 }
 static int lCameraOrthographic(lua_State *L) {
-  auto &cam = udValue<Camera>(L, 1, mtCamera);
+  auto &cam = udValue<Camera>(L, 1);
   float w = static_cast<float>(luaL_checknumber(L, 2));
   float h = static_cast<float>(luaL_checknumber(L, 3));
   float nearZ = static_cast<float>(luaL_checknumber(L, 4));
@@ -774,35 +748,35 @@ static int lCameraOrthographic(lua_State *L) {
   return 0;
 }
 static int lCameraGetPosition(lua_State *L) {
-  auto &cam = udValue<Camera>(L, 1, mtCamera);
-  udNewRef<Vec3>(L, mtVec3, &cam.getPosition());
+  auto &cam = udValue<Camera>(L, 1);
+  udNewRef<Vec3>(L, &cam.getPosition());
   return 1;
 }
 static int lCameraGetTarget(lua_State *L) {
-  auto &cam = udValue<Camera>(L, 1, mtCamera);
-  udNewOwned<Vec3>(L, mtVec3, cam.getTarget());
+  auto &cam = udValue<Camera>(L, 1);
+  udNewOwned<Vec3>(L, cam.getTarget());
   return 1;
 }
 static int lCameraGetUp(lua_State *L) {
-  auto &cam = udValue<Camera>(L, 1, mtCamera);
-  udNewOwned<Vec3>(L, mtVec3, cam.getUp());
+  auto &cam = udValue<Camera>(L, 1);
+  udNewOwned<Vec3>(L, cam.getUp());
   return 1;
 }
 static int lCameraIsAabbInFrustum(lua_State *L) {
-  auto &cam = udValue<Camera>(L, 1, mtCamera);
-  auto &aabb = udValue<AABB>(L, 2, mtAabb);
+  auto &cam = udValue<Camera>(L, 1);
+  auto &aabb = udValue<AABB>(L, 2);
   lua_pushboolean(L, cam.isAABBInFrustum(aabb));
   return 1;
 }
 static int lCameraScreenToWorldRay(lua_State *L) {
-  auto &cam = udValue<Camera>(L, 1, mtCamera);
-  auto &screenPos = udValue<Vec2>(L, 2, mtVec2);
+  auto &cam = udValue<Camera>(L, 1);
+  auto &screenPos = udValue<Vec2>(L, 2);
 
-  udNewOwned<Ray>(L, mtRay, cam.screenToWorldRay(screenPos));
+  udNewOwned<Ray>(L, cam.screenToWorldRay(screenPos));
   return 1;
 }
 static void registerCamera(lua_State *L) {
-  luaL_newmetatable(L, mtCamera);
+  luaL_newmetatable(L, Camera::metaTableName());
   luaPushcfunction2(L, udGc<Camera>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
@@ -832,37 +806,37 @@ static void registerCamera(lua_State *L) {
 }
 
 static int lCamera2DNew(lua_State *L) {
-  udNewOwned<Camera2D>(L, mtCamera2D, Camera2D{});
+  udNewOwned<Camera2D>(L, Camera2D{});
   return 1;
 }
 static int lCamera2DSize(lua_State *L) {
-  auto &cam = udValue<Camera2D>(L, 1, mtCamera2D);
-  udNewOwned<Vec2>(L, mtVec2, cam.size());
+  auto &cam = udValue<Camera2D>(L, 1);
+  udNewOwned<Vec2>(L, cam.size());
   return 1;
 }
 static int lCamera2DHalf(lua_State *L) {
-  auto &cam = udValue<Camera2D>(L, 1, mtCamera2D);
-  udNewOwned<Vec2>(L, mtVec2, cam.half());
+  auto &cam = udValue<Camera2D>(L, 1);
+  udNewOwned<Vec2>(L, cam.half());
   return 1;
 }
 static int lCamera2DResize(lua_State *L) {
-  auto &cam = udValue<Camera2D>(L, 1, mtCamera2D);
-  auto &size = udValue<Vec2>(L, 2, mtVec2);
+  auto &cam = udValue<Camera2D>(L, 1);
+  auto &size = udValue<Vec2>(L, 2);
   cam.resize(size);
   return 0;
 }
 static int lCamera2DWindowRatio(lua_State *L) {
-  auto &cam = udValue<Camera2D>(L, 1, mtCamera2D);
-  udNewOwned<Vec2>(L, mtVec2, cam.windowRatio());
+  auto &cam = udValue<Camera2D>(L, 1);
+  udNewOwned<Vec2>(L, cam.windowRatio());
   return 1;
 }
 static int lCamera2DInvWindowRatio(lua_State *L) {
-  auto &cam = udValue<Camera2D>(L, 1, mtCamera2D);
-  udNewOwned<Vec2>(L, mtVec2, cam.invWindowRatio());
+  auto &cam = udValue<Camera2D>(L, 1);
+  udNewOwned<Vec2>(L, cam.invWindowRatio());
   return 1;
 }
 static void registerCamera2D(lua_State *L) {
-  luaL_newmetatable(L, mtCamera2D);
+  luaL_newmetatable(L, Camera2D::metaTableName());
   luaPushcfunction2(L, udGc<Camera2D>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
@@ -889,29 +863,29 @@ static void registerCamera2D(lua_State *L) {
 // AABB / Timer / Collider
 // -----------------
 static int lAabbNew(lua_State *L) {
-  udNewOwned<AABB>(L, mtAabb, AABB{});
+  udNewOwned<AABB>(L, AABB{});
   return 1;
 }
 static int lAabbIndex(lua_State *L) {
-  auto &aabb = udValue<AABB>(L, 1, mtAabb);
+  auto &aabb = udValue<AABB>(L, 1);
   const char *k = luaL_checkstring(L, 2);
   if (std::strcmp(k, "min") == 0) {
-    udNewRef<Vec3>(L, mtVec3, &aabb.min);
+    udNewRef<Vec3>(L, &aabb.min);
     return 1;
   }
   if (std::strcmp(k, "max") == 0) {
-    udNewRef<Vec3>(L, mtVec3, &aabb.max);
+    udNewRef<Vec3>(L, &aabb.max);
     return 1;
   }
-  luaL_getmetatable(L, mtAabb);
+  luaL_getmetatable(L, AABB::metaTableName());
   lua_pushvalue(L, 2);
   lua_rawget(L, -2);
   return 1;
 }
 static int lAabbNewindex(lua_State *L) {
-  auto &aabb = udValue<AABB>(L, 1, mtAabb);
+  auto &aabb = udValue<AABB>(L, 1);
   const char *k = luaL_checkstring(L, 2);
-  auto &v = udValue<Vec3>(L, 3, mtVec3);
+  auto &v = udValue<Vec3>(L, 3);
   if (std::strcmp(k, "min") == 0) {
     aabb.min = v;
     return 0;
@@ -923,21 +897,21 @@ static int lAabbNewindex(lua_State *L) {
   return luaLError2(L, "sn.AABB: invalid field '%s'", k);
 }
 static int lAabbUpdateWorld(lua_State *L) {
-  auto &aabb = udValue<AABB>(L, 1, mtAabb);
-  auto &p = udValue<Vec3>(L, 2, mtVec3);
-  auto &scale = udValue<Vec3>(L, 3, mtVec3);
-  auto &local = udValue<AABB>(L, 4, mtAabb);
+  auto &aabb = udValue<AABB>(L, 1);
+  auto &p = udValue<Vec3>(L, 2);
+  auto &scale = udValue<Vec3>(L, 3);
+  auto &local = udValue<AABB>(L, 4);
   aabb.updateWorld(p, scale, local);
   return 0;
 }
 static int lAabbIntersectsAabb(lua_State *L) {
-  auto &a = udValue<AABB>(L, 1, mtAabb);
-  auto &b = udValue<AABB>(L, 2, mtAabb);
+  auto &a = udValue<AABB>(L, 1);
+  auto &b = udValue<AABB>(L, 2);
   lua_pushboolean(L, a.intersectsAABB(b));
   return 1;
 }
 static void registerAABB(lua_State *L) {
-  luaL_newmetatable(L, mtAabb);
+  luaL_newmetatable(L, AABB::metaTableName());
   luaPushcfunction2(L, udGc<AABB>);
   lua_setfield(L, -2, "__gc");
   luaPushcfunction2(L, lAabbIndex);
@@ -959,35 +933,35 @@ static void registerAABB(lua_State *L) {
 static int lTimerNew(lua_State *L) {
   if (lua_gettop(L) >= 1 && lua_isnumber(L, 1)) {
     float t = static_cast<float>(lua_tonumber(L, 1));
-    udNewOwned<Timer>(L, mtTimer, Timer(t));
+    udNewOwned<Timer>(L, Timer(t));
     return 1;
   }
-  udNewOwned<Timer>(L, mtTimer, Timer());
+  udNewOwned<Timer>(L, Timer());
   return 1;
 }
 static int lTimerStart(lua_State *L) {
-  udValue<Timer>(L, 1, mtTimer).start();
+  udValue<Timer>(L, 1).start();
   return 0;
 }
 static int lTimerStop(lua_State *L) {
-  udValue<Timer>(L, 1, mtTimer).stop();
+  udValue<Timer>(L, 1).stop();
   return 0;
 }
 static int lTimerIsStarted(lua_State *L) {
-  lua_pushboolean(L, udValue<Timer>(L, 1, mtTimer).isStarted());
+  lua_pushboolean(L, udValue<Timer>(L, 1).isStarted());
   return 1;
 }
 static int lTimerSetTime(lua_State *L) {
   float ms = static_cast<float>(luaL_checknumber(L, 2));
-  udValue<Timer>(L, 1, mtTimer).setTime(ms);
+  udValue<Timer>(L, 1).setTime(ms);
   return 0;
 }
 static int lTimerCheck(lua_State *L) {
-  lua_pushboolean(L, udValue<Timer>(L, 1, mtTimer).check());
+  lua_pushboolean(L, udValue<Timer>(L, 1).check());
   return 1;
 }
 static void registerTimer(lua_State *L) {
-  luaL_newmetatable(L, mtTimer);
+  luaL_newmetatable(L, Timer::metaTableName());
   luaPushcfunction2(L, udGc<Timer>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
@@ -1011,27 +985,25 @@ static void registerTimer(lua_State *L) {
 }
 
 static int lColliderNew(lua_State *L) {
-  udNewOwned<Collider>(L, mtCollider, Collider{});
+  udNewOwned<Collider>(L, Collider{});
   return 1;
 }
 static int lColliderGetPosition(lua_State *L) {
-  udNewOwned<Vec3>(L, mtVec3,
-                   udValue<Collider>(L, 1, mtCollider).getPosition());
+  udNewOwned<Vec3>(L, udValue<Collider>(L, 1).getPosition());
   return 1;
 }
 static int lColliderGetVelocity(lua_State *L) {
-  udNewOwned<Vec3>(L, mtVec3,
-                   udValue<Collider>(L, 1, mtCollider).getVelocity());
+  udNewOwned<Vec3>(L, udValue<Collider>(L, 1).getVelocity());
   return 1;
 }
 static int lColliderSetLinearVelocity(lua_State *L) {
-  auto &c = udValue<Collider>(L, 1, mtCollider);
-  auto &v = udValue<Vec3>(L, 2, mtVec3);
+  auto &c = udValue<Collider>(L, 1);
+  auto &v = udValue<Vec3>(L, 2);
   c.setLinearVelocity(v);
   return 0;
 }
 static void registerCollider(lua_State *L) {
-  luaL_newmetatable(L, mtCollider);
+  luaL_newmetatable(L, Collider::metaTableName());
   luaPushcfunction2(L, udGc<Collider>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
@@ -1056,19 +1028,18 @@ static void registerCollider(lua_State *L) {
 static int lGridNew(lua_State *L) {
   float w = static_cast<float>(luaL_checknumber(L, 1));
   float h = static_cast<float>(luaL_checknumber(L, 2));
-  udNewOwned<Grid>(L, mtGrid,
-                   Grid(static_cast<size_t>(w), static_cast<size_t>(h)));
+  udNewOwned<Grid>(L, Grid(static_cast<size_t>(w), static_cast<size_t>(h)));
   return 1;
 }
 static int lGridAt(lua_State *L) {
-  auto &g = udValue<Grid>(L, 1, mtGrid);
+  auto &g = udValue<Grid>(L, 1);
   int x = static_cast<int>(luaL_checkinteger(L, 2));
   int y = static_cast<int>(luaL_checkinteger(L, 3));
   lua_pushnumber(L, g.at(x - 1, y - 1));
   return 1;
 }
 static int lGridSet(lua_State *L) {
-  auto &g = udValue<Grid>(L, 1, mtGrid);
+  auto &g = udValue<Grid>(L, 1);
   int x = static_cast<int>(luaL_checkinteger(L, 2));
   int y = static_cast<int>(luaL_checkinteger(L, 3));
   float v = static_cast<float>(luaL_checknumber(L, 4));
@@ -1076,60 +1047,57 @@ static int lGridSet(lua_State *L) {
   return 0;
 }
 static int lGridWidth(lua_State *L) {
-  lua_pushinteger(
-      L, static_cast<lua_Integer>(udValue<Grid>(L, 1, mtGrid).width()));
+  lua_pushinteger(L, static_cast<lua_Integer>(udValue<Grid>(L, 1).width()));
   return 1;
 }
 static int lGridHeight(lua_State *L) {
-  lua_pushinteger(
-      L, static_cast<lua_Integer>(udValue<Grid>(L, 1, mtGrid).height()));
+  lua_pushinteger(L, static_cast<lua_Integer>(udValue<Grid>(L, 1).height()));
   return 1;
 }
 static int lGridSize(lua_State *L) {
-  lua_pushinteger(L,
-                  static_cast<lua_Integer>(udValue<Grid>(L, 1, mtGrid).size()));
+  lua_pushinteger(L, static_cast<lua_Integer>(udValue<Grid>(L, 1).size()));
   return 1;
 }
 static int lGridClear(lua_State *L) {
-  udValue<Grid>(L, 1, mtGrid).clear();
+  udValue<Grid>(L, 1).clear();
   return 0;
 }
 static int lGridResize(lua_State *L) {
-  auto &g = udValue<Grid>(L, 1, mtGrid);
+  auto &g = udValue<Grid>(L, 1);
   size_t w = static_cast<size_t>(luaL_checkinteger(L, 2));
   size_t h = static_cast<size_t>(luaL_checkinteger(L, 3));
   g.resize(w, h);
   return 0;
 }
 static int lGridFill(lua_State *L) {
-  auto &g = udValue<Grid>(L, 1, mtGrid);
+  auto &g = udValue<Grid>(L, 1);
   float v = static_cast<float>(luaL_checknumber(L, 2));
   g.fill(v);
   return 0;
 }
 static int lGridFillRect(lua_State *L) {
-  auto &g = udValue<Grid>(L, 1, mtGrid);
-  auto &r = udValue<Rect>(L, 2, mtRect);
+  auto &g = udValue<Grid>(L, 1);
+  auto &r = udValue<Rect>(L, 2);
   float v = static_cast<float>(luaL_checknumber(L, 3));
   g.fillRect(r, v);
   return 0;
 }
 static int lGridSetRow(lua_State *L) {
-  auto &g = udValue<Grid>(L, 1, mtGrid);
+  auto &g = udValue<Grid>(L, 1);
   int idx = static_cast<int>(luaL_checkinteger(L, 2));
   float v = static_cast<float>(luaL_checknumber(L, 3));
   g.setRow(idx - 1, v);
   return 0;
 }
 static int lGridSetColumn(lua_State *L) {
-  auto &g = udValue<Grid>(L, 1, mtGrid);
+  auto &g = udValue<Grid>(L, 1);
   int idx = static_cast<int>(luaL_checkinteger(L, 2));
   float v = static_cast<float>(luaL_checknumber(L, 3));
   g.setColumn(idx - 1, v);
   return 0;
 }
 static void registerGrid(lua_State *L) {
-  luaL_newmetatable(L, mtGrid);
+  luaL_newmetatable(L, Grid::metaTableName());
   luaPushcfunction2(L, udGc<Grid>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
@@ -1165,41 +1133,39 @@ static void registerGrid(lua_State *L) {
 }
 
 static int lBfsGridNew(lua_State *L) {
-  auto &g = udValue<Grid>(L, 1, mtGrid);
-  udNewOwned<BFSGrid>(L, mtBfsgrid, BFSGrid(g));
+  auto &g = udValue<Grid>(L, 1);
+  udNewOwned<BFSGrid>(L, BFSGrid(g));
   return 1;
 }
 static int lBfsGridWidth(lua_State *L) {
-  lua_pushinteger(
-      L, static_cast<lua_Integer>(udValue<BFSGrid>(L, 1, mtBfsgrid).width()));
+  lua_pushinteger(L, static_cast<lua_Integer>(udValue<BFSGrid>(L, 1).width()));
   return 1;
 }
 static int lBfsGridHeight(lua_State *L) {
-  lua_pushinteger(
-      L, static_cast<lua_Integer>(udValue<BFSGrid>(L, 1, mtBfsgrid).height()));
+  lua_pushinteger(L, static_cast<lua_Integer>(udValue<BFSGrid>(L, 1).height()));
   return 1;
 }
 static int lBfsGridFindPath(lua_State *L) {
-  auto &b = udValue<BFSGrid>(L, 1, mtBfsgrid);
-  auto &start = udValue<Vec2>(L, 2, mtVec2);
-  auto &end = udValue<Vec2>(L, 3, mtVec2);
+  auto &b = udValue<BFSGrid>(L, 1);
+  auto &start = udValue<Vec2>(L, 2);
+  auto &end = udValue<Vec2>(L, 3);
   lua_pushboolean(L, b.findPath(start, end));
   return 1;
 }
 static int lBfsGridTrace(lua_State *L) {
-  udNewOwned<Vec2>(L, mtVec2, udValue<BFSGrid>(L, 1, mtBfsgrid).trace());
+  udNewOwned<Vec2>(L, udValue<BFSGrid>(L, 1).trace());
   return 1;
 }
 static int lBfsGridTraceable(lua_State *L) {
-  lua_pushboolean(L, udValue<BFSGrid>(L, 1, mtBfsgrid).traceable());
+  lua_pushboolean(L, udValue<BFSGrid>(L, 1).traceable());
   return 1;
 }
 static int lBfsGridReset(lua_State *L) {
-  udValue<BFSGrid>(L, 1, mtBfsgrid).reset();
+  udValue<BFSGrid>(L, 1).reset();
   return 0;
 }
 static void registerBFSGrid(lua_State *L) {
-  luaL_newmetatable(L, mtBfsgrid);
+  luaL_newmetatable(L, BFSGrid::metaTableName());
   luaPushcfunction2(L, udGc<BFSGrid>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
@@ -1239,19 +1205,19 @@ static int lBufferNew(lua_State *L) {
   for (size_t i = 1; i <= n; ++i) {
     lua_rawgeti(L, 1, static_cast<lua_Integer>(i));
 
-    if (auto *v3 = udValueOrNull<Vec3>(L, -1, mtVec3)) {
+    if (auto *v3 = udValueOrNull<Vec3>(L, -1)) {
       size_t s = sizeof(Vec3);
       void *p = GlobalAllocator::get()->allocate(s);
       std::memcpy(p, v3, s);
       chunks.push_back(p);
       chunkSizes.push_back(s);
-    } else if (auto *v2 = udValueOrNull<Vec2>(L, -1, mtVec2)) {
+    } else if (auto *v2 = udValueOrNull<Vec2>(L, -1)) {
       size_t s = sizeof(Vec2);
       void *p = GlobalAllocator::get()->allocate(s);
       std::memcpy(p, v2, s);
       chunks.push_back(p);
       chunkSizes.push_back(s);
-    } else if (auto *cam = udValueOrNull<Camera>(L, -1, mtCamera)) {
+    } else if (auto *cam = udValueOrNull<Camera>(L, -1)) {
       size_t s = sizeof(Mat4) * 2;
       void *p = GlobalAllocator::get()->allocate(s);
       auto view = cam->getView();
@@ -1289,11 +1255,11 @@ static int lBufferNew(lua_State *L) {
   Buffer buffer(BufferType::Binary,
                 Ptr<void>(ptr, Deleter<void>(GlobalAllocator::get(), total)),
                 total);
-  udNewOwned<Buffer>(L, mtBuffer, std::move(buffer));
+  udNewOwned<Buffer>(L, std::move(buffer));
   return 1;
 }
 static void registerBuffer(lua_State *L) {
-  luaL_newmetatable(L, mtBuffer);
+  luaL_newmetatable(L, Buffer::metaTableName());
   luaPushcfunction2(L, udGc<Buffer>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
@@ -1329,7 +1295,7 @@ static void registerPivot(lua_State *L) {
 static int lRectNew(lua_State *L) {
   int n = lua_gettop(L);
   if (n == 0) {
-    udNewOwned<Rect>(L, mtRect, Rect());
+    udNewOwned<Rect>(L, Rect());
     return 1;
   }
   if (n == 4) {
@@ -1337,13 +1303,13 @@ static int lRectNew(lua_State *L) {
     float y = static_cast<float>(luaL_checknumber(L, 2));
     float w = static_cast<float>(luaL_checknumber(L, 3));
     float h = static_cast<float>(luaL_checknumber(L, 4));
-    udNewOwned<Rect>(L, mtRect, Rect(x, y, w, h));
+    udNewOwned<Rect>(L, Rect(x, y, w, h));
     return 1;
   }
   if (n == 2) {
-    auto &pos = udValue<Vec2>(L, 1, mtVec2);
-    auto &size = udValue<Vec2>(L, 2, mtVec2);
-    udNewOwned<Rect>(L, mtRect, Rect(pos, size));
+    auto &pos = udValue<Vec2>(L, 1);
+    auto &size = udValue<Vec2>(L, 2);
+    udNewOwned<Rect>(L, Rect(pos, size));
     return 1;
   }
   if (n == 5) {
@@ -1352,21 +1318,21 @@ static int lRectNew(lua_State *L) {
     float y = static_cast<float>(luaL_checknumber(L, 3));
     float w = static_cast<float>(luaL_checknumber(L, 4));
     float h = static_cast<float>(luaL_checknumber(L, 5));
-    udNewOwned<Rect>(L, mtRect, Rect(pivot, x, y, w, h));
+    udNewOwned<Rect>(L, Rect(pivot, x, y, w, h));
     return 1;
   }
   if (n == 3) {
     Pivot pivot = static_cast<Pivot>(luaL_checkinteger(L, 1));
-    auto &pos = udValue<Vec2>(L, 2, mtVec2);
-    auto &size = udValue<Vec2>(L, 3, mtVec2);
-    udNewOwned<Rect>(L, mtRect, Rect(pivot, pos, size));
+    auto &pos = udValue<Vec2>(L, 2);
+    auto &size = udValue<Vec2>(L, 3);
+    udNewOwned<Rect>(L, Rect(pivot, pos, size));
     return 1;
   }
   return luaLError2(L, "sn.Rect.new: invalid arguments");
 }
 
 static int lRectIndex(lua_State *L) {
-  auto &r = udValue<Rect>(L, 1, mtRect);
+  auto &r = udValue<Rect>(L, 1);
   const char *k = luaL_checkstring(L, 2);
   if (std::strcmp(k, "x") == 0) {
     lua_pushnumber(L, r.x);
@@ -1384,13 +1350,13 @@ static int lRectIndex(lua_State *L) {
     lua_pushnumber(L, r.height);
     return 1;
   }
-  luaL_getmetatable(L, mtRect);
+  luaL_getmetatable(L, Rect::metaTableName());
   lua_pushvalue(L, 2);
   lua_rawget(L, -2);
   return 1;
 }
 static int lRectNewindex(lua_State *L) {
-  auto &r = udValue<Rect>(L, 1, mtRect);
+  auto &r = udValue<Rect>(L, 1);
   const char *k = luaL_checkstring(L, 2);
   float v = static_cast<float>(luaL_checknumber(L, 3));
   if (std::strcmp(k, "x") == 0) {
@@ -1412,7 +1378,7 @@ static int lRectNewindex(lua_State *L) {
   return luaLError2(L, "sn.Rect: invalid field '%s'", k);
 }
 static void registerRect(lua_State *L) {
-  luaL_newmetatable(L, mtRect);
+  luaL_newmetatable(L, Rect::metaTableName());
   luaPushcfunction2(L, udGc<Rect>);
   lua_setfield(L, -2, "__gc");
   luaPushcfunction2(L, lRectIndex);
@@ -1431,33 +1397,33 @@ static void registerRect(lua_State *L) {
 // Transform
 // -----------------
 static int lTransformNew(lua_State *L) {
-  udNewOwned<Transform>(L, mtTransform, Transform());
+  udNewOwned<Transform>(L, Transform());
   return 1;
 }
 static int lTransformIndex(lua_State *L) {
-  auto &t = udValue<Transform>(L, 1, mtTransform);
+  auto &t = udValue<Transform>(L, 1);
   const char *k = luaL_checkstring(L, 2);
   if (std::strcmp(k, "position") == 0) {
-    udNewRef<Vec3>(L, mtVec3, &t.position);
+    udNewRef<Vec3>(L, &t.position);
     return 1;
   }
   if (std::strcmp(k, "rotation") == 0) {
-    udNewRef<Vec3>(L, mtVec3, &t.rotation);
+    udNewRef<Vec3>(L, &t.rotation);
     return 1;
   }
   if (std::strcmp(k, "scale") == 0) {
-    udNewRef<Vec3>(L, mtVec3, &t.scale);
+    udNewRef<Vec3>(L, &t.scale);
     return 1;
   }
-  luaL_getmetatable(L, mtTransform);
+  luaL_getmetatable(L, Transform::metaTableName());
   lua_pushvalue(L, 2);
   lua_rawget(L, -2);
   return 1;
 }
 static int lTransformNewindex(lua_State *L) {
-  auto &t = udValue<Transform>(L, 1, mtTransform);
+  auto &t = udValue<Transform>(L, 1);
   const char *k = luaL_checkstring(L, 2);
-  auto &v = udValue<Vec3>(L, 3, mtVec3);
+  auto &v = udValue<Vec3>(L, 3);
   if (std::strcmp(k, "position") == 0) {
     t.position = v;
     return 0;
@@ -1473,13 +1439,13 @@ static int lTransformNewindex(lua_State *L) {
   return luaLError2(L, "sn.Transform: invalid field '%s'", k);
 }
 static int lTransformTostring(lua_State *L) {
-  auto &t = udValue<Transform>(L, 1, mtTransform);
+  auto &t = udValue<Transform>(L, 1);
   String s = transformStr(t);
   lua_pushlstring(L, s.data(), s.size());
   return 1;
 }
 static void registerTransform(lua_State *L) {
-  luaL_newmetatable(L, mtTransform);
+  luaL_newmetatable(L, Transform::metaTableName());
   luaPushcfunction2(L, udGc<Transform>);
   lua_setfield(L, -2, "__gc");
   luaPushcfunction2(L, lTransformIndex);
@@ -1500,11 +1466,11 @@ static void registerTransform(lua_State *L) {
 // Font (Ptr)
 // -----------------
 static int lFontNew(lua_State *L) {
-  udPushPtr<Font>(L, mtFont, makePtr<Font>());
+  udPushPtr<Font>(L, makePtr<Font>());
   return 1;
 }
 static int lFontLoad(lua_State *L) {
-  auto &font = udPtr<Font>(L, 1, mtFont);
+  auto &font = udPtr<Font>(L, 1);
   int n = lua_gettop(L);
   int point = static_cast<int>(luaL_checkinteger(L, 2));
   if (n == 2) {
@@ -1516,28 +1482,27 @@ static int lFontLoad(lua_State *L) {
     lua_pushboolean(L, font->load(point, StringView(path)));
     return 1;
   }
-  auto &buf = udValue<Buffer>(L, 3, mtBuffer);
+  auto &buf = udValue<Buffer>(L, 3);
   lua_pushboolean(L, font->load(point, buf));
   return 1;
 }
 static int lFontResize(lua_State *L) {
-  auto &font = udPtr<Font>(L, 1, mtFont);
+  auto &font = udPtr<Font>(L, 1);
   int point = static_cast<int>(luaL_checkinteger(L, 2));
   font->resize(point);
   return 0;
 }
 static int lFontRegion(lua_State *L) {
-  auto &font = udPtr<Font>(L, 1, mtFont);
+  auto &font = udPtr<Font>(L, 1);
   const char *text = luaL_checkstring(L, 2);
   int fontSize = static_cast<int>(luaL_checkinteger(L, 3));
   Pivot pivot = static_cast<Pivot>(luaL_checkinteger(L, 4));
-  auto &vec = udValue<Vec2>(L, 5, mtVec2);
-  udNewOwned<Rect>(L, mtRect,
-                   font->region(StringView(text), fontSize, pivot, vec));
+  auto &vec = udValue<Vec2>(L, 5);
+  udNewOwned<Rect>(L, font->region(StringView(text), fontSize, pivot, vec));
   return 1;
 }
 static void registerFont(lua_State *L) {
-  luaL_newmetatable(L, mtFont);
+  luaL_newmetatable(L, Font::metaTableName());
   luaPushcfunction2(L, udPtrGc<Font>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
@@ -1562,55 +1527,55 @@ static void registerFont(lua_State *L) {
 static int lTextureNew(lua_State *L) {
   int n = lua_gettop(L);
   if (n == 0) {
-    udPushPtr<Texture>(L, mtTexture, makePtr<Texture>());
+    udPushPtr<Texture>(L, makePtr<Texture>());
     return 1;
   }
   int w = static_cast<int>(luaL_checkinteger(L, 1));
   int h = static_cast<int>(luaL_checkinteger(L, 2));
-  udPushPtr<Texture>(L, mtTexture, makePtr<Texture>(w, h));
+  udPushPtr<Texture>(L, makePtr<Texture>(w, h));
   return 1;
 }
 static int lTextureLoad(lua_State *L) {
-  auto &tex = udPtr<Texture>(L, 1, mtTexture);
+  auto &tex = udPtr<Texture>(L, 1);
   if (lua_isstring(L, 2)) {
     const char *path = luaL_checkstring(L, 2);
     tex->load(StringView(path));
     return 0;
   }
-  auto &buf = udValue<Buffer>(L, 2, mtBuffer);
+  auto &buf = udValue<Buffer>(L, 2);
   tex->load(buf);
   return 0;
 }
 static int lTextureLoadCubemap(lua_State *L) {
-  auto &tex = udPtr<Texture>(L, 1, mtTexture);
+  auto &tex = udPtr<Texture>(L, 1);
   const char *path = luaL_checkstring(L, 2);
   tex->loadCubemap(StringView(path));
   return 0;
 }
 static int lTextureFill(lua_State *L) {
-  auto &tex = udPtr<Texture>(L, 1, mtTexture);
-  auto &c = udValue<Color>(L, 2, mtColor);
+  auto &tex = udPtr<Texture>(L, 1);
+  auto &c = udValue<Color>(L, 2);
   tex->fill(c);
   return 0;
 }
 static int lTextureCopy(lua_State *L) {
-  auto &tex = udPtr<Texture>(L, 1, mtTexture);
-  udPushPtr<Texture>(L, mtTexture, makePtr<Texture>(tex->copy()));
+  auto &tex = udPtr<Texture>(L, 1);
+  udPushPtr<Texture>(L, makePtr<Texture>(tex->copy()));
   return 1;
 }
 static int lTextureSize(lua_State *L) {
-  auto &tex = udPtr<Texture>(L, 1, mtTexture);
-  udNewOwned<Vec2>(L, mtVec2, tex->size());
+  auto &tex = udPtr<Texture>(L, 1);
+  udNewOwned<Vec2>(L, tex->size());
   return 1;
 }
 static int lTextureTostring(lua_State *L) {
-  auto &tex = udPtr<Texture>(L, 1, mtTexture);
+  auto &tex = udPtr<Texture>(L, 1);
   String s = textureStr(*tex);
   lua_pushlstring(L, s.data(), s.size());
   return 1;
 }
 static void registerTexture(lua_State *L) {
-  luaL_newmetatable(L, mtTexture);
+  luaL_newmetatable(L, Texture::metaTableName());
   luaPushcfunction2(L, udPtrGc<Texture>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
@@ -1636,71 +1601,71 @@ static void registerTexture(lua_State *L) {
 }
 
 static int lModelNew(lua_State *L) {
-  udPushPtr<Model>(L, mtModel, makePtr<Model>());
+  udPushPtr<Model>(L, makePtr<Model>());
   return 1;
 }
 static int lModelLoad(lua_State *L) {
-  auto &m = udPtr<Model>(L, 1, mtModel);
+  auto &m = udPtr<Model>(L, 1);
   if (lua_isstring(L, 2)) {
     const char *path = luaL_checkstring(L, 2);
     m->load(StringView(path));
     return 0;
   }
-  auto &buf = udValue<Buffer>(L, 2, mtBuffer);
+  auto &buf = udValue<Buffer>(L, 2);
   m->load(buf);
   return 0;
 }
 static int lModelGetAabb(lua_State *L) {
-  auto &m = udPtr<Model>(L, 1, mtModel);
-  udNewOwned<AABB>(L, mtAabb, m->getAABB());
+  auto &m = udPtr<Model>(L, 1);
+  udNewOwned<AABB>(L, m->getAABB());
   return 1;
 }
 static int lModelLoadSprite(lua_State *L) {
-  udPtr<Model>(L, 1, mtModel)->loadSprite();
+  udPtr<Model>(L, 1)->loadSprite();
   return 0;
 }
 static int lModelLoadBox(lua_State *L) {
-  udPtr<Model>(L, 1, mtModel)->loadBox();
+  udPtr<Model>(L, 1)->loadBox();
   return 0;
 }
 static int lModelGetBoneUniformBuffer(lua_State *L) {
-  auto &m = udPtr<Model>(L, 1, mtModel);
-  udNewOwned<Buffer>(L, mtBuffer, m->getBoneUniformBuffer());
+  auto &m = udPtr<Model>(L, 1);
+  udNewOwned<Buffer>(L, m->getBoneUniformBuffer());
   return 1;
 }
 static int lModelPlay(lua_State *L) {
-  auto &m = udPtr<Model>(L, 1, mtModel);
+  auto &m = udPtr<Model>(L, 1);
   float start = static_cast<float>(luaL_checknumber(L, 2));
   m->play(start);
   return 0;
 }
 static int lModelUpdate(lua_State *L) {
-  auto &m = udPtr<Model>(L, 1, mtModel);
+  auto &m = udPtr<Model>(L, 1);
   float dt = static_cast<float>(luaL_checknumber(L, 2));
   m->update(dt);
   return 0;
 }
 static int lModelHasTexture(lua_State *L) {
-  auto &m = udPtr<Model>(L, 1, mtModel);
+  auto &m = udPtr<Model>(L, 1);
   auto k = static_cast<TextureKey>(luaL_checkinteger(L, 2));
   lua_pushboolean(L, m->hasTexture(k));
   return 1;
 }
 static int lModelGetTexture(lua_State *L) {
-  auto &m = udPtr<Model>(L, 1, mtModel);
+  auto &m = udPtr<Model>(L, 1);
   auto k = static_cast<TextureKey>(luaL_checkinteger(L, 2));
-  udPushPtr<Texture>(L, mtTexture, makePtr<Texture>(m->getTexture(k)));
+  udPushPtr<Texture>(L, makePtr<Texture>(m->getTexture(k)));
   return 1;
 }
 static int lModelSetTexture(lua_State *L) {
-  auto &m = udPtr<Model>(L, 1, mtModel);
+  auto &m = udPtr<Model>(L, 1);
   auto k = static_cast<TextureKey>(luaL_checkinteger(L, 2));
-  auto &t = udPtr<Texture>(L, 3, mtTexture);
+  auto &t = udPtr<Texture>(L, 3);
   m->setTexture(k, *t);
   return 0;
 }
 static void registerModel(lua_State *L) {
-  luaL_newmetatable(L, mtModel);
+  luaL_newmetatable(L, Model::metaTableName());
   luaPushcfunction2(L, udPtrGc<Model>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
@@ -1754,18 +1719,18 @@ static void registerTextureKey(lua_State *L) {
 // RenderTexture / Sound / Shader / GraphicsPipeline (Ptr)
 // -----------------
 static int lRenderTextureNew(lua_State *L) {
-  udPushPtr<RenderTexture>(L, mtRendertexture, makePtr<RenderTexture>());
+  udPushPtr<RenderTexture>(L, makePtr<RenderTexture>());
   return 1;
 }
 static int lRenderTextureCreate(lua_State *L) {
-  auto &rt = udPtr<RenderTexture>(L, 1, mtRendertexture);
+  auto &rt = udPtr<RenderTexture>(L, 1);
   int w = static_cast<int>(luaL_checkinteger(L, 2));
   int h = static_cast<int>(luaL_checkinteger(L, 3));
   rt->create(w, h);
   return 0;
 }
 static void registerRenderTexture(lua_State *L) {
-  luaL_newmetatable(L, mtRendertexture);
+  luaL_newmetatable(L, RenderTexture::metaTableName());
   luaPushcfunction2(L, udPtrGc<RenderTexture>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
@@ -1781,88 +1746,88 @@ static void registerRenderTexture(lua_State *L) {
 }
 
 static int lSoundNew(lua_State *L) {
-  udPushPtr<Sound>(L, mtSound, makePtr<Sound>());
+  udPushPtr<Sound>(L, makePtr<Sound>());
   return 1;
 }
 static int lSoundLoad(lua_State *L) {
-  auto &s = udPtr<Sound>(L, 1, mtSound);
+  auto &s = udPtr<Sound>(L, 1);
   if (lua_isstring(L, 2)) {
     const char *path = luaL_checkstring(L, 2);
     s->load(StringView(path));
     return 0;
   }
-  auto &buf = udValue<Buffer>(L, 2, mtBuffer);
+  auto &buf = udValue<Buffer>(L, 2);
   s->load(buf);
   return 0;
 }
 static int lSoundPlay(lua_State *L) {
-  udPtr<Sound>(L, 1, mtSound)->play();
+  udPtr<Sound>(L, 1)->play();
   return 0;
 }
 static int lSoundRestart(lua_State *L) {
-  udPtr<Sound>(L, 1, mtSound)->restart();
+  udPtr<Sound>(L, 1)->restart();
   return 0;
 }
 static int lSoundStop(lua_State *L) {
-  udPtr<Sound>(L, 1, mtSound)->stop();
+  udPtr<Sound>(L, 1)->stop();
   return 0;
 }
 static int lSoundSetLooping(lua_State *L) {
-  auto &s = udPtr<Sound>(L, 1, mtSound);
+  auto &s = udPtr<Sound>(L, 1);
   bool looping = lua_toboolean(L, 2) != 0;
   s->setLooping(looping);
   return 0;
 }
 static int lSoundSetVolume(lua_State *L) {
-  auto &s = udPtr<Sound>(L, 1, mtSound);
+  auto &s = udPtr<Sound>(L, 1);
   float v = static_cast<float>(luaL_checknumber(L, 2));
   s->setVolume(v);
   return 0;
 }
 static int lSoundSetPitch(lua_State *L) {
-  auto &s = udPtr<Sound>(L, 1, mtSound);
+  auto &s = udPtr<Sound>(L, 1);
   float v = static_cast<float>(luaL_checknumber(L, 2));
   s->setPitch(v);
   return 0;
 }
 static int lSoundSetPosition(lua_State *L) {
-  auto &s = udPtr<Sound>(L, 1, mtSound);
-  auto &p = udValue<Vec3>(L, 2, mtVec3);
+  auto &s = udPtr<Sound>(L, 1);
+  auto &p = udValue<Vec3>(L, 2);
   s->setPosition(p);
   return 0;
 }
 static int lSoundSetDirection(lua_State *L) {
-  auto &s = udPtr<Sound>(L, 1, mtSound);
-  auto &d = udValue<Vec3>(L, 2, mtVec3);
+  auto &s = udPtr<Sound>(L, 1);
+  auto &d = udValue<Vec3>(L, 2);
   s->setDirection(d);
   return 0;
 }
 static int lSoundIsPlaying(lua_State *L) {
-  lua_pushboolean(L, udPtr<Sound>(L, 1, mtSound)->isPlaying());
+  lua_pushboolean(L, udPtr<Sound>(L, 1)->isPlaying());
   return 1;
 }
 static int lSoundIsLooping(lua_State *L) {
-  lua_pushboolean(L, udPtr<Sound>(L, 1, mtSound)->isLooping());
+  lua_pushboolean(L, udPtr<Sound>(L, 1)->isLooping());
   return 1;
 }
 static int lSoundGetVolume(lua_State *L) {
-  lua_pushnumber(L, udPtr<Sound>(L, 1, mtSound)->getVolume());
+  lua_pushnumber(L, udPtr<Sound>(L, 1)->getVolume());
   return 1;
 }
 static int lSoundGetPitch(lua_State *L) {
-  lua_pushnumber(L, udPtr<Sound>(L, 1, mtSound)->getPitch());
+  lua_pushnumber(L, udPtr<Sound>(L, 1)->getPitch());
   return 1;
 }
 static int lSoundGetPosition(lua_State *L) {
-  udNewOwned<Vec3>(L, mtVec3, udPtr<Sound>(L, 1, mtSound)->getPosition());
+  udNewOwned<Vec3>(L, udPtr<Sound>(L, 1)->getPosition());
   return 1;
 }
 static int lSoundGetDirection(lua_State *L) {
-  udNewOwned<Vec3>(L, mtVec3, udPtr<Sound>(L, 1, mtSound)->getDirection());
+  udNewOwned<Vec3>(L, udPtr<Sound>(L, 1)->getDirection());
   return 1;
 }
 static void registerSound(lua_State *L) {
-  luaL_newmetatable(L, mtSound);
+  luaL_newmetatable(L, Sound::metaTableName());
   luaPushcfunction2(L, udPtrGc<Sound>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
@@ -1906,11 +1871,11 @@ static void registerSound(lua_State *L) {
 }
 
 static int lShaderNew(lua_State *L) {
-  udPushPtr<Shader>(L, mtShader, makePtr<Shader>());
+  udPushPtr<Shader>(L, makePtr<Shader>());
   return 1;
 }
 static int lShaderLoad(lua_State *L) {
-  auto &s = udPtr<Shader>(L, 1, mtShader);
+  auto &s = udPtr<Shader>(L, 1);
   const char *name = luaL_checkstring(L, 2);
   ShaderStage stage = static_cast<ShaderStage>(luaL_checkinteger(L, 3));
   int numUniformData = static_cast<int>(luaL_checkinteger(L, 4));
@@ -1918,14 +1883,14 @@ static int lShaderLoad(lua_State *L) {
   return 0;
 }
 static int lShaderCompileAndLoad(lua_State *L) {
-  auto &s = udPtr<Shader>(L, 1, mtShader);
+  auto &s = udPtr<Shader>(L, 1);
   const char *name = luaL_checkstring(L, 2);
   ShaderStage stage = static_cast<ShaderStage>(luaL_checkinteger(L, 3));
   s->compileAndLoad(StringView(name), stage);
   return 0;
 }
 static void registerShader(lua_State *L) {
-  luaL_newmetatable(L, mtShader);
+  luaL_newmetatable(L, Shader::metaTableName());
   luaPushcfunction2(L, udPtrGc<Shader>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
@@ -1943,51 +1908,51 @@ static void registerShader(lua_State *L) {
 }
 
 static int lPipelineNew(lua_State *L) {
-  udPushPtr<GraphicsPipeline>(L, mtPipeline, makePtr<GraphicsPipeline>());
+  udPushPtr<GraphicsPipeline>(L, makePtr<GraphicsPipeline>());
   return 1;
 }
 static int lPipelineSetVertexShader(lua_State *L) {
-  auto &p = udPtr<GraphicsPipeline>(L, 1, mtPipeline);
-  auto &s = udPtr<Shader>(L, 2, mtShader);
+  auto &p = udPtr<GraphicsPipeline>(L, 1);
+  auto &s = udPtr<Shader>(L, 2);
   p->setVertexShader(*s);
   return 0;
 }
 static int lPipelineSetFragmentShader(lua_State *L) {
-  auto &p = udPtr<GraphicsPipeline>(L, 1, mtPipeline);
-  auto &s = udPtr<Shader>(L, 2, mtShader);
+  auto &p = udPtr<GraphicsPipeline>(L, 1);
+  auto &s = udPtr<Shader>(L, 2);
   p->setFragmentShader(*s);
   return 0;
 }
 static int lPipelineSetEnableDepthTest(lua_State *L) {
-  auto &p = udPtr<GraphicsPipeline>(L, 1, mtPipeline);
+  auto &p = udPtr<GraphicsPipeline>(L, 1);
   bool enable = lua_toboolean(L, 2) != 0;
   p->setEnableDepthTest(enable);
   return 0;
 }
 static int lPipelineSetEnableInstanced(lua_State *L) {
-  auto &p = udPtr<GraphicsPipeline>(L, 1, mtPipeline);
+  auto &p = udPtr<GraphicsPipeline>(L, 1);
   bool enable = lua_toboolean(L, 2) != 0;
   p->setEnableInstanced(enable);
   return 0;
 }
 static int lPipelineSetEnableAnimation(lua_State *L) {
-  auto &p = udPtr<GraphicsPipeline>(L, 1, mtPipeline);
+  auto &p = udPtr<GraphicsPipeline>(L, 1);
   bool enable = lua_toboolean(L, 2) != 0;
   p->setEnableAnimation(enable);
   return 0;
 }
 static int lPipelineSetEnableTangent(lua_State *L) {
-  auto &p = udPtr<GraphicsPipeline>(L, 1, mtPipeline);
+  auto &p = udPtr<GraphicsPipeline>(L, 1);
   bool enable = lua_toboolean(L, 2) != 0;
   p->setEnableTangent(enable);
   return 0;
 }
 static int lPipelineBuild(lua_State *L) {
-  udPtr<GraphicsPipeline>(L, 1, mtPipeline)->build();
+  udPtr<GraphicsPipeline>(L, 1)->build();
   return 0;
 }
 static void registerPipeline(lua_State *L) {
-  luaL_newmetatable(L, mtPipeline);
+  luaL_newmetatable(L, GraphicsPipeline::metaTableName());
   luaPushcfunction2(L, udPtrGc<GraphicsPipeline>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
@@ -2066,15 +2031,15 @@ static int lWindowGetName(lua_State *L) {
   return 1;
 }
 static int lWindowSize(lua_State *L) {
-  udNewOwned<Vec2>(L, mtVec2, Window::size());
+  udNewOwned<Vec2>(L, Window::size());
   return 1;
 }
 static int lWindowHalf(lua_State *L) {
-  udNewOwned<Vec2>(L, mtVec2, Window::half());
+  udNewOwned<Vec2>(L, Window::half());
   return 1;
 }
 static int lWindowResize(lua_State *L) {
-  auto &size = udValue<Vec2>(L, 1, mtVec2);
+  auto &size = udValue<Vec2>(L, 1);
   Window::resize(size);
   return 0;
 }
@@ -2093,31 +2058,31 @@ static int lWindowResized(lua_State *L) {
   return 1;
 }
 static int lWindowRect(lua_State *L) {
-  udNewOwned<Rect>(L, mtRect, Window::rect());
+  udNewOwned<Rect>(L, Window::rect());
   return 1;
 }
 static int lWindowTopLeft(lua_State *L) {
-  udNewOwned<Vec2>(L, mtVec2, Window::topLeft());
+  udNewOwned<Vec2>(L, Window::topLeft());
   return 1;
 }
 static int lWindowTopCenter(lua_State *L) {
-  udNewOwned<Vec2>(L, mtVec2, Window::topCenter());
+  udNewOwned<Vec2>(L, Window::topCenter());
   return 1;
 }
 static int lWindowTopRight(lua_State *L) {
-  udNewOwned<Vec2>(L, mtVec2, Window::topRight());
+  udNewOwned<Vec2>(L, Window::topRight());
   return 1;
 }
 static int lWindowBottomLeft(lua_State *L) {
-  udNewOwned<Vec2>(L, mtVec2, Window::bottomLeft());
+  udNewOwned<Vec2>(L, Window::bottomLeft());
   return 1;
 }
 static int lWindowBottomCenter(lua_State *L) {
-  udNewOwned<Vec2>(L, mtVec2, Window::bottomCenter());
+  udNewOwned<Vec2>(L, Window::bottomCenter());
   return 1;
 }
 static int lWindowBottomRight(lua_State *L) {
-  udNewOwned<Vec2>(L, mtVec2, Window::bottomRight());
+  udNewOwned<Vec2>(L, Window::bottomRight());
   return 1;
 }
 static void registerWindow(lua_State *L) {
@@ -2154,32 +2119,30 @@ static void registerWindow(lua_State *L) {
 }
 
 static int lPhysicsCreateBoxCollider(lua_State *L) {
-  auto &t = udValue<Transform>(L, 1, mtTransform);
+  auto &t = udValue<Transform>(L, 1);
   bool isStatic = lua_toboolean(L, 2) != 0;
-  udNewOwned<Collider>(L, mtCollider, Physics::createBoxCollider(t, isStatic));
+  udNewOwned<Collider>(L, Physics::createBoxCollider(t, isStatic));
   return 1;
 }
 static int lPhysicsCreateSphereCollider(lua_State *L) {
-  auto &pos = udValue<Vec3>(L, 1, mtVec3);
+  auto &pos = udValue<Vec3>(L, 1);
   float radius = static_cast<float>(luaL_checknumber(L, 2));
   bool isStatic = lua_toboolean(L, 3) != 0;
-  udNewOwned<Collider>(L, mtCollider,
-                       Physics::createSphereCollider(pos, radius, isStatic));
+  udNewOwned<Collider>(L, Physics::createSphereCollider(pos, radius, isStatic));
   return 1;
 }
 static int lPhysicsCreateCylinderCollider(lua_State *L) {
-  auto &pos = udValue<Vec3>(L, 1, mtVec3);
-  auto &rot = udValue<Vec3>(L, 2, mtVec3);
+  auto &pos = udValue<Vec3>(L, 1);
+  auto &rot = udValue<Vec3>(L, 2);
   float halfHeight = static_cast<float>(luaL_checknumber(L, 3));
   float radius = static_cast<float>(luaL_checknumber(L, 4));
   bool isStatic = lua_toboolean(L, 5) != 0;
-  udNewOwned<Collider>(
-      L, mtCollider,
-      Physics::createCylinderCollider(pos, rot, halfHeight, radius, isStatic));
+  udNewOwned<Collider>(L, Physics::createCylinderCollider(pos, rot, halfHeight,
+                                                          radius, isStatic));
   return 1;
 }
 static int lPhysicsAddCollider(lua_State *L) {
-  auto &c = udValue<Collider>(L, 1, mtCollider);
+  auto &c = udValue<Collider>(L, 1);
   bool active = lua_toboolean(L, 2) != 0;
   Physics::addCollider(c, active);
   return 0;
@@ -2209,28 +2172,23 @@ static void registerShaderStage(lua_State *L) {
 }
 
 static int lBuiltinShaderGetDefaultVs(lua_State *L) {
-  udPushPtr<Shader>(L, mtShader,
-                    makePtr<Shader>(BuiltinShader::getDefaultVS()));
+  udPushPtr<Shader>(L, makePtr<Shader>(BuiltinShader::getDefaultVS()));
   return 1;
 }
 static int lBuiltinShaderGetDefaultFs(lua_State *L) {
-  udPushPtr<Shader>(L, mtShader,
-                    makePtr<Shader>(BuiltinShader::getDefaultFS()));
+  udPushPtr<Shader>(L, makePtr<Shader>(BuiltinShader::getDefaultFS()));
   return 1;
 }
 static int lBuiltinShaderGetDefaultInstancedVs(lua_State *L) {
-  udPushPtr<Shader>(L, mtShader,
-                    makePtr<Shader>(BuiltinShader::getDefaultInstancedVS()));
+  udPushPtr<Shader>(L, makePtr<Shader>(BuiltinShader::getDefaultInstancedVS()));
   return 1;
 }
 static int lBuiltinShaderGetCubemapVs(lua_State *L) {
-  udPushPtr<Shader>(L, mtShader,
-                    makePtr<Shader>(BuiltinShader::getCubemapVS()));
+  udPushPtr<Shader>(L, makePtr<Shader>(BuiltinShader::getCubemapVS()));
   return 1;
 }
 static int lBuiltinShaderGetCubemapFs(lua_State *L) {
-  udPushPtr<Shader>(L, mtShader,
-                    makePtr<Shader>(BuiltinShader::getCubemapFS()));
+  udPushPtr<Shader>(L, makePtr<Shader>(BuiltinShader::getCubemapFS()));
   return 1;
 }
 static void registerBuiltinShader(lua_State *L) {
@@ -2250,25 +2208,22 @@ static void registerBuiltinShader(lua_State *L) {
 
 static int lBuiltinPipelineGetDefault3D(lua_State *L) {
   udPushPtr<GraphicsPipeline>(
-      L, mtPipeline,
-      makePtr<GraphicsPipeline>(BuiltinPipeline::getDefault3D()));
+      L, makePtr<GraphicsPipeline>(BuiltinPipeline::getDefault3D()));
   return 1;
 }
 static int lBuiltinPipelineGetInstanced3D(lua_State *L) {
   udPushPtr<GraphicsPipeline>(
-      L, mtPipeline,
-      makePtr<GraphicsPipeline>(BuiltinPipeline::getInstanced3D()));
+      L, makePtr<GraphicsPipeline>(BuiltinPipeline::getInstanced3D()));
   return 1;
 }
 static int lBuiltinPipelineGetDefault2D(lua_State *L) {
   udPushPtr<GraphicsPipeline>(
-      L, mtPipeline,
-      makePtr<GraphicsPipeline>(BuiltinPipeline::getDefault2D()));
+      L, makePtr<GraphicsPipeline>(BuiltinPipeline::getDefault2D()));
   return 1;
 }
 static int lBuiltinPipelineGetCubemap(lua_State *L) {
   udPushPtr<GraphicsPipeline>(
-      L, mtPipeline, makePtr<GraphicsPipeline>(BuiltinPipeline::getCubemap()));
+      L, makePtr<GraphicsPipeline>(BuiltinPipeline::getCubemap()));
   return 1;
 }
 static void registerBuiltinPipeline(lua_State *L) {
@@ -2467,11 +2422,11 @@ static int lGamepadIsDown(lua_State *L) {
   return 1;
 }
 static int lGamepadGetLeftStick(lua_State *L) {
-  udNewOwned<Vec2>(L, mtVec2, GamePad::getLeftStick());
+  udNewOwned<Vec2>(L, GamePad::getLeftStick());
   return 1;
 }
 static int lGamepadGetRightStick(lua_State *L) {
-  udNewOwned<Vec2>(L, mtVec2, GamePad::getRightStick());
+  udNewOwned<Vec2>(L, GamePad::getRightStick());
   return 1;
 }
 static int lGamepadIsConnected(lua_State *L) {
@@ -2542,8 +2497,8 @@ static void registerGamepad(lua_State *L) {
 }
 
 static int lGraphicsDrawRect(lua_State *L) {
-  auto &rect = udValue<Rect>(L, 1, mtRect);
-  auto &color = udValue<Color>(L, 2, mtColor);
+  auto &rect = udValue<Rect>(L, 1);
+  auto &color = udValue<Color>(L, 2);
   if (lua_gettop(L) >= 3) {
     float angle = static_cast<float>(luaL_checknumber(L, 3));
     Graphics::drawRect(rect, color, angle);
@@ -2554,21 +2509,21 @@ static int lGraphicsDrawRect(lua_State *L) {
 }
 static int lGraphicsDrawText(lua_State *L) {
   const char *text = luaL_checkstring(L, 1);
-  auto &font = udPtr<Font>(L, 2, mtFont);
-  auto &pos = udValue<Vec2>(L, 3, mtVec2);
+  auto &font = udPtr<Font>(L, 2);
+  auto &pos = udValue<Vec2>(L, 3);
   if (lua_gettop(L) == 3) {
     Graphics::drawText(StringView(text), *font, pos);
     return 0;
   }
-  auto &color = udValue<Color>(L, 4, mtColor);
+  auto &color = udValue<Color>(L, 4);
   float size = static_cast<float>(luaL_optnumber(L, 5, 32.0));
   float angle = static_cast<float>(luaL_optnumber(L, 6, 0.0));
   Graphics::drawText(StringView(text), *font, pos, color, size, angle);
   return 0;
 }
 static int lGraphicsDrawImage(lua_State *L) {
-  auto &tex = udPtr<Texture>(L, 1, mtTexture);
-  auto &rect = udValue<Rect>(L, 2, mtRect);
+  auto &tex = udPtr<Texture>(L, 1);
+  auto &rect = udValue<Rect>(L, 2);
   if (lua_gettop(L) >= 3) {
     float angle = static_cast<float>(luaL_checknumber(L, 3));
     Graphics::drawImage(*tex, rect, angle);
@@ -2578,61 +2533,61 @@ static int lGraphicsDrawImage(lua_State *L) {
   return 0;
 }
 static int lGraphicsDrawCubemap(lua_State *L) {
-  auto &tex = udPtr<Texture>(L, 1, mtTexture);
+  auto &tex = udPtr<Texture>(L, 1);
   Graphics::drawCubemap(*tex);
   return 0;
 }
 static int lGraphicsDrawModel(lua_State *L) {
-  auto &m = udPtr<Model>(L, 1, mtModel);
-  auto &t = udValue<Transform>(L, 2, mtTransform);
+  auto &m = udPtr<Model>(L, 1);
+  auto &t = udValue<Transform>(L, 2);
   Graphics::drawModel(*m, t);
   return 0;
 }
 static int lGraphicsDrawModelInstanced(lua_State *L) {
-  auto &m = udPtr<Model>(L, 1, mtModel);
+  auto &m = udPtr<Model>(L, 1);
   luaL_checktype(L, 2, LUA_TTABLE);
   Array<Transform> transforms;
   size_t n = lua_objlen(L, 2);
   transforms.reserve(n);
   for (size_t i = 1; i <= n; ++i) {
     lua_rawgeti(L, 2, static_cast<lua_Integer>(i));
-    transforms.push_back(udValue<Transform>(L, -1, mtTransform));
+    transforms.push_back(udValue<Transform>(L, -1));
     lua_pop(L, 1);
   }
   Graphics::drawModelInstanced(*m, transforms);
   return 0;
 }
 static int lGraphicsSetCamera(lua_State *L) {
-  auto &cam = udValue<Camera>(L, 1, mtCamera);
+  auto &cam = udValue<Camera>(L, 1);
   Graphics::setCamera(cam);
   return 0;
 }
 static int lGraphicsGetCamera(lua_State *L) {
   auto &cam = Graphics::getCamera();
-  udNewRef<Camera>(L, mtCamera, &cam);
+  udNewRef<Camera>(L, &cam);
   return 1;
 }
 static int lGraphicsSetCamera2d(lua_State *L) {
-  auto &cam = udValue<Camera2D>(L, 1, mtCamera2D);
+  auto &cam = udValue<Camera2D>(L, 1);
   Graphics::setCamera2D(cam);
   return 0;
 }
 static int lGraphicsGetCamera2d(lua_State *L) {
   auto &cam = Graphics::getCamera2D();
-  udNewRef<Camera2D>(L, mtCamera2D, &cam);
+  udNewRef<Camera2D>(L, &cam);
   return 1;
 }
 static int lGraphicsGetClearColor(lua_State *L) {
-  udNewOwned<Color>(L, mtColor, Graphics::getClearColor());
+  udNewOwned<Color>(L, Graphics::getClearColor());
   return 1;
 }
 static int lGraphicsSetClearColor(lua_State *L) {
-  auto &c = udValue<Color>(L, 1, mtColor);
+  auto &c = udValue<Color>(L, 1);
   Graphics::setClearColor(c);
   return 0;
 }
 static int lGraphicsSetGraphicsPipeline(lua_State *L) {
-  auto &p = udPtr<GraphicsPipeline>(L, 1, mtPipeline);
+  auto &p = udPtr<GraphicsPipeline>(L, 1);
   Graphics::setGraphicsPipeline(*p);
   return 0;
 }
@@ -2643,7 +2598,7 @@ static int lGraphicsResetGraphicsPipeline(lua_State *L) {
 }
 static int lGraphicsSetTexture(lua_State *L) {
   UInt32 slot = static_cast<UInt32>(luaL_checkinteger(L, 1));
-  auto &t = udPtr<Texture>(L, 2, mtTexture);
+  auto &t = udPtr<Texture>(L, 2);
   Graphics::setTexture(slot, *t);
   return 0;
 }
@@ -2659,12 +2614,12 @@ static int lGraphicsResetAllTexture(lua_State *L) {
 }
 static int lGraphicsSetUniformBuffer(lua_State *L) {
   UInt32 slot = static_cast<UInt32>(luaL_checkinteger(L, 1));
-  auto &b = udValue<Buffer>(L, 2, mtBuffer);
+  auto &b = udValue<Buffer>(L, 2);
   Graphics::setUniformBuffer(slot, b);
   return 0;
 }
 static int lGraphicsSetRenderTarget(lua_State *L) {
-  auto &rt = udPtr<RenderTexture>(L, 1, mtRendertexture);
+  auto &rt = udPtr<RenderTexture>(L, 1);
   Graphics::setRenderTarget(*rt);
   return 0;
 }
@@ -2674,8 +2629,8 @@ static int lGraphicsFlush(lua_State *L) {
   return 0;
 }
 static int lGraphicsReadbackTexture(lua_State *L) {
-  auto &rt = udPtr<RenderTexture>(L, 1, mtRendertexture);
-  auto &out = udPtr<Texture>(L, 2, mtTexture);
+  auto &rt = udPtr<RenderTexture>(L, 1);
+  auto &out = udPtr<Texture>(L, 2);
   lua_pushboolean(L, Graphics::readbackTexture(*rt, *out));
   return 1;
 }
@@ -2727,11 +2682,11 @@ static void registerGraphics(lua_State *L) {
 }
 
 static int lMouseGetPositionOnScene(lua_State *L) {
-  udNewOwned<Vec2>(L, mtVec2, Mouse::getPositionOnScene());
+  udNewOwned<Vec2>(L, Mouse::getPositionOnScene());
   return 1;
 }
 static int lMouseGetPosition(lua_State *L) {
-  udNewOwned<Vec2>(L, mtVec2, Mouse::getPosition());
+  udNewOwned<Vec2>(L, Mouse::getPosition());
   return 1;
 }
 static int lMouseIsPressed(lua_State *L) {
@@ -2750,17 +2705,17 @@ static int lMouseIsDown(lua_State *L) {
   return 1;
 }
 static int lMouseSetPosition(lua_State *L) {
-  auto &p = udValue<Vec2>(L, 1, mtVec2);
+  auto &p = udValue<Vec2>(L, 1);
   Mouse::setPosition(p);
   return 0;
 }
 static int lMouseSetPositionOnScene(lua_State *L) {
-  auto &p = udValue<Vec2>(L, 1, mtVec2);
+  auto &p = udValue<Vec2>(L, 1);
   Mouse::setPositionOnScene(p);
   return 0;
 }
 static int lMouseGetScrollWheel(lua_State *L) {
-  udNewOwned<Vec2>(L, mtVec2, Mouse::getScrollWheel());
+  udNewOwned<Vec2>(L, Mouse::getScrollWheel());
   return 1;
 }
 static int lMouseHideCursor(lua_State *L) {
@@ -2966,12 +2921,12 @@ static int lImGuiText(lua_State *L) {
   return 0;
 }
 static int lImGuiSetNextWindowPos(lua_State *L) {
-  auto &pos = udValue<Vec2>(L, 1, mtVec2);
+  auto &pos = udValue<Vec2>(L, 1);
   ImGui::SetNextWindowPos({pos.x, pos.y});
   return 0;
 }
 static int lImGuiSetNextWindowSize(lua_State *L) {
-  auto &size = udValue<Vec2>(L, 1, mtVec2);
+  auto &size = udValue<Vec2>(L, 1);
   ImGui::SetNextWindowSize({size.x, size.y});
   return 0;
 }

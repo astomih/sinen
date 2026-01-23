@@ -5,6 +5,7 @@
 #include <math/vector.hpp>
 namespace sinen {
 struct AABB {
+  static constexpr const char *metaTableName() { return "sn.AABB"; }
   Vec3 min;
   Vec3 max;
   AABB() : min(Vec3(0.0f)), max(Vec3(0.0f)) {}

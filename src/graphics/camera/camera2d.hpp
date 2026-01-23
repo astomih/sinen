@@ -8,6 +8,8 @@ public:
   Camera2D(const Vec2 &size) : cameraSize(size) {}
   ~Camera2D() = default;
 
+  static constexpr const char *metaTableName() { return "sn.Camera2D"; }
+
   void resize(const Vec2 &size) { this->cameraSize = size; }
   Vec2 windowRatio() const;
   Vec2 invWindowRatio() const;

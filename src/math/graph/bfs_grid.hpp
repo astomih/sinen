@@ -15,6 +15,8 @@ namespace sinen {
 class BFSGrid {
 public:
   using graph = Grid;
+
+  static constexpr const char *metaTableName() { return "sn.BFSGrid"; }
   /**
    * @brief Construct a new bfs object
    *

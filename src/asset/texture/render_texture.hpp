@@ -6,6 +6,8 @@ class RenderTexture {
 public:
   RenderTexture();
 
+  static constexpr const char *metaTableName() { return "sn.RenderTexture"; }
+
   void create(int width, int height);
 
   int width;

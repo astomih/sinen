@@ -12,6 +12,8 @@ class Buffer {
 public:
   Buffer(const BufferType &type, Ptr<void> data, size_t size);
 
+  static constexpr const char *metaTableName() { return "sn.Buffer"; }
+
   Buffer(const Buffer &) = default;
   Buffer(Buffer &&) = default;
   Buffer &operator=(const Buffer &) = default;

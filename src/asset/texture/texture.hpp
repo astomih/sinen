@@ -18,6 +18,8 @@ public:
    */
   Texture();
   Texture(int width, int height);
+
+  static constexpr const char *metaTableName() { return "sn.Texture"; }
   /**
    * @brief Destroy the texture object
    *

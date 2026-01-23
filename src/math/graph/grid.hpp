@@ -403,6 +403,11 @@ inline void Grid<T>::resize(const std::size_t &w, const std::size_t &h) {
   }
 }
 } // namespace internal
-using Grid = internal::Grid<float>;
+class Grid : public internal::Grid<float> {
+public:
+  static constexpr const char *metaTableName() { return "sn.Grid"; }
+
+  using internal::Grid<float>::Grid;
+};
 } // namespace sinen
 #endif // !SINEN_GRID_HPP

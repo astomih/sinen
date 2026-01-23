@@ -19,6 +19,8 @@ public:
    *
    */
   Sound();
+
+  static constexpr const char *metaTableName() { return "sn.Sound"; }
   /**
    * @brief Destruct sound object
    */

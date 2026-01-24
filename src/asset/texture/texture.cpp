@@ -175,3 +175,12 @@ void updateNativeTexture(Ptr<rhi::Texture> texture, void *pPixels,
   writeTexture(texture, pPixels, channels);
 }
 } // namespace sinen
+
+#include <asset/script/luaapi.hpp>
+namespace sinen {
+String Texture::tableString() const {
+  TablePair p;
+  p.emplace_back("isLoaded", texture ? "true" : "false");
+  return convert("sn.Texture", p, false);
+}
+} // namespace sinen

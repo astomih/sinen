@@ -1,6 +1,7 @@
 #ifndef SINEN_VEC3_HPP
 #define SINEN_VEC3_HPP
 #include "math.hpp"
+#include <core/data/string.hpp>
 namespace sinen {
 class Vec4;
 class Vec3 {
@@ -18,6 +19,7 @@ public:
   Vec3(const Vec4 &v);
 
   static constexpr const char *metaTableName() { return "sn.Vec3"; }
+  String tableString() const;
 
   // Vector addition (a + b)
   friend Vec3 operator+(const Vec3 &a, const Vec3 &b) {

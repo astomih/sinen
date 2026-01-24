@@ -27,13 +27,7 @@
 #include <platform/io/filesystem.hpp>
 #include <platform/window/window.hpp>
 
-#ifdef SINEN_USE_LUAU
-#include <Luau/Compiler.h>
-#include <lua.h>
-#include <lualib.h>
-#else
-#include <lua.hpp>
-#endif
+#include "luaapi.hpp"
 
 #include <imgui.h>
 
@@ -43,37 +37,6 @@
 #include <utility>
 
 namespace sinen {
-void luaPushcfunction2(lua_State *L, lua_CFunction f) {
-#ifdef SINEN_USE_LUAU
-  lua_pushcfunction(L, f, "sn function");
-#else
-  lua_pushcfunction(L, f);
-#endif
-}
-int luaLError2(lua_State *L, const char *fmt, ...) {
-  va_list ap;
-  va_start(ap, fmt);
-#ifdef SINEN_USE_LUAU
-  luaL_error(L, va_list(ap));
-  return 0;
-#else
-  return luaL_error(L, va_list(ap));
-#endif
-}
-static int luaLRef2(lua_State *L, int idx) {
-#ifdef SINEN_USE_LUAU
-  return lua_ref(L, idx);
-#else
-  return luaL_ref(L, idx);
-#endif
-}
-static void luaLUnref2(lua_State *L, int idx, int r) {
-#ifdef SINEN_USE_LUAU
-  lua_unref(L, r);
-#else
-  luaL_unref(L, idx, r);
-#endif
-}
 auto alloc = [](void *ud, void *ptr, size_t osize, size_t nsize) -> void * {
   (void)ud;
   // free
@@ -96,32 +59,38 @@ auto alloc = [](void *ud, void *ptr, size_t osize, size_t nsize) -> void * {
   sinen::GlobalAllocator::get()->deallocate(ptr, osize);
   return nptr;
 };
-
-static String toStringTrim(double value) {
-  String s(std::format("{}", value));
-
-  auto dot = s.find('.');
-  if (dot == String::npos) {
-    return s + ".0";
-  }
-
-  bool allZero = true;
-  for (size_t i = dot + 1; i < s.size(); ++i) {
-    if (s[i] != '0') {
-      allZero = false;
-      break;
-    }
-  }
-
-  if (allZero) {
-    return s.substr(0, dot + 2);
-  }
-
-  s.erase(s.find_last_not_of('0') + 1);
-  return s;
+void luaPushcfunction2(lua_State *L, lua_CFunction f) {
+#ifdef SINEN_USE_LUAU
+  lua_pushcfunction(L, f, "sn function");
+#else
+  lua_pushcfunction(L, f);
+#endif
 }
-using TablePair = Array<std::pair<String, String>>;
-static String convert(StringView name, const TablePair &p, bool isReturn) {
+int luaLError2(lua_State *L, const char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+#ifdef SINEN_USE_LUAU
+  luaL_error(L, va_list(ap));
+  return 0;
+#else
+  return luaL_error(L, va_list(ap));
+#endif
+}
+int luaLRef2(lua_State *L, int idx) {
+#ifdef SINEN_USE_LUAU
+  return lua_ref(L, idx);
+#else
+  return luaL_ref(L, idx);
+#endif
+}
+void luaLUnref2(lua_State *L, int idx, int r) {
+#ifdef SINEN_USE_LUAU
+  lua_unref(L, r);
+#else
+  luaL_unref(L, idx, r);
+#endif
+}
+String convert(StringView name, const TablePair &p, bool isReturn) {
   String s;
   s = name.data();
   s += "{ ";
@@ -144,534 +113,33 @@ static String convert(StringView name, const TablePair &p, bool isReturn) {
   s += " }";
   return s;
 }
+String toStringTrim(double value) {
+  String s(std::format("{}", value));
+
+  auto dot = s.find('.');
+  if (dot == String::npos) {
+    return s + ".0";
+  }
+
+  bool allZero = true;
+  for (size_t i = dot + 1; i < s.size(); ++i) {
+    if (s[i] != '0') {
+      allZero = false;
+      break;
+    }
+  }
+
+  if (allZero) {
+    return s.substr(0, dot + 2);
+  }
+
+  s.erase(s.find_last_not_of('0') + 1);
+  return s;
+}
 static lua_State *gLua = nullptr;
 static int gSetupRef = LUA_NOREF;
 static int gUpdateRef = LUA_NOREF;
 static int gDrawRef = LUA_NOREF;
-static auto vec3Str(const Vec3 &v) {
-  TablePair p;
-  p.emplace_back("x", toStringTrim(v.x));
-  p.emplace_back("y", toStringTrim(v.y));
-  p.emplace_back("z", toStringTrim(v.z));
-  return convert("sn.Vec3", p, false);
-};
-static auto vec2Str(const Vec2 &v) {
-  TablePair p;
-  p.emplace_back("x", toStringTrim(v.x));
-  p.emplace_back("y", toStringTrim(v.y));
-
-  return convert("sn.Vec2", p, false);
-};
-static auto textureStr(const Texture &v) {
-  TablePair p;
-  p.emplace_back("isLoaded", v.texture ? "true" : "false");
-  return convert("sn.Texture", p, false);
-};
-static auto transformStr(const Transform &v) {
-  TablePair p;
-  p.emplace_back("position", vec3Str(v.position));
-  p.emplace_back("rotation", vec3Str(v.rotation));
-  p.emplace_back("scale", vec3Str(v.scale));
-  return convert("sn.Transform", p, true);
-};
-
-static auto colorStr(const Color &v) {
-  TablePair p;
-  p.emplace_back("r", toStringTrim(v.r));
-  p.emplace_back("g", toStringTrim(v.g));
-  p.emplace_back("b", toStringTrim(v.b));
-  p.emplace_back("a", toStringTrim(v.a));
-  return convert("sn.Color", p, false);
-};
-
-template <class T> struct UdBox {
-  bool owned = true;
-  T *ptr = nullptr;
-  alignas(T) std::byte storage[sizeof(T)];
-};
-
-static void *luaLTestudata2(lua_State *L, int idx, const char *tname) {
-#ifdef SINEN_USE_LUAU
-  void *p = lua_touserdata(L, idx);
-  if (!p) {
-    return nullptr;
-  }
-  if (!lua_getmetatable(L, idx)) {
-    return nullptr;
-  }
-  luaL_getmetatable(L, tname);
-  bool ok = lua_rawequal(L, -1, -2) != 0;
-  lua_pop(L, 2);
-  return ok ? p : nullptr;
-#else
-  return luaL_testudata(L, idx, tname);
-#endif
-}
-
-template <class T> static T &udValue(lua_State *L, int idx) {
-  auto *ud =
-      static_cast<UdBox<T> *>(luaL_checkudata(L, idx, T::metaTableName()));
-  return *ud->ptr;
-}
-template <class T> static T *udValueOrNull(lua_State *L, int idx) {
-  auto *ud =
-      static_cast<UdBox<T> *>(luaLTestudata2(L, idx, T::metaTableName()));
-  return ud ? ud->ptr : nullptr;
-}
-template <class T> static int udGc(lua_State *L) {
-  auto *ud = static_cast<UdBox<T> *>(lua_touserdata(L, 1));
-  if (ud && ud->owned && ud->ptr) {
-    ud->ptr->~T();
-    ud->ptr = nullptr;
-  }
-  return 0;
-}
-template <class T> static UdBox<T> *udNewOwned(lua_State *L, T value) {
-  void *mem = lua_newuserdata(L, sizeof(UdBox<T>));
-  auto *ud = new (mem) UdBox<T>();
-  ud->owned = true;
-  ud->ptr = new (ud->storage) T(std::move(value));
-  luaL_getmetatable(L, T::metaTableName());
-  lua_setmetatable(L, -2);
-  return ud;
-}
-template <class T> static UdBox<T> *udNewRef(lua_State *L, T *ref) {
-  void *mem = lua_newuserdata(L, sizeof(UdBox<T>));
-  auto *ud = new (mem) UdBox<T>();
-  ud->owned = false;
-  ud->ptr = ref;
-  luaL_getmetatable(L, T::metaTableName());
-  lua_setmetatable(L, -2);
-  return ud;
-}
-
-template <class T> static Ptr<T> &udPtr(lua_State *L, int idx) {
-  return *static_cast<Ptr<T> *>(luaL_checkudata(L, idx, T::metaTableName()));
-}
-template <class T> static int udPtrGc(lua_State *L) {
-  auto *ud = static_cast<Ptr<T> *>(lua_touserdata(L, 1));
-  ud->~Ptr<T>();
-  return 0;
-}
-template <class T> static void udPushPtr(lua_State *L, Ptr<T> value) {
-  void *mem = lua_newuserdata(L, sizeof(Ptr<T>));
-  new (mem) Ptr<T>(std::move(value));
-  luaL_getmetatable(L, T::metaTableName());
-  lua_setmetatable(L, -2);
-}
-
-static void pushSn(lua_State *L) { lua_getglobal(L, "sn"); }
-static void ensureSn(lua_State *L) {
-  lua_getglobal(L, "sn");
-  if (!lua_istable(L, -1)) {
-    lua_pop(L, 1);
-    lua_newtable(L);
-    lua_pushvalue(L, -1);
-    lua_setglobal(L, "sn");
-  }
-}
-static void pushSnNamed(lua_State *L, const char *name) {
-  ensureSn(L);
-  lua_newtable(L);
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -3, name);
-  lua_remove(L, -2); // remove sn
-}
-
-static int luaPCallLogged(lua_State *L, int nargs, int nresults) {
-  if (lua_pcall(L, nargs, nresults, 0) == LUA_OK) {
-    return LUA_OK;
-  }
-  const char *msg = lua_tostring(L, -1);
-  LogF::error("[lua error] {}", msg ? msg : "(unknown error)");
-  lua_pop(L, 1);
-  return LUA_ERRRUN;
-}
-
-// -----------------
-// Vec2
-// -----------------
-static int lVec2New(lua_State *L) {
-  int n = lua_gettop(L);
-  if (n == 0) {
-    udNewOwned<Vec2>(L, Vec2(0.0f));
-    return 1;
-  }
-  if (n == 1) {
-    float v = static_cast<float>(luaL_checknumber(L, 1));
-    udNewOwned<Vec2>(L, Vec2(v));
-    return 1;
-  }
-  float x = static_cast<float>(luaL_checknumber(L, 1));
-  float y = static_cast<float>(luaL_checknumber(L, 2));
-  udNewOwned<Vec2>(L, Vec2(x, y));
-  return 1;
-}
-static int lVec2Index(lua_State *L) {
-  auto &v = udValue<Vec2>(L, 1);
-  const char *k = luaL_checkstring(L, 2);
-  if (std::strcmp(k, "x") == 0) {
-    lua_pushnumber(L, v.x);
-    return 1;
-  }
-  if (std::strcmp(k, "y") == 0) {
-    lua_pushnumber(L, v.y);
-    return 1;
-  }
-  luaL_getmetatable(L, Vec2::metaTableName());
-  lua_pushvalue(L, 2);
-  lua_rawget(L, -2);
-  return 1;
-}
-static int lVec2Newindex(lua_State *L) {
-  auto &v = udValue<Vec2>(L, 1);
-  const char *k = luaL_checkstring(L, 2);
-  float value = static_cast<float>(luaL_checknumber(L, 3));
-  if (std::strcmp(k, "x") == 0) {
-    v.x = value;
-    return 0;
-  }
-  if (std::strcmp(k, "y") == 0) {
-    v.y = value;
-    return 0;
-  }
-  return luaLError2(L, "sn.Vec2: invalid field '%s'", k);
-}
-static int lVec2Add(lua_State *L) {
-  auto &a = udValue<Vec2>(L, 1);
-  auto &b = udValue<Vec2>(L, 2);
-  udNewOwned<Vec2>(L, a + b);
-  return 1;
-}
-static int lVec2Sub(lua_State *L) {
-  auto &a = udValue<Vec2>(L, 1);
-  auto &b = udValue<Vec2>(L, 2);
-  udNewOwned<Vec2>(L, a - b);
-  return 1;
-}
-static int lVec2Mul(lua_State *L) {
-  auto &a = udValue<Vec2>(L, 1);
-  auto &b = udValue<Vec2>(L, 2);
-  udNewOwned<Vec2>(L, a * b);
-  return 1;
-}
-static int lVec2Div(lua_State *L) {
-  auto &a = udValue<Vec2>(L, 1);
-  auto &b = udValue<Vec2>(L, 2);
-  udNewOwned<Vec2>(L, a / b);
-  return 1;
-}
-static int lVec2Tostring(lua_State *L) {
-  auto &v = udValue<Vec2>(L, 1);
-  String s = vec2Str(v);
-  lua_pushlstring(L, s.data(), s.size());
-  return 1;
-}
-static int lVec2Copy(lua_State *L) {
-  auto &v = udValue<Vec2>(L, 1);
-  udNewOwned<Vec2>(L, v);
-  return 1;
-}
-static int lVec2Length(lua_State *L) {
-  auto &v = udValue<Vec2>(L, 1);
-  lua_pushnumber(L, v.length());
-  return 1;
-}
-static void registerVec2(lua_State *L) {
-  luaL_newmetatable(L, Vec2::metaTableName());
-  luaPushcfunction2(L, udGc<Vec2>);
-  lua_setfield(L, -2, "__gc");
-  luaPushcfunction2(L, lVec2Index);
-  lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lVec2Newindex);
-  lua_setfield(L, -2, "__newindex");
-  luaPushcfunction2(L, lVec2Add);
-  lua_setfield(L, -2, "__add");
-  luaPushcfunction2(L, lVec2Sub);
-  lua_setfield(L, -2, "__sub");
-  luaPushcfunction2(L, lVec2Mul);
-  lua_setfield(L, -2, "__mul");
-  luaPushcfunction2(L, lVec2Div);
-  lua_setfield(L, -2, "__div");
-  luaPushcfunction2(L, lVec2Tostring);
-  lua_setfield(L, -2, "__tostring");
-  luaPushcfunction2(L, lVec2Copy);
-  lua_setfield(L, -2, "copy");
-  luaPushcfunction2(L, lVec2Length);
-  lua_setfield(L, -2, "length");
-  lua_pop(L, 1);
-
-  pushSnNamed(L, "Vec2");
-  luaPushcfunction2(L, lVec2New);
-  lua_setfield(L, -2, "new");
-  lua_pop(L, 1);
-}
-
-// -----------------
-// Vec3
-// -----------------
-static int lVec3New(lua_State *L) {
-  int n = lua_gettop(L);
-  if (n == 0) {
-    udNewOwned<Vec3>(L, Vec3(0.0f));
-    return 1;
-  }
-  if (n == 1) {
-    float v = static_cast<float>(luaL_checknumber(L, 1));
-    udNewOwned<Vec3>(L, Vec3(v));
-    return 1;
-  }
-  float x = static_cast<float>(luaL_checknumber(L, 1));
-  float y = static_cast<float>(luaL_checknumber(L, 2));
-  float z = static_cast<float>(luaL_checknumber(L, 3));
-  udNewOwned<Vec3>(L, Vec3(x, y, z));
-  return 1;
-}
-static int lVec3Index(lua_State *L) {
-  auto &v = udValue<Vec3>(L, 1);
-  const char *k = luaL_checkstring(L, 2);
-  if (std::strcmp(k, "x") == 0) {
-    lua_pushnumber(L, v.x);
-    return 1;
-  }
-  if (std::strcmp(k, "y") == 0) {
-    lua_pushnumber(L, v.y);
-    return 1;
-  }
-  if (std::strcmp(k, "z") == 0) {
-    lua_pushnumber(L, v.z);
-    return 1;
-  }
-  luaL_getmetatable(L, Vec3::metaTableName());
-  lua_pushvalue(L, 2);
-  lua_rawget(L, -2);
-  return 1;
-}
-static int lVec3Newindex(lua_State *L) {
-  auto &v = udValue<Vec3>(L, 1);
-  const char *k = luaL_checkstring(L, 2);
-  float value = static_cast<float>(luaL_checknumber(L, 3));
-  if (std::strcmp(k, "x") == 0) {
-    v.x = value;
-    return 0;
-  }
-  if (std::strcmp(k, "y") == 0) {
-    v.y = value;
-    return 0;
-  }
-  if (std::strcmp(k, "z") == 0) {
-    v.z = value;
-    return 0;
-  }
-  return luaLError2(L, "sn.Vec3: invalid field '%s'", k);
-}
-static int lVec3Add(lua_State *L) {
-  auto &a = udValue<Vec3>(L, 1);
-  auto &b = udValue<Vec3>(L, 2);
-  udNewOwned<Vec3>(L, a + b);
-  return 1;
-}
-static int lVec3Sub(lua_State *L) {
-  auto &a = udValue<Vec3>(L, 1);
-  auto &b = udValue<Vec3>(L, 2);
-  udNewOwned<Vec3>(L, a - b);
-  return 1;
-}
-static int lVec3Mul(lua_State *L) {
-  auto &a = udValue<Vec3>(L, 1);
-  auto &b = udValue<Vec3>(L, 2);
-  udNewOwned<Vec3>(L, a * b);
-  return 1;
-}
-static int lVec3Div(lua_State *L) {
-  auto &a = udValue<Vec3>(L, 1);
-  auto &b = udValue<Vec3>(L, 2);
-  udNewOwned<Vec3>(L, a / b);
-  return 1;
-}
-static int lVec3Tostring(lua_State *L) {
-  auto &v = udValue<Vec3>(L, 1);
-  String s = vec3Str(v);
-  lua_pushlstring(L, s.data(), s.size());
-  return 1;
-}
-static int lVec3Copy(lua_State *L) {
-  auto &v = udValue<Vec3>(L, 1);
-  udNewOwned<Vec3>(L, v);
-  return 1;
-}
-static int lVec3Length(lua_State *L) {
-  auto &v = udValue<Vec3>(L, 1);
-  lua_pushnumber(L, v.length());
-  return 1;
-}
-static int lVec3Normalize(lua_State *L) {
-  auto v = udValue<Vec3>(L, 1);
-  v.normalize();
-  udNewOwned<Vec3>(L, v);
-  return 1;
-}
-static int lVec3Dot(lua_State *L) {
-  auto a = udValue<Vec3>(L, 1);
-  auto b = udValue<Vec3>(L, 2);
-  lua_pushnumber(L, Vec3::dot(a, b));
-  return 1;
-}
-static int lVec3Cross(lua_State *L) {
-  auto a = udValue<Vec3>(L, 1);
-  auto b = udValue<Vec3>(L, 2);
-  udNewOwned<Vec3>(L, Vec3::cross(a, b));
-  return 1;
-}
-static int lVec3Lerp(lua_State *L) {
-  auto a = udValue<Vec3>(L, 1);
-  auto b = udValue<Vec3>(L, 2);
-  float value = luaL_checknumber(L, 3);
-  udNewOwned<Vec3>(L, Vec3::lerp(a, b, value));
-  return 1;
-}
-static int lVec3Reflect(lua_State *L) {
-  auto a = udValue<Vec3>(L, 1);
-  auto b = udValue<Vec3>(L, 2);
-  udNewOwned<Vec3>(L, Vec3::reflect(a, b));
-  return 1;
-}
-static void registerVec3(lua_State *L) {
-  luaL_newmetatable(L, Vec3::metaTableName());
-  luaPushcfunction2(L, udGc<Vec3>);
-  lua_setfield(L, -2, "__gc");
-  luaPushcfunction2(L, lVec3Index);
-  lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lVec3Newindex);
-  lua_setfield(L, -2, "__newindex");
-  luaPushcfunction2(L, lVec3Add);
-  lua_setfield(L, -2, "__add");
-  luaPushcfunction2(L, lVec3Sub);
-  lua_setfield(L, -2, "__sub");
-  luaPushcfunction2(L, lVec3Mul);
-  lua_setfield(L, -2, "__mul");
-  luaPushcfunction2(L, lVec3Div);
-  lua_setfield(L, -2, "__div");
-  luaPushcfunction2(L, lVec3Tostring);
-  lua_setfield(L, -2, "__tostring");
-  luaPushcfunction2(L, lVec3Copy);
-  lua_setfield(L, -2, "copy");
-  luaPushcfunction2(L, lVec3Length);
-  lua_setfield(L, -2, "length");
-  luaPushcfunction2(L, lVec3Normalize);
-  lua_setfield(L, -2, "normalize");
-  luaPushcfunction2(L, lVec3Dot);
-  lua_setfield(L, -2, "dot");
-  luaPushcfunction2(L, lVec3Cross);
-  lua_setfield(L, -2, "cross");
-  luaPushcfunction2(L, lVec3Lerp);
-  lua_setfield(L, -2, "lerp");
-  luaPushcfunction2(L, lVec3Reflect);
-  lua_setfield(L, -2, "reflect");
-  lua_pop(L, 1);
-
-  pushSnNamed(L, "Vec3");
-  luaPushcfunction2(L, lVec3New);
-  lua_setfield(L, -2, "new");
-  lua_pop(L, 1);
-}
-
-// -----------------
-// Color
-// -----------------
-static int lColorNew(lua_State *L) {
-  int n = lua_gettop(L);
-  if (n == 0) {
-    udNewOwned<Color>(L, Color(0.0f));
-    return 1;
-  }
-  if (n == 1) {
-    float v = static_cast<float>(luaL_checknumber(L, 1));
-    udNewOwned<Color>(L, Color(v));
-    return 1;
-  }
-  if (n == 2) {
-    float v = static_cast<float>(luaL_checknumber(L, 1));
-    float a = static_cast<float>(luaL_checknumber(L, 2));
-    udNewOwned<Color>(L, Color(v, a));
-    return 1;
-  }
-  float r = static_cast<float>(luaL_checknumber(L, 1));
-  float g = static_cast<float>(luaL_checknumber(L, 2));
-  float b = static_cast<float>(luaL_checknumber(L, 3));
-  float a = static_cast<float>(luaL_optnumber(L, 4, 1.0));
-  udNewOwned<Color>(L, Color(r, g, b, a));
-  return 1;
-}
-static int lColorIndex(lua_State *L) {
-  auto &c = udValue<Color>(L, 1);
-  const char *k = luaL_checkstring(L, 2);
-  if (std::strcmp(k, "r") == 0) {
-    lua_pushnumber(L, c.r);
-    return 1;
-  }
-  if (std::strcmp(k, "g") == 0) {
-    lua_pushnumber(L, c.g);
-    return 1;
-  }
-  if (std::strcmp(k, "b") == 0) {
-    lua_pushnumber(L, c.b);
-    return 1;
-  }
-  if (std::strcmp(k, "a") == 0) {
-    lua_pushnumber(L, c.a);
-    return 1;
-  }
-  luaL_getmetatable(L, Color::metaTableName());
-  lua_pushvalue(L, 2);
-  lua_rawget(L, -2);
-  return 1;
-}
-static int lColorNewindex(lua_State *L) {
-  auto &c = udValue<Color>(L, 1);
-  const char *k = luaL_checkstring(L, 2);
-  float value = static_cast<float>(luaL_checknumber(L, 3));
-  if (std::strcmp(k, "r") == 0) {
-    c.r = value;
-    return 0;
-  }
-  if (std::strcmp(k, "g") == 0) {
-    c.g = value;
-    return 0;
-  }
-  if (std::strcmp(k, "b") == 0) {
-    c.b = value;
-    return 0;
-  }
-  if (std::strcmp(k, "a") == 0) {
-    c.a = value;
-    return 0;
-  }
-  return luaLError2(L, "sn.Color: invalid field '%s'", k);
-}
-static int lColorTostring(lua_State *L) {
-  auto &c = udValue<Color>(L, 1);
-  String s = colorStr(c);
-  lua_pushlstring(L, s.data(), s.size());
-  return 1;
-}
-static void registerColor(lua_State *L) {
-  luaL_newmetatable(L, Color::metaTableName());
-  luaPushcfunction2(L, udGc<Color>);
-  lua_setfield(L, -2, "__gc");
-  luaPushcfunction2(L, lColorIndex);
-  lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lColorNewindex);
-  lua_setfield(L, -2, "__newindex");
-  luaPushcfunction2(L, lColorTostring);
-  lua_setfield(L, -2, "__tostring");
-  lua_pop(L, 1);
-
-  pushSnNamed(L, "Color");
-  luaPushcfunction2(L, lColorNew);
-  lua_setfield(L, -2, "new");
-  lua_pop(L, 1);
-}
 
 static int lRayIndex(lua_State *L) {
   auto &r = udValue<Ray>(L, 1);
@@ -1394,75 +862,6 @@ static void registerRect(lua_State *L) {
 }
 
 // -----------------
-// Transform
-// -----------------
-static int lTransformNew(lua_State *L) {
-  udNewOwned<Transform>(L, Transform());
-  return 1;
-}
-static int lTransformIndex(lua_State *L) {
-  auto &t = udValue<Transform>(L, 1);
-  const char *k = luaL_checkstring(L, 2);
-  if (std::strcmp(k, "position") == 0) {
-    udNewRef<Vec3>(L, &t.position);
-    return 1;
-  }
-  if (std::strcmp(k, "rotation") == 0) {
-    udNewRef<Vec3>(L, &t.rotation);
-    return 1;
-  }
-  if (std::strcmp(k, "scale") == 0) {
-    udNewRef<Vec3>(L, &t.scale);
-    return 1;
-  }
-  luaL_getmetatable(L, Transform::metaTableName());
-  lua_pushvalue(L, 2);
-  lua_rawget(L, -2);
-  return 1;
-}
-static int lTransformNewindex(lua_State *L) {
-  auto &t = udValue<Transform>(L, 1);
-  const char *k = luaL_checkstring(L, 2);
-  auto &v = udValue<Vec3>(L, 3);
-  if (std::strcmp(k, "position") == 0) {
-    t.position = v;
-    return 0;
-  }
-  if (std::strcmp(k, "rotation") == 0) {
-    t.rotation = v;
-    return 0;
-  }
-  if (std::strcmp(k, "scale") == 0) {
-    t.scale = v;
-    return 0;
-  }
-  return luaLError2(L, "sn.Transform: invalid field '%s'", k);
-}
-static int lTransformTostring(lua_State *L) {
-  auto &t = udValue<Transform>(L, 1);
-  String s = transformStr(t);
-  lua_pushlstring(L, s.data(), s.size());
-  return 1;
-}
-static void registerTransform(lua_State *L) {
-  luaL_newmetatable(L, Transform::metaTableName());
-  luaPushcfunction2(L, udGc<Transform>);
-  lua_setfield(L, -2, "__gc");
-  luaPushcfunction2(L, lTransformIndex);
-  lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lTransformNewindex);
-  lua_setfield(L, -2, "__newindex");
-  luaPushcfunction2(L, lTransformTostring);
-  lua_setfield(L, -2, "__tostring");
-  lua_pop(L, 1);
-
-  pushSnNamed(L, "Transform");
-  luaPushcfunction2(L, lTransformNew);
-  lua_setfield(L, -2, "new");
-  lua_pop(L, 1);
-}
-
-// -----------------
 // Font (Ptr)
 // -----------------
 static int lFontNew(lua_State *L) {
@@ -1570,7 +969,7 @@ static int lTextureSize(lua_State *L) {
 }
 static int lTextureTostring(lua_State *L) {
   auto &tex = udPtr<Texture>(L, 1);
-  String s = textureStr(*tex);
+  String s = tex->tableString();
   lua_pushlstring(L, s.data(), s.size());
   return 1;
 }
@@ -3043,6 +2442,47 @@ static int lImport(lua_State *L) {
   }
   return nret;
 }
+void registerVec2(lua_State *L);
+void registerVec3(lua_State *);
+void registerColor(lua_State* L);
+// void registerAABB(L);
+// void registerRay(L);
+// void registerTimer(L);
+// void registerCollider(L);
+// void registerCamera(L);
+// void registerCamera2D(L);
+// void registerBuffer(L);
+// void registerPivot(L);
+// void registerRect(L);
+void registerTransform(lua_State *L);
+// void registerGrid(L);
+// void registerBFSGrid(L);
+// void registerFont(L);
+// void registerTexture(L);
+// void registerRenderTexture(L);
+// void registerSound(L);
+// void registerShader(L);
+// void registerPipeline(L);
+// void registerModel(L);
+// void registerTextureKey(L);
+// void registerArguments(L);
+// void registerRandom(L);
+// void registerWindow(L);
+// void registerPhysics(L);
+// void registerShaderStage(L);
+// void registerBuiltinShader(L);
+// void registerBuiltinPipeline(L);
+// void registerEvent(L);
+// void registerGraphics(L);
+// void registerMouse(L);
+// void registerKeyboard(L);
+// void registerGamepad(L);
+// void registerFilesystem(lua_State *);
+// void registerScript(lua_State *);
+// void registerLog(lua_State *);
+// void registerImGui(lua_State *);
+// void registerPeriodic(lua_State *);
+// void registerTime(lua_State *);
 
 static void registerAll(lua_State *L) {
 

@@ -9,6 +9,7 @@ public:
   Transform() : position(0.0f), rotation(0.0f), scale(1.0f) {}
   ~Transform() = default;
   static constexpr const char *metaTableName() { return "sn.Transform"; }
+  String tableString() const;
   [[nodiscard]] Mat4 getWorldMatrix() const;
 
   void setPosition(Vec3 position) { this->position = position; }

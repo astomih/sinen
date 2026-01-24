@@ -1,6 +1,7 @@
 #ifndef SINEN_TEXTURE_HPP
 #define SINEN_TEXTURE_HPP
 #include <core/buffer/buffer.hpp>
+#include <core/data/string.hpp>
 #include <graphics/rhi/rhi.hpp>
 #include <math/color/color.hpp>
 #include <math/vector.hpp>
@@ -20,6 +21,7 @@ public:
   Texture(int width, int height);
 
   static constexpr const char *metaTableName() { return "sn.Texture"; }
+  String tableString() const;
   /**
    * @brief Destroy the texture object
    *

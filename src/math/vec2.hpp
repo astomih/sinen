@@ -1,6 +1,7 @@
 #ifndef SINEN_VEC2_HPP
 #define SINEN_VEC2_HPP
 #include "math.hpp"
+#include <core/data/string.hpp>
 namespace sinen {
 class Vec2 {
 public:
@@ -20,6 +21,7 @@ public:
   constexpr Vec2(float inX, float inY) : x(inX), y(inY) {}
 
   static constexpr const char *metaTableName() { return "sn.Vec2"; }
+  String tableString() const;
 
   // Vector addition (a + b)
   friend Vec2 operator+(const Vec2 &a, const Vec2 &b) {

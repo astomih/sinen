@@ -1,5 +1,6 @@
 #ifndef SINEN_COLOR_HPP
 #define SINEN_COLOR_HPP
+#include <core/data/string.hpp>
 namespace sinen {
 /**
  * @brief Color class
@@ -34,6 +35,7 @@ public:
   Color() = default;
 
   static constexpr const char *metaTableName() { return "sn.Color"; }
+  String tableString() const;
 
   // red value 0.0 - 1.0
   float r;

@@ -1,34 +1,36 @@
----@class gui_manager
+---@class GUIManager
 ---@field drawables any
 ---@field index number
----@field add fun(self: gui_manager, drawable: any)
----@field update fun(self: gui_manager)
----@field draw fun(self: gui_manager)
----@return gui_manager
-local function gui_manager()
-    local object = {
-        drawables = {},
-        index = 1,
-        ---@param self gui_manager
-        ---@param drawable any
-        add = function(self, drawable)
-            self.drawables[self.index] = drawable
-            self.index = self.index + 1
-        end,
-        ---@param self gui_manager
-        update = function(self)
-            self.index = 1
-        end,
-        ---@param self gui_manager
-        draw = function(self)
-            for i = 1, self.index - 1 do
-                if self.drawables[i] ~= nil then
-                    self.drawables[i].draw()
-                end
-            end
+---@field add fun(self: GUIManager, drawable: any)
+---@field update fun(self: GUIManager)
+---@field draw fun(self: GUIManager)
+local GUIManager = {}
+
+GUIManager.__index = GUIManager
+
+GUIManager.new = function()
+    local self = setmetatable({}, GUIManager)
+    self.drawables = {}
+    self.index = 1
+    return self
+end
+---@param self GUIManager
+---@param drawable any
+GUIManager.add = function(self, drawable)
+    self.drawables[self.index] = drawable
+    self.index = self.index + 1
+end
+---@param self GUIManager
+GUIManager.update = function(self)
+    self.index = 1
+end
+---@param self GUIManager
+GUIManager.draw = function(self)
+    for i = 1, self.index - 1 do
+        if self.drawables[i] ~= nil then
+            self.drawables[i].draw()
         end
-    }
-    return object
+    end
 end
 
-return gui_manager
+return GUIManager

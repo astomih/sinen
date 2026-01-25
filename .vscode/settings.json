@@ -8,6 +8,7 @@
   "C_Cpp.codeAnalysis.clangTidy.enabled": true,
   "Lua.diagnostics.disable": [
     "lowercase-global",
-    "duplicate-doc-field"
+    "duplicate-doc-field",
+    "duplicate-set-field"
   ],
 }

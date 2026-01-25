@@ -4,7 +4,7 @@ end
 
 local scene_io = require("scene_io")
 local button = require("gui/button").new()
-GUI_MANAGER = require("gui/gui_manager")()
+GUI_MANAGER = require("gui/gui_manager").new()
 
 local FONT = sn.Font.new()
 FONT:load(18)

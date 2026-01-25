@@ -1,4 +1,3 @@
----@diagnostic disable: duplicate-type
 ---@class Button
 ---@field font sn.Font
 ---@field bg_color sn.Color

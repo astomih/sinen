@@ -19,6 +19,39 @@ using namespace sinen;
 
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
+#include <iostream>
+
+void *mallocCustom(size_t size) {
+  Size *m = (Size *)GlobalAllocator::get()->allocate(size + sizeof(Size));
+  std::cout << "malloc: " << m << std::endl;
+  *m = size + sizeof(Size);
+  void *mem = m + 1;
+  return mem;
+}
+void *callocCustom(size_t nmemb, size_t size) {
+  Size *m =
+      (Size *)GlobalAllocator::get()->allocate(size * nmemb + sizeof(Size));
+  std::cout << "calloc: " << m << std::endl;
+  SDL_memset(m, 0, size * nmemb);
+  *m = size * nmemb + sizeof(Size);
+  void *mem = m + 1;
+  return mem;
+}
+
+void *reallocCustom(void *src, size_t size) {
+  Size *m = (Size *)GlobalAllocator::get()->allocate(size + sizeof(Size));
+  *m = size + sizeof(Size);
+  void *mem = m + 1;
+  SDL_memcpy(mem, src, *((Size *)(src)-1));
+  return mem;
+}
+
+void freeCustom(void *mem) {
+  Size *m = (Size *)mem;
+  m = m - 1;
+  std::cout << "free: " << m << std::endl;
+  GlobalAllocator::get()->deallocate((void *)m, *m);
+}
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
   Arguments::argc = argc;

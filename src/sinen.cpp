@@ -19,41 +19,100 @@ using namespace sinen;
 
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
-#include <iostream>
 
-void *mallocCustom(size_t size) {
-  Size *m = (Size *)GlobalAllocator::get()->allocate(size + sizeof(Size));
-  std::cout << "malloc: " << m << std::endl;
-  *m = size + sizeof(Size);
-  void *mem = m + 1;
-  return mem;
-}
-void *callocCustom(size_t nmemb, size_t size) {
-  Size *m =
-      (Size *)GlobalAllocator::get()->allocate(size * nmemb + sizeof(Size));
-  std::cout << "calloc: " << m << std::endl;
-  SDL_memset(m, 0, size * nmemb);
-  *m = size * nmemb + sizeof(Size);
-  void *mem = m + 1;
-  return mem;
+static inline bool addOverflowSize(size_t a, size_t b, size_t *out) {
+  if (a > SIZE_MAX - b)
+    return true;
+  *out = a + b;
+  return false;
 }
 
-void *reallocCustom(void *src, size_t size) {
-  Size *m = (Size *)GlobalAllocator::get()->allocate(size + sizeof(Size));
-  *m = size + sizeof(Size);
-  void *mem = m + 1;
-  SDL_memcpy(mem, src, *((Size *)(src)-1));
-  return mem;
+static inline bool mulOverflowSize(size_t a, size_t b, size_t *out) {
+  if (a != 0 && b > SIZE_MAX / a)
+    return true;
+  *out = a * b;
+  return false;
 }
 
-void freeCustom(void *mem) {
-  Size *m = (Size *)mem;
-  m = m - 1;
-  std::cout << "free: " << m << std::endl;
-  GlobalAllocator::get()->deallocate((void *)m, *m);
+static void *mallocCustom(size_t size) {
+  size_t totalSize;
+  if (addOverflowSize(size, sizeof(Size), &totalSize))
+    return nullptr;
+
+  auto *m = static_cast<Size *>(GlobalAllocator::get()->allocate(totalSize));
+  if (!m)
+    return nullptr;
+
+  *m = totalSize;
+  return static_cast<void *>(m + 1);
+}
+
+static void *callocCustom(size_t nmemb, size_t size) {
+  size_t payload;
+  if (mulOverflowSize(nmemb, size, &payload))
+    return nullptr;
+
+  size_t totalSize;
+  if (addOverflowSize(payload, sizeof(Size), &totalSize))
+    return nullptr;
+
+  auto *m = static_cast<Size *>(GlobalAllocator::get()->allocate(totalSize));
+  if (!m)
+    return nullptr;
+
+  SDL_memset(m, 0, totalSize);
+  *m = totalSize;
+  return static_cast<void *>(m + 1);
+}
+
+static void freeCustom(void *mem);
+static void *reallocCustom(void *src, size_t size) {
+  if (!src)
+    return mallocCustom(size);
+
+  if (size == 0) {
+    freeCustom(src);
+    return nullptr;
+  }
+
+  // Get old header
+  auto *oldHeader = static_cast<Size *>(src) - 1;
+  size_t oldTotal = *oldHeader;
+  size_t oldPayload =
+      (oldTotal >= sizeof(Size)) ? (oldTotal - sizeof(Size)) : 0;
+
+  size_t newTotal;
+  if (addOverflowSize(size, sizeof(Size), &newTotal))
+    return nullptr;
+
+  auto *newHeader =
+      static_cast<Size *>(GlobalAllocator::get()->allocate(newTotal));
+  if (!newHeader) {
+    return nullptr;
+  }
+
+  *newHeader = newTotal;
+  void *dst = static_cast<void *>(newHeader + 1);
+
+  size_t copyBytes = std::min(oldPayload, size);
+  if (copyBytes > 0)
+    SDL_memcpy(dst, src, copyBytes);
+
+  GlobalAllocator::get()->deallocate(static_cast<void *>(oldHeader), oldTotal);
+
+  return dst;
+}
+
+static void freeCustom(void *mem) {
+  if (!mem)
+    return;
+
+  auto *m = static_cast<Size *>(mem) - 1;
+  GlobalAllocator::get()->deallocate(static_cast<void *>(m), *m);
 }
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
+  SDL_SetMemoryFunctions(mallocCustom, callocCustom, reallocCustom, freeCustom);
   Arguments::argc = argc;
   Arguments ::argv.resize(argc);
   for (int i = 0; i < argc; i++) {

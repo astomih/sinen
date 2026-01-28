@@ -19,7 +19,7 @@ public:
 
   void load(StringView fileName) override {
     auto path = AssetIO::getFilePath(fileName);
-    ma_sound_init_from_file(Audio::getEngine(), path.c_str(),
+    ma_sound_init_from_file((ma_engine *)Audio::getEngine(), path.c_str(),
                             MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC, nullptr,
                             nullptr, &sound);
   }
@@ -31,7 +31,7 @@ public:
     if (r != MA_SUCCESS) {
       return;
     }
-    ma_sound_init_from_data_source(Audio::getEngine(), &decoder,
+    ma_sound_init_from_data_source((ma_engine *)Audio::getEngine(), &decoder,
                                    MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC,
                                    nullptr, &sound);
   }

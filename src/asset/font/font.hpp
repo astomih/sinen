@@ -5,9 +5,6 @@
 #include <math/geometry/mesh.hpp>
 #include <math/geometry/rect.hpp>
 
-#include <future>
-#include <stb_truetype.h>
-
 namespace sinen {
 /**
  * @brief font load and render to texture.
@@ -15,36 +12,23 @@ namespace sinen {
  */
 class Font {
 public:
-  Font();
-  Font(int32_t point, StringView file_name);
-  ~Font();
+  static Ptr<Font> create();
+  static Ptr<Font> create(int32_t point, StringView file_name);
+  virtual ~Font() = default;
 
   static constexpr const char *metaTableName() { return "sn.Font"; }
 
-  bool load(int point_size);
-  bool load(int pointSize, StringView path);
-  bool load(int pointSize, const Buffer &buffer);
-  bool isLoaded() { return m_size != 0; }
-  void unload();
-  int size() const { return m_size; }
-  void resize(int point_size);
-
-  Rect region(StringView text, int fontSize, const Pivot &pivot,
-              const Vec2 &vec);
-
-  Texture getAtlas() const;
-  Mesh getTextMesh(StringView text) const;
-
-private:
-  Array<Array<stbtt_packedchar>> packedChar;
-  stbtt_fontinfo fontInfo;
-  Texture texture;
-  uint32_t sheetSize;
-  std::future<bool> future;
-  Array<unsigned char> atlasBitmap;
-  String data;
-  bool loaded = false;
-  int m_size;
+  virtual bool load(int point_size) = 0;
+  virtual bool load(int pointSize, StringView path) = 0;
+  virtual bool load(int pointSize, const Buffer &buffer) = 0;
+  virtual bool isLoaded() = 0;
+  virtual void unload() = 0;
+  virtual int size() const = 0;
+  virtual void resize(int point_size) = 0;
+  virtual Rect region(StringView text, int fontSize, const Pivot &pivot,
+                      const Vec2 &vec) = 0;
+  virtual Texture getAtlas() const = 0;
+  virtual Mesh getTextMesh(StringView text) const = 0;
 };
 } // namespace sinen
 #endif // !SINEN_FONT_HPP

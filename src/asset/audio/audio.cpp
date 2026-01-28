@@ -12,6 +12,8 @@
 #include <miniaudio.h>
 
 namespace sinen {
+static ma_engine engine;
+static ma_resource_manager resouceManager;
 bool Audio::initialize() {
 
   auto resourceManagerConfig = ma_resource_manager_config_init();
@@ -19,7 +21,7 @@ bool Audio::initialize() {
   resourceManagerConfig.decodedChannels = 2;
   resourceManagerConfig.decodedSampleRate = 48000;
 
-  if (ma_resource_manager_init(&resourceManagerConfig, &data.resouceManager) !=
+  if (ma_resource_manager_init(&resourceManagerConfig, &resouceManager) !=
       MA_SUCCESS) {
     return false;
   }
@@ -27,8 +29,8 @@ bool Audio::initialize() {
   engineConfig.noDevice = MA_TRUE;
   engineConfig.channels = 2;
   engineConfig.sampleRate = 48000;
-  engineConfig.pResourceManager = &data.resouceManager;
-  if (ma_engine_init(&engineConfig, &data.engine) != MA_SUCCESS) {
+  engineConfig.pResourceManager = &resouceManager;
+  if (ma_engine_init(&engineConfig, &engine) != MA_SUCCESS) {
     return false;
   }
   auto dataCallBack = [](void *userdata, SDL_AudioStream *stream,
@@ -39,8 +41,8 @@ bool Audio::initialize() {
         ma_uint32 bufferSizeInFrames =
             static_cast<ma_uint32>(additional_amount) /
             ma_get_bytes_per_frame(ma_format_f32,
-                                   ma_engine_get_channels(&data.engine));
-        ma_engine_read_pcm_frames(&data.engine, pBuffer, bufferSizeInFrames,
+                                   ma_engine_get_channels(&engine));
+        ma_engine_read_pcm_frames(&engine, pBuffer, bufferSizeInFrames,
                                   nullptr);
 
         SDL_PutAudioStreamData(stream, pBuffer, additional_amount);
@@ -49,9 +51,9 @@ bool Audio::initialize() {
     }
   };
   SDL_AudioSpec spec{};
-  spec.freq = ma_engine_get_sample_rate(&data.engine);
+  spec.freq = ma_engine_get_sample_rate(&engine);
   spec.format = SDL_AUDIO_F32LE;
-  spec.channels = ma_engine_get_channels(&data.engine);
+  spec.channels = ma_engine_get_channels(&engine);
   SDL_AudioStream *stream = SDL_OpenAudioDeviceStream(
       SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, dataCallBack, nullptr);
   if (!stream) {
@@ -64,7 +66,9 @@ bool Audio::initialize() {
 }
 
 void Audio::shutdown() {
-  ma_engine_uninit(&data.engine);
-  ma_resource_manager_uninit(&data.resouceManager);
+  ma_engine_uninit(&engine);
+  ma_resource_manager_uninit(&resouceManager);
 }
+
+void *Audio::getEngine() { return (void *)&engine; }
 } // namespace sinen

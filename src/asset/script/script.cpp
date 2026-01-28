@@ -754,65 +754,6 @@ static void registerRect(lua_State *L) {
 }
 
 // -----------------
-// Font (Ptr)
-// -----------------
-static int lFontNew(lua_State *L) {
-  udPushPtr<Font>(L, makePtr<Font>());
-  return 1;
-}
-static int lFontLoad(lua_State *L) {
-  auto &font = udPtr<Font>(L, 1);
-  int n = lua_gettop(L);
-  int point = static_cast<int>(luaL_checkinteger(L, 2));
-  if (n == 2) {
-    lua_pushboolean(L, font->load(point));
-    return 1;
-  }
-  if (lua_isstring(L, 3)) {
-    const char *path = luaL_checkstring(L, 3);
-    lua_pushboolean(L, font->load(point, StringView(path)));
-    return 1;
-  }
-  auto &buf = udValue<Buffer>(L, 3);
-  lua_pushboolean(L, font->load(point, buf));
-  return 1;
-}
-static int lFontResize(lua_State *L) {
-  auto &font = udPtr<Font>(L, 1);
-  int point = static_cast<int>(luaL_checkinteger(L, 2));
-  font->resize(point);
-  return 0;
-}
-static int lFontRegion(lua_State *L) {
-  auto &font = udPtr<Font>(L, 1);
-  const char *text = luaL_checkstring(L, 2);
-  int fontSize = static_cast<int>(luaL_checkinteger(L, 3));
-  Pivot pivot = static_cast<Pivot>(luaL_checkinteger(L, 4));
-  auto &vec = udValue<Vec2>(L, 5);
-  udNewOwned<Rect>(L, font->region(StringView(text), fontSize, pivot, vec));
-  return 1;
-}
-static void registerFont(lua_State *L) {
-  luaL_newmetatable(L, Font::metaTableName());
-  luaPushcfunction2(L, udPtrGc<Font>);
-  lua_setfield(L, -2, "__gc");
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lFontLoad);
-  lua_setfield(L, -2, "load");
-  luaPushcfunction2(L, lFontResize);
-  lua_setfield(L, -2, "resize");
-  luaPushcfunction2(L, lFontRegion);
-  lua_setfield(L, -2, "region");
-  lua_pop(L, 1);
-
-  pushSnNamed(L, "Font");
-  luaPushcfunction2(L, lFontNew);
-  lua_setfield(L, -2, "new");
-  lua_pop(L, 1);
-}
-
-// -----------------
 // Texture / Model (Ptr)
 // -----------------
 static int lTextureNew(lua_State *L) {
@@ -2224,7 +2165,7 @@ void registerRay(lua_State *);
 void registerTransform(lua_State *);
 // void registerGrid(L);
 // void registerBFSGrid(L);
-// void registerFont(L);
+void registerFont(lua_State *);
 // void registerTexture(L);
 // void registerRenderTexture(L);
 void registerSound(lua_State *);

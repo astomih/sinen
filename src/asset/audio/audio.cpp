@@ -4,7 +4,6 @@
 #include <math/quaternion.hpp>
 #include <platform/io/asset_io.hpp>
 
-
 // external
 #include <SDL3/SDL.h>
 #if 0

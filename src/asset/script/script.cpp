@@ -1036,131 +1036,6 @@ static void registerRenderTexture(lua_State *L) {
   lua_pop(L, 1);
 }
 
-static int lSoundNew(lua_State *L) {
-  udPushPtr<Sound>(L, makePtr<Sound>());
-  return 1;
-}
-static int lSoundLoad(lua_State *L) {
-  auto &s = udPtr<Sound>(L, 1);
-  if (lua_isstring(L, 2)) {
-    const char *path = luaL_checkstring(L, 2);
-    s->load(StringView(path));
-    return 0;
-  }
-  auto &buf = udValue<Buffer>(L, 2);
-  s->load(buf);
-  return 0;
-}
-static int lSoundPlay(lua_State *L) {
-  udPtr<Sound>(L, 1)->play();
-  return 0;
-}
-static int lSoundRestart(lua_State *L) {
-  udPtr<Sound>(L, 1)->restart();
-  return 0;
-}
-static int lSoundStop(lua_State *L) {
-  udPtr<Sound>(L, 1)->stop();
-  return 0;
-}
-static int lSoundSetLooping(lua_State *L) {
-  auto &s = udPtr<Sound>(L, 1);
-  bool looping = lua_toboolean(L, 2) != 0;
-  s->setLooping(looping);
-  return 0;
-}
-static int lSoundSetVolume(lua_State *L) {
-  auto &s = udPtr<Sound>(L, 1);
-  float v = static_cast<float>(luaL_checknumber(L, 2));
-  s->setVolume(v);
-  return 0;
-}
-static int lSoundSetPitch(lua_State *L) {
-  auto &s = udPtr<Sound>(L, 1);
-  float v = static_cast<float>(luaL_checknumber(L, 2));
-  s->setPitch(v);
-  return 0;
-}
-static int lSoundSetPosition(lua_State *L) {
-  auto &s = udPtr<Sound>(L, 1);
-  auto &p = udValue<Vec3>(L, 2);
-  s->setPosition(p);
-  return 0;
-}
-static int lSoundSetDirection(lua_State *L) {
-  auto &s = udPtr<Sound>(L, 1);
-  auto &d = udValue<Vec3>(L, 2);
-  s->setDirection(d);
-  return 0;
-}
-static int lSoundIsPlaying(lua_State *L) {
-  lua_pushboolean(L, udPtr<Sound>(L, 1)->isPlaying());
-  return 1;
-}
-static int lSoundIsLooping(lua_State *L) {
-  lua_pushboolean(L, udPtr<Sound>(L, 1)->isLooping());
-  return 1;
-}
-static int lSoundGetVolume(lua_State *L) {
-  lua_pushnumber(L, udPtr<Sound>(L, 1)->getVolume());
-  return 1;
-}
-static int lSoundGetPitch(lua_State *L) {
-  lua_pushnumber(L, udPtr<Sound>(L, 1)->getPitch());
-  return 1;
-}
-static int lSoundGetPosition(lua_State *L) {
-  udNewOwned<Vec3>(L, udPtr<Sound>(L, 1)->getPosition());
-  return 1;
-}
-static int lSoundGetDirection(lua_State *L) {
-  udNewOwned<Vec3>(L, udPtr<Sound>(L, 1)->getDirection());
-  return 1;
-}
-static void registerSound(lua_State *L) {
-  luaL_newmetatable(L, Sound::metaTableName());
-  luaPushcfunction2(L, udPtrGc<Sound>);
-  lua_setfield(L, -2, "__gc");
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lSoundLoad);
-  lua_setfield(L, -2, "load");
-  luaPushcfunction2(L, lSoundPlay);
-  lua_setfield(L, -2, "play");
-  luaPushcfunction2(L, lSoundRestart);
-  lua_setfield(L, -2, "restart");
-  luaPushcfunction2(L, lSoundStop);
-  lua_setfield(L, -2, "stop");
-  luaPushcfunction2(L, lSoundSetLooping);
-  lua_setfield(L, -2, "setLooping");
-  luaPushcfunction2(L, lSoundSetVolume);
-  lua_setfield(L, -2, "setVolume");
-  luaPushcfunction2(L, lSoundSetPitch);
-  lua_setfield(L, -2, "setPitch");
-  luaPushcfunction2(L, lSoundSetPosition);
-  lua_setfield(L, -2, "setPosition");
-  luaPushcfunction2(L, lSoundSetDirection);
-  lua_setfield(L, -2, "setDirection");
-  luaPushcfunction2(L, lSoundIsPlaying);
-  lua_setfield(L, -2, "isPlaying");
-  luaPushcfunction2(L, lSoundIsLooping);
-  lua_setfield(L, -2, "isLooping");
-  luaPushcfunction2(L, lSoundGetVolume);
-  lua_setfield(L, -2, "getVolume");
-  luaPushcfunction2(L, lSoundGetPitch);
-  lua_setfield(L, -2, "getPitch");
-  luaPushcfunction2(L, lSoundGetPosition);
-  lua_setfield(L, -2, "getPosition");
-  luaPushcfunction2(L, lSoundGetDirection);
-  lua_setfield(L, -2, "getDirection");
-  lua_pop(L, 1);
-
-  pushSnNamed(L, "Sound");
-  luaPushcfunction2(L, lSoundNew);
-  lua_setfield(L, -2, "new");
-  lua_pop(L, 1);
-}
-
 static int lShaderNew(lua_State *L) {
   udPushPtr<Shader>(L, makePtr<Shader>());
   return 1;
@@ -2346,13 +2221,13 @@ void registerRay(lua_State *);
 // void registerBuffer(L);
 // void registerPivot(L);
 // void registerRect(L);
-void registerTransform(lua_State *L);
+void registerTransform(lua_State *);
 // void registerGrid(L);
 // void registerBFSGrid(L);
 // void registerFont(L);
 // void registerTexture(L);
 // void registerRenderTexture(L);
-// void registerSound(L);
+void registerSound(lua_State *);
 // void registerShader(L);
 // void registerPipeline(L);
 // void registerModel(L);

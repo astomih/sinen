@@ -1,4 +1,4 @@
 CompileFlags:
   CompilationDatabase: build/msvc2026-debug
   Add:
-    - "/std:c++latest"
+    - -std:c++latest

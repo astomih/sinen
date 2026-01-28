@@ -2,19 +2,16 @@
 #define SINEN_CAMERA_HPP
 
 #include <math/geometry/bbox.hpp>
+#include <math/geometry/ray.hpp>
 #include <math/matrix.hpp>
 #include <math/vector.hpp>
+
 
 namespace sinen {
 struct Frustum {
   Vec4 planes[6]; // x, y, z, w: ax + by + cz + d = 0
 };
 
-struct Ray {
-  static constexpr const char *metaTableName() { return "sn.Ray"; }
-  Vec3 origin;
-  Vec3 direction;
-};
 /**
  * @brief Camera class
  *

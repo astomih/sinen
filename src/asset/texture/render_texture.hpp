@@ -1,6 +1,6 @@
 #ifndef SINEN_RENDER_TEXTURE_HPP
 #define SINEN_RENDER_TEXTURE_HPP
-#include <graphics/rhi/rhi.hpp>
+#include <gpu/gpu.hpp>
 namespace sinen {
 class RenderTexture {
 public:
@@ -13,12 +13,12 @@ public:
   int width;
   int height;
 
-  Ptr<rhi::Texture> getTexture() const;
-  Ptr<rhi::Texture> getDepthStencil() const;
+  Ptr<gpu::Texture> getTexture() const;
+  Ptr<gpu::Texture> getDepthStencil() const;
 
 private:
-  Ptr<rhi::Texture> texture;
-  Ptr<rhi::Texture> depthStencil;
+  Ptr<gpu::Texture> texture;
+  Ptr<gpu::Texture> depthStencil;
 };
 } // namespace sinen
 #endif // SINEN_RENDER_TEXTURE_HPP

@@ -5,7 +5,7 @@
 #include <cstddef>
 namespace sinen {
 
-static rhi::VertexInputState
+static gpu::VertexInputState
 createVertexInputState(Allocator *allocator, std::bitset<32> featureFlags);
 void GraphicsPipeline::setVertexShader(const Shader &shader) {
   this->vertexShader = shader;
@@ -29,154 +29,154 @@ void GraphicsPipeline::build() {
   auto *allocator = GlobalAllocator::get();
   auto device = Graphics::getDevice();
 
-  rhi::GraphicsPipeline::CreateInfo pipelineInfo{allocator};
+  gpu::GraphicsPipeline::CreateInfo pipelineInfo{allocator};
   pipelineInfo.vertexShader = this->vertexShader.getRaw();
   pipelineInfo.fragmentShader = this->fragmentShader.getRaw();
   pipelineInfo.vertexInputState =
       createVertexInputState(allocator, featureFlags);
-  pipelineInfo.primitiveType = rhi::PrimitiveType::TriangleList;
+  pipelineInfo.primitiveType = gpu::PrimitiveType::TriangleList;
 
-  rhi::RasterizerState rasterizerState{};
-  rasterizerState.fillMode = rhi::FillMode::Fill;
-  rasterizerState.cullMode = rhi::CullMode::None;
-  rasterizerState.frontFace = rhi::FrontFace::CounterClockwise;
+  gpu::RasterizerState rasterizerState{};
+  rasterizerState.fillMode = gpu::FillMode::Fill;
+  rasterizerState.cullMode = gpu::CullMode::None;
+  rasterizerState.frontFace = gpu::FrontFace::CounterClockwise;
 
   pipelineInfo.rasterizerState = rasterizerState;
   pipelineInfo.multiSampleState = {};
-  pipelineInfo.multiSampleState.sampleCount = rhi::SampleCount::x1;
+  pipelineInfo.multiSampleState.sampleCount = gpu::SampleCount::x1;
   bool enableDepthTest =
       featureFlags.test(GraphicsPipeline::FeatureFlag::DepthTest);
   pipelineInfo.depthStencilState.enableDepthTest = enableDepthTest;
   pipelineInfo.depthStencilState.enableDepthWrite = enableDepthTest;
   pipelineInfo.depthStencilState.enableStencilTest = false;
-  pipelineInfo.depthStencilState.compareOp = rhi::CompareOp::LessOrEqual;
+  pipelineInfo.depthStencilState.compareOp = gpu::CompareOp::LessOrEqual;
 
   pipelineInfo.targetInfo.colorTargetDescriptions.emplace_back(
-      rhi::ColorTargetDescription{
+      gpu::ColorTargetDescription{
           .format = device->getSwapchainFormat(),
           .blendState =
-              rhi::ColorTargetBlendState{
-                  .srcColorBlendFactor = rhi::BlendFactor::SrcAlpha,
-                  .dstColorBlendFactor = rhi::BlendFactor::OneMinusSrcAlpha,
-                  .colorBlendOp = rhi::BlendOp::Add,
-                  .srcAlphaBlendFactor = rhi::BlendFactor::One,
-                  .dstAlphaBlendFactor = rhi::BlendFactor::OneMinusSrcAlpha,
-                  .alphaBlendOp = rhi::BlendOp::Add,
+              gpu::ColorTargetBlendState{
+                  .srcColorBlendFactor = gpu::BlendFactor::SrcAlpha,
+                  .dstColorBlendFactor = gpu::BlendFactor::OneMinusSrcAlpha,
+                  .colorBlendOp = gpu::BlendOp::Add,
+                  .srcAlphaBlendFactor = gpu::BlendFactor::One,
+                  .dstAlphaBlendFactor = gpu::BlendFactor::OneMinusSrcAlpha,
+                  .alphaBlendOp = gpu::BlendOp::Add,
                   .colorWriteMask =
-                      rhi::ColorComponent::R | rhi::ColorComponent::G |
-                      rhi::ColorComponent::B | rhi::ColorComponent::A,
+                      gpu::ColorComponent::R | gpu::ColorComponent::G |
+                      gpu::ColorComponent::B | gpu::ColorComponent::A,
                   .enableBlend = true,
               },
       });
   pipelineInfo.targetInfo.hasDepthStencilTarget = enableDepthTest;
   pipelineInfo.targetInfo.depthStencilTargetFormat =
-      rhi::TextureFormat::D32_FLOAT_S8_UINT;
+      gpu::TextureFormat::D32_FLOAT_S8_UINT;
   this->pipeline = device->createGraphicsPipeline(pipelineInfo);
 }
 
-rhi::VertexInputState createVertexInputState(Allocator *allocator,
+gpu::VertexInputState createVertexInputState(Allocator *allocator,
                                              std::bitset<32> featureFlags) {
   bool isInstance = featureFlags.test(GraphicsPipeline::FeatureFlag::Instanced);
   bool isAnimation =
       featureFlags.test(GraphicsPipeline::FeatureFlag::Animation);
   bool isTangent = featureFlags.test(GraphicsPipeline::FeatureFlag::Tangent);
-  rhi::VertexInputState vertexInputState{allocator};
+  gpu::VertexInputState vertexInputState{allocator};
   uint32_t location = 0;
   uint32_t bufferSlot = 0;
   vertexInputState.vertexBufferDescriptions.emplace_back(
-      rhi::VertexBufferDescription{
+      gpu::VertexBufferDescription{
           .slot = bufferSlot,
           .pitch = sizeof(Vertex),
-          .inputRate = rhi::VertexInputRate::Vertex,
+          .inputRate = gpu::VertexInputRate::Vertex,
           .instanceStepRate = 0,
       });
   vertexInputState.vertexAttributes.emplace_back(
-      rhi::VertexAttribute{.location = location++,
+      gpu::VertexAttribute{.location = location++,
                            .bufferSlot = bufferSlot,
-                           .format = rhi::VertexElementFormat::Float3,
+                           .format = gpu::VertexElementFormat::Float3,
                            .offset = offsetof(Vertex, position)});
   vertexInputState.vertexAttributes.emplace_back(
-      rhi::VertexAttribute{.location = location++,
+      gpu::VertexAttribute{.location = location++,
                            .bufferSlot = bufferSlot,
-                           .format = rhi::VertexElementFormat::Float3,
+                           .format = gpu::VertexElementFormat::Float3,
                            .offset = offsetof(Vertex, normal)});
   vertexInputState.vertexAttributes.emplace_back(
-      rhi::VertexAttribute{.location = location++,
+      gpu::VertexAttribute{.location = location++,
                            .bufferSlot = bufferSlot,
-                           .format = rhi::VertexElementFormat::Float2,
+                           .format = gpu::VertexElementFormat::Float2,
                            .offset = offsetof(Vertex, uv)});
   vertexInputState.vertexAttributes.emplace_back(
-      rhi::VertexAttribute{.location = location++,
+      gpu::VertexAttribute{.location = location++,
                            .bufferSlot = bufferSlot,
-                           .format = rhi::VertexElementFormat::Float4,
+                           .format = gpu::VertexElementFormat::Float4,
                            .offset = offsetof(Vertex, color)});
   if (isInstance) {
     bufferSlot++;
     vertexInputState.vertexBufferDescriptions.emplace_back(
-        rhi::VertexBufferDescription{
+        gpu::VertexBufferDescription{
             .slot = bufferSlot,
             .pitch = sizeof(Mat4),
-            .inputRate = rhi::VertexInputRate::Instance,
+            .inputRate = gpu::VertexInputRate::Instance,
             .instanceStepRate = 0,
         });
     uint32_t offset = 0;
     vertexInputState.vertexAttributes.emplace_back(
-        rhi::VertexAttribute{.location = location++,
+        gpu::VertexAttribute{.location = location++,
                              .bufferSlot = bufferSlot,
-                             .format = rhi::VertexElementFormat::Float4,
+                             .format = gpu::VertexElementFormat::Float4,
                              .offset = offset});
     offset += sizeof(float) * 4;
     vertexInputState.vertexAttributes.emplace_back(
-        rhi::VertexAttribute{.location = location++,
+        gpu::VertexAttribute{.location = location++,
                              .bufferSlot = bufferSlot,
-                             .format = rhi::VertexElementFormat::Float4,
+                             .format = gpu::VertexElementFormat::Float4,
                              .offset = offset});
     offset += sizeof(float) * 4;
     vertexInputState.vertexAttributes.emplace_back(
-        rhi::VertexAttribute{.location = location++,
+        gpu::VertexAttribute{.location = location++,
                              .bufferSlot = bufferSlot,
-                             .format = rhi::VertexElementFormat::Float4,
+                             .format = gpu::VertexElementFormat::Float4,
                              .offset = offset});
     offset += sizeof(float) * 4;
     vertexInputState.vertexAttributes.emplace_back(
-        rhi::VertexAttribute{.location = location++,
+        gpu::VertexAttribute{.location = location++,
                              .bufferSlot = bufferSlot,
-                             .format = rhi::VertexElementFormat::Float4,
+                             .format = gpu::VertexElementFormat::Float4,
                              .offset = offset});
   }
   if (isAnimation) {
     bufferSlot++;
     vertexInputState.vertexBufferDescriptions.emplace_back(
-        rhi::VertexBufferDescription{
+        gpu::VertexBufferDescription{
             .slot = bufferSlot,
             .pitch = sizeof(SkinnedVertex),
-            .inputRate = rhi::VertexInputRate::Vertex,
+            .inputRate = gpu::VertexInputRate::Vertex,
             .instanceStepRate = 0,
         });
     vertexInputState.vertexAttributes.emplace_back(
-        rhi::VertexAttribute{.location = location++,
+        gpu::VertexAttribute{.location = location++,
                              .bufferSlot = bufferSlot,
-                             .format = rhi::VertexElementFormat::Float4,
+                             .format = gpu::VertexElementFormat::Float4,
                              .offset = offsetof(SkinnedVertex, boneIDs)});
     vertexInputState.vertexAttributes.emplace_back(
-        rhi::VertexAttribute{.location = location++,
+        gpu::VertexAttribute{.location = location++,
                              .bufferSlot = bufferSlot,
-                             .format = rhi::VertexElementFormat::Float4,
+                             .format = gpu::VertexElementFormat::Float4,
                              .offset = offsetof(SkinnedVertex, boneWeights)});
   }
   if (isTangent) {
     bufferSlot++;
     vertexInputState.vertexBufferDescriptions.emplace_back(
-        rhi::VertexBufferDescription{
+        gpu::VertexBufferDescription{
             .slot = bufferSlot,
             .pitch = sizeof(Vec4),
-            .inputRate = rhi::VertexInputRate::Vertex,
+            .inputRate = gpu::VertexInputRate::Vertex,
             .instanceStepRate = 0,
         });
     vertexInputState.vertexAttributes.emplace_back(
-        rhi::VertexAttribute{.location = location++,
+        gpu::VertexAttribute{.location = location++,
                              .bufferSlot = bufferSlot,
-                             .format = rhi::VertexElementFormat::Float4,
+                             .format = gpu::VertexElementFormat::Float4,
                              .offset = 0});
   }
   return vertexInputState;

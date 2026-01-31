@@ -7,7 +7,7 @@
 #include <asset/texture/texture.hpp>
 #include <core/data/array.hpp>
 #include <graphics/graphics.hpp>
-#include <graphics/rhi/rhi.hpp>
+#include <gpu/gpu.hpp>
 #include <math/color/color.hpp>
 #include <math/geometry/mesh.hpp>
 #include <math/math.hpp>
@@ -123,7 +123,7 @@ public:
           this->future.wait();
           this->texture.loadFromMemory(this->atlasBitmap.data(),
                                        this->sheetSize, this->sheetSize,
-                                       rhi::TextureFormat::R8G8B8A8_UNORM, 4);
+                                       gpu::TextureFormat::R8G8B8A8_UNORM, 4);
           this->loaded = true;
         }
       }
@@ -146,7 +146,7 @@ public:
           this->future.wait();
           this->texture.loadFromMemory(this->atlasBitmap.data(),
                                        this->sheetSize, this->sheetSize,
-                                       rhi::TextureFormat::R8G8B8A8_UNORM, 4);
+                                       gpu::TextureFormat::R8G8B8A8_UNORM, 4);
           this->loaded = true;
         }
       }
@@ -169,7 +169,7 @@ public:
           this->future.wait();
           this->texture.loadFromMemory(this->atlasBitmap.data(),
                                        this->sheetSize, this->sheetSize,
-                                       rhi::TextureFormat::R8G8B8A8_UNORM, 4);
+                                       gpu::TextureFormat::R8G8B8A8_UNORM, 4);
           this->loaded = true;
         }
       }

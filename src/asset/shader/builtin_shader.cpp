@@ -20,13 +20,13 @@ bool BuiltinShader::initialize() {
     auto *allocator = GlobalAllocator::get();
     auto device = Graphics::getDevice();
 
-    rhi::Shader::CreateInfo vsInfo{};
+    gpu::Shader::CreateInfo vsInfo{};
     vsInfo.allocator = allocator;
     vsInfo.size = shader_vert_spv_len;
     vsInfo.data = shader_vert_spv;
     vsInfo.entrypoint = "main";
-    vsInfo.format = rhi::ShaderFormat::SPIRV;
-    vsInfo.stage = rhi::ShaderStage::Vertex;
+    vsInfo.format = gpu::ShaderFormat::SPIRV;
+    vsInfo.stage = gpu::ShaderStage::Vertex;
     vsInfo.numSamplers = 0;
     vsInfo.numStorageBuffers = 0;
     vsInfo.numStorageTextures = 0;
@@ -37,13 +37,13 @@ bool BuiltinShader::initialize() {
     auto *allocator = GlobalAllocator::get();
     auto device = Graphics::getDevice();
 
-    rhi::Shader::CreateInfo vsInfo{};
+    gpu::Shader::CreateInfo vsInfo{};
     vsInfo.allocator = allocator;
     vsInfo.size = shader_instance_vert_spv_len;
     vsInfo.data = shader_instance_vert_spv;
     vsInfo.entrypoint = "main";
-    vsInfo.format = rhi::ShaderFormat::SPIRV;
-    vsInfo.stage = rhi::ShaderStage::Vertex;
+    vsInfo.format = gpu::ShaderFormat::SPIRV;
+    vsInfo.stage = gpu::ShaderStage::Vertex;
     vsInfo.numSamplers = 0;
     vsInfo.numStorageBuffers = 0;
     vsInfo.numStorageTextures = 0;
@@ -54,13 +54,13 @@ bool BuiltinShader::initialize() {
     auto *allocator = GlobalAllocator::get();
     auto device = Graphics::getDevice();
 
-    rhi::Shader::CreateInfo fsInfo{};
+    gpu::Shader::CreateInfo fsInfo{};
     fsInfo.allocator = allocator;
     fsInfo.size = shader_frag_spv_len;
     fsInfo.data = shader_frag_spv;
     fsInfo.entrypoint = "main";
-    fsInfo.format = rhi::ShaderFormat::SPIRV;
-    fsInfo.stage = rhi::ShaderStage::Fragment;
+    fsInfo.format = gpu::ShaderFormat::SPIRV;
+    fsInfo.stage = gpu::ShaderStage::Fragment;
     fsInfo.numSamplers = 1; // one sampler for fragment shader
     fsInfo.numStorageBuffers = 0;
     fsInfo.numStorageTextures = 0;
@@ -71,13 +71,13 @@ bool BuiltinShader::initialize() {
     auto *allocator = GlobalAllocator::get();
     auto device = Graphics::getDevice();
 
-    rhi::Shader::CreateInfo vsInfo{};
+    gpu::Shader::CreateInfo vsInfo{};
     vsInfo.allocator = allocator;
     vsInfo.size = cubemap_vert_spv_len;
     vsInfo.data = cubemap_vert_spv;
     vsInfo.entrypoint = "main";
-    vsInfo.format = rhi::ShaderFormat::SPIRV;
-    vsInfo.stage = rhi::ShaderStage::Vertex;
+    vsInfo.format = gpu::ShaderFormat::SPIRV;
+    vsInfo.stage = gpu::ShaderStage::Vertex;
     vsInfo.numSamplers = 0;
     vsInfo.numStorageBuffers = 0;
     vsInfo.numStorageTextures = 0;
@@ -88,13 +88,13 @@ bool BuiltinShader::initialize() {
     auto *allocator = GlobalAllocator::get();
     auto device = Graphics::getDevice();
 
-    rhi::Shader::CreateInfo fsInfo{};
+    gpu::Shader::CreateInfo fsInfo{};
     fsInfo.allocator = allocator;
     fsInfo.size = cubemap_frag_spv_len;
     fsInfo.data = cubemap_frag_spv;
     fsInfo.entrypoint = "main";
-    fsInfo.format = rhi::ShaderFormat::SPIRV;
-    fsInfo.stage = rhi::ShaderStage::Fragment;
+    fsInfo.format = gpu::ShaderFormat::SPIRV;
+    fsInfo.stage = gpu::ShaderStage::Fragment;
     fsInfo.numSamplers = 1; // one sampler for fragment shader
     fsInfo.numStorageBuffers = 0;
     fsInfo.numStorageTextures = 0;

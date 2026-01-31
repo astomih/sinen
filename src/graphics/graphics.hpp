@@ -71,10 +71,10 @@ public:
   static Model box;
   static Model sprite;
 
-  static Ptr<rhi::Device> getDevice();
+  static Ptr<gpu::Device> getDevice();
 
 private:
-  static void beginRenderPass(bool depthEnabled, rhi::LoadOp loadOp);
+  static void beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp);
   static void prepareRenderPassFrame();
   static void setupShapes();
 };

@@ -6,7 +6,7 @@
 #include <core/buffer/buffer.hpp>
 #include <core/data/hashmap.hpp>
 #include <core/data/ptr.hpp>
-#include <graphics/rhi/rhi.hpp>
+#include <gpu/gpu.hpp>
 #include <math/geometry/bbox.hpp>
 #include <math/geometry/mesh.hpp>
 
@@ -53,10 +53,10 @@ public:
 
   Mesh getMesh() const { return mesh; }
 
-  Ptr<rhi::Buffer> vertexBuffer;
-  Ptr<rhi::Buffer> tangentBuffer;
-  Ptr<rhi::Buffer> animationVertexBuffer;
-  Ptr<rhi::Buffer> indexBuffer;
+  Ptr<gpu::Buffer> vertexBuffer;
+  Ptr<gpu::Buffer> tangentBuffer;
+  Ptr<gpu::Buffer> animationVertexBuffer;
+  Ptr<gpu::Buffer> indexBuffer;
 
   struct BoneInfo {
     Mat4 offsetMatrix;

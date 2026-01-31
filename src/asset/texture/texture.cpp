@@ -8,20 +8,20 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include <graphics/rhi/rhi.hpp>
+#include <gpu/gpu.hpp>
 
 namespace sinen {
-static Ptr<rhi::Texture> createNativeTexture(void *pPixels,
-                                             rhi::TextureFormat textureFormat,
+static Ptr<gpu::Texture> createNativeTexture(void *pPixels,
+                                             gpu::TextureFormat textureFormat,
                                              uint32_t width, uint32_t height,
                                              int channels);
-static void updateNativeTexture(Ptr<rhi::Texture> texture, void *pPixels,
+static void updateNativeTexture(Ptr<gpu::Texture> texture, void *pPixels,
                                 int channels);
 Texture::Texture() { this->texture = nullptr; }
 Texture::Texture(int width, int height) {
   Array<uint8_t> pixels(width * height * 4, 0);
   this->texture = createNativeTexture(
-      pixels.data(), rhi::TextureFormat::R8G8B8A8_UNORM, width, height, 4);
+      pixels.data(), gpu::TextureFormat::R8G8B8A8_UNORM, width, height, 4);
 }
 Texture::~Texture() {}
 
@@ -36,7 +36,7 @@ bool Texture::load(StringView fileName) {
   pixels = stbi_load_from_memory(reinterpret_cast<unsigned char *>(str.data()),
                                  str.size(), &width, &height, &bpp, 4);
 
-  texture = createNativeTexture(pixels, rhi::TextureFormat::R8G8B8A8_UNORM,
+  texture = createNativeTexture(pixels, gpu::TextureFormat::R8G8B8A8_UNORM,
                                 width, height, 4);
   return true;
 }
@@ -48,7 +48,7 @@ bool Texture::load(const Buffer &buffer) {
   auto *pixels =
       stbi_load_from_memory(reinterpret_cast<unsigned char *>(buffer.data()),
                             buffer.size(), &width, &height, &bpp, 4);
-  texture = createNativeTexture(pixels, rhi::TextureFormat::R8G8B8A8_UNORM,
+  texture = createNativeTexture(pixels, gpu::TextureFormat::R8G8B8A8_UNORM,
                                 width, height, 4);
   return true;
 }
@@ -63,12 +63,12 @@ bool Texture::loadFromMemory(Array<char> &buffer) {
                             buffer.size(), &width, &height, &bpp, 4);
 
   this->texture = createNativeTexture(
-      pixels, rhi::TextureFormat::R8G8B8A8_UNORM, width, height, 4);
+      pixels, gpu::TextureFormat::R8G8B8A8_UNORM, width, height, 4);
   return true;
 }
 
 bool Texture::loadFromMemory(void *pPixels, uint32_t width, uint32_t height,
-                             rhi::TextureFormat format, int channels) {
+                             gpu::TextureFormat format, int channels) {
   texture = createNativeTexture(pPixels, format, width, height, channels);
   return true;
 }
@@ -93,7 +93,7 @@ void Texture::fill(const Color &color) {
     pixels[2] = color.b * 255;
     pixels[3] = color.a * 255;
     texture = createNativeTexture(pixels.data(),
-                                  rhi::TextureFormat::R8G8B8A8_UNORM, 1, 1, 4);
+                                  gpu::TextureFormat::R8G8B8A8_UNORM, 1, 1, 4);
   }
 }
 
@@ -108,32 +108,32 @@ Vec2 Texture::size() {
   return Vec2(static_cast<float>(desc.width), static_cast<float>(desc.height));
 }
 
-static void writeTexture(Ptr<rhi::Texture> texture, void *pPixels,
+static void writeTexture(Ptr<gpu::Texture> texture, void *pPixels,
                          int channels) {
   auto allocator = GlobalAllocator::get();
   auto device = Graphics::getDevice();
   uint32_t width = texture->getCreateInfo().width,
            height = texture->getCreateInfo().height;
-  Ptr<rhi::TransferBuffer> transferBuffer;
+  Ptr<gpu::TransferBuffer> transferBuffer;
   {
-    rhi::TransferBuffer::CreateInfo info{};
+    gpu::TransferBuffer::CreateInfo info{};
     info.allocator = allocator;
     info.size = width * height * channels;
-    info.usage = rhi::TransferBufferUsage::Upload;
+    info.usage = gpu::TransferBufferUsage::Upload;
     transferBuffer = device->createTransferBuffer(info);
     auto *pMapped = transferBuffer->map(true);
     memcpy(pMapped, pPixels, info.size);
     transferBuffer->unmap();
   }
   {
-    rhi::CommandBuffer::CreateInfo info{};
+    gpu::CommandBuffer::CreateInfo info{};
     info.allocator = allocator;
     auto commandBuffer = device->acquireCommandBuffer(info);
     auto copyPass = commandBuffer->beginCopyPass();
-    rhi::TextureTransferInfo src{};
+    gpu::TextureTransferInfo src{};
     src.offset = 0;
     src.transferBuffer = transferBuffer;
-    rhi::TextureRegion dst{};
+    gpu::TextureRegion dst{};
     dst.x = 0;
     dst.y = 0;
     dst.width = width;
@@ -146,31 +146,31 @@ static void writeTexture(Ptr<rhi::Texture> texture, void *pPixels,
   }
   device->waitForGpuIdle();
 }
-Ptr<rhi::Texture> createNativeTexture(void *pPixels,
-                                      rhi::TextureFormat textureFormat,
+Ptr<gpu::Texture> createNativeTexture(void *pPixels,
+                                      gpu::TextureFormat textureFormat,
                                       uint32_t width, uint32_t height,
                                       int channels) {
   auto allocator = GlobalAllocator::get();
   auto device = Graphics::getDevice();
 
-  Ptr<rhi::Texture> texture;
+  Ptr<gpu::Texture> texture;
   {
-    rhi::Texture::CreateInfo info{};
+    gpu::Texture::CreateInfo info{};
     info.allocator = allocator;
     info.width = width;
     info.height = height;
     info.layerCountOrDepth = 1;
     info.format = textureFormat;
-    info.usage = rhi::TextureUsage::Sampler;
+    info.usage = gpu::TextureUsage::Sampler;
     info.numLevels = 1;
-    info.sampleCount = rhi::SampleCount::x1;
-    info.type = rhi::TextureType::Texture2D;
+    info.sampleCount = gpu::SampleCount::x1;
+    info.type = gpu::TextureType::Texture2D;
     texture = device->createTexture(info);
   }
   writeTexture(texture, pPixels, channels);
   return texture;
 }
-void updateNativeTexture(Ptr<rhi::Texture> texture, void *pPixels,
+void updateNativeTexture(Ptr<gpu::Texture> texture, void *pPixels,
                          int channels) {
   writeTexture(texture, pPixels, channels);
 }

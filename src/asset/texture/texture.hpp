@@ -2,7 +2,7 @@
 #define SINEN_TEXTURE_HPP
 #include <core/buffer/buffer.hpp>
 #include <core/data/string.hpp>
-#include <graphics/rhi/rhi.hpp>
+#include <gpu/gpu.hpp>
 #include <math/color/color.hpp>
 #include <math/vector.hpp>
 
@@ -48,7 +48,7 @@ public:
    */
   bool loadFromMemory(Array<char> &buffer);
   bool loadFromMemory(void *pPixels, uint32_t width, uint32_t height,
-                      rhi::TextureFormat format, int channels);
+                      gpu::TextureFormat format, int channels);
   /**
    * @brief Copy texture from another texture
    *
@@ -60,7 +60,7 @@ public:
 
   Vec2 size();
 
-  Ptr<rhi::Texture> texture;
+  Ptr<gpu::Texture> texture;
 };
 } // namespace sinen
 #endif // !SINEN_TEXTURE_HPP

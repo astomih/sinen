@@ -12,7 +12,7 @@
 #include <asset/script/script.hpp>
 #include <asset/shader/builtin_shader.hpp>
 #include <graphics/builtin_pipeline.hpp>
-#include <graphics/rhi/rhi.hpp>
+#include <gpu/gpu.hpp>
 #include <platform/window/window.hpp>
 
 #include <SDL3/SDL.h>
@@ -28,25 +28,25 @@ static Camera2D camera2D;
 static bool showImGui = false;
 static std::list<std::function<void()>> imguiFunctions;
 static std::list<std::function<void()>> preDrawFuncs;
-static Ptr<rhi::Backend> backend;
-static Ptr<rhi::Device> device;
-static Ptr<rhi::Texture> depthTexture;
-static Ptr<rhi::Sampler> sampler;
+static Ptr<gpu::Backend> backend;
+static Ptr<gpu::Device> device;
+static Ptr<gpu::Texture> depthTexture;
+static Ptr<gpu::Sampler> sampler;
 static std::optional<GraphicsPipeline> currentPipeline;
 static std::optional<GraphicsPipeline> customPipeline;
-static Ptr<rhi::CommandBuffer> mainCommandBuffer;
-static Ptr<rhi::CommandBuffer> currentCommandBuffer;
-static Ptr<rhi::RenderPass> currentRenderPass;
+static Ptr<gpu::CommandBuffer> mainCommandBuffer;
+static Ptr<gpu::CommandBuffer> currentCommandBuffer;
+static Ptr<gpu::RenderPass> currentRenderPass;
 static bool isFrameStarted = true;
 static bool isPrevDepthEnabled = true;
 static bool isChangedRenderTarget = false;
 static uint32_t drawCallCountPerFrame = 0;
-static Array<rhi::ColorTargetInfo> colorTargets = Array<rhi::ColorTargetInfo>();
-static rhi::DepthStencilTargetInfo depthStencilInfo;
-static Array<rhi::ColorTargetInfo> currentColorTargets;
-static rhi::DepthStencilTargetInfo currentDepthStencilInfo;
-static Hashmap<UInt32, rhi::TextureSamplerBinding> currentTextureBindings;
-void setFullWindowViewport(const Ptr<rhi::RenderPass> &renderPass) {
+static Array<gpu::ColorTargetInfo> colorTargets = Array<gpu::ColorTargetInfo>();
+static gpu::DepthStencilTargetInfo depthStencilInfo;
+static Array<gpu::ColorTargetInfo> currentColorTargets;
+static gpu::DepthStencilTargetInfo currentDepthStencilInfo;
+static Hashmap<UInt32, gpu::TextureSamplerBinding> currentTextureBindings;
+void setFullWindowViewport(const Ptr<gpu::RenderPass> &renderPass) {
   Rect rect;
   // SDL_Rect safeArea;
   // SDL_GetWindowSafeArea(WindowSystem::get_sdl_window(), &safeArea);
@@ -55,7 +55,7 @@ void setFullWindowViewport(const Ptr<rhi::RenderPass> &renderPass) {
   rect.width = Window::size().x;
   rect.height = Window::size().y;
 
-  rhi::Viewport viewport{};
+  gpu::Viewport viewport{};
   viewport.x = rect.x;
   viewport.y = rect.y;
   viewport.width = rect.width;
@@ -77,10 +77,10 @@ bool Graphics::initialize() {
     return c;
   }();
   backend =
-      rhi::RHI::createBackend(GlobalAllocator::get(), rhi::GraphicsAPI::SDLGPU);
+      gpu::RHI::createBackend(GlobalAllocator::get(), gpu::GraphicsAPI::SDLGPU);
   if (!backend)
     return false;
-  rhi::Device::CreateInfo info{};
+  gpu::Device::CreateInfo info{};
   info.allocator = GlobalAllocator::get();
   info.debugMode = true;
   device = backend->createDevice(info);
@@ -108,7 +108,7 @@ bool Graphics::initialize() {
   initInfo.Allocator = GlobalAllocator::get();
   initInfo.Device = device;
   initInfo.ColorTargetFormat = device->getSwapchainFormat();
-  initInfo.MSAASamples = rhi::SampleCount::x1;
+  initInfo.MSAASamples = gpu::SampleCount::x1;
   imGuiImplParanoixaInit(&initInfo);
 
   BuiltinShader::initialize();
@@ -116,28 +116,28 @@ bool Graphics::initialize() {
 
   // Create depth stencil target
   {
-    rhi::Texture::CreateInfo depthStencilCreateInfo{};
+    gpu::Texture::CreateInfo depthStencilCreateInfo{};
     depthStencilCreateInfo.allocator = GlobalAllocator::get();
     depthStencilCreateInfo.width = static_cast<uint32_t>(Window::size().x);
     depthStencilCreateInfo.height = static_cast<uint32_t>(Window::size().y);
     depthStencilCreateInfo.layerCountOrDepth = 1;
-    depthStencilCreateInfo.type = rhi::TextureType::Texture2D;
-    depthStencilCreateInfo.usage = rhi::TextureUsage::DepthStencilTarget;
-    depthStencilCreateInfo.format = rhi::TextureFormat::D32_FLOAT_S8_UINT;
+    depthStencilCreateInfo.type = gpu::TextureType::Texture2D;
+    depthStencilCreateInfo.usage = gpu::TextureUsage::DepthStencilTarget;
+    depthStencilCreateInfo.format = gpu::TextureFormat::D32_FLOAT_S8_UINT;
     depthStencilCreateInfo.numLevels = 1;
-    depthStencilCreateInfo.sampleCount = rhi::SampleCount::x1;
+    depthStencilCreateInfo.sampleCount = gpu::SampleCount::x1;
     depthTexture = device->createTexture(depthStencilCreateInfo);
     if (!depthTexture)
       return false;
   }
 
   // Default sampler
-  rhi::Sampler::CreateInfo samplerInfo{};
+  gpu::Sampler::CreateInfo samplerInfo{};
   samplerInfo.allocator = GlobalAllocator::get();
-  samplerInfo.minFilter = rhi::Filter::Linear;
-  samplerInfo.magFilter = rhi::Filter::Linear;
-  samplerInfo.addressModeU = rhi::AddressMode::Repeat;
-  samplerInfo.addressModeV = rhi::AddressMode::Repeat;
+  samplerInfo.minFilter = gpu::Filter::Linear;
+  samplerInfo.magFilter = gpu::Filter::Linear;
+  samplerInfo.addressModeU = gpu::AddressMode::Repeat;
+  samplerInfo.addressModeV = gpu::AddressMode::Repeat;
   samplerInfo.maxAnisotropy = 1.f;
   sampler = device->createSampler(samplerInfo);
   if (!sampler)
@@ -145,13 +145,13 @@ bool Graphics::initialize() {
 
   colorTargets.push_back({});
   depthStencilInfo.texture = depthTexture;
-  depthStencilInfo.loadOp = rhi::LoadOp::Clear;
-  depthStencilInfo.storeOp = rhi::StoreOp::Store;
+  depthStencilInfo.loadOp = gpu::LoadOp::Clear;
+  depthStencilInfo.storeOp = gpu::StoreOp::Store;
   depthStencilInfo.clearDepth = 1.0f;
   depthStencilInfo.clearStencil = 0;
   depthStencilInfo.cycle = false;
-  depthStencilInfo.stencilLoadOp = rhi::LoadOp::Clear;
-  depthStencilInfo.stencilStoreOp = rhi::StoreOp::Store;
+  depthStencilInfo.stencilLoadOp = gpu::LoadOp::Clear;
+  depthStencilInfo.stencilStoreOp = gpu::StoreOp::Store;
   setupShapes();
   return true;
 }
@@ -180,16 +180,16 @@ void Graphics::render() {
   colorTargets[0].texture = swapchainTexture;
   currentColorTargets = colorTargets;
   if (Window::resized()) {
-    rhi::Texture::CreateInfo depthStencilCreateInfo{};
+    gpu::Texture::CreateInfo depthStencilCreateInfo{};
     depthStencilCreateInfo.allocator = GlobalAllocator::get();
     depthStencilCreateInfo.width = Window::size().x;
     depthStencilCreateInfo.height = Window::size().y;
     depthStencilCreateInfo.layerCountOrDepth = 1;
-    depthStencilCreateInfo.type = rhi::TextureType::Texture2D;
-    depthStencilCreateInfo.usage = rhi::TextureUsage::DepthStencilTarget;
-    depthStencilCreateInfo.format = rhi::TextureFormat::D32_FLOAT_S8_UINT;
+    depthStencilCreateInfo.type = gpu::TextureType::Texture2D;
+    depthStencilCreateInfo.usage = gpu::TextureUsage::DepthStencilTarget;
+    depthStencilCreateInfo.format = gpu::TextureFormat::D32_FLOAT_S8_UINT;
     depthStencilCreateInfo.numLevels = 1;
-    depthStencilCreateInfo.sampleCount = rhi::SampleCount::x1;
+    depthStencilCreateInfo.sampleCount = gpu::SampleCount::x1;
     depthTexture = device->createTexture(depthStencilCreateInfo);
     depthStencilInfo.texture = depthTexture;
   }
@@ -212,13 +212,13 @@ void Graphics::render() {
 
   if (drawCallCountPerFrame == 0) {
     // Clear screen
-    beginRenderPass(true, rhi::LoadOp::Clear);
+    beginRenderPass(true, gpu::LoadOp::Clear);
   }
   commandBuffer->endRenderPass(currentRenderPass);
 
   imGuiImplParanoixaPrepareDrawData(drawData, commandBuffer);
 
-  beginRenderPass(false, rhi::LoadOp::Load);
+  beginRenderPass(false, gpu::LoadOp::Load);
   // Render ImGui
   imGuiImplParanoixaRenderDrawData(drawData, commandBuffer, currentRenderPass);
   commandBuffer->endRenderPass(currentRenderPass);
@@ -228,9 +228,9 @@ void Graphics::render() {
 }
 void Graphics::drawBase2D(const sinen::Draw2D &draw2D) {
   assert(currentPipeline.has_value());
-  auto vertexBufferBindings = Array<rhi::BufferBinding>{};
-  auto indexBufferBinding = rhi::BufferBinding{};
-  auto textureSamplers = Array<rhi::TextureSamplerBinding>{};
+  auto vertexBufferBindings = Array<gpu::BufferBinding>{};
+  auto indexBufferBinding = gpu::BufferBinding{};
+  auto textureSamplers = Array<gpu::TextureSamplerBinding>{};
   auto ratio = camera2D.windowRatio();
   auto invRatio = camera2D.invWindowRatio();
   Mat4 mat[3];
@@ -268,9 +268,9 @@ void Graphics::drawBase2D(const sinen::Draw2D &draw2D) {
   assert(model.indexBuffer != nullptr);
 
   vertexBufferBindings.emplace_back(
-      rhi::BufferBinding{.buffer = model.vertexBuffer, .offset = 0});
+      gpu::BufferBinding{.buffer = model.vertexBuffer, .offset = 0});
   indexBufferBinding =
-      rhi::BufferBinding{.buffer = model.indexBuffer, .offset = 0};
+      gpu::BufferBinding{.buffer = model.indexBuffer, .offset = 0};
 
   auto commandBuffer = currentCommandBuffer;
   auto renderPass = currentRenderPass;
@@ -280,7 +280,7 @@ void Graphics::drawBase2D(const sinen::Draw2D &draw2D) {
   }
   renderPass->bindVertexBuffers(0, vertexBufferBindings);
   renderPass->bindIndexBuffer(indexBufferBinding,
-                              rhi::IndexElementSize::Uint32);
+                              gpu::IndexElementSize::Uint32);
 
   commandBuffer->pushUniformData(0, &mat, sizeof(Mat4) * 3);
   renderPass->drawIndexedPrimitives(model.getMesh().data()->indices.size(), 1,
@@ -290,8 +290,8 @@ void Graphics::drawBase2D(const sinen::Draw2D &draw2D) {
 
 void Graphics::drawBase3D(const sinen::Draw3D &draw3D) {
   assert(currentPipeline.has_value());
-  auto vertexBufferBindings = Array<rhi::BufferBinding>();
-  auto indexBufferBinding = rhi::BufferBinding{};
+  auto vertexBufferBindings = Array<gpu::BufferBinding>();
+  auto indexBufferBinding = gpu::BufferBinding{};
   Mat4 mat[3];
   Array<Mat4> instanceData;
   {
@@ -311,21 +311,21 @@ void Graphics::drawBase3D(const sinen::Draw3D &draw3D) {
 
   auto instanceSize = sizeof(Mat4) * instanceData.size();
   bool isInstance = instanceSize > 0;
-  Ptr<rhi::Buffer> instanceBuffer = nullptr;
+  Ptr<gpu::Buffer> instanceBuffer = nullptr;
   if (isInstance) {
     if (!currentPipeline.has_value())
       currentPipeline = BuiltinPipeline::getInstanced3D();
-    rhi::Buffer::CreateInfo instanceBufferInfo{};
+    gpu::Buffer::CreateInfo instanceBufferInfo{};
     instanceBufferInfo.allocator = GlobalAllocator::get();
     instanceBufferInfo.size = instanceSize;
-    instanceBufferInfo.usage = rhi::BufferUsage::Vertex;
+    instanceBufferInfo.usage = gpu::BufferUsage::Vertex;
     instanceBuffer = device->createBuffer(instanceBufferInfo);
-    Ptr<rhi::TransferBuffer> transferBuffer;
+    Ptr<gpu::TransferBuffer> transferBuffer;
     {
-      rhi::TransferBuffer::CreateInfo info{};
+      gpu::TransferBuffer::CreateInfo info{};
       info.allocator = GlobalAllocator::get();
       info.size = instanceSize;
-      info.usage = rhi::TransferBufferUsage::Upload;
+      info.usage = gpu::TransferBufferUsage::Upload;
       transferBuffer = device->createTransferBuffer(info);
       auto *pMapped = transferBuffer->map(false);
       if (pMapped) {
@@ -334,16 +334,16 @@ void Graphics::drawBase3D(const sinen::Draw3D &draw3D) {
       transferBuffer->unmap();
     }
     {
-      rhi::CommandBuffer::CreateInfo info{};
+      gpu::CommandBuffer::CreateInfo info{};
       info.allocator = GlobalAllocator::get();
       auto commandBuffer = device->acquireCommandBuffer(info);
       {
         auto copyPass = commandBuffer->beginCopyPass();
         {
-          rhi::BufferTransferInfo src{};
+          gpu::BufferTransferInfo src{};
           src.offset = 0;
           src.transferBuffer = transferBuffer;
-          rhi::BufferRegion dst{};
+          gpu::BufferRegion dst{};
           dst.offset = 0;
           dst.size = instanceSize;
           dst.buffer = instanceBuffer;
@@ -357,20 +357,20 @@ void Graphics::drawBase3D(const sinen::Draw3D &draw3D) {
 
   const auto &model = draw3D.getModel();
   vertexBufferBindings.emplace_back(
-      rhi::BufferBinding{.buffer = model.vertexBuffer, .offset = 0});
+      gpu::BufferBinding{.buffer = model.vertexBuffer, .offset = 0});
   indexBufferBinding =
-      rhi::BufferBinding{.buffer = model.indexBuffer, .offset = 0};
+      gpu::BufferBinding{.buffer = model.indexBuffer, .offset = 0};
   if (isInstance) {
     vertexBufferBindings.emplace_back(
-        rhi::BufferBinding{.buffer = instanceBuffer, .offset = 0});
+        gpu::BufferBinding{.buffer = instanceBuffer, .offset = 0});
   }
   if (auto animationVertexBuffer = model.animationVertexBuffer) {
     vertexBufferBindings.emplace_back(
-        rhi::BufferBinding{.buffer = animationVertexBuffer, .offset = 0});
+        gpu::BufferBinding{.buffer = animationVertexBuffer, .offset = 0});
   }
   if (model.tangentBuffer) {
     vertexBufferBindings.emplace_back(
-        rhi::BufferBinding{.buffer = model.tangentBuffer, .offset = 0});
+        gpu::BufferBinding{.buffer = model.tangentBuffer, .offset = 0});
   }
   auto commandBuffer = currentCommandBuffer;
   auto renderPass = currentRenderPass;
@@ -380,7 +380,7 @@ void Graphics::drawBase3D(const sinen::Draw3D &draw3D) {
   }
   renderPass->bindVertexBuffers(0, vertexBufferBindings);
   renderPass->bindIndexBuffer(indexBufferBinding,
-                              rhi::IndexElementSize::Uint32);
+                              gpu::IndexElementSize::Uint32);
 
   commandBuffer->pushUniformData(0, &mat, sizeof(Mat4) * 3);
   uint32_t numIndices = model.getMesh().data()->indices.size();
@@ -494,7 +494,7 @@ void Graphics::drawModelInstanced(const Model &model,
   Graphics::drawBase3D(draw3D);
 }
 
-void Graphics::beginRenderPass(bool depthEnabled, rhi::LoadOp loadOp) {
+void Graphics::beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp) {
   colorTargets[0].loadOp = loadOp;
   currentColorTargets = colorTargets;
 
@@ -536,9 +536,9 @@ void Graphics::prepareRenderPassFrame() {
     isChangedRenderTarget = false;
   }
 
-  const rhi::LoadOp loadOp = (isFrameStarted || !hasActivePass)
-                                 ? rhi::LoadOp::Clear
-                                 : rhi::LoadOp::Load;
+  const gpu::LoadOp loadOp = (isFrameStarted || !hasActivePass)
+                                 ? gpu::LoadOp::Clear
+                                 : gpu::LoadOp::Load;
 
   beginRenderPass(depthEnabled, loadOp);
 
@@ -562,7 +562,7 @@ void Graphics::setUniformBuffer(UInt32 slotIndex, const Buffer &buffer) {
 }
 void Graphics::setTexture(UInt32 slotIndex, const Texture &texture) {
   currentTextureBindings.insert_or_assign(
-      slotIndex, rhi::TextureSamplerBinding{.sampler = sampler,
+      slotIndex, gpu::TextureSamplerBinding{.sampler = sampler,
                                             .texture = texture.texture});
 }
 void Graphics::resetTexture(UInt32 slotIndex) {
@@ -578,13 +578,13 @@ void Graphics::setRenderTarget(const RenderTexture &texture) {
   isChangedRenderTarget = true;
   auto depthTex = texture.getDepthStencil();
   currentCommandBuffer = device->acquireCommandBuffer({GlobalAllocator::get()});
-  currentColorTargets[0].loadOp = rhi::LoadOp::Clear;
+  currentColorTargets[0].loadOp = gpu::LoadOp::Clear;
   currentColorTargets[0].texture = tex;
   currentDepthStencilInfo.texture = depthTex;
   currentRenderPass = currentCommandBuffer->beginRenderPass(
       currentColorTargets, currentDepthStencilInfo);
   currentRenderPass->setViewport(
-      rhi::Viewport{0, 0, (float)texture.width, (float)texture.height, 0, 1});
+      gpu::Viewport{0, 0, (float)texture.width, (float)texture.height, 0, 1});
   currentRenderPass->setScissor(0, 0, (float)texture.width,
                                 (float)texture.height);
 }
@@ -598,33 +598,33 @@ bool Graphics::readbackTexture(const RenderTexture &srcRenderTexture,
                                Texture &out) {
   auto tex = srcRenderTexture.getTexture();
   // Copy
-  rhi::TransferBuffer::CreateInfo info2{};
+  gpu::TransferBuffer::CreateInfo info2{};
   info2.allocator = GlobalAllocator::get();
   info2.size = srcRenderTexture.width * srcRenderTexture.height * 4;
-  info2.usage = rhi::TransferBufferUsage::Download;
+  info2.usage = gpu::TransferBufferUsage::Download;
   auto transferBuffer = device->createTransferBuffer(info2);
   {
-    rhi::CommandBuffer::CreateInfo info{};
+    gpu::CommandBuffer::CreateInfo info{};
     info.allocator = GlobalAllocator::get();
     auto commandBuffer = device->acquireCommandBuffer(info);
     {
       auto copyPass = commandBuffer->beginCopyPass();
       {
-        rhi::TextureRegion region{};
+        gpu::TextureRegion region{};
         region.width = srcRenderTexture.width;
         region.height = srcRenderTexture.height;
         region.depth = 1;
         region.texture = tex;
-        rhi::TextureTransferInfo dst{};
+        gpu::TextureTransferInfo dst{};
         dst.offset = 0;
         dst.transferBuffer = transferBuffer;
         copyPass->downloadTexture(region, dst);
       }
       {
-        rhi::TextureTransferInfo src{};
+        gpu::TextureTransferInfo src{};
         src.offset = 0;
         src.transferBuffer = transferBuffer;
-        rhi::TextureRegion region{};
+        gpu::TextureRegion region{};
         region.x = 0;
         region.y = 0;
         region.width = srcRenderTexture.width;
@@ -661,5 +661,5 @@ void Graphics::addPreDrawFunc(std::function<void()> f) {
 void Graphics::addImGuiFunction(std::function<void()> function) {
   imguiFunctions.push_back(function);
 }
-Ptr<rhi::Device> Graphics::getDevice() { return device; }
+Ptr<gpu::Device> Graphics::getDevice() { return device; }
 } // namespace sinen

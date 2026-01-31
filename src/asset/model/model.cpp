@@ -28,12 +28,12 @@
 #include <math/vector.hpp>
 
 namespace sinen {
-std::pair<Ptr<rhi::Buffer>, Ptr<rhi::Buffer>>
+std::pair<Ptr<gpu::Buffer>, Ptr<gpu::Buffer>>
 createVertexIndexBuffer(const Array<Vertex> &vertices,
                         const Array<uint32_t> &indices);
-Ptr<rhi::Buffer>
+Ptr<gpu::Buffer>
 createSkinnedVertexBuffer(const Array<SkinnedVertex> &vertices);
-Ptr<rhi::Buffer> createBuffer(size_t size, void *data, rhi::BufferUsage usage);
+Ptr<gpu::Buffer> createBuffer(size_t size, void *data, gpu::BufferUsage usage);
 
 enum class LoadState { Version, Vertex, Indices };
 Array<Vec3> getVector3sFromKey(const aiVectorKey *keys, uint32_t count) {
@@ -295,7 +295,7 @@ std::optional<Texture> loadTexture(aiScene *scene, aiMaterial *material,
     texture.loadFromMemory(buffer);
   } else {
     texture.loadFromMemory(aiTex->pcData, aiTex->mWidth, aiTex->mHeight,
-                           rhi::TextureFormat::R8G8B8A8_UNORM, 4);
+                           gpu::TextureFormat::R8G8B8A8_UNORM, 4);
   }
   return texture;
 }
@@ -353,15 +353,15 @@ void Model::load(StringView path) {
       createVertexIndexBuffer(mesh.data()->vertices, mesh.data()->indices);
   this->vertexBuffer =
       createBuffer(mesh.data()->vertices.size() * sizeof(Vertex),
-                   mesh.data()->vertices.data(), rhi::BufferUsage::Vertex);
+                   mesh.data()->vertices.data(), gpu::BufferUsage::Vertex);
   this->animationVertexBuffer =
       createSkinnedVertexBuffer(skeletalAnimation.skinnedVertices);
   this->tangentBuffer =
       createBuffer(mesh.data()->tangents.size() * sizeof(Vec4),
-                   mesh.data()->tangents.data(), rhi::BufferUsage::Vertex);
+                   mesh.data()->tangents.data(), gpu::BufferUsage::Vertex);
   this->indexBuffer =
       createBuffer(mesh.data()->indices.size() * sizeof(uint32_t),
-                   mesh.data()->indices.data(), rhi::BufferUsage::Index);
+                   mesh.data()->indices.data(), gpu::BufferUsage::Index);
 }
 void Model::load(const Buffer &buffer) {
   // Assimp
@@ -385,15 +385,15 @@ void Model::load(const Buffer &buffer) {
       createVertexIndexBuffer(mesh.data()->vertices, mesh.data()->indices);
   this->vertexBuffer =
       createBuffer(mesh.data()->vertices.size() * sizeof(Vertex),
-                   mesh.data()->vertices.data(), rhi::BufferUsage::Vertex);
+                   mesh.data()->vertices.data(), gpu::BufferUsage::Vertex);
   this->animationVertexBuffer =
       createSkinnedVertexBuffer(skeletalAnimation.skinnedVertices);
   this->tangentBuffer =
       createBuffer(mesh.data()->tangents.size() * sizeof(Vec4),
-                   mesh.data()->tangents.data(), rhi::BufferUsage::Vertex);
+                   mesh.data()->tangents.data(), gpu::BufferUsage::Vertex);
   this->indexBuffer =
       createBuffer(mesh.data()->indices.size() * sizeof(uint32_t),
-                   mesh.data()->indices.data(), rhi::BufferUsage::Index);
+                   mesh.data()->indices.data(), gpu::BufferUsage::Index);
 }
 
 void Model::loadFromVertexArray(const Mesh &m) {
@@ -419,38 +419,38 @@ void Model::loadBox() { *this = Graphics::box; }
 
 const AABB &Model::getAABB() const { return this->localAABB; }
 
-std::pair<Ptr<rhi::Buffer>, Ptr<rhi::Buffer>>
+std::pair<Ptr<gpu::Buffer>, Ptr<gpu::Buffer>>
 createVertexIndexBuffer(const Array<Vertex> &vertices,
                         const Array<uint32_t> &indices) {
   auto device = Graphics::getDevice();
   size_t vertexBufferSize = vertices.size() * sizeof(Vertex);
-  Ptr<rhi::Buffer> vertexBuffer, indexBuffer;
-  rhi::Buffer::CreateInfo vertexBufferInfo{};
+  Ptr<gpu::Buffer> vertexBuffer, indexBuffer;
+  gpu::Buffer::CreateInfo vertexBufferInfo{};
   vertexBufferInfo.allocator = GlobalAllocator::get();
   vertexBufferInfo.size = vertexBufferSize;
-  vertexBufferInfo.usage = rhi::BufferUsage::Vertex;
+  vertexBufferInfo.usage = gpu::BufferUsage::Vertex;
   vertexBuffer = device->createBuffer(vertexBufferInfo);
 
-  rhi::Buffer::CreateInfo indexBufferInfo{};
+  gpu::Buffer::CreateInfo indexBufferInfo{};
   indexBufferInfo.allocator = GlobalAllocator::get();
   indexBufferInfo.size = indices.size() * sizeof(uint32_t);
-  indexBufferInfo.usage = rhi::BufferUsage::Index;
+  indexBufferInfo.usage = gpu::BufferUsage::Index;
   indexBuffer = device->createBuffer(indexBufferInfo);
 
-  Ptr<rhi::TransferBuffer> transferBuffer;
+  Ptr<gpu::TransferBuffer> transferBuffer;
   {
     {
-      rhi::TransferBuffer::CreateInfo info{};
+      gpu::TransferBuffer::CreateInfo info{};
       info.allocator = GlobalAllocator::get();
       info.size = vertexBufferSize;
-      info.usage = rhi::TransferBufferUsage::Upload;
+      info.usage = gpu::TransferBufferUsage::Upload;
       transferBuffer = device->createTransferBuffer(info);
       auto *pMapped = transferBuffer->map(false);
       memcpy(pMapped, vertices.data(), vertices.size() * sizeof(Vertex));
       transferBuffer->unmap();
     }
     {
-      rhi::CommandBuffer::CreateInfo info{};
+      gpu::CommandBuffer::CreateInfo info{};
       info.allocator = GlobalAllocator::get();
       auto commandBuffer = device->acquireCommandBuffer(info);
       {
@@ -458,10 +458,10 @@ createVertexIndexBuffer(const Array<Vertex> &vertices,
         auto copyPass = commandBuffer->beginCopyPass();
         {
 
-          rhi::BufferTransferInfo src{};
+          gpu::BufferTransferInfo src{};
           src.offset = 0;
           src.transferBuffer = transferBuffer;
-          rhi::BufferRegion dst{};
+          gpu::BufferRegion dst{};
           dst.offset = 0;
           dst.size = vertexBufferSize;
           dst.buffer = vertexBuffer;
@@ -473,10 +473,10 @@ createVertexIndexBuffer(const Array<Vertex> &vertices,
     }
   }
   {
-    rhi::TransferBuffer::CreateInfo info{};
+    gpu::TransferBuffer::CreateInfo info{};
     info.allocator = GlobalAllocator::get();
     info.size = indexBufferInfo.size;
-    info.usage = rhi::TransferBufferUsage::Upload;
+    info.usage = gpu::TransferBufferUsage::Upload;
     transferBuffer = device->createTransferBuffer(info);
     auto *pMapped = transferBuffer->map(false);
     memcpy(pMapped, indices.data(), indexBufferInfo.size);
@@ -484,7 +484,7 @@ createVertexIndexBuffer(const Array<Vertex> &vertices,
   }
   {
     {
-      rhi::CommandBuffer::CreateInfo info{};
+      gpu::CommandBuffer::CreateInfo info{};
       info.allocator = GlobalAllocator::get();
       auto commandBuffer = device->acquireCommandBuffer(info);
       {
@@ -492,10 +492,10 @@ createVertexIndexBuffer(const Array<Vertex> &vertices,
         auto copyPass = commandBuffer->beginCopyPass();
         {
 
-          rhi::BufferTransferInfo src{};
+          gpu::BufferTransferInfo src{};
           src.offset = 0;
           src.transferBuffer = transferBuffer;
-          rhi::BufferRegion dst{};
+          gpu::BufferRegion dst{};
           dst.offset = 0;
           dst.size = indexBufferInfo.size;
           dst.buffer = indexBuffer;
@@ -508,33 +508,33 @@ createVertexIndexBuffer(const Array<Vertex> &vertices,
   }
   return std::make_pair(vertexBuffer, indexBuffer);
 }
-Ptr<rhi::Buffer>
+Ptr<gpu::Buffer>
 createSkinnedVertexBuffer(const Array<SkinnedVertex> &vertices) {
   if (vertices.empty())
     return nullptr;
   auto device = Graphics::getDevice();
   size_t vertexBufferSize = vertices.size() * sizeof(SkinnedVertex);
-  Ptr<rhi::Buffer> vertexBuffer;
-  rhi::Buffer::CreateInfo vertexBufferInfo{};
+  Ptr<gpu::Buffer> vertexBuffer;
+  gpu::Buffer::CreateInfo vertexBufferInfo{};
   vertexBufferInfo.allocator = GlobalAllocator::get();
   vertexBufferInfo.size = vertexBufferSize;
-  vertexBufferInfo.usage = rhi::BufferUsage::Vertex;
+  vertexBufferInfo.usage = gpu::BufferUsage::Vertex;
   vertexBuffer = device->createBuffer(vertexBufferInfo);
 
-  Ptr<rhi::TransferBuffer> transferBuffer;
+  Ptr<gpu::TransferBuffer> transferBuffer;
   {
     {
-      rhi::TransferBuffer::CreateInfo info{};
+      gpu::TransferBuffer::CreateInfo info{};
       info.allocator = GlobalAllocator::get();
       info.size = vertexBufferSize;
-      info.usage = rhi::TransferBufferUsage::Upload;
+      info.usage = gpu::TransferBufferUsage::Upload;
       transferBuffer = device->createTransferBuffer(info);
       auto *pMapped = transferBuffer->map(false);
       memcpy(pMapped, vertices.data(), vertices.size() * sizeof(SkinnedVertex));
       transferBuffer->unmap();
     }
     {
-      rhi::CommandBuffer::CreateInfo info{};
+      gpu::CommandBuffer::CreateInfo info{};
       info.allocator = GlobalAllocator::get();
       auto commandBuffer = device->acquireCommandBuffer(info);
       {
@@ -542,10 +542,10 @@ createSkinnedVertexBuffer(const Array<SkinnedVertex> &vertices) {
         auto copyPass = commandBuffer->beginCopyPass();
         {
 
-          rhi::BufferTransferInfo src{};
+          gpu::BufferTransferInfo src{};
           src.offset = 0;
           src.transferBuffer = transferBuffer;
-          rhi::BufferRegion dst{};
+          gpu::BufferRegion dst{};
           dst.offset = 0;
           dst.size = vertexBufferSize;
           dst.buffer = vertexBuffer;
@@ -558,32 +558,32 @@ createSkinnedVertexBuffer(const Array<SkinnedVertex> &vertices) {
   }
   return vertexBuffer;
 }
-Ptr<rhi::Buffer> createBuffer(size_t size, void *data, rhi::BufferUsage usage) {
+Ptr<gpu::Buffer> createBuffer(size_t size, void *data, gpu::BufferUsage usage) {
 
   if (!data)
     return nullptr;
   auto device = Graphics::getDevice();
-  Ptr<rhi::Buffer> buffer;
-  rhi::Buffer::CreateInfo vertexBufferInfo{};
+  Ptr<gpu::Buffer> buffer;
+  gpu::Buffer::CreateInfo vertexBufferInfo{};
   vertexBufferInfo.allocator = GlobalAllocator::get();
   vertexBufferInfo.size = size;
   vertexBufferInfo.usage = usage;
   buffer = device->createBuffer(vertexBufferInfo);
 
-  Ptr<rhi::TransferBuffer> transferBuffer;
+  Ptr<gpu::TransferBuffer> transferBuffer;
   {
     {
-      rhi::TransferBuffer::CreateInfo info{};
+      gpu::TransferBuffer::CreateInfo info{};
       info.allocator = GlobalAllocator::get();
       info.size = size;
-      info.usage = rhi::TransferBufferUsage::Upload;
+      info.usage = gpu::TransferBufferUsage::Upload;
       transferBuffer = device->createTransferBuffer(info);
       auto *pMapped = transferBuffer->map(false);
       memcpy(pMapped, data, size);
       transferBuffer->unmap();
     }
     {
-      rhi::CommandBuffer::CreateInfo info{};
+      gpu::CommandBuffer::CreateInfo info{};
       info.allocator = GlobalAllocator::get();
       auto commandBuffer = device->acquireCommandBuffer(info);
       {
@@ -591,10 +591,10 @@ Ptr<rhi::Buffer> createBuffer(size_t size, void *data, rhi::BufferUsage usage) {
         auto copyPass = commandBuffer->beginCopyPass();
         {
 
-          rhi::BufferTransferInfo src{};
+          gpu::BufferTransferInfo src{};
           src.offset = 0;
           src.transferBuffer = transferBuffer;
-          rhi::BufferRegion dst{};
+          gpu::BufferRegion dst{};
           dst.offset = 0;
           dst.size = size;
           dst.buffer = buffer;

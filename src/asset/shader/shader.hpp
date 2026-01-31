@@ -1,7 +1,7 @@
 #ifndef SINEN_SHADER_HPP
 #define SINEN_SHADER_HPP
 #include "shader_stage.hpp"
-#include <graphics/rhi/rhi.hpp>
+#include <gpu/gpu.hpp>
 
 
 namespace sinen {
@@ -12,17 +12,17 @@ namespace sinen {
 class Shader {
 public:
   Shader() = default;
-  Shader(const Ptr<rhi::Shader> &raw) : shader(raw) {}
+  Shader(const Ptr<gpu::Shader> &raw) : shader(raw) {}
 
   static constexpr const char *metaTableName() { return "sn.Shader"; }
 
   void load(StringView name, ShaderStage stage, int numUniformData);
   void compileAndLoad(StringView name, ShaderStage stage);
 
-  Ptr<rhi::Shader> getRaw() { return shader; }
+  Ptr<gpu::Shader> getRaw() { return shader; }
 
 private:
-  Ptr<rhi::Shader> shader;
+  Ptr<gpu::Shader> shader;
 };
 } // namespace sinen
 #endif // !SINEN_SHADER_HPP

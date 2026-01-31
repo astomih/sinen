@@ -227,7 +227,7 @@ bool saveEXRFloat(const char *path, const float *img, int W, int H, int C) {
   return true;
 }
 
-static void writeTexture(Ptr<rhi::Texture> texture,
+static void writeTexture(Ptr<gpu::Texture> texture,
                          const std::array<Array<float>, 6> &faces) {
   auto device = Graphics::getDevice();
   uint32_t width = texture->getCreateInfo().width,
@@ -238,28 +238,28 @@ static void writeTexture(Ptr<rhi::Texture> texture,
     data.insert(data.end(), faces[i].begin(), faces[i].end());
   }
 
-  Ptr<rhi::TransferBuffer> transbuffers[6];
+  Ptr<gpu::TransferBuffer> transbuffers[6];
   for (int i = 0; i < 6; ++i) {
-    rhi::TransferBuffer::CreateInfo info{};
+    gpu::TransferBuffer::CreateInfo info{};
     info.allocator = GlobalAllocator::get();
     info.size = width * height * 4 * sizeof(Float32);
-    info.usage = rhi::TransferBufferUsage::Upload;
+    info.usage = gpu::TransferBufferUsage::Upload;
     transbuffers[i] = device->createTransferBuffer(info);
     auto *pMapped = transbuffers[i]->map(true);
     memcpy(pMapped, faces[i].data(), info.size);
     transbuffers[i]->unmap();
   }
   {
-    rhi::CommandBuffer::CreateInfo info{};
+    gpu::CommandBuffer::CreateInfo info{};
     info.allocator = GlobalAllocator::get();
     auto commandBuffer = device->acquireCommandBuffer(info);
     auto copyPass = commandBuffer->beginCopyPass();
 
     for (int i = 0; i < 6; i++) {
-      rhi::TextureTransferInfo src{};
+      gpu::TextureTransferInfo src{};
       src.offset = 0;
       src.transferBuffer = transbuffers[i];
-      rhi::TextureRegion dst{};
+      gpu::TextureRegion dst{};
       dst.layer = i;
       dst.x = 0;
       dst.y = 0;
@@ -275,24 +275,24 @@ static void writeTexture(Ptr<rhi::Texture> texture,
   }
   device->waitForGpuIdle();
 }
-Ptr<rhi::Texture>
+Ptr<gpu::Texture>
 createNativeCubemapTexture(const std::array<Array<float>, 6> &faces,
-                           rhi::TextureFormat textureFormat, uint32_t width,
+                           gpu::TextureFormat textureFormat, uint32_t width,
                            uint32_t height) {
   auto device = Graphics::getDevice();
 
-  Ptr<rhi::Texture> texture;
+  Ptr<gpu::Texture> texture;
   {
-    rhi::Texture::CreateInfo info{};
+    gpu::Texture::CreateInfo info{};
     info.allocator = GlobalAllocator::get();
     info.width = width;
     info.height = height;
     info.layerCountOrDepth = 6;
     info.format = textureFormat;
-    info.usage = rhi::TextureUsage::Sampler;
+    info.usage = gpu::TextureUsage::Sampler;
     info.numLevels = 1;
-    info.sampleCount = rhi::SampleCount::x1;
-    info.type = rhi::TextureType::Cube;
+    info.sampleCount = gpu::SampleCount::x1;
+    info.type = gpu::TextureType::Cube;
     texture = device->createTexture(info);
   }
   writeTexture(texture, faces);
@@ -313,7 +313,7 @@ bool Texture::loadCubemap(StringView path) {
   equirectToCubemap(equirect.data(), w, h, c, faceSize, faces);
 
   this->texture = createNativeCubemapTexture(
-      faces, rhi::TextureFormat::R32G32B32A32_FLOAT, faceSize, faceSize);
+      faces, gpu::TextureFormat::R32G32B32A32_FLOAT, faceSize, faceSize);
   return true;
 }
 } // namespace sinen

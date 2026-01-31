@@ -19,21 +19,21 @@ void Shader::load(StringView vertex_shader, ShaderStage stage,
 
   auto str = AssetIO::openAsString(vertex_shader);
 
-  rhi::Shader::CreateInfo info{};
+  gpu::Shader::CreateInfo info{};
   info.allocator = allocator;
   info.size = str.size();
   info.data = str.data();
   info.entrypoint = "main";
-  info.format = rhi::ShaderFormat::SPIRV;
+  info.format = gpu::ShaderFormat::SPIRV;
   switch (stage) {
   case ShaderStage::Vertex:
-    info.stage = rhi::ShaderStage::Vertex;
+    info.stage = gpu::ShaderStage::Vertex;
     break;
   case ShaderStage::Fragment:
-    info.stage = rhi::ShaderStage::Fragment;
+    info.stage = gpu::ShaderStage::Fragment;
     break;
   case ShaderStage::Compute:
-    info.stage = rhi::ShaderStage::Vertex; // TODO
+    info.stage = gpu::ShaderStage::Vertex; // TODO
     break;
   }
   info.numSamplers = stage==ShaderStage::Fragment?1:0;
@@ -55,21 +55,21 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage) {
   auto *allocator = GlobalAllocator::get();
   auto device = Graphics::getDevice();
 
-  rhi::Shader::CreateInfo info{};
+  gpu::Shader::CreateInfo info{};
   info.allocator = allocator;
   info.size = spirv.size();
   info.data = spirv.data();
   info.entrypoint = "main";
-  info.format = rhi::ShaderFormat::SPIRV;
+  info.format = gpu::ShaderFormat::SPIRV;
   switch (stage) {
   case ShaderStage::Vertex:
-    info.stage = rhi::ShaderStage::Vertex;
+    info.stage = gpu::ShaderStage::Vertex;
     break;
   case ShaderStage::Fragment:
-    info.stage = rhi::ShaderStage::Fragment;
+    info.stage = gpu::ShaderStage::Fragment;
     break;
   case ShaderStage::Compute:
-    info.stage = rhi::ShaderStage::Vertex; // TODO
+    info.stage = gpu::ShaderStage::Vertex; // TODO
     break;
   }
   info.numSamplers =

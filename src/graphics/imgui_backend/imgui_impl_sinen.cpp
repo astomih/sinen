@@ -3,8 +3,8 @@
 
 namespace sinen {
 struct ImGuiImplParanoixaFrameData {
-  Ptr<rhi::Buffer> VertexBuffer = nullptr;
-  Ptr<rhi::Buffer> IndexBuffer = nullptr;
+  Ptr<gpu::Buffer> VertexBuffer = nullptr;
+  Ptr<gpu::Buffer> IndexBuffer = nullptr;
   uint32_t VertexBufferSize = 0;
   uint32_t IndexBufferSize = 0;
 };
@@ -13,14 +13,14 @@ struct ImGuiImplParanoixaData {
   ImGuiImplParanoixaInitInfo InitInfo;
 
   // Graphics pipeline & shaders
-  Ptr<rhi::Shader> VertexShader = nullptr;
-  Ptr<rhi::Shader> FragmentShader = nullptr;
-  Ptr<rhi::GraphicsPipeline> Pipeline = nullptr;
+  Ptr<gpu::Shader> VertexShader = nullptr;
+  Ptr<gpu::Shader> FragmentShader = nullptr;
+  Ptr<gpu::GraphicsPipeline> Pipeline = nullptr;
 
   // Font data
-  Ptr<rhi::Sampler> FontSampler = nullptr;
-  Ptr<rhi::Texture> FontTexture = nullptr;
-  rhi::TextureSamplerBinding FontBinding = {nullptr, nullptr};
+  Ptr<gpu::Sampler> FontSampler = nullptr;
+  Ptr<gpu::Texture> FontTexture = nullptr;
+  gpu::TextureSamplerBinding FontBinding = {nullptr, nullptr};
 
   // Frame data for main window
   ImGuiImplParanoixaFrameData MainWindowFrameData;
@@ -37,29 +37,29 @@ static void imguiImplParanoixaCreateShaders() {
 
   auto driver = v->Device->getDriver();
 
-  rhi::Shader::CreateInfo vertex_shader_info = {};
+  gpu::Shader::CreateInfo vertex_shader_info = {};
   vertex_shader_info.allocator = v->Allocator;
   vertex_shader_info.entrypoint = "main";
-  vertex_shader_info.stage = rhi::ShaderStage::Vertex;
+  vertex_shader_info.stage = gpu::ShaderStage::Vertex;
   vertex_shader_info.numUniformBuffers = 1;
   vertex_shader_info.numStorageBuffers = 0;
   vertex_shader_info.numStorageTextures = 0;
   vertex_shader_info.numSamplers = 0;
 
-  rhi::Shader::CreateInfo fragment_shader_info = {};
+  gpu::Shader::CreateInfo fragment_shader_info = {};
   fragment_shader_info.allocator = v->Allocator;
   fragment_shader_info.entrypoint = "main";
-  fragment_shader_info.stage = rhi::ShaderStage::Fragment;
+  fragment_shader_info.stage = gpu::ShaderStage::Fragment;
   fragment_shader_info.numSamplers = 1;
   fragment_shader_info.numStorageBuffers = 0;
   fragment_shader_info.numStorageTextures = 0;
   fragment_shader_info.numUniformBuffers = 0;
 
   if (driver == "vulkan") {
-    vertex_shader_info.format = rhi::ShaderFormat::SPIRV;
+    vertex_shader_info.format = gpu::ShaderFormat::SPIRV;
     vertex_shader_info.data = spirv_vertex;
     vertex_shader_info.size = sizeof(spirv_vertex);
-    fragment_shader_info.format = rhi::ShaderFormat::SPIRV;
+    fragment_shader_info.format = gpu::ShaderFormat::SPIRV;
     fragment_shader_info.data = spirv_fragment;
     fragment_shader_info.size = sizeof(spirv_fragment);
   }
@@ -93,76 +93,76 @@ static void imGuiImplParanoixaCreateGraphicsPipeline() {
   ImGuiImplParanoixaInitInfo *v = &bd->InitInfo;
   imguiImplParanoixaCreateShaders();
 
-  Array<rhi::VertexBufferDescription> vertex_buffer_desc(v->Allocator);
+  Array<gpu::VertexBufferDescription> vertex_buffer_desc(v->Allocator);
   vertex_buffer_desc.resize(1);
   vertex_buffer_desc[0].slot = 0;
-  vertex_buffer_desc[0].inputRate = rhi::VertexInputRate::Vertex;
+  vertex_buffer_desc[0].inputRate = gpu::VertexInputRate::Vertex;
   vertex_buffer_desc[0].instanceStepRate = 0;
   vertex_buffer_desc[0].pitch = sizeof(ImDrawVert);
 
-  Array<rhi::VertexAttribute> vertex_attributes(v->Allocator);
+  Array<gpu::VertexAttribute> vertex_attributes(v->Allocator);
   vertex_attributes.resize(3);
   vertex_attributes[0].bufferSlot = 0;
-  vertex_attributes[0].format = rhi::VertexElementFormat::Float2;
+  vertex_attributes[0].format = gpu::VertexElementFormat::Float2;
   vertex_attributes[0].location = 0;
   vertex_attributes[0].offset = offsetof(ImDrawVert, pos);
 
   vertex_attributes[1].bufferSlot = 0;
-  vertex_attributes[1].format = rhi::VertexElementFormat::Float2;
+  vertex_attributes[1].format = gpu::VertexElementFormat::Float2;
   vertex_attributes[1].location = 1;
   vertex_attributes[1].offset = offsetof(ImDrawVert, uv);
 
   vertex_attributes[2].bufferSlot = 0;
-  vertex_attributes[2].format = rhi::VertexElementFormat::UByte4_NORM;
+  vertex_attributes[2].format = gpu::VertexElementFormat::UByte4_NORM;
   vertex_attributes[2].location = 2;
   vertex_attributes[2].offset = offsetof(ImDrawVert, col);
 
-  rhi::VertexInputState vertex_input_state{v->Allocator};
+  gpu::VertexInputState vertex_input_state{v->Allocator};
   vertex_input_state.vertexAttributes = vertex_attributes;
   vertex_input_state.vertexBufferDescriptions = vertex_buffer_desc;
 
-  rhi::RasterizerState rasterizer_state = {};
-  rasterizer_state.fillMode = rhi::FillMode::Fill;
-  rasterizer_state.cullMode = rhi::CullMode::None;
-  rasterizer_state.frontFace = rhi::FrontFace::CounterClockwise;
+  gpu::RasterizerState rasterizer_state = {};
+  rasterizer_state.fillMode = gpu::FillMode::Fill;
+  rasterizer_state.cullMode = gpu::CullMode::None;
+  rasterizer_state.frontFace = gpu::FrontFace::CounterClockwise;
   rasterizer_state.enableDepthBias = false;
   rasterizer_state.enableDepthClip = false;
 
-  rhi::MultiSampleState multisample_state{};
+  gpu::MultiSampleState multisample_state{};
   multisample_state.sampleCount = v->MSAASamples;
   multisample_state.enableMask = false;
 
-  rhi::DepthStencilState depth_stencil_state = {};
+  gpu::DepthStencilState depth_stencil_state = {};
   depth_stencil_state.enableDepthTest = false;
   depth_stencil_state.enableDepthWrite = false;
   depth_stencil_state.enableStencilTest = false;
 
-  rhi::ColorTargetBlendState blend_state = {};
+  gpu::ColorTargetBlendState blend_state = {};
   blend_state.enableBlend = true;
-  blend_state.srcColorBlendFactor = rhi::BlendFactor::SrcAlpha;
-  blend_state.dstColorBlendFactor = rhi::BlendFactor::OneMinusSrcAlpha;
-  blend_state.colorBlendOp = rhi::BlendOp::Add;
-  blend_state.srcAlphaBlendFactor = rhi::BlendFactor::One;
-  blend_state.dstAlphaBlendFactor = rhi::BlendFactor::OneMinusSrcAlpha;
-  blend_state.alphaBlendOp = rhi::BlendOp::Add;
-  blend_state.colorWriteMask = rhi::ColorComponent::R | rhi::ColorComponent::G |
-                               rhi::ColorComponent::B | rhi::ColorComponent::A;
+  blend_state.srcColorBlendFactor = gpu::BlendFactor::SrcAlpha;
+  blend_state.dstColorBlendFactor = gpu::BlendFactor::OneMinusSrcAlpha;
+  blend_state.colorBlendOp = gpu::BlendOp::Add;
+  blend_state.srcAlphaBlendFactor = gpu::BlendFactor::One;
+  blend_state.dstAlphaBlendFactor = gpu::BlendFactor::OneMinusSrcAlpha;
+  blend_state.alphaBlendOp = gpu::BlendOp::Add;
+  blend_state.colorWriteMask = gpu::ColorComponent::R | gpu::ColorComponent::G |
+                               gpu::ColorComponent::B | gpu::ColorComponent::A;
 
-  Array<rhi::ColorTargetDescription> color_target_desc(v->Allocator);
+  Array<gpu::ColorTargetDescription> color_target_desc(v->Allocator);
   color_target_desc.resize(1);
   color_target_desc[0].format = v->ColorTargetFormat;
   color_target_desc[0].blendState = blend_state;
 
-  rhi::TargetInfo target_info = {v->Allocator};
+  gpu::TargetInfo target_info = {v->Allocator};
   target_info.colorTargetDescriptions = color_target_desc;
   target_info.hasDepthStencilTarget = false;
 
-  rhi::GraphicsPipeline::CreateInfo pipeline_info = {v->Allocator};
+  gpu::GraphicsPipeline::CreateInfo pipeline_info = {v->Allocator};
   pipeline_info.allocator = v->Allocator;
   pipeline_info.vertexShader = bd->VertexShader;
   pipeline_info.fragmentShader = bd->FragmentShader;
   pipeline_info.vertexInputState = vertex_input_state;
-  pipeline_info.primitiveType = rhi::PrimitiveType::TriangleList;
+  pipeline_info.primitiveType = gpu::PrimitiveType::TriangleList;
   pipeline_info.rasterizerState = rasterizer_state;
   pipeline_info.multiSampleState = multisample_state;
   pipeline_info.depthStencilState = depth_stencil_state;
@@ -187,7 +187,7 @@ IMGUI_IMPL_API bool imGuiImplParanoixaInit(ImGuiImplParanoixaInitInfo *info) {
                                               // allowing for large meshes.
 
   IM_ASSERT(info->Device != nullptr);
-  IM_ASSERT(info->ColorTargetFormat != rhi::TextureFormat::Invalid);
+  IM_ASSERT(info->ColorTargetFormat != gpu::TextureFormat::Invalid);
 
   bd->InitInfo = *info;
 
@@ -205,15 +205,15 @@ IMGUI_IMPL_API void imGuiImplParanoixaNewFrame() {
   if (!bd->FontTexture)
     imGuiImplParanoixaCreateFontsTexture();
 }
-static void createOrResizeBuffer(Ptr<rhi::Buffer> &buffer, uint32_t *old_size,
-                                 uint32_t new_size, rhi::BufferUsage usage) {
+static void createOrResizeBuffer(Ptr<gpu::Buffer> &buffer, uint32_t *old_size,
+                                 uint32_t new_size, gpu::BufferUsage usage) {
   ImGuiImplParanoixaData *bd = imGuiImplParanoixaGetBackendData();
   ImGuiImplParanoixaInitInfo *v = &bd->InitInfo;
 
   // Even though this is fairly rarely called.
   v->Device->waitForGpuIdle();
 
-  rhi::Buffer::CreateInfo buffer_info = {};
+  gpu::Buffer::CreateInfo buffer_info = {};
   buffer_info.allocator = v->Allocator;
   buffer_info.usage = usage;
   buffer_info.size = new_size;
@@ -225,7 +225,7 @@ static void createOrResizeBuffer(Ptr<rhi::Buffer> &buffer, uint32_t *old_size,
 
 IMGUI_IMPL_API void
 imGuiImplParanoixaPrepareDrawData(ImDrawData *draw_data,
-                                  Ptr<rhi::CommandBuffer> command_buffer) {
+                                  Ptr<gpu::CommandBuffer> command_buffer) {
   // Avoid rendering when minimized, scale coordinates for retina displays
   // (screen coordinates != framebuffer coordinates)
   int fb_width =
@@ -243,22 +243,22 @@ imGuiImplParanoixaPrepareDrawData(ImDrawData *draw_data,
   uint32_t index_size = draw_data->TotalIdxCount * sizeof(ImDrawIdx);
   if (fd->VertexBuffer == nullptr || fd->VertexBufferSize < vertex_size)
     createOrResizeBuffer(fd->VertexBuffer, &fd->VertexBufferSize, vertex_size,
-                         rhi::BufferUsage::Vertex);
+                         gpu::BufferUsage::Vertex);
   IM_ASSERT(fd->VertexBuffer != nullptr &&
             "Failed to create the vertex buffer");
   if (fd->IndexBuffer == nullptr || fd->IndexBufferSize < index_size)
     createOrResizeBuffer(fd->IndexBuffer, &fd->IndexBufferSize, index_size,
-                         rhi::BufferUsage::Index);
+                         gpu::BufferUsage::Index);
   IM_ASSERT(fd->IndexBuffer != nullptr && "Failed to create the index buffer");
 
   // FIXME: It feels like more code could be shared there.
-  rhi::TransferBuffer::CreateInfo vertex_transferbuffer_info = {};
+  gpu::TransferBuffer::CreateInfo vertex_transferbuffer_info = {};
   vertex_transferbuffer_info.allocator = v->Allocator;
-  vertex_transferbuffer_info.usage = rhi::TransferBufferUsage::Upload;
+  vertex_transferbuffer_info.usage = gpu::TransferBufferUsage::Upload;
   vertex_transferbuffer_info.size = vertex_size;
-  rhi::TransferBuffer::CreateInfo index_transferbuffer_info = {};
+  gpu::TransferBuffer::CreateInfo index_transferbuffer_info = {};
   index_transferbuffer_info.allocator = v->Allocator;
-  index_transferbuffer_info.usage = rhi::TransferBufferUsage::Upload;
+  index_transferbuffer_info.usage = gpu::TransferBufferUsage::Upload;
   index_transferbuffer_info.size = index_size;
 
   auto vertex_transferbuffer =
@@ -284,19 +284,19 @@ imGuiImplParanoixaPrepareDrawData(ImDrawData *draw_data,
   vertex_transferbuffer->unmap();
   index_transferbuffer->unmap();
 
-  rhi::BufferTransferInfo vertex_buffer_location = {};
+  gpu::BufferTransferInfo vertex_buffer_location = {};
   vertex_buffer_location.offset = 0;
   vertex_buffer_location.transferBuffer = vertex_transferbuffer;
-  rhi::BufferTransferInfo index_buffer_location = {};
+  gpu::BufferTransferInfo index_buffer_location = {};
   index_buffer_location.offset = 0;
   index_buffer_location.transferBuffer = index_transferbuffer;
 
-  rhi::BufferRegion vertex_buffer_region = {};
+  gpu::BufferRegion vertex_buffer_region = {};
   vertex_buffer_region.buffer = fd->VertexBuffer;
   vertex_buffer_region.offset = 0;
   vertex_buffer_region.size = vertex_size;
 
-  rhi::BufferRegion index_buffer_region = {};
+  gpu::BufferRegion index_buffer_region = {};
   index_buffer_region.buffer = fd->IndexBuffer;
   index_buffer_region.offset = 0;
   index_buffer_region.size = index_size;
@@ -307,8 +307,8 @@ imGuiImplParanoixaPrepareDrawData(ImDrawData *draw_data,
   command_buffer->endCopyPass(copy_pass);
 }
 static void imGuiImplParanoixaSetupRenderState(
-    ImDrawData *draw_data, Ptr<rhi::GraphicsPipeline> pipeline,
-    Ptr<rhi::CommandBuffer> command_buffer, Ptr<rhi::RenderPass> render_pass,
+    ImDrawData *draw_data, Ptr<gpu::GraphicsPipeline> pipeline,
+    Ptr<gpu::CommandBuffer> command_buffer, Ptr<gpu::RenderPass> render_pass,
     ImGuiImplParanoixaFrameData *fd, uint32_t fb_width, uint32_t fb_height) {
   ImGuiImplParanoixaData *bd = imGuiImplParanoixaGetBackendData();
 
@@ -317,26 +317,26 @@ static void imGuiImplParanoixaSetupRenderState(
 
   // Bind Vertex And Index Buffers
   if (draw_data->TotalVtxCount > 0) {
-    Array<rhi::BufferBinding> vertex_buffer_bindings(bd->InitInfo.Allocator);
-    rhi::BufferBinding vertex_buffer_binding;
+    Array<gpu::BufferBinding> vertex_buffer_bindings(bd->InitInfo.Allocator);
+    gpu::BufferBinding vertex_buffer_binding;
     vertex_buffer_binding.buffer = fd->VertexBuffer;
     vertex_buffer_binding.offset = 0;
     vertex_buffer_bindings.push_back(vertex_buffer_binding);
 
-    Array<rhi::BufferBinding> index_buffer_bindings(bd->InitInfo.Allocator);
-    rhi::BufferBinding index_buffer_binding = {};
+    Array<gpu::BufferBinding> index_buffer_bindings(bd->InitInfo.Allocator);
+    gpu::BufferBinding index_buffer_binding = {};
     index_buffer_binding.buffer = fd->IndexBuffer;
     index_buffer_binding.offset = 0;
     index_buffer_bindings.push_back(index_buffer_binding);
     render_pass->bindVertexBuffers(0, vertex_buffer_bindings);
     render_pass->bindIndexBuffer(index_buffer_binding,
                                  sizeof(ImDrawIdx) == 2
-                                     ? rhi::IndexElementSize::Uint16
-                                     : rhi::IndexElementSize::Uint32);
+                                     ? gpu::IndexElementSize::Uint16
+                                     : gpu::IndexElementSize::Uint32);
   }
 
   // Setup viewport
-  rhi::Viewport viewport = {};
+  gpu::Viewport viewport = {};
   viewport.x = 0;
   viewport.y = 0;
   viewport.width = (float)fb_width;
@@ -361,8 +361,8 @@ static void imGuiImplParanoixaSetupRenderState(
 }
 
 IMGUI_IMPL_API void imGuiImplParanoixaRenderDrawData(
-    ImDrawData *draw_data, Ptr<rhi::CommandBuffer> command_buffer,
-    Ptr<rhi::RenderPass> render_pass, Ptr<rhi::GraphicsPipeline> pipeline) {
+    ImDrawData *draw_data, Ptr<gpu::CommandBuffer> command_buffer,
+    Ptr<gpu::RenderPass> render_pass, Ptr<gpu::GraphicsPipeline> pipeline) {
   int fb_width =
       (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
   int fb_height =
@@ -425,8 +425,8 @@ IMGUI_IMPL_API void imGuiImplParanoixaRenderDrawData(
                                 clip_max.y - clip_min.y);
 
         // Bind DescriptorSet with font or user texture
-        Array<rhi::TextureSamplerBinding> bindings(bd->InitInfo.Allocator);
-        auto *binding = (rhi::TextureSamplerBinding *)pcmd->GetTexID();
+        Array<gpu::TextureSamplerBinding> bindings(bd->InitInfo.Allocator);
+        auto *binding = (gpu::TextureSamplerBinding *)pcmd->GetTexID();
         bindings.push_back(*binding);
         render_pass->bindFragmentSamplers(0, bindings);
 
@@ -450,14 +450,14 @@ IMGUI_IMPL_API void imGuiImplParanoixaCreateDeviceObjects() {
     // Bilinear sampling is required by default. Set 'io.Fonts->Flags |=
     // ImFontAtlasFlags_NoBakedLines' or 'style.AntiAliasedLinesUseTex =
     // false' to allow point/nearest sampling.
-    rhi::Sampler::CreateInfo sampler_info = {};
+    gpu::Sampler::CreateInfo sampler_info = {};
     sampler_info.allocator = v->Allocator;
-    sampler_info.minFilter = rhi::Filter::Linear;
-    sampler_info.magFilter = rhi::Filter::Linear;
-    sampler_info.mipmapMode = rhi::MipmapMode::Linear;
-    sampler_info.addressModeU = rhi::AddressMode::ClampToEdge;
-    sampler_info.addressModeV = rhi::AddressMode::ClampToEdge;
-    sampler_info.addressModeW = rhi::AddressMode::ClampToEdge;
+    sampler_info.minFilter = gpu::Filter::Linear;
+    sampler_info.magFilter = gpu::Filter::Linear;
+    sampler_info.mipmapMode = gpu::MipmapMode::Linear;
+    sampler_info.addressModeU = gpu::AddressMode::ClampToEdge;
+    sampler_info.addressModeV = gpu::AddressMode::ClampToEdge;
+    sampler_info.addressModeW = gpu::AddressMode::ClampToEdge;
     sampler_info.mipLodBias = 0.0f;
     sampler_info.minLod = -1000.0f;
     sampler_info.maxLod = 1000.0f;
@@ -496,16 +496,16 @@ IMGUI_IMPL_API void imGuiImplParanoixaCreateFontsTexture() {
 
   // Create the Image:
   {
-    rhi::Texture::CreateInfo texture_info = {};
+    gpu::Texture::CreateInfo texture_info = {};
     texture_info.allocator = bd->InitInfo.Allocator;
-    texture_info.type = rhi::TextureType::Texture2D;
-    texture_info.format = rhi::TextureFormat::R8G8B8A8_UNORM;
-    texture_info.usage = rhi::TextureUsage::Sampler;
+    texture_info.type = gpu::TextureType::Texture2D;
+    texture_info.format = gpu::TextureFormat::R8G8B8A8_UNORM;
+    texture_info.usage = gpu::TextureUsage::Sampler;
     texture_info.width = width;
     texture_info.height = height;
     texture_info.layerCountOrDepth = 1;
     texture_info.numLevels = 1;
-    texture_info.sampleCount = rhi::SampleCount::x1;
+    texture_info.sampleCount = gpu::SampleCount::x1;
 
     bd->FontTexture = v->Device->createTexture(texture_info);
     IM_ASSERT(bd->FontTexture && "Failed to create font texture");
@@ -516,12 +516,12 @@ IMGUI_IMPL_API void imGuiImplParanoixaCreateFontsTexture() {
 
   // Create all the upload structures and upload:
   {
-    rhi::TransferBuffer::CreateInfo transferbuffer_info = {};
+    gpu::TransferBuffer::CreateInfo transferbuffer_info = {};
     transferbuffer_info.allocator = v->Allocator;
-    transferbuffer_info.usage = rhi::TransferBufferUsage::Upload;
+    transferbuffer_info.usage = gpu::TransferBufferUsage::Upload;
     transferbuffer_info.size = upload_size;
 
-    Ptr<rhi::TransferBuffer> transferbuffer =
+    Ptr<gpu::TransferBuffer> transferbuffer =
         v->Device->createTransferBuffer(transferbuffer_info);
     IM_ASSERT(transferbuffer != nullptr &&
               "Failed to create font transfer buffer");
@@ -530,19 +530,19 @@ IMGUI_IMPL_API void imGuiImplParanoixaCreateFontsTexture() {
     memcpy(texture_ptr, pixels, upload_size);
     transferbuffer->unmap();
 
-    rhi::TextureTransferInfo transfer_info = {};
+    gpu::TextureTransferInfo transfer_info = {};
     transfer_info.offset = 0;
     transfer_info.transferBuffer = transferbuffer;
 
-    rhi::TextureRegion texture_region = {};
+    gpu::TextureRegion texture_region = {};
     texture_region.texture = bd->FontTexture;
     texture_region.width = width;
     texture_region.height = height;
     texture_region.depth = 1;
 
-    Ptr<rhi::CommandBuffer> cmd =
+    Ptr<gpu::CommandBuffer> cmd =
         v->Device->acquireCommandBuffer({bd->InitInfo.Allocator});
-    Ptr<rhi::CopyPass> copy_pass = cmd->beginCopyPass();
+    Ptr<gpu::CopyPass> copy_pass = cmd->beginCopyPass();
     copy_pass->uploadTexture(transfer_info, texture_region, false);
     cmd->endCopyPass(copy_pass);
     v->Device->submitCommandBuffer(cmd);

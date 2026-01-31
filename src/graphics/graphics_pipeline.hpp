@@ -1,7 +1,7 @@
 #ifndef SINEN_RENDER_PIPELINE_HPP
 #define SINEN_RENDER_PIPELINE_HPP
 #include "../asset/shader/shader.hpp"
-#include "rhi/rhi_graphics_pipeline.hpp"
+#include <gpu/gpu_graphics_pipeline.hpp>
 
 #include <bitset>
 
@@ -33,12 +33,12 @@ public:
 
   const std::bitset<32> &getFeatureFlags() const { return featureFlags; }
 
-  Ptr<rhi::GraphicsPipeline> get() const { return pipeline; }
+  Ptr<gpu::GraphicsPipeline> get() const { return pipeline; }
 
 private:
   Shader vertexShader;
   Shader fragmentShader;
-  Ptr<rhi::GraphicsPipeline> pipeline;
+  Ptr<gpu::GraphicsPipeline> pipeline;
   std::bitset<32> featureFlags;
 };
 } // namespace sinen

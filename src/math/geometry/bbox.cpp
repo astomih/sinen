@@ -268,7 +268,7 @@ bool OBB::intersectsOBB(const OBB &obb) const {
 }
 
 } // namespace sinen
-#include <asset/script/luaapi.hpp>
+#include <script/luaapi.hpp>
 namespace sinen {
 
 static int lAabbNew(lua_State *L) {

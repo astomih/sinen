@@ -1,20 +1,19 @@
-#include <SDL3/SDL.h>
-#include <asset/texture/texture.hpp>
 #include <cassert>
+#include <chrono>
+#include <cstring>
+#include <functional>
+
 #include <core/thread/global_thread_pool.hpp>
 #include <core/thread/load_context.hpp>
+#include <gpu/gpu.hpp>
 #include <graphics/graphics.hpp>
+#include <graphics/texture/texture.hpp>
 #include <memory>
 #include <platform/io/asset_io.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
+#include <SDL3/SDL.h>
 #include <stb_image.h>
-
-#include <gpu/gpu.hpp>
-
-#include <chrono>
-#include <cstring>
-#include <functional>
 
 namespace sinen {
 static Ptr<gpu::Texture> createNativeTexture(void *pPixels,
@@ -370,7 +369,7 @@ void updateNativeTexture(Ptr<gpu::Texture> texture, void *pPixels,
 }
 } // namespace sinen
 
-#include <asset/script/luaapi.hpp>
+#include <script/luaapi.hpp>
 namespace sinen {
 String Texture::tableString() const {
   TablePair p;

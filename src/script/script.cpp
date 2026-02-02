@@ -1,8 +1,6 @@
 // internal
 #include "script.hpp"
 
-#include <asset/asset.hpp>
-#include <asset/shader/builtin_shader.hpp>
 #include <core/allocator/global_allocator.hpp>
 #include <core/buffer/buffer.hpp>
 #include <core/core.hpp>
@@ -15,6 +13,7 @@
 #include <core/thread/task_group.hpp>
 #include <graphics/builtin_pipeline.hpp>
 #include <graphics/graphics.hpp>
+#include <graphics/shader/builtin_shader.hpp>
 #include <math/graph/bfs_grid.hpp>
 #include <math/math.hpp>
 #include <math/periodic.hpp>

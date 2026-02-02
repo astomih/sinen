@@ -1,6 +1,6 @@
 // internal
-#include <asset/shader/shader.hpp>
 #include <graphics/graphics.hpp>
+#include <graphics/shader/shader.hpp>
 #include <platform/io/asset_io.hpp>
 
 #include <core/thread/global_thread_pool.hpp>

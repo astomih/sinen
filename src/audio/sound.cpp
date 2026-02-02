@@ -1,7 +1,6 @@
 // internal
 #include "audio.hpp"
-#include <asset/audio/sound.hpp>
-#include <memory>
+#include <audio/sound.hpp>
 #include <platform/io/asset_io.hpp>
 
 // external
@@ -78,7 +77,7 @@ private:
 Ptr<Sound> Sound::create() { return makePtr<SoundImpl>(); }
 } // namespace sinen
 
-#include <asset/script/luaapi.hpp>
+#include <script/luaapi.hpp>
 namespace sinen {
 static int lSoundNew(lua_State *L) {
   udPushPtr<Sound>(L, Sound::create());

@@ -6,11 +6,12 @@
 #include <unordered_map>
 
 // internal
-#include <asset/script/script.hpp>
 #include <core/data/string.hpp>
 #include <core/logger/log.hpp>
 #include <platform/io/asset_io.hpp>
 #include <platform/io/filesystem.hpp>
+#include <script/script.hpp>
+
 
 // external
 #include <SDL3/SDL.h>

@@ -2,11 +2,11 @@
 #define SINEN_MODEL_HPP
 #include "node.hpp"
 #include "skeletal_animation.hpp"
-#include <asset/texture/texture.hpp>
 #include <core/buffer/buffer.hpp>
 #include <core/data/hashmap.hpp>
 #include <core/data/ptr.hpp>
 #include <gpu/gpu.hpp>
+#include <graphics/texture/texture.hpp>
 #include <math/geometry/bbox.hpp>
 #include <math/geometry/mesh.hpp>
 

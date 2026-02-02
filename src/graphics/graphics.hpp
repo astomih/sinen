@@ -5,13 +5,15 @@
 #include <list>
 // internal
 #include "graphics_pipeline.hpp"
-#include <asset/asset.hpp>
 #include <core/allocator/pool_allocator.hpp>
 #include <core/data/ptr.hpp>
 #include <core/data/string.hpp>
 #include <graphics/camera/camera.hpp>
 #include <graphics/camera/camera2d.hpp>
 #include <graphics/drawable/drawable.hpp>
+#include <graphics/font/font.hpp>
+#include <graphics/model/model.hpp>
+#include <graphics/texture/render_texture.hpp>
 #include <math/color/color.hpp>
 #include <math/color/palette.hpp>
 #include <math/geometry/rect.hpp>

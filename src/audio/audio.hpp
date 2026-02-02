@@ -1,7 +1,7 @@
 #ifndef SINEN_AUDIO_HPP
 #define SINEN_AUDIO_HPP
 // internal
-#include <asset/audio/sound.hpp>
+#include <audio/sound.hpp>
 
 namespace sinen {
 class Audio {

@@ -46,7 +46,7 @@ Vec3 Vec3::transform(const Vec3 &v, const Quat &q) {
 }
 } // namespace sinen
 
-#include <asset/script/luaapi.hpp>
+#include <script/luaapi.hpp>
 namespace sinen {
 String Vec3::tableString() const {
   TablePair p;

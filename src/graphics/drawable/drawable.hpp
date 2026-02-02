@@ -1,8 +1,8 @@
 #ifndef SINEN_DRAWABLE_WRAPPER_HPP
 #define SINEN_DRAWABLE_WRAPPER_HPP
-#include "../../asset/model/model.hpp"
-#include "../../asset/texture/texture.hpp"
-#include "../../math/transform/transform.hpp"
+#include <graphics/model/model.hpp>
+#include <graphics/texture/texture.hpp>
+#include <math/transform/transform.hpp>
 
 namespace sinen {
 /**

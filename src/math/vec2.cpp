@@ -1,6 +1,6 @@
 #include "vec2.hpp"
 
-#include <asset/script/luaapi.hpp>
+#include <script/luaapi.hpp>
 namespace sinen {
 
 String Vec2::tableString() const {

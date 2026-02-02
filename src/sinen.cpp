@@ -1,5 +1,4 @@
-#include <asset/audio/audio.hpp>
-#include <asset/script/script.hpp>
+#include <audio/audio.hpp>
 #include <core/event/event.hpp>
 #include <graphics/graphics.hpp>
 #include <math/random.hpp>
@@ -7,6 +6,7 @@
 #include <platform/input/input.hpp>
 #include <platform/io/arguments.hpp>
 #include <platform/window/window.hpp>
+#include <script/script.hpp>
 
 #include <sinen.hpp>
 

@@ -3,11 +3,11 @@
 #include <cstddef>
 
 // internal
-#include <asset/font/font.hpp>
-#include <asset/texture/texture.hpp>
 #include <core/data/array.hpp>
 #include <gpu/gpu.hpp>
+#include <graphics/font/font.hpp>
 #include <graphics/graphics.hpp>
+#include <graphics/texture/texture.hpp>
 #include <math/color/color.hpp>
 #include <math/geometry/mesh.hpp>
 #include <math/math.hpp>
@@ -401,7 +401,7 @@ Ptr<Font> Font::create(int32_t point, StringView fileName) {
 }
 } // namespace sinen
 
-#include <asset/script/luaapi.hpp>
+#include <script/luaapi.hpp>
 namespace sinen {
 
 static int lFontNew(lua_State *L) {

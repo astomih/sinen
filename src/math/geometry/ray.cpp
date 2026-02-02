@@ -1,5 +1,5 @@
 #include "ray.hpp"
-#include <asset/script/luaapi.hpp>
+#include <script/luaapi.hpp>
 
 namespace sinen {
 static int lRayIndex(lua_State *L) {

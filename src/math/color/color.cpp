@@ -16,7 +16,7 @@ const Color Palette::lightPink() { return Color(1.f, 0.71f, 0.76f, 1.f); }
 const Color Palette::lightGreen() { return Color(0.56f, 0.93f, 0.56f, 1.f); }
 } // namespace sinen
 
-#include <asset/script/luaapi.hpp>
+#include <script/luaapi.hpp>
 namespace sinen {
 String Color::tableString() const {
   TablePair p;

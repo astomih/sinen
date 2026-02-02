@@ -1,6 +1,6 @@
-#include <asset/texture/render_texture.hpp>
 #include <core/allocator/global_allocator.hpp>
 #include <graphics/graphics.hpp>
+#include <graphics/texture/render_texture.hpp>
 
 namespace sinen {
 

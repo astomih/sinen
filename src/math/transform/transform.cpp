@@ -11,7 +11,7 @@ Mat4 Transform::getWorldMatrix() const {
 }
 } // namespace sinen
 
-#include <asset/script/luaapi.hpp>
+#include <script/luaapi.hpp>
 namespace sinen {
 String Transform::tableString() const {
   TablePair p;

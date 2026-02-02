@@ -1,9 +1,10 @@
-#include <asset/texture/texture.hpp>
 #include <core/thread/global_thread_pool.hpp>
 #include <core/thread/load_context.hpp>
 #include <graphics/graphics.hpp>
+#include <graphics/texture/texture.hpp>
 #include <math/math.hpp>
 #include <platform/io/asset_io.hpp>
+
 
 #include <algorithm>
 #include <array>

@@ -1,12 +1,9 @@
 // std
-#include <algorithm>
 #include <cassert>
 #include <cstdio>
 #include <memory>
-#include <optional>
 
 // internal
-#include <asset/asset.hpp>
 #include <core/allocator/global_allocator.hpp>
 #include <core/buffer/buffer.hpp>
 #include <core/core.hpp>

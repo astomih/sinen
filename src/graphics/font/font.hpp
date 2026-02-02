@@ -1,9 +1,10 @@
 #ifndef SINEN_FONT_HPP
 #define SINEN_FONT_HPP
-#include <asset/texture/texture.hpp>
 #include <core/data/string.hpp>
+#include <graphics/texture/texture.hpp>
 #include <math/geometry/mesh.hpp>
 #include <math/geometry/rect.hpp>
+
 
 namespace sinen {
 /**

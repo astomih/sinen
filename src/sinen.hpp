@@ -1,9 +1,6 @@
 #ifndef SINEN_HPP
 #define SINEN_HPP
 
-// Asset
-#include "asset/asset.hpp"
-
 // Core
 #include "core/core.hpp"
 

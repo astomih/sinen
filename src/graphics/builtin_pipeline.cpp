@@ -1,5 +1,5 @@
 #include "builtin_pipeline.hpp"
-#include <asset/shader/builtin_shader.hpp>
+#include <graphics/shader/builtin_shader.hpp>
 namespace sinen {
 static GraphicsPipeline default2D;
 static GraphicsPipeline default3D;

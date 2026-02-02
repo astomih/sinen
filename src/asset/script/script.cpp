@@ -11,6 +11,8 @@
 #include <core/def/types.hpp>
 #include <core/event/event.hpp>
 #include <core/logger/log.hpp>
+#include <core/thread/load_context.hpp>
+#include <core/thread/task_group.hpp>
 #include <graphics/builtin_pipeline.hpp>
 #include <graphics/graphics.hpp>
 #include <math/graph/bfs_grid.hpp>
@@ -140,6 +142,50 @@ static lua_State *gLua = nullptr;
 static int gSetupRef = LUA_NOREF;
 static int gUpdateRef = LUA_NOREF;
 static int gDrawRef = LUA_NOREF;
+
+enum class ScriptScenePhase {
+  Running,
+  Loading,
+};
+static ScriptScenePhase gScenePhase = ScriptScenePhase::Running;
+static TaskGroup gSetupTasks;
+
+static void drawNowLoadingOverlay() {
+  if (gScenePhase != ScriptScenePhase::Loading) {
+    return;
+  }
+
+  const uint32_t total = gSetupTasks.total();
+  const uint32_t pending = gSetupTasks.pending();
+  const float progress =
+      (total == 0) ? 1.0f : (static_cast<float>(total - pending) / total);
+
+  ImGuiIO &io = ImGui::GetIO();
+
+  ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+  ImGui::SetNextWindowSize(io.DisplaySize, ImGuiCond_Always);
+  ImGui::SetNextWindowBgAlpha(0.0f);
+
+  constexpr ImGuiWindowFlags flags =
+      ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoNav |
+      ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
+      ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBringToFrontOnFocus;
+
+  ImGui::Begin("##sn_now_loading", nullptr, flags);
+  const ImVec2 center =
+      ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f);
+  const float w = 280.0f;
+  const float h = 20.0f;
+
+  ImGui::SetCursorPos(ImVec2(center.x - w * 0.5f, center.y - 40.0f));
+  ImGui::TextUnformatted("Now Loading...");
+  ImGui::SetCursorPos(ImVec2(center.x - w * 0.5f, center.y - 10.0f));
+  ImGui::ProgressBar(progress, ImVec2(w, h));
+
+  ImGui::SetCursorPos(ImVec2(center.x - w * 0.5f, center.y + 16.0f));
+  ImGui::Text("tasks: %u / %u", total - pending, total);
+  ImGui::End();
+}
 
 // -----------------
 // Camera / Camera2D
@@ -2277,6 +2323,8 @@ bool Script::initialize() {
   lua_setglobal(gLua, "sn");
 
   registerAll(gLua);
+
+  Graphics::addImGuiFunction(drawNowLoadingOverlay);
 #endif
   return true;
 }
@@ -2315,6 +2363,10 @@ void Script::runScene() {
   if (!gLua) {
     return;
   }
+
+  gScenePhase = ScriptScenePhase::Running;
+  gSetupTasks = TaskGroup::create();
+  ScopedLoadContext loadCtx(gSetupTasks);
 
   auto logPCallError = [](lua_State *L) {
     const char *msg = lua_tostring(L, -1);
@@ -2381,11 +2433,25 @@ void Script::runScene() {
       logPCallError(gLua);
     }
   }
+
+  if (!gSetupTasks.isDone()) {
+    gScenePhase = ScriptScenePhase::Loading;
+  } else {
+    gScenePhase = ScriptScenePhase::Running;
+  }
 #endif
 }
 
 void Script::updateScene() {
 #ifndef SINEN_NO_USE_SCRIPT
+  if (gScenePhase == ScriptScenePhase::Loading) {
+    if (gSetupTasks.isDone()) {
+      gScenePhase = ScriptScenePhase::Running;
+    } else {
+      return;
+    }
+  }
+
   if (!gLua || gUpdateRef == LUA_NOREF) {
     return;
   }
@@ -2400,6 +2466,9 @@ void Script::updateScene() {
 
 void Script::drawScene() {
 #ifndef SINEN_NO_USE_SCRIPT
+  if (gScenePhase == ScriptScenePhase::Loading) {
+    return;
+  }
   if (!gLua || gDrawRef == LUA_NOREF) {
     return;
   }

@@ -1,8 +1,12 @@
 #include "graphics.hpp"
 #include <core/allocator/global_allocator.hpp>
+#include <core/thread/load_context.hpp>
 #include <graphics/graphics_pipeline.hpp>
 
 #include <cstddef>
+#include <chrono>
+#include <functional>
+#include <memory>
 namespace sinen {
 
 static gpu::VertexInputState
@@ -26,52 +30,78 @@ void GraphicsPipeline::setEnableTangent(bool enable) {
   featureFlags.set(Tangent, enable);
 }
 void GraphicsPipeline::build() {
-  auto *allocator = GlobalAllocator::get();
-  auto device = Graphics::getDevice();
+  const TaskGroup group = LoadContext::current();
+  group.add();
 
-  gpu::GraphicsPipeline::CreateInfo pipelineInfo{allocator};
-  pipelineInfo.vertexShader = this->vertexShader.getRaw();
-  pipelineInfo.fragmentShader = this->fragmentShader.getRaw();
-  pipelineInfo.vertexInputState =
-      createVertexInputState(allocator, featureFlags);
-  pipelineInfo.primitiveType = gpu::PrimitiveType::TriangleList;
+  const bool inSetup = (LoadContext::currentPtr() != nullptr);
 
-  gpu::RasterizerState rasterizerState{};
-  rasterizerState.fillMode = gpu::FillMode::Fill;
-  rasterizerState.cullMode = gpu::CullMode::None;
-  rasterizerState.frontFace = gpu::FrontFace::CounterClockwise;
+  auto buildOrRetry = std::make_shared<std::function<void()>>();
+  *buildOrRetry = [this, buildOrRetry, group]() {
+    if (this->pipeline) {
+      group.done();
+      return;
+    }
 
-  pipelineInfo.rasterizerState = rasterizerState;
-  pipelineInfo.multiSampleState = {};
-  pipelineInfo.multiSampleState.sampleCount = gpu::SampleCount::x1;
-  bool enableDepthTest =
-      featureFlags.test(GraphicsPipeline::FeatureFlag::DepthTest);
-  pipelineInfo.depthStencilState.enableDepthTest = enableDepthTest;
-  pipelineInfo.depthStencilState.enableDepthWrite = enableDepthTest;
-  pipelineInfo.depthStencilState.enableStencilTest = false;
-  pipelineInfo.depthStencilState.compareOp = gpu::CompareOp::LessOrEqual;
+    if (!this->vertexShader.getRaw() || !this->fragmentShader.getRaw()) {
+      Graphics::addPreDrawFunc(*buildOrRetry);
+      return;
+    }
 
-  pipelineInfo.targetInfo.colorTargetDescriptions.emplace_back(
-      gpu::ColorTargetDescription{
-          .format = device->getSwapchainFormat(),
-          .blendState =
-              gpu::ColorTargetBlendState{
-                  .srcColorBlendFactor = gpu::BlendFactor::SrcAlpha,
-                  .dstColorBlendFactor = gpu::BlendFactor::OneMinusSrcAlpha,
-                  .colorBlendOp = gpu::BlendOp::Add,
-                  .srcAlphaBlendFactor = gpu::BlendFactor::One,
-                  .dstAlphaBlendFactor = gpu::BlendFactor::OneMinusSrcAlpha,
-                  .alphaBlendOp = gpu::BlendOp::Add,
-                  .colorWriteMask =
-                      gpu::ColorComponent::R | gpu::ColorComponent::G |
-                      gpu::ColorComponent::B | gpu::ColorComponent::A,
-                  .enableBlend = true,
-              },
-      });
-  pipelineInfo.targetInfo.hasDepthStencilTarget = enableDepthTest;
-  pipelineInfo.targetInfo.depthStencilTargetFormat =
-      gpu::TextureFormat::D32_FLOAT_S8_UINT;
-  this->pipeline = device->createGraphicsPipeline(pipelineInfo);
+    auto *allocator = GlobalAllocator::get();
+    auto device = Graphics::getDevice();
+
+    gpu::GraphicsPipeline::CreateInfo pipelineInfo{allocator};
+    pipelineInfo.vertexShader = this->vertexShader.getRaw();
+    pipelineInfo.fragmentShader = this->fragmentShader.getRaw();
+    pipelineInfo.vertexInputState =
+        createVertexInputState(allocator, featureFlags);
+    pipelineInfo.primitiveType = gpu::PrimitiveType::TriangleList;
+
+    gpu::RasterizerState rasterizerState{};
+    rasterizerState.fillMode = gpu::FillMode::Fill;
+    rasterizerState.cullMode = gpu::CullMode::None;
+    rasterizerState.frontFace = gpu::FrontFace::CounterClockwise;
+
+    pipelineInfo.rasterizerState = rasterizerState;
+    pipelineInfo.multiSampleState = {};
+    pipelineInfo.multiSampleState.sampleCount = gpu::SampleCount::x1;
+    bool enableDepthTest =
+        featureFlags.test(GraphicsPipeline::FeatureFlag::DepthTest);
+    pipelineInfo.depthStencilState.enableDepthTest = enableDepthTest;
+    pipelineInfo.depthStencilState.enableDepthWrite = enableDepthTest;
+    pipelineInfo.depthStencilState.enableStencilTest = false;
+    pipelineInfo.depthStencilState.compareOp = gpu::CompareOp::LessOrEqual;
+
+    pipelineInfo.targetInfo.colorTargetDescriptions.emplace_back(
+        gpu::ColorTargetDescription{
+            .format = device->getSwapchainFormat(),
+            .blendState =
+                gpu::ColorTargetBlendState{
+                    .srcColorBlendFactor = gpu::BlendFactor::SrcAlpha,
+                    .dstColorBlendFactor = gpu::BlendFactor::OneMinusSrcAlpha,
+                    .colorBlendOp = gpu::BlendOp::Add,
+                    .srcAlphaBlendFactor = gpu::BlendFactor::One,
+                    .dstAlphaBlendFactor = gpu::BlendFactor::OneMinusSrcAlpha,
+                    .alphaBlendOp = gpu::BlendOp::Add,
+                    .colorWriteMask =
+                        gpu::ColorComponent::R | gpu::ColorComponent::G |
+                        gpu::ColorComponent::B | gpu::ColorComponent::A,
+                    .enableBlend = true,
+                },
+        });
+    pipelineInfo.targetInfo.hasDepthStencilTarget = enableDepthTest;
+    pipelineInfo.targetInfo.depthStencilTargetFormat =
+        gpu::TextureFormat::D32_FLOAT_S8_UINT;
+    this->pipeline = device->createGraphicsPipeline(pipelineInfo);
+    group.done();
+  };
+
+  if (!inSetup && this->vertexShader.getRaw() && this->fragmentShader.getRaw()) {
+    (*buildOrRetry)();
+    return;
+  }
+
+  Graphics::addPreDrawFunc(*buildOrRetry);
 }
 
 gpu::VertexInputState createVertexInputState(Allocator *allocator,

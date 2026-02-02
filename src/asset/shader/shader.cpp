@@ -3,80 +3,168 @@
 #include <graphics/graphics.hpp>
 #include <platform/io/asset_io.hpp>
 
+#include <core/thread/global_thread_pool.hpp>
+#include <core/thread/load_context.hpp>
+
 #include "core/allocator/global_allocator.hpp"
 #include "rt_shader_compiler.hpp"
 
 // external
 #include <SDL3/SDL.h>
 
+#include <chrono>
+#include <cstring>
+#include <functional>
+#include <memory>
+
 namespace sinen {
+Shader::Shader() { shader = makePtr<Ptr<gpu::Shader>>(); }
+Shader::Shader(const Ptr<gpu::Shader> &raw) {
+  shader = makePtr<Ptr<gpu::Shader>>();
+  *shader = raw;
+}
 void Shader::load(StringView vertex_shader, ShaderStage stage,
                   int numUniformData) {
-  auto *allocator = GlobalAllocator::get();
-  auto device = Graphics::getDevice();
+  this->shader.reset();
+  shader = makePtr<Ptr<gpu::Shader>>();
+  this->async = makePtr<AsyncState>();
+  const Ptr<AsyncState> state = this->async;
 
-  SDL_IOStream *file = (SDL_IOStream *)AssetIO::openAsIOStream(vertex_shader);
+  const TaskGroup group = LoadContext::current();
+  group.add();
 
-  auto str = AssetIO::openAsString(vertex_shader);
+  const String path = vertex_shader.data();
+  state->future =
+      globalThreadPool().submit([state, path, stage, numUniformData] {
+        auto str = AssetIO::openAsString(path);
+        state->spirv.resize(str.size());
+        if (!str.empty()) {
+          std::memcpy(state->spirv.data(), str.data(), str.size());
+        }
 
-  gpu::Shader::CreateInfo info{};
-  info.allocator = allocator;
-  info.size = str.size();
-  info.data = str.data();
-  info.entrypoint = "main";
-  info.format = gpu::ShaderFormat::SPIRV;
-  switch (stage) {
-  case ShaderStage::Vertex:
-    info.stage = gpu::ShaderStage::Vertex;
-    break;
-  case ShaderStage::Fragment:
-    info.stage = gpu::ShaderStage::Fragment;
-    break;
-  case ShaderStage::Compute:
-    info.stage = gpu::ShaderStage::Vertex; // TODO
-    break;
-  }
-  info.numSamplers = stage==ShaderStage::Fragment?1:0;
-  info.numStorageBuffers = 0;
-  info.numStorageTextures = 0;
-  info.numUniformBuffers = numUniformData + 1;
-  shader = device->createShader(info);
+        state->numUniformBuffers = static_cast<uint32_t>(numUniformData + 1);
+        state->numSamplers = (stage == ShaderStage::Fragment) ? 1u : 0u;
+
+        switch (stage) {
+        case ShaderStage::Vertex:
+          state->gpuStage = gpu::ShaderStage::Vertex;
+          break;
+        case ShaderStage::Fragment:
+          state->gpuStage = gpu::ShaderStage::Fragment;
+          break;
+        case ShaderStage::Compute:
+          state->gpuStage = gpu::ShaderStage::Vertex; // TODO
+          break;
+        }
+      });
+
+  auto pollAndCreate = std::make_shared<std::function<void()>>();
+  *pollAndCreate = [this, pollAndCreate, state, group]() {
+    if (!state->future.valid()) {
+      group.done();
+      return;
+    }
+    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
+        std::future_status::ready) {
+      Graphics::addPreDrawFunc(*pollAndCreate);
+      return;
+    }
+
+    state->future.get();
+
+    auto *allocator = GlobalAllocator::get();
+    auto device = Graphics::getDevice();
+
+    gpu::Shader::CreateInfo info{};
+    info.allocator = allocator;
+    info.size = state->spirv.size();
+    info.data = state->spirv.data();
+    info.entrypoint = "main";
+    info.format = gpu::ShaderFormat::SPIRV;
+    info.stage = state->gpuStage;
+    info.numSamplers = state->numSamplers;
+    info.numStorageBuffers = 0;
+    info.numStorageTextures = 0;
+    info.numUniformBuffers = state->numUniformBuffers;
+
+    *shader = device->createShader(info);
+    this->async.reset();
+    group.done();
+  };
+  Graphics::addPreDrawFunc(*pollAndCreate);
 }
 void Shader::compileAndLoad(StringView name, ShaderStage stage) {
 
-  String str = name.data();
+  this->shader.reset();
+  shader = makePtr<Ptr<gpu::Shader>>();
+  this->async = makePtr<AsyncState>();
+  const Ptr<AsyncState> state = this->async;
 
-  // TODO: add support for other languages
-  ShaderCompiler compiler;
-  ShaderCompiler::ReflectionData reflectionData;
-  auto spirv = compiler.compile(str, stage, ShaderCompiler::Language::SPIRV,
-                                reflectionData);
+  const TaskGroup group = LoadContext::current();
+  group.add();
 
-  auto *allocator = GlobalAllocator::get();
-  auto device = Graphics::getDevice();
+  const String str = name.data();
+  state->future = globalThreadPool().submit([state, str, stage] {
+    // TODO: add support for other languages
+    ShaderCompiler compiler;
+    ShaderCompiler::ReflectionData reflectionData{};
+    state->spirv = compiler.compile(str, stage, ShaderCompiler::Language::SPIRV,
+                                    reflectionData);
 
-  gpu::Shader::CreateInfo info{};
-  info.allocator = allocator;
-  info.size = spirv.size();
-  info.data = spirv.data();
-  info.entrypoint = "main";
-  info.format = gpu::ShaderFormat::SPIRV;
-  switch (stage) {
-  case ShaderStage::Vertex:
-    info.stage = gpu::ShaderStage::Vertex;
-    break;
-  case ShaderStage::Fragment:
-    info.stage = gpu::ShaderStage::Fragment;
-    break;
-  case ShaderStage::Compute:
-    info.stage = gpu::ShaderStage::Vertex; // TODO
-    break;
-  }
-  info.numSamplers =
-      stage == ShaderStage::Fragment ? reflectionData.numCombinedSamplers : 0;
-  info.numStorageBuffers = 0;
-  info.numStorageTextures = 0;
-  info.numUniformBuffers = reflectionData.numUniformBuffers;
-  shader = device->createShader(info);
+    state->numUniformBuffers = reflectionData.numUniformBuffers;
+    state->numSamplers = (stage == ShaderStage::Fragment)
+                             ? reflectionData.numCombinedSamplers
+                             : 0u;
+
+    switch (stage) {
+    case ShaderStage::Vertex:
+      state->gpuStage = gpu::ShaderStage::Vertex;
+      break;
+    case ShaderStage::Fragment:
+      state->gpuStage = gpu::ShaderStage::Fragment;
+      break;
+    case ShaderStage::Compute:
+      state->gpuStage = gpu::ShaderStage::Vertex; // TODO
+      break;
+    }
+  });
+
+  auto pollAndCreate = std::make_shared<std::function<void()>>();
+  *pollAndCreate = [this, pollAndCreate, state, group]() {
+    if (!state->future.valid()) {
+      group.done();
+      return;
+    }
+    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
+        std::future_status::ready) {
+      Graphics::addPreDrawFunc(*pollAndCreate);
+      return;
+    }
+
+    state->future.get();
+
+    auto *allocator = GlobalAllocator::get();
+    auto device = Graphics::getDevice();
+
+    gpu::Shader::CreateInfo info{};
+    info.allocator = allocator;
+    info.size = state->spirv.size();
+    info.data = state->spirv.data();
+    info.entrypoint = "main";
+    info.format = gpu::ShaderFormat::SPIRV;
+    info.stage = state->gpuStage;
+    info.numSamplers = state->numSamplers;
+    info.numStorageBuffers = 0;
+    info.numStorageTextures = 0;
+    info.numUniformBuffers = state->numUniformBuffers;
+
+    {
+      *shader = device->createShader(info);
+    }
+    this->async.reset();
+    group.done();
+  };
+  Graphics::addPreDrawFunc(*pollAndCreate);
 }
+Ptr<gpu::Shader> Shader::getRaw() { return *shader; }
 } // namespace sinen

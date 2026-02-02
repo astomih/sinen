@@ -11,9 +11,10 @@
 #include <asset/font/default/mplus-1p-medium.ttf.hpp>
 #include <asset/script/script.hpp>
 #include <asset/shader/builtin_shader.hpp>
-#include <graphics/builtin_pipeline.hpp>
 #include <gpu/gpu.hpp>
+#include <graphics/builtin_pipeline.hpp>
 #include <platform/window/window.hpp>
+
 
 #include <SDL3/SDL.h>
 
@@ -162,10 +163,13 @@ void Graphics::shutdown() {
 }
 
 void Graphics::render() {
-  for (auto &f : preDrawFuncs) {
-    f();
+  {
+    auto funcs = std::move(preDrawFuncs);
+    preDrawFuncs.clear();
+    for (auto &f : funcs) {
+      f();
+    }
   }
-  preDrawFuncs.clear();
 
   auto commandBuffer = device->acquireCommandBuffer({GlobalAllocator::get()});
   if (commandBuffer == nullptr) {
@@ -389,7 +393,7 @@ void Graphics::drawBase3D(const sinen::Draw3D &draw3D) {
   currentPipeline = std::nullopt;
 }
 void Graphics::drawRect(const Rect &rect, const Color &color, float angle) {
-  if (customPipeline.has_value())
+  if (customPipeline.has_value() && customPipeline.value().get() != nullptr)
     currentPipeline = customPipeline.value();
   else
     currentPipeline = BuiltinPipeline::getDefault2D();
@@ -405,7 +409,7 @@ void Graphics::drawRect(const Rect &rect, const Color &color, float angle) {
 }
 void Graphics::drawImage(const Texture &texture, const Rect &rect,
                          float angle) {
-  if (customPipeline.has_value())
+  if (customPipeline.has_value() && customPipeline.value().get() != nullptr)
     currentPipeline = customPipeline.value();
   else
     currentPipeline = BuiltinPipeline::getDefault2D();
@@ -419,7 +423,7 @@ void Graphics::drawImage(const Texture &texture, const Rect &rect,
 }
 void Graphics::drawText(StringView text, const Font &font, const Vec2 &position,
                         const Color &color, float textSize, float angle) {
-  if (customPipeline.has_value())
+  if (customPipeline.has_value() && customPipeline.value().get() != nullptr)
     currentPipeline = customPipeline.value();
   else
     currentPipeline = BuiltinPipeline::getDefault2D();
@@ -436,7 +440,7 @@ void Graphics::drawText(StringView text, const Font &font, const Vec2 &position,
   Graphics::drawBase2D(draw2D);
 }
 void Graphics::drawCubemap(const Texture &cubemap) {
-  if (customPipeline.has_value())
+  if (customPipeline.has_value() && customPipeline.value().get() != nullptr)
     currentPipeline = customPipeline.value();
   else
     currentPipeline = BuiltinPipeline::getCubemap();
@@ -452,7 +456,7 @@ void Graphics::drawCubemap(const Texture &cubemap) {
   Graphics::drawBase3D(draw3D);
 }
 void Graphics::drawModel(const Model &model, const Transform &transform) {
-  if (customPipeline.has_value())
+  if (customPipeline.has_value() && customPipeline.value().get() != nullptr)
     currentPipeline = customPipeline.value();
   else
     currentPipeline = BuiltinPipeline::getDefault3D();
@@ -474,7 +478,7 @@ void Graphics::drawModel(const Model &model, const Transform &transform) {
 }
 void Graphics::drawModelInstanced(const Model &model,
                                   const Array<Transform> &transforms) {
-  if (customPipeline.has_value())
+  if (customPipeline.has_value() && customPipeline.value().get() != nullptr)
     currentPipeline = customPipeline.value();
   else
     currentPipeline = BuiltinPipeline::getInstanced3D();

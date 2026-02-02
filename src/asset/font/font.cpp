@@ -6,12 +6,17 @@
 #include <asset/font/font.hpp>
 #include <asset/texture/texture.hpp>
 #include <core/data/array.hpp>
-#include <graphics/graphics.hpp>
 #include <gpu/gpu.hpp>
+#include <graphics/graphics.hpp>
 #include <math/color/color.hpp>
 #include <math/geometry/mesh.hpp>
 #include <math/math.hpp>
 #include <platform/io/asset_io.hpp>
+
+
+// thread
+#include <core/thread/global_thread_pool.hpp>
+#include <core/thread/load_context.hpp>
 
 // external
 #include <SDL3/SDL.h>
@@ -21,8 +26,9 @@
 
 #include "default/mplus-1p-medium.ttf.hpp"
 
+#include <chrono>
 #include <future>
-#include <thread>
+#include <memory>
 
 namespace sinen {
 struct CodepointRange {
@@ -46,7 +52,7 @@ private:
   std::future<bool> future;
   Array<unsigned char> atlasBitmap;
   String data;
-  bool loaded = false;
+  std::atomic<bool> loaded = false;
   int m_size;
 
 public:
@@ -110,74 +116,125 @@ public:
   bool load(int pointSize) override {
     pointSize += 16;
     stbtt_InitFont(&fontInfo, mplus1pMediumTtf, 0);
+    this->loaded = false;
     this->m_size = pointSize;
     this->sheetSize = pointSize * 64;
 
-    this->future =
-        std::async(std::launch::async, loadCore, mplus1pMediumTtf,
-                   std::ref(this->packedChar), std::ref(this->atlasBitmap),
-                   pointSize, this->sheetSize);
-    Graphics::addPreDrawFunc([this]() {
-      if (!this->loaded) {
-        if (this->future.valid()) {
-          this->future.wait();
-          this->texture.loadFromMemory(this->atlasBitmap.data(),
-                                       this->sheetSize, this->sheetSize,
-                                       gpu::TextureFormat::R8G8B8A8_UNORM, 4);
-          this->loaded = true;
-        }
+    const TaskGroup group = LoadContext::current();
+    group.add();
+
+    this->future = globalThreadPool().submit(
+        loadCore, mplus1pMediumTtf, std::ref(this->packedChar),
+        std::ref(this->atlasBitmap), pointSize, this->sheetSize);
+
+    auto pollAndUpload = std::make_shared<std::function<void()>>();
+    *pollAndUpload = [this, pollAndUpload, group]() {
+      if (this->loaded) {
+        return;
       }
-    });
+      if (!this->future.valid()) {
+        group.done();
+        return;
+      }
+
+      if (this->future.wait_for(std::chrono::milliseconds(0)) !=
+          std::future_status::ready) {
+        Graphics::addPreDrawFunc(*pollAndUpload);
+        return;
+      }
+
+      (void)this->future.get();
+      this->texture.loadFromMemory(this->atlasBitmap.data(), this->sheetSize,
+                                   this->sheetSize,
+                                   gpu::TextureFormat::R8G8B8A8_UNORM, 4);
+      this->loaded = true;
+      group.done();
+    };
+    Graphics::addPreDrawFunc(*pollAndUpload);
     return true;
   }
   bool load(int pointSize, StringView fontName) override {
     pointSize += 16;
+    this->loaded = false;
     this->m_size = pointSize;
     this->sheetSize = pointSize * 64;
     this->data = AssetIO::openAsString(fontName);
-    this->future =
-        std::async(std::launch::async, loadCore,
-                   reinterpret_cast<const unsigned char *>(this->data.data()),
-                   std::ref(this->packedChar), std::ref(this->atlasBitmap),
-                   pointSize, this->sheetSize);
-    Graphics::addPreDrawFunc([this]() {
-      if (!this->loaded) {
-        if (this->future.valid()) {
-          this->future.wait();
-          this->texture.loadFromMemory(this->atlasBitmap.data(),
-                                       this->sheetSize, this->sheetSize,
-                                       gpu::TextureFormat::R8G8B8A8_UNORM, 4);
-          this->loaded = true;
-        }
+    const TaskGroup group = LoadContext::current();
+    group.add();
+
+    this->future = globalThreadPool().submit(
+        loadCore, reinterpret_cast<const unsigned char *>(this->data.data()),
+        std::ref(this->packedChar), std::ref(this->atlasBitmap), pointSize,
+        this->sheetSize);
+
+    auto pollAndUpload = std::make_shared<std::function<void()>>();
+    *pollAndUpload = [this, pollAndUpload, group]() {
+      if (this->loaded) {
+        return;
       }
-    });
+      if (!this->future.valid()) {
+        group.done();
+        return;
+      }
+
+      if (this->future.wait_for(std::chrono::milliseconds(0)) !=
+          std::future_status::ready) {
+        Graphics::addPreDrawFunc(*pollAndUpload);
+        return;
+      }
+
+      (void)this->future.get();
+      this->texture.loadFromMemory(this->atlasBitmap.data(), this->sheetSize,
+                                   this->sheetSize,
+                                   gpu::TextureFormat::R8G8B8A8_UNORM, 4);
+      this->loaded = true;
+      group.done();
+    };
+    Graphics::addPreDrawFunc(*pollAndUpload);
     return true;
   }
   bool load(int pointSize, const Buffer &buffer) override {
     pointSize += 16;
+    this->loaded = false;
     this->m_size = pointSize;
     this->sheetSize = pointSize * 64;
     this->data = (const char *)buffer.data();
-    this->future =
-        std::async(std::launch::async, loadCore,
-                   reinterpret_cast<const unsigned char *>(this->data.data()),
-                   std::ref(this->packedChar), std::ref(this->atlasBitmap),
-                   pointSize, this->sheetSize);
-    Graphics::addPreDrawFunc([this]() {
-      if (!this->loaded) {
-        if (this->future.valid()) {
-          this->future.wait();
-          this->texture.loadFromMemory(this->atlasBitmap.data(),
-                                       this->sheetSize, this->sheetSize,
-                                       gpu::TextureFormat::R8G8B8A8_UNORM, 4);
-          this->loaded = true;
-        }
+    const TaskGroup group = LoadContext::current();
+    group.add();
+
+    this->future = globalThreadPool().submit(
+        loadCore, reinterpret_cast<const unsigned char *>(this->data.data()),
+        std::ref(this->packedChar), std::ref(this->atlasBitmap), pointSize,
+        this->sheetSize);
+
+    auto pollAndUpload = std::make_shared<std::function<void()>>();
+    *pollAndUpload = [this, pollAndUpload, group]() {
+      if (this->loaded) {
+        return;
       }
-    });
+      if (!this->future.valid()) {
+        group.done();
+        return;
+      }
+
+      if (this->future.wait_for(std::chrono::milliseconds(0)) !=
+          std::future_status::ready) {
+        Graphics::addPreDrawFunc(*pollAndUpload);
+        return;
+      }
+
+      (void)this->future.get();
+      this->texture.loadFromMemory(this->atlasBitmap.data(), this->sheetSize,
+                                   this->sheetSize,
+                                   gpu::TextureFormat::R8G8B8A8_UNORM, 4);
+      this->loaded = true;
+      group.done();
+    };
+    Graphics::addPreDrawFunc(*pollAndUpload);
     return true;
   }
 
-  bool isLoaded() override { return m_size != 0; }
+  bool isLoaded() override { return loaded; }
   void unload() override {}
   int size() const override { return m_size; }
 

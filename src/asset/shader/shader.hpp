@@ -1,8 +1,13 @@
 #ifndef SINEN_SHADER_HPP
 #define SINEN_SHADER_HPP
 #include "shader_stage.hpp"
+#include <core/data/array.hpp>
+#include <core/data/ptr.hpp>
+#include <core/data/string.hpp>
 #include <gpu/gpu.hpp>
 
+#include <cstdint>
+#include <future>
 
 namespace sinen {
 /**
@@ -11,18 +16,27 @@ namespace sinen {
  */
 class Shader {
 public:
-  Shader() = default;
-  Shader(const Ptr<gpu::Shader> &raw) : shader(raw) {}
+  Shader();
+  Shader(const Ptr<gpu::Shader> &raw);
 
   static constexpr const char *metaTableName() { return "sn.Shader"; }
 
   void load(StringView name, ShaderStage stage, int numUniformData);
   void compileAndLoad(StringView name, ShaderStage stage);
 
-  Ptr<gpu::Shader> getRaw() { return shader; }
+  bool isReady() const { return shader != nullptr; }
+  Ptr<gpu::Shader> getRaw();
 
 private:
-  Ptr<gpu::Shader> shader;
+  struct AsyncState {
+    std::future<void> future;
+    Array<char> spirv;
+    uint32_t numUniformBuffers = 0;
+    uint32_t numSamplers = 0;
+    gpu::ShaderStage gpuStage = gpu::ShaderStage::Vertex;
+  };
+  Ptr<Ptr<gpu::Shader>> shader;
+  Ptr<AsyncState> async;
 };
 } // namespace sinen
 #endif // !SINEN_SHADER_HPP

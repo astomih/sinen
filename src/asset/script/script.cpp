@@ -805,12 +805,12 @@ static void registerRect(lua_State *L) {
 static int lTextureNew(lua_State *L) {
   int n = lua_gettop(L);
   if (n == 0) {
-    udPushPtr<Texture>(L, makePtr<Texture>());
+    udPushPtr<Texture>(L, Texture::create());
     return 1;
   }
   int w = static_cast<int>(luaL_checkinteger(L, 1));
   int h = static_cast<int>(luaL_checkinteger(L, 2));
-  udPushPtr<Texture>(L, makePtr<Texture>(w, h));
+  udPushPtr<Texture>(L, Texture::create(w, h));
   return 1;
 }
 static int lTextureLoad(lua_State *L) {
@@ -838,7 +838,7 @@ static int lTextureFill(lua_State *L) {
 }
 static int lTextureCopy(lua_State *L) {
   auto &tex = udPtr<Texture>(L, 1);
-  udPushPtr<Texture>(L, makePtr<Texture>(tex->copy()));
+  udPushPtr<Texture>(L, tex->copy());
   return 1;
 }
 static int lTextureSize(lua_State *L) {
@@ -932,14 +932,14 @@ static int lModelHasTexture(lua_State *L) {
 static int lModelGetTexture(lua_State *L) {
   auto &m = udPtr<Model>(L, 1);
   auto k = static_cast<TextureKey>(luaL_checkinteger(L, 2));
-  udPushPtr<Texture>(L, makePtr<Texture>(m->getTexture(k)));
+  udPushPtr<Texture>(L, m->getTexture(k));
   return 1;
 }
 static int lModelSetTexture(lua_State *L) {
   auto &m = udPtr<Model>(L, 1);
   auto k = static_cast<TextureKey>(luaL_checkinteger(L, 2));
   auto &t = udPtr<Texture>(L, 3);
-  m->setTexture(k, *t);
+  m->setTexture(k, t);
   return 0;
 }
 static void registerModel(lua_State *L) {
@@ -1679,15 +1679,15 @@ static int lGraphicsDrawImage(lua_State *L) {
   auto &rect = udValue<Rect>(L, 2);
   if (lua_gettop(L) >= 3) {
     float angle = static_cast<float>(luaL_checknumber(L, 3));
-    Graphics::drawImage(*tex, rect, angle);
+    Graphics::drawImage(tex, rect, angle);
     return 0;
   }
-  Graphics::drawImage(*tex, rect);
+  Graphics::drawImage(tex, rect);
   return 0;
 }
 static int lGraphicsDrawCubemap(lua_State *L) {
   auto &tex = udPtr<Texture>(L, 1);
-  Graphics::drawCubemap(*tex);
+  Graphics::drawCubemap(tex);
   return 0;
 }
 static int lGraphicsDrawModel(lua_State *L) {
@@ -1752,7 +1752,7 @@ static int lGraphicsResetGraphicsPipeline(lua_State *L) {
 static int lGraphicsSetTexture(lua_State *L) {
   UInt32 slot = static_cast<UInt32>(luaL_checkinteger(L, 1));
   auto &t = udPtr<Texture>(L, 2);
-  Graphics::setTexture(slot, *t);
+  Graphics::setTexture(slot, t);
   return 0;
 }
 static int lGraphicsResetTexture(lua_State *L) {
@@ -1784,7 +1784,7 @@ static int lGraphicsFlush(lua_State *L) {
 static int lGraphicsReadbackTexture(lua_State *L) {
   auto &rt = udPtr<RenderTexture>(L, 1);
   auto &out = udPtr<Texture>(L, 2);
-  lua_pushboolean(L, Graphics::readbackTexture(*rt, *out));
+  lua_pushboolean(L, Graphics::readbackTexture(*rt, out));
   return 1;
 }
 static void registerGraphics(lua_State *L) {

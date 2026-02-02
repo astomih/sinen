@@ -277,51 +277,51 @@ void calcTangents(const aiScene *scene, Mesh &m) {
   }
 }
 
-std::optional<Texture> loadTexture(aiScene *scene, aiMaterial *material,
-                                   aiTextureType type) {
+Ptr<Texture> loadTexture(aiScene *scene, aiMaterial *material,
+                         aiTextureType type) {
   aiString texPath;
   if (material->GetTexture(type, 0, &texPath) != AI_SUCCESS) {
-    return std::nullopt;
+    return nullptr;
   }
   auto *aiTex = scene->GetEmbeddedTexture(texPath.C_Str());
   if (!aiTex) {
-    return std::nullopt;
+    return nullptr;
   }
-  Texture texture;
+  auto texture = Texture::create();
   Array<char> buffer;
   if (aiTex->mHeight == 0) {
     buffer.resize(aiTex->mWidth);
     memcpy(buffer.data(), aiTex->pcData, aiTex->mWidth);
-    texture.loadFromMemory(buffer);
+    texture->loadFromMemory(buffer);
   } else {
-    texture.loadFromMemory(aiTex->pcData, aiTex->mWidth, aiTex->mHeight,
-                           gpu::TextureFormat::R8G8B8A8_UNORM, 4);
+    texture->loadFromMemory(aiTex->pcData, aiTex->mWidth, aiTex->mHeight,
+                            gpu::TextureFormat::R8G8B8A8_UNORM, 4);
   }
   return texture;
 }
-void loadMaterial(aiScene *scene, Array<std::optional<Texture>> &textures) {
+void loadMaterial(aiScene *scene, Array<Ptr<Texture>> &textures) {
   for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
-    if (!textures[0].has_value()) {
+    if (!textures[0]) {
       textures[0] =
           loadTexture(scene, scene->mMaterials[i], aiTextureType_BASE_COLOR);
     }
-    if (!textures[1].has_value()) {
+    if (!textures[1]) {
       textures[1] =
           loadTexture(scene, scene->mMaterials[i], aiTextureType_NORMALS);
     }
-    if (!textures[2].has_value()) {
+    if (!textures[2]) {
       textures[2] = loadTexture(scene, scene->mMaterials[i],
                                 aiTextureType_DIFFUSE_ROUGHNESS);
     }
-    if (!textures[3].has_value()) {
+    if (!textures[3]) {
       textures[3] =
           loadTexture(scene, scene->mMaterials[i], aiTextureType_METALNESS);
     }
-    if (!textures[4].has_value()) {
+    if (!textures[4]) {
       textures[4] =
           loadTexture(scene, scene->mMaterials[i], aiTextureType_EMISSIVE);
     }
-    if (!textures[5].has_value()) {
+    if (!textures[5]) {
       textures[5] =
           loadTexture(scene, scene->mMaterials[i], aiTextureType_LIGHTMAP);
     }
@@ -643,12 +643,12 @@ void Model::loadBoneUniform(float start) {
   }
 }
 bool Model::hasTexture(TextureKey type) const {
-  return textures[static_cast<UInt32>(type)].has_value();
+  return textures[static_cast<UInt32>(type)] != nullptr;
 }
-Texture Model::getTexture(TextureKey type) const {
-  return textures[static_cast<UInt32>(type)].value();
+Ptr<Texture> Model::getTexture(TextureKey type) const {
+  return textures[static_cast<UInt32>(type)];
 }
-void Model::setTexture(TextureKey type, const Texture &texture) {
+void Model::setTexture(TextureKey type, const Ptr<Texture> &texture) {
   textures[static_cast<UInt32>(type)] = texture;
 }
 } // namespace sinen

@@ -33,8 +33,9 @@ public:
   static void drawRect(const Rect &rect, const Color &color) {
     drawRect(rect, color, 0.0f);
   }
-  static void drawImage(const Texture &texture, const Rect &rect, float angle);
-  static void drawImage(const Texture &texture, const Rect &rect) {
+  static void drawImage(const Ptr<Texture> &texture, const Rect &rect,
+                        float angle);
+  static void drawImage(const Ptr<Texture> &texture, const Rect &rect) {
     drawImage(texture, rect, 0.0f);
   }
   static void drawText(StringView text, const Font &font, const Vec2 &position,
@@ -47,7 +48,7 @@ public:
                        const Vec2 &position) {
     drawText(text, font, position, Palette::white(), 32.f, 0.0f);
   }
-  static void drawCubemap(const Texture &cubemap);
+  static void drawCubemap(const Ptr<Texture> &cubemap);
   static void drawModel(const Model &model, const Transform &transform);
   static void drawModelInstanced(const Model &model,
                                  const Array<Transform> &transforms);
@@ -61,12 +62,12 @@ public:
   static void setGraphicsPipeline(const GraphicsPipeline &pipeline);
   static void resetGraphicsPipeline();
   static void setUniformBuffer(UInt32 slotIndex, const Buffer &buffer);
-  static void setTexture(UInt32 slotIndex, const Texture &texture);
+  static void setTexture(UInt32 slotIndex, const Ptr<Texture> &texture);
   static void resetTexture(UInt32 slotIndex);
   static void resetAllTexture();
   static void setRenderTarget(const RenderTexture &texture);
   static void flush();
-  static bool readbackTexture(const RenderTexture &texture, Texture &out);
+  static bool readbackTexture(const RenderTexture &texture, Ptr<Texture> &out);
 
   static Model box;
   static Model sprite;

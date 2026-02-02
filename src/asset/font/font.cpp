@@ -13,7 +13,6 @@
 #include <math/math.hpp>
 #include <platform/io/asset_io.hpp>
 
-
 // thread
 #include <core/thread/global_thread_pool.hpp>
 #include <core/thread/load_context.hpp>
@@ -47,7 +46,7 @@ class FontImpl : public Font {
 private:
   Array<Array<stbtt_packedchar>> packedChar;
   stbtt_fontinfo fontInfo;
-  Texture texture;
+  Ptr<Texture> texture;
   uint32_t sheetSize;
   std::future<bool> future;
   Array<unsigned char> atlasBitmap;
@@ -56,7 +55,9 @@ private:
   int m_size;
 
 public:
-  FontImpl() : packedChar(), texture(), sheetSize(0) {}
+  FontImpl() : packedChar(), texture(), sheetSize(0) {
+    texture = Texture::create();
+  }
   FontImpl(int32_t point, StringView file_name) { load(point, file_name); }
   ~FontImpl() {}
   static bool loadCore(const unsigned char *fontData,
@@ -144,9 +145,9 @@ public:
       }
 
       (void)this->future.get();
-      this->texture.loadFromMemory(this->atlasBitmap.data(), this->sheetSize,
-                                   this->sheetSize,
-                                   gpu::TextureFormat::R8G8B8A8_UNORM, 4);
+      this->texture->loadFromMemory(this->atlasBitmap.data(), this->sheetSize,
+                                    this->sheetSize,
+                                    gpu::TextureFormat::R8G8B8A8_UNORM, 4);
       this->loaded = true;
       group.done();
     };
@@ -184,9 +185,9 @@ public:
       }
 
       (void)this->future.get();
-      this->texture.loadFromMemory(this->atlasBitmap.data(), this->sheetSize,
-                                   this->sheetSize,
-                                   gpu::TextureFormat::R8G8B8A8_UNORM, 4);
+      this->texture->loadFromMemory(this->atlasBitmap.data(), this->sheetSize,
+                                    this->sheetSize,
+                                    gpu::TextureFormat::R8G8B8A8_UNORM, 4);
       this->loaded = true;
       group.done();
     };
@@ -207,7 +208,7 @@ public:
         std::ref(this->packedChar), std::ref(this->atlasBitmap), pointSize,
         this->sheetSize);
 
-    auto pollAndUpload = std::make_shared<std::function<void()>>();
+    auto pollAndUpload = makePtr<std::function<void()>>();
     *pollAndUpload = [this, pollAndUpload, group]() {
       if (this->loaded) {
         return;
@@ -224,9 +225,9 @@ public:
       }
 
       (void)this->future.get();
-      this->texture.loadFromMemory(this->atlasBitmap.data(), this->sheetSize,
-                                   this->sheetSize,
-                                   gpu::TextureFormat::R8G8B8A8_UNORM, 4);
+      this->texture->loadFromMemory(this->atlasBitmap.data(), this->sheetSize,
+                                    this->sheetSize,
+                                    gpu::TextureFormat::R8G8B8A8_UNORM, 4);
       this->loaded = true;
       group.done();
     };
@@ -239,7 +240,7 @@ public:
   int size() const override { return m_size; }
 
   void resize(int point_size) override {}
-  Texture getAtlas() const override { return this->texture; }
+  Ptr<Texture> getAtlas() const override { return this->texture; }
 
   static const char *utf8ToCodepoint(const char *p, uint32_t *out_cp) {
     unsigned char c = (unsigned char)*p;

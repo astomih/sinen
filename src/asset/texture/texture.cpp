@@ -1,6 +1,8 @@
 #include <SDL3/SDL.h>
 #include <asset/texture/texture.hpp>
 #include <cassert>
+#include <core/thread/global_thread_pool.hpp>
+#include <core/thread/load_context.hpp>
 #include <graphics/graphics.hpp>
 #include <memory>
 #include <platform/io/asset_io.hpp>
@@ -10,6 +12,10 @@
 
 #include <gpu/gpu.hpp>
 
+#include <chrono>
+#include <cstring>
+#include <functional>
+
 namespace sinen {
 static Ptr<gpu::Texture> createNativeTexture(void *pPixels,
                                              gpu::TextureFormat textureFormat,
@@ -17,53 +23,233 @@ static Ptr<gpu::Texture> createNativeTexture(void *pPixels,
                                              int channels);
 static void updateNativeTexture(Ptr<gpu::Texture> texture, void *pPixels,
                                 int channels);
-Texture::Texture() { this->texture = nullptr; }
+
+namespace {
+struct AsyncTexture2DState {
+  std::future<void> future;
+  Array<uint8_t> pixels;
+  uint32_t width = 0;
+  uint32_t height = 0;
+  int channels = 4;
+  gpu::TextureFormat format = gpu::TextureFormat::R8G8B8A8_UNORM;
+  bool ok = false;
+};
+} // namespace
+Texture::Texture() { texture = nullptr; }
 Texture::Texture(int width, int height) {
   Array<uint8_t> pixels(width * height * 4, 0);
-  this->texture = createNativeTexture(
+  texture = createNativeTexture(
       pixels.data(), gpu::TextureFormat::R8G8B8A8_UNORM, width, height, 4);
 }
+Ptr<Texture> Texture::create() { return makePtr<Texture>(); }
+Ptr<Texture> Texture::create(int width, int height) {
+  return makePtr<Texture>(width, height);
+}
+
 Texture::~Texture() {}
 
 bool Texture::load(StringView fileName) {
-  unsigned char *pixels;
-  int width;
-  int height;
-  int bpp;
+  this->loading = true;
+  this->pendingWidth = 0;
+  this->pendingHeight = 0;
 
-  auto str = AssetIO::openAsString(fileName);
+  const TaskGroup group = LoadContext::current();
+  group.add();
 
-  pixels = stbi_load_from_memory(reinterpret_cast<unsigned char *>(str.data()),
-                                 str.size(), &width, &height, &bpp, 4);
+  auto state = makePtr<AsyncTexture2DState>();
+  this->async = state;
 
-  texture = createNativeTexture(pixels, gpu::TextureFormat::R8G8B8A8_UNORM,
-                                width, height, 4);
+  const String path = fileName.data();
+  state->future = globalThreadPool().submit([state, path] {
+    auto str = AssetIO::openAsString(path);
+    int width = 0, height = 0, bpp = 0;
+    unsigned char *decoded = stbi_load_from_memory(
+        reinterpret_cast<unsigned char *>(str.data()),
+        static_cast<int>(str.size()), &width, &height, &bpp, 4);
+    if (!decoded || width <= 0 || height <= 0) {
+      if (decoded)
+        stbi_image_free(decoded);
+      state->ok = false;
+      return;
+    }
+
+    const size_t sizeBytes =
+        static_cast<size_t>(width) * static_cast<size_t>(height) * 4u;
+    state->pixels.resize(sizeBytes);
+    std::memcpy(state->pixels.data(), decoded, sizeBytes);
+    stbi_image_free(decoded);
+
+    state->width = static_cast<uint32_t>(width);
+    state->height = static_cast<uint32_t>(height);
+    state->channels = 4;
+    state->format = gpu::TextureFormat::R8G8B8A8_UNORM;
+    state->ok = true;
+  });
+
+  auto pollAndUpload = std::make_shared<std::function<void()>>();
+  *pollAndUpload = [this, pollAndUpload, state, group]() {
+    if (!state->future.valid()) {
+      this->loading = false;
+      this->async.reset();
+      group.done();
+      return;
+    }
+
+    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
+        std::future_status::ready) {
+      Graphics::addPreDrawFunc(*pollAndUpload);
+      return;
+    }
+
+    state->future.get();
+    if (state->ok) {
+      texture =
+          createNativeTexture(state->pixels.data(), state->format, state->width,
+                              state->height, state->channels);
+      this->pendingWidth = state->width;
+      this->pendingHeight = state->height;
+    }
+    this->loading = false;
+    this->async.reset();
+    group.done();
+  };
+  Graphics::addPreDrawFunc(*pollAndUpload);
   return true;
 }
 bool Texture::load(const Buffer &buffer) {
+  this->texture.reset();
+  this->loading = true;
+  this->pendingWidth = 0;
+  this->pendingHeight = 0;
 
-  int width, height;
-  int bpp;
+  const TaskGroup group = LoadContext::current();
+  group.add();
 
-  auto *pixels =
-      stbi_load_from_memory(reinterpret_cast<unsigned char *>(buffer.data()),
-                            buffer.size(), &width, &height, &bpp, 4);
-  texture = createNativeTexture(pixels, gpu::TextureFormat::R8G8B8A8_UNORM,
-                                width, height, 4);
+  auto state = makePtr<AsyncTexture2DState>();
+  this->async = state;
+
+  const Buffer buf = buffer;
+  state->future = globalThreadPool().submit([state, buf] {
+    int width = 0, height = 0, bpp = 0;
+    unsigned char *decoded =
+        stbi_load_from_memory(reinterpret_cast<unsigned char *>(buf.data()),
+                              buf.size(), &width, &height, &bpp, 4);
+    if (!decoded || width <= 0 || height <= 0) {
+      if (decoded)
+        stbi_image_free(decoded);
+      state->ok = false;
+      return;
+    }
+
+    const size_t sizeBytes =
+        static_cast<size_t>(width) * static_cast<size_t>(height) * 4u;
+    state->pixels.resize(sizeBytes);
+    std::memcpy(state->pixels.data(), decoded, sizeBytes);
+    stbi_image_free(decoded);
+
+    state->width = static_cast<uint32_t>(width);
+    state->height = static_cast<uint32_t>(height);
+    state->channels = 4;
+    state->format = gpu::TextureFormat::R8G8B8A8_UNORM;
+    state->ok = true;
+  });
+
+  auto pollAndUpload = std::make_shared<std::function<void()>>();
+  *pollAndUpload = [this, pollAndUpload, state, group]() {
+    if (!state->future.valid()) {
+      this->loading = false;
+      this->async.reset();
+      group.done();
+      return;
+    }
+
+    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
+        std::future_status::ready) {
+      Graphics::addPreDrawFunc(*pollAndUpload);
+      return;
+    }
+
+    state->future.get();
+    if (state->ok) {
+      texture =
+          createNativeTexture(state->pixels.data(), state->format, state->width,
+                              state->height, state->channels);
+      this->pendingWidth = state->width;
+      this->pendingHeight = state->height;
+    }
+    this->loading = false;
+    this->async.reset();
+    group.done();
+  };
+  Graphics::addPreDrawFunc(*pollAndUpload);
   return true;
 }
 
 bool Texture::loadFromMemory(Array<char> &buffer) {
-  int width;
-  int height;
-  int bpp;
+  this->loading = true;
+  this->pendingWidth = 0;
+  this->pendingHeight = 0;
 
-  auto *pixels =
-      stbi_load_from_memory(reinterpret_cast<unsigned char *>(buffer.data()),
-                            buffer.size(), &width, &height, &bpp, 4);
+  const TaskGroup group = LoadContext::current();
+  group.add();
 
-  this->texture = createNativeTexture(
-      pixels, gpu::TextureFormat::R8G8B8A8_UNORM, width, height, 4);
+  auto state = makePtr<AsyncTexture2DState>();
+  this->async = state;
+
+  const String bytes(buffer.data(), buffer.size());
+  state->future = globalThreadPool().submit([state, bytes] {
+    int width = 0, height = 0, bpp = 0;
+    unsigned char *decoded = stbi_load_from_memory(
+        reinterpret_cast<const unsigned char *>(bytes.data()),
+        static_cast<int>(bytes.size()), &width, &height, &bpp, 4);
+    if (!decoded || width <= 0 || height <= 0) {
+      if (decoded)
+        stbi_image_free(decoded);
+      state->ok = false;
+      return;
+    }
+
+    const size_t sizeBytes =
+        static_cast<size_t>(width) * static_cast<size_t>(height) * 4u;
+    state->pixels.resize(sizeBytes);
+    std::memcpy(state->pixels.data(), decoded, sizeBytes);
+    stbi_image_free(decoded);
+
+    state->width = static_cast<uint32_t>(width);
+    state->height = static_cast<uint32_t>(height);
+    state->channels = 4;
+    state->format = gpu::TextureFormat::R8G8B8A8_UNORM;
+    state->ok = true;
+  });
+
+  auto pollAndUpload = std::make_shared<std::function<void()>>();
+  *pollAndUpload = [this, pollAndUpload, state, group]() {
+    if (!state->future.valid()) {
+      this->loading = false;
+      this->async.reset();
+      group.done();
+      return;
+    }
+
+    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
+        std::future_status::ready) {
+      Graphics::addPreDrawFunc(*pollAndUpload);
+      return;
+    }
+
+    state->future.get();
+    if (state->ok) {
+      texture =
+          createNativeTexture(state->pixels.data(), state->format, state->width,
+                              state->height, state->channels);
+      this->pendingWidth = state->width;
+      this->pendingHeight = state->height;
+    }
+    this->loading = false;
+    this->async.reset();
+    group.done();
+  };
+  Graphics::addPreDrawFunc(*pollAndUpload);
   return true;
 }
 
@@ -97,15 +283,23 @@ void Texture::fill(const Color &color) {
   }
 }
 
-Texture Texture::copy() {
-  Texture dst;
-  dst.texture = texture; // ?
+Ptr<Texture> Texture::copy() {
+  auto dst = Texture::create();
+  dst->texture = texture; // ?
   return dst;
 }
 
 Vec2 Texture::size() {
-  auto desc = texture->getCreateInfo();
-  return Vec2(static_cast<float>(desc.width), static_cast<float>(desc.height));
+  if (texture) {
+    auto desc = texture->getCreateInfo();
+    return Vec2(static_cast<float>(desc.width),
+                static_cast<float>(desc.height));
+  }
+  if (loading && pendingWidth > 0 && pendingHeight > 0) {
+    return Vec2(static_cast<float>(pendingWidth),
+                static_cast<float>(pendingHeight));
+  }
+  return Vec2(0.0f, 0.0f);
 }
 
 static void writeTexture(Ptr<gpu::Texture> texture, void *pPixels,

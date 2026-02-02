@@ -31,13 +31,6 @@ function setup()
     pipeline3d:setEnableTangent(true)
     pipeline3d:setEnableDepthTest(true)
     pipeline3d:build()
-    sn.Graphics.setGraphicsPipeline(pipeline3d)
-
-    sn.Graphics.setTexture(1, model:getTexture(sn.TextureKey.Normal))
-    sn.Graphics.setTexture(2, model:getTexture(sn.TextureKey.DiffuseRoughness))
-    sn.Graphics.setTexture(3, model:getTexture(sn.TextureKey.Metalness))
-    sn.Graphics.setTexture(4, model:getTexture(sn.TextureKey.Emissive))
-    sn.Graphics.setTexture(5, model:getTexture(sn.TextureKey.LightMap))
 
     uniform_data[1] = pos
     uniform_data[2] = light_pos
@@ -74,6 +67,14 @@ function update()
 end
 
 function draw()
+    sn.Graphics.setGraphicsPipeline(pipeline3d)
+
+    sn.Graphics.setTexture(1, model:getTexture(sn.TextureKey.Normal))
+    sn.Graphics.setTexture(2, model:getTexture(sn.TextureKey.DiffuseRoughness))
+    sn.Graphics.setTexture(3, model:getTexture(sn.TextureKey.Metalness))
+    sn.Graphics.setTexture(4, model:getTexture(sn.TextureKey.Emissive))
+    sn.Graphics.setTexture(5, model:getTexture(sn.TextureKey.LightMap))
+
     sn.Graphics.setUniformBuffer(1, sn.Buffer.new(uniform_data))
     sn.Graphics.drawModel(model, transform)
     sn.Graphics.drawModel(model, light_transform)

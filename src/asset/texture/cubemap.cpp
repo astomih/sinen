@@ -1,4 +1,6 @@
 #include <asset/texture/texture.hpp>
+#include <core/thread/global_thread_pool.hpp>
+#include <core/thread/load_context.hpp>
 #include <graphics/graphics.hpp>
 #include <math/math.hpp>
 #include <platform/io/asset_io.hpp>
@@ -6,10 +8,14 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <chrono>
 #include <cmath>
 #include <cstring>
+#include <functional>
 #include <iostream>
+#include <memory>
 #include <string>
+
 #define TINYEXR_IMPLEMENTATION
 #include <tinyexr.h>
 #include <vector>
@@ -299,21 +305,72 @@ createNativeCubemapTexture(const std::array<Array<float>, 6> &faces,
   return texture;
 }
 bool Texture::loadCubemap(StringView path) {
-  auto convertedPath = AssetIO::getFilePath(path);
+  this->loading = true;
+  this->pendingWidth = 0;
+  this->pendingHeight = 0;
 
-  Array<float> equirect;
-  int w = 0, h = 0, c = 0;
-  if (!loadEXRFloat(convertedPath.c_str(), equirect, w, h, c)) {
-    return false;
-  }
+  const TaskGroup group = LoadContext::current();
+  group.add();
 
-  int faceSize = 1024;
+  struct AsyncCubemapState {
+    std::future<void> future;
+    std::array<Array<float>, 6> faces;
+    uint32_t faceSize = 0;
+    bool ok = false;
+  };
 
-  std::array<Array<float>, 6> faces;
-  equirectToCubemap(equirect.data(), w, h, c, faceSize, faces);
+  auto state = makePtr<AsyncCubemapState>();
+  this->async = state;
 
-  this->texture = createNativeCubemapTexture(
-      faces, gpu::TextureFormat::R32G32B32A32_FLOAT, faceSize, faceSize);
+  const String srcPath = path.data();
+  state->future = globalThreadPool().submit([state, srcPath] {
+    auto convertedPath = AssetIO::getFilePath(srcPath);
+
+    Array<float> equirect;
+    int w = 0, h = 0, c = 0;
+    if (!loadEXRFloat(convertedPath.c_str(), equirect, w, h, c)) {
+      state->ok = false;
+      return;
+    }
+
+    const uint32_t faceSize = 1024;
+    std::array<Array<float>, 6> faces;
+    equirectToCubemap(equirect.data(), w, h, c, faceSize, faces);
+
+    state->faces = std::move(faces);
+    state->faceSize = faceSize;
+    state->ok = true;
+  });
+
+  auto pollAndUpload = std::make_shared<std::function<void()>>();
+  *pollAndUpload = [this, pollAndUpload, state, group]() {
+    if (!state->future.valid()) {
+      this->loading = false;
+      this->async.reset();
+      group.done();
+      return;
+    }
+
+    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
+        std::future_status::ready) {
+      Graphics::addPreDrawFunc(*pollAndUpload);
+      return;
+    }
+
+    state->future.get();
+    if (state->ok) {
+      texture = createNativeCubemapTexture(
+          state->faces, gpu::TextureFormat::R32G32B32A32_FLOAT, state->faceSize,
+          state->faceSize);
+      this->pendingWidth = state->faceSize;
+      this->pendingHeight = state->faceSize;
+    }
+    this->loading = false;
+    this->async.reset();
+    assert(this->texture);
+    group.done();
+  };
+  Graphics::addPreDrawFunc(*pollAndUpload);
   return true;
 }
 } // namespace sinen

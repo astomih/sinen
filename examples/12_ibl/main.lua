@@ -15,15 +15,6 @@ irradiance:loadCubemap("citrus_orchard_road_puresky_2k/irradiance.exr")
 local prefiltered = sn.Texture.new()
 prefiltered:loadCubemap("citrus_orchard_road_puresky_2k/m1.exr")
 
-sn.Graphics.setTexture(1, model:getTexture(sn.TextureKey.Normal))
-sn.Graphics.setTexture(2, model:getTexture(sn.TextureKey.DiffuseRoughness))
-sn.Graphics.setTexture(3, model:getTexture(sn.TextureKey.Metalness))
-sn.Graphics.setTexture(4, model:getTexture(sn.TextureKey.Emissive))
-sn.Graphics.setTexture(5, model:getTexture(sn.TextureKey.LightMap))
-sn.Graphics.setTexture(6, LUT)
-sn.Graphics.setTexture(7, cubemap)
-sn.Graphics.setTexture(8, irradiance)
-sn.Graphics.setTexture(9, prefiltered)
 
 
 
@@ -94,6 +85,16 @@ function update()
 end
 
 function draw()
+    sn.Graphics.setTexture(1, model:getTexture(sn.TextureKey.Normal))
+    sn.Graphics.setTexture(2, model:getTexture(sn.TextureKey.DiffuseRoughness))
+    sn.Graphics.setTexture(3, model:getTexture(sn.TextureKey.Metalness))
+    sn.Graphics.setTexture(4, model:getTexture(sn.TextureKey.Emissive))
+    sn.Graphics.setTexture(5, model:getTexture(sn.TextureKey.LightMap))
+    sn.Graphics.setTexture(6, LUT)
+    sn.Graphics.setTexture(7, cubemap)
+    sn.Graphics.setTexture(8, irradiance)
+    sn.Graphics.setTexture(9, prefiltered)
+
     sn.Graphics.resetGraphicsPipeline()
     sn.Graphics.drawCubemap(cubemap)
 

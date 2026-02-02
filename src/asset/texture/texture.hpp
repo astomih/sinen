@@ -1,6 +1,7 @@
 #ifndef SINEN_TEXTURE_HPP
 #define SINEN_TEXTURE_HPP
 #include <core/buffer/buffer.hpp>
+#include <core/data/array.hpp>
 #include <core/data/string.hpp>
 #include <gpu/gpu.hpp>
 #include <math/color/color.hpp>
@@ -13,12 +14,8 @@ namespace sinen {
  */
 class Texture {
 public:
-  /**
-   * @brief Construct a new texture object
-   *
-   */
-  Texture();
-  Texture(int width, int height);
+  static Ptr<Texture> create();
+  static Ptr<Texture> create(int width, int height);
 
   static constexpr const char *metaTableName() { return "sn.Texture"; }
   String tableString() const;
@@ -54,13 +51,23 @@ public:
    *
    * @return texture
    */
-  Texture copy();
+  Ptr<Texture> copy();
 
   void fill(const Color &color);
 
   Vec2 size();
 
+  Ptr<gpu::Texture> getRaw() const { return texture; }
+
+  Texture();
+  Texture(int, int);
+
+private:
   Ptr<gpu::Texture> texture;
+  std::atomic<bool> loading = false;
+  uint32_t pendingWidth = 0;
+  uint32_t pendingHeight = 0;
+  Ptr<void> async;
 };
 } // namespace sinen
 #endif // !SINEN_TEXTURE_HPP

@@ -27,7 +27,7 @@ public:
   virtual void resize(int point_size) = 0;
   virtual Rect region(StringView text, int fontSize, const Pivot &pivot,
                       const Vec2 &vec) = 0;
-  virtual Texture getAtlas() const = 0;
+  virtual Ptr<Texture> getAtlas() const = 0;
   virtual Mesh getTextMesh(StringView text) const = 0;
 };
 } // namespace sinen

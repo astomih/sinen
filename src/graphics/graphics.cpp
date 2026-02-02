@@ -15,7 +15,6 @@
 #include <graphics/builtin_pipeline.hpp>
 #include <platform/window/window.hpp>
 
-
 #include <SDL3/SDL.h>
 
 #include <imgui.h>
@@ -46,7 +45,7 @@ static Array<gpu::ColorTargetInfo> colorTargets = Array<gpu::ColorTargetInfo>();
 static gpu::DepthStencilTargetInfo depthStencilInfo;
 static Array<gpu::ColorTargetInfo> currentColorTargets;
 static gpu::DepthStencilTargetInfo currentDepthStencilInfo;
-static Hashmap<UInt32, gpu::TextureSamplerBinding> currentTextureBindings;
+static Hashmap<UInt32, Ptr<Texture>> currentTextureBindings;
 void setFullWindowViewport(const Ptr<gpu::RenderPass> &renderPass) {
   Rect rect;
   // SDL_Rect safeArea;
@@ -280,7 +279,7 @@ void Graphics::drawBase2D(const sinen::Draw2D &draw2D) {
   auto renderPass = currentRenderPass;
   renderPass->bindGraphicsPipeline(currentPipeline.value().get());
   for (auto &i : currentTextureBindings) {
-    renderPass->bindFragmentSampler(i.first, i.second);
+    renderPass->bindFragmentSampler(i.first, {sampler, i.second->getRaw()});
   }
   renderPass->bindVertexBuffers(0, vertexBufferBindings);
   renderPass->bindIndexBuffer(indexBufferBinding,
@@ -380,7 +379,7 @@ void Graphics::drawBase3D(const sinen::Draw3D &draw3D) {
   auto renderPass = currentRenderPass;
   renderPass->bindGraphicsPipeline(currentPipeline.value().get());
   for (auto &i : currentTextureBindings) {
-    renderPass->bindFragmentSampler(i.first, i.second);
+    renderPass->bindFragmentSampler(i.first, {sampler, i.second->getRaw()});
   }
   renderPass->bindVertexBuffers(0, vertexBufferBindings);
   renderPass->bindIndexBuffer(indexBufferBinding,
@@ -402,12 +401,12 @@ void Graphics::drawRect(const Rect &rect, const Color &color, float angle) {
   draw2D.scale = rect.size();
 
   draw2D.rotation = angle;
-  Texture texture;
-  texture.fill(color);
+  auto texture = Texture::create();
+  texture->fill(color);
   setTexture(0, texture);
   Graphics::drawBase2D(draw2D);
 }
-void Graphics::drawImage(const Texture &texture, const Rect &rect,
+void Graphics::drawImage(const Ptr<Texture> &texture, const Rect &rect,
                          float angle) {
   if (customPipeline.has_value() && customPipeline.value().get() != nullptr)
     currentPipeline = customPipeline.value();
@@ -432,14 +431,14 @@ void Graphics::drawText(StringView text, const Font &font, const Vec2 &position,
   model.loadFromVertexArray(font.getTextMesh(text));
 
   draw2D.position = position;
-  Texture texture = font.getAtlas();
+  auto texture = font.getAtlas();
   draw2D.rotation = angle;
   setTexture(0, texture);
   draw2D.model = model;
   draw2D.scale = Vec2(textSize / static_cast<float>(font.size()));
   Graphics::drawBase2D(draw2D);
 }
-void Graphics::drawCubemap(const Texture &cubemap) {
+void Graphics::drawCubemap(const Ptr<Texture> &cubemap) {
   if (customPipeline.has_value() && customPipeline.value().get() != nullptr)
     currentPipeline = customPipeline.value();
   else
@@ -464,8 +463,8 @@ void Graphics::drawModel(const Model &model, const Transform &transform) {
   if (model.hasTexture(TextureKey::BaseColor))
     setTexture(0, model.getTexture(TextureKey::BaseColor));
   else {
-    Texture t;
-    t.fill(Palette::white());
+    auto t = Texture::create();
+    t->fill(Palette::white());
     setTexture(0, t);
   }
 
@@ -485,8 +484,8 @@ void Graphics::drawModelInstanced(const Model &model,
   if (model.hasTexture(TextureKey::BaseColor))
     setTexture(0, model.getTexture(TextureKey::BaseColor));
   else {
-    Texture t;
-    t.fill(Palette::white());
+    auto t = Texture::create();
+    t->fill(Palette::white());
     setTexture(0, t);
   }
   sinen::Draw3D draw3D;
@@ -564,10 +563,8 @@ void Graphics::setUniformBuffer(UInt32 slotIndex, const Buffer &buffer) {
   currentCommandBuffer->pushUniformData(slotIndex, buffer.data(),
                                         buffer.size());
 }
-void Graphics::setTexture(UInt32 slotIndex, const Texture &texture) {
-  currentTextureBindings.insert_or_assign(
-      slotIndex, gpu::TextureSamplerBinding{.sampler = sampler,
-                                            .texture = texture.texture});
+void Graphics::setTexture(UInt32 slotIndex, const Ptr<Texture> &texture) {
+  currentTextureBindings.insert_or_assign(slotIndex, texture);
 }
 void Graphics::resetTexture(UInt32 slotIndex) {
   currentTextureBindings.erase(slotIndex);
@@ -599,7 +596,7 @@ void Graphics::flush() {
   currentCommandBuffer = mainCommandBuffer;
 }
 bool Graphics::readbackTexture(const RenderTexture &srcRenderTexture,
-                               Texture &out) {
+                               Ptr<Texture> &out) {
   auto tex = srcRenderTexture.getTexture();
   // Copy
   gpu::TransferBuffer::CreateInfo info2{};
@@ -634,7 +631,7 @@ bool Graphics::readbackTexture(const RenderTexture &srcRenderTexture,
         region.width = srcRenderTexture.width;
         region.height = srcRenderTexture.height;
         region.depth = 1;
-        region.texture = out.texture;
+        region.texture = out->getRaw();
         copyPass->uploadTexture(src, region, false);
       }
       commandBuffer->endCopyPass(copyPass);

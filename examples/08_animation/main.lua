@@ -1,4 +1,5 @@
 local model = sn.Model.new()
+local pipeline = sn.GraphicsPipeline.new()
 function setup()
     model:load("BrainStem.glb")
     local texture = sn.Texture.new()
@@ -7,7 +8,6 @@ function setup()
     local vs = sn.Shader.new()
     local fs = sn.Shader.new()
 
-    local pipeline = sn.GraphicsPipeline.new()
     vs:compileAndLoad("skinning.slang", sn.ShaderStage.Vertex)
     fs:compileAndLoad("skinning.slang", sn.ShaderStage.Fragment)
 
@@ -16,7 +16,6 @@ function setup()
     pipeline:setEnableDepthTest(true)
     pipeline:setEnableAnimation(true)
     pipeline:build()
-    sn.Graphics.setGraphicsPipeline(pipeline)
 
     sn.Graphics.getCamera():lookat(sn.Vec3.new(0, -3, 1), sn.Vec3.new(0, 0, 1), sn.Vec3.new(0, 0, 1))
 
@@ -31,6 +30,7 @@ function update()
 end
 
 function draw()
+    sn.Graphics.setGraphicsPipeline(pipeline)
     sn.Graphics.setUniformBuffer(1, model:getBoneUniformBuffer())
     -- Draw texture
     sn.Graphics.drawModel(model, sn.Transform.new())

@@ -67,8 +67,8 @@ public:
   const BoneMap &getBoneMap() { return this->boneMap; }
 
   bool hasTexture(TextureKey type) const;
-  Texture getTexture(TextureKey type) const;
-  void setTexture(TextureKey type, const Texture &texture);
+  Ptr<Texture> getTexture(TextureKey type) const;
+  void setTexture(TextureKey type, const Ptr<Texture> &texture);
 
 private:
   void loadBoneUniform(float time);
@@ -80,7 +80,7 @@ private:
 
   SkeletalAnimation skeletalAnimation;
   BoneMap boneMap;
-  Array<std::optional<Texture>> textures;
+  Array<Ptr<Texture>> textures;
 };
 } // namespace sinen
 #endif // !SINEN_MODEL_HPP

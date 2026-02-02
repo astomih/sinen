@@ -175,7 +175,7 @@ static void drawNowLoadingOverlay() {
   const ImVec2 center =
       ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f);
   const float w = 280.0f;
-  const float h = 20.0f;
+  const float h = 30.0f;
 
   ImGui::SetCursorPos(ImVec2(center.x - w * 0.5f, center.y - 40.0f));
   ImGui::TextUnformatted("Now Loading...");

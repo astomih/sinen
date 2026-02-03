@@ -2,6 +2,7 @@
 #include <graphics/camera/camera.hpp>
 #include <graphics/graphics.hpp>
 #include <platform/window/window.hpp>
+#include <script/luaapi.hpp>
 
 namespace sinen {
 static Vec3 perspDiv(const Vec4 &v) {
@@ -108,6 +109,94 @@ Ray Camera::screenToWorldRay(const Vec2 &screenPos,
 
 Ray Camera::screenToWorldRay(const Vec2 &screenPos) const {
   return screenToWorldRay(screenPos, Window::size());
+}
+
+static int lCameraNew(lua_State *L) {
+  udNewOwned<Camera>(L, Camera{});
+  return 1;
+}
+static int lCameraLookat(lua_State *L) {
+  auto &cam = udValue<Camera>(L, 1);
+  auto &pos = udValue<Vec3>(L, 2);
+  auto &target = udValue<Vec3>(L, 3);
+  auto &up = udValue<Vec3>(L, 4);
+  cam.lookat(pos, target, up);
+  return 0;
+}
+static int lCameraPerspective(lua_State *L) {
+  auto &cam = udValue<Camera>(L, 1);
+  float fov = static_cast<float>(luaL_checknumber(L, 2));
+  float aspect = static_cast<float>(luaL_checknumber(L, 3));
+  float nearZ = static_cast<float>(luaL_checknumber(L, 4));
+  float farZ = static_cast<float>(luaL_checknumber(L, 5));
+  cam.perspective(fov, aspect, nearZ, farZ);
+  return 0;
+}
+static int lCameraOrthographic(lua_State *L) {
+  auto &cam = udValue<Camera>(L, 1);
+  float w = static_cast<float>(luaL_checknumber(L, 2));
+  float h = static_cast<float>(luaL_checknumber(L, 3));
+  float nearZ = static_cast<float>(luaL_checknumber(L, 4));
+  float farZ = static_cast<float>(luaL_checknumber(L, 5));
+  cam.orthographic(w, h, nearZ, farZ);
+  return 0;
+}
+static int lCameraGetPosition(lua_State *L) {
+  auto &cam = udValue<Camera>(L, 1);
+  udNewRef<Vec3>(L, &cam.getPosition());
+  return 1;
+}
+static int lCameraGetTarget(lua_State *L) {
+  auto &cam = udValue<Camera>(L, 1);
+  udNewOwned<Vec3>(L, cam.getTarget());
+  return 1;
+}
+static int lCameraGetUp(lua_State *L) {
+  auto &cam = udValue<Camera>(L, 1);
+  udNewOwned<Vec3>(L, cam.getUp());
+  return 1;
+}
+static int lCameraIsAabbInFrustum(lua_State *L) {
+  auto &cam = udValue<Camera>(L, 1);
+  auto &aabb = udValue<AABB>(L, 2);
+  lua_pushboolean(L, cam.isAABBInFrustum(aabb));
+  return 1;
+}
+static int lCameraScreenToWorldRay(lua_State *L) {
+  auto &cam = udValue<Camera>(L, 1);
+  auto &screenPos = udValue<Vec2>(L, 2);
+
+  udNewOwned<Ray>(L, cam.screenToWorldRay(screenPos));
+  return 1;
+}
+void registerCamera(lua_State *L) {
+  luaL_newmetatable(L, Camera::metaTableName());
+  luaPushcfunction2(L, udGc<Camera>);
+  lua_setfield(L, -2, "__gc");
+  lua_pushvalue(L, -1);
+  lua_setfield(L, -2, "__index");
+  luaPushcfunction2(L, lCameraLookat);
+  lua_setfield(L, -2, "lookat");
+  luaPushcfunction2(L, lCameraPerspective);
+  lua_setfield(L, -2, "perspective");
+  luaPushcfunction2(L, lCameraOrthographic);
+  lua_setfield(L, -2, "orthographic");
+  luaPushcfunction2(L, lCameraGetPosition);
+  lua_setfield(L, -2, "getPosition");
+  luaPushcfunction2(L, lCameraGetTarget);
+  lua_setfield(L, -2, "getTarget");
+  luaPushcfunction2(L, lCameraGetUp);
+  lua_setfield(L, -2, "getUp");
+  luaPushcfunction2(L, lCameraIsAabbInFrustum);
+  lua_setfield(L, -2, "isAABBInFrustum");
+  luaPushcfunction2(L, lCameraScreenToWorldRay);
+  lua_setfield(L, -2, "screenToWorldRay");
+  lua_pop(L, 1);
+
+  pushSnNamed(L, "Camera");
+  luaPushcfunction2(L, lCameraNew);
+  lua_setfield(L, -2, "new");
+  lua_pop(L, 1);
 }
 
 } // namespace sinen

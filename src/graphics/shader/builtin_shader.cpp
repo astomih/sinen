@@ -1,5 +1,6 @@
 #include "builtin_shader.hpp"
 #include <graphics/graphics.hpp>
+#include <script/luaapi.hpp>
 
 #include "default/cubemap.frag.spv.hpp"
 #include "default/cubemap.vert.spv.hpp"
@@ -111,4 +112,39 @@ Shader BuiltinShader::getDefaultInstancedVS() { return defaultInstancedVS; }
 Shader BuiltinShader::getDefaultFS() { return defaultFS; }
 Shader BuiltinShader::getCubemapVS() { return cubemapVS; }
 Shader BuiltinShader::getCubemapFS() { return cubemapFS; }
+
+static int lBuiltinShaderGetDefaultVs(lua_State *L) {
+  udPushPtr<Shader>(L, makePtr<Shader>(BuiltinShader::getDefaultVS()));
+  return 1;
+}
+static int lBuiltinShaderGetDefaultFs(lua_State *L) {
+  udPushPtr<Shader>(L, makePtr<Shader>(BuiltinShader::getDefaultFS()));
+  return 1;
+}
+static int lBuiltinShaderGetDefaultInstancedVs(lua_State *L) {
+  udPushPtr<Shader>(L, makePtr<Shader>(BuiltinShader::getDefaultInstancedVS()));
+  return 1;
+}
+static int lBuiltinShaderGetCubemapVs(lua_State *L) {
+  udPushPtr<Shader>(L, makePtr<Shader>(BuiltinShader::getCubemapVS()));
+  return 1;
+}
+static int lBuiltinShaderGetCubemapFs(lua_State *L) {
+  udPushPtr<Shader>(L, makePtr<Shader>(BuiltinShader::getCubemapFS()));
+  return 1;
+}
+void registerBuiltinShader(lua_State *L) {
+  pushSnNamed(L, "BuiltinShader");
+  luaPushcfunction2(L, lBuiltinShaderGetDefaultVs);
+  lua_setfield(L, -2, "getDefaultVS");
+  luaPushcfunction2(L, lBuiltinShaderGetDefaultFs);
+  lua_setfield(L, -2, "getDefaultFS");
+  luaPushcfunction2(L, lBuiltinShaderGetDefaultInstancedVs);
+  lua_setfield(L, -2, "getDefaultInstancedVS");
+  luaPushcfunction2(L, lBuiltinShaderGetCubemapVs);
+  lua_setfield(L, -2, "getCubemapVS");
+  luaPushcfunction2(L, lBuiltinShaderGetCubemapFs);
+  lua_setfield(L, -2, "getCubemapFS");
+  lua_pop(L, 1);
+}
 } // namespace sinen

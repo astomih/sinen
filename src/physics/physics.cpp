@@ -12,6 +12,7 @@
 #include <math/matrix.hpp>
 #include <math/quaternion.hpp>
 #include <math/vector.hpp>
+#include <script/luaapi.hpp>
 
 #include <Jolt/Jolt.h>
 
@@ -372,5 +373,47 @@ void Physics::addCollider(const Collider &collider, bool active) {
   JPH::BodyID bodyID = it->second;
   bodyInterface.AddBody(bodyID, active ? JPH::EActivation::Activate
                                        : JPH::EActivation::DontActivate);
+}
+
+static int lPhysicsCreateBoxCollider(lua_State *L) {
+  auto &t = udValue<Transform>(L, 1);
+  bool isStatic = lua_toboolean(L, 2) != 0;
+  udNewOwned<Collider>(L, Physics::createBoxCollider(t, isStatic));
+  return 1;
+}
+static int lPhysicsCreateSphereCollider(lua_State *L) {
+  auto &pos = udValue<Vec3>(L, 1);
+  float radius = static_cast<float>(luaL_checknumber(L, 2));
+  bool isStatic = lua_toboolean(L, 3) != 0;
+  udNewOwned<Collider>(L, Physics::createSphereCollider(pos, radius, isStatic));
+  return 1;
+}
+static int lPhysicsCreateCylinderCollider(lua_State *L) {
+  auto &pos = udValue<Vec3>(L, 1);
+  auto &rot = udValue<Vec3>(L, 2);
+  float halfHeight = static_cast<float>(luaL_checknumber(L, 3));
+  float radius = static_cast<float>(luaL_checknumber(L, 4));
+  bool isStatic = lua_toboolean(L, 5) != 0;
+  udNewOwned<Collider>(L, Physics::createCylinderCollider(pos, rot, halfHeight,
+                                                          radius, isStatic));
+  return 1;
+}
+static int lPhysicsAddCollider(lua_State *L) {
+  auto &c = udValue<Collider>(L, 1);
+  bool active = lua_toboolean(L, 2) != 0;
+  Physics::addCollider(c, active);
+  return 0;
+}
+void registerPhysics(lua_State *L) {
+  pushSnNamed(L, "Physics");
+  luaPushcfunction2(L, lPhysicsCreateBoxCollider);
+  lua_setfield(L, -2, "createBoxCollider");
+  luaPushcfunction2(L, lPhysicsCreateSphereCollider);
+  lua_setfield(L, -2, "createSphereCollider");
+  luaPushcfunction2(L, lPhysicsCreateCylinderCollider);
+  lua_setfield(L, -2, "createCylinderCollider");
+  luaPushcfunction2(L, lPhysicsAddCollider);
+  lua_setfield(L, -2, "addCollider");
+  lua_pop(L, 1);
 }
 } // namespace sinen

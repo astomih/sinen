@@ -1,4 +1,5 @@
 #include <math/graph/bfs_grid.hpp>
+#include <script/luaapi.hpp>
 
 namespace sinen {
 BFSGrid::BFSGrid(const graph &field) {
@@ -93,4 +94,62 @@ Vec2 BFSGrid::trace() {
   return next;
 }
 bool BFSGrid::traceable() const { return !shortest.empty(); }
+
+static int lBfsGridNew(lua_State *L) {
+  auto &g = udValue<Grid>(L, 1);
+  udNewOwned<BFSGrid>(L, BFSGrid(g));
+  return 1;
+}
+static int lBfsGridWidth(lua_State *L) {
+  lua_pushinteger(L, static_cast<lua_Integer>(udValue<BFSGrid>(L, 1).width()));
+  return 1;
+}
+static int lBfsGridHeight(lua_State *L) {
+  lua_pushinteger(L, static_cast<lua_Integer>(udValue<BFSGrid>(L, 1).height()));
+  return 1;
+}
+static int lBfsGridFindPath(lua_State *L) {
+  auto &b = udValue<BFSGrid>(L, 1);
+  auto &start = udValue<Vec2>(L, 2);
+  auto &end = udValue<Vec2>(L, 3);
+  lua_pushboolean(L, b.findPath(start, end));
+  return 1;
+}
+static int lBfsGridTrace(lua_State *L) {
+  udNewOwned<Vec2>(L, udValue<BFSGrid>(L, 1).trace());
+  return 1;
+}
+static int lBfsGridTraceable(lua_State *L) {
+  lua_pushboolean(L, udValue<BFSGrid>(L, 1).traceable());
+  return 1;
+}
+static int lBfsGridReset(lua_State *L) {
+  udValue<BFSGrid>(L, 1).reset();
+  return 0;
+}
+void registerBFSGrid(lua_State *L) {
+  luaL_newmetatable(L, BFSGrid::metaTableName());
+  luaPushcfunction2(L, udGc<BFSGrid>);
+  lua_setfield(L, -2, "__gc");
+  lua_pushvalue(L, -1);
+  lua_setfield(L, -2, "__index");
+  luaPushcfunction2(L, lBfsGridWidth);
+  lua_setfield(L, -2, "width");
+  luaPushcfunction2(L, lBfsGridHeight);
+  lua_setfield(L, -2, "height");
+  luaPushcfunction2(L, lBfsGridFindPath);
+  lua_setfield(L, -2, "findPath");
+  luaPushcfunction2(L, lBfsGridTrace);
+  lua_setfield(L, -2, "trace");
+  luaPushcfunction2(L, lBfsGridTraceable);
+  lua_setfield(L, -2, "traceable");
+  luaPushcfunction2(L, lBfsGridReset);
+  lua_setfield(L, -2, "reset");
+  lua_pop(L, 1);
+
+  pushSnNamed(L, "BFSGrid");
+  luaPushcfunction2(L, lBfsGridNew);
+  lua_setfield(L, -2, "new");
+  lua_pop(L, 1);
+}
 } // namespace sinen

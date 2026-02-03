@@ -376,4 +376,80 @@ String Texture::tableString() const {
   p.emplace_back("isLoaded", texture ? "true" : "false");
   return convert("sn.Texture", p, false);
 }
+
+static int lTextureNew(lua_State *L) {
+  int n = lua_gettop(L);
+  if (n == 0) {
+    udPushPtr<Texture>(L, Texture::create());
+    return 1;
+  }
+  int w = static_cast<int>(luaL_checkinteger(L, 1));
+  int h = static_cast<int>(luaL_checkinteger(L, 2));
+  udPushPtr<Texture>(L, Texture::create(w, h));
+  return 1;
+}
+static int lTextureLoad(lua_State *L) {
+  auto &tex = udPtr<Texture>(L, 1);
+  if (lua_isstring(L, 2)) {
+    const char *path = luaL_checkstring(L, 2);
+    tex->load(StringView(path));
+    return 0;
+  }
+  auto &buf = udValue<Buffer>(L, 2);
+  tex->load(buf);
+  return 0;
+}
+static int lTextureLoadCubemap(lua_State *L) {
+  auto &tex = udPtr<Texture>(L, 1);
+  const char *path = luaL_checkstring(L, 2);
+  tex->loadCubemap(StringView(path));
+  return 0;
+}
+static int lTextureFill(lua_State *L) {
+  auto &tex = udPtr<Texture>(L, 1);
+  auto &c = udValue<Color>(L, 2);
+  tex->fill(c);
+  return 0;
+}
+static int lTextureCopy(lua_State *L) {
+  auto &tex = udPtr<Texture>(L, 1);
+  udPushPtr<Texture>(L, tex->copy());
+  return 1;
+}
+static int lTextureSize(lua_State *L) {
+  auto &tex = udPtr<Texture>(L, 1);
+  udNewOwned<Vec2>(L, tex->size());
+  return 1;
+}
+static int lTextureTostring(lua_State *L) {
+  auto &tex = udPtr<Texture>(L, 1);
+  String s = tex->tableString();
+  lua_pushlstring(L, s.data(), s.size());
+  return 1;
+}
+void registerTexture(lua_State *L) {
+  luaL_newmetatable(L, Texture::metaTableName());
+  luaPushcfunction2(L, udPtrGc<Texture>);
+  lua_setfield(L, -2, "__gc");
+  lua_pushvalue(L, -1);
+  lua_setfield(L, -2, "__index");
+  luaPushcfunction2(L, lTextureLoad);
+  lua_setfield(L, -2, "load");
+  luaPushcfunction2(L, lTextureLoadCubemap);
+  lua_setfield(L, -2, "loadCubemap");
+  luaPushcfunction2(L, lTextureFill);
+  lua_setfield(L, -2, "fill");
+  luaPushcfunction2(L, lTextureCopy);
+  lua_setfield(L, -2, "copy");
+  luaPushcfunction2(L, lTextureSize);
+  lua_setfield(L, -2, "size");
+  luaPushcfunction2(L, lTextureTostring);
+  lua_setfield(L, -2, "__tostring");
+  lua_pop(L, 1);
+
+  pushSnNamed(L, "Texture");
+  luaPushcfunction2(L, lTextureNew);
+  lua_setfield(L, -2, "new");
+  lua_pop(L, 1);
+}
 } // namespace sinen

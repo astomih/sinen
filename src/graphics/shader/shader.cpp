@@ -2,6 +2,7 @@
 #include <graphics/graphics.hpp>
 #include <graphics/shader/shader.hpp>
 #include <platform/io/asset_io.hpp>
+#include <script/luaapi.hpp>
 
 #include <core/thread/global_thread_pool.hpp>
 #include <core/thread/load_context.hpp>
@@ -167,4 +168,41 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage) {
   Graphics::addPreDrawFunc(*pollAndCreate);
 }
 Ptr<gpu::Shader> Shader::getRaw() { return *shader; }
+
+static int lShaderNew(lua_State *L) {
+  udPushPtr<Shader>(L, makePtr<Shader>());
+  return 1;
+}
+static int lShaderLoad(lua_State *L) {
+  auto &s = udPtr<Shader>(L, 1);
+  const char *name = luaL_checkstring(L, 2);
+  ShaderStage stage = static_cast<ShaderStage>(luaL_checkinteger(L, 3));
+  int numUniformData = static_cast<int>(luaL_checkinteger(L, 4));
+  s->load(StringView(name), stage, numUniformData);
+  return 0;
+}
+static int lShaderCompileAndLoad(lua_State *L) {
+  auto &s = udPtr<Shader>(L, 1);
+  const char *name = luaL_checkstring(L, 2);
+  ShaderStage stage = static_cast<ShaderStage>(luaL_checkinteger(L, 3));
+  s->compileAndLoad(StringView(name), stage);
+  return 0;
+}
+void registerShader(lua_State *L) {
+  luaL_newmetatable(L, Shader::metaTableName());
+  luaPushcfunction2(L, udPtrGc<Shader>);
+  lua_setfield(L, -2, "__gc");
+  lua_pushvalue(L, -1);
+  lua_setfield(L, -2, "__index");
+  luaPushcfunction2(L, lShaderLoad);
+  lua_setfield(L, -2, "load");
+  luaPushcfunction2(L, lShaderCompileAndLoad);
+  lua_setfield(L, -2, "compileAndLoad");
+  lua_pop(L, 1);
+
+  pushSnNamed(L, "Shader");
+  luaPushcfunction2(L, lShaderNew);
+  lua_setfield(L, -2, "new");
+  lua_pop(L, 1);
+}
 } // namespace sinen

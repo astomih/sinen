@@ -46,7 +46,7 @@ bool Audio::initialize() {
                                   nullptr);
 
         SDL_PutAudioStreamData(stream, pBuffer, additional_amount);
-        SDL_stack_free(data);
+        SDL_stack_free(pBuffer);
       }
     }
   };

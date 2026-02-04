@@ -2,7 +2,7 @@ require("global")
 local button = require("gui.button").new()
 
 local exampleDirs = sn.Filesystem.enumerateDirectory(".")
-local numExamples = 13
+local numExamples = 14
 function setup()
     sn.Graphics.resetGraphicsPipeline()
 end

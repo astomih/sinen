@@ -1,13 +1,20 @@
 // std
+#include <atomic>
 #include <cassert>
+#include <cstring>
 #include <cstdio>
 #include <memory>
+#include <future>
+#include <chrono>
+#include <functional>
 
 // internal
 #include <core/allocator/global_allocator.hpp>
 #include <core/buffer/buffer.hpp>
 #include <core/core.hpp>
 #include <core/data/ptr.hpp>
+#include <core/thread/global_thread_pool.hpp>
+#include <core/thread/load_context.hpp>
 #include <graphics/graphics.hpp>
 #include <graphics/model/model.hpp>
 #include <math/geometry/skinned_vertex.hpp>
@@ -33,6 +40,65 @@ createVertexIndexBuffer(const Array<Vertex> &vertices,
 Ptr<gpu::Buffer>
 createSkinnedVertexBuffer(const Array<SkinnedVertex> &vertices);
 Ptr<gpu::Buffer> createBuffer(size_t size, void *data, gpu::BufferUsage usage);
+
+namespace {
+struct EmbeddedTextureData {
+  bool present = false;
+  bool compressed = false;
+  uint32_t width = 0;
+  uint32_t height = 0;
+  int channels = 4;
+  gpu::TextureFormat format = gpu::TextureFormat::R8G8B8A8_UNORM;
+  Array<char> bytes;
+};
+
+static EmbeddedTextureData extractEmbeddedTexture(aiScene *scene,
+                                                  aiMaterial *material,
+                                                  aiTextureType type) {
+  EmbeddedTextureData out;
+
+  aiString texPath;
+  if (material->GetTexture(type, 0, &texPath) != AI_SUCCESS) {
+    return out;
+  }
+
+  auto *aiTex = scene->GetEmbeddedTexture(texPath.C_Str());
+  if (!aiTex) {
+    return out;
+  }
+
+  out.present = true;
+  if (aiTex->mHeight == 0) {
+    out.compressed = true;
+    out.bytes.resize(aiTex->mWidth);
+    std::memcpy(out.bytes.data(), aiTex->pcData, aiTex->mWidth);
+    return out;
+  }
+
+  out.compressed = false;
+  out.width = aiTex->mWidth;
+  out.height = aiTex->mHeight;
+  out.channels = 4;
+  out.format = gpu::TextureFormat::R8G8B8A8_UNORM;
+
+  const size_t sizeBytes =
+      static_cast<size_t>(out.width) * static_cast<size_t>(out.height) * 4u;
+  out.bytes.resize(sizeBytes);
+  std::memcpy(out.bytes.data(), aiTex->pcData, sizeBytes);
+  return out;
+}
+
+struct AsyncModelState {
+  std::future<void> future;
+  Mesh mesh;
+  AABB aabb;
+  Model::BoneMap boneMap;
+  SkeletalAnimation skeletalAnimation;
+  Array<EmbeddedTextureData> embeddedTextures;
+  bool ok = false;
+  std::atomic<bool> finalized = false;
+};
+} // namespace
 
 enum class LoadState { Version, Vertex, Indices };
 Array<Vec3> getVector3sFromKey(const aiVectorKey *keys, uint32_t count) {
@@ -329,70 +395,306 @@ void loadMaterial(aiScene *scene, Array<Ptr<Texture>> &textures) {
 Model::Model() : textures(6) {}
 
 void Model::load(StringView path) {
+  const TaskGroup group = LoadContext::current();
+  group.add();
 
-  auto fullFilePath = AssetIO::getFilePath(path.data());
-  // Assimp
-  Assimp::Importer importer;
-  const auto *scene = importer.ReadFile(
-      fullFilePath.c_str(),
-      aiProcess_ValidateDataStructure | aiProcess_LimitBoneWeights |
-          aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
-  if (!scene) {
-    LogF::error("Error loading model: {}", importer.GetErrorString());
-    return;
-  }
-  skeletalAnimation.owner = this;
-  loadBone(scene, this->boneMap);
-  loadAnimation(scene, this->skeletalAnimation, this->boneMap);
-  loadMesh(scene, this->mesh, this->localAABB);
-  loadMaterial(const_cast<aiScene *>(scene), textures);
-  calcTangents(scene, this->mesh);
+  this->vertexBuffer = nullptr;
+  this->tangentBuffer = nullptr;
+  this->animationVertexBuffer = nullptr;
+  this->indexBuffer = nullptr;
+  this->textures.assign(6, nullptr);
 
-  auto viBuffer =
-      createVertexIndexBuffer(mesh.data()->vertices, mesh.data()->indices);
-  this->vertexBuffer =
-      createBuffer(mesh.data()->vertices.size() * sizeof(Vertex),
-                   mesh.data()->vertices.data(), gpu::BufferUsage::Vertex);
-  this->animationVertexBuffer =
-      createSkinnedVertexBuffer(skeletalAnimation.skinnedVertices);
-  this->tangentBuffer =
-      createBuffer(mesh.data()->tangents.size() * sizeof(Vec4),
-                   mesh.data()->tangents.data(), gpu::BufferUsage::Vertex);
-  this->indexBuffer =
-      createBuffer(mesh.data()->indices.size() * sizeof(uint32_t),
-                   mesh.data()->indices.data(), gpu::BufferUsage::Index);
+  auto state = makePtr<AsyncModelState>();
+  state->embeddedTextures.resize(6);
+  const Ptr<void> stateVoid = std::static_pointer_cast<void>(state);
+  this->data = stateVoid;
+
+  const String pathStr = path.data();
+  state->future = globalThreadPool().submit([state, pathStr]() {
+    auto fullFilePath = AssetIO::getFilePath(pathStr);
+
+    Assimp::Importer importer;
+    const aiScene *scene = importer.ReadFile(
+        fullFilePath.c_str(),
+        aiProcess_ValidateDataStructure | aiProcess_LimitBoneWeights |
+            aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
+    if (!scene) {
+      state->ok = false;
+      return;
+    }
+
+    Mesh mesh;
+    AABB aabb;
+    Model::BoneMap boneMap;
+    SkeletalAnimation skeletalAnimation;
+
+    loadBone(scene, boneMap);
+    loadAnimation(scene, skeletalAnimation, boneMap);
+    loadMesh(scene, mesh, aabb);
+    calcTangents(scene, mesh);
+
+    Array<EmbeddedTextureData> embedded;
+    embedded.resize(6);
+    for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
+      if (!embedded[0].present) {
+        embedded[0] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                             scene->mMaterials[i],
+                                             aiTextureType_BASE_COLOR);
+      }
+      if (!embedded[1].present) {
+        embedded[1] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                             scene->mMaterials[i],
+                                             aiTextureType_NORMALS);
+      }
+      if (!embedded[2].present) {
+        embedded[2] = extractEmbeddedTexture(
+            const_cast<aiScene *>(scene), scene->mMaterials[i],
+            aiTextureType_DIFFUSE_ROUGHNESS);
+      }
+      if (!embedded[3].present) {
+        embedded[3] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                             scene->mMaterials[i],
+                                             aiTextureType_METALNESS);
+      }
+      if (!embedded[4].present) {
+        embedded[4] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                             scene->mMaterials[i],
+                                             aiTextureType_EMISSIVE);
+      }
+      if (!embedded[5].present) {
+        embedded[5] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                             scene->mMaterials[i],
+                                             aiTextureType_LIGHTMAP);
+      }
+    }
+
+    state->mesh = std::move(mesh);
+    state->aabb = aabb;
+    state->boneMap = std::move(boneMap);
+    state->skeletalAnimation = std::move(skeletalAnimation);
+    state->embeddedTextures = std::move(embedded);
+    state->ok = true;
+  });
+
+  auto pollAndFinalize = std::make_shared<std::function<void()>>();
+  *pollAndFinalize = [this, pollAndFinalize, state, stateVoid, group]() {
+    if (!state->future.valid()) {
+      group.done();
+      return;
+    }
+    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
+        std::future_status::ready) {
+      Graphics::addPreDrawFunc(*pollAndFinalize);
+      return;
+    }
+    if (state->finalized.exchange(true)) {
+      return;
+    }
+
+    state->future.get();
+
+    if (this->data != stateVoid) {
+      group.done();
+      return;
+    }
+
+    if (!state->ok) {
+      group.done();
+      return;
+    }
+
+    this->mesh = std::move(state->mesh);
+    this->localAABB = state->aabb;
+    this->boneMap = std::move(state->boneMap);
+    this->skeletalAnimation = std::move(state->skeletalAnimation);
+    this->skeletalAnimation.owner = this;
+
+    {
+      ScopedLoadContext ctx(group);
+      for (size_t i = 0; i < state->embeddedTextures.size() && i < 6; ++i) {
+        const auto &d = state->embeddedTextures[i];
+        if (!d.present) {
+          continue;
+        }
+        auto texture = Texture::create();
+        if (d.compressed) {
+          auto bytes = d.bytes;
+          texture->loadFromMemory(bytes);
+        } else {
+          texture->loadFromMemory(const_cast<char *>(d.bytes.data()), d.width,
+                                  d.height, d.format, d.channels);
+        }
+        this->textures[i] = texture;
+      }
+    }
+
+    auto mesh = this->mesh.data();
+    this->vertexBuffer =
+        createBuffer(mesh->vertices.size() * sizeof(Vertex), mesh->vertices.data(),
+                     gpu::BufferUsage::Vertex);
+    this->animationVertexBuffer =
+        createSkinnedVertexBuffer(this->skeletalAnimation.skinnedVertices);
+    this->tangentBuffer =
+        createBuffer(mesh->tangents.size() * sizeof(Vec4), mesh->tangents.data(),
+                     gpu::BufferUsage::Vertex);
+    this->indexBuffer =
+        createBuffer(mesh->indices.size() * sizeof(uint32_t), mesh->indices.data(),
+                     gpu::BufferUsage::Index);
+
+    this->data.reset();
+    group.done();
+  };
+  Graphics::addPreDrawFunc(*pollAndFinalize);
 }
 void Model::load(const Buffer &buffer) {
-  // Assimp
-  Assimp::Importer importer;
-  const auto *scene = importer.ReadFileFromMemory(
-      buffer.data(), buffer.size(),
-      aiProcess_ValidateDataStructure | aiProcess_LimitBoneWeights |
-          aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
-  if (!scene) {
-    LogF::error("Error loading model: {}", importer.GetErrorString());
-    return;
-  }
-  skeletalAnimation.owner = this;
-  loadBone(scene, this->boneMap);
-  loadAnimation(scene, this->skeletalAnimation, this->boneMap);
-  loadMesh(scene, this->mesh, this->localAABB);
-  loadMaterial(const_cast<aiScene *>(scene), textures);
-  calcTangents(scene, this->mesh);
+  const TaskGroup group = LoadContext::current();
+  group.add();
 
-  auto viBuffer =
-      createVertexIndexBuffer(mesh.data()->vertices, mesh.data()->indices);
-  this->vertexBuffer =
-      createBuffer(mesh.data()->vertices.size() * sizeof(Vertex),
-                   mesh.data()->vertices.data(), gpu::BufferUsage::Vertex);
-  this->animationVertexBuffer =
-      createSkinnedVertexBuffer(skeletalAnimation.skinnedVertices);
-  this->tangentBuffer =
-      createBuffer(mesh.data()->tangents.size() * sizeof(Vec4),
-                   mesh.data()->tangents.data(), gpu::BufferUsage::Vertex);
-  this->indexBuffer =
-      createBuffer(mesh.data()->indices.size() * sizeof(uint32_t),
-                   mesh.data()->indices.data(), gpu::BufferUsage::Index);
+  this->vertexBuffer = nullptr;
+  this->tangentBuffer = nullptr;
+  this->animationVertexBuffer = nullptr;
+  this->indexBuffer = nullptr;
+  this->textures.assign(6, nullptr);
+
+  auto state = makePtr<AsyncModelState>();
+  state->embeddedTextures.resize(6);
+  const Ptr<void> stateVoid = std::static_pointer_cast<void>(state);
+  this->data = stateVoid;
+
+  const Buffer buf = buffer;
+  state->future = globalThreadPool().submit([state, buf]() {
+    Assimp::Importer importer;
+    const aiScene *scene = importer.ReadFileFromMemory(
+        buf.data(), buf.size(),
+        aiProcess_ValidateDataStructure | aiProcess_LimitBoneWeights |
+            aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
+    if (!scene) {
+      state->ok = false;
+      return;
+    }
+
+    Mesh mesh;
+    AABB aabb;
+    Model::BoneMap boneMap;
+    SkeletalAnimation skeletalAnimation;
+
+    loadBone(scene, boneMap);
+    loadAnimation(scene, skeletalAnimation, boneMap);
+    loadMesh(scene, mesh, aabb);
+    calcTangents(scene, mesh);
+
+    Array<EmbeddedTextureData> embedded;
+    embedded.resize(6);
+    for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
+      if (!embedded[0].present) {
+        embedded[0] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                             scene->mMaterials[i],
+                                             aiTextureType_BASE_COLOR);
+      }
+      if (!embedded[1].present) {
+        embedded[1] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                             scene->mMaterials[i],
+                                             aiTextureType_NORMALS);
+      }
+      if (!embedded[2].present) {
+        embedded[2] = extractEmbeddedTexture(
+            const_cast<aiScene *>(scene), scene->mMaterials[i],
+            aiTextureType_DIFFUSE_ROUGHNESS);
+      }
+      if (!embedded[3].present) {
+        embedded[3] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                             scene->mMaterials[i],
+                                             aiTextureType_METALNESS);
+      }
+      if (!embedded[4].present) {
+        embedded[4] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                             scene->mMaterials[i],
+                                             aiTextureType_EMISSIVE);
+      }
+      if (!embedded[5].present) {
+        embedded[5] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                             scene->mMaterials[i],
+                                             aiTextureType_LIGHTMAP);
+      }
+    }
+
+    state->mesh = std::move(mesh);
+    state->aabb = aabb;
+    state->boneMap = std::move(boneMap);
+    state->skeletalAnimation = std::move(skeletalAnimation);
+    state->embeddedTextures = std::move(embedded);
+    state->ok = true;
+  });
+
+  auto pollAndFinalize = std::make_shared<std::function<void()>>();
+  *pollAndFinalize = [this, pollAndFinalize, state, stateVoid, group]() {
+    if (!state->future.valid()) {
+      group.done();
+      return;
+    }
+    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
+        std::future_status::ready) {
+      Graphics::addPreDrawFunc(*pollAndFinalize);
+      return;
+    }
+    if (state->finalized.exchange(true)) {
+      return;
+    }
+
+    state->future.get();
+
+    if (this->data != stateVoid) {
+      group.done();
+      return;
+    }
+
+    if (!state->ok) {
+      group.done();
+      return;
+    }
+
+    this->mesh = std::move(state->mesh);
+    this->localAABB = state->aabb;
+    this->boneMap = std::move(state->boneMap);
+    this->skeletalAnimation = std::move(state->skeletalAnimation);
+    this->skeletalAnimation.owner = this;
+
+    {
+      ScopedLoadContext ctx(group);
+      for (size_t i = 0; i < state->embeddedTextures.size() && i < 6; ++i) {
+        const auto &d = state->embeddedTextures[i];
+        if (!d.present) {
+          continue;
+        }
+        auto texture = Texture::create();
+        if (d.compressed) {
+          auto bytes = d.bytes;
+          texture->loadFromMemory(bytes);
+        } else {
+          texture->loadFromMemory(const_cast<char *>(d.bytes.data()), d.width,
+                                  d.height, d.format, d.channels);
+        }
+        this->textures[i] = texture;
+      }
+    }
+
+    auto mesh = this->mesh.data();
+    this->vertexBuffer =
+        createBuffer(mesh->vertices.size() * sizeof(Vertex), mesh->vertices.data(),
+                     gpu::BufferUsage::Vertex);
+    this->animationVertexBuffer =
+        createSkinnedVertexBuffer(this->skeletalAnimation.skinnedVertices);
+    this->tangentBuffer =
+        createBuffer(mesh->tangents.size() * sizeof(Vec4), mesh->tangents.data(),
+                     gpu::BufferUsage::Vertex);
+    this->indexBuffer =
+        createBuffer(mesh->indices.size() * sizeof(uint32_t), mesh->indices.data(),
+                     gpu::BufferUsage::Index);
+
+    this->data.reset();
+    group.done();
+  };
+  Graphics::addPreDrawFunc(*pollAndFinalize);
 }
 
 void Model::loadFromVertexArray(const Mesh &m) {

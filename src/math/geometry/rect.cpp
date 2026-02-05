@@ -205,6 +205,12 @@ static int lRectNewindex(lua_State *L) {
   }
   return luaLError2(L, "sn.Rect: invalid field '%s'", k);
 }
+static int lRectIntersectsRect(lua_State *L) {
+  auto &a = udValue<Rect>(L, 1);
+  auto &b = udValue<Rect>(L, 2);
+  lua_pushboolean(L, a.intersectsRect(b));
+  return 1;
+}
 void registerRect(lua_State *L) {
   luaL_newmetatable(L, Rect::metaTableName());
   luaPushcfunction2(L, udGc<Rect>);
@@ -213,6 +219,8 @@ void registerRect(lua_State *L) {
   lua_setfield(L, -2, "__index");
   luaPushcfunction2(L, lRectNewindex);
   lua_setfield(L, -2, "__newindex");
+  luaPushcfunction2(L, lRectIntersectsRect);
+  lua_setfield(L, -2, "intersectsRect");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Rect");

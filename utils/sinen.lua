@@ -206,12 +206,13 @@ sn = {
     GraphicsPipeline = {},
 
     ---@class sn.Pivot
-    ---@field TopLeft number
-    ---@field TopCenter number
-    ---@field TopRight number
-    ---@field BottomLeft number
-    ---@field BottomCenter number
-    ---@field BottomRight number
+    ---@field TopLeft sn.Pivot
+    ---@field TopCenter sn.Pivot
+    ---@field TopRight sn.Pivot
+    ---@field Center sn.Pivot
+    ---@field BottomLeft sn.Pivot
+    ---@field BottomCenter sn.Pivot
+    ---@field BottomRight sn.Pivot
     Pivot = {},
 
     ---@class sn.Rect
@@ -230,9 +231,9 @@ sn = {
     ---@field bottomCenter fun(self:sn.Rect) :sn.Vec2
     ---@field bottomRight fun(self:sn.Rect) :sn.Vec2
     ---@field position fun(self:sn.Rect):sn.Vec2
-    ---@field positionFromPivot fun(self:sn.Rect, pivot: sn.Pivot):sn.Vec2
+    ---@field positionFromPivot fun(self: sn.Rect, pivot: sn.Pivot):sn.Vec2
     ---@field size fun(self:sn.Rect):sn.Vec2
-    ---@field intersectsRect fun(self:sn.Rect,rect:sn.Rect) :sn.Rect
+    ---@field intersectsRect fun(self: sn.Rect, rect: sn.Rect) : boolean
     Rect = {},
 
     ---@class sn.Transform

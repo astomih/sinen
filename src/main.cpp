@@ -1,5 +1,7 @@
 #include <audio/audio.hpp>
 #include <core/event/event.hpp>
+#include <core/logger/log.hpp>
+#include <core/time/time.hpp>
 #include <graphics/graphics.hpp>
 #include <math/random.hpp>
 #include <physics/physics.hpp>
@@ -7,8 +9,6 @@
 #include <platform/io/arguments.hpp>
 #include <platform/window/window.hpp>
 #include <script/script.hpp>
-
-#include <sinen.hpp>
 
 #define SDL_MAIN_USE_CALLBACKS
 #include <SDL3/SDL_main.h>

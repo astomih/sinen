@@ -19,6 +19,6 @@ function update()
 end
 
 function draw()
-    sn.Graphics.drawText("Example Launcher", FONT, sn.Vec2.new(0, offset), sn.Color.new(1, 1, 1, 1), 24)
+    sn.Graphics.drawText("Example Launcher", FONT, sn.Vec2.new(0, offset + 10), sn.Color.new(1, 1, 1, 1), 24)
     GUI_MANAGER:draw()
 end

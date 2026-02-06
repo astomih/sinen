@@ -18,8 +18,6 @@ function setup()
     pipeline:build()
 
     sn.Graphics.getCamera():lookat(sn.Vec3.new(0, -3, 1), sn.Vec3.new(0, 0, 1), sn.Vec3.new(0, 0, 1))
-
-    model:play(0)
 end
 
 function update()

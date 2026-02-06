@@ -40,7 +40,7 @@ Button.show = function(self, text, pos, scale)
     end
     GUI_MANAGER:add({
         draw = function()
-            sn.Graphics.drawText(text, self.font, pos, sn.Color.new(1), 24)
+            sn.Graphics.drawText(text, self.font, pos, sn.Color.new(1), 14)
         end
     })
 

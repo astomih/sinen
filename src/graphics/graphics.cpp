@@ -8,7 +8,7 @@
 #include <graphics/imgui_backend/imgui_impl_sinen.hpp>
 #include <graphics/shader/builtin_shader.hpp>
 #include <graphics/texture/render_texture.hpp>
-#include <memory>
+#include <math/transform/transform.hpp>
 #include <platform/io/asset_io.hpp>
 #include <platform/window/window.hpp>
 #include <script/script.hpp>
@@ -428,7 +428,6 @@ void Graphics::drawText(StringView text, const Font &font, const Vec2 &position,
     currentPipeline = customPipeline.value();
   else
     currentPipeline = BuiltinPipeline::getDefault2D();
-  sinen::Draw2D draw2D;
   Model model;
   model.loadFromVertexArray(font.getTextMesh(text));
 

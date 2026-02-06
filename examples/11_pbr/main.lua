@@ -22,7 +22,7 @@ function setup()
     local pos = sn.Vec3.new(0.7, 0.7, 2.1)
     local at = sn.Vec3.new(0)
     local up = sn.Vec3.new(0, 1, 0)
-    sn.Graphics.getCamera():lookat(pos, at, up)
+    sn.Graphics.getCamera3D():lookat(pos, at, up)
 
     vertex_shader:compileAndLoad("shader_custom.slang", sn.ShaderStage.Vertex)
     fragment_shader:compileAndLoad("shader_custom.slang", sn.ShaderStage.Fragment)

@@ -6,36 +6,16 @@
 #include <core/core.hpp>
 #include <core/data/ptr.hpp>
 #include <core/data/string.hpp>
-#include <core/def/types.hpp>
-#include <core/event/event.hpp>
 #include <core/logger/log.hpp>
 #include <core/thread/load_context.hpp>
 #include <core/thread/task_group.hpp>
-#include <graphics/builtin_pipeline.hpp>
 #include <graphics/graphics.hpp>
-#include <graphics/shader/builtin_shader.hpp>
 #include <math/graph/bfs_grid.hpp>
-#include <math/math.hpp>
-#include <math/periodic.hpp>
-#include <math/random.hpp>
-#include <physics/physics.hpp>
-#include <platform/input/gamepad.hpp>
-#include <platform/input/key_input.hpp>
-#include <platform/input/keyboard.hpp>
-#include <platform/input/mouse.hpp>
-#include <platform/io/arguments.hpp>
 #include <platform/io/asset_io.hpp>
-#include <platform/io/filesystem.hpp>
-#include <platform/window/window.hpp>
 
 #include "luaapi.hpp"
 
 #include <imgui.h>
-
-#include <cstddef>
-#include <cstring>
-#include <format>
-#include <utility>
 
 namespace sinen {
 auto alloc = [](void *ud, void *ptr, size_t osize, size_t nsize) -> void * {

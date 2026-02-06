@@ -22,10 +22,6 @@ public:
    *
    */
   explicit Draw2D(const Texture &texture);
-  void add(const Vec2 &position, const float &rotation, const Vec2 &scale);
-  void at(const int &index, const Vec2 &position, const float &rotation,
-          const Vec2 &scale);
-  void clear();
   struct World {
     Vec2 position;
     float rotation;
@@ -54,10 +50,6 @@ public:
    *
    */
   explicit Draw3D(const Texture &texture);
-  void add(const Vec3 &position, const Vec3 &rotation, const Vec3 &scale);
-  void at(const int &index, const Vec3 &position, const Vec3 &rotation,
-          const Vec3 &scale);
-  void clear();
   Vec3 position;
   Vec3 rotation;
   Vec3 scale;

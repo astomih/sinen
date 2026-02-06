@@ -11,7 +11,7 @@ local pos = sn.Vec3.new(1, 1, 3)
 local at = sn.Vec3.new(0)
 local up = sn.Vec3.new(0, 1, 0)
 function setup()
-    sn.Graphics.getCamera():lookat(pos, at, up)
+    sn.Graphics.getCamera3D():lookat(pos, at, up)
 end
 
 function update()

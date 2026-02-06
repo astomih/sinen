@@ -17,7 +17,7 @@ function setup()
     pipeline:setEnableAnimation(true)
     pipeline:build()
 
-    sn.Graphics.getCamera():lookat(sn.Vec3.new(0, -3, 1), sn.Vec3.new(0, 0, 1), sn.Vec3.new(0, 0, 1))
+    sn.Graphics.getCamera3D():lookat(sn.Vec3.new(0, -3, 1), sn.Vec3.new(0, 0, 1), sn.Vec3.new(0, 0, 1))
 end
 
 function update()

@@ -1,6 +1,6 @@
 #include <core/buffer/buffer.hpp>
-#include <graphics/camera/camera.hpp>
 #include <graphics/camera/camera2d.hpp>
+#include <graphics/camera/camera3d.hpp>
 #include <graphics/font/font.hpp>
 #include <graphics/graphics.hpp>
 #include <graphics/graphics_pipeline.hpp>
@@ -73,22 +73,22 @@ static int lGraphicsDrawModelInstanced(lua_State *L) {
   Graphics::drawModelInstanced(*m, transforms);
   return 0;
 }
-static int lGraphicsSetCamera(lua_State *L) {
-  auto &cam = udValue<Camera>(L, 1);
-  Graphics::setCamera(cam);
+static int lGraphicsSetCamera3D(lua_State *L) {
+  auto &cam = udValue<Camera3D>(L, 1);
+  Graphics::setCamera3D(cam);
   return 0;
 }
-static int lGraphicsGetCamera(lua_State *L) {
+static int lGraphicsGetCamera3D(lua_State *L) {
   auto &cam = Graphics::getCamera();
-  udNewRef<Camera>(L, &cam);
+  udNewRef<Camera3D>(L, &cam);
   return 1;
 }
-static int lGraphicsSetCamera2d(lua_State *L) {
+static int lGraphicsSetCamera2D(lua_State *L) {
   auto &cam = udValue<Camera2D>(L, 1);
   Graphics::setCamera2D(cam);
   return 0;
 }
-static int lGraphicsGetCamera2d(lua_State *L) {
+static int lGraphicsGetCamera2D(lua_State *L) {
   auto &cam = Graphics::getCamera2D();
   udNewRef<Camera2D>(L, &cam);
   return 1;
@@ -134,14 +134,14 @@ static int lGraphicsSetUniformBuffer(lua_State *L) {
   Graphics::setUniformBuffer(slot, b);
   return 0;
 }
-static int lGraphicsSetRenderTarget(lua_State *L) {
+static int lGraphicsBeginRenderTarget(lua_State *L) {
   auto &rt = udPtr<RenderTexture>(L, 1);
-  Graphics::setRenderTarget(*rt);
+  Graphics::beginRenderTarget(*rt);
   return 0;
 }
-static int lGraphicsFlush(lua_State *L) {
+static int lGraphicsEndRenderTarget(lua_State *L) {
   (void)L;
-  Graphics::flush();
+  Graphics::endRenderTarget();
   return 0;
 }
 static int lGraphicsReadbackTexture(lua_State *L) {
@@ -164,14 +164,14 @@ void registerGraphics(lua_State *L) {
   lua_setfield(L, -2, "drawModel");
   luaPushcfunction2(L, lGraphicsDrawModelInstanced);
   lua_setfield(L, -2, "drawModelInstanced");
-  luaPushcfunction2(L, lGraphicsSetCamera);
-  lua_setfield(L, -2, "setCamera");
-  luaPushcfunction2(L, lGraphicsGetCamera);
-  lua_setfield(L, -2, "getCamera");
-  luaPushcfunction2(L, lGraphicsSetCamera2d);
-  lua_setfield(L, -2, "setCamera2d");
-  luaPushcfunction2(L, lGraphicsGetCamera2d);
-  lua_setfield(L, -2, "getCamera2d");
+  luaPushcfunction2(L, lGraphicsSetCamera3D);
+  lua_setfield(L, -2, "setCamera3D");
+  luaPushcfunction2(L, lGraphicsGetCamera3D);
+  lua_setfield(L, -2, "getCamera3D");
+  luaPushcfunction2(L, lGraphicsSetCamera2D);
+  lua_setfield(L, -2, "setCamera2D");
+  luaPushcfunction2(L, lGraphicsGetCamera2D);
+  lua_setfield(L, -2, "getCamera2D");
   luaPushcfunction2(L, lGraphicsGetClearColor);
   lua_setfield(L, -2, "getClearColor");
   luaPushcfunction2(L, lGraphicsSetClearColor);
@@ -188,10 +188,10 @@ void registerGraphics(lua_State *L) {
   lua_setfield(L, -2, "resetAllTexture");
   luaPushcfunction2(L, lGraphicsSetUniformBuffer);
   lua_setfield(L, -2, "setUniformBuffer");
-  luaPushcfunction2(L, lGraphicsSetRenderTarget);
-  lua_setfield(L, -2, "setRenderTarget");
-  luaPushcfunction2(L, lGraphicsFlush);
-  lua_setfield(L, -2, "flush");
+  luaPushcfunction2(L, lGraphicsBeginRenderTarget);
+  lua_setfield(L, -2, "beginRenderTarget");
+  luaPushcfunction2(L, lGraphicsEndRenderTarget);
+  lua_setfield(L, -2, "endRenderTarget");
   luaPushcfunction2(L, lGraphicsReadbackTexture);
   lua_setfield(L, -2, "readbackTexture");
   lua_pop(L, 1);

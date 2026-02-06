@@ -8,8 +8,8 @@
 #include <core/allocator/pool_allocator.hpp>
 #include <core/data/ptr.hpp>
 #include <core/data/string.hpp>
-#include <graphics/camera/camera.hpp>
 #include <graphics/camera/camera2d.hpp>
+#include <graphics/camera/camera3d.hpp>
 #include <graphics/drawable/drawable.hpp>
 #include <graphics/font/font.hpp>
 #include <graphics/model/model.hpp>
@@ -19,6 +19,7 @@
 #include <math/geometry/rect.hpp>
 #include <math/math.hpp>
 
+
 namespace sinen {
 class Graphics {
 public:
@@ -27,10 +28,8 @@ public:
   static void render();
   static void setCamera2D(const Camera2D &camera);
   static Camera2D &getCamera2D();
-  static void setCamera(const Camera &camera);
-  static Camera &getCamera();
-  static void drawBase2D(const sinen::Draw2D &draw2D);
-  static void drawBase3D(const sinen::Draw3D &draw3D);
+  static void setCamera3D(const Camera3D &camera);
+  static Camera3D &getCamera();
   static void drawRect(const Rect &rect, const Color &color, float angle);
   static void drawRect(const Rect &rect, const Color &color) {
     drawRect(rect, color, 0.0f);
@@ -67,19 +66,11 @@ public:
   static void setTexture(UInt32 slotIndex, const Ptr<Texture> &texture);
   static void resetTexture(UInt32 slotIndex);
   static void resetAllTexture();
-  static void setRenderTarget(const RenderTexture &texture);
-  static void flush();
+  static void beginRenderTarget(const RenderTexture &texture);
+  static void endRenderTarget();
   static bool readbackTexture(const RenderTexture &texture, Ptr<Texture> &out);
 
-  static Model box;
-  static Model sprite;
-
   static Ptr<gpu::Device> getDevice();
-
-private:
-  static void beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp);
-  static void prepareRenderPassFrame();
-  static void setupShapes();
 };
 } // namespace sinen
 #endif // !SINEN_RENDER_SYSTEM_HPP

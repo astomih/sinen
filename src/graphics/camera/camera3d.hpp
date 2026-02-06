@@ -6,7 +6,6 @@
 #include <math/matrix.hpp>
 #include <math/vector.hpp>
 
-
 namespace sinen {
 struct Frustum {
   Vec4 planes[6]; // x, y, z, w: ax + by + cz + d = 0
@@ -16,9 +15,9 @@ struct Frustum {
  * @brief Camera class
  *
  */
-class Camera {
+class Camera3D {
 public:
-  static constexpr const char *metaTableName() { return "sn.Camera"; }
+  static constexpr const char *metaTableName() { return "sn.Camera3D"; }
   /**
    * @brief Move to position, look at a target, and set up vector
    *

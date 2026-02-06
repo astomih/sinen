@@ -1,5 +1,5 @@
 // internal
-#include <graphics/camera/camera.hpp>
+#include <graphics/camera/camera3d.hpp>
 #include <graphics/graphics.hpp>
 #include <platform/window/window.hpp>
 #include <script/luaapi.hpp>
@@ -12,7 +12,8 @@ static Vec3 perspDiv(const Vec4 &v) {
   return Vec3(v.x / v.w, v.y / v.w, v.z / v.w);
 }
 
-void Camera::lookat(const Vec3 &position, const Vec3 &target, const Vec3 &up) {
+void Camera3D::lookat(const Vec3 &position, const Vec3 &target,
+                      const Vec3 &up) {
   this->position = position;
   this->target = target;
   this->up = up;
@@ -20,12 +21,12 @@ void Camera::lookat(const Vec3 &position, const Vec3 &target, const Vec3 &up) {
   view = (view);
   this->updateFrustum = true;
 }
-void Camera::perspective(float fov, float aspect, float near, float far) {
+void Camera3D::perspective(float fov, float aspect, float near, float far) {
   this->projection = Mat4::perspective(Math::toRadians(fov), aspect, near, far);
   projection = (projection);
   this->updateFrustum = true;
 }
-void Camera::orthographic(float width, float height, float near, float far) {
+void Camera3D::orthographic(float width, float height, float near, float far) {
   this->projection = Mat4::ortho(width, height, near, far);
   this->updateFrustum = true;
 }
@@ -65,7 +66,7 @@ static Frustum extractFrustumPlanes(const Mat4 &vp) {
 
   return f;
 }
-bool Camera::isAABBInFrustum(const AABB &aabb) {
+bool Camera3D::isAABBInFrustum(const AABB &aabb) {
   if (this->updateFrustum) {
     this->frustum = extractFrustumPlanes(this->projection * this->view);
     this->updateFrustum = false;
@@ -87,8 +88,8 @@ bool Camera::isAABBInFrustum(const AABB &aabb) {
   return true;
 }
 
-Ray Camera::screenToWorldRay(const Vec2 &screenPos,
-                            const Vec2 &viewportSize) const {
+Ray Camera3D::screenToWorldRay(const Vec2 &screenPos,
+                               const Vec2 &viewportSize) const {
   const Vec2 half = viewportSize * 0.5f;
   const float ndcX = screenPos.x / half.x;
   const float ndcY = screenPos.y / half.y;
@@ -107,16 +108,16 @@ Ray Camera::screenToWorldRay(const Vec2 &screenPos,
   return ray;
 }
 
-Ray Camera::screenToWorldRay(const Vec2 &screenPos) const {
+Ray Camera3D::screenToWorldRay(const Vec2 &screenPos) const {
   return screenToWorldRay(screenPos, Window::size());
 }
 
 static int lCameraNew(lua_State *L) {
-  udNewOwned<Camera>(L, Camera{});
+  udNewOwned<Camera3D>(L, Camera3D{});
   return 1;
 }
 static int lCameraLookat(lua_State *L) {
-  auto &cam = udValue<Camera>(L, 1);
+  auto &cam = udValue<Camera3D>(L, 1);
   auto &pos = udValue<Vec3>(L, 2);
   auto &target = udValue<Vec3>(L, 3);
   auto &up = udValue<Vec3>(L, 4);
@@ -124,7 +125,7 @@ static int lCameraLookat(lua_State *L) {
   return 0;
 }
 static int lCameraPerspective(lua_State *L) {
-  auto &cam = udValue<Camera>(L, 1);
+  auto &cam = udValue<Camera3D>(L, 1);
   float fov = static_cast<float>(luaL_checknumber(L, 2));
   float aspect = static_cast<float>(luaL_checknumber(L, 3));
   float nearZ = static_cast<float>(luaL_checknumber(L, 4));
@@ -133,7 +134,7 @@ static int lCameraPerspective(lua_State *L) {
   return 0;
 }
 static int lCameraOrthographic(lua_State *L) {
-  auto &cam = udValue<Camera>(L, 1);
+  auto &cam = udValue<Camera3D>(L, 1);
   float w = static_cast<float>(luaL_checknumber(L, 2));
   float h = static_cast<float>(luaL_checknumber(L, 3));
   float nearZ = static_cast<float>(luaL_checknumber(L, 4));
@@ -142,36 +143,36 @@ static int lCameraOrthographic(lua_State *L) {
   return 0;
 }
 static int lCameraGetPosition(lua_State *L) {
-  auto &cam = udValue<Camera>(L, 1);
+  auto &cam = udValue<Camera3D>(L, 1);
   udNewRef<Vec3>(L, &cam.getPosition());
   return 1;
 }
 static int lCameraGetTarget(lua_State *L) {
-  auto &cam = udValue<Camera>(L, 1);
+  auto &cam = udValue<Camera3D>(L, 1);
   udNewOwned<Vec3>(L, cam.getTarget());
   return 1;
 }
 static int lCameraGetUp(lua_State *L) {
-  auto &cam = udValue<Camera>(L, 1);
+  auto &cam = udValue<Camera3D>(L, 1);
   udNewOwned<Vec3>(L, cam.getUp());
   return 1;
 }
 static int lCameraIsAabbInFrustum(lua_State *L) {
-  auto &cam = udValue<Camera>(L, 1);
+  auto &cam = udValue<Camera3D>(L, 1);
   auto &aabb = udValue<AABB>(L, 2);
   lua_pushboolean(L, cam.isAABBInFrustum(aabb));
   return 1;
 }
 static int lCameraScreenToWorldRay(lua_State *L) {
-  auto &cam = udValue<Camera>(L, 1);
+  auto &cam = udValue<Camera3D>(L, 1);
   auto &screenPos = udValue<Vec2>(L, 2);
 
   udNewOwned<Ray>(L, cam.screenToWorldRay(screenPos));
   return 1;
 }
 void registerCamera(lua_State *L) {
-  luaL_newmetatable(L, Camera::metaTableName());
-  luaPushcfunction2(L, udGc<Camera>);
+  luaL_newmetatable(L, Camera3D::metaTableName());
+  luaPushcfunction2(L, udGc<Camera3D>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
@@ -193,7 +194,7 @@ void registerCamera(lua_State *L) {
   lua_setfield(L, -2, "screenToWorldRay");
   lua_pop(L, 1);
 
-  pushSnNamed(L, "Camera");
+  pushSnNamed(L, "Camera3D");
   luaPushcfunction2(L, lCameraNew);
   lua_setfield(L, -2, "new");
   lua_pop(L, 1);

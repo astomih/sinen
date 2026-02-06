@@ -75,16 +75,16 @@ sn = {
     ---@field setPosition fun(self: sn.Sound, position: sn.Vec3)
     Sound = {},
 
-    ---@class sn.Camera
-    ---@field new fun(): sn.Camera
-    ---@field lookat fun(self: sn.Camera, position: sn.Vec3, target: sn.Vec3, up: sn.Vec3)
-    ---@field perspective fun(self: sn.Camera, fov: number, aspect: number, near: number, far: number)
-    ---@field orthographic fun(self: sn.Camera, width: number, height: number, near: number, far: number)
-    ---@field getPosition fun(self: sn.Camera): sn.Vec3
-    ---@field getTarget fun(self: sn.Camera): sn.Vec3
-    ---@field getUp fun(self: sn.Camera): sn.Vec3
-    ---@field isAABBInFrustum fun(self: sn.Camera, aabb: sn.AABB): boolean
-    Camera = {},
+    ---@class sn.Camera3D
+    ---@field new fun(): sn.Camera3D
+    ---@field lookat fun(self: sn.Camera3D, position: sn.Vec3, target: sn.Vec3, up: sn.Vec3)
+    ---@field perspective fun(self: sn.Camera3D, fov: number, aspect: number, near: number, far: number)
+    ---@field orthographic fun(self: sn.Camera3D, width: number, height: number, near: number, far: number)
+    ---@field getPosition fun(self: sn.Camera3D): sn.Vec3
+    ---@field getTarget fun(self: sn.Camera3D): sn.Vec3
+    ---@field getUp fun(self: sn.Camera3D): sn.Vec3
+    ---@field isAABBInFrustum fun(self: sn.Camera3D, aabb: sn.AABB): boolean
+    Camera3D = {},
 
     ---@class sn.Camera2D
     ---@field new fun(): sn.Camera2D
@@ -326,10 +326,10 @@ sn = {
     ---@field drawModel fun(model: sn.Model, transform: sn.Transform)
     ---@field drawModelInstanced fun(model: sn.Model, transforms: table)
     ---@field drawCubemap fun(cubemap: sn.Texture)
-    ---@field setCamera fun(camera: sn.Camera)
-    ---@field getCamera fun(): sn.Camera
-    ---@field setCamera2d fun(camera: sn.Camera2D)
-    ---@field getCamera2d fun(): sn.Camera2D
+    ---@field setCamera3D fun(camera: sn.Camera3D)
+    ---@field getCamera3D fun(): sn.Camera3D
+    ---@field setCamera2D fun(camera: sn.Camera2D)
+    ---@field getCamera2D fun(): sn.Camera2D
     ---@field getClearColor fun(): sn.Color
     ---@field setClearColor fun(c: sn.Color)
     ---@field setGraphicsPipeline fun(pipe: sn.GraphicsPipeline)
@@ -338,8 +338,8 @@ sn = {
     ---@field resetTexture fun(slotIndex : number)
     ---@field resetAllTexture fun()
     ---@field setUniformBuffer fun(binding: number, data: sn.Buffer)
-    ---@field setRenderTarget fun(rt: sn.RenderTexture)
-    ---@field flush fun()
+    ---@field beginRenderTarget fun(rt: sn.RenderTexture)
+    ---@field endRenderTarget fun()
     ---@field readbackTexture fun(rt: sn.RenderTexture, out: sn.Texture): sn.Texture
     Graphics = {},
 

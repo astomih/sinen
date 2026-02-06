@@ -1,9 +1,8 @@
 local renderTexture = sn.RenderTexture.new()
-local out = sn.Texture.new()
-out:load("logo.png")
-local sx = out:size().x
-local sy = out:size().y
-renderTexture:create(math.floor(sx), math.floor(sy))
+local width = 500
+local height = 500
+local out = sn.Texture.new(width, height)
+renderTexture:create(width, height)
 
 local model = sn.Model.new()
 model:load("DamagedHelmet.glb")
@@ -17,15 +16,16 @@ function update()
     if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
         sn.Script.load("main", ".")
     end
-    sn.Graphics.getCamera():lookat(pos, sn.Vec3.new(0), sn.Vec3.new(0, 1, 0))
+    sn.Graphics.getCamera3D():lookat(pos, sn.Vec3.new(0), sn.Vec3.new(0, 1, 0))
 end
 
 function draw()
     sn.Graphics.resetGraphicsPipeline()
-    sn.Graphics.setRenderTarget(renderTexture)
+
+    sn.Graphics.beginRenderTarget(renderTexture)
     sn.Graphics.drawModel(model, transform)
-    -- Draw texture
-    sn.Graphics.flush()
+    sn.Graphics.endRenderTarget()
     sn.Graphics.readbackTexture(renderTexture, out)
-    sn.Graphics.drawImage(out, sn.Rect.new(0, 0, sx, sy))
+
+    sn.Graphics.drawImage(out, sn.Rect.new(0, 0, width, height))
 end

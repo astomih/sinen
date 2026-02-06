@@ -27,7 +27,7 @@ sphereCollider:setLinearVelocity(sn.Vec3.new(0, -5.0, 0))
 sn.Physics.addCollider(floorCollider, false)
 sn.Physics.addCollider(sphereCollider, true)
 
-sn.Graphics.getCamera():lookat(sn.Vec3.new(0, 10, 25), sn.Vec3.new(0, 0, 0), sn.Vec3.new(0, 1, 0))
+sn.Graphics.getCamera3D():lookat(sn.Vec3.new(0, 10, 25), sn.Vec3.new(0, 0, 0), sn.Vec3.new(0, 1, 0))
 
 function update()
     if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then

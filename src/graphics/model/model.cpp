@@ -1,12 +1,12 @@
 // std
 #include <atomic>
 #include <cassert>
-#include <cstring>
-#include <cstdio>
-#include <memory>
-#include <future>
 #include <chrono>
+#include <cstdio>
+#include <cstring>
 #include <functional>
+#include <future>
+#include <memory>
 
 // internal
 #include <core/allocator/global_allocator.hpp>
@@ -442,14 +442,14 @@ void Model::load(StringView path) {
                                              aiTextureType_BASE_COLOR);
       }
       if (!embedded[1].present) {
-        embedded[1] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
-                                             scene->mMaterials[i],
-                                             aiTextureType_NORMALS);
+        embedded[1] =
+            extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                   scene->mMaterials[i], aiTextureType_NORMALS);
       }
       if (!embedded[2].present) {
-        embedded[2] = extractEmbeddedTexture(
-            const_cast<aiScene *>(scene), scene->mMaterials[i],
-            aiTextureType_DIFFUSE_ROUGHNESS);
+        embedded[2] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                             scene->mMaterials[i],
+                                             aiTextureType_DIFFUSE_ROUGHNESS);
       }
       if (!embedded[3].present) {
         embedded[3] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
@@ -530,16 +530,16 @@ void Model::load(StringView path) {
 
     auto mesh = this->mesh.data();
     this->vertexBuffer =
-        createBuffer(mesh->vertices.size() * sizeof(Vertex), mesh->vertices.data(),
-                     gpu::BufferUsage::Vertex);
+        createBuffer(mesh->vertices.size() * sizeof(Vertex),
+                     mesh->vertices.data(), gpu::BufferUsage::Vertex);
     this->animationVertexBuffer =
         createSkinnedVertexBuffer(this->skeletalAnimation.skinnedVertices);
     this->tangentBuffer =
-        createBuffer(mesh->tangents.size() * sizeof(Vec4), mesh->tangents.data(),
-                     gpu::BufferUsage::Vertex);
+        createBuffer(mesh->tangents.size() * sizeof(Vec4),
+                     mesh->tangents.data(), gpu::BufferUsage::Vertex);
     this->indexBuffer =
-        createBuffer(mesh->indices.size() * sizeof(uint32_t), mesh->indices.data(),
-                     gpu::BufferUsage::Index);
+        createBuffer(mesh->indices.size() * sizeof(uint32_t),
+                     mesh->indices.data(), gpu::BufferUsage::Index);
 
     this->data.reset();
     group.done();
@@ -592,14 +592,14 @@ void Model::load(const Buffer &buffer) {
                                              aiTextureType_BASE_COLOR);
       }
       if (!embedded[1].present) {
-        embedded[1] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
-                                             scene->mMaterials[i],
-                                             aiTextureType_NORMALS);
+        embedded[1] =
+            extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                   scene->mMaterials[i], aiTextureType_NORMALS);
       }
       if (!embedded[2].present) {
-        embedded[2] = extractEmbeddedTexture(
-            const_cast<aiScene *>(scene), scene->mMaterials[i],
-            aiTextureType_DIFFUSE_ROUGHNESS);
+        embedded[2] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                             scene->mMaterials[i],
+                                             aiTextureType_DIFFUSE_ROUGHNESS);
       }
       if (!embedded[3].present) {
         embedded[3] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
@@ -680,16 +680,16 @@ void Model::load(const Buffer &buffer) {
 
     auto mesh = this->mesh.data();
     this->vertexBuffer =
-        createBuffer(mesh->vertices.size() * sizeof(Vertex), mesh->vertices.data(),
-                     gpu::BufferUsage::Vertex);
+        createBuffer(mesh->vertices.size() * sizeof(Vertex),
+                     mesh->vertices.data(), gpu::BufferUsage::Vertex);
     this->animationVertexBuffer =
         createSkinnedVertexBuffer(this->skeletalAnimation.skinnedVertices);
     this->tangentBuffer =
-        createBuffer(mesh->tangents.size() * sizeof(Vec4), mesh->tangents.data(),
-                     gpu::BufferUsage::Vertex);
+        createBuffer(mesh->tangents.size() * sizeof(Vec4),
+                     mesh->tangents.data(), gpu::BufferUsage::Vertex);
     this->indexBuffer =
-        createBuffer(mesh->indices.size() * sizeof(uint32_t), mesh->indices.data(),
-                     gpu::BufferUsage::Index);
+        createBuffer(mesh->indices.size() * sizeof(uint32_t),
+                     mesh->indices.data(), gpu::BufferUsage::Index);
 
     this->data.reset();
     group.done();
@@ -715,8 +715,14 @@ void Model::loadFromVertexArray(const Mesh &m) {
   this->indexBuffer = viBuffer.second;
 }
 
-void Model::loadSprite() { *this = Graphics::sprite; }
-void Model::loadBox() { *this = Graphics::box; }
+void Model::loadSprite() {
+  Rect rect;
+  loadFromVertexArray(rect.createMesh());
+}
+void Model::loadBox() {
+  AABB aabb;
+  loadFromVertexArray(aabb.createMesh());
+}
 
 const AABB &Model::getAABB() const { return this->localAABB; }
 

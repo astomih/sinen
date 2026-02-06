@@ -20,8 +20,9 @@
 #include <imgui_internal.h>
 
 namespace sinen {
+// Variables
 static Color clearColor = Palette::black();
-static Camera camera;
+static Camera3D camera;
 static Camera2D camera2D;
 static bool showImGui = false;
 static std::list<std::function<void()>> imguiFunctions;
@@ -44,7 +45,15 @@ static gpu::DepthStencilTargetInfo depthStencilInfo;
 static Array<gpu::ColorTargetInfo> currentColorTargets;
 static gpu::DepthStencilTargetInfo currentDepthStencilInfo;
 static Hashmap<UInt32, Ptr<Texture>> currentTextureBindings;
-void setFullWindowViewport(const Ptr<gpu::RenderPass> &renderPass) {
+static Model box = Model();
+static Model sprite = Model();
+
+// Functions
+static void prepareRenderPassFrame();
+static void setupShapes();
+static void beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp);
+
+static void setFullWindowViewport(const Ptr<gpu::RenderPass> &renderPass) {
   Rect rect;
   // SDL_Rect safeArea;
   // SDL_GetWindowSafeArea(WindowSystem::get_sdl_window(), &safeArea);
@@ -64,12 +73,10 @@ void setFullWindowViewport(const Ptr<gpu::RenderPass> &renderPass) {
   renderPass->setViewport(viewport);
   renderPass->setScissor(rect.x, rect.y, rect.width, rect.height);
 }
-Model Graphics::box = Model();
-Model Graphics::sprite = Model();
 bool Graphics::initialize() {
   camera2D = Window::size();
   camera = []() {
-    Camera c;
+    Camera3D c;
     c.lookat(Vec3{0, -1, 1}, Vec3{0, 0, 0}, Vec3{0, 0, 1});
     c.perspective(90.f, Window::size().x / Window::size().y, .1f, 100.f);
     return c;
@@ -227,7 +234,13 @@ void Graphics::render() {
   device->submitCommandBuffer(commandBuffer);
   device->waitForGpuIdle();
 }
-void Graphics::drawBase2D(const sinen::Draw2D &draw2D) {
+struct Transform2D {
+  Vec2 position;
+  float rotation;
+  Vec2 scale;
+};
+static void drawBase2D(const Array<Transform2D> &transforms,
+                       const Model &model) {
   assert(currentPipeline.has_value());
   auto vertexBufferBindings = Array<gpu::BufferBinding>{};
   auto indexBufferBinding = gpu::BufferBinding{};
@@ -236,12 +249,12 @@ void Graphics::drawBase2D(const sinen::Draw2D &draw2D) {
   auto invRatio = camera2D.invWindowRatio();
   Mat4 mat[3];
   Array<Mat4> instanceData;
-  auto pos = draw2D.position * ratio;
-  auto scale = draw2D.scale * 0.5f * ratio;
+  auto pos = transforms[0].position * ratio;
+  auto scale = transforms[0].scale * 0.5f * ratio;
   {
     Transform transform;
     transform.setPosition(Vec3(pos.x, pos.y, 0.0f));
-    transform.setRotation(Vec3(0, 0, draw2D.rotation));
+    transform.setRotation(Vec3(0, 0, transforms[0].rotation));
     transform.setScale(Vec3(scale.x, scale.y, 1.0f));
 
     mat[0] = transform.getWorldMatrix();
@@ -253,18 +266,20 @@ void Graphics::drawBase2D(const sinen::Draw2D &draw2D) {
   viewproj[1][1] = 2.f / Window::size().y;
   mat[1] = viewproj;
   mat[2] = Mat4(1.f);
-  for (auto &i : draw2D.worlds) {
-    Transform transform;
-    transform.setPosition(
-        Vec3(i.position.x * ratio.x, i.position.y * ratio.y, 0.0f));
-    transform.setRotation(Vec3(0, 0, i.rotation));
-    transform.setScale(Vec3(i.scale.x * 0.5f, i.scale.y * 0.5f, 1.0f));
-    instanceData.push_back(transform.getWorldMatrix());
+  if (transforms.size() > 1) {
+    for (auto &i : transforms) {
+      Transform transform;
+      transform.setPosition(
+          Vec3(i.position.x * ratio.x, i.position.y * ratio.y, 0.0f));
+      transform.setRotation(Vec3(0, 0, i.rotation));
+      transform.setScale(Vec3(i.scale.x * 0.5f, i.scale.y * 0.5f, 1.0f));
+      instanceData.push_back(transform.getWorldMatrix());
+    }
   }
   drawCallCountPerFrame++;
   prepareRenderPassFrame();
+  SDL_assert(currentRenderPass);
 
-  const auto &model = draw2D.model;
   assert(model.vertexBuffer != nullptr);
   assert(model.indexBuffer != nullptr);
 
@@ -289,23 +304,21 @@ void Graphics::drawBase2D(const sinen::Draw2D &draw2D) {
   currentPipeline = std::nullopt;
 }
 
-void Graphics::drawBase3D(const sinen::Draw3D &draw3D) {
+static void drawBase3D(const Array<Transform> transforms, const Model &model) {
   assert(currentPipeline.has_value());
   auto vertexBufferBindings = Array<gpu::BufferBinding>();
   auto indexBufferBinding = gpu::BufferBinding{};
   Mat4 mat[3];
   Array<Mat4> instanceData;
   {
-    Transform transform;
-    transform.setPosition(draw3D.position);
-    transform.setRotation(draw3D.rotation);
-    transform.setScale(draw3D.scale);
-    mat[0] = transform.getWorldMatrix();
+    mat[0] = transforms[0].getWorldMatrix();
     mat[1] = camera.getView();
     mat[2] = camera.getProjection();
   }
-  for (auto &i : draw3D.worlds) {
-    instanceData.push_back(i.getWorldMatrix());
+  if (transforms.size() > 1) {
+    for (auto &i : transforms) {
+      instanceData.push_back(i.getWorldMatrix());
+    }
   }
   drawCallCountPerFrame++;
   prepareRenderPassFrame();
@@ -356,7 +369,6 @@ void Graphics::drawBase3D(const sinen::Draw3D &draw3D) {
     }
   }
 
-  const auto &model = draw3D.getModel();
   vertexBufferBindings.emplace_back(
       gpu::BufferBinding{.buffer = model.vertexBuffer, .offset = 0});
   indexBufferBinding =
@@ -394,15 +406,11 @@ void Graphics::drawRect(const Rect &rect, const Color &color, float angle) {
     currentPipeline = customPipeline.value();
   else
     currentPipeline = BuiltinPipeline::getDefault2D();
-  sinen::Draw2D draw2D;
-  draw2D.position = rect.position();
-  draw2D.scale = rect.size();
-
-  draw2D.rotation = angle;
+  Array<Transform2D> transforms(1, {rect.position(), angle, rect.size()});
   auto texture = Texture::create();
   texture->fill(color);
   setTexture(0, texture);
-  Graphics::drawBase2D(draw2D);
+  drawBase2D(transforms, sprite);
 }
 void Graphics::drawImage(const Ptr<Texture> &texture, const Rect &rect,
                          float angle) {
@@ -410,13 +418,9 @@ void Graphics::drawImage(const Ptr<Texture> &texture, const Rect &rect,
     currentPipeline = customPipeline.value();
   else
     currentPipeline = BuiltinPipeline::getDefault2D();
-  sinen::Draw2D draw2D;
-  draw2D.position = rect.position();
-  draw2D.scale = rect.size();
-
-  draw2D.rotation = angle;
+  Array<Transform2D> transforms(1, {rect.position(), angle, rect.size()});
   setTexture(0, texture);
-  Graphics::drawBase2D(draw2D);
+  drawBase2D(transforms, sprite);
 }
 void Graphics::drawText(StringView text, const Font &font, const Vec2 &position,
                         const Color &color, float textSize, float angle) {
@@ -428,29 +432,22 @@ void Graphics::drawText(StringView text, const Font &font, const Vec2 &position,
   Model model;
   model.loadFromVertexArray(font.getTextMesh(text));
 
-  draw2D.position = position;
+  Array<Transform2D> transforms(
+      1, {position, angle, Vec2(textSize / static_cast<float>(font.size()))});
   auto texture = font.getAtlas();
-  draw2D.rotation = angle;
   setTexture(0, texture);
-  draw2D.model = model;
-  draw2D.scale = Vec2(textSize / static_cast<float>(font.size()));
-  Graphics::drawBase2D(draw2D);
+
+  drawBase2D(transforms, model);
 }
 void Graphics::drawCubemap(const Ptr<Texture> &cubemap) {
   if (customPipeline.has_value() && customPipeline.value().get() != nullptr)
     currentPipeline = customPipeline.value();
   else
     currentPipeline = BuiltinPipeline::getCubemap();
-  Transform transform;
-  Model model;
-  model.loadBox();
+
   setTexture(0, cubemap);
-  sinen::Draw3D draw3D;
-  draw3D.position = transform.position;
-  draw3D.scale = transform.scale;
-  draw3D.rotation = transform.rotation;
-  draw3D.model = model;
-  Graphics::drawBase3D(draw3D);
+  Array<Transform> transforms(1, Transform());
+  drawBase3D(transforms, box);
 }
 void Graphics::drawModel(const Model &model, const Transform &transform) {
   if (customPipeline.has_value() && customPipeline.value().get() != nullptr)
@@ -466,12 +463,7 @@ void Graphics::drawModel(const Model &model, const Transform &transform) {
     setTexture(0, t);
   }
 
-  sinen::Draw3D draw3D;
-  draw3D.position = transform.position;
-  draw3D.scale = transform.scale;
-  draw3D.rotation = transform.rotation;
-  draw3D.model = model;
-  Graphics::drawBase3D(draw3D);
+  drawBase3D(Array<Transform>(1, transform), model);
 }
 void Graphics::drawModelInstanced(const Model &model,
                                   const Array<Transform> &transforms) {
@@ -486,16 +478,10 @@ void Graphics::drawModelInstanced(const Model &model,
     t->fill(Palette::white());
     setTexture(0, t);
   }
-  sinen::Draw3D draw3D;
-  draw3D.position = Vec3{0, 0, 0};
-  draw3D.scale = Vec3{1, 1, 1};
-  draw3D.rotation = Vec3{0, 0, 0};
-  draw3D.model = model;
-  draw3D.worlds = transforms;
-  Graphics::drawBase3D(draw3D);
+  drawBase3D(transforms, model);
 }
 
-void Graphics::beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp) {
+static void beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp) {
   colorTargets[0].loadOp = loadOp;
   currentColorTargets = colorTargets;
 
@@ -511,7 +497,7 @@ void Graphics::beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp) {
   setFullWindowViewport(currentRenderPass);
 }
 
-void Graphics::prepareRenderPassFrame() {
+static void prepareRenderPassFrame() {
   const bool depthEnabled = currentPipeline.value().getFeatureFlags().test(
       GraphicsPipeline::FeatureFlag::DepthTest);
   if (isChangedRenderTarget) {
@@ -547,11 +533,9 @@ void Graphics::prepareRenderPassFrame() {
   isFrameStarted = false;
 }
 
-void Graphics::setupShapes() {
-  AABB aabb;
-  box.loadFromVertexArray(aabb.createMesh());
-  Rect rect;
-  sprite.loadFromVertexArray(rect.createMesh());
+void setupShapes() {
+  box.loadBox();
+  sprite.loadSprite();
 }
 void Graphics::setGraphicsPipeline(const GraphicsPipeline &pipeline) {
   customPipeline = pipeline;
@@ -569,7 +553,7 @@ void Graphics::resetTexture(UInt32 slotIndex) {
 }
 void Graphics::resetAllTexture() { currentTextureBindings.clear(); }
 
-void Graphics::setRenderTarget(const RenderTexture &texture) {
+void Graphics::beginRenderTarget(const RenderTexture &texture) {
   auto tex = texture.getTexture();
   if (tex == currentColorTargets[0].texture) {
     return;
@@ -587,14 +571,17 @@ void Graphics::setRenderTarget(const RenderTexture &texture) {
   currentRenderPass->setScissor(0, 0, (float)texture.width,
                                 (float)texture.height);
 }
-void Graphics::flush() {
+void Graphics::endRenderTarget() {
   currentCommandBuffer->endRenderPass(currentRenderPass);
+  currentRenderPass = nullptr;
   device->submitCommandBuffer(currentCommandBuffer);
   device->waitForGpuIdle();
   currentCommandBuffer = mainCommandBuffer;
 }
 bool Graphics::readbackTexture(const RenderTexture &srcRenderTexture,
                                Ptr<Texture> &out) {
+  SDL_assert(srcRenderTexture.width == out->size().x &&
+             srcRenderTexture.height == out->size().y);
   auto tex = srcRenderTexture.getTexture();
   // Copy
   gpu::TransferBuffer::CreateInfo info2{};
@@ -642,8 +629,8 @@ bool Graphics::readbackTexture(const RenderTexture &srcRenderTexture,
 }
 void Graphics::setCamera2D(const Camera2D &camera) { camera2D = camera; }
 Camera2D &Graphics::getCamera2D() { return camera2D; }
-void Graphics::setCamera(const Camera &_camera) { camera = _camera; }
-Camera &Graphics::getCamera() { return camera; }
+void Graphics::setCamera3D(const Camera3D &_camera) { camera = _camera; }
+Camera3D &Graphics::getCamera() { return camera; }
 void Graphics::setClearColor(const Color &color) {
   if (color.r >= 0.f && color.g >= 0.f && color.b >= 0.f)
     clearColor = color;

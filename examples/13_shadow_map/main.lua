@@ -4,7 +4,7 @@ local model = sn.Model.new()
 local modelTransform = sn.Transform.new()
 local floor = sn.Model.new()
 local floorTransform = sn.Transform.new()
-local shadowCamera = sn.Camera.new()
+local shadowCamera = sn.Camera3D.new()
 local depthVS = sn.Shader.new()
 local depthFS = sn.Shader.new()
 local depthPipeline = sn.GraphicsPipeline.new()
@@ -16,7 +16,7 @@ local pipeline = sn.GraphicsPipeline.new()
 ---@type sn.Buffer
 local uniformBuffer
 local floorTexture = sn.Texture.new()
-local camera = sn.Camera.new()
+local camera = sn.Camera3D.new()
 
 function setup()
     model:load("DamagedHelmet.glb")
@@ -65,20 +65,22 @@ function update()
 end
 
 function draw()
-    -- depth write pipeline
-    sn.Graphics.setRenderTarget(depthRenderTexture)
+    -- depth write
     sn.Graphics.setGraphicsPipeline(depthPipeline)
-    sn.Graphics.setCamera(shadowCamera)
+    sn.Graphics.setCamera3D(shadowCamera)
+
+    sn.Graphics.beginRenderTarget(depthRenderTexture)
     sn.Graphics.drawModel(model, modelTransform)
     sn.Graphics.drawModel(floor, floorTransform)
-    sn.Graphics.flush()
+    sn.Graphics.endRenderTarget()
     sn.Graphics.readbackTexture(depthRenderTexture, depthTexture)
 
     -- Lighting
     sn.Graphics.setGraphicsPipeline(pipeline)
+    sn.Graphics.setCamera3D(camera)
+
     sn.Graphics.setUniformBuffer(1, uniformBuffer)
     sn.Graphics.setTexture(1, depthTexture)
-    sn.Graphics.setCamera(camera)
     sn.Graphics.drawModel(model, modelTransform)
     sn.Graphics.drawModel(floor, floorTransform)
 end

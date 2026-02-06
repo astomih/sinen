@@ -1,7 +1,7 @@
 #include "buffer.hpp"
 #include <core/allocator/global_allocator.hpp>
 #include <cstddef>
-#include <graphics/camera/camera.hpp>
+#include <graphics/camera/camera3d.hpp>
 #include <math/matrix.hpp>
 #include <math/vector.hpp>
 #include <script/luaapi.hpp>
@@ -49,7 +49,7 @@ static int lBufferNew(lua_State *L) {
       std::memcpy(p, v2, s);
       chunks.push_back(p);
       chunkSizes.push_back(s);
-    } else if (auto *cam = udValueOrNull<Camera>(L, -1)) {
+    } else if (auto *cam = udValueOrNull<Camera3D>(L, -1)) {
       size_t s = sizeof(Mat4) * 2;
       void *p = GlobalAllocator::get()->allocate(s);
       auto view = cam->getView();

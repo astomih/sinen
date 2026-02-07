@@ -4,16 +4,19 @@
 #include "tlsf_allocator.hpp"
 
 #include <core/def/macro.hpp>
+#include <core/def/types.hpp>
 #include <core/logger/log.hpp>
 #include <memory_resource>
+
 namespace sinen {
-Allocator *GlobalAllocator::pA = nullptr;
+static std::atomic<Allocator *> pA = nullptr;
 Allocator *tlsf = nullptr;
-GlobalAllocator::GlobalAllocator() {}
+static Size allocatorSize = 0x90000000;
+static Size current = 0;
 Allocator *GlobalAllocator::get() {
-  if (pA)
+  if (pA) {
     return pA;
-  size_t allocatorSize = 0x8FFFFFF;
+  }
   tlsf = new TLSFAllocator(allocatorSize);
   pA = new std::pmr::synchronized_pool_resource(tlsf);
   if (!pA) {
@@ -22,4 +25,5 @@ Allocator *GlobalAllocator::get() {
   }
   return pA;
 }
+void GlobalAllocator::release() {}
 } // namespace sinen

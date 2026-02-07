@@ -14,6 +14,7 @@ public:
   }
 
 private:
+  mutable std::mutex mtx;
   void *mem;
   void *tlsf;
 };

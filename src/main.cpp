@@ -112,6 +112,7 @@ static void freeCustom(void *mem) {
 }
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
+  std::pmr::set_default_resource(std::pmr::new_delete_resource());
   SDL_SetMemoryFunctions(mallocCustom, callocCustom, reallocCustom, freeCustom);
   Arguments::argc = argc;
   Arguments ::argv.resize(argc);
@@ -195,5 +196,5 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result) {
   Graphics::shutdown();
   Window::shutdown();
   Script::shutdown();
-  SDL_Quit();
+  GlobalAllocator::release();
 }

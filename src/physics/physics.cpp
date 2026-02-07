@@ -241,10 +241,20 @@ bool Physics::initialize() {
   return true;
 }
 void Physics::shutdown() {
-  JPH::UnregisterTypes();
+  JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
+  for (auto &id : bodyMap) {
+    bodyInterface.RemoveBody(id.second);
+    bodyInterface.DestroyBody(id.second);
+  }
 
   delete JPH::Factory::sInstance;
   JPH::Factory::sInstance = nullptr;
+
+  JPH::UnregisterTypes();
+
+  auto barrier = jobSystem->CreateBarrier();
+  jobSystem->WaitForJobs(barrier);
+  jobSystem->DestroyBarrier(barrier);
 
   jobSystem = nullptr;
   physicsSystem = nullptr;

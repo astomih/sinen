@@ -127,7 +127,7 @@ Device::createTransferBuffer(const TransferBuffer::CreateInfo &createInfo) {
     return nullptr;
   }
   return makePtr<TransferBuffer>(createInfo.allocator, createInfo, *this,
-                                 buffer, allocation, info.pMappedData);
+                                 buffer, allocation, nullptr);
 }
 
 Ptr<gpu::Texture> Device::createTexture(const Texture::CreateInfo &createInfo) {

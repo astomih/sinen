@@ -6,8 +6,7 @@
 #define VMA_DEBUG_DETECT_CORRUPTION 1
 #endif
 #define VMA_IMPLEMENTATION
-#define VMA_VULKAN_VERSION 1003000
-#include <cstdio>
+#define VMA_VULKAN_VERSION 1004000
 
 #include <vk_mem_alloc.h>
 #endif // EMSCRIPTEN

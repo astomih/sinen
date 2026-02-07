@@ -7,10 +7,8 @@
 #endif
 #include <gpu/gpu.hpp>
 
-#include "d3d12u/d3d12u_renderer.hpp"
 #include "sdlgpu/sdlgpu_backend.hpp"
-#include "vulkan/vulkan_renderer.hpp"
-#include "webgpu/webgpu_renderer.hpp"
+#include "vulkan/vulkan_backend.hpp"
 
 #include <SDL3/SDL.h>
 
@@ -19,19 +17,20 @@ Ptr<Backend> RHI::createBackend(Allocator *allocator, const GraphicsAPI &api) {
 #ifndef SINEN_PLATFORM_EMSCRIPTEN
   switch (api) {
   case GraphicsAPI::Vulkan: {
-    // TODO
+    return makePtr<vulkan::Backend>(allocator);
   }
 #ifdef SINEN_PLATFORM_WINDOWS
   case GraphicsAPI::D3D12U: {
     // TODO
+    return nullptr;
   }
 #endif
   case GraphicsAPI::WebGPU: {
     // TODO
+    return nullptr;
   }
   case GraphicsAPI::SDLGPU: {
-    Ptr<Backend> p = makePtr<sdlgpu::Backend>(allocator);
-    return p;
+    return makePtr<sdlgpu::Backend>(allocator);
   }
   default:
     return nullptr;

@@ -6,6 +6,7 @@
 #include <memory>
 #include <thread>
 
+#include <core/data/hashmap.hpp>
 #include <core/data/ptr.hpp>
 #include <core/def/types.hpp>
 #include <core/time/time.hpp>
@@ -13,6 +14,8 @@
 #include <math/quaternion.hpp>
 #include <math/vector.hpp>
 #include <script/luaapi.hpp>
+
+#include "world.hpp"
 
 #include <Jolt/Jolt.h>
 
@@ -30,11 +33,6 @@
 #include <Jolt/RegisterTypes.h>
 
 namespace sinen {
-Vec3 Collider::getPosition() const { return Physics::getPosition(*this); }
-Vec3 Collider::getVelocity() const { return Physics::getVelocity(*this); }
-void Collider::setLinearVelocity(const Vec3 &velocity) const {
-  Physics::setLinearVelocity(*this, velocity);
-}
 class TempAllocator : public JPH::TempAllocator {
 public:
   TempAllocator() = default;
@@ -203,7 +201,6 @@ public:
   }
 };
 
-inline std::unordered_map<UInt32, JPH::BodyID> bodyMap = {};
 bool Physics::initialize() {
   JPH::RegisterDefaultAllocator();
 
@@ -241,11 +238,6 @@ bool Physics::initialize() {
   return true;
 }
 void Physics::shutdown() {
-  JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
-  for (auto &id : bodyMap) {
-    bodyInterface.RemoveBody(id.second);
-    bodyInterface.DestroyBody(id.second);
-  }
 
   delete JPH::Factory::sInstance;
   JPH::Factory::sInstance = nullptr;
@@ -274,148 +266,188 @@ void Physics::update() {
                         jobSystem.get());
 }
 
-Vec3 Physics::getPosition(const Collider &collider) {
-  JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
-  auto it = bodyMap.find(collider.id);
-  if (it == bodyMap.end()) {
-    return Vec3(0.0f);
-  }
-  JPH::BodyID bodyId = it->second;
-  JPH::RVec3 position = bodyInterface.GetCenterOfMassPosition(bodyId);
-  return {position.GetX(), position.GetY(), position.GetZ()};
-}
-
-Vec3 Physics::getVelocity(const Collider &collider) {
-  JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
-  auto it = bodyMap.find(collider.id);
-  if (it == bodyMap.end()) {
-    return Vec3(0.0f);
-  }
-  JPH::BodyID bodyId = it->second;
-  auto velocity = bodyInterface.GetLinearVelocity(bodyId);
-  return Vec3(velocity.GetX(), velocity.GetY(), velocity.GetZ());
-}
-void Physics::setLinearVelocity(const Collider &collider,
-                                const Vec3 &velocity) {
-  JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
-  auto bodyID = bodyMap[collider.id];
-  bodyInterface.SetLinearVelocity(bodyID, {velocity.x, velocity.y, velocity.z});
-}
-
 static UInt32 nextColliderID = 1;
 UInt32 getNextId() { return nextColliderID++; }
 
-Collider Physics::createBoxCollider(const Transform &transform, bool isStatic) {
+class WorldImpl : public World {
+  Hashmap<UInt32, JPH::BodyID> bodyMap = {};
 
-  JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
-
-  auto &position = transform.position;
-  auto &rotation = transform.rotation;
-  auto &scale = transform.scale;
-  JPH::BoxShapeSettings boxShapeSetting({scale.x, scale.y, scale.z});
-  boxShapeSetting.SetEmbedded();
-
-  // Create the shape
-  JPH::ShapeSettings::ShapeResult boxShapeResult = boxShapeSetting.Create();
-  JPH::ShapeRefC boxShape = boxShapeResult.Get();
-  const auto quaternion = Quat::fromEuler(rotation);
-
-  JPH::EMotionType motionType =
-      isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic;
-
-  JPH::ObjectLayer layer = isStatic ? Layers::nonMoving : Layers::moving;
-
-  JPH::BodyCreationSettings boxSettings(
-      boxShape, JPH::RVec3(position.x, position.y, position.z),
-      {quaternion.x, quaternion.y, quaternion.z, quaternion.w}, motionType,
-      layer);
-
-  JPH::Body *floor = bodyInterface.CreateBody(boxSettings);
-  Collider collider{getNextId()};
-  bodyMap[collider.id] = floor->GetID();
-  return collider;
-}
-
-Collider Physics::createSphereCollider(const Vec3 &position, float radius,
-                                       bool isStatic) {
-  auto &bodyInterface = physicsSystem->GetBodyInterface();
-  auto motionType =
-      isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic;
-  JPH::ObjectLayer layer = isStatic ? Layers::nonMoving : Layers::moving;
-  JPH::BodyCreationSettings sphereSettings(
-      new JPH::SphereShape(radius),
-      JPH::RVec3(position.x, position.y, position.z), JPH::Quat::sIdentity(),
-      motionType, layer);
-  auto *body = bodyInterface.CreateBody(sphereSettings);
-
-  Collider collider{getNextId()};
-  bodyMap[collider.id] = body->GetID();
-  return collider;
-}
-Collider Physics::createCylinderCollider(const Vec3 &position,
-                                         const Vec3 &rotation, float halfHeight,
-                                         float radius, bool isStatic) {
-  auto &bodyInterface = physicsSystem->GetBodyInterface();
-  JPH::CylinderShapeSettings cylinderShapeSetting(halfHeight, radius);
-  cylinderShapeSetting.SetEmbedded();
-  JPH::EMotionType motionType =
-      isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic;
-  JPH::ObjectLayer layer = isStatic ? Layers::nonMoving : Layers::moving;
-  JPH::ShapeSettings::ShapeResult cylinderShapeResult =
-      cylinderShapeSetting.Create();
-  JPH::ShapeRefC cylinderShape = cylinderShapeResult.Get();
-  const auto quaternion = Quat::fromEuler(rotation);
-  JPH::BodyCreationSettings cylinderSettings(
-      cylinderShape, JPH::RVec3(position.x, position.y, position.z),
-      {quaternion.x, quaternion.y, quaternion.z, quaternion.w}, motionType,
-      layer);
-  JPH::Body *cylinder = bodyInterface.CreateBody(cylinderSettings);
-  Collider collider{getNextId()};
-  bodyMap[collider.id] = cylinder->GetID();
-  return collider;
-}
-void Physics::addCollider(const Collider &collider, bool active) {
-  JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
-  auto it = bodyMap.find(collider.id);
-  if (it == bodyMap.end()) {
-    return;
+public:
+  WorldImpl() {}
+  ~WorldImpl() override {
+    JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
+    for (auto &id : bodyMap) {
+      bodyInterface.RemoveBody(id.second);
+      bodyInterface.DestroyBody(id.second);
+    }
   }
-  JPH::BodyID bodyID = it->second;
-  bodyInterface.AddBody(bodyID, active ? JPH::EActivation::Activate
-                                       : JPH::EActivation::DontActivate);
+  Vec3 getPosition(const Collider &collider) override {
+    JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
+    auto it = bodyMap.find(collider.id);
+    if (it == bodyMap.end()) {
+      return Vec3(0.0f);
+    }
+    JPH::BodyID bodyId = it->second;
+    JPH::RVec3 position = bodyInterface.GetCenterOfMassPosition(bodyId);
+    return {position.GetX(), position.GetY(), position.GetZ()};
+  }
+
+  Vec3 getVelocity(const Collider &collider) override {
+    JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
+    auto it = bodyMap.find(collider.id);
+    if (it == bodyMap.end()) {
+      return Vec3(0.0f);
+    }
+    JPH::BodyID bodyId = it->second;
+    auto velocity = bodyInterface.GetLinearVelocity(bodyId);
+    return Vec3(velocity.GetX(), velocity.GetY(), velocity.GetZ());
+  }
+
+  void setLinearVelocity(const Collider &collider,
+                         const Vec3 &velocity) override {
+    JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
+    auto bodyID = bodyMap[collider.id];
+    bodyInterface.SetLinearVelocity(bodyID,
+                                    {velocity.x, velocity.y, velocity.z});
+  }
+
+  Collider createBoxCollider(const Transform &transform,
+                             bool isStatic) override {
+
+    JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
+
+    auto &position = transform.position;
+    auto &rotation = transform.rotation;
+    auto &scale = transform.scale;
+    JPH::BoxShapeSettings boxShapeSetting({scale.x, scale.y, scale.z});
+    boxShapeSetting.SetEmbedded();
+
+    // Create the shape
+    JPH::ShapeSettings::ShapeResult boxShapeResult = boxShapeSetting.Create();
+    JPH::ShapeRefC boxShape = boxShapeResult.Get();
+    const auto quaternion = Quat::fromEuler(rotation);
+
+    JPH::EMotionType motionType =
+        isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic;
+
+    JPH::ObjectLayer layer = isStatic ? Layers::nonMoving : Layers::moving;
+
+    JPH::BodyCreationSettings boxSettings(
+        boxShape, JPH::RVec3(position.x, position.y, position.z),
+        {quaternion.x, quaternion.y, quaternion.z, quaternion.w}, motionType,
+        layer);
+
+    JPH::Body *floor = bodyInterface.CreateBody(boxSettings);
+    Collider collider{*this, getNextId()};
+    bodyMap[collider.id] = floor->GetID();
+    return collider;
+  }
+
+  Collider createSphereCollider(const Vec3 &position, float radius,
+                                bool isStatic) override {
+    auto &bodyInterface = physicsSystem->GetBodyInterface();
+    auto motionType =
+        isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic;
+    JPH::ObjectLayer layer = isStatic ? Layers::nonMoving : Layers::moving;
+    JPH::BodyCreationSettings sphereSettings(
+        new JPH::SphereShape(radius),
+        JPH::RVec3(position.x, position.y, position.z), JPH::Quat::sIdentity(),
+        motionType, layer);
+    auto *body = bodyInterface.CreateBody(sphereSettings);
+
+    Collider collider{*this, getNextId()};
+    bodyMap[collider.id] = body->GetID();
+    return collider;
+  }
+  Collider createCylinderCollider(const Vec3 &position, const Vec3 &rotation,
+                                  float halfHeight, float radius,
+                                  bool isStatic) override {
+    auto &bodyInterface = physicsSystem->GetBodyInterface();
+    JPH::CylinderShapeSettings cylinderShapeSetting(halfHeight, radius);
+    cylinderShapeSetting.SetEmbedded();
+    JPH::EMotionType motionType =
+        isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic;
+    JPH::ObjectLayer layer = isStatic ? Layers::nonMoving : Layers::moving;
+    JPH::ShapeSettings::ShapeResult cylinderShapeResult =
+        cylinderShapeSetting.Create();
+    JPH::ShapeRefC cylinderShape = cylinderShapeResult.Get();
+    const auto quaternion = Quat::fromEuler(rotation);
+    JPH::BodyCreationSettings cylinderSettings(
+        cylinderShape, JPH::RVec3(position.x, position.y, position.z),
+        {quaternion.x, quaternion.y, quaternion.z, quaternion.w}, motionType,
+        layer);
+    JPH::Body *cylinder = bodyInterface.CreateBody(cylinderSettings);
+    Collider collider{*this, getNextId()};
+    bodyMap[collider.id] = cylinder->GetID();
+    return collider;
+  }
+  void addCollider(const Collider &collider, bool active) override {
+    JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
+    auto it = bodyMap.find(collider.id);
+    if (it == bodyMap.end()) {
+      return;
+    }
+    JPH::BodyID bodyID = it->second;
+    bodyInterface.AddBody(bodyID, active ? JPH::EActivation::Activate
+                                         : JPH::EActivation::DontActivate);
+  }
+};
+
+Ptr<World> World::create() { return makePtr<WorldImpl>(); }
+
+Collider::Collider(World &world, UInt32 id) : world(world), id(id) {}
+Vec3 Collider::getPosition() const { return world.getPosition(*this); }
+Vec3 Collider::getVelocity() const { return world.getVelocity(*this); }
+void Collider::setLinearVelocity(const Vec3 &velocity) const {
+  world.setLinearVelocity(*this, velocity);
+}
+
+static int lWorldNew(lua_State *L) {
+  int n = lua_gettop(L);
+  udPushPtr<World>(L, World::create());
+  return 1;
 }
 
 static int lPhysicsCreateBoxCollider(lua_State *L) {
-  auto &t = udValue<Transform>(L, 1);
-  bool isStatic = lua_toboolean(L, 2) != 0;
-  udNewOwned<Collider>(L, Physics::createBoxCollider(t, isStatic));
+  auto w = udPtr<World>(L, 1);
+  auto &t = udValue<Transform>(L, 2);
+  bool isStatic = lua_toboolean(L, 3) != 0;
+  auto collider = w->createBoxCollider(t, isStatic);
+  udNewOwned<Collider>(L, collider);
   return 1;
 }
 static int lPhysicsCreateSphereCollider(lua_State *L) {
-  auto &pos = udValue<Vec3>(L, 1);
-  float radius = static_cast<float>(luaL_checknumber(L, 2));
-  bool isStatic = lua_toboolean(L, 3) != 0;
-  udNewOwned<Collider>(L, Physics::createSphereCollider(pos, radius, isStatic));
+  auto w = udPtr<World>(L, 1);
+  auto &pos = udValue<Vec3>(L, 2);
+  float radius = static_cast<float>(luaL_checknumber(L, 3));
+  bool isStatic = lua_toboolean(L, 4) != 0;
+  udNewOwned<Collider>(L, w->createSphereCollider(pos, radius, isStatic));
   return 1;
 }
 static int lPhysicsCreateCylinderCollider(lua_State *L) {
-  auto &pos = udValue<Vec3>(L, 1);
-  auto &rot = udValue<Vec3>(L, 2);
-  float halfHeight = static_cast<float>(luaL_checknumber(L, 3));
-  float radius = static_cast<float>(luaL_checknumber(L, 4));
-  bool isStatic = lua_toboolean(L, 5) != 0;
-  udNewOwned<Collider>(L, Physics::createCylinderCollider(pos, rot, halfHeight,
-                                                          radius, isStatic));
+  auto w = udPtr<World>(L, 1);
+  auto &pos = udValue<Vec3>(L, 2);
+  auto &rot = udValue<Vec3>(L, 3);
+  float halfHeight = static_cast<float>(luaL_checknumber(L, 4));
+  float radius = static_cast<float>(luaL_checknumber(L, 5));
+  bool isStatic = lua_toboolean(L, 6) != 0;
+  udNewOwned<Collider>(
+      L, w->createCylinderCollider(pos, rot, halfHeight, radius, isStatic));
   return 1;
 }
 static int lPhysicsAddCollider(lua_State *L) {
-  auto &c = udValue<Collider>(L, 1);
-  bool active = lua_toboolean(L, 2) != 0;
-  Physics::addCollider(c, active);
+  auto w = udPtr<World>(L, 1);
+  auto &c = udValue<Collider>(L, 2);
+  bool active = lua_toboolean(L, 3) != 0;
+  w->addCollider(c, active);
   return 0;
 }
 void registerPhysics(lua_State *L) {
-  pushSnNamed(L, "Physics");
+  luaL_newmetatable(L, World::metaTableName());
+  luaPushcfunction2(L, udPtrGc<World>);
+  lua_setfield(L, -2, "__gc");
+  lua_pushvalue(L, -1);
+  lua_setfield(L, -2, "__index");
   luaPushcfunction2(L, lPhysicsCreateBoxCollider);
   lua_setfield(L, -2, "createBoxCollider");
   luaPushcfunction2(L, lPhysicsCreateSphereCollider);
@@ -424,6 +456,11 @@ void registerPhysics(lua_State *L) {
   lua_setfield(L, -2, "createCylinderCollider");
   luaPushcfunction2(L, lPhysicsAddCollider);
   lua_setfield(L, -2, "addCollider");
+  lua_pop(L, 1);
+
+  pushSnNamed(L, "World");
+  luaPushcfunction2(L, lWorldNew);
+  lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
 } // namespace sinen

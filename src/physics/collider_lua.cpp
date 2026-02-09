@@ -2,10 +2,6 @@
 #include <script/luaapi.hpp>
 
 namespace sinen {
-static int lColliderNew(lua_State *L) {
-  udNewOwned<Collider>(L, Collider{});
-  return 1;
-}
 static int lColliderGetPosition(lua_State *L) {
   udNewOwned<Vec3>(L, udValue<Collider>(L, 1).getPosition());
   return 1;
@@ -35,8 +31,6 @@ void registerCollider(lua_State *L) {
   lua_pop(L, 1);
 
   pushSnNamed(L, "Collider");
-  luaPushcfunction2(L, lColliderNew);
-  lua_setfield(L, -2, "new");
-  lua_pop(L, 1);
+  lua_pop(L, 2);
 }
 } // namespace sinen

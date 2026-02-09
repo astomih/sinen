@@ -249,6 +249,13 @@ sn = {
     ---@field setLinearVelocity fun(self: sn.Collider, velocity: sn.Vec3)
     Collider = {},
 
+    ---@class sn.World
+    ---@field new fun(): sn.World
+    ---@field createBoxCollider fun(self: sn.World, transform: sn.Transform, isStatic: boolean): sn.Collider
+    ---@field createSphereCollider fun(self: sn.World, position: sn.Vec3, radius: number, isStatic: boolean): sn.Collider
+    ---@field addCollider fun(self:sn.World, collider: sn.Collider, isActive: boolean)
+    World = {},
+
     ---Static class
     ---@class sn.Arguments
     ---@field getArgc fun(): number
@@ -345,9 +352,6 @@ sn = {
 
     ---Static class
     ---@class sn.Physics
-    ---@field createBoxCollider fun(transform: sn.Transform, isStatic: boolean): sn.Collider
-    ---@field createSphereCollider fun(position: sn.Vec3, radius: number, isStatic: boolean): sn.Collider
-    ---@field addCollider fun(collider: sn.Collider, isActive: boolean)
     Physics = {},
 
     ---Static class

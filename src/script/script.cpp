@@ -378,6 +378,7 @@ void Script::runScene() {
   if (!gLua) {
     return;
   }
+  lua_gc(gLua, LUA_GCCOLLECT, 0);
 
   gScenePhase = ScriptScenePhase::Running;
   gSetupTasks = TaskGroup::create();

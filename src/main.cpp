@@ -149,12 +149,12 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     Log::critical("Failed to initialize physics");
     return SDL_APP_FAILURE;
   }
-  if (!Script::initialize()) {
-    Log::critical("Failed to initialize script");
-    return SDL_APP_FAILURE;
-  }
   if (!Random::initialize()) {
     Log::critical("Failed to initialize random");
+    return SDL_APP_FAILURE;
+  }
+  if (!Script::initialize()) {
+    Log::critical("Failed to initialize script");
     return SDL_APP_FAILURE;
   }
   return SDL_APP_CONTINUE;
@@ -189,12 +189,12 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
   return SDL_APP_CONTINUE;
 }
 void SDL_AppQuit(void *appstate, SDL_AppResult result) {
+  Script::shutdown();
   Physics::shutdown();
   Input::shutdown();
   Audio::shutdown();
   Random::shutdown();
   Graphics::shutdown();
   Window::shutdown();
-  Script::shutdown();
   GlobalAllocator::release();
 }

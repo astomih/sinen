@@ -26,6 +26,7 @@
 #include <Jolt/Physics/Body/BodyActivationListener.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 #include <Jolt/Physics/Collision/Shape/CylinderShape.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/PhysicsSettings.h>
@@ -266,21 +267,62 @@ void Physics::update() {
                         jobSystem.get());
 }
 
+void Physics::setGravity(const Vec3 &gravity) {
+  if (!physicsSystem) {
+    return;
+  }
+  physicsSystem->SetGravity({gravity.x, gravity.y, gravity.z});
+}
+Vec3 Physics::getGravity() {
+  if (!physicsSystem) {
+    return Vec3(0.0f);
+  }
+  auto g = physicsSystem->GetGravity();
+  return {g.GetX(), g.GetY(), g.GetZ()};
+}
+UInt32 Physics::bodyCount() {
+  return physicsSystem ? static_cast<UInt32>(physicsSystem->GetNumBodies()) : 0;
+}
+
 static UInt32 nextColliderID = 1;
 UInt32 getNextId() { return nextColliderID++; }
 
 class WorldImpl : public World {
   Hashmap<UInt32, JPH::BodyID> bodyMap = {};
 
+  bool tryGetBodyID(const Collider &collider, JPH::BodyID &out) {
+    auto it = bodyMap.find(collider.id);
+    if (it == bodyMap.end()) {
+      return false;
+    }
+    out = it->second;
+    return true;
+  }
+
 public:
   WorldImpl() {}
   ~WorldImpl() override {
     JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
     for (auto &id : bodyMap) {
-      bodyInterface.RemoveBody(id.second);
+      if (bodyInterface.IsAdded(id.second)) {
+        bodyInterface.RemoveBody(id.second);
+      }
       bodyInterface.DestroyBody(id.second);
     }
+    bodyMap.clear();
   }
+
+  bool isValid(const Collider &collider) override {
+    return bodyMap.find(collider.id) != bodyMap.end();
+  }
+  bool isAdded(const Collider &collider) override {
+    JPH::BodyID bodyID;
+    if (!tryGetBodyID(collider, bodyID)) {
+      return false;
+    }
+    return physicsSystem->GetBodyInterface().IsAdded(bodyID);
+  }
+
   Vec3 getPosition(const Collider &collider) override {
     JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
     auto it = bodyMap.find(collider.id);
@@ -290,6 +332,17 @@ public:
     JPH::BodyID bodyId = it->second;
     JPH::RVec3 position = bodyInterface.GetCenterOfMassPosition(bodyId);
     return {position.GetX(), position.GetY(), position.GetZ()};
+  }
+
+  Vec3 getRotation(const Collider &collider) override {
+    JPH::BodyID bodyID;
+    if (!tryGetBodyID(collider, bodyID)) {
+      return Vec3(0.0f);
+    }
+    JPH::Quat r = physicsSystem->GetBodyInterface().GetRotation(bodyID);
+    const Vec3 eRad = Quat::toEuler(Quat(r.GetX(), r.GetY(), r.GetZ(), r.GetW()));
+    return {Math::toDegrees(eRad.x), Math::toDegrees(eRad.y),
+            Math::toDegrees(eRad.z)};
   }
 
   Vec3 getVelocity(const Collider &collider) override {
@@ -303,12 +356,127 @@ public:
     return Vec3(velocity.GetX(), velocity.GetY(), velocity.GetZ());
   }
 
+  Vec3 getAngularVelocity(const Collider &collider) override {
+    JPH::BodyID bodyID;
+    if (!tryGetBodyID(collider, bodyID)) {
+      return Vec3(0.0f);
+    }
+    auto w = physicsSystem->GetBodyInterface().GetAngularVelocity(bodyID);
+    return Vec3(w.GetX(), w.GetY(), w.GetZ());
+  }
+
+  void setPosition(const Collider &collider, const Vec3 &position,
+                   bool activate) override {
+    JPH::BodyID bodyID;
+    if (!tryGetBodyID(collider, bodyID)) {
+      return;
+    }
+    physicsSystem->GetBodyInterface().SetPosition(
+        bodyID, {position.x, position.y, position.z},
+        activate ? JPH::EActivation::Activate
+                 : JPH::EActivation::DontActivate);
+  }
+
+  void setRotation(const Collider &collider, const Vec3 &rotation,
+                   bool activate) override {
+    JPH::BodyID bodyID;
+    if (!tryGetBodyID(collider, bodyID)) {
+      return;
+    }
+    const auto q = Quat::fromEuler(rotation);
+    physicsSystem->GetBodyInterface().SetRotation(
+        bodyID, {q.x, q.y, q.z, q.w},
+        activate ? JPH::EActivation::Activate
+                 : JPH::EActivation::DontActivate);
+  }
+
+  void setPositionAndRotation(const Collider &collider, const Vec3 &position,
+                              const Vec3 &rotation, bool activate) override {
+    JPH::BodyID bodyID;
+    if (!tryGetBodyID(collider, bodyID)) {
+      return;
+    }
+    const auto q = Quat::fromEuler(rotation);
+    physicsSystem->GetBodyInterface().SetPositionAndRotation(
+        bodyID, {position.x, position.y, position.z}, {q.x, q.y, q.z, q.w},
+        activate ? JPH::EActivation::Activate
+                 : JPH::EActivation::DontActivate);
+  }
+
   void setLinearVelocity(const Collider &collider,
                          const Vec3 &velocity) override {
     JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
-    auto bodyID = bodyMap[collider.id];
+    auto it = bodyMap.find(collider.id);
+    if (it == bodyMap.end()) {
+      return;
+    }
+    auto bodyID = it->second;
     bodyInterface.SetLinearVelocity(bodyID,
                                     {velocity.x, velocity.y, velocity.z});
+  }
+
+  void setAngularVelocity(const Collider &collider,
+                          const Vec3 &velocity) override {
+    JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
+    auto it = bodyMap.find(collider.id);
+    if (it == bodyMap.end()) {
+      return;
+    }
+    bodyInterface.SetAngularVelocity(it->second,
+                                     {velocity.x, velocity.y, velocity.z});
+  }
+
+  void addForce(const Collider &collider, const Vec3 &force,
+                bool activate) override {
+    JPH::BodyID bodyID;
+    if (!tryGetBodyID(collider, bodyID)) {
+      return;
+    }
+    physicsSystem->GetBodyInterface().AddForce(
+        bodyID, {force.x, force.y, force.z},
+        activate ? JPH::EActivation::Activate
+                 : JPH::EActivation::DontActivate);
+  }
+
+  void addImpulse(const Collider &collider, const Vec3 &impulse) override {
+    JPH::BodyID bodyID;
+    if (!tryGetBodyID(collider, bodyID)) {
+      return;
+    }
+    physicsSystem->GetBodyInterface().AddImpulse(
+        bodyID, {impulse.x, impulse.y, impulse.z});
+  }
+
+  void setFriction(const Collider &collider, float friction) override {
+    JPH::BodyID bodyID;
+    if (!tryGetBodyID(collider, bodyID)) {
+      return;
+    }
+    physicsSystem->GetBodyInterface().SetFriction(bodyID, friction);
+  }
+
+  void setRestitution(const Collider &collider, float restitution) override {
+    JPH::BodyID bodyID;
+    if (!tryGetBodyID(collider, bodyID)) {
+      return;
+    }
+    physicsSystem->GetBodyInterface().SetRestitution(bodyID, restitution);
+  }
+
+  void activate(const Collider &collider) override {
+    JPH::BodyID bodyID;
+    if (!tryGetBodyID(collider, bodyID)) {
+      return;
+    }
+    physicsSystem->GetBodyInterface().ActivateBody(bodyID);
+  }
+
+  void deactivate(const Collider &collider) override {
+    JPH::BodyID bodyID;
+    if (!tryGetBodyID(collider, bodyID)) {
+      return;
+    }
+    physicsSystem->GetBodyInterface().DeactivateBody(bodyID);
   }
 
   Collider createBoxCollider(const Transform &transform,
@@ -381,6 +549,30 @@ public:
     bodyMap[collider.id] = cylinder->GetID();
     return collider;
   }
+
+  Collider createCapsuleCollider(const Vec3 &position, const Vec3 &rotation,
+                                 float halfHeight, float radius,
+                                 bool isStatic) override {
+    auto &bodyInterface = physicsSystem->GetBodyInterface();
+    JPH::CapsuleShapeSettings capsuleShapeSetting(halfHeight, radius);
+    capsuleShapeSetting.SetEmbedded();
+    JPH::EMotionType motionType =
+        isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic;
+    JPH::ObjectLayer layer = isStatic ? Layers::nonMoving : Layers::moving;
+    JPH::ShapeSettings::ShapeResult capsuleShapeResult =
+        capsuleShapeSetting.Create();
+    JPH::ShapeRefC capsuleShape = capsuleShapeResult.Get();
+    const auto quaternion = Quat::fromEuler(rotation);
+    JPH::BodyCreationSettings capsuleSettings(
+        capsuleShape, JPH::RVec3(position.x, position.y, position.z),
+        {quaternion.x, quaternion.y, quaternion.z, quaternion.w}, motionType,
+        layer);
+    JPH::Body *capsule = bodyInterface.CreateBody(capsuleSettings);
+    Collider collider{*this, getNextId()};
+    bodyMap[collider.id] = capsule->GetID();
+    return collider;
+  }
+
   void addCollider(const Collider &collider, bool active) override {
     JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
     auto it = bodyMap.find(collider.id);
@@ -391,19 +583,79 @@ public:
     bodyInterface.AddBody(bodyID, active ? JPH::EActivation::Activate
                                          : JPH::EActivation::DontActivate);
   }
+
+  void removeCollider(const Collider &collider) override {
+    JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
+    auto it = bodyMap.find(collider.id);
+    if (it == bodyMap.end()) {
+      return;
+    }
+    if (!bodyInterface.IsAdded(it->second)) {
+      return;
+    }
+    bodyInterface.RemoveBody(it->second);
+  }
+
+  void destroyCollider(const Collider &collider) override {
+    JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
+    auto it = bodyMap.find(collider.id);
+    if (it == bodyMap.end()) {
+      return;
+    }
+    if (bodyInterface.IsAdded(it->second)) {
+      bodyInterface.RemoveBody(it->second);
+    }
+    bodyInterface.DestroyBody(it->second);
+    bodyMap.erase(it);
+  }
 };
 
 Ptr<World> World::create() { return makePtr<WorldImpl>(); }
 
 Collider::Collider(World &world, UInt32 id) : world(world), id(id) {}
+bool Collider::isValid() const { return world.isValid(*this); }
+bool Collider::isAdded() const { return world.isAdded(*this); }
 Vec3 Collider::getPosition() const { return world.getPosition(*this); }
+Vec3 Collider::getRotation() const { return world.getRotation(*this); }
 Vec3 Collider::getVelocity() const { return world.getVelocity(*this); }
+Vec3 Collider::getAngularVelocity() const {
+  return world.getAngularVelocity(*this);
+}
+void Collider::setPosition(const Vec3 &position, bool activate) const {
+  world.setPosition(*this, position, activate);
+}
+void Collider::setRotation(const Vec3 &rotation, bool activate) const {
+  world.setRotation(*this, rotation, activate);
+}
+void Collider::setPositionAndRotation(const Vec3 &position,
+                                      const Vec3 &rotation,
+                                      bool activate) const {
+  world.setPositionAndRotation(*this, position, rotation, activate);
+}
 void Collider::setLinearVelocity(const Vec3 &velocity) const {
   world.setLinearVelocity(*this, velocity);
 }
+void Collider::setAngularVelocity(const Vec3 &velocity) const {
+  world.setAngularVelocity(*this, velocity);
+}
+void Collider::addForce(const Vec3 &force, bool activate) const {
+  world.addForce(*this, force, activate);
+}
+void Collider::addImpulse(const Vec3 &impulse) const {
+  world.addImpulse(*this, impulse);
+}
+void Collider::setFriction(float friction) const {
+  world.setFriction(*this, friction);
+}
+void Collider::setRestitution(float restitution) const {
+  world.setRestitution(*this, restitution);
+}
+void Collider::activate() const { world.activate(*this); }
+void Collider::deactivate() const { world.deactivate(*this); }
+void Collider::remove() const { world.removeCollider(*this); }
+void Collider::destroy() const { world.destroyCollider(*this); }
 
 static int lWorldNew(lua_State *L) {
-  int n = lua_gettop(L);
   udPushPtr<World>(L, World::create());
   return 1;
 }
@@ -435,11 +687,52 @@ static int lPhysicsCreateCylinderCollider(lua_State *L) {
       L, w->createCylinderCollider(pos, rot, halfHeight, radius, isStatic));
   return 1;
 }
+static int lPhysicsCreateCapsuleCollider(lua_State *L) {
+  auto w = udPtr<World>(L, 1);
+  auto &pos = udValue<Vec3>(L, 2);
+  auto &rot = udValue<Vec3>(L, 3);
+  float halfHeight = static_cast<float>(luaL_checknumber(L, 4));
+  float radius = static_cast<float>(luaL_checknumber(L, 5));
+  bool isStatic = lua_toboolean(L, 6) != 0;
+  udNewOwned<Collider>(
+      L, w->createCapsuleCollider(pos, rot, halfHeight, radius, isStatic));
+  return 1;
+}
 static int lPhysicsAddCollider(lua_State *L) {
   auto w = udPtr<World>(L, 1);
   auto &c = udValue<Collider>(L, 2);
   bool active = lua_toboolean(L, 3) != 0;
   w->addCollider(c, active);
+  return 0;
+}
+static int lPhysicsRemoveCollider(lua_State *L) {
+  auto w = udPtr<World>(L, 1);
+  auto &c = udValue<Collider>(L, 2);
+  w->removeCollider(c);
+  return 0;
+}
+static int lPhysicsDestroyCollider(lua_State *L) {
+  auto w = udPtr<World>(L, 1);
+  auto &c = udValue<Collider>(L, 2);
+  w->destroyCollider(c);
+  return 0;
+}
+
+static int lPhysicsSetGravity(lua_State *L) {
+  auto &g = udValue<Vec3>(L, 1);
+  Physics::setGravity(g);
+  return 0;
+}
+static int lPhysicsGetGravity(lua_State *L) {
+  udNewOwned<Vec3>(L, Physics::getGravity());
+  return 1;
+}
+static int lPhysicsBodyCount(lua_State *L) {
+  lua_pushinteger(L, static_cast<lua_Integer>(Physics::bodyCount()));
+  return 1;
+}
+static int lPhysicsOptimizeBroadPhase(lua_State *L) {
+  Physics::postSetup();
   return 0;
 }
 void registerPhysics(lua_State *L) {
@@ -454,13 +747,30 @@ void registerPhysics(lua_State *L) {
   lua_setfield(L, -2, "createSphereCollider");
   luaPushcfunction2(L, lPhysicsCreateCylinderCollider);
   lua_setfield(L, -2, "createCylinderCollider");
+  luaPushcfunction2(L, lPhysicsCreateCapsuleCollider);
+  lua_setfield(L, -2, "createCapsuleCollider");
   luaPushcfunction2(L, lPhysicsAddCollider);
   lua_setfield(L, -2, "addCollider");
+  luaPushcfunction2(L, lPhysicsRemoveCollider);
+  lua_setfield(L, -2, "removeCollider");
+  luaPushcfunction2(L, lPhysicsDestroyCollider);
+  lua_setfield(L, -2, "destroyCollider");
   lua_pop(L, 1);
 
   pushSnNamed(L, "World");
   luaPushcfunction2(L, lWorldNew);
   lua_setfield(L, -2, "new");
+  lua_pop(L, 1);
+
+  pushSnNamed(L, "Physics");
+  luaPushcfunction2(L, lPhysicsSetGravity);
+  lua_setfield(L, -2, "setGravity");
+  luaPushcfunction2(L, lPhysicsGetGravity);
+  lua_setfield(L, -2, "getGravity");
+  luaPushcfunction2(L, lPhysicsBodyCount);
+  lua_setfield(L, -2, "bodyCount");
+  luaPushcfunction2(L, lPhysicsOptimizeBroadPhase);
+  lua_setfield(L, -2, "optimizeBroadPhase");
   lua_pop(L, 1);
 }
 } // namespace sinen

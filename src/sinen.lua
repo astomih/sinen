@@ -244,16 +244,36 @@ sn = {
     Transform = {},
 
     ---@class sn.Collider
+    ---@field isValid fun(self: sn.Collider): boolean
+    ---@field isAdded fun(self: sn.Collider): boolean
     ---@field getPosition fun(self: sn.Collider): sn.Vec3
+    ---@field getRotation fun(self: sn.Collider): sn.Vec3
     ---@field getVelocity fun(self: sn.Collider): sn.Vec3
+    ---@field getAngularVelocity fun(self: sn.Collider): sn.Vec3
+    ---@field setPosition fun(self: sn.Collider, position: sn.Vec3, activate: boolean?)
+    ---@field setRotation fun(self: sn.Collider, rotation: sn.Vec3, activate: boolean?)
+    ---@field setPositionAndRotation fun(self: sn.Collider, position: sn.Vec3, rotation: sn.Vec3, activate: boolean?)
     ---@field setLinearVelocity fun(self: sn.Collider, velocity: sn.Vec3)
+    ---@field setAngularVelocity fun(self: sn.Collider, velocity: sn.Vec3)
+    ---@field addForce fun(self: sn.Collider, force: sn.Vec3, activate: boolean?)
+    ---@field addImpulse fun(self: sn.Collider, impulse: sn.Vec3)
+    ---@field setFriction fun(self: sn.Collider, friction: number)
+    ---@field setRestitution fun(self: sn.Collider, restitution: number)
+    ---@field activate fun(self: sn.Collider)
+    ---@field deactivate fun(self: sn.Collider)
+    ---@field remove fun(self: sn.Collider)
+    ---@field destroy fun(self: sn.Collider)
     Collider = {},
 
     ---@class sn.World
     ---@field new fun(): sn.World
     ---@field createBoxCollider fun(self: sn.World, transform: sn.Transform, isStatic: boolean): sn.Collider
     ---@field createSphereCollider fun(self: sn.World, position: sn.Vec3, radius: number, isStatic: boolean): sn.Collider
+    ---@field createCylinderCollider fun(self: sn.World, position: sn.Vec3, rotation: sn.Vec3, halfHeight: number, radius: number, isStatic: boolean): sn.Collider
+    ---@field createCapsuleCollider fun(self: sn.World, position: sn.Vec3, rotation: sn.Vec3, halfHeight: number, radius: number, isStatic: boolean): sn.Collider
     ---@field addCollider fun(self:sn.World, collider: sn.Collider, isActive: boolean)
+    ---@field removeCollider fun(self:sn.World, collider: sn.Collider)
+    ---@field destroyCollider fun(self:sn.World, collider: sn.Collider)
     World = {},
 
     ---Static class
@@ -352,6 +372,10 @@ sn = {
 
     ---Static class
     ---@class sn.Physics
+    ---@field setGravity fun(gravity: sn.Vec3)
+    ---@field getGravity fun(): sn.Vec3
+    ---@field bodyCount fun(): number
+    ---@field optimizeBroadPhase fun()
     Physics = {},
 
     ---Static class

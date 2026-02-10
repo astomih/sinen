@@ -174,7 +174,7 @@ static int luaLoadSource(lua_State *L, const String &source,
     return LUA_OK;
   }
   const char *msg = lua_tostring(L, -1);
-  Log::error("[luau load error] %s", msg ? msg : "(unknown error)");
+  LogF::error("[luau load error] %s", msg ? msg : "(unknown error)");
   lua_pop(L, 1);
   return status;
 #else
@@ -255,7 +255,7 @@ void registerTime(lua_State *);
 static void registerAll(lua_State *L) {
 
 #ifdef SINEN_USE_LUAU
-  lua_pushcfunction2(L, l_import);
+  luaPushcfunction2(L, lImport);
   lua_setglobal(L, "require");
 #endif
 
@@ -322,8 +322,8 @@ bool Script::initialize() {
   if (auto *cb = lua_callbacks(gLua)) {
     cb->panic = [](lua_State *L, int errcode) {
       const char *msg = lua_tostring(L, -1);
-      Log::critical("[luau panic %d] %s", errcode,
-                    msg ? msg : "(unknown error)");
+      LogF::critical("[luau panic %d] %s", errcode,
+                     msg ? msg : "(unknown error)");
     };
   }
 #else

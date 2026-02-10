@@ -146,8 +146,5 @@ void registerCollider(lua_State *L) {
   luaPushcfunction2(L, lColliderDestroy);
   lua_setfield(L, -2, "destroy");
   lua_pop(L, 1);
-
-  pushSnNamed(L, "Collider");
-  lua_pop(L, 2);
 }
 } // namespace sinen

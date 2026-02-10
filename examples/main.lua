@@ -1,5 +1,5 @@
 require("global")
-local button = require("gui.button").new()
+local button = require("gui/button").new()
 
 local exampleDirs = sn.Filesystem.enumerateDirectory(".")
 local numExamples = 14

@@ -18,7 +18,9 @@ set(SINEN_INCLUDE_DIRS
     ${SINEN_SOURCE_DIR}/libs/tinyexr/deps/miniz
     ${SINEN_SOURCE_DIR}/libs/tlsf
     ${SINEN_SOURCE_DIR}/libs/volk
-    ${SINEN_SOURCE_DIR}/libs/VulkanMemoryAllocator/include)
+    ${SINEN_SOURCE_DIR}/libs/VulkanMemoryAllocator/include
+    ${SINEN_SOURCE_DIR}/libs/luau-debugger/debugger/include
+    ${SINEN_SOURCE_DIR}/libs/cppdap/include)
 
 if(SINEN_USE_LUAU)
   list(APPEND SINEN_INCLUDE_DIRS ${SINEN_SOURCE_DIR}/libs/luau/VM/include)

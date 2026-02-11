@@ -43,3 +43,9 @@
 [submodule "libs/luau"]
 	path = libs/luau
 	url = https://github.com/luau-lang/luau
+[submodule "libs/luau-debugger"]
+	path = libs/luau-debugger
+	url = https://github.com/sssooonnnggg/luau-debugger
+[submodule "libs/cppdap"]
+	path = libs/cppdap
+	url = https://github.com/sssooonnnggg/cppdap

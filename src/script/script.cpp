@@ -13,9 +13,13 @@
 #include <math/graph/bfs_grid.hpp>
 #include <platform/io/asset_io.hpp>
 
+#include <debugger.h>
+
 #include "luaapi.hpp"
 
 #include <imgui.h>
+
+#include <filesystem>
 
 namespace sinen {
 auto alloc = [](void *ud, void *ptr, size_t osize, size_t nsize) -> void * {
@@ -166,8 +170,10 @@ static void drawNowLoadingOverlay() {
 static int luaLoadSource(lua_State *L, const String &source,
                          const String &chunkname) {
 #ifdef SINEN_USE_LUAU
+  Luau::CompileOptions options{};
+  options.debugLevel = 2;
   std::string bytecode =
-      Luau::compile(std::string(source.data(), source.size()));
+      Luau::compile(std::string(source.data(), source.size()), options);
   int status =
       luau_load(L, chunkname.c_str(), bytecode.data(), bytecode.size(), 0);
   if (status == LUA_OK) {
@@ -309,8 +315,26 @@ static void registerAll(lua_State *L) {
   registerTime(L);
 }
 
+luau::debugger::Debugger debugger(true);
 bool Script::initialize() {
 #ifndef SINEN_NO_USE_SCRIPT
+  auto logHandler = [](std::string_view msg) {
+    printf("%s", msg.data());
+#if defined(__ANDROID__)
+    __android_log_print(ANDROID_LOG_INFO, "luaud", "%s", msg.data());
+#endif
+  };
+  auto errorHandler = [](std::string_view msg) {
+    fprintf(stderr, "%s", msg.data());
+#if defined(__ANDROID__)
+    __android_log_print(ANDROID_LOG_ERROR, "luaud", "%s", msg.data());
+#endif
+  };
+
+  luau::debugger::log::install(logHandler, errorHandler);
+  while (!debugger.listen(58000)) {
+  }
+
   // bindings are implemented using Lua C API (see per-module *lua.cpp files)
   gLua = lua_newstate(alloc, nullptr);
   if (!gLua) {
@@ -318,6 +342,7 @@ bool Script::initialize() {
     return false;
   }
   luaL_openlibs(gLua);
+  debugger.initialize(gLua);
 #ifdef SINEN_USE_LUAU
   if (auto *cb = lua_callbacks(gLua)) {
     cb->panic = [](lua_State *L, int errcode) {
@@ -411,10 +436,13 @@ void Script::runScene() {
 
   String filename = String(sceneName) + ".lua";
   String chunkname = "@" + AssetIO::getFilePath(filename);
-  if (luaLoadSource(gLua, source, chunkname) != LUA_OK) {
+  auto fullPath =
+      std::filesystem::current_path().string() + "\\" + filename.c_str();
+  if (luaLoadSource(gLua, source, fullPath.c_str()) != LUA_OK) {
     logPCallError(gLua);
     return;
   }
+  debugger.onLuaFileLoaded(gLua, fullPath, false);
   if (lua_pcall(gLua, 0, 0, 0) != LUA_OK) {
     logPCallError(gLua);
     return;

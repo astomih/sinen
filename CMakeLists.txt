@@ -39,6 +39,8 @@ if(SINEN_USE_LUAU)
   endforeach()
   set_target_properties(Luau.Analysis Luau.CLI.lib Luau.CodeGen Luau.Config
                         Luau.Require PROPERTIES EXCLUDE_FROM_ALL 1)
+  add_subdirectory(${SINEN_SOURCE_DIR}/libs/cppdap)
+  add_subdirectory(${SINEN_SOURCE_DIR}/libs/luau-debugger/debugger)
 else()
   if(NOT EMSCRIPTEN)
     add_subdirectory(${SINEN_SOURCE_DIR}/libs/LuaJIT EXCLUDE_FROM_ALL)
@@ -120,7 +122,14 @@ if(SINEN_USE_SLANG)
 endif()
 
 if(SINEN_USE_LUAU)
-  list(APPEND SINEN_LINK_LIBRARIES Luau.VM Luau.Compiler Luau.Ast)
+  list(
+    APPEND
+    SINEN_LINK_LIBRARIES
+    Luau.VM
+    Luau.Compiler
+    Luau.Ast
+    cppdap
+    Luau.Debugger)
 else()
   if(NOT EMSCRIPTEN)
     list(APPEND SINEN_LINK_LIBRARIES libluajit)

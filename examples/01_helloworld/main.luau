@@ -1,4 +1,4 @@
-local font = Font.new()
+local font: Font = Font.new()
 font:load(32)
 function update()
 	if Keyboard.isPressed(Keyboard.ESCAPE) then

@@ -1,5 +1,5 @@
 local G = require("../global")
-local sound = Sound.new()
+local sound: Sound = Sound.new()
 sound:load("shot.wav")
 
 function update()

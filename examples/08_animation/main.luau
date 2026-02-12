@@ -1,12 +1,12 @@
-local model = Model.new()
-local pipeline = GraphicsPipeline.new()
+local model: Model = Model.new()
+local pipeline: GraphicsPipeline = GraphicsPipeline.new()
 function setup()
 	model:load("BrainStem.glb")
-	local texture = Texture.new()
+	local texture: Texture = Texture.new()
 	texture:fill(Color.new(1, 1, 1, 1))
 
-	local vs = Shader.new()
-	local fs = Shader.new()
+	local vs: Shader = Shader.new()
+	local fs: Shader = Shader.new()
 
 	vs:compileAndLoad("skinning.slang", ShaderStage.Vertex)
 	fs:compileAndLoad("skinning.slang", ShaderStage.Fragment)

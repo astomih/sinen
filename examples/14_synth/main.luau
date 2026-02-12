@@ -1,5 +1,5 @@
 local G = require("../global")
-local synth = Synth.new()
+local synth: Synth = Synth.new()
 synth:setBpm(130)
 synth:setStepBeats(0.25) -- 16th note steps (1.0 = quarter note)
 synth:setADSR(0.002, 0.06, 0.3, 0.12)

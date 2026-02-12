@@ -1,40 +1,40 @@
 --!nolint FunctionUnused
-local model = Model.new()
+local model: Model = Model.new()
 model:load("DamagedHelmet.glb")
-local transform = Transform.new()
-local light_transform = Transform.new()
-local vertex_shader = Shader.new()
-local fragment_shader = Shader.new()
-local pipeline3d = GraphicsPipeline.new()
-local light_pos: Vec3 = Vec3.new(2, 0, 0)
-local light_intensity: number = 2.5
-local uniform_data: { any } = {}
+local transform: Transform = Transform.new()
+local lightTransform: Transform = Transform.new()
+local vertexShader: Shader = Shader.new()
+local fragmentShader: Shader = Shader.new()
+local pipeline3D: GraphicsPipeline = GraphicsPipeline.new()
+local lightPos: Vec3 = Vec3.new(2, 0, 0)
+local lightIntensity: number = 2.5
+local uniformBuffer: { any } = {}
 
 function setup()
 	transform.position = Vec3.new(0, 0, 0)
 	transform.rotation = Vec3.new(90, 0, 0)
 	transform.scale = Vec3.new(1, 1, 1)
 
-	light_transform.position = Vec3.new(0)
-	light_transform.rotation = Vec3.new(90, 0, 0)
-	light_transform.scale = Vec3.new(1)
+	lightTransform.position = Vec3.new(0)
+	lightTransform.rotation = Vec3.new(90, 0, 0)
+	lightTransform.scale = Vec3.new(1)
 
 	local pos = Vec3.new(0.7, 0.7, 2.1)
 	local at = Vec3.new(0)
 	local up = Vec3.new(0, 1, 0)
 	Graphics.getCamera3D():lookat(pos, at, up)
 
-	vertex_shader:compileAndLoad("shader_custom.slang", ShaderStage.Vertex)
-	fragment_shader:compileAndLoad("shader_custom.slang", ShaderStage.Fragment)
-	pipeline3d:setVertexShader(vertex_shader)
-	pipeline3d:setFragmentShader(fragment_shader)
-	pipeline3d:setEnableTangent(true)
-	pipeline3d:setEnableDepthTest(true)
-	pipeline3d:build()
+	vertexShader:compileAndLoad("shader_custom.slang", ShaderStage.Vertex)
+	fragmentShader:compileAndLoad("shader_custom.slang", ShaderStage.Fragment)
+	pipeline3D:setVertexShader(vertexShader)
+	pipeline3D:setFragmentShader(fragmentShader)
+	pipeline3D:setEnableTangent(true)
+	pipeline3D:setEnableDepthTest(true)
+	pipeline3D:build()
 
-	uniform_data[1] = pos
-	uniform_data[2] = light_pos
-	uniform_data[3] = light_intensity
+	uniformBuffer[1] = pos
+	uniformBuffer[2] = lightPos
+	uniformBuffer[3] = lightIntensity
 end
 
 function update()
@@ -43,31 +43,31 @@ function update()
 	end
 	transform.rotation.z = transform.rotation.z + Time.delta() * 10
 	if Keyboard.isDown(Keyboard.LEFT) then
-		light_pos.x = light_pos.x - Time.delta() * 5
+		lightPos.x = lightPos.x - Time.delta() * 5
 	end
 	if Keyboard.isDown(Keyboard.RIGHT) then
-		light_pos.x = light_pos.x + Time.delta() * 5
+		lightPos.x = lightPos.x + Time.delta() * 5
 	end
 	if Keyboard.isDown(Keyboard.UP) then
 		if Keyboard.isDown(Keyboard.LSHIFT) then
-			light_pos.z = light_pos.z + Time.delta() * 5
+			lightPos.z = lightPos.z + Time.delta() * 5
 		else
-			light_pos.y = light_pos.y + Time.delta() * 5
+			lightPos.y = lightPos.y + Time.delta() * 5
 		end
 	end
 	if Keyboard.isDown(Keyboard.DOWN) then
 		if Keyboard.isDown(Keyboard.LSHIFT) then
-			light_pos.z = light_pos.z - Time.delta() * 5
+			lightPos.z = lightPos.z - Time.delta() * 5
 		else
-			light_pos.y = light_pos.y - Time.delta() * 5
+			lightPos.y = lightPos.y - Time.delta() * 5
 		end
 	end
-	uniform_data[2] = light_pos
-	light_transform.position = light_pos
+	uniformBuffer[2] = lightPos
+	lightTransform.position = lightPos
 end
 
 function draw()
-	Graphics.setGraphicsPipeline(pipeline3d)
+	Graphics.setGraphicsPipeline(pipeline3D)
 
 	Graphics.setTexture(1, model:getTexture(TextureKey.Normal))
 	Graphics.setTexture(2, model:getTexture(TextureKey.DiffuseRoughness))
@@ -75,7 +75,7 @@ function draw()
 	Graphics.setTexture(4, model:getTexture(TextureKey.Emissive))
 	Graphics.setTexture(5, model:getTexture(TextureKey.LightMap))
 
-	Graphics.setUniformBuffer(1, Buffer.new(uniform_data))
+	Graphics.setUniformBuffer(1, Buffer.new(uniformBuffer))
 	Graphics.drawModel(model, transform)
-	Graphics.drawModel(model, light_transform)
+	Graphics.drawModel(model, lightTransform)
 end

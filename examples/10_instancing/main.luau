@@ -1,6 +1,6 @@
-local model = Model.new()
+local model: Model = Model.new()
 model:load("DamagedHelmet.glb")
-local transforms = {}
+local transforms: { Transform } = {}
 function setup()
 	for i = 0, 10 do
 		for j = 0, 10 do
@@ -11,9 +11,9 @@ function setup()
 		end
 	end
 
-	local pos = Vec3.new(-3, 5, -3)
-	local at = Vec3.new(15, -5, 15)
-	local up = Vec3.new(0, 1, 0)
+	local pos: Vec3 = Vec3.new(-3, 5, -3)
+	local at: Vec3 = Vec3.new(15, -5, 15)
+	local up: Vec3 = Vec3.new(0, 1, 0)
 	Graphics.getCamera3D():lookat(pos, at, up)
 end
 

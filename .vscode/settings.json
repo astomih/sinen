@@ -6,11 +6,6 @@
     "libs/**": true,
   },
   "C_Cpp.codeAnalysis.clangTidy.enabled": true,
-  "Lua.diagnostics.disable": [
-    "lowercase-global",
-    "duplicate-doc-field",
-    "duplicate-set-field"
-  ],
   "luau-lsp.types.definitionFiles": {
     "sinen": "${workspaceFolder:sinen}api/sinen.luau"
   },

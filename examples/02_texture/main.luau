@@ -1,4 +1,4 @@
-local image = Texture.new()
+local image: Texture = Texture.new()
 function setup()
 	-- Create a image
 	image:load("logo.png")

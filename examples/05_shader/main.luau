@@ -1,17 +1,17 @@
-local texture = Texture.new()
+local texture: Texture = Texture.new()
 
-local vertex_shader = Shader.new()
-vertex_shader:load("shader_custom.vert.spv", ShaderStage.Vertex, 1)
-local fragment_shader = Shader.new()
-fragment_shader:load("shaderAlpha.frag.spv", ShaderStage.Fragment, 0)
+local vertexShader: Shader = Shader.new()
+vertexShader:load("shader_custom.vert.spv", ShaderStage.Vertex, 1)
+local fragmentShader: Shader = Shader.new()
+fragmentShader:load("shaderAlpha.frag.spv", ShaderStage.Fragment, 0)
 
-local pipeline2d = GraphicsPipeline.new()
-pipeline2d:setVertexShader(vertex_shader)
-pipeline2d:setFragmentShader(fragment_shader)
-pipeline2d:setEnableDepthTest(false)
-pipeline2d:build()
+local pipeline2D: GraphicsPipeline = GraphicsPipeline.new()
+pipeline2D:setVertexShader(vertexShader)
+pipeline2D:setFragmentShader(fragmentShader)
+pipeline2D:setEnableDepthTest(false)
+pipeline2D:build()
 
-local uniformBuffer = Buffer.new({
+local uniformBuffer: Buffer = Buffer.new({
 	2.0,
 	0.5,
 	0.5,
@@ -27,7 +27,7 @@ function update()
 end
 
 function draw()
-	Graphics.setGraphicsPipeline(pipeline2d)
+	Graphics.setGraphicsPipeline(pipeline2D)
 	Graphics.setUniformBuffer(1, uniformBuffer)
 	-- Draw texture
 	Graphics.drawImage(texture, Rect.new(Vec2.new(0), texture:size()))

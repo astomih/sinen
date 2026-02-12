@@ -1,5 +1,5 @@
 # Sinen
-
+Sinen is a creative coding framework for Luau/Slang
 <p align="center"><a href="https://astomih.github.io/sinen"><img src="https://raw.githubusercontent.com/astomih/sinen/main/docs/logo/logo_bg_white.png" width="480" alt="Sinen Logo"></a></p>  
 
 # Documents
@@ -9,14 +9,14 @@
 
 # Hello World in Sinen
 
-``` lua
--- main.lua
-local font = sn.Font.new()
-font:load(32)
+``` luau
+local font: Font = Font.new()
+font:load(48)
 
 function draw()
-    sn.Graphics.drawText("Hello World!", font, sn.Vec2.new(0, 0), sn.Color.new(1.0), 32, 0.0)
+	Graphics.drawText("Hello World!", font, Vec2.new(0, 0), Color.new(1.0), 32)
 end
+
 ```
 
 ![Hello World](https://raw.githubusercontent.com/astomih/sinen/refs/heads/main/examples/screenshot/01.png)

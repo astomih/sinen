@@ -1,7 +1,7 @@
 {
   "configurations": [
     {
-      "name": "Sinen examples C++ Debug",
+      "name": "Sinen examples Debug",
       "type": "cppvsdbg",
       "request": "launch",
       "program": "${workspaceFolder:sinen}/build/msvc2026-debug/sinen",
@@ -13,11 +13,11 @@
       "serverReadyAction": {
         "pattern": "Luau Debug server started on 58000",
         "action": "startDebugging",
-        "name": "Luau debugger attach"
+        "name": "Luau Debugger"
       }
     },
     {
-      "name": "Luau debugger attach",
+      "name": "Luau Debugger",
       "type": "luau",
       "request": "attach",
       "port": 58000,

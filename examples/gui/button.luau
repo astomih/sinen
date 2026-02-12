@@ -1,3 +1,4 @@
+local G = require("../global")
 local Button = {}
 
 Button.__index = Button
@@ -19,13 +20,13 @@ Button.show = function(self, text: string, pos: Vec2, scale: Vec2)
 		and mpos.y >= pos.y - scale.y / 2
 		and mpos.y <= pos.y + scale.y / 2
 	then
-		gGuiManager:add({
+		G.guiManager:add({
 			draw = function()
 				Graphics.drawRect(Rect.new(pos, scale), Color.new(0.2, 0.7, 0.2, 1))
 			end,
 		})
 		if Mouse.isPressed(Mouse.LEFT) then
-			gGuiManager:add({
+			G.guiManager:add({
 				draw = function()
 					Graphics.drawRect(Rect.new(pos, scale), Color.new(0.2, 0.2, 0.7, 1))
 				end,
@@ -33,13 +34,13 @@ Button.show = function(self, text: string, pos: Vec2, scale: Vec2)
 			return true
 		end
 	else
-		gGuiManager:add({
+		G.guiManager:add({
 			draw = function()
 				Graphics.drawRect(Rect.new(pos, scale), self.bg_color)
 			end,
 		})
 	end
-	gGuiManager:add({
+	G.guiManager:add({
 		draw = function()
 			Graphics.drawText(text, self.font, pos, Color.new(1), 14)
 		end,

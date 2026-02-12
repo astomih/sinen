@@ -9,32 +9,19 @@
       "stopAtEntry": false,
       "cwd": "${workspaceFolder:sinen}/examples",
       "environment": [],
-      "console": "internalConsole"
+      "console": "internalConsole",
+      "serverReadyAction": {
+        "pattern": "Luau Debug server started on 58000",
+        "action": "startDebugging",
+        "name": "Luau debugger attach"
+      }
     },
     {
-      "name": "Sinen examples Lua Debug",
-      "type": "lua-local",
-      "request": "launch",
-      "program": {
-        "command": "${workspaceFolder:sinen}/build/msvc2026-debug/sinen",
-      },
-      "cwd": "${workspaceFolder:sinen}/examples"
-    },
-    {
-      "name": "Sinen editor2D Lua Debug",
-      "type": "lua-local",
-      "cwd": "${workspaceFolder:sinen}/utils/editor2d",
-      "program": {
-        "command": "${workspaceFolder:sinen}/build/msvc2026-debug/sinen",
-      },
-      "request": "launch"
-    },
-    {
-      "name": "Luau debuger attach",
+      "name": "Luau debugger attach",
       "type": "luau",
       "request": "attach",
       "port": 58000,
       "sourceMap": {}
     },
-  ]
+  ],
 }

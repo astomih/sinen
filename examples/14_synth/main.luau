@@ -1,4 +1,4 @@
-local global = require("../global")
+local G = require("../global")
 local synth = Synth.new()
 synth:setBpm(130)
 synth:setStepBeats(0.25) -- 16th note steps (1.0 = quarter note)
@@ -27,10 +27,16 @@ function update()
 end
 
 function draw()
-	Graphics.drawText("Synth (miniaudio) - press SPACE to restart, ESC to go back", FONT, Vec2.new(0), Color.new(1), 16)
+	Graphics.drawText(
+		"Synth (miniaudio) - press SPACE to restart, ESC to go back",
+		G.font,
+		Vec2.new(0),
+		Color.new(1),
+		16
+	)
 	Graphics.drawText(
 		"Pattern uses [], ~, and modifiers (^wave @vel :dur #cutoff !pan)",
-		FONT,
+		G.font,
 		Vec2.new(0, -20),
 		Color.new(1),
 		14

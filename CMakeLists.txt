@@ -128,6 +128,7 @@ if(SINEN_USE_LUAU)
     Luau.VM
     Luau.Compiler
     Luau.Ast
+    Luau.Require
     cppdap
     Luau.Debugger)
 else()

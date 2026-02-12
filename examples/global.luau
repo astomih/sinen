@@ -1,3 +1,6 @@
-gFont = Font.new()
-gFont:load(24)
-gGuiManager = require("gui_manager").new()
+local GUIManager = require("./gui/gui_manager")
+local G = {}
+G.font = Font.new()
+G.font:load(24)
+G.guiManager = GUIManager.new()
+return G

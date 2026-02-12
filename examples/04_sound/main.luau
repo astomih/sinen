@@ -1,3 +1,4 @@
+local G = require("../global")
 local sound = Sound.new()
 sound:load("shot.wav")
 
@@ -11,5 +12,5 @@ function update()
 end
 
 function draw()
-	Graphics.drawText("Press SPACE key to play sound", FONT, Vec2.new(0), Color.new(1), 16)
+	Graphics.drawText("Press SPACE key to play sound", G.font, Vec2.new(0), Color.new(1), 16)
 end

@@ -49,11 +49,11 @@ function draw()
 	Graphics.drawModel(box, boxTransform)
 
 	Graphics.drawModel(sphere, sphereTransform)
-	for _, c in ipairs(colliders) do
+	for i, c in ipairs(colliders) do
 		local transform = Transform.new()
 		transform.position = c:getPosition()
 		if transform.position.y < -10.0 then
-			table.remove(colliders, _)
+			table.remove(colliders, i)
 		else
 			transform.scale = Vec3.new(0.5)
 			Graphics.drawModel(sphere, transform)

@@ -6,9 +6,9 @@ local light_transform = Transform.new()
 local vertex_shader = Shader.new()
 local fragment_shader = Shader.new()
 local pipeline3d = GraphicsPipeline.new()
-local light_pos = Vec3.new(2, 0, 0)
-local light_intensity = 2.5
-local uniform_data = {}
+local light_pos: Vec3 = Vec3.new(2, 0, 0)
+local light_intensity: number = 2.5
+local uniform_data: { any } = {}
 
 function setup()
 	transform.position = Vec3.new(0, 0, 0)

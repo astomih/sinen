@@ -43,10 +43,10 @@ pipeline3d:setEnableTangent(true)
 pipeline3d:setEnableDepthTest(true)
 pipeline3d:build()
 
-local light_pos = Vec3.new(2, 0, 0)
-local light_intensity = 2.5
+local light_pos: Vec3 = Vec3.new(2, 0, 0)
+local light_intensity: number = 2.5
 
-local uniform_data = {
+local uniform_data: { any } = {
 	pos,
 	light_pos,
 	light_intensity,

@@ -22,10 +22,5 @@ set(SINEN_INCLUDE_DIRS
     ${SINEN_SOURCE_DIR}/libs/luau-debugger/debugger/include
     ${SINEN_SOURCE_DIR}/libs/cppdap/include)
 
-if(SINEN_USE_LUAU)
-  list(APPEND SINEN_INCLUDE_DIRS ${SINEN_SOURCE_DIR}/libs/luau/VM/include
-       ${SINEN_SOURCE_DIR}/libs/luau/Require/include)
-else()
-  list(APPEND SINEN_INCLUDE_DIRS ${SINEN_SOURCE_DIR}/libs/LuaJIT/src
-       ${SINEN_BINARY_DIR}/LuaJIT ${SINEN_BINARY_DIR}/LuaJIT/src)
-endif()
+list(APPEND SINEN_INCLUDE_DIRS ${SINEN_SOURCE_DIR}/libs/luau/VM/include
+     ${SINEN_SOURCE_DIR}/libs/luau/Require/include)

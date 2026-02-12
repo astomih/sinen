@@ -9,12 +9,7 @@ if(NOT EMSCRIPTEN)
   find_package(Vulkan REQUIRED)
 endif()
 
-option(SINEN_USE_LUAU "Use Luau instead of LuaJIT on desktop" OFF)
 option(SINEN_USE_SLANG "Use Slang for shader compilation" ON)
-
-if(EMSCRIPTEN)
-  set(SINEN_USE_LUAU ON)
-endif()
 
 include(${SINEN_SOURCE_DIR}/cmake/include.cmake)
 include(${SINEN_SOURCE_DIR}/cmake/libs.cmake)
@@ -29,28 +24,17 @@ if(WIN32)
   unset(CMAKE_FOLDER)
 endif()
 
-if(SINEN_USE_LUAU)
-  add_subdirectory(${SINEN_SOURCE_DIR}/libs/Luau)
-  foreach(target Luau.VM Luau.Compiler)
-    get_target_property(defs ${target} INTERFACE_COMPILE_DEFINITIONS)
-    list(FILTER defs EXCLUDE REGEX [[LUA.*_API]])
-    set_target_properties(${target} PROPERTIES INTERFACE_COMPILE_DEFINITIONS
-                                               "${defs}")
-  endforeach()
-  set_target_properties(Luau.Analysis Luau.CLI.lib Luau.CodeGen Luau.Config
-                        Luau.Require PROPERTIES EXCLUDE_FROM_ALL 1)
-  add_subdirectory(${SINEN_SOURCE_DIR}/libs/cppdap)
-  add_subdirectory(${SINEN_SOURCE_DIR}/libs/luau-debugger/debugger)
-else()
-  if(NOT EMSCRIPTEN)
-    add_subdirectory(${SINEN_SOURCE_DIR}/libs/LuaJIT EXCLUDE_FROM_ALL)
-    if(MSVC)
-      target_compile_definitions(libluajit PRIVATE _CRT_SECURE_NO_WARNINGS)
-      target_compile_definitions(minilua PRIVATE _CRT_SECURE_NO_WARNINGS)
-      target_compile_definitions(buildvm PRIVATE _CRT_SECURE_NO_WARNINGS)
-    endif()
-  endif()
-endif()
+add_subdirectory(${SINEN_SOURCE_DIR}/libs/Luau)
+foreach(target Luau.VM Luau.Compiler)
+  get_target_property(defs ${target} INTERFACE_COMPILE_DEFINITIONS)
+  list(FILTER defs EXCLUDE REGEX [[LUA.*_API]])
+  set_target_properties(${target} PROPERTIES INTERFACE_COMPILE_DEFINITIONS
+                                             "${defs}")
+endforeach()
+set_target_properties(Luau.Analysis Luau.CLI.lib Luau.CodeGen Luau.Config
+                      Luau.Require PROPERTIES EXCLUDE_FROM_ALL 1)
+add_subdirectory(${SINEN_SOURCE_DIR}/libs/cppdap)
+add_subdirectory(${SINEN_SOURCE_DIR}/libs/luau-debugger/debugger)
 
 if(SINEN_USE_SLANG)
   add_subdirectory(${SINEN_SOURCE_DIR}/libs/slang EXCLUDE_FROM_ALL)
@@ -121,21 +105,15 @@ if(SINEN_USE_SLANG)
   list(APPEND SINEN_LINK_LIBRARIES slang)
 endif()
 
-if(SINEN_USE_LUAU)
-  list(
-    APPEND
-    SINEN_LINK_LIBRARIES
-    Luau.VM
-    Luau.Compiler
-    Luau.Ast
-    Luau.Require
-    cppdap
-    Luau.Debugger)
-else()
-  if(NOT EMSCRIPTEN)
-    list(APPEND SINEN_LINK_LIBRARIES libluajit)
-  endif()
-endif()
+list(
+  APPEND
+  SINEN_LINK_LIBRARIES
+  Luau.VM
+  Luau.Compiler
+  Luau.Ast
+  Luau.Require
+  cppdap
+  Luau.Debugger)
 
 if(WIN32)
   list(APPEND SINEN_LINK_LIBRARIES d3d12)
@@ -152,8 +130,7 @@ else()
 endif()
 
 target_link_libraries(sinen PUBLIC ${SINEN_LINK_LIBRARIES})
-set(SINEN_COMPILE_DEFINITIONS $<$<BOOL:${SINEN_USE_SLANG}>:SINEN_USE_SLANG>
-                              $<$<BOOL:${SINEN_USE_LUAU}>:SINEN_USE_LUAU>)
+set(SINEN_COMPILE_DEFINITIONS $<$<BOOL:${SINEN_USE_SLANG}>:SINEN_USE_SLANG>)
 target_compile_definitions(sinen PUBLIC ${SINEN_COMPILE_DEFINITIONS})
 
 if(WIN32)

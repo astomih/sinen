@@ -1,12 +1,9 @@
 #ifndef SINEN_LUAAPI_HPP
 #define SINEN_LUAAPI_HPP
-#ifdef SINEN_USE_LUAU
 #include <Luau/Compiler.h>
 #include <lua.h>
 #include <lualib.h>
-#else
-#include <lua.hpp>
-#endif
+
 #include <core/data/array.hpp>
 #include <core/data/ptr.hpp>
 #include <core/data/string.hpp>
@@ -22,7 +19,6 @@ template <class T> struct UdBox {
 };
 
 static void *luaLTestudata2(lua_State *L, int idx, const char *tname) {
-#ifdef SINEN_USE_LUAU
   void *p = lua_touserdata(L, idx);
   if (!p) {
     return nullptr;
@@ -34,9 +30,6 @@ static void *luaLTestudata2(lua_State *L, int idx, const char *tname) {
   bool ok = lua_rawequal(L, -1, -2) != 0;
   lua_pop(L, 2);
   return ok ? p : nullptr;
-#else
-  return luaL_testudata(L, idx, tname);
-#endif
 }
 
 template <class T> static T &udValue(lua_State *L, int idx) {

@@ -53,36 +53,16 @@ auto alloc = [](void *ud, void *ptr, size_t osize, size_t nsize) -> void * {
   return nptr;
 };
 void luaPushcfunction2(lua_State *L, lua_CFunction f) {
-#ifdef SINEN_USE_LUAU
   lua_pushcfunction(L, f, "sn function");
-#else
-  lua_pushcfunction(L, f);
-#endif
 }
 int luaLError2(lua_State *L, const char *fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
-#ifdef SINEN_USE_LUAU
   luaL_error(L, va_list(ap));
   return 0;
-#else
-  return luaL_error(L, va_list(ap));
-#endif
 }
-int luaLRef2(lua_State *L, int idx) {
-#ifdef SINEN_USE_LUAU
-  return lua_ref(L, idx);
-#else
-  return luaL_ref(L, idx);
-#endif
-}
-void luaLUnref2(lua_State *L, int idx, int r) {
-#ifdef SINEN_USE_LUAU
-  lua_unref(L, r);
-#else
-  luaL_unref(L, idx, r);
-#endif
-}
+int luaLRef2(lua_State *L, int idx) { return lua_ref(L, idx); }
+void luaLUnref2(lua_State *L, int idx, int r) { lua_unref(L, r); }
 void pushSnNamed(lua_State *L, const char *name) {
   // ensureSn(L);
   // lua_newtable(L);
@@ -187,7 +167,6 @@ static void drawNowLoadingOverlay() {
 
 static int luaLoadSource(lua_State *L, const String &source,
                          const String &chunkname) {
-#ifdef SINEN_USE_LUAU
   Luau::CompileOptions options{};
   options.debugLevel = 2;
   std::string bytecode =
@@ -201,9 +180,6 @@ static int luaLoadSource(lua_State *L, const String &source,
   LogF::error("[luau load error] %s", msg ? msg : "(unknown error)");
   lua_pop(L, 1);
   return status;
-#else
-  return luaL_loadbuffer(L, source.data(), source.size(), chunkname.c_str());
-#endif
 }
 static constexpr const char *prefix = ".luau";
 void registerVec2(lua_State *);
@@ -249,7 +225,6 @@ void registerImGui(lua_State *);
 void registerPeriodic(lua_State *);
 void registerTime(lua_State *);
 
-#ifdef SINEN_USE_LUAU
 luau::debugger::Debugger debugger(false);
 namespace {
 struct RequireContext {
@@ -431,14 +406,12 @@ static luarequire_WriteResult writeStringToBuffer(const std::string &value,
   return WRITE_SUCCESS;
 }
 } // namespace
-#endif // SINEN_USE_LUAU
 
 // Returns whether requires are permitted from the given chunkname.
 static bool is_require_allowed(lua_State *L, void *ctx,
                                const char *requirer_chunkname) {
   (void)L;
   (void)ctx;
-#ifdef SINEN_USE_LUAU
   // Disallow require from non-file chunks.
   if (!requirer_chunkname || requirer_chunkname[0] == '=') {
     return false;
@@ -452,16 +425,12 @@ static bool is_require_allowed(lua_State *L, void *ctx,
   // Allow if it looks like a file-backed chunk. We keep this permissive and
   // rely on `reset` to validate and locate the module.
   return endsWithIcaseAscii(s, ".luau") || endsWithIcaseAscii(s, ".lua");
-#else
-  return false;
-#endif
 }
 
 // Resets the internal state to point at the requirer module.
 static luarequire_NavigateResult reset(lua_State *L, void *ctx,
                                        const char *requirer_chunkname) {
   (void)L;
-#ifdef SINEN_USE_LUAU
   auto *rc = static_cast<RequireContext *>(ctx);
   if (!rc) {
     return NAVIGATE_NOT_FOUND;
@@ -496,11 +465,6 @@ static luarequire_NavigateResult reset(lua_State *L, void *ctx,
   }
 
   return NAVIGATE_SUCCESS;
-#else
-  (void)ctx;
-  (void)requirer_chunkname;
-  return NAVIGATE_NOT_FOUND;
-#endif
 }
 
 // Resets the internal state to point at an aliased module, given its exact
@@ -509,7 +473,6 @@ static luarequire_NavigateResult reset(lua_State *L, void *ctx,
 static luarequire_NavigateResult jump_to_alias(lua_State *L, void *ctx,
                                                const char *path) {
   (void)L;
-#ifdef SINEN_USE_LUAU
   auto *rc = static_cast<RequireContext *>(ctx);
   if (!rc || !path) {
     return NAVIGATE_NOT_FOUND;
@@ -560,11 +523,6 @@ static luarequire_NavigateResult jump_to_alias(lua_State *L, void *ctx,
   }
 
   return NAVIGATE_NOT_FOUND;
-#else
-  (void)ctx;
-  (void)path;
-  return NAVIGATE_NOT_FOUND;
-#endif
 }
 
 // Provides an initial alias override opportunity prior to searching for
@@ -592,7 +550,6 @@ to_alias_fallback(lua_State *L, void *ctx, const char *alias_unprefixed) {
 // Navigates through the context by making mutations to the internal state.
 static luarequire_NavigateResult to_parent(lua_State *L, void *ctx) {
   (void)L;
-#ifdef SINEN_USE_LUAU
   auto *rc = static_cast<RequireContext *>(ctx);
   if (!rc) {
     return NAVIGATE_NOT_FOUND;
@@ -604,15 +561,10 @@ static luarequire_NavigateResult to_parent(lua_State *L, void *ctx) {
 
   rc->current = rc->current.parent_path().lexically_normal();
   return NAVIGATE_SUCCESS;
-#else
-  (void)ctx;
-  return NAVIGATE_NOT_FOUND;
-#endif
 }
 static luarequire_NavigateResult to_child(lua_State *L, void *ctx,
                                           const char *name) {
   (void)L;
-#ifdef SINEN_USE_LUAU
   auto *rc = static_cast<RequireContext *>(ctx);
   if (!rc || !name) {
     return NAVIGATE_NOT_FOUND;
@@ -641,26 +593,16 @@ static luarequire_NavigateResult to_child(lua_State *L, void *ctx,
 
   rc->current = child;
   return NAVIGATE_SUCCESS;
-#else
-  (void)ctx;
-  (void)name;
-  return NAVIGATE_NOT_FOUND;
-#endif
 }
 
 // Returns whether the context is currently pointing at a module.
 static bool is_module_present(lua_State *L, void *ctx) {
   (void)L;
-#ifdef SINEN_USE_LUAU
   auto *rc = static_cast<RequireContext *>(ctx);
   if (!rc) {
     return false;
   }
   return resolveModuleFileRel(*rc).has_value();
-#else
-  (void)ctx;
-  return false;
-#endif
 }
 
 // Provides a chunkname for the current module. This will be accessible
@@ -670,7 +612,6 @@ static luarequire_WriteResult get_chunkname(lua_State *L, void *ctx,
                                             char *buffer, size_t buffer_size,
                                             size_t *size_out) {
   (void)L;
-#ifdef SINEN_USE_LUAU
   auto *rc = static_cast<RequireContext *>(ctx);
   if (!rc) {
     return WRITE_FAILURE;
@@ -683,13 +624,6 @@ static luarequire_WriteResult get_chunkname(lua_State *L, void *ctx,
   std::filesystem::path abs = (rc->root / *relOpt).lexically_normal();
   std::string chunk = "@" + abs.string();
   return writeStringToBuffer(chunk, buffer, buffer_size, size_out);
-#else
-  (void)ctx;
-  (void)buffer;
-  (void)buffer_size;
-  (void)size_out;
-  return WRITE_FAILURE;
-#endif
 }
 
 // Provides a loadname that identifies the current module and is passed to
@@ -698,7 +632,6 @@ static luarequire_WriteResult get_loadname(lua_State *L, void *ctx,
                                            char *buffer, size_t buffer_size,
                                            size_t *size_out) {
   (void)L;
-#ifdef SINEN_USE_LUAU
   auto *rc = static_cast<RequireContext *>(ctx);
   if (!rc) {
     return WRITE_FAILURE;
@@ -711,13 +644,6 @@ static luarequire_WriteResult get_loadname(lua_State *L, void *ctx,
   std::filesystem::path abs = (rc->root / *relOpt).lexically_normal();
   std::string loadname = abs.string();
   return writeStringToBuffer(loadname, buffer, buffer_size, size_out);
-#else
-  (void)ctx;
-  (void)buffer;
-  (void)buffer_size;
-  (void)size_out;
-  return WRITE_FAILURE;
-#endif
 }
 
 // Provides a cache key representing the current module. This function is
@@ -726,7 +652,6 @@ static luarequire_WriteResult get_cache_key(lua_State *L, void *ctx,
                                             char *buffer, size_t buffer_size,
                                             size_t *size_out) {
   (void)L;
-#ifdef SINEN_USE_LUAU
   auto *rc = static_cast<RequireContext *>(ctx);
   if (!rc) {
     return WRITE_FAILURE;
@@ -742,13 +667,6 @@ static luarequire_WriteResult get_cache_key(lua_State *L, void *ctx,
     return static_cast<char>(std::tolower(c));
   });
   return writeStringToBuffer(key, buffer, buffer_size, size_out);
-#else
-  (void)ctx;
-  (void)buffer;
-  (void)buffer_size;
-  (void)size_out;
-  return WRITE_FAILURE;
-#endif
 }
 
 // Returns whether a configuration file is present in the current context,
@@ -757,7 +675,6 @@ static luarequire_WriteResult get_cache_key(lua_State *L, void *ctx,
 // NAVIGATE_FAILURE is returned (at root).
 static luarequire_ConfigStatus get_config_status(lua_State *L, void *ctx) {
   (void)L;
-#ifdef SINEN_USE_LUAU
   auto *rc = static_cast<RequireContext *>(ctx);
   if (!rc) {
     return CONFIG_ABSENT;
@@ -787,10 +704,6 @@ static luarequire_ConfigStatus get_config_status(lua_State *L, void *ctx) {
   }
 
   return CONFIG_ABSENT;
-#else
-  (void)ctx;
-  return CONFIG_ABSENT;
-#endif
 }
 
 // Parses the configuration file in the current context for the given alias
@@ -818,7 +731,6 @@ static luarequire_WriteResult get_alias(lua_State *L, void *ctx,
 // files internally.
 static luarequire_WriteResult get_config(lua_State *L, void *ctx, char *buffer,
                                          size_t buffer_size, size_t *size_out) {
-#ifdef SINEN_USE_LUAU
   (void)L;
   auto *rc = static_cast<RequireContext *>(ctx);
   if (!rc) {
@@ -862,14 +774,6 @@ static luarequire_WriteResult get_config(lua_State *L, void *ctx, char *buffer,
   const std::string contents(reinterpret_cast<const char *>(load), fileLength);
   SDL_free(load);
   return writeStringToBuffer(contents, buffer, buffer_size, size_out);
-#else
-  (void)L;
-  (void)ctx;
-  (void)buffer;
-  (void)buffer_size;
-  (void)size_out;
-  return WRITE_FAILURE;
-#endif
 }
 
 // Returns the maximum number of milliseconds to allow for executing a given
@@ -890,7 +794,6 @@ static int get_luau_config_timeout(lua_State *L, void *ctx) {
 static int load(lua_State *L, void *ctx, const char *path,
                 const char *chunkname, const char *loadname) {
   (void)loadname;
-#ifdef SINEN_USE_LUAU
   auto *rc = static_cast<RequireContext *>(ctx);
   if (!rc) {
     lua_pushstring(L, "require: missing context");
@@ -947,14 +850,6 @@ static int load(lua_State *L, void *ctx, const char *path,
   }
 
   return numResults;
-#else
-  (void)L;
-  (void)ctx;
-  (void)path;
-  (void)chunkname;
-  (void)loadname;
-  return 0;
-#endif
 }
 
 static void requireConfigInit(luarequire_Configuration *config) {
@@ -978,7 +873,6 @@ static void requireConfigInit(luarequire_Configuration *config) {
 
 static void registerAll(lua_State *L) {
 
-#ifdef SINEN_USE_LUAU
   // luaPushcfunction2(L, Luau::Require::lua_require);
   // lua_setglobal(L, "require");
   static RequireContext requireCtx{};
@@ -1015,7 +909,6 @@ static void registerAll(lua_State *L) {
   //     lua_pop(L, 1);
   //   }
   // }
-#endif
 
   registerVec2(L);
   registerVec3(L);
@@ -1092,7 +985,6 @@ bool Script::initialize() {
   }
   luaL_openlibs(gLua);
   debugger.initialize(gLua);
-#ifdef SINEN_USE_LUAU
   if (auto *cb = lua_callbacks(gLua)) {
     cb->panic = [](lua_State *L, int errcode) {
       const char *msg = lua_tostring(L, -1);
@@ -1100,13 +992,6 @@ bool Script::initialize() {
                      msg ? msg : "(unknown error)");
     };
   }
-#else
-  lua_atpanic(gLua, [](lua_State *L) -> int {
-    const char *msg = lua_tostring(L, -1);
-    LogF::critical("[lua panic] {}", msg ? msg : "(unknown error)");
-    return 0;
-  });
-#endif
 
   lua_newtable(gLua);
   lua_setglobal(gLua, "sn");
@@ -1198,9 +1083,7 @@ void Script::runScene() {
 
   lua_getglobal(gLua, "setup");
   int funcIndex = LUA_REGISTRYINDEX;
-#ifdef SINEN_USE_LUAU
   funcIndex = -1;
-#endif
   if (lua_isfunction(gLua, -1)) {
     gSetupRef = luaLRef2(gLua, funcIndex);
   } else {

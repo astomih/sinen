@@ -25,9 +25,6 @@
 [submodule "libs/miniaudio"]
 	path = libs/miniaudio
 	url = https://github.com/mackron/miniaudio
-[submodule "luajit"]
-	path = libs/LuaJIT
-	url = https://github.com/WohlSoft/LuaJIT
 [submodule "libs/WebGPU-distribution"]
 	path = libs/WebGPU-distribution
 	url = https://github.com/eliemichel/WebGPU-distribution

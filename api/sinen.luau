@@ -168,9 +168,9 @@ export type Timer = {
 }
 
 export type ShaderStage = {
-	Vertex: number,
-	Fragment: number,
-	Compute: number,
+	Vertex: ShaderStage,
+	Fragment: ShaderStage,
+	Compute: ShaderStage,
 }
 
 export type Shader = {
@@ -512,48 +512,56 @@ export type ImGui = {
 	WindowFlags: ImGuiWindowFlags,
 }
 
-export type sn = {
-	Buffer: Buffer,
-	Vec3: Vec3,
-	Vec2: Vec2,
-	Texture: Texture,
-	RenderTexture: RenderTexture,
-	Sound: Sound,
-	Camera3D: Camera3D,
-	Camera2D: Camera2D,
-	TextureKey: TextureKey,
-	Model: Model,
-	AABB: AABB,
-	Timer: Timer,
-	Shader: Shader,
-	Font: Font,
-	Color: Color,
-	Grid: Grid,
-	BFSGrid: BFSGrid,
-	GraphicsPipeline: GraphicsPipeline,
-	Pivot: Pivot,
-	Rect: Rect,
-	Transform: Transform,
-	Collider: Collider,
-	World: World,
-	Arguments: Arguments,
-	Event: Event,
-	Script: Script,
-	Filesystem: Filesystem,
-	Random: Random,
-	Window: Window,
-	ShaderStage: ShaderStage,
-	BuiltinShader: BuiltinShader,
-	BuiltinPipelines: BuiltinPipelines,
-	Graphics: Graphics,
-	Physics: Physics,
-	Keyboard: Keyboard,
-	Mouse: Mouse,
-	Gamepad: Gamepad,
-	Periodic: Periodic,
-	Time: Time,
-	Log: Log,
-	ImGui: ImGui,
+export type Synth ={
+	new: () -> Synth,
+	setBpm: (self:Synth,bpm: number)->nil,
+setStepBeats: (self:Synth,stepBeats: number)->nil,
+setADSR: (self:Synth,a:number, d:number, s:number, r:number)->nil,
+setMasterGain: (self:Synth,gain: number)->nil,
+setPattern: (self: Synth, pattern:string)->nil,
+play: (self:Synth)->nil,
+stop: (self:Synth)->nil
 }
 
-declare sn: sn
+declare Buffer: Buffer
+declare Vec3: Vec3
+declare Vec2: Vec2
+declare Texture: Texture
+declare RenderTexture: RenderTexture
+declare Sound: Sound
+declare Camera3D: Camera3D
+declare Camera2D: Camera2D
+declare TextureKey: TextureKey
+declare Model: Model
+declare AABB: AABB
+declare Timer: Timer
+declare Shader: Shader
+declare Font: Font
+declare Color: Color
+declare Grid: Grid
+declare BFSGrid: BFSGrid
+declare GraphicsPipeline: GraphicsPipeline
+declare Pivot: Pivot
+declare Rect: Rect
+declare Transform: Transform
+declare Collider: Collider
+declare World: World
+declare Arguments: Arguments
+declare Event: Event
+declare Script: Script
+declare Filesystem: Filesystem
+declare Random: Random
+declare Window: Window
+declare ShaderStage: ShaderStage
+declare BuiltinShader: BuiltinShader
+declare BuiltinPipelines: BuiltinPipelines
+declare Graphics: Graphics
+declare Physics: Physics
+declare Keyboard: Keyboard
+declare Mouse: Mouse
+declare Gamepad: Gamepad
+declare Periodic: Periodic
+declare Time: Time
+declare Log: Log
+declare ImGui: ImGui
+declare Synth: Synth

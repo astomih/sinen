@@ -75,6 +75,16 @@ void luaLUnref2(lua_State *L, int idx, int r) {
   luaL_unref(L, idx, r);
 #endif
 }
+void pushSnNamed(lua_State *L, const char *name) {
+  // ensureSn(L);
+  // lua_newtable(L);
+  // lua_pushvalue(L, -1);
+  // lua_setfield(L, -3, name);
+  // lua_remove(L, -2); // remove sn
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setglobal(L, name);
+}
 String convert(StringView name, const TablePair &p, bool isReturn) {
   String s;
   s = name.data();
@@ -187,9 +197,10 @@ static int luaLoadSource(lua_State *L, const String &source,
   return luaL_loadbuffer(L, source.data(), source.size(), chunkname.c_str());
 #endif
 }
+static constexpr const char *prefix = ".luau";
 static int lImport(lua_State *L) {
   const char *name = luaL_checkstring(L, 1);
-  String filename = String(name) + ".lua";
+  String filename = String(name) + prefix;
   String source = AssetIO::openAsString(filename);
   if (source.empty()) {
     lua_pushnil(L);
@@ -416,7 +427,7 @@ void Script::runScene() {
   };
 
   String source;
-  source = AssetIO::openAsString(String(sceneName) + ".lua");
+  source = AssetIO::openAsString(String(sceneName) + prefix);
   if (source.empty()) {
     source = nothingSceneLua;
   }
@@ -434,7 +445,7 @@ void Script::runScene() {
     gDrawRef = LUA_NOREF;
   }
 
-  String filename = String(sceneName) + ".lua";
+  String filename = String(sceneName) + prefix;
   String chunkname = "@" + AssetIO::getFilePath(filename);
   auto fullPath =
       std::filesystem::current_path().string() + "\\" + filename.c_str();

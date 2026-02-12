@@ -28,6 +28,13 @@
         "command": "${workspaceFolder:sinen}/build/msvc2026-debug/sinen",
       },
       "request": "launch"
-    }
+    },
+    {
+      "name": "Luau debuger attach",
+      "type": "luau",
+      "request": "attach",
+      "port": 58000,
+      "sourceMap": {}
+    },
   ]
 }

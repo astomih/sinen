@@ -101,13 +101,7 @@ static void ensureSn(lua_State *L) {
     lua_setglobal(L, "sn");
   }
 }
-static void pushSnNamed(lua_State *L, const char *name) {
-  ensureSn(L);
-  lua_newtable(L);
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -3, name);
-  lua_remove(L, -2); // remove sn
-}
+void pushSnNamed(lua_State *L, const char *name);
 
 static int luaPCallLogged(lua_State *L, int nargs, int nresults) {
   if (lua_pcall(L, nargs, nresults, 0) == LUA_OK) {

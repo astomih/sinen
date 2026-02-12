@@ -1,0 +1,11 @@
+  {
+    "languageMode": "strict",
+    "globals": [
+      "describe",
+      "it",
+      "expect"
+    ],
+    "lint": {
+      "FunctionUnused": false
+    }
+  }

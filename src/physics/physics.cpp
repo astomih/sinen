@@ -15,7 +15,7 @@
 #include <math/vector.hpp>
 #include <script/luaapi.hpp>
 
-#include "world.hpp"
+#include "world3d.hpp"
 
 #include <Jolt/Jolt.h>
 
@@ -53,7 +53,6 @@ public:
     GlobalAllocator::get()->deallocate(inAddress, inSize);
   }
 };
-static UniquePtr<JPH::PhysicsSystem> physicsSystem;
 static UniquePtr<JPH::TempAllocator> tempAllocator;
 static UniquePtr<JPH::JobSystemThreadPool> jobSystem;
 static void traceImplement(const char *inFMT, ...) {
@@ -212,29 +211,10 @@ bool Physics::initialize() {
 
   JPH::RegisterTypes();
 
-  physicsSystem = makeUnique<JPH::PhysicsSystem>();
   tempAllocator = makeUnique<TempAllocator>();
   jobSystem = makeUnique<JPH::JobSystemThreadPool>(
       JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers,
       std::thread::hardware_concurrency() - 1);
-
-  const UInt32 cMaxBodies = 1024;
-  const UInt32 cNumBodyMutexes = 0;
-  const UInt32 cMaxBodyPairs = 1024;
-  const UInt32 cMaxContactConstraints = 1024;
-  static BPLayerInterfaceImpl broadPhaseLayerInterface;
-  static ObjectVsBroadPhaseLayerFilterImpl objectVSBroadPhaseLayerFilter;
-  static ObjectLayerPairFilterImpl objectVSLayerFilter;
-
-  physicsSystem->Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs,
-                      cMaxContactConstraints, broadPhaseLayerInterface,
-                      objectVSBroadPhaseLayerFilter, objectVSLayerFilter);
-
-  static MyBodyActivationListener bodyActivationListener;
-  physicsSystem->SetBodyActivationListener(&bodyActivationListener);
-
-  static MyContactListener contactListener;
-  physicsSystem->SetContactListener(&contactListener);
 
   return true;
 }
@@ -250,45 +230,15 @@ void Physics::shutdown() {
   jobSystem->DestroyBarrier(barrier);
 
   jobSystem = nullptr;
-  physicsSystem = nullptr;
   tempAllocator = nullptr;
-}
-
-void Physics::postSetup() {
-  if (physicsSystem->GetNumBodies() == 0) {
-    return;
-  }
-  physicsSystem->OptimizeBroadPhase();
-}
-
-void Physics::update() {
-  const int cCollisionSteps = 1;
-  physicsSystem->Update(Time::deltaTime(), cCollisionSteps, tempAllocator.get(),
-                        jobSystem.get());
-}
-
-void Physics::setGravity(const Vec3 &gravity) {
-  if (!physicsSystem) {
-    return;
-  }
-  physicsSystem->SetGravity({gravity.x, gravity.y, gravity.z});
-}
-Vec3 Physics::getGravity() {
-  if (!physicsSystem) {
-    return Vec3(0.0f);
-  }
-  auto g = physicsSystem->GetGravity();
-  return {g.GetX(), g.GetY(), g.GetZ()};
-}
-UInt32 Physics::bodyCount() {
-  return physicsSystem ? static_cast<UInt32>(physicsSystem->GetNumBodies()) : 0;
 }
 
 static UInt32 nextColliderID = 1;
 UInt32 getNextId() { return nextColliderID++; }
 
-class WorldImpl : public World {
+class World3DImpl : public World3D {
   Hashmap<UInt32, JPH::BodyID> bodyMap = {};
+  UniquePtr<JPH::PhysicsSystem> physicsSystem;
 
   bool tryGetBodyID(const Collider &collider, JPH::BodyID &out) {
     auto it = bodyMap.find(collider.id);
@@ -300,8 +250,27 @@ class WorldImpl : public World {
   }
 
 public:
-  WorldImpl() {}
-  ~WorldImpl() override {
+  World3DImpl() {
+    const UInt32 cMaxBodies = 1024;
+    const UInt32 cNumBodyMutexes = 0;
+    const UInt32 cMaxBodyPairs = 1024;
+    const UInt32 cMaxContactConstraints = 1024;
+    static BPLayerInterfaceImpl broadPhaseLayerInterface;
+    static ObjectVsBroadPhaseLayerFilterImpl objectVSBroadPhaseLayerFilter;
+    static ObjectLayerPairFilterImpl objectVSLayerFilter;
+
+    physicsSystem = makeUnique<JPH::PhysicsSystem>();
+    physicsSystem->Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs,
+                        cMaxContactConstraints, broadPhaseLayerInterface,
+                        objectVSBroadPhaseLayerFilter, objectVSLayerFilter);
+
+    static MyBodyActivationListener bodyActivationListener;
+    physicsSystem->SetBodyActivationListener(&bodyActivationListener);
+
+    static MyContactListener contactListener;
+    physicsSystem->SetContactListener(&contactListener);
+  }
+  ~World3DImpl() override {
     JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
     for (auto &id : bodyMap) {
       if (bodyInterface.IsAdded(id.second)) {
@@ -340,7 +309,8 @@ public:
       return Vec3(0.0f);
     }
     JPH::Quat r = physicsSystem->GetBodyInterface().GetRotation(bodyID);
-    const Vec3 eRad = Quat::toEuler(Quat(r.GetX(), r.GetY(), r.GetZ(), r.GetW()));
+    const Vec3 eRad =
+        Quat::toEuler(Quat(r.GetX(), r.GetY(), r.GetZ(), r.GetW()));
     return {Math::toDegrees(eRad.x), Math::toDegrees(eRad.y),
             Math::toDegrees(eRad.z)};
   }
@@ -373,8 +343,7 @@ public:
     }
     physicsSystem->GetBodyInterface().SetPosition(
         bodyID, {position.x, position.y, position.z},
-        activate ? JPH::EActivation::Activate
-                 : JPH::EActivation::DontActivate);
+        activate ? JPH::EActivation::Activate : JPH::EActivation::DontActivate);
   }
 
   void setRotation(const Collider &collider, const Vec3 &rotation,
@@ -386,8 +355,7 @@ public:
     const auto q = Quat::fromEuler(rotation);
     physicsSystem->GetBodyInterface().SetRotation(
         bodyID, {q.x, q.y, q.z, q.w},
-        activate ? JPH::EActivation::Activate
-                 : JPH::EActivation::DontActivate);
+        activate ? JPH::EActivation::Activate : JPH::EActivation::DontActivate);
   }
 
   void setPositionAndRotation(const Collider &collider, const Vec3 &position,
@@ -399,8 +367,7 @@ public:
     const auto q = Quat::fromEuler(rotation);
     physicsSystem->GetBodyInterface().SetPositionAndRotation(
         bodyID, {position.x, position.y, position.z}, {q.x, q.y, q.z, q.w},
-        activate ? JPH::EActivation::Activate
-                 : JPH::EActivation::DontActivate);
+        activate ? JPH::EActivation::Activate : JPH::EActivation::DontActivate);
   }
 
   void setLinearVelocity(const Collider &collider,
@@ -434,8 +401,7 @@ public:
     }
     physicsSystem->GetBodyInterface().AddForce(
         bodyID, {force.x, force.y, force.z},
-        activate ? JPH::EActivation::Activate
-                 : JPH::EActivation::DontActivate);
+        activate ? JPH::EActivation::Activate : JPH::EActivation::DontActivate);
   }
 
   void addImpulse(const Collider &collider, const Vec3 &impulse) override {
@@ -478,9 +444,25 @@ public:
     }
     physicsSystem->GetBodyInterface().DeactivateBody(bodyID);
   }
+  void setGravity(const Vec3 &gravity) override {
+    if (!physicsSystem) {
+      return;
+    }
+    physicsSystem->SetGravity({gravity.x, gravity.y, gravity.z});
+  }
+  Vec3 getGravity() override {
+    if (!physicsSystem) {
+      return Vec3(0.0f);
+    }
+    auto g = physicsSystem->GetGravity();
+    return {g.GetX(), g.GetY(), g.GetZ()};
+  }
+  UInt32 bodyCount() override {
+    return physicsSystem ? static_cast<UInt32>(physicsSystem->GetNumBodies())
+                         : 0;
+  }
 
-  Collider createBoxCollider(const Transform &transform,
-                             bool isStatic) override {
+  Collider newBoxCollider(const Transform &transform, bool isStatic) override {
 
     JPH::BodyInterface &bodyInterface = physicsSystem->GetBodyInterface();
 
@@ -511,8 +493,8 @@ public:
     return collider;
   }
 
-  Collider createSphereCollider(const Vec3 &position, float radius,
-                                bool isStatic) override {
+  Collider newSphereCollider(const Vec3 &position, float radius,
+                             bool isStatic) override {
     auto &bodyInterface = physicsSystem->GetBodyInterface();
     auto motionType =
         isStatic ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic;
@@ -527,9 +509,9 @@ public:
     bodyMap[collider.id] = body->GetID();
     return collider;
   }
-  Collider createCylinderCollider(const Vec3 &position, const Vec3 &rotation,
-                                  float halfHeight, float radius,
-                                  bool isStatic) override {
+  Collider newCylinderCollider(const Vec3 &position, const Vec3 &rotation,
+                               float halfHeight, float radius,
+                               bool isStatic) override {
     auto &bodyInterface = physicsSystem->GetBodyInterface();
     JPH::CylinderShapeSettings cylinderShapeSetting(halfHeight, radius);
     cylinderShapeSetting.SetEmbedded();
@@ -550,9 +532,9 @@ public:
     return collider;
   }
 
-  Collider createCapsuleCollider(const Vec3 &position, const Vec3 &rotation,
-                                 float halfHeight, float radius,
-                                 bool isStatic) override {
+  Collider newCapsuleCollider(const Vec3 &position, const Vec3 &rotation,
+                              float halfHeight, float radius,
+                              bool isStatic) override {
     auto &bodyInterface = physicsSystem->GetBodyInterface();
     JPH::CapsuleShapeSettings capsuleShapeSetting(halfHeight, radius);
     capsuleShapeSetting.SetEmbedded();
@@ -608,11 +590,17 @@ public:
     bodyInterface.DestroyBody(it->second);
     bodyMap.erase(it);
   }
+  void optimizeBroadPhase() override { physicsSystem->OptimizeBroadPhase(); }
+
+  void update(float time, int collisionSteps) override {
+    physicsSystem->Update(time, collisionSteps, tempAllocator.get(),
+                          jobSystem.get());
+  }
 };
 
-Ptr<World> World::create() { return makePtr<WorldImpl>(); }
+Ptr<World3D> World3D::create() { return makePtr<World3DImpl>(); }
 
-Collider::Collider(World &world, UInt32 id) : world(world), id(id) {}
+Collider::Collider(World3D &world, UInt32 id) : world(world), id(id) {}
 bool Collider::isValid() const { return world.isValid(*this); }
 bool Collider::isAdded() const { return world.isAdded(*this); }
 Vec3 Collider::getPosition() const { return world.getPosition(*this); }
@@ -655,122 +643,132 @@ void Collider::deactivate() const { world.deactivate(*this); }
 void Collider::remove() const { world.removeCollider(*this); }
 void Collider::destroy() const { world.destroyCollider(*this); }
 
-static int lWorldNew(lua_State *L) {
-  udPushPtr<World>(L, World::create());
+static int lWorld3DNew(lua_State *L) {
+  udPushPtr<World3D>(L, World3D::create());
   return 1;
 }
 
-static int lPhysicsCreateBoxCollider(lua_State *L) {
-  auto w = udPtr<World>(L, 1);
+static int lWorld3DNewBoxCollider(lua_State *L) {
+  auto w = udPtr<World3D>(L, 1);
   auto &t = udValue<Transform>(L, 2);
   bool isStatic = lua_toboolean(L, 3) != 0;
-  auto collider = w->createBoxCollider(t, isStatic);
+  auto collider = w->newBoxCollider(t, isStatic);
   udNewOwned<Collider>(L, collider);
   return 1;
 }
-static int lPhysicsCreateSphereCollider(lua_State *L) {
-  auto w = udPtr<World>(L, 1);
+static int lWorld3DNewSphereCollider(lua_State *L) {
+  auto w = udPtr<World3D>(L, 1);
   auto &pos = udValue<Vec3>(L, 2);
   float radius = static_cast<float>(luaL_checknumber(L, 3));
   bool isStatic = lua_toboolean(L, 4) != 0;
-  udNewOwned<Collider>(L, w->createSphereCollider(pos, radius, isStatic));
+  udNewOwned<Collider>(L, w->newSphereCollider(pos, radius, isStatic));
   return 1;
 }
-static int lPhysicsCreateCylinderCollider(lua_State *L) {
-  auto w = udPtr<World>(L, 1);
+static int lWorld3DNewCylinderCollider(lua_State *L) {
+  auto w = udPtr<World3D>(L, 1);
   auto &pos = udValue<Vec3>(L, 2);
   auto &rot = udValue<Vec3>(L, 3);
   float halfHeight = static_cast<float>(luaL_checknumber(L, 4));
   float radius = static_cast<float>(luaL_checknumber(L, 5));
   bool isStatic = lua_toboolean(L, 6) != 0;
   udNewOwned<Collider>(
-      L, w->createCylinderCollider(pos, rot, halfHeight, radius, isStatic));
+      L, w->newCylinderCollider(pos, rot, halfHeight, radius, isStatic));
   return 1;
 }
-static int lPhysicsCreateCapsuleCollider(lua_State *L) {
-  auto w = udPtr<World>(L, 1);
+static int lWorld3DNewCapsuleCollider(lua_State *L) {
+  auto w = udPtr<World3D>(L, 1);
   auto &pos = udValue<Vec3>(L, 2);
   auto &rot = udValue<Vec3>(L, 3);
   float halfHeight = static_cast<float>(luaL_checknumber(L, 4));
   float radius = static_cast<float>(luaL_checknumber(L, 5));
   bool isStatic = lua_toboolean(L, 6) != 0;
   udNewOwned<Collider>(
-      L, w->createCapsuleCollider(pos, rot, halfHeight, radius, isStatic));
+      L, w->newCapsuleCollider(pos, rot, halfHeight, radius, isStatic));
   return 1;
 }
-static int lPhysicsAddCollider(lua_State *L) {
-  auto w = udPtr<World>(L, 1);
+static int lWorld3DAddCollider(lua_State *L) {
+  auto w = udPtr<World3D>(L, 1);
   auto &c = udValue<Collider>(L, 2);
   bool active = lua_toboolean(L, 3) != 0;
   w->addCollider(c, active);
   return 0;
 }
-static int lPhysicsRemoveCollider(lua_State *L) {
-  auto w = udPtr<World>(L, 1);
+static int lWorld3DRemoveCollider(lua_State *L) {
+  auto w = udPtr<World3D>(L, 1);
   auto &c = udValue<Collider>(L, 2);
   w->removeCollider(c);
   return 0;
 }
-static int lPhysicsDestroyCollider(lua_State *L) {
-  auto w = udPtr<World>(L, 1);
+static int lWorld3DDestroyCollider(lua_State *L) {
+  auto w = udPtr<World3D>(L, 1);
   auto &c = udValue<Collider>(L, 2);
   w->destroyCollider(c);
   return 0;
 }
 
-static int lPhysicsSetGravity(lua_State *L) {
-  auto &g = udValue<Vec3>(L, 1);
-  Physics::setGravity(g);
+static int lWorld3DSetGravity(lua_State *L) {
+  auto w = udPtr<World3D>(L, 1);
+  auto &g = udValue<Vec3>(L, 2);
+  w->setGravity(g);
   return 0;
 }
-static int lPhysicsGetGravity(lua_State *L) {
-  udNewOwned<Vec3>(L, Physics::getGravity());
+static int lWorld3DGetGravity(lua_State *L) {
+  auto w = udPtr<World3D>(L, 1);
+  udNewOwned<Vec3>(L, w->getGravity());
   return 1;
 }
-static int lPhysicsBodyCount(lua_State *L) {
-  lua_pushinteger(L, static_cast<lua_Integer>(Physics::bodyCount()));
+static int lWorld3DBodyCount(lua_State *L) {
+  auto w = udPtr<World3D>(L, 1);
+  lua_pushinteger(L, static_cast<lua_Integer>(w->bodyCount()));
   return 1;
 }
-static int lPhysicsOptimizeBroadPhase(lua_State *L) {
-  Physics::postSetup();
+static int lWorld3DOptimizeBroadPhase(lua_State *L) {
+  auto w = udPtr<World3D>(L, 1);
+  w->optimizeBroadPhase();
+  return 0;
+}
+static int lWorld3DUpdate(lua_State *L) {
+  auto w = udPtr<World3D>(L, 1);
+  float time = static_cast<float>(luaL_checknumber(L, 2));
+  int collisionSteps = static_cast<int>(luaL_checkinteger(L, 3));
+  w->update(time, collisionSteps);
   return 0;
 }
 void registerPhysics(lua_State *L) {
-  luaL_newmetatable(L, World::metaTableName());
-  luaPushcfunction2(L, udPtrGc<World>);
+  luaL_newmetatable(L, World3D::metaTableName());
+  luaPushcfunction2(L, udPtrGc<World3D>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lPhysicsCreateBoxCollider);
-  lua_setfield(L, -2, "createBoxCollider");
-  luaPushcfunction2(L, lPhysicsCreateSphereCollider);
-  lua_setfield(L, -2, "createSphereCollider");
-  luaPushcfunction2(L, lPhysicsCreateCylinderCollider);
-  lua_setfield(L, -2, "createCylinderCollider");
-  luaPushcfunction2(L, lPhysicsCreateCapsuleCollider);
-  lua_setfield(L, -2, "createCapsuleCollider");
-  luaPushcfunction2(L, lPhysicsAddCollider);
+  luaPushcfunction2(L, lWorld3DNewBoxCollider);
+  lua_setfield(L, -2, "newBoxCollider");
+  luaPushcfunction2(L, lWorld3DNewSphereCollider);
+  lua_setfield(L, -2, "newSphereCollider");
+  luaPushcfunction2(L, lWorld3DNewCylinderCollider);
+  lua_setfield(L, -2, "newCylinderCollider");
+  luaPushcfunction2(L, lWorld3DNewCapsuleCollider);
+  lua_setfield(L, -2, "newCapsuleCollider");
+  luaPushcfunction2(L, lWorld3DAddCollider);
   lua_setfield(L, -2, "addCollider");
-  luaPushcfunction2(L, lPhysicsRemoveCollider);
+  luaPushcfunction2(L, lWorld3DRemoveCollider);
   lua_setfield(L, -2, "removeCollider");
-  luaPushcfunction2(L, lPhysicsDestroyCollider);
+  luaPushcfunction2(L, lWorld3DDestroyCollider);
   lua_setfield(L, -2, "destroyCollider");
-  lua_pop(L, 1);
-
-  pushSnNamed(L, "World");
-  luaPushcfunction2(L, lWorldNew);
-  lua_setfield(L, -2, "new");
-  lua_pop(L, 1);
-
-  pushSnNamed(L, "Physics");
-  luaPushcfunction2(L, lPhysicsSetGravity);
+  luaPushcfunction2(L, lWorld3DSetGravity);
   lua_setfield(L, -2, "setGravity");
-  luaPushcfunction2(L, lPhysicsGetGravity);
+  luaPushcfunction2(L, lWorld3DGetGravity);
   lua_setfield(L, -2, "getGravity");
-  luaPushcfunction2(L, lPhysicsBodyCount);
+  luaPushcfunction2(L, lWorld3DBodyCount);
   lua_setfield(L, -2, "bodyCount");
-  luaPushcfunction2(L, lPhysicsOptimizeBroadPhase);
+  luaPushcfunction2(L, lWorld3DOptimizeBroadPhase);
   lua_setfield(L, -2, "optimizeBroadPhase");
+  luaPushcfunction2(L, lWorld3DUpdate);
+  lua_setfield(L, -2, "update");
+  lua_pop(L, 1);
+
+  pushSnNamed(L, "World3D");
+  luaPushcfunction2(L, lWorld3DNew);
+  lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 }
 } // namespace sinen

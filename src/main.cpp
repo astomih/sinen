@@ -165,11 +165,9 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
   Input::update();
   Time::update();
   Script::updateScene();
-  Physics::update();
   Graphics::render();
   if (Script::hasToReload()) {
     Script::runScene();
-    Physics::postSetup();
     Script::doneReload();
   }
   if (Keyboard::isPressed(Keyboard::Code::F11)) {

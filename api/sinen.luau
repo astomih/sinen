@@ -244,15 +244,23 @@ export type Collider = {
 	destroy: (self: Collider) -> nil,
 }
 
-export type World = {
-	new: () -> World,
-	createBoxCollider: (self: World, transform: Transform, isStatic: boolean) -> Collider,
-	createSphereCollider: (self: World, position: Vec3, radius: number, isStatic: boolean) -> Collider,
-	createCylinderCollider: (self: World, position: Vec3, rotation: Vec3, halfHeight: number, radius: number, isStatic: boolean) -> Collider,
-	createCapsuleCollider: (self: World, position: Vec3, rotation: Vec3, halfHeight: number, radius: number, isStatic: boolean) -> Collider,
-	addCollider: (self: World, collider: Collider, isActive: boolean) -> nil,
-	removeCollider: (self: World, collider: Collider) -> nil,
-	destroyCollider: (self: World, collider: Collider) -> nil,
+export type World3D = {
+	new: () -> World3D,
+	newBoxCollider: (self: World3D, transform: Transform, isStatic: boolean) -> Collider,
+	newSphereCollider: (self: World3D, position: Vec3, radius: number, isStatic: boolean) -> Collider,
+	newCylinderCollider: (self: World3D, position: Vec3, rotation: Vec3, halfHeight: number, radius: number, isStatic: boolean) -> Collider,
+	newCapsuleCollider: (self: World3D, position: Vec3, rotation: Vec3, halfHeight: number, radius: number, isStatic: boolean) -> Collider,
+
+	setGravity: (self: World3D, gravity: Vec3) -> nil,
+	getGravity: (self: World3D) -> Vec3,
+
+	bodyCount: (self: World3D) -> number,
+	addCollider: (self: World3D, collider: Collider, isActive: boolean) -> nil,
+	removeCollider: (self: World3D, collider: Collider) -> nil,
+	destroyCollider: (self: World3D, collider: Collider) -> nil,
+
+	optimizeBroadPhase: (self: World3D) -> nil,
+	update: (self: World3D, time: number, collisionSteps: number) -> nil,
 }
 
 export type Arguments = {
@@ -545,7 +553,7 @@ declare Pivot: Pivot
 declare Rect: Rect
 declare Transform: Transform
 declare Collider: Collider
-declare World: World
+declare World3D: World3D
 declare Arguments: Arguments
 declare Event: Event
 declare Script: Script

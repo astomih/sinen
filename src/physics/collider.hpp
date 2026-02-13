@@ -3,10 +3,10 @@
 #include <core/data/ptr.hpp>
 #include <math/vec3.hpp>
 namespace sinen {
-class World;
+class World3D;
 class Collider {
 public:
-  Collider(World &world, UInt32 id);
+  Collider(World3D &world, UInt32 id);
   static constexpr const char *metaTableName() { return "sn.Collider"; }
   bool isValid() const;
   bool isAdded() const;
@@ -31,7 +31,7 @@ public:
   UInt32 id;
 
 private:
-  World &world;
+  World3D &world;
 };
 } // namespace sinen
 

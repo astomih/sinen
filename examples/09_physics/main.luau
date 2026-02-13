@@ -21,12 +21,13 @@ sphereTransform.scale = Vec3.new(0.5)
 
 local colliders: { Collider } = {}
 
-local world: World = World.new()
-local floorCollider = world:createBoxCollider(boxTransform, true)
-local sphereCollider = world:createSphereCollider(sphereTransform.position, 0.5, false)
+local world: World3D = World3D.new()
+local floorCollider = world:newBoxCollider(boxTransform, true)
+local sphereCollider = world:newSphereCollider(sphereTransform.position, 0.5, false)
 sphereCollider:setLinearVelocity(Vec3.new(0, -5.0, 0))
 world:addCollider(floorCollider, false)
 world:addCollider(sphereCollider, true)
+world:optimizeBroadPhase()
 
 Graphics.getCamera3D():lookat(Vec3.new(0, 10, 25), Vec3.new(0, 0, 0), Vec3.new(0, 1, 0))
 
@@ -38,11 +39,12 @@ function update()
 	sphereTransform.position = sphereCollider:getPosition()
 
 	if Mouse.isPressed(Mouse.LEFT) then
-		local sc: Collider = world:createSphereCollider(Vec3.new(0, 2, 0), 0.5, false)
+		local sc: Collider = world:newSphereCollider(Vec3.new(0, 2, 0), 0.5, false)
 		sc:setLinearVelocity(Vec3.new(math.random(-5, 5), math.random(-5, 5), math.random(-5, 5)))
 		world:addCollider(sc, true)
 		table.insert(colliders, sc)
 	end
+	world:update(Time.delta(), 1)
 end
 
 function draw()

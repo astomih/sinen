@@ -12,7 +12,6 @@
 #include <platform/io/filesystem.hpp>
 #include <script/script.hpp>
 
-
 // external
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_platform.h>
@@ -34,11 +33,11 @@ StringView AssetIO::open(StringView name) {
   String filePath;
   convertFilePath(filePath, name);
   auto *file = SDL_IOFromFile(filePath.c_str(), "r");
-  LogF::error("File open error {}: {}", filePath.c_str(), SDL_GetError());
+  Log::error("File open error {}: {}", filePath.c_str(), SDL_GetError());
   size_t fileLength;
   void *load = SDL_LoadFile_IO(file, &fileLength, 1);
   if (!load) {
-    LogF::error("File open error {}: {}", filePath.c_str(), SDL_GetError());
+    Log::error("File open error {}: {}", filePath.c_str(), SDL_GetError());
     return "";
   }
   StringView result(reinterpret_cast<char *>(load), fileLength);
@@ -51,7 +50,7 @@ void *AssetIO::openAsIOStream(StringView name) {
 
   SDL_IOStream *file = SDL_IOFromFile(filePath.c_str(), "r");
   if (!file) {
-    LogF::error("File open error {}: {}", filePath.c_str(), SDL_GetError());
+    Log::error("File open error {}: {}", filePath.c_str(), SDL_GetError());
     return nullptr;
   }
   return file;
@@ -61,13 +60,13 @@ String AssetIO::openAsString(StringView name) {
   convertFilePath(filePath, name);
   auto *file = SDL_IOFromFile(filePath.c_str(), "r");
   if (!file) {
-    LogF::error("{}", String("Sinen file open error" + filePath).c_str());
+    Log::error("{}", String("Sinen file open error" + filePath).c_str());
     return "";
   }
   size_t fileLength;
   void *load = SDL_LoadFile_IO(file, &fileLength, 1);
   if (!load) {
-    LogF::error("{}", String("Sinen file open error" + filePath).c_str());
+    Log::error("{}", String("Sinen file open error" + filePath).c_str());
     return "";
   }
   String result{reinterpret_cast<char *>(load), fileLength};

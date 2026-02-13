@@ -111,8 +111,8 @@ Array<Mat4> SkeletalAnimation::getFinalBoneMatrices() const {
     if (finalBoneMatrices.contains(name)) {
       result[owner->getBoneMap().at(name).index] = mat;
     } else {
-      LogF::error("[Warning] bone \"{}\" has no finalTransform. Using identity",
-                  name);
+      Log::error("[Warning] bone \"{}\" has no finalTransform. Using identity",
+                 name);
     }
   }
   return result;

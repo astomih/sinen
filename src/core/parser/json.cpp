@@ -161,7 +161,7 @@ Json::~Json() {}
 void Json::parse(StringView str) {
   pimpl->doc.Parse(str.data());
   if (pimpl->doc.HasParseError()) {
-    LogF::critical("{}", static_cast<int>(pimpl->doc.GetParseError()));
+    Log::critical("{}", static_cast<int>(pimpl->doc.GetParseError()));
   }
 }
 Json::Object Json::operator[](StringView key) {

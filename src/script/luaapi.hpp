@@ -101,7 +101,7 @@ static int luaPCallLogged(lua_State *L, int nargs, int nresults) {
     return LUA_OK;
   }
   const char *msg = lua_tostring(L, -1);
-  LogF::error("[lua error] {}", msg ? msg : "(unknown error)");
+  Log::error("[lua error] {}", msg ? msg : "(unknown error)");
   lua_pop(L, 1);
   return LUA_ERRRUN;
 }

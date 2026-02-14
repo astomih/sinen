@@ -19,6 +19,9 @@ public:
    *
    */
   ~File();
+
+  static constexpr const char *metaTableName() { return "sn.File"; }
+
   /**
    * @brief Open a file
    *

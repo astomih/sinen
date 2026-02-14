@@ -4,7 +4,6 @@
 #include <cstring>
 #include <platform/io/file.hpp>
 
-
 namespace sinen {
 File::File() : stream(nullptr) {}
 File::~File() { close(); }
@@ -40,4 +39,60 @@ void File::seek(const std::int64_t &offset) {
 }
 std::int64_t File::tell() { return SDL_TellIO((SDL_IOStream *)stream); }
 std::int64_t File::size() { return SDL_GetIOSize((SDL_IOStream *)stream); }
+} // namespace sinen
+
+#include <script/binding.hpp>
+namespace sinen {
+void registerFile(lua_State *L) {
+  Binding binding(L);
+  binding.beginClass(File::metaTableName(), udPtrGc<File>, "File",
+                     [](lua_State *L) {
+                       udPushPtr<File>(L, makePtr<File>());
+                       return 1;
+                     });
+  binding.registerFunction("open", [](lua_State *L) {
+    auto &f = udPtr<File>(L, 1);
+    const char *filename = luaL_checkstring(L, 2);
+    const char *mode = luaL_checkstring(L, 3);
+    f->open(StringView(filename), StringView(mode));
+    return 0;
+  });
+  binding.registerFunction("close", [](lua_State *L) {
+    auto &f = udPtr<File>(L, 1);
+    f->close();
+    return 0;
+  });
+  binding.registerFunction("read", [](lua_State *L) {
+    auto &f = udPtr<File>(L, 1);
+    size_t size = static_cast<size_t>(luaL_checkinteger(L, 2));
+    Buffer buf = f->read(size);
+    udNewOwned<Buffer>(L, std::move(buf));
+    return 1;
+  });
+  binding.registerFunction("write", [](lua_State *L) {
+    auto &f = udPtr<File>(L, 1);
+    auto &buf = udValue<Buffer>(L, 2);
+    f->write(buf);
+    return 0;
+  });
+  binding.registerFunction("seek", [](lua_State *L) {
+    auto &f = udPtr<File>(L, 1);
+    std::int64_t offset = static_cast<std::int64_t>(luaL_checkinteger(L, 2));
+    f->seek(offset);
+    return 0;
+  });
+  binding.registerFunction("tell", [](lua_State *L) {
+    auto &f = udPtr<File>(L, 1);
+    std::int64_t pos = f->tell();
+    lua_pushinteger(L, pos);
+    return 1;
+  });
+  binding.registerFunction("size", [](lua_State *L) {
+    auto &f = udPtr<File>(L, 1);
+    std::int64_t size = f->size();
+    lua_pushinteger(L, size);
+    return 1;
+  });
+  binding.endClass();
+}
 } // namespace sinen

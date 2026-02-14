@@ -494,6 +494,29 @@ export type Time = {
 	delta: () -> number,
 }
 
+export type File={
+	new: () -> File,
+	-- mode:
+   -- "r": Open a file for reading. The file must exist.
+   -- "w": Create an empty file for writing. If a file with the same name already
+   --      exists its content is erased and the file is treated as a new empty file.
+   -- "a": Append to a file. Writing operations append data at the end of the
+	 --		 file. The file is created if it does not exist.
+   -- "r+": Open a file for update both reading and writing. The file must
+	 -- 		  exist.
+	 --   "w+": Create an empty file for both reading and writing. If a file with
+	 -- the same name already exists its content is erased and the file is treated as a
+	 -- new empty file.
+	 -- "a+": Open a file for reading and appending.
+	open: (self: File, path: string, mode: string) -> boolean,
+	close: (self: File) -> nil,
+	read: (self: File, size: number) -> Buffer,
+	write: (self: File, data: Buffer) -> nil,
+	size: (self: File) -> number,
+	tell: (self: File) -> number,
+	seek: (self: File, offset: number) -> nil,
+}
+
 export type Log = {
 	verbose: (msg: any) -> nil,
 	info: (msg: any) -> nil,

@@ -224,6 +224,7 @@ void registerLog(lua_State *);
 void registerImGui(lua_State *);
 void registerPeriodic(lua_State *);
 void registerTime(lua_State *);
+void registerFile(lua_State *);
 
 luau::debugger::Debugger debugger(false);
 namespace {
@@ -955,6 +956,7 @@ static void registerAll(lua_State *L) {
   registerImGui(L);
   registerPeriodic(L);
   registerTime(L);
+  registerFile(L);
 }
 
 bool Script::initialize() {

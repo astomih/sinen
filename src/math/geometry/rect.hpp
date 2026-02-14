@@ -31,7 +31,9 @@ struct Rect {
   Vec2 topLeft() const;
   Vec2 topCenter() const;
   Vec2 topRight() const;
+  Vec2 left() const;
   Vec2 center() const;
+  Vec2 right() const;
   Vec2 bottomLeft() const;
   Vec2 bottomCenter() const;
   Vec2 bottomRight() const;

@@ -52,8 +52,9 @@ Vec2 Rect::topCenter() const { return Vec2(_pos.x, _pos.y + _size.y * 0.5f); }
 Vec2 Rect::topRight() const {
   return Vec2(_pos.x + _size.x * 0.5f, _pos.y + _size.y * 0.5f);
 }
-
+Vec2 Rect::left() const { return Vec2(_pos.x - _size.x * 0.5f, _pos.y); }
 Vec2 Rect::center() const { return _pos; }
+Vec2 Rect::right() const { return Vec2(_pos.x + _size.x * 0.5f, _pos.y); }
 Vec2 Rect::bottomLeft() const {
   return Vec2(_pos.x - _size.x * 0.5f, _pos.y - _size.y * 0.5f);
 }
@@ -74,8 +75,12 @@ Vec2 Rect::positionfromPivot(Pivot pivot) const {
     return topCenter();
   case Pivot::TopRight:
     return topRight();
+  case Pivot::Left:
+    return left();
   case Pivot::Center:
     return center();
+  case Pivot::Right:
+    return right();
   case Pivot::BottomLeft:
     return bottomLeft();
   case Pivot::BottomCenter:
@@ -221,6 +226,70 @@ void registerRect(lua_State *L) {
   lua_setfield(L, -2, "__newindex");
   luaPushcfunction2(L, lRectIntersectsRect);
   lua_setfield(L, -2, "intersectsRect");
+
+  luaPushcfunction2(L, [](lua_State *L) -> int {
+    auto &r = udValue<Rect>(L, 1);
+    udNewOwned<Vec2>(L, r.topLeft());
+    return 1;
+  });
+  lua_setfield(L, -2, "topLeft");
+
+  luaPushcfunction2(L, [](lua_State *L) -> int {
+    auto &r = udValue<Rect>(L, 1);
+    udNewOwned<Vec2>(L, r.topCenter());
+    return 1;
+  });
+  lua_setfield(L, -2, "topCenter");
+
+  luaPushcfunction2(L, [](lua_State *L) -> int {
+    auto &r = udValue<Rect>(L, 1);
+    udNewOwned<Vec2>(L, r.topRight());
+    return 1;
+  });
+  lua_setfield(L, -2, "topRight");
+
+  luaPushcfunction2(L, [](lua_State *L) -> int {
+    auto &r = udValue<Rect>(L, 1);
+    udNewOwned<Vec2>(L, r.left());
+    return 1;
+  });
+  lua_setfield(L, -2, "left");
+
+  luaPushcfunction2(L, [](lua_State *L) -> int {
+    auto &r = udValue<Rect>(L, 1);
+    udNewOwned<Vec2>(L, r.center());
+    return 1;
+  });
+  lua_setfield(L, -2, "center");
+
+  luaPushcfunction2(L, [](lua_State *L) -> int {
+    auto &r = udValue<Rect>(L, 1);
+    udNewOwned<Vec2>(L, r.right());
+    return 1;
+  });
+  lua_setfield(L, -2, "right");
+
+  luaPushcfunction2(L, [](lua_State *L) -> int {
+    auto &r = udValue<Rect>(L, 1);
+    udNewOwned<Vec2>(L, r.bottomLeft());
+    return 1;
+  });
+  lua_setfield(L, -2, "bottomLeft");
+
+  luaPushcfunction2(L, [](lua_State *L) -> int {
+    auto &r = udValue<Rect>(L, 1);
+    udNewOwned<Vec2>(L, r.bottomCenter());
+    return 1;
+  });
+  lua_setfield(L, -2, "bottomCenter");
+
+  luaPushcfunction2(L, [](lua_State *L) -> int {
+    auto &r = udValue<Rect>(L, 1);
+    udNewOwned<Vec2>(L, r.bottomRight());
+    return 1;
+  });
+  lua_setfield(L, -2, "bottomRight");
+
   lua_pop(L, 1);
 
   pushSnNamed(L, "Rect");

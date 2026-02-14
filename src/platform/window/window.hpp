@@ -25,6 +25,9 @@ public:
   static Vec2 topLeft();
   static Vec2 topCenter();
   static Vec2 topRight();
+  static Vec2 left();
+  static Vec2 center();
+  static Vec2 right();
   static Vec2 bottomLeft();
   static Vec2 bottomCenter();
   static Vec2 bottomRight();

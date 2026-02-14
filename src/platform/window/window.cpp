@@ -64,6 +64,9 @@ Rect Window::rect() { return Rect(Vec2(0), size()); }
 Vec2 Window::topLeft() { return rect().topLeft(); }
 Vec2 Window::topCenter() { return rect().topCenter(); }
 Vec2 Window::topRight() { return rect().topRight(); }
+Vec2 Window::left() { return rect().left(); }
+Vec2 Window::center() { return rect().center(); }
+Vec2 Window::right() { return rect().right(); }
 Vec2 Window::bottomLeft() { return rect().bottomLeft(); }
 Vec2 Window::bottomCenter() { return rect().bottomCenter(); }
 Vec2 Window::bottomRight() { return rect().bottomRight(); }
@@ -127,8 +130,20 @@ static int lWindowTopRight(lua_State *L) {
   udNewOwned<Vec2>(L, Window::topRight());
   return 1;
 }
+static int lWindowLeft(lua_State *L) {
+  udNewOwned<Vec2>(L, Window::left());
+  return 1;
+}
+static int lWindowCenter(lua_State *L) {
+  udNewOwned<Vec2>(L, Window::center());
+  return 1;
+}
+static int lWindowRight(lua_State *L) {
+  udNewOwned<Vec2>(L, Window::right());
+  return 1;
+}
 static int lWindowBottomLeft(lua_State *L) {
-  udNewOwned<Vec2>(L, Window::bottomLeft());
+  udNewOwned<Vec2>(L, Window::left());
   return 1;
 }
 static int lWindowBottomCenter(lua_State *L) {
@@ -163,6 +178,12 @@ void registerWindow(lua_State *L) {
   lua_setfield(L, -2, "topCenter");
   luaPushcfunction2(L, lWindowTopRight);
   lua_setfield(L, -2, "topRight");
+  luaPushcfunction2(L, lWindowLeft);
+  lua_setfield(L, -2, "left");
+  luaPushcfunction2(L, lWindowCenter);
+  lua_setfield(L, -2, "center");
+  luaPushcfunction2(L, lWindowRight);
+  lua_setfield(L, -2, "right");
   luaPushcfunction2(L, lWindowBottomLeft);
   lua_setfield(L, -2, "bottomLeft");
   luaPushcfunction2(L, lWindowBottomCenter);

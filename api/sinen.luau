@@ -2,16 +2,13 @@
 
 -- This file is a Luau definition file for Sinen's Lua API.
 
-export type Buffer = {
-	new: (array: any) -> Buffer,
-}
+export type Buffer = {}
 
 export type Vec3 = {
 	x: number,
 	y: number,
 	z: number,
 
-	new: (((x: number, y: number, z: number) -> Vec3) & ((value: number) -> Vec3)),
 	copy: (self: Vec3) -> Vec3,
 	length: (self: Vec3) -> number,
 	forward: (self: Vec3, rotation: Vec3) -> Vec3,
@@ -26,7 +23,6 @@ export type Vec2 = {
 	x: number,
 	y: number,
 
-	new: (((x: number, y: number) -> Vec2) & ((value: number) -> Vec2)),
 	copy: (self: Vec2) -> Vec2,
 	length: (self: Vec2) -> number,
 	normalize: (self: Vec2) -> Vec2,
@@ -53,7 +49,6 @@ export type Rect = {
 	width: number,
 	height: number,
 
-	new: (((x: number, y: number, width: number, height: number) -> Rect) & ((position: Vec2, size: Vec2) -> Rect) & ((pivot: Pivot, x: number, y: number, w: number, h: number) -> Rect) & ((pivot: Pivot, pos: Vec2, size: Vec2) -> Rect)),
 	topLeft: (self: Rect) -> Vec2,
 	topCenter: (self: Rect) -> Vec2,
 	topRight: (self: Rect) -> Vec2,
@@ -73,11 +68,9 @@ export type Transform = {
 	position: Vec3,
 	rotation: Vec3,
 	scale: Vec3,
-	new: () -> Transform,
 }
 
 export type AABB = {
-	new: () -> AABB,
 	min: Vec3,
 	max: Vec3,
 	updateWorld: (self: AABB, position: Vec3, scale: Vec3, modelAABB: AABB) -> nil,
@@ -89,12 +82,9 @@ export type Color = {
 	g: number,
 	b: number,
 	a: number,
-
-	new: (((r: number, g: number, b: number, a: number) -> Color) & ((value: number, a: number) -> Color) & ((value: number) -> Color) & (() -> Color)),
 }
 
 export type Texture = {
-	new: ((() -> Texture) & ((width: number, height: number) -> Texture)),
 	fill: (self: Texture, color: Color) -> nil,
 	blend: (self: Texture, color: Color) -> nil,
 	copy: (self: Texture) -> Texture,
@@ -105,12 +95,10 @@ export type Texture = {
 }
 
 export type RenderTexture = {
-	new: () -> RenderTexture,
 	create: (self: RenderTexture, x: number, y: number) -> nil,
 }
 
 export type Sound = {
-	new: () -> Sound,
 	load: (self: Sound, path: string) -> nil,
 	loadFromPath: (self: Sound, path: string) -> nil,
 	play: (self: Sound) -> nil,
@@ -121,7 +109,6 @@ export type Sound = {
 }
 
 export type Camera3D = {
-	new: () -> Camera3D,
 	lookat: (self: Camera3D, position: Vec3, target: Vec3, up: Vec3) -> nil,
 	perspective: (self: Camera3D, fov: number, aspect: number, near: number, far: number) -> nil,
 	orthographic: (self: Camera3D, width: number, height: number, near: number, far: number) -> nil,
@@ -132,7 +119,6 @@ export type Camera3D = {
 }
 
 export type Camera2D = {
-	new: () -> Camera2D,
 	resize: (self: Camera2D, size: Vec2) -> nil,
 	windowRatio: (self: Camera2D) -> Vec2,
 	invWindowRatio: (self: Camera2D) -> Vec2,
@@ -160,9 +146,8 @@ export type TextureKey = {
 }
 
 export type Model = {
-	new: () -> Model,
 	getAABB: (self: Model) -> AABB,
-	load: (((self: Model, path: string) -> nil) & ((self: Model, buffer: Buffer) -> nil)),
+	load: ((self: Model, path: string) -> nil) & ((self: Model, buffer: Buffer) -> nil),
 	loadSprite: (self: Model) -> nil,
 	loadBox: (self: Model) -> nil,
 	getBoneUniformBuffer: (self: Model) -> Buffer,
@@ -174,7 +159,6 @@ export type Model = {
 }
 
 export type Timer = {
-	new: () -> Timer,
 	start: (self: Timer) -> nil,
 	stop: (self: Timer) -> nil,
 	isStarted: (self: Timer) -> boolean,
@@ -189,20 +173,21 @@ export type ShaderStage = {
 }
 
 export type Shader = {
-	new: () -> Shader,
 	load: (self: Shader, path: string, shaderStage: ShaderStage, uniform_count: number) -> nil,
 	compileAndLoad: (self: Shader, source: string, shaderStage: ShaderStage) -> nil,
 }
 
 export type Font = {
-	new: () -> Font,
-	load: (((self: Font, size: number) -> nil) & ((self: Font, size: number, path: string) -> nil) & ((self: Font, size: number, buffer: Buffer) -> nil)),
+	load: (
+		((self: Font, size: number) -> nil)
+		& ((self: Font, size: number, path: string) -> nil)
+		& ((self: Font, size: number, buffer: Buffer) -> nil)
+	),
 	resize: (self: Font, size: number) -> nil,
 	region: (self: Font, text: string, fontSize: number, pivot: number, position: Vec2) -> Rect,
 }
 
 export type Grid = {
-	new: (w: number, h: number) -> Grid,
 	at: (self: Grid, x: number, y: number) -> number,
 	set: (self: Grid, x: number, y: number, v: number) -> nil,
 	width: (self: Grid) -> number,
@@ -217,7 +202,6 @@ export type Grid = {
 }
 
 export type BFSGrid = {
-	new: (grid: Grid) -> BFSGrid,
 	width: (self: BFSGrid) -> number,
 	height: (self: BFSGrid) -> number,
 	findPath: (self: BFSGrid, start: Vec2, end_: Vec2) -> any,
@@ -227,7 +211,6 @@ export type BFSGrid = {
 }
 
 export type GraphicsPipeline = {
-	new: () -> GraphicsPipeline,
 	setVertexShader: (self: GraphicsPipeline, shader: Shader) -> nil,
 	setFragmentShader: (self: GraphicsPipeline, shader: Shader) -> nil,
 	setEnableDepthTest: (self: GraphicsPipeline, enable: boolean) -> nil,
@@ -260,11 +243,24 @@ export type Collider = {
 }
 
 export type World3D = {
-	new: () -> World3D,
 	newBoxCollider: (self: World3D, transform: Transform, isStatic: boolean) -> Collider,
 	newSphereCollider: (self: World3D, position: Vec3, radius: number, isStatic: boolean) -> Collider,
-	newCylinderCollider: (self: World3D, position: Vec3, rotation: Vec3, halfHeight: number, radius: number, isStatic: boolean) -> Collider,
-	newCapsuleCollider: (self: World3D, position: Vec3, rotation: Vec3, halfHeight: number, radius: number, isStatic: boolean) -> Collider,
+	newCylinderCollider: (
+		self: World3D,
+		position: Vec3,
+		rotation: Vec3,
+		halfHeight: number,
+		radius: number,
+		isStatic: boolean
+	) -> Collider,
+	newCapsuleCollider: (
+		self: World3D,
+		position: Vec3,
+		rotation: Vec3,
+		halfHeight: number,
+		radius: number,
+		isStatic: boolean
+	) -> Collider,
 
 	setGravity: (self: World3D, gravity: Vec3) -> nil,
 	getGravity: (self: World3D) -> Vec3,
@@ -494,20 +490,19 @@ export type Time = {
 	delta: () -> number,
 }
 
-export type File={
-	new: () -> File,
+export type File = {
 	-- mode:
-   -- "r": Open a file for reading. The file must exist.
-   -- "w": Create an empty file for writing. If a file with the same name already
-   --      exists its content is erased and the file is treated as a new empty file.
-   -- "a": Append to a file. Writing operations append data at the end of the
-	 --		 file. The file is created if it does not exist.
-   -- "r+": Open a file for update both reading and writing. The file must
-	 -- 		  exist.
-	 --   "w+": Create an empty file for both reading and writing. If a file with
-	 -- the same name already exists its content is erased and the file is treated as a
-	 -- new empty file.
-	 -- "a+": Open a file for reading and appending.
+	-- "r": Open a file for reading. The file must exist.
+	-- "w": Create an empty file for writing. If a file with the same name already
+	--      exists its content is erased and the file is treated as a new empty file.
+	-- "a": Append to a file. Writing operations append data at the end of the
+	--		 file. The file is created if it does not exist.
+	-- "r+": Open a file for update both reading and writing. The file must
+	-- 		  exist.
+	--   "w+": Create an empty file for both reading and writing. If a file with
+	-- the same name already exists its content is erased and the file is treated as a
+	-- new empty file.
+	-- "a+": Open a file for reading and appending.
 	open: (self: File, path: string, mode: string) -> boolean,
 	close: (self: File) -> nil,
 	read: (self: File, size: number) -> Buffer,
@@ -561,40 +556,42 @@ export type ImGui = {
 	WindowFlags: ImGuiWindowFlags,
 }
 
-export type Synth ={
-	new: () -> Synth,
-	setBpm: (self:Synth,bpm: number)->nil,
-setStepBeats: (self:Synth,stepBeats: number)->nil,
-setADSR: (self:Synth,a:number, d:number, s:number, r:number)->nil,
-setMasterGain: (self:Synth,gain: number)->nil,
-setPattern: (self: Synth, pattern:string)->nil,
-play: (self:Synth)->nil,
-stop: (self:Synth)->nil
+export type Synth = {
+	setBpm: (self: Synth, bpm: number) -> nil,
+	setStepBeats: (self: Synth, stepBeats: number) -> nil,
+	setADSR: (self: Synth, a: number, d: number, s: number, r: number) -> nil,
+	setMasterGain: (self: Synth, gain: number) -> nil,
+	setPattern: (self: Synth, pattern: string) -> nil,
+	play: (self: Synth) -> nil,
+	stop: (self: Synth) -> nil,
 }
 
-declare Buffer: Buffer
-declare Vec3: Vec3
-declare Vec2: Vec2
-declare Texture: Texture
-declare RenderTexture: RenderTexture
-declare Sound: Sound
-declare Camera3D: Camera3D
-declare Camera2D: Camera2D
+----[[
+declare Buffer: typeof({}::{new: (array: { any }) -> Buffer})
+declare Vec3: typeof({}::{new: ((x: number, y: number, z: number) -> Vec3) & ((value: number) -> Vec3)})
+declare Vec2: typeof({}::{new: ((x: number, y: number) -> Vec2) & ((value: number) -> Vec2)})
+declare Texture: typeof({}::{new: (() -> Texture) & ((width: number, height: number) -> Texture)})
+declare RenderTexture: typeof({}::{new: () -> RenderTexture})
+declare Sound: typeof({}::{new: () -> Sound})
+declare Camera3D: typeof({}::{new: () -> Camera3D})
+declare Camera2D: typeof({}::{new: () -> Camera2D})
 declare TextureKey: TextureKey
-declare Model: Model
-declare AABB: AABB
-declare Timer: Timer
-declare Shader: Shader
-declare Font: Font
-declare Color: Color
-declare Grid: Grid
-declare BFSGrid: BFSGrid
-declare GraphicsPipeline: GraphicsPipeline
+declare Model: typeof({}::{new: () -> Model})
+declare AABB: typeof({}::{new: () -> AABB})
+declare Timer: typeof({}::{new: () -> Timer})
+declare Shader: typeof({}::{new: () -> Shader})
+declare Font: typeof({}::{new: (()-> Font) &((size: number) -> Font) & ((size: number, path: string) -> Font) & ((size: number, buffer: Buffer) -> Font)})
+declare Color: typeof({}::{new: ((r: number, g: number, b: number, a: number) -> Color) & ((value: number, a: number) -> Color) & ((value: number) -> Color) & (() -> Color)})
+declare Grid: typeof({}::{new: (w: number, h: number) -> Grid})
+declare BFSGrid: typeof({}::{new: (grid: Grid) -> BFSGrid})
+declare GraphicsPipeline: typeof({}::{new: () -> GraphicsPipeline})
 declare Pivot: Pivot
-declare Rect: Rect
-declare Transform: Transform
+declare Rect: typeof({}::{new: (((x: number, y: number, width: number, height: number) -> Rect) & ((position: Vec2, size: Vec2) -> Rect) & ((pivot: Pivot, x: number, y: number, w: number, h: number) -> Rect) & ((pivot: Pivot, pos: Vec2, size: Vec2) -> Rect))})
+declare Transform: typeof({}::{new: () -> Transform})
 declare Collider: Collider
-declare World3D: World3D
+declare World3D: typeof({}::{new: () -> World3D})
+declare Synth: typeof({}::{new: () -> Synth})
+declare File: typeof({}::{new: () -> File})
 declare Arguments: Arguments
 declare Event: Event
 declare Script: Script
@@ -613,4 +610,4 @@ declare Periodic: Periodic
 declare Time: Time
 declare Log: Log
 declare ImGui: ImGui
-declare Synth: Synth
+--]]

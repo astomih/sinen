@@ -112,5 +112,9 @@ void luaLUnref2(lua_State *L, int idx, int r);
 using TablePair = Array<std::pair<String, String>>;
 String convert(StringView name, const TablePair &p, bool isReturn);
 String toStringTrim(double value);
+int luaLoadSource(lua_State *L, const String &source, const String &chunkname,
+                  StringView fullPath);
+static constexpr const char *prefix = ".luau";
+lua_State *getGlobalLua();
 } // namespace sinen
 #endif // SINEN_LUAAPI_HPP

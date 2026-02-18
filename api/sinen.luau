@@ -4,32 +4,73 @@
 
 export type Buffer = {}
 
-export type Vec3 = {
-	x: number,
-	y: number,
-	z: number,
+local Vec3Impl = {}
+Vec3Impl.new = function(): Vec3
+	return setmetatable(
+		{} :: {
+			x: number,
+			y: number,
+			z: number,
 
-	copy: (self: Vec3) -> Vec3,
-	length: (self: Vec3) -> number,
-	forward: (self: Vec3, rotation: Vec3) -> Vec3,
-	normalize: (self: Vec3) -> Vec3,
-	dot: (self: Vec3, other: Vec3) -> number,
-	cross: (self: Vec3, other: Vec3) -> Vec3,
-	lerp: (self: Vec3, other: Vec3, t: number) -> Vec3,
-	reflect: (self: Vec3, n: Vec3) -> Vec3,
-}
+			copy: (self: Vec3) -> Vec3,
+			length: (self: Vec3) -> number,
+			forward: (self: Vec3, rotation: Vec3) -> Vec3,
+			normalize: (self: Vec3) -> Vec3,
+			dot: (self: Vec3, other: Vec3) -> number,
+			cross: (self: Vec3, other: Vec3) -> Vec3,
+			lerp: (self: Vec3, other: Vec3, t: number) -> Vec3,
+			reflect: (self: Vec3, n: Vec3) -> Vec3,
+		},
+		{} :: typeof(Vec3Impl)
+	)
+end
+Vec3Impl.__index = Vec3Impl
+Vec3Impl.__add = function(a: Vec3, b: Vec3): Vec3
+	error("Not implemented")
+end
+Vec3Impl.__mul = function(a: Vec3 , b: (Vec3 | number)): Vec3
+	error("Not implemented")
+end
+Vec3Impl.__sub = function(a: Vec3, b: Vec3): Vec3
+	error("Not implemented")
+end
+Vec3Impl.__div = function(a: Vec3, b: (Vec3 | number)): Vec3
+	error("Not implemented")
+end
+export type Vec3 = typeof(Vec3Impl.new())
 
-export type Vec2 = {
-	x: number,
-	y: number,
+local Vec2Impl = {}
+Vec2Impl.new = function(): Vec2
+	return setmetatable(
+		{} :: {
+			x: number,
+			y: number,
 
-	copy: (self: Vec2) -> Vec2,
-	length: (self: Vec2) -> number,
-	normalize: (self: Vec2) -> Vec2,
-	dot: (self: Vec2, other: Vec2) -> number,
-	lerp: (self: Vec2, other: Vec2, t: number) -> Vec2,
-	reflect: (self: Vec2, n: Vec2) -> Vec2,
-}
+			copy: (self: Vec2) -> Vec2,
+			length: (self: Vec2) -> number,
+			normalize: (self: Vec2) -> Vec2,
+			dot: (self: Vec2, other: Vec2) -> number,
+			lerp: (self: Vec2, other: Vec2, t: number) -> Vec2,
+			reflect: (self: Vec2, n: Vec2) -> Vec2,
+		},
+		{} :: typeof(Vec2Impl)
+	)
+end
+
+Vec2Impl.__index = Vec2Impl
+Vec2Impl.__add = function(a: Vec2, b: Vec2): Vec2
+	error("Not implemented")
+end
+Vec2Impl.__mul = function(a: Vec2 , b: (Vec2 | number)): Vec2
+	error("Not implemented")
+end
+Vec2Impl.__sub = function(a: Vec2, b: Vec2): Vec2
+	error("Not implemented")
+end
+Vec2Impl.__div = function(a: Vec2, b: (Vec2 | number)): Vec2
+	error("Not implemented")
+end
+export type Vec2 = typeof(Vec2Impl.new())
 
 export type Pivot = {
 	TopLeft: number,

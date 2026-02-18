@@ -1,13 +1,29 @@
 {
   "configurations": [
     {
-      "name": "Sinen examples Debug",
+      "name": "Examples",
       "type": "cppvsdbg",
       "request": "launch",
       "program": "${workspaceFolder:sinen}/build/msvc2026-debug/sinen",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder:sinen}/examples",
+      "environment": [],
+      "console": "internalConsole",
+      "serverReadyAction": {
+        "pattern": "Luau Debug server started on 58000",
+        "action": "startDebugging",
+        "name": "Luau Debugger"
+      }
+    },
+    {
+      "name": "Gallery",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder:sinen}/build/msvc2026-debug/sinen",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder:sinen}/gallery",
       "environment": [],
       "console": "internalConsole",
       "serverReadyAction": {

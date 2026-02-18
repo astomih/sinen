@@ -7,6 +7,6 @@
   },
   "C_Cpp.codeAnalysis.clangTidy.enabled": true,
   "luau-lsp.types.definitionFiles": {
-    "sinen": "${workspaceFolder:sinen}api/sinen.luau"
+    "sinen": "api/sinen.luau"
   },
 }

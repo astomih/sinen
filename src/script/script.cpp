@@ -493,4 +493,22 @@ void Script::drawScene() {
 #endif
 }
 
+bool Script::hasToReload() { return reload; }
+void Script::doneReload() { reload = false; }
+void Script::setSceneName(StringView name) {
+  sceneName = name;
+  reload = true;
+}
+String Script::getSceneName() { return sceneName; }
+void Script::load(StringView filePath, StringView baseDirPath) {
+  setSceneName(filePath);
+  setBasePath(baseDirPath);
+}
+void Script::setBasePath(StringView path) {
+  if (!path.empty()) {
+    basePath = path;
+  }
+  reload = true;
+}
+String Script::getBasePath() { return basePath; }
 } // namespace sinen

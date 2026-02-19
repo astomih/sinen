@@ -4,7 +4,7 @@
 local Room = require("./room")
 local Corridor = require("./corridor")
 
-local function centerOf(room)
+local function centerOf(room: Room.Room)
 	local p = room:get_position()
 	local s = room:get_size()
 	return Vec2.new(p.x + math.floor(s.x / 2), p.y + math.floor(s.y / 2))
@@ -37,7 +37,7 @@ local function dungeonGenerator(grid, floor, wall, player, key, stair)
 	------------------------------------------------------------
 	local rooms = {}
 	for i = 1, room_count do
-		rooms[i] = Room:new(grid_size, min_size, max_size)
+		rooms[i] = Room.new(grid_size, min_size, max_size)
 	end
 
 	-- init

@@ -1,3 +1,4 @@
+local Room = require("./room")
 --------------------------------------------------------------------
 -- corridor.lua
 --------------------------------------------------------------------
@@ -15,7 +16,7 @@ function Corridor:get_path()
 end
 
 ---@param grid Grid
-function Corridor:connect(grid, rooms, floor_id)
+function Corridor:connect(grid: Grid, rooms: { Room.Room }, floor_id: number)
 	for i = 1, #rooms - 1 do
 		local a = rooms[i]
 		local b = rooms[i + 1]

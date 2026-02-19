@@ -1,4 +1,4 @@
-local World = require("world")
+local World = require("./world")
 
 ---@class Effect
 ---@field duration number
@@ -21,8 +21,32 @@ local World = require("world")
 ---@field timer number
 local Effect = {}
 Effect.__index = Effect
-Effect.new = function()
-	local self = setmetatable({}, Effect)
+Effect.new = function(): Effect
+	local self = setmetatable(
+		{} :: {
+			duration: number,
+			looping: boolean,
+			prewarm: boolean,
+			start_lifetime: number,
+			start_speed: number,
+			start_size: number,
+			start_rotation: number,
+			start_color: Color,
+			gravity_multiplier: number,
+			inherit_velocity: number,
+			play_on_awake: boolean,
+			max_particles: number,
+			transform: { Transform },
+			model: Model,
+			texture: Texture,
+			worlds: { World.World },
+			is_playing: boolean,
+			timer: number,
+
+			impl: (self: Effect) -> (),
+		},
+		Effect :: typeof(Effect)
+	)
 	self.duration = 0.0
 	self.looping = false
 	self.prewarm = false
@@ -57,7 +81,7 @@ Effect.new = function()
 end
 
 ---@param self Effect
-Effect.impl = function(self)
+Effect.impl = function(self: Effect)
 	local dT = Time.delta()
 	for i = 1, self.max_particles do
 		self.worlds[i].position.x = self.worlds[i].position.x + math.cos(i) * dT
@@ -66,7 +90,7 @@ Effect.impl = function(self)
 	end
 end
 ---@param self Effect
-Effect.update = function(self)
+Effect.update = function(self: Effect)
 	--  if not self.is_playing then return end
 	self.timer = self.timer + Time.delta()
 	if self.timer > self.start_lifetime then
@@ -102,4 +126,5 @@ end
 Effect.play = function(self)
 	self.is_playing = true
 end
+export type Effect = typeof(Effect.new())
 return Effect

@@ -1,4 +1,5 @@
 local G = require("./global")
+local Player = require("./player")
 local bombedSound = Sound.new()
 bombedSound:load("sound/bombed.wav")
 local r1 = 0
@@ -38,7 +39,29 @@ local Enemy = {}
 Enemy.__index = Enemy
 
 Enemy.new = function()
-	local self = setmetatable({}, Enemy)
+	local self = setmetatable(
+		{} :: {
+			transform: Transform,
+			model: Model,
+			speed: number,
+			search_length: number,
+			hp: number,
+			aabb: AABB,
+			is_collision_first: boolean,
+			collision_time: number,
+			collision_timer: number,
+			map: Grid,
+			bfs: BFSGrid,
+
+			get_forward_z: (drawer: Transform) -> Vec2,
+			add_damage: (self: Enemy, damage: number) -> boolean,
+			setup: (self: Enemy, map: Grid, mapSizeX: number, mapSizeY: number) -> nil,
+			update: (self: Enemy, player: Player.Player) -> nil,
+			draw: (self: Enemy) -> nil,
+			player_collision: (self: Enemy, player: Player.Player) -> nil,
+		},
+		Enemy :: typeof(Enemy)
+	)
 	self.speed = 10
 	self.search_length = 15
 	self.hp = 30
@@ -56,7 +79,7 @@ end
 ---@param self Enemy
 ---@param damage number Damage value
 ---@return boolean Returns true if the enemy is dead
-Enemy.add_damage = function(self, damage)
+Enemy.add_damage = function(self: Enemy, damage)
 	self.hp = self.hp - damage
 	if self.hp <= 0 then
 		return true
@@ -80,7 +103,7 @@ Enemy.setup = function(self, map, mapSizeX, mapSizeY)
 	r2 = 0
 	while decidePos(map, mapSizeX, mapSizeY) == true do
 	end
-	self.transform.position = Vec3.new(r1 * TILE_SIZE, r2 * TILE_SIZE, 0.5)
+	self.transform.position = Vec3.new(r1 * G.TILE_SIZE, r2 * G.TILE_SIZE, 0.5)
 	self.is_collision_first = true
 	self.collision_time = 1.0
 	self.collision_timer = 0.0
@@ -88,7 +111,7 @@ end
 
 ---@param self Enemy
 ---@param player Player
-Enemy.update = function(self, player)
+Enemy.update = function(self: Enemy, player)
 	local dT = Time.delta()
 	local length = (self.transform.position - player.transform.position):length()
 	if length > self.search_length then
@@ -97,7 +120,7 @@ Enemy.update = function(self, player)
 	self.aabb:updateWorld(self.transform.position, self.transform.scale, enemyModel:getAABB())
 	-- If there is a wall between the player and the enemy, the enemy will not move.
 	local start = Vec2.new(self.transform.position.x / G.TILE_SIZE, self.transform.position.y / G.TILE_SIZE)
-	local goal = Vec2.new(player.transform.position.x / G.TILE_SIZE, player.transform.position.y / TILE_SIZE)
+	local goal = Vec2.new(player.transform.position.x / G.TILE_SIZE, player.transform.position.y / G.TILE_SIZE)
 
 	start.x = math.floor(start.x + 0.5)
 	start.y = math.floor(start.y + 0.5)
@@ -134,7 +157,7 @@ Enemy.update = function(self, player)
 		path = self.bfs:trace()
 
 		local dir =
-			Vec2.new(path.x * TILE_SIZE - self.transform.position.x, path.y * TILE_SIZE - self.transform.position.y)
+			Vec2.new(path.x * G.TILE_SIZE - self.transform.position.x, path.y * G.TILE_SIZE - self.transform.position.y)
 		if dir.x < -1 then
 			dir.x = -1
 		end
@@ -164,7 +187,7 @@ end
 
 ---@param self Enemy
 ---@param player Player
-Enemy.player_collision = function(self, player)
+Enemy.player_collision = function(self: Enemy, player: Player.Player)
 	if self.aabb:intersectsAABB(player.aabb) then
 		if self.is_collision_first then
 			bombedSound:play()
@@ -190,4 +213,5 @@ Enemy.player_collision = function(self, player)
 		self.is_collision_first = true
 	end
 end
+export type Enemy = typeof(Enemy.new())
 return Enemy

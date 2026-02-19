@@ -1,8 +1,8 @@
 #include "random.hpp"
 #include <math/random.hpp>
 #include <math/vector.hpp>
-#include <script/luaapi.hpp>
 #include <random>
+#include <script/luaapi.hpp>
 namespace sinen {
 std::mt19937 Random::sGenerator;
 bool Random::initialize() {
@@ -17,11 +17,17 @@ void Random::seed(unsigned int seed) { sGenerator.seed(seed); }
 float Random::getFloat() { return getRange(0.0f, 1.0f); }
 
 float Random::getRange(float min, float max) {
+  if (max < min) {
+    std::swap(min, max);
+  }
   std::uniform_real_distribution<float> dist(min, max);
   return dist(sGenerator);
 }
 
 int Random::getIntRange(int min, int max) {
+  if (max < min) {
+    std::swap(min, max);
+  }
   std::uniform_int_distribution<int> dist(min, max);
   int a = dist(sGenerator);
   return a;

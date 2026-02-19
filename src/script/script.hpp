@@ -13,23 +13,14 @@ public:
   static void updateScene();
   static void drawScene();
 
-  static bool hasToReload() { return reload; }
-  static void doneReload() { reload = false; }
+  static bool hasToReload();
+  static void doneReload();
 
-  static void setSceneName(StringView name) {
-    sceneName = name;
-    reload = true;
-  }
-  static String getSceneName() { return sceneName; }
-  static void load(StringView filePath, StringView baseDirPath = ".") {
-    setSceneName(filePath);
-    setBasePath(baseDirPath);
-  }
-  static void setBasePath(StringView path) {
-    basePath = path;
-    reload = true;
-  }
-  static String getBasePath() { return basePath; }
+  static void setSceneName(StringView name);
+  static String getSceneName();
+  static void load(StringView filePath, StringView baseDirPath = "");
+  static void setBasePath(StringView path);
+  static String getBasePath();
 
 private:
   inline static String sceneName = "main";

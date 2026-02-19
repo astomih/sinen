@@ -33,6 +33,22 @@
       }
     },
     {
+      "name": "Test",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder:sinen}/build/msvc2026-debug/sinen",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder:sinen}/test",
+      "environment": [],
+      "console": "internalConsole",
+      "serverReadyAction": {
+        "pattern": "Luau Debug server started on 58000",
+        "action": "startDebugging",
+        "name": "Luau Debugger"
+      }
+    },
+    {
       "name": "Luau Debugger",
       "type": "luau",
       "request": "attach",

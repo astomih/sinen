@@ -21,7 +21,7 @@ Bullet.new = function()
 			update: (self: Bullet) -> nil,
 			draw: (self: Bullet) -> nil,
 		},
-		{} :: typeof(Bullet)
+		Bullet :: typeof(Bullet)
 	)
 end
 export type Bullet = typeof(Bullet.new())

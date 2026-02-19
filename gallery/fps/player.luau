@@ -1,10 +1,11 @@
 local G = require("./global")
-local Bullet = require("bullet")
-local calc_input_vector = require("calc_input_vector")
-local is_collision = require("is_collision")
-local input_vector = {}
+local Bullet = require("./bullet")
+local World = require("./world")
+local calc_input_vector = require("./calc_input_vector")
+local is_collision = require("./is_collision")
+local input_vector: Vec3 = Vec3.new(0)
 local speed = 2.0
-local Effect = require("effect")
+local Effect = require("./effect")
 local r1 = 0
 local r2 = 0
 
@@ -12,53 +13,69 @@ local scopeTex = Texture.new()
 scopeTex:load("image/scope.png")
 
 ---@param map Grid
-local function decide_pos(map, map_size_x, map_size_y)
+local function decide_pos(map: Grid, map_size_x: number, map_size_y: number)
 	r1 = math.random(1, map_size_x)
 	r2 = math.random(1, map_size_y)
 	return map:at(r1, r2) == 1
 end
 
----@class Player
----@field transform Transform
----@field  rotationZ number
----@field model Model
----@field bullets Bullet[]
----@field hp number
----@field hpMax number
----@field hpColor Color
----@field stamina number
----@field stamina_max number
----@field stamina_recover_speed number
----@field stamina_boost_cost number
----@field stamina_run_cost integer
----@field stamina_texture Texture
----@field stamina_rect Rect
----@field stamina_max_texture Texture
----@field stamina_max_rect Rect
----@field aabb AABB
----@field bullet_time number
----@field bullet_timer number
----@field bullet_flag boolean
----@field efks Effect[]
----@field is_shot boolean
----@field boost number
----@field boost_time number
----@field boost_timer number
----@field boost_mag number
----@field boost_sound Sound
----@field is_boost boolean
----@field speed_min number
----@field speed_max number
----@field blur_time number
----@field scopePos Vec2
----@field horizontal number
----@field vertical number
 local Player = {}
 
 Player.__index = Player
 
 Player.new = function()
-	local self = setmetatable({}, Player)
+	local self = setmetatable(
+		{} :: {
+			transform: Transform,
+			rotationZ: number,
+			model: Model,
+			bullets: { Bullet.Bullet },
+			hp: number,
+			hpMax: number,
+			hpColor: Color,
+			stamina: number,
+			stamina_max: number,
+			stamina_recover_speed: number,
+			stamina_boost_cost: number,
+			stamina_run_cost: number,
+			stamina_texture: Texture,
+			stamina_rect: Rect,
+			stamina_max_texture: Texture,
+			stamina_max_rect: Rect,
+			aabb: AABB,
+			bullet_time: number,
+			bullet_timer: number,
+			bullet_flag: boolean,
+			efks: { Effect.Effect },
+			is_shot: boolean,
+			boost: number,
+			boost_time: number,
+			boost_timer: number,
+			boost_mag: number,
+			boost_sound: Sound,
+			is_boost: boolean,
+			speed_min: number,
+			speed_max: number,
+			blur_time: number,
+			scopePos: Vec2,
+			horizontal: number,
+			vertical: number,
+
+			setup: (self: any, map: any, map_size_x: number, map_size_y: number) -> nil,
+			update: (
+				self: Player,
+				map: Grid,
+				map_draw3ds: { { World.World } },
+				map_size_x: number,
+				map_size_y: number
+			) -> (),
+			draw3: (self: Player) -> (),
+			draw2: (self: Player) -> (),
+			render_text: (self: Player) -> (),
+			boost_reset: (self: Player) -> (),
+		},
+		Player :: typeof(Player)
+	)
 	self.rotationZ = 0.0
 	self.bullets = {}
 	self.hp = 0
@@ -92,13 +109,12 @@ Player.boost_reset = function(self)
 	self.boost = 0.0
 	self.is_boost = false
 end
----@param self Player
----@param map Grid
----@param map_size_x number
----@param map_size_y number
-Player.setup = function(self, map, map_size_x, map_size_y)
+Player.hoge = function(self: Player)
+	print("hoge")
+end
+Player.setup = function(self: any, map: any, map_size_x: number, map_size_y: number)
 	self.model = Model.new()
-	self.model:load("model/triangle.glb")
+	self.model:load("model/enemy.glb")
 	self.transform = Transform.new()
 	self.aabb = AABB.new()
 	self.bullet_time = 0.1
@@ -109,8 +125,8 @@ Player.setup = function(self, map, map_size_x, map_size_y)
 	self.stamina_texture:fill(Color.new(1.0, 1.0, 1.0, 0.9))
 	self.stamina_max_texture = Texture.new()
 	self.stamina_max_texture:fill(Color.new(0.0, 0.0, 0.0, 0.2))
-	self.stamina_rect = Rect.new(Vec2.new(0, 350), G.UI_SCALE_Vec2(300, 10))
-	self.stamina_max_rect = Rect.new(Vec2.new(0, 350), G.UI_SCALE_Vec2(300, 10))
+	self.stamina_rect = Rect.new(Vec2.new(0, 350), Vec2.new(300, 10))
+	self.stamina_max_rect = Rect.new(Vec2.new(0, 350), Vec2.new(300, 10))
 
 	self:render_text()
 	r1 = 0
@@ -128,8 +144,7 @@ end
 ---@param map_draw3ds World[][]
 ---@param map_size_x number
 ---@param map_size_y number
-Player.update = function(self, map, map_draw3ds, map_size_x, map_size_y)
-	local p = self.transform.position:copy()
+Player.update = function(self: Player, map, map_draw3ds, map_size_x, map_size_y)
 	self.aabb:updateWorld(self.transform.position, self.transform.scale, self.model:getAABB())
 	input_vector = calc_input_vector()
 	local is_move = input_vector.x ~= 0 or input_vector.y ~= 0
@@ -339,7 +354,7 @@ Player.draw2 = function(self)
 	Graphics.drawImage(scopeTex, Rect.new(self.scopePos, scopeTex:size()))
 end
 ---@param self Player
-Player.render_text = function(self)
+Player.render_text = function(self: Player)
 	if self.hp / self.hpMax <= 0.2 then
 		self.hpColor = Color.new(1, 0.0, 0.0, 0.8)
 	else
@@ -347,4 +362,5 @@ Player.render_text = function(self)
 	end
 end
 
+export type Player = typeof(Player.new())
 return Player

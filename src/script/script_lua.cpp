@@ -10,7 +10,7 @@ static int lScriptLoad(lua_State *L) {
     Script::load(StringView(filePath), StringView(baseDirPath));
     return 0;
   }
-  Script::load(StringView(filePath), ".");
+  Script::load(StringView(filePath));
   return 0;
 }
 void registerScript(lua_State *L) {

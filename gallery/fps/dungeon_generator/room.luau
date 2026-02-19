@@ -10,6 +10,10 @@ local function RoomType(): Room
 			size: Vec2,
 			position: Vec2,
 			fill: (self: Room, grid: Grid, floor_id: number) -> nil,
+
+			new: (grid_size: Vec2, minimum: Vec2, maximum: Vec2) -> Room,
+			get_position: (self: Room) -> Vec2,
+			get_size: (self: Room) -> Vec2,
 		},
 		Room :: typeof(Room)
 	)
@@ -17,7 +21,7 @@ local function RoomType(): Room
 end
 export type Room = typeof(RoomType())
 
-function Room.new(grid_size, minimum, maximum): Room
+function Room.new(grid_size: Vec2, minimum: Vec2, maximum: Vec2): Room
 	local self = RoomType()
 	self:_set_size(minimum, maximum)
 	self:_set_random_position(grid_size)

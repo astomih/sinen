@@ -3,6 +3,7 @@ local button = require("./gui/button").new()
 
 local galleryDirs = {
 	"fps",
+	"neon_orbit",
 }
 
 local numGallerys = #galleryDirs

@@ -73,7 +73,7 @@ local function menu()
 					self.option = true
 				end
 				if button:show("Quit", Vec2.new(0, -70), Vec2.new(200, 60)) then
-					Event.quit()
+					Script.load("main", ".")
 				end
 			end
 		end,

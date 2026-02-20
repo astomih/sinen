@@ -9,6 +9,7 @@ shader_tasks = [
         "entry": "VSMain",
         "out": "shader_instance.vert.spv",
     },
+    {"src": "rect_color.slang", "entry": "FSMain", "out": "rect_color.frag.spv"},
     {"src": "cubemap.slang", "entry": "FSMain", "out": "cubemap.frag.spv"},
     {"src": "cubemap.slang", "entry": "VSMain", "out": "cubemap.vert.spv"},
 ]

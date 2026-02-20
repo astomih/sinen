@@ -9,6 +9,7 @@ public:
   static GraphicsPipeline getDefault3D();
   static GraphicsPipeline getInstanced3D();
   static GraphicsPipeline getDefault2D();
+  static GraphicsPipeline getRect2D();
   static GraphicsPipeline getCubemap();
 };
 } // namespace sinen

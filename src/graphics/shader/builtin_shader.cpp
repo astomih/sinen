@@ -4,6 +4,7 @@
 
 #include "default/cubemap.frag.spv.hpp"
 #include "default/cubemap.vert.spv.hpp"
+#include "default/rect_color.frag.spv.hpp"
 #include "default/shader.frag.spv.hpp"
 #include "default/shader.vert.spv.hpp"
 #include "default/shader_instance.vert.spv.hpp"
@@ -12,6 +13,7 @@ namespace sinen {
 static Shader defaultVS;
 static Shader defaultInstancedVS;
 static Shader defaultFS;
+static Shader rectFS;
 static Shader cubemapVS;
 static Shader cubemapFS;
 
@@ -72,6 +74,23 @@ bool BuiltinShader::initialize() {
     auto *allocator = GlobalAllocator::get();
     auto device = Graphics::getDevice();
 
+    gpu::Shader::CreateInfo fsInfo{};
+    fsInfo.allocator = allocator;
+    fsInfo.size = rect_color_frag_spv_len;
+    fsInfo.data = rect_color_frag_spv;
+    fsInfo.entrypoint = "main";
+    fsInfo.format = gpu::ShaderFormat::SPIRV;
+    fsInfo.stage = gpu::ShaderStage::Fragment;
+    fsInfo.numSamplers = 0; // no sampler for solid-color rectangle
+    fsInfo.numStorageBuffers = 0;
+    fsInfo.numStorageTextures = 0;
+    fsInfo.numUniformBuffers = 2;
+    rectFS = Shader(device->createShader(fsInfo));
+  }
+  {
+    auto *allocator = GlobalAllocator::get();
+    auto device = Graphics::getDevice();
+
     gpu::Shader::CreateInfo vsInfo{};
     vsInfo.allocator = allocator;
     vsInfo.size = cubemap_vert_spv_len;
@@ -110,6 +129,7 @@ void BuiltinShader::shutdown() {}
 Shader BuiltinShader::getDefaultVS() { return defaultVS; }
 Shader BuiltinShader::getDefaultInstancedVS() { return defaultInstancedVS; }
 Shader BuiltinShader::getDefaultFS() { return defaultFS; }
+Shader BuiltinShader::getRectFS() { return rectFS; }
 Shader BuiltinShader::getCubemapVS() { return cubemapVS; }
 Shader BuiltinShader::getCubemapFS() { return cubemapFS; }
 
@@ -123,6 +143,10 @@ static int lBuiltinShaderGetDefaultFs(lua_State *L) {
 }
 static int lBuiltinShaderGetDefaultInstancedVs(lua_State *L) {
   udPushPtr<Shader>(L, makePtr<Shader>(BuiltinShader::getDefaultInstancedVS()));
+  return 1;
+}
+static int lBuiltinShaderGetRectFs(lua_State *L) {
+  udPushPtr<Shader>(L, makePtr<Shader>(BuiltinShader::getRectFS()));
   return 1;
 }
 static int lBuiltinShaderGetCubemapVs(lua_State *L) {
@@ -141,6 +165,8 @@ void registerBuiltinShader(lua_State *L) {
   lua_setfield(L, -2, "getDefaultFS");
   luaPushcfunction2(L, lBuiltinShaderGetDefaultInstancedVs);
   lua_setfield(L, -2, "getDefaultInstancedVS");
+  luaPushcfunction2(L, lBuiltinShaderGetRectFs);
+  lua_setfield(L, -2, "getRectFS");
   luaPushcfunction2(L, lBuiltinShaderGetCubemapVs);
   lua_setfield(L, -2, "getCubemapVS");
   luaPushcfunction2(L, lBuiltinShaderGetCubemapFs);

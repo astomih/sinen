@@ -405,11 +405,9 @@ void Graphics::drawRect(const Rect &rect, const Color &color, float angle) {
   if (customPipeline.has_value() && customPipeline.value().get() != nullptr)
     currentPipeline = customPipeline.value();
   else
-    currentPipeline = BuiltinPipeline::getDefault2D();
+    currentPipeline = BuiltinPipeline::getRect2D();
   Array<Transform2D> transforms(1, {rect.position(), angle, rect.size()});
-  auto texture = Texture::create();
-  texture->fill(color);
-  setTexture(0, texture);
+  currentCommandBuffer->pushUniformData(1, &color, sizeof(Color));
   drawBase2D(transforms, sprite);
 }
 void Graphics::drawImage(const Ptr<Texture> &texture, const Rect &rect,

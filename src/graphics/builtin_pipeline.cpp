@@ -3,6 +3,7 @@
 #include <script/luaapi.hpp>
 namespace sinen {
 static GraphicsPipeline default2D;
+static GraphicsPipeline rect2D;
 static GraphicsPipeline default3D;
 static GraphicsPipeline instanced3D;
 static GraphicsPipeline cubemap;
@@ -10,6 +11,7 @@ bool BuiltinPipeline::initialize() {
   Shader vs = BuiltinShader::getDefaultVS();
   Shader vsInstanced = BuiltinShader::getDefaultInstancedVS();
   Shader fs = BuiltinShader::getDefaultFS();
+  Shader rectFS = BuiltinShader::getRectFS();
   Shader cubemapVS = BuiltinShader::getCubemapVS();
   Shader cubemapFS = BuiltinShader::getCubemapFS();
 
@@ -29,6 +31,11 @@ bool BuiltinPipeline::initialize() {
   default2D.setEnableDepthTest(false);
   default2D.build();
 
+  rect2D.setVertexShader(vs);
+  rect2D.setFragmentShader(rectFS);
+  rect2D.setEnableDepthTest(false);
+  rect2D.build();
+
   cubemap.setVertexShader(cubemapVS);
   cubemap.setFragmentShader(cubemapFS);
   cubemap.setEnableDepthTest(false);
@@ -40,6 +47,7 @@ void BuiltinPipeline::shutdown() {}
 GraphicsPipeline BuiltinPipeline::getDefault3D() { return default3D; }
 GraphicsPipeline BuiltinPipeline::getInstanced3D() { return instanced3D; }
 GraphicsPipeline BuiltinPipeline::getDefault2D() { return default2D; }
+GraphicsPipeline BuiltinPipeline::getRect2D() { return rect2D; }
 GraphicsPipeline BuiltinPipeline::getCubemap() { return cubemap; }
 
 static int lBuiltinPipelineGetDefault3D(lua_State *L) {
@@ -57,6 +65,11 @@ static int lBuiltinPipelineGetDefault2D(lua_State *L) {
       L, makePtr<GraphicsPipeline>(BuiltinPipeline::getDefault2D()));
   return 1;
 }
+static int lBuiltinPipelineGetRect2D(lua_State *L) {
+  udPushPtr<GraphicsPipeline>(
+      L, makePtr<GraphicsPipeline>(BuiltinPipeline::getRect2D()));
+  return 1;
+}
 static int lBuiltinPipelineGetCubemap(lua_State *L) {
   udPushPtr<GraphicsPipeline>(
       L, makePtr<GraphicsPipeline>(BuiltinPipeline::getCubemap()));
@@ -70,6 +83,8 @@ void registerBuiltinPipeline(lua_State *L) {
   lua_setfield(L, -2, "getInstanced3D");
   luaPushcfunction2(L, lBuiltinPipelineGetDefault2D);
   lua_setfield(L, -2, "getDefault2D");
+  luaPushcfunction2(L, lBuiltinPipelineGetRect2D);
+  lua_setfield(L, -2, "getRect2D");
   luaPushcfunction2(L, lBuiltinPipelineGetCubemap);
   lua_setfield(L, -2, "getCubemap");
   lua_pop(L, 1);

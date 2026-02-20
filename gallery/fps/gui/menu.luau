@@ -1,6 +1,6 @@
 local button = require("./button").new()
 local text = require("./text").new()
-local scroll = require("./scroll")()
+local scroll = require("./scroll").new()
 local function menu()
 	local object = {
 		hide = true,

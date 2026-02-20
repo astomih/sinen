@@ -9,4 +9,11 @@
   "luau-lsp.types.definitionFiles": {
     "sinen": "api/sinen.luau"
   },
+  "luau-lsp.bytecode.vectorLib": "",
+  "luau-lsp.bytecode.vectorType": "",
+  "luau-lsp.completion.imports.requireStyle": "alwaysRelative",
+  "luau-lsp.fflags.enableNewSolver": false,
+  "luau-lsp.platform.type": "standard",
+  "luau-lsp.types.robloxSecurityLevel": "None",
+  "luau-lsp.bytecode.typeInfoLevel": 1,
 }

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+    <url>
+        <loc>https://astomih.github.io/sinen/home/</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://astomih.github.io/sinen/home/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://astomih.github.io/sinen/ja/home/"/>
+    </url>
+    <url>
+        <loc>https://astomih.github.io/sinen/lua_api/</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://astomih.github.io/sinen/lua_api/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://astomih.github.io/sinen/ja/lua_api/"/>
+    </url>
+    <url>
+        <loc>https://astomih.github.io/sinen/tutorial/</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://astomih.github.io/sinen/tutorial/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://astomih.github.io/sinen/ja/tutorial/"/>
+    </url>
+    <url>
+        <loc>https://astomih.github.io/sinen/ja/home/</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://astomih.github.io/sinen/ja/home/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://astomih.github.io/sinen/home/"/>
+    </url>
+    <url>
+        <loc>https://astomih.github.io/sinen/ja/lua_api/</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://astomih.github.io/sinen/ja/lua_api/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://astomih.github.io/sinen/lua_api/"/>
+    </url>
+    <url>
+        <loc>https://astomih.github.io/sinen/ja/tutorial/</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ja" href="https://astomih.github.io/sinen/ja/tutorial/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://astomih.github.io/sinen/tutorial/"/>
+    </url>
+</urlset>

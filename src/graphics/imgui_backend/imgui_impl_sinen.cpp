@@ -37,31 +37,31 @@ static void imguiImplParanoixaCreateShaders() {
 
   auto driver = v->Device->getDriver();
 
-  gpu::Shader::CreateInfo vertex_shader_info = {};
-  vertex_shader_info.allocator = v->Allocator;
-  vertex_shader_info.entrypoint = "main";
-  vertex_shader_info.stage = gpu::ShaderStage::Vertex;
-  vertex_shader_info.numUniformBuffers = 1;
-  vertex_shader_info.numStorageBuffers = 0;
-  vertex_shader_info.numStorageTextures = 0;
-  vertex_shader_info.numSamplers = 0;
+  gpu::Shader::CreateInfo vertexShaderInfo = {};
+  vertexShaderInfo.allocator = v->Allocator;
+  vertexShaderInfo.entrypoint = "main";
+  vertexShaderInfo.stage = gpu::ShaderStage::Vertex;
+  vertexShaderInfo.numUniformBuffers = 1;
+  vertexShaderInfo.numStorageBuffers = 0;
+  vertexShaderInfo.numStorageTextures = 0;
+  vertexShaderInfo.numSamplers = 0;
 
-  gpu::Shader::CreateInfo fragment_shader_info = {};
-  fragment_shader_info.allocator = v->Allocator;
-  fragment_shader_info.entrypoint = "main";
-  fragment_shader_info.stage = gpu::ShaderStage::Fragment;
-  fragment_shader_info.numSamplers = 1;
-  fragment_shader_info.numStorageBuffers = 0;
-  fragment_shader_info.numStorageTextures = 0;
-  fragment_shader_info.numUniformBuffers = 0;
+  gpu::Shader::CreateInfo fragmentShaderInfo = {};
+  fragmentShaderInfo.allocator = v->Allocator;
+  fragmentShaderInfo.entrypoint = "main";
+  fragmentShaderInfo.stage = gpu::ShaderStage::Fragment;
+  fragmentShaderInfo.numSamplers = 1;
+  fragmentShaderInfo.numStorageBuffers = 0;
+  fragmentShaderInfo.numStorageTextures = 0;
+  fragmentShaderInfo.numUniformBuffers = 0;
 
   if (driver == "vulkan") {
-    vertex_shader_info.format = gpu::ShaderFormat::SPIRV;
-    vertex_shader_info.data = spirv_vertex;
-    vertex_shader_info.size = sizeof(spirv_vertex);
-    fragment_shader_info.format = gpu::ShaderFormat::SPIRV;
-    fragment_shader_info.data = spirv_fragment;
-    fragment_shader_info.size = sizeof(spirv_fragment);
+    vertexShaderInfo.format = gpu::ShaderFormat::SPIRV;
+    vertexShaderInfo.data = spirv_vertex;
+    vertexShaderInfo.size = sizeof(spirv_vertex);
+    fragmentShaderInfo.format = gpu::ShaderFormat::SPIRV;
+    fragmentShaderInfo.data = spirv_fragment;
+    fragmentShaderInfo.size = sizeof(spirv_fragment);
   }
   //   else if (strcmp(driver, "direct3d12") == 0) {
   //     vertex_shader_info.format = SDL_GPU_SHADERFORMAT_DXBC;
@@ -83,8 +83,8 @@ static void imguiImplParanoixaCreateShaders() {
   //     fragment_shader_info.code_size = sizeof(metallib_fragment);
   //   }
   // #endif
-  bd->VertexShader = v->Device->createShader(vertex_shader_info);
-  bd->FragmentShader = v->Device->createShader(fragment_shader_info);
+  bd->VertexShader = v->Device->createShader(vertexShaderInfo);
+  bd->FragmentShader = v->Device->createShader(fragmentShaderInfo);
   IM_ASSERT(bd->VertexShader != nullptr);
   IM_ASSERT(bd->FragmentShader != nullptr);
 }
@@ -93,82 +93,82 @@ static void imGuiImplParanoixaCreateGraphicsPipeline() {
   ImGuiImplParanoixaInitInfo *v = &bd->InitInfo;
   imguiImplParanoixaCreateShaders();
 
-  Array<gpu::VertexBufferDescription> vertex_buffer_desc(v->Allocator);
-  vertex_buffer_desc.resize(1);
-  vertex_buffer_desc[0].slot = 0;
-  vertex_buffer_desc[0].inputRate = gpu::VertexInputRate::Vertex;
-  vertex_buffer_desc[0].instanceStepRate = 0;
-  vertex_buffer_desc[0].pitch = sizeof(ImDrawVert);
+  Array<gpu::VertexBufferDescription> vertexBufferDesc(v->Allocator);
+  vertexBufferDesc.resize(1);
+  vertexBufferDesc[0].slot = 0;
+  vertexBufferDesc[0].inputRate = gpu::VertexInputRate::Vertex;
+  vertexBufferDesc[0].instanceStepRate = 0;
+  vertexBufferDesc[0].pitch = sizeof(ImDrawVert);
 
-  Array<gpu::VertexAttribute> vertex_attributes(v->Allocator);
-  vertex_attributes.resize(3);
-  vertex_attributes[0].bufferSlot = 0;
-  vertex_attributes[0].format = gpu::VertexElementFormat::Float2;
-  vertex_attributes[0].location = 0;
-  vertex_attributes[0].offset = offsetof(ImDrawVert, pos);
+  Array<gpu::VertexAttribute> vertexAttributes(v->Allocator);
+  vertexAttributes.resize(3);
+  vertexAttributes[0].bufferSlot = 0;
+  vertexAttributes[0].format = gpu::VertexElementFormat::Float2;
+  vertexAttributes[0].location = 0;
+  vertexAttributes[0].offset = offsetof(ImDrawVert, pos);
 
-  vertex_attributes[1].bufferSlot = 0;
-  vertex_attributes[1].format = gpu::VertexElementFormat::Float2;
-  vertex_attributes[1].location = 1;
-  vertex_attributes[1].offset = offsetof(ImDrawVert, uv);
+  vertexAttributes[1].bufferSlot = 0;
+  vertexAttributes[1].format = gpu::VertexElementFormat::Float2;
+  vertexAttributes[1].location = 1;
+  vertexAttributes[1].offset = offsetof(ImDrawVert, uv);
 
-  vertex_attributes[2].bufferSlot = 0;
-  vertex_attributes[2].format = gpu::VertexElementFormat::UByte4_NORM;
-  vertex_attributes[2].location = 2;
-  vertex_attributes[2].offset = offsetof(ImDrawVert, col);
+  vertexAttributes[2].bufferSlot = 0;
+  vertexAttributes[2].format = gpu::VertexElementFormat::UByte4_NORM;
+  vertexAttributes[2].location = 2;
+  vertexAttributes[2].offset = offsetof(ImDrawVert, col);
 
-  gpu::VertexInputState vertex_input_state{v->Allocator};
-  vertex_input_state.vertexAttributes = vertex_attributes;
-  vertex_input_state.vertexBufferDescriptions = vertex_buffer_desc;
+  gpu::VertexInputState vertexInputState{v->Allocator};
+  vertexInputState.vertexAttributes = vertexAttributes;
+  vertexInputState.vertexBufferDescriptions = vertexBufferDesc;
 
-  gpu::RasterizerState rasterizer_state = {};
-  rasterizer_state.fillMode = gpu::FillMode::Fill;
-  rasterizer_state.cullMode = gpu::CullMode::None;
-  rasterizer_state.frontFace = gpu::FrontFace::CounterClockwise;
-  rasterizer_state.enableDepthBias = false;
-  rasterizer_state.enableDepthClip = false;
+  gpu::RasterizerState rasterizerState = {};
+  rasterizerState.fillMode = gpu::FillMode::Fill;
+  rasterizerState.cullMode = gpu::CullMode::None;
+  rasterizerState.frontFace = gpu::FrontFace::CounterClockwise;
+  rasterizerState.enableDepthBias = false;
+  rasterizerState.enableDepthClip = false;
 
-  gpu::MultiSampleState multisample_state{};
-  multisample_state.sampleCount = v->MSAASamples;
-  multisample_state.enableMask = false;
+  gpu::MultiSampleState multisampleState{};
+  multisampleState.sampleCount = v->MSAASamples;
+  multisampleState.enableMask = false;
 
-  gpu::DepthStencilState depth_stencil_state = {};
-  depth_stencil_state.enableDepthTest = false;
-  depth_stencil_state.enableDepthWrite = false;
-  depth_stencil_state.enableStencilTest = false;
+  gpu::DepthStencilState depthStencilState = {};
+  depthStencilState.enableDepthTest = false;
+  depthStencilState.enableDepthWrite = false;
+  depthStencilState.enableStencilTest = false;
 
-  gpu::ColorTargetBlendState blend_state = {};
-  blend_state.enableBlend = true;
-  blend_state.srcColorBlendFactor = gpu::BlendFactor::SrcAlpha;
-  blend_state.dstColorBlendFactor = gpu::BlendFactor::OneMinusSrcAlpha;
-  blend_state.colorBlendOp = gpu::BlendOp::Add;
-  blend_state.srcAlphaBlendFactor = gpu::BlendFactor::One;
-  blend_state.dstAlphaBlendFactor = gpu::BlendFactor::OneMinusSrcAlpha;
-  blend_state.alphaBlendOp = gpu::BlendOp::Add;
-  blend_state.colorWriteMask = gpu::ColorComponent::R | gpu::ColorComponent::G |
-                               gpu::ColorComponent::B | gpu::ColorComponent::A;
+  gpu::ColorTargetBlendState blendState = {};
+  blendState.enableBlend = true;
+  blendState.srcColorBlendFactor = gpu::BlendFactor::SrcAlpha;
+  blendState.dstColorBlendFactor = gpu::BlendFactor::OneMinusSrcAlpha;
+  blendState.colorBlendOp = gpu::BlendOp::Add;
+  blendState.srcAlphaBlendFactor = gpu::BlendFactor::One;
+  blendState.dstAlphaBlendFactor = gpu::BlendFactor::OneMinusSrcAlpha;
+  blendState.alphaBlendOp = gpu::BlendOp::Add;
+  blendState.colorWriteMask = gpu::ColorComponent::R | gpu::ColorComponent::G |
+                              gpu::ColorComponent::B | gpu::ColorComponent::A;
 
-  Array<gpu::ColorTargetDescription> color_target_desc(v->Allocator);
-  color_target_desc.resize(1);
-  color_target_desc[0].format = v->ColorTargetFormat;
-  color_target_desc[0].blendState = blend_state;
+  Array<gpu::ColorTargetDescription> colorTargetDesc(v->Allocator);
+  colorTargetDesc.resize(1);
+  colorTargetDesc[0].format = v->ColorTargetFormat;
+  colorTargetDesc[0].blendState = blendState;
 
-  gpu::TargetInfo target_info = {v->Allocator};
-  target_info.colorTargetDescriptions = color_target_desc;
-  target_info.hasDepthStencilTarget = false;
+  gpu::TargetInfo targetInfo = {v->Allocator};
+  targetInfo.colorTargetDescriptions = colorTargetDesc;
+  targetInfo.hasDepthStencilTarget = false;
 
-  gpu::GraphicsPipeline::CreateInfo pipeline_info = {v->Allocator};
-  pipeline_info.allocator = v->Allocator;
-  pipeline_info.vertexShader = bd->VertexShader;
-  pipeline_info.fragmentShader = bd->FragmentShader;
-  pipeline_info.vertexInputState = vertex_input_state;
-  pipeline_info.primitiveType = gpu::PrimitiveType::TriangleList;
-  pipeline_info.rasterizerState = rasterizer_state;
-  pipeline_info.multiSampleState = multisample_state;
-  pipeline_info.depthStencilState = depth_stencil_state;
-  pipeline_info.targetInfo = target_info;
+  gpu::GraphicsPipeline::CreateInfo pipelineInfo = {v->Allocator};
+  pipelineInfo.allocator = v->Allocator;
+  pipelineInfo.vertexShader = bd->VertexShader;
+  pipelineInfo.fragmentShader = bd->FragmentShader;
+  pipelineInfo.vertexInputState = vertexInputState;
+  pipelineInfo.primitiveType = gpu::PrimitiveType::TriangleList;
+  pipelineInfo.rasterizerState = rasterizerState;
+  pipelineInfo.multiSampleState = multisampleState;
+  pipelineInfo.depthStencilState = depthStencilState;
+  pipelineInfo.targetInfo = targetInfo;
 
-  bd->Pipeline = v->Device->createGraphicsPipeline(pipeline_info);
+  bd->Pipeline = v->Device->createGraphicsPipeline(pipelineInfo);
   IM_ASSERT(bd->Pipeline != nullptr && "Failed to create graphics pipeline");
 }
 IMGUI_IMPL_API bool imGuiImplParanoixaInit(ImGuiImplParanoixaInitInfo *info) {
@@ -213,12 +213,12 @@ static void createOrResizeBuffer(Ptr<gpu::Buffer> &buffer, uint32_t *old_size,
   // Even though this is fairly rarely called.
   v->Device->waitForGpuIdle();
 
-  gpu::Buffer::CreateInfo buffer_info = {};
-  buffer_info.allocator = v->Allocator;
-  buffer_info.usage = usage;
-  buffer_info.size = new_size;
+  gpu::Buffer::CreateInfo bufferInfo = {};
+  bufferInfo.allocator = v->Allocator;
+  bufferInfo.usage = usage;
+  bufferInfo.size = new_size;
   // buffer_info.props = 0;
-  buffer = v->Device->createBuffer(buffer_info);
+  buffer = v->Device->createBuffer(bufferInfo);
   *old_size = new_size;
   IM_ASSERT(buffer != nullptr && "Failed to create GPU Buffer");
 }
@@ -228,83 +228,82 @@ imGuiImplParanoixaPrepareDrawData(ImDrawData *draw_data,
                                   Ptr<gpu::CommandBuffer> command_buffer) {
   // Avoid rendering when minimized, scale coordinates for retina displays
   // (screen coordinates != framebuffer coordinates)
-  int fb_width =
-      (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
-  int fb_height =
+  int fbWidth = (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
+  int fbHeight =
       (int)(draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
-  if (fb_width <= 0 || fb_height <= 0 || draw_data->TotalVtxCount <= 0)
+  if (fbWidth <= 0 || fbHeight <= 0 || draw_data->TotalVtxCount <= 0)
     return;
 
   ImGuiImplParanoixaData *bd = imGuiImplParanoixaGetBackendData();
   ImGuiImplParanoixaInitInfo *v = &bd->InitInfo;
   ImGuiImplParanoixaFrameData *fd = &bd->MainWindowFrameData;
 
-  uint32_t vertex_size = draw_data->TotalVtxCount * sizeof(ImDrawVert);
-  uint32_t index_size = draw_data->TotalIdxCount * sizeof(ImDrawIdx);
-  if (fd->VertexBuffer == nullptr || fd->VertexBufferSize < vertex_size)
-    createOrResizeBuffer(fd->VertexBuffer, &fd->VertexBufferSize, vertex_size,
+  uint32_t vertexSize = draw_data->TotalVtxCount * sizeof(ImDrawVert);
+  uint32_t indexSize = draw_data->TotalIdxCount * sizeof(ImDrawIdx);
+  if (fd->VertexBuffer == nullptr || fd->VertexBufferSize < vertexSize)
+    createOrResizeBuffer(fd->VertexBuffer, &fd->VertexBufferSize, vertexSize,
                          gpu::BufferUsage::Vertex);
   IM_ASSERT(fd->VertexBuffer != nullptr &&
             "Failed to create the vertex buffer");
-  if (fd->IndexBuffer == nullptr || fd->IndexBufferSize < index_size)
-    createOrResizeBuffer(fd->IndexBuffer, &fd->IndexBufferSize, index_size,
+  if (fd->IndexBuffer == nullptr || fd->IndexBufferSize < indexSize)
+    createOrResizeBuffer(fd->IndexBuffer, &fd->IndexBufferSize, indexSize,
                          gpu::BufferUsage::Index);
   IM_ASSERT(fd->IndexBuffer != nullptr && "Failed to create the index buffer");
 
   // FIXME: It feels like more code could be shared there.
-  gpu::TransferBuffer::CreateInfo vertex_transferbuffer_info = {};
-  vertex_transferbuffer_info.allocator = v->Allocator;
-  vertex_transferbuffer_info.usage = gpu::TransferBufferUsage::Upload;
-  vertex_transferbuffer_info.size = vertex_size;
-  gpu::TransferBuffer::CreateInfo index_transferbuffer_info = {};
-  index_transferbuffer_info.allocator = v->Allocator;
-  index_transferbuffer_info.usage = gpu::TransferBufferUsage::Upload;
-  index_transferbuffer_info.size = index_size;
+  gpu::TransferBuffer::CreateInfo vertexTransferbufferInfo = {};
+  vertexTransferbufferInfo.allocator = v->Allocator;
+  vertexTransferbufferInfo.usage = gpu::TransferBufferUsage::Upload;
+  vertexTransferbufferInfo.size = vertexSize;
+  gpu::TransferBuffer::CreateInfo indexTransferbufferInfo = {};
+  indexTransferbufferInfo.allocator = v->Allocator;
+  indexTransferbufferInfo.usage = gpu::TransferBufferUsage::Upload;
+  indexTransferbufferInfo.size = indexSize;
 
-  auto vertex_transferbuffer =
-      v->Device->createTransferBuffer(vertex_transferbuffer_info);
-  IM_ASSERT(vertex_transferbuffer != nullptr &&
+  auto vertexTransferbuffer =
+      v->Device->createTransferBuffer(vertexTransferbufferInfo);
+  IM_ASSERT(vertexTransferbuffer != nullptr &&
             "Failed to create the vertex transfer buffer");
-  auto index_transferbuffer =
-      v->Device->createTransferBuffer(index_transferbuffer_info);
-  IM_ASSERT(index_transferbuffer != nullptr &&
+  auto indexTransferbuffer =
+      v->Device->createTransferBuffer(indexTransferbufferInfo);
+  IM_ASSERT(indexTransferbuffer != nullptr &&
             "Failed to create the index transfer buffer");
 
-  ImDrawVert *vtx_dst = (ImDrawVert *)vertex_transferbuffer->map(true);
-  ImDrawIdx *idx_dst = (ImDrawIdx *)index_transferbuffer->map(true);
+  ImDrawVert *vtxDst = (ImDrawVert *)vertexTransferbuffer->map(true);
+  ImDrawIdx *idxDst = (ImDrawIdx *)indexTransferbuffer->map(true);
   for (int n = 0; n < draw_data->CmdListsCount; n++) {
-    const ImDrawList *draw_list = draw_data->CmdLists[n];
-    memcpy(vtx_dst, draw_list->VtxBuffer.Data,
-           draw_list->VtxBuffer.Size * sizeof(ImDrawVert));
-    memcpy(idx_dst, draw_list->IdxBuffer.Data,
-           draw_list->IdxBuffer.Size * sizeof(ImDrawIdx));
-    vtx_dst += draw_list->VtxBuffer.Size;
-    idx_dst += draw_list->IdxBuffer.Size;
+    const ImDrawList *drawList = draw_data->CmdLists[n];
+    memcpy(vtxDst, drawList->VtxBuffer.Data,
+           drawList->VtxBuffer.Size * sizeof(ImDrawVert));
+    memcpy(idxDst, drawList->IdxBuffer.Data,
+           drawList->IdxBuffer.Size * sizeof(ImDrawIdx));
+    vtxDst += drawList->VtxBuffer.Size;
+    idxDst += drawList->IdxBuffer.Size;
   }
-  vertex_transferbuffer->unmap();
-  index_transferbuffer->unmap();
+  vertexTransferbuffer->unmap();
+  indexTransferbuffer->unmap();
 
-  gpu::BufferTransferInfo vertex_buffer_location = {};
-  vertex_buffer_location.offset = 0;
-  vertex_buffer_location.transferBuffer = vertex_transferbuffer;
-  gpu::BufferTransferInfo index_buffer_location = {};
-  index_buffer_location.offset = 0;
-  index_buffer_location.transferBuffer = index_transferbuffer;
+  gpu::BufferTransferInfo vertexBufferLocation = {};
+  vertexBufferLocation.offset = 0;
+  vertexBufferLocation.transferBuffer = vertexTransferbuffer;
+  gpu::BufferTransferInfo indexBufferLocation = {};
+  indexBufferLocation.offset = 0;
+  indexBufferLocation.transferBuffer = indexTransferbuffer;
 
-  gpu::BufferRegion vertex_buffer_region = {};
-  vertex_buffer_region.buffer = fd->VertexBuffer;
-  vertex_buffer_region.offset = 0;
-  vertex_buffer_region.size = vertex_size;
+  gpu::BufferRegion vertexBufferRegion = {};
+  vertexBufferRegion.buffer = fd->VertexBuffer;
+  vertexBufferRegion.offset = 0;
+  vertexBufferRegion.size = vertexSize;
 
-  gpu::BufferRegion index_buffer_region = {};
-  index_buffer_region.buffer = fd->IndexBuffer;
-  index_buffer_region.offset = 0;
-  index_buffer_region.size = index_size;
+  gpu::BufferRegion indexBufferRegion = {};
+  indexBufferRegion.buffer = fd->IndexBuffer;
+  indexBufferRegion.offset = 0;
+  indexBufferRegion.size = indexSize;
 
-  auto copy_pass = command_buffer->beginCopyPass();
-  copy_pass->uploadBuffer(vertex_buffer_location, vertex_buffer_region, false);
-  copy_pass->uploadBuffer(index_buffer_location, index_buffer_region, false);
-  command_buffer->endCopyPass(copy_pass);
+  auto copyPass = command_buffer->beginCopyPass();
+  copyPass->uploadBuffer(vertexBufferLocation, vertexBufferRegion, false);
+  copyPass->uploadBuffer(indexBufferLocation, indexBufferRegion, false);
+  command_buffer->endCopyPass(copyPass);
 }
 static void imGuiImplParanoixaSetupRenderState(
     ImDrawData *draw_data, Ptr<gpu::GraphicsPipeline> pipeline,
@@ -317,19 +316,19 @@ static void imGuiImplParanoixaSetupRenderState(
 
   // Bind Vertex And Index Buffers
   if (draw_data->TotalVtxCount > 0) {
-    Array<gpu::BufferBinding> vertex_buffer_bindings(bd->InitInfo.Allocator);
-    gpu::BufferBinding vertex_buffer_binding;
-    vertex_buffer_binding.buffer = fd->VertexBuffer;
-    vertex_buffer_binding.offset = 0;
-    vertex_buffer_bindings.push_back(vertex_buffer_binding);
+    Array<gpu::BufferBinding> vertexBufferBindings(bd->InitInfo.Allocator);
+    gpu::BufferBinding vertexBufferBinding;
+    vertexBufferBinding.buffer = fd->VertexBuffer;
+    vertexBufferBinding.offset = 0;
+    vertexBufferBindings.push_back(vertexBufferBinding);
 
-    Array<gpu::BufferBinding> index_buffer_bindings(bd->InitInfo.Allocator);
-    gpu::BufferBinding index_buffer_binding = {};
-    index_buffer_binding.buffer = fd->IndexBuffer;
-    index_buffer_binding.offset = 0;
-    index_buffer_bindings.push_back(index_buffer_binding);
-    render_pass->bindVertexBuffers(0, vertex_buffer_bindings);
-    render_pass->bindIndexBuffer(index_buffer_binding,
+    Array<gpu::BufferBinding> indexBufferBindings(bd->InitInfo.Allocator);
+    gpu::BufferBinding indexBufferBinding = {};
+    indexBufferBinding.buffer = fd->IndexBuffer;
+    indexBufferBinding.offset = 0;
+    indexBufferBindings.push_back(indexBufferBinding);
+    render_pass->bindVertexBuffers(0, vertexBufferBindings);
+    render_pass->bindIndexBuffer(indexBufferBinding,
                                  sizeof(ImDrawIdx) == 2
                                      ? gpu::IndexElementSize::Uint16
                                      : gpu::IndexElementSize::Uint32);
@@ -363,11 +362,10 @@ static void imGuiImplParanoixaSetupRenderState(
 IMGUI_IMPL_API void imGuiImplParanoixaRenderDrawData(
     ImDrawData *draw_data, Ptr<gpu::CommandBuffer> command_buffer,
     Ptr<gpu::RenderPass> render_pass, Ptr<gpu::GraphicsPipeline> pipeline) {
-  int fb_width =
-      (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
-  int fb_height =
+  int fbWidth = (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
+  int fbHeight =
       (int)(draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
-  if (fb_width <= 0 || fb_height <= 0)
+  if (fbWidth <= 0 || fbHeight <= 0)
     return;
 
   ImGuiImplParanoixaData *bd = imGuiImplParanoixaGetBackendData();
@@ -377,52 +375,52 @@ IMGUI_IMPL_API void imGuiImplParanoixaRenderDrawData(
     pipeline = bd->Pipeline;
 
   imGuiImplParanoixaSetupRenderState(draw_data, pipeline, command_buffer,
-                                     render_pass, fd, fb_width, fb_height);
+                                     render_pass, fd, fbWidth, fbHeight);
 
   // Will project scissor/clipping rectangles into framebuffer space
-  ImVec2 clip_off = draw_data->DisplayPos; // (0,0) unless using multi-viewports
-  ImVec2 clip_scale =
+  ImVec2 clipOff = draw_data->DisplayPos; // (0,0) unless using multi-viewports
+  ImVec2 clipScale =
       draw_data->FramebufferScale; // (1,1) unless using retina display which
                                    // are often (2,2)
 
   // Render command lists
   // (Because we merged all buffers into a single one, we maintain our own
   // offset into them)
-  int global_vtx_offset = 0;
-  int global_idx_offset = 0;
+  int globalVtxOffset = 0;
+  int globalIdxOffset = 0;
   for (int n = 0; n < draw_data->CmdListsCount; n++) {
-    const ImDrawList *draw_list = draw_data->CmdLists[n];
-    for (int cmd_i = 0; cmd_i < draw_list->CmdBuffer.Size; cmd_i++) {
-      const ImDrawCmd *pcmd = &draw_list->CmdBuffer[cmd_i];
+    const ImDrawList *drawList = draw_data->CmdLists[n];
+    for (int cmdI = 0; cmdI < drawList->CmdBuffer.Size; cmdI++) {
+      const ImDrawCmd *pcmd = &drawList->CmdBuffer[cmdI];
       if (pcmd->UserCallback != nullptr) {
-        pcmd->UserCallback(draw_list, pcmd);
+        pcmd->UserCallback(drawList, pcmd);
       } else {
         // Project scissor/clipping rectangles into framebuffer space
-        ImVec2 clip_min((pcmd->ClipRect.x - clip_off.x) * clip_scale.x,
-                        (pcmd->ClipRect.y - clip_off.y) * clip_scale.y);
-        ImVec2 clip_max((pcmd->ClipRect.z - clip_off.x) * clip_scale.x,
-                        (pcmd->ClipRect.w - clip_off.y) * clip_scale.y);
+        ImVec2 clipMin((pcmd->ClipRect.x - clipOff.x) * clipScale.x,
+                       (pcmd->ClipRect.y - clipOff.y) * clipScale.y);
+        ImVec2 clipMax((pcmd->ClipRect.z - clipOff.x) * clipScale.x,
+                       (pcmd->ClipRect.w - clipOff.y) * clipScale.y);
 
         // Clamp to viewport as SDL_SetGPUScissor() won't accept values that are
         // off bounds
-        if (clip_min.x < 0.0f) {
-          clip_min.x = 0.0f;
+        if (clipMin.x < 0.0f) {
+          clipMin.x = 0.0f;
         }
-        if (clip_min.y < 0.0f) {
-          clip_min.y = 0.0f;
+        if (clipMin.y < 0.0f) {
+          clipMin.y = 0.0f;
         }
-        if (clip_max.x > fb_width) {
-          clip_max.x = (float)fb_width;
+        if (clipMax.x > fbWidth) {
+          clipMax.x = (float)fbWidth;
         }
-        if (clip_max.y > fb_height) {
-          clip_max.y = (float)fb_height;
+        if (clipMax.y > fbHeight) {
+          clipMax.y = (float)fbHeight;
         }
-        if (clip_max.x <= clip_min.x || clip_max.y <= clip_min.y)
+        if (clipMax.x <= clipMin.x || clipMax.y <= clipMin.y)
           continue;
 
         // Apply scissor/clipping rectangle
-        render_pass->setScissor(clip_min.x, clip_min.y, clip_max.x - clip_min.x,
-                                clip_max.y - clip_min.y);
+        render_pass->setScissor(clipMin.x, clipMin.y, clipMax.x - clipMin.x,
+                                clipMax.y - clipMin.y);
 
         // Bind DescriptorSet with font or user texture
         Array<gpu::TextureSamplerBinding> bindings(bd->InitInfo.Allocator);
@@ -432,14 +430,14 @@ IMGUI_IMPL_API void imGuiImplParanoixaRenderDrawData(
 
         // Draw
         render_pass->drawIndexedPrimitives(
-            pcmd->ElemCount, 1, pcmd->IdxOffset + global_idx_offset,
-            pcmd->VtxOffset + global_vtx_offset, 0);
+            pcmd->ElemCount, 1, pcmd->IdxOffset + globalIdxOffset,
+            pcmd->VtxOffset + globalVtxOffset, 0);
       }
     }
-    global_idx_offset += draw_list->IdxBuffer.Size;
-    global_vtx_offset += draw_list->VtxBuffer.Size;
+    globalIdxOffset += drawList->IdxBuffer.Size;
+    globalVtxOffset += drawList->VtxBuffer.Size;
   }
-  render_pass->setScissor(0, 0, fb_width, fb_height);
+  render_pass->setScissor(0, 0, fbWidth, fbHeight);
 }
 
 IMGUI_IMPL_API void imGuiImplParanoixaCreateDeviceObjects() {
@@ -450,22 +448,22 @@ IMGUI_IMPL_API void imGuiImplParanoixaCreateDeviceObjects() {
     // Bilinear sampling is required by default. Set 'io.Fonts->Flags |=
     // ImFontAtlasFlags_NoBakedLines' or 'style.AntiAliasedLinesUseTex =
     // false' to allow point/nearest sampling.
-    gpu::Sampler::CreateInfo sampler_info = {};
-    sampler_info.allocator = v->Allocator;
-    sampler_info.minFilter = gpu::Filter::Linear;
-    sampler_info.magFilter = gpu::Filter::Linear;
-    sampler_info.mipmapMode = gpu::MipmapMode::Linear;
-    sampler_info.addressModeU = gpu::AddressMode::ClampToEdge;
-    sampler_info.addressModeV = gpu::AddressMode::ClampToEdge;
-    sampler_info.addressModeW = gpu::AddressMode::ClampToEdge;
-    sampler_info.mipLodBias = 0.0f;
-    sampler_info.minLod = -1000.0f;
-    sampler_info.maxLod = 1000.0f;
-    sampler_info.enableAnisotropy = false;
-    sampler_info.maxAnisotropy = 1.0f;
-    sampler_info.enableCompare = false;
+    gpu::Sampler::CreateInfo samplerInfo = {};
+    samplerInfo.allocator = v->Allocator;
+    samplerInfo.minFilter = gpu::Filter::Linear;
+    samplerInfo.magFilter = gpu::Filter::Linear;
+    samplerInfo.mipmapMode = gpu::MipmapMode::Linear;
+    samplerInfo.addressModeU = gpu::AddressMode::ClampToEdge;
+    samplerInfo.addressModeV = gpu::AddressMode::ClampToEdge;
+    samplerInfo.addressModeW = gpu::AddressMode::ClampToEdge;
+    samplerInfo.mipLodBias = 0.0f;
+    samplerInfo.minLod = -1000.0f;
+    samplerInfo.maxLod = 1000.0f;
+    samplerInfo.enableAnisotropy = false;
+    samplerInfo.maxAnisotropy = 1.0f;
+    samplerInfo.enableCompare = false;
 
-    bd->FontSampler = v->Device->createSampler(sampler_info);
+    bd->FontSampler = v->Device->createSampler(samplerInfo);
     bd->FontBinding.sampler = bd->FontSampler;
     IM_ASSERT(bd->FontSampler != nullptr &&
               "Failed to create font sampler, call SDL_GetError() for more "
@@ -492,22 +490,22 @@ IMGUI_IMPL_API void imGuiImplParanoixaCreateFontsTexture() {
   unsigned char *pixels;
   int width, height;
   io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-  uint32_t upload_size = width * height * 4 * sizeof(char);
+  uint32_t uploadSize = width * height * 4 * sizeof(char);
 
   // Create the Image:
   {
-    gpu::Texture::CreateInfo texture_info = {};
-    texture_info.allocator = bd->InitInfo.Allocator;
-    texture_info.type = gpu::TextureType::Texture2D;
-    texture_info.format = gpu::TextureFormat::R8G8B8A8_UNORM;
-    texture_info.usage = gpu::TextureUsage::Sampler;
-    texture_info.width = width;
-    texture_info.height = height;
-    texture_info.layerCountOrDepth = 1;
-    texture_info.numLevels = 1;
-    texture_info.sampleCount = gpu::SampleCount::x1;
+    gpu::Texture::CreateInfo textureInfo = {};
+    textureInfo.allocator = bd->InitInfo.Allocator;
+    textureInfo.type = gpu::TextureType::Texture2D;
+    textureInfo.format = gpu::TextureFormat::R8G8B8A8_UNORM;
+    textureInfo.usage = gpu::TextureUsage::Sampler;
+    textureInfo.width = width;
+    textureInfo.height = height;
+    textureInfo.layerCountOrDepth = 1;
+    textureInfo.numLevels = 1;
+    textureInfo.sampleCount = gpu::SampleCount::x1;
 
-    bd->FontTexture = v->Device->createTexture(texture_info);
+    bd->FontTexture = v->Device->createTexture(textureInfo);
     IM_ASSERT(bd->FontTexture && "Failed to create font texture");
   }
 
@@ -516,35 +514,35 @@ IMGUI_IMPL_API void imGuiImplParanoixaCreateFontsTexture() {
 
   // Create all the upload structures and upload:
   {
-    gpu::TransferBuffer::CreateInfo transferbuffer_info = {};
-    transferbuffer_info.allocator = v->Allocator;
-    transferbuffer_info.usage = gpu::TransferBufferUsage::Upload;
-    transferbuffer_info.size = upload_size;
+    gpu::TransferBuffer::CreateInfo transferbufferInfo = {};
+    transferbufferInfo.allocator = v->Allocator;
+    transferbufferInfo.usage = gpu::TransferBufferUsage::Upload;
+    transferbufferInfo.size = uploadSize;
 
     Ptr<gpu::TransferBuffer> transferbuffer =
-        v->Device->createTransferBuffer(transferbuffer_info);
+        v->Device->createTransferBuffer(transferbufferInfo);
     IM_ASSERT(transferbuffer != nullptr &&
               "Failed to create font transfer buffer");
 
-    void *texture_ptr = transferbuffer->map(false);
-    memcpy(texture_ptr, pixels, upload_size);
+    void *texturePtr = transferbuffer->map(false);
+    memcpy(texturePtr, pixels, uploadSize);
     transferbuffer->unmap();
 
-    gpu::TextureTransferInfo transfer_info = {};
-    transfer_info.offset = 0;
-    transfer_info.transferBuffer = transferbuffer;
+    gpu::TextureTransferInfo transferInfo = {};
+    transferInfo.offset = 0;
+    transferInfo.transferBuffer = transferbuffer;
 
-    gpu::TextureRegion texture_region = {};
-    texture_region.texture = bd->FontTexture;
-    texture_region.width = width;
-    texture_region.height = height;
-    texture_region.depth = 1;
+    gpu::TextureRegion textureRegion = {};
+    textureRegion.texture = bd->FontTexture;
+    textureRegion.width = width;
+    textureRegion.height = height;
+    textureRegion.depth = 1;
 
     Ptr<gpu::CommandBuffer> cmd =
         v->Device->acquireCommandBuffer({bd->InitInfo.Allocator});
-    Ptr<gpu::CopyPass> copy_pass = cmd->beginCopyPass();
-    copy_pass->uploadTexture(transfer_info, texture_region, false);
-    cmd->endCopyPass(copy_pass);
+    Ptr<gpu::CopyPass> copyPass = cmd->beginCopyPass();
+    copyPass->uploadTexture(transferInfo, textureRegion, false);
+    cmd->endCopyPass(copyPass);
     v->Device->submitCommandBuffer(cmd);
   }
 

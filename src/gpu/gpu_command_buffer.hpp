@@ -31,7 +31,10 @@ public:
                   float g = 0.f, float b = 0.f, float a = 1.f) = 0;
   virtual void endRenderPass(Ptr<RenderPass> renderPass) = 0;
 
-  virtual void pushUniformData(UInt32 slot, const void *data, size_t size) = 0;
+  virtual void pushVertexUniformData(UInt32 slot, const void *data,
+                                     size_t size) = 0;
+  virtual void pushFragmentUniformData(UInt32 slot, const void *data,
+                                       size_t size) = 0;
 
 protected:
   CommandBuffer(const CreateInfo &createInfo) : createInfo(createInfo) {}

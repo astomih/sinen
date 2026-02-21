@@ -357,7 +357,7 @@ static void imGuiImplParanoixaSetupRenderState(
   ubo.scale[1] = 2.0f / draw_data->DisplaySize.y;
   ubo.translation[0] = -1.0f - draw_data->DisplayPos.x * ubo.scale[0];
   ubo.translation[1] = -1.0f - draw_data->DisplayPos.y * ubo.scale[1];
-  command_buffer->pushUniformData(0, &ubo, sizeof(UBO));
+  command_buffer->pushVertexUniformData(0, &ubo, sizeof(UBO));
 }
 
 IMGUI_IMPL_API void imGuiImplParanoixaRenderDrawData(

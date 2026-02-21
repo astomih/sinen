@@ -188,7 +188,18 @@ void CommandBuffer::endRenderPass(Ptr<gpu::RenderPass> renderPass) {
   downCast<RenderPass>(renderPass)->end();
 }
 
-void CommandBuffer::pushUniformData(UInt32 slot, const void *data, Size size) {
+void CommandBuffer::pushVertexUniformData(UInt32 slot, const void *data,
+                                          Size size) {
+  pushUniformDataInternal(slot, data, size);
+}
+
+void CommandBuffer::pushFragmentUniformData(UInt32 slot, const void *data,
+                                            Size size) {
+  pushUniformDataInternal(slot, data, size);
+}
+
+void CommandBuffer::pushUniformDataInternal(UInt32 slot, const void *data,
+                                            Size size) {
   ensureRecording();
   if (!uniformMapped) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,

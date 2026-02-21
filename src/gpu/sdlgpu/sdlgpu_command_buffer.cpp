@@ -60,9 +60,13 @@ void CommandBuffer::endRenderPass(Ptr<gpu::RenderPass> renderPass) {
   SDL_EndGPURenderPass(downCast<RenderPass>(renderPass)->getNative());
 }
 
-void CommandBuffer::pushUniformData(UInt32 slot, const void *data,
-                                    size_t size) {
+void CommandBuffer::pushVertexUniformData(UInt32 slot, const void *data,
+                                          size_t size) {
   SDL_PushGPUVertexUniformData(this->commandBuffer, slot, data, size);
+}
+
+void CommandBuffer::pushFragmentUniformData(UInt32 slot, const void *data,
+                                            size_t size) {
   SDL_PushGPUFragmentUniformData(this->commandBuffer, slot, data, size);
 }
 } // namespace sinen::gpu::sdlgpu

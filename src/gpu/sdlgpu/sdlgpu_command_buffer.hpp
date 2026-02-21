@@ -25,7 +25,9 @@ public:
                   float g = 0.f, float b = 0.f, float a = 1.f) override;
   void endRenderPass(Ptr<gpu::RenderPass> renderPass) override;
 
-  void pushUniformData(UInt32 slot, const void *data, Size size) override;
+  void pushVertexUniformData(UInt32 slot, const void *data, Size size) override;
+  void pushFragmentUniformData(UInt32 slot, const void *data,
+                               Size size) override;
 
 private:
   SDL_GPUCommandBuffer *commandBuffer;

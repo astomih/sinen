@@ -298,7 +298,7 @@ static void drawBase2D(const Array<Transform2D> &transforms,
   renderPass->bindIndexBuffer(indexBufferBinding,
                               gpu::IndexElementSize::Uint32);
 
-  commandBuffer->pushUniformData(0, &mat, sizeof(Mat4) * 3);
+  commandBuffer->pushVertexUniformData(0, &mat, sizeof(Mat4) * 3);
   renderPass->drawIndexedPrimitives(model.getMesh().data()->indices.size(), 1,
                                     0, 0, 0);
   currentPipeline = std::nullopt;
@@ -395,7 +395,7 @@ static void drawBase3D(const Array<Transform> transforms, const Model &model) {
   renderPass->bindIndexBuffer(indexBufferBinding,
                               gpu::IndexElementSize::Uint32);
 
-  commandBuffer->pushUniformData(0, &mat, sizeof(Mat4) * 3);
+  commandBuffer->pushVertexUniformData(0, &mat, sizeof(Mat4) * 3);
   uint32_t numIndices = model.getMesh().data()->indices.size();
   uint32_t numInstance = isInstance ? instanceSize : 1;
   renderPass->drawIndexedPrimitives(numIndices, numInstance, 0, 0, 0);
@@ -407,7 +407,7 @@ void Graphics::drawRect(const Rect &rect, const Color &color, float angle) {
   else
     currentPipeline = BuiltinPipeline::getRect2D();
   Array<Transform2D> transforms(1, {rect.position(), angle, rect.size()});
-  currentCommandBuffer->pushUniformData(1, &color, sizeof(Color));
+  currentCommandBuffer->pushFragmentUniformData(1, &color, sizeof(Color));
   drawBase2D(transforms, sprite);
 }
 void Graphics::drawImage(const Ptr<Texture> &texture, const Rect &rect,
@@ -539,8 +539,10 @@ void Graphics::setGraphicsPipeline(const GraphicsPipeline &pipeline) {
 }
 void Graphics::resetGraphicsPipeline() { customPipeline = std::nullopt; }
 void Graphics::setUniformBuffer(UInt32 slotIndex, const Buffer &buffer) {
-  currentCommandBuffer->pushUniformData(slotIndex, buffer.data(),
-                                        buffer.size());
+  currentCommandBuffer->pushVertexUniformData(slotIndex, buffer.data(),
+                                              buffer.size());
+  currentCommandBuffer->pushFragmentUniformData(slotIndex, buffer.data(),
+                                                buffer.size());
 }
 void Graphics::setTexture(UInt32 slotIndex, const Ptr<Texture> &texture) {
   currentTextureBindings.insert_or_assign(slotIndex, texture);

@@ -19,7 +19,6 @@
 #include <math/math.hpp>
 #include <math/transform/transform.hpp>
 
-
 namespace sinen {
 class Graphics {
 public:

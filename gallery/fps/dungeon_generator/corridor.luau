@@ -2,13 +2,20 @@ local Room = require("./room")
 --------------------------------------------------------------------
 -- corridor.lua
 --------------------------------------------------------------------
-local Corridor = {
-	path = {},
-}
+local Corridor = {}
 Corridor.__index = Corridor
 
-function Corridor:new()
-	return setmetatable({}, Corridor)
+function Corridor.new()
+	local self = setmetatable(
+		{} :: {
+			path: { Vec2 },
+			get_path: (self: Corridor) -> { Vec2 },
+			connect: (self: Corridor, grid: Grid, rooms: { Room.Room }, floor_id: number) -> (),
+		},
+		Corridor
+	)
+	self.path = {}
+	return self
 end
 
 function Corridor:get_path()
@@ -46,5 +53,6 @@ function Corridor:connect(grid: Grid, rooms: { Room.Room }, floor_id: number)
 		end
 	end
 end
+export type Corridor = typeof(Corridor.new())
 
 return Corridor

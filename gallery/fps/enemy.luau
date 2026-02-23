@@ -5,13 +5,10 @@ bombedSound:load("sound/bombed.wav")
 local r1 = 0
 local r2 = 0
 
----@param map Grid
----@param mapSizeX number
----@param mapSizeY number
-local function decidePos(map, mapSizeX, mapSizeY)
-	r1 = Random.getRange(1, mapSizeX)
-	r2 = Random.getRange(1, mapSizeY)
-	return map:at(r1, r2) < G.MAP_CHIP_WALKABLE
+local function decidePos(map: Grid, mapSizeX: number, mapSizeY: number)
+	r1 = Random.getIntRange(1, mapSizeX)
+	r2 = Random.getIntRange(1, mapSizeY)
+	return map:at(r1, r2) == 1
 end
 
 local enemyModel = Model.new()
@@ -22,18 +19,6 @@ enemyModel:getAABB().min.z = -10.0
 local enemyTexture = Texture.new()
 enemyTexture:fill(Color.new(0, 1, 0, 1))
 
----@class Enemy
----@field transform Transform
----@field model Model
----@field speed number
----@field search_length number
----@field hp number
----@field aabb AABB
----@field is_collision_first boolean
----@field collision_time number
----@field collision_timer number
----@field map Grid
----@field bfs BFSGrid
 local Enemy = {}
 
 Enemy.__index = Enemy
@@ -75,11 +60,7 @@ Enemy.get_forward_z = function(drawer)
 	return Vec2.new(-math.sin(math.rad(drawer.rotation.z)), math.cos(math.rad(-drawer.rotation.z)))
 end
 
----Add damage to enemy
----@param self Enemy
----@param damage number Damage value
----@return boolean Returns true if the enemy is dead
-Enemy.add_damage = function(self: Enemy, damage)
+Enemy.add_damage = function(self: Enemy, damage: number): boolean
 	self.hp = self.hp - damage
 	if self.hp <= 0 then
 		return true
@@ -87,11 +68,7 @@ Enemy.add_damage = function(self: Enemy, damage)
 	return false
 end
 
----@param self Enemy
----@param map Grid
----@param mapSizeX number
----@param mapSizeY number
-Enemy.setup = function(self, map, mapSizeX, mapSizeY)
+Enemy.setup = function(self: Enemy, map: Grid, mapSizeX: number, mapSizeY: number)
 	self.bfs = BFSGrid.new(map)
 	self.transform = Transform.new()
 	self.model = enemyModel
@@ -111,7 +88,7 @@ end
 
 ---@param self Enemy
 ---@param player Player
-Enemy.update = function(self: Enemy, player)
+Enemy.update = function(self: Enemy, player: Player.Player)
 	local dT = Time.delta()
 	local length = (self.transform.position - player.transform.position):length()
 	if length > self.search_length then

@@ -16,4 +16,5 @@
   "luau-lsp.platform.type": "standard",
   "luau-lsp.types.robloxSecurityLevel": "None",
   "luau-lsp.bytecode.typeInfoLevel": 1,
+  "luau-lsp.fflags.sync": false,
 }

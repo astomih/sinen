@@ -2,11 +2,11 @@ local G = require("../global")
 local Button = {}
 
 Button.__index = Button
-Button.new = function(): Button
+Button.new = function()
 	local self = setmetatable(
 		{} :: {
 			bgColor: Color,
-			show: (self: Button, text: string, pos: Vec2, scale: Vec2) -> nil,
+			show: (self: Button, text: string, pos: Vec2, scale: Vec2) -> (),
 		},
 		Button
 	)

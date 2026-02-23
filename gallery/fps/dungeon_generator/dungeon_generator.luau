@@ -35,7 +35,7 @@ local function dungeonGenerator(grid, floor, wall, player, key, stair)
 	------------------------------------------------------------
 	-- Room generate
 	------------------------------------------------------------
-	local rooms = {}
+	local rooms: { Room.Room } = {}
 	for i = 1, room_count do
 		rooms[i] = Room.new(grid_size, min_size, max_size)
 	end
@@ -53,7 +53,7 @@ local function dungeonGenerator(grid, floor, wall, player, key, stair)
 	end
 
 	-- sort x for corridor
-	table.sort(rooms, function(a, b)
+	table.sort(rooms, function(a: Room.Room, b: Room.Room)
 		return a:get_position().x < b:get_position().x
 	end)
 
@@ -71,7 +71,7 @@ local function dungeonGenerator(grid, floor, wall, player, key, stair)
 	------------------------------------------------------------
 	-- corridor
 	------------------------------------------------------------
-	local corridor = Corridor:new()
+	local corridor = Corridor.new()
 	corridor:connect(grid, rooms, floor)
 
 	------------------------------------------------------------

@@ -1,4 +1,7 @@
 CompileFlags:
   CompilationDatabase: build/msvc2026-debug
+  Remove:
+    - -std=*
+    - /std:*
   Add:
-    - -std:c++latest
+    - /std:c++latest

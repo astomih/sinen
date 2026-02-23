@@ -9,6 +9,7 @@
 
 #include "sdlgpu/sdlgpu_backend.hpp"
 #include "vulkan/vulkan_backend.hpp"
+#include "webgpu/webgpu_backend.hpp"
 
 #include <SDL3/SDL.h>
 
@@ -26,8 +27,7 @@ Ptr<Backend> RHI::createBackend(Allocator *allocator, const GraphicsAPI &api) {
   }
 #endif
   case GraphicsAPI::WebGPU: {
-    // TODO
-    return nullptr;
+    return makePtr<webgpu::Backend>(allocator);
   }
   case GraphicsAPI::SDLGPU: {
     return makePtr<sdlgpu::Backend>(allocator);

@@ -55,7 +55,7 @@ static void imguiImplParanoixaCreateShaders() {
   fragmentShaderInfo.numStorageTextures = 0;
   fragmentShaderInfo.numUniformBuffers = 0;
 
-  if (driver == "vulkan") {
+  if (driver == "vulkan" || driver == "webgpu" || driver == "wgpu") {
     vertexShaderInfo.format = gpu::ShaderFormat::SPIRV;
     vertexShaderInfo.data = spirv_vertex;
     vertexShaderInfo.size = sizeof(spirv_vertex);

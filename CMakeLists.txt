@@ -60,18 +60,6 @@ file(
   ${SINEN_SOURCE_DIR}/libs/imgui/imgui_tables.cpp
   ${SINEN_SOURCE_DIR}/libs/imgui/imgui_widgets.cpp
   ${SINEN_SOURCE_DIR}/libs/imgui/backends/imgui_impl_sdl3.cpp)
-if(NOT ANDROID)
-  list(APPEND SINEN_SOURCE_FILES
-       ${SINEN_SOURCE_DIR}/libs/imgui/backends/imgui_impl_wgpu.cpp)
-endif()
-if(WIN32)
-  list(APPEND SINEN_SOURCE_FILES
-       ${SINEN_SOURCE_DIR}/libs/imgui/backends/imgui_impl_dx12.cpp)
-endif()
-if(NOT EMSCRIPTEN)
-  list(APPEND SINEN_SOURCE_FILES
-       ${SINEN_SOURCE_DIR}/libs/imgui/backends/imgui_impl_vulkan.cpp)
-endif()
 file(GLOB_RECURSE SINEN_HEADER_FILES ${SINEN_SOURCE_DIR}/src/*.hpp
      ${SINEN_SOURCE_DIR}/src/*.inl ${SINEN_SOURCE_DIR}/*.hpp)
 

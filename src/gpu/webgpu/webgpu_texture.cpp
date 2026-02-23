@@ -1,7 +1,5 @@
 #include "webgpu_texture.hpp"
 
-#ifndef EMSCRIPTEN
-
 namespace sinen::gpu::webgpu {
 Texture::~Texture() {
   if (textureView) {
@@ -17,5 +15,3 @@ Texture::~Texture() {
   }
 }
 } // namespace sinen::gpu::webgpu
-
-#endif // EMSCRIPTEN

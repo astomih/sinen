@@ -1,6 +1,4 @@
 #include "webgpu_copy_pass.hpp"
-
-#ifndef EMSCRIPTEN
 #include "webgpu_buffer.hpp"
 #include "webgpu_command_buffer.hpp"
 #include "webgpu_convert.hpp"
@@ -49,15 +47,15 @@ void CopyPass::uploadTexture(const TextureTransferInfo &src,
   writeSize.height = dst.height;
   writeSize.depthOrArrayLayers = dst.depth;
 
-  size_t uploadSize =
-      static_cast<size_t>(bytesPerRow) * dst.height * dst.depth;
+  size_t uploadSize = static_cast<size_t>(bytesPerRow) * dst.height * dst.depth;
   if (src.offset + uploadSize > transfer->getCreateInfo().size) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                  "uploadTexture failed: source range exceeds transfer buffer");
     return;
   }
   wgpuQueueWriteTexture(commandBuffer.getDevice()->getQueue(), &destination,
-                        uploadData + src.offset, uploadSize, &layout, &writeSize);
+                        uploadData + src.offset, uploadSize, &layout,
+                        &writeSize);
 }
 
 void CopyPass::downloadTexture(const TextureRegion &src,
@@ -116,8 +114,9 @@ void CopyPass::uploadBuffer(const BufferTransferInfo &src,
                  "uploadBuffer failed: source range exceeds transfer buffer");
     return;
   }
-  wgpuQueueWriteBuffer(commandBuffer.getDevice()->getQueue(), buffer->getNative(),
-                       dst.offset, uploadData + src.offset, dst.size);
+  wgpuQueueWriteBuffer(commandBuffer.getDevice()->getQueue(),
+                       buffer->getNative(), dst.offset, uploadData + src.offset,
+                       dst.size);
 }
 
 void CopyPass::downloadBuffer(const BufferRegion &src,
@@ -129,14 +128,14 @@ void CopyPass::downloadBuffer(const BufferRegion &src,
                  "downloadBuffer failed: invalid source or transfer buffer");
     return;
   }
-  wgpuCommandEncoderCopyBufferToBuffer(commandBuffer.getEncoder(), buffer->getNative(),
-                                       src.offset, transfer->getNative(),
-                                       dst.offset, src.size);
+  wgpuCommandEncoderCopyBufferToBuffer(
+      commandBuffer.getEncoder(), buffer->getNative(), src.offset,
+      transfer->getNative(), dst.offset, src.size);
 }
 
-void CopyPass::copyTexture(const TextureLocation &src, const TextureLocation &dst,
-                           UInt32 width, UInt32 height, UInt32 depth,
-                           bool cycle) {
+void CopyPass::copyTexture(const TextureLocation &src,
+                           const TextureLocation &dst, UInt32 width,
+                           UInt32 height, UInt32 depth, bool cycle) {
   (void)cycle;
   auto srcTex = downCast<Texture>(src.texture);
   auto dstTex = downCast<Texture>(dst.texture);
@@ -167,5 +166,3 @@ void CopyPass::copyTexture(const TextureLocation &src, const TextureLocation &ds
                                          &destination, &copySize);
 }
 } // namespace sinen::gpu::webgpu
-
-#endif // EMSCRIPTEN

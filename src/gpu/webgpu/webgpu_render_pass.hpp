@@ -1,9 +1,8 @@
-#ifndef EMSCRIPTEN
 #ifndef SINEN_WEBGPU_RENDER_PASS_HPP
 #define SINEN_WEBGPU_RENDER_PASS_HPP
 
-#include <gpu/gpu_render_pass.hpp>
 #include "webgpu_command_buffer.hpp"
+#include <gpu/gpu_render_pass.hpp>
 #include <unordered_map>
 #include <vector>
 #include <webgpu/webgpu.h>
@@ -43,7 +42,8 @@ public:
 private:
   void applyBindings();
   void applyUniformBindings(
-      UInt32 groupIndex, const std::unordered_map<UInt32, UniformBinding> &bindings);
+      UInt32 groupIndex,
+      const std::unordered_map<UInt32, UniformBinding> &bindings);
 
   Allocator *allocator;
   CommandBuffer &commandBuffer;
@@ -56,4 +56,3 @@ private:
 } // namespace sinen::gpu::webgpu
 
 #endif // SINEN_WEBGPU_RENDER_PASS_HPP
-#endif // EMSCRIPTEN

@@ -1,6 +1,4 @@
 #include "webgpu_render_pass.hpp"
-
-#ifndef EMSCRIPTEN
 #include "webgpu_buffer.hpp"
 #include "webgpu_command_buffer.hpp"
 #include "webgpu_convert.hpp"
@@ -80,7 +78,8 @@ void RenderPass::bindFragmentSampler(UInt32 startSlot,
 }
 
 void RenderPass::applyUniformBindings(
-    UInt32 groupIndex, const std::unordered_map<UInt32, UniformBinding> &bindings) {
+    UInt32 groupIndex,
+    const std::unordered_map<UInt32, UniformBinding> &bindings) {
   if (bindings.empty()) {
     return;
   }
@@ -89,8 +88,8 @@ void RenderPass::applyUniformBindings(
     return;
   }
 
-  auto layout =
-      wgpuRenderPipelineGetBindGroupLayout(nativePipeline->getNative(), groupIndex);
+  auto layout = wgpuRenderPipelineGetBindGroupLayout(
+      nativePipeline->getNative(), groupIndex);
   if (!layout) {
     return;
   }
@@ -114,8 +113,8 @@ void RenderPass::applyUniformBindings(
     desc.layout = layout;
     desc.entryCount = entries.size();
     desc.entries = entries.data();
-    auto bindGroup =
-        wgpuDeviceCreateBindGroup(commandBuffer.getDevice()->getNative(), &desc);
+    auto bindGroup = wgpuDeviceCreateBindGroup(
+        commandBuffer.getDevice()->getNative(), &desc);
     if (bindGroup) {
       wgpuRenderPassEncoderSetBindGroup(renderPass, groupIndex, bindGroup, 0,
                                         nullptr);
@@ -141,7 +140,8 @@ void RenderPass::applyBindings() {
     return;
   }
 
-  auto layout = wgpuRenderPipelineGetBindGroupLayout(nativePipeline->getNative(), 2);
+  auto layout =
+      wgpuRenderPipelineGetBindGroupLayout(nativePipeline->getNative(), 2);
   if (!layout) {
     return;
   }
@@ -156,7 +156,8 @@ void RenderPass::applyBindings() {
     }
     auto view = texture->getView();
     if (!view && texture->getNative()) {
-      view = commandBuffer.getDevice()->createDefaultTextureView(texture->getNative());
+      view = commandBuffer.getDevice()->createDefaultTextureView(
+          texture->getNative());
       if (view) {
         transientViews.push_back(view);
       }
@@ -181,8 +182,8 @@ void RenderPass::applyBindings() {
     desc.layout = layout;
     desc.entryCount = entries.size();
     desc.entries = entries.data();
-    auto bindGroup =
-        wgpuDeviceCreateBindGroup(commandBuffer.getDevice()->getNative(), &desc);
+    auto bindGroup = wgpuDeviceCreateBindGroup(
+        commandBuffer.getDevice()->getNative(), &desc);
     if (!bindGroup) {
       // Fallback for pipelines where sampled images are exposed as texture-only
       // bindings instead of split texture/sampler pairs.
@@ -211,8 +212,8 @@ void RenderPass::applyBindings() {
       }
       desc.entryCount = entries.size();
       desc.entries = entries.data();
-      bindGroup =
-          wgpuDeviceCreateBindGroup(commandBuffer.getDevice()->getNative(), &desc);
+      bindGroup = wgpuDeviceCreateBindGroup(
+          commandBuffer.getDevice()->getNative(), &desc);
     }
     if (bindGroup) {
       wgpuRenderPassEncoderSetBindGroup(renderPass, 2, bindGroup, 0, nullptr);
@@ -252,5 +253,3 @@ void RenderPass::drawIndexedPrimitives(UInt32 indexCount, UInt32 instanceCount,
                                    firstInstance);
 }
 } // namespace sinen::gpu::webgpu
-
-#endif // EMSCRIPTEN

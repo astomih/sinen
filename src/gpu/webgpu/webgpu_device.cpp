@@ -1,6 +1,5 @@
 #include "webgpu_device.hpp"
 
-#ifndef EMSCRIPTEN
 #include "webgpu_convert.hpp"
 
 #include <SDL3/SDL.h>
@@ -124,8 +123,8 @@ void Device::claimWindow(void *window) {
 
 #if defined(SINEN_PLATFORM_WINDOWS)
   SDL_PropertiesID props = SDL_GetWindowProperties(this->window);
-  void *hwnd =
-      SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
+  void *hwnd = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_HWND_POINTER,
+                                      nullptr);
   void *hinstance = SDL_GetPointerProperty(
       props, SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, nullptr);
 
@@ -184,8 +183,8 @@ Ptr<gpu::Texture> Device::createTexture(const Texture::CreateInfo &createInfo) {
 
   auto texture = wgpuDeviceCreateTexture(device, &desc);
   auto view = createTextureView(texture, createInfo);
-  return makePtr<Texture>(createInfo.allocator, createInfo, get(), texture, view,
-                          false);
+  return makePtr<Texture>(createInfo.allocator, createInfo, get(), texture,
+                          view, false);
 }
 
 Ptr<gpu::Sampler> Device::createSampler(const Sampler::CreateInfo &createInfo) {
@@ -199,9 +198,9 @@ Ptr<gpu::Sampler> Device::createSampler(const Sampler::CreateInfo &createInfo) {
   desc.lodMinClamp = createInfo.minLod;
   desc.lodMaxClamp = createInfo.maxLod;
   desc.compare = convert::CompareOpFrom(createInfo.compareOp);
-  desc.maxAnisotropy =
-      createInfo.enableAnisotropy ? static_cast<uint16_t>(createInfo.maxAnisotropy)
-                                  : 1;
+  desc.maxAnisotropy = createInfo.enableAnisotropy
+                           ? static_cast<uint16_t>(createInfo.maxAnisotropy)
+                           : 1;
 
   auto sampler = wgpuDeviceCreateSampler(device, &desc);
   return makePtr<Sampler>(createInfo.allocator, createInfo, get(), sampler);
@@ -233,7 +232,8 @@ Ptr<gpu::Shader> Device::createShader(const Shader::CreateInfo &createInfo) {
   spirvDesc.chain.sType = WGPUSType_ShaderSourceSPIRV;
   spirvDesc.chain.next = nullptr;
   spirvDesc.code = static_cast<const uint32_t *>(createInfo.data);
-  spirvDesc.codeSize = static_cast<uint32_t>(createInfo.size / sizeof(uint32_t));
+  spirvDesc.codeSize =
+      static_cast<uint32_t>(createInfo.size / sizeof(uint32_t));
 
   WGPUShaderModuleDescriptor shaderDesc{};
   shaderDesc.nextInChain = &spirvDesc.chain;
@@ -248,11 +248,12 @@ Device::acquireCommandBuffer(const CommandBuffer::CreateInfo &createInfo) {
   WGPUCommandEncoderDescriptor desc{};
   desc.label = toWgpuStringView("sinen-command-encoder");
   auto encoder = wgpuDeviceCreateCommandEncoder(device, &desc);
-  return makePtr<CommandBuffer>(createInfo.allocator, createInfo, get(), encoder);
+  return makePtr<CommandBuffer>(createInfo.allocator, createInfo, get(),
+                                encoder);
 }
 
-Ptr<gpu::GraphicsPipeline> Device::createGraphicsPipeline(
-    const GraphicsPipeline::CreateInfo &createInfo) {
+Ptr<gpu::GraphicsPipeline>
+Device::createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) {
   auto vs = downCast<Shader>(createInfo.vertexShader);
   auto fs = downCast<Shader>(createInfo.fragmentShader);
   if (!vs || !fs) {
@@ -261,11 +262,13 @@ Ptr<gpu::GraphicsPipeline> Device::createGraphicsPipeline(
     return nullptr;
   }
 
-  const int vbCount = createInfo.vertexInputState.vertexBufferDescriptions.size();
+  const int vbCount =
+      createInfo.vertexInputState.vertexBufferDescriptions.size();
   std::vector<WGPUVertexBufferLayout> vertexBuffers(vbCount);
   std::vector<std::vector<WGPUVertexAttribute>> attributesByBuffer(vbCount);
 
-  for (int i = 0; i < createInfo.vertexInputState.vertexAttributes.size(); ++i) {
+  for (int i = 0; i < createInfo.vertexInputState.vertexAttributes.size();
+       ++i) {
     const auto &attr = createInfo.vertexInputState.vertexAttributes[i];
     int vbIndex = -1;
     for (int j = 0; j < vbCount; ++j) {
@@ -287,7 +290,8 @@ Ptr<gpu::GraphicsPipeline> Device::createGraphicsPipeline(
   }
 
   for (int i = 0; i < vbCount; ++i) {
-    const auto &vbDesc = createInfo.vertexInputState.vertexBufferDescriptions[i];
+    const auto &vbDesc =
+        createInfo.vertexInputState.vertexBufferDescriptions[i];
     vertexBuffers[i] = {};
     vertexBuffers[i].stepMode = convert::VertexInputRateFrom(vbDesc.inputRate);
     vertexBuffers[i].arrayStride = vbDesc.pitch;
@@ -295,7 +299,8 @@ Ptr<gpu::GraphicsPipeline> Device::createGraphicsPipeline(
     vertexBuffers[i].attributes = attributesByBuffer[i].data();
   }
 
-  const int colorTargetCount = createInfo.targetInfo.colorTargetDescriptions.size();
+  const int colorTargetCount =
+      createInfo.targetInfo.colorTargetDescriptions.size();
   std::vector<WGPUColorTargetState> colorTargets(colorTargetCount);
   std::vector<WGPUBlendState> blendStates(colorTargetCount);
 
@@ -345,21 +350,23 @@ Ptr<gpu::GraphicsPipeline> Device::createGraphicsPipeline(
   fragmentState.targets = colorTargets.data();
 
   WGPUPrimitiveState primitiveState{};
-  primitiveState.topology = convert::PrimitiveTypeFrom(createInfo.primitiveType);
+  primitiveState.topology =
+      convert::PrimitiveTypeFrom(createInfo.primitiveType);
   primitiveState.stripIndexFormat = WGPUIndexFormat_Undefined;
   primitiveState.frontFace =
       convert::FrontFaceFrom(createInfo.rasterizerState.frontFace);
-  primitiveState.cullMode = convert::CullModeFrom(createInfo.rasterizerState.cullMode);
+  primitiveState.cullMode =
+      convert::CullModeFrom(createInfo.rasterizerState.cullMode);
   primitiveState.unclippedDepth = !createInfo.rasterizerState.enableDepthClip;
 
   WGPUDepthStencilState depthStencilState{};
   WGPUDepthStencilState *depthStencilStatePtr = nullptr;
   if (createInfo.targetInfo.hasDepthStencilTarget) {
     depthStencilState = {};
-    depthStencilState.format =
-        convert::TextureFormatFrom(createInfo.targetInfo.depthStencilTargetFormat);
-    depthStencilState.depthWriteEnabled =
-        convert::OptionalBoolFrom(createInfo.depthStencilState.enableDepthWrite);
+    depthStencilState.format = convert::TextureFormatFrom(
+        createInfo.targetInfo.depthStencilTargetFormat);
+    depthStencilState.depthWriteEnabled = convert::OptionalBoolFrom(
+        createInfo.depthStencilState.enableDepthWrite);
     depthStencilState.depthCompare =
         convert::CompareOpFrom(createInfo.depthStencilState.compareOp);
     depthStencilState.stencilFront.compare = convert::CompareOpFrom(
@@ -378,10 +385,11 @@ Ptr<gpu::GraphicsPipeline> Device::createGraphicsPipeline(
         createInfo.depthStencilState.backStencilState.depthFailOp);
     depthStencilState.stencilBack.passOp = convert::StencilOpFrom(
         createInfo.depthStencilState.backStencilState.passOp);
-    depthStencilState.stencilReadMask = createInfo.depthStencilState.compareMask;
+    depthStencilState.stencilReadMask =
+        createInfo.depthStencilState.compareMask;
     depthStencilState.stencilWriteMask = createInfo.depthStencilState.writeMask;
-    depthStencilState.depthBias =
-        static_cast<int32_t>(createInfo.rasterizerState.depthBiasConstantFactor);
+    depthStencilState.depthBias = static_cast<int32_t>(
+        createInfo.rasterizerState.depthBiasConstantFactor);
     depthStencilState.depthBiasSlopeScale =
         createInfo.rasterizerState.depthBiasSlopeFactor;
     depthStencilState.depthBiasClamp =
@@ -390,8 +398,8 @@ Ptr<gpu::GraphicsPipeline> Device::createGraphicsPipeline(
   }
 
   WGPUMultisampleState multisampleState{};
-  multisampleState.count = convert::SampleCountFrom(
-      createInfo.multiSampleState.sampleCount);
+  multisampleState.count =
+      convert::SampleCountFrom(createInfo.multiSampleState.sampleCount);
   multisampleState.mask = createInfo.multiSampleState.enableMask
                               ? createInfo.multiSampleState.sampleMask
                               : ~0u;
@@ -454,7 +462,8 @@ Device::acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) {
     wgpuSurfaceGetCurrentTexture(surface, &surfaceTexture);
   }
 
-  if ((surfaceTexture.status != WGPUSurfaceGetCurrentTextureStatus_SuccessOptimal &&
+  if ((surfaceTexture.status !=
+           WGPUSurfaceGetCurrentTextureStatus_SuccessOptimal &&
        surfaceTexture.status !=
            WGPUSurfaceGetCurrentTextureStatus_SuccessSuboptimal) ||
       !surfaceTexture.texture) {
@@ -529,7 +538,8 @@ void Device::configureSurface(UInt32 width, UInt32 height) {
   }
 
   WGPUSurfaceCapabilities caps{};
-  if (wgpuSurfaceGetCapabilities(surface, adapter, &caps) != WGPUStatus_Success ||
+  if (wgpuSurfaceGetCapabilities(surface, adapter, &caps) !=
+          WGPUStatus_Success ||
       caps.formatCount == 0) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                  "Failed to query WebGPU surface capabilities");
@@ -558,8 +568,9 @@ void Device::configureSurface(UInt32 width, UInt32 height) {
     }
   }
 
-  WGPUCompositeAlphaMode alphaMode =
-      caps.alphaModeCount > 0 ? caps.alphaModes[0] : WGPUCompositeAlphaMode_Auto;
+  WGPUCompositeAlphaMode alphaMode = caps.alphaModeCount > 0
+                                         ? caps.alphaModes[0]
+                                         : WGPUCompositeAlphaMode_Auto;
 
   WGPUSurfaceConfiguration config{};
   config.device = device;
@@ -581,5 +592,3 @@ void Device::configureSurface(UInt32 width, UInt32 height) {
   wgpuSurfaceCapabilitiesFreeMembers(caps);
 }
 } // namespace sinen::gpu::webgpu
-
-#endif // EMSCRIPTEN

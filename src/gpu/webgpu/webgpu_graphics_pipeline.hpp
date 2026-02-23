@@ -1,4 +1,3 @@
-#ifndef EMSCRIPTEN
 #ifndef SINEN_WEBGPU_GRAPHICS_PIPELINE_HPP
 #define SINEN_WEBGPU_GRAPHICS_PIPELINE_HPP
 
@@ -25,4 +24,3 @@ private:
 } // namespace sinen::gpu::webgpu
 
 #endif // SINEN_WEBGPU_GRAPHICS_PIPELINE_HPP
-#endif // EMSCRIPTEN

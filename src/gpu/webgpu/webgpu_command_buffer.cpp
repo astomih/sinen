@@ -1,11 +1,10 @@
 #include "webgpu_command_buffer.hpp"
 
-#ifndef EMSCRIPTEN
+#include "webgpu_convert.hpp"
 #include "webgpu_copy_pass.hpp"
 #include "webgpu_device.hpp"
 #include "webgpu_render_pass.hpp"
 #include "webgpu_texture.hpp"
-#include "webgpu_convert.hpp"
 #include <SDL3/SDL.h>
 #include <vector>
 
@@ -95,15 +94,14 @@ Ptr<gpu::CopyPass> CommandBuffer::beginCopyPass() {
   return makePtr<CopyPass>(getCreateInfo().allocator, *this);
 }
 
-void CommandBuffer::endCopyPass(Ptr<gpu::CopyPass> copyPass) {
-  (void)copyPass;
-}
+void CommandBuffer::endCopyPass(Ptr<gpu::CopyPass> copyPass) { (void)copyPass; }
 
 Ptr<gpu::RenderPass>
 CommandBuffer::beginRenderPass(const Array<ColorTargetInfo> &infos,
                                const DepthStencilTargetInfo &depthStencilInfo,
                                float r, float g, float b, float a) {
-  Array<WGPURenderPassColorAttachment> colorAttachments(getCreateInfo().allocator);
+  Array<WGPURenderPassColorAttachment> colorAttachments(
+      getCreateInfo().allocator);
   colorAttachments.resize(infos.size());
   std::vector<WGPUTextureView> transientViews;
   transientViews.reserve(infos.size() + 1);
@@ -144,7 +142,8 @@ CommandBuffer::beginRenderPass(const Array<ColorTargetInfo> &infos,
     }
     depthStencilAttachment = {};
     depthStencilAttachment.view = depthView;
-    depthStencilAttachment.depthLoadOp = convert::LoadOpFrom(depthStencilInfo.loadOp);
+    depthStencilAttachment.depthLoadOp =
+        convert::LoadOpFrom(depthStencilInfo.loadOp);
     depthStencilAttachment.depthStoreOp =
         convert::StoreOpFrom(depthStencilInfo.storeOp);
     depthStencilAttachment.depthClearValue = depthStencilInfo.clearDepth;
@@ -166,8 +165,9 @@ CommandBuffer::beginRenderPass(const Array<ColorTargetInfo> &infos,
   passDesc.timestampWrites = nullptr;
 
   auto pass = wgpuCommandEncoderBeginRenderPass(commandEncoder, &passDesc);
-  return makePtr<RenderPass>(getCreateInfo().allocator, getCreateInfo().allocator,
-                             *this, pass, std::move(transientViews));
+  return makePtr<RenderPass>(getCreateInfo().allocator,
+                             getCreateInfo().allocator, *this, pass,
+                             std::move(transientViews));
 }
 
 void CommandBuffer::endRenderPass(Ptr<gpu::RenderPass> renderPass) {
@@ -187,5 +187,3 @@ void CommandBuffer::pushFragmentUniformData(UInt32 slot, const void *data,
   updateUniformBinding(fragmentUniformBindings, slot, data, size);
 }
 } // namespace sinen::gpu::webgpu
-
-#endif // EMSCRIPTEN

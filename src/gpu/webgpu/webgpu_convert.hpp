@@ -1,4 +1,3 @@
-#ifndef EMSCRIPTEN
 #ifndef SINEN_WEBGPU_CONVERT_HPP
 #define SINEN_WEBGPU_CONVERT_HPP
 
@@ -39,4 +38,3 @@ UInt32 bytesPerPixel(TextureFormat textureFormat);
 } // namespace sinen::gpu::webgpu::convert
 
 #endif // SINEN_WEBGPU_CONVERT_HPP
-#endif // EMSCRIPTEN

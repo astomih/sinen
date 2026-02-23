@@ -1,4 +1,3 @@
-#ifndef EMSCRIPTEN
 #ifndef SINEN_WEBGPU_COMMAND_BUFFER_HPP
 #define SINEN_WEBGPU_COMMAND_BUFFER_HPP
 
@@ -56,8 +55,9 @@ public:
 
 private:
   void releaseUniformBindings();
-  void updateUniformBinding(std::unordered_map<UInt32, UniformBinding> &bindings,
-                            UInt32 slot, const void *data, Size size);
+  void
+  updateUniformBinding(std::unordered_map<UInt32, UniformBinding> &bindings,
+                       UInt32 slot, const void *data, Size size);
 
   Ptr<Device> device;
   WGPUCommandEncoder commandEncoder;
@@ -70,4 +70,3 @@ private:
 } // namespace sinen::gpu::webgpu
 
 #endif // SINEN_WEBGPU_COMMAND_BUFFER_HPP
-#endif // EMSCRIPTEN

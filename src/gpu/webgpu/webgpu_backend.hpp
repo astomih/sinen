@@ -1,4 +1,3 @@
-#ifndef EMSCRIPTEN
 #ifndef SINEN_WEBGPU_BACKEND_HPP
 #define SINEN_WEBGPU_BACKEND_HPP
 
@@ -13,4 +12,3 @@ public:
 } // namespace sinen::gpu::webgpu
 
 #endif // SINEN_WEBGPU_BACKEND_HPP
-#endif // EMSCRIPTEN

@@ -1,10 +1,10 @@
 #include "webgpu_backend.hpp"
 
-#ifndef EMSCRIPTEN
 #include "webgpu_device.hpp"
 #include <SDL3/SDL.h>
-#include <thread>
 #include <webgpu/webgpu.h>
+
+#include <core/logger/log.hpp>
 
 namespace sinen::gpu::webgpu {
 namespace {
@@ -27,26 +27,12 @@ WGPUStringView toWgpuStringView(const char *str) {
   return {str, WGPU_STRLEN};
 }
 
-bool waitForFuture(WGPUInstance instance, WGPUFuture future) {
-  if (!instance || future.id == 0) {
-    return false;
+void waitForRequest() {
+#ifdef SINEN_PLATFORM_EMSCRIPTEN
+  while (userData.adapterRequested == false) {
+    emscripten_sleep(100);
   }
-  WGPUFutureWaitInfo waitInfo{};
-  waitInfo.future = future;
-  waitInfo.completed = false;
-  while (true) {
-    waitInfo.completed = false;
-    const auto status = wgpuInstanceWaitAny(instance, 1, &waitInfo, 0);
-    if (status == WGPUWaitStatus_Success && waitInfo.completed) {
-      return true;
-    }
-    if (status == WGPUWaitStatus_TimedOut || status == WGPUWaitStatus_Success) {
-      wgpuInstanceProcessEvents(instance);
-      std::this_thread::yield();
-      continue;
-    }
-    return false;
-  }
+#endif // SINEN_PLATFORM_EMSCRIPTEN
 }
 
 void onAdapterRequest(WGPURequestAdapterStatus status, WGPUAdapter adapter,
@@ -55,6 +41,11 @@ void onAdapterRequest(WGPURequestAdapterStatus status, WGPUAdapter adapter,
   (void)message;
   (void)userdata2;
   auto *state = static_cast<AdapterRequestState *>(userdata1);
+  if (status != WGPURequestAdapterStatus_Success || !adapter) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Failed to request WebGPU adapter: %.*s",
+                 static_cast<int>(message.length), message.data);
+  }
   state->done = true;
   state->success = (status == WGPURequestAdapterStatus_Success && adapter);
   state->adapter = adapter;
@@ -71,36 +62,27 @@ void onDeviceRequest(WGPURequestDeviceStatus status, WGPUDevice device,
 }
 } // namespace
 
-Ptr<gpu::Device> Backend::createDevice(const gpu::Device::CreateInfo &createInfo) {
+Ptr<gpu::Device>
+Backend::createDevice(const gpu::Device::CreateInfo &createInfo) {
   (void)createInfo.debugMode;
   WGPUInstanceDescriptor instanceDesc{};
   auto instance = wgpuCreateInstance(&instanceDesc);
   if (!instance) {
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                 "Failed to create WebGPU instance");
+    Log::error("Failed to create WebGPU instance");
     return nullptr;
   }
 
   AdapterRequestState adapterState{};
   WGPURequestAdapterOptions adapterOptions{};
-  adapterOptions.featureLevel = WGPUFeatureLevel_Core;
-  adapterOptions.powerPreference = WGPUPowerPreference_HighPerformance;
-  adapterOptions.forceFallbackAdapter = false;
-  adapterOptions.backendType = WGPUBackendType_Undefined;
-  adapterOptions.compatibleSurface = nullptr;
-
   WGPURequestAdapterCallbackInfo adapterCallbackInfo{};
-  adapterCallbackInfo.mode = WGPUCallbackMode_WaitAnyOnly;
   adapterCallbackInfo.callback = &onAdapterRequest;
   adapterCallbackInfo.userdata1 = &adapterState;
-  adapterCallbackInfo.userdata2 = nullptr;
 
   auto adapterFuture =
-      wgpuInstanceRequestAdapter(instance, &adapterOptions, adapterCallbackInfo);
-  if (!waitForFuture(instance, adapterFuture) || !adapterState.done ||
-      !adapterState.success || !adapterState.adapter) {
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                 "Failed to request WebGPU adapter");
+      wgpuInstanceRequestAdapter(instance, nullptr, adapterCallbackInfo);
+  waitForRequest();
+  if (!adapterState.adapter) {
+    Log::error("Failed to request WebGPU adapter");
     wgpuInstanceRelease(instance);
     return nullptr;
   }
@@ -124,12 +106,11 @@ Ptr<gpu::Device> Backend::createDevice(const gpu::Device::CreateInfo &createInfo
   deviceCallbackInfo.userdata1 = &deviceState;
   deviceCallbackInfo.userdata2 = nullptr;
 
-  auto deviceFuture =
-      wgpuAdapterRequestDevice(adapterState.adapter, &deviceDesc, deviceCallbackInfo);
-  if (!waitForFuture(instance, deviceFuture) || !deviceState.done ||
-      !deviceState.success || !deviceState.device) {
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                 "Failed to request WebGPU device");
+  auto deviceFuture = wgpuAdapterRequestDevice(adapterState.adapter,
+                                               &deviceDesc, deviceCallbackInfo);
+  waitForRequest();
+  if (!deviceState.device) {
+    Log::error("Failed to request WebGPU device");
     wgpuAdapterRelease(adapterState.adapter);
     wgpuInstanceRelease(instance);
     return nullptr;
@@ -148,4 +129,3 @@ Ptr<gpu::Device> Backend::createDevice(const gpu::Device::CreateInfo &createInfo
                          adapterState.adapter, deviceState.device, queue);
 }
 } // namespace sinen::gpu::webgpu
-#endif // EMSCRIPTEN

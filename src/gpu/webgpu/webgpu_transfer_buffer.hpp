@@ -1,4 +1,3 @@
-#ifndef EMSCRIPTEN
 #ifndef SINEN_WEBGPU_TRANSFER_BUFFER_HPP
 #define SINEN_WEBGPU_TRANSFER_BUFFER_HPP
 
@@ -42,4 +41,3 @@ private:
 } // namespace sinen::gpu::webgpu
 
 #endif // SINEN_WEBGPU_TRANSFER_BUFFER_HPP
-#endif // EMSCRIPTEN

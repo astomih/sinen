@@ -1,7 +1,5 @@
 #include "webgpu_sampler.hpp"
 
-#ifndef EMSCRIPTEN
-
 namespace sinen::gpu::webgpu {
 Sampler::~Sampler() {
   if (sampler) {
@@ -10,5 +8,3 @@ Sampler::~Sampler() {
   }
 }
 } // namespace sinen::gpu::webgpu
-
-#endif // EMSCRIPTEN

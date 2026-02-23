@@ -1,7 +1,5 @@
 #include "webgpu_graphics_pipeline.hpp"
 
-#ifndef EMSCRIPTEN
-
 namespace sinen::gpu::webgpu {
 GraphicsPipeline::~GraphicsPipeline() {
   if (pipeline) {
@@ -10,5 +8,3 @@ GraphicsPipeline::~GraphicsPipeline() {
   }
 }
 } // namespace sinen::gpu::webgpu
-
-#endif // EMSCRIPTEN

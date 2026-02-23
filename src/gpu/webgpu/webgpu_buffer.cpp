@@ -1,7 +1,5 @@
 #include "webgpu_buffer.hpp"
 
-#ifndef EMSCRIPTEN
-
 namespace sinen::gpu::webgpu {
 Buffer::~Buffer() {
   if (buffer) {
@@ -10,5 +8,3 @@ Buffer::~Buffer() {
   }
 }
 } // namespace sinen::gpu::webgpu
-
-#endif // EMSCRIPTEN

@@ -1,7 +1,5 @@
 #include "webgpu_shader.hpp"
 
-#ifndef EMSCRIPTEN
-
 namespace sinen::gpu::webgpu {
 Shader::~Shader() {
   if (shaderModule) {
@@ -10,5 +8,3 @@ Shader::~Shader() {
   }
 }
 } // namespace sinen::gpu::webgpu
-
-#endif // EMSCRIPTEN

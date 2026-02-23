@@ -1,8 +1,6 @@
 #include "webgpu_transfer_buffer.hpp"
-
-#ifndef EMSCRIPTEN
-#include "webgpu_device.hpp"
 #include "webgpu_convert.hpp"
+#include "webgpu_device.hpp"
 #include <SDL3/SDL.h>
 
 namespace sinen::gpu::webgpu {
@@ -43,9 +41,9 @@ void *TransferBuffer::map(bool cycle) {
   callbackInfo.userdata1 = &state;
   callbackInfo.userdata2 = nullptr;
 
-  const auto future =
-      wgpuBufferMapAsync(transferBuffer, convert::MapModeFrom(getCreateInfo().usage),
-                         0, WGPU_WHOLE_MAP_SIZE, callbackInfo);
+  const auto future = wgpuBufferMapAsync(
+      transferBuffer, convert::MapModeFrom(getCreateInfo().usage), 0,
+      WGPU_WHOLE_MAP_SIZE, callbackInfo);
   if (!device->waitForFuture(future) || !state.done || !state.success) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                  "TransferBuffer map failed: map async did not complete");
@@ -53,7 +51,8 @@ void *TransferBuffer::map(bool cycle) {
   }
 
   if (getCreateInfo().usage == TransferBufferUsage::Download) {
-    auto p = wgpuBufferGetConstMappedRange(transferBuffer, 0, WGPU_WHOLE_MAP_SIZE);
+    auto p =
+        wgpuBufferGetConstMappedRange(transferBuffer, 0, WGPU_WHOLE_MAP_SIZE);
     return const_cast<void *>(p);
   }
   return wgpuBufferGetMappedRange(transferBuffer, 0, WGPU_WHOLE_MAP_SIZE);
@@ -67,5 +66,3 @@ void TransferBuffer::unmap() {
   }
 }
 } // namespace sinen::gpu::webgpu
-
-#endif // EMSCRIPTEN

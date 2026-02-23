@@ -1,7 +1,5 @@
 #include "webgpu_convert.hpp"
 
-#ifndef EMSCRIPTEN
-
 namespace sinen::gpu::webgpu::convert {
 WGPULoadOp LoadOpFrom(LoadOp loadOp) {
   switch (loadOp) {
@@ -405,5 +403,3 @@ UInt32 bytesPerPixel(TextureFormat textureFormat) {
   }
 }
 } // namespace sinen::gpu::webgpu::convert
-
-#endif // EMSCRIPTEN

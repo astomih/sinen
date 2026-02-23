@@ -1,6 +1,8 @@
 #include "imgui_impl_sinen.hpp"
 #include "imgui_impl_sinen_shaders.hpp"
 
+#include <core/def/assert.hpp>
+
 namespace sinen {
 struct ImGuiImplParanoixaFrameData {
   Ptr<gpu::Buffer> VertexBuffer = nullptr;
@@ -85,8 +87,8 @@ static void imguiImplParanoixaCreateShaders() {
   // #endif
   bd->VertexShader = v->Device->createShader(vertexShaderInfo);
   bd->FragmentShader = v->Device->createShader(fragmentShaderInfo);
-  IM_ASSERT(bd->VertexShader != nullptr);
-  IM_ASSERT(bd->FragmentShader != nullptr);
+  SN_ASSERT(bd->VertexShader != nullptr);
+  SN_ASSERT(bd->FragmentShader != nullptr);
 }
 static void imGuiImplParanoixaCreateGraphicsPipeline() {
   ImGuiImplParanoixaData *bd = imGuiImplParanoixaGetBackendData();
@@ -169,12 +171,12 @@ static void imGuiImplParanoixaCreateGraphicsPipeline() {
   pipelineInfo.targetInfo = targetInfo;
 
   bd->Pipeline = v->Device->createGraphicsPipeline(pipelineInfo);
-  IM_ASSERT(bd->Pipeline != nullptr && "Failed to create graphics pipeline");
+  SN_ASSERT(bd->Pipeline != nullptr && "Failed to create graphics pipeline");
 }
 IMGUI_IMPL_API bool imGuiImplParanoixaInit(ImGuiImplParanoixaInitInfo *info) {
   ImGuiIO &io = ImGui::GetIO();
   IMGUI_CHECKVERSION();
-  IM_ASSERT(io.BackendRendererUserData == nullptr &&
+  SN_ASSERT(io.BackendRendererUserData == nullptr &&
             "Already initialized a renderer backend!");
 
   // Setup backend capabilities flags
@@ -186,8 +188,8 @@ IMGUI_IMPL_API bool imGuiImplParanoixaInit(ImGuiImplParanoixaInitInfo *info) {
                                               // ImDrawCmd::VtxOffset field,
                                               // allowing for large meshes.
 
-  IM_ASSERT(info->Device != nullptr);
-  IM_ASSERT(info->ColorTargetFormat != gpu::TextureFormat::Invalid);
+  SN_ASSERT(info->Device != nullptr);
+  SN_ASSERT(info->ColorTargetFormat != gpu::TextureFormat::Invalid);
 
   bd->InitInfo = *info;
 
@@ -199,7 +201,7 @@ IMGUI_IMPL_API void imGuiImplParanoixaShutdown() {}
 
 IMGUI_IMPL_API void imGuiImplParanoixaNewFrame() {
   ImGuiImplParanoixaData *bd = imGuiImplParanoixaGetBackendData();
-  IM_ASSERT(bd != nullptr && "Context or backend not initialized! Did you call "
+  SN_ASSERT(bd != nullptr && "Context or backend not initialized! Did you call "
                              "ImGui_ImplParanoixa_Init()?");
 
   if (!bd->FontTexture)
@@ -220,7 +222,7 @@ static void createOrResizeBuffer(Ptr<gpu::Buffer> &buffer, uint32_t *old_size,
   // buffer_info.props = 0;
   buffer = v->Device->createBuffer(bufferInfo);
   *old_size = new_size;
-  IM_ASSERT(buffer != nullptr && "Failed to create GPU Buffer");
+  SN_ASSERT(buffer != nullptr && "Failed to create GPU Buffer");
 }
 
 IMGUI_IMPL_API void
@@ -243,12 +245,12 @@ imGuiImplParanoixaPrepareDrawData(ImDrawData *draw_data,
   if (fd->VertexBuffer == nullptr || fd->VertexBufferSize < vertexSize)
     createOrResizeBuffer(fd->VertexBuffer, &fd->VertexBufferSize, vertexSize,
                          gpu::BufferUsage::Vertex);
-  IM_ASSERT(fd->VertexBuffer != nullptr &&
+  SN_ASSERT(fd->VertexBuffer != nullptr &&
             "Failed to create the vertex buffer");
   if (fd->IndexBuffer == nullptr || fd->IndexBufferSize < indexSize)
     createOrResizeBuffer(fd->IndexBuffer, &fd->IndexBufferSize, indexSize,
                          gpu::BufferUsage::Index);
-  IM_ASSERT(fd->IndexBuffer != nullptr && "Failed to create the index buffer");
+  SN_ASSERT(fd->IndexBuffer != nullptr && "Failed to create the index buffer");
 
   // FIXME: It feels like more code could be shared there.
   gpu::TransferBuffer::CreateInfo vertexTransferbufferInfo = {};
@@ -262,11 +264,11 @@ imGuiImplParanoixaPrepareDrawData(ImDrawData *draw_data,
 
   auto vertexTransferbuffer =
       v->Device->createTransferBuffer(vertexTransferbufferInfo);
-  IM_ASSERT(vertexTransferbuffer != nullptr &&
+  SN_ASSERT(vertexTransferbuffer != nullptr &&
             "Failed to create the vertex transfer buffer");
   auto indexTransferbuffer =
       v->Device->createTransferBuffer(indexTransferbufferInfo);
-  IM_ASSERT(indexTransferbuffer != nullptr &&
+  SN_ASSERT(indexTransferbuffer != nullptr &&
             "Failed to create the index transfer buffer");
 
   ImDrawVert *vtxDst = (ImDrawVert *)vertexTransferbuffer->map(true);
@@ -465,7 +467,7 @@ IMGUI_IMPL_API void imGuiImplParanoixaCreateDeviceObjects() {
 
     bd->FontSampler = v->Device->createSampler(samplerInfo);
     bd->FontBinding.sampler = bd->FontSampler;
-    IM_ASSERT(bd->FontSampler != nullptr &&
+    SN_ASSERT(bd->FontSampler != nullptr &&
               "Failed to create font sampler, call SDL_GetError() for more "
               "information");
   }
@@ -506,7 +508,7 @@ IMGUI_IMPL_API void imGuiImplParanoixaCreateFontsTexture() {
     textureInfo.sampleCount = gpu::SampleCount::x1;
 
     bd->FontTexture = v->Device->createTexture(textureInfo);
-    IM_ASSERT(bd->FontTexture && "Failed to create font texture");
+    SN_ASSERT(bd->FontTexture && "Failed to create font texture");
   }
 
   // Assign the texture to the TextureSamplerBinding
@@ -521,7 +523,7 @@ IMGUI_IMPL_API void imGuiImplParanoixaCreateFontsTexture() {
 
     Ptr<gpu::TransferBuffer> transferbuffer =
         v->Device->createTransferBuffer(transferbufferInfo);
-    IM_ASSERT(transferbuffer != nullptr &&
+    SN_ASSERT(transferbuffer != nullptr &&
               "Failed to create font transfer buffer");
 
     void *texturePtr = transferbuffer->map(false);

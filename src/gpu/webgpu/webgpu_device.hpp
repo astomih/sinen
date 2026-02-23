@@ -1,4 +1,3 @@
-#ifndef EMSCRIPTEN
 #ifndef SINEN_WEBGPU_DEVICE_HPP
 #define SINEN_WEBGPU_DEVICE_HPP
 
@@ -23,8 +22,8 @@ namespace sinen::gpu::webgpu {
 
 class Device : public gpu::Device {
 public:
-  Device(const CreateInfo &createInfo, WGPUInstance instance, WGPUAdapter adapter,
-         WGPUDevice device, WGPUQueue queue)
+  Device(const CreateInfo &createInfo, WGPUInstance instance,
+         WGPUAdapter adapter, WGPUDevice device, WGPUQueue queue)
       : gpu::Device(createInfo), instance(instance), adapter(adapter),
         device(device), queue(queue), surface(nullptr), window(nullptr),
         swapchainFormat(WGPUTextureFormat_Undefined), configuredWidth(0),
@@ -38,8 +37,9 @@ public:
   WGPUSurface getSurface() const { return surface; }
 
   bool waitForFuture(WGPUFuture future) const;
-  WGPUTextureView createTextureView(WGPUTexture texture,
-                                    const gpu::Texture::CreateInfo &createInfo) const;
+  WGPUTextureView
+  createTextureView(WGPUTexture texture,
+                    const gpu::Texture::CreateInfo &createInfo) const;
   WGPUTextureView createDefaultTextureView(WGPUTexture texture) const;
 
   void claimWindow(void *window) override;
@@ -85,4 +85,3 @@ private:
 } // namespace sinen::gpu::webgpu
 
 #endif // SINEN_WEBGPU_DEVICE_HPP
-#endif // EMSCRIPTEN

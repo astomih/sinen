@@ -1,4 +1,3 @@
-#ifndef EMSCRIPTEN
 #ifndef SINEN_WEBGPU_TEXTURE_HPP
 #define SINEN_WEBGPU_TEXTURE_HPP
 
@@ -31,4 +30,3 @@ private:
 } // namespace sinen::gpu::webgpu
 
 #endif // SINEN_WEBGPU_TEXTURE_HPP
-#endif // EMSCRIPTEN

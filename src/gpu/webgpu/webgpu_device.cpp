@@ -1,6 +1,7 @@
 #include "webgpu_device.hpp"
-
 #include "webgpu_convert.hpp"
+
+#include <core/def/macro.hpp>
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_properties.h>
@@ -121,7 +122,7 @@ void Device::claimWindow(void *window) {
     surface = nullptr;
   }
 
-#if defined(SINEN_PLATFORM_WINDOWS)
+#ifdef SINEN_PLATFORM_WINDOWS
   SDL_PropertiesID props = SDL_GetWindowProperties(this->window);
   void *hwnd = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_HWND_POINTER,
                                       nullptr);

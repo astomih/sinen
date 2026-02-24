@@ -74,12 +74,13 @@ Backend::createDevice(const gpu::Device::CreateInfo &createInfo) {
 
   AdapterRequestState adapterState{};
   WGPURequestAdapterOptions adapterOptions{};
+  adapterOptions.backendType = WGPUBackendType_Undefined;
   WGPURequestAdapterCallbackInfo adapterCallbackInfo{};
   adapterCallbackInfo.callback = &onAdapterRequest;
   adapterCallbackInfo.userdata1 = &adapterState;
 
-  auto adapterFuture =
-      wgpuInstanceRequestAdapter(instance, nullptr, adapterCallbackInfo);
+  auto adapterFuture = wgpuInstanceRequestAdapter(instance, &adapterOptions,
+                                                  adapterCallbackInfo);
   waitForRequest();
   if (!adapterState.adapter) {
     Log::error("Failed to request WebGPU adapter");

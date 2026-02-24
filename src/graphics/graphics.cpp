@@ -82,7 +82,7 @@ bool Graphics::initialize() {
     return c;
   }();
   backend =
-      gpu::RHI::createBackend(GlobalAllocator::get(), gpu::GraphicsAPI::WebGPU);
+      gpu::RHI::createBackend(GlobalAllocator::get(), gpu::GraphicsAPI::SDLGPU);
   if (!backend)
     return false;
   gpu::Device::CreateInfo info{};

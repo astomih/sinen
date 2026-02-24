@@ -459,7 +459,7 @@ IMGUI_IMPL_API void imGuiImplParanoixaCreateDeviceObjects() {
     samplerInfo.addressModeV = gpu::AddressMode::ClampToEdge;
     samplerInfo.addressModeW = gpu::AddressMode::ClampToEdge;
     samplerInfo.mipLodBias = 0.0f;
-    samplerInfo.minLod = -1000.0f;
+    samplerInfo.minLod = 0.0f;
     samplerInfo.maxLod = 1000.0f;
     samplerInfo.enableAnisotropy = false;
     samplerInfo.maxAnisotropy = 1.0f;

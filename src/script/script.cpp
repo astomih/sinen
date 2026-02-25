@@ -10,7 +10,6 @@
 #include <core/thread/load_context.hpp>
 #include <core/thread/task_group.hpp>
 #include <graphics/graphics.hpp>
-#include <math/graph/bfs_grid.hpp>
 #include <platform/io/asset_io.hpp>
 #include <platform/io/filesystem.hpp>
 
@@ -193,8 +192,6 @@ void registerBuffer(lua_State *);
 void registerPivot(lua_State *);
 void registerRect(lua_State *);
 void registerTransform(lua_State *);
-void registerGrid(lua_State *);
-void registerBFSGrid(lua_State *);
 void registerFont(lua_State *);
 void registerTexture(lua_State *);
 void registerRenderTexture(lua_State *);
@@ -260,8 +257,6 @@ static void registerAll(lua_State *L) {
   registerPivot(L);
   registerRect(L);
   registerTransform(L);
-  registerGrid(L);
-  registerBFSGrid(L);
 
   registerFont(L);
   registerTexture(L);

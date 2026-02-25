@@ -3,6 +3,7 @@
 --------------------------------------------------------------------
 local Room = require("./room")
 local Corridor = require("./corridor")
+local BFSGrid = require("../bfsgrid")
 
 local function centerOf(room: Room.Room)
 	local p = room:get_position()

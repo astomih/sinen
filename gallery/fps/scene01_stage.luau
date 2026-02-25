@@ -4,6 +4,7 @@ local Player = require("./player")
 local player = Player.new()
 local Enemy = require("./enemy")
 local dungeonGenerator = require("./dungeon_generator/dungeon_generator")
+local Grid = require("./grid")
 local enemies: { Enemy.Enemy } = {}
 local enemy_max_num = 100
 local World = require("./world")

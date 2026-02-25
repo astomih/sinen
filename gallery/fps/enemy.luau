@@ -1,5 +1,6 @@
 local G = require("./global")
 local Player = require("./player")
+local BFSGrid = require("./bfsgrid")
 local bombedSound = Sound.new()
 bombedSound:load("sound/bombed.wav")
 local r1 = 0

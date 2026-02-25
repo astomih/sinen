@@ -213,6 +213,11 @@ export type ShaderStage = {
 	Compute: ShaderStage,
 }
 
+export type ShaderFormat = {
+	SPIRV: ShaderFormat,
+	WGSL: ShaderFormat,
+}
+
 export type Shader = {
 	load: (self: Shader, path: string, shaderStage: ShaderStage, uniform_count: number) -> nil,
 	compileAndLoad: (self: Shader, source: string, shaderStage: ShaderStage) -> nil,
@@ -640,6 +645,7 @@ declare Filesystem: Filesystem
 declare Random: Random
 declare Window: Window
 declare ShaderStage: ShaderStage
+declare ShaderFormat: ShaderFormat
 declare BuiltinShader: BuiltinShader
 declare BuiltinPipelines: BuiltinPipelines
 declare Graphics: Graphics

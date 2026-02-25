@@ -42,7 +42,7 @@ static void imguiImplParanoixaCreateShaders() {
   gpu::Shader::CreateInfo vertexShaderInfo = {};
   vertexShaderInfo.allocator = v->Allocator;
   vertexShaderInfo.entrypoint = "main";
-  vertexShaderInfo.stage = gpu::ShaderStage::Vertex;
+  vertexShaderInfo.stage = ShaderStage::Vertex;
   vertexShaderInfo.numUniformBuffers = 1;
   vertexShaderInfo.numStorageBuffers = 0;
   vertexShaderInfo.numStorageTextures = 0;
@@ -51,17 +51,17 @@ static void imguiImplParanoixaCreateShaders() {
   gpu::Shader::CreateInfo fragmentShaderInfo = {};
   fragmentShaderInfo.allocator = v->Allocator;
   fragmentShaderInfo.entrypoint = "main";
-  fragmentShaderInfo.stage = gpu::ShaderStage::Fragment;
+  fragmentShaderInfo.stage = ShaderStage::Fragment;
   fragmentShaderInfo.numSamplers = 1;
   fragmentShaderInfo.numStorageBuffers = 0;
   fragmentShaderInfo.numStorageTextures = 0;
   fragmentShaderInfo.numUniformBuffers = 0;
 
   if (driver == "vulkan" || driver == "webgpu" || driver == "wgpu") {
-    vertexShaderInfo.format = gpu::ShaderFormat::SPIRV;
+    vertexShaderInfo.format = ShaderFormat::SPIRV;
     vertexShaderInfo.data = spirv_vertex;
     vertexShaderInfo.size = sizeof(spirv_vertex);
-    fragmentShaderInfo.format = gpu::ShaderFormat::SPIRV;
+    fragmentShaderInfo.format = ShaderFormat::SPIRV;
     fragmentShaderInfo.data = spirv_fragment;
     fragmentShaderInfo.size = sizeof(spirv_fragment);
   }

@@ -117,7 +117,7 @@ public:
 
   VkShaderModule getNative() const { return module; }
   const char *getEntrypoint() const { return entrypoint; }
-  gpu::ShaderStage getStage() const { return stage; }
+  ShaderStage getStage() const { return stage; }
   uint32_t getNumUniformBuffers() const { return numUniformBuffers; }
   uint32_t getNumSamplers() const { return numSamplers; }
 
@@ -125,7 +125,7 @@ private:
   Device &device;
   VkShaderModule module = VK_NULL_HANDLE;
   const char *entrypoint = "main";
-  gpu::ShaderStage stage = gpu::ShaderStage::Vertex;
+  ShaderStage stage = ShaderStage::Vertex;
   uint32_t numUniformBuffers = 0;
   uint32_t numSamplers = 0;
 };

@@ -3,12 +3,9 @@
 #include <core/allocator/allocator.hpp>
 #include <core/data/ptr.hpp>
 #include <core/def/types.hpp>
+#include <graphics/shader/shader_format.hpp>
+#include <graphics/shader/shader_stage.hpp>
 namespace sinen::gpu {
-enum class ShaderFormat {
-  SPIRV,
-  WGSL,
-};
-enum class ShaderStage { Vertex, Fragment };
 class Shader {
 public:
   struct CreateInfo {
@@ -24,6 +21,7 @@ public:
     UInt32 numUniformBuffers;
   };
   virtual ~Shader() = default;
+  const CreateInfo &getCreateInfo() const { return createInfo; }
 
 protected:
   Shader(const CreateInfo &createInfo) : createInfo(createInfo) {}

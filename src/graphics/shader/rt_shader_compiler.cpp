@@ -62,7 +62,7 @@ getReflectionData(slang::IComponentType *program) {
 }
 
 Array<char> ShaderCompiler::compile(StringView sourcePath, ShaderStage stage,
-                                    Language lang,
+                                    ShaderFormat format,
                                     ReflectionData &reflectionData) {
 #if SINEN_USE_SLANG
   using namespace slang;
@@ -75,17 +75,13 @@ Array<char> ShaderCompiler::compile(StringView sourcePath, ShaderStage stage,
 
   std::array<TargetDesc, 1> targetDesc = {};
   bool emitSpirvDirectly = false;
-  switch (lang) {
-  case Language::SPIRV:
+  switch (format) {
+  case ShaderFormat::SPIRV:
     targetDesc[0].format = SLANG_SPIRV;
     targetDesc[0].profile = globalSession->findProfile("spirv_1_3");
     emitSpirvDirectly = true;
     break;
-  case Language::DXIL:
-    targetDesc[0].format = SLANG_DXIL;
-    targetDesc[0].profile = globalSession->findProfile("sm_6_5");
-    break;
-  case Language::WGSL:
+  case ShaderFormat::WGSL:
     targetDesc[0].format = SLANG_WGSL;
     targetDesc[0].profile = globalSession->findProfile("wgsl_1_0");
     break;
@@ -94,9 +90,9 @@ Array<char> ShaderCompiler::compile(StringView sourcePath, ShaderStage stage,
   sessionDesc.targetCount = targetDesc.size();
   std::array<slang::CompilerOptionEntry, 1> options = {};
   if (emitSpirvDirectly) {
-    options[0] = {slang::CompilerOptionName::EmitSpirvDirectly,
-                  {slang::CompilerOptionValueKind::Int, 1, 0, nullptr,
-                   nullptr}};
+    options[0] = {
+        slang::CompilerOptionName::EmitSpirvDirectly,
+        {slang::CompilerOptionValueKind::Int, 1, 0, nullptr, nullptr}};
     sessionDesc.compilerOptionEntries = options.data();
     sessionDesc.compilerOptionEntryCount = options.size();
   }

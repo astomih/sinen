@@ -28,8 +28,8 @@ bool BuiltinShader::initialize() {
     vsInfo.size = shader_vert_spv_len;
     vsInfo.data = shader_vert_spv;
     vsInfo.entrypoint = "main";
-    vsInfo.format = gpu::ShaderFormat::SPIRV;
-    vsInfo.stage = gpu::ShaderStage::Vertex;
+    vsInfo.format = ShaderFormat::SPIRV;
+    vsInfo.stage = ShaderStage::Vertex;
     vsInfo.numSamplers = 0;
     vsInfo.numStorageBuffers = 0;
     vsInfo.numStorageTextures = 0;
@@ -45,8 +45,8 @@ bool BuiltinShader::initialize() {
     vsInfo.size = shader_instance_vert_spv_len;
     vsInfo.data = shader_instance_vert_spv;
     vsInfo.entrypoint = "main";
-    vsInfo.format = gpu::ShaderFormat::SPIRV;
-    vsInfo.stage = gpu::ShaderStage::Vertex;
+    vsInfo.format = ShaderFormat::SPIRV;
+    vsInfo.stage = ShaderStage::Vertex;
     vsInfo.numSamplers = 0;
     vsInfo.numStorageBuffers = 0;
     vsInfo.numStorageTextures = 0;
@@ -62,8 +62,8 @@ bool BuiltinShader::initialize() {
     fsInfo.size = shader_frag_spv_len;
     fsInfo.data = shader_frag_spv;
     fsInfo.entrypoint = "main";
-    fsInfo.format = gpu::ShaderFormat::SPIRV;
-    fsInfo.stage = gpu::ShaderStage::Fragment;
+    fsInfo.format = ShaderFormat::SPIRV;
+    fsInfo.stage = ShaderStage::Fragment;
     fsInfo.numSamplers = 1; // one sampler for fragment shader
     fsInfo.numStorageBuffers = 0;
     fsInfo.numStorageTextures = 0;
@@ -79,8 +79,8 @@ bool BuiltinShader::initialize() {
     fsInfo.size = rect_color_frag_spv_len;
     fsInfo.data = rect_color_frag_spv;
     fsInfo.entrypoint = "main";
-    fsInfo.format = gpu::ShaderFormat::SPIRV;
-    fsInfo.stage = gpu::ShaderStage::Fragment;
+    fsInfo.format = ShaderFormat::SPIRV;
+    fsInfo.stage = ShaderStage::Fragment;
     fsInfo.numSamplers = 0; // no sampler for solid-color rectangle
     fsInfo.numStorageBuffers = 0;
     fsInfo.numStorageTextures = 0;
@@ -96,8 +96,8 @@ bool BuiltinShader::initialize() {
     vsInfo.size = cubemap_vert_spv_len;
     vsInfo.data = cubemap_vert_spv;
     vsInfo.entrypoint = "main";
-    vsInfo.format = gpu::ShaderFormat::SPIRV;
-    vsInfo.stage = gpu::ShaderStage::Vertex;
+    vsInfo.format = ShaderFormat::SPIRV;
+    vsInfo.stage = ShaderStage::Vertex;
     vsInfo.numSamplers = 0;
     vsInfo.numStorageBuffers = 0;
     vsInfo.numStorageTextures = 0;
@@ -113,8 +113,8 @@ bool BuiltinShader::initialize() {
     fsInfo.size = cubemap_frag_spv_len;
     fsInfo.data = cubemap_frag_spv;
     fsInfo.entrypoint = "main";
-    fsInfo.format = gpu::ShaderFormat::SPIRV;
-    fsInfo.stage = gpu::ShaderStage::Fragment;
+    fsInfo.format = ShaderFormat::SPIRV;
+    fsInfo.stage = ShaderStage::Fragment;
     fsInfo.numSamplers = 1; // one sampler for fragment shader
     fsInfo.numStorageBuffers = 0;
     fsInfo.numStorageTextures = 0;

@@ -260,7 +260,7 @@ Ptr<gpu::Sampler> Device::createSampler(const Sampler::CreateInfo &createInfo) {
 }
 
 Ptr<gpu::Shader> Device::createShader(const Shader::CreateInfo &createInfo) {
-  if (createInfo.format != gpu::ShaderFormat::SPIRV) {
+  if (createInfo.format != ShaderFormat::SPIRV) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Vulkan: only SPIRV supported");
     return nullptr;
   }

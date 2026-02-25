@@ -20,20 +20,19 @@
 
 namespace sinen {
 namespace {
-gpu::ShaderStage toGpuShaderStage(ShaderStage stage) {
+
+ShaderStage toShaderStage(ShaderStage stage) {
   switch (stage) {
   case ShaderStage::Vertex:
-    return gpu::ShaderStage::Vertex;
+    return ShaderStage::Vertex;
   case ShaderStage::Fragment:
-    return gpu::ShaderStage::Fragment;
-  case ShaderStage::Compute:
-    return gpu::ShaderStage::Vertex; // TODO
+    return ShaderStage::Fragment;
   }
-  return gpu::ShaderStage::Vertex;
+  return ShaderStage::Vertex;
 }
 
-const char *entryPointFor(ShaderStage stage, gpu::ShaderFormat format) {
-  if (format == gpu::ShaderFormat::WGSL) {
+const char *entryPointFor(ShaderStage stage, ShaderFormat format) {
+  if (format == ShaderFormat::WGSL) {
     switch (stage) {
     case ShaderStage::Vertex:
       return "VSMain";
@@ -46,13 +45,13 @@ const char *entryPointFor(ShaderStage stage, gpu::ShaderFormat format) {
   return "main";
 }
 
-gpu::ShaderFormat formatFromPath(StringView path) {
+ShaderFormat formatFromPath(StringView path) {
   constexpr StringView wgslExt = ".wgsl";
   if (path.size() >= wgslExt.size() &&
       path.substr(path.size() - wgslExt.size()) == wgslExt) {
-    return gpu::ShaderFormat::WGSL;
+    return ShaderFormat::WGSL;
   }
-  return gpu::ShaderFormat::SPIRV;
+  return ShaderFormat::SPIRV;
 }
 } // namespace
 
@@ -60,6 +59,11 @@ Shader::Shader() { shader = makePtr<Ptr<gpu::Shader>>(); }
 Shader::Shader(const Ptr<gpu::Shader> &raw) {
   shader = makePtr<Ptr<gpu::Shader>>();
   *shader = raw;
+  if (raw != nullptr) {
+    const auto &createInfo = raw->getCreateInfo();
+    format = createInfo.format;
+    stage = toShaderStage(createInfo.stage);
+  }
 }
 void Shader::load(StringView vertex_shader, ShaderStage stage,
                   int numUniformData) {
@@ -68,6 +72,9 @@ void Shader::load(StringView vertex_shader, ShaderStage stage,
   this->async = makePtr<AsyncState>();
   const Ptr<AsyncState> state = this->async;
   const auto shaderFormat = formatFromPath(vertex_shader);
+  this->format = shaderFormat;
+  this->stage = stage;
+  this->code.clear();
 
   const TaskGroup group = LoadContext::current();
   group.add();
@@ -76,7 +83,7 @@ void Shader::load(StringView vertex_shader, ShaderStage stage,
   state->future = globalThreadPool().submit(
       [state, path, stage, numUniformData, shaderFormat] {
         auto str = AssetIO::openAsString(path);
-        if (shaderFormat == gpu::ShaderFormat::WGSL &&
+        if (shaderFormat == ShaderFormat::WGSL &&
             (str.empty() || str.back() != '\0')) {
           str.push_back('\0');
         }
@@ -85,13 +92,14 @@ void Shader::load(StringView vertex_shader, ShaderStage stage,
           std::memcpy(state->spirv.data(), str.data(), str.size());
         }
 
+        state->shaderFormat = shaderFormat;
         state->numUniformBuffers = static_cast<uint32_t>(numUniformData + 1);
         state->numSamplers = (stage == ShaderStage::Fragment) ? 1u : 0u;
-        state->gpuStage = toGpuShaderStage(stage);
+        state->gpuStage = stage;
       });
 
   auto pollAndCreate = std::make_shared<std::function<void()>>();
-  *pollAndCreate = [this, pollAndCreate, state, group, stage, shaderFormat]() {
+  *pollAndCreate = [this, pollAndCreate, state, group]() {
     if (!state->future.valid()) {
       group.done();
       return;
@@ -111,8 +119,8 @@ void Shader::load(StringView vertex_shader, ShaderStage stage,
     info.allocator = allocator;
     info.size = state->spirv.size();
     info.data = state->spirv.data();
-    info.entrypoint = entryPointFor(stage, shaderFormat);
-    info.format = shaderFormat;
+    info.entrypoint = entryPointFor(this->stage, state->shaderFormat);
+    info.format = state->shaderFormat;
     info.stage = state->gpuStage;
     info.numSamplers = state->numSamplers;
     info.numStorageBuffers = 0;
@@ -120,6 +128,8 @@ void Shader::load(StringView vertex_shader, ShaderStage stage,
     info.numUniformBuffers = state->numUniformBuffers;
 
     *shader = device->createShader(info);
+    this->format = state->shaderFormat;
+    this->code = state->spirv;
     this->async.reset();
     group.done();
   };
@@ -131,6 +141,8 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage) {
   shader = makePtr<Ptr<gpu::Shader>>();
   this->async = makePtr<AsyncState>();
   const Ptr<AsyncState> state = this->async;
+  this->stage = stage;
+  this->code.clear();
 
   const TaskGroup group = LoadContext::current();
   group.add();
@@ -138,27 +150,29 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage) {
   const String str = name.data();
   state->future = globalThreadPool().submit([state, str, stage] {
     auto device = Graphics::getDevice();
-    const auto language = (device && device->getDriver() == "webgpu")
-                              ? ShaderCompiler::Language::WGSL
-                              : ShaderCompiler::Language::SPIRV;
+    const auto format = (device && device->getDriver() == "webgpu")
+                            ? ShaderFormat::WGSL
+                            : ShaderFormat::SPIRV;
 
     ShaderCompiler compiler;
     ShaderCompiler::ReflectionData reflectionData{};
-    state->spirv = compiler.compile(str, stage, language, reflectionData);
-    if (language == ShaderCompiler::Language::WGSL &&
+    state->spirv = compiler.compile(str, stage, format, reflectionData);
+    if (format == ShaderFormat::WGSL &&
         (state->spirv.empty() || state->spirv.back() != '\0')) {
       state->spirv.push_back('\0');
     }
 
+    state->shaderFormat = (format == ShaderFormat::WGSL) ? ShaderFormat::WGSL
+                                                         : ShaderFormat::SPIRV;
     state->numUniformBuffers = reflectionData.numUniformBuffers;
     state->numSamplers = (stage == ShaderStage::Fragment)
                              ? reflectionData.numCombinedSamplers
                              : 0u;
-    state->gpuStage = toGpuShaderStage(stage);
+    state->gpuStage = stage;
   });
 
   auto pollAndCreate = std::make_shared<std::function<void()>>();
-  *pollAndCreate = [this, pollAndCreate, state, group, stage]() {
+  *pollAndCreate = [this, pollAndCreate, state, group]() {
     if (!state->future.valid()) {
       group.done();
       return;
@@ -175,14 +189,11 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage) {
     auto device = Graphics::getDevice();
 
     gpu::Shader::CreateInfo info{};
-    const auto shaderFormat = (device && device->getDriver() == "webgpu")
-                                  ? gpu::ShaderFormat::WGSL
-                                  : gpu::ShaderFormat::SPIRV;
     info.allocator = allocator;
     info.size = state->spirv.size();
     info.data = state->spirv.data();
-    info.entrypoint = entryPointFor(stage, shaderFormat);
-    info.format = shaderFormat;
+    info.entrypoint = entryPointFor(this->stage, state->shaderFormat);
+    info.format = state->shaderFormat;
     info.stage = state->gpuStage;
     info.numSamplers = state->numSamplers;
     info.numStorageBuffers = 0;
@@ -192,12 +203,24 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage) {
     {
       *shader = device->createShader(info);
     }
+    this->format = state->shaderFormat;
+    this->code = state->spirv;
     this->async.reset();
     group.done();
   };
   Graphics::addPreDrawFunc(*pollAndCreate);
 }
 Ptr<gpu::Shader> Shader::getRaw() { return *shader; }
+ShaderFormat Shader::getFormat() const { return format; }
+ShaderStage Shader::getStage() const { return stage; }
+Buffer Shader::getCode() const {
+  if (code.empty()) {
+    return Buffer(BufferType::Binary, Ptr<void>(), 0);
+  }
+  auto ret = makeBuffer(code.size(), BufferType::Binary);
+  std::memcpy(ret.data(), code.data(), code.size());
+  return ret;
+}
 
 static int lShaderNew(lua_State *L) {
   udPushPtr<Shader>(L, makePtr<Shader>());

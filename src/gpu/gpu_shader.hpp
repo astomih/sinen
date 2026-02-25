@@ -3,8 +3,8 @@
 #include <core/allocator/allocator.hpp>
 #include <core/data/ptr.hpp>
 #include <core/def/types.hpp>
-#include <graphics/shader/shader_format.hpp>
-#include <graphics/shader/shader_stage.hpp>
+#include <gpu/shader/shader_format.hpp>
+#include <gpu/shader/shader_stage.hpp>
 namespace sinen::gpu {
 class Shader {
 public:

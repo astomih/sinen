@@ -1,4 +1,4 @@
-#include <graphics/shader/shader_stage.hpp>
+#include "shader_stage.hpp"
 #include <script/luaapi.hpp>
 
 namespace sinen {

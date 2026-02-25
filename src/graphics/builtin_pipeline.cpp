@@ -1,5 +1,5 @@
 #include "builtin_pipeline.hpp"
-#include <graphics/shader/builtin_shader.hpp>
+#include <gpu/shader/builtin_shader.hpp>
 #include <script/luaapi.hpp>
 namespace sinen {
 static GraphicsPipeline default2D;

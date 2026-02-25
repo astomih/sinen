@@ -2,16 +2,17 @@
 #include <cassert>
 #include <core/allocator/global_allocator.hpp>
 #include <gpu/gpu.hpp>
+#include <gpu/shader/builtin_shader.hpp>
 #include <graphics/builtin_pipeline.hpp>
 #include <graphics/font/default/mplus-1p-medium.ttf.hpp>
 #include <graphics/graphics.hpp>
 #include <graphics/imgui_backend/imgui_impl_sinen.hpp>
-#include <graphics/shader/builtin_shader.hpp>
 #include <graphics/texture/render_texture.hpp>
 #include <math/transform/transform.hpp>
 #include <platform/io/asset_io.hpp>
 #include <platform/window/window.hpp>
 #include <script/script.hpp>
+
 
 #include <SDL3/SDL.h>
 

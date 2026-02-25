@@ -1,4 +1,4 @@
-#include <graphics/shader/shader_format.hpp>
+#include "shader_format.hpp"
 #include <script/luaapi.hpp>
 
 namespace sinen {

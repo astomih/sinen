@@ -1,6 +1,6 @@
 // internal
+#include "shader.hpp"
 #include <graphics/graphics.hpp>
-#include <graphics/shader/shader.hpp>
 #include <platform/io/asset_io.hpp>
 #include <script/luaapi.hpp>
 

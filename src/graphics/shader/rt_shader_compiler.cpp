@@ -74,15 +74,32 @@ Array<char> ShaderCompiler::compile(StringView sourcePath, ShaderStage stage,
   SessionDesc sessionDesc = {};
 
   std::array<TargetDesc, 1> targetDesc = {};
-  targetDesc[0].format = SLANG_SPIRV;
-  targetDesc[0].profile = globalSession->findProfile("spirv_1_3");
+  bool emitSpirvDirectly = false;
+  switch (lang) {
+  case Language::SPIRV:
+    targetDesc[0].format = SLANG_SPIRV;
+    targetDesc[0].profile = globalSession->findProfile("spirv_1_3");
+    emitSpirvDirectly = true;
+    break;
+  case Language::DXIL:
+    targetDesc[0].format = SLANG_DXIL;
+    targetDesc[0].profile = globalSession->findProfile("sm_6_5");
+    break;
+  case Language::WGSL:
+    targetDesc[0].format = SLANG_WGSL;
+    targetDesc[0].profile = globalSession->findProfile("wgsl_1_0");
+    break;
+  }
   sessionDesc.targets = targetDesc.data();
   sessionDesc.targetCount = targetDesc.size();
-  std::array<slang::CompilerOptionEntry, 1> options = {
-      {slang::CompilerOptionName::EmitSpirvDirectly,
-       {slang::CompilerOptionValueKind::Int, 1, 0, nullptr, nullptr}}};
-  sessionDesc.compilerOptionEntries = options.data();
-  sessionDesc.compilerOptionEntryCount = options.size();
+  std::array<slang::CompilerOptionEntry, 1> options = {};
+  if (emitSpirvDirectly) {
+    options[0] = {slang::CompilerOptionName::EmitSpirvDirectly,
+                  {slang::CompilerOptionValueKind::Int, 1, 0, nullptr,
+                   nullptr}};
+    sessionDesc.compilerOptionEntries = options.data();
+    sessionDesc.compilerOptionEntryCount = options.size();
+  }
   sessionDesc.defaultMatrixLayoutMode = SLANG_MATRIX_LAYOUT_ROW_MAJOR;
 
   Slang::ComPtr<ISession> session;
@@ -168,23 +185,23 @@ Array<char> ShaderCompiler::compile(StringView sourcePath, ShaderStage stage,
   }
 
   // 7. Get Target Kernel Code
-  Slang::ComPtr<slang::IBlob> spirvCode;
+  Slang::ComPtr<slang::IBlob> compiledCode;
   {
     Slang::ComPtr<slang::IBlob> diagnosticsBlob;
     SlangResult result = linkedProgram->getEntryPointCode(
-        0, 0, spirvCode.writeRef(), diagnosticsBlob.writeRef());
+        0, 0, compiledCode.writeRef(), diagnosticsBlob.writeRef());
     if (SLANG_FAILED(result)) {
-      std::cout << "Error getting SPIR-V code: " << result << std::endl;
+      std::cout << "Error getting shader code: " << result << std::endl;
       return {};
     }
   }
 
   // TODO: Get reflection (num bindings, etc.)
   reflectionData = getReflectionData(linkedProgram);
-  Array<char> spirvData(spirvCode->getBufferSize());
-  std::memcpy(spirvData.data(), spirvCode->getBufferPointer(),
-              spirvCode->getBufferSize());
-  return spirvData;
+  Array<char> shaderData(compiledCode->getBufferSize());
+  std::memcpy(shaderData.data(), compiledCode->getBufferPointer(),
+              compiledCode->getBufferSize());
+  return shaderData;
 #else
   std::cout << "SLANG is not enabled. Cannot compile shader." << std::endl;
   return {};

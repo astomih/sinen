@@ -4,7 +4,10 @@
 #include <core/data/ptr.hpp>
 #include <core/def/types.hpp>
 namespace sinen::gpu {
-enum class ShaderFormat { SPIRV };
+enum class ShaderFormat {
+  SPIRV,
+  WGSL,
+};
 enum class ShaderStage { Vertex, Fragment };
 class Shader {
 public:

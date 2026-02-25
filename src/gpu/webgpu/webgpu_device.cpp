@@ -223,22 +223,32 @@ Device::createTransferBuffer(const TransferBuffer::CreateInfo &createInfo) {
 }
 
 Ptr<gpu::Shader> Device::createShader(const Shader::CreateInfo &createInfo) {
-  if (createInfo.format != ShaderFormat::SPIRV) {
+  WGPUShaderModuleDescriptor shaderDesc{};
+  shaderDesc.label = toWgpuStringView("sinen-shader");
+  WGPUShaderSourceSPIRV spirvDesc{};
+  WGPUShaderSourceWGSL wgslDesc{};
+
+  switch (createInfo.format) {
+  case ShaderFormat::SPIRV:
+    spirvDesc.chain.sType = WGPUSType_ShaderSourceSPIRV;
+    spirvDesc.chain.next = nullptr;
+    spirvDesc.code = static_cast<const uint32_t *>(createInfo.data);
+    spirvDesc.codeSize =
+        static_cast<uint32_t>(createInfo.size / sizeof(uint32_t));
+    shaderDesc.nextInChain = &spirvDesc.chain;
+    break;
+  case ShaderFormat::WGSL:
+    wgslDesc.chain.sType = WGPUSType_ShaderSourceWGSL;
+    wgslDesc.chain.next = nullptr;
+    wgslDesc.code = toWgpuStringView(static_cast<const char *>(createInfo.data));
+    shaderDesc.nextInChain = &wgslDesc.chain;
+    break;
+  default:
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                 "WebGPU backend only supports SPIR-V input");
+                 "WebGPU backend does not support shader format: %d",
+                 static_cast<int>(createInfo.format));
     return nullptr;
   }
-
-  WGPUShaderSourceSPIRV spirvDesc{};
-  spirvDesc.chain.sType = WGPUSType_ShaderSourceSPIRV;
-  spirvDesc.chain.next = nullptr;
-  spirvDesc.code = static_cast<const uint32_t *>(createInfo.data);
-  spirvDesc.codeSize =
-      static_cast<uint32_t>(createInfo.size / sizeof(uint32_t));
-
-  WGPUShaderModuleDescriptor shaderDesc{};
-  shaderDesc.nextInChain = &spirvDesc.chain;
-  shaderDesc.label = toWgpuStringView("sinen-shader");
 
   auto shader = wgpuDeviceCreateShaderModule(device, &shaderDesc);
   return makePtr<Shader>(createInfo.allocator, createInfo, get(), shader);

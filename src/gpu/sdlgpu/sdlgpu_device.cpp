@@ -85,6 +85,12 @@ Ptr<gpu::Sampler> Device::createSampler(const Sampler::CreateInfo &createInfo) {
 }
 
 Ptr<gpu::Shader> Device::createShader(const Shader::CreateInfo &createInfo) {
+  if (createInfo.format != ShaderFormat::SPIRV) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "SDLGPU backend only supports SPIR-V input");
+    return nullptr;
+  }
+
   SDL_GPUShaderCreateInfo shaderCI = {};
   shaderCI.stage = createInfo.stage == ShaderStage::Vertex
                        ? SDL_GPU_SHADERSTAGE_VERTEX

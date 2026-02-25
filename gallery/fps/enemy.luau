@@ -95,6 +95,8 @@ Enemy.update = function(self: Enemy, player: Player.Player)
 	if length > self.search_length then
 		return
 	end
+	local mapW = self.map:width()
+	local mapH = self.map:height()
 	self.aabb:updateWorld(self.transform.position, self.transform.scale, enemyModel:getAABB())
 	-- If there is a wall between the player and the enemy, the enemy will not move.
 	local start = Vec2.new(self.transform.position.x / G.TILE_SIZE, self.transform.position.y / G.TILE_SIZE)
@@ -104,6 +106,10 @@ Enemy.update = function(self: Enemy, player: Player.Player)
 	start.y = math.floor(start.y + 0.5)
 	goal.x = math.floor(goal.x + 0.5)
 	goal.y = math.floor(goal.y + 0.5)
+	start.x = math.max(1, math.min(mapW, start.x))
+	start.y = math.max(1, math.min(mapH, start.y))
+	goal.x = math.max(1, math.min(mapW, goal.x))
+	goal.y = math.max(1, math.min(mapH, goal.y))
 
 	local min_x = math.min(start.x, goal.x)
 	local max_x = math.max(start.x, goal.x)

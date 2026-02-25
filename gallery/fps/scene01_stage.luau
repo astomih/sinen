@@ -171,12 +171,11 @@ local collision_bullets = function(_bullets: { bullet.Bullet })
 				end
 			end
 		end
-		if
-			map:at(
-				math.floor(v.transform.position.x / G.TILE_SIZE + 0.5),
-				math.floor(v.transform.position.y / G.TILE_SIZE + 0.5)
-			) < G.MAP_CHIP_WALKABLE
-		then
+		local bx = math.floor(v.transform.position.x / G.TILE_SIZE + 0.5)
+		local by = math.floor(v.transform.position.y / G.TILE_SIZE + 0.5)
+		if bx < 1 or by < 1 or bx > map_size_x or by > map_size_y then
+			table.remove(player.bullets, i)
+		elseif map:at(bx, by) < G.MAP_CHIP_WALKABLE then
 			table.remove(player.bullets, i)
 		end
 	end

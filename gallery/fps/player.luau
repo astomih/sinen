@@ -321,6 +321,12 @@ Player.update = function(self: Player, map, map_draw3ds, map_size_x, map_size_y)
 			self.transform.position.y = before_pos.y
 		end
 	end
+	local minX = G.TILE_SIZE
+	local minY = G.TILE_SIZE
+	local maxX = map_size_x * G.TILE_SIZE
+	local maxY = map_size_y * G.TILE_SIZE
+	self.transform.position.x = math.max(minX, math.min(maxX, self.transform.position.x))
+	self.transform.position.y = math.max(minY, math.min(maxY, self.transform.position.y))
 	local pos = Mouse.getPositionOnScene()
 	local camera2DHalf = Graphics.getCamera2D():half()
 	self.transform.rotation.y = self.transform.rotation.y + math.sin(pos.y / camera2DHalf.y) * 32.0

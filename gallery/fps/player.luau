@@ -1,6 +1,7 @@
 local G = require("./global")
 local Bullet = require("./bullet")
 local World = require("./world")
+local Grid = require("./grid")
 local calc_input_vector = require("./calc_input_vector")
 local is_collision = require("./is_collision")
 local input_vector: Vec3 = Vec3.new(0)
@@ -13,7 +14,7 @@ local scopeTex = Texture.new()
 scopeTex:load("image/scope.png")
 
 ---@param map Grid
-local function decide_pos(map: Grid, map_size_x: number, map_size_y: number)
+local function decide_pos(map: Grid.Grid, map_size_x: number, map_size_y: number)
 	r1 = math.random(1, map_size_x)
 	r2 = math.random(1, map_size_y)
 	return map:at(r1, r2) == 1
@@ -64,7 +65,7 @@ Player.new = function()
 			setup: (self: any, map: any, map_size_x: number, map_size_y: number) -> nil,
 			update: (
 				self: Player,
-				map: Grid,
+				map: Grid.Grid,
 				map_draw3ds: { { World.World } },
 				map_size_x: number,
 				map_size_y: number
@@ -139,12 +140,13 @@ Player.setup = function(self: any, map: any, map_size_x: number, map_size_y: num
 	self.boost_sound:load("sound/boost.wav")
 	self.boost_sound:setVolume(0.2)
 end
----@param self Player
----@param map Grid
----@param map_draw3ds World[][]
----@param map_size_x number
----@param map_size_y number
-Player.update = function(self: Player, map, map_draw3ds, map_size_x, map_size_y)
+Player.update = function(
+	self: Player,
+	map: Grid.Grid,
+	map_draw3ds: { { World.World } },
+	map_size_x: number,
+	map_size_y: number
+)
 	self.aabb:updateWorld(self.transform.position, self.transform.scale, self.model:getAABB())
 	input_vector = calc_input_vector()
 	local is_move = input_vector.x ~= 0 or input_vector.y ~= 0
@@ -212,7 +214,7 @@ Player.update = function(self: Player, map, map_draw3ds, map_size_x, map_size_y)
 				---@type Effect
 				local efk = Effect.new()
 				efk.texture:fill(Color.new(0.6, 0.6, 1.0, 1.0))
-				efk.impl = function(e)
+				efk.impl = function(e: Effect.Effect)
 					for i = 1, e.max_particles do
 						local t = Time.delta() * 2
 						e.worlds[i].position.x = e.worlds[i].position.x + math.cos(i) * t
@@ -342,8 +344,8 @@ Player.update = function(self: Player, map, map_draw3ds, map_size_x, map_size_y)
 	end
 end
 ---@param self Player
-Player.draw3 = function(self)
-	for i, v in ipairs(self.efks) do
+Player.draw3 = function(self: Player)
+	for i: number, v: Effect.Effect in ipairs(self.efks) do
 		Graphics.setTexture(0, v.texture)
 		v:draw()
 	end
@@ -353,7 +355,7 @@ Player.draw3 = function(self)
 	end
 end
 ---@param self Player
-Player.draw2 = function(self)
+Player.draw2 = function(self: Player)
 	Graphics.drawText("HP: " .. self.hp, G.FONT_DEFAULT64, Vec2.new(0, 300), self.hpColor, 32)
 	Graphics.drawImage(self.stamina_max_texture, self.stamina_max_rect)
 	Graphics.drawImage(self.stamina_texture, self.stamina_rect)

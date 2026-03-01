@@ -382,6 +382,8 @@ build/android/app/src/main/jniLibs/arm64-v8a/*
 !build/android/app/src/main/jniLibs/arm64-v8a/.gitkeep
 !build/android/app/build/.gitkeep
 
+*.exe
+
 
 build/clang/*
 !build/clang/.gitkeep

@@ -1,10 +1,11 @@
 local G = require("./global")
 local World = require("./world")
+local Grid = require("./grid")
 
 local function is_collision(
 	position: Vec3,
 	aabb: AABB,
-	map: Grid,
+	map: Grid.Grid,
 	map_draw3ds: { { World.World } },
 	map_size_x: number,
 	map_size_y: number

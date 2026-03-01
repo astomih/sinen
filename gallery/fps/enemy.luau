@@ -1,12 +1,13 @@
 local G = require("./global")
 local Player = require("./player")
 local BFSGrid = require("./bfsgrid")
+local Grid = require("./grid")
 local bombedSound = Sound.new()
 bombedSound:load("sound/bombed.wav")
 local r1 = 0
 local r2 = 0
 
-local function decidePos(map: Grid, mapSizeX: number, mapSizeY: number)
+local function decidePos(map: Grid.Grid, mapSizeX: number, mapSizeY: number)
 	r1 = Random.getIntRange(1, mapSizeX)
 	r2 = Random.getIntRange(1, mapSizeY)
 	return map:at(r1, r2) == 1
@@ -36,12 +37,12 @@ Enemy.new = function()
 			is_collision_first: boolean,
 			collision_time: number,
 			collision_timer: number,
-			map: Grid,
-			bfs: BFSGrid,
+			map: Grid.Grid,
+			bfs: BFSGrid.BFSGrid,
 
 			get_forward_z: (drawer: Transform) -> Vec2,
 			add_damage: (self: Enemy, damage: number) -> boolean,
-			setup: (self: Enemy, map: Grid, mapSizeX: number, mapSizeY: number) -> nil,
+			setup: (self: Enemy, map: Grid.Grid, mapSizeX: number, mapSizeY: number) -> nil,
 			update: (self: Enemy, player: Player.Player) -> nil,
 			draw: (self: Enemy) -> nil,
 			player_collision: (self: Enemy, player: Player.Player) -> nil,
@@ -69,7 +70,7 @@ Enemy.add_damage = function(self: Enemy, damage: number): boolean
 	return false
 end
 
-Enemy.setup = function(self: Enemy, map: Grid, mapSizeX: number, mapSizeY: number)
+Enemy.setup = function(self: Enemy, map: Grid.Grid, mapSizeX: number, mapSizeY: number)
 	self.bfs = BFSGrid.new(map)
 	self.transform = Transform.new()
 	self.model = enemyModel

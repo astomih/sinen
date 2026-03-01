@@ -1,27 +1,8 @@
 local World = require("./world")
 
----@class Effect
----@field duration number
----@field looping boolean
----@field prewarm boolean
----@field start_lifetime number
----@field start_speed number
----@field start_size number
----@field start_rotation number
----@field start_color  Color
----@field gravity_multiplier number
----@field inherit_velocity number
----@field play_on_awake boolean
----@field max_particles number
----@field transform Transform[]
----@field model Model
----@field texture Texture
----@field worlds World[]
----@field is_playing boolean
----@field timer number
 local Effect = {}
 Effect.__index = Effect
-Effect.new = function(): Effect
+Effect.new = function()
 	local self = setmetatable(
 		{} :: {
 			duration: number,
@@ -44,6 +25,9 @@ Effect.new = function(): Effect
 			timer: number,
 
 			impl: (self: Effect) -> (),
+			update: (self: Effect) -> (),
+			draw: (self: Effect) -> (),
+			play: (self: Effect) -> (),
 		},
 		Effect :: typeof(Effect)
 	)
@@ -77,10 +61,11 @@ Effect.new = function(): Effect
 	end
 	self.is_playing = false
 	self.timer = 0.0
+
 	return self
 end
+export type Effect = typeof(Effect.new())
 
----@param self Effect
 Effect.impl = function(self: Effect)
 	local dT = Time.delta()
 	for i = 1, self.max_particles do
@@ -89,10 +74,10 @@ Effect.impl = function(self: Effect)
 		self.worlds[i].position.z = self.worlds[i].position.z + dT
 	end
 end
----@param self Effect
 Effect.update = function(self: Effect)
 	--  if not self.is_playing then return end
-	self.timer = self.timer + Time.delta()
+	local dT: number = Time.delta()
+	self.timer = self.timer + dT
 	if self.timer > self.start_lifetime then
 		self.timer = 0.0
 		for i = 1, self.max_particles do
@@ -117,14 +102,13 @@ Effect.update = function(self: Effect)
 	end
 end
 ---@param self Effect
-Effect.draw = function(self)
+Effect.draw = function(self: Effect)
 	if self.is_playing then
 		Graphics.drawModelInstanced(self.model, self.transform)
 	end
 end
 ---@param self Effect
-Effect.play = function(self)
+Effect.play = function(self: Effect)
 	self.is_playing = true
 end
-export type Effect = typeof(Effect.new())
 return Effect

@@ -1,9 +1,9 @@
 local Impl = {}
 Impl.__index = Impl
-Impl.new = function(): GUIManager
+Impl.new = function()
 	local self = setmetatable(
 		{} :: {
-			drawables: { any },
+			drawables: { { draw: () -> () } },
 			index: number,
 			add: (self: GUIManager, drawable: any) -> nil,
 			update: (self: GUIManager) -> nil,
@@ -17,7 +17,7 @@ Impl.new = function(): GUIManager
 end
 export type GUIManager = typeof(Impl.new())
 
-Impl.add = function(self: GUIManager, drawable)
+Impl.add = function(self: GUIManager, drawable: { draw: () -> () })
 	self.drawables[self.index] = drawable
 	self.index = self.index + 1
 end

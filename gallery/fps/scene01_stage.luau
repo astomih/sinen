@@ -11,7 +11,7 @@ local World = require("./world")
 local Effect = require("./effect")
 local map_size_x: number = 64
 local map_size_y: number = 64
-local map: Grid = Grid.new(map_size_x, map_size_y)
+local map: Grid.Grid = Grid.new(map_size_x, map_size_y)
 local map_z = Grid.new(map_size_x, map_size_y)
 -- draw object
 local map_draw3ds = {}
@@ -103,8 +103,7 @@ camera_controller:setup(player)
 camera_controller:update()
 scene_switcher:start("")
 
----@param map_draw3ds World[][]
-local FrustumCullingMapDraw = function(map_draw3ds)
+local FrustumCullingMapDraw = function(map_draw3ds: { { World.World } })
 	for y = 1, map_size_y do
 		for x = 1, map_size_x do
 			if Graphics.getCamera3D():isAABBInFrustum(map_draw3ds[y][x].aabb) then

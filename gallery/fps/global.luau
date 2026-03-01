@@ -35,9 +35,10 @@ G.MAP_CHIP = {
 }
 G.MAP_CHIP_WALKABLE = 0
 G.FONT_DEFAULT32 = Font.new()
-G.FONT_DEFAULT32:load(32, G.DEFAULT_FONT_NAME)
+local GridGazerFont = "font/x16y32pxGridGazer.ttf"
+G.FONT_DEFAULT32:load(32, GridGazerFont)
 G.FONT_DEFAULT64 = Font.new()
-G.FONT_DEFAULT64:load(64, G.DEFAULT_FONT_NAME)
+G.FONT_DEFAULT64:load(64, GridGazerFont)
 -- FONT_DEFAULT128 = sn.Font.new()
 -- FONT_DEFAULT128:load(128, DEFAULT_FONT_NAME)
 

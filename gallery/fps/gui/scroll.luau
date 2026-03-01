@@ -1,12 +1,11 @@
 local G = require("../global")
 local Scroll = {}
 Scroll.__index = Scroll
-Scroll.new = function(): Scroll
+Scroll.new = function()
 	local self = setmetatable(
 		{} :: {
 			positions: { Vec2 },
 			current_pos: number,
-			add: (self: Scroll, position: Vec2) -> (),
 			prev_mpos: Vec2,
 			t1: Texture,
 			t2: Texture,
@@ -15,15 +14,19 @@ Scroll.new = function(): Scroll
 			maxRect: Rect,
 			is_drag: boolean,
 			initial: boolean,
-			show: (self: Scroll, pos: Vec2, scale: Vec2) -> nil,
+			add: (self: Scroll, position: Vec2) -> (),
+			show: (self: Scroll, pos: Vec2, scale: Vec2) -> (),
 		},
 		Scroll
 	)
-	self.positions = {}
+	self.positions = {} :: { Vec2 }
 	self.current_pos = 1
+	self.prev_mpos = Vec2.new(0, 0)
 	self.is_drag = false
 	self.initial = true
+	self.pos = Vec2.new(0, 0)
 	self.rect = Rect.new(0, 0, 0, 0)
+	self.maxRect = Rect.new(0, 0, 0, 0)
 	self.t1 = Texture.new()
 	self.t1:fill(Color.new(0, 0, 0, 0.5))
 	self.t2 = Texture.new()

@@ -1,8 +1,3 @@
----@class World
----@field position Vec3
----@field rotation Vec3
----@field scale Vec3
----@field aabb AABB
 local World = {}
 World.__index = World
 World.new = function()
@@ -13,7 +8,7 @@ World.new = function()
 			scale: Vec3,
 			aabb: AABB,
 		},
-		{} :: typeof(World)
+		World :: typeof(World)
 	)
 	self.position = Vec3.new(0)
 	self.rotation = Vec3.new(0)

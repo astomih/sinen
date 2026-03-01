@@ -12,7 +12,7 @@
   "luau-lsp.bytecode.vectorLib": "",
   "luau-lsp.bytecode.vectorType": "",
   "luau-lsp.completion.imports.requireStyle": "alwaysRelative",
-  "luau-lsp.fflags.enableNewSolver": false,
+  "luau-lsp.fflags.enableNewSolver": true,
   "luau-lsp.platform.type": "standard",
   "luau-lsp.types.robloxSecurityLevel": "None",
   "luau-lsp.bytecode.typeInfoLevel": 1,

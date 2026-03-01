@@ -1,15 +1,16 @@
+local Grid = require("../grid")
 --------------------------------------------------------------------
 -- room.lua
 --------------------------------------------------------------------
 local Room = {}
 Room.__index = Room
 
-local function RoomType(): Room
+local function RoomType()
 	local self = setmetatable(
 		{} :: {
 			size: Vec2,
 			position: Vec2,
-			fill: (self: Room, grid: Grid, floor_id: number) -> nil,
+			fill: (self: Room, grid: Grid.Grid, floor_id: number) -> nil,
 
 			new: (grid_size: Vec2, minimum: Vec2, maximum: Vec2) -> Room,
 			get_position: (self: Room) -> Vec2,
@@ -29,7 +30,7 @@ function Room.new(grid_size: Vec2, minimum: Vec2, maximum: Vec2): Room
 end
 
 ---@param grid Grid
-function Room.fill(self: Room, grid: Grid, floor_id)
+function Room.fill(self: Room, grid: Grid.Grid, floor_id)
 	for dy = 1, self.size.y do
 		for dx = 1, self.size.x do
 			grid:set(self.position.x + dx, self.position.y + dy, floor_id)

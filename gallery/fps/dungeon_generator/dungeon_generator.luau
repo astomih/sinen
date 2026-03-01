@@ -4,6 +4,7 @@
 local Room = require("./room")
 local Corridor = require("./corridor")
 local BFSGrid = require("../bfsgrid")
+local grid = require("../grid")
 
 local function centerOf(room: Room.Room)
 	local p = room:get_position()
@@ -11,13 +12,14 @@ local function centerOf(room: Room.Room)
 	return Vec2.new(p.x + math.floor(s.x / 2), p.y + math.floor(s.y / 2))
 end
 
----@param grid   Grid
----@param floor  integer
----@param wall   integer
----@param player integer
----@param key    integer
----@param stair  integer
-local function dungeonGenerator(grid, floor, wall, player, key, stair)
+local function dungeonGenerator(
+	grid: grid.Grid,
+	floor: number,
+	wall: number,
+	player: number,
+	key: number,
+	stair: number
+)
 	if grid:width() < 3 or grid:height() < 3 then
 		return
 	end

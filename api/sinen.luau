@@ -53,7 +53,7 @@ Vec2Impl.new = function(): Vec2
 			lerp: (self: Vec2, other: Vec2, t: number) -> Vec2,
 			reflect: (self: Vec2, n: Vec2) -> Vec2,
 		},
-		{} :: typeof(Vec2Impl)
+		Vec2Impl
 	)
 end
 
@@ -233,28 +233,6 @@ export type Font = {
 	region: (self: Font, text: string, fontSize: number, pivot: number, position: Vec2) -> Rect,
 }
 
-export type Grid = {
-	at: (self: Grid, x: number, y: number) -> number,
-	set: (self: Grid, x: number, y: number, v: number) -> nil,
-	width: (self: Grid) -> number,
-	height: (self: Grid) -> number,
-	size: (self: Grid) -> number,
-	clear: (self: Grid) -> nil,
-	resize: (self: Grid, w: number, h: number) -> nil,
-	fill: (self: Grid, value: number) -> nil,
-	fillRect: (self: Grid, index: number, value: number) -> nil,
-	setRow: (self: Grid, index: number, value: number) -> nil,
-	setColumn: (self: Grid, index: number, value: number) -> nil,
-}
-
-export type BFSGrid = {
-	width: (self: BFSGrid) -> number,
-	height: (self: BFSGrid) -> number,
-	findPath: (self: BFSGrid, start: Vec2, end_: Vec2) -> any,
-	trace: (self: BFSGrid) -> Vec2,
-	traceable: (self: BFSGrid) -> boolean,
-	reset: (self: BFSGrid) -> nil,
-}
 
 export type GraphicsPipeline = {
 	setVertexShader: (self: GraphicsPipeline, shader: Shader) -> nil,
@@ -628,8 +606,6 @@ declare Timer: typeof({}::{new: () -> Timer})
 declare Shader: typeof({}::{new: () -> Shader})
 declare Font: typeof({}::{new: (()-> Font) &((size: number) -> Font) & ((size: number, path: string) -> Font) & ((size: number, buffer: Buffer) -> Font)})
 declare Color: typeof({}::{new: ((r: number, g: number, b: number, a: number) -> Color) & ((value: number, a: number) -> Color) & ((value: number) -> Color) & (() -> Color)})
-declare Grid: typeof({}::{new: (w: number, h: number) -> Grid})
-declare BFSGrid: typeof({}::{new: (grid: Grid) -> BFSGrid})
 declare GraphicsPipeline: typeof({}::{new: () -> GraphicsPipeline})
 declare Pivot: Pivot
 declare Rect: typeof({}::{new: (((x: number, y: number, width: number, height: number) -> Rect) & ((position: Vec2, size: Vec2) -> Rect) & ((pivot: Pivot, x: number, y: number, w: number, h: number) -> Rect) & ((pivot: Pivot, pos: Vec2, size: Vec2) -> Rect))})

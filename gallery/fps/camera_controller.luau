@@ -1,7 +1,7 @@
 local Player = require("./player")
 local CameraController = {}
 CameraController.__index = CameraController
-CameraController.new = function(): CameraController
+CameraController.new = function()
 	local self = setmetatable(
 		{} :: {
 			position: Vec3,
@@ -39,7 +39,7 @@ CameraController.setup = function(self: CameraController, player: Player.Player)
 	self.target =
 		Vec3.new(self.player.transform.position.x, self.player.transform.position.y, self.player.transform.position.z)
 end
-CameraController.update = function(self)
+CameraController.update = function(self: CameraController)
 	self.target.x = math.sin(math.rad(self.player.transform.rotation.z))
 	self.target.y = math.cos(math.rad(self.player.transform.rotation.z))
 	self.target.z = math.sin(math.rad(self.player.transform.rotation.y))

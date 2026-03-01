@@ -10,7 +10,7 @@ local SceneSwitcher = {
 }
 SceneSwitcher.__index = SceneSwitcher
 
-SceneSwitcher.new = function(): SceneSwitcher
+SceneSwitcher.new = function()
 	return setmetatable(
 		{} :: {
 			color: Color,
@@ -20,6 +20,7 @@ SceneSwitcher.new = function(): SceneSwitcher
 			scene_name: string,
 			is_launch: boolean,
 
+			start: (self: SceneSwitcher, scene_name: string) -> nil,
 			update: (self: SceneSwitcher) -> nil,
 		},
 		SceneSwitcher

@@ -38,6 +38,7 @@ public:
   gpu::TextureFormat getSwapchainFormat() const override;
   void waitForGpuIdle() override;
   String getDriver() const override;
+  GPUBackendAPI getBackendAPI() const override { return GPUBackendAPI::Vulkan; }
 
   // Internals for backend classes.
   VkInstance getVkInstance() const { return instance; }

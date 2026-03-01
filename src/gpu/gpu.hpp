@@ -8,18 +8,10 @@
 #include <core/def/macro.hpp>
 #include <core/def/types.hpp>
 
+#include "gpu_backend_api.hpp"
 #include "gpu_device.hpp"
 
 namespace sinen::gpu {
-
-enum class GraphicsAPI {
-  Vulkan,
-#ifdef SINEN_PLATFORM_WINDOWS
-  D3D12U,
-#endif
-  WebGPU,
-  SDLGPU,
-};
 
 class Backend {
 public:
@@ -31,7 +23,7 @@ public:
 class RHI {
 public:
   static Ptr<Backend> createBackend(Allocator *allocator,
-                                    const GraphicsAPI &api);
+                                    const GPUBackendAPI &api);
 };
 } // namespace sinen::gpu
 #endif

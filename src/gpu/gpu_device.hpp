@@ -1,5 +1,6 @@
 #ifndef SINEN_GPU_DEVICE_HPP
 #define SINEN_GPU_DEVICE_HPP
+#include "gpu_backend_api.hpp"
 #include "gpu_buffer.hpp"
 #include "gpu_command_buffer.hpp"
 #include "gpu_compute_pipeline.hpp"
@@ -41,6 +42,8 @@ public:
   virtual void waitForGpuIdle() = 0;
 
   virtual String getDriver() const = 0;
+
+  virtual GPUBackendAPI getBackendAPI() const = 0;
 
 protected:
   Device(const CreateInfo &createInfo) : createInfo(createInfo) {}

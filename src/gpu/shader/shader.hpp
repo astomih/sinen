@@ -24,6 +24,7 @@ public:
 
   void load(StringView name, ShaderStage stage, int numUniformData);
   void compileAndLoad(StringView name, ShaderStage stage);
+  void compileAndLoad(StringView name, ShaderStage stage, ShaderFormat format);
 
   bool isReady() const { return shader != nullptr; }
   Ptr<gpu::Shader> getRaw();

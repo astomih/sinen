@@ -63,6 +63,7 @@ public:
   gpu::TextureFormat getSwapchainFormat() const override;
   void waitForGpuIdle() override;
   String getDriver() const override;
+  GPUBackendAPI getBackendAPI() const override { return GPUBackendAPI::WebGPU; }
 
   std::shared_ptr<Device> get() {
     return std::dynamic_pointer_cast<Device>(getPtr());

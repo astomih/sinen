@@ -136,6 +136,19 @@ void Shader::load(StringView vertex_shader, ShaderStage stage,
   Graphics::addPreDrawFunc(*pollAndCreate);
 }
 void Shader::compileAndLoad(StringView name, ShaderStage stage) {
+  GPUBackendAPI backendAPI = Graphics::getDevice()->getBackendAPI();
+  ShaderFormat format;
+  switch (backendAPI) {
+  case GPUBackendAPI::WebGPU:
+    format = ShaderFormat::WGSL;
+    break;
+  default:
+    format = ShaderFormat::SPIRV;
+  }
+  compileAndLoad(name, stage, format);
+}
+void Shader::compileAndLoad(StringView name, ShaderStage stage,
+                            ShaderFormat format) {
 
   this->shader.reset();
   shader = makePtr<Ptr<gpu::Shader>>();
@@ -148,12 +161,8 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage) {
   group.add();
 
   const String str = name.data();
-  state->future = globalThreadPool().submit([state, str, stage] {
+  state->future = globalThreadPool().submit([state, str, stage, format] {
     auto device = Graphics::getDevice();
-    const auto format = (device && device->getDriver() == "webgpu")
-                            ? ShaderFormat::WGSL
-                            : ShaderFormat::SPIRV;
-
     ShaderCompiler compiler;
     ShaderCompiler::ReflectionData reflectionData{};
     state->spirv = compiler.compile(str, stage, format, reflectionData);
@@ -238,7 +247,13 @@ static int lShaderCompileAndLoad(lua_State *L) {
   auto &s = udPtr<Shader>(L, 1);
   const char *name = luaL_checkstring(L, 2);
   ShaderStage stage = static_cast<ShaderStage>(luaL_checkinteger(L, 3));
-  s->compileAndLoad(StringView(name), stage);
+
+  if (lua_gettop(L) >= 4) {
+    auto format = static_cast<ShaderFormat>(luaL_checkinteger(L, 4));
+    s->compileAndLoad(StringView(name), stage, format);
+  } else {
+    s->compileAndLoad(StringView(name), stage);
+  }
   return 0;
 }
 void registerShader(lua_State *L) {

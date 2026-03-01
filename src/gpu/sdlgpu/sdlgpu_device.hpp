@@ -55,6 +55,8 @@ public:
     return std::dynamic_pointer_cast<Device>(getPtr());
   }
 
+  GPUBackendAPI getBackendAPI() const override { return GPUBackendAPI::SDLGPU; }
+
 private:
   SDL_GPUDevice *device;
   SDL_Window *window;

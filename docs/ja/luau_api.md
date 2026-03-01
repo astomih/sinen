@@ -1,0 +1,1 @@
+# [Luau API](https://github.com/astomih/sinen/blob/main/api/sinen.luau)

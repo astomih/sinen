@@ -370,10 +370,8 @@ build/msvc2022-release/*
 
 build/msvc2026-debug/*
 !build/msvc2026-debug/.gitkeep
-!build/msvc2026-debug/sinen.exe
 build/msvc2026-release/*
 !build/msvc2026-release/.gitkeep
-!build/msvc2026-release/sinen.exe
 
 build/android/arm64-v8a_26_Release/*
 build/android/.gradle/*

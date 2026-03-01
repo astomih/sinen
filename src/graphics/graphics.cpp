@@ -464,6 +464,9 @@ void Graphics::drawModel(const Model &model, const Transform &transform) {
 }
 void Graphics::drawModelInstanced(const Model &model,
                                   const Array<Transform> &transforms) {
+  if (transforms.empty())
+    return;
+
   if (customPipeline.has_value() && customPipeline.value().get() != nullptr)
     currentPipeline = customPipeline.value();
   else

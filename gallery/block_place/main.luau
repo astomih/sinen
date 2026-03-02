@@ -413,13 +413,7 @@ local function drawRack()
 
 		local piece = rack[i]
 		if piece == nil then
-			sn.Graphics.drawText(
-				"USED",
-				hudFont,
-				sn.Vec2.new(x, SLOT_Y - 6.0),
-				sn.Color.new(0.7, 0.75, 0.86, 0.95),
-				22
-			)
+			sn.Graphics.drawText("USED", hudFont, sn.Vec2.new(x, SLOT_Y - 6.0), sn.Color.new(0.7, 0.75, 0.86, 0.95), 22)
 		else
 			local previewCell = 26.0
 			local drawW = piece.shape.w * previewCell
@@ -433,13 +427,7 @@ end
 
 local function drawHUD()
 	sn.Graphics.drawText("BLOCK PLACE", titleFont, sn.Vec2.new(0.0, 586.0), sn.Color.new(1.0, 1.0, 1.0, 0.95), 42)
-	sn.Graphics.drawText(
-		"Score  " .. score,
-		hudFont,
-		sn.Vec2.new(0.0, 544.0),
-		sn.Color.new(0.96, 0.97, 1.0, 0.95),
-		28
-	)
+	sn.Graphics.drawText("Score  " .. score, hudFont, sn.Vec2.new(0.0, 544.0), sn.Color.new(0.96, 0.97, 1.0, 0.95), 28)
 	sn.Graphics.drawText(
 		"Best   " .. bestScore,
 		hudFont,

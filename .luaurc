@@ -7,5 +7,10 @@
     ],
     "lint": {
       "FunctionUnused": false
-    }
+    },
+    "aliases": {
+      "sinen": "./api/sinen.luau"
+    },
+    "lintErrors": true,
+    "typeErrors": true
   }

@@ -634,3 +634,13 @@ declare Time: Time
 declare Log: Log
 declare ImGui: ImGui
 --]]
+
+return {
+	Buffer = Buffer,
+	Vec3 = Vec3,
+	Vec2 = Vec2,
+	Texture = Texture,
+	RenderTexture = RenderTexture, Sound = Sound,
+	Camera3D = Camera3D, Camera2D = Camera2D,
+	TextureKey = TextureKey, Model = Model, AABB = AABB, Timer = Timer, Shader = Shader, Font = Font, Color = Color, GraphicsPipeline = GraphicsPipeline, Pivot = Pivot, Rect = Rect, Transform = Transform, Collider = Collider, World3D = World3D, Synth = Synth, File = File, Arguments = Arguments, Event = Event, Script = Script, Filesystem = Filesystem, Random = Random, Window = Window, ShaderStage = ShaderStage, ShaderFormat = ShaderFormat, BuiltinShader = BuiltinShader, BuiltinPipelines = BuiltinPipelines, Graphics = Graphics, Physics = Physics, Keyboard = Keyboard, Mouse = Mouse, Gamepad = Gamepad, Periodic = Periodic, Time = Time, Log = Log, ImGui = ImGui
+}

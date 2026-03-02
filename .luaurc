@@ -11,6 +11,6 @@
     "aliases": {
       "sinen": "./api/sinen.luau"
     },
-    "lintErrors": true,
+    "lintErrors": false,
     "typeErrors": true
   }

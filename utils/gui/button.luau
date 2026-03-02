@@ -14,7 +14,7 @@ Button.new = function()
 	return self
 end
 
-Button.show = function(self, text: string, pos: Vec2, scale: Vec2)
+Button.show = function(self, text: string, pos: sn.Vec2, scale: sn.Vec2)
 	-- Mouse in _?
 	local mpos = sn.Mouse.getPositionOnScene()
 	if

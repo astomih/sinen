@@ -1,3 +1,4 @@
+local sn = require("@sinen")
 local World = require("./world")
 
 local Effect = {}
@@ -12,14 +13,14 @@ Effect.new = function()
 			start_speed: number,
 			start_size: number,
 			start_rotation: number,
-			start_color: Color,
+			start_color: sn.Color,
 			gravity_multiplier: number,
 			inherit_velocity: number,
 			play_on_awake: boolean,
 			max_particles: number,
-			transform: { Transform },
-			model: Model,
-			texture: Texture,
+			transform: { sn.Transform },
+			model: sn.Model,
+			texture: sn.Texture,
 			worlds: { World.World },
 			is_playing: boolean,
 			timer: number,
@@ -38,26 +39,26 @@ Effect.new = function()
 	self.start_speed = 5.0
 	self.start_size = 1.0
 	self.start_rotation = 0.0
-	self.start_color = Color.new(1, 1, 1, 1)
+	self.start_color = sn.Color.new(1, 1, 1, 1)
 	self.gravity_multiplier = 0.0
 	self.inherit_velocity = 0.0
 	self.play_on_awake = false
 	self.max_particles = 10
 
 	self.looping = false
-	self.texture = Texture.new()
+	self.texture = sn.Texture.new()
 	self.texture:fill(self.start_color)
 	self.transform = {}
-	self.model = Model.new()
+	self.model = sn.Model.new()
 	self.model:loadBox()
-	self.model:setTexture(TextureKey.BaseColor, self.texture)
+	self.model:setTexture(sn.TextureKey.BaseColor, self.texture)
 
 	self.worlds = {}
 	for i = 1, self.max_particles do
 		self.worlds[i] = World.new()
-		self.worlds[i].position = Vec3.new(0)
-		self.worlds[i].rotation = Vec3.new(0)
-		self.worlds[i].scale = Vec3.new(0.1)
+		self.worlds[i].position = sn.Vec3.new(0)
+		self.worlds[i].rotation = sn.Vec3.new(0)
+		self.worlds[i].scale = sn.Vec3.new(0.1)
 	end
 	self.is_playing = false
 	self.timer = 0.0
@@ -67,7 +68,7 @@ end
 export type Effect = typeof(Effect.new())
 
 Effect.impl = function(self: Effect)
-	local dT = Time.delta()
+	local dT = sn.Time.delta()
 	for i = 1, self.max_particles do
 		self.worlds[i].position.x = self.worlds[i].position.x + math.cos(i) * dT
 		self.worlds[i].position.y = self.worlds[i].position.y + math.sin(i) * dT
@@ -76,14 +77,14 @@ Effect.impl = function(self: Effect)
 end
 Effect.update = function(self: Effect)
 	--  if not self.is_playing then return end
-	local dT: number = Time.delta()
+	local dT: number = sn.Time.delta()
 	self.timer = self.timer + dT
 	if self.timer > self.start_lifetime then
 		self.timer = 0.0
 		for i = 1, self.max_particles do
-			self.worlds[i].position = Vec3.new(0)
-			self.worlds[i].rotation = Vec3.new(0)
-			self.worlds[i].scale = Vec3.new(0.1)
+			self.worlds[i].position = sn.Vec3.new(0)
+			self.worlds[i].rotation = sn.Vec3.new(0)
+			self.worlds[i].scale = sn.Vec3.new(0.1)
 		end
 		if not self.looping then
 			self.is_playing = false
@@ -93,7 +94,7 @@ Effect.update = function(self: Effect)
 	if self.is_playing then
 		self.transform = {}
 		for i = 1, self.max_particles do
-			local transform = Transform.new()
+			local transform = sn.Transform.new()
 			transform.position = self.worlds[i].position
 			transform.rotation = self.worlds[i].rotation
 			transform.scale = self.worlds[i].scale
@@ -104,7 +105,7 @@ end
 ---@param self Effect
 Effect.draw = function(self: Effect)
 	if self.is_playing then
-		Graphics.drawModelInstanced(self.model, self.transform)
+		sn.Graphics.drawModelInstanced(self.model, self.transform)
 	end
 end
 ---@param self Effect

@@ -1,3 +1,4 @@
+local sn = require("@sinen")
 --!nonstrict
 
 local BFSGrid = {}
@@ -70,7 +71,7 @@ local function backtrace(self, endX0: number, endY0: number)
 	local x = endX0
 	local y = endY0
 	while x ~= -1 and y ~= -1 do
-		table.insert(self._shortest, Vec2.new(x, y))
+		table.insert(self._shortest, sn.Vec2.new(x, y))
 		local idx = index0(self._w, x, y)
 		local px = self._prevX[idx]
 		local py = self._prevY[idx]

@@ -1,3 +1,4 @@
+local sn = require("@sinen")
 local GUIManager = require("./gui/gui_manager")
 local G = {} :: {
 	NOW_STAGE: number,
@@ -5,7 +6,7 @@ local G = {} :: {
 	COLLISION_SPACE: any,
 	COLLISION_SPACE_DIVISION: number,
 	TILE_SIZE: number,
-	DEFAULT_TEXTURE: Texture?,
+	DEFAULT_TEXTURE: sn.Texture?,
 	DEFAULT_FONT_NAME: string,
 	MAP_CHIP: {
 		FLOOR: number,
@@ -15,8 +16,8 @@ local G = {} :: {
 		PLAYER: number,
 	},
 	MAP_CHIP_WALKABLE: number,
-	FONT_DEFAULT32: Font,
-	FONT_DEFAULT64: Font,
+	FONT_DEFAULT32: sn.Font,
+	FONT_DEFAULT64: sn.Font,
 	GUI_MANAGER: GUIManager.GUIManager,
 }
 G.NOW_STAGE = 1
@@ -34,10 +35,10 @@ G.MAP_CHIP = {
 	PLAYER = 4,
 }
 G.MAP_CHIP_WALKABLE = 0
-G.FONT_DEFAULT32 = Font.new()
+G.FONT_DEFAULT32 = sn.Font.new()
 local GridGazerFont = "font/x16y32pxGridGazer.ttf"
 G.FONT_DEFAULT32:load(32, GridGazerFont)
-G.FONT_DEFAULT64 = Font.new()
+G.FONT_DEFAULT64 = sn.Font.new()
 G.FONT_DEFAULT64:load(64, GridGazerFont)
 -- FONT_DEFAULT128 = sn.Font.new()
 -- FONT_DEFAULT128:load(128, DEFAULT_FONT_NAME)

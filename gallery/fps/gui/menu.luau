@@ -1,3 +1,4 @@
+local sn = require("@sinen")
 local button = require("./button").new()
 local text = require("./text").new()
 local scroll = require("./scroll").new()
@@ -9,7 +10,7 @@ local function menu()
 		option_Window_size = false,
 		setup = function(self) end,
 		update = function(self)
-			local is_esc = Keyboard.isPressed(Keyboard.ESCAPE)
+			local is_esc = sn.Keyboard.isPressed(sn.Keyboard.ESCAPE)
 			if self.hide_next then
 				self.hide = not self.hide
 				self.hide_next = false
@@ -19,61 +20,61 @@ local function menu()
 				end
 			end
 			if self.option_Window_size then
-				text:show("Window Size", Vec2.new(0, 200), 50)
-				scroll:show(Vec2.new(200, 0), Vec2.new(20, 400))
+				text:show("Window Size", sn.Vec2.new(0, 200), 50)
+				scroll:show(sn.Vec2.new(200, 0), sn.Vec2.new(20, 400))
 				local offset = scroll.pos.y * 1.5
 				local start = 100
-				if button:show("1120x630", Vec2.new(0, start + offset), Vec2.new(200, 50)) then
-					Window.resize(Vec2.new(1120, 630))
+				if button:show("1120x630", sn.Vec2.new(0, start + offset), sn.Vec2.new(200, 50)) then
+					sn.Window.resize(sn.Vec2.new(1120, 630))
 				end
 				start = start - 100
-				if button:show("1280x720", Vec2.new(0, start + offset), Vec2.new(200, 50)) then
-					Window.resize(Vec2.new(1280, 720))
+				if button:show("1280x720", sn.Vec2.new(0, start + offset), sn.Vec2.new(200, 50)) then
+					sn.Window.resize(sn.Vec2.new(1280, 720))
 				end
 				start = start - 100
-				if button:show("1440x810", Vec2.new(0, start + offset), Vec2.new(200, 50)) then
-					Window.resize(Vec2.new(1440, 810))
+				if button:show("1440x810", sn.Vec2.new(0, start + offset), sn.Vec2.new(200, 50)) then
+					sn.Window.resize(sn.Vec2.new(1440, 810))
 				end
 				start = start - 100
-				if button:show("1600x900", Vec2.new(0, start + offset), Vec2.new(200, 50)) then
-					Window.resize(Vec2.new(1600, 900))
+				if button:show("1600x900", sn.Vec2.new(0, start + offset), sn.Vec2.new(200, 50)) then
+					sn.Window.resize(sn.Vec2.new(1600, 900))
 				end
 				start = start - 100
-				if button:show("1760x990", Vec2.new(0, start + offset), Vec2.new(200, 50)) then
-					Window.resize(Vec2.new(1760, 990))
+				if button:show("1760x990", sn.Vec2.new(0, start + offset), sn.Vec2.new(200, 50)) then
+					sn.Window.resize(sn.Vec2.new(1760, 990))
 				end
 				start = start - 100
-				if button:show("1920x1080", Vec2.new(0, start + offset), Vec2.new(200, 50)) then
-					Window.resize(Vec2.new(1920, 1080))
+				if button:show("1920x1080", sn.Vec2.new(0, start + offset), sn.Vec2.new(200, 50)) then
+					sn.Window.resize(sn.Vec2.new(1920, 1080))
 				end
-				if button:show("Back", Vec2.new(0, -300), Vec2.new(200, 50)) or is_esc then
+				if button:show("Back", sn.Vec2.new(0, -300), sn.Vec2.new(200, 50)) or is_esc then
 					self.option_Window_size = false
 				end
 
 				return
 			end
 			if self.option then
-				text:show("Option", Vec2.new(0, 200), 50)
-				if button:show("Window Size", Vec2.new(0, 100), Vec2.new(300, 50)) then
+				text:show("Option", sn.Vec2.new(0, 200), 50)
+				if button:show("Window Size", sn.Vec2.new(0, 100), sn.Vec2.new(300, 50)) then
 					self.option_Window_size = true
 				end
-				if button:show("Back", Vec2.new(0, -100), Vec2.new(200, 50)) or is_esc then
+				if button:show("Back", sn.Vec2.new(0, -100), sn.Vec2.new(200, 50)) or is_esc then
 					self.option = false
 				end
 				return
 			end
 			if not self.hide then
-				Mouse.hideCursor(false)
-				Mouse.setRelative(false)
-				text:show("Menu", Vec2.new(0, 200), 50)
-				if button:show("Resume", Vec2.new(0, 70), Vec2.new(200, 60)) or is_esc then
+				sn.Mouse.hideCursor(false)
+				sn.Mouse.setRelative(false)
+				text:show("Menu", sn.Vec2.new(0, 200), 50)
+				if button:show("Resume", sn.Vec2.new(0, 70), sn.Vec2.new(200, 60)) or is_esc then
 					self.hide_next = true
 				end
-				if button:show("Option", Vec2.new(0, 0), Vec2.new(200, 60)) then
+				if button:show("Option", sn.Vec2.new(0, 0), sn.Vec2.new(200, 60)) then
 					self.option = true
 				end
-				if button:show("Quit", Vec2.new(0, -70), Vec2.new(200, 60)) then
-					Script.load("main", ".")
+				if button:show("Quit", sn.Vec2.new(0, -70), sn.Vec2.new(200, 60)) then
+					sn.Script.load("main", ".")
 				end
 			end
 		end,

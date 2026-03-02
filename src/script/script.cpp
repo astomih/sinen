@@ -25,6 +25,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstring>
 #include <filesystem>
 #include <optional>
 #include <string_view>
@@ -65,9 +66,17 @@ int luaLError2(lua_State *L, const char *fmt, ...) {
 int luaLRef2(lua_State *L, int idx) { return lua_ref(L, idx); }
 void luaLUnref2(lua_State *L, int idx, int r) { lua_unref(L, r); }
 void pushSnNamed(lua_State *L, const char *name) {
+  lua_getglobal(L, "sn");
+  if (!lua_istable(L, -1)) {
+    lua_pop(L, 1);
+    lua_newtable(L);
+    lua_pushvalue(L, -1);
+    lua_setglobal(L, "sn");
+  }
   lua_newtable(L);
   lua_pushvalue(L, -1);
-  lua_setglobal(L, name);
+  lua_setfield(L, -3, name);
+  lua_remove(L, -2);
 }
 String convert(StringView name, const TablePair &p, bool isReturn) {
   String s;
@@ -127,6 +136,32 @@ enum class ScriptScenePhase {
 };
 static ScriptScenePhase gScenePhase = ScriptScenePhase::Running;
 static TaskGroup gSetupTasks;
+
+static int requireWithSinenAlias(lua_State *L) {
+  const char *moduleName = luaL_checkstring(L, 1);
+  if (std::strcmp(moduleName, "@sinen") == 0) {
+    lua_getglobal(L, "sn");
+    return 1;
+  }
+
+  lua_pushvalue(L, lua_upvalueindex(1));
+  lua_insert(L, 1);
+
+  const int nargs = lua_gettop(L) - 1;
+  lua_call(L, nargs, LUA_MULTRET);
+  return lua_gettop(L);
+}
+
+static void installRequireAlias(lua_State *L) {
+  lua_getglobal(L, "require");
+  if (!lua_isfunction(L, -1)) {
+    lua_pop(L, 1);
+    return;
+  }
+
+  lua_pushcclosure(L, requireWithSinenAlias, "require", 1);
+  lua_setglobal(L, "require");
+}
 
 static void drawNowLoadingOverlay() {
   if (gScenePhase != ScriptScenePhase::Loading) {
@@ -330,6 +365,7 @@ bool Script::initialize() {
   lua_setglobal(gLua, "sn");
 
   registerAll(gLua);
+  installRequireAlias(gLua);
 
   Graphics::addImGuiFunction(drawNowLoadingOverlay);
 #endif
@@ -359,10 +395,11 @@ void Script::shutdown() {
 }
 
 static const char *nothingSceneLua = R"(
-local font = Font.new()
+local sn = require("@sinen")
+local font = sn.Font.new()
 font:load(32)
 function draw()
-    Graphics.drawText("NO DATA", font, Vec2.new(0, 0), Color.new(1.0), 32, 0.0)
+    sn.Graphics.drawText("NO DATA", font, sn.Vec2.new(0, 0), sn.Color.new(1.0), 32, 0.0)
 end
 )";
 void Script::runScene() {

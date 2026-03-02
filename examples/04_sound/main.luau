@@ -1,16 +1,17 @@
+local sn = require("@sinen")
 local G = require("../global")
-local sound: Sound = Sound.new()
+local sound: sn.Sound = sn.Sound.new()
 sound:load("shot.wav")
 
 function update()
-	if Keyboard.isPressed(Keyboard.ESCAPE) then
-		Script.load("main", ".")
+	if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
+		sn.Script.load("main", ".")
 	end
-	if Keyboard.isPressed(Keyboard.SPACE) then
+	if sn.Keyboard.isPressed(sn.Keyboard.SPACE) then
 		sound:play()
 	end
 end
 
 function draw()
-	Graphics.drawText("Press SPACE key to play sound", G.font, Vec2.new(0), Color.new(1), 16)
+	sn.Graphics.drawText("Press SPACE key to play sound", G.font, sn.Vec2.new(0), sn.Color.new(1), 16)
 end

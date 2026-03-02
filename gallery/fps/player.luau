@@ -1,16 +1,17 @@
+local sn = require("@sinen")
 local G = require("./global")
 local Bullet = require("./bullet")
 local World = require("./world")
 local Grid = require("./grid")
 local calc_input_vector = require("./calc_input_vector")
 local is_collision = require("./is_collision")
-local input_vector: Vec3 = Vec3.new(0)
+local input_vector: sn.Vec3 = sn.Vec3.new(0)
 local speed = 2.0
 local Effect = require("./effect")
 local r1 = 0
 local r2 = 0
 
-local scopeTex = Texture.new()
+local scopeTex = sn.Texture.new()
 scopeTex:load("image/scope.png")
 
 ---@param map Grid
@@ -27,23 +28,23 @@ Player.__index = Player
 Player.new = function()
 	local self = setmetatable(
 		{} :: {
-			transform: Transform,
+			transform: sn.Transform,
 			rotationZ: number,
-			model: Model,
+			model: sn.Model,
 			bullets: { Bullet.Bullet },
 			hp: number,
 			hpMax: number,
-			hpColor: Color,
+			hpColor: sn.Color,
 			stamina: number,
 			stamina_max: number,
 			stamina_recover_speed: number,
 			stamina_boost_cost: number,
 			stamina_run_cost: number,
-			stamina_texture: Texture,
-			stamina_rect: Rect,
-			stamina_max_texture: Texture,
-			stamina_max_rect: Rect,
-			aabb: AABB,
+			stamina_texture: sn.Texture,
+			stamina_rect: sn.Rect,
+			stamina_max_texture: sn.Texture,
+			stamina_max_rect: sn.Rect,
+			aabb: sn.AABB,
 			bullet_time: number,
 			bullet_timer: number,
 			bullet_flag: boolean,
@@ -53,12 +54,12 @@ Player.new = function()
 			boost_time: number,
 			boost_timer: number,
 			boost_mag: number,
-			boost_sound: Sound,
+			boost_sound: sn.Sound,
 			is_boost: boolean,
 			speed_min: number,
 			speed_max: number,
 			blur_time: number,
-			scopePos: Vec2,
+			scopePos: sn.Vec2,
 			horizontal: number,
 			vertical: number,
 
@@ -81,7 +82,7 @@ Player.new = function()
 	self.bullets = {}
 	self.hp = 0
 	self.hpMax = 100
-	self.hpColor = Color.new(1, 1, 1, 1)
+	self.hpColor = sn.Color.new(1, 1, 1, 1)
 	self.stamina = 0
 	self.stamina_max = 100
 	self.stamina_recover_speed = 20
@@ -99,7 +100,7 @@ Player.new = function()
 	self.speed_min = 6.0
 	self.speed_max = 16.0
 	self.blur_time = 0.0
-	self.scopePos = Vec2.new(0)
+	self.scopePos = sn.Vec2.new(0)
 	self.horizontal = math.pi
 	self.vertical = 0.0
 	return self
@@ -114,29 +115,29 @@ Player.hoge = function(self: Player)
 	print("hoge")
 end
 Player.setup = function(self: any, map: any, map_size_x: number, map_size_y: number)
-	self.model = Model.new()
+	self.model = sn.Model.new()
 	self.model:load("model/enemy.glb")
-	self.transform = Transform.new()
-	self.aabb = AABB.new()
+	self.transform = sn.Transform.new()
+	self.aabb = sn.AABB.new()
 	self.bullet_time = 0.1
 	self.bullet_timer = 0.0
 	self.hp = 100
 	self.stamina = self.stamina_max
-	self.stamina_texture = Texture.new()
-	self.stamina_texture:fill(Color.new(1.0, 1.0, 1.0, 0.9))
-	self.stamina_max_texture = Texture.new()
-	self.stamina_max_texture:fill(Color.new(0.0, 0.0, 0.0, 0.2))
-	self.stamina_rect = Rect.new(Vec2.new(0, 350), Vec2.new(300, 10))
-	self.stamina_max_rect = Rect.new(Vec2.new(0, 350), Vec2.new(300, 10))
+	self.stamina_texture = sn.Texture.new()
+	self.stamina_texture:fill(sn.Color.new(1.0, 1.0, 1.0, 0.9))
+	self.stamina_max_texture = sn.Texture.new()
+	self.stamina_max_texture:fill(sn.Color.new(0.0, 0.0, 0.0, 0.2))
+	self.stamina_rect = sn.Rect.new(sn.Vec2.new(0, 350), sn.Vec2.new(300, 10))
+	self.stamina_max_rect = sn.Rect.new(sn.Vec2.new(0, 350), sn.Vec2.new(300, 10))
 
 	self:render_text()
 	r1 = 0
 	r2 = 0
 	while decide_pos(map, map_size_x, map_size_y) == true do
 	end
-	self.transform.position = Vec3.new(r1 * 2, r2 * 2, 1.0)
-	self.transform.scale = Vec3.new(1)
-	self.boost_sound = Sound.new()
+	self.transform.position = sn.Vec3.new(r1 * 2, r2 * 2, 1.0)
+	self.transform.scale = sn.Vec3.new(1)
+	self.boost_sound = sn.Sound.new()
 	self.boost_sound:load("sound/boost.wav")
 	self.boost_sound:setVolume(0.2)
 end
@@ -151,48 +152,48 @@ Player.update = function(
 	input_vector = calc_input_vector()
 	local is_move = input_vector.x ~= 0 or input_vector.y ~= 0
 
-	if Keyboard.isDown(Keyboard.LSHIFT) and is_move then
+	if sn.Keyboard.isDown(sn.Keyboard.LSHIFT) and is_move then
 		speed = self.speed_max
-		self.stamina = self.stamina - self.stamina_run_cost * Time.delta()
+		self.stamina = self.stamina - self.stamina_run_cost * sn.Time.delta()
 		if self.stamina <= 0.0 then
 			self.stamina = 0.0
 			speed = self.speed_min
 		end
 	else
 		speed = self.speed_min
-		self.stamina = self.stamina + Time.delta() * self.stamina_recover_speed
+		self.stamina = self.stamina + sn.Time.delta() * self.stamina_recover_speed
 		if self.stamina > self.stamina_max then
 			self.stamina = self.stamina_max
 		end
 	end
 	-- bullet
-	if Mouse.isPressed(Mouse.LEFT) then
+	if sn.Mouse.isPressed(sn.Mouse.LEFT) then
 		self.bullet_flag = true
 	end
-	self.bullet_timer = self.bullet_timer + Time.delta()
+	self.bullet_timer = self.bullet_timer + sn.Time.delta()
 	if self.bullet_flag then
-		if self.bullet_timer > self.bullet_time and (Mouse.isDown(Mouse.LEFT)) then
-			local forward = Vec3.new(
+		if self.bullet_timer > self.bullet_time and (sn.Mouse.isDown(sn.Mouse.LEFT)) then
+			local forward = sn.Vec3.new(
 				math.sin(math.rad(self.transform.rotation.z)),
 				math.cos(math.rad(self.transform.rotation.z)),
 				math.sin(math.rad(self.transform.rotation.y))
 			)
-			local cross = Vec3.new(
+			local cross = sn.Vec3.new(
 				math.sin(math.rad(self.transform.rotation.z + 90)),
 				math.cos(math.rad(self.transform.rotation.z + 90)),
 				-0.5
 			)
 
-			local rot = forward * Vec3.new(1000, 1000, 1000) - cross
+			local rot = forward * sn.Vec3.new(1000, 1000, 1000) - cross
 			rot = rot:normalize()
 
 			local b = Bullet.new()
 			b:setup(self.transform, rot)
-			b.transform.position = b.transform.position + cross * Vec3.new(0.25, 0.25, 1)
+			b.transform.position = b.transform.position + cross * sn.Vec3.new(0.25, 0.25, 1)
 			table.insert(self.bullets, b)
 			self.bullet_timer = 0.0
 		end
-		if Mouse.isReleased(Mouse.LEFT) then
+		if sn.Mouse.isReleased(sn.Mouse.LEFT) then
 			self.bullet_flag = false
 		end
 	end
@@ -200,12 +201,12 @@ Player.update = function(
 		if self.boost_timer >= self.boost_time then
 			self:boost_reset()
 		else
-			local t = Periodic.sin0_1(self.boost_time * 2.0, self.boost_timer) - 0.5
+			local t = sn.Periodic.sin0_1(self.boost_time * 2.0, self.boost_timer) - 0.5
 			t = t * 0.2
-			self.boost_timer = self.boost_timer + Time.delta()
+			self.boost_timer = self.boost_timer + sn.Time.delta()
 		end
 	else
-		if Keyboard.isPressed(Keyboard.SPACE) and is_move then
+		if sn.Keyboard.isPressed(sn.Keyboard.SPACE) and is_move then
 			if self.stamina >= self.stamina_boost_cost then
 				self.stamina = self.stamina - self.stamina_boost_cost
 				if self.stamina <= 0.0 then
@@ -213,10 +214,10 @@ Player.update = function(
 				end
 				---@type Effect
 				local efk = Effect.new()
-				efk.texture:fill(Color.new(0.6, 0.6, 1.0, 1.0))
+				efk.texture:fill(sn.Color.new(0.6, 0.6, 1.0, 1.0))
 				efk.impl = function(e: Effect.Effect)
 					for i = 1, e.max_particles do
-						local t = Time.delta() * 2
+						local t = sn.Time.delta() * 2
 						e.worlds[i].position.x = e.worlds[i].position.x + math.cos(i) * t
 						e.worlds[i].position.y = e.worlds[i].position.y + math.sin(i) * t
 						e.worlds[i].position.z = e.worlds[i].position.z + t
@@ -238,7 +239,7 @@ Player.update = function(
 		v:update()
 		if v.current_time > v.life_time then
 			local efk = Effect.new()
-			efk.texture:fill(Color.new(1.0, 1.0, 1.0, 1.0))
+			efk.texture:fill(sn.Color.new(1.0, 1.0, 1.0, 1.0))
 			for j = 1, efk.max_particles do
 				efk.worlds[j].position = v.transform.position:copy()
 			end
@@ -253,7 +254,7 @@ Player.update = function(
 			table.remove(self.efks, i)
 		end
 	end
-	local before_pos = Vec3.new(self.transform.position.x, self.transform.position.y, self.transform.position.z)
+	local before_pos = sn.Vec3.new(self.transform.position.x, self.transform.position.y, self.transform.position.z)
 	local final_speed = 0.0
 	if self.is_boost then
 		final_speed = self.speed_max * self.boost
@@ -269,33 +270,33 @@ Player.update = function(
 	if input_vector.y ~= 0 then
 		flag = true
 		self.transform.position = self.transform.position
-			+ Vec3.new(
-				math.sin(math.rad(self.transform.rotation.z)) * final_speed * Time.delta() * input_vector.y,
-				math.cos(math.rad(self.transform.rotation.z)) * final_speed * Time.delta() * input_vector.y,
+			+ sn.Vec3.new(
+				math.sin(math.rad(self.transform.rotation.z)) * final_speed * sn.Time.delta() * input_vector.y,
+				math.cos(math.rad(self.transform.rotation.z)) * final_speed * sn.Time.delta() * input_vector.y,
 				0
 			)
 	end
 	if input_vector.x ~= 0 then
 		flag = true
 		self.transform.position = self.transform.position
-			+ Vec3.new(
-				math.sin(math.rad(self.transform.rotation.z + 90 * input_vector.x)) * final_speed * Time.delta(),
-				math.cos(math.rad(self.transform.rotation.z + 90 * input_vector.x)) * final_speed * Time.delta(),
+			+ sn.Vec3.new(
+				math.sin(math.rad(self.transform.rotation.z + 90 * input_vector.x)) * final_speed * sn.Time.delta(),
+				math.cos(math.rad(self.transform.rotation.z + 90 * input_vector.x)) * final_speed * sn.Time.delta(),
 				0
 			)
 	end
 
 	if flag then
-		local dxy = Vec2.new(self.transform.position.x, self.transform.position.y)
-			- Vec2.new(before_pos.x, before_pos.y)
+		local dxy = sn.Vec2.new(self.transform.position.x, self.transform.position.y)
+			- sn.Vec2.new(before_pos.x, before_pos.y)
 		self.aabb:updateWorld(
-			self.transform.position - Vec3.new(0, dxy.y, 0),
+			self.transform.position - sn.Vec3.new(0, dxy.y, 0),
 			self.transform.scale,
 			self.model:getAABB()
 		)
 		if
 			is_collision(
-				self.transform.position - Vec3.new(0, dxy.y, 0),
+				self.transform.position - sn.Vec3.new(0, dxy.y, 0),
 				self.aabb,
 				map,
 				map_draw3ds,
@@ -306,13 +307,13 @@ Player.update = function(
 			self.transform.position.x = before_pos.x
 		end
 		self.aabb:updateWorld(
-			self.transform.position - Vec3.new(dxy.x, 0, 0),
+			self.transform.position - sn.Vec3.new(dxy.x, 0, 0),
 			self.transform.scale,
 			self.model:getAABB()
 		)
 		if
 			is_collision(
-				self.transform.position - Vec3.new(dxy.x, 0, 0),
+				self.transform.position - sn.Vec3.new(dxy.x, 0, 0),
 				self.aabb,
 				map,
 				map_draw3ds,
@@ -329,44 +330,44 @@ Player.update = function(
 	local maxY = map_size_y * G.TILE_SIZE
 	self.transform.position.x = math.max(minX, math.min(maxX, self.transform.position.x))
 	self.transform.position.y = math.max(minY, math.min(maxY, self.transform.position.y))
-	local pos = Mouse.getPositionOnScene()
-	local camera2DHalf = Graphics.getCamera2D():half()
+	local pos = sn.Mouse.getPositionOnScene()
+	local camera2DHalf = sn.Graphics.getCamera2D():half()
 	self.transform.rotation.y = self.transform.rotation.y + math.sin(pos.y / camera2DHalf.y) * 32.0
 
 	self.transform.rotation.z = self.transform.rotation.z + math.sin(pos.x / camera2DHalf.x) * 32.0
-	Mouse.setPositionOnScene(Vec2.new(0.0, 0.0))
+	sn.Mouse.setPositionOnScene(sn.Vec2.new(0.0, 0.0))
 	local s_ratio = self.stamina / self.stamina_max
 	self.stamina_rect.width = s_ratio * 300
 	if s_ratio <= 0.2 then
-		self.stamina_texture:fill(Color.new(1.0, 0.0, 0.0, 0.9))
+		self.stamina_texture:fill(sn.Color.new(1.0, 0.0, 0.0, 0.9))
 	else
-		self.stamina_texture:fill(Color.new(1.0, 1.0, 1.0, 0.9))
+		self.stamina_texture:fill(sn.Color.new(1.0, 1.0, 1.0, 0.9))
 	end
 end
 ---@param self Player
 Player.draw3 = function(self: Player)
 	for i: number, v: Effect.Effect in ipairs(self.efks) do
-		Graphics.setTexture(0, v.texture)
+		sn.Graphics.setTexture(0, v.texture)
 		v:draw()
 	end
 	for i, v in ipairs(self.bullets) do
-		Graphics.setTexture(0, v.texture)
+		sn.Graphics.setTexture(0, v.texture)
 		v:draw()
 	end
 end
 ---@param self Player
 Player.draw2 = function(self: Player)
-	Graphics.drawText("HP: " .. self.hp, G.FONT_DEFAULT64, Vec2.new(0, 300), self.hpColor, 32)
-	Graphics.drawImage(self.stamina_max_texture, self.stamina_max_rect)
-	Graphics.drawImage(self.stamina_texture, self.stamina_rect)
-	Graphics.drawImage(scopeTex, Rect.new(self.scopePos, scopeTex:size()))
+	sn.Graphics.drawText("HP: " .. self.hp, G.FONT_DEFAULT64, sn.Vec2.new(0, 300), self.hpColor, 32)
+	sn.Graphics.drawImage(self.stamina_max_texture, self.stamina_max_rect)
+	sn.Graphics.drawImage(self.stamina_texture, self.stamina_rect)
+	sn.Graphics.drawImage(scopeTex, sn.Rect.new(self.scopePos, scopeTex:size()))
 end
 ---@param self Player
 Player.render_text = function(self: Player)
 	if self.hp / self.hpMax <= 0.2 then
-		self.hpColor = Color.new(1, 0.0, 0.0, 0.8)
+		self.hpColor = sn.Color.new(1, 0.0, 0.0, 0.8)
 	else
-		self.hpColor = Color.new(1, 1, 1, 0.9)
+		self.hpColor = sn.Color.new(1, 1, 1, 0.9)
 	end
 end
 

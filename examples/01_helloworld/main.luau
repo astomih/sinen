@@ -1,11 +1,12 @@
-local font: Font = Font.new()
+local sn = require("@sinen")
+local font: sn.Font = sn.Font.new()
 font:load(32)
 function update()
-	if Keyboard.isPressed(Keyboard.ESCAPE) then
-		Script.load("main", ".")
+	if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
+		sn.Script.load("main", ".")
 	end
 end
 
 function draw()
-	Graphics.drawText("Hello World!", font, Vec2.new(0, 0), Color.new(1.0), 32)
+	sn.Graphics.drawText("Hello World!", font, sn.Vec2.new(0, 0), sn.Color.new(1.0), 32)
 end

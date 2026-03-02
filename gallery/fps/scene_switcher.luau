@@ -1,7 +1,8 @@
+local sn = require("@sinen")
 ---@class SceneSwitcher
 
 local SceneSwitcher = {
-	color = Color.new(0, 0, 0, 0.0),
+	color = sn.Color.new(0, 0, 0, 0.0),
 	time = 0.25,
 	timer = 0.0,
 	flag = false,
@@ -13,7 +14,7 @@ SceneSwitcher.__index = SceneSwitcher
 SceneSwitcher.new = function()
 	return setmetatable(
 		{} :: {
-			color: Color,
+			color: sn.Color,
 			time: number,
 			timer: number,
 			flag: boolean,
@@ -32,7 +33,7 @@ SceneSwitcher.update = function(self: SceneSwitcher)
 	if self.flag then
 		if not self.is_launch then
 			if self.timer < self.time then
-				self.timer = self.timer + Time.delta()
+				self.timer = self.timer + sn.Time.delta()
 				local t = self.timer * (1.0 / self.time)
 				if t > 1.0 then
 					t = 1.0
@@ -40,24 +41,24 @@ SceneSwitcher.update = function(self: SceneSwitcher)
 				if t < 0.0 then
 					t = 1.0
 				end
-				self.color = Color.new(self.color.r, self.color.g, self.color.b, t)
+				self.color = sn.Color.new(self.color.r, self.color.g, self.color.b, t)
 			else
 				self.timer = 0
-				self.color = Color.new(self.color.r, self.color.g, self.color.b, 1.0)
+				self.color = sn.Color.new(self.color.r, self.color.g, self.color.b, 1.0)
 				self.flag = false
-				Script.load(self.scene_name)
+				sn.Script.load(self.scene_name)
 			end
 		else
 			if self.timer > 0.0 then
-				self.timer = self.timer - Time.delta()
+				self.timer = self.timer - sn.Time.delta()
 				local t = self.timer * (1.0 / self.time)
 				if t < 0.0 then
 					t = 0.0
 				end
-				self.color = Color.new(self.color.r, self.color.g, self.color.b, t)
+				self.color = sn.Color.new(self.color.r, self.color.g, self.color.b, t)
 			else
 				self.flag = false
-				self.color = Color.new(self.color.r, self.color.g, self.color.b, 0.0)
+				self.color = sn.Color.new(self.color.r, self.color.g, self.color.b, 0.0)
 				self.timer = 0.0
 			end
 		end
@@ -65,17 +66,17 @@ SceneSwitcher.update = function(self: SceneSwitcher)
 end
 
 SceneSwitcher.draw = function(self)
-	Graphics.drawRect(Rect.new(Vec2.new(0), Window.size()), self.color)
+	sn.Graphics.drawRect(sn.Rect.new(sn.Vec2.new(0), sn.Window.size()), self.color)
 end
 
 SceneSwitcher.start = function(self, scene_name)
 	self.is_launch = string.len(scene_name) == 0
 	if self.is_launch then
-		self.color = Color.new(self.color.r, self.color.g, self.color.b, 1.0)
+		self.color = sn.Color.new(self.color.r, self.color.g, self.color.b, 1.0)
 		self.flag = false
 		self.timer = self.time
 	else
-		self.color = Color.new(self.color.r, self.color.g, self.color.b, 0.0)
+		self.color = sn.Color.new(self.color.r, self.color.g, self.color.b, 0.0)
 		self.timer = 0.0
 	end
 	self.scene_name = scene_name

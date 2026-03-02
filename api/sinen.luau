@@ -2,7 +2,9 @@
 
 -- This file is a Luau definition file for Sinen's Lua API.
 
-export type Buffer = {}
+export type Buffer = {
+	new: (array: { any }) -> Buffer,
+}
 
 local Vec3Impl = {}
 Vec3Impl.new = function(): Vec3
@@ -11,7 +13,7 @@ Vec3Impl.new = function(): Vec3
 			x: number,
 			y: number,
 			z: number,
-
+			new: ((x: number, y: number, z: number) -> Vec3) & ((value: number) -> Vec3),
 			copy: (self: Vec3) -> Vec3,
 			length: (self: Vec3) -> number,
 			forward: (self: Vec3, rotation: Vec3) -> Vec3,
@@ -28,13 +30,13 @@ Vec3Impl.__index = Vec3Impl
 Vec3Impl.__add = function(a: Vec3, b: Vec3): Vec3
 	error("Not implemented")
 end
-Vec3Impl.__mul = function(a: Vec3 , b: (Vec3 | number)): Vec3
+Vec3Impl.__mul = function(a: Vec3, b: Vec3 | number): Vec3
 	error("Not implemented")
 end
 Vec3Impl.__sub = function(a: Vec3, b: Vec3): Vec3
 	error("Not implemented")
 end
-Vec3Impl.__div = function(a: Vec3, b: (Vec3 | number)): Vec3
+Vec3Impl.__div = function(a: Vec3, b: Vec3 | number): Vec3
 	error("Not implemented")
 end
 export type Vec3 = typeof(Vec3Impl.new())
@@ -45,7 +47,7 @@ Vec2Impl.new = function(): Vec2
 		{} :: {
 			x: number,
 			y: number,
-
+			new: ((x: number, y: number) -> Vec2) & ((value: number) -> Vec2),
 			copy: (self: Vec2) -> Vec2,
 			length: (self: Vec2) -> number,
 			normalize: (self: Vec2) -> Vec2,
@@ -61,13 +63,13 @@ Vec2Impl.__index = Vec2Impl
 Vec2Impl.__add = function(a: Vec2, b: Vec2): Vec2
 	error("Not implemented")
 end
-Vec2Impl.__mul = function(a: Vec2 , b: (Vec2 | number)): Vec2
+Vec2Impl.__mul = function(a: Vec2, b: Vec2 | number): Vec2
 	error("Not implemented")
 end
 Vec2Impl.__sub = function(a: Vec2, b: Vec2): Vec2
 	error("Not implemented")
 end
-Vec2Impl.__div = function(a: Vec2, b: (Vec2 | number)): Vec2
+Vec2Impl.__div = function(a: Vec2, b: Vec2 | number): Vec2
 	error("Not implemented")
 end
 export type Vec2 = typeof(Vec2Impl.new())
@@ -90,6 +92,12 @@ export type Rect = {
 	width: number,
 	height: number,
 
+	new: (
+		((x: number, y: number, width: number, height: number) -> Rect)
+		& ((position: Vec2, size: Vec2) -> Rect)
+		& ((pivot: Pivot, x: number, y: number, w: number, h: number) -> Rect)
+		& ((pivot: Pivot, pos: Vec2, size: Vec2) -> Rect)
+	),
 	topLeft: (self: Rect) -> Vec2,
 	topCenter: (self: Rect) -> Vec2,
 	topRight: (self: Rect) -> Vec2,
@@ -106,12 +114,14 @@ export type Rect = {
 }
 
 export type Transform = {
+	new: () -> Transform,
 	position: Vec3,
 	rotation: Vec3,
 	scale: Vec3,
 }
 
 export type AABB = {
+	new: () -> AABB,
 	min: Vec3,
 	max: Vec3,
 	updateWorld: (self: AABB, position: Vec3, scale: Vec3, modelAABB: AABB) -> nil,
@@ -119,6 +129,10 @@ export type AABB = {
 }
 
 export type Color = {
+	new: ((r: number, g: number, b: number, a: number) -> Color)
+		& ((value: number, a: number) -> Color)
+		& ((value: number) -> Color)
+		& (() -> Color),
 	r: number,
 	g: number,
 	b: number,
@@ -126,6 +140,7 @@ export type Color = {
 }
 
 export type Texture = {
+	new: (() -> Texture) & ((width: number, height: number) -> Texture),
 	fill: (self: Texture, color: Color) -> nil,
 	blend: (self: Texture, color: Color) -> nil,
 	copy: (self: Texture) -> Texture,
@@ -136,10 +151,12 @@ export type Texture = {
 }
 
 export type RenderTexture = {
+	new: () -> RenderTexture,
 	create: (self: RenderTexture, x: number, y: number) -> nil,
 }
 
 export type Sound = {
+	new: () -> Sound,
 	load: (self: Sound, path: string) -> nil,
 	loadFromPath: (self: Sound, path: string) -> nil,
 	play: (self: Sound) -> nil,
@@ -150,6 +167,7 @@ export type Sound = {
 }
 
 export type Camera3D = {
+	new: () -> Camera3D,
 	lookat: (self: Camera3D, position: Vec3, target: Vec3, up: Vec3) -> nil,
 	perspective: (self: Camera3D, fov: number, aspect: number, near: number, far: number) -> nil,
 	orthographic: (self: Camera3D, width: number, height: number, near: number, far: number) -> nil,
@@ -160,6 +178,7 @@ export type Camera3D = {
 }
 
 export type Camera2D = {
+	new: () -> Camera2D,
 	resize: (self: Camera2D, size: Vec2) -> nil,
 	windowRatio: (self: Camera2D) -> Vec2,
 	invWindowRatio: (self: Camera2D) -> Vec2,
@@ -187,6 +206,7 @@ export type TextureKey = {
 }
 
 export type Model = {
+	new: () -> Model,
 	getAABB: (self: Model) -> AABB,
 	load: ((self: Model, path: string) -> nil) & ((self: Model, buffer: Buffer) -> nil),
 	loadSprite: (self: Model) -> nil,
@@ -200,6 +220,7 @@ export type Model = {
 }
 
 export type Timer = {
+	new: () -> Timer,
 	start: (self: Timer) -> nil,
 	stop: (self: Timer) -> nil,
 	isStarted: (self: Timer) -> boolean,
@@ -219,11 +240,16 @@ export type ShaderFormat = {
 }
 
 export type Shader = {
+	new: () -> Shader,
 	load: (self: Shader, path: string, shaderStage: ShaderStage, uniform_count: number) -> nil,
 	compileAndLoad: (self: Shader, source: string, shaderStage: ShaderStage, shaderFormat: ShaderFormat?) -> nil,
 }
 
 export type Font = {
+	new: (() -> Font)
+		& ((size: number) -> Font)
+		& ((size: number, path: string) -> Font)
+		& ((size: number, buffer: Buffer) -> Font),
 	load: (
 		((self: Font, size: number) -> nil)
 		& ((self: Font, size: number, path: string) -> nil)
@@ -233,8 +259,8 @@ export type Font = {
 	region: (self: Font, text: string, fontSize: number, pivot: number, position: Vec2) -> Rect,
 }
 
-
 export type GraphicsPipeline = {
+	new: () -> GraphicsPipeline,
 	setVertexShader: (self: GraphicsPipeline, shader: Shader) -> nil,
 	setFragmentShader: (self: GraphicsPipeline, shader: Shader) -> nil,
 	setEnableDepthTest: (self: GraphicsPipeline, enable: boolean) -> nil,
@@ -267,6 +293,7 @@ export type Collider = {
 }
 
 export type World3D = {
+	new: () -> World3D,
 	newBoxCollider: (self: World3D, transform: Transform, isStatic: boolean) -> Collider,
 	newSphereCollider: (self: World3D, position: Vec3, radius: number, isStatic: boolean) -> Collider,
 	newCylinderCollider: (
@@ -515,6 +542,7 @@ export type Time = {
 }
 
 export type File = {
+	new: () -> File,
 	--- mode:
 	--- "r": Open a file for reading. The file must exist.
 	--- "w": Create an empty file for writing. If a file with the same name already
@@ -581,6 +609,7 @@ export type ImGui = {
 }
 
 export type Synth = {
+	new: () -> Synth,
 	setBpm: (self: Synth, bpm: number) -> nil,
 	setStepBeats: (self: Synth, stepBeats: number) -> nil,
 	setADSR: (self: Synth, a: number, d: number, s: number, r: number) -> nil,
@@ -590,57 +619,47 @@ export type Synth = {
 	stop: (self: Synth) -> nil,
 }
 
-----[[
-declare Buffer: typeof({}::{new: (array: { any }) -> Buffer})
-declare Vec3: typeof({}::{new: ((x: number, y: number, z: number) -> Vec3) & ((value: number) -> Vec3)})
-declare Vec2: typeof({}::{new: ((x: number, y: number) -> Vec2) & ((value: number) -> Vec2)})
-declare Texture: typeof({}::{new: (() -> Texture) & ((width: number, height: number) -> Texture)})
-declare RenderTexture: typeof({}::{new: () -> RenderTexture})
-declare Sound: typeof({}::{new: () -> Sound})
-declare Camera3D: typeof({}::{new: () -> Camera3D})
-declare Camera2D: typeof({}::{new: () -> Camera2D})
-declare TextureKey: TextureKey
-declare Model: typeof({}::{new: () -> Model})
-declare AABB: typeof({}::{new: () -> AABB})
-declare Timer: typeof({}::{new: () -> Timer})
-declare Shader: typeof({}::{new: () -> Shader})
-declare Font: typeof({}::{new: (()-> Font) &((size: number) -> Font) & ((size: number, path: string) -> Font) & ((size: number, buffer: Buffer) -> Font)})
-declare Color: typeof({}::{new: ((r: number, g: number, b: number, a: number) -> Color) & ((value: number, a: number) -> Color) & ((value: number) -> Color) & (() -> Color)})
-declare GraphicsPipeline: typeof({}::{new: () -> GraphicsPipeline})
-declare Pivot: Pivot
-declare Rect: typeof({}::{new: (((x: number, y: number, width: number, height: number) -> Rect) & ((position: Vec2, size: Vec2) -> Rect) & ((pivot: Pivot, x: number, y: number, w: number, h: number) -> Rect) & ((pivot: Pivot, pos: Vec2, size: Vec2) -> Rect))})
-declare Transform: typeof({}::{new: () -> Transform})
-declare Collider: Collider
-declare World3D: typeof({}::{new: () -> World3D})
-declare Synth: typeof({}::{new: () -> Synth})
-declare File: typeof({}::{new: () -> File})
-declare Arguments: Arguments
-declare Event: Event
-declare Script: Script
-declare Filesystem: Filesystem
-declare Random: Random
-declare Window: Window
-declare ShaderStage: ShaderStage
-declare ShaderFormat: ShaderFormat
-declare BuiltinShader: BuiltinShader
-declare BuiltinPipelines: BuiltinPipelines
-declare Graphics: Graphics
-declare Physics: Physics
-declare Keyboard: Keyboard
-declare Mouse: Mouse
-declare Gamepad: Gamepad
-declare Periodic: Periodic
-declare Time: Time
-declare Log: Log
-declare ImGui: ImGui
---]]
-
 return {
-	Buffer = Buffer,
-	Vec3 = Vec3,
-	Vec2 = Vec2,
-	Texture = Texture,
-	RenderTexture = RenderTexture, Sound = Sound,
-	Camera3D = Camera3D, Camera2D = Camera2D,
-	TextureKey = TextureKey, Model = Model, AABB = AABB, Timer = Timer, Shader = Shader, Font = Font, Color = Color, GraphicsPipeline = GraphicsPipeline, Pivot = Pivot, Rect = Rect, Transform = Transform, Collider = Collider, World3D = World3D, Synth = Synth, File = File, Arguments = Arguments, Event = Event, Script = Script, Filesystem = Filesystem, Random = Random, Window = Window, ShaderStage = ShaderStage, ShaderFormat = ShaderFormat, BuiltinShader = BuiltinShader, BuiltinPipelines = BuiltinPipelines, Graphics = Graphics, Physics = Physics, Keyboard = Keyboard, Mouse = Mouse, Gamepad = Gamepad, Periodic = Periodic, Time = Time, Log = Log, ImGui = ImGui
+	Buffer = {} :: Buffer,
+	Vec3 = Vec3Impl,
+	Vec2 = Vec2Impl,
+	Texture = {} :: Texture,
+	RenderTexture = {} :: RenderTexture,
+	Sound = {} :: Sound,
+	Camera3D = {} :: Camera3D,
+	Camera2D = {} :: Camera2D,
+	TextureKey = {} :: TextureKey,
+	Model = {} :: Model,
+	AABB = {} :: AABB,
+	Timer = {} :: Timer,
+	Shader = {} :: Shader,
+	Font = {} :: Font,
+	Color = {} :: Color,
+	GraphicsPipeline = {} :: GraphicsPipeline,
+	Pivot = {} :: Pivot,
+	Rect = {} :: Rect,
+	Transform = {} :: Transform,
+	Collider = {} :: Collider,
+	World3D = {} :: World3D,
+	Synth = {} :: Synth,
+	File = {} :: File,
+	Arguments = {} :: Arguments,
+	Event = {} :: Event,
+	Script = {} :: Script,
+	Filesystem = {} :: Filesystem,
+	Random = {} :: Random,
+	Window = {} :: Window,
+	ShaderStage = {} :: ShaderStage,
+	ShaderFormat = {} :: ShaderFormat,
+	BuiltinShader = {} :: BuiltinShader,
+	BuiltinPipelines = {} :: BuiltinPipelines,
+	Graphics = {} :: Graphics,
+	Physics = {} :: Physics,
+	Keyboard = {} :: Keyboard,
+	Mouse = {} :: Mouse,
+	Gamepad = {} :: Gamepad,
+	Periodic = {} :: Periodic,
+	Time = {} :: Time,
+	Log = {} :: Log,
+	ImGui = {} :: ImGui,
 }

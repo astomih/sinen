@@ -1,31 +1,31 @@
---!nolint FunctionUnused
-local model: Model = Model.new()
+local sn = require("@sinen")
+local model: sn.Model = sn.Model.new()
 model:load("DamagedHelmet.glb")
-local transform: Transform = Transform.new()
-local lightTransform: Transform = Transform.new()
-local vertexShader: Shader = Shader.new()
-local fragmentShader: Shader = Shader.new()
-local pipeline3D: GraphicsPipeline = GraphicsPipeline.new()
-local lightPos: Vec3 = Vec3.new(2, 0, 0)
+local transform: sn.Transform = sn.Transform.new()
+local lightTransform: sn.Transform = sn.Transform.new()
+local vertexShader: sn.Shader = sn.Shader.new()
+local fragmentShader: sn.Shader = sn.Shader.new()
+local pipeline3D: sn.GraphicsPipeline = sn.GraphicsPipeline.new()
+local lightPos: sn.Vec3 = sn.Vec3.new(2, 0, 0)
 local lightIntensity: number = 2.5
 local uniformBuffer: { any } = {}
 
 function setup()
-	transform.position = Vec3.new(0, 0, 0)
-	transform.rotation = Vec3.new(90, 0, 0)
-	transform.scale = Vec3.new(1, 1, 1)
+	transform.position = sn.Vec3.new(0, 0, 0)
+	transform.rotation = sn.Vec3.new(90, 0, 0)
+	transform.scale = sn.Vec3.new(1, 1, 1)
 
-	lightTransform.position = Vec3.new(0)
-	lightTransform.rotation = Vec3.new(90, 0, 0)
-	lightTransform.scale = Vec3.new(1)
+	lightTransform.position = sn.Vec3.new(0)
+	lightTransform.rotation = sn.Vec3.new(90, 0, 0)
+	lightTransform.scale = sn.Vec3.new(1)
 
-	local pos = Vec3.new(0.7, 0.7, 2.1)
-	local at = Vec3.new(0)
-	local up = Vec3.new(0, 1, 0)
-	Graphics.getCamera3D():lookat(pos, at, up)
+	local pos = sn.Vec3.new(0.7, 0.7, 2.1)
+	local at = sn.Vec3.new(0)
+	local up = sn.Vec3.new(0, 1, 0)
+	sn.Graphics.getCamera3D():lookat(pos, at, up)
 
-	vertexShader:compileAndLoad("shader_custom.slang", ShaderStage.Vertex)
-	fragmentShader:compileAndLoad("shader_custom.slang", ShaderStage.Fragment)
+	vertexShader:compileAndLoad("shader_custom.slang", sn.ShaderStage.Vertex)
+	fragmentShader:compileAndLoad("shader_custom.slang", sn.ShaderStage.Fragment)
 	pipeline3D:setVertexShader(vertexShader)
 	pipeline3D:setFragmentShader(fragmentShader)
 	pipeline3D:setEnableTangent(true)
@@ -38,28 +38,28 @@ function setup()
 end
 
 function update()
-	if Keyboard.isPressed(Keyboard.ESCAPE) then
-		Script.load("main", ".")
+	if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
+		sn.Script.load("main", ".")
 	end
-	transform.rotation.z = transform.rotation.z + Time.delta() * 10
-	if Keyboard.isDown(Keyboard.LEFT) then
-		lightPos.x = lightPos.x - Time.delta() * 5
+	transform.rotation.z = transform.rotation.z + sn.Time.delta() * 10
+	if sn.Keyboard.isDown(sn.Keyboard.LEFT) then
+		lightPos.x = lightPos.x - sn.Time.delta() * 5
 	end
-	if Keyboard.isDown(Keyboard.RIGHT) then
-		lightPos.x = lightPos.x + Time.delta() * 5
+	if sn.Keyboard.isDown(sn.Keyboard.RIGHT) then
+		lightPos.x = lightPos.x + sn.Time.delta() * 5
 	end
-	if Keyboard.isDown(Keyboard.UP) then
-		if Keyboard.isDown(Keyboard.LSHIFT) then
-			lightPos.z = lightPos.z + Time.delta() * 5
+	if sn.Keyboard.isDown(sn.Keyboard.UP) then
+		if sn.Keyboard.isDown(sn.Keyboard.LSHIFT) then
+			lightPos.z = lightPos.z + sn.Time.delta() * 5
 		else
-			lightPos.y = lightPos.y + Time.delta() * 5
+			lightPos.y = lightPos.y + sn.Time.delta() * 5
 		end
 	end
-	if Keyboard.isDown(Keyboard.DOWN) then
-		if Keyboard.isDown(Keyboard.LSHIFT) then
-			lightPos.z = lightPos.z - Time.delta() * 5
+	if sn.Keyboard.isDown(sn.Keyboard.DOWN) then
+		if sn.Keyboard.isDown(sn.Keyboard.LSHIFT) then
+			lightPos.z = lightPos.z - sn.Time.delta() * 5
 		else
-			lightPos.y = lightPos.y - Time.delta() * 5
+			lightPos.y = lightPos.y - sn.Time.delta() * 5
 		end
 	end
 	uniformBuffer[2] = lightPos
@@ -67,15 +67,15 @@ function update()
 end
 
 function draw()
-	Graphics.setGraphicsPipeline(pipeline3D)
+	sn.Graphics.setGraphicsPipeline(pipeline3D)
 
-	Graphics.setTexture(1, model:getTexture(TextureKey.Normal))
-	Graphics.setTexture(2, model:getTexture(TextureKey.DiffuseRoughness))
-	Graphics.setTexture(3, model:getTexture(TextureKey.Metalness))
-	Graphics.setTexture(4, model:getTexture(TextureKey.Emissive))
-	Graphics.setTexture(5, model:getTexture(TextureKey.LightMap))
+	sn.Graphics.setTexture(1, model:getTexture(sn.TextureKey.Normal))
+	sn.Graphics.setTexture(2, model:getTexture(sn.TextureKey.DiffuseRoughness))
+	sn.Graphics.setTexture(3, model:getTexture(sn.TextureKey.Metalness))
+	sn.Graphics.setTexture(4, model:getTexture(sn.TextureKey.Emissive))
+	sn.Graphics.setTexture(5, model:getTexture(sn.TextureKey.LightMap))
 
-	Graphics.setUniformBuffer(1, Buffer.new(uniformBuffer))
-	Graphics.drawModel(model, transform)
-	Graphics.drawModel(model, lightTransform)
+	sn.Graphics.setUniformBuffer(1, sn.Buffer.new(uniformBuffer))
+	sn.Graphics.drawModel(model, transform)
+	sn.Graphics.drawModel(model, lightTransform)
 end

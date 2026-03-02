@@ -10,11 +10,12 @@ Sinen is a creative coding framework for Luau/Slang
 # Hello World in Sinen
 
 ``` luau
-local font: Font = Font.new()
+local sn = require("@sinen")
+local font: sn.Font = sn.Font.new()
 font:load(48)
 
 function draw()
-	Graphics.drawText("Hello World!", font, Vec2.new(0, 0), Color.new(1.0), 32)
+	sn.Graphics.drawText("Hello World!", font, sn.Vec2.new(0, 0), sn.Color.new(1.0), 32)
 end
 
 ```

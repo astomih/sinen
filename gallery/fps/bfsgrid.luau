@@ -1,4 +1,4 @@
---!nonstrict
+local sn = require("@sinen")
 
 local BFSGrid = {}
 BFSGrid.__index = BFSGrid
@@ -18,20 +18,20 @@ local function inBounds0(self, x0: number, y0: number): boolean
 	return x0 >= 0 and y0 >= 0 and x0 < self._w and y0 < self._h
 end
 
-local function queueClear(self)
+local function queueClear(self: BFSGrid)
 	self._qx = {}
 	self._qy = {}
 	self._qh = 1
 	self._qt = 0
 end
 
-local function queuePush(self, x0: number, y0: number)
+local function queuePush(self: BFSGrid, x0: number, y0: number)
 	self._qt += 1
 	self._qx[self._qt] = x0
 	self._qy[self._qt] = y0
 end
 
-local function queuePop(self): (number, number)
+local function queuePop(self: BFSGrid): (number, number)
 	local x0 = self._qx[self._qh]
 	local y0 = self._qy[self._qh]
 	self._qx[self._qh] = nil
@@ -40,11 +40,11 @@ local function queuePop(self): (number, number)
 	return x0 :: number, y0 :: number
 end
 
-local function queueEmpty(self): boolean
+local function queueEmpty(self: BFSGrid): boolean
 	return self._qh > self._qt
 end
 
-local function stackClear(self)
+local function stackClear(self: BFSGrid)
 	self._shortest = {}
 end
 
@@ -66,11 +66,11 @@ local function fieldAt(self, x0: number, y0: number): number
 	return self._field[index0(self._w, x0, y0)]
 end
 
-local function backtrace(self, endX0: number, endY0: number)
+local function backtrace(self: BFSGrid, endX0: number, endY0: number)
 	local x = endX0
 	local y = endY0
 	while x ~= -1 and y ~= -1 do
-		table.insert(self._shortest, Vec2.new(x, y))
+		table.insert(self._shortest, sn.Vec2.new(x, y))
 		local idx = index0(self._w, x, y)
 		local px = self._prevX[idx]
 		local py = self._prevY[idx]
@@ -97,15 +97,15 @@ BFSGrid.new = function(grid)
 			_dist: { number },
 			_prevX: { number },
 			_prevY: { number },
-			_shortest: { Vec2 },
+			_shortest: { sn.Vec2 },
 			_qx: { number? },
 			_qy: { number? },
 			_qh: number,
 			_qt: number,
 			width: (self: any) -> number,
 			height: (self: any) -> number,
-			findPath: (self: any, start: Vec2, end_: Vec2) -> any,
-			trace: (self: any) -> Vec2,
+			findPath: (self: any, start: sn.Vec2, end_: sn.Vec2) -> any,
+			trace: (self: any) -> sn.Vec2,
 			traceable: (self: any) -> boolean,
 			reset: (self: any) -> nil,
 		},
@@ -134,7 +134,7 @@ BFSGrid.height = function(self): number
 	return self._h
 end
 
-BFSGrid.reset = function(self)
+BFSGrid.reset = function(self: BFSGrid)
 	for i = 1, #self._dist do
 		self._dist[i] = -1
 		self._prevX[i] = -1
@@ -144,7 +144,7 @@ BFSGrid.reset = function(self)
 	queueClear(self)
 end
 
-BFSGrid.findPath = function(self, start: Vec2, end_: Vec2): any
+BFSGrid.findPath = function(self: BFSGrid, start: sn.Vec2, end_: sn.Vec2): any
 	local startX0 = truncToInt(start.x)
 	local startY0 = truncToInt(start.y)
 	local endX0 = truncToInt(end_.x)
@@ -194,11 +194,11 @@ BFSGrid.findPath = function(self, start: Vec2, end_: Vec2): any
 	return false
 end
 
-BFSGrid.traceable = function(self): boolean
+BFSGrid.traceable = function(self: BFSGrid): boolean
 	return #self._shortest > 0
 end
 
-BFSGrid.trace = function(self): Vec2
+BFSGrid.trace = function(self: BFSGrid): sn.Vec2
 	local nextNode = table.remove(self._shortest)
 	if nextNode == nil then
 		error("BFSGrid.trace called with no traceable path")

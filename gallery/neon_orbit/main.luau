@@ -1,5 +1,6 @@
-local titleFont: Font = Font.new()
-local infoFont: Font = Font.new()
+local sn = require("@sinen")
+local titleFont: sn.Font = sn.Font.new()
+local infoFont: sn.Font = sn.Font.new()
 
 local paletteShift = 0.0
 local mode = 1
@@ -39,32 +40,32 @@ local function particleCount(): number
 end
 
 function setup()
-	Graphics.resetGraphicsPipeline()
-	Graphics.getCamera2D():resize(Vec2.new(1280, 720))
+	sn.Graphics.resetGraphicsPipeline()
+	sn.Graphics.getCamera2D():resize(sn.Vec2.new(1280, 720))
 	titleFont:load(44)
 	infoFont:load(20)
 end
 
 function update()
-	if Keyboard.isPressed(Keyboard.ESCAPE) then
-		Script.load("main", ".")
+	if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
+		sn.Script.load("main", ".")
 		return
 	end
 
-	if Keyboard.isPressed(Keyboard.SPACE) then
+	if sn.Keyboard.isPressed(sn.Keyboard.SPACE) then
 		mode = mode + 1
 		if mode > 3 then
 			mode = 1
 		end
 	end
 
-	if Mouse.isPressed(Mouse.LEFT) then
+	if sn.Mouse.isPressed(sn.Mouse.LEFT) then
 		paletteShift = paletteShift + 0.9
 	end
 end
 
 local function drawBackground(t: number, mx: number, my: number)
-	local half = Graphics.getCamera2D():half()
+	local half = sn.Graphics.getCamera2D():half()
 	local width = half.x * 2.0
 	local step = 24.0
 	local y = -half.y
@@ -76,9 +77,9 @@ local function drawBackground(t: number, mx: number, my: number)
 		local g = 0.05 + (1.0 - drift) * 0.16
 		local b = 0.07 + wave(fy * 9.0, t + mx * 0.001) * 0.24
 
-		Graphics.drawRect(
-			Rect.new(Vec2.new(0, y), Vec2.new(width + 2.0, step + 1.0)),
-			Color.new(saturate(r), saturate(g), saturate(b), 1.0)
+		sn.Graphics.drawRect(
+			sn.Rect.new(sn.Vec2.new(0, y), sn.Vec2.new(width + 2.0, step + 1.0)),
+			sn.Color.new(saturate(r), saturate(g), saturate(b), 1.0)
 		)
 		y = y + step
 	end
@@ -103,9 +104,9 @@ local function drawSwarm(t: number, mx: number, my: number)
 		local b = 0.25 + wave(fi * 1.3 + 4.0 + paletteShift, t * 1.1) * 0.7
 		local a = 0.2 + wave(fi * 2.1, t * 1.5) * 0.6
 
-		Graphics.drawRect(
-			Rect.new(Vec2.new(x, y), Vec2.new(sz, sz)),
-			Color.new(saturate(r), saturate(g), saturate(b), saturate(a))
+		sn.Graphics.drawRect(
+			sn.Rect.new(sn.Vec2.new(x, y), sn.Vec2.new(sz, sz)),
+			sn.Color.new(saturate(r), saturate(g), saturate(b), saturate(a))
 		)
 	end
 end
@@ -117,16 +118,16 @@ local function drawCore(t: number, mx: number, my: number)
 		local cx = mx * (0.04 + i * 0.006)
 		local cy = my * (0.04 + i * 0.006)
 
-		Graphics.drawRect(
-			Rect.new(Vec2.new(cx, cy), Vec2.new(size, size)),
-			Color.new(0.85, 0.95, 1.0, saturate(alpha))
+		sn.Graphics.drawRect(
+			sn.Rect.new(sn.Vec2.new(cx, cy), sn.Vec2.new(size, size)),
+			sn.Color.new(0.85, 0.95, 1.0, saturate(alpha))
 		)
 	end
 end
 
 function draw()
-	local t = Time.seconds()
-	local m = Mouse.getPositionOnScene()
+	local t = sn.Time.seconds()
+	local m = sn.Mouse.getPositionOnScene()
 	local mx = m.x
 	local my = m.y
 
@@ -134,15 +135,15 @@ function draw()
 	drawSwarm(t, mx, my)
 	drawCore(t, mx, my)
 
-	Graphics.drawRect(Rect.new(Vec2.new(mx, my), Vec2.new(12, 12)), Color.new(1, 1, 1, 0.9))
+	sn.Graphics.drawRect(sn.Rect.new(sn.Vec2.new(mx, my), sn.Vec2.new(12, 12)), sn.Color.new(1, 1, 1, 0.9))
 
-	Graphics.drawText("NEON ORBIT", titleFont, Vec2.new(0, 320), Color.new(1, 1, 1, 0.95), 44)
-	Graphics.drawText(
+	sn.Graphics.drawText("NEON ORBIT", titleFont, sn.Vec2.new(0, 320), sn.Color.new(1, 1, 1, 0.95), 44)
+	sn.Graphics.drawText(
 		"SPACE: MODE  LEFT CLICK: PALETTE SHIFT  ESC: BACK",
 		infoFont,
-		Vec2.new(0, -330),
-		Color.new(1, 1, 1, 0.85),
+		sn.Vec2.new(0, -330),
+		sn.Color.new(1, 1, 1, 0.85),
 		20
 	)
-	Graphics.drawText("MODE: " .. modeName(), infoFont, Vec2.new(0, 285), Color.new(0.9, 1.0, 1.0, 0.9), 20)
+	sn.Graphics.drawText("MODE: " .. modeName(), infoFont, sn.Vec2.new(0, 285), sn.Color.new(0.9, 1.0, 1.0, 0.9), 20)
 end

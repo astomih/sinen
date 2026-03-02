@@ -6,9 +6,6 @@
     "libs/**": true,
   },
   "C_Cpp.codeAnalysis.clangTidy.enabled": true,
-  "luau-lsp.types.definitionFiles": {
-    "sinen": "api/sinen.luau"
-  },
   "luau-lsp.bytecode.vectorLib": "",
   "luau-lsp.bytecode.vectorType": "",
   "luau-lsp.completion.imports.requireStyle": "alwaysRelative",

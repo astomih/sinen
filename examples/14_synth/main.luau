@@ -1,5 +1,6 @@
+local sn = require("@sinen")
 local G = require("../global")
-local synth: Synth = Synth.new()
+local synth: sn.Synth = sn.Synth.new()
 synth:setBpm(130)
 synth:setStepBeats(0.25) -- 16th note steps (1.0 = quarter note)
 synth:setADSR(0.002, 0.06, 0.3, 0.12)
@@ -17,28 +18,28 @@ synth:setPattern(
 synth:play()
 
 function update()
-	if Keyboard.isPressed(Keyboard.ESCAPE) then
+	if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
 		synth:stop()
-		Script.load("main", ".")
+		sn.Script.load("main", ".")
 	end
-	if Keyboard.isPressed(Keyboard.SPACE) then
+	if sn.Keyboard.isPressed(sn.Keyboard.SPACE) then
 		synth:play()
 	end
 end
 
 function draw()
-	Graphics.drawText(
+	sn.Graphics.drawText(
 		"Synth (miniaudio) - press SPACE to restart, ESC to go back",
 		G.font,
-		Vec2.new(0),
-		Color.new(1),
+		sn.Vec2.new(0),
+		sn.Color.new(1),
 		16
 	)
-	Graphics.drawText(
+	sn.Graphics.drawText(
 		"Pattern uses [], ~, and modifiers (^wave @vel :dur #cutoff !pan)",
 		G.font,
-		Vec2.new(0, -20),
-		Color.new(1),
+		sn.Vec2.new(0, -20),
+		sn.Color.new(1),
 		14
 	)
 end

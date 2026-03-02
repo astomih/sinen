@@ -1,19 +1,20 @@
+local sn = require("@sinen")
 local World = {}
 World.__index = World
 World.new = function()
 	local self = setmetatable(
 		{} :: {
-			position: Vec3,
-			rotation: Vec3,
-			scale: Vec3,
-			aabb: AABB,
+			position: sn.Vec3,
+			rotation: sn.Vec3,
+			scale: sn.Vec3,
+			aabb: sn.AABB,
 		},
 		World :: typeof(World)
 	)
-	self.position = Vec3.new(0)
-	self.rotation = Vec3.new(0)
-	self.scale = Vec3.new(1)
-	self.aabb = AABB.new()
+	self.position = sn.Vec3.new(0)
+	self.rotation = sn.Vec3.new(0)
+	self.scale = sn.Vec3.new(1)
+	self.aabb = sn.AABB.new()
 	return self
 end
 export type World = typeof(World.new())

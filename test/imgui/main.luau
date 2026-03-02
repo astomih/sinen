@@ -1,6 +1,7 @@
+local sn = require("@sinen")
 function draw()
-	ImGui.setNextWindowSize(Vec2.new(500, 500))
-	ImGui.Begin("Hello ImGui Test")
-	ImGui.text("Hello, world!")
-	ImGui.End()
+	sn.ImGui.setNextWindowSize(sn.Vec2.new(500, 500))
+	sn.ImGui.Begin("Hello ImGui Test")
+	sn.ImGui.text("Hello, world!")
+	sn.ImGui.End()
 end

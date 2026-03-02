@@ -1,15 +1,16 @@
-local model: Model = Model.new()
-local pipeline: GraphicsPipeline = GraphicsPipeline.new()
+local sn = require("@sinen")
+local model: sn.Model = sn.Model.new()
+local pipeline: sn.GraphicsPipeline = sn.GraphicsPipeline.new()
 function setup()
 	model:load("BrainStem.glb")
-	local texture: Texture = Texture.new()
-	texture:fill(Color.new(1, 1, 1, 1))
+	local texture: sn.Texture = sn.Texture.new()
+	texture:fill(sn.Color.new(1, 1, 1, 1))
 
-	local vs: Shader = Shader.new()
-	local fs: Shader = Shader.new()
+	local vs: sn.Shader = sn.Shader.new()
+	local fs: sn.Shader = sn.Shader.new()
 
-	vs:compileAndLoad("skinning.slang", ShaderStage.Vertex)
-	fs:compileAndLoad("skinning.slang", ShaderStage.Fragment)
+	vs:compileAndLoad("skinning.slang", sn.ShaderStage.Vertex)
+	fs:compileAndLoad("skinning.slang", sn.ShaderStage.Fragment)
 
 	pipeline:setVertexShader(vs)
 	pipeline:setFragmentShader(fs)
@@ -17,19 +18,19 @@ function setup()
 	pipeline:setEnableAnimation(true)
 	pipeline:build()
 
-	Graphics.getCamera3D():lookat(Vec3.new(0, -3, 1), Vec3.new(0, 0, 1), Vec3.new(0, 0, 1))
+	sn.Graphics.getCamera3D():lookat(sn.Vec3.new(0, -3, 1), sn.Vec3.new(0, 0, 1), sn.Vec3.new(0, 0, 1))
 end
 
 function update()
-	if Keyboard.isPressed(Keyboard.ESCAPE) then
-		Script.load("main", ".")
+	if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
+		sn.Script.load("main", ".")
 	end
-	model:update(Time.delta())
+	model:update(sn.Time.delta())
 end
 
 function draw()
-	Graphics.setGraphicsPipeline(pipeline)
-	Graphics.setUniformBuffer(1, model:getBoneUniformBuffer())
+	sn.Graphics.setGraphicsPipeline(pipeline)
+	sn.Graphics.setUniformBuffer(1, model:getBoneUniformBuffer())
 	-- Draw texture
-	Graphics.drawModel(model, Transform.new())
+	sn.Graphics.drawModel(model, sn.Transform.new())
 end

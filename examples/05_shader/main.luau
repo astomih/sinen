@@ -1,17 +1,18 @@
-local texture: Texture = Texture.new()
+local sn = require("@sinen")
+local texture: sn.Texture = sn.Texture.new()
 
-local vertexShader: Shader = Shader.new()
-vertexShader:load("shader_custom.vert.spv", ShaderStage.Vertex, 1)
-local fragmentShader: Shader = Shader.new()
-fragmentShader:load("shaderAlpha.frag.spv", ShaderStage.Fragment, 0)
+local vertexShader: sn.Shader = sn.Shader.new()
+vertexShader:load("shader_custom.vert.spv", sn.ShaderStage.Vertex, 1)
+local fragmentShader: sn.Shader = sn.Shader.new()
+fragmentShader:load("shaderAlpha.frag.spv", sn.ShaderStage.Fragment, 0)
 
-local pipeline2D: GraphicsPipeline = GraphicsPipeline.new()
+local pipeline2D: sn.GraphicsPipeline = sn.GraphicsPipeline.new()
 pipeline2D:setVertexShader(vertexShader)
 pipeline2D:setFragmentShader(fragmentShader)
 pipeline2D:setEnableDepthTest(false)
 pipeline2D:build()
 
-local uniformBuffer: Buffer = Buffer.new({
+local uniformBuffer: sn.Buffer = sn.Buffer.new({
 	2.0,
 	0.5,
 	0.5,
@@ -21,14 +22,14 @@ local uniformBuffer: Buffer = Buffer.new({
 texture:load("logo.png")
 
 function update()
-	if Keyboard.isPressed(Keyboard.ESCAPE) then
-		Script.load("main", ".")
+	if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
+		sn.Script.load("main", ".")
 	end
 end
 
 function draw()
-	Graphics.setGraphicsPipeline(pipeline2D)
-	Graphics.setUniformBuffer(1, uniformBuffer)
+	sn.Graphics.setGraphicsPipeline(pipeline2D)
+	sn.Graphics.setUniformBuffer(1, uniformBuffer)
 	-- Draw texture
-	Graphics.drawImage(texture, Rect.new(Vec2.new(0), texture:size()))
+	sn.Graphics.drawImage(texture, sn.Rect.new(sn.Vec2.new(0), texture:size()))
 end

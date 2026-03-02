@@ -1,3 +1,4 @@
+local sn = require("@sinen")
 --------------------------------------------------------------------
 -- dungeon_generator.lua
 --------------------------------------------------------------------
@@ -9,7 +10,7 @@ local grid = require("../grid")
 local function centerOf(room: Room.Room)
 	local p = room:get_position()
 	local s = room:get_size()
-	return Vec2.new(p.x + math.floor(s.x / 2), p.y + math.floor(s.y / 2))
+	return sn.Vec2.new(p.x + math.floor(s.x / 2), p.y + math.floor(s.y / 2))
 end
 
 local function dungeonGenerator(
@@ -25,15 +26,15 @@ local function dungeonGenerator(
 	end
 
 	local recreate = false
-	local grid_size = Vec2.new(grid:width(), grid:height())
+	local grid_size = sn.Vec2.new(grid:width(), grid:height())
 
 	local min_rooms = 5
 	local max_rooms = 14
 	local room_count = math.random(min_rooms, max_rooms)
 
-	local min_size = Vec2.new(5, 5)
+	local min_size = sn.Vec2.new(5, 5)
 	local sz = 5 + max_rooms - room_count
-	local max_size = Vec2.new(sz, sz)
+	local max_size = sn.Vec2.new(sz, sz)
 
 	------------------------------------------------------------
 	-- Room generate

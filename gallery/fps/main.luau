@@ -1,7 +1,8 @@
+local sn = require("@sinen")
 local G = require("./global")
 local menu = require("./gui/menu")()
 local sceneSwitcher = require("./scene_switcher").new()
-Graphics.getCamera2D():resize(Vec2.new(1280, 720))
+sn.Graphics.getCamera2D():resize(sn.Vec2.new(1280, 720))
 G.SCORE = 0
 G.NOW_STAGE = 1
 menu:setup()
@@ -15,19 +16,19 @@ function update()
 	end
 	menu:update()
 	if menu.hide then
-		if Mouse.isPressed(Mouse.LEFT) then
+		if sn.Mouse.isPressed(sn.Mouse.LEFT) then
 			sceneSwitcher:start("scene01_stage")
 		end
 	end
 end
 
 function draw()
-	Graphics.drawText("FPS", G.FONT_DEFAULT64, Vec2.new(0, 0), Color.new(1), 64)
-	Graphics.drawText(
+	sn.Graphics.drawText("FPS", G.FONT_DEFAULT64, sn.Vec2.new(0, 0), sn.Color.new(1), 64)
+	sn.Graphics.drawText(
 		"CLICK TO START",
 		G.FONT_DEFAULT32,
-		Vec2.new(0, -64 * 3.0),
-		Color.new(1, 1, 1, Periodic.sin0_1(2.0, Time.seconds())),
+		sn.Vec2.new(0, -64 * 3.0),
+		sn.Color.new(1, 1, 1, sn.Periodic.sin0_1(2.0, sn.Time.seconds())),
 		32
 	)
 	menu:draw()

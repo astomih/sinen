@@ -1,64 +1,65 @@
-local boxTex: Texture = Texture.new()
-boxTex:fill(Color.new(1, 1, 1, 1))
+local sn = require("@sinen")
+local boxTex: sn.Texture = sn.Texture.new()
+boxTex:fill(sn.Color.new(1, 1, 1, 1))
 
-local sphereTex: Texture = Texture.new()
-sphereTex:fill(Color.new(1, 0, 0, 1))
+local sphereTex: sn.Texture = sn.Texture.new()
+sphereTex:fill(sn.Color.new(1, 0, 0, 1))
 
-local box: Model = Model.new()
+local box: sn.Model = sn.Model.new()
 box:loadBox()
-box:setTexture(TextureKey.BaseColor, boxTex)
+box:setTexture(sn.TextureKey.BaseColor, boxTex)
 
-local sphere: Model = Model.new()
+local sphere: sn.Model = sn.Model.new()
 sphere:load("sphere.glb")
-sphere:setTexture(TextureKey.BaseColor, sphereTex)
+sphere:setTexture(sn.TextureKey.BaseColor, sphereTex)
 
-local boxTransform: Transform = Transform.new()
-boxTransform.rotation = Vec3.new(0, 0, 10)
-boxTransform.scale = Vec3.new(20, 1, 20)
-local sphereTransform: Transform = Transform.new()
-sphereTransform.position = Vec3.new(0, 2, 0)
-sphereTransform.scale = Vec3.new(0.5)
+local boxTransform: sn.Transform = sn.Transform.new()
+boxTransform.rotation = sn.Vec3.new(0, 0, 10)
+boxTransform.scale = sn.Vec3.new(20, 1, 20)
+local sphereTransform: sn.Transform = sn.Transform.new()
+sphereTransform.position = sn.Vec3.new(0, 2, 0)
+sphereTransform.scale = sn.Vec3.new(0.5)
 
-local colliders: { Collider } = {}
+local colliders: { sn.Collider } = {}
 
-local world: World3D = World3D.new()
+local world: sn.World3D = sn.World3D.new()
 local floorCollider = world:newBoxCollider(boxTransform, true)
 local sphereCollider = world:newSphereCollider(sphereTransform.position, 0.5, false)
-sphereCollider:setLinearVelocity(Vec3.new(0, -5.0, 0))
+sphereCollider:setLinearVelocity(sn.Vec3.new(0, -5.0, 0))
 world:addCollider(floorCollider, false)
 world:addCollider(sphereCollider, true)
 world:optimizeBroadPhase()
 
-Graphics.getCamera3D():lookat(Vec3.new(0, 10, 25), Vec3.new(0, 0, 0), Vec3.new(0, 1, 0))
+sn.Graphics.getCamera3D():lookat(sn.Vec3.new(0, 10, 25), sn.Vec3.new(0, 0, 0), sn.Vec3.new(0, 1, 0))
 
 function update()
-	if Keyboard.isPressed(Keyboard.ESCAPE) then
-		Script.load("main", ".")
+	if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
+		sn.Script.load("main", ".")
 	end
 	boxTransform.position = floorCollider:getPosition()
 	sphereTransform.position = sphereCollider:getPosition()
 
-	if Mouse.isPressed(Mouse.LEFT) then
-		local sc: Collider = world:newSphereCollider(Vec3.new(0, 2, 0), 0.5, false)
-		sc:setLinearVelocity(Vec3.new(math.random(-5, 5), math.random(-5, 5), math.random(-5, 5)))
+	if sn.Mouse.isPressed(sn.Mouse.LEFT) then
+		local sc: sn.Collider = world:newSphereCollider(sn.Vec3.new(0, 2, 0), 0.5, false)
+		sc:setLinearVelocity(sn.Vec3.new(math.random(-5, 5), math.random(-5, 5), math.random(-5, 5)))
 		world:addCollider(sc, true)
 		table.insert(colliders, sc)
 	end
-	world:update(Time.delta(), 1)
+	world:update(sn.Time.delta(), 1)
 end
 
 function draw()
-	Graphics.drawModel(box, boxTransform)
+	sn.Graphics.drawModel(box, boxTransform)
 
-	Graphics.drawModel(sphere, sphereTransform)
+	sn.Graphics.drawModel(sphere, sphereTransform)
 	for i, c in ipairs(colliders) do
-		local transform = Transform.new()
+		local transform = sn.Transform.new()
 		transform.position = c:getPosition()
 		if transform.position.y < -10.0 then
 			table.remove(colliders, i)
 		else
-			transform.scale = Vec3.new(0.5)
-			Graphics.drawModel(sphere, transform)
+			transform.scale = sn.Vec3.new(0.5)
+			sn.Graphics.drawModel(sphere, transform)
 		end
 	end
 end

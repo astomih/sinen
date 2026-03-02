@@ -1,3 +1,4 @@
+local sn = require("@sinen")
 local G = require("../global")
 local Button = {}
 
@@ -5,15 +6,15 @@ Button.__index = Button
 
 Button.new = function()
 	local self = setmetatable({}, Button)
-	self.font = Font.new()
+	self.font = sn.Font.new()
 	self.font:load(24)
-	self.bg_color = Color.new(0.7, 0.2, 0.2, 1.0)
+	self.bg_color = sn.Color.new(0.7, 0.2, 0.2, 1.0)
 	return self
 end
 
-Button.show = function(self, text: string, pos: Vec2, scale: Vec2)
+Button.show = function(self, text: string, pos: sn.Vec2, scale: sn.Vec2)
 	-- Mouse in _?
-	local mpos = Mouse.getPositionOnScene()
+	local mpos = sn.Mouse.getPositionOnScene()
 	if
 		mpos.x >= pos.x - scale.x / 2
 		and mpos.x <= pos.x + scale.x / 2
@@ -22,13 +23,13 @@ Button.show = function(self, text: string, pos: Vec2, scale: Vec2)
 	then
 		G.guiManager:add({
 			draw = function()
-				Graphics.drawRect(Rect.new(pos, scale), Color.new(0.2, 0.7, 0.2, 1))
+				sn.Graphics.drawRect(sn.Rect.new(pos, scale), sn.Color.new(0.2, 0.7, 0.2, 1))
 			end,
 		})
-		if Mouse.isPressed(Mouse.LEFT) then
+		if sn.Mouse.isPressed(sn.Mouse.LEFT) then
 			G.guiManager:add({
 				draw = function()
-					Graphics.drawRect(Rect.new(pos, scale), Color.new(0.2, 0.2, 0.7, 1))
+					sn.Graphics.drawRect(sn.Rect.new(pos, scale), sn.Color.new(0.2, 0.2, 0.7, 1))
 				end,
 			})
 			return true
@@ -36,13 +37,13 @@ Button.show = function(self, text: string, pos: Vec2, scale: Vec2)
 	else
 		G.guiManager:add({
 			draw = function()
-				Graphics.drawRect(Rect.new(pos, scale), self.bg_color)
+				sn.Graphics.drawRect(sn.Rect.new(pos, scale), self.bg_color)
 			end,
 		})
 	end
 	G.guiManager:add({
 		draw = function()
-			Graphics.drawText(text, self.font, pos, Color.new(1), 14)
+			sn.Graphics.drawText(text, self.font, pos, sn.Color.new(1), 14)
 		end,
 	})
 

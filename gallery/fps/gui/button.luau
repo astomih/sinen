@@ -1,3 +1,4 @@
+local sn = require("@sinen")
 local G = require("../global")
 local Button = {}
 
@@ -5,19 +6,19 @@ Button.__index = Button
 Button.new = function()
 	local self = setmetatable(
 		{} :: {
-			bgColor: Color,
-			show: (self: Button, text: string, pos: Vec2, scale: Vec2) -> (),
+			bgColor: sn.Color,
+			show: (self: Button, text: string, pos: sn.Vec2, scale: sn.Vec2) -> (),
 		},
 		Button
 	)
-	self.bgColor = Color.new(0.7, 0.2, 0.2, 1)
+	self.bgColor = sn.Color.new(0.7, 0.2, 0.2, 1)
 	return self
 end
 export type Button = typeof(Button.new())
 
-Button.show = function(self: Button, text: string, pos: Vec2, scale: Vec2)
+Button.show = function(self: Button, text: string, pos: sn.Vec2, scale: sn.Vec2)
 	-- Mouse in _?
-	local mpos = Mouse.getPositionOnScene()
+	local mpos = sn.Mouse.getPositionOnScene()
 	if
 		mpos.x >= pos.x - scale.x / 2
 		and mpos.x <= pos.x + scale.x / 2
@@ -26,13 +27,13 @@ Button.show = function(self: Button, text: string, pos: Vec2, scale: Vec2)
 	then
 		G.GUI_MANAGER:add({
 			draw = function()
-				Graphics.drawRect(Rect.new(pos, scale), Color.new(0.2, 0.7, 0.2, 1))
+				sn.Graphics.drawRect(sn.Rect.new(pos, scale), sn.Color.new(0.2, 0.7, 0.2, 1))
 			end,
 		})
-		if Mouse.isPressed(Mouse.LEFT) then
+		if sn.Mouse.isPressed(sn.Mouse.LEFT) then
 			G.GUI_MANAGER:add({
 				draw = function()
-					Graphics.drawRect(Rect.new(pos, scale), Color.new(0.2, 0.2, 0.7, 1))
+					sn.Graphics.drawRect(sn.Rect.new(pos, scale), sn.Color.new(0.2, 0.2, 0.7, 1))
 				end,
 			})
 			return true
@@ -40,13 +41,13 @@ Button.show = function(self: Button, text: string, pos: Vec2, scale: Vec2)
 	else
 		G.GUI_MANAGER:add({
 			draw = function()
-				Graphics.drawRect(Rect.new(pos, scale), self.bgColor)
+				sn.Graphics.drawRect(sn.Rect.new(pos, scale), self.bgColor)
 			end,
 		})
 	end
 	G.GUI_MANAGER:add({
 		draw = function()
-			Graphics.drawText(text, G.FONT_DEFAULT64, pos, Color.new(1), 24)
+			sn.Graphics.drawText(text, G.FONT_DEFAULT64, pos, sn.Color.new(1), 24)
 		end,
 	})
 

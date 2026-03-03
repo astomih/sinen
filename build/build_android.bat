@@ -1,2 +1,10 @@
 cmake --build %~dp0android/arm64-v8a_26_Release
 copy %~dp0android\arm64-v8a_26_Release\lib\libsinen.so %~dp0android\app\src\main\jniLibs\arm64-v8a\libsinen.so
+copy %~dp0android\arm64-v8a_26_Release\libs\SDL\lib\libSDL3.so %~dp0android\app\src\main\jniLibs\arm64-v8a\libSDL3.so
+copy %~dp0android\arm64-v8a_26_Release\libs\assimp\code\lib\libassimp.so %~dp0android\app\src\main\jniLibs\arm64-v8a\libassimp.so
+copy %~dp0android\arm64-v8a_26_Release\libs\JoltPhysics\Build\lib\libJolt.so %~dp0android\app\src\main\jniLibs\arm64-v8a\libJolt.so
+copy %~dp0android\arm64-v8a_26_Release\libs\JoltPhysics\Build\lib\libJolt.so %~dp0android\app\src\main\jniLibs\arm64-v8a\libJolt.so
+copy %~dp0android\arm64-v8a_26_Release\libs\slang\source\slang\lib\libslang.so %~dp0android\app\src\main\jniLibs\arm64-v8a\libslang.so
+copy %~dp0android\arm64-v8a_26_Release\libs\slang\source\slang\lib\libslang.so %~dp0android\app\src\main\jniLibs\arm64-v8a\libslang.so
+copy %~dp0android\arm64-v8a_26_Release\libs\slang\external\miniz\lib\libminiz.so %~dp0android\app\src\main\jniLibs\arm64-v8a\libminiz.so
+copy %~dp0android\arm64-v8a_26_Release\libs\cppdap\lib\libcppdap.so %~dp0android\app\src\main\jniLibs\arm64-v8a\libcppdap.so

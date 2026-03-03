@@ -13,7 +13,7 @@ public:
    * @brief Construct a new matrix4 object
    *
    */
-  constexpr Mat4() : mat() { *this = Mat4::identity(); }
+  Mat4() : mat() { *this = Mat4::identity(); }
   explicit Mat4(float v) { *this = scale(Vec3{v}); }
   /**
    * @brief Construct a new matrix4 object
@@ -33,7 +33,7 @@ public:
                 float a22, float a23, float a30, float a31, float a32,
                 float a33);
 
-  static constexpr Mat4 identity() {
+  static Mat4 identity() {
     return Mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
   }
 

@@ -60,6 +60,10 @@ file(
   ${SINEN_SOURCE_DIR}/libs/imgui/imgui_tables.cpp
   ${SINEN_SOURCE_DIR}/libs/imgui/imgui_widgets.cpp
   ${SINEN_SOURCE_DIR}/libs/imgui/backends/imgui_impl_sdl3.cpp)
+if(ANDROID)
+  list(FILTER SINEN_SOURCE_FILES EXCLUDE REGEX
+       ".*[\\\\/]src[\\\\/]gpu[\\\\/]webgpu[\\\\/].*\\.cpp$")
+endif()
 file(GLOB_RECURSE SINEN_HEADER_FILES ${SINEN_SOURCE_DIR}/src/*.hpp
      ${SINEN_SOURCE_DIR}/src/*.inl ${SINEN_SOURCE_DIR}/*.hpp)
 

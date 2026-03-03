@@ -8,8 +8,8 @@
 
 namespace sinen {
 template <typename T> struct Deleter {
-  constexpr Deleter(Allocator *a = nullptr, size_t size = sizeof(T)) noexcept
-      : pA(a), size(size) {}
+  constexpr Deleter(Allocator *a = nullptr) noexcept : pA(a), size(sizeof(T)) {}
+  constexpr Deleter(Allocator *a, size_t size) noexcept : pA(a), size(size) {}
   template <typename U,
             std::enable_if_t<std::is_convertible_v<U *, T *>, int> = 0>
   Deleter(const Deleter<U> &other) noexcept : pA(other.pA), size(other.size) {}
@@ -20,7 +20,9 @@ template <typename T> struct Deleter {
   void operator()(T *ptr) const {
     if (!ptr)
       return;
-    ptr->~T();
+    if constexpr (!std::is_void_v<T>) {
+      ptr->~T();
+    }
     assert(pA);
     pA->deallocate(ptr, size);
   }

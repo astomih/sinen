@@ -3,10 +3,12 @@
 #include "core/allocator/allocator.hpp"
 #include "tlsf_allocator.hpp"
 
+#include <atomic>
 #include <core/def/macro.hpp>
 #include <core/def/types.hpp>
 #include <core/logger/log.hpp>
 #include <memory_resource>
+
 
 namespace sinen {
 static std::atomic<Allocator *> pA = nullptr;

@@ -28,10 +28,10 @@ public:
    */
   explicit Mat4(float inMat[16]) { memcpy(m16, inMat, 16 * sizeof(float)); }
   explicit Mat4(const float *value) { memcpy(m16, value, sizeof(float) * 16); }
-  constexpr Mat4(float a00, float a01, float a02, float a03, float a10,
-                 float a11, float a12, float a13, float a20, float a21,
-                 float a22, float a23, float a30, float a31, float a32,
-                 float a33);
+  explicit Mat4(float a00, float a01, float a02, float a03, float a10,
+                float a11, float a12, float a13, float a20, float a21,
+                float a22, float a23, float a30, float a31, float a32,
+                float a33);
 
   static constexpr Mat4 identity() {
     return Mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);

@@ -9,7 +9,9 @@
 
 #include "sdlgpu/sdlgpu_backend.hpp"
 #include "vulkan/vulkan_backend.hpp"
+#ifndef SINEN_PLATFORM_ANDROID
 #include "webgpu/webgpu_backend.hpp"
+#endif
 
 #include <SDL3/SDL.h>
 
@@ -27,9 +29,11 @@ Ptr<Backend> RHI::createBackend(Allocator *allocator,
     return nullptr;
   }
 #endif
+#ifndef SINEN_PLATFORM_ANDROID
   case GPUBackendAPI::WebGPU: {
     return makePtr<webgpu::Backend>(allocator);
   }
+#endif
   case GPUBackendAPI::SDLGPU: {
     return makePtr<sdlgpu::Backend>(allocator);
   }

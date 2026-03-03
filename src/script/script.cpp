@@ -60,7 +60,21 @@ void luaPushcfunction2(lua_State *L, lua_CFunction f) {
 int luaLError2(lua_State *L, const char *fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
-  luaL_error(L, va_list(ap));
+  va_list ap2;
+  va_copy(ap2, ap);
+  int n = std::vsnprintf(nullptr, 0, fmt, ap2);
+  va_end(ap2);
+
+  if (n < 0) {
+    luaL_errorL(L, "luaL_verrorL: formatting failed");
+    return -1;
+  }
+
+  std::vector<char> buf(static_cast<size_t>(n) + 1);
+  std::vsnprintf(buf.data(), buf.size(), fmt, ap);
+
+  luaL_errorL(L, "%s", buf.data());
+
   return 0;
 }
 int luaLRef2(lua_State *L, int idx) { return lua_ref(L, idx); }
@@ -327,22 +341,13 @@ static void registerAll(lua_State *L) {
 
 bool Script::initialize() {
 #ifndef SINEN_NO_USE_SCRIPT
-  auto logHandler = [](std::string_view msg) {
-    printf("%s", msg.data());
-#if defined(__ANDROID__)
-    __android_log_print(ANDROID_LOG_INFO, "luaud", "%s", msg.data());
-#endif
-  };
+  auto logHandler = [](std::string_view msg) { Log::info("{}", msg.data()); };
   auto errorHandler = [](std::string_view msg) {
-    fprintf(stderr, "%s", msg.data());
-#if defined(__ANDROID__)
-    __android_log_print(ANDROID_LOG_ERROR, "luaud", "%s", msg.data());
-#endif
+    Log::error("{}", msg.data());
   };
 
   luau::debugger::log::install(logHandler, errorHandler);
-  while (!debugger.listen(58000)) {
-  }
+  debugger.listen(58000);
   Log::info("Luau Debug server started on 58000");
 
   // bindings are implemented using Lua C API (see per-module *lua.cpp files)

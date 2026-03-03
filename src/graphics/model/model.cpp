@@ -19,6 +19,7 @@
 #include <graphics/model/model.hpp>
 #include <math/geometry/skinned_vertex.hpp>
 #include <math/geometry/vertex.hpp>
+#include <math/mat4.hpp>
 #include <math/math.hpp>
 #include <platform/io/asset_io.hpp>
 #include <script/luaapi.hpp>
@@ -131,7 +132,10 @@ Array<float> getTimesFromQuatKey(const aiQuatKey *keys, uint32_t count) {
   }
   return result;
 };
-Mat4 convertMatrix(const aiMatrix4x4 &m) { return (Mat4(&m.a1)); }
+Mat4 convertMatrix(const aiMatrix4x4 &m) {
+  const float *mat = &m.a1;
+  return Mat4(mat);
+}
 
 Node createNodeFromAiNode(const aiNode *ainode) {
   Node node;

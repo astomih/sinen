@@ -7,6 +7,8 @@
 #include <math/color/color.hpp>
 #include <math/vector.hpp>
 
+#include <atomic>
+
 namespace sinen {
 /**
  * @brief Texture

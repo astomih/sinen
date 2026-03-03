@@ -1,8 +1,8 @@
 #include "tlsf_allocator.hpp"
+#include <core/def/assert.hpp>
 
 #include <cassert>
-
-#include <core/def/assert.hpp>
+#include <cstdlib>
 #include <tlsf.h>
 
 namespace sinen {

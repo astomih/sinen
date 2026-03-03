@@ -1,7 +1,9 @@
 #ifndef SINEN_TYPES_HPP
 #define SINEN_TYPES_HPP
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
+
 
 namespace sinen {
 using UInt8 = std::uint8_t;

@@ -347,7 +347,30 @@ bool Script::initialize() {
   };
 
   luau::debugger::log::install(logHandler, errorHandler);
+#ifdef SINEN_PLATFORM_ANDROID
+  auto isDebuggerAttached[]() {
+    FILE *file = fopen("/proc/self/status", "r");
+    if (!file)
+      return false;
+
+    char line[256];
+    while (fgets(line, sizeof(line), file)) {
+      if (strncmp(line, "TracerPid:", 10) == 0) {
+        int tracerPid = atoi(line + 10);
+        fclose(file);
+        return tracerPid != 0;
+      }
+    }
+
+    fclose(file);
+    return false;
+  };
+  if (isDebuggerAttached()) {
+    debugger.listen(58000);
+  }
+#else
   debugger.listen(58000);
+#endif
   Log::info("Luau Debug server started on 58000");
 
   // bindings are implemented using Lua C API (see per-module *lua.cpp files)

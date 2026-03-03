@@ -19,7 +19,7 @@ local infoFont = sn.Font.new()
 
 local board = {}
 local rack = {} :: { { shape: Shape, colorIndex: number } }
-local selectedSlot = 0
+local dragSlot = 0
 local score = 0
 local bestScore = 0
 local combo = 0
@@ -126,6 +126,16 @@ local function mouseToBoardCell(mx: number, my: number): (number?, number?)
 	return row, col
 end
 
+local function dropOriginFromMouse(shape: Shape, mx: number, my: number): (number?, number?)
+	local centerRow, centerCol = mouseToBoardCell(mx, my)
+	if centerRow == nil or centerCol == nil then
+		return nil, nil
+	end
+	local anchorRow = math.floor(shape.h / 2)
+	local anchorCol = math.floor(shape.w / 2)
+	return centerRow - anchorRow, centerCol - anchorCol
+end
+
 local function canPlace(shape: Shape, row: number, col: number): boolean
 	for i = 1, #shape.cells do
 		local cell = shape.cells[i]
@@ -215,7 +225,7 @@ local function refillRack()
 	for i = 1, 3 do
 		rack[i] = randomPiece()
 	end
-	selectedSlot = 0
+	dragSlot = 0
 end
 
 local function hasAnyMove()
@@ -247,6 +257,7 @@ local function restartGame()
 	score = 0
 	combo = 0
 	gameOver = false
+	dragSlot = 0
 	refillRack()
 end
 
@@ -279,7 +290,6 @@ local function placeSelected(slot: number, row: number, col: number)
 	end
 
 	rack[slot] = nil
-	selectedSlot = 0
 
 	if rackIsEmpty() then
 		refillRack()
@@ -316,31 +326,6 @@ local function drawShape(shape: Shape, left: number, top: number, size: number, 
 	end
 end
 
-local function drawBackground()
-	local half = sn.Graphics.getCamera2D():half()
-	local width = half.x * 2.0
-	local height = half.y * 2.0
-
-	sn.Graphics.drawRect(
-		sn.Rect.new(sn.Vec2.new(0, 0), sn.Vec2.new(width + 2.0, height + 2.0)),
-		sn.Color.new(0.05, 0.07, 0.1, 1.0)
-	)
-
-	local bands = 14
-	local step = height / bands
-	for i = 0, bands - 1 do
-		local t = i / (bands - 1)
-		local y = half.y - (i + 0.5) * step
-		local r = 0.07 + t * 0.07
-		local g = 0.1 + t * 0.08
-		local b = 0.14 + t * 0.1
-		sn.Graphics.drawRect(
-			sn.Rect.new(sn.Vec2.new(0, y), sn.Vec2.new(width + 2.0, step + 1.0)),
-			sn.Color.new(r, g, b, 0.42)
-		)
-	end
-end
-
 local function drawBoard()
 	local boardSizePx = BOARD_SIZE * BOARD_CELL
 	local frameX = BOARD_LEFT + boardSizePx * 0.5
@@ -372,11 +357,11 @@ local function drawBoard()
 		end
 	end
 
-	if selectedSlot ~= 0 and rack[selectedSlot] ~= nil and not gameOver then
+	if dragSlot ~= 0 and rack[dragSlot] ~= nil and not gameOver then
 		local m = sn.Mouse.getPositionOnScene()
-		local row, col = mouseToBoardCell(m.x, m.y)
+		local piece = rack[dragSlot]
+		local row, col = dropOriginFromMouse(piece.shape, m.x, m.y)
 		if row ~= nil and col ~= nil then
-			local piece = rack[selectedSlot]
 			if canPlace(piece.shape, row, col) then
 				for i = 1, #piece.shape.cells do
 					local cell = piece.shape.cells[i]
@@ -396,7 +381,7 @@ end
 local function drawRack()
 	for i = 1, 3 do
 		local x = SLOT_X[i]
-		local selected = selectedSlot == i
+		local selected = dragSlot == i
 		local baseColor = sn.Color.new(0.14, 0.17, 0.23, 1.0)
 		if selected then
 			baseColor = sn.Color.new(0.2, 0.26, 0.34, 1.0)
@@ -420,39 +405,34 @@ local function drawRack()
 			local drawH = piece.shape.h * previewCell
 			local left = x - drawW * 0.5
 			local top = SLOT_Y + drawH * 0.5 - 10.0
-			drawShape(piece.shape, left, top, previewCell, colorByIndex(piece.colorIndex, 1.0))
+			local alpha = 1.0
+			if selected then
+				alpha = 0.28
+			end
+			drawShape(piece.shape, left, top, previewCell, colorByIndex(piece.colorIndex, alpha))
 		end
 	end
 end
 
-local function drawHUD()
-	sn.Graphics.drawText("BLOCK PLACE", titleFont, sn.Vec2.new(0.0, 586.0), sn.Color.new(1.0, 1.0, 1.0, 0.95), 42)
-	sn.Graphics.drawText("Score  " .. score, hudFont, sn.Vec2.new(0.0, 544.0), sn.Color.new(0.96, 0.97, 1.0, 0.95), 28)
-	sn.Graphics.drawText(
-		"Best   " .. bestScore,
-		hudFont,
-		sn.Vec2.new(0.0, 510.0),
-		sn.Color.new(0.8, 0.88, 1.0, 0.95),
-		24
-	)
-	if combo > 1 then
-		sn.Graphics.drawText(
-			"Combo x" .. combo,
-			hudFont,
-			sn.Vec2.new(0.0, 476.0),
-			sn.Color.new(1.0, 0.88, 0.45, 0.98),
-			24
-		)
+local function drawDraggingPiece()
+	if dragSlot == 0 or gameOver then
+		return
+	end
+	local piece = rack[dragSlot]
+	if piece == nil then
+		return
 	end
 
-	sn.Graphics.drawText(
-		"CLICK PIECE -> CLICK BOARD | SPACE: RESTART | ESC: BACK",
-		infoFont,
-		sn.Vec2.new(0.0, -610.0),
-		sn.Color.new(0.85, 0.9, 0.98, 0.92),
-		16
-	)
+	local m = sn.Mouse.getPositionOnScene()
+	local previewCell = 30.0
+	local drawW = piece.shape.w * previewCell
+	local drawH = piece.shape.h * previewCell
+	local left = m.x - drawW * 0.5
+	local top = m.y + drawH * 0.5
+	drawShape(piece.shape, left, top, previewCell, colorByIndex(piece.colorIndex, 0.85))
 end
+
+local function drawHUD() end
 
 local function drawGameOver()
 	if not gameOver then
@@ -501,34 +481,36 @@ function update()
 		return
 	end
 
-	if sn.Mouse.isPressed(sn.Mouse.LEFT) then
-		if gameOver then
-			restartGame()
-			return
-		end
+	if gameOver and sn.Mouse.isPressed(sn.Mouse.LEFT) then
+		restartGame()
+		return
+	end
 
+	if sn.Mouse.isPressed(sn.Mouse.LEFT) and not gameOver then
 		local m = sn.Mouse.getPositionOnScene()
 		local slot = slotAt(m.x, m.y)
-		if slot ~= nil then
-			if rack[slot] ~= nil then
-				selectedSlot = slot
-			end
-			return
+		if slot ~= nil and rack[slot] ~= nil then
+			dragSlot = slot
 		end
+	end
 
-		if selectedSlot ~= 0 and rack[selectedSlot] ~= nil then
-			local row, col = mouseToBoardCell(m.x, m.y)
-			if row ~= nil and col ~= nil and canPlace(rack[selectedSlot].shape, row, col) then
-				placeSelected(selectedSlot, row, col)
+	if dragSlot ~= 0 and sn.Mouse.isReleased(sn.Mouse.LEFT) then
+		local piece = rack[dragSlot]
+		if piece ~= nil then
+			local m = sn.Mouse.getPositionOnScene()
+			local row, col = dropOriginFromMouse(piece.shape, m.x, m.y)
+			if row ~= nil and col ~= nil and canPlace(piece.shape, row, col) then
+				placeSelected(dragSlot, row, col)
 			end
 		end
+		dragSlot = 0
 	end
 end
 
 function draw()
-	drawBackground()
 	drawBoard()
 	drawRack()
+	drawDraggingPiece()
 	drawHUD()
 	drawGameOver()
 end

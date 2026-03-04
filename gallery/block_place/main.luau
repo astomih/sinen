@@ -20,6 +20,8 @@ local infoFont = sn.Font.new()
 local board = {}
 local rack = {} :: { { shape: Shape, colorIndex: number } }
 local dragSlot = 0
+local dragGrabOffsetX = 0.0
+local dragGrabOffsetY = 0.0
 local score = 0
 local bestScore = 0
 local combo = 0
@@ -126,8 +128,37 @@ local function mouseToBoardCell(mx: number, my: number): (number?, number?)
 	return row, col
 end
 
+local function clamp01(v: number): number
+	if v < 0.0 then
+		return 0.0
+	end
+	if v > 1.0 then
+		return 1.0
+	end
+	return v
+end
+
+local function slotPieceRect(slot: number, piece: { shape: Shape, colorIndex: number }, cellSize: number)
+	local drawW = piece.shape.w * cellSize
+	local drawH = piece.shape.h * cellSize
+	local left = SLOT_X[slot] - drawW * 0.5
+	local top = SLOT_Y + drawH * 0.5 - 10.0
+	return left, top, drawW, drawH
+end
+
+local function draggingPieceRectFromMouse(shape: Shape, mx: number, my: number)
+	local drawW = shape.w * BOARD_CELL
+	local drawH = shape.h * BOARD_CELL
+	local left = mx - dragGrabOffsetX
+	local top = my + dragGrabOffsetY
+	return left, top, drawW, drawH
+end
+
 local function dropOriginFromMouse(shape: Shape, mx: number, my: number): (number?, number?)
-	local centerRow, centerCol = mouseToBoardCell(mx, my)
+	local left, top, drawW, drawH = draggingPieceRectFromMouse(shape, mx, my)
+	local centerX = left + drawW * 0.5
+	local centerY = top - drawH * 0.5
+	local centerRow, centerCol = mouseToBoardCell(centerX, centerY)
 	if centerRow == nil or centerCol == nil then
 		return nil, nil
 	end
@@ -226,6 +257,8 @@ local function refillRack()
 		rack[i] = randomPiece()
 	end
 	dragSlot = 0
+	dragGrabOffsetX = 0.0
+	dragGrabOffsetY = 0.0
 end
 
 local function hasAnyMove()
@@ -258,6 +291,8 @@ local function restartGame()
 	combo = 0
 	gameOver = false
 	dragSlot = 0
+	dragGrabOffsetX = 0.0
+	dragGrabOffsetY = 0.0
 	refillRack()
 end
 
@@ -303,18 +338,28 @@ local function placeSelected(slot: number, row: number, col: number)
 end
 
 local function slotAt(mx, my): number?
-	for i = 1, 3 do
-		local x = SLOT_X[i]
-		if
-			mx >= x - SLOT_WIDTH * 0.5
-			and mx <= x + SLOT_WIDTH * 0.5
-			and my >= SLOT_Y - SLOT_HEIGHT * 0.5
-			and my <= SLOT_Y + SLOT_HEIGHT * 0.5
-		then
-			return i
-		end
+	local half = sn.Graphics.getCamera2D():half()
+	local minX = -half.x
+	local width = half.x * 2.0
+	local minY = -half.y
+	local lowerThirdTop = minY + (half.y * 2.0) / 3.0
+
+	if my < minY or my > lowerThirdTop then
+		return nil
 	end
-	return nil
+	if mx < minX or mx > minX + width then
+		return nil
+	end
+
+	local third = width / 3.0
+	local slot = math.floor((mx - minX) / third) + 1
+	if slot < 1 then
+		slot = 1
+	end
+	if slot > 3 then
+		slot = 3
+	end
+	return slot
 end
 
 local function drawShape(shape: Shape, left: number, top: number, size: number, color: sn.Color)
@@ -401,10 +446,7 @@ local function drawRack()
 			sn.Graphics.drawText("USED", hudFont, sn.Vec2.new(x, SLOT_Y - 6.0), sn.Color.new(0.7, 0.75, 0.86, 0.95), 22)
 		else
 			local previewCell = 26.0
-			local drawW = piece.shape.w * previewCell
-			local drawH = piece.shape.h * previewCell
-			local left = x - drawW * 0.5
-			local top = SLOT_Y + drawH * 0.5 - 10.0
+			local left, top = slotPieceRect(i, piece, previewCell)
 			local alpha = 1.0
 			if selected then
 				alpha = 0.28
@@ -424,12 +466,8 @@ local function drawDraggingPiece()
 	end
 
 	local m = sn.Mouse.getPositionOnScene()
-	local previewCell = 30.0
-	local drawW = piece.shape.w * previewCell
-	local drawH = piece.shape.h * previewCell
-	local left = m.x - drawW * 0.5
-	local top = m.y + drawH * 0.5
-	drawShape(piece.shape, left, top, previewCell, colorByIndex(piece.colorIndex, 0.85))
+	local left, top = draggingPieceRectFromMouse(piece.shape, m.x, m.y)
+	drawShape(piece.shape, left, top, BOARD_CELL, colorByIndex(piece.colorIndex, 0.85))
 end
 
 local function drawHUD() end
@@ -490,6 +528,12 @@ function update()
 		local m = sn.Mouse.getPositionOnScene()
 		local slot = slotAt(m.x, m.y)
 		if slot ~= nil and rack[slot] ~= nil then
+			local piece = rack[slot]
+			local grabLeft, grabTop, grabW, grabH = slotPieceRect(slot, piece, 26.0)
+			local localX = clamp01((m.x - grabLeft) / grabW)
+			local localY = clamp01((grabTop - m.y) / grabH)
+			dragGrabOffsetX = localX * (piece.shape.w * BOARD_CELL)
+			dragGrabOffsetY = localY * (piece.shape.h * BOARD_CELL)
 			dragSlot = slot
 		end
 	end
@@ -504,6 +548,8 @@ function update()
 			end
 		end
 		dragSlot = 0
+		dragGrabOffsetX = 0.0
+		dragGrabOffsetY = 0.0
 	end
 end
 

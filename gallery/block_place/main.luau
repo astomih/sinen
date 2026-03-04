@@ -157,16 +157,14 @@ local function draggingPieceRectFromMouse(shape: Shape, mx: number, my: number)
 end
 
 local function dropOriginFromMouse(shape: Shape, mx: number, my: number): (number?, number?)
-	local left, top, drawW, drawH = draggingPieceRectFromMouse(shape, mx, my)
-	local centerX = left + drawW * 0.5
-	local centerY = top - drawH * 0.5
-	local centerRow, centerCol = mouseToBoardCell(centerX, centerY)
-	if centerRow == nil or centerCol == nil then
+	local left, top = draggingPieceRectFromMouse(shape, mx, my)
+	local originCenterX = left + BOARD_CELL * 0.5
+	local originCenterY = top - BOARD_CELL * 0.5
+	local originRow, originCol = mouseToBoardCell(originCenterX, originCenterY)
+	if originRow == nil or originCol == nil then
 		return nil, nil
 	end
-	local anchorRow = math.floor(shape.h / 2)
-	local anchorCol = math.floor(shape.w / 2)
-	return centerRow - anchorRow, centerCol - anchorCol
+	return originRow, originCol
 end
 
 local function canPlace(shape: Shape, row: number, col: number): boolean

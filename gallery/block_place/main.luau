@@ -1,14 +1,16 @@
 local sn = require("@sinen")
 
 local BOARD_SIZE = 8
-local BOARD_CELL = 62.0
-local BOARD_LEFT = -248.0
+local BOARD_CELL = 66.0
+local BOARD_LEFT = -264.0
 local BOARD_TOP = 420.0
 
 local SLOT_X = { -230.0, 0.0, 230.0 }
-local SLOT_Y = -430.0
+local SLOT_Y = -230.0
 local SLOT_WIDTH = 200.0
 local SLOT_HEIGHT = 170.0
+
+local GRAB_HEIGHT = 3
 
 local BOARD_COLOR = sn.Color.new(0.12, 0.15, 0.2, 1.0)
 local EMPTY_CELL_COLOR = sn.Color.new(0.17, 0.2, 0.27, 1.0)
@@ -338,11 +340,11 @@ local function placeSelected(slot: number, row: number, col: number)
 end
 
 local function slotAt(mx, my): number?
-	local half = sn.Graphics.getCamera2D():half()
+	local half: sn.Vec2 = sn.Graphics.getCamera2D():half()
 	local minX = -half.x
 	local width = half.x * 2.0
 	local minY = -half.y
-	local lowerThirdTop = minY + (half.y * 2.0) / 3.0
+	local lowerThirdTop: number = minY + (half.y * 2.0) / 3.0
 
 	if my < minY or my > lowerThirdTop then
 		return nil
@@ -533,7 +535,7 @@ function update()
 			local localX = clamp01((m.x - grabLeft) / grabW)
 			local localY = clamp01((grabTop - m.y) / grabH)
 			dragGrabOffsetX = localX * (piece.shape.w * BOARD_CELL)
-			dragGrabOffsetY = localY * (piece.shape.h * BOARD_CELL)
+			dragGrabOffsetY = GRAB_HEIGHT * BOARD_CELL * 2.0
 			dragSlot = slot
 		end
 	end

@@ -10,8 +10,6 @@ local SLOT_Y = -230.0
 local SLOT_WIDTH = 200.0
 local SLOT_HEIGHT = 170.0
 
-local GRAB_HEIGHT = 3
-
 local BOARD_COLOR = sn.Color.new(0.12, 0.15, 0.2, 1.0)
 local EMPTY_CELL_COLOR = sn.Color.new(0.17, 0.2, 0.27, 1.0)
 
@@ -146,6 +144,36 @@ local function slotPieceRect(slot: number, piece: { shape: Shape, colorIndex: nu
 	local left = SLOT_X[slot] - drawW * 0.5
 	local top = SLOT_Y + drawH * 0.5 - 10.0
 	return left, top, drawW, drawH
+end
+
+local function shapeHasCell(shape: Shape, x: number, y: number): boolean
+	for i = 1, #shape.cells do
+		local c = shape.cells[i]
+		if c.x == x and c.y == y then
+			return true
+		end
+	end
+	return false
+end
+
+local function nearestShapeCell(shape: Shape, px: number, py: number): (number, number)
+	local bestX = shape.cells[1].x
+	local bestY = shape.cells[1].y
+	local bestD = 1e30
+	for i = 1, #shape.cells do
+		local c = shape.cells[i]
+		local cx = (c.x + 0.5) * BOARD_CELL
+		local cy = (c.y + 0.5) * BOARD_CELL
+		local dx = cx - px
+		local dy = cy - py
+		local d = dx * dx + dy * dy
+		if d < bestD then
+			bestD = d
+			bestX = c.x
+			bestY = c.y
+		end
+	end
+	return bestX, bestY
 end
 
 local function draggingPieceRectFromMouse(shape: Shape, mx: number, my: number)
@@ -532,8 +560,31 @@ function update()
 			local grabLeft, grabTop, grabW, grabH = slotPieceRect(slot, piece, 26.0)
 			local localX = clamp01((m.x - grabLeft) / grabW)
 			local localY = clamp01((grabTop - m.y) / grabH)
-			dragGrabOffsetX = localX * (piece.shape.w * BOARD_CELL)
-			dragGrabOffsetY = GRAB_HEIGHT * BOARD_CELL * 2.0
+
+			local localPxX = localX * (piece.shape.w * BOARD_CELL)
+			local localPxY = localY * (piece.shape.h * BOARD_CELL)
+			local maxPxX = piece.shape.w * BOARD_CELL - 0.0001
+			local maxPxY = piece.shape.h * BOARD_CELL - 0.0001
+			if localPxX > maxPxX then
+				localPxX = maxPxX
+			end
+			if localPxY > maxPxY then
+				localPxY = maxPxY
+			end
+
+			local cellX = math.floor(localPxX / BOARD_CELL)
+			local cellY = math.floor(localPxY / BOARD_CELL)
+
+			if shapeHasCell(piece.shape, cellX, cellY) then
+				local innerX = localPxX - cellX * BOARD_CELL
+				local innerY = localPxY - cellY * BOARD_CELL
+				dragGrabOffsetX = cellX * BOARD_CELL + innerX
+				dragGrabOffsetY = cellY * BOARD_CELL + innerY
+			else
+				local nearX, nearY = nearestShapeCell(piece.shape, localPxX, localPxY)
+				dragGrabOffsetX = nearX * BOARD_CELL + BOARD_CELL * 0.5
+				dragGrabOffsetY = nearY * BOARD_CELL + BOARD_CELL * 0.5
+			end
 			dragSlot = slot
 		end
 	end

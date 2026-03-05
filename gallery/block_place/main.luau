@@ -9,6 +9,7 @@ local SLOT_X = { -230.0, 0.0, 230.0 }
 local SLOT_Y = -230.0
 local SLOT_WIDTH = 200.0
 local SLOT_HEIGHT = 170.0
+local DRAG_Y_BIAS = 200.0
 
 local BOARD_COLOR = sn.Color.new(0.12, 0.15, 0.2, 1.0)
 local EMPTY_CELL_COLOR = sn.Color.new(0.17, 0.2, 0.27, 1.0)
@@ -180,7 +181,7 @@ local function draggingPieceRectFromMouse(shape: Shape, mx: number, my: number)
 	local drawW = shape.w * BOARD_CELL
 	local drawH = shape.h * BOARD_CELL
 	local left = mx - dragGrabOffsetX
-	local top = my + dragGrabOffsetY
+	local top = my + dragGrabOffsetY + DRAG_Y_BIAS
 	return left, top, drawW, drawH
 end
 

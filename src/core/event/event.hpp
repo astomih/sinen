@@ -8,11 +8,13 @@ public:
   static void quit() { setQuit(true); }
   static void setQuit(bool quit);
   static bool isQuit();
+  static bool isPaused();
 
   static void processEvent(SDL_Event &event);
 
 private:
-  inline static bool _quit = false;
+  static bool _quit;
+  static bool paused;
 };
 } // namespace sinen
 

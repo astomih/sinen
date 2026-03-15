@@ -46,3 +46,6 @@
 [submodule "libs/cppdap"]
 	path = libs/cppdap
 	url = https://github.com/sssooonnnggg/cppdap
+[submodule "libs/physfs"]
+	path = libs/physfs
+	url = https://github.com/icculus/physfs

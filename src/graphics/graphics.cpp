@@ -5,6 +5,7 @@
 #include <gpu/shader/builtin_shader.hpp>
 #include <graphics/builtin_pipeline.hpp>
 #include <graphics/font/default/mplus-1p-medium.ttf.hpp>
+#include <graphics/font/font_glyph_ranges.hpp>
 #include <graphics/graphics.hpp>
 #include <graphics/imgui_backend/imgui_impl_sinen.hpp>
 #include <graphics/texture/render_texture.hpp>
@@ -101,9 +102,13 @@ bool Graphics::initialize() {
 #else
   float sizePixels = 32.0f;
 #endif
+  ImFontConfig fontConfig = {};
+  fontConfig.OversampleH = 1;
+  fontConfig.OversampleV = 1;
+  context->IO.Fonts->TexDesiredWidth = 2048;
   context->IO.Fonts->AddFontFromMemoryTTF(
-      (void *)mplus1pMediumTtf, mplus1pMediumTtfLen, sizePixels, nullptr,
-      context->IO.Fonts->GetGlyphRangesJapanese());
+      (void *)mplus1pMediumTtf, mplus1pMediumTtfLen, sizePixels, &fontConfig,
+      font::defaultJapaneseGlyphRangesForImGui());
   context->IO.IniFilename = nullptr;
   context->IO.WantTextInput = true;
   auto *imeData = &context->PlatformImeData;

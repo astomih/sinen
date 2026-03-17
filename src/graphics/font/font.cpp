@@ -1,11 +1,18 @@
 // std
+#include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <cstddef>
+#include <cstring>
+#include <future>
+#include <memory>
 
 // internal
 #include <core/data/array.hpp>
+#include <core/data/hashmap.hpp>
 #include <gpu/gpu.hpp>
 #include <graphics/font/font.hpp>
+#include <graphics/font/font_glyph_ranges.hpp>
 #include <graphics/graphics.hpp>
 #include <graphics/texture/texture.hpp>
 #include <math/color/color.hpp>
@@ -25,214 +32,210 @@
 
 #include "default/mplus-1p-medium.ttf.hpp"
 
-#include <chrono>
-#include <future>
-#include <memory>
-
 namespace sinen {
-struct CodepointRange {
-  constexpr CodepointRange(uint32_t first, uint32_t last)
-      : first(first), last(last), count(last - first + 1) {}
-  uint32_t first;
-  uint32_t last;
-  uint32_t count;
+namespace {
+
+constexpr UInt32 kFallbackAsciiCodepoint = '?';
+constexpr UInt32 kReplacementCodepoint = 0xFFFD;
+constexpr int kAtlasSizes[] = {1024, 2048, 4096, 8192};
+
+struct PackedAtlasData {
+  Array<int> codepoints;
+  Array<stbtt_packedchar> packedChars;
+  Hashmap<UInt32, UInt32> glyphLookup;
+  Array<unsigned char> atlasBitmap;
+  UInt32 sheetSize = 0;
+  bool success = false;
 };
 
-constexpr CodepointRange asciiWidthRange = {0xFF01, 0xFF5E};
-constexpr CodepointRange japaneseRange = {0x3000, 0x9FFF};
-constexpr CodepointRange asciiRange = {0x0020, 0x007F};
+UInt32 selectFallbackGlyphIndex(const Hashmap<UInt32, UInt32> &glyphLookup) {
+  if (auto it = glyphLookup.find(kFallbackAsciiCodepoint);
+      it != glyphLookup.end()) {
+    return it->second;
+  }
+  if (auto it = glyphLookup.find(kReplacementCodepoint);
+      it != glyphLookup.end()) {
+    return it->second;
+  }
+  return 0;
+}
+
+bool tryPackAtlas(const unsigned char *fontData, int pointSize, int sheetSize,
+                  const Array<UInt32> &sourceCodepoints,
+                  PackedAtlasData &result) {
+  result.codepoints.clear();
+  result.packedChars.clear();
+  result.glyphLookup.clear();
+  result.atlasBitmap.clear();
+
+  result.codepoints.reserve(sourceCodepoints.size());
+  for (UInt32 cp : sourceCodepoints) {
+    result.codepoints.push_back(static_cast<int>(cp));
+  }
+
+  result.packedChars.resize(result.codepoints.size());
+
+  stbtt_pack_range range = {};
+  range.font_size = static_cast<float>(pointSize);
+  range.first_unicode_codepoint_in_range = 0;
+  range.array_of_unicode_codepoints = result.codepoints.data();
+  range.num_chars = static_cast<int>(result.codepoints.size());
+  range.chardata_for_range = result.packedChars.data();
+
+  Array<unsigned char> monoAtlas(sheetSize * sheetSize);
+  stbtt_pack_context spc = {};
+  if (!stbtt_PackBegin(&spc, monoAtlas.data(), sheetSize, sheetSize, 0, 1,
+                       nullptr)) {
+    return false;
+  }
+
+  stbtt_PackSetOversampling(&spc, 1, 1);
+  stbtt_PackSetSkipMissingCodepoints(&spc, 0);
+  const int packed = stbtt_PackFontRanges(&spc, fontData, 0, &range, 1);
+  stbtt_PackEnd(&spc);
+  if (!packed) {
+    return false;
+  }
+
+  result.atlasBitmap.resize(sheetSize * sheetSize * 4);
+  for (int y = 0; y < sheetSize; ++y) {
+    for (int x = 0; x < sheetSize; ++x) {
+      const int grayIndex = y * sheetSize + x;
+      const int rgbaIndex = grayIndex * 4;
+      const unsigned char alpha = monoAtlas[grayIndex];
+      result.atlasBitmap[rgbaIndex + 0] = 255;
+      result.atlasBitmap[rgbaIndex + 1] = 255;
+      result.atlasBitmap[rgbaIndex + 2] = 255;
+      result.atlasBitmap[rgbaIndex + 3] = alpha;
+    }
+  }
+
+  result.glyphLookup.reserve(result.codepoints.size());
+  for (UInt32 i = 0; i < result.codepoints.size(); ++i) {
+    result.glyphLookup.emplace(static_cast<UInt32>(result.codepoints[i]), i);
+  }
+
+  result.sheetSize = static_cast<UInt32>(sheetSize);
+  result.success = true;
+  return true;
+}
+
+PackedAtlasData loadCore(const unsigned char *fontData, int pointSize) {
+  PackedAtlasData result;
+  const auto &codepoints = font::defaultGlyphCodepoints();
+  for (int sheetSize : kAtlasSizes) {
+    if (tryPackAtlas(fontData, pointSize, sheetSize, codepoints, result)) {
+      return result;
+    }
+  }
+  result.success = false;
+  return result;
+}
+
+} // namespace
 
 class FontImpl : public Font {
 private:
-  Array<Array<stbtt_packedchar>> packedChar;
+  Array<stbtt_packedchar> packedChars;
+  Array<unsigned char> fontBytes;
+  Hashmap<UInt32, UInt32> glyphLookup;
   stbtt_fontinfo fontInfo;
   Ptr<Texture> texture;
-  uint32_t sheetSize;
-  std::future<bool> future;
+  UInt32 sheetSize;
+  UInt32 fallbackGlyphIndex;
+  std::future<PackedAtlasData> future;
   Array<unsigned char> atlasBitmap;
-  String data;
   std::atomic<bool> loaded = false;
   int m_size;
 
 public:
-  FontImpl() : packedChar(), texture(), sheetSize(0) {
+  FontImpl()
+      : packedChars(), fontBytes(), glyphLookup(), texture(), sheetSize(0),
+        fallbackGlyphIndex(0), future(), atlasBitmap(), loaded(false),
+        m_size(0) {
     texture = Texture::create();
   }
-  FontImpl(int32_t point, StringView file_name) { load(point, file_name); }
+  FontImpl(int32_t point, StringView file_name) : FontImpl() {
+    load(point, file_name);
+  }
   ~FontImpl() {}
-  static bool loadCore(const unsigned char *fontData,
-                       Array<Array<stbtt_packedchar>> &pc,
-                       Array<unsigned char> &atlasBitmap, int pointSize,
-                       int sheetSize) {
-    stbtt_pack_range ranges[3] = {};
-    pc.resize(std::size(ranges));
-    size_t index = 0;
-    // ASCII WIDTH
-    pc[index].resize(asciiWidthRange.count);
-    ranges[index].font_size = pointSize;
-    ranges[index].first_unicode_codepoint_in_range = asciiWidthRange.first;
-    ranges[index].num_chars = asciiWidthRange.count;
-    ranges[index].chardata_for_range = pc[index].data();
-    index++;
 
-    // Japanese
-    pc[index].resize(japaneseRange.count);
-    ranges[index].font_size = pointSize;
-    ranges[index].first_unicode_codepoint_in_range = japaneseRange.first;
-    ranges[index].num_chars = japaneseRange.count;
-    ranges[index].chardata_for_range = pc[index].data();
-    index++;
+  bool loadFromBytes(int pointSize, Array<unsigned char> &&bytes) {
+    pointSize += 16;
+    this->loaded = false;
+    this->m_size = pointSize;
+    this->sheetSize = 0;
+    this->fallbackGlyphIndex = 0;
+    this->fontBytes = std::move(bytes);
 
-    // ASCII
-    pc[index].resize(asciiRange.count);
-    ranges[index].font_size = pointSize;
-    ranges[index].first_unicode_codepoint_in_range = asciiRange.first;
-    ranges[index].num_chars = asciiRange.count;
-    ranges[index].chardata_for_range = pc[index].data();
-    index++;
-
-    stbtt_pack_context spc;
-    atlasBitmap.resize(sheetSize * sheetSize * 4);
-    Array<unsigned char> temp(sheetSize * sheetSize);
-    stbtt_PackBegin(&spc, temp.data(), sheetSize, sheetSize, 0, 1, NULL);
-    stbtt_PackFontRanges(&spc, fontData, 0, ranges, std::size(ranges));
-    stbtt_PackEnd(&spc);
-    // 1ch -> 4ch (R8G8B8A8)
-    for (int y = 0; y < sheetSize; ++y) {
-      for (int x = 0; x < sheetSize; ++x) {
-        int idxGray = y * sheetSize + x;
-        int idxRGBA = (y * sheetSize + x) * 4;
-
-        unsigned char a = temp[idxGray];
-
-        atlasBitmap[idxRGBA + 0] = 255;
-        atlasBitmap[idxRGBA + 1] = 255;
-        atlasBitmap[idxRGBA + 2] = 255;
-        atlasBitmap[idxRGBA + 3] = a;
-      }
+    if (this->fontBytes.empty() ||
+        !stbtt_InitFont(&fontInfo, this->fontBytes.data(), 0)) {
+      return false;
     }
 
+    const TaskGroup group = LoadContext::current();
+    group.add();
+
+    this->future =
+        globalThreadPool().submit(loadCore, this->fontBytes.data(), pointSize);
+
+    auto pollAndUpload = std::make_shared<std::function<void()>>();
+    *pollAndUpload = [this, pollAndUpload, group]() {
+      if (this->loaded) {
+        return;
+      }
+      if (!this->future.valid()) {
+        group.done();
+        return;
+      }
+
+      if (this->future.wait_for(std::chrono::milliseconds(0)) !=
+          std::future_status::ready) {
+        Graphics::addPreDrawFunc(*pollAndUpload);
+        return;
+      }
+
+      PackedAtlasData atlasData = this->future.get();
+      if (!atlasData.success || atlasData.sheetSize == 0 ||
+          atlasData.packedChars.empty()) {
+        group.done();
+        return;
+      }
+
+      this->packedChars = std::move(atlasData.packedChars);
+      this->glyphLookup = std::move(atlasData.glyphLookup);
+      this->atlasBitmap = std::move(atlasData.atlasBitmap);
+      this->sheetSize = atlasData.sheetSize;
+      this->fallbackGlyphIndex = selectFallbackGlyphIndex(this->glyphLookup);
+
+      this->texture->loadFromMemory(this->atlasBitmap.data(), this->sheetSize,
+                                    this->sheetSize,
+                                    gpu::TextureFormat::R8G8B8A8_UNORM, 4);
+      this->atlasBitmap.clear();
+      this->atlasBitmap.shrink_to_fit();
+      this->loaded = true;
+      group.done();
+    };
+    Graphics::addPreDrawFunc(*pollAndUpload);
     return true;
   }
+
   bool load(int pointSize) override {
-    pointSize += 16;
-    stbtt_InitFont(&fontInfo, mplus1pMediumTtf, 0);
-    this->loaded = false;
-    this->m_size = pointSize;
-    this->sheetSize = pointSize * 64;
-
-    const TaskGroup group = LoadContext::current();
-    group.add();
-
-    this->future = globalThreadPool().submit(
-        loadCore, mplus1pMediumTtf, std::ref(this->packedChar),
-        std::ref(this->atlasBitmap), pointSize, this->sheetSize);
-
-    auto pollAndUpload = std::make_shared<std::function<void()>>();
-    *pollAndUpload = [this, pollAndUpload, group]() {
-      if (this->loaded) {
-        return;
-      }
-      if (!this->future.valid()) {
-        group.done();
-        return;
-      }
-
-      if (this->future.wait_for(std::chrono::milliseconds(0)) !=
-          std::future_status::ready) {
-        Graphics::addPreDrawFunc(*pollAndUpload);
-        return;
-      }
-
-      (void)this->future.get();
-      this->texture->loadFromMemory(this->atlasBitmap.data(), this->sheetSize,
-                                    this->sheetSize,
-                                    gpu::TextureFormat::R8G8B8A8_UNORM, 4);
-      this->loaded = true;
-      group.done();
-    };
-    Graphics::addPreDrawFunc(*pollAndUpload);
-    return true;
+    Array<unsigned char> bytes(mplus1pMediumTtf,
+                               mplus1pMediumTtf + mplus1pMediumTtfLen);
+    return loadFromBytes(pointSize, std::move(bytes));
   }
+
   bool load(int pointSize, StringView fontName) override {
-    pointSize += 16;
-    this->loaded = false;
-    this->m_size = pointSize;
-    this->sheetSize = pointSize * 64;
-    this->data = AssetIO::openAsString(fontName);
-    const TaskGroup group = LoadContext::current();
-    group.add();
-
-    this->future = globalThreadPool().submit(
-        loadCore, reinterpret_cast<const unsigned char *>(this->data.data()),
-        std::ref(this->packedChar), std::ref(this->atlasBitmap), pointSize,
-        this->sheetSize);
-
-    auto pollAndUpload = std::make_shared<std::function<void()>>();
-    *pollAndUpload = [this, pollAndUpload, group]() {
-      if (this->loaded) {
-        return;
-      }
-      if (!this->future.valid()) {
-        group.done();
-        return;
-      }
-
-      if (this->future.wait_for(std::chrono::milliseconds(0)) !=
-          std::future_status::ready) {
-        Graphics::addPreDrawFunc(*pollAndUpload);
-        return;
-      }
-
-      (void)this->future.get();
-      this->texture->loadFromMemory(this->atlasBitmap.data(), this->sheetSize,
-                                    this->sheetSize,
-                                    gpu::TextureFormat::R8G8B8A8_UNORM, 4);
-      this->loaded = true;
-      group.done();
-    };
-    Graphics::addPreDrawFunc(*pollAndUpload);
-    return true;
+    const String data = AssetIO::openAsString(fontName);
+    Array<unsigned char> bytes(data.begin(), data.end());
+    return loadFromBytes(pointSize, std::move(bytes));
   }
+
   bool load(int pointSize, const Buffer &buffer) override {
-    pointSize += 16;
-    this->loaded = false;
-    this->m_size = pointSize;
-    this->sheetSize = pointSize * 64;
-    this->data = (const char *)buffer.data();
-    const TaskGroup group = LoadContext::current();
-    group.add();
-
-    this->future = globalThreadPool().submit(
-        loadCore, reinterpret_cast<const unsigned char *>(this->data.data()),
-        std::ref(this->packedChar), std::ref(this->atlasBitmap), pointSize,
-        this->sheetSize);
-
-    auto pollAndUpload = makePtr<std::function<void()>>();
-    *pollAndUpload = [this, pollAndUpload, group]() {
-      if (this->loaded) {
-        return;
-      }
-      if (!this->future.valid()) {
-        group.done();
-        return;
-      }
-
-      if (this->future.wait_for(std::chrono::milliseconds(0)) !=
-          std::future_status::ready) {
-        Graphics::addPreDrawFunc(*pollAndUpload);
-        return;
-      }
-
-      (void)this->future.get();
-      this->texture->loadFromMemory(this->atlasBitmap.data(), this->sheetSize,
-                                    this->sheetSize,
-                                    gpu::TextureFormat::R8G8B8A8_UNORM, 4);
-      this->loaded = true;
-      group.done();
-    };
-    Graphics::addPreDrawFunc(*pollAndUpload);
-    return true;
+    Array<unsigned char> bytes(buffer.size());
+    std::memcpy(bytes.data(), buffer.data(), static_cast<size_t>(buffer.size()));
+    return loadFromBytes(pointSize, std::move(bytes));
   }
 
   bool isLoaded() override { return loaded; }
@@ -342,6 +345,10 @@ public:
   Mesh getTextMesh(StringView text) const override {
 
     auto textMesh = makePtr<Mesh::Data>();
+    if (this->packedChars.empty() || this->sheetSize == 0) {
+      return Mesh{textMesh};
+    }
+
     float x = 0.f, y = 0.f;
     Vec2 yrange(Math::infinity, Math::negInfinity);
     const char *p = text.data();
@@ -349,25 +356,15 @@ public:
       uint32_t cp;
       const auto *next = utf8ToCodepoint(p, &cp);
       stbtt_aligned_quad q;
-      uint32_t idx1 = 0, idx2 = 0;
-      if (cp >= asciiWidthRange.first && cp <= asciiWidthRange.last) {
-        // Zenkaku
-        idx1 = 0;
-        idx2 = cp - asciiWidthRange.first;
-      } else if (cp >= japaneseRange.first && cp <= japaneseRange.last) {
-        // Japanese
-        idx1 = 1;
-        idx2 = cp - japaneseRange.first;
-      } else if (cp >= asciiRange.first && cp <= asciiRange.last) {
-        // ASCII
-        idx1 = 2;
-        idx2 = cp - asciiRange.first;
+      UInt32 glyphIndex = fallbackGlyphIndex;
+      if (auto it = glyphLookup.find(cp); it != glyphLookup.end()) {
+        glyphIndex = it->second;
       }
 
-      uint32_t sheetSize = this->sheetSize;
-      stbtt_GetPackedQuad(this->packedChar[idx1].data(), sheetSize, sheetSize,
-                          idx2, &x, &y, &q, 1);
-      uint32_t startIndex = textMesh->vertices.size();
+      const UInt32 atlasSize = this->sheetSize;
+      stbtt_GetPackedQuad(this->packedChars.data(), atlasSize, atlasSize,
+                          static_cast<int>(glyphIndex), &x, &y, &q, 1);
+      UInt32 startIndex = textMesh->vertices.size();
       auto &vertices = textMesh->vertices;
       vertices.push_back(Vertex{
           {q.x0 * 4.f, -q.y0 * 4.f, 0}, {1, 1, 1}, {q.s0, q.t0}, {1, 1, 1, 1}});
@@ -387,6 +384,9 @@ public:
       textMesh->indices.push_back(startIndex + 1);
       textMesh->indices.push_back(startIndex + 3);
       p = next;
+    }
+    if (textMesh->vertices.empty()) {
+      return Mesh{textMesh};
     }
     for (auto &v : textMesh->vertices) {
       v.position.x -= x * 2.f;

@@ -44,9 +44,9 @@ git submodule update --init --recursive
 
 ### Windows
 
-#### Visual Studio 2022
+#### Visual Studio 2026
 
-Run "build/generate_vs2022.bat" and open&build the generated solution file(build/desktop/.).
+Run "build/generate_msvc2026-release.bat" and "build/build_msvc2026-release.bat"
 
 ### Android
 

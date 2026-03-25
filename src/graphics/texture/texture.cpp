@@ -1,8 +1,7 @@
 #include <cassert>
-#include <chrono>
 #include <cstring>
-#include <functional>
 
+#include <core/thread/future_poll.hpp>
 #include <core/thread/global_thread_pool.hpp>
 #include <core/thread/load_context.hpp>
 #include <gpu/gpu.hpp>
@@ -33,6 +32,10 @@ struct AsyncTexture2DState {
   gpu::TextureFormat format = gpu::TextureFormat::R8G8B8A8_UNORM;
   bool ok = false;
 };
+
+static void scheduleOnPreDraw(std::function<void()> f) {
+  Graphics::addPreDrawFunc(std::move(f));
+}
 } // namespace
 Texture::Texture() { texture = nullptr; }
 Texture::Texture(int width, int height) {
@@ -84,35 +87,23 @@ bool Texture::load(StringView fileName) {
     state->format = gpu::TextureFormat::R8G8B8A8_UNORM;
     state->ok = true;
   });
-
-  auto pollAndUpload = std::make_shared<std::function<void()>>();
-  *pollAndUpload = [this, pollAndUpload, state, group]() {
-    if (!state->future.valid()) {
-      this->loading = false;
-      this->async.reset();
-      group.done();
-      return;
-    }
-
-    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
-        std::future_status::ready) {
-      Graphics::addPreDrawFunc(*pollAndUpload);
-      return;
-    }
-
-    state->future.get();
-    if (state->ok) {
-      texture =
-          createNativeTexture(state->pixels.data(), state->format, state->width,
-                              state->height, state->channels);
-      this->pendingWidth = state->width;
-      this->pendingHeight = state->height;
-    }
-    this->loading = false;
-    this->async.reset();
-    group.done();
-  };
-  Graphics::addPreDrawFunc(*pollAndUpload);
+  scheduleFuturePoll(
+      state, group, scheduleOnPreDraw,
+      [this, state] {
+        if (state->ok) {
+          texture = createNativeTexture(state->pixels.data(), state->format,
+                                        state->width, state->height,
+                                        state->channels);
+          this->pendingWidth = state->width;
+          this->pendingHeight = state->height;
+        }
+        this->loading = false;
+        this->async.reset();
+      },
+      [this] {
+        this->loading = false;
+        this->async.reset();
+      });
   return true;
 }
 bool Texture::load(const Buffer &buffer) {
@@ -152,35 +143,23 @@ bool Texture::load(const Buffer &buffer) {
     state->format = gpu::TextureFormat::R8G8B8A8_UNORM;
     state->ok = true;
   });
-
-  auto pollAndUpload = std::make_shared<std::function<void()>>();
-  *pollAndUpload = [this, pollAndUpload, state, group]() {
-    if (!state->future.valid()) {
-      this->loading = false;
-      this->async.reset();
-      group.done();
-      return;
-    }
-
-    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
-        std::future_status::ready) {
-      Graphics::addPreDrawFunc(*pollAndUpload);
-      return;
-    }
-
-    state->future.get();
-    if (state->ok) {
-      texture =
-          createNativeTexture(state->pixels.data(), state->format, state->width,
-                              state->height, state->channels);
-      this->pendingWidth = state->width;
-      this->pendingHeight = state->height;
-    }
-    this->loading = false;
-    this->async.reset();
-    group.done();
-  };
-  Graphics::addPreDrawFunc(*pollAndUpload);
+  scheduleFuturePoll(
+      state, group, scheduleOnPreDraw,
+      [this, state] {
+        if (state->ok) {
+          texture = createNativeTexture(state->pixels.data(), state->format,
+                                        state->width, state->height,
+                                        state->channels);
+          this->pendingWidth = state->width;
+          this->pendingHeight = state->height;
+        }
+        this->loading = false;
+        this->async.reset();
+      },
+      [this] {
+        this->loading = false;
+        this->async.reset();
+      });
   return true;
 }
 
@@ -220,35 +199,23 @@ bool Texture::loadFromMemory(Array<char> &buffer) {
     state->format = gpu::TextureFormat::R8G8B8A8_UNORM;
     state->ok = true;
   });
-
-  auto pollAndUpload = std::make_shared<std::function<void()>>();
-  *pollAndUpload = [this, pollAndUpload, state, group]() {
-    if (!state->future.valid()) {
-      this->loading = false;
-      this->async.reset();
-      group.done();
-      return;
-    }
-
-    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
-        std::future_status::ready) {
-      Graphics::addPreDrawFunc(*pollAndUpload);
-      return;
-    }
-
-    state->future.get();
-    if (state->ok) {
-      texture =
-          createNativeTexture(state->pixels.data(), state->format, state->width,
-                              state->height, state->channels);
-      this->pendingWidth = state->width;
-      this->pendingHeight = state->height;
-    }
-    this->loading = false;
-    this->async.reset();
-    group.done();
-  };
-  Graphics::addPreDrawFunc(*pollAndUpload);
+  scheduleFuturePoll(
+      state, group, scheduleOnPreDraw,
+      [this, state] {
+        if (state->ok) {
+          texture = createNativeTexture(state->pixels.data(), state->format,
+                                        state->width, state->height,
+                                        state->channels);
+          this->pendingWidth = state->width;
+          this->pendingHeight = state->height;
+        }
+        this->loading = false;
+        this->async.reset();
+      },
+      [this] {
+        this->loading = false;
+        this->async.reset();
+      });
   return true;
 }
 

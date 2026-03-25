@@ -5,10 +5,24 @@
 #include <Luau/Require.h>
 
 #include <filesystem>
+#include <optional>
 namespace sinen {
 struct RequireContext {
   std::filesystem::path root;
   std::filesystem::path current;
+  mutable bool moduleFileResolved = false;
+  mutable std::optional<std::filesystem::path> moduleFileRel;
+  mutable bool configResolved = false;
+  mutable luarequire_ConfigStatus configStatus = CONFIG_ABSENT;
+  mutable std::optional<std::filesystem::path> configFile;
+
+  void invalidate() const {
+    moduleFileResolved = false;
+    moduleFileRel.reset();
+    configResolved = false;
+    configStatus = CONFIG_ABSENT;
+    configFile.reset();
+  }
 };
 // Returns whether requires are permitted from the given chunkname.
 bool isRequireAllowed(lua_State *L, void *ctx, const char *requirer_chunkname);

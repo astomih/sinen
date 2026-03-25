@@ -40,14 +40,6 @@ if(SINEN_USE_SLANG)
   add_subdirectory(${SINEN_SOURCE_DIR}/libs/slang EXCLUDE_FROM_ALL)
 endif()
 
-set(CMAKE_CXX_FLAGS
-    "-DIMGUI_IMPL_VULKAN_NO_PROTOTYPES")
-if(MSVC)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
-else()
-  set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g -O0 -DDEBUG")
-  set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -Wno-format-security")
-endif()
 file(
   GLOB_RECURSE
   SINEN_SOURCE_FILES
@@ -67,15 +59,34 @@ endif()
 file(GLOB_RECURSE SINEN_HEADER_FILES ${SINEN_SOURCE_DIR}/src/*.hpp
      ${SINEN_SOURCE_DIR}/src/*.inl ${SINEN_SOURCE_DIR}/*.hpp)
 
+set(SINEN_PLATFORM_SOURCES)
+if(WIN32)
+  list(APPEND SINEN_PLATFORM_SOURCES docs/icon/icon.rc)
+endif()
+
 if(BUILD_SHARED_LIBS)
-  add_library(sinen SHARED docs/icon/icon.rc ${SINEN_SOURCE_FILES}
+  add_library(sinen SHARED ${SINEN_PLATFORM_SOURCES} ${SINEN_SOURCE_FILES}
                            ${SINEN_HEADER_FILES})
 else()
-  add_executable(sinen docs/icon/icon.rc ${SINEN_SOURCE_FILES}
+  add_executable(sinen ${SINEN_PLATFORM_SOURCES} ${SINEN_SOURCE_FILES}
                        ${SINEN_HEADER_FILES})
 endif()
 target_include_directories(sinen PUBLIC ${SINEN_INCLUDE_DIRS}
                                         ${SDL3_INCLUDE_PATHS})
+target_compile_definitions(
+  sinen
+  PRIVATE IMGUI_IMPL_VULKAN_NO_PROTOTYPES
+  PUBLIC $<$<BOOL:${SINEN_USE_SLANG}>:SINEN_USE_SLANG>)
+if(MSVC)
+  target_compile_options(sinen PRIVATE /bigobj)
+else()
+  target_compile_options(
+    sinen
+    PRIVATE $<$<CONFIG:Debug>:-Wall;-Wextra;-g;-O0>
+            $<$<CONFIG:Release>:-O2;-Wno-format-security>)
+  target_compile_definitions(sinen PRIVATE $<$<CONFIG:Debug>:DEBUG>
+                                           $<$<CONFIG:Release>:NDEBUG>)
+endif()
 if(MSVC)
   # MSVC STL
   set(MSVC_STL_INCLUDE "$ENV{VCToolsInstallDir}/include")
@@ -122,8 +133,6 @@ else()
 endif()
 
 target_link_libraries(sinen PUBLIC ${SINEN_LINK_LIBRARIES})
-set(SINEN_COMPILE_DEFINITIONS $<$<BOOL:${SINEN_USE_SLANG}>:SINEN_USE_SLANG>)
-target_compile_definitions(sinen PUBLIC ${SINEN_COMPILE_DEFINITIONS})
 
 if(WIN32)
   if(MSVC)

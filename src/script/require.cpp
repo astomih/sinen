@@ -5,7 +5,11 @@
 
 #include <SDL3/SDL.h>
 
+#include <algorithm>
+#include <cctype>
+#include <cstring>
 #include <filesystem>
+#include <string_view>
 
 namespace sinen {
 namespace {
@@ -143,6 +147,13 @@ resolveRequirerFile(sinen::RequireContext &rc, const char *requirer_chunkname) {
 
 static std::optional<std::filesystem::path>
 resolveModuleFileRel(const RequireContext &rc) {
+  if (rc.moduleFileResolved) {
+    return rc.moduleFileRel;
+  }
+
+  rc.moduleFileResolved = true;
+  rc.moduleFileRel.reset();
+
   std::error_code ec;
   const std::filesystem::path fileRel = rc.current;
 
@@ -150,7 +161,8 @@ resolveModuleFileRel(const RequireContext &rc) {
   std::filesystem::path fileAbs = (rc.root / fileLuau).lexically_normal();
   if (std::filesystem::exists(fileAbs, ec) &&
       std::filesystem::is_regular_file(fileAbs, ec)) {
-    return fileLuau;
+    rc.moduleFileRel = fileLuau;
+    return rc.moduleFileRel;
   }
 
   const String initName = String("init") + prefix;
@@ -158,9 +170,76 @@ resolveModuleFileRel(const RequireContext &rc) {
   std::filesystem::path initAbs = (rc.root / initRel).lexically_normal();
   if (std::filesystem::exists(initAbs, ec) &&
       std::filesystem::is_regular_file(initAbs, ec)) {
-    return initRel;
+    rc.moduleFileRel = initRel;
+    return rc.moduleFileRel;
   }
 
+  return std::nullopt;
+}
+
+static void setCurrentModule(RequireContext &rc, std::filesystem::path rel) {
+  if (rel.filename() == (String("init") + prefix).c_str()) {
+    rc.current = rel.parent_path().lexically_normal();
+  } else {
+    rel.replace_extension();
+    rc.current = rel.lexically_normal();
+  }
+  rc.invalidate();
+}
+
+static std::filesystem::path resolveConfigDirectory(const RequireContext &rc) {
+  std::filesystem::path dirAbs = (rc.root / rc.current).lexically_normal();
+
+  std::error_code ec;
+  if (!std::filesystem::is_directory(dirAbs, ec)) {
+    dirAbs = dirAbs.parent_path();
+  }
+
+  return dirAbs.lexically_normal();
+}
+
+static luarequire_ConfigStatus resolveConfigStatus(const RequireContext &rc) {
+  if (rc.configResolved) {
+    return rc.configStatus;
+  }
+
+  rc.configResolved = true;
+  rc.configStatus = CONFIG_ABSENT;
+  rc.configFile.reset();
+
+  const std::filesystem::path dirAbs = resolveConfigDirectory(rc);
+  std::error_code ec;
+  const std::filesystem::path jsonAbs = (dirAbs / ".luaurc").lexically_normal();
+  const std::filesystem::path luauAbs =
+      (dirAbs / ".config.luau").lexically_normal();
+
+  const bool hasJson = std::filesystem::is_regular_file(jsonAbs, ec);
+  const bool hasLuau = std::filesystem::is_regular_file(luauAbs, ec);
+
+  if (hasJson && hasLuau) {
+    rc.configStatus = CONFIG_AMBIGUOUS;
+    return rc.configStatus;
+  }
+  if (hasJson) {
+    rc.configStatus = CONFIG_PRESENT_JSON;
+    rc.configFile = jsonAbs;
+    return rc.configStatus;
+  }
+  if (hasLuau) {
+    rc.configStatus = CONFIG_PRESENT_LUAU;
+    rc.configFile = luauAbs;
+    return rc.configStatus;
+  }
+
+  return rc.configStatus;
+}
+
+static std::optional<std::filesystem::path>
+resolveConfigFile(const RequireContext &rc) {
+  const auto status = resolveConfigStatus(rc);
+  if (status == CONFIG_PRESENT_JSON || status == CONFIG_PRESENT_LUAU) {
+    return rc.configFile;
+  }
   return std::nullopt;
 }
 
@@ -213,6 +292,7 @@ luarequire_NavigateResult reset(lua_State *L, void *ctx,
   }
 
   rc->root = getRequireRoot();
+  rc->invalidate();
 
   auto fileAbsOpt = resolveRequirerFile(*rc, requirer_chunkname);
   if (!fileAbsOpt) {
@@ -231,15 +311,7 @@ luarequire_NavigateResult reset(lua_State *L, void *ctx,
     return NAVIGATE_NOT_FOUND;
   }
 
-  // Convert "foo.luau" -> "foo". If this is an init module, treat the module
-  // as the directory that contains it (i.e. "dir/init.luau" -> "dir").
-  if (rel.filename() == (String("init") + prefix).c_str()) {
-    rc->current = rel.parent_path().lexically_normal();
-  } else {
-    rel.replace_extension();
-    rc->current = rel.lexically_normal();
-  }
-
+  setCurrentModule(*rc, rel);
   return NAVIGATE_SUCCESS;
 }
 
@@ -268,13 +340,7 @@ luarequire_NavigateResult jumpToAlias(lua_State *L, void *ctx,
       return NAVIGATE_NOT_FOUND;
     }
 
-    if (rel.filename() == (String("init") + prefix).c_str()) {
-      rc->current = rel.parent_path().lexically_normal();
-    } else {
-      rel.replace_extension();
-      rc->current = rel.lexically_normal();
-    }
-
+    setCurrentModule(*rc, rel);
     return NAVIGATE_SUCCESS;
   }
 
@@ -295,6 +361,7 @@ luarequire_NavigateResult jumpToAlias(lua_State *L, void *ctx,
   }
   if (fileExists || initExists) {
     rc->current = relNoExt.lexically_normal();
+    rc->invalidate();
     return NAVIGATE_SUCCESS;
   }
 
@@ -336,6 +403,7 @@ luarequire_NavigateResult toParent(lua_State *L, void *ctx) {
   }
 
   rc->current = rc->current.parent_path().lexically_normal();
+  rc->invalidate();
   return NAVIGATE_SUCCESS;
 }
 luarequire_NavigateResult toChild(lua_State *L, void *ctx, const char *name) {
@@ -367,6 +435,7 @@ luarequire_NavigateResult toChild(lua_State *L, void *ctx, const char *name) {
   }
 
   rc->current = child;
+  rc->invalidate();
   return NAVIGATE_SUCCESS;
 }
 
@@ -451,31 +520,7 @@ luarequire_ConfigStatus getConfigStatus(lua_State *L, void *ctx) {
   if (!rc) {
     return CONFIG_ABSENT;
   }
-
-  std::filesystem::path dirAbs = (rc->root / rc->current).lexically_normal();
-
-  std::error_code ec;
-  if (!std::filesystem::is_directory(dirAbs, ec)) {
-    dirAbs = dirAbs.parent_path();
-  }
-
-  const std::filesystem::path jsonAbs = dirAbs / ".luaurc";
-  const std::filesystem::path luauAbs = dirAbs / ".config.luau";
-
-  const bool hasJson = std::filesystem::is_regular_file(jsonAbs, ec);
-  const bool hasLuau = std::filesystem::is_regular_file(luauAbs, ec);
-
-  if (hasJson && hasLuau) {
-    return CONFIG_AMBIGUOUS;
-  }
-  if (hasJson) {
-    return CONFIG_PRESENT_JSON;
-  }
-  if (hasLuau) {
-    return CONFIG_PRESENT_LUAU;
-  }
-
-  return CONFIG_ABSENT;
+  return resolveConfigStatus(*rc);
 }
 
 // Parses the configuration file in the current context for the given alias
@@ -509,31 +554,14 @@ luarequire_WriteResult getConfig(lua_State *L, void *ctx, char *buffer,
     return WRITE_FAILURE;
   }
 
-  std::filesystem::path dirAbs = (rc->root / rc->current).lexically_normal();
-
-  std::error_code ec;
-  if (!std::filesystem::is_directory(dirAbs, ec)) {
-    dirAbs = dirAbs.parent_path();
-  }
-
-  const std::filesystem::path jsonAbs = (dirAbs / ".luaurc").lexically_normal();
-  const std::filesystem::path luauAbs =
-      (dirAbs / ".config.luau").lexically_normal();
-
-  const bool hasJson = std::filesystem::is_regular_file(jsonAbs, ec);
-  const bool hasLuau = std::filesystem::is_regular_file(luauAbs, ec);
-  if (hasJson && hasLuau) {
-    return WRITE_FAILURE;
-  }
-
-  std::filesystem::path cfgAbs = hasJson ? jsonAbs : luauAbs;
-  if (!std::filesystem::is_regular_file(cfgAbs, ec)) {
+  auto cfgAbs = resolveConfigFile(*rc);
+  if (!cfgAbs) {
     return WRITE_FAILURE;
   }
 
   // Read directly from disk so we don't depend on Script::getBasePath while
   // navigating across parents.
-  auto *file = SDL_IOFromFile(cfgAbs.string().c_str(), "r");
+  auto *file = SDL_IOFromFile(cfgAbs->string().c_str(), "r");
   if (!file) {
     return WRITE_FAILURE;
   }

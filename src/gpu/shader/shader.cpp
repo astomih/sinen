@@ -5,6 +5,7 @@
 #include <script/luaapi.hpp>
 
 #include <core/thread/global_thread_pool.hpp>
+#include <core/thread/future_poll.hpp>
 #include <core/thread/load_context.hpp>
 
 #include "core/allocator/global_allocator.hpp"
@@ -53,6 +54,10 @@ ShaderFormat formatFromPath(StringView path) {
   }
   return ShaderFormat::SPIRV;
 }
+
+static void scheduleOnPreDraw(std::function<void()> f) {
+  Graphics::addPreDrawFunc(std::move(f));
+}
 } // namespace
 
 Shader::Shader() { shader = makePtr<Ptr<gpu::Shader>>(); }
@@ -97,43 +102,30 @@ void Shader::load(StringView vertex_shader, ShaderStage stage,
         state->numSamplers = (stage == ShaderStage::Fragment) ? 1u : 0u;
         state->gpuStage = stage;
       });
+  scheduleFuturePoll(
+      state, group, scheduleOnPreDraw,
+      [this, state] {
+        auto *allocator = GlobalAllocator::get();
+        auto device = Graphics::getDevice();
 
-  auto pollAndCreate = std::make_shared<std::function<void()>>();
-  *pollAndCreate = [this, pollAndCreate, state, group]() {
-    if (!state->future.valid()) {
-      group.done();
-      return;
-    }
-    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
-        std::future_status::ready) {
-      Graphics::addPreDrawFunc(*pollAndCreate);
-      return;
-    }
+        gpu::Shader::CreateInfo info{};
+        info.allocator = allocator;
+        info.size = state->spirv.size();
+        info.data = state->spirv.data();
+        info.entrypoint = entryPointFor(this->stage, state->shaderFormat);
+        info.format = state->shaderFormat;
+        info.stage = state->gpuStage;
+        info.numSamplers = state->numSamplers;
+        info.numStorageBuffers = 0;
+        info.numStorageTextures = 0;
+        info.numUniformBuffers = state->numUniformBuffers;
 
-    state->future.get();
-
-    auto *allocator = GlobalAllocator::get();
-    auto device = Graphics::getDevice();
-
-    gpu::Shader::CreateInfo info{};
-    info.allocator = allocator;
-    info.size = state->spirv.size();
-    info.data = state->spirv.data();
-    info.entrypoint = entryPointFor(this->stage, state->shaderFormat);
-    info.format = state->shaderFormat;
-    info.stage = state->gpuStage;
-    info.numSamplers = state->numSamplers;
-    info.numStorageBuffers = 0;
-    info.numStorageTextures = 0;
-    info.numUniformBuffers = state->numUniformBuffers;
-
-    *shader = device->createShader(info);
-    this->format = state->shaderFormat;
-    this->code = state->spirv;
-    this->async.reset();
-    group.done();
-  };
-  Graphics::addPreDrawFunc(*pollAndCreate);
+        *shader = device->createShader(info);
+        this->format = state->shaderFormat;
+        this->code = state->spirv;
+        this->async.reset();
+      },
+      [this] { this->async.reset(); });
 }
 void Shader::compileAndLoad(StringView name, ShaderStage stage) {
   GPUBackendAPI backendAPI = Graphics::getDevice()->getBackendAPI();
@@ -179,45 +171,30 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage,
                              : 0u;
     state->gpuStage = stage;
   });
+  scheduleFuturePoll(
+      state, group, scheduleOnPreDraw,
+      [this, state] {
+        auto *allocator = GlobalAllocator::get();
+        auto device = Graphics::getDevice();
 
-  auto pollAndCreate = std::make_shared<std::function<void()>>();
-  *pollAndCreate = [this, pollAndCreate, state, group]() {
-    if (!state->future.valid()) {
-      group.done();
-      return;
-    }
-    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
-        std::future_status::ready) {
-      Graphics::addPreDrawFunc(*pollAndCreate);
-      return;
-    }
+        gpu::Shader::CreateInfo info{};
+        info.allocator = allocator;
+        info.size = state->spirv.size();
+        info.data = state->spirv.data();
+        info.entrypoint = entryPointFor(this->stage, state->shaderFormat);
+        info.format = state->shaderFormat;
+        info.stage = state->gpuStage;
+        info.numSamplers = state->numSamplers;
+        info.numStorageBuffers = 0;
+        info.numStorageTextures = 0;
+        info.numUniformBuffers = state->numUniformBuffers;
 
-    state->future.get();
-
-    auto *allocator = GlobalAllocator::get();
-    auto device = Graphics::getDevice();
-
-    gpu::Shader::CreateInfo info{};
-    info.allocator = allocator;
-    info.size = state->spirv.size();
-    info.data = state->spirv.data();
-    info.entrypoint = entryPointFor(this->stage, state->shaderFormat);
-    info.format = state->shaderFormat;
-    info.stage = state->gpuStage;
-    info.numSamplers = state->numSamplers;
-    info.numStorageBuffers = 0;
-    info.numStorageTextures = 0;
-    info.numUniformBuffers = state->numUniformBuffers;
-
-    {
-      *shader = device->createShader(info);
-    }
-    this->format = state->shaderFormat;
-    this->code = state->spirv;
-    this->async.reset();
-    group.done();
-  };
-  Graphics::addPreDrawFunc(*pollAndCreate);
+        *shader = device->createShader(info);
+        this->format = state->shaderFormat;
+        this->code = state->spirv;
+        this->async.reset();
+      },
+      [this] { this->async.reset(); });
 }
 Ptr<gpu::Shader> Shader::getRaw() { return *shader; }
 ShaderFormat Shader::getFormat() const { return format; }

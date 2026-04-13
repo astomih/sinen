@@ -6,6 +6,7 @@ local galleryDirs = {
 	"fps",
 	"block_place",
 	"neon_orbit",
+	"shader_toy",
 }
 
 local numGallerys = #galleryDirs

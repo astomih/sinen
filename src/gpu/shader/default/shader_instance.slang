@@ -1,6 +1,6 @@
 #define UNIFORM(name, bind)                                                    \
   [[vk::binding(bind, 1)]]                                                     \
-  cbuffer name : register(c##bind, space1)
+  cbuffer name : register(b##bind, space1)
 
 struct VSInput {
   float3 position : POSITION;

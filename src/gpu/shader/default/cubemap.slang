@@ -12,10 +12,10 @@ struct VSOutput {
 
 #define UNIFORM_VERT(name, bind)                                               \
   [[vk::binding(bind, 1)]]                                                     \
-  cbuffer name //: register(c##bind, space1)
+  cbuffer name : register(b##bind, space1)
 #define UNIFORM_FRAG(name, bind)                                               \
   [[vk::binding(bind, 3)]]                                                     \
-  cbuffer name //: register(c##bind, space1)
+  cbuffer name : register(b##bind, space1)
 
 UNIFORM_VERT(Mat, 0) {
   float4x4 world;
@@ -42,12 +42,11 @@ struct FSInput {
 };
 
 struct FSOutput {
-  float4 color : COLOR;
+  float4 color : SV_Target0;
 };
 #define COMBINED_IMAGE_SAMPLER(name, bind)                                     \
   [[vk::binding(bind, 2)]]                                                     \
-  Sampler2D name; //: register(t##bind, space##set) : register(s##bind,
-                  //: space##set);
+  Sampler2D name : register(t##bind, space##set) : register(s##bind, : space##set);
 
 [[vk::binding(0, 2)]]
 SamplerCube cubemap;

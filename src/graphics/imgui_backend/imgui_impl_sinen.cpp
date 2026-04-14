@@ -2,6 +2,7 @@
 #include "imgui_impl_sinen_shaders.hpp"
 
 #include <core/def/assert.hpp>
+#include <gpu/shader/rt_shader_compiler.hpp>
 
 namespace sinen {
 struct ImGuiImplParanoixaFrameData {
@@ -64,15 +65,14 @@ static void imguiImplParanoixaCreateShaders() {
     fragmentShaderInfo.format = ShaderFormat::SPIRV;
     fragmentShaderInfo.data = spirv_fragment;
     fragmentShaderInfo.size = sizeof(spirv_fragment);
+  } else if (driver == "direct3d12") {
+    vertexShaderInfo.format = ShaderFormat::DXIL;
+    vertexShaderInfo.data = dxbc_vertex;
+    vertexShaderInfo.size = sizeof(dxbc_vertex);
+    fragmentShaderInfo.format = ShaderFormat::DXIL;
+    fragmentShaderInfo.data = dxbc_fragment;
+    fragmentShaderInfo.size = sizeof(dxbc_fragment);
   }
-  //   else if (strcmp(driver, "direct3d12") == 0) {
-  //     vertex_shader_info.format = SDL_GPU_SHADERFORMAT_DXBC;
-  //     vertex_shader_info.code = dxbc_vertex;
-  //     vertex_shader_info.code_size = sizeof(dxbc_vertex);
-  //     fragment_shader_info.format = SDL_GPU_SHADERFORMAT_DXBC;
-  //     fragment_shader_info.code = dxbc_fragment;
-  //     fragment_shader_info.code_size = sizeof(dxbc_fragment);
-  //   }
   // #ifdef __APPLE__
   //   else {
   //     vertex_shader_info.entrypoint = "main0";

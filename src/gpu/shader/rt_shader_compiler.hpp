@@ -17,6 +17,10 @@ public:
 
   Array<char> compile(StringView sourcePath, ShaderStage stage,
                       ShaderFormat format, ReflectionData &reflectionData);
+  Array<char> compileSource(StringView moduleName, StringView modulePath,
+                            StringView source, ShaderStage stage,
+                            ShaderFormat format,
+                            ReflectionData &reflectionData);
 };
 } // namespace sinen
 

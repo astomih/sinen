@@ -2,12 +2,23 @@
 #include <graphics/graphics.hpp>
 #include <script/luaapi.hpp>
 
+#include "rt_shader_compiler.hpp"
+
+// SPIR-V
 #include "default/cubemap.frag.spv.hpp"
 #include "default/cubemap.vert.spv.hpp"
 #include "default/rect_color.frag.spv.hpp"
 #include "default/shader.frag.spv.hpp"
 #include "default/shader.vert.spv.hpp"
 #include "default/shader_instance.vert.spv.hpp"
+
+// DXIL
+#include "default/cubemap.frag.dxil.hpp"
+#include "default/cubemap.vert.dxil.hpp"
+#include "default/rect_color.frag.dxil.hpp"
+#include "default/shader.frag.dxil.hpp"
+#include "default/shader.vert.dxil.hpp"
+#include "default/shader_instance.vert.dxil.hpp"
 
 namespace sinen {
 static Shader defaultVS;
@@ -18,17 +29,23 @@ static Shader cubemapVS;
 static Shader cubemapFS;
 
 bool BuiltinShader::initialize() {
+  auto *allocator = GlobalAllocator::get();
+  auto device = Graphics::getDevice();
+  auto format = device->getBackendAPI() == GPUBackendAPI::Vulkan
+                    ? ShaderFormat::SPIRV
+                    : ShaderFormat::DXIL;
   {
-
-    auto *allocator = GlobalAllocator::get();
-    auto device = Graphics::getDevice();
-
     gpu::Shader::CreateInfo vsInfo{};
     vsInfo.allocator = allocator;
-    vsInfo.size = shader_vert_spv_len;
-    vsInfo.data = shader_vert_spv;
+    if (format == ShaderFormat::SPIRV) {
+      vsInfo.size = shader_vert_spv_len;
+      vsInfo.data = shader_vert_spv;
+    } else {
+      vsInfo.size = shader_vert_dxil_len;
+      vsInfo.data = shader_vert_dxil;
+    }
     vsInfo.entrypoint = "main";
-    vsInfo.format = ShaderFormat::SPIRV;
+    vsInfo.format = format;
     vsInfo.stage = ShaderStage::Vertex;
     vsInfo.numSamplers = 0;
     vsInfo.numStorageBuffers = 0;
@@ -37,15 +54,17 @@ bool BuiltinShader::initialize() {
     defaultVS = Shader(device->createShader(vsInfo));
   }
   {
-    auto *allocator = GlobalAllocator::get();
-    auto device = Graphics::getDevice();
-
     gpu::Shader::CreateInfo vsInfo{};
     vsInfo.allocator = allocator;
-    vsInfo.size = shader_instance_vert_spv_len;
-    vsInfo.data = shader_instance_vert_spv;
+    if (format == ShaderFormat::SPIRV) {
+      vsInfo.size = shader_instance_vert_spv_len;
+      vsInfo.data = shader_instance_vert_spv;
+    } else {
+      vsInfo.size = shader_instance_vert_dxil_len;
+      vsInfo.data = shader_instance_vert_dxil;
+    }
     vsInfo.entrypoint = "main";
-    vsInfo.format = ShaderFormat::SPIRV;
+    vsInfo.format = format;
     vsInfo.stage = ShaderStage::Vertex;
     vsInfo.numSamplers = 0;
     vsInfo.numStorageBuffers = 0;
@@ -54,15 +73,17 @@ bool BuiltinShader::initialize() {
     defaultInstancedVS = Shader(device->createShader(vsInfo));
   }
   {
-    auto *allocator = GlobalAllocator::get();
-    auto device = Graphics::getDevice();
-
     gpu::Shader::CreateInfo fsInfo{};
     fsInfo.allocator = allocator;
-    fsInfo.size = shader_frag_spv_len;
-    fsInfo.data = shader_frag_spv;
+    if (format == ShaderFormat::SPIRV) {
+      fsInfo.size = shader_frag_spv_len;
+      fsInfo.data = shader_frag_spv;
+    } else {
+      fsInfo.size = shader_frag_dxil_len;
+      fsInfo.data = shader_frag_dxil;
+    }
     fsInfo.entrypoint = "main";
-    fsInfo.format = ShaderFormat::SPIRV;
+    fsInfo.format = format;
     fsInfo.stage = ShaderStage::Fragment;
     fsInfo.numSamplers = 1; // one sampler for fragment shader
     fsInfo.numStorageBuffers = 0;
@@ -71,16 +92,20 @@ bool BuiltinShader::initialize() {
     defaultFS = Shader(device->createShader(fsInfo));
   }
   {
-    auto *allocator = GlobalAllocator::get();
-    auto device = Graphics::getDevice();
-
     gpu::Shader::CreateInfo fsInfo{};
     fsInfo.allocator = allocator;
     fsInfo.size = rect_color_frag_spv_len;
     fsInfo.data = rect_color_frag_spv;
     fsInfo.entrypoint = "main";
-    fsInfo.format = ShaderFormat::SPIRV;
+    fsInfo.format = format;
     fsInfo.stage = ShaderStage::Fragment;
+    if (format == ShaderFormat::SPIRV) {
+      fsInfo.size = rect_color_frag_spv_len;
+      fsInfo.data = rect_color_frag_spv;
+    } else {
+      fsInfo.size = rect_color_frag_dxil_len;
+      fsInfo.data = rect_color_frag_dxil;
+    }
     fsInfo.numSamplers = 0; // no sampler for solid-color rectangle
     fsInfo.numStorageBuffers = 0;
     fsInfo.numStorageTextures = 0;
@@ -88,15 +113,17 @@ bool BuiltinShader::initialize() {
     rectFS = Shader(device->createShader(fsInfo));
   }
   {
-    auto *allocator = GlobalAllocator::get();
-    auto device = Graphics::getDevice();
-
     gpu::Shader::CreateInfo vsInfo{};
     vsInfo.allocator = allocator;
-    vsInfo.size = cubemap_vert_spv_len;
-    vsInfo.data = cubemap_vert_spv;
+    if (format == ShaderFormat::SPIRV) {
+      vsInfo.size = cubemap_vert_spv_len;
+      vsInfo.data = cubemap_vert_spv;
+    } else {
+      vsInfo.size = cubemap_vert_dxil_len;
+      vsInfo.data = cubemap_vert_dxil;
+    }
     vsInfo.entrypoint = "main";
-    vsInfo.format = ShaderFormat::SPIRV;
+    vsInfo.format = format;
     vsInfo.stage = ShaderStage::Vertex;
     vsInfo.numSamplers = 0;
     vsInfo.numStorageBuffers = 0;
@@ -105,15 +132,17 @@ bool BuiltinShader::initialize() {
     cubemapVS = Shader(device->createShader(vsInfo));
   }
   {
-    auto *allocator = GlobalAllocator::get();
-    auto device = Graphics::getDevice();
-
     gpu::Shader::CreateInfo fsInfo{};
     fsInfo.allocator = allocator;
-    fsInfo.size = cubemap_frag_spv_len;
-    fsInfo.data = cubemap_frag_spv;
+    if (format == ShaderFormat::SPIRV) {
+      fsInfo.size = cubemap_frag_spv_len;
+      fsInfo.data = cubemap_frag_spv;
+    } else {
+      fsInfo.size = cubemap_frag_dxil_len;
+      fsInfo.data = cubemap_frag_dxil;
+    }
     fsInfo.entrypoint = "main";
-    fsInfo.format = ShaderFormat::SPIRV;
+    fsInfo.format = format;
     fsInfo.stage = ShaderStage::Fragment;
     fsInfo.numSamplers = 1; // one sampler for fragment shader
     fsInfo.numStorageBuffers = 0;

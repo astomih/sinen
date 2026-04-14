@@ -20,6 +20,8 @@
 #include <imgui_impl_sdl3.h>
 #include <imgui_internal.h>
 
+#include <cstring>
+
 namespace sinen {
 // Variables
 static Color clearColor = Palette::black();
@@ -54,6 +56,26 @@ static void prepareRenderPassFrame();
 static void setupShapes();
 static void beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp);
 
+static GPUBackendAPI selectBackendAPI() {
+    return GPUBackendAPI::D3D12U;
+  const char *backendName = SDL_getenv("SINEN_GPU_BACKEND");
+
+#ifdef SINEN_PLATFORM_WINDOWS
+  if (std::strcmp(backendName, "d3d12") == 0 ||
+      std::strcmp(backendName, "direct3d12") == 0) {
+    return GPUBackendAPI::D3D12U;
+  }
+#endif
+  if (std::strcmp(backendName, "vulkan") == 0) {
+    return GPUBackendAPI::Vulkan;
+  }
+  if (std::strcmp(backendName, "webgpu") == 0 ||
+      std::strcmp(backendName, "wgpu") == 0) {
+    return GPUBackendAPI::WebGPU;
+  }
+  return GPUBackendAPI::SDLGPU;
+}
+
 static void setFullWindowViewport(const Ptr<gpu::RenderPass> &renderPass) {
   Rect rect;
   // SDL_Rect safeArea;
@@ -82,8 +104,7 @@ bool Graphics::initialize() {
     c.perspective(90.f, Window::size().x / Window::size().y, .1f, 100.f);
     return c;
   }();
-  backend =
-      gpu::RHI::createBackend(GlobalAllocator::get(), GPUBackendAPI::SDLGPU);
+  backend = gpu::RHI::createBackend(GlobalAllocator::get(), selectBackendAPI());
   if (!backend)
     return false;
   gpu::Device::CreateInfo info{};

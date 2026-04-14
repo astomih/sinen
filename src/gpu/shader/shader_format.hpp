@@ -5,6 +5,8 @@ namespace sinen {
 enum class ShaderFormat {
   SPIRV,
   WGSL,
+  DXBC,
+  DXIL,
 };
 }
 

@@ -15,6 +15,21 @@
 #include <SDL3/SDL_gpu.h>
 
 namespace sinen::gpu::sdlgpu {
+namespace {
+SDL_GPUShaderFormat shaderFormatFrom(ShaderFormat format) {
+  switch (format) {
+  case ShaderFormat::SPIRV:
+    return SDL_GPU_SHADERFORMAT_SPIRV;
+  case ShaderFormat::DXBC:
+    return SDL_GPU_SHADERFORMAT_DXBC;
+  case ShaderFormat::DXIL:
+    return SDL_GPU_SHADERFORMAT_DXIL;
+  default:
+    return SDL_GPU_SHADERFORMAT_INVALID;
+  }
+}
+} // namespace
+
 Device::~Device() {
   if (window)
     SDL_ReleaseWindowFromGPUDevice(device, window);
@@ -85,9 +100,11 @@ Ptr<gpu::Sampler> Device::createSampler(const Sampler::CreateInfo &createInfo) {
 }
 
 Ptr<gpu::Shader> Device::createShader(const Shader::CreateInfo &createInfo) {
-  if (createInfo.format != ShaderFormat::SPIRV) {
+  const SDL_GPUShaderFormat nativeFormat = shaderFormatFrom(createInfo.format);
+  if (nativeFormat == SDL_GPU_SHADERFORMAT_INVALID ||
+      (shaderFormats & nativeFormat) == 0) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                 "SDLGPU backend only supports SPIR-V input");
+                 "SDL_GPU backend does not support this shader format");
     return nullptr;
   }
 
@@ -97,7 +114,7 @@ Ptr<gpu::Shader> Device::createShader(const Shader::CreateInfo &createInfo) {
                        : SDL_GPU_SHADERSTAGE_FRAGMENT;
   shaderCI.code_size = createInfo.size;
   shaderCI.code = reinterpret_cast<const Uint8 *>(createInfo.data);
-  shaderCI.format = SDL_GPU_SHADERFORMAT_SPIRV;
+  shaderCI.format = nativeFormat;
   shaderCI.entrypoint = createInfo.entrypoint;
   shaderCI.num_samplers = createInfo.numSamplers;
   shaderCI.num_storage_buffers = createInfo.numStorageBuffers;

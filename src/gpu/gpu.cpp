@@ -7,6 +7,9 @@
 #endif
 #include <gpu/gpu.hpp>
 
+#ifdef SINEN_PLATFORM_WINDOWS
+#include "d3d12/d3d12_backend.hpp"
+#endif
 #include "sdlgpu/sdlgpu_backend.hpp"
 #include "vulkan/vulkan_backend.hpp"
 #ifndef SINEN_PLATFORM_ANDROID
@@ -25,8 +28,7 @@ Ptr<Backend> RHI::createBackend(Allocator *allocator,
   }
 #ifdef SINEN_PLATFORM_WINDOWS
   case GPUBackendAPI::D3D12U: {
-    // TODO
-    return nullptr;
+    return makePtr<d3d12::Backend>(allocator);
   }
 #endif
 #ifndef SINEN_PLATFORM_ANDROID

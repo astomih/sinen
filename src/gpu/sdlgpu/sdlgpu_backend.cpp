@@ -7,15 +7,16 @@
 
 namespace sinen::gpu::sdlgpu {
 Ptr<gpu::Device> Backend::createDevice(const Device::CreateInfo &createInfo) {
-  SDL_GPUDevice *device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV,
-                                              createInfo.debugMode, nullptr);
+  SDL_GPUDevice *device =
+      SDL_CreateGPUDevice(shaderFormats, createInfo.debugMode, driverName);
   if (!device) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                  "Failed to create SDL_GPUDevice:\n");
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, SDL_GetError());
     return nullptr;
   }
-  return makePtr<Device>(createInfo.allocator, createInfo, device);
+  return makePtr<Device>(createInfo.allocator, createInfo, device,
+                         shaderFormats, backendAPI);
 }
 } // namespace sinen::gpu::sdlgpu
 #endif // EMSCRIPTEN

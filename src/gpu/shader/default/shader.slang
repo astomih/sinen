@@ -1,25 +1,25 @@
-#define UNIFORM(name, bind)                                                    \
+#define UNIFORM_VERT(name, bind)                                               \
   [[vk::binding(bind, 1)]]                                                     \
-  cbuffer name : register(c##bind, space1)
+  cbuffer name : register(b##bind, space1)
 
 #define COMBINED_IMAGE_SAMPLER(name, bind, set)                                \
   [[vk::binding(bind, set)]]                                                   \
   Sampler2D name : register(t##bind, space##set) : register(s##bind, space##set);
 
 struct VSInput {
-  float3 position : POSITION;
-  float3 normal : NORMAL;
+  float3 position : POSITION0;
+  float3 normal : NORMAL0;
   float2 uv : TEXCOORD0;
-  float4 color : COLOR;
+  float4 color : COLOR0;
 };
 
 struct VSOutput {
-  float4 out : SV_Position;
+  float4 out : SV_Position0;
   float2 uv : TEXCOORD0;
-  float4 color : COLOR;
+  float4 color : COLOR0;
 };
 
-UNIFORM(Mat, 0) {
+UNIFORM_VERT(Mat, 0) {
   float4x4 world;
   float4x4 view;
   float4x4 proj;
@@ -40,11 +40,11 @@ VSOutput VSMain(VSInput input) {
 
 struct FSInput {
   float2 uv : TEXCOORD0;
-  float4 color : COLOR;
+  float4 color : COLOR0;
 };
 
 struct FSOutput {
-  float4 color : COLOR;
+  float4 color : SV_Target0;
 };
 
 COMBINED_IMAGE_SAMPLER(sampledTexture, 0, 2)

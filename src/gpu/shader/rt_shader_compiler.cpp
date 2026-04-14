@@ -41,7 +41,8 @@ getReflectionData(slang::IComponentType *program) {
     int numUniformBuffers = 0;
     for (int i = 0; i < rangeCount; ++i) {
       auto rangeType = typeLayout->getBindingRangeType(i);
-      if (rangeType == slang::BindingType::CombinedTextureSampler) {
+      if (rangeType == slang::BindingType::CombinedTextureSampler ||
+          rangeType == slang::BindingType::Sampler) {
         data.numCombinedSamplers++;
       }
       if (rangeType == slang::BindingType::ConstantBuffer) {
@@ -61,9 +62,11 @@ getReflectionData(slang::IComponentType *program) {
   return data;
 }
 
-Array<char> ShaderCompiler::compile(StringView sourcePath, ShaderStage stage,
-                                    ShaderFormat format,
-                                    ReflectionData &reflectionData) {
+Array<char> ShaderCompiler::compileSource(StringView moduleName,
+                                          StringView modulePath,
+                                          StringView source, ShaderStage stage,
+                                          ShaderFormat format,
+                                          ReflectionData &reflectionData) {
 #if SINEN_USE_SLANG
   using namespace slang;
 
@@ -85,6 +88,14 @@ Array<char> ShaderCompiler::compile(StringView sourcePath, ShaderStage stage,
     targetDesc[0].format = SLANG_WGSL;
     targetDesc[0].profile = globalSession->findProfile("wgsl_1_0");
     break;
+  case ShaderFormat::DXBC:
+    targetDesc[0].format = SLANG_DXBC;
+    targetDesc[0].profile = globalSession->findProfile("sm_5_1");
+    break;
+  case ShaderFormat::DXIL:
+    targetDesc[0].format = SLANG_DXIL;
+    targetDesc[0].profile = globalSession->findProfile("sm_6_0");
+    break;
   }
   sessionDesc.targets = targetDesc.data();
   sessionDesc.targetCount = targetDesc.size();
@@ -103,20 +114,13 @@ Array<char> ShaderCompiler::compile(StringView sourcePath, ShaderStage stage,
 
   Slang::ComPtr<slang::IModule> slangModule;
   {
-    String moduleName;
-    {
-
-      size_t dotPos = sourcePath.find_last_of('.');
-      auto view =
-          (dotPos == String::npos) ? sourcePath : sourcePath.substr(0, dotPos);
-      moduleName = view.data();
-    }
-    auto source = sinen::AssetIO::openAsString(sourcePath);
+    String moduleNameString(moduleName.data(), moduleName.size());
+    String modulePathString(modulePath.data(), modulePath.size());
     Slang::ComPtr<slang::IBlob> diagnosticsBlob;
     slangModule = session->loadModuleFromSourceString(
-        moduleName.c_str(),                              // Module name
-        sinen::AssetIO::getFilePath(sourcePath).c_str(), // Module path
-        source.data(),                                   // Shader source code
+        moduleNameString.c_str(), // Module name
+        modulePathString.c_str(), // Module path
+        source.data(),              // Shader source code
         diagnosticsBlob.writeRef()); // Optional diagnostic container
     if (!slangModule) {
       diagnoseIfNeeded(diagnosticsBlob);
@@ -202,5 +206,21 @@ Array<char> ShaderCompiler::compile(StringView sourcePath, ShaderStage stage,
   std::cout << "SLANG is not enabled. Cannot compile shader." << std::endl;
   return {};
 #endif
+}
+
+Array<char> ShaderCompiler::compile(StringView sourcePath, ShaderStage stage,
+                                    ShaderFormat format,
+                                    ReflectionData &reflectionData) {
+  String moduleName;
+  {
+    size_t dotPos = sourcePath.find_last_of('.');
+    auto view =
+        (dotPos == String::npos) ? sourcePath : sourcePath.substr(0, dotPos);
+    moduleName = String(view.data(), view.size());
+  }
+  auto source = sinen::AssetIO::openAsString(sourcePath);
+  auto modulePath = sinen::AssetIO::getFilePath(sourcePath);
+  return compileSource(moduleName, modulePath, source, stage, format,
+                       reflectionData);
 }
 } // namespace sinen

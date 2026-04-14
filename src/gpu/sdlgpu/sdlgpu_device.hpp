@@ -23,8 +23,11 @@ namespace sinen::gpu::sdlgpu {
 
 class Device : public gpu::Device {
 public:
-  Device(const CreateInfo &createInfo, SDL_GPUDevice *device)
-      : gpu::Device(createInfo), device(device), window(nullptr) {}
+  Device(const CreateInfo &createInfo, SDL_GPUDevice *device,
+         SDL_GPUShaderFormat shaderFormats,
+         GPUBackendAPI backendAPI = GPUBackendAPI::SDLGPU)
+      : gpu::Device(createInfo), device(device), window(nullptr),
+        shaderFormats(shaderFormats), backendAPI(backendAPI) {}
   ~Device() override;
 
   SDL_GPUDevice *getNative() { return device; }
@@ -55,11 +58,13 @@ public:
     return std::dynamic_pointer_cast<Device>(getPtr());
   }
 
-  GPUBackendAPI getBackendAPI() const override { return GPUBackendAPI::SDLGPU; }
+  GPUBackendAPI getBackendAPI() const override { return backendAPI; }
 
 private:
   SDL_GPUDevice *device;
   SDL_Window *window;
+  SDL_GPUShaderFormat shaderFormats;
+  GPUBackendAPI backendAPI;
 };
 } // namespace sinen::gpu::sdlgpu
 

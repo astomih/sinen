@@ -48,9 +48,19 @@ const char *entryPointFor(ShaderStage stage, ShaderFormat format) {
 
 ShaderFormat formatFromPath(StringView path) {
   constexpr StringView wgslExt = ".wgsl";
+  constexpr StringView dxbcExt = ".dxbc";
+  constexpr StringView dxilExt = ".dxil";
   if (path.size() >= wgslExt.size() &&
       path.substr(path.size() - wgslExt.size()) == wgslExt) {
     return ShaderFormat::WGSL;
+  }
+  if (path.size() >= dxbcExt.size() &&
+      path.substr(path.size() - dxbcExt.size()) == dxbcExt) {
+    return ShaderFormat::DXBC;
+  }
+  if (path.size() >= dxilExt.size() &&
+      path.substr(path.size() - dxilExt.size()) == dxilExt) {
+    return ShaderFormat::DXIL;
   }
   return ShaderFormat::SPIRV;
 }
@@ -134,6 +144,11 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage) {
   case GPUBackendAPI::WebGPU:
     format = ShaderFormat::WGSL;
     break;
+#ifdef SINEN_PLATFORM_WINDOWS
+  case GPUBackendAPI::D3D12U:
+    format = ShaderFormat::DXIL;
+    break;
+#endif
   default:
     format = ShaderFormat::SPIRV;
   }
@@ -163,8 +178,7 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage,
       state->spirv.push_back('\0');
     }
 
-    state->shaderFormat = (format == ShaderFormat::WGSL) ? ShaderFormat::WGSL
-                                                         : ShaderFormat::SPIRV;
+    state->shaderFormat = format;
     state->numUniformBuffers = reflectionData.numUniformBuffers;
     state->numSamplers = (stage == ShaderStage::Fragment)
                              ? reflectionData.numCombinedSamplers

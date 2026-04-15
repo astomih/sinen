@@ -96,7 +96,7 @@ if(MSVC)
 
   set(WINSDK_INCLUDES
       "${WINSDK_INCLUDE_BASE}/ucrt" "${WINSDK_INCLUDE_BASE}/shared"
-      "${WINSDK_INCLUDE_BASE}/um")
+      "${WINSDK_INCLUDE_BASE}/um" "${WINSDK_INCLUDE_BASE}/winrt")
 
   target_include_directories(sinen SYSTEM PRIVATE "${MSVC_STL_INCLUDE}"
                                                   ${WINSDK_INCLUDES})

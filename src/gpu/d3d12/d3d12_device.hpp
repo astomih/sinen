@@ -112,7 +112,9 @@ private:
   std::vector<Ptr<Texture>> swapchainTextures;
 
   Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvHeap;
+  Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvCpuHeap;
   Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> samplerHeap;
+  Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> samplerCpuHeap;
   Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvHeap;
   Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvHeap;
   UINT srvDescriptorSize = 0;

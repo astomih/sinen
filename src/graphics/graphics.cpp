@@ -57,7 +57,7 @@ static void setupShapes();
 static void beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp);
 
 static GPUBackendAPI selectBackendAPI() {
-    return GPUBackendAPI::D3D12U;
+  return GPUBackendAPI::D3D12U;
   const char *backendName = SDL_getenv("SINEN_GPU_BACKEND");
 
 #ifdef SINEN_PLATFORM_WINDOWS

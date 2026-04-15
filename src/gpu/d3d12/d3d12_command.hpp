@@ -43,7 +43,20 @@ public:
 
   D3D12_GPU_VIRTUAL_ADDRESS vertexUniform(UInt32 slot) const;
   D3D12_GPU_VIRTUAL_ADDRESS fragmentUniform(UInt32 slot) const;
-  void keepAlive(ComPtr<ID3D12Resource> resource) { uploadResources.push_back(resource); }
+  void keepAlive(ComPtr<ID3D12Resource> resource) {
+    if (resource) {
+      referencedResources.push_back(resource);
+    }
+  }
+  void keepAlive(ID3D12Resource *resource) {
+    if (!resource) {
+      return;
+    }
+    resource->AddRef();
+    ComPtr<ID3D12Resource> retained;
+    retained.Attach(resource);
+    referencedResources.push_back(retained);
+  }
 
 private:
   D3D12_GPU_VIRTUAL_ADDRESS uploadUniform(const void *data, size_t size);
@@ -55,7 +68,7 @@ private:
   bool swapchainUsed = false;
   std::array<D3D12_GPU_VIRTUAL_ADDRESS, 4> vertexUniforms{};
   std::array<D3D12_GPU_VIRTUAL_ADDRESS, 4> fragmentUniforms{};
-  std::vector<ComPtr<ID3D12Resource>> uploadResources;
+  std::vector<ComPtr<ID3D12Resource>> referencedResources;
 };
 
 class CopyPass : public gpu::CopyPass {

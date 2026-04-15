@@ -31,9 +31,12 @@ static Shader cubemapFS;
 bool BuiltinShader::initialize() {
   auto *allocator = GlobalAllocator::get();
   auto device = Graphics::getDevice();
-  auto format = device->getBackendAPI() == GPUBackendAPI::Vulkan
-                    ? ShaderFormat::SPIRV
-                    : ShaderFormat::DXIL;
+  auto format = ShaderFormat::SPIRV;
+#ifdef SINEN_PLATFORM_WINDOWS
+  if (device->getBackendAPI() == GPUBackendAPI::D3D12U) {
+    format = ShaderFormat::DXIL;
+  }
+#endif
   {
     gpu::Shader::CreateInfo vsInfo{};
     vsInfo.allocator = allocator;

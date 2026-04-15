@@ -1,13 +1,13 @@
 struct VSInput {
-  float3 position : POSITION;
-  float3 normal : NORMAL;
-  float2 uv : TEXCOORD0;
-  float4 color : COLOR;
+  float3 position : TEXCOORD0;
+  float3 normal : TEXCOORD1;
+  float2 uv : TEXCOORD2;
+  float4 color : TEXCOORD3;
 };
 
 struct VSOutput {
   float4 out : SV_Position;
-  float3 pos : TEXCOORD1;
+  float3 pos : TEXCOORD4;
 };
 
 #define UNIFORM_VERT(name, bind)                                               \
@@ -15,7 +15,7 @@ struct VSOutput {
   cbuffer name : register(b##bind, space1)
 #define UNIFORM_FRAG(name, bind)                                               \
   [[vk::binding(bind, 3)]]                                                     \
-  cbuffer name : register(b##bind, space1)
+  cbuffer name : register(b##bind, space3)
 
 UNIFORM_VERT(Mat, 0) {
   float4x4 world;
@@ -38,18 +38,19 @@ VSOutput VSMain(VSInput input) {
 };
 
 struct FSInput {
-  float3 pos : TEXCOORD1;
+  float4 position : SV_Position;
+  float3 pos : TEXCOORD4;
 };
 
 struct FSOutput {
-  float4 color : SV_Target0;
+  float4 color : SV_Target;
 };
 #define COMBINED_IMAGE_SAMPLER(name, bind)                                     \
   [[vk::binding(bind, 2)]]                                                     \
   Sampler2D name : register(t##bind, space##set) : register(s##bind, : space##set);
 
 [[vk::binding(0, 2)]]
-SamplerCube cubemap;
+SamplerCube cubemap : register(t0, space2) : register(s0, space2);
 
 [shader("fragment")]
 FSOutput FSMain(FSInput input) {

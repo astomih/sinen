@@ -85,6 +85,7 @@ CommandBuffer::beginRenderPass(const Array<ColorTargetInfo> &infos,
     if (!texture) {
       continue;
     }
+    keepAlive(texture->getNative());
     device->transition(commandList.Get(), texture.get(),
                        D3D12_RESOURCE_STATE_RENDER_TARGET);
     rtvs.push_back(texture->getRtv());
@@ -98,6 +99,7 @@ CommandBuffer::beginRenderPass(const Array<ColorTargetInfo> &infos,
   D3D12_CPU_DESCRIPTOR_HANDLE *dsvPtr = nullptr;
   if (depthStencilInfo.texture) {
     auto depth = downCast<Texture>(depthStencilInfo.texture);
+    keepAlive(depth->getNative());
     device->transition(commandList.Get(), depth.get(),
                        D3D12_RESOURCE_STATE_DEPTH_WRITE);
     dsv = depth->getDsv();
@@ -125,7 +127,8 @@ D3D12_GPU_VIRTUAL_ADDRESS CommandBuffer::uploadUniform(const void *data,
   if (!data || size == 0) {
     return 0;
   }
-  const UINT64 uploadSize = alignTo(size, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+  const UINT64 uploadSize =
+      alignTo(size, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
   ComPtr<ID3D12Resource> resource;
   auto heap = heapProperties(D3D12_HEAP_TYPE_UPLOAD);
   auto desc = bufferDesc(uploadSize);
@@ -173,12 +176,15 @@ void CopyPass::uploadBuffer(const BufferTransferInfo &src,
   auto source = downCast<TransferBuffer>(src.transferBuffer);
   auto target = downCast<Buffer>(dst.buffer);
   auto list = commandBuffer->getNative();
+  commandBuffer->keepAlive(source->getNative());
+  commandBuffer->keepAlive(target->getNative());
   commandBuffer->getDevice()->transition(list, target.get(),
                                          D3D12_RESOURCE_STATE_COPY_DEST);
   list->CopyBufferRegion(target->getNative(), dst.offset, source->getNative(),
                          src.offset, dst.size);
   commandBuffer->getDevice()->transition(
-      list, target.get(), convert::bufferStateFrom(target->getCreateInfo().usage));
+      list, target.get(),
+      convert::bufferStateFrom(target->getCreateInfo().usage));
 }
 
 void CopyPass::downloadBuffer(const BufferRegion &src,
@@ -186,6 +192,8 @@ void CopyPass::downloadBuffer(const BufferRegion &src,
   auto source = downCast<Buffer>(src.buffer);
   auto target = downCast<TransferBuffer>(dst.transferBuffer);
   auto list = commandBuffer->getNative();
+  commandBuffer->keepAlive(source->getNative());
+  commandBuffer->keepAlive(target->getNative());
   commandBuffer->getDevice()->transition(list, source.get(),
                                          D3D12_RESOURCE_STATE_COPY_SOURCE);
   list->CopyBufferRegion(target->getNative(), dst.offset, source->getNative(),
@@ -198,6 +206,8 @@ void CopyPass::uploadTexture(const TextureTransferInfo &src,
   auto target = downCast<Texture>(dst.texture);
   auto device = commandBuffer->getDevice();
   auto list = commandBuffer->getNative();
+  commandBuffer->keepAlive(source->getNative());
+  commandBuffer->keepAlive(target->getNative());
 
   D3D12_RESOURCE_DESC textureDesc = target->getNative()->GetDesc();
   D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint{};
@@ -206,8 +216,8 @@ void CopyPass::uploadTexture(const TextureTransferInfo &src,
   UINT64 totalSize = 0;
   const UINT dstSubresource =
       dst.mipLevel + dst.layer * target->getCreateInfo().numLevels;
-  device->getNative()->GetCopyableFootprints(&textureDesc, dstSubresource, 1,
-                                             0, &footprint, &numRows, &rowSize,
+  device->getNative()->GetCopyableFootprints(&textureDesc, dstSubresource, 1, 0,
+                                             &footprint, &numRows, &rowSize,
                                              &totalSize);
 
   ComPtr<ID3D12Resource> upload;
@@ -217,8 +227,10 @@ void CopyPass::uploadTexture(const TextureTransferInfo &src,
       &heap, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_GENERIC_READ,
       nullptr, IID_PPV_ARGS(&upload));
 
-  const UINT srcRowPitch = dst.width * bytesPerPixel(target->getCreateInfo().format);
-  auto *srcBytes = static_cast<const uint8_t *>(source->map(false)) + src.offset;
+  const UINT srcRowPitch =
+      dst.width * bytesPerPixel(target->getCreateInfo().format);
+  auto *srcBytes =
+      static_cast<const uint8_t *>(source->map(false)) + src.offset;
   void *mapped = nullptr;
   upload->Map(0, nullptr, &mapped);
   auto *dstBytes = static_cast<uint8_t *>(mapped) + footprint.Offset;
@@ -251,7 +263,8 @@ void CopyPass::uploadTexture(const TextureTransferInfo &src,
   device->transition(list, target.get(), D3D12_RESOURCE_STATE_COPY_DEST);
   list->CopyTextureRegion(&targetLocation, dst.x, dst.y, dst.z, &sourceLocation,
                           &box);
-  device->transition(list, target.get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+  device->transition(list, target.get(),
+                     D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 }
 
 void CopyPass::downloadTexture(const TextureRegion &src,
@@ -260,6 +273,8 @@ void CopyPass::downloadTexture(const TextureRegion &src,
   auto target = downCast<TransferBuffer>(dst.transferBuffer);
   auto device = commandBuffer->getDevice();
   auto list = commandBuffer->getNative();
+  commandBuffer->keepAlive(source->getNative());
+  commandBuffer->keepAlive(target->getNative());
 
   D3D12_RESOURCE_DESC textureDesc = source->getNative()->GetDesc();
   D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint{};
@@ -295,12 +310,15 @@ void CopyPass::downloadTexture(const TextureRegion &src,
   list->CopyTextureRegion(&targetLocation, 0, 0, 0, &sourceLocation, &box);
 }
 
-void CopyPass::copyTexture(const TextureLocation &src, const TextureLocation &dst,
-                           UInt32 width, UInt32 height, UInt32 depth, bool) {
+void CopyPass::copyTexture(const TextureLocation &src,
+                           const TextureLocation &dst, UInt32 width,
+                           UInt32 height, UInt32 depth, bool) {
   auto source = downCast<Texture>(src.texture);
   auto target = downCast<Texture>(dst.texture);
   auto device = commandBuffer->getDevice();
   auto list = commandBuffer->getNative();
+  commandBuffer->keepAlive(source->getNative());
+  commandBuffer->keepAlive(target->getNative());
 
   D3D12_TEXTURE_COPY_LOCATION sourceLocation{};
   sourceLocation.pResource = source->getNative();
@@ -312,8 +330,8 @@ void CopyPass::copyTexture(const TextureLocation &src, const TextureLocation &ds
   targetLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
   targetLocation.SubresourceIndex =
       dst.mipLevel + dst.layer * target->getCreateInfo().numLevels;
-  D3D12_BOX box{src.x, src.y, src.z, src.x + width, src.y + height,
-                src.z + depth};
+  D3D12_BOX box{src.x,         src.y,          src.z,
+                src.x + width, src.y + height, src.z + depth};
 
   device->transition(list, source.get(), D3D12_RESOURCE_STATE_COPY_SOURCE);
   device->transition(list, target.get(), D3D12_RESOURCE_STATE_COPY_DEST);
@@ -326,7 +344,8 @@ RenderPass::RenderPass(CommandBuffer *commandBuffer,
                        const DepthStencilTargetInfo &)
     : commandBuffer(commandBuffer) {}
 
-void RenderPass::bindGraphicsPipeline(Ptr<gpu::GraphicsPipeline> graphicsPipeline) {
+void RenderPass::bindGraphicsPipeline(
+    Ptr<gpu::GraphicsPipeline> graphicsPipeline) {
   pipeline = downCast<GraphicsPipeline>(graphicsPipeline);
   auto list = commandBuffer->getNative();
   list->SetGraphicsRootSignature(pipeline->getRootSignature());
@@ -336,32 +355,36 @@ void RenderPass::bindGraphicsPipeline(Ptr<gpu::GraphicsPipeline> graphicsPipelin
 
 void RenderPass::bindVertexBuffers(UInt32 slot,
                                    const Array<BufferBinding> &bindings) {
-  Array<D3D12_VERTEX_BUFFER_VIEW> views(commandBuffer->getCreateInfo().allocator);
+  Array<D3D12_VERTEX_BUFFER_VIEW> views(
+      commandBuffer->getCreateInfo().allocator);
   views.resize(bindings.size());
   for (size_t i = 0; i < bindings.size(); ++i) {
     auto buffer = downCast<Buffer>(bindings[i].buffer);
+    commandBuffer->keepAlive(buffer->getNative());
     commandBuffer->getDevice()->transition(
         commandBuffer->getNative(), buffer.get(),
         D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
-    views[i].BufferLocation = buffer->getNative()->GetGPUVirtualAddress() +
-                              bindings[i].offset;
+    views[i].BufferLocation =
+        buffer->getNative()->GetGPUVirtualAddress() + bindings[i].offset;
     views[i].SizeInBytes = buffer->getCreateInfo().size - bindings[i].offset;
     const auto &vb = pipeline->getCreateInfo()
                          .vertexInputState.vertexBufferDescriptions[slot + i];
     views[i].StrideInBytes = vb.pitch;
   }
-  commandBuffer->getNative()->IASetVertexBuffers(slot,
-                                                 static_cast<UINT>(views.size()),
-                                                 views.data());
+  commandBuffer->getNative()->IASetVertexBuffers(
+      slot, static_cast<UINT>(views.size()), views.data());
 }
 
 void RenderPass::bindIndexBuffer(const BufferBinding &binding,
                                  IndexElementSize indexElementSize) {
   auto buffer = downCast<Buffer>(binding.buffer);
-  commandBuffer->getDevice()->transition(commandBuffer->getNative(), buffer.get(),
+  commandBuffer->keepAlive(buffer->getNative());
+  commandBuffer->getDevice()->transition(commandBuffer->getNative(),
+                                         buffer.get(),
                                          D3D12_RESOURCE_STATE_INDEX_BUFFER);
   D3D12_INDEX_BUFFER_VIEW view{};
-  view.BufferLocation = buffer->getNative()->GetGPUVirtualAddress() + binding.offset;
+  view.BufferLocation =
+      buffer->getNative()->GetGPUVirtualAddress() + binding.offset;
   view.SizeInBytes = buffer->getCreateInfo().size - binding.offset;
   view.Format = convert::indexFormatFrom(indexElementSize);
   commandBuffer->getNative()->IASetIndexBuffer(&view);
@@ -387,13 +410,14 @@ void RenderPass::bindFragmentSamplers(
       const auto &binding = bindings[i - startSlot];
       if (binding.texture) {
         auto texture = downCast<Texture>(binding.texture);
+        commandBuffer->keepAlive(texture->getNative());
         device->transition(commandBuffer->getNative(), texture.get(),
                            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        srcSrv = {texture->getSrvCpu(), texture->getSrvGpu()};
+        srcSrv = {texture->getSrvCpu(), {}};
       }
       if (binding.sampler) {
         auto samplerObj = downCast<Sampler>(binding.sampler);
-        srcSampler = {samplerObj->getCpu(), samplerObj->getGpu()};
+        srcSampler = {samplerObj->getCpu(), {}};
       }
     }
     device->getNative()->CopyDescriptorsSimple(
@@ -408,14 +432,15 @@ void RenderPass::bindFragmentSamplers(
 
 void RenderPass::bindFragmentSampler(UInt32 startSlot,
                                      const TextureSamplerBinding &binding) {
-  Array<TextureSamplerBinding> bindings(commandBuffer->getCreateInfo().allocator);
+  Array<TextureSamplerBinding> bindings(
+      commandBuffer->getCreateInfo().allocator);
   bindings.push_back(binding);
   bindFragmentSamplers(startSlot, bindings);
 }
 
 void RenderPass::setViewport(const Viewport &viewport) {
-  D3D12_VIEWPORT vp{viewport.x, viewport.y, viewport.width, viewport.height,
-                    viewport.minDepth, viewport.maxDepth};
+  D3D12_VIEWPORT vp{viewport.x,      viewport.y,        viewport.width,
+                    viewport.height, viewport.minDepth, viewport.maxDepth};
   commandBuffer->getNative()->RSSetViewports(1, &vp);
 }
 

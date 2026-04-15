@@ -67,7 +67,7 @@ Device::~Device() {
 
 void Device::createDeviceObjects() {
   UINT factoryFlags = 0;
-  if (getCreateInfo().debugMode) {
+  if (this->getCreateInfo().debugMode) {
     ComPtr<ID3D12Debug> debug;
     if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debug)))) {
       debug->EnableDebugLayer();
@@ -111,12 +111,16 @@ void Device::createDeviceObjects() {
   srvDesc.NumDescriptors = SrvHeapCapacity;
   srvDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
   device->CreateDescriptorHeap(&srvDesc, IID_PPV_ARGS(&srvHeap));
+  srvDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+  device->CreateDescriptorHeap(&srvDesc, IID_PPV_ARGS(&srvCpuHeap));
 
   D3D12_DESCRIPTOR_HEAP_DESC samplerDesc{};
   samplerDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
   samplerDesc.NumDescriptors = SamplerHeapCapacity;
   samplerDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
   device->CreateDescriptorHeap(&samplerDesc, IID_PPV_ARGS(&samplerHeap));
+  samplerDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+  device->CreateDescriptorHeap(&samplerDesc, IID_PPV_ARGS(&samplerCpuHeap));
 
   D3D12_DESCRIPTOR_HEAP_DESC rtvDesc{};
   rtvDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
@@ -442,19 +446,18 @@ Device::createShader(const gpu::Shader::CreateInfo &createInfo) {
 Ptr<gpu::GraphicsPipeline> Device::createGraphicsPipeline(
     const gpu::GraphicsPipeline::CreateInfo &createInfo) {
   Array<D3D12_INPUT_ELEMENT_DESC> elements(createInfo.allocator);
-  Array<String> semanticNames(createInfo.allocator);
-  semanticNames.resize(createInfo.vertexInputState.vertexAttributes.size());
   elements.resize(createInfo.vertexInputState.vertexAttributes.size());
+
   for (size_t i = 0; i < elements.size(); ++i) {
     const auto &attr = createInfo.vertexInputState.vertexAttributes[i];
-    semanticNames[i] = "TEXCOORD";
-    elements[i].SemanticName = semanticNames[i].c_str();
+    const auto &vb =
+        createInfo.vertexInputState.vertexBufferDescriptions[attr.bufferSlot];
+
+    elements[i].SemanticName = "TEXCOORD";
     elements[i].SemanticIndex = attr.location;
     elements[i].Format = convert::vertexFormatFrom(attr.format);
     elements[i].InputSlot = attr.bufferSlot;
     elements[i].AlignedByteOffset = attr.offset;
-    const auto &vb =
-        createInfo.vertexInputState.vertexBufferDescriptions[attr.bufferSlot];
     elements[i].InputSlotClass =
         vb.inputRate == VertexInputRate::Instance
             ? D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA
@@ -685,14 +688,12 @@ D3D12_GPU_DESCRIPTOR_HANDLE Device::gpuHandle(ID3D12DescriptorHeap *heap,
 
 CpuGpuDescriptor Device::allocateSrvDescriptor() {
   const UINT index = srvUsed++;
-  return {cpuHandle(srvHeap.Get(), srvDescriptorSize, index),
-          gpuHandle(srvHeap.Get(), srvDescriptorSize, index)};
+  return {cpuHandle(srvCpuHeap.Get(), srvDescriptorSize, index), {}};
 }
 
 CpuGpuDescriptor Device::allocateSamplerDescriptor() {
   const UINT index = samplerUsed++;
-  return {cpuHandle(samplerHeap.Get(), samplerDescriptorSize, index),
-          gpuHandle(samplerHeap.Get(), samplerDescriptorSize, index)};
+  return {cpuHandle(samplerCpuHeap.Get(), samplerDescriptorSize, index), {}};
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE Device::allocateRtvDescriptor() {

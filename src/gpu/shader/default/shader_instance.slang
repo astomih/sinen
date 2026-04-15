@@ -3,17 +3,20 @@
   cbuffer name : register(b##bind, space1)
 
 struct VSInput {
-  float3 position : POSITION;
-  float3 normal : NORMAL;
-  float2 uv : TEXCOORD0;
-  float4 color : COLOR;
-  float4x4 m : INSTANCE;
+  float3 position : TEXCOORD0;
+  float3 normal : TEXCOORD1;
+  float2 uv : TEXCOORD2;
+  float4 color : TEXCOORD3;
+  float4 m0 : TEXCOORD4;
+  float4 m1 : TEXCOORD5;
+  float4 m2 : TEXCOORD6;
+  float4 m3 : TEXCOORD7;
 };
 
 struct VSOutput {
   float4 out : SV_Position;
   float2 uv : TEXCOORD0;
-  float4 color : COLOR;
+  float4 color : COLOR0;
 };
 
 UNIFORM(Mat, 0) {
@@ -28,9 +31,9 @@ UNIFORM(Mat, 0) {
 [shader("vertex")]
 VSOutput VSMain(VSInput input) {
   VSOutput output;
-  float4x4 inWorldPos;
-  output.out =
-      mul(mul(proj, mul(view, input.m, )), float4(input.position, 1.0));
+  float4x4 instanceWorld = float4x4(input.m0, input.m1, input.m2, input.m3);
+  float4x4 pvw = mul(proj, mul(view, instanceWorld));
+  output.out = mul(pvw, float4(input.position, 1.0));
   output.uv = input.uv;
   output.color = input.color;
   return output;

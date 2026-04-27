@@ -574,42 +574,6 @@ export type Log = {
 	critical: (msg: any) -> nil,
 }
 
-export type ImGuiWindowFlags = {
-	None: number,
-	NoTitleBar: number,
-	NoResize: number,
-	NoMove: number,
-	NoScrollBar: number,
-	NoScrollWithMouse: number,
-	NoCollapse: number,
-	AlwaysAutoResize: number,
-	NoBackground: number,
-	NoSavedSettings: number,
-	NoMouseInputs: number,
-	MenuBar: number,
-	HorizontalScrollbar: number,
-	NoFocusOnAppearing: number,
-	NoBringToFrontOnFocus: number,
-	AlwaysVerticalScrollbar: number,
-	AlwaysHorizontalScrollbar: number,
-	NoNavInputs: number,
-	NoNavFocus: number,
-	UnsavedDocument: number,
-	NoNav: number,
-	NoDecoration: number,
-	NoInputs: number,
-}
-
-export type ImGui = {
-	Begin: (name: string, flags: ImGuiWindowFlags?) -> nil,
-	End: () -> nil,
-	button: (name: string) -> nil,
-	text: (name: string) -> nil,
-	setNextWindowPos: (pos: Vec2) -> nil,
-	setNextWindowSize: (size: Vec2) -> nil,
-	WindowFlags: ImGuiWindowFlags,
-}
-
 export type Synth = {
 	new: () -> Synth,
 	setBpm: (self: Synth, bpm: number) -> nil,
@@ -663,5 +627,4 @@ return {
 	Periodic = {} :: Periodic,
 	Time = {} :: Time,
 	Log = {} :: Log,
-	ImGui = {} :: ImGui,
 }

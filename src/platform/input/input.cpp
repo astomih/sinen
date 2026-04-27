@@ -3,7 +3,6 @@
 #include <platform/window/window.hpp>
 
 #include <cstring>
-#include <imgui_impl_sdl3.h>
 
 #include <platform/platform.hpp>
 #include <platform/window/window.hpp>
@@ -149,7 +148,6 @@ void Mouse::hideCursor(bool hide) {
   isHide = hide;
   if (hide) {
     SDL_HideCursor();
-    ImGui::SetMouseCursor(ImGuiMouseCursor_None);
   } else {
     SDL_ShowCursor();
   }

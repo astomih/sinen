@@ -4,11 +4,8 @@
 #include <core/data/array.hpp>
 #include <core/def/types.hpp>
 
-#include <imgui.h>
-
 namespace sinen::font {
 
-const ImWchar *defaultJapaneseGlyphRangesForImGui();
 const Array<UInt32> &defaultGlyphCodepoints();
 
 } // namespace sinen::font

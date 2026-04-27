@@ -19,8 +19,6 @@
 
 #include <debugger.h>
 
-#include <imgui.h>
-
 #include <SDL3/SDL.h>
 
 #include <algorithm>
@@ -186,29 +184,6 @@ static void drawNowLoadingOverlay() {
   const uint32_t pending = gSetupTasks.pending();
   const float progress =
       (total == 0) ? 1.0f : (static_cast<float>(total - pending) / total);
-
-  ImGuiIO &io = ImGui::GetIO();
-
-  ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
-  ImGui::SetNextWindowSize(io.DisplaySize, ImGuiCond_Always);
-  ImGui::SetNextWindowBgAlpha(0.0f);
-
-  constexpr ImGuiWindowFlags flags =
-      ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoNav |
-      ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
-      ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBringToFrontOnFocus;
-
-  ImGui::Begin("##sn_now_loading", nullptr, flags);
-  const ImVec2 center =
-      ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f);
-  const float w = 280.0f;
-  const float h = 30.0f;
-
-  ImGui::SetCursorPos(ImVec2(center.x - w * 0.5f, center.y - 40.0f));
-  ImGui::TextUnformatted("Now Loading...");
-  ImGui::SetCursorPos(ImVec2(center.x - w * 0.5f, center.y - 10.0f));
-  ImGui::ProgressBar(progress, ImVec2(w, h));
-  ImGui::End();
 }
 
 int luaLoadSource(lua_State *L, const String &source, const String &chunkname,
@@ -265,7 +240,6 @@ void registerGamepad(lua_State *);
 void registerFilesystem(lua_State *);
 void registerScript(lua_State *);
 void registerLog(lua_State *);
-void registerImGui(lua_State *);
 void registerPeriodic(lua_State *);
 void registerTime(lua_State *);
 void registerFile(lua_State *);
@@ -333,7 +307,6 @@ static void registerAll(lua_State *L) {
   registerFilesystem(L);
   registerScript(L);
   registerLog(L);
-  registerImGui(L);
   registerPeriodic(L);
   registerTime(L);
   registerFile(L);

@@ -234,7 +234,8 @@ public:
 
   bool load(int pointSize, const Buffer &buffer) override {
     Array<unsigned char> bytes(buffer.size());
-    std::memcpy(bytes.data(), buffer.data(), static_cast<size_t>(buffer.size()));
+    std::memcpy(bytes.data(), buffer.data(),
+                static_cast<size_t>(buffer.size()));
     return loadFromBytes(pointSize, std::move(bytes));
   }
 

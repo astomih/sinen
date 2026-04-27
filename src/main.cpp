@@ -17,9 +17,6 @@
 
 using namespace sinen;
 
-#include <imgui.h>
-#include <imgui_impl_sdl3.h>
-
 static inline bool addOverflowSize(size_t a, size_t b, size_t *out) {
   if (a > SIZE_MAX - b)
     return true;
@@ -183,7 +180,6 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
   return SDL_APP_CONTINUE;
 }
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
-  ImGui_ImplSDL3_ProcessEvent(event);
   Event::processEvent(*event);
   Window::processEvent(*event);
   Input::processEvent(*event);

@@ -46,12 +46,8 @@ file(
   ${SINEN_SOURCE_DIR}/src/*.cpp
   ${SINEN_SOURCE_DIR}/libs/tinyexr/deps/miniz/miniz.c
   ${SINEN_SOURCE_DIR}/libs/tlsf/tlsf.c
-  ${SINEN_SOURCE_DIR}/libs/imgui/imgui.cpp
-  ${SINEN_SOURCE_DIR}/libs/imgui/imgui_demo.cpp
-  ${SINEN_SOURCE_DIR}/libs/imgui/imgui_draw.cpp
-  ${SINEN_SOURCE_DIR}/libs/imgui/imgui_tables.cpp
-  ${SINEN_SOURCE_DIR}/libs/imgui/imgui_widgets.cpp
-  ${SINEN_SOURCE_DIR}/libs/imgui/backends/imgui_impl_sdl3.cpp)
+)
+
 if(ANDROID)
   list(FILTER SINEN_SOURCE_FILES EXCLUDE REGEX
        ".*[\\\\/]src[\\\\/]gpu[\\\\/]webgpu[\\\\/].*\\.cpp$")
@@ -75,7 +71,6 @@ target_include_directories(sinen PUBLIC ${SINEN_INCLUDE_DIRS}
                                         ${SDL3_INCLUDE_PATHS})
 target_compile_definitions(
   sinen
-  PRIVATE IMGUI_IMPL_VULKAN_NO_PROTOTYPES
   PUBLIC $<$<BOOL:${SINEN_USE_SLANG}>:SINEN_USE_SLANG>)
 if(MSVC)
   target_compile_options(sinen PRIVATE /bigobj)

@@ -2,9 +2,7 @@ local sn = require("@sinen")
 local G = require("./global")
 local button = require("./gui/button").new()
 
-local testDirs = {
-	"imgui",
-}
+local testDirs = {}
 
 local numGallerys = #testDirs
 function setup()

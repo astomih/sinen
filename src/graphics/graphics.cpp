@@ -7,7 +7,6 @@
 #include <graphics/font/default/mplus-1p-medium.ttf.hpp>
 #include <graphics/font/font_glyph_ranges.hpp>
 #include <graphics/graphics.hpp>
-#include <graphics/imgui_backend/imgui_impl_sinen.hpp>
 #include <graphics/texture/render_texture.hpp>
 #include <math/transform/transform.hpp>
 #include <platform/io/asset_io.hpp>
@@ -15,10 +14,6 @@
 #include <script/script.hpp>
 
 #include <SDL3/SDL.h>
-
-#include <imgui.h>
-#include <imgui_impl_sdl3.h>
-#include <imgui_internal.h>
 
 #include <cstring>
 
@@ -57,7 +52,7 @@ static void setupShapes();
 static void beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp);
 
 static GPUBackendAPI selectBackendAPI() {
-  return GPUBackendAPI::D3D12U;
+  return GPUBackendAPI::SDLGPU;
   const char *backendName = SDL_getenv("SINEN_GPU_BACKEND");
 
 #ifdef SINEN_PLATFORM_WINDOWS
@@ -116,32 +111,6 @@ bool Graphics::initialize() {
 
   auto *window = Window::getSdlWindow();
   device->claimWindow(window);
-  IMGUI_CHECKVERSION();
-  auto *context = ImGui::CreateContext();
-#ifdef __ANDROID__
-  float sizePixels = 64.0f;
-#else
-  float sizePixels = 32.0f;
-#endif
-  ImFontConfig fontConfig = {};
-  fontConfig.OversampleH = 1;
-  fontConfig.OversampleV = 1;
-  context->IO.Fonts->TexDesiredWidth = 2048;
-  context->IO.Fonts->AddFontFromMemoryTTF(
-      (void *)mplus1pMediumTtf, mplus1pMediumTtfLen, sizePixels, &fontConfig,
-      font::defaultJapaneseGlyphRangesForImGui());
-  context->IO.IniFilename = nullptr;
-  context->IO.WantTextInput = true;
-  auto *imeData = &context->PlatformImeData;
-  imeData->WantVisible = true;
-  ImGui_ImplSDL3_InitForSDLGPU(window);
-  ImGuiImplParanoixaInitInfo initInfo = {};
-  initInfo.Allocator = GlobalAllocator::get();
-  initInfo.Device = device;
-  initInfo.ColorTargetFormat = device->getSwapchainFormat();
-  initInfo.MSAASamples = gpu::SampleCount::x1;
-  imGuiImplParanoixaInit(&initInfo);
-
   BuiltinShader::initialize();
   BuiltinPipeline::initialize();
 
@@ -229,32 +198,16 @@ void Graphics::render() {
   }
   currentDepthStencilInfo = depthStencilInfo;
 
-  imGuiImplParanoixaNewFrame();
-  ImGui_ImplSDL3_NewFrame();
-  ImGui::NewFrame();
-  for (auto &func : Graphics::getImGuiFunction()) {
-    func();
-  }
-
   isFrameStarted = true;
   drawCallCountPerFrame = 0;
   Script::drawScene();
 
   // Rendering
-  ImGui::Render();
-  ImDrawData *drawData = ImGui::GetDrawData();
 
   if (drawCallCountPerFrame == 0) {
     // Clear screen
     beginRenderPass(true, gpu::LoadOp::Clear);
   }
-  commandBuffer->endRenderPass(currentRenderPass);
-
-  imGuiImplParanoixaPrepareDrawData(drawData, commandBuffer);
-
-  beginRenderPass(false, gpu::LoadOp::Load);
-  // Render ImGui
-  imGuiImplParanoixaRenderDrawData(drawData, commandBuffer, currentRenderPass);
   commandBuffer->endRenderPass(currentRenderPass);
 
   device->submitCommandBuffer(commandBuffer);

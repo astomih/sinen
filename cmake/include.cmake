@@ -2,8 +2,6 @@ set(SINEN_INCLUDE_DIRS
     ${Vulkan_INCLUDE_DIR}
     ${SINEN_SOURCE_DIR}
     ${SINEN_SOURCE_DIR}/src
-    ${SINEN_SOURCE_DIR}/libs/imgui
-    ${SINEN_SOURCE_DIR}/libs/imgui/backends
     ${SINEN_SOURCE_DIR}/libs/rapidjson/include
     ${SINEN_SOURCE_DIR}/libs/SDL/include
     ${SINEN_SOURCE_DIR}/libs/miniaudio

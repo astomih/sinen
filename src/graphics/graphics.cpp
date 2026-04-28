@@ -404,7 +404,7 @@ void Graphics::drawText(StringView text, const Font &font, const Vec2 &position,
   if (customPipeline.has_value() && customPipeline.value().get() != nullptr)
     currentPipeline = customPipeline.value();
   else
-    currentPipeline = BuiltinPipeline::getDefault2D();
+    currentPipeline = BuiltinPipeline::getFont2D();
   Model model;
   model.loadFromVertexArray(font.getTextMesh(text));
 

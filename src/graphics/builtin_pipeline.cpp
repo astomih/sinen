@@ -3,6 +3,7 @@
 #include <script/luaapi.hpp>
 namespace sinen {
 static GraphicsPipeline default2D;
+static GraphicsPipeline font2D;
 static GraphicsPipeline rect2D;
 static GraphicsPipeline default3D;
 static GraphicsPipeline instanced3D;
@@ -11,6 +12,7 @@ bool BuiltinPipeline::initialize() {
   Shader vs = BuiltinShader::getDefaultVS();
   Shader vsInstanced = BuiltinShader::getDefaultInstancedVS();
   Shader fs = BuiltinShader::getDefaultFS();
+  Shader fontFS = BuiltinShader::getFontFS();
   Shader rectFS = BuiltinShader::getRectFS();
   Shader cubemapVS = BuiltinShader::getCubemapVS();
   Shader cubemapFS = BuiltinShader::getCubemapFS();
@@ -31,6 +33,11 @@ bool BuiltinPipeline::initialize() {
   default2D.setEnableDepthTest(false);
   default2D.build();
 
+  font2D.setVertexShader(vs);
+  font2D.setFragmentShader(fontFS);
+  font2D.setEnableDepthTest(false);
+  font2D.build();
+
   rect2D.setVertexShader(vs);
   rect2D.setFragmentShader(rectFS);
   rect2D.setEnableDepthTest(false);
@@ -47,6 +54,7 @@ void BuiltinPipeline::shutdown() {}
 GraphicsPipeline BuiltinPipeline::getDefault3D() { return default3D; }
 GraphicsPipeline BuiltinPipeline::getInstanced3D() { return instanced3D; }
 GraphicsPipeline BuiltinPipeline::getDefault2D() { return default2D; }
+GraphicsPipeline BuiltinPipeline::getFont2D() { return font2D; }
 GraphicsPipeline BuiltinPipeline::getRect2D() { return rect2D; }
 GraphicsPipeline BuiltinPipeline::getCubemap() { return cubemap; }
 
@@ -63,6 +71,11 @@ static int lBuiltinPipelineGetInstanced3D(lua_State *L) {
 static int lBuiltinPipelineGetDefault2D(lua_State *L) {
   udPushPtr<GraphicsPipeline>(
       L, makePtr<GraphicsPipeline>(BuiltinPipeline::getDefault2D()));
+  return 1;
+}
+static int lBuiltinPipelineGetFont2D(lua_State *L) {
+  udPushPtr<GraphicsPipeline>(
+      L, makePtr<GraphicsPipeline>(BuiltinPipeline::getFont2D()));
   return 1;
 }
 static int lBuiltinPipelineGetRect2D(lua_State *L) {
@@ -83,6 +96,8 @@ void registerBuiltinPipeline(lua_State *L) {
   lua_setfield(L, -2, "getInstanced3D");
   luaPushcfunction2(L, lBuiltinPipelineGetDefault2D);
   lua_setfield(L, -2, "getDefault2D");
+  luaPushcfunction2(L, lBuiltinPipelineGetFont2D);
+  lua_setfield(L, -2, "getFont2D");
   luaPushcfunction2(L, lBuiltinPipelineGetRect2D);
   lua_setfield(L, -2, "getRect2D");
   luaPushcfunction2(L, lBuiltinPipelineGetCubemap);

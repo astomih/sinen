@@ -3,6 +3,7 @@ import subprocess
 # 1. Shader info
 spirv_tasks = [
     {"src": "shader.slang", "entry": "FSMain", "out": "shader.frag.spv"},
+    {"src": "font.slang", "entry": "FSMain", "out": "font.frag.spv"},
     {"src": "shader.slang", "entry": "VSMain", "out": "shader.vert.spv"},
     {
         "src": "shader_instance.slang",
@@ -44,6 +45,7 @@ for task in spirv_tasks:
 
 dxil_tasks = [
     {"src": "shader.slang", "entry": "FSMain", "out": "shader.frag.dxil", "profile": "ps_6_0"},
+    {"src": "font.slang", "entry": "FSMain", "out": "font.frag.dxil", "profile": "ps_6_0"},
     {"src": "shader.slang", "entry": "VSMain", "out": "shader.vert.dxil", "profile": "vs_6_0"},
     {
         "src": "shader_instance.slang",

@@ -38,6 +38,8 @@ namespace {
 constexpr UInt32 kFallbackAsciiCodepoint = '?';
 constexpr UInt32 kReplacementCodepoint = 0xFFFD;
 constexpr int kAtlasSizes[] = {1024, 2048, 4096, 8192};
+constexpr int kGlyphPadding = 2;
+constexpr float kAtlasEstimateSlack = 1.6f;
 
 struct PackedAtlasData {
   Array<int> codepoints;
@@ -47,6 +49,44 @@ struct PackedAtlasData {
   UInt32 sheetSize = 0;
   bool success = false;
 };
+
+Array<int> collectAvailableCodepoints(const stbtt_fontinfo &fontInfo,
+                                      const Array<UInt32> &sourceCodepoints) {
+  Array<int> codepoints;
+  codepoints.reserve(sourceCodepoints.size());
+  for (UInt32 cp : sourceCodepoints) {
+    if (stbtt_FindGlyphIndex(&fontInfo, static_cast<int>(cp)) != 0) {
+      codepoints.push_back(static_cast<int>(cp));
+    }
+  }
+  return codepoints;
+}
+
+int estimateInitialAtlasSize(const stbtt_fontinfo &fontInfo, int pointSize,
+                             const Array<int> &codepoints) {
+  const float scale =
+      stbtt_ScaleForPixelHeight(&fontInfo, static_cast<float>(pointSize));
+  uint64_t estimatedArea = 0;
+  for (int cp : codepoints) {
+    int x0, y0, x1, y1;
+    stbtt_GetCodepointBitmapBoxSubpixel(&fontInfo, cp, scale, scale, 0.0f, 0.0f,
+                                        &x0, &y0, &x1, &y1);
+    const int width = std::max(0, x1 - x0) + kGlyphPadding;
+    const int height = std::max(0, y1 - y0) + kGlyphPadding;
+    estimatedArea +=
+        static_cast<uint64_t>(width) * static_cast<uint64_t>(height);
+  }
+
+  const double targetArea =
+      static_cast<double>(estimatedArea) * kAtlasEstimateSlack;
+  for (int sheetSize : kAtlasSizes) {
+    const double sheetArea = static_cast<double>(sheetSize) * sheetSize;
+    if (targetArea <= sheetArea) {
+      return sheetSize;
+    }
+  }
+  return kAtlasSizes[sizeof(kAtlasSizes) / sizeof(kAtlasSizes[0]) - 1];
+}
 
 UInt32 selectFallbackGlyphIndex(const Hashmap<UInt32, UInt32> &glyphLookup) {
   if (auto it = glyphLookup.find(kFallbackAsciiCodepoint);
@@ -61,17 +101,13 @@ UInt32 selectFallbackGlyphIndex(const Hashmap<UInt32, UInt32> &glyphLookup) {
 }
 
 bool tryPackAtlas(const unsigned char *fontData, int pointSize, int sheetSize,
-                  const Array<UInt32> &sourceCodepoints,
-                  PackedAtlasData &result) {
+                  const Array<int> &codepoints, PackedAtlasData &result) {
   result.codepoints.clear();
   result.packedChars.clear();
   result.glyphLookup.clear();
   result.atlasBitmap.clear();
 
-  result.codepoints.reserve(sourceCodepoints.size());
-  for (UInt32 cp : sourceCodepoints) {
-    result.codepoints.push_back(static_cast<int>(cp));
-  }
+  result.codepoints = codepoints;
 
   result.packedChars.resize(result.codepoints.size());
 
@@ -90,25 +126,14 @@ bool tryPackAtlas(const unsigned char *fontData, int pointSize, int sheetSize,
   }
 
   stbtt_PackSetOversampling(&spc, 1, 1);
-  stbtt_PackSetSkipMissingCodepoints(&spc, 0);
+  stbtt_PackSetSkipMissingCodepoints(&spc, 1);
   const int packed = stbtt_PackFontRanges(&spc, fontData, 0, &range, 1);
   stbtt_PackEnd(&spc);
   if (!packed) {
     return false;
   }
 
-  result.atlasBitmap.resize(sheetSize * sheetSize * 4);
-  for (int y = 0; y < sheetSize; ++y) {
-    for (int x = 0; x < sheetSize; ++x) {
-      const int grayIndex = y * sheetSize + x;
-      const int rgbaIndex = grayIndex * 4;
-      const unsigned char alpha = monoAtlas[grayIndex];
-      result.atlasBitmap[rgbaIndex + 0] = 255;
-      result.atlasBitmap[rgbaIndex + 1] = 255;
-      result.atlasBitmap[rgbaIndex + 2] = 255;
-      result.atlasBitmap[rgbaIndex + 3] = alpha;
-    }
-  }
+  result.atlasBitmap = std::move(monoAtlas);
 
   result.glyphLookup.reserve(result.codepoints.size());
   for (UInt32 i = 0; i < result.codepoints.size(); ++i) {
@@ -122,9 +147,28 @@ bool tryPackAtlas(const unsigned char *fontData, int pointSize, int sheetSize,
 
 PackedAtlasData loadCore(const unsigned char *fontData, int pointSize) {
   PackedAtlasData result;
+  stbtt_fontinfo fontInfo;
+  if (!stbtt_InitFont(&fontInfo, fontData, 0)) {
+    result.success = false;
+    return result;
+  }
+
   const auto &codepoints = font::defaultGlyphCodepoints();
+  const Array<int> availableCodepoints =
+      collectAvailableCodepoints(fontInfo, codepoints);
+  if (availableCodepoints.empty()) {
+    result.success = false;
+    return result;
+  }
+
+  const int initialSheetSize =
+      estimateInitialAtlasSize(fontInfo, pointSize, availableCodepoints);
   for (int sheetSize : kAtlasSizes) {
-    if (tryPackAtlas(fontData, pointSize, sheetSize, codepoints, result)) {
+    if (sheetSize < initialSheetSize) {
+      continue;
+    }
+    if (tryPackAtlas(fontData, pointSize, sheetSize, availableCodepoints,
+                     result)) {
       return result;
     }
   }
@@ -210,7 +254,7 @@ public:
 
       this->texture->loadFromMemory(this->atlasBitmap.data(), this->sheetSize,
                                     this->sheetSize,
-                                    gpu::TextureFormat::R8G8B8A8_UNORM, 4);
+                                    gpu::TextureFormat::R8_UNORM, 1);
       this->atlasBitmap.clear();
       this->atlasBitmap.shrink_to_fit();
       this->loaded = true;

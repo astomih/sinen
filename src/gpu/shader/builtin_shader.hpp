@@ -9,6 +9,7 @@ public:
   static Shader getDefaultVS();
   static Shader getDefaultInstancedVS();
   static Shader getDefaultFS();
+  static Shader getFontFS();
   static Shader getRectFS();
   static Shader getCubemapVS();
   static Shader getCubemapFS();

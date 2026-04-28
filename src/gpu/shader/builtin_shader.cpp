@@ -2,11 +2,10 @@
 #include <graphics/graphics.hpp>
 #include <script/luaapi.hpp>
 
-#include "rt_shader_compiler.hpp"
-
 // SPIR-V
 #include "default/cubemap.frag.spv.hpp"
 #include "default/cubemap.vert.spv.hpp"
+#include "default/font.frag.spv.hpp"
 #include "default/rect_color.frag.spv.hpp"
 #include "default/shader.frag.spv.hpp"
 #include "default/shader.vert.spv.hpp"
@@ -15,6 +14,7 @@
 // DXIL
 #include "default/cubemap.frag.dxil.hpp"
 #include "default/cubemap.vert.dxil.hpp"
+#include "default/font.frag.dxil.hpp"
 #include "default/rect_color.frag.dxil.hpp"
 #include "default/shader.frag.dxil.hpp"
 #include "default/shader.vert.dxil.hpp"
@@ -24,6 +24,7 @@ namespace sinen {
 static Shader defaultVS;
 static Shader defaultInstancedVS;
 static Shader defaultFS;
+static Shader fontFS;
 static Shader rectFS;
 static Shader cubemapVS;
 static Shader cubemapFS;
@@ -97,6 +98,25 @@ bool BuiltinShader::initialize() {
   {
     gpu::Shader::CreateInfo fsInfo{};
     fsInfo.allocator = allocator;
+    if (format == ShaderFormat::SPIRV) {
+      fsInfo.size = font_frag_spv_len;
+      fsInfo.data = font_frag_spv;
+    } else {
+      fsInfo.size = font_frag_dxil_len;
+      fsInfo.data = font_frag_dxil;
+    }
+    fsInfo.entrypoint = "main";
+    fsInfo.format = format;
+    fsInfo.stage = ShaderStage::Fragment;
+    fsInfo.numSamplers = 1;
+    fsInfo.numStorageBuffers = 0;
+    fsInfo.numStorageTextures = 0;
+    fsInfo.numUniformBuffers = 1;
+    fontFS = Shader(device->createShader(fsInfo));
+  }
+  {
+    gpu::Shader::CreateInfo fsInfo{};
+    fsInfo.allocator = allocator;
     fsInfo.size = rect_color_frag_spv_len;
     fsInfo.data = rect_color_frag_spv;
     fsInfo.entrypoint = "main";
@@ -161,6 +181,7 @@ void BuiltinShader::shutdown() {}
 Shader BuiltinShader::getDefaultVS() { return defaultVS; }
 Shader BuiltinShader::getDefaultInstancedVS() { return defaultInstancedVS; }
 Shader BuiltinShader::getDefaultFS() { return defaultFS; }
+Shader BuiltinShader::getFontFS() { return fontFS; }
 Shader BuiltinShader::getRectFS() { return rectFS; }
 Shader BuiltinShader::getCubemapVS() { return cubemapVS; }
 Shader BuiltinShader::getCubemapFS() { return cubemapFS; }
@@ -171,6 +192,10 @@ static int lBuiltinShaderGetDefaultVs(lua_State *L) {
 }
 static int lBuiltinShaderGetDefaultFs(lua_State *L) {
   udPushPtr<Shader>(L, makePtr<Shader>(BuiltinShader::getDefaultFS()));
+  return 1;
+}
+static int lBuiltinShaderGetFontFs(lua_State *L) {
+  udPushPtr<Shader>(L, makePtr<Shader>(BuiltinShader::getFontFS()));
   return 1;
 }
 static int lBuiltinShaderGetDefaultInstancedVs(lua_State *L) {
@@ -195,6 +220,8 @@ void registerBuiltinShader(lua_State *L) {
   lua_setfield(L, -2, "getDefaultVS");
   luaPushcfunction2(L, lBuiltinShaderGetDefaultFs);
   lua_setfield(L, -2, "getDefaultFS");
+  luaPushcfunction2(L, lBuiltinShaderGetFontFs);
+  lua_setfield(L, -2, "getFontFS");
   luaPushcfunction2(L, lBuiltinShaderGetDefaultInstancedVs);
   lua_setfield(L, -2, "getDefaultInstancedVS");
   luaPushcfunction2(L, lBuiltinShaderGetRectFs);

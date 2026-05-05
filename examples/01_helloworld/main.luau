@@ -1,6 +1,6 @@
 local sn = require("@sinen")
 local font: sn.Font = sn.Font.new()
-font:load(32)
+font:load(32, sn.Font.Bitmap)
 function update()
 	if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
 		sn.Script.load("main", ".")

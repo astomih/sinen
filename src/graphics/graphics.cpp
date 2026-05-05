@@ -406,13 +406,16 @@ void Graphics::drawText(StringView text, const Font &font, const Vec2 &position,
     currentPipeline = customPipeline.value();
   else
     currentPipeline = BuiltinPipeline::getFont2D();
-  Model model;
-  model.loadFromVertexArray(font.getTextMesh(text));
+  TextDrawData textData = font.makeTextDrawData(text);
+  if (!textData.valid || textData.texture == nullptr) {
+    return;
+  }
 
+  Model model;
+  model.loadFromVertexArray(textData.mesh);
   Array<Transform2D> transforms(
       1, {position, angle, Vec2(textSize / static_cast<float>(font.size()))});
-  auto texture = font.getAtlas();
-  setTexture(0, texture);
+  setTexture(0, textData.texture);
 
   drawBase2D(transforms, model);
 }

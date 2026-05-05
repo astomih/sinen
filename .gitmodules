@@ -46,3 +46,6 @@
 [submodule "libs/physfs"]
 	path = libs/physfs
 	url = https://github.com/icculus/physfs
+[submodule "libs/msdfgen"]
+	path = libs/msdfgen
+	url = https://github.com/chlumsky/msdfgen

@@ -1,31 +1,28 @@
 // std
 #include <algorithm>
-#include <cassert>
-#include <chrono>
+#include <atomic>
+#include <cmath>
 #include <cstddef>
 #include <cstring>
-#include <future>
+#include <exception>
 #include <memory>
+#include <mutex>
+#include <thread>
 
 // internal
 #include <core/data/array.hpp>
 #include <core/data/hashmap.hpp>
 #include <gpu/gpu.hpp>
 #include <graphics/font/font.hpp>
-#include <graphics/font/font_glyph_ranges.hpp>
-#include <graphics/graphics.hpp>
 #include <graphics/texture/texture.hpp>
 #include <math/color/color.hpp>
 #include <math/geometry/mesh.hpp>
 #include <math/math.hpp>
 #include <platform/io/asset_io.hpp>
 
-// thread
-#include <core/thread/global_thread_pool.hpp>
-#include <core/thread/load_context.hpp>
-
 // external
-#include <SDL3/SDL.h>
+#include <msdfgen.h>
+
 #define STB_TRUETYPE_IMPLEMENTATION
 #define STBTT_RASTERIZER_VERSION 2
 #include <stb_truetype.h>
@@ -34,11 +31,12 @@
 
 namespace sinen {
 namespace {
-
 constexpr UInt32 kFallbackAsciiCodepoint = '?';
 constexpr UInt32 kReplacementCodepoint = 0xFFFD;
-constexpr int kAtlasSizes[] = {1024, 2048, 4096, 8192};
+constexpr int kAtlasSizes[] = {64, 128, 256, 512, 1024, 2048, 4096, 8192};
 constexpr int kGlyphPadding = 2;
+constexpr int kMsdfGlyphPixelHeight = 32;
+constexpr int kMsdfPixelRange = 4;
 constexpr float kAtlasEstimateSlack = 1.6f;
 
 struct PackedAtlasData {
@@ -46,24 +44,14 @@ struct PackedAtlasData {
   Array<stbtt_packedchar> packedChars;
   Hashmap<UInt32, UInt32> glyphLookup;
   Array<unsigned char> atlasBitmap;
+  gpu::TextureFormat textureFormat = gpu::TextureFormat::R8_UNORM;
+  int channels = 1;
   UInt32 sheetSize = 0;
   bool success = false;
 };
 
-Array<int> collectAvailableCodepoints(const stbtt_fontinfo &fontInfo,
-                                      const Array<UInt32> &sourceCodepoints) {
-  Array<int> codepoints;
-  codepoints.reserve(sourceCodepoints.size());
-  for (UInt32 cp : sourceCodepoints) {
-    if (stbtt_FindGlyphIndex(&fontInfo, static_cast<int>(cp)) != 0) {
-      codepoints.push_back(static_cast<int>(cp));
-    }
-  }
-  return codepoints;
-}
-
 int estimateInitialAtlasSize(const stbtt_fontinfo &fontInfo, int pointSize,
-                             const Array<int> &codepoints) {
+                             const Array<int> &codepoints, FontMethod method) {
   const float scale =
       stbtt_ScaleForPixelHeight(&fontInfo, static_cast<float>(pointSize));
   uint64_t estimatedArea = 0;
@@ -71,8 +59,12 @@ int estimateInitialAtlasSize(const stbtt_fontinfo &fontInfo, int pointSize,
     int x0, y0, x1, y1;
     stbtt_GetCodepointBitmapBoxSubpixel(&fontInfo, cp, scale, scale, 0.0f, 0.0f,
                                         &x0, &y0, &x1, &y1);
-    const int width = std::max(0, x1 - x0) + kGlyphPadding;
-    const int height = std::max(0, y1 - y0) + kGlyphPadding;
+    int width = std::max(0, x1 - x0) + kGlyphPadding;
+    int height = std::max(0, y1 - y0) + kGlyphPadding;
+    if (method == FontMethod::MSDF && width > 0 && height > 0) {
+      width += kMsdfPixelRange * 2;
+      height += kMsdfPixelRange * 2;
+    }
     estimatedArea +=
         static_cast<uint64_t>(width) * static_cast<uint64_t>(height);
   }
@@ -88,6 +80,115 @@ int estimateInitialAtlasSize(const stbtt_fontinfo &fontInfo, int pointSize,
   return kAtlasSizes[sizeof(kAtlasSizes) / sizeof(kAtlasSizes[0]) - 1];
 }
 
+msdfgen::Point2 toMsdfPoint(const stbtt_vertex &v, float scale) {
+  return msdfgen::Point2(static_cast<double>(v.x) * scale,
+                         -static_cast<double>(v.y) * scale);
+}
+
+bool almostEqual(const msdfgen::Point2 &a, const msdfgen::Point2 &b) {
+  constexpr double epsilon = 0.0001;
+  return std::abs(a.x - b.x) < epsilon && std::abs(a.y - b.y) < epsilon;
+}
+
+msdfgen::Shape makeGlyphShape(const stbtt_fontinfo &fontInfo, int glyphIndex,
+                              float scale) {
+  msdfgen::Shape shape;
+  stbtt_vertex *vertices = nullptr;
+  const int vertexCount = stbtt_GetGlyphShape(&fontInfo, glyphIndex, &vertices);
+  if (vertexCount <= 0 || vertices == nullptr) {
+    if (vertices != nullptr) {
+      stbtt_FreeShape(&fontInfo, vertices);
+    }
+    return shape;
+  }
+
+  msdfgen::Contour *contour = nullptr;
+  msdfgen::Point2 contourStart;
+  msdfgen::Point2 current;
+  bool hasCurrent = false;
+
+  auto closeContour = [&]() {
+    if (contour == nullptr) {
+      return;
+    }
+    if (contour->edges.empty()) {
+      shape.contours.pop_back();
+    } else if (!almostEqual(current, contourStart)) {
+      contour->addEdge(msdfgen::EdgeHolder(current, contourStart));
+    }
+    contour = nullptr;
+    hasCurrent = false;
+  };
+
+  for (int i = 0; i < vertexCount; ++i) {
+    const stbtt_vertex &v = vertices[i];
+    switch (v.type) {
+    case STBTT_vmove:
+      closeContour();
+      contour = &shape.addContour();
+      current = toMsdfPoint(v, scale);
+      contourStart = current;
+      hasCurrent = true;
+      break;
+    case STBTT_vline: {
+      if (!hasCurrent || contour == nullptr) {
+        break;
+      }
+      const msdfgen::Point2 p = toMsdfPoint(v, scale);
+      if (!almostEqual(current, p)) {
+        contour->addEdge(msdfgen::EdgeHolder(current, p));
+      }
+      current = p;
+      break;
+    }
+    case STBTT_vcurve: {
+      if (!hasCurrent || contour == nullptr) {
+        break;
+      }
+      const msdfgen::Point2 control(static_cast<double>(v.cx) * scale,
+                                    -static_cast<double>(v.cy) * scale);
+      const msdfgen::Point2 p = toMsdfPoint(v, scale);
+      if (!almostEqual(current, p)) {
+        contour->addEdge(msdfgen::EdgeHolder(current, control, p));
+      }
+      current = p;
+      break;
+    }
+    case STBTT_vcubic: {
+      if (!hasCurrent || contour == nullptr) {
+        break;
+      }
+      const msdfgen::Point2 control0(static_cast<double>(v.cx) * scale,
+                                     -static_cast<double>(v.cy) * scale);
+      const msdfgen::Point2 control1(static_cast<double>(v.cx1) * scale,
+                                     -static_cast<double>(v.cy1) * scale);
+      const msdfgen::Point2 p = toMsdfPoint(v, scale);
+      if (!almostEqual(current, p)) {
+        contour->addEdge(msdfgen::EdgeHolder(current, control0, control1, p));
+      }
+      current = p;
+      break;
+    }
+    default:
+      break;
+    }
+  }
+  closeContour();
+  stbtt_FreeShape(&fontInfo, vertices);
+
+  if (!shape.contours.empty()) {
+    shape.orientContours();
+    shape.normalize();
+    msdfgen::edgeColoringSimple(shape, 3.0);
+  }
+  return shape;
+}
+
+unsigned char msdfFloatToByte(float value) {
+  const float clamped = std::clamp(value, 0.0f, 1.0f);
+  return static_cast<unsigned char>(clamped * 255.0f + 0.5f);
+}
+
 UInt32 selectFallbackGlyphIndex(const Hashmap<UInt32, UInt32> &glyphLookup) {
   if (auto it = glyphLookup.find(kFallbackAsciiCodepoint);
       it != glyphLookup.end()) {
@@ -98,6 +199,16 @@ UInt32 selectFallbackGlyphIndex(const Hashmap<UInt32, UInt32> &glyphLookup) {
     return it->second;
   }
   return 0;
+}
+
+std::size_t msdfWorkerCount(std::size_t glyphCount) {
+  if (glyphCount < 8) {
+    return 1;
+  }
+  const unsigned int hardwareThreads = std::thread::hardware_concurrency();
+  const std::size_t workerThreads =
+      hardwareThreads > 1 ? static_cast<std::size_t>(hardwareThreads - 1) : 1;
+  return std::clamp<std::size_t>(workerThreads, 1, glyphCount);
 }
 
 bool tryPackAtlas(const unsigned char *fontData, int pointSize, int sheetSize,
@@ -134,6 +245,8 @@ bool tryPackAtlas(const unsigned char *fontData, int pointSize, int sheetSize,
   }
 
   result.atlasBitmap = std::move(monoAtlas);
+  result.textureFormat = gpu::TextureFormat::R8_UNORM;
+  result.channels = 1;
 
   result.glyphLookup.reserve(result.codepoints.size());
   for (UInt32 i = 0; i < result.codepoints.size(); ++i) {
@@ -145,35 +258,156 @@ bool tryPackAtlas(const unsigned char *fontData, int pointSize, int sheetSize,
   return true;
 }
 
-PackedAtlasData loadCore(const unsigned char *fontData, int pointSize) {
-  PackedAtlasData result;
-  stbtt_fontinfo fontInfo;
-  if (!stbtt_InitFont(&fontInfo, fontData, 0)) {
-    result.success = false;
-    return result;
+bool tryPackMsdfAtlas(const stbtt_fontinfo &fontInfo, int pointSize,
+                      int sheetSize, const Array<int> &codepoints,
+                      PackedAtlasData &result) {
+  result.codepoints.clear();
+  result.packedChars.clear();
+  result.glyphLookup.clear();
+  result.atlasBitmap.clear();
+
+  const float scale =
+      stbtt_ScaleForPixelHeight(&fontInfo, static_cast<float>(pointSize));
+  result.codepoints = codepoints;
+  result.packedChars.resize(result.codepoints.size());
+
+  Array<stbrp_rect> rects(result.codepoints.size());
+  Array<int> glyphs(result.codepoints.size());
+  Array<int> x0s(result.codepoints.size());
+  Array<int> y0s(result.codepoints.size());
+  Array<int> x1s(result.codepoints.size());
+  Array<int> y1s(result.codepoints.size());
+
+  for (UInt32 i = 0; i < result.codepoints.size(); ++i) {
+    const int glyph = stbtt_FindGlyphIndex(&fontInfo, result.codepoints[i]);
+    glyphs[i] = glyph;
+    stbtt_GetGlyphBitmapBoxSubpixel(&fontInfo, glyph, scale, scale, 0.0f, 0.0f,
+                                    &x0s[i], &y0s[i], &x1s[i], &y1s[i]);
+    const int glyphWidth = std::max(0, x1s[i] - x0s[i]);
+    const int glyphHeight = std::max(0, y1s[i] - y0s[i]);
+    rects[i].id = static_cast<int>(i);
+    rects[i].w = glyphWidth > 0 ? glyphWidth + kMsdfPixelRange * 2 : 0;
+    rects[i].h = glyphHeight > 0 ? glyphHeight + kMsdfPixelRange * 2 : 0;
+    rects[i].x = 0;
+    rects[i].y = 0;
+    rects[i].was_packed = 0;
   }
 
-  const auto &codepoints = font::defaultGlyphCodepoints();
-  const Array<int> availableCodepoints =
-      collectAvailableCodepoints(fontInfo, codepoints);
-  if (availableCodepoints.empty()) {
-    result.success = false;
-    return result;
+  stbtt_pack_context spc = {};
+  if (!stbtt_PackBegin(&spc, nullptr, sheetSize, sheetSize, 0, 1, nullptr)) {
+    return false;
+  }
+  stbtt_PackFontRangesPackRects(&spc, rects.data(),
+                                static_cast<int>(rects.size()));
+  stbtt_PackEnd(&spc);
+
+  Array<unsigned char> atlas(
+      static_cast<size_t>(sheetSize) * static_cast<size_t>(sheetSize) * 4u, 0);
+
+  for (UInt32 i = 0; i < result.codepoints.size(); ++i) {
+    const auto &rect = rects[i];
+    if (rect.w > 0 && rect.h > 0 && !rect.was_packed) {
+      return false;
+    }
+
+    int advance = 0;
+    int lsb = 0;
+    stbtt_GetGlyphHMetrics(&fontInfo, glyphs[i], &advance, &lsb);
+
+    stbtt_packedchar &packed = result.packedChars[i];
+    packed.x0 = static_cast<unsigned short>(rect.x);
+    packed.y0 = static_cast<unsigned short>(rect.y);
+    packed.x1 = static_cast<unsigned short>(rect.x + rect.w);
+    packed.y1 = static_cast<unsigned short>(rect.y + rect.h);
+    packed.xoff = static_cast<float>(x0s[i] - kMsdfPixelRange);
+    packed.yoff = static_cast<float>(y0s[i] - kMsdfPixelRange);
+    packed.xoff2 = packed.xoff + static_cast<float>(rect.w);
+    packed.yoff2 = packed.yoff + static_cast<float>(rect.h);
+    packed.xadvance = static_cast<float>(advance) * scale;
   }
 
-  const int initialSheetSize =
-      estimateInitialAtlasSize(fontInfo, pointSize, availableCodepoints);
-  for (int sheetSize : kAtlasSizes) {
-    if (sheetSize < initialSheetSize) {
-      continue;
+  std::atomic<UInt32> nextGlyph{0};
+  std::atomic<bool> failed{false};
+  std::exception_ptr workerException;
+  std::mutex exceptionMutex;
+
+  auto renderGlyphs = [&]() {
+    try {
+      while (!failed.load(std::memory_order_relaxed)) {
+        const UInt32 i = nextGlyph.fetch_add(1, std::memory_order_relaxed);
+        if (i >= result.codepoints.size()) {
+          break;
+        }
+
+        const auto &rect = rects[i];
+        if (rect.w == 0 || rect.h == 0) {
+          continue;
+        }
+
+        msdfgen::Shape shape = makeGlyphShape(fontInfo, glyphs[i], scale);
+        if (shape.contours.empty()) {
+          continue;
+        }
+
+        msdfgen::Bitmap<float, 3> msdf(rect.w, rect.h);
+        const msdfgen::Vector2 msdfScale(1.0, 1.0);
+        const msdfgen::Vector2 msdfTranslate(
+            -static_cast<double>(x0s[i]) + kMsdfPixelRange,
+            -static_cast<double>(y0s[i]) + kMsdfPixelRange);
+        msdfgen::generateMSDF_legacy(msdf, shape,
+                                     msdfgen::Range(kMsdfPixelRange),
+                                     msdfScale, msdfTranslate);
+        msdfgen::distanceSignCorrection(msdf, shape, msdfScale, msdfTranslate);
+
+        for (int y = 0; y < rect.h; ++y) {
+          for (int x = 0; x < rect.w; ++x) {
+            const float *src = msdf(x, y);
+            const size_t dst =
+                (static_cast<size_t>(rect.y + y) * sheetSize + rect.x + x) *
+                4u;
+            atlas[dst + 0] = msdfFloatToByte(src[0]);
+            atlas[dst + 1] = msdfFloatToByte(src[1]);
+            atlas[dst + 2] = msdfFloatToByte(src[2]);
+            atlas[dst + 3] = 255;
+          }
+        }
+      }
+    } catch (...) {
+      failed.store(true, std::memory_order_relaxed);
+      std::lock_guard<std::mutex> lock(exceptionMutex);
+      if (!workerException) {
+        workerException = std::current_exception();
+      }
     }
-    if (tryPackAtlas(fontData, pointSize, sheetSize, availableCodepoints,
-                     result)) {
-      return result;
-    }
+  };
+
+  const std::size_t workerCount = msdfWorkerCount(result.codepoints.size());
+  Array<std::thread> workers;
+  workers.reserve(workerCount > 0 ? workerCount - 1 : 0);
+  for (std::size_t i = 1; i < workerCount; ++i) {
+    workers.emplace_back(renderGlyphs);
   }
-  result.success = false;
-  return result;
+  renderGlyphs();
+  for (auto &worker : workers) {
+    worker.join();
+  }
+  if (workerException) {
+    std::rethrow_exception(workerException);
+  }
+  if (failed.load(std::memory_order_relaxed)) {
+    return false;
+  }
+
+  result.atlasBitmap = std::move(atlas);
+  result.textureFormat = gpu::TextureFormat::R8G8B8A8_UNORM;
+  result.channels = 4;
+  result.glyphLookup.reserve(result.codepoints.size());
+  for (UInt32 i = 0; i < result.codepoints.size(); ++i) {
+    result.glyphLookup.emplace(static_cast<UInt32>(result.codepoints[i]), i);
+  }
+  result.sheetSize = static_cast<UInt32>(sheetSize);
+  result.success = true;
+  return true;
 }
 
 } // namespace
@@ -187,29 +421,35 @@ private:
   Ptr<Texture> texture;
   UInt32 sheetSize;
   UInt32 fallbackGlyphIndex;
-  std::future<PackedAtlasData> future;
-  Array<unsigned char> atlasBitmap;
+  FontMethod method;
+  mutable Hashmap<String, TextDrawData> textCache;
   std::atomic<bool> loaded = false;
   int m_size;
 
 public:
   FontImpl()
       : packedChars(), fontBytes(), glyphLookup(), texture(), sheetSize(0),
-        fallbackGlyphIndex(0), future(), atlasBitmap(), loaded(false),
-        m_size(0) {
+        fallbackGlyphIndex(0), method(FontMethod::Bitmap), textCache(),
+        loaded(false), m_size(0) {
     texture = Texture::create();
   }
-  FontImpl(int32_t point, StringView file_name) : FontImpl() {
-    load(point, file_name);
+  FontImpl(int32_t point, StringView file_name,
+           FontMethod fontMethod = FontMethod::Bitmap)
+      : FontImpl() {
+    load(point, file_name, fontMethod);
   }
   ~FontImpl() {}
 
-  bool loadFromBytes(int pointSize, Array<unsigned char> &&bytes) {
-    pointSize += 16;
+  bool loadFromBytes(int pointSize, Array<unsigned char> &&bytes,
+                     FontMethod fontMethod) {
+    const int bakedPointSize =
+        fontMethod == FontMethod::MSDF ? kMsdfGlyphPixelHeight : pointSize + 16;
     this->loaded = false;
-    this->m_size = pointSize;
+    this->m_size = bakedPointSize;
     this->sheetSize = 0;
     this->fallbackGlyphIndex = 0;
+    this->method = fontMethod;
+    this->textCache.clear();
     this->fontBytes = std::move(bytes);
 
     if (this->fontBytes.empty() ||
@@ -217,70 +457,29 @@ public:
       return false;
     }
 
-    const TaskGroup group = LoadContext::current();
-    group.add();
-
-    this->future =
-        globalThreadPool().submit(loadCore, this->fontBytes.data(), pointSize);
-
-    auto pollAndUpload = std::make_shared<std::function<void()>>();
-    *pollAndUpload = [this, pollAndUpload, group]() {
-      if (this->loaded) {
-        return;
-      }
-      if (!this->future.valid()) {
-        group.done();
-        return;
-      }
-
-      if (this->future.wait_for(std::chrono::milliseconds(0)) !=
-          std::future_status::ready) {
-        Graphics::addPreDrawFunc(*pollAndUpload);
-        return;
-      }
-
-      PackedAtlasData atlasData = this->future.get();
-      if (!atlasData.success || atlasData.sheetSize == 0 ||
-          atlasData.packedChars.empty()) {
-        group.done();
-        return;
-      }
-
-      this->packedChars = std::move(atlasData.packedChars);
-      this->glyphLookup = std::move(atlasData.glyphLookup);
-      this->atlasBitmap = std::move(atlasData.atlasBitmap);
-      this->sheetSize = atlasData.sheetSize;
-      this->fallbackGlyphIndex = selectFallbackGlyphIndex(this->glyphLookup);
-
-      this->texture->loadFromMemory(this->atlasBitmap.data(), this->sheetSize,
-                                    this->sheetSize,
-                                    gpu::TextureFormat::R8_UNORM, 1);
-      this->atlasBitmap.clear();
-      this->atlasBitmap.shrink_to_fit();
-      this->loaded = true;
-      group.done();
-    };
-    Graphics::addPreDrawFunc(*pollAndUpload);
+    this->loaded = true;
     return true;
   }
 
-  bool load(int pointSize) override {
+  bool load(int pointSize, FontMethod fontMethod) override {
     Array<unsigned char> bytes(mplus1pMediumTtf,
                                mplus1pMediumTtf + mplus1pMediumTtfLen);
-    return loadFromBytes(pointSize, std::move(bytes));
+    return loadFromBytes(pointSize, std::move(bytes), fontMethod);
   }
 
-  bool load(int pointSize, StringView fontName) override {
+  bool load(int pointSize, StringView fontName,
+            FontMethod fontMethod) override {
     const String data = AssetIO::openAsString(fontName);
     Array<unsigned char> bytes(data.begin(), data.end());
-    return loadFromBytes(pointSize, std::move(bytes));
+    return loadFromBytes(pointSize, std::move(bytes), fontMethod);
   }
 
-  bool load(int pointSize, const Buffer &buffer) override {
+  bool load(int pointSize, const Buffer &buffer,
+            FontMethod fontMethod) override {
     Array<unsigned char> bytes(buffer.size());
     std::memcpy(bytes.data(), buffer.data(),
                 static_cast<size_t>(buffer.size()));
-    return loadFromBytes(pointSize, std::move(bytes));
+    return loadFromBytes(pointSize, std::move(bytes), fontMethod);
   }
 
   bool isLoaded() override { return loaded; }
@@ -387,10 +586,38 @@ public:
     return Rect(pivot, vec.x, vec.y, m.w * 2.f, m.h * 2.f);
   }
 
-  Mesh getTextMesh(StringView text) const override {
+  Array<int> collectTextCodepoints(StringView text) const {
+    Array<int> codepoints;
+    Hashmap<UInt32, UInt32> seen;
+    const char *p = text.data();
+    while (*p) {
+      UInt32 cp = 0;
+      p = utf8ToCodepoint(p, &cp);
+      if (stbtt_FindGlyphIndex(&fontInfo, static_cast<int>(cp)) == 0) {
+        if (stbtt_FindGlyphIndex(&fontInfo,
+                                 static_cast<int>(kFallbackAsciiCodepoint)) !=
+            0) {
+          cp = kFallbackAsciiCodepoint;
+        } else if (stbtt_FindGlyphIndex(
+                       &fontInfo, static_cast<int>(kReplacementCodepoint)) !=
+                   0) {
+          cp = kReplacementCodepoint;
+        } else {
+          continue;
+        }
+      }
+      if (seen.emplace(cp, 1).second) {
+        codepoints.push_back(static_cast<int>(cp));
+      }
+    }
+    return codepoints;
+  }
 
+  Mesh makeTextMesh(StringView text, const Array<stbtt_packedchar> &chars,
+                    const Hashmap<UInt32, UInt32> &lookup,
+                    UInt32 fallbackIndex, UInt32 atlasSize) const {
     auto textMesh = makePtr<Mesh::Data>();
-    if (this->packedChars.empty() || this->sheetSize == 0) {
+    if (chars.empty() || atlasSize == 0) {
       return Mesh{textMesh};
     }
 
@@ -401,13 +628,12 @@ public:
       uint32_t cp;
       const auto *next = utf8ToCodepoint(p, &cp);
       stbtt_aligned_quad q;
-      UInt32 glyphIndex = fallbackGlyphIndex;
-      if (auto it = glyphLookup.find(cp); it != glyphLookup.end()) {
+      UInt32 glyphIndex = fallbackIndex;
+      if (auto it = lookup.find(cp); it != lookup.end()) {
         glyphIndex = it->second;
       }
 
-      const UInt32 atlasSize = this->sheetSize;
-      stbtt_GetPackedQuad(this->packedChars.data(), atlasSize, atlasSize,
+      stbtt_GetPackedQuad(chars.data(), atlasSize, atlasSize,
                           static_cast<int>(glyphIndex), &x, &y, &q, 1);
       UInt32 startIndex = textMesh->vertices.size();
       auto &vertices = textMesh->vertices;
@@ -439,15 +665,99 @@ public:
     }
     return Mesh{textMesh};
   }
+
+  Mesh getTextMesh(StringView text) const override {
+    return makeTextDrawData(text).mesh;
+  }
+
+  TextDrawData makeTextDrawData(StringView text) const override {
+    TextDrawData data;
+    if (!this->loaded.load()) {
+      return data;
+    }
+
+    const String cacheKey(text.data(), text.size());
+    if (auto it = textCache.find(cacheKey); it != textCache.end()) {
+      return it->second;
+    }
+
+    const Array<int> codepoints = collectTextCodepoints(text);
+    if (codepoints.empty()) {
+      return data;
+    }
+
+    PackedAtlasData atlasData;
+    const int initialSheetSize =
+        estimateInitialAtlasSize(fontInfo, this->m_size, codepoints,
+                                 this->method);
+    for (int sheetSize : kAtlasSizes) {
+      if (sheetSize < initialSheetSize) {
+        continue;
+      }
+      const bool packed =
+          this->method == FontMethod::MSDF
+              ? tryPackMsdfAtlas(fontInfo, this->m_size, sheetSize, codepoints,
+                                 atlasData)
+              : tryPackAtlas(this->fontBytes.data(), this->m_size, sheetSize,
+                             codepoints, atlasData);
+      if (packed) {
+        break;
+      }
+    }
+    if (!atlasData.success || atlasData.sheetSize == 0 ||
+        atlasData.packedChars.empty()) {
+      return data;
+    }
+
+    Ptr<Texture> textTexture = Texture::create();
+    textTexture->loadFromMemory(atlasData.atlasBitmap.data(),
+                                atlasData.sheetSize, atlasData.sheetSize,
+                                atlasData.textureFormat, atlasData.channels);
+
+    data.mesh = makeTextMesh(text, atlasData.packedChars, atlasData.glyphLookup,
+                             selectFallbackGlyphIndex(atlasData.glyphLookup),
+                             atlasData.sheetSize);
+    data.texture = textTexture;
+    data.valid = true;
+    textCache.emplace(cacheKey, data);
+    return data;
+  }
 };
 Ptr<Font> Font::create() { return makePtr<FontImpl>(); }
 Ptr<Font> Font::create(int32_t point, StringView fileName) {
   return makePtr<FontImpl>(point, fileName);
 }
+Ptr<Font> Font::create(int32_t point, StringView fileName, FontMethod method) {
+  return makePtr<FontImpl>(point, fileName, method);
+}
 } // namespace sinen
 
 #include <script/luaapi.hpp>
 namespace sinen {
+
+static FontMethod lFontMethod(lua_State *L, int index) {
+  if (index > lua_gettop(L) || lua_isnoneornil(L, index)) {
+    return FontMethod::Bitmap;
+  }
+  if (lua_isstring(L, index)) {
+    const char *method = luaL_checkstring(L, index);
+    if (std::strcmp(method, "msdf") == 0 || std::strcmp(method, "MSDF") == 0) {
+      return FontMethod::MSDF;
+    }
+    return FontMethod::Bitmap;
+  }
+  return static_cast<FontMethod>(luaL_checkinteger(L, index));
+}
+
+static bool lIsFontMethodString(lua_State *L, int index) {
+  if (!lua_isstring(L, index)) {
+    return false;
+  }
+  const char *method = lua_tostring(L, index);
+  return std::strcmp(method, "bitmap") == 0 ||
+         std::strcmp(method, "Bitmap") == 0 ||
+         std::strcmp(method, "msdf") == 0 || std::strcmp(method, "MSDF") == 0;
+}
 
 static int lFontNew(lua_State *L) {
   udPushPtr<Font>(L, Font::create());
@@ -461,13 +771,17 @@ static int lFontLoad(lua_State *L) {
     lua_pushboolean(L, font->load(point));
     return 1;
   }
+  if (n == 3 && (lua_isnumber(L, 3) || lIsFontMethodString(L, 3))) {
+    lua_pushboolean(L, font->load(point, lFontMethod(L, 3)));
+    return 1;
+  }
   if (lua_isstring(L, 3)) {
     const char *path = luaL_checkstring(L, 3);
-    lua_pushboolean(L, font->load(point, StringView(path)));
+    lua_pushboolean(L, font->load(point, StringView(path), lFontMethod(L, 4)));
     return 1;
   }
   auto &buf = udValue<Buffer>(L, 3);
-  lua_pushboolean(L, font->load(point, buf));
+  lua_pushboolean(L, font->load(point, buf, lFontMethod(L, 4)));
   return 1;
 }
 static int lFontResize(lua_State *L) {
@@ -502,6 +816,10 @@ void registerFont(lua_State *L) {
   pushSnNamed(L, "Font");
   luaPushcfunction2(L, lFontNew);
   lua_setfield(L, -2, "new");
+  lua_pushinteger(L, static_cast<lua_Integer>(FontMethod::Bitmap));
+  lua_setfield(L, -2, "Bitmap");
+  lua_pushinteger(L, static_cast<lua_Integer>(FontMethod::MSDF));
+  lua_setfield(L, -2, "MSDF");
   lua_pop(L, 1);
 }
 

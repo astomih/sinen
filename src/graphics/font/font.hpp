@@ -5,8 +5,18 @@
 #include <math/geometry/mesh.hpp>
 #include <math/geometry/rect.hpp>
 
-
 namespace sinen {
+enum class FontMethod {
+  Bitmap,
+  MSDF,
+};
+
+struct TextDrawData {
+  Mesh mesh;
+  Ptr<Texture> texture;
+  bool valid = false;
+};
+
 /**
  * @brief font load and render to texture.
  *
@@ -15,13 +25,17 @@ class Font {
 public:
   static Ptr<Font> create();
   static Ptr<Font> create(int32_t point, StringView file_name);
+  static Ptr<Font> create(int32_t point, StringView file_name,
+                          FontMethod method);
   virtual ~Font() = default;
 
   static constexpr const char *metaTableName() { return "sn.Font"; }
 
-  virtual bool load(int point_size) = 0;
-  virtual bool load(int pointSize, StringView path) = 0;
-  virtual bool load(int pointSize, const Buffer &buffer) = 0;
+  virtual bool load(int point_size, FontMethod method = FontMethod::MSDF) = 0;
+  virtual bool load(int pointSize, StringView path,
+                    FontMethod method = FontMethod::MSDF) = 0;
+  virtual bool load(int pointSize, const Buffer &buffer,
+                    FontMethod method = FontMethod::MSDF) = 0;
   virtual bool isLoaded() = 0;
   virtual void unload() = 0;
   virtual int size() const = 0;
@@ -30,6 +44,7 @@ public:
                       const Vec2 &vec) = 0;
   virtual Ptr<Texture> getAtlas() const = 0;
   virtual Mesh getTextMesh(StringView text) const = 0;
+  virtual TextDrawData makeTextDrawData(StringView text) const = 0;
 };
 } // namespace sinen
 #endif // !SINEN_FONT_HPP

@@ -248,14 +248,19 @@ export type Shader = {
 }
 
 export type Font = {
+	Bitmap: number,
+	MSDF: number,
 	new: (() -> Font)
 		& ((size: number) -> Font)
 		& ((size: number, path: string) -> Font)
 		& ((size: number, buffer: Buffer) -> Font),
 	load: (
 		((self: Font, size: number) -> nil)
+		& ((self: Font, size: number, method: number) -> nil)
 		& ((self: Font, size: number, path: string) -> nil)
+		& ((self: Font, size: number, path: string, method: number) -> nil)
 		& ((self: Font, size: number, buffer: Buffer) -> nil)
+		& ((self: Font, size: number, buffer: Buffer, method: number) -> nil)
 	),
 	resize: (self: Font, size: number) -> nil,
 	region: (self: Font, text: string, fontSize: number, pivot: number, position: Vec2) -> Rect,

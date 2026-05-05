@@ -35,6 +35,7 @@ set_target_properties(Luau.Analysis Luau.CLI.lib Luau.CodeGen Luau.Config
                       Luau.Require PROPERTIES EXCLUDE_FROM_ALL 1)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/cppdap)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/luau-debugger/debugger)
+add_subdirectory(${SINEN_SOURCE_DIR}/libs/msdfgen EXCLUDE_FROM_ALL)
 
 if(SINEN_USE_SLANG)
   add_subdirectory(${SINEN_SOURCE_DIR}/libs/slang EXCLUDE_FROM_ALL)
@@ -111,6 +112,7 @@ list(
   Luau.Ast
   Luau.Require
   cppdap
+  msdfgen-core
   Luau.Debugger)
 
 if(WIN32)

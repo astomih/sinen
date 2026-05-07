@@ -14,7 +14,10 @@ String Window::mName;
 bool Window::mResized = false;
 bool Window::initialize(StringView name) {
   mName = name;
-  uint64_t windowFlags = SDL_WINDOW_VULKAN;
+  uint64_t windowFlags = 0;
+#if !defined(SINEN_PLATFORM_EMSCRIPTEN)
+  windowFlags |= SDL_WINDOW_VULKAN;
+#endif
 #ifdef __ANDROID__
   windowFlags |=
       SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS | SDL_WINDOW_INPUT_FOCUS;
@@ -25,6 +28,11 @@ bool Window::initialize(StringView name) {
 
   mWindow = SDL_CreateWindow(String(name).c_str(), static_cast<int>(mSize.x),
                              static_cast<int>(mSize.y), windowFlags);
+  if (!mWindow) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_CreateWindow failed: %s",
+                 SDL_GetError());
+    return false;
+  }
 
   // Safe rect
   // #ifdef __ANDROID__

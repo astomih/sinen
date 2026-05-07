@@ -17,19 +17,23 @@ include(${SINEN_SOURCE_DIR}/cmake/libs.cmake)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/assimp EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/JoltPhysics/Build EXCLUDE_FROM_ALL)
-if(WIN32)
-  set(CMAKE_FOLDER "webgpu")
-  add_subdirectory(${SINEN_SOURCE_DIR}/libs/WebGPU-distribution
-                   EXCLUDE_FROM_ALL)
-  unset(CMAKE_FOLDER)
+if(EMSCRIPTEN AND NOT TARGET webgpu)
+  add_library(webgpu INTERFACE)
+  target_compile_definitions(webgpu INTERFACE WEBGPU_BACKEND_EMDAWNWEBGPU)
+  target_compile_options(webgpu INTERFACE --use-port=emdawnwebgpu)
+  target_link_options(webgpu INTERFACE --use-port=emdawnwebgpu -sASYNCIFY=1)
+  function(target_copy_webgpu_binaries Target)
+  endfunction()
 endif()
 
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/Luau)
 foreach(target Luau.VM Luau.Compiler)
   get_target_property(defs ${target} INTERFACE_COMPILE_DEFINITIONS)
-  list(FILTER defs EXCLUDE REGEX [[LUA.*_API]])
-  set_target_properties(${target} PROPERTIES INTERFACE_COMPILE_DEFINITIONS
-                                             "${defs}")
+  if(defs)
+    list(FILTER defs EXCLUDE REGEX [[LUA.*_API]])
+    set_target_properties(${target} PROPERTIES INTERFACE_COMPILE_DEFINITIONS
+                                               "${defs}")
+  endif()
 endforeach()
 set_target_properties(Luau.Analysis Luau.CLI.lib Luau.CodeGen Luau.Config
                       Luau.Require PROPERTIES EXCLUDE_FROM_ALL 1)
@@ -49,7 +53,7 @@ file(
   ${SINEN_SOURCE_DIR}/libs/tlsf/tlsf.c
 )
 
-if(ANDROID)
+if(NOT EMSCRIPTEN)
   list(FILTER SINEN_SOURCE_FILES EXCLUDE REGEX
        ".*[\\\\/]src[\\\\/]gpu[\\\\/]webgpu[\\\\/].*\\.cpp$")
 endif()
@@ -68,11 +72,24 @@ else()
   add_executable(sinen ${SINEN_PLATFORM_SOURCES} ${SINEN_SOURCE_FILES}
                        ${SINEN_HEADER_FILES})
 endif()
+if(EMSCRIPTEN AND NOT BUILD_SHARED_LIBS)
+  set_target_properties(sinen PROPERTIES SUFFIX ".html")
+endif()
 target_include_directories(sinen PUBLIC ${SINEN_INCLUDE_DIRS}
                                         ${SDL3_INCLUDE_PATHS})
 target_compile_definitions(
   sinen
   PUBLIC $<$<BOOL:${SINEN_USE_SLANG}>:SINEN_USE_SLANG>)
+if(EMSCRIPTEN)
+  target_compile_definitions(sinen PUBLIC EMSCRIPTEN)
+  target_link_options(
+    sinen
+    PRIVATE
+      -sALLOW_MEMORY_GROWTH=1
+      -sINITIAL_MEMORY=268435456
+      -sMAXIMUM_MEMORY=2147483648
+      -sASSERTIONS=1)
+endif()
 if(MSVC)
   target_compile_options(sinen PRIVATE /bigobj)
 else()
@@ -125,7 +142,9 @@ endif()
 if(ANDROID)
   find_library(ANDROID_LIB android)
   list(APPEND SINEN_LINK_LIBRARIES ${ANDROID_LIB})
-else()
+endif()
+
+if(EMSCRIPTEN)
   target_copy_webgpu_binaries(sinen)
   list(APPEND SINEN_LINK_LIBRARIES webgpu)
 endif()

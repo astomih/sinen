@@ -57,7 +57,7 @@ WGPUTextureFormat TextureFormatFrom(TextureFormat textureFormat) {
   case TextureFormat::R32G32B32A32_FLOAT:
     return WGPUTextureFormat_RGBA32Float;
   case TextureFormat::D32_FLOAT_S8_UINT:
-    return WGPUTextureFormat_Depth32FloatStencil8;
+    return WGPUTextureFormat_Depth32Float;
   default:
     return WGPUTextureFormat_Undefined;
   }
@@ -75,7 +75,7 @@ TextureFormat TextureFormatTo(WGPUTextureFormat textureFormat) {
     return TextureFormat::B8G8R8A8_UNORM;
   case WGPUTextureFormat_RGBA32Float:
     return TextureFormat::R32G32B32A32_FLOAT;
-  case WGPUTextureFormat_Depth32FloatStencil8:
+  case WGPUTextureFormat_Depth32Float:
     return TextureFormat::D32_FLOAT_S8_UINT;
   default:
     return TextureFormat::Invalid;

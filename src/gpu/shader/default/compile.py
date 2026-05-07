@@ -1,21 +1,33 @@
 import subprocess
 
-# 1. Shader info
-spirv_tasks = [
-    {"src": "shader.slang", "entry": "FSMain", "out": "shader.frag.spv"},
-    {"src": "font.slang", "entry": "FSMain", "out": "font.frag.spv"},
-    {"src": "shader.slang", "entry": "VSMain", "out": "shader.vert.spv"},
+common_tasks = [
+    {"src": "shader.slang", "entry": "FSMain", "out": "shader.frag"},
+    {"src": "font.slang", "entry": "FSMain", "out": "font.frag"},
+    {"src": "shader.slang", "entry": "VSMain", "out": "shader.vert"},
     {
         "src": "shader_instance.slang",
         "entry": "VSMain",
-        "out": "shader_instance.vert.spv",
+        "out": "shader_instance.vert",
     },
-    {"src": "rect_color.slang", "entry": "FSMain", "out": "rect_color.frag.spv"},
-    {"src": "cubemap.slang", "entry": "FSMain", "out": "cubemap.frag.spv"},
-    {"src": "cubemap.slang", "entry": "VSMain", "out": "cubemap.vert.spv"},
+    {"src": "rect_color.slang", "entry": "FSMain", "out": "rect_color.frag"},
+    {"src": "cubemap.slang", "entry": "FSMain", "out": "cubemap.frag"},
+    {"src": "cubemap.slang", "entry": "VSMain", "out": "cubemap.vert"},
 ]
 
-# 2. SPIR-V gen using slangc
+spirv_tasks = [{**task, "out": f"{task['out']}.spv"} for task in common_tasks]
+wgsl_tasks = [{**task, "out": f"{task['out']}.wgsl"} for task in common_tasks]
+
+
+def generate_headers(tasks):
+    for task in tasks:
+        shader_file = task["out"]
+        header_file = f"{shader_file}.hpp"
+        cmd = ["xxd", "-i", shader_file]
+        print("Generating header:", header_file)
+        with open(header_file, "w") as f:
+            subprocess.run(cmd, stdout=f, check=True)
+
+
 for task in spirv_tasks:
     cmd = [
         "slangc",
@@ -33,14 +45,24 @@ for task in spirv_tasks:
     print("Running:", " ".join(cmd))
     subprocess.run(cmd, check=True)
 
-# 3. Header File using xxd
-for task in spirv_tasks:
-    spv_file = task["out"]
-    header_file = f"{spv_file}.hpp"
-    cmd = ["xxd", "-i", spv_file]
-    print("Generating header:", header_file)
-    with open(header_file, "w") as f:
-        subprocess.run(cmd, stdout=f, check=True)
+generate_headers(spirv_tasks)
+
+for task in wgsl_tasks:
+    cmd = [
+        "slangc",
+        "-target",
+        "wgsl",
+        "-matrix-layout-row-major",
+        "-entry",
+        task["entry"],
+        task["src"],
+        "-o",
+        task["out"],
+    ]
+    print("Running:", " ".join(cmd))
+    subprocess.run(cmd, check=True)
+
+generate_headers(wgsl_tasks)
 
 
 dxil_tasks = [
@@ -75,9 +97,9 @@ for task in dxil_tasks:
     subprocess.run(cmd, check=True)
 
 for task in dxil_tasks:
-    spv_file = task["out"]
-    header_file = f"{spv_file}.hpp"
-    cmd = ["xxd", "-i", spv_file]
+    shader_file = task["out"]
+    header_file = f"{shader_file}.hpp"
+    cmd = ["xxd", "-i", shader_file]
     print("Generating header:", header_file)
     with open(header_file, "w") as f:
         subprocess.run(cmd, stdout=f, check=True)

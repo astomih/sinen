@@ -11,6 +11,15 @@
 #include "default/shader.vert.spv.hpp"
 #include "default/shader_instance.vert.spv.hpp"
 
+// WGSL
+#include "default/cubemap.frag.wgsl.hpp"
+#include "default/cubemap.vert.wgsl.hpp"
+#include "default/font.frag.wgsl.hpp"
+#include "default/rect_color.frag.wgsl.hpp"
+#include "default/shader.frag.wgsl.hpp"
+#include "default/shader.vert.wgsl.hpp"
+#include "default/shader_instance.vert.wgsl.hpp"
+
 // DXIL
 #include "default/cubemap.frag.dxil.hpp"
 #include "default/cubemap.vert.dxil.hpp"
@@ -29,10 +38,36 @@ static Shader rectFS;
 static Shader cubemapVS;
 static Shader cubemapFS;
 
+static const char *entryPointFor(ShaderStage stage, ShaderFormat format) {
+  if (format != ShaderFormat::WGSL) {
+    return "main";
+  }
+  return stage == ShaderStage::Vertex ? "VSMain" : "FSMain";
+}
+
+static void setShaderCode(gpu::Shader::CreateInfo &info, ShaderFormat format,
+                          const void *spvData, size_t spvSize,
+                          const void *wgslData, size_t wgslSize,
+                          const void *dxilData, size_t dxilSize) {
+  if (format == ShaderFormat::WGSL) {
+    info.size = wgslSize;
+    info.data = wgslData;
+  } else if (format == ShaderFormat::DXIL) {
+    info.size = dxilSize;
+    info.data = dxilData;
+  } else {
+    info.size = spvSize;
+    info.data = spvData;
+  }
+}
+
 bool BuiltinShader::initialize() {
   auto *allocator = GlobalAllocator::get();
   auto device = Graphics::getDevice();
   auto format = ShaderFormat::SPIRV;
+  if (device->getBackendAPI() == GPUBackendAPI::WebGPU) {
+    format = ShaderFormat::WGSL;
+  }
 #ifdef SINEN_PLATFORM_WINDOWS
   if (device->getBackendAPI() == GPUBackendAPI::D3D12) {
     format = ShaderFormat::DXIL;
@@ -41,14 +76,10 @@ bool BuiltinShader::initialize() {
   {
     gpu::Shader::CreateInfo vsInfo{};
     vsInfo.allocator = allocator;
-    if (format == ShaderFormat::SPIRV) {
-      vsInfo.size = shader_vert_spv_len;
-      vsInfo.data = shader_vert_spv;
-    } else {
-      vsInfo.size = shader_vert_dxil_len;
-      vsInfo.data = shader_vert_dxil;
-    }
-    vsInfo.entrypoint = "main";
+    setShaderCode(vsInfo, format, shader_vert_spv, shader_vert_spv_len,
+                  shader_vert_wgsl, shader_vert_wgsl_len, shader_vert_dxil,
+                  shader_vert_dxil_len);
+    vsInfo.entrypoint = entryPointFor(ShaderStage::Vertex, format);
     vsInfo.format = format;
     vsInfo.stage = ShaderStage::Vertex;
     vsInfo.numSamplers = 0;
@@ -60,14 +91,11 @@ bool BuiltinShader::initialize() {
   {
     gpu::Shader::CreateInfo vsInfo{};
     vsInfo.allocator = allocator;
-    if (format == ShaderFormat::SPIRV) {
-      vsInfo.size = shader_instance_vert_spv_len;
-      vsInfo.data = shader_instance_vert_spv;
-    } else {
-      vsInfo.size = shader_instance_vert_dxil_len;
-      vsInfo.data = shader_instance_vert_dxil;
-    }
-    vsInfo.entrypoint = "main";
+    setShaderCode(vsInfo, format, shader_instance_vert_spv,
+                  shader_instance_vert_spv_len, shader_instance_vert_wgsl,
+                  shader_instance_vert_wgsl_len, shader_instance_vert_dxil,
+                  shader_instance_vert_dxil_len);
+    vsInfo.entrypoint = entryPointFor(ShaderStage::Vertex, format);
     vsInfo.format = format;
     vsInfo.stage = ShaderStage::Vertex;
     vsInfo.numSamplers = 0;
@@ -79,14 +107,10 @@ bool BuiltinShader::initialize() {
   {
     gpu::Shader::CreateInfo fsInfo{};
     fsInfo.allocator = allocator;
-    if (format == ShaderFormat::SPIRV) {
-      fsInfo.size = shader_frag_spv_len;
-      fsInfo.data = shader_frag_spv;
-    } else {
-      fsInfo.size = shader_frag_dxil_len;
-      fsInfo.data = shader_frag_dxil;
-    }
-    fsInfo.entrypoint = "main";
+    setShaderCode(fsInfo, format, shader_frag_spv, shader_frag_spv_len,
+                  shader_frag_wgsl, shader_frag_wgsl_len, shader_frag_dxil,
+                  shader_frag_dxil_len);
+    fsInfo.entrypoint = entryPointFor(ShaderStage::Fragment, format);
     fsInfo.format = format;
     fsInfo.stage = ShaderStage::Fragment;
     fsInfo.numSamplers = 1; // one sampler for fragment shader
@@ -98,14 +122,10 @@ bool BuiltinShader::initialize() {
   {
     gpu::Shader::CreateInfo fsInfo{};
     fsInfo.allocator = allocator;
-    if (format == ShaderFormat::SPIRV) {
-      fsInfo.size = font_frag_spv_len;
-      fsInfo.data = font_frag_spv;
-    } else {
-      fsInfo.size = font_frag_dxil_len;
-      fsInfo.data = font_frag_dxil;
-    }
-    fsInfo.entrypoint = "main";
+    setShaderCode(fsInfo, format, font_frag_spv, font_frag_spv_len,
+                  font_frag_wgsl, font_frag_wgsl_len, font_frag_dxil,
+                  font_frag_dxil_len);
+    fsInfo.entrypoint = entryPointFor(ShaderStage::Fragment, format);
     fsInfo.format = format;
     fsInfo.stage = ShaderStage::Fragment;
     fsInfo.numSamplers = 1;
@@ -117,18 +137,13 @@ bool BuiltinShader::initialize() {
   {
     gpu::Shader::CreateInfo fsInfo{};
     fsInfo.allocator = allocator;
-    fsInfo.size = rect_color_frag_spv_len;
-    fsInfo.data = rect_color_frag_spv;
-    fsInfo.entrypoint = "main";
+    setShaderCode(fsInfo, format, rect_color_frag_spv,
+                  rect_color_frag_spv_len, rect_color_frag_wgsl,
+                  rect_color_frag_wgsl_len, rect_color_frag_dxil,
+                  rect_color_frag_dxil_len);
+    fsInfo.entrypoint = entryPointFor(ShaderStage::Fragment, format);
     fsInfo.format = format;
     fsInfo.stage = ShaderStage::Fragment;
-    if (format == ShaderFormat::SPIRV) {
-      fsInfo.size = rect_color_frag_spv_len;
-      fsInfo.data = rect_color_frag_spv;
-    } else {
-      fsInfo.size = rect_color_frag_dxil_len;
-      fsInfo.data = rect_color_frag_dxil;
-    }
     fsInfo.numSamplers = 0; // no sampler for solid-color rectangle
     fsInfo.numStorageBuffers = 0;
     fsInfo.numStorageTextures = 0;
@@ -138,14 +153,10 @@ bool BuiltinShader::initialize() {
   {
     gpu::Shader::CreateInfo vsInfo{};
     vsInfo.allocator = allocator;
-    if (format == ShaderFormat::SPIRV) {
-      vsInfo.size = cubemap_vert_spv_len;
-      vsInfo.data = cubemap_vert_spv;
-    } else {
-      vsInfo.size = cubemap_vert_dxil_len;
-      vsInfo.data = cubemap_vert_dxil;
-    }
-    vsInfo.entrypoint = "main";
+    setShaderCode(vsInfo, format, cubemap_vert_spv, cubemap_vert_spv_len,
+                  cubemap_vert_wgsl, cubemap_vert_wgsl_len,
+                  cubemap_vert_dxil, cubemap_vert_dxil_len);
+    vsInfo.entrypoint = entryPointFor(ShaderStage::Vertex, format);
     vsInfo.format = format;
     vsInfo.stage = ShaderStage::Vertex;
     vsInfo.numSamplers = 0;
@@ -157,14 +168,10 @@ bool BuiltinShader::initialize() {
   {
     gpu::Shader::CreateInfo fsInfo{};
     fsInfo.allocator = allocator;
-    if (format == ShaderFormat::SPIRV) {
-      fsInfo.size = cubemap_frag_spv_len;
-      fsInfo.data = cubemap_frag_spv;
-    } else {
-      fsInfo.size = cubemap_frag_dxil_len;
-      fsInfo.data = cubemap_frag_dxil;
-    }
-    fsInfo.entrypoint = "main";
+    setShaderCode(fsInfo, format, cubemap_frag_spv, cubemap_frag_spv_len,
+                  cubemap_frag_wgsl, cubemap_frag_wgsl_len,
+                  cubemap_frag_dxil, cubemap_frag_dxil_len);
+    fsInfo.entrypoint = entryPointFor(ShaderStage::Fragment, format);
     fsInfo.format = format;
     fsInfo.stage = ShaderStage::Fragment;
     fsInfo.numSamplers = 1; // one sampler for fragment shader

@@ -51,7 +51,7 @@ FSOutput FSMain(FSInput input) {
 
   float signedDistance = median3(sampleColor.rgb);
   float pxRange = screenPxRange(input.uv);
-  float coverage = saturate(pxRange * (signedDistance - 0.5) + 0.5);
+  float coverage = clamp(pxRange * (signedDistance - 0.5) + 0.5, 0.0, 1.0);
 
   float4 color = input.color * textColor;
   output.color = float4(color.rgb, color.a * coverage);

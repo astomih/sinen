@@ -54,7 +54,10 @@ static void setupShapes();
 static void beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp);
 
 static GPUBackendAPI selectBackendAPI() {
-    return GPUBackendAPI::D3D12;
+#ifdef SINEN_PLATFORM_EMSCRIPTEN
+  return GPUBackendAPI::WebGPU;
+#else
+  return GPUBackendAPI::D3D12;
   const char *backendName = SDL_getenv("SINEN_GPU_BACKEND");
   if (backendName == nullptr || backendName[0] == '\0') {
     return GPUBackendAPI::SDLGPU;
@@ -69,11 +72,8 @@ static GPUBackendAPI selectBackendAPI() {
   if (std::strcmp(backendName, "vulkan") == 0) {
     return GPUBackendAPI::Vulkan;
   }
-  if (std::strcmp(backendName, "webgpu") == 0 ||
-      std::strcmp(backendName, "wgpu") == 0) {
-    return GPUBackendAPI::WebGPU;
-  }
   return GPUBackendAPI::SDLGPU;
+#endif
 }
 
 static void setFullWindowViewport(const Ptr<gpu::RenderPass> &renderPass) {

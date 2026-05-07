@@ -148,12 +148,10 @@ CommandBuffer::beginRenderPass(const Array<ColorTargetInfo> &infos,
         convert::StoreOpFrom(depthStencilInfo.storeOp);
     depthStencilAttachment.depthClearValue = depthStencilInfo.clearDepth;
     depthStencilAttachment.depthReadOnly = false;
-    depthStencilAttachment.stencilLoadOp =
-        convert::LoadOpFrom(depthStencilInfo.stencilLoadOp);
-    depthStencilAttachment.stencilStoreOp =
-        convert::StoreOpFrom(depthStencilInfo.stencilStoreOp);
-    depthStencilAttachment.stencilClearValue = depthStencilInfo.clearStencil;
-    depthStencilAttachment.stencilReadOnly = false;
+    depthStencilAttachment.stencilLoadOp = WGPULoadOp_Undefined;
+    depthStencilAttachment.stencilStoreOp = WGPUStoreOp_Undefined;
+    depthStencilAttachment.stencilClearValue = 0;
+    depthStencilAttachment.stencilReadOnly = true;
     depthStencilAttachmentPtr = &depthStencilAttachment;
   }
 

@@ -22,8 +22,9 @@ struct QueueDoneState {
   bool success = false;
 };
 
-void onQueueDone(WGPUQueueWorkDoneStatus status, void *userdata1,
-                 void *userdata2) {
+void onQueueDone(WGPUQueueWorkDoneStatus status, WGPUStringView message,
+                 void *userdata1, void *userdata2) {
+  (void)message;
   (void)userdata2;
   auto *state = static_cast<QueueDoneState *>(userdata1);
   state->done = true;
@@ -110,11 +111,13 @@ WGPUTextureView Device::createDefaultTextureView(WGPUTexture texture) const {
 void Device::claimWindow(void *window) {
   this->window = static_cast<SDL_Window *>(window);
 
+#ifndef SINEN_PLATFORM_EMSCRIPTEN
   if (!this->window) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                  "WebGPU claimWindow failed: window is null");
     return;
   }
+#endif
 
   if (surface) {
     wgpuSurfaceUnconfigure(surface);
@@ -122,7 +125,16 @@ void Device::claimWindow(void *window) {
     surface = nullptr;
   }
 
-#ifdef SINEN_PLATFORM_WINDOWS
+#ifdef SINEN_PLATFORM_EMSCRIPTEN
+  WGPUEmscriptenSurfaceSourceCanvasHTMLSelector canvasDesc =
+      WGPU_EMSCRIPTEN_SURFACE_SOURCE_CANVAS_HTML_SELECTOR_INIT;
+  canvasDesc.selector = toWgpuStringView("#canvas");
+
+  WGPUSurfaceDescriptor surfaceDesc{};
+  surfaceDesc.nextInChain = &canvasDesc.chain;
+  surfaceDesc.label = toWgpuStringView("sinen-webgpu-surface");
+  surface = wgpuInstanceCreateSurface(instance, &surfaceDesc);
+#elif defined(SINEN_PLATFORM_WINDOWS)
   SDL_PropertiesID props = SDL_GetWindowProperties(this->window);
   void *hwnd = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_HWND_POINTER,
                                       nullptr);
@@ -240,7 +252,12 @@ Ptr<gpu::Shader> Device::createShader(const Shader::CreateInfo &createInfo) {
   case ShaderFormat::WGSL:
     wgslDesc.chain.sType = WGPUSType_ShaderSourceWGSL;
     wgslDesc.chain.next = nullptr;
-    wgslDesc.code = toWgpuStringView(static_cast<const char *>(createInfo.data));
+    wgslDesc.code.data = static_cast<const char *>(createInfo.data);
+    wgslDesc.code.length = createInfo.size;
+    if (wgslDesc.code.length > 0 &&
+        wgslDesc.code.data[wgslDesc.code.length - 1] == '\0') {
+      --wgslDesc.code.length;
+    }
     shaderDesc.nextInChain = &wgslDesc.chain;
     break;
   default:

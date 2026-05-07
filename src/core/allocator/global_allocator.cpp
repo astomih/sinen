@@ -13,7 +13,11 @@
 namespace sinen {
 static std::atomic<Allocator *> pA = nullptr;
 Allocator *tlsf = nullptr;
+#ifdef SINEN_PLATFORM_EMSCRIPTEN
+static Size allocatorSize = 128 * 1024 * 1024;
+#else
 static Size allocatorSize = 0x90000000;
+#endif
 static Size current = 0;
 Allocator *GlobalAllocator::get() {
   if (pA) {

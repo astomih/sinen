@@ -4,6 +4,10 @@
 #include <SDL3/SDL.h>
 #include <webgpu/webgpu.h>
 
+#ifdef SINEN_PLATFORM_EMSCRIPTEN
+#include <emscripten.h>
+#endif
+
 #include <core/logger/log.hpp>
 
 namespace sinen::gpu::webgpu {
@@ -27,11 +31,13 @@ WGPUStringView toWgpuStringView(const char *str) {
   return {str, WGPU_STRLEN};
 }
 
-void waitForRequest() {
+void waitForRequest(const bool &done) {
 #ifdef SINEN_PLATFORM_EMSCRIPTEN
-  while (userData.adapterRequested == false) {
-    emscripten_sleep(100);
+  while (!done) {
+    emscripten_sleep(1);
   }
+#else
+  (void)done;
 #endif // SINEN_PLATFORM_EMSCRIPTEN
 }
 
@@ -76,12 +82,12 @@ Backend::createDevice(const gpu::Device::CreateInfo &createInfo) {
   WGPURequestAdapterOptions adapterOptions{};
   adapterOptions.backendType = WGPUBackendType_Undefined;
   WGPURequestAdapterCallbackInfo adapterCallbackInfo{};
+  adapterCallbackInfo.mode = WGPUCallbackMode_AllowSpontaneous;
   adapterCallbackInfo.callback = &onAdapterRequest;
   adapterCallbackInfo.userdata1 = &adapterState;
 
-  auto adapterFuture = wgpuInstanceRequestAdapter(instance, &adapterOptions,
-                                                  adapterCallbackInfo);
-  waitForRequest();
+  wgpuInstanceRequestAdapter(instance, &adapterOptions, adapterCallbackInfo);
+  waitForRequest(adapterState.done);
   if (!adapterState.adapter) {
     Log::error("Failed to request WebGPU adapter");
     wgpuInstanceRelease(instance);
@@ -102,14 +108,14 @@ Backend::createDevice(const gpu::Device::CreateInfo &createInfo) {
   deviceDesc.uncapturedErrorCallbackInfo = {};
 
   WGPURequestDeviceCallbackInfo deviceCallbackInfo{};
-  deviceCallbackInfo.mode = WGPUCallbackMode_WaitAnyOnly;
+  deviceCallbackInfo.mode = WGPUCallbackMode_AllowSpontaneous;
   deviceCallbackInfo.callback = &onDeviceRequest;
   deviceCallbackInfo.userdata1 = &deviceState;
   deviceCallbackInfo.userdata2 = nullptr;
 
-  auto deviceFuture = wgpuAdapterRequestDevice(adapterState.adapter,
-                                               &deviceDesc, deviceCallbackInfo);
-  waitForRequest();
+  wgpuAdapterRequestDevice(adapterState.adapter, &deviceDesc,
+                           deviceCallbackInfo);
+  waitForRequest(deviceState.done);
   if (!deviceState.device) {
     Log::error("Failed to request WebGPU device");
     wgpuAdapterRelease(adapterState.adapter);

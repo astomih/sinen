@@ -7,13 +7,14 @@
 #endif
 #include <gpu/gpu.hpp>
 
+#ifdef SINEN_PLATFORM_EMSCRIPTEN
+#include "webgpu/webgpu_backend.hpp"
+#else
 #ifdef SINEN_PLATFORM_WINDOWS
 #include "d3d12/d3d12_backend.hpp"
 #endif
 #include "sdlgpu/sdlgpu_backend.hpp"
 #include "vulkan/vulkan_backend.hpp"
-#ifndef SINEN_PLATFORM_ANDROID
-#include "webgpu/webgpu_backend.hpp"
 #endif
 
 #include <SDL3/SDL.h>
@@ -21,7 +22,12 @@
 namespace sinen::gpu {
 Ptr<Backend> RHI::createBackend(Allocator *allocator,
                                 const GPUBackendAPI &api) {
-#ifndef SINEN_PLATFORM_EMSCRIPTEN
+#ifdef SINEN_PLATFORM_EMSCRIPTEN
+  if (api == GPUBackendAPI::WebGPU) {
+    return makePtr<webgpu::Backend>(allocator);
+  }
+  return nullptr;
+#else
   switch (api) {
   case GPUBackendAPI::Vulkan: {
     return makePtr<vulkan::Backend>(allocator);
@@ -31,11 +37,6 @@ Ptr<Backend> RHI::createBackend(Allocator *allocator,
     return makePtr<d3d12::Backend>(allocator);
   }
 #endif
-#ifndef SINEN_PLATFORM_ANDROID
-  case GPUBackendAPI::WebGPU: {
-    return makePtr<webgpu::Backend>(allocator);
-  }
-#endif
   case GPUBackendAPI::SDLGPU: {
     return makePtr<sdlgpu::Backend>(allocator);
   }
@@ -43,6 +44,5 @@ Ptr<Backend> RHI::createBackend(Allocator *allocator,
     return nullptr;
   }
 #endif
-  return nullptr;
 }
 } // namespace sinen::gpu

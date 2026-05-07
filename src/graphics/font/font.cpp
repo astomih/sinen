@@ -34,9 +34,10 @@ namespace {
 constexpr UInt32 kFallbackAsciiCodepoint = '?';
 constexpr UInt32 kReplacementCodepoint = 0xFFFD;
 constexpr int kAtlasSizes[] = {64, 128, 256, 512, 1024, 2048, 4096, 8192};
-constexpr int kGlyphPadding = 2;
+constexpr int kGlyphPadding =1;
 constexpr int kMsdfGlyphPixelHeight = 32;
-constexpr int kMsdfPixelRange = 4;
+constexpr int kMsdfPixelRange = 6;
+constexpr int kMsdfAtlasGutter = 1;
 constexpr float kAtlasEstimateSlack = 1.6f;
 
 struct PackedAtlasData {
@@ -64,6 +65,8 @@ int estimateInitialAtlasSize(const stbtt_fontinfo &fontInfo, int pointSize,
     if (method == FontMethod::MSDF && width > 0 && height > 0) {
       width += kMsdfPixelRange * 2;
       height += kMsdfPixelRange * 2;
+      width += kMsdfAtlasGutter * 2;
+      height += kMsdfAtlasGutter * 2;
     }
     estimatedArea +=
         static_cast<uint64_t>(width) * static_cast<uint64_t>(height);
@@ -286,8 +289,14 @@ bool tryPackMsdfAtlas(const stbtt_fontinfo &fontInfo, int pointSize,
     const int glyphWidth = std::max(0, x1s[i] - x0s[i]);
     const int glyphHeight = std::max(0, y1s[i] - y0s[i]);
     rects[i].id = static_cast<int>(i);
-    rects[i].w = glyphWidth > 0 ? glyphWidth + kMsdfPixelRange * 2 : 0;
-    rects[i].h = glyphHeight > 0 ? glyphHeight + kMsdfPixelRange * 2 : 0;
+    rects[i].w = glyphWidth > 0
+                     ? glyphWidth + kMsdfPixelRange * 2 +
+                           kMsdfAtlasGutter * 2
+                     : 0;
+    rects[i].h = glyphHeight > 0
+                     ? glyphHeight + kMsdfPixelRange * 2 +
+                           kMsdfAtlasGutter * 2
+                     : 0;
     rects[i].x = 0;
     rects[i].y = 0;
     rects[i].was_packed = 0;
@@ -319,8 +328,10 @@ bool tryPackMsdfAtlas(const stbtt_fontinfo &fontInfo, int pointSize,
     packed.y0 = static_cast<unsigned short>(rect.y);
     packed.x1 = static_cast<unsigned short>(rect.x + rect.w);
     packed.y1 = static_cast<unsigned short>(rect.y + rect.h);
-    packed.xoff = static_cast<float>(x0s[i] - kMsdfPixelRange);
-    packed.yoff = static_cast<float>(y0s[i] - kMsdfPixelRange);
+    packed.xoff =
+        static_cast<float>(x0s[i] - kMsdfPixelRange - kMsdfAtlasGutter);
+    packed.yoff =
+        static_cast<float>(y0s[i] - kMsdfPixelRange - kMsdfAtlasGutter);
     packed.xoff2 = packed.xoff + static_cast<float>(rect.w);
     packed.yoff2 = packed.yoff + static_cast<float>(rect.h);
     packed.xadvance = static_cast<float>(advance) * scale;
@@ -349,14 +360,14 @@ bool tryPackMsdfAtlas(const stbtt_fontinfo &fontInfo, int pointSize,
           continue;
         }
 
-        msdfgen::Bitmap<float, 3> msdf(rect.w, rect.h);
+        msdfgen::Bitmap<float, 4> msdf(rect.w, rect.h);
         const msdfgen::Vector2 msdfScale(1.0, 1.0);
         const msdfgen::Vector2 msdfTranslate(
-            -static_cast<double>(x0s[i]) + kMsdfPixelRange,
-            -static_cast<double>(y0s[i]) + kMsdfPixelRange);
-        msdfgen::generateMSDF_legacy(msdf, shape,
-                                     msdfgen::Range(kMsdfPixelRange),
-                                     msdfScale, msdfTranslate);
+            -static_cast<double>(x0s[i]) + kMsdfPixelRange + kMsdfAtlasGutter,
+            -static_cast<double>(y0s[i]) + kMsdfPixelRange + kMsdfAtlasGutter);
+        msdfgen::generateMTSDF_legacy(msdf, shape,
+                                      msdfgen::Range(kMsdfPixelRange),
+                                      msdfScale, msdfTranslate);
         msdfgen::distanceSignCorrection(msdf, shape, msdfScale, msdfTranslate);
 
         for (int y = 0; y < rect.h; ++y) {
@@ -368,7 +379,7 @@ bool tryPackMsdfAtlas(const stbtt_fontinfo &fontInfo, int pointSize,
             atlas[dst + 0] = msdfFloatToByte(src[0]);
             atlas[dst + 1] = msdfFloatToByte(src[1]);
             atlas[dst + 2] = msdfFloatToByte(src[2]);
-            atlas[dst + 3] = 255;
+            atlas[dst + 3] = msdfFloatToByte(src[3]);
           }
         }
       }

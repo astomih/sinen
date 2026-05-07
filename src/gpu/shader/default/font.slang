@@ -6,6 +6,10 @@
   [[vk::binding(bind, set)]]                                                   \
   Sampler2D name : register(t##bind, space##set) : register(s##bind, space##set);
 
+#define UNIFORM_FRAG(name, bind)                                               \
+  [[vk::binding(bind, 3)]]                                                     \
+  cbuffer name : register(b##bind, space3)
+
 struct FSInput {
   float4 position : SV_POSITION;
   float2 uv : TEXCOORD0;
@@ -18,18 +22,39 @@ struct FSOutput {
 
 COMBINED_IMAGE_SAMPLER(sampledTexture, 0, 2)
 
+UNIFORM_FRAG(FontParams, 1) {
+  float4 textColor;
+
+  // atlasParams.xy = atlas pixel size
+  // atlasParams.z  = msdf pxRange used when generating the atlas
+  // atlasParams.w  = unused
+  float4 atlasParams;
+};
+
 float median3(float3 v) { return max(min(v.r, v.g), min(max(v.r, v.g), v.b)); }
+
+float screenPxRange(float2 uv) {
+  float pxRange = atlasParams.z;
+  float2 atlasSize = atlasParams.xy;
+
+  float2 unitRange = float2(pxRange, pxRange) / atlasSize;
+  float2 screenTexSize = 1.0 / max(fwidth(uv), float2(0.0001, 0.0001));
+
+  return max(0.5 * dot(unitRange, screenTexSize), 1.0);
+}
 
 [shader("fragment")]
 FSOutput FSMain(FSInput input) {
   FSOutput output;
+
   float4 sampleColor = sampledTexture.Sample(input.uv);
-  float coverage = sampleColor.r;
-  if (sampleColor.g > 0.0 || sampleColor.b > 0.0) {
-    float signedDistance = median3(sampleColor.rgb) - 0.5;
-    float antialiasWidth = max(fwidth(signedDistance), 0.0001);
-    coverage = saturate(signedDistance / antialiasWidth + 0.5);
-  }
-  output.color = float4(input.color.rgb, input.color.a * coverage);
+
+  float signedDistance = median3(sampleColor.rgb);
+  float pxRange = screenPxRange(input.uv);
+  float coverage = saturate(pxRange * (signedDistance - 0.5) + 0.5);
+
+  float4 color = input.color * textColor;
+  output.color = float4(color.rgb, color.a * coverage);
+
   return output;
 }

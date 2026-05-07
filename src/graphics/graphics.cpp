@@ -30,6 +30,7 @@ static Ptr<gpu::Backend> backend;
 static Ptr<gpu::Device> device;
 static Ptr<gpu::Texture> depthTexture;
 static Ptr<gpu::Sampler> sampler;
+static Ptr<gpu::Sampler> fontSampler;
 static std::optional<GraphicsPipeline> currentPipeline;
 static std::optional<GraphicsPipeline> customPipeline;
 static Ptr<gpu::CommandBuffer> mainCommandBuffer;
@@ -144,6 +145,17 @@ bool Graphics::initialize() {
   if (!sampler)
     return false;
 
+  gpu::Sampler::CreateInfo fontSamplerInfo = samplerInfo;
+  fontSamplerInfo.minFilter = gpu::Filter::Linear;
+  fontSamplerInfo.magFilter = gpu::Filter::Linear;
+  fontSamplerInfo.mipmapMode = gpu::MipmapMode::Nearest;
+  fontSamplerInfo.addressModeU = gpu::AddressMode::ClampToEdge;
+  fontSamplerInfo.addressModeV = gpu::AddressMode::ClampToEdge;
+  fontSamplerInfo.addressModeW = gpu::AddressMode::ClampToEdge;
+  fontSampler = device->createSampler(fontSamplerInfo);
+  if (!fontSampler)
+    return false;
+
   colorTargets.push_back({});
   depthStencilInfo.texture = depthTexture;
   depthStencilInfo.loadOp = gpu::LoadOp::Clear;
@@ -219,8 +231,12 @@ struct Transform2D {
   float rotation;
   Vec2 scale;
 };
-static void drawBase2D(const Array<Transform2D> &transforms,
-                       const Model &model) {
+struct FontFragmentParams {
+  Color textColor;
+  Vec4 atlasParams;
+};
+static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
+                       const Ptr<gpu::Sampler> &textureSampler = sampler) {
   assert(currentPipeline.has_value());
   auto vertexBufferBindings = Array<gpu::BufferBinding>{};
   auto indexBufferBinding = gpu::BufferBinding{};
@@ -272,7 +288,8 @@ static void drawBase2D(const Array<Transform2D> &transforms,
   auto renderPass = currentRenderPass;
   renderPass->bindGraphicsPipeline(currentPipeline.value().get());
   for (auto &i : currentTextureBindings) {
-    renderPass->bindFragmentSampler(i.first, {sampler, i.second->getRaw()});
+    renderPass->bindFragmentSampler(i.first,
+                                    {textureSampler, i.second->getRaw()});
   }
   renderPass->bindVertexBuffers(0, vertexBufferBindings);
   renderPass->bindIndexBuffer(indexBufferBinding,
@@ -416,8 +433,12 @@ void Graphics::drawText(StringView text, const Font &font, const Vec2 &position,
   Array<Transform2D> transforms(
       1, {position, angle, Vec2(textSize / static_cast<float>(font.size()))});
   setTexture(0, textData.texture);
+  const Vec2 atlasSize = textData.texture->size();
+  const FontFragmentParams params{color,
+                                  Vec4(atlasSize.x, atlasSize.y, 6.0f, 0.0f)};
+  currentCommandBuffer->pushFragmentUniformData(1, &params, sizeof(params));
 
-  drawBase2D(transforms, model);
+  drawBase2D(transforms, model, fontSampler);
 }
 void Graphics::drawCubemap(const Ptr<Texture> &cubemap) {
   if (customPipeline.has_value() && customPipeline.value().get() != nullptr)

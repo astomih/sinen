@@ -111,7 +111,7 @@ bool BuiltinShader::initialize() {
     fsInfo.numSamplers = 1;
     fsInfo.numStorageBuffers = 0;
     fsInfo.numStorageTextures = 0;
-    fsInfo.numUniformBuffers = 1;
+    fsInfo.numUniformBuffers = 2;
     fontFS = Shader(device->createShader(fsInfo));
   }
   {

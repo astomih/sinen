@@ -34,7 +34,7 @@ bool BuiltinShader::initialize() {
   auto device = Graphics::getDevice();
   auto format = ShaderFormat::SPIRV;
 #ifdef SINEN_PLATFORM_WINDOWS
-  if (device->getBackendAPI() == GPUBackendAPI::D3D12U) {
+  if (device->getBackendAPI() == GPUBackendAPI::D3D12) {
     format = ShaderFormat::DXIL;
   }
 #endif

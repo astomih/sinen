@@ -54,13 +54,13 @@ static void setupShapes();
 static void beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp);
 
 static GPUBackendAPI selectBackendAPI() {
-  return GPUBackendAPI::SDLGPU;
+  return GPUBackendAPI::D3D12;
   const char *backendName = SDL_getenv("SINEN_GPU_BACKEND");
 
 #ifdef SINEN_PLATFORM_WINDOWS
   if (std::strcmp(backendName, "d3d12") == 0 ||
       std::strcmp(backendName, "direct3d12") == 0) {
-    return GPUBackendAPI::D3D12U;
+    return GPUBackendAPI::D3D12;
   }
 #endif
   if (std::strcmp(backendName, "vulkan") == 0) {
@@ -374,13 +374,18 @@ static void drawBase3D(const Array<Transform> transforms, const Model &model) {
     vertexBufferBindings.emplace_back(
         gpu::BufferBinding{.buffer = instanceBuffer, .offset = 0});
   }
-  if (auto animationVertexBuffer = model.animationVertexBuffer) {
+  const auto &pipelineFeatures = currentPipeline.value().getFeatureFlags();
+  if (pipelineFeatures.test(GraphicsPipeline::FeatureFlag::Animation)) {
+    auto animationVertexBuffer = model.animationVertexBuffer;
+    SDL_assert(animationVertexBuffer != nullptr);
     vertexBufferBindings.emplace_back(
         gpu::BufferBinding{.buffer = animationVertexBuffer, .offset = 0});
   }
-  if (model.tangentBuffer) {
+  if (pipelineFeatures.test(GraphicsPipeline::FeatureFlag::Tangent)) {
+    auto tangentBuffer = model.tangentBuffer;
+    SDL_assert(tangentBuffer != nullptr);
     vertexBufferBindings.emplace_back(
-        gpu::BufferBinding{.buffer = model.tangentBuffer, .offset = 0});
+        gpu::BufferBinding{.buffer = tangentBuffer, .offset = 0});
   }
   auto commandBuffer = currentCommandBuffer;
   auto renderPass = currentRenderPass;

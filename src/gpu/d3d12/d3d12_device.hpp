@@ -32,23 +32,23 @@ public:
   createTexture(const gpu::Texture::CreateInfo &createInfo) override;
   Ptr<gpu::Sampler>
   createSampler(const gpu::Sampler::CreateInfo &createInfo) override;
-  Ptr<gpu::TransferBuffer>
-  createTransferBuffer(const gpu::TransferBuffer::CreateInfo &createInfo) override;
+  Ptr<gpu::TransferBuffer> createTransferBuffer(
+      const gpu::TransferBuffer::CreateInfo &createInfo) override;
   Ptr<gpu::Shader>
   createShader(const gpu::Shader::CreateInfo &createInfo) override;
   Ptr<gpu::GraphicsPipeline> createGraphicsPipeline(
       const gpu::GraphicsPipeline::CreateInfo &createInfo) override;
-  Ptr<gpu::ComputePipeline>
-  createComputePipeline(const gpu::ComputePipeline::CreateInfo &createInfo) override;
-  Ptr<gpu::CommandBuffer>
-  acquireCommandBuffer(const gpu::CommandBuffer::CreateInfo &createInfo) override;
+  Ptr<gpu::ComputePipeline> createComputePipeline(
+      const gpu::ComputePipeline::CreateInfo &createInfo) override;
+  Ptr<gpu::CommandBuffer> acquireCommandBuffer(
+      const gpu::CommandBuffer::CreateInfo &createInfo) override;
   void submitCommandBuffer(Ptr<gpu::CommandBuffer> commandBuffer) override;
   Ptr<gpu::Texture>
   acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) override;
   gpu::TextureFormat getSwapchainFormat() const override;
   void waitForGpuIdle() override;
   String getDriver() const override;
-  GPUBackendAPI getBackendAPI() const override { return GPUBackendAPI::D3D12U; }
+  GPUBackendAPI getBackendAPI() const override { return GPUBackendAPI::D3D12; }
 
   std::shared_ptr<Device> get() {
     return std::dynamic_pointer_cast<Device>(getPtr());

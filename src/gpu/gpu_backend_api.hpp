@@ -8,7 +8,7 @@ namespace sinen {
 enum class GPUBackendAPI {
   Vulkan,
 #ifdef SINEN_PLATFORM_WINDOWS
-  D3D12U,
+  D3D12,
 #endif
   WebGPU,
   SDLGPU,

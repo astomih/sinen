@@ -355,11 +355,40 @@ void RenderPass::bindGraphicsPipeline(
 
 void RenderPass::bindVertexBuffers(UInt32 slot,
                                    const Array<BufferBinding> &bindings) {
+  if (!pipeline) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "D3D12: bindVertexBuffers called without a pipeline");
+    return;
+  }
+
+  const auto &vertexBuffers =
+      pipeline->getCreateInfo().vertexInputState.vertexBufferDescriptions;
+  if (slot >= vertexBuffers.size()) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "D3D12: vertex buffer slot %u is outside pipeline layout",
+                 slot);
+    return;
+  }
+
+  const size_t viewCount =
+      std::min<size_t>(bindings.size(), vertexBuffers.size() - slot);
+  if (viewCount != bindings.size()) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "D3D12: ignoring %zu vertex buffer binding(s) not present in "
+                 "the pipeline layout",
+                 bindings.size() - viewCount);
+  }
+
   Array<D3D12_VERTEX_BUFFER_VIEW> views(
       commandBuffer->getCreateInfo().allocator);
-  views.resize(bindings.size());
-  for (size_t i = 0; i < bindings.size(); ++i) {
+  views.resize(viewCount);
+  for (size_t i = 0; i < viewCount; ++i) {
     auto buffer = downCast<Buffer>(bindings[i].buffer);
+    if (!buffer) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "D3D12: null vertex buffer binding");
+      return;
+    }
     commandBuffer->keepAlive(buffer->getNative());
     commandBuffer->getDevice()->transition(
         commandBuffer->getNative(), buffer.get(),
@@ -367,9 +396,11 @@ void RenderPass::bindVertexBuffers(UInt32 slot,
     views[i].BufferLocation =
         buffer->getNative()->GetGPUVirtualAddress() + bindings[i].offset;
     views[i].SizeInBytes = buffer->getCreateInfo().size - bindings[i].offset;
-    const auto &vb = pipeline->getCreateInfo()
-                         .vertexInputState.vertexBufferDescriptions[slot + i];
+    const auto &vb = vertexBuffers[slot + i];
     views[i].StrideInBytes = vb.pitch;
+  }
+  if (views.empty()) {
+    return;
   }
   commandBuffer->getNative()->IASetVertexBuffers(
       slot, static_cast<UINT>(views.size()), views.data());

@@ -27,7 +27,7 @@ Ptr<Backend> RHI::createBackend(Allocator *allocator,
     return makePtr<vulkan::Backend>(allocator);
   }
 #ifdef SINEN_PLATFORM_WINDOWS
-  case GPUBackendAPI::D3D12U: {
+  case GPUBackendAPI::D3D12: {
     return makePtr<d3d12::Backend>(allocator);
   }
 #endif

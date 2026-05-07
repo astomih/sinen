@@ -4,9 +4,10 @@
 #include <platform/io/asset_io.hpp>
 #include <script/luaapi.hpp>
 
-#include <core/thread/global_thread_pool.hpp>
 #include <core/thread/future_poll.hpp>
+#include <core/thread/global_thread_pool.hpp>
 #include <core/thread/load_context.hpp>
+
 
 #include "core/allocator/global_allocator.hpp"
 #include "rt_shader_compiler.hpp"
@@ -145,7 +146,7 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage) {
     format = ShaderFormat::WGSL;
     break;
 #ifdef SINEN_PLATFORM_WINDOWS
-  case GPUBackendAPI::D3D12U:
+  case GPUBackendAPI::D3D12:
     format = ShaderFormat::DXIL;
     break;
 #endif

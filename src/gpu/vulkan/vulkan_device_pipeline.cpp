@@ -9,81 +9,176 @@
 #include <array>
 
 namespace sinen::gpu::vulkan {
-Ptr<gpu::GraphicsPipeline>
-Device::createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) {
-  auto vs = downCast<Shader>(createInfo.vertexShader);
-  auto fs = downCast<Shader>(createInfo.fragmentShader);
-  uint32_t uniformCount = std::max(vs ? vs->getNumUniformBuffers() : 0u,
-                                   fs ? fs->getNumUniformBuffers() : 0u);
-  uint32_t samplerCount = fs ? fs->getNumSamplers() : 0u;
+namespace {
+VkDescriptorSetLayout createDescriptorSetLayout(
+    VkDevice device, const std::vector<VkDescriptorSetLayoutBinding> &bindings,
+    const char *label) {
+  VkDescriptorSetLayoutCreateInfo ci{};
+  ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+  ci.bindingCount = static_cast<uint32_t>(bindings.size());
+  ci.pBindings = bindings.data();
 
-  // set = 0: unused/empty
-  VkDescriptorSetLayoutCreateInfo emptyLayoutCI{};
-  emptyLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-  emptyLayoutCI.bindingCount = 0;
-  emptyLayoutCI.pBindings = nullptr;
-  VkDescriptorSetLayout emptySetLayout = VK_NULL_HANDLE;
-  if (vkCreateDescriptorSetLayout(device, &emptyLayoutCI, nullptr,
-                                  &emptySetLayout) != VK_SUCCESS) {
+  VkDescriptorSetLayout layout = VK_NULL_HANDLE;
+  if (vkCreateDescriptorSetLayout(device, &ci, nullptr, &layout) !=
+      VK_SUCCESS) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                 "Vulkan: vkCreateDescriptorSetLayout (empty) failed");
-    return nullptr;
+                 "Vulkan: vkCreateDescriptorSetLayout (%s) failed", label);
+    return VK_NULL_HANDLE;
   }
+  return layout;
+}
 
-  // set = 1: uniform buffers
-  std::vector<VkDescriptorSetLayoutBinding> uniformBindings;
-  uniformBindings.reserve(uniformCount);
-  for (uint32_t i = 0; i < uniformCount; ++i) {
+std::vector<VkDescriptorSetLayoutBinding>
+uniformBindings(uint32_t count, VkShaderStageFlags stages) {
+  std::vector<VkDescriptorSetLayoutBinding> bindings;
+  bindings.reserve(count);
+  for (uint32_t i = 0; i < count; ++i) {
     VkDescriptorSetLayoutBinding b{};
     b.binding = i;
     b.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     b.descriptorCount = 1;
-    b.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-    uniformBindings.push_back(b);
+    b.stageFlags = stages;
+    bindings.push_back(b);
   }
+  return bindings;
+}
 
-  VkDescriptorSetLayoutCreateInfo uniformLayoutCI{};
-  uniformLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-  uniformLayoutCI.bindingCount = static_cast<uint32_t>(uniformBindings.size());
-  uniformLayoutCI.pBindings = uniformBindings.data();
-  VkDescriptorSetLayout uniformSetLayout = VK_NULL_HANDLE;
-  if (vkCreateDescriptorSetLayout(device, &uniformLayoutCI, nullptr,
-                                  &uniformSetLayout) != VK_SUCCESS) {
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                 "Vulkan: vkCreateDescriptorSetLayout (uniform) failed");
-    vkDestroyDescriptorSetLayout(device, emptySetLayout, nullptr);
-    return nullptr;
-  }
-
-  // set = 2: samplers
-  std::vector<VkDescriptorSetLayoutBinding> samplerBindings;
-  samplerBindings.reserve(samplerCount);
-  for (uint32_t i = 0; i < samplerCount; ++i) {
+std::vector<VkDescriptorSetLayoutBinding>
+samplerBindings(uint32_t count, VkShaderStageFlags stages) {
+  std::vector<VkDescriptorSetLayoutBinding> bindings;
+  bindings.reserve(count);
+  for (uint32_t i = 0; i < count; ++i) {
     VkDescriptorSetLayoutBinding b{};
     b.binding = i;
     b.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     b.descriptorCount = 1;
-    b.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-    samplerBindings.push_back(b);
+    b.stageFlags = stages;
+    bindings.push_back(b);
   }
-  VkDescriptorSetLayoutCreateInfo samplerLayoutCI{};
-  samplerLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-  samplerLayoutCI.bindingCount = static_cast<uint32_t>(samplerBindings.size());
-  samplerLayoutCI.pBindings = samplerBindings.data();
-  VkDescriptorSetLayout samplerSetLayout = VK_NULL_HANDLE;
-  if (vkCreateDescriptorSetLayout(device, &samplerLayoutCI, nullptr,
-                                  &samplerSetLayout) != VK_SUCCESS) {
+  return bindings;
+}
+
+VkRenderPass createCompatibleRenderPass(
+    VkDevice device, const GraphicsPipeline::CreateInfo &createInfo) {
+  std::vector<VkAttachmentDescription> attachments;
+  std::vector<VkAttachmentReference> colorRefs;
+  attachments.reserve(createInfo.targetInfo.colorTargetDescriptions.size() + 1);
+  colorRefs.reserve(createInfo.targetInfo.colorTargetDescriptions.size());
+
+  for (const auto &target : createInfo.targetInfo.colorTargetDescriptions) {
+    VkAttachmentDescription attachment{};
+    attachment.format = convert::textureFormatFrom(target.format);
+    attachment.samples =
+        convert::sampleCountFrom(createInfo.multiSampleState.sampleCount);
+    attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    attachments.push_back(attachment);
+
+    VkAttachmentReference ref{};
+    ref.attachment = static_cast<uint32_t>(attachments.size() - 1);
+    ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    colorRefs.push_back(ref);
+  }
+
+  VkAttachmentReference depthRef{};
+  VkAttachmentReference *depthRefPtr = nullptr;
+  if (createInfo.targetInfo.hasDepthStencilTarget) {
+    VkAttachmentDescription attachment{};
+    attachment.format =
+        convert::textureFormatFrom(createInfo.targetInfo.depthStencilTargetFormat);
+    attachment.samples =
+        convert::sampleCountFrom(createInfo.multiSampleState.sampleCount);
+    attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachment.initialLayout =
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    attachments.push_back(attachment);
+
+    depthRef.attachment = static_cast<uint32_t>(attachments.size() - 1);
+    depthRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    depthRefPtr = &depthRef;
+  }
+
+  VkSubpassDescription subpass{};
+  subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+  subpass.colorAttachmentCount = static_cast<uint32_t>(colorRefs.size());
+  subpass.pColorAttachments = colorRefs.data();
+  subpass.pDepthStencilAttachment = depthRefPtr;
+
+  VkSubpassDependency dependency{};
+  dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+  dependency.dstSubpass = 0;
+  dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+                            VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+                            VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+  dependency.dstStageMask = dependency.srcStageMask;
+  dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+                             VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+  VkRenderPassCreateInfo ci{};
+  ci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+  ci.attachmentCount = static_cast<uint32_t>(attachments.size());
+  ci.pAttachments = attachments.data();
+  ci.subpassCount = 1;
+  ci.pSubpasses = &subpass;
+  ci.dependencyCount = 1;
+  ci.pDependencies = &dependency;
+
+  VkRenderPass renderPass = VK_NULL_HANDLE;
+  if (vkCreateRenderPass(device, &ci, nullptr, &renderPass) != VK_SUCCESS) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                 "Vulkan: vkCreateDescriptorSetLayout (sampler) failed");
-    vkDestroyDescriptorSetLayout(device, uniformSetLayout, nullptr);
-    vkDestroyDescriptorSetLayout(device, emptySetLayout, nullptr);
+                 "Vulkan: vkCreateRenderPass (pipeline) failed");
+    return VK_NULL_HANDLE;
+  }
+  return renderPass;
+}
+} // namespace
+
+Ptr<gpu::GraphicsPipeline>
+Device::createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) {
+  auto vs = downCast<Shader>(createInfo.vertexShader);
+  auto fs = downCast<Shader>(createInfo.fragmentShader);
+  const uint32_t vertexUniformCount = vs ? vs->getNumUniformBuffers() : 0u;
+  const uint32_t fragmentUniformCount = fs ? fs->getNumUniformBuffers() : 0u;
+  const uint32_t fragmentSamplerCount = fs ? fs->getNumSamplers() : 0u;
+
+  VkDescriptorSetLayout vertexSamplerSetLayout =
+      createDescriptorSetLayout(device, {}, "vertex sampler");
+  VkDescriptorSetLayout vertexUniformSetLayout = createDescriptorSetLayout(
+      device, uniformBindings(vertexUniformCount, VK_SHADER_STAGE_VERTEX_BIT),
+      "vertex uniform");
+  VkDescriptorSetLayout fragmentSamplerSetLayout = createDescriptorSetLayout(
+      device, samplerBindings(fragmentSamplerCount, VK_SHADER_STAGE_FRAGMENT_BIT),
+      "fragment sampler");
+  VkDescriptorSetLayout fragmentUniformSetLayout = createDescriptorSetLayout(
+      device,
+      uniformBindings(fragmentUniformCount, VK_SHADER_STAGE_FRAGMENT_BIT),
+      "fragment uniform");
+  if (!vertexSamplerSetLayout || !vertexUniformSetLayout ||
+      !fragmentSamplerSetLayout || !fragmentUniformSetLayout) {
+    if (fragmentUniformSetLayout)
+      vkDestroyDescriptorSetLayout(device, fragmentUniformSetLayout, nullptr);
+    if (fragmentSamplerSetLayout)
+      vkDestroyDescriptorSetLayout(device, fragmentSamplerSetLayout, nullptr);
+    if (vertexUniformSetLayout)
+      vkDestroyDescriptorSetLayout(device, vertexUniformSetLayout, nullptr);
+    if (vertexSamplerSetLayout)
+      vkDestroyDescriptorSetLayout(device, vertexSamplerSetLayout, nullptr);
     return nullptr;
   }
 
   VkPipelineLayoutCreateInfo layoutCI{};
   layoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  std::array<VkDescriptorSetLayout, 3> setLayouts = {
-      emptySetLayout, uniformSetLayout, samplerSetLayout};
+  std::array<VkDescriptorSetLayout, 4> setLayouts = {
+      vertexSamplerSetLayout, vertexUniformSetLayout, fragmentSamplerSetLayout,
+      fragmentUniformSetLayout};
   layoutCI.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
   layoutCI.pSetLayouts = setLayouts.data();
   VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
@@ -91,9 +186,10 @@ Device::createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) {
       VK_SUCCESS) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                  "Vulkan: vkCreatePipelineLayout failed");
-    vkDestroyDescriptorSetLayout(device, samplerSetLayout, nullptr);
-    vkDestroyDescriptorSetLayout(device, uniformSetLayout, nullptr);
-    vkDestroyDescriptorSetLayout(device, emptySetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device, fragmentUniformSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device, fragmentSamplerSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device, vertexUniformSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device, vertexSamplerSetLayout, nullptr);
     return nullptr;
   }
 
@@ -218,26 +314,18 @@ Device::createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) {
   dynamic.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
   dynamic.pDynamicStates = dynamicStates.data();
 
-  std::vector<VkFormat> colorFormats;
-  colorFormats.reserve(createInfo.targetInfo.colorTargetDescriptions.size());
-  for (auto &target : createInfo.targetInfo.colorTargetDescriptions) {
-    colorFormats.push_back(convert::textureFormatFrom(target.format));
+  VkRenderPass renderPass = createCompatibleRenderPass(device, createInfo);
+  if (renderPass == VK_NULL_HANDLE) {
+    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device, fragmentUniformSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device, fragmentSamplerSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device, vertexUniformSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device, vertexSamplerSetLayout, nullptr);
+    return nullptr;
   }
-  VkPipelineRenderingCreateInfo renderingInfo{};
-  renderingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
-  renderingInfo.colorAttachmentCount =
-      static_cast<uint32_t>(colorFormats.size());
-  renderingInfo.pColorAttachmentFormats = colorFormats.data();
-  renderingInfo.depthAttachmentFormat =
-      createInfo.targetInfo.hasDepthStencilTarget
-          ? convert::textureFormatFrom(
-                createInfo.targetInfo.depthStencilTargetFormat)
-          : VK_FORMAT_UNDEFINED;
-  renderingInfo.stencilAttachmentFormat = renderingInfo.depthAttachmentFormat;
 
   VkGraphicsPipelineCreateInfo pipelineCI{};
   pipelineCI.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-  pipelineCI.pNext = &renderingInfo;
   pipelineCI.stageCount = 2;
   pipelineCI.pStages = stages;
   pipelineCI.pVertexInputState = &vertexInput;
@@ -250,29 +338,35 @@ Device::createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) {
   pipelineCI.pColorBlendState = &colorBlend;
   pipelineCI.pDynamicState = &dynamic;
   pipelineCI.layout = pipelineLayout;
+  pipelineCI.renderPass = renderPass;
+  pipelineCI.subpass = 0;
 
   VkPipeline pipeline = VK_NULL_HANDLE;
   if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineCI, nullptr,
                                 &pipeline) != VK_SUCCESS) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                  "Vulkan: vkCreateGraphicsPipelines failed");
+    vkDestroyRenderPass(device, renderPass, nullptr);
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-    vkDestroyDescriptorSetLayout(device, samplerSetLayout, nullptr);
-    vkDestroyDescriptorSetLayout(device, uniformSetLayout, nullptr);
-    vkDestroyDescriptorSetLayout(device, emptySetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device, fragmentUniformSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device, fragmentSamplerSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device, vertexUniformSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device, vertexSamplerSetLayout, nullptr);
     return nullptr;
   }
 
   GraphicsPipeline::LayoutInfo layoutInfo{};
-  layoutInfo.emptySetLayout = emptySetLayout;
-  layoutInfo.uniformSetLayout = uniformSetLayout;
-  layoutInfo.samplerSetLayout = samplerSetLayout;
+  layoutInfo.vertexSamplerSetLayout = vertexSamplerSetLayout;
+  layoutInfo.vertexUniformSetLayout = vertexUniformSetLayout;
+  layoutInfo.fragmentSamplerSetLayout = fragmentSamplerSetLayout;
+  layoutInfo.fragmentUniformSetLayout = fragmentUniformSetLayout;
   layoutInfo.pipelineLayout = pipelineLayout;
-  layoutInfo.uniformBindingCount = uniformCount;
-  layoutInfo.samplerBindingCount = samplerCount;
+  layoutInfo.vertexUniformBindingCount = vertexUniformCount;
+  layoutInfo.fragmentUniformBindingCount = fragmentUniformCount;
+  layoutInfo.fragmentSamplerBindingCount = fragmentSamplerCount;
 
   return makePtr<GraphicsPipeline>(createInfo.allocator, createInfo, *this,
-                                   pipeline, layoutInfo);
+                                   pipeline, renderPass, layoutInfo);
 }
 
 Ptr<gpu::ComputePipeline> Device::createComputePipeline(

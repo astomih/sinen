@@ -12,7 +12,7 @@ struct VSOutput {
 
 #define UNIFORM(name, bind)                                                    \
   [[vk::binding(bind, 1)]]                                                     \
-  cbuffer name //: register(c##bind, space1)
+  cbuffer name : register(b##bind, space1)
 
 UNIFORM(Mat, 0) {
   float4x4 world;
@@ -29,6 +29,7 @@ VSOutput VSMain(VSInput input) {
 };
 
 struct FSInput {
+  float4 position : SV_Position;
   float4 pos : TEXCOORD0;
 };
 

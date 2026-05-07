@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <array>
 #include <cstring>
+#include <vector>
 
 namespace sinen::gpu::vulkan {
 static VkDeviceSize alignUp(VkDeviceSize value, VkDeviceSize alignment) {
@@ -57,9 +58,21 @@ CommandBuffer::CommandBuffer(const CreateInfo &createInfo, Device &device,
       uniformAllocation(uniformAllocation), uniformMapped(uniformMapped),
       uniformSize(uniformSize), uniformAlignment(uniformAlignment),
       uniformRange(device.getUniformRange()),
-      uniformSlotOffsets(createInfo.allocator) {
-  uniformSlotOffsets.resize(32);
-  std::fill(uniformSlotOffsets.begin(), uniformSlotOffsets.end(), 0u);
+      vertexUniformSlotOffsets(createInfo.allocator),
+      fragmentUniformSlotOffsets(createInfo.allocator),
+      referencedBuffers(createInfo.allocator),
+      referencedTextures(createInfo.allocator),
+      referencedSamplers(createInfo.allocator),
+      referencedPipelines(createInfo.allocator),
+      referencedTransferBuffers(createInfo.allocator),
+      referencedRenderPasses(createInfo.allocator),
+      referencedFramebuffers(createInfo.allocator) {
+  vertexUniformSlotOffsets.resize(32);
+  fragmentUniformSlotOffsets.resize(32);
+  std::fill(vertexUniformSlotOffsets.begin(), vertexUniformSlotOffsets.end(),
+            0u);
+  std::fill(fragmentUniformSlotOffsets.begin(),
+            fragmentUniformSlotOffsets.end(), 0u);
 }
 
 CommandBuffer::~CommandBuffer() {
@@ -70,6 +83,12 @@ CommandBuffer::~CommandBuffer() {
 
   if (descriptorPool != VK_NULL_HANDLE) {
     vkDestroyDescriptorPool(vkDevice, descriptorPool, nullptr);
+  }
+  for (VkFramebuffer framebuffer : referencedFramebuffers) {
+    vkDestroyFramebuffer(vkDevice, framebuffer, nullptr);
+  }
+  for (VkRenderPass renderPass : referencedRenderPasses) {
+    vkDestroyRenderPass(vkDevice, renderPass, nullptr);
   }
   if (uniformBuffer != VK_NULL_HANDLE) {
     vmaDestroyBuffer(device.getVmaAllocator(), uniformBuffer,
@@ -88,18 +107,73 @@ void CommandBuffer::markUsesSwapchain(uint32_t imageIndex) {
   swapchainImageIndex = imageIndex;
 }
 
-void CommandBuffer::setUniformSlotOffset(uint32_t slot, uint32_t offset) {
-  if (slot >= static_cast<uint32_t>(uniformSlotOffsets.size())) {
-    uniformSlotOffsets.resize(slot + 1);
+void CommandBuffer::keepAlive(Ptr<gpu::Buffer> resource) {
+  if (resource) {
+    referencedBuffers.push_back(resource);
   }
-  uniformSlotOffsets[slot] = offset;
 }
 
-uint32_t CommandBuffer::getUniformSlotOffset(uint32_t slot) const {
-  if (slot >= static_cast<uint32_t>(uniformSlotOffsets.size())) {
+void CommandBuffer::keepAlive(Ptr<gpu::Texture> resource) {
+  if (resource) {
+    referencedTextures.push_back(resource);
+  }
+}
+
+void CommandBuffer::keepAlive(Ptr<gpu::Sampler> resource) {
+  if (resource) {
+    referencedSamplers.push_back(resource);
+  }
+}
+
+void CommandBuffer::keepAlive(Ptr<gpu::GraphicsPipeline> resource) {
+  if (resource) {
+    referencedPipelines.push_back(resource);
+  }
+}
+
+void CommandBuffer::keepAlive(Ptr<gpu::TransferBuffer> resource) {
+  if (resource) {
+    referencedTransferBuffers.push_back(resource);
+  }
+}
+
+void CommandBuffer::keepAliveRenderPassHandles(VkRenderPass renderPass,
+                                               VkFramebuffer framebuffer) {
+  if (framebuffer != VK_NULL_HANDLE) {
+    referencedFramebuffers.push_back(framebuffer);
+  }
+  if (renderPass != VK_NULL_HANDLE) {
+    referencedRenderPasses.push_back(renderPass);
+  }
+}
+
+void CommandBuffer::setVertexUniformSlotOffset(uint32_t slot, uint32_t offset) {
+  if (slot >= static_cast<uint32_t>(vertexUniformSlotOffsets.size())) {
+    vertexUniformSlotOffsets.resize(slot + 1);
+  }
+  vertexUniformSlotOffsets[slot] = offset;
+}
+
+void CommandBuffer::setFragmentUniformSlotOffset(uint32_t slot,
+                                                 uint32_t offset) {
+  if (slot >= static_cast<uint32_t>(fragmentUniformSlotOffsets.size())) {
+    fragmentUniformSlotOffsets.resize(slot + 1);
+  }
+  fragmentUniformSlotOffsets[slot] = offset;
+}
+
+uint32_t CommandBuffer::getVertexUniformSlotOffset(uint32_t slot) const {
+  if (slot >= static_cast<uint32_t>(vertexUniformSlotOffsets.size())) {
     return 0;
   }
-  return uniformSlotOffsets[slot];
+  return vertexUniformSlotOffsets[slot];
+}
+
+uint32_t CommandBuffer::getFragmentUniformSlotOffset(uint32_t slot) const {
+  if (slot >= static_cast<uint32_t>(fragmentUniformSlotOffsets.size())) {
+    return 0;
+  }
+  return fragmentUniformSlotOffsets[slot];
 }
 
 void CommandBuffer::ensureRecording() {
@@ -117,7 +191,10 @@ void CommandBuffer::ensureRecording() {
   }
   recording = true;
   uniformWriteOffset = 0;
-  std::fill(uniformSlotOffsets.begin(), uniformSlotOffsets.end(), 0u);
+  std::fill(vertexUniformSlotOffsets.begin(), vertexUniformSlotOffsets.end(),
+            0u);
+  std::fill(fragmentUniformSlotOffsets.begin(),
+            fragmentUniformSlotOffsets.end(), 0u);
 }
 
 void CommandBuffer::transitionTexture(Texture &texture,
@@ -190,40 +267,39 @@ void CommandBuffer::endRenderPass(Ptr<gpu::RenderPass> renderPass) {
 
 void CommandBuffer::pushVertexUniformData(UInt32 slot, const void *data,
                                           Size size) {
-  pushUniformDataInternal(slot, data, size);
+  setVertexUniformSlotOffset(slot, pushUniformDataInternal(data, size));
 }
 
 void CommandBuffer::pushFragmentUniformData(UInt32 slot, const void *data,
                                             Size size) {
-  pushUniformDataInternal(slot, data, size);
+  setFragmentUniformSlotOffset(slot, pushUniformDataInternal(data, size));
 }
 
-void CommandBuffer::pushUniformDataInternal(UInt32 slot, const void *data,
-                                            Size size) {
+uint32_t CommandBuffer::pushUniformDataInternal(const void *data, Size size) {
   ensureRecording();
   if (!uniformMapped) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                  "Vulkan: uniform buffer not mapped");
-    return;
+    return 0;
   }
   if (size > uniformRange) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                  "Vulkan: uniform push too large (%zu > %llu)", size,
                  static_cast<unsigned long long>(uniformRange));
-    return;
+    return 0;
   }
 
   VkDeviceSize aligned = alignUp(uniformWriteOffset, uniformAlignment);
   if (aligned + size > uniformSize) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                  "Vulkan: uniform buffer out of space");
-    return;
+    return 0;
   }
   std::memcpy(static_cast<uint8_t *>(uniformMapped) + aligned, data, size);
   vmaFlushAllocation(device.getVmaAllocator(), uniformAllocation, aligned,
                      size);
-  setUniformSlotOffset(slot, static_cast<uint32_t>(aligned));
   uniformWriteOffset = aligned + size;
+  return static_cast<uint32_t>(aligned);
 }
 
 CopyPass::CopyPass(Device &device, CommandBuffer &commandBuffer)
@@ -231,6 +307,8 @@ CopyPass::CopyPass(Device &device, CommandBuffer &commandBuffer)
 
 void CopyPass::uploadBuffer(const BufferTransferInfo &src,
                             const BufferRegion &dst, bool /*cycle*/) {
+  commandBuffer.keepAlive(src.transferBuffer);
+  commandBuffer.keepAlive(dst.buffer);
   auto srcBuf = downCast<TransferBuffer>(src.transferBuffer);
   auto dstBuf = downCast<Buffer>(dst.buffer);
   VkBufferCopy region{};
@@ -243,6 +321,8 @@ void CopyPass::uploadBuffer(const BufferTransferInfo &src,
 
 void CopyPass::downloadBuffer(const BufferRegion &src,
                               const BufferTransferInfo &dst) {
+  commandBuffer.keepAlive(src.buffer);
+  commandBuffer.keepAlive(dst.transferBuffer);
   auto srcBuf = downCast<Buffer>(src.buffer);
   auto dstBuf = downCast<TransferBuffer>(dst.transferBuffer);
   VkBufferCopy region{};
@@ -255,6 +335,8 @@ void CopyPass::downloadBuffer(const BufferRegion &src,
 
 void CopyPass::uploadTexture(const TextureTransferInfo &src,
                              const TextureRegion &dst, bool /*cycle*/) {
+  commandBuffer.keepAlive(src.transferBuffer);
+  commandBuffer.keepAlive(dst.texture);
   auto srcBuf = downCast<TransferBuffer>(src.transferBuffer);
   auto dstTex = downCast<Texture>(dst.texture);
 
@@ -282,6 +364,8 @@ void CopyPass::uploadTexture(const TextureTransferInfo &src,
 
 void CopyPass::downloadTexture(const TextureRegion &src,
                                const TextureTransferInfo &dst) {
+  commandBuffer.keepAlive(src.texture);
+  commandBuffer.keepAlive(dst.transferBuffer);
   auto srcTex = downCast<Texture>(src.texture);
   auto dstBuf = downCast<TransferBuffer>(dst.transferBuffer);
 
@@ -305,6 +389,8 @@ void CopyPass::downloadTexture(const TextureRegion &src,
 void CopyPass::copyTexture(const TextureLocation &src,
                            const TextureLocation &dst, UInt32 width,
                            UInt32 height, UInt32 depth, bool /*cycle*/) {
+  commandBuffer.keepAlive(src.texture);
+  commandBuffer.keepAlive(dst.texture);
   auto srcTex = downCast<Texture>(src.texture);
   auto dstTex = downCast<Texture>(dst.texture);
   commandBuffer.transitionTexture(*srcTex,
@@ -338,80 +424,165 @@ RenderPass::RenderPass(Device &device, CommandBuffer &commandBuffer)
 void RenderPass::begin(const Array<ColorTargetInfo> &infos,
                        const DepthStencilTargetInfo &depthStencilInfo, float r,
                        float g, float b, float a) {
-  Array<VkRenderingAttachmentInfo> colorAttachments(
-      commandBuffer.getCreateInfo().allocator);
-  colorAttachments.resize(infos.size());
+  std::vector<VkAttachmentDescription> attachments;
+  std::vector<VkAttachmentReference> colorRefs;
+  std::vector<VkImageView> views;
+  std::vector<VkClearValue> clearValues;
+  attachments.reserve(infos.size() + 1);
+  colorRefs.reserve(infos.size());
+  views.reserve(infos.size() + 1);
+  clearValues.reserve(infos.size() + 1);
 
   uint32_t width = 1;
   uint32_t height = 1;
 
-  for (int i = 0; i < infos.size(); ++i) {
-    auto tex = downCast<Texture>(infos[i].texture);
-    commandBuffer.transitionTexture(*tex,
-                                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+  for (const auto &info : infos) {
+    commandBuffer.keepAlive(info.texture);
+    auto tex = downCast<Texture>(info.texture);
     width = tex->getWidth();
     height = tex->getHeight();
 
-    VkRenderingAttachmentInfo attachment{};
-    attachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-    attachment.imageView = tex->getView();
-    attachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    attachment.loadOp = convert::loadOpFrom(infos[i].loadOp);
-    attachment.storeOp = convert::storeOpFrom(infos[i].storeOp);
-    attachment.clearValue.color = {{r, g, b, a}};
-    colorAttachments[i] = attachment;
+    VkAttachmentDescription attachment{};
+    attachment.format = tex->getFormat();
+    attachment.samples =
+        convert::sampleCountFrom(tex->getCreateInfo().sampleCount);
+    attachment.loadOp = convert::loadOpFrom(info.loadOp);
+    attachment.storeOp = convert::storeOpFrom(info.storeOp);
+    attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachment.initialLayout = tex->getLayout();
+    attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    attachments.push_back(attachment);
+
+    VkAttachmentReference ref{};
+    ref.attachment = static_cast<uint32_t>(attachments.size() - 1);
+    ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    colorRefs.push_back(ref);
+    views.push_back(tex->getView());
+
+    VkClearValue clear{};
+    clear.color = {{r, g, b, a}};
+    clearValues.push_back(clear);
+    tex->setLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
   }
 
-  VkRenderingAttachmentInfo depthAttachment{};
-  VkRenderingAttachmentInfo stencilAttachment{};
-  VkRenderingInfo rendering{};
-  rendering.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
-  rendering.renderArea.offset = {0, 0};
-  rendering.renderArea.extent = {width, height};
-  rendering.layerCount = 1;
-  rendering.colorAttachmentCount = colorAttachments.size();
-  rendering.pColorAttachments = colorAttachments.data();
+  VkAttachmentReference depthRef{};
+  VkAttachmentReference *depthRefPtr = nullptr;
 
   if (depthStencilInfo.texture) {
+    commandBuffer.keepAlive(depthStencilInfo.texture);
     auto tex = downCast<Texture>(depthStencilInfo.texture);
-    commandBuffer.transitionTexture(
-        *tex, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-
-    depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-    depthAttachment.imageView = tex->getView();
-    depthAttachment.imageLayout =
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-    depthAttachment.loadOp = convert::loadOpFrom(depthStencilInfo.loadOp);
-    depthAttachment.storeOp = convert::storeOpFrom(depthStencilInfo.storeOp);
-    depthAttachment.clearValue.depthStencil.depth = depthStencilInfo.clearDepth;
-    depthAttachment.clearValue.depthStencil.stencil =
-        static_cast<uint32_t>(depthStencilInfo.clearStencil);
-    rendering.pDepthAttachment = &depthAttachment;
-
-    stencilAttachment = depthAttachment;
-    stencilAttachment.loadOp =
+    VkAttachmentDescription attachment{};
+    attachment.format = tex->getFormat();
+    attachment.samples =
+        convert::sampleCountFrom(tex->getCreateInfo().sampleCount);
+    attachment.loadOp = convert::loadOpFrom(depthStencilInfo.loadOp);
+    attachment.storeOp = convert::storeOpFrom(depthStencilInfo.storeOp);
+    attachment.stencilLoadOp =
         convert::loadOpFrom(depthStencilInfo.stencilLoadOp);
-    stencilAttachment.storeOp =
+    attachment.stencilStoreOp =
         convert::storeOpFrom(depthStencilInfo.stencilStoreOp);
-    rendering.pStencilAttachment = &stencilAttachment;
+    attachment.initialLayout = tex->getLayout();
+    attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    attachments.push_back(attachment);
+
+    depthRef.attachment = static_cast<uint32_t>(attachments.size() - 1);
+    depthRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    depthRefPtr = &depthRef;
+    views.push_back(tex->getView());
+
+    VkClearValue clear{};
+    clear.depthStencil.depth = depthStencilInfo.clearDepth;
+    clear.depthStencil.stencil =
+        static_cast<uint32_t>(depthStencilInfo.clearStencil);
+    clearValues.push_back(clear);
+    tex->setLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
   }
 
-  vkCmdBeginRendering(cmd, &rendering);
+  VkSubpassDescription subpass{};
+  subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+  subpass.colorAttachmentCount = static_cast<uint32_t>(colorRefs.size());
+  subpass.pColorAttachments = colorRefs.data();
+  subpass.pDepthStencilAttachment = depthRefPtr;
+
+  VkSubpassDependency dependency{};
+  dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+  dependency.dstSubpass = 0;
+  dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+                            VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+                            VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+  dependency.dstStageMask = dependency.srcStageMask;
+  dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+                             VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+  VkRenderPassCreateInfo renderPassCI{};
+  renderPassCI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+  renderPassCI.attachmentCount = static_cast<uint32_t>(attachments.size());
+  renderPassCI.pAttachments = attachments.data();
+  renderPassCI.subpassCount = 1;
+  renderPassCI.pSubpasses = &subpass;
+  renderPassCI.dependencyCount = 1;
+  renderPassCI.pDependencies = &dependency;
+
+  if (vkCreateRenderPass(device.getVkDevice(), &renderPassCI, nullptr,
+                         &renderPass) != VK_SUCCESS) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: vkCreateRenderPass failed");
+    return;
+  }
+
+  VkFramebufferCreateInfo framebufferCI{};
+  framebufferCI.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+  framebufferCI.renderPass = renderPass;
+  framebufferCI.attachmentCount = static_cast<uint32_t>(views.size());
+  framebufferCI.pAttachments = views.data();
+  framebufferCI.width = width;
+  framebufferCI.height = height;
+  framebufferCI.layers = 1;
+  if (vkCreateFramebuffer(device.getVkDevice(), &framebufferCI, nullptr,
+                          &framebuffer) != VK_SUCCESS) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: vkCreateFramebuffer failed");
+    vkDestroyRenderPass(device.getVkDevice(), renderPass, nullptr);
+    renderPass = VK_NULL_HANDLE;
+    return;
+  }
+
+  VkRenderPassBeginInfo beginInfo{};
+  beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+  beginInfo.renderPass = renderPass;
+  beginInfo.framebuffer = framebuffer;
+  beginInfo.renderArea.offset = {0, 0};
+  beginInfo.renderArea.extent = {width, height};
+  beginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+  beginInfo.pClearValues = clearValues.data();
+  vkCmdBeginRenderPass(cmd, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
-void RenderPass::end() { vkCmdEndRendering(cmd); }
+void RenderPass::end() {
+  if (renderPass == VK_NULL_HANDLE) {
+    return;
+  }
+  vkCmdEndRenderPass(cmd);
+  commandBuffer.keepAliveRenderPassHandles(renderPass, framebuffer);
+  framebuffer = VK_NULL_HANDLE;
+  renderPass = VK_NULL_HANDLE;
+}
 
 void RenderPass::ensureDescriptorSet() {
-  if (!boundPipeline || uniformSet != VK_NULL_HANDLE ||
-      samplerSet != VK_NULL_HANDLE) {
+  if (!boundPipeline || vertexUniformSet != VK_NULL_HANDLE ||
+      fragmentSamplerSet != VK_NULL_HANDLE ||
+      fragmentUniformSet != VK_NULL_HANDLE) {
     return;
   }
   auto layoutInfo = boundPipeline->getLayoutInfo();
 
-  std::array<VkDescriptorSetLayout, 2> setLayouts = {
-      layoutInfo.uniformSetLayout, layoutInfo.samplerSetLayout};
+  std::array<VkDescriptorSetLayout, 3> setLayouts = {
+      layoutInfo.vertexUniformSetLayout, layoutInfo.fragmentSamplerSetLayout,
+      layoutInfo.fragmentUniformSetLayout};
 
-  std::array<VkDescriptorSet, 2> sets = {VK_NULL_HANDLE, VK_NULL_HANDLE};
+  std::array<VkDescriptorSet, 3> sets = {VK_NULL_HANDLE, VK_NULL_HANDLE,
+                                         VK_NULL_HANDLE};
 
   VkDescriptorSetAllocateInfo allocInfo{};
   allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -425,37 +596,59 @@ void RenderPass::ensureDescriptorSet() {
                  "Vulkan: vkAllocateDescriptorSets failed");
     return;
   }
-  uniformSet = sets[0];
-  samplerSet = sets[1];
+  vertexUniformSet = sets[0];
+  fragmentSamplerSet = sets[1];
+  fragmentUniformSet = sets[2];
 
   Array<VkWriteDescriptorSet> writes(commandBuffer.getCreateInfo().allocator);
-  writes.reserve(layoutInfo.uniformBindingCount +
-                 layoutInfo.samplerBindingCount);
-  Array<VkDescriptorBufferInfo> bufferInfos(
+  writes.reserve(layoutInfo.vertexUniformBindingCount +
+                 layoutInfo.fragmentUniformBindingCount +
+                 layoutInfo.fragmentSamplerBindingCount);
+  Array<VkDescriptorBufferInfo> vertexBufferInfos(
       commandBuffer.getCreateInfo().allocator);
-  bufferInfos.resize(layoutInfo.uniformBindingCount);
+  vertexBufferInfos.resize(layoutInfo.vertexUniformBindingCount);
 
-  for (uint32_t i = 0; i < layoutInfo.uniformBindingCount; ++i) {
+  for (uint32_t i = 0; i < layoutInfo.vertexUniformBindingCount; ++i) {
     VkDescriptorBufferInfo bi{};
     bi.buffer = commandBuffer.getUniformBuffer();
     bi.offset = 0;
     bi.range = commandBuffer.getUniformRange();
-    bufferInfos[i] = bi;
+    vertexBufferInfos[i] = bi;
 
     VkWriteDescriptorSet w{};
     w.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    w.dstSet = uniformSet;
+    w.dstSet = vertexUniformSet;
     w.dstBinding = i;
     w.descriptorCount = 1;
     w.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-    w.pBufferInfo = &bufferInfos[i];
+    w.pBufferInfo = &vertexBufferInfos[i];
+    writes.push_back(w);
+  }
+
+  Array<VkDescriptorBufferInfo> fragmentBufferInfos(
+      commandBuffer.getCreateInfo().allocator);
+  fragmentBufferInfos.resize(layoutInfo.fragmentUniformBindingCount);
+  for (uint32_t i = 0; i < layoutInfo.fragmentUniformBindingCount; ++i) {
+    VkDescriptorBufferInfo bi{};
+    bi.buffer = commandBuffer.getUniformBuffer();
+    bi.offset = 0;
+    bi.range = commandBuffer.getUniformRange();
+    fragmentBufferInfos[i] = bi;
+
+    VkWriteDescriptorSet w{};
+    w.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    w.dstSet = fragmentUniformSet;
+    w.dstBinding = i;
+    w.descriptorCount = 1;
+    w.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    w.pBufferInfo = &fragmentBufferInfos[i];
     writes.push_back(w);
   }
 
   Array<VkDescriptorImageInfo> imageInfos(
       commandBuffer.getCreateInfo().allocator);
-  imageInfos.resize(layoutInfo.samplerBindingCount);
-  for (uint32_t i = 0; i < layoutInfo.samplerBindingCount; ++i) {
+  imageInfos.resize(layoutInfo.fragmentSamplerBindingCount);
+  for (uint32_t i = 0; i < layoutInfo.fragmentSamplerBindingCount; ++i) {
     VkDescriptorImageInfo ii{};
     ii.sampler = device.getDefaultSampler();
     ii.imageView = device.getDefaultTextureView();
@@ -464,7 +657,7 @@ void RenderPass::ensureDescriptorSet() {
 
     VkWriteDescriptorSet w{};
     w.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    w.dstSet = samplerSet;
+    w.dstSet = fragmentSamplerSet;
     w.dstBinding = i;
     w.descriptorCount = 1;
     w.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -477,18 +670,24 @@ void RenderPass::ensureDescriptorSet() {
 }
 
 void RenderPass::bindDescriptorSet() {
-  if (!boundPipeline || uniformSet == VK_NULL_HANDLE ||
-      samplerSet == VK_NULL_HANDLE) {
+  if (!boundPipeline || vertexUniformSet == VK_NULL_HANDLE ||
+      fragmentSamplerSet == VK_NULL_HANDLE ||
+      fragmentUniformSet == VK_NULL_HANDLE) {
     return;
   }
 
   auto layoutInfo = boundPipeline->getLayoutInfo();
   Array<uint32_t> dynamicOffsets(commandBuffer.getCreateInfo().allocator);
-  dynamicOffsets.resize(layoutInfo.uniformBindingCount);
-  for (uint32_t i = 0; i < layoutInfo.uniformBindingCount; ++i) {
-    dynamicOffsets[i] = commandBuffer.getUniformSlotOffset(i);
+  dynamicOffsets.reserve(layoutInfo.vertexUniformBindingCount +
+                         layoutInfo.fragmentUniformBindingCount);
+  for (uint32_t i = 0; i < layoutInfo.vertexUniformBindingCount; ++i) {
+    dynamicOffsets.push_back(commandBuffer.getVertexUniformSlotOffset(i));
   }
-  std::array<VkDescriptorSet, 2> sets = {uniformSet, samplerSet};
+  for (uint32_t i = 0; i < layoutInfo.fragmentUniformBindingCount; ++i) {
+    dynamicOffsets.push_back(commandBuffer.getFragmentUniformSlotOffset(i));
+  }
+  std::array<VkDescriptorSet, 3> sets = {vertexUniformSet, fragmentSamplerSet,
+                                         fragmentUniformSet};
   vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
                           layoutInfo.pipelineLayout, 1,
                           static_cast<uint32_t>(sets.size()), sets.data(),
@@ -497,9 +696,16 @@ void RenderPass::bindDescriptorSet() {
 
 void RenderPass::bindGraphicsPipeline(
     Ptr<gpu::GraphicsPipeline> graphicsPipeline) {
+  commandBuffer.keepAlive(graphicsPipeline);
   boundPipeline = downCast<GraphicsPipeline>(graphicsPipeline);
-  uniformSet = VK_NULL_HANDLE;
-  samplerSet = VK_NULL_HANDLE;
+  if (!boundPipeline) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: null graphics pipeline binding");
+    return;
+  }
+  vertexUniformSet = VK_NULL_HANDLE;
+  fragmentSamplerSet = VK_NULL_HANDLE;
+  fragmentUniformSet = VK_NULL_HANDLE;
   ensureDescriptorSet();
   vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
                     boundPipeline->getNative());
@@ -512,6 +718,7 @@ void RenderPass::bindVertexBuffers(UInt32 startSlot,
   buffers.resize(bindings.size());
   offsets.resize(bindings.size());
   for (int i = 0; i < bindings.size(); ++i) {
+    commandBuffer.keepAlive(bindings[i].buffer);
     buffers[i] = downCast<Buffer>(bindings[i].buffer)->getNative();
     offsets[i] = bindings[i].offset;
   }
@@ -521,6 +728,7 @@ void RenderPass::bindVertexBuffers(UInt32 startSlot,
 
 void RenderPass::bindIndexBuffer(const BufferBinding &binding,
                                  IndexElementSize indexElementSize) {
+  commandBuffer.keepAlive(binding.buffer);
   VkIndexType indexType = VK_INDEX_TYPE_UINT32;
   if (indexElementSize == IndexElementSize::Uint16) {
     indexType = VK_INDEX_TYPE_UINT16;
@@ -535,12 +743,21 @@ void RenderPass::bindFragmentSamplers(
     return;
   }
   ensureDescriptorSet();
+  const auto &layoutInfo = boundPipeline->getLayoutInfo();
+  if (startSlot >= layoutInfo.fragmentSamplerBindingCount) {
+    return;
+  }
+  const uint32_t bindingCount = std::min<uint32_t>(
+      static_cast<uint32_t>(bindings.size()),
+      layoutInfo.fragmentSamplerBindingCount - startSlot);
   Array<VkWriteDescriptorSet> writes(commandBuffer.getCreateInfo().allocator);
   Array<VkDescriptorImageInfo> infos(commandBuffer.getCreateInfo().allocator);
-  writes.resize(bindings.size());
-  infos.resize(bindings.size());
+  writes.resize(bindingCount);
+  infos.resize(bindingCount);
 
-  for (int i = 0; i < bindings.size(); ++i) {
+  for (uint32_t i = 0; i < bindingCount; ++i) {
+    commandBuffer.keepAlive(bindings[i].sampler);
+    commandBuffer.keepAlive(bindings[i].texture);
     auto sampler = downCast<Sampler>(bindings[i].sampler);
     auto texture = downCast<Texture>(bindings[i].texture);
     commandBuffer.transitionTexture(*texture,
@@ -554,7 +771,7 @@ void RenderPass::bindFragmentSamplers(
 
     VkWriteDescriptorSet w{};
     w.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    w.dstSet = samplerSet;
+    w.dstSet = fragmentSamplerSet;
     w.dstBinding = startSlot + i;
     w.descriptorCount = 1;
     w.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -577,9 +794,11 @@ void RenderPass::bindFragmentSampler(UInt32 startSlot,
 void RenderPass::setViewport(const Viewport &viewport) {
   VkViewport vp{};
   vp.x = viewport.x;
-  vp.y = viewport.y;
+  // Match SDL_GPU's Vulkan backend: flip the Vulkan viewport so the public
+  // coordinate system stays consistent with D3D12/SDL_GPU.
+  vp.y = viewport.y + viewport.height;
   vp.width = viewport.width;
-  vp.height = viewport.height;
+  vp.height = -viewport.height;
   vp.minDepth = viewport.minDepth;
   vp.maxDepth = viewport.maxDepth;
   vkCmdSetViewport(cmd, 0, 1, &vp);

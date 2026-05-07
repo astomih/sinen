@@ -29,13 +29,23 @@ public:
   bool usesSwapchain() const { return swapchainUsed; }
   uint32_t getSwapchainImageIndex() const { return swapchainImageIndex; }
 
+  void keepAlive(Ptr<gpu::Buffer> resource);
+  void keepAlive(Ptr<gpu::Texture> resource);
+  void keepAlive(Ptr<gpu::Sampler> resource);
+  void keepAlive(Ptr<gpu::GraphicsPipeline> resource);
+  void keepAlive(Ptr<gpu::TransferBuffer> resource);
+  void keepAliveRenderPassHandles(VkRenderPass renderPass,
+                                  VkFramebuffer framebuffer);
+
   void ensureRecording();
   void finishForSubmit();
 
   void transitionTexture(Texture &texture, VkImageLayout newLayout);
 
-  void setUniformSlotOffset(uint32_t slot, uint32_t offset);
-  uint32_t getUniformSlotOffset(uint32_t slot) const;
+  void setVertexUniformSlotOffset(uint32_t slot, uint32_t offset);
+  void setFragmentUniformSlotOffset(uint32_t slot, uint32_t offset);
+  uint32_t getVertexUniformSlotOffset(uint32_t slot) const;
+  uint32_t getFragmentUniformSlotOffset(uint32_t slot) const;
 
   Ptr<gpu::CopyPass> beginCopyPass() override;
   void endCopyPass(Ptr<gpu::CopyPass> copyPass) override;
@@ -49,7 +59,7 @@ public:
                                Size size) override;
 
 private:
-  void pushUniformDataInternal(UInt32 slot, const void *data, Size size);
+  uint32_t pushUniformDataInternal(const void *data, Size size);
 
   Device &device;
   VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
@@ -64,7 +74,15 @@ private:
   VkDeviceSize uniformWriteOffset = 0;
   VkDeviceSize uniformRange = 0;
 
-  Array<uint32_t> uniformSlotOffsets;
+  Array<uint32_t> vertexUniformSlotOffsets;
+  Array<uint32_t> fragmentUniformSlotOffsets;
+  Array<Ptr<gpu::Buffer>> referencedBuffers;
+  Array<Ptr<gpu::Texture>> referencedTextures;
+  Array<Ptr<gpu::Sampler>> referencedSamplers;
+  Array<Ptr<gpu::GraphicsPipeline>> referencedPipelines;
+  Array<Ptr<gpu::TransferBuffer>> referencedTransferBuffers;
+  Array<VkRenderPass> referencedRenderPasses;
+  Array<VkFramebuffer> referencedFramebuffers;
 
   bool recording = false;
   bool swapchainUsed = false;
@@ -131,8 +149,11 @@ private:
   VkCommandBuffer cmd = VK_NULL_HANDLE;
 
   Ptr<GraphicsPipeline> boundPipeline = nullptr;
-  VkDescriptorSet uniformSet = VK_NULL_HANDLE;
-  VkDescriptorSet samplerSet = VK_NULL_HANDLE;
+  VkDescriptorSet vertexUniformSet = VK_NULL_HANDLE;
+  VkDescriptorSet fragmentSamplerSet = VK_NULL_HANDLE;
+  VkDescriptorSet fragmentUniformSet = VK_NULL_HANDLE;
+  VkRenderPass renderPass = VK_NULL_HANDLE;
+  VkFramebuffer framebuffer = VK_NULL_HANDLE;
 };
 
 } // namespace sinen::gpu::vulkan

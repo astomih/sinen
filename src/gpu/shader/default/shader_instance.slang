@@ -3,10 +3,10 @@
   cbuffer name : register(b##bind, space1)
 
 struct VSInput {
-  float3 position : TEXCOORD0;
-  float3 normal : TEXCOORD1;
-  float2 uv : TEXCOORD2;
-  float4 color : TEXCOORD3;
+  float3 position : POSITION;
+  float3 normal : NORMAL;
+  float2 uv : TEXCOORD0;
+  float4 color : COLOR;
   float4 m0 : TEXCOORD4;
   float4 m1 : TEXCOORD5;
   float4 m2 : TEXCOORD6;
@@ -16,7 +16,7 @@ struct VSInput {
 struct VSOutput {
   float4 out : SV_Position;
   float2 uv : TEXCOORD0;
-  float4 color : COLOR0;
+  float4 color : COLOR;
 };
 
 UNIFORM(Mat, 0) {

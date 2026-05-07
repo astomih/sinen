@@ -55,6 +55,7 @@ public:
   }
 
   ID3D12Device *getNative() const { return device.Get(); }
+  bool isValid() const { return device != nullptr && commandQueue != nullptr; }
   ID3D12CommandQueue *getQueue() const { return commandQueue.Get(); }
   ID3D12DescriptorHeap *getSrvHeap() const { return srvHeap.Get(); }
   ID3D12DescriptorHeap *getSamplerHeap() const { return samplerHeap.Get(); }

@@ -19,10 +19,10 @@ struct VSOutput {
 
 #define UNIFORM_VERT(name, bind)                                               \
   [[vk::binding(bind, 1)]]                                                     \
-  cbuffer name //: register(c##bind, space1)
+  cbuffer name : register(b##bind, space1)
 #define UNIFORM_FRAG(name, bind)                                               \
   [[vk::binding(bind, 3)]]                                                     \
-  cbuffer name //: register(c##bind, space1)
+  cbuffer name : register(b##bind, space3)
 
 UNIFORM_VERT(Mat, 0) {
   float4x4 world;
@@ -66,6 +66,7 @@ VSOutput VSMain(VSInput input) {
 };
 
 struct FSInput {
+  float4 position : SV_Position;
   float2 uv : TEXCOORD0;
   float3 pos : TEXCOORD1;
   float3 normal : NORMAL;
@@ -76,13 +77,12 @@ struct FSInput {
 };
 
 struct FSOutput {
-  float4 color : COLOR;
+  float4 color : SV_Target;
 };
 
 #define COMBINED_IMAGE_SAMPLER(name, bind)                                     \
   [[vk::binding(bind, 2)]]                                                     \
-  Sampler2D name; //: register(t##bind, space##set) : register(s##bind,
-                  //: space##set);
+  Sampler2D name : register(t##bind, space2) : register(s##bind, space2);
 COMBINED_IMAGE_SAMPLER(albedoMap, 0)
 COMBINED_IMAGE_SAMPLER(normalMap, 1)
 COMBINED_IMAGE_SAMPLER(diffuseRoughnessMap,
@@ -96,11 +96,11 @@ COMBINED_IMAGE_SAMPLER(aoMap, 5)
 COMBINED_IMAGE_SAMPLER(brdfLUT, 6)
 
 [[vk::binding(7, 2)]]
-SamplerCube cubemap;
+SamplerCube cubemap : register(t7, space2) : register(s7, space2);
 [[vk::binding(8, 2)]]
-SamplerCube irradianceMap;
+SamplerCube irradianceMap : register(t8, space2) : register(s8, space2);
 [[vk::binding(9, 2)]]
-SamplerCube prefilteredMap;
+SamplerCube prefilteredMap : register(t9, space2) : register(s9, space2);
 
 // BRDF
 float3 SchlickFresnel(float hDotV, float3 refl) {
@@ -224,7 +224,7 @@ FSOutput FSMain(FSInput input) {
 
   output.color =
       float4(computePBR_IBL(input.pos, input.uv, input.T, input.B, input.N,
-                            float3(camPosx, camPosy, camPosz), light, 1.0),
+                            float3(camPosx, camPosy, camPosz), light, 1),
              1.0);
   return output;
 }

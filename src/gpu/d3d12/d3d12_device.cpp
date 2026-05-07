@@ -50,6 +50,80 @@ void logIfFailed(HRESULT hr, const char *message) {
                  static_cast<unsigned int>(hr));
   }
 }
+
+bool hasRequiredD3D12Options(ID3D12Device *device) {
+  D3D12_FEATURE_DATA_D3D12_OPTIONS options{};
+  if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS,
+                                         &options, sizeof(options)))) {
+    return false;
+  }
+  return options.ResourceBindingTier >= D3D12_RESOURCE_BINDING_TIER_2;
+}
+
+UINT16 depthOrArraySizeFrom(const gpu::Texture::CreateInfo &createInfo) {
+  switch (createInfo.type) {
+  case TextureType::Texture3D:
+    return static_cast<UINT16>(createInfo.layerCountOrDepth);
+  case TextureType::Cube:
+    return 6;
+  case TextureType::CubeArray:
+    return static_cast<UINT16>(createInfo.layerCountOrDepth * 6);
+  default:
+    return static_cast<UINT16>(std::max<UInt32>(1, createInfo.layerCountOrDepth));
+  }
+}
+
+struct D3D12VertexSemantic {
+  const char *name;
+  UINT index;
+};
+
+D3D12VertexSemantic vertexSemanticFrom(
+    const gpu::VertexInputState &vertexInputState,
+    const gpu::VertexAttribute &attr) {
+  const auto &vb = vertexInputState.vertexBufferDescriptions[attr.bufferSlot];
+  if (vb.inputRate == VertexInputRate::Instance) {
+    return {"TEXCOORD", attr.location};
+  }
+
+  if (attr.bufferSlot == 0) {
+    switch (attr.location) {
+    case 0:
+      return {"POSITION", 0};
+    case 1:
+      return {"NORMAL", 0};
+    case 2:
+      return {"TEXCOORD", 0};
+    case 3:
+      return {"COLOR", 0};
+    default:
+      return {"TEXCOORD", attr.location};
+    }
+  }
+
+  size_t slotAttributeCount = 0;
+  size_t slotAttributeIndex = 0;
+  for (const auto &other : vertexInputState.vertexAttributes) {
+    if (other.bufferSlot != attr.bufferSlot) {
+      continue;
+    }
+    if (other.location < attr.location) {
+      ++slotAttributeIndex;
+    }
+    ++slotAttributeCount;
+  }
+
+  if (slotAttributeCount == 1) {
+    return {"TANGENT", 0};
+  }
+  if (slotAttributeIndex == 0) {
+    return {"BLENDINDICES", 0};
+  }
+  if (slotAttributeIndex == 1) {
+    return {"BLENDWEIGHT", 0};
+  }
+  return {"TEXCOORD", attr.location};
+}
 } // namespace
 
 Device::Device(const CreateInfo &createInfo) : gpu::Device(createInfo) {
@@ -87,17 +161,28 @@ void Device::createDeviceObjects() {
       continue;
     }
     if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0,
-                                    IID_PPV_ARGS(&device)))) {
+                                    IID_PPV_ARGS(&device))) &&
+        hasRequiredD3D12Options(device.Get())) {
       break;
     }
     adapter.Reset();
+    device.Reset();
   }
   if (!device && factory) {
     ComPtr<IDXGIAdapter> warp;
     if (SUCCEEDED(factory->EnumWarpAdapter(IID_PPV_ARGS(&warp)))) {
       D3D12CreateDevice(warp.Get(), D3D_FEATURE_LEVEL_11_0,
                         IID_PPV_ARGS(&device));
+      if (device && !hasRequiredD3D12Options(device.Get())) {
+        device.Reset();
+      }
     }
+  }
+  if (!device) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "D3D12: no adapter supports Feature Level 11_0 and Resource "
+                 "Binding Tier 2");
+    return;
   }
 
   D3D12_COMMAND_QUEUE_DESC queueDesc{};
@@ -249,7 +334,7 @@ void Device::createDefaultDescriptors() {
 }
 
 void Device::createGraphicsRootSignature() {
-  D3D12_DESCRIPTOR_RANGE ranges[2]{};
+  D3D12_DESCRIPTOR_RANGE ranges[4]{};
   ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
   ranges[0].NumDescriptors = 16;
   ranges[0].BaseShaderRegister = 0;
@@ -262,8 +347,20 @@ void Device::createGraphicsRootSignature() {
   ranges[1].RegisterSpace = 2;
   ranges[1].OffsetInDescriptorsFromTableStart =
       D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+  ranges[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+  ranges[2].NumDescriptors = 16;
+  ranges[2].BaseShaderRegister = 0;
+  ranges[2].RegisterSpace = 0;
+  ranges[2].OffsetInDescriptorsFromTableStart =
+      D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+  ranges[3].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+  ranges[3].NumDescriptors = 16;
+  ranges[3].BaseShaderRegister = 0;
+  ranges[3].RegisterSpace = 0;
+  ranges[3].OffsetInDescriptorsFromTableStart =
+      D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-  D3D12_ROOT_PARAMETER params[6]{};
+  D3D12_ROOT_PARAMETER params[12]{};
   params[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
   params[0].Descriptor.ShaderRegister = 0;
   params[0].Descriptor.RegisterSpace = 1;
@@ -288,9 +385,33 @@ void Device::createGraphicsRootSignature() {
   params[5].DescriptorTable.NumDescriptorRanges = 1;
   params[5].DescriptorTable.pDescriptorRanges = &ranges[1];
   params[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+  params[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+  params[6].Descriptor.ShaderRegister = 0;
+  params[6].Descriptor.RegisterSpace = 0;
+  params[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+  params[7].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+  params[7].Descriptor.ShaderRegister = 1;
+  params[7].Descriptor.RegisterSpace = 0;
+  params[7].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+  params[8].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+  params[8].Descriptor.ShaderRegister = 0;
+  params[8].Descriptor.RegisterSpace = 0;
+  params[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+  params[9].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+  params[9].Descriptor.ShaderRegister = 1;
+  params[9].Descriptor.RegisterSpace = 0;
+  params[9].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+  params[10].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+  params[10].DescriptorTable.NumDescriptorRanges = 1;
+  params[10].DescriptorTable.pDescriptorRanges = &ranges[2];
+  params[10].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+  params[11].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+  params[11].DescriptorTable.NumDescriptorRanges = 1;
+  params[11].DescriptorTable.pDescriptorRanges = &ranges[3];
+  params[11].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
   D3D12_ROOT_SIGNATURE_DESC desc{};
-  desc.NumParameters = 6;
+  desc.NumParameters = 12;
   desc.pParameters = params;
   desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
@@ -353,7 +474,7 @@ Device::createTexture(const gpu::Texture::CreateInfo &createInfo) {
   desc.Dimension = convert::textureDimensionFrom(createInfo.type);
   desc.Width = createInfo.width;
   desc.Height = createInfo.height;
-  desc.DepthOrArraySize = static_cast<UINT16>(createInfo.layerCountOrDepth);
+  desc.DepthOrArraySize = depthOrArraySizeFrom(createInfo);
   desc.MipLevels = static_cast<UINT16>(createInfo.numLevels);
   desc.Format = convert::textureFormatFrom(createInfo.format);
   desc.SampleDesc.Count = convert::sampleCountFrom(createInfo.sampleCount);
@@ -388,9 +509,20 @@ Device::createTexture(const gpu::Texture::CreateInfo &createInfo) {
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
     srvDesc.Format = desc.Format;
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    if (createInfo.type == TextureType::Cube) {
+    if (createInfo.type == TextureType::Texture2DArray) {
+      srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+      srvDesc.Texture2DArray.ArraySize = createInfo.layerCountOrDepth;
+      srvDesc.Texture2DArray.MipLevels = createInfo.numLevels;
+    } else if (createInfo.type == TextureType::Cube) {
       srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
       srvDesc.TextureCube.MipLevels = createInfo.numLevels;
+    } else if (createInfo.type == TextureType::CubeArray) {
+      srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
+      srvDesc.TextureCubeArray.NumCubes = createInfo.layerCountOrDepth;
+      srvDesc.TextureCubeArray.MipLevels = createInfo.numLevels;
+    } else if (createInfo.type == TextureType::Texture3D) {
+      srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
+      srvDesc.Texture3D.MipLevels = createInfo.numLevels;
     } else {
       srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
       srvDesc.Texture2D.MipLevels = createInfo.numLevels;
@@ -453,8 +585,10 @@ Ptr<gpu::GraphicsPipeline> Device::createGraphicsPipeline(
     const auto &vb =
         createInfo.vertexInputState.vertexBufferDescriptions[attr.bufferSlot];
 
-    elements[i].SemanticName = "TEXCOORD";
-    elements[i].SemanticIndex = attr.location;
+    const auto semantic =
+        vertexSemanticFrom(createInfo.vertexInputState, attr);
+    elements[i].SemanticName = semantic.name;
+    elements[i].SemanticIndex = semantic.index;
     elements[i].Format = convert::vertexFormatFrom(attr.format);
     elements[i].InputSlot = attr.bufferSlot;
     elements[i].AlignedByteOffset = attr.offset;
@@ -569,7 +703,6 @@ Ptr<gpu::ComputePipeline> Device::createComputePipeline(
 
 Ptr<gpu::CommandBuffer>
 Device::acquireCommandBuffer(const gpu::CommandBuffer::CreateInfo &createInfo) {
-  resetTransientDescriptors();
   ComPtr<ID3D12CommandAllocator> allocator;
   device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
                                  IID_PPV_ARGS(&allocator));
@@ -585,6 +718,10 @@ Device::acquireCommandBuffer(const gpu::CommandBuffer::CreateInfo &createInfo) {
 
 Ptr<gpu::Texture>
 Device::acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) {
+  // Descriptor tables are frame-local. Upload command buffers can be created
+  // while recording draws, so resetting from acquireCommandBuffer would
+  // invalidate descriptors already referenced by the active render command list.
+  resetTransientDescriptors();
   if (!swapchain) {
     createSwapchain();
   } else if (window) {

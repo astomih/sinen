@@ -146,7 +146,7 @@ void Device::createInstance() {
   appInfo.applicationVersion = VK_MAKE_VERSION(0, 1, 0);
   appInfo.pEngineName = "sinen";
   appInfo.engineVersion = VK_MAKE_VERSION(0, 1, 0);
-  appInfo.apiVersion = VK_API_VERSION_1_3;
+  appInfo.apiVersion = VK_API_VERSION_1_0;
 
   VkInstanceCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -232,7 +232,17 @@ void Device::pickPhysicalDevice() {
           return std::strcmp(e.extensionName,
                              VK_KHR_SWAPCHAIN_EXTENSION_NAME) == 0;
         });
-    if (!hasSwapchain) {
+    bool hasMaintenance1 = std::any_of(
+        exts.begin(), exts.end(), [](const VkExtensionProperties &e) {
+          return std::strcmp(e.extensionName,
+                             VK_KHR_MAINTENANCE1_EXTENSION_NAME) == 0;
+        });
+    VkPhysicalDeviceFeatures features{};
+    vkGetPhysicalDeviceFeatures(pd, &features);
+    if (!hasSwapchain || !hasMaintenance1 || !features.independentBlend ||
+        !features.imageCubeArray || !features.depthClamp ||
+        !features.shaderClipDistance ||
+        !features.drawIndirectFirstInstance || !features.sampleRateShading) {
       continue;
     }
     VkPhysicalDeviceProperties props{};
@@ -248,6 +258,12 @@ void Device::pickPhysicalDevice() {
 }
 
 void Device::createLogicalDevice() {
+  if (physicalDevice == VK_NULL_HANDLE) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: no suitable SDL_GPU-compatible device found");
+    return;
+  }
+
   float priority = 1.0f;
   VkDeviceQueueCreateInfo queueCI{};
   queueCI.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -255,23 +271,24 @@ void Device::createLogicalDevice() {
   queueCI.queueCount = 1;
   queueCI.pQueuePriorities = &priority;
 
-  VkPhysicalDeviceVulkan13Features features13{};
-  features13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
-  features13.dynamicRendering = VK_TRUE;
+  VkPhysicalDeviceFeatures features{};
+  features.independentBlend = VK_TRUE;
+  features.imageCubeArray = VK_TRUE;
+  features.depthClamp = VK_TRUE;
+  features.shaderClipDistance = VK_TRUE;
+  features.drawIndirectFirstInstance = VK_TRUE;
+  features.sampleRateShading = VK_TRUE;
 
-  VkPhysicalDeviceFeatures2 features2{};
-  features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-  features2.pNext = &features13;
-
-  const char *extensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+  const char *extensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+                              VK_KHR_MAINTENANCE1_EXTENSION_NAME};
 
   VkDeviceCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-  ci.pNext = &features2;
   ci.queueCreateInfoCount = 1;
   ci.pQueueCreateInfos = &queueCI;
-  ci.enabledExtensionCount = 1;
+  ci.enabledExtensionCount = 2;
   ci.ppEnabledExtensionNames = extensions;
+  ci.pEnabledFeatures = &features;
 
   if (vkCreateDevice(physicalDevice, &ci, nullptr, &device) != VK_SUCCESS) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Vulkan: vkCreateDevice failed");
@@ -318,7 +335,7 @@ void Device::createAllocator() {
   ci.instance = instance;
   ci.physicalDevice = physicalDevice;
   ci.device = device;
-  ci.vulkanApiVersion = VK_API_VERSION_1_3;
+  ci.vulkanApiVersion = VK_API_VERSION_1_0;
   ci.pVulkanFunctions = &functions;
   if (vmaCreateAllocator(&ci, &vmaAllocator) != VK_SUCCESS) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,

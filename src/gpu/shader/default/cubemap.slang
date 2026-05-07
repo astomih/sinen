@@ -1,8 +1,8 @@
 struct VSInput {
-  float3 position : TEXCOORD0;
-  float3 normal : TEXCOORD1;
-  float2 uv : TEXCOORD2;
-  float4 color : TEXCOORD3;
+  float3 position : POSITION;
+  float3 normal : NORMAL;
+  float2 uv : TEXCOORD0;
+  float4 color : COLOR;
 };
 
 struct VSOutput {
@@ -47,7 +47,7 @@ struct FSOutput {
 };
 #define COMBINED_IMAGE_SAMPLER(name, bind)                                     \
   [[vk::binding(bind, 2)]]                                                     \
-  Sampler2D name : register(t##bind, space##set) : register(s##bind, : space##set);
+  Sampler2D name : register(t##bind, space2) : register(s##bind, space2);
 
 [[vk::binding(0, 2)]]
 SamplerCube cubemap : register(t0, space2) : register(s0, space2);

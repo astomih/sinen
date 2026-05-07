@@ -6,7 +6,11 @@
 
 namespace sinen::gpu::d3d12 {
 Ptr<gpu::Device> Backend::createDevice(const gpu::Device::CreateInfo &createInfo) {
-  return makePtr<Device>(createInfo.allocator, createInfo);
+  auto device = makePtr<Device>(createInfo.allocator, createInfo);
+  if (!device->isValid()) {
+    return nullptr;
+  }
+  return device;
 }
 } // namespace sinen::gpu::d3d12
 

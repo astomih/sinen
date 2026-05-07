@@ -19,10 +19,10 @@ struct VSOutput {
 
 #define UNIFORM_VERT(name, bind)                                               \
   [[vk::binding(bind, 1)]]                                                     \
-  cbuffer name //: register(c##bind, space1)
+  cbuffer name : register(b##bind, space1)
 #define UNIFORM_FRAG(name, bind)                                               \
   [[vk::binding(bind, 3)]]                                                     \
-  cbuffer name //: register(c##bind, space1)
+  cbuffer name : register(b##bind, space3)
 
 UNIFORM_VERT(Mat, 0) {
   float4x4 world;
@@ -66,6 +66,7 @@ VSOutput VSMain(VSInput input) {
 };
 
 struct FSInput {
+  float4 position : SV_Position;
   float2 uv : TEXCOORD0;
   float3 pos : TEXCOORD1;
   float3 normal : NORMAL;
@@ -76,12 +77,11 @@ struct FSInput {
 };
 
 struct FSOutput {
-  float4 color : COLOR;
+  float4 color : SV_Target;
 };
 #define COMBINED_IMAGE_SAMPLER(name, bind)                                     \
   [[vk::binding(bind, 2)]]                                                     \
-  Sampler2D name; //: register(t##bind, space##set) : register(s##bind,
-                  //: space##set);
+  Sampler2D name : register(t##bind, space2) : register(s##bind, space2);
 
 COMBINED_IMAGE_SAMPLER(albedoMap, 0)
 COMBINED_IMAGE_SAMPLER(normalMap, 1)

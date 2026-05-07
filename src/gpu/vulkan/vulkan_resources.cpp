@@ -110,29 +110,37 @@ Shader::~Shader() {
 
 GraphicsPipeline::GraphicsPipeline(const CreateInfo &createInfo, Device &device,
                                    VkPipeline pipeline,
+                                   VkRenderPass renderPass,
                                    const LayoutInfo &layoutInfo)
     : gpu::GraphicsPipeline(createInfo), device(device), pipeline(pipeline),
-      layoutInfo(layoutInfo) {}
+      renderPass(renderPass), layoutInfo(layoutInfo) {}
 
 GraphicsPipeline::~GraphicsPipeline() {
   if (pipeline != VK_NULL_HANDLE) {
     vkDestroyPipeline(device.getVkDevice(), pipeline, nullptr);
   }
+  if (renderPass != VK_NULL_HANDLE) {
+    vkDestroyRenderPass(device.getVkDevice(), renderPass, nullptr);
+  }
   if (layoutInfo.pipelineLayout != VK_NULL_HANDLE) {
     vkDestroyPipelineLayout(device.getVkDevice(), layoutInfo.pipelineLayout,
                             nullptr);
   }
-  if (layoutInfo.samplerSetLayout != VK_NULL_HANDLE) {
+  if (layoutInfo.fragmentUniformSetLayout != VK_NULL_HANDLE) {
     vkDestroyDescriptorSetLayout(device.getVkDevice(),
-                                 layoutInfo.samplerSetLayout, nullptr);
+                                 layoutInfo.fragmentUniformSetLayout, nullptr);
   }
-  if (layoutInfo.uniformSetLayout != VK_NULL_HANDLE) {
+  if (layoutInfo.fragmentSamplerSetLayout != VK_NULL_HANDLE) {
     vkDestroyDescriptorSetLayout(device.getVkDevice(),
-                                 layoutInfo.uniformSetLayout, nullptr);
+                                 layoutInfo.fragmentSamplerSetLayout, nullptr);
   }
-  if (layoutInfo.emptySetLayout != VK_NULL_HANDLE) {
+  if (layoutInfo.vertexUniformSetLayout != VK_NULL_HANDLE) {
     vkDestroyDescriptorSetLayout(device.getVkDevice(),
-                                 layoutInfo.emptySetLayout, nullptr);
+                                 layoutInfo.vertexUniformSetLayout, nullptr);
+  }
+  if (layoutInfo.vertexSamplerSetLayout != VK_NULL_HANDLE) {
+    vkDestroyDescriptorSetLayout(device.getVkDevice(),
+                                 layoutInfo.vertexSamplerSetLayout, nullptr);
   }
 }
 } // namespace sinen::gpu::vulkan

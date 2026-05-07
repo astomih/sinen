@@ -133,24 +133,29 @@ private:
 class GraphicsPipeline : public gpu::GraphicsPipeline {
 public:
   struct LayoutInfo {
-    VkDescriptorSetLayout emptySetLayout = VK_NULL_HANDLE;   // set = 0
-    VkDescriptorSetLayout uniformSetLayout = VK_NULL_HANDLE; // set = 1
-    VkDescriptorSetLayout samplerSetLayout = VK_NULL_HANDLE; // set = 2
+    VkDescriptorSetLayout vertexSamplerSetLayout = VK_NULL_HANDLE;  // set = 0
+    VkDescriptorSetLayout vertexUniformSetLayout = VK_NULL_HANDLE;  // set = 1
+    VkDescriptorSetLayout fragmentSamplerSetLayout = VK_NULL_HANDLE; // set = 2
+    VkDescriptorSetLayout fragmentUniformSetLayout = VK_NULL_HANDLE; // set = 3
     VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
-    uint32_t uniformBindingCount = 0;
-    uint32_t samplerBindingCount = 0;
+    uint32_t vertexUniformBindingCount = 0;
+    uint32_t fragmentUniformBindingCount = 0;
+    uint32_t fragmentSamplerBindingCount = 0;
   };
 
   GraphicsPipeline(const CreateInfo &createInfo, Device &device,
-                   VkPipeline pipeline, const LayoutInfo &layoutInfo);
+                   VkPipeline pipeline, VkRenderPass renderPass,
+                   const LayoutInfo &layoutInfo);
   ~GraphicsPipeline() override;
 
   VkPipeline getNative() const { return pipeline; }
+  VkRenderPass getRenderPass() const { return renderPass; }
   const LayoutInfo &getLayoutInfo() const { return layoutInfo; }
 
 private:
   Device &device;
   VkPipeline pipeline = VK_NULL_HANDLE;
+  VkRenderPass renderPass = VK_NULL_HANDLE;
   LayoutInfo layoutInfo{};
 };
 

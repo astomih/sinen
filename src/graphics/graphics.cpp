@@ -54,8 +54,11 @@ static void setupShapes();
 static void beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp);
 
 static GPUBackendAPI selectBackendAPI() {
-  return GPUBackendAPI::D3D12;
+    return GPUBackendAPI::D3D12;
   const char *backendName = SDL_getenv("SINEN_GPU_BACKEND");
+  if (backendName == nullptr || backendName[0] == '\0') {
+    return GPUBackendAPI::SDLGPU;
+  }
 
 #ifdef SINEN_PLATFORM_WINDOWS
   if (std::strcmp(backendName, "d3d12") == 0 ||
@@ -235,6 +238,47 @@ struct FontFragmentParams {
   Color textColor;
   Vec4 atlasParams;
 };
+
+static void bindCurrentTextureSamplers(
+    const Ptr<gpu::RenderPass> &renderPass,
+    const Ptr<gpu::Sampler> &textureSampler = sampler) {
+  if (currentTextureBindings.empty()) {
+    return;
+  }
+
+#ifdef SINEN_PLATFORM_WINDOWS
+  if (device && device->getBackendAPI() != GPUBackendAPI::D3D12) {
+#endif
+    for (auto &binding : currentTextureBindings) {
+      if (!binding.second) {
+        continue;
+      }
+      renderPass->bindFragmentSampler(
+          binding.first, {textureSampler, binding.second->getRaw()});
+    }
+    return;
+#ifdef SINEN_PLATFORM_WINDOWS
+  }
+#endif
+
+  UInt32 maxSlot = 0;
+  for (const auto &binding : currentTextureBindings) {
+    if (binding.first > maxSlot) {
+      maxSlot = binding.first;
+    }
+  }
+
+  Array<gpu::TextureSamplerBinding> textureSamplers;
+  textureSamplers.resize(maxSlot + 1);
+  for (const auto &binding : currentTextureBindings) {
+    if (!binding.second) {
+      continue;
+    }
+    textureSamplers[binding.first] = {textureSampler, binding.second->getRaw()};
+  }
+  renderPass->bindFragmentSamplers(0, textureSamplers);
+}
+
 static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
                        const Ptr<gpu::Sampler> &textureSampler = sampler) {
   assert(currentPipeline.has_value());
@@ -287,10 +331,7 @@ static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
   auto commandBuffer = currentCommandBuffer;
   auto renderPass = currentRenderPass;
   renderPass->bindGraphicsPipeline(currentPipeline.value().get());
-  for (auto &i : currentTextureBindings) {
-    renderPass->bindFragmentSampler(i.first,
-                                    {textureSampler, i.second->getRaw()});
-  }
+  bindCurrentTextureSamplers(renderPass, textureSampler);
   renderPass->bindVertexBuffers(0, vertexBufferBindings);
   renderPass->bindIndexBuffer(indexBufferBinding,
                               gpu::IndexElementSize::Uint32);
@@ -390,9 +431,7 @@ static void drawBase3D(const Array<Transform> transforms, const Model &model) {
   auto commandBuffer = currentCommandBuffer;
   auto renderPass = currentRenderPass;
   renderPass->bindGraphicsPipeline(currentPipeline.value().get());
-  for (auto &i : currentTextureBindings) {
-    renderPass->bindFragmentSampler(i.first, {sampler, i.second->getRaw()});
-  }
+  bindCurrentTextureSamplers(renderPass);
   renderPass->bindVertexBuffers(0, vertexBufferBindings);
   renderPass->bindIndexBuffer(indexBufferBinding,
                               gpu::IndexElementSize::Uint32);

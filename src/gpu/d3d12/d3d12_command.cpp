@@ -459,6 +459,9 @@ void RenderPass::bindFragmentSamplers(
   commandBuffer->getNative()->SetGraphicsRootDescriptorTable(4, firstSrv.gpu);
   commandBuffer->getNative()->SetGraphicsRootDescriptorTable(5,
                                                              firstSampler.gpu);
+  commandBuffer->getNative()->SetGraphicsRootDescriptorTable(10, firstSrv.gpu);
+  commandBuffer->getNative()->SetGraphicsRootDescriptorTable(11,
+                                                             firstSampler.gpu);
 }
 
 void RenderPass::bindFragmentSampler(UInt32 startSlot,
@@ -484,15 +487,19 @@ void RenderPass::bindUniforms() {
   auto list = commandBuffer->getNative();
   if (auto address = commandBuffer->vertexUniform(0)) {
     list->SetGraphicsRootConstantBufferView(0, address);
+    list->SetGraphicsRootConstantBufferView(6, address);
   }
   if (auto address = commandBuffer->vertexUniform(1)) {
     list->SetGraphicsRootConstantBufferView(1, address);
+    list->SetGraphicsRootConstantBufferView(7, address);
   }
   if (auto address = commandBuffer->fragmentUniform(0)) {
     list->SetGraphicsRootConstantBufferView(2, address);
+    list->SetGraphicsRootConstantBufferView(8, address);
   }
   if (auto address = commandBuffer->fragmentUniform(1)) {
     list->SetGraphicsRootConstantBufferView(3, address);
+    list->SetGraphicsRootConstantBufferView(9, address);
   }
 }
 

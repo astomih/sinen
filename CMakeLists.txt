@@ -10,6 +10,8 @@ if(NOT EMSCRIPTEN)
 endif()
 
 option(SINEN_USE_SLANG "Use Slang for shader compilation" ON)
+option(SINEN_ENABLE_NATIVE_WEBGPU_DAWN
+       "Enable native WebGPU backend through Dawn" ON)
 
 include(${SINEN_SOURCE_DIR}/cmake/include.cmake)
 include(${SINEN_SOURCE_DIR}/cmake/libs.cmake)
@@ -17,6 +19,7 @@ include(${SINEN_SOURCE_DIR}/cmake/libs.cmake)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/assimp EXCLUDE_FROM_ALL)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/JoltPhysics/Build EXCLUDE_FROM_ALL)
+set(SINEN_ENABLE_WEBGPU OFF)
 if(EMSCRIPTEN AND NOT TARGET webgpu)
   add_library(webgpu INTERFACE)
   target_compile_definitions(webgpu INTERFACE WEBGPU_BACKEND_EMDAWNWEBGPU)
@@ -24,6 +27,17 @@ if(EMSCRIPTEN AND NOT TARGET webgpu)
   target_link_options(webgpu INTERFACE --use-port=emdawnwebgpu -sASYNCIFY=1)
   function(target_copy_webgpu_binaries Target)
   endfunction()
+  set(SINEN_ENABLE_WEBGPU ON)
+elseif(SINEN_ENABLE_NATIVE_WEBGPU_DAWN AND WIN32 AND NOT TARGET webgpu)
+  set(WEBGPU_BACKEND DAWN CACHE STRING "Native WebGPU backend" FORCE)
+  set(WEBGPU_LINK_TYPE SHARED CACHE STRING "Native WebGPU link type" FORCE)
+  set(SINEN_PREVIOUS_CMAKE_FOLDER ${CMAKE_FOLDER})
+  set(CMAKE_FOLDER "webgpu")
+  add_subdirectory(${SINEN_SOURCE_DIR}/libs/WebGPU-distribution
+                   EXCLUDE_FROM_ALL)
+  set(CMAKE_FOLDER ${SINEN_PREVIOUS_CMAKE_FOLDER})
+  unset(SINEN_PREVIOUS_CMAKE_FOLDER)
+  set(SINEN_ENABLE_WEBGPU ON)
 endif()
 
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/Luau)
@@ -53,7 +67,7 @@ file(
   ${SINEN_SOURCE_DIR}/libs/tlsf/tlsf.c
 )
 
-if(NOT EMSCRIPTEN)
+if(NOT SINEN_ENABLE_WEBGPU)
   list(FILTER SINEN_SOURCE_FILES EXCLUDE REGEX
        ".*[\\\\/]src[\\\\/]gpu[\\\\/]webgpu[\\\\/].*\\.cpp$")
 endif()
@@ -77,6 +91,13 @@ if(EMSCRIPTEN AND NOT BUILD_SHARED_LIBS)
 endif()
 target_include_directories(sinen PUBLIC ${SINEN_INCLUDE_DIRS}
                                         ${SDL3_INCLUDE_PATHS})
+if(TARGET dawn::webgpu_dawn)
+  get_target_property(SINEN_DAWN_INCLUDE_DIRS dawn::webgpu_dawn
+                      INTERFACE_INCLUDE_DIRECTORIES)
+  if(SINEN_DAWN_INCLUDE_DIRS)
+    target_include_directories(sinen BEFORE PRIVATE ${SINEN_DAWN_INCLUDE_DIRS})
+  endif()
+endif()
 target_compile_definitions(
   sinen
   PUBLIC $<$<BOOL:${SINEN_USE_SLANG}>:SINEN_USE_SLANG>)
@@ -89,6 +110,9 @@ if(EMSCRIPTEN)
       -sINITIAL_MEMORY=268435456
       -sMAXIMUM_MEMORY=2147483648
       -sASSERTIONS=1)
+endif()
+if(SINEN_ENABLE_WEBGPU)
+  target_compile_definitions(sinen PUBLIC SINEN_ENABLE_WEBGPU)
 endif()
 if(MSVC)
   target_compile_options(sinen PRIVATE /bigobj)
@@ -117,6 +141,10 @@ endif()
 
 set(SINEN_LINK_LIBRARIES SDL3::SDL3 assimp Jolt)
 
+if(SINEN_ENABLE_WEBGPU)
+  list(APPEND SINEN_LINK_LIBRARIES webgpu)
+endif()
+
 if(SINEN_USE_SLANG)
   list(APPEND SINEN_LINK_LIBRARIES slang)
 endif()
@@ -144,9 +172,8 @@ if(ANDROID)
   list(APPEND SINEN_LINK_LIBRARIES ${ANDROID_LIB})
 endif()
 
-if(EMSCRIPTEN)
+if(SINEN_ENABLE_WEBGPU)
   target_copy_webgpu_binaries(sinen)
-  list(APPEND SINEN_LINK_LIBRARIES webgpu)
 endif()
 
 target_link_libraries(sinen PUBLIC ${SINEN_LINK_LIBRARIES})

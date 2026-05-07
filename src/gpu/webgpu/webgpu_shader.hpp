@@ -3,7 +3,7 @@
 
 #include <core/data/ptr.hpp>
 #include <gpu/gpu_shader.hpp>
-#include <webgpu/webgpu.h>
+#include "webgpu_api.hpp"
 
 namespace sinen::gpu::webgpu {
 class Device;

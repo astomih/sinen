@@ -79,19 +79,19 @@ struct FSInput {
 struct FSOutput {
   float4 color : SV_Target;
 };
-#define COMBINED_IMAGE_SAMPLER(name, bind)                                     \
-  [[vk::binding(bind, 2)]]                                                     \
-  Sampler2D name : register(t##bind, space2) : register(s##bind, space2);
+#define COMBINED_IMAGE_SAMPLER(name, textureBind, samplerBind)                 \
+  [[vk::binding(textureBind, 2)]]                                              \
+  Sampler2D name : register(t##textureBind, space2)                            \
+      : register(s##samplerBind, space2);
 
-COMBINED_IMAGE_SAMPLER(albedoMap, 0)
-COMBINED_IMAGE_SAMPLER(normalMap, 1)
+COMBINED_IMAGE_SAMPLER(albedoMap, 0, 1)
+COMBINED_IMAGE_SAMPLER(normalMap, 2, 3)
 COMBINED_IMAGE_SAMPLER(diffuseRoughnessMap,
-                       2) // in DamagedHelmet.glb, the
-                          // roughness is in the G channel
-                          // and metallic is in the B channel
-COMBINED_IMAGE_SAMPLER(metallicMap, 3)
-COMBINED_IMAGE_SAMPLER(emissiveMap, 4)
-COMBINED_IMAGE_SAMPLER(aoMap, 5)
+                       4, 5) // in DamagedHelmet.glb, the
+                             // roughness is in the G channel
+                             // and metallic is in the B channel
+COMBINED_IMAGE_SAMPLER(emissiveMap, 8, 9)
+COMBINED_IMAGE_SAMPLER(aoMap, 10, 11)
 
 // BRDF
 float3 SchlickFresnel(float hDotV, float3 refl) {

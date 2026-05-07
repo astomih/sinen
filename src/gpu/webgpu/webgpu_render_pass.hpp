@@ -5,7 +5,7 @@
 #include <gpu/gpu_render_pass.hpp>
 #include <unordered_map>
 #include <vector>
-#include <webgpu/webgpu.h>
+#include "webgpu_api.hpp"
 
 namespace sinen::gpu::webgpu {
 class RenderPass : public gpu::RenderPass {

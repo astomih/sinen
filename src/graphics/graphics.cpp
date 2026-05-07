@@ -54,13 +54,17 @@ static void setupShapes();
 static void beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp);
 
 static GPUBackendAPI selectBackendAPI() {
+  return GPUBackendAPI::WebGPU;
 #ifdef SINEN_PLATFORM_EMSCRIPTEN
   return GPUBackendAPI::WebGPU;
 #else
-  return GPUBackendAPI::D3D12;
   const char *backendName = SDL_getenv("SINEN_GPU_BACKEND");
   if (backendName == nullptr || backendName[0] == '\0') {
+#ifdef SINEN_PLATFORM_WINDOWS
+    return GPUBackendAPI::D3D12;
+#else
     return GPUBackendAPI::SDLGPU;
+#endif
   }
 
 #ifdef SINEN_PLATFORM_WINDOWS
@@ -72,6 +76,13 @@ static GPUBackendAPI selectBackendAPI() {
   if (std::strcmp(backendName, "vulkan") == 0) {
     return GPUBackendAPI::Vulkan;
   }
+#ifdef SINEN_ENABLE_WEBGPU
+  if (std::strcmp(backendName, "webgpu") == 0 ||
+      std::strcmp(backendName, "wgpu") == 0 ||
+      std::strcmp(backendName, "dawn") == 0) {
+    return GPUBackendAPI::WebGPU;
+  }
+#endif
   return GPUBackendAPI::SDLGPU;
 #endif
 }
@@ -340,6 +351,7 @@ static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
   renderPass->drawIndexedPrimitives(model.getMesh().data()->indices.size(), 1,
                                     0, 0, 0);
   currentPipeline = std::nullopt;
+  currentTextureBindings.clear();
 }
 
 static void drawBase3D(const Array<Transform> transforms, const Model &model) {
@@ -441,6 +453,7 @@ static void drawBase3D(const Array<Transform> transforms, const Model &model) {
   uint32_t numInstance = isInstance ? instanceSize : 1;
   renderPass->drawIndexedPrimitives(numIndices, numInstance, 0, 0, 0);
   currentPipeline = std::nullopt;
+  currentTextureBindings.clear();
 }
 void Graphics::drawRect(const Rect &rect, const Color &color, float angle) {
   if (customPipeline.has_value() && customPipeline.value().get() != nullptr)

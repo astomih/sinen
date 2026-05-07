@@ -36,7 +36,7 @@ void *TransferBuffer::map(bool cycle) {
 
   MapState state{};
   WGPUBufferMapCallbackInfo callbackInfo{};
-  callbackInfo.mode = WGPUCallbackMode_WaitAnyOnly;
+  callbackInfo.mode = WGPUCallbackMode_AllowProcessEvents;
   callbackInfo.callback = &TransferBuffer::onMapComplete;
   callbackInfo.userdata1 = &state;
   callbackInfo.userdata2 = nullptr;
@@ -44,7 +44,7 @@ void *TransferBuffer::map(bool cycle) {
   const auto future = wgpuBufferMapAsync(
       transferBuffer, convert::MapModeFrom(getCreateInfo().usage), 0,
       WGPU_WHOLE_MAP_SIZE, callbackInfo);
-  if (!device->waitForFuture(future) || !state.done || !state.success) {
+  if (!device->waitForFuture(future, &state.done) || !state.success) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                  "TransferBuffer map failed: map async did not complete");
     return nullptr;

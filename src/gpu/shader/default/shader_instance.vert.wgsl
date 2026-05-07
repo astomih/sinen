@@ -1,50 +1,47 @@
-struct _MatrixStorage_float4x4std140_0
-{
-    @align(16) data_0 : array<vec4<f32>, i32(4)>,
+struct MatrixStorage {
+  data: array<vec4<f32>, 4>,
 };
 
-struct SLANG_ParameterGroup_Mat_std140_0
-{
-    @align(16) world_0 : _MatrixStorage_float4x4std140_0,
-    @align(16) view_0 : _MatrixStorage_float4x4std140_0,
-    @align(16) proj_0 : _MatrixStorage_float4x4std140_0,
-    @align(16) user_0 : _MatrixStorage_float4x4std140_0,
-    @align(16) light_view_0 : _MatrixStorage_float4x4std140_0,
-    @align(16) light_proj_0 : _MatrixStorage_float4x4std140_0,
+struct MatUniform {
+  world: MatrixStorage,
+  view: MatrixStorage,
+  proj: MatrixStorage,
+  user: MatrixStorage,
+  lightView: MatrixStorage,
+  lightProj: MatrixStorage,
 };
 
-@binding(0) @group(1) var<uniform> Mat_0 : SLANG_ParameterGroup_Mat_std140_0;
-fn unpackStorage_0( _S1 : _MatrixStorage_float4x4std140_0) -> mat4x4<f32>
-{
-    return mat4x4<f32>(_S1.data_0[i32(0)][i32(0)], _S1.data_0[i32(0)][i32(1)], _S1.data_0[i32(0)][i32(2)], _S1.data_0[i32(0)][i32(3)], _S1.data_0[i32(1)][i32(0)], _S1.data_0[i32(1)][i32(1)], _S1.data_0[i32(1)][i32(2)], _S1.data_0[i32(1)][i32(3)], _S1.data_0[i32(2)][i32(0)], _S1.data_0[i32(2)][i32(1)], _S1.data_0[i32(2)][i32(2)], _S1.data_0[i32(2)][i32(3)], _S1.data_0[i32(3)][i32(0)], _S1.data_0[i32(3)][i32(1)], _S1.data_0[i32(3)][i32(2)], _S1.data_0[i32(3)][i32(3)]);
+@binding(0) @group(1) var<uniform> Mat: MatUniform;
+
+fn unpackMatrix(m: MatrixStorage) -> mat4x4<f32> {
+  return mat4x4<f32>(m.data[0], m.data[1], m.data[2], m.data[3]);
 }
 
-struct VSOutput_0
-{
-    @builtin(position) out_0 : vec4<f32>,
-    @location(0) uv_0 : vec2<f32>,
-    @location(1) color_0 : vec4<f32>,
+struct VertexInput {
+  @location(0) position: vec3<f32>,
+  @location(1) normal: vec3<f32>,
+  @location(2) uv: vec2<f32>,
+  @location(3) color: vec4<f32>,
+  @location(4) m0: vec4<f32>,
+  @location(5) m1: vec4<f32>,
+  @location(6) m2: vec4<f32>,
+  @location(7) m3: vec4<f32>,
 };
 
-struct vertexInput_0
-{
-    @location(0) position_0 : vec3<f32>,
-    @location(1) normal_0 : vec3<f32>,
-    @location(2) uv_1 : vec2<f32>,
-    @location(3) color_1 : vec4<f32>,
-    @location(4) m0_0 : vec4<f32>,
-    @location(5) m1_0 : vec4<f32>,
-    @location(6) m2_0 : vec4<f32>,
-    @location(7) m3_0 : vec4<f32>,
+struct VertexOutput {
+  @builtin(position) position: vec4<f32>,
+  @location(0) uv: vec2<f32>,
+  @location(1) color: vec4<f32>,
 };
 
 @vertex
-fn VSMain( _S2 : vertexInput_0) -> VSOutput_0
-{
-    var output_0 : VSOutput_0;
-    output_0.out_0 = (((vec4<f32>(_S2.position_0, 1.0f)) * (((((((mat4x4<f32>(_S2.m0_0, _S2.m1_0, _S2.m2_0, _S2.m3_0)) * (unpackStorage_0(Mat_0.view_0))))) * (unpackStorage_0(Mat_0.proj_0)))))));
-    output_0.uv_0 = _S2.uv_1;
-    output_0.color_0 = _S2.color_1;
-    return output_0;
+fn VSMain(input: VertexInput) -> VertexOutput {
+  var output: VertexOutput;
+  let world = mat4x4<f32>(input.m0, input.m1, input.m2, input.m3);
+  let view = unpackMatrix(Mat.view);
+  let proj = unpackMatrix(Mat.proj);
+  output.position = vec4<f32>(input.position, 1.0) * world * view * proj;
+  output.uv = input.uv;
+  output.color = input.color;
+  return output;
 }
-

@@ -70,8 +70,10 @@ TextureFormat TextureFormatTo(WGPUTextureFormat textureFormat) {
   case WGPUTextureFormat_RG8Unorm:
     return TextureFormat::R8G8_UNORM;
   case WGPUTextureFormat_RGBA8Unorm:
+  case WGPUTextureFormat_RGBA8UnormSrgb:
     return TextureFormat::R8G8B8A8_UNORM;
   case WGPUTextureFormat_BGRA8Unorm:
+  case WGPUTextureFormat_BGRA8UnormSrgb:
     return TextureFormat::B8G8R8A8_UNORM;
   case WGPUTextureFormat_RGBA32Float:
     return TextureFormat::R32G32B32A32_FLOAT;

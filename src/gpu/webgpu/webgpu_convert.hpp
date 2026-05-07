@@ -6,7 +6,7 @@
 #include <gpu/gpu_sampler.hpp>
 #include <gpu/gpu_texture.hpp>
 #include <gpu/gpu_transfer_buffer.hpp>
-#include <webgpu/webgpu.h>
+#include "webgpu_api.hpp"
 
 namespace sinen::gpu::webgpu::convert {
 WGPULoadOp LoadOpFrom(LoadOp loadOp);

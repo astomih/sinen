@@ -7,9 +7,10 @@
 #endif
 #include <gpu/gpu.hpp>
 
-#ifdef SINEN_PLATFORM_EMSCRIPTEN
+#ifdef SINEN_ENABLE_WEBGPU
 #include "webgpu/webgpu_backend.hpp"
-#else
+#endif
+#ifndef SINEN_PLATFORM_EMSCRIPTEN
 #ifdef SINEN_PLATFORM_WINDOWS
 #include "d3d12/d3d12_backend.hpp"
 #endif
@@ -23,9 +24,11 @@ namespace sinen::gpu {
 Ptr<Backend> RHI::createBackend(Allocator *allocator,
                                 const GPUBackendAPI &api) {
 #ifdef SINEN_PLATFORM_EMSCRIPTEN
+#ifdef SINEN_ENABLE_WEBGPU
   if (api == GPUBackendAPI::WebGPU) {
     return makePtr<webgpu::Backend>(allocator);
   }
+#endif
   return nullptr;
 #else
   switch (api) {
@@ -35,6 +38,11 @@ Ptr<Backend> RHI::createBackend(Allocator *allocator,
 #ifdef SINEN_PLATFORM_WINDOWS
   case GPUBackendAPI::D3D12: {
     return makePtr<d3d12::Backend>(allocator);
+  }
+#endif
+#ifdef SINEN_ENABLE_WEBGPU
+  case GPUBackendAPI::WebGPU: {
+    return makePtr<webgpu::Backend>(allocator);
   }
 #endif
   case GPUBackendAPI::SDLGPU: {

@@ -242,6 +242,8 @@ void RenderPass::drawPrimitives(UInt32 vertexCount, UInt32 instanceCount,
   applyBindings();
   wgpuRenderPassEncoderDraw(renderPass, vertexCount, instanceCount, firstVertex,
                             firstInstance);
+  fragmentSamplerBindings.clear();
+  commandBuffer.clearDrawBindings();
 }
 
 void RenderPass::drawIndexedPrimitives(UInt32 indexCount, UInt32 instanceCount,
@@ -251,5 +253,7 @@ void RenderPass::drawIndexedPrimitives(UInt32 indexCount, UInt32 instanceCount,
   wgpuRenderPassEncoderDrawIndexed(renderPass, indexCount, instanceCount,
                                    firstIndex, static_cast<Int32>(vertexOffset),
                                    firstInstance);
+  fragmentSamplerBindings.clear();
+  commandBuffer.clearDrawBindings();
 }
 } // namespace sinen::gpu::webgpu

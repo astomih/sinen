@@ -48,11 +48,12 @@ struct FSOutput {
   float4 color : SV_Target;
 };
 
-#define COMBINED_IMAGE_SAMPLER(name, bind)                                     \
-  [[vk::binding(bind, 2)]]                                                     \
-  Sampler2D name : register(t##bind, space2) : register(s##bind, space2);
-COMBINED_IMAGE_SAMPLER(baseColor, 0)
-COMBINED_IMAGE_SAMPLER(depthTexture, 1)
+#define COMBINED_IMAGE_SAMPLER(name, textureBind, samplerBind)                 \
+  [[vk::binding(textureBind, 2)]]                                              \
+  Sampler2D name : register(t##textureBind, space2)                            \
+      : register(s##samplerBind, space2);
+COMBINED_IMAGE_SAMPLER(baseColor, 0, 1)
+COMBINED_IMAGE_SAMPLER(depthTexture, 2, 3)
 
 [shader("fragment")]
 FSOutput FSMain(FSInput input) {

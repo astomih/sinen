@@ -3,7 +3,8 @@
 
 #include <gpu/gpu_command_buffer.hpp>
 #include <unordered_map>
-#include <webgpu/webgpu.h>
+#include <vector>
+#include "webgpu_api.hpp"
 
 namespace sinen::gpu::webgpu {
 class Device;
@@ -39,6 +40,7 @@ public:
   getFragmentUniformBindings() const {
     return fragmentUniformBindings;
   }
+  void clearDrawBindings();
 
   Ptr<gpu::CopyPass> beginCopyPass() override;
   void endCopyPass(Ptr<gpu::CopyPass> copyPass) override;
@@ -53,8 +55,9 @@ public:
   void pushFragmentUniformData(UInt32 slot, const void *data,
                                Size size) override;
 
-private:
   void releaseUniformBindings();
+
+private:
   void
   updateUniformBinding(std::unordered_map<UInt32, UniformBinding> &bindings,
                        UInt32 slot, const void *data, Size size);
@@ -66,6 +69,7 @@ private:
   bool submitted;
   std::unordered_map<UInt32, UniformBinding> vertexUniformBindings;
   std::unordered_map<UInt32, UniformBinding> fragmentUniformBindings;
+  std::vector<WGPUBuffer> retainedUniformBuffers;
 };
 } // namespace sinen::gpu::webgpu
 

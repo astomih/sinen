@@ -6,6 +6,12 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_video.h>
+#ifdef SINEN_PLATFORM_EMSCRIPTEN
+#include <emscripten/html5.h>
+#endif
+#include <chrono>
+#include <cstring>
+#include <string>
 #include <thread>
 #include <vector>
 
@@ -22,13 +28,82 @@ struct QueueDoneState {
   bool success = false;
 };
 
+struct ErrorScopeState {
+  bool done = false;
+  WGPUErrorType type = WGPUErrorType_NoError;
+  WGPUPopErrorScopeStatus status = WGPUPopErrorScopeStatus_Success;
+  std::string message;
+};
+
+struct CompilationInfoState {
+  bool done = false;
+};
+
+int stringViewLength(WGPUStringView str) {
+  if (!str.data) {
+    return 0;
+  }
+  if (str.length == WGPU_STRLEN) {
+    return static_cast<int>(std::strlen(str.data));
+  }
+  return static_cast<int>(str.length);
+}
+
+bool hasStencilAspect(WGPUTextureFormat format) {
+  switch (format) {
+  case WGPUTextureFormat_Depth24PlusStencil8:
+  case WGPUTextureFormat_Depth32FloatStencil8:
+    return true;
+  default:
+    return false;
+  }
+}
+
+#ifdef WEBGPU_BACKEND_DAWN
+void onQueueDone(WGPUQueueWorkDoneStatus status, void *userdata1,
+                 void *userdata2) {
+#else
 void onQueueDone(WGPUQueueWorkDoneStatus status, WGPUStringView message,
                  void *userdata1, void *userdata2) {
   (void)message;
+#endif
   (void)userdata2;
   auto *state = static_cast<QueueDoneState *>(userdata1);
   state->done = true;
   state->success = (status == WGPUQueueWorkDoneStatus_Success);
+}
+
+void onErrorScope(WGPUPopErrorScopeStatus status, WGPUErrorType type,
+                  WGPUStringView message, void *userdata1, void *userdata2) {
+  (void)userdata2;
+  auto *state = static_cast<ErrorScopeState *>(userdata1);
+  state->done = true;
+  state->status = status;
+  state->type = type;
+  if (message.data) {
+    state->message.assign(message.data, stringViewLength(message));
+  }
+}
+
+void onCompilationInfo(WGPUCompilationInfoRequestStatus status,
+                       const WGPUCompilationInfo *info, void *userdata1,
+                       void *userdata2) {
+  (void)userdata2;
+  if (status == WGPUCompilationInfoRequestStatus_Success && info) {
+    for (size_t i = 0; i < info->messageCount; ++i) {
+      const auto &msg = info->messages[i];
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "WebGPU shader compilation message: type=%d line=%llu "
+                   "col=%llu message=%.*s",
+                   static_cast<int>(msg.type),
+                   static_cast<unsigned long long>(msg.lineNum),
+                   static_cast<unsigned long long>(msg.linePos),
+                   stringViewLength(msg.message),
+                   msg.message.data ? msg.message.data : "");
+    }
+  }
+  auto *state = static_cast<CompilationInfoState *>(userdata1);
+  state->done = true;
 }
 } // namespace
 
@@ -60,10 +135,25 @@ Device::~Device() {
   }
 }
 
-bool Device::waitForFuture(WGPUFuture future) const {
+bool Device::waitForFuture(WGPUFuture future, const bool *done) const {
   if (!instance || future.id == 0) {
     return false;
   }
+
+#ifdef WEBGPU_BACKEND_DAWN
+  const auto start = std::chrono::steady_clock::now();
+  while (!done || !*done) {
+    if (device) {
+      wgpuDeviceTick(device);
+    }
+    wgpuInstanceProcessEvents(instance);
+    if (std::chrono::steady_clock::now() - start > std::chrono::seconds(10)) {
+      return false;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  }
+  return true;
+#else
   WGPUFutureWaitInfo waitInfo{};
   waitInfo.future = future;
   waitInfo.completed = false;
@@ -80,6 +170,59 @@ bool Device::waitForFuture(WGPUFuture future) const {
       continue;
     }
     return false;
+  }
+#endif
+}
+
+bool Device::popErrorScope(const char *label) {
+  if (!device) {
+    return true;
+  }
+
+  ErrorScopeState state{};
+  WGPUPopErrorScopeCallbackInfo callbackInfo{};
+  callbackInfo.mode = WGPUCallbackMode_AllowProcessEvents;
+  callbackInfo.callback = &onErrorScope;
+  callbackInfo.userdata1 = &state;
+  callbackInfo.userdata2 = nullptr;
+
+  auto future = wgpuDevicePopErrorScope(device, callbackInfo);
+  if (!waitForFuture(future, &state.done)) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "WebGPU %s validation scope did not complete", label);
+    return false;
+  }
+
+  if (state.status != WGPUPopErrorScopeStatus_Success ||
+      state.type != WGPUErrorType_NoError) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "WebGPU %s validation error: status=%d type=%d message=%.*s",
+                 label, static_cast<int>(state.status),
+                 static_cast<int>(state.type),
+                 static_cast<int>(state.message.size()),
+                 state.message.c_str());
+    return false;
+  }
+  return true;
+}
+
+void Device::logShaderCompilationInfo(WGPUShaderModule shader,
+                                      const char *label) {
+  if (!shader) {
+    return;
+  }
+
+  CompilationInfoState state{};
+  WGPUCompilationInfoCallbackInfo callbackInfo{};
+  callbackInfo.mode = WGPUCallbackMode_AllowProcessEvents;
+  callbackInfo.callback = &onCompilationInfo;
+  callbackInfo.userdata1 = &state;
+  callbackInfo.userdata2 = nullptr;
+
+  auto future = wgpuShaderModuleGetCompilationInfo(shader, callbackInfo);
+  if (!waitForFuture(future, &state.done)) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "WebGPU %s compilation info did not complete", label);
   }
 }
 
@@ -210,7 +353,9 @@ Ptr<gpu::Sampler> Device::createSampler(const Sampler::CreateInfo &createInfo) {
   desc.mipmapFilter = convert::MipmapModeFrom(createInfo.mipmapMode);
   desc.lodMinClamp = createInfo.minLod;
   desc.lodMaxClamp = createInfo.maxLod;
-  desc.compare = convert::CompareOpFrom(createInfo.compareOp);
+  desc.compare = createInfo.enableCompare
+                     ? convert::CompareOpFrom(createInfo.compareOp)
+                     : WGPUCompareFunction_Undefined;
   desc.maxAnisotropy = createInfo.enableAnisotropy
                            ? static_cast<uint16_t>(createInfo.maxAnisotropy)
                            : 1;
@@ -267,7 +412,19 @@ Ptr<gpu::Shader> Device::createShader(const Shader::CreateInfo &createInfo) {
     return nullptr;
   }
 
+  wgpuDevicePushErrorScope(device, WGPUErrorFilter_Validation);
   auto shader = wgpuDeviceCreateShaderModule(device, &shaderDesc);
+  const bool validShader = popErrorScope("createShader");
+  logShaderCompilationInfo(shader, "createShader");
+  if (!shader) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "createShader failed: WebGPU shader module is null");
+    return nullptr;
+  }
+  if (!validShader) {
+    wgpuShaderModuleRelease(shader);
+    return nullptr;
+  }
   return makePtr<Shader>(createInfo.allocator, createInfo, get(), shader);
 }
 
@@ -289,6 +446,8 @@ Device::createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) {
                  "createGraphicsPipeline failed: shader cast failed");
     return nullptr;
   }
+
+  configureSurfaceIfNeeded();
 
   const int vbCount =
       createInfo.vertexInputState.vertexBufferDescriptions.size();
@@ -336,6 +495,20 @@ Device::createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) {
     const auto &target = createInfo.targetInfo.colorTargetDescriptions[i];
     colorTargets[i] = {};
     colorTargets[i].format = convert::TextureFormatFrom(target.format);
+    if (swapchainFormat != WGPUTextureFormat_Undefined &&
+        target.format == convert::TextureFormatTo(swapchainFormat)) {
+      colorTargets[i].format = swapchainFormat;
+    }
+    if (colorTargets[i].format == WGPUTextureFormat_Undefined &&
+        swapchainFormat != WGPUTextureFormat_Undefined) {
+      colorTargets[i].format = swapchainFormat;
+    }
+    if (colorTargets[i].format == WGPUTextureFormat_Undefined) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "createGraphicsPipeline failed: color target format is "
+                   "undefined");
+      return nullptr;
+    }
     colorTargets[i].writeMask =
         target.blendState.enableColorWriteMask
             ? convert::ColorWriteMaskFrom(target.blendState.colorWriteMask)
@@ -385,7 +558,7 @@ Device::createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) {
       convert::FrontFaceFrom(createInfo.rasterizerState.frontFace);
   primitiveState.cullMode =
       convert::CullModeFrom(createInfo.rasterizerState.cullMode);
-  primitiveState.unclippedDepth = !createInfo.rasterizerState.enableDepthClip;
+  primitiveState.unclippedDepth = false;
 
   WGPUDepthStencilState depthStencilState{};
   WGPUDepthStencilState *depthStencilStatePtr = nullptr;
@@ -393,29 +566,44 @@ Device::createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) {
     depthStencilState = {};
     depthStencilState.format = convert::TextureFormatFrom(
         createInfo.targetInfo.depthStencilTargetFormat);
+    if (depthStencilState.format == WGPUTextureFormat_Undefined) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "createGraphicsPipeline failed: depth target format is "
+                   "undefined");
+      return nullptr;
+    }
     depthStencilState.depthWriteEnabled = convert::OptionalBoolFrom(
         createInfo.depthStencilState.enableDepthWrite);
     depthStencilState.depthCompare =
         convert::CompareOpFrom(createInfo.depthStencilState.compareOp);
-    depthStencilState.stencilFront.compare = convert::CompareOpFrom(
-        createInfo.depthStencilState.frontStencilState.compareOp);
-    depthStencilState.stencilFront.failOp = convert::StencilOpFrom(
-        createInfo.depthStencilState.frontStencilState.failOp);
-    depthStencilState.stencilFront.depthFailOp = convert::StencilOpFrom(
-        createInfo.depthStencilState.frontStencilState.depthFailOp);
-    depthStencilState.stencilFront.passOp = convert::StencilOpFrom(
-        createInfo.depthStencilState.frontStencilState.passOp);
-    depthStencilState.stencilBack.compare = convert::CompareOpFrom(
-        createInfo.depthStencilState.backStencilState.compareOp);
-    depthStencilState.stencilBack.failOp = convert::StencilOpFrom(
-        createInfo.depthStencilState.backStencilState.failOp);
-    depthStencilState.stencilBack.depthFailOp = convert::StencilOpFrom(
-        createInfo.depthStencilState.backStencilState.depthFailOp);
-    depthStencilState.stencilBack.passOp = convert::StencilOpFrom(
-        createInfo.depthStencilState.backStencilState.passOp);
-    depthStencilState.stencilReadMask =
-        createInfo.depthStencilState.compareMask;
-    depthStencilState.stencilWriteMask = createInfo.depthStencilState.writeMask;
+    depthStencilState.stencilFront.compare = WGPUCompareFunction_Always;
+    depthStencilState.stencilFront.failOp = WGPUStencilOperation_Keep;
+    depthStencilState.stencilFront.depthFailOp = WGPUStencilOperation_Keep;
+    depthStencilState.stencilFront.passOp = WGPUStencilOperation_Keep;
+    depthStencilState.stencilBack = depthStencilState.stencilFront;
+    if (createInfo.depthStencilState.enableStencilTest &&
+        hasStencilAspect(depthStencilState.format)) {
+      depthStencilState.stencilFront.compare = convert::CompareOpFrom(
+          createInfo.depthStencilState.frontStencilState.compareOp);
+      depthStencilState.stencilFront.failOp = convert::StencilOpFrom(
+          createInfo.depthStencilState.frontStencilState.failOp);
+      depthStencilState.stencilFront.depthFailOp = convert::StencilOpFrom(
+          createInfo.depthStencilState.frontStencilState.depthFailOp);
+      depthStencilState.stencilFront.passOp = convert::StencilOpFrom(
+          createInfo.depthStencilState.frontStencilState.passOp);
+      depthStencilState.stencilBack.compare = convert::CompareOpFrom(
+          createInfo.depthStencilState.backStencilState.compareOp);
+      depthStencilState.stencilBack.failOp = convert::StencilOpFrom(
+          createInfo.depthStencilState.backStencilState.failOp);
+      depthStencilState.stencilBack.depthFailOp = convert::StencilOpFrom(
+          createInfo.depthStencilState.backStencilState.depthFailOp);
+      depthStencilState.stencilBack.passOp = convert::StencilOpFrom(
+          createInfo.depthStencilState.backStencilState.passOp);
+      depthStencilState.stencilReadMask =
+          createInfo.depthStencilState.compareMask;
+      depthStencilState.stencilWriteMask =
+          createInfo.depthStencilState.writeMask;
+    }
     depthStencilState.depthBias = static_cast<int32_t>(
         createInfo.rasterizerState.depthBiasConstantFactor);
     depthStencilState.depthBiasSlopeScale =
@@ -442,7 +630,18 @@ Device::createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) {
   pipelineDesc.multisample = multisampleState;
   pipelineDesc.fragment = &fragmentState;
 
+  wgpuDevicePushErrorScope(device, WGPUErrorFilter_Validation);
   auto pipeline = wgpuDeviceCreateRenderPipeline(device, &pipelineDesc);
+  const bool validPipeline = popErrorScope("createGraphicsPipeline");
+  if (!pipeline) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "createGraphicsPipeline failed: WebGPU pipeline is null");
+    return nullptr;
+  }
+  if (!validPipeline) {
+    wgpuRenderPipelineRelease(pipeline);
+    return nullptr;
+  }
   return makePtr<GraphicsPipeline>(createInfo.allocator, createInfo, get(),
                                    pipeline);
 }
@@ -470,6 +669,10 @@ void Device::submitCommandBuffer(Ptr<gpu::CommandBuffer> commandBuffer) {
   if (cb->getShouldPresent() && surface) {
     wgpuSurfacePresent(surface);
   }
+#ifdef WEBGPU_BACKEND_DAWN
+  wgpuDeviceTick(device);
+  wgpuInstanceProcessEvents(instance);
+#endif
 }
 
 Ptr<gpu::Texture>
@@ -519,7 +722,14 @@ Device::acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) {
 }
 
 gpu::TextureFormat Device::getSwapchainFormat() const {
-  return convert::TextureFormatTo(swapchainFormat);
+  auto format = convert::TextureFormatTo(swapchainFormat);
+  if (format == TextureFormat::Invalid &&
+      swapchainFormat != WGPUTextureFormat_Undefined) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Unsupported WebGPU swapchain format: %d",
+                 static_cast<int>(swapchainFormat));
+  }
+  return format;
 }
 
 void Device::waitForGpuIdle() {
@@ -528,13 +738,13 @@ void Device::waitForGpuIdle() {
   }
   QueueDoneState state{};
   WGPUQueueWorkDoneCallbackInfo callbackInfo{};
-  callbackInfo.mode = WGPUCallbackMode_WaitAnyOnly;
+  callbackInfo.mode = WGPUCallbackMode_AllowProcessEvents;
   callbackInfo.callback = &onQueueDone;
   callbackInfo.userdata1 = &state;
   callbackInfo.userdata2 = nullptr;
 
   auto future = wgpuQueueOnSubmittedWorkDone(queue, callbackInfo);
-  waitForFuture(future);
+  waitForFuture(future, &state.done);
 }
 
 String Device::getDriver() const {
@@ -542,13 +752,20 @@ String Device::getDriver() const {
 }
 
 void Device::configureSurfaceIfNeeded() {
-  if (!window || !surface) {
+  if (!surface) {
     return;
   }
 
   int w = 0;
   int h = 0;
-  SDL_GetWindowSizeInPixels(window, &w, &h);
+  if (window) {
+    SDL_GetWindowSizeInPixels(window, &w, &h);
+  }
+#ifdef SINEN_PLATFORM_EMSCRIPTEN
+  if (w <= 0 || h <= 0) {
+    emscripten_get_canvas_element_size("#canvas", &w, &h);
+  }
+#endif
   if (w <= 0 || h <= 0) {
     return;
   }
@@ -584,6 +801,16 @@ void Device::configureSurface(UInt32 width, UInt32 height) {
       chosenFormat = caps.formats[i];
     }
   }
+  if (chosenFormat != WGPUTextureFormat_BGRA8Unorm &&
+      chosenFormat != WGPUTextureFormat_RGBA8Unorm) {
+    for (size_t i = 0; i < caps.formatCount; ++i) {
+      if (caps.formats[i] == WGPUTextureFormat_BGRA8UnormSrgb ||
+          caps.formats[i] == WGPUTextureFormat_RGBA8UnormSrgb) {
+        chosenFormat = caps.formats[i];
+        break;
+      }
+    }
+  }
 
   WGPUPresentMode presentMode = WGPUPresentMode_Fifo;
   if (caps.presentModeCount > 0) {
@@ -596,9 +823,16 @@ void Device::configureSurface(UInt32 width, UInt32 height) {
     }
   }
 
-  WGPUCompositeAlphaMode alphaMode = caps.alphaModeCount > 0
-                                         ? caps.alphaModes[0]
-                                         : WGPUCompositeAlphaMode_Auto;
+  WGPUCompositeAlphaMode alphaMode = WGPUCompositeAlphaMode_Auto;
+  if (caps.alphaModeCount > 0) {
+    alphaMode = caps.alphaModes[0];
+    for (size_t i = 0; i < caps.alphaModeCount; ++i) {
+      if (caps.alphaModes[i] == WGPUCompositeAlphaMode_Opaque) {
+        alphaMode = WGPUCompositeAlphaMode_Opaque;
+        break;
+      }
+    }
+  }
 
   WGPUSurfaceConfiguration config{};
   config.device = device;

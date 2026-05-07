@@ -2,7 +2,7 @@
 
 #include "webgpu_device.hpp"
 #include <SDL3/SDL.h>
-#include <webgpu/webgpu.h>
+#include "webgpu_api.hpp"
 
 #ifdef SINEN_PLATFORM_EMSCRIPTEN
 #include <emscripten.h>
@@ -66,6 +66,29 @@ void onDeviceRequest(WGPURequestDeviceStatus status, WGPUDevice device,
   state->success = (status == WGPURequestDeviceStatus_Success && device);
   state->device = device;
 }
+
+void onDeviceLost(WGPUDevice const *device, WGPUDeviceLostReason reason,
+                  WGPUStringView message, void *userdata1, void *userdata2) {
+  (void)device;
+  (void)userdata1;
+  (void)userdata2;
+  SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+               "WebGPU device lost: reason=%d message=%.*s",
+               static_cast<int>(reason), static_cast<int>(message.length),
+               message.data ? message.data : "");
+}
+
+void onUncapturedError(WGPUDevice const *device, WGPUErrorType type,
+                       WGPUStringView message, void *userdata1,
+                       void *userdata2) {
+  (void)device;
+  (void)userdata1;
+  (void)userdata2;
+  SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+               "WebGPU uncaptured error: type=%d message=%.*s",
+               static_cast<int>(type), static_cast<int>(message.length),
+               message.data ? message.data : "");
+}
 } // namespace
 
 Ptr<gpu::Device>
@@ -103,9 +126,12 @@ Backend::createDevice(const gpu::Device::CreateInfo &createInfo) {
   deviceDesc.defaultQueue.label = toWgpuStringView("sinen-webgpu-queue");
   deviceDesc.defaultQueue.nextInChain = nullptr;
   deviceDesc.deviceLostCallbackInfo = {};
-  deviceDesc.deviceLostCallbackInfo.mode = WGPUCallbackMode_WaitAnyOnly;
-  deviceDesc.deviceLostCallbackInfo.callback = nullptr;
+  deviceDesc.deviceLostCallbackInfo.mode = WGPUCallbackMode_AllowSpontaneous;
+  deviceDesc.deviceLostCallbackInfo.callback = &onDeviceLost;
   deviceDesc.uncapturedErrorCallbackInfo = {};
+  deviceDesc.uncapturedErrorCallbackInfo.callback = &onUncapturedError;
+  deviceDesc.uncapturedErrorCallbackInfo.userdata1 = nullptr;
+  deviceDesc.uncapturedErrorCallbackInfo.userdata2 = nullptr;
 
   WGPURequestDeviceCallbackInfo deviceCallbackInfo{};
   deviceCallbackInfo.mode = WGPUCallbackMode_AllowSpontaneous;

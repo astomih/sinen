@@ -14,7 +14,7 @@
 #include "webgpu_texture.hpp"
 #include "webgpu_transfer_buffer.hpp"
 
-#include <webgpu/webgpu.h>
+#include "webgpu_api.hpp"
 
 struct SDL_Window;
 
@@ -36,7 +36,7 @@ public:
   WGPUQueue getQueue() const { return queue; }
   WGPUSurface getSurface() const { return surface; }
 
-  bool waitForFuture(WGPUFuture future) const;
+  bool waitForFuture(WGPUFuture future, const bool *done = nullptr) const;
   WGPUTextureView
   createTextureView(WGPUTexture texture,
                     const gpu::Texture::CreateInfo &createInfo) const;
@@ -70,6 +70,8 @@ public:
   }
 
 private:
+  bool popErrorScope(const char *label);
+  void logShaderCompilationInfo(WGPUShaderModule shader, const char *label);
   void configureSurfaceIfNeeded();
   void configureSurface(UInt32 width, UInt32 height);
 

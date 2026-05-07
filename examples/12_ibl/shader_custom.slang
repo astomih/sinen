@@ -80,27 +80,27 @@ struct FSOutput {
   float4 color : SV_Target;
 };
 
-#define COMBINED_IMAGE_SAMPLER(name, bind)                                     \
-  [[vk::binding(bind, 2)]]                                                     \
-  Sampler2D name : register(t##bind, space2) : register(s##bind, space2);
-COMBINED_IMAGE_SAMPLER(albedoMap, 0)
-COMBINED_IMAGE_SAMPLER(normalMap, 1)
+#define COMBINED_IMAGE_SAMPLER(name, textureBind, samplerBind)                 \
+  [[vk::binding(textureBind, 2)]]                                              \
+  Sampler2D name : register(t##textureBind, space2)                            \
+      : register(s##samplerBind, space2);
+COMBINED_IMAGE_SAMPLER(albedoMap, 0, 1)
+COMBINED_IMAGE_SAMPLER(normalMap, 2, 3)
 COMBINED_IMAGE_SAMPLER(diffuseRoughnessMap,
-                       2) // in DamagedHelmet.glb, the
-                          // roughness is in the G channel
-                          // and metallic is in the B channel
-COMBINED_IMAGE_SAMPLER(metallicMap, 3)
-COMBINED_IMAGE_SAMPLER(emissiveMap, 4)
-COMBINED_IMAGE_SAMPLER(aoMap, 5)
+                       4, 5) // in DamagedHelmet.glb, the
+                             // roughness is in the G channel
+                             // and metallic is in the B channel
+COMBINED_IMAGE_SAMPLER(emissiveMap, 8, 9)
+COMBINED_IMAGE_SAMPLER(aoMap, 10, 11)
 
-COMBINED_IMAGE_SAMPLER(brdfLUT, 6)
+COMBINED_IMAGE_SAMPLER(brdfLUT, 12, 13)
 
-[[vk::binding(7, 2)]]
-SamplerCube cubemap : register(t7, space2) : register(s7, space2);
-[[vk::binding(8, 2)]]
-SamplerCube irradianceMap : register(t8, space2) : register(s8, space2);
-[[vk::binding(9, 2)]]
-SamplerCube prefilteredMap : register(t9, space2) : register(s9, space2);
+[[vk::binding(14, 2)]]
+SamplerCube cubemap : register(t14, space2) : register(s15, space2);
+[[vk::binding(16, 2)]]
+SamplerCube irradianceMap : register(t16, space2) : register(s17, space2);
+[[vk::binding(18, 2)]]
+SamplerCube prefilteredMap : register(t18, space2) : register(s19, space2);
 
 // BRDF
 float3 SchlickFresnel(float hDotV, float3 refl) {

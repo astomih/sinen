@@ -22,6 +22,14 @@ CommandBuffer::~CommandBuffer() {
 }
 
 void CommandBuffer::releaseUniformBindings() {
+  for (auto buffer : retainedUniformBuffers) {
+    if (buffer) {
+      wgpuBufferDestroy(buffer);
+      wgpuBufferRelease(buffer);
+    }
+  }
+  retainedUniformBuffers.clear();
+
   for (auto &[slot, binding] : vertexUniformBindings) {
     (void)slot;
     if (binding.buffer) {
@@ -37,6 +45,26 @@ void CommandBuffer::releaseUniformBindings() {
     if (binding.buffer) {
       wgpuBufferDestroy(binding.buffer);
       wgpuBufferRelease(binding.buffer);
+      binding.buffer = nullptr;
+    }
+  }
+  fragmentUniformBindings.clear();
+}
+
+void CommandBuffer::clearDrawBindings() {
+  for (auto &[slot, binding] : vertexUniformBindings) {
+    (void)slot;
+    if (binding.buffer) {
+      retainedUniformBuffers.push_back(binding.buffer);
+      binding.buffer = nullptr;
+    }
+  }
+  vertexUniformBindings.clear();
+
+  for (auto &[slot, binding] : fragmentUniformBindings) {
+    (void)slot;
+    if (binding.buffer) {
+      retainedUniformBuffers.push_back(binding.buffer);
       binding.buffer = nullptr;
     }
   }

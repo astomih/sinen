@@ -1,17 +1,20 @@
 #include <cassert>
 #include <cstring>
 
+#include <core/profiler.hpp>
 #include <core/thread/future_poll.hpp>
 #include <core/thread/global_thread_pool.hpp>
 #include <core/thread/load_context.hpp>
 #include <gpu/gpu.hpp>
 #include <graphics/graphics.hpp>
 #include <graphics/texture/texture.hpp>
+#include <math/math.hpp>
 #include <memory>
 #include <platform/io/asset_io.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <SDL3/SDL.h>
+#include <ktx.h>
 #include <stb_image.h>
 
 namespace sinen {
@@ -19,13 +22,33 @@ static Ptr<gpu::Texture> createNativeTexture(void *pPixels,
                                              gpu::TextureFormat textureFormat,
                                              uint32_t width, uint32_t height,
                                              int channels);
+struct TextureMipPixels {
+  Array<uint8_t> pixels;
+  uint32_t width = 0;
+  uint32_t height = 0;
+};
+static Ptr<gpu::Texture>
+createNativeTexture(const Array<TextureMipPixels> &mips,
+                    gpu::TextureFormat textureFormat, int channels);
 static void updateNativeTexture(Ptr<gpu::Texture> texture, void *pPixels,
                                 int channels);
 
 namespace {
+constexpr uint8_t Ktx2Identifier[] = {0xAB, 0x4B, 0x54, 0x58, 0x20, 0x32,
+                                      0x30, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A};
+constexpr uint32_t VkFormatR8Unorm = 9;
+constexpr uint32_t VkFormatR8G8Unorm = 16;
+constexpr uint32_t VkFormatR8G8B8Unorm = 23;
+constexpr uint32_t VkFormatR8G8B8Srgb = 29;
+constexpr uint32_t VkFormatR8G8B8A8Unorm = 37;
+constexpr uint32_t VkFormatR8G8B8A8Srgb = 43;
+constexpr uint32_t VkFormatB8G8R8A8Unorm = 44;
+constexpr uint32_t VkFormatB8G8R8A8Srgb = 50;
+
 struct AsyncTexture2DState {
   std::future<void> future;
   Array<uint8_t> pixels;
+  Array<TextureMipPixels> mips;
   uint32_t width = 0;
   uint32_t height = 0;
   int channels = 4;
@@ -35,6 +58,132 @@ struct AsyncTexture2DState {
 
 static void scheduleOnPreDraw(std::function<void()> f) {
   Graphics::addPreDrawFunc(std::move(f));
+}
+
+static bool hasKtx2Identifier(const void *data, size_t size) {
+  return size >= sizeof(Ktx2Identifier) &&
+         std::memcmp(data, Ktx2Identifier, sizeof(Ktx2Identifier)) == 0;
+}
+
+static uint32_t mipExtent(uint32_t base, uint32_t level) {
+  return Math::max(1u, base >> level);
+}
+
+static bool decodeKtx2(const uint8_t *bytes, size_t size,
+                       AsyncTexture2DState &out) {
+  if (!hasKtx2Identifier(bytes, size)) {
+    return false;
+  }
+
+  ktxTexture2 *texture = nullptr;
+  KTX_error_code result = ktxTexture2_CreateFromMemory(
+      bytes, size, KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &texture);
+  if (result != KTX_SUCCESS || !texture) {
+    return true;
+  }
+
+  auto destroyTexture = [&texture]() {
+    if (texture) {
+      ktxTexture2_Destroy(texture);
+      texture = nullptr;
+    }
+  };
+
+  if (texture->numDimensions != 2 || texture->numFaces != 1 ||
+      texture->numLayers > 1 || texture->baseWidth == 0 ||
+      texture->baseHeight == 0) {
+    destroyTexture();
+    return true;
+  }
+
+  bool transcodedToRgba = false;
+  if (ktxTexture2_NeedsTranscoding(texture)) {
+    result = ktxTexture2_TranscodeBasis(texture, KTX_TTF_RGBA32, 0);
+    if (result != KTX_SUCCESS) {
+      destroyTexture();
+      return true;
+    }
+    transcodedToRgba = true;
+  }
+
+  int srcChannels = 4;
+  bool bgra = false;
+  if (!transcodedToRgba) {
+    switch (texture->vkFormat) {
+    case VkFormatR8Unorm:
+      srcChannels = 1;
+      break;
+    case VkFormatR8G8Unorm:
+      srcChannels = 2;
+      break;
+    case VkFormatR8G8B8Unorm:
+    case VkFormatR8G8B8Srgb:
+      srcChannels = 3;
+      break;
+    case VkFormatR8G8B8A8Unorm:
+    case VkFormatR8G8B8A8Srgb:
+      srcChannels = 4;
+      break;
+    case VkFormatB8G8R8A8Unorm:
+    case VkFormatB8G8R8A8Srgb:
+      srcChannels = 4;
+      bgra = true;
+      break;
+    default:
+      destroyTexture();
+      return true;
+    }
+  }
+
+  out.mips.clear();
+  const uint32_t numLevels = Math::max(1u, texture->numLevels);
+  auto *data = texture->pData;
+  if (!data) {
+    destroyTexture();
+    return true;
+  }
+  for (uint32_t level = 0; level < numLevels; ++level) {
+    ktx_size_t offset = 0;
+    if (ktxTexture2_GetImageOffset(texture, level, 0, 0, &offset) !=
+        KTX_SUCCESS) {
+      destroyTexture();
+      return true;
+    }
+
+    const uint32_t width = mipExtent(texture->baseWidth, level);
+    const uint32_t height = mipExtent(texture->baseHeight, level);
+    const size_t pixelCount = static_cast<size_t>(width) * height;
+    TextureMipPixels mip;
+    mip.width = width;
+    mip.height = height;
+    mip.pixels.resize(pixelCount * 4u);
+
+    const uint8_t *src = data + offset;
+    for (size_t i = 0; i < pixelCount; ++i) {
+      const uint8_t r = src[i * srcChannels + (bgra ? 2 : 0)];
+      const uint8_t g = srcChannels > 1 ? src[i * srcChannels + 1] : r;
+      const uint8_t b =
+          srcChannels > 2 ? src[i * srcChannels + (bgra ? 0 : 2)] : r;
+      const uint8_t a = srcChannels > 3 ? src[i * srcChannels + 3] : 255;
+      mip.pixels[i * 4 + 0] = r;
+      mip.pixels[i * 4 + 1] = g;
+      mip.pixels[i * 4 + 2] = b;
+      mip.pixels[i * 4 + 3] = a;
+    }
+    out.mips.push_back(std::move(mip));
+  }
+
+  if (!out.mips.empty()) {
+    out.pixels = out.mips[0].pixels;
+    out.width = out.mips[0].width;
+    out.height = out.mips[0].height;
+    out.channels = 4;
+    out.format = gpu::TextureFormat::R8G8B8A8_UNORM;
+    out.ok = true;
+  }
+
+  destroyTexture();
+  return true;
 }
 } // namespace
 Texture::Texture() { texture = nullptr; }
@@ -63,7 +212,12 @@ bool Texture::load(StringView fileName) {
 
   const String path = fileName.data();
   state->future = globalThreadPool().submit([state, path] {
+    ZoneScopedN("Texture::load decode");
     auto str = AssetIO::openAsString(path);
+    if (decodeKtx2(reinterpret_cast<const uint8_t *>(str.data()), str.size(),
+                   *state)) {
+      return;
+    }
     int width = 0, height = 0, bpp = 0;
     unsigned char *decoded = stbi_load_from_memory(
         reinterpret_cast<unsigned char *>(str.data()),
@@ -91,9 +245,12 @@ bool Texture::load(StringView fileName) {
       state, group, scheduleOnPreDraw,
       [this, state] {
         if (state->ok) {
-          texture = createNativeTexture(state->pixels.data(), state->format,
-                                        state->width, state->height,
-                                        state->channels);
+          texture = state->mips.empty()
+                        ? createNativeTexture(state->pixels.data(),
+                                              state->format, state->width,
+                                              state->height, state->channels)
+                        : createNativeTexture(state->mips, state->format,
+                                              state->channels);
           this->pendingWidth = state->width;
           this->pendingHeight = state->height;
         }
@@ -120,6 +277,11 @@ bool Texture::load(const Buffer &buffer) {
 
   const Buffer buf = buffer;
   state->future = globalThreadPool().submit([state, buf] {
+    ZoneScopedN("Texture::load(buffer) decode");
+    if (decodeKtx2(reinterpret_cast<const uint8_t *>(buf.data()), buf.size(),
+                   *state)) {
+      return;
+    }
     int width = 0, height = 0, bpp = 0;
     unsigned char *decoded =
         stbi_load_from_memory(reinterpret_cast<unsigned char *>(buf.data()),
@@ -147,9 +309,12 @@ bool Texture::load(const Buffer &buffer) {
       state, group, scheduleOnPreDraw,
       [this, state] {
         if (state->ok) {
-          texture = createNativeTexture(state->pixels.data(), state->format,
-                                        state->width, state->height,
-                                        state->channels);
+          texture = state->mips.empty()
+                        ? createNativeTexture(state->pixels.data(),
+                                              state->format, state->width,
+                                              state->height, state->channels)
+                        : createNativeTexture(state->mips, state->format,
+                                              state->channels);
           this->pendingWidth = state->width;
           this->pendingHeight = state->height;
         }
@@ -176,6 +341,11 @@ bool Texture::loadFromMemory(Array<char> &buffer) {
 
   const String bytes(buffer.data(), buffer.size());
   state->future = globalThreadPool().submit([state, bytes] {
+    ZoneScopedN("Texture::loadFromMemory decode");
+    if (decodeKtx2(reinterpret_cast<const uint8_t *>(bytes.data()),
+                   bytes.size(), *state)) {
+      return;
+    }
     int width = 0, height = 0, bpp = 0;
     unsigned char *decoded = stbi_load_from_memory(
         reinterpret_cast<const unsigned char *>(bytes.data()),
@@ -203,9 +373,12 @@ bool Texture::loadFromMemory(Array<char> &buffer) {
       state, group, scheduleOnPreDraw,
       [this, state] {
         if (state->ok) {
-          texture = createNativeTexture(state->pixels.data(), state->format,
-                                        state->width, state->height,
-                                        state->channels);
+          texture = state->mips.empty()
+                        ? createNativeTexture(state->pixels.data(),
+                                              state->format, state->width,
+                                              state->height, state->channels)
+                        : createNativeTexture(state->mips, state->format,
+                                              state->channels);
           this->pendingWidth = state->width;
           this->pendingHeight = state->height;
         }
@@ -268,12 +441,11 @@ Vec2 Texture::size() {
   return Vec2(0.0f, 0.0f);
 }
 
-static void writeTexture(Ptr<gpu::Texture> texture, void *pPixels,
-                         int channels) {
+static void writeTextureLevel(Ptr<gpu::Texture> texture, void *pPixels,
+                              int channels, uint32_t mipLevel, uint32_t width,
+                              uint32_t height) {
   auto allocator = GlobalAllocator::get();
   auto device = Graphics::getDevice();
-  uint32_t width = texture->getCreateInfo().width,
-           height = texture->getCreateInfo().height;
   Ptr<gpu::TransferBuffer> transferBuffer;
   {
     gpu::TransferBuffer::CreateInfo info{};
@@ -299,6 +471,7 @@ static void writeTexture(Ptr<gpu::Texture> texture, void *pPixels,
     dst.width = width;
     dst.height = height;
     dst.depth = 1;
+    dst.mipLevel = mipLevel;
     dst.texture = texture;
     copyPass->uploadTexture(src, dst, true);
     commandBuffer->endCopyPass(copyPass);
@@ -306,6 +479,14 @@ static void writeTexture(Ptr<gpu::Texture> texture, void *pPixels,
   }
   device->waitForGpuIdle();
 }
+
+static void writeTexture(Ptr<gpu::Texture> texture, void *pPixels,
+                         int channels) {
+  uint32_t width = texture->getCreateInfo().width,
+           height = texture->getCreateInfo().height;
+  writeTextureLevel(texture, pPixels, channels, 0, width, height);
+}
+
 Ptr<gpu::Texture> createNativeTexture(void *pPixels,
                                       gpu::TextureFormat textureFormat,
                                       uint32_t width, uint32_t height,
@@ -330,6 +511,39 @@ Ptr<gpu::Texture> createNativeTexture(void *pPixels,
   writeTexture(texture, pPixels, channels);
   return texture;
 }
+
+Ptr<gpu::Texture> createNativeTexture(const Array<TextureMipPixels> &mips,
+                                      gpu::TextureFormat textureFormat,
+                                      int channels) {
+  if (mips.empty()) {
+    return nullptr;
+  }
+
+  auto allocator = GlobalAllocator::get();
+  auto device = Graphics::getDevice();
+
+  gpu::Texture::CreateInfo info{};
+  info.allocator = allocator;
+  info.width = mips[0].width;
+  info.height = mips[0].height;
+  info.layerCountOrDepth = 1;
+  info.format = textureFormat;
+  info.usage = gpu::TextureUsage::Sampler;
+  info.numLevels = static_cast<UInt32>(mips.size());
+  info.sampleCount = gpu::SampleCount::x1;
+  info.type = gpu::TextureType::Texture2D;
+  auto texture = device->createTexture(info);
+  if (!texture) {
+    return nullptr;
+  }
+
+  for (uint32_t level = 0; level < mips.size(); ++level) {
+    writeTextureLevel(texture, const_cast<uint8_t *>(mips[level].pixels.data()),
+                      channels, level, mips[level].width, mips[level].height);
+  }
+  return texture;
+}
+
 void updateNativeTexture(Ptr<gpu::Texture> texture, void *pPixels,
                          int channels) {
   writeTexture(texture, pPixels, channels);

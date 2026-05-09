@@ -1,6 +1,7 @@
 #include "graphics.hpp"
 #include <cassert>
 #include <core/allocator/global_allocator.hpp>
+#include <core/profiler.hpp>
 #include <gpu/gpu.hpp>
 #include <gpu/shader/builtin_shader.hpp>
 #include <graphics/builtin_pipeline.hpp>
@@ -152,8 +153,12 @@ bool Graphics::initialize() {
   samplerInfo.allocator = GlobalAllocator::get();
   samplerInfo.minFilter = gpu::Filter::Linear;
   samplerInfo.magFilter = gpu::Filter::Linear;
+  samplerInfo.mipmapMode = gpu::MipmapMode::Linear;
   samplerInfo.addressModeU = gpu::AddressMode::Repeat;
   samplerInfo.addressModeV = gpu::AddressMode::Repeat;
+  samplerInfo.addressModeW = gpu::AddressMode::Repeat;
+  samplerInfo.minLod = 0.0f;
+  samplerInfo.maxLod = 1000.0f;
   samplerInfo.maxAnisotropy = 1.f;
   sampler = device->createSampler(samplerInfo);
   if (!sampler)
@@ -189,7 +194,9 @@ void Graphics::shutdown() {
 }
 
 void Graphics::render() {
+  ZoneScopedN("Graphics::render");
   {
+    ZoneScopedN("preDraw");
     auto funcs = std::move(preDrawFuncs);
     preDrawFuncs.clear();
     for (auto &f : funcs) {
@@ -227,7 +234,10 @@ void Graphics::render() {
 
   isFrameStarted = true;
   drawCallCountPerFrame = 0;
-  Script::drawScene();
+  {
+    ZoneScopedN("Script::drawScene");
+    Script::drawScene();
+  }
 
   // Rendering
 
@@ -237,8 +247,14 @@ void Graphics::render() {
   }
   commandBuffer->endRenderPass(currentRenderPass);
 
-  device->submitCommandBuffer(commandBuffer);
-  device->waitForGpuIdle();
+  {
+    ZoneScopedN("GPU submit");
+    device->submitCommandBuffer(commandBuffer);
+  }
+  {
+    ZoneScopedN("GPU wait idle");
+    device->waitForGpuIdle();
+  }
 }
 struct Transform2D {
   Vec2 position;
@@ -250,9 +266,9 @@ struct FontFragmentParams {
   Vec4 atlasParams;
 };
 
-static void bindCurrentTextureSamplers(
-    const Ptr<gpu::RenderPass> &renderPass,
-    const Ptr<gpu::Sampler> &textureSampler = sampler) {
+static void
+bindCurrentTextureSamplers(const Ptr<gpu::RenderPass> &renderPass,
+                           const Ptr<gpu::Sampler> &textureSampler = sampler) {
   if (currentTextureBindings.empty()) {
     return;
   }
@@ -355,6 +371,7 @@ static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
 }
 
 static void drawBase3D(const Array<Transform> transforms, const Model &model) {
+  ZoneScopedN("drawBase3D");
   assert(currentPipeline.has_value());
   auto vertexBufferBindings = Array<gpu::BufferBinding>();
   auto indexBufferBinding = gpu::BufferBinding{};
@@ -421,8 +438,17 @@ static void drawBase3D(const Array<Transform> transforms, const Model &model) {
 
   vertexBufferBindings.emplace_back(
       gpu::BufferBinding{.buffer = model.vertexBuffer, .offset = 0});
+  UInt32 lod = 0;
+  if (transforms.size() == 1) {
+    lod = model.selectLod(
+        (transforms[0].getPosition() - camera.getPosition()).length());
+  }
+  Ptr<gpu::Buffer> selectedIndexBuffer = model.indexBuffer;
+  if (lod < model.lodIndexBuffers.size() && model.lodIndexBuffers[lod]) {
+    selectedIndexBuffer = model.lodIndexBuffers[lod];
+  }
   indexBufferBinding =
-      gpu::BufferBinding{.buffer = model.indexBuffer, .offset = 0};
+      gpu::BufferBinding{.buffer = selectedIndexBuffer, .offset = 0};
   if (isInstance) {
     vertexBufferBindings.emplace_back(
         gpu::BufferBinding{.buffer = instanceBuffer, .offset = 0});
@@ -449,8 +475,10 @@ static void drawBase3D(const Array<Transform> transforms, const Model &model) {
                               gpu::IndexElementSize::Uint32);
 
   commandBuffer->pushVertexUniformData(0, &mat, sizeof(Mat4) * 3);
-  uint32_t numIndices = model.getMesh().data()->indices.size();
-  uint32_t numInstance = isInstance ? instanceSize : 1;
+  uint32_t numIndices =
+      static_cast<uint32_t>(model.getIndicesForLod(lod).size());
+  uint32_t numInstance =
+      isInstance ? static_cast<uint32_t>(instanceData.size()) : 1;
   renderPass->drawIndexedPrimitives(numIndices, numInstance, 0, 0, 0);
   currentPipeline = std::nullopt;
   currentTextureBindings.clear();

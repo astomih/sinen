@@ -49,3 +49,12 @@
 [submodule "libs/msdfgen"]
 	path = libs/msdfgen
 	url = https://github.com/chlumsky/msdfgen
+[submodule "libs/tracy"]
+	path = libs/tracy
+	url = https://github.com/wolfpld/tracy
+[submodule "libs/meshoptimizer"]
+	path = libs/meshoptimizer
+	url = https://github.com/zeux/meshoptimizer
+[submodule "libs/ktx-software"]
+	path = libs/ktx-software
+	url = https://github.com/khronosgroup/ktx-software

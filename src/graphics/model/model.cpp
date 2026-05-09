@@ -6,6 +6,7 @@
 #include <cstring>
 #include <functional>
 #include <future>
+#include <iterator>
 #include <memory>
 
 // internal
@@ -13,6 +14,7 @@
 #include <core/buffer/buffer.hpp>
 #include <core/core.hpp>
 #include <core/data/ptr.hpp>
+#include <core/profiler.hpp>
 #include <core/thread/global_thread_pool.hpp>
 #include <core/thread/load_context.hpp>
 #include <graphics/graphics.hpp>
@@ -29,6 +31,7 @@
 #include <assimp/matrix4x4.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include <meshoptimizer.h>
 
 #include <math/matrix.hpp>
 #include <math/quaternion.hpp>
@@ -41,6 +44,8 @@ createVertexIndexBuffer(const Array<Vertex> &vertices,
 Ptr<gpu::Buffer>
 createSkinnedVertexBuffer(const Array<SkinnedVertex> &vertices);
 Ptr<gpu::Buffer> createBuffer(size_t size, void *data, gpu::BufferUsage usage);
+Array<Ptr<gpu::Buffer>> createLodIndexBuffers(const Mesh &mesh,
+                                              const Ptr<gpu::Buffer> &base);
 
 namespace {
 struct EmbeddedTextureData {
@@ -99,6 +104,67 @@ struct AsyncModelState {
   bool ok = false;
   std::atomic<bool> finalized = false;
 };
+
+static void optimizeIndexOrder(Mesh &mesh, Array<UInt32> &indices) {
+  auto data = mesh.data();
+  if (indices.empty() || data->vertices.empty()) {
+    return;
+  }
+
+  Array<UInt32> cacheOptimized(indices.size());
+  meshopt_optimizeVertexCache(cacheOptimized.data(), indices.data(),
+                              indices.size(), data->vertices.size());
+  meshopt_optimizeOverdraw(indices.data(), cacheOptimized.data(),
+                           cacheOptimized.size(), &data->vertices[0].position.x,
+                           data->vertices.size(), sizeof(Vertex), 1.05f);
+}
+
+static size_t triangleIndexCount(size_t count) { return (count / 3) * 3; }
+
+static void optimizeMesh(Mesh &mesh) {
+  ZoneScopedN("Model mesh optimize");
+  auto data = mesh.data();
+  if (data->indices.size() < 3 || data->vertices.empty()) {
+    return;
+  }
+
+  optimizeIndexOrder(mesh, data->indices);
+
+  data->lods.clear();
+  data->lods.push_back(
+      Mesh::Data::Lod{.indices = data->indices, .threshold = 0.0f});
+
+  constexpr float ratios[] = {0.60f, 0.35f, 0.18f};
+  constexpr float thresholds[] = {14.0f, 28.0f, 56.0f};
+  constexpr float maxError = 1e-2f;
+
+  size_t previousCount = data->indices.size();
+  for (size_t i = 0; i < std::size(ratios); ++i) {
+    const size_t targetCount = triangleIndexCount(
+        static_cast<size_t>(data->indices.size() * ratios[i]));
+    if (targetCount < 12 || targetCount >= previousCount) {
+      continue;
+    }
+
+    Array<UInt32> simplified(data->indices.size());
+    float error = 0.0f;
+    size_t simplifiedCount = meshopt_simplify(
+        simplified.data(), data->indices.data(), data->indices.size(),
+        &data->vertices[0].position.x, data->vertices.size(), sizeof(Vertex),
+        targetCount, maxError, 0, &error);
+    simplifiedCount = triangleIndexCount(simplifiedCount);
+    if (simplifiedCount < 12 || simplifiedCount >= previousCount) {
+      continue;
+    }
+
+    simplified.resize(simplifiedCount);
+    optimizeIndexOrder(mesh, simplified);
+    data->lods.push_back(Mesh::Data::Lod{.indices = std::move(simplified),
+                                         .threshold = thresholds[i],
+                                         .error = error});
+    previousCount = simplifiedCount;
+  }
+}
 } // namespace
 
 enum class LoadState { Version, Vertex, Indices };
@@ -406,6 +472,7 @@ void Model::load(StringView path) {
   this->tangentBuffer = nullptr;
   this->animationVertexBuffer = nullptr;
   this->indexBuffer = nullptr;
+  this->lodIndexBuffers.clear();
   this->textures.assign(6, nullptr);
 
   auto state = makePtr<AsyncModelState>();
@@ -436,6 +503,7 @@ void Model::load(StringView path) {
     loadAnimation(scene, skeletalAnimation, boneMap);
     loadMesh(scene, mesh, aabb);
     calcTangents(scene, mesh);
+    optimizeMesh(mesh);
 
     Array<EmbeddedTextureData> embedded;
     embedded.resize(6);
@@ -544,6 +612,8 @@ void Model::load(StringView path) {
     this->indexBuffer =
         createBuffer(mesh->indices.size() * sizeof(uint32_t),
                      mesh->indices.data(), gpu::BufferUsage::Index);
+    this->lodIndexBuffers =
+        createLodIndexBuffers(this->mesh, this->indexBuffer);
 
     this->data.reset();
     group.done();
@@ -558,6 +628,7 @@ void Model::load(const Buffer &buffer) {
   this->tangentBuffer = nullptr;
   this->animationVertexBuffer = nullptr;
   this->indexBuffer = nullptr;
+  this->lodIndexBuffers.clear();
   this->textures.assign(6, nullptr);
 
   auto state = makePtr<AsyncModelState>();
@@ -586,6 +657,7 @@ void Model::load(const Buffer &buffer) {
     loadAnimation(scene, skeletalAnimation, boneMap);
     loadMesh(scene, mesh, aabb);
     calcTangents(scene, mesh);
+    optimizeMesh(mesh);
 
     Array<EmbeddedTextureData> embedded;
     embedded.resize(6);
@@ -694,6 +766,8 @@ void Model::load(const Buffer &buffer) {
     this->indexBuffer =
         createBuffer(mesh->indices.size() * sizeof(uint32_t),
                      mesh->indices.data(), gpu::BufferUsage::Index);
+    this->lodIndexBuffers =
+        createLodIndexBuffers(this->mesh, this->indexBuffer);
 
     this->data.reset();
     group.done();
@@ -702,7 +776,8 @@ void Model::load(const Buffer &buffer) {
 }
 
 void Model::loadFromVertexArray(const Mesh &m) {
-  this->mesh = m;
+  this->mesh = Mesh(*m.data());
+  optimizeMesh(this->mesh);
   auto mesh = this->mesh.data();
   AABB aabb;
   for (auto &v : mesh->vertices) {
@@ -717,6 +792,7 @@ void Model::loadFromVertexArray(const Mesh &m) {
   auto viBuffer = createVertexIndexBuffer(mesh->vertices, mesh->indices);
   this->vertexBuffer = viBuffer.first;
   this->indexBuffer = viBuffer.second;
+  this->lodIndexBuffers = createLodIndexBuffers(this->mesh, this->indexBuffer);
 }
 
 void Model::loadSprite() {
@@ -729,6 +805,38 @@ void Model::loadBox() {
 }
 
 const AABB &Model::getAABB() const { return this->localAABB; }
+
+UInt32 Model::getLodCount() const {
+  auto data = mesh.data();
+  return data->lods.empty() ? 1u : static_cast<UInt32>(data->lods.size());
+}
+
+UInt32 Model::selectLod(float distance) const {
+  auto data = mesh.data();
+  if (data->lods.empty()) {
+    return 0;
+  }
+
+  const Vec3 extent = localAABB.max - localAABB.min;
+  const float radius = Math::max(extent.length() * 0.5f, 0.001f);
+  const float normalizedDistance = distance / radius;
+
+  UInt32 selected = 0;
+  for (UInt32 i = 1; i < data->lods.size(); ++i) {
+    if (normalizedDistance >= data->lods[i].threshold) {
+      selected = i;
+    }
+  }
+  return selected;
+}
+
+const Array<UInt32> &Model::getIndicesForLod(UInt32 lod) const {
+  auto data = mesh.data();
+  if (lod < data->lods.size() && !data->lods[lod].indices.empty()) {
+    return data->lods[lod].indices;
+  }
+  return data->indices;
+}
 
 std::pair<Ptr<gpu::Buffer>, Ptr<gpu::Buffer>>
 createVertexIndexBuffer(const Array<Vertex> &vertices,
@@ -819,6 +927,29 @@ createVertexIndexBuffer(const Array<Vertex> &vertices,
   }
   return std::make_pair(vertexBuffer, indexBuffer);
 }
+
+Array<Ptr<gpu::Buffer>> createLodIndexBuffers(const Mesh &mesh,
+                                              const Ptr<gpu::Buffer> &base) {
+  Array<Ptr<gpu::Buffer>> buffers;
+  auto data = mesh.data();
+  buffers.reserve(data->lods.size());
+  for (size_t i = 0; i < data->lods.size(); ++i) {
+    auto &lod = data->lods[i];
+    if (i == 0) {
+      buffers.push_back(base);
+      continue;
+    }
+    if (lod.indices.empty()) {
+      buffers.push_back(nullptr);
+      continue;
+    }
+    buffers.push_back(createBuffer(lod.indices.size() * sizeof(UInt32),
+                                   lod.indices.data(),
+                                   gpu::BufferUsage::Index));
+  }
+  return buffers;
+}
+
 Ptr<gpu::Buffer>
 createSkinnedVertexBuffer(const Array<SkinnedVertex> &vertices) {
   if (vertices.empty())
@@ -871,7 +1002,7 @@ createSkinnedVertexBuffer(const Array<SkinnedVertex> &vertices) {
 }
 Ptr<gpu::Buffer> createBuffer(size_t size, void *data, gpu::BufferUsage usage) {
 
-  if (!data)
+  if (!data || size == 0)
     return nullptr;
   auto device = Graphics::getDevice();
   Ptr<gpu::Buffer> buffer;

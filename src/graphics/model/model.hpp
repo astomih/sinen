@@ -52,11 +52,15 @@ public:
   Buffer getBoneUniformBuffer() const;
 
   Mesh getMesh() const { return mesh; }
+  UInt32 getLodCount() const;
+  UInt32 selectLod(float distance) const;
+  const Array<UInt32> &getIndicesForLod(UInt32 lod) const;
 
   Ptr<gpu::Buffer> vertexBuffer;
   Ptr<gpu::Buffer> tangentBuffer;
   Ptr<gpu::Buffer> animationVertexBuffer;
   Ptr<gpu::Buffer> indexBuffer;
+  Array<Ptr<gpu::Buffer>> lodIndexBuffers;
 
   struct BoneInfo {
     Mat4 offsetMatrix;

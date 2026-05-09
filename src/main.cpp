@@ -1,6 +1,7 @@
 #include <audio/audio.hpp>
 #include <core/event/event.hpp>
 #include <core/logger/log.hpp>
+#include <core/profiler.hpp>
 #include <core/time/time.hpp>
 #include <graphics/graphics.hpp>
 #include <math/random.hpp>
@@ -109,6 +110,7 @@ static void freeCustom(void *mem) {
 }
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
+  ZoneScopedN("SDL_AppInit");
   std::pmr::set_default_resource(GlobalAllocator::get());
   SDL_SetMemoryFunctions(mallocCustom, callocCustom, reallocCustom, freeCustom);
   Arguments::argc = argc;
@@ -157,16 +159,27 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
   return SDL_APP_CONTINUE;
 }
 SDL_AppResult SDL_AppIterate(void *appstate) {
+  ZoneScopedN("Frame");
   if (Event::isQuit())
     return SDL_APP_SUCCESS;
   if (Event::isPaused()) {
     return SDL_APP_CONTINUE;
   }
-  Input::update();
-  Time::update();
-  Script::updateScene();
+  {
+    ZoneScopedN("Input::update");
+    Input::update();
+  }
+  {
+    ZoneScopedN("Time::update");
+    Time::update();
+  }
+  {
+    ZoneScopedN("Script::updateScene");
+    Script::updateScene();
+  }
   Graphics::render();
   if (Script::hasToReload()) {
+    ZoneScopedN("Script::runScene");
     Script::runScene();
     Script::doneReload();
   }
@@ -177,15 +190,18 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
   }
   Window::prepareFrame();
   Input::prepareForUpdate();
+  FrameMark;
   return SDL_APP_CONTINUE;
 }
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
+  ZoneScopedN("SDL_AppEvent");
   Event::processEvent(*event);
   Window::processEvent(*event);
   Input::processEvent(*event);
   return SDL_APP_CONTINUE;
 }
 void SDL_AppQuit(void *appstate, SDL_AppResult result) {
+  ZoneScopedN("SDL_AppQuit");
   Script::shutdown();
   Physics::shutdown();
   Input::shutdown();

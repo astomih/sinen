@@ -15,9 +15,15 @@ namespace sinen {
 class Mesh {
 public:
   struct Data {
+    struct Lod {
+      Array<UInt32> indices;
+      float threshold = 0.0f;
+      float error = 0.0f;
+    };
     Array<Vertex> vertices;
     Array<Vec4> tangents;
     Array<UInt32> indices;
+    Array<Lod> lods;
   };
   Mesh();
   explicit Mesh(const Data &data);

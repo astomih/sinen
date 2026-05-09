@@ -12,6 +12,7 @@ endif()
 option(SINEN_USE_SLANG "Use Slang for shader compilation" ON)
 option(SINEN_ENABLE_NATIVE_WEBGPU_DAWN
        "Enable native WebGPU backend through Dawn" ON)
+option(SINEN_ENABLE_TRACY "Enable Tracy CPU frame profiling" ON)
 
 include(${SINEN_SOURCE_DIR}/cmake/include.cmake)
 include(${SINEN_SOURCE_DIR}/cmake/libs.cmake)
@@ -54,6 +55,31 @@ set_target_properties(Luau.Analysis Luau.CLI.lib Luau.CodeGen Luau.Config
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/cppdap)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/luau-debugger/debugger)
 add_subdirectory(${SINEN_SOURCE_DIR}/libs/msdfgen EXCLUDE_FROM_ALL)
+
+set(MESHOPT_BUILD_DEMO OFF CACHE BOOL "Build meshoptimizer demo" FORCE)
+set(MESHOPT_BUILD_GLTFPACK OFF CACHE BOOL "Build gltfpack" FORCE)
+set(MESHOPT_INSTALL OFF CACHE BOOL "Install meshoptimizer" FORCE)
+add_subdirectory(${SINEN_SOURCE_DIR}/libs/meshoptimizer EXCLUDE_FROM_ALL)
+
+set(KTX_FEATURE_DOC OFF CACHE BOOL "Create KTX documentation" FORCE)
+set(KTX_FEATURE_JNI OFF CACHE BOOL "Create Java bindings for libktx" FORCE)
+set(KTX_FEATURE_PY OFF CACHE BOOL "Create Python source distribution" FORCE)
+set(KTX_FEATURE_TESTS OFF CACHE BOOL "Create KTX unit tests" FORCE)
+set(KTX_FEATURE_TOOLS OFF CACHE BOOL "Enable KTX CLI tools" FORCE)
+set(KTX_FEATURE_TOOLS_CTS OFF CACHE BOOL "Enable KTX CLI tools CTS tests" FORCE)
+set(KTX_FEATURE_LOADTEST_APPS OFF CACHE STRING "Build KTX load test apps" FORCE)
+set(LIBKTX_FEATURE_KTX1 ON CACHE BOOL "Enable KTX 1 support" FORCE)
+set(LIBKTX_FEATURE_KTX2 ON CACHE BOOL "Enable KTX 2 support" FORCE)
+set(LIBKTX_FEATURE_VK_UPLOAD OFF CACHE BOOL "Enable Vulkan upload helpers" FORCE)
+set(LIBKTX_FEATURE_GL_UPLOAD OFF CACHE BOOL "Enable OpenGL upload helpers" FORCE)
+add_subdirectory(${SINEN_SOURCE_DIR}/libs/ktx-software EXCLUDE_FROM_ALL)
+
+if(SINEN_ENABLE_TRACY)
+  set(TRACY_ENABLE ON CACHE BOOL "Enable Tracy profiling" FORCE)
+  set(TRACY_ON_DEMAND ON CACHE BOOL "Enable Tracy on-demand profiling" FORCE)
+  set(TRACY_ONLY_LOCALHOST ON CACHE BOOL "Restrict Tracy to localhost" FORCE)
+  add_subdirectory(${SINEN_SOURCE_DIR}/libs/tracy EXCLUDE_FROM_ALL)
+endif()
 
 if(SINEN_USE_SLANG)
   add_subdirectory(${SINEN_SOURCE_DIR}/libs/slang EXCLUDE_FROM_ALL)
@@ -100,7 +126,8 @@ if(TARGET dawn::webgpu_dawn)
 endif()
 target_compile_definitions(
   sinen
-  PUBLIC $<$<BOOL:${SINEN_USE_SLANG}>:SINEN_USE_SLANG>)
+  PUBLIC $<$<BOOL:${SINEN_USE_SLANG}>:SINEN_USE_SLANG>
+         $<$<BOOL:${SINEN_ENABLE_TRACY}>:SINEN_ENABLE_TRACY>)
 if(EMSCRIPTEN)
   target_compile_definitions(sinen PUBLIC EMSCRIPTEN)
   target_link_options(
@@ -139,7 +166,7 @@ if(MSVC)
                                                   ${WINSDK_INCLUDES})
 endif()
 
-set(SINEN_LINK_LIBRARIES SDL3::SDL3 assimp Jolt)
+set(SINEN_LINK_LIBRARIES SDL3::SDL3 assimp Jolt meshoptimizer ktx_read)
 
 if(SINEN_ENABLE_WEBGPU)
   list(APPEND SINEN_LINK_LIBRARIES webgpu)
@@ -147,6 +174,10 @@ endif()
 
 if(SINEN_USE_SLANG)
   list(APPEND SINEN_LINK_LIBRARIES slang)
+endif()
+
+if(SINEN_ENABLE_TRACY)
+  list(APPEND SINEN_LINK_LIBRARIES Tracy::TracyClient)
 endif()
 
 list(

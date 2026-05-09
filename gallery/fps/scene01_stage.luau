@@ -144,7 +144,14 @@ function draw()
 	sn.Graphics.drawText(
 		scoreText,
 		G.FONT_DEFAULT64,
-		G.textTopLeftFromCenter(scoreText, G.FONT_DEFAULT64, sn.Vec2.new(-300, 300), 32),
+		G.FONT_DEFAULT64
+			:region(
+				scoreText,
+				32,
+				sn.Pivot.Center,
+				sn.Graphics.getCamera2D():center() + sn.Vec2.new(-300, -300)
+			)
+			:topLeft(),
 		sn.Color.new(1, 1, 1, 1),
 		32
 	)

@@ -17,10 +17,6 @@ synth:setPattern(
 )
 synth:play()
 
-local function textTopLeftFromCenter(text: string, pos: sn.Vec2, fontSize: number): sn.Vec2
-	return G.textTopLeftFromCenter(text, G.font, pos, fontSize)
-end
-
 function update()
 	if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
 		synth:stop()
@@ -35,18 +31,28 @@ function draw()
 	sn.Graphics.drawText(
 		"Synth (miniaudio) - press SPACE to restart, ESC to go back",
 		G.font,
-		textTopLeftFromCenter("Synth (miniaudio) - press SPACE to restart, ESC to go back", sn.Vec2.new(0), 16),
+		G.font
+			:region(
+				"Synth (miniaudio) - press SPACE to restart, ESC to go back",
+				16,
+				sn.Pivot.Center,
+				sn.Graphics.getCamera2D():center()
+			)
+			:topLeft(),
 		sn.Color.new(1),
 		16
 	)
 	sn.Graphics.drawText(
 		"Pattern uses [], ~, and modifiers (^wave @vel :dur #cutoff !pan)",
 		G.font,
-		textTopLeftFromCenter(
-			"Pattern uses [], ~, and modifiers (^wave @vel :dur #cutoff !pan)",
-			sn.Vec2.new(0, -20),
-			14
-		),
+		G.font
+			:region(
+				"Pattern uses [], ~, and modifiers (^wave @vel :dur #cutoff !pan)",
+				14,
+				sn.Pivot.Center,
+				sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, 20)
+			)
+			:topLeft(),
 		sn.Color.new(1),
 		14
 	)

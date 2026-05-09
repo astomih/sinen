@@ -20,7 +20,7 @@ function draw()
 	sn.Graphics.drawText(
 		"GAME OVER",
 		G.FONT_DEFAULT64,
-		G.textTopLeftFromCenter("GAME OVER", G.FONT_DEFAULT64, sn.Vec2.new(0), 64),
+		G.FONT_DEFAULT64:region("GAME OVER", 64, sn.Pivot.Center, sn.Graphics.getCamera2D():center()):topLeft(),
 		sn.Color.new(1, 0.25, 0.25, 1),
 		64
 	)

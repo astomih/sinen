@@ -12,7 +12,14 @@ text.show = function(self, text, pos, scale)
 			sn.Graphics.drawText(
 				text,
 				G.FONT_DEFAULT32,
-				G.textTopLeftFromCenter(text, G.FONT_DEFAULT32, pos, 24),
+				G.FONT_DEFAULT32
+					:region(
+						text,
+						24,
+						sn.Pivot.Center,
+						sn.Graphics.getCamera2D():center() + sn.Vec2.new(pos.x, -pos.y)
+					)
+					:topLeft(),
 				sn.Color.new(1),
 				24
 			)

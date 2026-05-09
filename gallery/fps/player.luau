@@ -361,19 +361,36 @@ Player.draw2 = function(self: Player)
 	sn.Graphics.drawText(
 		hpText,
 		G.FONT_DEFAULT64,
-		G.textTopLeftFromCenter(hpText, G.FONT_DEFAULT64, sn.Vec2.new(0, 300), 32),
+		G.FONT_DEFAULT64
+			:region(hpText, 32, sn.Pivot.Center, sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, -300))
+			:topLeft(),
 		self.hpColor,
 		32
 	)
 	sn.Graphics.drawImage(
 		self.stamina_max_texture,
-		G.rectFromCenter(sn.Vec2.new(0, 350), sn.Vec2.new(self.stamina_max_rect.width, self.stamina_max_rect.height))
+		sn.Rect.new(
+			sn.Pivot.Center,
+			sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, -350),
+			sn.Vec2.new(self.stamina_max_rect.width, self.stamina_max_rect.height)
+		)
 	)
 	sn.Graphics.drawImage(
 		self.stamina_texture,
-		G.rectFromCenter(sn.Vec2.new(0, 350), sn.Vec2.new(self.stamina_rect.width, self.stamina_rect.height))
+		sn.Rect.new(
+			sn.Pivot.Center,
+			sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, -350),
+			sn.Vec2.new(self.stamina_rect.width, self.stamina_rect.height)
+		)
 	)
-	sn.Graphics.drawImage(scopeTex, G.rectFromCenter(self.scopePos, scopeTex:size()))
+	sn.Graphics.drawImage(
+		scopeTex,
+		sn.Rect.new(
+			sn.Pivot.Center,
+			sn.Graphics.getCamera2D():center() + sn.Vec2.new(self.scopePos.x, -self.scopePos.y),
+			scopeTex:size()
+		)
+	)
 end
 ---@param self Player
 Player.render_text = function(self: Player)

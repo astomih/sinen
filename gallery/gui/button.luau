@@ -23,13 +23,23 @@ Button.show = function(self, text: string, pos: sn.Vec2, scale: sn.Vec2)
 	then
 		G.guiManager:add({
 			draw = function()
-				sn.Graphics.drawRect(G.rectFromCenter(pos, scale), sn.Color.new(0.2, 0.7, 0.2, 1))
+				sn.Graphics.drawRect(
+					sn.Rect.new(sn.Pivot.Center, sn.Graphics.getCamera2D():center() + sn.Vec2.new(pos.x, -pos.y), scale),
+					sn.Color.new(0.2, 0.7, 0.2, 1)
+				)
 			end,
 		})
 		if sn.Mouse.isPressed(sn.Mouse.LEFT) then
 			G.guiManager:add({
 				draw = function()
-					sn.Graphics.drawRect(G.rectFromCenter(pos, scale), sn.Color.new(0.2, 0.2, 0.7, 1))
+					sn.Graphics.drawRect(
+						sn.Rect.new(
+							sn.Pivot.Center,
+							sn.Graphics.getCamera2D():center() + sn.Vec2.new(pos.x, -pos.y),
+							scale
+						),
+						sn.Color.new(0.2, 0.2, 0.7, 1)
+					)
 				end,
 			})
 			return true
@@ -37,7 +47,10 @@ Button.show = function(self, text: string, pos: sn.Vec2, scale: sn.Vec2)
 	else
 		G.guiManager:add({
 			draw = function()
-				sn.Graphics.drawRect(G.rectFromCenter(pos, scale), self.bg_color)
+				sn.Graphics.drawRect(
+					sn.Rect.new(sn.Pivot.Center, sn.Graphics.getCamera2D():center() + sn.Vec2.new(pos.x, -pos.y), scale),
+					self.bg_color
+				)
 			end,
 		})
 	end
@@ -46,7 +59,14 @@ Button.show = function(self, text: string, pos: sn.Vec2, scale: sn.Vec2)
 			sn.Graphics.drawText(
 				text,
 				self.font,
-				G.textTopLeftFromCenter(text, self.font, pos, 14),
+				self.font
+					:region(
+						text,
+						14,
+						sn.Pivot.Center,
+						sn.Graphics.getCamera2D():center() + sn.Vec2.new(pos.x, -pos.y)
+					)
+					:topLeft(),
 				sn.Color.new(1),
 				14
 			)

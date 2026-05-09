@@ -23,7 +23,14 @@ function draw()
 	sn.Graphics.drawText(
 		"Example Launcher",
 		G.font,
-		G.textTopLeftFromCenter("Example Launcher", G.font, sn.Vec2.new(0, offset + 10), 24),
+		G.font
+			:region(
+				"Example Launcher",
+				24,
+				sn.Pivot.Center,
+				sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, -(offset + 10))
+			)
+			:topLeft(),
 		sn.Color.new(1, 1, 1, 1),
 		24
 	)

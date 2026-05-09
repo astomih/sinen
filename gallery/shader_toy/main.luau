@@ -28,15 +28,6 @@ local function fullscreenRect(): sn.Rect
 	return sn.Rect.new(sn.Vec2.new(0.0, 0.0), size)
 end
 
-local function toScreen(pos: sn.Vec2): sn.Vec2
-	local half = sn.Graphics.getCamera2D():half()
-	return sn.Vec2.new(half.x + pos.x, half.y - pos.y)
-end
-
-local function textTopLeftFromCenter(text: string, font: sn.Font, pos: sn.Vec2, fontSize: number): sn.Vec2
-	return font:region(text, fontSize, sn.Pivot.Center, toScreen(pos)):topLeft()
-end
-
 function setup()
 	sn.Graphics.resetGraphicsPipeline()
 	sn.Graphics.setClearColor(sn.Color.new(0.0, 0.0, 0.0, 1.0))
@@ -102,12 +93,14 @@ function draw()
 	sn.Graphics.drawText(
 		"SPACE / CLICK: CHANGE SHADER  ESC: BACK",
 		infoFont,
-		textTopLeftFromCenter(
-			"SPACE / CLICK: CHANGE SHADER  ESC: BACK",
-			infoFont,
-			sn.Vec2.new(0, -size.y * 0.5 + 34),
-			18
-		),
+		infoFont
+			:region(
+				"SPACE / CLICK: CHANGE SHADER  ESC: BACK",
+				18,
+				sn.Pivot.Center,
+				sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, size.y * 0.5 - 34)
+			)
+			:topLeft(),
 		sn.Color.new(1, 1, 1, 0.76),
 		18
 	)

@@ -44,8 +44,13 @@ Scroll.show = function(self: Scroll, pos: sn.Vec2, scale: sn.Vec2)
 		self.initial = false
 	end
 	local knobSize = sn.Vec2.new(scale.x, scale.y * 0.1)
-	self.rect = G.rectFromCenter(self.pos, knobSize)
-	self.maxRect = G.rectFromCenter(pos, scale)
+	self.rect = sn.Rect.new(
+		sn.Pivot.Center,
+		sn.Graphics.getCamera2D():center() + sn.Vec2.new(self.pos.x, -self.pos.y),
+		knobSize
+	)
+	self.maxRect =
+		sn.Rect.new(sn.Pivot.Center, sn.Graphics.getCamera2D():center() + sn.Vec2.new(pos.x, -pos.y), scale)
 	-- Mouse
 	local mpos = sn.Mouse.getPositionOnScene()
 	if not self.is_drag and sn.Mouse.isPressed(sn.Mouse.LEFT) then

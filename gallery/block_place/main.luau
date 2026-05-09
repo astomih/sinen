@@ -105,19 +105,6 @@ local function colorByIndex(index: number, alpha: number)
 	return sn.Color.new(c[1], c[2], c[3], a)
 end
 
-local function toScreen(pos: sn.Vec2): sn.Vec2
-	local half = sn.Graphics.getCamera2D():half()
-	return sn.Vec2.new(half.x + pos.x, half.y - pos.y)
-end
-
-local function rectFromCenter(pos: sn.Vec2, size: sn.Vec2): sn.Rect
-	return sn.Rect.new(sn.Pivot.Center, toScreen(pos), size)
-end
-
-local function textTopLeftFromCenter(text: string, font: sn.Font, pos: sn.Vec2, fontSize: number): sn.Vec2
-	return font:region(text, fontSize, sn.Pivot.Center, toScreen(pos)):topLeft()
-end
-
 local function boardCellCenter(row: number, col: number)
 	local x = BOARD_LEFT + (col - 0.5) * BOARD_CELL
 	local y = BOARD_TOP - (row - 0.5) * BOARD_CELL
@@ -409,7 +396,14 @@ local function drawShape(shape: Shape, left: number, top: number, size: number, 
 		local cell = shape.cells[i]
 		local x = left + cell.x * size + size * 0.5
 		local y = top - cell.y * size - size * 0.5
-		sn.Graphics.drawRect(rectFromCenter(sn.Vec2.new(x, y), sn.Vec2.new(size - 4.0, size - 4.0)), color)
+		sn.Graphics.drawRect(
+			sn.Rect.new(
+				sn.Pivot.Center,
+				sn.Graphics.getCamera2D():center() + sn.Vec2.new(x, -y),
+				sn.Vec2.new(size - 4.0, size - 4.0)
+			),
+			color
+		)
 	end
 end
 
@@ -418,11 +412,19 @@ local function drawBoard()
 	local frameX = BOARD_LEFT + boardSizePx * 0.5
 	local frameY = BOARD_TOP - boardSizePx * 0.5
 	sn.Graphics.drawRect(
-		rectFromCenter(sn.Vec2.new(frameX, frameY), sn.Vec2.new(boardSizePx + 26.0, boardSizePx + 26.0)),
+		sn.Rect.new(
+			sn.Pivot.Center,
+			sn.Graphics.getCamera2D():center() + sn.Vec2.new(frameX, -frameY),
+			sn.Vec2.new(boardSizePx + 26.0, boardSizePx + 26.0)
+		),
 		sn.Color.new(0.09, 0.11, 0.15, 1.0)
 	)
 	sn.Graphics.drawRect(
-		rectFromCenter(sn.Vec2.new(frameX, frameY), sn.Vec2.new(boardSizePx + 8.0, boardSizePx + 8.0)),
+		sn.Rect.new(
+			sn.Pivot.Center,
+			sn.Graphics.getCamera2D():center() + sn.Vec2.new(frameX, -frameY),
+			sn.Vec2.new(boardSizePx + 8.0, boardSizePx + 8.0)
+		),
 		BOARD_COLOR
 	)
 
@@ -432,12 +434,20 @@ local function drawBoard()
 			local index = board[row][col]
 			if index == 0 then
 				sn.Graphics.drawRect(
-					rectFromCenter(sn.Vec2.new(x, y), sn.Vec2.new(BOARD_CELL - 6.0, BOARD_CELL - 6.0)),
+					sn.Rect.new(
+						sn.Pivot.Center,
+						sn.Graphics.getCamera2D():center() + sn.Vec2.new(x, -y),
+						sn.Vec2.new(BOARD_CELL - 6.0, BOARD_CELL - 6.0)
+					),
 					EMPTY_CELL_COLOR
 				)
 			else
 				sn.Graphics.drawRect(
-					rectFromCenter(sn.Vec2.new(x, y), sn.Vec2.new(BOARD_CELL - 6.0, BOARD_CELL - 6.0)),
+					sn.Rect.new(
+						sn.Pivot.Center,
+						sn.Graphics.getCamera2D():center() + sn.Vec2.new(x, -y),
+						sn.Vec2.new(BOARD_CELL - 6.0, BOARD_CELL - 6.0)
+					),
 					colorByIndex(index, 1.0)
 				)
 			end
@@ -456,7 +466,11 @@ local function drawBoard()
 					local pc = col + cell.x
 					local x, y = boardCellCenter(pr, pc)
 					sn.Graphics.drawRect(
-						rectFromCenter(sn.Vec2.new(x, y), sn.Vec2.new(BOARD_CELL - 12.0, BOARD_CELL - 12.0)),
+						sn.Rect.new(
+							sn.Pivot.Center,
+							sn.Graphics.getCamera2D():center() + sn.Vec2.new(x, -y),
+							sn.Vec2.new(BOARD_CELL - 12.0, BOARD_CELL - 12.0)
+						),
 						colorByIndex(piece.colorIndex, 0.45)
 					)
 				end
@@ -474,12 +488,26 @@ local function drawRack()
 			baseColor = sn.Color.new(0.2, 0.26, 0.34, 1.0)
 		end
 
-		sn.Graphics.drawRect(rectFromCenter(sn.Vec2.new(x, SLOT_Y), sn.Vec2.new(SLOT_WIDTH, SLOT_HEIGHT)), baseColor)
+		sn.Graphics.drawRect(
+			sn.Rect.new(
+				sn.Pivot.Center,
+				sn.Graphics.getCamera2D():center() + sn.Vec2.new(x, -SLOT_Y),
+				sn.Vec2.new(SLOT_WIDTH, SLOT_HEIGHT)
+			),
+			baseColor
+		)
 		local pieceText = "PIECE " .. i
 		sn.Graphics.drawText(
 			pieceText,
 			infoFont,
-			textTopLeftFromCenter(pieceText, infoFont, sn.Vec2.new(x, SLOT_Y + 58.0), 16),
+			infoFont
+				:region(
+					pieceText,
+					16,
+					sn.Pivot.Center,
+					sn.Graphics.getCamera2D():center() + sn.Vec2.new(x, -(SLOT_Y + 58.0))
+				)
+				:topLeft(),
 			sn.Color.new(0.85, 0.9, 0.98, 0.95),
 			16
 		)
@@ -489,7 +517,14 @@ local function drawRack()
 			sn.Graphics.drawText(
 				"USED",
 				hudFont,
-				textTopLeftFromCenter("USED", hudFont, sn.Vec2.new(x, SLOT_Y - 6.0), 22),
+				hudFont
+					:region(
+						"USED",
+						22,
+						sn.Pivot.Center,
+						sn.Graphics.getCamera2D():center() + sn.Vec2.new(x, -(SLOT_Y - 6.0))
+					)
+					:topLeft(),
 				sn.Color.new(0.7, 0.75, 0.86, 0.95),
 				22
 			)
@@ -528,27 +563,48 @@ local function drawGameOver()
 
 	local half = sn.Graphics.getCamera2D():half()
 	sn.Graphics.drawRect(
-		rectFromCenter(sn.Vec2.new(0, 0), sn.Vec2.new(half.x * 2.0 + 2.0, half.y * 2.0 + 2.0)),
+		sn.Rect.new(sn.Pivot.Center, sn.Graphics.getCamera2D():center(), sn.Vec2.new(half.x * 2.0 + 2.0, half.y * 2.0 + 2.0)),
 		sn.Color.new(0, 0, 0, 0.62)
 	)
 	sn.Graphics.drawText(
 		"NO MORE MOVES",
 		titleFont,
-		textTopLeftFromCenter("NO MORE MOVES", titleFont, sn.Vec2.new(0, 70), 48),
+		titleFont
+			:region(
+				"NO MORE MOVES",
+				48,
+				sn.Pivot.Center,
+				sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, -70)
+			)
+			:topLeft(),
 		sn.Color.new(1, 1, 1, 0.98),
 		48
 	)
 	sn.Graphics.drawText(
 		"SPACE or LEFT CLICK to restart",
 		hudFont,
-		textTopLeftFromCenter("SPACE or LEFT CLICK to restart", hudFont, sn.Vec2.new(0, 6), 24),
+		hudFont
+			:region(
+				"SPACE or LEFT CLICK to restart",
+				24,
+				sn.Pivot.Center,
+				sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, -6)
+			)
+			:topLeft(),
 		sn.Color.new(0.88, 0.93, 1.0, 0.95),
 		24
 	)
 	sn.Graphics.drawText(
 		"ESC to return gallery",
 		infoFont,
-		textTopLeftFromCenter("ESC to return gallery", infoFont, sn.Vec2.new(0, -38), 20),
+		infoFont
+			:region(
+				"ESC to return gallery",
+				20,
+				sn.Pivot.Center,
+				sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, 38)
+			)
+			:topLeft(),
 		sn.Color.new(0.78, 0.86, 0.98, 0.92),
 		20
 	)

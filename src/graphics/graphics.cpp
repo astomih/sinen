@@ -17,6 +17,7 @@
 
 #include <SDL3/SDL.h>
 
+#include <algorithm>
 #include <cstring>
 
 namespace sinen {
@@ -312,10 +313,13 @@ static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
   auto indexBufferBinding = gpu::BufferBinding{};
   auto textureSamplers = Array<gpu::TextureSamplerBinding>{};
   auto ratio = camera2D.windowRatio();
-  auto invRatio = camera2D.invWindowRatio();
   Mat4 mat[3];
   Array<Mat4> instanceData;
-  auto pos = transforms[0].position * ratio;
+  const auto cameraSize = camera2D.size();
+  const Vec2 cameraHalf = cameraSize * 0.5f;
+  const auto pos = Vec2(transforms[0].position.x - cameraHalf.x,
+                        cameraHalf.y - transforms[0].position.y) *
+                   ratio;
   auto scale = transforms[0].scale * 0.5f * ratio;
   {
     Transform transform;
@@ -327,7 +331,6 @@ static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
   }
   auto viewproj = Mat4(1.0f);
 
-  auto screenSize = camera2D.size();
   viewproj[0][0] = 2.f / Window::size().x;
   viewproj[1][1] = 2.f / Window::size().y;
   mat[1] = viewproj;
@@ -335,10 +338,13 @@ static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
   if (transforms.size() > 1) {
     for (auto &i : transforms) {
       Transform transform;
-      transform.setPosition(
-          Vec3(i.position.x * ratio.x, i.position.y * ratio.y, 0.0f));
+      const auto instancePos =
+          Vec2(i.position.x - cameraHalf.x, cameraHalf.y - i.position.y) *
+          ratio;
+      transform.setPosition(Vec3(instancePos.x, instancePos.y, 0.0f));
       transform.setRotation(Vec3(0, 0, i.rotation));
-      transform.setScale(Vec3(i.scale.x * 0.5f, i.scale.y * 0.5f, 1.0f));
+      transform.setScale(
+          Vec3(i.scale.x * 0.5f * ratio.x, i.scale.y * 0.5f * ratio.y, 1.0f));
       instanceData.push_back(transform.getWorldMatrix());
     }
   }
@@ -487,7 +493,7 @@ void Graphics::drawRect(const Rect &rect, const Color &color, float angle) {
     currentPipeline = customPipeline.value();
   else
     currentPipeline = BuiltinPipeline::getRect2D();
-  Array<Transform2D> transforms(1, {rect.position(), angle, rect.size()});
+  Array<Transform2D> transforms(1, {rect.center(), angle, rect.size()});
   currentCommandBuffer->pushFragmentUniformData(1, &color, sizeof(Color));
   drawBase2D(transforms, sprite);
 }
@@ -497,7 +503,7 @@ void Graphics::drawImage(const Ptr<Texture> &texture, const Rect &rect,
     currentPipeline = customPipeline.value();
   else
     currentPipeline = BuiltinPipeline::getDefault2D();
-  Array<Transform2D> transforms(1, {rect.position(), angle, rect.size()});
+  Array<Transform2D> transforms(1, {rect.center(), angle, rect.size()});
   setTexture(0, texture);
   drawBase2D(transforms, sprite);
 }
@@ -514,8 +520,21 @@ void Graphics::drawText(StringView text, const Font &font, const Vec2 &position,
 
   Model model;
   model.loadFromVertexArray(textData.mesh);
-  Array<Transform2D> transforms(
-      1, {position, angle, Vec2(textSize / static_cast<float>(font.size()))});
+  const auto scale = textSize / static_cast<float>(font.size());
+  const auto meshScale = scale * 0.5f;
+  Vec2 textPosition = position;
+  const auto meshData = textData.mesh.data();
+  if (meshData != nullptr && !meshData->vertices.empty()) {
+    auto minX = meshData->vertices[0].position.x;
+    auto maxY = meshData->vertices[0].position.y;
+    for (const auto &vertex : meshData->vertices) {
+      minX = std::min(minX, vertex.position.x);
+      maxY = std::max(maxY, vertex.position.y);
+    }
+    textPosition.x -= minX * meshScale;
+    textPosition.y += maxY * meshScale;
+  }
+  Array<Transform2D> transforms(1, {textPosition, angle, Vec2(scale)});
   setTexture(0, textData.texture);
   const Vec2 atlasSize = textData.texture->size();
   const FontFragmentParams params{color,

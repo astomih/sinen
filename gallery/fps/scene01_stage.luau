@@ -140,7 +140,14 @@ function draw()
 	sn.Graphics.drawModel(sprite_model, stair)
 
 	player:draw2()
-	sn.Graphics.drawText("SCORE: " .. G.SCORE, G.FONT_DEFAULT64, sn.Vec2.new(-300, 300), sn.Color.new(1, 1, 1, 1), 32)
+	local scoreText = "SCORE: " .. G.SCORE
+	sn.Graphics.drawText(
+		scoreText,
+		G.FONT_DEFAULT64,
+		G.textTopLeftFromCenter(scoreText, G.FONT_DEFAULT64, sn.Vec2.new(-300, 300), 32),
+		sn.Color.new(1, 1, 1, 1),
+		32
+	)
 	menu_object:draw()
 	scene_switcher:draw()
 	G.GUI_MANAGER:draw()

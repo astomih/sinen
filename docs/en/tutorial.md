@@ -10,6 +10,8 @@ Sinen is based on three simple rules:
 - Split logic into `setup`, `update`, and `draw`
 - Place assets under the runtime base directory
 
+2D drawing uses Processing/raylib-style coordinates. `sn.Vec2.new(0, 0)` is the top-left of the screen, x grows to the right, and y grows downward. `sn.Rect.new(x, y, width, height)` also treats `x, y` as the rectangle's top-left corner.
+
 Here is the minimum script:
 
 ```luau
@@ -28,7 +30,7 @@ function update()
 end
 
 function draw()
-	sn.Graphics.drawText("Hello Sinen!", font, sn.Vec2.new(0, 0), sn.Color.new(1.0), 32)
+	sn.Graphics.drawText("Hello Sinen!", font, sn.Vec2.new(20, 20), sn.Color.new(1.0), 32)
 end
 ```
 
@@ -78,7 +80,7 @@ function setup()
 end
 
 function draw()
-	sn.Graphics.drawImage(image, sn.Rect.new(sn.Vec2.new(0), image:size()))
+	sn.Graphics.drawImage(image, sn.Rect.new(20, 20, image:size().x, image:size().y))
 end
 ```
 

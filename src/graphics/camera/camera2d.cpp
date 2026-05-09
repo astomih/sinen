@@ -14,7 +14,7 @@ Vec2 Camera2D::windowRatio() const { return Window::size() / rect_.size(); }
 Vec2 Camera2D::invWindowRatio() const { return rect_.size() / Window::size(); }
 Vec2 Camera2D::size() const { return rect_.size(); }
 Vec2 Camera2D::half() const { return rect_.size() * 0.5f; }
-Rect Camera2D::rect() const { return Rect(Vec2(0), size()); }
+Rect Camera2D::rect() const { return Rect(0.0f, 0.0f, size().x, size().y); }
 Vec2 Camera2D::topLeft() const { return rect().topLeft(); }
 Vec2 Camera2D::topCenter() const { return rect().topCenter(); }
 Vec2 Camera2D::topRight() const { return rect().topRight(); }

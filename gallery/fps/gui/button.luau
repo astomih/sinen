@@ -27,13 +27,13 @@ Button.show = function(self: Button, text: string, pos: sn.Vec2, scale: sn.Vec2)
 	then
 		G.GUI_MANAGER:add({
 			draw = function()
-				sn.Graphics.drawRect(sn.Rect.new(pos, scale), sn.Color.new(0.2, 0.7, 0.2, 1))
+				sn.Graphics.drawRect(G.rectFromCenter(pos, scale), sn.Color.new(0.2, 0.7, 0.2, 1))
 			end,
 		})
 		if sn.Mouse.isPressed(sn.Mouse.LEFT) then
 			G.GUI_MANAGER:add({
 				draw = function()
-					sn.Graphics.drawRect(sn.Rect.new(pos, scale), sn.Color.new(0.2, 0.2, 0.7, 1))
+					sn.Graphics.drawRect(G.rectFromCenter(pos, scale), sn.Color.new(0.2, 0.2, 0.7, 1))
 				end,
 			})
 			return true
@@ -41,13 +41,19 @@ Button.show = function(self: Button, text: string, pos: sn.Vec2, scale: sn.Vec2)
 	else
 		G.GUI_MANAGER:add({
 			draw = function()
-				sn.Graphics.drawRect(sn.Rect.new(pos, scale), self.bgColor)
+				sn.Graphics.drawRect(G.rectFromCenter(pos, scale), self.bgColor)
 			end,
 		})
 	end
 	G.GUI_MANAGER:add({
 		draw = function()
-			sn.Graphics.drawText(text, G.FONT_DEFAULT64, pos, sn.Color.new(1), 24)
+			sn.Graphics.drawText(
+				text,
+				G.FONT_DEFAULT64,
+				G.textTopLeftFromCenter(text, G.FONT_DEFAULT64, pos, 24),
+				sn.Color.new(1),
+				24
+			)
 		end,
 	})
 

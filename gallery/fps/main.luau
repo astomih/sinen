@@ -23,11 +23,17 @@ function update()
 end
 
 function draw()
-	sn.Graphics.drawText("FPS", G.FONT_DEFAULT64, sn.Vec2.new(0, 0), sn.Color.new(1), 64)
+	sn.Graphics.drawText(
+		"FPS",
+		G.FONT_DEFAULT64,
+		G.textTopLeftFromCenter("FPS", G.FONT_DEFAULT64, sn.Vec2.new(0, 0), 64),
+		sn.Color.new(1),
+		64
+	)
 	sn.Graphics.drawText(
 		"CLICK TO START",
 		G.FONT_DEFAULT32,
-		sn.Vec2.new(0, -64 * 3.0),
+		G.textTopLeftFromCenter("CLICK TO START", G.FONT_DEFAULT32, sn.Vec2.new(0, -64 * 3.0), 32),
 		sn.Color.new(1, 1, 1, sn.Periodic.sin0_1(2.0, sn.Time.seconds())),
 		32
 	)

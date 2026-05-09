@@ -2,6 +2,11 @@ local sn = require("@sinen")
 local texture: sn.Texture = sn.Texture.new()
 texture:load("logo.png")
 
+local function rectFromCenter(pos: sn.Vec2, size: sn.Vec2): sn.Rect
+	local half = sn.Graphics.getCamera2D():half()
+	return sn.Rect.new(sn.Pivot.Center, sn.Vec2.new(half.x + pos.x, half.y - pos.y), size)
+end
+
 local vertexShader: sn.Shader = sn.Shader.new()
 vertexShader:compileAndLoad("shader_custom.slang", sn.ShaderStage.Vertex)
 local fragmentShader: sn.Shader = sn.Shader.new()
@@ -30,5 +35,5 @@ function draw()
 	sn.Graphics.setGraphicsPipeline(pipeline2D)
 	sn.Graphics.setUniformBuffer(1, uniformBuffer)
 	-- Draw texture
-	sn.Graphics.drawImage(texture, sn.Rect.new(sn.Vec2.new(0), texture:size()))
+	sn.Graphics.drawImage(texture, rectFromCenter(sn.Vec2.new(0), texture:size()))
 end

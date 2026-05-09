@@ -357,10 +357,23 @@ Player.draw3 = function(self: Player)
 end
 ---@param self Player
 Player.draw2 = function(self: Player)
-	sn.Graphics.drawText("HP: " .. self.hp, G.FONT_DEFAULT64, sn.Vec2.new(0, 300), self.hpColor, 32)
-	sn.Graphics.drawImage(self.stamina_max_texture, self.stamina_max_rect)
-	sn.Graphics.drawImage(self.stamina_texture, self.stamina_rect)
-	sn.Graphics.drawImage(scopeTex, sn.Rect.new(self.scopePos, scopeTex:size()))
+	local hpText = "HP: " .. self.hp
+	sn.Graphics.drawText(
+		hpText,
+		G.FONT_DEFAULT64,
+		G.textTopLeftFromCenter(hpText, G.FONT_DEFAULT64, sn.Vec2.new(0, 300), 32),
+		self.hpColor,
+		32
+	)
+	sn.Graphics.drawImage(
+		self.stamina_max_texture,
+		G.rectFromCenter(sn.Vec2.new(0, 350), sn.Vec2.new(self.stamina_max_rect.width, self.stamina_max_rect.height))
+	)
+	sn.Graphics.drawImage(
+		self.stamina_texture,
+		G.rectFromCenter(sn.Vec2.new(0, 350), sn.Vec2.new(self.stamina_rect.width, self.stamina_rect.height))
+	)
+	sn.Graphics.drawImage(scopeTex, G.rectFromCenter(self.scopePos, scopeTex:size()))
 end
 ---@param self Player
 Player.render_text = function(self: Player)

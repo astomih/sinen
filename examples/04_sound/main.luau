@@ -13,5 +13,11 @@ function update()
 end
 
 function draw()
-	sn.Graphics.drawText("Press SPACE key to play sound", G.font, sn.Vec2.new(0), sn.Color.new(1), 16)
+	sn.Graphics.drawText(
+		"Press SPACE key to play sound",
+		G.font,
+		G.textTopLeftFromCenter("Press SPACE key to play sound", G.font, sn.Vec2.new(0), 16),
+		sn.Color.new(1),
+		16
+	)
 end

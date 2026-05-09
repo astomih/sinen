@@ -1,4 +1,5 @@
 local sn = require("@sinen")
+local G = require("./global")
 ---@class SceneSwitcher
 
 local SceneSwitcher = {
@@ -66,7 +67,7 @@ SceneSwitcher.update = function(self: SceneSwitcher)
 end
 
 SceneSwitcher.draw = function(self)
-	sn.Graphics.drawRect(sn.Rect.new(sn.Vec2.new(0), sn.Window.size()), self.color)
+	sn.Graphics.drawRect(G.rectFromCenter(sn.Vec2.new(0), sn.Window.size()), self.color)
 end
 
 SceneSwitcher.start = function(self, scene_name)

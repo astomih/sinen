@@ -43,12 +43,18 @@ Scroll.show = function(self: Scroll, pos: sn.Vec2, scale: sn.Vec2)
 		self.pos = sn.Vec2.new(pos.x, pos.y)
 		self.initial = false
 	end
-	self.rect = sn.Rect.new(self.pos, sn.Vec2.new(scale.x, scale.y * 0.1))
-	self.maxRect = sn.Rect.new(pos, scale)
+	local knobSize = sn.Vec2.new(scale.x, scale.y * 0.1)
+	self.rect = G.rectFromCenter(self.pos, knobSize)
+	self.maxRect = G.rectFromCenter(pos, scale)
 	-- Mouse
 	local mpos = sn.Mouse.getPositionOnScene()
 	if not self.is_drag and sn.Mouse.isPressed(sn.Mouse.LEFT) then
-		if self.rect:intersectsRect(sn.Rect.new(mpos, sn.Vec2.new(1))) then
+		if
+			mpos.x >= self.pos.x - knobSize.x * 0.5
+			and mpos.x <= self.pos.x + knobSize.x * 0.5
+			and mpos.y >= self.pos.y - knobSize.y * 0.5
+			and mpos.y <= self.pos.y + knobSize.y * 0.5
+		then
 			self.is_drag = true
 		end
 	end
@@ -57,11 +63,13 @@ Scroll.show = function(self: Scroll, pos: sn.Vec2, scale: sn.Vec2)
 	end
 	if self.is_drag then
 		self.pos.y = mpos.y
-		if self.pos.y > self.maxRect:topCenter().y then
-			self.pos.y = self.maxRect:topCenter().y - self.rect.height * 0.5
+		local maxY = pos.y + scale.y * 0.5
+		local minY = pos.y - scale.y * 0.5
+		if self.pos.y > maxY then
+			self.pos.y = maxY - knobSize.y * 0.5
 		end
-		if self.pos.y < self.maxRect:bottomCenter().y then
-			self.pos.y = self.maxRect:bottomCenter().y + self.rect.height * 0.5
+		if self.pos.y < minY then
+			self.pos.y = minY + knobSize.y * 0.5
 		end
 		for i, v in ipairs(self.positions) do
 			v.y = mpos.y + v.y

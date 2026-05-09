@@ -39,6 +39,19 @@ local function particleCount(): number
 	return 240
 end
 
+local function toScreen(pos: sn.Vec2): sn.Vec2
+	local half = sn.Graphics.getCamera2D():half()
+	return sn.Vec2.new(half.x + pos.x, half.y - pos.y)
+end
+
+local function rectFromCenter(pos: sn.Vec2, size: sn.Vec2): sn.Rect
+	return sn.Rect.new(sn.Pivot.Center, toScreen(pos), size)
+end
+
+local function textTopLeftFromCenter(text: string, font: sn.Font, pos: sn.Vec2, fontSize: number): sn.Vec2
+	return font:region(text, fontSize, sn.Pivot.Center, toScreen(pos)):topLeft()
+end
+
 function setup()
 	sn.Graphics.resetGraphicsPipeline()
 	sn.Graphics.getCamera2D():resize(sn.Vec2.new(1280, 720))
@@ -78,7 +91,7 @@ local function drawBackground(t: number, mx: number, my: number)
 		local b = 0.07 + wave(fy * 9.0, t + mx * 0.001) * 0.24
 
 		sn.Graphics.drawRect(
-			sn.Rect.new(sn.Vec2.new(0, y), sn.Vec2.new(width + 2.0, step + 1.0)),
+			rectFromCenter(sn.Vec2.new(0, y), sn.Vec2.new(width + 2.0, step + 1.0)),
 			sn.Color.new(saturate(r), saturate(g), saturate(b), 1.0)
 		)
 		y = y + step
@@ -105,7 +118,7 @@ local function drawSwarm(t: number, mx: number, my: number)
 		local a = 0.2 + wave(fi * 2.1, t * 1.5) * 0.6
 
 		sn.Graphics.drawRect(
-			sn.Rect.new(sn.Vec2.new(x, y), sn.Vec2.new(sz, sz)),
+			rectFromCenter(sn.Vec2.new(x, y), sn.Vec2.new(sz, sz)),
 			sn.Color.new(saturate(r), saturate(g), saturate(b), saturate(a))
 		)
 	end
@@ -119,7 +132,7 @@ local function drawCore(t: number, mx: number, my: number)
 		local cy = my * (0.04 + i * 0.006)
 
 		sn.Graphics.drawRect(
-			sn.Rect.new(sn.Vec2.new(cx, cy), sn.Vec2.new(size, size)),
+			rectFromCenter(sn.Vec2.new(cx, cy), sn.Vec2.new(size, size)),
 			sn.Color.new(0.85, 0.95, 1.0, saturate(alpha))
 		)
 	end
@@ -135,15 +148,33 @@ function draw()
 	drawSwarm(t, mx, my)
 	drawCore(t, mx, my)
 
-	sn.Graphics.drawRect(sn.Rect.new(sn.Vec2.new(mx, my), sn.Vec2.new(12, 12)), sn.Color.new(1, 1, 1, 0.9))
+	sn.Graphics.drawRect(rectFromCenter(sn.Vec2.new(mx, my), sn.Vec2.new(12, 12)), sn.Color.new(1, 1, 1, 0.9))
 
-	sn.Graphics.drawText("NEON ORBIT", titleFont, sn.Vec2.new(0, 320), sn.Color.new(1, 1, 1, 0.95), 44)
+	sn.Graphics.drawText(
+		"NEON ORBIT",
+		titleFont,
+		textTopLeftFromCenter("NEON ORBIT", titleFont, sn.Vec2.new(0, 320), 44),
+		sn.Color.new(1, 1, 1, 0.95),
+		44
+	)
 	sn.Graphics.drawText(
 		"SPACE: MODE  LEFT CLICK: PALETTE SHIFT  ESC: BACK",
 		infoFont,
-		sn.Vec2.new(0, -330),
+		textTopLeftFromCenter(
+			"SPACE: MODE  LEFT CLICK: PALETTE SHIFT  ESC: BACK",
+			infoFont,
+			sn.Vec2.new(0, -330),
+			20
+		),
 		sn.Color.new(1, 1, 1, 0.85),
 		20
 	)
-	sn.Graphics.drawText("MODE: " .. modeName(), infoFont, sn.Vec2.new(0, 285), sn.Color.new(0.9, 1.0, 1.0, 0.9), 20)
+	local modeText = "MODE: " .. modeName()
+	sn.Graphics.drawText(
+		modeText,
+		infoFont,
+		textTopLeftFromCenter(modeText, infoFont, sn.Vec2.new(0, 285), 20),
+		sn.Color.new(0.9, 1.0, 1.0, 0.9),
+		20
+	)
 end

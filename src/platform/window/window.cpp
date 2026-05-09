@@ -151,7 +151,7 @@ static int lWindowRight(lua_State *L) {
   return 1;
 }
 static int lWindowBottomLeft(lua_State *L) {
-  udNewOwned<Vec2>(L, Window::left());
+  udNewOwned<Vec2>(L, Window::bottomLeft());
   return 1;
 }
 static int lWindowBottomCenter(lua_State *L) {

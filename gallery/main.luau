@@ -26,6 +26,12 @@ function update()
 end
 
 function draw()
-	sn.Graphics.drawText("Gallery Launcher", G.font, sn.Vec2.new(0, offset + 10), sn.Color.new(1, 1, 1, 1), 24)
+	sn.Graphics.drawText(
+		"Gallery Launcher",
+		G.font,
+		G.textTopLeftFromCenter("Gallery Launcher", G.font, sn.Vec2.new(0, offset + 10), 24),
+		sn.Color.new(1, 1, 1, 1),
+		24
+	)
 	G.guiManager:draw()
 end

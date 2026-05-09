@@ -18,7 +18,13 @@ function update()
 end
 
 function draw()
-	sn.Graphics.drawText("STAGE CLEAR", G.FONT_DEFAULT64, sn.Vec2.new(0), sn.Color.new(1), 64)
+	sn.Graphics.drawText(
+		"STAGE CLEAR",
+		G.FONT_DEFAULT64,
+		G.textTopLeftFromCenter("STAGE CLEAR", G.FONT_DEFAULT64, sn.Vec2.new(0), 64),
+		sn.Color.new(1),
+		64
+	)
 	scene_switcher:draw()
 	G.GUI_MANAGER:draw()
 end

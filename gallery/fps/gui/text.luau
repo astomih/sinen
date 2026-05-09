@@ -9,7 +9,13 @@ end
 text.show = function(self, text, pos, scale)
 	G.GUI_MANAGER:add({
 		draw = function()
-			sn.Graphics.drawText(text, G.FONT_DEFAULT32, pos, sn.Color.new(1), 24)
+			sn.Graphics.drawText(
+				text,
+				G.FONT_DEFAULT32,
+				G.textTopLeftFromCenter(text, G.FONT_DEFAULT32, pos, 24),
+				sn.Color.new(1),
+				24
+			)
 		end,
 	})
 

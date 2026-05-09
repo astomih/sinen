@@ -86,6 +86,9 @@ export type Pivot = {
 	BottomRight: number,
 }
 
+-- 2D rectangles use a top-left origin: x/y is the top-left corner,
+-- width grows to the right, and height grows downward.
+-- The pivot overloads let you construct the same rectangle from another anchor.
 export type Rect = {
 	x: number,
 	y: number,
@@ -389,8 +392,12 @@ export type BuiltinPipelines = {
 }
 
 export type Graphics = {
+	-- 2D drawing uses Processing/raylib-style screen coordinates:
+	-- (0, 0) is the top-left of the active Camera2D, x grows right, y grows down.
+	-- drawRect/drawImage use Rect.x/y as the object's top-left corner.
 	drawRect: (rect: Rect, color: Color, angle: number?) -> nil,
 	drawImage: (texture: Texture, rect: Rect, angle: number?) -> nil,
+	-- drawText positions the top-left of the rendered text.
 	drawText: (text: string, font: Font, position: Vec2, color: Color?, fontSize: number?, angle: number?) -> nil,
 	drawModel: (model: Model, transform: Transform) -> nil,
 	drawModelInstanced: (model: Model, transforms: { Transform }) -> nil,

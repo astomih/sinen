@@ -10,6 +10,8 @@ Sinen の基本はこの3つです。
 - `setup` / `update` / `draw` の3関数で処理を分ける
 - アセットは実行時のベースディレクトリ配下に置く
 
+2D 描画の座標は Processing や raylib と同じく左上原点です。`sn.Vec2.new(0, 0)` は画面左上、x は右方向、y は下方向に増えます。`sn.Rect.new(x, y, width, height)` の `x, y` も矩形の左上です。
+
 最小コードは次のとおりです。
 
 ```luau
@@ -28,7 +30,7 @@ function update()
 end
 
 function draw()
-	sn.Graphics.drawText("Hello Sinen!", font, sn.Vec2.new(0, 0), sn.Color.new(1.0), 32)
+	sn.Graphics.drawText("Hello Sinen!", font, sn.Vec2.new(20, 20), sn.Color.new(1.0), 32)
 end
 ```
 
@@ -78,7 +80,7 @@ function setup()
 end
 
 function draw()
-	sn.Graphics.drawImage(image, sn.Rect.new(sn.Vec2.new(0), image:size()))
+	sn.Graphics.drawImage(image, sn.Rect.new(20, 20, image:size().x, image:size().y))
 end
 ```
 

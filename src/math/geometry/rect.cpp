@@ -13,25 +13,31 @@ Rect::Rect(const Vec2 &_pos, const Vec2 &_size) : _pos(_pos), _size(_size) {}
 Rect::Rect(Pivot pivot, float x, float y, float width, float height) {
   switch (pivot) {
   case Pivot::TopLeft:
-    *this = Rect(x + width * 0.5f, y - height * 0.5f, width, height);
-    break;
-  case Pivot::TopCenter:
-    *this = Rect(x, y - height * 0.5f, width, height);
-    break;
-  case Pivot::TopRight:
-    *this = Rect(x - width * 0.5f, y - height * 0.5f, width, height);
-    break;
-  case Pivot::Center:
     *this = Rect(x, y, width, height);
     break;
+  case Pivot::TopCenter:
+    *this = Rect(x - width * 0.5f, y, width, height);
+    break;
+  case Pivot::TopRight:
+    *this = Rect(x - width, y, width, height);
+    break;
+  case Pivot::Left:
+    *this = Rect(x, y - height * 0.5f, width, height);
+    break;
+  case Pivot::Center:
+    *this = Rect(x - width * 0.5f, y - height * 0.5f, width, height);
+    break;
+  case Pivot::Right:
+    *this = Rect(x - width, y - height * 0.5f, width, height);
+    break;
   case Pivot::BottomLeft:
-    *this = Rect(x + width * 0.5f, y + height * 0.5f, width, height);
+    *this = Rect(x, y - height, width, height);
     break;
   case Pivot::BottomCenter:
-    *this = Rect(x, y + height * 0.5f, width, height);
+    *this = Rect(x - width * 0.5f, y - height, width, height);
     break;
   case Pivot::BottomRight:
-    *this = Rect(x - width * 0.5f, y + height * 0.5f, width, height);
+    *this = Rect(x - width, y - height, width, height);
     break;
   default:
     assert(false && "Invalid pivot");
@@ -43,28 +49,26 @@ Rect::Rect(Pivot pivot, const Vec2 &pos, const Vec2 &size) {
   *this = Rect(pivot, pos.x, pos.y, size.x, size.y);
 }
 
-Vec2 Rect::topLeft() const {
-  return Vec2(_pos.x - _size.x * 0.5f, _pos.y + _size.y * 0.5f);
-}
+Vec2 Rect::topLeft() const { return _pos; }
 
-Vec2 Rect::topCenter() const { return Vec2(_pos.x, _pos.y + _size.y * 0.5f); }
+Vec2 Rect::topCenter() const { return Vec2(_pos.x + _size.x * 0.5f, _pos.y); }
 
-Vec2 Rect::topRight() const {
+Vec2 Rect::topRight() const { return Vec2(_pos.x + _size.x, _pos.y); }
+Vec2 Rect::left() const { return Vec2(_pos.x, _pos.y + _size.y * 0.5f); }
+Vec2 Rect::center() const {
   return Vec2(_pos.x + _size.x * 0.5f, _pos.y + _size.y * 0.5f);
 }
-Vec2 Rect::left() const { return Vec2(_pos.x - _size.x * 0.5f, _pos.y); }
-Vec2 Rect::center() const { return _pos; }
-Vec2 Rect::right() const { return Vec2(_pos.x + _size.x * 0.5f, _pos.y); }
-Vec2 Rect::bottomLeft() const {
-  return Vec2(_pos.x - _size.x * 0.5f, _pos.y - _size.y * 0.5f);
+Vec2 Rect::right() const {
+  return Vec2(_pos.x + _size.x, _pos.y + _size.y * 0.5f);
 }
+Vec2 Rect::bottomLeft() const { return Vec2(_pos.x, _pos.y + _size.y); }
 
 Vec2 Rect::bottomCenter() const {
-  return Vec2(_pos.x, _pos.y - _size.y * 0.5f);
+  return Vec2(_pos.x + _size.x * 0.5f, _pos.y + _size.y);
 }
 
 Vec2 Rect::bottomRight() const {
-  return Vec2(_pos.x + _size.x * 0.5f, _pos.y - _size.y * 0.5f);
+  return Vec2(_pos.x + _size.x, _pos.y + _size.y);
 }
 
 Vec2 Rect::positionfromPivot(Pivot pivot) const {
@@ -92,10 +96,8 @@ Vec2 Rect::positionfromPivot(Pivot pivot) const {
 }
 
 bool Rect::intersectsRect(const Rect &rect) {
-  auto own = topLeft();
-  auto other = rect.topLeft();
-  return (own.x <= other.x + width && other.x <= own.x + width) &&
-         (other.y <= own.y + height && own.y <= other.y + height);
+  return (x <= rect.x + rect.width && rect.x <= x + width) &&
+         (y <= rect.y + rect.height && rect.y <= y + height);
 }
 
 Mesh Rect::createMesh() {

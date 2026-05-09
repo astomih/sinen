@@ -38,7 +38,6 @@ getReflectionData(slang::IComponentType *program) {
         programLayout->getGlobalParamsTypeLayout();
     const int rangeCount = typeLayout->getBindingRangeCount();
 
-    int numUniformBuffers = 0;
     for (int i = 0; i < rangeCount; ++i) {
       auto rangeType = typeLayout->getBindingRangeType(i);
       if (rangeType == slang::BindingType::CombinedTextureSampler ||
@@ -99,6 +98,12 @@ Array<char> ShaderCompiler::compileSource(StringView moduleName,
   }
   sessionDesc.targets = targetDesc.data();
   sessionDesc.targetCount = targetDesc.size();
+  std::array<slang::PreprocessorMacroDesc, 1> macros = {};
+  if (format == ShaderFormat::WGSL) {
+    macros[0] = {"SINEN_TARGET_WEBGPU", "1"};
+    sessionDesc.preprocessorMacros = macros.data();
+    sessionDesc.preprocessorMacroCount = macros.size();
+  }
   std::array<slang::CompilerOptionEntry, 1> options = {};
   if (emitSpirvDirectly) {
     options[0] = {

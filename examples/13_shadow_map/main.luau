@@ -81,5 +81,7 @@ function draw()
 	sn.Graphics.setUniformBuffer(1, uniformBuffer)
 	sn.Graphics.setTexture(1, depthTexture)
 	sn.Graphics.drawModel(model, modelTransform)
+	sn.Graphics.setUniformBuffer(1, uniformBuffer)
+	sn.Graphics.setTexture(1, depthTexture)
 	sn.Graphics.drawModel(floor, floorTransform)
 end

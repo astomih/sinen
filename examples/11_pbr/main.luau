@@ -71,10 +71,15 @@ function draw()
 
 	sn.Graphics.setTexture(1, model:getTexture(sn.TextureKey.Normal))
 	sn.Graphics.setTexture(2, model:getTexture(sn.TextureKey.DiffuseRoughness))
-	sn.Graphics.setTexture(4, model:getTexture(sn.TextureKey.Emissive))
-	sn.Graphics.setTexture(5, model:getTexture(sn.TextureKey.LightMap))
+	sn.Graphics.setTexture(3, model:getTexture(sn.TextureKey.Emissive))
+	sn.Graphics.setTexture(4, model:getTexture(sn.TextureKey.LightMap))
 
-	sn.Graphics.setUniformBuffer(1, sn.Buffer.new(uniformBuffer))
+	sn.Graphics.setUniformBuffer(0, sn.Buffer.new(uniformBuffer))
 	sn.Graphics.drawModel(model, transform)
+	sn.Graphics.setTexture(1, model:getTexture(sn.TextureKey.Normal))
+	sn.Graphics.setTexture(2, model:getTexture(sn.TextureKey.DiffuseRoughness))
+	sn.Graphics.setTexture(3, model:getTexture(sn.TextureKey.Emissive))
+	sn.Graphics.setTexture(4, model:getTexture(sn.TextureKey.LightMap))
+	sn.Graphics.setUniformBuffer(0, sn.Buffer.new(uniformBuffer))
 	sn.Graphics.drawModel(model, lightTransform)
 end

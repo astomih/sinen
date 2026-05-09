@@ -48,12 +48,19 @@ struct FSOutput {
   float4 color : SV_Target;
 };
 
-#define COMBINED_IMAGE_SAMPLER(name, textureBind, samplerBind)                 \
+#ifdef SINEN_TARGET_WEBGPU
+#define COMBINED_IMAGE_SAMPLER(name, logicalBind, textureBind, samplerBind)    \
   [[vk::binding(textureBind, 2)]]                                              \
   Sampler2D name : register(t##textureBind, space2)                            \
       : register(s##samplerBind, space2);
-COMBINED_IMAGE_SAMPLER(baseColor, 0, 1)
-COMBINED_IMAGE_SAMPLER(depthTexture, 2, 3)
+#else
+#define COMBINED_IMAGE_SAMPLER(name, logicalBind, textureBind, samplerBind)    \
+  [[vk::binding(logicalBind, 2)]]                                              \
+  Sampler2D name : register(t##logicalBind, space2)                            \
+      : register(s##logicalBind, space2);
+#endif
+COMBINED_IMAGE_SAMPLER(baseColor, 0, 0, 1)
+COMBINED_IMAGE_SAMPLER(depthTexture, 1, 2, 3)
 
 [shader("fragment")]
 FSOutput FSMain(FSInput input) {

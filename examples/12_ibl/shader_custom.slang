@@ -80,27 +80,39 @@ struct FSOutput {
   float4 color : SV_Target;
 };
 
-#define COMBINED_IMAGE_SAMPLER(name, textureBind, samplerBind)                 \
+#ifdef SINEN_TARGET_WEBGPU
+#define COMBINED_IMAGE_SAMPLER(name, logicalBind, textureBind, samplerBind)    \
   [[vk::binding(textureBind, 2)]]                                              \
   Sampler2D name : register(t##textureBind, space2)                            \
       : register(s##samplerBind, space2);
-COMBINED_IMAGE_SAMPLER(albedoMap, 0, 1)
-COMBINED_IMAGE_SAMPLER(normalMap, 2, 3)
+#define COMBINED_CUBE_SAMPLER(name, logicalBind, textureBind, samplerBind)     \
+  [[vk::binding(textureBind, 2)]]                                              \
+  SamplerCube name : register(t##textureBind, space2)                          \
+      : register(s##samplerBind, space2);
+#else
+#define COMBINED_IMAGE_SAMPLER(name, logicalBind, textureBind, samplerBind)    \
+  [[vk::binding(logicalBind, 2)]]                                              \
+  Sampler2D name : register(t##logicalBind, space2)                            \
+      : register(s##logicalBind, space2);
+#define COMBINED_CUBE_SAMPLER(name, logicalBind, textureBind, samplerBind)     \
+  [[vk::binding(logicalBind, 2)]]                                              \
+  SamplerCube name : register(t##logicalBind, space2)                          \
+      : register(s##logicalBind, space2);
+#endif
+COMBINED_IMAGE_SAMPLER(albedoMap, 0, 0, 1)
+COMBINED_IMAGE_SAMPLER(normalMap, 1, 2, 3)
 COMBINED_IMAGE_SAMPLER(diffuseRoughnessMap,
-                       4, 5) // in DamagedHelmet.glb, the
-                             // roughness is in the G channel
-                             // and metallic is in the B channel
-COMBINED_IMAGE_SAMPLER(emissiveMap, 8, 9)
-COMBINED_IMAGE_SAMPLER(aoMap, 10, 11)
+                       2, 4, 5) // in DamagedHelmet.glb, the
+                                // roughness is in the G channel
+                                // and metallic is in the B channel
+COMBINED_IMAGE_SAMPLER(emissiveMap, 3, 6, 7)
+COMBINED_IMAGE_SAMPLER(aoMap, 4, 8, 9)
 
-COMBINED_IMAGE_SAMPLER(brdfLUT, 12, 13)
+COMBINED_IMAGE_SAMPLER(brdfLUT, 5, 10, 11)
 
-[[vk::binding(14, 2)]]
-SamplerCube cubemap : register(t14, space2) : register(s15, space2);
-[[vk::binding(16, 2)]]
-SamplerCube irradianceMap : register(t16, space2) : register(s17, space2);
-[[vk::binding(18, 2)]]
-SamplerCube prefilteredMap : register(t18, space2) : register(s19, space2);
+COMBINED_CUBE_SAMPLER(cubemap, 6, 12, 13)
+COMBINED_CUBE_SAMPLER(irradianceMap, 7, 14, 15)
+COMBINED_CUBE_SAMPLER(prefilteredMap, 8, 16, 17)
 
 // BRDF
 float3 SchlickFresnel(float hDotV, float3 refl) {
@@ -129,7 +141,7 @@ struct Light {
   float intensity;
 };
 
-UNIFORM_FRAG(Positions, 1) {
+UNIFORM_FRAG(Positions, 0) {
   float camPosx;
   float camPosy;
   float camPosz;

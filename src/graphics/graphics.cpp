@@ -55,7 +55,6 @@ static void setupShapes();
 static void beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp);
 
 static GPUBackendAPI selectBackendAPI() {
-  return GPUBackendAPI::WebGPU;
 #ifdef SINEN_PLATFORM_EMSCRIPTEN
   return GPUBackendAPI::WebGPU;
 #else

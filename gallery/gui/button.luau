@@ -24,7 +24,7 @@ Button.show = function(self, text: string, pos: sn.Vec2, scale: sn.Vec2)
 		G.guiManager:add({
 			draw = function()
 				sn.Graphics.drawRect(
-					sn.Rect.new(sn.Pivot.Center, sn.Graphics.getCamera2D():center() + sn.Vec2.new(pos.x, -pos.y), scale),
+					sn.Rect.new(sn.Pivot.Center, sn.Window.center() + sn.Vec2.new(pos.x, -pos.y), scale),
 					sn.Color.new(0.2, 0.7, 0.2, 1)
 				)
 			end,
@@ -35,7 +35,7 @@ Button.show = function(self, text: string, pos: sn.Vec2, scale: sn.Vec2)
 					sn.Graphics.drawRect(
 						sn.Rect.new(
 							sn.Pivot.Center,
-							sn.Graphics.getCamera2D():center() + sn.Vec2.new(pos.x, -pos.y),
+							sn.Window.center() + sn.Vec2.new(pos.x, -pos.y),
 							scale
 						),
 						sn.Color.new(0.2, 0.2, 0.7, 1)
@@ -48,7 +48,7 @@ Button.show = function(self, text: string, pos: sn.Vec2, scale: sn.Vec2)
 		G.guiManager:add({
 			draw = function()
 				sn.Graphics.drawRect(
-					sn.Rect.new(sn.Pivot.Center, sn.Graphics.getCamera2D():center() + sn.Vec2.new(pos.x, -pos.y), scale),
+					sn.Rect.new(sn.Pivot.Center, sn.Window.center() + sn.Vec2.new(pos.x, -pos.y), scale),
 					self.bg_color
 				)
 			end,
@@ -64,7 +64,7 @@ Button.show = function(self, text: string, pos: sn.Vec2, scale: sn.Vec2)
 						text,
 						14,
 						sn.Pivot.Center,
-						sn.Graphics.getCamera2D():center() + sn.Vec2.new(pos.x, -pos.y)
+						sn.Window.center() + sn.Vec2.new(pos.x, -pos.y)
 					)
 					:topLeft(),
 				sn.Color.new(1),

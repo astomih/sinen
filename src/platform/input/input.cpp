@@ -121,7 +121,7 @@ void Mouse::setPosition(const Vec2 &pos) {
   SDL_WarpMouseInWindow(Window::getSdlWindow(), half.x + pos.x, half.y - pos.y);
 }
 void Mouse::setPositionOnScene(const Vec2 &pos) {
-  Mouse::setPosition(pos * Graphics::getCamera2D().windowRatio());
+  Mouse::setPosition(pos);
 }
 Vec2 Mouse::getPosition() {
   Vec2 pos;
@@ -131,7 +131,7 @@ Vec2 Mouse::getPosition() {
   return pos;
 }
 Vec2 Mouse::getPositionOnScene() {
-  return Mouse::getPosition() * Graphics::getCamera2D().invWindowRatio();
+  return Mouse::getPosition();
 }
 
 Vec2 Mouse::getScrollWheel() { return Input::mMouse.mScrollWheel; }

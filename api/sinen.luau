@@ -396,19 +396,18 @@ export type BuiltinPipelines = {
 
 export type Graphics = {
 	-- 2D drawing uses Processing/raylib-style screen coordinates:
-	-- (0, 0) is the top-left of the active Camera2D, x grows right, y grows down.
+	-- (0, 0) is the top-left of the window, x grows right, y grows down.
 	-- drawRect/drawImage use Rect.x/y as the object's top-left corner.
 	drawRect: (rect: Rect, color: Color, angle: number?) -> nil,
 	drawImage: (texture: Texture, rect: Rect, angle: number?) -> nil,
 	-- drawText positions the top-left of the rendered text.
 	drawText: (text: string, font: Font, position: Vec2, color: Color?, fontSize: number?, angle: number?) -> nil,
+	begin2D: (camera: Camera2D?) -> nil,
+	begin3D: (camera: Camera3D) -> nil,
+	finish: () -> nil,
 	drawModel: (model: Model, transform: Transform) -> nil,
 	drawModelInstanced: (model: Model, transforms: { Transform }) -> nil,
 	drawCubemap: (cubemap: Texture) -> nil,
-	setCamera3D: (camera: Camera3D) -> nil,
-	getCamera3D: () -> Camera3D,
-	setCamera2D: (camera: Camera2D) -> nil,
-	getCamera2D: () -> Camera2D,
 	getClearColor: () -> Color,
 	setClearColor: (c: Color) -> nil,
 	setGraphicsPipeline: (pipe: GraphicsPipeline) -> nil,

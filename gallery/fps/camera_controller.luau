@@ -8,6 +8,7 @@ CameraController.new = function()
 			position: sn.Vec3,
 			target: sn.Vec3,
 			up: sn.Vec3,
+			camera: sn.Camera3D,
 			prev_boost: boolean,
 			is_tracking_player: boolean,
 			player: Player.Player,
@@ -22,6 +23,7 @@ CameraController.new = function()
 	self.position = sn.Vec3.new(0, 0, 0)
 	self.target = sn.Vec3.new(0, 0, 0)
 	self.up = sn.Vec3.new(0, 0, 1)
+	self.camera = sn.Camera3D.new()
 	self.prev_boost = false
 	self.is_tracking_player = false
 	self.py = 5
@@ -48,7 +50,7 @@ CameraController.update = function(self: CameraController)
 	self.target.y = math.cos(math.rad(self.player.transform.rotation.z))
 	self.target.z = math.sin(math.rad(self.player.transform.rotation.y))
 	self.position = self.player.transform.position:copy()
-	sn.Graphics.getCamera3D():lookat(self.position, self.position + self.target, sn.Vec3.new(0, 0, 1))
+	self.camera:lookat(self.position, self.position + self.target, sn.Vec3.new(0, 0, 1))
 end
 
 export type CameraController = typeof(CameraController.new())

@@ -34,7 +34,7 @@ function draw()
 				"Gallery Launcher",
 				24,
 				sn.Pivot.Center,
-				sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, -(offset + 10))
+				sn.Window.center() + sn.Vec2.new(0, -(offset + 10))
 			)
 			:topLeft(),
 		sn.Color.new(1, 1, 1, 1),

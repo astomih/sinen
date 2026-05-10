@@ -21,7 +21,7 @@ function draw()
 	sn.Graphics.drawText(
 		"STAGE CLEAR",
 		G.FONT_DEFAULT64,
-		G.FONT_DEFAULT64:region("STAGE CLEAR", 64, sn.Pivot.Center, sn.Graphics.getCamera2D():center()):topLeft(),
+		G.FONT_DEFAULT64:region("STAGE CLEAR", 64, sn.Pivot.Center, sn.Window.center()):topLeft(),
 		sn.Color.new(1),
 		64
 	)

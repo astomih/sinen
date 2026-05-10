@@ -29,7 +29,8 @@ light_transform.scale = sn.Vec3.new(0.5)
 local pos: sn.Vec3 = sn.Vec3.new(0.7, 0.7, 2.1)
 local at: sn.Vec3 = sn.Vec3.new(0)
 local up: sn.Vec3 = sn.Vec3.new(0, 1, 0)
-sn.Graphics.getCamera3D():lookat(pos, at, up)
+local camera: sn.Camera3D = sn.Camera3D.new()
+camera:lookat(pos, at, up)
 
 local vertex_shader = sn.Shader.new()
 vertex_shader:compileAndLoad("shader_custom.slang", sn.ShaderStage.Vertex)
@@ -82,6 +83,7 @@ function update()
 end
 
 function draw()
+	sn.Graphics.begin3D(camera)
 	sn.Graphics.resetAllTexture()
 	sn.Graphics.resetGraphicsPipeline()
 	sn.Graphics.drawCubemap(cubemap)
@@ -109,4 +111,5 @@ function draw()
 	sn.Graphics.setTexture(8, prefiltered)
 	sn.Graphics.setUniformBuffer(0, sn.Buffer.new(uniformData))
 	sn.Graphics.drawModel(lightSphere, light_transform)
+	sn.Graphics.finish()
 end

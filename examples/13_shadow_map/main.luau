@@ -65,18 +65,19 @@ end
 
 function draw()
 	-- depth write
+	sn.Graphics.begin3D(shadowCamera)
 	sn.Graphics.setGraphicsPipeline(depthPipeline)
-	sn.Graphics.setCamera3D(shadowCamera)
 
 	sn.Graphics.beginRenderTarget(depthRenderTexture)
 	sn.Graphics.drawModel(model, modelTransform)
 	sn.Graphics.drawModel(floor, floorTransform)
 	sn.Graphics.endRenderTarget()
+	sn.Graphics.finish()
 	sn.Graphics.readbackTexture(depthRenderTexture, depthTexture)
 
 	-- Lighting
+	sn.Graphics.begin3D(camera)
 	sn.Graphics.setGraphicsPipeline(pipeline)
-	sn.Graphics.setCamera3D(camera)
 
 	sn.Graphics.setUniformBuffer(1, uniformBuffer)
 	sn.Graphics.setTexture(1, depthTexture)
@@ -84,4 +85,5 @@ function draw()
 	sn.Graphics.setUniformBuffer(1, uniformBuffer)
 	sn.Graphics.setTexture(1, depthTexture)
 	sn.Graphics.drawModel(floor, floorTransform)
+	sn.Graphics.finish()
 end

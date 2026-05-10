@@ -24,7 +24,6 @@ end
 
 local function fullscreenRect(): sn.Rect
 	local size = sn.Window.size()
-	sn.Graphics.getCamera2D():resize(size)
 	return sn.Rect.new(sn.Vec2.new(0.0, 0.0), size)
 end
 
@@ -98,7 +97,7 @@ function draw()
 				"SPACE / CLICK: CHANGE SHADER  ESC: BACK",
 				18,
 				sn.Pivot.Center,
-				sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, size.y * 0.5 - 34)
+				sn.Window.center() + sn.Vec2.new(0, size.y * 0.5 - 34)
 			)
 			:topLeft(),
 		sn.Color.new(1, 1, 1, 0.76),

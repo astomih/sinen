@@ -14,5 +14,5 @@ end
 
 function draw()
 	-- Draw image
-	sn.Graphics.drawImage(image, sn.Rect.new(sn.Pivot.Center, sn.Graphics.getCamera2D():center(), image:size()))
+	sn.Graphics.drawImage(image, sn.Rect.new(sn.Pivot.Center, sn.Window.center(), image:size()))
 end

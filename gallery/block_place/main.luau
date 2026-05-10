@@ -367,7 +367,7 @@ local function placeSelected(slot: number, row: number, col: number)
 end
 
 local function slotAt(mx, my): number?
-	local half: sn.Vec2 = sn.Graphics.getCamera2D():half()
+	local half: sn.Vec2 = sn.Window.half()
 	local minX = -half.x
 	local width = half.x * 2.0
 	local minY = -half.y
@@ -399,7 +399,7 @@ local function drawShape(shape: Shape, left: number, top: number, size: number, 
 		sn.Graphics.drawRect(
 			sn.Rect.new(
 				sn.Pivot.Center,
-				sn.Graphics.getCamera2D():center() + sn.Vec2.new(x, -y),
+				sn.Window.center() + sn.Vec2.new(x, -y),
 				sn.Vec2.new(size - 4.0, size - 4.0)
 			),
 			color
@@ -414,7 +414,7 @@ local function drawBoard()
 	sn.Graphics.drawRect(
 		sn.Rect.new(
 			sn.Pivot.Center,
-			sn.Graphics.getCamera2D():center() + sn.Vec2.new(frameX, -frameY),
+			sn.Window.center() + sn.Vec2.new(frameX, -frameY),
 			sn.Vec2.new(boardSizePx + 26.0, boardSizePx + 26.0)
 		),
 		sn.Color.new(0.09, 0.11, 0.15, 1.0)
@@ -422,7 +422,7 @@ local function drawBoard()
 	sn.Graphics.drawRect(
 		sn.Rect.new(
 			sn.Pivot.Center,
-			sn.Graphics.getCamera2D():center() + sn.Vec2.new(frameX, -frameY),
+			sn.Window.center() + sn.Vec2.new(frameX, -frameY),
 			sn.Vec2.new(boardSizePx + 8.0, boardSizePx + 8.0)
 		),
 		BOARD_COLOR
@@ -436,7 +436,7 @@ local function drawBoard()
 				sn.Graphics.drawRect(
 					sn.Rect.new(
 						sn.Pivot.Center,
-						sn.Graphics.getCamera2D():center() + sn.Vec2.new(x, -y),
+						sn.Window.center() + sn.Vec2.new(x, -y),
 						sn.Vec2.new(BOARD_CELL - 6.0, BOARD_CELL - 6.0)
 					),
 					EMPTY_CELL_COLOR
@@ -445,7 +445,7 @@ local function drawBoard()
 				sn.Graphics.drawRect(
 					sn.Rect.new(
 						sn.Pivot.Center,
-						sn.Graphics.getCamera2D():center() + sn.Vec2.new(x, -y),
+						sn.Window.center() + sn.Vec2.new(x, -y),
 						sn.Vec2.new(BOARD_CELL - 6.0, BOARD_CELL - 6.0)
 					),
 					colorByIndex(index, 1.0)
@@ -468,7 +468,7 @@ local function drawBoard()
 					sn.Graphics.drawRect(
 						sn.Rect.new(
 							sn.Pivot.Center,
-							sn.Graphics.getCamera2D():center() + sn.Vec2.new(x, -y),
+							sn.Window.center() + sn.Vec2.new(x, -y),
 							sn.Vec2.new(BOARD_CELL - 12.0, BOARD_CELL - 12.0)
 						),
 						colorByIndex(piece.colorIndex, 0.45)
@@ -491,7 +491,7 @@ local function drawRack()
 		sn.Graphics.drawRect(
 			sn.Rect.new(
 				sn.Pivot.Center,
-				sn.Graphics.getCamera2D():center() + sn.Vec2.new(x, -SLOT_Y),
+				sn.Window.center() + sn.Vec2.new(x, -SLOT_Y),
 				sn.Vec2.new(SLOT_WIDTH, SLOT_HEIGHT)
 			),
 			baseColor
@@ -505,7 +505,7 @@ local function drawRack()
 					pieceText,
 					16,
 					sn.Pivot.Center,
-					sn.Graphics.getCamera2D():center() + sn.Vec2.new(x, -(SLOT_Y + 58.0))
+					sn.Window.center() + sn.Vec2.new(x, -(SLOT_Y + 58.0))
 				)
 				:topLeft(),
 			sn.Color.new(0.85, 0.9, 0.98, 0.95),
@@ -522,7 +522,7 @@ local function drawRack()
 						"USED",
 						22,
 						sn.Pivot.Center,
-						sn.Graphics.getCamera2D():center() + sn.Vec2.new(x, -(SLOT_Y - 6.0))
+						sn.Window.center() + sn.Vec2.new(x, -(SLOT_Y - 6.0))
 					)
 					:topLeft(),
 				sn.Color.new(0.7, 0.75, 0.86, 0.95),
@@ -561,9 +561,9 @@ local function drawGameOver()
 		return
 	end
 
-	local half = sn.Graphics.getCamera2D():half()
+	local half = sn.Window.half()
 	sn.Graphics.drawRect(
-		sn.Rect.new(sn.Pivot.Center, sn.Graphics.getCamera2D():center(), sn.Vec2.new(half.x * 2.0 + 2.0, half.y * 2.0 + 2.0)),
+		sn.Rect.new(sn.Pivot.Center, sn.Window.center(), sn.Vec2.new(half.x * 2.0 + 2.0, half.y * 2.0 + 2.0)),
 		sn.Color.new(0, 0, 0, 0.62)
 	)
 	sn.Graphics.drawText(
@@ -574,7 +574,7 @@ local function drawGameOver()
 				"NO MORE MOVES",
 				48,
 				sn.Pivot.Center,
-				sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, -70)
+				sn.Window.center() + sn.Vec2.new(0, -70)
 			)
 			:topLeft(),
 		sn.Color.new(1, 1, 1, 0.98),
@@ -588,7 +588,7 @@ local function drawGameOver()
 				"SPACE or LEFT CLICK to restart",
 				24,
 				sn.Pivot.Center,
-				sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, -6)
+				sn.Window.center() + sn.Vec2.new(0, -6)
 			)
 			:topLeft(),
 		sn.Color.new(0.88, 0.93, 1.0, 0.95),
@@ -602,7 +602,7 @@ local function drawGameOver()
 				"ESC to return gallery",
 				20,
 				sn.Pivot.Center,
-				sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, 38)
+				sn.Window.center() + sn.Vec2.new(0, 38)
 			)
 			:topLeft(),
 		sn.Color.new(0.78, 0.86, 0.98, 0.92),
@@ -612,7 +612,6 @@ end
 
 function setup()
 	sn.Graphics.resetGraphicsPipeline()
-	sn.Graphics.getCamera2D():resize(sn.Vec2.new(720, 1280))
 	titleFont:load(44)
 	hudFont:load(26)
 	infoFont:load(20)

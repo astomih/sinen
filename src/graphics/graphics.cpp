@@ -23,8 +23,13 @@
 namespace sinen {
 // Variables
 static Color clearColor = Palette::black();
-static Camera3D camera;
-static Camera2D camera2D;
+enum class GraphicsPass {
+  TwoD,
+  ThreeD,
+};
+static GraphicsPass currentGraphicsPass = GraphicsPass::TwoD;
+static std::optional<Camera2D> currentCamera2D;
+static std::optional<Camera3D> currentCamera3D;
 static bool showImGui = false;
 static std::list<std::function<void()>> imguiFunctions;
 static std::list<std::function<void()>> preDrawFuncs;
@@ -109,13 +114,6 @@ static void setFullWindowViewport(const Ptr<gpu::RenderPass> &renderPass) {
   renderPass->setScissor(rect.x, rect.y, rect.width, rect.height);
 }
 bool Graphics::initialize() {
-  camera2D = Window::size();
-  camera = []() {
-    Camera3D c;
-    c.lookat(Vec3{0, -1, 1}, Vec3{0, 0, 0}, Vec3{0, 0, 1});
-    c.perspective(90.f, Window::size().x / Window::size().y, .1f, 100.f);
-    return c;
-  }();
   backend = gpu::RHI::createBackend(GlobalAllocator::get(), selectBackendAPI());
   if (!backend)
     return false;
@@ -233,6 +231,9 @@ void Graphics::render() {
   currentDepthStencilInfo = depthStencilInfo;
 
   isFrameStarted = true;
+  currentGraphicsPass = GraphicsPass::TwoD;
+  currentCamera2D = std::nullopt;
+  currentCamera3D = std::nullopt;
   drawCallCountPerFrame = 0;
   {
     ZoneScopedN("Script::drawScene");
@@ -312,10 +313,13 @@ static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
   auto vertexBufferBindings = Array<gpu::BufferBinding>{};
   auto indexBufferBinding = gpu::BufferBinding{};
   auto textureSamplers = Array<gpu::TextureSamplerBinding>{};
-  auto ratio = camera2D.windowRatio();
+  const Camera2D windowCamera(Window::size());
+  const Camera2D *camera2D =
+      currentCamera2D.has_value() ? &currentCamera2D.value() : &windowCamera;
+  auto ratio = camera2D->windowRatio();
   Mat4 mat[3];
   Array<Mat4> instanceData;
-  const auto cameraSize = camera2D.size();
+  const auto cameraSize = camera2D->size();
   const Vec2 cameraHalf = cameraSize * 0.5f;
   const auto pos = Vec2(transforms[0].position.x - cameraHalf.x,
                         cameraHalf.y - transforms[0].position.y) *
@@ -378,6 +382,13 @@ static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
 static void drawBase3D(const Array<Transform> transforms, const Model &model) {
   ZoneScopedN("drawBase3D");
   assert(currentPipeline.has_value());
+  SDL_assert(currentGraphicsPass == GraphicsPass::ThreeD);
+  SDL_assert(currentCamera3D.has_value());
+  if (currentGraphicsPass != GraphicsPass::ThreeD ||
+      !currentCamera3D.has_value()) {
+    return;
+  }
+  const Camera3D &camera = currentCamera3D.value();
   auto vertexBufferBindings = Array<gpu::BufferBinding>();
   auto indexBufferBinding = gpu::BufferBinding{};
   Mat4 mat[3];
@@ -644,6 +655,28 @@ void setupShapes() {
   box.loadBox();
   sprite.loadSprite();
 }
+void Graphics::begin2D() {
+  currentGraphicsPass = GraphicsPass::TwoD;
+  currentCamera2D = std::nullopt;
+  currentCamera3D = std::nullopt;
+}
+void Graphics::begin2D(const Camera2D &camera) {
+  currentGraphicsPass = GraphicsPass::TwoD;
+  currentCamera2D = camera;
+  currentCamera3D = std::nullopt;
+}
+void Graphics::begin3D(const Camera3D &camera) {
+  currentGraphicsPass = GraphicsPass::ThreeD;
+  currentCamera2D = std::nullopt;
+  currentCamera3D = camera;
+}
+void Graphics::finish() {
+  currentGraphicsPass = GraphicsPass::TwoD;
+  currentCamera2D = std::nullopt;
+  currentCamera3D = std::nullopt;
+  currentTextureBindings.clear();
+  currentPipeline = std::nullopt;
+}
 void Graphics::setGraphicsPipeline(const GraphicsPipeline &pipeline) {
   customPipeline = pipeline;
 }
@@ -736,10 +769,6 @@ bool Graphics::readbackTexture(const RenderTexture &srcRenderTexture,
   currentRenderPass = nullptr;
   return true;
 }
-void Graphics::setCamera2D(const Camera2D &camera) { camera2D = camera; }
-Camera2D &Graphics::getCamera2D() { return camera2D; }
-void Graphics::setCamera3D(const Camera3D &_camera) { camera = _camera; }
-Camera3D &Graphics::getCamera() { return camera; }
 void Graphics::setClearColor(const Color &color) {
   if (color.r >= 0.f && color.g >= 0.f && color.b >= 0.f)
     clearColor = color;
@@ -822,25 +851,24 @@ static int lGraphicsDrawModelInstanced(lua_State *L) {
   Graphics::drawModelInstanced(*m, transforms);
   return 0;
 }
-static int lGraphicsSetCamera3D(lua_State *L) {
+static int lGraphicsBegin2D(lua_State *L) {
+  if (lua_gettop(L) >= 1) {
+    auto &cam = udValue<Camera2D>(L, 1);
+    Graphics::begin2D(cam);
+    return 0;
+  }
+  Graphics::begin2D();
+  return 0;
+}
+static int lGraphicsBegin3D(lua_State *L) {
   auto &cam = udValue<Camera3D>(L, 1);
-  Graphics::setCamera3D(cam);
+  Graphics::begin3D(cam);
   return 0;
 }
-static int lGraphicsGetCamera3D(lua_State *L) {
-  auto &cam = Graphics::getCamera();
-  udNewRef<Camera3D>(L, &cam);
-  return 1;
-}
-static int lGraphicsSetCamera2D(lua_State *L) {
-  auto &cam = udValue<Camera2D>(L, 1);
-  Graphics::setCamera2D(cam);
+static int lGraphicsFinish(lua_State *L) {
+  (void)L;
+  Graphics::finish();
   return 0;
-}
-static int lGraphicsGetCamera2D(lua_State *L) {
-  auto &cam = Graphics::getCamera2D();
-  udNewRef<Camera2D>(L, &cam);
-  return 1;
 }
 static int lGraphicsGetClearColor(lua_State *L) {
   udNewOwned<Color>(L, Graphics::getClearColor());
@@ -913,14 +941,12 @@ void registerGraphics(lua_State *L) {
   lua_setfield(L, -2, "drawModel");
   luaPushcfunction2(L, lGraphicsDrawModelInstanced);
   lua_setfield(L, -2, "drawModelInstanced");
-  luaPushcfunction2(L, lGraphicsSetCamera3D);
-  lua_setfield(L, -2, "setCamera3D");
-  luaPushcfunction2(L, lGraphicsGetCamera3D);
-  lua_setfield(L, -2, "getCamera3D");
-  luaPushcfunction2(L, lGraphicsSetCamera2D);
-  lua_setfield(L, -2, "setCamera2D");
-  luaPushcfunction2(L, lGraphicsGetCamera2D);
-  lua_setfield(L, -2, "getCamera2D");
+  luaPushcfunction2(L, lGraphicsBegin2D);
+  lua_setfield(L, -2, "begin2D");
+  luaPushcfunction2(L, lGraphicsBegin3D);
+  lua_setfield(L, -2, "begin3D");
+  luaPushcfunction2(L, lGraphicsFinish);
+  lua_setfield(L, -2, "finish");
   luaPushcfunction2(L, lGraphicsGetClearColor);
   lua_setfield(L, -2, "getClearColor");
   luaPushcfunction2(L, lGraphicsSetClearColor);

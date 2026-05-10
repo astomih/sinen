@@ -12,6 +12,11 @@ static Vec3 perspDiv(const Vec4 &v) {
   return Vec3(v.x / v.w, v.y / v.w, v.z / v.w);
 }
 
+Camera3D::Camera3D() {
+  lookat(Vec3{0, -1, 1}, Vec3{0, 0, 0}, Vec3{0, 0, 1});
+  perspective(90.f, Window::size().x / Window::size().y, .1f, 100.f);
+}
+
 void Camera3D::lookat(const Vec3 &position, const Vec3 &target,
                       const Vec3 &up) {
   this->position = position;
@@ -143,8 +148,8 @@ static int lCameraOrthographic(lua_State *L) {
   return 0;
 }
 static int lCameraGetPosition(lua_State *L) {
-  auto &cam = udValue<Camera3D>(L, 1);
-  udNewRef<Vec3>(L, &cam.getPosition());
+  const auto &cam = udValue<Camera3D>(L, 1);
+  udNewOwned<Vec3>(L, cam.getPosition());
   return 1;
 }
 static int lCameraGetTarget(lua_State *L) {

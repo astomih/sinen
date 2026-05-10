@@ -36,7 +36,7 @@ function draw()
 				"Synth (miniaudio) - press SPACE to restart, ESC to go back",
 				16,
 				sn.Pivot.Center,
-				sn.Graphics.getCamera2D():center()
+				sn.Window.center()
 			)
 			:topLeft(),
 		sn.Color.new(1),
@@ -50,7 +50,7 @@ function draw()
 				"Pattern uses [], ~, and modifiers (^wave @vel :dur #cutoff !pan)",
 				14,
 				sn.Pivot.Center,
-				sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, 20)
+				sn.Window.center() + sn.Vec2.new(0, 20)
 			)
 			:topLeft(),
 		sn.Color.new(1),

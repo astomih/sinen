@@ -69,14 +69,14 @@ local function drawCentered(text: string, y: number, size: number, color)
 	sn.Graphics.drawText(
 		text,
 		font,
-		font:region(text, size, sn.Pivot.Center, sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, y)):topLeft(),
+		font:region(text, size, sn.Pivot.Center, sn.Window.center() + sn.Vec2.new(0, y)):topLeft(),
 		color,
 		size
 	)
 end
 
 function draw()
-	local center = sn.Graphics.getCamera2D():center()
+	local center = sn.Window.center()
 	if info then
 		local displayWidth = 640
 		local displayHeight = displayWidth * info.height / info.width

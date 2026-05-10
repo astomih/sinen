@@ -12,7 +12,7 @@ function draw()
 	sn.Graphics.drawText(
 		"Hello World!",
 		font,
-		font:region("Hello World!", 32, sn.Pivot.Center, sn.Graphics.getCamera2D():center()):topLeft(),
+		font:region("Hello World!", 32, sn.Pivot.Center, sn.Window.center()):topLeft(),
 		sn.Color.new(1.0),
 		32
 	)

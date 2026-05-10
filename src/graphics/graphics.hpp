@@ -25,10 +25,10 @@ public:
   static bool initialize();
   static void shutdown();
   static void render();
-  static void setCamera2D(const Camera2D &camera);
-  static Camera2D &getCamera2D();
-  static void setCamera3D(const Camera3D &camera);
-  static Camera3D &getCamera();
+  static void begin2D();
+  static void begin2D(const Camera2D &camera);
+  static void begin3D(const Camera3D &camera);
+  static void finish();
   static void drawRect(const Rect &rect, const Color &color, float angle);
   static void drawRect(const Rect &rect, const Color &color) {
     drawRect(rect, color, 0.0f);

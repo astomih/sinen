@@ -17,6 +17,7 @@ struct Frustum {
  */
 class Camera3D {
 public:
+  Camera3D();
   static constexpr const char *metaTableName() { return "sn.Camera3D"; }
   /**
    * @brief Move to position, look at a target, and set up vector
@@ -78,7 +79,7 @@ public:
    *
    * @return Vec3&
    */
-  Vec3 &getPosition() { return position; }
+  const Vec3 &getPosition() const { return position; }
   /**
    * @brief Get the target of camera
    *

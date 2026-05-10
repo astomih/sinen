@@ -107,7 +107,7 @@ scene_switcher:start("")
 local FrustumCullingMapDraw = function(map_draw3ds: { { World.World } })
 	for y = 1, map_size_y do
 		for x = 1, map_size_x do
-			if sn.Graphics.getCamera3D():isAABBInFrustum(map_draw3ds[y][x].aabb) then
+			if camera_controller.camera:isAABBInFrustum(map_draw3ds[y][x].aabb) then
 				if map:at(x, y) == G.MAP_CHIP.WALL then
 					local transform = sn.Transform.new()
 					transform.position = map_draw3ds[y][x].position
@@ -127,6 +127,7 @@ local FrustumCullingMapDraw = function(map_draw3ds: { { World.World } })
 	end
 end
 function draw()
+	sn.Graphics.begin3D(camera_controller.camera)
 	player:draw3()
 
 	for i, v in ipairs(enemies) do
@@ -138,6 +139,7 @@ function draw()
 	sn.Graphics.drawModelInstanced(boxModel, box)
 	sn.Graphics.drawModelInstanced(sprite_model, sprite)
 	sn.Graphics.drawModel(sprite_model, stair)
+	sn.Graphics.finish()
 
 	player:draw2()
 	local scoreText = "SCORE: " .. G.SCORE
@@ -149,7 +151,7 @@ function draw()
 				scoreText,
 				32,
 				sn.Pivot.Center,
-				sn.Graphics.getCamera2D():center() + sn.Vec2.new(-300, -300)
+				sn.Window.center() + sn.Vec2.new(-300, -300)
 			)
 			:topLeft(),
 		sn.Color.new(1, 1, 1, 1),

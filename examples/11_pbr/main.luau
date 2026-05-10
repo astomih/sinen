@@ -9,6 +9,7 @@ local pipeline3D: sn.GraphicsPipeline = sn.GraphicsPipeline.new()
 local lightPos: sn.Vec3 = sn.Vec3.new(2, 0, 0)
 local lightIntensity: number = 2.5
 local uniformBuffer: { any } = {}
+local camera: sn.Camera3D = sn.Camera3D.new()
 
 function setup()
 	transform.position = sn.Vec3.new(0, 0, 0)
@@ -22,7 +23,7 @@ function setup()
 	local pos = sn.Vec3.new(0.7, 0.7, 2.1)
 	local at = sn.Vec3.new(0)
 	local up = sn.Vec3.new(0, 1, 0)
-	sn.Graphics.getCamera3D():lookat(pos, at, up)
+	camera:lookat(pos, at, up)
 
 	vertexShader:compileAndLoad("shader_custom.slang", sn.ShaderStage.Vertex)
 	fragmentShader:compileAndLoad("shader_custom.slang", sn.ShaderStage.Fragment)
@@ -67,6 +68,7 @@ function update()
 end
 
 function draw()
+	sn.Graphics.begin3D(camera)
 	sn.Graphics.setGraphicsPipeline(pipeline3D)
 
 	sn.Graphics.setTexture(1, model:getTexture(sn.TextureKey.Normal))
@@ -82,4 +84,5 @@ function draw()
 	sn.Graphics.setTexture(4, model:getTexture(sn.TextureKey.LightMap))
 	sn.Graphics.setUniformBuffer(0, sn.Buffer.new(uniformBuffer))
 	sn.Graphics.drawModel(model, lightTransform)
+	sn.Graphics.finish()
 end

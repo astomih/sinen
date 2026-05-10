@@ -30,7 +30,8 @@ world:addCollider(floorCollider, false)
 world:addCollider(sphereCollider, true)
 world:optimizeBroadPhase()
 
-sn.Graphics.getCamera3D():lookat(sn.Vec3.new(0, 10, 25), sn.Vec3.new(0, 0, 0), sn.Vec3.new(0, 1, 0))
+local camera: sn.Camera3D = sn.Camera3D.new()
+camera:lookat(sn.Vec3.new(0, 10, 25), sn.Vec3.new(0, 0, 0), sn.Vec3.new(0, 1, 0))
 
 function update()
 	if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
@@ -49,6 +50,7 @@ function update()
 end
 
 function draw()
+	sn.Graphics.begin3D(camera)
 	sn.Graphics.drawModel(box, boxTransform)
 
 	sn.Graphics.drawModel(sphere, sphereTransform)
@@ -62,4 +64,5 @@ function draw()
 			sn.Graphics.drawModel(sphere, transform)
 		end
 	end
+	sn.Graphics.finish()
 end

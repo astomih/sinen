@@ -31,5 +31,5 @@ function draw()
 	sn.Graphics.setGraphicsPipeline(pipeline2D)
 	sn.Graphics.setUniformBuffer(1, uniformBuffer)
 	-- Draw texture
-	sn.Graphics.drawImage(texture, sn.Rect.new(sn.Pivot.Center, sn.Graphics.getCamera2D():center(), texture:size()))
+	sn.Graphics.drawImage(texture, sn.Rect.new(sn.Pivot.Center, sn.Window.center(), texture:size()))
 end

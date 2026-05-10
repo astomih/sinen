@@ -2,6 +2,7 @@ local sn = require("@sinen")
 local model: sn.Model = sn.Model.new()
 model:load("DamagedHelmet.glb")
 local transforms: { sn.Transform } = {}
+local camera: sn.Camera3D = sn.Camera3D.new()
 function setup()
 	for i = 0, 10 do
 		for j = 0, 10 do
@@ -15,7 +16,7 @@ function setup()
 	local pos: sn.Vec3 = sn.Vec3.new(-3, 5, -3)
 	local at: sn.Vec3 = sn.Vec3.new(15, -5, 15)
 	local up: sn.Vec3 = sn.Vec3.new(0, 1, 0)
-	sn.Graphics.getCamera3D():lookat(pos, at, up)
+	camera:lookat(pos, at, up)
 end
 
 function update()
@@ -25,5 +26,7 @@ function update()
 end
 
 function draw()
+	sn.Graphics.begin3D(camera)
 	sn.Graphics.drawModelInstanced(model, transforms)
+	sn.Graphics.finish()
 end

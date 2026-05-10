@@ -10,8 +10,9 @@ transform.scale = sn.Vec3.new(1, 1, 1)
 local pos: sn.Vec3 = sn.Vec3.new(1, 1, 3)
 local at: sn.Vec3 = sn.Vec3.new(0)
 local up: sn.Vec3 = sn.Vec3.new(0, 1, 0)
+local camera: sn.Camera3D = sn.Camera3D.new()
 function setup()
-	sn.Graphics.getCamera3D():lookat(pos, at, up)
+	camera:lookat(pos, at, up)
 end
 
 function update()
@@ -21,5 +22,7 @@ function update()
 end
 
 function draw()
+	sn.Graphics.begin3D(camera)
 	sn.Graphics.drawModel(model, transform)
+	sn.Graphics.finish()
 end

@@ -331,7 +331,7 @@ Player.update = function(
 	self.transform.position.x = math.max(minX, math.min(maxX, self.transform.position.x))
 	self.transform.position.y = math.max(minY, math.min(maxY, self.transform.position.y))
 	local pos = sn.Mouse.getPositionOnScene()
-	local camera2DHalf = sn.Graphics.getCamera2D():half()
+	local camera2DHalf = sn.Window.half()
 	self.transform.rotation.y = self.transform.rotation.y + math.sin(pos.y / camera2DHalf.y) * 32.0
 
 	self.transform.rotation.z = self.transform.rotation.z + math.sin(pos.x / camera2DHalf.x) * 32.0
@@ -362,7 +362,7 @@ Player.draw2 = function(self: Player)
 		hpText,
 		G.FONT_DEFAULT64,
 		G.FONT_DEFAULT64
-			:region(hpText, 32, sn.Pivot.Center, sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, -300))
+			:region(hpText, 32, sn.Pivot.Center, sn.Window.center() + sn.Vec2.new(0, -300))
 			:topLeft(),
 		self.hpColor,
 		32
@@ -371,7 +371,7 @@ Player.draw2 = function(self: Player)
 		self.stamina_max_texture,
 		sn.Rect.new(
 			sn.Pivot.Center,
-			sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, -350),
+			sn.Window.center() + sn.Vec2.new(0, -350),
 			sn.Vec2.new(self.stamina_max_rect.width, self.stamina_max_rect.height)
 		)
 	)
@@ -379,7 +379,7 @@ Player.draw2 = function(self: Player)
 		self.stamina_texture,
 		sn.Rect.new(
 			sn.Pivot.Center,
-			sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, -350),
+			sn.Window.center() + sn.Vec2.new(0, -350),
 			sn.Vec2.new(self.stamina_rect.width, self.stamina_rect.height)
 		)
 	)
@@ -387,7 +387,7 @@ Player.draw2 = function(self: Player)
 		scopeTex,
 		sn.Rect.new(
 			sn.Pivot.Center,
-			sn.Graphics.getCamera2D():center() + sn.Vec2.new(self.scopePos.x, -self.scopePos.y),
+			sn.Window.center() + sn.Vec2.new(self.scopePos.x, -self.scopePos.y),
 			scopeTex:size()
 		)
 	)

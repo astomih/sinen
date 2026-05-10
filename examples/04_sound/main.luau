@@ -17,7 +17,7 @@ function draw()
 		"Press SPACE key to play sound",
 		G.font,
 		G.font
-			:region("Press SPACE key to play sound", 16, sn.Pivot.Center, sn.Graphics.getCamera2D():center())
+			:region("Press SPACE key to play sound", 16, sn.Pivot.Center, sn.Window.center())
 			:topLeft(),
 		sn.Color.new(1),
 		16

@@ -17,7 +17,7 @@ text.show = function(self, text, pos, scale)
 						text,
 						24,
 						sn.Pivot.Center,
-						sn.Graphics.getCamera2D():center() + sn.Vec2.new(pos.x, -pos.y)
+						sn.Window.center() + sn.Vec2.new(pos.x, -pos.y)
 					)
 					:topLeft(),
 				sn.Color.new(1),

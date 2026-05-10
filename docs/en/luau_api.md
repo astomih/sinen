@@ -4,7 +4,7 @@
 
 2D drawing uses a top-left origin.
 
-- `(0, 0)` is the top-left of the active `Camera2D`
+- `(0, 0)` is the top-left of the window
 - x grows to the right
 - y grows downward
 - `Rect.new(x, y, width, height)` treats `x, y` as the rectangle's top-left
@@ -16,6 +16,32 @@ Use the `Pivot` overload of `Rect.new` when you want to construct a rectangle fr
 ```luau
 local rect = sn.Rect.new(sn.Pivot.Center, sn.Vec2.new(400, 300), sn.Vec2.new(120, 80))
 sn.Graphics.drawRect(rect, sn.Color.new(1, 1, 1, 1))
+```
+
+2D drawing can also be scoped with an explicit `Camera2D`. Without `begin2D`, or after `finish()`, 2D drawing uses the window as the implicit camera.
+
+```luau
+local uiCamera = sn.Camera2D.new()
+uiCamera:resize(sn.Vec2.new(1280, 720))
+
+sn.Graphics.begin2D(uiCamera)
+sn.Graphics.drawText("HUD", font, sn.Vec2.new(20, 20))
+sn.Graphics.finish()
+```
+
+## 3D Passes
+
+3D drawing is scoped by an explicit camera pass. Call `Graphics.begin3D(camera)`, issue 3D draw calls, then call `Graphics.finish()` before returning to implicit 2D drawing.
+
+```luau
+local camera = sn.Camera3D.new()
+camera:lookat(sn.Vec3.new(1, 1, 3), sn.Vec3.new(0), sn.Vec3.new(0, 1, 0))
+
+sn.Graphics.begin3D(camera)
+sn.Graphics.drawModel(model, transform)
+sn.Graphics.finish()
+
+sn.Graphics.drawText("HUD", font, sn.Vec2.new(20, 20))
 ```
 
 ## Video API

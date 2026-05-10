@@ -1,6 +1,7 @@
 local sn = require("@sinen")
 local model: sn.Model = sn.Model.new()
 local pipeline: sn.GraphicsPipeline = sn.GraphicsPipeline.new()
+local camera: sn.Camera3D = sn.Camera3D.new()
 function setup()
 	model:load("BrainStem.glb")
 	local texture: sn.Texture = sn.Texture.new()
@@ -18,7 +19,7 @@ function setup()
 	pipeline:setEnableAnimation(true)
 	pipeline:build()
 
-	sn.Graphics.getCamera3D():lookat(sn.Vec3.new(0, -3, 1), sn.Vec3.new(0, 0, 1), sn.Vec3.new(0, 0, 1))
+	camera:lookat(sn.Vec3.new(0, -3, 1), sn.Vec3.new(0, 0, 1), sn.Vec3.new(0, 0, 1))
 end
 
 function update()
@@ -29,8 +30,10 @@ function update()
 end
 
 function draw()
+	sn.Graphics.begin3D(camera)
 	sn.Graphics.setGraphicsPipeline(pipeline)
 	sn.Graphics.setUniformBuffer(1, model:getBoneUniformBuffer())
 	-- Draw texture
 	sn.Graphics.drawModel(model, sn.Transform.new())
+	sn.Graphics.finish()
 end

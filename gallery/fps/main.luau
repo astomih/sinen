@@ -2,7 +2,6 @@ local sn = require("@sinen")
 local G = require("./global")
 local menu = require("./gui/menu")()
 local sceneSwitcher = require("./scene_switcher").new()
-sn.Graphics.getCamera2D():resize(sn.Vec2.new(1280, 720))
 G.SCORE = 0
 G.NOW_STAGE = 1
 menu:setup()
@@ -26,7 +25,7 @@ function draw()
 	sn.Graphics.drawText(
 		"FPS",
 		G.FONT_DEFAULT64,
-		G.FONT_DEFAULT64:region("FPS", 64, sn.Pivot.Center, sn.Graphics.getCamera2D():center()):topLeft(),
+		G.FONT_DEFAULT64:region("FPS", 64, sn.Pivot.Center, sn.Window.center()):topLeft(),
 		sn.Color.new(1),
 		64
 	)
@@ -38,7 +37,7 @@ function draw()
 				"CLICK TO START",
 				32,
 				sn.Pivot.Center,
-				sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, 64 * 3.0)
+				sn.Window.center() + sn.Vec2.new(0, 64 * 3.0)
 			)
 			:topLeft(),
 		sn.Color.new(1, 1, 1, sn.Periodic.sin0_1(2.0, sn.Time.seconds())),

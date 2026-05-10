@@ -41,7 +41,6 @@ end
 
 function setup()
 	sn.Graphics.resetGraphicsPipeline()
-	sn.Graphics.getCamera2D():resize(sn.Vec2.new(1280, 720))
 	titleFont:load(44)
 	infoFont:load(20)
 end
@@ -65,7 +64,7 @@ function update()
 end
 
 local function drawBackground(t: number, mx: number, my: number)
-	local half = sn.Graphics.getCamera2D():half()
+	local half = sn.Window.half()
 	local width = half.x * 2.0
 	local step = 24.0
 	local y = -half.y
@@ -80,7 +79,7 @@ local function drawBackground(t: number, mx: number, my: number)
 		sn.Graphics.drawRect(
 			sn.Rect.new(
 				sn.Pivot.Center,
-				sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, -y),
+				sn.Window.center() + sn.Vec2.new(0, -y),
 				sn.Vec2.new(width + 2.0, step + 1.0)
 			),
 			sn.Color.new(saturate(r), saturate(g), saturate(b), 1.0)
@@ -109,7 +108,7 @@ local function drawSwarm(t: number, mx: number, my: number)
 		local a = 0.2 + wave(fi * 2.1, t * 1.5) * 0.6
 
 		sn.Graphics.drawRect(
-			sn.Rect.new(sn.Pivot.Center, sn.Graphics.getCamera2D():center() + sn.Vec2.new(x, -y), sn.Vec2.new(sz, sz)),
+			sn.Rect.new(sn.Pivot.Center, sn.Window.center() + sn.Vec2.new(x, -y), sn.Vec2.new(sz, sz)),
 			sn.Color.new(saturate(r), saturate(g), saturate(b), saturate(a))
 		)
 	end
@@ -123,7 +122,7 @@ local function drawCore(t: number, mx: number, my: number)
 		local cy = my * (0.04 + i * 0.006)
 
 		sn.Graphics.drawRect(
-			sn.Rect.new(sn.Pivot.Center, sn.Graphics.getCamera2D():center() + sn.Vec2.new(cx, -cy), sn.Vec2.new(size, size)),
+			sn.Rect.new(sn.Pivot.Center, sn.Window.center() + sn.Vec2.new(cx, -cy), sn.Vec2.new(size, size)),
 			sn.Color.new(0.85, 0.95, 1.0, saturate(alpha))
 		)
 	end
@@ -140,7 +139,7 @@ function draw()
 	drawCore(t, mx, my)
 
 	sn.Graphics.drawRect(
-		sn.Rect.new(sn.Pivot.Center, sn.Graphics.getCamera2D():center() + sn.Vec2.new(mx, -my), sn.Vec2.new(12, 12)),
+		sn.Rect.new(sn.Pivot.Center, sn.Window.center() + sn.Vec2.new(mx, -my), sn.Vec2.new(12, 12)),
 		sn.Color.new(1, 1, 1, 0.9)
 	)
 
@@ -152,7 +151,7 @@ function draw()
 				"NEON ORBIT",
 				44,
 				sn.Pivot.Center,
-				sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, -320)
+				sn.Window.center() + sn.Vec2.new(0, -320)
 			)
 			:topLeft(),
 		sn.Color.new(1, 1, 1, 0.95),
@@ -166,7 +165,7 @@ function draw()
 				"SPACE: MODE  LEFT CLICK: PALETTE SHIFT  ESC: BACK",
 				20,
 				sn.Pivot.Center,
-				sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, 330)
+				sn.Window.center() + sn.Vec2.new(0, 330)
 			)
 			:topLeft(),
 		sn.Color.new(1, 1, 1, 0.85),
@@ -177,7 +176,7 @@ function draw()
 		modeText,
 		infoFont,
 		infoFont
-			:region(modeText, 20, sn.Pivot.Center, sn.Graphics.getCamera2D():center() + sn.Vec2.new(0, -285))
+			:region(modeText, 20, sn.Pivot.Center, sn.Window.center() + sn.Vec2.new(0, -285))
 			:topLeft(),
 		sn.Color.new(0.9, 1.0, 1.0, 0.9),
 		20

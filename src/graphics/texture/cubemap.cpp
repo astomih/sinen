@@ -5,7 +5,6 @@
 #include <math/math.hpp>
 #include <platform/io/asset_io.hpp>
 
-
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -13,6 +12,7 @@
 #include <cmath>
 #include <cstring>
 #include <functional>
+#include <future>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -32,6 +32,69 @@ static inline void normalize3(float &x, float &y, float &z) {
     y /= len;
     z /= len;
   }
+}
+
+struct Float2 {
+  float x = 0.0f;
+  float y = 0.0f;
+};
+
+struct Float3 {
+  float x = 0.0f;
+  float y = 0.0f;
+  float z = 0.0f;
+};
+
+static inline Float3 makeFloat3(float x, float y, float z) {
+  return Float3{x, y, z};
+}
+
+static inline Float3 add(Float3 a, Float3 b) {
+  return makeFloat3(a.x + b.x, a.y + b.y, a.z + b.z);
+}
+
+static inline Float3 sub(Float3 a, Float3 b) {
+  return makeFloat3(a.x - b.x, a.y - b.y, a.z - b.z);
+}
+
+static inline Float3 mul(Float3 v, float s) {
+  return makeFloat3(v.x * s, v.y * s, v.z * s);
+}
+
+static inline float dot(Float3 a, Float3 b) {
+  return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+static inline Float3 cross(Float3 a, Float3 b) {
+  return makeFloat3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z,
+                    a.x * b.y - a.y * b.x);
+}
+
+static inline Float3 normalize(Float3 v) {
+  float len = std::sqrt(dot(v, v));
+  if (len <= 0.0f) {
+    return makeFloat3(0.0f, 0.0f, 0.0f);
+  }
+  return mul(v, 1.0f / len);
+}
+
+static inline Float2 hammersley(uint32_t i, uint32_t n) {
+  uint32_t bits = i;
+  bits = (bits << 16u) | (bits >> 16u);
+  bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
+  bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
+  bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
+  bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
+  const float radicalInverse =
+      static_cast<float>(bits) * 2.3283064365386963e-10f;
+  return Float2{static_cast<float>(i) / static_cast<float>(n), radicalInverse};
+}
+
+static inline void tangentBasis(Float3 n, Float3 &tangent, Float3 &bitangent) {
+  const Float3 up = std::fabs(n.z) < 0.999f ? makeFloat3(0.0f, 0.0f, 1.0f)
+                                            : makeFloat3(1.0f, 0.0f, 0.0f);
+  tangent = normalize(cross(up, n));
+  bitangent = cross(n, tangent);
 }
 
 static inline void sampleEquirectBilinear(const float *img, int W, int H, int C,
@@ -62,6 +125,18 @@ static inline void sampleEquirectBilinear(const float *img, int W, int H, int C,
     float v1 = p01[c] * (1.0f - tx) + p11[c] * tx;
     out[c] = v0 * (1.0f - ty) + v1 * ty;
   }
+}
+
+static inline Float3 sampleEquirectDirection(const float *img, int W, int H,
+                                             int C, Float3 dir) {
+  constexpr float PI = 3.14159265358979323846f;
+  constexpr float INV_2PI = 1.0f / (2.0f * PI);
+  constexpr float INV_PI = 1.0f / PI;
+  float rgba[4] = {};
+  const float u = std::atan2(dir.z, dir.x) * INV_2PI + 0.5f;
+  const float v = std::acos(clampf(dir.y, -1.0f, 1.0f)) * INV_PI;
+  sampleEquirectBilinear(img, W, H, C, u, v, rgba);
+  return makeFloat3(rgba[0], rgba[1], rgba[2]);
 }
 
 // 0:+X, 1:-X, 2:+Y, 3:-Y, 4:+Z, 5:-Z
@@ -140,6 +215,140 @@ void equirectToCubemap(const float *in, int W, int H, int C, int faceSize,
         for (int c = 0; c < C; ++c)
           px[c] = tmp[c];
       }
+    }
+  }
+}
+
+void computeIrradianceCubemap(const float *in, int W, int H, int C,
+                              int faceSize, uint32_t sampleCount,
+                              std::array<Array<float>, 6> &outFaces) {
+  assert(C == 3 || C == 4);
+  sampleCount = Math::max(1u, sampleCount);
+  for (int f = 0; f < 6; ++f) {
+    outFaces[f].assign(faceSize * faceSize * 4, 0.0f);
+  }
+
+  constexpr float PI = 3.14159265358979323846f;
+  const float invN = 1.0f / faceSize;
+
+  for (int f = 0; f < 6; ++f) {
+    float *dst = outFaces[f].data();
+    for (int j = 0; j < faceSize; ++j) {
+      const float v = (j + 0.5f) * invN;
+      const float b = -(2.0f * v - 1.0f);
+
+      for (int i = 0; i < faceSize; ++i) {
+        const float u = (i + 0.5f) * invN;
+        const float a = 2.0f * u - 1.0f;
+
+        float nx, ny, nz;
+        faceDir(static_cast<Face>(f), a, b, nx, ny, nz);
+        const Float3 n = makeFloat3(nx, ny, nz);
+
+        Float3 tangent;
+        Float3 bitangent;
+        tangentBasis(n, tangent, bitangent);
+
+        Float3 irradiance = {};
+        for (uint32_t sample = 0; sample < sampleCount; ++sample) {
+          const Float2 xi = hammersley(sample, sampleCount);
+          const float phi = 2.0f * PI * xi.x;
+          const float cosTheta = std::sqrt(1.0f - xi.y);
+          const float sinTheta = std::sqrt(xi.y);
+
+          const Float3 local = makeFloat3(std::cos(phi) * sinTheta,
+                                          std::sin(phi) * sinTheta, cosTheta);
+          const Float3 dir =
+              normalize(add(add(mul(tangent, local.x), mul(bitangent, local.y)),
+                            mul(n, local.z)));
+          irradiance =
+              add(irradiance, sampleEquirectDirection(in, W, H, C, dir));
+        }
+
+        // Match the engine's existing irradiance maps: store the
+        // cosine-weighted average radiance. The sample shader applies its own
+        // diffuse scale.
+        irradiance = mul(irradiance, 1.0f / static_cast<float>(sampleCount));
+        float *px = dst + (j * faceSize + i) * 4;
+        px[0] = irradiance.x;
+        px[1] = irradiance.y;
+        px[2] = irradiance.z;
+        px[3] = 1.0f;
+      }
+    }
+  }
+}
+
+static inline Float3 importanceSampleGGX(Float2 xi, Float3 n, float roughness) {
+  constexpr float PI = 3.14159265358979323846f;
+  const float a = roughness * roughness;
+  const float phi = 2.0f * PI * xi.x;
+  const float cosTheta =
+      std::sqrt((1.0f - xi.y) / (1.0f + (a * a - 1.0f) * xi.y));
+  const float sinTheta = std::sqrt(Math::max(0.0f, 1.0f - cosTheta * cosTheta));
+
+  const Float3 h =
+      makeFloat3(std::cos(phi) * sinTheta, std::sin(phi) * sinTheta, cosTheta);
+
+  Float3 tangent;
+  Float3 bitangent;
+  tangentBasis(n, tangent, bitangent);
+  return normalize(
+      add(add(mul(tangent, h.x), mul(bitangent, h.y)), mul(n, h.z)));
+}
+
+static inline float geometrySchlickGGX(float nDotV, float roughness) {
+  const float k = (roughness * roughness) * 0.5f;
+  return nDotV / (nDotV * (1.0f - k) + k);
+}
+
+static inline float geometrySmith(Float3 n, Float3 v, Float3 l,
+                                  float roughness) {
+  const float nDotV = Math::max(dot(n, v), 0.0f);
+  const float nDotL = Math::max(dot(n, l), 0.0f);
+  return geometrySchlickGGX(nDotV, roughness) *
+         geometrySchlickGGX(nDotL, roughness);
+}
+
+void computeBRDFLUT(uint32_t size, uint32_t sampleCount, Array<float> &out) {
+  size = Math::max(1u, size);
+  sampleCount = Math::max(1u, sampleCount);
+  out.assign(static_cast<size_t>(size) * size * 4u, 0.0f);
+
+  const Float3 n = makeFloat3(0.0f, 0.0f, 1.0f);
+  for (uint32_t y = 0; y < size; ++y) {
+    const float roughness = (static_cast<float>(y) + 0.5f) / size;
+    for (uint32_t x = 0; x < size; ++x) {
+      const float nDotV = (static_cast<float>(x) + 0.5f) / size;
+      const Float3 v = makeFloat3(
+          std::sqrt(Math::max(0.0f, 1.0f - nDotV * nDotV)), 0.0f, nDotV);
+
+      float a = 0.0f;
+      float b = 0.0f;
+      for (uint32_t i = 0; i < sampleCount; ++i) {
+        const Float2 xi = hammersley(i, sampleCount);
+        const Float3 h = importanceSampleGGX(xi, n, roughness);
+        const Float3 l = normalize(sub(mul(h, 2.0f * dot(v, h)), v));
+
+        const float nDotL = Math::max(l.z, 0.0f);
+        const float nDotH = Math::max(h.z, 0.0f);
+        const float vDotH = Math::max(dot(v, h), 0.0f);
+        if (nDotL > 0.0f && nDotH > 0.0f && nDotV > 0.0f) {
+          const float g = geometrySmith(n, v, l, roughness);
+          const float gVis = (g * vDotH) / (nDotH * nDotV);
+          const float fc = std::pow(1.0f - vDotH, 5.0f);
+          a += (1.0f - fc) * gVis;
+          b += fc * gVis;
+        }
+      }
+
+      // Match the existing BRDF LUT texture orientation used by shader UVs.
+      const uint32_t dstY = size - 1u - y;
+      const size_t index = (static_cast<size_t>(dstY) * size + x) * 4u;
+      out[index + 0] = a / static_cast<float>(sampleCount);
+      out[index + 1] = b / static_cast<float>(sampleCount);
+      out[index + 2] = 0.0f;
+      out[index + 3] = 1.0f;
     }
   }
 }
@@ -282,6 +491,48 @@ static void writeTexture(Ptr<gpu::Texture> texture,
   }
   device->waitForGpuIdle();
 }
+
+static void writeFloatTexture2D(Ptr<gpu::Texture> texture,
+                                const Array<float> &pixels) {
+  auto device = Graphics::getDevice();
+  const uint32_t width = texture->getCreateInfo().width;
+  const uint32_t height = texture->getCreateInfo().height;
+
+  Ptr<gpu::TransferBuffer> transferBuffer;
+  {
+    gpu::TransferBuffer::CreateInfo info{};
+    info.allocator = GlobalAllocator::get();
+    info.size = width * height * 4 * sizeof(Float32);
+    info.usage = gpu::TransferBufferUsage::Upload;
+    transferBuffer = device->createTransferBuffer(info);
+    auto *pMapped = transferBuffer->map(true);
+    memcpy(pMapped, pixels.data(), info.size);
+    transferBuffer->unmap();
+  }
+  {
+    gpu::CommandBuffer::CreateInfo info{};
+    info.allocator = GlobalAllocator::get();
+    auto commandBuffer = device->acquireCommandBuffer(info);
+    auto copyPass = commandBuffer->beginCopyPass();
+
+    gpu::TextureTransferInfo src{};
+    src.offset = 0;
+    src.transferBuffer = transferBuffer;
+    gpu::TextureRegion dst{};
+    dst.x = 0;
+    dst.y = 0;
+    dst.width = width;
+    dst.height = height;
+    dst.depth = 1;
+    dst.texture = texture;
+    copyPass->uploadTexture(src, dst, true);
+
+    commandBuffer->endCopyPass(copyPass);
+    device->submitCommandBuffer(commandBuffer);
+  }
+  device->waitForGpuIdle();
+}
+
 Ptr<gpu::Texture>
 createNativeCubemapTexture(const std::array<Array<float>, 6> &faces,
                            gpu::TextureFormat textureFormat, uint32_t width,
@@ -305,6 +556,26 @@ createNativeCubemapTexture(const std::array<Array<float>, 6> &faces,
   writeTexture(texture, faces);
   return texture;
 }
+
+Ptr<gpu::Texture> createNativeFloatTexture2D(const Array<float> &pixels,
+                                             uint32_t width, uint32_t height) {
+  auto device = Graphics::getDevice();
+
+  gpu::Texture::CreateInfo info{};
+  info.allocator = GlobalAllocator::get();
+  info.width = width;
+  info.height = height;
+  info.layerCountOrDepth = 1;
+  info.format = gpu::TextureFormat::R32G32B32A32_FLOAT;
+  info.usage = gpu::TextureUsage::Sampler;
+  info.numLevels = 1;
+  info.sampleCount = gpu::SampleCount::x1;
+  info.type = gpu::TextureType::Texture2D;
+  auto texture = device->createTexture(info);
+  writeFloatTexture2D(texture, pixels);
+  return texture;
+}
+
 bool Texture::loadCubemap(StringView path) {
   this->loading = true;
   this->pendingWidth = 0;
@@ -369,6 +640,139 @@ bool Texture::loadCubemap(StringView path) {
     this->loading = false;
     this->async.reset();
     assert(this->texture);
+    group.done();
+  };
+  Graphics::addPreDrawFunc(*pollAndUpload);
+  return true;
+}
+
+bool Texture::loadIrradianceCubemap(StringView path, uint32_t faceSize,
+                                    uint32_t sampleCount) {
+  if (faceSize == 0 || sampleCount == 0) {
+    return false;
+  }
+
+  this->loading = true;
+  this->pendingWidth = 0;
+  this->pendingHeight = 0;
+
+  const TaskGroup group = LoadContext::current();
+  group.add();
+
+  struct AsyncIrradianceState {
+    std::future<void> future;
+    std::array<Array<float>, 6> faces;
+    uint32_t faceSize = 0;
+    bool ok = false;
+  };
+
+  auto state = makePtr<AsyncIrradianceState>();
+  this->async = state;
+
+  const String srcPath = path.data();
+  state->future = globalThreadPool().submit([state, srcPath, faceSize,
+                                             sampleCount] {
+    auto convertedPath = AssetIO::getFilePath(srcPath);
+
+    Array<float> equirect;
+    int w = 0, h = 0, c = 0;
+    if (!loadEXRFloat(convertedPath.c_str(), equirect, w, h, c)) {
+      state->ok = false;
+      return;
+    }
+
+    std::array<Array<float>, 6> faces;
+    computeIrradianceCubemap(equirect.data(), w, h, c,
+                             static_cast<int>(faceSize), sampleCount, faces);
+
+    state->faces = std::move(faces);
+    state->faceSize = faceSize;
+    state->ok = true;
+  });
+
+  auto pollAndUpload = std::make_shared<std::function<void()>>();
+  *pollAndUpload = [this, pollAndUpload, state, group]() {
+    if (!state->future.valid()) {
+      this->loading = false;
+      this->async.reset();
+      group.done();
+      return;
+    }
+
+    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
+        std::future_status::ready) {
+      Graphics::addPreDrawFunc(*pollAndUpload);
+      return;
+    }
+
+    state->future.get();
+    if (state->ok) {
+      texture = createNativeCubemapTexture(
+          state->faces, gpu::TextureFormat::R32G32B32A32_FLOAT, state->faceSize,
+          state->faceSize);
+      this->pendingWidth = state->faceSize;
+      this->pendingHeight = state->faceSize;
+    }
+    this->loading = false;
+    this->async.reset();
+    group.done();
+  };
+  Graphics::addPreDrawFunc(*pollAndUpload);
+  return true;
+}
+
+bool Texture::loadBRDFLUT(uint32_t size, uint32_t sampleCount) {
+  if (size == 0 || sampleCount == 0) {
+    return false;
+  }
+
+  this->loading = true;
+  this->pendingWidth = 0;
+  this->pendingHeight = 0;
+
+  const TaskGroup group = LoadContext::current();
+  group.add();
+
+  struct AsyncBRDFLUTState {
+    std::future<void> future;
+    Array<float> pixels;
+    uint32_t size = 0;
+    bool ok = false;
+  };
+
+  auto state = makePtr<AsyncBRDFLUTState>();
+  this->async = state;
+
+  state->future = globalThreadPool().submit([state, size, sampleCount] {
+    computeBRDFLUT(size, sampleCount, state->pixels);
+    state->size = size;
+    state->ok = true;
+  });
+
+  auto pollAndUpload = std::make_shared<std::function<void()>>();
+  *pollAndUpload = [this, pollAndUpload, state, group]() {
+    if (!state->future.valid()) {
+      this->loading = false;
+      this->async.reset();
+      group.done();
+      return;
+    }
+
+    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
+        std::future_status::ready) {
+      Graphics::addPreDrawFunc(*pollAndUpload);
+      return;
+    }
+
+    state->future.get();
+    if (state->ok) {
+      texture =
+          createNativeFloatTexture2D(state->pixels, state->size, state->size);
+      this->pendingWidth = state->size;
+      this->pendingHeight = state->size;
+    }
+    this->loading = false;
+    this->async.reset();
     group.done();
   };
   Graphics::addPreDrawFunc(*pollAndUpload);

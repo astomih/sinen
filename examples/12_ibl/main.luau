@@ -4,14 +4,16 @@ model:load("DamagedHelmet.glb")
 local lightSphere: sn.Model = sn.Model.new()
 lightSphere:load("sphere.glb")
 
+local envPath = "citrus_orchard_road_puresky_2k/citrus_orchard_road_puresky_2k.exr"
+
 local lut: sn.Texture = sn.Texture.new()
-lut:load("citrus_orchard_road_puresky_2k/brdfLUT.png")
+lut:loadBRDFLUT(256, 512)
 
 local cubemap: sn.Texture = sn.Texture.new()
-cubemap:loadCubemap("citrus_orchard_road_puresky_2k/citrus_orchard_road_puresky_2k.exr")
+cubemap:loadCubemap(envPath)
 
 local irradiance: sn.Texture = sn.Texture.new()
-irradiance:loadCubemap("citrus_orchard_road_puresky_2k/irradiance.exr")
+irradiance:loadIrradianceCubemap(envPath, 64, 256)
 
 local prefiltered: sn.Texture = sn.Texture.new()
 prefiltered:loadCubemap("citrus_orchard_road_puresky_2k/m1.exr")

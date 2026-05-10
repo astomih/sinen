@@ -37,6 +37,9 @@ public:
   bool load(const Buffer &buffer);
 
   bool loadCubemap(StringView fileName);
+  bool loadIrradianceCubemap(StringView fileName, uint32_t faceSize = 64,
+                             uint32_t sampleCount = 256);
+  bool loadBRDFLUT(uint32_t size = 256, uint32_t sampleCount = 512);
   /**
    * @brief Load texture from memory
    *

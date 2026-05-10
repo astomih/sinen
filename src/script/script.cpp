@@ -243,6 +243,7 @@ void registerLog(lua_State *);
 void registerPeriodic(lua_State *);
 void registerTime(lua_State *);
 void registerFile(lua_State *);
+void registerVideo(lua_State *);
 
 static void requireConfigInit(luarequire_Configuration *config) {
   config->is_require_allowed = isRequireAllowed;
@@ -310,6 +311,7 @@ static void registerAll(lua_State *L) {
   registerPeriodic(L);
   registerTime(L);
   registerFile(L);
+  registerVideo(L);
 }
 
 bool Script::initialize() {

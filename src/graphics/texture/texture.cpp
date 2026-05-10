@@ -398,6 +398,21 @@ bool Texture::loadFromMemory(void *pPixels, uint32_t width, uint32_t height,
   return true;
 }
 
+bool Texture::loadPixels(const Buffer &buffer, uint32_t width, uint32_t height,
+                         gpu::TextureFormat format, int channels) {
+  if (width == 0 || height == 0 || channels <= 0) {
+    return false;
+  }
+  const size_t required = static_cast<size_t>(width) *
+                          static_cast<size_t>(height) *
+                          static_cast<size_t>(channels);
+  if (static_cast<size_t>(buffer.size()) < required) {
+    return false;
+  }
+  texture = createNativeTexture(buffer.data(), format, width, height, channels);
+  return texture != nullptr;
+}
+
 void Texture::fill(const Color &color) {
   if (texture) {
 
@@ -586,6 +601,22 @@ static int lTextureLoadCubemap(lua_State *L) {
   tex->loadCubemap(StringView(path));
   return 0;
 }
+static int lTextureLoadPixels(lua_State *L) {
+  auto &tex = udPtr<Texture>(L, 1);
+  auto &buf = udValue<Buffer>(L, 2);
+  const auto width = static_cast<uint32_t>(luaL_checkinteger(L, 3));
+  const auto height = static_cast<uint32_t>(luaL_checkinteger(L, 4));
+  const char *formatName = luaL_optstring(L, 5, "rgba8");
+
+  gpu::TextureFormat format = gpu::TextureFormat::R8G8B8A8_UNORM;
+  int channels = 4;
+  if (StringView(formatName) == "bgra8" || StringView(formatName) == "BGRA8") {
+    format = gpu::TextureFormat::B8G8R8A8_UNORM;
+  }
+
+  lua_pushboolean(L, tex->loadPixels(buf, width, height, format, channels));
+  return 1;
+}
 static int lTextureFill(lua_State *L) {
   auto &tex = udPtr<Texture>(L, 1);
   auto &c = udValue<Color>(L, 2);
@@ -618,6 +649,8 @@ void registerTexture(lua_State *L) {
   lua_setfield(L, -2, "load");
   luaPushcfunction2(L, lTextureLoadCubemap);
   lua_setfield(L, -2, "loadCubemap");
+  luaPushcfunction2(L, lTextureLoadPixels);
+  lua_setfield(L, -2, "loadPixels");
   luaPushcfunction2(L, lTextureFill);
   lua_setfield(L, -2, "fill");
   luaPushcfunction2(L, lTextureCopy);

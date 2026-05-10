@@ -4,6 +4,8 @@
 
 export type Buffer = {
 	new: (array: { any }) -> Buffer,
+	fromBytes: (bytes: { number }) -> Buffer,
+	size: (self: Buffer) -> number,
 }
 
 local Vec3Impl = {}
@@ -148,6 +150,7 @@ export type Texture = {
 	blend: (self: Texture, color: Color) -> nil,
 	copy: (self: Texture) -> Texture,
 	load: (self: Texture, path: string) -> nil,
+	loadPixels: (self: Texture, pixels: Buffer, width: number, height: number, format: string?) -> boolean,
 	loadCubemap: (self: Texture, path: string) -> nil,
 	loadFromPath: (self: Texture, path: string) -> nil,
 	size: (self: Texture) -> Vec2,
@@ -578,6 +581,48 @@ export type File = {
 	seek: (self: File, offset: number) -> nil,
 }
 
+export type VideoInfo = {
+	width: number,
+	height: number,
+	fps: number,
+	frameCount: number,
+}
+
+export type VideoFrame = {
+	width: number,
+	height: number,
+	channels: number,
+	pixels: Buffer,
+}
+
+export type VideoWriter = {
+	new: () -> VideoWriter,
+	open: (self: VideoWriter, path: string, width: number, height: number, fps: number) -> boolean,
+	addFrame: (
+		self: VideoWriter,
+		pixels: Buffer,
+		width: number,
+		height: number,
+		format: string?,
+		quality: number?,
+		strideBytes: number?
+	) -> boolean,
+	addEncodedFrame: (self: VideoWriter, encoded: Buffer) -> boolean,
+	close: (self: VideoWriter) -> boolean,
+	frameCount: (self: VideoWriter) -> number,
+	lastError: (self: VideoWriter) -> string,
+}
+
+export type VideoReader = {
+	new: () -> VideoReader,
+	open: (self: VideoReader, path: string) -> boolean,
+	close: (self: VideoReader) -> nil,
+	info: (self: VideoReader) -> VideoInfo,
+	readEncodedFrame: (self: VideoReader, index: number) -> Buffer?,
+	readFrame: (self: VideoReader, index: number) -> VideoFrame?,
+	lastError: (self: VideoReader) -> string,
+}
+
 export type Log = {
 	verbose: (msg: any) -> nil,
 	info: (msg: any) -> nil,
@@ -639,4 +684,6 @@ return {
 	Periodic = {} :: Periodic,
 	Time = {} :: Time,
 	Log = {} :: Log,
+	VideoWriter = {} :: VideoWriter,
+	VideoReader = {} :: VideoReader,
 }

@@ -36,6 +36,12 @@ Install `sinen-arm64-v8a` apk on your device, and place examples/* directory on 
 ## 08 Animation
 ![](screenshot/08.png)
 
+## 15 Video Encode
+Encodes a generated RGBA8 animation through the Video API and reads it back.
+
+## 16 Video Decode
+Decodes an AVI file through the Video API and draws the frames as a texture.
+
   
 ## Top down shooting
 ![](screenshot/top_down_stg.png)

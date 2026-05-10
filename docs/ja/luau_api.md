@@ -17,3 +17,23 @@
 local rect = sn.Rect.new(sn.Pivot.Center, sn.Vec2.new(400, 300), sn.Vec2.new(120, 80))
 sn.Graphics.drawRect(rect, sn.Color.new(1, 1, 1, 1))
 ```
+
+## Video API
+
+`sn.VideoWriter` と `sn.VideoReader` は、動画の書き出しと読み戻しに対応します。現在の実装は外部コーデックに依存しない簡易 AVI コンテナを使います。
+
+```luau
+local writer = sn.VideoWriter.new()
+if writer:open("capture.avi", 640, 360, 30) then
+	-- pixels は RGB8/RGBA8/BGR8/BGRA8 の sn.Buffer
+	writer:addFrame(pixels, 640, 360, "rgba8", 90)
+	writer:close()
+end
+
+local reader = sn.VideoReader.new()
+if reader:open("capture.avi") then
+	local info = reader:info()
+	local frame = reader:readFrame(0)
+	reader:close()
+end
+```

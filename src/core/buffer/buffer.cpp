@@ -90,17 +90,48 @@ static int lBufferNew(lua_State *L) {
   udNewOwned<Buffer>(L, std::move(buffer));
   return 1;
 }
+
+static int lBufferFromBytes(lua_State *L) {
+  luaL_checktype(L, 1, LUA_TTABLE);
+  const size_t n = lua_objlen(L, 1);
+  Buffer buffer = makeBuffer(n, BufferType::Binary);
+  auto *dst = static_cast<unsigned char *>(buffer.data());
+
+  for (size_t i = 1; i <= n; ++i) {
+    lua_rawgeti(L, 1, static_cast<lua_Integer>(i));
+    const auto value = static_cast<int>(luaL_checkinteger(L, -1));
+    if (value < 0 || value > 255) {
+      return luaLError2(L, "Buffer.fromBytes expects values in 0..255");
+    }
+    dst[i - 1] = static_cast<unsigned char>(value);
+    lua_pop(L, 1);
+  }
+
+  udNewOwned<Buffer>(L, std::move(buffer));
+  return 1;
+}
+
+static int lBufferSize(lua_State *L) {
+  auto &buffer = udValue<Buffer>(L, 1);
+  lua_pushinteger(L, buffer.size());
+  return 1;
+}
+
 void registerBuffer(lua_State *L) {
   luaL_newmetatable(L, Buffer::metaTableName());
   luaPushcfunction2(L, udGc<Buffer>);
   lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
+  luaPushcfunction2(L, lBufferSize);
+  lua_setfield(L, -2, "size");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Buffer");
   luaPushcfunction2(L, lBufferNew);
   lua_setfield(L, -2, "new");
+  luaPushcfunction2(L, lBufferFromBytes);
+  lua_setfield(L, -2, "fromBytes");
   lua_pop(L, 1);
 }
 } // namespace sinen

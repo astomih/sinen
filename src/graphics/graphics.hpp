@@ -29,6 +29,7 @@ public:
   static void begin2D(const Camera2D &camera);
   static void begin3D(const Camera3D &camera);
   static void finish();
+  static Vec2 windowToCurrent2D(const Vec2 &windowPosition);
   static void drawRect(const Rect &rect, const Color &color, float angle);
   static void drawRect(const Rect &rect, const Color &color) {
     drawRect(rect, color, 0.0f);

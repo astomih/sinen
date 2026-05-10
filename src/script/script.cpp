@@ -234,6 +234,7 @@ void registerBuiltinShader(lua_State *);
 void registerBuiltinPipeline(lua_State *);
 void registerEvent(lua_State *);
 void registerGraphics(lua_State *);
+void registerGui(lua_State *);
 void registerMouse(lua_State *);
 void registerKeyboard(lua_State *);
 void registerGamepad(lua_State *);
@@ -302,6 +303,7 @@ static void registerAll(lua_State *L) {
   registerEvent(L);
 
   registerGraphics(L);
+  registerGui(L);
   registerMouse(L);
   registerKeyboard(L);
   registerGamepad(L);

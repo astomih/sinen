@@ -159,7 +159,6 @@ function draw()
 	)
 	menu_object:draw()
 	scene_switcher:draw()
-	G.GUI_MANAGER:draw()
 end
 
 local collision_bullets = function(_bullets: { bullet.Bullet })
@@ -197,7 +196,6 @@ local collision_bullets = function(_bullets: { bullet.Bullet })
 	end
 end
 function update()
-	G.GUI_MANAGER:update()
 	if scene_switcher.flag then
 		scene_switcher:update()
 		return

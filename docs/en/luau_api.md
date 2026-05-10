@@ -44,6 +44,24 @@ sn.Graphics.finish()
 sn.Graphics.drawText("HUD", font, sn.Vec2.new(20, 20))
 ```
 
+## Immediate GUI
+
+`sn.Gui` provides a small immediate-mode GUI layer. Call widgets every frame from `draw()`; each widget draws itself and returns its new interaction state.
+
+```luau
+local enabled = false
+local volume = 0.5
+
+function draw()
+	if sn.Gui.button("Play", sn.Rect.new(20, 20, 120, 32)) then
+		print("clicked")
+	end
+
+	enabled = sn.Gui.checkbox("Enabled", enabled, sn.Rect.new(20, 64, 160, 28))
+	volume = sn.Gui.sliderFloat("Volume", volume, 0.0, 1.0, sn.Rect.new(20, 104, 240, 28))
+end
+```
+
 ## Video API
 
 `sn.VideoWriter` and `sn.VideoReader` write and read video files. The current implementation uses a simple AVI container without an external codec dependency.

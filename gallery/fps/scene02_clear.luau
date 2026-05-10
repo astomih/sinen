@@ -7,7 +7,6 @@ sn.Mouse.hideCursor(false)
 sn.Mouse.setRelative(false)
 
 function update()
-	G.GUI_MANAGER:update()
 	if scene_switcher.flag then
 		scene_switcher:update()
 		return
@@ -26,5 +25,4 @@ function draw()
 		64
 	)
 	scene_switcher:draw()
-	G.GUI_MANAGER:draw()
 end

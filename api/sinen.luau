@@ -421,6 +421,16 @@ export type Graphics = {
 	readbackTexture: (rt: RenderTexture, out: Texture) -> Texture,
 }
 
+export type Gui = {
+	setFont: (font: Font) -> nil,
+	setFontSize: (size: number) -> nil,
+	setThemeColor: (background: Color, hover: Color, active: Color, text: Color, accent: Color) -> nil,
+	label: (text: string, position: Vec2, color: Color?, fontSize: number?) -> nil,
+	button: (text: string, rect: Rect) -> boolean,
+	checkbox: (text: string, checked: boolean, rect: Rect) -> boolean,
+	sliderFloat: (text: string, value: number, min: number, max: number, rect: Rect) -> number,
+}
+
 export type Physics = {
 	setGravity: (gravity: Vec3) -> nil,
 	getGravity: () -> Vec3,
@@ -676,6 +686,7 @@ return {
 	BuiltinShader = {} :: BuiltinShader,
 	BuiltinPipelines = {} :: BuiltinPipelines,
 	Graphics = {} :: Graphics,
+	Gui = {} :: Gui,
 	Physics = {} :: Physics,
 	Keyboard = {} :: Keyboard,
 	Mouse = {} :: Mouse,

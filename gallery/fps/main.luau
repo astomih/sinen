@@ -8,7 +8,6 @@ menu:setup()
 sceneSwitcher:start("")
 
 function update()
-	G.GUI_MANAGER:update()
 	if sceneSwitcher.flag then
 		sceneSwitcher:update()
 		return
@@ -46,5 +45,4 @@ function draw()
 	menu:draw()
 
 	sceneSwitcher:draw()
-	G.GUI_MANAGER:draw()
 end

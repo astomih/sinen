@@ -3,6 +3,7 @@
 #include <core/allocator/global_allocator.hpp>
 #include <core/profiler.hpp>
 #include <gpu/gpu.hpp>
+#include <gui/gui.hpp>
 #include <gpu/shader/builtin_shader.hpp>
 #include <graphics/builtin_pipeline.hpp>
 #include <graphics/font/default/mplus-1p-medium.ttf.hpp>
@@ -234,6 +235,7 @@ void Graphics::render() {
   currentGraphicsPass = GraphicsPass::TwoD;
   currentCamera2D = std::nullopt;
   currentCamera3D = std::nullopt;
+  Gui::newFrame();
   drawCallCountPerFrame = 0;
   {
     ZoneScopedN("Script::drawScene");
@@ -676,6 +678,12 @@ void Graphics::finish() {
   currentCamera3D = std::nullopt;
   currentTextureBindings.clear();
   currentPipeline = std::nullopt;
+}
+Vec2 Graphics::windowToCurrent2D(const Vec2 &windowPosition) {
+  const Camera2D windowCamera(Window::size());
+  const Camera2D *camera2D =
+      currentCamera2D.has_value() ? &currentCamera2D.value() : &windowCamera;
+  return windowPosition * camera2D->invWindowRatio();
 }
 void Graphics::setGraphicsPipeline(const GraphicsPipeline &pipeline) {
   customPipeline = pipeline;

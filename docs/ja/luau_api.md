@@ -44,6 +44,24 @@ sn.Graphics.finish()
 sn.Graphics.drawText("HUD", font, sn.Vec2.new(20, 20))
 ```
 
+## Immediate GUI
+
+`sn.Gui` は小さな immediate-mode GUI レイヤーです。`draw()` から毎フレーム widget を呼ぶと、その場で描画され、新しい入力状態が戻り値で返ります。
+
+```luau
+local enabled = false
+local volume = 0.5
+
+function draw()
+	if sn.Gui.button("Play", sn.Rect.new(20, 20, 120, 32)) then
+		print("clicked")
+	end
+
+	enabled = sn.Gui.checkbox("Enabled", enabled, sn.Rect.new(20, 64, 160, 28))
+	volume = sn.Gui.sliderFloat("Volume", volume, 0.0, 1.0, sn.Rect.new(20, 104, 240, 28))
+end
+```
+
 ## Video API
 
 `sn.VideoWriter` と `sn.VideoReader` は、動画の書き出しと読み戻しに対応します。現在の実装は外部コーデックに依存しない簡易 AVI コンテナを使います。

@@ -1,6 +1,5 @@
 local sn = require("@sinen")
 local G = require("./global")
-local button = require("./gui/button").new()
 
 local exampleDirs = sn.Filesystem.enumerateDirectory(".")
 local numExamples = 16
@@ -8,18 +7,18 @@ function setup()
 	sn.Graphics.resetGraphicsPipeline()
 end
 
-local offset = numExamples * 16.0
-function update()
-	G.guiManager:update()
+local buttonSize = sn.Vec2.new(360, 40)
+local buttonStep = 48.0
+local offset = (numExamples - 1) * buttonStep * 0.5
+function update() end
 
-	for i = 1, numExamples do
-		if button:show(exampleDirs[i], sn.Vec2.new(0, i * -32.0 + offset), sn.Vec2.new(300, 32)) then
-			sn.Script.load("main", exampleDirs[i])
-		end
-	end
+local function centeredRect(pos: sn.Vec2, size: sn.Vec2): sn.Rect
+	return sn.Rect.new(sn.Pivot.Center, sn.Window.center() + sn.Vec2.new(pos.x, -pos.y), size)
 end
 
 function draw()
+	sn.Gui.setFont(G.font)
+	sn.Gui.setFontSize(24)
 	sn.Graphics.drawText(
 		"Example Launcher",
 		G.font,
@@ -34,5 +33,9 @@ function draw()
 		sn.Color.new(1, 1, 1, 1),
 		24
 	)
-	G.guiManager:draw()
+	for i = 1, numExamples do
+		if sn.Gui.button(exampleDirs[i], centeredRect(sn.Vec2.new(0, (i - 1) * -buttonStep + offset), buttonSize)) then
+			sn.Script.load("main", exampleDirs[i])
+		end
+	end
 end

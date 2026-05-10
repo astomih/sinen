@@ -153,6 +153,7 @@ export type Texture = {
 	loadPixels: (self: Texture, pixels: Buffer, width: number, height: number, format: string?) -> boolean,
 	loadCubemap: (self: Texture, path: string) -> nil,
 	loadIrradianceCubemap: (self: Texture, path: string, faceSize: number?, sampleCount: number?) -> boolean,
+	loadPrefilteredCubemap: (self: Texture, path: string, faceSize: number?, mipLevels: number?, sampleCount: number?) -> boolean,
 	loadBRDFLUT: (self: Texture, size: number?, sampleCount: number?) -> boolean,
 	loadFromPath: (self: Texture, path: string) -> nil,
 	size: (self: Texture) -> Vec2,

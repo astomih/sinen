@@ -16,7 +16,7 @@ local irradiance: sn.Texture = sn.Texture.new()
 irradiance:loadIrradianceCubemap(envPath, 64, 256)
 
 local prefiltered: sn.Texture = sn.Texture.new()
-prefiltered:loadCubemap("citrus_orchard_road_puresky_2k/m1.exr")
+prefiltered:loadPrefilteredCubemap(envPath, 128, 5, 128)
 
 local transform: sn.Transform = sn.Transform.new()
 transform.position = sn.Vec3.new(0, 0, 0)

@@ -279,6 +279,11 @@ void computeIrradianceCubemap(const float *in, int W, int H, int C,
   }
 }
 
+struct CubeMipFaces {
+  std::array<Array<float>, 6> faces;
+  uint32_t faceSize = 0;
+};
+
 static inline Float3 importanceSampleGGX(Float2 xi, Float3 n, float roughness) {
   constexpr float PI = 3.14159265358979323846f;
   const float a = roughness * roughness;
@@ -308,6 +313,87 @@ static inline float geometrySmith(Float3 n, Float3 v, Float3 l,
   const float nDotL = Math::max(dot(n, l), 0.0f);
   return geometrySchlickGGX(nDotV, roughness) *
          geometrySchlickGGX(nDotL, roughness);
+}
+
+static uint32_t maxMipLevels(uint32_t faceSize) {
+  uint32_t levels = 0;
+  do {
+    ++levels;
+    faceSize >>= 1u;
+  } while (faceSize > 0);
+  return levels;
+}
+
+void computePrefilteredCubemap(const float *in, int W, int H, int C,
+                               uint32_t faceSize, uint32_t mipLevels,
+                               uint32_t sampleCount,
+                               Array<CubeMipFaces> &outMips) {
+  assert(C == 3 || C == 4);
+  faceSize = Math::max(1u, faceSize);
+  mipLevels = Math::max(1u, Math::min(mipLevels, maxMipLevels(faceSize)));
+  sampleCount = Math::max(1u, sampleCount);
+
+  outMips.clear();
+  outMips.resize(mipLevels);
+
+  for (uint32_t mip = 0; mip < mipLevels; ++mip) {
+    const uint32_t mipFaceSize = Math::max(1u, faceSize >> mip);
+    const float roughness =
+        mipLevels > 1 ? static_cast<float>(mip) / (mipLevels - 1u) : 0.0f;
+
+    outMips[mip].faceSize = mipFaceSize;
+    for (int f = 0; f < 6; ++f) {
+      outMips[mip].faces[f].assign(mipFaceSize * mipFaceSize * 4, 0.0f);
+    }
+
+    const float invN = 1.0f / mipFaceSize;
+    for (int f = 0; f < 6; ++f) {
+      float *dst = outMips[mip].faces[f].data();
+      for (uint32_t j = 0; j < mipFaceSize; ++j) {
+        const float v = (j + 0.5f) * invN;
+        const float b = -(2.0f * v - 1.0f);
+
+        for (uint32_t i = 0; i < mipFaceSize; ++i) {
+          const float u = (i + 0.5f) * invN;
+          const float a = 2.0f * u - 1.0f;
+
+          float nx, ny, nz;
+          faceDir(static_cast<Face>(f), a, b, nx, ny, nz);
+          const Float3 n = makeFloat3(nx, ny, nz);
+          const Float3 vdir = n;
+
+          Float3 prefiltered = {};
+          float totalWeight = 0.0f;
+          for (uint32_t sample = 0; sample < sampleCount; ++sample) {
+            const Float2 xi = hammersley(sample, sampleCount);
+            const Float3 h = importanceSampleGGX(xi, n, roughness);
+            const Float3 l = normalize(sub(mul(h, 2.0f * dot(vdir, h)), vdir));
+            const float nDotL = Math::max(dot(n, l), 0.0f);
+            if (nDotL <= 0.0f) {
+              continue;
+            }
+
+            prefiltered =
+                add(prefiltered,
+                    mul(sampleEquirectDirection(in, W, H, C, l), nDotL));
+            totalWeight += nDotL;
+          }
+
+          if (totalWeight > 0.0f) {
+            prefiltered = mul(prefiltered, 1.0f / totalWeight);
+          } else {
+            prefiltered = sampleEquirectDirection(in, W, H, C, n);
+          }
+
+          float *px = dst + (j * mipFaceSize + i) * 4;
+          px[0] = prefiltered.x;
+          px[1] = prefiltered.y;
+          px[2] = prefiltered.z;
+          px[3] = 1.0f;
+        }
+      }
+    }
+  }
 }
 
 void computeBRDFLUT(uint32_t size, uint32_t sampleCount, Array<float> &out) {
@@ -492,6 +578,51 @@ static void writeTexture(Ptr<gpu::Texture> texture,
   device->waitForGpuIdle();
 }
 
+static void writeTexture(Ptr<gpu::Texture> texture,
+                         const Array<CubeMipFaces> &mips) {
+  auto device = Graphics::getDevice();
+
+  for (uint32_t mip = 0; mip < mips.size(); ++mip) {
+    const auto &mipData = mips[mip];
+    Ptr<gpu::TransferBuffer> transbuffers[6];
+    for (int face = 0; face < 6; ++face) {
+      gpu::TransferBuffer::CreateInfo info{};
+      info.allocator = GlobalAllocator::get();
+      info.size = mipData.faceSize * mipData.faceSize * 4 * sizeof(Float32);
+      info.usage = gpu::TransferBufferUsage::Upload;
+      transbuffers[face] = device->createTransferBuffer(info);
+      auto *pMapped = transbuffers[face]->map(true);
+      memcpy(pMapped, mipData.faces[face].data(), info.size);
+      transbuffers[face]->unmap();
+    }
+
+    gpu::CommandBuffer::CreateInfo info{};
+    info.allocator = GlobalAllocator::get();
+    auto commandBuffer = device->acquireCommandBuffer(info);
+    auto copyPass = commandBuffer->beginCopyPass();
+
+    for (int face = 0; face < 6; ++face) {
+      gpu::TextureTransferInfo src{};
+      src.offset = 0;
+      src.transferBuffer = transbuffers[face];
+      gpu::TextureRegion dst{};
+      dst.layer = face;
+      dst.mipLevel = mip;
+      dst.x = 0;
+      dst.y = 0;
+      dst.width = mipData.faceSize;
+      dst.height = mipData.faceSize;
+      dst.depth = 1;
+      dst.texture = texture;
+      copyPass->uploadTexture(src, dst, false);
+    }
+
+    commandBuffer->endCopyPass(copyPass);
+    device->submitCommandBuffer(commandBuffer);
+  }
+  device->waitForGpuIdle();
+}
+
 static void writeFloatTexture2D(Ptr<gpu::Texture> texture,
                                 const Array<float> &pixels) {
   auto device = Graphics::getDevice();
@@ -554,6 +685,29 @@ createNativeCubemapTexture(const std::array<Array<float>, 6> &faces,
     texture = device->createTexture(info);
   }
   writeTexture(texture, faces);
+  return texture;
+}
+
+Ptr<gpu::Texture> createNativeCubemapTexture(const Array<CubeMipFaces> &mips,
+                                             gpu::TextureFormat textureFormat) {
+  if (mips.empty()) {
+    return nullptr;
+  }
+
+  auto device = Graphics::getDevice();
+
+  gpu::Texture::CreateInfo info{};
+  info.allocator = GlobalAllocator::get();
+  info.width = mips[0].faceSize;
+  info.height = mips[0].faceSize;
+  info.layerCountOrDepth = 6;
+  info.format = textureFormat;
+  info.usage = gpu::TextureUsage::Sampler;
+  info.numLevels = static_cast<UInt32>(mips.size());
+  info.sampleCount = gpu::SampleCount::x1;
+  info.type = gpu::TextureType::Cube;
+  auto texture = device->createTexture(info);
+  writeTexture(texture, mips);
   return texture;
 }
 
@@ -710,6 +864,80 @@ bool Texture::loadIrradianceCubemap(StringView path, uint32_t faceSize,
       texture = createNativeCubemapTexture(
           state->faces, gpu::TextureFormat::R32G32B32A32_FLOAT, state->faceSize,
           state->faceSize);
+      this->pendingWidth = state->faceSize;
+      this->pendingHeight = state->faceSize;
+    }
+    this->loading = false;
+    this->async.reset();
+    group.done();
+  };
+  Graphics::addPreDrawFunc(*pollAndUpload);
+  return true;
+}
+
+bool Texture::loadPrefilteredCubemap(StringView path, uint32_t faceSize,
+                                     uint32_t mipLevels, uint32_t sampleCount) {
+  if (faceSize == 0 || mipLevels == 0 || sampleCount == 0) {
+    return false;
+  }
+
+  this->loading = true;
+  this->pendingWidth = 0;
+  this->pendingHeight = 0;
+
+  const TaskGroup group = LoadContext::current();
+  group.add();
+
+  struct AsyncPrefilteredState {
+    std::future<void> future;
+    Array<CubeMipFaces> mips;
+    uint32_t faceSize = 0;
+    bool ok = false;
+  };
+
+  auto state = makePtr<AsyncPrefilteredState>();
+  this->async = state;
+
+  const String srcPath = path.data();
+  state->future = globalThreadPool().submit(
+      [state, srcPath, faceSize, mipLevels, sampleCount] {
+        auto convertedPath = AssetIO::getFilePath(srcPath);
+
+        Array<float> equirect;
+        int w = 0, h = 0, c = 0;
+        if (!loadEXRFloat(convertedPath.c_str(), equirect, w, h, c)) {
+          state->ok = false;
+          return;
+        }
+
+        Array<CubeMipFaces> mips;
+        computePrefilteredCubemap(equirect.data(), w, h, c, faceSize, mipLevels,
+                                  sampleCount, mips);
+
+        state->mips = std::move(mips);
+        state->faceSize = faceSize;
+        state->ok = true;
+      });
+
+  auto pollAndUpload = std::make_shared<std::function<void()>>();
+  *pollAndUpload = [this, pollAndUpload, state, group]() {
+    if (!state->future.valid()) {
+      this->loading = false;
+      this->async.reset();
+      group.done();
+      return;
+    }
+
+    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
+        std::future_status::ready) {
+      Graphics::addPreDrawFunc(*pollAndUpload);
+      return;
+    }
+
+    state->future.get();
+    if (state->ok) {
+      texture = createNativeCubemapTexture(
+          state->mips, gpu::TextureFormat::R32G32B32A32_FLOAT);
       this->pendingWidth = state->faceSize;
       this->pendingHeight = state->faceSize;
     }

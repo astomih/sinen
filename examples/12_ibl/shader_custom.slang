@@ -83,28 +83,24 @@ struct FSOutput {
 #ifdef SINEN_TARGET_WEBGPU
 #define COMBINED_IMAGE_SAMPLER(name, logicalBind, textureBind, samplerBind)    \
   [[vk::binding(textureBind, 2)]]                                              \
-  Sampler2D name : register(t##textureBind, space2)                            \
-      : register(s##samplerBind, space2);
+  Sampler2D name : register(t##textureBind, space2) : register(s##samplerBind, space2);
 #define COMBINED_CUBE_SAMPLER(name, logicalBind, textureBind, samplerBind)     \
   [[vk::binding(textureBind, 2)]]                                              \
-  SamplerCube name : register(t##textureBind, space2)                          \
-      : register(s##samplerBind, space2);
+  SamplerCube name : register(t##textureBind, space2) : register(s##samplerBind, space2);
 #else
 #define COMBINED_IMAGE_SAMPLER(name, logicalBind, textureBind, samplerBind)    \
   [[vk::binding(logicalBind, 2)]]                                              \
-  Sampler2D name : register(t##logicalBind, space2)                            \
-      : register(s##logicalBind, space2);
+  Sampler2D name : register(t##logicalBind, space2) : register(s##logicalBind, space2);
 #define COMBINED_CUBE_SAMPLER(name, logicalBind, textureBind, samplerBind)     \
   [[vk::binding(logicalBind, 2)]]                                              \
-  SamplerCube name : register(t##logicalBind, space2)                          \
-      : register(s##logicalBind, space2);
+  SamplerCube name : register(t##logicalBind, space2) : register(s##logicalBind, space2);
 #endif
 COMBINED_IMAGE_SAMPLER(albedoMap, 0, 0, 1)
 COMBINED_IMAGE_SAMPLER(normalMap, 1, 2, 3)
-COMBINED_IMAGE_SAMPLER(diffuseRoughnessMap,
-                       2, 4, 5) // in DamagedHelmet.glb, the
-                                // roughness is in the G channel
-                                // and metallic is in the B channel
+COMBINED_IMAGE_SAMPLER(diffuseRoughnessMap, 2, 4,
+                       5) // in DamagedHelmet.glb, the
+                          // roughness is in the G channel
+                          // and metallic is in the B channel
 COMBINED_IMAGE_SAMPLER(emissiveMap, 3, 6, 7)
 COMBINED_IMAGE_SAMPLER(aoMap, 4, 8, 9)
 
@@ -157,7 +153,7 @@ float3 IBL_Ambient(float3 posWS, float3 N_WS, float3 V_WS, float3 albedo,
 
   float3 irradiance = irradianceMap.Sample(N_WS).rgb;
 
-  float prefilteredMipCount = 1.0;
+  float prefilteredMipCount = 5.0;
   float envIntensity = 1.0;
 
   float NdotV = saturate(dot(N_WS, V_WS));
@@ -240,4 +236,3 @@ FSOutput FSMain(FSInput input) {
              1.0);
   return output;
 }
-

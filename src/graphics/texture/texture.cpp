@@ -615,6 +615,22 @@ static int lTextureLoadIrradianceCubemap(lua_State *L) {
                          static_cast<uint32_t>(sampleCountArg)));
   return 1;
 }
+static int lTextureLoadPrefilteredCubemap(lua_State *L) {
+  auto &tex = udPtr<Texture>(L, 1);
+  const char *path = luaL_checkstring(L, 2);
+  const auto faceSizeArg = luaL_optinteger(L, 3, 128);
+  const auto mipLevelsArg = luaL_optinteger(L, 4, 5);
+  const auto sampleCountArg = luaL_optinteger(L, 5, 128);
+  if (faceSizeArg <= 0 || mipLevelsArg <= 0 || sampleCountArg <= 0) {
+    lua_pushboolean(L, false);
+    return 1;
+  }
+  lua_pushboolean(L, tex->loadPrefilteredCubemap(
+                         StringView(path), static_cast<uint32_t>(faceSizeArg),
+                         static_cast<uint32_t>(mipLevelsArg),
+                         static_cast<uint32_t>(sampleCountArg)));
+  return 1;
+}
 static int lTextureLoadBRDFLUT(lua_State *L) {
   auto &tex = udPtr<Texture>(L, 1);
   const auto sizeArg = luaL_optinteger(L, 2, 256);
@@ -677,6 +693,8 @@ void registerTexture(lua_State *L) {
   lua_setfield(L, -2, "loadCubemap");
   luaPushcfunction2(L, lTextureLoadIrradianceCubemap);
   lua_setfield(L, -2, "loadIrradianceCubemap");
+  luaPushcfunction2(L, lTextureLoadPrefilteredCubemap);
+  lua_setfield(L, -2, "loadPrefilteredCubemap");
   luaPushcfunction2(L, lTextureLoadBRDFLUT);
   lua_setfield(L, -2, "loadBRDFLUT");
   luaPushcfunction2(L, lTextureLoadPixels);

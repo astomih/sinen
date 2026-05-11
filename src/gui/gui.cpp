@@ -29,14 +29,14 @@ static std::uint64_t activeId = 0;
 static std::uint64_t hotId = 0;
 
 static std::uint64_t hashId(StringView text, const Rect &rect) {
-  std::size_t seed = std::hash<std::string_view>{}(
-      std::string_view(text.data(), text.size()));
+  std::size_t seed =
+      std::hash<std::string_view>{}(std::string_view(text.data(), text.size()));
   auto combine = [&](float value) {
     std::uint32_t bits = 0;
     static_assert(sizeof(bits) == sizeof(value));
     std::memcpy(&bits, &value, sizeof(bits));
-    seed ^= static_cast<std::size_t>(bits) + 0x9e3779b9 + (seed << 6) +
-            (seed >> 2);
+    seed ^=
+        static_cast<std::size_t>(bits) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
   };
   combine(rect.x);
   combine(rect.y);
@@ -91,8 +91,8 @@ static float fitFontSize(StringView text, const Rect &rect, float fontSize) {
 static Rect textRect(StringView text, const Rect &rect, float fontSize) {
   auto *f = font();
   if (f == nullptr || !f->isLoaded()) {
-    return Rect(rect.x + 8.0f, rect.y + (rect.height - fontSize) * 0.5f,
-                0.0f, 0.0f);
+    return Rect(rect.x + 8.0f, rect.y + (rect.height - fontSize) * 0.5f, 0.0f,
+                0.0f);
   }
   return f->region(text, static_cast<int>(fontSize), Pivot::Center,
                    rect.center());
@@ -229,12 +229,66 @@ float Gui::sliderFloat(StringView text, float value, float min, float max,
     String label(text);
     label += ": ";
     label += std::format("{:.2f}", value);
-    Graphics::drawText(label, *f,
-                       Vec2(rect.x + 8.0f,
-                            rect.y + (rect.height - currentFontSize) * 0.5f),
-                       theme.text, currentFontSize, 0.0f);
+    Graphics::drawText(
+        label, *f,
+        Vec2(rect.x + 8.0f, rect.y + (rect.height - currentFontSize) * 0.5f),
+        theme.text, currentFontSize, 0.0f);
   }
   return value;
+}
+
+float Gui::scrollVertical(float scroll, const Rect &viewport,
+                          float contentHeight, float wheelStep) {
+  if (viewport.height <= 0.0f || contentHeight <= 0.0f) {
+    return 0.0f;
+  }
+
+  const float maxScroll = std::max(0.0f, contentHeight - viewport.height);
+  if (maxScroll <= 0.0f) {
+    return 0.0f;
+  }
+
+  const std::uint64_t id = hashId("scrollVertical", viewport);
+  const Rect track(viewport.x + viewport.width - 8.0f, viewport.y, 8.0f,
+                   viewport.height);
+  const Vec2 mouse = mousePosition2D();
+  const bool hoveredViewport = contains(viewport, mouse);
+  const bool hoveredTrack = contains(track, mouse);
+  const Vec2 wheel = Mouse::getScrollWheel();
+
+  if (hoveredViewport && wheel.y != 0.0f) {
+    scroll -= wheel.y * wheelStep;
+  }
+
+  const float thumbHeight =
+      std::max(24.0f, viewport.height * (viewport.height / contentHeight));
+  const float thumbRange = std::max(1.0f, track.height - thumbHeight);
+  auto thumbY = [&]() {
+    return track.y +
+           (std::clamp(scroll, 0.0f, maxScroll) / maxScroll) * thumbRange;
+  };
+  Rect thumb(track.x, thumbY(), track.width, thumbHeight);
+
+  if (hoveredTrack && Mouse::isPressed(Mouse::LEFT)) {
+    activeId = id;
+  }
+  if (activeId == id && Mouse::isDown(Mouse::LEFT)) {
+    const float local =
+        std::clamp(mouse.y - track.y - thumbHeight * 0.5f, 0.0f, thumbRange);
+    scroll = (local / thumbRange) * maxScroll;
+    thumb.y = thumbY();
+  }
+  if (activeId == id && Mouse::isReleased(Mouse::LEFT)) {
+    activeId = 0;
+  }
+
+  scroll = std::clamp(scroll, 0.0f, maxScroll);
+  thumb.y = thumbY();
+
+  Graphics::drawRect(track, Color(theme.background.r, theme.background.g,
+                                  theme.background.b, 0.55f));
+  Graphics::drawRect(thumb, activeId == id ? theme.active : theme.accent);
+  return scroll;
 }
 } // namespace sinen
 
@@ -298,6 +352,16 @@ static int lGuiSliderFloat(lua_State *L) {
   return 1;
 }
 
+static int lGuiScrollVertical(lua_State *L) {
+  const float scroll = static_cast<float>(luaL_checknumber(L, 1));
+  auto &viewport = udValue<Rect>(L, 2);
+  const float contentHeight = static_cast<float>(luaL_checknumber(L, 3));
+  const float wheelStep = static_cast<float>(luaL_optnumber(L, 4, 48.0));
+  lua_pushnumber(
+      L, Gui::scrollVertical(scroll, viewport, contentHeight, wheelStep));
+  return 1;
+}
+
 void registerGui(lua_State *L) {
   pushSnNamed(L, "Gui");
   luaPushcfunction2(L, lGuiSetFont);
@@ -314,6 +378,8 @@ void registerGui(lua_State *L) {
   lua_setfield(L, -2, "checkbox");
   luaPushcfunction2(L, lGuiSliderFloat);
   lua_setfield(L, -2, "sliderFloat");
+  luaPushcfunction2(L, lGuiScrollVertical);
+  lua_setfield(L, -2, "scrollVertical");
   lua_pop(L, 1);
 }
 } // namespace sinen

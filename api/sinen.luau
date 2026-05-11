@@ -457,6 +457,7 @@ export type Gui = {
 	button: (text: string, rect: Rect) -> boolean,
 	checkbox: (text: string, checked: boolean, rect: Rect) -> boolean,
 	sliderFloat: (text: string, value: number, min: number, max: number, rect: Rect) -> number,
+	scrollVertical: (scroll: number, viewport: Rect, contentHeight: number, wheelStep: number?) -> number,
 }
 
 export type Physics = {
@@ -548,7 +549,7 @@ export type Mouse = {
 	getPositionOnScene: () -> Vec2,
 	setPosition: (pos: Vec2) -> nil,
 	setPositionOnScene: (pos: Vec2) -> nil,
-	getScrollWheel: () -> number,
+	getScrollWheel: () -> Vec2,
 	hideCursor: (isHide: boolean) -> nil,
 	setRelative: (isRelative: boolean) -> nil,
 }

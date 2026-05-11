@@ -22,6 +22,8 @@ public:
   static bool checkbox(StringView text, bool checked, const Rect &rect);
   static float sliderFloat(StringView text, float value, float min, float max,
                            const Rect &rect);
+  static float scrollVertical(float scroll, const Rect &viewport,
+                              float contentHeight, float wheelStep = 48.0f);
 };
 } // namespace sinen
 

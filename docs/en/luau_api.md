@@ -78,6 +78,17 @@ function draw()
 end
 ```
 
+For scrollable lists, keep the scroll offset in Luau and update it with the value returned by `scrollVertical()`.
+
+```luau
+local scrollY = 0.0
+local viewport = sn.Rect.new(20, 80, 360, 480)
+
+function draw()
+	scrollY = sn.Gui.scrollVertical(scrollY, viewport, 900, 48)
+end
+```
+
 ## Video API
 
 `sn.VideoWriter` and `sn.VideoReader` write and read video files. The current implementation uses a simple AVI container without an external codec dependency.

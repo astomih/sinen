@@ -78,6 +78,17 @@ function draw()
 end
 ```
 
+スクロールが必要な一覧では、スクロール量を Luau 側で保持し、`scrollVertical()` の戻り値で更新します。
+
+```luau
+local scrollY = 0.0
+local viewport = sn.Rect.new(20, 80, 360, 480)
+
+function draw()
+	scrollY = sn.Gui.scrollVertical(scrollY, viewport, 900, 48)
+end
+```
+
 ## Video API
 
 `sn.VideoWriter` と `sn.VideoReader` は、動画の書き出しと読み戻しに対応します。現在の実装は外部コーデックに依存しない簡易 AVI コンテナを使います。

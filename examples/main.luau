@@ -2,7 +2,7 @@ local sn = require("@sinen")
 local G = require("./global")
 
 local exampleDirs = sn.Filesystem.enumerateDirectory(".")
-local numExamples = 17
+local numExamples = 18
 function setup()
 	sn.Graphics.resetGraphicsPipeline()
 end

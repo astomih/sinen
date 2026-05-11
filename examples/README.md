@@ -51,6 +51,5 @@ build_sna.bat
 ..\..\build\msvc2026-debug\sinen.exe archive_sample.sna
 ```
 
-  
-## Top down shooting
-![](screenshot/top_down_stg.png)
+## 18 Procedural Model
+Builds sphere, cylinder, and custom pyramid models from Luau with `sn.MeshBuilder`.

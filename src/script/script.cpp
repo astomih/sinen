@@ -224,6 +224,7 @@ void registerSynth(lua_State *);
 void registerShader(lua_State *);
 void registerPipeline(lua_State *);
 void registerModel(lua_State *);
+void registerMeshBuilder(lua_State *);
 void registerTextureKey(lua_State *);
 void registerArguments(lua_State *);
 void registerRandom(lua_State *);
@@ -292,6 +293,7 @@ static void registerAll(lua_State *L) {
   registerShader(L);
   registerPipeline(L);
   registerModel(L);
+  registerMeshBuilder(L);
   registerTextureKey(L);
 
   registerArguments(L);

@@ -44,6 +44,22 @@ sn.Graphics.finish()
 sn.Graphics.drawText("HUD", font, sn.Vec2.new(20, 20))
 ```
 
+## Procedural 3D Models
+
+`sn.MeshBuilder` lets Luau assemble vertices, triangles, and primitive shapes, then convert the result into a `Model`. The vertex ids returned by `vertex()` are 1-based for Luau code.
+
+```luau
+local builder = sn.MeshBuilder.new()
+builder:addSphere(1.0, 16, 32, sn.Color.new(0.9, 0.4, 0.2, 1.0))
+
+local model = builder:toModel()
+local transform = sn.Transform.new()
+
+sn.Graphics.begin3D(camera)
+sn.Graphics.drawModel(model, transform)
+sn.Graphics.finish()
+```
+
 ## Immediate GUI
 
 `sn.Gui` provides a small immediate-mode GUI layer. Call widgets every frame from `draw()`; each widget draws itself and returns its new interaction state.

@@ -44,6 +44,22 @@ sn.Graphics.finish()
 sn.Graphics.drawText("HUD", font, sn.Vec2.new(20, 20))
 ```
 
+## プロシージャル 3D モデル
+
+`sn.MeshBuilder` は Luau から頂点・三角形・基本形状を組み立て、`Model` に変換できます。`vertex()` が返す頂点番号は Luau 側に合わせて 1 始まりです。
+
+```luau
+local builder = sn.MeshBuilder.new()
+builder:addSphere(1.0, 16, 32, sn.Color.new(0.9, 0.4, 0.2, 1.0))
+
+local model = builder:toModel()
+local transform = sn.Transform.new()
+
+sn.Graphics.begin3D(camera)
+sn.Graphics.drawModel(model, transform)
+sn.Graphics.finish()
+```
+
 ## Immediate GUI
 
 `sn.Gui` は小さな immediate-mode GUI レイヤーです。`draw()` から毎フレーム widget を呼ぶと、その場で描画され、新しい入力状態が戻り値で返ります。

@@ -229,6 +229,27 @@ export type Model = {
 	setTexture: (self: Model, textureKey: number, texture: Texture) -> nil,
 }
 
+export type MeshBuilder = {
+	new: () -> MeshBuilder,
+	clear: (self: MeshBuilder) -> nil,
+	vertex: (self: MeshBuilder, position: Vec3, normal: Vec3?, uv: Vec2?, color: Color?) -> number,
+	triangle: (self: MeshBuilder, a: number, b: number, c: number) -> nil,
+	quad: (self: MeshBuilder, a: number, b: number, c: number, d: number) -> nil,
+	addPlane: (self: MeshBuilder, width: number?, depth: number?, color: Color?) -> nil,
+	addBox: (
+		((self: MeshBuilder, size: Vec3?, color: Color?) -> nil)
+		& ((self: MeshBuilder, size: number, color: Color?) -> nil)
+		& ((self: MeshBuilder, width: number, height: number, depth: number, color: Color?) -> nil)
+	),
+	addSphere: (self: MeshBuilder, radius: number?, rings: number?, segments: number?, color: Color?) -> nil,
+	addCylinder: (self: MeshBuilder, radius: number?, height: number?, segments: number?, color: Color?) -> nil,
+	addCone: (self: MeshBuilder, radius: number?, height: number?, segments: number?, color: Color?) -> nil,
+	recalculateNormals: (self: MeshBuilder) -> nil,
+	toModel: (self: MeshBuilder) -> Model,
+	vertexCount: (self: MeshBuilder) -> number,
+	indexCount: (self: MeshBuilder) -> number,
+}
+
 export type Timer = {
 	new: () -> Timer,
 	start: (self: Timer) -> nil,
@@ -669,6 +690,7 @@ return {
 	Camera2D = {} :: Camera2D,
 	TextureKey = {} :: TextureKey,
 	Model = {} :: Model,
+	MeshBuilder = {} :: MeshBuilder,
 	AABB = {} :: AABB,
 	Timer = {} :: Timer,
 	Shader = {} :: Shader,

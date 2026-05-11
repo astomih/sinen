@@ -54,6 +54,20 @@ cd examples\01_helloworld
 
 `main.luau` が読み込まれます。
 
+`.sna` アーカイブを渡して実行することもできます。`.sna` は zip 形式で、
+zip 直下に `sna/` フォルダを置き、その中に `main.luau` とアセットを配置します。
+
+```text
+hoge.sna
+└─ sna
+   ├─ main.luau
+   └─ logo.png
+```
+
+```bat
+build\msvc2026-debug\sinen.exe hoge.sna
+```
+
 ### Android
 
 - `build\generate_android.bat`

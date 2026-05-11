@@ -123,9 +123,9 @@ Array<char> ShaderCompiler::compileSource(StringView moduleName,
     String modulePathString(modulePath.data(), modulePath.size());
     Slang::ComPtr<slang::IBlob> diagnosticsBlob;
     slangModule = session->loadModuleFromSourceString(
-        moduleNameString.c_str(), // Module name
-        modulePathString.c_str(), // Module path
-        source.data(),              // Shader source code
+        moduleNameString.c_str(),    // Module name
+        modulePathString.c_str(),    // Module path
+        source.data(),               // Shader source code
         diagnosticsBlob.writeRef()); // Optional diagnostic container
     if (!slangModule) {
       diagnoseIfNeeded(diagnosticsBlob);
@@ -224,7 +224,7 @@ Array<char> ShaderCompiler::compile(StringView sourcePath, ShaderStage stage,
     moduleName = String(view.data(), view.size());
   }
   auto source = sinen::AssetIO::openAsString(sourcePath);
-  auto modulePath = sinen::AssetIO::getFilePath(sourcePath);
+  auto modulePath = sinen::AssetIO::getLoadPath(sourcePath);
   return compileSource(moduleName, modulePath, source, stage, format,
                        reflectionData);
 }

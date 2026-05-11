@@ -1,6 +1,7 @@
 // std
 #include <atomic>
 #include <cassert>
+#include <cctype>
 #include <chrono>
 #include <cstdio>
 #include <cstring>
@@ -120,6 +121,18 @@ static void optimizeIndexOrder(Mesh &mesh, Array<UInt32> &indices) {
 }
 
 static size_t triangleIndexCount(size_t count) { return (count / 3) * 3; }
+
+static String assimpHintFromPath(StringView path) {
+  const size_t dot = path.find_last_of('.');
+  if (dot == StringView::npos || dot + 1 >= path.size()) {
+    return "";
+  }
+  String hint(path.substr(dot + 1));
+  std::transform(hint.begin(), hint.end(), hint.begin(), [](unsigned char c) {
+    return static_cast<char>(std::tolower(c));
+  });
+  return hint;
+}
 
 static void optimizeMesh(Mesh &mesh) {
   ZoneScopedN("Model mesh optimize");
@@ -482,13 +495,21 @@ void Model::load(StringView path) {
 
   const String pathStr = path.data();
   state->future = globalThreadPool().submit([state, pathStr]() {
-    auto fullFilePath = AssetIO::getFilePath(pathStr);
-
     Assimp::Importer importer;
-    const aiScene *scene = importer.ReadFile(
-        fullFilePath.c_str(),
+    const unsigned int flags =
         aiProcess_ValidateDataStructure | aiProcess_LimitBoneWeights |
-            aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
+        aiProcess_JoinIdenticalVertices | aiProcess_Triangulate;
+    const aiScene *scene = nullptr;
+    String modelBytes;
+    if (AssetIO::isArchiveMounted() && AssetIO::exists(pathStr)) {
+      modelBytes = AssetIO::openAsString(pathStr);
+      const String hint = assimpHintFromPath(pathStr);
+      scene = importer.ReadFileFromMemory(modelBytes.data(), modelBytes.size(),
+                                          flags, hint.c_str());
+    } else {
+      auto fullFilePath = AssetIO::getFilePath(pathStr);
+      scene = importer.ReadFile(fullFilePath.c_str(), flags);
+    }
     if (!scene) {
       state->ok = false;
       return;

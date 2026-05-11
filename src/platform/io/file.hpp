@@ -53,6 +53,7 @@ new empty file.
 
 private:
   void *stream;
+  Array<char> memory;
 };
 } // namespace sinen
 #endif // !SINEN_FILE_HPP

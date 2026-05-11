@@ -8,6 +8,7 @@
 #include <physics/physics.hpp>
 #include <platform/input/input.hpp>
 #include <platform/io/arguments.hpp>
+#include <platform/io/asset_io.hpp>
 #include <platform/window/window.hpp>
 #include <script/script.hpp>
 
@@ -15,6 +16,8 @@
 #include <SDL3/SDL_main.h>
 
 #include <SDL3/SDL.h>
+
+#include <cstring>
 
 using namespace sinen;
 
@@ -118,6 +121,15 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
   for (int i = 0; i < argc; i++) {
     Arguments::argv[i] = argv[i];
   }
+  for (int i = 1; i < argc; i++) {
+    StringView arg(argv[i]);
+    if (arg.size() >= std::strlen(AssetIO::archiveExtension()) &&
+        arg.substr(arg.size() - std::strlen(AssetIO::archiveExtension())) ==
+            AssetIO::archiveExtension()) {
+      AssetIO::mountArchive(arg);
+      break;
+    }
+  }
 
   SDL_SetHint(SDL_HINT_APP_NAME, "Sinen");
   SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1");
@@ -203,6 +215,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
 void SDL_AppQuit(void *appstate, SDL_AppResult result) {
   ZoneScopedN("SDL_AppQuit");
   Script::shutdown();
+  AssetIO::unmountArchive();
   Physics::shutdown();
   Input::shutdown();
   Audio::shutdown();

@@ -1,6 +1,7 @@
 #include "require.hpp"
 #include "luaapi.hpp"
 #include "script.hpp"
+#include <platform/io/asset_io.hpp>
 #include <platform/io/filesystem.hpp>
 
 #include <SDL3/SDL.h>
@@ -36,6 +37,12 @@ static bool endsWithIcaseAscii(const std::string_view s,
 }
 
 static std::filesystem::path getRequireRoot() {
+  if (AssetIO::isArchiveMounted()) {
+    std::filesystem::path root(AssetIO::archiveRootDirectory());
+    std::filesystem::path basePath(Script::getBasePath().c_str());
+    return (root / basePath).lexically_normal();
+  }
+
   std::filesystem::path base(Filesystem::getAppBaseDirectory().c_str());
   std::filesystem::path basePath(Script::getBasePath().c_str());
 
@@ -49,6 +56,50 @@ static std::filesystem::path getRequireRoot() {
     }
   }
   return absRoot.lexically_normal();
+}
+
+static String toGenericString(const std::filesystem::path &path) {
+  const auto s = path.lexically_normal().generic_string();
+  return String(s.c_str(), s.size());
+}
+
+static bool virtualRegularFileExists(const std::filesystem::path &path) {
+  if (AssetIO::isArchiveMounted()) {
+    return AssetIO::archiveEntryExists(toGenericString(path));
+  }
+
+  std::error_code ec;
+  return std::filesystem::exists(path, ec) &&
+         std::filesystem::is_regular_file(path, ec);
+}
+
+static bool virtualDirectoryExists(const std::filesystem::path &path) {
+  if (AssetIO::isArchiveMounted()) {
+    return AssetIO::archiveDirectoryExists(toGenericString(path));
+  }
+
+  std::error_code ec;
+  return std::filesystem::is_directory(path, ec);
+}
+
+static String virtualReadFile(const std::filesystem::path &path) {
+  if (AssetIO::isArchiveMounted()) {
+    return AssetIO::openArchiveEntryAsString(toGenericString(path));
+  }
+
+  auto *file = SDL_IOFromFile(path.string().c_str(), "r");
+  if (!file) {
+    return "";
+  }
+  size_t fileLength = 0;
+  void *load = SDL_LoadFile_IO(file, &fileLength, 1);
+  if (!load) {
+    return "";
+  }
+
+  String contents(reinterpret_cast<const char *>(load), fileLength);
+  SDL_free(load);
+  return contents;
 }
 
 static std::filesystem::path normalizeChunknamePath(const char *chunkname) {
@@ -101,9 +152,7 @@ static bool isPathUnderRootIcase(const std::filesystem::path &path,
 
 static std::optional<std::filesystem::path>
 resolveExistingFilePath(const std::filesystem::path &p) {
-  std::error_code ec;
-  if (std::filesystem::exists(p, ec) &&
-      std::filesystem::is_regular_file(p, ec)) {
+  if (virtualRegularFileExists(p)) {
     return p;
   }
   return std::nullopt;
@@ -113,6 +162,20 @@ static std::optional<std::filesystem::path>
 resolveRequirerFile(sinen::RequireContext &rc, const char *requirer_chunkname) {
   std::filesystem::path p = normalizeChunknamePath(requirer_chunkname);
   if (p.empty()) {
+    return std::nullopt;
+  }
+
+  if (AssetIO::isArchiveMounted()) {
+    if (auto hit = resolveExistingFilePath(p)) {
+      return hit;
+    }
+
+    std::filesystem::path fallback =
+        (rc.root / p.filename()).lexically_normal();
+    if (auto hit = resolveExistingFilePath(fallback)) {
+      return hit;
+    }
+
     return std::nullopt;
   }
 
@@ -154,13 +217,11 @@ resolveModuleFileRel(const RequireContext &rc) {
   rc.moduleFileResolved = true;
   rc.moduleFileRel.reset();
 
-  std::error_code ec;
   const std::filesystem::path fileRel = rc.current;
 
   std::filesystem::path fileLuau = (fileRel.string() + prefix);
   std::filesystem::path fileAbs = (rc.root / fileLuau).lexically_normal();
-  if (std::filesystem::exists(fileAbs, ec) &&
-      std::filesystem::is_regular_file(fileAbs, ec)) {
+  if (virtualRegularFileExists(fileAbs)) {
     rc.moduleFileRel = fileLuau;
     return rc.moduleFileRel;
   }
@@ -168,8 +229,7 @@ resolveModuleFileRel(const RequireContext &rc) {
   const String initName = String("init") + prefix;
   std::filesystem::path initRel = fileRel / initName.c_str();
   std::filesystem::path initAbs = (rc.root / initRel).lexically_normal();
-  if (std::filesystem::exists(initAbs, ec) &&
-      std::filesystem::is_regular_file(initAbs, ec)) {
+  if (virtualRegularFileExists(initAbs)) {
     rc.moduleFileRel = initRel;
     return rc.moduleFileRel;
   }
@@ -190,8 +250,7 @@ static void setCurrentModule(RequireContext &rc, std::filesystem::path rel) {
 static std::filesystem::path resolveConfigDirectory(const RequireContext &rc) {
   std::filesystem::path dirAbs = (rc.root / rc.current).lexically_normal();
 
-  std::error_code ec;
-  if (!std::filesystem::is_directory(dirAbs, ec)) {
+  if (!virtualDirectoryExists(dirAbs)) {
     dirAbs = dirAbs.parent_path();
   }
 
@@ -208,13 +267,12 @@ static luarequire_ConfigStatus resolveConfigStatus(const RequireContext &rc) {
   rc.configFile.reset();
 
   const std::filesystem::path dirAbs = resolveConfigDirectory(rc);
-  std::error_code ec;
   const std::filesystem::path jsonAbs = (dirAbs / ".luaurc").lexically_normal();
   const std::filesystem::path luauAbs =
       (dirAbs / ".config.luau").lexically_normal();
 
-  const bool hasJson = std::filesystem::is_regular_file(jsonAbs, ec);
-  const bool hasLuau = std::filesystem::is_regular_file(luauAbs, ec);
+  const bool hasJson = virtualRegularFileExists(jsonAbs);
+  const bool hasLuau = virtualRegularFileExists(luauAbs);
 
   if (hasJson && hasLuau) {
     rc.configStatus = CONFIG_AMBIGUOUS;
@@ -298,8 +356,12 @@ luarequire_NavigateResult reset(lua_State *L, void *ctx,
   if (!fileAbsOpt) {
     return NAVIGATE_NOT_FOUND;
   }
-  const std::filesystem::path fileAbs =
-      std::filesystem::weakly_canonical(*fileAbsOpt).lexically_normal();
+  std::filesystem::path fileAbs;
+  if (AssetIO::isArchiveMounted()) {
+    fileAbs = fileAbsOpt->lexically_normal();
+  } else {
+    fileAbs = std::filesystem::weakly_canonical(*fileAbsOpt).lexically_normal();
+  }
 
   // Reject chunks outside the configured script root.
   if (!isPathUnderRootIcase(fileAbs, rc->root)) {
@@ -333,8 +395,7 @@ luarequire_NavigateResult jumpToAlias(lua_State *L, void *ctx,
   // explicitly absolute.
   std::filesystem::path abs = p.is_absolute() ? p : (rc->root / p);
 
-  std::error_code ec;
-  if (std::filesystem::is_regular_file(abs, ec)) {
+  if (virtualRegularFileExists(abs)) {
     std::filesystem::path rel = abs.lexically_relative(rc->root);
     if (rel.empty() || rel.generic_string().starts_with("..")) {
       return NAVIGATE_NOT_FOUND;
@@ -354,8 +415,8 @@ luarequire_NavigateResult jumpToAlias(lua_State *L, void *ctx,
   std::filesystem::path tryDirInit =
       (rc->root / relNoExt / (String("init") + prefix).c_str());
 
-  const bool fileExists = std::filesystem::is_regular_file(tryFile, ec);
-  const bool initExists = std::filesystem::is_regular_file(tryDirInit, ec);
+  const bool fileExists = virtualRegularFileExists(tryFile);
+  const bool initExists = virtualRegularFileExists(tryDirInit);
   if (fileExists && initExists) {
     return NAVIGATE_AMBIGUOUS;
   }
@@ -420,12 +481,11 @@ luarequire_NavigateResult toChild(lua_State *L, void *ctx, const char *name) {
 
   std::filesystem::path child = (rc->current / component).lexically_normal();
 
-  std::error_code ec;
   const std::filesystem::path fileAbs = (rc->root / (child.string() + prefix));
   const std::filesystem::path dirAbs = (rc->root / child);
 
-  const bool fileExists = std::filesystem::is_regular_file(fileAbs, ec);
-  const bool dirExists = std::filesystem::is_directory(dirAbs, ec);
+  const bool fileExists = virtualRegularFileExists(fileAbs);
+  const bool dirExists = virtualDirectoryExists(dirAbs);
 
   if (fileExists && dirExists) {
     return NAVIGATE_AMBIGUOUS;
@@ -559,21 +619,14 @@ luarequire_WriteResult getConfig(lua_State *L, void *ctx, char *buffer,
     return WRITE_FAILURE;
   }
 
-  // Read directly from disk so we don't depend on Script::getBasePath while
+  // Read from the resolved path so we don't depend on Script::getBasePath while
   // navigating across parents.
-  auto *file = SDL_IOFromFile(cfgAbs->string().c_str(), "r");
-  if (!file) {
+  const String contents = virtualReadFile(*cfgAbs);
+  if (contents.empty()) {
     return WRITE_FAILURE;
   }
-  size_t fileLength = 0;
-  void *load = SDL_LoadFile_IO(file, &fileLength, 1);
-  if (!load) {
-    return WRITE_FAILURE;
-  }
-
-  const std::string contents(reinterpret_cast<const char *>(load), fileLength);
-  SDL_free(load);
-  return writeStringToBuffer(contents, buffer, buffer_size, size_out);
+  return writeStringToBuffer(std::string(contents.data(), contents.size()),
+                             buffer, buffer_size, size_out);
 }
 
 // Returns the maximum number of milliseconds to allow for executing a given
@@ -610,22 +663,12 @@ int load(lua_State *L, void *ctx, const char *path, const char *chunkname,
   const std::filesystem::path moduleAbs =
       (rc->root / *relOpt).lexically_normal();
 
-  auto *file = SDL_IOFromFile(moduleAbs.string().c_str(), "r");
-  if (!file) {
-    lua_pushfstring(L, "require: failed to open module file (%s)",
-                    moduleAbs.string().c_str());
-    return 0;
-  }
-  size_t fileLength = 0;
-  void *raw = SDL_LoadFile_IO(file, &fileLength, 1);
-  if (!raw) {
+  const String source = virtualReadFile(moduleAbs);
+  if (source.empty()) {
     lua_pushfstring(L, "require: failed to read module file (%s)",
                     moduleAbs.string().c_str());
     return 0;
   }
-
-  const String source(reinterpret_cast<const char *>(raw), fileLength);
-  SDL_free(raw);
 
   const int stackBefore = lua_gettop(L);
   if (luaLoadSource(L, source,

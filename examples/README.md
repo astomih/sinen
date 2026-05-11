@@ -42,6 +42,15 @@ Encodes a generated RGBA8 animation through the Video API and reads it back.
 ## 16 Video Decode
 Decodes an AVI file through the Video API and draws the frames as a texture.
 
+## 17 Archive
+Packages `17_archive/sna` into `archive_sample.sna` and runs `main.luau` from the archive.
+
+```bat
+cd examples\17_archive
+build_sna.bat
+..\..\build\msvc2026-debug\sinen.exe archive_sample.sna
+```
+
   
 ## Top down shooting
 ![](screenshot/top_down_stg.png)

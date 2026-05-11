@@ -54,6 +54,20 @@ cd examples\01_helloworld
 
 `main.luau` will be loaded.
 
+You can also run a `.sna` archive. A `.sna` file is a zip archive whose root
+contains a `sna/` directory with `main.luau` and its assets inside.
+
+```text
+hoge.sna
+└─ sna
+   ├─ main.luau
+   └─ logo.png
+```
+
+```bat
+build\msvc2026-debug\sinen.exe hoge.sna
+```
+
 ### Android
 
 - `build\generate_android.bat`

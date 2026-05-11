@@ -4,35 +4,38 @@
 #include <platform/io/asset_io.hpp>
 
 // external
+#include "core/data/array.hpp"
 #include "core/data/ptr.hpp"
 #if 1
 #define MINIAUDIO_IMPLEMENTATION
 #endif
 #include <miniaudio.h>
 
+#include <cstring>
+
 namespace sinen {
 class SoundImpl : public Sound {
 public:
   SoundImpl() : sound() {}
-  virtual ~SoundImpl() override { ma_sound_uninit(&sound); }
+  virtual ~SoundImpl() override { reset(); }
 
   void load(StringView fileName) override {
-    auto path = AssetIO::getFilePath(fileName);
-    ma_sound_init_from_file((ma_engine *)Audio::getEngine(), path.c_str(),
-                            MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC, nullptr,
-                            nullptr, &sound);
-  }
-  void load(const Buffer &buffer) override {
-    ma_decoder decoder;
-    ma_decoder_config dcfg = ma_decoder_config_init(ma_format_f32, 2, 44100);
-    ma_result r =
-        ma_decoder_init_memory(buffer.data(), buffer.size(), &dcfg, &decoder);
-    if (r != MA_SUCCESS) {
+    if (AssetIO::isArchiveMounted() && AssetIO::exists(fileName)) {
+      auto bytes = AssetIO::openAsString(fileName);
+      loadMemory(bytes.data(), bytes.size());
       return;
     }
-    ma_sound_init_from_data_source((ma_engine *)Audio::getEngine(), &decoder,
-                                   MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC,
-                                   nullptr, &sound);
+
+    reset();
+    auto path = AssetIO::getFilePath(fileName);
+    if (ma_sound_init_from_file((ma_engine *)Audio::getEngine(), path.c_str(),
+                                MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC,
+                                nullptr, nullptr, &sound) == MA_SUCCESS) {
+      soundInitialized = true;
+    }
+  }
+  void load(const Buffer &buffer) override {
+    loadMemory(buffer.data(), static_cast<size_t>(buffer.size()));
   }
   void play() override { ma_sound_start(&sound); }
 
@@ -72,7 +75,45 @@ public:
   }
 
 private:
+  void reset() {
+    if (soundInitialized) {
+      ma_sound_uninit(&sound);
+      soundInitialized = false;
+    }
+    if (decoderInitialized) {
+      ma_decoder_uninit(&decoder);
+      decoderInitialized = false;
+    }
+    memory.clear();
+  }
+
+  void loadMemory(const void *data, size_t size) {
+    reset();
+    if (!data || size == 0) {
+      return;
+    }
+    memory.resize(size);
+    std::memcpy(memory.data(), data, size);
+
+    ma_decoder_config dcfg = ma_decoder_config_init(ma_format_f32, 2, 44100);
+    ma_result r =
+        ma_decoder_init_memory(memory.data(), memory.size(), &dcfg, &decoder);
+    if (r != MA_SUCCESS) {
+      return;
+    }
+    decoderInitialized = true;
+    r = ma_sound_init_from_data_source((ma_engine *)Audio::getEngine(),
+                                       &decoder, 0, nullptr, &sound);
+    if (r == MA_SUCCESS) {
+      soundInitialized = true;
+    }
+  }
+
   ma_sound sound;
+  ma_decoder decoder{};
+  Array<char> memory;
+  bool soundInitialized = false;
+  bool decoderInitialized = false;
 };
 Ptr<Sound> Sound::create() { return makePtr<SoundImpl>(); }
 } // namespace sinen

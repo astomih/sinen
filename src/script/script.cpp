@@ -422,9 +422,13 @@ void Script::runScene() {
   }
 
   String filename = String(sceneName) + prefix;
-  String chunkname = "@" + AssetIO::getFilePath(filename);
-  auto fullPath = std::filesystem::current_path().string() + "\\" +
-                  AssetIO::getFilePath(filename).c_str();
+  String loadPath = AssetIO::getLoadPath(filename);
+  String chunkname = "@" + loadPath;
+  auto fullPath =
+      AssetIO::isArchiveMounted()
+          ? loadPath
+          : String(std::filesystem::current_path().string().c_str()) + "\\" +
+                AssetIO::getFilePath(filename).c_str();
   if (luaLoadSource(gLua, source, fullPath.c_str(), fullPath) != LUA_OK) {
     logPCallError(gLua);
     return;

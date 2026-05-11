@@ -1,5 +1,6 @@
 #include "core/logger/log.hpp"
 
+#include <platform/io/asset_io.hpp>
 #include <platform/io/filesystem.hpp>
 #include <script/luaapi.hpp>
 
@@ -7,6 +8,10 @@
 
 namespace sinen {
 Array<String> Filesystem::enumerateDirectory(StringView path) {
+  if (AssetIO::isArchiveMounted()) {
+    return AssetIO::enumerateArchiveDirectory(path);
+  }
+
   auto p = getAppBaseDirectory() + "/" + String(path.data());
   Array<String> result;
   SDL_EnumerateDirectory(

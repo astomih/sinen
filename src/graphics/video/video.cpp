@@ -1,4 +1,5 @@
 #include <graphics/video/video.hpp>
+#include <platform/io/asset_io.hpp>
 
 #include <algorithm>
 #include <cstring>
@@ -379,6 +380,20 @@ void VideoReader::setError(StringView message) { error = message; }
 bool VideoReader::open(StringView path) {
   close();
   error.clear();
+
+  if (AssetIO::isArchiveMounted() && AssetIO::exists(path)) {
+    String data = AssetIO::openAsString(path);
+    bytes.assign(data.begin(), data.end());
+    if (bytes.empty()) {
+      setError("empty video input file");
+      return false;
+    }
+    if (!parse()) {
+      close();
+      return false;
+    }
+    return true;
+  }
 
   std::ifstream input(String(path).c_str(), std::ios::binary);
   if (!input) {

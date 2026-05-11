@@ -2,14 +2,14 @@ local sn = require("@sinen")
 local G = require("./global")
 
 local exampleDirs = sn.Filesystem.enumerateDirectory(".")
-local numExamples = 16
+local numExamples = 17
 function setup()
 	sn.Graphics.resetGraphicsPipeline()
 end
 
-local buttonSize = sn.Vec2.new(360, 40)
+local buttonSize = sn.Vec2.new(360, 20)
 local buttonStep = 48.0
-local offset = (numExamples - 1) * buttonStep * 0.5
+local offset = (numExamples - 1) * buttonStep
 function update() end
 
 local function centeredRect(pos: sn.Vec2, size: sn.Vec2): sn.Rect
@@ -23,12 +23,7 @@ function draw()
 		"Example Launcher",
 		G.font,
 		G.font
-			:region(
-				"Example Launcher",
-				24,
-				sn.Pivot.Center,
-				sn.Window.center() + sn.Vec2.new(0, -(offset + 10))
-			)
+			:region("Example Launcher", 24, sn.Pivot.Center, sn.Window.center() + sn.Vec2.new(0, -(offset + 10)))
 			:topLeft(),
 		sn.Color.new(1, 1, 1, 1),
 		24

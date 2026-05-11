@@ -439,11 +439,21 @@ void computeBRDFLUT(uint32_t size, uint32_t sampleCount, Array<float> &out) {
   }
 }
 
-bool loadEXRFloat(const char *path, Array<float> &img, int &W, int &H, int &C) {
+bool loadEXRFloat(StringView path, Array<float> &img, int &W, int &H, int &C) {
   float *out;
   const char *err = nullptr;
   int w, h;
-  int ret = LoadEXR(&out, &w, &h, path, &err);
+  int ret = TINYEXR_ERROR_INVALID_ARGUMENT;
+  String bytes;
+  if (AssetIO::isArchiveMounted() && AssetIO::exists(path)) {
+    bytes = AssetIO::openAsString(path);
+    ret = LoadEXRFromMemory(
+        &out, &w, &h, reinterpret_cast<const unsigned char *>(bytes.data()),
+        bytes.size(), &err);
+  } else {
+    auto filePath = AssetIO::getFilePath(path);
+    ret = LoadEXR(&out, &w, &h, filePath.c_str(), &err);
+  }
   if (ret != TINYEXR_SUCCESS) {
     if (err) {
       std::cerr << "LoadEXR error: " << err << "\n";
@@ -750,11 +760,9 @@ bool Texture::loadCubemap(StringView path) {
 
   const String srcPath = path.data();
   state->future = globalThreadPool().submit([state, srcPath] {
-    auto convertedPath = AssetIO::getFilePath(srcPath);
-
     Array<float> equirect;
     int w = 0, h = 0, c = 0;
-    if (!loadEXRFloat(convertedPath.c_str(), equirect, w, h, c)) {
+    if (!loadEXRFloat(srcPath, equirect, w, h, c)) {
       state->ok = false;
       return;
     }
@@ -826,11 +834,9 @@ bool Texture::loadIrradianceCubemap(StringView path, uint32_t faceSize,
   const String srcPath = path.data();
   state->future = globalThreadPool().submit([state, srcPath, faceSize,
                                              sampleCount] {
-    auto convertedPath = AssetIO::getFilePath(srcPath);
-
     Array<float> equirect;
     int w = 0, h = 0, c = 0;
-    if (!loadEXRFloat(convertedPath.c_str(), equirect, w, h, c)) {
+    if (!loadEXRFloat(srcPath, equirect, w, h, c)) {
       state->ok = false;
       return;
     }
@@ -901,11 +907,9 @@ bool Texture::loadPrefilteredCubemap(StringView path, uint32_t faceSize,
   const String srcPath = path.data();
   state->future = globalThreadPool().submit(
       [state, srcPath, faceSize, mipLevels, sampleCount] {
-        auto convertedPath = AssetIO::getFilePath(srcPath);
-
         Array<float> equirect;
         int w = 0, h = 0, c = 0;
-        if (!loadEXRFloat(convertedPath.c_str(), equirect, w, h, c)) {
+        if (!loadEXRFloat(srcPath, equirect, w, h, c)) {
           state->ok = false;
           return;
         }

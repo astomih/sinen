@@ -2,12 +2,21 @@
 #include "core/buffer/buffer.hpp"
 #include <SDL3/SDL.h>
 #include <cstring>
+#include <platform/io/asset_io.hpp>
 #include <platform/io/file.hpp>
 
 namespace sinen {
 File::File() : stream(nullptr) {}
 File::~File() { close(); }
 bool File::open(StringView filename, StringView mode) {
+  close();
+  if (mode == "r" && AssetIO::isArchiveMounted() && AssetIO::exists(filename)) {
+    String data = AssetIO::openAsString(filename);
+    memory.assign(data.begin(), data.end());
+    stream = (void *)SDL_IOFromConstMem(memory.data(), memory.size());
+    return stream != nullptr;
+  }
+
   stream = (void *)SDL_IOFromFile(filename.data(), mode.data());
   if (stream == nullptr) {
     return false;
@@ -19,6 +28,7 @@ void File::close() {
     SDL_CloseIO((SDL_IOStream *)stream);
     stream = nullptr;
   }
+  memory.clear();
 }
 
 Buffer File::read(size_t size) {

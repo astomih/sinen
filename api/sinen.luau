@@ -6,6 +6,7 @@ export type Buffer = {
 	new: (array: { any }) -> Buffer,
 	fromBytes: (bytes: { number }) -> Buffer,
 	size: (self: Buffer) -> number,
+	toHeader: (self: Buffer, symbolName: string) -> Buffer,
 }
 
 local Vec3Impl = {}
@@ -253,7 +254,10 @@ export type ShaderFormat = {
 export type Shader = {
 	new: () -> Shader,
 	load: (self: Shader, path: string, shaderStage: ShaderStage, uniform_count: number) -> nil,
+	compile: (self: Shader, source: string, shaderStage: ShaderStage, shaderFormat: ShaderFormat) -> nil,
 	compileAndLoad: (self: Shader, source: string, shaderStage: ShaderStage, shaderFormat: ShaderFormat?) -> nil,
+	getCode: (self: Shader) -> Buffer,
+	isReady: (self: Shader) -> boolean,
 }
 
 export type Font = {

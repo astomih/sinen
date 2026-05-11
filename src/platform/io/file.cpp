@@ -54,8 +54,8 @@ void registerFile(lua_State *L) {
     auto &f = udPtr<File>(L, 1);
     const char *filename = luaL_checkstring(L, 2);
     const char *mode = luaL_checkstring(L, 3);
-    f->open(StringView(filename), StringView(mode));
-    return 0;
+    lua_pushboolean(L, f->open(StringView(filename), StringView(mode)));
+    return 1;
   });
   binding.registerFunction("close", [](lua_State *L) {
     auto &f = udPtr<File>(L, 1);

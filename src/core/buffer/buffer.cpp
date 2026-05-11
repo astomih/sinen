@@ -7,6 +7,8 @@
 #include <script/luaapi.hpp>
 
 #include <cstring>
+#include <iomanip>
+#include <sstream>
 
 namespace sinen {
 Buffer::Buffer(const BufferType &type, Ptr<void> data, size_t size)
@@ -111,6 +113,41 @@ static int lBufferFromBytes(lua_State *L) {
   return 1;
 }
 
+static int lBufferToHeader(lua_State *L) {
+  auto &buffer = udValue<Buffer>(L, 1);
+  const char *symbolName = luaL_checkstring(L, 2);
+
+  std::ostringstream out;
+  out << "unsigned char " << symbolName << "[] = {\n";
+
+  const auto *bytes = static_cast<const unsigned char *>(buffer.data());
+  const size_t size = static_cast<size_t>(buffer.size());
+  for (size_t i = 0; i < size; ++i) {
+    if (i % 12 == 0) {
+      out << "  ";
+    }
+    out << "0x" << std::hex << std::setfill('0') << std::setw(2)
+        << static_cast<int>(bytes[i]);
+    if (i + 1 < size) {
+      out << ", ";
+    }
+    if (i % 12 == 11 || i + 1 == size) {
+      out << "\n";
+    }
+  }
+
+  out << std::dec << "};\n";
+  out << "unsigned int " << symbolName << "_len = " << size << ";\n";
+
+  const auto header = out.str();
+  Buffer headerBuffer = makeBuffer(header.size(), BufferType::String);
+  if (!header.empty()) {
+    std::memcpy(headerBuffer.data(), header.data(), header.size());
+  }
+  udNewOwned<Buffer>(L, std::move(headerBuffer));
+  return 1;
+}
+
 static int lBufferSize(lua_State *L) {
   auto &buffer = udValue<Buffer>(L, 1);
   lua_pushinteger(L, buffer.size());
@@ -125,6 +162,8 @@ void registerBuffer(lua_State *L) {
   lua_setfield(L, -2, "__index");
   luaPushcfunction2(L, lBufferSize);
   lua_setfield(L, -2, "size");
+  luaPushcfunction2(L, lBufferToHeader);
+  lua_setfield(L, -2, "toHeader");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Buffer");

@@ -28,6 +28,15 @@
       "group": {
         "kind": "build"
       }
+    },
+    {
+      "label": "build_builtin_shaders",
+      "type": "shell",
+      "command": "${workspaceFolder:sinen}/build/build_builtin_shaders.bat",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build"
+      }
     }
   ]
 }

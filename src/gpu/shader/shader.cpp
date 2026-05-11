@@ -138,6 +138,24 @@ void Shader::load(StringView vertex_shader, ShaderStage stage,
       },
       [this] { this->async.reset(); });
 }
+
+void Shader::compile(StringView name, ShaderStage stage, ShaderFormat format) {
+  this->shader.reset();
+  shader = makePtr<Ptr<gpu::Shader>>();
+  this->stage = stage;
+  this->format = format;
+  this->code.clear();
+
+  ShaderCompiler compiler;
+  ShaderCompiler::ReflectionData reflectionData{};
+  auto compiledCode = compiler.compile(name, stage, format, reflectionData);
+  if (format == ShaderFormat::WGSL &&
+      (compiledCode.empty() || compiledCode.back() != '\0')) {
+    compiledCode.push_back('\0');
+  }
+  this->code = std::move(compiledCode);
+}
+
 void Shader::compileAndLoad(StringView name, ShaderStage stage) {
   GPUBackendAPI backendAPI = Graphics::getDevice()->getBackendAPI();
   ShaderFormat format;
@@ -248,6 +266,28 @@ static int lShaderCompileAndLoad(lua_State *L) {
   }
   return 0;
 }
+
+static int lShaderCompile(lua_State *L) {
+  auto &s = udPtr<Shader>(L, 1);
+  const char *name = luaL_checkstring(L, 2);
+  ShaderStage stage = static_cast<ShaderStage>(luaL_checkinteger(L, 3));
+  auto format = static_cast<ShaderFormat>(luaL_checkinteger(L, 4));
+  s->compile(StringView(name), stage, format);
+  return 0;
+}
+
+static int lShaderGetCode(lua_State *L) {
+  auto &s = udPtr<Shader>(L, 1);
+  udNewOwned<Buffer>(L, s->getCode());
+  return 1;
+}
+
+static int lShaderIsReady(lua_State *L) {
+  auto &s = udPtr<Shader>(L, 1);
+  lua_pushboolean(L, s->isReady());
+  return 1;
+}
+
 void registerShader(lua_State *L) {
   luaL_newmetatable(L, Shader::metaTableName());
   luaPushcfunction2(L, udPtrGc<Shader>);
@@ -256,8 +296,14 @@ void registerShader(lua_State *L) {
   lua_setfield(L, -2, "__index");
   luaPushcfunction2(L, lShaderLoad);
   lua_setfield(L, -2, "load");
+  luaPushcfunction2(L, lShaderCompile);
+  lua_setfield(L, -2, "compile");
   luaPushcfunction2(L, lShaderCompileAndLoad);
   lua_setfield(L, -2, "compileAndLoad");
+  luaPushcfunction2(L, lShaderGetCode);
+  lua_setfield(L, -2, "getCode");
+  luaPushcfunction2(L, lShaderIsReady);
+  lua_setfield(L, -2, "isReady");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Shader");

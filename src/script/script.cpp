@@ -230,6 +230,7 @@ void registerRandom(lua_State *);
 void registerWindow(lua_State *);
 void registerPhysics(lua_State *);
 void registerShaderStage(lua_State *);
+void registerShaderFormat(lua_State *);
 void registerBuiltinShader(lua_State *);
 void registerBuiltinPipeline(lua_State *);
 void registerEvent(lua_State *);
@@ -298,6 +299,7 @@ static void registerAll(lua_State *L) {
   registerWindow(L);
   registerPhysics(L);
   registerShaderStage(L);
+  registerShaderFormat(L);
   registerBuiltinShader(L);
   registerBuiltinPipeline(L);
   registerEvent(L);

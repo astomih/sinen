@@ -1,1 +1,3 @@
-python compile.py
+@echo off
+cd /d "%~dp0"
+sinen

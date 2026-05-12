@@ -1,5 +1,6 @@
 #include <graphics/video/video.hpp>
 #include <platform/io/asset_io.hpp>
+#include <platform/io/filesystem.hpp>
 
 #include <algorithm>
 #include <cstring>
@@ -148,7 +149,14 @@ bool VideoWriter::open(StringView path, UInt32 width, UInt32 height,
     return false;
   }
 
-  output.open(String(path).c_str(), std::ios::binary | std::ios::trunc);
+  String resolvedPath;
+  if (!Filesystem::resolveSandboxPath(path, FilesystemAccess::Write,
+                                      resolvedPath)) {
+    setError("video output path is outside the filesystem sandbox");
+    return false;
+  }
+
+  output.open(resolvedPath.c_str(), std::ios::binary | std::ios::trunc);
   if (!output) {
     setError("failed to open video output file");
     return false;
@@ -395,7 +403,14 @@ bool VideoReader::open(StringView path) {
     return true;
   }
 
-  std::ifstream input(String(path).c_str(), std::ios::binary);
+  String resolvedPath;
+  if (!Filesystem::resolveSandboxPath(path, FilesystemAccess::Read,
+                                      resolvedPath)) {
+    setError("video input path is outside the filesystem sandbox");
+    return false;
+  }
+
+  std::ifstream input(resolvedPath.c_str(), std::ios::binary);
   if (!input) {
     setError("failed to open video input file");
     return false;

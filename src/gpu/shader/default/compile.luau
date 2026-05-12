@@ -58,12 +58,9 @@ local function symbolName(path: string): string
 end
 
 local function writeFile(path: string, data: sn.Buffer)
-	local file = sn.File.new()
-	if not file:open(path, "wb") then
+	if not sn.Filesystem.write(path, data) then
 		error("Failed to open " .. path)
 	end
-	file:write(data)
-	file:close()
 end
 
 local function addTask(src: string, out: string, stage: any, format: any)

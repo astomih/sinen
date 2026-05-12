@@ -4,8 +4,6 @@
 
 #include "rt_shader_compiler.hpp"
 
-#include <platform/io/file.hpp>
-
 #include <platform/io/asset_io.hpp>
 
 #include <slang-com-helper.h>
@@ -50,14 +48,6 @@ getReflectionData(slang::IComponentType *program) {
     }
   }
 
-  // Slang::ComPtr<ISlangBlob> blob;
-  // programLayout->toJson(blob.writeRef());
-  // if (blob) {
-  //   File file;
-  //   file.open("slang.json", File::Mode::w);
-  //   file.write(blob->getBufferPointer(), blob->getBufferSize(), 1);
-  //   file.close();
-  // }
   return data;
 }
 

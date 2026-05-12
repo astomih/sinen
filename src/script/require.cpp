@@ -43,11 +43,14 @@ static std::filesystem::path getRequireRoot() {
     return (root / basePath).lexically_normal();
   }
 
-  std::filesystem::path base(Filesystem::getAppBaseDirectory().c_str());
-  std::filesystem::path basePath(Script::getBasePath().c_str());
+  String resolvedRoot;
+  if (!Filesystem::resolveSandboxPath(Script::getBasePath(),
+                                      FilesystemAccess::Read, resolvedRoot)) {
+    resolvedRoot = Filesystem::getAppBaseDirectory();
+  }
 
   std::error_code ec;
-  std::filesystem::path root = (base / basePath).lexically_normal();
+  std::filesystem::path root(resolvedRoot.c_str());
   std::filesystem::path absRoot = std::filesystem::weakly_canonical(root, ec);
   if (ec) {
     absRoot = std::filesystem::absolute(root, ec);

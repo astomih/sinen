@@ -170,10 +170,16 @@ static String openArchiveEntryAsStringLocked(StringView path) {
 }
 } // namespace
 
-static void convertFilePath(String &filePath, StringView name) {
-
-  filePath = Filesystem::getAppBaseDirectory() + "/" + Script::getBasePath() +
-             "/" + String(name);
+static bool convertFilePath(String &filePath, StringView name,
+                            FilesystemAccess access) {
+  const String logicalPath = Script::getBasePath() + "/" + String(name);
+  if (!Filesystem::resolveSandboxPath(logicalPath, access, filePath)) {
+    Log::error("Filesystem sandbox rejected asset path: {}",
+               logicalPath.c_str());
+    filePath.clear();
+    return false;
+  }
+  return true;
 }
 Array<uint8_t> AssetIO::key = {0};
 StringView AssetIO::open(StringView name) {
@@ -183,11 +189,13 @@ StringView AssetIO::open(StringView name) {
 }
 void *AssetIO::openAsIOStream(StringView name) {
   String filePath;
-  convertFilePath(filePath, name);
+  if (!convertFilePath(filePath, name, FilesystemAccess::Read)) {
+    return nullptr;
+  }
 
   SDL_IOStream *file = SDL_IOFromFile(filePath.c_str(), "r");
   if (!file) {
-    Log::error("File open error {}: {}", filePath.c_str(), SDL_GetError());
+    Log::error("Asset open error {}: {}", filePath.c_str(), SDL_GetError());
     return nullptr;
   }
   return file;
@@ -201,7 +209,9 @@ String AssetIO::openAsString(StringView name) {
   }
 
   String filePath;
-  convertFilePath(filePath, name);
+  if (!convertFilePath(filePath, name, FilesystemAccess::Read)) {
+    return "";
+  }
   auto *file = SDL_IOFromFile(filePath.c_str(), "r");
   if (!file) {
     Log::error("{}", String("Sinen file open error" + filePath).c_str());
@@ -220,7 +230,9 @@ String AssetIO::openAsString(StringView name) {
 
 void AssetIO::write(StringView name, StringView data) {
   String filePath;
-  convertFilePath(filePath, name);
+  if (!convertFilePath(filePath, name, FilesystemAccess::Write)) {
+    return;
+  }
   auto *file = SDL_IOFromFile(filePath.c_str(), "w");
   if (!file) {
     return;
@@ -233,7 +245,7 @@ void AssetIO::write(StringView name, StringView data) {
 
 String AssetIO::getFilePath(StringView name) {
   String filePath;
-  convertFilePath(filePath, name);
+  convertFilePath(filePath, name, FilesystemAccess::Read);
   return filePath;
 }
 
@@ -313,7 +325,9 @@ bool AssetIO::exists(StringView name) {
   }
 
   String filePath;
-  convertFilePath(filePath, name);
+  if (!convertFilePath(filePath, name, FilesystemAccess::Read)) {
+    return false;
+  }
   auto *file = SDL_IOFromFile(filePath.c_str(), "r");
   if (!file) {
     return false;

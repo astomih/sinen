@@ -3,7 +3,6 @@
 #include <SDL3/SDL.h>
 #include <core/parser/json.hpp>
 #include <platform/input/keyboard.hpp>
-#include <platform/io/file.hpp>
 #include <platform/io/filesystem.hpp>
 #include <script/luaapi.hpp>
 

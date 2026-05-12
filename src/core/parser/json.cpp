@@ -11,7 +11,6 @@
 // internal libraries
 #include "json.hpp"
 #include <core/logger/log.hpp>
-#include <platform/io/file.hpp>
 
 namespace sinen {
 class Json::Array::impl {

@@ -127,7 +127,8 @@ endif()
 target_compile_definitions(
   sinen
   PUBLIC $<$<BOOL:${SINEN_USE_SLANG}>:SINEN_USE_SLANG>
-         $<$<BOOL:${SINEN_ENABLE_TRACY}>:SINEN_ENABLE_TRACY>)
+         $<$<BOOL:${SINEN_ENABLE_TRACY}>:SINEN_ENABLE_TRACY>
+         $<$<CONFIG:Debug>:SINEN_DEBUG_WORKING_DIRECTORY>)
 if(EMSCRIPTEN)
   target_compile_definitions(sinen PUBLIC EMSCRIPTEN)
   target_link_options(

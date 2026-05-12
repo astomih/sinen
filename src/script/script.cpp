@@ -24,7 +24,6 @@
 #include <algorithm>
 #include <cctype>
 #include <cstring>
-#include <filesystem>
 #include <optional>
 #include <string_view>
 
@@ -226,7 +225,6 @@ void registerPipeline(lua_State *);
 void registerModel(lua_State *);
 void registerMeshBuilder(lua_State *);
 void registerTextureKey(lua_State *);
-void registerArguments(lua_State *);
 void registerRandom(lua_State *);
 void registerWindow(lua_State *);
 void registerPhysics(lua_State *);
@@ -245,7 +243,6 @@ void registerScript(lua_State *);
 void registerLog(lua_State *);
 void registerPeriodic(lua_State *);
 void registerTime(lua_State *);
-void registerFile(lua_State *);
 void registerVideo(lua_State *);
 
 static void requireConfigInit(luarequire_Configuration *config) {
@@ -296,7 +293,6 @@ static void registerAll(lua_State *L) {
   registerMeshBuilder(L);
   registerTextureKey(L);
 
-  registerArguments(L);
   registerRandom(L);
   registerWindow(L);
   registerPhysics(L);
@@ -316,7 +312,6 @@ static void registerAll(lua_State *L) {
   registerLog(L);
   registerPeriodic(L);
   registerTime(L);
-  registerFile(L);
   registerVideo(L);
 }
 
@@ -429,8 +424,10 @@ void Script::runScene() {
   auto fullPath =
       AssetIO::isArchiveMounted()
           ? loadPath
-          : String(std::filesystem::current_path().string().c_str()) + "\\" +
-                AssetIO::getFilePath(filename).c_str();
+          : AssetIO::getFilePath(filename);
+  if (fullPath.empty()) {
+    fullPath = filename;
+  }
   if (luaLoadSource(gLua, source, fullPath.c_str(), fullPath) != LUA_OK) {
     logPCallError(gLua);
     return;

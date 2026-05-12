@@ -195,7 +195,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     Script::runScene();
     Script::doneReload();
   }
-  if (Keyboard::isPressed(Keyboard::Code::F11)) {
+  if (Keyboard::isPressed(Scancode::F11)) {
     static bool fullscreen = false;
     fullscreen = !fullscreen;
     Window::setFullscreen(fullscreen);

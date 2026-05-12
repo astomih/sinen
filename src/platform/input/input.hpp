@@ -11,7 +11,7 @@ namespace sinen {
 struct KeyboardStateImpl {
 public:
   const bool *mCurrState;
-  std::array<uint8_t, static_cast<int>(Keyboard::Code::COUNT)> mPrevState;
+  std::array<uint8_t, static_cast<int>(Scancode::COUNT)> mPrevState;
 };
 
 struct KeyInputState {
@@ -31,10 +31,8 @@ public:
 struct JoystickStateImpl {
 public:
   // Current/previous buttons
-  uint8_t
-      mCurrButtons[static_cast<int>(GamePad::code::NUM_GAMECONTROLLER_BUTTON)];
-  uint8_t
-      mPrevButtons[static_cast<int>(GamePad::code::NUM_GAMECONTROLLER_BUTTON)];
+  uint8_t mCurrButtons[static_cast<int>(GamepadButton::COUNT)];
+  uint8_t mPrevButtons[static_cast<int>(GamepadButton::COUNT)];
   // Left/right sticks
   Vec2 mLeftStick;
   Vec2 mRightStick;

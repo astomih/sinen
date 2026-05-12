@@ -15,7 +15,7 @@ local pos: sn.Vec3 = sn.Vec3.new(1, 1, 3)
 local camera: sn.Camera3D = sn.Camera3D.new()
 
 function update()
-	if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
+	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then
 		sn.Script.load("main", ".")
 	end
 	camera:lookat(pos, sn.Vec3.new(0), sn.Vec3.new(0, 1, 0))

@@ -19,7 +19,7 @@ SDL_Cursor *gCursor = nullptr;
  *
  */
 enum class button_state { None, Pressed, Released, Held };
-static button_state getKeyState(Keyboard::Code _key_code) {
+static button_state getKeyState(Scancode _key_code) {
   if (Input::mKeyboard.mPrevState[static_cast<int>(_key_code)] == 0) {
     if (Input::mKeyboard.mCurrState[static_cast<int>(_key_code)] == 0) {
       return button_state::None;
@@ -72,7 +72,7 @@ static button_state getButtonState(Mouse::Code _button) {
     }
   }
 }
-static button_state getButtonState(GamePad::code _button) {
+static button_state getButtonState(GamepadButton _button) {
   if (Input::mJoystick.mPrevButtons[static_cast<int>(_button)] == 0) {
     if (Input::mJoystick.mCurrButtons[static_cast<int>(_button)] == 0) {
       return button_state::None;
@@ -94,15 +94,15 @@ KeyInputState Input::keyInputState = KeyInputState();
 MouseStateImpl Input::mMouse = MouseStateImpl();
 JoystickStateImpl Input::mJoystick = JoystickStateImpl();
 
-bool Keyboard::isDown(Keyboard::Code _key_code) {
+bool Keyboard::isDown(Scancode _key_code) {
   return getKeyState(_key_code) == button_state::Held;
 }
 
-bool Keyboard::isPressed(Keyboard::Code _key_code) {
+bool Keyboard::isPressed(Scancode _key_code) {
   return getKeyState(_key_code) == button_state::Pressed;
 }
 
-bool Keyboard::isReleased(Keyboard::Code _key_code) {
+bool Keyboard::isReleased(Scancode _key_code) {
   return getKeyState(_key_code) == button_state::Released;
 }
 
@@ -164,15 +164,15 @@ bool Mouse::isReleased(Mouse::Code _button) {
   return getButtonState(_button) == button_state::Released;
 }
 
-bool GamePad::isDown(GamePad::code _button) {
+bool GamePad::isDown(GamepadButton _button) {
   return getButtonState(_button) == button_state::Held;
 }
 
-bool GamePad::isPressed(GamePad::code _button) {
+bool GamePad::isPressed(GamepadButton _button) {
   return getButtonState(_button) == button_state::Pressed;
 }
 
-bool GamePad::isReleased(GamePad::code _button) {
+bool GamePad::isReleased(GamepadButton _button) {
   return getButtonState(_button) == button_state::Released;
 }
 const Vec2 &GamePad::getLeftStick() { return Input::mJoystick.mLeftStick; }
@@ -223,7 +223,7 @@ void Input::update() {
   // Buttons
   for (int i = 0; i < SDL_GAMEPAD_BUTTON_COUNT; i++) {
     mJoystick.mCurrButtons[i] =
-        mController.getButton(static_cast<GamePad::code>(i));
+        mController.getButton(static_cast<GamepadButton>(i));
   }
 
   // Triggers

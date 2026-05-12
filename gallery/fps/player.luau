@@ -152,7 +152,7 @@ Player.update = function(
 	input_vector = calc_input_vector()
 	local is_move = input_vector.x ~= 0 or input_vector.y ~= 0
 
-	if sn.Keyboard.isDown(sn.Keyboard.LSHIFT) and is_move then
+	if sn.Keyboard.isDown(sn.Scancode.LSHIFT) and is_move then
 		speed = self.speed_max
 		self.stamina = self.stamina - self.stamina_run_cost * sn.Time.delta()
 		if self.stamina <= 0.0 then
@@ -206,7 +206,7 @@ Player.update = function(
 			self.boost_timer = self.boost_timer + sn.Time.delta()
 		end
 	else
-		if sn.Keyboard.isPressed(sn.Keyboard.SPACE) and is_move then
+		if sn.Keyboard.isPressed(sn.Scancode.SPACE) and is_move then
 			if self.stamina >= self.stamina_boost_cost then
 				self.stamina = self.stamina - self.stamina_boost_cost
 				if self.stamina <= 0.0 then

@@ -39,25 +39,25 @@ function setup()
 end
 
 function update()
-	if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
+	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then
 		sn.Script.load("main", ".")
 	end
 	transform.rotation.z = transform.rotation.z + sn.Time.delta() * 10
-	if sn.Keyboard.isDown(sn.Keyboard.LEFT) then
+	if sn.Keyboard.isDown(sn.Scancode.LEFT) then
 		lightPos.x = lightPos.x - sn.Time.delta() * 5
 	end
-	if sn.Keyboard.isDown(sn.Keyboard.RIGHT) then
+	if sn.Keyboard.isDown(sn.Scancode.RIGHT) then
 		lightPos.x = lightPos.x + sn.Time.delta() * 5
 	end
-	if sn.Keyboard.isDown(sn.Keyboard.UP) then
-		if sn.Keyboard.isDown(sn.Keyboard.LSHIFT) then
+	if sn.Keyboard.isDown(sn.Scancode.UP) then
+		if sn.Keyboard.isDown(sn.Scancode.LSHIFT) then
 			lightPos.z = lightPos.z + sn.Time.delta() * 5
 		else
 			lightPos.y = lightPos.y + sn.Time.delta() * 5
 		end
 	end
-	if sn.Keyboard.isDown(sn.Keyboard.DOWN) then
-		if sn.Keyboard.isDown(sn.Keyboard.LSHIFT) then
+	if sn.Keyboard.isDown(sn.Scancode.DOWN) then
+		if sn.Keyboard.isDown(sn.Scancode.LSHIFT) then
 			lightPos.z = lightPos.z - sn.Time.delta() * 5
 		else
 			lightPos.y = lightPos.y - sn.Time.delta() * 5

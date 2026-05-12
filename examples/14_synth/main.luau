@@ -18,11 +18,11 @@ synth:setPattern(
 synth:play()
 
 function update()
-	if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
+	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then
 		synth:stop()
 		sn.Script.load("main", ".")
 	end
-	if sn.Keyboard.isPressed(sn.Keyboard.SPACE) then
+	if sn.Keyboard.isPressed(sn.Scancode.SPACE) then
 		synth:play()
 	end
 end

@@ -35,11 +35,11 @@ function setup()
 end
 
 function update()
-	if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
+	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then
 		sn.Script.load("main", ".")
 	end
 
-	if sn.Keyboard.isPressed(sn.Keyboard.ENTER) and payloadBase then
+	if sn.Keyboard.isPressed(sn.Scancode.ENTER) and payloadBase then
 		sn.Script.load("main", payloadBase)
 	end
 end

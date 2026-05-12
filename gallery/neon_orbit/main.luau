@@ -46,12 +46,12 @@ function setup()
 end
 
 function update()
-	if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
+	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then
 		sn.Script.load("main", ".")
 		return
 	end
 
-	if sn.Keyboard.isPressed(sn.Keyboard.SPACE) then
+	if sn.Keyboard.isPressed(sn.Scancode.SPACE) then
 		mode = mode + 1
 		if mode > 3 then
 			mode = 1

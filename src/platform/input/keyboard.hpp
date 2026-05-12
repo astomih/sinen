@@ -2,41 +2,10 @@
 #define SINEN_KEYBOARD_HPP
 namespace sinen {
 /**
- * @brief Keyboard
+ * @brief Keyboard key code
  *
  */
-class Keyboard {
-public:
-  enum class Code;
-  /**
-   * @brief Is key pressed?
-   *
-   * @param _key
-   * @return true yes
-   * @return false no
-   */
-  static bool isPressed(Code _key);
-  /**
-   * @brief Is key down?
-   *
-   * @param _key key code
-   * @return true yes
-   * @return false no
-   */
-  static bool isDown(Code _key);
-  /**
-   * @brief Is key released?
-   *
-   * @param _key
-   * @return true yes
-   * @return false no
-   */
-  static bool isReleased(Code _key);
-  /**
-   * @brief Key code
-   *
-   */
-  enum class Code : int {
+enum class Scancode : int {
     UNKNOWN = 0,
 
     A = 4,
@@ -359,8 +328,40 @@ public:
 
     COUNT = 512 /**< not a key, just marks the number of scancodes
                                 for array bounds */
-  };
-  using enum Code;
+};
+
+/**
+ * @brief Keyboard
+ *
+ */
+class Keyboard {
+public:
+  using Code = Scancode;
+  /**
+   * @brief Is key pressed?
+   *
+   * @param _key
+   * @return true yes
+   * @return false no
+   */
+  static bool isPressed(Scancode _key);
+  /**
+   * @brief Is key down?
+   *
+   * @param _key key code
+   * @return true yes
+   * @return false no
+   */
+  static bool isDown(Scancode _key);
+  /**
+   * @brief Is key released?
+   *
+   * @param _key
+   * @return true yes
+   * @return false no
+   */
+  static bool isReleased(Scancode _key);
+  using enum Scancode;
 };
 } // namespace sinen
 #endif // !SINEN_KEYBOARD_HPP

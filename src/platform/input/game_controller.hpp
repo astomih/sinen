@@ -23,7 +23,7 @@ public:
 
   bool initialize();
   int16_t getAxis(axis _axis);
-  uint8_t getButton(GamePad::code button);
+  uint8_t getButton(GamepadButton button);
 
 private:
   class Impl;

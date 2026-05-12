@@ -24,7 +24,7 @@ local function menu()
 		option_Window_size = false,
 		setup = function(self) end,
 		update = function(self)
-			local is_esc = sn.Keyboard.isPressed(sn.Keyboard.ESCAPE)
+			local is_esc = sn.Keyboard.isPressed(sn.Scancode.ESCAPE)
 			if self.hide_next then
 				self.hide = not self.hide
 				self.hide_next = false
@@ -39,7 +39,7 @@ local function menu()
 			end
 		end,
 		draw = function(self)
-			local is_esc = sn.Keyboard.isPressed(sn.Keyboard.ESCAPE)
+			local is_esc = sn.Keyboard.isPressed(sn.Scancode.ESCAPE)
 			sn.Gui.setFont(G.FONT_DEFAULT64)
 			sn.Gui.setFontSize(24)
 			if self.option_Window_size then

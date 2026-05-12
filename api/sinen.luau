@@ -78,15 +78,15 @@ end
 export type Vec2 = typeof(Vec2Impl.new())
 
 export type Pivot = {
-	TopLeft: number,
-	TopCenter: number,
-	TopRight: number,
-	Left: number,
-	Center: number,
-	Right: number,
-	BottomLeft: number,
-	BottomCenter: number,
-	BottomRight: number,
+	TopLeft: Pivot,
+	TopCenter: Pivot,
+	TopRight: Pivot,
+	Left: Pivot,
+	Center: Pivot,
+	Right: Pivot,
+	BottomLeft: Pivot,
+	BottomCenter: Pivot,
+	BottomRight: Pivot,
 }
 
 -- 2D rectangles use a top-left origin: x/y is the top-left corner,
@@ -154,7 +154,13 @@ export type Texture = {
 	loadPixels: (self: Texture, pixels: Buffer, width: number, height: number, format: string?) -> boolean,
 	loadCubemap: (self: Texture, path: string) -> nil,
 	loadIrradianceCubemap: (self: Texture, path: string, faceSize: number?, sampleCount: number?) -> boolean,
-	loadPrefilteredCubemap: (self: Texture, path: string, faceSize: number?, mipLevels: number?, sampleCount: number?) -> boolean,
+	loadPrefilteredCubemap: (
+		self: Texture,
+		path: string,
+		faceSize: number?,
+		mipLevels: number?,
+		sampleCount: number?
+	) -> boolean,
 	loadBRDFLUT: (self: Texture, size: number?, sampleCount: number?) -> boolean,
 	loadFromPath: (self: Texture, path: string) -> nil,
 	size: (self: Texture) -> Vec2,
@@ -297,7 +303,7 @@ export type Font = {
 		& ((self: Font, size: number, buffer: Buffer, method: number) -> nil)
 	),
 	resize: (self: Font, size: number) -> nil,
-	region: (self: Font, text: string, fontSize: number, pivot: number, position: Vec2) -> Rect,
+	region: (self: Font, text: string, fontSize: number, pivot: Pivot, position: Vec2) -> Rect,
 }
 
 export type GraphicsPipeline = {
@@ -530,6 +536,7 @@ export type Keyboard = {
 	LCTRL: number,
 	RCTRL: number,
 	LALT: number,
+	ENTER: number,
 
 	isPressed: (scancode: number) -> boolean,
 	isReleased: (scancode: number) -> boolean,

@@ -54,7 +54,7 @@ local function stageName(stage: any): string
 end
 
 local function symbolName(path: string): string
-	return string.gsub(path, "[^%w]", "_")
+	return (string.gsub(path, "[^%w]", "_"))
 end
 
 local function writeFile(path: string, data: sn.Buffer)

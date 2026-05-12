@@ -10,7 +10,7 @@ local status = "Press SPACE to encode " .. frames .. " RGBA frames to " .. outpu
 local verified = ""
 
 local function makeFrame(frameIndex: number)
-	local bytes = table.create(width * height * 4)
+	local bytes: { number } = table.create(width * height * 4, 0.0)
 	local t = frameIndex / frames
 	local k = 1
 

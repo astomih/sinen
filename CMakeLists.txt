@@ -19,6 +19,12 @@ option(SINEN_EMSCRIPTEN_ASSERTIONS
        "Enable Emscripten runtime assertions in generated JavaScript" OFF)
 option(SINEN_EMSCRIPTEN_DEBUG_RUNTIME
        "Enable Emscripten runtime checks and source maps for debugging" OFF)
+set(SINEN_EMSCRIPTEN_PRELOAD_DIR
+    ""
+    CACHE PATH "Directory to preload into the Emscripten virtual filesystem")
+set(SINEN_EMSCRIPTEN_PRELOAD_MOUNT
+    "/"
+    CACHE STRING "Virtual filesystem mount point for SINEN_EMSCRIPTEN_PRELOAD_DIR")
 
 include(${SINEN_SOURCE_DIR}/cmake/include.cmake)
 include(${SINEN_SOURCE_DIR}/cmake/libs.cmake)
@@ -146,6 +152,16 @@ if(EMSCRIPTEN)
       -sALLOW_MEMORY_GROWTH=1
       -sINITIAL_MEMORY=268435456
       -sMAXIMUM_MEMORY=2147483648)
+  if(SINEN_EMSCRIPTEN_PRELOAD_DIR)
+    if(NOT IS_DIRECTORY "${SINEN_EMSCRIPTEN_PRELOAD_DIR}")
+      message(FATAL_ERROR
+              "SINEN_EMSCRIPTEN_PRELOAD_DIR is not a directory: ${SINEN_EMSCRIPTEN_PRELOAD_DIR}")
+    endif()
+    target_link_options(
+      sinen
+      PRIVATE
+        "SHELL:--preload-file \"${SINEN_EMSCRIPTEN_PRELOAD_DIR}@${SINEN_EMSCRIPTEN_PRELOAD_MOUNT}\"")
+  endif()
   if(SINEN_EMSCRIPTEN_ASSERTIONS)
     target_link_options(sinen PRIVATE -sASSERTIONS=1)
   endif()

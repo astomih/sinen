@@ -3,6 +3,7 @@ setlocal
 
 set "BUILD_DIR=%~dp0emscripten"
 set "BUILD_TYPE=Release"
+set "ASSET_DIR=%~1"
 
 where emcmake >nul 2>nul
 if errorlevel 1 (
@@ -34,4 +35,6 @@ emcmake cmake ^
   -DSINEN_EMSCRIPTEN_ASYNCIFY=ON ^
   -DSINEN_EMSCRIPTEN_ASSERTIONS=OFF ^
   -DSINEN_EMSCRIPTEN_DEBUG_RUNTIME=OFF ^
+  -DSINEN_EMSCRIPTEN_PRELOAD_DIR="%ASSET_DIR%" ^
+  -DSINEN_EMSCRIPTEN_PRELOAD_MOUNT=/ ^
   -DASSIMP_BUILD_ZLIB=ON

@@ -1,14 +1,15 @@
 #include "webgpu_backend.hpp"
 
+#include "webgpu_api.hpp"
 #include "webgpu_device.hpp"
 #include <SDL3/SDL.h>
-#include "webgpu_api.hpp"
 
 #ifdef SINEN_PLATFORM_EMSCRIPTEN
 #include <emscripten.h>
 #endif
 
 #include <core/logger/log.hpp>
+#include <memory>
 
 namespace sinen::gpu::webgpu {
 namespace {
@@ -31,14 +32,30 @@ WGPUStringView toWgpuStringView(const char *str) {
   return {str, WGPU_STRLEN};
 }
 
-void waitForRequest(const bool &done) {
+bool waitForRequest(WGPUInstance instance, const char *label,
+                    const bool &done) {
 #ifdef SINEN_PLATFORM_EMSCRIPTEN
+  (void)instance;
+  const double startTime = emscripten_get_now();
+  constexpr double requestTimeoutMs = 10000.0;
   while (!done) {
+    if (emscripten_get_now() - startTime > requestTimeoutMs) {
+      return false;
+    }
     emscripten_sleep(1);
   }
+  return true;
+#elif defined(WEBGPU_BACKEND_DAWN)
+  while (!done) {
+    wgpuInstanceProcessEvents(instance);
+  }
+  return true;
 #else
+  (void)instance;
+  (void)label;
   (void)done;
-#endif // SINEN_PLATFORM_EMSCRIPTEN
+  return true;
+#endif
 }
 
 void onAdapterRequest(WGPURequestAdapterStatus status, WGPUAdapter adapter,
@@ -101,23 +118,28 @@ Backend::createDevice(const gpu::Device::CreateInfo &createInfo) {
     return nullptr;
   }
 
-  AdapterRequestState adapterState{};
+  auto adapterState = std::make_unique<AdapterRequestState>();
   WGPURequestAdapterOptions adapterOptions{};
   adapterOptions.backendType = WGPUBackendType_Undefined;
   WGPURequestAdapterCallbackInfo adapterCallbackInfo{};
   adapterCallbackInfo.mode = WGPUCallbackMode_AllowSpontaneous;
   adapterCallbackInfo.callback = &onAdapterRequest;
-  adapterCallbackInfo.userdata1 = &adapterState;
+  adapterCallbackInfo.userdata1 = adapterState.get();
 
   wgpuInstanceRequestAdapter(instance, &adapterOptions, adapterCallbackInfo);
-  waitForRequest(adapterState.done);
-  if (!adapterState.adapter) {
+  if (!waitForRequest(instance, "adapter", adapterState->done)) {
+    Log::error("Timed out while requesting WebGPU adapter");
+    adapterState.release();
+    wgpuInstanceRelease(instance);
+    return nullptr;
+  }
+  if (!adapterState->adapter) {
     Log::error("Failed to request WebGPU adapter");
     wgpuInstanceRelease(instance);
     return nullptr;
   }
 
-  DeviceRequestState deviceState{};
+  auto deviceState = std::make_unique<DeviceRequestState>();
   WGPUDeviceDescriptor deviceDesc{};
   deviceDesc.label = toWgpuStringView("sinen-webgpu-device");
   deviceDesc.requiredFeatureCount = 0;
@@ -136,29 +158,34 @@ Backend::createDevice(const gpu::Device::CreateInfo &createInfo) {
   WGPURequestDeviceCallbackInfo deviceCallbackInfo{};
   deviceCallbackInfo.mode = WGPUCallbackMode_AllowSpontaneous;
   deviceCallbackInfo.callback = &onDeviceRequest;
-  deviceCallbackInfo.userdata1 = &deviceState;
+  deviceCallbackInfo.userdata1 = deviceState.get();
   deviceCallbackInfo.userdata2 = nullptr;
 
-  wgpuAdapterRequestDevice(adapterState.adapter, &deviceDesc,
+  wgpuAdapterRequestDevice(adapterState->adapter, &deviceDesc,
                            deviceCallbackInfo);
-  waitForRequest(deviceState.done);
-  if (!deviceState.device) {
-    Log::error("Failed to request WebGPU device");
-    wgpuAdapterRelease(adapterState.adapter);
+  if (!waitForRequest(instance, "device", deviceState->done)) {
+    Log::error("Timed out while requesting WebGPU device");
+    deviceState.release();
+    wgpuAdapterRelease(adapterState->adapter);
     wgpuInstanceRelease(instance);
     return nullptr;
   }
-
-  auto queue = wgpuDeviceGetQueue(deviceState.device);
+  if (!deviceState->device) {
+    Log::error("Failed to request WebGPU device");
+    wgpuAdapterRelease(adapterState->adapter);
+    wgpuInstanceRelease(instance);
+    return nullptr;
+  }
+  auto queue = wgpuDeviceGetQueue(deviceState->device);
   if (!queue) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get WebGPU queue");
-    wgpuDeviceRelease(deviceState.device);
-    wgpuAdapterRelease(adapterState.adapter);
+    wgpuDeviceRelease(deviceState->device);
+    wgpuAdapterRelease(adapterState->adapter);
     wgpuInstanceRelease(instance);
     return nullptr;
   }
 
   return makePtr<Device>(createInfo.allocator, createInfo, instance,
-                         adapterState.adapter, deviceState.device, queue);
+                         adapterState->adapter, deviceState->device, queue);
 }
 } // namespace sinen::gpu::webgpu

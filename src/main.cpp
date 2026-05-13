@@ -150,7 +150,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
   if (!Audio::initialize()) {
     Log::critical("Failed to initialize audio");
     Audio::shutdown();
-    return SDL_APP_FAILURE;
+    // return SDL_APP_FAILURE;
   }
   if (!Input::initialize()) {
     Log::critical("Failed to initialize input");
@@ -168,6 +168,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     Log::critical("Failed to initialize script");
     return SDL_APP_FAILURE;
   }
+  Script::runScene();
+  Script::doneReload();
   return SDL_APP_CONTINUE;
 }
 SDL_AppResult SDL_AppIterate(void *appstate) {

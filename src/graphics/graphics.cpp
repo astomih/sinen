@@ -3,13 +3,13 @@
 #include <core/allocator/global_allocator.hpp>
 #include <core/profiler.hpp>
 #include <gpu/gpu.hpp>
-#include <gui/gui.hpp>
 #include <gpu/shader/builtin_shader.hpp>
 #include <graphics/builtin_pipeline.hpp>
 #include <graphics/font/default/mplus-1p-medium.ttf.hpp>
 #include <graphics/font/font_glyph_ranges.hpp>
 #include <graphics/graphics.hpp>
 #include <graphics/texture/render_texture.hpp>
+#include <gui/gui.hpp>
 #include <math/transform/transform.hpp>
 #include <platform/io/asset_io.hpp>
 #include <platform/window/window.hpp>
@@ -60,6 +60,7 @@ static Model sprite = Model();
 static void prepareRenderPassFrame();
 static void setupShapes();
 static void beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp);
+static Vec2 validRenderSize();
 
 static GPUBackendAPI selectBackendAPI() {
 #ifdef SINEN_PLATFORM_EMSCRIPTEN
@@ -122,20 +123,26 @@ bool Graphics::initialize() {
   info.allocator = GlobalAllocator::get();
   info.debugMode = true;
   device = backend->createDevice(info);
-  if (!device)
+  if (!device) {
+    Log::error("Failed to create GPU device");
     return false;
+  }
 
   auto *window = Window::getSdlWindow();
   device->claimWindow(window);
+  Log::info("WebGPU device claimed window");
   BuiltinShader::initialize();
+  Log::info("Builtin shaders initialized");
   BuiltinPipeline::initialize();
+  Log::info("Builtin pipelines initialized");
 
   // Create depth stencil target
   {
+    const Vec2 renderSize = validRenderSize();
     gpu::Texture::CreateInfo depthStencilCreateInfo{};
     depthStencilCreateInfo.allocator = GlobalAllocator::get();
-    depthStencilCreateInfo.width = static_cast<uint32_t>(Window::size().x);
-    depthStencilCreateInfo.height = static_cast<uint32_t>(Window::size().y);
+    depthStencilCreateInfo.width = static_cast<uint32_t>(renderSize.x);
+    depthStencilCreateInfo.height = static_cast<uint32_t>(renderSize.y);
     depthStencilCreateInfo.layerCountOrDepth = 1;
     depthStencilCreateInfo.type = gpu::TextureType::Texture2D;
     depthStencilCreateInfo.usage = gpu::TextureUsage::DepthStencilTarget;
@@ -143,8 +150,10 @@ bool Graphics::initialize() {
     depthStencilCreateInfo.numLevels = 1;
     depthStencilCreateInfo.sampleCount = gpu::SampleCount::x1;
     depthTexture = device->createTexture(depthStencilCreateInfo);
-    if (!depthTexture)
+    if (!depthTexture) {
+      Log::error("Failed to create depth texture");
       return false;
+    }
   }
 
   // Default sampler
@@ -160,8 +169,10 @@ bool Graphics::initialize() {
   samplerInfo.maxLod = 1000.0f;
   samplerInfo.maxAnisotropy = 1.f;
   sampler = device->createSampler(samplerInfo);
-  if (!sampler)
+  if (!sampler) {
+    Log::error("Failed to create default sampler");
     return false;
+  }
 
   gpu::Sampler::CreateInfo fontSamplerInfo = samplerInfo;
   fontSamplerInfo.minFilter = gpu::Filter::Linear;
@@ -171,8 +182,10 @@ bool Graphics::initialize() {
   fontSamplerInfo.addressModeV = gpu::AddressMode::ClampToEdge;
   fontSamplerInfo.addressModeW = gpu::AddressMode::ClampToEdge;
   fontSampler = device->createSampler(fontSamplerInfo);
-  if (!fontSampler)
+  if (!fontSampler) {
+    Log::error("Failed to create font sampler");
     return false;
+  }
 
   colorTargets.push_back({});
   depthStencilInfo.texture = depthTexture;
@@ -184,6 +197,9 @@ bool Graphics::initialize() {
   depthStencilInfo.stencilLoadOp = gpu::LoadOp::Clear;
   depthStencilInfo.stencilStoreOp = gpu::StoreOp::Store;
   setupShapes();
+
+  Log::info("WebGPU graphics module initialized successfully");
+
   return true;
 }
 
@@ -216,10 +232,11 @@ void Graphics::render() {
   colorTargets[0].texture = swapchainTexture;
   currentColorTargets = colorTargets;
   if (Window::resized()) {
+    const Vec2 renderSize = validRenderSize();
     gpu::Texture::CreateInfo depthStencilCreateInfo{};
     depthStencilCreateInfo.allocator = GlobalAllocator::get();
-    depthStencilCreateInfo.width = Window::size().x;
-    depthStencilCreateInfo.height = Window::size().y;
+    depthStencilCreateInfo.width = static_cast<uint32_t>(renderSize.x);
+    depthStencilCreateInfo.height = static_cast<uint32_t>(renderSize.y);
     depthStencilCreateInfo.layerCountOrDepth = 1;
     depthStencilCreateInfo.type = gpu::TextureType::Texture2D;
     depthStencilCreateInfo.usage = gpu::TextureUsage::DepthStencilTarget;
@@ -615,6 +632,14 @@ static void beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp) {
   }
 
   setFullWindowViewport(currentRenderPass);
+}
+
+static Vec2 validRenderSize() {
+  Vec2 size = Window::size();
+  if (size.x <= 0.0f || size.y <= 0.0f) {
+    size = Vec2(1.0f, 1.0f);
+  }
+  return size;
 }
 
 static void prepareRenderPassFrame() {

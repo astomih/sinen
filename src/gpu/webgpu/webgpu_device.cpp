@@ -2,11 +2,13 @@
 #include "webgpu_convert.hpp"
 
 #include <core/def/macro.hpp>
+#include <core/logger/log.hpp>
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_video.h>
 #ifdef SINEN_PLATFORM_EMSCRIPTEN
+#include <emscripten.h>
 #include <emscripten/html5.h>
 #endif
 #include <chrono>
@@ -136,11 +138,26 @@ Device::~Device() {
 }
 
 bool Device::waitForFuture(WGPUFuture future, const bool *done) const {
+  Log::info("Waiting for WebGPU future...");
   if (!instance || future.id == 0) {
     return false;
   }
 
-#ifdef WEBGPU_BACKEND_DAWN
+#ifdef SINEN_PLATFORM_EMSCRIPTEN
+  if (!done) {
+    return false;
+  }
+
+  const double startTime = emscripten_get_now();
+  constexpr double futureTimeoutMs = 10000.0;
+  while (!*done) {
+    if (emscripten_get_now() - startTime > futureTimeoutMs) {
+      return false;
+    }
+    emscripten_sleep(1);
+  }
+  return true;
+#elif defined(WEBGPU_BACKEND_DAWN)
   const auto start = std::chrono::steady_clock::now();
   while (!done || !*done) {
     if (device) {
@@ -199,8 +216,7 @@ bool Device::popErrorScope(const char *label) {
                  "WebGPU %s validation error: status=%d type=%d message=%.*s",
                  label, static_cast<int>(state.status),
                  static_cast<int>(state.type),
-                 static_cast<int>(state.message.size()),
-                 state.message.c_str());
+                 static_cast<int>(state.message.size()), state.message.c_str());
     return false;
   }
   return true;
@@ -277,6 +293,9 @@ void Device::claimWindow(void *window) {
   surfaceDesc.nextInChain = &canvasDesc.chain;
   surfaceDesc.label = toWgpuStringView("sinen-webgpu-surface");
   surface = wgpuInstanceCreateSurface(instance, &surfaceDesc);
+  if (swapchainFormat == WGPUTextureFormat_Undefined) {
+    swapchainFormat = WGPUTextureFormat_BGRA8Unorm;
+  }
 #elif defined(SINEN_PLATFORM_WINDOWS)
   SDL_PropertiesID props = SDL_GetWindowProperties(this->window);
   void *hwnd = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_HWND_POINTER,
@@ -412,10 +431,16 @@ Ptr<gpu::Shader> Device::createShader(const Shader::CreateInfo &createInfo) {
     return nullptr;
   }
 
+#ifndef SINEN_PLATFORM_EMSCRIPTEN
   wgpuDevicePushErrorScope(device, WGPUErrorFilter_Validation);
+#endif
   auto shader = wgpuDeviceCreateShaderModule(device, &shaderDesc);
+#ifndef SINEN_PLATFORM_EMSCRIPTEN
   const bool validShader = popErrorScope("createShader");
   logShaderCompilationInfo(shader, "createShader");
+#else
+  const bool validShader = true;
+#endif
   if (!shader) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                  "createShader failed: WebGPU shader module is null");
@@ -630,9 +655,15 @@ Device::createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) {
   pipelineDesc.multisample = multisampleState;
   pipelineDesc.fragment = &fragmentState;
 
+#ifndef SINEN_PLATFORM_EMSCRIPTEN
   wgpuDevicePushErrorScope(device, WGPUErrorFilter_Validation);
+#endif
   auto pipeline = wgpuDeviceCreateRenderPipeline(device, &pipelineDesc);
+#ifndef SINEN_PLATFORM_EMSCRIPTEN
   const bool validPipeline = popErrorScope("createGraphicsPipeline");
+#else
+  const bool validPipeline = true;
+#endif
   if (!pipeline) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                  "createGraphicsPipeline failed: WebGPU pipeline is null");
@@ -667,7 +698,9 @@ void Device::submitCommandBuffer(Ptr<gpu::CommandBuffer> commandBuffer) {
   cb->setSubmitted(true);
 
   if (cb->getShouldPresent() && surface) {
+#ifndef SINEN_PLATFORM_EMSCRIPTEN
     wgpuSurfacePresent(surface);
+#endif
   }
 #ifdef WEBGPU_BACKEND_DAWN
   wgpuDeviceTick(device);
@@ -723,6 +756,11 @@ Device::acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) {
 
 gpu::TextureFormat Device::getSwapchainFormat() const {
   auto format = convert::TextureFormatTo(swapchainFormat);
+#ifdef SINEN_PLATFORM_EMSCRIPTEN
+  if (format == TextureFormat::Invalid) {
+    return TextureFormat::B8G8R8A8_UNORM;
+  }
+#endif
   if (format == TextureFormat::Invalid &&
       swapchainFormat != WGPUTextureFormat_Undefined) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -736,6 +774,9 @@ void Device::waitForGpuIdle() {
   if (!queue) {
     return;
   }
+#ifdef SINEN_PLATFORM_EMSCRIPTEN
+  return;
+#else
   QueueDoneState state{};
   WGPUQueueWorkDoneCallbackInfo callbackInfo{};
   callbackInfo.mode = WGPUCallbackMode_AllowProcessEvents;
@@ -745,6 +786,7 @@ void Device::waitForGpuIdle() {
 
   auto future = wgpuQueueOnSubmittedWorkDone(queue, callbackInfo);
   waitForFuture(future, &state.done);
+#endif
 }
 
 String Device::getDriver() const {
@@ -764,6 +806,12 @@ void Device::configureSurfaceIfNeeded() {
 #ifdef SINEN_PLATFORM_EMSCRIPTEN
   if (w <= 0 || h <= 0) {
     emscripten_get_canvas_element_size("#canvas", &w, &h);
+  }
+  if (w <= 0 || h <= 0) {
+    w = configuredWidth > 0 ? static_cast<int>(configuredWidth) : 1280;
+    h = configuredHeight > 0 ? static_cast<int>(configuredHeight) : 720;
+    emscripten_set_canvas_element_size("#canvas", w, h);
+    emscripten_set_element_css_size("#canvas", w, h);
   }
 #endif
   if (w <= 0 || h <= 0) {
@@ -792,7 +840,19 @@ void Device::configureSurface(UInt32 width, UInt32 height) {
   }
 
   WGPUTextureFormat chosenFormat = caps.formats[0];
+  if (swapchainFormat != WGPUTextureFormat_Undefined) {
+    for (size_t i = 0; i < caps.formatCount; ++i) {
+      if (caps.formats[i] == swapchainFormat) {
+        chosenFormat = swapchainFormat;
+        break;
+      }
+    }
+  }
   for (size_t i = 0; i < caps.formatCount; ++i) {
+    if (chosenFormat == swapchainFormat &&
+        swapchainFormat != WGPUTextureFormat_Undefined) {
+      break;
+    }
     if (caps.formats[i] == WGPUTextureFormat_BGRA8Unorm) {
       chosenFormat = caps.formats[i];
       break;

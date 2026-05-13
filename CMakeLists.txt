@@ -13,6 +13,12 @@ option(SINEN_USE_SLANG "Use Slang for shader compilation" ON)
 option(SINEN_ENABLE_NATIVE_WEBGPU_DAWN
        "Enable native WebGPU backend through Dawn" ON)
 option(SINEN_ENABLE_TRACY "Enable Tracy CPU frame profiling" ON)
+option(SINEN_EMSCRIPTEN_ASYNCIFY
+       "Enable Emscripten Asyncify support for blocking browser waits" ON)
+option(SINEN_EMSCRIPTEN_ASSERTIONS
+       "Enable Emscripten runtime assertions in generated JavaScript" OFF)
+option(SINEN_EMSCRIPTEN_DEBUG_RUNTIME
+       "Enable Emscripten runtime checks and source maps for debugging" OFF)
 
 include(${SINEN_SOURCE_DIR}/cmake/include.cmake)
 include(${SINEN_SOURCE_DIR}/cmake/libs.cmake)
@@ -25,7 +31,10 @@ if(EMSCRIPTEN AND NOT TARGET webgpu)
   add_library(webgpu INTERFACE)
   target_compile_definitions(webgpu INTERFACE WEBGPU_BACKEND_EMDAWNWEBGPU)
   target_compile_options(webgpu INTERFACE --use-port=emdawnwebgpu)
-  target_link_options(webgpu INTERFACE --use-port=emdawnwebgpu -sASYNCIFY=1)
+  target_link_options(webgpu INTERFACE --use-port=emdawnwebgpu)
+  if(SINEN_EMSCRIPTEN_ASYNCIFY)
+    target_link_options(webgpu INTERFACE -sASYNCIFY=1)
+  endif()
   function(target_copy_webgpu_binaries Target)
   endfunction()
   set(SINEN_ENABLE_WEBGPU ON)
@@ -136,8 +145,21 @@ if(EMSCRIPTEN)
     PRIVATE
       -sALLOW_MEMORY_GROWTH=1
       -sINITIAL_MEMORY=268435456
-      -sMAXIMUM_MEMORY=2147483648
-      -sASSERTIONS=1)
+      -sMAXIMUM_MEMORY=2147483648)
+  if(SINEN_EMSCRIPTEN_ASSERTIONS)
+    target_link_options(sinen PRIVATE -sASSERTIONS=1)
+  endif()
+  if(SINEN_EMSCRIPTEN_DEBUG_RUNTIME)
+    target_compile_options(sinen PRIVATE -gsource-map)
+    target_link_options(
+      sinen
+      PRIVATE
+        -gsource-map
+        -sASSERTIONS=2
+        -sSAFE_HEAP=1
+        -sSTACK_OVERFLOW_CHECK=2
+        -sDEMANGLE_SUPPORT=1)
+  endif()
 endif()
 if(SINEN_ENABLE_WEBGPU)
   target_compile_definitions(sinen PUBLIC SINEN_ENABLE_WEBGPU)

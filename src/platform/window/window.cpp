@@ -1,10 +1,15 @@
 #include "window.hpp"
 
 #include <SDL3/SDL.h>
+#include <core/def/macro.hpp>
 #include <core/parser/json.hpp>
 #include <platform/input/keyboard.hpp>
 #include <platform/io/filesystem.hpp>
 #include <script/luaapi.hpp>
+
+#ifdef SINEN_PLATFORM_EMSCRIPTEN
+#include <emscripten/html5.h>
+#endif
 
 namespace sinen {
 Vec2 Window::mSize = Vec2(1280.f, 720.f);
@@ -40,10 +45,31 @@ bool Window::initialize(StringView name) {
   //   mSize.x = static_cast<float>(safeArea.w);
   //   mSize.y = static_cast<float>(safeArea.h);
   // #endif
-  int x, y;
+  int x = 0;
+  int y = 0;
   SDL_GetWindowSize(mWindow, &x, &y);
-  mSize.x = static_cast<float>(x);
-  mSize.y = static_cast<float>(y);
+#ifdef SINEN_PLATFORM_EMSCRIPTEN
+  const int fallbackW = static_cast<int>(mSize.x > 0 ? mSize.x : 1280.f);
+  const int fallbackH = static_cast<int>(mSize.y > 0 ? mSize.y : 720.f);
+  int canvasW = 0;
+  int canvasH = 0;
+  emscripten_get_canvas_element_size("#canvas", &canvasW, &canvasH);
+  if (canvasW <= 0 || canvasH <= 0) {
+    canvasW = fallbackW;
+    canvasH = fallbackH;
+    emscripten_set_canvas_element_size("#canvas", canvasW, canvasH);
+    emscripten_set_element_css_size("#canvas", canvasW, canvasH);
+    SDL_SetWindowSize(mWindow, canvasW, canvasH);
+  }
+  if (canvasW > 0 && canvasH > 0) {
+    x = canvasW;
+    y = canvasH;
+  }
+#endif
+  if (x > 0 && y > 0) {
+    mSize.x = static_cast<float>(x);
+    mSize.y = static_cast<float>(y);
+  }
   return true;
 }
 
@@ -84,8 +110,10 @@ void Window::processEvent(SDL_Event &event) {
     mResized = true;
     int x, y;
     SDL_GetWindowSize(mWindow, &x, &y);
-    mSize.x = static_cast<float>(x);
-    mSize.y = static_cast<float>(y);
+    if (x > 0 && y > 0) {
+      mSize.x = static_cast<float>(x);
+      mSize.y = static_cast<float>(y);
+    }
   }
 }
 

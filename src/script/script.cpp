@@ -198,7 +198,7 @@ int luaLoadSource(lua_State *L, const String &source, const String &chunkname,
     return LUA_OK;
   }
   const char *msg = lua_tostring(L, -1);
-  Log::error("[luau load error] %s", msg ? msg : "(unknown error)");
+  Log::error("[luau load error] {}", msg ? msg : "(unknown error)");
   lua_pop(L, 1);
   return status;
 }
@@ -337,7 +337,7 @@ bool Script::initialize() {
   if (auto *cb = lua_callbacks(gLua)) {
     cb->panic = [](lua_State *L, int errcode) {
       const char *msg = lua_tostring(L, -1);
-      Log::critical("[luau panic %d] %s", errcode,
+      Log::critical("[luau panic {}] {}", errcode,
                     msg ? msg : "(unknown error)");
     };
   }

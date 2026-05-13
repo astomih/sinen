@@ -14,6 +14,9 @@
 namespace sinen {
 static ma_engine engine;
 static ma_resource_manager resouceManager;
+static bool resourceManagerInitialized = false;
+static bool engineInitialized = false;
+static SDL_AudioStream *audioStream = nullptr;
 bool Audio::initialize() {
 
   auto resourceManagerConfig = ma_resource_manager_config_init();
@@ -25,14 +28,18 @@ bool Audio::initialize() {
       MA_SUCCESS) {
     return false;
   }
+  resourceManagerInitialized = true;
   auto engineConfig = ma_engine_config_init();
   engineConfig.noDevice = MA_TRUE;
   engineConfig.channels = 2;
   engineConfig.sampleRate = 48000;
   engineConfig.pResourceManager = &resouceManager;
   if (ma_engine_init(&engineConfig, &engine) != MA_SUCCESS) {
+    ma_resource_manager_uninit(&resouceManager);
+    resourceManagerInitialized = false;
     return false;
   }
+  engineInitialized = true;
   auto dataCallBack = [](void *userdata, SDL_AudioStream *stream,
                          int additional_amount, int total_amount) {
     if (additional_amount > 0) {
@@ -54,20 +61,32 @@ bool Audio::initialize() {
   spec.freq = ma_engine_get_sample_rate(&engine);
   spec.format = SDL_AUDIO_F32LE;
   spec.channels = ma_engine_get_channels(&engine);
-  SDL_AudioStream *stream = SDL_OpenAudioDeviceStream(
+  audioStream = SDL_OpenAudioDeviceStream(
       SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, dataCallBack, nullptr);
-  if (!stream) {
-    return false;
+  if (!audioStream) {
+    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                "Audio output stream unavailable: %s", SDL_GetError());
+    return true;
   }
 
-  SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream));
+  SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(audioStream));
 
   return true;
 }
 
 void Audio::shutdown() {
-  ma_engine_uninit(&engine);
-  ma_resource_manager_uninit(&resouceManager);
+  if (audioStream) {
+    SDL_DestroyAudioStream(audioStream);
+    audioStream = nullptr;
+  }
+  if (engineInitialized) {
+    ma_engine_uninit(&engine);
+    engineInitialized = false;
+  }
+  if (resourceManagerInitialized) {
+    ma_resource_manager_uninit(&resouceManager);
+    resourceManagerInitialized = false;
+  }
 }
 
 void *Audio::getEngine() { return (void *)&engine; }

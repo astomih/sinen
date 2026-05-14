@@ -19,12 +19,19 @@ option(SINEN_EMSCRIPTEN_ASSERTIONS
        "Enable Emscripten runtime assertions in generated JavaScript" OFF)
 option(SINEN_EMSCRIPTEN_DEBUG_RUNTIME
        "Enable Emscripten runtime checks and source maps for debugging" OFF)
+option(SINEN_EMSCRIPTEN_EXCEPTIONS
+       "Enable C++ exception catching in Emscripten builds" ON)
 set(SINEN_EMSCRIPTEN_PRELOAD_DIR
     ""
     CACHE PATH "Directory to preload into the Emscripten virtual filesystem")
 set(SINEN_EMSCRIPTEN_PRELOAD_MOUNT
     "/"
     CACHE STRING "Virtual filesystem mount point for SINEN_EMSCRIPTEN_PRELOAD_DIR")
+
+if(EMSCRIPTEN AND SINEN_EMSCRIPTEN_EXCEPTIONS)
+  add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-fexceptions>")
+  add_link_options(-fexceptions -sNO_DISABLE_EXCEPTION_CATCHING=1)
+endif()
 
 include(${SINEN_SOURCE_DIR}/cmake/include.cmake)
 include(${SINEN_SOURCE_DIR}/cmake/libs.cmake)
@@ -162,6 +169,10 @@ if(EMSCRIPTEN)
       PRIVATE
         "SHELL:--preload-file \"${SINEN_EMSCRIPTEN_PRELOAD_DIR}@${SINEN_EMSCRIPTEN_PRELOAD_MOUNT}\"")
   endif()
+  if(SINEN_EMSCRIPTEN_EXCEPTIONS)
+    target_compile_options(sinen PRIVATE -fexceptions)
+    target_link_options(sinen PRIVATE -fexceptions -sNO_DISABLE_EXCEPTION_CATCHING=1)
+  endif()
   if(SINEN_EMSCRIPTEN_ASSERTIONS)
     target_link_options(sinen PRIVATE -sASSERTIONS=1)
   endif()
@@ -174,7 +185,7 @@ if(EMSCRIPTEN)
         -sASSERTIONS=2
         -sSAFE_HEAP=1
         -sSTACK_OVERFLOW_CHECK=2
-        -sDEMANGLE_SUPPORT=1)
+        )
   endif()
 endif()
 if(SINEN_ENABLE_WEBGPU)

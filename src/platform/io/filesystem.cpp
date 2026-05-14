@@ -15,9 +15,11 @@
 
 namespace sinen {
 namespace {
-static std::filesystem::path normalizeFsPath(const std::filesystem::path &path) {
+static std::filesystem::path
+normalizeFsPath(const std::filesystem::path &path) {
   std::error_code ec;
-  std::filesystem::path normalized = std::filesystem::weakly_canonical(path, ec);
+  std::filesystem::path normalized =
+      std::filesystem::weakly_canonical(path, ec);
   if (ec) {
     normalized = std::filesystem::absolute(path, ec);
     if (ec) {
@@ -82,6 +84,49 @@ static bool resolvePathUnderRoot(const std::filesystem::path &requested,
   resolvedPath = String(s.c_str(), s.size());
   return true;
 }
+
+#if defined(SINEN_PLATFORM_EMSCRIPTEN) || defined(EMSCRIPTEN)
+static String normalizeVirtualPath(StringView path) {
+  Array<String> parts;
+  String current;
+  for (char c : path) {
+    const char normalized = (c == '\\') ? '/' : c;
+    if (normalized == '/') {
+      if (current.empty() || current == ".") {
+        current.clear();
+      } else if (current == "..") {
+        if (!parts.empty()) {
+          parts.pop_back();
+        }
+        current.clear();
+      } else {
+        parts.push_back(current);
+        current.clear();
+      }
+      continue;
+    }
+    current.push_back(normalized);
+  }
+  if (!current.empty() && current != ".") {
+    if (current == "..") {
+      if (!parts.empty()) {
+        parts.pop_back();
+      }
+    } else {
+      parts.push_back(current);
+    }
+  }
+
+  String out = "/";
+  for (size_t i = 0; i < parts.size(); ++i) {
+    if (i > 0) {
+      out.push_back('/');
+    }
+    out += parts[i];
+  }
+  return out;
+}
+#endif
 } // namespace
 
 Array<String> Filesystem::enumerateDirectory(StringView path) {
@@ -91,7 +136,8 @@ Array<String> Filesystem::enumerateDirectory(StringView path) {
 
   String resolvedPath;
   if (!resolveSandboxPath(path, FilesystemAccess::Read, resolvedPath)) {
-    Log::error("Filesystem sandbox rejected directory: {}", String(path).c_str());
+    Log::error("Filesystem sandbox rejected directory: {}",
+               String(path).c_str());
     return {};
   }
 
@@ -202,6 +248,10 @@ bool Filesystem::resolveSandboxPath(StringView path, FilesystemAccess access,
                                     String &resolvedPath) {
   (void)access;
 
+#if defined(SINEN_PLATFORM_EMSCRIPTEN) || defined(EMSCRIPTEN)
+  resolvedPath = normalizeVirtualPath(path);
+  return true;
+#else
   const std::filesystem::path baseRoot =
       normalizeFsPath(std::filesystem::path(getAppBaseDirectory().c_str()));
   if (baseRoot.empty()) {
@@ -238,9 +288,11 @@ bool Filesystem::resolveSandboxPath(StringView path, FilesystemAccess access,
 
   resolvedPath.clear();
   return false;
+#endif
 }
 
-bool Filesystem::isSandboxPathAllowed(StringView path, FilesystemAccess access) {
+bool Filesystem::isSandboxPathAllowed(StringView path,
+                                      FilesystemAccess access) {
   String resolvedPath;
   return resolveSandboxPath(path, access, resolvedPath);
 }

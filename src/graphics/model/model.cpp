@@ -267,7 +267,11 @@ void loadAnimation(const aiScene *scene, SkeletalAnimation &skeletalAnimation,
         aiBone *bone = aimesh->mBones[j];
         String boneName = bone->mName.C_Str();
 
-        uint32_t index = boneMap.at(boneName).index;
+        auto boneIt = boneMap.find(boneName);
+        if (boneIt == boneMap.end()) {
+          continue;
+        }
+        uint32_t index = boneIt->second.index;
 
         for (uint32_t k = 0; k < bone->mNumWeights; ++k) {
           uint32_t vertexId = bone->mWeights[k].mVertexId;
@@ -501,6 +505,18 @@ void Model::load(StringView path) {
         aiProcess_JoinIdenticalVertices | aiProcess_Triangulate;
     const aiScene *scene = nullptr;
     String modelBytes;
+    Log::info("Loading model from path: {}", pathStr);
+#if defined(SINEN_PLATFORM_EMSCRIPTEN) || defined(EMSCRIPTEN)
+    modelBytes = AssetIO::openAsString(pathStr);
+    if (!modelBytes.empty()) {
+      Log::info("Model path is empty, trying to load from memory");
+      const String hint = assimpHintFromPath(pathStr);
+      scene = importer.ReadFileFromMemory(modelBytes.data(), modelBytes.size(),
+                                          flags, hint.c_str());
+    }
+    Log::info("Model loaded from path: {}, size: {}", pathStr,
+              modelBytes.size());
+#else
     if (AssetIO::isArchiveMounted() && AssetIO::exists(pathStr)) {
       modelBytes = AssetIO::openAsString(pathStr);
       const String hint = assimpHintFromPath(pathStr);
@@ -510,10 +526,12 @@ void Model::load(StringView path) {
       auto fullFilePath = AssetIO::getFilePath(pathStr);
       scene = importer.ReadFile(fullFilePath.c_str(), flags);
     }
+#endif
     if (!scene) {
       state->ok = false;
       return;
     }
+    Log::info("Model loaded successfully: {}", pathStr);
 
     Mesh mesh;
     AABB aabb;

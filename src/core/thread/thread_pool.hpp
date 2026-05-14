@@ -21,11 +21,15 @@ namespace sinen {
 class ThreadPool {
 public:
   explicit ThreadPool(std::size_t thread_count) {
+#if defined(SINEN_PLATFORM_EMSCRIPTEN) || defined(EMSCRIPTEN)
+    (void)thread_count;
+#else
     assert(thread_count > 0);
     workers_.reserve(thread_count);
     for (std::size_t i = 0; i < thread_count; ++i) {
       workers_.emplace_back([this] { workerLoop(); });
     }
+#endif
   }
 
   ThreadPool(const ThreadPool &) = delete;
@@ -42,6 +46,9 @@ public:
         std::bind(std::forward<F>(f), std::forward<Args>(args)...));
 
     std::future<R> fut = task->get_future();
+#if defined(SINEN_PLATFORM_EMSCRIPTEN) || defined(EMSCRIPTEN)
+    (*task)();
+#else
     {
       std::lock_guard<std::mutex> lk(mtx_);
       if (stopping_) {
@@ -50,6 +57,7 @@ public:
       tasks_.emplace([task]() { (*task)(); });
     }
     cv_.notify_one();
+#endif
     return fut;
   }
 

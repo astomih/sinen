@@ -214,13 +214,15 @@ String AssetIO::openAsString(StringView name) {
   }
   auto *file = SDL_IOFromFile(filePath.c_str(), "r");
   if (!file) {
-    Log::error("{}", String("Sinen file open error" + filePath).c_str());
+    Log::error("Sinen file open error {}: {}", filePath.c_str(),
+               SDL_GetError());
     return "";
   }
   size_t fileLength;
   void *load = SDL_LoadFile_IO(file, &fileLength, 1);
   if (!load) {
-    Log::error("{}", String("Sinen file open error" + filePath).c_str());
+    Log::error("Sinen file read error {}: {}", filePath.c_str(),
+               SDL_GetError());
     return "";
   }
   String result{reinterpret_cast<char *>(load), fileLength};

@@ -31,9 +31,10 @@ void SkeletalAnimation::readNodeHierarchy(float animTime, const Node &node,
   auto globalTransform = parentTransform * nodeTransform;
 
   const auto &boneMap = owner->getBoneMap();
-  if (boneMap.contains(nodeName)) {
+  auto boneIt = boneMap.find(nodeName);
+  if (boneIt != boneMap.end()) {
     finalBoneMatrices[nodeName] = globalInverseTransform * globalTransform *
-                                  boneMap.at(nodeName).offsetMatrix;
+                                  boneIt->second.offsetMatrix;
   }
 
   for (const auto &child : node.children) {
@@ -108,8 +109,9 @@ Mat4 SkeletalAnimation::interpolateTransform(const NodeAnimation &channel,
 Array<Mat4> SkeletalAnimation::getFinalBoneMatrices() const {
   Array<Mat4> result(finalBoneMatrices.size(), Mat4(1.0f));
   for (const auto &[name, mat] : finalBoneMatrices) {
-    if (finalBoneMatrices.contains(name)) {
-      result[owner->getBoneMap().at(name).index] = mat;
+    auto boneIt = owner->getBoneMap().find(name);
+    if (boneIt != owner->getBoneMap().end()) {
+      result[boneIt->second.index] = mat;
     } else {
       Log::error("[Warning] bone \"{}\" has no finalTransform. Using identity",
                  name);

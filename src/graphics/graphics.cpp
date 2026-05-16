@@ -63,6 +63,7 @@ static void beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp);
 static Vec2 validRenderSize();
 
 static GPUBackendAPI selectBackendAPI() {
+  return GPUBackendAPI::WebGPU;
 #ifdef SINEN_PLATFORM_EMSCRIPTEN
   return GPUBackendAPI::WebGPU;
 #else

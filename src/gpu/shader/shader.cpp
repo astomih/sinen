@@ -8,14 +8,12 @@
 #include <core/thread/global_thread_pool.hpp>
 #include <core/thread/load_context.hpp>
 
-
 #include "core/allocator/global_allocator.hpp"
-#include "rt_shader_compiler.hpp"
+#include "shader_compiler.hpp"
 
 // external
 #include <SDL3/SDL.h>
 
-#include <chrono>
 #include <cstring>
 #include <functional>
 #include <memory>
@@ -29,6 +27,8 @@ ShaderStage toShaderStage(ShaderStage stage) {
     return ShaderStage::Vertex;
   case ShaderStage::Fragment:
     return ShaderStage::Fragment;
+  case ShaderStage::Compute:
+    return ShaderStage::Compute;
   }
   return ShaderStage::Vertex;
 }

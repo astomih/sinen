@@ -105,6 +105,12 @@ endif()
 
 if(SINEN_USE_SLANG)
   add_subdirectory(${SINEN_SOURCE_DIR}/libs/slang EXCLUDE_FROM_ALL)
+  if(MSVC AND TARGET libcmark-gfm)
+    target_compile_options(
+      libcmark-gfm
+      PUBLIC $<$<COMPILE_LANG_AND_ID:C,MSVC>:/utf-8>
+             $<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/utf-8>)
+  endif()
 endif()
 
 file(

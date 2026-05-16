@@ -1090,9 +1090,18 @@ Ptr<gpu::Buffer> createBuffer(size_t size, void *data, gpu::BufferUsage usage) {
 }
 
 Buffer Model::getBoneUniformBuffer() const {
-  auto size = boneMatrices.size() * sizeof(Mat4);
+  constexpr size_t shaderBoneCapacity = 256;
+  const auto matrixCount = boneMatrices.size() < shaderBoneCapacity
+                               ? boneMatrices.size()
+                               : shaderBoneCapacity;
+  auto size = shaderBoneCapacity * sizeof(Mat4);
   auto *ptr = (Mat4 *)GlobalAllocator::get()->allocate(size);
-  memcpy(ptr, boneMatrices.data(), size);
+  for (size_t i = 0; i < shaderBoneCapacity; ++i) {
+    ptr[i] = Mat4::identity();
+  }
+  if (matrixCount > 0) {
+    memcpy(ptr, boneMatrices.data(), matrixCount * sizeof(Mat4));
+  }
   auto deleter = Deleter<void>(GlobalAllocator::get(), size);
   return Buffer(BufferType::Binary, Ptr<void>(ptr, std::move(deleter)), size);
 }

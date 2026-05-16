@@ -10,11 +10,11 @@ struct VSOutput {
   float4 pos : TEXCOORD0;
 };
 
-#define UNIFORM(name, bind)                                                    \
+#define UNIFORM_VERT(name, bind)                                               \
   [[vk::binding(bind, 1)]]                                                     \
   cbuffer name : register(b##bind, space1)
 
-UNIFORM(Mat, 0) {
+UNIFORM_VERT(Mat, 0) {
   float4x4 world;
   float4x4 view;
   float4x4 proj;
@@ -36,9 +36,17 @@ struct FSInput {
 struct FSOutput {
   float4 color : SV_Target;
 };
-#define COMBINED_IMAGE_SAMPLER(name, bind, set)                                \
-  [[vk::binding(bind, set)]]                                                   \
-  Sampler2D name : register(t##bind, space##set) : register(s##bind, space##set);
+#ifdef SINEN_TARGET_WEBGPU
+#define COMBINED_IMAGE_SAMPLER(name, logicalBind, textureBind, samplerBind)    \
+  [[vk::binding(textureBind, 2)]]                                              \
+  Sampler2D name : register(t##textureBind, space2)                            \
+      : register(s##samplerBind, space2);
+#else
+#define COMBINED_IMAGE_SAMPLER(name, logicalBind, textureBind, samplerBind)    \
+  [[vk::binding(logicalBind, 2)]]                                              \
+  Sampler2D name : register(t##logicalBind, space2)                            \
+      : register(s##logicalBind, space2);
+#endif
 
 [shader("fragment")]
 FSOutput FSMain(FSInput input) {

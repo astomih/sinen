@@ -2,9 +2,9 @@ local sn = require("@sinen")
 local texture: sn.Texture = sn.Texture.new()
 
 local vertexShader: sn.Shader = sn.Shader.new()
-vertexShader:load("shader_custom.vert.spv", sn.ShaderStage.Vertex, 1)
+vertexShader:compileAndLoad("shader_custom.slang", sn.ShaderStage.Vertex)
 local fragmentShader: sn.Shader = sn.Shader.new()
-fragmentShader:load("shaderAlpha.frag.spv", sn.ShaderStage.Fragment, 0)
+fragmentShader:compileAndLoad("shader_custom.slang", sn.ShaderStage.Fragment)
 
 local pipeline2D: sn.GraphicsPipeline = sn.GraphicsPipeline.new()
 pipeline2D:setVertexShader(vertexShader)

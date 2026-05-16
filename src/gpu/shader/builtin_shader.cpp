@@ -137,10 +137,9 @@ bool BuiltinShader::initialize() {
   {
     gpu::Shader::CreateInfo fsInfo{};
     fsInfo.allocator = allocator;
-    setShaderCode(fsInfo, format, rect_color_frag_spv,
-                  rect_color_frag_spv_len, rect_color_frag_wgsl,
-                  rect_color_frag_wgsl_len, rect_color_frag_dxil,
-                  rect_color_frag_dxil_len);
+    setShaderCode(fsInfo, format, rect_color_frag_spv, rect_color_frag_spv_len,
+                  rect_color_frag_wgsl, rect_color_frag_wgsl_len,
+                  rect_color_frag_dxil, rect_color_frag_dxil_len);
     fsInfo.entrypoint = entryPointFor(ShaderStage::Fragment, format);
     fsInfo.format = format;
     fsInfo.stage = ShaderStage::Fragment;
@@ -154,8 +153,8 @@ bool BuiltinShader::initialize() {
     gpu::Shader::CreateInfo vsInfo{};
     vsInfo.allocator = allocator;
     setShaderCode(vsInfo, format, cubemap_vert_spv, cubemap_vert_spv_len,
-                  cubemap_vert_wgsl, cubemap_vert_wgsl_len,
-                  cubemap_vert_dxil, cubemap_vert_dxil_len);
+                  cubemap_vert_wgsl, cubemap_vert_wgsl_len, cubemap_vert_dxil,
+                  cubemap_vert_dxil_len);
     vsInfo.entrypoint = entryPointFor(ShaderStage::Vertex, format);
     vsInfo.format = format;
     vsInfo.stage = ShaderStage::Vertex;
@@ -169,8 +168,8 @@ bool BuiltinShader::initialize() {
     gpu::Shader::CreateInfo fsInfo{};
     fsInfo.allocator = allocator;
     setShaderCode(fsInfo, format, cubemap_frag_spv, cubemap_frag_spv_len,
-                  cubemap_frag_wgsl, cubemap_frag_wgsl_len,
-                  cubemap_frag_dxil, cubemap_frag_dxil_len);
+                  cubemap_frag_wgsl, cubemap_frag_wgsl_len, cubemap_frag_dxil,
+                  cubemap_frag_dxil_len);
     fsInfo.entrypoint = entryPointFor(ShaderStage::Fragment, format);
     fsInfo.format = format;
     fsInfo.stage = ShaderStage::Fragment;

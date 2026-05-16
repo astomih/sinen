@@ -10,6 +10,20 @@
 #include <vector>
 
 namespace sinen::gpu::webgpu {
+namespace {
+WGPUBindGroup createBindGroup(WGPUDevice device, WGPUBindGroupLayout layout,
+                              const std::vector<WGPUBindGroupEntry> &entries) {
+  if (!device || !layout || entries.empty()) {
+    return nullptr;
+  }
+  WGPUBindGroupDescriptor desc{};
+  desc.layout = layout;
+  desc.entryCount = entries.size();
+  desc.entries = entries.data();
+  return wgpuDeviceCreateBindGroup(device, &desc);
+}
+} // namespace
+
 RenderPass::~RenderPass() {
   close();
   for (auto view : transientViews) {
@@ -88,16 +102,22 @@ void RenderPass::applyUniformBindings(
     return;
   }
 
-  auto layout = wgpuRenderPipelineGetBindGroupLayout(
-      nativePipeline->getNative(), groupIndex);
-  if (!layout) {
-    return;
-  }
-
   std::vector<WGPUBindGroupEntry> entries;
   entries.reserve(bindings.size());
+  auto vertexShader =
+      downCast<Shader>(nativePipeline->getCreateInfo().vertexShader);
+  auto fragmentShader =
+      downCast<Shader>(nativePipeline->getCreateInfo().fragmentShader);
+  const bool canFilterUniforms = vertexShader && fragmentShader &&
+                                 vertexShader->hasKnownUniformBindings() &&
+                                 fragmentShader->hasKnownUniformBindings();
   for (const auto &[slot, binding] : bindings) {
     if (!binding.buffer || binding.size == 0) {
+      continue;
+    }
+    if (canFilterUniforms &&
+        !vertexShader->hasUniformBinding(groupIndex, slot) &&
+        !fragmentShader->hasUniformBinding(groupIndex, slot)) {
       continue;
     }
     WGPUBindGroupEntry entry{};
@@ -108,18 +128,22 @@ void RenderPass::applyUniformBindings(
     entries.push_back(entry);
   }
 
-  if (!entries.empty()) {
-    WGPUBindGroupDescriptor desc{};
-    desc.layout = layout;
-    desc.entryCount = entries.size();
-    desc.entries = entries.data();
-    auto bindGroup = wgpuDeviceCreateBindGroup(
-        commandBuffer.getDevice()->getNative(), &desc);
-    if (bindGroup) {
-      wgpuRenderPassEncoderSetBindGroup(renderPass, groupIndex, bindGroup, 0,
-                                        nullptr);
-      wgpuBindGroupRelease(bindGroup);
-    }
+  if (entries.empty()) {
+    return;
+  }
+
+  auto layout = wgpuRenderPipelineGetBindGroupLayout(
+      nativePipeline->getNative(), groupIndex);
+  if (!layout) {
+    return;
+  }
+
+  auto bindGroup =
+      createBindGroup(commandBuffer.getDevice()->getNative(), layout, entries);
+  if (bindGroup) {
+    wgpuRenderPassEncoderSetBindGroup(renderPass, groupIndex, bindGroup, 0,
+                                      nullptr);
+    wgpuBindGroupRelease(bindGroup);
   }
   wgpuBindGroupLayoutRelease(layout);
 }
@@ -148,10 +172,21 @@ void RenderPass::applyBindings() {
 
   std::vector<WGPUBindGroupEntry> entries;
   entries.reserve(fragmentSamplerBindings.size() * 2);
+  auto fragmentShader =
+      downCast<Shader>(nativePipeline->getCreateInfo().fragmentShader);
+  const bool canFilterResources =
+      fragmentShader && fragmentShader->hasKnownUniformBindings();
   for (const auto &[slot, binding] : fragmentSamplerBindings) {
     auto sampler = downCast<Sampler>(binding.sampler);
     auto texture = downCast<Texture>(binding.texture);
     if (!sampler || !texture) {
+      continue;
+    }
+    const UInt32 textureBinding = slot * 2;
+    const UInt32 samplerBinding = slot * 2 + 1;
+    if (canFilterResources &&
+        (!fragmentShader->hasResourceBinding(2, textureBinding) ||
+         !fragmentShader->hasResourceBinding(2, samplerBinding))) {
       continue;
     }
     auto view = texture->getView();
@@ -167,14 +202,17 @@ void RenderPass::applyBindings() {
     }
 
     WGPUBindGroupEntry texEntry{};
-    texEntry.binding = slot * 2;
+    texEntry.binding = textureBinding;
     texEntry.textureView = view;
     entries.push_back(texEntry);
 
     WGPUBindGroupEntry samplerEntry{};
-    samplerEntry.binding = slot * 2 + 1;
+    samplerEntry.binding = samplerBinding;
     samplerEntry.sampler = sampler->getNative();
     entries.push_back(samplerEntry);
+
+    retainedTextures.push_back(binding.texture);
+    retainedSamplers.push_back(binding.sampler);
   }
 
   if (!entries.empty()) {
@@ -184,37 +222,6 @@ void RenderPass::applyBindings() {
     desc.entries = entries.data();
     auto bindGroup = wgpuDeviceCreateBindGroup(
         commandBuffer.getDevice()->getNative(), &desc);
-    if (!bindGroup) {
-      // Fallback for pipelines where sampled images are exposed as texture-only
-      // bindings instead of split texture/sampler pairs.
-      entries.clear();
-      entries.reserve(fragmentSamplerBindings.size());
-      for (const auto &[slot, binding] : fragmentSamplerBindings) {
-        auto texture = downCast<Texture>(binding.texture);
-        if (!texture) {
-          continue;
-        }
-        auto view = texture->getView();
-        if (!view && texture->getNative()) {
-          view = commandBuffer.getDevice()->createDefaultTextureView(
-              texture->getNative());
-          if (view) {
-            transientViews.push_back(view);
-          }
-        }
-        if (!view) {
-          continue;
-        }
-        WGPUBindGroupEntry texEntry{};
-        texEntry.binding = slot;
-        texEntry.textureView = view;
-        entries.push_back(texEntry);
-      }
-      desc.entryCount = entries.size();
-      desc.entries = entries.data();
-      bindGroup = wgpuDeviceCreateBindGroup(
-          commandBuffer.getDevice()->getNative(), &desc);
-    }
     if (bindGroup) {
       wgpuRenderPassEncoderSetBindGroup(renderPass, 2, bindGroup, 0, nullptr);
       wgpuBindGroupRelease(bindGroup);

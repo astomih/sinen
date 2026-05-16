@@ -11,20 +11,20 @@ struct VSOutput {
   float4 color : COLOR;
 };
 
-#define UNIFORM(name, bind)                                                    \
+#define UNIFORM_VERT(name, bind)                                               \
   [[vk::binding(bind, 1)]]                                                     \
   cbuffer name : register(b##bind, space1)
+#define UNIFORM_FRAG(name, bind)                                               \
+  [[vk::binding(bind, 3)]]                                                     \
+  cbuffer name : register(b##bind, space3)
 
-UNIFORM(Mat, 0) {
+UNIFORM_VERT(Mat, 0) {
   float4x4 world;
   float4x4 view;
   float4x4 proj;
-  float4x4 user;
-  float4x4 light_view;
-  float4x4 light_proj;
 }
 
-UNIFORM(Test, 1) { float4 test; }
+UNIFORM_FRAG(Test, 1) { float4 test; }
 
 [shader("vertex")]
 VSOutput VSMain(VSInput input) {
@@ -44,16 +44,24 @@ struct FSInput {
 struct FSOutput {
   float4 color : SV_Target;
 };
-#define COMBINED_IMAGE_SAMPLER(name, bind, set)                                \
-  [[vk::binding(bind, set)]]                                                   \
-  Sampler2D name : register(t##bind, space##set) : register(s##bind, space##set);
+#ifdef SINEN_TARGET_WEBGPU
+#define COMBINED_IMAGE_SAMPLER(name, logicalBind, textureBind, samplerBind)    \
+  [[vk::binding(textureBind, 2)]]                                              \
+  Sampler2D name : register(t##textureBind, space2)                            \
+      : register(s##samplerBind, space2);
+#else
+#define COMBINED_IMAGE_SAMPLER(name, logicalBind, textureBind, samplerBind)    \
+  [[vk::binding(logicalBind, 2)]]                                              \
+  Sampler2D name : register(t##logicalBind, space2)                            \
+      : register(s##logicalBind, space2);
+#endif
 
-COMBINED_IMAGE_SAMPLER(sampledTexture, 0, 2)
+COMBINED_IMAGE_SAMPLER(sampledTexture, 0, 0, 1)
 
 [shader("fragment")]
 FSOutput FSMain(FSInput input) {
   FSOutput output;
-  output.color = sampledTexture.Sample(input.uv) * input.color;
+  output.color = sampledTexture.Sample(input.uv) * input.color * test;
   return output;
 }
 

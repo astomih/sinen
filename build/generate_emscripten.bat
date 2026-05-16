@@ -30,6 +30,8 @@ if not exist "%BUILD_DIR%" (
   mkdir "%BUILD_DIR%"
 )
 
+@REM Slang on Emscripten is currently disabled due to some issues with the Slang compiler. It may be re-enabled in the future when those issues are resolved. 
+
 emcmake cmake ^
 -S "%~dp0.." ^
 -B "%BUILD_DIR%" ^
@@ -37,7 +39,7 @@ emcmake cmake ^
 -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^
 -DCMAKE_EXECUTABLE_SUFFIX=.html ^
 -DBUILD_SHARED_LIBS=OFF ^
--DSINEN_USE_SLANG=ON ^
+-DSINEN_USE_SLANG=OFF ^ 
 -DSINEN_EMSCRIPTEN_ASYNCIFY=ON ^
 -DSINEN_EMSCRIPTEN_ASSERTIONS=ON ^
 -DSINEN_EMSCRIPTEN_DEBUG_RUNTIME=OFF ^

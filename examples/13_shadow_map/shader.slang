@@ -77,7 +77,11 @@ FSOutput FSMain(FSInput input) {
 
   depthUV.y = 1.0 - depthUV.y;
   const float bias = 0.05f;
+#ifdef SINEN_TARGET_WEBGPU
+  float depthSM = depthTexture.SampleLevel(depthUV, 0.0f).r;
+#else
   float depthSM = depthTexture.Sample(depthUV).r;
+#endif
   float shadow = (depthSM + bias) < proj.z ? 1.0f : 0.0f;
 
   output.color *= lerp(1.0f, 0.5f, shadow);

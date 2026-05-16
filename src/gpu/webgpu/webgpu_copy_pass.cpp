@@ -9,6 +9,17 @@
 #include <SDL3/SDL.h>
 
 namespace sinen::gpu::webgpu {
+namespace {
+UInt32 alignTo(UInt32 value, UInt32 alignment) {
+  return (value + alignment - 1) & ~(alignment - 1);
+}
+
+UInt32 textureOriginZ(const gpu::Texture::CreateInfo &createInfo, UInt32 layer,
+                      UInt32 z) {
+  return createInfo.type == gpu::TextureType::Texture3D ? z : layer;
+}
+} // namespace
+
 void CopyPass::uploadTexture(const TextureTransferInfo &src,
                              const TextureRegion &dst, bool cycle) {
   (void)cycle;
@@ -34,7 +45,8 @@ void CopyPass::uploadTexture(const TextureTransferInfo &src,
   WGPUTexelCopyTextureInfo destination{};
   destination.texture = texture->getNative();
   destination.mipLevel = dst.mipLevel;
-  destination.origin = {dst.x, dst.y, dst.z};
+  destination.origin = {
+      dst.x, dst.y, textureOriginZ(texture->getCreateInfo(), dst.layer, dst.z)};
   destination.aspect = WGPUTextureAspect_All;
 
   WGPUTexelCopyBufferLayout layout{};
@@ -70,12 +82,13 @@ void CopyPass::downloadTexture(const TextureRegion &src,
 
   const auto textureFormat = texture->getCreateInfo().format;
   const UInt32 bpp = convert::bytesPerPixel(textureFormat);
-  const UInt32 bytesPerRow = src.width * bpp;
+  const UInt32 bytesPerRow = alignTo(src.width * bpp, 256);
 
   WGPUTexelCopyTextureInfo source{};
   source.texture = texture->getNative();
   source.mipLevel = src.mipLevel;
-  source.origin = {src.x, src.y, src.z};
+  source.origin = {src.x, src.y,
+                   textureOriginZ(texture->getCreateInfo(), src.layer, src.z)};
   source.aspect = WGPUTextureAspect_All;
 
   WGPUTexelCopyBufferInfo destination{};
@@ -89,6 +102,14 @@ void CopyPass::downloadTexture(const TextureRegion &src,
   copySize.height = src.height;
   copySize.depthOrArrayLayers = src.depth;
 
+  const size_t downloadSize =
+      static_cast<size_t>(bytesPerRow) * src.height * src.depth;
+  if (dst.offset + downloadSize > transfer->getCreateInfo().size) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "downloadTexture failed: destination range exceeds transfer "
+                 "buffer");
+    return;
+  }
   wgpuCommandEncoderCopyTextureToBuffer(commandBuffer.getEncoder(), &source,
                                         &destination, &copySize);
 }
@@ -148,13 +169,15 @@ void CopyPass::copyTexture(const TextureLocation &src,
   WGPUTexelCopyTextureInfo source{};
   source.texture = srcTex->getNative();
   source.mipLevel = src.mipLevel;
-  source.origin = {src.x, src.y, src.z};
+  source.origin = {src.x, src.y,
+                   textureOriginZ(srcTex->getCreateInfo(), src.layer, src.z)};
   source.aspect = WGPUTextureAspect_All;
 
   WGPUTexelCopyTextureInfo destination{};
   destination.texture = dstTex->getNative();
   destination.mipLevel = dst.mipLevel;
-  destination.origin = {dst.x, dst.y, dst.z};
+  destination.origin = {
+      dst.x, dst.y, textureOriginZ(dstTex->getCreateInfo(), dst.layer, dst.z)};
   destination.aspect = WGPUTextureAspect_All;
 
   WGPUExtent3D copySize{};

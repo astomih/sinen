@@ -142,8 +142,16 @@ Backend::createDevice(const gpu::Device::CreateInfo &createInfo) {
   auto deviceState = std::make_unique<DeviceRequestState>();
   WGPUDeviceDescriptor deviceDesc{};
   deviceDesc.label = toWgpuStringView("sinen-webgpu-device");
-  deviceDesc.requiredFeatureCount = 0;
-  deviceDesc.requiredFeatures = nullptr;
+  WGPUFeatureName requiredFeatures[1]{};
+  if (wgpuAdapterHasFeature(adapterState->adapter,
+                            WGPUFeatureName_Float32Filterable)) {
+    requiredFeatures[0] = WGPUFeatureName_Float32Filterable;
+    deviceDesc.requiredFeatureCount = 1;
+    deviceDesc.requiredFeatures = requiredFeatures;
+  } else {
+    deviceDesc.requiredFeatureCount = 0;
+    deviceDesc.requiredFeatures = nullptr;
+  }
   deviceDesc.requiredLimits = nullptr;
   deviceDesc.defaultQueue.label = toWgpuStringView("sinen-webgpu-queue");
   deviceDesc.defaultQueue.nextInChain = nullptr;

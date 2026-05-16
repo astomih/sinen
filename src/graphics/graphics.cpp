@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <vector>
 
 namespace sinen {
 // Variables
@@ -63,7 +64,6 @@ static void beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp);
 static Vec2 validRenderSize();
 
 static GPUBackendAPI selectBackendAPI() {
-  return GPUBackendAPI::WebGPU;
 #ifdef SINEN_PLATFORM_EMSCRIPTEN
   return GPUBackendAPI::WebGPU;
 #else
@@ -286,6 +286,45 @@ struct FontFragmentParams {
   Color textColor;
   Vec4 atlasParams;
 };
+
+static bool isRgba8Format(gpu::TextureFormat format) {
+  return format == gpu::TextureFormat::R8G8B8A8_UNORM ||
+         format == gpu::TextureFormat::B8G8R8A8_UNORM;
+}
+
+static UInt32 alignTo(UInt32 value, UInt32 alignment) {
+  return (value + alignment - 1) & ~(alignment - 1);
+}
+
+static void copyTextureBytesWithFormatConversion(const UInt8 *src, UInt8 *dst,
+                                                 UInt32 width, UInt32 height,
+                                                 UInt32 srcBytesPerRow,
+                                                 UInt32 dstBytesPerRow,
+                                                 gpu::TextureFormat srcFormat,
+                                                 gpu::TextureFormat dstFormat) {
+  const bool swapRB = isRgba8Format(srcFormat) && isRgba8Format(dstFormat) &&
+                      srcFormat != dstFormat;
+  if (!swapRB) {
+    for (UInt32 y = 0; y < height; ++y) {
+      memcpy(dst + static_cast<size_t>(dstBytesPerRow) * y,
+             src + static_cast<size_t>(srcBytesPerRow) * y,
+             static_cast<size_t>(width) * 4);
+    }
+    return;
+  }
+
+  for (UInt32 y = 0; y < height; ++y) {
+    const UInt8 *srcRow = src + static_cast<size_t>(srcBytesPerRow) * y;
+    UInt8 *dstRow = dst + static_cast<size_t>(dstBytesPerRow) * y;
+    for (UInt32 x = 0; x < width; ++x) {
+      const size_t offset = static_cast<size_t>(x) * 4;
+      dstRow[offset + 0] = srcRow[offset + 2];
+      dstRow[offset + 1] = srcRow[offset + 1];
+      dstRow[offset + 2] = srcRow[offset + 0];
+      dstRow[offset + 3] = srcRow[offset + 3];
+    }
+  }
+}
 
 static void
 bindCurrentTextureSamplers(const Ptr<gpu::RenderPass> &renderPass,
@@ -759,47 +798,107 @@ bool Graphics::readbackTexture(const RenderTexture &srcRenderTexture,
   SDL_assert(srcRenderTexture.width == out->size().x &&
              srcRenderTexture.height == out->size().y);
   auto tex = srcRenderTexture.getTexture();
-  // Copy
-  gpu::TransferBuffer::CreateInfo info2{};
-  info2.allocator = GlobalAllocator::get();
-  info2.size = srcRenderTexture.width * srcRenderTexture.height * 4;
-  info2.usage = gpu::TransferBufferUsage::Download;
-  auto transferBuffer = device->createTransferBuffer(info2);
+  auto outTex = out->getRaw();
+  const auto srcFormat = tex->getCreateInfo().format;
+  const auto dstFormat = outTex->getCreateInfo().format;
+  const auto width = static_cast<UInt32>(srcRenderTexture.width);
+  const auto height = static_cast<UInt32>(srcRenderTexture.height);
+  if (srcFormat == dstFormat) {
+    gpu::CommandBuffer::CreateInfo info{};
+    info.allocator = GlobalAllocator::get();
+    auto commandBuffer = device->acquireCommandBuffer(info);
+    {
+      auto copyPass = commandBuffer->beginCopyPass();
+      gpu::TextureLocation src{};
+      src.texture = tex;
+      gpu::TextureLocation dst{};
+      dst.texture = outTex;
+      copyPass->copyTexture(src, dst, width, height, 1, false);
+      commandBuffer->endCopyPass(copyPass);
+    }
+    device->submitCommandBuffer(commandBuffer);
+    device->waitForGpuIdle();
+    currentRenderPass = nullptr;
+    return true;
+  }
+
+  if (!isRgba8Format(srcFormat) || !isRgba8Format(dstFormat)) {
+    Log::error("readbackTexture failed: unsupported texture format conversion");
+    return false;
+  }
+
+  const UInt32 tightBytesPerRow = width * 4;
+  const UInt32 downloadBytesPerRow = alignTo(tightBytesPerRow, 256);
+  const size_t dataSize = static_cast<size_t>(tightBytesPerRow) * height;
+  const size_t downloadSize = static_cast<size_t>(downloadBytesPerRow) * height;
+  gpu::TransferBuffer::CreateInfo downloadInfo{};
+  downloadInfo.allocator = GlobalAllocator::get();
+  downloadInfo.size = static_cast<UInt32>(downloadSize);
+  downloadInfo.usage = gpu::TransferBufferUsage::Download;
+  auto downloadBuffer = device->createTransferBuffer(downloadInfo);
   {
     gpu::CommandBuffer::CreateInfo info{};
     info.allocator = GlobalAllocator::get();
     auto commandBuffer = device->acquireCommandBuffer(info);
     {
       auto copyPass = commandBuffer->beginCopyPass();
-      {
-        gpu::TextureRegion region{};
-        region.width = srcRenderTexture.width;
-        region.height = srcRenderTexture.height;
-        region.depth = 1;
-        region.texture = tex;
-        gpu::TextureTransferInfo dst{};
-        dst.offset = 0;
-        dst.transferBuffer = transferBuffer;
-        copyPass->downloadTexture(region, dst);
-      }
-      {
-        gpu::TextureTransferInfo src{};
-        src.offset = 0;
-        src.transferBuffer = transferBuffer;
-        gpu::TextureRegion region{};
-        region.x = 0;
-        region.y = 0;
-        region.width = srcRenderTexture.width;
-        region.height = srcRenderTexture.height;
-        region.depth = 1;
-        region.texture = out->getRaw();
-        copyPass->uploadTexture(src, region, false);
-      }
+      gpu::TextureRegion src{};
+      src.texture = tex;
+      src.width = width;
+      src.height = height;
+      src.depth = 1;
+      gpu::TextureTransferInfo dst{};
+      dst.transferBuffer = downloadBuffer;
+      copyPass->downloadTexture(src, dst);
       commandBuffer->endCopyPass(copyPass);
     }
     device->submitCommandBuffer(commandBuffer);
     device->waitForGpuIdle();
   }
+
+  auto *mapped = static_cast<const UInt8 *>(downloadBuffer->map(false));
+  if (!mapped) {
+    Log::error("readbackTexture failed: download buffer map failed");
+    return false;
+  }
+  std::vector<UInt8> converted(dataSize);
+  copyTextureBytesWithFormatConversion(mapped, converted.data(), width, height,
+                                       downloadBytesPerRow, tightBytesPerRow,
+                                       srcFormat, dstFormat);
+  downloadBuffer->unmap();
+
+  gpu::TransferBuffer::CreateInfo uploadInfo{};
+  uploadInfo.allocator = GlobalAllocator::get();
+  uploadInfo.size = static_cast<UInt32>(dataSize);
+  uploadInfo.usage = gpu::TransferBufferUsage::Upload;
+  auto uploadBuffer = device->createTransferBuffer(uploadInfo);
+  auto *uploadData = uploadBuffer->map(true);
+  if (!uploadData) {
+    Log::error("readbackTexture failed: upload buffer map failed");
+    return false;
+  }
+  memcpy(uploadData, converted.data(), dataSize);
+  uploadBuffer->unmap();
+  {
+    gpu::CommandBuffer::CreateInfo info{};
+    info.allocator = GlobalAllocator::get();
+    auto commandBuffer = device->acquireCommandBuffer(info);
+    {
+      auto copyPass = commandBuffer->beginCopyPass();
+      gpu::TextureTransferInfo src{};
+      src.transferBuffer = uploadBuffer;
+      gpu::TextureRegion dst{};
+      dst.texture = outTex;
+      dst.width = width;
+      dst.height = height;
+      dst.depth = 1;
+      copyPass->uploadTexture(src, dst, false);
+      commandBuffer->endCopyPass(copyPass);
+    }
+    device->submitCommandBuffer(commandBuffer);
+    device->waitForGpuIdle();
+  }
+
   currentRenderPass = nullptr;
   return true;
 }

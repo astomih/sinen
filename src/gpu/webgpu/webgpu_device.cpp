@@ -138,7 +138,6 @@ Device::~Device() {
 }
 
 bool Device::waitForFuture(WGPUFuture future, const bool *done) const {
-  Log::info("Waiting for WebGPU future...");
   if (!instance || future.id == 0) {
     return false;
   }

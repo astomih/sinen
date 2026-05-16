@@ -23,9 +23,6 @@ UNIFORM(Mat, 0) {
   float4x4 world;
   float4x4 view;
   float4x4 proj;
-  float4x4 user;
-  float4x4 light_view;
-  float4x4 light_proj;
 }
 
 [shader("vertex")]

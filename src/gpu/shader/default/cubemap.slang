@@ -31,8 +31,9 @@ VSOutput VSMain(VSInput input) {
   viewWithoutTranslation[1][3] = 0.0;
   viewWithoutTranslation[2][3] = 0.0;
 
-  output.out =
+  float4 clipPos =
       mul(proj, mul(viewWithoutTranslation, float4(input.position.xyz, 1.0)));
+  output.out = clipPos.xyww;
   output.pos = input.position.xyz;
   return output;
 };
@@ -58,4 +59,3 @@ FSOutput FSMain(FSInput input) {
   output.color = cubemap.Sample(input.pos);
   return output;
 }
-

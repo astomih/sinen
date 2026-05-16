@@ -1,11 +1,11 @@
 #ifndef SINEN_WEBGPU_RENDER_PASS_HPP
 #define SINEN_WEBGPU_RENDER_PASS_HPP
 
+#include "webgpu_api.hpp"
 #include "webgpu_command_buffer.hpp"
 #include <gpu/gpu_render_pass.hpp>
 #include <unordered_map>
 #include <vector>
-#include "webgpu_api.hpp"
 
 namespace sinen::gpu::webgpu {
 class RenderPass : public gpu::RenderPass {
@@ -49,6 +49,8 @@ private:
   CommandBuffer &commandBuffer;
   WGPURenderPassEncoder renderPass;
   std::vector<WGPUTextureView> transientViews;
+  std::vector<Ptr<gpu::Texture>> retainedTextures;
+  std::vector<Ptr<gpu::Sampler>> retainedSamplers;
   bool closed;
   Ptr<gpu::GraphicsPipeline> currentPipeline;
   std::unordered_map<UInt32, TextureSamplerBinding> fragmentSamplerBindings;

@@ -78,6 +78,10 @@ void CommandBuffer::updateUniformBinding(
     return;
   }
 
+  constexpr Size minPaddedUniformBufferSize = sizeof(float) * 16 * 6;
+  const Size bufferSize =
+      size < minPaddedUniformBufferSize ? minPaddedUniformBufferSize : size;
+
   auto it = bindings.find(slot);
   if (it != bindings.end()) {
     if (it->second.buffer) {
@@ -90,7 +94,7 @@ void CommandBuffer::updateUniformBinding(
   WGPUBufferDescriptor desc{};
   desc.label = {nullptr, 0};
   desc.usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst;
-  desc.size = size;
+  desc.size = bufferSize;
   desc.mappedAtCreation = false;
   auto uniformBuffer = wgpuDeviceCreateBuffer(device->getNative(), &desc);
   if (!uniformBuffer) {
@@ -100,7 +104,7 @@ void CommandBuffer::updateUniformBinding(
   }
 
   wgpuQueueWriteBuffer(device->getQueue(), uniformBuffer, 0, data, size);
-  bindings.insert_or_assign(slot, UniformBinding{uniformBuffer, size});
+  bindings.insert_or_assign(slot, UniformBinding{uniformBuffer, bufferSize});
 }
 
 WGPUCommandBuffer CommandBuffer::finish() {

@@ -9,6 +9,7 @@
 #include <core/thread/load_context.hpp>
 
 #include "core/allocator/global_allocator.hpp"
+#include "shader_bundle.hpp"
 #include "shader_compiler.hpp"
 
 // external
@@ -31,20 +32,6 @@ ShaderStage toShaderStage(ShaderStage stage) {
     return ShaderStage::Compute;
   }
   return ShaderStage::Vertex;
-}
-
-const char *entryPointFor(ShaderStage stage, ShaderFormat format) {
-  if (format == ShaderFormat::WGSL) {
-    switch (stage) {
-    case ShaderStage::Vertex:
-      return "VSMain";
-    case ShaderStage::Fragment:
-      return "FSMain";
-    case ShaderStage::Compute:
-      return "CSMain";
-    }
-  }
-  return "main";
 }
 
 ShaderFormat formatFromPath(StringView path) {
@@ -88,6 +75,8 @@ void Shader::load(StringView vertex_shader, ShaderStage stage,
   this->async = makePtr<AsyncState>();
   const Ptr<AsyncState> state = this->async;
   const auto shaderFormat = formatFromPath(vertex_shader);
+  const auto preferredFormat =
+      ShaderBundle::preferredFormatFor(Graphics::getDevice()->getBackendAPI());
   this->format = shaderFormat;
   this->stage = stage;
   this->code.clear();
@@ -97,25 +86,47 @@ void Shader::load(StringView vertex_shader, ShaderStage stage,
 
   const String path = vertex_shader.data();
   state->future = globalThreadPool().submit(
-      [state, path, stage, numUniformData, shaderFormat] {
+      [state, path, stage, numUniformData, shaderFormat, preferredFormat] {
         auto str = AssetIO::openAsString(path);
-        if (shaderFormat == ShaderFormat::WGSL &&
-            (str.empty() || str.back() != '\0')) {
-          str.push_back('\0');
-        }
-        state->spirv.resize(str.size());
-        if (!str.empty()) {
-          std::memcpy(state->spirv.data(), str.data(), str.size());
-        }
+        if (ShaderBundle::isBundle(str)) {
+          auto selected = ShaderBundle::select(str, stage, preferredFormat);
+          if (!selected) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                         "Shader bundle does not contain requested backend "
+                         "format");
+            state->valid = false;
+            return;
+          }
+          state->spirv = std::move(selected->code);
+          state->shaderFormat = selected->format;
+          state->numUniformBuffers = selected->numUniformBuffers;
+          state->numSamplers = selected->numSamplers;
+          state->numStorageBuffers = selected->numStorageBuffers;
+          state->numStorageTextures = selected->numStorageTextures;
+          state->gpuStage = selected->stage;
+        } else {
+          if (shaderFormat == ShaderFormat::WGSL &&
+              (str.empty() || str.back() != '\0')) {
+            str.push_back('\0');
+          }
+          state->spirv.resize(str.size());
+          if (!str.empty()) {
+            std::memcpy(state->spirv.data(), str.data(), str.size());
+          }
 
-        state->shaderFormat = shaderFormat;
-        state->numUniformBuffers = static_cast<uint32_t>(numUniformData + 1);
-        state->numSamplers = (stage == ShaderStage::Fragment) ? 1u : 0u;
-        state->gpuStage = stage;
+          state->shaderFormat = shaderFormat;
+          state->numUniformBuffers = static_cast<uint32_t>(numUniformData + 1);
+          state->numSamplers = (stage == ShaderStage::Fragment) ? 1u : 0u;
+          state->gpuStage = stage;
+        }
       });
   scheduleFuturePoll(
       state, group, scheduleOnPreDraw,
       [this, state] {
+        if (!state->valid) {
+          this->async.reset();
+          return;
+        }
         auto *allocator = GlobalAllocator::get();
         auto device = Graphics::getDevice();
 
@@ -123,12 +134,13 @@ void Shader::load(StringView vertex_shader, ShaderStage stage,
         info.allocator = allocator;
         info.size = state->spirv.size();
         info.data = state->spirv.data();
-        info.entrypoint = entryPointFor(this->stage, state->shaderFormat);
+        info.entrypoint =
+            ShaderBundle::entryPointFor(state->gpuStage, state->shaderFormat);
         info.format = state->shaderFormat;
         info.stage = state->gpuStage;
         info.numSamplers = state->numSamplers;
-        info.numStorageBuffers = 0;
-        info.numStorageTextures = 0;
+        info.numStorageBuffers = state->numStorageBuffers;
+        info.numStorageTextures = state->numStorageTextures;
         info.numUniformBuffers = state->numUniformBuffers;
 
         *shader = device->createShader(info);
@@ -158,19 +170,7 @@ void Shader::compile(StringView name, ShaderStage stage, ShaderFormat format) {
 
 void Shader::compileAndLoad(StringView name, ShaderStage stage) {
   GPUBackendAPI backendAPI = Graphics::getDevice()->getBackendAPI();
-  ShaderFormat format;
-  switch (backendAPI) {
-  case GPUBackendAPI::WebGPU:
-    format = ShaderFormat::WGSL;
-    break;
-#ifdef SINEN_PLATFORM_WINDOWS
-  case GPUBackendAPI::D3D12:
-    format = ShaderFormat::DXIL;
-    break;
-#endif
-  default:
-    format = ShaderFormat::SPIRV;
-  }
+  ShaderFormat format = ShaderBundle::preferredFormatFor(backendAPI);
   compileAndLoad(name, stage, format);
 }
 void Shader::compileAndLoad(StringView name, ShaderStage stage,
@@ -188,7 +188,6 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage,
 
   const String str = name.data();
   state->future = globalThreadPool().submit([state, str, stage, format] {
-    auto device = Graphics::getDevice();
     ShaderCompiler compiler;
     ShaderCompiler::ReflectionData reflectionData{};
     state->spirv = compiler.compile(str, stage, format, reflectionData);
@@ -207,6 +206,10 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage,
   scheduleFuturePoll(
       state, group, scheduleOnPreDraw,
       [this, state] {
+        if (!state->valid) {
+          this->async.reset();
+          return;
+        }
         auto *allocator = GlobalAllocator::get();
         auto device = Graphics::getDevice();
 
@@ -214,12 +217,13 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage,
         info.allocator = allocator;
         info.size = state->spirv.size();
         info.data = state->spirv.data();
-        info.entrypoint = entryPointFor(this->stage, state->shaderFormat);
+        info.entrypoint =
+            ShaderBundle::entryPointFor(state->gpuStage, state->shaderFormat);
         info.format = state->shaderFormat;
         info.stage = state->gpuStage;
         info.numSamplers = state->numSamplers;
-        info.numStorageBuffers = 0;
-        info.numStorageTextures = 0;
+        info.numStorageBuffers = state->numStorageBuffers;
+        info.numStorageTextures = state->numStorageTextures;
         info.numUniformBuffers = state->numUniformBuffers;
 
         *shader = device->createShader(info);

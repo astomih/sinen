@@ -287,6 +287,20 @@ export type Shader = {
 	isReady: (self: Shader) -> boolean,
 }
 
+export type ShaderBundleEntry = {
+	stage: ShaderStage,
+	format: ShaderFormat,
+	code: Buffer,
+	numSamplers: number?,
+	numStorageBuffers: number?,
+	numStorageTextures: number?,
+	numUniformBuffers: number?,
+}
+
+export type ShaderBundle = {
+	pack: (entries: { ShaderBundleEntry }) -> Buffer,
+}
+
 export type Font = {
 	Bitmap: number,
 	MSDF: number,
@@ -602,6 +616,7 @@ export type Time = {
 export type Filesystem = {
 	enumerateDirectory: (path: string) -> { string },
 	read: (path: string) -> Buffer?,
+	exists: (path: string) -> boolean,
 	write: (path: string, data: Buffer) -> boolean,
 	getUserDirectory: () -> string,
 }
@@ -682,6 +697,7 @@ return {
 	AABB = {} :: AABB,
 	Timer = {} :: Timer,
 	Shader = {} :: Shader,
+	ShaderBundle = {} :: ShaderBundle,
 	Font = {} :: Font,
 	Color = {} :: Color,
 	GraphicsPipeline = {} :: GraphicsPipeline,

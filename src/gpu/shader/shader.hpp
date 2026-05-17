@@ -40,7 +40,10 @@ private:
     ShaderFormat shaderFormat = ShaderFormat::SPIRV;
     uint32_t numUniformBuffers = 0;
     uint32_t numSamplers = 0;
+    uint32_t numStorageBuffers = 0;
+    uint32_t numStorageTextures = 0;
     ShaderStage gpuStage = ShaderStage::Vertex;
+    bool valid = true;
   };
   Ptr<Ptr<gpu::Shader>> shader;
   Ptr<AsyncState> async;

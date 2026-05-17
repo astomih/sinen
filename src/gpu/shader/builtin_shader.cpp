@@ -2,32 +2,15 @@
 #include <graphics/graphics.hpp>
 #include <script/luaapi.hpp>
 
-// SPIR-V
-#include "default/cubemap.frag.spv.hpp"
-#include "default/cubemap.vert.spv.hpp"
-#include "default/font.frag.spv.hpp"
-#include "default/rect_color.frag.spv.hpp"
-#include "default/shader.frag.spv.hpp"
-#include "default/shader.vert.spv.hpp"
-#include "default/shader_instance.vert.spv.hpp"
+#include "shader_bundle.hpp"
 
-// WGSL
-#include "default/cubemap.frag.wgsl.hpp"
-#include "default/cubemap.vert.wgsl.hpp"
-#include "default/font.frag.wgsl.hpp"
-#include "default/rect_color.frag.wgsl.hpp"
-#include "default/shader.frag.wgsl.hpp"
-#include "default/shader.vert.wgsl.hpp"
-#include "default/shader_instance.vert.wgsl.hpp"
-
-// DXIL
-#include "default/cubemap.frag.dxil.hpp"
-#include "default/cubemap.vert.dxil.hpp"
-#include "default/font.frag.dxil.hpp"
-#include "default/rect_color.frag.dxil.hpp"
-#include "default/shader.frag.dxil.hpp"
-#include "default/shader.vert.dxil.hpp"
-#include "default/shader_instance.vert.dxil.hpp"
+#include "default/cubemap.frag.snb.hpp"
+#include "default/cubemap.vert.snb.hpp"
+#include "default/font.frag.snb.hpp"
+#include "default/rect_color.frag.snb.hpp"
+#include "default/shader.frag.snb.hpp"
+#include "default/shader.vert.snb.hpp"
+#include "default/shader_instance.vert.snb.hpp"
 
 namespace sinen {
 static Shader defaultVS;
@@ -38,147 +21,48 @@ static Shader rectFS;
 static Shader cubemapVS;
 static Shader cubemapFS;
 
-static const char *entryPointFor(ShaderStage stage, ShaderFormat format) {
-  if (format != ShaderFormat::WGSL) {
-    return "main";
+static Shader createBuiltinShader(const unsigned char *bundleData,
+                                  unsigned int bundleSize, ShaderStage stage) {
+  auto *allocator = GlobalAllocator::get();
+  auto device = Graphics::getDevice();
+  const auto format = ShaderBundle::preferredFormatFor(device->getBackendAPI());
+  auto entry = ShaderBundle::select(
+      StringView(reinterpret_cast<const char *>(bundleData), bundleSize), stage,
+      format);
+  if (!entry) {
+    return Shader();
   }
-  return stage == ShaderStage::Vertex ? "VSMain" : "FSMain";
-}
 
-static void setShaderCode(gpu::Shader::CreateInfo &info, ShaderFormat format,
-                          const void *spvData, size_t spvSize,
-                          const void *wgslData, size_t wgslSize,
-                          const void *dxilData, size_t dxilSize) {
-  if (format == ShaderFormat::WGSL) {
-    info.size = wgslSize;
-    info.data = wgslData;
-  } else if (format == ShaderFormat::DXIL) {
-    info.size = dxilSize;
-    info.data = dxilData;
-  } else {
-    info.size = spvSize;
-    info.data = spvData;
-  }
+  gpu::Shader::CreateInfo info{};
+  info.allocator = allocator;
+  info.size = entry->code.size();
+  info.data = entry->code.data();
+  info.entrypoint = ShaderBundle::entryPointFor(entry->stage, entry->format);
+  info.format = entry->format;
+  info.stage = entry->stage;
+  info.numSamplers = entry->numSamplers;
+  info.numStorageBuffers = entry->numStorageBuffers;
+  info.numStorageTextures = entry->numStorageTextures;
+  info.numUniformBuffers = entry->numUniformBuffers;
+  return Shader(device->createShader(info));
 }
 
 bool BuiltinShader::initialize() {
-  auto *allocator = GlobalAllocator::get();
-  auto device = Graphics::getDevice();
-  auto format = ShaderFormat::SPIRV;
-  if (device->getBackendAPI() == GPUBackendAPI::WebGPU) {
-    format = ShaderFormat::WGSL;
-  }
-#ifdef SINEN_PLATFORM_WINDOWS
-  if (device->getBackendAPI() == GPUBackendAPI::D3D12) {
-    format = ShaderFormat::DXIL;
-  }
-#endif
-  {
-    gpu::Shader::CreateInfo vsInfo{};
-    vsInfo.allocator = allocator;
-    setShaderCode(vsInfo, format, shader_vert_spv, shader_vert_spv_len,
-                  shader_vert_wgsl, shader_vert_wgsl_len, shader_vert_dxil,
-                  shader_vert_dxil_len);
-    vsInfo.entrypoint = entryPointFor(ShaderStage::Vertex, format);
-    vsInfo.format = format;
-    vsInfo.stage = ShaderStage::Vertex;
-    vsInfo.numSamplers = 0;
-    vsInfo.numStorageBuffers = 0;
-    vsInfo.numStorageTextures = 0;
-    vsInfo.numUniformBuffers = 1; // only one uniform buffer for vertex shader
-    defaultVS = Shader(device->createShader(vsInfo));
-  }
-  {
-    gpu::Shader::CreateInfo vsInfo{};
-    vsInfo.allocator = allocator;
-    setShaderCode(vsInfo, format, shader_instance_vert_spv,
-                  shader_instance_vert_spv_len, shader_instance_vert_wgsl,
-                  shader_instance_vert_wgsl_len, shader_instance_vert_dxil,
-                  shader_instance_vert_dxil_len);
-    vsInfo.entrypoint = entryPointFor(ShaderStage::Vertex, format);
-    vsInfo.format = format;
-    vsInfo.stage = ShaderStage::Vertex;
-    vsInfo.numSamplers = 0;
-    vsInfo.numStorageBuffers = 0;
-    vsInfo.numStorageTextures = 0;
-    vsInfo.numUniformBuffers = 1; // only one uniform buffer for vertex shader
-    defaultInstancedVS = Shader(device->createShader(vsInfo));
-  }
-  {
-    gpu::Shader::CreateInfo fsInfo{};
-    fsInfo.allocator = allocator;
-    setShaderCode(fsInfo, format, shader_frag_spv, shader_frag_spv_len,
-                  shader_frag_wgsl, shader_frag_wgsl_len, shader_frag_dxil,
-                  shader_frag_dxil_len);
-    fsInfo.entrypoint = entryPointFor(ShaderStage::Fragment, format);
-    fsInfo.format = format;
-    fsInfo.stage = ShaderStage::Fragment;
-    fsInfo.numSamplers = 1; // one sampler for fragment shader
-    fsInfo.numStorageBuffers = 0;
-    fsInfo.numStorageTextures = 0;
-    fsInfo.numUniformBuffers = 1; // only one uniform buffer for fragment shader
-    defaultFS = Shader(device->createShader(fsInfo));
-  }
-  {
-    gpu::Shader::CreateInfo fsInfo{};
-    fsInfo.allocator = allocator;
-    setShaderCode(fsInfo, format, font_frag_spv, font_frag_spv_len,
-                  font_frag_wgsl, font_frag_wgsl_len, font_frag_dxil,
-                  font_frag_dxil_len);
-    fsInfo.entrypoint = entryPointFor(ShaderStage::Fragment, format);
-    fsInfo.format = format;
-    fsInfo.stage = ShaderStage::Fragment;
-    fsInfo.numSamplers = 1;
-    fsInfo.numStorageBuffers = 0;
-    fsInfo.numStorageTextures = 0;
-    fsInfo.numUniformBuffers = 2;
-    fontFS = Shader(device->createShader(fsInfo));
-  }
-  {
-    gpu::Shader::CreateInfo fsInfo{};
-    fsInfo.allocator = allocator;
-    setShaderCode(fsInfo, format, rect_color_frag_spv, rect_color_frag_spv_len,
-                  rect_color_frag_wgsl, rect_color_frag_wgsl_len,
-                  rect_color_frag_dxil, rect_color_frag_dxil_len);
-    fsInfo.entrypoint = entryPointFor(ShaderStage::Fragment, format);
-    fsInfo.format = format;
-    fsInfo.stage = ShaderStage::Fragment;
-    fsInfo.numSamplers = 0; // no sampler for solid-color rectangle
-    fsInfo.numStorageBuffers = 0;
-    fsInfo.numStorageTextures = 0;
-    fsInfo.numUniformBuffers = 2;
-    rectFS = Shader(device->createShader(fsInfo));
-  }
-  {
-    gpu::Shader::CreateInfo vsInfo{};
-    vsInfo.allocator = allocator;
-    setShaderCode(vsInfo, format, cubemap_vert_spv, cubemap_vert_spv_len,
-                  cubemap_vert_wgsl, cubemap_vert_wgsl_len, cubemap_vert_dxil,
-                  cubemap_vert_dxil_len);
-    vsInfo.entrypoint = entryPointFor(ShaderStage::Vertex, format);
-    vsInfo.format = format;
-    vsInfo.stage = ShaderStage::Vertex;
-    vsInfo.numSamplers = 0;
-    vsInfo.numStorageBuffers = 0;
-    vsInfo.numStorageTextures = 0;
-    vsInfo.numUniformBuffers = 1; // only one uniform buffer for vertex shader
-    cubemapVS = Shader(device->createShader(vsInfo));
-  }
-  {
-    gpu::Shader::CreateInfo fsInfo{};
-    fsInfo.allocator = allocator;
-    setShaderCode(fsInfo, format, cubemap_frag_spv, cubemap_frag_spv_len,
-                  cubemap_frag_wgsl, cubemap_frag_wgsl_len, cubemap_frag_dxil,
-                  cubemap_frag_dxil_len);
-    fsInfo.entrypoint = entryPointFor(ShaderStage::Fragment, format);
-    fsInfo.format = format;
-    fsInfo.stage = ShaderStage::Fragment;
-    fsInfo.numSamplers = 1; // one sampler for fragment shader
-    fsInfo.numStorageBuffers = 0;
-    fsInfo.numStorageTextures = 0;
-    fsInfo.numUniformBuffers = 1; // only one uniform buffer for fragment shader
-    cubemapFS = Shader(device->createShader(fsInfo));
-  }
+  defaultVS = createBuiltinShader(shader_vert_snb, shader_vert_snb_len,
+                                  ShaderStage::Vertex);
+  defaultInstancedVS =
+      createBuiltinShader(shader_instance_vert_snb,
+                          shader_instance_vert_snb_len, ShaderStage::Vertex);
+  defaultFS = createBuiltinShader(shader_frag_snb, shader_frag_snb_len,
+                                  ShaderStage::Fragment);
+  fontFS = createBuiltinShader(font_frag_snb, font_frag_snb_len,
+                               ShaderStage::Fragment);
+  rectFS = createBuiltinShader(rect_color_frag_snb, rect_color_frag_snb_len,
+                               ShaderStage::Fragment);
+  cubemapVS = createBuiltinShader(cubemap_vert_snb, cubemap_vert_snb_len,
+                                  ShaderStage::Vertex);
+  cubemapFS = createBuiltinShader(cubemap_frag_snb, cubemap_frag_snb_len,
+                                  ShaderStage::Fragment);
 
   return true;
 }

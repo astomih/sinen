@@ -6,27 +6,95 @@ type SourceTask = {
 	src: string,
 	out: string,
 	stage: any,
+	numSamplers: number,
+	numStorageBuffers: number,
+	numStorageTextures: number,
+	numUniformBuffers: number,
 }
 
 type CompileTask = {
 	src: string,
-	out: string,
 	stage: any,
 	format: any,
+	numSamplers: number,
+	numStorageBuffers: number,
+	numStorageTextures: number,
+	numUniformBuffers: number,
 	code: sn.Buffer,
 }
 
-local sourceTasks: { SourceTask } = {
-	{ src = "shader.slang", out = "shader.frag", stage = sn.ShaderStage.Fragment },
-	{ src = "font.slang", out = "font.frag", stage = sn.ShaderStage.Fragment },
-	{ src = "shader.slang", out = "shader.vert", stage = sn.ShaderStage.Vertex },
-	{ src = "shader_instance.slang", out = "shader_instance.vert", stage = sn.ShaderStage.Vertex },
-	{ src = "rect_color.slang", out = "rect_color.frag", stage = sn.ShaderStage.Fragment },
-	{ src = "cubemap.slang", out = "cubemap.frag", stage = sn.ShaderStage.Fragment },
-	{ src = "cubemap.slang", out = "cubemap.vert", stage = sn.ShaderStage.Vertex },
+type BundleTask = {
+	out: string,
+	entries: { CompileTask },
 }
 
-local tasks: { CompileTask } = {}
+local sourceTasks: { SourceTask } = {
+	{
+		src = "shader.slang",
+		out = "shader.frag",
+		stage = sn.ShaderStage.Fragment,
+		numSamplers = 1,
+		numStorageBuffers = 0,
+		numStorageTextures = 0,
+		numUniformBuffers = 1,
+	},
+	{
+		src = "font.slang",
+		out = "font.frag",
+		stage = sn.ShaderStage.Fragment,
+		numSamplers = 1,
+		numStorageBuffers = 0,
+		numStorageTextures = 0,
+		numUniformBuffers = 2,
+	},
+	{
+		src = "shader.slang",
+		out = "shader.vert",
+		stage = sn.ShaderStage.Vertex,
+		numSamplers = 0,
+		numStorageBuffers = 0,
+		numStorageTextures = 0,
+		numUniformBuffers = 1,
+	},
+	{
+		src = "shader_instance.slang",
+		out = "shader_instance.vert",
+		stage = sn.ShaderStage.Vertex,
+		numSamplers = 0,
+		numStorageBuffers = 0,
+		numStorageTextures = 0,
+		numUniformBuffers = 1,
+	},
+	{
+		src = "rect_color.slang",
+		out = "rect_color.frag",
+		stage = sn.ShaderStage.Fragment,
+		numSamplers = 0,
+		numStorageBuffers = 0,
+		numStorageTextures = 0,
+		numUniformBuffers = 2,
+	},
+	{
+		src = "cubemap.slang",
+		out = "cubemap.frag",
+		stage = sn.ShaderStage.Fragment,
+		numSamplers = 1,
+		numStorageBuffers = 0,
+		numStorageTextures = 0,
+		numUniformBuffers = 1,
+	},
+	{
+		src = "cubemap.slang",
+		out = "cubemap.vert",
+		stage = sn.ShaderStage.Vertex,
+		numSamplers = 0,
+		numStorageBuffers = 0,
+		numStorageTextures = 0,
+		numUniformBuffers = 1,
+	},
+}
+
+local tasks: { BundleTask } = {}
 local written = false
 
 local function formatName(format: any): string
@@ -63,41 +131,63 @@ local function writeFile(path: string, data: sn.Buffer)
 	end
 end
 
-local function addTask(src: string, out: string, stage: any, format: any)
-	sn.Log.info("Compiling " .. out .. " from " .. src .. " (" .. stageName(stage) .. ", " .. formatName(format) .. ")")
+local function compileTask(task: SourceTask, format: any): CompileTask
+	sn.Log.info(
+		"Compiling "
+			.. task.out
+			.. " from "
+			.. task.src
+			.. " ("
+			.. stageName(task.stage)
+			.. ", "
+			.. formatName(format)
+			.. ")"
+	)
 	local shader = sn.Shader.new()
-	shader:compile(src, stage, format)
+	shader:compile(task.src, task.stage, format)
 	local code = shader:getCode()
 	if code:size() == 0 then
-		error("Shader compiled with empty code: " .. out)
+		error("Shader compiled with empty code: " .. task.out)
 	end
-	table.insert(tasks, {
-		src = src,
-		out = out,
-		stage = stage,
+	return {
+		src = task.src,
+		stage = task.stage,
 		format = format,
+		numSamplers = task.numSamplers,
+		numStorageBuffers = task.numStorageBuffers,
+		numStorageTextures = task.numStorageTextures,
+		numUniformBuffers = task.numUniformBuffers,
 		code = code,
+	}
+end
+
+local function addBundleTask(task: SourceTask)
+	local entries = {
+		compileTask(task, sn.ShaderFormat.SPIRV),
+		compileTask(task, sn.ShaderFormat.WGSL),
+		compileTask(task, sn.ShaderFormat.DXIL),
+	}
+	table.insert(tasks, {
+		out = task.out .. ".snb",
+		entries = entries,
 	})
 end
 
-local function writeTask(task: CompileTask)
-	local code = task.code
-	sn.Log.info("Writing " .. task.out .. " (" .. tostring(code:size()) .. " bytes)")
-	writeFile(task.out, code)
+local function writeTask(task: BundleTask)
+	local bundle = sn.ShaderBundle.pack(task.entries)
+	if bundle:size() == 0 then
+		error("Shader bundle is empty: " .. task.out)
+	end
+	sn.Log.info("Writing " .. task.out .. " (" .. tostring(bundle:size()) .. " bytes)")
+	writeFile(task.out, bundle)
 	sn.Log.info("Writing " .. task.out .. ".hpp")
-	writeFile(task.out .. ".hpp", code:toHeader(symbolName(task.out)))
+	writeFile(task.out .. ".hpp", bundle:toHeader(symbolName(task.out)))
 end
 
 function setup()
 	sn.Log.info("Builtin shader compile started")
 	for _, task in sourceTasks do
-		addTask(task.src, task.out .. ".spv", task.stage, sn.ShaderFormat.SPIRV)
-	end
-	for _, task in sourceTasks do
-		addTask(task.src, task.out .. ".wgsl", task.stage, sn.ShaderFormat.WGSL)
-	end
-	for _, task in sourceTasks do
-		addTask(task.src, task.out .. ".dxil", task.stage, sn.ShaderFormat.DXIL)
+		addBundleTask(task)
 	end
 	sn.Log.info("Queued " .. tostring(#tasks) .. " builtin shader compile tasks")
 end

@@ -15,6 +15,7 @@ class Filesystem {
 public:
   static Array<String> enumerateDirectory(StringView path);
   static std::optional<Buffer> read(StringView path);
+  static bool exists(StringView path);
   static bool write(StringView path, const Buffer &buffer);
   static String getAppBaseDirectory();
   static String getUserDirectory();

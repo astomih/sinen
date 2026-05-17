@@ -221,6 +221,7 @@ void registerRenderTexture(lua_State *);
 void registerSound(lua_State *);
 void registerSynth(lua_State *);
 void registerShader(lua_State *);
+void registerShaderBundle(lua_State *);
 void registerPipeline(lua_State *);
 void registerModel(lua_State *);
 void registerMeshBuilder(lua_State *);
@@ -288,6 +289,7 @@ static void registerAll(lua_State *L) {
   registerSound(L);
   registerSynth(L);
   registerShader(L);
+  registerShaderBundle(L);
   registerPipeline(L);
   registerModel(L);
   registerMeshBuilder(L);

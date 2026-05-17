@@ -195,6 +195,24 @@ std::optional<Buffer> Filesystem::read(StringView path) {
   return buffer;
 }
 
+bool Filesystem::exists(StringView path) {
+  if (AssetIO::isArchiveMounted() && AssetIO::exists(path)) {
+    return true;
+  }
+
+  String resolvedPath;
+  if (!resolveSandboxPath(path, FilesystemAccess::Read, resolvedPath)) {
+    return false;
+  }
+
+  auto *file = SDL_IOFromFile(resolvedPath.c_str(), "rb");
+  if (!file) {
+    return false;
+  }
+  SDL_CloseIO(file);
+  return true;
+}
+
 bool Filesystem::write(StringView path, const Buffer &buffer) {
   String resolvedPath;
   if (!resolveSandboxPath(path, FilesystemAccess::Write, resolvedPath)) {
@@ -317,6 +335,11 @@ static int lFilesystemRead(lua_State *L) {
   udNewOwned<Buffer>(L, std::move(*buffer));
   return 1;
 }
+static int lFilesystemExists(lua_State *L) {
+  const char *path = luaL_checkstring(L, 1);
+  lua_pushboolean(L, Filesystem::exists(StringView(path)));
+  return 1;
+}
 static int lFilesystemWrite(lua_State *L) {
   const char *path = luaL_checkstring(L, 1);
   const auto &buffer = udValue<Buffer>(L, 2);
@@ -334,6 +357,8 @@ void registerFilesystem(lua_State *L) {
   lua_setfield(L, -2, "enumerateDirectory");
   luaPushcfunction2(L, lFilesystemRead);
   lua_setfield(L, -2, "read");
+  luaPushcfunction2(L, lFilesystemExists);
+  lua_setfield(L, -2, "exists");
   luaPushcfunction2(L, lFilesystemWrite);
   lua_setfield(L, -2, "write");
   luaPushcfunction2(L, lFilesystemGetUserDirectory);

@@ -63,7 +63,7 @@ elseif(SINEN_ENABLE_NATIVE_WEBGPU_DAWN AND WIN32 AND NOT TARGET webgpu)
   set(SINEN_ENABLE_WEBGPU ON)
 endif()
 
-add_subdirectory(${SINEN_SOURCE_DIR}/libs/Luau)
+add_subdirectory(${SINEN_SOURCE_DIR}/libs/luau)
 foreach(target Luau.VM Luau.Compiler)
   get_target_property(defs ${target} INTERFACE_COMPILE_DEFINITIONS)
   if(defs)

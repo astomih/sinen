@@ -140,6 +140,8 @@ jobs:
       - name: Configure
         shell: bash
         run: |
+          set -o pipefail
+
           emcmake cmake \
             -S . \
             -B build/emscripten \
@@ -148,13 +150,34 @@ jobs:
             -DCMAKE_EXECUTABLE_SUFFIX=.html \
             -DBUILD_SHARED_LIBS=OFF \
             -DSINEN_USE_SLANG=OFF \
+            -DSINEN_ENABLE_TRACY=OFF \
             -DSINEN_EMSCRIPTEN_ASYNCIFY=ON \
             -DSINEN_EMSCRIPTEN_ASSERTIONS=ON \
             -DSINEN_EMSCRIPTEN_DEBUG_RUNTIME=OFF \
             -DSINEN_EMSCRIPTEN_EXCEPTIONS=ON \
             -DSINEN_EMSCRIPTEN_PRELOAD_DIR="${GITHUB_WORKSPACE}/examples" \
             -DSINEN_EMSCRIPTEN_PRELOAD_MOUNT=/ \
-            -DASSIMP_BUILD_ZLIB=ON
+            -DASSIMP_BUILD_ZLIB=ON \
+            -DASSIMP_BUILD_TESTS=OFF \
+            -DASSIMP_BUILD_ASSIMP_TOOLS=OFF \
+            -DASSIMP_INSTALL=OFF \
+            -DKTX_FEATURE_JS=OFF \
+            -DKTX_FEATURE_TESTS=OFF \
+            -DKTX_FEATURE_TOOLS=OFF \
+            -DKTX_FEATURE_LOADTEST_APPS=OFF \
+            -DSDL_TEST_LIBRARY=OFF \
+            -DSDL_TESTS=OFF \
+            -DSDL_EXAMPLES=OFF \
+            -DSDL_INSTALL=OFF \
+            -DENABLE_INSTALL=OFF \
+            2>&1 | tee build/emscripten-configure.log
+
+      - name: Upload Emscripten Configure Log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: emscripten-configure-log
+          path: build/emscripten-configure.log
 
       - name: Build
         shell: bash

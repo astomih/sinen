@@ -1,16 +1,21 @@
-name: Windows Release
+name: Build and Release
 
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
 jobs:
-  build:
+  build_windows:
+    name: Build Windows
     runs-on: windows-2022
 
     steps:
@@ -87,7 +92,13 @@ jobs:
             throw "Built executable was not found: $exePath"
           }
 
+          $webgpuDawnPath = Join-Path $buildDir "webgpu_dawn.dll"
+          if (-not (Test-Path $webgpuDawnPath)) {
+            throw "webgpu_dawn.dll was not found: $webgpuDawnPath"
+          }
+
           Copy-Item $exePath -Destination $packageDir -Force
+          Copy-Item $webgpuDawnPath -Destination $packageDir -Force
           Copy-Item README.md -Destination $packageDir -Force
           Copy-Item LICENSE.md -Destination $packageDir -Force
 
@@ -95,17 +106,174 @@ jobs:
             Remove-Item $archivePath -Force
           }
 
-          Compress-Archive -Path $packageDir -DestinationPath $archivePath -Force
+          Compress-Archive -Path "$packageDir\*" -DestinationPath $archivePath -Force
 
-      - name: Upload Artifact
+      - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sinen-windows-x64
+          name: sinen-windows-x64-zip
           path: dist/sinen-windows-x64.zip
 
-      - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
+  build_emscripten:
+    name: Build Emscripten
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          files: dist/sinen-windows-x64.zip
-          generate_release_notes: true
+          submodules: recursive
+
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+
+      - name: Restore Dependency Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/emscripten/_deps
+            build/emscripten/libs
+          key: ${{ runner.os }}-emscripten-release-deps-v1-${{ hashFiles('CMakeLists.txt', 'cmake/**', '.gitmodules', 'libs/WebGPU-distribution/emscripten/emscripten-git-tag.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-emscripten-release-deps-v1-
+
+      - name: Configure
+        shell: bash
+        run: |
+          emcmake cmake \
+            -S . \
+            -B build/emscripten \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_EXECUTABLE_SUFFIX=.html \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DSINEN_USE_SLANG=OFF \
+            -DSINEN_EMSCRIPTEN_ASYNCIFY=ON \
+            -DSINEN_EMSCRIPTEN_ASSERTIONS=ON \
+            -DSINEN_EMSCRIPTEN_DEBUG_RUNTIME=OFF \
+            -DSINEN_EMSCRIPTEN_EXCEPTIONS=ON \
+            -DSINEN_EMSCRIPTEN_PRELOAD_DIR="${GITHUB_WORKSPACE}/examples" \
+            -DSINEN_EMSCRIPTEN_PRELOAD_MOUNT=/ \
+            -DASSIMP_BUILD_ZLIB=ON
+
+      - name: Build
+        shell: bash
+        run: |
+          cmake --build build/emscripten --parallel
+
+      - name: Package WebGPU Site
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p dist/webgpu
+          cp build/emscripten/sinen.html dist/webgpu/index.html
+          cp build/emscripten/sinen.js dist/webgpu/
+          cp build/emscripten/sinen.wasm dist/webgpu/
+          cp build/emscripten/sinen.data dist/webgpu/
+
+          (
+            cd dist/webgpu
+            zip -r ../sinen-webgpu.zip .
+          )
+
+      - name: Upload Emscripten Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sinen-webgpu-zip
+          path: dist/sinen-webgpu.zip
+
+      - name: Upload WebGPU Site Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sinen-webgpu-site
+          path: dist/webgpu
+
+  deploy_webgpu:
+    name: Publish WebGPU Site
+    runs-on: ubuntu-latest
+    needs:
+      - build_emscripten
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
+
+    steps:
+      - name: Download WebGPU Site Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sinen-webgpu-site
+          path: dist/webgpu
+
+      - name: Publish WebGPU Site
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: dist/webgpu
+          destination_dir: webgpu
+          keep_files: true
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs:
+      - build_windows
+      - build_emscripten
+      - deploy_webgpu
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Release Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: sinen-*-zip
+          path: release-assets
+          merge-multiple: true
+
+      - name: Create Date Version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          base_tag="v$(TZ=Asia/Tokyo date +'%Y.%m.%d')"
+          tag="$base_tag"
+          suffix=1
+
+          git fetch --tags
+          while git rev-parse -q --verify "refs/tags/$tag" >/dev/null; do
+            suffix=$((suffix + 1))
+            tag="${base_tag}.${suffix}"
+          done
+
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Create Git Tag
+        shell: bash
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag "$TAG" "$GITHUB_SHA"
+          git push origin "refs/tags/$TAG"
+
+      - name: Create GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          gh release create "$TAG" release-assets/*.zip \
+            --target "$GITHUB_SHA" \
+            --title "$TAG" \
+            --notes "Automated release for $TAG."

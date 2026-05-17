@@ -4,6 +4,10 @@ on:
   push:
     branches: [ main ]
 
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
+
 jobs:
   build:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
@@ -19,4 +23,4 @@ jobs:
         python-version: 3.9
     - run: |
           pip install mkdocs-material mkdocs-static-i18n
-          mkdocs gh-deploy --force
+          mkdocs gh-deploy --force --dirty

@@ -8,8 +8,8 @@ function setup()
 	sn.Graphics.resetGraphicsPipeline()
 end
 
-local buttonSize = sn.Vec2.new(360, 40)
-local buttonStep = 48.0
+local buttonSize = sn.Vec2.new(512, 64)
+local buttonStep = 70.0
 local headerHeight = 88.0
 local margin = 24.0
 function update() end

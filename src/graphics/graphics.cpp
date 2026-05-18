@@ -599,8 +599,8 @@ void Graphics::drawText(StringView text, const Font &font, const Vec2 &position,
   Array<Transform2D> transforms(1, {textPosition, angle, Vec2(scale)});
   setTexture(0, textData.texture);
   const Vec2 atlasSize = textData.texture->size();
-  const FontFragmentParams params{color,
-                                  Vec4(atlasSize.x, atlasSize.y, 6.0f, 0.0f)};
+  const FontFragmentParams params{
+      color, Vec4(atlasSize.x, atlasSize.y, textData.distanceFieldRange, 0.0f)};
   currentCommandBuffer->pushFragmentUniformData(1, &params, sizeof(params));
 
   drawBase2D(transforms, model, fontSampler);

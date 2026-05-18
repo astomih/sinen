@@ -49,7 +49,7 @@ FSOutput FSMain(FSInput input) {
 
   float4 sampleColor = sampledTexture.Sample(input.uv);
 
-  float signedDistance = median3(sampleColor.rgb);
+  float signedDistance = min(median3(sampleColor.rgb), sampleColor.a);
   float pxRange = screenPxRange(input.uv);
   float coverage = clamp(pxRange * (signedDistance - 0.5) + 0.5, 0.0, 1.0);
 

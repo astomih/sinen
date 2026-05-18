@@ -14,6 +14,7 @@ enum class FontMethod {
 struct TextDrawData {
   Mesh mesh;
   Ptr<Texture> texture;
+  float distanceFieldRange = 1.0f;
   bool valid = false;
 };
 

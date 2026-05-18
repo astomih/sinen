@@ -34,9 +34,10 @@ namespace {
 constexpr UInt32 kFallbackAsciiCodepoint = '?';
 constexpr UInt32 kReplacementCodepoint = 0xFFFD;
 constexpr int kAtlasSizes[] = {64, 128, 256, 512, 1024, 2048, 4096, 8192};
-constexpr int kGlyphPadding =1;
-constexpr int kMsdfGlyphPixelHeight = 32;
-constexpr int kMsdfPixelRange = 6;
+constexpr int kGlyphPadding = 1;
+constexpr int kDefaultMsdfGlyphPixelHeight = 32;
+constexpr int kDefaultMsdfPixelRange = 6;
+constexpr int kMinMsdfPixelRange = 2;
 constexpr int kMsdfAtlasGutter = 1;
 constexpr float kAtlasEstimateSlack = 1.6f;
 
@@ -47,12 +48,21 @@ struct PackedAtlasData {
   Array<unsigned char> atlasBitmap;
   gpu::TextureFormat textureFormat = gpu::TextureFormat::R8_UNORM;
   int channels = 1;
+  int distanceFieldRange = 1;
   UInt32 sheetSize = 0;
   bool success = false;
 };
 
+int msdfPixelRangeForSize(int pointSize) {
+  const float range = static_cast<float>(pointSize) *
+                      static_cast<float>(kDefaultMsdfPixelRange) /
+                      static_cast<float>(kDefaultMsdfGlyphPixelHeight);
+  return std::max(kMinMsdfPixelRange, static_cast<int>(std::ceil(range)));
+}
+
 int estimateInitialAtlasSize(const stbtt_fontinfo &fontInfo, int pointSize,
-                             const Array<int> &codepoints, FontMethod method) {
+                             const Array<int> &codepoints, FontMethod method,
+                             int msdfPixelRange) {
   const float scale =
       stbtt_ScaleForPixelHeight(&fontInfo, static_cast<float>(pointSize));
   uint64_t estimatedArea = 0;
@@ -63,8 +73,8 @@ int estimateInitialAtlasSize(const stbtt_fontinfo &fontInfo, int pointSize,
     int width = std::max(0, x1 - x0) + kGlyphPadding;
     int height = std::max(0, y1 - y0) + kGlyphPadding;
     if (method == FontMethod::MSDF && width > 0 && height > 0) {
-      width += kMsdfPixelRange * 2;
-      height += kMsdfPixelRange * 2;
+      width += msdfPixelRange * 2;
+      height += msdfPixelRange * 2;
       width += kMsdfAtlasGutter * 2;
       height += kMsdfAtlasGutter * 2;
     }
@@ -263,7 +273,7 @@ bool tryPackAtlas(const unsigned char *fontData, int pointSize, int sheetSize,
 
 bool tryPackMsdfAtlas(const stbtt_fontinfo &fontInfo, int pointSize,
                       int sheetSize, const Array<int> &codepoints,
-                      PackedAtlasData &result) {
+                      int msdfPixelRange, PackedAtlasData &result) {
   result.codepoints.clear();
   result.packedChars.clear();
   result.glyphLookup.clear();
@@ -290,12 +300,10 @@ bool tryPackMsdfAtlas(const stbtt_fontinfo &fontInfo, int pointSize,
     const int glyphHeight = std::max(0, y1s[i] - y0s[i]);
     rects[i].id = static_cast<int>(i);
     rects[i].w = glyphWidth > 0
-                     ? glyphWidth + kMsdfPixelRange * 2 +
-                           kMsdfAtlasGutter * 2
+                     ? glyphWidth + msdfPixelRange * 2 + kMsdfAtlasGutter * 2
                      : 0;
     rects[i].h = glyphHeight > 0
-                     ? glyphHeight + kMsdfPixelRange * 2 +
-                           kMsdfAtlasGutter * 2
+                     ? glyphHeight + msdfPixelRange * 2 + kMsdfAtlasGutter * 2
                      : 0;
     rects[i].x = 0;
     rects[i].y = 0;
@@ -329,9 +337,9 @@ bool tryPackMsdfAtlas(const stbtt_fontinfo &fontInfo, int pointSize,
     packed.x1 = static_cast<unsigned short>(rect.x + rect.w);
     packed.y1 = static_cast<unsigned short>(rect.y + rect.h);
     packed.xoff =
-        static_cast<float>(x0s[i] - kMsdfPixelRange - kMsdfAtlasGutter);
+        static_cast<float>(x0s[i] - msdfPixelRange - kMsdfAtlasGutter);
     packed.yoff =
-        static_cast<float>(y0s[i] - kMsdfPixelRange - kMsdfAtlasGutter);
+        static_cast<float>(y0s[i] - msdfPixelRange - kMsdfAtlasGutter);
     packed.xoff2 = packed.xoff + static_cast<float>(rect.w);
     packed.yoff2 = packed.yoff + static_cast<float>(rect.h);
     packed.xadvance = static_cast<float>(advance) * scale;
@@ -363,12 +371,15 @@ bool tryPackMsdfAtlas(const stbtt_fontinfo &fontInfo, int pointSize,
         msdfgen::Bitmap<float, 4> msdf(rect.w, rect.h);
         const msdfgen::Vector2 msdfScale(1.0, 1.0);
         const msdfgen::Vector2 msdfTranslate(
-            -static_cast<double>(x0s[i]) + kMsdfPixelRange + kMsdfAtlasGutter,
-            -static_cast<double>(y0s[i]) + kMsdfPixelRange + kMsdfAtlasGutter);
-        msdfgen::generateMTSDF_legacy(msdf, shape,
-                                      msdfgen::Range(kMsdfPixelRange),
-                                      msdfScale, msdfTranslate);
+            -static_cast<double>(x0s[i]) + msdfPixelRange + kMsdfAtlasGutter,
+            -static_cast<double>(y0s[i]) + msdfPixelRange + kMsdfAtlasGutter);
+        const msdfgen::Range msdfRange(msdfPixelRange);
+        const msdfgen::Projection msdfProjection(msdfScale, msdfTranslate);
+        msdfgen::generateMTSDF_legacy(msdf, shape, msdfRange, msdfScale,
+                                      msdfTranslate);
         msdfgen::distanceSignCorrection(msdf, shape, msdfScale, msdfTranslate);
+        msdfgen::msdfErrorCorrection(msdf, shape, msdfProjection, msdfRange,
+                                     msdfgen::MSDFGeneratorConfig(false));
 
         for (int y = 0; y < rect.h; ++y) {
           for (int x = 0; x < rect.w; ++x) {
@@ -412,6 +423,7 @@ bool tryPackMsdfAtlas(const stbtt_fontinfo &fontInfo, int pointSize,
   result.atlasBitmap = std::move(atlas);
   result.textureFormat = gpu::TextureFormat::R8G8B8A8_UNORM;
   result.channels = 4;
+  result.distanceFieldRange = msdfPixelRange;
   result.glyphLookup.reserve(result.codepoints.size());
   for (UInt32 i = 0; i < result.codepoints.size(); ++i) {
     result.glyphLookup.emplace(static_cast<UInt32>(result.codepoints[i]), i);
@@ -433,6 +445,7 @@ private:
   UInt32 sheetSize;
   UInt32 fallbackGlyphIndex;
   FontMethod method;
+  int distanceFieldRange;
   mutable Hashmap<String, TextDrawData> textCache;
   std::atomic<bool> loaded = false;
   int m_size;
@@ -440,8 +453,8 @@ private:
 public:
   FontImpl()
       : packedChars(), fontBytes(), glyphLookup(), texture(), sheetSize(0),
-        fallbackGlyphIndex(0), method(FontMethod::Bitmap), textCache(),
-        loaded(false), m_size(0) {
+        fallbackGlyphIndex(0), method(FontMethod::Bitmap),
+        distanceFieldRange(1), textCache(), loaded(false), m_size(0) {
     texture = Texture::create();
   }
   FontImpl(int32_t point, StringView file_name,
@@ -454,12 +467,16 @@ public:
   bool loadFromBytes(int pointSize, Array<unsigned char> &&bytes,
                      FontMethod fontMethod) {
     const int bakedPointSize =
-        fontMethod == FontMethod::MSDF ? kMsdfGlyphPixelHeight : pointSize + 16;
+        fontMethod == FontMethod::MSDF ? std::max(1, pointSize)
+                                       : std::max(1, pointSize + 16);
     this->loaded = false;
     this->m_size = bakedPointSize;
     this->sheetSize = 0;
     this->fallbackGlyphIndex = 0;
     this->method = fontMethod;
+    this->distanceFieldRange =
+        fontMethod == FontMethod::MSDF ? msdfPixelRangeForSize(bakedPointSize)
+                                       : 1;
     this->textCache.clear();
     this->fontBytes = std::move(bytes);
 
@@ -700,7 +717,7 @@ public:
     PackedAtlasData atlasData;
     const int initialSheetSize =
         estimateInitialAtlasSize(fontInfo, this->m_size, codepoints,
-                                 this->method);
+                                 this->method, this->distanceFieldRange);
     for (int sheetSize : kAtlasSizes) {
       if (sheetSize < initialSheetSize) {
         continue;
@@ -708,7 +725,7 @@ public:
       const bool packed =
           this->method == FontMethod::MSDF
               ? tryPackMsdfAtlas(fontInfo, this->m_size, sheetSize, codepoints,
-                                 atlasData)
+                                 this->distanceFieldRange, atlasData)
               : tryPackAtlas(this->fontBytes.data(), this->m_size, sheetSize,
                              codepoints, atlasData);
       if (packed) {
@@ -729,6 +746,7 @@ public:
                              selectFallbackGlyphIndex(atlasData.glyphLookup),
                              atlasData.sheetSize);
     data.texture = textTexture;
+    data.distanceFieldRange = static_cast<float>(atlasData.distanceFieldRange);
     data.valid = true;
     textCache.emplace(cacheKey, data);
     return data;

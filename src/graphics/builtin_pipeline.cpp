@@ -1,6 +1,7 @@
 #include "builtin_pipeline.hpp"
-#include <gpu/shader/builtin_shader.hpp>
 #include <script/luaapi.hpp>
+#include <shader/builtin_shader.hpp>
+
 namespace sinen {
 static GraphicsPipeline default2D;
 static GraphicsPipeline font2D;

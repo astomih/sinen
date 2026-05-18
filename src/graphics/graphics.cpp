@@ -3,7 +3,6 @@
 #include <core/allocator/global_allocator.hpp>
 #include <core/profiler.hpp>
 #include <gpu/gpu.hpp>
-#include <gpu/shader/builtin_shader.hpp>
 #include <graphics/builtin_pipeline.hpp>
 #include <graphics/font/default/mplus-1p-medium.ttf.hpp>
 #include <graphics/font/font_glyph_ranges.hpp>
@@ -15,6 +14,8 @@
 #include <platform/window/window.hpp>
 #include <script/luaapi.hpp>
 #include <script/script.hpp>
+#include <shader/builtin_shader.hpp>
+
 
 #include <SDL3/SDL.h>
 

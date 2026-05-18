@@ -16,7 +16,6 @@
 #include <script/script.hpp>
 #include <shader/builtin_shader.hpp>
 
-
 #include <SDL3/SDL.h>
 
 #include <algorithm>
@@ -63,6 +62,8 @@ static void prepareRenderPassFrame();
 static void setupShapes();
 static void beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp);
 static Vec2 validRenderSize();
+static Ptr<gpu::Texture> createDepthTexture(const Vec2 &size);
+static Vec2 renderTargetSize(const Ptr<gpu::Texture> &texture);
 
 static GPUBackendAPI selectBackendAPI() {
 #ifdef SINEN_PLATFORM_EMSCRIPTEN
@@ -103,8 +104,9 @@ static void setFullWindowViewport(const Ptr<gpu::RenderPass> &renderPass) {
   // SDL_GetWindowSafeArea(WindowSystem::get_sdl_window(), &safeArea);
   rect.x = 0;
   rect.y = 0;
-  rect.width = Window::size().x;
-  rect.height = Window::size().y;
+  const Vec2 targetSize = renderTargetSize(currentColorTargets[0].texture);
+  rect.width = targetSize.x;
+  rect.height = targetSize.y;
 
   gpu::Viewport viewport{};
   viewport.x = rect.x;
@@ -140,18 +142,7 @@ bool Graphics::initialize() {
 
   // Create depth stencil target
   {
-    const Vec2 renderSize = validRenderSize();
-    gpu::Texture::CreateInfo depthStencilCreateInfo{};
-    depthStencilCreateInfo.allocator = GlobalAllocator::get();
-    depthStencilCreateInfo.width = static_cast<uint32_t>(renderSize.x);
-    depthStencilCreateInfo.height = static_cast<uint32_t>(renderSize.y);
-    depthStencilCreateInfo.layerCountOrDepth = 1;
-    depthStencilCreateInfo.type = gpu::TextureType::Texture2D;
-    depthStencilCreateInfo.usage = gpu::TextureUsage::DepthStencilTarget;
-    depthStencilCreateInfo.format = gpu::TextureFormat::D32_FLOAT_S8_UINT;
-    depthStencilCreateInfo.numLevels = 1;
-    depthStencilCreateInfo.sampleCount = gpu::SampleCount::x1;
-    depthTexture = device->createTexture(depthStencilCreateInfo);
+    depthTexture = createDepthTexture(validRenderSize());
     if (!depthTexture) {
       Log::error("Failed to create depth texture");
       return false;
@@ -221,6 +212,14 @@ void Graphics::render() {
     }
   }
 
+  currentRenderPass = nullptr;
+  currentCommandBuffer.reset();
+  mainCommandBuffer.reset();
+  if (!colorTargets.empty()) {
+    colorTargets[0].texture = nullptr;
+  }
+  currentColorTargets.clear();
+
   auto commandBuffer = device->acquireCommandBuffer({GlobalAllocator::get()});
   if (commandBuffer == nullptr) {
     return;
@@ -233,19 +232,11 @@ void Graphics::render() {
   currentCommandBuffer = commandBuffer;
   colorTargets[0].texture = swapchainTexture;
   currentColorTargets = colorTargets;
-  if (Window::resized()) {
-    const Vec2 renderSize = validRenderSize();
-    gpu::Texture::CreateInfo depthStencilCreateInfo{};
-    depthStencilCreateInfo.allocator = GlobalAllocator::get();
-    depthStencilCreateInfo.width = static_cast<uint32_t>(renderSize.x);
-    depthStencilCreateInfo.height = static_cast<uint32_t>(renderSize.y);
-    depthStencilCreateInfo.layerCountOrDepth = 1;
-    depthStencilCreateInfo.type = gpu::TextureType::Texture2D;
-    depthStencilCreateInfo.usage = gpu::TextureUsage::DepthStencilTarget;
-    depthStencilCreateInfo.format = gpu::TextureFormat::D32_FLOAT_S8_UINT;
-    depthStencilCreateInfo.numLevels = 1;
-    depthStencilCreateInfo.sampleCount = gpu::SampleCount::x1;
-    depthTexture = device->createTexture(depthStencilCreateInfo);
+  const Vec2 targetSize = renderTargetSize(swapchainTexture);
+  const Vec2 depthSize = renderTargetSize(depthTexture);
+  if (Window::resized() || depthSize.x != targetSize.x ||
+      depthSize.y != targetSize.y) {
+    depthTexture = createDepthTexture(targetSize);
     depthStencilInfo.texture = depthTexture;
   }
   currentDepthStencilInfo = depthStencilInfo;
@@ -677,10 +668,41 @@ static void beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp) {
 
 static Vec2 validRenderSize() {
   Vec2 size = Window::size();
+  if (auto *window = Window::getSdlWindow()) {
+    int width = 0;
+    int height = 0;
+    SDL_GetWindowSizeInPixels(window, &width, &height);
+    if (width > 0 && height > 0) {
+      size = Vec2(static_cast<float>(width), static_cast<float>(height));
+    }
+  }
   if (size.x <= 0.0f || size.y <= 0.0f) {
     size = Vec2(1.0f, 1.0f);
   }
   return size;
+}
+
+static Ptr<gpu::Texture> createDepthTexture(const Vec2 &size) {
+  gpu::Texture::CreateInfo depthStencilCreateInfo{};
+  depthStencilCreateInfo.allocator = GlobalAllocator::get();
+  depthStencilCreateInfo.width = static_cast<uint32_t>(std::max(1.0f, size.x));
+  depthStencilCreateInfo.height = static_cast<uint32_t>(std::max(1.0f, size.y));
+  depthStencilCreateInfo.layerCountOrDepth = 1;
+  depthStencilCreateInfo.type = gpu::TextureType::Texture2D;
+  depthStencilCreateInfo.usage = gpu::TextureUsage::DepthStencilTarget;
+  depthStencilCreateInfo.format = gpu::TextureFormat::D32_FLOAT_S8_UINT;
+  depthStencilCreateInfo.numLevels = 1;
+  depthStencilCreateInfo.sampleCount = gpu::SampleCount::x1;
+  return device->createTexture(depthStencilCreateInfo);
+}
+
+static Vec2 renderTargetSize(const Ptr<gpu::Texture> &texture) {
+  if (!texture) {
+    return validRenderSize();
+  }
+  const auto &info = texture->getCreateInfo();
+  return Vec2(static_cast<float>(std::max<UInt32>(1, info.width)),
+              static_cast<float>(std::max<UInt32>(1, info.height)));
 }
 
 static void prepareRenderPassFrame() {

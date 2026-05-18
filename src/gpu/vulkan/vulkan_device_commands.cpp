@@ -4,6 +4,7 @@
 
 #include <SDL3/SDL.h>
 
+#include <algorithm>
 #include <array>
 
 #include "volk.hpp"
@@ -106,12 +107,34 @@ Ptr<gpu::Texture>
 Device::acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) {
   if (!swapchain) {
     createSwapchain();
+    if (!swapchain) {
+      return nullptr;
+    }
+  } else if (window) {
+    int width = 0;
+    int height = 0;
+    SDL_GetWindowSizeInPixels(window, &width, &height);
+    const uint32_t drawableWidth = static_cast<uint32_t>(std::max(0, width));
+    const uint32_t drawableHeight = static_cast<uint32_t>(std::max(0, height));
+    if (drawableWidth == 0 || drawableHeight == 0) {
+      return nullptr;
+    }
+    if (drawableWidth != swapchainExtent.width ||
+        drawableHeight != swapchainExtent.height) {
+      recreateSwapchain();
+      if (!swapchain) {
+        return nullptr;
+      }
+    }
   }
   uint32_t imageIndex = 0;
   VkResult res = vkAcquireNextImageKHR(
       device, swapchain, UINT64_MAX, VK_NULL_HANDLE, acquireFence, &imageIndex);
   if (res == VK_ERROR_OUT_OF_DATE_KHR) {
     recreateSwapchain();
+    if (!swapchain) {
+      return nullptr;
+    }
     res = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, VK_NULL_HANDLE,
                                 acquireFence, &imageIndex);
   }

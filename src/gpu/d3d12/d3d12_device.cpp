@@ -246,13 +246,16 @@ void Device::claimWindow(void *window) {
 }
 
 void Device::createSwapchain() {
-  destroySwapchain();
-
   int w = 0;
   int h = 0;
   SDL_GetWindowSizeInPixels(window, &w, &h);
   width = max(1, w);
   height = max(1, h);
+
+  if (swapchain) {
+    resizeSwapchain(width, height);
+    return;
+  }
 
   DXGI_SWAP_CHAIN_DESC1 desc{};
   desc.Width = width;
@@ -276,11 +279,42 @@ void Device::createSwapchain() {
                                  DXGI_MWA_NO_ALT_ENTER);
   swapchain1.As(&swapchain);
   currentBackBuffer = swapchain->GetCurrentBackBufferIndex();
+  createSwapchainTextures();
+}
 
+void Device::resizeSwapchain(UINT newWidth, UINT newHeight) {
+  waitForGpuIdle();
   swapchainTextures.clear();
+  HRESULT hr =
+      swapchain->ResizeBuffers(FrameCount, newWidth, newHeight, swapchainFormat,
+                               0);
+  logIfFailed(hr, "D3D12: ResizeBuffers failed");
+  if (FAILED(hr)) {
+    destroySwapchain();
+    return;
+  }
+  width = newWidth;
+  height = newHeight;
+  currentBackBuffer = swapchain->GetCurrentBackBufferIndex();
+  createSwapchainTextures();
+}
+
+void Device::createSwapchainTextures() {
+  swapchainTextures.clear();
+  if (swapchainRtvs.size() != FrameCount) {
+    swapchainRtvs.clear();
+    swapchainRtvs.reserve(FrameCount);
+    for (UINT i = 0; i < FrameCount; ++i) {
+      swapchainRtvs.push_back(allocateRtvDescriptor());
+    }
+  }
   for (UINT i = 0; i < FrameCount; ++i) {
     ComPtr<ID3D12Resource> backBuffer;
-    swapchain->GetBuffer(i, IID_PPV_ARGS(&backBuffer));
+    HRESULT hr = swapchain->GetBuffer(i, IID_PPV_ARGS(&backBuffer));
+    logIfFailed(hr, "D3D12: GetBuffer failed");
+    if (FAILED(hr)) {
+      continue;
+    }
 
     gpu::Texture::CreateInfo ci{};
     ci.allocator = getCreateInfo().allocator;
@@ -294,7 +328,7 @@ void Device::createSwapchain() {
     ci.sampleCount = SampleCount::x1;
     auto texture = makePtr<Texture>(ci.allocator, ci, get(), backBuffer,
                                     D3D12_RESOURCE_STATE_PRESENT, true);
-    auto rtv = allocateRtvDescriptor();
+    auto rtv = swapchainRtvs[i];
     device->CreateRenderTargetView(backBuffer.Get(), nullptr, rtv);
     texture->setRtv(rtv);
     swapchainTextures.push_back(texture);
@@ -734,7 +768,15 @@ Device::acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) {
       createSwapchain();
     }
   }
+  if (!swapchain || swapchainTextures.empty()) {
+    return nullptr;
+  }
   currentBackBuffer = swapchain->GetCurrentBackBufferIndex();
+  if (currentBackBuffer >= swapchainTextures.size()) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "D3D12: invalid swapchain back buffer index");
+    return nullptr;
+  }
   downCast<CommandBuffer>(commandBuffer)->markUsesSwapchain();
   return swapchainTextures[currentBackBuffer];
 }
@@ -749,7 +791,13 @@ void Device::submitCommandBuffer(Ptr<gpu::CommandBuffer> commandBuffer) {
   ID3D12CommandList *lists[] = {cb->getNative()};
   commandQueue->ExecuteCommandLists(1, lists);
   if (cb->usesSwapchain() && swapchain) {
-    swapchain->Present(1, 0);
+    HRESULT hr = swapchain->Present(1, 0);
+    if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET) {
+      logIfFailed(device->GetDeviceRemovedReason(),
+                  "D3D12: device removed during Present");
+    } else {
+      logIfFailed(hr, "D3D12: Present failed");
+    }
   }
   signalAndWait();
 }

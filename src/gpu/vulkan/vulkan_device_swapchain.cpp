@@ -9,6 +9,16 @@
 #include "volk.hpp"
 
 namespace sinen::gpu::vulkan {
+namespace {
+VkExtent2D getDrawableExtent(SDL_Window *window) {
+  int width = 0;
+  int height = 0;
+  SDL_GetWindowSizeInPixels(window, &width, &height);
+  return {static_cast<uint32_t>(std::max(0, width)),
+          static_cast<uint32_t>(std::max(0, height))};
+}
+} // namespace
+
 void Device::destroySwapchain() {
   swapchainTextures.clear();
   for (auto view : swapchainImageViews) {
@@ -35,6 +45,11 @@ void Device::createSwapchain() {
   uint32_t formatCount = 0;
   vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount,
                                        nullptr);
+  if (formatCount == 0) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: no surface formats available");
+    return;
+  }
   std::vector<VkSurfaceFormatKHR> formats(formatCount);
   vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount,
                                        formats.data());
@@ -67,14 +82,16 @@ void Device::createSwapchain() {
 
   VkExtent2D extent = caps.currentExtent;
   if (extent.width == UINT32_MAX) {
-    int w = 0, h = 0;
-    SDL_GetWindowSize(window, &w, &h);
-    extent.width = std::clamp<uint32_t>(static_cast<uint32_t>(w),
-                                        caps.minImageExtent.width,
-                                        caps.maxImageExtent.width);
-    extent.height = std::clamp<uint32_t>(static_cast<uint32_t>(h),
-                                         caps.minImageExtent.height,
-                                         caps.maxImageExtent.height);
+    extent = getDrawableExtent(window);
+    extent.width = std::clamp<uint32_t>(
+        extent.width, caps.minImageExtent.width, caps.maxImageExtent.width);
+    extent.height = std::clamp<uint32_t>(
+        extent.height, caps.minImageExtent.height, caps.maxImageExtent.height);
+  }
+  if (extent.width == 0 || extent.height == 0) {
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: skipping zero-sized swapchain");
+    return;
   }
   swapchainExtent = extent;
 

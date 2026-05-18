@@ -89,7 +89,9 @@ private:
 
   void createDeviceObjects();
   void createSwapchain();
+  void resizeSwapchain(UINT newWidth, UINT newHeight);
   void destroySwapchain();
+  void createSwapchainTextures();
   void createDefaultDescriptors();
   void createGraphicsRootSignature();
   void signalAndWait();
@@ -111,6 +113,7 @@ private:
   UINT height = 0;
   UINT currentBackBuffer = 0;
   std::vector<Ptr<Texture>> swapchainTextures;
+  std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> swapchainRtvs;
 
   Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvHeap;
   Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvCpuHeap;

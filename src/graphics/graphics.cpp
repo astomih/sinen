@@ -32,9 +32,8 @@ enum class GraphicsPass {
 static GraphicsPass currentGraphicsPass = GraphicsPass::TwoD;
 static std::optional<Camera2D> currentCamera2D;
 static std::optional<Camera3D> currentCamera3D;
-static bool showImGui = false;
-static std::list<std::function<void()>> imguiFunctions;
 static std::list<std::function<void()>> preDrawFuncs;
+static std::list<std::function<void()>> postDrawFuncs;
 static Ptr<gpu::Backend> backend;
 static Ptr<gpu::Device> device;
 static Ptr<gpu::Texture> depthTexture;
@@ -250,6 +249,9 @@ void Graphics::render() {
   {
     ZoneScopedN("Script::drawScene");
     Script::drawScene();
+  }
+  for (auto &f : postDrawFuncs) {
+    f();
   }
 
   // Rendering
@@ -930,16 +932,11 @@ void Graphics::setClearColor(const Color &color) {
     clearColor = color;
 }
 Color Graphics::getClearColor() { return clearColor; }
-void Graphics::toggleShowImGui() { showImGui = !showImGui; }
-bool Graphics::isShowImGui() { return showImGui; }
-std::list<std::function<void()>> &Graphics::getImGuiFunction() {
-  return imguiFunctions;
-}
 void Graphics::addPreDrawFunc(std::function<void()> f) {
   preDrawFuncs.push_back(f);
 }
-void Graphics::addImGuiFunction(std::function<void()> function) {
-  imguiFunctions.push_back(function);
+void Graphics::addPostDrawFunc(std::function<void()> function) {
+  postDrawFuncs.push_back(function);
 }
 Ptr<gpu::Device> Graphics::getDevice() { return device; }
 } // namespace sinen

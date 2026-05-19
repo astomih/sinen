@@ -12,6 +12,7 @@
 #include <graphics/graphics.hpp>
 #include <platform/io/asset_io.hpp>
 #include <platform/io/filesystem.hpp>
+#include <platform/window/window.hpp>
 
 #include "luaapi.hpp"
 #include "require.hpp"
@@ -74,7 +75,11 @@ int luaLError2(lua_State *L, const char *fmt, ...) {
 
   return 0;
 }
-int luaLRef2(lua_State *L, int idx) { return lua_ref(L, idx); }
+int luaLRef2(lua_State *L, int idx) {
+  int ref = lua_ref(L, idx);
+  lua_remove(L, idx);
+  return ref;
+}
 void luaLUnref2(lua_State *L, int idx, int r) { lua_unref(L, r); }
 void pushSnNamed(lua_State *L, const char *name) {
   lua_getglobal(L, "sn");
@@ -174,6 +179,15 @@ static void installRequireAlias(lua_State *L) {
   lua_setglobal(L, "require");
 }
 
+static void clearSceneEntryPoints(lua_State *L) {
+  lua_pushnil(L);
+  lua_setglobal(L, "setup");
+  lua_pushnil(L);
+  lua_setglobal(L, "update");
+  lua_pushnil(L);
+  lua_setglobal(L, "draw");
+}
+
 static void drawNowLoadingOverlay() {
   if (gScenePhase != ScriptScenePhase::Loading) {
     return;
@@ -183,6 +197,22 @@ static void drawNowLoadingOverlay() {
   const uint32_t pending = gSetupTasks.pending();
   const float progress =
       (total == 0) ? 1.0f : (static_cast<float>(total - pending) / total);
+  const float clampedProgress = std::clamp(progress, 0.0f, 1.0f);
+
+  const Vec2 windowSize = Window::size();
+  const float margin = 32.0f;
+  const float maxBarWidth = std::max(64.0f, windowSize.x - margin * 2.0f);
+  const float barWidth = std::min(480.0f, maxBarWidth);
+  const float barHeight = 10.0f;
+  const float barX = (windowSize.x - barWidth) * 0.5f;
+  const float barY = windowSize.y * 0.82f;
+
+  Graphics::drawRect(Rect(0.0f, 0.0f, windowSize.x, windowSize.y),
+                     Color(0.0f, 0.0f, 0.0f, 0.35f));
+  Graphics::drawRect(Rect(barX, barY, barWidth, barHeight),
+                     Color(1.0f, 1.0f, 1.0f, 0.22f));
+  Graphics::drawRect(Rect(barX, barY, barWidth * clampedProgress, barHeight),
+                     Color(0.18f, 0.62f, 0.95f, 0.95f));
 }
 
 int luaLoadSource(lua_State *L, const String &source, const String &chunkname,
@@ -356,7 +386,7 @@ bool Script::initialize() {
   registerAll(gLua);
   installRequireAlias(gLua);
 
-  Graphics::addImGuiFunction(drawNowLoadingOverlay);
+  Graphics::addPostDrawFunc(drawNowLoadingOverlay);
 #endif
   return true;
 }
@@ -396,6 +426,7 @@ void Script::runScene() {
   if (!gLua) {
     return;
   }
+  lua_settop(gLua, 0);
 
   gScenePhase = ScriptScenePhase::Running;
   gSetupTasks = TaskGroup::create();
@@ -425,6 +456,7 @@ void Script::runScene() {
     luaLUnref2(gLua, LUA_REGISTRYINDEX, gDrawRef);
     gDrawRef = LUA_NOREF;
   }
+  clearSceneEntryPoints(gLua);
 
   String filename = String(sceneName) + prefix;
   String loadPath = AssetIO::getLoadPath(filename);
@@ -437,11 +469,12 @@ void Script::runScene() {
     fullPath = filename;
   }
   if (luaLoadSource(gLua, source, fullPath.c_str(), fullPath) != LUA_OK) {
-    logPCallError(gLua);
+    lua_settop(gLua, 0);
     return;
   }
   if (lua_pcall(gLua, 0, 0, 0) != LUA_OK) {
     logPCallError(gLua);
+    lua_settop(gLua, 0);
     return;
   }
 
@@ -472,6 +505,7 @@ void Script::runScene() {
       logPCallError(gLua);
     }
   }
+  lua_settop(gLua, 0);
 
   if (!gSetupTasks.isDone()) {
     gScenePhase = ScriptScenePhase::Loading;

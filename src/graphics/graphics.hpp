@@ -55,11 +55,8 @@ public:
                                  const Array<Transform> &transforms);
   static void setClearColor(const Color &color);
   static Color getClearColor();
-  static void toggleShowImGui();
-  static bool isShowImGui();
-  static std::list<std::function<void()>> &getImGuiFunction();
   static void addPreDrawFunc(std::function<void()> f);
-  static void addImGuiFunction(std::function<void()> function);
+  static void addPostDrawFunc(std::function<void()> function);
   static void setGraphicsPipeline(const GraphicsPipeline &pipeline);
   static void resetGraphicsPipeline();
   static void setUniformBuffer(UInt32 slotIndex, const Buffer &buffer);

@@ -2,7 +2,20 @@ local sn = require("@sinen")
 local G = require("./global")
 
 local exampleDirs = sn.Filesystem.enumerateDirectory(".")
-local numExamples = 18
+-- Filter out non-starts-with-digit
+
+local getFilteredDirs = function(dirs: { string }): { string }
+	local filteredDirs: { string } = {}
+	for _, entry: string in ipairs(dirs) do
+		if string.match(entry, "^%d") then
+			table.insert(filteredDirs, entry)
+		end
+	end
+	return filteredDirs
+end
+exampleDirs = getFilteredDirs(exampleDirs)
+
+local numExamples = #exampleDirs
 local scrollY = 0.0
 function setup()
 	sn.Graphics.resetGraphicsPipeline()

@@ -385,8 +385,7 @@ bool tryPackMsdfAtlas(const stbtt_fontinfo &fontInfo, int pointSize,
           for (int x = 0; x < rect.w; ++x) {
             const float *src = msdf(x, y);
             const size_t dst =
-                (static_cast<size_t>(rect.y + y) * sheetSize + rect.x + x) *
-                4u;
+                (static_cast<size_t>(rect.y + y) * sheetSize + rect.x + x) * 4u;
             atlas[dst + 0] = msdfFloatToByte(src[0]);
             atlas[dst + 1] = msdfFloatToByte(src[1]);
             atlas[dst + 2] = msdfFloatToByte(src[2]);
@@ -458,7 +457,7 @@ public:
     texture = Texture::create();
   }
   FontImpl(int32_t point, StringView file_name,
-           FontMethod fontMethod = FontMethod::Bitmap)
+           FontMethod fontMethod = FontMethod::MSDF)
       : FontImpl() {
     load(point, file_name, fontMethod);
   }
@@ -466,22 +465,26 @@ public:
 
   bool loadFromBytes(int pointSize, Array<unsigned char> &&bytes,
                      FontMethod fontMethod) {
-    const int bakedPointSize =
-        fontMethod == FontMethod::MSDF ? std::max(1, pointSize)
-                                       : std::max(1, pointSize + 16);
+    const int bakedPointSize = fontMethod == FontMethod::MSDF
+                                   ? std::max(1, pointSize)
+                                   : std::max(1, pointSize + 16);
     this->loaded = false;
     this->m_size = bakedPointSize;
     this->sheetSize = 0;
     this->fallbackGlyphIndex = 0;
     this->method = fontMethod;
-    this->distanceFieldRange =
-        fontMethod == FontMethod::MSDF ? msdfPixelRangeForSize(bakedPointSize)
-                                       : 1;
+    this->distanceFieldRange = fontMethod == FontMethod::MSDF
+                                   ? msdfPixelRangeForSize(bakedPointSize)
+                                   : 1;
     this->textCache.clear();
     this->fontBytes = std::move(bytes);
 
-    if (this->fontBytes.empty() ||
-        !stbtt_InitFont(&fontInfo, this->fontBytes.data(), 0)) {
+    const int fontOffset =
+        this->fontBytes.empty()
+            ? -1
+            : stbtt_GetFontOffsetForIndex(this->fontBytes.data(), 0);
+    if (fontOffset < 0 ||
+        !stbtt_InitFont(&fontInfo, this->fontBytes.data(), fontOffset)) {
       return false;
     }
 
@@ -622,9 +625,8 @@ public:
       UInt32 cp = 0;
       p = utf8ToCodepoint(p, &cp);
       if (stbtt_FindGlyphIndex(&fontInfo, static_cast<int>(cp)) == 0) {
-        if (stbtt_FindGlyphIndex(&fontInfo,
-                                 static_cast<int>(kFallbackAsciiCodepoint)) !=
-            0) {
+        if (stbtt_FindGlyphIndex(
+                &fontInfo, static_cast<int>(kFallbackAsciiCodepoint)) != 0) {
           cp = kFallbackAsciiCodepoint;
         } else if (stbtt_FindGlyphIndex(
                        &fontInfo, static_cast<int>(kReplacementCodepoint)) !=
@@ -642,8 +644,8 @@ public:
   }
 
   Mesh makeTextMesh(StringView text, const Array<stbtt_packedchar> &chars,
-                    const Hashmap<UInt32, UInt32> &lookup,
-                    UInt32 fallbackIndex, UInt32 atlasSize) const {
+                    const Hashmap<UInt32, UInt32> &lookup, UInt32 fallbackIndex,
+                    UInt32 atlasSize) const {
     auto textMesh = makePtr<Mesh::Data>();
     if (chars.empty() || atlasSize == 0) {
       return Mesh{textMesh};
@@ -766,7 +768,7 @@ namespace sinen {
 
 static FontMethod lFontMethod(lua_State *L, int index) {
   if (index > lua_gettop(L) || lua_isnoneornil(L, index)) {
-    return FontMethod::Bitmap;
+    return FontMethod::MSDF;
   }
   if (lua_isstring(L, index)) {
     const char *method = luaL_checkstring(L, index);

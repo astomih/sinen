@@ -193,7 +193,7 @@ void *AssetIO::openAsIOStream(StringView name) {
     return nullptr;
   }
 
-  SDL_IOStream *file = SDL_IOFromFile(filePath.c_str(), "r");
+  SDL_IOStream *file = SDL_IOFromFile(filePath.c_str(), "rb");
   if (!file) {
     Log::error("Asset open error {}: {}", filePath.c_str(), SDL_GetError());
     return nullptr;
@@ -212,7 +212,7 @@ String AssetIO::openAsString(StringView name) {
   if (!convertFilePath(filePath, name, FilesystemAccess::Read)) {
     return "";
   }
-  auto *file = SDL_IOFromFile(filePath.c_str(), "r");
+  auto *file = SDL_IOFromFile(filePath.c_str(), "rb");
   if (!file) {
     Log::error("Sinen file open error {}: {}", filePath.c_str(),
                SDL_GetError());
@@ -330,7 +330,7 @@ bool AssetIO::exists(StringView name) {
   if (!convertFilePath(filePath, name, FilesystemAccess::Read)) {
     return false;
   }
-  auto *file = SDL_IOFromFile(filePath.c_str(), "r");
+  auto *file = SDL_IOFromFile(filePath.c_str(), "rb");
   if (!file) {
     return false;
   }

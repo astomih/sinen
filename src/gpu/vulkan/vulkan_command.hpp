@@ -33,6 +33,7 @@ public:
   void keepAlive(Ptr<gpu::Texture> resource);
   void keepAlive(Ptr<gpu::Sampler> resource);
   void keepAlive(Ptr<gpu::GraphicsPipeline> resource);
+  void keepAlive(Ptr<gpu::ComputePipeline> resource);
   void keepAlive(Ptr<gpu::TransferBuffer> resource);
   void keepAliveRenderPassHandles(VkRenderPass renderPass,
                                   VkFramebuffer framebuffer);
@@ -44,11 +45,17 @@ public:
 
   void setVertexUniformSlotOffset(uint32_t slot, uint32_t offset);
   void setFragmentUniformSlotOffset(uint32_t slot, uint32_t offset);
+  void setComputeUniformSlotOffset(uint32_t slot, uint32_t offset);
   uint32_t getVertexUniformSlotOffset(uint32_t slot) const;
   uint32_t getFragmentUniformSlotOffset(uint32_t slot) const;
+  uint32_t getComputeUniformSlotOffset(uint32_t slot) const;
 
   Ptr<gpu::CopyPass> beginCopyPass() override;
   void endCopyPass(Ptr<gpu::CopyPass> copyPass) override;
+  Ptr<gpu::ComputePass>
+  beginComputePass(const Array<StorageTextureBinding> &storageTextures,
+                   const Array<StorageBufferBinding> &storageBuffers) override;
+  void endComputePass(Ptr<gpu::ComputePass> computePass) override;
   Ptr<gpu::RenderPass>
   beginRenderPass(const Array<ColorTargetInfo> &infos,
                   const DepthStencilTargetInfo &depthStencilInfo, float r = 0.f,
@@ -57,6 +64,8 @@ public:
   void pushVertexUniformData(UInt32 slot, const void *data, Size size) override;
   void pushFragmentUniformData(UInt32 slot, const void *data,
                                Size size) override;
+  void pushComputeUniformData(UInt32 slot, const void *data,
+                              Size size) override;
 
 private:
   uint32_t pushUniformDataInternal(const void *data, Size size);
@@ -76,10 +85,12 @@ private:
 
   Array<uint32_t> vertexUniformSlotOffsets;
   Array<uint32_t> fragmentUniformSlotOffsets;
+  Array<uint32_t> computeUniformSlotOffsets;
   Array<Ptr<gpu::Buffer>> referencedBuffers;
   Array<Ptr<gpu::Texture>> referencedTextures;
   Array<Ptr<gpu::Sampler>> referencedSamplers;
   Array<Ptr<gpu::GraphicsPipeline>> referencedPipelines;
+  Array<Ptr<gpu::ComputePipeline>> referencedComputePipelines;
   Array<Ptr<gpu::TransferBuffer>> referencedTransferBuffers;
   Array<VkRenderPass> referencedRenderPasses;
   Array<VkFramebuffer> referencedFramebuffers;
@@ -154,6 +165,29 @@ private:
   VkDescriptorSet fragmentUniformSet = VK_NULL_HANDLE;
   VkRenderPass renderPass = VK_NULL_HANDLE;
   VkFramebuffer framebuffer = VK_NULL_HANDLE;
+};
+
+class ComputePass : public gpu::ComputePass {
+public:
+  ComputePass(Device &device, CommandBuffer &commandBuffer,
+              Array<StorageBufferBinding> storageBuffers);
+  ~ComputePass() override = default;
+
+  void bindComputePipeline(Ptr<gpu::ComputePipeline> computePipeline) override;
+  void dispatchWorkgroups(UInt32 groupCountX, UInt32 groupCountY,
+                          UInt32 groupCountZ) override;
+
+private:
+  void ensureDescriptorSet();
+  void bindDescriptorSet();
+
+  Device &device;
+  CommandBuffer &commandBuffer;
+  VkCommandBuffer cmd = VK_NULL_HANDLE;
+  Ptr<ComputePipeline> boundPipeline = nullptr;
+  VkDescriptorSet storageBufferSet = VK_NULL_HANDLE;
+  VkDescriptorSet uniformSet = VK_NULL_HANDLE;
+  Array<StorageBufferBinding> storageBuffers;
 };
 
 } // namespace sinen::gpu::vulkan

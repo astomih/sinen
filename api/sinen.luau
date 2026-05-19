@@ -331,6 +331,21 @@ export type GraphicsPipeline = {
 	build: (self: GraphicsPipeline) -> nil,
 }
 
+export type ComputeBuffer = {
+	new: (() -> ComputeBuffer) & ((size: number) -> ComputeBuffer) & ((data: Buffer) -> ComputeBuffer),
+	create: (self: ComputeBuffer, size: number) -> nil,
+	upload: (self: ComputeBuffer, data: Buffer) -> nil,
+	download: (self: ComputeBuffer) -> Buffer,
+	size: (self: ComputeBuffer) -> number,
+}
+
+export type ComputePipeline = {
+	new: () -> ComputePipeline,
+	setShader: (self: ComputePipeline, shader: Shader) -> nil,
+	setThreadGroupSize: (self: ComputePipeline, x: number, y: number?, z: number?) -> nil,
+	build: (self: ComputePipeline) -> nil,
+}
+
 export type Collider = {
 	isValid: (self: Collider) -> boolean,
 	isAdded: (self: Collider) -> boolean,
@@ -458,6 +473,16 @@ export type Graphics = {
 	beginRenderTarget: (rt: RenderTexture) -> nil,
 	endRenderTarget: () -> nil,
 	readbackTexture: (rt: RenderTexture, out: Texture) -> Texture,
+}
+
+export type Compute = {
+	setComputePipeline: (pipe: ComputePipeline) -> nil,
+	resetComputePipeline: () -> nil,
+	setUniformBuffer: (slotIndex: number, data: Buffer) -> nil,
+	setStorageBuffer: (slotIndex: number, buffer: ComputeBuffer) -> nil,
+	resetStorageBuffer: (slotIndex: number) -> nil,
+	resetAllStorageBuffers: () -> nil,
+	dispatch: (groupCountX: number, groupCountY: number?, groupCountZ: number?) -> nil,
 }
 
 export type Gui = {
@@ -701,6 +726,8 @@ return {
 	Font = {} :: Font,
 	Color = {} :: Color,
 	GraphicsPipeline = {} :: GraphicsPipeline,
+	ComputeBuffer = {} :: ComputeBuffer,
+	ComputePipeline = {} :: ComputePipeline,
 	Pivot = {} :: Pivot,
 	Rect = {} :: Rect,
 	Transform = {} :: Transform,
@@ -717,6 +744,7 @@ return {
 	BuiltinShader = {} :: BuiltinShader,
 	BuiltinPipelines = {} :: BuiltinPipelines,
 	Graphics = {} :: Graphics,
+	Compute = {} :: Compute,
 	Gui = {} :: Gui,
 	Physics = {} :: Physics,
 	Scancode = {} :: Scancode,

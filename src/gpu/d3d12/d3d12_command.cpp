@@ -75,6 +75,14 @@ Ptr<gpu::CopyPass> CommandBuffer::beginCopyPass() {
 
 void CommandBuffer::endCopyPass(Ptr<gpu::CopyPass>) {}
 
+Ptr<gpu::ComputePass> CommandBuffer::beginComputePass(
+    const Array<StorageTextureBinding> &,
+    const Array<StorageBufferBinding> &storageBuffers) {
+  return makePtr<ComputePass>(getCreateInfo().allocator, this, storageBuffers);
+}
+
+void CommandBuffer::endComputePass(Ptr<gpu::ComputePass>) {}
+
 Ptr<gpu::RenderPass>
 CommandBuffer::beginRenderPass(const Array<ColorTargetInfo> &infos,
                                const DepthStencilTargetInfo &depthStencilInfo,
@@ -163,12 +171,23 @@ void CommandBuffer::pushFragmentUniformData(UInt32 slot, const void *data,
   }
 }
 
+void CommandBuffer::pushComputeUniformData(UInt32 slot, const void *data,
+                                           size_t size) {
+  if (slot < computeUniforms.size()) {
+    computeUniforms[slot] = uploadUniform(data, size);
+  }
+}
+
 D3D12_GPU_VIRTUAL_ADDRESS CommandBuffer::vertexUniform(UInt32 slot) const {
   return slot < vertexUniforms.size() ? vertexUniforms[slot] : 0;
 }
 
 D3D12_GPU_VIRTUAL_ADDRESS CommandBuffer::fragmentUniform(UInt32 slot) const {
   return slot < fragmentUniforms.size() ? fragmentUniforms[slot] : 0;
+}
+
+D3D12_GPU_VIRTUAL_ADDRESS CommandBuffer::computeUniform(UInt32 slot) const {
+  return slot < computeUniforms.size() ? computeUniforms[slot] : 0;
 }
 
 void CopyPass::uploadBuffer(const BufferTransferInfo &src,
@@ -517,6 +536,78 @@ void RenderPass::drawIndexedPrimitives(UInt32 numIndices, UInt32 numInstances,
   commandBuffer->getNative()->DrawIndexedInstanced(
       numIndices, numInstances, firstIndex, static_cast<INT>(vertexOffset),
       firstInstance);
+}
+
+ComputePass::ComputePass(CommandBuffer *commandBuffer,
+                         const Array<StorageBufferBinding> &storageBuffers)
+    : commandBuffer(commandBuffer),
+      storageBuffers(storageBuffers, commandBuffer->getCreateInfo().allocator) {
+}
+
+void ComputePass::bindComputePipeline(
+    Ptr<gpu::ComputePipeline> computePipeline) {
+  pipeline = downCast<ComputePipeline>(computePipeline);
+  if (!pipeline) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "D3D12: null compute pipeline binding");
+    return;
+  }
+  auto list = commandBuffer->getNative();
+  list->SetComputeRootSignature(pipeline->getRootSignature());
+  list->SetPipelineState(pipeline->getNative());
+  bindStorageBuffers();
+}
+
+void ComputePass::bindStorageBuffers() {
+  if (storageBuffers.empty()) {
+    return;
+  }
+
+  auto device = commandBuffer->getDevice();
+  CpuGpuDescriptor first{};
+  for (UInt32 i = 0; i < storageBuffers.size(); ++i) {
+    auto descriptor = device->allocateTransientSrvDescriptor();
+    if (i == 0) {
+      first = descriptor;
+    }
+    auto buffer = downCast<Buffer>(storageBuffers[i].buffer);
+    if (!buffer) {
+      continue;
+    }
+    commandBuffer->keepAlive(buffer->getNative());
+    device->transition(commandBuffer->getNative(), buffer.get(),
+                       D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+    D3D12_UNORDERED_ACCESS_VIEW_DESC desc{};
+    desc.Format = DXGI_FORMAT_R32_TYPELESS;
+    desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+    desc.Buffer.FirstElement = 0;
+    desc.Buffer.NumElements = buffer->getCreateInfo().size / 4;
+    desc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_RAW;
+    device->getNative()->CreateUnorderedAccessView(buffer->getNative(),
+                                                   nullptr, &desc,
+                                                   descriptor.cpu);
+  }
+  commandBuffer->getNative()->SetComputeRootDescriptorTable(0, first.gpu);
+}
+
+void ComputePass::bindUniforms() {
+  auto list = commandBuffer->getNative();
+  for (UInt32 i = 0; i < 4; ++i) {
+    if (auto address = commandBuffer->computeUniform(i)) {
+      list->SetComputeRootConstantBufferView(i + 1, address);
+    }
+  }
+}
+
+void ComputePass::dispatchWorkgroups(UInt32 groupCountX, UInt32 groupCountY,
+                                     UInt32 groupCountZ) {
+  if (!pipeline) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "D3D12: dispatch called without compute pipeline");
+    return;
+  }
+  bindUniforms();
+  commandBuffer->getNative()->Dispatch(groupCountX, groupCountY, groupCountZ);
 }
 } // namespace sinen::gpu::d3d12
 

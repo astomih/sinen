@@ -73,6 +73,7 @@ public:
   void resetTransientDescriptors();
 
   ID3D12RootSignature *getGraphicsRootSignature();
+  ID3D12RootSignature *getComputeRootSignature();
   void transition(ID3D12GraphicsCommandList *list, Texture *texture,
                   D3D12_RESOURCE_STATES after);
   void transition(ID3D12GraphicsCommandList *list, Buffer *buffer,
@@ -94,6 +95,7 @@ private:
   void createSwapchainTextures();
   void createDefaultDescriptors();
   void createGraphicsRootSignature();
+  void createComputeRootSignature();
   void signalAndWait();
   D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle(ID3D12DescriptorHeap *heap,
                                         UINT descriptorSize, UINT index) const;
@@ -135,6 +137,7 @@ private:
   CpuGpuDescriptor defaultSampler{};
 
   Microsoft::WRL::ComPtr<ID3D12RootSignature> graphicsRootSignature;
+  Microsoft::WRL::ComPtr<ID3D12RootSignature> computeRootSignature;
   Microsoft::WRL::ComPtr<ID3D12Fence> fence;
   UINT64 fenceValue = 0;
   void *fenceEvent = nullptr;

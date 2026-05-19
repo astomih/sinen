@@ -678,8 +678,44 @@ Device::createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) {
 
 Ptr<gpu::ComputePipeline>
 Device::createComputePipeline(const ComputePipeline::CreateInfo &createInfo) {
+  auto cs = downCast<Shader>(createInfo.computeShader);
+  if (!cs) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "createComputePipeline failed: shader cast failed");
+    return nullptr;
+  }
+
+  WGPUComputeState computeState{};
+  computeState.module = cs->getNative();
+  computeState.entryPoint = toWgpuStringView(cs->getEntryPoint());
+  computeState.constantCount = 0;
+  computeState.constants = nullptr;
+
+  WGPUComputePipelineDescriptor pipelineDesc{};
+  pipelineDesc.label = toWgpuStringView("sinen-compute-pipeline");
+  pipelineDesc.layout = nullptr;
+  pipelineDesc.compute = computeState;
+
+#ifndef SINEN_PLATFORM_EMSCRIPTEN
+  wgpuDevicePushErrorScope(device, WGPUErrorFilter_Validation);
+#endif
+  auto pipeline = wgpuDeviceCreateComputePipeline(device, &pipelineDesc);
+#ifndef SINEN_PLATFORM_EMSCRIPTEN
+  const bool validPipeline = popErrorScope("createComputePipeline");
+#else
+  const bool validPipeline = true;
+#endif
+  if (!pipeline) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "createComputePipeline failed: WebGPU pipeline is null");
+    return nullptr;
+  }
+  if (!validPipeline) {
+    wgpuComputePipelineRelease(pipeline);
+    return nullptr;
+  }
   return makePtr<ComputePipeline>(createInfo.allocator, createInfo, get(),
-                                  nullptr);
+                                  pipeline);
 }
 
 void Device::submitCommandBuffer(Ptr<gpu::CommandBuffer> commandBuffer) {

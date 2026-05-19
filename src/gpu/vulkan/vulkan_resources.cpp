@@ -100,7 +100,9 @@ Shader::Shader(const CreateInfo &createInfo, Device &device,
     : gpu::Shader(createInfo), device(device), module(module),
       entrypoint(createInfo.entrypoint ? createInfo.entrypoint : "main"),
       stage(createInfo.stage), numUniformBuffers(createInfo.numUniformBuffers),
-      numSamplers(createInfo.numSamplers) {}
+      numSamplers(createInfo.numSamplers),
+      numStorageBuffers(createInfo.numStorageBuffers),
+      numStorageTextures(createInfo.numStorageTextures) {}
 
 Shader::~Shader() {
   if (module != VK_NULL_HANDLE) {
@@ -141,6 +143,30 @@ GraphicsPipeline::~GraphicsPipeline() {
   if (layoutInfo.vertexSamplerSetLayout != VK_NULL_HANDLE) {
     vkDestroyDescriptorSetLayout(device.getVkDevice(),
                                  layoutInfo.vertexSamplerSetLayout, nullptr);
+  }
+}
+
+ComputePipeline::ComputePipeline(const CreateInfo &createInfo, Device &device,
+                                 VkPipeline pipeline,
+                                 const LayoutInfo &layoutInfo)
+    : gpu::ComputePipeline(createInfo), device(device), pipeline(pipeline),
+      layoutInfo(layoutInfo) {}
+
+ComputePipeline::~ComputePipeline() {
+  if (pipeline != VK_NULL_HANDLE) {
+    vkDestroyPipeline(device.getVkDevice(), pipeline, nullptr);
+  }
+  if (layoutInfo.pipelineLayout != VK_NULL_HANDLE) {
+    vkDestroyPipelineLayout(device.getVkDevice(), layoutInfo.pipelineLayout,
+                            nullptr);
+  }
+  if (layoutInfo.uniformSetLayout != VK_NULL_HANDLE) {
+    vkDestroyDescriptorSetLayout(device.getVkDevice(),
+                                 layoutInfo.uniformSetLayout, nullptr);
+  }
+  if (layoutInfo.storageBufferSetLayout != VK_NULL_HANDLE) {
+    vkDestroyDescriptorSetLayout(device.getVkDevice(),
+                                 layoutInfo.storageBufferSetLayout, nullptr);
   }
 }
 } // namespace sinen::gpu::vulkan

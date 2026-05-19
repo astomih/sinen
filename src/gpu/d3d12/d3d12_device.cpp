@@ -230,6 +230,7 @@ void Device::createDeviceObjects() {
   fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
   createGraphicsRootSignature();
+  createComputeRootSignature();
   createDefaultDescriptors();
 }
 
@@ -469,17 +470,69 @@ ID3D12RootSignature *Device::getGraphicsRootSignature() {
   return graphicsRootSignature.Get();
 }
 
+void Device::createComputeRootSignature() {
+  D3D12_DESCRIPTOR_RANGE ranges[1]{};
+  ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+  ranges[0].NumDescriptors = 16;
+  ranges[0].BaseShaderRegister = 0;
+  ranges[0].RegisterSpace = 0;
+  ranges[0].OffsetInDescriptorsFromTableStart =
+      D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+  D3D12_ROOT_PARAMETER params[5]{};
+  params[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+  params[0].DescriptorTable.NumDescriptorRanges = 1;
+  params[0].DescriptorTable.pDescriptorRanges = &ranges[0];
+  params[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+  for (UINT i = 0; i < 4; ++i) {
+    params[i + 1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    params[i + 1].Descriptor.ShaderRegister = i;
+    params[i + 1].Descriptor.RegisterSpace = 0;
+    params[i + 1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+  }
+
+  D3D12_ROOT_SIGNATURE_DESC desc{};
+  desc.NumParameters = 5;
+  desc.pParameters = params;
+
+  ComPtr<ID3DBlob> blob;
+  ComPtr<ID3DBlob> error;
+  HRESULT hr = D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1,
+                                           &blob, &error);
+  if (FAILED(hr)) {
+    if (error) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "D3D12 compute root signature: %s",
+                   static_cast<const char *>(error->GetBufferPointer()));
+    }
+    return;
+  }
+  device->CreateRootSignature(0, blob->GetBufferPointer(),
+                              blob->GetBufferSize(),
+                              IID_PPV_ARGS(&computeRootSignature));
+}
+
+ID3D12RootSignature *Device::getComputeRootSignature() {
+  return computeRootSignature.Get();
+}
+
 Ptr<gpu::Buffer>
 Device::createBuffer(const gpu::Buffer::CreateInfo &createInfo) {
   ComPtr<ID3D12Resource> resource;
-  auto heap = heapProperties(D3D12_HEAP_TYPE_DEFAULT);
   auto desc = bufferDesc(createInfo.size);
+  if (createInfo.usage == BufferUsage::Storage) {
+    desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+  }
+  auto heap = heapProperties(D3D12_HEAP_TYPE_DEFAULT);
+  auto initialState = createInfo.usage == BufferUsage::Storage
+                          ? D3D12_RESOURCE_STATE_UNORDERED_ACCESS
+                          : D3D12_RESOURCE_STATE_COMMON;
   HRESULT hr = device->CreateCommittedResource(
-      &heap, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_COMMON, nullptr,
+      &heap, D3D12_HEAP_FLAG_NONE, &desc, initialState, nullptr,
       IID_PPV_ARGS(&resource));
   logIfFailed(hr, "D3D12: create buffer failed");
   return makePtr<Buffer>(createInfo.allocator, createInfo, get(), resource,
-                         D3D12_RESOURCE_STATE_COMMON);
+                         initialState);
 }
 
 Ptr<gpu::TransferBuffer> Device::createTransferBuffer(
@@ -527,9 +580,12 @@ Device::createTexture(const gpu::Texture::CreateInfo &createInfo) {
     clearPtr = &clear;
   }
 
-  auto initialState = createInfo.usage == TextureUsage::Sampler
-                          ? D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
-                          : D3D12_RESOURCE_STATE_COMMON;
+  auto initialState =
+      createInfo.usage == TextureUsage::Sampler
+          ? D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
+          : createInfo.usage == TextureUsage::Storage
+                ? D3D12_RESOURCE_STATE_UNORDERED_ACCESS
+                : D3D12_RESOURCE_STATE_COMMON;
   auto heap = heapProperties(D3D12_HEAP_TYPE_DEFAULT);
   HRESULT hr = device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE,
                                                &desc, initialState, clearPtr,
@@ -732,7 +788,26 @@ Ptr<gpu::GraphicsPipeline> Device::createGraphicsPipeline(
 
 Ptr<gpu::ComputePipeline> Device::createComputePipeline(
     const gpu::ComputePipeline::CreateInfo &createInfo) {
-  return makePtr<ComputePipeline>(createInfo.allocator, createInfo);
+  auto shader = downCast<Shader>(createInfo.computeShader);
+  if (!shader) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "D3D12: create compute pipeline missing shader");
+    return nullptr;
+  }
+
+  D3D12_COMPUTE_PIPELINE_STATE_DESC desc{};
+  desc.pRootSignature = computeRootSignature.Get();
+  desc.CS = shader->getBytecode();
+
+  ComPtr<ID3D12PipelineState> pso;
+  HRESULT hr = device->CreateComputePipelineState(&desc, IID_PPV_ARGS(&pso));
+  logIfFailed(hr, "D3D12: CreateComputePipelineState failed");
+  if (FAILED(hr)) {
+    return nullptr;
+  }
+
+  return makePtr<ComputePipeline>(createInfo.allocator, createInfo, get(),
+                                  computeRootSignature, pso);
 }
 
 Ptr<gpu::CommandBuffer>

@@ -3,7 +3,9 @@
 #ifndef EMSCRIPTEN
 #include "sdlgpu_convert.hpp"
 #include "sdlgpu_copy_pass.hpp"
+#include "sdlgpu_compute_pipeline.hpp"
 #include "sdlgpu_render_pass.hpp"
+#include "sdlgpu_buffer.hpp"
 #include "sdlgpu_texture.hpp"
 
 #include <SDL3/SDL_gpu.h>
@@ -17,6 +19,45 @@ Ptr<gpu::CopyPass> CommandBuffer::beginCopyPass() {
 
 void CommandBuffer::endCopyPass(Ptr<gpu::CopyPass> copyPass) {
   SDL_EndGPUCopyPass(downCast<CopyPass>(copyPass)->getNative());
+}
+
+Ptr<gpu::ComputePass> CommandBuffer::beginComputePass(
+    const Array<StorageTextureBinding> &storageTextures,
+    const Array<StorageBufferBinding> &storageBuffers) {
+  Array<SDL_GPUStorageTextureReadWriteBinding> textureBindings(
+      getCreateInfo().allocator);
+  textureBindings.resize(storageTextures.size());
+  for (int i = 0; i < storageTextures.size(); ++i) {
+    textureBindings[i] = {};
+    if (storageTextures[i].texture) {
+      textureBindings[i].texture =
+          downCast<Texture>(storageTextures[i].texture)->getNative();
+    }
+    textureBindings[i].mip_level = storageTextures[i].mipLevel;
+    textureBindings[i].layer = storageTextures[i].layer;
+    textureBindings[i].cycle = storageTextures[i].cycle;
+  }
+
+  Array<SDL_GPUStorageBufferReadWriteBinding> bufferBindings(
+      getCreateInfo().allocator);
+  bufferBindings.resize(storageBuffers.size());
+  for (int i = 0; i < storageBuffers.size(); ++i) {
+    bufferBindings[i] = {};
+    if (storageBuffers[i].buffer) {
+      bufferBindings[i].buffer =
+          downCast<Buffer>(storageBuffers[i].buffer)->getNative();
+    }
+    bufferBindings[i].cycle = storageBuffers[i].cycle;
+  }
+
+  auto *pass = SDL_BeginGPUComputePass(
+      commandBuffer, textureBindings.data(), textureBindings.size(),
+      bufferBindings.data(), bufferBindings.size());
+  return makePtr<ComputePass>(getCreateInfo().allocator, pass);
+}
+
+void CommandBuffer::endComputePass(Ptr<gpu::ComputePass> computePass) {
+  SDL_EndGPUComputePass(downCast<ComputePass>(computePass)->getNative());
 }
 
 Ptr<gpu::RenderPass>
@@ -68,6 +109,22 @@ void CommandBuffer::pushVertexUniformData(UInt32 slot, const void *data,
 void CommandBuffer::pushFragmentUniformData(UInt32 slot, const void *data,
                                             size_t size) {
   SDL_PushGPUFragmentUniformData(this->commandBuffer, slot, data, size);
+}
+
+void CommandBuffer::pushComputeUniformData(UInt32 slot, const void *data,
+                                           size_t size) {
+  SDL_PushGPUComputeUniformData(this->commandBuffer, slot, data, size);
+}
+
+void ComputePass::bindComputePipeline(
+    Ptr<gpu::ComputePipeline> computePipeline) {
+  SDL_BindGPUComputePipeline(
+      computePass, downCast<ComputePipeline>(computePipeline)->getNative());
+}
+
+void ComputePass::dispatchWorkgroups(UInt32 groupCountX, UInt32 groupCountY,
+                                     UInt32 groupCountZ) {
+  SDL_DispatchGPUCompute(computePass, groupCountX, groupCountY, groupCountZ);
 }
 } // namespace sinen::gpu::sdlgpu
 #endif // EMSCRIPTEN

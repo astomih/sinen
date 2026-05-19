@@ -126,6 +126,9 @@ WGPUTextureUsage TextureUsageFrom(TextureUsage textureUsage) {
   case TextureUsage::DepthStencilTarget:
     return WGPUTextureUsage_RenderAttachment | WGPUTextureUsage_CopyDst |
            WGPUTextureUsage_CopySrc;
+  case TextureUsage::Storage:
+    return WGPUTextureUsage_StorageBinding | WGPUTextureUsage_TextureBinding |
+           WGPUTextureUsage_CopyDst | WGPUTextureUsage_CopySrc;
   default:
     return WGPUTextureUsage_TextureBinding;
   }
@@ -239,6 +242,9 @@ WGPUBufferUsage BufferUsageFrom(BufferUsage bufferUsage) {
            WGPUBufferUsage_CopySrc;
   case BufferUsage::Indirect:
     return WGPUBufferUsage_Indirect | WGPUBufferUsage_CopyDst |
+           WGPUBufferUsage_CopySrc;
+  case BufferUsage::Storage:
+    return WGPUBufferUsage_Storage | WGPUBufferUsage_CopyDst |
            WGPUBufferUsage_CopySrc;
   default:
     return WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst;

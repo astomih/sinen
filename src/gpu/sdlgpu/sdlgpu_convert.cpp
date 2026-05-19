@@ -140,6 +140,9 @@ SDL_GPUTextureUsageFlags TextureUsageFrom(TextureUsage textureUsage) {
     return SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
   case TextureUsage::DepthStencilTarget:
     return SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
+  case TextureUsage::Storage:
+    return SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ |
+           SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE;
   default:
     return SDL_GPU_TEXTUREUSAGE_SAMPLER;
   }
@@ -242,6 +245,9 @@ SDL_GPUBufferUsageFlags BufferUsageFrom(BufferUsage bufferUsage) {
     return SDL_GPU_BUFFERUSAGE_INDEX;
   case BufferUsage::Indirect:
     return SDL_GPU_BUFFERUSAGE_INDIRECT;
+  case BufferUsage::Storage:
+    return SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ |
+           SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE;
   default:
     return SDL_GPU_BUFFERUSAGE_VERTEX;
   }

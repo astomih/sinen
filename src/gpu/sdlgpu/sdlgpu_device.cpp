@@ -13,6 +13,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_gpu.h>
+#include <cstring>
 
 namespace sinen::gpu::sdlgpu {
 namespace {
@@ -108,10 +109,22 @@ Ptr<gpu::Shader> Device::createShader(const Shader::CreateInfo &createInfo) {
     return nullptr;
   }
 
+  Array<Uint8> bytecode(createInfo.allocator);
+  bytecode.resize(createInfo.size);
+  std::memcpy(bytecode.data(), createInfo.data, createInfo.size);
+
+  if (createInfo.stage == ShaderStage::Compute) {
+    return makePtr<Shader>(createInfo.allocator, createInfo,
+                           downCast<Device>(getPtr()), nullptr,
+                           std::move(bytecode));
+  }
+
   SDL_GPUShaderCreateInfo shaderCI = {};
   shaderCI.stage = createInfo.stage == ShaderStage::Vertex
                        ? SDL_GPU_SHADERSTAGE_VERTEX
-                       : SDL_GPU_SHADERSTAGE_FRAGMENT;
+                       : createInfo.stage == ShaderStage::Fragment
+                             ? SDL_GPU_SHADERSTAGE_FRAGMENT
+                             : SDL_GPU_SHADERSTAGE_VERTEX;
   shaderCI.code_size = createInfo.size;
   shaderCI.code = reinterpret_cast<const Uint8 *>(createInfo.data);
   shaderCI.format = nativeFormat;
@@ -125,7 +138,8 @@ Ptr<gpu::Shader> Device::createShader(const Shader::CreateInfo &createInfo) {
 
   auto p = downCast<Device>(getPtr());
 
-  return makePtr<Shader>(createInfo.allocator, createInfo, p, shader);
+  return makePtr<Shader>(createInfo.allocator, createInfo, p, shader,
+                         std::move(bytecode));
 }
 
 Ptr<gpu::CommandBuffer>
@@ -274,8 +288,30 @@ Device::createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) {
 
 Ptr<gpu::ComputePipeline>
 Device::createComputePipeline(const ComputePipeline::CreateInfo &createInfo) {
+  auto shader = downCast<Shader>(createInfo.computeShader);
+  if (!shader) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "SDL_GPU: create compute pipeline missing shader");
+    return nullptr;
+  }
+  const auto &shaderInfo = shader->getCreateInfo();
+  const auto &bytecode = shader->getBytecode();
+  const SDL_GPUShaderFormat nativeFormat = shaderFormatFrom(shaderInfo.format);
+  SDL_GPUComputePipelineCreateInfo pipelineCI{};
+  pipelineCI.code_size = bytecode.size();
+  pipelineCI.code = bytecode.data();
+  pipelineCI.entrypoint = shaderInfo.entrypoint;
+  pipelineCI.format = nativeFormat;
+  pipelineCI.num_samplers = shaderInfo.numSamplers;
+  pipelineCI.num_readwrite_storage_buffers = shaderInfo.numStorageBuffers;
+  pipelineCI.num_readwrite_storage_textures = shaderInfo.numStorageTextures;
+  pipelineCI.num_uniform_buffers = shaderInfo.numUniformBuffers;
+  pipelineCI.threadcount_x = createInfo.threadCountX;
+  pipelineCI.threadcount_y = createInfo.threadCountY;
+  pipelineCI.threadcount_z = createInfo.threadCountZ;
+  auto *pipeline = SDL_CreateGPUComputePipeline(device, &pipelineCI);
   return makePtr<ComputePipeline>(createInfo.allocator, createInfo,
-                                  downCast<Device>(getPtr()), nullptr);
+                                  downCast<Device>(getPtr()), pipeline);
 }
 
 void Device::submitCommandBuffer(Ptr<gpu::CommandBuffer> commandBuffer) {

@@ -4,6 +4,7 @@
 
 #include <SDL3/SDL_gpu.h>
 #include <gpu/gpu_command_buffer.hpp>
+#include <gpu/gpu_compute_pass.hpp>
 
 namespace sinen::gpu::sdlgpu {
 class CopyPass;
@@ -19,6 +20,10 @@ public:
 
   Ptr<gpu::CopyPass> beginCopyPass() override;
   void endCopyPass(Ptr<gpu::CopyPass> copyPass) override;
+  Ptr<gpu::ComputePass>
+  beginComputePass(const Array<StorageTextureBinding> &storageTextures,
+                   const Array<StorageBufferBinding> &storageBuffers) override;
+  void endComputePass(Ptr<gpu::ComputePass> computePass) override;
   Ptr<gpu::RenderPass>
   beginRenderPass(const Array<ColorTargetInfo> &infos,
                   const DepthStencilTargetInfo &depthStencilInfo, float r = 0.f,
@@ -28,9 +33,25 @@ public:
   void pushVertexUniformData(UInt32 slot, const void *data, Size size) override;
   void pushFragmentUniformData(UInt32 slot, const void *data,
                                Size size) override;
+  void pushComputeUniformData(UInt32 slot, const void *data,
+                              Size size) override;
 
 private:
   SDL_GPUCommandBuffer *commandBuffer;
+};
+
+class ComputePass : public gpu::ComputePass {
+public:
+  explicit ComputePass(SDL_GPUComputePass *computePass)
+      : computePass(computePass) {}
+
+  SDL_GPUComputePass *getNative() { return computePass; }
+  void bindComputePipeline(Ptr<gpu::ComputePipeline> computePipeline) override;
+  void dispatchWorkgroups(UInt32 groupCountX, UInt32 groupCountY,
+                          UInt32 groupCountZ) override;
+
+private:
+  SDL_GPUComputePass *computePass;
 };
 } // namespace sinen::gpu::sdlgpu
 

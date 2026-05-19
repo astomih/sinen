@@ -24,8 +24,6 @@ ShaderCompiler::ReflectionData
 getReflectionData(slang::IComponentType *program) {
   auto *programLayout = program->getLayout();
   ShaderCompiler::ReflectionData data;
-  data.numUniformBuffers = 0;
-  data.numCombinedSamplers = 0;
 
   if (!programLayout)
     return data;
@@ -44,6 +42,15 @@ getReflectionData(slang::IComponentType *program) {
       }
       if (rangeType == slang::BindingType::ConstantBuffer) {
         data.numUniformBuffers++;
+      }
+      if (rangeType == slang::BindingType::MutableRawBuffer ||
+          rangeType == slang::BindingType::MutableTypedBuffer ||
+          rangeType == slang::BindingType::RawBuffer ||
+          rangeType == slang::BindingType::TypedBuffer) {
+        data.numStorageBuffers++;
+      }
+      if (rangeType == slang::BindingType::MutableTexture) {
+        data.numStorageTextures++;
       }
     }
   }

@@ -11,6 +11,8 @@ D3D12_RESOURCE_STATES bufferStateFrom(BufferUsage usage) {
     return D3D12_RESOURCE_STATE_INDEX_BUFFER;
   case BufferUsage::Indirect:
     return D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+  case BufferUsage::Storage:
+    return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
   }
   return D3D12_RESOURCE_STATE_COMMON;
 }
@@ -23,6 +25,8 @@ D3D12_RESOURCE_FLAGS textureFlagsFrom(TextureUsage usage) {
     return D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
   case TextureUsage::DepthStencilTarget:
     return D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+  case TextureUsage::Storage:
+    return D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
   }
   return D3D12_RESOURCE_FLAG_NONE;
 }

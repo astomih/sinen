@@ -2,6 +2,8 @@
 
 #include "webgpu_convert.hpp"
 #include "webgpu_copy_pass.hpp"
+#include "webgpu_compute_pipeline.hpp"
+#include "webgpu_buffer.hpp"
 #include "webgpu_device.hpp"
 #include "webgpu_render_pass.hpp"
 #include "webgpu_texture.hpp"
@@ -49,6 +51,16 @@ void CommandBuffer::releaseUniformBindings() {
     }
   }
   fragmentUniformBindings.clear();
+
+  for (auto &[slot, binding] : computeUniformBindings) {
+    (void)slot;
+    if (binding.buffer) {
+      wgpuBufferDestroy(binding.buffer);
+      wgpuBufferRelease(binding.buffer);
+      binding.buffer = nullptr;
+    }
+  }
+  computeUniformBindings.clear();
 }
 
 void CommandBuffer::clearDrawBindings() {
@@ -69,6 +81,15 @@ void CommandBuffer::clearDrawBindings() {
     }
   }
   fragmentUniformBindings.clear();
+
+  for (auto &[slot, binding] : computeUniformBindings) {
+    (void)slot;
+    if (binding.buffer) {
+      retainedUniformBuffers.push_back(binding.buffer);
+      binding.buffer = nullptr;
+    }
+  }
+  computeUniformBindings.clear();
 }
 
 void CommandBuffer::updateUniformBinding(
@@ -127,6 +148,25 @@ Ptr<gpu::CopyPass> CommandBuffer::beginCopyPass() {
 }
 
 void CommandBuffer::endCopyPass(Ptr<gpu::CopyPass> copyPass) { (void)copyPass; }
+
+Ptr<gpu::ComputePass> CommandBuffer::beginComputePass(
+    const Array<StorageTextureBinding> &storageTextures,
+    const Array<StorageBufferBinding> &storageBuffers) {
+  WGPUComputePassDescriptor desc{};
+  auto nativePass = wgpuCommandEncoderBeginComputePass(commandEncoder, &desc);
+  Array<StorageTextureBinding> textures(storageTextures,
+                                        getCreateInfo().allocator);
+  Array<StorageBufferBinding> buffers(storageBuffers, getCreateInfo().allocator);
+  return makePtr<ComputePass>(getCreateInfo().allocator, *this, nativePass,
+                              std::move(textures), std::move(buffers));
+}
+
+void CommandBuffer::endComputePass(Ptr<gpu::ComputePass> computePass) {
+  auto pass = downCast<ComputePass>(computePass);
+  if (pass) {
+    pass->close();
+  }
+}
 
 Ptr<gpu::RenderPass>
 CommandBuffer::beginRenderPass(const Array<ColorTargetInfo> &infos,
@@ -215,5 +255,121 @@ void CommandBuffer::pushVertexUniformData(UInt32 slot, const void *data,
 void CommandBuffer::pushFragmentUniformData(UInt32 slot, const void *data,
                                             Size size) {
   updateUniformBinding(fragmentUniformBindings, slot, data, size);
+}
+
+void CommandBuffer::pushComputeUniformData(UInt32 slot, const void *data,
+                                           Size size) {
+  updateUniformBinding(computeUniformBindings, slot, data, size);
+}
+
+ComputePass::~ComputePass() {
+  close();
+  if (storageBindGroup) {
+    wgpuBindGroupRelease(storageBindGroup);
+    storageBindGroup = nullptr;
+  }
+  if (uniformBindGroup) {
+    wgpuBindGroupRelease(uniformBindGroup);
+    uniformBindGroup = nullptr;
+  }
+}
+
+void ComputePass::close() {
+  if (pass) {
+    wgpuComputePassEncoderEnd(pass);
+    wgpuComputePassEncoderRelease(pass);
+    pass = nullptr;
+  }
+}
+
+void ComputePass::bindComputePipeline(
+    Ptr<gpu::ComputePipeline> computePipeline) {
+  pipeline = computePipeline;
+  auto nativePipeline = downCast<ComputePipeline>(pipeline);
+  if (!nativePipeline || !pass) {
+    return;
+  }
+  wgpuComputePassEncoderSetPipeline(pass, nativePipeline->getNative());
+  bindResources();
+}
+
+void ComputePass::bindResources() {
+  auto nativePipeline = downCast<ComputePipeline>(pipeline);
+  if (!nativePipeline || !pass) {
+    return;
+  }
+
+  if (!storageBuffers.empty()) {
+    std::vector<WGPUBindGroupEntry> entries;
+    entries.reserve(storageBuffers.size());
+    for (UInt32 i = 0; i < storageBuffers.size(); ++i) {
+      auto buffer = downCast<Buffer>(storageBuffers[i].buffer);
+      if (!buffer) {
+        continue;
+      }
+      WGPUBindGroupEntry entry{};
+      entry.binding = i;
+      entry.buffer = buffer->getNative();
+      entry.offset = 0;
+      entry.size = buffer->getCreateInfo().size;
+      entries.push_back(entry);
+    }
+    if (!entries.empty()) {
+      auto layout = wgpuComputePipelineGetBindGroupLayout(
+          nativePipeline->getNative(), 0);
+      WGPUBindGroupDescriptor desc{};
+      desc.layout = layout;
+      desc.entryCount = entries.size();
+      desc.entries = entries.data();
+      storageBindGroup = wgpuDeviceCreateBindGroup(
+          commandBuffer.getDevice()->getNative(), &desc);
+      wgpuBindGroupLayoutRelease(layout);
+      if (storageBindGroup) {
+        wgpuComputePassEncoderSetBindGroup(pass, 0, storageBindGroup, 0,
+                                           nullptr);
+      }
+    }
+  }
+
+  const auto &uniforms = commandBuffer.getComputeUniformBindings();
+  if (!uniforms.empty()) {
+    std::vector<WGPUBindGroupEntry> entries;
+    entries.reserve(uniforms.size());
+    for (const auto &[slot, binding] : uniforms) {
+      if (!binding.buffer) {
+        continue;
+      }
+      WGPUBindGroupEntry entry{};
+      entry.binding = slot;
+      entry.buffer = binding.buffer;
+      entry.offset = 0;
+      entry.size = binding.size;
+      entries.push_back(entry);
+    }
+    if (!entries.empty()) {
+      auto layout = wgpuComputePipelineGetBindGroupLayout(
+          nativePipeline->getNative(), 1);
+      WGPUBindGroupDescriptor desc{};
+      desc.layout = layout;
+      desc.entryCount = entries.size();
+      desc.entries = entries.data();
+      uniformBindGroup = wgpuDeviceCreateBindGroup(
+          commandBuffer.getDevice()->getNative(), &desc);
+      wgpuBindGroupLayoutRelease(layout);
+      if (uniformBindGroup) {
+        wgpuComputePassEncoderSetBindGroup(pass, 1, uniformBindGroup, 0,
+                                           nullptr);
+      }
+    }
+  }
+}
+
+void ComputePass::dispatchWorkgroups(UInt32 groupCountX, UInt32 groupCountY,
+                                     UInt32 groupCountZ) {
+  if (!pass) {
+    return;
+  }
+  wgpuComputePassEncoderDispatchWorkgroups(pass, groupCountX, groupCountY,
+                                           groupCountZ);
 }
 } // namespace sinen::gpu::webgpu

@@ -58,6 +58,21 @@ samplerBindings(uint32_t count, VkShaderStageFlags stages) {
   return bindings;
 }
 
+std::vector<VkDescriptorSetLayoutBinding>
+storageBufferBindings(uint32_t count, VkShaderStageFlags stages) {
+  std::vector<VkDescriptorSetLayoutBinding> bindings;
+  bindings.reserve(count);
+  for (uint32_t i = 0; i < count; ++i) {
+    VkDescriptorSetLayoutBinding b{};
+    b.binding = i;
+    b.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    b.descriptorCount = 1;
+    b.stageFlags = stages;
+    bindings.push_back(b);
+  }
+  return bindings;
+}
+
 VkRenderPass createCompatibleRenderPass(
     VkDevice device, const GraphicsPipeline::CreateInfo &createInfo) {
   std::vector<VkAttachmentDescription> attachments;
@@ -370,8 +385,79 @@ Device::createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) {
 }
 
 Ptr<gpu::ComputePipeline> Device::createComputePipeline(
-    const ComputePipeline::CreateInfo & /*createInfo*/) {
-  return nullptr;
+    const ComputePipeline::CreateInfo &createInfo) {
+  auto cs = downCast<Shader>(createInfo.computeShader);
+  if (!cs) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: createComputePipeline missing shader");
+    return nullptr;
+  }
+
+  const uint32_t storageBufferCount = cs->getNumStorageBuffers();
+  const uint32_t uniformCount = cs->getNumUniformBuffers();
+
+  VkDescriptorSetLayout storageSetLayout = createDescriptorSetLayout(
+      device,
+      storageBufferBindings(storageBufferCount, VK_SHADER_STAGE_COMPUTE_BIT),
+      "compute storage buffers");
+  VkDescriptorSetLayout uniformSetLayout = createDescriptorSetLayout(
+      device, uniformBindings(uniformCount, VK_SHADER_STAGE_COMPUTE_BIT),
+      "compute uniforms");
+  if (!storageSetLayout || !uniformSetLayout) {
+    if (uniformSetLayout)
+      vkDestroyDescriptorSetLayout(device, uniformSetLayout, nullptr);
+    if (storageSetLayout)
+      vkDestroyDescriptorSetLayout(device, storageSetLayout, nullptr);
+    return nullptr;
+  }
+
+  std::array<VkDescriptorSetLayout, 2> setLayouts = {storageSetLayout,
+                                                     uniformSetLayout};
+  VkPipelineLayoutCreateInfo layoutCI{};
+  layoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+  layoutCI.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
+  layoutCI.pSetLayouts = setLayouts.data();
+
+  VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+  if (vkCreatePipelineLayout(device, &layoutCI, nullptr, &pipelineLayout) !=
+      VK_SUCCESS) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: vkCreatePipelineLayout (compute) failed");
+    vkDestroyDescriptorSetLayout(device, uniformSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device, storageSetLayout, nullptr);
+    return nullptr;
+  }
+
+  VkPipelineShaderStageCreateInfo stage{};
+  stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+  stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+  stage.module = cs->getNative();
+  stage.pName = cs->getEntrypoint();
+
+  VkComputePipelineCreateInfo pipelineCI{};
+  pipelineCI.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+  pipelineCI.stage = stage;
+  pipelineCI.layout = pipelineLayout;
+
+  VkPipeline pipeline = VK_NULL_HANDLE;
+  if (vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineCI, nullptr,
+                               &pipeline) != VK_SUCCESS) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: vkCreateComputePipelines failed");
+    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device, uniformSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device, storageSetLayout, nullptr);
+    return nullptr;
+  }
+
+  ComputePipeline::LayoutInfo layoutInfo{};
+  layoutInfo.storageBufferSetLayout = storageSetLayout;
+  layoutInfo.uniformSetLayout = uniformSetLayout;
+  layoutInfo.pipelineLayout = pipelineLayout;
+  layoutInfo.storageBufferBindingCount = storageBufferCount;
+  layoutInfo.uniformBindingCount = uniformCount;
+  return makePtr<ComputePipeline>(createInfo.allocator, createInfo, *this,
+                                  pipeline, layoutInfo);
 }
 } // namespace sinen::gpu::vulkan
 

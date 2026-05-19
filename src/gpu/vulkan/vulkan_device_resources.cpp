@@ -76,6 +76,8 @@ Ptr<gpu::Buffer> Device::createBuffer(const Buffer::CreateInfo &createInfo) {
     usage |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
   if (createInfo.usage == gpu::BufferUsage::Indirect)
     usage |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+  if (createInfo.usage == gpu::BufferUsage::Storage)
+    usage |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 
   VkBufferCreateInfo bufferCI{};
   bufferCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -140,6 +142,8 @@ Ptr<gpu::Texture> Device::createTexture(const Texture::CreateInfo &createInfo) {
     usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
   if (createInfo.usage == gpu::TextureUsage::DepthStencilTarget)
     usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+  if (createInfo.usage == gpu::TextureUsage::Storage)
+    usage |= VK_IMAGE_USAGE_STORAGE_BIT;
 
   VkImageType imageType = VK_IMAGE_TYPE_2D;
   VkImageViewType viewType = VK_IMAGE_VIEW_TYPE_2D;

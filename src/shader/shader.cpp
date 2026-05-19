@@ -201,6 +201,8 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage,
     state->numSamplers = (stage == ShaderStage::Fragment)
                              ? reflectionData.numCombinedSamplers
                              : 0u;
+    state->numStorageBuffers = reflectionData.numStorageBuffers;
+    state->numStorageTextures = reflectionData.numStorageTextures;
     state->gpuStage = stage;
   });
   scheduleFuturePoll(

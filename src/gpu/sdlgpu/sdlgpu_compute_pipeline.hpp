@@ -15,7 +15,8 @@ public:
   ComputePipeline(const CreateInfo &createInfo, const Ptr<Device> &device,
                   SDL_GPUComputePipeline *pipeline)
       : gpu::ComputePipeline(createInfo), device(device), pipeline(pipeline) {}
-  ~ComputePipeline() override {}
+  ~ComputePipeline() override;
+  SDL_GPUComputePipeline *getNative() { return pipeline; }
 
 private:
   Ptr<Device> device;

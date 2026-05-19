@@ -3,6 +3,7 @@
 
 #include <core/data/ptr.hpp>
 #include <gpu/gpu_buffer.hpp>
+#include <gpu/gpu_compute_pipeline.hpp>
 #include <gpu/gpu_graphics_pipeline.hpp>
 #include <gpu/gpu_sampler.hpp>
 #include <gpu/gpu_shader.hpp>
@@ -120,6 +121,8 @@ public:
   ShaderStage getStage() const { return stage; }
   uint32_t getNumUniformBuffers() const { return numUniformBuffers; }
   uint32_t getNumSamplers() const { return numSamplers; }
+  uint32_t getNumStorageBuffers() const { return numStorageBuffers; }
+  uint32_t getNumStorageTextures() const { return numStorageTextures; }
 
 private:
   Device &device;
@@ -128,6 +131,8 @@ private:
   ShaderStage stage = ShaderStage::Vertex;
   uint32_t numUniformBuffers = 0;
   uint32_t numSamplers = 0;
+  uint32_t numStorageBuffers = 0;
+  uint32_t numStorageTextures = 0;
 };
 
 class GraphicsPipeline : public gpu::GraphicsPipeline {
@@ -156,6 +161,29 @@ private:
   Device &device;
   VkPipeline pipeline = VK_NULL_HANDLE;
   VkRenderPass renderPass = VK_NULL_HANDLE;
+  LayoutInfo layoutInfo{};
+};
+
+class ComputePipeline : public gpu::ComputePipeline {
+public:
+  struct LayoutInfo {
+    VkDescriptorSetLayout storageBufferSetLayout = VK_NULL_HANDLE; // set = 0
+    VkDescriptorSetLayout uniformSetLayout = VK_NULL_HANDLE;       // set = 1
+    VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+    uint32_t storageBufferBindingCount = 0;
+    uint32_t uniformBindingCount = 0;
+  };
+
+  ComputePipeline(const CreateInfo &createInfo, Device &device,
+                  VkPipeline pipeline, const LayoutInfo &layoutInfo);
+  ~ComputePipeline() override;
+
+  VkPipeline getNative() const { return pipeline; }
+  const LayoutInfo &getLayoutInfo() const { return layoutInfo; }
+
+private:
+  Device &device;
+  VkPipeline pipeline = VK_NULL_HANDLE;
   LayoutInfo layoutInfo{};
 };
 

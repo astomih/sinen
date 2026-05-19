@@ -12,7 +12,7 @@ enum class TextureFormat {
   R32G32B32A32_FLOAT,
   D32_FLOAT_S8_UINT
 };
-enum class TextureUsage { Sampler, ColorTarget, DepthStencilTarget };
+enum class TextureUsage { Sampler, ColorTarget, DepthStencilTarget, Storage };
 enum class TextureType {
   Texture2D,
   Texture2DArray,

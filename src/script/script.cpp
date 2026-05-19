@@ -223,6 +223,9 @@ void registerSynth(lua_State *);
 void registerShader(lua_State *);
 void registerShaderBundle(lua_State *);
 void registerPipeline(lua_State *);
+void registerComputeBuffer(lua_State *);
+void registerComputePipeline(lua_State *);
+void registerCompute(lua_State *);
 void registerModel(lua_State *);
 void registerMeshBuilder(lua_State *);
 void registerTextureKey(lua_State *);
@@ -291,6 +294,8 @@ static void registerAll(lua_State *L) {
   registerShader(L);
   registerShaderBundle(L);
   registerPipeline(L);
+  registerComputeBuffer(L);
+  registerComputePipeline(L);
   registerModel(L);
   registerMeshBuilder(L);
   registerTextureKey(L);
@@ -305,6 +310,7 @@ static void registerAll(lua_State *L) {
   registerEvent(L);
 
   registerGraphics(L);
+  registerCompute(L);
   registerGui(L);
   registerMouse(L);
   registerKeyboard(L);

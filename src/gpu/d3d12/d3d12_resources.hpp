@@ -123,8 +123,18 @@ private:
 
 class ComputePipeline : public gpu::ComputePipeline {
 public:
-  explicit ComputePipeline(const CreateInfo &createInfo)
-      : gpu::ComputePipeline(createInfo) {}
+  ComputePipeline(const CreateInfo &createInfo, Ptr<Device> device,
+                  ComPtr<ID3D12RootSignature> rootSignature,
+                  ComPtr<ID3D12PipelineState> pipelineState)
+      : gpu::ComputePipeline(createInfo), device(device),
+        rootSignature(rootSignature), pipelineState(pipelineState) {}
+  ID3D12RootSignature *getRootSignature() const { return rootSignature.Get(); }
+  ID3D12PipelineState *getNative() const { return pipelineState.Get(); }
+
+private:
+  Ptr<Device> device;
+  ComPtr<ID3D12RootSignature> rootSignature;
+  ComPtr<ID3D12PipelineState> pipelineState;
 };
 } // namespace sinen::gpu::d3d12
 

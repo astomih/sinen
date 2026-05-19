@@ -8,6 +8,7 @@
 #include "d3d12_resources.hpp"
 
 #include <gpu/gpu_command_buffer.hpp>
+#include <gpu/gpu_compute_pass.hpp>
 #include <gpu/gpu_copy_pass.hpp>
 #include <gpu/gpu_render_pass.hpp>
 
@@ -31,6 +32,10 @@ public:
 
   Ptr<gpu::CopyPass> beginCopyPass() override;
   void endCopyPass(Ptr<gpu::CopyPass> copyPass) override;
+  Ptr<gpu::ComputePass>
+  beginComputePass(const Array<StorageTextureBinding> &storageTextures,
+                   const Array<StorageBufferBinding> &storageBuffers) override;
+  void endComputePass(Ptr<gpu::ComputePass> computePass) override;
   Ptr<gpu::RenderPass>
   beginRenderPass(const Array<ColorTargetInfo> &infos,
                   const DepthStencilTargetInfo &depthStencilInfo, float r = 0.f,
@@ -40,9 +45,12 @@ public:
                              size_t size) override;
   void pushFragmentUniformData(UInt32 slot, const void *data,
                                size_t size) override;
+  void pushComputeUniformData(UInt32 slot, const void *data,
+                              size_t size) override;
 
   D3D12_GPU_VIRTUAL_ADDRESS vertexUniform(UInt32 slot) const;
   D3D12_GPU_VIRTUAL_ADDRESS fragmentUniform(UInt32 slot) const;
+  D3D12_GPU_VIRTUAL_ADDRESS computeUniform(UInt32 slot) const;
   void keepAlive(ComPtr<ID3D12Resource> resource) {
     if (resource) {
       referencedResources.push_back(resource);
@@ -68,6 +76,7 @@ private:
   bool swapchainUsed = false;
   std::array<D3D12_GPU_VIRTUAL_ADDRESS, 4> vertexUniforms{};
   std::array<D3D12_GPU_VIRTUAL_ADDRESS, 4> fragmentUniforms{};
+  std::array<D3D12_GPU_VIRTUAL_ADDRESS, 4> computeUniforms{};
   std::vector<ComPtr<ID3D12Resource>> referencedResources;
 };
 
@@ -120,6 +129,24 @@ private:
 
   CommandBuffer *commandBuffer;
   Ptr<GraphicsPipeline> pipeline;
+};
+
+class ComputePass : public gpu::ComputePass {
+public:
+  ComputePass(CommandBuffer *commandBuffer,
+              const Array<StorageBufferBinding> &storageBuffers);
+
+  void bindComputePipeline(Ptr<gpu::ComputePipeline> computePipeline) override;
+  void dispatchWorkgroups(UInt32 groupCountX, UInt32 groupCountY,
+                          UInt32 groupCountZ) override;
+
+private:
+  void bindStorageBuffers();
+  void bindUniforms();
+
+  CommandBuffer *commandBuffer;
+  Ptr<ComputePipeline> pipeline;
+  Array<StorageBufferBinding> storageBuffers;
 };
 } // namespace sinen::gpu::d3d12
 

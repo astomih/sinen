@@ -36,6 +36,9 @@ static void setBarrierMasksForLayout(VkImageLayout layout,
   case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
     accessMask = VK_ACCESS_SHADER_READ_BIT;
     break;
+  case VK_IMAGE_LAYOUT_GENERAL:
+    accessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+    break;
   case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
     accessMask = 0;
     break;
@@ -60,19 +63,24 @@ CommandBuffer::CommandBuffer(const CreateInfo &createInfo, Device &device,
       uniformRange(device.getUniformRange()),
       vertexUniformSlotOffsets(createInfo.allocator),
       fragmentUniformSlotOffsets(createInfo.allocator),
+      computeUniformSlotOffsets(createInfo.allocator),
       referencedBuffers(createInfo.allocator),
       referencedTextures(createInfo.allocator),
       referencedSamplers(createInfo.allocator),
       referencedPipelines(createInfo.allocator),
+      referencedComputePipelines(createInfo.allocator),
       referencedTransferBuffers(createInfo.allocator),
       referencedRenderPasses(createInfo.allocator),
       referencedFramebuffers(createInfo.allocator) {
   vertexUniformSlotOffsets.resize(32);
   fragmentUniformSlotOffsets.resize(32);
+  computeUniformSlotOffsets.resize(32);
   std::fill(vertexUniformSlotOffsets.begin(), vertexUniformSlotOffsets.end(),
             0u);
   std::fill(fragmentUniformSlotOffsets.begin(),
             fragmentUniformSlotOffsets.end(), 0u);
+  std::fill(computeUniformSlotOffsets.begin(), computeUniformSlotOffsets.end(),
+            0u);
 }
 
 CommandBuffer::~CommandBuffer() {
@@ -131,6 +139,12 @@ void CommandBuffer::keepAlive(Ptr<gpu::GraphicsPipeline> resource) {
   }
 }
 
+void CommandBuffer::keepAlive(Ptr<gpu::ComputePipeline> resource) {
+  if (resource) {
+    referencedComputePipelines.push_back(resource);
+  }
+}
+
 void CommandBuffer::keepAlive(Ptr<gpu::TransferBuffer> resource) {
   if (resource) {
     referencedTransferBuffers.push_back(resource);
@@ -162,6 +176,14 @@ void CommandBuffer::setFragmentUniformSlotOffset(uint32_t slot,
   fragmentUniformSlotOffsets[slot] = offset;
 }
 
+void CommandBuffer::setComputeUniformSlotOffset(uint32_t slot,
+                                                uint32_t offset) {
+  if (slot >= static_cast<uint32_t>(computeUniformSlotOffsets.size())) {
+    computeUniformSlotOffsets.resize(slot + 1);
+  }
+  computeUniformSlotOffsets[slot] = offset;
+}
+
 uint32_t CommandBuffer::getVertexUniformSlotOffset(uint32_t slot) const {
   if (slot >= static_cast<uint32_t>(vertexUniformSlotOffsets.size())) {
     return 0;
@@ -174,6 +196,13 @@ uint32_t CommandBuffer::getFragmentUniformSlotOffset(uint32_t slot) const {
     return 0;
   }
   return fragmentUniformSlotOffsets[slot];
+}
+
+uint32_t CommandBuffer::getComputeUniformSlotOffset(uint32_t slot) const {
+  if (slot >= static_cast<uint32_t>(computeUniformSlotOffsets.size())) {
+    return 0;
+  }
+  return computeUniformSlotOffsets[slot];
 }
 
 void CommandBuffer::ensureRecording() {
@@ -195,6 +224,8 @@ void CommandBuffer::ensureRecording() {
             0u);
   std::fill(fragmentUniformSlotOffsets.begin(),
             fragmentUniformSlotOffsets.end(), 0u);
+  std::fill(computeUniformSlotOffsets.begin(), computeUniformSlotOffsets.end(),
+            0u);
 }
 
 void CommandBuffer::transitionTexture(Texture &texture,
@@ -251,6 +282,17 @@ Ptr<gpu::CopyPass> CommandBuffer::beginCopyPass() {
 
 void CommandBuffer::endCopyPass(Ptr<gpu::CopyPass> /*copyPass*/) {}
 
+Ptr<gpu::ComputePass> CommandBuffer::beginComputePass(
+    const Array<StorageTextureBinding> &,
+    const Array<StorageBufferBinding> &storageBuffers) {
+  ensureRecording();
+  Array<StorageBufferBinding> buffers(storageBuffers, getCreateInfo().allocator);
+  return makePtr<ComputePass>(getCreateInfo().allocator, device, *this,
+                              std::move(buffers));
+}
+
+void CommandBuffer::endComputePass(Ptr<gpu::ComputePass> /*computePass*/) {}
+
 Ptr<gpu::RenderPass>
 CommandBuffer::beginRenderPass(const Array<ColorTargetInfo> &infos,
                                const DepthStencilTargetInfo &depthStencilInfo,
@@ -273,6 +315,11 @@ void CommandBuffer::pushVertexUniformData(UInt32 slot, const void *data,
 void CommandBuffer::pushFragmentUniformData(UInt32 slot, const void *data,
                                             Size size) {
   setFragmentUniformSlotOffset(slot, pushUniformDataInternal(data, size));
+}
+
+void CommandBuffer::pushComputeUniformData(UInt32 slot, const void *data,
+                                           Size size) {
+  setComputeUniformSlotOffset(slot, pushUniformDataInternal(data, size));
 }
 
 uint32_t CommandBuffer::pushUniformDataInternal(const void *data, Size size) {
@@ -826,6 +873,129 @@ void RenderPass::drawIndexedPrimitives(UInt32 numIndices, UInt32 numInstances,
   bindDescriptorSet();
   vkCmdDrawIndexed(cmd, numIndices, numInstances, firstIndex, vertexOffset,
                    firstInstance);
+}
+
+ComputePass::ComputePass(Device &device, CommandBuffer &commandBuffer,
+                         Array<StorageBufferBinding> storageBuffers)
+    : device(device), commandBuffer(commandBuffer),
+      cmd(commandBuffer.getNative()), storageBuffers(std::move(storageBuffers)) {
+}
+
+void ComputePass::ensureDescriptorSet() {
+  if (!boundPipeline || storageBufferSet != VK_NULL_HANDLE ||
+      uniformSet != VK_NULL_HANDLE) {
+    return;
+  }
+  const auto &layoutInfo = boundPipeline->getLayoutInfo();
+  std::array<VkDescriptorSetLayout, 2> setLayouts = {
+      layoutInfo.storageBufferSetLayout, layoutInfo.uniformSetLayout};
+  std::array<VkDescriptorSet, 2> sets = {VK_NULL_HANDLE, VK_NULL_HANDLE};
+
+  VkDescriptorSetAllocateInfo allocInfo{};
+  allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+  allocInfo.descriptorPool = commandBuffer.getDescriptorPool();
+  allocInfo.descriptorSetCount = static_cast<uint32_t>(setLayouts.size());
+  allocInfo.pSetLayouts = setLayouts.data();
+  if (vkAllocateDescriptorSets(device.getVkDevice(), &allocInfo, sets.data()) !=
+      VK_SUCCESS) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: vkAllocateDescriptorSets (compute) failed");
+    return;
+  }
+  storageBufferSet = sets[0];
+  uniformSet = sets[1];
+
+  Array<VkWriteDescriptorSet> writes(commandBuffer.getCreateInfo().allocator);
+  Array<VkDescriptorBufferInfo> storageInfos(
+      commandBuffer.getCreateInfo().allocator);
+  const uint32_t storageCount = std::min<uint32_t>(
+      storageBuffers.size(), layoutInfo.storageBufferBindingCount);
+  storageInfos.resize(storageCount);
+  for (uint32_t i = 0; i < storageCount; ++i) {
+    commandBuffer.keepAlive(storageBuffers[i].buffer);
+    auto buffer = downCast<Buffer>(storageBuffers[i].buffer);
+    if (!buffer) {
+      continue;
+    }
+    VkDescriptorBufferInfo bi{};
+    bi.buffer = buffer->getNative();
+    bi.offset = 0;
+    bi.range = buffer->getCreateInfo().size;
+    storageInfos[i] = bi;
+
+    VkWriteDescriptorSet w{};
+    w.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    w.dstSet = storageBufferSet;
+    w.dstBinding = i;
+    w.descriptorCount = 1;
+    w.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    w.pBufferInfo = &storageInfos[i];
+    writes.push_back(w);
+  }
+
+  Array<VkDescriptorBufferInfo> uniformInfos(
+      commandBuffer.getCreateInfo().allocator);
+  uniformInfos.resize(layoutInfo.uniformBindingCount);
+  for (uint32_t i = 0; i < layoutInfo.uniformBindingCount; ++i) {
+    VkDescriptorBufferInfo bi{};
+    bi.buffer = commandBuffer.getUniformBuffer();
+    bi.offset = 0;
+    bi.range = commandBuffer.getUniformRange();
+    uniformInfos[i] = bi;
+
+    VkWriteDescriptorSet w{};
+    w.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    w.dstSet = uniformSet;
+    w.dstBinding = i;
+    w.descriptorCount = 1;
+    w.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    w.pBufferInfo = &uniformInfos[i];
+    writes.push_back(w);
+  }
+
+  vkUpdateDescriptorSets(device.getVkDevice(), writes.size(), writes.data(), 0,
+                         nullptr);
+}
+
+void ComputePass::bindDescriptorSet() {
+  if (!boundPipeline || storageBufferSet == VK_NULL_HANDLE ||
+      uniformSet == VK_NULL_HANDLE) {
+    return;
+  }
+  const auto &layoutInfo = boundPipeline->getLayoutInfo();
+  Array<uint32_t> dynamicOffsets(commandBuffer.getCreateInfo().allocator);
+  dynamicOffsets.reserve(layoutInfo.uniformBindingCount);
+  for (uint32_t i = 0; i < layoutInfo.uniformBindingCount; ++i) {
+    dynamicOffsets.push_back(commandBuffer.getComputeUniformSlotOffset(i));
+  }
+  std::array<VkDescriptorSet, 2> sets = {storageBufferSet, uniformSet};
+  vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE,
+                          layoutInfo.pipelineLayout, 0,
+                          static_cast<uint32_t>(sets.size()), sets.data(),
+                          dynamicOffsets.size(), dynamicOffsets.data());
+}
+
+void ComputePass::bindComputePipeline(
+    Ptr<gpu::ComputePipeline> computePipeline) {
+  commandBuffer.keepAlive(computePipeline);
+  boundPipeline = downCast<ComputePipeline>(computePipeline);
+  if (!boundPipeline) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: null compute pipeline binding");
+    return;
+  }
+  storageBufferSet = VK_NULL_HANDLE;
+  uniformSet = VK_NULL_HANDLE;
+  ensureDescriptorSet();
+  vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE,
+                    boundPipeline->getNative());
+}
+
+void ComputePass::dispatchWorkgroups(UInt32 groupCountX, UInt32 groupCountY,
+                                     UInt32 groupCountZ) {
+  ensureDescriptorSet();
+  bindDescriptorSet();
+  vkCmdDispatch(cmd, groupCountX, groupCountY, groupCountZ);
 }
 } // namespace sinen::gpu::vulkan
 

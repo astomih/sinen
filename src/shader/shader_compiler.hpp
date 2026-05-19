@@ -9,8 +9,10 @@ namespace sinen {
 class ShaderCompiler {
 public:
   struct ReflectionData {
-    uint32_t numUniformBuffers;
-    uint32_t numCombinedSamplers;
+    uint32_t numUniformBuffers = 0;
+    uint32_t numCombinedSamplers = 0;
+    uint32_t numStorageBuffers = 0;
+    uint32_t numStorageTextures = 0;
   };
 
   ShaderCompiler() = default;

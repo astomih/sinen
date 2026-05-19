@@ -11,16 +11,18 @@
 
 namespace sinen::gpu::vulkan {
 static VkDescriptorPool createDescriptorPool(VkDevice device) {
-  std::array<VkDescriptorPoolSize, 2> poolSizes{};
+  std::array<VkDescriptorPoolSize, 3> poolSizes{};
   poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
   poolSizes[0].descriptorCount = 512;
   poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
   poolSizes[1].descriptorCount = 256;
+  poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+  poolSizes[2].descriptorCount = 256;
 
   VkDescriptorPoolCreateInfo poolCI{};
   poolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
   poolCI.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-  poolCI.maxSets = 768;
+  poolCI.maxSets = 1024;
   poolCI.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
   poolCI.pPoolSizes = poolSizes.data();
 

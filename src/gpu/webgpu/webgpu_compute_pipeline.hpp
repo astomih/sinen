@@ -15,6 +15,7 @@ public:
                   WGPUComputePipeline pipeline)
       : gpu::ComputePipeline(createInfo), device(device), pipeline(pipeline) {}
   ~ComputePipeline() override;
+  WGPUComputePipeline getNative() const { return pipeline; }
 
 private:
   Ptr<Device> device;

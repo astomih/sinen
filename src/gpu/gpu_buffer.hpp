@@ -4,7 +4,7 @@
 #include <core/data/ptr.hpp>
 #include <core/def/types.hpp>
 namespace sinen::gpu {
-enum class BufferUsage { Vertex, Index, Indirect };
+enum class BufferUsage { Vertex, Index, Indirect, Storage };
 class Buffer {
 public:
   struct CreateInfo {

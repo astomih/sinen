@@ -7,8 +7,12 @@ public:
   struct CreateInfo {
     Allocator *allocator;
     Ptr<Shader> computeShader;
+    UInt32 threadCountX = 1;
+    UInt32 threadCountY = 1;
+    UInt32 threadCountZ = 1;
   };
   virtual ~ComputePipeline() = default;
+  const CreateInfo &getCreateInfo() const { return createInfo; }
 
 protected:
   ComputePipeline(const CreateInfo &createInfo) : createInfo(createInfo) {}

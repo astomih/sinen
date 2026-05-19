@@ -53,3 +53,6 @@ build_sna.bat
 
 ## 18 Procedural Model
 Builds sphere, cylinder, and custom pyramid models from Luau with `sn.MeshBuilder`.
+
+## 19 Compute
+Runs a compute shader from Luau, writes RGBA pixels into a `ComputeBuffer`, downloads them, and displays the result as a texture.

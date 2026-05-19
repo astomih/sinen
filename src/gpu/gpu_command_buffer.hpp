@@ -1,5 +1,6 @@
 #ifndef SINEN_GPU_COMMAND_BUFFER_HPP
 #define SINEN_GPU_COMMAND_BUFFER_HPP
+#include "gpu_compute_pass.hpp"
 #include "gpu_copy_pass.hpp"
 #include "gpu_render_pass.hpp"
 namespace sinen::gpu {
@@ -25,6 +26,11 @@ public:
   virtual Ptr<CopyPass> beginCopyPass() = 0;
   virtual void endCopyPass(Ptr<CopyPass> copyPass) = 0;
 
+  virtual Ptr<ComputePass>
+  beginComputePass(const Array<StorageTextureBinding> &storageTextures,
+                   const Array<StorageBufferBinding> &storageBuffers) = 0;
+  virtual void endComputePass(Ptr<ComputePass> computePass) = 0;
+
   virtual Ptr<class RenderPass>
   beginRenderPass(const Array<ColorTargetInfo> &infos,
                   const DepthStencilTargetInfo &depthStencilInfo, float r = 0.f,
@@ -35,6 +41,8 @@ public:
                                      size_t size) = 0;
   virtual void pushFragmentUniformData(UInt32 slot, const void *data,
                                        size_t size) = 0;
+  virtual void pushComputeUniformData(UInt32 slot, const void *data,
+                                      size_t size) = 0;
 
 protected:
   CommandBuffer(const CreateInfo &createInfo) : createInfo(createInfo) {}

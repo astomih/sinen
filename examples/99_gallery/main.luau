@@ -29,19 +29,14 @@ function draw()
 		"Gallery Launcher",
 		G.font,
 		G.font
-			:region(
-				"Gallery Launcher",
-				24,
-				sn.Pivot.Center,
-				sn.Window.center() + sn.Vec2.new(0, -(offset + 10))
-			)
+			:region("Gallery Launcher", 24, sn.Pivot.Center, sn.Window.center() + sn.Vec2.new(0, -(offset + 10)))
 			:topLeft(),
 		sn.Color.new(1, 1, 1, 1),
 		24
 	)
 	for i = 1, numGallerys do
 		if sn.Gui.button(galleryDirs[i], centeredRect(sn.Vec2.new(0, (i - 1) * -buttonStep + offset), buttonSize)) then
-			sn.Script.load("main", galleryDirs[i])
+			sn.Script.load("main", "99_gallery/" .. galleryDirs[i])
 		end
 	end
 end

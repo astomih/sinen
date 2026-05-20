@@ -12,20 +12,9 @@ type SourceTask = {
 	numUniformBuffers: number,
 }
 
-type CompileTask = {
-	src: string,
-	stage: any,
-	format: any,
-	numSamplers: number,
-	numStorageBuffers: number,
-	numStorageTextures: number,
-	numUniformBuffers: number,
-	code: sn.Buffer,
-}
-
 type BundleTask = {
 	out: string,
-	entries: { CompileTask },
+	entries: { sn.ShaderBundleEntry },
 }
 
 local sourceTasks: { SourceTask } = {
@@ -131,7 +120,7 @@ local function writeFile(path: string, data: sn.Buffer)
 	end
 end
 
-local function compileTask(task: SourceTask, format: any): CompileTask
+local function compileTask(task: SourceTask, format: any): sn.ShaderBundleEntry
 	sn.Log.info(
 		"Compiling "
 			.. task.out

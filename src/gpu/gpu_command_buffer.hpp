@@ -2,6 +2,7 @@
 #define SINEN_GPU_COMMAND_BUFFER_HPP
 #include "gpu_compute_pass.hpp"
 #include "gpu_copy_pass.hpp"
+#include "gpu_ray_tracing.hpp"
 #include "gpu_render_pass.hpp"
 namespace sinen::gpu {
 struct DepthStencilTargetInfo {
@@ -30,6 +31,9 @@ public:
   beginComputePass(const Array<StorageTextureBinding> &storageTextures,
                    const Array<StorageBufferBinding> &storageBuffers) = 0;
   virtual void endComputePass(Ptr<ComputePass> computePass) = 0;
+
+  virtual Ptr<RayTracingPass> beginRayTracingPass() { return nullptr; }
+  virtual void endRayTracingPass(Ptr<RayTracingPass>) {}
 
   virtual Ptr<class RenderPass>
   beginRenderPass(const Array<ColorTargetInfo> &infos,

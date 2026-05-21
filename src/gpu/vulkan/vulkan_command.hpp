@@ -34,6 +34,8 @@ public:
   void keepAlive(Ptr<gpu::Sampler> resource);
   void keepAlive(Ptr<gpu::GraphicsPipeline> resource);
   void keepAlive(Ptr<gpu::ComputePipeline> resource);
+  void keepAlive(Ptr<gpu::AccelerationStructure> resource);
+  void keepAlive(Ptr<gpu::RayTracingPipeline> resource);
   void keepAlive(Ptr<gpu::TransferBuffer> resource);
   void keepAliveRenderPassHandles(VkRenderPass renderPass,
                                   VkFramebuffer framebuffer);
@@ -56,6 +58,8 @@ public:
   beginComputePass(const Array<StorageTextureBinding> &storageTextures,
                    const Array<StorageBufferBinding> &storageBuffers) override;
   void endComputePass(Ptr<gpu::ComputePass> computePass) override;
+  Ptr<gpu::RayTracingPass> beginRayTracingPass() override;
+  void endRayTracingPass(Ptr<gpu::RayTracingPass> rayTracingPass) override;
   Ptr<gpu::RenderPass>
   beginRenderPass(const Array<ColorTargetInfo> &infos,
                   const DepthStencilTargetInfo &depthStencilInfo, float r = 0.f,
@@ -91,6 +95,8 @@ private:
   Array<Ptr<gpu::Sampler>> referencedSamplers;
   Array<Ptr<gpu::GraphicsPipeline>> referencedPipelines;
   Array<Ptr<gpu::ComputePipeline>> referencedComputePipelines;
+  Array<Ptr<gpu::AccelerationStructure>> referencedAccelerationStructures;
+  Array<Ptr<gpu::RayTracingPipeline>> referencedRayTracingPipelines;
   Array<Ptr<gpu::TransferBuffer>> referencedTransferBuffers;
   Array<VkRenderPass> referencedRenderPasses;
   Array<VkFramebuffer> referencedFramebuffers;
@@ -188,6 +194,46 @@ private:
   VkDescriptorSet storageBufferSet = VK_NULL_HANDLE;
   VkDescriptorSet uniformSet = VK_NULL_HANDLE;
   Array<StorageBufferBinding> storageBuffers;
+};
+
+class RayTracingPass : public gpu::RayTracingPass {
+public:
+  RayTracingPass(Device &device, CommandBuffer &commandBuffer);
+  ~RayTracingPass() override = default;
+
+  void buildBottomLevelAccelerationStructure(
+      Ptr<gpu::AccelerationStructure> dst,
+      const Array<gpu::RayTracingGeometry> &geometries,
+      Ptr<gpu::Buffer> scratchBuffer, UInt64 scratchOffset,
+      gpu::RayTracingBuildFlags flags,
+      Ptr<gpu::AccelerationStructure> src = nullptr) override;
+  void buildTopLevelAccelerationStructure(
+      Ptr<gpu::AccelerationStructure> dst, const gpu::BufferBinding &instances,
+      UInt32 instanceCount, Ptr<gpu::Buffer> scratchBuffer,
+      UInt64 scratchOffset, gpu::RayTracingBuildFlags flags,
+      Ptr<gpu::AccelerationStructure> src = nullptr) override;
+  void bindAccelerationStructures(UInt32 startSlot,
+                                  const Array<Ptr<gpu::AccelerationStructure>>
+                                      &accelerationStructures) override;
+  void bindStorageBuffers(
+      UInt32 startSlot,
+      const Array<gpu::StorageBufferBinding> &storageBuffers) override;
+  void bindRayTracingPipeline(Ptr<gpu::RayTracingPipeline> pipeline) override;
+  void dispatchRays(const gpu::RayTracingShaderTableRegion &rayGeneration,
+                    const gpu::RayTracingShaderTableRegion &miss,
+                    const gpu::RayTracingShaderTableRegion &hit,
+                    const gpu::RayTracingShaderTableRegion &callable,
+                    UInt32 width, UInt32 height, UInt32 depth) override;
+
+private:
+  void bindDescriptorSets();
+
+  Device &device;
+  CommandBuffer &commandBuffer;
+  VkCommandBuffer cmd = VK_NULL_HANDLE;
+  Ptr<RayTracingPipeline> boundPipeline = nullptr;
+  Array<Ptr<gpu::AccelerationStructure>> accelerationStructures;
+  Array<gpu::StorageBufferBinding> storageBuffers;
 };
 
 } // namespace sinen::gpu::vulkan

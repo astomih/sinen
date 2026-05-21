@@ -69,6 +69,8 @@ CommandBuffer::CommandBuffer(const CreateInfo &createInfo, Device &device,
       referencedSamplers(createInfo.allocator),
       referencedPipelines(createInfo.allocator),
       referencedComputePipelines(createInfo.allocator),
+      referencedAccelerationStructures(createInfo.allocator),
+      referencedRayTracingPipelines(createInfo.allocator),
       referencedTransferBuffers(createInfo.allocator),
       referencedRenderPasses(createInfo.allocator),
       referencedFramebuffers(createInfo.allocator) {
@@ -142,6 +144,18 @@ void CommandBuffer::keepAlive(Ptr<gpu::GraphicsPipeline> resource) {
 void CommandBuffer::keepAlive(Ptr<gpu::ComputePipeline> resource) {
   if (resource) {
     referencedComputePipelines.push_back(resource);
+  }
+}
+
+void CommandBuffer::keepAlive(Ptr<gpu::AccelerationStructure> resource) {
+  if (resource) {
+    referencedAccelerationStructures.push_back(resource);
+  }
+}
+
+void CommandBuffer::keepAlive(Ptr<gpu::RayTracingPipeline> resource) {
+  if (resource) {
+    referencedRayTracingPipelines.push_back(resource);
   }
 }
 
@@ -286,12 +300,26 @@ Ptr<gpu::ComputePass> CommandBuffer::beginComputePass(
     const Array<StorageTextureBinding> &,
     const Array<StorageBufferBinding> &storageBuffers) {
   ensureRecording();
-  Array<StorageBufferBinding> buffers(storageBuffers, getCreateInfo().allocator);
+  Array<StorageBufferBinding> buffers(storageBuffers,
+                                      getCreateInfo().allocator);
   return makePtr<ComputePass>(getCreateInfo().allocator, device, *this,
                               std::move(buffers));
 }
 
 void CommandBuffer::endComputePass(Ptr<gpu::ComputePass> /*computePass*/) {}
+
+Ptr<gpu::RayTracingPass> CommandBuffer::beginRayTracingPass() {
+  if (!device.supportsRayTracing()) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: ray tracing is not supported by this device");
+    return nullptr;
+  }
+  ensureRecording();
+  return makePtr<RayTracingPass>(getCreateInfo().allocator, device, *this);
+}
+
+void CommandBuffer::endRayTracingPass(
+    Ptr<gpu::RayTracingPass> /*rayTracingPass*/) {}
 
 Ptr<gpu::RenderPass>
 CommandBuffer::beginRenderPass(const Array<ColorTargetInfo> &infos,
@@ -794,9 +822,9 @@ void RenderPass::bindFragmentSamplers(
   if (startSlot >= layoutInfo.fragmentSamplerBindingCount) {
     return;
   }
-  const uint32_t bindingCount = std::min<uint32_t>(
-      static_cast<uint32_t>(bindings.size()),
-      layoutInfo.fragmentSamplerBindingCount - startSlot);
+  const uint32_t bindingCount =
+      std::min<uint32_t>(static_cast<uint32_t>(bindings.size()),
+                         layoutInfo.fragmentSamplerBindingCount - startSlot);
   Array<VkWriteDescriptorSet> writes(commandBuffer.getCreateInfo().allocator);
   Array<VkDescriptorImageInfo> infos(commandBuffer.getCreateInfo().allocator);
   writes.resize(bindingCount);
@@ -878,8 +906,8 @@ void RenderPass::drawIndexedPrimitives(UInt32 numIndices, UInt32 numInstances,
 ComputePass::ComputePass(Device &device, CommandBuffer &commandBuffer,
                          Array<StorageBufferBinding> storageBuffers)
     : device(device), commandBuffer(commandBuffer),
-      cmd(commandBuffer.getNative()), storageBuffers(std::move(storageBuffers)) {
-}
+      cmd(commandBuffer.getNative()),
+      storageBuffers(std::move(storageBuffers)) {}
 
 void ComputePass::ensureDescriptorSet() {
   if (!boundPipeline || storageBufferSet != VK_NULL_HANDLE ||

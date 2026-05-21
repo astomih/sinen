@@ -24,6 +24,42 @@ debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity,
   return VK_FALSE;
 }
 
+bool hasExtension(const Array<VkExtensionProperties> &extensions,
+                  const char *name) {
+  return std::any_of(extensions.begin(), extensions.end(),
+                     [name](const VkExtensionProperties &e) {
+                       return std::strcmp(e.extensionName, name) == 0;
+                     });
+}
+
+bool queryRayTracingSupport(VkPhysicalDevice pd,
+                            const Array<VkExtensionProperties> &extensions) {
+  if (!hasExtension(extensions, VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME) ||
+      !hasExtension(extensions, VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME) ||
+      !hasExtension(extensions, VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME) ||
+      !hasExtension(extensions,
+                    VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME)) {
+    return false;
+  }
+
+  VkPhysicalDeviceBufferDeviceAddressFeatures bda{};
+  bda.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;
+  VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructure{};
+  accelerationStructure.sType =
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+  accelerationStructure.pNext = &bda;
+  VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingPipeline{};
+  rayTracingPipeline.sType =
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+  rayTracingPipeline.pNext = &accelerationStructure;
+  VkPhysicalDeviceFeatures2 features2{};
+  features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+  features2.pNext = &rayTracingPipeline;
+  vkGetPhysicalDeviceFeatures2(pd, &features2);
+  return rayTracingPipeline.rayTracingPipeline &&
+         accelerationStructure.accelerationStructure && bda.bufferDeviceAddress;
+}
+
 Device::Device(const CreateInfo &createInfo) : gpu::Device(createInfo) {}
 
 Device::~Device() {
@@ -146,7 +182,7 @@ void Device::createInstance() {
   appInfo.applicationVersion = VK_MAKE_VERSION(0, 1, 0);
   appInfo.pEngineName = "sinen";
   appInfo.engineVersion = VK_MAKE_VERSION(0, 1, 0);
-  appInfo.apiVersion = VK_API_VERSION_1_0;
+  appInfo.apiVersion = VK_API_VERSION_1_2;
 
   VkInstanceCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -227,22 +263,16 @@ void Device::pickPhysicalDevice() {
     vkEnumerateDeviceExtensionProperties(pd, nullptr, &extCount, nullptr);
     Array<VkExtensionProperties> exts(extCount);
     vkEnumerateDeviceExtensionProperties(pd, nullptr, &extCount, exts.data());
-    bool hasSwapchain = std::any_of(
-        exts.begin(), exts.end(), [](const VkExtensionProperties &e) {
-          return std::strcmp(e.extensionName,
-                             VK_KHR_SWAPCHAIN_EXTENSION_NAME) == 0;
-        });
-    bool hasMaintenance1 = std::any_of(
-        exts.begin(), exts.end(), [](const VkExtensionProperties &e) {
-          return std::strcmp(e.extensionName,
-                             VK_KHR_MAINTENANCE1_EXTENSION_NAME) == 0;
-        });
+    bool hasSwapchain = hasExtension(exts, VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+    bool hasMaintenance1 =
+        hasExtension(exts, VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+    bool hasRayTracing = queryRayTracingSupport(pd, exts);
     VkPhysicalDeviceFeatures features{};
     vkGetPhysicalDeviceFeatures(pd, &features);
     if (!hasSwapchain || !hasMaintenance1 || !features.independentBlend ||
         !features.imageCubeArray || !features.depthClamp ||
-        !features.shaderClipDistance ||
-        !features.drawIndirectFirstInstance || !features.sampleRateShading) {
+        !features.shaderClipDistance || !features.drawIndirectFirstInstance ||
+        !features.sampleRateShading) {
       continue;
     }
     VkPhysicalDeviceProperties props{};
@@ -253,6 +283,7 @@ void Device::pickPhysicalDevice() {
       bestScore = score;
       physicalDevice = pd;
       queueFamilyIndex = qf;
+      rayTracingSupported = hasRayTracing;
     }
   }
 }
@@ -279,16 +310,43 @@ void Device::createLogicalDevice() {
   features.drawIndirectFirstInstance = VK_TRUE;
   features.sampleRateShading = VK_TRUE;
 
-  const char *extensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-                              VK_KHR_MAINTENANCE1_EXTENSION_NAME};
+  Array<const char *> extensions;
+  extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+  extensions.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+
+  VkPhysicalDeviceBufferDeviceAddressFeatures bda{};
+  bda.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;
+  VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructure{};
+  accelerationStructure.sType =
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+  accelerationStructure.accelerationStructure = VK_TRUE;
+  accelerationStructure.pNext = &bda;
+  VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingPipeline{};
+  rayTracingPipeline.sType =
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+  rayTracingPipeline.rayTracingPipeline = VK_TRUE;
+  rayTracingPipeline.pNext = &accelerationStructure;
+  VkPhysicalDeviceFeatures2 features2{};
+  features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+  features2.features = features;
+  features2.pNext = &rayTracingPipeline;
+
+  if (rayTracingSupported) {
+    extensions.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
+    extensions.push_back(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
+    extensions.push_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+    extensions.push_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
+    bda.bufferDeviceAddress = VK_TRUE;
+  }
 
   VkDeviceCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
   ci.queueCreateInfoCount = 1;
   ci.pQueueCreateInfos = &queueCI;
-  ci.enabledExtensionCount = 2;
-  ci.ppEnabledExtensionNames = extensions;
-  ci.pEnabledFeatures = &features;
+  ci.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+  ci.ppEnabledExtensionNames = extensions.data();
+  ci.pEnabledFeatures = rayTracingSupported ? nullptr : &features;
+  ci.pNext = rayTracingSupported ? &features2 : nullptr;
 
   if (vkCreateDevice(physicalDevice, &ci, nullptr, &device) != VK_SUCCESS) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Vulkan: vkCreateDevice failed");
@@ -296,6 +354,15 @@ void Device::createLogicalDevice() {
     return;
   }
   vkGetDeviceQueue(device, queueFamilyIndex, 0, &queue);
+
+  if (rayTracingSupported) {
+    VkPhysicalDeviceProperties2 props2{};
+    props2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+    rayTracingPipelineProperties.sType =
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
+    props2.pNext = &rayTracingPipelineProperties;
+    vkGetPhysicalDeviceProperties2(physicalDevice, &props2);
+  }
 }
 
 static VmaVulkanFunctions getVulkanFunctions() {
@@ -335,7 +402,7 @@ void Device::createAllocator() {
   ci.instance = instance;
   ci.physicalDevice = physicalDevice;
   ci.device = device;
-  ci.vulkanApiVersion = VK_API_VERSION_1_0;
+  ci.vulkanApiVersion = VK_API_VERSION_1_2;
   ci.pVulkanFunctions = &functions;
   if (vmaCreateAllocator(&ci, &vmaAllocator) != VK_SUCCESS) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,

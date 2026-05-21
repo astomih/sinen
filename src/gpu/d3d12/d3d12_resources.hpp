@@ -8,6 +8,7 @@
 #include <gpu/gpu_buffer.hpp>
 #include <gpu/gpu_compute_pipeline.hpp>
 #include <gpu/gpu_graphics_pipeline.hpp>
+#include <gpu/gpu_ray_tracing.hpp>
 #include <gpu/gpu_sampler.hpp>
 #include <gpu/gpu_shader.hpp>
 #include <gpu/gpu_texture.hpp>
@@ -15,6 +16,9 @@
 
 #include <d3d12.h>
 #include <wrl/client.h>
+
+#include <string>
+#include <vector>
 
 namespace sinen::gpu::d3d12 {
 class Device;
@@ -31,6 +35,9 @@ public:
   Buffer(const CreateInfo &createInfo, Ptr<Device> device,
          ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES state);
   ID3D12Resource *getNative() const { return resource.Get(); }
+  D3D12_GPU_VIRTUAL_ADDRESS getDeviceAddress() const {
+    return resource ? resource->GetGPUVirtualAddress() : 0;
+  }
   D3D12_RESOURCE_STATES getState() const { return state; }
   void setState(D3D12_RESOURCE_STATES value) { state = value; }
 
@@ -135,6 +142,44 @@ private:
   Ptr<Device> device;
   ComPtr<ID3D12RootSignature> rootSignature;
   ComPtr<ID3D12PipelineState> pipelineState;
+};
+
+class AccelerationStructure : public gpu::AccelerationStructure {
+public:
+  AccelerationStructure(const CreateInfo &createInfo, Ptr<Device> device,
+                        ComPtr<ID3D12Resource> resource);
+  ID3D12Resource *getNative() const { return resource.Get(); }
+  UInt64 getDeviceAddress() const override {
+    return resource ? resource->GetGPUVirtualAddress() : 0;
+  }
+
+private:
+  Ptr<Device> device;
+  ComPtr<ID3D12Resource> resource;
+};
+
+class RayTracingPipeline : public gpu::RayTracingPipeline {
+public:
+  RayTracingPipeline(const CreateInfo &createInfo, Ptr<Device> device,
+                     ComPtr<ID3D12RootSignature> globalRootSignature,
+                     ComPtr<ID3D12StateObject> stateObject,
+                     std::vector<std::wstring> shaderGroupExportNames);
+  ID3D12RootSignature *getRootSignature() const {
+    return globalRootSignature.Get();
+  }
+  ID3D12StateObject *getNative() const { return stateObject.Get(); }
+  UInt32 getShaderGroupHandleSize() const override {
+    return D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+  }
+  bool getShaderGroupHandles(UInt32 firstGroup, UInt32 groupCount, void *dst,
+                             Size dstSize) const override;
+
+private:
+  Ptr<Device> device;
+  ComPtr<ID3D12RootSignature> globalRootSignature;
+  ComPtr<ID3D12StateObject> stateObject;
+  ComPtr<ID3D12StateObjectProperties> stateObjectProperties;
+  std::vector<std::wstring> shaderGroupExportNames;
 };
 } // namespace sinen::gpu::d3d12
 

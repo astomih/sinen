@@ -189,6 +189,18 @@ const char *ShaderBundle::entryPointFor(ShaderStage stage,
       return "FSMain";
     case ShaderStage::Compute:
       return "CSMain";
+    case ShaderStage::RayGeneration:
+      return "RayGenMain";
+    case ShaderStage::AnyHit:
+      return "AnyHitMain";
+    case ShaderStage::ClosestHit:
+      return "ClosestHitMain";
+    case ShaderStage::Miss:
+      return "MissMain";
+    case ShaderStage::Intersection:
+      return "IntersectionMain";
+    case ShaderStage::Callable:
+      return "CallableMain";
     }
   }
   return "main";

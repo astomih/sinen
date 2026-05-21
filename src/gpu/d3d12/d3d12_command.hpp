@@ -36,6 +36,8 @@ public:
   beginComputePass(const Array<StorageTextureBinding> &storageTextures,
                    const Array<StorageBufferBinding> &storageBuffers) override;
   void endComputePass(Ptr<gpu::ComputePass> computePass) override;
+  Ptr<gpu::RayTracingPass> beginRayTracingPass() override;
+  void endRayTracingPass(Ptr<gpu::RayTracingPass> rayTracingPass) override;
   Ptr<gpu::RenderPass>
   beginRenderPass(const Array<ColorTargetInfo> &infos,
                   const DepthStencilTargetInfo &depthStencilInfo, float r = 0.f,
@@ -107,13 +109,15 @@ public:
              const Array<ColorTargetInfo> &colorTargets,
              const DepthStencilTargetInfo &depthStencilInfo);
 
-  void bindGraphicsPipeline(Ptr<gpu::GraphicsPipeline> graphicsPipeline) override;
+  void
+  bindGraphicsPipeline(Ptr<gpu::GraphicsPipeline> graphicsPipeline) override;
   void bindVertexBuffers(UInt32 slot,
                          const Array<BufferBinding> &bindings) override;
   void bindIndexBuffer(const BufferBinding &binding,
                        IndexElementSize indexElementSize) override;
-  void bindFragmentSamplers(UInt32 slot,
-                            const Array<TextureSamplerBinding> &bindings) override;
+  void
+  bindFragmentSamplers(UInt32 slot,
+                       const Array<TextureSamplerBinding> &bindings) override;
   void bindFragmentSampler(UInt32 startSlot,
                            const TextureSamplerBinding &binding) override;
   void setViewport(const Viewport &viewport) override;
@@ -147,6 +151,42 @@ private:
   CommandBuffer *commandBuffer;
   Ptr<ComputePipeline> pipeline;
   Array<StorageBufferBinding> storageBuffers;
+};
+
+class RayTracingPass : public gpu::RayTracingPass {
+public:
+  explicit RayTracingPass(CommandBuffer *commandBuffer)
+      : commandBuffer(commandBuffer) {}
+
+  void buildBottomLevelAccelerationStructure(
+      Ptr<gpu::AccelerationStructure> dst,
+      const Array<gpu::RayTracingGeometry> &geometries,
+      Ptr<gpu::Buffer> scratchBuffer, UInt64 scratchOffset,
+      gpu::RayTracingBuildFlags flags,
+      Ptr<gpu::AccelerationStructure> src = nullptr) override;
+  void buildTopLevelAccelerationStructure(
+      Ptr<gpu::AccelerationStructure> dst, const gpu::BufferBinding &instances,
+      UInt32 instanceCount, Ptr<gpu::Buffer> scratchBuffer,
+      UInt64 scratchOffset, gpu::RayTracingBuildFlags flags,
+      Ptr<gpu::AccelerationStructure> src = nullptr) override;
+  void bindAccelerationStructures(UInt32 startSlot,
+                                  const Array<Ptr<gpu::AccelerationStructure>>
+                                      &accelerationStructures) override;
+  void bindStorageBuffers(
+      UInt32 startSlot,
+      const Array<gpu::StorageBufferBinding> &storageBuffers) override;
+  void bindRayTracingPipeline(Ptr<gpu::RayTracingPipeline> pipeline) override;
+  void dispatchRays(const gpu::RayTracingShaderTableRegion &rayGeneration,
+                    const gpu::RayTracingShaderTableRegion &miss,
+                    const gpu::RayTracingShaderTableRegion &hit,
+                    const gpu::RayTracingShaderTableRegion &callable,
+                    UInt32 width, UInt32 height, UInt32 depth) override;
+
+private:
+  void bindUniforms();
+
+  CommandBuffer *commandBuffer;
+  Ptr<RayTracingPipeline> pipeline;
 };
 } // namespace sinen::gpu::d3d12
 

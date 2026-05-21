@@ -40,6 +40,18 @@ public:
       const gpu::GraphicsPipeline::CreateInfo &createInfo) override;
   Ptr<gpu::ComputePipeline> createComputePipeline(
       const gpu::ComputePipeline::CreateInfo &createInfo) override;
+  bool supportsRayTracing() const override { return rayTracingSupported; }
+  gpu::RayTracingAccelerationStructureBuildSizes
+  getBottomLevelAccelerationStructureBuildSizes(
+      const Array<gpu::RayTracingGeometry> &geometries,
+      gpu::RayTracingBuildFlags flags) override;
+  gpu::RayTracingAccelerationStructureBuildSizes
+  getTopLevelAccelerationStructureBuildSizes(
+      UInt32 instanceCount, gpu::RayTracingBuildFlags flags) override;
+  Ptr<gpu::AccelerationStructure> createAccelerationStructure(
+      const gpu::AccelerationStructure::CreateInfo &createInfo) override;
+  Ptr<gpu::RayTracingPipeline> createRayTracingPipeline(
+      const gpu::RayTracingPipeline::CreateInfo &createInfo) override;
   Ptr<gpu::CommandBuffer> acquireCommandBuffer(
       const gpu::CommandBuffer::CreateInfo &createInfo) override;
   void submitCommandBuffer(Ptr<gpu::CommandBuffer> commandBuffer) override;
@@ -55,6 +67,7 @@ public:
   }
 
   ID3D12Device *getNative() const { return device.Get(); }
+  ID3D12Device5 *getRayTracingNative() const { return device5.Get(); }
   bool isValid() const { return device != nullptr && commandQueue != nullptr; }
   ID3D12CommandQueue *getQueue() const { return commandQueue.Get(); }
   ID3D12DescriptorHeap *getSrvHeap() const { return srvHeap.Get(); }
@@ -74,6 +87,7 @@ public:
 
   ID3D12RootSignature *getGraphicsRootSignature();
   ID3D12RootSignature *getComputeRootSignature();
+  ID3D12RootSignature *getRayTracingRootSignature();
   void transition(ID3D12GraphicsCommandList *list, Texture *texture,
                   D3D12_RESOURCE_STATES after);
   void transition(ID3D12GraphicsCommandList *list, Buffer *buffer,
@@ -96,6 +110,7 @@ private:
   void createDefaultDescriptors();
   void createGraphicsRootSignature();
   void createComputeRootSignature();
+  void createRayTracingRootSignature();
   void signalAndWait();
   D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle(ID3D12DescriptorHeap *heap,
                                         UINT descriptorSize, UINT index) const;
@@ -108,6 +123,7 @@ private:
   Microsoft::WRL::ComPtr<IDXGIFactory6> factory;
   Microsoft::WRL::ComPtr<IDXGIAdapter1> adapter;
   Microsoft::WRL::ComPtr<ID3D12Device> device;
+  Microsoft::WRL::ComPtr<ID3D12Device5> device5;
   Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue;
   Microsoft::WRL::ComPtr<IDXGISwapChain3> swapchain;
   DXGI_FORMAT swapchainFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
@@ -138,9 +154,11 @@ private:
 
   Microsoft::WRL::ComPtr<ID3D12RootSignature> graphicsRootSignature;
   Microsoft::WRL::ComPtr<ID3D12RootSignature> computeRootSignature;
+  Microsoft::WRL::ComPtr<ID3D12RootSignature> rayTracingRootSignature;
   Microsoft::WRL::ComPtr<ID3D12Fence> fence;
   UINT64 fenceValue = 0;
   void *fenceEvent = nullptr;
+  bool rayTracingSupported = false;
 };
 } // namespace sinen::gpu::d3d12
 

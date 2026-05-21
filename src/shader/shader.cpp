@@ -30,6 +30,18 @@ ShaderStage toShaderStage(ShaderStage stage) {
     return ShaderStage::Fragment;
   case ShaderStage::Compute:
     return ShaderStage::Compute;
+  case ShaderStage::RayGeneration:
+    return ShaderStage::RayGeneration;
+  case ShaderStage::AnyHit:
+    return ShaderStage::AnyHit;
+  case ShaderStage::ClosestHit:
+    return ShaderStage::ClosestHit;
+  case ShaderStage::Miss:
+    return ShaderStage::Miss;
+  case ShaderStage::Intersection:
+    return ShaderStage::Intersection;
+  case ShaderStage::Callable:
+    return ShaderStage::Callable;
   }
   return ShaderStage::Vertex;
 }

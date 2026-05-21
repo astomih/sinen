@@ -30,6 +30,18 @@ public:
       const GraphicsPipeline::CreateInfo &createInfo) override;
   Ptr<gpu::ComputePipeline>
   createComputePipeline(const ComputePipeline::CreateInfo &createInfo) override;
+  bool supportsRayTracing() const override { return rayTracingSupported; }
+  gpu::RayTracingAccelerationStructureBuildSizes
+  getBottomLevelAccelerationStructureBuildSizes(
+      const Array<gpu::RayTracingGeometry> &geometries,
+      gpu::RayTracingBuildFlags flags) override;
+  gpu::RayTracingAccelerationStructureBuildSizes
+  getTopLevelAccelerationStructureBuildSizes(
+      UInt32 instanceCount, gpu::RayTracingBuildFlags flags) override;
+  Ptr<gpu::AccelerationStructure> createAccelerationStructure(
+      const gpu::AccelerationStructure::CreateInfo &createInfo) override;
+  Ptr<gpu::RayTracingPipeline> createRayTracingPipeline(
+      const gpu::RayTracingPipeline::CreateInfo &createInfo) override;
   Ptr<gpu::CommandBuffer>
   acquireCommandBuffer(const CommandBuffer::CreateInfo &createInfo) override;
   void submitCommandBuffer(Ptr<gpu::CommandBuffer> commandBuffer) override;
@@ -49,6 +61,10 @@ public:
   VmaAllocator getVmaAllocator() const { return vmaAllocator; }
   VkCommandPool getCommandPool() const { return commandPool; }
   VkDeviceSize getUniformRange() const { return uniformRange; }
+  const VkPhysicalDeviceRayTracingPipelinePropertiesKHR &
+  getRayTracingPipelineProperties() const {
+    return rayTracingPipelineProperties;
+  }
   VkSampler getDefaultSampler() const { return defaultSampler; }
   VkImageView getDefaultTextureView() const { return defaultTextureView; }
 
@@ -98,6 +114,9 @@ private:
   VkImageView defaultTextureView = VK_NULL_HANDLE;
 
   VkDeviceSize uniformRange = 4096;
+  bool rayTracingSupported = false;
+  VkPhysicalDeviceRayTracingPipelinePropertiesKHR
+      rayTracingPipelineProperties{};
 };
 } // namespace sinen::gpu::vulkan
 

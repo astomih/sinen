@@ -5,6 +5,7 @@
 #include "gpu_command_buffer.hpp"
 #include "gpu_compute_pipeline.hpp"
 #include "gpu_graphics_pipeline.hpp"
+#include "gpu_ray_tracing.hpp"
 #include "gpu_transfer_buffer.hpp"
 
 #include <core/data/string.hpp>
@@ -33,6 +34,24 @@ public:
   createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) = 0;
   virtual Ptr<ComputePipeline>
   createComputePipeline(const ComputePipeline::CreateInfo &createInfo) = 0;
+  virtual bool supportsRayTracing() const { return false; }
+  virtual RayTracingAccelerationStructureBuildSizes
+  getBottomLevelAccelerationStructureBuildSizes(
+      const Array<RayTracingGeometry> &, RayTracingBuildFlags) {
+    return {};
+  }
+  virtual RayTracingAccelerationStructureBuildSizes
+  getTopLevelAccelerationStructureBuildSizes(UInt32, RayTracingBuildFlags) {
+    return {};
+  }
+  virtual Ptr<AccelerationStructure>
+  createAccelerationStructure(const AccelerationStructure::CreateInfo &) {
+    return nullptr;
+  }
+  virtual Ptr<RayTracingPipeline>
+  createRayTracingPipeline(const RayTracingPipeline::CreateInfo &) {
+    return nullptr;
+  }
   virtual Ptr<CommandBuffer>
   acquireCommandBuffer(const CommandBuffer::CreateInfo &createInfo) = 0;
   virtual void submitCommandBuffer(Ptr<CommandBuffer> commandBuffer) = 0;

@@ -83,6 +83,17 @@ Ptr<gpu::ComputePass> CommandBuffer::beginComputePass(
 
 void CommandBuffer::endComputePass(Ptr<gpu::ComputePass>) {}
 
+Ptr<gpu::RayTracingPass> CommandBuffer::beginRayTracingPass() {
+  if (!device->supportsRayTracing()) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "D3D12: ray tracing is not supported by this device");
+    return nullptr;
+  }
+  return makePtr<RayTracingPass>(getCreateInfo().allocator, this);
+}
+
+void CommandBuffer::endRayTracingPass(Ptr<gpu::RayTracingPass>) {}
+
 Ptr<gpu::RenderPass>
 CommandBuffer::beginRenderPass(const Array<ColorTargetInfo> &infos,
                                const DepthStencilTargetInfo &depthStencilInfo,
@@ -583,9 +594,8 @@ void ComputePass::bindStorageBuffers() {
     desc.Buffer.FirstElement = 0;
     desc.Buffer.NumElements = buffer->getCreateInfo().size / 4;
     desc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_RAW;
-    device->getNative()->CreateUnorderedAccessView(buffer->getNative(),
-                                                   nullptr, &desc,
-                                                   descriptor.cpu);
+    device->getNative()->CreateUnorderedAccessView(buffer->getNative(), nullptr,
+                                                   &desc, descriptor.cpu);
   }
   commandBuffer->getNative()->SetComputeRootDescriptorTable(0, first.gpu);
 }

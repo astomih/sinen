@@ -256,6 +256,7 @@ void registerPipeline(lua_State *);
 void registerComputeBuffer(lua_State *);
 void registerComputePipeline(lua_State *);
 void registerCompute(lua_State *);
+void registerRaytracing(lua_State *);
 void registerModel(lua_State *);
 void registerMeshBuilder(lua_State *);
 void registerTextureKey(lua_State *);
@@ -326,6 +327,7 @@ static void registerAll(lua_State *L) {
   registerPipeline(L);
   registerComputeBuffer(L);
   registerComputePipeline(L);
+  registerRaytracing(L);
   registerModel(L);
   registerMeshBuilder(L);
   registerTextureKey(L);

@@ -78,6 +78,11 @@ Ptr<gpu::Buffer> Device::createBuffer(const Buffer::CreateInfo &createInfo) {
     usage |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
   if (createInfo.usage == gpu::BufferUsage::Storage)
     usage |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+  if (rayTracingSupported) {
+    usage |=
+        VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT |
+        VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR;
+  }
 
   VkBufferCreateInfo bufferCI{};
   bufferCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -97,8 +102,16 @@ Ptr<gpu::Buffer> Device::createBuffer(const Buffer::CreateInfo &createInfo) {
     return nullptr;
   }
 
+  VkDeviceAddress address = 0;
+  if (rayTracingSupported) {
+    VkBufferDeviceAddressInfo addressInfo{};
+    addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+    addressInfo.buffer = buffer;
+    address = vkGetBufferDeviceAddress(device, &addressInfo);
+  }
+
   return makePtr<Buffer>(createInfo.allocator, createInfo, *this, buffer,
-                         allocation);
+                         allocation, address);
 }
 
 Ptr<gpu::TransferBuffer>

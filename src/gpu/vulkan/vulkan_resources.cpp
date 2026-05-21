@@ -5,9 +5,9 @@
 
 namespace sinen::gpu::vulkan {
 Buffer::Buffer(const CreateInfo &createInfo, Device &device, VkBuffer buffer,
-               VmaAllocation allocation)
+               VmaAllocation allocation, VkDeviceAddress deviceAddress)
     : gpu::Buffer(createInfo), device(device), buffer(buffer),
-      allocation(allocation) {}
+      allocation(allocation), deviceAddress(deviceAddress) {}
 
 Buffer::~Buffer() {
   if (buffer != VK_NULL_HANDLE) {
@@ -111,8 +111,7 @@ Shader::~Shader() {
 }
 
 GraphicsPipeline::GraphicsPipeline(const CreateInfo &createInfo, Device &device,
-                                   VkPipeline pipeline,
-                                   VkRenderPass renderPass,
+                                   VkPipeline pipeline, VkRenderPass renderPass,
                                    const LayoutInfo &layoutInfo)
     : gpu::GraphicsPipeline(createInfo), device(device), pipeline(pipeline),
       renderPass(renderPass), layoutInfo(layoutInfo) {}
@@ -168,6 +167,77 @@ ComputePipeline::~ComputePipeline() {
     vkDestroyDescriptorSetLayout(device.getVkDevice(),
                                  layoutInfo.storageBufferSetLayout, nullptr);
   }
+}
+
+AccelerationStructure::AccelerationStructure(
+    const CreateInfo &createInfo, Device &device, VkBuffer buffer,
+    VmaAllocation allocation, VkAccelerationStructureKHR accelerationStructure,
+    VkDeviceAddress deviceAddress)
+    : gpu::AccelerationStructure(createInfo), device(device), buffer(buffer),
+      allocation(allocation), accelerationStructure(accelerationStructure),
+      deviceAddress(deviceAddress) {}
+
+AccelerationStructure::~AccelerationStructure() {
+  if (accelerationStructure != VK_NULL_HANDLE) {
+    vkDestroyAccelerationStructureKHR(device.getVkDevice(),
+                                      accelerationStructure, nullptr);
+  }
+  if (buffer != VK_NULL_HANDLE) {
+    vmaDestroyBuffer(device.getVmaAllocator(), buffer, allocation);
+  }
+}
+
+RayTracingPipeline::RayTracingPipeline(const CreateInfo &createInfo,
+                                       Device &device, VkPipeline pipeline,
+                                       const LayoutInfo &layoutInfo)
+    : gpu::RayTracingPipeline(createInfo), device(device), pipeline(pipeline),
+      layoutInfo(layoutInfo) {}
+
+RayTracingPipeline::~RayTracingPipeline() {
+  if (pipeline != VK_NULL_HANDLE) {
+    vkDestroyPipeline(device.getVkDevice(), pipeline, nullptr);
+  }
+  if (layoutInfo.pipelineLayout != VK_NULL_HANDLE) {
+    vkDestroyPipelineLayout(device.getVkDevice(), layoutInfo.pipelineLayout,
+                            nullptr);
+  }
+  if (layoutInfo.uniformSetLayout != VK_NULL_HANDLE) {
+    vkDestroyDescriptorSetLayout(device.getVkDevice(),
+                                 layoutInfo.uniformSetLayout, nullptr);
+  }
+  if (layoutInfo.storageImageSetLayout != VK_NULL_HANDLE) {
+    vkDestroyDescriptorSetLayout(device.getVkDevice(),
+                                 layoutInfo.storageImageSetLayout, nullptr);
+  }
+  if (layoutInfo.storageBufferSetLayout != VK_NULL_HANDLE) {
+    vkDestroyDescriptorSetLayout(device.getVkDevice(),
+                                 layoutInfo.storageBufferSetLayout, nullptr);
+  }
+  if (layoutInfo.accelerationStructureSetLayout != VK_NULL_HANDLE) {
+    vkDestroyDescriptorSetLayout(device.getVkDevice(),
+                                 layoutInfo.accelerationStructureSetLayout,
+                                 nullptr);
+  }
+}
+
+UInt32 RayTracingPipeline::getShaderGroupHandleSize() const {
+  return device.getRayTracingPipelineProperties().shaderGroupHandleSize;
+}
+
+bool RayTracingPipeline::getShaderGroupHandles(UInt32 firstGroup,
+                                               UInt32 groupCount, void *dst,
+                                               Size dstSize) const {
+  if (!pipeline || !dst) {
+    return false;
+  }
+  const Size expectedSize =
+      static_cast<Size>(getShaderGroupHandleSize()) * groupCount;
+  if (dstSize < expectedSize) {
+    return false;
+  }
+  return vkGetRayTracingShaderGroupHandlesKHR(device.getVkDevice(), pipeline,
+                                              firstGroup, groupCount, dstSize,
+                                              dst) == VK_SUCCESS;
 }
 } // namespace sinen::gpu::vulkan
 

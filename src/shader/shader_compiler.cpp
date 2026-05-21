@@ -77,7 +77,14 @@ Array<char> ShaderCompiler::compileSource(StringView moduleName,
   switch (format) {
   case ShaderFormat::SPIRV:
     targetDesc[0].format = SLANG_SPIRV;
-    targetDesc[0].profile = globalSession->findProfile("spirv_1_3");
+    targetDesc[0].profile = globalSession->findProfile(
+        stage == ShaderStage::RayGeneration || stage == ShaderStage::AnyHit ||
+                stage == ShaderStage::ClosestHit ||
+                stage == ShaderStage::Miss ||
+                stage == ShaderStage::Intersection ||
+                stage == ShaderStage::Callable
+            ? "spirv_1_4"
+            : "spirv_1_3");
     emitSpirvDirectly = true;
     break;
   case ShaderFormat::WGSL:
@@ -90,7 +97,14 @@ Array<char> ShaderCompiler::compileSource(StringView moduleName,
     break;
   case ShaderFormat::DXIL:
     targetDesc[0].format = SLANG_DXIL;
-    targetDesc[0].profile = globalSession->findProfile("sm_6_0");
+    targetDesc[0].profile = globalSession->findProfile(
+        stage == ShaderStage::RayGeneration || stage == ShaderStage::AnyHit ||
+                stage == ShaderStage::ClosestHit ||
+                stage == ShaderStage::Miss ||
+                stage == ShaderStage::Intersection ||
+                stage == ShaderStage::Callable
+            ? "lib_6_3"
+            : "sm_6_0");
     break;
   }
   sessionDesc.targets = targetDesc.data();
@@ -144,6 +158,24 @@ Array<char> ShaderCompiler::compileSource(StringView moduleName,
       break;
     case ShaderStage::Compute:
       entryPointName = "CSMain";
+      break;
+    case ShaderStage::RayGeneration:
+      entryPointName = "RayGenMain";
+      break;
+    case ShaderStage::AnyHit:
+      entryPointName = "AnyHitMain";
+      break;
+    case ShaderStage::ClosestHit:
+      entryPointName = "ClosestHitMain";
+      break;
+    case ShaderStage::Miss:
+      entryPointName = "MissMain";
+      break;
+    case ShaderStage::Intersection:
+      entryPointName = "IntersectionMain";
+      break;
+    case ShaderStage::Callable:
+      entryPointName = "CallableMain";
       break;
     default: // Unsupported type
       std::cout << "Unsupported shader type" << std::endl;

@@ -53,11 +53,20 @@ void logIfFailed(HRESULT hr, const char *message) {
 
 bool hasRequiredD3D12Options(ID3D12Device *device) {
   D3D12_FEATURE_DATA_D3D12_OPTIONS options{};
-  if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS,
-                                         &options, sizeof(options)))) {
+  if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &options,
+                                         sizeof(options)))) {
     return false;
   }
   return options.ResourceBindingTier >= D3D12_RESOURCE_BINDING_TIER_2;
+}
+
+bool hasRayTracingSupport(ID3D12Device *device) {
+  D3D12_FEATURE_DATA_D3D12_OPTIONS5 options{};
+  if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &options,
+                                         sizeof(options)))) {
+    return false;
+  }
+  return options.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED;
 }
 
 UINT16 depthOrArraySizeFrom(const gpu::Texture::CreateInfo &createInfo) {
@@ -69,7 +78,8 @@ UINT16 depthOrArraySizeFrom(const gpu::Texture::CreateInfo &createInfo) {
   case TextureType::CubeArray:
     return static_cast<UINT16>(createInfo.layerCountOrDepth * 6);
   default:
-    return static_cast<UINT16>(std::max<UInt32>(1, createInfo.layerCountOrDepth));
+    return static_cast<UINT16>(
+        std::max<UInt32>(1, createInfo.layerCountOrDepth));
   }
 }
 
@@ -78,9 +88,9 @@ struct D3D12VertexSemantic {
   UINT index;
 };
 
-D3D12VertexSemantic vertexSemanticFrom(
-    const gpu::VertexInputState &vertexInputState,
-    const gpu::VertexAttribute &attr) {
+D3D12VertexSemantic
+vertexSemanticFrom(const gpu::VertexInputState &vertexInputState,
+                   const gpu::VertexAttribute &attr) {
   const auto &vb = vertexInputState.vertexBufferDescriptions[attr.bufferSlot];
   if (vb.inputRate == VertexInputRate::Instance) {
     return {"TEXCOORD", attr.location};
@@ -184,6 +194,9 @@ void Device::createDeviceObjects() {
                  "Binding Tier 2");
     return;
   }
+  if (hasRayTracingSupport(device.Get()) && SUCCEEDED(device.As(&device5))) {
+    rayTracingSupported = true;
+  }
 
   D3D12_COMMAND_QUEUE_DESC queueDesc{};
   queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
@@ -231,6 +244,7 @@ void Device::createDeviceObjects() {
 
   createGraphicsRootSignature();
   createComputeRootSignature();
+  createRayTracingRootSignature();
   createDefaultDescriptors();
 }
 
@@ -286,9 +300,8 @@ void Device::createSwapchain() {
 void Device::resizeSwapchain(UINT newWidth, UINT newHeight) {
   waitForGpuIdle();
   swapchainTextures.clear();
-  HRESULT hr =
-      swapchain->ResizeBuffers(FrameCount, newWidth, newHeight, swapchainFormat,
-                               0);
+  HRESULT hr = swapchain->ResizeBuffers(FrameCount, newWidth, newHeight,
+                                        swapchainFormat, 0);
   logIfFailed(hr, "D3D12: ResizeBuffers failed");
   if (FAILED(hr)) {
     destroySwapchain();
@@ -516,6 +529,66 @@ ID3D12RootSignature *Device::getComputeRootSignature() {
   return computeRootSignature.Get();
 }
 
+void Device::createRayTracingRootSignature() {
+  if (!rayTracingSupported) {
+    return;
+  }
+
+  D3D12_DESCRIPTOR_RANGE ranges[2]{};
+  ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+  ranges[0].NumDescriptors = 32;
+  ranges[0].BaseShaderRegister = 0;
+  ranges[0].RegisterSpace = 0;
+  ranges[0].OffsetInDescriptorsFromTableStart =
+      D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+  ranges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+  ranges[1].NumDescriptors = 32;
+  ranges[1].BaseShaderRegister = 0;
+  ranges[1].RegisterSpace = 0;
+  ranges[1].OffsetInDescriptorsFromTableStart =
+      D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+  D3D12_ROOT_PARAMETER params[6]{};
+  params[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+  params[0].DescriptorTable.NumDescriptorRanges = 1;
+  params[0].DescriptorTable.pDescriptorRanges = &ranges[0];
+  params[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+  params[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+  params[1].DescriptorTable.NumDescriptorRanges = 1;
+  params[1].DescriptorTable.pDescriptorRanges = &ranges[1];
+  params[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+  for (UINT i = 0; i < 4; ++i) {
+    params[i + 2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    params[i + 2].Descriptor.ShaderRegister = i;
+    params[i + 2].Descriptor.RegisterSpace = 0;
+    params[i + 2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+  }
+
+  D3D12_ROOT_SIGNATURE_DESC desc{};
+  desc.NumParameters = 6;
+  desc.pParameters = params;
+
+  ComPtr<ID3DBlob> blob;
+  ComPtr<ID3DBlob> error;
+  HRESULT hr = D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1,
+                                           &blob, &error);
+  if (FAILED(hr)) {
+    if (error) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "D3D12 ray tracing root signature: %s",
+                   static_cast<const char *>(error->GetBufferPointer()));
+    }
+    return;
+  }
+  device->CreateRootSignature(0, blob->GetBufferPointer(),
+                              blob->GetBufferSize(),
+                              IID_PPV_ARGS(&rayTracingRootSignature));
+}
+
+ID3D12RootSignature *Device::getRayTracingRootSignature() {
+  return rayTracingRootSignature.Get();
+}
+
 Ptr<gpu::Buffer>
 Device::createBuffer(const gpu::Buffer::CreateInfo &createInfo) {
   ComPtr<ID3D12Resource> resource;
@@ -527,9 +600,9 @@ Device::createBuffer(const gpu::Buffer::CreateInfo &createInfo) {
   auto initialState = createInfo.usage == BufferUsage::Storage
                           ? D3D12_RESOURCE_STATE_UNORDERED_ACCESS
                           : D3D12_RESOURCE_STATE_COMMON;
-  HRESULT hr = device->CreateCommittedResource(
-      &heap, D3D12_HEAP_FLAG_NONE, &desc, initialState, nullptr,
-      IID_PPV_ARGS(&resource));
+  HRESULT hr = device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE,
+                                               &desc, initialState, nullptr,
+                                               IID_PPV_ARGS(&resource));
   logIfFailed(hr, "D3D12: create buffer failed");
   return makePtr<Buffer>(createInfo.allocator, createInfo, get(), resource,
                          initialState);
@@ -580,12 +653,11 @@ Device::createTexture(const gpu::Texture::CreateInfo &createInfo) {
     clearPtr = &clear;
   }
 
-  auto initialState =
-      createInfo.usage == TextureUsage::Sampler
-          ? D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
-          : createInfo.usage == TextureUsage::Storage
-                ? D3D12_RESOURCE_STATE_UNORDERED_ACCESS
-                : D3D12_RESOURCE_STATE_COMMON;
+  auto initialState = createInfo.usage == TextureUsage::Sampler
+                          ? D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
+                      : createInfo.usage == TextureUsage::Storage
+                          ? D3D12_RESOURCE_STATE_UNORDERED_ACCESS
+                          : D3D12_RESOURCE_STATE_COMMON;
   auto heap = heapProperties(D3D12_HEAP_TYPE_DEFAULT);
   HRESULT hr = device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE,
                                                &desc, initialState, clearPtr,
@@ -675,8 +747,7 @@ Ptr<gpu::GraphicsPipeline> Device::createGraphicsPipeline(
     const auto &vb =
         createInfo.vertexInputState.vertexBufferDescriptions[attr.bufferSlot];
 
-    const auto semantic =
-        vertexSemanticFrom(createInfo.vertexInputState, attr);
+    const auto semantic = vertexSemanticFrom(createInfo.vertexInputState, attr);
     elements[i].SemanticName = semantic.name;
     elements[i].SemanticIndex = semantic.index;
     elements[i].Format = convert::vertexFormatFrom(attr.format);
@@ -829,7 +900,8 @@ Ptr<gpu::Texture>
 Device::acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) {
   // Descriptor tables are frame-local. Upload command buffers can be created
   // while recording draws, so resetting from acquireCommandBuffer would
-  // invalidate descriptors already referenced by the active render command list.
+  // invalidate descriptors already referenced by the active render command
+  // list.
   resetTransientDescriptors();
   if (!swapchain) {
     createSwapchain();

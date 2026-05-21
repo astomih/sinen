@@ -269,6 +269,12 @@ export type ShaderStage = {
 	Vertex: ShaderStage,
 	Fragment: ShaderStage,
 	Compute: ShaderStage,
+	RayGeneration: ShaderStage,
+	AnyHit: ShaderStage,
+	ClosestHit: ShaderStage,
+	Miss: ShaderStage,
+	Intersection: ShaderStage,
+	Callable: ShaderStage,
 }
 
 export type ShaderFormat = {
@@ -344,6 +350,97 @@ export type ComputePipeline = {
 	setShader: (self: ComputePipeline, shader: Shader) -> nil,
 	setThreadGroupSize: (self: ComputePipeline, x: number, y: number?, z: number?) -> nil,
 	build: (self: ComputePipeline) -> nil,
+}
+
+export type RaytracingAccelerationStructure = {
+	getDeviceAddress: (self: RaytracingAccelerationStructure) -> number,
+}
+
+export type RaytracingPipeline = {
+	new: () -> RaytracingPipeline,
+	addShader: (self: RaytracingPipeline, shader: Shader, exportName: string?) -> nil,
+	addHitGroup: (
+		self: RaytracingPipeline,
+		exportName: string,
+		closestHitShaderIndex: number?,
+		anyHitShaderIndex: number?,
+		intersectionShaderIndex: number?
+	) -> nil,
+	setMaxPayloadSize: (self: RaytracingPipeline, size: number) -> nil,
+	setMaxAttributeSize: (self: RaytracingPipeline, size: number) -> nil,
+	setMaxRecursionDepth: (self: RaytracingPipeline, depth: number) -> nil,
+	build: (self: RaytracingPipeline) -> nil,
+	isReady: (self: RaytracingPipeline) -> boolean,
+	getShaderGroupHandleSize: (self: RaytracingPipeline) -> number,
+	getShaderGroupHandles: (self: RaytracingPipeline, firstGroup: number, groupCount: number) -> Buffer,
+}
+
+export type RaytracingTriangleGeometry = {
+	vertexBuffer: ComputeBuffer,
+	vertexOffset: number?,
+	vertexStride: number?,
+	vertexCount: number,
+	indexBuffer: ComputeBuffer?,
+	indexOffset: number?,
+	indexCount: number?,
+	opaque: boolean?,
+}
+
+export type RaytracingAabbGeometry = {
+	aabbBuffer: ComputeBuffer,
+	offset: number?,
+	stride: number?,
+	count: number,
+	opaque: boolean?,
+}
+
+export type RaytracingInstance = {
+	accelerationStructure: RaytracingAccelerationStructure,
+	transform: { number }?,
+	instanceCustomIndex: number?,
+	mask: number?,
+	shaderBindingTableRecordOffset: number?,
+	flags: number?,
+}
+
+export type RaytracingShaderTableRegion = {
+	offset: number?,
+	size: number?,
+	stride: number?,
+}
+
+export type RaytracingDispatchInfo = {
+	shaderTable: ComputeBuffer,
+	width: number,
+	height: number?,
+	depth: number?,
+	rayGeneration: RaytracingShaderTableRegion?,
+	miss: RaytracingShaderTableRegion?,
+	hit: RaytracingShaderTableRegion?,
+	callable: RaytracingShaderTableRegion?,
+	accelerationStructures: { RaytracingAccelerationStructure }?,
+	storageBuffers: { ComputeBuffer }?,
+	uniforms: { Buffer }?,
+}
+
+export type RaytracingBuildFlags = {
+	None: number,
+	AllowUpdate: number,
+	PreferFastTrace: number,
+	PreferFastBuild: number,
+	MinimizeMemory: number,
+}
+
+export type Raytracing = {
+	Pipeline: RaytracingPipeline,
+	BuildFlags: RaytracingBuildFlags,
+	isSupported: () -> boolean,
+	createBottomLevel: (
+		geometries: { RaytracingTriangleGeometry | RaytracingAabbGeometry },
+		flags: number?
+	) -> RaytracingAccelerationStructure,
+	createTopLevel: (instances: { RaytracingInstance }, flags: number?) -> RaytracingAccelerationStructure,
+	dispatch: (pipeline: RaytracingPipeline, info: RaytracingDispatchInfo) -> nil,
 }
 
 export type Collider = {
@@ -728,6 +825,7 @@ return {
 	GraphicsPipeline = {} :: GraphicsPipeline,
 	ComputeBuffer = {} :: ComputeBuffer,
 	ComputePipeline = {} :: ComputePipeline,
+	Raytracing = {} :: Raytracing,
 	Pivot = {} :: Pivot,
 	Rect = {} :: Rect,
 	Transform = {} :: Transform,

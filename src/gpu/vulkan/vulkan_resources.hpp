@@ -5,6 +5,7 @@
 #include <gpu/gpu_buffer.hpp>
 #include <gpu/gpu_compute_pipeline.hpp>
 #include <gpu/gpu_graphics_pipeline.hpp>
+#include <gpu/gpu_ray_tracing.hpp>
 #include <gpu/gpu_sampler.hpp>
 #include <gpu/gpu_shader.hpp>
 #include <gpu/gpu_texture.hpp>
@@ -18,15 +19,17 @@ class Device;
 class Buffer : public gpu::Buffer {
 public:
   Buffer(const CreateInfo &createInfo, Device &device, VkBuffer buffer,
-         VmaAllocation allocation);
+         VmaAllocation allocation, VkDeviceAddress deviceAddress = 0);
   ~Buffer() override;
 
   VkBuffer getNative() const { return buffer; }
+  VkDeviceAddress getDeviceAddress() const { return deviceAddress; }
 
 private:
   Device &device;
   VkBuffer buffer = VK_NULL_HANDLE;
   VmaAllocation allocation = VK_NULL_HANDLE;
+  VkDeviceAddress deviceAddress = 0;
 };
 
 class TransferBuffer : public gpu::TransferBuffer {
@@ -138,8 +141,8 @@ private:
 class GraphicsPipeline : public gpu::GraphicsPipeline {
 public:
   struct LayoutInfo {
-    VkDescriptorSetLayout vertexSamplerSetLayout = VK_NULL_HANDLE;  // set = 0
-    VkDescriptorSetLayout vertexUniformSetLayout = VK_NULL_HANDLE;  // set = 1
+    VkDescriptorSetLayout vertexSamplerSetLayout = VK_NULL_HANDLE;   // set = 0
+    VkDescriptorSetLayout vertexUniformSetLayout = VK_NULL_HANDLE;   // set = 1
     VkDescriptorSetLayout fragmentSamplerSetLayout = VK_NULL_HANDLE; // set = 2
     VkDescriptorSetLayout fragmentUniformSetLayout = VK_NULL_HANDLE; // set = 3
     VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
@@ -180,6 +183,51 @@ public:
 
   VkPipeline getNative() const { return pipeline; }
   const LayoutInfo &getLayoutInfo() const { return layoutInfo; }
+
+private:
+  Device &device;
+  VkPipeline pipeline = VK_NULL_HANDLE;
+  LayoutInfo layoutInfo{};
+};
+
+class AccelerationStructure : public gpu::AccelerationStructure {
+public:
+  AccelerationStructure(const CreateInfo &createInfo, Device &device,
+                        VkBuffer buffer, VmaAllocation allocation,
+                        VkAccelerationStructureKHR accelerationStructure,
+                        VkDeviceAddress deviceAddress);
+  ~AccelerationStructure() override;
+
+  VkAccelerationStructureKHR getNative() const { return accelerationStructure; }
+  UInt64 getDeviceAddress() const override { return deviceAddress; }
+
+private:
+  Device &device;
+  VkBuffer buffer = VK_NULL_HANDLE;
+  VmaAllocation allocation = VK_NULL_HANDLE;
+  VkAccelerationStructureKHR accelerationStructure = VK_NULL_HANDLE;
+  VkDeviceAddress deviceAddress = 0;
+};
+
+class RayTracingPipeline : public gpu::RayTracingPipeline {
+public:
+  struct LayoutInfo {
+    VkDescriptorSetLayout accelerationStructureSetLayout = VK_NULL_HANDLE;
+    VkDescriptorSetLayout storageBufferSetLayout = VK_NULL_HANDLE;
+    VkDescriptorSetLayout storageImageSetLayout = VK_NULL_HANDLE;
+    VkDescriptorSetLayout uniformSetLayout = VK_NULL_HANDLE;
+    VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+  };
+
+  RayTracingPipeline(const CreateInfo &createInfo, Device &device,
+                     VkPipeline pipeline, const LayoutInfo &layoutInfo);
+  ~RayTracingPipeline() override;
+
+  VkPipeline getNative() const { return pipeline; }
+  const LayoutInfo &getLayoutInfo() const { return layoutInfo; }
+  UInt32 getShaderGroupHandleSize() const override;
+  bool getShaderGroupHandles(UInt32 firstGroup, UInt32 groupCount, void *dst,
+                             Size dstSize) const override;
 
 private:
   Device &device;

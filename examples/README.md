@@ -56,3 +56,6 @@ Builds sphere, cylinder, and custom pyramid models from Luau with `sn.MeshBuilde
 
 ## 19 Compute
 Runs a compute shader from Luau, writes RGBA pixels into a `ComputeBuffer`, downloads them, and displays the result as a texture.
+
+## 20 Ray Tracing
+Builds BLAS/TLAS and dispatches a ray generation / miss / closest-hit shader pipeline from Luau through `sn.Raytracing`.

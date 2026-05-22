@@ -11,6 +11,12 @@
 
 namespace sinen::gpu::vulkan {
 namespace {
+constexpr uint32_t kRayTracingResourceSet = 4;
+constexpr uint32_t kRayTracingUniformSet = 5;
+constexpr uint32_t kRayTracingAccelerationStructureBindingCount = 8;
+constexpr uint32_t kRayTracingStorageBufferBaseBinding =
+    kRayTracingAccelerationStructureBindingCount;
+
 VkBuildAccelerationStructureFlagsKHR
 buildFlagsFrom(gpu::RayTracingBuildFlags flags) {
   VkBuildAccelerationStructureFlagsKHR out = 0;
@@ -83,6 +89,28 @@ descriptorBindings(uint32_t count, VkDescriptorType type) {
     VkDescriptorSetLayoutBinding binding{};
     binding.binding = i;
     binding.descriptorType = type;
+    binding.descriptorCount = 1;
+    binding.stageFlags = VK_SHADER_STAGE_ALL;
+    bindings.push_back(binding);
+  }
+  return bindings;
+}
+
+std::vector<VkDescriptorSetLayoutBinding> rayTracingResourceBindings() {
+  std::vector<VkDescriptorSetLayoutBinding> bindings;
+  bindings.reserve(kRayTracingAccelerationStructureBindingCount + 32);
+  for (uint32_t i = 0; i < kRayTracingAccelerationStructureBindingCount; ++i) {
+    VkDescriptorSetLayoutBinding binding{};
+    binding.binding = i;
+    binding.descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+    binding.descriptorCount = 1;
+    binding.stageFlags = VK_SHADER_STAGE_ALL;
+    bindings.push_back(binding);
+  }
+  for (uint32_t i = 0; i < 32; ++i) {
+    VkDescriptorSetLayoutBinding binding{};
+    binding.binding = kRayTracingStorageBufferBaseBinding + i;
+    binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     binding.descriptorCount = 1;
     binding.stageFlags = VK_SHADER_STAGE_ALL;
     bindings.push_back(binding);
@@ -286,35 +314,26 @@ Ptr<gpu::RayTracingPipeline> Device::createRayTracingPipeline(
     return nullptr;
   }
 
-  VkDescriptorSetLayout asSetLayout = createDescriptorSetLayout(
-      device,
-      descriptorBindings(8, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR),
-      "ray tracing acceleration structures");
-  VkDescriptorSetLayout storageBufferSetLayout = createDescriptorSetLayout(
-      device, descriptorBindings(32, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER),
-      "ray tracing storage buffers");
-  VkDescriptorSetLayout storageImageSetLayout = createDescriptorSetLayout(
-      device, descriptorBindings(32, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE),
-      "ray tracing storage images");
+  VkDescriptorSetLayout emptySetLayout =
+      createDescriptorSetLayout(device, {}, "ray tracing empty");
+  VkDescriptorSetLayout resourceSetLayout = createDescriptorSetLayout(
+      device, rayTracingResourceBindings(), "ray tracing resources");
   VkDescriptorSetLayout uniformSetLayout = createDescriptorSetLayout(
       device, descriptorBindings(4, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC),
       "ray tracing uniforms");
-  if (!asSetLayout || !storageBufferSetLayout || !storageImageSetLayout ||
-      !uniformSetLayout) {
+  if (!emptySetLayout || !resourceSetLayout || !uniformSetLayout) {
     if (uniformSetLayout)
       vkDestroyDescriptorSetLayout(device, uniformSetLayout, nullptr);
-    if (storageImageSetLayout)
-      vkDestroyDescriptorSetLayout(device, storageImageSetLayout, nullptr);
-    if (storageBufferSetLayout)
-      vkDestroyDescriptorSetLayout(device, storageBufferSetLayout, nullptr);
-    if (asSetLayout)
-      vkDestroyDescriptorSetLayout(device, asSetLayout, nullptr);
+    if (resourceSetLayout)
+      vkDestroyDescriptorSetLayout(device, resourceSetLayout, nullptr);
+    if (emptySetLayout)
+      vkDestroyDescriptorSetLayout(device, emptySetLayout, nullptr);
     return nullptr;
   }
 
-  std::array<VkDescriptorSetLayout, 4> setLayouts = {
-      asSetLayout, storageBufferSetLayout, storageImageSetLayout,
-      uniformSetLayout};
+  std::array<VkDescriptorSetLayout, 6> setLayouts = {
+      emptySetLayout, emptySetLayout,    emptySetLayout,
+      emptySetLayout, resourceSetLayout, uniformSetLayout};
   VkPipelineLayoutCreateInfo layoutCI{};
   layoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
   layoutCI.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
@@ -325,9 +344,8 @@ Ptr<gpu::RayTracingPipeline> Device::createRayTracingPipeline(
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                  "Vulkan: vkCreatePipelineLayout (ray tracing) failed");
     vkDestroyDescriptorSetLayout(device, uniformSetLayout, nullptr);
-    vkDestroyDescriptorSetLayout(device, storageImageSetLayout, nullptr);
-    vkDestroyDescriptorSetLayout(device, storageBufferSetLayout, nullptr);
-    vkDestroyDescriptorSetLayout(device, asSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device, resourceSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device, emptySetLayout, nullptr);
     return nullptr;
   }
 
@@ -414,16 +432,14 @@ Ptr<gpu::RayTracingPipeline> Device::createRayTracingPipeline(
                  "Vulkan: vkCreateRayTracingPipelinesKHR failed");
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
     vkDestroyDescriptorSetLayout(device, uniformSetLayout, nullptr);
-    vkDestroyDescriptorSetLayout(device, storageImageSetLayout, nullptr);
-    vkDestroyDescriptorSetLayout(device, storageBufferSetLayout, nullptr);
-    vkDestroyDescriptorSetLayout(device, asSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device, resourceSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device, emptySetLayout, nullptr);
     return nullptr;
   }
 
   RayTracingPipeline::LayoutInfo layoutInfo{};
-  layoutInfo.accelerationStructureSetLayout = asSetLayout;
-  layoutInfo.storageBufferSetLayout = storageBufferSetLayout;
-  layoutInfo.storageImageSetLayout = storageImageSetLayout;
+  layoutInfo.emptySetLayout = emptySetLayout;
+  layoutInfo.resourceSetLayout = resourceSetLayout;
   layoutInfo.uniformSetLayout = uniformSetLayout;
   layoutInfo.pipelineLayout = pipelineLayout;
   return makePtr<RayTracingPipeline>(createInfo.allocator, createInfo, *this,
@@ -557,14 +573,16 @@ void RayTracingPass::bindRayTracingPipeline(
 }
 
 void RayTracingPass::bindAccelerationStructures(
-    UInt32,
+    UInt32 startSlot,
     const Array<Ptr<gpu::AccelerationStructure>> &accelerationStructures) {
+  accelerationStructureStartSlot = startSlot;
   this->accelerationStructures = Array<Ptr<gpu::AccelerationStructure>>(
       accelerationStructures, commandBuffer.getCreateInfo().allocator);
 }
 
 void RayTracingPass::bindStorageBuffers(
-    UInt32, const Array<gpu::StorageBufferBinding> &storageBuffers) {
+    UInt32 startSlot, const Array<gpu::StorageBufferBinding> &storageBuffers) {
+  storageBufferStartSlot = startSlot;
   this->storageBuffers = Array<gpu::StorageBufferBinding>(
       storageBuffers, commandBuffer.getCreateInfo().allocator);
 }
@@ -575,14 +593,14 @@ void RayTracingPass::bindDescriptorSets() {
   }
 
   const auto &layoutInfo = boundPipeline->getLayoutInfo();
-  if (!accelerationStructures.empty() &&
-      layoutInfo.accelerationStructureSetLayout != VK_NULL_HANDLE) {
+  if ((!accelerationStructures.empty() || !storageBuffers.empty()) &&
+      layoutInfo.resourceSetLayout != VK_NULL_HANDLE) {
     VkDescriptorSet set = VK_NULL_HANDLE;
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = commandBuffer.getDescriptorPool();
     allocInfo.descriptorSetCount = 1;
-    allocInfo.pSetLayouts = &layoutInfo.accelerationStructureSetLayout;
+    allocInfo.pSetLayouts = &layoutInfo.resourceSetLayout;
     if (vkAllocateDescriptorSets(device.getVkDevice(), &allocInfo, &set) ==
         VK_SUCCESS) {
       std::vector<VkAccelerationStructureKHR> handles;
@@ -595,41 +613,24 @@ void RayTracingPass::bindDescriptorSets() {
 
       std::vector<VkWriteDescriptorSetAccelerationStructureKHR> asInfos(
           handles.size());
-      std::vector<VkWriteDescriptorSet> writes(handles.size());
+      std::vector<VkDescriptorBufferInfo> bufferInfos(storageBuffers.size());
+      std::vector<VkWriteDescriptorSet> writes;
+      writes.reserve(handles.size() + storageBuffers.size());
       for (size_t i = 0; i < handles.size(); ++i) {
         asInfos[i].sType =
             VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;
         asInfos[i].accelerationStructureCount = 1;
         asInfos[i].pAccelerationStructures = &handles[i];
-        writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        writes[i].pNext = &asInfos[i];
-        writes[i].dstSet = set;
-        writes[i].dstBinding = static_cast<uint32_t>(i);
-        writes[i].descriptorCount = 1;
-        writes[i].descriptorType =
-            VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+        VkWriteDescriptorSet write{};
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.pNext = &asInfos[i];
+        write.dstSet = set;
+        write.dstBinding =
+            accelerationStructureStartSlot + static_cast<uint32_t>(i);
+        write.descriptorCount = 1;
+        write.descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+        writes.push_back(write);
       }
-      vkUpdateDescriptorSets(device.getVkDevice(),
-                             static_cast<uint32_t>(writes.size()),
-                             writes.data(), 0, nullptr);
-      vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
-                              layoutInfo.pipelineLayout, 0, 1, &set, 0,
-                              nullptr);
-    }
-  }
-
-  if (!storageBuffers.empty() &&
-      layoutInfo.storageBufferSetLayout != VK_NULL_HANDLE) {
-    VkDescriptorSet set = VK_NULL_HANDLE;
-    VkDescriptorSetAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = commandBuffer.getDescriptorPool();
-    allocInfo.descriptorSetCount = 1;
-    allocInfo.pSetLayouts = &layoutInfo.storageBufferSetLayout;
-    if (vkAllocateDescriptorSets(device.getVkDevice(), &allocInfo, &set) ==
-        VK_SUCCESS) {
-      std::vector<VkDescriptorBufferInfo> bufferInfos(storageBuffers.size());
-      std::vector<VkWriteDescriptorSet> writes(storageBuffers.size());
       for (size_t i = 0; i < storageBuffers.size(); ++i) {
         auto buffer = downCast<Buffer>(storageBuffers[i].buffer);
         if (!buffer) {
@@ -639,19 +640,22 @@ void RayTracingPass::bindDescriptorSets() {
         bufferInfos[i].buffer = buffer->getNative();
         bufferInfos[i].offset = 0;
         bufferInfos[i].range = buffer->getCreateInfo().size;
-        writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        writes[i].dstSet = set;
-        writes[i].dstBinding = static_cast<uint32_t>(i);
-        writes[i].descriptorCount = 1;
-        writes[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-        writes[i].pBufferInfo = &bufferInfos[i];
+        VkWriteDescriptorSet write{};
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.dstSet = set;
+        write.dstBinding = kRayTracingStorageBufferBaseBinding +
+                           storageBufferStartSlot + static_cast<uint32_t>(i);
+        write.descriptorCount = 1;
+        write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        write.pBufferInfo = &bufferInfos[i];
+        writes.push_back(write);
       }
       vkUpdateDescriptorSets(device.getVkDevice(),
                              static_cast<uint32_t>(writes.size()),
                              writes.data(), 0, nullptr);
       vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
-                              layoutInfo.pipelineLayout, 1, 1, &set, 0,
-                              nullptr);
+                              layoutInfo.pipelineLayout, kRayTracingResourceSet,
+                              1, &set, 0, nullptr);
     }
   }
 
@@ -685,8 +689,8 @@ void RayTracingPass::bindDescriptorSets() {
       vkUpdateDescriptorSets(device.getVkDevice(), uniformCount, writes.data(),
                              0, nullptr);
       vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
-                              layoutInfo.pipelineLayout, 3, 1, &set,
-                              uniformCount, uniformOffsets);
+                              layoutInfo.pipelineLayout, kRayTracingUniformSet,
+                              1, &set, uniformCount, uniformOffsets);
     }
   }
 }

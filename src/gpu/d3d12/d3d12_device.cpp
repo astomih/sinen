@@ -538,13 +538,13 @@ void Device::createRayTracingRootSignature() {
   ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
   ranges[0].NumDescriptors = 32;
   ranges[0].BaseShaderRegister = 0;
-  ranges[0].RegisterSpace = 0;
+  ranges[0].RegisterSpace = 4;
   ranges[0].OffsetInDescriptorsFromTableStart =
       D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
   ranges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
   ranges[1].NumDescriptors = 32;
   ranges[1].BaseShaderRegister = 0;
-  ranges[1].RegisterSpace = 0;
+  ranges[1].RegisterSpace = 4;
   ranges[1].OffsetInDescriptorsFromTableStart =
       D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
@@ -560,7 +560,7 @@ void Device::createRayTracingRootSignature() {
   for (UINT i = 0; i < 4; ++i) {
     params[i + 2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     params[i + 2].Descriptor.ShaderRegister = i;
-    params[i + 2].Descriptor.RegisterSpace = 0;
+    params[i + 2].Descriptor.RegisterSpace = 5;
     params[i + 2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
   }
 

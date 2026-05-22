@@ -404,6 +404,9 @@ void Device::createAllocator() {
   ci.device = device;
   ci.vulkanApiVersion = VK_API_VERSION_1_2;
   ci.pVulkanFunctions = &functions;
+  if (rayTracingSupported) {
+    ci.flags |= VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+  }
   if (vmaCreateAllocator(&ci, &vmaAllocator) != VK_SUCCESS) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                  "Vulkan: vmaCreateAllocator failed");

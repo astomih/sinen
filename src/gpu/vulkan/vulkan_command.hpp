@@ -232,6 +232,8 @@ private:
   CommandBuffer &commandBuffer;
   VkCommandBuffer cmd = VK_NULL_HANDLE;
   Ptr<RayTracingPipeline> boundPipeline = nullptr;
+  UInt32 accelerationStructureStartSlot = 0;
+  UInt32 storageBufferStartSlot = 0;
   Array<Ptr<gpu::AccelerationStructure>> accelerationStructures;
   Array<gpu::StorageBufferBinding> storageBuffers;
 };

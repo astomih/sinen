@@ -2,11 +2,11 @@ struct RayPayload {
   float3 color;
 };
 
-[[vk::binding(0, 0)]]
-RaytracingAccelerationStructure scene : register(t0, space0);
+[[vk::binding(0, 4)]]
+RaytracingAccelerationStructure scene : register(t0, space4);
 
-[[vk::binding(0, 1)]]
-RWByteAddressBuffer outputPixels : register(u0, space0);
+[[vk::binding(8, 4)]]
+RWByteAddressBuffer outputPixels : register(u0, space4);
 
 [shader("raygeneration")]
 void RayGenMain() {

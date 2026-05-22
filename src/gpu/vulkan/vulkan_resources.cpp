@@ -205,18 +205,13 @@ RayTracingPipeline::~RayTracingPipeline() {
     vkDestroyDescriptorSetLayout(device.getVkDevice(),
                                  layoutInfo.uniformSetLayout, nullptr);
   }
-  if (layoutInfo.storageImageSetLayout != VK_NULL_HANDLE) {
+  if (layoutInfo.resourceSetLayout != VK_NULL_HANDLE) {
     vkDestroyDescriptorSetLayout(device.getVkDevice(),
-                                 layoutInfo.storageImageSetLayout, nullptr);
+                                 layoutInfo.resourceSetLayout, nullptr);
   }
-  if (layoutInfo.storageBufferSetLayout != VK_NULL_HANDLE) {
+  if (layoutInfo.emptySetLayout != VK_NULL_HANDLE) {
     vkDestroyDescriptorSetLayout(device.getVkDevice(),
-                                 layoutInfo.storageBufferSetLayout, nullptr);
-  }
-  if (layoutInfo.accelerationStructureSetLayout != VK_NULL_HANDLE) {
-    vkDestroyDescriptorSetLayout(device.getVkDevice(),
-                                 layoutInfo.accelerationStructureSetLayout,
-                                 nullptr);
+                                 layoutInfo.emptySetLayout, nullptr);
   }
 }
 

@@ -212,9 +212,8 @@ private:
 class RayTracingPipeline : public gpu::RayTracingPipeline {
 public:
   struct LayoutInfo {
-    VkDescriptorSetLayout accelerationStructureSetLayout = VK_NULL_HANDLE;
-    VkDescriptorSetLayout storageBufferSetLayout = VK_NULL_HANDLE;
-    VkDescriptorSetLayout storageImageSetLayout = VK_NULL_HANDLE;
+    VkDescriptorSetLayout emptySetLayout = VK_NULL_HANDLE;
+    VkDescriptorSetLayout resourceSetLayout = VK_NULL_HANDLE;
     VkDescriptorSetLayout uniformSetLayout = VK_NULL_HANDLE;
     VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
   };

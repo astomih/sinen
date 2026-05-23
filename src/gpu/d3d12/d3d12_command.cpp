@@ -502,6 +502,55 @@ void RenderPass::bindFragmentSampler(UInt32 startSlot,
   bindFragmentSamplers(startSlot, bindings);
 }
 
+void RenderPass::bindAccelerationStructures(
+    UInt32 startSlot,
+    const Array<Ptr<gpu::AccelerationStructure>> &accelerationStructures) {
+  if (accelerationStructures.empty()) {
+    return;
+  }
+
+  auto device = commandBuffer->getDevice();
+  CpuGpuDescriptor first{};
+  const UInt32 descriptorCount =
+      startSlot + static_cast<UInt32>(accelerationStructures.size());
+  for (UInt32 i = 0; i < descriptorCount; ++i) {
+    auto descriptor = device->allocateTransientSrvDescriptor();
+    if (i == 0) {
+      first = descriptor;
+    }
+    if (i < startSlot) {
+      D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
+      desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+      desc.ViewDimension =
+          D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
+      device->getNative()->CreateShaderResourceView(nullptr, &desc,
+                                                    descriptor.cpu);
+      continue;
+    }
+    auto accelerationStructure =
+        downCast<AccelerationStructure>(accelerationStructures[i - startSlot]);
+    if (!accelerationStructure) {
+      D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
+      desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+      desc.ViewDimension =
+          D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
+      device->getNative()->CreateShaderResourceView(nullptr, &desc,
+                                                    descriptor.cpu);
+      continue;
+    }
+    commandBuffer->keepAlive(accelerationStructure->getNative());
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
+    desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    desc.ViewDimension = D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
+    desc.RaytracingAccelerationStructure.Location =
+        accelerationStructure->getDeviceAddress();
+    device->getNative()->CreateShaderResourceView(nullptr, &desc,
+                                                  descriptor.cpu);
+  }
+  commandBuffer->getNative()->SetGraphicsRootDescriptorTable(12, first.gpu);
+}
+
 void RenderPass::setViewport(const Viewport &viewport) {
   D3D12_VIEWPORT vp{viewport.x,      viewport.y,        viewport.width,
                     viewport.height, viewport.minDepth, viewport.maxDepth};
@@ -567,6 +616,55 @@ void ComputePass::bindComputePipeline(
   list->SetComputeRootSignature(pipeline->getRootSignature());
   list->SetPipelineState(pipeline->getNative());
   bindStorageBuffers();
+}
+
+void ComputePass::bindAccelerationStructures(
+    UInt32 startSlot,
+    const Array<Ptr<gpu::AccelerationStructure>> &accelerationStructures) {
+  if (accelerationStructures.empty()) {
+    return;
+  }
+
+  auto device = commandBuffer->getDevice();
+  CpuGpuDescriptor first{};
+  const UInt32 descriptorCount =
+      startSlot + static_cast<UInt32>(accelerationStructures.size());
+  for (UInt32 i = 0; i < descriptorCount; ++i) {
+    auto descriptor = device->allocateTransientSrvDescriptor();
+    if (i == 0) {
+      first = descriptor;
+    }
+    if (i < startSlot) {
+      D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
+      desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+      desc.ViewDimension =
+          D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
+      device->getNative()->CreateShaderResourceView(nullptr, &desc,
+                                                    descriptor.cpu);
+      continue;
+    }
+    auto accelerationStructure =
+        downCast<AccelerationStructure>(accelerationStructures[i - startSlot]);
+    if (!accelerationStructure) {
+      D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
+      desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+      desc.ViewDimension =
+          D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
+      device->getNative()->CreateShaderResourceView(nullptr, &desc,
+                                                    descriptor.cpu);
+      continue;
+    }
+    commandBuffer->keepAlive(accelerationStructure->getNative());
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
+    desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    desc.ViewDimension = D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
+    desc.RaytracingAccelerationStructure.Location =
+        accelerationStructure->getDeviceAddress();
+    device->getNative()->CreateShaderResourceView(nullptr, &desc,
+                                                  descriptor.cpu);
+  }
+  commandBuffer->getNative()->SetComputeRootDescriptorTable(5, first.gpu);
 }
 
 void ComputePass::bindStorageBuffers() {

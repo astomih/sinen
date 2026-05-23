@@ -77,14 +77,7 @@ Array<char> ShaderCompiler::compileSource(StringView moduleName,
   switch (format) {
   case ShaderFormat::SPIRV:
     targetDesc[0].format = SLANG_SPIRV;
-    targetDesc[0].profile = globalSession->findProfile(
-        stage == ShaderStage::RayGeneration || stage == ShaderStage::AnyHit ||
-                stage == ShaderStage::ClosestHit ||
-                stage == ShaderStage::Miss ||
-                stage == ShaderStage::Intersection ||
-                stage == ShaderStage::Callable
-            ? "spirv_1_4"
-            : "spirv_1_3");
+    targetDesc[0].profile = globalSession->findProfile("spirv_1_4");
     emitSpirvDirectly = true;
     break;
   case ShaderFormat::WGSL:
@@ -104,7 +97,7 @@ Array<char> ShaderCompiler::compileSource(StringView moduleName,
                 stage == ShaderStage::Intersection ||
                 stage == ShaderStage::Callable
             ? "lib_6_3"
-            : "sm_6_0");
+            : "sm_6_5");
     break;
   }
   sessionDesc.targets = targetDesc.data();

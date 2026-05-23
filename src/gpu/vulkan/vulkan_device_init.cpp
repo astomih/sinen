@@ -60,6 +60,20 @@ bool queryRayTracingSupport(VkPhysicalDevice pd,
          accelerationStructure.accelerationStructure && bda.bufferDeviceAddress;
 }
 
+bool queryRayQuerySupport(VkPhysicalDevice pd,
+                          const Array<VkExtensionProperties> &extensions) {
+  if (!hasExtension(extensions, VK_KHR_RAY_QUERY_EXTENSION_NAME)) {
+    return false;
+  }
+  VkPhysicalDeviceRayQueryFeaturesKHR rayQuery{};
+  rayQuery.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR;
+  VkPhysicalDeviceFeatures2 features2{};
+  features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+  features2.pNext = &rayQuery;
+  vkGetPhysicalDeviceFeatures2(pd, &features2);
+  return rayQuery.rayQuery == VK_TRUE;
+}
+
 Device::Device(const CreateInfo &createInfo) : gpu::Device(createInfo) {}
 
 Device::~Device() {
@@ -267,6 +281,7 @@ void Device::pickPhysicalDevice() {
     bool hasMaintenance1 =
         hasExtension(exts, VK_KHR_MAINTENANCE1_EXTENSION_NAME);
     bool hasRayTracing = queryRayTracingSupport(pd, exts);
+    bool hasRayQuery = hasRayTracing && queryRayQuerySupport(pd, exts);
     VkPhysicalDeviceFeatures features{};
     vkGetPhysicalDeviceFeatures(pd, &features);
     if (!hasSwapchain || !hasMaintenance1 || !features.independentBlend ||
@@ -284,6 +299,7 @@ void Device::pickPhysicalDevice() {
       physicalDevice = pd;
       queueFamilyIndex = qf;
       rayTracingSupported = hasRayTracing;
+      rayQuerySupported = hasRayQuery;
     }
   }
 }
@@ -326,6 +342,8 @@ void Device::createLogicalDevice() {
       VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
   rayTracingPipeline.rayTracingPipeline = VK_TRUE;
   rayTracingPipeline.pNext = &accelerationStructure;
+  VkPhysicalDeviceRayQueryFeaturesKHR rayQuery{};
+  rayQuery.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR;
   VkPhysicalDeviceFeatures2 features2{};
   features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
   features2.features = features;
@@ -337,6 +355,12 @@ void Device::createLogicalDevice() {
     extensions.push_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
     extensions.push_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
     bda.bufferDeviceAddress = VK_TRUE;
+  }
+  if (rayQuerySupported) {
+    extensions.push_back(VK_KHR_RAY_QUERY_EXTENSION_NAME);
+    rayQuery.rayQuery = VK_TRUE;
+    rayQuery.pNext = features2.pNext;
+    features2.pNext = &rayQuery;
   }
 
   VkDeviceCreateInfo ci{};

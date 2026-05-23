@@ -494,7 +494,8 @@ void CopyPass::copyTexture(const TextureLocation &src,
 
 RenderPass::RenderPass(Device &device, CommandBuffer &commandBuffer)
     : device(device), commandBuffer(commandBuffer),
-      cmd(commandBuffer.getNative()) {}
+      cmd(commandBuffer.getNative()),
+      accelerationStructures(commandBuffer.getCreateInfo().allocator) {}
 
 void RenderPass::begin(const Array<ColorTargetInfo> &infos,
                        const DepthStencilTargetInfo &depthStencilInfo, float r,
@@ -744,6 +745,58 @@ void RenderPass::ensureDescriptorSet() {
                          nullptr);
 }
 
+void RenderPass::ensureAccelerationStructureDescriptorSet() {
+  if (!boundPipeline || accelerationStructureSet != VK_NULL_HANDLE ||
+      accelerationStructures.empty()) {
+    return;
+  }
+  const auto &layoutInfo = boundPipeline->getLayoutInfo();
+  if (layoutInfo.accelerationStructureSetLayout == VK_NULL_HANDLE) {
+    return;
+  }
+
+  VkDescriptorSetAllocateInfo allocInfo{};
+  allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+  allocInfo.descriptorPool = commandBuffer.getDescriptorPool();
+  allocInfo.descriptorSetCount = 1;
+  allocInfo.pSetLayouts = &layoutInfo.accelerationStructureSetLayout;
+  if (vkAllocateDescriptorSets(device.getVkDevice(), &allocInfo,
+                               &accelerationStructureSet) != VK_SUCCESS) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: vkAllocateDescriptorSets (ray query) failed");
+    return;
+  }
+
+  Array<VkAccelerationStructureKHR> handles(
+      commandBuffer.getCreateInfo().allocator);
+  handles.resize(accelerationStructures.size());
+  for (uint32_t i = 0; i < accelerationStructures.size(); ++i) {
+    auto native = downCast<AccelerationStructure>(accelerationStructures[i]);
+    handles[i] = native ? native->getNative() : VK_NULL_HANDLE;
+    commandBuffer.keepAlive(accelerationStructures[i]);
+  }
+
+  Array<VkWriteDescriptorSetAccelerationStructureKHR> asInfos(
+      commandBuffer.getCreateInfo().allocator);
+  Array<VkWriteDescriptorSet> writes(commandBuffer.getCreateInfo().allocator);
+  asInfos.resize(handles.size());
+  writes.resize(handles.size());
+  for (uint32_t i = 0; i < handles.size(); ++i) {
+    asInfos[i].sType =
+        VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;
+    asInfos[i].accelerationStructureCount = 1;
+    asInfos[i].pAccelerationStructures = &handles[i];
+    writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writes[i].pNext = &asInfos[i];
+    writes[i].dstSet = accelerationStructureSet;
+    writes[i].dstBinding = accelerationStructureStartSlot + i;
+    writes[i].descriptorCount = 1;
+    writes[i].descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+  }
+  vkUpdateDescriptorSets(device.getVkDevice(), writes.size(), writes.data(), 0,
+                         nullptr);
+}
+
 void RenderPass::bindDescriptorSet() {
   if (!boundPipeline || vertexUniformSet == VK_NULL_HANDLE ||
       fragmentSamplerSet == VK_NULL_HANDLE ||
@@ -767,6 +820,12 @@ void RenderPass::bindDescriptorSet() {
                           layoutInfo.pipelineLayout, 1,
                           static_cast<uint32_t>(sets.size()), sets.data(),
                           dynamicOffsets.size(), dynamicOffsets.data());
+  ensureAccelerationStructureDescriptorSet();
+  if (accelerationStructureSet != VK_NULL_HANDLE) {
+    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            layoutInfo.pipelineLayout, 6, 1,
+                            &accelerationStructureSet, 0, nullptr);
+  }
 }
 
 void RenderPass::bindGraphicsPipeline(
@@ -781,6 +840,7 @@ void RenderPass::bindGraphicsPipeline(
   vertexUniformSet = VK_NULL_HANDLE;
   fragmentSamplerSet = VK_NULL_HANDLE;
   fragmentUniformSet = VK_NULL_HANDLE;
+  accelerationStructureSet = VK_NULL_HANDLE;
   ensureDescriptorSet();
   vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
                     boundPipeline->getNative());
@@ -866,6 +926,16 @@ void RenderPass::bindFragmentSampler(UInt32 startSlot,
   bindFragmentSamplers(startSlot, bindings);
 }
 
+void RenderPass::bindAccelerationStructures(
+    UInt32 startSlot,
+    const Array<Ptr<gpu::AccelerationStructure>> &accelerationStructures) {
+  accelerationStructureStartSlot = startSlot;
+  accelerationStructureSet = VK_NULL_HANDLE;
+  this->accelerationStructures = Array<Ptr<gpu::AccelerationStructure>>(
+      accelerationStructures, commandBuffer.getCreateInfo().allocator);
+  ensureAccelerationStructureDescriptorSet();
+}
+
 void RenderPass::setViewport(const Viewport &viewport) {
   VkViewport vp{};
   vp.x = viewport.x;
@@ -907,6 +977,7 @@ ComputePass::ComputePass(Device &device, CommandBuffer &commandBuffer,
                          Array<StorageBufferBinding> storageBuffers)
     : device(device), commandBuffer(commandBuffer),
       cmd(commandBuffer.getNative()),
+      accelerationStructures(commandBuffer.getCreateInfo().allocator),
       storageBuffers(std::move(storageBuffers)) {}
 
 void ComputePass::ensureDescriptorSet() {
@@ -985,6 +1056,58 @@ void ComputePass::ensureDescriptorSet() {
                          nullptr);
 }
 
+void ComputePass::ensureAccelerationStructureDescriptorSet() {
+  if (!boundPipeline || accelerationStructureSet != VK_NULL_HANDLE ||
+      accelerationStructures.empty()) {
+    return;
+  }
+  const auto &layoutInfo = boundPipeline->getLayoutInfo();
+  if (layoutInfo.accelerationStructureSetLayout == VK_NULL_HANDLE) {
+    return;
+  }
+
+  VkDescriptorSetAllocateInfo allocInfo{};
+  allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+  allocInfo.descriptorPool = commandBuffer.getDescriptorPool();
+  allocInfo.descriptorSetCount = 1;
+  allocInfo.pSetLayouts = &layoutInfo.accelerationStructureSetLayout;
+  if (vkAllocateDescriptorSets(device.getVkDevice(), &allocInfo,
+                               &accelerationStructureSet) != VK_SUCCESS) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: vkAllocateDescriptorSets (compute ray query) failed");
+    return;
+  }
+
+  Array<VkAccelerationStructureKHR> handles(
+      commandBuffer.getCreateInfo().allocator);
+  handles.resize(accelerationStructures.size());
+  for (uint32_t i = 0; i < accelerationStructures.size(); ++i) {
+    auto native = downCast<AccelerationStructure>(accelerationStructures[i]);
+    handles[i] = native ? native->getNative() : VK_NULL_HANDLE;
+    commandBuffer.keepAlive(accelerationStructures[i]);
+  }
+
+  Array<VkWriteDescriptorSetAccelerationStructureKHR> asInfos(
+      commandBuffer.getCreateInfo().allocator);
+  Array<VkWriteDescriptorSet> writes(commandBuffer.getCreateInfo().allocator);
+  asInfos.resize(handles.size());
+  writes.resize(handles.size());
+  for (uint32_t i = 0; i < handles.size(); ++i) {
+    asInfos[i].sType =
+        VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;
+    asInfos[i].accelerationStructureCount = 1;
+    asInfos[i].pAccelerationStructures = &handles[i];
+    writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writes[i].pNext = &asInfos[i];
+    writes[i].dstSet = accelerationStructureSet;
+    writes[i].dstBinding = accelerationStructureStartSlot + i;
+    writes[i].descriptorCount = 1;
+    writes[i].descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+  }
+  vkUpdateDescriptorSets(device.getVkDevice(), writes.size(), writes.data(), 0,
+                         nullptr);
+}
+
 void ComputePass::bindDescriptorSet() {
   if (!boundPipeline || storageBufferSet == VK_NULL_HANDLE ||
       uniformSet == VK_NULL_HANDLE) {
@@ -1001,6 +1124,12 @@ void ComputePass::bindDescriptorSet() {
                           layoutInfo.pipelineLayout, 0,
                           static_cast<uint32_t>(sets.size()), sets.data(),
                           dynamicOffsets.size(), dynamicOffsets.data());
+  ensureAccelerationStructureDescriptorSet();
+  if (accelerationStructureSet != VK_NULL_HANDLE) {
+    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE,
+                            layoutInfo.pipelineLayout, 6, 1,
+                            &accelerationStructureSet, 0, nullptr);
+  }
 }
 
 void ComputePass::bindComputePipeline(
@@ -1014,9 +1143,20 @@ void ComputePass::bindComputePipeline(
   }
   storageBufferSet = VK_NULL_HANDLE;
   uniformSet = VK_NULL_HANDLE;
+  accelerationStructureSet = VK_NULL_HANDLE;
   ensureDescriptorSet();
   vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE,
                     boundPipeline->getNative());
+}
+
+void ComputePass::bindAccelerationStructures(
+    UInt32 startSlot,
+    const Array<Ptr<gpu::AccelerationStructure>> &accelerationStructures) {
+  accelerationStructureStartSlot = startSlot;
+  accelerationStructureSet = VK_NULL_HANDLE;
+  this->accelerationStructures = Array<Ptr<gpu::AccelerationStructure>>(
+      accelerationStructures, commandBuffer.getCreateInfo().allocator);
+  ensureAccelerationStructureDescriptorSet();
 }
 
 void ComputePass::dispatchWorkgroups(UInt32 groupCountX, UInt32 groupCountY,

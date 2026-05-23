@@ -53,6 +53,8 @@ static gpu::DepthStencilTargetInfo depthStencilInfo;
 static Array<gpu::ColorTargetInfo> currentColorTargets;
 static gpu::DepthStencilTargetInfo currentDepthStencilInfo;
 static Hashmap<UInt32, Ptr<Texture>> currentTextureBindings;
+static Hashmap<UInt32, Ptr<gpu::AccelerationStructure>>
+    currentAccelerationStructureBindings;
 static Model box = Model();
 static Model sprite = Model();
 
@@ -360,6 +362,23 @@ bindCurrentTextureSamplers(const Ptr<gpu::RenderPass> &renderPass,
   renderPass->bindFragmentSamplers(0, textureSamplers);
 }
 
+static void
+bindCurrentAccelerationStructures(const Ptr<gpu::RenderPass> &renderPass) {
+  if (currentAccelerationStructureBindings.empty()) {
+    return;
+  }
+  UInt32 maxSlot = 0;
+  for (const auto &binding : currentAccelerationStructureBindings) {
+    maxSlot = std::max(maxSlot, binding.first);
+  }
+  Array<Ptr<gpu::AccelerationStructure>> accelerationStructures;
+  accelerationStructures.resize(maxSlot + 1);
+  for (const auto &binding : currentAccelerationStructureBindings) {
+    accelerationStructures[binding.first] = binding.second;
+  }
+  renderPass->bindAccelerationStructures(0, accelerationStructures);
+}
+
 static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
                        const Ptr<gpu::Sampler> &textureSampler = sampler) {
   assert(currentPipeline.has_value());
@@ -421,6 +440,7 @@ static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
   auto renderPass = currentRenderPass;
   renderPass->bindGraphicsPipeline(currentPipeline.value().get());
   bindCurrentTextureSamplers(renderPass, textureSampler);
+  bindCurrentAccelerationStructures(renderPass);
   renderPass->bindVertexBuffers(0, vertexBufferBindings);
   renderPass->bindIndexBuffer(indexBufferBinding,
                               gpu::IndexElementSize::Uint32);
@@ -430,6 +450,7 @@ static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
                                     0, 0, 0);
   currentPipeline = std::nullopt;
   currentTextureBindings.clear();
+  currentAccelerationStructureBindings.clear();
 }
 
 static void drawBase3D(const Array<Transform> transforms, const Model &model) {
@@ -539,6 +560,7 @@ static void drawBase3D(const Array<Transform> transforms, const Model &model) {
   auto renderPass = currentRenderPass;
   renderPass->bindGraphicsPipeline(currentPipeline.value().get());
   bindCurrentTextureSamplers(renderPass);
+  bindCurrentAccelerationStructures(renderPass);
   renderPass->bindVertexBuffers(0, vertexBufferBindings);
   renderPass->bindIndexBuffer(indexBufferBinding,
                               gpu::IndexElementSize::Uint32);
@@ -551,6 +573,7 @@ static void drawBase3D(const Array<Transform> transforms, const Model &model) {
   renderPass->drawIndexedPrimitives(numIndices, numInstance, 0, 0, 0);
   currentPipeline = std::nullopt;
   currentTextureBindings.clear();
+  currentAccelerationStructureBindings.clear();
 }
 void Graphics::drawRect(const Rect &rect, const Color &color, float angle) {
   if (customPipeline.has_value() && customPipeline.value().get() != nullptr)
@@ -767,6 +790,7 @@ void Graphics::finish() {
   currentCamera2D = std::nullopt;
   currentCamera3D = std::nullopt;
   currentTextureBindings.clear();
+  currentAccelerationStructureBindings.clear();
   currentPipeline = std::nullopt;
 }
 Vec2 Graphics::windowToCurrent2D(const Vec2 &windowPosition) {
@@ -792,6 +816,21 @@ void Graphics::resetTexture(UInt32 slotIndex) {
   currentTextureBindings.erase(slotIndex);
 }
 void Graphics::resetAllTexture() { currentTextureBindings.clear(); }
+
+void Graphics::setAccelerationStructure(
+    UInt32 slotIndex,
+    const Ptr<gpu::AccelerationStructure> &accelerationStructure) {
+  currentAccelerationStructureBindings.insert_or_assign(slotIndex,
+                                                        accelerationStructure);
+}
+
+void Graphics::resetAccelerationStructure(UInt32 slotIndex) {
+  currentAccelerationStructureBindings.erase(slotIndex);
+}
+
+void Graphics::resetAllAccelerationStructures() {
+  currentAccelerationStructureBindings.clear();
+}
 
 void Graphics::beginRenderTarget(const RenderTexture &texture) {
   auto tex = texture.getTexture();

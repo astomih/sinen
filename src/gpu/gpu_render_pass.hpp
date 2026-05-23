@@ -3,6 +3,8 @@
 #include "gpu_buffer.hpp"
 #include "gpu_graphics_pipeline.hpp"
 namespace sinen::gpu {
+class AccelerationStructure;
+
 enum class IndexElementSize { Uint16, Uint32 };
 struct TextureSamplerBinding {
   Ptr<class Sampler> sampler;
@@ -30,6 +32,9 @@ public:
                        const Array<TextureSamplerBinding> &bindings) = 0;
   virtual void bindFragmentSampler(UInt32 startSlot,
                                    const TextureSamplerBinding &binding) = 0;
+  virtual void
+  bindAccelerationStructures(UInt32 startSlot,
+                             const Array<Ptr<AccelerationStructure>> &) {}
   virtual void setViewport(const Viewport &viewport) = 0;
   virtual void setScissor(Int32 x, Int32 y, Int32 width, Int32 height) = 0;
   virtual void drawPrimitives(UInt32 numVertices, UInt32 numInstances,

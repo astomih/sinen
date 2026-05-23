@@ -69,6 +69,15 @@ bool hasRayTracingSupport(ID3D12Device *device) {
   return options.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED;
 }
 
+bool hasRayQuerySupport(ID3D12Device *device) {
+  D3D12_FEATURE_DATA_D3D12_OPTIONS5 options{};
+  if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &options,
+                                         sizeof(options)))) {
+    return false;
+  }
+  return options.RaytracingTier >= D3D12_RAYTRACING_TIER_1_1;
+}
+
 UINT16 depthOrArraySizeFrom(const gpu::Texture::CreateInfo &createInfo) {
   switch (createInfo.type) {
   case TextureType::Texture3D:
@@ -196,6 +205,7 @@ void Device::createDeviceObjects() {
   }
   if (hasRayTracingSupport(device.Get()) && SUCCEEDED(device.As(&device5))) {
     rayTracingSupported = true;
+    rayQuerySupported = hasRayQuerySupport(device.Get());
   }
 
   D3D12_COMMAND_QUEUE_DESC queueDesc{};
@@ -382,7 +392,7 @@ void Device::createDefaultDescriptors() {
 }
 
 void Device::createGraphicsRootSignature() {
-  D3D12_DESCRIPTOR_RANGE ranges[4]{};
+  D3D12_DESCRIPTOR_RANGE ranges[5]{};
   ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
   ranges[0].NumDescriptors = 16;
   ranges[0].BaseShaderRegister = 0;
@@ -407,8 +417,14 @@ void Device::createGraphicsRootSignature() {
   ranges[3].RegisterSpace = 0;
   ranges[3].OffsetInDescriptorsFromTableStart =
       D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+  ranges[4].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+  ranges[4].NumDescriptors = 8;
+  ranges[4].BaseShaderRegister = 0;
+  ranges[4].RegisterSpace = 6;
+  ranges[4].OffsetInDescriptorsFromTableStart =
+      D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-  D3D12_ROOT_PARAMETER params[12]{};
+  D3D12_ROOT_PARAMETER params[13]{};
   params[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
   params[0].Descriptor.ShaderRegister = 0;
   params[0].Descriptor.RegisterSpace = 1;
@@ -457,9 +473,13 @@ void Device::createGraphicsRootSignature() {
   params[11].DescriptorTable.NumDescriptorRanges = 1;
   params[11].DescriptorTable.pDescriptorRanges = &ranges[3];
   params[11].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+  params[12].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+  params[12].DescriptorTable.NumDescriptorRanges = 1;
+  params[12].DescriptorTable.pDescriptorRanges = &ranges[4];
+  params[12].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
   D3D12_ROOT_SIGNATURE_DESC desc{};
-  desc.NumParameters = 12;
+  desc.NumParameters = 13;
   desc.pParameters = params;
   desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
@@ -484,15 +504,21 @@ ID3D12RootSignature *Device::getGraphicsRootSignature() {
 }
 
 void Device::createComputeRootSignature() {
-  D3D12_DESCRIPTOR_RANGE ranges[1]{};
+  D3D12_DESCRIPTOR_RANGE ranges[2]{};
   ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
   ranges[0].NumDescriptors = 16;
   ranges[0].BaseShaderRegister = 0;
   ranges[0].RegisterSpace = 0;
   ranges[0].OffsetInDescriptorsFromTableStart =
       D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+  ranges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+  ranges[1].NumDescriptors = 8;
+  ranges[1].BaseShaderRegister = 0;
+  ranges[1].RegisterSpace = 6;
+  ranges[1].OffsetInDescriptorsFromTableStart =
+      D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-  D3D12_ROOT_PARAMETER params[5]{};
+  D3D12_ROOT_PARAMETER params[6]{};
   params[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
   params[0].DescriptorTable.NumDescriptorRanges = 1;
   params[0].DescriptorTable.pDescriptorRanges = &ranges[0];
@@ -503,9 +529,13 @@ void Device::createComputeRootSignature() {
     params[i + 1].Descriptor.RegisterSpace = 0;
     params[i + 1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
   }
+  params[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+  params[5].DescriptorTable.NumDescriptorRanges = 1;
+  params[5].DescriptorTable.pDescriptorRanges = &ranges[1];
+  params[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
   D3D12_ROOT_SIGNATURE_DESC desc{};
-  desc.NumParameters = 5;
+  desc.NumParameters = 6;
   desc.pParameters = params;
 
   ComPtr<ID3DBlob> blob;

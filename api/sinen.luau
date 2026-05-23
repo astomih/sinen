@@ -435,12 +435,19 @@ export type Raytracing = {
 	Pipeline: RaytracingPipeline,
 	BuildFlags: RaytracingBuildFlags,
 	isSupported: () -> boolean,
+	isRayQuerySupported: () -> boolean,
 	createBottomLevel: (
 		geometries: { RaytracingTriangleGeometry | RaytracingAabbGeometry },
 		flags: number?
 	) -> RaytracingAccelerationStructure,
 	createTopLevel: (instances: { RaytracingInstance }, flags: number?) -> RaytracingAccelerationStructure,
 	dispatch: (pipeline: RaytracingPipeline, info: RaytracingDispatchInfo) -> nil,
+	setComputeAccelerationStructure: (slotIndex: number, accelerationStructure: RaytracingAccelerationStructure) -> nil,
+	resetComputeAccelerationStructure: (slotIndex: number) -> nil,
+	resetAllComputeAccelerationStructures: () -> nil,
+	setGraphicsAccelerationStructure: (slotIndex: number, accelerationStructure: RaytracingAccelerationStructure) -> nil,
+	resetGraphicsAccelerationStructure: (slotIndex: number) -> nil,
+	resetAllGraphicsAccelerationStructures: () -> nil,
 }
 
 export type Collider = {

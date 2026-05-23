@@ -149,6 +149,9 @@ public:
                        const Array<TextureSamplerBinding> &bindings) override;
   void bindFragmentSampler(UInt32 startSlot,
                            const TextureSamplerBinding &binding) override;
+  void bindAccelerationStructures(UInt32 startSlot,
+                                  const Array<Ptr<gpu::AccelerationStructure>>
+                                      &accelerationStructures) override;
   void setViewport(const Viewport &viewport) override;
   void setScissor(Int32 x, Int32 y, Int32 width, Int32 height) override;
   void drawPrimitives(UInt32 numVertices, UInt32 numInstances,
@@ -159,6 +162,7 @@ public:
 
 private:
   void ensureDescriptorSet();
+  void ensureAccelerationStructureDescriptorSet();
   void bindDescriptorSet();
 
   Device &device;
@@ -169,6 +173,9 @@ private:
   VkDescriptorSet vertexUniformSet = VK_NULL_HANDLE;
   VkDescriptorSet fragmentSamplerSet = VK_NULL_HANDLE;
   VkDescriptorSet fragmentUniformSet = VK_NULL_HANDLE;
+  VkDescriptorSet accelerationStructureSet = VK_NULL_HANDLE;
+  UInt32 accelerationStructureStartSlot = 0;
+  Array<Ptr<gpu::AccelerationStructure>> accelerationStructures;
   VkRenderPass renderPass = VK_NULL_HANDLE;
   VkFramebuffer framebuffer = VK_NULL_HANDLE;
 };
@@ -180,11 +187,15 @@ public:
   ~ComputePass() override = default;
 
   void bindComputePipeline(Ptr<gpu::ComputePipeline> computePipeline) override;
+  void bindAccelerationStructures(UInt32 startSlot,
+                                  const Array<Ptr<gpu::AccelerationStructure>>
+                                      &accelerationStructures) override;
   void dispatchWorkgroups(UInt32 groupCountX, UInt32 groupCountY,
                           UInt32 groupCountZ) override;
 
 private:
   void ensureDescriptorSet();
+  void ensureAccelerationStructureDescriptorSet();
   void bindDescriptorSet();
 
   Device &device;
@@ -193,6 +204,9 @@ private:
   Ptr<ComputePipeline> boundPipeline = nullptr;
   VkDescriptorSet storageBufferSet = VK_NULL_HANDLE;
   VkDescriptorSet uniformSet = VK_NULL_HANDLE;
+  VkDescriptorSet accelerationStructureSet = VK_NULL_HANDLE;
+  UInt32 accelerationStructureStartSlot = 0;
+  Array<Ptr<gpu::AccelerationStructure>> accelerationStructures;
   Array<StorageBufferBinding> storageBuffers;
 };
 

@@ -12,6 +12,8 @@ namespace sinen {
 static std::optional<ComputePipeline> currentPipeline;
 static Hashmap<UInt32, Buffer> currentUniformBindings;
 static Hashmap<UInt32, ComputeBuffer> currentStorageBufferBindings;
+static Hashmap<UInt32, Ptr<gpu::AccelerationStructure>>
+    currentAccelerationStructureBindings;
 
 void Compute::setComputePipeline(const ComputePipeline &pipeline) {
   currentPipeline = pipeline;
@@ -31,8 +33,21 @@ void Compute::resetStorageBuffer(UInt32 slotIndex) {
   currentStorageBufferBindings.erase(slotIndex);
 }
 
-void Compute::resetAllStorageBuffers() {
-  currentStorageBufferBindings.clear();
+void Compute::resetAllStorageBuffers() { currentStorageBufferBindings.clear(); }
+
+void Compute::setAccelerationStructure(
+    UInt32 slotIndex,
+    const Ptr<gpu::AccelerationStructure> &accelerationStructure) {
+  currentAccelerationStructureBindings.insert_or_assign(slotIndex,
+                                                        accelerationStructure);
+}
+
+void Compute::resetAccelerationStructure(UInt32 slotIndex) {
+  currentAccelerationStructureBindings.erase(slotIndex);
+}
+
+void Compute::resetAllAccelerationStructures() {
+  currentAccelerationStructureBindings.clear();
 }
 
 void Compute::dispatch(UInt32 groupCountX, UInt32 groupCountY,
@@ -66,9 +81,23 @@ void Compute::dispatch(UInt32 groupCountX, UInt32 groupCountY,
     }
   }
 
+  UInt32 maxAccelerationStructureSlot = 0;
+  for (const auto &binding : currentAccelerationStructureBindings) {
+    maxAccelerationStructureSlot =
+        std::max(maxAccelerationStructureSlot, binding.first);
+  }
+  Array<Ptr<gpu::AccelerationStructure>> accelerationStructures(allocator);
+  if (!currentAccelerationStructureBindings.empty()) {
+    accelerationStructures.resize(maxAccelerationStructureSlot + 1);
+    for (auto &binding : currentAccelerationStructureBindings) {
+      accelerationStructures[binding.first] = binding.second;
+    }
+  }
+
   auto computePass =
       commandBuffer->beginComputePass(storageTextures, storageBuffers);
   computePass->bindComputePipeline(currentPipeline->get());
+  computePass->bindAccelerationStructures(0, accelerationStructures);
   computePass->dispatchWorkgroups(groupCountX, groupCountY, groupCountZ);
   commandBuffer->endComputePass(computePass);
   device->submitCommandBuffer(commandBuffer);
@@ -76,6 +105,7 @@ void Compute::dispatch(UInt32 groupCountX, UInt32 groupCountY,
 
   currentUniformBindings.clear();
   currentStorageBufferBindings.clear();
+  currentAccelerationStructureBindings.clear();
 }
 
 static int lComputeSetComputePipeline(lua_State *L) {

@@ -73,8 +73,24 @@ storageBufferBindings(uint32_t count, VkShaderStageFlags stages) {
   return bindings;
 }
 
-VkRenderPass createCompatibleRenderPass(
-    VkDevice device, const GraphicsPipeline::CreateInfo &createInfo) {
+std::vector<VkDescriptorSetLayoutBinding>
+accelerationStructureBindings(uint32_t count, VkShaderStageFlags stages) {
+  std::vector<VkDescriptorSetLayoutBinding> bindings;
+  bindings.reserve(count);
+  for (uint32_t i = 0; i < count; ++i) {
+    VkDescriptorSetLayoutBinding b{};
+    b.binding = i;
+    b.descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+    b.descriptorCount = 1;
+    b.stageFlags = stages;
+    bindings.push_back(b);
+  }
+  return bindings;
+}
+
+VkRenderPass
+createCompatibleRenderPass(VkDevice device,
+                           const GraphicsPipeline::CreateInfo &createInfo) {
   std::vector<VkAttachmentDescription> attachments;
   std::vector<VkAttachmentReference> colorRefs;
   attachments.reserve(createInfo.targetInfo.colorTargetDescriptions.size() + 1);
@@ -103,16 +119,15 @@ VkRenderPass createCompatibleRenderPass(
   VkAttachmentReference *depthRefPtr = nullptr;
   if (createInfo.targetInfo.hasDepthStencilTarget) {
     VkAttachmentDescription attachment{};
-    attachment.format =
-        convert::textureFormatFrom(createInfo.targetInfo.depthStencilTargetFormat);
+    attachment.format = convert::textureFormatFrom(
+        createInfo.targetInfo.depthStencilTargetFormat);
     attachment.samples =
         convert::sampleCountFrom(createInfo.multiSampleState.sampleCount);
     attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
-    attachment.initialLayout =
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    attachment.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     attachments.push_back(attachment);
 
@@ -170,14 +185,30 @@ Device::createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) {
       device, uniformBindings(vertexUniformCount, VK_SHADER_STAGE_VERTEX_BIT),
       "vertex uniform");
   VkDescriptorSetLayout fragmentSamplerSetLayout = createDescriptorSetLayout(
-      device, samplerBindings(fragmentSamplerCount, VK_SHADER_STAGE_FRAGMENT_BIT),
+      device,
+      samplerBindings(fragmentSamplerCount, VK_SHADER_STAGE_FRAGMENT_BIT),
       "fragment sampler");
   VkDescriptorSetLayout fragmentUniformSetLayout = createDescriptorSetLayout(
       device,
       uniformBindings(fragmentUniformCount, VK_SHADER_STAGE_FRAGMENT_BIT),
       "fragment uniform");
+  VkDescriptorSetLayout emptySetLayout = VK_NULL_HANDLE;
+  VkDescriptorSetLayout accelerationStructureSetLayout = VK_NULL_HANDLE;
+  if (rayQuerySupported) {
+    emptySetLayout = createDescriptorSetLayout(device, {}, "ray query empty");
+    accelerationStructureSetLayout = createDescriptorSetLayout(
+        device, accelerationStructureBindings(8, VK_SHADER_STAGE_ALL_GRAPHICS),
+        "ray query acceleration structures");
+  }
   if (!vertexSamplerSetLayout || !vertexUniformSetLayout ||
-      !fragmentSamplerSetLayout || !fragmentUniformSetLayout) {
+      !fragmentSamplerSetLayout || !fragmentUniformSetLayout ||
+      (rayQuerySupported &&
+       (!emptySetLayout || !accelerationStructureSetLayout))) {
+    if (accelerationStructureSetLayout)
+      vkDestroyDescriptorSetLayout(device, accelerationStructureSetLayout,
+                                   nullptr);
+    if (emptySetLayout)
+      vkDestroyDescriptorSetLayout(device, emptySetLayout, nullptr);
     if (fragmentUniformSetLayout)
       vkDestroyDescriptorSetLayout(device, fragmentUniformSetLayout, nullptr);
     if (fragmentSamplerSetLayout)
@@ -191,16 +222,31 @@ Device::createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) {
 
   VkPipelineLayoutCreateInfo layoutCI{};
   layoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+  std::array<VkDescriptorSetLayout, 7> rayQuerySetLayouts = {
+      vertexSamplerSetLayout,
+      vertexUniformSetLayout,
+      fragmentSamplerSetLayout,
+      fragmentUniformSetLayout,
+      emptySetLayout,
+      emptySetLayout,
+      accelerationStructureSetLayout};
   std::array<VkDescriptorSetLayout, 4> setLayouts = {
       vertexSamplerSetLayout, vertexUniformSetLayout, fragmentSamplerSetLayout,
       fragmentUniformSetLayout};
-  layoutCI.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
-  layoutCI.pSetLayouts = setLayouts.data();
+  layoutCI.setLayoutCount = static_cast<uint32_t>(
+      rayQuerySupported ? rayQuerySetLayouts.size() : setLayouts.size());
+  layoutCI.pSetLayouts =
+      rayQuerySupported ? rayQuerySetLayouts.data() : setLayouts.data();
   VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
   if (vkCreatePipelineLayout(device, &layoutCI, nullptr, &pipelineLayout) !=
       VK_SUCCESS) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                  "Vulkan: vkCreatePipelineLayout failed");
+    if (accelerationStructureSetLayout)
+      vkDestroyDescriptorSetLayout(device, accelerationStructureSetLayout,
+                                   nullptr);
+    if (emptySetLayout)
+      vkDestroyDescriptorSetLayout(device, emptySetLayout, nullptr);
     vkDestroyDescriptorSetLayout(device, fragmentUniformSetLayout, nullptr);
     vkDestroyDescriptorSetLayout(device, fragmentSamplerSetLayout, nullptr);
     vkDestroyDescriptorSetLayout(device, vertexUniformSetLayout, nullptr);
@@ -332,6 +378,11 @@ Device::createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) {
   VkRenderPass renderPass = createCompatibleRenderPass(device, createInfo);
   if (renderPass == VK_NULL_HANDLE) {
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+    if (accelerationStructureSetLayout)
+      vkDestroyDescriptorSetLayout(device, accelerationStructureSetLayout,
+                                   nullptr);
+    if (emptySetLayout)
+      vkDestroyDescriptorSetLayout(device, emptySetLayout, nullptr);
     vkDestroyDescriptorSetLayout(device, fragmentUniformSetLayout, nullptr);
     vkDestroyDescriptorSetLayout(device, fragmentSamplerSetLayout, nullptr);
     vkDestroyDescriptorSetLayout(device, vertexUniformSetLayout, nullptr);
@@ -363,6 +414,11 @@ Device::createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) {
                  "Vulkan: vkCreateGraphicsPipelines failed");
     vkDestroyRenderPass(device, renderPass, nullptr);
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+    if (accelerationStructureSetLayout)
+      vkDestroyDescriptorSetLayout(device, accelerationStructureSetLayout,
+                                   nullptr);
+    if (emptySetLayout)
+      vkDestroyDescriptorSetLayout(device, emptySetLayout, nullptr);
     vkDestroyDescriptorSetLayout(device, fragmentUniformSetLayout, nullptr);
     vkDestroyDescriptorSetLayout(device, fragmentSamplerSetLayout, nullptr);
     vkDestroyDescriptorSetLayout(device, vertexUniformSetLayout, nullptr);
@@ -375,6 +431,8 @@ Device::createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) {
   layoutInfo.vertexUniformSetLayout = vertexUniformSetLayout;
   layoutInfo.fragmentSamplerSetLayout = fragmentSamplerSetLayout;
   layoutInfo.fragmentUniformSetLayout = fragmentUniformSetLayout;
+  layoutInfo.emptySetLayout = emptySetLayout;
+  layoutInfo.accelerationStructureSetLayout = accelerationStructureSetLayout;
   layoutInfo.pipelineLayout = pipelineLayout;
   layoutInfo.vertexUniformBindingCount = vertexUniformCount;
   layoutInfo.fragmentUniformBindingCount = fragmentUniformCount;
@@ -384,8 +442,8 @@ Device::createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) {
                                    pipeline, renderPass, layoutInfo);
 }
 
-Ptr<gpu::ComputePipeline> Device::createComputePipeline(
-    const ComputePipeline::CreateInfo &createInfo) {
+Ptr<gpu::ComputePipeline>
+Device::createComputePipeline(const ComputePipeline::CreateInfo &createInfo) {
   auto cs = downCast<Shader>(createInfo.computeShader);
   if (!cs) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -403,7 +461,23 @@ Ptr<gpu::ComputePipeline> Device::createComputePipeline(
   VkDescriptorSetLayout uniformSetLayout = createDescriptorSetLayout(
       device, uniformBindings(uniformCount, VK_SHADER_STAGE_COMPUTE_BIT),
       "compute uniforms");
-  if (!storageSetLayout || !uniformSetLayout) {
+  VkDescriptorSetLayout emptySetLayout = VK_NULL_HANDLE;
+  VkDescriptorSetLayout accelerationStructureSetLayout = VK_NULL_HANDLE;
+  if (rayQuerySupported) {
+    emptySetLayout =
+        createDescriptorSetLayout(device, {}, "compute ray query empty");
+    accelerationStructureSetLayout = createDescriptorSetLayout(
+        device, accelerationStructureBindings(8, VK_SHADER_STAGE_COMPUTE_BIT),
+        "compute ray query acceleration structures");
+  }
+  if (!storageSetLayout || !uniformSetLayout ||
+      (rayQuerySupported &&
+       (!emptySetLayout || !accelerationStructureSetLayout))) {
+    if (accelerationStructureSetLayout)
+      vkDestroyDescriptorSetLayout(device, accelerationStructureSetLayout,
+                                   nullptr);
+    if (emptySetLayout)
+      vkDestroyDescriptorSetLayout(device, emptySetLayout, nullptr);
     if (uniformSetLayout)
       vkDestroyDescriptorSetLayout(device, uniformSetLayout, nullptr);
     if (storageSetLayout)
@@ -411,18 +485,33 @@ Ptr<gpu::ComputePipeline> Device::createComputePipeline(
     return nullptr;
   }
 
+  std::array<VkDescriptorSetLayout, 7> rayQuerySetLayouts = {
+      storageSetLayout,
+      uniformSetLayout,
+      emptySetLayout,
+      emptySetLayout,
+      emptySetLayout,
+      emptySetLayout,
+      accelerationStructureSetLayout};
   std::array<VkDescriptorSetLayout, 2> setLayouts = {storageSetLayout,
                                                      uniformSetLayout};
   VkPipelineLayoutCreateInfo layoutCI{};
   layoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  layoutCI.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
-  layoutCI.pSetLayouts = setLayouts.data();
+  layoutCI.setLayoutCount = static_cast<uint32_t>(
+      rayQuerySupported ? rayQuerySetLayouts.size() : setLayouts.size());
+  layoutCI.pSetLayouts =
+      rayQuerySupported ? rayQuerySetLayouts.data() : setLayouts.data();
 
   VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
   if (vkCreatePipelineLayout(device, &layoutCI, nullptr, &pipelineLayout) !=
       VK_SUCCESS) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                  "Vulkan: vkCreatePipelineLayout (compute) failed");
+    if (accelerationStructureSetLayout)
+      vkDestroyDescriptorSetLayout(device, accelerationStructureSetLayout,
+                                   nullptr);
+    if (emptySetLayout)
+      vkDestroyDescriptorSetLayout(device, emptySetLayout, nullptr);
     vkDestroyDescriptorSetLayout(device, uniformSetLayout, nullptr);
     vkDestroyDescriptorSetLayout(device, storageSetLayout, nullptr);
     return nullptr;
@@ -445,6 +534,11 @@ Ptr<gpu::ComputePipeline> Device::createComputePipeline(
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                  "Vulkan: vkCreateComputePipelines failed");
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+    if (accelerationStructureSetLayout)
+      vkDestroyDescriptorSetLayout(device, accelerationStructureSetLayout,
+                                   nullptr);
+    if (emptySetLayout)
+      vkDestroyDescriptorSetLayout(device, emptySetLayout, nullptr);
     vkDestroyDescriptorSetLayout(device, uniformSetLayout, nullptr);
     vkDestroyDescriptorSetLayout(device, storageSetLayout, nullptr);
     return nullptr;
@@ -453,6 +547,8 @@ Ptr<gpu::ComputePipeline> Device::createComputePipeline(
   ComputePipeline::LayoutInfo layoutInfo{};
   layoutInfo.storageBufferSetLayout = storageSetLayout;
   layoutInfo.uniformSetLayout = uniformSetLayout;
+  layoutInfo.emptySetLayout = emptySetLayout;
+  layoutInfo.accelerationStructureSetLayout = accelerationStructureSetLayout;
   layoutInfo.pipelineLayout = pipelineLayout;
   layoutInfo.storageBufferBindingCount = storageBufferCount;
   layoutInfo.uniformBindingCount = uniformCount;

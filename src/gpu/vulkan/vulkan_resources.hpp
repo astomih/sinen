@@ -145,6 +145,9 @@ public:
     VkDescriptorSetLayout vertexUniformSetLayout = VK_NULL_HANDLE;   // set = 1
     VkDescriptorSetLayout fragmentSamplerSetLayout = VK_NULL_HANDLE; // set = 2
     VkDescriptorSetLayout fragmentUniformSetLayout = VK_NULL_HANDLE; // set = 3
+    VkDescriptorSetLayout emptySetLayout = VK_NULL_HANDLE; // set = 4-5
+    VkDescriptorSetLayout accelerationStructureSetLayout =
+        VK_NULL_HANDLE; // set = 6
     VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
     uint32_t vertexUniformBindingCount = 0;
     uint32_t fragmentUniformBindingCount = 0;
@@ -172,6 +175,9 @@ public:
   struct LayoutInfo {
     VkDescriptorSetLayout storageBufferSetLayout = VK_NULL_HANDLE; // set = 0
     VkDescriptorSetLayout uniformSetLayout = VK_NULL_HANDLE;       // set = 1
+    VkDescriptorSetLayout emptySetLayout = VK_NULL_HANDLE;         // set = 2-5
+    VkDescriptorSetLayout accelerationStructureSetLayout =
+        VK_NULL_HANDLE; // set = 6
     VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
     uint32_t storageBufferBindingCount = 0;
     uint32_t uniformBindingCount = 0;

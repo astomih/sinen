@@ -59,3 +59,6 @@ Runs a compute shader from Luau, writes RGBA pixels into a `ComputeBuffer`, down
 
 ## 20 Ray Tracing
 Builds BLAS/TLAS and dispatches a ray generation / miss / closest-hit shader pipeline from Luau through `sn.Raytracing`.
+
+## 21 Ray Query
+Builds BLAS/TLAS and traces inline rays from a compute shader through `sn.Raytracing` acceleration-structure bindings.

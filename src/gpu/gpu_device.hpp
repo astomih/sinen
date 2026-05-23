@@ -35,6 +35,7 @@ public:
   virtual Ptr<ComputePipeline>
   createComputePipeline(const ComputePipeline::CreateInfo &createInfo) = 0;
   virtual bool supportsRayTracing() const { return false; }
+  virtual bool supportsRayQuery() const { return false; }
   virtual RayTracingAccelerationStructureBuildSizes
   getBottomLevelAccelerationStructureBuildSizes(
       const Array<RayTracingGeometry> &, RayTracingBuildFlags) {

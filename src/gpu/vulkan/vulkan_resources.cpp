@@ -127,6 +127,15 @@ GraphicsPipeline::~GraphicsPipeline() {
     vkDestroyPipelineLayout(device.getVkDevice(), layoutInfo.pipelineLayout,
                             nullptr);
   }
+  if (layoutInfo.accelerationStructureSetLayout != VK_NULL_HANDLE) {
+    vkDestroyDescriptorSetLayout(device.getVkDevice(),
+                                 layoutInfo.accelerationStructureSetLayout,
+                                 nullptr);
+  }
+  if (layoutInfo.emptySetLayout != VK_NULL_HANDLE) {
+    vkDestroyDescriptorSetLayout(device.getVkDevice(),
+                                 layoutInfo.emptySetLayout, nullptr);
+  }
   if (layoutInfo.fragmentUniformSetLayout != VK_NULL_HANDLE) {
     vkDestroyDescriptorSetLayout(device.getVkDevice(),
                                  layoutInfo.fragmentUniformSetLayout, nullptr);
@@ -158,6 +167,15 @@ ComputePipeline::~ComputePipeline() {
   if (layoutInfo.pipelineLayout != VK_NULL_HANDLE) {
     vkDestroyPipelineLayout(device.getVkDevice(), layoutInfo.pipelineLayout,
                             nullptr);
+  }
+  if (layoutInfo.accelerationStructureSetLayout != VK_NULL_HANDLE) {
+    vkDestroyDescriptorSetLayout(device.getVkDevice(),
+                                 layoutInfo.accelerationStructureSetLayout,
+                                 nullptr);
+  }
+  if (layoutInfo.emptySetLayout != VK_NULL_HANDLE) {
+    vkDestroyDescriptorSetLayout(device.getVkDevice(),
+                                 layoutInfo.emptySetLayout, nullptr);
   }
   if (layoutInfo.uniformSetLayout != VK_NULL_HANDLE) {
     vkDestroyDescriptorSetLayout(device.getVkDevice(),

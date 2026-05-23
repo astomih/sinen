@@ -120,6 +120,9 @@ public:
                        const Array<TextureSamplerBinding> &bindings) override;
   void bindFragmentSampler(UInt32 startSlot,
                            const TextureSamplerBinding &binding) override;
+  void bindAccelerationStructures(UInt32 startSlot,
+                                  const Array<Ptr<gpu::AccelerationStructure>>
+                                      &accelerationStructures) override;
   void setViewport(const Viewport &viewport) override;
   void setScissor(Int32 x, Int32 y, Int32 width, Int32 height) override;
   void drawPrimitives(UInt32 numVertices, UInt32 numInstances,
@@ -141,6 +144,9 @@ public:
               const Array<StorageBufferBinding> &storageBuffers);
 
   void bindComputePipeline(Ptr<gpu::ComputePipeline> computePipeline) override;
+  void bindAccelerationStructures(UInt32 startSlot,
+                                  const Array<Ptr<gpu::AccelerationStructure>>
+                                      &accelerationStructures) override;
   void dispatchWorkgroups(UInt32 groupCountX, UInt32 groupCountY,
                           UInt32 groupCountZ) override;
 

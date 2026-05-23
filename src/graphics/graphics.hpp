@@ -20,6 +20,10 @@
 #include <math/transform/transform.hpp>
 
 namespace sinen {
+namespace gpu {
+class AccelerationStructure;
+}
+
 class Graphics {
 public:
   static bool initialize();
@@ -63,6 +67,11 @@ public:
   static void setTexture(UInt32 slotIndex, const Ptr<Texture> &texture);
   static void resetTexture(UInt32 slotIndex);
   static void resetAllTexture();
+  static void setAccelerationStructure(
+      UInt32 slotIndex,
+      const Ptr<gpu::AccelerationStructure> &accelerationStructure);
+  static void resetAccelerationStructure(UInt32 slotIndex);
+  static void resetAllAccelerationStructures();
   static void beginRenderTarget(const RenderTexture &texture);
   static void endRenderTarget();
   static bool readbackTexture(const RenderTexture &texture, Ptr<Texture> &out);

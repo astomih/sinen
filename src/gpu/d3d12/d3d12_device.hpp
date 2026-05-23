@@ -41,6 +41,7 @@ public:
   Ptr<gpu::ComputePipeline> createComputePipeline(
       const gpu::ComputePipeline::CreateInfo &createInfo) override;
   bool supportsRayTracing() const override { return rayTracingSupported; }
+  bool supportsRayQuery() const override { return rayQuerySupported; }
   gpu::RayTracingAccelerationStructureBuildSizes
   getBottomLevelAccelerationStructureBuildSizes(
       const Array<gpu::RayTracingGeometry> &geometries,
@@ -159,6 +160,7 @@ private:
   UINT64 fenceValue = 0;
   void *fenceEvent = nullptr;
   bool rayTracingSupported = false;
+  bool rayQuerySupported = false;
 };
 } // namespace sinen::gpu::d3d12
 

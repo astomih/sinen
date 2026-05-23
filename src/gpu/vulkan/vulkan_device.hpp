@@ -31,6 +31,7 @@ public:
   Ptr<gpu::ComputePipeline>
   createComputePipeline(const ComputePipeline::CreateInfo &createInfo) override;
   bool supportsRayTracing() const override { return rayTracingSupported; }
+  bool supportsRayQuery() const override { return rayQuerySupported; }
   gpu::RayTracingAccelerationStructureBuildSizes
   getBottomLevelAccelerationStructureBuildSizes(
       const Array<gpu::RayTracingGeometry> &geometries,
@@ -115,6 +116,7 @@ private:
 
   VkDeviceSize uniformRange = 4096;
   bool rayTracingSupported = false;
+  bool rayQuerySupported = false;
   VkPhysicalDeviceRayTracingPipelinePropertiesKHR
       rayTracingPipelineProperties{};
 };

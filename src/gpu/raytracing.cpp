@@ -1,3 +1,4 @@
+#include <compute/compute.hpp>
 #include <compute/compute_buffer.hpp>
 #include <core/allocator/global_allocator.hpp>
 #include <core/buffer/buffer.hpp>
@@ -251,6 +252,49 @@ private:
 static int lRaytracingIsSupported(lua_State *L) {
   lua_pushboolean(L, Graphics::getDevice()->supportsRayTracing());
   return 1;
+}
+
+static int lRaytracingIsRayQuerySupported(lua_State *L) {
+  lua_pushboolean(L, Graphics::getDevice()->supportsRayQuery());
+  return 1;
+}
+
+static int lRaytracingSetComputeAccelerationStructure(lua_State *L) {
+  const auto slot = static_cast<UInt32>(luaL_checkinteger(L, 1));
+  auto &as = udPtr<RaytracingAccelerationStructure>(L, 2);
+  Compute::setAccelerationStructure(slot, as->getRaw());
+  return 0;
+}
+
+static int lRaytracingResetComputeAccelerationStructure(lua_State *L) {
+  const auto slot = static_cast<UInt32>(luaL_checkinteger(L, 1));
+  Compute::resetAccelerationStructure(slot);
+  return 0;
+}
+
+static int lRaytracingResetAllComputeAccelerationStructures(lua_State *L) {
+  (void)L;
+  Compute::resetAllAccelerationStructures();
+  return 0;
+}
+
+static int lRaytracingSetGraphicsAccelerationStructure(lua_State *L) {
+  const auto slot = static_cast<UInt32>(luaL_checkinteger(L, 1));
+  auto &as = udPtr<RaytracingAccelerationStructure>(L, 2);
+  Graphics::setAccelerationStructure(slot, as->getRaw());
+  return 0;
+}
+
+static int lRaytracingResetGraphicsAccelerationStructure(lua_State *L) {
+  const auto slot = static_cast<UInt32>(luaL_checkinteger(L, 1));
+  Graphics::resetAccelerationStructure(slot);
+  return 0;
+}
+
+static int lRaytracingResetAllGraphicsAccelerationStructures(lua_State *L) {
+  (void)L;
+  Graphics::resetAllAccelerationStructures();
+  return 0;
 }
 
 static int lRaytracingPipelineNew(lua_State *L) {
@@ -596,12 +640,26 @@ void registerRaytracing(lua_State *L) {
   pushSnNamed(L, "Raytracing");
   luaPushcfunction2(L, lRaytracingIsSupported);
   lua_setfield(L, -2, "isSupported");
+  luaPushcfunction2(L, lRaytracingIsRayQuerySupported);
+  lua_setfield(L, -2, "isRayQuerySupported");
   luaPushcfunction2(L, lRaytracingCreateBottomLevel);
   lua_setfield(L, -2, "createBottomLevel");
   luaPushcfunction2(L, lRaytracingCreateTopLevel);
   lua_setfield(L, -2, "createTopLevel");
   luaPushcfunction2(L, lRaytracingDispatch);
   lua_setfield(L, -2, "dispatch");
+  luaPushcfunction2(L, lRaytracingSetComputeAccelerationStructure);
+  lua_setfield(L, -2, "setComputeAccelerationStructure");
+  luaPushcfunction2(L, lRaytracingResetComputeAccelerationStructure);
+  lua_setfield(L, -2, "resetComputeAccelerationStructure");
+  luaPushcfunction2(L, lRaytracingResetAllComputeAccelerationStructures);
+  lua_setfield(L, -2, "resetAllComputeAccelerationStructures");
+  luaPushcfunction2(L, lRaytracingSetGraphicsAccelerationStructure);
+  lua_setfield(L, -2, "setGraphicsAccelerationStructure");
+  luaPushcfunction2(L, lRaytracingResetGraphicsAccelerationStructure);
+  lua_setfield(L, -2, "resetGraphicsAccelerationStructure");
+  luaPushcfunction2(L, lRaytracingResetAllGraphicsAccelerationStructures);
+  lua_setfield(L, -2, "resetAllGraphicsAccelerationStructures");
 
   lua_newtable(L);
   luaPushcfunction2(L, lRaytracingPipelineNew);

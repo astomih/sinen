@@ -1,7 +1,7 @@
 local sn = require("@sinen")
 
-local width = sn.Window.half().x
-local height = sn.Window.half().y
+local width = 384
+local height = 288
 
 local font: sn.Font = sn.Font.new()
 font:load(22)
@@ -33,8 +33,8 @@ local vertexData = sn.Buffer.new({
 })
 local vertexBuffer = sn.ComputeBuffer.new(vertexData)
 
-local blas = nil
-local tlas = nil
+local blas: sn.RaytracingAccelerationStructure? = nil
+local tlas: sn.RaytracingAccelerationStructure? = nil
 local shaderTable: sn.ComputeBuffer? = nil
 local rendered = false
 local status = "Checking ray tracing support..."
@@ -51,11 +51,11 @@ local function render()
 				vertexBuffer = vertexBuffer,
 				vertexStride = 12,
 				vertexCount = 3,
-			},
+			} :: sn.RaytracingTriangleGeometry,
 		})
 	end
 
-	if tlas == nil then
+	if tlas == nil and blas ~= nil then
 		tlas = sn.Raytracing.createTopLevel({
 			{
 				accelerationStructure = blas,
@@ -70,16 +70,18 @@ local function render()
 	end
 
 	local handleSize = pipeline:getShaderGroupHandleSize()
-	sn.Raytracing.dispatch(pipeline, {
-		shaderTable = shaderTable :: sn.ComputeBuffer,
-		width = width,
-		height = height,
-		accelerationStructures = { tlas },
-		storageBuffers = { outputBuffer },
-		rayGeneration = { offset = 0, size = handleSize, stride = handleSize },
-		miss = { offset = handleSize, size = handleSize, stride = handleSize },
-		hit = { offset = handleSize * 2, size = handleSize, stride = handleSize },
-	})
+	if tlas ~= nil then
+		sn.Raytracing.dispatch(pipeline, {
+			shaderTable = shaderTable :: sn.ComputeBuffer,
+			width = width,
+			height = height,
+			accelerationStructures = { tlas },
+			storageBuffers = { outputBuffer },
+			rayGeneration = { offset = 0, size = handleSize, stride = handleSize },
+			miss = { offset = handleSize, size = handleSize, stride = handleSize },
+			hit = { offset = handleSize * 2, size = handleSize, stride = handleSize },
+		})
+	end
 
 	local pixels = outputBuffer:download()
 	if outputTexture:loadPixels(pixels, width, height, "rgba8") then
@@ -103,10 +105,12 @@ end
 
 function draw()
 	local center = sn.Window.center()
-	local scale = 3
-	local imageRect = sn.Rect.new(sn.Pivot.Center, center, sn.Vec2.new(width * scale, height * scale))
+	local imageRect = sn.Rect.new(sn.Pivot.Center, center, sn.Vec2.new(width, height))
 
 	if rendered then
 		sn.Graphics.drawImage(outputTexture, imageRect)
 	end
+
+	local textPosition = sn.Vec2.new(center.x - 300, imageRect.y + imageRect.height + 24)
+	sn.Graphics.drawText(status, font, textPosition, sn.Color.new(1.0), 22)
 end

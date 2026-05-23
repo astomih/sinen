@@ -4,7 +4,11 @@
 #include "gpu_compute_pipeline.hpp"
 #include "gpu_texture.hpp"
 
+#include <core/data/array.hpp>
+
 namespace sinen::gpu {
+class AccelerationStructure;
+
 struct StorageBufferBinding {
   Ptr<Buffer> buffer;
   bool cycle = false;
@@ -22,6 +26,9 @@ public:
   virtual ~ComputePass() = default;
 
   virtual void bindComputePipeline(Ptr<ComputePipeline> computePipeline) = 0;
+  virtual void
+  bindAccelerationStructures(UInt32 startSlot,
+                             const Array<Ptr<AccelerationStructure>> &) {}
   virtual void dispatchWorkgroups(UInt32 groupCountX, UInt32 groupCountY,
                                   UInt32 groupCountZ) = 0;
 

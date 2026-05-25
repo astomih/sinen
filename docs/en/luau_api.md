@@ -60,6 +60,82 @@ sn.Graphics.drawModel(model, transform)
 sn.Graphics.finish()
 ```
 
+## Shader Resource Bindings
+
+When writing Slang/HLSL shaders for Sinen, resource bindings must match the backend shader format.
+
+### SPIR-V
+
+Vertex shader:
+
+- `set = 0`: sampled textures, then storage textures, then storage buffers
+- `set = 1`: uniform buffers
+
+Fragment shader:
+
+- `set = 2`: sampled textures, then storage textures, then storage buffers
+- `set = 3`: uniform buffers
+
+Compute shader:
+
+- `set = 0`: storage buffers
+- `set = 1`: uniform buffers
+
+Ray tracing pipeline shaders:
+
+- `set = 4`: acceleration structures first, then storage buffers
+- `set = 5`: uniform buffers
+
+Ray query in graphics or compute shaders:
+
+- `set = 6`: acceleration structures
+
+Example:
+
+```hlsl
+[[vk::binding(0, 6)]]
+RaytracingAccelerationStructure scene;
+
+[[vk::binding(0, 0)]]
+RWByteAddressBuffer outputPixels;
+```
+
+### DXBC / DXIL
+
+Vertex shader:
+
+- `t[n], space0`: sampled textures, then storage textures, then storage buffers
+- `s[n], space0`: samplers with matching sampled-texture indices
+- `b[n], space1`: uniform buffers
+
+Pixel shader:
+
+- `t[n], space2`: sampled textures, then storage textures, then storage buffers
+- `s[n], space2`: samplers with matching sampled-texture indices
+- `b[n], space3`: uniform buffers
+
+Compute shader:
+
+- `u[n], space0`: storage buffers
+- `b[n], space0`: uniform buffers
+
+Ray tracing pipeline shaders:
+
+- `t[n], space4`: acceleration structures
+- `u[n], space4`: storage buffers
+- `b[n], space5`: uniform buffers
+
+Ray query in graphics or compute shaders:
+
+- `t[n], space6`: acceleration structures
+
+Example:
+
+```hlsl
+RaytracingAccelerationStructure scene : register(t0, space6);
+RWByteAddressBuffer outputPixels : register(u0, space0);
+```
+
 ## Immediate GUI
 
 `sn.Gui` provides a small immediate-mode GUI layer. Call widgets every frame from `draw()`; each widget draws itself and returns its new interaction state.

@@ -60,6 +60,82 @@ sn.Graphics.drawModel(model, transform)
 sn.Graphics.finish()
 ```
 
+## シェーダーリソースバインディング
+
+Sinen で Slang/HLSL シェーダーを書く場合、リソースの binding は backend のシェーダーフォーマットに合わせます。
+
+### SPIR-V
+
+頂点シェーダー:
+
+- `set = 0`: サンプリングされたテクスチャ、続いてストレージテクスチャ、続いてストレージバッファ
+- `set = 1`: 均一バッファ
+
+フラグメントシェーダー:
+
+- `set = 2`: サンプリングされたテクスチャ、続いてストレージテクスチャ、続いてストレージバッファ
+- `set = 3`: 均一バッファ
+
+Compute シェーダー:
+
+- `set = 0`: ストレージバッファ
+- `set = 1`: 均一バッファ
+
+Ray tracing pipeline シェーダー:
+
+- `set = 4`: アクセラレーション構造、続いてストレージバッファ
+- `set = 5`: 均一バッファ
+
+Graphics / compute シェーダー内の Ray query:
+
+- `set = 6`: アクセラレーション構造
+
+例:
+
+```hlsl
+[[vk::binding(0, 6)]]
+RaytracingAccelerationStructure scene;
+
+[[vk::binding(0, 0)]]
+RWByteAddressBuffer outputPixels;
+```
+
+### DXBC / DXIL
+
+頂点シェーダー:
+
+- `t[n], space0`: サンプリングされたテクスチャ、続いてストレージテクスチャ、続いてストレージバッファ
+- `s[n], space0`: サンプリングされたテクスチャに対応するインデックスのサンプラー
+- `b[n], space1`: 均一バッファ
+
+ピクセルシェーダー:
+
+- `t[n], space2`: サンプリングされたテクスチャ、続いてストレージテクスチャ、続いてストレージバッファ
+- `s[n], space2`: サンプリングされたテクスチャに対応するインデックスのサンプラー
+- `b[n], space3`: 均一バッファ
+
+Compute シェーダー:
+
+- `u[n], space0`: ストレージバッファ
+- `b[n], space0`: 均一バッファ
+
+Ray tracing pipeline シェーダー:
+
+- `t[n], space4`: アクセラレーション構造
+- `u[n], space4`: ストレージバッファ
+- `b[n], space5`: 均一バッファ
+
+Graphics / compute シェーダー内の Ray query:
+
+- `t[n], space6`: アクセラレーション構造
+
+例:
+
+```hlsl
+RaytracingAccelerationStructure scene : register(t0, space6);
+RWByteAddressBuffer outputPixels : register(u0, space0);
+```
+
 ## Immediate GUI
 
 `sn.Gui` は小さな immediate-mode GUI レイヤーです。`draw()` から毎フレーム widget を呼ぶと、その場で描画され、新しい入力状態が戻り値で返ります。

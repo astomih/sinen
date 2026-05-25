@@ -284,6 +284,23 @@ export type ShaderFormat = {
 	DXIL: ShaderFormat,
 }
 
+--- Shader resource binding conventions:
+---
+--- SPIR-V:
+---   Vertex:   set 0 = sampled textures, then storage textures, then storage buffers; set 1 = uniform buffers
+---   Fragment: set 2 = sampled textures, then storage textures, then storage buffers; set 3 = uniform buffers
+---   Compute:  set 0 = storage buffers; set 1 = uniform buffers
+---   Ray tracing pipeline: set 4 = acceleration structures, then storage buffers; set 5 = uniform buffers
+---   Ray query in graphics/compute shaders: set 6 = acceleration structures
+---
+--- DXBC / DXIL:
+---   Vertex:   t[n]/space0 = sampled textures, then storage textures, then storage buffers;
+---             s[n]/space0 = samplers matching sampled-texture indices; b[n]/space1 = uniform buffers
+---   Pixel:    t[n]/space2 = sampled textures, then storage textures, then storage buffers;
+---             s[n]/space2 = samplers matching sampled-texture indices; b[n]/space3 = uniform buffers
+---   Compute:  u[n]/space0 = storage buffers; b[n]/space0 = uniform buffers
+---   Ray tracing pipeline: t[n]/space4 = acceleration structures; u[n]/space4 = storage buffers; b[n]/space5 = uniform buffers
+---   Ray query in graphics/compute shaders: t[n]/space6 = acceleration structures
 export type Shader = {
 	new: () -> Shader,
 	load: (self: Shader, path: string, shaderStage: ShaderStage, uniform_count: number) -> nil,
@@ -445,7 +462,10 @@ export type Raytracing = {
 	setComputeAccelerationStructure: (slotIndex: number, accelerationStructure: RaytracingAccelerationStructure) -> nil,
 	resetComputeAccelerationStructure: (slotIndex: number) -> nil,
 	resetAllComputeAccelerationStructures: () -> nil,
-	setGraphicsAccelerationStructure: (slotIndex: number, accelerationStructure: RaytracingAccelerationStructure) -> nil,
+	setGraphicsAccelerationStructure: (
+		slotIndex: number,
+		accelerationStructure: RaytracingAccelerationStructure
+	) -> nil,
 	resetGraphicsAccelerationStructure: (slotIndex: number) -> nil,
 	resetAllGraphicsAccelerationStructures: () -> nil,
 }

@@ -157,3 +157,29 @@ local Player = require("./player")
 - `examples/14_synth`: シンセ
 
 API 一覧は `docs/ja/luau_api.md` から参照できます。
+
+## 9. Luau 単体テスト
+
+`tests/luau` には、Sinen 上で起動できる小さな Luau 単体テストランナーがあります。
+
+```bat
+cd tests\luau
+..\..\build\msvc2026-debug\sinen.exe
+```
+
+`main.luau` が `sinen_test.luau` を読み込み、同じディレクトリの `*.test.luau` を登録してから実行します。テスト結果はログと画面に表示されます。
+
+基本形は次のとおりです。
+
+```luau
+local test = require("./sinen_test")
+local describe = test.describe
+local it = test.it
+local expect = test.expect
+
+describe("math", function()
+	it("adds numbers", function()
+		expect(1 + 1):toBe(2)
+	end)
+end)
+```

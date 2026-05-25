@@ -62,3 +62,11 @@ Builds BLAS/TLAS and dispatches a ray generation / miss / closest-hit shader pip
 
 ## 21 Ray Query
 Builds BLAS/TLAS and traces inline rays from a compute shader through `sn.Raytracing` acceleration-structure bindings.
+
+## Luau Unit Tests
+The Luau test runner lives in `../tests/luau` and launches the same way as an example directory.
+
+```bat
+cd ..\tests\luau
+..\..\build\msvc2026-debug\sinen.exe
+```

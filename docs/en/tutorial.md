@@ -157,3 +157,29 @@ local Player = require("./player")
 - `examples/14_synth`: synth
 
 For the full API, see `docs/en/luau_api.md`.
+
+## 9. Luau Unit Tests
+
+`tests/luau` contains a small Luau unit test runner that can be launched with Sinen.
+
+```bat
+cd tests\luau
+..\..\build\msvc2026-debug\sinen.exe
+```
+
+`main.luau` loads `sinen_test.luau`, registers `*.test.luau` files in the same directory, then runs them. Results are written to the log and drawn on screen.
+
+The basic shape is:
+
+```luau
+local test = require("./sinen_test")
+local describe = test.describe
+local it = test.it
+local expect = test.expect
+
+describe("math", function()
+	it("adds numbers", function()
+		expect(1 + 1):toBe(2)
+	end)
+end)
+```

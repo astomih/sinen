@@ -37,7 +37,7 @@ local font: sn.Font = sn.Font.new()
 local result: any = nil
 
 function setup()
-	font:load(18)
+	font:load(32)
 	result = test.run({
 		logInfo = function(message: string)
 			sn.Log.info(message)
@@ -56,7 +56,9 @@ end
 
 function draw()
 	local lines = if result then result.lines else { "Running Luau unit tests..." }
-	local titleColor = if result and not result.ok then sn.Color.new(1.0, 0.25, 0.25, 1.0) else sn.Color.new(0.35, 1.0, 0.55, 1.0)
+	local titleColor = if result and not result.ok
+		then sn.Color.new(1.0, 0.25, 0.25, 1.0)
+		else sn.Color.new(0.35, 1.0, 0.55, 1.0)
 	local bodyColor = sn.Color.new(1.0)
 	local failColor = sn.Color.new(1.0, 0.35, 0.35, 1.0)
 	local y = 24

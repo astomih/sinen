@@ -292,6 +292,28 @@ void registerRect(lua_State *L) {
   });
   lua_setfield(L, -2, "bottomRight");
 
+  luaPushcfunction2(L, [](lua_State *L) -> int {
+    auto &r = udValue<Rect>(L, 1);
+    udNewOwned<Vec2>(L, r.position());
+    return 1;
+  });
+  lua_setfield(L, -2, "position");
+
+  luaPushcfunction2(L, [](lua_State *L) -> int {
+    auto &r = udValue<Rect>(L, 1);
+    const Pivot pivot = static_cast<Pivot>(luaL_checkinteger(L, 2));
+    udNewOwned<Vec2>(L, r.positionfromPivot(pivot));
+    return 1;
+  });
+  lua_setfield(L, -2, "positionFromPivot");
+
+  luaPushcfunction2(L, [](lua_State *L) -> int {
+    auto &r = udValue<Rect>(L, 1);
+    udNewOwned<Vec2>(L, r.size());
+    return 1;
+  });
+  lua_setfield(L, -2, "size");
+
   lua_pop(L, 1);
 
   pushSnNamed(L, "Rect");

@@ -203,42 +203,96 @@ void Device::createDeviceObjects() {
                  "Binding Tier 2");
     return;
   }
-  if (hasRayTracingSupport(device.Get()) && SUCCEEDED(device.As(&device5))) {
-    rayTracingSupported = true;
-    rayQuerySupported = hasRayQuerySupport(device.Get());
+  if (hasRayTracingSupport(device.Get())) {
+    HRESULT hr = device.As(&device5);
+    if (SUCCEEDED(hr)) {
+      rayTracingSupported = true;
+      rayQuerySupported = hasRayQuerySupport(device.Get());
+      if (!rayQuerySupported) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                    "D3D12: ray query disabled; DXR tier 1.1 is not "
+                    "supported by this device");
+      }
+    } else {
+      SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                  "D3D12: ray tracing disabled; ID3D12Device5 is not "
+                  "available (HRESULT 0x%08X)",
+                  static_cast<unsigned int>(hr));
+      rayTracingSupported = false;
+      rayQuerySupported = false;
+    }
+  } else {
+    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                "D3D12: ray tracing disabled; DXR is not supported by this "
+                "device");
   }
 
   D3D12_COMMAND_QUEUE_DESC queueDesc{};
   queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-  logIfFailed(
-      device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueue)),
-      "D3D12: CreateCommandQueue failed");
+  HRESULT hr =
+      device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueue));
+  logIfFailed(hr, "D3D12: CreateCommandQueue failed");
+  if (FAILED(hr)) {
+    disableRayTracing("D3D12: device initialization failed");
+    return;
+  }
 
   D3D12_DESCRIPTOR_HEAP_DESC srvDesc{};
   srvDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
   srvDesc.NumDescriptors = SrvHeapCapacity;
   srvDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-  device->CreateDescriptorHeap(&srvDesc, IID_PPV_ARGS(&srvHeap));
+  hr = device->CreateDescriptorHeap(&srvDesc, IID_PPV_ARGS(&srvHeap));
+  logIfFailed(hr, "D3D12: create shader-visible SRV heap failed");
+  if (FAILED(hr)) {
+    disableRayTracing("D3D12: device initialization failed");
+    return;
+  }
   srvDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-  device->CreateDescriptorHeap(&srvDesc, IID_PPV_ARGS(&srvCpuHeap));
+  hr = device->CreateDescriptorHeap(&srvDesc, IID_PPV_ARGS(&srvCpuHeap));
+  logIfFailed(hr, "D3D12: create CPU SRV heap failed");
+  if (FAILED(hr)) {
+    disableRayTracing("D3D12: device initialization failed");
+    return;
+  }
 
   D3D12_DESCRIPTOR_HEAP_DESC samplerDesc{};
   samplerDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
   samplerDesc.NumDescriptors = SamplerHeapCapacity;
   samplerDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-  device->CreateDescriptorHeap(&samplerDesc, IID_PPV_ARGS(&samplerHeap));
+  hr = device->CreateDescriptorHeap(&samplerDesc, IID_PPV_ARGS(&samplerHeap));
+  logIfFailed(hr, "D3D12: create shader-visible sampler heap failed");
+  if (FAILED(hr)) {
+    disableRayTracing("D3D12: device initialization failed");
+    return;
+  }
   samplerDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-  device->CreateDescriptorHeap(&samplerDesc, IID_PPV_ARGS(&samplerCpuHeap));
+  hr =
+      device->CreateDescriptorHeap(&samplerDesc, IID_PPV_ARGS(&samplerCpuHeap));
+  logIfFailed(hr, "D3D12: create CPU sampler heap failed");
+  if (FAILED(hr)) {
+    disableRayTracing("D3D12: device initialization failed");
+    return;
+  }
 
   D3D12_DESCRIPTOR_HEAP_DESC rtvDesc{};
   rtvDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
   rtvDesc.NumDescriptors = RtvHeapCapacity;
-  device->CreateDescriptorHeap(&rtvDesc, IID_PPV_ARGS(&rtvHeap));
+  hr = device->CreateDescriptorHeap(&rtvDesc, IID_PPV_ARGS(&rtvHeap));
+  logIfFailed(hr, "D3D12: create RTV heap failed");
+  if (FAILED(hr)) {
+    disableRayTracing("D3D12: device initialization failed");
+    return;
+  }
 
   D3D12_DESCRIPTOR_HEAP_DESC dsvDesc{};
   dsvDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
   dsvDesc.NumDescriptors = DsvHeapCapacity;
-  device->CreateDescriptorHeap(&dsvDesc, IID_PPV_ARGS(&dsvHeap));
+  hr = device->CreateDescriptorHeap(&dsvDesc, IID_PPV_ARGS(&dsvHeap));
+  logIfFailed(hr, "D3D12: create DSV heap failed");
+  if (FAILED(hr)) {
+    disableRayTracing("D3D12: device initialization failed");
+    return;
+  }
 
   srvDescriptorSize = device->GetDescriptorHandleIncrementSize(
       D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -249,8 +303,18 @@ void Device::createDeviceObjects() {
   dsvDescriptorSize =
       device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
-  device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
+  hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
+  logIfFailed(hr, "D3D12: CreateFence failed");
+  if (FAILED(hr)) {
+    disableRayTracing("D3D12: device initialization failed");
+    return;
+  }
   fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+  if (!fenceEvent) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "D3D12: CreateEvent failed");
+    disableRayTracing("D3D12: device initialization failed");
+    return;
+  }
 
   createGraphicsRootSignature();
   createComputeRootSignature();
@@ -259,6 +323,11 @@ void Device::createDeviceObjects() {
 }
 
 void Device::claimWindow(void *window) {
+  if (deviceLost || !isValid()) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "D3D12: cannot claim window because device is unavailable");
+    return;
+  }
   this->window = static_cast<SDL_Window *>(window);
   SDL_PropertiesID props = SDL_GetWindowProperties(this->window);
   hwnd = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_HWND_POINTER,
@@ -271,6 +340,9 @@ void Device::claimWindow(void *window) {
 }
 
 void Device::createSwapchain() {
+  if (deviceLost || !isValid()) {
+    return;
+  }
   int w = 0;
   int h = 0;
   SDL_GetWindowSizeInPixels(window, &w, &h);
@@ -608,11 +680,16 @@ void Device::createRayTracingRootSignature() {
                    "D3D12 ray tracing root signature: %s",
                    static_cast<const char *>(error->GetBufferPointer()));
     }
+    disableRayTracing("D3D12: ray tracing root signature serialization failed");
     return;
   }
-  device->CreateRootSignature(0, blob->GetBufferPointer(),
-                              blob->GetBufferSize(),
-                              IID_PPV_ARGS(&rayTracingRootSignature));
+  hr = device->CreateRootSignature(0, blob->GetBufferPointer(),
+                                   blob->GetBufferSize(),
+                                   IID_PPV_ARGS(&rayTracingRootSignature));
+  logIfFailed(hr, "D3D12: create ray tracing root signature failed");
+  if (FAILED(hr)) {
+    disableRayTracing("D3D12: ray tracing root signature creation failed");
+  }
 }
 
 ID3D12RootSignature *Device::getRayTracingRootSignature() {
@@ -634,6 +711,9 @@ Device::createBuffer(const gpu::Buffer::CreateInfo &createInfo) {
                                                &desc, initialState, nullptr,
                                                IID_PPV_ARGS(&resource));
   logIfFailed(hr, "D3D12: create buffer failed");
+  if (FAILED(hr)) {
+    return nullptr;
+  }
   return makePtr<Buffer>(createInfo.allocator, createInfo, get(), resource,
                          initialState);
 }
@@ -653,6 +733,9 @@ Ptr<gpu::TransferBuffer> Device::createTransferBuffer(
                                                &desc, initialState, nullptr,
                                                IID_PPV_ARGS(&resource));
   logIfFailed(hr, "D3D12: create transfer buffer failed");
+  if (FAILED(hr)) {
+    return nullptr;
+  }
   return makePtr<TransferBuffer>(createInfo.allocator, createInfo, get(),
                                  resource);
 }
@@ -693,6 +776,9 @@ Device::createTexture(const gpu::Texture::CreateInfo &createInfo) {
                                                &desc, initialState, clearPtr,
                                                IID_PPV_ARGS(&resource));
   logIfFailed(hr, "D3D12: create texture failed");
+  if (FAILED(hr)) {
+    return nullptr;
+  }
 
   auto texture = makePtr<Texture>(createInfo.allocator, createInfo, get(),
                                   resource, initialState, false);
@@ -913,12 +999,26 @@ Ptr<gpu::ComputePipeline> Device::createComputePipeline(
 
 Ptr<gpu::CommandBuffer>
 Device::acquireCommandBuffer(const gpu::CommandBuffer::CreateInfo &createInfo) {
+  if (deviceLost || !isValid()) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "D3D12: cannot acquire command buffer because device is "
+                 "unavailable");
+    return nullptr;
+  }
   ComPtr<ID3D12CommandAllocator> allocator;
-  device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
-                                 IID_PPV_ARGS(&allocator));
+  HRESULT hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
+                                              IID_PPV_ARGS(&allocator));
+  logIfFailed(hr, "D3D12: CreateCommandAllocator failed");
+  if (FAILED(hr)) {
+    return nullptr;
+  }
   ComPtr<ID3D12GraphicsCommandList> list;
-  device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, allocator.Get(),
-                            nullptr, IID_PPV_ARGS(&list));
+  hr = device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
+                                 allocator.Get(), nullptr, IID_PPV_ARGS(&list));
+  logIfFailed(hr, "D3D12: CreateCommandList failed");
+  if (FAILED(hr)) {
+    return nullptr;
+  }
   ID3D12DescriptorHeap *heaps[] = {srvHeap.Get(), samplerHeap.Get()};
   list->SetDescriptorHeaps(2, heaps);
   list->SetGraphicsRootSignature(graphicsRootSignature.Get());
@@ -928,6 +1028,9 @@ Device::acquireCommandBuffer(const gpu::CommandBuffer::CreateInfo &createInfo) {
 
 Ptr<gpu::Texture>
 Device::acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) {
+  if (deviceLost || !commandBuffer) {
+    return nullptr;
+  }
   // Descriptor tables are frame-local. Upload command buffers can be created
   // while recording draws, so resetting from acquireCommandBuffer would
   // invalidate descriptors already referenced by the active render command
@@ -959,6 +1062,9 @@ Device::acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) {
 }
 
 void Device::submitCommandBuffer(Ptr<gpu::CommandBuffer> commandBuffer) {
+  if (deviceLost || !commandBuffer) {
+    return;
+  }
   auto cb = downCast<CommandBuffer>(commandBuffer);
   if (cb->usesSwapchain()) {
     auto texture = downCast<Texture>(swapchainTextures[currentBackBuffer]);
@@ -970,8 +1076,9 @@ void Device::submitCommandBuffer(Ptr<gpu::CommandBuffer> commandBuffer) {
   if (cb->usesSwapchain() && swapchain) {
     HRESULT hr = swapchain->Present(1, 0);
     if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET) {
-      logIfFailed(device->GetDeviceRemovedReason(),
-                  "D3D12: device removed during Present");
+      markDeviceLost("D3D12: device removed during Present",
+                     device->GetDeviceRemovedReason());
+      return;
     } else {
       logIfFailed(hr, "D3D12: Present failed");
     }
@@ -980,16 +1087,54 @@ void Device::submitCommandBuffer(Ptr<gpu::CommandBuffer> commandBuffer) {
 }
 
 void Device::waitForGpuIdle() {
-  if (commandQueue && fence) {
+  if (!deviceLost && commandQueue && fence) {
     signalAndWait();
   }
 }
 
+void Device::disableRayTracing(const char *reason) {
+  if (reason) {
+    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "%s; ray tracing disabled",
+                reason);
+  }
+  rayTracingRootSignature.Reset();
+  device5.Reset();
+  rayTracingSupported = false;
+  rayQuerySupported = false;
+}
+
+void Device::markDeviceLost(const char *context, HRESULT hr) {
+  if (deviceLost) {
+    return;
+  }
+  SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s (HRESULT 0x%08X)", context,
+               static_cast<unsigned int>(hr));
+  deviceLost = true;
+  disableRayTracing("D3D12: device is lost");
+  destroySwapchain();
+}
+
 void Device::signalAndWait() {
+  if (deviceLost || !commandQueue || !fence || !fenceEvent) {
+    return;
+  }
   const UINT64 value = ++fenceValue;
-  commandQueue->Signal(fence.Get(), value);
+  HRESULT hr = commandQueue->Signal(fence.Get(), value);
+  if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET) {
+    markDeviceLost("D3D12: device removed during queue signal",
+                   device->GetDeviceRemovedReason());
+    return;
+  }
+  logIfFailed(hr, "D3D12: queue signal failed");
+  if (FAILED(hr)) {
+    return;
+  }
   if (fence->GetCompletedValue() < value) {
-    fence->SetEventOnCompletion(value, static_cast<HANDLE>(fenceEvent));
+    hr = fence->SetEventOnCompletion(value, static_cast<HANDLE>(fenceEvent));
+    logIfFailed(hr, "D3D12: fence SetEventOnCompletion failed");
+    if (FAILED(hr)) {
+      return;
+    }
     WaitForSingleObject(static_cast<HANDLE>(fenceEvent), INFINITE);
   }
 }

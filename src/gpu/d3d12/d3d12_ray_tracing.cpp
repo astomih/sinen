@@ -152,6 +152,9 @@ Device::getBottomLevelAccelerationStructureBuildSizes(
     const Array<gpu::RayTracingGeometry> &geometries,
     gpu::RayTracingBuildFlags flags) {
   if (!rayTracingSupported || !device5) {
+    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                "D3D12: bottom-level acceleration structure size query "
+                "ignored because ray tracing is disabled");
     return {};
   }
   std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> nativeGeometries;
@@ -166,6 +169,9 @@ gpu::RayTracingAccelerationStructureBuildSizes
 Device::getTopLevelAccelerationStructureBuildSizes(
     UInt32 instanceCount, gpu::RayTracingBuildFlags flags) {
   if (!rayTracingSupported || !device5) {
+    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                "D3D12: top-level acceleration structure size query ignored "
+                "because ray tracing is disabled");
     return {};
   }
   D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs{};
@@ -182,6 +188,9 @@ Device::getTopLevelAccelerationStructureBuildSizes(
 Ptr<gpu::AccelerationStructure> Device::createAccelerationStructure(
     const gpu::AccelerationStructure::CreateInfo &createInfo) {
   if (!rayTracingSupported || !device5 || createInfo.size == 0) {
+    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                "D3D12: createAccelerationStructure ignored because ray "
+                "tracing is disabled or the requested size is zero");
     return nullptr;
   }
   auto heap = heapProperties(D3D12_HEAP_TYPE_DEFAULT);
@@ -204,6 +213,9 @@ Ptr<gpu::AccelerationStructure> Device::createAccelerationStructure(
 Ptr<gpu::RayTracingPipeline> Device::createRayTracingPipeline(
     const gpu::RayTracingPipeline::CreateInfo &createInfo) {
   if (!rayTracingSupported || !device5 || !rayTracingRootSignature) {
+    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                "D3D12: createRayTracingPipeline ignored because ray tracing "
+                "is disabled");
     return nullptr;
   }
 
@@ -358,8 +370,9 @@ void RayTracingPass::buildBottomLevelAccelerationStructure(
       scratch->getDeviceAddress() + scratchOffset;
 
   ComPtr<ID3D12GraphicsCommandList4> list4;
-  commandBuffer->getNative()->QueryInterface(IID_PPV_ARGS(&list4));
+  HRESULT hr = commandBuffer->getNative()->QueryInterface(IID_PPV_ARGS(&list4));
   if (!list4) {
+    logIfFailed(hr, "D3D12: ID3D12GraphicsCommandList4 is not available");
     return;
   }
   commandBuffer->keepAlive(dstAS->getNative());
@@ -430,8 +443,9 @@ void RayTracingPass::buildTopLevelAccelerationStructure(
       scratch->getDeviceAddress() + scratchOffset;
 
   ComPtr<ID3D12GraphicsCommandList4> list4;
-  commandBuffer->getNative()->QueryInterface(IID_PPV_ARGS(&list4));
+  HRESULT hr = commandBuffer->getNative()->QueryInterface(IID_PPV_ARGS(&list4));
   if (!list4) {
+    logIfFailed(hr, "D3D12: ID3D12GraphicsCommandList4 is not available");
     return;
   }
   commandBuffer->keepAlive(dstAS->getNative());
@@ -457,8 +471,9 @@ void RayTracingPass::bindRayTracingPipeline(
     return;
   }
   ComPtr<ID3D12GraphicsCommandList4> list4;
-  commandBuffer->getNative()->QueryInterface(IID_PPV_ARGS(&list4));
+  HRESULT hr = commandBuffer->getNative()->QueryInterface(IID_PPV_ARGS(&list4));
   if (!list4) {
+    logIfFailed(hr, "D3D12: ID3D12GraphicsCommandList4 is not available");
     return;
   }
   list4->SetComputeRootSignature(pipeline->getRootSignature());
@@ -549,8 +564,9 @@ void RayTracingPass::dispatchRays(
     return;
   }
   ComPtr<ID3D12GraphicsCommandList4> list4;
-  commandBuffer->getNative()->QueryInterface(IID_PPV_ARGS(&list4));
+  HRESULT hr = commandBuffer->getNative()->QueryInterface(IID_PPV_ARGS(&list4));
   if (!list4) {
+    logIfFailed(hr, "D3D12: ID3D12GraphicsCommandList4 is not available");
     return;
   }
   D3D12_DISPATCH_RAYS_DESC desc{};

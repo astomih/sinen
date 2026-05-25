@@ -33,26 +33,59 @@ void Device::destroySwapchain() {
 }
 
 void Device::recreateSwapchain() {
-  vkDeviceWaitIdle(device);
+  if (deviceLost) {
+    return;
+  }
+  waitForGpuIdle();
+  if (deviceLost) {
+    return;
+  }
   destroySwapchain();
   createSwapchain();
 }
 
 void Device::createSwapchain() {
+  if (deviceLost || device == VK_NULL_HANDLE || surface == VK_NULL_HANDLE) {
+    return;
+  }
   VkSurfaceCapabilitiesKHR caps{};
-  vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &caps);
+  VkResult res =
+      vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &caps);
+  if (res == VK_ERROR_DEVICE_LOST) {
+    markDeviceLost("Vulkan: vkGetPhysicalDeviceSurfaceCapabilitiesKHR failed");
+    return;
+  }
+  if (res != VK_SUCCESS) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: vkGetPhysicalDeviceSurfaceCapabilitiesKHR failed: "
+                 "%d",
+                 res);
+    return;
+  }
 
   uint32_t formatCount = 0;
-  vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount,
-                                       nullptr);
+  res = vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface,
+                                             &formatCount, nullptr);
+  if (res != VK_SUCCESS) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: vkGetPhysicalDeviceSurfaceFormatsKHR failed: %d",
+                 res);
+    return;
+  }
   if (formatCount == 0) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                  "Vulkan: no surface formats available");
     return;
   }
   std::vector<VkSurfaceFormatKHR> formats(formatCount);
-  vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount,
-                                       formats.data());
+  res = vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface,
+                                             &formatCount, formats.data());
+  if (res != VK_SUCCESS) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: vkGetPhysicalDeviceSurfaceFormatsKHR failed: %d",
+                 res);
+    return;
+  }
 
   VkSurfaceFormatKHR chosen = formats[0];
   for (auto &f : formats) {
@@ -67,11 +100,25 @@ void Device::createSwapchain() {
   swapchainVkFormat = chosen.format;
 
   uint32_t presentModeCount = 0;
-  vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface,
-                                            &presentModeCount, nullptr);
+  res = vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface,
+                                                  &presentModeCount, nullptr);
+  if (res != VK_SUCCESS) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: vkGetPhysicalDeviceSurfacePresentModesKHR failed: "
+                 "%d",
+                 res);
+    return;
+  }
   std::vector<VkPresentModeKHR> modes(presentModeCount);
-  vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface,
-                                            &presentModeCount, modes.data());
+  res = vkGetPhysicalDeviceSurfacePresentModesKHR(
+      physicalDevice, surface, &presentModeCount, modes.data());
+  if (res != VK_SUCCESS) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: vkGetPhysicalDeviceSurfacePresentModesKHR failed: "
+                 "%d",
+                 res);
+    return;
+  }
   VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
   for (auto m : modes) {
     if (m == VK_PRESENT_MODE_MAILBOX_KHR) {
@@ -83,8 +130,8 @@ void Device::createSwapchain() {
   VkExtent2D extent = caps.currentExtent;
   if (extent.width == UINT32_MAX) {
     extent = getDrawableExtent(window);
-    extent.width = std::clamp<uint32_t>(
-        extent.width, caps.minImageExtent.width, caps.maxImageExtent.width);
+    extent.width = std::clamp<uint32_t>(extent.width, caps.minImageExtent.width,
+                                        caps.maxImageExtent.width);
     extent.height = std::clamp<uint32_t>(
         extent.height, caps.minImageExtent.height, caps.maxImageExtent.height);
   }
@@ -116,9 +163,15 @@ void Device::createSwapchain() {
   ci.presentMode = presentMode;
   ci.clipped = VK_TRUE;
 
-  if (vkCreateSwapchainKHR(device, &ci, nullptr, &swapchain) != VK_SUCCESS) {
+  res = vkCreateSwapchainKHR(device, &ci, nullptr, &swapchain);
+  if (res == VK_ERROR_DEVICE_LOST) {
+    markDeviceLost("Vulkan: vkCreateSwapchainKHR failed");
+    swapchain = VK_NULL_HANDLE;
+    return;
+  }
+  if (res != VK_SUCCESS) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                 "Vulkan: vkCreateSwapchainKHR failed");
+                 "Vulkan: vkCreateSwapchainKHR failed: %d", res);
     swapchain = VK_NULL_HANDLE;
     return;
   }

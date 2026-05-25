@@ -200,6 +200,9 @@ Device::getBottomLevelAccelerationStructureBuildSizes(
     const Array<gpu::RayTracingGeometry> &geometries,
     gpu::RayTracingBuildFlags flags) {
   if (!rayTracingSupported) {
+    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                "Vulkan: bottom-level acceleration structure size query "
+                "ignored because ray tracing is disabled");
     return {};
   }
   std::vector<VkAccelerationStructureGeometryKHR> nativeGeometries;
@@ -228,6 +231,9 @@ gpu::RayTracingAccelerationStructureBuildSizes
 Device::getTopLevelAccelerationStructureBuildSizes(
     UInt32 instanceCount, gpu::RayTracingBuildFlags flags) {
   if (!rayTracingSupported) {
+    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                "Vulkan: top-level acceleration structure size query ignored "
+                "because ray tracing is disabled");
     return {};
   }
   VkAccelerationStructureGeometryKHR geometry{};
@@ -257,6 +263,15 @@ Device::getTopLevelAccelerationStructureBuildSizes(
 Ptr<gpu::AccelerationStructure> Device::createAccelerationStructure(
     const gpu::AccelerationStructure::CreateInfo &createInfo) {
   if (!rayTracingSupported || createInfo.size == 0) {
+    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                "Vulkan: createAccelerationStructure ignored because ray "
+                "tracing is disabled or the requested size is zero");
+    return nullptr;
+  }
+  if (vmaAllocator == VK_NULL_HANDLE) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: createAccelerationStructure failed because VMA "
+                 "allocator is unavailable");
     return nullptr;
   }
 
@@ -311,6 +326,9 @@ Ptr<gpu::AccelerationStructure> Device::createAccelerationStructure(
 Ptr<gpu::RayTracingPipeline> Device::createRayTracingPipeline(
     const gpu::RayTracingPipeline::CreateInfo &createInfo) {
   if (!rayTracingSupported) {
+    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                "Vulkan: createRayTracingPipeline ignored because ray tracing "
+                "is disabled");
     return nullptr;
   }
 
@@ -656,6 +674,10 @@ void RayTracingPass::bindDescriptorSets() {
       vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
                               layoutInfo.pipelineLayout, kRayTracingResourceSet,
                               1, &set, 0, nullptr);
+    } else {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "Vulkan: vkAllocateDescriptorSets (ray tracing resources) "
+                   "failed");
     }
   }
 
@@ -691,6 +713,10 @@ void RayTracingPass::bindDescriptorSets() {
       vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
                               layoutInfo.pipelineLayout, kRayTracingUniformSet,
                               1, &set, uniformCount, uniformOffsets);
+    } else {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "Vulkan: vkAllocateDescriptorSets (ray tracing uniforms) "
+                   "failed");
     }
   }
 }

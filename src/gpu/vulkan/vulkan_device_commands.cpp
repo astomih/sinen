@@ -6,22 +6,22 @@
 
 #include <algorithm>
 #include <array>
+#include <vector>
 
 #include "volk.hpp"
 
 namespace sinen::gpu::vulkan {
-static VkDescriptorPool createDescriptorPool(VkDevice device) {
-  std::array<VkDescriptorPoolSize, 5> poolSizes{};
-  poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-  poolSizes[0].descriptorCount = 512;
-  poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-  poolSizes[1].descriptorCount = 256;
-  poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-  poolSizes[2].descriptorCount = 256;
-  poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-  poolSizes[3].descriptorCount = 128;
-  poolSizes[4].type = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
-  poolSizes[4].descriptorCount = 64;
+static VkDescriptorPool
+createDescriptorPool(VkDevice device, bool includeAccelerationStructures) {
+  std::vector<VkDescriptorPoolSize> poolSizes;
+  poolSizes.reserve(includeAccelerationStructures ? 5 : 4);
+  poolSizes.push_back({VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 512});
+  poolSizes.push_back({VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 256});
+  poolSizes.push_back({VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 256});
+  poolSizes.push_back({VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 128});
+  if (includeAccelerationStructures) {
+    poolSizes.push_back({VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 64});
+  }
 
   VkDescriptorPoolCreateInfo poolCI{};
   poolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -39,6 +39,14 @@ static VkDescriptorPool createDescriptorPool(VkDevice device) {
 
 Ptr<gpu::CommandBuffer>
 Device::acquireCommandBuffer(const CommandBuffer::CreateInfo &createInfo) {
+  if (deviceLost || device == VK_NULL_HANDLE || commandPool == VK_NULL_HANDLE ||
+      vmaAllocator == VK_NULL_HANDLE) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: cannot acquire command buffer because device is "
+                 "unavailable");
+    return nullptr;
+  }
+
   VkCommandBufferAllocateInfo allocInfo{};
   allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
   allocInfo.commandPool = commandPool;
@@ -60,8 +68,11 @@ Device::acquireCommandBuffer(const CommandBuffer::CreateInfo &createInfo) {
     return nullptr;
   }
 
-  VkDescriptorPool descriptorPool = createDescriptorPool(device);
+  VkDescriptorPool descriptorPool =
+      createDescriptorPool(device, supportsRayTracing());
   if (!descriptorPool) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: vkCreateDescriptorPool failed");
     vkDestroyFence(device, fence, nullptr);
     vkFreeCommandBuffers(device, commandPool, 1, &cmd);
     return nullptr;
@@ -111,6 +122,9 @@ Device::acquireCommandBuffer(const CommandBuffer::CreateInfo &createInfo) {
 
 Ptr<gpu::Texture>
 Device::acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) {
+  if (deviceLost || !commandBuffer) {
+    return nullptr;
+  }
   if (!swapchain) {
     createSwapchain();
     if (!swapchain) {
@@ -136,6 +150,10 @@ Device::acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) {
   uint32_t imageIndex = 0;
   VkResult res = vkAcquireNextImageKHR(
       device, swapchain, UINT64_MAX, VK_NULL_HANDLE, acquireFence, &imageIndex);
+  if (res == VK_ERROR_DEVICE_LOST) {
+    markDeviceLost("Vulkan: vkAcquireNextImageKHR failed");
+    return nullptr;
+  }
   if (res == VK_ERROR_OUT_OF_DATE_KHR) {
     recreateSwapchain();
     if (!swapchain) {
@@ -143,13 +161,26 @@ Device::acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) {
     }
     res = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, VK_NULL_HANDLE,
                                 acquireFence, &imageIndex);
+    if (res == VK_ERROR_DEVICE_LOST) {
+      markDeviceLost("Vulkan: vkAcquireNextImageKHR failed after recreate");
+      return nullptr;
+    }
   }
   if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                  "Vulkan: vkAcquireNextImageKHR failed: %d", res);
     return nullptr;
   }
-  vkWaitForFences(device, 1, &acquireFence, VK_TRUE, UINT64_MAX);
+  res = vkWaitForFences(device, 1, &acquireFence, VK_TRUE, UINT64_MAX);
+  if (res == VK_ERROR_DEVICE_LOST) {
+    markDeviceLost("Vulkan: vkWaitForFences failed during acquire");
+    return nullptr;
+  }
+  if (res != VK_SUCCESS) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: vkWaitForFences failed during acquire: %d", res);
+    return nullptr;
+  }
   vkResetFences(device, 1, &acquireFence);
 
   auto cb = downCast<CommandBuffer>(commandBuffer);
@@ -158,6 +189,9 @@ Device::acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) {
 }
 
 void Device::submitCommandBuffer(Ptr<gpu::CommandBuffer> commandBuffer) {
+  if (deviceLost || !commandBuffer) {
+    return;
+  }
   auto cb = downCast<CommandBuffer>(commandBuffer);
   cb->finishForSubmit();
 
@@ -169,11 +203,26 @@ void Device::submitCommandBuffer(Ptr<gpu::CommandBuffer> commandBuffer) {
 
   VkFence fence = cb->getFence();
   vkResetFences(device, 1, &fence);
-  if (vkQueueSubmit(queue, 1, &submitInfo, fence) != VK_SUCCESS) {
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Vulkan: vkQueueSubmit failed");
+  VkResult res = vkQueueSubmit(queue, 1, &submitInfo, fence);
+  if (res == VK_ERROR_DEVICE_LOST) {
+    markDeviceLost("Vulkan: vkQueueSubmit failed");
     return;
   }
-  vkWaitForFences(device, 1, &fence, VK_TRUE, UINT64_MAX);
+  if (res != VK_SUCCESS) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: vkQueueSubmit failed: %d", res);
+    return;
+  }
+  res = vkWaitForFences(device, 1, &fence, VK_TRUE, UINT64_MAX);
+  if (res == VK_ERROR_DEVICE_LOST) {
+    markDeviceLost("Vulkan: vkWaitForFences failed during submit");
+    return;
+  }
+  if (res != VK_SUCCESS) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: vkWaitForFences failed during submit: %d", res);
+    return;
+  }
 
   if (cb->usesSwapchain()) {
     VkPresentInfoKHR presentInfo{};
@@ -183,10 +232,26 @@ void Device::submitCommandBuffer(Ptr<gpu::CommandBuffer> commandBuffer) {
     uint32_t index = cb->getSwapchainImageIndex();
     presentInfo.pImageIndices = &index;
     VkResult pres = vkQueuePresentKHR(queue, &presentInfo);
+    if (pres == VK_ERROR_DEVICE_LOST) {
+      markDeviceLost("Vulkan: vkQueuePresentKHR failed");
+      return;
+    }
     if (pres == VK_ERROR_OUT_OF_DATE_KHR || pres == VK_SUBOPTIMAL_KHR) {
       recreateSwapchain();
+    } else if (pres != VK_SUCCESS) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "Vulkan: vkQueuePresentKHR failed: %d", pres);
+      return;
     }
-    vkQueueWaitIdle(queue);
+    pres = vkQueueWaitIdle(queue);
+    if (pres == VK_ERROR_DEVICE_LOST) {
+      markDeviceLost("Vulkan: vkQueueWaitIdle failed after present");
+      return;
+    }
+    if (pres != VK_SUCCESS) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "Vulkan: vkQueueWaitIdle failed after present: %d", pres);
+    }
   }
 }
 } // namespace sinen::gpu::vulkan

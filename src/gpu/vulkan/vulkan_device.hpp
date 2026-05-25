@@ -30,8 +30,12 @@ public:
       const GraphicsPipeline::CreateInfo &createInfo) override;
   Ptr<gpu::ComputePipeline>
   createComputePipeline(const ComputePipeline::CreateInfo &createInfo) override;
-  bool supportsRayTracing() const override { return rayTracingSupported; }
-  bool supportsRayQuery() const override { return rayQuerySupported; }
+  bool supportsRayTracing() const override {
+    return !deviceLost && rayTracingSupported;
+  }
+  bool supportsRayQuery() const override {
+    return !deviceLost && rayQuerySupported;
+  }
   gpu::RayTracingAccelerationStructureBuildSizes
   getBottomLevelAccelerationStructureBuildSizes(
       const Array<gpu::RayTracingGeometry> &geometries,
@@ -85,9 +89,12 @@ private:
   void destroySwapchain();
   void recreateSwapchain();
   void createDefaultResources();
+  void disableRayTracing(const char *reason);
+  void markDeviceLost(const char *context);
 
   SDL_Window *window = nullptr;
   bool initialized = false;
+  bool deviceLost = false;
 
   VkInstance instance = VK_NULL_HANDLE;
   VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;

@@ -40,8 +40,12 @@ public:
       const gpu::GraphicsPipeline::CreateInfo &createInfo) override;
   Ptr<gpu::ComputePipeline> createComputePipeline(
       const gpu::ComputePipeline::CreateInfo &createInfo) override;
-  bool supportsRayTracing() const override { return rayTracingSupported; }
-  bool supportsRayQuery() const override { return rayQuerySupported; }
+  bool supportsRayTracing() const override {
+    return !deviceLost && rayTracingSupported;
+  }
+  bool supportsRayQuery() const override {
+    return !deviceLost && rayQuerySupported;
+  }
   gpu::RayTracingAccelerationStructureBuildSizes
   getBottomLevelAccelerationStructureBuildSizes(
       const Array<gpu::RayTracingGeometry> &geometries,
@@ -69,7 +73,9 @@ public:
 
   ID3D12Device *getNative() const { return device.Get(); }
   ID3D12Device5 *getRayTracingNative() const { return device5.Get(); }
-  bool isValid() const { return device != nullptr && commandQueue != nullptr; }
+  bool isValid() const {
+    return !deviceLost && device != nullptr && commandQueue != nullptr;
+  }
   ID3D12CommandQueue *getQueue() const { return commandQueue.Get(); }
   ID3D12DescriptorHeap *getSrvHeap() const { return srvHeap.Get(); }
   ID3D12DescriptorHeap *getSamplerHeap() const { return samplerHeap.Get(); }
@@ -112,6 +118,8 @@ private:
   void createGraphicsRootSignature();
   void createComputeRootSignature();
   void createRayTracingRootSignature();
+  void disableRayTracing(const char *reason);
+  void markDeviceLost(const char *context, HRESULT hr);
   void signalAndWait();
   D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle(ID3D12DescriptorHeap *heap,
                                         UINT descriptorSize, UINT index) const;
@@ -161,6 +169,7 @@ private:
   void *fenceEvent = nullptr;
   bool rayTracingSupported = false;
   bool rayQuerySupported = false;
+  bool deviceLost = false;
 };
 } // namespace sinen::gpu::d3d12
 

@@ -505,6 +505,12 @@ void RenderPass::bindFragmentSampler(UInt32 startSlot,
 void RenderPass::bindAccelerationStructures(
     UInt32 startSlot,
     const Array<Ptr<gpu::AccelerationStructure>> &accelerationStructures) {
+  if (!commandBuffer->getDevice()->supportsRayQuery()) {
+    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                "D3D12: graphics acceleration structure binding ignored "
+                "because ray query is disabled");
+    return;
+  }
   if (accelerationStructures.empty()) {
     return;
   }
@@ -621,6 +627,12 @@ void ComputePass::bindComputePipeline(
 void ComputePass::bindAccelerationStructures(
     UInt32 startSlot,
     const Array<Ptr<gpu::AccelerationStructure>> &accelerationStructures) {
+  if (!commandBuffer->getDevice()->supportsRayQuery()) {
+    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                "D3D12: compute acceleration structure binding ignored "
+                "because ray query is disabled");
+    return;
+  }
   if (accelerationStructures.empty()) {
     return;
   }

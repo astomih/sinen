@@ -433,10 +433,23 @@ static int lRaytracingCreateBottomLevel(lua_State *L) {
   asInfo.type = gpu::AccelerationStructure::Type::BottomLevel;
   asInfo.size = sizes.accelerationStructureSize;
   auto accelerationStructure = device->createAccelerationStructure(asInfo);
+  if (!accelerationStructure) {
+    return luaLError2(
+        L, "Raytracing.createBottomLevel failed to create acceleration "
+           "structure");
+  }
   ComputeBuffer scratch(static_cast<UInt32>(sizes.buildScratchSize));
 
   auto commandBuffer = device->acquireCommandBuffer({allocator});
+  if (!commandBuffer) {
+    return luaLError2(
+        L, "Raytracing.createBottomLevel failed to acquire command buffer");
+  }
   auto pass = commandBuffer->beginRayTracingPass();
+  if (!pass) {
+    return luaLError2(
+        L, "Raytracing.createBottomLevel failed to begin ray tracing pass");
+  }
   pass->buildBottomLevelAccelerationStructure(accelerationStructure, geometries,
                                               scratch.getRaw(), 0, flags);
   commandBuffer->endRayTracingPass(pass);
@@ -502,10 +515,23 @@ static int lRaytracingCreateTopLevel(lua_State *L) {
   asInfo.type = gpu::AccelerationStructure::Type::TopLevel;
   asInfo.size = sizes.accelerationStructureSize;
   auto accelerationStructure = device->createAccelerationStructure(asInfo);
+  if (!accelerationStructure) {
+    return luaLError2(L,
+                      "Raytracing.createTopLevel failed to create acceleration "
+                      "structure");
+  }
   ComputeBuffer scratch(static_cast<UInt32>(sizes.buildScratchSize));
 
   auto commandBuffer = device->acquireCommandBuffer({allocator});
+  if (!commandBuffer) {
+    return luaLError2(
+        L, "Raytracing.createTopLevel failed to acquire command buffer");
+  }
   auto pass = commandBuffer->beginRayTracingPass();
+  if (!pass) {
+    return luaLError2(
+        L, "Raytracing.createTopLevel failed to begin ray tracing pass");
+  }
   pass->buildTopLevelAccelerationStructure(
       accelerationStructure, gpu::BufferBinding{instanceBuffer.getRaw(), 0},
       static_cast<UInt32>(instances.size()), scratch.getRaw(), 0, flags);
@@ -523,6 +549,9 @@ static int lRaytracingDispatch(lua_State *L) {
     return luaLError2(L, "Raytracing.dispatch called on an unsupported device");
   }
   auto &pipeline = udPtr<RaytracingPipeline>(L, 1);
+  if (!pipeline->getRaw()) {
+    return luaLError2(L, "Raytracing.dispatch called with an unbuilt pipeline");
+  }
   luaL_checktype(L, 2, LUA_TTABLE);
   const int descIndex = 2;
 
@@ -546,6 +575,10 @@ static int lRaytracingDispatch(lua_State *L) {
   auto allocator = GlobalAllocator::get();
   auto device = Graphics::getDevice();
   auto commandBuffer = device->acquireCommandBuffer({allocator});
+  if (!commandBuffer) {
+    return luaLError2(L,
+                      "Raytracing.dispatch failed to acquire command buffer");
+  }
 
   lua_getfield(L, descIndex, "uniforms");
   if (lua_istable(L, -1)) {
@@ -592,6 +625,10 @@ static int lRaytracingDispatch(lua_State *L) {
   lua_pop(L, 1);
 
   auto pass = commandBuffer->beginRayTracingPass();
+  if (!pass) {
+    return luaLError2(L,
+                      "Raytracing.dispatch failed to begin ray tracing pass");
+  }
   pass->bindRayTracingPipeline(pipeline->getRaw());
   pass->bindAccelerationStructures(0, accelerationStructures);
   pass->bindStorageBuffers(0, storageBuffers);

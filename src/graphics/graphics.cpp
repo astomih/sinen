@@ -135,11 +135,8 @@ bool Graphics::initialize() {
 
   auto *window = Window::getSdlWindow();
   device->claimWindow(window);
-  Log::info("WebGPU device claimed window");
   BuiltinShader::initialize();
-  Log::info("Builtin shaders initialized");
   BuiltinPipeline::initialize();
-  Log::info("Builtin pipelines initialized");
 
   // Create depth stencil target
   {

@@ -929,6 +929,12 @@ void RenderPass::bindFragmentSampler(UInt32 startSlot,
 void RenderPass::bindAccelerationStructures(
     UInt32 startSlot,
     const Array<Ptr<gpu::AccelerationStructure>> &accelerationStructures) {
+  if (!device.supportsRayQuery()) {
+    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                "Vulkan: graphics acceleration structure binding ignored "
+                "because ray query is disabled");
+    return;
+  }
   accelerationStructureStartSlot = startSlot;
   accelerationStructureSet = VK_NULL_HANDLE;
   this->accelerationStructures = Array<Ptr<gpu::AccelerationStructure>>(
@@ -1152,6 +1158,12 @@ void ComputePass::bindComputePipeline(
 void ComputePass::bindAccelerationStructures(
     UInt32 startSlot,
     const Array<Ptr<gpu::AccelerationStructure>> &accelerationStructures) {
+  if (!device.supportsRayQuery()) {
+    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                "Vulkan: compute acceleration structure binding ignored "
+                "because ray query is disabled");
+    return;
+  }
   accelerationStructureStartSlot = startSlot;
   accelerationStructureSet = VK_NULL_HANDLE;
   this->accelerationStructures = Array<Ptr<gpu::AccelerationStructure>>(

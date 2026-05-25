@@ -10,6 +10,10 @@
 
 namespace sinen::gpu::vulkan {
 void Device::createDefaultResources() {
+  if (deviceLost || device == VK_NULL_HANDLE ||
+      vmaAllocator == VK_NULL_HANDLE) {
+    return;
+  }
   {
     gpu::Sampler::CreateInfo sCI{};
     sCI.allocator = getCreateInfo().allocator;
@@ -22,6 +26,11 @@ void Device::createDefaultResources() {
     sCI.enableAnisotropy = false;
     sCI.enableCompare = false;
     defaultSamplerObject = createSampler(sCI);
+    if (!defaultSamplerObject) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "Vulkan: failed to create default sampler");
+      return;
+    }
     defaultSampler = downCast<Sampler>(defaultSamplerObject)->getNative();
   }
 
@@ -37,6 +46,11 @@ void Device::createDefaultResources() {
     tCI.numLevels = 1;
     tCI.sampleCount = gpu::SampleCount::x1;
     defaultTexture = downCast<Texture>(createTexture(tCI));
+    if (!defaultTexture) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "Vulkan: failed to create default texture");
+      return;
+    }
     defaultTextureView = defaultTexture->getView();
 
     uint32_t pixel = 0xFFFFFFFFu;
@@ -45,6 +59,11 @@ void Device::createDefaultResources() {
     tbCI.usage = gpu::TransferBufferUsage::Upload;
     tbCI.size = sizeof(pixel);
     auto staging = createTransferBuffer(tbCI);
+    if (!staging) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "Vulkan: failed to create default texture staging buffer");
+      return;
+    }
     void *mapped = staging->map(false);
     std::memcpy(mapped, &pixel, sizeof(pixel));
     staging->unmap();
@@ -52,6 +71,9 @@ void Device::createDefaultResources() {
     gpu::CommandBuffer::CreateInfo cbCI{};
     cbCI.allocator = getCreateInfo().allocator;
     auto cb = acquireCommandBuffer(cbCI);
+    if (!cb) {
+      return;
+    }
     auto copyPass = cb->beginCopyPass();
     gpu::TextureRegion region{};
     region.texture = defaultTexture;
@@ -68,6 +90,11 @@ void Device::createDefaultResources() {
 }
 
 Ptr<gpu::Buffer> Device::createBuffer(const Buffer::CreateInfo &createInfo) {
+  if (deviceLost || vmaAllocator == VK_NULL_HANDLE) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: createBuffer failed because device is unavailable");
+    return nullptr;
+  }
   VkBufferUsageFlags usage =
       VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
   if (createInfo.usage == gpu::BufferUsage::Vertex)
@@ -116,6 +143,12 @@ Ptr<gpu::Buffer> Device::createBuffer(const Buffer::CreateInfo &createInfo) {
 
 Ptr<gpu::TransferBuffer>
 Device::createTransferBuffer(const TransferBuffer::CreateInfo &createInfo) {
+  if (deviceLost || vmaAllocator == VK_NULL_HANDLE) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: createTransferBuffer failed because device is "
+                 "unavailable");
+    return nullptr;
+  }
   VkBufferUsageFlags usage =
       (createInfo.usage == gpu::TransferBufferUsage::Upload)
           ? VK_BUFFER_USAGE_TRANSFER_SRC_BIT
@@ -146,6 +179,11 @@ Device::createTransferBuffer(const TransferBuffer::CreateInfo &createInfo) {
 }
 
 Ptr<gpu::Texture> Device::createTexture(const Texture::CreateInfo &createInfo) {
+  if (deviceLost || vmaAllocator == VK_NULL_HANDLE) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: createTexture failed because device is unavailable");
+    return nullptr;
+  }
   VkFormat format = convert::textureFormatFrom(createInfo.format);
   VkImageUsageFlags usage =
       VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
@@ -249,6 +287,11 @@ Ptr<gpu::Texture> Device::createTexture(const Texture::CreateInfo &createInfo) {
 }
 
 Ptr<gpu::Sampler> Device::createSampler(const Sampler::CreateInfo &createInfo) {
+  if (deviceLost || device == VK_NULL_HANDLE) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: createSampler failed because device is unavailable");
+    return nullptr;
+  }
   VkSamplerCreateInfo ci{};
   ci.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
   ci.magFilter = convert::filterFrom(createInfo.magFilter);
@@ -277,6 +320,11 @@ Ptr<gpu::Sampler> Device::createSampler(const Sampler::CreateInfo &createInfo) {
 }
 
 Ptr<gpu::Shader> Device::createShader(const Shader::CreateInfo &createInfo) {
+  if (deviceLost || device == VK_NULL_HANDLE) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: createShader failed because device is unavailable");
+    return nullptr;
+  }
   if (createInfo.format != ShaderFormat::SPIRV) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Vulkan: only SPIRV supported");
     return nullptr;
@@ -301,7 +349,18 @@ gpu::TextureFormat Device::getSwapchainFormat() const {
   return gpu::TextureFormat::R8G8B8A8_UNORM;
 }
 
-void Device::waitForGpuIdle() { vkDeviceWaitIdle(device); }
+void Device::waitForGpuIdle() {
+  if (deviceLost || device == VK_NULL_HANDLE) {
+    return;
+  }
+  VkResult res = vkDeviceWaitIdle(device);
+  if (res == VK_ERROR_DEVICE_LOST) {
+    markDeviceLost("Vulkan: vkDeviceWaitIdle failed");
+  } else if (res != VK_SUCCESS) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "Vulkan: vkDeviceWaitIdle failed: %d", res);
+  }
+}
 
 String Device::getDriver() const {
   return String("vulkan", getCreateInfo().allocator);

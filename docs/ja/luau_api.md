@@ -60,6 +60,18 @@ sn.Graphics.drawModel(model, transform)
 sn.Graphics.finish()
 ```
 
+## レイトレーシング対応確認
+
+レイトレーシング機能を使う前に `sn.Raytracing.isDeviceSupported()` を確認してください。互換用に `sn.Raytracing.isSupported()` も同じ結果を返します。
+
+```luau
+if not sn.Raytracing.isDeviceSupported() then
+	return
+end
+```
+
+Ray query は別機能として `sn.Raytracing.isRayQuerySupported()` で確認します。対応していないデバイスで、確認用 API 以外の `sn.Raytracing` API を呼ぶと Lua エラーになります。
+
 ## シェーダーリソースバインディング
 
 Sinen で Slang/HLSL シェーダーを書く場合、リソースの binding は backend のシェーダーフォーマットに合わせます。

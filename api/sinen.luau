@@ -451,6 +451,7 @@ export type RaytracingBuildFlags = {
 export type Raytracing = {
 	Pipeline: RaytracingPipeline,
 	BuildFlags: RaytracingBuildFlags,
+	isDeviceSupported: () -> boolean,
 	isSupported: () -> boolean,
 	isRayQuerySupported: () -> boolean,
 	createBottomLevel: (

@@ -60,6 +60,18 @@ sn.Graphics.drawModel(model, transform)
 sn.Graphics.finish()
 ```
 
+## Ray Tracing Support
+
+Check `sn.Raytracing.isDeviceSupported()` before using ray tracing features. `sn.Raytracing.isSupported()` is kept as a compatibility alias and returns the same value.
+
+```luau
+if not sn.Raytracing.isDeviceSupported() then
+	return
+end
+```
+
+Ray query support is separate and can be checked with `sn.Raytracing.isRayQuerySupported()`. Calling any `sn.Raytracing` API other than support checks on an unsupported device raises a Lua error.
+
 ## Shader Resource Bindings
 
 When writing Slang/HLSL shaders for Sinen, resource bindings must match the backend shader format.

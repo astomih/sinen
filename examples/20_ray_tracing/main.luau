@@ -8,23 +8,31 @@ font:load(22)
 
 local outputTexture: sn.Texture = sn.Texture.new(width, height)
 local outputBuffer: sn.ComputeBuffer = sn.ComputeBuffer.new(width * height * 4)
+local supported = sn.Raytracing.isDeviceSupported()
+local status = if supported
+	then "Compiling ray tracing shaders..."
+	else "Ray tracing is not supported by this backend/device"
 
 local raygen: sn.Shader = sn.Shader.new()
 local miss: sn.Shader = sn.Shader.new()
 local closestHit: sn.Shader = sn.Shader.new()
-raygen:compileAndLoad("raytrace.slang", sn.ShaderStage.RayGeneration)
-miss:compileAndLoad("raytrace.slang", sn.ShaderStage.Miss)
-closestHit:compileAndLoad("raytrace.slang", sn.ShaderStage.ClosestHit)
+local pipeline: sn.RaytracingPipeline? = nil
+if supported then
+	raygen:compileAndLoad("raytrace.slang", sn.ShaderStage.RayGeneration)
+	miss:compileAndLoad("raytrace.slang", sn.ShaderStage.Miss)
+	closestHit:compileAndLoad("raytrace.slang", sn.ShaderStage.ClosestHit)
 
-local pipeline = sn.Raytracing.Pipeline.new()
-pipeline:addShader(raygen, "RayGenMain")
-pipeline:addShader(miss, "MissMain")
-pipeline:addShader(closestHit, "ClosestHitMain")
-pipeline:addHitGroup("TriangleHitGroup", 2)
-pipeline:setMaxPayloadSize(16)
-pipeline:setMaxAttributeSize(8)
-pipeline:setMaxRecursionDepth(1)
-pipeline:build()
+	local p = sn.Raytracing.Pipeline.new()
+	p:addShader(raygen, "RayGenMain")
+	p:addShader(miss, "MissMain")
+	p:addShader(closestHit, "ClosestHitMain")
+	p:addHitGroup("TriangleHitGroup", 2)
+	p:setMaxPayloadSize(16)
+	p:setMaxAttributeSize(8)
+	p:setMaxRecursionDepth(1)
+	p:build()
+	pipeline = p
+end
 
 local vertexData = sn.Buffer.new({
 	sn.Vec3.new(-0.7, -0.6, 0.0),
@@ -37,13 +45,13 @@ local blas: sn.RaytracingAccelerationStructure? = nil
 local tlas: sn.RaytracingAccelerationStructure? = nil
 local shaderTable: sn.ComputeBuffer? = nil
 local rendered = false
-local status = "Checking ray tracing support..."
 
 local function render()
-	if not sn.Raytracing.isSupported() then
+	if not supported or pipeline == nil then
 		status = "Ray tracing is not supported by this backend/device"
 		return
 	end
+	local p = pipeline :: sn.RaytracingPipeline
 
 	if blas == nil then
 		blas = sn.Raytracing.createBottomLevel({
@@ -65,13 +73,13 @@ local function render()
 	end
 
 	if shaderTable == nil then
-		local handles = pipeline:getShaderGroupHandles(0, 3)
+		local handles = p:getShaderGroupHandles(0, 3)
 		shaderTable = sn.ComputeBuffer.new(handles)
 	end
 
-	local handleSize = pipeline:getShaderGroupHandleSize()
+	local handleSize = p:getShaderGroupHandleSize()
 	if tlas ~= nil then
-		sn.Raytracing.dispatch(pipeline, {
+		sn.Raytracing.dispatch(p, {
 			shaderTable = shaderTable :: sn.ComputeBuffer,
 			width = width,
 			height = height,
@@ -95,6 +103,10 @@ end
 function update()
 	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then
 		sn.Script.load("main", ".")
+	end
+
+	if pipeline == nil or not supported then
+		return
 	end
 
 	if not rendered and pipeline:isReady() then

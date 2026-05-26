@@ -115,6 +115,24 @@ void readTransform(lua_State *L, int tableIndex,
   }
   lua_pop(L, 1);
 }
+
+bool requireRayTracingSupport(lua_State *L, const char *functionName) {
+  if (Graphics::getDevice()->supportsRayTracing()) {
+    return true;
+  }
+  luaLError2(L, "%s called on a device without ray tracing support",
+             functionName);
+  return false;
+}
+
+bool requireRayQuerySupport(lua_State *L, const char *functionName) {
+  if (Graphics::getDevice()->supportsRayQuery()) {
+    return true;
+  }
+  luaLError2(L, "%s called on a device without ray query support",
+             functionName);
+  return false;
+}
 } // namespace
 
 class RaytracingAccelerationStructure {
@@ -260,6 +278,10 @@ static int lRaytracingIsRayQuerySupported(lua_State *L) {
 }
 
 static int lRaytracingSetComputeAccelerationStructure(lua_State *L) {
+  if (!requireRayQuerySupport(L,
+                              "Raytracing.setComputeAccelerationStructure")) {
+    return 0;
+  }
   const auto slot = static_cast<UInt32>(luaL_checkinteger(L, 1));
   auto &as = udPtr<RaytracingAccelerationStructure>(L, 2);
   Compute::setAccelerationStructure(slot, as->getRaw());
@@ -267,18 +289,30 @@ static int lRaytracingSetComputeAccelerationStructure(lua_State *L) {
 }
 
 static int lRaytracingResetComputeAccelerationStructure(lua_State *L) {
+  if (!requireRayQuerySupport(L,
+                              "Raytracing.resetComputeAccelerationStructure")) {
+    return 0;
+  }
   const auto slot = static_cast<UInt32>(luaL_checkinteger(L, 1));
   Compute::resetAccelerationStructure(slot);
   return 0;
 }
 
 static int lRaytracingResetAllComputeAccelerationStructures(lua_State *L) {
+  if (!requireRayQuerySupport(
+          L, "Raytracing.resetAllComputeAccelerationStructures")) {
+    return 0;
+  }
   (void)L;
   Compute::resetAllAccelerationStructures();
   return 0;
 }
 
 static int lRaytracingSetGraphicsAccelerationStructure(lua_State *L) {
+  if (!requireRayQuerySupport(L,
+                              "Raytracing.setGraphicsAccelerationStructure")) {
+    return 0;
+  }
   const auto slot = static_cast<UInt32>(luaL_checkinteger(L, 1));
   auto &as = udPtr<RaytracingAccelerationStructure>(L, 2);
   Graphics::setAccelerationStructure(slot, as->getRaw());
@@ -286,23 +320,37 @@ static int lRaytracingSetGraphicsAccelerationStructure(lua_State *L) {
 }
 
 static int lRaytracingResetGraphicsAccelerationStructure(lua_State *L) {
+  if (!requireRayQuerySupport(
+          L, "Raytracing.resetGraphicsAccelerationStructure")) {
+    return 0;
+  }
   const auto slot = static_cast<UInt32>(luaL_checkinteger(L, 1));
   Graphics::resetAccelerationStructure(slot);
   return 0;
 }
 
 static int lRaytracingResetAllGraphicsAccelerationStructures(lua_State *L) {
+  if (!requireRayQuerySupport(
+          L, "Raytracing.resetAllGraphicsAccelerationStructures")) {
+    return 0;
+  }
   (void)L;
   Graphics::resetAllAccelerationStructures();
   return 0;
 }
 
 static int lRaytracingPipelineNew(lua_State *L) {
+  if (!requireRayTracingSupport(L, "Raytracing.Pipeline.new")) {
+    return 0;
+  }
   udPushPtr<RaytracingPipeline>(L, makePtr<RaytracingPipeline>());
   return 1;
 }
 
 static int lRaytracingPipelineAddShader(lua_State *L) {
+  if (!requireRayTracingSupport(L, "Raytracing.Pipeline.addShader")) {
+    return 0;
+  }
   auto &pipeline = udPtr<RaytracingPipeline>(L, 1);
   auto &shader = udPtr<Shader>(L, 2);
   const char *exportName = luaL_optstring(L, 3, nullptr);
@@ -311,6 +359,9 @@ static int lRaytracingPipelineAddShader(lua_State *L) {
 }
 
 static int lRaytracingPipelineAddHitGroup(lua_State *L) {
+  if (!requireRayTracingSupport(L, "Raytracing.Pipeline.addHitGroup")) {
+    return 0;
+  }
   auto &pipeline = udPtr<RaytracingPipeline>(L, 1);
   const char *exportName = luaL_checkstring(L, 2);
   const auto closestHit =
@@ -323,40 +374,64 @@ static int lRaytracingPipelineAddHitGroup(lua_State *L) {
 }
 
 static int lRaytracingPipelineSetMaxPayloadSize(lua_State *L) {
+  if (!requireRayTracingSupport(L, "Raytracing.Pipeline.setMaxPayloadSize")) {
+    return 0;
+  }
   auto &pipeline = udPtr<RaytracingPipeline>(L, 1);
   pipeline->setMaxPayloadSize(static_cast<UInt32>(luaL_checkinteger(L, 2)));
   return 0;
 }
 
 static int lRaytracingPipelineSetMaxAttributeSize(lua_State *L) {
+  if (!requireRayTracingSupport(L, "Raytracing.Pipeline.setMaxAttributeSize")) {
+    return 0;
+  }
   auto &pipeline = udPtr<RaytracingPipeline>(L, 1);
   pipeline->setMaxAttributeSize(static_cast<UInt32>(luaL_checkinteger(L, 2)));
   return 0;
 }
 
 static int lRaytracingPipelineSetMaxRecursionDepth(lua_State *L) {
+  if (!requireRayTracingSupport(L,
+                                "Raytracing.Pipeline.setMaxRecursionDepth")) {
+    return 0;
+  }
   auto &pipeline = udPtr<RaytracingPipeline>(L, 1);
   pipeline->setMaxRecursionDepth(static_cast<UInt32>(luaL_checkinteger(L, 2)));
   return 0;
 }
 
 static int lRaytracingPipelineBuild(lua_State *L) {
+  if (!requireRayTracingSupport(L, "Raytracing.Pipeline.build")) {
+    return 0;
+  }
   udPtr<RaytracingPipeline>(L, 1)->build();
   return 0;
 }
 
 static int lRaytracingPipelineIsReady(lua_State *L) {
+  if (!requireRayTracingSupport(L, "Raytracing.Pipeline.isReady")) {
+    return 0;
+  }
   lua_pushboolean(L, udPtr<RaytracingPipeline>(L, 1)->getRaw() != nullptr);
   return 1;
 }
 
 static int lRaytracingPipelineGetShaderGroupHandleSize(lua_State *L) {
+  if (!requireRayTracingSupport(
+          L, "Raytracing.Pipeline.getShaderGroupHandleSize")) {
+    return 0;
+  }
   lua_pushinteger(L,
                   udPtr<RaytracingPipeline>(L, 1)->getShaderGroupHandleSize());
   return 1;
 }
 
 static int lRaytracingPipelineGetShaderGroupHandles(lua_State *L) {
+  if (!requireRayTracingSupport(L,
+                                "Raytracing.Pipeline.getShaderGroupHandles")) {
+    return 0;
+  }
   auto &pipeline = udPtr<RaytracingPipeline>(L, 1);
   auto first = static_cast<UInt32>(luaL_checkinteger(L, 2));
   auto count = static_cast<UInt32>(luaL_checkinteger(L, 3));
@@ -365,15 +440,18 @@ static int lRaytracingPipelineGetShaderGroupHandles(lua_State *L) {
 }
 
 static int lRaytracingAccelerationStructureGetDeviceAddress(lua_State *L) {
+  if (!requireRayTracingSupport(
+          L, "Raytracing.AccelerationStructure.getDeviceAddress")) {
+    return 0;
+  }
   auto &as = udPtr<RaytracingAccelerationStructure>(L, 1);
   lua_pushnumber(L, static_cast<double>(as->getDeviceAddress()));
   return 1;
 }
 
 static int lRaytracingCreateBottomLevel(lua_State *L) {
-  if (!Graphics::getDevice()->supportsRayTracing()) {
-    return luaLError2(
-        L, "Raytracing.createBottomLevel called on an unsupported device");
+  if (!requireRayTracingSupport(L, "Raytracing.createBottomLevel")) {
+    return 0;
   }
   luaL_checktype(L, 1, LUA_TTABLE);
   auto flags = static_cast<gpu::RayTracingBuildFlags>(
@@ -462,9 +540,8 @@ static int lRaytracingCreateBottomLevel(lua_State *L) {
 }
 
 static int lRaytracingCreateTopLevel(lua_State *L) {
-  if (!Graphics::getDevice()->supportsRayTracing()) {
-    return luaLError2(
-        L, "Raytracing.createTopLevel called on an unsupported device");
+  if (!requireRayTracingSupport(L, "Raytracing.createTopLevel")) {
+    return 0;
   }
   luaL_checktype(L, 1, LUA_TTABLE);
   auto flags = static_cast<gpu::RayTracingBuildFlags>(
@@ -545,8 +622,8 @@ static int lRaytracingCreateTopLevel(lua_State *L) {
 }
 
 static int lRaytracingDispatch(lua_State *L) {
-  if (!Graphics::getDevice()->supportsRayTracing()) {
-    return luaLError2(L, "Raytracing.dispatch called on an unsupported device");
+  if (!requireRayTracingSupport(L, "Raytracing.dispatch")) {
+    return 0;
   }
   auto &pipeline = udPtr<RaytracingPipeline>(L, 1);
   if (!pipeline->getRaw()) {
@@ -675,6 +752,8 @@ void registerRaytracing(lua_State *L) {
   lua_pop(L, 1);
 
   pushSnNamed(L, "Raytracing");
+  luaPushcfunction2(L, lRaytracingIsSupported);
+  lua_setfield(L, -2, "isDeviceSupported");
   luaPushcfunction2(L, lRaytracingIsSupported);
   lua_setfield(L, -2, "isSupported");
   luaPushcfunction2(L, lRaytracingIsRayQuerySupported);

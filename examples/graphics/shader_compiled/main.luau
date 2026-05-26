@@ -6,7 +6,7 @@ local shaderSource = "shader_custom.slang"
 local vertexShaderBundle = "shader_custom.vert.snb"
 local fragmentShaderBundle = "shader_custom.frag.snb"
 
-local basePath = "06_shader_compiled/"
+local basePath = "graphics/06_shader_compiled/"
 
 local function compileShader(source: string, stage: any, format: any): sn.Buffer
 	local shader = sn.Shader.new()

@@ -39,13 +39,12 @@ static bool endsWithIcaseAscii(const std::string_view s,
 static std::filesystem::path getRequireRoot() {
   if (AssetIO::isArchiveMounted()) {
     std::filesystem::path root(AssetIO::archiveRootDirectory());
-    std::filesystem::path basePath(Script::getBasePath().c_str());
-    return (root / basePath).lexically_normal();
+    return root.lexically_normal();
   }
 
   String resolvedRoot;
-  if (!Filesystem::resolveSandboxPath(Script::getBasePath(),
-                                      FilesystemAccess::Read, resolvedRoot)) {
+  if (!Filesystem::resolveSandboxPath(".", FilesystemAccess::Read,
+                                      resolvedRoot)) {
     resolvedRoot = Filesystem::getAppBaseDirectory();
   }
 
@@ -366,7 +365,7 @@ luarequire_NavigateResult reset(lua_State *L, void *ctx,
     fileAbs = std::filesystem::weakly_canonical(*fileAbsOpt).lexically_normal();
   }
 
-  // Reject chunks outside the configured script root.
+  // Reject chunks outside the configured sandbox root.
   if (!isPathUnderRootIcase(fileAbs, rc->root)) {
     return NAVIGATE_NOT_FOUND;
   }

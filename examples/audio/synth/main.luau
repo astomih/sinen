@@ -1,5 +1,5 @@
 local sn = require("@sinen")
-local G = require("../global")
+local G = require("../../global")
 local synth: sn.Synth = sn.Synth.new()
 synth:setBpm(130)
 synth:setStepBeats(0.25) -- 16th note steps (1.0 = quarter note)

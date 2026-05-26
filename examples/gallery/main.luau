@@ -16,7 +16,12 @@ end
 local buttonSize = sn.Vec2.new(360, 40)
 local buttonStep = 48.0
 local offset = (numGallerys - 1) * buttonStep * 0.5
-function update() end
+
+function update()
+	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then
+		sn.Script.load("main", ".")
+	end
+end
 
 local function centeredRect(pos: sn.Vec2, size: sn.Vec2): sn.Rect
 	return sn.Rect.new(sn.Pivot.Center, sn.Window.center() + sn.Vec2.new(pos.x, -pos.y), size)
@@ -36,7 +41,7 @@ function draw()
 	)
 	for i = 1, numGallerys do
 		if sn.Gui.button(galleryDirs[i], centeredRect(sn.Vec2.new(0, (i - 1) * -buttonStep + offset), buttonSize)) then
-			sn.Script.load("main", "99_gallery/" .. galleryDirs[i])
+			sn.Script.load("main", "gallery/" .. galleryDirs[i])
 		end
 	end
 end

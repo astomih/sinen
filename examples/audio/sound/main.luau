@@ -1,5 +1,5 @@
 local sn = require("@sinen")
-local G = require("../global")
+local G = require("../../global")
 local sound: sn.Sound = sn.Sound.new()
 sound:load("shot.wav")
 

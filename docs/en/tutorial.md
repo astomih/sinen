@@ -48,8 +48,8 @@ build\build_msvc2026-debug.bat
 2. Move to your project directory and run
 
 ```bat
-cd examples\01_helloworld
-..\..\build\msvc2026-debug\sinen.exe
+cd examples\basics\01_helloworld
+..\..\..\build\msvc2026-debug\sinen.exe
 ```
 
 `main.luau` will be loaded.
@@ -149,12 +149,12 @@ local Player = require("./player")
 
 ## 8. Next Examples to Read
 
-- `examples/01_helloworld`: minimal setup
-- `examples/02_texture`: image drawing
-- `examples/03_model`: 3D model drawing
-- `examples/04_sound`: sound playback
-- `examples/09_physics`: physics
-- `examples/14_synth`: synth
+- `examples/basics/01_helloworld`: minimal setup
+- `examples/graphics/02_texture`: image drawing
+- `examples/graphics/03_model`: 3D model drawing
+- `examples/audio/04_sound`: sound playback
+- `examples/simulation/09_physics`: physics
+- `examples/audio/14_synth`: synth
 
 For the full API, see `docs/en/luau_api.md`.
 

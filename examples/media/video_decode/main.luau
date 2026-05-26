@@ -9,7 +9,7 @@ local info = nil
 local status = ""
 local frameIndex = -1
 local playing = true
-local videoPath = "16_video_decode/video_demo.avi"
+local videoPath = "video_demo.avi"
 
 local function openVideo()
 	if not reader:open(videoPath) then

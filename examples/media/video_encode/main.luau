@@ -5,7 +5,7 @@ font:load(24)
 local width = 96
 local height = 54
 local frames = 24
-local outputPath = "video_encode_demo.avi"
+local outputPath = "media/video_encode/video_encode_demo.avi"
 local status = "Press SPACE to encode " .. frames .. " RGBA frames to " .. outputPath
 local verified = ""
 

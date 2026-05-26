@@ -48,8 +48,8 @@ build\build_msvc2026-debug.bat
 2. プロジェクトディレクトリへ移動して実行
 
 ```bat
-cd examples\01_helloworld
-..\..\build\msvc2026-debug\sinen.exe
+cd examples\basics\01_helloworld
+..\..\..\build\msvc2026-debug\sinen.exe
 ```
 
 `main.luau` が読み込まれます。
@@ -149,12 +149,12 @@ local Player = require("./player")
 
 ## 8. 次に読むサンプル
 
-- `examples/01_helloworld`: 最小構成
-- `examples/02_texture`: 画像表示
-- `examples/03_model`: 3Dモデル表示
-- `examples/04_sound`: サウンド再生
-- `examples/09_physics`: 物理
-- `examples/14_synth`: シンセ
+- `examples/basics/01_helloworld`: 最小構成
+- `examples/graphics/02_texture`: 画像表示
+- `examples/graphics/03_model`: 3Dモデル表示
+- `examples/audio/04_sound`: サウンド再生
+- `examples/simulation/09_physics`: 物理
+- `examples/audio/14_synth`: シンセ
 
 API 一覧は `docs/ja/luau_api.md` から参照できます。
 

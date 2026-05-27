@@ -218,10 +218,10 @@ function update()
 		math.floor(player.transform.position.x + 0.5) == math.floor(stair.position.x)
 		and math.floor(player.transform.position.y + 0.5) == math.floor(stair.position.y)
 	then
-		scene_switcher:start("scene02_clear")
+		scene_switcher:start("scene02_clear.luau")
 	end
 	if player.hp <= 0 then
-		scene_switcher:start("scene03_gameover")
+		scene_switcher:start("scene03_gameover.luau")
 	end
 	camera_controller:update()
 end

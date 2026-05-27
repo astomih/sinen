@@ -6,7 +6,7 @@ This page explains the fastest way to run a Luau app with Sinen.
 
 Sinen is based on three simple rules:
 
-- Run `main.luau` as the entry script
+- Run `main.snb` or `main.luau` as the entry script
 - Split logic into `setup`, `update`, and `draw`
 - Place assets under the runtime base directory
 
@@ -25,7 +25,7 @@ end
 function update()
 	if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
 		-- Move to another scene if needed
-		-- sn.Script.load("main", ".")
+		-- sn.Script.load("/main.luau")
 	end
 end
 
@@ -52,10 +52,11 @@ cd examples\basics\01_helloworld
 ..\..\..\build\msvc2026-debug\sinen.exe
 ```
 
-`main.luau` will be loaded.
+`main.snb` is loaded when present; otherwise `main.luau` is loaded.
 
 You can also run a `.sna` archive. A `.sna` file is a zip archive whose root
 contains a `sna/` directory with `main.luau` and its assets inside.
+If `main.snb` is present, it takes priority over `main.luau`.
 
 ```text
 hoge.sna
@@ -117,15 +118,15 @@ end
 
 ## 6. Scene Switching
 
-Use `sn.Script.load(filePath, baseDirPath)` to switch scenes.
+Use `sn.Script.load(path)` to switch scenes.
 
-- `filePath`: script name without extension (for example, `main`)
-- `baseDirPath`: base directory of that scene
+- `path`: script path with a `.luau` or `.snb` extension (for example, `scenes/title/main.luau`)
+- Relative paths are based on the current scene file; paths starting with `/` are based on the root scene file
 
 Example: switch to `scenes/title/main.luau`
 
 ```luau
-sn.Script.load("main", "scenes/title")
+sn.Script.load("/scenes/title/main.luau")
 ```
 
 ## 7. Example Directory Layout

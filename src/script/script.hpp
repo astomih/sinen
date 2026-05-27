@@ -18,7 +18,7 @@ public:
 
   static void setSceneName(StringView name);
   static String getSceneName();
-  static void load(StringView filePath, StringView baseDirPath = "");
+  static void load(StringView filePath);
   static void setBasePath(StringView path);
   static String getBasePath();
   static String getRootBasePath();

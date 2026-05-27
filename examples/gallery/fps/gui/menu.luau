@@ -94,7 +94,7 @@ local function menu()
 					self.option = true
 				end
 				if sn.Gui.button("Quit", centeredRect(sn.Vec2.new(0, -70), sn.Vec2.new(200, 60))) then
-					sn.Script.load("main", ".")
+					sn.Script.load("/main.luau")
 				end
 			end
 		end,

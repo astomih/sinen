@@ -29,18 +29,16 @@ function setup()
 
 	if directoryContains("sna", "main.luau") then
 		payloadBase = "sna"
-	elseif directoryContains("data/17_archive/sna", "main.luau") then
-		payloadBase = "data/17_archive/sna"
 	end
 end
 
 function update()
 	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then
-		sn.Script.load("main", ".")
+		sn.Script.load("/main.luau")
 	end
 
 	if sn.Keyboard.isPressed(sn.Scancode.ENTER) and payloadBase then
-		sn.Script.load("main", payloadBase)
+		sn.Script.load(payloadBase .. "/main.luau")
 	end
 end
 

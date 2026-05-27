@@ -15,7 +15,7 @@ function update()
 	menu:update()
 	if menu.hide then
 		if sn.Mouse.isPressed(sn.Mouse.LEFT) then
-			sceneSwitcher:start("scene01_stage")
+			sceneSwitcher:start("scene01_stage.luau")
 		end
 	end
 end

@@ -19,7 +19,7 @@ local offset = (numGallerys - 1) * buttonStep * 0.5
 
 function update()
 	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then
-		sn.Script.load("main", ".")
+		sn.Script.load("/main.luau")
 	end
 end
 
@@ -41,7 +41,7 @@ function draw()
 	)
 	for i = 1, numGallerys do
 		if sn.Gui.button(galleryDirs[i], centeredRect(sn.Vec2.new(0, (i - 1) * -buttonStep + offset), buttonSize)) then
-			sn.Script.load("main", "gallery/" .. galleryDirs[i])
+			sn.Script.load("/gallery/" .. galleryDirs[i] .. "/main.luau")
 		end
 	end
 end

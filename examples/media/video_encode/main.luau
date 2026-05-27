@@ -72,7 +72,7 @@ end
 
 function update()
 	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then
-		sn.Script.load("main", ".")
+		sn.Script.load("/main.luau")
 	end
 	if sn.Keyboard.isPressed(sn.Scancode.SPACE) then
 		encode()

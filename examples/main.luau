@@ -61,7 +61,7 @@ function draw()
 	for i = 1, numCategories do
 		local rect = itemRect(i, viewport)
 		if intersectsViewport(rect, viewport) and sn.Gui.button(categories[i].label, rect) then
-			sn.Script.load("main", categories[i].dir)
+			sn.Script.load("/" .. categories[i].dir .. "/main.luau")
 		end
 	end
 end

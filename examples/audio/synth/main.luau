@@ -20,7 +20,7 @@ synth:play()
 function update()
 	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then
 		synth:stop()
-		sn.Script.load("main", ".")
+		sn.Script.load("/main.luau")
 	end
 	if sn.Keyboard.isPressed(sn.Scancode.SPACE) then
 		synth:play()

@@ -50,7 +50,7 @@ end
 function update()
 	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then
 		reader:close()
-		sn.Script.load("main", ".")
+		sn.Script.load("/main.luau")
 	end
 	if sn.Keyboard.isPressed(sn.Scancode.SPACE) then
 		playing = not playing

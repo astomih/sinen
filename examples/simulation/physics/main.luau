@@ -35,7 +35,7 @@ camera:lookat(sn.Vec3.new(0, 10, 25), sn.Vec3.new(0, 0, 0), sn.Vec3.new(0, 1, 0)
 
 function update()
 	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then
-		sn.Script.load("main", ".")
+		sn.Script.load("/main.luau")
 	end
 	boxTransform.position = floorCollider:getPosition()
 	sphereTransform.position = sphereCollider:getPosition()

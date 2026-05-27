@@ -16,7 +16,7 @@ end
 
 function update()
 	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then
-		sn.Script.load("main", ".")
+		sn.Script.load("/main.luau")
 	end
 end
 
@@ -60,7 +60,7 @@ function draw()
 	for i = 1, numExamples do
 		local rect = itemRect(i, viewport)
 		if intersectsViewport(rect, viewport) and sn.Gui.button(examples[i].label, rect) then
-			sn.Script.load("main", "gpu/" .. examples[i].dir)
+			sn.Script.load("/gpu/" .. examples[i].dir .. "/main.luau")
 		end
 	end
 end

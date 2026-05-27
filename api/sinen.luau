@@ -531,7 +531,7 @@ export type Event = {
 }
 
 export type Script = {
-	load: (path: string, basePath: string?) -> nil,
+	load: (path: string) -> nil,
 }
 
 export type Random = {

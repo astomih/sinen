@@ -12,7 +12,7 @@ function update()
 		return
 	end
 	if sn.Mouse.isPressed(sn.Mouse.LEFT) then
-		scene_switcher:start("main")
+		scene_switcher:start("main.luau")
 	end
 end
 

@@ -153,6 +153,17 @@ static bool resolveUserLogicalPath(StringView path, String &resolvedPath) {
 }
 
 static bool resolveAppLogicalPath(StringView path, String &resolvedPath) {
+  const String basePath = Script::getBasePath();
+  if (!startsWithLogicalRoot(path) && startsWithUserScheme(basePath)) {
+    String userPath = basePath;
+    if (!userPath.empty() && userPath.back() != '/' &&
+        userPath.back() != '\\') {
+      userPath.push_back('/');
+    }
+    userPath += String(path);
+    return resolveUserLogicalPath(userPath, resolvedPath);
+  }
+
   String rootResolved;
   if (!resolveAppLogicalDirectory(Script::getRootBasePath(), rootResolved)) {
     resolvedPath.clear();
@@ -161,7 +172,8 @@ static bool resolveAppLogicalPath(StringView path, String &resolvedPath) {
 
   String logicalPath = startsWithLogicalRoot(path)
                            ? stripLogicalRoot(path)
-                           : (Script::getBasePath() + "/" + String(path));
+                           : (basePath + "/" + String(path));
+  logicalPath = stripLogicalRoot(logicalPath);
   return resolvePathUnderRoot(std::filesystem::path(logicalPath.c_str()),
                               std::filesystem::path(rootResolved.c_str()),
                               resolvedPath);
@@ -360,9 +372,14 @@ bool Filesystem::resolveSandboxPath(StringView path, FilesystemAccess access,
   const String basePath = startsWithLogicalRoot(path)
                               ? Script::getRootBasePath()
                               : Script::getBasePath();
+  if (!startsWithLogicalRoot(path) && startsWithUserScheme(basePath)) {
+    resolvedPath.clear();
+    return false;
+  }
   const String logicalPath =
       startsWithLogicalRoot(path) ? stripLogicalRoot(path) : String(path);
-  resolvedPath = normalizeVirtualPath(basePath + "/" + logicalPath);
+  resolvedPath =
+      normalizeVirtualPath(stripLogicalRoot(basePath + "/" + logicalPath));
   return true;
 #else
   if (startsWithUserScheme(path)) {

@@ -90,7 +90,8 @@ static bool endsWithIcaseAscii(StringView value, StringView suffix) {
 
 static String archiveEntryPath(StringView name) {
   String logicalPath;
-  if (name.starts_with("user://")) {
+  if (name.starts_with("user://") ||
+      Script::getBasePath().starts_with("user://")) {
     return "";
   }
   if (!name.empty() && (name[0] == '/' || name[0] == '\\')) {
@@ -208,7 +209,8 @@ void *AssetIO::openAsIOStream(StringView name) {
   return file;
 }
 String AssetIO::openAsString(StringView name) {
-  if (!name.starts_with("user://") && isArchiveMounted()) {
+  if (!name.starts_with("user://") &&
+      !Script::getBasePath().starts_with("user://") && isArchiveMounted()) {
     const String path = archiveEntryPath(name);
     if (!path.empty() && archiveEntryExists(path)) {
       return openArchiveEntryAsString(path);
@@ -259,7 +261,8 @@ String AssetIO::getFilePath(StringView name) {
 }
 
 String AssetIO::getLoadPath(StringView name) {
-  if (!name.starts_with("user://") && isArchiveMounted()) {
+  if (!name.starts_with("user://") &&
+      !Script::getBasePath().starts_with("user://") && isArchiveMounted()) {
     return archiveEntryPath(name);
   }
   return getFilePath(name);
@@ -326,7 +329,8 @@ bool AssetIO::isArchivePath(StringView path) {
 }
 
 bool AssetIO::exists(StringView name) {
-  if (!name.starts_with("user://") && isArchiveMounted()) {
+  if (!name.starts_with("user://") &&
+      !Script::getBasePath().starts_with("user://") && isArchiveMounted()) {
     const String path = archiveEntryPath(name);
     if (!path.empty() && archiveEntryExists(path)) {
       return true;

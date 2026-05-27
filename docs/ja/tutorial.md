@@ -6,7 +6,7 @@
 
 Sinen の基本はこの3つです。
 
-- `main.luau` をエントリースクリプトとして実行する
+- `main.snb` または `main.luau` をエントリースクリプトとして実行する
 - `setup` / `update` / `draw` の3関数で処理を分ける
 - アセットは実行時のベースディレクトリ配下に置く
 
@@ -25,7 +25,7 @@ end
 function update()
 	if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
 		-- 必要なら別シーンへ遷移
-		-- sn.Script.load("main", ".")
+		-- sn.Script.load("/main.luau")
 	end
 end
 
@@ -52,10 +52,11 @@ cd examples\basics\01_helloworld
 ..\..\..\build\msvc2026-debug\sinen.exe
 ```
 
-`main.luau` が読み込まれます。
+`main.snb` があればそれが読み込まれ、なければ `main.luau` が読み込まれます。
 
 `.sna` アーカイブを渡して実行することもできます。`.sna` は zip 形式で、
 zip 直下に `sna/` フォルダを置き、その中に `main.luau` とアセットを配置します。
+`main.snb` がある場合は `main.luau` より優先されます。
 
 ```text
 hoge.sna
@@ -117,15 +118,15 @@ end
 
 ## 6. シーン遷移
 
-`sn.Script.load(filePath, baseDirPath)` で遷移できます。
+`sn.Script.load(path)` で遷移できます。
 
-- `filePath`: 拡張子なしのスクリプト名（例: `main`）
-- `baseDirPath`: そのシーンの基準ディレクトリ
+- `path`: `.luau` または `.snb` 付きのスクリプトパス（例: `scenes/title/main.luau`）
+- 相対パスは現在のシーンファイルの場所基準、`/` 始まりはルートシーンファイルの場所基準です
 
 例: `scenes/title/main.luau` に遷移
 
 ```luau
-sn.Script.load("main", "scenes/title")
+sn.Script.load("/scenes/title/main.luau")
 ```
 
 ## 7. ディレクトリ構成の例

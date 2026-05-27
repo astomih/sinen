@@ -232,6 +232,20 @@ int luaLoadSource(lua_State *L, const String &source, const String &chunkname,
   lua_pop(L, 1);
   return status;
 }
+
+static int luaLoadBytecode(lua_State *L, const String &bytecode,
+                           const String &chunkname, StringView fullPath) {
+  int status =
+      luau_load(L, chunkname.c_str(), bytecode.data(), bytecode.size(), 0);
+  if (status == LUA_OK) {
+    debugger.onLuaFileLoaded(gLua, fullPath, true);
+    return LUA_OK;
+  }
+  const char *msg = lua_tostring(L, -1);
+  Log::error("[luau load error] {}", msg ? msg : "(unknown error)");
+  lua_pop(L, 1);
+  return status;
+}
 void registerVec2(lua_State *);
 void registerVec3(lua_State *);
 void registerColor(lua_State *);
@@ -423,6 +437,171 @@ function draw()
     sn.Graphics.drawText("NO DATA", font, sn.Vec2.new(0, 0), sn.Color.new(1.0), 32, 0.0)
 end
 )";
+
+static bool startsWithUserScheme(StringView path) {
+  constexpr StringView scheme = "user://";
+  return path.size() >= scheme.size() &&
+         path.substr(0, scheme.size()) == scheme;
+}
+
+static bool startsWithLogicalRoot(StringView path) {
+  return !path.empty() && (path[0] == '/' || path[0] == '\\');
+}
+
+static bool isPathSeparator(char c) { return c == '/' || c == '\\'; }
+
+static bool hasScriptExtension(StringView path) {
+  constexpr StringView sourceExt = prefix;
+  constexpr StringView bytecodeExt = ".snb";
+  return (path.size() >= sourceExt.size() &&
+          path.substr(path.size() - sourceExt.size()) == sourceExt) ||
+         (path.size() >= bytecodeExt.size() &&
+          path.substr(path.size() - bytecodeExt.size()) == bytecodeExt);
+}
+
+static String normalizeLogicalPath(StringView path) {
+  String scheme;
+  StringView rest = path;
+  if (startsWithUserScheme(rest)) {
+    scheme = "user://";
+    rest.remove_prefix(scheme.size());
+  } else if (startsWithLogicalRoot(rest)) {
+    scheme = "/";
+  }
+
+  while (!rest.empty() && startsWithLogicalRoot(rest)) {
+    rest.remove_prefix(1);
+  }
+
+  Array<String> parts;
+  String current;
+  for (char c : rest) {
+    const char normalized = isPathSeparator(c) ? '/' : c;
+    if (normalized == '/') {
+      if (current.empty() || current == ".") {
+        current.clear();
+      } else if (current == "..") {
+        if (!parts.empty()) {
+          parts.pop_back();
+        }
+        current.clear();
+      } else {
+        parts.push_back(current);
+        current.clear();
+      }
+      continue;
+    }
+    current.push_back(normalized);
+  }
+  if (!current.empty() && current != ".") {
+    if (current == "..") {
+      if (!parts.empty()) {
+        parts.pop_back();
+      }
+    } else {
+      parts.push_back(current);
+    }
+  }
+
+  String out = scheme;
+  for (size_t i = 0; i < parts.size(); ++i) {
+    if (!out.empty() && out.back() != '/') {
+      out.push_back('/');
+    } else if (out.empty() && i > 0) {
+      out.push_back('/');
+    }
+    out += parts[i];
+  }
+
+  if (out.empty()) {
+    return ".";
+  }
+  return out;
+}
+
+static String joinLogicalPath(StringView base, StringView path) {
+  if (startsWithUserScheme(path) || startsWithLogicalRoot(path)) {
+    return normalizeLogicalPath(path);
+  }
+
+  String combined = base.empty() ? String(".") : String(base);
+  if (!combined.empty() && !isPathSeparator(combined.back())) {
+    combined.push_back('/');
+  }
+  combined += String(path);
+  return normalizeLogicalPath(combined);
+}
+
+static String dirnameLogicalPath(StringView path) {
+  if (startsWithUserScheme(path)) {
+    constexpr StringView scheme = "user://";
+    StringView rest = path.substr(scheme.size());
+    const size_t slash = rest.find_last_of("/\\");
+    if (slash == StringView::npos) {
+      return String(scheme);
+    }
+    return normalizeLogicalPath(String(scheme) + String(rest.substr(0, slash)));
+  }
+
+  const size_t slash = path.find_last_of("/\\");
+  if (slash == StringView::npos) {
+    return ".";
+  }
+  if (slash == 0 && startsWithLogicalRoot(path)) {
+    return "/";
+  }
+  return normalizeLogicalPath(path.substr(0, slash));
+}
+
+static String basenameLogicalPath(StringView path) {
+  if (startsWithUserScheme(path)) {
+    constexpr StringView scheme = "user://";
+    path.remove_prefix(scheme.size());
+  }
+  const size_t slash = path.find_last_of("/\\");
+  if (slash == StringView::npos) {
+    return String(path);
+  }
+  return String(path.substr(slash + 1));
+}
+
+struct ScriptChunk {
+  String bytes;
+  String filename;
+  bool bytecode = false;
+};
+
+static ScriptChunk loadSceneChunk(StringView sceneName) {
+  ScriptChunk chunk;
+
+  if (hasScriptExtension(sceneName)) {
+    chunk.bytes = AssetIO::openAsString(sceneName);
+    if (!chunk.bytes.empty()) {
+      chunk.filename = sceneName;
+      chunk.bytecode = sceneName.size() >= 4 &&
+                       sceneName.substr(sceneName.size() - 4) == ".snb";
+    }
+    return chunk;
+  }
+
+  const String bytecodeName = String(sceneName) + ".snb";
+  if (AssetIO::exists(bytecodeName)) {
+    chunk.bytes = AssetIO::openAsString(bytecodeName);
+    if (!chunk.bytes.empty()) {
+      chunk.filename = bytecodeName;
+      chunk.bytecode = true;
+      return chunk;
+    }
+  }
+
+  const String sourceName = String(sceneName) + prefix;
+  chunk.bytes = AssetIO::openAsString(sourceName);
+  if (!chunk.bytes.empty()) {
+    chunk.filename = sourceName;
+  }
+  return chunk;
+}
+
 void Script::runScene() {
 #ifndef SINEN_NO_USE_SCRIPT
   if (!gLua) {
@@ -440,10 +619,11 @@ void Script::runScene() {
     lua_pop(L, 1);
   };
 
-  String source;
-  source = AssetIO::openAsString(String(sceneName) + prefix);
-  if (source.empty()) {
-    source = nothingSceneLua;
+  ScriptChunk chunk = loadSceneChunk(sceneName);
+  if (chunk.bytes.empty()) {
+    chunk.bytes = nothingSceneLua;
+    chunk.filename = String(sceneName) + prefix;
+    chunk.bytecode = false;
   }
 
   if (gSetupRef != LUA_NOREF) {
@@ -460,15 +640,19 @@ void Script::runScene() {
   }
   clearSceneEntryPoints(gLua);
 
-  String filename = String(sceneName) + prefix;
-  String loadPath = AssetIO::getLoadPath(filename);
+  String loadPath = AssetIO::getLoadPath(chunk.filename);
   String chunkname = "@" + loadPath;
-  auto fullPath =
-      AssetIO::isArchiveMounted() ? loadPath : AssetIO::getFilePath(filename);
+  auto fullPath = AssetIO::isArchiveMounted()
+                      ? loadPath
+                      : AssetIO::getFilePath(chunk.filename);
   if (fullPath.empty()) {
-    fullPath = filename;
+    fullPath = chunk.filename;
   }
-  if (luaLoadSource(gLua, source, fullPath.c_str(), fullPath) != LUA_OK) {
+  const int loadStatus =
+      chunk.bytecode
+          ? luaLoadBytecode(gLua, chunk.bytes, fullPath.c_str(), fullPath)
+          : luaLoadSource(gLua, chunk.bytes, fullPath.c_str(), fullPath);
+  if (loadStatus != LUA_OK) {
     lua_settop(gLua, 0);
     return;
   }
@@ -561,13 +745,24 @@ void Script::setSceneName(StringView name) {
   reload = true;
 }
 String Script::getSceneName() { return sceneName; }
-void Script::load(StringView filePath, StringView baseDirPath) {
-  setSceneName(filePath);
-  setBasePath(baseDirPath);
+void Script::load(StringView filePath) {
+  String normalized = joinLogicalPath(basePath, filePath);
+  if (!hasScriptExtension(normalized)) {
+    Log::error("Script.load requires a .luau or .snb extension: {}",
+               normalized.c_str());
+    return;
+  }
+  String nextSceneName = basenameLogicalPath(normalized);
+  if (nextSceneName.empty()) {
+    nextSceneName = "main";
+  }
+  sceneName = nextSceneName;
+  basePath = dirnameLogicalPath(normalized);
+  reload = true;
 }
 void Script::setBasePath(StringView path) {
   if (!path.empty()) {
-    basePath = path;
+    basePath = normalizeLogicalPath(path);
   }
   reload = true;
 }
@@ -578,12 +773,10 @@ String Script::getRootBasePath() { return rootBasePath; }
 namespace sinen {
 static int lScriptLoad(lua_State *L) {
   int n = lua_gettop(L);
-  const char *filePath = luaL_checkstring(L, 1);
-  if (n >= 2) {
-    const char *baseDirPath = luaL_checkstring(L, 2);
-    Script::load(StringView(filePath), StringView(baseDirPath));
-    return 0;
+  if (n != 1) {
+    return luaLError2(L, "Script.load expects exactly one path argument");
   }
+  const char *filePath = luaL_checkstring(L, 1);
   Script::load(StringView(filePath));
   return 0;
 }

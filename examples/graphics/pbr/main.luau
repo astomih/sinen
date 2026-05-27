@@ -40,7 +40,7 @@ end
 
 function update()
 	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then
-		sn.Script.load("main", ".")
+		sn.Script.load("/main.luau")
 	end
 	transform.rotation.z = transform.rotation.z + sn.Time.delta() * 10
 	if sn.Keyboard.isDown(sn.Scancode.LEFT) then

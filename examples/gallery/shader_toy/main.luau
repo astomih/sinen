@@ -49,7 +49,7 @@ end
 function update()
 	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then
 		sn.Graphics.resetGraphicsPipeline()
-		sn.Script.load("main", ".")
+		sn.Script.load("/main.luau")
 		return
 	end
 

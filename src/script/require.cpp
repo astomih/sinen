@@ -43,7 +43,7 @@ static std::filesystem::path getRequireRoot() {
   }
 
   String resolvedRoot;
-  if (!Filesystem::resolveSandboxPath(".", FilesystemAccess::Read,
+  if (!Filesystem::resolveSandboxPath("/", FilesystemAccess::Read,
                                       resolvedRoot)) {
     resolvedRoot = Filesystem::getAppBaseDirectory();
   }

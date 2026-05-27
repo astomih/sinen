@@ -89,7 +89,15 @@ static bool endsWithIcaseAscii(StringView value, StringView suffix) {
 }
 
 static String archiveEntryPath(StringView name) {
-  String logicalPath = Script::getBasePath() + "/" + String(name);
+  String logicalPath;
+  if (name.starts_with("user://")) {
+    return "";
+  }
+  if (!name.empty() && (name[0] == '/' || name[0] == '\\')) {
+    logicalPath = Script::getRootBasePath() + "/" + String(name.substr(1));
+  } else {
+    logicalPath = Script::getBasePath() + "/" + String(name);
+  }
   String normalized = normalizePath(logicalPath);
   if (normalized.empty()) {
     return AssetIO::archiveRootDirectory();
@@ -172,10 +180,9 @@ static String openArchiveEntryAsStringLocked(StringView path) {
 
 static bool convertFilePath(String &filePath, StringView name,
                             FilesystemAccess access) {
-  const String logicalPath = Script::getBasePath() + "/" + String(name);
-  if (!Filesystem::resolveSandboxPath(logicalPath, access, filePath)) {
+  if (!Filesystem::resolveSandboxPath(name, access, filePath)) {
     Log::error("Filesystem sandbox rejected asset path: {}",
-               logicalPath.c_str());
+               String(name).c_str());
     filePath.clear();
     return false;
   }
@@ -201,9 +208,9 @@ void *AssetIO::openAsIOStream(StringView name) {
   return file;
 }
 String AssetIO::openAsString(StringView name) {
-  if (isArchiveMounted()) {
+  if (!name.starts_with("user://") && isArchiveMounted()) {
     const String path = archiveEntryPath(name);
-    if (archiveEntryExists(path)) {
+    if (!path.empty() && archiveEntryExists(path)) {
       return openArchiveEntryAsString(path);
     }
   }
@@ -252,7 +259,7 @@ String AssetIO::getFilePath(StringView name) {
 }
 
 String AssetIO::getLoadPath(StringView name) {
-  if (isArchiveMounted()) {
+  if (!name.starts_with("user://") && isArchiveMounted()) {
     return archiveEntryPath(name);
   }
   return getFilePath(name);
@@ -319,9 +326,9 @@ bool AssetIO::isArchivePath(StringView path) {
 }
 
 bool AssetIO::exists(StringView name) {
-  if (isArchiveMounted()) {
+  if (!name.starts_with("user://") && isArchiveMounted()) {
     const String path = archiveEntryPath(name);
-    if (archiveEntryExists(path)) {
+    if (!path.empty() && archiveEntryExists(path)) {
       return true;
     }
   }
@@ -360,7 +367,10 @@ Array<String> AssetIO::enumerateArchiveDirectory(StringView path) {
     return result;
   }
 
-  String normalized = normalizeArchivePath(path);
+  String normalized = archiveEntryPath(path);
+  if (normalized.empty()) {
+    return result;
+  }
   if (!normalized.empty() && normalized.back() != '/') {
     normalized.push_back('/');
   }

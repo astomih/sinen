@@ -464,9 +464,7 @@ void Script::runScene() {
   String loadPath = AssetIO::getLoadPath(filename);
   String chunkname = "@" + loadPath;
   auto fullPath =
-      AssetIO::isArchiveMounted()
-          ? loadPath
-          : AssetIO::getFilePath(filename);
+      AssetIO::isArchiveMounted() ? loadPath : AssetIO::getFilePath(filename);
   if (fullPath.empty()) {
     fullPath = filename;
   }
@@ -574,6 +572,7 @@ void Script::setBasePath(StringView path) {
   reload = true;
 }
 String Script::getBasePath() { return basePath; }
+String Script::getRootBasePath() { return rootBasePath; }
 } // namespace sinen
 
 namespace sinen {

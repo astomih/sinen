@@ -3,6 +3,7 @@
 #include <platform/io/asset_io.hpp>
 #include <platform/io/filesystem.hpp>
 #include <script/luaapi.hpp>
+#include <script/script.hpp>
 
 #include <SDL3/SDL.h>
 
@@ -10,6 +11,7 @@
 #include <cctype>
 #include <cstring>
 #include <filesystem>
+#include <string_view>
 #include <system_error>
 #include <utility>
 
@@ -85,6 +87,86 @@ static bool resolvePathUnderRoot(const std::filesystem::path &requested,
   return true;
 }
 
+static bool startsWithUserScheme(StringView path) {
+  constexpr StringView scheme = "user://";
+  return path.size() >= scheme.size() &&
+         path.substr(0, scheme.size()) == scheme;
+}
+
+static bool startsWithLogicalRoot(StringView path) {
+  return !path.empty() && (path[0] == '/' || path[0] == '\\');
+}
+
+static String stripLogicalRoot(StringView path) {
+  while (!path.empty() && (path[0] == '/' || path[0] == '\\')) {
+    path.remove_prefix(1);
+  }
+  return String(path);
+}
+
+static std::filesystem::path appBaseRootPath() {
+  return normalizeFsPath(
+      std::filesystem::path(Filesystem::getAppBaseDirectory().c_str()));
+}
+
+static bool resolveAppSandboxPath(const std::filesystem::path &requested,
+                                  String &resolvedPath) {
+#ifdef SINEN_DEBUG_WORKING_DIRECTORY
+  std::error_code cwdEc;
+  const std::filesystem::path workingRoot =
+      normalizeFsPath(std::filesystem::current_path(cwdEc));
+  if (!cwdEc && !workingRoot.empty() &&
+      resolvePathUnderRoot(requested, workingRoot, resolvedPath)) {
+    return true;
+  }
+#endif
+
+  const std::filesystem::path baseRoot = appBaseRootPath();
+  return !baseRoot.empty() &&
+         resolvePathUnderRoot(requested, baseRoot, resolvedPath);
+}
+
+static bool resolveAppLogicalDirectory(StringView path, String &resolvedPath) {
+  const std::filesystem::path requested{String(path)};
+  return resolveAppSandboxPath(requested, resolvedPath);
+}
+
+static bool resolveUserLogicalPath(StringView path, String &resolvedPath) {
+  constexpr StringView scheme = "user://";
+  String rest = String(path.substr(scheme.size()));
+  rest = stripLogicalRoot(rest);
+
+  const String userDir = Filesystem::getUserDirectory();
+  if (userDir.empty()) {
+    resolvedPath.clear();
+    return false;
+  }
+
+  const std::filesystem::path userRoot =
+      normalizeFsPath(std::filesystem::path(userDir.c_str()));
+  if (userRoot.empty()) {
+    resolvedPath.clear();
+    return false;
+  }
+  return resolvePathUnderRoot(std::filesystem::path(rest.c_str()), userRoot,
+                              resolvedPath);
+}
+
+static bool resolveAppLogicalPath(StringView path, String &resolvedPath) {
+  String rootResolved;
+  if (!resolveAppLogicalDirectory(Script::getRootBasePath(), rootResolved)) {
+    resolvedPath.clear();
+    return false;
+  }
+
+  String logicalPath = startsWithLogicalRoot(path)
+                           ? stripLogicalRoot(path)
+                           : (Script::getBasePath() + "/" + String(path));
+  return resolvePathUnderRoot(std::filesystem::path(logicalPath.c_str()),
+                              std::filesystem::path(rootResolved.c_str()),
+                              resolvedPath);
+}
+
 #if defined(SINEN_PLATFORM_EMSCRIPTEN) || defined(EMSCRIPTEN)
 static String normalizeVirtualPath(StringView path) {
   Array<String> parts;
@@ -130,7 +212,7 @@ static String normalizeVirtualPath(StringView path) {
 } // namespace
 
 Array<String> Filesystem::enumerateDirectory(StringView path) {
-  if (AssetIO::isArchiveMounted()) {
+  if (!startsWithUserScheme(path) && AssetIO::isArchiveMounted()) {
     return AssetIO::enumerateArchiveDirectory(path);
   }
 
@@ -157,7 +239,8 @@ Array<String> Filesystem::enumerateDirectory(StringView path) {
 }
 
 std::optional<Buffer> Filesystem::read(StringView path) {
-  if (AssetIO::isArchiveMounted() && AssetIO::exists(path)) {
+  if (!startsWithUserScheme(path) && AssetIO::isArchiveMounted() &&
+      AssetIO::exists(path)) {
     const String data = AssetIO::openAsString(path);
     Buffer buffer = makeBuffer(data.size(), BufferType::Binary);
     if (!data.empty()) {
@@ -196,7 +279,8 @@ std::optional<Buffer> Filesystem::read(StringView path) {
 }
 
 bool Filesystem::exists(StringView path) {
-  if (AssetIO::isArchiveMounted() && AssetIO::exists(path)) {
+  if (!startsWithUserScheme(path) && AssetIO::isArchiveMounted() &&
+      AssetIO::exists(path)) {
     return true;
   }
 
@@ -249,7 +333,11 @@ String Filesystem::getAppBaseDirectory() {
 }
 
 String Filesystem::getUserDirectory() {
-#ifdef _WIN32
+#if defined(SINEN_PLATFORM_EMSCRIPTEN) || defined(EMSCRIPTEN)
+  return "";
+#elif defined(__ANDROID__)
+  return "/sdcard/Android/media/astomih.sinen.app";
+#else
   char *prefPath = SDL_GetPrefPath("astomih", "sinen");
   if (!prefPath) {
     return "";
@@ -257,8 +345,6 @@ String Filesystem::getUserDirectory() {
   String result(prefPath);
   SDL_free(prefPath);
   return result;
-#else
-  return "";
 #endif
 }
 
@@ -267,42 +353,29 @@ bool Filesystem::resolveSandboxPath(StringView path, FilesystemAccess access,
   (void)access;
 
 #if defined(SINEN_PLATFORM_EMSCRIPTEN) || defined(EMSCRIPTEN)
-  resolvedPath = normalizeVirtualPath(path);
+  if (startsWithUserScheme(path)) {
+    resolvedPath.clear();
+    return false;
+  }
+  const String basePath = startsWithLogicalRoot(path)
+                              ? Script::getRootBasePath()
+                              : Script::getBasePath();
+  const String logicalPath =
+      startsWithLogicalRoot(path) ? stripLogicalRoot(path) : String(path);
+  resolvedPath = normalizeVirtualPath(basePath + "/" + logicalPath);
   return true;
 #else
-  const std::filesystem::path baseRoot =
-      normalizeFsPath(std::filesystem::path(getAppBaseDirectory().c_str()));
-  if (baseRoot.empty()) {
+  if (startsWithUserScheme(path)) {
+    if (resolveUserLogicalPath(path, resolvedPath)) {
+      return true;
+    }
+    resolvedPath.clear();
     return false;
   }
 
-  std::filesystem::path requested{String(path)};
-
-#ifdef SINEN_DEBUG_WORKING_DIRECTORY
-  std::error_code cwdEc;
-  const std::filesystem::path workingRoot =
-      normalizeFsPath(std::filesystem::current_path(cwdEc));
-  if (!cwdEc && !workingRoot.empty() &&
-      resolvePathUnderRoot(requested, workingRoot, resolvedPath)) {
+  if (resolveAppLogicalPath(path, resolvedPath)) {
     return true;
   }
-#endif
-
-  if (resolvePathUnderRoot(requested, baseRoot, resolvedPath)) {
-    return true;
-  }
-
-#ifdef _WIN32
-  const String userDir = getUserDirectory();
-  if (!userDir.empty()) {
-    const std::filesystem::path userRoot =
-        normalizeFsPath(std::filesystem::path(userDir.c_str()));
-    if (!userRoot.empty() &&
-        resolvePathUnderRoot(requested, userRoot, resolvedPath)) {
-      return true;
-    }
-  }
-#endif
 
   resolvedPath.clear();
   return false;

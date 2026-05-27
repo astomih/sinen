@@ -21,10 +21,12 @@ public:
   static void load(StringView filePath, StringView baseDirPath = "");
   static void setBasePath(StringView path);
   static String getBasePath();
+  static String getRootBasePath();
 
 private:
   inline static String sceneName = "main";
   inline static String basePath = ".";
+  inline static String rootBasePath = ".";
   inline static bool reload = true;
 };
 } // namespace sinen

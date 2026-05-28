@@ -2,6 +2,8 @@
 #define SINEN_TLSF_ALLOCATOR_HPP
 #include "allocator.hpp"
 
+#include <mutex>
+
 namespace sinen {
 class TLSFAllocator : public Allocator {
 public:

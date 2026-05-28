@@ -55,3 +55,6 @@
 [submodule "libs/ktx-software"]
 	path = libs/ktx-software
 	url = https://github.com/khronosgroup/ktx-software
+[submodule "tests/cpp/googletest"]
+	path = tests/cpp/googletest
+	url = https://github.com/google/googletest

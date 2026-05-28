@@ -1,0 +1,7 @@
+add_subdirectory(googletest EXCLUDE_FROM_ALL)
+
+add_executable(sinen_allocator_tests allocator_tests.cpp)
+target_link_libraries(sinen_allocator_tests PRIVATE sinen_core GTest::gtest_main)
+set_property(TARGET sinen_allocator_tests PROPERTY CXX_STANDARD 23)
+
+add_test(NAME sinen_allocator_tests COMMAND sinen_allocator_tests)

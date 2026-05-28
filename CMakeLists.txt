@@ -114,3 +114,9 @@ if(SINEN_USE_SLANG)
 endif()
 
 add_subdirectory(${SINEN_SOURCE_DIR}/src)
+
+option(SINEN_BUILD_CPP_TESTS "Build C++ unit tests" ON)
+if(SINEN_BUILD_CPP_TESTS)
+  enable_testing()
+  add_subdirectory(${SINEN_SOURCE_DIR}/tests/cpp)
+endif()

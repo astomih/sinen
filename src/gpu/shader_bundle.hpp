@@ -1,8 +1,8 @@
 #ifndef SINEN_SHADER_BUNDLE_HPP
 #define SINEN_SHADER_BUNDLE_HPP
 
-#include "shader_format.hpp"
-#include "shader_stage.hpp"
+#include <gpu/shader_format.hpp>
+#include <gpu/shader_stage.hpp>
 #include <core/buffer/buffer.hpp>
 #include <core/data/array.hpp>
 #include <core/data/string.hpp>
@@ -10,8 +10,6 @@
 
 #include <cstdint>
 #include <optional>
-
-struct lua_State;
 
 namespace sinen {
 
@@ -45,8 +43,6 @@ public:
   static ShaderFormat preferredFormatFor(GPUBackendAPI backendAPI);
   static const char *entryPointFor(ShaderStage stage, ShaderFormat format);
 };
-
-void registerShaderBundle(lua_State *L);
 
 } // namespace sinen
 

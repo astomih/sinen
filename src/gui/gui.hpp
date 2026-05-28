@@ -13,9 +13,11 @@ public:
   static void newFrame();
   static void setFont(const Ptr<Font> &font);
   static void setFontSize(float size);
+  static float fontSize();
   static void setThemeColor(const Color &background, const Color &hover,
                             const Color &active, const Color &text,
                             const Color &accent);
+  static Color textColor();
   static void label(StringView text, const Vec2 &position,
                     const Color &color = Color(1.0f), float fontSize = 0.0f);
   static bool button(StringView text, const Rect &rect);

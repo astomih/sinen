@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "shader_compiler.hpp"
+#include <shader_compiler/shader_compiler.hpp>
 
 #include <platform/io/asset_io.hpp>
 

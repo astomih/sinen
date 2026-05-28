@@ -1,6 +1,6 @@
 #ifndef SINEN_SHADER_HPP
 #define SINEN_SHADER_HPP
-#include "shader_stage.hpp"
+#include <gpu/shader_stage.hpp>
 #include <core/buffer/buffer.hpp>
 #include <core/data/array.hpp>
 #include <core/data/ptr.hpp>

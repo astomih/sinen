@@ -1,7 +1,7 @@
 #ifndef SINEN_SHADER_COMPILER_HPP
 #define SINEN_SHADER_COMPILER_HPP
-#include "shader_format.hpp"
-#include "shader_stage.hpp"
+#include <gpu/shader_format.hpp>
+#include <gpu/shader_stage.hpp>
 #include <core/data/array.hpp>
 #include <core/data/string.hpp>
 

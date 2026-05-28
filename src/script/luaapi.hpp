@@ -7,6 +7,7 @@
 #include <core/data/array.hpp>
 #include <core/data/ptr.hpp>
 #include <core/data/string.hpp>
+#include <core/data/table_string.hpp>
 #include <core/logger/log.hpp>
 
 #include <utility>
@@ -109,9 +110,6 @@ void luaPushcfunction2(lua_State *L, lua_CFunction f);
 int luaLError2(lua_State *L, const char *fmt, ...);
 int luaLRef2(lua_State *L, int idx);
 void luaLUnref2(lua_State *L, int idx, int r);
-using TablePair = Array<std::pair<String, String>>;
-String convert(StringView name, const TablePair &p, bool isReturn);
-String toStringTrim(double value);
 int luaLoadSource(lua_State *L, const String &source, const String &chunkname,
                   StringView fullPath);
 static constexpr const char *prefix = ".luau";

@@ -1,7 +1,7 @@
 #ifndef SINEN_RENDER_PIPELINE_HPP
 #define SINEN_RENDER_PIPELINE_HPP
 #include <gpu/gpu_graphics_pipeline.hpp>
-#include <shader/shader.hpp>
+#include <gpu/shader.hpp>
 
 #include <bitset>
 

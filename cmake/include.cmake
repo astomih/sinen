@@ -1,24 +1,3 @@
 set(SINEN_INCLUDE_DIRS
-    ${Vulkan_INCLUDE_DIR}
     ${SINEN_SOURCE_DIR}
-    ${SINEN_SOURCE_DIR}/src
-    ${SINEN_SOURCE_DIR}/libs/rapidjson/include
-    ${SINEN_SOURCE_DIR}/libs/SDL/include
-    ${SINEN_SOURCE_DIR}/libs/miniaudio
-    ${SINEN_SOURCE_DIR}/src/script/include
-    ${SINEN_SOURCE_DIR}/src/rt_shader_compiler/include
-    ${SINEN_SOURCE_DIR}/libs/assimp/include
-    ${SINEN_SOURCE_DIR}/libs/SDL/include
-    ${SINEN_SOURCE_DIR}/libs/stb
-    ${SINEN_SOURCE_DIR}/libs/slang/include
-    ${SINEN_SOURCE_DIR}/libs/JoltPhysics
-    ${SINEN_SOURCE_DIR}/libs/tinyexr
-    ${SINEN_SOURCE_DIR}/libs/tinyexr/deps/miniz
-    ${SINEN_SOURCE_DIR}/libs/tlsf
-    ${SINEN_SOURCE_DIR}/libs/volk
-    ${SINEN_SOURCE_DIR}/libs/VulkanMemoryAllocator/include
-    ${SINEN_SOURCE_DIR}/libs/luau-debugger/debugger/include
-    ${SINEN_SOURCE_DIR}/libs/cppdap/include)
-
-list(APPEND SINEN_INCLUDE_DIRS ${SINEN_SOURCE_DIR}/libs/luau/VM/include
-     ${SINEN_SOURCE_DIR}/libs/luau/Require/include)
+    ${SINEN_SOURCE_DIR}/src)

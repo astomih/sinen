@@ -24,7 +24,7 @@
 #include <math/geometry/vertex.hpp>
 #include <math/mat4.hpp>
 #include <math/math.hpp>
-#include <platform/io/asset_io.hpp>
+#include <platform/io/asset_reader.hpp>
 
 #include <assimp/IOSystem.hpp>
 #include <assimp/Importer.hpp>
@@ -506,7 +506,7 @@ void Model::load(StringView path) {
     String modelBytes;
     Log::info("Loading model from path: {}", pathStr);
 #if defined(SINEN_PLATFORM_EMSCRIPTEN) || defined(EMSCRIPTEN)
-    modelBytes = AssetIO::openAsString(pathStr);
+    modelBytes = AssetReader::openAsString(pathStr);
     if (!modelBytes.empty()) {
       Log::info("Model path is empty, trying to load from memory");
       const String hint = assimpHintFromPath(pathStr);
@@ -516,13 +516,13 @@ void Model::load(StringView path) {
     Log::info("Model loaded from path: {}, size: {}", pathStr,
               modelBytes.size());
 #else
-    if (AssetIO::isArchiveMounted() && AssetIO::exists(pathStr)) {
-      modelBytes = AssetIO::openAsString(pathStr);
+    if (AssetReader::isArchiveMounted() && AssetReader::exists(pathStr)) {
+      modelBytes = AssetReader::openAsString(pathStr);
       const String hint = assimpHintFromPath(pathStr);
       scene = importer.ReadFileFromMemory(modelBytes.data(), modelBytes.size(),
                                           flags, hint.c_str());
     } else {
-      auto fullFilePath = AssetIO::getFilePath(pathStr);
+      auto fullFilePath = AssetReader::getFilePath(pathStr);
       scene = importer.ReadFile(fullFilePath.c_str(), flags);
     }
 #endif

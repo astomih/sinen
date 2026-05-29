@@ -1,4 +1,3 @@
-#include <script/luaapi.hpp>
 #include <core/profiler.hpp>
 #include <core/thread/future_poll.hpp>
 #include <core/thread/global_thread_pool.hpp>
@@ -7,7 +6,8 @@
 #include <graphics/graphics.hpp>
 #include <graphics/texture/texture.hpp>
 #include <math/math.hpp>
-#include <platform/io/asset_io.hpp>
+#include <platform/io/asset_reader.hpp>
+#include <script/luaapi.hpp>
 
 namespace sinen {
 static int lTextureNew(lua_State *L) {

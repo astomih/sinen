@@ -1,17 +1,16 @@
-#include <script/luaapi.hpp>
 #include <core/allocator/global_allocator.hpp>
 #include <core/profiler.hpp>
+#include <gpu/builtin_shader.hpp>
 #include <gpu/gpu.hpp>
 #include <graphics/builtin_pipeline.hpp>
 #include <graphics/font/default/mplus-1p-medium.ttf.hpp>
-#include <graphics/font/font_glyph_ranges.hpp>
 #include <graphics/graphics.hpp>
 #include <graphics/texture/render_texture.hpp>
 #include <gui/gui.hpp>
 #include <math/transform/transform.hpp>
-#include <platform/io/asset_io.hpp>
+#include <platform/io/asset_reader.hpp>
 #include <platform/window/window.hpp>
-#include <gpu/builtin_shader.hpp>
+#include <script/luaapi.hpp>
 
 namespace sinen {
 static int lGraphicsDrawRect(lua_State *L) {

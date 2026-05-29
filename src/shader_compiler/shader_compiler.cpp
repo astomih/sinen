@@ -4,7 +4,7 @@
 
 #include <shader_compiler/shader_compiler.hpp>
 
-#include <platform/io/asset_io.hpp>
+#include <platform/io/asset_reader.hpp>
 
 #include <slang-com-helper.h>
 #include <slang-com-ptr.h>
@@ -245,8 +245,8 @@ Array<char> ShaderCompiler::compile(StringView sourcePath, ShaderStage stage,
         (dotPos == String::npos) ? sourcePath : sourcePath.substr(0, dotPos);
     moduleName = String(view.data(), view.size());
   }
-  auto source = sinen::AssetIO::openAsString(sourcePath);
-  auto modulePath = sinen::AssetIO::getLoadPath(sourcePath);
+  auto source = sinen::AssetReader::openAsString(sourcePath);
+  auto modulePath = sinen::AssetReader::getLoadPath(sourcePath);
   return compileSource(moduleName, modulePath, source, stage, format,
                        reflectionData);
 }

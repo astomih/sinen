@@ -1,7 +1,7 @@
 #include "require.hpp"
 #include "luaapi.hpp"
 #include "script.hpp"
-#include <platform/io/asset_io.hpp>
+#include <platform/io/asset_reader.hpp>
 #include <platform/io/filesystem.hpp>
 
 #include <SDL3/SDL.h>
@@ -37,8 +37,8 @@ static bool endsWithIcaseAscii(const std::string_view s,
 }
 
 static std::filesystem::path getRequireRoot() {
-  if (AssetIO::isArchiveMounted()) {
-    std::filesystem::path root(AssetIO::archiveRootDirectory());
+  if (AssetReader::isArchiveMounted()) {
+    std::filesystem::path root(AssetReader::archiveRootDirectory());
     return root.lexically_normal();
   }
 
@@ -66,8 +66,8 @@ static String toGenericString(const std::filesystem::path &path) {
 }
 
 static bool virtualRegularFileExists(const std::filesystem::path &path) {
-  if (AssetIO::isArchiveMounted()) {
-    return AssetIO::archiveEntryExists(toGenericString(path));
+  if (AssetReader::isArchiveMounted()) {
+    return AssetReader::archiveEntryExists(toGenericString(path));
   }
 
   std::error_code ec;
@@ -76,8 +76,8 @@ static bool virtualRegularFileExists(const std::filesystem::path &path) {
 }
 
 static bool virtualDirectoryExists(const std::filesystem::path &path) {
-  if (AssetIO::isArchiveMounted()) {
-    return AssetIO::archiveDirectoryExists(toGenericString(path));
+  if (AssetReader::isArchiveMounted()) {
+    return AssetReader::archiveDirectoryExists(toGenericString(path));
   }
 
   std::error_code ec;
@@ -85,8 +85,8 @@ static bool virtualDirectoryExists(const std::filesystem::path &path) {
 }
 
 static String virtualReadFile(const std::filesystem::path &path) {
-  if (AssetIO::isArchiveMounted()) {
-    return AssetIO::openArchiveEntryAsString(toGenericString(path));
+  if (AssetReader::isArchiveMounted()) {
+    return AssetReader::openArchiveEntryAsString(toGenericString(path));
   }
 
   auto *file = SDL_IOFromFile(path.string().c_str(), "r");
@@ -167,7 +167,7 @@ resolveRequirerFile(sinen::RequireContext &rc, const char *requirer_chunkname) {
     return std::nullopt;
   }
 
-  if (AssetIO::isArchiveMounted()) {
+  if (AssetReader::isArchiveMounted()) {
     if (auto hit = resolveExistingFilePath(p)) {
       return hit;
     }
@@ -359,7 +359,7 @@ luarequire_NavigateResult reset(lua_State *L, void *ctx,
     return NAVIGATE_NOT_FOUND;
   }
   std::filesystem::path fileAbs;
-  if (AssetIO::isArchiveMounted()) {
+  if (AssetReader::isArchiveMounted()) {
     fileAbs = fileAbsOpt->lexically_normal();
   } else {
     fileAbs = std::filesystem::weakly_canonical(*fileAbsOpt).lexically_normal();

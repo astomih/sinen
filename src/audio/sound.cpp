@@ -1,7 +1,7 @@
 // internal
 #include "audio.hpp"
 #include <audio/sound.hpp>
-#include <platform/io/asset_io.hpp>
+#include <platform/io/asset_reader.hpp>
 
 // external
 #include "core/data/array.hpp"
@@ -20,14 +20,14 @@ public:
   virtual ~SoundImpl() override { reset(); }
 
   void load(StringView fileName) override {
-    if (AssetIO::isArchiveMounted() && AssetIO::exists(fileName)) {
-      auto bytes = AssetIO::openAsString(fileName);
+    if (AssetReader::isArchiveMounted() && AssetReader::exists(fileName)) {
+      auto bytes = AssetReader::openAsString(fileName);
       loadMemory(bytes.data(), bytes.size());
       return;
     }
 
     reset();
-    auto path = AssetIO::getFilePath(fileName);
+    auto path = AssetReader::getFilePath(fileName);
     if (ma_sound_init_from_file((ma_engine *)Audio::getEngine(), path.c_str(),
                                 MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_ASYNC,
                                 nullptr, nullptr, &sound) == MA_SUCCESS) {

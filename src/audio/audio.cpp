@@ -2,7 +2,7 @@
 #include "audio.hpp"
 #include <math/math.hpp>
 #include <math/quaternion.hpp>
-#include <platform/io/asset_io.hpp>
+#include <platform/io/asset_reader.hpp>
 
 // external
 #include <SDL3/SDL.h>

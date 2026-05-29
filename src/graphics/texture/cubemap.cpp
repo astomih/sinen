@@ -3,7 +3,7 @@
 #include <graphics/graphics.hpp>
 #include <graphics/texture/texture.hpp>
 #include <math/math.hpp>
-#include <platform/io/asset_io.hpp>
+#include <platform/io/asset_reader.hpp>
 
 #include <algorithm>
 #include <array>
@@ -445,13 +445,13 @@ bool loadEXRFloat(StringView path, Array<float> &img, int &W, int &H, int &C) {
   int w, h;
   int ret = TINYEXR_ERROR_INVALID_ARGUMENT;
   String bytes;
-  if (AssetIO::isArchiveMounted() && AssetIO::exists(path)) {
-    bytes = AssetIO::openAsString(path);
+  if (AssetReader::isArchiveMounted() && AssetReader::exists(path)) {
+    bytes = AssetReader::openAsString(path);
     ret = LoadEXRFromMemory(
         &out, &w, &h, reinterpret_cast<const unsigned char *>(bytes.data()),
         bytes.size(), &err);
   } else {
-    auto filePath = AssetIO::getFilePath(path);
+    auto filePath = AssetReader::getFilePath(path);
     ret = LoadEXR(&out, &w, &h, filePath.c_str(), &err);
   }
   if (ret != TINYEXR_SUCCESS) {

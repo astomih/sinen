@@ -11,12 +11,13 @@
 #endif
 
 namespace sinen {
-Vec2 Window::mSize = Vec2(1280.f, 720.f);
-String Window::mName;
-::SDL_Window *Window::mWindow = nullptr;
-bool Window::mResized = false;
+Vec2 windowSize = Vec2(1280.f, 720.f);
+String windowName;
+::SDL_Window *pSdlWindow = nullptr;
+bool bResizedInFrame = false;
+
 bool Window::initialize(StringView name) {
-  mName = name;
+  windowName = name;
   uint64_t windowFlags = 0;
 #if !defined(SINEN_PLATFORM_EMSCRIPTEN)
   windowFlags |= SDL_WINDOW_VULKAN;
@@ -29,27 +30,20 @@ bool Window::initialize(StringView name) {
   windowFlags |= SDL_WINDOW_RESIZABLE;
 #endif
 
-  mWindow = SDL_CreateWindow(String(name).c_str(), static_cast<int>(mSize.x),
-                             static_cast<int>(mSize.y), windowFlags);
-  if (!mWindow) {
+  pSdlWindow = SDL_CreateWindow(String(name).c_str(), static_cast<int>(windowSize.x),
+                             static_cast<int>(windowSize.y), windowFlags);
+  if (!pSdlWindow) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_CreateWindow failed: %s",
                  SDL_GetError());
     return false;
   }
 
-  // Safe rect
-  // #ifdef __ANDROID__
-  //   SDL_Rect safeArea;
-  //   SDL_GetWindowSafeArea(mWindow, &safeArea);
-  //   mSize.x = static_cast<float>(safeArea.w);
-  //   mSize.y = static_cast<float>(safeArea.h);
-  // #endif
   int x = 0;
   int y = 0;
-  SDL_GetWindowSize(mWindow, &x, &y);
+  SDL_GetWindowSize(pSdlWindow, &x, &y);
 #ifdef SINEN_PLATFORM_EMSCRIPTEN
-  const int fallbackW = static_cast<int>(mSize.x > 0 ? mSize.x : 1280.f);
-  const int fallbackH = static_cast<int>(mSize.y > 0 ? mSize.y : 720.f);
+  const int fallbackW = static_cast<int>(windowSize.x > 0 ? windowSize.x : 1280.f);
+  const int fallbackH = static_cast<int>(windowSize.y > 0 ? windowSize.y : 720.f);
   int canvasW = 0;
   int canvasH = 0;
   emscripten_get_canvas_element_size("#canvas", &canvasW, &canvasH);
@@ -58,7 +52,7 @@ bool Window::initialize(StringView name) {
     canvasH = fallbackH;
     emscripten_set_canvas_element_size("#canvas", canvasW, canvasH);
     emscripten_set_element_css_size("#canvas", canvasW, canvasH);
-    SDL_SetWindowSize(mWindow, canvasW, canvasH);
+    SDL_SetWindowSize(pSdlWindow, canvasW, canvasH);
   }
   if (canvasW > 0 && canvasH > 0) {
     x = canvasW;
@@ -66,32 +60,33 @@ bool Window::initialize(StringView name) {
   }
 #endif
   if (x > 0 && y > 0) {
-    mSize.x = static_cast<float>(x);
-    mSize.y = static_cast<float>(y);
+    windowSize.x = static_cast<float>(x);
+    windowSize.y = static_cast<float>(y);
   }
   return true;
 }
 
 void Window::shutdown() {
-  SDL_DestroyWindow(mWindow);
-  mWindow = nullptr;
+  SDL_DestroyWindow(pSdlWindow);
+  pSdlWindow = nullptr;
 }
 void Window::resize(const Vec2 &size) {
-  mSize = size;
-  SDL_SetWindowSize(mWindow, static_cast<int>(mSize.x),
-                    static_cast<int>(mSize.y));
+  windowSize = size;
+  SDL_SetWindowSize(pSdlWindow, static_cast<int>(windowSize.x),
+                    static_cast<int>(windowSize.y));
 }
 void Window::setFullscreen(bool fullscreen) {
-  SDL_SetWindowFullscreen(mWindow, fullscreen);
+  SDL_SetWindowFullscreen(pSdlWindow, fullscreen);
 }
 void Window::rename(StringView name) {
-  mName = name;
-  SDL_SetWindowTitle(mWindow, mName.c_str());
+  windowName = name;
+  SDL_SetWindowTitle(pSdlWindow, windowName.c_str());
 }
 
-Vec2 Window::size() { return mSize; }
-bool Window::resized() { return mResized; }
-String Window::name() { return mName; }
+Vec2 Window::size() { return windowSize; }
+bool Window::resized() { return bResizedInFrame; }
+Vec2 Window::half() { return Vec2(windowSize.x / 2.0, windowSize.y / 2.0); }
+String Window::name() { return windowName; }
 Rect Window::rect() { return Rect(Vec2(0), size()); }
 Vec2 Window::topLeft() { return rect().topLeft(); }
 Vec2 Window::topCenter() { return rect().topCenter(); }
@@ -103,17 +98,18 @@ Vec2 Window::bottomLeft() { return rect().bottomLeft(); }
 Vec2 Window::bottomCenter() { return rect().bottomCenter(); }
 Vec2 Window::bottomRight() { return rect().bottomRight(); }
 
-void Window::prepareFrame() { mResized = false; }
+void Window::prepareFrame() { bResizedInFrame = false; }
 void Window::processEvent(SDL_Event &event) {
   if (event.window.type == SDL_EventType::SDL_EVENT_WINDOW_RESIZED) {
-    mResized = true;
+    bResizedInFrame = true;
     int x, y;
-    SDL_GetWindowSize(mWindow, &x, &y);
+    SDL_GetWindowSize(pSdlWindow, &x, &y);
     if (x > 0 && y > 0) {
-      mSize.x = static_cast<float>(x);
-      mSize.y = static_cast<float>(y);
+      windowSize.x = static_cast<float>(x);
+      windowSize.y = static_cast<float>(y);
     }
   }
 }
+SDL_Window *Window::getSdlWindow() { return pSdlWindow; }
 
 } // namespace sinen

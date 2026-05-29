@@ -1,6 +1,6 @@
-#include <script/luaapi.hpp>
-#include <platform/io/asset_io.hpp>
+#include <platform/io/asset_reader.hpp>
 #include <platform/io/filesystem.hpp>
+#include <script/luaapi.hpp>
 
 namespace sinen {
 static int lFilesystemEnumerateDirectory(lua_State *L) {

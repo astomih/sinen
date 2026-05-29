@@ -1,8 +1,8 @@
 #include <cassert>
 #include <cstring>
 
-#include <core/profiler.hpp>
 #include <core/data/table_string.hpp>
+#include <core/profiler.hpp>
 #include <core/thread/future_poll.hpp>
 #include <core/thread/global_thread_pool.hpp>
 #include <core/thread/load_context.hpp>
@@ -11,7 +11,7 @@
 #include <graphics/texture/texture.hpp>
 #include <math/math.hpp>
 #include <memory>
-#include <platform/io/asset_io.hpp>
+#include <platform/io/asset_reader.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <SDL3/SDL.h>
@@ -214,7 +214,7 @@ bool Texture::load(StringView fileName) {
   const String path = fileName.data();
   state->future = globalThreadPool().submit([state, path] {
     ZoneScopedN("Texture::load decode");
-    auto str = AssetIO::openAsString(path);
+    auto str = AssetReader::openAsString(path);
     if (decodeKtx2(reinterpret_cast<const uint8_t *>(str.data()), str.size(),
                    *state)) {
       return;

@@ -10,7 +10,7 @@
 // internal
 #include <core/data/string.hpp>
 #include <core/logger/log.hpp>
-#include <platform/io/asset_io.hpp>
+#include <platform/io/asset_reader.hpp>
 #include <platform/io/filesystem.hpp>
 #include <script/script.hpp>
 
@@ -101,21 +101,21 @@ static String archiveEntryPath(StringView name) {
   }
   String normalized = normalizePath(logicalPath);
   if (normalized.empty()) {
-    return AssetIO::archiveRootDirectory();
+    return AssetReader::archiveRootDirectory();
   }
-  return String(AssetIO::archiveRootDirectory()) + "/" + normalized;
+  return String(AssetReader::archiveRootDirectory()) + "/" + normalized;
 }
 
 static String normalizeArchivePath(StringView path) {
   String normalized = normalizePath(path);
-  if (normalized == AssetIO::archiveRootDirectory() ||
-      normalized.starts_with(String(AssetIO::archiveRootDirectory()) + "/")) {
+  if (normalized == AssetReader::archiveRootDirectory() ||
+      normalized.starts_with(String(AssetReader::archiveRootDirectory()) + "/")) {
     return normalized;
   }
   if (normalized.empty()) {
-    return AssetIO::archiveRootDirectory();
+    return AssetReader::archiveRootDirectory();
   }
-  return String(AssetIO::archiveRootDirectory()) + "/" + normalized;
+  return String(AssetReader::archiveRootDirectory()) + "/" + normalized;
 }
 
 static bool archiveEntryExistsLocked(StringView path) {
@@ -189,13 +189,13 @@ static bool convertFilePath(String &filePath, StringView name,
   }
   return true;
 }
-Array<uint8_t> AssetIO::key = {0};
-StringView AssetIO::open(StringView name) {
+Array<uint8_t> AssetReader::key = {0};
+StringView AssetReader::open(StringView name) {
   static thread_local String result;
   result = openAsString(name);
   return result;
 }
-void *AssetIO::openAsIOStream(StringView name) {
+void *AssetReader::openAsIOStream(StringView name) {
   String filePath;
   if (!convertFilePath(filePath, name, FilesystemAccess::Read)) {
     return nullptr;
@@ -208,7 +208,7 @@ void *AssetIO::openAsIOStream(StringView name) {
   }
   return file;
 }
-String AssetIO::openAsString(StringView name) {
+String AssetReader::openAsString(StringView name) {
   if (!name.starts_with("user://") &&
       !Script::getBasePath().starts_with("user://") && isArchiveMounted()) {
     const String path = archiveEntryPath(name);
@@ -239,28 +239,13 @@ String AssetIO::openAsString(StringView name) {
   return result;
 }
 
-void AssetIO::write(StringView name, StringView data) {
-  String filePath;
-  if (!convertFilePath(filePath, name, FilesystemAccess::Write)) {
-    return;
-  }
-  auto *file = SDL_IOFromFile(filePath.c_str(), "w");
-  if (!file) {
-    return;
-  }
-  if (data.size() != SDL_WriteIO(file, data.data(), data.size())) {
-    Log::error("data_stream: Could not write all strings");
-  }
-  SDL_CloseIO(file);
-}
-
-String AssetIO::getFilePath(StringView name) {
+String AssetReader::getFilePath(StringView name) {
   String filePath;
   convertFilePath(filePath, name, FilesystemAccess::Read);
   return filePath;
 }
 
-String AssetIO::getLoadPath(StringView name) {
+String AssetReader::getLoadPath(StringView name) {
   if (!name.starts_with("user://") &&
       !Script::getBasePath().starts_with("user://") && isArchiveMounted()) {
     return archiveEntryPath(name);
@@ -268,7 +253,7 @@ String AssetIO::getLoadPath(StringView name) {
   return getFilePath(name);
 }
 
-bool AssetIO::mountArchive(StringView path) {
+bool AssetReader::mountArchive(StringView path) {
   if (!endsWithIcaseAscii(path, archiveExtension())) {
     Log::error("Unsupported archive extension: {}", String(path).c_str());
     return false;
@@ -306,7 +291,7 @@ bool AssetIO::mountArchive(StringView path) {
   return true;
 }
 
-void AssetIO::unmountArchive() {
+void AssetReader::unmountArchive() {
   std::lock_guard<std::mutex> lock(gArchiveMutex);
   if (!gArchiveMounted) {
     return;
@@ -317,18 +302,18 @@ void AssetIO::unmountArchive() {
   gArchivePath.clear();
 }
 
-bool AssetIO::isArchiveMounted() {
+bool AssetReader::isArchiveMounted() {
   std::lock_guard<std::mutex> lock(gArchiveMutex);
   return gArchiveMounted;
 }
 
-bool AssetIO::isArchivePath(StringView path) {
+bool AssetReader::isArchivePath(StringView path) {
   const String normalized = normalizePath(path);
   return normalized == archiveRootDirectory() ||
          normalized.starts_with(String(archiveRootDirectory()) + "/");
 }
 
-bool AssetIO::exists(StringView name) {
+bool AssetReader::exists(StringView name) {
   if (!name.starts_with("user://") &&
       !Script::getBasePath().starts_with("user://") && isArchiveMounted()) {
     const String path = archiveEntryPath(name);
@@ -349,22 +334,22 @@ bool AssetIO::exists(StringView name) {
   return true;
 }
 
-bool AssetIO::archiveEntryExists(StringView path) {
+bool AssetReader::archiveEntryExists(StringView path) {
   std::lock_guard<std::mutex> lock(gArchiveMutex);
   return archiveEntryExistsLocked(path);
 }
 
-bool AssetIO::archiveDirectoryExists(StringView path) {
+bool AssetReader::archiveDirectoryExists(StringView path) {
   std::lock_guard<std::mutex> lock(gArchiveMutex);
   return archiveDirectoryExistsLocked(path);
 }
 
-String AssetIO::openArchiveEntryAsString(StringView path) {
+String AssetReader::openArchiveEntryAsString(StringView path) {
   std::lock_guard<std::mutex> lock(gArchiveMutex);
   return openArchiveEntryAsStringLocked(path);
 }
 
-Array<String> AssetIO::enumerateArchiveDirectory(StringView path) {
+Array<String> AssetReader::enumerateArchiveDirectory(StringView path) {
   Array<String> result;
   std::lock_guard<std::mutex> lock(gArchiveMutex);
   if (!gArchiveMounted) {

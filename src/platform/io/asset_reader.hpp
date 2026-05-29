@@ -4,11 +4,7 @@
 #include <core/data/string.hpp>
 namespace sinen {
 
-/**
- * @brief Data stream class
- *
- */
-class AssetIO {
+class AssetReader {
 public:
   static constexpr const char *archiveExtension() { return ".sna"; }
   static constexpr const char *archiveRootDirectory() { return "sna"; }
@@ -19,7 +15,6 @@ public:
   static void *openAsIOStream(StringView name);
 
   static String openAsString(StringView name);
-  static void write(StringView name, StringView data);
   static String getFilePath(StringView name);
   static String getLoadPath(StringView name);
 

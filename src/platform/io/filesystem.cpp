@@ -1,6 +1,6 @@
 #include "core/logger/log.hpp"
 
-#include <platform/io/asset_io.hpp>
+#include <platform/io/asset_reader.hpp>
 #include <platform/io/filesystem.hpp>
 #include <script/script.hpp>
 
@@ -223,8 +223,8 @@ static String normalizeVirtualPath(StringView path) {
 } // namespace
 
 Array<String> Filesystem::enumerateDirectory(StringView path) {
-  if (!startsWithUserScheme(path) && AssetIO::isArchiveMounted()) {
-    return AssetIO::enumerateArchiveDirectory(path);
+  if (!startsWithUserScheme(path) && AssetReader::isArchiveMounted()) {
+    return AssetReader::enumerateArchiveDirectory(path);
   }
 
   String resolvedPath;
@@ -250,9 +250,9 @@ Array<String> Filesystem::enumerateDirectory(StringView path) {
 }
 
 std::optional<Buffer> Filesystem::read(StringView path) {
-  if (!startsWithUserScheme(path) && AssetIO::isArchiveMounted() &&
-      AssetIO::exists(path)) {
-    const String data = AssetIO::openAsString(path);
+  if (!startsWithUserScheme(path) && AssetReader::isArchiveMounted() &&
+      AssetReader::exists(path)) {
+    const String data = AssetReader::openAsString(path);
     Buffer buffer = makeBuffer(data.size(), BufferType::Binary);
     if (!data.empty()) {
       std::memcpy(buffer.data(), data.data(), data.size());
@@ -290,8 +290,8 @@ std::optional<Buffer> Filesystem::read(StringView path) {
 }
 
 bool Filesystem::exists(StringView path) {
-  if (!startsWithUserScheme(path) && AssetIO::isArchiveMounted() &&
-      AssetIO::exists(path)) {
+  if (!startsWithUserScheme(path) && AssetReader::isArchiveMounted() &&
+      AssetReader::exists(path)) {
     return true;
   }
 

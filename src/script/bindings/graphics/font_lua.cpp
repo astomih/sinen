@@ -1,4 +1,3 @@
-#include <script/luaapi.hpp>
 #include <core/data/array.hpp>
 #include <core/data/hashmap.hpp>
 #include <gpu/gpu.hpp>
@@ -7,7 +6,8 @@
 #include <math/color/color.hpp>
 #include <math/geometry/mesh.hpp>
 #include <math/math.hpp>
-#include <platform/io/asset_io.hpp>
+#include <platform/io/asset_reader.hpp>
+#include <script/luaapi.hpp>
 
 #include <cstring>
 

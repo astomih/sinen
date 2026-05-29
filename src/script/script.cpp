@@ -10,7 +10,7 @@
 #include <core/thread/load_context.hpp>
 #include <core/thread/task_group.hpp>
 #include <graphics/graphics.hpp>
-#include <platform/io/asset_io.hpp>
+#include <platform/io/asset_reader.hpp>
 #include <platform/io/filesystem.hpp>
 #include <platform/window/window.hpp>
 
@@ -332,8 +332,6 @@ bool Script::initialize() {
 
   luau::debugger::log::install(logHandler, errorHandler);
   debugger.listen(58000);
-  Log::info("Luau Debug server started on 58000");
-
   // bindings are implemented using Lua C API (see per-module *lua.cpp files)
   gLua = lua_newstate(alloc, nullptr);
   if (!gLua) {
@@ -529,7 +527,7 @@ static ScriptChunk loadSceneChunk(StringView sceneName) {
   ScriptChunk chunk;
 
   if (hasScriptExtension(sceneName)) {
-    chunk.bytes = AssetIO::openAsString(sceneName);
+    chunk.bytes = AssetReader::openAsString(sceneName);
     if (!chunk.bytes.empty()) {
       chunk.filename = sceneName;
       chunk.bytecode = sceneName.size() >= 4 &&
@@ -539,8 +537,8 @@ static ScriptChunk loadSceneChunk(StringView sceneName) {
   }
 
   const String bytecodeName = String(sceneName) + ".snb";
-  if (AssetIO::exists(bytecodeName)) {
-    chunk.bytes = AssetIO::openAsString(bytecodeName);
+  if (AssetReader::exists(bytecodeName)) {
+    chunk.bytes = AssetReader::openAsString(bytecodeName);
     if (!chunk.bytes.empty()) {
       chunk.filename = bytecodeName;
       chunk.bytecode = true;
@@ -549,7 +547,7 @@ static ScriptChunk loadSceneChunk(StringView sceneName) {
   }
 
   const String sourceName = String(sceneName) + prefix;
-  chunk.bytes = AssetIO::openAsString(sourceName);
+  chunk.bytes = AssetReader::openAsString(sourceName);
   if (!chunk.bytes.empty()) {
     chunk.filename = sourceName;
   }
@@ -594,11 +592,11 @@ void Script::runScene() {
   }
   clearSceneEntryPoints(gLua);
 
-  String loadPath = AssetIO::getLoadPath(chunk.filename);
+  String loadPath = AssetReader::getLoadPath(chunk.filename);
   String chunkname = "@" + loadPath;
-  auto fullPath = AssetIO::isArchiveMounted()
+  auto fullPath = AssetReader::isArchiveMounted()
                       ? loadPath
-                      : AssetIO::getFilePath(chunk.filename);
+                      : AssetReader::getFilePath(chunk.filename);
   if (fullPath.empty()) {
     fullPath = chunk.filename;
   }

@@ -1,5 +1,5 @@
 #include <graphics/video/video.hpp>
-#include <platform/io/asset_io.hpp>
+#include <platform/io/asset_reader.hpp>
 #include <platform/io/filesystem.hpp>
 
 #include <algorithm>
@@ -389,8 +389,8 @@ bool VideoReader::open(StringView path) {
   close();
   error.clear();
 
-  if (AssetIO::isArchiveMounted() && AssetIO::exists(path)) {
-    String data = AssetIO::openAsString(path);
+  if (AssetReader::isArchiveMounted() && AssetReader::exists(path)) {
+    String data = AssetReader::openAsString(path);
     bytes.assign(data.begin(), data.end());
     if (bytes.empty()) {
       setError("empty video input file");

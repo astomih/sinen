@@ -1,4 +1,3 @@
-#include <script/luaapi.hpp>
 #include <core/allocator/global_allocator.hpp>
 #include <core/buffer/buffer.hpp>
 #include <core/core.hpp>
@@ -12,10 +11,11 @@
 #include <math/geometry/vertex.hpp>
 #include <math/mat4.hpp>
 #include <math/math.hpp>
-#include <platform/io/asset_io.hpp>
 #include <math/matrix.hpp>
 #include <math/quaternion.hpp>
 #include <math/vector.hpp>
+#include <platform/io/asset_reader.hpp>
+#include <script/luaapi.hpp>
 
 namespace sinen {
 static int lModelNew(lua_State *L) {

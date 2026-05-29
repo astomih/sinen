@@ -5,13 +5,9 @@
 #include <core/profiler.hpp>
 #include <gpu/gpu.hpp>
 #include <graphics/builtin_pipeline.hpp>
-#include <graphics/font/default/mplus-1p-medium.ttf.hpp>
-#include <graphics/font/font_glyph_ranges.hpp>
-#include <graphics/graphics.hpp>
 #include <graphics/texture/render_texture.hpp>
 #include <gui/gui.hpp>
 #include <math/transform/transform.hpp>
-#include <platform/io/asset_io.hpp>
 #include <platform/window/window.hpp>
 #include <script/script.hpp>
 #include <gpu/builtin_shader.hpp>
@@ -19,7 +15,6 @@
 #include <SDL3/SDL.h>
 
 #include <algorithm>
-#include <cstring>
 #include <vector>
 
 namespace sinen {
@@ -188,8 +183,6 @@ bool Graphics::initialize() {
   depthStencilInfo.stencilLoadOp = gpu::LoadOp::Clear;
   depthStencilInfo.stencilStoreOp = gpu::StoreOp::Store;
   setupShapes();
-
-  Log::info("WebGPU graphics module initialized successfully");
 
   return true;
 }

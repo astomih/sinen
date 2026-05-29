@@ -8,7 +8,7 @@
 #include <physics/physics.hpp>
 #include <platform/input/input.hpp>
 #include <platform/io/arguments.hpp>
-#include <platform/io/asset_io.hpp>
+#include <platform/io/asset_reader.hpp>
 #include <platform/window/window.hpp>
 #include <script/script.hpp>
 
@@ -123,10 +123,10 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
   }
   for (int i = 1; i < argc; i++) {
     StringView arg(argv[i]);
-    if (arg.size() >= std::strlen(AssetIO::archiveExtension()) &&
-        arg.substr(arg.size() - std::strlen(AssetIO::archiveExtension())) ==
-            AssetIO::archiveExtension()) {
-      AssetIO::mountArchive(arg);
+    if (arg.size() >= std::strlen(AssetReader::archiveExtension()) &&
+        arg.substr(arg.size() - std::strlen(AssetReader::archiveExtension())) ==
+            AssetReader::archiveExtension()) {
+      AssetReader::mountArchive(arg);
       break;
     }
   }
@@ -217,7 +217,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
 void SDL_AppQuit(void *appstate, SDL_AppResult result) {
   ZoneScopedN("SDL_AppQuit");
   Script::shutdown();
-  AssetIO::unmountArchive();
+  AssetReader::unmountArchive();
   Physics::shutdown();
   Input::shutdown();
   Audio::shutdown();

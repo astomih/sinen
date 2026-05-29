@@ -18,7 +18,7 @@
 #include <math/color/color.hpp>
 #include <math/geometry/mesh.hpp>
 #include <math/math.hpp>
-#include <platform/io/asset_io.hpp>
+#include <platform/io/asset_reader.hpp>
 
 // external
 #include <msdfgen.h>
@@ -500,7 +500,7 @@ public:
 
   bool load(int pointSize, StringView fontName,
             FontMethod fontMethod) override {
-    const String data = AssetIO::openAsString(fontName);
+    const String data = AssetReader::openAsString(fontName);
     Array<unsigned char> bytes(data.begin(), data.end());
     return loadFromBytes(pointSize, std::move(bytes), fontMethod);
   }

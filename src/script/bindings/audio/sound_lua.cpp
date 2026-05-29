@@ -1,6 +1,6 @@
-#include <script/luaapi.hpp>
 #include <audio/sound.hpp>
-#include <platform/io/asset_io.hpp>
+#include <platform/io/asset_reader.hpp>
+#include <script/luaapi.hpp>
 
 namespace sinen {
 static int lSoundNew(lua_State *L) {

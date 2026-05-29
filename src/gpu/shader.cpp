@@ -1,7 +1,7 @@
 // internal
 #include "shader.hpp"
 #include <graphics/graphics.hpp>
-#include <platform/io/asset_io.hpp>
+#include <platform/io/asset_reader.hpp>
 
 #include <core/thread/future_poll.hpp>
 #include <core/thread/global_thread_pool.hpp>
@@ -98,7 +98,7 @@ void Shader::load(StringView vertex_shader, ShaderStage stage,
   const String path = vertex_shader.data();
   state->future = globalThreadPool().submit(
       [state, path, stage, numUniformData, shaderFormat, preferredFormat] {
-        auto str = AssetIO::openAsString(path);
+        auto str = AssetReader::openAsString(path);
         if (ShaderBundle::isBundle(str)) {
           auto selected = ShaderBundle::select(str, stage, preferredFormat);
           if (!selected) {

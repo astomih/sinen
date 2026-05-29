@@ -63,7 +63,6 @@ Array<char> ShaderCompiler::compileSource(StringView moduleName,
                                           StringView source, ShaderStage stage,
                                           ShaderFormat format,
                                           ReflectionData &reflectionData) {
-#if SINEN_USE_SLANG
   using namespace slang;
 
   Slang::ComPtr<IGlobalSession> globalSession;
@@ -229,10 +228,6 @@ Array<char> ShaderCompiler::compileSource(StringView moduleName,
   std::memcpy(shaderData.data(), compiledCode->getBufferPointer(),
               compiledCode->getBufferSize());
   return shaderData;
-#else
-  std::cout << "SLANG is not enabled. Cannot compile shader." << std::endl;
-  return {};
-#endif
 }
 
 Array<char> ShaderCompiler::compile(StringView sourcePath, ShaderStage stage,

@@ -5,6 +5,6 @@ target_include_directories(
   PUBLIC ${SINEN_SOURCE_DIR}/libs/rapidjson/include
          ${SINEN_SOURCE_DIR}/libs/tlsf)
 target_link_libraries(sinen_core PUBLIC SDL3::SDL3)
-if(SINEN_ENABLE_TRACY)
+if(SINEN_MODULE_PROFILER)
   target_link_libraries(sinen_core PUBLIC Tracy::TracyClient)
 endif()

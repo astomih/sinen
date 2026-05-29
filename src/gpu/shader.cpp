@@ -9,7 +9,9 @@
 
 #include "core/allocator/global_allocator.hpp"
 #include "shader_bundle.hpp"
+#ifdef SINEN_MODULE_SHADER_COMPILER
 #include <shader_compiler/shader_compiler.hpp>
+#endif
 
 // external
 #include <SDL3/SDL.h>
@@ -169,6 +171,7 @@ void Shader::compile(StringView name, ShaderStage stage, ShaderFormat format) {
   this->format = format;
   this->code.clear();
 
+#ifdef SINEN_MODULE_SHADER_COMPILER
   ShaderCompiler compiler;
   ShaderCompiler::ReflectionData reflectionData{};
   auto compiledCode = compiler.compile(name, stage, format, reflectionData);
@@ -177,6 +180,10 @@ void Shader::compile(StringView name, ShaderStage stage, ShaderFormat format) {
     compiledCode.push_back('\0');
   }
   this->code = std::move(compiledCode);
+#else
+  SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+               "ShaderCompiler module is disabled. Cannot compile shader.");
+#endif
 }
 
 void Shader::compileAndLoad(StringView name, ShaderStage stage) {
@@ -197,6 +204,7 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage,
   const TaskGroup group = LoadContext::current();
   group.add();
 
+#ifdef SINEN_MODULE_SHADER_COMPILER
   const String str = name.data();
   state->future = globalThreadPool().submit([state, str, stage, format] {
     ShaderCompiler compiler;
@@ -216,6 +224,13 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage,
     state->numStorageTextures = reflectionData.numStorageTextures;
     state->gpuStage = stage;
   });
+#else
+  state->future = globalThreadPool().submit([state] {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                 "ShaderCompiler module is disabled. Cannot compile shader.");
+    state->valid = false;
+  });
+#endif
   scheduleFuturePoll(
       state, group, scheduleOnPreDraw,
       [this, state] {

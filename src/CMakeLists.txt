@@ -3,9 +3,15 @@ target_include_directories(sinen_common INTERFACE ${SINEN_INCLUDE_DIRS})
 
 target_compile_definitions(
   sinen_common
-  INTERFACE $<$<BOOL:${SINEN_USE_SLANG}>:SINEN_USE_SLANG>
-            $<$<BOOL:${SINEN_ENABLE_TRACY}>:SINEN_ENABLE_TRACY>
-            $<$<CONFIG:Debug>:SINEN_DEBUG_WORKING_DIRECTORY>)
+  INTERFACE $<$<CONFIG:Debug>:SINEN_DEBUG_WORKING_DIRECTORY>)
+
+foreach(SINEN_MODULE_NAME CORE MATH PLATFORM AUDIO GPU SHADER_COMPILER GRAPHICS
+                          COMPUTE PHYSICS GUI SCRIPT PROFILER)
+  if(SINEN_MODULE_${SINEN_MODULE_NAME})
+    target_compile_definitions(
+      sinen_common INTERFACE SINEN_MODULE_${SINEN_MODULE_NAME})
+  endif()
+endforeach()
 
 if(SINEN_ENABLE_WEBGPU)
   target_compile_definitions(sinen_common INTERFACE SINEN_ENABLE_WEBGPU)
@@ -93,118 +99,142 @@ function(sinen_glob_module target module_dir)
   sinen_add_module(${target} ${SINEN_MODULE_SOURCES} ${SINEN_MODULE_HEADERS})
 endfunction()
 
-add_subdirectory(core)
-add_subdirectory(math)
-add_subdirectory(platform)
-add_subdirectory(audio)
-add_subdirectory(gpu)
-add_subdirectory(shader_compiler)
-add_subdirectory(graphics)
-add_subdirectory(compute)
-add_subdirectory(physics)
-add_subdirectory(gui)
-add_subdirectory(script)
+set(SINEN_INTERNAL_MODULES)
 
-target_link_libraries(sinen_math PUBLIC sinen_core)
-target_link_libraries(sinen_platform PUBLIC sinen_core sinen_math)
-target_link_libraries(sinen_gpu PUBLIC sinen_core sinen_math)
-target_link_libraries(sinen_graphics PUBLIC sinen_core sinen_math sinen_gpu
-                                         sinen_platform)
-target_link_libraries(sinen_physics PUBLIC sinen_core sinen_math)
-target_link_libraries(sinen_audio PUBLIC sinen_core sinen_math sinen_platform)
-target_link_libraries(sinen_shader_compiler PUBLIC sinen_core sinen_gpu
-                                                   sinen_platform)
-target_link_libraries(sinen_compute PUBLIC sinen_core sinen_gpu sinen_graphics)
-target_link_libraries(sinen_gui PUBLIC sinen_core sinen_math sinen_graphics
-                                      sinen_platform)
-target_link_libraries(sinen_script PUBLIC sinen_core sinen_math sinen_platform
-                                         sinen_audio sinen_gpu
-                                         sinen_shader_compiler sinen_graphics
-                                         sinen_compute sinen_physics sinen_gui)
+macro(sinen_add_enabled_module option directory target)
+  if(${option})
+    add_subdirectory(${directory})
+    list(APPEND SINEN_INTERNAL_MODULES ${target})
+  endif()
+endmacro()
 
-set(SINEN_INTERNAL_MODULES
-    sinen_core
-    sinen_math
-    sinen_platform
-    sinen_audio
-    sinen_gpu
-    sinen_shader_compiler
-    sinen_graphics
-    sinen_compute
-    sinen_physics
-    sinen_gui
-    sinen_script)
+sinen_add_enabled_module(SINEN_MODULE_CORE core sinen_core)
+sinen_add_enabled_module(SINEN_MODULE_MATH math sinen_math)
+sinen_add_enabled_module(SINEN_MODULE_PLATFORM platform sinen_platform)
+sinen_add_enabled_module(SINEN_MODULE_AUDIO audio sinen_audio)
+sinen_add_enabled_module(SINEN_MODULE_GPU gpu sinen_gpu)
+sinen_add_enabled_module(SINEN_MODULE_SHADER_COMPILER shader_compiler
+                         sinen_shader_compiler)
+sinen_add_enabled_module(SINEN_MODULE_GRAPHICS graphics sinen_graphics)
+sinen_add_enabled_module(SINEN_MODULE_COMPUTE compute sinen_compute)
+sinen_add_enabled_module(SINEN_MODULE_PHYSICS physics sinen_physics)
+sinen_add_enabled_module(SINEN_MODULE_GUI gui sinen_gui)
+sinen_add_enabled_module(SINEN_MODULE_SCRIPT script sinen_script)
+
+if(TARGET sinen_math)
+  target_link_libraries(sinen_math PUBLIC sinen_core)
+endif()
+if(TARGET sinen_platform)
+  target_link_libraries(sinen_platform PUBLIC sinen_core sinen_math)
+endif()
+if(TARGET sinen_gpu)
+  target_link_libraries(sinen_gpu PUBLIC sinen_core sinen_math)
+  if(TARGET sinen_shader_compiler)
+    target_link_libraries(sinen_gpu PUBLIC sinen_shader_compiler)
+  endif()
+endif()
+if(TARGET sinen_graphics)
+  target_link_libraries(sinen_graphics PUBLIC sinen_core sinen_math sinen_gpu
+                                           sinen_platform)
+endif()
+if(TARGET sinen_physics)
+  target_link_libraries(sinen_physics PUBLIC sinen_core sinen_math)
+endif()
+if(TARGET sinen_audio)
+  target_link_libraries(sinen_audio PUBLIC sinen_core sinen_math sinen_platform)
+endif()
+if(TARGET sinen_shader_compiler)
+  target_link_libraries(sinen_shader_compiler PUBLIC sinen_core sinen_gpu
+                                                     sinen_platform)
+endif()
+if(TARGET sinen_compute)
+  target_link_libraries(sinen_compute PUBLIC sinen_core sinen_gpu
+                                            sinen_graphics)
+endif()
+if(TARGET sinen_gui)
+  target_link_libraries(sinen_gui PUBLIC sinen_core sinen_math sinen_graphics
+                                        sinen_platform)
+endif()
+if(TARGET sinen_script)
+  target_link_libraries(sinen_script PUBLIC sinen_core sinen_math sinen_platform
+                                           sinen_audio sinen_gpu sinen_graphics
+                                           sinen_compute sinen_physics
+                                           sinen_gui)
+endif()
 
 set(SINEN_PLATFORM_SOURCES)
 if(WIN32)
   list(APPEND SINEN_PLATFORM_SOURCES ${SINEN_SOURCE_DIR}/docs/icon/icon.rc)
 endif()
 
-if(BUILD_SHARED_LIBS)
-  add_library(sinen SHARED main.cpp ${SINEN_PLATFORM_SOURCES})
-else()
-  add_executable(sinen main.cpp ${SINEN_PLATFORM_SOURCES})
-endif()
+if(SINEN_BUILD_APP)
+  if(BUILD_SHARED_LIBS)
+    add_library(sinen SHARED main.cpp ${SINEN_PLATFORM_SOURCES})
+  else()
+    add_executable(sinen main.cpp ${SINEN_PLATFORM_SOURCES})
+  endif()
 
-if(EMSCRIPTEN AND NOT BUILD_SHARED_LIBS)
-  set_target_properties(sinen PROPERTIES SUFFIX ".html")
-endif()
+  if(EMSCRIPTEN AND NOT BUILD_SHARED_LIBS)
+    set_target_properties(sinen PROPERTIES SUFFIX ".html")
+  endif()
 
-target_link_libraries(sinen PRIVATE ${SINEN_INTERNAL_MODULES} SDL3::SDL3)
+  target_link_libraries(sinen PRIVATE ${SINEN_INTERNAL_MODULES} SDL3::SDL3)
 
-set(SINEN_LINK_LIBRARIES)
+  set(SINEN_LINK_LIBRARIES)
 
-if(WIN32)
-  list(APPEND SINEN_LINK_LIBRARIES d3d12 dxgi dxguid Ws2_32)
-endif()
+  if(WIN32)
+    list(APPEND SINEN_LINK_LIBRARIES d3d12 dxgi dxguid Ws2_32)
+  endif()
 
-if(ANDROID)
-  find_library(ANDROID_LIB android)
-  list(APPEND SINEN_LINK_LIBRARIES ${ANDROID_LIB})
-endif()
+  if(ANDROID)
+    find_library(ANDROID_LIB android)
+    list(APPEND SINEN_LINK_LIBRARIES ${ANDROID_LIB})
+  endif()
 
-target_link_libraries(sinen PUBLIC ${SINEN_LINK_LIBRARIES})
+  target_link_libraries(sinen PUBLIC ${SINEN_LINK_LIBRARIES})
 
-if(EMSCRIPTEN)
-  target_link_options(
-    sinen
-    PRIVATE
-      -sALLOW_MEMORY_GROWTH=1
-      -sINITIAL_MEMORY=268435456
-      -sMAXIMUM_MEMORY=2147483648)
-  if(SINEN_EMSCRIPTEN_PRELOAD_DIR)
-    if(NOT IS_DIRECTORY "${SINEN_EMSCRIPTEN_PRELOAD_DIR}")
-      message(FATAL_ERROR
-              "SINEN_EMSCRIPTEN_PRELOAD_DIR is not a directory: ${SINEN_EMSCRIPTEN_PRELOAD_DIR}")
-    endif()
+  if(EMSCRIPTEN)
     target_link_options(
       sinen
       PRIVATE
-        "SHELL:--preload-file \"${SINEN_EMSCRIPTEN_PRELOAD_DIR}@${SINEN_EMSCRIPTEN_PRELOAD_MOUNT}\"")
+        -sALLOW_MEMORY_GROWTH=1
+        -sINITIAL_MEMORY=268435456
+        -sMAXIMUM_MEMORY=2147483648)
+    if(SINEN_EMSCRIPTEN_PRELOAD_DIR)
+      if(NOT IS_DIRECTORY "${SINEN_EMSCRIPTEN_PRELOAD_DIR}")
+        message(FATAL_ERROR
+                "SINEN_EMSCRIPTEN_PRELOAD_DIR is not a directory: ${SINEN_EMSCRIPTEN_PRELOAD_DIR}")
+      endif()
+      target_link_options(
+        sinen
+        PRIVATE
+          "SHELL:--preload-file \"${SINEN_EMSCRIPTEN_PRELOAD_DIR}@${SINEN_EMSCRIPTEN_PRELOAD_MOUNT}\"")
+    endif()
+    if(SINEN_EMSCRIPTEN_EXCEPTIONS)
+      target_link_options(sinen PRIVATE -fexceptions
+                          -sNO_DISABLE_EXCEPTION_CATCHING=1)
+    endif()
+    if(SINEN_EMSCRIPTEN_ASSERTIONS)
+      target_link_options(sinen PRIVATE -sASSERTIONS=1)
+    endif()
+    if(SINEN_EMSCRIPTEN_DEBUG_RUNTIME)
+      target_link_options(sinen PRIVATE -gsource-map -sASSERTIONS=2
+                          -sSAFE_HEAP=1 -sSTACK_OVERFLOW_CHECK=2)
+    endif()
   endif()
-  if(SINEN_EMSCRIPTEN_EXCEPTIONS)
-    target_link_options(sinen PRIVATE -fexceptions -sNO_DISABLE_EXCEPTION_CATCHING=1)
-  endif()
-  if(SINEN_EMSCRIPTEN_ASSERTIONS)
-    target_link_options(sinen PRIVATE -sASSERTIONS=1)
-  endif()
-  if(SINEN_EMSCRIPTEN_DEBUG_RUNTIME)
-    target_link_options(sinen PRIVATE -gsource-map -sASSERTIONS=2 -sSAFE_HEAP=1
-                        -sSTACK_OVERFLOW_CHECK=2)
-  endif()
-endif()
 
-if(SINEN_ENABLE_WEBGPU)
-  target_copy_webgpu_binaries(sinen)
-endif()
-
-if(WIN32)
-  if(MSVC)
-    set(SUBSYSTEM_LINKER_OPTIONS "/SUBSYSTEM:WINDOWS")
-  else()
-    set(SUBSYSTEM_LINKER_OPTIONS "-mwindows")
+  if(SINEN_ENABLE_WEBGPU)
+    target_copy_webgpu_binaries(sinen)
   endif()
-endif()
 
-target_link_options(sinen PRIVATE ${SUBSYSTEM_LINKER_OPTIONS})
-set_property(TARGET sinen PROPERTY CXX_STANDARD 23)
+  if(WIN32)
+    if(MSVC)
+      set(SUBSYSTEM_LINKER_OPTIONS "/SUBSYSTEM:WINDOWS")
+    else()
+      set(SUBSYSTEM_LINKER_OPTIONS "-mwindows")
+    endif()
+  endif()
+
+  target_link_options(sinen PRIVATE ${SUBSYSTEM_LINKER_OPTIONS})
+  set_property(TARGET sinen PROPERTY CXX_STANDARD 23)
+endif()

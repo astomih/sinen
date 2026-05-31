@@ -49,6 +49,21 @@ static int lCameraGetUp(lua_State *L) {
   udNewOwned<Vec3>(L, cam.getUp());
   return 1;
 }
+static int lCameraGetView(lua_State *L) {
+  const auto &cam = udValue<Camera3D>(L, 1);
+  udNewOwned<Mat4>(L, cam.getView());
+  return 1;
+}
+static int lCameraGetProjection(lua_State *L) {
+  const auto &cam = udValue<Camera3D>(L, 1);
+  udNewOwned<Mat4>(L, cam.getProjection());
+  return 1;
+}
+static int lCameraGetViewProjection(lua_State *L) {
+  const auto &cam = udValue<Camera3D>(L, 1);
+  udNewOwned<Mat4>(L, cam.getView() * cam.getProjection());
+  return 1;
+}
 static int lCameraIsAabbInFrustum(lua_State *L) {
   auto &cam = udValue<Camera3D>(L, 1);
   auto &aabb = udValue<AABB>(L, 2);
@@ -80,6 +95,12 @@ void registerCamera(lua_State *L) {
   lua_setfield(L, -2, "getTarget");
   luaPushcfunction2(L, lCameraGetUp);
   lua_setfield(L, -2, "getUp");
+  luaPushcfunction2(L, lCameraGetView);
+  lua_setfield(L, -2, "getView");
+  luaPushcfunction2(L, lCameraGetProjection);
+  lua_setfield(L, -2, "getProjection");
+  luaPushcfunction2(L, lCameraGetViewProjection);
+  lua_setfield(L, -2, "getViewProjection");
   luaPushcfunction2(L, lCameraIsAabbInFrustum);
   lua_setfield(L, -2, "isAABBInFrustum");
   luaPushcfunction2(L, lCameraScreenToWorldRay);

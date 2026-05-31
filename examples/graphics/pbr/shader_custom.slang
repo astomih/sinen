@@ -25,9 +25,10 @@ struct VSOutput {
   cbuffer name : register(b##bind, space3)
 
 UNIFORM_VERT(Mat, 0) {
+  float4x4 wvp;
+}
+UNIFORM_VERT(World, 1) {
   float4x4 world;
-  float4x4 view;
-  float4x4 proj;
 }
 float3x3 invert(float3x3 m) {
   return 1.0 / determinant(m) *
@@ -43,7 +44,7 @@ VSOutput VSMain(VSInput input) {
   VSOutput output;
 
   float4 wpos = mul(world, float4(input.position, 1.0));
-  output.out = mul(proj, mul(view, wpos));
+  output.out = mul(wvp, float4(input.position, 1.0));
   output.uv = input.uv;
   output.color = input.color;
   output.pos = wpos.xyz;
@@ -82,21 +83,19 @@ struct FSOutput {
 #ifdef SINEN_TARGET_WEBGPU
 #define COMBINED_IMAGE_SAMPLER(name, logicalBind, textureBind, samplerBind)    \
   [[vk::binding(textureBind, 2)]]                                              \
-  Sampler2D name : register(t##textureBind, space2)                            \
-      : register(s##samplerBind, space2);
+  Sampler2D name : register(t##textureBind, space2) : register(s##samplerBind, space2);
 #else
 #define COMBINED_IMAGE_SAMPLER(name, logicalBind, textureBind, samplerBind)    \
   [[vk::binding(logicalBind, 2)]]                                              \
-  Sampler2D name : register(t##logicalBind, space2)                            \
-      : register(s##logicalBind, space2);
+  Sampler2D name : register(t##logicalBind, space2) : register(s##logicalBind, space2);
 #endif
 
 COMBINED_IMAGE_SAMPLER(albedoMap, 0, 0, 1)
 COMBINED_IMAGE_SAMPLER(normalMap, 1, 2, 3)
-COMBINED_IMAGE_SAMPLER(diffuseRoughnessMap,
-                       2, 4, 5) // in DamagedHelmet.glb, the
-                                // roughness is in the G channel
-                                // and metallic is in the B channel
+COMBINED_IMAGE_SAMPLER(diffuseRoughnessMap, 2, 4,
+                       5) // in DamagedHelmet.glb, the
+                          // roughness is in the G channel
+                          // and metallic is in the B channel
 COMBINED_IMAGE_SAMPLER(emissiveMap, 3, 6, 7)
 COMBINED_IMAGE_SAMPLER(aoMap, 4, 8, 9)
 

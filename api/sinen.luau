@@ -77,6 +77,45 @@ Vec2Impl.__div = function(a: Vec2, b: Vec2 | number): Vec2
 end
 export type Vec2 = typeof(Vec2Impl.new())
 
+local Mat4Impl = {}
+Mat4Impl.new = function(): Mat4
+	return setmetatable(
+		{} :: {
+			new: (
+				(() -> Mat4)
+				& ((value: number) -> Mat4)
+				& ((
+					m00: number,
+					m01: number,
+					m02: number,
+					m03: number,
+					m10: number,
+					m11: number,
+					m12: number,
+					m13: number,
+					m20: number,
+					m21: number,
+					m22: number,
+					m23: number,
+					m30: number,
+					m31: number,
+					m32: number,
+					m33: number
+				) -> Mat4)
+			),
+			copy: (self: Mat4) -> Mat4,
+			transpose: (self: Mat4) -> Mat4,
+			identity: () -> Mat4,
+		},
+		{} :: typeof(Mat4Impl)
+	)
+end
+Mat4Impl.__index = Mat4Impl
+Mat4Impl.__mul = function(a: Mat4, b: Mat4): Mat4
+	error("Not implemented")
+end
+export type Mat4 = typeof(Mat4Impl.new())
+
 export type Pivot = {
 	TopLeft: Pivot,
 	TopCenter: Pivot,
@@ -124,6 +163,7 @@ export type Transform = {
 	position: Vec3,
 	rotation: Vec3,
 	scale: Vec3,
+	getWorldMatrix: (self: Transform) -> Mat4,
 }
 
 export type AABB = {
@@ -190,6 +230,9 @@ export type Camera3D = {
 	getPosition: (self: Camera3D) -> Vec3,
 	getTarget: (self: Camera3D) -> Vec3,
 	getUp: (self: Camera3D) -> Vec3,
+	getView: (self: Camera3D) -> Mat4,
+	getProjection: (self: Camera3D) -> Mat4,
+	getViewProjection: (self: Camera3D) -> Mat4,
 	isAABBInFrustum: (self: Camera3D, aabb: AABB) -> boolean,
 }
 
@@ -836,6 +879,7 @@ return {
 	Buffer = {} :: Buffer,
 	Vec3 = Vec3Impl,
 	Vec2 = Vec2Impl,
+	Mat4 = Mat4Impl,
 	Texture = {} :: Texture,
 	RenderTexture = {} :: RenderTexture,
 	Sound = {} :: Sound,

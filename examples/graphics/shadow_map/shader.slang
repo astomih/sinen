@@ -19,21 +19,20 @@ struct VSOutput {
   cbuffer name : register(b##bind, space3)
 
 UNIFORM_VERT(Mat, 0) {
-  float4x4 world;
-  float4x4 view;
-  float4x4 proj;
+  float4x4 wvp;
 }
 UNIFORM_VERT(shadowMat, 1) {
-  float4x4 shadowView;
-  float4x4 shadowProj;
+  float4x4 world;
+  float4x4 shadowViewProj;
 }
 
 [shader("vertex")]
 VSOutput VSMain(VSInput input) {
   VSOutput output;
-  output.out = mul(mul(proj, mul(view, world)), float4(input.position, 1.0));
+  float4 wpos = mul(world, float4(input.position, 1.0));
+  output.out = mul(wvp, float4(input.position, 1.0));
   output.shadowCoord =
-      mul(mul(shadowProj, mul(shadowView, world)), float4(input.position, 1.0));
+      mul(shadowViewProj, wpos);
   output.uv = input.uv;
   return output;
 };

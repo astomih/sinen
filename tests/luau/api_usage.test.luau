@@ -65,10 +65,26 @@ describe("Sinen Luau API", function()
 		transform.position = sn.Vec3.new(1, 2, 3)
 		transform.rotation = sn.Vec3.new(0)
 		transform.scale = sn.Vec3.new(1)
+		local world: sn.Mat4 = transform:getWorldMatrix()
+		local worldCopy: sn.Mat4 = world:copy()
 		timer:setTime(1.0)
 
 		expect(transform.position.y):toBeCloseTo(2)
+		expect(worldCopy):toBeTruthy()
 		expect(timer:isStarted()):toBeFalsy()
+	end)
+
+	it("exposes camera matrices", function()
+		local camera: sn.Camera3D = sn.Camera3D.new()
+		camera:lookat(sn.Vec3.new(0, 0, 5), sn.Vec3.new(0), sn.Vec3.new(0, 1, 0))
+		camera:perspective(45, 16 / 9, 0.1, 100)
+
+		local view: sn.Mat4 = camera:getView()
+		local projection: sn.Mat4 = camera:getProjection()
+		local viewProjection: sn.Mat4 = camera:getViewProjection()
+		local buffer: sn.Buffer = sn.Buffer.new({ view, projection, viewProjection })
+
+		expect(buffer:size()):toBe(64 * 3)
 	end)
 end)
 

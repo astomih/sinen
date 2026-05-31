@@ -24,9 +24,7 @@ struct VSOutput {
 };
 
 UNIFORM(Mat, 0) {
-  float4x4 world;
-  float4x4 view;
-  float4x4 proj;
+  float4x4 wvp;
 }
 
 UNIFORM_FRAG(ShaderToyData, 1) {
@@ -39,8 +37,7 @@ COMBINED_IMAGE_SAMPLER(sampledTexture, 0, 2);
 [shader("vertex")]
 VSOutput VSMain(VSInput input) {
   VSOutput output;
-  float4x4 pvw = mul(proj, mul(view, world));
-  output.out = mul(pvw, float4(input.position, 1.0));
+  output.out = mul(wvp, float4(input.position, 1.0));
   output.uv = input.uv;
   output.color = input.color;
   return output;
@@ -52,7 +49,7 @@ struct FSInput {
 };
 
 struct FSOutput {
-  float4 color : COLOR;
+  float4 color : SV_Target;
 };
 
 static float hash21(float2 p) {

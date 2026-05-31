@@ -20,16 +20,13 @@ struct VSOutput {
 };
 
 UNIFORM_VERT(Mat, 0) {
-  float4x4 world;
-  float4x4 view;
-  float4x4 proj;
+  float4x4 wvp;
 }
 
 [shader("vertex")]
 VSOutput VSMain(VSInput input) {
   VSOutput output;
-  float4x4 pvw = mul(proj, mul(view, world));
-  output.out = mul(pvw, float4(input.position, 1.0));
+  output.out = mul(wvp, float4(input.position, 1.0));
   output.uv = input.uv;
   output.color = input.color;
   return output;

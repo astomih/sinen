@@ -33,14 +33,17 @@ static int lBufferNew(lua_State *L) {
       std::memcpy(p, v2, s);
       chunks.push_back(p);
       chunkSizes.push_back(s);
-    } else if (auto *cam = udValueOrNull<Camera3D>(L, -1)) {
-      size_t s = sizeof(Mat4) * 2;
+    } else if (auto *m = udValueOrNull<Mat4>(L, -1)) {
+      size_t s = sizeof(Mat4);
       void *p = GlobalAllocator::get()->allocate(s);
-      auto view = cam->getView();
-      auto proj = cam->getProjection();
-      std::memcpy(p, &view, sizeof(Mat4));
-      std::memcpy(reinterpret_cast<std::byte *>(p) + sizeof(Mat4), &proj,
-                  sizeof(Mat4));
+      std::memcpy(p, m, s);
+      chunks.push_back(p);
+      chunkSizes.push_back(s);
+    } else if (auto *cam = udValueOrNull<Camera3D>(L, -1)) {
+      size_t s = sizeof(Mat4);
+      void *p = GlobalAllocator::get()->allocate(s);
+      auto viewproj = cam->getView() * cam->getProjection();
+      std::memcpy(p, &viewproj, sizeof(Mat4));
       chunks.push_back(p);
       chunkSizes.push_back(s);
     } else if (lua_isnumber(L, -1)) {

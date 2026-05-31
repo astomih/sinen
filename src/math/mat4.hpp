@@ -4,6 +4,8 @@
 namespace sinen {
 class Mat4 {
 public:
+  static constexpr const char *metaTableName() { return "sn.Mat4"; }
+
   union {
     float mat[4][4];
     float m16[16];

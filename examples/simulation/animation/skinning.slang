@@ -19,20 +19,17 @@ struct VSOutput {
   cbuffer name : register(b##bind, space1)
 
 UNIFORM_VERT(Mat, 0) {
-  float4x4 model;
-  float4x4 view;
-  float4x4 proj;
+  float4x4 wvp;
 }
 
 UNIFORM_VERT(skinning, 1) { float4x4 bone[256]; }
 [shader("vertex")]
 VSOutput VSMain(VSInput input) {
   VSOutput output;
-  float4x4 mvp = mul((proj), mul((view), (model)));
   float4x4 skin = float4x4(0);
   for (int i = 0; i < 4; i++)
     skin += ((bone[int(input.bone_index[i])]) * input.bone_weight[i]);
-  output.out = mul(mvp, mul(skin, float4(input.position, 1.0)));
+  output.out = mul(wvp, mul(skin, float4(input.position, 1.0)));
   output.uv = input.uv;
   output.normal = normalize(mul(skin, float4(input.normal, 0.0)).xyz);
   output.color = input.color;

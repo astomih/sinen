@@ -55,6 +55,10 @@ local uniformData: { any } = {
 	lightIntensity,
 }
 
+local function setWorldUniform(t: sn.Transform)
+	sn.Graphics.setUniformBuffer(1, sn.Buffer.new({ t:getWorldMatrix() }))
+end
+
 function update()
 	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then
 		sn.Script.load("/main.luau")
@@ -102,6 +106,7 @@ function draw()
 
 	sn.Graphics.setGraphicsPipeline(pipeline3d)
 	sn.Graphics.setUniformBuffer(0, sn.Buffer.new(uniformData))
+	setWorldUniform(transform)
 	sn.Graphics.drawModel(model, transform)
 	sn.Graphics.setTexture(1, model:getTexture(sn.TextureKey.Normal))
 	sn.Graphics.setTexture(2, model:getTexture(sn.TextureKey.DiffuseRoughness))
@@ -112,6 +117,7 @@ function draw()
 	sn.Graphics.setTexture(7, irradiance)
 	sn.Graphics.setTexture(8, prefiltered)
 	sn.Graphics.setUniformBuffer(0, sn.Buffer.new(uniformData))
+	setWorldUniform(light_transform)
 	sn.Graphics.drawModel(lightSphere, light_transform)
 	sn.Graphics.finish()
 end

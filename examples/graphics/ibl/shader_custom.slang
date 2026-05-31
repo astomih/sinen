@@ -25,9 +25,10 @@ struct VSOutput {
   cbuffer name : register(b##bind, space3)
 
 UNIFORM_VERT(Mat, 0) {
+  float4x4 wvp;
+}
+UNIFORM_VERT(World, 1) {
   float4x4 world;
-  float4x4 view;
-  float4x4 proj;
 }
 float3x3 invert(float3x3 m) {
   return 1.0 / determinant(m) *
@@ -43,7 +44,7 @@ VSOutput VSMain(VSInput input) {
   VSOutput output;
 
   float4 wpos = mul(world, float4(input.position, 1.0));
-  output.out = mul(proj, mul(view, wpos));
+  output.out = mul(wvp, float4(input.position, 1.0));
   output.uv = input.uv;
   output.color = input.color;
   output.pos = wpos.xyz;

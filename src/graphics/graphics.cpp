@@ -3,6 +3,7 @@
 #include <core/allocator/global_allocator.hpp>
 #include <core/logger/log.hpp>
 #include <core/profiler.hpp>
+#include <gpu/builtin_shader.hpp>
 #include <gpu/gpu.hpp>
 #include <graphics/builtin_pipeline.hpp>
 #include <graphics/texture/render_texture.hpp>
@@ -10,7 +11,7 @@
 #include <math/transform/transform.hpp>
 #include <platform/window/window.hpp>
 #include <script/script.hpp>
-#include <gpu/builtin_shader.hpp>
+
 
 #include <SDL3/SDL.h>
 
@@ -379,7 +380,7 @@ static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
   const Camera2D *camera2D =
       currentCamera2D.has_value() ? &currentCamera2D.value() : &windowCamera;
   auto ratio = camera2D->windowRatio();
-  Mat4 mat[3];
+  Mat4 wvp;
   Array<Mat4> instanceData;
   const auto cameraSize = camera2D->size();
   const Vec2 cameraHalf = cameraSize * 0.5f;
@@ -393,14 +394,13 @@ static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
     transform.setRotation(Vec3(0, 0, transforms[0].rotation));
     transform.setScale(Vec3(scale.x, scale.y, 1.0f));
 
-    mat[0] = transform.getWorldMatrix();
+    wvp = transform.getWorldMatrix();
   }
   auto viewproj = Mat4(1.0f);
 
   viewproj[0][0] = 2.f / Window::size().x;
   viewproj[1][1] = 2.f / Window::size().y;
-  mat[1] = viewproj;
-  mat[2] = Mat4(1.f);
+  wvp *= viewproj;
   if (transforms.size() > 1) {
     for (auto &i : transforms) {
       Transform transform;
@@ -435,7 +435,7 @@ static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
   renderPass->bindIndexBuffer(indexBufferBinding,
                               gpu::IndexElementSize::Uint32);
 
-  commandBuffer->pushVertexUniformData(0, &mat, sizeof(Mat4) * 3);
+  commandBuffer->pushVertexUniformData(0, &wvp, sizeof(wvp));
   renderPass->drawIndexedPrimitives(model.getMesh().data()->indices.size(), 1,
                                     0, 0, 0);
   currentPipeline = std::nullopt;
@@ -455,12 +455,12 @@ static void drawBase3D(const Array<Transform> transforms, const Model &model) {
   const Camera3D &camera = currentCamera3D.value();
   auto vertexBufferBindings = Array<gpu::BufferBinding>();
   auto indexBufferBinding = gpu::BufferBinding{};
-  Mat4 mat[3];
+  Mat4 wvp;
+  Mat4 viewproj;
   Array<Mat4> instanceData;
   {
-    mat[0] = transforms[0].getWorldMatrix();
-    mat[1] = camera.getView();
-    mat[2] = camera.getProjection();
+    viewproj = camera.getView() * camera.getProjection();
+    wvp = transforms[0].getWorldMatrix() * viewproj;
   }
   if (transforms.size() > 1) {
     for (auto &i : transforms) {
@@ -555,7 +555,8 @@ static void drawBase3D(const Array<Transform> transforms, const Model &model) {
   renderPass->bindIndexBuffer(indexBufferBinding,
                               gpu::IndexElementSize::Uint32);
 
-  commandBuffer->pushVertexUniformData(0, &mat, sizeof(Mat4) * 3);
+  const Mat4 &vertexParams = isInstance ? viewproj : wvp;
+  commandBuffer->pushVertexUniformData(0, &vertexParams, sizeof(vertexParams));
   uint32_t numIndices =
       static_cast<uint32_t>(model.getIndicesForLod(lod).size());
   uint32_t numInstance =
@@ -970,6 +971,4 @@ void Graphics::addPostDrawFunc(std::function<void()> function) {
 Ptr<gpu::Device> Graphics::getDevice() { return device; }
 } // namespace sinen
 
-namespace sinen {
-
-} // namespace sinen
+namespace sinen {} // namespace sinen

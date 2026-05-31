@@ -11,6 +11,10 @@ local lightIntensity: number = 2.5
 local uniformBuffer: { any } = {}
 local camera: sn.Camera3D = sn.Camera3D.new()
 
+local function setWorldUniform(t: sn.Transform)
+	sn.Graphics.setUniformBuffer(1, sn.Buffer.new({ t:getWorldMatrix() }))
+end
+
 function setup()
 	transform.position = sn.Vec3.new(0, 0, 0)
 	transform.rotation = sn.Vec3.new(90, 0, 0)
@@ -77,12 +81,14 @@ function draw()
 	sn.Graphics.setTexture(4, model:getTexture(sn.TextureKey.LightMap))
 
 	sn.Graphics.setUniformBuffer(0, sn.Buffer.new(uniformBuffer))
+	setWorldUniform(transform)
 	sn.Graphics.drawModel(model, transform)
 	sn.Graphics.setTexture(1, model:getTexture(sn.TextureKey.Normal))
 	sn.Graphics.setTexture(2, model:getTexture(sn.TextureKey.DiffuseRoughness))
 	sn.Graphics.setTexture(3, model:getTexture(sn.TextureKey.Emissive))
 	sn.Graphics.setTexture(4, model:getTexture(sn.TextureKey.LightMap))
 	sn.Graphics.setUniformBuffer(0, sn.Buffer.new(uniformBuffer))
+	setWorldUniform(lightTransform)
 	sn.Graphics.drawModel(model, lightTransform)
 	sn.Graphics.finish()
 end

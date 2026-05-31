@@ -19,9 +19,7 @@ struct VSOutput {
   cbuffer name : register(b##bind, space3)
 
 UNIFORM_VERT(Mat, 0) {
-  float4x4 world;
-  float4x4 view;
-  float4x4 proj;
+  float4x4 wvp;
 }
 
 UNIFORM_FRAG(Test, 1) { float4 test; }
@@ -29,7 +27,7 @@ UNIFORM_FRAG(Test, 1) { float4 test; }
 [shader("vertex")]
 VSOutput VSMain(VSInput input) {
   VSOutput output;
-  output.out = mul(proj * view * world, float4(input.position, 1.0));
+  output.out = mul(wvp, float4(input.position, 1.0));
   output.uv = input.uv;
   output.color = input.color;
   return output;

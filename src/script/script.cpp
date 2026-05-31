@@ -202,6 +202,7 @@ static int luaLoadBytecode(lua_State *L, const String &bytecode,
 }
 void registerVec2(lua_State *);
 void registerVec3(lua_State *);
+void registerMat4(lua_State *);
 void registerColor(lua_State *);
 void registerAABB(lua_State *);
 void registerRay(lua_State *);
@@ -273,6 +274,7 @@ static void registerAll(lua_State *L) {
 
   registerVec2(L);
   registerVec3(L);
+  registerMat4(L);
   registerColor(L);
   registerAABB(L);
   registerRay(L);

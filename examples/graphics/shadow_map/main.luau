@@ -14,9 +14,15 @@ local depthTexture: sn.Texture = sn.Texture.new(sn.Window.size().x, sn.Window.si
 local vs: sn.Shader = sn.Shader.new()
 local fs: sn.Shader = sn.Shader.new()
 local pipeline: sn.GraphicsPipeline = sn.GraphicsPipeline.new()
-local uniformBuffer: sn.Buffer
 local floorTexture: sn.Texture = sn.Texture.new()
 local camera: sn.Camera3D = sn.Camera3D.new()
+
+local function setShadowUniform(t: sn.Transform)
+	sn.Graphics.setUniformBuffer(1, sn.Buffer.new({
+		t:getWorldMatrix(),
+		shadowCamera:getViewProjection(),
+	}))
+end
 
 function setup()
 	model:load("DamagedHelmet.glb")
@@ -48,8 +54,6 @@ function setup()
 	pipeline:setFragmentShader(fs)
 	pipeline:build()
 
-	uniformBuffer = sn.Buffer.new({ shadowCamera })
-
 	floorTexture:fill(sn.Color.new(1))
 
 	camera:perspective(70, 16.0 / 9.0, 0.1, 100)
@@ -79,10 +83,10 @@ function draw()
 	sn.Graphics.begin3D(camera)
 	sn.Graphics.setGraphicsPipeline(pipeline)
 
-	sn.Graphics.setUniformBuffer(1, uniformBuffer)
+	setShadowUniform(modelTransform)
 	sn.Graphics.setTexture(1, depthTexture)
 	sn.Graphics.drawModel(model, modelTransform)
-	sn.Graphics.setUniformBuffer(1, uniformBuffer)
+	setShadowUniform(floorTransform)
 	sn.Graphics.setTexture(1, depthTexture)
 	sn.Graphics.drawModel(floor, floorTransform)
 	sn.Graphics.finish()

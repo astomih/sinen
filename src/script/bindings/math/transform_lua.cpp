@@ -1,7 +1,8 @@
-#include <script/luaapi.hpp>
-#include <math/transform/transform.hpp>
 #include <math/matrix.hpp>
 #include <math/quaternion.hpp>
+#include <math/transform/transform.hpp>
+#include <script/luaapi.hpp>
+
 
 namespace sinen {
 static int lTransformNew(lua_State *L) {
@@ -52,6 +53,11 @@ static int lTransformTostring(lua_State *L) {
   lua_pushlstring(L, s.data(), s.size());
   return 1;
 }
+static int lTransformGetWorldMatrix(lua_State *L) {
+  const auto &t = udValue<Transform>(L, 1);
+  udNewOwned<Mat4>(L, t.getWorldMatrix());
+  return 1;
+}
 void registerTransform(lua_State *L) {
   luaL_newmetatable(L, Transform::metaTableName());
   luaPushcfunction2(L, udGc<Transform>);
@@ -62,6 +68,8 @@ void registerTransform(lua_State *L) {
   lua_setfield(L, -2, "__newindex");
   luaPushcfunction2(L, lTransformTostring);
   lua_setfield(L, -2, "__tostring");
+  luaPushcfunction2(L, lTransformGetWorldMatrix);
+  lua_setfield(L, -2, "getWorldMatrix");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Transform");

@@ -12,7 +12,6 @@
 #include <platform/window/window.hpp>
 #include <script/script.hpp>
 
-
 #include <SDL3/SDL.h>
 
 #include <algorithm>
@@ -400,7 +399,7 @@ static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
 
   viewproj[0][0] = 2.f / Window::size().x;
   viewproj[1][1] = 2.f / Window::size().y;
-  wvp *= viewproj;
+  wvp = viewproj * wvp;
   if (transforms.size() > 1) {
     for (auto &i : transforms) {
       Transform transform;
@@ -459,8 +458,8 @@ static void drawBase3D(const Array<Transform> transforms, const Model &model) {
   Mat4 viewproj;
   Array<Mat4> instanceData;
   {
-    viewproj = camera.getView() * camera.getProjection();
-    wvp = transforms[0].getWorldMatrix() * viewproj;
+    viewproj = camera.getProjection() * camera.getView();
+    wvp = viewproj * transforms[0].getWorldMatrix();
   }
   if (transforms.size() > 1) {
     for (auto &i : transforms) {

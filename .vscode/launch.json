@@ -4,7 +4,7 @@
       "name": "Examples",
       "type": "cppvsdbg",
       "request": "launch",
-      "program": "${workspaceFolder:sinen}/build/msvc2026-debug/sinen",
+      "program": "${workspaceFolder:sinen}/build/msvc2026-debug/src/sinen",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder:sinen}/examples",

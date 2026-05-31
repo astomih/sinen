@@ -33,8 +33,10 @@ UNIFORM_VERT(Mat, 0) {
 [shader("vertex")]
 VSOutput VSMain(VSInput input) {
   VSOutput output;
-  output.out = mul(wvp, float4(input.position, 1.0));
-  output.direction = input.position;
+  float4 clipPosition = mul(wvp, float4(input.position, 1.0));
+  clipPosition.z = clipPosition.w;
+  output.out = clipPosition;
+  output.direction = normalize(input.position);
   return output;
 }
 

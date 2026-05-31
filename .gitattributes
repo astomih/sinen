@@ -3,6 +3,10 @@
 ###############################################################################
 * text=auto
 
+*.slang text eol=lf linguist-language=HLSL
+src/gpu/default/*.snb binary
+src/gpu/default/*.snb.hpp text eol=lf -diff linguist-generated=true
+
 ###############################################################################
 # Set default behavior for command prompt diff.
 #

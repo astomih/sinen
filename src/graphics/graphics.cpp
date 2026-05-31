@@ -442,6 +442,54 @@ static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
   currentAccelerationStructureBindings.clear();
 }
 
+static Mat4 cubemapViewProjection(const Camera3D &camera) {
+  Mat4 view = camera.getView();
+  view[0][3] = 0.0f;
+  view[1][3] = 0.0f;
+  view[2][3] = 0.0f;
+  return camera.getProjection() * view;
+}
+
+static void drawBaseCubemap(const Model &model) {
+  assert(currentPipeline.has_value());
+  SDL_assert(currentGraphicsPass == GraphicsPass::ThreeD);
+  SDL_assert(currentCamera3D.has_value());
+  if (currentGraphicsPass != GraphicsPass::ThreeD ||
+      !currentCamera3D.has_value()) {
+    return;
+  }
+
+  const Mat4 wvp = cubemapViewProjection(currentCamera3D.value());
+  drawCallCountPerFrame++;
+  prepareRenderPassFrame();
+
+  assert(model.vertexBuffer != nullptr);
+  assert(model.indexBuffer != nullptr);
+
+  Array<gpu::BufferBinding> vertexBufferBindings;
+  vertexBufferBindings.emplace_back(
+      gpu::BufferBinding{.buffer = model.vertexBuffer, .offset = 0});
+  const gpu::BufferBinding indexBufferBinding{
+      .buffer = model.indexBuffer, .offset = 0};
+
+  auto commandBuffer = currentCommandBuffer;
+  auto renderPass = currentRenderPass;
+  renderPass->bindGraphicsPipeline(currentPipeline.value().get());
+  bindCurrentTextureSamplers(renderPass);
+  bindCurrentAccelerationStructures(renderPass);
+  renderPass->bindVertexBuffers(0, vertexBufferBindings);
+  renderPass->bindIndexBuffer(indexBufferBinding,
+                              gpu::IndexElementSize::Uint32);
+
+  commandBuffer->pushVertexUniformData(0, &wvp, sizeof(wvp));
+  renderPass->drawIndexedPrimitives(
+      static_cast<uint32_t>(model.getMesh().data()->indices.size()), 1, 0, 0,
+      0);
+  currentPipeline = std::nullopt;
+  currentTextureBindings.clear();
+  currentAccelerationStructureBindings.clear();
+}
+
 static void drawBase3D(const Array<Transform> transforms, const Model &model) {
   ZoneScopedN("drawBase3D");
   assert(currentPipeline.has_value());
@@ -621,14 +669,17 @@ void Graphics::drawText(StringView text, const Font &font, const Vec2 &position,
   drawBase2D(transforms, model, fontSampler);
 }
 void Graphics::drawCubemap(const Ptr<Texture> &cubemap) {
+  if (!cubemap || !cubemap->getRaw()) {
+    return;
+  }
+
   if (customPipeline.has_value() && customPipeline.value().get() != nullptr)
     currentPipeline = customPipeline.value();
   else
     currentPipeline = BuiltinPipeline::getCubemap();
 
   setTexture(0, cubemap);
-  Array<Transform> transforms(1, Transform());
-  drawBase3D(transforms, box);
+  drawBaseCubemap(box);
 }
 void Graphics::drawModel(const Model &model, const Transform &transform) {
   if (customPipeline.has_value() && customPipeline.value().get() != nullptr)

@@ -45,7 +45,7 @@ bool BuiltinPipeline::initialize() {
 
   cubemap.setVertexShader(cubemapVS);
   cubemap.setFragmentShader(cubemapFS);
-  cubemap.setEnableDepthTest(false);
+  cubemap.setEnableDepthTest(true);
   cubemap.build();
 
   return true;

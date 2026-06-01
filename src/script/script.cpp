@@ -215,6 +215,7 @@ void registerPivot(lua_State *);
 void registerRect(lua_State *);
 void registerTransform(lua_State *);
 void registerFont(lua_State *);
+void registerTextStyle(lua_State *);
 void registerTexture(lua_State *);
 void registerRenderTexture(lua_State *);
 void registerSound(lua_State *);
@@ -288,6 +289,7 @@ static void registerAll(lua_State *L) {
   registerTransform(L);
 
   registerFont(L);
+  registerTextStyle(L);
   registerTexture(L);
   registerRenderTexture(L);
   registerSound(L);
@@ -388,7 +390,7 @@ local sn = require("@sinen")
 local font = sn.Font.new()
 font:load(32)
 function draw()
-    sn.Graphics.drawText("NO DATA", font, sn.Vec2.new(0, 0), sn.Color.new(1.0), 32, 0.0)
+    sn.Graphics.drawText("NO DATA", sn.TextStyle.new(font, sn.Color.new(1.0), 32), sn.TextTransform.new(sn.Vec2.new(0, 0)))
 end
 )";
 

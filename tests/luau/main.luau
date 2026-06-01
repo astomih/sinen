@@ -71,7 +71,11 @@ function draw()
 			color = failColor
 		end
 
-		sn.Graphics.drawText(line, font, sn.Vec2.new(24, y), color, 18)
+		sn.Graphics.drawText(
+			line,
+			sn.TextStyle.new(font, color, 18),
+			sn.TextTransform.new(sn.Vec2.new(24, y))
+		)
 		y += 24
 	end
 end

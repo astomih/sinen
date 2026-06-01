@@ -82,10 +82,8 @@ end
 local function drawCentered(text: string, y: number, size: number, color)
 	sn.Graphics.drawText(
 		text,
-		font,
-		font:region(text, size, sn.Pivot.Center, sn.Window.center() + sn.Vec2.new(0, y)):topLeft(),
-		color,
-		size
+		sn.TextStyle.new(font, color, size),
+		sn.TextTransform.new(sn.Window.center() + sn.Vec2.new(0, y), 0.0, sn.Pivot.Center)
 	)
 end
 

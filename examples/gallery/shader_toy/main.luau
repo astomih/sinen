@@ -91,16 +91,7 @@ function draw()
 	sn.Graphics.resetGraphicsPipeline()
 	sn.Graphics.drawText(
 		"SPACE / CLICK: CHANGE SHADER  ESC: BACK",
-		infoFont,
-		infoFont
-			:region(
-				"SPACE / CLICK: CHANGE SHADER  ESC: BACK",
-				18,
-				sn.Pivot.Center,
-				sn.Window.center() + sn.Vec2.new(0, size.y * 0.5 - 34)
-			)
-			:topLeft(),
-		sn.Color.new(1, 1, 1, 0.76),
-		18
+		sn.TextStyle.new(infoFont, sn.Color.new(1, 1, 1, 0.76), 18),
+		sn.TextTransform.new(sn.Window.center() + sn.Vec2.new(0, size.y * 0.5 - 34), 0.0, sn.Pivot.Center)
 	)
 end

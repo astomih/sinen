@@ -12,6 +12,7 @@
 #include <graphics/camera/camera3d.hpp>
 #include <graphics/font/font.hpp>
 #include <graphics/model/model.hpp>
+#include <graphics/text_style.hpp>
 #include <graphics/texture/render_texture.hpp>
 #include <math/color/color.hpp>
 #include <math/color/palette.hpp>
@@ -43,16 +44,8 @@ public:
   static void drawImage(const Ptr<Texture> &texture, const Rect &rect) {
     drawImage(texture, rect, 0.0f);
   }
-  static void drawText(StringView text, const Font &font, const Vec2 &position,
-                       const Color &color, float textSize, float angle);
-  static void drawText(StringView text, const Font &font, const Vec2 &position,
-                       const Color &color) {
-    drawText(text, font, position, color, 32.f, 0.0f);
-  }
-  static void drawText(StringView text, const Font &font,
-                       const Vec2 &position) {
-    drawText(text, font, position, Palette::white(), 32.f, 0.0f);
-  }
+  static void drawText(StringView text, const TextStyle &style,
+                       const TextTransform &transform);
   static void drawCubemap(const Ptr<Texture> &cubemap);
   static void drawModel(const Model &model, const Transform &transform);
   static void drawModelInstanced(const Model &model,

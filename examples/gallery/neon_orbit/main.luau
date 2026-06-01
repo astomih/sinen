@@ -145,40 +145,18 @@ function draw()
 
 	sn.Graphics.drawText(
 		"NEON ORBIT",
-		titleFont,
-		titleFont
-			:region(
-				"NEON ORBIT",
-				44,
-				sn.Pivot.Center,
-				sn.Window.center() + sn.Vec2.new(0, -320)
-			)
-			:topLeft(),
-		sn.Color.new(1, 1, 1, 0.95),
-		44
+		sn.TextStyle.new(titleFont, sn.Color.new(1, 1, 1, 0.95), 44),
+		sn.TextTransform.new(sn.Window.center() + sn.Vec2.new(0, -320), 0.0, sn.Pivot.Center)
 	)
 	sn.Graphics.drawText(
 		"SPACE: MODE  LEFT CLICK: PALETTE SHIFT  ESC: BACK",
-		infoFont,
-		infoFont
-			:region(
-				"SPACE: MODE  LEFT CLICK: PALETTE SHIFT  ESC: BACK",
-				20,
-				sn.Pivot.Center,
-				sn.Window.center() + sn.Vec2.new(0, 330)
-			)
-			:topLeft(),
-		sn.Color.new(1, 1, 1, 0.85),
-		20
+		sn.TextStyle.new(infoFont, sn.Color.new(1, 1, 1, 0.85), 20),
+		sn.TextTransform.new(sn.Window.center() + sn.Vec2.new(0, 330), 0.0, sn.Pivot.Center)
 	)
 	local modeText = "MODE: " .. modeName()
 	sn.Graphics.drawText(
 		modeText,
-		infoFont,
-		infoFont
-			:region(modeText, 20, sn.Pivot.Center, sn.Window.center() + sn.Vec2.new(0, -285))
-			:topLeft(),
-		sn.Color.new(0.9, 1.0, 1.0, 0.9),
-		20
+		sn.TextStyle.new(infoFont, sn.Color.new(0.9, 1.0, 1.0, 0.9), 20),
+		sn.TextTransform.new(sn.Window.center() + sn.Vec2.new(0, -285), 0.0, sn.Pivot.Center)
 	)
 end

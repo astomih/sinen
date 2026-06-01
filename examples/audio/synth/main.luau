@@ -30,30 +30,12 @@ end
 function draw()
 	sn.Graphics.drawText(
 		"Synth (miniaudio) - press SPACE to restart, ESC to go back",
-		G.font,
-		G.font
-			:region(
-				"Synth (miniaudio) - press SPACE to restart, ESC to go back",
-				16,
-				sn.Pivot.Center,
-				sn.Window.center()
-			)
-			:topLeft(),
-		sn.Color.new(1),
-		16
+		sn.TextStyle.new(G.font, sn.Color.new(1), 16),
+		sn.TextTransform.new(sn.Window.center(), 0.0, sn.Pivot.Center)
 	)
 	sn.Graphics.drawText(
 		"Pattern uses [], ~, and modifiers (^wave @vel :dur #cutoff !pan)",
-		G.font,
-		G.font
-			:region(
-				"Pattern uses [], ~, and modifiers (^wave @vel :dur #cutoff !pan)",
-				14,
-				sn.Pivot.Center,
-				sn.Window.center() + sn.Vec2.new(0, 20)
-			)
-			:topLeft(),
-		sn.Color.new(1),
-		14
+		sn.TextStyle.new(G.font, sn.Color.new(1), 14),
+		sn.TextTransform.new(sn.Window.center() + sn.Vec2.new(0, 20), 0.0, sn.Pivot.Center)
 	)
 end

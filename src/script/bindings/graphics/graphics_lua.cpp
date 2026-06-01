@@ -26,16 +26,9 @@ static int lGraphicsDrawRect(lua_State *L) {
 }
 static int lGraphicsDrawText(lua_State *L) {
   const char *text = luaL_checkstring(L, 1);
-  auto &font = udPtr<Font>(L, 2);
-  auto &pos = udValue<Vec2>(L, 3);
-  if (lua_gettop(L) == 3) {
-    Graphics::drawText(StringView(text), *font, pos);
-    return 0;
-  }
-  auto &color = udValue<Color>(L, 4);
-  float size = static_cast<float>(luaL_optnumber(L, 5, 32.0));
-  float angle = static_cast<float>(luaL_optnumber(L, 6, 0.0));
-  Graphics::drawText(StringView(text), *font, pos, color, size, angle);
+  auto &style = udValue<TextStyle>(L, 2);
+  auto &transform = udValue<TextTransform>(L, 3);
+  Graphics::drawText(StringView(text), style, transform);
   return 0;
 }
 static int lGraphicsDrawImage(lua_State *L) {

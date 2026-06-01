@@ -145,17 +145,8 @@ function draw()
 	local scoreText = "SCORE: " .. G.SCORE
 	sn.Graphics.drawText(
 		scoreText,
-		G.FONT_DEFAULT64,
-		G.FONT_DEFAULT64
-			:region(
-				scoreText,
-				32,
-				sn.Pivot.Center,
-				sn.Window.center() + sn.Vec2.new(-300, -300)
-			)
-			:topLeft(),
-		sn.Color.new(1, 1, 1, 1),
-		32
+		sn.TextStyle.new(G.FONT_DEFAULT64, sn.Color.new(1, 1, 1, 1), 32),
+		sn.TextTransform.new(sn.Window.center() + sn.Vec2.new(-300, -300), 0.0, sn.Pivot.Center)
 	)
 	menu_object:draw()
 	scene_switcher:draw()

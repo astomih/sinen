@@ -632,22 +632,29 @@ void Graphics::drawImage(const Ptr<Texture> &texture, const Rect &rect,
   setTexture(0, texture);
   drawBase2D(transforms, sprite);
 }
-void Graphics::drawText(StringView text, const Font &font, const Vec2 &position,
-                        const Color &color, float textSize, float angle) {
+void Graphics::drawText(StringView text, const TextStyle &style,
+                        const TextTransform &transform) {
+  Font *font = style.font();
+  if (font == nullptr) {
+    return;
+  }
+
   if (customPipeline.has_value() && customPipeline.value().get() != nullptr)
     currentPipeline = customPipeline.value();
   else
     currentPipeline = BuiltinPipeline::getFont2D();
-  TextDrawData textData = font.makeTextDrawData(text);
+  TextDrawData textData = font->makeTextDrawData(text);
   if (!textData.valid || textData.texture == nullptr) {
     return;
   }
 
   Model model;
   model.loadFromVertexArray(textData.mesh);
-  const auto scale = textSize / static_cast<float>(font.size());
+  const auto scale = style.fontSize / static_cast<float>(font->size());
   const auto meshScale = scale * 0.5f;
-  Vec2 textPosition = position;
+  Vec2 textPosition = font->region(text, static_cast<int>(style.fontSize),
+                                   transform.pivot, transform.position)
+                          .topLeft();
   const auto meshData = textData.mesh.data();
   if (meshData != nullptr && !meshData->vertices.empty()) {
     auto minX = meshData->vertices[0].position.x;
@@ -659,11 +666,13 @@ void Graphics::drawText(StringView text, const Font &font, const Vec2 &position,
     textPosition.x -= minX * meshScale;
     textPosition.y += maxY * meshScale;
   }
-  Array<Transform2D> transforms(1, {textPosition, angle, Vec2(scale)});
+  Array<Transform2D> transforms(1,
+                                {textPosition, transform.angle, Vec2(scale)});
   setTexture(0, textData.texture);
   const Vec2 atlasSize = textData.texture->size();
   const FontFragmentParams params{
-      color, Vec4(atlasSize.x, atlasSize.y, textData.distanceFieldRange, 0.0f)};
+      style.color,
+      Vec4(atlasSize.x, atlasSize.y, textData.distanceFieldRange, 0.0f)};
   currentCommandBuffer->pushFragmentUniformData(1, &params, sizeof(params));
 
   drawBase2D(transforms, model, fontSampler);

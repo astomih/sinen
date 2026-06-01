@@ -40,10 +40,8 @@ function draw()
 	local title = "Data Examples"
 	sn.Graphics.drawText(
 		title,
-		G.font,
-		G.font:region(title, 24, sn.Pivot.TopCenter, sn.Vec2.new(windowSize.x * 0.5, margin)):topLeft(),
-		sn.Color.new(1, 1, 1, 1),
-		24
+		sn.TextStyle.new(G.font, sn.Color.new(1, 1, 1, 1), 24),
+		sn.TextTransform.new(sn.Vec2.new(windowSize.x * 0.5, margin), 0.0, sn.Pivot.TopCenter)
 	)
 
 	local viewport = sn.Rect.new(

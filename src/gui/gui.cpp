@@ -87,16 +87,6 @@ static float fitFontSize(StringView text, const Rect &rect, float fontSize) {
   return size;
 }
 
-static Rect textRect(StringView text, const Rect &rect, float fontSize) {
-  auto *f = font();
-  if (f == nullptr || !f->isLoaded()) {
-    return Rect(rect.x + 8.0f, rect.y + (rect.height - fontSize) * 0.5f, 0.0f,
-                0.0f);
-  }
-  return f->region(text, static_cast<int>(fontSize), Pivot::Center,
-                   rect.center());
-}
-
 static Color widgetColor(std::uint64_t id, bool hovered) {
   if (activeId == id) {
     return theme.active;
@@ -156,7 +146,7 @@ void Gui::label(StringView text, const Vec2 &position, const Color &color,
     return;
   }
   const float size = fontSize > 0.0f ? fontSize : currentFontSize;
-  Graphics::drawText(text, *f, position, color, size, 0.0f);
+  Graphics::drawText(text, TextStyle(*f, color, size), TextTransform(position));
 }
 
 bool Gui::button(StringView text, const Rect &rect) {
@@ -168,8 +158,8 @@ bool Gui::button(StringView text, const Rect &rect) {
   auto *f = font();
   if (f != nullptr && f->isLoaded()) {
     const float fontSize = fitFontSize(text, rect, currentFontSize);
-    Graphics::drawText(text, *f, textRect(text, rect, fontSize).topLeft(),
-                       theme.text, fontSize, 0.0f);
+    Graphics::drawText(text, TextStyle(*f, theme.text, fontSize),
+                       TextTransform(rect.center(), 0.0f, Pivot::Center));
   }
   return clicked;
 }
@@ -194,7 +184,8 @@ bool Gui::checkbox(StringView text, bool checked, const Rect &rect) {
   if (f != nullptr && f->isLoaded()) {
     const Vec2 textPos(rect.x + side + 8.0f,
                        rect.y + (rect.height - currentFontSize) * 0.5f);
-    Graphics::drawText(text, *f, textPos, theme.text, currentFontSize, 0.0f);
+    Graphics::drawText(text, TextStyle(*f, theme.text, currentFontSize),
+                       TextTransform(textPos));
   }
   return value;
 }
@@ -233,9 +224,9 @@ float Gui::sliderFloat(StringView text, float value, float min, float max,
     label += ": ";
     label += std::format("{:.2f}", value);
     Graphics::drawText(
-        label, *f,
-        Vec2(rect.x + 8.0f, rect.y + (rect.height - currentFontSize) * 0.5f),
-        theme.text, currentFontSize, 0.0f);
+        label, TextStyle(*f, theme.text, currentFontSize),
+        TextTransform(Vec2(rect.x + 8.0f,
+                           rect.y + (rect.height - currentFontSize) * 0.5f)));
   }
   return value;
 }
@@ -295,5 +286,4 @@ float Gui::scrollVertical(float scroll, const Rect &viewport,
 }
 } // namespace sinen
 
-namespace sinen {
-} // namespace sinen
+namespace sinen {} // namespace sinen

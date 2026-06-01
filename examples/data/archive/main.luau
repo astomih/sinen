@@ -45,10 +45,18 @@ end
 function draw()
 	local y = 80
 	for _, line in lines do
-		sn.Graphics.drawText(line, font, sn.Vec2.new(60, y), sn.Color.new(1.0), 24)
+		sn.Graphics.drawText(
+			line,
+			sn.TextStyle.new(font, sn.Color.new(1.0), 24),
+			sn.TextTransform.new(sn.Vec2.new(60, y))
+		)
 		y += 34
 	end
 
 	local action = payloadBase and "Press Enter to preview sna/main.luau" or "sna/main.luau was not found"
-	sn.Graphics.drawText(action, font, sn.Vec2.new(60, y + 24), sn.Color.new(0.5, 0.9, 1.0, 1.0), 24)
+	sn.Graphics.drawText(
+		action,
+		sn.TextStyle.new(font, sn.Color.new(0.5, 0.9, 1.0, 1.0), 24),
+		sn.TextTransform.new(sn.Vec2.new(60, y + 24))
+	)
 end

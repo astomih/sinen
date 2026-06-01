@@ -61,5 +61,9 @@ function draw()
 	end
 
 	local textPosition = sn.Vec2.new(center.x - 240, imageRect.y + imageRect.height + 24)
-	sn.Graphics.drawText(status, font, textPosition, sn.Color.new(1.0), 24)
+	sn.Graphics.drawText(
+		status,
+		sn.TextStyle.new(font, sn.Color.new(1.0), 24),
+		sn.TextTransform.new(textPosition)
+	)
 end

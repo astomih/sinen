@@ -360,12 +360,8 @@ Player.draw2 = function(self: Player)
 	local hpText = "HP: " .. self.hp
 	sn.Graphics.drawText(
 		hpText,
-		G.FONT_DEFAULT64,
-		G.FONT_DEFAULT64
-			:region(hpText, 32, sn.Pivot.Center, sn.Window.center() + sn.Vec2.new(0, -300))
-			:topLeft(),
-		self.hpColor,
-		32
+		sn.TextStyle.new(G.FONT_DEFAULT64, self.hpColor, 32),
+		sn.TextTransform.new(sn.Window.center() + sn.Vec2.new(0, -300), 0.0, sn.Pivot.Center)
 	)
 	sn.Graphics.drawImage(
 		self.stamina_max_texture,

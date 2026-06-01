@@ -32,12 +32,8 @@ function draw()
 	sn.Gui.setFontSize(24)
 	sn.Graphics.drawText(
 		"Gallery Launcher",
-		G.font,
-		G.font
-			:region("Gallery Launcher", 24, sn.Pivot.Center, sn.Window.center() + sn.Vec2.new(0, -(offset + 10)))
-			:topLeft(),
-		sn.Color.new(1, 1, 1, 1),
-		24
+		sn.TextStyle.new(G.font, sn.Color.new(1, 1, 1, 1), 24),
+		sn.TextTransform.new(sn.Window.center() + sn.Vec2.new(0, -(offset + 10)), 0.0, sn.Pivot.Center)
 	)
 	for i = 1, numGallerys do
 		if sn.Gui.button(galleryDirs[i], centeredRect(sn.Vec2.new(0, (i - 1) * -buttonStep + offset), buttonSize)) then

@@ -23,24 +23,13 @@ end
 function draw()
 	sn.Graphics.drawText(
 		"FPS",
-		G.FONT_DEFAULT64,
-		G.FONT_DEFAULT64:region("FPS", 64, sn.Pivot.Center, sn.Window.center()):topLeft(),
-		sn.Color.new(1),
-		64
+		sn.TextStyle.new(G.FONT_DEFAULT64, sn.Color.new(1), 64),
+		sn.TextTransform.new(sn.Window.center(), 0.0, sn.Pivot.Center)
 	)
 	sn.Graphics.drawText(
 		"CLICK TO START",
-		G.FONT_DEFAULT32,
-		G.FONT_DEFAULT32
-			:region(
-				"CLICK TO START",
-				32,
-				sn.Pivot.Center,
-				sn.Window.center() + sn.Vec2.new(0, 64 * 3.0)
-			)
-			:topLeft(),
-		sn.Color.new(1, 1, 1, sn.Periodic.sin0_1(2.0, sn.Time.seconds())),
-		32
+		sn.TextStyle.new(G.FONT_DEFAULT32, sn.Color.new(1, 1, 1, sn.Periodic.sin0_1(2.0, sn.Time.seconds())), 32),
+		sn.TextTransform.new(sn.Window.center() + sn.Vec2.new(0, 64 * 3.0), 0.0, sn.Pivot.Center)
 	)
 	menu:draw()
 

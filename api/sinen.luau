@@ -386,6 +386,20 @@ export type Font = {
 	region: (self: Font, text: string, fontSize: number, pivot: Pivot, position: Vec2) -> Rect,
 }
 
+export type TextStyle = {
+	new: ((font: Font, color: Color?, fontSize: number?) -> TextStyle) & ((font: Font, fontSize: number) -> TextStyle),
+	font: Font,
+	color: Color,
+	fontSize: number,
+}
+
+export type TextTransform = {
+	new: (position: Vec2, angle: number?, pivot: Pivot?) -> TextTransform,
+	position: Vec2,
+	angle: number,
+	pivot: Pivot,
+}
+
 export type GraphicsPipeline = {
 	new: () -> GraphicsPipeline,
 	setVertexShader: (self: GraphicsPipeline, shader: Shader) -> nil,
@@ -622,8 +636,8 @@ export type Graphics = {
 	-- drawRect/drawImage use Rect.x/y as the object's top-left corner.
 	drawRect: (rect: Rect, color: Color, angle: number?) -> nil,
 	drawImage: (texture: Texture, rect: Rect, angle: number?) -> nil,
-	-- drawText positions the top-left of the rendered text.
-	drawText: (text: string, font: Font, position: Vec2, color: Color?, fontSize: number?, angle: number?) -> nil,
+	-- drawText positions transform.position using transform.pivot.
+	drawText: (text: string, style: TextStyle, transform: TextTransform) -> nil,
 	begin2D: (camera: Camera2D?) -> nil,
 	begin3D: (camera: Camera3D) -> nil,
 	finish: () -> nil,
@@ -893,6 +907,8 @@ return {
 	Shader = {} :: Shader,
 	ShaderBundle = {} :: ShaderBundle,
 	Font = {} :: Font,
+	TextStyle = {} :: TextStyle,
+	TextTransform = {} :: TextTransform,
 	Color = {} :: Color,
 	GraphicsPipeline = {} :: GraphicsPipeline,
 	ComputeBuffer = {} :: ComputeBuffer,

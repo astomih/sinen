@@ -499,34 +499,16 @@ local function drawRack()
 		local pieceText = "PIECE " .. i
 		sn.Graphics.drawText(
 			pieceText,
-			infoFont,
-			infoFont
-				:region(
-					pieceText,
-					16,
-					sn.Pivot.Center,
-					sn.Window.center() + sn.Vec2.new(x, -(SLOT_Y + 58.0))
-				)
-				:topLeft(),
-			sn.Color.new(0.85, 0.9, 0.98, 0.95),
-			16
+			sn.TextStyle.new(infoFont, sn.Color.new(0.85, 0.9, 0.98, 0.95), 16),
+			sn.TextTransform.new(sn.Window.center() + sn.Vec2.new(x, -(SLOT_Y + 58.0)), 0.0, sn.Pivot.Center)
 		)
 
 		local piece = rack[i]
 		if piece == nil then
 			sn.Graphics.drawText(
 				"USED",
-				hudFont,
-				hudFont
-					:region(
-						"USED",
-						22,
-						sn.Pivot.Center,
-						sn.Window.center() + sn.Vec2.new(x, -(SLOT_Y - 6.0))
-					)
-					:topLeft(),
-				sn.Color.new(0.7, 0.75, 0.86, 0.95),
-				22
+				sn.TextStyle.new(hudFont, sn.Color.new(0.7, 0.75, 0.86, 0.95), 22),
+				sn.TextTransform.new(sn.Window.center() + sn.Vec2.new(x, -(SLOT_Y - 6.0)), 0.0, sn.Pivot.Center)
 			)
 		else
 			local previewCell = 26.0
@@ -568,45 +550,18 @@ local function drawGameOver()
 	)
 	sn.Graphics.drawText(
 		"NO MORE MOVES",
-		titleFont,
-		titleFont
-			:region(
-				"NO MORE MOVES",
-				48,
-				sn.Pivot.Center,
-				sn.Window.center() + sn.Vec2.new(0, -70)
-			)
-			:topLeft(),
-		sn.Color.new(1, 1, 1, 0.98),
-		48
+		sn.TextStyle.new(titleFont, sn.Color.new(1, 1, 1, 0.98), 48),
+		sn.TextTransform.new(sn.Window.center() + sn.Vec2.new(0, -70), 0.0, sn.Pivot.Center)
 	)
 	sn.Graphics.drawText(
 		"SPACE or LEFT CLICK to restart",
-		hudFont,
-		hudFont
-			:region(
-				"SPACE or LEFT CLICK to restart",
-				24,
-				sn.Pivot.Center,
-				sn.Window.center() + sn.Vec2.new(0, -6)
-			)
-			:topLeft(),
-		sn.Color.new(0.88, 0.93, 1.0, 0.95),
-		24
+		sn.TextStyle.new(hudFont, sn.Color.new(0.88, 0.93, 1.0, 0.95), 24),
+		sn.TextTransform.new(sn.Window.center() + sn.Vec2.new(0, -6), 0.0, sn.Pivot.Center)
 	)
 	sn.Graphics.drawText(
 		"ESC to return gallery",
-		infoFont,
-		infoFont
-			:region(
-				"ESC to return gallery",
-				20,
-				sn.Pivot.Center,
-				sn.Window.center() + sn.Vec2.new(0, 38)
-			)
-			:topLeft(),
-		sn.Color.new(0.78, 0.86, 0.98, 0.92),
-		20
+		sn.TextStyle.new(infoFont, sn.Color.new(0.78, 0.86, 0.98, 0.92), 20),
+		sn.TextTransform.new(sn.Window.center() + sn.Vec2.new(0, 38), 0.0, sn.Pivot.Center)
 	)
 end
 

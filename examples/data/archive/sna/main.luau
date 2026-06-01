@@ -41,7 +41,11 @@ function draw()
 
 	local y = 80
 	for _, line in lines do
-		sn.Graphics.drawText(line, font, sn.Vec2.new(60, y), sn.Color.new(1.0), 24)
+		sn.Graphics.drawText(
+			line,
+			sn.TextStyle.new(font, sn.Color.new(1.0), 24),
+			sn.TextTransform.new(sn.Vec2.new(60, y))
+		)
 		y += 34
 	end
 end

@@ -15,11 +15,7 @@ end
 function draw()
 	sn.Graphics.drawText(
 		"Press SPACE key to play sound",
-		G.font,
-		G.font
-			:region("Press SPACE key to play sound", 16, sn.Pivot.Center, sn.Window.center())
-			:topLeft(),
-		sn.Color.new(1),
-		16
+		sn.TextStyle.new(G.font, sn.Color.new(1), 16),
+		sn.TextTransform.new(sn.Window.center(), 0.0, sn.Pivot.Center)
 	)
 end

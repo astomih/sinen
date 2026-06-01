@@ -92,6 +92,27 @@ bool Camera3D::isAABBInFrustum(const AABB &aabb) {
   return true;
 }
 
+Vec3 Camera3D::worldToScreen(const Vec3 &worldPosition,
+                             const Vec2 &viewportSize) const {
+  const Mat4 vp = this->projection * this->view;
+  const Vec4 world(worldPosition, 1.0f);
+  const Vec4 clip(vp[0][0] * world.x + vp[0][1] * world.y + vp[0][2] * world.z +
+                      vp[0][3] * world.w,
+                  vp[1][0] * world.x + vp[1][1] * world.y + vp[1][2] * world.z +
+                      vp[1][3] * world.w,
+                  vp[2][0] * world.x + vp[2][1] * world.y + vp[2][2] * world.z +
+                      vp[2][3] * world.w,
+                  vp[3][0] * world.x + vp[3][1] * world.y + vp[3][2] * world.z +
+                      vp[3][3] * world.w);
+  const Vec3 ndc = perspDiv(clip);
+  return Vec3((ndc.x * 0.5f + 0.5f) * viewportSize.x,
+              (1.0f - (ndc.y * 0.5f + 0.5f)) * viewportSize.y, ndc.z);
+}
+
+Vec3 Camera3D::worldToScreen(const Vec3 &worldPosition) const {
+  return worldToScreen(worldPosition, Window::size());
+}
+
 Ray Camera3D::screenToWorldRay(const Vec2 &screenPos,
                                const Vec2 &viewportSize) const {
   const Vec2 half = viewportSize * 0.5f;

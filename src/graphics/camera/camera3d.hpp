@@ -55,6 +55,9 @@ public:
    */
   bool isAABBInFrustum(const AABB &aabb);
 
+  Vec3 worldToScreen(const Vec3 &worldPosition, const Vec2 &viewportSize) const;
+  Vec3 worldToScreen(const Vec3 &worldPosition) const;
+
   /**
    * @brief Convert a screen-space position to a world-space ray.
    *

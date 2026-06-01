@@ -3,8 +3,8 @@
 #include <core/thread/load_context.hpp>
 #include <graphics/graphics_pipeline.hpp>
 
-#include <cstddef>
 #include <chrono>
+#include <cstddef>
 #include <functional>
 #include <memory>
 namespace sinen {
@@ -19,6 +19,10 @@ void GraphicsPipeline::setFragmentShader(const Shader &shader) {
 }
 void GraphicsPipeline::setEnableDepthTest(bool enable) {
   featureFlags.set(DepthTest, enable);
+  featureFlags.set(DepthWrite, enable);
+}
+void GraphicsPipeline::setEnableDepthWrite(bool enable) {
+  featureFlags.set(DepthWrite, enable);
 }
 void GraphicsPipeline::setEnableInstanced(bool enable) {
   featureFlags.set(Instanced, enable);
@@ -65,10 +69,12 @@ void GraphicsPipeline::build() {
     pipelineInfo.rasterizerState = rasterizerState;
     pipelineInfo.multiSampleState = {};
     pipelineInfo.multiSampleState.sampleCount = gpu::SampleCount::x1;
-    bool enableDepthTest =
+    const bool enableDepthTest =
         featureFlags.test(GraphicsPipeline::FeatureFlag::DepthTest);
+    const bool enableDepthWrite =
+        featureFlags.test(GraphicsPipeline::FeatureFlag::DepthWrite);
     pipelineInfo.depthStencilState.enableDepthTest = enableDepthTest;
-    pipelineInfo.depthStencilState.enableDepthWrite = enableDepthTest;
+    pipelineInfo.depthStencilState.enableDepthWrite = enableDepthWrite;
     pipelineInfo.depthStencilState.enableStencilTest = false;
     pipelineInfo.depthStencilState.compareOp = gpu::CompareOp::LessOrEqual;
 
@@ -89,14 +95,16 @@ void GraphicsPipeline::build() {
                     .enableBlend = true,
                 },
         });
-    pipelineInfo.targetInfo.hasDepthStencilTarget = enableDepthTest;
+    pipelineInfo.targetInfo.hasDepthStencilTarget =
+        enableDepthTest || enableDepthWrite;
     pipelineInfo.targetInfo.depthStencilTargetFormat =
         gpu::TextureFormat::D32_FLOAT_S8_UINT;
     this->pipeline = device->createGraphicsPipeline(pipelineInfo);
     group.done();
   };
 
-  if (!inSetup && this->vertexShader.getRaw() && this->fragmentShader.getRaw()) {
+  if (!inSetup && this->vertexShader.getRaw() &&
+      this->fragmentShader.getRaw()) {
     (*buildOrRetry)();
     return;
   }

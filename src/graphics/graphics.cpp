@@ -469,8 +469,8 @@ static void drawBaseCubemap(const Model &model) {
   Array<gpu::BufferBinding> vertexBufferBindings;
   vertexBufferBindings.emplace_back(
       gpu::BufferBinding{.buffer = model.vertexBuffer, .offset = 0});
-  const gpu::BufferBinding indexBufferBinding{
-      .buffer = model.indexBuffer, .offset = 0};
+  const gpu::BufferBinding indexBufferBinding{.buffer = model.indexBuffer,
+                                              .offset = 0};
 
   auto commandBuffer = currentCommandBuffer;
   auto renderPass = currentRenderPass;
@@ -781,8 +781,10 @@ static Vec2 renderTargetSize(const Ptr<gpu::Texture> &texture) {
 }
 
 static void prepareRenderPassFrame() {
-  const bool depthEnabled = currentPipeline.value().getFeatureFlags().test(
-      GraphicsPipeline::FeatureFlag::DepthTest);
+  const auto &featureFlags = currentPipeline.value().getFeatureFlags();
+  const bool depthEnabled =
+      featureFlags.test(GraphicsPipeline::FeatureFlag::DepthTest) ||
+      featureFlags.test(GraphicsPipeline::FeatureFlag::DepthWrite);
   if (isChangedRenderTarget) {
     isChangedRenderTarget = false;
     isPrevDepthEnabled = depthEnabled;

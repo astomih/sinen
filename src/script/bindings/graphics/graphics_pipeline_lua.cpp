@@ -1,7 +1,7 @@
-#include <script/luaapi.hpp>
 #include <core/allocator/global_allocator.hpp>
 #include <core/thread/load_context.hpp>
 #include <graphics/graphics_pipeline.hpp>
+#include <script/luaapi.hpp>
 
 namespace sinen {
 static int lPipelineNew(lua_State *L) {
@@ -24,6 +24,12 @@ static int lPipelineSetEnableDepthTest(lua_State *L) {
   auto &p = udPtr<GraphicsPipeline>(L, 1);
   bool enable = lua_toboolean(L, 2) != 0;
   p->setEnableDepthTest(enable);
+  return 0;
+}
+static int lPipelineSetEnableDepthWrite(lua_State *L) {
+  auto &p = udPtr<GraphicsPipeline>(L, 1);
+  bool enable = lua_toboolean(L, 2) != 0;
+  p->setEnableDepthWrite(enable);
   return 0;
 }
 static int lPipelineSetEnableInstanced(lua_State *L) {
@@ -60,6 +66,8 @@ void registerPipeline(lua_State *L) {
   lua_setfield(L, -2, "setFragmentShader");
   luaPushcfunction2(L, lPipelineSetEnableDepthTest);
   lua_setfield(L, -2, "setEnableDepthTest");
+  luaPushcfunction2(L, lPipelineSetEnableDepthWrite);
+  lua_setfield(L, -2, "setEnableDepthWrite");
   luaPushcfunction2(L, lPipelineSetEnableInstanced);
   lua_setfield(L, -2, "setEnableInstanced");
   luaPushcfunction2(L, lPipelineSetEnableAnimation);

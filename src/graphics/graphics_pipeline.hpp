@@ -16,6 +16,7 @@ public:
     Instanced = 1 << 1,
     Animation = 1 << 2,
     Tangent = 1 << 3,
+    DepthWrite = 1 << 4,
   };
 
   GraphicsPipeline() = default;
@@ -25,6 +26,7 @@ public:
   void setFragmentShader(const Shader &shader);
 
   void setEnableDepthTest(bool enable);
+  void setEnableDepthWrite(bool enable);
   void setEnableInstanced(bool enable);
   void setEnableAnimation(bool enable);
   void setEnableTangent(bool enable);

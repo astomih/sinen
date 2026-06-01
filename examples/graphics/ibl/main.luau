@@ -1,8 +1,46 @@
 local sn = require("@sinen")
+
+local function createLightModel(): sn.Model
+	local builder = sn.MeshBuilder.new()
+	builder:addSphere(1.0, 24, 48, sn.Color.new(1.0, 0.98, 0.78, 1.0))
+	return builder:toModel()
+end
+
+local function createLightGlowModel(): sn.Model
+	local builder = sn.MeshBuilder.new()
+	builder:addSphere(1.0, 24, 48, sn.Color.new(1.0, 0.78, 0.22, 0.42))
+	return builder:toModel()
+end
+
+local function createGlowTexture(size: number): sn.Texture
+	local pixels = {}
+	local center = (size - 1) * 0.5
+	local index = 1
+	for y = 0, size - 1 do
+		for x = 0, size - 1 do
+			local dx = (x - center) / center
+			local dy = (y - center) / center
+			local distance = math.sqrt(dx * dx + dy * dy)
+			local falloff = math.max(0, 1 - distance)
+			local alpha = math.floor((falloff * falloff * falloff) * 180)
+			pixels[index] = 255
+			pixels[index + 1] = 220
+			pixels[index + 2] = 92
+			pixels[index + 3] = alpha
+			index += 4
+		end
+	end
+
+	local texture = sn.Texture.new()
+	texture:loadPixels(sn.Buffer.fromBytes(pixels), size, size)
+	return texture
+end
+
 local model: sn.Model = sn.Model.new()
 model:load("DamagedHelmet.glb")
-local lightSphere: sn.Model = sn.Model.new()
-lightSphere:load("sphere.glb")
+local lightModel: sn.Model = createLightModel()
+local lightGlowModel: sn.Model = createLightGlowModel()
+local glowTexture: sn.Texture = createGlowTexture(96)
 
 local envPath = "citrus_orchard_road_puresky_2k/citrus_orchard_road_puresky_2k.exr"
 
@@ -23,10 +61,12 @@ transform.position = sn.Vec3.new(0, 0, 0)
 transform.rotation = sn.Vec3.new(90, 0, 0)
 transform.scale = sn.Vec3.new(1, 1, 1)
 
-local light_transform: sn.Transform = sn.Transform.new()
-light_transform.position = sn.Vec3.new(0)
-light_transform.rotation = sn.Vec3.new(0, 0, 0)
-light_transform.scale = sn.Vec3.new(0.5)
+local lightTransform: sn.Transform = sn.Transform.new()
+lightTransform.rotation = sn.Vec3.new(0, 0, 0)
+lightTransform.scale = sn.Vec3.new(0.12)
+local lightGlowTransform: sn.Transform = sn.Transform.new()
+lightGlowTransform.rotation = sn.Vec3.new(0, 0, 0)
+lightGlowTransform.scale = sn.Vec3.new(0.24)
 
 local pos: sn.Vec3 = sn.Vec3.new(0.7, 0.7, 2.1)
 local at: sn.Vec3 = sn.Vec3.new(0)
@@ -46,8 +86,17 @@ pipeline3d:setEnableTangent(true)
 pipeline3d:setEnableDepthTest(true)
 pipeline3d:build()
 
-local lightPos: sn.Vec3 = sn.Vec3.new(2, 0, 0)
-local lightIntensity: number = 2.5
+local lightGlowPipeline: sn.GraphicsPipeline = sn.GraphicsPipeline.new()
+lightGlowPipeline:setVertexShader(sn.BuiltinShader.getDefaultVS())
+lightGlowPipeline:setFragmentShader(sn.BuiltinShader.getDefaultFS())
+lightGlowPipeline:setEnableDepthTest(true)
+lightGlowPipeline:setEnableDepthWrite(false)
+lightGlowPipeline:build()
+
+local lightPos: sn.Vec3 = sn.Vec3.new(1.05, 0.8, 0.75)
+local lightIntensity: number = 4.0
+lightTransform.position = lightPos
+lightGlowTransform.position = lightPos
 
 local uniformData: { any } = {
 	pos,
@@ -57,6 +106,19 @@ local uniformData: { any } = {
 
 local function setWorldUniform(t: sn.Transform)
 	sn.Graphics.setUniformBuffer(1, sn.Buffer.new({ t:getWorldMatrix() }))
+end
+
+local function drawLightBloom()
+	local screen = camera:worldToScreen(lightPos)
+
+	sn.Graphics.begin2D()
+	sn.Graphics.resetAllTexture()
+	sn.Graphics.resetGraphicsPipeline()
+	local glowSize = 170
+	sn.Graphics.drawImage(
+		glowTexture,
+		sn.Rect.new(sn.Pivot.Center, sn.Vec2.new(screen.x, screen.y), sn.Vec2.new(glowSize, glowSize))
+	)
 end
 
 function update()
@@ -85,7 +147,8 @@ function update()
 		end
 	end
 	uniformData[2] = lightPos
-	light_transform.position = lightPos
+	lightTransform.position = lightPos
+	lightGlowTransform.position = lightPos
 end
 
 function draw()
@@ -108,16 +171,12 @@ function draw()
 	sn.Graphics.setUniformBuffer(0, sn.Buffer.new(uniformData))
 	setWorldUniform(transform)
 	sn.Graphics.drawModel(model, transform)
-	sn.Graphics.setTexture(1, model:getTexture(sn.TextureKey.Normal))
-	sn.Graphics.setTexture(2, model:getTexture(sn.TextureKey.DiffuseRoughness))
-	sn.Graphics.setTexture(3, model:getTexture(sn.TextureKey.Emissive))
-	sn.Graphics.setTexture(4, model:getTexture(sn.TextureKey.LightMap))
-	sn.Graphics.setTexture(5, lut)
-	sn.Graphics.setTexture(6, cubemap)
-	sn.Graphics.setTexture(7, irradiance)
-	sn.Graphics.setTexture(8, prefiltered)
-	sn.Graphics.setUniformBuffer(0, sn.Buffer.new(uniformData))
-	setWorldUniform(light_transform)
-	sn.Graphics.drawModel(lightSphere, light_transform)
+
+	sn.Graphics.resetAllTexture()
+	sn.Graphics.setGraphicsPipeline(lightGlowPipeline)
+	sn.Graphics.drawModel(lightGlowModel, lightGlowTransform)
+	sn.Graphics.resetGraphicsPipeline()
+	sn.Graphics.drawModel(lightModel, lightTransform)
+	drawLightBloom()
 	sn.Graphics.finish()
 end

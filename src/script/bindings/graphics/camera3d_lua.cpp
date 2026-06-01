@@ -1,7 +1,7 @@
-#include <script/luaapi.hpp>
 #include <graphics/camera/camera3d.hpp>
 #include <graphics/graphics.hpp>
 #include <platform/window/window.hpp>
+#include <script/luaapi.hpp>
 
 namespace sinen {
 static int lCameraNew(lua_State *L) {
@@ -70,6 +70,17 @@ static int lCameraIsAabbInFrustum(lua_State *L) {
   lua_pushboolean(L, cam.isAABBInFrustum(aabb));
   return 1;
 }
+static int lCameraWorldToScreen(lua_State *L) {
+  auto &cam = udValue<Camera3D>(L, 1);
+  auto &worldPosition = udValue<Vec3>(L, 2);
+  if (lua_gettop(L) >= 3) {
+    auto &viewportSize = udValue<Vec2>(L, 3);
+    udNewOwned<Vec3>(L, cam.worldToScreen(worldPosition, viewportSize));
+    return 1;
+  }
+  udNewOwned<Vec3>(L, cam.worldToScreen(worldPosition));
+  return 1;
+}
 static int lCameraScreenToWorldRay(lua_State *L) {
   auto &cam = udValue<Camera3D>(L, 1);
   auto &screenPos = udValue<Vec2>(L, 2);
@@ -103,6 +114,8 @@ void registerCamera(lua_State *L) {
   lua_setfield(L, -2, "getViewProjection");
   luaPushcfunction2(L, lCameraIsAabbInFrustum);
   lua_setfield(L, -2, "isAABBInFrustum");
+  luaPushcfunction2(L, lCameraWorldToScreen);
+  lua_setfield(L, -2, "worldToScreen");
   luaPushcfunction2(L, lCameraScreenToWorldRay);
   lua_setfield(L, -2, "screenToWorldRay");
   lua_pop(L, 1);

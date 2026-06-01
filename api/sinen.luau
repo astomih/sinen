@@ -234,6 +234,8 @@ export type Camera3D = {
 	getProjection: (self: Camera3D) -> Mat4,
 	getViewProjection: (self: Camera3D) -> Mat4,
 	isAABBInFrustum: (self: Camera3D, aabb: AABB) -> boolean,
+	worldToScreen: ((self: Camera3D, worldPosition: Vec3) -> Vec3)
+		& ((self: Camera3D, worldPosition: Vec3, viewportSize: Vec2) -> Vec3),
 }
 
 export type Camera2D = {
@@ -405,6 +407,7 @@ export type GraphicsPipeline = {
 	setVertexShader: (self: GraphicsPipeline, shader: Shader) -> nil,
 	setFragmentShader: (self: GraphicsPipeline, shader: Shader) -> nil,
 	setEnableDepthTest: (self: GraphicsPipeline, enable: boolean) -> nil,
+	setEnableDepthWrite: (self: GraphicsPipeline, enable: boolean) -> nil,
 	setEnableInstanced: (self: GraphicsPipeline, enable: boolean) -> nil,
 	setEnableAnimation: (self: GraphicsPipeline, enable: boolean) -> nil,
 	setEnableTangent: (self: GraphicsPipeline, enable: boolean) -> nil,

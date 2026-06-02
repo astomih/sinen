@@ -6,8 +6,8 @@
 #include <gpu/builtin_shader.hpp>
 #include <gpu/gpu.hpp>
 #include <graphics/builtin_pipeline.hpp>
+#include <graphics/gui/gui.hpp>
 #include <graphics/texture/render_texture.hpp>
-#include <gui/gui.hpp>
 #include <math/transform/transform.hpp>
 #include <platform/window/window.hpp>
 #include <script/script.hpp>

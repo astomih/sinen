@@ -5,12 +5,13 @@
 #include <graphics/builtin_pipeline.hpp>
 #include <graphics/font/default/mplus-1p-medium.ttf.hpp>
 #include <graphics/graphics.hpp>
+#include <graphics/gui/gui.hpp>
 #include <graphics/texture/render_texture.hpp>
-#include <gui/gui.hpp>
 #include <math/transform/transform.hpp>
 #include <platform/io/asset_reader.hpp>
 #include <platform/window/window.hpp>
 #include <script/luaapi.hpp>
+
 
 namespace sinen {
 static int lGraphicsDrawRect(lua_State *L) {

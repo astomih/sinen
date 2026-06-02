@@ -1,8 +1,9 @@
-#include <script/luaapi.hpp>
-#include <gui/gui.hpp>
 #include <graphics/graphics.hpp>
+#include <graphics/gui/gui.hpp>
 #include <platform/input/mouse.hpp>
 #include <platform/window/window.hpp>
+#include <script/luaapi.hpp>
+
 
 namespace sinen {
 static int lGuiSetFont(lua_State *L) {

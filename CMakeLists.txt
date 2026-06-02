@@ -33,7 +33,6 @@ option(SINEN_MODULE_SHADER_COMPILER "Build the ShaderCompiler module" ON)
 option(SINEN_MODULE_GRAPHICS "Build the Graphics module" ON)
 option(SINEN_MODULE_COMPUTE "Build the Compute module" ON)
 option(SINEN_MODULE_PHYSICS "Build the Physics module" ON)
-option(SINEN_MODULE_GUI "Build the GUI module" ON)
 option(SINEN_MODULE_SCRIPT "Build the Script module" ON)
 option(SINEN_MODULE_PROFILER "Build the profiler integration module" ON)
 
@@ -71,10 +70,6 @@ sinen_require_module(COMPUTE GPU)
 sinen_require_module(COMPUTE GRAPHICS)
 sinen_require_module(PHYSICS CORE)
 sinen_require_module(PHYSICS MATH)
-sinen_require_module(GUI CORE)
-sinen_require_module(GUI MATH)
-sinen_require_module(GUI GRAPHICS)
-sinen_require_module(GUI PLATFORM)
 sinen_require_module(SCRIPT CORE)
 sinen_require_module(SCRIPT MATH)
 sinen_require_module(SCRIPT PLATFORM)
@@ -83,7 +78,6 @@ sinen_require_module(SCRIPT GPU)
 sinen_require_module(SCRIPT GRAPHICS)
 sinen_require_module(SCRIPT COMPUTE)
 sinen_require_module(SCRIPT PHYSICS)
-sinen_require_module(SCRIPT GUI)
 if(SINEN_MODULE_PROFILER AND NOT SINEN_MODULE_CORE)
   message(FATAL_ERROR "SINEN_MODULE_PROFILER=ON requires SINEN_MODULE_CORE=ON")
 endif()
@@ -213,7 +207,7 @@ target_compile_definitions(
   INTERFACE $<$<CONFIG:Debug>:SINEN_DEBUG_WORKING_DIRECTORY>)
 
 foreach(SINEN_MODULE_NAME CORE MATH PLATFORM AUDIO GPU SHADER_COMPILER GRAPHICS
-                          COMPUTE PHYSICS GUI SCRIPT PROFILER)
+                          COMPUTE PHYSICS SCRIPT PROFILER)
   if(SINEN_MODULE_${SINEN_MODULE_NAME})
     target_compile_definitions(
       sinen_common INTERFACE SINEN_MODULE_${SINEN_MODULE_NAME})
@@ -325,7 +319,6 @@ sinen_add_enabled_module(SINEN_MODULE_SHADER_COMPILER shader_compiler
 sinen_add_enabled_module(SINEN_MODULE_GRAPHICS graphics sinen_graphics)
 sinen_add_enabled_module(SINEN_MODULE_COMPUTE compute sinen_compute)
 sinen_add_enabled_module(SINEN_MODULE_PHYSICS physics sinen_physics)
-sinen_add_enabled_module(SINEN_MODULE_GUI gui sinen_gui)
 sinen_add_enabled_module(SINEN_MODULE_SCRIPT script sinen_script)
 
 if(TARGET sinen_math)
@@ -358,15 +351,11 @@ if(TARGET sinen_compute)
   target_link_libraries(sinen_compute PUBLIC sinen_core sinen_gpu
                                             sinen_graphics)
 endif()
-if(TARGET sinen_gui)
-  target_link_libraries(sinen_gui PUBLIC sinen_core sinen_math sinen_graphics
-                                        sinen_platform)
-endif()
 if(TARGET sinen_script)
   target_link_libraries(sinen_script PUBLIC sinen_core sinen_math sinen_platform
                                            sinen_audio sinen_gpu sinen_graphics
                                            sinen_compute sinen_physics
-                                           sinen_gui)
+                                           )
 endif()
 
 set(SINEN_PLATFORM_SOURCES)

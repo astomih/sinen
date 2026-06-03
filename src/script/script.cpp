@@ -395,7 +395,8 @@ function draw()
 		"NO DATA",
 		sn.TextStyle.new(font, sn.Color.new(1.0), 32),
 		sn.TextTransform.new(sn.Window.center(), 0.0, sn.Pivot.Center)
-	)
+  )
+end
 )";
 
 static bool startsWithUserScheme(StringView path) {

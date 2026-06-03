@@ -4,11 +4,14 @@ setlocal
 set "BUILD_DIR=%~dp0emscripten"
 set "BUILD_TYPE=Release"
 set "ASSET_DIR=%~1"
-set "ASSET_OPTIONS="
 set CURRENT_DIR=%~dp0
 
 if not "%ASSET_DIR%"=="" (
-  set "ASSET_OPTIONS=-DSINEN_EMSCRIPTEN_PRELOAD_DIR=%ASSET_DIR% -DSINEN_EMSCRIPTEN_PRELOAD_MOUNT=/"
+  if not exist "%ASSET_DIR%" (
+    echo Asset directory does not exist: %ASSET_DIR%
+    exit /b 1
+  )
+  echo Emscripten assets will be packed during build: %ASSET_DIR%
 )
 
 where emcmake >nul 2>nul
@@ -32,6 +35,7 @@ if not exist "%BUILD_DIR%" (
 
 @REM Slang on Emscripten is currently disabled due to some issues with the Slang compiler. It may be re-enabled in the future when those issues are resolved. 
 
+if "%ASSET_DIR%"=="" (
 emcmake cmake ^
 -S "%~dp0.." ^
 -B "%BUILD_DIR%" ^
@@ -39,10 +43,26 @@ emcmake cmake ^
 -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^
 -DCMAKE_EXECUTABLE_SUFFIX=.html ^
 -DBUILD_SHARED_LIBS=OFF ^
--DSINEN_MODULE_SHADER_COMPILER=OFF ^ 
+-DSINEN_MODULE_SHADER_COMPILER=OFF ^
 -DSINEN_EMSCRIPTEN_ASYNCIFY=ON ^
 -DSINEN_EMSCRIPTEN_ASSERTIONS=ON ^
 -DSINEN_EMSCRIPTEN_DEBUG_RUNTIME=OFF ^
 -DSINEN_EMSCRIPTEN_EXCEPTIONS=ON ^
-%ASSET_OPTIONS% ^
--DASSIMP_BUILD_ZLIB=ON ^
+-DASSIMP_BUILD_ZLIB=ON
+) else (
+emcmake cmake ^
+-S "%~dp0.." ^
+-B "%BUILD_DIR%" ^
+-G Ninja ^
+-DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^
+-DCMAKE_EXECUTABLE_SUFFIX=.html ^
+-DBUILD_SHARED_LIBS=OFF ^
+-DSINEN_MODULE_SHADER_COMPILER=OFF ^
+-DSINEN_EMSCRIPTEN_ASYNCIFY=ON ^
+-DSINEN_EMSCRIPTEN_ASSERTIONS=ON ^
+-DSINEN_EMSCRIPTEN_DEBUG_RUNTIME=OFF ^
+-DSINEN_EMSCRIPTEN_EXCEPTIONS=ON ^
+-DSINEN_EMSCRIPTEN_PRELOAD_DIR=%ASSET_DIR% ^
+-DSINEN_EMSCRIPTEN_PRELOAD_MOUNT=/ ^
+-DASSIMP_BUILD_ZLIB=ON
+)

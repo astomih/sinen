@@ -17,4 +17,4 @@ if not exist "%BUILD_DIR%\CMakeCache.txt" (
   exit /b 1
 )
 
-sudo cmake --build "%BUILD_DIR%" --parallel %NUMBER_OF_PROCESSORS%
+cmake --build "%BUILD_DIR%" --parallel %NUMBER_OF_PROCESSORS%

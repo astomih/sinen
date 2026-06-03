@@ -2,71 +2,26 @@
 Sinen is a creative coding framework for Luau/Slang
 <p align="center"><a href="https://astomih.github.io/sinen"><img src="https://raw.githubusercontent.com/astomih/sinen/main/docs/logo/logo_bg_white.png" width="480" alt="Sinen Logo"></a></p>  
 
-# Documents
-
-[![Documents](https://github.com/astomih/sinen/actions/workflows/documents.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/documents.yml)  
-[https://astomih.github.io/sinen](https://astomih.github.io/sinen)
-
-# Hello World in Sinen
+# Hello World
 
 ``` luau
 local sn = require("@sinen")
 local font: sn.Font = sn.Font.new()
-font:load(48)
+font:load(32)
 
 function draw()
-	sn.Graphics.drawText("Hello World!", font, sn.Vec2.new(0, 0), sn.Color.new(1.0), 32)
+	sn.Graphics.drawText(
+		"Hello World!",
+		sn.TextStyle.new(font, sn.Color.new(1.0), 32),
+		sn.TextTransform.new(sn.Window.center(), 0.0, sn.Pivot.Center)
+	)
 end
 
 ```
 
 ![Hello World](https://raw.githubusercontent.com/astomih/sinen/refs/heads/main/examples/screenshot/01.png)
 
-## How to run or asset place
+# Documents
 
-See examples directory.
-
-# How to build from source
-
-## Requirements
-
-- CMake 3.20 or later
-- C++23 compiler
-- Vulkan SDK(In MacOS, MoltenVK)
-
-## Build commands
-
-``` bash
-git clone https://github.com/astomih/sinen.git
-cd sinen
-git submodule update --init --recursive
-```
-
-### Windows
-
-#### Visual Studio 2026
-
-Run "build/generate_msvc2026-release.bat" and "build/build_msvc2026-release.bat"
-
-### Android
-
-Run "build/generate_android.bat", "build_android.bat" in build directory.  
-Then open the build/android directory in Android Studio, and build&run.
-
-### MacOS
-
-``` bash
-cmake -B build/macos -DEXTERNAL_ALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release
-cmake --build build/macos
-```
-
-### Linux
-
-``` bash
-cmake -B build/linux -DEXTERNAL_ALL_BUILD=ON -DCMAKE_BUILD_TYPE=Release
-cmake --build build/linux
-```
-
-# Lisence
-
-MIT Lisence
+[![Documents](https://github.com/astomih/sinen/actions/workflows/documents.yml/badge.svg)](https://github.com/astomih/sinen/actions/workflows/documents.yml)  
+[https://astomih.github.io/sinen](https://astomih.github.io/sinen)

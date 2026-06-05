@@ -1,1 +1,0 @@
-sinen_glob_module(sinen_compute compute)

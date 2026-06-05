@@ -1,2 +1,0 @@
-sinen_glob_module(sinen_physics physics)
-target_link_libraries(sinen_physics PUBLIC Jolt)

@@ -302,9 +302,114 @@ endfunction()
 
 set(SINEN_INTERNAL_MODULES)
 
-macro(sinen_add_enabled_module option directory target)
+function(sinen_add_core_module)
+  sinen_glob_module(sinen_core core)
+  target_sources(sinen_core PRIVATE ${SINEN_SOURCE_DIR}/libs/tlsf/tlsf.c)
+  target_include_directories(
+    sinen_core
+    PUBLIC ${SINEN_SOURCE_DIR}/libs/rapidjson/include
+           ${SINEN_SOURCE_DIR}/libs/tlsf)
+  target_link_libraries(sinen_core PUBLIC SDL3::SDL3)
+  if(SINEN_MODULE_PROFILER)
+    target_link_libraries(sinen_core PUBLIC Tracy::TracyClient)
+  endif()
+endfunction()
+
+function(sinen_add_math_module)
+  sinen_glob_module(sinen_math math)
+endfunction()
+
+function(sinen_add_platform_module)
+  sinen_glob_module(sinen_platform platform)
+  target_sources(sinen_platform PRIVATE
+                 ${SINEN_SOURCE_DIR}/libs/tinyexr/deps/miniz/miniz.c)
+  target_include_directories(sinen_platform
+                             PUBLIC ${SINEN_SOURCE_DIR}/libs/tinyexr/deps/miniz)
+  target_link_libraries(sinen_platform PUBLIC SDL3::SDL3)
+endfunction()
+
+function(sinen_add_audio_module)
+  sinen_glob_module(sinen_audio audio)
+  target_include_directories(sinen_audio PUBLIC ${SINEN_SOURCE_DIR}/libs/miniaudio)
+  target_link_libraries(sinen_audio PUBLIC SDL3::SDL3)
+endfunction()
+
+function(sinen_add_gpu_module)
+  file(GLOB_RECURSE SINEN_GPU_SOURCES CONFIGURE_DEPENDS
+       ${SINEN_SOURCE_DIR}/src/gpu/*.cpp)
+  file(GLOB_RECURSE SINEN_GPU_HEADERS CONFIGURE_DEPENDS
+       ${SINEN_SOURCE_DIR}/src/gpu/*.hpp ${SINEN_SOURCE_DIR}/src/gpu/*.inl)
+
+  if(NOT SINEN_ENABLE_WEBGPU)
+    list(FILTER SINEN_GPU_SOURCES EXCLUDE REGEX
+         ".*[\\\\/]src[\\\\/]gpu[\\\\/]webgpu[\\\\/].*\\.cpp$")
+    list(FILTER SINEN_GPU_HEADERS EXCLUDE REGEX
+         ".*[\\\\/]src[\\\\/]gpu[\\\\/]webgpu[\\\\/].*\\.(hpp|inl)$")
+  endif()
+
+  sinen_add_module(sinen_gpu ${SINEN_GPU_SOURCES} ${SINEN_GPU_HEADERS})
+  target_include_directories(
+    sinen_gpu
+    PUBLIC ${Vulkan_INCLUDE_DIR} ${SINEN_SOURCE_DIR}/libs/volk
+           ${SINEN_SOURCE_DIR}/libs/VulkanMemoryAllocator/include)
+  target_link_libraries(sinen_gpu PUBLIC SDL3::SDL3)
+
+  if(SINEN_ENABLE_WEBGPU)
+    target_link_libraries(sinen_gpu PUBLIC webgpu)
+    if(TARGET dawn::webgpu_dawn)
+      get_target_property(SINEN_DAWN_INCLUDE_DIRS dawn::webgpu_dawn
+                          INTERFACE_INCLUDE_DIRECTORIES)
+      if(SINEN_DAWN_INCLUDE_DIRS)
+        target_include_directories(sinen_gpu BEFORE
+                                   PUBLIC ${SINEN_DAWN_INCLUDE_DIRS})
+      endif()
+    endif()
+  endif()
+
+  if(WIN32)
+    target_link_libraries(sinen_gpu PUBLIC d3d12 dxgi dxguid)
+  endif()
+endfunction()
+
+function(sinen_add_shader_compiler_module)
+  sinen_glob_module(sinen_shader_compiler shader_compiler)
+  target_link_libraries(sinen_shader_compiler PUBLIC slang)
+endfunction()
+
+function(sinen_add_graphics_module)
+  sinen_glob_module(sinen_graphics graphics)
+  target_include_directories(
+    sinen_graphics
+    PUBLIC ${SINEN_SOURCE_DIR}/libs/stb ${SINEN_SOURCE_DIR}/libs/tinyexr
+           ${SINEN_SOURCE_DIR}/libs/tinyexr/deps/miniz)
+  target_link_libraries(sinen_graphics PUBLIC SDL3::SDL3 assimp meshoptimizer
+                                              ktx_read msdfgen-core)
+endfunction()
+
+function(sinen_add_compute_module)
+  sinen_glob_module(sinen_compute compute)
+endfunction()
+
+function(sinen_add_physics_module)
+  sinen_glob_module(sinen_physics physics)
+  target_link_libraries(sinen_physics PUBLIC Jolt)
+endfunction()
+
+function(sinen_add_script_module)
+  sinen_glob_module(sinen_script script)
+  target_include_directories(
+    sinen_script
+    PUBLIC ${SINEN_SOURCE_DIR}/src/script/include
+           ${SINEN_SOURCE_DIR}/libs/luau-debugger/debugger/include
+           ${SINEN_SOURCE_DIR}/libs/cppdap/include)
+  target_link_libraries(sinen_script PUBLIC Luau.VM Luau.Compiler Luau.Ast
+                                            Luau.Require cppdap Luau.Debugger
+                                            SDL3::SDL3)
+endfunction()
+
+macro(sinen_add_enabled_module option module target)
   if(${option})
-    add_subdirectory(${SINEN_SOURCE_DIR}/src/${directory})
+    cmake_language(CALL sinen_add_${module}_module)
     list(APPEND SINEN_INTERNAL_MODULES ${target})
   endif()
 endmacro()

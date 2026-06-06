@@ -9,7 +9,7 @@ local lines = {
 	"  build_sna.bat",
 	"",
 	"Run it from this directory:",
-	"  ..\\..\\..\\build\\msvc2026-debug\\sinen.exe archive_sample.sna",
+	"  ./sinen archive_sample.sna",
 	"",
 	"This launcher preview runs the unpacked sna/ payload.",
 }

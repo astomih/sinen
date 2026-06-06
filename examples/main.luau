@@ -2,12 +2,10 @@ local sn = require("@sinen")
 local G = require("./global")
 
 local categories = {
-	{ label = "Basics", dir = "basics" },
 	{ label = "Graphics", dir = "graphics" },
 	{ label = "Audio", dir = "audio" },
-	{ label = "Simulation", dir = "simulation" },
+	{ label = "Physics", dir = "physics" },
 	{ label = "Media", dir = "media" },
-	{ label = "Data", dir = "data" },
 	{ label = "GPU", dir = "gpu" },
 	{ label = "Gallery", dir = "gallery" },
 }

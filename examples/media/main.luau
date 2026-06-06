@@ -2,6 +2,7 @@ local sn = require("@sinen")
 local G = require("../global")
 
 local examples = {
+	{ label = "Archive", dir = "archive" },
 	{ label = "Video Encode", dir = "video_encode" },
 	{ label = "Video Decode", dir = "video_decode" },
 }

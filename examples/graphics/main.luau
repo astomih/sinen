@@ -2,6 +2,7 @@ local sn = require("@sinen")
 local G = require("../global")
 
 local examples = {
+	{ label = "Text", dir = "text" },
 	{ label = "Texture", dir = "texture" },
 	{ label = "Model", dir = "model" },
 	{ label = "Shader", dir = "shader" },
@@ -12,6 +13,7 @@ local examples = {
 	{ label = "IBL", dir = "ibl" },
 	{ label = "Shadow Map", dir = "shadow_map" },
 	{ label = "Procedural Model", dir = "procedural_model" },
+	{ label = "Animation", dir = "animation" },
 }
 
 local numExamples = #examples

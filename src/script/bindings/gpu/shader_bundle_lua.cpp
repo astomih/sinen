@@ -53,12 +53,7 @@ static int lShaderBundlePack(lua_State *L) {
     lua_pop(L, 1);
   }
 
-  auto bundle = ShaderBundle::pack(entries);
-  Buffer buffer = makeBuffer(bundle.size(), BufferType::Binary);
-  if (!bundle.empty()) {
-    std::memcpy(buffer.data(), bundle.data(), bundle.size());
-  }
-  udNewOwned<Buffer>(L, std::move(buffer));
+  udNewOwned<Buffer>(L, ShaderBundle::packBuffer(entries));
   return 1;
 }
 

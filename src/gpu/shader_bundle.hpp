@@ -38,6 +38,7 @@ public:
 
   static bool isBundle(StringView data);
   static Array<char> pack(const Array<PackEntry> &entries);
+  static Buffer packBuffer(const Array<PackEntry> &entries);
   static std::optional<Entry> select(StringView data, ShaderStage stage,
                                      ShaderFormat preferredFormat);
   static ShaderFormat preferredFormatFor(GPUBackendAPI backendAPI);

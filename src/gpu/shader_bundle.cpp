@@ -100,6 +100,15 @@ Array<char> ShaderBundle::pack(const Array<PackEntry> &entries) {
   return out;
 }
 
+Buffer ShaderBundle::packBuffer(const Array<PackEntry> &entries) {
+  auto bundle = pack(entries);
+  Buffer buffer = makeBuffer(bundle.size(), BufferType::Binary);
+  if (!bundle.empty()) {
+    std::memcpy(buffer.data(), bundle.data(), bundle.size());
+  }
+  return buffer;
+}
+
 std::optional<ShaderBundle::Entry>
 ShaderBundle::select(StringView data, ShaderStage stage,
                      ShaderFormat preferredFormat) {

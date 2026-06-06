@@ -1,15 +1,10 @@
 #include <script/luaapi.hpp>
-#include <cstring>
-#include <functional>
-#include <gpu/gpu_ray_tracing.hpp>
-#include <memory>
 #include <compute/compute.hpp>
 #include <compute/compute_buffer.hpp>
 #include <core/allocator/global_allocator.hpp>
 #include <core/buffer/buffer.hpp>
-#include <core/thread/load_context.hpp>
 #include <graphics/graphics.hpp>
-#include <gpu/shader.hpp>
+#include <gpu/raytracing.hpp>
 
 namespace sinen {
 namespace {
@@ -134,138 +129,6 @@ bool requireRayQuerySupport(lua_State *L, const char *functionName) {
   return false;
 }
 } // namespace
-
-class RaytracingAccelerationStructure {
-public:
-  static constexpr const char *metaTableName() {
-    return "sn.Raytracing.AccelerationStructure";
-  }
-
-  explicit RaytracingAccelerationStructure(
-      Ptr<gpu::AccelerationStructure> accelerationStructure = nullptr)
-      : accelerationStructure(std::move(accelerationStructure)) {}
-
-  Ptr<gpu::AccelerationStructure> getRaw() const {
-    return accelerationStructure;
-  }
-  UInt64 getDeviceAddress() const {
-    return accelerationStructure ? accelerationStructure->getDeviceAddress()
-                                 : 0;
-  }
-
-private:
-  Ptr<gpu::AccelerationStructure> accelerationStructure;
-};
-
-class RaytracingPipeline {
-public:
-  static constexpr const char *metaTableName() {
-    return "sn.Raytracing.Pipeline";
-  }
-
-  void addShader(const Shader &shader, const char *exportName) {
-    shaders.push_back({shader, exportName ? String(exportName) : String()});
-  }
-
-  void addHitGroup(const char *exportName, UInt32 closestHitShaderIndex,
-                   UInt32 anyHitShaderIndex, UInt32 intersectionShaderIndex) {
-    hitGroups.push_back({exportName ? String(exportName) : String(),
-                         closestHitShaderIndex, anyHitShaderIndex,
-                         intersectionShaderIndex});
-  }
-
-  void setMaxPayloadSize(UInt32 value) { maxPayloadSize = value; }
-  void setMaxAttributeSize(UInt32 value) { maxAttributeSize = value; }
-  void setMaxRecursionDepth(UInt32 value) { maxRecursionDepth = value; }
-  UInt32 getShaderGroupHandleSize() const {
-    return pipeline ? pipeline->getShaderGroupHandleSize() : 0;
-  }
-  Ptr<gpu::RayTracingPipeline> getRaw() const { return pipeline; }
-
-  void build() {
-    const TaskGroup group = LoadContext::current();
-    group.add();
-    const bool inSetup = (LoadContext::currentPtr() != nullptr);
-
-    auto buildOrRetry = std::make_shared<std::function<void()>>();
-    *buildOrRetry = [this, buildOrRetry, group]() {
-      if (pipeline) {
-        group.done();
-        return;
-      }
-
-      for (auto &entry : shaders) {
-        if (!entry.shader.getRaw()) {
-          Graphics::addPreDrawFunc(*buildOrRetry);
-          return;
-        }
-      }
-
-      auto allocator = GlobalAllocator::get();
-      gpu::RayTracingPipeline::CreateInfo info(allocator);
-      info.maxPayloadSize = maxPayloadSize;
-      info.maxAttributeSize = maxAttributeSize;
-      info.maxRecursionDepth = maxRecursionDepth;
-      for (auto &entry : shaders) {
-        gpu::RayTracingShader shaderInfo{};
-        shaderInfo.shader = entry.shader.getRaw();
-        shaderInfo.exportName =
-            entry.exportName.empty() ? nullptr : entry.exportName.c_str();
-        info.shaders.push_back(shaderInfo);
-      }
-      for (auto &entry : hitGroups) {
-        gpu::RayTracingHitGroup hitGroup{};
-        hitGroup.exportName =
-            entry.exportName.empty() ? nullptr : entry.exportName.c_str();
-        hitGroup.closestHitShaderIndex = entry.closestHitShaderIndex;
-        hitGroup.anyHitShaderIndex = entry.anyHitShaderIndex;
-        hitGroup.intersectionShaderIndex = entry.intersectionShaderIndex;
-        info.hitGroups.push_back(hitGroup);
-      }
-      pipeline = Graphics::getDevice()->createRayTracingPipeline(info);
-      group.done();
-    };
-
-    if (!inSetup) {
-      (*buildOrRetry)();
-      return;
-    }
-    Graphics::addPreDrawFunc(*buildOrRetry);
-  }
-
-  Buffer getShaderGroupHandles(UInt32 firstGroup, UInt32 groupCount) const {
-    if (!pipeline || groupCount == 0) {
-      return Buffer(BufferType::Binary, Ptr<void>(), 0);
-    }
-    const UInt32 handleSize = pipeline->getShaderGroupHandleSize();
-    Buffer out = makeBuffer(static_cast<size_t>(handleSize) * groupCount,
-                            BufferType::Binary);
-    if (!pipeline->getShaderGroupHandles(firstGroup, groupCount, out.data(),
-                                         out.size())) {
-      return Buffer(BufferType::Binary, Ptr<void>(), 0);
-    }
-    return out;
-  }
-
-private:
-  struct ShaderEntry {
-    Shader shader;
-    String exportName;
-  };
-  struct HitGroupEntry {
-    String exportName;
-    UInt32 closestHitShaderIndex = UINT32_MAX;
-    UInt32 anyHitShaderIndex = UINT32_MAX;
-    UInt32 intersectionShaderIndex = UINT32_MAX;
-  };
-
-  Array<ShaderEntry> shaders;
-  Array<HitGroupEntry> hitGroups;
-  Ptr<gpu::RayTracingPipeline> pipeline;
-  UInt32 maxPayloadSize = 32;
-  UInt32 maxAttributeSize = 8;
-  UInt32 maxRecursionDepth = 1;
-};
 
 static int lRaytracingIsSupported(lua_State *L) {
   lua_pushboolean(L, Graphics::getDevice()->supportsRayTracing());
@@ -413,7 +276,7 @@ static int lRaytracingPipelineIsReady(lua_State *L) {
   if (!requireRayTracingSupport(L, "Raytracing.Pipeline.isReady")) {
     return 0;
   }
-  lua_pushboolean(L, udPtr<RaytracingPipeline>(L, 1)->getRaw() != nullptr);
+  lua_pushboolean(L, udPtr<RaytracingPipeline>(L, 1)->isReady());
   return 1;
 }
 
@@ -503,39 +366,13 @@ static int lRaytracingCreateBottomLevel(lua_State *L) {
     lua_pop(L, 1);
   }
 
-  auto device = Graphics::getDevice();
-  const auto sizes =
-      device->getBottomLevelAccelerationStructureBuildSizes(geometries, flags);
-  gpu::AccelerationStructure::CreateInfo asInfo{};
-  asInfo.allocator = allocator;
-  asInfo.type = gpu::AccelerationStructure::Type::BottomLevel;
-  asInfo.size = sizes.accelerationStructureSize;
-  auto accelerationStructure = device->createAccelerationStructure(asInfo);
+  String error;
+  auto accelerationStructure =
+      createBottomLevelAccelerationStructure(geometries, flags, &error);
   if (!accelerationStructure) {
-    return luaLError2(
-        L, "Raytracing.createBottomLevel failed to create acceleration "
-           "structure");
+    return luaLError2(L, "%s", error.c_str());
   }
-  ComputeBuffer scratch(static_cast<UInt32>(sizes.buildScratchSize));
-
-  auto commandBuffer = device->acquireCommandBuffer({allocator});
-  if (!commandBuffer) {
-    return luaLError2(
-        L, "Raytracing.createBottomLevel failed to acquire command buffer");
-  }
-  auto pass = commandBuffer->beginRayTracingPass();
-  if (!pass) {
-    return luaLError2(
-        L, "Raytracing.createBottomLevel failed to begin ray tracing pass");
-  }
-  pass->buildBottomLevelAccelerationStructure(accelerationStructure, geometries,
-                                              scratch.getRaw(), 0, flags);
-  commandBuffer->endRayTracingPass(pass);
-  device->submitCommandBuffer(commandBuffer);
-  device->waitForGpuIdle();
-
-  udPushPtr<RaytracingAccelerationStructure>(
-      L, makePtr<RaytracingAccelerationStructure>(accelerationStructure));
+  udPushPtr<RaytracingAccelerationStructure>(L, accelerationStructure);
   return 1;
 }
 
@@ -577,47 +414,13 @@ static int lRaytracingCreateTopLevel(lua_State *L) {
     lua_pop(L, 1);
   }
 
-  Buffer instanceData = makeBuffer(
-      sizeof(gpu::RayTracingInstance) * instances.size(), BufferType::Binary);
-  if (!instances.empty()) {
-    std::memcpy(instanceData.data(), instances.data(), instanceData.size());
-  }
-  ComputeBuffer instanceBuffer(instanceData);
-
-  auto device = Graphics::getDevice();
-  const auto sizes = device->getTopLevelAccelerationStructureBuildSizes(
-      static_cast<UInt32>(instances.size()), flags);
-  gpu::AccelerationStructure::CreateInfo asInfo{};
-  asInfo.allocator = allocator;
-  asInfo.type = gpu::AccelerationStructure::Type::TopLevel;
-  asInfo.size = sizes.accelerationStructureSize;
-  auto accelerationStructure = device->createAccelerationStructure(asInfo);
+  String error;
+  auto accelerationStructure =
+      createTopLevelAccelerationStructure(instances, flags, &error);
   if (!accelerationStructure) {
-    return luaLError2(L,
-                      "Raytracing.createTopLevel failed to create acceleration "
-                      "structure");
+    return luaLError2(L, "%s", error.c_str());
   }
-  ComputeBuffer scratch(static_cast<UInt32>(sizes.buildScratchSize));
-
-  auto commandBuffer = device->acquireCommandBuffer({allocator});
-  if (!commandBuffer) {
-    return luaLError2(
-        L, "Raytracing.createTopLevel failed to acquire command buffer");
-  }
-  auto pass = commandBuffer->beginRayTracingPass();
-  if (!pass) {
-    return luaLError2(
-        L, "Raytracing.createTopLevel failed to begin ray tracing pass");
-  }
-  pass->buildTopLevelAccelerationStructure(
-      accelerationStructure, gpu::BufferBinding{instanceBuffer.getRaw(), 0},
-      static_cast<UInt32>(instances.size()), scratch.getRaw(), 0, flags);
-  commandBuffer->endRayTracingPass(pass);
-  device->submitCommandBuffer(commandBuffer);
-  device->waitForGpuIdle();
-
-  udPushPtr<RaytracingAccelerationStructure>(
-      L, makePtr<RaytracingAccelerationStructure>(accelerationStructure));
+  udPushPtr<RaytracingAccelerationStructure>(L, accelerationStructure);
   return 1;
 }
 
@@ -626,9 +429,6 @@ static int lRaytracingDispatch(lua_State *L) {
     return 0;
   }
   auto &pipeline = udPtr<RaytracingPipeline>(L, 1);
-  if (!pipeline->getRaw()) {
-    return luaLError2(L, "Raytracing.dispatch called with an unbuilt pipeline");
-  }
   luaL_checktype(L, 2, LUA_TTABLE);
   const int descIndex = 2;
 
@@ -637,82 +437,66 @@ static int lRaytracingDispatch(lua_State *L) {
   auto shaderTableRaw = shaderTable->getRaw();
   lua_pop(L, 1);
 
-  const UInt32 width = optFieldU32(L, descIndex, "width", 1);
-  const UInt32 height = optFieldU32(L, descIndex, "height", 1);
-  const UInt32 depth = optFieldU32(L, descIndex, "depth", 1);
+  RaytracingDispatchInfo info;
+  info.width = optFieldU32(L, descIndex, "width", 1);
+  info.height = optFieldU32(L, descIndex, "height", 1);
+  info.depth = optFieldU32(L, descIndex, "depth", 1);
   const UInt32 handleSize = pipeline->getShaderGroupHandleSize();
-  auto raygen =
+  info.rayGeneration =
       readRegion(L, descIndex, "rayGeneration", shaderTableRaw, handleSize, 0);
-  auto miss =
+  info.miss =
       readRegion(L, descIndex, "miss", shaderTableRaw, handleSize, handleSize);
-  auto hit = readRegion(L, descIndex, "hit", shaderTableRaw, handleSize,
+  info.hit = readRegion(L, descIndex, "hit", shaderTableRaw, handleSize,
                         handleSize * 2);
-  auto callable = readRegion(L, descIndex, "callable", shaderTableRaw, 0, 0);
-
-  auto allocator = GlobalAllocator::get();
-  auto device = Graphics::getDevice();
-  auto commandBuffer = device->acquireCommandBuffer({allocator});
-  if (!commandBuffer) {
-    return luaLError2(L,
-                      "Raytracing.dispatch failed to acquire command buffer");
-  }
+  info.callable =
+      readRegion(L, descIndex, "callable", shaderTableRaw, 0, 0);
 
   lua_getfield(L, descIndex, "uniforms");
   if (lua_istable(L, -1)) {
     const int uniformsIndex = lua_gettop(L);
     const size_t count = lua_objlen(L, uniformsIndex);
+    info.uniforms.reserve(count);
     for (size_t i = 1; i <= count; ++i) {
       lua_rawgeti(L, uniformsIndex, static_cast<lua_Integer>(i));
       auto &buffer = udValue<Buffer>(L, -1);
-      commandBuffer->pushComputeUniformData(static_cast<UInt32>(i - 1),
-                                            buffer.data(), buffer.size());
+      info.uniforms.push_back(buffer);
       lua_pop(L, 1);
     }
   }
   lua_pop(L, 1);
 
-  Array<Ptr<gpu::AccelerationStructure>> accelerationStructures(allocator);
   lua_getfield(L, descIndex, "accelerationStructures");
   if (lua_istable(L, -1)) {
     const int asIndex = lua_gettop(L);
     const size_t count = lua_objlen(L, asIndex);
-    accelerationStructures.reserve(count);
+    info.accelerationStructures.reserve(count);
     for (size_t i = 1; i <= count; ++i) {
       lua_rawgeti(L, asIndex, static_cast<lua_Integer>(i));
       auto &as = udPtr<RaytracingAccelerationStructure>(L, -1);
-      accelerationStructures.push_back(as->getRaw());
+      info.accelerationStructures.push_back(as->getRaw());
       lua_pop(L, 1);
     }
   }
   lua_pop(L, 1);
 
-  Array<gpu::StorageBufferBinding> storageBuffers(allocator);
   lua_getfield(L, descIndex, "storageBuffers");
   if (lua_istable(L, -1)) {
     const int storageIndex = lua_gettop(L);
     const size_t count = lua_objlen(L, storageIndex);
-    storageBuffers.resize(count);
+    info.storageBuffers.resize(count);
     for (size_t i = 1; i <= count; ++i) {
       lua_rawgeti(L, storageIndex, static_cast<lua_Integer>(i));
       auto &buffer = udPtr<ComputeBuffer>(L, -1);
-      storageBuffers[i - 1].buffer = buffer->getRaw();
+      info.storageBuffers[i - 1].buffer = buffer->getRaw();
       lua_pop(L, 1);
     }
   }
   lua_pop(L, 1);
 
-  auto pass = commandBuffer->beginRayTracingPass();
-  if (!pass) {
-    return luaLError2(L,
-                      "Raytracing.dispatch failed to begin ray tracing pass");
+  String error;
+  if (!dispatchRays(*pipeline, info, &error)) {
+    return luaLError2(L, "%s", error.c_str());
   }
-  pass->bindRayTracingPipeline(pipeline->getRaw());
-  pass->bindAccelerationStructures(0, accelerationStructures);
-  pass->bindStorageBuffers(0, storageBuffers);
-  pass->dispatchRays(raygen, miss, hit, callable, width, height, depth);
-  commandBuffer->endRayTracingPass(pass);
-  device->submitCommandBuffer(commandBuffer);
-  device->waitForGpuIdle();
   return 0;
 }
 

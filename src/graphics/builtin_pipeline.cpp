@@ -51,7 +51,14 @@ bool BuiltinPipeline::initialize() {
 
   return true;
 }
-void BuiltinPipeline::shutdown() {}
+void BuiltinPipeline::shutdown() {
+  default2D = GraphicsPipeline();
+  font2D = GraphicsPipeline();
+  rect2D = GraphicsPipeline();
+  default3D = GraphicsPipeline();
+  instanced3D = GraphicsPipeline();
+  cubemap = GraphicsPipeline();
+}
 GraphicsPipeline BuiltinPipeline::getDefault3D() { return default3D; }
 GraphicsPipeline BuiltinPipeline::getInstanced3D() { return instanced3D; }
 GraphicsPipeline BuiltinPipeline::getDefault2D() { return default2D; }

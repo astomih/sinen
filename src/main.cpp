@@ -112,6 +112,32 @@ static void freeCustom(void *mem) {
   GlobalAllocator::get()->deallocate(static_cast<void *>(m), *m);
 }
 
+static bool reloadSceneAfterGraphicsSwitch(bool switched) {
+  Script::clearRequireCache();
+  Script::runScene();
+  Script::doneReload();
+  return switched;
+}
+
+static bool switchGraphicsBackend(GPUBackendAPI api) {
+  if (api == Graphics::getBackendAPI()) {
+    return true;
+  }
+  const bool switched = Graphics::switchBackend(api);
+  if (!Graphics::getDevice()) {
+    return false;
+  }
+  return reloadSceneAfterGraphicsSwitch(switched);
+}
+
+static bool switchToNextGraphicsBackend() {
+  const bool switched = Graphics::switchToNextBackend();
+  if (!Graphics::getDevice()) {
+    return false;
+  }
+  return reloadSceneAfterGraphicsSwitch(switched);
+}
+
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
   ZoneScopedN("SDL_AppInit");
   std::pmr::set_default_resource(GlobalAllocator::get());
@@ -197,10 +223,23 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     Script::runScene();
     Script::doneReload();
   }
+  if (Keyboard::isPressed(Scancode::F8)) {
+    Graphics::requestNextBackendSwitch();
+  }
   if (Keyboard::isPressed(Scancode::F11)) {
     static bool fullscreen = false;
     fullscreen = !fullscreen;
     Window::setFullscreen(fullscreen);
+  }
+  if (Graphics::consumeRequestedNextBackendSwitch()) {
+    if (!switchToNextGraphicsBackend()) {
+      Log::error("Failed to switch to the next GPU backend");
+    }
+  }
+  if (auto requestedBackend = Graphics::consumeRequestedBackendSwitch()) {
+    if (!switchGraphicsBackend(*requestedBackend)) {
+      Log::error("Failed to switch requested GPU backend");
+    }
   }
   Window::prepareFrame();
   Input::prepareForUpdate();

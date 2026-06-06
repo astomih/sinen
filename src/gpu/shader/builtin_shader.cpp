@@ -65,7 +65,15 @@ bool BuiltinShader::initialize() {
 
   return true;
 }
-void BuiltinShader::shutdown() {}
+void BuiltinShader::shutdown() {
+  defaultVS = Shader();
+  defaultInstancedVS = Shader();
+  defaultFS = Shader();
+  fontFS = Shader();
+  rectFS = Shader();
+  cubemapVS = Shader();
+  cubemapFS = Shader();
+}
 
 Shader BuiltinShader::getDefaultVS() { return defaultVS; }
 Shader BuiltinShader::getDefaultInstancedVS() { return defaultInstancedVS; }

@@ -3,11 +3,13 @@
 // std
 #include <functional>
 #include <list>
+#include <optional>
 // internal
 #include "graphics_pipeline.hpp"
 #include <core/allocator/pool_allocator.hpp>
 #include <core/data/ptr.hpp>
 #include <core/data/string.hpp>
+#include <gpu/gpu_backend_api.hpp>
 #include <graphics/camera/camera2d.hpp>
 #include <graphics/camera/camera3d.hpp>
 #include <graphics/font/font.hpp>
@@ -29,6 +31,16 @@ class Graphics {
 public:
   static bool initialize();
   static void shutdown();
+  static bool switchBackend(GPUBackendAPI api);
+  static bool switchToNextBackend();
+  static void requestBackendSwitch(GPUBackendAPI api);
+  static void requestNextBackendSwitch();
+  static bool consumeRequestedNextBackendSwitch();
+  static std::optional<GPUBackendAPI> consumeRequestedBackendSwitch();
+  static GPUBackendAPI getBackendAPI();
+  static String getBackendName();
+  static String getBackendName(GPUBackendAPI api);
+  static bool parseBackendName(StringView name, GPUBackendAPI &api);
   static void render();
   static void begin2D();
   static void begin2D(const Camera2D &camera);

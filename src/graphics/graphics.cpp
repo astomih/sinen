@@ -12,10 +12,11 @@
 #include <platform/window/window.hpp>
 #include <script/script.hpp>
 
-
 #include <SDL3/SDL.h>
 
 #include <algorithm>
+#include <cstring>
+#include <optional>
 #include <vector>
 
 namespace sinen {
@@ -32,6 +33,9 @@ static std::list<std::function<void()>> preDrawFuncs;
 static std::list<std::function<void()>> postDrawFuncs;
 static Ptr<gpu::Backend> backend;
 static Ptr<gpu::Device> device;
+static GPUBackendAPI currentBackendAPI = GPUBackendAPI::SDLGPU;
+static std::optional<GPUBackendAPI> requestedBackendSwitch;
+static bool requestedNextBackendSwitch = false;
 static Ptr<gpu::Texture> depthTexture;
 static Ptr<gpu::Sampler> sampler;
 static Ptr<gpu::Sampler> fontSampler;
@@ -61,6 +65,10 @@ static void beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp);
 static Vec2 validRenderSize();
 static Ptr<gpu::Texture> createDepthTexture(const Vec2 &size);
 static Vec2 renderTargetSize(const Ptr<gpu::Texture> &texture);
+static bool initializeBackend(GPUBackendAPI api);
+static void releaseBackendResources();
+static Array<GPUBackendAPI> availableBackendAPIs();
+static GPUBackendAPI nextBackendAPI(GPUBackendAPI api);
 
 static GPUBackendAPI selectBackendAPI() {
 #ifdef SINEN_PLATFORM_EMSCRIPTEN
@@ -116,8 +124,10 @@ static void setFullWindowViewport(const Ptr<gpu::RenderPass> &renderPass) {
   renderPass->setViewport(viewport);
   renderPass->setScissor(rect.x, rect.y, rect.width, rect.height);
 }
-bool Graphics::initialize() {
-  backend = gpu::RHI::createBackend(GlobalAllocator::get(), selectBackendAPI());
+bool Graphics::initialize() { return initializeBackend(selectBackendAPI()); }
+
+static bool initializeBackend(GPUBackendAPI api) {
+  backend = gpu::RHI::createBackend(GlobalAllocator::get(), api);
   if (!backend)
     return false;
   gpu::Device::CreateInfo info{};
@@ -131,6 +141,7 @@ bool Graphics::initialize() {
 
   auto *window = Window::getSdlWindow();
   device->claimWindow(window);
+  currentBackendAPI = device->getBackendAPI();
   BuiltinShader::initialize();
   BuiltinPipeline::initialize();
 
@@ -189,8 +200,176 @@ bool Graphics::initialize() {
 }
 
 void Graphics::shutdown() {
+  releaseBackendResources();
+  postDrawFuncs.clear();
+}
+
+static void releaseBackendResources() {
+  if (device) {
+    device->waitForGpuIdle();
+  }
+
+  preDrawFuncs.clear();
+  requestedBackendSwitch = std::nullopt;
+  requestedNextBackendSwitch = false;
+  currentPipeline = std::nullopt;
+  customPipeline = std::nullopt;
+  currentTextureBindings.clear();
+  currentAccelerationStructureBindings.clear();
+  currentColorTargets.clear();
+  colorTargets.clear();
+  currentRenderPass = nullptr;
+  currentCommandBuffer.reset();
+  mainCommandBuffer.reset();
+  depthTexture.reset();
+  sampler.reset();
+  fontSampler.reset();
+  box = Model();
+  sprite = Model();
+  BuiltinPipeline::shutdown();
+  BuiltinShader::shutdown();
   device.reset();
   backend.reset();
+  isFrameStarted = true;
+  isPrevDepthEnabled = true;
+  isChangedRenderTarget = false;
+  drawCallCountPerFrame = 0;
+}
+
+bool Graphics::switchBackend(GPUBackendAPI api) {
+  if (device && device->getBackendAPI() == api) {
+    return true;
+  }
+
+  const std::optional<GPUBackendAPI> previous =
+      device ? std::optional<GPUBackendAPI>(device->getBackendAPI())
+             : std::nullopt;
+  releaseBackendResources();
+  if (initializeBackend(api)) {
+    Log::info("Switched GPU backend to {}", getBackendName().c_str());
+    return true;
+  }
+
+  Log::error("Failed to switch GPU backend to {}", getBackendName(api).c_str());
+  if (previous && initializeBackend(*previous)) {
+    Log::info("Restored GPU backend {}", getBackendName().c_str());
+  }
+  return false;
+}
+
+bool Graphics::switchToNextBackend() {
+  const auto backends = availableBackendAPIs();
+  if (backends.size() <= 1) {
+    return false;
+  }
+
+  GPUBackendAPI candidate = nextBackendAPI(getBackendAPI());
+  for (Size i = 0; i < backends.size() - 1; ++i) {
+    if (switchBackend(candidate)) {
+      return true;
+    }
+    candidate = nextBackendAPI(candidate);
+  }
+  return false;
+}
+
+void Graphics::requestBackendSwitch(GPUBackendAPI api) {
+  requestedBackendSwitch = api;
+}
+
+void Graphics::requestNextBackendSwitch() { requestedNextBackendSwitch = true; }
+
+bool Graphics::consumeRequestedNextBackendSwitch() {
+  const bool request = requestedNextBackendSwitch;
+  requestedNextBackendSwitch = false;
+  return request;
+}
+
+std::optional<GPUBackendAPI> Graphics::consumeRequestedBackendSwitch() {
+  auto request = requestedBackendSwitch;
+  requestedBackendSwitch = std::nullopt;
+  return request;
+}
+
+GPUBackendAPI Graphics::getBackendAPI() {
+  if (device) {
+    return device->getBackendAPI();
+  }
+  return currentBackendAPI;
+}
+
+String Graphics::getBackendName() { return getBackendName(getBackendAPI()); }
+
+String Graphics::getBackendName(GPUBackendAPI api) {
+  switch (api) {
+  case GPUBackendAPI::Vulkan:
+    return "vulkan";
+#ifdef SINEN_PLATFORM_WINDOWS
+  case GPUBackendAPI::D3D12:
+    return "d3d12";
+#endif
+  case GPUBackendAPI::WebGPU:
+    return "webgpu";
+  case GPUBackendAPI::SDLGPU:
+    return "sdlgpu";
+  }
+  return "unknown";
+}
+
+bool Graphics::parseBackendName(StringView name, GPUBackendAPI &api) {
+#ifdef SINEN_PLATFORM_WINDOWS
+  if (name == "d3d12" || name == "direct3d12") {
+    api = GPUBackendAPI::D3D12;
+    return true;
+  }
+#endif
+  if (name == "vulkan") {
+    api = GPUBackendAPI::Vulkan;
+    return true;
+  }
+#ifdef SINEN_ENABLE_WEBGPU
+  if (name == "webgpu" || name == "wgpu" || name == "dawn") {
+    api = GPUBackendAPI::WebGPU;
+    return true;
+  }
+#endif
+  if (name == "sdlgpu" || name == "sdl") {
+    api = GPUBackendAPI::SDLGPU;
+    return true;
+  }
+  return false;
+}
+
+static Array<GPUBackendAPI> availableBackendAPIs() {
+  Array<GPUBackendAPI> apis;
+#ifdef SINEN_PLATFORM_EMSCRIPTEN
+#ifdef SINEN_ENABLE_WEBGPU
+  apis.push_back(GPUBackendAPI::WebGPU);
+#endif
+#else
+#ifdef SINEN_PLATFORM_WINDOWS
+  apis.push_back(GPUBackendAPI::D3D12);
+#endif
+  apis.push_back(GPUBackendAPI::Vulkan);
+#ifdef SINEN_ENABLE_WEBGPU
+  apis.push_back(GPUBackendAPI::WebGPU);
+#endif
+  apis.push_back(GPUBackendAPI::SDLGPU);
+#endif
+  return apis;
+}
+
+static GPUBackendAPI nextBackendAPI(GPUBackendAPI api) {
+  const auto apis = availableBackendAPIs();
+  if (apis.empty()) {
+    return api;
+  }
+  for (Size i = 0; i < apis.size(); ++i) {
+    if (apis[i] == api) {
+      return apis[(i + 1) % apis.size()];
+    }
+  }
+  return apis.front();
 }
 
 void Graphics::render() {

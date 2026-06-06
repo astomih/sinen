@@ -701,6 +701,15 @@ void Script::drawScene() {
 
 bool Script::hasToReload() { return reload; }
 void Script::doneReload() { reload = false; }
+void Script::clearRequireCache() {
+#ifndef SINEN_NO_USE_SCRIPT
+  if (!gLua) {
+    return;
+  }
+  luarequire_clearcache(gLua);
+  lua_settop(gLua, 0);
+#endif
+}
 void Script::setSceneName(StringView name) {
   sceneName = name;
   reload = true;

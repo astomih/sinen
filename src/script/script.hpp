@@ -15,6 +15,7 @@ public:
 
   static bool hasToReload();
   static void doneReload();
+  static void clearRequireCache();
 
   static void setSceneName(StringView name);
   static String getSceneName();

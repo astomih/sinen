@@ -12,7 +12,18 @@
 #include <platform/window/window.hpp>
 #include <script/luaapi.hpp>
 
+#include <cctype>
+
 namespace sinen {
+static String normalizedBackendName(const char *name) {
+  String normalized = name ? name : "";
+  for (auto &ch : normalized) {
+    ch = static_cast<char>(
+        std::tolower(static_cast<unsigned char>(ch)));
+  }
+  return normalized;
+}
+
 static int lGraphicsDrawRect(lua_State *L) {
   auto &rect = udValue<Rect>(L, 1);
   auto &color = udValue<Color>(L, 2);
@@ -143,6 +154,25 @@ static int lGraphicsReadbackTexture(lua_State *L) {
   lua_pushboolean(L, Graphics::readbackTexture(*rt, out));
   return 1;
 }
+static int lGraphicsGetBackendName(lua_State *L) {
+  const auto name = Graphics::getBackendName();
+  lua_pushstring(L, name.c_str());
+  return 1;
+}
+static int lGraphicsSwitchBackend(lua_State *L) {
+  GPUBackendAPI api{};
+  const auto name = normalizedBackendName(luaL_checkstring(L, 1));
+  if (!Graphics::parseBackendName(name, api)) {
+    return luaLError2(L, "Unknown GPU backend: %s", name.c_str());
+  }
+  Graphics::requestBackendSwitch(api);
+  return 0;
+}
+static int lGraphicsSwitchToNextBackend(lua_State *L) {
+  (void)L;
+  Graphics::requestNextBackendSwitch();
+  return 0;
+}
 void registerGraphics(lua_State *L) {
   pushSnNamed(L, "Graphics");
   luaPushcfunction2(L, lGraphicsDrawRect);
@@ -185,6 +215,12 @@ void registerGraphics(lua_State *L) {
   lua_setfield(L, -2, "endRenderTarget");
   luaPushcfunction2(L, lGraphicsReadbackTexture);
   lua_setfield(L, -2, "readbackTexture");
+  luaPushcfunction2(L, lGraphicsGetBackendName);
+  lua_setfield(L, -2, "getBackendName");
+  luaPushcfunction2(L, lGraphicsSwitchBackend);
+  lua_setfield(L, -2, "switchBackend");
+  luaPushcfunction2(L, lGraphicsSwitchToNextBackend);
+  lua_setfield(L, -2, "switchToNextBackend");
   lua_pop(L, 1);
 }
 

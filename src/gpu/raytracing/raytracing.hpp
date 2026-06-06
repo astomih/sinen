@@ -1,8 +1,8 @@
 #ifndef SINEN_RAYTRACING_HPP
 #define SINEN_RAYTRACING_HPP
 
-#include "gpu_ray_tracing.hpp"
-#include "shader.hpp"
+#include "gpu/gpu_ray_tracing.hpp"
+#include "gpu/shader/shader.hpp"
 
 #include <core/buffer/buffer.hpp>
 #include <core/data/string.hpp>
@@ -83,8 +83,7 @@ Ptr<RaytracingAccelerationStructure> createTopLevelAccelerationStructure(
     const Array<gpu::RayTracingInstance> &instances,
     gpu::RayTracingBuildFlags flags, String *error = nullptr);
 bool dispatchRays(const RaytracingPipeline &pipeline,
-                  const RaytracingDispatchInfo &info,
-                  String *error = nullptr);
+                  const RaytracingDispatchInfo &info, String *error = nullptr);
 } // namespace sinen
 
 #endif

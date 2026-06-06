@@ -1,7 +1,7 @@
 #include <core/allocator/global_allocator.hpp>
 #include <core/profiler.hpp>
-#include <gpu/builtin_shader.hpp>
 #include <gpu/gpu.hpp>
+#include <gpu/shader/builtin_shader.hpp>
 #include <graphics/builtin_pipeline.hpp>
 #include <graphics/font/default/mplus-1p-medium.ttf.hpp>
 #include <graphics/graphics.hpp>
@@ -11,7 +11,6 @@
 #include <platform/io/asset_reader.hpp>
 #include <platform/window/window.hpp>
 #include <script/luaapi.hpp>
-
 
 namespace sinen {
 static int lGraphicsDrawRect(lua_State *L) {

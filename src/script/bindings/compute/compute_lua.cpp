@@ -1,10 +1,11 @@
-#include <script/luaapi.hpp>
-#include <compute/compute_buffer.hpp>
-#include <compute/compute_pipeline.hpp>
-#include <compute/compute.hpp>
 #include <core/allocator/global_allocator.hpp>
 #include <core/logger/log.hpp>
+#include <gpu/compute/compute.hpp>
+#include <gpu/compute/compute_buffer.hpp>
+#include <gpu/compute/compute_pipeline.hpp>
 #include <graphics/graphics.hpp>
+#include <script/luaapi.hpp>
+
 
 namespace sinen {
 static int lComputeSetComputePipeline(lua_State *L) {

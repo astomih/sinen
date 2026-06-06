@@ -3,14 +3,15 @@
 #include <core/allocator/global_allocator.hpp>
 #include <core/logger/log.hpp>
 #include <core/profiler.hpp>
-#include <gpu/builtin_shader.hpp>
 #include <gpu/gpu.hpp>
+#include <gpu/shader/builtin_shader.hpp>
 #include <graphics/builtin_pipeline.hpp>
 #include <graphics/gui/gui.hpp>
 #include <graphics/texture/render_texture.hpp>
 #include <math/transform/transform.hpp>
 #include <platform/window/window.hpp>
 #include <script/script.hpp>
+
 
 #include <SDL3/SDL.h>
 

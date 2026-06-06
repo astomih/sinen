@@ -31,7 +31,6 @@ option(SINEN_MODULE_AUDIO "Build the Audio module" ON)
 option(SINEN_MODULE_GPU "Build the GPU module" ON)
 option(SINEN_MODULE_SHADER_COMPILER "Build the ShaderCompiler module" ON)
 option(SINEN_MODULE_GRAPHICS "Build the Graphics module" ON)
-option(SINEN_MODULE_COMPUTE "Build the Compute module" ON)
 option(SINEN_MODULE_PHYSICS "Build the Physics module" ON)
 option(SINEN_MODULE_SCRIPT "Build the Script module" ON)
 option(SINEN_MODULE_PROFILER "Build the profiler integration module" ON)
@@ -65,9 +64,6 @@ sinen_require_module(GRAPHICS CORE)
 sinen_require_module(GRAPHICS MATH)
 sinen_require_module(GRAPHICS GPU)
 sinen_require_module(GRAPHICS PLATFORM)
-sinen_require_module(COMPUTE CORE)
-sinen_require_module(COMPUTE GPU)
-sinen_require_module(COMPUTE GRAPHICS)
 sinen_require_module(PHYSICS CORE)
 sinen_require_module(PHYSICS MATH)
 sinen_require_module(SCRIPT CORE)
@@ -76,7 +72,6 @@ sinen_require_module(SCRIPT PLATFORM)
 sinen_require_module(SCRIPT AUDIO)
 sinen_require_module(SCRIPT GPU)
 sinen_require_module(SCRIPT GRAPHICS)
-sinen_require_module(SCRIPT COMPUTE)
 sinen_require_module(SCRIPT PHYSICS)
 if(SINEN_MODULE_PROFILER AND NOT SINEN_MODULE_CORE)
   message(FATAL_ERROR "SINEN_MODULE_PROFILER=ON requires SINEN_MODULE_CORE=ON")
@@ -207,7 +202,7 @@ target_compile_definitions(
   INTERFACE $<$<CONFIG:Debug>:SINEN_DEBUG_WORKING_DIRECTORY>)
 
 foreach(SINEN_MODULE_NAME CORE MATH PLATFORM AUDIO GPU SHADER_COMPILER GRAPHICS
-                          COMPUTE PHYSICS SCRIPT PROFILER)
+                          PHYSICS SCRIPT PROFILER)
   if(SINEN_MODULE_${SINEN_MODULE_NAME})
     target_compile_definitions(
       sinen_common INTERFACE SINEN_MODULE_${SINEN_MODULE_NAME})
@@ -386,10 +381,6 @@ function(sinen_add_graphics_module)
                                               ktx_read msdfgen-core)
 endfunction()
 
-function(sinen_add_compute_module)
-  sinen_glob_module(sinen_compute compute)
-endfunction()
-
 function(sinen_add_physics_module)
   sinen_glob_module(sinen_physics physics)
   target_link_libraries(sinen_physics PUBLIC Jolt)
@@ -422,7 +413,6 @@ sinen_add_enabled_module(SINEN_MODULE_GPU gpu sinen_gpu)
 sinen_add_enabled_module(SINEN_MODULE_SHADER_COMPILER shader_compiler
                          sinen_shader_compiler)
 sinen_add_enabled_module(SINEN_MODULE_GRAPHICS graphics sinen_graphics)
-sinen_add_enabled_module(SINEN_MODULE_COMPUTE compute sinen_compute)
 sinen_add_enabled_module(SINEN_MODULE_PHYSICS physics sinen_physics)
 sinen_add_enabled_module(SINEN_MODULE_SCRIPT script sinen_script)
 
@@ -452,14 +442,10 @@ if(TARGET sinen_shader_compiler)
   target_link_libraries(sinen_shader_compiler PUBLIC sinen_core sinen_gpu
                                                      sinen_platform)
 endif()
-if(TARGET sinen_compute)
-  target_link_libraries(sinen_compute PUBLIC sinen_core sinen_gpu
-                                            sinen_graphics)
-endif()
 if(TARGET sinen_script)
   target_link_libraries(sinen_script PUBLIC sinen_core sinen_math sinen_platform
                                            sinen_audio sinen_gpu sinen_graphics
-                                           sinen_compute sinen_physics
+                                           sinen_physics
                                            )
 endif()
 

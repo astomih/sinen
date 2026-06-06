@@ -1,5 +1,6 @@
+#include <gpu/shader/shader_format.hpp>
 #include <script/luaapi.hpp>
-#include <gpu/shader_format.hpp>
+
 
 namespace sinen {
 void registerShaderFormat(lua_State *L) {

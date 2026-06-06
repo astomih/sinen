@@ -1,5 +1,6 @@
+#include <gpu/shader/shader_stage.hpp>
 #include <script/luaapi.hpp>
-#include <gpu/shader_stage.hpp>
+
 
 namespace sinen {
 void registerShaderStage(lua_State *L) {

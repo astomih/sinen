@@ -1,7 +1,8 @@
-#include <script/luaapi.hpp>
-#include <compute/compute_buffer.hpp>
 #include <core/allocator/global_allocator.hpp>
+#include <gpu/compute/compute_buffer.hpp>
 #include <graphics/graphics.hpp>
+#include <script/luaapi.hpp>
+
 
 namespace sinen {
 static int lComputeBufferNew(lua_State *L) {

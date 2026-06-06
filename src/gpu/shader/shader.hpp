@@ -1,11 +1,12 @@
 #ifndef SINEN_SHADER_HPP
 #define SINEN_SHADER_HPP
-#include <gpu/shader_stage.hpp>
 #include <core/buffer/buffer.hpp>
 #include <core/data/array.hpp>
 #include <core/data/ptr.hpp>
 #include <core/data/string.hpp>
 #include <gpu/gpu.hpp>
+#include <gpu/shader/shader_stage.hpp>
+
 
 #include <cstdint>
 #include <future>

@@ -1,6 +1,7 @@
-#include <script/luaapi.hpp>
+#include <gpu/shader/builtin_shader.hpp>
 #include <graphics/builtin_pipeline.hpp>
-#include <gpu/builtin_shader.hpp>
+#include <script/luaapi.hpp>
+
 
 namespace sinen {
 static int lBuiltinPipelineGetDefault3D(lua_State *L) {

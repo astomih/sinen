@@ -2,7 +2,7 @@
 #define SINEN_COMPUTE_PIPELINE_HPP
 
 #include <gpu/gpu_compute_pipeline.hpp>
-#include <gpu/shader.hpp>
+#include <gpu/shader/shader.hpp>
 
 namespace sinen {
 class ComputePipeline {

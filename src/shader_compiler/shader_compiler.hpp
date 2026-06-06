@@ -1,9 +1,10 @@
 #ifndef SINEN_SHADER_COMPILER_HPP
 #define SINEN_SHADER_COMPILER_HPP
-#include <gpu/shader_format.hpp>
-#include <gpu/shader_stage.hpp>
 #include <core/data/array.hpp>
 #include <core/data/string.hpp>
+#include <gpu/shader/shader_format.hpp>
+#include <gpu/shader/shader_stage.hpp>
+
 
 namespace sinen {
 class ShaderCompiler {

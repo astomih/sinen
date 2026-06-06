@@ -8,14 +8,14 @@
 #include <gpu/gpu.hpp>
 
 #ifdef SINEN_ENABLE_WEBGPU
-#include "webgpu/webgpu_backend.hpp"
+#include "backend/webgpu/webgpu_backend.hpp"
 #endif
 #ifndef SINEN_PLATFORM_EMSCRIPTEN
 #ifdef SINEN_PLATFORM_WINDOWS
-#include "d3d12/d3d12_backend.hpp"
+#include "backend/d3d12/d3d12_backend.hpp"
 #endif
-#include "sdlgpu/sdlgpu_backend.hpp"
-#include "vulkan/vulkan_backend.hpp"
+#include "backend/sdlgpu/sdlgpu_backend.hpp"
+#include "backend/vulkan/vulkan_backend.hpp"
 #endif
 
 #include <SDL3/SDL.h>

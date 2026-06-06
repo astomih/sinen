@@ -1,6 +1,7 @@
-#include <script/luaapi.hpp>
-#include <gpu/builtin_shader.hpp>
+#include <gpu/shader/builtin_shader.hpp>
 #include <graphics/graphics.hpp>
+#include <script/luaapi.hpp>
+
 
 namespace sinen {
 static int lBuiltinShaderGetDefaultVs(lua_State *L) {

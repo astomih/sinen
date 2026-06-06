@@ -1,10 +1,10 @@
-#include <script/luaapi.hpp>
-#include <compute/compute.hpp>
-#include <compute/compute_buffer.hpp>
 #include <core/allocator/global_allocator.hpp>
 #include <core/buffer/buffer.hpp>
+#include <gpu/compute/compute.hpp>
+#include <gpu/compute/compute_buffer.hpp>
+#include <gpu/raytracing/raytracing.hpp>
 #include <graphics/graphics.hpp>
-#include <gpu/raytracing.hpp>
+#include <script/luaapi.hpp>
 
 namespace sinen {
 namespace {
@@ -448,8 +448,7 @@ static int lRaytracingDispatch(lua_State *L) {
       readRegion(L, descIndex, "miss", shaderTableRaw, handleSize, handleSize);
   info.hit = readRegion(L, descIndex, "hit", shaderTableRaw, handleSize,
                         handleSize * 2);
-  info.callable =
-      readRegion(L, descIndex, "callable", shaderTableRaw, 0, 0);
+  info.callable = readRegion(L, descIndex, "callable", shaderTableRaw, 0, 0);
 
   lua_getfield(L, descIndex, "uniforms");
   if (lua_istable(L, -1)) {

@@ -1,5 +1,6 @@
+#include <gpu/shader/shader_bundle.hpp>
 #include <script/luaapi.hpp>
-#include <gpu/shader_bundle.hpp>
+
 
 namespace sinen {
 namespace {

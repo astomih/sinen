@@ -1,7 +1,7 @@
 #include <core/thread/future_poll.hpp>
 #include <core/thread/global_thread_pool.hpp>
 #include <core/thread/load_context.hpp>
-#include <gpu/shader.hpp>
+#include <gpu/shader/shader.hpp>
 #include <graphics/graphics.hpp>
 #include <platform/io/asset_reader.hpp>
 #include <script/luaapi.hpp>

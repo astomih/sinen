@@ -522,6 +522,7 @@ Ptr<gpu::Texture> createNativeTexture(void *pPixels,
     info.numLevels = 1;
     info.sampleCount = gpu::SampleCount::x1;
     info.type = gpu::TextureType::Texture2D;
+    info.debugName = "Texture 2D";
     texture = device->createTexture(info);
   }
   writeTexture(texture, pPixels, channels);
@@ -548,6 +549,7 @@ Ptr<gpu::Texture> createNativeTexture(const Array<TextureMipPixels> &mips,
   info.numLevels = static_cast<UInt32>(mips.size());
   info.sampleCount = gpu::SampleCount::x1;
   info.type = gpu::TextureType::Texture2D;
+  info.debugName = "Texture 2D mip chain";
   auto texture = device->createTexture(info);
   if (!texture) {
     return nullptr;

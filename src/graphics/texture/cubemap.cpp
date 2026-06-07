@@ -1,4 +1,5 @@
 #include <core/thread/global_thread_pool.hpp>
+#include <core/thread/future_poll.hpp>
 #include <core/thread/load_context.hpp>
 #include <graphics/graphics.hpp>
 #include <graphics/texture/texture.hpp>
@@ -692,6 +693,7 @@ createNativeCubemapTexture(const std::array<Array<float>, 6> &faces,
     info.numLevels = 1;
     info.sampleCount = gpu::SampleCount::x1;
     info.type = gpu::TextureType::Cube;
+    info.debugName = "Texture cubemap";
     texture = device->createTexture(info);
   }
   writeTexture(texture, faces);
@@ -716,6 +718,7 @@ Ptr<gpu::Texture> createNativeCubemapTexture(const Array<CubeMipFaces> &mips,
   info.numLevels = static_cast<UInt32>(mips.size());
   info.sampleCount = gpu::SampleCount::x1;
   info.type = gpu::TextureType::Cube;
+  info.debugName = "Texture cubemap mip chain";
   auto texture = device->createTexture(info);
   writeTexture(texture, mips);
   return texture;
@@ -735,6 +738,7 @@ Ptr<gpu::Texture> createNativeFloatTexture2D(const Array<float> &pixels,
   info.numLevels = 1;
   info.sampleCount = gpu::SampleCount::x1;
   info.type = gpu::TextureType::Texture2D;
+  info.debugName = "Texture BRDF LUT";
   auto texture = device->createTexture(info);
   writeFloatTexture2D(texture, pixels);
   return texture;
@@ -776,35 +780,26 @@ bool Texture::loadCubemap(StringView path) {
     state->ok = true;
   });
 
-  auto pollAndUpload = std::make_shared<std::function<void()>>();
-  *pollAndUpload = [this, pollAndUpload, state, group]() {
-    if (!state->future.valid()) {
-      this->loading = false;
-      this->async.reset();
-      group.done();
-      return;
-    }
-
-    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
-        std::future_status::ready) {
-      Graphics::addPreDrawFunc(*pollAndUpload);
-      return;
-    }
-
-    state->future.get();
-    if (state->ok) {
-      texture = createNativeCubemapTexture(
-          state->faces, gpu::TextureFormat::R32G32B32A32_FLOAT, state->faceSize,
-          state->faceSize);
-      this->pendingWidth = state->faceSize;
-      this->pendingHeight = state->faceSize;
-    }
-    this->loading = false;
-    this->async.reset();
-    assert(this->texture);
-    group.done();
-  };
-  Graphics::addPreDrawFunc(*pollAndUpload);
+  scheduleFuturePoll(
+      state, group, [](std::function<void()> f) {
+        Graphics::addPreDrawFunc(std::move(f));
+      },
+      [this, state] {
+        if (state->ok) {
+          texture = createNativeCubemapTexture(
+              state->faces, gpu::TextureFormat::R32G32B32A32_FLOAT,
+              state->faceSize, state->faceSize);
+          this->pendingWidth = state->faceSize;
+          this->pendingHeight = state->faceSize;
+        }
+        this->loading = false;
+        this->async.reset();
+        assert(this->texture);
+      },
+      [this] {
+        this->loading = false;
+        this->async.reset();
+      });
   return true;
 }
 
@@ -850,34 +845,25 @@ bool Texture::loadIrradianceCubemap(StringView path, uint32_t faceSize,
     state->ok = true;
   });
 
-  auto pollAndUpload = std::make_shared<std::function<void()>>();
-  *pollAndUpload = [this, pollAndUpload, state, group]() {
-    if (!state->future.valid()) {
-      this->loading = false;
-      this->async.reset();
-      group.done();
-      return;
-    }
-
-    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
-        std::future_status::ready) {
-      Graphics::addPreDrawFunc(*pollAndUpload);
-      return;
-    }
-
-    state->future.get();
-    if (state->ok) {
-      texture = createNativeCubemapTexture(
-          state->faces, gpu::TextureFormat::R32G32B32A32_FLOAT, state->faceSize,
-          state->faceSize);
-      this->pendingWidth = state->faceSize;
-      this->pendingHeight = state->faceSize;
-    }
-    this->loading = false;
-    this->async.reset();
-    group.done();
-  };
-  Graphics::addPreDrawFunc(*pollAndUpload);
+  scheduleFuturePoll(
+      state, group, [](std::function<void()> f) {
+        Graphics::addPreDrawFunc(std::move(f));
+      },
+      [this, state] {
+        if (state->ok) {
+          texture = createNativeCubemapTexture(
+              state->faces, gpu::TextureFormat::R32G32B32A32_FLOAT,
+              state->faceSize, state->faceSize);
+          this->pendingWidth = state->faceSize;
+          this->pendingHeight = state->faceSize;
+        }
+        this->loading = false;
+        this->async.reset();
+      },
+      [this] {
+        this->loading = false;
+        this->async.reset();
+      });
   return true;
 }
 
@@ -923,33 +909,24 @@ bool Texture::loadPrefilteredCubemap(StringView path, uint32_t faceSize,
         state->ok = true;
       });
 
-  auto pollAndUpload = std::make_shared<std::function<void()>>();
-  *pollAndUpload = [this, pollAndUpload, state, group]() {
-    if (!state->future.valid()) {
-      this->loading = false;
-      this->async.reset();
-      group.done();
-      return;
-    }
-
-    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
-        std::future_status::ready) {
-      Graphics::addPreDrawFunc(*pollAndUpload);
-      return;
-    }
-
-    state->future.get();
-    if (state->ok) {
-      texture = createNativeCubemapTexture(
-          state->mips, gpu::TextureFormat::R32G32B32A32_FLOAT);
-      this->pendingWidth = state->faceSize;
-      this->pendingHeight = state->faceSize;
-    }
-    this->loading = false;
-    this->async.reset();
-    group.done();
-  };
-  Graphics::addPreDrawFunc(*pollAndUpload);
+  scheduleFuturePoll(
+      state, group, [](std::function<void()> f) {
+        Graphics::addPreDrawFunc(std::move(f));
+      },
+      [this, state] {
+        if (state->ok) {
+          texture = createNativeCubemapTexture(
+              state->mips, gpu::TextureFormat::R32G32B32A32_FLOAT);
+          this->pendingWidth = state->faceSize;
+          this->pendingHeight = state->faceSize;
+        }
+        this->loading = false;
+        this->async.reset();
+      },
+      [this] {
+        this->loading = false;
+        this->async.reset();
+      });
   return true;
 }
 
@@ -981,33 +958,24 @@ bool Texture::loadBRDFLUT(uint32_t size, uint32_t sampleCount) {
     state->ok = true;
   });
 
-  auto pollAndUpload = std::make_shared<std::function<void()>>();
-  *pollAndUpload = [this, pollAndUpload, state, group]() {
-    if (!state->future.valid()) {
-      this->loading = false;
-      this->async.reset();
-      group.done();
-      return;
-    }
-
-    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
-        std::future_status::ready) {
-      Graphics::addPreDrawFunc(*pollAndUpload);
-      return;
-    }
-
-    state->future.get();
-    if (state->ok) {
-      texture =
-          createNativeFloatTexture2D(state->pixels, state->size, state->size);
-      this->pendingWidth = state->size;
-      this->pendingHeight = state->size;
-    }
-    this->loading = false;
-    this->async.reset();
-    group.done();
-  };
-  Graphics::addPreDrawFunc(*pollAndUpload);
+  scheduleFuturePoll(
+      state, group, [](std::function<void()> f) {
+        Graphics::addPreDrawFunc(std::move(f));
+      },
+      [this, state] {
+        if (state->ok) {
+          texture = createNativeFloatTexture2D(state->pixels, state->size,
+                                               state->size);
+          this->pendingWidth = state->size;
+          this->pendingHeight = state->size;
+        }
+        this->loading = false;
+        this->async.reset();
+      },
+      [this] {
+        this->loading = false;
+        this->async.reset();
+      });
   return true;
 }
 } // namespace sinen

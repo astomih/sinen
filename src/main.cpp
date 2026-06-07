@@ -113,29 +113,35 @@ static void freeCustom(void *mem) {
 }
 
 static bool reloadSceneAfterGraphicsSwitch(bool switched) {
-  Script::clearRequireCache();
   Script::runScene();
   Script::doneReload();
   return switched;
+}
+
+static bool restartSceneAfterGraphicsSwitch(bool switched) {
+  if (!Graphics::getDevice()) {
+    return false;
+  }
+  if (!Script::initialize()) {
+    Log::critical("Failed to reinitialize script after GPU backend switch");
+    return false;
+  }
+  return reloadSceneAfterGraphicsSwitch(switched);
 }
 
 static bool switchGraphicsBackend(GPUBackendAPI api) {
   if (api == Graphics::getBackendAPI()) {
     return true;
   }
+  Script::shutdown();
   const bool switched = Graphics::switchBackend(api);
-  if (!Graphics::getDevice()) {
-    return false;
-  }
-  return reloadSceneAfterGraphicsSwitch(switched);
+  return restartSceneAfterGraphicsSwitch(switched);
 }
 
 static bool switchToNextGraphicsBackend() {
+  Script::shutdown();
   const bool switched = Graphics::switchToNextBackend();
-  if (!Graphics::getDevice()) {
-    return false;
-  }
-  return reloadSceneAfterGraphicsSwitch(switched);
+  return restartSceneAfterGraphicsSwitch(switched);
 }
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {

@@ -367,6 +367,7 @@ void Script::shutdown() {
   if (!gLua) {
     return;
   }
+  debugger.release(gLua);
   if (gSetupRef != LUA_NOREF) {
     luaLUnref2(gLua, LUA_REGISTRYINDEX, gSetupRef);
     gSetupRef = LUA_NOREF;
@@ -382,6 +383,8 @@ void Script::shutdown() {
   lua_gc(gLua, LUA_GCCOLLECT, 0);
   lua_close(gLua);
   gLua = nullptr;
+  gScenePhase = ScriptScenePhase::Running;
+  gSetupTasks = TaskGroup();
 #endif // SINEN_NO_USE_SCRIPT
 }
 

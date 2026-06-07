@@ -60,6 +60,7 @@ public:
   acquireSwapchainTexture(Ptr<CommandBuffer> commandBuffer) = 0;
   virtual TextureFormat getSwapchainFormat() const = 0;
   virtual void waitForGpuIdle() = 0;
+  virtual void releaseResources() { waitForGpuIdle(); }
 
   virtual String getDriver() const = 0;
 

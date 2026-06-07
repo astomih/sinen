@@ -90,9 +90,10 @@ Sampler::Sampler(const CreateInfo &createInfo, Device &device,
     : gpu::Sampler(createInfo), device(device), sampler(sampler) {}
 
 Sampler::~Sampler() {
-  if (sampler != VK_NULL_HANDLE) {
+  if (sampler != VK_NULL_HANDLE && device.hasValidDevice()) {
     vkDestroySampler(device.getVkDevice(), sampler, nullptr);
   }
+  sampler = VK_NULL_HANDLE;
 }
 
 Shader::Shader(const CreateInfo &createInfo, Device &device,

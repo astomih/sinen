@@ -19,9 +19,11 @@ void RenderTexture::create(int width, int height) {
   info.numLevels = 1;
   info.sampleCount = gpu::SampleCount::x1;
   info.type = gpu::TextureType::Texture2D;
+  info.debugName = "RenderTexture color";
   texture = device->createTexture(info);
   info.format = gpu::TextureFormat::D32_FLOAT_S8_UINT;
   info.usage = gpu::TextureUsage::DepthStencilTarget;
+  info.debugName = "RenderTexture depth";
   depthStencil = device->createTexture(info);
 
   this->width = width;

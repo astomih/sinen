@@ -24,6 +24,9 @@ static Shader createBuiltinShader(const unsigned char *bundleData,
                                   unsigned int bundleSize, ShaderStage stage) {
   auto *allocator = GlobalAllocator::get();
   auto device = Graphics::getDevice();
+  if (!device) {
+    return Shader();
+  }
   const auto format = ShaderBundle::preferredFormatFor(device->getBackendAPI());
   auto entry = ShaderBundle::select(
       StringView(reinterpret_cast<const char *>(bundleData), bundleSize), stage,

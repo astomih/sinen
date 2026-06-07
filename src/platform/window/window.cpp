@@ -15,6 +15,7 @@ Vec2 windowSize = Vec2(1280.f, 720.f);
 String windowName;
 ::SDL_Window *pSdlWindow = nullptr;
 bool bResizedInFrame = false;
+bool bFullscreen = false;
 
 bool Window::initialize(StringView name) {
   windowName = name;
@@ -66,6 +67,30 @@ bool Window::initialize(StringView name) {
   return true;
 }
 
+bool Window::recreate() {
+  const String name = windowName;
+  if (pSdlWindow) {
+    int width = 0;
+    int height = 0;
+    SDL_GetWindowSize(pSdlWindow, &width, &height);
+    if (width > 0 && height > 0) {
+      windowSize.x = static_cast<float>(width);
+      windowSize.y = static_cast<float>(height);
+    }
+    SDL_DestroyWindow(pSdlWindow);
+    pSdlWindow = nullptr;
+  }
+
+  if (!Window::initialize(name)) {
+    return false;
+  }
+  if (bFullscreen) {
+    SDL_SetWindowFullscreen(pSdlWindow, true);
+  }
+  bResizedInFrame = true;
+  return true;
+}
+
 void Window::shutdown() {
   SDL_DestroyWindow(pSdlWindow);
   pSdlWindow = nullptr;
@@ -76,6 +101,7 @@ void Window::resize(const Vec2 &size) {
                     static_cast<int>(windowSize.y));
 }
 void Window::setFullscreen(bool fullscreen) {
+  bFullscreen = fullscreen;
   SDL_SetWindowFullscreen(pSdlWindow, fullscreen);
 }
 void Window::rename(StringView name) {

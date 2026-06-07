@@ -14,6 +14,7 @@ class AccelerationStructure;
 
 class Compute {
 public:
+  static void shutdown();
   static void setComputePipeline(const ComputePipeline &pipeline);
   static void resetComputePipeline();
   static void setUniformBuffer(UInt32 slotIndex, const Buffer &buffer);

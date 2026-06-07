@@ -196,7 +196,18 @@ void Device::createSwapchain() {
     viewCI.subresourceRange.levelCount = 1;
     viewCI.subresourceRange.baseArrayLayer = 0;
     viewCI.subresourceRange.layerCount = 1;
-    vkCreateImageView(device, &viewCI, nullptr, &swapchainImageViews[i]);
+    VkResult viewResult =
+        vkCreateImageView(device, &viewCI, nullptr, &swapchainImageViews[i]);
+    if (viewResult != VK_SUCCESS) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "Vulkan: vkCreateImageView for swapchain image failed: %d",
+                   viewResult);
+      destroySwapchain();
+      return;
+    }
+    setDebugName(VK_OBJECT_TYPE_IMAGE_VIEW,
+                 (uint64_t)swapchainImageViews[i],
+                 "Vulkan swapchain image view");
 
     gpu::Texture::CreateInfo tCI{};
     tCI.allocator = getCreateInfo().allocator;
@@ -215,7 +226,7 @@ void Device::createSwapchain() {
     native.image = swapchainImages[i];
     native.view = swapchainImageViews[i];
     native.format = swapchainVkFormat;
-    native.initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    native.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     native.ownsImage = false;
     native.ownsView = false;
     native.allocation = VK_NULL_HANDLE;

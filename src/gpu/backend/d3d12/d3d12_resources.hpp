@@ -42,7 +42,7 @@ public:
   void setState(D3D12_RESOURCE_STATES value) { state = value; }
 
 private:
-  Ptr<Device> device;
+  Ref<Device> device;
   ComPtr<ID3D12Resource> resource;
   D3D12_RESOURCE_STATES state;
 };
@@ -66,7 +66,7 @@ public:
   void setSrv(CpuGpuDescriptor value) { srv = value; }
 
 private:
-  Ptr<Device> device;
+  Ref<Device> device;
   ComPtr<ID3D12Resource> resource;
   D3D12_RESOURCE_STATES state;
   bool swapchainTexture;
@@ -85,7 +85,7 @@ public:
   void unmap() override;
 
 private:
-  Ptr<Device> device;
+  Ref<Device> device;
   ComPtr<ID3D12Resource> resource;
   void *mapped = nullptr;
 };
@@ -98,7 +98,7 @@ public:
   D3D12_GPU_DESCRIPTOR_HANDLE getGpu() const { return descriptor.gpu; }
 
 private:
-  Ptr<Device> device;
+  Ref<Device> device;
   CpuGpuDescriptor descriptor;
 };
 
@@ -122,7 +122,7 @@ public:
   D3D12_PRIMITIVE_TOPOLOGY getTopology() const { return topology; }
 
 private:
-  Ptr<Device> device;
+  Ref<Device> device;
   ComPtr<ID3D12RootSignature> rootSignature;
   ComPtr<ID3D12PipelineState> pipelineState;
   D3D12_PRIMITIVE_TOPOLOGY topology;
@@ -139,7 +139,7 @@ public:
   ID3D12PipelineState *getNative() const { return pipelineState.Get(); }
 
 private:
-  Ptr<Device> device;
+  Ref<Device> device;
   ComPtr<ID3D12RootSignature> rootSignature;
   ComPtr<ID3D12PipelineState> pipelineState;
 };
@@ -154,7 +154,7 @@ public:
   }
 
 private:
-  Ptr<Device> device;
+  Ref<Device> device;
   ComPtr<ID3D12Resource> resource;
 };
 
@@ -175,7 +175,7 @@ public:
                              Size dstSize) const override;
 
 private:
-  Ptr<Device> device;
+  Ref<Device> device;
   ComPtr<ID3D12RootSignature> globalRootSignature;
   ComPtr<ID3D12StateObject> stateObject;
   ComPtr<ID3D12StateObjectProperties> stateObjectProperties;

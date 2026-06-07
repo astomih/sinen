@@ -54,6 +54,7 @@ public:
   acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) override;
   gpu::TextureFormat getSwapchainFormat() const override;
   void waitForGpuIdle() override;
+  void releaseResources() override;
   String getDriver() const override;
   GPUBackendAPI getBackendAPI() const override { return GPUBackendAPI::Vulkan; }
 
@@ -72,6 +73,13 @@ public:
   }
   VkSampler getDefaultSampler() const { return defaultSampler; }
   VkImageView getDefaultTextureView() const { return defaultTextureView; }
+  Ptr<gpu::Sampler> getDefaultSamplerObject() const {
+    return defaultSamplerObject;
+  }
+  Ptr<gpu::Texture> getDefaultTexture() const { return defaultTexture; }
+  bool hasValidDevice() const { return device != VK_NULL_HANDLE; }
+  void setDebugName(VkObjectType objectType, uint64_t objectHandle,
+                    const char *name) const;
 
   Texture *getSwapchainTexture(uint32_t index) const;
   VkImage getSwapchainImage(uint32_t index) const;
@@ -115,8 +123,10 @@ private:
   std::vector<Ptr<Texture>> swapchainTextures;
 
   VkFence acquireFence = VK_NULL_HANDLE;
+  VkSemaphore imageAvailableSemaphore = VK_NULL_HANDLE;
+  VkSemaphore renderFinishedSemaphore = VK_NULL_HANDLE;
 
-  Ptr<gpu::Sampler> defaultSamplerObject;
+  Ptr<gpu::Sampler> defaultSamplerObject = nullptr;
   VkSampler defaultSampler = VK_NULL_HANDLE;
   Ptr<Texture> defaultTexture;
   VkImageView defaultTextureView = VK_NULL_HANDLE;

@@ -14,6 +14,13 @@ static Hashmap<UInt32, ComputeBuffer> currentStorageBufferBindings;
 static Hashmap<UInt32, Ptr<gpu::AccelerationStructure>>
     currentAccelerationStructureBindings;
 
+void Compute::shutdown() {
+  currentPipeline = std::nullopt;
+  currentUniformBindings.clear();
+  currentStorageBufferBindings.clear();
+  currentAccelerationStructureBindings.clear();
+}
+
 void Compute::setComputePipeline(const ComputePipeline &pipeline) {
   currentPipeline = pipeline;
 }

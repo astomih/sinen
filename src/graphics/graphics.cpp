@@ -3,6 +3,7 @@
 #include <core/allocator/global_allocator.hpp>
 #include <core/logger/log.hpp>
 #include <core/profiler.hpp>
+#include <gpu/compute/compute.hpp>
 #include <gpu/gpu.hpp>
 #include <gpu/shader/builtin_shader.hpp>
 #include <graphics/builtin_pipeline.hpp>
@@ -209,7 +210,10 @@ static void releaseBackendResources() {
     device->waitForGpuIdle();
   }
 
+  Compute::shutdown();
+  Gui::shutdown();
   preDrawFuncs.clear();
+  postDrawFuncs.clear();
   requestedBackendSwitch = std::nullopt;
   requestedNextBackendSwitch = false;
   currentPipeline = std::nullopt;
@@ -218,6 +222,8 @@ static void releaseBackendResources() {
   currentAccelerationStructureBindings.clear();
   currentColorTargets.clear();
   colorTargets.clear();
+  currentDepthStencilInfo = {};
+  depthStencilInfo = {};
   currentRenderPass = nullptr;
   currentCommandBuffer.reset();
   mainCommandBuffer.reset();
@@ -228,6 +234,9 @@ static void releaseBackendResources() {
   sprite = Model();
   BuiltinPipeline::shutdown();
   BuiltinShader::shutdown();
+  if (device) {
+    device->releaseResources();
+  }
   device.reset();
   backend.reset();
   isFrameStarted = true;
@@ -245,6 +254,10 @@ bool Graphics::switchBackend(GPUBackendAPI api) {
       device ? std::optional<GPUBackendAPI>(device->getBackendAPI())
              : std::nullopt;
   releaseBackendResources();
+  if (previous && !Window::recreate()) {
+    Log::error("Failed to recreate window for GPU backend switch");
+    return false;
+  }
   if (initializeBackend(api)) {
     Log::info("Switched GPU backend to {}", getBackendName().c_str());
     return true;
@@ -948,6 +961,7 @@ static Ptr<gpu::Texture> createDepthTexture(const Vec2 &size) {
   depthStencilCreateInfo.format = gpu::TextureFormat::D32_FLOAT_S8_UINT;
   depthStencilCreateInfo.numLevels = 1;
   depthStencilCreateInfo.sampleCount = gpu::SampleCount::x1;
+  depthStencilCreateInfo.debugName = "Graphics depth texture";
   return device->createTexture(depthStencilCreateInfo);
 }
 

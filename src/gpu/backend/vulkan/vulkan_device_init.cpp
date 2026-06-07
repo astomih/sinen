@@ -77,29 +77,28 @@ bool queryRayQuerySupport(VkPhysicalDevice pd,
 Device::Device(const CreateInfo &createInfo) : gpu::Device(createInfo) {}
 
 Device::~Device() {
-  if (device != VK_NULL_HANDLE && !deviceLost) {
-    vkDeviceWaitIdle(device);
-  }
-
-  defaultSamplerObject.reset();
-  defaultTexture.reset();
-
-  destroySwapchain();
+  releaseResources();
 
   if (acquireFence != VK_NULL_HANDLE) {
     vkDestroyFence(device, acquireFence, nullptr);
   }
+  if (imageAvailableSemaphore != VK_NULL_HANDLE) {
+    vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
+  }
+  if (renderFinishedSemaphore != VK_NULL_HANDLE) {
+    vkDestroySemaphore(device, renderFinishedSemaphore, nullptr);
+  }
   if (commandPool != VK_NULL_HANDLE) {
     vkDestroyCommandPool(device, commandPool, nullptr);
-  }
-  if (vmaAllocator != VK_NULL_HANDLE) {
-    vmaDestroyAllocator(vmaAllocator);
   }
   if (device != VK_NULL_HANDLE) {
     vkDestroyDevice(device, nullptr);
   }
   if (surface != VK_NULL_HANDLE && window) {
     SDL_Vulkan_DestroySurface(instance, surface, nullptr);
+  }
+  if (vmaAllocator != VK_NULL_HANDLE) {
+    vmaDestroyAllocator(vmaAllocator);
   }
   if (debugMessenger != VK_NULL_HANDLE) {
     vkDestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
@@ -108,6 +107,17 @@ Device::~Device() {
     vkDestroyInstance(instance, nullptr);
   }
   initialized = false;
+}
+
+void Device::releaseResources() {
+  if (device != VK_NULL_HANDLE && !deviceLost) {
+    vkDeviceWaitIdle(device);
+  }
+  defaultSamplerObject.reset();
+  defaultTexture.reset();
+  defaultSampler = VK_NULL_HANDLE;
+  defaultTextureView = VK_NULL_HANDLE;
+  destroySwapchain();
 }
 
 void Device::disableRayTracing(const char *reason) {
@@ -129,6 +139,21 @@ void Device::markDeviceLost(const char *context) {
   deviceLost = true;
   disableRayTracing("Vulkan: device is lost");
   destroySwapchain();
+}
+
+void Device::setDebugName(VkObjectType objectType, uint64_t objectHandle,
+                          const char *name) const {
+  if (!getCreateInfo().debugMode || device == VK_NULL_HANDLE ||
+      objectHandle == 0 || !name || name[0] == '\0' ||
+      !vkSetDebugUtilsObjectNameEXT) {
+    return;
+  }
+  VkDebugUtilsObjectNameInfoEXT info{};
+  info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+  info.objectType = objectType;
+  info.objectHandle = objectHandle;
+  info.pObjectName = name;
+  vkSetDebugUtilsObjectNameEXT(device, &info);
 }
 
 void Device::claimWindow(void *windowPtr) {
@@ -176,6 +201,10 @@ void Device::initializeVulkan() {
   VkFenceCreateInfo fenceCI{};
   fenceCI.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
   vkCreateFence(device, &fenceCI, nullptr, &acquireFence);
+  VkSemaphoreCreateInfo semaphoreCI{};
+  semaphoreCI.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+  vkCreateSemaphore(device, &semaphoreCI, nullptr, &imageAvailableSemaphore);
+  vkCreateSemaphore(device, &semaphoreCI, nullptr, &renderFinishedSemaphore);
 
   VkPhysicalDeviceProperties props{};
   vkGetPhysicalDeviceProperties(physicalDevice, &props);

@@ -10,6 +10,7 @@ namespace sinen {
 class Window {
 public:
   static bool initialize(StringView name);
+  static bool recreate();
   static void shutdown();
   static void prepareFrame();
   static void processEvent(SDL_Event &event);

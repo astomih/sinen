@@ -16,6 +16,7 @@
 #include <core/core.hpp>
 #include <core/data/ptr.hpp>
 #include <core/profiler.hpp>
+#include <core/thread/future_poll.hpp>
 #include <core/thread/global_thread_pool.hpp>
 #include <core/thread/load_context.hpp>
 #include <graphics/graphics.hpp>
@@ -586,77 +587,65 @@ void Model::load(StringView path) {
     state->ok = true;
   });
 
-  auto pollAndFinalize = std::make_shared<std::function<void()>>();
-  *pollAndFinalize = [this, pollAndFinalize, state, stateVoid, group]() {
-    if (!state->future.valid()) {
-      group.done();
-      return;
-    }
-    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
-        std::future_status::ready) {
-      Graphics::addPreDrawFunc(*pollAndFinalize);
-      return;
-    }
-    if (state->finalized.exchange(true)) {
-      return;
-    }
-
-    state->future.get();
-
-    if (this->data != stateVoid) {
-      group.done();
-      return;
-    }
-
-    if (!state->ok) {
-      group.done();
-      return;
-    }
-
-    this->mesh = std::move(state->mesh);
-    this->localAABB = state->aabb;
-    this->boneMap = std::move(state->boneMap);
-    this->skeletalAnimation = std::move(state->skeletalAnimation);
-    this->skeletalAnimation.owner = this;
-
-    {
-      ScopedLoadContext ctx(group);
-      for (size_t i = 0; i < state->embeddedTextures.size() && i < 6; ++i) {
-        const auto &d = state->embeddedTextures[i];
-        if (!d.present) {
-          continue;
+  scheduleFuturePoll(
+      state, group,
+      [](std::function<void()> f) { Graphics::addPreDrawFunc(std::move(f)); },
+      [this, state, stateVoid, group] {
+        if (state->finalized.exchange(true)) {
+          return;
         }
-        auto texture = Texture::create();
-        if (d.compressed) {
-          auto bytes = d.bytes;
-          texture->loadFromMemory(bytes);
-        } else {
-          texture->loadFromMemory(const_cast<char *>(d.bytes.data()), d.width,
-                                  d.height, d.format, d.channels);
+
+        if (this->data != stateVoid) {
+          return;
         }
-        this->textures[i] = texture;
-      }
-    }
 
-    auto mesh = this->mesh.data();
-    this->vertexBuffer =
-        createBuffer(mesh->vertices.size() * sizeof(Vertex),
-                     mesh->vertices.data(), gpu::BufferUsage::Vertex);
-    this->animationVertexBuffer =
-        createSkinnedVertexBuffer(this->skeletalAnimation.skinnedVertices);
-    this->tangentBuffer =
-        createBuffer(mesh->tangents.size() * sizeof(Vec4),
-                     mesh->tangents.data(), gpu::BufferUsage::Vertex);
-    this->indexBuffer =
-        createBuffer(mesh->indices.size() * sizeof(uint32_t),
-                     mesh->indices.data(), gpu::BufferUsage::Index);
-    this->lodIndexBuffers =
-        createLodIndexBuffers(this->mesh, this->indexBuffer);
+        if (!state->ok) {
+          return;
+        }
 
-    this->data.reset();
-    group.done();
-  };
-  Graphics::addPreDrawFunc(*pollAndFinalize);
+        this->mesh = std::move(state->mesh);
+        this->localAABB = state->aabb;
+        this->boneMap = std::move(state->boneMap);
+        this->skeletalAnimation = std::move(state->skeletalAnimation);
+        this->skeletalAnimation.owner = this;
+
+        {
+          ScopedLoadContext ctx(group);
+          for (size_t i = 0; i < state->embeddedTextures.size() && i < 6; ++i) {
+            const auto &d = state->embeddedTextures[i];
+            if (!d.present) {
+              continue;
+            }
+            auto texture = Texture::create();
+            if (d.compressed) {
+              auto bytes = d.bytes;
+              texture->loadFromMemory(bytes);
+            } else {
+              texture->loadFromMemory(const_cast<char *>(d.bytes.data()),
+                                      d.width, d.height, d.format, d.channels);
+            }
+            this->textures[i] = texture;
+          }
+        }
+
+        auto mesh = this->mesh.data();
+        this->vertexBuffer =
+            createBuffer(mesh->vertices.size() * sizeof(Vertex),
+                         mesh->vertices.data(), gpu::BufferUsage::Vertex);
+        this->animationVertexBuffer =
+            createSkinnedVertexBuffer(this->skeletalAnimation.skinnedVertices);
+        this->tangentBuffer =
+            createBuffer(mesh->tangents.size() * sizeof(Vec4),
+                         mesh->tangents.data(), gpu::BufferUsage::Vertex);
+        this->indexBuffer =
+            createBuffer(mesh->indices.size() * sizeof(uint32_t),
+                         mesh->indices.data(), gpu::BufferUsage::Index);
+        this->lodIndexBuffers =
+            createLodIndexBuffers(this->mesh, this->indexBuffer);
+
+        this->data.reset();
+      },
+      [] {});
 }
 void Model::load(const Buffer &buffer) {
   const TaskGroup group = LoadContext::current();
@@ -740,77 +729,65 @@ void Model::load(const Buffer &buffer) {
     state->ok = true;
   });
 
-  auto pollAndFinalize = std::make_shared<std::function<void()>>();
-  *pollAndFinalize = [this, pollAndFinalize, state, stateVoid, group]() {
-    if (!state->future.valid()) {
-      group.done();
-      return;
-    }
-    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
-        std::future_status::ready) {
-      Graphics::addPreDrawFunc(*pollAndFinalize);
-      return;
-    }
-    if (state->finalized.exchange(true)) {
-      return;
-    }
-
-    state->future.get();
-
-    if (this->data != stateVoid) {
-      group.done();
-      return;
-    }
-
-    if (!state->ok) {
-      group.done();
-      return;
-    }
-
-    this->mesh = std::move(state->mesh);
-    this->localAABB = state->aabb;
-    this->boneMap = std::move(state->boneMap);
-    this->skeletalAnimation = std::move(state->skeletalAnimation);
-    this->skeletalAnimation.owner = this;
-
-    {
-      ScopedLoadContext ctx(group);
-      for (size_t i = 0; i < state->embeddedTextures.size() && i < 6; ++i) {
-        const auto &d = state->embeddedTextures[i];
-        if (!d.present) {
-          continue;
+  scheduleFuturePoll(
+      state, group,
+      [](std::function<void()> f) { Graphics::addPreDrawFunc(std::move(f)); },
+      [this, state, stateVoid, group] {
+        if (state->finalized.exchange(true)) {
+          return;
         }
-        auto texture = Texture::create();
-        if (d.compressed) {
-          auto bytes = d.bytes;
-          texture->loadFromMemory(bytes);
-        } else {
-          texture->loadFromMemory(const_cast<char *>(d.bytes.data()), d.width,
-                                  d.height, d.format, d.channels);
+
+        if (this->data != stateVoid) {
+          return;
         }
-        this->textures[i] = texture;
-      }
-    }
 
-    auto mesh = this->mesh.data();
-    this->vertexBuffer =
-        createBuffer(mesh->vertices.size() * sizeof(Vertex),
-                     mesh->vertices.data(), gpu::BufferUsage::Vertex);
-    this->animationVertexBuffer =
-        createSkinnedVertexBuffer(this->skeletalAnimation.skinnedVertices);
-    this->tangentBuffer =
-        createBuffer(mesh->tangents.size() * sizeof(Vec4),
-                     mesh->tangents.data(), gpu::BufferUsage::Vertex);
-    this->indexBuffer =
-        createBuffer(mesh->indices.size() * sizeof(uint32_t),
-                     mesh->indices.data(), gpu::BufferUsage::Index);
-    this->lodIndexBuffers =
-        createLodIndexBuffers(this->mesh, this->indexBuffer);
+        if (!state->ok) {
+          return;
+        }
 
-    this->data.reset();
-    group.done();
-  };
-  Graphics::addPreDrawFunc(*pollAndFinalize);
+        this->mesh = std::move(state->mesh);
+        this->localAABB = state->aabb;
+        this->boneMap = std::move(state->boneMap);
+        this->skeletalAnimation = std::move(state->skeletalAnimation);
+        this->skeletalAnimation.owner = this;
+
+        {
+          ScopedLoadContext ctx(group);
+          for (size_t i = 0; i < state->embeddedTextures.size() && i < 6; ++i) {
+            const auto &d = state->embeddedTextures[i];
+            if (!d.present) {
+              continue;
+            }
+            auto texture = Texture::create();
+            if (d.compressed) {
+              auto bytes = d.bytes;
+              texture->loadFromMemory(bytes);
+            } else {
+              texture->loadFromMemory(const_cast<char *>(d.bytes.data()),
+                                      d.width, d.height, d.format, d.channels);
+            }
+            this->textures[i] = texture;
+          }
+        }
+
+        auto mesh = this->mesh.data();
+        this->vertexBuffer =
+            createBuffer(mesh->vertices.size() * sizeof(Vertex),
+                         mesh->vertices.data(), gpu::BufferUsage::Vertex);
+        this->animationVertexBuffer =
+            createSkinnedVertexBuffer(this->skeletalAnimation.skinnedVertices);
+        this->tangentBuffer =
+            createBuffer(mesh->tangents.size() * sizeof(Vec4),
+                         mesh->tangents.data(), gpu::BufferUsage::Vertex);
+        this->indexBuffer =
+            createBuffer(mesh->indices.size() * sizeof(uint32_t),
+                         mesh->indices.data(), gpu::BufferUsage::Index);
+        this->lodIndexBuffers =
+            createLodIndexBuffers(this->mesh, this->indexBuffer);
+
+        this->data.reset();
+      },
+      [] {});
 }
 
 void Model::loadFromVertexArray(const Mesh &m) {

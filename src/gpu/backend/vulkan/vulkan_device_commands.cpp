@@ -148,8 +148,10 @@ Device::acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) {
     }
   }
   uint32_t imageIndex = 0;
-  VkResult res = vkAcquireNextImageKHR(
-      device, swapchain, UINT64_MAX, VK_NULL_HANDLE, acquireFence, &imageIndex);
+  VkResult res =
+      vkAcquireNextImageKHR(device, swapchain, UINT64_MAX,
+                            imageAvailableSemaphore, VK_NULL_HANDLE,
+                            &imageIndex);
   if (res == VK_ERROR_DEVICE_LOST) {
     markDeviceLost("Vulkan: vkAcquireNextImageKHR failed");
     return nullptr;
@@ -159,8 +161,9 @@ Device::acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) {
     if (!swapchain) {
       return nullptr;
     }
-    res = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, VK_NULL_HANDLE,
-                                acquireFence, &imageIndex);
+    res = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX,
+                                imageAvailableSemaphore, VK_NULL_HANDLE,
+                                &imageIndex);
     if (res == VK_ERROR_DEVICE_LOST) {
       markDeviceLost("Vulkan: vkAcquireNextImageKHR failed after recreate");
       return nullptr;
@@ -171,18 +174,6 @@ Device::acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) {
                  "Vulkan: vkAcquireNextImageKHR failed: %d", res);
     return nullptr;
   }
-  res = vkWaitForFences(device, 1, &acquireFence, VK_TRUE, UINT64_MAX);
-  if (res == VK_ERROR_DEVICE_LOST) {
-    markDeviceLost("Vulkan: vkWaitForFences failed during acquire");
-    return nullptr;
-  }
-  if (res != VK_SUCCESS) {
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                 "Vulkan: vkWaitForFences failed during acquire: %d", res);
-    return nullptr;
-  }
-  vkResetFences(device, 1, &acquireFence);
-
   auto cb = downCast<CommandBuffer>(commandBuffer);
   cb->markUsesSwapchain(imageIndex);
   return swapchainTextures[imageIndex];
@@ -200,6 +191,15 @@ void Device::submitCommandBuffer(Ptr<gpu::CommandBuffer> commandBuffer) {
   VkCommandBuffer cmd = cb->getNative();
   submitInfo.commandBufferCount = 1;
   submitInfo.pCommandBuffers = &cmd;
+  VkPipelineStageFlags waitStage =
+      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+  if (cb->usesSwapchain()) {
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = &imageAvailableSemaphore;
+    submitInfo.pWaitDstStageMask = &waitStage;
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = &renderFinishedSemaphore;
+  }
 
   VkFence fence = cb->getFence();
   vkResetFences(device, 1, &fence);
@@ -229,6 +229,8 @@ void Device::submitCommandBuffer(Ptr<gpu::CommandBuffer> commandBuffer) {
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = &swapchain;
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = &renderFinishedSemaphore;
     uint32_t index = cb->getSwapchainImageIndex();
     presentInfo.pImageIndices = &index;
     VkResult pres = vkQueuePresentKHR(queue, &presentInfo);

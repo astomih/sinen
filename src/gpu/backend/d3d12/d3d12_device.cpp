@@ -1092,6 +1092,11 @@ void Device::waitForGpuIdle() {
   }
 }
 
+void Device::releaseResources() {
+  waitForGpuIdle();
+  destroySwapchain();
+}
+
 void Device::disableRayTracing(const char *reason) {
   if (reason) {
     SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "%s; ray tracing disabled",

@@ -10,6 +10,7 @@
 namespace sinen {
 class Gui {
 public:
+  static void shutdown();
   static void newFrame();
   static void setFont(const Ptr<Font> &font);
   static void setFontSize(float size);

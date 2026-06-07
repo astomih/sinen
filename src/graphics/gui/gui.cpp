@@ -110,6 +110,13 @@ static bool updateButtonState(std::uint64_t id, bool hovered) {
 }
 } // namespace
 
+void Gui::shutdown() {
+  currentFont.reset();
+  defaultFont.reset();
+  activeId = 0;
+  hotId = 0;
+}
+
 void Gui::newFrame() {
   hotId = 0;
   if (!Mouse::isDown(Mouse::LEFT) && !Mouse::isReleased(Mouse::LEFT)) {

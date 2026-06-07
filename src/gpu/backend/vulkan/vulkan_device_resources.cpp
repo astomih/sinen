@@ -25,6 +25,9 @@ void Device::createDefaultResources() {
     sCI.addressModeW = gpu::AddressMode::Repeat;
     sCI.enableAnisotropy = false;
     sCI.enableCompare = false;
+    if (defaultSamplerObject) {
+      defaultSamplerObject.reset();
+    }
     defaultSamplerObject = createSampler(sCI);
     if (!defaultSamplerObject) {
       SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -45,6 +48,7 @@ void Device::createDefaultResources() {
     tCI.layerCountOrDepth = 1;
     tCI.numLevels = 1;
     tCI.sampleCount = gpu::SampleCount::x1;
+    tCI.debugName = "Vulkan default texture";
     defaultTexture = downCast<Texture>(createTexture(tCI));
     if (!defaultTexture) {
       SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -244,10 +248,16 @@ Ptr<gpu::Texture> Device::createTexture(const Texture::CreateInfo &createInfo) {
 
   VkImage image = VK_NULL_HANDLE;
   VmaAllocation allocation = VK_NULL_HANDLE;
+  VmaAllocationInfo allocationInfo{};
   if (vmaCreateImage(vmaAllocator, &imageCI, &allocCI, &image, &allocation,
-                     nullptr) != VK_SUCCESS) {
+                     &allocationInfo) != VK_SUCCESS) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Vulkan: vmaCreateImage failed");
     return nullptr;
+  }
+  if (createInfo.debugName) {
+    setDebugName(VK_OBJECT_TYPE_IMAGE, (uint64_t)image, createInfo.debugName);
+    setDebugName(VK_OBJECT_TYPE_DEVICE_MEMORY,
+                 (uint64_t)allocationInfo.deviceMemory, createInfo.debugName);
   }
 
   VkImageViewCreateInfo viewCI{};
@@ -268,7 +278,6 @@ Ptr<gpu::Texture> Device::createTexture(const Texture::CreateInfo &createInfo) {
     vmaDestroyImage(vmaAllocator, image, allocation);
     return nullptr;
   }
-
   Texture::NativeCreateInfo native{};
   native.image = image;
   native.view = view;

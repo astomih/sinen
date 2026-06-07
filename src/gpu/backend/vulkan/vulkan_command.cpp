@@ -515,6 +515,11 @@ void RenderPass::begin(const Array<ColorTargetInfo> &infos,
   for (const auto &info : infos) {
     commandBuffer.keepAlive(info.texture);
     auto tex = downCast<Texture>(info.texture);
+    if (!tex || tex->getView() == VK_NULL_HANDLE) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "Vulkan: invalid color attachment texture");
+      return;
+    }
     width = tex->getWidth();
     height = tex->getHeight();
 
@@ -548,6 +553,11 @@ void RenderPass::begin(const Array<ColorTargetInfo> &infos,
   if (depthStencilInfo.texture) {
     commandBuffer.keepAlive(depthStencilInfo.texture);
     auto tex = downCast<Texture>(depthStencilInfo.texture);
+    if (!tex || tex->getView() == VK_NULL_HANDLE) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "Vulkan: invalid depth attachment texture");
+      return;
+    }
     VkAttachmentDescription attachment{};
     attachment.format = tex->getFormat();
     attachment.samples =

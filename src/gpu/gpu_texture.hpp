@@ -38,6 +38,7 @@ public:
     UInt32 layerCountOrDepth;
     UInt32 numLevels;
     SampleCount sampleCount;
+    const char *debugName = nullptr;
   };
   virtual ~Texture() = default;
 

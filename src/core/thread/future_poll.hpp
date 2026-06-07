@@ -12,35 +12,55 @@
 
 namespace sinen {
 
+namespace detail {
+template <class State, class Schedule, class OnReady, class OnInvalid>
+struct FuturePollContext {
+  FuturePollContext(Ptr<State> state, TaskGroup group, Schedule schedule,
+                    OnReady onReady, OnInvalid onInvalid)
+      : state(std::move(state)), group(std::move(group)),
+        schedule(std::move(schedule)), onReady(std::move(onReady)),
+        onInvalid(std::move(onInvalid)) {}
+
+  Ptr<State> state;
+  TaskGroup group;
+  Schedule schedule;
+  OnReady onReady;
+  OnInvalid onInvalid;
+};
+
+template <class Context> void scheduleFuturePollStep(Ptr<Context> context) {
+  context->schedule([context]() mutable {
+    if (!context->state->future.valid()) {
+      context->onInvalid();
+      context->group.done();
+      return;
+    }
+
+    if (context->state->future.wait_for(std::chrono::milliseconds(0)) !=
+        std::future_status::ready) {
+      scheduleFuturePollStep(context);
+      return;
+    }
+
+    context->state->future.get();
+    context->onReady();
+    context->group.done();
+  });
+}
+} // namespace detail
+
 template <class State, class Schedule, class OnReady, class OnInvalid>
 void scheduleFuturePoll(const Ptr<State> &state, const TaskGroup &group,
                         Schedule &&schedule, OnReady &&onReady,
                         OnInvalid &&onInvalid) {
-  auto scheduleFn = std::forward<Schedule>(schedule);
-  auto onReadyFn = std::forward<OnReady>(onReady);
-  auto onInvalidFn = std::forward<OnInvalid>(onInvalid);
-
-  auto poll = std::make_shared<std::function<void()>>();
-  *poll = [poll, state, group, scheduleFn, onReadyFn,
-           onInvalidFn]() mutable {
-    if (!state->future.valid()) {
-      onInvalidFn();
-      group.done();
-      return;
-    }
-
-    if (state->future.wait_for(std::chrono::milliseconds(0)) !=
-        std::future_status::ready) {
-      scheduleFn(*poll);
-      return;
-    }
-
-    state->future.get();
-    onReadyFn();
-    group.done();
-  };
-
-  scheduleFn(*poll);
+  using Context =
+      detail::FuturePollContext<State, std::decay_t<Schedule>,
+                                std::decay_t<OnReady>, std::decay_t<OnInvalid>>;
+  auto context =
+      makePtr<Context>(state, group, std::forward<Schedule>(schedule),
+                       std::forward<OnReady>(onReady),
+                       std::forward<OnInvalid>(onInvalid));
+  detail::scheduleFuturePollStep(context);
 }
 
 template <class State, class Schedule, class OnReady>

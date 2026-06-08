@@ -30,10 +30,10 @@
 
 namespace sinen {
 namespace {
-String sceneFileName = "main.luau";
-String baseDirectory = "/";
+String gFileName = "main.luau";
+String gBaseDirectory = "/";
 bool reload = true;
-}
+} // namespace
 auto alloc = [](void *ud, void *ptr, size_t osize, size_t nsize) -> void * {
   (void)ud;
   // free
@@ -417,11 +417,8 @@ static bool isPathSeparator(char c) { return c == '/' || c == '\\'; }
 
 static bool hasScriptExtension(StringView path) {
   constexpr StringView sourceExt = prefix;
-  constexpr StringView bytecodeExt = ".snb";
   return (path.size() >= sourceExt.size() &&
-          path.substr(path.size() - sourceExt.size()) == sourceExt) ||
-         (path.size() >= bytecodeExt.size() &&
-          path.substr(path.size() - bytecodeExt.size()) == bytecodeExt);
+          path.substr(path.size() - sourceExt.size()) == sourceExt);
 }
 
 static String normalizeLogicalPath(StringView path) {
@@ -533,7 +530,6 @@ static String basenameLogicalPath(StringView path) {
 struct ScriptChunk {
   String bytes;
   String filename;
-  bool bytecode = false;
 };
 
 static ScriptChunk loadSceneChunk(StringView sceneName) {
@@ -543,20 +539,8 @@ static ScriptChunk loadSceneChunk(StringView sceneName) {
     chunk.bytes = AssetReader::readAsString(sceneName);
     if (!chunk.bytes.empty()) {
       chunk.filename = sceneName;
-      chunk.bytecode = sceneName.size() >= 4 &&
-                       sceneName.substr(sceneName.size() - 4) == ".snb";
     }
     return chunk;
-  }
-
-  const String bytecodeName = String(sceneName) + ".snb";
-  if (AssetReader::exists(bytecodeName)) {
-    chunk.bytes = AssetReader::readAsString(bytecodeName);
-    if (!chunk.bytes.empty()) {
-      chunk.filename = bytecodeName;
-      chunk.bytecode = true;
-      return chunk;
-    }
   }
 
   const String sourceName = String(sceneName) + prefix;
@@ -584,11 +568,10 @@ void Script::executeScene() {
     lua_pop(L, 1);
   };
 
-  ScriptChunk chunk = loadSceneChunk(sceneFileName);
+  ScriptChunk chunk = loadSceneChunk(gFileName);
   if (chunk.bytes.empty()) {
     chunk.bytes = nothingSceneLua;
-    chunk.filename = String(sceneFileName) + prefix;
-    chunk.bytecode = false;
+    chunk.filename = String(gFileName) + prefix;
   }
 
   if (gSetupRef != LUA_NOREF) {
@@ -614,9 +597,7 @@ void Script::executeScene() {
     fullPath = chunk.filename;
   }
   const int loadStatus =
-      chunk.bytecode
-          ? luaLoadBytecode(gLua, chunk.bytes, fullPath.c_str(), fullPath)
-          : luaLoadSource(gLua, chunk.bytes, fullPath.c_str(), fullPath);
+      luaLoadSource(gLua, chunk.bytes, fullPath.c_str(), fullPath);
   if (loadStatus != LUA_OK) {
     lua_settop(gLua, 0);
     return;
@@ -708,24 +689,18 @@ void Script::clearRequireCache() {
 }
 
 void Script::load(StringView filePath) {
-  String normalized = joinLogicalPath(baseDirectory, filePath);
+  String normalized = joinLogicalPath(gBaseDirectory, filePath);
   if (!hasScriptExtension(normalized)) {
-    Log::error("Script.load requires a .luau or .snb extension: {}",
+    Log::error("Script.load requires a .luau or .sna extension: {}",
                normalized.c_str());
     return;
   }
-  String nextFileBaseName = basenameLogicalPath(normalized);
-  if (nextFileBaseName.empty()) {
-    nextFileBaseName = "main";
-  }
-  sceneFileName = nextFileBaseName;
-  baseDirectory = dirnameLogicalPath(normalized);
+  gFileName = basenameLogicalPath(normalized);
+  gBaseDirectory = dirnameLogicalPath(normalized);
   reload = true;
 }
-String Script::getFileName() { return sceneFileName; }
-String Script::getBaseDirectory() {
-  return baseDirectory;
-}
+String Script::getFileName() { return gFileName; }
+String Script::getBaseDirectory() { return gBaseDirectory; }
 } // namespace sinen
 
 namespace sinen {

@@ -9,26 +9,17 @@ public:
   static bool initialize();
   static void shutdown();
 
-  static void runScene();
-  static void updateScene();
-  static void drawScene();
+  static void executeScene();
+  static bool hasToReloadScene();
 
-  static bool hasToReload();
-  static void doneReload();
+  static void callUpdate();
+  static void callDraw();
+
   static void clearRequireCache();
 
-  static void setSceneName(StringView name);
-  static String getSceneName();
   static void load(StringView filePath);
-  static void setBasePath(StringView path);
-  static String getBasePath();
-  static String getRootBasePath();
-
-private:
-  inline static String sceneName = "main";
-  inline static String basePath = ".";
-  inline static String rootBasePath = ".";
-  inline static bool reload = true;
+  static String getFileName();
+  static String getBaseDirectory();
 };
 } // namespace sinen
 

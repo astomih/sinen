@@ -370,7 +370,7 @@ void Graphics::render() {
   drawCallCountPerFrame = 0;
   {
     ZoneScopedN("Script::drawScene");
-    Script::drawScene();
+    Script::callDraw();
   }
   for (auto &f : postDrawFuncs) {
     f();

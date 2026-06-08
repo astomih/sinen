@@ -16,7 +16,7 @@
 
 namespace sinen {
 namespace {
-static std::filesystem::path
+std::filesystem::path
 normalizeFsPath(const std::filesystem::path &path) {
   std::error_code ec;
   std::filesystem::path normalized =
@@ -30,7 +30,7 @@ normalizeFsPath(const std::filesystem::path &path) {
   return normalized.lexically_normal();
 }
 
-static bool samePathComponent(StringView a, StringView b) {
+bool samePathComponent(StringView a, StringView b) {
 #ifdef _WIN32
   if (a.size() != b.size()) {
     return false;
@@ -48,7 +48,7 @@ static bool samePathComponent(StringView a, StringView b) {
 #endif
 }
 
-static bool isPathUnderRoot(const std::filesystem::path &path,
+bool isPathUnderRoot(const std::filesystem::path &path,
                             const std::filesystem::path &root) {
   auto p = path.lexically_normal();
   auto r = root.lexically_normal();
@@ -70,7 +70,7 @@ static bool isPathUnderRoot(const std::filesystem::path &path,
   return true;
 }
 
-static bool resolvePathUnderRoot(const std::filesystem::path &requested,
+bool resolvePathUnderRoot(const std::filesystem::path &requested,
                                  const std::filesystem::path &root,
                                  String &resolvedPath) {
   std::filesystem::path candidate =
@@ -86,29 +86,29 @@ static bool resolvePathUnderRoot(const std::filesystem::path &requested,
   return true;
 }
 
-static bool startsWithUserScheme(StringView path) {
+bool startsWithUserScheme(StringView path) {
   constexpr StringView scheme = "user://";
   return path.size() >= scheme.size() &&
          path.substr(0, scheme.size()) == scheme;
 }
 
-static bool startsWithLogicalRoot(StringView path) {
+bool startsWithLogicalRoot(StringView path) {
   return !path.empty() && (path[0] == '/' || path[0] == '\\');
 }
 
-static String stripLogicalRoot(StringView path) {
+String stripLogicalRoot(StringView path) {
   while (!path.empty() && (path[0] == '/' || path[0] == '\\')) {
     path.remove_prefix(1);
   }
   return String(path);
 }
 
-static std::filesystem::path appBaseRootPath() {
+std::filesystem::path appBaseRootPath() {
   return normalizeFsPath(
       std::filesystem::path(Filesystem::getAppBaseDirectory().c_str()));
 }
 
-static bool resolveAppSandboxPath(const std::filesystem::path &requested,
+bool resolveAppSandboxPath(const std::filesystem::path &requested,
                                   String &resolvedPath) {
 #ifdef SINEN_DEBUG_WORKING_DIRECTORY
   std::error_code cwdEc;
@@ -125,12 +125,12 @@ static bool resolveAppSandboxPath(const std::filesystem::path &requested,
          resolvePathUnderRoot(requested, baseRoot, resolvedPath);
 }
 
-static bool resolveAppLogicalDirectory(StringView path, String &resolvedPath) {
+bool resolveAppLogicalDirectory(StringView path, String &resolvedPath) {
   const std::filesystem::path requested{String(path)};
   return resolveAppSandboxPath(requested, resolvedPath);
 }
 
-static bool resolveUserLogicalPath(StringView path, String &resolvedPath) {
+bool resolveUserLogicalPath(StringView path, String &resolvedPath) {
   constexpr StringView scheme = "user://";
   String rest = String(path.substr(scheme.size()));
   rest = stripLogicalRoot(rest);
@@ -151,8 +151,8 @@ static bool resolveUserLogicalPath(StringView path, String &resolvedPath) {
                               resolvedPath);
 }
 
-static bool resolveAppLogicalPath(StringView path, String &resolvedPath) {
-  const String basePath = Script::getBasePath();
+bool resolveAppLogicalPath(StringView path, String &resolvedPath) {
+  const String basePath = Script::getBaseDirectory();
   if (!startsWithLogicalRoot(path) && startsWithUserScheme(basePath)) {
     String userPath = basePath;
     if (!userPath.empty() && userPath.back() != '/' &&
@@ -164,7 +164,7 @@ static bool resolveAppLogicalPath(StringView path, String &resolvedPath) {
   }
 
   String rootResolved;
-  if (!resolveAppLogicalDirectory(Script::getRootBasePath(), rootResolved)) {
+  if (!resolveAppLogicalDirectory(".", rootResolved)) {
     resolvedPath.clear();
     return false;
   }
@@ -252,7 +252,7 @@ Array<String> Filesystem::enumerateDirectory(StringView path) {
 std::optional<Buffer> Filesystem::read(StringView path) {
   if (!startsWithUserScheme(path) && AssetReader::isArchiveMounted() &&
       AssetReader::exists(path)) {
-    const String data = AssetReader::openAsString(path);
+    const String data = AssetReader::readAsString(path);
     Buffer buffer = makeBuffer(data.size(), BufferType::Binary);
     if (!data.empty()) {
       std::memcpy(buffer.data(), data.data(), data.size());
@@ -369,8 +369,8 @@ bool Filesystem::resolveSandboxPath(StringView path, FilesystemAccess access,
     return false;
   }
   const String basePath = startsWithLogicalRoot(path)
-                              ? Script::getRootBasePath()
-                              : Script::getBasePath();
+                              ? "/"
+                              : Script::getBaseDirectory();
   if (!startsWithLogicalRoot(path) && startsWithUserScheme(basePath)) {
     resolvedPath.clear();
     return false;

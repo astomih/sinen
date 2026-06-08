@@ -10,11 +10,8 @@ public:
   static constexpr const char *archiveRootDirectory() { return "sna"; }
 
   static Array<uint8_t> key;
-  static StringView open(StringView name);
 
-  static void *openAsIOStream(StringView name);
-
-  static String openAsString(StringView name);
+  static String readAsString(StringView name);
   static String getFilePath(StringView name);
   static String getLoadPath(StringView name);
 

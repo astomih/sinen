@@ -447,7 +447,7 @@ bool loadEXRFloat(StringView path, Array<float> &img, int &W, int &H, int &C) {
   int ret = TINYEXR_ERROR_INVALID_ARGUMENT;
   String bytes;
   if (AssetReader::isArchiveMounted() && AssetReader::exists(path)) {
-    bytes = AssetReader::openAsString(path);
+    bytes = AssetReader::readAsString(path);
     ret = LoadEXRFromMemory(
         &out, &w, &h, reinterpret_cast<const unsigned char *>(bytes.data()),
         bytes.size(), &err);

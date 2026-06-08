@@ -100,7 +100,7 @@ void Shader::load(StringView vertex_shader, ShaderStage stage,
   const String path = vertex_shader.data();
   state->future = globalThreadPool().submit(
       [state, path, stage, numUniformData, shaderFormat, preferredFormat] {
-        auto str = AssetReader::openAsString(path);
+        auto str = AssetReader::readAsString(path);
         if (ShaderBundle::isBundle(str)) {
           auto selected = ShaderBundle::select(str, stage, preferredFormat);
           if (!selected) {

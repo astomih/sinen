@@ -171,8 +171,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     Log::critical("Failed to initialize script");
     return SDL_APP_FAILURE;
   }
-  Script::runScene();
-  Script::doneReload();
+  Script::executeScene();
   return SDL_APP_CONTINUE;
 }
 SDL_AppResult SDL_AppIterate(void *appstate) {
@@ -192,13 +191,12 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
   }
   {
     ZoneScopedN("Script::updateScene");
-    Script::updateScene();
+    Script::callUpdate();
   }
   Graphics::render();
-  if (Script::hasToReload()) {
+  if (Script::hasToReloadScene()) {
     ZoneScopedN("Script::runScene");
-    Script::runScene();
-    Script::doneReload();
+    Script::executeScene();
   }
   if (Keyboard::isPressed(Scancode::F8)) {
     Script::shutdown();
@@ -208,8 +206,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     Window::initialize("Sinen");
     Script::initialize();
     Graphics::initialize();
-    Script::runScene();
-    Script::doneReload();
+    Script::executeScene();
   }
   if (Keyboard::isPressed(Scancode::F11)) {
     static bool fullscreen = false;

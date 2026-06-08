@@ -21,7 +21,7 @@ public:
 
   void load(StringView fileName) override {
     if (AssetReader::isArchiveMounted() && AssetReader::exists(fileName)) {
-      auto bytes = AssetReader::openAsString(fileName);
+      auto bytes = AssetReader::readAsString(fileName);
       loadMemory(bytes.data(), bytes.size());
       return;
     }

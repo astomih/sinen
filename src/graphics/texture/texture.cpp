@@ -214,7 +214,7 @@ bool Texture::load(StringView fileName) {
   const String path = fileName.data();
   state->future = globalThreadPool().submit([state, path] {
     ZoneScopedN("Texture::load decode");
-    auto str = AssetReader::openAsString(path);
+    auto str = AssetReader::readAsString(path);
     if (decodeKtx2(reinterpret_cast<const uint8_t *>(str.data()), str.size(),
                    *state)) {
       return;

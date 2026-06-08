@@ -91,13 +91,13 @@ static bool endsWithIcaseAscii(StringView value, StringView suffix) {
 static String archiveEntryPath(StringView name) {
   String logicalPath;
   if (name.starts_with("user://") ||
-      Script::getBasePath().starts_with("user://")) {
+      Script::getBaseDirectory().starts_with("user://")) {
     return "";
   }
   if (!name.empty() && (name[0] == '/' || name[0] == '\\')) {
-    logicalPath = Script::getRootBasePath() + "/" + String(name.substr(1));
+    logicalPath = "./" + String(name.substr(1));
   } else {
-    logicalPath = Script::getBasePath() + "/" + String(name);
+    logicalPath = Script::getBaseDirectory() + "/" + String(name);
   }
   String normalized = normalizePath(logicalPath);
   if (normalized.empty()) {
@@ -190,27 +190,9 @@ static bool convertFilePath(String &filePath, StringView name,
   return true;
 }
 Array<uint8_t> AssetReader::key = {0};
-StringView AssetReader::open(StringView name) {
-  static thread_local String result;
-  result = openAsString(name);
-  return result;
-}
-void *AssetReader::openAsIOStream(StringView name) {
-  String filePath;
-  if (!convertFilePath(filePath, name, FilesystemAccess::Read)) {
-    return nullptr;
-  }
-
-  SDL_IOStream *file = SDL_IOFromFile(filePath.c_str(), "rb");
-  if (!file) {
-    Log::error("Asset open error {}: {}", filePath.c_str(), SDL_GetError());
-    return nullptr;
-  }
-  return file;
-}
-String AssetReader::openAsString(StringView name) {
+String AssetReader::readAsString(StringView name) {
   if (!name.starts_with("user://") &&
-      !Script::getBasePath().starts_with("user://") && isArchiveMounted()) {
+      !Script::getBaseDirectory().starts_with("user://") && isArchiveMounted()) {
     const String path = archiveEntryPath(name);
     if (!path.empty() && archiveEntryExists(path)) {
       return openArchiveEntryAsString(path);
@@ -247,7 +229,7 @@ String AssetReader::getFilePath(StringView name) {
 
 String AssetReader::getLoadPath(StringView name) {
   if (!name.starts_with("user://") &&
-      !Script::getBasePath().starts_with("user://") && isArchiveMounted()) {
+      !Script::getBaseDirectory().starts_with("user://") && isArchiveMounted()) {
     return archiveEntryPath(name);
   }
   return getFilePath(name);
@@ -315,7 +297,7 @@ bool AssetReader::isArchivePath(StringView path) {
 
 bool AssetReader::exists(StringView name) {
   if (!name.starts_with("user://") &&
-      !Script::getBasePath().starts_with("user://") && isArchiveMounted()) {
+      !Script::getBaseDirectory().starts_with("user://") && isArchiveMounted()) {
     const String path = archiveEntryPath(name);
     if (!path.empty() && archiveEntryExists(path)) {
       return true;

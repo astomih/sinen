@@ -507,7 +507,7 @@ void Model::load(StringView path) {
     String modelBytes;
     Log::info("Loading model from path: {}", pathStr);
 #if defined(SINEN_PLATFORM_EMSCRIPTEN) || defined(EMSCRIPTEN)
-    modelBytes = AssetReader::openAsString(pathStr);
+    modelBytes = AssetReader::readAsString(pathStr);
     if (!modelBytes.empty()) {
       Log::info("Model path is empty, trying to load from memory");
       const String hint = assimpHintFromPath(pathStr);
@@ -518,7 +518,7 @@ void Model::load(StringView path) {
               modelBytes.size());
 #else
     if (AssetReader::isArchiveMounted() && AssetReader::exists(pathStr)) {
-      modelBytes = AssetReader::openAsString(pathStr);
+      modelBytes = AssetReader::readAsString(pathStr);
       const String hint = assimpHintFromPath(pathStr);
       scene = importer.ReadFileFromMemory(modelBytes.data(), modelBytes.size(),
                                           flags, hint.c_str());

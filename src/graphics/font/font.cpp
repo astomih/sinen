@@ -500,7 +500,7 @@ public:
 
   bool load(int pointSize, StringView fontName,
             FontMethod fontMethod) override {
-    const String data = AssetReader::openAsString(fontName);
+    const String data = AssetReader::readAsString(fontName);
     Array<unsigned char> bytes(data.begin(), data.end());
     return loadFromBytes(pointSize, std::move(bytes), fontMethod);
   }

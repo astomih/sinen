@@ -390,7 +390,7 @@ bool VideoReader::open(StringView path) {
   error.clear();
 
   if (AssetReader::isArchiveMounted() && AssetReader::exists(path)) {
-    String data = AssetReader::openAsString(path);
+    String data = AssetReader::readAsString(path);
     bytes.assign(data.begin(), data.end());
     if (bytes.empty()) {
       setError("empty video input file");

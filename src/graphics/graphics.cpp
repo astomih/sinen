@@ -35,8 +35,6 @@ static std::list<std::function<void()>> postDrawFuncs;
 static Ptr<gpu::Backend> backend;
 static Ptr<gpu::Device> device;
 static GPUBackendAPI currentBackendAPI = GPUBackendAPI::SDLGPU;
-static std::optional<GPUBackendAPI> requestedBackendSwitch;
-static bool requestedNextBackendSwitch = false;
 static Ptr<gpu::Texture> depthTexture;
 static Ptr<gpu::Sampler> sampler;
 static Ptr<gpu::Sampler> fontSampler;
@@ -214,8 +212,6 @@ static void releaseBackendResources() {
   Gui::shutdown();
   preDrawFuncs.clear();
   postDrawFuncs.clear();
-  requestedBackendSwitch = std::nullopt;
-  requestedNextBackendSwitch = false;
   currentPipeline = std::nullopt;
   customPipeline = std::nullopt;
   currentTextureBindings.clear();
@@ -243,65 +239,6 @@ static void releaseBackendResources() {
   isPrevDepthEnabled = true;
   isChangedRenderTarget = false;
   drawCallCountPerFrame = 0;
-}
-
-bool Graphics::switchBackend(GPUBackendAPI api) {
-  if (device && device->getBackendAPI() == api) {
-    return true;
-  }
-
-  const std::optional<GPUBackendAPI> previous =
-      device ? std::optional<GPUBackendAPI>(device->getBackendAPI())
-             : std::nullopt;
-  releaseBackendResources();
-  if (previous && !Window::recreate()) {
-    Log::error("Failed to recreate window for GPU backend switch");
-    return false;
-  }
-  if (initializeBackend(api)) {
-    Log::info("Switched GPU backend to {}", getBackendName().c_str());
-    return true;
-  }
-
-  Log::error("Failed to switch GPU backend to {}", getBackendName(api).c_str());
-  if (previous && initializeBackend(*previous)) {
-    Log::info("Restored GPU backend {}", getBackendName().c_str());
-  }
-  return false;
-}
-
-bool Graphics::switchToNextBackend() {
-  const auto backends = availableBackendAPIs();
-  if (backends.size() <= 1) {
-    return false;
-  }
-
-  GPUBackendAPI candidate = nextBackendAPI(getBackendAPI());
-  for (Size i = 0; i < backends.size() - 1; ++i) {
-    if (switchBackend(candidate)) {
-      return true;
-    }
-    candidate = nextBackendAPI(candidate);
-  }
-  return false;
-}
-
-void Graphics::requestBackendSwitch(GPUBackendAPI api) {
-  requestedBackendSwitch = api;
-}
-
-void Graphics::requestNextBackendSwitch() { requestedNextBackendSwitch = true; }
-
-bool Graphics::consumeRequestedNextBackendSwitch() {
-  const bool request = requestedNextBackendSwitch;
-  requestedNextBackendSwitch = false;
-  return request;
-}
-
-std::optional<GPUBackendAPI> Graphics::consumeRequestedBackendSwitch() {
-  auto request = requestedBackendSwitch;
-  requestedBackendSwitch = std::nullopt;
-  return request;
 }
 
 GPUBackendAPI Graphics::getBackendAPI() {

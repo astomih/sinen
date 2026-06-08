@@ -21,21 +21,22 @@
 
 using namespace sinen;
 
-static inline bool addOverflowSize(size_t a, size_t b, size_t *out) {
+namespace {
+inline bool addOverflowSize(size_t a, size_t b, size_t *out) {
   if (a > SIZE_MAX - b)
     return true;
   *out = a + b;
   return false;
 }
 
-static inline bool mulOverflowSize(size_t a, size_t b, size_t *out) {
+inline bool mulOverflowSize(size_t a, size_t b, size_t *out) {
   if (a != 0 && b > SIZE_MAX / a)
     return true;
   *out = a * b;
   return false;
 }
 
-static void *mallocCustom(size_t size) {
+void *mallocCustom(size_t size) {
   size_t totalSize;
   if (addOverflowSize(size, sizeof(Size), &totalSize))
     return nullptr;
@@ -48,7 +49,7 @@ static void *mallocCustom(size_t size) {
   return static_cast<void *>(m + 1);
 }
 
-static void *callocCustom(size_t nmemb, size_t size) {
+void *callocCustom(size_t nmemb, size_t size) {
   size_t payload;
   if (mulOverflowSize(nmemb, size, &payload))
     return nullptr;
@@ -66,8 +67,8 @@ static void *callocCustom(size_t nmemb, size_t size) {
   return static_cast<void *>(m + 1);
 }
 
-static void freeCustom(void *mem);
-static void *reallocCustom(void *src, size_t size) {
+void freeCustom(void *mem);
+void *reallocCustom(void *src, size_t size) {
   if (!src)
     return mallocCustom(size);
 
@@ -104,7 +105,7 @@ static void *reallocCustom(void *src, size_t size) {
   return dst;
 }
 
-static void freeCustom(void *mem) {
+void freeCustom(void *mem) {
   if (!mem)
     return;
 
@@ -112,37 +113,7 @@ static void freeCustom(void *mem) {
   GlobalAllocator::get()->deallocate(static_cast<void *>(m), *m);
 }
 
-static bool reloadSceneAfterGraphicsSwitch(bool switched) {
-  Script::runScene();
-  Script::doneReload();
-  return switched;
-}
-
-static bool restartSceneAfterGraphicsSwitch(bool switched) {
-  if (!Graphics::getDevice()) {
-    return false;
-  }
-  if (!Script::initialize()) {
-    Log::critical("Failed to reinitialize script after GPU backend switch");
-    return false;
-  }
-  return reloadSceneAfterGraphicsSwitch(switched);
-}
-
-static bool switchGraphicsBackend(GPUBackendAPI api) {
-  if (api == Graphics::getBackendAPI()) {
-    return true;
-  }
-  Script::shutdown();
-  const bool switched = Graphics::switchBackend(api);
-  return restartSceneAfterGraphicsSwitch(switched);
-}
-
-static bool switchToNextGraphicsBackend() {
-  Script::shutdown();
-  const bool switched = Graphics::switchToNextBackend();
-  return restartSceneAfterGraphicsSwitch(switched);
-}
+} // namespace
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
   ZoneScopedN("SDL_AppInit");
@@ -230,22 +201,20 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     Script::doneReload();
   }
   if (Keyboard::isPressed(Scancode::F8)) {
-    Graphics::requestNextBackendSwitch();
+    Script::shutdown();
+    Graphics::shutdown();
+    Window::shutdown();
+
+    Window::initialize("Sinen");
+    Script::initialize();
+    Graphics::initialize();
+    Script::runScene();
+    Script::doneReload();
   }
   if (Keyboard::isPressed(Scancode::F11)) {
     static bool fullscreen = false;
     fullscreen = !fullscreen;
     Window::setFullscreen(fullscreen);
-  }
-  if (Graphics::consumeRequestedNextBackendSwitch()) {
-    if (!switchToNextGraphicsBackend()) {
-      Log::error("Failed to switch to the next GPU backend");
-    }
-  }
-  if (auto requestedBackend = Graphics::consumeRequestedBackendSwitch()) {
-    if (!switchGraphicsBackend(*requestedBackend)) {
-      Log::error("Failed to switch requested GPU backend");
-    }
   }
   Window::prepareFrame();
   Input::prepareForUpdate();

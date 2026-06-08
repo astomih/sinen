@@ -35,16 +35,16 @@ static void updateNativeTexture(Ptr<gpu::Texture> texture, void *pPixels,
                                 int channels);
 
 namespace {
-constexpr uint8_t Ktx2Identifier[] = {0xAB, 0x4B, 0x54, 0x58, 0x20, 0x32,
+constexpr uint8_t ktx2Identifier[] = {0xAB, 0x4B, 0x54, 0x58, 0x20, 0x32,
                                       0x30, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A};
-constexpr uint32_t VkFormatR8Unorm = 9;
-constexpr uint32_t VkFormatR8G8Unorm = 16;
-constexpr uint32_t VkFormatR8G8B8Unorm = 23;
-constexpr uint32_t VkFormatR8G8B8Srgb = 29;
-constexpr uint32_t VkFormatR8G8B8A8Unorm = 37;
-constexpr uint32_t VkFormatR8G8B8A8Srgb = 43;
-constexpr uint32_t VkFormatB8G8R8A8Unorm = 44;
-constexpr uint32_t VkFormatB8G8R8A8Srgb = 50;
+constexpr uint32_t vkFormatR8Unorm = 9;
+constexpr uint32_t vkFormatR8G8Unorm = 16;
+constexpr uint32_t vkFormatR8G8B8Unorm = 23;
+constexpr uint32_t vkFormatR8G8B8Srgb = 29;
+constexpr uint32_t vkFormatR8G8B8A8Unorm = 37;
+constexpr uint32_t vkFormatR8G8B8A8Srgb = 43;
+constexpr uint32_t vkFormatB8G8R8A8Unorm = 44;
+constexpr uint32_t vkFormatB8G8R8A8Srgb = 50;
 
 struct AsyncTexture2DState {
   std::future<void> future;
@@ -62,8 +62,8 @@ static void scheduleOnPreDraw(std::function<void()> f) {
 }
 
 static bool hasKtx2Identifier(const void *data, size_t size) {
-  return size >= sizeof(Ktx2Identifier) &&
-         std::memcmp(data, Ktx2Identifier, sizeof(Ktx2Identifier)) == 0;
+  return size >= sizeof(ktx2Identifier) &&
+         std::memcmp(data, ktx2Identifier, sizeof(ktx2Identifier)) == 0;
 }
 
 static uint32_t mipExtent(uint32_t base, uint32_t level) {
@@ -111,22 +111,22 @@ static bool decodeKtx2(const uint8_t *bytes, size_t size,
   bool bgra = false;
   if (!transcodedToRgba) {
     switch (texture->vkFormat) {
-    case VkFormatR8Unorm:
+    case vkFormatR8Unorm:
       srcChannels = 1;
       break;
-    case VkFormatR8G8Unorm:
+    case vkFormatR8G8Unorm:
       srcChannels = 2;
       break;
-    case VkFormatR8G8B8Unorm:
-    case VkFormatR8G8B8Srgb:
+    case vkFormatR8G8B8Unorm:
+    case vkFormatR8G8B8Srgb:
       srcChannels = 3;
       break;
-    case VkFormatR8G8B8A8Unorm:
-    case VkFormatR8G8B8A8Srgb:
+    case vkFormatR8G8B8A8Unorm:
+    case vkFormatR8G8B8A8Srgb:
       srcChannels = 4;
       break;
-    case VkFormatB8G8R8A8Unorm:
-    case VkFormatB8G8R8A8Srgb:
+    case vkFormatB8G8R8A8Unorm:
+    case vkFormatB8G8R8A8Srgb:
       srcChannels = 4;
       bgra = true;
       break;

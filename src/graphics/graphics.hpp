@@ -31,12 +31,6 @@ class Graphics {
 public:
   static bool initialize();
   static void shutdown();
-  static bool switchBackend(GPUBackendAPI api);
-  static bool switchToNextBackend();
-  static void requestBackendSwitch(GPUBackendAPI api);
-  static void requestNextBackendSwitch();
-  static bool consumeRequestedNextBackendSwitch();
-  static std::optional<GPUBackendAPI> consumeRequestedBackendSwitch();
   static GPUBackendAPI getBackendAPI();
   static String getBackendName();
   static String getBackendName(GPUBackendAPI api);

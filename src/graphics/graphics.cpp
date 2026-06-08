@@ -124,7 +124,7 @@ static void setFullWindowViewport(const Ptr<gpu::RenderPass> &renderPass) {
   renderPass->setScissor(rect.x, rect.y, rect.width, rect.height);
 }
 bool Graphics::initialize() { return initializeBackend(selectBackendAPI()); }
-
+bool Graphics::initialize(GPUBackendAPI api) { return initializeBackend(api); }
 static bool initializeBackend(GPUBackendAPI api) {
   backend = gpu::RHI::createBackend(GlobalAllocator::get(), api);
   if (!backend)

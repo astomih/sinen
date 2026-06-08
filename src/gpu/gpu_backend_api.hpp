@@ -5,14 +5,14 @@
 
 namespace sinen {
 
-enum class GPUBackendAPI {
-  Vulkan,
+enum class GPUBackendAPI : int {
+  Vulkan = 0,
 #ifdef SINEN_PLATFORM_WINDOWS
   D3D12,
 #endif
   WebGPU,
   SDLGPU,
-
+  COUNT
 };
 
 } // namespace sinen

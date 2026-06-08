@@ -147,7 +147,9 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
   if (!Audio::initialize()) {
     Log::critical("Failed to initialize audio");
     Audio::shutdown();
-    // return SDL_APP_FAILURE;
+#ifndef SINEN_PLATFORM_EMSCRIPTEN
+    return SDL_APP_FAILURE;
+#endif
   }
   if (!Input::initialize()) {
     Log::critical("Failed to initialize input");
@@ -193,13 +195,16 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     Script::executeScene();
   }
   if (Keyboard::isPressed(Scancode::F8)) {
+    auto api = Graphics::getBackendAPI();
+    api = static_cast<GPUBackendAPI>((static_cast<Int32>(api) + 1) %
+                                     static_cast<Int32>(GPUBackendAPI::COUNT));
     Script::shutdown();
     Graphics::shutdown();
     Window::shutdown();
 
-    Window::initialize("Sinen");
+    Window::initialize("Sinen :" + Graphics::getBackendName(api));
     Script::initialize();
-    Graphics::initialize();
+    Graphics::initialize(static_cast<GPUBackendAPI>(api));
     Script::executeScene();
   }
   if (Keyboard::isPressed(Scancode::F11)) {

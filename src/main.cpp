@@ -7,7 +7,6 @@
 #include <math/random.hpp>
 #include <physics/physics.hpp>
 #include <platform/input/input.hpp>
-#include <platform/io/arguments.hpp>
 #include <platform/io/asset_reader.hpp>
 #include <platform/window/window.hpp>
 #include <script/script.hpp>
@@ -119,11 +118,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
   ZoneScopedN("SDL_AppInit");
   std::pmr::set_default_resource(GlobalAllocator::get());
   SDL_SetMemoryFunctions(mallocCustom, callocCustom, reallocCustom, freeCustom);
-  Arguments::argc = argc;
-  Arguments ::argv.resize(argc);
-  for (int i = 0; i < argc; i++) {
-    Arguments::argv[i] = argv[i];
-  }
   for (int i = 1; i < argc; i++) {
     StringView arg(argv[i]);
     if (arg.size() >= std::strlen(AssetReader::archiveExtension()) &&

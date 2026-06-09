@@ -6,6 +6,10 @@
 #include <cstring>
 
 namespace sinen {
+ComputeBuffer::~ComputeBuffer() {
+  buffer.reset();
+  bufferSize = 0;
+}
 ComputeBuffer::ComputeBuffer(UInt32 size) { create(size); }
 
 ComputeBuffer::ComputeBuffer(const Buffer &data) { upload(data); }

@@ -383,6 +383,7 @@ void Script::shutdown() {
     gDrawRef = LUA_NOREF;
   }
   lua_gc(gLua, LUA_GCCOLLECT, 0);
+  lua_gc(gLua, LUA_GCCOLLECT, 0);
   lua_close(gLua);
   gLua = nullptr;
   gScenePhase = ScriptScenePhase::Running;

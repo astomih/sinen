@@ -10,6 +10,7 @@ public:
   static constexpr const char *metaTableName() { return "sn.ComputePipeline"; }
 
   ComputePipeline() = default;
+  ~ComputePipeline() = default;
 
   void setShader(const Shader &shader);
   void setThreadGroupSize(UInt32 x, UInt32 y = 1, UInt32 z = 1);

@@ -81,6 +81,11 @@ Shader::Shader(const Ptr<gpu::Shader> &raw) {
     stage = toShaderStage(createInfo.stage);
   }
 }
+Shader::~Shader() {
+  shader.reset();
+  async.reset();
+}
+
 void Shader::load(StringView vertex_shader, ShaderStage stage,
                   int numUniformData) {
   this->shader.reset();

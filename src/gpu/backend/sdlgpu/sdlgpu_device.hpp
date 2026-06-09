@@ -52,6 +52,7 @@ public:
   acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) override;
   gpu::TextureFormat getSwapchainFormat() const override;
   void waitForGpuIdle() override;
+  void releaseResources() override;
   String getDriver() const override;
 
   std::shared_ptr<Device> get() {

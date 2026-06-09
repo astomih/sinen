@@ -84,8 +84,6 @@ static int lModelSetTexture(lua_State *L) {
 }
 void registerModel(lua_State *L) {
   luaL_newmetatable(L, Model::metaTableName());
-  luaPushcfunction2(L, udPtrGc<Model>);
-  lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
   luaPushcfunction2(L, lModelLoad);

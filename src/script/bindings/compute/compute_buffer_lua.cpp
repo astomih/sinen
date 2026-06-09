@@ -3,7 +3,6 @@
 #include <graphics/graphics.hpp>
 #include <script/luaapi.hpp>
 
-
 namespace sinen {
 static int lComputeBufferNew(lua_State *L) {
   if (lua_gettop(L) == 0) {
@@ -48,8 +47,6 @@ static int lComputeBufferSize(lua_State *L) {
 
 void registerComputeBuffer(lua_State *L) {
   luaL_newmetatable(L, ComputeBuffer::metaTableName());
-  luaPushcfunction2(L, udPtrGc<ComputeBuffer>);
-  lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
   luaPushcfunction2(L, lComputeBufferCreate);

@@ -77,9 +77,8 @@ static int lFontRegion(lua_State *L) {
   return 1;
 }
 void registerFont(lua_State *L) {
+
   luaL_newmetatable(L, Font::metaTableName());
-  luaPushcfunction2(L, udPtrGc<Font>);
-  lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
   luaPushcfunction2(L, lFontLoad);

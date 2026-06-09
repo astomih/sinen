@@ -20,6 +20,7 @@ public:
   };
 
   GraphicsPipeline() = default;
+  ~GraphicsPipeline();
 
   void setVertexShader(const Shader &shader);
   void setVertexInstancedShader(const Shader &shader);

@@ -30,6 +30,8 @@ public:
     return "sn.Raytracing.Pipeline";
   }
 
+  ~RaytracingPipeline();
+
   void addShader(const Shader &shader, const char *exportName);
   void addHitGroup(const char *exportName, UInt32 closestHitShaderIndex,
                    UInt32 anyHitShaderIndex, UInt32 intersectionShaderIndex);

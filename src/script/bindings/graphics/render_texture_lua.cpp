@@ -1,7 +1,8 @@
-#include <script/luaapi.hpp>
 #include <core/allocator/global_allocator.hpp>
 #include <graphics/graphics.hpp>
 #include <graphics/texture/render_texture.hpp>
+#include <script/luaapi.hpp>
+
 
 namespace sinen {
 static int lRenderTextureNew(lua_State *L) {
@@ -17,8 +18,6 @@ static int lRenderTextureCreate(lua_State *L) {
 }
 void registerRenderTexture(lua_State *L) {
   luaL_newmetatable(L, RenderTexture::metaTableName());
-  luaPushcfunction2(L, udPtrGc<RenderTexture>);
-  lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
   luaPushcfunction2(L, lRenderTextureCreate);

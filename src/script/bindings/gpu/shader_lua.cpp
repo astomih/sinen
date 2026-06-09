@@ -57,8 +57,6 @@ static int lShaderIsReady(lua_State *L) {
 
 void registerShader(lua_State *L) {
   luaL_newmetatable(L, Shader::metaTableName());
-  luaPushcfunction2(L, udPtrGc<Shader>);
-  lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
   luaPushcfunction2(L, lShaderLoad);

@@ -11,6 +11,7 @@ namespace sinen {
 
 static gpu::VertexInputState
 createVertexInputState(Allocator *allocator, std::bitset<32> featureFlags);
+GraphicsPipeline::~GraphicsPipeline() { pipeline.reset(); }
 void GraphicsPipeline::setVertexShader(const Shader &shader) {
   this->vertexShader = shader;
 }

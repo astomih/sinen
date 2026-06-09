@@ -69,13 +69,16 @@ RaytracingAccelerationStructure::RaytracingAccelerationStructure(
     Ptr<gpu::AccelerationStructure> accelerationStructure)
     : accelerationStructure(std::move(accelerationStructure)) {}
 
-Ptr<gpu::AccelerationStructure> RaytracingAccelerationStructure::getRaw() const {
+Ptr<gpu::AccelerationStructure>
+RaytracingAccelerationStructure::getRaw() const {
   return accelerationStructure;
 }
 
 UInt64 RaytracingAccelerationStructure::getDeviceAddress() const {
   return accelerationStructure ? accelerationStructure->getDeviceAddress() : 0;
 }
+
+RaytracingPipeline::~RaytracingPipeline() { pipeline.reset(); }
 
 void RaytracingPipeline::addShader(const Shader &shader,
                                    const char *exportName) {
@@ -170,9 +173,8 @@ Buffer RaytracingPipeline::getShaderGroupHandles(UInt32 firstGroup,
     return Buffer(BufferType::Binary, Ptr<void>(), 0);
   }
   const UInt32 handleSize = pipeline->getShaderGroupHandleSize();
-  Buffer out =
-      makeBuffer(static_cast<size_t>(handleSize) * groupCount,
-                 BufferType::Binary);
+  Buffer out = makeBuffer(static_cast<size_t>(handleSize) * groupCount,
+                          BufferType::Binary);
   if (!pipeline->getShaderGroupHandles(firstGroup, groupCount, out.data(),
                                        out.size())) {
     return Buffer(BufferType::Binary, Ptr<void>(), 0);
@@ -225,9 +227,8 @@ Ptr<RaytracingAccelerationStructure> createBottomLevelAccelerationStructure(
 Ptr<RaytracingAccelerationStructure> createTopLevelAccelerationStructure(
     const Array<gpu::RayTracingInstance> &instances,
     gpu::RayTracingBuildFlags flags, String *error) {
-  Buffer instanceData =
-      makeBuffer(sizeof(gpu::RayTracingInstance) * instances.size(),
-                 BufferType::Binary);
+  Buffer instanceData = makeBuffer(
+      sizeof(gpu::RayTracingInstance) * instances.size(), BufferType::Binary);
   if (!instances.empty()) {
     std::memcpy(instanceData.data(), instances.data(), instanceData.size());
   }
@@ -290,8 +291,8 @@ bool dispatchRays(const RaytracingPipeline &pipeline,
 
   for (size_t i = 0; i < info.uniforms.size(); ++i) {
     const auto &buffer = info.uniforms[i];
-    commandBuffer->pushComputeUniformData(static_cast<UInt32>(i),
-                                          buffer.data(), buffer.size());
+    commandBuffer->pushComputeUniformData(static_cast<UInt32>(i), buffer.data(),
+                                          buffer.size());
   }
 
   auto pass = commandBuffer->beginRayTracingPass();

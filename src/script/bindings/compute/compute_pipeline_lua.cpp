@@ -4,7 +4,6 @@
 #include <graphics/graphics.hpp>
 #include <script/luaapi.hpp>
 
-
 namespace sinen {
 static int lComputePipelineNew(lua_State *L) {
   udPushPtr<ComputePipeline>(L, makePtr<ComputePipeline>());
@@ -34,8 +33,6 @@ static int lComputePipelineSetThreadGroupSize(lua_State *L) {
 
 void registerComputePipeline(lua_State *L) {
   luaL_newmetatable(L, ComputePipeline::metaTableName());
-  luaPushcfunction2(L, udPtrGc<ComputePipeline>);
-  lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
   luaPushcfunction2(L, lComputePipelineSetShader);

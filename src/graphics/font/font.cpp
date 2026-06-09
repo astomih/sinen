@@ -461,7 +461,17 @@ public:
       : FontImpl() {
     load(point, file_name, fontMethod);
   }
-  ~FontImpl() {}
+  ~FontImpl() override {
+    packedChars.clear();
+    fontBytes.clear();
+    glyphLookup.clear();
+    texture.reset();
+    sheetSize = 0;
+    fallbackGlyphIndex = 0;
+    method = FontMethod::Bitmap;
+    distanceFieldRange = 1;
+    textCache.clear();
+  }
 
   bool loadFromBytes(int pointSize, Array<unsigned char> &&bytes,
                      FontMethod fontMethod) {
@@ -762,4 +772,3 @@ Ptr<Font> Font::create(int32_t point, StringView fileName, FontMethod method) {
   return makePtr<FontImpl>(point, fileName, method);
 }
 } // namespace sinen
-

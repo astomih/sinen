@@ -73,13 +73,15 @@ template <class T> static UdBox<T> *udNewRef(lua_State *L, T *ref) {
 template <class T> static Ptr<T> &udPtr(lua_State *L, int idx) {
   return *static_cast<Ptr<T> *>(luaL_checkudata(L, idx, T::metaTableName()));
 }
-template <class T> static int udPtrGc(lua_State *L) {
-  auto *ud = static_cast<Ptr<T> *>(lua_touserdata(L, 1));
-  ud->~Ptr<T>();
-  return 0;
+template <class T> static void udPtrGc(void *L) {
+  Ptr<T> *ud = static_cast<Ptr<T> *>(L);
+  if (ud && *ud) {
+    (*ud)->~T();
+    ud->~Ptr<T>();
+  }
 }
 template <class T> static void udPushPtr(lua_State *L, Ptr<T> value) {
-  void *mem = lua_newuserdata(L, sizeof(Ptr<T>));
+  void *mem = lua_newuserdatadtor(L, sizeof(Ptr<T>), udPtrGc<T>);
   new (mem) Ptr<T>(std::move(value));
   luaL_getmetatable(L, T::metaTableName());
   lua_setmetatable(L, -2);

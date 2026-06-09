@@ -1,15 +1,13 @@
 #include "binding.hpp"
 
 namespace sinen {
-void Binding::beginClass(const char *metaTableName, lua_CFunction gc,
-                         const char *className, lua_CFunction constructor) {
+void Binding::beginClass(const char *metaTableName, const char *className,
+                         lua_CFunction constructor) {
   pushSnNamed(L, className);
   registerFunction("new", constructor);
   lua_pop(L, 1);
 
   luaL_newmetatable(L, metaTableName);
-  luaPushcfunction2(L, gc);
-  lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
 }

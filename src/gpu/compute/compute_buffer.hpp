@@ -10,6 +10,8 @@ public:
   static constexpr const char *metaTableName() { return "sn.ComputeBuffer"; }
 
   ComputeBuffer() = default;
+  ~ComputeBuffer();
+
   explicit ComputeBuffer(UInt32 size);
   explicit ComputeBuffer(const Buffer &data);
 

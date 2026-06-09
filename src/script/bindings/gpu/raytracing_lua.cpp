@@ -501,8 +501,6 @@ static int lRaytracingDispatch(lua_State *L) {
 
 void registerRaytracing(lua_State *L) {
   luaL_newmetatable(L, RaytracingAccelerationStructure::metaTableName());
-  luaPushcfunction2(L, udPtrGc<RaytracingAccelerationStructure>);
-  lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
   luaPushcfunction2(L, lRaytracingAccelerationStructureGetDeviceAddress);
@@ -510,8 +508,6 @@ void registerRaytracing(lua_State *L) {
   lua_pop(L, 1);
 
   luaL_newmetatable(L, RaytracingPipeline::metaTableName());
-  luaPushcfunction2(L, udPtrGc<RaytracingPipeline>);
-  lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
   luaPushcfunction2(L, lRaytracingPipelineAddShader);

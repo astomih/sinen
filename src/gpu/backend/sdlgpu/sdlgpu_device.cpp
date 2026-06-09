@@ -1,5 +1,7 @@
 #include "sdlgpu_device.hpp"
 
+#include <core/logger/log.hpp>
+
 #ifndef EMSCRIPTEN
 #include "sdlgpu_buffer.hpp"
 #include "sdlgpu_command_buffer.hpp"
@@ -31,17 +33,22 @@ SDL_GPUShaderFormat shaderFormatFrom(ShaderFormat format) {
 }
 } // namespace
 
-Device::~Device() {
-  if (window)
+Device::~Device() { releaseResources(); }
+
+void Device::releaseResources() {
+  if (window && device) {
     SDL_ReleaseWindowFromGPUDevice(device, window);
-  SDL_DestroyGPUDevice(device);
+    window = nullptr;
+  }
+  if (device) {
+    SDL_DestroyGPUDevice(device);
+    device = nullptr;
+  }
 }
 
 void Device::claimWindow(void *window) {
   if (!SDL_ClaimWindowForGPUDevice(device, static_cast<SDL_Window *>(window))) {
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                 "Failed to claim window for GPU device:\n");
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, SDL_GetError());
+    Log::error("Failed to claim window for GPU device: {}", SDL_GetError());
   }
   this->window = static_cast<SDL_Window *>(window);
 }
@@ -120,11 +127,10 @@ Ptr<gpu::Shader> Device::createShader(const Shader::CreateInfo &createInfo) {
   }
 
   SDL_GPUShaderCreateInfo shaderCI = {};
-  shaderCI.stage = createInfo.stage == ShaderStage::Vertex
-                       ? SDL_GPU_SHADERSTAGE_VERTEX
-                       : createInfo.stage == ShaderStage::Fragment
-                             ? SDL_GPU_SHADERSTAGE_FRAGMENT
-                             : SDL_GPU_SHADERSTAGE_VERTEX;
+  shaderCI.stage =
+      createInfo.stage == ShaderStage::Vertex     ? SDL_GPU_SHADERSTAGE_VERTEX
+      : createInfo.stage == ShaderStage::Fragment ? SDL_GPU_SHADERSTAGE_FRAGMENT
+                                                  : SDL_GPU_SHADERSTAGE_VERTEX;
   shaderCI.code_size = createInfo.size;
   shaderCI.code = reinterpret_cast<const Uint8 *>(createInfo.data);
   shaderCI.format = nativeFormat;
@@ -158,58 +164,59 @@ Device::createGraphicsPipeline(const GraphicsPipeline::CreateInfo &createInfo) {
       downCast<Shader>(createInfo.fragmentShader)->getNative();
   {
     auto &rasterizerState = createInfo.rasterizerState;
-    auto &rasterizer_state = pipelineCI.rasterizer_state;
-    rasterizer_state.fill_mode =
+    auto &sdlRasterizerState = pipelineCI.rasterizer_state;
+    sdlRasterizerState.fill_mode =
         convert::FillModeFrom(createInfo.rasterizerState.fillMode);
-    rasterizer_state.cull_mode =
+    sdlRasterizerState.cull_mode =
         convert::CullModeFrom(createInfo.rasterizerState.cullMode);
-    rasterizer_state.front_face =
+    sdlRasterizerState.front_face =
         convert::FrontFaceFrom(createInfo.rasterizerState.frontFace);
-    rasterizer_state.depth_bias_constant_factor =
+    sdlRasterizerState.depth_bias_constant_factor =
         rasterizerState.depthBiasConstantFactor;
-    rasterizer_state.depth_bias_clamp = rasterizerState.depthBiasClamp;
-    rasterizer_state.depth_bias_slope_factor =
+    sdlRasterizerState.depth_bias_clamp = rasterizerState.depthBiasClamp;
+    sdlRasterizerState.depth_bias_slope_factor =
         rasterizerState.depthBiasSlopeFactor;
-    rasterizer_state.enable_depth_bias = rasterizerState.enableDepthBias;
-    rasterizer_state.enable_depth_clip = rasterizerState.enableDepthClip;
+    sdlRasterizerState.enable_depth_bias = rasterizerState.enableDepthBias;
+    sdlRasterizerState.enable_depth_clip = rasterizerState.enableDepthClip;
   }
   {
-    auto &multisample_state = pipelineCI.multisample_state;
+    auto &sdlMultisampleState = pipelineCI.multisample_state;
     auto &multiSampleState = createInfo.multiSampleState;
-    multisample_state.enable_mask = multiSampleState.enableMask;
-    multisample_state.sample_count =
+    sdlMultisampleState.enable_mask = multiSampleState.enableMask;
+    sdlMultisampleState.sample_count =
         convert::SampleCountFrom(multiSampleState.sampleCount);
-    multisample_state.sample_mask = multiSampleState.sampleMask;
+    sdlMultisampleState.sample_mask = multiSampleState.sampleMask;
   }
   {
-    auto &depth_stencil_state = pipelineCI.depth_stencil_state;
+    auto &sdlDepthStencilState = pipelineCI.depth_stencil_state;
     auto &depthStencilState = createInfo.depthStencilState;
-    depth_stencil_state.compare_op =
+    sdlDepthStencilState.compare_op =
         convert::CompareOpFrom(depthStencilState.compareOp);
 
-    depth_stencil_state.back_stencil_state.fail_op =
+    sdlDepthStencilState.back_stencil_state.fail_op =
         convert::StencilOpFrom(depthStencilState.backStencilState.failOp);
-    depth_stencil_state.back_stencil_state.pass_op =
+    sdlDepthStencilState.back_stencil_state.pass_op =
         convert::StencilOpFrom(depthStencilState.backStencilState.passOp);
-    depth_stencil_state.back_stencil_state.depth_fail_op =
+    sdlDepthStencilState.back_stencil_state.depth_fail_op =
         convert::StencilOpFrom(depthStencilState.backStencilState.depthFailOp);
-    depth_stencil_state.back_stencil_state.compare_op =
+    sdlDepthStencilState.back_stencil_state.compare_op =
         convert::CompareOpFrom(depthStencilState.backStencilState.compareOp);
 
-    depth_stencil_state.front_stencil_state.fail_op =
+    sdlDepthStencilState.front_stencil_state.fail_op =
         convert::StencilOpFrom(depthStencilState.frontStencilState.failOp);
-    depth_stencil_state.front_stencil_state.pass_op =
+    sdlDepthStencilState.front_stencil_state.pass_op =
         convert::StencilOpFrom(depthStencilState.frontStencilState.passOp);
-    depth_stencil_state.front_stencil_state.depth_fail_op =
+    sdlDepthStencilState.front_stencil_state.depth_fail_op =
         convert::StencilOpFrom(depthStencilState.frontStencilState.depthFailOp);
-    depth_stencil_state.front_stencil_state.compare_op =
+    sdlDepthStencilState.front_stencil_state.compare_op =
         convert::CompareOpFrom(depthStencilState.frontStencilState.compareOp);
 
-    depth_stencil_state.compare_mask = depthStencilState.compareMask;
-    depth_stencil_state.write_mask = depthStencilState.writeMask;
-    depth_stencil_state.enable_depth_test = depthStencilState.enableDepthTest;
-    depth_stencil_state.enable_depth_write = depthStencilState.enableDepthWrite;
-    depth_stencil_state.enable_stencil_test =
+    sdlDepthStencilState.compare_mask = depthStencilState.compareMask;
+    sdlDepthStencilState.write_mask = depthStencilState.writeMask;
+    sdlDepthStencilState.enable_depth_test = depthStencilState.enableDepthTest;
+    sdlDepthStencilState.enable_depth_write =
+        depthStencilState.enableDepthWrite;
+    sdlDepthStencilState.enable_stencil_test =
         depthStencilState.enableStencilTest;
   }
 
@@ -315,8 +322,11 @@ Device::createComputePipeline(const ComputePipeline::CreateInfo &createInfo) {
 }
 
 void Device::submitCommandBuffer(Ptr<gpu::CommandBuffer> commandBuffer) {
-  SDL_SubmitGPUCommandBuffer(
+  bool result = SDL_SubmitGPUCommandBuffer(
       downCast<CommandBuffer>(commandBuffer)->getNative());
+  if (!result) {
+    Log::error("Failed to submit command buffer: {}", SDL_GetError());
+  }
 }
 
 Ptr<gpu::Texture>
@@ -324,15 +334,14 @@ Device::acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) {
   auto raw = downCast<CommandBuffer>(commandBuffer);
   auto buffer = raw->getNative();
   if (buffer == nullptr) {
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                 "Command buffer is not valid for swapchain texture");
+    Log::error("Command buffer is not valid for swapchain texture");
     return nullptr;
   }
   SDL_GPUTexture *nativeTex = nullptr;
   SDL_WaitAndAcquireGPUSwapchainTexture(buffer, window, &nativeTex, nullptr,
                                         nullptr);
   if (nativeTex == nullptr) {
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s", SDL_GetError());
+    Log::error("Failed to acquire swapchain texture");
     return nullptr;
   }
 
@@ -351,8 +360,7 @@ gpu::TextureFormat Device::getSwapchainFormat() const {
   case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM:
     return gpu::TextureFormat::R8G8B8A8_UNORM;
   default:
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                 "Unsupported swapchain format: %d", format);
+    Log::error("Unsupported swapchain format: {}", static_cast<int>(format));
     SDL_assert(false && "Unsupported swapchain format");
     return gpu::TextureFormat::Invalid;
   };

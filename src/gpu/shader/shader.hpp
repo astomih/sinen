@@ -7,7 +7,6 @@
 #include <gpu/gpu.hpp>
 #include <gpu/shader/shader_stage.hpp>
 
-
 #include <cstdint>
 #include <future>
 
@@ -20,6 +19,7 @@ class Shader {
 public:
   Shader();
   Shader(const Ptr<gpu::Shader> &raw);
+  ~Shader();
 
   static constexpr const char *metaTableName() { return "sn.Shader"; }
 

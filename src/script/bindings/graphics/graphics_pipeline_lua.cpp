@@ -56,8 +56,6 @@ static int lPipelineBuild(lua_State *L) {
 }
 void registerPipeline(lua_State *L) {
   luaL_newmetatable(L, GraphicsPipeline::metaTableName());
-  luaPushcfunction2(L, udPtrGc<GraphicsPipeline>);
-  lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
   luaPushcfunction2(L, lPipelineSetVertexShader);

@@ -158,8 +158,8 @@ static int lVideoReaderLastError(lua_State *L) {
 
 void registerVideo(lua_State *L) {
   Binding writer(L);
-  writer.beginClass(VideoWriter::metaTableName(), udPtrGc<VideoWriter>,
-                    "VideoWriter", lVideoWriterNew);
+  writer.beginClass(VideoWriter::metaTableName(), "VideoWriter",
+                    lVideoWriterNew);
   writer.registerFunction("open", lVideoWriterOpen);
   writer.registerFunction("addFrame", lVideoWriterAddFrame);
   writer.registerFunction("addEncodedFrame", lVideoWriterAddEncodedFrame);
@@ -169,8 +169,8 @@ void registerVideo(lua_State *L) {
   writer.endClass();
 
   Binding reader(L);
-  reader.beginClass(VideoReader::metaTableName(), udPtrGc<VideoReader>,
-                    "VideoReader", lVideoReaderNew);
+  reader.beginClass(VideoReader::metaTableName(), "VideoReader",
+                    lVideoReaderNew);
   reader.registerFunction("open", lVideoReaderOpen);
   reader.registerFunction("close", lVideoReaderClose);
   reader.registerFunction("info", lVideoReaderInfo);

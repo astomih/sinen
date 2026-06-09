@@ -86,8 +86,6 @@ static int lSoundGetDirection(lua_State *L) {
 }
 void registerSound(lua_State *L) {
   luaL_newmetatable(L, Sound::metaTableName());
-  luaPushcfunction2(L, udPtrGc<Sound>);
-  lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
   luaPushcfunction2(L, lSoundLoad);

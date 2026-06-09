@@ -1,6 +1,3 @@
-#include <script/luaapi.hpp>
-#include <physics/physics.hpp>
-#include <physics/world3d.hpp>
 #include <core/data/hashmap.hpp>
 #include <core/data/ptr.hpp>
 #include <core/def/types.hpp>
@@ -8,6 +5,10 @@
 #include <math/matrix.hpp>
 #include <math/quaternion.hpp>
 #include <math/vector.hpp>
+#include <physics/physics.hpp>
+#include <physics/world3d.hpp>
+#include <script/luaapi.hpp>
+
 
 namespace sinen {
 static int lWorld3DNew(lua_State *L) {
@@ -103,8 +104,6 @@ static int lWorld3DUpdate(lua_State *L) {
 }
 void registerPhysics(lua_State *L) {
   luaL_newmetatable(L, World3D::metaTableName());
-  luaPushcfunction2(L, udPtrGc<World3D>);
-  lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
   luaPushcfunction2(L, lWorld3DNewBoxCollider);

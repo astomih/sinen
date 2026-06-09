@@ -1,6 +1,7 @@
-#include <script/luaapi.hpp>
 #include <audio/synth.hpp>
 #include <core/logger/log.hpp>
+#include <script/luaapi.hpp>
+
 
 namespace sinen {
 static int lSynthNew(lua_State *L) {
@@ -51,8 +52,6 @@ static int lSynthSetADSR(lua_State *L) {
 
 void registerSynth(lua_State *L) {
   luaL_newmetatable(L, Synth::metaTableName());
-  luaPushcfunction2(L, udPtrGc<Synth>);
-  lua_setfield(L, -2, "__gc");
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
 

@@ -331,7 +331,7 @@ export type ShaderFormat = {
 --- SPIR-V:
 ---   Vertex:   set 0 = sampled textures, then storage textures, then storage buffers; set 1 = uniform buffers
 ---   Fragment: set 2 = sampled textures, then storage textures, then storage buffers; set 3 = uniform buffers
----   Compute:  set 0 = storage buffers; set 1 = uniform buffers
+---   Compute:  set 0 = sampled textures/read-only storage resources; set 1 = read-write storage resources; set 2 = uniform buffers
 ---   Ray tracing pipeline: set 4 = acceleration structures, then storage buffers; set 5 = uniform buffers
 ---   Ray query in graphics/compute shaders: set 6 = acceleration structures
 ---
@@ -340,7 +340,7 @@ export type ShaderFormat = {
 ---             s[n]/space0 = samplers matching sampled-texture indices; b[n]/space1 = uniform buffers
 ---   Pixel:    t[n]/space2 = sampled textures, then storage textures, then storage buffers;
 ---             s[n]/space2 = samplers matching sampled-texture indices; b[n]/space3 = uniform buffers
----   Compute:  u[n]/space0 = storage buffers; b[n]/space0 = uniform buffers
+---   Compute:  t[n]/space0 = sampled textures/read-only storage resources; u[n]/space1 = read-write storage resources; b[n]/space2 = uniform buffers
 ---   Ray tracing pipeline: t[n]/space4 = acceleration structures; u[n]/space4 = storage buffers; b[n]/space5 = uniform buffers
 ---   Ray query in graphics/compute shaders: t[n]/space6 = acceleration structures
 export type Shader = {

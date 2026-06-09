@@ -1137,7 +1137,7 @@ void ComputePass::bindDescriptorSet() {
   }
   std::array<VkDescriptorSet, 2> sets = {storageBufferSet, uniformSet};
   vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE,
-                          layoutInfo.pipelineLayout, 0,
+                          layoutInfo.pipelineLayout, 1,
                           static_cast<uint32_t>(sets.size()), sets.data(),
                           dynamicOffsets.size(), dynamicOffsets.data());
   ensureAccelerationStructureDescriptorSet();

@@ -1,8 +1,8 @@
 static const uint ImageWidth = 128;
 static const uint ImageHeight = 128;
 
-[[vk::binding(0, 0)]]
-RWByteAddressBuffer outputPixels : register(u0, space0);
+[[vk::binding(0, 1)]]
+RWByteAddressBuffer outputPixels : register(u0, space1);
 
 [shader("compute")]
 [numthreads(8, 8, 1)]

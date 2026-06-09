@@ -4,8 +4,8 @@ static const uint ImageHeight = 288;
 [[vk::binding(0, 6)]]
 RaytracingAccelerationStructure scene : register(t0, space6);
 
-[[vk::binding(0, 0)]]
-RWByteAddressBuffer outputPixels : register(u0, space0);
+[[vk::binding(0, 1)]]
+RWByteAddressBuffer outputPixels : register(u0, space1);
 
 bool traceScene(float2 uv, out float hitT) {
   RayDesc ray;

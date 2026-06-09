@@ -461,18 +461,17 @@ Device::createComputePipeline(const ComputePipeline::CreateInfo &createInfo) {
   VkDescriptorSetLayout uniformSetLayout = createDescriptorSetLayout(
       device, uniformBindings(uniformCount, VK_SHADER_STAGE_COMPUTE_BIT),
       "compute uniforms");
-  VkDescriptorSetLayout emptySetLayout = VK_NULL_HANDLE;
+  VkDescriptorSetLayout emptySetLayout =
+      createDescriptorSetLayout(device, {}, "compute empty");
   VkDescriptorSetLayout accelerationStructureSetLayout = VK_NULL_HANDLE;
   if (rayQuerySupported) {
-    emptySetLayout =
-        createDescriptorSetLayout(device, {}, "compute ray query empty");
     accelerationStructureSetLayout = createDescriptorSetLayout(
         device, accelerationStructureBindings(8, VK_SHADER_STAGE_COMPUTE_BIT),
         "compute ray query acceleration structures");
   }
-  if (!storageSetLayout || !uniformSetLayout ||
+  if (!emptySetLayout || !storageSetLayout || !uniformSetLayout ||
       (rayQuerySupported &&
-       (!emptySetLayout || !accelerationStructureSetLayout))) {
+       accelerationStructureSetLayout == VK_NULL_HANDLE)) {
     if (accelerationStructureSetLayout)
       vkDestroyDescriptorSetLayout(device, accelerationStructureSetLayout,
                                    nullptr);
@@ -486,15 +485,15 @@ Device::createComputePipeline(const ComputePipeline::CreateInfo &createInfo) {
   }
 
   std::array<VkDescriptorSetLayout, 7> rayQuerySetLayouts = {
+      emptySetLayout,
       storageSetLayout,
       uniformSetLayout,
       emptySetLayout,
       emptySetLayout,
       emptySetLayout,
-      emptySetLayout,
       accelerationStructureSetLayout};
-  std::array<VkDescriptorSetLayout, 2> setLayouts = {storageSetLayout,
-                                                     uniformSetLayout};
+  std::array<VkDescriptorSetLayout, 3> setLayouts = {
+      emptySetLayout, storageSetLayout, uniformSetLayout};
   VkPipelineLayoutCreateInfo layoutCI{};
   layoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
   layoutCI.setLayoutCount = static_cast<uint32_t>(
@@ -545,9 +544,9 @@ Device::createComputePipeline(const ComputePipeline::CreateInfo &createInfo) {
   }
 
   ComputePipeline::LayoutInfo layoutInfo{};
+  layoutInfo.emptySetLayout = emptySetLayout;
   layoutInfo.storageBufferSetLayout = storageSetLayout;
   layoutInfo.uniformSetLayout = uniformSetLayout;
-  layoutInfo.emptySetLayout = emptySetLayout;
   layoutInfo.accelerationStructureSetLayout = accelerationStructureSetLayout;
   layoutInfo.pipelineLayout = pipelineLayout;
   layoutInfo.storageBufferBindingCount = storageBufferCount;

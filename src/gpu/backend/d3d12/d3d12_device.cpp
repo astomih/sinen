@@ -580,7 +580,7 @@ void Device::createComputeRootSignature() {
   ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
   ranges[0].NumDescriptors = 16;
   ranges[0].BaseShaderRegister = 0;
-  ranges[0].RegisterSpace = 0;
+  ranges[0].RegisterSpace = 1;
   ranges[0].OffsetInDescriptorsFromTableStart =
       D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
   ranges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
@@ -598,7 +598,7 @@ void Device::createComputeRootSignature() {
   for (UINT i = 0; i < 4; ++i) {
     params[i + 1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     params[i + 1].Descriptor.ShaderRegister = i;
-    params[i + 1].Descriptor.RegisterSpace = 0;
+    params[i + 1].Descriptor.RegisterSpace = 2;
     params[i + 1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
   }
   params[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;

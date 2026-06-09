@@ -51,8 +51,18 @@ template <class T> static int udGc(lua_State *L) {
   }
   return 0;
 }
+template <class T> static void udBoxDtor(void *p) {
+  auto *ud = static_cast<UdBox<T> *>(p);
+  if (ud && ud->owned && ud->ptr) {
+    ud->ptr->~T();
+    ud->ptr = nullptr;
+  }
+  if (ud) {
+    ud->~UdBox<T>();
+  }
+}
 template <class T> static UdBox<T> *udNewOwned(lua_State *L, T value) {
-  void *mem = lua_newuserdata(L, sizeof(UdBox<T>));
+  void *mem = lua_newuserdatadtor(L, sizeof(UdBox<T>), udBoxDtor<T>);
   auto *ud = new (mem) UdBox<T>();
   ud->owned = true;
   ud->ptr = new (ud->storage) T(std::move(value));
@@ -61,7 +71,7 @@ template <class T> static UdBox<T> *udNewOwned(lua_State *L, T value) {
   return ud;
 }
 template <class T> static UdBox<T> *udNewRef(lua_State *L, T *ref) {
-  void *mem = lua_newuserdata(L, sizeof(UdBox<T>));
+  void *mem = lua_newuserdatadtor(L, sizeof(UdBox<T>), udBoxDtor<T>);
   auto *ud = new (mem) UdBox<T>();
   ud->owned = false;
   ud->ptr = ref;
@@ -75,8 +85,7 @@ template <class T> static Ptr<T> &udPtr(lua_State *L, int idx) {
 }
 template <class T> static void udPtrGc(void *L) {
   Ptr<T> *ud = static_cast<Ptr<T> *>(L);
-  if (ud && *ud) {
-    (*ud)->~T();
+  if (ud) {
     ud->~Ptr<T>();
   }
 }

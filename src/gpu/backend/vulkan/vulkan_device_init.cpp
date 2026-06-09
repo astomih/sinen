@@ -91,14 +91,15 @@ Device::~Device() {
   if (commandPool != VK_NULL_HANDLE) {
     vkDestroyCommandPool(device, commandPool, nullptr);
   }
+  if (vmaAllocator != VK_NULL_HANDLE) {
+    vmaDestroyAllocator(vmaAllocator);
+    vmaAllocator = VK_NULL_HANDLE;
+  }
   if (device != VK_NULL_HANDLE) {
     vkDestroyDevice(device, nullptr);
   }
   if (surface != VK_NULL_HANDLE && window) {
     SDL_Vulkan_DestroySurface(instance, surface, nullptr);
-  }
-  if (vmaAllocator != VK_NULL_HANDLE) {
-    vmaDestroyAllocator(vmaAllocator);
   }
   if (debugMessenger != VK_NULL_HANDLE) {
     vkDestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);

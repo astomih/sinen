@@ -89,6 +89,8 @@ local written = false
 local function formatName(format: any): string
 	if format == sn.ShaderFormat.SPIRV then
 		return "SPIR-V"
+	elseif format == sn.ShaderFormat.SPIRV_1_3 then
+		return "SPIR-V 1.3"
 	elseif format == sn.ShaderFormat.WGSL then
 		return "WGSL"
 	elseif format == sn.ShaderFormat.DXIL then
@@ -153,6 +155,7 @@ end
 local function addBundleTask(task: SourceTask)
 	local entries = {
 		compileTask(task, sn.ShaderFormat.SPIRV),
+		compileTask(task, sn.ShaderFormat.SPIRV_1_3),
 		compileTask(task, sn.ShaderFormat.WGSL),
 		compileTask(task, sn.ShaderFormat.DXIL),
 	}

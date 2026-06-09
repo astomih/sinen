@@ -27,6 +27,15 @@ local function compileShaderBundle(path: string, stage: any, numSamplers: number
 		},
 		{
 			stage = stage,
+			format = sn.ShaderFormat.SPIRV_1_3,
+			code = compileShader(shaderSource, stage, sn.ShaderFormat.SPIRV_1_3),
+			numSamplers = numSamplers,
+			numStorageBuffers = 0,
+			numStorageTextures = 0,
+			numUniformBuffers = numUniformBuffers,
+		},
+		{
+			stage = stage,
 			format = sn.ShaderFormat.WGSL,
 			code = compileShader(shaderSource, stage, sn.ShaderFormat.WGSL),
 			numSamplers = numSamplers,

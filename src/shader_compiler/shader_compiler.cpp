@@ -79,6 +79,11 @@ Array<char> ShaderCompiler::compileSource(StringView moduleName,
     targetDesc[0].profile = globalSession->findProfile("spirv_1_4");
     emitSpirvDirectly = true;
     break;
+  case ShaderFormat::SPIRV_1_3:
+    targetDesc[0].format = SLANG_SPIRV;
+    targetDesc[0].profile = globalSession->findProfile("spirv_1_3");
+    emitSpirvDirectly = true;
+    break;
   case ShaderFormat::WGSL:
     targetDesc[0].format = SLANG_WGSL;
     targetDesc[0].profile = globalSession->findProfile("wgsl_1_0");

@@ -320,6 +320,7 @@ export type ShaderStage = {
 
 export type ShaderFormat = {
 	SPIRV: ShaderFormat,
+	SPIRV_1_3: ShaderFormat,
 	WGSL: ShaderFormat,
 	DXBC: ShaderFormat,
 	DXIL: ShaderFormat,

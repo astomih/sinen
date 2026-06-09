@@ -22,6 +22,7 @@ namespace {
 SDL_GPUShaderFormat shaderFormatFrom(ShaderFormat format) {
   switch (format) {
   case ShaderFormat::SPIRV:
+  case ShaderFormat::SPIRV_1_3:
     return SDL_GPU_SHADERFORMAT_SPIRV;
   case ShaderFormat::DXBC:
     return SDL_GPU_SHADERFORMAT_DXBC;
@@ -338,8 +339,13 @@ Device::acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) {
     return nullptr;
   }
   SDL_GPUTexture *nativeTex = nullptr;
-  SDL_WaitAndAcquireGPUSwapchainTexture(buffer, window, &nativeTex, nullptr,
-                                        nullptr);
+  Uint32 width = 0;
+  Uint32 height = 0;
+  if (!SDL_WaitAndAcquireGPUSwapchainTexture(buffer, window, &nativeTex,
+                                            &width, &height)) {
+    Log::error("Failed to acquire swapchain texture: {}", SDL_GetError());
+    return nullptr;
+  }
   if (nativeTex == nullptr) {
     Log::error("Failed to acquire swapchain texture");
     return nullptr;
@@ -347,6 +353,14 @@ Device::acquireSwapchainTexture(Ptr<gpu::CommandBuffer> commandBuffer) {
 
   Texture::CreateInfo ci{};
   ci.allocator = commandBuffer->getCreateInfo().allocator;
+  ci.type = TextureType::Texture2D;
+  ci.format = getSwapchainFormat();
+  ci.usage = TextureUsage::ColorTarget;
+  ci.width = width;
+  ci.height = height;
+  ci.layerCountOrDepth = 1;
+  ci.numLevels = 1;
+  ci.sampleCount = SampleCount::x1;
   auto texture = makePtr<Texture>(commandBuffer->getCreateInfo().allocator, ci,
                                   downCast<Device>(getPtr()), nativeTex, true);
   return texture;

@@ -7,6 +7,7 @@ enum class ShaderFormat {
   WGSL,
   DXBC,
   DXIL,
+  SPIRV_1_3,
 };
 }
 

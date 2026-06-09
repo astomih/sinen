@@ -168,6 +168,8 @@ ShaderFormat ShaderBundle::preferredFormatFor(GPUBackendAPI backendAPI) {
   switch (backendAPI) {
   case GPUBackendAPI::WebGPU:
     return ShaderFormat::WGSL;
+  case GPUBackendAPI::SDLGPU:
+    return ShaderFormat::SPIRV_1_3;
 #ifdef SINEN_PLATFORM_WINDOWS
   case GPUBackendAPI::D3D12:
     return ShaderFormat::DXIL;

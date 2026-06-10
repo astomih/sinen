@@ -1,11 +1,12 @@
 #ifndef SINEN_WEBGPU_COMMAND_BUFFER_HPP
 #define SINEN_WEBGPU_COMMAND_BUFFER_HPP
 
+#include "webgpu_api.hpp"
 #include <gpu/gpu_command_buffer.hpp>
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include "webgpu_api.hpp"
+
 
 namespace sinen::gpu::webgpu {
 class Device;
@@ -21,10 +22,7 @@ struct UniformBinding {
 class CommandBuffer : public gpu::CommandBuffer {
 public:
   CommandBuffer(const CreateInfo &createInfo, const Ptr<Device> &device,
-                WGPUCommandEncoder commandEncoder)
-      : gpu::CommandBuffer(createInfo), device(device),
-        commandEncoder(commandEncoder), commandBuffer(nullptr),
-        shouldPresent(false), submitted(false) {}
+                WGPUCommandEncoder commandEncoder);
   ~CommandBuffer() override;
 
   Ptr<Device> getDevice() const { return device; }
@@ -34,6 +32,12 @@ public:
   void setSubmitted(bool value) { submitted = value; }
   void setShouldPresent(bool value) { shouldPresent = value; }
   bool getShouldPresent() const { return shouldPresent; }
+  void keepAlive(Ptr<gpu::Buffer> resource);
+  void keepAlive(Ptr<gpu::Texture> resource);
+  void keepAlive(Ptr<gpu::Sampler> resource);
+  void keepAlive(Ptr<gpu::GraphicsPipeline> resource);
+  void keepAlive(Ptr<gpu::ComputePipeline> resource);
+  void keepAlive(Ptr<gpu::TransferBuffer> resource);
   const std::unordered_map<UInt32, UniformBinding> &
   getVertexUniformBindings() const {
     return vertexUniformBindings;
@@ -83,6 +87,12 @@ private:
   std::unordered_map<UInt32, UniformBinding> fragmentUniformBindings;
   std::unordered_map<UInt32, UniformBinding> computeUniformBindings;
   std::vector<WGPUBuffer> retainedUniformBuffers;
+  std::vector<Ptr<gpu::Buffer>> referencedBuffers;
+  std::vector<Ptr<gpu::Texture>> referencedTextures;
+  std::vector<Ptr<gpu::Sampler>> referencedSamplers;
+  std::vector<Ptr<gpu::GraphicsPipeline>> referencedPipelines;
+  std::vector<Ptr<gpu::ComputePipeline>> referencedComputePipelines;
+  std::vector<Ptr<gpu::TransferBuffer>> referencedTransferBuffers;
 };
 
 class ComputePass : public gpu::ComputePass {

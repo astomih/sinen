@@ -1,9 +1,9 @@
 #include "webgpu_command_buffer.hpp"
 
+#include "webgpu_buffer.hpp"
+#include "webgpu_compute_pipeline.hpp"
 #include "webgpu_convert.hpp"
 #include "webgpu_copy_pass.hpp"
-#include "webgpu_compute_pipeline.hpp"
-#include "webgpu_buffer.hpp"
 #include "webgpu_device.hpp"
 #include "webgpu_render_pass.hpp"
 #include "webgpu_texture.hpp"
@@ -11,7 +11,22 @@
 #include <vector>
 
 namespace sinen::gpu::webgpu {
+CommandBuffer::CommandBuffer(const CreateInfo &createInfo,
+                             const Ptr<Device> &device,
+                             WGPUCommandEncoder commandEncoder)
+    : gpu::CommandBuffer(createInfo), device(device),
+      commandEncoder(commandEncoder), commandBuffer(nullptr),
+      shouldPresent(false), submitted(false), referencedBuffers(),
+      referencedTextures(), referencedSamplers(), referencedPipelines(),
+      referencedComputePipelines(), referencedTransferBuffers() {}
 CommandBuffer::~CommandBuffer() {
+  referencedBuffers.clear();
+  referencedTextures.clear();
+  referencedSamplers.clear();
+  referencedPipelines.clear();
+  referencedComputePipelines.clear();
+  referencedTransferBuffers.clear();
+
   releaseUniformBindings();
   if (commandBuffer) {
     wgpuCommandBufferRelease(commandBuffer);
@@ -61,6 +76,42 @@ void CommandBuffer::releaseUniformBindings() {
     }
   }
   computeUniformBindings.clear();
+}
+
+void CommandBuffer::keepAlive(Ptr<gpu::Buffer> resource) {
+  if (resource) {
+    referencedBuffers.push_back(std::move(resource));
+  }
+}
+
+void CommandBuffer::keepAlive(Ptr<gpu::Texture> resource) {
+  if (resource) {
+    referencedTextures.push_back(std::move(resource));
+  }
+}
+
+void CommandBuffer::keepAlive(Ptr<gpu::Sampler> resource) {
+  if (resource) {
+    referencedSamplers.push_back(std::move(resource));
+  }
+}
+
+void CommandBuffer::keepAlive(Ptr<gpu::GraphicsPipeline> resource) {
+  if (resource) {
+    referencedPipelines.push_back(std::move(resource));
+  }
+}
+
+void CommandBuffer::keepAlive(Ptr<gpu::ComputePipeline> resource) {
+  if (resource) {
+    referencedComputePipelines.push_back(std::move(resource));
+  }
+}
+
+void CommandBuffer::keepAlive(Ptr<gpu::TransferBuffer> resource) {
+  if (resource) {
+    referencedTransferBuffers.push_back(std::move(resource));
+  }
 }
 
 void CommandBuffer::clearDrawBindings() {
@@ -156,7 +207,8 @@ Ptr<gpu::ComputePass> CommandBuffer::beginComputePass(
   auto nativePass = wgpuCommandEncoderBeginComputePass(commandEncoder, &desc);
   Array<StorageTextureBinding> textures(storageTextures,
                                         getCreateInfo().allocator);
-  Array<StorageBufferBinding> buffers(storageBuffers, getCreateInfo().allocator);
+  Array<StorageBufferBinding> buffers(storageBuffers,
+                                      getCreateInfo().allocator);
   return makePtr<ComputePass>(getCreateInfo().allocator, *this, nativePass,
                               std::move(textures), std::move(buffers));
 }
@@ -179,6 +231,7 @@ CommandBuffer::beginRenderPass(const Array<ColorTargetInfo> &infos,
   transientViews.reserve(infos.size() + 1);
 
   for (int i = 0; i < infos.size(); ++i) {
+    keepAlive(infos[i].texture);
     auto tex = downCast<Texture>(infos[i].texture);
     WGPUTextureView view = tex ? tex->getView() : nullptr;
     if (!view && tex && tex->getNative()) {
@@ -204,6 +257,7 @@ CommandBuffer::beginRenderPass(const Array<ColorTargetInfo> &infos,
   WGPURenderPassDepthStencilAttachment depthStencilAttachment{};
   WGPURenderPassDepthStencilAttachment *depthStencilAttachmentPtr = nullptr;
   if (depthStencilInfo.texture) {
+    keepAlive(depthStencilInfo.texture);
     auto depthTex = downCast<Texture>(depthStencilInfo.texture);
     WGPUTextureView depthView = depthTex ? depthTex->getView() : nullptr;
     if (!depthView && depthTex && depthTex->getNative()) {
@@ -289,6 +343,7 @@ void ComputePass::bindComputePipeline(
   if (!nativePipeline || !pass) {
     return;
   }
+  commandBuffer.keepAlive(computePipeline);
   wgpuComputePassEncoderSetPipeline(pass, nativePipeline->getNative());
   bindResources();
 }
@@ -307,6 +362,7 @@ void ComputePass::bindResources() {
       if (!buffer) {
         continue;
       }
+      commandBuffer.keepAlive(storageBuffers[i].buffer);
       WGPUBindGroupEntry entry{};
       entry.binding = i;
       entry.buffer = buffer->getNative();
@@ -315,8 +371,8 @@ void ComputePass::bindResources() {
       entries.push_back(entry);
     }
     if (!entries.empty()) {
-      auto layout = wgpuComputePipelineGetBindGroupLayout(
-          nativePipeline->getNative(), 0);
+      auto layout =
+          wgpuComputePipelineGetBindGroupLayout(nativePipeline->getNative(), 1);
       WGPUBindGroupDescriptor desc{};
       desc.layout = layout;
       desc.entryCount = entries.size();
@@ -325,7 +381,7 @@ void ComputePass::bindResources() {
           commandBuffer.getDevice()->getNative(), &desc);
       wgpuBindGroupLayoutRelease(layout);
       if (storageBindGroup) {
-        wgpuComputePassEncoderSetBindGroup(pass, 0, storageBindGroup, 0,
+        wgpuComputePassEncoderSetBindGroup(pass, 1, storageBindGroup, 0,
                                            nullptr);
       }
     }
@@ -347,8 +403,8 @@ void ComputePass::bindResources() {
       entries.push_back(entry);
     }
     if (!entries.empty()) {
-      auto layout = wgpuComputePipelineGetBindGroupLayout(
-          nativePipeline->getNative(), 1);
+      auto layout =
+          wgpuComputePipelineGetBindGroupLayout(nativePipeline->getNative(), 2);
       WGPUBindGroupDescriptor desc{};
       desc.layout = layout;
       desc.entryCount = entries.size();
@@ -357,7 +413,7 @@ void ComputePass::bindResources() {
           commandBuffer.getDevice()->getNative(), &desc);
       wgpuBindGroupLayoutRelease(layout);
       if (uniformBindGroup) {
-        wgpuComputePassEncoderSetBindGroup(pass, 1, uniformBindGroup, 0,
+        wgpuComputePassEncoderSetBindGroup(pass, 2, uniformBindGroup, 0,
                                            nullptr);
       }
     }

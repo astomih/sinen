@@ -51,6 +51,7 @@ void RenderPass::bindGraphicsPipeline(Ptr<gpu::GraphicsPipeline> pipeline) {
   if (!nativePipeline) {
     return;
   }
+  commandBuffer.keepAlive(pipeline);
   wgpuRenderPassEncoderSetPipeline(renderPass, nativePipeline->getNative());
 }
 
@@ -61,6 +62,7 @@ void RenderPass::bindVertexBuffers(UInt32 startSlot,
     if (!buffer) {
       continue;
     }
+    commandBuffer.keepAlive(bindings[i].buffer);
     wgpuRenderPassEncoderSetVertexBuffer(renderPass, startSlot + i,
                                          buffer->getNative(),
                                          bindings[i].offset, WGPU_WHOLE_SIZE);
@@ -73,6 +75,7 @@ void RenderPass::bindIndexBuffer(const BufferBinding &binding,
   if (!buffer) {
     return;
   }
+  commandBuffer.keepAlive(binding.buffer);
   wgpuRenderPassEncoderSetIndexBuffer(
       renderPass, buffer->getNative(),
       convert::IndexFormatFrom(indexElementSize), binding.offset,
@@ -211,6 +214,8 @@ void RenderPass::applyBindings() {
     samplerEntry.sampler = sampler->getNative();
     entries.push_back(samplerEntry);
 
+    commandBuffer.keepAlive(binding.texture);
+    commandBuffer.keepAlive(binding.sampler);
     retainedTextures.push_back(binding.texture);
     retainedSamplers.push_back(binding.sampler);
   }

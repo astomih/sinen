@@ -30,6 +30,8 @@ void CopyPass::uploadTexture(const TextureTransferInfo &src,
                  "uploadTexture failed: invalid transfer buffer or texture");
     return;
   }
+  commandBuffer.keepAlive(src.transferBuffer);
+  commandBuffer.keepAlive(dst.texture);
 
   const UInt8 *uploadData = transfer->getUploadData();
   if (!uploadData) {
@@ -79,6 +81,8 @@ void CopyPass::downloadTexture(const TextureRegion &src,
                  "downloadTexture failed: invalid transfer buffer or texture");
     return;
   }
+  commandBuffer.keepAlive(src.texture);
+  commandBuffer.keepAlive(dst.transferBuffer);
 
   const auto textureFormat = texture->getCreateInfo().format;
   const UInt32 bpp = convert::bytesPerPixel(textureFormat);
@@ -124,6 +128,8 @@ void CopyPass::uploadBuffer(const BufferTransferInfo &src,
                  "uploadBuffer failed: invalid transfer buffer or destination");
     return;
   }
+  commandBuffer.keepAlive(src.transferBuffer);
+  commandBuffer.keepAlive(dst.buffer);
   const UInt8 *uploadData = transfer->getUploadData();
   if (!uploadData) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -149,6 +155,8 @@ void CopyPass::downloadBuffer(const BufferRegion &src,
                  "downloadBuffer failed: invalid source or transfer buffer");
     return;
   }
+  commandBuffer.keepAlive(src.buffer);
+  commandBuffer.keepAlive(dst.transferBuffer);
   wgpuCommandEncoderCopyBufferToBuffer(
       commandBuffer.getEncoder(), buffer->getNative(), src.offset,
       transfer->getNative(), dst.offset, src.size);
@@ -165,6 +173,8 @@ void CopyPass::copyTexture(const TextureLocation &src,
                  "copyTexture failed: invalid source or destination texture");
     return;
   }
+  commandBuffer.keepAlive(src.texture);
+  commandBuffer.keepAlive(dst.texture);
 
   WGPUTexelCopyTextureInfo source{};
   source.texture = srcTex->getNative();

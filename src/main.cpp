@@ -112,6 +112,11 @@ void freeCustom(void *mem) {
   GlobalAllocator::get()->deallocate(static_cast<void *>(m), *m);
 }
 
+String getWindowTitleWithBackend(GPUBackendAPI api) {
+  return "Sinen | " + Graphics::getBackendName(api) +
+         " | F8: Switch API | F11: Fullscreen";
+}
+
 } // namespace
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
@@ -135,12 +140,12 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     Log::critical("Failed to initialize SDL");
     return SDL_APP_FAILURE;
   }
-
-  if (!Window::initialize("Sinen")) {
+  GPUBackendAPI api = Graphics::chooseBackendApiByPlatformFeatures();
+  if (!Window::initialize(getWindowTitleWithBackend(api))) {
     Log::critical("Failed to initialize window");
     return SDL_APP_FAILURE;
   }
-  if (!Graphics::initialize()) {
+  if (!Graphics::initialize(api)) {
     Log::critical("Failed to initialize graphics");
     return SDL_APP_FAILURE;
   }
@@ -200,9 +205,8 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
                                      static_cast<Int32>(GPUBackendAPI::COUNT));
     Script::shutdown();
     Graphics::shutdown();
-    Window::shutdown();
 
-    Window::initialize("Sinen :" + Graphics::getBackendName(api));
+    Window::rename(getWindowTitleWithBackend(api));
     Script::initialize();
     Graphics::initialize(static_cast<GPUBackendAPI>(api));
     Script::executeScene();

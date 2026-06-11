@@ -69,43 +69,8 @@ static void releaseBackendResources();
 static Array<GPUBackendAPI> availableBackendAPIs();
 static GPUBackendAPI nextBackendAPI(GPUBackendAPI api);
 
-static GPUBackendAPI selectBackendAPI() {
-#ifdef SINEN_PLATFORM_EMSCRIPTEN
-  return GPUBackendAPI::WebGPU;
-#else
-  const char *backendName = SDL_getenv("SINEN_GPU_BACKEND");
-  if (backendName == nullptr || backendName[0] == '\0') {
-#ifdef SINEN_PLATFORM_WINDOWS
-    return GPUBackendAPI::D3D12;
-#else
-    return GPUBackendAPI::SDLGPU;
-#endif
-  }
-
-#ifdef SINEN_PLATFORM_WINDOWS
-  if (std::strcmp(backendName, "d3d12") == 0 ||
-      std::strcmp(backendName, "direct3d12") == 0) {
-    return GPUBackendAPI::D3D12;
-  }
-#endif
-  if (std::strcmp(backendName, "vulkan") == 0) {
-    return GPUBackendAPI::Vulkan;
-  }
-#ifdef SINEN_ENABLE_WEBGPU
-  if (std::strcmp(backendName, "webgpu") == 0 ||
-      std::strcmp(backendName, "wgpu") == 0 ||
-      std::strcmp(backendName, "dawn") == 0) {
-    return GPUBackendAPI::WebGPU;
-  }
-#endif
-  return GPUBackendAPI::SDLGPU;
-#endif
-}
-
 static void setFullWindowViewport(const Ptr<gpu::RenderPass> &renderPass) {
   Rect rect;
-  // SDL_Rect safeArea;
-  // SDL_GetWindowSafeArea(WindowSystem::get_sdl_window(), &safeArea);
   rect.x = 0;
   rect.y = 0;
   const Vec2 targetSize = renderTargetSize(currentColorTargets[0].texture);
@@ -123,7 +88,6 @@ static void setFullWindowViewport(const Ptr<gpu::RenderPass> &renderPass) {
   renderPass->setViewport(viewport);
   renderPass->setScissor(rect.x, rect.y, rect.width, rect.height);
 }
-bool Graphics::initialize() { return initializeBackend(selectBackendAPI()); }
 bool Graphics::initialize(GPUBackendAPI api) { return initializeBackend(api); }
 static bool initializeBackend(GPUBackendAPI api) {
   backend = gpu::RHI::createBackend(GlobalAllocator::get(), api);
@@ -203,6 +167,39 @@ void Graphics::shutdown() {
   postDrawFuncs.clear();
 }
 
+GPUBackendAPI Graphics::chooseBackendApiByPlatformFeatures() {
+#ifdef SINEN_PLATFORM_EMSCRIPTEN
+  return GPUBackendAPI::WebGPU;
+#else
+  const char *backendName = SDL_getenv("SINEN_GPU_BACKEND");
+  if (backendName == nullptr || backendName[0] == '\0') {
+#ifdef SINEN_PLATFORM_WINDOWS
+    return GPUBackendAPI::D3D12;
+#else
+    return GPUBackendAPI::SDLGPU;
+#endif
+  }
+
+#ifdef SINEN_PLATFORM_WINDOWS
+  if (std::strcmp(backendName, "d3d12") == 0 ||
+      std::strcmp(backendName, "direct3d12") == 0) {
+    return GPUBackendAPI::D3D12;
+  }
+#endif
+  if (std::strcmp(backendName, "vulkan") == 0) {
+    return GPUBackendAPI::Vulkan;
+  }
+#ifdef SINEN_ENABLE_WEBGPU
+  if (std::strcmp(backendName, "webgpu") == 0 ||
+      std::strcmp(backendName, "wgpu") == 0 ||
+      std::strcmp(backendName, "dawn") == 0) {
+    return GPUBackendAPI::WebGPU;
+  }
+#endif
+  return GPUBackendAPI::SDLGPU;
+#endif
+}
+
 static void releaseBackendResources() {
   if (device) {
     device->waitForGpuIdle();
@@ -253,15 +250,17 @@ String Graphics::getBackendName() { return getBackendName(getBackendAPI()); }
 String Graphics::getBackendName(GPUBackendAPI api) {
   switch (api) {
   case GPUBackendAPI::Vulkan:
-    return "vulkan";
+    return "Vulkan";
 #ifdef SINEN_PLATFORM_WINDOWS
   case GPUBackendAPI::D3D12:
-    return "d3d12";
+    return "Direct3D12";
 #endif
   case GPUBackendAPI::WebGPU:
-    return "webgpu";
+    return "WebGPU";
   case GPUBackendAPI::SDLGPU:
-    return "sdlgpu";
+    return "SDL3_GPU";
+  default:
+    break;
   }
   return "unknown";
 }

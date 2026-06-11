@@ -29,9 +29,10 @@ class AccelerationStructure;
 
 class Graphics {
 public:
-  static bool initialize();
   static bool initialize(GPUBackendAPI api);
   static void shutdown();
+
+  static GPUBackendAPI chooseBackendApiByPlatformFeatures();
   static GPUBackendAPI getBackendAPI();
   static String getBackendName();
   static String getBackendName(GPUBackendAPI api);

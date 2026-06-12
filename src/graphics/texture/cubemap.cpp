@@ -23,6 +23,9 @@
 #include <vector>
 namespace sinen {
 
+using FloatPixels = std::vector<float>;
+using CubeFaces = std::array<FloatPixels, 6>;
+
 static inline float clampf(float x, float a, float b) {
   return x < a ? a : (x > b ? b : x);
 }
@@ -181,7 +184,7 @@ static inline void faceDir(Face f, float a, float b, float &x, float &y,
 }
 
 void equirectToCubemap(const float *in, int W, int H, int C, int faceSize,
-                       std::array<Array<float>, 6> &outFaces) {
+                       CubeFaces &outFaces) {
   assert(C == 3 || C == 4);
   for (int f = 0; f < 6; ++f) {
     outFaces[f].assign(faceSize * faceSize * C, 0.0f);
@@ -192,7 +195,7 @@ void equirectToCubemap(const float *in, int W, int H, int C, int faceSize,
   const float INV_2PI = 1.0f / (2.0f * PI);
   const float INV_PI = 1.0f / PI;
 
-  Array<float> tmp(C, 0.0f);
+  FloatPixels tmp(C, 0.0f);
 
   for (int f = 0; f < 6; ++f) {
     float *dst = outFaces[f].data();
@@ -222,7 +225,7 @@ void equirectToCubemap(const float *in, int W, int H, int C, int faceSize,
 
 void computeIrradianceCubemap(const float *in, int W, int H, int C,
                               int faceSize, uint32_t sampleCount,
-                              std::array<Array<float>, 6> &outFaces) {
+                              CubeFaces &outFaces) {
   assert(C == 3 || C == 4);
   sampleCount = Math::max(1u, sampleCount);
   for (int f = 0; f < 6; ++f) {
@@ -281,7 +284,7 @@ void computeIrradianceCubemap(const float *in, int W, int H, int C,
 }
 
 struct CubeMipFaces {
-  std::array<Array<float>, 6> faces;
+  CubeFaces faces;
   uint32_t faceSize = 0;
 };
 
@@ -328,7 +331,7 @@ static uint32_t maxMipLevels(uint32_t faceSize) {
 void computePrefilteredCubemap(const float *in, int W, int H, int C,
                                uint32_t faceSize, uint32_t mipLevels,
                                uint32_t sampleCount,
-                               Array<CubeMipFaces> &outMips) {
+                               std::vector<CubeMipFaces> &outMips) {
   assert(C == 3 || C == 4);
   faceSize = Math::max(1u, faceSize);
   mipLevels = Math::max(1u, Math::min(mipLevels, maxMipLevels(faceSize)));
@@ -397,7 +400,7 @@ void computePrefilteredCubemap(const float *in, int W, int H, int C,
   }
 }
 
-void computeBRDFLUT(uint32_t size, uint32_t sampleCount, Array<float> &out) {
+void computeBRDFLUT(uint32_t size, uint32_t sampleCount, FloatPixels &out) {
   size = Math::max(1u, size);
   sampleCount = Math::max(1u, sampleCount);
   out.assign(static_cast<size_t>(size) * size * 4u, 0.0f);
@@ -440,7 +443,7 @@ void computeBRDFLUT(uint32_t size, uint32_t sampleCount, Array<float> &out) {
   }
 }
 
-bool loadEXRFloat(StringView path, Array<float> &img, int &W, int &H, int &C) {
+bool loadEXRFloat(StringView path, FloatPixels &img, int &W, int &H, int &C) {
   float *out;
   const char *err = nullptr;
   int w, h;
@@ -541,15 +544,10 @@ bool saveEXRFloat(const char *path, const float *img, int W, int H, int C) {
 }
 
 static void writeTexture(Ptr<gpu::Texture> texture,
-                         const std::array<Array<float>, 6> &faces) {
+                         const CubeFaces &faces) {
   auto device = Graphics::getDevice();
   uint32_t width = texture->getCreateInfo().width,
            height = texture->getCreateInfo().height;
-
-  Array<float> data;
-  for (int i = 0; i < faces.size(); ++i) {
-    data.insert(data.end(), faces[i].begin(), faces[i].end());
-  }
 
   Ptr<gpu::TransferBuffer> transbuffers[6];
   for (int i = 0; i < 6; ++i) {
@@ -590,7 +588,7 @@ static void writeTexture(Ptr<gpu::Texture> texture,
 }
 
 static void writeTexture(Ptr<gpu::Texture> texture,
-                         const Array<CubeMipFaces> &mips) {
+                         const std::vector<CubeMipFaces> &mips) {
   auto device = Graphics::getDevice();
 
   for (uint32_t mip = 0; mip < mips.size(); ++mip) {
@@ -635,7 +633,7 @@ static void writeTexture(Ptr<gpu::Texture> texture,
 }
 
 static void writeFloatTexture2D(Ptr<gpu::Texture> texture,
-                                const Array<float> &pixels) {
+                                const FloatPixels &pixels) {
   auto device = Graphics::getDevice();
   const uint32_t width = texture->getCreateInfo().width;
   const uint32_t height = texture->getCreateInfo().height;
@@ -676,7 +674,7 @@ static void writeFloatTexture2D(Ptr<gpu::Texture> texture,
 }
 
 Ptr<gpu::Texture>
-createNativeCubemapTexture(const std::array<Array<float>, 6> &faces,
+createNativeCubemapTexture(const CubeFaces &faces,
                            gpu::TextureFormat textureFormat, uint32_t width,
                            uint32_t height) {
   auto device = Graphics::getDevice();
@@ -700,7 +698,7 @@ createNativeCubemapTexture(const std::array<Array<float>, 6> &faces,
   return texture;
 }
 
-Ptr<gpu::Texture> createNativeCubemapTexture(const Array<CubeMipFaces> &mips,
+Ptr<gpu::Texture> createNativeCubemapTexture(const std::vector<CubeMipFaces> &mips,
                                              gpu::TextureFormat textureFormat) {
   if (mips.empty()) {
     return nullptr;
@@ -724,7 +722,7 @@ Ptr<gpu::Texture> createNativeCubemapTexture(const Array<CubeMipFaces> &mips,
   return texture;
 }
 
-Ptr<gpu::Texture> createNativeFloatTexture2D(const Array<float> &pixels,
+Ptr<gpu::Texture> createNativeFloatTexture2D(const FloatPixels &pixels,
                                              uint32_t width, uint32_t height) {
   auto device = Graphics::getDevice();
 
@@ -754,17 +752,19 @@ bool Texture::loadCubemap(StringView path) {
 
   struct AsyncCubemapState {
     std::future<void> future;
-    std::array<Array<float>, 6> faces;
+    String debugName;
+    CubeFaces faces;
     uint32_t faceSize = 0;
     bool ok = false;
   };
 
   auto state = makePtr<AsyncCubemapState>();
+  state->debugName = "Texture::loadCubemap(" + String(path) + ")";
   this->async = state;
 
   const String srcPath = path.data();
   state->future = globalThreadPool().submit([state, srcPath] {
-    Array<float> equirect;
+    FloatPixels equirect;
     int w = 0, h = 0, c = 0;
     if (!loadEXRFloat(srcPath, equirect, w, h, c)) {
       state->ok = false;
@@ -772,7 +772,7 @@ bool Texture::loadCubemap(StringView path) {
     }
 
     const uint32_t faceSize = 1024;
-    std::array<Array<float>, 6> faces;
+    CubeFaces faces;
     equirectToCubemap(equirect.data(), w, h, c, faceSize, faces);
 
     state->faces = std::move(faces);
@@ -818,25 +818,27 @@ bool Texture::loadIrradianceCubemap(StringView path, uint32_t faceSize,
 
   struct AsyncIrradianceState {
     std::future<void> future;
-    std::array<Array<float>, 6> faces;
+    String debugName;
+    CubeFaces faces;
     uint32_t faceSize = 0;
     bool ok = false;
   };
 
   auto state = makePtr<AsyncIrradianceState>();
+  state->debugName = "Texture::loadIrradianceCubemap(" + String(path) + ")";
   this->async = state;
 
   const String srcPath = path.data();
   state->future = globalThreadPool().submit([state, srcPath, faceSize,
                                              sampleCount] {
-    Array<float> equirect;
+    FloatPixels equirect;
     int w = 0, h = 0, c = 0;
     if (!loadEXRFloat(srcPath, equirect, w, h, c)) {
       state->ok = false;
       return;
     }
 
-    std::array<Array<float>, 6> faces;
+    CubeFaces faces;
     computeIrradianceCubemap(equirect.data(), w, h, c,
                              static_cast<int>(faceSize), sampleCount, faces);
 
@@ -882,25 +884,27 @@ bool Texture::loadPrefilteredCubemap(StringView path, uint32_t faceSize,
 
   struct AsyncPrefilteredState {
     std::future<void> future;
-    Array<CubeMipFaces> mips;
+    String debugName;
+    std::vector<CubeMipFaces> mips;
     uint32_t faceSize = 0;
     bool ok = false;
   };
 
   auto state = makePtr<AsyncPrefilteredState>();
+  state->debugName = "Texture::loadPrefilteredCubemap(" + String(path) + ")";
   this->async = state;
 
   const String srcPath = path.data();
   state->future = globalThreadPool().submit(
       [state, srcPath, faceSize, mipLevels, sampleCount] {
-        Array<float> equirect;
+        FloatPixels equirect;
         int w = 0, h = 0, c = 0;
         if (!loadEXRFloat(srcPath, equirect, w, h, c)) {
           state->ok = false;
           return;
         }
 
-        Array<CubeMipFaces> mips;
+        std::vector<CubeMipFaces> mips;
         computePrefilteredCubemap(equirect.data(), w, h, c, faceSize, mipLevels,
                                   sampleCount, mips);
 
@@ -944,12 +948,14 @@ bool Texture::loadBRDFLUT(uint32_t size, uint32_t sampleCount) {
 
   struct AsyncBRDFLUTState {
     std::future<void> future;
-    Array<float> pixels;
+    String debugName;
+    FloatPixels pixels;
     uint32_t size = 0;
     bool ok = false;
   };
 
   auto state = makePtr<AsyncBRDFLUTState>();
+  state->debugName = "Texture::loadBRDFLUT";
   this->async = state;
 
   state->future = globalThreadPool().submit([state, size, sampleCount] {

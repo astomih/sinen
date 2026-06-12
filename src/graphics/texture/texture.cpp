@@ -1,7 +1,9 @@
 #include <cassert>
 #include <cstring>
+#include <vector>
 
 #include <core/data/table_string.hpp>
+#include <core/logger/log.hpp>
 #include <core/profiler.hpp>
 #include <core/thread/future_poll.hpp>
 #include <core/thread/global_thread_pool.hpp>
@@ -24,12 +26,12 @@ static Ptr<gpu::Texture> createNativeTexture(void *pPixels,
                                              uint32_t width, uint32_t height,
                                              int channels);
 struct TextureMipPixels {
-  Array<uint8_t> pixels;
+  std::vector<uint8_t> pixels;
   uint32_t width = 0;
   uint32_t height = 0;
 };
 static Ptr<gpu::Texture>
-createNativeTexture(const Array<TextureMipPixels> &mips,
+createNativeTexture(const std::vector<TextureMipPixels> &mips,
                     gpu::TextureFormat textureFormat, int channels);
 static void updateNativeTexture(Ptr<gpu::Texture> texture, void *pPixels,
                                 int channels);
@@ -48,8 +50,9 @@ constexpr uint32_t vkFormatB8G8R8A8Srgb = 50;
 
 struct AsyncTexture2DState {
   std::future<void> future;
-  Array<uint8_t> pixels;
-  Array<TextureMipPixels> mips;
+  String debugName;
+  std::vector<uint8_t> pixels;
+  std::vector<TextureMipPixels> mips;
   uint32_t width = 0;
   uint32_t height = 0;
   int channels = 4;
@@ -209,6 +212,7 @@ bool Texture::load(StringView fileName) {
   group.add();
 
   auto state = makePtr<AsyncTexture2DState>();
+  state->debugName = "Texture::load(" + String(fileName) + ")";
   this->async = state;
 
   const String path = fileName.data();
@@ -274,6 +278,7 @@ bool Texture::load(const Buffer &buffer) {
   group.add();
 
   auto state = makePtr<AsyncTexture2DState>();
+  state->debugName = "Texture::load(buffer)";
   this->async = state;
 
   const Buffer buf = buffer;
@@ -338,15 +343,20 @@ bool Texture::loadFromMemory(Array<char> &buffer) {
   group.add();
 
   auto state = makePtr<AsyncTexture2DState>();
+  state->debugName = "Texture::loadFromMemory";
   this->async = state;
 
   const String bytes(buffer.data(), buffer.size());
   state->future = globalThreadPool().submit([state, bytes] {
+    const char *stage = "start";
+    try {
     ZoneScopedN("Texture::loadFromMemory decode");
+    stage = "decode ktx2";
     if (decodeKtx2(reinterpret_cast<const uint8_t *>(bytes.data()),
                    bytes.size(), *state)) {
       return;
     }
+    stage = "stbi decode";
     int width = 0, height = 0, bpp = 0;
     unsigned char *decoded = stbi_load_from_memory(
         reinterpret_cast<const unsigned char *>(bytes.data()),
@@ -360,6 +370,7 @@ bool Texture::loadFromMemory(Array<char> &buffer) {
 
     const size_t sizeBytes =
         static_cast<size_t>(width) * static_cast<size_t>(height) * 4u;
+    stage = "copy decoded pixels";
     state->pixels.resize(sizeBytes);
     std::memcpy(state->pixels.data(), decoded, sizeBytes);
     stbi_image_free(decoded);
@@ -369,6 +380,15 @@ bool Texture::loadFromMemory(Array<char> &buffer) {
     state->channels = 4;
     state->format = gpu::TextureFormat::R8G8B8A8_UNORM;
     state->ok = true;
+    } catch (const std::exception &e) {
+      state->ok = false;
+      Log::error("Texture::loadFromMemory failed at {}: {}", stage, e.what());
+    } catch (...) {
+      state->ok = false;
+      Log::error("Texture::loadFromMemory failed at {} with an unknown "
+                 "exception",
+                 stage);
+    }
   });
   scheduleFuturePoll(
       state, group, scheduleOnPreDraw,
@@ -529,7 +549,7 @@ Ptr<gpu::Texture> createNativeTexture(void *pPixels,
   return texture;
 }
 
-Ptr<gpu::Texture> createNativeTexture(const Array<TextureMipPixels> &mips,
+Ptr<gpu::Texture> createNativeTexture(const std::vector<TextureMipPixels> &mips,
                                       gpu::TextureFormat textureFormat,
                                       int channels) {
   if (mips.empty()) {

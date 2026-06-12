@@ -2,9 +2,12 @@
 #define SINEN_FUTURE_POLL_HPP
 
 #include <core/data/ptr.hpp>
+#include <core/data/string.hpp>
+#include <core/logger/log.hpp>
 #include <core/thread/task_group.hpp>
 
 #include <chrono>
+#include <exception>
 #include <functional>
 #include <future>
 #include <memory>
@@ -13,6 +16,15 @@
 namespace sinen {
 
 namespace detail {
+template <class State> StringView futurePollTaskName(const State &state) {
+  if constexpr (requires { state.debugName; }) {
+    if (!state.debugName.empty()) {
+      return StringView(state.debugName.data(), state.debugName.size());
+    }
+  }
+  return "Async task";
+}
+
 template <class State, class Schedule, class OnReady, class OnInvalid>
 struct FuturePollContext {
   FuturePollContext(Ptr<State> state, TaskGroup group, Schedule schedule,
@@ -42,8 +54,33 @@ template <class Context> void scheduleFuturePollStep(Ptr<Context> context) {
       return;
     }
 
-    context->state->future.get();
-    context->onReady();
+    try {
+      context->state->future.get();
+    } catch (const std::exception &e) {
+      Log::error("{} future failed: {}",
+                 futurePollTaskName(*context->state), e.what());
+      context->onInvalid();
+      context->group.done();
+      return;
+    } catch (...) {
+      Log::error("{} future failed with an unknown exception",
+                 futurePollTaskName(*context->state));
+      context->onInvalid();
+      context->group.done();
+      return;
+    }
+
+    try {
+      context->onReady();
+    } catch (const std::exception &e) {
+      Log::error("{} onReady failed: {}",
+                 futurePollTaskName(*context->state), e.what());
+      context->onInvalid();
+    } catch (...) {
+      Log::error("{} onReady failed with an unknown exception",
+                 futurePollTaskName(*context->state));
+      context->onInvalid();
+    }
     context->group.done();
   });
 }

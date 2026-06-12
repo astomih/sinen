@@ -7,6 +7,7 @@
 #include <core/def/types.hpp>
 #include <core/logger/log.hpp>
 #include <cstdlib>
+#include <limits>
 #include <memory_resource>
 #include <mutex>
 
@@ -16,16 +17,35 @@ std::once_flag gAllocatorOnce;
 std::mutex gReleaseMutex;
 std::pmr::synchronized_pool_resource *gAllocator = nullptr;
 TLSFAllocator *gTlsfAllocator = nullptr;
+constexpr Size bytesPerMiB = 1024 * 1024;
 #ifdef SINEN_PLATFORM_EMSCRIPTEN
-constexpr Size allocatorSize = 128 * 1024 * 1024;
+constexpr Size defaultAllocatorSize = 128 * bytesPerMiB;
 #else
-constexpr Size allocatorSize = 0x90000000;
+constexpr Size defaultAllocatorSize = 256 * bytesPerMiB;
 #endif
+
+Size configuredAllocatorSize() {
+  const char *sizeMbText = std::getenv("SINEN_GLOBAL_ALLOCATOR_SIZE_MB");
+  if (!sizeMbText || sizeMbText[0] == '\0') {
+    return defaultAllocatorSize;
+  }
+
+  char *end = nullptr;
+  const unsigned long long sizeMb = std::strtoull(sizeMbText, &end, 10);
+  constexpr unsigned long long maxSizeMb =
+      std::numeric_limits<Size>::max() / bytesPerMiB;
+  if (end == sizeMbText || *end != '\0' || sizeMb == 0 ||
+      sizeMb > maxSizeMb) {
+    return defaultAllocatorSize;
+  }
+
+  return static_cast<Size>(sizeMb) * bytesPerMiB;
+}
 } // namespace
 
 Allocator *GlobalAllocator::get() {
   std::call_once(gAllocatorOnce, [] {
-    gTlsfAllocator = new TLSFAllocator(allocatorSize);
+    gTlsfAllocator = new TLSFAllocator(configuredAllocatorSize());
     gAllocator = new std::pmr::synchronized_pool_resource(gTlsfAllocator);
   });
 

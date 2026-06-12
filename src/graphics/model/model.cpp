@@ -97,6 +97,7 @@ static EmbeddedTextureData extractEmbeddedTexture(aiScene *scene,
 
 struct AsyncModelState {
   std::future<void> future;
+  String debugName;
   Mesh mesh;
   AABB aabb;
   Model::BoneMap boneMap;
@@ -492,99 +493,125 @@ void Model::load(StringView path) {
   this->lodIndexBuffers.clear();
   this->textures.assign(6, nullptr);
 
+  const String pathStr = path.data();
   auto state = makePtr<AsyncModelState>();
   state->embeddedTextures.resize(6);
+  state->debugName = "Model::load(" + pathStr + ")";
   const Ptr<void> stateVoid = std::static_pointer_cast<void>(state);
   this->data = stateVoid;
 
-  const String pathStr = path.data();
   state->future = globalThreadPool().submit([state, pathStr]() {
-    Assimp::Importer importer;
-    const unsigned int flags =
-        aiProcess_ValidateDataStructure | aiProcess_LimitBoneWeights |
-        aiProcess_JoinIdenticalVertices | aiProcess_Triangulate;
-    const aiScene *scene = nullptr;
-    String modelBytes;
-    Log::info("Loading model from path: {}", pathStr);
+    const char *stage = "start";
+    try {
+      Assimp::Importer importer;
+      const unsigned int flags =
+          aiProcess_ValidateDataStructure | aiProcess_LimitBoneWeights |
+          aiProcess_JoinIdenticalVertices | aiProcess_Triangulate;
+      const aiScene *scene = nullptr;
+      String modelBytes;
+      Log::info("Loading model from path: {}", pathStr);
 #if defined(SINEN_PLATFORM_EMSCRIPTEN) || defined(EMSCRIPTEN)
-    modelBytes = AssetReader::readAsString(pathStr);
-    if (!modelBytes.empty()) {
-      Log::info("Model path is empty, trying to load from memory");
-      const String hint = assimpHintFromPath(pathStr);
-      scene = importer.ReadFileFromMemory(modelBytes.data(), modelBytes.size(),
-                                          flags, hint.c_str());
-    }
-    Log::info("Model loaded from path: {}, size: {}", pathStr,
-              modelBytes.size());
-#else
-    if (AssetReader::isArchiveMounted() && AssetReader::exists(pathStr)) {
+      stage = "read file";
       modelBytes = AssetReader::readAsString(pathStr);
-      const String hint = assimpHintFromPath(pathStr);
-      scene = importer.ReadFileFromMemory(modelBytes.data(), modelBytes.size(),
-                                          flags, hint.c_str());
-    } else {
-      auto fullFilePath = AssetReader::getFilePath(pathStr);
-      scene = importer.ReadFile(fullFilePath.c_str(), flags);
-    }
+      if (!modelBytes.empty()) {
+        Log::info("Model path is empty, trying to load from memory");
+        const String hint = assimpHintFromPath(pathStr);
+        stage = "assimp read memory";
+        scene = importer.ReadFileFromMemory(modelBytes.data(),
+                                            modelBytes.size(), flags,
+                                            hint.c_str());
+      }
+      Log::info("Model loaded from path: {}, size: {}", pathStr,
+                modelBytes.size());
+#else
+      stage = "resolve model path";
+      if (AssetReader::isArchiveMounted() && AssetReader::exists(pathStr)) {
+        stage = "read archive model";
+        modelBytes = AssetReader::readAsString(pathStr);
+        const String hint = assimpHintFromPath(pathStr);
+        stage = "assimp read archive memory";
+        scene = importer.ReadFileFromMemory(modelBytes.data(),
+                                            modelBytes.size(), flags,
+                                            hint.c_str());
+      } else {
+        stage = "assimp read file";
+        auto fullFilePath = AssetReader::getFilePath(pathStr);
+        scene = importer.ReadFile(fullFilePath.c_str(), flags);
+      }
 #endif
-    if (!scene) {
+      if (!scene) {
+        state->ok = false;
+        return;
+      }
+      Log::info("Model loaded successfully: {}", pathStr);
+
+      Mesh mesh;
+      AABB aabb;
+      Model::BoneMap boneMap;
+      SkeletalAnimation skeletalAnimation;
+
+      stage = "load bones";
+      loadBone(scene, boneMap);
+      stage = "load animation";
+      loadAnimation(scene, skeletalAnimation, boneMap);
+      stage = "load mesh";
+      loadMesh(scene, mesh, aabb);
+      stage = "calculate tangents";
+      calcTangents(scene, mesh);
+      stage = "optimize mesh";
+      optimizeMesh(mesh);
+
+      stage = "extract embedded textures";
+      Array<EmbeddedTextureData> embedded;
+      embedded.resize(6);
+      for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
+        if (!embedded[0].present) {
+          embedded[0] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                               scene->mMaterials[i],
+                                               aiTextureType_BASE_COLOR);
+        }
+        if (!embedded[1].present) {
+          embedded[1] = extractEmbeddedTexture(
+              const_cast<aiScene *>(scene), scene->mMaterials[i],
+              aiTextureType_NORMALS);
+        }
+        if (!embedded[2].present) {
+          embedded[2] = extractEmbeddedTexture(
+              const_cast<aiScene *>(scene), scene->mMaterials[i],
+              aiTextureType_DIFFUSE_ROUGHNESS);
+        }
+        if (!embedded[3].present) {
+          embedded[3] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                               scene->mMaterials[i],
+                                               aiTextureType_METALNESS);
+        }
+        if (!embedded[4].present) {
+          embedded[4] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                               scene->mMaterials[i],
+                                               aiTextureType_EMISSIVE);
+        }
+        if (!embedded[5].present) {
+          embedded[5] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                               scene->mMaterials[i],
+                                               aiTextureType_LIGHTMAP);
+        }
+      }
+
+      state->mesh = std::move(mesh);
+      state->aabb = aabb;
+      state->boneMap = std::move(boneMap);
+      state->skeletalAnimation = std::move(skeletalAnimation);
+      state->embeddedTextures = std::move(embedded);
+      state->ok = true;
+    } catch (const std::exception &e) {
       state->ok = false;
-      return;
+      Log::error("Model async load failed at {} ({}): {}", stage,
+                 pathStr.c_str(), e.what());
+    } catch (...) {
+      state->ok = false;
+      Log::error("Model async load failed at {} ({}) with an unknown exception",
+                 stage, pathStr.c_str());
     }
-    Log::info("Model loaded successfully: {}", pathStr);
-
-    Mesh mesh;
-    AABB aabb;
-    Model::BoneMap boneMap;
-    SkeletalAnimation skeletalAnimation;
-
-    loadBone(scene, boneMap);
-    loadAnimation(scene, skeletalAnimation, boneMap);
-    loadMesh(scene, mesh, aabb);
-    calcTangents(scene, mesh);
-    optimizeMesh(mesh);
-
-    Array<EmbeddedTextureData> embedded;
-    embedded.resize(6);
-    for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
-      if (!embedded[0].present) {
-        embedded[0] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
-                                             scene->mMaterials[i],
-                                             aiTextureType_BASE_COLOR);
-      }
-      if (!embedded[1].present) {
-        embedded[1] =
-            extractEmbeddedTexture(const_cast<aiScene *>(scene),
-                                   scene->mMaterials[i], aiTextureType_NORMALS);
-      }
-      if (!embedded[2].present) {
-        embedded[2] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
-                                             scene->mMaterials[i],
-                                             aiTextureType_DIFFUSE_ROUGHNESS);
-      }
-      if (!embedded[3].present) {
-        embedded[3] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
-                                             scene->mMaterials[i],
-                                             aiTextureType_METALNESS);
-      }
-      if (!embedded[4].present) {
-        embedded[4] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
-                                             scene->mMaterials[i],
-                                             aiTextureType_EMISSIVE);
-      }
-      if (!embedded[5].present) {
-        embedded[5] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
-                                             scene->mMaterials[i],
-                                             aiTextureType_LIGHTMAP);
-      }
-    }
-
-    state->mesh = std::move(mesh);
-    state->aabb = aabb;
-    state->boneMap = std::move(boneMap);
-    state->skeletalAnimation = std::move(skeletalAnimation);
-    state->embeddedTextures = std::move(embedded);
-    state->ok = true;
   });
 
   scheduleFuturePoll(
@@ -600,6 +627,7 @@ void Model::load(StringView path) {
         }
 
         if (!state->ok) {
+          this->data.reset();
           return;
         }
 
@@ -645,7 +673,11 @@ void Model::load(StringView path) {
 
         this->data.reset();
       },
-      [] {});
+      [this, stateVoid] {
+        if (this->data == stateVoid) {
+          this->data.reset();
+        }
+      });
 }
 void Model::load(const Buffer &buffer) {
   const TaskGroup group = LoadContext::current();
@@ -660,73 +692,92 @@ void Model::load(const Buffer &buffer) {
 
   auto state = makePtr<AsyncModelState>();
   state->embeddedTextures.resize(6);
+  state->debugName = "Model::load(buffer)";
   const Ptr<void> stateVoid = std::static_pointer_cast<void>(state);
   this->data = stateVoid;
 
   const Buffer buf = buffer;
   state->future = globalThreadPool().submit([state, buf]() {
-    Assimp::Importer importer;
-    const aiScene *scene = importer.ReadFileFromMemory(
-        buf.data(), buf.size(),
-        aiProcess_ValidateDataStructure | aiProcess_LimitBoneWeights |
-            aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
-    if (!scene) {
+    const char *stage = "start";
+    try {
+      Assimp::Importer importer;
+      stage = "assimp read memory";
+      const aiScene *scene = importer.ReadFileFromMemory(
+          buf.data(), buf.size(),
+          aiProcess_ValidateDataStructure | aiProcess_LimitBoneWeights |
+              aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
+      if (!scene) {
+        state->ok = false;
+        return;
+      }
+
+      Mesh mesh;
+      AABB aabb;
+      Model::BoneMap boneMap;
+      SkeletalAnimation skeletalAnimation;
+
+      stage = "load bones";
+      loadBone(scene, boneMap);
+      stage = "load animation";
+      loadAnimation(scene, skeletalAnimation, boneMap);
+      stage = "load mesh";
+      loadMesh(scene, mesh, aabb);
+      stage = "calculate tangents";
+      calcTangents(scene, mesh);
+      stage = "optimize mesh";
+      optimizeMesh(mesh);
+
+      stage = "extract embedded textures";
+      Array<EmbeddedTextureData> embedded;
+      embedded.resize(6);
+      for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
+        if (!embedded[0].present) {
+          embedded[0] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                               scene->mMaterials[i],
+                                               aiTextureType_BASE_COLOR);
+        }
+        if (!embedded[1].present) {
+          embedded[1] = extractEmbeddedTexture(
+              const_cast<aiScene *>(scene), scene->mMaterials[i],
+              aiTextureType_NORMALS);
+        }
+        if (!embedded[2].present) {
+          embedded[2] = extractEmbeddedTexture(
+              const_cast<aiScene *>(scene), scene->mMaterials[i],
+              aiTextureType_DIFFUSE_ROUGHNESS);
+        }
+        if (!embedded[3].present) {
+          embedded[3] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                               scene->mMaterials[i],
+                                               aiTextureType_METALNESS);
+        }
+        if (!embedded[4].present) {
+          embedded[4] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                               scene->mMaterials[i],
+                                               aiTextureType_EMISSIVE);
+        }
+        if (!embedded[5].present) {
+          embedded[5] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                               scene->mMaterials[i],
+                                               aiTextureType_LIGHTMAP);
+        }
+      }
+
+      state->mesh = std::move(mesh);
+      state->aabb = aabb;
+      state->boneMap = std::move(boneMap);
+      state->skeletalAnimation = std::move(skeletalAnimation);
+      state->embeddedTextures = std::move(embedded);
+      state->ok = true;
+    } catch (const std::exception &e) {
       state->ok = false;
-      return;
+      Log::error("Model async load(buffer) failed at {}: {}", stage, e.what());
+    } catch (...) {
+      state->ok = false;
+      Log::error("Model async load(buffer) failed at {} with an unknown "
+                 "exception",
+                 stage);
     }
-
-    Mesh mesh;
-    AABB aabb;
-    Model::BoneMap boneMap;
-    SkeletalAnimation skeletalAnimation;
-
-    loadBone(scene, boneMap);
-    loadAnimation(scene, skeletalAnimation, boneMap);
-    loadMesh(scene, mesh, aabb);
-    calcTangents(scene, mesh);
-    optimizeMesh(mesh);
-
-    Array<EmbeddedTextureData> embedded;
-    embedded.resize(6);
-    for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
-      if (!embedded[0].present) {
-        embedded[0] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
-                                             scene->mMaterials[i],
-                                             aiTextureType_BASE_COLOR);
-      }
-      if (!embedded[1].present) {
-        embedded[1] =
-            extractEmbeddedTexture(const_cast<aiScene *>(scene),
-                                   scene->mMaterials[i], aiTextureType_NORMALS);
-      }
-      if (!embedded[2].present) {
-        embedded[2] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
-                                             scene->mMaterials[i],
-                                             aiTextureType_DIFFUSE_ROUGHNESS);
-      }
-      if (!embedded[3].present) {
-        embedded[3] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
-                                             scene->mMaterials[i],
-                                             aiTextureType_METALNESS);
-      }
-      if (!embedded[4].present) {
-        embedded[4] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
-                                             scene->mMaterials[i],
-                                             aiTextureType_EMISSIVE);
-      }
-      if (!embedded[5].present) {
-        embedded[5] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
-                                             scene->mMaterials[i],
-                                             aiTextureType_LIGHTMAP);
-      }
-    }
-
-    state->mesh = std::move(mesh);
-    state->aabb = aabb;
-    state->boneMap = std::move(boneMap);
-    state->skeletalAnimation = std::move(skeletalAnimation);
-    state->embeddedTextures = std::move(embedded);
-    state->ok = true;
   });
 
   scheduleFuturePoll(
@@ -742,6 +793,7 @@ void Model::load(const Buffer &buffer) {
         }
 
         if (!state->ok) {
+          this->data.reset();
           return;
         }
 
@@ -787,7 +839,11 @@ void Model::load(const Buffer &buffer) {
 
         this->data.reset();
       },
-      [] {});
+      [this, stateVoid] {
+        if (this->data == stateVoid) {
+          this->data.reset();
+        }
+      });
 }
 
 void Model::loadFromVertexArray(const Mesh &m) {

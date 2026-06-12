@@ -72,6 +72,25 @@ static void releaseBackendResources();
 static Array<GPUBackendAPI> availableBackendAPIs();
 static GPUBackendAPI nextBackendAPI(GPUBackendAPI api);
 
+static void clearCurrentDrawState() {
+  currentPipeline = std::nullopt;
+  currentTextureBindings.clear();
+  currentAccelerationStructureBindings.clear();
+}
+
+static bool isPipelineReadyForDraw() {
+  return currentPipeline.has_value() && currentPipeline.value().get() != nullptr;
+}
+
+static bool isModelReadyForDraw(const Model &model) {
+  if (!model.vertexBuffer || !model.indexBuffer) {
+    return false;
+  }
+  const auto mesh = model.getMesh();
+  const auto data = mesh.data();
+  return data != nullptr && !data->indices.empty();
+}
+
 static void setFullWindowViewport(const Ptr<gpu::RenderPass> &renderPass) {
   Rect rect;
   rect.x = 0;
@@ -472,7 +491,7 @@ bindCurrentTextureSamplers(const Ptr<gpu::RenderPass> &renderPass,
   if (device && device->getBackendAPI() != GPUBackendAPI::D3D12) {
 #endif
     for (auto &binding : currentTextureBindings) {
-      if (!binding.second) {
+      if (!binding.second || !binding.second->getRaw()) {
         continue;
       }
       renderPass->bindFragmentSampler(
@@ -493,7 +512,7 @@ bindCurrentTextureSamplers(const Ptr<gpu::RenderPass> &renderPass,
   Array<gpu::TextureSamplerBinding> textureSamplers;
   textureSamplers.resize(maxSlot + 1);
   for (const auto &binding : currentTextureBindings) {
-    if (!binding.second) {
+    if (!binding.second || !binding.second->getRaw()) {
       continue;
     }
     textureSamplers[binding.first] = {textureSampler, binding.second->getRaw()};
@@ -521,6 +540,10 @@ bindCurrentAccelerationStructures(const Ptr<gpu::RenderPass> &renderPass) {
 static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
                        const Ptr<gpu::Sampler> &textureSampler = sampler) {
   assert(currentPipeline.has_value());
+  if (!isPipelineReadyForDraw() || !isModelReadyForDraw(model)) {
+    clearCurrentDrawState();
+    return;
+  }
   auto vertexBufferBindings = Array<gpu::BufferBinding>{};
   auto indexBufferBinding = gpu::BufferBinding{};
   auto textureSamplers = Array<gpu::TextureSamplerBinding>{};
@@ -566,9 +589,6 @@ static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
   prepareRenderPassFrame();
   SDL_assert(currentRenderPass);
 
-  assert(model.vertexBuffer != nullptr);
-  assert(model.indexBuffer != nullptr);
-
   vertexBufferBindings.emplace_back(
       gpu::BufferBinding{.buffer = model.vertexBuffer, .offset = 0});
   indexBufferBinding =
@@ -586,9 +606,7 @@ static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
   commandBuffer->pushVertexUniformData(0, &wvp, sizeof(wvp));
   renderPass->drawIndexedPrimitives(model.getMesh().data()->indices.size(), 1,
                                     0, 0, 0);
-  currentPipeline = std::nullopt;
-  currentTextureBindings.clear();
-  currentAccelerationStructureBindings.clear();
+  clearCurrentDrawState();
 }
 
 static Mat4 cubemapViewProjection(const Camera3D &camera) {
@@ -603,17 +621,16 @@ static void drawBaseCubemap(const Model &model) {
   assert(currentPipeline.has_value());
   SDL_assert(currentGraphicsPass == GraphicsPass::ThreeD);
   SDL_assert(currentCamera3D.has_value());
-  if (currentGraphicsPass != GraphicsPass::ThreeD ||
+  if (!isPipelineReadyForDraw() || !isModelReadyForDraw(model) ||
+      currentGraphicsPass != GraphicsPass::ThreeD ||
       !currentCamera3D.has_value()) {
+    clearCurrentDrawState();
     return;
   }
 
   const Mat4 wvp = cubemapViewProjection(currentCamera3D.value());
   drawCallCountPerFrame++;
   prepareRenderPassFrame();
-
-  assert(model.vertexBuffer != nullptr);
-  assert(model.indexBuffer != nullptr);
 
   Array<gpu::BufferBinding> vertexBufferBindings;
   vertexBufferBindings.emplace_back(
@@ -634,9 +651,7 @@ static void drawBaseCubemap(const Model &model) {
   renderPass->drawIndexedPrimitives(
       static_cast<uint32_t>(model.getMesh().data()->indices.size()), 1, 0, 0,
       0);
-  currentPipeline = std::nullopt;
-  currentTextureBindings.clear();
-  currentAccelerationStructureBindings.clear();
+  clearCurrentDrawState();
 }
 
 static void drawBase3D(const Array<Transform> transforms, const Model &model) {
@@ -644,8 +659,10 @@ static void drawBase3D(const Array<Transform> transforms, const Model &model) {
   assert(currentPipeline.has_value());
   SDL_assert(currentGraphicsPass == GraphicsPass::ThreeD);
   SDL_assert(currentCamera3D.has_value());
-  if (currentGraphicsPass != GraphicsPass::ThreeD ||
+  if (!isPipelineReadyForDraw() || !isModelReadyForDraw(model) ||
+      currentGraphicsPass != GraphicsPass::ThreeD ||
       !currentCamera3D.has_value()) {
+    clearCurrentDrawState();
     return;
   }
   const Camera3D &camera = currentCamera3D.value();
@@ -758,9 +775,7 @@ static void drawBase3D(const Array<Transform> transforms, const Model &model) {
   uint32_t numInstance =
       isInstance ? static_cast<uint32_t>(instanceData.size()) : 1;
   renderPass->drawIndexedPrimitives(numIndices, numInstance, 0, 0, 0);
-  currentPipeline = std::nullopt;
-  currentTextureBindings.clear();
-  currentAccelerationStructureBindings.clear();
+  clearCurrentDrawState();
 }
 void Graphics::drawRect(const Rect &rect, const Color &color, float angle) {
   if (customPipeline.has_value() && customPipeline.value().get() != nullptr)
@@ -840,14 +855,19 @@ void Graphics::drawCubemap(const Ptr<Texture> &cubemap) {
   drawBaseCubemap(box);
 }
 void Graphics::drawModel(const Model &model, const Transform &transform) {
+  if (!isModelReadyForDraw(model)) {
+    return;
+  }
+
   if (customPipeline.has_value() && customPipeline.value().get() != nullptr)
     currentPipeline = customPipeline.value();
   else
     currentPipeline = BuiltinPipeline::getDefault3D();
 
-  if (model.hasTexture(TextureKey::BaseColor))
-    setTexture(0, model.getTexture(TextureKey::BaseColor));
-  else {
+  auto baseColor = model.getTexture(TextureKey::BaseColor);
+  if (baseColor && baseColor->getRaw()) {
+    setTexture(0, baseColor);
+  } else {
     auto t = Texture::create();
     t->fill(Palette::white());
     setTexture(0, t);
@@ -857,16 +877,17 @@ void Graphics::drawModel(const Model &model, const Transform &transform) {
 }
 void Graphics::drawModelInstanced(const Model &model,
                                   const Array<Transform> &transforms) {
-  if (transforms.empty())
+  if (transforms.empty() || !isModelReadyForDraw(model))
     return;
 
   if (customPipeline.has_value() && customPipeline.value().get() != nullptr)
     currentPipeline = customPipeline.value();
   else
     currentPipeline = BuiltinPipeline::getInstanced3D();
-  if (model.hasTexture(TextureKey::BaseColor))
-    setTexture(0, model.getTexture(TextureKey::BaseColor));
-  else {
+  auto baseColor = model.getTexture(TextureKey::BaseColor);
+  if (baseColor && baseColor->getRaw()) {
+    setTexture(0, baseColor);
+  } else {
     auto t = Texture::create();
     t->fill(Palette::white());
     setTexture(0, t);

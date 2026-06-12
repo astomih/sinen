@@ -92,6 +92,7 @@ void Shader::load(StringView vertex_shader, ShaderStage stage,
   shader = makePtr<Ptr<gpu::Shader>>();
   this->async = makePtr<AsyncState>();
   const Ptr<AsyncState> state = this->async;
+  state->debugName = "Shader::load(" + String(vertex_shader) + ")";
   const auto shaderFormat = formatFromPath(vertex_shader);
   const auto preferredFormat =
       ShaderBundle::preferredFormatFor(Graphics::getDevice()->getBackendAPI());
@@ -203,6 +204,7 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage,
   shader = makePtr<Ptr<gpu::Shader>>();
   this->async = makePtr<AsyncState>();
   const Ptr<AsyncState> state = this->async;
+  state->debugName = "Shader::compileAndLoad(" + String(name) + ")";
   this->stage = stage;
   this->code.clear();
 

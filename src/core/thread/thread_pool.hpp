@@ -12,6 +12,7 @@
 #include <mutex>
 #include <queue>
 #include <stdexcept>
+#include <system_error>
 #include <thread>
 #include <type_traits>
 #include <utility>
@@ -27,7 +28,12 @@ public:
     assert(thread_count > 0);
     workers_.reserve(thread_count);
     for (std::size_t i = 0; i < thread_count; ++i) {
-      workers_.emplace_back([this] { workerLoop(); });
+      try {
+        workers_.emplace_back([this] { workerLoop(); });
+      } catch (const std::system_error &) {
+        inlineExecution_ = workers_.empty();
+        break;
+      }
     }
 #endif
   }
@@ -49,6 +55,11 @@ public:
 #if defined(SINEN_PLATFORM_EMSCRIPTEN) || defined(EMSCRIPTEN)
     (*task)();
 #else
+    if (inlineExecution_) {
+      (*task)();
+      return fut;
+    }
+
     {
       std::lock_guard<std::mutex> lk(mtx_);
       if (stopping_) {
@@ -69,9 +80,16 @@ public:
       stopping_ = true;
     }
     cv_.notify_all();
+    const auto currentThreadId = std::this_thread::get_id();
     for (auto &t : workers_) {
-      if (t.joinable())
-        t.join();
+      if (!t.joinable()) {
+        continue;
+      }
+      if (t.get_id() == currentThreadId) {
+        t.detach();
+        continue;
+      }
+      t.join();
     }
     workers_.clear();
   }
@@ -100,6 +118,7 @@ private:
   Queue<std::function<void()>> tasks_;
   Array<std::thread> workers_;
   bool stopping_ = false;
+  bool inlineExecution_ = false;
 };
 } // namespace sinen
 

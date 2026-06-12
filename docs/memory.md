@@ -22,6 +22,13 @@ known.
 
 ## Global Allocator Use
 
+The initial global TLSF backing store defaults to 256 MiB on desktop builds and
+128 MiB on Emscripten builds. Set `SINEN_GLOBAL_ALLOCATOR_SIZE_MB` before
+startup to override the desktop default when a workload needs a larger pool.
+
+Async loading uses a small global thread pool. It defaults to at most 4 worker
+threads and can be overridden with `SINEN_THREAD_POOL_SIZE`.
+
 Do not use `GlobalAllocator` directly in new code unless:
 
 1. the allocation is truly process-lifetime,

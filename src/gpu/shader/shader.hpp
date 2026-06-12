@@ -37,6 +37,7 @@ public:
 private:
   struct AsyncState {
     std::future<void> future;
+    String debugName;
     Array<char> spirv;
     ShaderFormat shaderFormat = ShaderFormat::SPIRV;
     uint32_t numUniformBuffers = 0;

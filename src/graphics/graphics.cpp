@@ -1,5 +1,6 @@
 #include "graphics.hpp"
 #include <cassert>
+#include <core/allocator/engine_memory.hpp>
 #include <core/allocator/global_allocator.hpp>
 #include <core/logger/log.hpp>
 #include <core/profiler.hpp>
@@ -43,6 +44,7 @@ static std::optional<GraphicsPipeline> customPipeline;
 static Ptr<gpu::CommandBuffer> mainCommandBuffer;
 static Ptr<gpu::CommandBuffer> currentCommandBuffer;
 static Ptr<gpu::RenderPass> currentRenderPass;
+static Allocator *graphicsAllocator = nullptr;
 static bool isFrameStarted = true;
 static bool isPrevDepthEnabled = true;
 static bool isChangedRenderTarget = false;
@@ -65,6 +67,7 @@ static Vec2 validRenderSize();
 static Ptr<gpu::Texture> createDepthTexture(const Vec2 &size);
 static Vec2 renderTargetSize(const Ptr<gpu::Texture> &texture);
 static bool initializeBackend(GPUBackendAPI api);
+static bool initializeBackend(GPUBackendAPI api, Allocator *allocator);
 static void releaseBackendResources();
 static Array<GPUBackendAPI> availableBackendAPIs();
 static GPUBackendAPI nextBackendAPI(GPUBackendAPI api);
@@ -88,13 +91,29 @@ static void setFullWindowViewport(const Ptr<gpu::RenderPass> &renderPass) {
   renderPass->setViewport(viewport);
   renderPass->setScissor(rect.x, rect.y, rect.width, rect.height);
 }
-bool Graphics::initialize(GPUBackendAPI api) { return initializeBackend(api); }
+static Allocator *graphicsMemory() {
+  return graphicsAllocator ? graphicsAllocator : EngineMemory::graphics();
+}
+
+bool Graphics::initialize(GPUBackendAPI api) {
+  return initialize(api, EngineMemory::graphics());
+}
+
+bool Graphics::initialize(GPUBackendAPI api, Allocator *allocator) {
+  return initializeBackend(api, allocator);
+}
+
 static bool initializeBackend(GPUBackendAPI api) {
-  backend = gpu::RHI::createBackend(GlobalAllocator::get(), api);
+  return initializeBackend(api, EngineMemory::graphics());
+}
+
+static bool initializeBackend(GPUBackendAPI api, Allocator *allocator) {
+  graphicsAllocator = allocator ? allocator : EngineMemory::graphics();
+  backend = gpu::RHI::createBackend(graphicsMemory(), api);
   if (!backend)
     return false;
   gpu::Device::CreateInfo info{};
-  info.allocator = GlobalAllocator::get();
+  info.allocator = graphicsMemory();
   info.debugMode = true;
   device = backend->createDevice(info);
   if (!device) {
@@ -119,7 +138,7 @@ static bool initializeBackend(GPUBackendAPI api) {
 
   // Default sampler
   gpu::Sampler::CreateInfo samplerInfo{};
-  samplerInfo.allocator = GlobalAllocator::get();
+  samplerInfo.allocator = graphicsMemory();
   samplerInfo.minFilter = gpu::Filter::Linear;
   samplerInfo.magFilter = gpu::Filter::Linear;
   samplerInfo.mipmapMode = gpu::MipmapMode::Linear;
@@ -232,6 +251,7 @@ static void releaseBackendResources() {
   }
   device.reset();
   backend.reset();
+  graphicsAllocator = nullptr;
   isFrameStarted = true;
   isPrevDepthEnabled = true;
   isChangedRenderTarget = false;
@@ -888,7 +908,7 @@ static Vec2 validRenderSize() {
 
 static Ptr<gpu::Texture> createDepthTexture(const Vec2 &size) {
   gpu::Texture::CreateInfo depthStencilCreateInfo{};
-  depthStencilCreateInfo.allocator = GlobalAllocator::get();
+  depthStencilCreateInfo.allocator = graphicsMemory();
   depthStencilCreateInfo.width = static_cast<uint32_t>(std::max(1.0f, size.x));
   depthStencilCreateInfo.height = static_cast<uint32_t>(std::max(1.0f, size.y));
   depthStencilCreateInfo.layerCountOrDepth = 1;
@@ -1107,7 +1127,8 @@ bool Graphics::readbackTexture(const RenderTexture &srcRenderTexture,
     Log::error("readbackTexture failed: download buffer map failed");
     return false;
   }
-  std::vector<UInt8> converted(dataSize);
+  Array<UInt8> converted(EngineMemory::frame());
+  converted.resize(dataSize);
   copyTextureBytesWithFormatConversion(mapped, converted.data(), width, height,
                                        downloadBytesPerRow, tightBytesPerRow,
                                        srcFormat, dstFormat);

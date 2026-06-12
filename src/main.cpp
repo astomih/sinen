@@ -1,4 +1,5 @@
 #include <audio/audio.hpp>
+#include <core/allocator/engine_memory.hpp>
 #include <core/event/event.hpp>
 #include <core/logger/log.hpp>
 #include <core/profiler.hpp>
@@ -16,11 +17,17 @@
 
 #include <SDL3/SDL.h>
 
+#include <algorithm>
+#include <cstddef>
 #include <cstring>
 
 using namespace sinen;
 
 namespace {
+struct alignas(std::max_align_t) AllocationHeader {
+  Size totalSize;
+};
+
 inline bool addOverflowSize(size_t a, size_t b, size_t *out) {
   if (a > SIZE_MAX - b)
     return true;
@@ -37,14 +44,15 @@ inline bool mulOverflowSize(size_t a, size_t b, size_t *out) {
 
 void *mallocCustom(size_t size) {
   size_t totalSize;
-  if (addOverflowSize(size, sizeof(Size), &totalSize))
+  if (addOverflowSize(size, sizeof(AllocationHeader), &totalSize))
     return nullptr;
 
-  auto *m = static_cast<Size *>(GlobalAllocator::get()->allocate(totalSize));
+  auto *m = static_cast<AllocationHeader *>(
+      EngineMemory::global()->allocate(totalSize));
   if (!m)
     return nullptr;
 
-  *m = totalSize;
+  m->totalSize = totalSize;
   return static_cast<void *>(m + 1);
 }
 
@@ -54,15 +62,16 @@ void *callocCustom(size_t nmemb, size_t size) {
     return nullptr;
 
   size_t totalSize;
-  if (addOverflowSize(payload, sizeof(Size), &totalSize))
+  if (addOverflowSize(payload, sizeof(AllocationHeader), &totalSize))
     return nullptr;
 
-  auto *m = static_cast<Size *>(GlobalAllocator::get()->allocate(totalSize));
+  auto *m = static_cast<AllocationHeader *>(
+      EngineMemory::global()->allocate(totalSize));
   if (!m)
     return nullptr;
 
   SDL_memset(m, 0, totalSize);
-  *m = totalSize;
+  m->totalSize = totalSize;
   return static_cast<void *>(m + 1);
 }
 
@@ -77,29 +86,30 @@ void *reallocCustom(void *src, size_t size) {
   }
 
   // Get old header
-  auto *oldHeader = static_cast<Size *>(src) - 1;
-  size_t oldTotal = *oldHeader;
-  size_t oldPayload =
-      (oldTotal >= sizeof(Size)) ? (oldTotal - sizeof(Size)) : 0;
+  auto *oldHeader = static_cast<AllocationHeader *>(src) - 1;
+  size_t oldTotal = oldHeader->totalSize;
+  size_t oldPayload = (oldTotal >= sizeof(AllocationHeader))
+                          ? (oldTotal - sizeof(AllocationHeader))
+                          : 0;
 
   size_t newTotal;
-  if (addOverflowSize(size, sizeof(Size), &newTotal))
+  if (addOverflowSize(size, sizeof(AllocationHeader), &newTotal))
     return nullptr;
 
-  auto *newHeader =
-      static_cast<Size *>(GlobalAllocator::get()->allocate(newTotal));
+  auto *newHeader = static_cast<AllocationHeader *>(
+      EngineMemory::global()->allocate(newTotal));
   if (!newHeader) {
     return nullptr;
   }
 
-  *newHeader = newTotal;
+  newHeader->totalSize = newTotal;
   void *dst = static_cast<void *>(newHeader + 1);
 
   size_t copyBytes = std::min(oldPayload, size);
   if (copyBytes > 0)
     SDL_memcpy(dst, src, copyBytes);
 
-  GlobalAllocator::get()->deallocate(static_cast<void *>(oldHeader), oldTotal);
+  EngineMemory::global()->deallocate(static_cast<void *>(oldHeader), oldTotal);
 
   return dst;
 }
@@ -108,8 +118,8 @@ void freeCustom(void *mem) {
   if (!mem)
     return;
 
-  auto *m = static_cast<Size *>(mem) - 1;
-  GlobalAllocator::get()->deallocate(static_cast<void *>(m), *m);
+  auto *m = static_cast<AllocationHeader *>(mem) - 1;
+  EngineMemory::global()->deallocate(static_cast<void *>(m), m->totalSize);
 }
 
 String getWindowTitleWithBackend(GPUBackendAPI api) {
@@ -121,7 +131,11 @@ String getWindowTitleWithBackend(GPUBackendAPI api) {
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
   ZoneScopedN("SDL_AppInit");
-  std::pmr::set_default_resource(GlobalAllocator::get());
+  if (!EngineMemory::initialize()) {
+    Log::critical("Failed to initialize engine memory");
+    return SDL_APP_FAILURE;
+  }
+  std::pmr::set_default_resource(EngineMemory::global());
   SDL_SetMemoryFunctions(mallocCustom, callocCustom, reallocCustom, freeCustom);
   for (int i = 1; i < argc; i++) {
     StringView arg(argv[i]);
@@ -145,7 +159,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     Log::critical("Failed to initialize window");
     return SDL_APP_FAILURE;
   }
-  if (!Graphics::initialize(api)) {
+  if (!Graphics::initialize(api, EngineMemory::graphics())) {
     Log::critical("Failed to initialize graphics");
     return SDL_APP_FAILURE;
   }
@@ -172,14 +186,19 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     Log::critical("Failed to initialize script");
     return SDL_APP_FAILURE;
   }
+  EngineMemory::resetScene();
   Script::executeScene();
   return SDL_APP_CONTINUE;
 }
 SDL_AppResult SDL_AppIterate(void *appstate) {
   ZoneScopedN("Frame");
-  if (Event::isQuit())
+  EngineMemory::beginFrame();
+  if (Event::isQuit()) {
+    EngineMemory::endFrame();
     return SDL_APP_SUCCESS;
+  }
   if (Event::isPaused()) {
+    EngineMemory::endFrame();
     return SDL_APP_CONTINUE;
   }
   {
@@ -197,6 +216,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
   Graphics::render();
   if (Script::hasToReloadScene()) {
     ZoneScopedN("Script::runScene");
+    EngineMemory::resetScene();
     Script::executeScene();
   }
   if (Keyboard::isPressed(Scancode::F8)) {
@@ -206,9 +226,11 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     Script::shutdown();
     Graphics::shutdown();
 
+    EngineMemory::resetScene();
     Window::rename(getWindowTitleWithBackend(api));
     Script::initialize();
-    Graphics::initialize(static_cast<GPUBackendAPI>(api));
+    Graphics::initialize(static_cast<GPUBackendAPI>(api),
+                         EngineMemory::graphics());
     Script::executeScene();
   }
   if (Keyboard::isPressed(Scancode::F11)) {
@@ -218,6 +240,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
   }
   Window::prepareFrame();
   Input::prepareForUpdate();
+  EngineMemory::endFrame();
   FrameMark;
   return SDL_APP_CONTINUE;
 }
@@ -238,5 +261,5 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result) {
   Random::shutdown();
   Graphics::shutdown();
   Window::shutdown();
-  GlobalAllocator::release();
+  EngineMemory::shutdown();
 }

@@ -1,5 +1,6 @@
 #include "shader_bundle.hpp"
 
+#include <core/allocator/engine_memory.hpp>
 
 #include <cstring>
 #include <limits>
@@ -102,7 +103,8 @@ Array<char> ShaderBundle::pack(const Array<PackEntry> &entries) {
 
 Buffer ShaderBundle::packBuffer(const Array<PackEntry> &entries) {
   auto bundle = pack(entries);
-  Buffer buffer = makeBuffer(bundle.size(), BufferType::Binary);
+  Buffer buffer =
+      makeBuffer(bundle.size(), BufferType::Binary, EngineMemory::asset());
   if (!bundle.empty()) {
     std::memcpy(buffer.data(), bundle.data(), bundle.size());
   }

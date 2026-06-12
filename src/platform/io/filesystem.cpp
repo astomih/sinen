@@ -1,5 +1,6 @@
 #include "core/logger/log.hpp"
 
+#include <core/allocator/engine_memory.hpp>
 #include <platform/io/asset_reader.hpp>
 #include <platform/io/filesystem.hpp>
 #include <script/script.hpp>
@@ -253,7 +254,8 @@ std::optional<Buffer> Filesystem::read(StringView path) {
   if (!startsWithUserScheme(path) && AssetReader::isArchiveMounted() &&
       AssetReader::exists(path)) {
     const String data = AssetReader::readAsString(path);
-    Buffer buffer = makeBuffer(data.size(), BufferType::Binary);
+    Buffer buffer =
+        makeBuffer(data.size(), BufferType::Binary, EngineMemory::asset());
     if (!data.empty()) {
       std::memcpy(buffer.data(), data.data(), data.size());
     }
@@ -281,7 +283,8 @@ std::optional<Buffer> Filesystem::read(StringView path) {
     return std::nullopt;
   }
 
-  Buffer buffer = makeBuffer(fileLength, BufferType::Binary);
+  Buffer buffer =
+      makeBuffer(fileLength, BufferType::Binary, EngineMemory::asset());
   if (fileLength > 0) {
     std::memcpy(buffer.data(), loaded, fileLength);
   }

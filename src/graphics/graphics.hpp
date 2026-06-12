@@ -6,6 +6,7 @@
 #include <optional>
 // internal
 #include "graphics_pipeline.hpp"
+#include <core/allocator/allocator.hpp>
 #include <core/allocator/pool_allocator.hpp>
 #include <core/data/ptr.hpp>
 #include <core/data/string.hpp>
@@ -30,6 +31,7 @@ class AccelerationStructure;
 class Graphics {
 public:
   static bool initialize(GPUBackendAPI api);
+  static bool initialize(GPUBackendAPI api, Allocator *allocator);
   static void shutdown();
 
   static GPUBackendAPI chooseBackendApiByPlatformFeatures();

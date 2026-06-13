@@ -220,17 +220,28 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     Script::executeScene();
   }
   if (Keyboard::isPressed(Scancode::F8)) {
-    auto api = Graphics::getBackendAPI();
-    api = static_cast<GPUBackendAPI>((static_cast<Int32>(api) + 1) %
-                                     static_cast<Int32>(GPUBackendAPI::COUNT));
+    auto currentBackendAPI = Graphics::getBackendAPI();
     Script::shutdown();
     Graphics::shutdown();
 
     EngineMemory::resetScene();
-    Window::rename(getWindowTitleWithBackend(api));
     Script::initialize();
-    Graphics::initialize(static_cast<GPUBackendAPI>(api),
-                         EngineMemory::graphics());
+
+    auto api = currentBackendAPI;
+    auto getNextAPI = [](GPUBackendAPI api) {
+      return static_cast<GPUBackendAPI>(
+          (static_cast<Int32>(api) + 1) %
+          static_cast<Int32>(GPUBackendAPI::COUNT));
+    };
+    api = getNextAPI(api);
+    while (!Graphics::initialize(api, EngineMemory::graphics())) {
+      api = getNextAPI(api);
+      if (api == currentBackendAPI) {
+        Log::critical("Failed to initialize any graphics backend.");
+        return SDL_APP_FAILURE;
+      }
+    }
+    Window::rename(getWindowTitleWithBackend(api));
     Script::executeScene();
   }
   if (Keyboard::isPressed(Scancode::F11)) {

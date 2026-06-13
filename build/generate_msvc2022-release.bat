@@ -1,2 +1,2 @@
 call "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat" -arch=x64 -host_arch=x64
-cmake %~dp0.. -B %~dp0msvc2022-release -G "Ninja" -DCMAKE_BUILD_TYPE=Release
+cmake %~dp0.. -B %~dp0msvc2022-release -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DSINEN_ENABLE_NATIVE_WEBGPU_DAWN=OFF

@@ -64,7 +64,7 @@ jobs:
       - name: Configure
         shell: pwsh
         run: |
-          cmake -S . -B build/windows-release -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake -S . -B build/windows-release -G Ninja -DCMAKE_BUILD_TYPE=Release -DSINEN_ENABLE_NATIVE_WEBGPU_DAWN=OFF
 
       - name: Build
         shell: pwsh
@@ -78,41 +78,26 @@ jobs:
 
           $buildDir = Join-Path $PWD "build/windows-release"
           $distDir = Join-Path $PWD "dist"
-          $packageDir = Join-Path $distDir "sinen-windows-x64"
-          $archivePath = Join-Path $distDir "sinen-windows-x64.zip"
+          $releaseExePath = Join-Path $distDir "sinen-windows-x64.exe"
 
           New-Item -ItemType Directory -Force -Path $distDir | Out-Null
-          if (Test-Path $packageDir) {
-            Remove-Item $packageDir -Recurse -Force
-          }
-          New-Item -ItemType Directory -Force -Path $packageDir | Out-Null
 
           $exePath = Join-Path $buildDir "sinen.exe"
           if (-not (Test-Path $exePath)) {
             throw "Built executable was not found: $exePath"
           }
 
-          $webgpuDawnPath = Join-Path $buildDir "webgpu_dawn.dll"
-          if (-not (Test-Path $webgpuDawnPath)) {
-            throw "webgpu_dawn.dll was not found: $webgpuDawnPath"
+          if (Test-Path $releaseExePath) {
+            Remove-Item $releaseExePath -Force
           }
 
-          Copy-Item $exePath -Destination $packageDir -Force
-          Copy-Item $webgpuDawnPath -Destination $packageDir -Force
-          Copy-Item README.md -Destination $packageDir -Force
-          Copy-Item LICENSE.md -Destination $packageDir -Force
-
-          if (Test-Path $archivePath) {
-            Remove-Item $archivePath -Force
-          }
-
-          Compress-Archive -Path "$packageDir\*" -DestinationPath $archivePath -Force
+          Copy-Item $exePath -Destination $releaseExePath -Force
 
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sinen-windows-x64-zip
-          path: dist/sinen-windows-x64.zip
+          name: sinen-windows-x64-exe
+          path: dist/sinen-windows-x64.exe
 
   build_emscripten:
     name: Build Emscripten
@@ -251,7 +236,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download Release Artifacts
+      - name: Download Windows Release Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sinen-windows-x64-exe
+          path: release-assets
+
+      - name: Download Zip Release Artifacts
         uses: actions/download-artifact@v4
         with:
           pattern: sinen-*-zip
@@ -296,7 +287,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          gh release create "$TAG" release-assets/*.zip \
+          gh release create "$TAG" release-assets/* \
             --target "$GITHUB_SHA" \
             --title "$TAG" \
             --notes "Automated release for $TAG."

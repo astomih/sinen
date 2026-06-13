@@ -6,8 +6,14 @@ set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(SINEN_SOURCE_DIR ${CMAKE_SOURCE_DIR})
 
+set(SINEN_ENABLE_NATIVE_WEBGPU_DAWN_DEFAULT ON)
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+  set(SINEN_ENABLE_NATIVE_WEBGPU_DAWN_DEFAULT OFF)
+endif()
 option(SINEN_ENABLE_NATIVE_WEBGPU_DAWN
-       "Enable native WebGPU backend through Dawn" ON)
+       "Enable native WebGPU backend through Dawn"
+       ${SINEN_ENABLE_NATIVE_WEBGPU_DAWN_DEFAULT})
+unset(SINEN_ENABLE_NATIVE_WEBGPU_DAWN_DEFAULT)
 option(SINEN_EMSCRIPTEN_ASYNCIFY
        "Enable Emscripten Asyncify support for blocking browser waits" ON)
 option(SINEN_EMSCRIPTEN_ASSERTIONS
@@ -337,9 +343,9 @@ function(sinen_add_gpu_module)
 
   if(NOT SINEN_ENABLE_WEBGPU)
     list(FILTER SINEN_GPU_SOURCES EXCLUDE REGEX
-         ".*[\\\\/]src[\\\\/]gpu[\\\\/]webgpu[\\\\/].*\\.cpp$")
+         ".*[\\\\/]src[\\\\/]gpu[\\\\/]backend[\\\\/]webgpu[\\\\/].*\\.cpp$")
     list(FILTER SINEN_GPU_HEADERS EXCLUDE REGEX
-         ".*[\\\\/]src[\\\\/]gpu[\\\\/]webgpu[\\\\/].*\\.(hpp|inl)$")
+         ".*[\\\\/]src[\\\\/]gpu[\\\\/]backend[\\\\/]webgpu[\\\\/].*\\.(hpp|inl)$")
   endif()
 
   sinen_add_module(sinen_gpu ${SINEN_GPU_SOURCES} ${SINEN_GPU_HEADERS})

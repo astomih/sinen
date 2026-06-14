@@ -78,7 +78,7 @@ jobs:
 
           $buildDir = Join-Path $PWD "build/windows-release"
           $distDir = Join-Path $PWD "dist"
-          $releaseExePath = Join-Path $distDir "sinen-windows-x64.exe"
+          $releaseExePath = Join-Path $distDir "sinen.exe"
 
           New-Item -ItemType Directory -Force -Path $distDir | Out-Null
 
@@ -96,8 +96,8 @@ jobs:
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sinen-windows-x64-exe
-          path: dist/sinen-windows-x64.exe
+          name: sinen-exe
+          path: dist/sinen.exe
 
   build_emscripten:
     name: Build Emscripten
@@ -239,7 +239,7 @@ jobs:
       - name: Download Windows Release Artifact
         uses: actions/download-artifact@v4
         with:
-          name: sinen-windows-x64-exe
+          name: sinen-exe
           path: release-assets
 
       - name: Download Zip Release Artifacts

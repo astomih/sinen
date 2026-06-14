@@ -134,7 +134,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_EXECUTABLE_SUFFIX=.html \
             -DBUILD_SHARED_LIBS=OFF \
-            -DSINEN_USE_SLANG=OFF \
+            -DSINEN_MODULE_SHADER_COMPILER=OFF \
             -DSINEN_ENABLE_TRACY=OFF \
             -DSINEN_EMSCRIPTEN_ASYNCIFY=ON \
             -DSINEN_EMSCRIPTEN_ASSERTIONS=ON \

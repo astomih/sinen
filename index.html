@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting</title>
+
+  <link rel="alternate" hreflang="ja" href="https://astomih.github.io/sinen/ja/home" />
+  <link rel="alternate" hreflang="en" href="https://astomih.github.io/sinen/home" />
+  <link rel="alternate" hreflang="x-default" href="https://astomih.github.io/sinen/home" />
+  <script>
+    (function () {
+      const lang = navigator.language || navigator.userLanguage;
+      if (!lang) return;
+      const path = location.pathname;
+      const short = lang.split("-")[0];
+
+      if (short == "ja") {
+        location.replace(`/sinen/ja/home/`);
+      }
+      else {
+        location.replace(`/sinen/home/`);
+      }
+    })();
+  </script>
+</head>
+
+</html>

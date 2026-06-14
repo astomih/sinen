@@ -17,20 +17,14 @@ Sinen の基本はこの3つです。
 ```luau
 local sn = require("@sinen")
 local font: sn.Font = sn.Font.new()
-
-function setup()
-	font:load(32)
-end
-
-function update()
-	if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
-		-- 必要なら別シーンへ遷移
-		-- sn.Script.load("/main.luau")
-	end
-end
+font:load(32)
 
 function draw()
-	sn.Graphics.drawText("Hello Sinen!", font, sn.Vec2.new(20, 20), sn.Color.new(1.0), 32)
+	sn.Graphics.drawText(
+		"Hello World!",
+		sn.TextStyle.new(font, sn.Color.new(1.0), 32),
+		sn.TextTransform.new(sn.Window.center(), 0.0, sn.Pivot.Center)
+	)
 end
 ```
 
@@ -110,7 +104,7 @@ function setup()
 end
 
 function update()
-	if sn.Keyboard.isPressed(sn.Keyboard.SPACE) then
+	if sn.Keyboard.isPressed(sn.Scancode.SPACE) then
 		se:play()
 	end
 end
@@ -147,40 +141,4 @@ my_game/
 ```luau
 local Player = require("./player")
 ```
-
-## 8. 次に読むサンプル
-
-- `examples/basics/01_helloworld`: 最小構成
-- `examples/graphics/02_texture`: 画像表示
-- `examples/graphics/03_model`: 3Dモデル表示
-- `examples/audio/04_sound`: サウンド再生
-- `examples/simulation/09_physics`: 物理
-- `examples/audio/14_synth`: シンセ
-
 API 一覧は `docs/ja/luau_api.md` から参照できます。
-
-## 9. Luau 単体テスト
-
-`tests/luau` には、Sinen 上で起動できる小さな Luau 単体テストランナーがあります。
-
-```bat
-cd tests\luau
-..\..\build\msvc2026-debug\sinen.exe
-```
-
-`main.luau` が `sinen_test.luau` を読み込み、同じディレクトリの `*.test.luau` を登録してから実行します。テスト結果はログと画面に表示されます。
-
-基本形は次のとおりです。
-
-```luau
-local test = require("./sinen_test")
-local describe = test.describe
-local it = test.it
-local expect = test.expect
-
-describe("math", function()
-	it("adds numbers", function()
-		expect(1 + 1):toBe(2)
-	end)
-end)
-```

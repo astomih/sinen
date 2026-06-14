@@ -17,20 +17,14 @@ Here is the minimum script:
 ```luau
 local sn = require("@sinen")
 local font: sn.Font = sn.Font.new()
-
-function setup()
-	font:load(32)
-end
-
-function update()
-	if sn.Keyboard.isPressed(sn.Keyboard.ESCAPE) then
-		-- Move to another scene if needed
-		-- sn.Script.load("/main.luau")
-	end
-end
+font:load(32)
 
 function draw()
-	sn.Graphics.drawText("Hello Sinen!", font, sn.Vec2.new(20, 20), sn.Color.new(1.0), 32)
+	sn.Graphics.drawText(
+		"Hello World!",
+		sn.TextStyle.new(font, sn.Color.new(1.0), 32),
+		sn.TextTransform.new(sn.Window.center(), 0.0, sn.Pivot.Center)
+	)
 end
 ```
 
@@ -146,41 +140,4 @@ For modules in the same directory, use normal `require`.
 
 ```luau
 local Player = require("./player")
-```
-
-## 8. Next Examples to Read
-
-- `examples/basics/01_helloworld`: minimal setup
-- `examples/graphics/02_texture`: image drawing
-- `examples/graphics/03_model`: 3D model drawing
-- `examples/audio/04_sound`: sound playback
-- `examples/simulation/09_physics`: physics
-- `examples/audio/14_synth`: synth
-
-For the full API, see `docs/en/luau_api.md`.
-
-## 9. Luau Unit Tests
-
-`tests/luau` contains a small Luau unit test runner that can be launched with Sinen.
-
-```bat
-cd tests\luau
-..\..\build\msvc2026-debug\sinen.exe
-```
-
-`main.luau` loads `sinen_test.luau`, registers `*.test.luau` files in the same directory, then runs them. Results are written to the log and drawn on screen.
-
-The basic shape is:
-
-```luau
-local test = require("./sinen_test")
-local describe = test.describe
-local it = test.it
-local expect = test.expect
-
-describe("math", function()
-	it("adds numbers", function()
-		expect(1 + 1):toBe(2)
-	end)
-end)
 ```

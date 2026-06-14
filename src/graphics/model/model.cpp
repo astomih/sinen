@@ -509,7 +509,6 @@ void Model::load(StringView path) {
           aiProcess_JoinIdenticalVertices | aiProcess_Triangulate;
       const aiScene *scene = nullptr;
       String modelBytes;
-      Log::info("Loading model from path: {}", pathStr);
 #if defined(SINEN_PLATFORM_EMSCRIPTEN) || defined(EMSCRIPTEN)
       stage = "read file";
       modelBytes = AssetReader::readAsString(pathStr);
@@ -517,12 +516,9 @@ void Model::load(StringView path) {
         Log::info("Model path is empty, trying to load from memory");
         const String hint = assimpHintFromPath(pathStr);
         stage = "assimp read memory";
-        scene = importer.ReadFileFromMemory(modelBytes.data(),
-                                            modelBytes.size(), flags,
-                                            hint.c_str());
+        scene = importer.ReadFileFromMemory(
+            modelBytes.data(), modelBytes.size(), flags, hint.c_str());
       }
-      Log::info("Model loaded from path: {}, size: {}", pathStr,
-                modelBytes.size());
 #else
       stage = "resolve model path";
       if (AssetReader::isArchiveMounted() && AssetReader::exists(pathStr)) {
@@ -530,9 +526,8 @@ void Model::load(StringView path) {
         modelBytes = AssetReader::readAsString(pathStr);
         const String hint = assimpHintFromPath(pathStr);
         stage = "assimp read archive memory";
-        scene = importer.ReadFileFromMemory(modelBytes.data(),
-                                            modelBytes.size(), flags,
-                                            hint.c_str());
+        scene = importer.ReadFileFromMemory(
+            modelBytes.data(), modelBytes.size(), flags, hint.c_str());
       } else {
         stage = "assimp read file";
         auto fullFilePath = AssetReader::getFilePath(pathStr);
@@ -543,7 +538,6 @@ void Model::load(StringView path) {
         state->ok = false;
         return;
       }
-      Log::info("Model loaded successfully: {}", pathStr);
 
       Mesh mesh;
       AABB aabb;
@@ -571,14 +565,14 @@ void Model::load(StringView path) {
                                                aiTextureType_BASE_COLOR);
         }
         if (!embedded[1].present) {
-          embedded[1] = extractEmbeddedTexture(
-              const_cast<aiScene *>(scene), scene->mMaterials[i],
-              aiTextureType_NORMALS);
+          embedded[1] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                               scene->mMaterials[i],
+                                               aiTextureType_NORMALS);
         }
         if (!embedded[2].present) {
-          embedded[2] = extractEmbeddedTexture(
-              const_cast<aiScene *>(scene), scene->mMaterials[i],
-              aiTextureType_DIFFUSE_ROUGHNESS);
+          embedded[2] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                               scene->mMaterials[i],
+                                               aiTextureType_DIFFUSE_ROUGHNESS);
         }
         if (!embedded[3].present) {
           embedded[3] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
@@ -737,14 +731,14 @@ void Model::load(const Buffer &buffer) {
                                                aiTextureType_BASE_COLOR);
         }
         if (!embedded[1].present) {
-          embedded[1] = extractEmbeddedTexture(
-              const_cast<aiScene *>(scene), scene->mMaterials[i],
-              aiTextureType_NORMALS);
+          embedded[1] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                               scene->mMaterials[i],
+                                               aiTextureType_NORMALS);
         }
         if (!embedded[2].present) {
-          embedded[2] = extractEmbeddedTexture(
-              const_cast<aiScene *>(scene), scene->mMaterials[i],
-              aiTextureType_DIFFUSE_ROUGHNESS);
+          embedded[2] = extractEmbeddedTexture(const_cast<aiScene *>(scene),
+                                               scene->mMaterials[i],
+                                               aiTextureType_DIFFUSE_ROUGHNESS);
         }
         if (!embedded[3].present) {
           embedded[3] = extractEmbeddedTexture(const_cast<aiScene *>(scene),

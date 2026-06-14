@@ -646,6 +646,8 @@ export type Graphics = {
 	drawCubemap: (cubemap: Texture) -> nil,
 	getClearColor: () -> Color,
 	setClearColor: (c: Color) -> nil,
+	setMSAASampleCount: (sampleCount: number) -> nil,
+	getMSAASampleCount: () -> number,
 	setGraphicsPipeline: (pipe: GraphicsPipeline) -> nil,
 	resetGraphicsPipeline: () -> nil,
 	getBackendName: () -> string,

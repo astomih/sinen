@@ -36,6 +36,8 @@ static std::list<std::function<void()>> postDrawFuncs;
 static Ptr<gpu::Backend> backend;
 static Ptr<gpu::Device> device;
 static GPUBackendAPI currentBackendAPI = GPUBackendAPI::SDLGPU;
+static gpu::SampleCount msaaSampleCount = gpu::SampleCount::x4;
+static Ptr<gpu::Texture> msaaColorTexture;
 static Ptr<gpu::Texture> depthTexture;
 static Ptr<gpu::Sampler> sampler;
 static Ptr<gpu::Sampler> fontSampler;
@@ -64,6 +66,10 @@ static void prepareRenderPassFrame();
 static void setupShapes();
 static void beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp);
 static Vec2 validRenderSize();
+static Ptr<gpu::Texture> createColorTexture(const Vec2 &size,
+                                            gpu::TextureFormat format,
+                                            gpu::SampleCount sampleCount,
+                                            const char *debugName);
 static Ptr<gpu::Texture> createDepthTexture(const Vec2 &size);
 static Vec2 renderTargetSize(const Ptr<gpu::Texture> &texture);
 static bool initializeBackend(GPUBackendAPI api);
@@ -79,7 +85,8 @@ static void clearCurrentDrawState() {
 }
 
 static bool isPipelineReadyForDraw() {
-  return currentPipeline.has_value() && currentPipeline.value().get() != nullptr;
+  return currentPipeline.has_value() &&
+         currentPipeline.value().get() != nullptr;
 }
 
 static bool isModelReadyForDraw(const Model &model) {
@@ -114,6 +121,41 @@ static Allocator *graphicsMemory() {
   return graphicsAllocator ? graphicsAllocator : EngineMemory::graphics();
 }
 
+static UInt32 sampleCountValue(gpu::SampleCount sampleCount) {
+  switch (sampleCount) {
+  case gpu::SampleCount::x2:
+    return 2;
+  case gpu::SampleCount::x4:
+    return 4;
+  case gpu::SampleCount::x8:
+    return 8;
+  case gpu::SampleCount::x1:
+  default:
+    return 1;
+  }
+}
+
+static bool parseSampleCount(UInt32 value, gpu::SampleCount &out) {
+  switch (value) {
+  case 1:
+    out = gpu::SampleCount::x1;
+    return true;
+  case 2:
+    out = gpu::SampleCount::x2;
+    return true;
+  case 4:
+    out = gpu::SampleCount::x4;
+    return true;
+  case 8:
+    out = gpu::SampleCount::x8;
+    return true;
+  default:
+    return false;
+  }
+}
+
+static bool isMSAAEnabled() { return msaaSampleCount != gpu::SampleCount::x1; }
+
 bool Graphics::initialize(GPUBackendAPI api) {
   return initialize(api, EngineMemory::graphics());
 }
@@ -144,7 +186,6 @@ static bool initializeBackend(GPUBackendAPI api, Allocator *allocator) {
   device->claimWindow(window);
   currentBackendAPI = device->getBackendAPI();
   BuiltinShader::initialize();
-  BuiltinPipeline::initialize();
 
   // Create depth stencil target
   {
@@ -154,6 +195,7 @@ static bool initializeBackend(GPUBackendAPI api, Allocator *allocator) {
       return false;
     }
   }
+  BuiltinPipeline::initialize();
 
   // Default sampler
   gpu::Sampler::CreateInfo samplerInfo{};
@@ -259,6 +301,7 @@ static void releaseBackendResources() {
   currentCommandBuffer.reset();
   mainCommandBuffer.reset();
   depthTexture.reset();
+  msaaColorTexture.reset();
   sampler.reset();
   fontSampler.reset();
   box = Model();
@@ -376,6 +419,7 @@ void Graphics::render() {
   mainCommandBuffer.reset();
   if (!colorTargets.empty()) {
     colorTargets[0].texture = nullptr;
+    colorTargets[0].resolveTexture = nullptr;
   }
   currentColorTargets.clear();
 
@@ -389,12 +433,29 @@ void Graphics::render() {
   }
   mainCommandBuffer = commandBuffer;
   currentCommandBuffer = commandBuffer;
-  colorTargets[0].texture = swapchainTexture;
-  currentColorTargets = colorTargets;
   const Vec2 targetSize = renderTargetSize(swapchainTexture);
+  if (isMSAAEnabled()) {
+    const Vec2 colorSize = renderTargetSize(msaaColorTexture);
+    const auto format = swapchainTexture->getCreateInfo().format;
+    if (!msaaColorTexture || colorSize.x != targetSize.x ||
+        colorSize.y != targetSize.y ||
+        msaaColorTexture->getCreateInfo().format != format ||
+        msaaColorTexture->getCreateInfo().sampleCount != msaaSampleCount) {
+      msaaColorTexture = createColorTexture(targetSize, format, msaaSampleCount,
+                                            "Graphics MSAA color texture");
+    }
+  } else {
+    msaaColorTexture.reset();
+  }
+  colorTargets[0].texture =
+      isMSAAEnabled() && msaaColorTexture ? msaaColorTexture : swapchainTexture;
+  colorTargets[0].resolveTexture =
+      colorTargets[0].texture != swapchainTexture ? swapchainTexture : nullptr;
+  currentColorTargets = colorTargets;
   const Vec2 depthSize = renderTargetSize(depthTexture);
-  if (Window::resized() || depthSize.x != targetSize.x ||
-      depthSize.y != targetSize.y) {
+  if (!depthTexture || Window::resized() || depthSize.x != targetSize.x ||
+      depthSize.y != targetSize.y ||
+      depthTexture->getCreateInfo().sampleCount != msaaSampleCount) {
     depthTexture = createDepthTexture(targetSize);
     depthStencilInfo.texture = depthTexture;
   }
@@ -928,17 +989,27 @@ static Vec2 validRenderSize() {
 }
 
 static Ptr<gpu::Texture> createDepthTexture(const Vec2 &size) {
+  return createColorTexture(size, gpu::TextureFormat::D32_FLOAT_S8_UINT,
+                            msaaSampleCount, "Graphics depth texture");
+}
+
+static Ptr<gpu::Texture> createColorTexture(const Vec2 &size,
+                                            gpu::TextureFormat format,
+                                            gpu::SampleCount sampleCount,
+                                            const char *debugName) {
   gpu::Texture::CreateInfo depthStencilCreateInfo{};
   depthStencilCreateInfo.allocator = graphicsMemory();
   depthStencilCreateInfo.width = static_cast<uint32_t>(std::max(1.0f, size.x));
   depthStencilCreateInfo.height = static_cast<uint32_t>(std::max(1.0f, size.y));
   depthStencilCreateInfo.layerCountOrDepth = 1;
   depthStencilCreateInfo.type = gpu::TextureType::Texture2D;
-  depthStencilCreateInfo.usage = gpu::TextureUsage::DepthStencilTarget;
-  depthStencilCreateInfo.format = gpu::TextureFormat::D32_FLOAT_S8_UINT;
+  depthStencilCreateInfo.usage = format == gpu::TextureFormat::D32_FLOAT_S8_UINT
+                                     ? gpu::TextureUsage::DepthStencilTarget
+                                     : gpu::TextureUsage::ColorTarget;
+  depthStencilCreateInfo.format = format;
   depthStencilCreateInfo.numLevels = 1;
-  depthStencilCreateInfo.sampleCount = gpu::SampleCount::x1;
-  depthStencilCreateInfo.debugName = "Graphics depth texture";
+  depthStencilCreateInfo.sampleCount = sampleCount;
+  depthStencilCreateInfo.debugName = debugName;
   return device->createTexture(depthStencilCreateInfo);
 }
 
@@ -993,6 +1064,34 @@ void setupShapes() {
   box.loadBox();
   sprite.loadSprite();
 }
+
+void Graphics::setMSAASampleCount(UInt32 sampleCount) {
+  gpu::SampleCount parsed = gpu::SampleCount::x1;
+  if (!parseSampleCount(sampleCount, parsed)) {
+    Log::error("Invalid MSAA sample count. Use 1, 2, 4, or 8.");
+    return;
+  }
+  if (msaaSampleCount == parsed) {
+    return;
+  }
+
+  msaaSampleCount = parsed;
+  msaaColorTexture.reset();
+  depthTexture.reset();
+
+  if (device) {
+    device->waitForGpuIdle();
+    depthTexture = createDepthTexture(validRenderSize());
+    depthStencilInfo.texture = depthTexture;
+    BuiltinPipeline::shutdown();
+    BuiltinPipeline::initialize();
+  }
+}
+
+UInt32 Graphics::getMSAASampleCount() {
+  return sampleCountValue(msaaSampleCount);
+}
+
 void Graphics::begin2D() {
   currentGraphicsPass = GraphicsPass::TwoD;
   currentCamera2D = std::nullopt;
@@ -1056,7 +1155,7 @@ void Graphics::resetAllAccelerationStructures() {
 }
 
 void Graphics::beginRenderTarget(const RenderTexture &texture) {
-  auto tex = texture.getTexture();
+  auto tex = texture.getColorTarget();
   if (tex == currentColorTargets[0].texture) {
     return;
   }
@@ -1065,6 +1164,8 @@ void Graphics::beginRenderTarget(const RenderTexture &texture) {
   currentCommandBuffer = device->acquireCommandBuffer({GlobalAllocator::get()});
   currentColorTargets[0].loadOp = gpu::LoadOp::Clear;
   currentColorTargets[0].texture = tex;
+  currentColorTargets[0].resolveTexture =
+      tex != texture.getTexture() ? texture.getTexture() : nullptr;
   currentDepthStencilInfo.texture = depthTex;
   currentRenderPass = currentCommandBuffer->beginRenderPass(
       currentColorTargets, currentDepthStencilInfo);

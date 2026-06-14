@@ -130,11 +130,13 @@ public:
   void drawIndexedPrimitives(UInt32 numIndices, UInt32 numInstances,
                              UInt32 firstIndex, UInt32 vertexOffset,
                              UInt32 firstInstance) override;
+  void resolveTargets();
 
 private:
   void bindUniforms();
 
   CommandBuffer *commandBuffer;
+  Array<ColorTargetInfo> colorTargets;
   Ptr<GraphicsPipeline> pipeline;
 };
 

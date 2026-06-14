@@ -242,10 +242,21 @@ CommandBuffer::beginRenderPass(const Array<ColorTargetInfo> &infos,
     }
     colorAttachments[i] = {};
     colorAttachments[i].view = view;
-    colorAttachments[i].resolveTarget = nullptr;
+    keepAlive(infos[i].resolveTexture);
+    auto resolveTex = downCast<Texture>(infos[i].resolveTexture);
+    WGPUTextureView resolveView = resolveTex ? resolveTex->getView() : nullptr;
+    if (!resolveView && resolveTex && resolveTex->getNative()) {
+      resolveView = device->createDefaultTextureView(resolveTex->getNative());
+      if (resolveView) {
+        transientViews.push_back(resolveView);
+      }
+    }
+    colorAttachments[i].resolveTarget = resolveView;
     colorAttachments[i].depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
     colorAttachments[i].loadOp = convert::LoadOpFrom(infos[i].loadOp);
-    colorAttachments[i].storeOp = convert::StoreOpFrom(infos[i].storeOp);
+    colorAttachments[i].storeOp = resolveView
+                                      ? WGPUStoreOp_Discard
+                                      : convert::StoreOpFrom(infos[i].storeOp);
     colorAttachments[i].clearValue = {
         .r = r,
         .g = g,

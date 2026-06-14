@@ -502,12 +502,14 @@ void RenderPass::begin(const Array<ColorTargetInfo> &infos,
                        float g, float b, float a) {
   std::vector<VkAttachmentDescription> attachments;
   std::vector<VkAttachmentReference> colorRefs;
+  std::vector<VkAttachmentReference> resolveRefs;
   std::vector<VkImageView> views;
   std::vector<VkClearValue> clearValues;
-  attachments.reserve(infos.size() + 1);
+  attachments.reserve(infos.size() * 2 + 1);
   colorRefs.reserve(infos.size());
-  views.reserve(infos.size() + 1);
-  clearValues.reserve(infos.size() + 1);
+  resolveRefs.reserve(infos.size());
+  views.reserve(infos.size() * 2 + 1);
+  clearValues.reserve(infos.size() * 2 + 1);
 
   uint32_t width = 1;
   uint32_t height = 1;
@@ -545,6 +547,39 @@ void RenderPass::begin(const Array<ColorTargetInfo> &infos,
     clear.color = {{r, g, b, a}};
     clearValues.push_back(clear);
     tex->setLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+    if (info.resolveTexture) {
+      commandBuffer.keepAlive(info.resolveTexture);
+      auto resolveTex = downCast<Texture>(info.resolveTexture);
+      if (!resolveTex || resolveTex->getView() == VK_NULL_HANDLE) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                     "Vulkan: invalid resolve attachment texture");
+        return;
+      }
+
+      VkAttachmentDescription resolveAttachment{};
+      resolveAttachment.format = resolveTex->getFormat();
+      resolveAttachment.samples =
+          convert::sampleCountFrom(resolveTex->getCreateInfo().sampleCount);
+      resolveAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+      resolveAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+      resolveAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+      resolveAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+      resolveAttachment.initialLayout = resolveTex->getLayout();
+      resolveAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+      attachments.push_back(resolveAttachment);
+
+      VkAttachmentReference resolveRef{};
+      resolveRef.attachment = static_cast<uint32_t>(attachments.size() - 1);
+      resolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+      resolveRefs.push_back(resolveRef);
+      views.push_back(resolveTex->getView());
+
+      VkClearValue resolveClear{};
+      resolveClear.color = {{0.0f, 0.0f, 0.0f, 0.0f}};
+      clearValues.push_back(resolveClear);
+      resolveTex->setLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    }
   }
 
   VkAttachmentReference depthRef{};
@@ -589,6 +624,8 @@ void RenderPass::begin(const Array<ColorTargetInfo> &infos,
   subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
   subpass.colorAttachmentCount = static_cast<uint32_t>(colorRefs.size());
   subpass.pColorAttachments = colorRefs.data();
+  subpass.pResolveAttachments =
+      resolveRefs.empty() ? nullptr : resolveRefs.data();
   subpass.pDepthStencilAttachment = depthRefPtr;
 
   VkSubpassDependency dependency{};

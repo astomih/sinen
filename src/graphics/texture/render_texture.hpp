@@ -14,10 +14,12 @@ public:
   int height;
 
   Ptr<gpu::Texture> getTexture() const;
+  Ptr<gpu::Texture> getColorTarget() const;
   Ptr<gpu::Texture> getDepthStencil() const;
 
 private:
   Ptr<gpu::Texture> texture;
+  Ptr<gpu::Texture> colorTarget;
   Ptr<gpu::Texture> depthStencil;
 };
 } // namespace sinen

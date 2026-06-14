@@ -69,7 +69,23 @@ void GraphicsPipeline::build() {
 
     pipelineInfo.rasterizerState = rasterizerState;
     pipelineInfo.multiSampleState = {};
-    pipelineInfo.multiSampleState.sampleCount = gpu::SampleCount::x1;
+    gpu::SampleCount sampleCount = gpu::SampleCount::x1;
+    switch (Graphics::getMSAASampleCount()) {
+    case 2:
+      sampleCount = gpu::SampleCount::x2;
+      break;
+    case 4:
+      sampleCount = gpu::SampleCount::x4;
+      break;
+    case 8:
+      sampleCount = gpu::SampleCount::x8;
+      break;
+    case 1:
+    default:
+      sampleCount = gpu::SampleCount::x1;
+      break;
+    }
+    pipelineInfo.multiSampleState.sampleCount = sampleCount;
     const bool enableDepthTest =
         featureFlags.test(GraphicsPipeline::FeatureFlag::DepthTest);
     const bool enableDepthWrite =

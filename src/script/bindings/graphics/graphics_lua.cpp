@@ -105,6 +105,20 @@ static int lGraphicsSetClearColor(lua_State *L) {
   Graphics::setClearColor(c);
   return 0;
 }
+static int lGraphicsSetMSAASampleCount(lua_State *L) {
+  UInt32 sampleCount = static_cast<UInt32>(luaL_checkinteger(L, 1));
+  if (sampleCount != 1 && sampleCount != 2 && sampleCount != 4 &&
+      sampleCount != 8) {
+    luaL_error(L, "MSAA sample count must be 1, 2, 4, or 8");
+    return 0;
+  }
+  Graphics::setMSAASampleCount(sampleCount);
+  return 0;
+}
+static int lGraphicsGetMSAASampleCount(lua_State *L) {
+  lua_pushinteger(L, Graphics::getMSAASampleCount());
+  return 1;
+}
 static int lGraphicsSetGraphicsPipeline(lua_State *L) {
   auto &p = udPtr<GraphicsPipeline>(L, 1);
   Graphics::setGraphicsPipeline(*p);
@@ -182,6 +196,10 @@ void registerGraphics(lua_State *L) {
   lua_setfield(L, -2, "getClearColor");
   luaPushcfunction2(L, lGraphicsSetClearColor);
   lua_setfield(L, -2, "setClearColor");
+  luaPushcfunction2(L, lGraphicsSetMSAASampleCount);
+  lua_setfield(L, -2, "setMSAASampleCount");
+  luaPushcfunction2(L, lGraphicsGetMSAASampleCount);
+  lua_setfield(L, -2, "getMSAASampleCount");
   luaPushcfunction2(L, lGraphicsSetGraphicsPipeline);
   lua_setfield(L, -2, "setGraphicsPipeline");
   luaPushcfunction2(L, lGraphicsResetGraphicsPipeline);

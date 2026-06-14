@@ -62,6 +62,8 @@ public:
                                  const Array<Transform> &transforms);
   static void setClearColor(const Color &color);
   static Color getClearColor();
+  static void setMSAASampleCount(UInt32 sampleCount);
+  static UInt32 getMSAASampleCount();
   static void addPreDrawFunc(std::function<void()> f);
   static void addPostDrawFunc(std::function<void()> function);
   static void setGraphicsPipeline(const GraphicsPipeline &pipeline);

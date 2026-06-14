@@ -139,7 +139,12 @@ CommandBuffer::beginRenderPass(const Array<ColorTargetInfo> &infos,
                              depthStencilInfo);
 }
 
-void CommandBuffer::endRenderPass(Ptr<gpu::RenderPass>) {}
+void CommandBuffer::endRenderPass(Ptr<gpu::RenderPass> renderPass) {
+  auto pass = downCast<RenderPass>(renderPass);
+  if (pass) {
+    pass->resolveTargets();
+  }
+}
 
 D3D12_GPU_VIRTUAL_ADDRESS CommandBuffer::uploadUniform(const void *data,
                                                        size_t size) {
@@ -370,9 +375,30 @@ void CopyPass::copyTexture(const TextureLocation &src,
 }
 
 RenderPass::RenderPass(CommandBuffer *commandBuffer,
-                       const Array<ColorTargetInfo> &,
+                       const Array<ColorTargetInfo> &colorTargets,
                        const DepthStencilTargetInfo &)
-    : commandBuffer(commandBuffer) {}
+    : commandBuffer(commandBuffer),
+      colorTargets(commandBuffer->getCreateInfo().allocator) {
+  this->colorTargets = colorTargets;
+}
+
+void RenderPass::resolveTargets() {
+  auto list = commandBuffer->getNative();
+  auto device = commandBuffer->getDevice();
+  for (const auto &target : colorTargets) {
+    auto source = downCast<Texture>(target.texture);
+    auto resolve = downCast<Texture>(target.resolveTexture);
+    if (!source || !resolve) {
+      continue;
+    }
+    commandBuffer->keepAlive(source->getNative());
+    commandBuffer->keepAlive(resolve->getNative());
+    device->transition(list, source.get(), D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
+    device->transition(list, resolve.get(), D3D12_RESOURCE_STATE_RESOLVE_DEST);
+    list->ResolveSubresource(resolve->getNative(), 0, source->getNative(), 0,
+                             source->getNative()->GetDesc().Format);
+  }
+}
 
 void RenderPass::bindGraphicsPipeline(
     Ptr<gpu::GraphicsPipeline> graphicsPipeline) {

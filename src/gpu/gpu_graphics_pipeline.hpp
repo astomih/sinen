@@ -108,6 +108,7 @@ enum class LoadOp { Load, Clear, DontCare };
 enum class StoreOp { Store, DontCare };
 struct ColorTargetInfo {
   Ptr<Texture> texture;
+  Ptr<Texture> resolveTexture;
   // clearColor
   LoadOp loadOp;
   StoreOp storeOp;

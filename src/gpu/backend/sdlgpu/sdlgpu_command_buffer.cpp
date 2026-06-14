@@ -1,11 +1,11 @@
 #include "sdlgpu_command_buffer.hpp"
 
 #ifndef EMSCRIPTEN
+#include "sdlgpu_buffer.hpp"
+#include "sdlgpu_compute_pipeline.hpp"
 #include "sdlgpu_convert.hpp"
 #include "sdlgpu_copy_pass.hpp"
-#include "sdlgpu_compute_pipeline.hpp"
 #include "sdlgpu_render_pass.hpp"
-#include "sdlgpu_buffer.hpp"
 #include "sdlgpu_texture.hpp"
 
 #include <SDL3/SDL_gpu.h>
@@ -71,7 +71,13 @@ CommandBuffer::beginRenderPass(const Array<ColorTargetInfo> &infos,
     colorTargetInfos[i].texture =
         downCast<Texture>(infos[i].texture)->getNative();
     colorTargetInfos[i].load_op = convert::LoadOpFrom(infos[i].loadOp);
-    colorTargetInfos[i].store_op = convert::StoreOpFrom(infos[i].storeOp);
+    colorTargetInfos[i].store_op = infos[i].resolveTexture
+                                       ? SDL_GPU_STOREOP_RESOLVE
+                                       : convert::StoreOpFrom(infos[i].storeOp);
+    colorTargetInfos[i].resolve_texture =
+        infos[i].resolveTexture
+            ? downCast<Texture>(infos[i].resolveTexture)->getNative()
+            : nullptr;
     colorTargetInfos[i].clear_color = {r, g, b, a};
   }
   SDL_GPUDepthStencilTargetInfo depthStencilTarget{};

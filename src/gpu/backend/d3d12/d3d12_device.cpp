@@ -1199,30 +1199,85 @@ D3D12_GPU_DESCRIPTOR_HANDLE Device::gpuHandle(ID3D12DescriptorHeap *heap,
 }
 
 CpuGpuDescriptor Device::allocateSrvDescriptor() {
+  if (srvUsed >= SrvFallbackIndex) {
+    if (!srvOverflowLogged) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "D3D12: CPU SRV descriptor heap exhausted");
+      srvOverflowLogged = true;
+    }
+    return {cpuHandle(srvCpuHeap.Get(), srvDescriptorSize, SrvFallbackIndex),
+            {}};
+  }
   const UINT index = srvUsed++;
   return {cpuHandle(srvCpuHeap.Get(), srvDescriptorSize, index), {}};
 }
 
 CpuGpuDescriptor Device::allocateSamplerDescriptor() {
+  if (samplerUsed >= SamplerFallbackIndex) {
+    if (!samplerOverflowLogged) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "D3D12: CPU sampler descriptor heap exhausted");
+      samplerOverflowLogged = true;
+    }
+    return {cpuHandle(samplerCpuHeap.Get(), samplerDescriptorSize,
+                      SamplerFallbackIndex),
+            {}};
+  }
   const UINT index = samplerUsed++;
   return {cpuHandle(samplerCpuHeap.Get(), samplerDescriptorSize, index), {}};
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE Device::allocateRtvDescriptor() {
+  if (rtvUsed >= RtvFallbackIndex) {
+    if (!rtvOverflowLogged) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "D3D12: RTV descriptor heap exhausted");
+      rtvOverflowLogged = true;
+    }
+    return cpuHandle(rtvHeap.Get(), rtvDescriptorSize, RtvFallbackIndex);
+  }
   return cpuHandle(rtvHeap.Get(), rtvDescriptorSize, rtvUsed++);
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE Device::allocateDsvDescriptor() {
+  if (dsvUsed >= DsvFallbackIndex) {
+    if (!dsvOverflowLogged) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "D3D12: DSV descriptor heap exhausted");
+      dsvOverflowLogged = true;
+    }
+    return cpuHandle(dsvHeap.Get(), dsvDescriptorSize, DsvFallbackIndex);
+  }
   return cpuHandle(dsvHeap.Get(), dsvDescriptorSize, dsvUsed++);
 }
 
 CpuGpuDescriptor Device::allocateTransientSrvDescriptor() {
+  if (transientSrvUsed >= SrvFallbackIndex) {
+    if (!transientSrvOverflowLogged) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "D3D12: transient SRV descriptor heap exhausted");
+      transientSrvOverflowLogged = true;
+    }
+    return {cpuHandle(srvHeap.Get(), srvDescriptorSize, SrvFallbackIndex),
+            gpuHandle(srvHeap.Get(), srvDescriptorSize, SrvFallbackIndex)};
+  }
   const UINT index = transientSrvUsed++;
   return {cpuHandle(srvHeap.Get(), srvDescriptorSize, index),
           gpuHandle(srvHeap.Get(), srvDescriptorSize, index)};
 }
 
 CpuGpuDescriptor Device::allocateTransientSamplerDescriptor() {
+  if (transientSamplerUsed >= SamplerFallbackIndex) {
+    if (!transientSamplerOverflowLogged) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                   "D3D12: transient sampler descriptor heap exhausted");
+      transientSamplerOverflowLogged = true;
+    }
+    return {cpuHandle(samplerHeap.Get(), samplerDescriptorSize,
+                      SamplerFallbackIndex),
+            gpuHandle(samplerHeap.Get(), samplerDescriptorSize,
+                      SamplerFallbackIndex)};
+  }
   const UINT index = transientSamplerUsed++;
   return {cpuHandle(samplerHeap.Get(), samplerDescriptorSize, index),
           gpuHandle(samplerHeap.Get(), samplerDescriptorSize, index)};
@@ -1231,6 +1286,8 @@ CpuGpuDescriptor Device::allocateTransientSamplerDescriptor() {
 void Device::resetTransientDescriptors() {
   transientSrvUsed = TransientSrvBase;
   transientSamplerUsed = TransientSamplerBase;
+  transientSrvOverflowLogged = false;
+  transientSamplerOverflowLogged = false;
 }
 } // namespace sinen::gpu::d3d12
 

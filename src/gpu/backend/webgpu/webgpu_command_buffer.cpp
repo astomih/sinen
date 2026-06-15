@@ -255,7 +255,7 @@ CommandBuffer::beginRenderPass(const Array<ColorTargetInfo> &infos,
     colorAttachments[i].depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
     colorAttachments[i].loadOp = convert::LoadOpFrom(infos[i].loadOp);
     colorAttachments[i].storeOp = resolveView
-                                      ? WGPUStoreOp_Discard
+                                      ? WGPUStoreOp_Store
                                       : convert::StoreOpFrom(infos[i].storeOp);
     colorAttachments[i].clearValue = {
         .r = r,

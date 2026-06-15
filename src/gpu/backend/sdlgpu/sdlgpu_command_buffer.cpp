@@ -72,7 +72,7 @@ CommandBuffer::beginRenderPass(const Array<ColorTargetInfo> &infos,
         downCast<Texture>(infos[i].texture)->getNative();
     colorTargetInfos[i].load_op = convert::LoadOpFrom(infos[i].loadOp);
     colorTargetInfos[i].store_op = infos[i].resolveTexture
-                                       ? SDL_GPU_STOREOP_RESOLVE
+                                       ? SDL_GPU_STOREOP_RESOLVE_AND_STORE
                                        : convert::StoreOpFrom(infos[i].storeOp);
     colorTargetInfos[i].resolve_texture =
         infos[i].resolveTexture

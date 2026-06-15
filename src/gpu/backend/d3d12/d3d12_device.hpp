@@ -103,12 +103,16 @@ public:
 
 private:
   static constexpr UINT FrameCount = 2;
-  static constexpr UINT SrvHeapCapacity = 4096;
-  static constexpr UINT SamplerHeapCapacity = 256;
+  static constexpr UINT SrvHeapCapacity = 65536;
+  static constexpr UINT SamplerHeapCapacity = 2048;
   static constexpr UINT RtvHeapCapacity = 1024;
   static constexpr UINT DsvHeapCapacity = 256;
-  static constexpr UINT TransientSrvBase = 2048;
-  static constexpr UINT TransientSamplerBase = 128;
+  static constexpr UINT TransientSrvBase = 0;
+  static constexpr UINT TransientSamplerBase = 0;
+  static constexpr UINT SrvFallbackIndex = SrvHeapCapacity - 1;
+  static constexpr UINT SamplerFallbackIndex = SamplerHeapCapacity - 1;
+  static constexpr UINT RtvFallbackIndex = RtvHeapCapacity - 1;
+  static constexpr UINT DsvFallbackIndex = DsvHeapCapacity - 1;
 
   void createDeviceObjects();
   void createSwapchain();
@@ -159,6 +163,12 @@ private:
   UINT dsvUsed = 0;
   UINT transientSrvUsed = TransientSrvBase;
   UINT transientSamplerUsed = TransientSamplerBase;
+  bool srvOverflowLogged = false;
+  bool samplerOverflowLogged = false;
+  bool rtvOverflowLogged = false;
+  bool dsvOverflowLogged = false;
+  bool transientSrvOverflowLogged = false;
+  bool transientSamplerOverflowLogged = false;
   CpuGpuDescriptor defaultSrv{};
   CpuGpuDescriptor defaultSampler{};
 

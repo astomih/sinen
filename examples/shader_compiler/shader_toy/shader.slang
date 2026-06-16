@@ -1,14 +1,19 @@
-#define UNIFORM(name, bind)                                                    \
+#define UNIFORM_VERT(name, bind)                                               \
   [[vk::binding(bind, 1)]]                                                     \
-  cbuffer name
-
+  cbuffer name : register(b##bind, space1)
 #define UNIFORM_FRAG(name, bind)                                               \
   [[vk::binding(bind, 3)]]                                                     \
-  cbuffer name //: register(c##bind, space1)
+  cbuffer name : register(b##bind, space3)
 
-#define COMBINED_IMAGE_SAMPLER(name, bind, set)                                \
-  [[vk::binding(bind, set)]]                                                   \
-  Sampler2D name
+#ifdef SINEN_TARGET_WEBGPU
+#define COMBINED_IMAGE_SAMPLER(name, logicalBind, textureBind, samplerBind)    \
+  [[vk::binding(textureBind, 2)]]                                              \
+  Sampler2D name : register(t##textureBind, space2) : register(s##samplerBind, space2);
+#else
+#define COMBINED_IMAGE_SAMPLER(name, logicalBind, textureBind, samplerBind)    \
+  [[vk::binding(logicalBind, 2)]]                                              \
+  Sampler2D name : register(t##logicalBind, space2) : register(s##logicalBind, space2);
+#endif
 
 struct VSInput {
   float3 position : POSITION;
@@ -23,16 +28,14 @@ struct VSOutput {
   float4 color : COLOR;
 };
 
-UNIFORM(Mat, 0) {
-  float4x4 wvp;
-}
+UNIFORM_VERT(Mat, 0) { float4x4 wvp; }
 
 UNIFORM_FRAG(ShaderToyData, 1) {
   float4 iResolutionTimeMode;
   float4 iMousePulse;
 }
 
-COMBINED_IMAGE_SAMPLER(sampledTexture, 0, 2);
+COMBINED_IMAGE_SAMPLER(sampledTexture, 0, 0, 1);
 
 [shader("vertex")]
 VSOutput VSMain(VSInput input) {
@@ -44,6 +47,7 @@ VSOutput VSMain(VSInput input) {
 }
 
 struct FSInput {
+  float4 position : SV_Position;
   float2 uv : TEXCOORD0;
   float4 color : COLOR;
 };

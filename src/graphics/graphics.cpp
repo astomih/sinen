@@ -175,7 +175,11 @@ static bool initializeBackend(GPUBackendAPI api, Allocator *allocator) {
     return false;
   gpu::Device::CreateInfo info{};
   info.allocator = graphicsMemory();
+#if defined(SINEN_BUILD_DEBUG)
   info.debugMode = true;
+#else
+  info.debugMode = false;
+#endif
   device = backend->createDevice(info);
   if (!device) {
     Log::error("Failed to create GPU device");

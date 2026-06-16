@@ -5,8 +5,6 @@ local examples = {
 	{ label = "Text", dir = "text" },
 	{ label = "Texture", dir = "texture" },
 	{ label = "Model", dir = "model" },
-	{ label = "Shader", dir = "shader" },
-	{ label = "Shader Compiled", dir = "shader_compiled" },
 	{ label = "Render Texture", dir = "render_texture" },
 	{ label = "Instancing", dir = "instancing" },
 	{ label = "PBR", dir = "pbr" },

@@ -1,19 +1,4 @@
-#define UNIFORM_VERT(name, bind)                                               \
-  [[vk::binding(bind, 1)]]                                                     \
-  cbuffer name : register(b##bind, space1)
-#define UNIFORM_FRAG(name, bind)                                               \
-  [[vk::binding(bind, 3)]]                                                     \
-  cbuffer name : register(b##bind, space3)
-
-#ifdef SINEN_TARGET_WEBGPU
-#define COMBINED_IMAGE_SAMPLER(name, logicalBind, textureBind, samplerBind)    \
-  [[vk::binding(textureBind, 2)]]                                              \
-  Sampler2D name : register(t##textureBind, space2) : register(s##samplerBind, space2);
-#else
-#define COMBINED_IMAGE_SAMPLER(name, logicalBind, textureBind, samplerBind)    \
-  [[vk::binding(logicalBind, 2)]]                                              \
-  Sampler2D name : register(t##logicalBind, space2) : register(s##logicalBind, space2);
-#endif
+#include "../../common.slang"
 
 struct VSInput {
   float3 position : POSITION;

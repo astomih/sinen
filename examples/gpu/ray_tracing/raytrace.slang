@@ -1,12 +1,11 @@
+#include "../../common.slang"
+
 struct RayPayload {
   float3 color;
 };
 
-[[vk::binding(0, 4)]]
-RaytracingAccelerationStructure scene : register(t0, space4);
-
-[[vk::binding(8, 4)]]
-RWByteAddressBuffer outputPixels : register(u0, space4);
+SinenRaytracingASInRaytracing(scene, 0);
+SinenRWByteAddressBufferInRaytracing(outputPixels, 0);
 
 [shader("raygeneration")]
 void RayGenMain() {
@@ -40,6 +39,5 @@ void MissMain(inout RayPayload payload) {
 void ClosestHitMain(inout RayPayload payload,
                     in BuiltInTriangleIntersectionAttributes attributes) {
   payload.color = float3(1.0 - attributes.barycentrics.x,
-                         attributes.barycentrics.x,
-                         attributes.barycentrics.y);
+                         attributes.barycentrics.x, attributes.barycentrics.y);
 }

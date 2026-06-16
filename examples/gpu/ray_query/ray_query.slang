@@ -1,11 +1,9 @@
+#include "../../common.slang"
 static const uint ImageWidth = 384;
 static const uint ImageHeight = 288;
 
-[[vk::binding(0, 6)]]
-RaytracingAccelerationStructure scene : register(t0, space6);
-
-[[vk::binding(0, 1)]]
-RWByteAddressBuffer outputPixels : register(u0, space1);
+SinenRaytracingASInCompute(scene, 0);
+SinenRWByteAddressBufferInCompute(outputPixels, 0);
 
 bool traceScene(float2 uv, out float hitT) {
   RayDesc ray;
@@ -29,7 +27,7 @@ bool traceScene(float2 uv, out float hitT) {
 
 [shader("compute")]
 [numthreads(8, 8, 1)]
-void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID) {
+void CSMain(uint3 dispatchThreadID: SV_DispatchThreadID) {
   if (dispatchThreadID.x >= ImageWidth || dispatchThreadID.y >= ImageHeight) {
     return;
   }
@@ -41,7 +39,8 @@ void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID) {
   float3 color = float3(0.02, 0.04, 0.08);
   if (traceScene(uv, hitT)) {
     float shade = saturate(1.0 - hitT * 0.08);
-    color = float3(1.0, 0.35, 0.12) * shade + float3(0.0, 0.25, 0.75) * (1.0 - shade);
+    color = float3(1.0, 0.35, 0.12) * shade +
+            float3(0.0, 0.25, 0.75) * (1.0 - shade);
   }
 
   uint r = (uint)round(saturate(color.r) * 255.0);

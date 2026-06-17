@@ -12,17 +12,41 @@ local lightModel: sn.Model = createLightModel()
 
 local envPath = "citrus_orchard_road_puresky_2k/citrus_orchard_road_puresky_2k.exr"
 
+function saveImageExr(name: string, texture: sn.Texture)
+	local buffer: sn.Buffer = texture:toExrBuffer(true)
+	sn.Filesystem.write(name, buffer)
+end
+
+function saveImage(name: string, texture: sn.Texture)
+	local buffer: sn.Buffer = texture:toPngBuffer()
+	sn.Filesystem.write(name, buffer)
+end
+
+local isExistsEXRs = false
+if
+	sn.Filesystem.exists("brdf_lut.png")
+	and sn.Filesystem.exists("irradiance_cubemap.exr")
+	and sn.Filesystem.exists("prefiltered_cubemap.exr")
+then
+	isExistsEXRs = true
+end
+
 local lut: sn.Texture = sn.Texture.new()
-lut:loadBRDFLUT(256, 512)
-
 local cubemap: sn.Texture = sn.Texture.new()
-cubemap:loadCubemap(envPath)
-
 local irradiance: sn.Texture = sn.Texture.new()
-irradiance:loadIrradianceCubemap(envPath, 64, 256)
-
 local prefiltered: sn.Texture = sn.Texture.new()
-prefiltered:loadPrefilteredCubemap(envPath, 128, 5, 128)
+
+if isExistsEXRs then
+	lut:load("brdf_lut.png")
+	cubemap:loadCubemap(envPath)
+	irradiance:loadCubemap("irradiance_cubemap.exr")
+	prefiltered:loadCubemap("prefiltered_cubemap.exr")
+else
+	lut:loadBRDFLUT(256, 512)
+	cubemap:loadCubemap(envPath)
+	irradiance:loadIrradianceCubemap(envPath, 64, 256)
+	prefiltered:loadPrefilteredCubemap(envPath, 128, 5, 128)
+end
 
 local transform: sn.Transform = sn.Transform.new()
 transform.position = sn.Vec3.new(0, 0, 0)
@@ -66,6 +90,11 @@ local function setWorldUniform(t: sn.Transform)
 end
 
 function update()
+	if sn.Keyboard.isPressed(sn.Scancode.P) then
+		saveImage("brdf_lut.png", lut)
+		saveImageExr("irradiance_cubemap.exr", irradiance)
+		saveImageExr("prefiltered_cubemap.exr", prefiltered)
+	end
 	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then
 		sn.Script.load("/main.luau")
 	end

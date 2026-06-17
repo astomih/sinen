@@ -7,7 +7,11 @@
 #include <math/color/color.hpp>
 #include <math/vector.hpp>
 
+#include <array>
 #include <atomic>
+#include <cstdint>
+#include <vector>
+
 
 namespace sinen {
 /**
@@ -56,6 +60,14 @@ public:
                       gpu::TextureFormat format, int channels);
   bool loadPixels(const Buffer &buffer, uint32_t width, uint32_t height,
                   gpu::TextureFormat format, int channels);
+  void setPixelData(const void *pPixels, uint32_t width, uint32_t height,
+                    gpu::TextureFormat format, int channels);
+  void setFloatPixelData(const float *pPixels, uint32_t width, uint32_t height,
+                         int channels);
+  void setFloatCubemapData(const std::array<std::vector<float>, 6> &faces,
+                           uint32_t faceSize);
+  Buffer toPngBuffer() const;
+  Buffer toExrBuffer(bool saveAsFp16 = false) const;
   /**
    * @brief Copy texture from another texture
    *
@@ -77,6 +89,15 @@ private:
   std::atomic<bool> loading = false;
   uint32_t pendingWidth = 0;
   uint32_t pendingHeight = 0;
+  std::vector<uint8_t> pixels;
+  uint32_t pixelWidth = 0;
+  uint32_t pixelHeight = 0;
+  gpu::TextureFormat pixelFormat = gpu::TextureFormat::Invalid;
+  int pixelChannels = 0;
+  std::vector<float> floatPixels;
+  uint32_t floatPixelWidth = 0;
+  uint32_t floatPixelHeight = 0;
+  int floatPixelChannels = 0;
   Ptr<void> async;
 };
 } // namespace sinen

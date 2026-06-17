@@ -89,11 +89,30 @@ static int lTextureLoadPixels(lua_State *L) {
 
   gpu::TextureFormat format = gpu::TextureFormat::R8G8B8A8_UNORM;
   int channels = 4;
-  if (StringView(formatName) == "bgra8" || StringView(formatName) == "BGRA8") {
+  if (StringView(formatName) == "r8" || StringView(formatName) == "R8") {
+    format = gpu::TextureFormat::R8_UNORM;
+    channels = 1;
+  } else if (StringView(formatName) == "rg8" ||
+             StringView(formatName) == "RG8") {
+    format = gpu::TextureFormat::R8G8_UNORM;
+    channels = 2;
+  } else if (StringView(formatName) == "bgra8" ||
+             StringView(formatName) == "BGRA8") {
     format = gpu::TextureFormat::B8G8R8A8_UNORM;
   }
 
   lua_pushboolean(L, tex->loadPixels(buf, width, height, format, channels));
+  return 1;
+}
+static int lTextureToPngBuffer(lua_State *L) {
+  auto &tex = udPtr<Texture>(L, 1);
+  udNewOwned<Buffer>(L, tex->toPngBuffer());
+  return 1;
+}
+static int lTextureToExrBuffer(lua_State *L) {
+  auto &tex = udPtr<Texture>(L, 1);
+  const bool saveAsFp16 = lua_toboolean(L, 2);
+  udNewOwned<Buffer>(L, tex->toExrBuffer(saveAsFp16));
   return 1;
 }
 static int lTextureFill(lua_State *L) {
@@ -134,6 +153,10 @@ void registerTexture(lua_State *L) {
   lua_setfield(L, -2, "loadBRDFLUT");
   luaPushcfunction2(L, lTextureLoadPixels);
   lua_setfield(L, -2, "loadPixels");
+  luaPushcfunction2(L, lTextureToPngBuffer);
+  lua_setfield(L, -2, "toPngBuffer");
+  luaPushcfunction2(L, lTextureToExrBuffer);
+  lua_setfield(L, -2, "toExrBuffer");
   luaPushcfunction2(L, lTextureFill);
   lua_setfield(L, -2, "fill");
   luaPushcfunction2(L, lTextureCopy);

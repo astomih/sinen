@@ -1,4 +1,6 @@
 #include <cassert>
+#include <cstdlib>
+#include <cmath>
 #include <cstring>
 #include <vector>
 
@@ -19,6 +21,8 @@
 #include <SDL3/SDL.h>
 #include <ktx.h>
 #include <stb_image.h>
+#include <stb_image_write.h>
+#include <tinyexr.h>
 
 namespace sinen {
 static Ptr<gpu::Texture> createNativeTexture(void *pPixels,
@@ -189,12 +193,170 @@ static bool decodeKtx2(const uint8_t *bytes, size_t size,
   destroyTexture();
   return true;
 }
+
+static bool decodeImage2D(const uint8_t *bytes, size_t size,
+                          AsyncTexture2DState &out) {
+  int width = 0, height = 0, bpp = 0;
+  unsigned char *decoded = stbi_load_from_memory(bytes, static_cast<int>(size),
+                                                 &width, &height, &bpp, 0);
+  if (!decoded || width <= 0 || height <= 0 || bpp <= 0) {
+    if (decoded) {
+      stbi_image_free(decoded);
+    }
+    out.ok = false;
+    return false;
+  }
+
+  const size_t pixelCount =
+      static_cast<size_t>(width) * static_cast<size_t>(height);
+  if (bpp == 1 || bpp == 2 || bpp == 4) {
+    const size_t sizeBytes = pixelCount * static_cast<size_t>(bpp);
+    out.pixels.resize(sizeBytes);
+    std::memcpy(out.pixels.data(), decoded, sizeBytes);
+    out.channels = bpp;
+    out.format = bpp == 1   ? gpu::TextureFormat::R8_UNORM
+                 : bpp == 2 ? gpu::TextureFormat::R8G8_UNORM
+                            : gpu::TextureFormat::R8G8B8A8_UNORM;
+  } else {
+    out.pixels.resize(pixelCount * 4u);
+    for (size_t i = 0; i < pixelCount; ++i) {
+      out.pixels[i * 4 + 0] = decoded[i * bpp + 0];
+      out.pixels[i * 4 + 1] = decoded[i * bpp + 1];
+      out.pixels[i * 4 + 2] = decoded[i * bpp + 2];
+      out.pixels[i * 4 + 3] = 255;
+    }
+    out.channels = 4;
+    out.format = gpu::TextureFormat::R8G8B8A8_UNORM;
+  }
+  stbi_image_free(decoded);
+
+  out.width = static_cast<uint32_t>(width);
+  out.height = static_cast<uint32_t>(height);
+  out.ok = true;
+  return true;
+}
+
+static bool textureFormatToRgba8(const uint8_t *src, uint32_t width,
+                                 uint32_t height, gpu::TextureFormat format,
+                                 int channels, std::vector<uint8_t> &rgba) {
+  const size_t pixelCount = static_cast<size_t>(width) * height;
+  rgba.assign(pixelCount * 4u, 255);
+
+  switch (format) {
+  case gpu::TextureFormat::R8_UNORM:
+    for (size_t i = 0; i < pixelCount; ++i) {
+      rgba[i * 4 + 0] = src[i];
+      rgba[i * 4 + 1] = src[i];
+      rgba[i * 4 + 2] = src[i];
+    }
+    return true;
+  case gpu::TextureFormat::R8G8_UNORM:
+    for (size_t i = 0; i < pixelCount; ++i) {
+      rgba[i * 4 + 0] = src[i * 2 + 0];
+      rgba[i * 4 + 1] = src[i * 2 + 1];
+      rgba[i * 4 + 2] = 0;
+    }
+    return true;
+  case gpu::TextureFormat::R8G8B8A8_UNORM:
+    if (channels != 4) {
+      return false;
+    }
+    rgba.assign(src, src + pixelCount * 4u);
+    return true;
+  case gpu::TextureFormat::B8G8R8A8_UNORM:
+    if (channels != 4) {
+      return false;
+    }
+    for (size_t i = 0; i < pixelCount; ++i) {
+      rgba[i * 4 + 0] = src[i * 4 + 2];
+      rgba[i * 4 + 1] = src[i * 4 + 1];
+      rgba[i * 4 + 2] = src[i * 4 + 0];
+      rgba[i * 4 + 3] = src[i * 4 + 3];
+    }
+    return true;
+  default:
+    return false;
+  }
+}
+
+static uint8_t floatToUnorm8(float value) {
+  if (!std::isfinite(value)) {
+    return 0;
+  }
+  value = Math::clamp(value, 0.0f, 1.0f);
+  return static_cast<uint8_t>(value * 255.0f + 0.5f);
+}
+
+static bool floatPixelsToRgba8(const float *src, uint32_t width,
+                               uint32_t height, int channels,
+                               std::vector<uint8_t> &rgba) {
+  if (!src || width == 0 || height == 0 ||
+      (channels != 1 && channels != 3 && channels != 4)) {
+    return false;
+  }
+
+  const size_t pixelCount = static_cast<size_t>(width) * height;
+  rgba.assign(pixelCount * 4u, 255);
+  for (size_t i = 0; i < pixelCount; ++i) {
+    const float *pixel = src + i * static_cast<size_t>(channels);
+    if (channels == 1) {
+      const uint8_t value = floatToUnorm8(pixel[0]);
+      rgba[i * 4 + 0] = value;
+      rgba[i * 4 + 1] = value;
+      rgba[i * 4 + 2] = value;
+    } else {
+      rgba[i * 4 + 0] = floatToUnorm8(pixel[0]);
+      rgba[i * 4 + 1] = floatToUnorm8(pixel[1]);
+      rgba[i * 4 + 2] = floatToUnorm8(pixel[2]);
+      if (channels == 4) {
+        rgba[i * 4 + 3] = floatToUnorm8(pixel[3]);
+      }
+    }
+  }
+  return true;
+}
+
+static int channelsForFormat(gpu::TextureFormat format) {
+  switch (format) {
+  case gpu::TextureFormat::R8_UNORM:
+    return 1;
+  case gpu::TextureFormat::R8G8_UNORM:
+    return 2;
+  case gpu::TextureFormat::R8G8B8A8_UNORM:
+  case gpu::TextureFormat::B8G8R8A8_UNORM:
+    return 4;
+  default:
+    return 0;
+  }
+}
+
+static void pngWriteCallback(void *context, void *data, int size) {
+  if (size <= 0) {
+    return;
+  }
+  auto *out = static_cast<std::vector<uint8_t> *>(context);
+  const auto *bytes = static_cast<const uint8_t *>(data);
+  out->insert(out->end(), bytes, bytes + size);
+}
+
+static Buffer emptyBinaryBuffer() {
+  return Buffer(BufferType::Binary, Ptr<void>(), 0);
+}
 } // namespace
 Texture::Texture() { texture = nullptr; }
 Texture::Texture(int width, int height) {
   Array<uint8_t> pixels(width * height * 4, 0);
   texture = createNativeTexture(
       pixels.data(), gpu::TextureFormat::R8G8B8A8_UNORM, width, height, 4);
+  this->pixels.assign(pixels.begin(), pixels.end());
+  this->pixelWidth = static_cast<uint32_t>(width);
+  this->pixelHeight = static_cast<uint32_t>(height);
+  this->pixelFormat = gpu::TextureFormat::R8G8B8A8_UNORM;
+  this->pixelChannels = 4;
+  this->floatPixels.clear();
+  this->floatPixelWidth = 0;
+  this->floatPixelHeight = 0;
+  this->floatPixelChannels = 0;
 }
 Ptr<Texture> Texture::create() { return makePtr<Texture>(); }
 Ptr<Texture> Texture::create(int width, int height) {
@@ -223,28 +385,8 @@ bool Texture::load(StringView fileName) {
                    *state)) {
       return;
     }
-    int width = 0, height = 0, bpp = 0;
-    unsigned char *decoded = stbi_load_from_memory(
-        reinterpret_cast<unsigned char *>(str.data()),
-        static_cast<int>(str.size()), &width, &height, &bpp, 4);
-    if (!decoded || width <= 0 || height <= 0) {
-      if (decoded)
-        stbi_image_free(decoded);
-      state->ok = false;
-      return;
-    }
-
-    const size_t sizeBytes =
-        static_cast<size_t>(width) * static_cast<size_t>(height) * 4u;
-    state->pixels.resize(sizeBytes);
-    std::memcpy(state->pixels.data(), decoded, sizeBytes);
-    stbi_image_free(decoded);
-
-    state->width = static_cast<uint32_t>(width);
-    state->height = static_cast<uint32_t>(height);
-    state->channels = 4;
-    state->format = gpu::TextureFormat::R8G8B8A8_UNORM;
-    state->ok = true;
+    decodeImage2D(reinterpret_cast<const uint8_t *>(str.data()), str.size(),
+                  *state);
   });
   scheduleFuturePoll(
       state, group, scheduleOnPreDraw,
@@ -258,6 +400,15 @@ bool Texture::load(StringView fileName) {
                                               state->channels);
           this->pendingWidth = state->width;
           this->pendingHeight = state->height;
+          this->pixels = state->pixels;
+          this->pixelWidth = state->width;
+          this->pixelHeight = state->height;
+          this->pixelFormat = state->format;
+          this->pixelChannels = state->channels;
+          this->floatPixels.clear();
+          this->floatPixelWidth = 0;
+          this->floatPixelHeight = 0;
+          this->floatPixelChannels = 0;
         }
         this->loading = false;
         this->async.reset();
@@ -288,28 +439,8 @@ bool Texture::load(const Buffer &buffer) {
                    *state)) {
       return;
     }
-    int width = 0, height = 0, bpp = 0;
-    unsigned char *decoded =
-        stbi_load_from_memory(reinterpret_cast<unsigned char *>(buf.data()),
-                              buf.size(), &width, &height, &bpp, 4);
-    if (!decoded || width <= 0 || height <= 0) {
-      if (decoded)
-        stbi_image_free(decoded);
-      state->ok = false;
-      return;
-    }
-
-    const size_t sizeBytes =
-        static_cast<size_t>(width) * static_cast<size_t>(height) * 4u;
-    state->pixels.resize(sizeBytes);
-    std::memcpy(state->pixels.data(), decoded, sizeBytes);
-    stbi_image_free(decoded);
-
-    state->width = static_cast<uint32_t>(width);
-    state->height = static_cast<uint32_t>(height);
-    state->channels = 4;
-    state->format = gpu::TextureFormat::R8G8B8A8_UNORM;
-    state->ok = true;
+    decodeImage2D(reinterpret_cast<const uint8_t *>(buf.data()), buf.size(),
+                  *state);
   });
   scheduleFuturePoll(
       state, group, scheduleOnPreDraw,
@@ -323,6 +454,15 @@ bool Texture::load(const Buffer &buffer) {
                                               state->channels);
           this->pendingWidth = state->width;
           this->pendingHeight = state->height;
+          this->pixels = state->pixels;
+          this->pixelWidth = state->width;
+          this->pixelHeight = state->height;
+          this->pixelFormat = state->format;
+          this->pixelChannels = state->channels;
+          this->floatPixels.clear();
+          this->floatPixelWidth = 0;
+          this->floatPixelHeight = 0;
+          this->floatPixelChannels = 0;
         }
         this->loading = false;
         this->async.reset();
@@ -350,36 +490,16 @@ bool Texture::loadFromMemory(Array<char> &buffer) {
   state->future = globalThreadPool().submit([state, bytes] {
     const char *stage = "start";
     try {
-    ZoneScopedN("Texture::loadFromMemory decode");
-    stage = "decode ktx2";
-    if (decodeKtx2(reinterpret_cast<const uint8_t *>(bytes.data()),
-                   bytes.size(), *state)) {
-      return;
-    }
-    stage = "stbi decode";
-    int width = 0, height = 0, bpp = 0;
-    unsigned char *decoded = stbi_load_from_memory(
-        reinterpret_cast<const unsigned char *>(bytes.data()),
-        static_cast<int>(bytes.size()), &width, &height, &bpp, 4);
-    if (!decoded || width <= 0 || height <= 0) {
-      if (decoded)
-        stbi_image_free(decoded);
-      state->ok = false;
-      return;
-    }
-
-    const size_t sizeBytes =
-        static_cast<size_t>(width) * static_cast<size_t>(height) * 4u;
-    stage = "copy decoded pixels";
-    state->pixels.resize(sizeBytes);
-    std::memcpy(state->pixels.data(), decoded, sizeBytes);
-    stbi_image_free(decoded);
-
-    state->width = static_cast<uint32_t>(width);
-    state->height = static_cast<uint32_t>(height);
-    state->channels = 4;
-    state->format = gpu::TextureFormat::R8G8B8A8_UNORM;
-    state->ok = true;
+      ZoneScopedN("Texture::loadFromMemory decode");
+      stage = "decode ktx2";
+      if (decodeKtx2(reinterpret_cast<const uint8_t *>(bytes.data()),
+                     bytes.size(), *state)) {
+        return;
+      }
+      stage = "stbi decode";
+      stage = "decode image";
+      decodeImage2D(reinterpret_cast<const uint8_t *>(bytes.data()),
+                    bytes.size(), *state);
     } catch (const std::exception &e) {
       state->ok = false;
       Log::error("Texture::loadFromMemory failed at {}: {}", stage, e.what());
@@ -402,6 +522,15 @@ bool Texture::loadFromMemory(Array<char> &buffer) {
                                               state->channels);
           this->pendingWidth = state->width;
           this->pendingHeight = state->height;
+          this->pixels = state->pixels;
+          this->pixelWidth = state->width;
+          this->pixelHeight = state->height;
+          this->pixelFormat = state->format;
+          this->pixelChannels = state->channels;
+          this->floatPixels.clear();
+          this->floatPixelWidth = 0;
+          this->floatPixelHeight = 0;
+          this->floatPixelChannels = 0;
         }
         this->loading = false;
         this->async.reset();
@@ -416,22 +545,213 @@ bool Texture::loadFromMemory(Array<char> &buffer) {
 bool Texture::loadFromMemory(void *pPixels, uint32_t width, uint32_t height,
                              gpu::TextureFormat format, int channels) {
   texture = createNativeTexture(pPixels, format, width, height, channels);
+  if (format == gpu::TextureFormat::R32G32B32A32_FLOAT && channels == 16) {
+    pixels.clear();
+    pixelWidth = 0;
+    pixelHeight = 0;
+    pixelFormat = gpu::TextureFormat::Invalid;
+    pixelChannels = 0;
+    setFloatPixelData(static_cast<const float *>(pPixels), width, height, 4);
+  } else {
+    setPixelData(pPixels, width, height, format, channels);
+  }
   return true;
 }
 
 bool Texture::loadPixels(const Buffer &buffer, uint32_t width, uint32_t height,
                          gpu::TextureFormat format, int channels) {
-  if (width == 0 || height == 0 || channels <= 0) {
+  const int expectedChannels = channelsForFormat(format);
+  if (width == 0 || height == 0 || channels <= 0 || expectedChannels == 0 ||
+      expectedChannels != channels) {
     return false;
   }
   const size_t required = static_cast<size_t>(width) *
                           static_cast<size_t>(height) *
                           static_cast<size_t>(channels);
-  if (static_cast<size_t>(buffer.size()) < required) {
+  if (buffer.size() < 0 || static_cast<size_t>(buffer.size()) < required) {
     return false;
   }
   texture = createNativeTexture(buffer.data(), format, width, height, channels);
-  return texture != nullptr;
+  if (!texture) {
+    return false;
+  }
+  const auto *bytes = static_cast<const uint8_t *>(buffer.data());
+  pixels.assign(bytes, bytes + required);
+  pixelWidth = width;
+  pixelHeight = height;
+  pixelFormat = format;
+  pixelChannels = channels;
+  floatPixels.clear();
+  floatPixelWidth = 0;
+  floatPixelHeight = 0;
+  floatPixelChannels = 0;
+  return true;
+}
+
+void Texture::setPixelData(const void *pPixels, uint32_t width, uint32_t height,
+                           gpu::TextureFormat format, int channels) {
+  const int expectedChannels = channelsForFormat(format);
+  if (!pPixels || width == 0 || height == 0 || channels <= 0 ||
+      expectedChannels == 0 || expectedChannels != channels) {
+    pixels.clear();
+    pixelWidth = 0;
+    pixelHeight = 0;
+    pixelFormat = gpu::TextureFormat::Invalid;
+    pixelChannels = 0;
+    return;
+  }
+
+  const size_t sizeBytes = static_cast<size_t>(width) *
+                           static_cast<size_t>(height) *
+                           static_cast<size_t>(channels);
+  const auto *bytes = static_cast<const uint8_t *>(pPixels);
+  pixels.assign(bytes, bytes + sizeBytes);
+  pixelWidth = width;
+  pixelHeight = height;
+  pixelFormat = format;
+  pixelChannels = channels;
+  floatPixels.clear();
+  floatPixelWidth = 0;
+  floatPixelHeight = 0;
+  floatPixelChannels = 0;
+}
+
+void Texture::setFloatPixelData(const float *pPixels, uint32_t width,
+                                uint32_t height, int channels) {
+  if (!pPixels || width == 0 || height == 0 ||
+      (channels != 1 && channels != 3 && channels != 4)) {
+    floatPixels.clear();
+    floatPixelWidth = 0;
+    floatPixelHeight = 0;
+    floatPixelChannels = 0;
+    return;
+  }
+
+  const size_t sizeFloats = static_cast<size_t>(width) *
+                            static_cast<size_t>(height) *
+                            static_cast<size_t>(channels);
+  floatPixels.assign(pPixels, pPixels + sizeFloats);
+  floatPixelWidth = width;
+  floatPixelHeight = height;
+  floatPixelChannels = channels;
+  pixels.clear();
+  pixelWidth = 0;
+  pixelHeight = 0;
+  pixelFormat = gpu::TextureFormat::Invalid;
+  pixelChannels = 0;
+}
+
+void Texture::setFloatCubemapData(
+    const std::array<std::vector<float>, 6> &faces, uint32_t faceSize) {
+  if (faceSize == 0) {
+    setFloatPixelData(nullptr, 0, 0, 0);
+    return;
+  }
+
+  const size_t faceFloats =
+      static_cast<size_t>(faceSize) * static_cast<size_t>(faceSize) * 4u;
+  for (const auto &face : faces) {
+    if (face.size() < faceFloats) {
+      setFloatPixelData(nullptr, 0, 0, 0);
+      return;
+    }
+  }
+
+  std::vector<float> atlas(static_cast<size_t>(faceSize) *
+                               static_cast<size_t>(faceSize) * 6u * 4u,
+                           0.0f);
+  for (uint32_t face = 0; face < 6; ++face) {
+    for (uint32_t y = 0; y < faceSize; ++y) {
+      const float *srcRow =
+          faces[face].data() + static_cast<size_t>(y) * faceSize * 4u;
+      float *dstRow = atlas.data() +
+                      (static_cast<size_t>(face * faceSize + y) * faceSize) *
+                          4u;
+      std::memcpy(dstRow, srcRow,
+                  static_cast<size_t>(faceSize) * 4u * sizeof(float));
+    }
+  }
+  setFloatPixelData(atlas.data(), faceSize, faceSize * 6u, 4);
+}
+
+Buffer Texture::toPngBuffer() const {
+  std::vector<uint8_t> rgba;
+  uint32_t pngWidth = pixelWidth;
+  uint32_t pngHeight = pixelHeight;
+
+  if (!pixels.empty() && pixelWidth > 0 && pixelHeight > 0) {
+    if (!textureFormatToRgba8(pixels.data(), pixelWidth, pixelHeight,
+                              pixelFormat, pixelChannels, rgba)) {
+      return emptyBinaryBuffer();
+    }
+  } else if (!floatPixels.empty() && floatPixelWidth > 0 &&
+             floatPixelHeight > 0) {
+    pngWidth = floatPixelWidth;
+    pngHeight = floatPixelHeight;
+    if (!floatPixelsToRgba8(floatPixels.data(), floatPixelWidth,
+                            floatPixelHeight, floatPixelChannels, rgba)) {
+      return emptyBinaryBuffer();
+    }
+  } else {
+    return emptyBinaryBuffer();
+  }
+
+  std::vector<uint8_t> png;
+  stbi_write_png_to_func(pngWriteCallback, &png, static_cast<int>(pngWidth),
+                         static_cast<int>(pngHeight), 4, rgba.data(),
+                         static_cast<int>(pngWidth) * 4);
+  if (png.empty()) {
+    return emptyBinaryBuffer();
+  }
+
+  Buffer buffer = makeBuffer(png.size(), BufferType::Binary);
+  std::memcpy(buffer.data(), png.data(), png.size());
+  return buffer;
+}
+
+Buffer Texture::toExrBuffer(bool saveAsFp16) const {
+  std::vector<float> exrPixels;
+  uint32_t exrWidth = floatPixelWidth;
+  uint32_t exrHeight = floatPixelHeight;
+  int exrChannels = floatPixelChannels;
+
+  if (!floatPixels.empty() && exrWidth > 0 && exrHeight > 0 &&
+      (exrChannels == 1 || exrChannels == 3 || exrChannels == 4)) {
+    exrPixels = floatPixels;
+  } else if (!pixels.empty() && pixelWidth > 0 && pixelHeight > 0) {
+    std::vector<uint8_t> rgba;
+    if (!textureFormatToRgba8(pixels.data(), pixelWidth, pixelHeight,
+                              pixelFormat, pixelChannels, rgba)) {
+      return emptyBinaryBuffer();
+    }
+    exrWidth = pixelWidth;
+    exrHeight = pixelHeight;
+    exrChannels = 4;
+    exrPixels.resize(static_cast<size_t>(exrWidth) * exrHeight * 4u);
+    for (size_t i = 0; i < exrPixels.size(); ++i) {
+      exrPixels[i] = static_cast<float>(rgba[i]) / 255.0f;
+    }
+  } else {
+    return emptyBinaryBuffer();
+  }
+
+  unsigned char *exrData = nullptr;
+  const char *err = nullptr;
+  const int size = SaveEXRToMemory(
+      exrPixels.data(), static_cast<int>(exrWidth), static_cast<int>(exrHeight),
+      exrChannels, saveAsFp16 ? 1 : 0, &exrData, &err);
+  if (size <= 0 || !exrData) {
+    if (err) {
+      Log::error("Texture::toExrBuffer failed: {}", err);
+      FreeEXRErrorMessage(err);
+    }
+    return emptyBinaryBuffer();
+  }
+
+  Buffer buffer = makeBuffer(static_cast<size_t>(size), BufferType::Binary);
+  std::memcpy(buffer.data(), exrData, static_cast<size_t>(size));
+  free(exrData);
+  return buffer;
 }
 
 void Texture::fill(const Color &color) {
@@ -439,14 +759,48 @@ void Texture::fill(const Color &color) {
 
     auto w = texture->getCreateInfo().width;
     auto h = texture->getCreateInfo().height;
-    Array<uint8_t> pixels(w * h * 4, 0);
-    for (int i = 0; i < w * h * 4; i += 4) {
-      pixels[i + 0] = color.r * 255;
-      pixels[i + 1] = color.g * 255;
-      pixels[i + 2] = color.b * 255;
-      pixels[i + 3] = color.a * 255;
+    auto format = texture->getCreateInfo().format;
+    int channels = channelsForFormat(format);
+    bool recreateTexture = false;
+    if (channels == 0) {
+      format = gpu::TextureFormat::R8G8B8A8_UNORM;
+      channels = 4;
+      recreateTexture = true;
     }
-    updateNativeTexture(texture, pixels.data(), 4);
+    Array<uint8_t> pixels(static_cast<size_t>(w) * h * channels, 0);
+    for (size_t i = 0; i < static_cast<size_t>(w) * h; ++i) {
+      const size_t offset = i * channels;
+      if (format == gpu::TextureFormat::R8_UNORM) {
+        pixels[offset] = color.r * 255;
+      } else if (format == gpu::TextureFormat::R8G8_UNORM) {
+        pixels[offset + 0] = color.r * 255;
+        pixels[offset + 1] = color.g * 255;
+      } else if (format == gpu::TextureFormat::B8G8R8A8_UNORM) {
+        pixels[offset + 0] = color.b * 255;
+        pixels[offset + 1] = color.g * 255;
+        pixels[offset + 2] = color.r * 255;
+        pixels[offset + 3] = color.a * 255;
+      } else {
+        pixels[offset + 0] = color.r * 255;
+        pixels[offset + 1] = color.g * 255;
+        pixels[offset + 2] = color.b * 255;
+        pixels[offset + 3] = color.a * 255;
+      }
+    }
+    if (recreateTexture) {
+      texture = createNativeTexture(pixels.data(), format, w, h, channels);
+    } else {
+      updateNativeTexture(texture, pixels.data(), channels);
+    }
+    this->pixels.assign(pixels.begin(), pixels.end());
+    pixelWidth = w;
+    pixelHeight = h;
+    pixelFormat = format;
+    pixelChannels = channels;
+    floatPixels.clear();
+    floatPixelWidth = 0;
+    floatPixelHeight = 0;
+    floatPixelChannels = 0;
   } else {
     Array<uint8_t> pixels(4, 0);
     pixels[0] = color.r * 255;
@@ -455,12 +809,30 @@ void Texture::fill(const Color &color) {
     pixels[3] = color.a * 255;
     texture = createNativeTexture(pixels.data(),
                                   gpu::TextureFormat::R8G8B8A8_UNORM, 1, 1, 4);
+    this->pixels.assign(pixels.begin(), pixels.end());
+    pixelWidth = 1;
+    pixelHeight = 1;
+    pixelFormat = gpu::TextureFormat::R8G8B8A8_UNORM;
+    pixelChannels = 4;
+    floatPixels.clear();
+    floatPixelWidth = 0;
+    floatPixelHeight = 0;
+    floatPixelChannels = 0;
   }
 }
 
 Ptr<Texture> Texture::copy() {
   auto dst = Texture::create();
   dst->texture = texture; // ?
+  dst->pixels = pixels;
+  dst->pixelWidth = pixelWidth;
+  dst->pixelHeight = pixelHeight;
+  dst->pixelFormat = pixelFormat;
+  dst->pixelChannels = pixelChannels;
+  dst->floatPixels = floatPixels;
+  dst->floatPixelWidth = floatPixelWidth;
+  dst->floatPixelHeight = floatPixelHeight;
+  dst->floatPixelChannels = floatPixelChannels;
   return dst;
 }
 

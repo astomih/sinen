@@ -186,8 +186,10 @@ export type Texture = {
 	fill: (self: Texture, color: Color) -> nil,
 	blend: (self: Texture, color: Color) -> nil,
 	copy: (self: Texture) -> Texture,
-	load: (self: Texture, path: string) -> nil,
+	load: (self: Texture, source: string | Buffer) -> nil,
 	loadPixels: (self: Texture, pixels: Buffer, width: number, height: number, format: string?) -> boolean,
+	toPngBuffer: (self: Texture) -> Buffer,
+	toExrBuffer: (self: Texture, saveAsFp16: boolean?) -> Buffer,
 	loadCubemap: (self: Texture, path: string) -> nil,
 	loadIrradianceCubemap: (self: Texture, path: string, faceSize: number?, sampleCount: number?) -> boolean,
 	loadPrefilteredCubemap: (

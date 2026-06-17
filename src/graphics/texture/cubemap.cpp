@@ -1,5 +1,5 @@
-#include <core/thread/global_thread_pool.hpp>
 #include <core/thread/future_poll.hpp>
+#include <core/thread/global_thread_pool.hpp>
 #include <core/thread/load_context.hpp>
 #include <graphics/graphics.hpp>
 #include <graphics/texture/texture.hpp>
@@ -218,6 +218,30 @@ void equirectToCubemap(const float *in, int W, int H, int C, int faceSize,
         float *px = dst + (j * faceSize + i) * C;
         for (int c = 0; c < C; ++c)
           px[c] = tmp[c];
+      }
+    }
+  }
+}
+
+bool isVerticalCubemapAtlas(int W, int H, int C) {
+  return W > 0 && H == W * 6 && (C == 3 || C == 4);
+}
+
+void verticalCubemapAtlasToCubemap(const float *in, int W, int H, int C,
+                                   CubeFaces &outFaces) {
+  assert(isVerticalCubemapAtlas(W, H, C));
+  const int faceSize = W;
+  for (int f = 0; f < 6; ++f) {
+    outFaces[f].assign(faceSize * faceSize * 4, 0.0f);
+    for (int y = 0; y < faceSize; ++y) {
+      for (int x = 0; x < faceSize; ++x) {
+        const float *src =
+            in + ((f * faceSize + y) * W + x) * static_cast<size_t>(C);
+        float *dst = outFaces[f].data() + (y * faceSize + x) * 4;
+        dst[0] = src[0];
+        dst[1] = C > 1 ? src[1] : src[0];
+        dst[2] = C > 2 ? src[2] : src[0];
+        dst[3] = C > 3 ? src[3] : 1.0f;
       }
     }
   }
@@ -543,8 +567,7 @@ bool saveEXRFloat(const char *path, const float *img, int W, int H, int C) {
   return true;
 }
 
-static void writeTexture(Ptr<gpu::Texture> texture,
-                         const CubeFaces &faces) {
+static void writeTexture(Ptr<gpu::Texture> texture, const CubeFaces &faces) {
   auto device = Graphics::getDevice();
   uint32_t width = texture->getCreateInfo().width,
            height = texture->getCreateInfo().height;
@@ -673,10 +696,9 @@ static void writeFloatTexture2D(Ptr<gpu::Texture> texture,
   device->waitForGpuIdle();
 }
 
-Ptr<gpu::Texture>
-createNativeCubemapTexture(const CubeFaces &faces,
-                           gpu::TextureFormat textureFormat, uint32_t width,
-                           uint32_t height) {
+Ptr<gpu::Texture> createNativeCubemapTexture(const CubeFaces &faces,
+                                             gpu::TextureFormat textureFormat,
+                                             uint32_t width, uint32_t height) {
   auto device = Graphics::getDevice();
 
   Ptr<gpu::Texture> texture;
@@ -698,8 +720,9 @@ createNativeCubemapTexture(const CubeFaces &faces,
   return texture;
 }
 
-Ptr<gpu::Texture> createNativeCubemapTexture(const std::vector<CubeMipFaces> &mips,
-                                             gpu::TextureFormat textureFormat) {
+Ptr<gpu::Texture>
+createNativeCubemapTexture(const std::vector<CubeMipFaces> &mips,
+                           gpu::TextureFormat textureFormat) {
   if (mips.empty()) {
     return nullptr;
   }
@@ -771,9 +794,15 @@ bool Texture::loadCubemap(StringView path) {
       return;
     }
 
-    const uint32_t faceSize = 1024;
     CubeFaces faces;
-    equirectToCubemap(equirect.data(), w, h, c, faceSize, faces);
+    const uint32_t faceSize =
+        isVerticalCubemapAtlas(w, h, c) ? static_cast<uint32_t>(w) : 1024u;
+    if (isVerticalCubemapAtlas(w, h, c)) {
+      verticalCubemapAtlasToCubemap(equirect.data(), w, h, c, faces);
+    } else {
+      equirectToCubemap(equirect.data(), w, h, c,
+                        static_cast<int>(faceSize), faces);
+    }
 
     state->faces = std::move(faces);
     state->faceSize = faceSize;
@@ -781,9 +810,8 @@ bool Texture::loadCubemap(StringView path) {
   });
 
   scheduleFuturePoll(
-      state, group, [](std::function<void()> f) {
-        Graphics::addPreDrawFunc(std::move(f));
-      },
+      state, group,
+      [](std::function<void()> f) { Graphics::addPreDrawFunc(std::move(f)); },
       [this, state] {
         if (state->ok) {
           texture = createNativeCubemapTexture(
@@ -791,6 +819,7 @@ bool Texture::loadCubemap(StringView path) {
               state->faceSize, state->faceSize);
           this->pendingWidth = state->faceSize;
           this->pendingHeight = state->faceSize;
+          this->setFloatCubemapData(state->faces, state->faceSize);
         }
         this->loading = false;
         this->async.reset();
@@ -848,9 +877,8 @@ bool Texture::loadIrradianceCubemap(StringView path, uint32_t faceSize,
   });
 
   scheduleFuturePoll(
-      state, group, [](std::function<void()> f) {
-        Graphics::addPreDrawFunc(std::move(f));
-      },
+      state, group,
+      [](std::function<void()> f) { Graphics::addPreDrawFunc(std::move(f)); },
       [this, state] {
         if (state->ok) {
           texture = createNativeCubemapTexture(
@@ -858,6 +886,7 @@ bool Texture::loadIrradianceCubemap(StringView path, uint32_t faceSize,
               state->faceSize, state->faceSize);
           this->pendingWidth = state->faceSize;
           this->pendingHeight = state->faceSize;
+          this->setFloatCubemapData(state->faces, state->faceSize);
         }
         this->loading = false;
         this->async.reset();
@@ -914,15 +943,18 @@ bool Texture::loadPrefilteredCubemap(StringView path, uint32_t faceSize,
       });
 
   scheduleFuturePoll(
-      state, group, [](std::function<void()> f) {
-        Graphics::addPreDrawFunc(std::move(f));
-      },
+      state, group,
+      [](std::function<void()> f) { Graphics::addPreDrawFunc(std::move(f)); },
       [this, state] {
         if (state->ok) {
           texture = createNativeCubemapTexture(
               state->mips, gpu::TextureFormat::R32G32B32A32_FLOAT);
           this->pendingWidth = state->faceSize;
           this->pendingHeight = state->faceSize;
+          if (!state->mips.empty()) {
+            this->setFloatCubemapData(state->mips[0].faces,
+                                      state->mips[0].faceSize);
+          }
         }
         this->loading = false;
         this->async.reset();
@@ -965,15 +997,16 @@ bool Texture::loadBRDFLUT(uint32_t size, uint32_t sampleCount) {
   });
 
   scheduleFuturePoll(
-      state, group, [](std::function<void()> f) {
-        Graphics::addPreDrawFunc(std::move(f));
-      },
+      state, group,
+      [](std::function<void()> f) { Graphics::addPreDrawFunc(std::move(f)); },
       [this, state] {
         if (state->ok) {
           texture = createNativeFloatTexture2D(state->pixels, state->size,
                                                state->size);
           this->pendingWidth = state->size;
           this->pendingHeight = state->size;
+          this->setFloatPixelData(state->pixels.data(), state->size,
+                                  state->size, 4);
         }
         this->loading = false;
         this->async.reset();

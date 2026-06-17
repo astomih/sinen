@@ -511,25 +511,49 @@ static bool isRgba8Format(gpu::TextureFormat format) {
          format == gpu::TextureFormat::B8G8R8A8_UNORM;
 }
 
+static UInt32 bytesPerPixelForTextureFormat(gpu::TextureFormat format) {
+  switch (format) {
+  case gpu::TextureFormat::R8_UNORM:
+    return 1;
+  case gpu::TextureFormat::R8G8_UNORM:
+    return 2;
+  case gpu::TextureFormat::R8G8B8A8_UNORM:
+  case gpu::TextureFormat::B8G8R8A8_UNORM:
+    return 4;
+  default:
+    return 0;
+  }
+}
+
 static UInt32 alignTo(UInt32 value, UInt32 alignment) {
   return (value + alignment - 1) & ~(alignment - 1);
 }
 
-static void copyTextureBytesWithFormatConversion(const UInt8 *src, UInt8 *dst,
+static bool copyTextureBytesWithFormatConversion(const UInt8 *src, UInt8 *dst,
                                                  UInt32 width, UInt32 height,
                                                  UInt32 srcBytesPerRow,
                                                  UInt32 dstBytesPerRow,
                                                  gpu::TextureFormat srcFormat,
                                                  gpu::TextureFormat dstFormat) {
-  const bool swapRB = isRgba8Format(srcFormat) && isRgba8Format(dstFormat) &&
-                      srcFormat != dstFormat;
-  if (!swapRB) {
+  const UInt32 srcBytesPerPixel = bytesPerPixelForTextureFormat(srcFormat);
+  const UInt32 dstBytesPerPixel = bytesPerPixelForTextureFormat(dstFormat);
+  if (srcBytesPerPixel == 0 || dstBytesPerPixel == 0) {
+    return false;
+  }
+
+  if (srcFormat == dstFormat) {
     for (UInt32 y = 0; y < height; ++y) {
       memcpy(dst + static_cast<size_t>(dstBytesPerRow) * y,
              src + static_cast<size_t>(srcBytesPerRow) * y,
-             static_cast<size_t>(width) * 4);
+             static_cast<size_t>(width) * srcBytesPerPixel);
     }
-    return;
+    return true;
+  }
+
+  const bool swapRB = isRgba8Format(srcFormat) && isRgba8Format(dstFormat) &&
+                      srcFormat != dstFormat;
+  if (!swapRB) {
+    return false;
   }
 
   for (UInt32 y = 0; y < height; ++y) {
@@ -543,6 +567,7 @@ static void copyTextureBytesWithFormatConversion(const UInt8 *src, UInt8 *dst,
       dstRow[offset + 3] = srcRow[offset + 3];
     }
   }
+  return true;
 }
 
 static void
@@ -1195,33 +1220,20 @@ bool Graphics::readbackTexture(const RenderTexture &srcRenderTexture,
   const auto dstFormat = outTex->getCreateInfo().format;
   const auto width = static_cast<UInt32>(srcRenderTexture.width);
   const auto height = static_cast<UInt32>(srcRenderTexture.height);
-  if (srcFormat == dstFormat) {
-    gpu::CommandBuffer::CreateInfo info{};
-    info.allocator = GlobalAllocator::get();
-    auto commandBuffer = device->acquireCommandBuffer(info);
-    {
-      auto copyPass = commandBuffer->beginCopyPass();
-      gpu::TextureLocation src{};
-      src.texture = tex;
-      gpu::TextureLocation dst{};
-      dst.texture = outTex;
-      copyPass->copyTexture(src, dst, width, height, 1, false);
-      commandBuffer->endCopyPass(copyPass);
-    }
-    device->submitCommandBuffer(commandBuffer);
-    device->waitForGpuIdle();
-    currentRenderPass = nullptr;
-    return true;
-  }
-
-  if (!isRgba8Format(srcFormat) || !isRgba8Format(dstFormat)) {
+  const UInt32 srcBytesPerPixel = bytesPerPixelForTextureFormat(srcFormat);
+  const UInt32 dstBytesPerPixel = bytesPerPixelForTextureFormat(dstFormat);
+  const bool canConvert = srcFormat == dstFormat ||
+                          (isRgba8Format(srcFormat) &&
+                           isRgba8Format(dstFormat));
+  if (srcBytesPerPixel == 0 || dstBytesPerPixel == 0 || !canConvert) {
     Log::error("readbackTexture failed: unsupported texture format conversion");
     return false;
   }
 
-  const UInt32 tightBytesPerRow = width * 4;
-  const UInt32 downloadBytesPerRow = alignTo(tightBytesPerRow, 256);
-  const size_t dataSize = static_cast<size_t>(tightBytesPerRow) * height;
+  const UInt32 srcTightBytesPerRow = width * srcBytesPerPixel;
+  const UInt32 dstTightBytesPerRow = width * dstBytesPerPixel;
+  const UInt32 downloadBytesPerRow = alignTo(srcTightBytesPerRow, 256);
+  const size_t dataSize = static_cast<size_t>(dstTightBytesPerRow) * height;
   const size_t downloadSize = static_cast<size_t>(downloadBytesPerRow) * height;
   gpu::TransferBuffer::CreateInfo downloadInfo{};
   downloadInfo.allocator = GlobalAllocator::get();
@@ -1255,9 +1267,13 @@ bool Graphics::readbackTexture(const RenderTexture &srcRenderTexture,
   }
   Array<UInt8> converted(EngineMemory::frame());
   converted.resize(dataSize);
-  copyTextureBytesWithFormatConversion(mapped, converted.data(), width, height,
-                                       downloadBytesPerRow, tightBytesPerRow,
-                                       srcFormat, dstFormat);
+  if (!copyTextureBytesWithFormatConversion(
+          mapped, converted.data(), width, height, downloadBytesPerRow,
+          dstTightBytesPerRow, srcFormat, dstFormat)) {
+    downloadBuffer->unmap();
+    Log::error("readbackTexture failed: unsupported texture format conversion");
+    return false;
+  }
   downloadBuffer->unmap();
 
   gpu::TransferBuffer::CreateInfo uploadInfo{};
@@ -1292,6 +1308,8 @@ bool Graphics::readbackTexture(const RenderTexture &srcRenderTexture,
     device->waitForGpuIdle();
   }
 
+  out->setPixelData(converted.data(), width, height, dstFormat,
+                    static_cast<int>(dstBytesPerPixel));
   currentRenderPass = nullptr;
   return true;
 }

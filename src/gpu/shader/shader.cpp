@@ -66,16 +66,6 @@ ShaderFormat formatFromPath(StringView path) {
   return ShaderFormat::SPIRV;
 }
 
-#ifdef SINEN_MODULE_SHADER_COMPILER
-uint32_t reflectedSamplerCount(ShaderStage stage,
-                               const ShaderCompiler::ReflectionData &data) {
-  // Slang's base reflection reports global declarations, including resources
-  // that only another entry point uses. Keep the previous runtime assumption for
-  // graphics shaders until entry-point metadata is wired into the compiler.
-  return stage == ShaderStage::Fragment ? data.numCombinedSamplers : 0u;
-}
-#endif
-
 static void scheduleOnPreDraw(std::function<void()> f) {
   Graphics::addPreDrawFunc(std::move(f));
 }
@@ -211,7 +201,7 @@ void Shader::compile(StringView name, ShaderStage stage, ShaderFormat format) {
     compiledCode.push_back('\0');
   }
   this->code = std::move(compiledCode);
-  this->numSamplers = reflectedSamplerCount(stage, reflectionData);
+  this->numSamplers = reflectionData.numCombinedSamplers;
   this->numStorageBuffers = reflectionData.numStorageBuffers;
   this->numStorageTextures = reflectionData.numStorageTextures;
   this->numUniformBuffers = reflectionData.numUniformBuffers;
@@ -257,7 +247,7 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage,
 
     state->shaderFormat = format;
     state->numUniformBuffers = reflectionData.numUniformBuffers;
-    state->numSamplers = reflectedSamplerCount(stage, reflectionData);
+    state->numSamplers = reflectionData.numCombinedSamplers;
     state->numStorageBuffers = reflectionData.numStorageBuffers;
     state->numStorageTextures = reflectionData.numStorageTextures;
     state->gpuStage = stage;

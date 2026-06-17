@@ -16,8 +16,7 @@ static int lShaderLoad(lua_State *L) {
   auto &s = udPtr<Shader>(L, 1);
   const char *name = luaL_checkstring(L, 2);
   ShaderStage stage = static_cast<ShaderStage>(luaL_checkinteger(L, 3));
-  int numUniformData = static_cast<int>(luaL_checkinteger(L, 4));
-  s->load(StringView(name), stage, numUniformData);
+  s->load(StringView(name), stage);
   return 0;
 }
 static int lShaderCompileAndLoad(lua_State *L) {
@@ -55,6 +54,30 @@ static int lShaderIsReady(lua_State *L) {
   return 1;
 }
 
+static int lShaderGetNumSamplers(lua_State *L) {
+  auto &s = udPtr<Shader>(L, 1);
+  lua_pushinteger(L, s->getNumSamplers());
+  return 1;
+}
+
+static int lShaderGetNumStorageBuffers(lua_State *L) {
+  auto &s = udPtr<Shader>(L, 1);
+  lua_pushinteger(L, s->getNumStorageBuffers());
+  return 1;
+}
+
+static int lShaderGetNumStorageTextures(lua_State *L) {
+  auto &s = udPtr<Shader>(L, 1);
+  lua_pushinteger(L, s->getNumStorageTextures());
+  return 1;
+}
+
+static int lShaderGetNumUniformBuffers(lua_State *L) {
+  auto &s = udPtr<Shader>(L, 1);
+  lua_pushinteger(L, s->getNumUniformBuffers());
+  return 1;
+}
+
 void registerShader(lua_State *L) {
   luaL_newmetatable(L, Shader::metaTableName());
   lua_pushvalue(L, -1);
@@ -69,6 +92,14 @@ void registerShader(lua_State *L) {
   lua_setfield(L, -2, "getCode");
   luaPushcfunction2(L, lShaderIsReady);
   lua_setfield(L, -2, "isReady");
+  luaPushcfunction2(L, lShaderGetNumSamplers);
+  lua_setfield(L, -2, "getNumSamplers");
+  luaPushcfunction2(L, lShaderGetNumStorageBuffers);
+  lua_setfield(L, -2, "getNumStorageBuffers");
+  luaPushcfunction2(L, lShaderGetNumStorageTextures);
+  lua_setfield(L, -2, "getNumStorageTextures");
+  luaPushcfunction2(L, lShaderGetNumUniformBuffers);
+  lua_setfield(L, -2, "getNumUniformBuffers");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Shader");

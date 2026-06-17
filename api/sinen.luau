@@ -345,10 +345,14 @@ export type ShaderFormat = {
 ---   Ray query in graphics/compute shaders: t[n]/space6 = acceleration structures
 export type Shader = {
 	new: () -> Shader,
-	load: (self: Shader, path: string, shaderStage: ShaderStage, uniform_count: number) -> nil,
+	load: (self: Shader, path: string, shaderStage: ShaderStage) -> nil,
 	compile: (self: Shader, source: string, shaderStage: ShaderStage, shaderFormat: ShaderFormat) -> nil,
 	compileAndLoad: (self: Shader, source: string, shaderStage: ShaderStage, shaderFormat: ShaderFormat?) -> nil,
 	getCode: (self: Shader) -> Buffer,
+	getNumSamplers: (self: Shader) -> number,
+	getNumStorageBuffers: (self: Shader) -> number,
+	getNumStorageTextures: (self: Shader) -> number,
+	getNumUniformBuffers: (self: Shader) -> number,
 	isReady: (self: Shader) -> boolean,
 }
 

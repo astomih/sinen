@@ -10,6 +10,7 @@ namespace {
 constexpr char kMagic[4] = {'S', 'N', 'S', 'B'};
 constexpr uint32_t kVersion = 1;
 constexpr uint32_t kHeaderSize = 12;
+// stage, format, code offset/size, sampler/storage/uniform counts, reserved.
 constexpr uint32_t kEntrySize = 36;
 
 void appendU32(Array<char> &out, uint32_t value) {
@@ -53,6 +54,14 @@ uint32_t checkedU32(size_t value) {
   return static_cast<uint32_t>(value);
 }
 
+bool addOverflow(size_t a, size_t b, size_t &out) {
+  if (a > std::numeric_limits<size_t>::max() - b) {
+    return true;
+  }
+  out = a + b;
+  return false;
+}
+
 } // namespace
 
 bool ShaderBundle::isBundle(StringView data) {
@@ -61,9 +70,17 @@ bool ShaderBundle::isBundle(StringView data) {
 
 Array<char> ShaderBundle::pack(const Array<PackEntry> &entries) {
   Array<char> out;
+  if (entries.size() > std::numeric_limits<uint32_t>::max()) {
+    return out;
+  }
+  if (entries.size() != 0 &&
+      entries.size() > std::numeric_limits<size_t>::max() / kEntrySize) {
+    return out;
+  }
   const size_t tableSize = static_cast<size_t>(kEntrySize) * entries.size();
-  const size_t payloadOffset = kHeaderSize + tableSize;
-  if (payloadOffset > std::numeric_limits<uint32_t>::max()) {
+  size_t payloadOffset = 0;
+  if (addOverflow(kHeaderSize, tableSize, payloadOffset) ||
+      payloadOffset > std::numeric_limits<uint32_t>::max()) {
     return out;
   }
 
@@ -74,8 +91,21 @@ Array<char> ShaderBundle::pack(const Array<PackEntry> &entries) {
 
   Array<char> payload;
   for (const auto &entry : entries) {
+    if (entry.size > 0 && entry.data == nullptr) {
+      return {};
+    }
     align4(payload);
-    offsets.push_back(checkedU32(payloadOffset + payload.size()));
+    size_t entryOffset = 0;
+    if (addOverflow(payloadOffset, payload.size(), entryOffset) ||
+        entryOffset > std::numeric_limits<uint32_t>::max()) {
+      return {};
+    }
+    size_t entryEnd = 0;
+    if (addOverflow(payload.size(), entry.size, entryEnd) ||
+        payloadOffset > std::numeric_limits<uint32_t>::max() - entryEnd) {
+      return {};
+    }
+    offsets.push_back(checkedU32(entryOffset));
     sizes.push_back(entry.size);
     appendBytes(payload, entry.data, entry.size);
   }

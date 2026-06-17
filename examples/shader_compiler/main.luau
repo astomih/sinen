@@ -4,6 +4,7 @@ local G = require("../global")
 local examples = {
 	{ label = "Minimal Shader", dir = "minimal_shader" },
 	{ label = "Shader Toy", dir = "shader_toy" },
+	{ label = "Compiler", dir = "compiler" },
 }
 
 local numExamples = #examples

@@ -23,7 +23,7 @@ public:
 
   static constexpr const char *metaTableName() { return "sn.Shader"; }
 
-  void load(StringView name, ShaderStage stage, int numUniformData);
+  void load(StringView name, ShaderStage stage);
   void compile(StringView name, ShaderStage stage, ShaderFormat format);
   void compileAndLoad(StringView name, ShaderStage stage);
   void compileAndLoad(StringView name, ShaderStage stage, ShaderFormat format);
@@ -33,6 +33,10 @@ public:
   ShaderFormat getFormat() const;
   ShaderStage getStage() const;
   Buffer getCode() const;
+  uint32_t getNumSamplers() const;
+  uint32_t getNumStorageBuffers() const;
+  uint32_t getNumStorageTextures() const;
+  uint32_t getNumUniformBuffers() const;
 
 private:
   struct AsyncState {
@@ -52,6 +56,10 @@ private:
   ShaderFormat format = ShaderFormat::SPIRV;
   ShaderStage stage = ShaderStage::Vertex;
   Array<char> code;
+  uint32_t numUniformBuffers = 0;
+  uint32_t numSamplers = 0;
+  uint32_t numStorageBuffers = 0;
+  uint32_t numStorageTextures = 0;
 };
 } // namespace sinen
 #endif // !SINEN_SHADER_HPP

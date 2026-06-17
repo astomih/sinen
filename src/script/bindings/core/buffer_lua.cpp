@@ -113,10 +113,11 @@ static int lBufferToHeader(lua_State *L) {
     }
     out << "0x" << std::hex << std::setfill('0') << std::setw(2)
         << static_cast<int>(bytes[i]);
+    const bool isLineEnd = i % 12 == 11 || i + 1 == size;
     if (i + 1 < size) {
-      out << ", ";
+      out << (isLineEnd ? "," : ", ");
     }
-    if (i % 12 == 11 || i + 1 == size) {
+    if (isLineEnd) {
       out << "\n";
     }
   }

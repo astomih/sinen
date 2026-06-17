@@ -66,6 +66,16 @@ ShaderFormat formatFromPath(StringView path) {
   return ShaderFormat::SPIRV;
 }
 
+#ifdef SINEN_MODULE_SHADER_COMPILER
+uint32_t reflectedSamplerCount(ShaderStage stage,
+                               const ShaderCompiler::ReflectionData &data) {
+  // Slang's base reflection reports global declarations, including resources
+  // that only another entry point uses. Keep the previous runtime assumption for
+  // graphics shaders until entry-point metadata is wired into the compiler.
+  return stage == ShaderStage::Fragment ? data.numCombinedSamplers : 0u;
+}
+#endif
+
 static void scheduleOnPreDraw(std::function<void()> f) {
   Graphics::addPreDrawFunc(std::move(f));
 }
@@ -79,6 +89,10 @@ Shader::Shader(const Ptr<gpu::Shader> &raw) {
     const auto &createInfo = raw->getCreateInfo();
     format = createInfo.format;
     stage = toShaderStage(createInfo.stage);
+    numSamplers = createInfo.numSamplers;
+    numStorageBuffers = createInfo.numStorageBuffers;
+    numStorageTextures = createInfo.numStorageTextures;
+    numUniformBuffers = createInfo.numUniformBuffers;
   }
 }
 Shader::~Shader() {
@@ -86,8 +100,7 @@ Shader::~Shader() {
   async.reset();
 }
 
-void Shader::load(StringView vertex_shader, ShaderStage stage,
-                  int numUniformData) {
+void Shader::load(StringView vertex_shader, ShaderStage stage) {
   this->shader.reset();
   shader = makePtr<Ptr<gpu::Shader>>();
   this->async = makePtr<AsyncState>();
@@ -99,13 +112,17 @@ void Shader::load(StringView vertex_shader, ShaderStage stage,
   this->format = shaderFormat;
   this->stage = stage;
   this->code.clear();
+  this->numSamplers = 0;
+  this->numStorageBuffers = 0;
+  this->numStorageTextures = 0;
+  this->numUniformBuffers = 0;
 
   const TaskGroup group = LoadContext::current();
   group.add();
 
   const String path = vertex_shader.data();
   state->future = globalThreadPool().submit(
-      [state, path, stage, numUniformData, shaderFormat, preferredFormat] {
+      [state, path, stage, shaderFormat, preferredFormat] {
         auto str = AssetReader::readAsString(path);
         if (ShaderBundle::isBundle(str)) {
           auto selected = ShaderBundle::select(str, stage, preferredFormat);
@@ -134,7 +151,7 @@ void Shader::load(StringView vertex_shader, ShaderStage stage,
           }
 
           state->shaderFormat = shaderFormat;
-          state->numUniformBuffers = static_cast<uint32_t>(numUniformData + 1);
+          state->numUniformBuffers = 1;
           state->numSamplers = (stage == ShaderStage::Fragment) ? 1u : 0u;
           state->gpuStage = stage;
         }
@@ -165,6 +182,10 @@ void Shader::load(StringView vertex_shader, ShaderStage stage,
         *shader = device->createShader(info);
         this->format = state->shaderFormat;
         this->code = state->spirv;
+        this->numSamplers = state->numSamplers;
+        this->numStorageBuffers = state->numStorageBuffers;
+        this->numStorageTextures = state->numStorageTextures;
+        this->numUniformBuffers = state->numUniformBuffers;
         this->async.reset();
       },
       [this] { this->async.reset(); });
@@ -176,6 +197,10 @@ void Shader::compile(StringView name, ShaderStage stage, ShaderFormat format) {
   this->stage = stage;
   this->format = format;
   this->code.clear();
+  this->numSamplers = 0;
+  this->numStorageBuffers = 0;
+  this->numStorageTextures = 0;
+  this->numUniformBuffers = 0;
 
 #ifdef SINEN_MODULE_SHADER_COMPILER
   ShaderCompiler compiler;
@@ -186,6 +211,10 @@ void Shader::compile(StringView name, ShaderStage stage, ShaderFormat format) {
     compiledCode.push_back('\0');
   }
   this->code = std::move(compiledCode);
+  this->numSamplers = reflectedSamplerCount(stage, reflectionData);
+  this->numStorageBuffers = reflectionData.numStorageBuffers;
+  this->numStorageTextures = reflectionData.numStorageTextures;
+  this->numUniformBuffers = reflectionData.numUniformBuffers;
 #else
   SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                "ShaderCompiler module is disabled. Cannot compile shader.");
@@ -207,6 +236,10 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage,
   state->debugName = "Shader::compileAndLoad(" + String(name) + ")";
   this->stage = stage;
   this->code.clear();
+  this->numSamplers = 0;
+  this->numStorageBuffers = 0;
+  this->numStorageTextures = 0;
+  this->numUniformBuffers = 0;
 
   const TaskGroup group = LoadContext::current();
   group.add();
@@ -224,9 +257,7 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage,
 
     state->shaderFormat = format;
     state->numUniformBuffers = reflectionData.numUniformBuffers;
-    state->numSamplers = (stage == ShaderStage::Fragment)
-                             ? reflectionData.numCombinedSamplers
-                             : 0u;
+    state->numSamplers = reflectedSamplerCount(stage, reflectionData);
     state->numStorageBuffers = reflectionData.numStorageBuffers;
     state->numStorageTextures = reflectionData.numStorageTextures;
     state->gpuStage = stage;
@@ -264,6 +295,10 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage,
         *shader = device->createShader(info);
         this->format = state->shaderFormat;
         this->code = state->spirv;
+        this->numSamplers = state->numSamplers;
+        this->numStorageBuffers = state->numStorageBuffers;
+        this->numStorageTextures = state->numStorageTextures;
+        this->numUniformBuffers = state->numUniformBuffers;
         this->async.reset();
       },
       [this] { this->async.reset(); });
@@ -271,6 +306,10 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage,
 Ptr<gpu::Shader> Shader::getRaw() { return *shader; }
 ShaderFormat Shader::getFormat() const { return format; }
 ShaderStage Shader::getStage() const { return stage; }
+uint32_t Shader::getNumSamplers() const { return numSamplers; }
+uint32_t Shader::getNumStorageBuffers() const { return numStorageBuffers; }
+uint32_t Shader::getNumStorageTextures() const { return numStorageTextures; }
+uint32_t Shader::getNumUniformBuffers() const { return numUniformBuffers; }
 Buffer Shader::getCode() const {
   if (code.empty()) {
     return Buffer(BufferType::Binary, Ptr<void>(), 0);

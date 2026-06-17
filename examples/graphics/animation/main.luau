@@ -10,8 +10,8 @@ function setup()
 	local vs: sn.Shader = sn.Shader.new()
 	local fs: sn.Shader = sn.Shader.new()
 
-	vs:compileAndLoad("skinning.slang", sn.ShaderStage.Vertex)
-	fs:compileAndLoad("skinning.slang", sn.ShaderStage.Fragment)
+	vs:load("skinning.vert.snb", sn.ShaderStage.Vertex)
+	fs:load("skinning.frag.snb", sn.ShaderStage.Fragment)
 
 	pipeline:setVertexShader(vs)
 	pipeline:setFragmentShader(fs)

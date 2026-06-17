@@ -40,9 +40,9 @@ local camera: sn.Camera3D = sn.Camera3D.new()
 camera:lookat(pos, at, up)
 
 local vertex_shader = sn.Shader.new()
-vertex_shader:compileAndLoad("shader_custom.slang", sn.ShaderStage.Vertex)
+vertex_shader:load("shader_custom.vert.snb", sn.ShaderStage.Vertex)
 local fragment_shader = sn.Shader.new()
-fragment_shader:compileAndLoad("shader_custom.slang", sn.ShaderStage.Fragment)
+fragment_shader:load("shader_custom.frag.snb", sn.ShaderStage.Fragment)
 
 local pipeline3d = sn.GraphicsPipeline.new()
 pipeline3d:setVertexShader(vertex_shader)

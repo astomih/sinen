@@ -8,7 +8,7 @@ local font: sn.Font = sn.Font.new()
 font:load(24)
 
 local shader: sn.Shader = sn.Shader.new()
-shader:compileAndLoad("compute_image.slang", sn.ShaderStage.Compute)
+shader:load("compute_image.comp.snb", sn.ShaderStage.Compute)
 
 local pipeline: sn.ComputePipeline = sn.ComputePipeline.new()
 local outputBuffer: sn.ComputeBuffer = sn.ComputeBuffer.new(width * height * 4)
@@ -61,9 +61,5 @@ function draw()
 	end
 
 	local textPosition = sn.Vec2.new(center.x - 240, imageRect.y + imageRect.height + 24)
-	sn.Graphics.drawText(
-		status,
-		sn.TextStyle.new(font, sn.Color.new(1.0), 24),
-		sn.TextTransform.new(textPosition)
-	)
+	sn.Graphics.drawText(status, sn.TextStyle.new(font, sn.Color.new(1.0), 24), sn.TextTransform.new(textPosition))
 end

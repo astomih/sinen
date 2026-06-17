@@ -29,7 +29,7 @@ local status = if supported
 	else "Ray query is not supported by this backend/device"
 
 if supported then
-	shader:compileAndLoad("ray_query.slang", sn.ShaderStage.Compute)
+	shader:load("ray_query.comp.snb", sn.ShaderStage.Compute)
 end
 
 local function buildAccelerationStructures()
@@ -103,9 +103,5 @@ function draw()
 	end
 
 	local textPosition = sn.Vec2.new(center.x - 300, imageRect.y + imageRect.height + 24)
-	sn.Graphics.drawText(
-		status,
-		sn.TextStyle.new(font, sn.Color.new(1.0), 22),
-		sn.TextTransform.new(textPosition)
-	)
+	sn.Graphics.drawText(status, sn.TextStyle.new(font, sn.Color.new(1.0), 22), sn.TextTransform.new(textPosition))
 end

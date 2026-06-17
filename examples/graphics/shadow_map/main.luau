@@ -18,10 +18,13 @@ local floorTexture: sn.Texture = sn.Texture.new()
 local camera: sn.Camera3D = sn.Camera3D.new()
 
 local function setShadowUniform(t: sn.Transform)
-	sn.Graphics.setUniformBuffer(1, sn.Buffer.new({
-		t:getWorldMatrix(),
-		shadowCamera:getViewProjection(),
-	}))
+	sn.Graphics.setUniformBuffer(
+		1,
+		sn.Buffer.new({
+			t:getWorldMatrix(),
+			shadowCamera:getViewProjection(),
+		})
+	)
 end
 
 function setup()
@@ -36,8 +39,8 @@ function setup()
 	shadowCamera:orthographic(20, 20, -10, 10.0)
 	shadowCamera:lookat(sn.Vec3.new(0.5, 2, 2), sn.Vec3.new(0), sn.Vec3.new(0, 1, 0))
 
-	depthVS:compileAndLoad("depth_write.slang", sn.ShaderStage.Vertex)
-	depthFS:compileAndLoad("depth_write.slang", sn.ShaderStage.Fragment)
+	depthVS:load("depth_write.vert.snb", sn.ShaderStage.Vertex)
+	depthFS:load("depth_write.frag.snb", sn.ShaderStage.Fragment)
 
 	depthPipeline:setEnableDepthTest(true)
 	depthPipeline:setVertexShader(depthVS)
@@ -47,8 +50,8 @@ function setup()
 	depthRenderTexture:create(sn.Window.size().x, sn.Window.size().y)
 	depthTexture:fill(sn.Color.new(1, 1, 1, 1))
 
-	vs:compileAndLoad("shader.slang", sn.ShaderStage.Vertex)
-	fs:compileAndLoad("shader.slang", sn.ShaderStage.Fragment)
+	vs:load("shader.vert.snb", sn.ShaderStage.Vertex)
+	fs:load("shader.frag.snb", sn.ShaderStage.Fragment)
 	pipeline:setEnableDepthTest(true)
 	pipeline:setVertexShader(vs)
 	pipeline:setFragmentShader(fs)

@@ -34,6 +34,25 @@ void GraphicsPipeline::setEnableAnimation(bool enable) {
 void GraphicsPipeline::setEnableTangent(bool enable) {
   featureFlags.set(Tangent, enable);
 }
+bool GraphicsPipeline::findUniformBufferSlot(StringView name,
+                                             UInt32 &slot) const {
+  uint32_t resolvedSlot = 0;
+  if (vertexShader.findUniformBufferSlot(name, resolvedSlot) ||
+      fragmentShader.findUniformBufferSlot(name, resolvedSlot)) {
+    slot = resolvedSlot;
+    return true;
+  }
+  return false;
+}
+bool GraphicsPipeline::findTextureSlot(StringView name, UInt32 &slot) const {
+  uint32_t resolvedSlot = 0;
+  if (fragmentShader.findTextureSlot(name, resolvedSlot) ||
+      vertexShader.findTextureSlot(name, resolvedSlot)) {
+    slot = resolvedSlot;
+    return true;
+  }
+  return false;
+}
 void GraphicsPipeline::build() {
   const TaskGroup group = LoadContext::current();
   group.add();

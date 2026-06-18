@@ -69,8 +69,11 @@ public:
   static void setGraphicsPipeline(const GraphicsPipeline &pipeline);
   static void resetGraphicsPipeline();
   static void setUniformBuffer(UInt32 slotIndex, const Buffer &buffer);
+  static void setUniformBuffer(StringView name, const Buffer &buffer);
   static void setTexture(UInt32 slotIndex, const Ptr<Texture> &texture);
+  static void setTexture(StringView name, const Ptr<Texture> &texture);
   static void resetTexture(UInt32 slotIndex);
+  static void resetTexture(StringView name);
   static void resetAllTexture();
   static void setAccelerationStructure(
       UInt32 slotIndex,

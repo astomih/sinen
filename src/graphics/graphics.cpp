@@ -89,6 +89,48 @@ static bool isPipelineReadyForDraw() {
          currentPipeline.value().get() != nullptr;
 }
 
+static const GraphicsPipeline *pipelineForNamedResourceBinding() {
+  if (customPipeline.has_value() && customPipeline.value().get() != nullptr) {
+    return &customPipeline.value();
+  }
+  if (currentPipeline.has_value() && currentPipeline.value().get() != nullptr) {
+    return &currentPipeline.value();
+  }
+  return nullptr;
+}
+
+static bool resolveUniformBufferSlot(StringView name, UInt32 &slot) {
+  const GraphicsPipeline *pipeline = pipelineForNamedResourceBinding();
+  if (pipeline == nullptr) {
+    Log::error("setUniformBuffer({}, ...) called without a ready graphics "
+               "pipeline",
+               name);
+    return false;
+  }
+  if (!pipeline->findUniformBufferSlot(name, slot)) {
+    Log::error("Uniform buffer '{}' was not found in the current graphics "
+               "pipeline",
+               name);
+    return false;
+  }
+  return true;
+}
+
+static bool resolveTextureSlot(StringView name, UInt32 &slot) {
+  const GraphicsPipeline *pipeline = pipelineForNamedResourceBinding();
+  if (pipeline == nullptr) {
+    Log::error("setTexture('%.*s') called without a ready graphics pipeline",
+               static_cast<int>(name.size()), name.data());
+    return false;
+  }
+  if (!pipeline->findTextureSlot(name, slot)) {
+    Log::error("Texture '%.*s' was not found in the current graphics pipeline",
+               static_cast<int>(name.size()), name.data());
+    return false;
+  }
+  return true;
+}
+
 static bool isModelReadyForDraw(const Model &model) {
   if (!model.vertexBuffer || !model.indexBuffer) {
     return false;
@@ -1160,11 +1202,29 @@ void Graphics::setUniformBuffer(UInt32 slotIndex, const Buffer &buffer) {
   currentCommandBuffer->pushFragmentUniformData(slotIndex, buffer.data(),
                                                 buffer.size());
 }
+void Graphics::setUniformBuffer(StringView name, const Buffer &buffer) {
+  UInt32 slot = 0;
+  if (resolveUniformBufferSlot(name, slot)) {
+    setUniformBuffer(slot, buffer);
+  }
+}
 void Graphics::setTexture(UInt32 slotIndex, const Ptr<Texture> &texture) {
   currentTextureBindings.insert_or_assign(slotIndex, texture);
 }
+void Graphics::setTexture(StringView name, const Ptr<Texture> &texture) {
+  UInt32 slot = 0;
+  if (resolveTextureSlot(name, slot)) {
+    setTexture(slot, texture);
+  }
+}
 void Graphics::resetTexture(UInt32 slotIndex) {
   currentTextureBindings.erase(slotIndex);
+}
+void Graphics::resetTexture(StringView name) {
+  UInt32 slot = 0;
+  if (resolveTextureSlot(name, slot)) {
+    resetTexture(slot);
+  }
 }
 void Graphics::resetAllTexture() { currentTextureBindings.clear(); }
 
@@ -1222,9 +1282,8 @@ bool Graphics::readbackTexture(const RenderTexture &srcRenderTexture,
   const auto height = static_cast<UInt32>(srcRenderTexture.height);
   const UInt32 srcBytesPerPixel = bytesPerPixelForTextureFormat(srcFormat);
   const UInt32 dstBytesPerPixel = bytesPerPixelForTextureFormat(dstFormat);
-  const bool canConvert = srcFormat == dstFormat ||
-                          (isRgba8Format(srcFormat) &&
-                           isRgba8Format(dstFormat));
+  const bool canConvert = srcFormat == dstFormat || (isRgba8Format(srcFormat) &&
+                                                     isRgba8Format(dstFormat));
   if (srcBytesPerPixel == 0 || dstBytesPerPixel == 0 || !canConvert) {
     Log::error("readbackTexture failed: unsupported texture format conversion");
     return false;

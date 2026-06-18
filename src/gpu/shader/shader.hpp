@@ -37,8 +37,20 @@ public:
   uint32_t getNumStorageBuffers() const;
   uint32_t getNumStorageTextures() const;
   uint32_t getNumUniformBuffers() const;
+  bool findUniformBufferSlot(StringView name, uint32_t &slot) const;
+  bool findTextureSlot(StringView name, uint32_t &slot) const;
+
+  struct ResourceBinding {
+    String name;
+    uint32_t slot = 0;
+  };
 
 private:
+  struct ResourceBindings {
+    Array<ResourceBinding> uniformBuffers;
+    Array<ResourceBinding> textures;
+  };
+
   struct AsyncState {
     std::future<void> future;
     String debugName;
@@ -48,10 +60,13 @@ private:
     uint32_t numSamplers = 0;
     uint32_t numStorageBuffers = 0;
     uint32_t numStorageTextures = 0;
+    Array<ResourceBinding> uniformBuffers;
+    Array<ResourceBinding> textures;
     ShaderStage gpuStage = ShaderStage::Vertex;
     bool valid = true;
   };
   Ptr<Ptr<gpu::Shader>> shader;
+  Ptr<ResourceBindings> resourceBindings;
   Ptr<AsyncState> async;
   ShaderFormat format = ShaderFormat::SPIRV;
   ShaderStage stage = ShaderStage::Vertex;

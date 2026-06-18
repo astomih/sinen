@@ -15,6 +15,7 @@ public:
   void setShader(const Shader &shader);
   void setThreadGroupSize(UInt32 x, UInt32 y = 1, UInt32 z = 1);
   void build();
+  bool findUniformBufferSlot(StringView name, UInt32 &slot) const;
   Ptr<gpu::ComputePipeline> get() const { return pipeline; }
 
 private:

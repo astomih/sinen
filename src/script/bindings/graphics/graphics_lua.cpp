@@ -130,14 +130,24 @@ static int lGraphicsResetGraphicsPipeline(lua_State *L) {
   return 0;
 }
 static int lGraphicsSetTexture(lua_State *L) {
-  UInt32 slot = static_cast<UInt32>(luaL_checkinteger(L, 1));
   auto &t = udPtr<Texture>(L, 2);
-  Graphics::setTexture(slot, t);
+  if (lua_type(L, 1) == LUA_TSTRING) {
+    const char *name = luaL_checkstring(L, 1);
+    Graphics::setTexture(StringView(name), t);
+  } else {
+    UInt32 slot = static_cast<UInt32>(luaL_checkinteger(L, 1));
+    Graphics::setTexture(slot, t);
+  }
   return 0;
 }
 static int lGraphicsResetTexture(lua_State *L) {
-  UInt32 slot = static_cast<UInt32>(luaL_checkinteger(L, 1));
-  Graphics::resetTexture(slot);
+  if (lua_type(L, 1) == LUA_TSTRING) {
+    const char *name = luaL_checkstring(L, 1);
+    Graphics::resetTexture(StringView(name));
+  } else {
+    UInt32 slot = static_cast<UInt32>(luaL_checkinteger(L, 1));
+    Graphics::resetTexture(slot);
+  }
   return 0;
 }
 static int lGraphicsResetAllTexture(lua_State *L) {
@@ -146,9 +156,14 @@ static int lGraphicsResetAllTexture(lua_State *L) {
   return 0;
 }
 static int lGraphicsSetUniformBuffer(lua_State *L) {
-  UInt32 slot = static_cast<UInt32>(luaL_checkinteger(L, 1));
   auto &b = udValue<Buffer>(L, 2);
-  Graphics::setUniformBuffer(slot, b);
+  if (lua_type(L, 1) == LUA_TSTRING) {
+    const char *name = luaL_checkstring(L, 1);
+    Graphics::setUniformBuffer(StringView(name), b);
+  } else {
+    UInt32 slot = static_cast<UInt32>(luaL_checkinteger(L, 1));
+    Graphics::setUniformBuffer(slot, b);
+  }
   return 0;
 }
 static int lGraphicsBeginRenderTarget(lua_State *L) {

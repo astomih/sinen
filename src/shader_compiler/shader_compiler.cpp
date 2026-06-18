@@ -118,8 +118,7 @@ std::optional<uint32_t> countSpirvUniformBufferSlots(const void *data,
   return slots;
 }
 
-std::optional<uint32_t> parseWgslBinding(StringView source,
-                                         size_t bindingPos) {
+std::optional<uint32_t> parseWgslBinding(StringView source, size_t bindingPos) {
   constexpr StringView bindingPrefix = "@binding(";
   size_t valuePos = bindingPos + bindingPrefix.size();
   if (valuePos >= source.size()) {
@@ -232,16 +231,19 @@ bool isVariableLocationUsed(slang::IMetadata *metadata,
 
   const unsigned bindingIndex = varLayout->getBindingIndex();
   const unsigned bindingSpace = varLayout->getBindingSpace();
-  if (isUnknownBindingValue(bindingIndex) || isUnknownBindingValue(bindingSpace)) {
+  if (isUnknownBindingValue(bindingIndex) ||
+      isUnknownBindingValue(bindingSpace)) {
     return true;
   }
 
   bool querySucceeded = false;
-  if (isParameterLocationUsed(metadata, SLANG_PARAMETER_CATEGORY_CONSTANT_BUFFER,
+  if (isParameterLocationUsed(metadata,
+                              SLANG_PARAMETER_CATEGORY_CONSTANT_BUFFER,
                               bindingSpace, bindingIndex, querySucceeded)) {
     return true;
   }
-  if (isParameterLocationUsed(metadata, SLANG_PARAMETER_CATEGORY_DESCRIPTOR_TABLE_SLOT,
+  if (isParameterLocationUsed(metadata,
+                              SLANG_PARAMETER_CATEGORY_DESCRIPTOR_TABLE_SLOT,
                               bindingSpace, bindingIndex, querySucceeded)) {
     return true;
   }
@@ -341,10 +343,49 @@ void countBindingRange(ShaderCompiler::ReflectionData &data,
     data.numStorageTextures++;
   }
 }
+
+void pushResourceBinding(Array<ShaderCompiler::ResourceBinding> &bindings,
+                         const char *name, uint32_t slot) {
+  if (name == nullptr || name[0] == '\0') {
+    return;
+  }
+  for (const auto &binding : bindings) {
+    if (binding.name == name) {
+      return;
+    }
+  }
+  bindings.push_back({String(name), slot});
+}
+
+std::optional<uint32_t>
+bindingRangeRegisterIndex(slang::TypeLayoutReflection *typeLayout,
+                          SlangInt bindingRangeIndex) {
+  const SlangInt descriptorSetIndex =
+      typeLayout->getBindingRangeDescriptorSetIndex(bindingRangeIndex);
+  const SlangInt firstDescriptorRangeIndex =
+      typeLayout->getBindingRangeFirstDescriptorRangeIndex(bindingRangeIndex);
+  if (!isKnownNonNegative(descriptorSetIndex) ||
+      !isKnownNonNegative(firstDescriptorRangeIndex)) {
+    return std::nullopt;
+  }
+
+  const SlangInt registerIndex =
+      typeLayout->getDescriptorSetDescriptorRangeIndexOffset(
+          descriptorSetIndex, firstDescriptorRangeIndex);
+  if (!isKnownNonNegative(registerIndex)) {
+    return std::nullopt;
+  }
+  return static_cast<uint32_t>(registerIndex);
+}
+
+bool isTextureBindingRange(slang::BindingType rangeType) {
+  return rangeType == slang::BindingType::CombinedTextureSampler ||
+         rangeType == slang::BindingType::Texture;
+}
 } // namespace
 
-ShaderCompiler::ReflectionData
-getReflectionData(slang::IComponentType *program, slang::IMetadata *metadata) {
+ShaderCompiler::ReflectionData getReflectionData(slang::IComponentType *program,
+                                                 slang::IMetadata *metadata) {
   auto *programLayout = program->getLayout();
   ShaderCompiler::ReflectionData data;
 
@@ -363,6 +404,14 @@ getReflectionData(slang::IComponentType *program, slang::IMetadata *metadata) {
       }
       auto rangeType = typeLayout->getBindingRangeType(i);
       countBindingRange(data, rangeType);
+      if (isTextureBindingRange(rangeType)) {
+        auto *variable = typeLayout->getBindingRangeLeafVariable(i);
+        const std::optional<uint32_t> slot =
+            bindingRangeRegisterIndex(typeLayout, i);
+        if (variable && slot) {
+          pushResourceBinding(data.textures, variable->getName(), *slot);
+        }
+      }
     }
   }
 
@@ -375,6 +424,11 @@ getReflectionData(slang::IComponentType *program, slang::IMetadata *metadata) {
     if (!isVariableLocationUsed(metadata, varLayout)) {
       continue;
     }
+    const unsigned bindingIndex = varLayout->getBindingIndex();
+    const uint32_t slot = isUnknownBindingValue(bindingIndex)
+                              ? data.numUniformBuffers
+                              : static_cast<uint32_t>(bindingIndex);
+    pushResourceBinding(data.uniformBuffers, varLayout->getName(), slot);
     data.numUniformBuffers++;
   }
 
@@ -553,9 +607,8 @@ Array<char> ShaderCompiler::compileSource(StringView moduleName,
   Slang::ComPtr<slang::IMetadata> metadata;
   {
     Slang::ComPtr<slang::IBlob> diagnosticsBlob;
-    SlangResult result =
-        linkedProgram->getTargetMetadata(0, metadata.writeRef(),
-                                         diagnosticsBlob.writeRef());
+    SlangResult result = linkedProgram->getTargetMetadata(
+        0, metadata.writeRef(), diagnosticsBlob.writeRef());
     if (SLANG_FAILED(result)) {
       diagnoseIfNeeded(diagnosticsBlob);
       diagnosticsBlob.setNull();

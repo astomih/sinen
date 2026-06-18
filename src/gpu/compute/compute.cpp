@@ -31,6 +31,24 @@ void Compute::setUniformBuffer(UInt32 slotIndex, const Buffer &buffer) {
   currentUniformBindings.insert_or_assign(slotIndex, buffer);
 }
 
+void Compute::setUniformBuffer(StringView name, const Buffer &buffer) {
+  if (!currentPipeline.has_value() || currentPipeline->get() == nullptr) {
+    Log::error("Compute::setUniformBuffer('%.*s') called without a ready "
+               "compute pipeline",
+               static_cast<int>(name.size()), name.data());
+    return;
+  }
+
+  UInt32 slot = 0;
+  if (!currentPipeline->findUniformBufferSlot(name, slot)) {
+    Log::error("Uniform buffer '%.*s' was not found in the current compute "
+               "pipeline",
+               static_cast<int>(name.size()), name.data());
+    return;
+  }
+  setUniformBuffer(slot, buffer);
+}
+
 void Compute::setStorageBuffer(UInt32 slotIndex, const ComputeBuffer &buffer) {
   currentStorageBufferBindings.insert_or_assign(slotIndex, buffer);
 }

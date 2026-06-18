@@ -21,9 +21,14 @@ static int lComputeResetComputePipeline(lua_State *L) {
 }
 
 static int lComputeSetUniformBuffer(lua_State *L) {
-  auto slot = static_cast<UInt32>(luaL_checkinteger(L, 1));
   auto &buffer = udValue<Buffer>(L, 2);
-  Compute::setUniformBuffer(slot, buffer);
+  if (lua_type(L, 1) == LUA_TSTRING) {
+    const char *name = luaL_checkstring(L, 1);
+    Compute::setUniformBuffer(StringView(name), buffer);
+  } else {
+    auto slot = static_cast<UInt32>(luaL_checkinteger(L, 1));
+    Compute::setUniformBuffer(slot, buffer);
+  }
   return 0;
 }
 

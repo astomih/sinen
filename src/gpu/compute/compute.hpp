@@ -6,6 +6,7 @@
 
 #include <core/buffer/buffer.hpp>
 #include <core/data/hashmap.hpp>
+#include <core/data/string.hpp>
 
 namespace sinen {
 namespace gpu {
@@ -18,6 +19,7 @@ public:
   static void setComputePipeline(const ComputePipeline &pipeline);
   static void resetComputePipeline();
   static void setUniformBuffer(UInt32 slotIndex, const Buffer &buffer);
+  static void setUniformBuffer(StringView name, const Buffer &buffer);
   static void setStorageBuffer(UInt32 slotIndex, const ComputeBuffer &buffer);
   static void resetStorageBuffer(UInt32 slotIndex);
   static void resetAllStorageBuffers();

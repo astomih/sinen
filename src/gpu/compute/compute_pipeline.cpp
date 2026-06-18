@@ -18,6 +18,16 @@ void ComputePipeline::setThreadGroupSize(UInt32 x, UInt32 y, UInt32 z) {
   threadCountZ = z;
 }
 
+bool ComputePipeline::findUniformBufferSlot(StringView name,
+                                            UInt32 &slot) const {
+  uint32_t resolvedSlot = 0;
+  if (computeShader.findUniformBufferSlot(name, resolvedSlot)) {
+    slot = resolvedSlot;
+    return true;
+  }
+  return false;
+}
+
 void ComputePipeline::build() {
   const TaskGroup group = LoadContext::current();
   group.add();

@@ -85,7 +85,7 @@ function draw()
 	})
 
 	sn.Graphics.setGraphicsPipeline(pipeline)
-	sn.Graphics.setUniformBuffer(1, shaderData)
+	sn.Graphics.setUniformBuffer("ShaderData", shaderData)
 	sn.Graphics.drawImage(blankTexture, fullscreenRect())
 
 	sn.Graphics.resetGraphicsPipeline()

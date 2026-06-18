@@ -35,6 +35,8 @@ public:
   void build();
 
   const std::bitset<32> &getFeatureFlags() const { return featureFlags; }
+  bool findUniformBufferSlot(StringView name, UInt32 &slot) const;
+  bool findTextureSlot(StringView name, UInt32 &slot) const;
 
   Ptr<gpu::GraphicsPipeline> get() const { return pipeline; }
 

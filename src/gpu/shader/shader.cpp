@@ -69,11 +69,27 @@ ShaderFormat formatFromPath(StringView path) {
 static void scheduleOnPreDraw(std::function<void()> f) {
   Graphics::addPreDrawFunc(std::move(f));
 }
+
+#ifdef SINEN_MODULE_SHADER_COMPILER
+static Array<Shader::ResourceBinding>
+copyResourceBindings(const Array<ShaderCompiler::ResourceBinding> &bindings) {
+  Array<Shader::ResourceBinding> result;
+  result.reserve(bindings.size());
+  for (const auto &binding : bindings) {
+    result.push_back({binding.name, binding.slot});
+  }
+  return result;
+}
+#endif
 } // namespace
 
-Shader::Shader() { shader = makePtr<Ptr<gpu::Shader>>(); }
+Shader::Shader() {
+  shader = makePtr<Ptr<gpu::Shader>>();
+  resourceBindings = makePtr<ResourceBindings>();
+}
 Shader::Shader(const Ptr<gpu::Shader> &raw) {
   shader = makePtr<Ptr<gpu::Shader>>();
+  resourceBindings = makePtr<ResourceBindings>();
   *shader = raw;
   if (raw != nullptr) {
     const auto &createInfo = raw->getCreateInfo();
@@ -93,6 +109,8 @@ Shader::~Shader() {
 void Shader::load(StringView vertex_shader, ShaderStage stage) {
   this->shader.reset();
   shader = makePtr<Ptr<gpu::Shader>>();
+  resourceBindings = makePtr<ResourceBindings>();
+  const Ptr<ResourceBindings> bindings = resourceBindings;
   this->async = makePtr<AsyncState>();
   const Ptr<AsyncState> state = this->async;
   state->debugName = "Shader::load(" + String(vertex_shader) + ")";
@@ -148,7 +166,7 @@ void Shader::load(StringView vertex_shader, ShaderStage stage) {
       });
   scheduleFuturePoll(
       state, group, scheduleOnPreDraw,
-      [this, state] {
+      [this, state, bindings] {
         if (!state->valid) {
           this->async.reset();
           return;
@@ -176,6 +194,8 @@ void Shader::load(StringView vertex_shader, ShaderStage stage) {
         this->numStorageBuffers = state->numStorageBuffers;
         this->numStorageTextures = state->numStorageTextures;
         this->numUniformBuffers = state->numUniformBuffers;
+        bindings->uniformBuffers = state->uniformBuffers;
+        bindings->textures = state->textures;
         this->async.reset();
       },
       [this] { this->async.reset(); });
@@ -184,6 +204,7 @@ void Shader::load(StringView vertex_shader, ShaderStage stage) {
 void Shader::compile(StringView name, ShaderStage stage, ShaderFormat format) {
   this->shader.reset();
   shader = makePtr<Ptr<gpu::Shader>>();
+  resourceBindings = makePtr<ResourceBindings>();
   this->stage = stage;
   this->format = format;
   this->code.clear();
@@ -205,6 +226,9 @@ void Shader::compile(StringView name, ShaderStage stage, ShaderFormat format) {
   this->numStorageBuffers = reflectionData.numStorageBuffers;
   this->numStorageTextures = reflectionData.numStorageTextures;
   this->numUniformBuffers = reflectionData.numUniformBuffers;
+  resourceBindings->uniformBuffers =
+      copyResourceBindings(reflectionData.uniformBuffers);
+  resourceBindings->textures = copyResourceBindings(reflectionData.textures);
 #else
   SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                "ShaderCompiler module is disabled. Cannot compile shader.");
@@ -221,6 +245,8 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage,
 
   this->shader.reset();
   shader = makePtr<Ptr<gpu::Shader>>();
+  resourceBindings = makePtr<ResourceBindings>();
+  const Ptr<ResourceBindings> bindings = resourceBindings;
   this->async = makePtr<AsyncState>();
   const Ptr<AsyncState> state = this->async;
   state->debugName = "Shader::compileAndLoad(" + String(name) + ")";
@@ -250,6 +276,8 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage,
     state->numSamplers = reflectionData.numCombinedSamplers;
     state->numStorageBuffers = reflectionData.numStorageBuffers;
     state->numStorageTextures = reflectionData.numStorageTextures;
+    state->uniformBuffers = copyResourceBindings(reflectionData.uniformBuffers);
+    state->textures = copyResourceBindings(reflectionData.textures);
     state->gpuStage = stage;
   });
 #else
@@ -261,7 +289,7 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage,
 #endif
   scheduleFuturePoll(
       state, group, scheduleOnPreDraw,
-      [this, state] {
+      [this, state, bindings] {
         if (!state->valid) {
           this->async.reset();
           return;
@@ -289,6 +317,8 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage,
         this->numStorageBuffers = state->numStorageBuffers;
         this->numStorageTextures = state->numStorageTextures;
         this->numUniformBuffers = state->numUniformBuffers;
+        bindings->uniformBuffers = state->uniformBuffers;
+        bindings->textures = state->textures;
         this->async.reset();
       },
       [this] { this->async.reset(); });
@@ -300,6 +330,30 @@ uint32_t Shader::getNumSamplers() const { return numSamplers; }
 uint32_t Shader::getNumStorageBuffers() const { return numStorageBuffers; }
 uint32_t Shader::getNumStorageTextures() const { return numStorageTextures; }
 uint32_t Shader::getNumUniformBuffers() const { return numUniformBuffers; }
+bool Shader::findUniformBufferSlot(StringView name, uint32_t &slot) const {
+  if (!resourceBindings) {
+    return false;
+  }
+  for (const auto &binding : resourceBindings->uniformBuffers) {
+    if (binding.name == name) {
+      slot = binding.slot;
+      return true;
+    }
+  }
+  return false;
+}
+bool Shader::findTextureSlot(StringView name, uint32_t &slot) const {
+  if (!resourceBindings) {
+    return false;
+  }
+  for (const auto &binding : resourceBindings->textures) {
+    if (binding.name == name) {
+      slot = binding.slot;
+      return true;
+    }
+  }
+  return false;
+}
 Buffer Shader::getCode() const {
   if (code.empty()) {
     return Buffer(BufferType::Binary, Ptr<void>(), 0);

@@ -15,7 +15,7 @@ struct VSOutput {
 
 UNIFORM_VERT(Mat, 0) { float4x4 wvp; }
 
-UNIFORM_FRAG(ShaderToyData, 1) {
+UNIFORM_FRAG(ShaderData, 1) {
   float4 iResolutionTimeMode;
   float4 iMousePulse;
 }

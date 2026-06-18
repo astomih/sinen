@@ -1,4 +1,4 @@
-#include "compute.hpp"
+#include <gpu/compute/compute.hpp>
 
 #include <core/allocator/global_allocator.hpp>
 #include <core/logger/log.hpp>

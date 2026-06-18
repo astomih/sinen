@@ -1,4 +1,4 @@
-#include "random.hpp"
+#include <math/random.hpp>
 #include <math/random.hpp>
 #include <math/vector.hpp>
 #include <random>

@@ -1,5 +1,5 @@
 // internal
-#include "audio.hpp"
+#include <audio/audio.hpp>
 #include <audio/synth.hpp>
 #include <core/logger/log.hpp>
 

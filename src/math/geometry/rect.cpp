@@ -1,4 +1,4 @@
-#include "rect.hpp"
+#include <math/geometry/rect.hpp>
 
 #include <cstring>
 namespace sinen {

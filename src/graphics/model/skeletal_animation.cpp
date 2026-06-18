@@ -1,4 +1,4 @@
-#include "model.hpp"
+#include <graphics/model/model.hpp>
 #include <core/logger/log.hpp>
 #include <math/math.hpp>
 namespace sinen {

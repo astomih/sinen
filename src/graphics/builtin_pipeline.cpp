@@ -1,4 +1,4 @@
-#include "builtin_pipeline.hpp"
+#include <graphics/builtin_pipeline.hpp>
 #include <gpu/shader/builtin_shader.hpp>
 
 namespace sinen {

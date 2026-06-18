@@ -1,4 +1,4 @@
-#include "vertex.hpp"
+#include <math/geometry/vertex.hpp>
 namespace sinen {
 
 Vertex::Vertex()

@@ -1,4 +1,4 @@
-#include "vec4.hpp"
+#include <math/vec4.hpp>
 
 namespace sinen {
 Vec4::Vec4(const Vec3 &v, float w) : x(v.x), y(v.y), z(v.z), w(w) {}

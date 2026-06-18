@@ -1,6 +1,6 @@
-#include "engine_memory.hpp"
+#include <core/allocator/engine_memory.hpp>
 
-#include "global_allocator.hpp"
+#include <core/allocator/global_allocator.hpp>
 
 #include <core/def/types.hpp>
 #include <memory_resource>

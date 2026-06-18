@@ -297,7 +297,9 @@ function(sinen_glob_module target module_dir)
        ${SINEN_SOURCE_DIR}/src/${module_dir}/*.cpp)
   file(GLOB_RECURSE SINEN_MODULE_HEADERS CONFIGURE_DEPENDS
        ${SINEN_SOURCE_DIR}/src/${module_dir}/*.hpp
-       ${SINEN_SOURCE_DIR}/src/${module_dir}/*.inl)
+       ${SINEN_SOURCE_DIR}/src/${module_dir}/*.inl
+       ${SINEN_SOURCE_DIR}/include/${module_dir}/*.hpp
+       ${SINEN_SOURCE_DIR}/include/${module_dir}/*.inl)
   sinen_add_module(${target} ${SINEN_MODULE_SOURCES} ${SINEN_MODULE_HEADERS})
 endfunction()
 
@@ -339,7 +341,9 @@ function(sinen_add_gpu_module)
   file(GLOB_RECURSE SINEN_GPU_SOURCES CONFIGURE_DEPENDS
        ${SINEN_SOURCE_DIR}/src/gpu/*.cpp)
   file(GLOB_RECURSE SINEN_GPU_HEADERS CONFIGURE_DEPENDS
-       ${SINEN_SOURCE_DIR}/src/gpu/*.hpp ${SINEN_SOURCE_DIR}/src/gpu/*.inl)
+       ${SINEN_SOURCE_DIR}/src/gpu/*.hpp ${SINEN_SOURCE_DIR}/src/gpu/*.inl
+       ${SINEN_SOURCE_DIR}/include/gpu/*.hpp
+       ${SINEN_SOURCE_DIR}/include/gpu/*.inl)
 
   if(NOT SINEN_ENABLE_WEBGPU)
     list(FILTER SINEN_GPU_SOURCES EXCLUDE REGEX

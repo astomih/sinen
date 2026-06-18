@@ -1,12 +1,24 @@
 #ifndef SINEN_SCRIPT_REQUIRE_HPP
 #define SINEN_SCRIPT_REQUIRE_HPP
-#include "luaapi.hpp"
 
+#include <Luau/Compiler.h>
 #include <Luau/Require.h>
+#include <lua.h>
+#include <lualib.h>
+
+#include <core/data/array.hpp>
+#include <core/data/ptr.hpp>
+#include <core/data/string.hpp>
+#include <core/data/table_string.hpp>
+#include <core/logger/log.hpp>
 
 #include <filesystem>
 #include <optional>
+
 namespace sinen {
+static constexpr const char *prefix = ".luau";
+int luaLoadSource(lua_State *L, const String &source, const String &chunkname,
+                  StringView fullPath);
 struct RequireContext {
   std::filesystem::path root;
   std::filesystem::path current;

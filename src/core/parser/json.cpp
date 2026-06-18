@@ -9,7 +9,7 @@
 #include <rapidjson/writer.h>
 
 // internal libraries
-#include "json.hpp"
+#include <core/parser/json.hpp>
 #include <core/logger/log.hpp>
 
 namespace sinen {

@@ -1,5 +1,5 @@
 // internal
-#include "script.hpp"
+#include <script/script.hpp>
 
 #include <core/allocator/global_allocator.hpp>
 #include <core/buffer/buffer.hpp>
@@ -14,7 +14,6 @@
 #include <platform/io/filesystem.hpp>
 #include <platform/window/window.hpp>
 
-#include "luaapi.hpp"
 #include "require.hpp"
 #include <Luau/Require.h>
 

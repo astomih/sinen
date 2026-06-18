@@ -1,4 +1,4 @@
-#include "bbox.hpp"
+#include <math/geometry/bbox.hpp>
 namespace sinen {
 
 void AABB::updateWorld(const Vec3 &p, const Vec3 &scale, const AABB &local) {

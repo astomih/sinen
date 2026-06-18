@@ -1,4 +1,4 @@
-#include "ray.hpp"
+#include <math/geometry/ray.hpp>
 
 namespace sinen {
 } // namespace sinen

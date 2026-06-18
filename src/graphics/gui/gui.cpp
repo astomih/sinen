@@ -1,4 +1,4 @@
-#include "gui.hpp"
+#include <graphics/gui/gui.hpp>
 
 #include <algorithm>
 #include <cstdint>

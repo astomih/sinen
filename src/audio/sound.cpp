@@ -1,5 +1,5 @@
 // internal
-#include "audio.hpp"
+#include <audio/audio.hpp>
 #include <audio/sound.hpp>
 #include <platform/io/asset_reader.hpp>
 

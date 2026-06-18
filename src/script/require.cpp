@@ -1,8 +1,7 @@
 #include "require.hpp"
-#include "luaapi.hpp"
-#include "script.hpp"
 #include <platform/io/asset_reader.hpp>
 #include <platform/io/filesystem.hpp>
+#include <script/script.hpp>
 
 #include <SDL3/SDL.h>
 

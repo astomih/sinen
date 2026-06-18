@@ -1,4 +1,4 @@
-#include "raytracing.hpp"
+#include <gpu/raytracing/raytracing.hpp>
 
 #include <core/allocator/global_allocator.hpp>
 #include <core/thread/load_context.hpp>

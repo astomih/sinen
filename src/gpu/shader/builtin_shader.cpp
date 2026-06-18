@@ -1,7 +1,7 @@
-#include "builtin_shader.hpp"
+#include <gpu/shader/builtin_shader.hpp>
 #include <graphics/graphics.hpp>
 
-#include "shader_bundle.hpp"
+#include <gpu/shader/shader_bundle.hpp>
 
 #include "default/cubemap.frag.snb.hpp"
 #include "default/cubemap.vert.snb.hpp"

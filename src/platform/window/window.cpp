@@ -1,4 +1,4 @@
-#include "window.hpp"
+#include <platform/window/window.hpp>
 
 #include <SDL3/SDL.h>
 #include <core/def/macro.hpp>

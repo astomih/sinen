@@ -1,4 +1,4 @@
-#include "shader_bundle.hpp"
+#include <gpu/shader/shader_bundle.hpp>
 
 #include <core/allocator/engine_memory.hpp>
 

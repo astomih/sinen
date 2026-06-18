@@ -1,5 +1,5 @@
-#include "input.hpp"
-#include "mouse.hpp"
+#include <platform/input/input.hpp>
+#include <platform/input/mouse.hpp>
 #include <platform/window/window.hpp>
 
 #include <cstring>

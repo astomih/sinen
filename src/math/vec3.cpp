@@ -1,8 +1,8 @@
-#include "vec3.hpp"
+#include <math/vec3.hpp>
 #include <core/data/table_string.hpp>
-#include "mat4.hpp"
+#include <math/mat4.hpp>
 #include <core/data/table_string.hpp>
-#include "vec4.hpp"
+#include <math/vec4.hpp>
 #include <core/data/table_string.hpp>
 
 namespace sinen {

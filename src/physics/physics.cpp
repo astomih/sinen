@@ -1,4 +1,4 @@
-#include "physics.hpp"
+#include <physics/physics.hpp>
 
 // STL includes
 #include <cstdarg>
@@ -14,7 +14,7 @@
 #include <math/quaternion.hpp>
 #include <math/vector.hpp>
 
-#include "world3d.hpp"
+#include <physics/world3d.hpp>
 
 #include <Jolt/Jolt.h>
 

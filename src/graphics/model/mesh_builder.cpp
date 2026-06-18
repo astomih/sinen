@@ -1,4 +1,4 @@
-#include "mesh_builder.hpp"
+#include <graphics/model/mesh_builder.hpp>
 
 #include <graphics/model/model.hpp>
 

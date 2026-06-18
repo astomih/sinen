@@ -1,4 +1,4 @@
-#include "buffer.hpp"
+#include <core/buffer/buffer.hpp>
 #include <core/allocator/global_allocator.hpp>
 #include <cstddef>
 #include <graphics/camera/camera3d.hpp>

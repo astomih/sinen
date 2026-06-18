@@ -1,7 +1,7 @@
-#include "global_allocator.hpp"
-#include "allocator.hpp"
+#include <core/allocator/global_allocator.hpp>
+#include <core/allocator/allocator.hpp>
 #include "core/allocator/allocator.hpp"
-#include "tlsf_allocator.hpp"
+#include <core/allocator/tlsf_allocator.hpp>
 
 #include <core/def/macro.hpp>
 #include <core/def/types.hpp>

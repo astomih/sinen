@@ -1,5 +1,5 @@
 // internal
-#include "shader.hpp"
+#include <gpu/shader/shader.hpp>
 #include <graphics/graphics.hpp>
 #include <platform/io/asset_reader.hpp>
 
@@ -8,7 +8,7 @@
 #include <core/thread/load_context.hpp>
 
 #include "core/allocator/global_allocator.hpp"
-#include "shader_bundle.hpp"
+#include <gpu/shader/shader_bundle.hpp>
 #ifdef SINEN_MODULE_SHADER_COMPILER
 #include <shader_compiler/shader_compiler.hpp>
 #endif

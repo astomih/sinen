@@ -1,4 +1,4 @@
-#include "table_string.hpp"
+#include <core/data/table_string.hpp>
 
 #include <format>
 

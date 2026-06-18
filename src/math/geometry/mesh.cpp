@@ -1,4 +1,4 @@
-#include "mesh.hpp"
+#include <math/geometry/mesh.hpp>
 namespace sinen {
 Mesh::Mesh() { _data = makePtr<Data>(); }
 Mesh::Mesh(const Data &data) {

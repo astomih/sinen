@@ -1,7 +1,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_gamepad.h>
 
-#include "game_controller.hpp"
+#include <platform/input/game_controller.hpp>
 
 namespace sinen {
 class Joystick::Impl {

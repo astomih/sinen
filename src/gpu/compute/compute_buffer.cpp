@@ -1,4 +1,4 @@
-#include "compute_buffer.hpp"
+#include <gpu/compute/compute_buffer.hpp>
 
 #include <core/allocator/global_allocator.hpp>
 #include <graphics/graphics.hpp>

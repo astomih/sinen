@@ -1,4 +1,4 @@
-#include "event.hpp"
+#include <core/event/event.hpp>
 
 namespace sinen {
 bool Event::_quit = false;

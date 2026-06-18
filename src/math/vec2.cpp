@@ -1,4 +1,4 @@
-#include "vec2.hpp"
+#include <math/vec2.hpp>
 #include <core/data/table_string.hpp>
 
 namespace sinen {

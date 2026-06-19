@@ -345,6 +345,7 @@ if(SINEN_BUILD_APP)
   endif()
 
   target_link_libraries(sinen PRIVATE ${SINEN_INTERNAL_MODULES} SDL3::SDL3)
+  target_include_directories(sinen PRIVATE ${SINEN_SOURCE_DIR}/src)
   sinen_configure_platform_app(sinen)
 
   if(SINEN_ENABLE_WEBGPU)

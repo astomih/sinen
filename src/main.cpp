@@ -1,6 +1,7 @@
 #include <audio/audio.hpp>
 #include <core/allocator/engine_memory.hpp>
 #include <core/event/event.hpp>
+#include <core/event/event_impl.hpp>
 #include <core/logger/log.hpp>
 #include <core/profiler.hpp>
 #include <core/time/time.hpp>
@@ -11,7 +12,6 @@
 #include <platform/io/asset_reader.hpp>
 #include <platform/window/window.hpp>
 #include <script/script.hpp>
-
 #define SDL_MAIN_USE_CALLBACKS
 #include <SDL3/SDL_main.h>
 
@@ -257,9 +257,10 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 }
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
   ZoneScopedN("SDL_AppEvent");
-  Event::processEvent(*event);
-  Window::processEvent(*event);
-  Input::processEvent(*event);
+  auto wrappedEvent = createEvent(*event);
+  wrappedEvent->processEvent();
+  Window::processEvent(*wrappedEvent);
+  Input::processEvent(*wrappedEvent);
   return SDL_APP_CONTINUE;
 }
 void SDL_AppQuit(void *appstate, SDL_AppResult result) {

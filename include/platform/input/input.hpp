@@ -6,8 +6,9 @@
 #include <platform/platform.hpp>
 #include <unordered_set>
 
-#include <SDL3/SDL.h>
 namespace sinen {
+class Event;
+
 struct KeyboardStateImpl {
 public:
   const bool *mCurrState;
@@ -52,7 +53,7 @@ public:
   static void prepareForUpdate();
   // Called after SDL_PollEvents loop
   static void update();
-  static void processEvent(SDL_Event &event);
+  static void processEvent(const Event &event);
 
   static void setRelativeMouseMode(bool value);
 

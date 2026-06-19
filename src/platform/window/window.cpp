@@ -1,5 +1,7 @@
 #include <platform/window/window.hpp>
 
+#include <core/event/event.hpp>
+
 #include <SDL3/SDL.h>
 #include <core/def/macro.hpp>
 #include <core/parser/json.hpp>
@@ -125,8 +127,8 @@ Vec2 Window::bottomCenter() { return rect().bottomCenter(); }
 Vec2 Window::bottomRight() { return rect().bottomRight(); }
 
 void Window::prepareFrame() { bResizedInFrame = false; }
-void Window::processEvent(SDL_Event &event) {
-  if (event.window.type == SDL_EventType::SDL_EVENT_WINDOW_RESIZED) {
+void Window::processEvent(const Event &event) {
+  if (event.type() == Event::Type::WindowResized) {
     bResizedInFrame = true;
     int x, y;
     SDL_GetWindowSize(pSdlWindow, &x, &y);

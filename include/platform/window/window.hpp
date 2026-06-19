@@ -4,16 +4,18 @@
 #include <graphics/graphics.hpp>
 #include <math/vector.hpp>
 
-#include <SDL3/SDL.h>
+#include <SDL3/SDL_video.h>
 
 namespace sinen {
+class Event;
+
 class Window {
 public:
   static bool initialize(StringView name);
   static bool recreate();
   static void shutdown();
   static void prepareFrame();
-  static void processEvent(SDL_Event &event);
+  static void processEvent(const Event &event);
   static SDL_Window *getSdlWindow();
   static void resize(const Vec2 &size);
   static void setFullscreen(bool fullscreen);

@@ -1,4 +1,6 @@
 #include <platform/input/input.hpp>
+
+#include <core/event/event.hpp>
 #include <platform/input/mouse.hpp>
 #include <platform/window/window.hpp>
 
@@ -243,19 +245,19 @@ void Input::update() {
 
   Mouse::hideCursor(isHide);
 }
-void Input::processEvent(SDL_Event &event) {
+void Input::processEvent(const Event &event) {
 
-  switch (event.type) {
-  case SDL_EVENT_MOUSE_WHEEL: {
-    mMouse.mScrollWheel = Vec2(static_cast<float>(event.wheel.x),
-                               static_cast<float>(event.wheel.y));
+  switch (event.type()) {
+  case Event::Type::MouseWheel: {
+    const auto wheel = event.mouseWheel();
+    mMouse.mScrollWheel = Vec2(wheel.x, wheel.y);
     break;
   }
-  case SDL_EVENT_KEY_DOWN: {
-    keyInputState.currentKeys.insert(event.key.key);
+  case Event::Type::KeyDown: {
+    keyInputState.currentKeys.insert(event.keyCode());
     break;
   }
-  case SDL_EVENT_TEXT_INPUT: {
+  case Event::Type::TextInput: {
     break;
   }
   default:

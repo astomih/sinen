@@ -1,8 +1,13 @@
 #ifndef SINEN_ASSERT_HPP
 #define SINEN_ASSERT_HPP
 
-#include <SDL3/SDL_assert.h>
+namespace sinen {
+class Assert {
+public:
+  static void report(bool condition, const char *cond) noexcept;
+};
 
-#define SN_ASSERT(condition) SDL_assert(condition)
+#define SN_ASSERT(condition) Assert::report(condition, #condition)
+} // namespace sinen
 
 #endif // SINEN_ASSERT_HPP

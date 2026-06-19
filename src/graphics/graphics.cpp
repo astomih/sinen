@@ -1,4 +1,3 @@
-#include <graphics/graphics.hpp>
 #include <cassert>
 #include <core/allocator/engine_memory.hpp>
 #include <core/allocator/global_allocator.hpp>
@@ -8,6 +7,7 @@
 #include <gpu/gpu.hpp>
 #include <gpu/shader/builtin_shader.hpp>
 #include <graphics/builtin_pipeline.hpp>
+#include <graphics/graphics.hpp>
 #include <graphics/gui/gui.hpp>
 #include <graphics/texture/render_texture.hpp>
 #include <math/transform/transform.hpp>
@@ -296,34 +296,14 @@ void Graphics::shutdown() {
 GPUBackendAPI Graphics::chooseBackendApiByPlatformFeatures() {
 #ifdef SINEN_PLATFORM_EMSCRIPTEN
   return GPUBackendAPI::WebGPU;
-#else
-  const char *backendName = SDL_getenv("SINEN_GPU_BACKEND");
-  if (backendName == nullptr || backendName[0] == '\0') {
-#ifdef SINEN_PLATFORM_WINDOWS
-    return GPUBackendAPI::D3D12;
-#else
-    return GPUBackendAPI::SDLGPU;
 #endif
-  }
-
 #ifdef SINEN_PLATFORM_WINDOWS
-  if (std::strcmp(backendName, "d3d12") == 0 ||
-      std::strcmp(backendName, "direct3d12") == 0) {
-    return GPUBackendAPI::D3D12;
-  }
+  return GPUBackendAPI::D3D12;
 #endif
-  if (std::strcmp(backendName, "vulkan") == 0) {
-    return GPUBackendAPI::Vulkan;
-  }
 #ifdef SINEN_ENABLE_WEBGPU
-  if (std::strcmp(backendName, "webgpu") == 0 ||
-      std::strcmp(backendName, "wgpu") == 0 ||
-      std::strcmp(backendName, "dawn") == 0) {
-    return GPUBackendAPI::WebGPU;
-  }
+  return GPUBackendAPI::WebGPU;
 #endif
-  return GPUBackendAPI::SDLGPU;
-#endif
+  return GPUBackendAPI::Vulkan;
 }
 
 static void releaseBackendResources() {

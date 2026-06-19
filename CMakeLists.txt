@@ -5,29 +5,7 @@ project(sinen)
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(SINEN_SOURCE_DIR ${CMAKE_SOURCE_DIR})
-
-set(SINEN_ENABLE_NATIVE_WEBGPU_DAWN_DEFAULT ON)
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-  set(SINEN_ENABLE_NATIVE_WEBGPU_DAWN_DEFAULT OFF)
-endif()
-option(SINEN_ENABLE_NATIVE_WEBGPU_DAWN
-       "Enable native WebGPU backend through Dawn"
-       ${SINEN_ENABLE_NATIVE_WEBGPU_DAWN_DEFAULT})
-unset(SINEN_ENABLE_NATIVE_WEBGPU_DAWN_DEFAULT)
-option(SINEN_EMSCRIPTEN_ASYNCIFY
-       "Enable Emscripten Asyncify support for blocking browser waits" ON)
-option(SINEN_EMSCRIPTEN_ASSERTIONS
-       "Enable Emscripten runtime assertions in generated JavaScript" OFF)
-option(SINEN_EMSCRIPTEN_DEBUG_RUNTIME
-       "Enable Emscripten runtime checks and source maps for debugging" OFF)
-option(SINEN_EMSCRIPTEN_EXCEPTIONS
-       "Enable C++ exception catching in Emscripten builds" ON)
-set(SINEN_EMSCRIPTEN_PRELOAD_DIR
-    ""
-    CACHE PATH "Directory to preload into the Emscripten virtual filesystem")
-set(SINEN_EMSCRIPTEN_PRELOAD_MOUNT
-    "/"
-    CACHE STRING "Virtual filesystem mount point for SINEN_EMSCRIPTEN_PRELOAD_DIR")
+include(${SINEN_SOURCE_DIR}/cmake/platform.cmake)
 
 option(SINEN_BUILD_APP "Build the Sinen application executable" ON)
 option(SINEN_MODULE_CORE "Build the Core module" ON)
@@ -92,14 +70,7 @@ sinen_require_app_module(GRAPHICS)
 sinen_require_app_module(PHYSICS)
 sinen_require_app_module(SCRIPT)
 
-if(SINEN_MODULE_GPU AND NOT EMSCRIPTEN)
-  find_package(Vulkan REQUIRED)
-endif()
-
-if(EMSCRIPTEN AND SINEN_EMSCRIPTEN_EXCEPTIONS)
-  add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-fexceptions>")
-  add_link_options(-fexceptions -sNO_DISABLE_EXCEPTION_CATCHING=1)
-endif()
+sinen_configure_platform_dependencies()
 
 include(${SINEN_SOURCE_DIR}/cmake/include.cmake)
 include(${SINEN_SOURCE_DIR}/cmake/libs.cmake)
@@ -118,32 +89,7 @@ if(SINEN_MODULE_PHYSICS)
   add_subdirectory(${SINEN_SOURCE_DIR}/libs/JoltPhysics/Build EXCLUDE_FROM_ALL)
 endif()
 
-set(SINEN_ENABLE_WEBGPU OFF)
-if(SINEN_MODULE_GPU AND EMSCRIPTEN AND NOT TARGET webgpu)
-  add_library(webgpu INTERFACE)
-  target_compile_definitions(webgpu INTERFACE WEBGPU_BACKEND_EMDAWNWEBGPU)
-  target_compile_options(webgpu INTERFACE --use-port=emdawnwebgpu)
-  target_link_options(webgpu INTERFACE --use-port=emdawnwebgpu)
-  if(SINEN_EMSCRIPTEN_ASYNCIFY)
-    target_link_options(webgpu INTERFACE -sASYNCIFY=1)
-  endif()
-  function(target_copy_webgpu_binaries Target)
-  endfunction()
-  set(SINEN_ENABLE_WEBGPU ON)
-elseif(SINEN_MODULE_GPU AND SINEN_ENABLE_NATIVE_WEBGPU_DAWN AND WIN32
-       AND NOT TARGET webgpu)
-  set(WEBGPU_BACKEND DAWN CACHE STRING "Native WebGPU backend" FORCE)
-  set(WEBGPU_LINK_TYPE SHARED CACHE STRING "Native WebGPU link type" FORCE)
-  set(WEBGPU_BUILD_FROM_SOURCE OFF CACHE BOOL
-      "Build WebGPU backend from source" FORCE)
-  set(SINEN_PREVIOUS_CMAKE_FOLDER ${CMAKE_FOLDER})
-  set(CMAKE_FOLDER "webgpu")
-  add_subdirectory(${SINEN_SOURCE_DIR}/libs/WebGPU-distribution
-                   EXCLUDE_FROM_ALL)
-  set(CMAKE_FOLDER ${SINEN_PREVIOUS_CMAKE_FOLDER})
-  unset(SINEN_PREVIOUS_CMAKE_FOLDER)
-  set(SINEN_ENABLE_WEBGPU ON)
-endif()
+sinen_configure_platform_webgpu()
 
 if(SINEN_MODULE_SCRIPT)
   add_subdirectory(${SINEN_SOURCE_DIR}/libs/luau)
@@ -192,12 +138,7 @@ endif()
 
 if(SINEN_MODULE_SHADER_COMPILER)
   add_subdirectory(${SINEN_SOURCE_DIR}/libs/slang EXCLUDE_FROM_ALL)
-  if(MSVC AND TARGET libcmark-gfm)
-    target_compile_options(
-      libcmark-gfm
-      PUBLIC $<$<COMPILE_LANG_AND_ID:C,MSVC>:/utf-8>
-             $<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/utf-8>)
-  endif()
+  sinen_configure_platform_shader_compiler(slang)
 endif()
 
 add_library(sinen_common INTERFACE)
@@ -219,72 +160,7 @@ if(SINEN_ENABLE_WEBGPU)
   target_compile_definitions(sinen_common INTERFACE SINEN_ENABLE_WEBGPU)
 endif()
 
-if(EMSCRIPTEN)
-  target_compile_definitions(sinen_common INTERFACE EMSCRIPTEN)
-  if(SINEN_EMSCRIPTEN_EXCEPTIONS)
-    target_compile_options(sinen_common INTERFACE -fexceptions)
-  endif()
-  if(SINEN_EMSCRIPTEN_DEBUG_RUNTIME)
-    target_compile_options(sinen_common INTERFACE -gsource-map)
-  endif()
-endif()
-
-if(MSVC)
-  target_compile_options(sinen_common INTERFACE /bigobj)
-
-  set(SINEN_MSVC_SYSTEM_INCLUDES)
-
-  if(DEFINED ENV{VCToolsInstallDir} AND EXISTS "$ENV{VCToolsInstallDir}/include")
-    list(APPEND SINEN_MSVC_SYSTEM_INCLUDES "$ENV{VCToolsInstallDir}/include")
-  else()
-    get_filename_component(SINEN_MSVC_BIN_ARCH_DIR "${CMAKE_CXX_COMPILER}"
-                           DIRECTORY)
-    get_filename_component(SINEN_MSVC_BIN_HOST_DIR "${SINEN_MSVC_BIN_ARCH_DIR}"
-                           DIRECTORY)
-    get_filename_component(SINEN_MSVC_BIN_DIR "${SINEN_MSVC_BIN_HOST_DIR}"
-                           DIRECTORY)
-    get_filename_component(SINEN_MSVC_TOOL_DIR "${SINEN_MSVC_BIN_DIR}" DIRECTORY)
-    if(EXISTS "${SINEN_MSVC_TOOL_DIR}/include")
-      list(APPEND SINEN_MSVC_SYSTEM_INCLUDES "${SINEN_MSVC_TOOL_DIR}/include")
-    endif()
-  endif()
-
-  if(DEFINED ENV{WindowsSdkDir} AND DEFINED ENV{WindowsSDKVersion})
-    set(SINEN_WINSDK_INCLUDE_BASE
-        "$ENV{WindowsSdkDir}/Include/$ENV{WindowsSDKVersion}")
-  elseif(CMAKE_MT)
-    get_filename_component(SINEN_WINSDK_BIN_ARCH_DIR "${CMAKE_MT}" DIRECTORY)
-    get_filename_component(SINEN_WINSDK_VERSION_DIR "${SINEN_WINSDK_BIN_ARCH_DIR}"
-                           DIRECTORY)
-    get_filename_component(SINEN_WINSDK_BIN_DIR "${SINEN_WINSDK_VERSION_DIR}"
-                           DIRECTORY)
-    get_filename_component(SINEN_WINSDK_ROOT_DIR "${SINEN_WINSDK_BIN_DIR}"
-                           DIRECTORY)
-    get_filename_component(SINEN_WINSDK_VERSION "${SINEN_WINSDK_VERSION_DIR}"
-                           NAME)
-    set(SINEN_WINSDK_INCLUDE_BASE
-        "${SINEN_WINSDK_ROOT_DIR}/Include/${SINEN_WINSDK_VERSION}")
-  endif()
-
-  foreach(SINEN_WINSDK_INCLUDE ucrt shared um winrt)
-    if(EXISTS "${SINEN_WINSDK_INCLUDE_BASE}/${SINEN_WINSDK_INCLUDE}")
-      list(APPEND SINEN_MSVC_SYSTEM_INCLUDES
-           "${SINEN_WINSDK_INCLUDE_BASE}/${SINEN_WINSDK_INCLUDE}")
-    endif()
-  endforeach()
-
-  if(SINEN_MSVC_SYSTEM_INCLUDES)
-    target_include_directories(sinen_common SYSTEM
-                               INTERFACE ${SINEN_MSVC_SYSTEM_INCLUDES})
-  endif()
-else()
-  target_compile_options(
-    sinen_common
-    INTERFACE $<$<CONFIG:Debug>:-Wall;-Wextra;-g;-O0>
-              $<$<CONFIG:Release>:-O2;-Wno-format-security>)
-  target_compile_definitions(sinen_common INTERFACE $<$<CONFIG:Debug>:DEBUG>
-                                                    $<$<CONFIG:Release>:NDEBUG>)
-endif()
+sinen_configure_platform_common(sinen_common)
 
 function(sinen_add_module target)
   add_library(${target} STATIC ${ARGN})
@@ -371,9 +247,7 @@ function(sinen_add_gpu_module)
     endif()
   endif()
 
-  if(WIN32)
-    target_link_libraries(sinen_gpu PUBLIC d3d12 dxgi dxguid)
-  endif()
+  sinen_configure_platform_gpu(sinen_gpu)
 endfunction()
 
 function(sinen_add_shader_compiler_module)
@@ -459,10 +333,7 @@ if(TARGET sinen_script)
                                            )
 endif()
 
-set(SINEN_PLATFORM_SOURCES)
-if(WIN32)
-  list(APPEND SINEN_PLATFORM_SOURCES ${SINEN_SOURCE_DIR}/docs/icon/icon.rc)
-endif()
+sinen_collect_platform_sources(SINEN_PLATFORM_SOURCES)
 
 if(SINEN_BUILD_APP)
   if(BUILD_SHARED_LIBS)
@@ -473,68 +344,13 @@ if(SINEN_BUILD_APP)
                          ${SINEN_PLATFORM_SOURCES})
   endif()
 
-  if(EMSCRIPTEN AND NOT BUILD_SHARED_LIBS)
-    set_target_properties(sinen PROPERTIES SUFFIX ".html")
-  endif()
-
   target_link_libraries(sinen PRIVATE ${SINEN_INTERNAL_MODULES} SDL3::SDL3)
-
-  set(SINEN_LINK_LIBRARIES)
-
-  if(WIN32)
-    list(APPEND SINEN_LINK_LIBRARIES d3d12 dxgi dxguid Ws2_32)
-  endif()
-
-  if(ANDROID)
-    find_library(ANDROID_LIB android)
-    list(APPEND SINEN_LINK_LIBRARIES ${ANDROID_LIB})
-  endif()
-
-  target_link_libraries(sinen PUBLIC ${SINEN_LINK_LIBRARIES})
-
-  if(EMSCRIPTEN)
-    target_link_options(
-      sinen
-      PRIVATE
-        -sALLOW_MEMORY_GROWTH=1
-        -sINITIAL_MEMORY=268435456
-        -sMAXIMUM_MEMORY=2147483648)
-    if(SINEN_EMSCRIPTEN_PRELOAD_DIR)
-      if(NOT IS_DIRECTORY "${SINEN_EMSCRIPTEN_PRELOAD_DIR}")
-        message(FATAL_ERROR
-                "SINEN_EMSCRIPTEN_PRELOAD_DIR is not a directory: ${SINEN_EMSCRIPTEN_PRELOAD_DIR}")
-      endif()
-      target_link_options(
-        sinen
-        PRIVATE
-          "SHELL:--preload-file \"${SINEN_EMSCRIPTEN_PRELOAD_DIR}@${SINEN_EMSCRIPTEN_PRELOAD_MOUNT}\"")
-    endif()
-    if(SINEN_EMSCRIPTEN_EXCEPTIONS)
-      target_link_options(sinen PRIVATE -fexceptions
-                          -sNO_DISABLE_EXCEPTION_CATCHING=1)
-    endif()
-    if(SINEN_EMSCRIPTEN_ASSERTIONS)
-      target_link_options(sinen PRIVATE -sASSERTIONS=1)
-    endif()
-    if(SINEN_EMSCRIPTEN_DEBUG_RUNTIME)
-      target_link_options(sinen PRIVATE -gsource-map -sASSERTIONS=2
-                          -sSAFE_HEAP=1 -sSTACK_OVERFLOW_CHECK=2)
-    endif()
-  endif()
+  sinen_configure_platform_app(sinen)
 
   if(SINEN_ENABLE_WEBGPU)
     target_copy_webgpu_binaries(sinen)
   endif()
 
-  if(WIN32)
-    if(MSVC)
-      set(SUBSYSTEM_LINKER_OPTIONS "/SUBSYSTEM:WINDOWS")
-    else()
-      set(SUBSYSTEM_LINKER_OPTIONS "-mwindows")
-    endif()
-  endif()
-
-  target_link_options(sinen PRIVATE ${SUBSYSTEM_LINKER_OPTIONS})
   set_property(TARGET sinen PROPERTY CXX_STANDARD 23)
 endif()
 

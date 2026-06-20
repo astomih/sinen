@@ -1,9 +1,10 @@
+#include "window_native.hpp"
 #include <platform/window/window.hpp>
 
 #include <core/event/event.hpp>
 
-#include <SDL3/SDL.h>
 #include <core/def/macro.hpp>
+#include <core/logger/log.hpp>
 #include <core/parser/json.hpp>
 #include <platform/input/keyboard.hpp>
 #include <platform/io/filesystem.hpp>
@@ -33,11 +34,11 @@ bool Window::initialize(StringView name) {
   windowFlags |= SDL_WINDOW_RESIZABLE;
 #endif
 
-  pSdlWindow = SDL_CreateWindow(String(name).c_str(), static_cast<int>(windowSize.x),
-                             static_cast<int>(windowSize.y), windowFlags);
+  pSdlWindow =
+      SDL_CreateWindow(String(name).c_str(), static_cast<int>(windowSize.x),
+                       static_cast<int>(windowSize.y), windowFlags);
   if (!pSdlWindow) {
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_CreateWindow failed: %s",
-                 SDL_GetError());
+    Log::error("SDL_CreateWindow failed: {}", SDL_GetError());
     return false;
   }
 
@@ -45,8 +46,10 @@ bool Window::initialize(StringView name) {
   int y = 0;
   SDL_GetWindowSize(pSdlWindow, &x, &y);
 #ifdef SINEN_PLATFORM_EMSCRIPTEN
-  const int fallbackW = static_cast<int>(windowSize.x > 0 ? windowSize.x : 1280.f);
-  const int fallbackH = static_cast<int>(windowSize.y > 0 ? windowSize.y : 720.f);
+  const int fallbackW =
+      static_cast<int>(windowSize.x > 0 ? windowSize.x : 1280.f);
+  const int fallbackH =
+      static_cast<int>(windowSize.y > 0 ? windowSize.y : 720.f);
   int canvasW = 0;
   int canvasH = 0;
   emscripten_get_canvas_element_size("#canvas", &canvasW, &canvasH);
@@ -138,6 +141,6 @@ void Window::processEvent(const Event &event) {
     }
   }
 }
-SDL_Window *Window::getSdlWindow() { return pSdlWindow; }
+SDL_Window *WindowNative::getWindow() { return pSdlWindow; }
 
 } // namespace sinen

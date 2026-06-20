@@ -12,6 +12,7 @@
 #include <graphics/texture/render_texture.hpp>
 #include <math/transform/transform.hpp>
 #include <platform/window/window.hpp>
+#include <platform/window/window_native.hpp>
 #include <script/script.hpp>
 
 #include <SDL3/SDL.h>
@@ -228,7 +229,7 @@ static bool initializeBackend(GPUBackendAPI api, Allocator *allocator) {
     return false;
   }
 
-  auto *window = Window::getSdlWindow();
+  auto *window = WindowNative::getWindow();
   device->claimWindow(window);
   currentBackendAPI = device->getBackendAPI();
   BuiltinShader::initialize();
@@ -1025,7 +1026,7 @@ static void beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp) {
 
 static Vec2 validRenderSize() {
   Vec2 size = Window::size();
-  if (auto *window = Window::getSdlWindow()) {
+  if (auto *window = WindowNative::getWindow()) {
     int width = 0;
     int height = 0;
     SDL_GetWindowSizeInPixels(window, &width, &height);

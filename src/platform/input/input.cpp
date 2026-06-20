@@ -3,6 +3,7 @@
 #include <core/event/event.hpp>
 #include <platform/input/mouse.hpp>
 #include <platform/window/window.hpp>
+#include <platform/window/window_native.hpp>
 
 #include <cstring>
 
@@ -120,11 +121,10 @@ bool KeyInput::isReleased(const KeyCode key) {
 
 void Mouse::setPosition(const Vec2 &pos) {
   const auto half = Window::half();
-  SDL_WarpMouseInWindow(Window::getSdlWindow(), half.x + pos.x, half.y - pos.y);
+  SDL_WarpMouseInWindow(WindowNative::getWindow(), half.x + pos.x,
+                        half.y - pos.y);
 }
-void Mouse::setPositionOnScene(const Vec2 &pos) {
-  Mouse::setPosition(pos);
-}
+void Mouse::setPositionOnScene(const Vec2 &pos) { Mouse::setPosition(pos); }
 Vec2 Mouse::getPosition() {
   Vec2 pos;
   SDL_GetMouseState(&pos.x, &pos.y);
@@ -132,18 +132,16 @@ Vec2 Mouse::getPosition() {
   pos.y *= -1.f;
   return pos;
 }
-Vec2 Mouse::getPositionOnScene() {
-  return Mouse::getPosition();
-}
+Vec2 Mouse::getPositionOnScene() { return Mouse::getPosition(); }
 
 Vec2 Mouse::getScrollWheel() { return Input::mMouse.mScrollWheel; }
 
 void Mouse::setRelative(bool is_relative) {
-  SDL_SetWindowRelativeMouseMode(Window::getSdlWindow(), is_relative);
+  SDL_SetWindowRelativeMouseMode(WindowNative::getWindow(), is_relative);
 }
 
 bool Mouse::isRelative() {
-  return SDL_GetWindowRelativeMouseMode(Window::getSdlWindow());
+  return SDL_GetWindowRelativeMouseMode(WindowNative::getWindow());
 }
 
 void Mouse::hideCursor(bool hide) {
@@ -267,7 +265,7 @@ void Input::processEvent(const Event &event) {
 
 void Input::setRelativeMouseMode(bool _value) {
   bool set = _value ? true : false;
-  SDL_SetWindowRelativeMouseMode(Window::getSdlWindow(), set);
+  SDL_SetWindowRelativeMouseMode(WindowNative::getWindow(), set);
 }
 
 float Input::filter1d(int _input) {

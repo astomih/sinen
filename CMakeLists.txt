@@ -205,7 +205,8 @@ function(sinen_add_platform_module)
   target_sources(sinen_platform PRIVATE
                  ${SINEN_SOURCE_DIR}/libs/tinyexr/deps/miniz/miniz.c)
   target_include_directories(sinen_platform
-                             PUBLIC ${SINEN_SOURCE_DIR}/libs/tinyexr/deps/miniz)
+                             PUBLIC ${SINEN_SOURCE_DIR}/libs/tinyexr/deps/miniz
+                             PRIVATE ${SINEN_SOURCE_DIR}/src)
   target_link_libraries(sinen_platform PUBLIC SDL3::SDL3)
 endfunction()
 

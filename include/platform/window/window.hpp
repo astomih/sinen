@@ -4,8 +4,6 @@
 #include <graphics/graphics.hpp>
 #include <math/vector.hpp>
 
-#include <SDL3/SDL_video.h>
-
 namespace sinen {
 class Event;
 
@@ -16,7 +14,6 @@ public:
   static void shutdown();
   static void prepareFrame();
   static void processEvent(const Event &event);
-  static SDL_Window *getSdlWindow();
   static void resize(const Vec2 &size);
   static void setFullscreen(bool fullscreen);
   static void rename(StringView name);

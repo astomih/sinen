@@ -187,7 +187,8 @@ function(sinen_add_core_module)
   target_include_directories(
     sinen_core
     PUBLIC ${SINEN_SOURCE_DIR}/libs/rapidjson/include
-           ${SINEN_SOURCE_DIR}/libs/tlsf)
+           ${SINEN_SOURCE_DIR}/libs/tlsf
+    PRIVATE ${SINEN_SOURCE_DIR}/src)
   target_link_libraries(sinen_core PUBLIC SDL3::SDL3)
   if(SINEN_MODULE_PROFILER)
     target_link_libraries(sinen_core PUBLIC Tracy::TracyClient)
@@ -196,6 +197,7 @@ endfunction()
 
 function(sinen_add_math_module)
   sinen_glob_module(sinen_math math)
+  target_include_directories(sinen_math PRIVATE ${SINEN_SOURCE_DIR}/src)
 endfunction()
 
 function(sinen_add_platform_module)
@@ -209,7 +211,9 @@ endfunction()
 
 function(sinen_add_audio_module)
   sinen_glob_module(sinen_audio audio)
-  target_include_directories(sinen_audio PUBLIC ${SINEN_SOURCE_DIR}/libs/miniaudio)
+  target_include_directories(sinen_audio 
+    PUBLIC ${SINEN_SOURCE_DIR}/libs/miniaudio
+    PRIVATE ${SINEN_SOURCE_DIR}/src)
   target_link_libraries(sinen_audio PUBLIC SDL3::SDL3)
 endfunction()
 
@@ -232,7 +236,8 @@ function(sinen_add_gpu_module)
   target_include_directories(
     sinen_gpu
     PUBLIC ${Vulkan_INCLUDE_DIR} ${SINEN_SOURCE_DIR}/libs/volk
-           ${SINEN_SOURCE_DIR}/libs/VulkanMemoryAllocator/include)
+           ${SINEN_SOURCE_DIR}/libs/VulkanMemoryAllocator/include
+    PRIVATE ${SINEN_SOURCE_DIR}/src)
   target_link_libraries(sinen_gpu PUBLIC SDL3::SDL3)
 
   if(SINEN_ENABLE_WEBGPU)
@@ -252,6 +257,7 @@ endfunction()
 
 function(sinen_add_shader_compiler_module)
   sinen_glob_module(sinen_shader_compiler shader_compiler)
+  target_include_directories(sinen_shader_compiler PRIVATE ${SINEN_SOURCE_DIR}/src)
   target_link_libraries(sinen_shader_compiler PUBLIC slang)
 endfunction()
 
@@ -260,13 +266,15 @@ function(sinen_add_graphics_module)
   target_include_directories(
     sinen_graphics
     PUBLIC ${SINEN_SOURCE_DIR}/libs/stb ${SINEN_SOURCE_DIR}/libs/tinyexr
-           ${SINEN_SOURCE_DIR}/libs/tinyexr/deps/miniz)
+           ${SINEN_SOURCE_DIR}/libs/tinyexr/deps/miniz
+    PRIVATE ${SINEN_SOURCE_DIR}/src)
   target_link_libraries(sinen_graphics PUBLIC SDL3::SDL3 assimp meshoptimizer
                                               ktx_read msdfgen-core)
 endfunction()
 
 function(sinen_add_physics_module)
   sinen_glob_module(sinen_physics physics)
+  target_include_directories(sinen_physics PRIVATE ${SINEN_SOURCE_DIR}/src)
   target_link_libraries(sinen_physics PUBLIC Jolt)
 endfunction()
 
@@ -276,7 +284,8 @@ function(sinen_add_script_module)
     sinen_script
     PUBLIC ${SINEN_SOURCE_DIR}/src/script/include
            ${SINEN_SOURCE_DIR}/libs/luau-debugger/debugger/include
-           ${SINEN_SOURCE_DIR}/libs/cppdap/include)
+           ${SINEN_SOURCE_DIR}/libs/cppdap/include
+    PRIVATE ${SINEN_SOURCE_DIR}/src)
   target_link_libraries(sinen_script PUBLIC Luau.VM Luau.Compiler Luau.Ast
                                             Luau.Require cppdap Luau.Debugger
                                             SDL3::SDL3)

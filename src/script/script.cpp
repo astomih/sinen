@@ -55,6 +55,7 @@ auto alloc = [](void *ud, void *ptr, size_t osize, size_t nsize) -> void * {
   sinen::GlobalAllocator::get()->deallocate(ptr, osize);
   return nptr;
 };
+bool isEnableDebugger = false;
 luau::debugger::Debugger debugger(false);
 void luaPushcfunction2(lua_State *L, lua_CFunction f) {
   lua_pushcfunction(L, f, "sn function");
@@ -162,8 +163,10 @@ static void drawNowLoadingOverlay() {
   const float maxBarWidth = std::max(64.0f, windowSize.x - margin * 2.0f);
   const float barWidth = std::min(480.0f, maxBarWidth);
   const float barHeight = 10.0f;
-  const float barX = (windowSize.x - barWidth) * 0.5f;
-  const float barY = windowSize.y * 0.82f;
+
+  const Vec2 center = Window::center();
+  const float barX = center.x - barWidth * 0.5f;
+  const float barY = center.y - barHeight * 0.5f;
 
   Graphics::drawRect(Rect(0.0f, 0.0f, windowSize.x, windowSize.y),
                      Color(0.0f, 0.0f, 0.0f, 0.35f));
@@ -182,7 +185,9 @@ int luaLoadSource(lua_State *L, const String &source, const String &chunkname,
   int status =
       luau_load(L, chunkname.c_str(), bytecode.data(), bytecode.size(), 0);
   if (status == LUA_OK) {
-    debugger.onLuaFileLoaded(gLua, fullPath, true);
+    if (isEnableDebugger) {
+      debugger.onLuaFileLoaded(gLua, fullPath, true);
+    }
     return LUA_OK;
   }
   const char *msg = lua_tostring(L, -1);
@@ -196,7 +201,9 @@ static int luaLoadBytecode(lua_State *L, const String &bytecode,
   int status =
       luau_load(L, chunkname.c_str(), bytecode.data(), bytecode.size(), 0);
   if (status == LUA_OK) {
-    debugger.onLuaFileLoaded(gLua, fullPath, true);
+    if (isEnableDebugger) {
+      debugger.onLuaFileLoaded(gLua, fullPath, true);
+    }
     return LUA_OK;
   }
   const char *msg = lua_tostring(L, -1);
@@ -331,14 +338,35 @@ static void registerAll(lua_State *L) {
   registerVideo(L);
 }
 
-bool Script::initialize() {
-  auto logHandler = [](std::string_view msg) { Log::info("{}", msg.data()); };
-  auto errorHandler = [](std::string_view msg) {
-    Log::error("{}", msg.data());
-  };
+bool Script::initialize(bool isScriptDebug) {
+  isEnableDebugger = isScriptDebug;
+  if (isScriptDebug) {
+    bool isDebuggerConnected = false;
+    auto logHandler = [&isDebuggerConnected](std::string_view msg) {
+      if (msg == "[info][Luau.Debugger][debugger.cpp:126] Debugger client "
+                 "connected\n") {
+        isDebuggerConnected = true;
+      }
+      Log::info("{}", msg.data());
+    };
+    auto errorHandler = [](std::string_view msg) {
+      Log::error("{}", msg.data());
+    };
 
-  luau::debugger::log::install(logHandler, errorHandler);
-  debugger.listen(58000);
+    luau::debugger::log::install(logHandler, errorHandler);
+    debugger.listen(58000);
+    Log::info("Luau Debug server started on 58000");
+    const UInt32 delayStep = 10; // ms
+    UInt32 timeout = 5000;
+    while (!isDebuggerConnected) {
+      SDL_Delay(delayStep);
+      timeout -= delayStep;
+      if (timeout == 0) {
+        Log::error("Luau debugger connection timed out.");
+        return false;
+      }
+    }
+  }
   // bindings are implemented using Lua C API (see per-module *lua.cpp files)
   gLua = lua_newstate(alloc, nullptr);
   if (!gLua) {
@@ -346,7 +374,9 @@ bool Script::initialize() {
     return false;
   }
   luaL_openlibs(gLua);
-  debugger.initialize(gLua);
+  if (isScriptDebug) {
+    debugger.initialize(gLua);
+  }
   if (auto *cb = lua_callbacks(gLua)) {
     cb->panic = [](lua_State *L, int errcode) {
       const char *msg = lua_tostring(L, -1);
@@ -368,7 +398,9 @@ void Script::shutdown() {
   if (!gLua) {
     return;
   }
-  debugger.release(gLua);
+  if (isEnableDebugger) {
+    debugger.release(gLua);
+  }
   if (gSetupRef != LUA_NOREF) {
     luaLUnref2(gLua, LUA_REGISTRYINDEX, gSetupRef);
     gSetupRef = LUA_NOREF;

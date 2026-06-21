@@ -126,7 +126,7 @@ String getWindowTitleWithBackend(GPUBackendAPI api) {
   return "Sinen | " + Graphics::getBackendName(api) +
          " | F8: Switch API | F11: Fullscreen";
 }
-
+bool isScriptDebug = false;
 } // namespace
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
@@ -137,6 +137,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
   }
   std::pmr::set_default_resource(EngineMemory::global());
   SDL_SetMemoryFunctions(mallocCustom, callocCustom, reallocCustom, freeCustom);
+
   for (int i = 1; i < argc; i++) {
     StringView arg(argv[i]);
     if (arg.size() >= std::strlen(AssetReader::archiveExtension()) &&
@@ -144,6 +145,9 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
             AssetReader::archiveExtension()) {
       AssetReader::mountArchive(arg);
       break;
+    }
+    if (arg == "--debug-mode") {
+      isScriptDebug = true;
     }
   }
 
@@ -182,7 +186,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     Log::critical("Failed to initialize random");
     return SDL_APP_FAILURE;
   }
-  if (!Script::initialize()) {
+  if (!Script::initialize(isScriptDebug)) {
     Log::critical("Failed to initialize script");
     return SDL_APP_FAILURE;
   }
@@ -225,7 +229,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     Graphics::shutdown();
 
     EngineMemory::resetScene();
-    Script::initialize();
+    Script::initialize(isScriptDebug);
 
     auto api = currentBackendAPI;
     auto getNextAPI = [](GPUBackendAPI api) {

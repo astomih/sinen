@@ -6,7 +6,7 @@ namespace sinen {
 
 class Script {
 public:
-  static bool initialize();
+  static bool initialize(bool isScriptDebug);
   static void shutdown();
 
   static void executeScene();

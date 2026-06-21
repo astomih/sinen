@@ -5,7 +5,9 @@
       "type": "cppvsdbg",
       "request": "launch",
       "program": "${workspaceFolder:sinen}/build/msvc2026-debug/sinen",
-      "args": [],
+      "args": [
+        "--debug-mode"
+      ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder:sinen}/examples",
       "environment": [],
@@ -21,7 +23,9 @@
       "type": "cppvsdbg",
       "request": "launch",
       "program": "${workspaceFolder:sinen}/build/msvc2026-debug/sinen",
-      "args": [],
+      "args": [
+        "--debug-mode"
+      ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder:sinen}/tests/luau",
       "environment": [],

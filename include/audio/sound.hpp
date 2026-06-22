@@ -16,8 +16,9 @@ public:
   static Ptr<Sound> create();
 
   virtual ~Sound() = default;
-  virtual void load(StringView fileName) = 0;
-  virtual void load(const Buffer &buffer) = 0;
+  virtual bool load(StringView fileName) = 0;
+  virtual bool load(const Buffer &buffer) = 0;
+  virtual bool isLoaded() const = 0;
   virtual void play() = 0;
   virtual void restart() = 0;
   virtual void stop() = 0;

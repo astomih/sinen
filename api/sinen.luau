@@ -182,25 +182,17 @@ export type Color = {
 }
 
 export type Texture = {
-	new: (() -> Texture) & ((width: number, height: number) -> Texture),
+	new: ((source: string | Buffer) -> Texture) & ((width: number, height: number) -> Texture),
+	newCubemap: (path: string) -> Texture,
+	newIrradianceCubemap: (path: string, faceSize: number?, sampleCount: number?) -> Texture,
+	newPrefilteredCubemap: (path: string, faceSize: number?, mipLevels: number?, sampleCount: number?) -> Texture,
+	newBRDFLUT: (size: number?, sampleCount: number?) -> Texture,
 	fill: (self: Texture, color: Color) -> nil,
 	blend: (self: Texture, color: Color) -> nil,
 	copy: (self: Texture) -> Texture,
-	load: (self: Texture, source: string | Buffer) -> nil,
-	loadPixels: (self: Texture, pixels: Buffer, width: number, height: number, format: string?) -> boolean,
+	updatePixels: (self: Texture, pixels: Buffer, width: number, height: number, format: string?) -> boolean,
 	toPngBuffer: (self: Texture) -> Buffer,
 	toExrBuffer: (self: Texture, saveAsFp16: boolean?) -> Buffer,
-	loadCubemap: (self: Texture, path: string) -> nil,
-	loadIrradianceCubemap: (self: Texture, path: string, faceSize: number?, sampleCount: number?) -> boolean,
-	loadPrefilteredCubemap: (
-		self: Texture,
-		path: string,
-		faceSize: number?,
-		mipLevels: number?,
-		sampleCount: number?
-	) -> boolean,
-	loadBRDFLUT: (self: Texture, size: number?, sampleCount: number?) -> boolean,
-	loadFromPath: (self: Texture, path: string) -> nil,
 	size: (self: Texture) -> Vec2,
 }
 
@@ -210,9 +202,7 @@ export type RenderTexture = {
 }
 
 export type Sound = {
-	new: () -> Sound,
-	load: (self: Sound, path: string) -> nil,
-	loadFromPath: (self: Sound, path: string) -> nil,
+	new: (source: string | Buffer) -> Sound,
 	play: (self: Sound) -> nil,
 	setVolume: (self: Sound, volume: number) -> nil,
 	setPitch: (self: Sound, pitch: number) -> nil,
@@ -265,11 +255,10 @@ export type TextureKey = {
 }
 
 export type Model = {
-	new: () -> Model,
+	new: (source: string | Buffer) -> Model,
+	newSprite: () -> Model,
+	newBox: () -> Model,
 	getAABB: (self: Model) -> AABB,
-	load: ((self: Model, path: string) -> nil) & ((self: Model, buffer: Buffer) -> nil),
-	loadSprite: (self: Model) -> nil,
-	loadBox: (self: Model) -> nil,
 	getBoneUniformBuffer: (self: Model) -> Buffer,
 	play: (self: Model, position: number) -> nil,
 	update: (self: Model, delta: number) -> nil,
@@ -346,10 +335,9 @@ export type ShaderFormat = {
 ---   Ray tracing pipeline: t[n]/space4 = acceleration structures; u[n]/space4 = storage buffers; b[n]/space5 = uniform buffers
 ---   Ray query in graphics/compute shaders: t[n]/space6 = acceleration structures
 export type Shader = {
-	new: () -> Shader,
-	load: (self: Shader, path: string, shaderStage: ShaderStage) -> nil,
-	compile: (self: Shader, source: string, shaderStage: ShaderStage, shaderFormat: ShaderFormat) -> nil,
-	compileAndLoad: (self: Shader, source: string, shaderStage: ShaderStage, shaderFormat: ShaderFormat?) -> nil,
+	new: (path: string, shaderStage: ShaderStage) -> Shader,
+	compile: (source: string, shaderStage: ShaderStage, shaderFormat: ShaderFormat) -> Shader,
+	compileAndLoad: (source: string, shaderStage: ShaderStage, shaderFormat: ShaderFormat?) -> Shader,
 	getCode: (self: Shader) -> Buffer,
 	getNumSamplers: (self: Shader) -> number,
 	getNumStorageBuffers: (self: Shader) -> number,
@@ -375,18 +363,12 @@ export type ShaderBundle = {
 export type Font = {
 	Bitmap: number,
 	MSDF: number,
-	new: (() -> Font)
-		& ((size: number) -> Font)
+	new: ((size: number) -> Font)
 		& ((size: number, path: string) -> Font)
-		& ((size: number, buffer: Buffer) -> Font),
-	load: (
-		((self: Font, size: number) -> nil)
-		& ((self: Font, size: number, method: number) -> nil)
-		& ((self: Font, size: number, path: string) -> nil)
-		& ((self: Font, size: number, path: string, method: number) -> nil)
-		& ((self: Font, size: number, buffer: Buffer) -> nil)
-		& ((self: Font, size: number, buffer: Buffer, method: number) -> nil)
-	),
+		& ((size: number, buffer: Buffer) -> Font)
+		& ((size: number, method: number) -> Font)
+		& ((size: number, path: string, method: number) -> Font)
+		& ((size: number, buffer: Buffer, method: number) -> Font),
 	resize: (self: Font, size: number) -> nil,
 	region: (self: Font, text: string, fontSize: number, pivot: Pivot, position: Vec2) -> Rect,
 }

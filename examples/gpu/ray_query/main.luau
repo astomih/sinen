@@ -4,10 +4,9 @@ local width = 384
 local height = 288
 local threadGroupSize = 8
 
-local font: sn.Font = sn.Font.new()
-font:load(22)
+local font: sn.Font = sn.Font.new(22)
 
-local shader: sn.Shader = sn.Shader.new()
+local shader: sn.Shader = sn.Shader.new("ray_query.comp.snb", sn.ShaderStage.Compute)
 local pipeline: sn.ComputePipeline = sn.ComputePipeline.new()
 local outputTexture: sn.Texture = sn.Texture.new(width, height)
 local outputBuffer: sn.ComputeBuffer = sn.ComputeBuffer.new(width * height * 4)
@@ -29,7 +28,6 @@ local status = if supported
 	else "Ray query is not supported by this backend/device"
 
 if supported then
-	shader:load("ray_query.comp.snb", sn.ShaderStage.Compute)
 end
 
 local function buildAccelerationStructures()
@@ -64,7 +62,7 @@ local function render()
 	sn.Compute.dispatch(width / threadGroupSize, height / threadGroupSize, 1)
 
 	local pixels = outputBuffer:download()
-	if outputTexture:loadPixels(pixels, width, height, "rgba8") then
+	if outputTexture:updatePixels(pixels, width, height, "rgba8") then
 		status = "Ray query triangle from a compute shader"
 	else
 		status = "Ray query finished, but texture upload failed"

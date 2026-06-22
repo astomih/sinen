@@ -1,20 +1,20 @@
 local sn = require("@sinen")
 --TODO: depth texture as D24 or D32, PCF, etc...
 
-local model: sn.Model = sn.Model.new()
+local model: sn.Model = sn.Model.new("DamagedHelmet.glb")
 local modelTransform: sn.Transform = sn.Transform.new()
-local floor: sn.Model = sn.Model.new()
+local floor: sn.Model = sn.Model.newSprite()
 local floorTransform: sn.Transform = sn.Transform.new()
 local shadowCamera: sn.Camera3D = sn.Camera3D.new()
-local depthVS: sn.Shader = sn.Shader.new()
-local depthFS: sn.Shader = sn.Shader.new()
+local depthVS: sn.Shader = sn.Shader.new("depth_write.vert.snb", sn.ShaderStage.Vertex)
+local depthFS: sn.Shader = sn.Shader.new("depth_write.frag.snb", sn.ShaderStage.Fragment)
 local depthPipeline: sn.GraphicsPipeline = sn.GraphicsPipeline.new()
 local depthRenderTexture: sn.RenderTexture = sn.RenderTexture.new()
 local depthTexture: sn.Texture = sn.Texture.new(sn.Window.size().x, sn.Window.size().y)
-local vs: sn.Shader = sn.Shader.new()
-local fs: sn.Shader = sn.Shader.new()
+local vs: sn.Shader = sn.Shader.new("shader.vert.snb", sn.ShaderStage.Vertex)
+local fs: sn.Shader = sn.Shader.new("shader.frag.snb", sn.ShaderStage.Fragment)
 local pipeline: sn.GraphicsPipeline = sn.GraphicsPipeline.new()
-local floorTexture: sn.Texture = sn.Texture.new()
+local floorTexture: sn.Texture = sn.Texture.new(1, 1)
 local camera: sn.Camera3D = sn.Camera3D.new()
 
 local function setShadowUniform(t: sn.Transform)
@@ -28,19 +28,15 @@ local function setShadowUniform(t: sn.Transform)
 end
 
 function setup()
-	model:load("DamagedHelmet.glb")
 	modelTransform.position = sn.Vec3.new(0, 0, 0)
 	modelTransform.rotation = sn.Vec3.new(90, 0, 0)
 	modelTransform.scale = sn.Vec3.new(1, 1, 1)
-	floor:loadSprite()
 	floorTransform.rotation.x = 90
 	floorTransform.position.y = -1.0
 
 	shadowCamera:orthographic(20, 20, -10, 10.0)
 	shadowCamera:lookat(sn.Vec3.new(0.5, 2, 2), sn.Vec3.new(0), sn.Vec3.new(0, 1, 0))
 
-	depthVS:load("depth_write.vert.snb", sn.ShaderStage.Vertex)
-	depthFS:load("depth_write.frag.snb", sn.ShaderStage.Fragment)
 
 	depthPipeline:setEnableDepthTest(true)
 	depthPipeline:setVertexShader(depthVS)
@@ -50,8 +46,6 @@ function setup()
 	depthRenderTexture:create(sn.Window.size().x, sn.Window.size().y)
 	depthTexture:fill(sn.Color.new(1, 1, 1, 1))
 
-	vs:load("shader.vert.snb", sn.ShaderStage.Vertex)
-	fs:load("shader.frag.snb", sn.ShaderStage.Fragment)
 	pipeline:setEnableDepthTest(true)
 	pipeline:setVertexShader(vs)
 	pipeline:setFragmentShader(fs)

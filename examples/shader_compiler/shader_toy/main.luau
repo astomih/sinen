@@ -1,11 +1,11 @@
 local sn = require("@sinen")
 
-local titleFont: sn.Font = sn.Font.new()
-local infoFont: sn.Font = sn.Font.new()
+local titleFont: sn.Font = sn.Font.new(34)
+local infoFont: sn.Font = sn.Font.new(18)
 local blankTexture: sn.Texture = sn.Texture.new(1, 1)
 
-local vertexShader: sn.Shader = sn.Shader.new()
-local fragmentShader: sn.Shader = sn.Shader.new()
+local vertexShader: sn.Shader = sn.Shader.compileAndLoad("shader.slang", sn.ShaderStage.Vertex)
+local fragmentShader: sn.Shader = sn.Shader.compileAndLoad("shader.slang", sn.ShaderStage.Fragment)
 local pipeline: sn.GraphicsPipeline = sn.GraphicsPipeline.new()
 
 local mode = 1
@@ -31,13 +31,9 @@ function setup()
 	sn.Graphics.resetGraphicsPipeline()
 	sn.Graphics.setClearColor(sn.Color.new(0.0, 0.0, 0.0, 1.0))
 
-	titleFont:load(34)
-	infoFont:load(18)
 
 	blankTexture:fill(sn.Color.new(1.0, 1.0, 1.0, 1.0))
 
-	vertexShader:compileAndLoad("shader.slang", sn.ShaderStage.Vertex)
-	fragmentShader:compileAndLoad("shader.slang", sn.ShaderStage.Fragment)
 	pipeline:setVertexShader(vertexShader)
 	pipeline:setFragmentShader(fragmentShader)
 	pipeline:setEnableDepthTest(false)

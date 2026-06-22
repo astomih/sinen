@@ -6,13 +6,12 @@ local function createLightModel(): sn.Model
 	return builder:toModel()
 end
 
-local model: sn.Model = sn.Model.new()
-model:load("DamagedHelmet.glb")
+local model: sn.Model = sn.Model.new("DamagedHelmet.glb")
 local lightModel: sn.Model = createLightModel()
 local transform: sn.Transform = sn.Transform.new()
 local lightTransform: sn.Transform = sn.Transform.new()
-local vertexShader: sn.Shader = sn.Shader.new()
-local fragmentShader: sn.Shader = sn.Shader.new()
+local vertexShader: sn.Shader = sn.Shader.new("shader_custom.vert.snb", sn.ShaderStage.Vertex)
+local fragmentShader: sn.Shader = sn.Shader.new("shader_custom.frag.snb", sn.ShaderStage.Fragment)
 local pipeline3D: sn.GraphicsPipeline = sn.GraphicsPipeline.new()
 local lightPos: sn.Vec3 = sn.Vec3.new(1.05, 0.8, 0.75)
 local lightIntensity: number = 4.0
@@ -37,8 +36,6 @@ function setup()
 	local up = sn.Vec3.new(0, 1, 0)
 	camera:lookat(pos, at, up)
 
-	vertexShader:load("shader_custom.vert.snb", sn.ShaderStage.Vertex)
-	fragmentShader:load("shader_custom.frag.snb", sn.ShaderStage.Fragment)
 	pipeline3D:setVertexShader(vertexShader)
 	pipeline3D:setFragmentShader(fragmentShader)
 	pipeline3D:setEnableTangent(true)

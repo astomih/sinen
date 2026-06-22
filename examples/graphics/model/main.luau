@@ -1,6 +1,5 @@
 local sn = require("@sinen")
-local model: sn.Model = sn.Model.new()
-model:load("DamagedHelmet.glb")
+local model: sn.Model = sn.Model.new("DamagedHelmet.glb")
 
 local transform: sn.Transform = sn.Transform.new()
 transform.position = sn.Vec3.new(0, 0, 0)

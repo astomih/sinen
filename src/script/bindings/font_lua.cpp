@@ -38,28 +38,36 @@ static bool lIsFontMethodString(lua_State *L, int index) {
 }
 
 static int lFontNew(lua_State *L) {
-  udPushPtr<Font>(L, Font::create());
-  return 1;
-}
-static int lFontLoad(lua_State *L) {
-  auto &font = udPtr<Font>(L, 1);
-  int n = lua_gettop(L);
-  int point = static_cast<int>(luaL_checkinteger(L, 2));
-  if (n == 2) {
-    lua_pushboolean(L, font->load(point));
-    return 1;
+  const int n = lua_gettop(L);
+  if (n < 1 || n > 3) {
+    return luaLError2(
+        L, "sn.Font.new expects size, optional source, and optional method");
   }
-  if (n == 3 && (lua_isnumber(L, 3) || lIsFontMethodString(L, 3))) {
-    lua_pushboolean(L, font->load(point, lFontMethod(L, 3)));
-    return 1;
+  const int point = static_cast<int>(luaL_checkinteger(L, 1));
+  if (point <= 0) {
+    return luaLError2(L, "sn.Font.new size must be greater than zero");
   }
-  if (lua_isstring(L, 3)) {
-    const char *path = luaL_checkstring(L, 3);
-    lua_pushboolean(L, font->load(point, StringView(path), lFontMethod(L, 4)));
-    return 1;
+
+  auto font = Font::create();
+  bool loaded = false;
+  if (n == 1 || (n == 2 && (lua_isnumber(L, 2) || lIsFontMethodString(L, 2)))) {
+    loaded = font->load(point, lFontMethod(L, 2));
+  } else if (lua_isstring(L, 2)) {
+    const char *path = luaL_checkstring(L, 2);
+    if (!AssetReader::exists(path)) {
+      font.reset();
+      return luaLError2(L, "sn.Font.new asset not found: %s", path);
+    }
+    loaded = font->load(point, StringView(path), lFontMethod(L, 3));
+  } else {
+    auto &buffer = udValue<Buffer>(L, 2);
+    loaded = buffer.size() > 0 && font->load(point, buffer, lFontMethod(L, 3));
   }
-  auto &buf = udValue<Buffer>(L, 3);
-  lua_pushboolean(L, font->load(point, buf, lFontMethod(L, 4)));
+  if (!loaded) {
+    font.reset();
+    return luaLError2(L, "sn.Font.new failed to load the font");
+  }
+  udPushPtr<Font>(L, std::move(font));
   return 1;
 }
 static int lFontResize(lua_State *L) {
@@ -82,8 +90,6 @@ void registerFont(lua_State *L) {
   luaL_newmetatable(L, Font::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lFontLoad);
-  lua_setfield(L, -2, "load");
   luaPushcfunction2(L, lFontResize);
   lua_setfield(L, -2, "resize");
   luaPushcfunction2(L, lFontRegion);

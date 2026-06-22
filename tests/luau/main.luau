@@ -33,11 +33,10 @@ end
 
 loadTests()
 
-local font: sn.Font = sn.Font.new()
+local font: sn.Font = sn.Font.new(32)
 local result: any = nil
 
 function setup()
-	font:load(32)
 	result = test.run({
 		logInfo = function(message: string)
 			sn.Log.info(message)

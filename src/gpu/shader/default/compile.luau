@@ -102,8 +102,7 @@ local function compileTask(task: SourceTask, format: any): sn.ShaderBundleEntry
 			.. formatName(format)
 			.. ")"
 	)
-	local shader = sn.Shader.new()
-	shader:compile(task.src, task.stage, format)
+	local shader = sn.Shader.compile(task.src, task.stage, format)
 	local code = shader:getCode()
 	if code:size() == 0 then
 		error("Shader compiled with empty code: " .. task.out)

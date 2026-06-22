@@ -1,16 +1,14 @@
 local sn = require("@sinen")
-local boxTex: sn.Texture = sn.Texture.new()
+local boxTex: sn.Texture = sn.Texture.new(1, 1)
 boxTex:fill(sn.Color.new(1, 1, 1, 1))
 
-local sphereTex: sn.Texture = sn.Texture.new()
+local sphereTex: sn.Texture = sn.Texture.new(1, 1)
 sphereTex:fill(sn.Color.new(1, 0, 0, 1))
 
-local box: sn.Model = sn.Model.new()
-box:loadBox()
+local box: sn.Model = sn.Model.newBox()
 box:setTexture(sn.TextureKey.BaseColor, boxTex)
 
-local sphere: sn.Model = sn.Model.new()
-sphere:load("sphere.glb")
+local sphere: sn.Model = sn.Model.new("sphere.glb")
 sphere:setTexture(sn.TextureKey.BaseColor, sphereTex)
 
 local boxTransform: sn.Transform = sn.Transform.new()

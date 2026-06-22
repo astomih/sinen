@@ -6,8 +6,7 @@ local function createLightModel(): sn.Model
 	return builder:toModel()
 end
 
-local model: sn.Model = sn.Model.new()
-model:load("DamagedHelmet.glb")
+local model: sn.Model = sn.Model.new("DamagedHelmet.glb")
 local lightModel: sn.Model = createLightModel()
 
 local envPath = "citrus_orchard_road_puresky_2k/citrus_orchard_road_puresky_2k.exr"
@@ -31,21 +30,21 @@ then
 	isExistsEXRs = true
 end
 
-local lut: sn.Texture = sn.Texture.new()
-local cubemap: sn.Texture = sn.Texture.new()
-local irradiance: sn.Texture = sn.Texture.new()
-local prefiltered: sn.Texture = sn.Texture.new()
+local lut: sn.Texture
+local cubemap: sn.Texture
+local irradiance: sn.Texture
+local prefiltered: sn.Texture
 
 if isExistsEXRs then
-	lut:load("brdf_lut.png")
-	cubemap:loadCubemap(envPath)
-	irradiance:loadCubemap("irradiance_cubemap.exr")
-	prefiltered:loadCubemap("prefiltered_cubemap.exr")
+	lut = sn.Texture.new("brdf_lut.png")
+	cubemap = sn.Texture.newCubemap(envPath)
+	irradiance = sn.Texture.newCubemap("irradiance_cubemap.exr")
+	prefiltered = sn.Texture.newCubemap("prefiltered_cubemap.exr")
 else
-	lut:loadBRDFLUT(256, 512)
-	cubemap:loadCubemap(envPath)
-	irradiance:loadIrradianceCubemap(envPath, 64, 256)
-	prefiltered:loadPrefilteredCubemap(envPath, 128, 5, 128)
+	lut = sn.Texture.newBRDFLUT(256, 512)
+	cubemap = sn.Texture.newCubemap(envPath)
+	irradiance = sn.Texture.newIrradianceCubemap(envPath, 64, 256)
+	prefiltered = sn.Texture.newPrefilteredCubemap(envPath, 128, 5, 128)
 end
 
 local transform: sn.Transform = sn.Transform.new()
@@ -63,10 +62,8 @@ local up: sn.Vec3 = sn.Vec3.new(0, 1, 0)
 local camera: sn.Camera3D = sn.Camera3D.new()
 camera:lookat(pos, at, up)
 
-local vertex_shader = sn.Shader.new()
-vertex_shader:load("shader_custom.vert.snb", sn.ShaderStage.Vertex)
-local fragment_shader = sn.Shader.new()
-fragment_shader:load("shader_custom.frag.snb", sn.ShaderStage.Fragment)
+local vertex_shader = sn.Shader.new("shader_custom.vert.snb", sn.ShaderStage.Vertex)
+local fragment_shader = sn.Shader.new("shader_custom.frag.snb", sn.ShaderStage.Fragment)
 
 local pipeline3d = sn.GraphicsPipeline.new()
 pipeline3d:setVertexShader(vertex_shader)

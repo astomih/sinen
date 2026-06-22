@@ -4,11 +4,9 @@ local width = 128
 local height = 128
 local threadGroupSize = 8
 
-local font: sn.Font = sn.Font.new()
-font:load(24)
+local font: sn.Font = sn.Font.new(24)
 
-local shader: sn.Shader = sn.Shader.new()
-shader:load("compute_image.comp.snb", sn.ShaderStage.Compute)
+local shader: sn.Shader = sn.Shader.new("compute_image.comp.snb", sn.ShaderStage.Compute)
 
 local pipeline: sn.ComputePipeline = sn.ComputePipeline.new()
 local outputBuffer: sn.ComputeBuffer = sn.ComputeBuffer.new(width * height * 4)
@@ -24,7 +22,7 @@ local function dispatchCompute()
 	sn.Compute.dispatch(width / threadGroupSize, height / threadGroupSize, 1)
 
 	local pixels = outputBuffer:download()
-	if outputTexture:loadPixels(pixels, width, height, "rgba8") then
+	if outputTexture:updatePixels(pixels, width, height, "rgba8") then
 		status = "Compute shader generated an RGBA texture"
 	else
 		status = "Compute dispatch finished, but texture upload failed"

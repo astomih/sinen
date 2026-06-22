@@ -1,10 +1,8 @@
 local sn = require("@sinen")
-local texture: sn.Texture = sn.Texture.new()
+local texture: sn.Texture = sn.Texture.new("logo.png")
 
-local vertexShader: sn.Shader = sn.Shader.new()
-vertexShader:compileAndLoad("shader_custom.slang", sn.ShaderStage.Vertex)
-local fragmentShader: sn.Shader = sn.Shader.new()
-fragmentShader:compileAndLoad("shader_custom.slang", sn.ShaderStage.Fragment)
+local vertexShader: sn.Shader = sn.Shader.compileAndLoad("shader_custom.slang", sn.ShaderStage.Vertex)
+local fragmentShader: sn.Shader = sn.Shader.compileAndLoad("shader_custom.slang", sn.ShaderStage.Fragment)
 
 local pipeline2D: sn.GraphicsPipeline = sn.GraphicsPipeline.new()
 pipeline2D:setVertexShader(vertexShader)
@@ -19,7 +17,6 @@ local uniformBuffer: sn.Buffer = sn.Buffer.new({
 	1.0,
 })
 
-texture:load("logo.png")
 
 function update()
 	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then

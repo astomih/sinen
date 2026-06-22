@@ -5,8 +5,7 @@ local height: number = 500
 local out: sn.Texture = sn.Texture.new(width, height)
 renderTexture:create(width, height)
 
-local model: sn.Model = sn.Model.new()
-model:load("DamagedHelmet.glb")
+local model: sn.Model = sn.Model.new("DamagedHelmet.glb")
 
 local transform: sn.Transform = sn.Transform.new()
 transform.rotation = sn.Vec3.new(90, 0, 0)

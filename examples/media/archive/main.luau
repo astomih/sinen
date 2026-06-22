@@ -1,5 +1,5 @@
 local sn = require("@sinen")
-local font: sn.Font = sn.Font.new()
+local font: sn.Font = sn.Font.new(24)
 
 local payloadBase = nil
 local lines = {
@@ -25,8 +25,6 @@ local function directoryContains(path: string, expected: string): boolean
 end
 
 function setup()
-	font:load(24)
-
 	if directoryContains("sna", "main.luau") then
 		payloadBase = "sna"
 	end

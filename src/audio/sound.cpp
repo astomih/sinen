@@ -19,11 +19,11 @@ public:
   SoundImpl() : sound() {}
   virtual ~SoundImpl() override { reset(); }
 
-  void load(StringView fileName) override {
+  bool load(StringView fileName) override {
     if (AssetReader::isArchiveMounted() && AssetReader::exists(fileName)) {
       auto bytes = AssetReader::readAsString(fileName);
       loadMemory(bytes.data(), bytes.size());
-      return;
+      return soundInitialized;
     }
 
     reset();
@@ -33,10 +33,13 @@ public:
                                 nullptr, nullptr, &sound) == MA_SUCCESS) {
       soundInitialized = true;
     }
+    return soundInitialized;
   }
-  void load(const Buffer &buffer) override {
+  bool load(const Buffer &buffer) override {
     loadMemory(buffer.data(), static_cast<size_t>(buffer.size()));
+    return soundInitialized;
   }
+  bool isLoaded() const override { return soundInitialized; }
   void play() override { ma_sound_start(&sound); }
 
   void restart() override {
@@ -118,5 +121,4 @@ private:
 Ptr<Sound> Sound::create() { return makePtr<SoundImpl>(); }
 } // namespace sinen
 
-namespace sinen {
-} // namespace sinen
+namespace sinen {} // namespace sinen

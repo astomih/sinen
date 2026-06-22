@@ -1,10 +1,9 @@
 local sn = require("@sinen")
 
-local font = sn.Font.new()
-font:load(24)
+local font = sn.Font.new(24)
 
 local reader = sn.VideoReader.new()
-local texture = sn.Texture.new()
+local texture = sn.Texture.new(1, 1)
 local info = nil
 local status = ""
 local frameIndex = -1
@@ -35,7 +34,7 @@ local function uploadFrame(index: number)
 		return
 	end
 
-	if texture:loadPixels(frame.pixels, frame.width, frame.height, "rgba8") then
+	if texture:updatePixels(frame.pixels, frame.width, frame.height, "rgba8") then
 		frameIndex = index
 	else
 		status = "texture upload failed at frame " .. index

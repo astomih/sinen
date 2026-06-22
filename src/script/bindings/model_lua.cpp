@@ -17,35 +17,46 @@
 #include <math/vector.hpp>
 #include <platform/io/asset_reader.hpp>
 
-
 namespace sinen {
 static int lModelNew(lua_State *L) {
-  udPushPtr<Model>(L, makePtr<Model>());
-  return 1;
-}
-static int lModelLoad(lua_State *L) {
-  auto &m = udPtr<Model>(L, 1);
-  if (lua_isstring(L, 2)) {
-    const char *path = luaL_checkstring(L, 2);
-    m->load(StringView(path));
-    return 0;
+  if (lua_gettop(L) != 1) {
+    return luaLError2(L, "sn.Model.new expects exactly one source");
   }
-  auto &buf = udValue<Buffer>(L, 2);
-  m->load(buf);
-  return 0;
+  auto model = makePtr<Model>();
+  if (lua_isstring(L, 1)) {
+    const char *path = luaL_checkstring(L, 1);
+    if (!AssetReader::exists(path)) {
+      model.reset();
+      return luaLError2(L, "sn.Model.new asset not found: %s", path);
+    }
+    model->load(StringView(path));
+  } else {
+    auto &buffer = udValue<Buffer>(L, 1);
+    if (buffer.size() == 0) {
+      model.reset();
+      return luaLError2(L, "sn.Model.new source buffer is empty");
+    }
+    model->load(buffer);
+  }
+  udPushPtr<Model>(L, std::move(model));
+  return 1;
 }
 static int lModelGetAabb(lua_State *L) {
   auto &m = udPtr<Model>(L, 1);
   udNewOwned<AABB>(L, m->getAABB());
   return 1;
 }
-static int lModelLoadSprite(lua_State *L) {
-  udPtr<Model>(L, 1)->loadSprite();
-  return 0;
+static int lModelNewSprite(lua_State *L) {
+  auto model = makePtr<Model>();
+  model->loadSprite();
+  udPushPtr<Model>(L, std::move(model));
+  return 1;
 }
-static int lModelLoadBox(lua_State *L) {
-  udPtr<Model>(L, 1)->loadBox();
-  return 0;
+static int lModelNewBox(lua_State *L) {
+  auto model = makePtr<Model>();
+  model->loadBox();
+  udPushPtr<Model>(L, std::move(model));
+  return 1;
 }
 static int lModelGetBoneUniformBuffer(lua_State *L) {
   auto &m = udPtr<Model>(L, 1);
@@ -87,14 +98,8 @@ void registerModel(lua_State *L) {
   luaL_newmetatable(L, Model::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lModelLoad);
-  lua_setfield(L, -2, "load");
   luaPushcfunction2(L, lModelGetAabb);
   lua_setfield(L, -2, "getAABB");
-  luaPushcfunction2(L, lModelLoadSprite);
-  lua_setfield(L, -2, "loadSprite");
-  luaPushcfunction2(L, lModelLoadBox);
-  lua_setfield(L, -2, "loadBox");
   luaPushcfunction2(L, lModelGetBoneUniformBuffer);
   lua_setfield(L, -2, "getBoneUniformBuffer");
   luaPushcfunction2(L, lModelPlay);
@@ -112,6 +117,10 @@ void registerModel(lua_State *L) {
   pushSnNamed(L, "Model");
   luaPushcfunction2(L, lModelNew);
   lua_setfield(L, -2, "new");
+  luaPushcfunction2(L, lModelNewSprite);
+  lua_setfield(L, -2, "newSprite");
+  luaPushcfunction2(L, lModelNewBox);
+  lua_setfield(L, -2, "newBox");
   lua_pop(L, 1);
 }
 

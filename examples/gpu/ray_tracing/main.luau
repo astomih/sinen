@@ -3,8 +3,7 @@ local sn = require("@sinen")
 local width = 384
 local height = 288
 
-local font: sn.Font = sn.Font.new()
-font:load(22)
+local font: sn.Font = sn.Font.new(22)
 
 local outputTexture: sn.Texture = sn.Texture.new(width, height)
 local outputBuffer: sn.ComputeBuffer = sn.ComputeBuffer.new(width * height * 4)
@@ -13,14 +12,11 @@ local status = if supported
 	then "Compiling ray tracing shaders..."
 	else "Ray tracing is not supported by this backend/device"
 
-local raygen: sn.Shader = sn.Shader.new()
-local miss: sn.Shader = sn.Shader.new()
-local closestHit: sn.Shader = sn.Shader.new()
+local raygen: sn.Shader = sn.Shader.compileAndLoad("raytrace.slang", sn.ShaderStage.RayGeneration)
+local miss: sn.Shader = sn.Shader.compileAndLoad("raytrace.slang", sn.ShaderStage.Miss)
+local closestHit: sn.Shader = sn.Shader.compileAndLoad("raytrace.slang", sn.ShaderStage.ClosestHit)
 local pipeline: sn.RaytracingPipeline? = nil
 if supported then
-	raygen:compileAndLoad("raytrace.slang", sn.ShaderStage.RayGeneration)
-	miss:compileAndLoad("raytrace.slang", sn.ShaderStage.Miss)
-	closestHit:compileAndLoad("raytrace.slang", sn.ShaderStage.ClosestHit)
 
 	local p = sn.Raytracing.Pipeline.new()
 	p:addShader(raygen, "RayGenMain")
@@ -92,7 +88,7 @@ local function render()
 	end
 
 	local pixels = outputBuffer:download()
-	if outputTexture:loadPixels(pixels, width, height, "rgba8") then
+	if outputTexture:updatePixels(pixels, width, height, "rgba8") then
 		status = "Ray traced triangle"
 	else
 		status = "Ray tracing finished, but texture upload failed"

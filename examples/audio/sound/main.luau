@@ -1,7 +1,6 @@
 local sn = require("@sinen")
 local G = require("../../global")
-local sound: sn.Sound = sn.Sound.new()
-sound:load("shot.wav")
+local sound: sn.Sound = sn.Sound.new("shot.wav")
 
 function update()
 	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then

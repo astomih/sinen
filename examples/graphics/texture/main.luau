@@ -1,9 +1,8 @@
 local sn = require("@sinen")
-local image: sn.Texture = sn.Texture.new()
+local image: sn.Texture = sn.Texture.new("logo.png")
 
 function setup()
 	-- Create a image
-	image:load("logo.png")
 end
 
 function update()

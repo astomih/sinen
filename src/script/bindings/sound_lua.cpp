@@ -2,22 +2,30 @@
 #include <audio/sound.hpp>
 #include <platform/io/asset_reader.hpp>
 
-
 namespace sinen {
 static int lSoundNew(lua_State *L) {
-  udPushPtr<Sound>(L, Sound::create());
-  return 1;
-}
-static int lSoundLoad(lua_State *L) {
-  auto &s = udPtr<Sound>(L, 1);
-  if (lua_isstring(L, 2)) {
-    const char *path = luaL_checkstring(L, 2);
-    s->load(StringView(path));
-    return 0;
+  if (lua_gettop(L) != 1) {
+    return luaLError2(L, "sn.Sound.new expects exactly one source");
   }
-  auto &buf = udValue<Buffer>(L, 2);
-  s->load(buf);
-  return 0;
+  auto sound = Sound::create();
+  bool loaded = false;
+  if (lua_isstring(L, 1)) {
+    const char *path = luaL_checkstring(L, 1);
+    if (!AssetReader::exists(path)) {
+      sound.reset();
+      return luaLError2(L, "sn.Sound.new asset not found: %s", path);
+    }
+    loaded = sound->load(StringView(path));
+  } else {
+    auto &buffer = udValue<Buffer>(L, 1);
+    loaded = buffer.size() > 0 && sound->load(buffer);
+  }
+  if (!loaded) {
+    sound.reset();
+    return luaLError2(L, "sn.Sound.new failed to load the sound");
+  }
+  udPushPtr<Sound>(L, std::move(sound));
+  return 1;
 }
 static int lSoundPlay(lua_State *L) {
   udPtr<Sound>(L, 1)->play();
@@ -89,8 +97,6 @@ void registerSound(lua_State *L) {
   luaL_newmetatable(L, Sound::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lSoundLoad);
-  lua_setfield(L, -2, "load");
   luaPushcfunction2(L, lSoundPlay);
   lua_setfield(L, -2, "play");
   luaPushcfunction2(L, lSoundRestart);

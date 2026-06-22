@@ -423,8 +423,7 @@ void Script::shutdown() {
 
 static const char *nothingSceneLua = R"(
 local sn = require("@sinen")
-local font: sn.Font = sn.Font.new()
-font:load(32)
+local font: sn.Font = sn.Font.new(32)
 
 function draw()
 	sn.Graphics.drawText(

@@ -1,12 +1,11 @@
 local sn = require("@sinen")
 local info = require("./module/archive_info")
 
-local font: sn.Font = sn.Font.new()
+local font: sn.Font = sn.Font.new(24)
 local rootEntries = {}
 local moduleEntries = {}
 
 function setup()
-	font:load(24)
 	rootEntries = sn.Filesystem.enumerateDirectory(".")
 	moduleEntries = sn.Filesystem.enumerateDirectory("module")
 end

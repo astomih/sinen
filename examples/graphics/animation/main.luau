@@ -1,17 +1,13 @@
 local sn = require("@sinen")
-local model: sn.Model = sn.Model.new()
+local model: sn.Model = sn.Model.new("BrainStem.glb")
 local pipeline: sn.GraphicsPipeline = sn.GraphicsPipeline.new()
 local camera: sn.Camera3D = sn.Camera3D.new()
 function setup()
-	model:load("BrainStem.glb")
-	local texture: sn.Texture = sn.Texture.new()
+	local texture: sn.Texture = sn.Texture.new(1, 1)
 	texture:fill(sn.Color.new(1, 1, 1, 1))
 
-	local vs: sn.Shader = sn.Shader.new()
-	local fs: sn.Shader = sn.Shader.new()
-
-	vs:load("skinning.vert.snb", sn.ShaderStage.Vertex)
-	fs:load("skinning.frag.snb", sn.ShaderStage.Fragment)
+	local vs: sn.Shader = sn.Shader.new("skinning.vert.snb", sn.ShaderStage.Vertex)
+	local fs: sn.Shader = sn.Shader.new("skinning.frag.snb", sn.ShaderStage.Fragment)
 
 	pipeline:setVertexShader(vs)
 	pipeline:setFragmentShader(fs)

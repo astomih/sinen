@@ -137,8 +137,7 @@ end
 
 local function compileEntry(file: SlangFile, format: any): sn.ShaderBundleEntry
 	sn.Log.info("Compiling " .. file.path .. " (" .. selectedStageName .. ", " .. formatName(format) .. ")")
-	local shader = sn.Shader.new()
-	shader:compile(file.path, selectedStage, format)
+	local shader = sn.Shader.compile(file.path, selectedStage, format)
 	local code = shader:getCode()
 	if code:size() == 0 then
 		error("Shader compiled with empty code: " .. file.path)

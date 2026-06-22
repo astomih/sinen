@@ -1,6 +1,5 @@
 local sn = require("@sinen")
-local model: sn.Model = sn.Model.new()
-model:load("DamagedHelmet.glb")
+local model: sn.Model = sn.Model.new("DamagedHelmet.glb")
 local transforms: { sn.Transform } = {}
 local camera: sn.Camera3D = sn.Camera3D.new()
 function setup()

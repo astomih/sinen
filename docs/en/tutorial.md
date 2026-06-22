@@ -16,8 +16,7 @@ Here is the minimum script:
 
 ```luau
 local sn = require("@sinen")
-local font: sn.Font = sn.Font.new()
-font:load(32)
+local font: sn.Font = sn.Font.new(32)
 
 function draw()
 	sn.Graphics.drawText(
@@ -82,10 +81,9 @@ build\msvc2026-debug\sinen.exe hoge.sna
 
 ```luau
 local sn = require("@sinen")
-local image: sn.Texture = sn.Texture.new()
+local image: sn.Texture = sn.Texture.new("logo.png")
 
 function setup()
-	image:load("logo.png")
 end
 
 function draw()
@@ -97,10 +95,9 @@ end
 
 ```luau
 local sn = require("@sinen")
-local se: sn.Sound = sn.Sound.new()
+local se: sn.Sound = sn.Sound.new("shot.wav")
 
 function setup()
-	se:load("shot.wav")
 end
 
 function update()

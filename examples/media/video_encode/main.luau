@@ -1,7 +1,6 @@
 local sn = require("@sinen")
 
-local font: sn.Font = sn.Font.new()
-font:load(24)
+local font: sn.Font = sn.Font.new(24)
 local width = 96
 local height = 54
 local frames = 24

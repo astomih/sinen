@@ -3,10 +3,42 @@
 #include <core/data/ptr.hpp>
 #include <math/vec3.hpp>
 namespace sinen {
-class World3D;
+class PhysicsWorld {
+public:
+  virtual ~PhysicsWorld() = default;
+  virtual bool isValid(const class Collider &collider) = 0;
+  virtual bool isAdded(const class Collider &collider) = 0;
+  virtual Vec3 getPosition(const class Collider &collider) = 0;
+  virtual Vec3 getRotation(const class Collider &collider) = 0;
+  virtual Vec3 getVelocity(const class Collider &collider) = 0;
+  virtual Vec3 getAngularVelocity(const class Collider &collider) = 0;
+  virtual void setPosition(const class Collider &collider, const Vec3 &position,
+                           bool activate) = 0;
+  virtual void setRotation(const class Collider &collider, const Vec3 &rotation,
+                           bool activate) = 0;
+  virtual void setPositionAndRotation(const class Collider &collider,
+                                      const Vec3 &position,
+                                      const Vec3 &rotation, bool activate) = 0;
+  virtual void setLinearVelocity(const class Collider &collider,
+                                 const Vec3 &velocity) = 0;
+  virtual void setAngularVelocity(const class Collider &collider,
+                                  const Vec3 &velocity) = 0;
+  virtual void addForce(const class Collider &collider, const Vec3 &force,
+                        bool activate) = 0;
+  virtual void addImpulse(const class Collider &collider,
+                          const Vec3 &impulse) = 0;
+  virtual void setFriction(const class Collider &collider, float friction) = 0;
+  virtual void setRestitution(const class Collider &collider,
+                              float restitution) = 0;
+  virtual void activate(const class Collider &collider) = 0;
+  virtual void deactivate(const class Collider &collider) = 0;
+  virtual void removeCollider(const class Collider &collider) = 0;
+  virtual void destroyCollider(const class Collider &collider) = 0;
+};
+
 class Collider {
 public:
-  Collider(World3D &world, UInt32 id);
+  Collider(PhysicsWorld &world, UInt32 id);
   static constexpr const char *metaTableName() { return "sn.Collider"; }
   bool isValid() const;
   bool isAdded() const;
@@ -31,7 +63,7 @@ public:
   UInt32 id;
 
 private:
-  World3D &world;
+  PhysicsWorld &world;
 };
 } // namespace sinen
 

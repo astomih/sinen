@@ -1,66 +1,63 @@
 local sn = require("@sinen")
-local boxTex: sn.Texture = sn.Texture.new(1, 1)
-boxTex:fill(sn.Color.new(1, 1, 1, 1))
+local G = require("../global")
 
-local sphereTex: sn.Texture = sn.Texture.new(1, 1)
-sphereTex:fill(sn.Color.new(1, 0, 0, 1))
+local examples = {
+	{ label = "2D", dir = "2d" },
+	{ label = "3D", dir = "3d" },
+}
 
-local box: sn.Model = sn.Model.newBox()
-box:setTexture(sn.TextureKey.BaseColor, boxTex)
+local numExamples = #examples
+local scrollY = 0.0
 
-local sphere: sn.Model = sn.Model.new("sphere.glb")
-sphere:setTexture(sn.TextureKey.BaseColor, sphereTex)
-
-local boxTransform: sn.Transform = sn.Transform.new()
-boxTransform.rotation = sn.Vec3.new(0, 0, 10)
-boxTransform.scale = sn.Vec3.new(20, 1, 20)
-local sphereTransform: sn.Transform = sn.Transform.new()
-sphereTransform.position = sn.Vec3.new(0, 2, 0)
-sphereTransform.scale = sn.Vec3.new(0.5)
-
-local colliders: { sn.Collider } = {}
-
-local world: sn.World3D = sn.World3D.new()
-local floorCollider = world:newBoxCollider(boxTransform, true)
-local sphereCollider = world:newSphereCollider(sphereTransform.position, 0.5, false)
-sphereCollider:setLinearVelocity(sn.Vec3.new(0, -5.0, 0))
-world:addCollider(floorCollider, false)
-world:addCollider(sphereCollider, true)
-world:optimizeBroadPhase()
-
-local camera: sn.Camera3D = sn.Camera3D.new()
-camera:lookat(sn.Vec3.new(0, 10, 25), sn.Vec3.new(0, 0, 0), sn.Vec3.new(0, 1, 0))
+function setup()
+	sn.Graphics.resetGraphicsPipeline()
+end
 
 function update()
 	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then
 		sn.Script.load("/main.luau")
 	end
-	boxTransform.position = floorCollider:getPosition()
-	sphereTransform.position = sphereCollider:getPosition()
+end
 
-	if sn.Mouse.isPressed(sn.Mouse.LEFT) then
-		local sc: sn.Collider = world:newSphereCollider(sn.Vec3.new(0, 2, 0), 0.5, false)
-		sc:setLinearVelocity(sn.Vec3.new(math.random(-5, 5), math.random(-5, 5), math.random(-5, 5)))
-		world:addCollider(sc, true)
-		table.insert(colliders, sc)
-	end
-	world:update(sn.Time.delta(), 1)
+local buttonSize = sn.Vec2.new(512, 64)
+local buttonStep = 70.0
+local headerHeight = 88.0
+local margin = 24.0
+
+local function itemRect(index: number, viewport: sn.Rect): sn.Rect
+	local centerX = viewport.x + viewport.width * 0.5
+	local y = viewport.y + (index - 1) * buttonStep - scrollY
+	return sn.Rect.new(sn.Pivot.TopCenter, centerX, y, buttonSize.x, buttonSize.y)
+end
+
+local function intersectsViewport(rect: sn.Rect, viewport: sn.Rect): boolean
+	return rect.y + rect.height >= viewport.y and rect.y <= viewport.y + viewport.height
 end
 
 function draw()
-	sn.Graphics.begin3D(camera)
-	sn.Graphics.drawModel(box, boxTransform)
+	sn.Gui.setFont(G.font)
+	sn.Gui.setFontSize(24)
+	local windowSize = sn.Window.size()
+	local title = "Physics Examples"
+	sn.Graphics.drawText(
+		title,
+		sn.TextStyle.new(G.font, sn.Color.new(1, 1, 1, 1), 24),
+		sn.TextTransform.new(sn.Vec2.new(windowSize.x * 0.5, margin), 0.0, sn.Pivot.TopCenter)
+	)
 
-	sn.Graphics.drawModel(sphere, sphereTransform)
-	for i, c in ipairs(colliders) do
-		local transform = sn.Transform.new()
-		transform.position = c:getPosition()
-		if transform.position.y < -10.0 then
-			table.remove(colliders, i)
-		else
-			transform.scale = sn.Vec3.new(0.5)
-			sn.Graphics.drawModel(sphere, transform)
+	local viewport = sn.Rect.new(
+		margin,
+		headerHeight,
+		windowSize.x - margin * 2.0,
+		math.max(80.0, windowSize.y - headerHeight - margin)
+	)
+	local contentHeight = numExamples * buttonStep - (buttonStep - buttonSize.y)
+	scrollY = sn.Gui.scrollVertical(scrollY, viewport, contentHeight, buttonStep)
+
+	for i = 1, numExamples do
+		local rect = itemRect(i, viewport)
+		if intersectsViewport(rect, viewport) and sn.Gui.button(examples[i].label, rect) then
+			sn.Script.load("/physics/" .. examples[i].dir .. "/main.luau")
 		end
 	end
-	sn.Graphics.finish()
 end

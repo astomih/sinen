@@ -538,6 +538,31 @@ export type Collider = {
 	destroy: (self: Collider) -> nil,
 }
 
+export type World2D = {
+	new: () -> World2D,
+	newBoxCollider: (self: World2D, transform: Transform, isStatic: boolean) -> Collider,
+	newCircleCollider: (self: World2D, position: Vec3, radius: number, isStatic: boolean) -> Collider,
+	newCapsuleCollider: (
+		self: World2D,
+		position: Vec3,
+		rotation: Vec3,
+		halfHeight: number,
+		radius: number,
+		isStatic: boolean
+	) -> Collider,
+
+	setGravity: (self: World2D, gravity: Vec3) -> nil,
+	getGravity: (self: World2D) -> Vec3,
+
+	bodyCount: (self: World2D) -> number,
+	addCollider: (self: World2D, collider: Collider, isActive: boolean) -> nil,
+	removeCollider: (self: World2D, collider: Collider) -> nil,
+	destroyCollider: (self: World2D, collider: Collider) -> nil,
+
+	optimizeBroadPhase: (self: World2D) -> nil,
+	update: (self: World2D, time: number, collisionSteps: number) -> nil,
+}
+
 export type World3D = {
 	new: () -> World3D,
 	newBoxCollider: (self: World3D, transform: Transform, isStatic: boolean) -> Collider,
@@ -909,6 +934,7 @@ return {
 	Rect = {} :: Rect,
 	Transform = {} :: Transform,
 	Collider = {} :: Collider,
+	World2D = {} :: World2D,
 	World3D = {} :: World3D,
 	Synth = {} :: Synth,
 	Event = {} :: Event,

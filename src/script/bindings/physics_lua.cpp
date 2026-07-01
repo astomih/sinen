@@ -7,9 +7,99 @@
 #include <math/quaternion.hpp>
 #include <math/vector.hpp>
 #include <physics/physics.hpp>
+#include <physics/world2d.hpp>
 #include <physics/world3d.hpp>
 
 namespace sinen {
+static int lWorld2DNew(lua_State *L) {
+  udPushPtr<World2D>(L, World2D::create());
+  return 1;
+}
+
+static int lWorld2DNewBoxCollider(lua_State *L) {
+  auto w = udPtr<World2D>(L, 1);
+  auto &t = udValue<Transform>(L, 2);
+  bool isStatic = lua_toboolean(L, 3) != 0;
+  udNewOwned<Collider>(L, w->newBoxCollider(t, isStatic));
+  return 1;
+}
+
+static int lWorld2DNewCircleCollider(lua_State *L) {
+  auto w = udPtr<World2D>(L, 1);
+  auto &pos = udValue<Vec3>(L, 2);
+  float radius = static_cast<float>(luaL_checknumber(L, 3));
+  bool isStatic = lua_toboolean(L, 4) != 0;
+  udNewOwned<Collider>(L, w->newCircleCollider(pos, radius, isStatic));
+  return 1;
+}
+
+static int lWorld2DNewCapsuleCollider(lua_State *L) {
+  auto w = udPtr<World2D>(L, 1);
+  auto &pos = udValue<Vec3>(L, 2);
+  auto &rot = udValue<Vec3>(L, 3);
+  float halfHeight = static_cast<float>(luaL_checknumber(L, 4));
+  float radius = static_cast<float>(luaL_checknumber(L, 5));
+  bool isStatic = lua_toboolean(L, 6) != 0;
+  udNewOwned<Collider>(
+      L, w->newCapsuleCollider(pos, rot, halfHeight, radius, isStatic));
+  return 1;
+}
+
+static int lWorld2DAddCollider(lua_State *L) {
+  auto w = udPtr<World2D>(L, 1);
+  auto &c = udValue<Collider>(L, 2);
+  bool active = lua_toboolean(L, 3) != 0;
+  w->addCollider(c, active);
+  return 0;
+}
+
+static int lWorld2DRemoveCollider(lua_State *L) {
+  auto w = udPtr<World2D>(L, 1);
+  auto &c = udValue<Collider>(L, 2);
+  w->removeCollider(c);
+  return 0;
+}
+
+static int lWorld2DDestroyCollider(lua_State *L) {
+  auto w = udPtr<World2D>(L, 1);
+  auto &c = udValue<Collider>(L, 2);
+  w->destroyCollider(c);
+  return 0;
+}
+
+static int lWorld2DSetGravity(lua_State *L) {
+  auto w = udPtr<World2D>(L, 1);
+  auto &g = udValue<Vec3>(L, 2);
+  w->setGravity(g);
+  return 0;
+}
+
+static int lWorld2DGetGravity(lua_State *L) {
+  auto w = udPtr<World2D>(L, 1);
+  udNewOwned<Vec3>(L, w->getGravity());
+  return 1;
+}
+
+static int lWorld2DBodyCount(lua_State *L) {
+  auto w = udPtr<World2D>(L, 1);
+  lua_pushinteger(L, static_cast<lua_Integer>(w->bodyCount()));
+  return 1;
+}
+
+static int lWorld2DOptimizeBroadPhase(lua_State *L) {
+  auto w = udPtr<World2D>(L, 1);
+  w->optimizeBroadPhase();
+  return 0;
+}
+
+static int lWorld2DUpdate(lua_State *L) {
+  auto w = udPtr<World2D>(L, 1);
+  float time = static_cast<float>(luaL_checknumber(L, 2));
+  int collisionSteps = static_cast<int>(luaL_checkinteger(L, 3));
+  w->update(time, collisionSteps);
+  return 0;
+}
+
 static int lWorld3DNew(lua_State *L) {
   udPushPtr<World3D>(L, World3D::create());
   return 1;
@@ -102,6 +192,33 @@ static int lWorld3DUpdate(lua_State *L) {
   return 0;
 }
 void registerPhysics(lua_State *L) {
+  luaL_newmetatable(L, World2D::metaTableName());
+  lua_pushvalue(L, -1);
+  lua_setfield(L, -2, "__index");
+  luaPushcfunction2(L, lWorld2DNewBoxCollider);
+  lua_setfield(L, -2, "newBoxCollider");
+  luaPushcfunction2(L, lWorld2DNewCircleCollider);
+  lua_setfield(L, -2, "newCircleCollider");
+  luaPushcfunction2(L, lWorld2DNewCapsuleCollider);
+  lua_setfield(L, -2, "newCapsuleCollider");
+  luaPushcfunction2(L, lWorld2DAddCollider);
+  lua_setfield(L, -2, "addCollider");
+  luaPushcfunction2(L, lWorld2DRemoveCollider);
+  lua_setfield(L, -2, "removeCollider");
+  luaPushcfunction2(L, lWorld2DDestroyCollider);
+  lua_setfield(L, -2, "destroyCollider");
+  luaPushcfunction2(L, lWorld2DSetGravity);
+  lua_setfield(L, -2, "setGravity");
+  luaPushcfunction2(L, lWorld2DGetGravity);
+  lua_setfield(L, -2, "getGravity");
+  luaPushcfunction2(L, lWorld2DBodyCount);
+  lua_setfield(L, -2, "bodyCount");
+  luaPushcfunction2(L, lWorld2DOptimizeBroadPhase);
+  lua_setfield(L, -2, "optimizeBroadPhase");
+  luaPushcfunction2(L, lWorld2DUpdate);
+  lua_setfield(L, -2, "update");
+  lua_pop(L, 1);
+
   luaL_newmetatable(L, World3D::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
@@ -129,6 +246,11 @@ void registerPhysics(lua_State *L) {
   lua_setfield(L, -2, "optimizeBroadPhase");
   luaPushcfunction2(L, lWorld3DUpdate);
   lua_setfield(L, -2, "update");
+  lua_pop(L, 1);
+
+  pushSnNamed(L, "World2D");
+  luaPushcfunction2(L, lWorld2DNew);
+  lua_setfield(L, -2, "new");
   lua_pop(L, 1);
 
   pushSnNamed(L, "World3D");

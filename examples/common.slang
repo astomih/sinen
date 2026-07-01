@@ -22,8 +22,8 @@
 #endif
 
 #define SinenRWByteAddressBufferInCompute(name, bind)                          \
-  [[vk::binding(bind, 1)]]                                                     \
-  RWByteAddressBuffer name : register(u##bind, space1)
+  [[vk::binding(bind, 0)]]                                                     \
+  RWByteAddressBuffer name : register(u##bind, space0)
 
 #define SinenRaytracingASInCompute(name, bind)                                 \
   [[vk::binding(bind, 6)]]                                                     \

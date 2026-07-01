@@ -47,12 +47,28 @@ struct BindingDecoration {
   uint32_t binding;
 };
 
+struct DescriptorSetDecoration {
+  uint32_t targetId;
+  uint32_t set;
+};
+
 std::optional<uint32_t>
 findBindingDecoration(const Array<BindingDecoration> &decorations,
                       uint32_t targetId) {
   for (const BindingDecoration &decoration : decorations) {
     if (decoration.targetId == targetId) {
       return decoration.binding;
+    }
+  }
+  return std::nullopt;
+}
+
+std::optional<uint32_t>
+findDescriptorSetDecoration(const Array<DescriptorSetDecoration> &decorations,
+                            uint32_t targetId) {
+  for (const DescriptorSetDecoration &decoration : decorations) {
+    if (decoration.targetId == targetId) {
+      return decoration.set;
     }
   }
   return std::nullopt;
@@ -65,8 +81,28 @@ uint32_t readSpirvWord(const void *data, size_t wordIndex) {
   return value;
 }
 
+std::optional<uint32_t> uniformDescriptorSetForStage(ShaderStage stage) {
+  switch (stage) {
+  case ShaderStage::Vertex:
+    return 1;
+  case ShaderStage::Fragment:
+    return 3;
+  case ShaderStage::Compute:
+    return 1;
+  case ShaderStage::RayGeneration:
+  case ShaderStage::AnyHit:
+  case ShaderStage::ClosestHit:
+  case ShaderStage::Miss:
+  case ShaderStage::Intersection:
+  case ShaderStage::Callable:
+    return 5;
+  }
+  return std::nullopt;
+}
+
 std::optional<uint32_t> countSpirvUniformBufferSlots(const void *data,
-                                                     size_t size) {
+                                                     size_t size,
+                                                     ShaderStage stage) {
   if (!data || size < 20 || (size % 4) != 0) {
     return std::nullopt;
   }
@@ -74,10 +110,12 @@ std::optional<uint32_t> countSpirvUniformBufferSlots(const void *data,
   constexpr uint32_t opDecorate = 71;
   constexpr uint32_t opVariable = 59;
   constexpr uint32_t decorationBinding = 33;
+  constexpr uint32_t decorationDescriptorSet = 34;
   constexpr uint32_t storageClassUniform = 2;
 
   const size_t wordCount = size / 4;
   Array<BindingDecoration> bindingDecorations;
+  Array<DescriptorSetDecoration> descriptorSetDecorations;
   Array<uint32_t> uniformVariableIds;
   size_t index = 5;
   while (index < wordCount) {
@@ -95,6 +133,9 @@ std::optional<uint32_t> countSpirvUniformBufferSlots(const void *data,
       if (decoration == decorationBinding) {
         const uint32_t binding = readSpirvWord(data, index + 3);
         bindingDecorations.push_back({targetId, binding});
+      } else if (decoration == decorationDescriptorSet) {
+        const uint32_t set = readSpirvWord(data, index + 3);
+        descriptorSetDecorations.push_back({targetId, set});
       }
     } else if (opCode == opVariable && instructionWordCount >= 4) {
       const uint32_t resultId = readSpirvWord(data, index + 2);
@@ -108,7 +149,14 @@ std::optional<uint32_t> countSpirvUniformBufferSlots(const void *data,
   }
 
   uint32_t slots = 0;
+  const std::optional<uint32_t> uniformSet =
+      uniformDescriptorSetForStage(stage);
   for (uint32_t id : uniformVariableIds) {
+    const std::optional<uint32_t> descriptorSet =
+        findDescriptorSetDecoration(descriptorSetDecorations, id);
+    if (uniformSet && (!descriptorSet || *descriptorSet != *uniformSet)) {
+      continue;
+    }
     const std::optional<uint32_t> binding =
         findBindingDecoration(bindingDecorations, id);
     if (binding) {
@@ -175,13 +223,13 @@ std::optional<uint32_t> countWgslUniformBufferSlots(const void *data,
 
 void overrideUniformBufferSlotCountFromCode(
     ShaderCompiler::ReflectionData &reflectionData, ShaderFormat format,
-    const void *data, size_t size) {
+    ShaderStage stage, const void *data, size_t size) {
   std::optional<uint32_t> count;
   if (format == ShaderFormat::WGSL) {
     count = countWgslUniformBufferSlots(data, size);
   } else if (format == ShaderFormat::SPIRV ||
              format == ShaderFormat::SPIRV_1_3) {
-    count = countSpirvUniformBufferSlots(data, size);
+    count = countSpirvUniformBufferSlots(data, size, stage);
   }
   if (count) {
     reflectionData.numUniformBuffers = *count;
@@ -619,7 +667,7 @@ Array<char> ShaderCompiler::compileSource(StringView moduleName,
   }
 
   reflectionData = getReflectionData(linkedProgram, metadata);
-  overrideUniformBufferSlotCountFromCode(reflectionData, format,
+  overrideUniformBufferSlotCountFromCode(reflectionData, format, stage,
                                          compiledCode->getBufferPointer(),
                                          compiledCode->getBufferSize());
   Array<char> shaderData(compiledCode->getBufferSize());

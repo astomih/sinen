@@ -383,7 +383,7 @@ void ComputePass::bindResources() {
     }
     if (!entries.empty()) {
       auto layout =
-          wgpuComputePipelineGetBindGroupLayout(nativePipeline->getNative(), 1);
+          wgpuComputePipelineGetBindGroupLayout(nativePipeline->getNative(), 0);
       WGPUBindGroupDescriptor desc{};
       desc.layout = layout;
       desc.entryCount = entries.size();
@@ -392,7 +392,7 @@ void ComputePass::bindResources() {
           commandBuffer.getDevice()->getNative(), &desc);
       wgpuBindGroupLayoutRelease(layout);
       if (storageBindGroup) {
-        wgpuComputePassEncoderSetBindGroup(pass, 1, storageBindGroup, 0,
+        wgpuComputePassEncoderSetBindGroup(pass, 0, storageBindGroup, 0,
                                            nullptr);
       }
     }
@@ -415,7 +415,7 @@ void ComputePass::bindResources() {
     }
     if (!entries.empty()) {
       auto layout =
-          wgpuComputePipelineGetBindGroupLayout(nativePipeline->getNative(), 2);
+          wgpuComputePipelineGetBindGroupLayout(nativePipeline->getNative(), 1);
       WGPUBindGroupDescriptor desc{};
       desc.layout = layout;
       desc.entryCount = entries.size();
@@ -424,7 +424,7 @@ void ComputePass::bindResources() {
           commandBuffer.getDevice()->getNative(), &desc);
       wgpuBindGroupLayoutRelease(layout);
       if (uniformBindGroup) {
-        wgpuComputePassEncoderSetBindGroup(pass, 2, uniformBindGroup, 0,
+        wgpuComputePassEncoderSetBindGroup(pass, 1, uniformBindGroup, 0,
                                            nullptr);
       }
     }

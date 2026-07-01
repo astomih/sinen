@@ -173,9 +173,9 @@ private:
 class ComputePipeline : public gpu::ComputePipeline {
 public:
   struct LayoutInfo {
-    VkDescriptorSetLayout emptySetLayout = VK_NULL_HANDLE;         // set = 0, 3-5
-    VkDescriptorSetLayout storageBufferSetLayout = VK_NULL_HANDLE; // set = 1
-    VkDescriptorSetLayout uniformSetLayout = VK_NULL_HANDLE;       // set = 2
+    VkDescriptorSetLayout storageBufferSetLayout = VK_NULL_HANDLE; // set = 0
+    VkDescriptorSetLayout uniformSetLayout = VK_NULL_HANDLE;       // set = 1
+    VkDescriptorSetLayout emptySetLayout = VK_NULL_HANDLE;         // set = 2-5
     VkDescriptorSetLayout accelerationStructureSetLayout =
         VK_NULL_HANDLE; // set = 6
     VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;

@@ -3,6 +3,6 @@
 This sample builds BLAS/TLAS through the Luau `sn.Raytracing` API, binds the TLAS to a compute shader, and traces inline rays with `RayQuery`.
 
 - `main.luau` creates the acceleration structures, dispatches a compute pipeline, and displays the storage-buffer result as a texture.
-- `ray_query.slang` uses `RaytracingAccelerationStructure` at SPIR-V `set 6` / DX `space6`.
+- `ray_query.slang` uses the compute `RWByteAddressBuffer` output at SPIR-V `set 0` / DX `space0`, and `RaytracingAccelerationStructure` at SPIR-V `set 6` / DX `space6`.
 
 The sample requires a desktop backend/device with ray query support.

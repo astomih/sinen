@@ -129,7 +129,7 @@ RWByteAddressBuffer outputPixels;
 Compute シェーダー:
 
 - `u[n], space0`: ストレージバッファ
-- `b[n], space0`: 均一バッファ
+- `b[n], space1`: 均一バッファ
 
 Ray tracing pipeline シェーダー:
 

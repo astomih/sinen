@@ -485,15 +485,15 @@ Device::createComputePipeline(const ComputePipeline::CreateInfo &createInfo) {
   }
 
   std::array<VkDescriptorSetLayout, 7> rayQuerySetLayouts = {
-      emptySetLayout,
       storageSetLayout,
       uniformSetLayout,
       emptySetLayout,
       emptySetLayout,
       emptySetLayout,
+      emptySetLayout,
       accelerationStructureSetLayout};
-  std::array<VkDescriptorSetLayout, 3> setLayouts = {
-      emptySetLayout, storageSetLayout, uniformSetLayout};
+  std::array<VkDescriptorSetLayout, 2> setLayouts = {storageSetLayout,
+                                                     uniformSetLayout};
   VkPipelineLayoutCreateInfo layoutCI{};
   layoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
   layoutCI.setLayoutCount = static_cast<uint32_t>(

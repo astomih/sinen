@@ -129,7 +129,7 @@ Pixel shader:
 Compute shader:
 
 - `u[n], space0`: storage buffers
-- `b[n], space0`: uniform buffers
+- `b[n], space1`: uniform buffers
 
 Ray tracing pipeline shaders:
 

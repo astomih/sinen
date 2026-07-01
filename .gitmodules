@@ -58,3 +58,9 @@
 [submodule "tests/cpp/googletest"]
 	path = tests/cpp/googletest
 	url = https://github.com/google/googletest
+[submodule "libs/box2d"]
+	path = libs/box2d
+	url = https://github.com/erincatto/box2d
+[submodule "libs/box3d"]
+	path = libs/box3d
+	url = https://github.com/erincatto/box3d

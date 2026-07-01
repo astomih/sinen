@@ -373,7 +373,9 @@ build/msvc2026-debug/*
 build/msvc2026-release/*
 !build/msvc2026-release/.gitkeep
 
-build/android/arm64-v8a_26_Release/*
+build/android/arm64-v8a_26_Release/
+build/android/arm64-v8a_28_Release/
+build/android/arm64-v8a_31_Release/
 build/android/.gradle/*
 build/android/app/build/*
 build/android/build/*

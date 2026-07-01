@@ -299,7 +299,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             "cppdap",
             "Jolt",
             "miniz",
-            "slang",
+            "slang-compiler",
+            "ktx_read",
+            "msdfgen-core",
+            "TracyClient",
             "sinen",
         };
     }

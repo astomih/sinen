@@ -4,6 +4,7 @@ local G = require("../global")
 local examples = {
 	{ label = "Compute", dir = "compute" },
 	{ label = "Ray Tracing", dir = "ray_tracing" },
+	{ label = "Path Tracer", dir = "path_tracer" },
 	{ label = "Ray Query", dir = "ray_query" },
 }
 

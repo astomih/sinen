@@ -56,6 +56,7 @@ auto alloc = [](void *ud, void *ptr, size_t osize, size_t nsize) -> void * {
   return nptr;
 };
 bool isEnableDebugger = false;
+bool isDebuggerConnected = false;
 luau::debugger::Debugger debugger(false);
 void luaPushcfunction2(lua_State *L, lua_CFunction f) {
   lua_pushcfunction(L, f, "sn function");
@@ -185,7 +186,7 @@ int luaLoadSource(lua_State *L, const String &source, const String &chunkname,
   int status =
       luau_load(L, chunkname.c_str(), bytecode.data(), bytecode.size(), 0);
   if (status == LUA_OK) {
-    if (isEnableDebugger) {
+    if (isEnableDebugger && isDebuggerConnected) {
       debugger.onLuaFileLoaded(gLua, fullPath, true);
     }
     return LUA_OK;
@@ -340,9 +341,9 @@ static void registerAll(lua_State *L) {
 
 bool Script::initialize(bool isScriptDebug) {
   isEnableDebugger = isScriptDebug;
-  if (isScriptDebug) {
-    bool isDebuggerConnected = false;
-    auto logHandler = [&isDebuggerConnected](std::string_view msg) {
+  isDebuggerConnected = false;
+  if (isScriptDebug && !isDebuggerConnected) {
+    auto logHandler = [&](std::string_view msg) {
       if (msg == "[info][Luau.Debugger][debugger.cpp:126] Debugger client "
                  "connected\n") {
         isDebuggerConnected = true;
@@ -363,7 +364,7 @@ bool Script::initialize(bool isScriptDebug) {
       timeout -= delayStep;
       if (timeout == 0) {
         Log::error("Luau debugger connection timed out.");
-        return false;
+        break;
       }
     }
   }
@@ -374,7 +375,7 @@ bool Script::initialize(bool isScriptDebug) {
     return false;
   }
   luaL_openlibs(gLua);
-  if (isScriptDebug) {
+  if (isScriptDebug && isDebuggerConnected) {
     debugger.initialize(gLua);
   }
   if (auto *cb = lua_callbacks(gLua)) {
@@ -398,9 +399,6 @@ void Script::shutdown() {
   if (!gLua) {
     return;
   }
-  if (isEnableDebugger) {
-    debugger.release(gLua);
-  }
   if (gSetupRef != LUA_NOREF) {
     luaLUnref2(gLua, LUA_REGISTRYINDEX, gSetupRef);
     gSetupRef = LUA_NOREF;
@@ -416,6 +414,9 @@ void Script::shutdown() {
   lua_gc(gLua, LUA_GCCOLLECT, 0);
   lua_gc(gLua, LUA_GCCOLLECT, 0);
   lua_close(gLua);
+  if (isEnableDebugger && isDebuggerConnected) {
+    debugger.stop();
+  }
   gLua = nullptr;
   gScenePhase = ScriptScenePhase::Running;
   gSetupTasks = TaskGroup();

@@ -15,7 +15,8 @@
       "serverReadyAction": {
         "pattern": "Luau Debug server started on 58000",
         "action": "startDebugging",
-        "name": "Luau Debugger"
+        "name": "Luau Debugger",
+        "killOnServerStop": true
       }
     },
     {

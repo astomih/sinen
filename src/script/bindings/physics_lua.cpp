@@ -6,6 +6,7 @@
 #include <math/matrix.hpp>
 #include <math/quaternion.hpp>
 #include <math/vector.hpp>
+#include <math/geometry/ray.hpp>
 #include <physics/physics.hpp>
 #include <physics/world2d.hpp>
 #include <physics/world3d.hpp>
@@ -150,6 +151,52 @@ static int lWorld3DAddCollider(lua_State *L) {
   w->addCollider(c, active);
   return 0;
 }
+static int lWorld3DRaycastClosest(lua_State *L) {
+  auto w = udPtr<World3D>(L, 1);
+  Vec3 origin;
+  Vec3 direction;
+  float maxDistance = 0.0f;
+
+  if (udValueOrNull<Ray>(L, 2) != nullptr) {
+    const auto &ray = udValue<Ray>(L, 2);
+    origin = ray.origin;
+    direction = ray.direction;
+    maxDistance = lua_gettop(L) >= 3
+                      ? static_cast<float>(luaL_checknumber(L, 3))
+                      : direction.length();
+  } else {
+    origin = udValue<Vec3>(L, 2);
+    direction = udValue<Vec3>(L, 3);
+    maxDistance = lua_gettop(L) >= 4
+                      ? static_cast<float>(luaL_checknumber(L, 4))
+                      : direction.length();
+  }
+
+  RaycastHit3D hit;
+  if (!w->raycastClosest(origin, direction, maxDistance, hit)) {
+    lua_pushnil(L);
+    return 1;
+  }
+
+  lua_createtable(L, 0, 8);
+  udNewOwned<Collider>(L, Collider(*w, hit.colliderId));
+  lua_setfield(L, -2, "collider");
+  udNewOwned<Vec3>(L, hit.point);
+  lua_setfield(L, -2, "point");
+  udNewOwned<Vec3>(L, hit.normal);
+  lua_setfield(L, -2, "normal");
+  lua_pushnumber(L, hit.fraction);
+  lua_setfield(L, -2, "fraction");
+  lua_pushnumber(L, hit.distance);
+  lua_setfield(L, -2, "distance");
+  lua_pushinteger(L, static_cast<lua_Integer>(hit.userMaterialId));
+  lua_setfield(L, -2, "userMaterialId");
+  lua_pushinteger(L, static_cast<lua_Integer>(hit.triangleIndex));
+  lua_setfield(L, -2, "triangleIndex");
+  lua_pushinteger(L, static_cast<lua_Integer>(hit.childIndex));
+  lua_setfield(L, -2, "childIndex");
+  return 1;
+}
 static int lWorld3DRemoveCollider(lua_State *L) {
   auto w = udPtr<World3D>(L, 1);
   auto &c = udValue<Collider>(L, 2);
@@ -232,6 +279,8 @@ void registerPhysics(lua_State *L) {
   lua_setfield(L, -2, "newCapsuleCollider");
   luaPushcfunction2(L, lWorld3DAddCollider);
   lua_setfield(L, -2, "addCollider");
+  luaPushcfunction2(L, lWorld3DRaycastClosest);
+  lua_setfield(L, -2, "raycastClosest");
   luaPushcfunction2(L, lWorld3DRemoveCollider);
   lua_setfield(L, -2, "removeCollider");
   luaPushcfunction2(L, lWorld3DDestroyCollider);

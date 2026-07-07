@@ -538,6 +538,23 @@ export type Collider = {
 	destroy: (self: Collider) -> nil,
 }
 
+export type Ray = {
+	new: ((origin: Vec3, direction: Vec3) -> Ray) & (() -> Ray),
+	origin: Vec3,
+	direction: Vec3,
+}
+
+export type RaycastHit3D = {
+	collider: Collider,
+	point: Vec3,
+	normal: Vec3,
+	fraction: number,
+	distance: number,
+	userMaterialId: number,
+	triangleIndex: number,
+	childIndex: number,
+}
+
 export type World2D = {
 	new: () -> World2D,
 	newBoxCollider: (self: World2D, transform: Transform, isStatic: boolean) -> Collider,
@@ -589,6 +606,8 @@ export type World3D = {
 
 	bodyCount: (self: World3D) -> number,
 	addCollider: (self: World3D, collider: Collider, isActive: boolean) -> nil,
+	raycastClosest: ((self: World3D, origin: Vec3, direction: Vec3, maxDistance: number?) -> RaycastHit3D?)
+		& ((self: World3D, ray: Ray, maxDistance: number?) -> RaycastHit3D?),
 	removeCollider: (self: World3D, collider: Collider) -> nil,
 	destroyCollider: (self: World3D, collider: Collider) -> nil,
 
@@ -933,6 +952,7 @@ return {
 	Pivot = {} :: Pivot,
 	Rect = {} :: Rect,
 	Transform = {} :: Transform,
+	Ray = {} :: Ray,
 	Collider = {} :: Collider,
 	World2D = {} :: World2D,
 	World3D = {} :: World3D,

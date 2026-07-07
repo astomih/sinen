@@ -1,4 +1,5 @@
 #include "luaapi.hpp"
+#include <math/quaternion.hpp>
 #include <math/vec3.hpp>
 
 namespace sinen {
@@ -97,6 +98,12 @@ static int lVec3Length(lua_State *L) {
   lua_pushnumber(L, v.length());
   return 1;
 }
+static int lVec3Forward(lua_State *L) {
+  auto v = udValue<Vec3>(L, 1);
+  auto &rotation = udValue<Vec3>(L, 2);
+  udNewOwned<Vec3>(L, Vec3::transform(v, Quat::fromEuler(rotation)));
+  return 1;
+}
 static int lVec3Normalize(lua_State *L) {
   auto v = udValue<Vec3>(L, 1);
   v.normalize();
@@ -150,6 +157,8 @@ void registerVec3(lua_State *L) {
   lua_setfield(L, -2, "copy");
   luaPushcfunction2(L, lVec3Length);
   lua_setfield(L, -2, "length");
+  luaPushcfunction2(L, lVec3Forward);
+  lua_setfield(L, -2, "forward");
   luaPushcfunction2(L, lVec3Normalize);
   lua_setfield(L, -2, "normalize");
   luaPushcfunction2(L, lVec3Dot);

@@ -282,6 +282,37 @@ public:
     }
   }
 
+  bool raycastClosest(const Vec3 &origin, const Vec3 &direction,
+                      float maxDistance, RaycastHit3D &hit) override {
+    const float directionLength = direction.length();
+    if (directionLength <= 0.0f || maxDistance <= 0.0f) {
+      return false;
+    }
+
+    const Vec3 translation = direction * (maxDistance / directionLength);
+    b3RayResult result = b3World_CastRayClosest(
+        world, toB3(origin), toB3(translation), b3DefaultQueryFilter());
+    if (!result.hit) {
+      return false;
+    }
+
+    const UInt64 shapeKey = b3StoreShapeId(result.shapeId);
+    const auto colliderEntry = shapeMap.find(shapeKey);
+    if (colliderEntry == shapeMap.end()) {
+      return false;
+    }
+
+    hit.colliderId = colliderEntry->second;
+    hit.point = fromB3(result.point);
+    hit.normal = fromB3(result.normal);
+    hit.fraction = result.fraction;
+    hit.distance = maxDistance * result.fraction;
+    hit.userMaterialId = static_cast<UInt64>(result.userMaterialId);
+    hit.triangleIndex = result.triangleIndex;
+    hit.childIndex = result.childIndex;
+    return true;
+  }
+
   void removeCollider(const Collider &collider) override {
     Body3D *entry = findBody(collider);
     if (entry != nullptr && b3Body_IsEnabled(entry->body)) {
@@ -297,6 +328,7 @@ public:
     if (b3Body_IsValid(entry->second.body)) {
       b3DestroyBody(entry->second.body);
     }
+    shapeMap.erase(b3StoreShapeId(entry->second.shape));
     bodyMap.erase(entry);
   }
 
@@ -308,6 +340,7 @@ public:
 
 private:
   Hashmap<UInt32, Body3D> bodyMap = {};
+  Hashmap<UInt64, UInt32> shapeMap = {};
   b3WorldId world = {};
 
   Body3D *findBody(const Collider &collider) {
@@ -331,6 +364,7 @@ private:
   Collider store(b3BodyId body, b3ShapeId shape) {
     Collider collider{*this, getNextId()};
     bodyMap[collider.id] = {body, shape};
+    shapeMap[b3StoreShapeId(shape)] = collider.id;
     return collider;
   }
 

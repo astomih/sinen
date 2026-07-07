@@ -86,6 +86,21 @@ describe("Sinen Luau API", function()
 
 		expect(buffer:size()):toBe(64 * 3)
 	end)
+
+	it("casts physics rays for hit scan queries", function()
+		local world: sn.World3D = sn.World3D.new()
+		local collider = world:newSphereCollider(sn.Vec3.new(0, 0, 5), 1, true)
+		world:addCollider(collider, false)
+
+		local ray = sn.Ray.new(sn.Vec3.new(0), sn.Vec3.new(0, 0, 1))
+		local hit = world:raycastClosest(ray, 10)
+
+		expect(hit):toBeTruthy()
+		if hit then
+			expect(hit.collider:isValid()):toBeTruthy()
+			expect(hit.distance):toBeCloseTo(4)
+		end
+	end)
 end)
 
 return true

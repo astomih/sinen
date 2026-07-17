@@ -2,6 +2,14 @@
 
 -- This file is a Luau definition file for Sinen's Lua API.
 
+local ECS = require("./ecs")
+
+export type Entity = ECS.Entity
+export type Component<T> = ECS.Component<T>
+export type ComponentMap = ECS.ComponentMap
+export type System = ECS.System
+export type ECSWorld = ECS.World
+
 export type Buffer = {
 	new: (array: { any }) -> Buffer,
 	fromBytes: (bytes: { number }) -> Buffer,
@@ -925,6 +933,7 @@ export type Synth = {
 }
 
 return {
+	ECS = ECS,
 	Buffer = {} :: Buffer,
 	Vec3 = Vec3Impl,
 	Vec2 = Vec2Impl,

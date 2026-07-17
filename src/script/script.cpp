@@ -15,6 +15,7 @@
 #include <platform/window/window.hpp>
 
 #include "require.hpp"
+#include "ecs_luau.hpp"
 #include <Luau/Require.h>
 
 #include <debugger.h>
@@ -137,6 +138,24 @@ static void installRequireAlias(lua_State *L) {
 
   lua_pushcclosure(L, requireWithSinenAlias, "require", 1);
   lua_setglobal(L, "require");
+}
+
+static bool registerEcs(lua_State *L) {
+  const String source(ecsLuauSource.data(), ecsLuauSource.size());
+  if (luaLoadSource(L, source, "@sinen/ecs", "@sinen/ecs") != LUA_OK) {
+    return false;
+  }
+  if (lua_pcall(L, 0, 1, 0) != LUA_OK) {
+    const char *msg = lua_tostring(L, -1);
+    Log::error("[luau ECS error] {}", msg ? msg : "(unknown error)");
+    lua_pop(L, 1);
+    return false;
+  }
+  lua_getglobal(L, "sn");
+  lua_pushvalue(L, -2);
+  lua_setfield(L, -2, "ECS");
+  lua_pop(L, 2);
+  return true;
 }
 
 static void clearSceneEntryPoints(lua_State *L) {
@@ -390,6 +409,11 @@ bool Script::initialize(bool isScriptDebug) {
   lua_setglobal(gLua, "sn");
 
   registerAll(gLua);
+  if (!registerEcs(gLua)) {
+    lua_close(gLua);
+    gLua = nullptr;
+    return false;
+  }
   installRequireAlias(gLua);
 
   Graphics::addPostDrawFunc(drawNowLoadingOverlay);

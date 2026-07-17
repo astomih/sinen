@@ -290,13 +290,16 @@ function(sinen_add_physics_module)
 endfunction()
 
 function(sinen_add_script_module)
+  file(READ ${SINEN_SOURCE_DIR}/api/ecs.luau SINEN_ECS_LUAU_SOURCE)
+  configure_file(${SINEN_SOURCE_DIR}/src/script/ecs_luau.hpp.in
+                 ${CMAKE_CURRENT_BINARY_DIR}/generated/ecs_luau.hpp @ONLY)
   sinen_glob_module(sinen_script script)
   target_include_directories(
     sinen_script
     PUBLIC ${SINEN_SOURCE_DIR}/src/script/include
            ${SINEN_SOURCE_DIR}/libs/luau-debugger/debugger/include
            ${SINEN_SOURCE_DIR}/libs/cppdap/include
-    PRIVATE ${SINEN_SOURCE_DIR}/src)
+    PRIVATE ${SINEN_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/generated)
   target_link_libraries(sinen_script PUBLIC Luau.VM Luau.Compiler Luau.Ast
                                             Luau.Require cppdap Luau.Debugger
                                             SDL3::SDL3)

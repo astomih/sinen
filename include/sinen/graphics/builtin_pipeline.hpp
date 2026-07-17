@@ -11,6 +11,7 @@ public:
   static GraphicsPipeline getDefault2D();
   static GraphicsPipeline getFont2D();
   static GraphicsPipeline getRect2D();
+  static GraphicsPipeline getInstancedRect2D();
   static GraphicsPipeline getCubemap();
 };
 } // namespace sinen

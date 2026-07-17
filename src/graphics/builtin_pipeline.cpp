@@ -5,6 +5,7 @@ namespace sinen {
 static GraphicsPipeline default2D;
 static GraphicsPipeline font2D;
 static GraphicsPipeline rect2D;
+static GraphicsPipeline instancedRect2D;
 static GraphicsPipeline default3D;
 static GraphicsPipeline instanced3D;
 static GraphicsPipeline cubemap;
@@ -43,6 +44,12 @@ bool BuiltinPipeline::initialize() {
   rect2D.setEnableDepthTest(false);
   rect2D.build();
 
+  instancedRect2D.setVertexShader(vsInstanced);
+  instancedRect2D.setFragmentShader(rectFS);
+  instancedRect2D.setEnableInstanced(true);
+  instancedRect2D.setEnableDepthTest(false);
+  instancedRect2D.build();
+
   cubemap.setVertexShader(cubemapVS);
   cubemap.setFragmentShader(cubemapFS);
   cubemap.setEnableDepthTest(true);
@@ -55,6 +62,7 @@ void BuiltinPipeline::shutdown() {
   default2D = GraphicsPipeline();
   font2D = GraphicsPipeline();
   rect2D = GraphicsPipeline();
+  instancedRect2D = GraphicsPipeline();
   default3D = GraphicsPipeline();
   instanced3D = GraphicsPipeline();
   cubemap = GraphicsPipeline();
@@ -64,6 +72,9 @@ GraphicsPipeline BuiltinPipeline::getInstanced3D() { return instanced3D; }
 GraphicsPipeline BuiltinPipeline::getDefault2D() { return default2D; }
 GraphicsPipeline BuiltinPipeline::getFont2D() { return font2D; }
 GraphicsPipeline BuiltinPipeline::getRect2D() { return rect2D; }
+GraphicsPipeline BuiltinPipeline::getInstancedRect2D() {
+  return instancedRect2D;
+}
 GraphicsPipeline BuiltinPipeline::getCubemap() { return cubemap; }
 
 } // namespace sinen

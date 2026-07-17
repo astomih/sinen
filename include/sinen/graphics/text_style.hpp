@@ -41,6 +41,11 @@ public:
   float angle = 0.0f;
   Pivot pivot = Pivot::TopLeft;
 };
+
+struct TextBatchItem {
+  String text;
+  TextTransform transform;
+};
 } // namespace sinen
 
 #endif

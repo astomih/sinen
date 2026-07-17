@@ -18,6 +18,7 @@
 #include <SDL3/SDL.h>
 
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <optional>
 #include <vector>
@@ -700,12 +701,62 @@ static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
       instanceData.push_back(transform.getWorldMatrix());
     }
   }
+  Ptr<gpu::Buffer> instanceBuffer;
+  if (!instanceData.empty()) {
+    const auto instanceSize =
+        static_cast<UInt32>(sizeof(Mat4) * instanceData.size());
+    gpu::Buffer::CreateInfo instanceBufferInfo{};
+    instanceBufferInfo.allocator = GlobalAllocator::get();
+    instanceBufferInfo.size = instanceSize;
+    instanceBufferInfo.usage = gpu::BufferUsage::Vertex;
+    instanceBuffer = device->createBuffer(instanceBufferInfo);
+
+    gpu::TransferBuffer::CreateInfo transferInfo{};
+    transferInfo.allocator = GlobalAllocator::get();
+    transferInfo.size = instanceSize;
+    transferInfo.usage = gpu::TransferBufferUsage::Upload;
+    auto transferBuffer = device->createTransferBuffer(transferInfo);
+    bool uploaded = false;
+    if (instanceBuffer && transferBuffer) {
+      if (auto *mapped = transferBuffer->map(false)) {
+        memcpy(mapped, instanceData.data(), instanceSize);
+        uploaded = true;
+      }
+      transferBuffer->unmap();
+
+      auto uploadCommandBuffer = uploaded
+                                     ? device->acquireCommandBuffer(
+                                           {GlobalAllocator::get()})
+                                     : nullptr;
+      if (uploaded && uploadCommandBuffer) {
+        auto copyPass = uploadCommandBuffer->beginCopyPass();
+        gpu::BufferTransferInfo src{};
+        src.transferBuffer = transferBuffer;
+        gpu::BufferRegion dst{};
+        dst.buffer = instanceBuffer;
+        dst.size = instanceSize;
+        copyPass->uploadBuffer(src, dst, false);
+        uploadCommandBuffer->endCopyPass(copyPass);
+        device->submitCommandBuffer(uploadCommandBuffer);
+      } else {
+        uploaded = false;
+      }
+    }
+    if (!uploaded) {
+      instanceBuffer.reset();
+      instanceData.clear();
+    }
+  }
   drawCallCountPerFrame++;
   prepareRenderPassFrame();
   SDL_assert(currentRenderPass);
 
   vertexBufferBindings.emplace_back(
       gpu::BufferBinding{.buffer = model.vertexBuffer, .offset = 0});
+  if (instanceBuffer) {
+    vertexBufferBindings.emplace_back(
+        gpu::BufferBinding{.buffer = instanceBuffer, .offset = 0});
+  }
   indexBufferBinding =
       gpu::BufferBinding{.buffer = model.indexBuffer, .offset = 0};
 
@@ -718,9 +769,14 @@ static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
   renderPass->bindIndexBuffer(indexBufferBinding,
                               gpu::IndexElementSize::Uint32);
 
-  commandBuffer->pushVertexUniformData(0, &wvp, sizeof(wvp));
-  renderPass->drawIndexedPrimitives(model.getMesh().data()->indices.size(), 1,
-                                    0, 0, 0);
+  const Mat4 &vertexParams = instanceBuffer ? viewproj : wvp;
+  commandBuffer->pushVertexUniformData(0, &vertexParams,
+                                       sizeof(vertexParams));
+  const auto instanceCount = instanceBuffer
+                                 ? static_cast<UInt32>(instanceData.size())
+                                 : 1u;
+  renderPass->drawIndexedPrimitives(model.getMesh().data()->indices.size(),
+                                    instanceCount, 0, 0, 0);
   clearCurrentDrawState();
 }
 
@@ -901,6 +957,24 @@ void Graphics::drawRect(const Rect &rect, const Color &color, float angle) {
   currentCommandBuffer->pushFragmentUniformData(1, &color, sizeof(Color));
   drawBase2D(transforms, sprite);
 }
+void Graphics::drawRects(const Array<Rect> &rects, const Color &color) {
+  if (rects.empty()) {
+    return;
+  }
+  if (rects.size() == 1) {
+    drawRect(rects.front(), color);
+    return;
+  }
+  currentPipeline = BuiltinPipeline::getInstancedRect2D();
+  Array<Transform2D> transforms;
+  transforms.reserve(rects.size());
+  for (const auto &rect : rects) {
+    transforms.emplace_back(
+        Transform2D{rect.center(), 0.0f, rect.size()});
+  }
+  currentCommandBuffer->pushFragmentUniformData(1, &color, sizeof(Color));
+  drawBase2D(transforms, sprite);
+}
 void Graphics::drawImage(const Ptr<Texture> &texture, const Rect &rect,
                          float angle) {
   if (customPipeline.has_value() && customPipeline.value().get() != nullptr)
@@ -985,6 +1059,119 @@ void Graphics::drawText(StringView text, const TextStyle &style,
       Vec4(atlasSize.x, atlasSize.y, textData.distanceFieldRange, 0.0f)};
   currentCommandBuffer->pushFragmentUniformData(1, &params, sizeof(params));
 
+  drawBase2D(transforms, model, fontSampler);
+}
+void Graphics::drawTexts(const Array<TextBatchItem> &items,
+                         const TextStyle &style) {
+  Font *font = style.font();
+  if (font == nullptr || items.empty() || style.fontSize <= 0.0f) {
+    return;
+  }
+
+  Array<StringView> texts;
+  texts.reserve(items.size());
+  for (const auto &item : items) {
+    texts.emplace_back(item.text);
+  }
+  TextBatchDrawData textData = font->makeTextBatchDrawData(texts);
+  if (!textData.valid || textData.texture == nullptr ||
+      textData.meshes.size() != items.size()) {
+    return;
+  }
+
+  const float scale = style.fontSize / static_cast<float>(font->size());
+  const float meshScale = scale * 0.5f;
+  if (meshScale == 0.0f) {
+    return;
+  }
+
+  auto combinedData = makePtr<Mesh::Data>();
+  for (Size itemIndex = 0; itemIndex < items.size(); ++itemIndex) {
+    const auto sourceData = textData.meshes[itemIndex].data();
+    if (sourceData == nullptr || sourceData->vertices.empty()) {
+      continue;
+    }
+
+    float minX = sourceData->vertices[0].position.x;
+    float maxX = minX;
+    float minY = sourceData->vertices[0].position.y;
+    float maxY = minY;
+    for (const auto &vertex : sourceData->vertices) {
+      minX = std::min(minX, vertex.position.x);
+      maxX = std::max(maxX, vertex.position.x);
+      minY = std::min(minY, vertex.position.y);
+      maxY = std::max(maxY, vertex.position.y);
+    }
+    const float centerX = (minX + maxX) * 0.5f;
+    const float centerY = (minY + maxY) * 0.5f;
+    Vec2 textPosition = items[itemIndex].transform.position;
+    switch (items[itemIndex].transform.pivot) {
+    case Pivot::TopLeft:
+      textPosition += Vec2(-minX, maxY) * meshScale;
+      break;
+    case Pivot::TopCenter:
+      textPosition += Vec2(-centerX, maxY) * meshScale;
+      break;
+    case Pivot::TopRight:
+      textPosition += Vec2(-maxX, maxY) * meshScale;
+      break;
+    case Pivot::Left:
+      textPosition += Vec2(-minX, centerY) * meshScale;
+      break;
+    case Pivot::Center:
+      textPosition += Vec2(-centerX, centerY) * meshScale;
+      break;
+    case Pivot::Right:
+      textPosition += Vec2(-maxX, centerY) * meshScale;
+      break;
+    case Pivot::BottomLeft:
+      textPosition += Vec2(-minX, minY) * meshScale;
+      break;
+    case Pivot::BottomCenter:
+      textPosition += Vec2(-centerX, minY) * meshScale;
+      break;
+    case Pivot::BottomRight:
+      textPosition += Vec2(-maxX, minY) * meshScale;
+      break;
+    }
+
+    const float angle = items[itemIndex].transform.angle;
+    const float cosine = std::cos(angle);
+    const float sine = std::sin(angle);
+    const float localX = textPosition.x / meshScale;
+    const float localY = -textPosition.y / meshScale;
+    const UInt32 vertexOffset =
+        static_cast<UInt32>(combinedData->vertices.size());
+    combinedData->vertices.reserve(combinedData->vertices.size() +
+                                   sourceData->vertices.size());
+    for (auto vertex : sourceData->vertices) {
+      const float x = vertex.position.x;
+      const float y = vertex.position.y;
+      vertex.position.x = cosine * x - sine * y + localX;
+      vertex.position.y = sine * x + cosine * y + localY;
+      combinedData->vertices.push_back(vertex);
+    }
+    combinedData->indices.reserve(combinedData->indices.size() +
+                                  sourceData->indices.size());
+    for (const UInt32 index : sourceData->indices) {
+      combinedData->indices.push_back(vertexOffset + index);
+    }
+  }
+  if (combinedData->vertices.empty() || combinedData->indices.empty()) {
+    return;
+  }
+
+  currentPipeline = BuiltinPipeline::getFont2D();
+  Model model;
+  model.loadFromVertexArray(Mesh(combinedData));
+  setTexture(0, textData.texture);
+  const Vec2 atlasSize = textData.texture->size();
+  const FontFragmentParams params{
+      style.color,
+      Vec4(atlasSize.x, atlasSize.y, textData.distanceFieldRange, 0.0f)};
+  currentCommandBuffer->pushFragmentUniformData(1, &params, sizeof(params));
+  Array<Transform2D> transforms(
+      1, {Vec2(0.0f), 0.0f, Vec2(scale)});
   drawBase2D(transforms, model, fontSampler);
 }
 void Graphics::drawCubemap(const Ptr<Texture> &cubemap) {

@@ -43,8 +43,8 @@ constexpr float kAtlasEstimateSlack = 1.6f;
 
 struct PackedAtlasData {
   Array<int> codepoints;
-  Array<stbtt_packedchar> packedChars;
-  Hashmap<UInt32, UInt32> glyphLookup;
+  mutable Array<stbtt_packedchar> packedChars;
+  mutable Hashmap<UInt32, UInt32> glyphLookup;
   Array<unsigned char> atlasBitmap;
   gpu::TextureFormat textureFormat = gpu::TextureFormat::R8_UNORM;
   int channels = 1;
@@ -440,9 +440,9 @@ private:
   Array<unsigned char> fontBytes;
   Hashmap<UInt32, UInt32> glyphLookup;
   stbtt_fontinfo fontInfo;
-  Ptr<Texture> texture;
-  UInt32 sheetSize;
-  UInt32 fallbackGlyphIndex;
+  mutable Ptr<Texture> texture;
+  mutable UInt32 sheetSize;
+  mutable UInt32 fallbackGlyphIndex;
   FontMethod method;
   int distanceFieldRange;
   mutable Hashmap<String, TextDrawData> textCache;
@@ -486,6 +486,9 @@ public:
     this->distanceFieldRange = fontMethod == FontMethod::MSDF
                                    ? msdfPixelRangeForSize(bakedPointSize)
                                    : 1;
+    this->packedChars.clear();
+    this->glyphLookup.clear();
+    this->texture = Texture::create();
     this->textCache.clear();
     this->fontBytes = std::move(bytes);
 
@@ -761,6 +764,95 @@ public:
     data.distanceFieldRange = static_cast<float>(atlasData.distanceFieldRange);
     data.valid = true;
     textCache.emplace(cacheKey, data);
+    return data;
+  }
+
+  TextBatchDrawData
+  makeTextBatchDrawData(const Array<StringView> &texts) override {
+    TextBatchDrawData data;
+    if (!this->loaded.load() || texts.empty()) {
+      return data;
+    }
+
+    Array<int> requiredCodepoints;
+    Hashmap<UInt32, UInt32> requiredLookup;
+    for (const auto text : texts) {
+      for (const int codepoint : collectTextCodepoints(text)) {
+        if (requiredLookup.emplace(static_cast<UInt32>(codepoint), 1).second) {
+          requiredCodepoints.push_back(codepoint);
+        }
+      }
+    }
+    if (requiredCodepoints.empty()) {
+      return data;
+    }
+
+    bool atlasMissingGlyph = !texture || sheetSize == 0;
+    for (const int codepoint : requiredCodepoints) {
+      if (!glyphLookup.contains(static_cast<UInt32>(codepoint))) {
+        atlasMissingGlyph = true;
+        break;
+      }
+    }
+
+    if (atlasMissingGlyph) {
+      Array<int> atlasCodepoints;
+      Hashmap<UInt32, UInt32> atlasLookup;
+      atlasCodepoints.reserve(glyphLookup.size() + requiredCodepoints.size());
+      for (const auto &[codepoint, unused] : glyphLookup) {
+        (void)unused;
+        atlasLookup.emplace(codepoint, 1);
+        atlasCodepoints.push_back(static_cast<int>(codepoint));
+      }
+      for (const int codepoint : requiredCodepoints) {
+        if (atlasLookup.emplace(static_cast<UInt32>(codepoint), 1).second) {
+          atlasCodepoints.push_back(codepoint);
+        }
+      }
+
+      PackedAtlasData atlasData;
+      const int initialSheetSize = estimateInitialAtlasSize(
+          fontInfo, this->m_size, atlasCodepoints, this->method,
+          this->distanceFieldRange);
+      for (int candidateSize : kAtlasSizes) {
+        if (candidateSize < initialSheetSize) {
+          continue;
+        }
+        const bool packed =
+            this->method == FontMethod::MSDF
+                ? tryPackMsdfAtlas(fontInfo, this->m_size, candidateSize,
+                                   atlasCodepoints, this->distanceFieldRange,
+                                   atlasData)
+                : tryPackAtlas(this->fontBytes.data(), this->m_size,
+                               candidateSize, atlasCodepoints, atlasData);
+        if (packed) {
+          break;
+        }
+      }
+      if (!atlasData.success || atlasData.sheetSize == 0 ||
+          atlasData.packedChars.empty()) {
+        return data;
+      }
+
+      auto batchTexture = Texture::create();
+      batchTexture->loadFromMemory(
+          atlasData.atlasBitmap.data(), atlasData.sheetSize,
+          atlasData.sheetSize, atlasData.textureFormat, atlasData.channels);
+      packedChars = std::move(atlasData.packedChars);
+      glyphLookup = std::move(atlasData.glyphLookup);
+      sheetSize = atlasData.sheetSize;
+      fallbackGlyphIndex = selectFallbackGlyphIndex(glyphLookup);
+      texture = std::move(batchTexture);
+    }
+
+    data.meshes.reserve(texts.size());
+    for (const auto text : texts) {
+      data.meshes.push_back(makeTextMesh(text, packedChars, glyphLookup,
+                                         fallbackGlyphIndex, sheetSize));
+    }
+    data.texture = texture;
+    data.distanceFieldRange = static_cast<float>(distanceFieldRange);
+    data.valid = data.texture != nullptr && !data.meshes.empty();
     return data;
   }
 };

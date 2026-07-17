@@ -18,6 +18,13 @@ struct TextDrawData {
   bool valid = false;
 };
 
+struct TextBatchDrawData {
+  Array<Mesh> meshes;
+  Ptr<Texture> texture;
+  float distanceFieldRange = 1.0f;
+  bool valid = false;
+};
+
 /**
  * @brief font load and render to texture.
  *
@@ -46,6 +53,8 @@ public:
   virtual Ptr<Texture> getAtlas() const = 0;
   virtual Mesh getTextMesh(StringView text) const = 0;
   virtual TextDrawData makeTextDrawData(StringView text) const = 0;
+  virtual TextBatchDrawData
+  makeTextBatchDrawData(const Array<StringView> &texts) = 0;
 };
 } // namespace sinen
 #endif // !SINEN_FONT_HPP

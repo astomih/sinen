@@ -5,7 +5,7 @@
 #include <cstring>
 #include <format>
 #include <functional>
-#include <type_traits>
+#include <iterator>
 #include <variant>
 #include <vector>
 
@@ -33,6 +33,7 @@ static std::uint64_t hotId = 0;
 struct RectDrawCommand {
   Rect rect;
   Color color;
+  std::uint8_t layer;
 };
 
 struct TextDrawCommand {
@@ -82,8 +83,9 @@ static Ptr<Font> fontPtr() {
   return defaultFont;
 }
 
-static void queueRect(const Rect &rect, const Color &color) {
-  drawCommands.emplace_back(RectDrawCommand{rect, color});
+static void queueRect(const Rect &rect, const Color &color,
+                      std::uint8_t layer = 0) {
+  drawCommands.emplace_back(RectDrawCommand{rect, color, layer});
 }
 
 static void queueText(StringView text, const Ptr<Font> &font,
@@ -165,21 +167,74 @@ void Gui::newFrame() {
 }
 
 void Gui::render() {
+  struct RectBatch {
+    Color color;
+    Array<Rect> rects;
+  };
+
+  std::uint8_t maxLayer = 0;
   for (const auto &command : drawCommands) {
-    std::visit(
-        [](const auto &drawCommand) {
-          using Command = std::decay_t<decltype(drawCommand)>;
-          if constexpr (std::is_same_v<Command, RectDrawCommand>) {
-            Graphics::drawRect(drawCommand.rect, drawCommand.color);
-          } else {
-            Graphics::drawText(
-                drawCommand.text,
-                TextStyle(drawCommand.font, drawCommand.color,
-                          drawCommand.fontSize),
-                drawCommand.transform);
-          }
-        },
-        command);
+    if (const auto *rect = std::get_if<RectDrawCommand>(&command)) {
+      maxLayer = std::max(maxLayer, rect->layer);
+    }
+  }
+  for (unsigned int layer = 0; layer <= maxLayer; ++layer) {
+    std::vector<RectBatch> batches;
+    for (const auto &command : drawCommands) {
+      const auto *rect = std::get_if<RectDrawCommand>(&command);
+      if (rect == nullptr || rect->layer != layer) {
+        continue;
+      }
+      auto batch = std::find_if(
+          batches.begin(), batches.end(), [&](const RectBatch &candidate) {
+            return candidate.color.r == rect->color.r &&
+                   candidate.color.g == rect->color.g &&
+                   candidate.color.b == rect->color.b &&
+                   candidate.color.a == rect->color.a;
+          });
+      if (batch == batches.end()) {
+        batches.push_back(RectBatch{rect->color, {}});
+        batch = std::prev(batches.end());
+      }
+      batch->rects.push_back(rect->rect);
+    }
+    for (const auto &batch : batches) {
+      Graphics::drawRects(batch.rects, batch.color);
+    }
+  }
+
+  struct TextBatch {
+    Ptr<Font> font;
+    Color color;
+    float fontSize;
+    Array<TextBatchItem> items;
+  };
+  std::vector<TextBatch> textBatches;
+  for (const auto &command : drawCommands) {
+    const auto *text = std::get_if<TextDrawCommand>(&command);
+    if (text == nullptr) {
+      continue;
+    }
+    auto batch = std::find_if(
+        textBatches.begin(), textBatches.end(), [&](const TextBatch &candidate) {
+          return candidate.font == text->font &&
+                 candidate.fontSize == text->fontSize &&
+                 candidate.color.r == text->color.r &&
+                 candidate.color.g == text->color.g &&
+                 candidate.color.b == text->color.b &&
+                 candidate.color.a == text->color.a;
+        });
+    if (batch == textBatches.end()) {
+      textBatches.push_back(
+          TextBatch{text->font, text->color, text->fontSize, {}});
+      batch = std::prev(textBatches.end());
+    }
+    batch->items.push_back(TextBatchItem{text->text, text->transform});
+  }
+  for (const auto &batch : textBatches) {
+    Graphics::drawTexts(
+        batch.items,
+        TextStyle(batch.font, batch.color, batch.fontSize));
   }
   drawCommands.clear();
 }
@@ -244,7 +299,7 @@ bool Gui::checkbox(StringView text, bool checked, const Rect &rect) {
     const float pad = std::max(3.0f, side * 0.22f);
     queueRect(Rect(box.x + pad, box.y + pad, box.width - pad * 2.0f,
                    box.height - pad * 2.0f),
-              theme.accent);
+              theme.accent, 1);
   }
 
   auto *f = font();
@@ -281,7 +336,8 @@ float Gui::sliderFloat(StringView text, float value, float min, float max,
 
   queueRect(rect, widgetColor(id, hovered));
   const float t = max > min ? (value - min) / (max - min) : 0.0f;
-  queueRect(Rect(rect.x, rect.y, rect.width * t, rect.height), theme.accent);
+  queueRect(Rect(rect.x, rect.y, rect.width * t, rect.height), theme.accent,
+            1);
 
   auto *f = font();
   if (f != nullptr && f->isLoaded()) {
@@ -345,7 +401,7 @@ float Gui::scrollVertical(float scroll, const Rect &viewport,
 
   queueRect(track, Color(theme.background.r, theme.background.g,
                          theme.background.b, 0.55f));
-  queueRect(thumb, activeId == id ? theme.active : theme.accent);
+  queueRect(thumb, activeId == id ? theme.active : theme.accent, 1);
   return scroll;
 }
 } // namespace sinen

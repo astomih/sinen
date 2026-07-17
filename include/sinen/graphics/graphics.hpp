@@ -49,6 +49,7 @@ public:
   static void drawRect(const Rect &rect, const Color &color) {
     drawRect(rect, color, 0.0f);
   }
+  static void drawRects(const Array<Rect> &rects, const Color &color);
   static void drawImage(const Ptr<Texture> &texture, const Rect &rect,
                         float angle);
   static void drawImage(const Ptr<Texture> &texture, const Rect &rect) {
@@ -56,6 +57,8 @@ public:
   }
   static void drawText(StringView text, const TextStyle &style,
                        const TextTransform &transform);
+  static void drawTexts(const Array<TextBatchItem> &items,
+                        const TextStyle &style);
   static void drawCubemap(const Ptr<Texture> &cubemap);
   static void drawModel(const Model &model, const Transform &transform);
   static void drawModelInstanced(const Model &model,

@@ -249,10 +249,9 @@ bool Gui::checkbox(StringView text, bool checked, const Rect &rect) {
 
   auto *f = font();
   if (f != nullptr && f->isLoaded()) {
-    const Vec2 textPos(rect.x + side + 8.0f,
-                       rect.y + (rect.height - currentFontSize) * 0.5f);
+    const Vec2 textPos(rect.x + side + 8.0f, rect.center().y);
     queueText(text, fontPtr(), theme.text, currentFontSize,
-              TextTransform(textPos));
+              TextTransform(textPos, 0.0f, Pivot::Left));
   }
   return value;
 }
@@ -290,9 +289,8 @@ float Gui::sliderFloat(StringView text, float value, float min, float max,
     label += ": ";
     label += std::format("{:.2f}", value);
     queueText(label, fontPtr(), theme.text, currentFontSize,
-              TextTransform(Vec2(
-                  rect.x + 8.0f,
-                  rect.y + (rect.height - currentFontSize) * 0.5f)));
+              TextTransform(Vec2(rect.x + 8.0f, rect.center().y), 0.0f,
+                            Pivot::Left));
   }
   return value;
 }

@@ -931,19 +931,50 @@ void Graphics::drawText(StringView text, const TextStyle &style,
   model.loadFromVertexArray(textData.mesh);
   const auto scale = style.fontSize / static_cast<float>(font->size());
   const auto meshScale = scale * 0.5f;
-  Vec2 textPosition = font->region(text, static_cast<int>(style.fontSize),
-                                   transform.pivot, transform.position)
-                          .topLeft();
+  Vec2 textPosition = transform.position;
   const auto meshData = textData.mesh.data();
   if (meshData != nullptr && !meshData->vertices.empty()) {
     auto minX = meshData->vertices[0].position.x;
+    auto maxX = minX;
+    auto minY = meshData->vertices[0].position.y;
     auto maxY = meshData->vertices[0].position.y;
     for (const auto &vertex : meshData->vertices) {
       minX = std::min(minX, vertex.position.x);
+      maxX = std::max(maxX, vertex.position.x);
+      minY = std::min(minY, vertex.position.y);
       maxY = std::max(maxY, vertex.position.y);
     }
-    textPosition.x -= minX * meshScale;
-    textPosition.y += maxY * meshScale;
+    const float centerX = (minX + maxX) * 0.5f;
+    const float centerY = (minY + maxY) * 0.5f;
+    switch (transform.pivot) {
+    case Pivot::TopLeft:
+      textPosition += Vec2(-minX, maxY) * meshScale;
+      break;
+    case Pivot::TopCenter:
+      textPosition += Vec2(-centerX, maxY) * meshScale;
+      break;
+    case Pivot::TopRight:
+      textPosition += Vec2(-maxX, maxY) * meshScale;
+      break;
+    case Pivot::Left:
+      textPosition += Vec2(-minX, centerY) * meshScale;
+      break;
+    case Pivot::Center:
+      textPosition += Vec2(-centerX, centerY) * meshScale;
+      break;
+    case Pivot::Right:
+      textPosition += Vec2(-maxX, centerY) * meshScale;
+      break;
+    case Pivot::BottomLeft:
+      textPosition += Vec2(-minX, minY) * meshScale;
+      break;
+    case Pivot::BottomCenter:
+      textPosition += Vec2(-centerX, minY) * meshScale;
+      break;
+    case Pivot::BottomRight:
+      textPosition += Vec2(-maxX, minY) * meshScale;
+      break;
+    }
   }
   Array<Transform2D> transforms(1,
                                 {textPosition, transform.angle, Vec2(scale)});

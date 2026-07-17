@@ -769,10 +769,19 @@ static int lScriptLoad(lua_State *L) {
   Script::load(StringView(filePath));
   return 0;
 }
+static int lScriptClearRequireCache(lua_State *L) {
+  if (lua_gettop(L) != 0) {
+    return luaLError2(L, "Script.clearRequireCache expects no arguments");
+  }
+  Script::clearRequireCache();
+  return 0;
+}
 void registerScript(lua_State *L) {
   pushSnNamed(L, "Script");
   luaPushcfunction2(L, lScriptLoad);
   lua_setfield(L, -2, "load");
+  luaPushcfunction2(L, lScriptClearRequireCache);
+  lua_setfield(L, -2, "clearRequireCache");
   lua_pop(L, 1);
 }
 } // namespace sinen

@@ -11,9 +11,9 @@ local expect = test.expect
 type Position = { x: number, y: number }
 type Velocity = { x: number, y: number }
 
-local Position = ECS.component<Position>("Position")
-local Velocity = ECS.component<Velocity>("Velocity")
-local Name = ECS.component<string>("Name")
+local Position: sn.Component<Position> = ECS.component("Position")
+local Velocity: sn.Component<Velocity> = ECS.component("Velocity")
+local Name: sn.Component<string> = ECS.component("Name")
 
 describe("ECS", function()
 	it("creates, updates, removes, and recycles entities", function()

@@ -629,6 +629,7 @@ export type Event = {
 
 export type Script = {
 	load: (path: string) -> nil,
+	clearRequireCache: () -> nil,
 }
 
 export type Random = {
@@ -866,8 +867,10 @@ export type Time = {
 export type Filesystem = {
 	enumerateDirectory: (path: string) -> { string },
 	read: (path: string) -> Buffer?,
+	readText: (path: string) -> string?,
 	exists: (path: string) -> boolean,
 	write: (path: string, data: Buffer) -> boolean,
+	writeText: (path: string, text: string) -> boolean,
 	getUserDirectory: () -> string,
 }
 

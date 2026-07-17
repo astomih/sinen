@@ -501,6 +501,8 @@ void Graphics::render() {
   for (auto &f : postDrawFuncs) {
     f();
   }
+  Graphics::finish();
+  Gui::render();
 
   // Rendering
 

@@ -12,6 +12,7 @@ class Gui {
 public:
   static void shutdown();
   static void newFrame();
+  static void render();
   static void setFont(const Ptr<Font> &font);
   static void setFontSize(float size);
   static float fontSize();

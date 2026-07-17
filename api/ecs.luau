@@ -135,9 +135,7 @@ function WorldMethods.isAlive(self: WorldImpl, entity: Entity): boolean
 		return false
 	end
 	local index = entity.index
-	return type(index) == "number"
-		and self._alive[index] == true
-		and self._generations[index] == entity.generation
+	return type(index) == "number" and self._alive[index] == true and self._generations[index] == entity.generation
 end
 
 function WorldMethods.despawn(self: WorldImpl, entity: Entity): boolean
@@ -270,11 +268,7 @@ function WorldMethods.query(self: WorldImpl, ...: Component<any>): QueryIterator
 	end
 end
 
-function WorldMethods.each(
-	self: WorldImpl,
-	components: { Component<any> },
-	callback: (Entity, ...any) -> ()
-)
+function WorldMethods.each(self: WorldImpl, components: { Component<any> }, callback: (Entity, ...any) -> ())
 	local iterator = self:query(table.unpack(components))
 	while true do
 		local values = { iterator() }

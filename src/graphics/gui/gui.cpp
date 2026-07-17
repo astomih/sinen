@@ -5,6 +5,9 @@
 #include <cstring>
 #include <format>
 #include <functional>
+#include <type_traits>
+#include <variant>
+#include <vector>
 
 #include <graphics/graphics.hpp>
 #include <platform/input/mouse.hpp>
@@ -26,6 +29,22 @@ static Ptr<Font> currentFont;
 static float currentFontSize = 16.0f;
 static std::uint64_t activeId = 0;
 static std::uint64_t hotId = 0;
+
+struct RectDrawCommand {
+  Rect rect;
+  Color color;
+};
+
+struct TextDrawCommand {
+  String text;
+  Ptr<Font> font;
+  Color color;
+  float fontSize;
+  TextTransform transform;
+};
+
+using DrawCommand = std::variant<RectDrawCommand, TextDrawCommand>;
+static std::vector<DrawCommand> drawCommands;
 
 static std::uint64_t hashId(StringView text, const Rect &rect) {
   std::size_t seed =
@@ -53,6 +72,25 @@ static Font *font() {
     defaultFont->load(16);
   }
   return defaultFont.get();
+}
+
+static Ptr<Font> fontPtr() {
+  font();
+  if (currentFont && currentFont->isLoaded()) {
+    return currentFont;
+  }
+  return defaultFont;
+}
+
+static void queueRect(const Rect &rect, const Color &color) {
+  drawCommands.emplace_back(RectDrawCommand{rect, color});
+}
+
+static void queueText(StringView text, const Ptr<Font> &font,
+                      const Color &color, float fontSize,
+                      const TextTransform &transform) {
+  drawCommands.emplace_back(TextDrawCommand{String(text), font, color,
+                                             fontSize, transform});
 }
 
 static Vec2 mousePosition2D() {
@@ -111,6 +149,7 @@ static bool updateButtonState(std::uint64_t id, bool hovered) {
 } // namespace
 
 void Gui::shutdown() {
+  drawCommands.clear();
   currentFont.reset();
   defaultFont.reset();
   activeId = 0;
@@ -118,10 +157,31 @@ void Gui::shutdown() {
 }
 
 void Gui::newFrame() {
+  drawCommands.clear();
   hotId = 0;
   if (!Mouse::isDown(Mouse::LEFT) && !Mouse::isReleased(Mouse::LEFT)) {
     activeId = 0;
   }
+}
+
+void Gui::render() {
+  for (const auto &command : drawCommands) {
+    std::visit(
+        [](const auto &drawCommand) {
+          using Command = std::decay_t<decltype(drawCommand)>;
+          if constexpr (std::is_same_v<Command, RectDrawCommand>) {
+            Graphics::drawRect(drawCommand.rect, drawCommand.color);
+          } else {
+            Graphics::drawText(
+                drawCommand.text,
+                TextStyle(drawCommand.font, drawCommand.color,
+                          drawCommand.fontSize),
+                drawCommand.transform);
+          }
+        },
+        command);
+  }
+  drawCommands.clear();
 }
 
 void Gui::setFont(const Ptr<Font> &font) { currentFont = font; }
@@ -153,20 +213,20 @@ void Gui::label(StringView text, const Vec2 &position, const Color &color,
     return;
   }
   const float size = fontSize > 0.0f ? fontSize : currentFontSize;
-  Graphics::drawText(text, TextStyle(*f, color, size), TextTransform(position));
+  queueText(text, fontPtr(), color, size, TextTransform(position));
 }
 
 bool Gui::button(StringView text, const Rect &rect) {
   const std::uint64_t id = hashId(text, rect);
   const bool hovered = contains(rect, mousePosition2D());
   const bool clicked = updateButtonState(id, hovered);
-  Graphics::drawRect(rect, widgetColor(id, hovered));
+  queueRect(rect, widgetColor(id, hovered));
 
   auto *f = font();
   if (f != nullptr && f->isLoaded()) {
     const float fontSize = fitFontSize(text, rect, currentFontSize);
-    Graphics::drawText(text, TextStyle(*f, theme.text, fontSize),
-                       TextTransform(rect.center(), 0.0f, Pivot::Center));
+    queueText(text, fontPtr(), theme.text, fontSize,
+              TextTransform(rect.center(), 0.0f, Pivot::Center));
   }
   return clicked;
 }
@@ -179,20 +239,20 @@ bool Gui::checkbox(StringView text, bool checked, const Rect &rect) {
 
   const float side = std::min(rect.width, rect.height);
   const Rect box(rect.x, rect.y + (rect.height - side) * 0.5f, side, side);
-  Graphics::drawRect(box, widgetColor(id, hovered));
+  queueRect(box, widgetColor(id, hovered));
   if (value) {
     const float pad = std::max(3.0f, side * 0.22f);
-    Graphics::drawRect(Rect(box.x + pad, box.y + pad, box.width - pad * 2.0f,
-                            box.height - pad * 2.0f),
-                       theme.accent);
+    queueRect(Rect(box.x + pad, box.y + pad, box.width - pad * 2.0f,
+                   box.height - pad * 2.0f),
+              theme.accent);
   }
 
   auto *f = font();
   if (f != nullptr && f->isLoaded()) {
     const Vec2 textPos(rect.x + side + 8.0f,
                        rect.y + (rect.height - currentFontSize) * 0.5f);
-    Graphics::drawText(text, TextStyle(*f, theme.text, currentFontSize),
-                       TextTransform(textPos));
+    queueText(text, fontPtr(), theme.text, currentFontSize,
+              TextTransform(textPos));
   }
   return value;
 }
@@ -220,20 +280,19 @@ float Gui::sliderFloat(StringView text, float value, float min, float max,
   }
   value = std::clamp(value, min, max);
 
-  Graphics::drawRect(rect, widgetColor(id, hovered));
+  queueRect(rect, widgetColor(id, hovered));
   const float t = max > min ? (value - min) / (max - min) : 0.0f;
-  Graphics::drawRect(Rect(rect.x, rect.y, rect.width * t, rect.height),
-                     theme.accent);
+  queueRect(Rect(rect.x, rect.y, rect.width * t, rect.height), theme.accent);
 
   auto *f = font();
   if (f != nullptr && f->isLoaded()) {
     String label(text);
     label += ": ";
     label += std::format("{:.2f}", value);
-    Graphics::drawText(
-        label, TextStyle(*f, theme.text, currentFontSize),
-        TextTransform(Vec2(rect.x + 8.0f,
-                           rect.y + (rect.height - currentFontSize) * 0.5f)));
+    queueText(label, fontPtr(), theme.text, currentFontSize,
+              TextTransform(Vec2(
+                  rect.x + 8.0f,
+                  rect.y + (rect.height - currentFontSize) * 0.5f)));
   }
   return value;
 }
@@ -286,9 +345,9 @@ float Gui::scrollVertical(float scroll, const Rect &viewport,
   scroll = std::clamp(scroll, 0.0f, maxScroll);
   thumb.y = thumbY();
 
-  Graphics::drawRect(track, Color(theme.background.r, theme.background.g,
-                                  theme.background.b, 0.55f));
-  Graphics::drawRect(thumb, activeId == id ? theme.active : theme.accent);
+  queueRect(track, Color(theme.background.r, theme.background.g,
+                         theme.background.b, 0.55f));
+  queueRect(thumb, activeId == id ? theme.active : theme.accent);
   return scroll;
 }
 } // namespace sinen

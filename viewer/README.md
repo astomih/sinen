@@ -1,4 +1,4 @@
-# Sinen ECS Editor
+# Sinen Viewer
 
 Run `build/msvc2026-debug/sinen.exe` with `editor/` as the working directory.
 The editor itself is a Sinen Luau scene and stores its mixed 2D/3D document in an ECS world.

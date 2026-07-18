@@ -20,7 +20,7 @@
       }
     },
     {
-      "name": "Editor",
+      "name": "Viewer",
       "type": "cppvsdbg",
       "request": "launch",
       "program": "${workspaceFolder:sinen}/build/msvc2026-debug/sinen",
@@ -28,7 +28,7 @@
         "--debug-mode"
       ],
       "stopAtEntry": false,
-      "cwd": "${workspaceFolder:sinen}/editor",
+      "cwd": "${workspaceFolder:sinen}/viewer",
       "environment": [],
       "console": "internalConsole",
       "serverReadyAction": {

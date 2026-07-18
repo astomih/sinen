@@ -114,7 +114,7 @@ local function removeSelected()
 end
 
 function setup()
-	sn.Window.rename("Sinen ECS Editor")
+	sn.Window.rename("Sinen Viewer")
 	sn.Window.resize(sn.Vec2.new(1200, 760))
 	sn.Graphics.setClearColor(background)
 	sn.Gui.setThemeColor(
@@ -133,7 +133,8 @@ function update()
 	if statusTime > 0 then
 		statusTime -= sn.Time.delta()
 	end
-	if (sn.Keyboard.isDown(sn.Scancode.LCTRL) or sn.Keyboard.isDown(sn.Scancode.RCTRL))
+	if
+		(sn.Keyboard.isDown(sn.Scancode.LCTRL) or sn.Keyboard.isDown(sn.Scancode.RCTRL))
 		and sn.Keyboard.isPressed(sn.Scancode.S)
 	then
 		saveScene()
@@ -172,7 +173,12 @@ local function draw3DViewport(canvasRect: sn.Rect): sn.Entity?
 		sn.Vec3.new(0, 1, 0)
 	)
 	local windowSize = sn.Window.size()
-	viewportCamera:perspective(cameraConfig.fov, windowSize.x / math.max(windowSize.y, 1), cameraConfig.near, cameraConfig.far)
+	viewportCamera:perspective(
+		cameraConfig.fov,
+		windowSize.x / math.max(windowSize.y, 1),
+		cameraConfig.near,
+		cameraConfig.far
+	)
 
 	sn.Graphics.begin3D(viewportCamera)
 	for entity, transform3D, box in document.world:query(Components.Transform3D, Components.Box3D) do
@@ -197,7 +203,8 @@ local function draw3DViewport(canvasRect: sn.Rect): sn.Entity?
 		return nil
 	end
 	local mouse = sn.Mouse.getPosition()
-	if mouse.x < canvasRect.x
+	if
+		mouse.x < canvasRect.x
 		or mouse.x > canvasRect.x + canvasRect.width
 		or mouse.y < canvasRect.y
 		or mouse.y > canvasRect.y + canvasRect.height
@@ -244,7 +251,8 @@ local function drawCanvas(canvasRect: sn.Rect)
 			local color = rectangle.color
 			sn.Graphics.drawRect(rect, sn.Color.new(color[1], color[2], color[3], color[4]), transform.rotation)
 
-			if clicked
+			if
+				clicked
 				and mouse.x >= rect.x
 				and mouse.x <= rect.x + rect.width
 				and mouse.y >= rect.y
@@ -276,7 +284,15 @@ local function drawHierarchy(rect: sn.Rect)
 	end
 end
 
-local function slider(label: string, value: number, minimum: number, maximum: number, x: number, y: number, width: number): number
+local function slider(
+	label: string,
+	value: number,
+	minimum: number,
+	maximum: number,
+	x: number,
+	y: number,
+	width: number
+): number
 	return sn.Gui.sliderFloat(label, value, minimum, maximum, sn.Rect.new(x, y, width, 28))
 end
 
@@ -440,7 +456,6 @@ function draw()
 	if sn.Gui.button("Reload", sn.Rect.new(362, 10, 86, 34)) then
 		reloadScene()
 	end
-	sn.Gui.label("Sinen ECS Editor 2D / 3D", sn.Vec2.new(470, 17), nil, 18)
 	if statusTime > 0 then
 		sn.Gui.label(status, sn.Vec2.new(size.x - 300, 18), muted, 15)
 	end

@@ -1,0 +1,72 @@
+local sn = require("@sinen")
+
+local boxTexture: sn.Texture = sn.Texture.new(1, 1)
+boxTexture:fill(sn.Color.new(1, 1, 1, 1))
+
+local sphereTexture: sn.Texture = sn.Texture.new(1, 1)
+sphereTexture:fill(sn.Color.new(1, 0, 0, 1))
+
+local box: sn.Model = sn.Model.newBox()
+box:setTexture(sn.TextureKey.BaseColor, boxTexture)
+
+local sphere: sn.Model = sn.Model.new("sphere.glb")
+sphere:setTexture(sn.TextureKey.BaseColor, sphereTexture)
+
+local boxTransform: sn.Transform = sn.Transform.new()
+boxTransform.rotation = sn.Vec3.new(0, 0, 10)
+boxTransform.scale = sn.Vec3.new(20, 1, 20)
+
+local sphereTransform: sn.Transform = sn.Transform.new()
+sphereTransform.position = sn.Vec3.new(0, 2, 0)
+sphereTransform.scale = sn.Vec3.new(0.5)
+
+local colliders: { sn.Collider } = {}
+local world: sn.World3D = sn.World3D.new()
+local floorCollider = world:newBoxCollider(boxTransform, true)
+local sphereCollider = world:newSphereCollider(sphereTransform.position, 0.5, false)
+sphereCollider:setLinearVelocity(sn.Vec3.new(0, -5, 0))
+world:addCollider(floorCollider, false)
+world:addCollider(sphereCollider, true)
+world:optimizeBroadPhase()
+
+local camera: sn.Camera3D = sn.Camera3D.new()
+camera:lookat(sn.Vec3.new(0, 10, 25), sn.Vec3.new(0), sn.Vec3.new(0, 1, 0))
+
+function update()
+	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then
+		sn.Script.load("/main.luau")
+	end
+
+	boxTransform.position = floorCollider:getPosition()
+	sphereTransform.position = sphereCollider:getPosition()
+
+	if sn.Mouse.isPressed(sn.Mouse.LEFT) then
+		local collider = world:newSphereCollider(sn.Vec3.new(0, 2, 0), 0.5, false)
+		collider:setLinearVelocity(sn.Vec3.new(math.random(-5, 5), math.random(-5, 5), math.random(-5, 5)))
+		world:addCollider(collider, true)
+		table.insert(colliders, collider)
+	end
+
+	world:update(sn.Time.delta(), 1)
+end
+
+function draw()
+	sn.Graphics.begin3D(camera)
+	sn.Graphics.drawModel(box, boxTransform)
+	sn.Graphics.drawModel(sphere, sphereTransform)
+
+	for i = #colliders, 1, -1 do
+		local collider = colliders[i]
+		local transform = sn.Transform.new()
+		transform.position = collider:getPosition()
+		if transform.position.y < -10 then
+			world:destroyCollider(collider)
+			table.remove(colliders, i)
+		else
+			transform.scale = sn.Vec3.new(0.5)
+			sn.Graphics.drawModel(sphere, transform)
+		end
+	end
+
+	sn.Graphics.finish()
+end

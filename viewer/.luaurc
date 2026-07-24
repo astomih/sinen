@@ -1,8 +1,0 @@
-{
-  "languageMode": "strict",
-  "aliases": {
-    "sinen": "../api/sinen.luau"
-  },
-  "lintErrors": false,
-  "typeErrors": true
-}

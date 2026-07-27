@@ -20,7 +20,7 @@
       }
     },
     {
-      "name": "Viewer",
+      "name": "Utils",
       "type": "cppvsdbg",
       "request": "launch",
       "program": "${workspaceFolder:sinen}/build/msvc2026-debug/sinen",
@@ -28,26 +28,7 @@
         "--debug-mode"
       ],
       "stopAtEntry": false,
-      "cwd": "${workspaceFolder:sinen}/viewer",
-      "environment": [],
-      "console": "internalConsole",
-      "serverReadyAction": {
-        "pattern": "Luau Debug server started on 58000",
-        "action": "startDebugging",
-        "name": "Luau Debugger",
-        "killOnServerStop": true
-      }
-    },
-    {
-      "name": "Works",
-      "type": "cppvsdbg",
-      "request": "launch",
-      "program": "${workspaceFolder:sinen}/build/msvc2026-debug/sinen",
-      "args": [
-        "--debug-mode"
-      ],
-      "stopAtEntry": false,
-      "cwd": "${workspaceFolder:sinen}/works",
+      "cwd": "${workspaceFolder:sinen}/utils",
       "environment": [],
       "console": "internalConsole",
       "serverReadyAction": {

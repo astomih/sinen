@@ -74,6 +74,10 @@ sinen_configure_platform_dependencies()
 
 include(${SINEN_SOURCE_DIR}/cmake/include.cmake)
 include(${SINEN_SOURCE_DIR}/cmake/libs.cmake)
+include(${SINEN_SOURCE_DIR}/cmake/licenses.cmake)
+
+sinen_generate_license_header(
+  ${CMAKE_CURRENT_BINARY_DIR}/generated/licenses_data.hpp)
 
 if(SINEN_MODULE_CORE OR SINEN_MODULE_PLATFORM OR SINEN_MODULE_AUDIO
    OR SINEN_MODULE_GPU OR SINEN_MODULE_GRAPHICS OR SINEN_MODULE_SCRIPT
@@ -201,7 +205,7 @@ function(sinen_add_core_module)
     sinen_core
     PUBLIC ${SINEN_SOURCE_DIR}/libs/rapidjson/include
            ${SINEN_SOURCE_DIR}/libs/tlsf
-    PRIVATE ${SINEN_SOURCE_DIR}/src)
+    PRIVATE ${SINEN_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/generated)
   target_link_libraries(sinen_core PUBLIC SDL3::SDL3)
   if(SINEN_MODULE_PROFILER)
     target_link_libraries(sinen_core PUBLIC Tracy::TracyClient)

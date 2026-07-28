@@ -6,6 +6,13 @@ set_property(TARGET sinen_allocator_tests PROPERTY CXX_STANDARD 23)
 
 add_test(NAME sinen_allocator_tests COMMAND sinen_allocator_tests)
 
+add_executable(sinen_license_report_tests license_report_tests.cpp)
+target_link_libraries(sinen_license_report_tests
+                      PRIVATE sinen_core GTest::gtest_main)
+set_property(TARGET sinen_license_report_tests PROPERTY CXX_STANDARD 23)
+
+add_test(NAME sinen_license_report_tests COMMAND sinen_license_report_tests)
+
 if(TARGET sinen_script)
   add_executable(
     sinen_luau_binding_tests

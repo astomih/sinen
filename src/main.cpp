@@ -2,6 +2,7 @@
 #include <core/allocator/engine_memory.hpp>
 #include <core/event/event.hpp>
 #include <core/event/event_impl.hpp>
+#include <core/license_report.hpp>
 #include <core/logger/log.hpp>
 #include <core/profiler.hpp>
 #include <core/time/time.hpp>
@@ -10,6 +11,7 @@
 #include <physics/physics.hpp>
 #include <platform/input/input.hpp>
 #include <platform/io/asset_reader.hpp>
+#include <platform/io/filesystem.hpp>
 #include <platform/window/window.hpp>
 #include <script/script.hpp>
 #define SDL_MAIN_USE_CALLBACKS
@@ -20,6 +22,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
+#include <filesystem>
 
 using namespace sinen;
 
@@ -126,6 +129,31 @@ String getWindowTitleWithBackend(GPUBackendAPI api) {
   return "Sinen | " + Graphics::getBackendName(api) +
          " | F8: Switch API | F11: Fullscreen";
 }
+
+void writeLicenseReport() {
+  const auto tryWrite = [](StringView directory) {
+    if (directory.empty()) {
+      return false;
+    }
+    const std::filesystem::path outputPath =
+        std::filesystem::path(std::string(directory)) / "licenses.html";
+    const std::string pathString = outputPath.string();
+    if (!LicenseReport::writeHtml(pathString)) {
+      return false;
+    }
+    Log::info("License report written to {}", pathString);
+    return true;
+  };
+
+  if (tryWrite(Filesystem::getAppBaseDirectory())) {
+    return;
+  }
+  if (tryWrite(Filesystem::getUserDirectory())) {
+    return;
+  }
+  Log::warn("Failed to write licenses.html");
+}
+
 bool isScriptDebug = false;
 } // namespace
 
@@ -158,6 +186,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     Log::critical("Failed to initialize SDL");
     return SDL_APP_FAILURE;
   }
+  writeLicenseReport();
   GPUBackendAPI api = Graphics::chooseBackendApiByPlatformFeatures();
   if (!Window::initialize(getWindowTitleWithBackend(api))) {
     Log::critical("Failed to initialize window");

@@ -27,7 +27,8 @@ if not exist %ANDROID_NDK_ROOT% (
 )
 
 @REM Check CMake
-set CMAKE_VERSION=4.1.1
+if not defined ANDROID_CMAKE_VERSION set ANDROID_CMAKE_VERSION=4.1.1
+set CMAKE_VERSION=%ANDROID_CMAKE_VERSION%
 set ANDROID_CMAKE_PATH=%ANDROID_SDK_ROOT%\cmake\%CMAKE_VERSION%\bin
 if not exist %ANDROID_CMAKE_PATH%\cmake.exe (
     echo "CMake (%CMAKE_VERSION%) is not available."
@@ -38,6 +39,15 @@ if not exist %ANDROID_CMAKE_PATH%\cmake.exe (
 set BUILD_ABI=arm64-v8a
 set BUILD_API_LEVEL=28
 set BUILD_CONFIGURATION=Release
+
+if not defined SINEN_SLANG_GENERATORS_PATH (
+    set "SINEN_SLANG_GENERATORS_PATH=%CURRENT_DIR%\msvc2026-debug\generators\Debug\bin"
+)
+
+if not exist "%SINEN_SLANG_GENERATORS_PATH%\slang-bootstrap.exe" (
+    echo Slang host generators were not found: %SINEN_SLANG_GENERATORS_PATH%
+    exit /b -1
+)
 
 set BUILD_DIR=%CURRENT_DIR%\android\%BUILD_ABI%_%BUILD_API_LEVEL%_%BUILD_CONFIGURATION%
 
@@ -85,6 +95,6 @@ set BUILD_DIR=%CURRENT_DIR%\android\%BUILD_ABI%_%BUILD_API_LEVEL%_%BUILD_CONFIGU
 -DSLANG_ENABLE_REPLAYER=OFF ^
 -DSLANG_ENABLE_XLIB=OFF ^
 -DSLANG_ENABLE_AFTERMATH=OFF ^
--DSLANG_GENERATORS_PATH=%CURRENT_DIR%\msvc2026-debug\generators\Debug\bin ^
+-DSLANG_GENERATORS_PATH="%SINEN_SLANG_GENERATORS_PATH%" ^
 -S%CURRENT_DIR%.. ^
 -B%BUILD_DIR%

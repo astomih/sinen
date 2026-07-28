@@ -99,6 +99,157 @@ jobs:
           name: sinen-exe
           path: dist/sinen.exe
 
+      - name: Upload Slang Host Generators
+        uses: actions/upload-artifact@v4
+        with:
+          name: slang-host-generators
+          path: build/windows-release/generators/Release/bin/*.exe
+
+  build_android:
+    name: Build Android
+    runs-on: windows-2022
+    needs:
+      - build_windows
+    env:
+      ANDROID_CMAKE_VERSION: 4.1.1
+      ANDROID_NDK_VERSION: 28.1.13356709
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      SINEN_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      SINEN_ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      SINEN_ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+          cache-dependency-path: build/android/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Install Android Build Tools
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $sdkRoot = $env:ANDROID_SDK_ROOT
+          if (-not $sdkRoot) {
+            $sdkRoot = $env:ANDROID_HOME
+          }
+          if (-not $sdkRoot) {
+            throw "The Android SDK was not found on the runner."
+          }
+
+          $sdkManager = Join-Path $sdkRoot "cmdline-tools\latest\bin\sdkmanager.bat"
+          if (-not (Test-Path $sdkManager)) {
+            throw "sdkmanager was not found: $sdkManager"
+          }
+
+          & $sdkManager `
+            "platforms;android-35" `
+            "build-tools;35.0.0" `
+            "cmake;$env:ANDROID_CMAKE_VERSION" `
+            "ndk;$env:ANDROID_NDK_VERSION"
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to install the Android SDK packages."
+          }
+
+          "ANDROID_SDK_ROOT=$sdkRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "ANDROID_NDK_ROOT=$sdkRoot\ndk\$env:ANDROID_NDK_VERSION" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Download Slang Host Generators
+        uses: actions/download-artifact@v4
+        with:
+          name: slang-host-generators
+          path: build/android-host-generators
+
+      - name: Restore Android Dependency Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/android/arm64-v8a_28_Release/_deps
+            build/android/arm64-v8a_28_Release/libs/slang
+          key: ${{ runner.os }}-android-release-deps-v1-${{ hashFiles('CMakeLists.txt', 'cmake/**', '.gitmodules', 'libs/slang/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-android-release-deps-v1-
+
+      - name: Configure Android
+        shell: cmd
+        env:
+          SINEN_SLANG_GENERATORS_PATH: ${{ github.workspace }}\build\android-host-generators
+        run: build\generate_android.bat
+
+      - name: Build Android Native Libraries
+        shell: cmd
+        run: build\build_android.bat
+
+      - name: Configure Android Signing
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          if ([string]::IsNullOrWhiteSpace($env:ANDROID_KEYSTORE_BASE64)) {
+            Write-Host "Android signing secrets are not configured; an unsigned release APK will be produced."
+            exit 0
+          }
+
+          if ([string]::IsNullOrWhiteSpace($env:SINEN_ANDROID_KEYSTORE_PASSWORD) -or
+              [string]::IsNullOrWhiteSpace($env:SINEN_ANDROID_KEY_ALIAS) -or
+              [string]::IsNullOrWhiteSpace($env:SINEN_ANDROID_KEY_PASSWORD)) {
+            throw "ANDROID_KEYSTORE_BASE64 is set, but one or more Android signing secrets are missing."
+          }
+
+          $keystorePath = Join-Path $env:RUNNER_TEMP "sinen-release.keystore"
+          [IO.File]::WriteAllBytes(
+            $keystorePath,
+            [Convert]::FromBase64String($env:ANDROID_KEYSTORE_BASE64)
+          )
+          "SINEN_ANDROID_KEYSTORE=$keystorePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Build Android APK
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          Push-Location build/android
+          try {
+            .\gradlew.bat assembleRelease --no-daemon --stacktrace
+            if ($LASTEXITCODE -ne 0) {
+              throw "Gradle failed to assemble the Android release APK."
+            }
+          } finally {
+            Pop-Location
+          }
+
+      - name: Package Android APK
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $outputDir = Join-Path $PWD "build/android/app/build/outputs/apk/release"
+          $signedApk = Join-Path $outputDir "app-release.apk"
+          $unsignedApk = Join-Path $outputDir "app-release-unsigned.apk"
+          $distDir = Join-Path $PWD "dist"
+          New-Item -ItemType Directory -Force -Path $distDir | Out-Null
+
+          if (Test-Path $signedApk) {
+            Copy-Item $signedApk (Join-Path $distDir "sinen-android-arm64-v8a.apk") -Force
+          } elseif (Test-Path $unsignedApk) {
+            Copy-Item $unsignedApk (Join-Path $distDir "sinen-android-arm64-v8a-unsigned.apk") -Force
+          } else {
+            throw "The Android release APK was not found in $outputDir."
+          }
+
+      - name: Upload Android Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sinen-android-apk
+          path: dist/sinen-android-*.apk
+
   build_emscripten:
     name: Build Emscripten
     runs-on: ubuntu-latest
@@ -227,6 +378,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build_windows
+      - build_android
       - build_emscripten
       - deploy_webgpu
 
@@ -240,6 +392,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: sinen-exe
+          path: release-assets
+
+      - name: Download Android Release Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sinen-android-apk
           path: release-assets
 
       - name: Download Zip Release Artifacts

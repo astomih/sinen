@@ -59,21 +59,15 @@ static int lTransformGetWorldMatrix(lua_State *L) {
 }
 void registerTransform(lua_State *L) {
   luaL_newmetatable(L, Transform::metaTableName());
-  luaPushcfunction2(L, udGc<Transform>);
-  lua_setfield(L, -2, "__gc");
-  luaPushcfunction2(L, lTransformIndex);
-  lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lTransformNewindex);
-  lua_setfield(L, -2, "__newindex");
-  luaPushcfunction2(L, lTransformTostring);
-  lua_setfield(L, -2, "__tostring");
-  luaPushcfunction2(L, lTransformGetWorldMatrix);
-  lua_setfield(L, -2, "getWorldMatrix");
+  Binding::registerFunction(L, "__gc", udGc<Transform>);
+  Binding::registerFunction(L, "__index", lTransformIndex);
+  Binding::registerFunction(L, "__newindex", lTransformNewindex);
+  Binding::registerFunction(L, "__tostring", lTransformTostring);
+  Binding::registerFunction(L, "getWorldMatrix", lTransformGetWorldMatrix);
   lua_pop(L, 1);
 
   pushSnNamed(L, "Transform");
-  luaPushcfunction2(L, lTransformNew);
-  lua_setfield(L, -2, "new");
+  Binding::registerFunction(L, "new", lTransformNew);
   lua_pop(L, 1);
 }
 

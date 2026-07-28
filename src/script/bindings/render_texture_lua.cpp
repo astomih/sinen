@@ -19,13 +19,11 @@ void registerRenderTexture(lua_State *L) {
   luaL_newmetatable(L, RenderTexture::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lRenderTextureCreate);
-  lua_setfield(L, -2, "create");
+  Binding::registerFunction(L, "create", lRenderTextureCreate);
   lua_pop(L, 1);
 
   pushSnNamed(L, "RenderTexture");
-  luaPushcfunction2(L, lRenderTextureNew);
-  lua_setfield(L, -2, "new");
+  Binding::registerFunction(L, "new", lRenderTextureNew);
   lua_pop(L, 1);
 }
 } // namespace sinen

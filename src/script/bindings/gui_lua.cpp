@@ -76,22 +76,14 @@ static int lGuiScrollVertical(lua_State *L) {
 
 void registerGui(lua_State *L) {
   pushSnNamed(L, "Gui");
-  luaPushcfunction2(L, lGuiSetFont);
-  lua_setfield(L, -2, "setFont");
-  luaPushcfunction2(L, lGuiSetFontSize);
-  lua_setfield(L, -2, "setFontSize");
-  luaPushcfunction2(L, lGuiSetThemeColor);
-  lua_setfield(L, -2, "setThemeColor");
-  luaPushcfunction2(L, lGuiLabel);
-  lua_setfield(L, -2, "label");
-  luaPushcfunction2(L, lGuiButton);
-  lua_setfield(L, -2, "button");
-  luaPushcfunction2(L, lGuiCheckbox);
-  lua_setfield(L, -2, "checkbox");
-  luaPushcfunction2(L, lGuiSliderFloat);
-  lua_setfield(L, -2, "sliderFloat");
-  luaPushcfunction2(L, lGuiScrollVertical);
-  lua_setfield(L, -2, "scrollVertical");
+  Binding::registerFunction(L, "setFont", lGuiSetFont);
+  Binding::registerFunction(L, "setFontSize", lGuiSetFontSize);
+  Binding::registerFunction(L, "setThemeColor", lGuiSetThemeColor);
+  Binding::registerFunction(L, "label", lGuiLabel);
+  Binding::registerFunction(L, "button", lGuiButton);
+  Binding::registerFunction(L, "checkbox", lGuiCheckbox);
+  Binding::registerFunction(L, "sliderFloat", lGuiSliderFloat);
+  Binding::registerFunction(L, "scrollVertical", lGuiScrollVertical);
   lua_pop(L, 1);
 }
 } // namespace sinen

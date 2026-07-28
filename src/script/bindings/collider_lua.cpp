@@ -1,7 +1,6 @@
 #include "luaapi.hpp"
 #include <physics/collider.hpp>
 
-
 namespace sinen {
 static int lColliderIsValid(lua_State *L) {
   lua_pushboolean(L, udValue<Collider>(L, 1).isValid() ? 1 : 0);
@@ -104,48 +103,31 @@ static int lColliderDestroy(lua_State *L) {
 }
 void registerCollider(lua_State *L) {
   luaL_newmetatable(L, Collider::metaTableName());
-  luaPushcfunction2(L, udGc<Collider>);
-  lua_setfield(L, -2, "__gc");
+  Binding::registerFunction(L, "__gc", udGc<Collider>);
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lColliderIsValid);
-  lua_setfield(L, -2, "isValid");
-  luaPushcfunction2(L, lColliderIsAdded);
-  lua_setfield(L, -2, "isAdded");
-  luaPushcfunction2(L, lColliderGetPosition);
-  lua_setfield(L, -2, "getPosition");
-  luaPushcfunction2(L, lColliderGetRotation);
-  lua_setfield(L, -2, "getRotation");
-  luaPushcfunction2(L, lColliderGetVelocity);
-  lua_setfield(L, -2, "getVelocity");
-  luaPushcfunction2(L, lColliderGetAngularVelocity);
-  lua_setfield(L, -2, "getAngularVelocity");
-  luaPushcfunction2(L, lColliderSetPosition);
-  lua_setfield(L, -2, "setPosition");
-  luaPushcfunction2(L, lColliderSetRotation);
-  lua_setfield(L, -2, "setRotation");
-  luaPushcfunction2(L, lColliderSetPositionAndRotation);
-  lua_setfield(L, -2, "setPositionAndRotation");
-  luaPushcfunction2(L, lColliderSetLinearVelocity);
-  lua_setfield(L, -2, "setLinearVelocity");
-  luaPushcfunction2(L, lColliderSetAngularVelocity);
-  lua_setfield(L, -2, "setAngularVelocity");
-  luaPushcfunction2(L, lColliderAddForce);
-  lua_setfield(L, -2, "addForce");
-  luaPushcfunction2(L, lColliderAddImpulse);
-  lua_setfield(L, -2, "addImpulse");
-  luaPushcfunction2(L, lColliderSetFriction);
-  lua_setfield(L, -2, "setFriction");
-  luaPushcfunction2(L, lColliderSetRestitution);
-  lua_setfield(L, -2, "setRestitution");
-  luaPushcfunction2(L, lColliderActivate);
-  lua_setfield(L, -2, "activate");
-  luaPushcfunction2(L, lColliderDeactivate);
-  lua_setfield(L, -2, "deactivate");
-  luaPushcfunction2(L, lColliderRemove);
-  lua_setfield(L, -2, "remove");
-  luaPushcfunction2(L, lColliderDestroy);
-  lua_setfield(L, -2, "destroy");
+  Binding::registerFunction(L, "isValid", lColliderIsValid);
+  Binding::registerFunction(L, "isAdded", lColliderIsAdded);
+  Binding::registerFunction(L, "getPosition", lColliderGetPosition);
+  Binding::registerFunction(L, "getRotation", lColliderGetRotation);
+  Binding::registerFunction(L, "getVelocity", lColliderGetVelocity);
+  Binding::registerFunction(L, "getAngularVelocity",
+                            lColliderGetAngularVelocity);
+  Binding::registerFunction(L, "setPosition", lColliderSetPosition);
+  Binding::registerFunction(L, "setRotation", lColliderSetRotation);
+  Binding::registerFunction(L, "setPositionAndRotation",
+                            lColliderSetPositionAndRotation);
+  Binding::registerFunction(L, "setLinearVelocity", lColliderSetLinearVelocity);
+  Binding::registerFunction(L, "setAngularVelocity",
+                            lColliderSetAngularVelocity);
+  Binding::registerFunction(L, "addForce", lColliderAddForce);
+  Binding::registerFunction(L, "addImpulse", lColliderAddImpulse);
+  Binding::registerFunction(L, "setFriction", lColliderSetFriction);
+  Binding::registerFunction(L, "setRestitution", lColliderSetRestitution);
+  Binding::registerFunction(L, "activate", lColliderActivate);
+  Binding::registerFunction(L, "deactivate", lColliderDeactivate);
+  Binding::registerFunction(L, "remove", lColliderRemove);
+  Binding::registerFunction(L, "destroy", lColliderDestroy);
   lua_pop(L, 1);
 }
 } // namespace sinen

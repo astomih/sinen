@@ -4,7 +4,6 @@
 #include <gpu/compute/compute_pipeline.hpp>
 #include <graphics/graphics.hpp>
 
-
 namespace sinen {
 static int lComputePipelineNew(lua_State *L) {
   udPushPtr<ComputePipeline>(L, makePtr<ComputePipeline>());
@@ -36,17 +35,14 @@ void registerComputePipeline(lua_State *L) {
   luaL_newmetatable(L, ComputePipeline::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lComputePipelineSetShader);
-  lua_setfield(L, -2, "setShader");
-  luaPushcfunction2(L, lComputePipelineBuild);
-  lua_setfield(L, -2, "build");
-  luaPushcfunction2(L, lComputePipelineSetThreadGroupSize);
-  lua_setfield(L, -2, "setThreadGroupSize");
+  Binding::registerFunction(L, "setShader", lComputePipelineSetShader);
+  Binding::registerFunction(L, "build", lComputePipelineBuild);
+  Binding::registerFunction(L, "setThreadGroupSize",
+                            lComputePipelineSetThreadGroupSize);
   lua_pop(L, 1);
 
   pushSnNamed(L, "ComputePipeline");
-  luaPushcfunction2(L, lComputePipelineNew);
-  lua_setfield(L, -2, "new");
+  Binding::registerFunction(L, "new", lComputePipelineNew);
   lua_pop(L, 1);
 }
 } // namespace sinen

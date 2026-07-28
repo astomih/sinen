@@ -1,7 +1,6 @@
 #include "luaapi.hpp"
 #include <platform/input/mouse.hpp>
 
-
 namespace sinen {
 static int lMouseGetPositionOnScene(lua_State *L) {
   udNewOwned<Vec2>(L, Mouse::getPositionOnScene());
@@ -56,38 +55,22 @@ static int lMouseIsRelative(lua_State *L) {
 }
 void registerMouse(lua_State *L) {
   pushSnNamed(L, "Mouse");
-  luaPushcfunction2(L, lMouseSetRelative);
-  lua_setfield(L, -2, "setRelative");
-  luaPushcfunction2(L, lMouseIsRelative);
-  lua_setfield(L, -2, "isRelative");
-  luaPushcfunction2(L, lMouseGetPositionOnScene);
-  lua_setfield(L, -2, "getPositionOnScene");
-  luaPushcfunction2(L, lMouseGetPosition);
-  lua_setfield(L, -2, "getPosition");
-  luaPushcfunction2(L, lMouseIsPressed);
-  lua_setfield(L, -2, "isPressed");
-  luaPushcfunction2(L, lMouseIsReleased);
-  lua_setfield(L, -2, "isReleased");
-  luaPushcfunction2(L, lMouseIsDown);
-  lua_setfield(L, -2, "isDown");
-  luaPushcfunction2(L, lMouseSetPosition);
-  lua_setfield(L, -2, "setPosition");
-  luaPushcfunction2(L, lMouseSetPositionOnScene);
-  lua_setfield(L, -2, "setPositionOnScene");
-  luaPushcfunction2(L, lMouseGetScrollWheel);
-  lua_setfield(L, -2, "getScrollWheel");
-  luaPushcfunction2(L, lMouseHideCursor);
-  lua_setfield(L, -2, "hideCursor");
-  lua_pushinteger(L, static_cast<int>(Mouse::LEFT));
-  lua_setfield(L, -2, "LEFT");
-  lua_pushinteger(L, static_cast<int>(Mouse::RIGHT));
-  lua_setfield(L, -2, "RIGHT");
-  lua_pushinteger(L, static_cast<int>(Mouse::MIDDLE));
-  lua_setfield(L, -2, "MIDDLE");
-  lua_pushinteger(L, static_cast<int>(Mouse::X1));
-  lua_setfield(L, -2, "X1");
-  lua_pushinteger(L, static_cast<int>(Mouse::X2));
-  lua_setfield(L, -2, "X2");
+  Binding::registerFunction(L, "setRelative", lMouseSetRelative);
+  Binding::registerFunction(L, "isRelative", lMouseIsRelative);
+  Binding::registerFunction(L, "getPositionOnScene", lMouseGetPositionOnScene);
+  Binding::registerFunction(L, "getPosition", lMouseGetPosition);
+  Binding::registerFunction(L, "isPressed", lMouseIsPressed);
+  Binding::registerFunction(L, "isReleased", lMouseIsReleased);
+  Binding::registerFunction(L, "isDown", lMouseIsDown);
+  Binding::registerFunction(L, "setPosition", lMouseSetPosition);
+  Binding::registerFunction(L, "setPositionOnScene", lMouseSetPositionOnScene);
+  Binding::registerFunction(L, "getScrollWheel", lMouseGetScrollWheel);
+  Binding::registerFunction(L, "hideCursor", lMouseHideCursor);
+  Binding::registerInteger(L, "LEFT", static_cast<int>(Mouse::LEFT));
+  Binding::registerInteger(L, "RIGHT", static_cast<int>(Mouse::RIGHT));
+  Binding::registerInteger(L, "MIDDLE", static_cast<int>(Mouse::MIDDLE));
+  Binding::registerInteger(L, "X1", static_cast<int>(Mouse::X1));
+  Binding::registerInteger(L, "X2", static_cast<int>(Mouse::X2));
   lua_pop(L, 1);
 }
 } // namespace sinen

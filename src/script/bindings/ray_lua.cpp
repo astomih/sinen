@@ -31,15 +31,12 @@ static int lRayNew(lua_State *L) {
 }
 void registerRay(lua_State *L) {
   luaL_newmetatable(L, Ray::metaTableName());
-  luaPushcfunction2(L, udGc<Ray>);
-  lua_setfield(L, -2, "__gc");
-  luaPushcfunction2(L, lRayIndex);
-  lua_setfield(L, -2, "__index");
+  Binding::registerFunction(L, "__gc", udGc<Ray>);
+  Binding::registerFunction(L, "__index", lRayIndex);
   lua_pop(L, 1);
 
   pushSnNamed(L, "Ray");
-  luaPushcfunction2(L, lRayNew);
-  lua_setfield(L, -2, "new");
+  Binding::registerFunction(L, "new", lRayNew);
   lua_pop(L, 1);
 }
 } // namespace sinen

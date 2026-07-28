@@ -103,14 +103,10 @@ static int lVideoReaderInfo(lua_State *L) {
   auto &reader = udPtr<VideoReader>(L, 1);
   const auto &info = reader->videoInfo();
   lua_newtable(L);
-  lua_pushinteger(L, info.width);
-  lua_setfield(L, -2, "width");
-  lua_pushinteger(L, info.height);
-  lua_setfield(L, -2, "height");
-  lua_pushinteger(L, info.fps);
-  lua_setfield(L, -2, "fps");
-  lua_pushinteger(L, info.frameCount);
-  lua_setfield(L, -2, "frameCount");
+  Binding::registerInteger(L, "width", info.width);
+  Binding::registerInteger(L, "height", info.height);
+  Binding::registerInteger(L, "fps", info.fps);
+  Binding::registerInteger(L, "frameCount", info.frameCount);
   return 1;
 }
 
@@ -139,12 +135,9 @@ static int lVideoReaderReadFrame(lua_State *L) {
   auto buffer = makeBuffer(frame.pixels.size(), BufferType::Binary);
   std::memcpy(buffer.data(), frame.pixels.data(), frame.pixels.size());
   lua_newtable(L);
-  lua_pushinteger(L, frame.width);
-  lua_setfield(L, -2, "width");
-  lua_pushinteger(L, frame.height);
-  lua_setfield(L, -2, "height");
-  lua_pushinteger(L, frame.channels);
-  lua_setfield(L, -2, "channels");
+  Binding::registerInteger(L, "width", frame.width);
+  Binding::registerInteger(L, "height", frame.height);
+  Binding::registerInteger(L, "channels", frame.channels);
   udNewOwned<Buffer>(L, std::move(buffer));
   lua_setfield(L, -2, "pixels");
   return 1;

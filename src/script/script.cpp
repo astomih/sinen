@@ -14,8 +14,9 @@
 #include <platform/io/filesystem.hpp>
 #include <platform/window/window.hpp>
 
-#include "require.hpp"
+#include "bindings/binding.hpp"
 #include "ecs_luau.hpp"
+#include "require.hpp"
 #include <Luau/Require.h>
 
 #include <debugger.h>
@@ -59,9 +60,6 @@ auto alloc = [](void *ud, void *ptr, size_t osize, size_t nsize) -> void * {
 bool isEnableDebugger = false;
 bool isDebuggerConnected = false;
 luau::debugger::Debugger debugger(false);
-void luaPushcfunction2(lua_State *L, lua_CFunction f) {
-  lua_pushcfunction(L, f, "sn function");
-}
 int luaLError2(lua_State *L, const char *fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
@@ -778,10 +776,8 @@ static int lScriptClearRequireCache(lua_State *L) {
 }
 void registerScript(lua_State *L) {
   pushSnNamed(L, "Script");
-  luaPushcfunction2(L, lScriptLoad);
-  lua_setfield(L, -2, "load");
-  luaPushcfunction2(L, lScriptClearRequireCache);
-  lua_setfield(L, -2, "clearRequireCache");
+  Binding::registerFunction(L, "load", lScriptLoad);
+  Binding::registerFunction(L, "clearRequireCache", lScriptClearRequireCache);
   lua_pop(L, 1);
 }
 } // namespace sinen

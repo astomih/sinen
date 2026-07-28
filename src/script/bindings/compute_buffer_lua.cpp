@@ -49,19 +49,14 @@ void registerComputeBuffer(lua_State *L) {
   luaL_newmetatable(L, ComputeBuffer::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lComputeBufferCreate);
-  lua_setfield(L, -2, "create");
-  luaPushcfunction2(L, lComputeBufferUpload);
-  lua_setfield(L, -2, "upload");
-  luaPushcfunction2(L, lComputeBufferDownload);
-  lua_setfield(L, -2, "download");
-  luaPushcfunction2(L, lComputeBufferSize);
-  lua_setfield(L, -2, "size");
+  Binding::registerFunction(L, "create", lComputeBufferCreate);
+  Binding::registerFunction(L, "upload", lComputeBufferUpload);
+  Binding::registerFunction(L, "download", lComputeBufferDownload);
+  Binding::registerFunction(L, "size", lComputeBufferSize);
   lua_pop(L, 1);
 
   pushSnNamed(L, "ComputeBuffer");
-  luaPushcfunction2(L, lComputeBufferNew);
-  lua_setfield(L, -2, "new");
+  Binding::registerFunction(L, "new", lComputeBufferNew);
   lua_pop(L, 1);
 }
 } // namespace sinen

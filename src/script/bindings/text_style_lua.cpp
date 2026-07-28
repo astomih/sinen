@@ -120,31 +120,23 @@ static int lTextTransformNewindex(lua_State *L) {
 
 void registerTextStyle(lua_State *L) {
   luaL_newmetatable(L, TextStyle::metaTableName());
-  luaPushcfunction2(L, udGc<TextStyle>);
-  lua_setfield(L, -2, "__gc");
-  luaPushcfunction2(L, lTextStyleIndex);
-  lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lTextStyleNewindex);
-  lua_setfield(L, -2, "__newindex");
+  Binding::registerFunction(L, "__gc", udGc<TextStyle>);
+  Binding::registerFunction(L, "__index", lTextStyleIndex);
+  Binding::registerFunction(L, "__newindex", lTextStyleNewindex);
   lua_pop(L, 1);
 
   pushSnNamed(L, "TextStyle");
-  luaPushcfunction2(L, lTextStyleNew);
-  lua_setfield(L, -2, "new");
+  Binding::registerFunction(L, "new", lTextStyleNew);
   lua_pop(L, 1);
 
   luaL_newmetatable(L, TextTransform::metaTableName());
-  luaPushcfunction2(L, udGc<TextTransform>);
-  lua_setfield(L, -2, "__gc");
-  luaPushcfunction2(L, lTextTransformIndex);
-  lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lTextTransformNewindex);
-  lua_setfield(L, -2, "__newindex");
+  Binding::registerFunction(L, "__gc", udGc<TextTransform>);
+  Binding::registerFunction(L, "__index", lTextTransformIndex);
+  Binding::registerFunction(L, "__newindex", lTextTransformNewindex);
   lua_pop(L, 1);
 
   pushSnNamed(L, "TextTransform");
-  luaPushcfunction2(L, lTextTransformNew);
-  lua_setfield(L, -2, "new");
+  Binding::registerFunction(L, "new", lTextTransformNew);
   lua_pop(L, 1);
 }
 } // namespace sinen

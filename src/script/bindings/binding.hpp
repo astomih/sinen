@@ -13,6 +13,13 @@ public:
                   lua_CFunction constructor);
   void registerFunction(const char *name, lua_CFunction func);
   void endClass();
+
+  static void registerFunction(lua_State *L, const char *name,
+                               lua_CFunction func);
+  static void registerInteger(lua_State *L, const char *name,
+                              lua_Integer value);
+  static void registerNumber(lua_State *L, const char *name, lua_Number value);
+
   lua_State *L;
 };
 } // namespace sinen

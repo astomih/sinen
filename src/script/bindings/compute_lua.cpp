@@ -61,20 +61,17 @@ static int lComputeDispatch(lua_State *L) {
 
 void registerCompute(lua_State *L) {
   pushSnNamed(L, "Compute");
-  luaPushcfunction2(L, lComputeSetComputePipeline);
-  lua_setfield(L, -2, "setComputePipeline");
-  luaPushcfunction2(L, lComputeResetComputePipeline);
-  lua_setfield(L, -2, "resetComputePipeline");
-  luaPushcfunction2(L, lComputeSetUniformBuffer);
-  lua_setfield(L, -2, "setUniformBuffer");
-  luaPushcfunction2(L, lComputeSetStorageBuffer);
-  lua_setfield(L, -2, "setStorageBuffer");
-  luaPushcfunction2(L, lComputeResetStorageBuffer);
-  lua_setfield(L, -2, "resetStorageBuffer");
-  luaPushcfunction2(L, lComputeResetAllStorageBuffers);
-  lua_setfield(L, -2, "resetAllStorageBuffers");
-  luaPushcfunction2(L, lComputeDispatch);
-  lua_setfield(L, -2, "dispatch");
+  Binding::registerFunction(L, "setComputePipeline",
+                            lComputeSetComputePipeline);
+  Binding::registerFunction(L, "resetComputePipeline",
+                            lComputeResetComputePipeline);
+  Binding::registerFunction(L, "setUniformBuffer", lComputeSetUniformBuffer);
+  Binding::registerFunction(L, "setStorageBuffer", lComputeSetStorageBuffer);
+  Binding::registerFunction(L, "resetStorageBuffer",
+                            lComputeResetStorageBuffer);
+  Binding::registerFunction(L, "resetAllStorageBuffers",
+                            lComputeResetAllStorageBuffers);
+  Binding::registerFunction(L, "dispatch", lComputeDispatch);
   lua_pop(L, 1);
 }
 } // namespace sinen

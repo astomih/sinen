@@ -3,7 +3,6 @@
 #include <math/vector.hpp>
 #include <platform/window/window.hpp>
 
-
 namespace sinen {
 static int lCamera2DNew(lua_State *L) {
   udNewOwned<Camera2D>(L, Camera2D{});
@@ -37,95 +36,78 @@ static int lCamera2DInvWindowRatio(lua_State *L) {
 }
 void registerCamera2D(lua_State *L) {
   luaL_newmetatable(L, Camera2D::metaTableName());
-  luaPushcfunction2(L, udGc<Camera2D>);
-  lua_setfield(L, -2, "__gc");
+  Binding::registerFunction(L, "__gc", udGc<Camera2D>);
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lCamera2DSize);
-  lua_setfield(L, -2, "size");
-  luaPushcfunction2(L, lCamera2DHalf);
-  lua_setfield(L, -2, "half");
-  luaPushcfunction2(L, lCamera2DResize);
-  lua_setfield(L, -2, "resize");
-  luaPushcfunction2(L, lCamera2DWindowRatio);
-  lua_setfield(L, -2, "windowRatio");
-  luaPushcfunction2(L, lCamera2DInvWindowRatio);
-  lua_setfield(L, -2, "invWindowRatio");
+  Binding::registerFunction(L, "size", lCamera2DSize);
+  Binding::registerFunction(L, "half", lCamera2DHalf);
+  Binding::registerFunction(L, "resize", lCamera2DResize);
+  Binding::registerFunction(L, "windowRatio", lCamera2DWindowRatio);
+  Binding::registerFunction(L, "invWindowRatio", lCamera2DInvWindowRatio);
 
-  luaPushcfunction2(L, [](lua_State *L) -> int {
+  Binding::registerFunction(L, "rect", [](lua_State *L) -> int {
     auto &r = udValue<Camera2D>(L, 1);
     udNewOwned<Rect>(L, r.rect());
     return 1;
   });
-  lua_setfield(L, -2, "rect");
 
-  luaPushcfunction2(L, [](lua_State *L) -> int {
+  Binding::registerFunction(L, "topLeft", [](lua_State *L) -> int {
     auto &r = udValue<Camera2D>(L, 1);
     udNewOwned<Vec2>(L, r.topLeft());
     return 1;
   });
-  lua_setfield(L, -2, "topLeft");
 
-  luaPushcfunction2(L, [](lua_State *L) -> int {
+  Binding::registerFunction(L, "topCenter", [](lua_State *L) -> int {
     auto &r = udValue<Camera2D>(L, 1);
     udNewOwned<Vec2>(L, r.topCenter());
     return 1;
   });
-  lua_setfield(L, -2, "topCenter");
 
-  luaPushcfunction2(L, [](lua_State *L) -> int {
+  Binding::registerFunction(L, "topRight", [](lua_State *L) -> int {
     auto &r = udValue<Camera2D>(L, 1);
     udNewOwned<Vec2>(L, r.topRight());
     return 1;
   });
-  lua_setfield(L, -2, "topRight");
 
-  luaPushcfunction2(L, [](lua_State *L) -> int {
+  Binding::registerFunction(L, "left", [](lua_State *L) -> int {
     auto &r = udValue<Camera2D>(L, 1);
     udNewOwned<Vec2>(L, r.left());
     return 1;
   });
-  lua_setfield(L, -2, "left");
 
-  luaPushcfunction2(L, [](lua_State *L) -> int {
+  Binding::registerFunction(L, "center", [](lua_State *L) -> int {
     auto &r = udValue<Camera2D>(L, 1);
     udNewOwned<Vec2>(L, r.center());
     return 1;
   });
-  lua_setfield(L, -2, "center");
 
-  luaPushcfunction2(L, [](lua_State *L) -> int {
+  Binding::registerFunction(L, "right", [](lua_State *L) -> int {
     auto &r = udValue<Camera2D>(L, 1);
     udNewOwned<Vec2>(L, r.right());
     return 1;
   });
-  lua_setfield(L, -2, "right");
 
-  luaPushcfunction2(L, [](lua_State *L) -> int {
+  Binding::registerFunction(L, "bottomLeft", [](lua_State *L) -> int {
     auto &r = udValue<Camera2D>(L, 1);
     udNewOwned<Vec2>(L, r.bottomLeft());
     return 1;
   });
-  lua_setfield(L, -2, "bottomLeft");
 
-  luaPushcfunction2(L, [](lua_State *L) -> int {
+  Binding::registerFunction(L, "bottomCenter", [](lua_State *L) -> int {
     auto &r = udValue<Camera2D>(L, 1);
     udNewOwned<Vec2>(L, r.bottomCenter());
     return 1;
   });
-  lua_setfield(L, -2, "bottomCenter");
 
-  luaPushcfunction2(L, [](lua_State *L) -> int {
+  Binding::registerFunction(L, "bottomRight", [](lua_State *L) -> int {
     auto &r = udValue<Camera2D>(L, 1);
     udNewOwned<Vec2>(L, r.bottomRight());
     return 1;
   });
-  lua_setfield(L, -2, "bottomRight");
   lua_pop(L, 1);
 
   pushSnNamed(L, "Camera2D");
-  luaPushcfunction2(L, lCamera2DNew);
-  lua_setfield(L, -2, "new");
+  Binding::registerFunction(L, "new", lCamera2DNew);
   lua_pop(L, 1);
 }
 } // namespace sinen

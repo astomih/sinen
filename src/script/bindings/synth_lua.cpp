@@ -54,26 +54,18 @@ void registerSynth(lua_State *L) {
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
 
-  luaPushcfunction2(L, lSynthPlay);
-  lua_setfield(L, -2, "play");
-  luaPushcfunction2(L, lSynthStop);
-  lua_setfield(L, -2, "stop");
-  luaPushcfunction2(L, lSynthSetPattern);
-  lua_setfield(L, -2, "setPattern");
-  luaPushcfunction2(L, lSynthSetBpm);
-  lua_setfield(L, -2, "setBpm");
-  luaPushcfunction2(L, lSynthSetStepBeats);
-  lua_setfield(L, -2, "setStepBeats");
-  luaPushcfunction2(L, lSynthSetMasterGain);
-  lua_setfield(L, -2, "setMasterGain");
-  luaPushcfunction2(L, lSynthSetADSR);
-  lua_setfield(L, -2, "setADSR");
+  Binding::registerFunction(L, "play", lSynthPlay);
+  Binding::registerFunction(L, "stop", lSynthStop);
+  Binding::registerFunction(L, "setPattern", lSynthSetPattern);
+  Binding::registerFunction(L, "setBpm", lSynthSetBpm);
+  Binding::registerFunction(L, "setStepBeats", lSynthSetStepBeats);
+  Binding::registerFunction(L, "setMasterGain", lSynthSetMasterGain);
+  Binding::registerFunction(L, "setADSR", lSynthSetADSR);
 
   lua_pop(L, 1);
 
   pushSnNamed(L, "Synth");
-  luaPushcfunction2(L, lSynthNew);
-  lua_setfield(L, -2, "new");
+  Binding::registerFunction(L, "new", lSynthNew);
   lua_pop(L, 1);
 }
 } // namespace sinen

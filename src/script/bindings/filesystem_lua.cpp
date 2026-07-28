@@ -66,20 +66,14 @@ static int lFilesystemGetUserDirectory(lua_State *L) {
 }
 void registerFilesystem(lua_State *L) {
   pushSnNamed(L, "Filesystem");
-  luaPushcfunction2(L, lFilesystemEnumerateDirectory);
-  lua_setfield(L, -2, "enumerateDirectory");
-  luaPushcfunction2(L, lFilesystemRead);
-  lua_setfield(L, -2, "read");
-  luaPushcfunction2(L, lFilesystemReadText);
-  lua_setfield(L, -2, "readText");
-  luaPushcfunction2(L, lFilesystemExists);
-  lua_setfield(L, -2, "exists");
-  luaPushcfunction2(L, lFilesystemWrite);
-  lua_setfield(L, -2, "write");
-  luaPushcfunction2(L, lFilesystemWriteText);
-  lua_setfield(L, -2, "writeText");
-  luaPushcfunction2(L, lFilesystemGetUserDirectory);
-  lua_setfield(L, -2, "getUserDirectory");
+  Binding::registerFunction(L, "enumerateDirectory",
+                            lFilesystemEnumerateDirectory);
+  Binding::registerFunction(L, "read", lFilesystemRead);
+  Binding::registerFunction(L, "readText", lFilesystemReadText);
+  Binding::registerFunction(L, "exists", lFilesystemExists);
+  Binding::registerFunction(L, "write", lFilesystemWrite);
+  Binding::registerFunction(L, "writeText", lFilesystemWriteText);
+  Binding::registerFunction(L, "getUserDirectory", lFilesystemGetUserDirectory);
   lua_pop(L, 1);
 }
 } // namespace sinen

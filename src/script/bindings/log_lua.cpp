@@ -35,16 +35,11 @@ static int lLogCritical(lua_State *L) {
 }
 void registerLog(lua_State *L) {
   pushSnNamed(L, "Log");
-  luaPushcfunction2(L, lLogVerbose);
-  lua_setfield(L, -2, "verbose");
-  luaPushcfunction2(L, lLogInfo);
-  lua_setfield(L, -2, "info");
-  luaPushcfunction2(L, lLogError);
-  lua_setfield(L, -2, "error");
-  luaPushcfunction2(L, lLogWarn);
-  lua_setfield(L, -2, "warn");
-  luaPushcfunction2(L, lLogCritical);
-  lua_setfield(L, -2, "critical");
+  Binding::registerFunction(L, "verbose", lLogVerbose);
+  Binding::registerFunction(L, "info", lLogInfo);
+  Binding::registerFunction(L, "error", lLogError);
+  Binding::registerFunction(L, "warn", lLogWarn);
+  Binding::registerFunction(L, "critical", lLogCritical);
   lua_pop(L, 1);
 }
 

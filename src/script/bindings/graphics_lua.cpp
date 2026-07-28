@@ -189,52 +189,34 @@ static int lGraphicsGetBackendName(lua_State *L) {
 }
 void registerGraphics(lua_State *L) {
   pushSnNamed(L, "Graphics");
-  luaPushcfunction2(L, lGraphicsDrawRect);
-  lua_setfield(L, -2, "drawRect");
-  luaPushcfunction2(L, lGraphicsDrawText);
-  lua_setfield(L, -2, "drawText");
-  luaPushcfunction2(L, lGraphicsDrawImage);
-  lua_setfield(L, -2, "drawImage");
-  luaPushcfunction2(L, lGraphicsDrawCubemap);
-  lua_setfield(L, -2, "drawCubemap");
-  luaPushcfunction2(L, lGraphicsDrawModel);
-  lua_setfield(L, -2, "drawModel");
-  luaPushcfunction2(L, lGraphicsDrawModelInstanced);
-  lua_setfield(L, -2, "drawModelInstanced");
-  luaPushcfunction2(L, lGraphicsBegin2D);
-  lua_setfield(L, -2, "begin2D");
-  luaPushcfunction2(L, lGraphicsBegin3D);
-  lua_setfield(L, -2, "begin3D");
-  luaPushcfunction2(L, lGraphicsFinish);
-  lua_setfield(L, -2, "finish");
-  luaPushcfunction2(L, lGraphicsGetClearColor);
-  lua_setfield(L, -2, "getClearColor");
-  luaPushcfunction2(L, lGraphicsSetClearColor);
-  lua_setfield(L, -2, "setClearColor");
-  luaPushcfunction2(L, lGraphicsSetMSAASampleCount);
-  lua_setfield(L, -2, "setMSAASampleCount");
-  luaPushcfunction2(L, lGraphicsGetMSAASampleCount);
-  lua_setfield(L, -2, "getMSAASampleCount");
-  luaPushcfunction2(L, lGraphicsSetGraphicsPipeline);
-  lua_setfield(L, -2, "setGraphicsPipeline");
-  luaPushcfunction2(L, lGraphicsResetGraphicsPipeline);
-  lua_setfield(L, -2, "resetGraphicsPipeline");
-  luaPushcfunction2(L, lGraphicsSetTexture);
-  lua_setfield(L, -2, "setTexture");
-  luaPushcfunction2(L, lGraphicsResetTexture);
-  lua_setfield(L, -2, "resetTexture");
-  luaPushcfunction2(L, lGraphicsResetAllTexture);
-  lua_setfield(L, -2, "resetAllTexture");
-  luaPushcfunction2(L, lGraphicsSetUniformBuffer);
-  lua_setfield(L, -2, "setUniformBuffer");
-  luaPushcfunction2(L, lGraphicsBeginRenderTarget);
-  lua_setfield(L, -2, "beginRenderTarget");
-  luaPushcfunction2(L, lGraphicsEndRenderTarget);
-  lua_setfield(L, -2, "endRenderTarget");
-  luaPushcfunction2(L, lGraphicsReadbackTexture);
-  lua_setfield(L, -2, "readbackTexture");
-  luaPushcfunction2(L, lGraphicsGetBackendName);
-  lua_setfield(L, -2, "getBackendName");
+  Binding::registerFunction(L, "drawRect", lGraphicsDrawRect);
+  Binding::registerFunction(L, "drawText", lGraphicsDrawText);
+  Binding::registerFunction(L, "drawImage", lGraphicsDrawImage);
+  Binding::registerFunction(L, "drawCubemap", lGraphicsDrawCubemap);
+  Binding::registerFunction(L, "drawModel", lGraphicsDrawModel);
+  Binding::registerFunction(L, "drawModelInstanced",
+                            lGraphicsDrawModelInstanced);
+  Binding::registerFunction(L, "begin2D", lGraphicsBegin2D);
+  Binding::registerFunction(L, "begin3D", lGraphicsBegin3D);
+  Binding::registerFunction(L, "finish", lGraphicsFinish);
+  Binding::registerFunction(L, "getClearColor", lGraphicsGetClearColor);
+  Binding::registerFunction(L, "setClearColor", lGraphicsSetClearColor);
+  Binding::registerFunction(L, "setMSAASampleCount",
+                            lGraphicsSetMSAASampleCount);
+  Binding::registerFunction(L, "getMSAASampleCount",
+                            lGraphicsGetMSAASampleCount);
+  Binding::registerFunction(L, "setGraphicsPipeline",
+                            lGraphicsSetGraphicsPipeline);
+  Binding::registerFunction(L, "resetGraphicsPipeline",
+                            lGraphicsResetGraphicsPipeline);
+  Binding::registerFunction(L, "setTexture", lGraphicsSetTexture);
+  Binding::registerFunction(L, "resetTexture", lGraphicsResetTexture);
+  Binding::registerFunction(L, "resetAllTexture", lGraphicsResetAllTexture);
+  Binding::registerFunction(L, "setUniformBuffer", lGraphicsSetUniformBuffer);
+  Binding::registerFunction(L, "beginRenderTarget", lGraphicsBeginRenderTarget);
+  Binding::registerFunction(L, "endRenderTarget", lGraphicsEndRenderTarget);
+  Binding::registerFunction(L, "readbackTexture", lGraphicsReadbackTexture);
+  Binding::registerFunction(L, "getBackendName", lGraphicsGetBackendName);
   lua_pop(L, 1);
 }
 

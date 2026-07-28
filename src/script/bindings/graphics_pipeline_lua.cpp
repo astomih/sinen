@@ -3,7 +3,6 @@
 #include <core/thread/load_context.hpp>
 #include <graphics/graphics_pipeline.hpp>
 
-
 namespace sinen {
 static int lPipelineNew(lua_State *L) {
   udPushPtr<GraphicsPipeline>(L, makePtr<GraphicsPipeline>());
@@ -59,27 +58,22 @@ void registerPipeline(lua_State *L) {
   luaL_newmetatable(L, GraphicsPipeline::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lPipelineSetVertexShader);
-  lua_setfield(L, -2, "setVertexShader");
-  luaPushcfunction2(L, lPipelineSetFragmentShader);
-  lua_setfield(L, -2, "setFragmentShader");
-  luaPushcfunction2(L, lPipelineSetEnableDepthTest);
-  lua_setfield(L, -2, "setEnableDepthTest");
-  luaPushcfunction2(L, lPipelineSetEnableDepthWrite);
-  lua_setfield(L, -2, "setEnableDepthWrite");
-  luaPushcfunction2(L, lPipelineSetEnableInstanced);
-  lua_setfield(L, -2, "setEnableInstanced");
-  luaPushcfunction2(L, lPipelineSetEnableAnimation);
-  lua_setfield(L, -2, "setEnableAnimation");
-  luaPushcfunction2(L, lPipelineSetEnableTangent);
-  lua_setfield(L, -2, "setEnableTangent");
-  luaPushcfunction2(L, lPipelineBuild);
-  lua_setfield(L, -2, "build");
+  Binding::registerFunction(L, "setVertexShader", lPipelineSetVertexShader);
+  Binding::registerFunction(L, "setFragmentShader", lPipelineSetFragmentShader);
+  Binding::registerFunction(L, "setEnableDepthTest",
+                            lPipelineSetEnableDepthTest);
+  Binding::registerFunction(L, "setEnableDepthWrite",
+                            lPipelineSetEnableDepthWrite);
+  Binding::registerFunction(L, "setEnableInstanced",
+                            lPipelineSetEnableInstanced);
+  Binding::registerFunction(L, "setEnableAnimation",
+                            lPipelineSetEnableAnimation);
+  Binding::registerFunction(L, "setEnableTangent", lPipelineSetEnableTangent);
+  Binding::registerFunction(L, "build", lPipelineBuild);
   lua_pop(L, 1);
 
   pushSnNamed(L, "GraphicsPipeline");
-  luaPushcfunction2(L, lPipelineNew);
-  lua_setfield(L, -2, "new");
+  Binding::registerFunction(L, "new", lPipelineNew);
   lua_pop(L, 1);
 }
 } // namespace sinen

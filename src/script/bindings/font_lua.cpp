@@ -90,19 +90,15 @@ void registerFont(lua_State *L) {
   luaL_newmetatable(L, Font::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lFontResize);
-  lua_setfield(L, -2, "resize");
-  luaPushcfunction2(L, lFontRegion);
-  lua_setfield(L, -2, "region");
+  Binding::registerFunction(L, "resize", lFontResize);
+  Binding::registerFunction(L, "region", lFontRegion);
   lua_pop(L, 1);
 
   pushSnNamed(L, "Font");
-  luaPushcfunction2(L, lFontNew);
-  lua_setfield(L, -2, "new");
-  lua_pushinteger(L, static_cast<lua_Integer>(FontMethod::Bitmap));
-  lua_setfield(L, -2, "Bitmap");
-  lua_pushinteger(L, static_cast<lua_Integer>(FontMethod::MSDF));
-  lua_setfield(L, -2, "MSDF");
+  Binding::registerFunction(L, "new", lFontNew);
+  Binding::registerInteger(L, "Bitmap",
+                         static_cast<lua_Integer>(FontMethod::Bitmap));
+  Binding::registerInteger(L, "MSDF", static_cast<lua_Integer>(FontMethod::MSDF));
   lua_pop(L, 1);
 }
 

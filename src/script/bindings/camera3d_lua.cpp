@@ -3,7 +3,6 @@
 #include <graphics/graphics.hpp>
 #include <platform/window/window.hpp>
 
-
 namespace sinen {
 static int lCameraNew(lua_State *L) {
   udNewOwned<Camera3D>(L, Camera3D{});
@@ -91,39 +90,25 @@ static int lCameraScreenToWorldRay(lua_State *L) {
 }
 void registerCamera(lua_State *L) {
   luaL_newmetatable(L, Camera3D::metaTableName());
-  luaPushcfunction2(L, udGc<Camera3D>);
-  lua_setfield(L, -2, "__gc");
+  Binding::registerFunction(L, "__gc", udGc<Camera3D>);
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lCameraLookat);
-  lua_setfield(L, -2, "lookat");
-  luaPushcfunction2(L, lCameraPerspective);
-  lua_setfield(L, -2, "perspective");
-  luaPushcfunction2(L, lCameraOrthographic);
-  lua_setfield(L, -2, "orthographic");
-  luaPushcfunction2(L, lCameraGetPosition);
-  lua_setfield(L, -2, "getPosition");
-  luaPushcfunction2(L, lCameraGetTarget);
-  lua_setfield(L, -2, "getTarget");
-  luaPushcfunction2(L, lCameraGetUp);
-  lua_setfield(L, -2, "getUp");
-  luaPushcfunction2(L, lCameraGetView);
-  lua_setfield(L, -2, "getView");
-  luaPushcfunction2(L, lCameraGetProjection);
-  lua_setfield(L, -2, "getProjection");
-  luaPushcfunction2(L, lCameraGetViewProjection);
-  lua_setfield(L, -2, "getViewProjection");
-  luaPushcfunction2(L, lCameraIsAabbInFrustum);
-  lua_setfield(L, -2, "isAABBInFrustum");
-  luaPushcfunction2(L, lCameraWorldToScreen);
-  lua_setfield(L, -2, "worldToScreen");
-  luaPushcfunction2(L, lCameraScreenToWorldRay);
-  lua_setfield(L, -2, "screenToWorldRay");
+  Binding::registerFunction(L, "lookat", lCameraLookat);
+  Binding::registerFunction(L, "perspective", lCameraPerspective);
+  Binding::registerFunction(L, "orthographic", lCameraOrthographic);
+  Binding::registerFunction(L, "getPosition", lCameraGetPosition);
+  Binding::registerFunction(L, "getTarget", lCameraGetTarget);
+  Binding::registerFunction(L, "getUp", lCameraGetUp);
+  Binding::registerFunction(L, "getView", lCameraGetView);
+  Binding::registerFunction(L, "getProjection", lCameraGetProjection);
+  Binding::registerFunction(L, "getViewProjection", lCameraGetViewProjection);
+  Binding::registerFunction(L, "isAABBInFrustum", lCameraIsAabbInFrustum);
+  Binding::registerFunction(L, "worldToScreen", lCameraWorldToScreen);
+  Binding::registerFunction(L, "screenToWorldRay", lCameraScreenToWorldRay);
   lua_pop(L, 1);
 
   pushSnNamed(L, "Camera3D");
-  luaPushcfunction2(L, lCameraNew);
-  lua_setfield(L, -2, "new");
+  Binding::registerFunction(L, "new", lCameraNew);
   lua_pop(L, 1);
 }
 

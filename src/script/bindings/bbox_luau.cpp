@@ -52,21 +52,15 @@ static int lAabbIntersectsAabb(lua_State *L) {
 }
 void registerAABB(lua_State *L) {
   luaL_newmetatable(L, AABB::metaTableName());
-  luaPushcfunction2(L, udGc<AABB>);
-  lua_setfield(L, -2, "__gc");
-  luaPushcfunction2(L, lAabbIndex);
-  lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lAabbNewindex);
-  lua_setfield(L, -2, "__newindex");
-  luaPushcfunction2(L, lAabbUpdateWorld);
-  lua_setfield(L, -2, "updateWorld");
-  luaPushcfunction2(L, lAabbIntersectsAabb);
-  lua_setfield(L, -2, "intersectsAABB");
+  Binding::registerFunction(L, "__gc", udGc<AABB>);
+  Binding::registerFunction(L, "__index", lAabbIndex);
+  Binding::registerFunction(L, "__newindex", lAabbNewindex);
+  Binding::registerFunction(L, "updateWorld", lAabbUpdateWorld);
+  Binding::registerFunction(L, "intersectsAABB", lAabbIntersectsAabb);
   lua_pop(L, 1);
 
   pushSnNamed(L, "AABB");
-  luaPushcfunction2(L, lAabbNew);
-  lua_setfield(L, -2, "new");
+  Binding::registerFunction(L, "new", lAabbNew);
   lua_pop(L, 1);
 }
 } // namespace sinen

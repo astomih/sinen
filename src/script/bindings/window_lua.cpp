@@ -5,7 +5,6 @@
 #include <platform/io/filesystem.hpp>
 #include <platform/window/window.hpp>
 
-
 namespace sinen {
 static int lWindowGetName(lua_State *L) {
   auto name = Window::name();
@@ -81,40 +80,23 @@ static int lWindowBottomRight(lua_State *L) {
 }
 void registerWindow(lua_State *L) {
   pushSnNamed(L, "Window");
-  luaPushcfunction2(L, lWindowGetName);
-  lua_setfield(L, -2, "getName");
-  luaPushcfunction2(L, lWindowSize);
-  lua_setfield(L, -2, "size");
-  luaPushcfunction2(L, lWindowHalf);
-  lua_setfield(L, -2, "half");
-  luaPushcfunction2(L, lWindowResize);
-  lua_setfield(L, -2, "resize");
-  luaPushcfunction2(L, lWindowSetFullscreen);
-  lua_setfield(L, -2, "setFullscreen");
-  luaPushcfunction2(L, lWindowRename);
-  lua_setfield(L, -2, "rename");
-  luaPushcfunction2(L, lWindowResized);
-  lua_setfield(L, -2, "resized");
-  luaPushcfunction2(L, lWindowRect);
-  lua_setfield(L, -2, "rect");
-  luaPushcfunction2(L, lWindowTopLeft);
-  lua_setfield(L, -2, "topLeft");
-  luaPushcfunction2(L, lWindowTopCenter);
-  lua_setfield(L, -2, "topCenter");
-  luaPushcfunction2(L, lWindowTopRight);
-  lua_setfield(L, -2, "topRight");
-  luaPushcfunction2(L, lWindowLeft);
-  lua_setfield(L, -2, "left");
-  luaPushcfunction2(L, lWindowCenter);
-  lua_setfield(L, -2, "center");
-  luaPushcfunction2(L, lWindowRight);
-  lua_setfield(L, -2, "right");
-  luaPushcfunction2(L, lWindowBottomLeft);
-  lua_setfield(L, -2, "bottomLeft");
-  luaPushcfunction2(L, lWindowBottomCenter);
-  lua_setfield(L, -2, "bottomCenter");
-  luaPushcfunction2(L, lWindowBottomRight);
-  lua_setfield(L, -2, "bottomRight");
+  Binding::registerFunction(L, "getName", lWindowGetName);
+  Binding::registerFunction(L, "size", lWindowSize);
+  Binding::registerFunction(L, "half", lWindowHalf);
+  Binding::registerFunction(L, "resize", lWindowResize);
+  Binding::registerFunction(L, "setFullscreen", lWindowSetFullscreen);
+  Binding::registerFunction(L, "rename", lWindowRename);
+  Binding::registerFunction(L, "resized", lWindowResized);
+  Binding::registerFunction(L, "rect", lWindowRect);
+  Binding::registerFunction(L, "topLeft", lWindowTopLeft);
+  Binding::registerFunction(L, "topCenter", lWindowTopCenter);
+  Binding::registerFunction(L, "topRight", lWindowTopRight);
+  Binding::registerFunction(L, "left", lWindowLeft);
+  Binding::registerFunction(L, "center", lWindowCenter);
+  Binding::registerFunction(L, "right", lWindowRight);
+  Binding::registerFunction(L, "bottomLeft", lWindowBottomLeft);
+  Binding::registerFunction(L, "bottomCenter", lWindowBottomCenter);
+  Binding::registerFunction(L, "bottomRight", lWindowBottomRight);
   lua_pop(L, 1);
 }
 } // namespace sinen

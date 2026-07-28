@@ -137,43 +137,26 @@ static int lVec3Reflect(lua_State *L) {
 }
 void registerVec3(lua_State *L) {
   luaL_newmetatable(L, Vec3::metaTableName());
-  luaPushcfunction2(L, udGc<Vec3>);
-  lua_setfield(L, -2, "__gc");
-  luaPushcfunction2(L, lVec3Index);
-  lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lVec3Newindex);
-  lua_setfield(L, -2, "__newindex");
-  luaPushcfunction2(L, lVec3Add);
-  lua_setfield(L, -2, "__add");
-  luaPushcfunction2(L, lVec3Sub);
-  lua_setfield(L, -2, "__sub");
-  luaPushcfunction2(L, lVec3Mul);
-  lua_setfield(L, -2, "__mul");
-  luaPushcfunction2(L, lVec3Div);
-  lua_setfield(L, -2, "__div");
-  luaPushcfunction2(L, lVec3Tostring);
-  lua_setfield(L, -2, "__tostring");
-  luaPushcfunction2(L, lVec3Copy);
-  lua_setfield(L, -2, "copy");
-  luaPushcfunction2(L, lVec3Length);
-  lua_setfield(L, -2, "length");
-  luaPushcfunction2(L, lVec3Forward);
-  lua_setfield(L, -2, "forward");
-  luaPushcfunction2(L, lVec3Normalize);
-  lua_setfield(L, -2, "normalize");
-  luaPushcfunction2(L, lVec3Dot);
-  lua_setfield(L, -2, "dot");
-  luaPushcfunction2(L, lVec3Cross);
-  lua_setfield(L, -2, "cross");
-  luaPushcfunction2(L, lVec3Lerp);
-  lua_setfield(L, -2, "lerp");
-  luaPushcfunction2(L, lVec3Reflect);
-  lua_setfield(L, -2, "reflect");
+  Binding::registerFunction(L, "__gc", udGc<Vec3>);
+  Binding::registerFunction(L, "__index", lVec3Index);
+  Binding::registerFunction(L, "__newindex", lVec3Newindex);
+  Binding::registerFunction(L, "__add", lVec3Add);
+  Binding::registerFunction(L, "__sub", lVec3Sub);
+  Binding::registerFunction(L, "__mul", lVec3Mul);
+  Binding::registerFunction(L, "__div", lVec3Div);
+  Binding::registerFunction(L, "__tostring", lVec3Tostring);
+  Binding::registerFunction(L, "copy", lVec3Copy);
+  Binding::registerFunction(L, "length", lVec3Length);
+  Binding::registerFunction(L, "forward", lVec3Forward);
+  Binding::registerFunction(L, "normalize", lVec3Normalize);
+  Binding::registerFunction(L, "dot", lVec3Dot);
+  Binding::registerFunction(L, "cross", lVec3Cross);
+  Binding::registerFunction(L, "lerp", lVec3Lerp);
+  Binding::registerFunction(L, "reflect", lVec3Reflect);
   lua_pop(L, 1);
 
   pushSnNamed(L, "Vec3");
-  luaPushcfunction2(L, lVec3New);
-  lua_setfield(L, -2, "new");
+  Binding::registerFunction(L, "new", lVec3New);
   lua_pop(L, 1);
 }
 } // namespace sinen

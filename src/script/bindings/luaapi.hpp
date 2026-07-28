@@ -12,6 +12,8 @@
 
 #include <utility>
 
+#include "binding.hpp"
+
 namespace sinen {
 template <class T> struct UdBox {
   bool owned = true;
@@ -117,7 +119,6 @@ static int luaPCallLogged(lua_State *L, int nargs, int nresults) {
   lua_pop(L, 1);
   return LUA_ERRRUN;
 }
-void luaPushcfunction2(lua_State *L, lua_CFunction f);
 int luaLError2(lua_State *L, const char *fmt, ...);
 int luaLRef2(lua_State *L, int idx);
 void luaLUnref2(lua_State *L, int idx, int r);

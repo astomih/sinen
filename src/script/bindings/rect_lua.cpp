@@ -1,7 +1,6 @@
 #include "luaapi.hpp"
 #include <math/geometry/rect.hpp>
 
-
 namespace sinen {
 static int lRectNew(lua_State *L) {
   int n = lua_gettop(L);
@@ -96,105 +95,88 @@ static int lRectIntersectsRect(lua_State *L) {
 }
 void registerRect(lua_State *L) {
   luaL_newmetatable(L, Rect::metaTableName());
-  luaPushcfunction2(L, udGc<Rect>);
-  lua_setfield(L, -2, "__gc");
-  luaPushcfunction2(L, lRectIndex);
-  lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lRectNewindex);
-  lua_setfield(L, -2, "__newindex");
-  luaPushcfunction2(L, lRectIntersectsRect);
-  lua_setfield(L, -2, "intersectsRect");
+  Binding::registerFunction(L, "__gc", udGc<Rect>);
+  Binding::registerFunction(L, "__index", lRectIndex);
+  Binding::registerFunction(L, "__newindex", lRectNewindex);
+  Binding::registerFunction(L, "intersectsRect", lRectIntersectsRect);
 
-  luaPushcfunction2(L, [](lua_State *L) -> int {
+  Binding::registerFunction(L, "topLeft", [](lua_State *L) -> int {
     auto &r = udValue<Rect>(L, 1);
     udNewOwned<Vec2>(L, r.topLeft());
     return 1;
   });
-  lua_setfield(L, -2, "topLeft");
 
-  luaPushcfunction2(L, [](lua_State *L) -> int {
+  Binding::registerFunction(L, "topCenter", [](lua_State *L) -> int {
     auto &r = udValue<Rect>(L, 1);
     udNewOwned<Vec2>(L, r.topCenter());
     return 1;
   });
-  lua_setfield(L, -2, "topCenter");
 
-  luaPushcfunction2(L, [](lua_State *L) -> int {
+  Binding::registerFunction(L, "topRight", [](lua_State *L) -> int {
     auto &r = udValue<Rect>(L, 1);
     udNewOwned<Vec2>(L, r.topRight());
     return 1;
   });
-  lua_setfield(L, -2, "topRight");
 
-  luaPushcfunction2(L, [](lua_State *L) -> int {
+  Binding::registerFunction(L, "left", [](lua_State *L) -> int {
     auto &r = udValue<Rect>(L, 1);
     udNewOwned<Vec2>(L, r.left());
     return 1;
   });
-  lua_setfield(L, -2, "left");
 
-  luaPushcfunction2(L, [](lua_State *L) -> int {
+  Binding::registerFunction(L, "center", [](lua_State *L) -> int {
     auto &r = udValue<Rect>(L, 1);
     udNewOwned<Vec2>(L, r.center());
     return 1;
   });
-  lua_setfield(L, -2, "center");
 
-  luaPushcfunction2(L, [](lua_State *L) -> int {
+  Binding::registerFunction(L, "right", [](lua_State *L) -> int {
     auto &r = udValue<Rect>(L, 1);
     udNewOwned<Vec2>(L, r.right());
     return 1;
   });
-  lua_setfield(L, -2, "right");
 
-  luaPushcfunction2(L, [](lua_State *L) -> int {
+  Binding::registerFunction(L, "bottomLeft", [](lua_State *L) -> int {
     auto &r = udValue<Rect>(L, 1);
     udNewOwned<Vec2>(L, r.bottomLeft());
     return 1;
   });
-  lua_setfield(L, -2, "bottomLeft");
 
-  luaPushcfunction2(L, [](lua_State *L) -> int {
+  Binding::registerFunction(L, "bottomCenter", [](lua_State *L) -> int {
     auto &r = udValue<Rect>(L, 1);
     udNewOwned<Vec2>(L, r.bottomCenter());
     return 1;
   });
-  lua_setfield(L, -2, "bottomCenter");
 
-  luaPushcfunction2(L, [](lua_State *L) -> int {
+  Binding::registerFunction(L, "bottomRight", [](lua_State *L) -> int {
     auto &r = udValue<Rect>(L, 1);
     udNewOwned<Vec2>(L, r.bottomRight());
     return 1;
   });
-  lua_setfield(L, -2, "bottomRight");
 
-  luaPushcfunction2(L, [](lua_State *L) -> int {
+  Binding::registerFunction(L, "position", [](lua_State *L) -> int {
     auto &r = udValue<Rect>(L, 1);
     udNewOwned<Vec2>(L, r.position());
     return 1;
   });
-  lua_setfield(L, -2, "position");
 
-  luaPushcfunction2(L, [](lua_State *L) -> int {
+  Binding::registerFunction(L, "positionFromPivot", [](lua_State *L) -> int {
     auto &r = udValue<Rect>(L, 1);
     const Pivot pivot = static_cast<Pivot>(luaL_checkinteger(L, 2));
     udNewOwned<Vec2>(L, r.positionfromPivot(pivot));
     return 1;
   });
-  lua_setfield(L, -2, "positionFromPivot");
 
-  luaPushcfunction2(L, [](lua_State *L) -> int {
+  Binding::registerFunction(L, "size", [](lua_State *L) -> int {
     auto &r = udValue<Rect>(L, 1);
     udNewOwned<Vec2>(L, r.size());
     return 1;
   });
-  lua_setfield(L, -2, "size");
 
   lua_pop(L, 1);
 
   pushSnNamed(L, "Rect");
-  luaPushcfunction2(L, lRectNew);
-  lua_setfield(L, -2, "new");
+  Binding::registerFunction(L, "new", lRectNew);
   lua_pop(L, 1);
 }
 

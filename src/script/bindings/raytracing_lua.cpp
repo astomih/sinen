@@ -503,80 +503,71 @@ void registerRaytracing(lua_State *L) {
   luaL_newmetatable(L, RaytracingAccelerationStructure::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lRaytracingAccelerationStructureGetDeviceAddress);
-  lua_setfield(L, -2, "getDeviceAddress");
+  Binding::registerFunction(L, "getDeviceAddress",
+                            lRaytracingAccelerationStructureGetDeviceAddress);
   lua_pop(L, 1);
 
   luaL_newmetatable(L, RaytracingPipeline::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lRaytracingPipelineAddShader);
-  lua_setfield(L, -2, "addShader");
-  luaPushcfunction2(L, lRaytracingPipelineAddHitGroup);
-  lua_setfield(L, -2, "addHitGroup");
-  luaPushcfunction2(L, lRaytracingPipelineSetMaxPayloadSize);
-  lua_setfield(L, -2, "setMaxPayloadSize");
-  luaPushcfunction2(L, lRaytracingPipelineSetMaxAttributeSize);
-  lua_setfield(L, -2, "setMaxAttributeSize");
-  luaPushcfunction2(L, lRaytracingPipelineSetMaxRecursionDepth);
-  lua_setfield(L, -2, "setMaxRecursionDepth");
-  luaPushcfunction2(L, lRaytracingPipelineBuild);
-  lua_setfield(L, -2, "build");
-  luaPushcfunction2(L, lRaytracingPipelineIsReady);
-  lua_setfield(L, -2, "isReady");
-  luaPushcfunction2(L, lRaytracingPipelineGetShaderGroupHandleSize);
-  lua_setfield(L, -2, "getShaderGroupHandleSize");
-  luaPushcfunction2(L, lRaytracingPipelineGetShaderGroupHandles);
-  lua_setfield(L, -2, "getShaderGroupHandles");
+  Binding::registerFunction(L, "addShader", lRaytracingPipelineAddShader);
+  Binding::registerFunction(L, "addHitGroup", lRaytracingPipelineAddHitGroup);
+  Binding::registerFunction(L, "setMaxPayloadSize",
+                            lRaytracingPipelineSetMaxPayloadSize);
+  Binding::registerFunction(L, "setMaxAttributeSize",
+                            lRaytracingPipelineSetMaxAttributeSize);
+  Binding::registerFunction(L, "setMaxRecursionDepth",
+                            lRaytracingPipelineSetMaxRecursionDepth);
+  Binding::registerFunction(L, "build", lRaytracingPipelineBuild);
+  Binding::registerFunction(L, "isReady", lRaytracingPipelineIsReady);
+  Binding::registerFunction(L, "getShaderGroupHandleSize",
+                            lRaytracingPipelineGetShaderGroupHandleSize);
+  Binding::registerFunction(L, "getShaderGroupHandles",
+                            lRaytracingPipelineGetShaderGroupHandles);
   lua_pop(L, 1);
 
   pushSnNamed(L, "Raytracing");
-  luaPushcfunction2(L, lRaytracingIsSupported);
-  lua_setfield(L, -2, "isDeviceSupported");
-  luaPushcfunction2(L, lRaytracingIsSupported);
-  lua_setfield(L, -2, "isSupported");
-  luaPushcfunction2(L, lRaytracingIsRayQuerySupported);
-  lua_setfield(L, -2, "isRayQuerySupported");
-  luaPushcfunction2(L, lRaytracingCreateBottomLevel);
-  lua_setfield(L, -2, "createBottomLevel");
-  luaPushcfunction2(L, lRaytracingCreateTopLevel);
-  lua_setfield(L, -2, "createTopLevel");
-  luaPushcfunction2(L, lRaytracingDispatch);
-  lua_setfield(L, -2, "dispatch");
-  luaPushcfunction2(L, lRaytracingSetComputeAccelerationStructure);
-  lua_setfield(L, -2, "setComputeAccelerationStructure");
-  luaPushcfunction2(L, lRaytracingResetComputeAccelerationStructure);
-  lua_setfield(L, -2, "resetComputeAccelerationStructure");
-  luaPushcfunction2(L, lRaytracingResetAllComputeAccelerationStructures);
-  lua_setfield(L, -2, "resetAllComputeAccelerationStructures");
-  luaPushcfunction2(L, lRaytracingSetGraphicsAccelerationStructure);
-  lua_setfield(L, -2, "setGraphicsAccelerationStructure");
-  luaPushcfunction2(L, lRaytracingResetGraphicsAccelerationStructure);
-  lua_setfield(L, -2, "resetGraphicsAccelerationStructure");
-  luaPushcfunction2(L, lRaytracingResetAllGraphicsAccelerationStructures);
-  lua_setfield(L, -2, "resetAllGraphicsAccelerationStructures");
+  Binding::registerFunction(L, "isDeviceSupported", lRaytracingIsSupported);
+  Binding::registerFunction(L, "isSupported", lRaytracingIsSupported);
+  Binding::registerFunction(L, "isRayQuerySupported",
+                            lRaytracingIsRayQuerySupported);
+  Binding::registerFunction(L, "createBottomLevel",
+                            lRaytracingCreateBottomLevel);
+  Binding::registerFunction(L, "createTopLevel", lRaytracingCreateTopLevel);
+  Binding::registerFunction(L, "dispatch", lRaytracingDispatch);
+  Binding::registerFunction(L, "setComputeAccelerationStructure",
+                            lRaytracingSetComputeAccelerationStructure);
+  Binding::registerFunction(L, "resetComputeAccelerationStructure",
+                            lRaytracingResetComputeAccelerationStructure);
+  Binding::registerFunction(L, "resetAllComputeAccelerationStructures",
+                            lRaytracingResetAllComputeAccelerationStructures);
+  Binding::registerFunction(L, "setGraphicsAccelerationStructure",
+                            lRaytracingSetGraphicsAccelerationStructure);
+  Binding::registerFunction(L, "resetGraphicsAccelerationStructure",
+                            lRaytracingResetGraphicsAccelerationStructure);
+  Binding::registerFunction(L, "resetAllGraphicsAccelerationStructures",
+                            lRaytracingResetAllGraphicsAccelerationStructures);
 
   lua_newtable(L);
-  luaPushcfunction2(L, lRaytracingPipelineNew);
-  lua_setfield(L, -2, "new");
+  Binding::registerFunction(L, "new", lRaytracingPipelineNew);
   lua_setfield(L, -2, "Pipeline");
 
   lua_newtable(L);
-  lua_pushinteger(L, static_cast<lua_Integer>(
-                         static_cast<UInt32>(gpu::RayTracingBuildFlags::None)));
-  lua_setfield(L, -2, "None");
-  lua_pushinteger(L, static_cast<lua_Integer>(static_cast<UInt32>(
-                         gpu::RayTracingBuildFlags::AllowUpdate)));
-  lua_setfield(L, -2, "AllowUpdate");
-  lua_pushinteger(L, static_cast<lua_Integer>(static_cast<UInt32>(
-                         gpu::RayTracingBuildFlags::PreferFastTrace)));
-  lua_setfield(L, -2, "PreferFastTrace");
-  lua_pushinteger(L, static_cast<lua_Integer>(static_cast<UInt32>(
-                         gpu::RayTracingBuildFlags::PreferFastBuild)));
-  lua_setfield(L, -2, "PreferFastBuild");
-  lua_pushinteger(L, static_cast<lua_Integer>(static_cast<UInt32>(
-                         gpu::RayTracingBuildFlags::MinimizeMemory)));
-  lua_setfield(L, -2, "MinimizeMemory");
+  Binding::registerInteger(L, "None",
+                         static_cast<lua_Integer>(static_cast<UInt32>(
+                             gpu::RayTracingBuildFlags::None)));
+  Binding::registerInteger(L, "AllowUpdate",
+                         static_cast<lua_Integer>(static_cast<UInt32>(
+                             gpu::RayTracingBuildFlags::AllowUpdate)));
+  Binding::registerInteger(L, "PreferFastTrace",
+                         static_cast<lua_Integer>(static_cast<UInt32>(
+                             gpu::RayTracingBuildFlags::PreferFastTrace)));
+  Binding::registerInteger(L, "PreferFastBuild",
+                         static_cast<lua_Integer>(static_cast<UInt32>(
+                             gpu::RayTracingBuildFlags::PreferFastBuild)));
+  Binding::registerInteger(L, "MinimizeMemory",
+                         static_cast<lua_Integer>(static_cast<UInt32>(
+                             gpu::RayTracingBuildFlags::MinimizeMemory)));
   lua_setfield(L, -2, "BuildFlags");
 
   lua_pop(L, 1);

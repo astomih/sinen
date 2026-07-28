@@ -1,7 +1,6 @@
 #include "luaapi.hpp"
 #include <gpu/shader/shader_bundle.hpp>
 
-
 #include <limits>
 
 namespace sinen {
@@ -81,8 +80,7 @@ static int lShaderBundlePack(lua_State *L) {
 
 void registerShaderBundle(lua_State *L) {
   pushSnNamed(L, "ShaderBundle");
-  luaPushcfunction2(L, lShaderBundlePack);
-  lua_setfield(L, -2, "pack");
+  Binding::registerFunction(L, "pack", lShaderBundlePack);
   lua_pop(L, 1);
 }
 

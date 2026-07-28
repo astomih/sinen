@@ -17,10 +17,8 @@ static int lPeriodicCos01(lua_State *L) {
 }
 void registerPeriodic(lua_State *L) {
   pushSnNamed(L, "Periodic");
-  luaPushcfunction2(L, lPeriodicSin01);
-  lua_setfield(L, -2, "sin0_1");
-  luaPushcfunction2(L, lPeriodicCos01);
-  lua_setfield(L, -2, "cos0_1");
+  Binding::registerFunction(L, "sin0_1", lPeriodicSin01);
+  Binding::registerFunction(L, "cos0_1", lPeriodicCos01);
   lua_pop(L, 1);
 }
 } // namespace sinen

@@ -35,25 +35,18 @@ static int lTimerCheck(lua_State *L) {
 }
 void registerTimer(lua_State *L) {
   luaL_newmetatable(L, Timer::metaTableName());
-  luaPushcfunction2(L, udGc<Timer>);
-  lua_setfield(L, -2, "__gc");
+  Binding::registerFunction(L, "__gc", udGc<Timer>);
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lTimerStart);
-  lua_setfield(L, -2, "start");
-  luaPushcfunction2(L, lTimerStop);
-  lua_setfield(L, -2, "stop");
-  luaPushcfunction2(L, lTimerIsStarted);
-  lua_setfield(L, -2, "isStarted");
-  luaPushcfunction2(L, lTimerSetTime);
-  lua_setfield(L, -2, "setTime");
-  luaPushcfunction2(L, lTimerCheck);
-  lua_setfield(L, -2, "check");
+  Binding::registerFunction(L, "start", lTimerStart);
+  Binding::registerFunction(L, "stop", lTimerStop);
+  Binding::registerFunction(L, "isStarted", lTimerIsStarted);
+  Binding::registerFunction(L, "setTime", lTimerSetTime);
+  Binding::registerFunction(L, "check", lTimerCheck);
   lua_pop(L, 1);
 
   pushSnNamed(L, "Timer");
-  luaPushcfunction2(L, lTimerNew);
-  lua_setfield(L, -2, "new");
+  Binding::registerFunction(L, "new", lTimerNew);
   lua_pop(L, 1);
 }
 } // namespace sinen

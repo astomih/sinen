@@ -9,8 +9,7 @@ static int lEventQuit(lua_State *L) {
 }
 void registerEvent(lua_State *L) {
   pushSnNamed(L, "Event");
-  luaPushcfunction2(L, lEventQuit);
-  lua_setfield(L, -2, "quit");
+  Binding::registerFunction(L, "quit", lEventQuit);
   lua_pop(L, 1);
 }
 } // namespace sinen

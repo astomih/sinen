@@ -172,33 +172,23 @@ void registerTexture(lua_State *L) {
   luaL_newmetatable(L, Texture::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lTextureUpdatePixels);
-  lua_setfield(L, -2, "updatePixels");
-  luaPushcfunction2(L, lTextureToPngBuffer);
-  lua_setfield(L, -2, "toPngBuffer");
-  luaPushcfunction2(L, lTextureToExrBuffer);
-  lua_setfield(L, -2, "toExrBuffer");
-  luaPushcfunction2(L, lTextureFill);
-  lua_setfield(L, -2, "fill");
-  luaPushcfunction2(L, lTextureCopy);
-  lua_setfield(L, -2, "copy");
-  luaPushcfunction2(L, lTextureSize);
-  lua_setfield(L, -2, "size");
-  luaPushcfunction2(L, lTextureTostring);
-  lua_setfield(L, -2, "__tostring");
+  Binding::registerFunction(L, "updatePixels", lTextureUpdatePixels);
+  Binding::registerFunction(L, "toPngBuffer", lTextureToPngBuffer);
+  Binding::registerFunction(L, "toExrBuffer", lTextureToExrBuffer);
+  Binding::registerFunction(L, "fill", lTextureFill);
+  Binding::registerFunction(L, "copy", lTextureCopy);
+  Binding::registerFunction(L, "size", lTextureSize);
+  Binding::registerFunction(L, "__tostring", lTextureTostring);
   lua_pop(L, 1);
 
   pushSnNamed(L, "Texture");
-  luaPushcfunction2(L, lTextureNew);
-  lua_setfield(L, -2, "new");
-  luaPushcfunction2(L, lTextureNewCubemap);
-  lua_setfield(L, -2, "newCubemap");
-  luaPushcfunction2(L, lTextureNewIrradianceCubemap);
-  lua_setfield(L, -2, "newIrradianceCubemap");
-  luaPushcfunction2(L, lTextureNewPrefilteredCubemap);
-  lua_setfield(L, -2, "newPrefilteredCubemap");
-  luaPushcfunction2(L, lTextureNewBRDFLUT);
-  lua_setfield(L, -2, "newBRDFLUT");
+  Binding::registerFunction(L, "new", lTextureNew);
+  Binding::registerFunction(L, "newCubemap", lTextureNewCubemap);
+  Binding::registerFunction(L, "newIrradianceCubemap",
+                            lTextureNewIrradianceCubemap);
+  Binding::registerFunction(L, "newPrefilteredCubemap",
+                            lTextureNewPrefilteredCubemap);
+  Binding::registerFunction(L, "newBRDFLUT", lTextureNewBRDFLUT);
   lua_pop(L, 1);
 }
 } // namespace sinen

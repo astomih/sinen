@@ -143,21 +143,16 @@ static int lBufferSize(lua_State *L) {
 
 void registerBuffer(lua_State *L) {
   luaL_newmetatable(L, Buffer::metaTableName());
-  luaPushcfunction2(L, udGc<Buffer>);
-  lua_setfield(L, -2, "__gc");
+  Binding::registerFunction(L, "__gc", udGc<Buffer>);
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lBufferSize);
-  lua_setfield(L, -2, "size");
-  luaPushcfunction2(L, lBufferToHeader);
-  lua_setfield(L, -2, "toHeader");
+  Binding::registerFunction(L, "size", lBufferSize);
+  Binding::registerFunction(L, "toHeader", lBufferToHeader);
   lua_pop(L, 1);
 
   pushSnNamed(L, "Buffer");
-  luaPushcfunction2(L, lBufferNew);
-  lua_setfield(L, -2, "new");
-  luaPushcfunction2(L, lBufferFromBytes);
-  lua_setfield(L, -2, "fromBytes");
+  Binding::registerFunction(L, "new", lBufferNew);
+  Binding::registerFunction(L, "fromBytes", lBufferFromBytes);
   lua_pop(L, 1);
 }
 } // namespace sinen

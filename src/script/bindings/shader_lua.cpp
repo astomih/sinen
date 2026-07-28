@@ -97,27 +97,21 @@ void registerShader(lua_State *L) {
   luaL_newmetatable(L, Shader::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lShaderGetCode);
-  lua_setfield(L, -2, "getCode");
-  luaPushcfunction2(L, lShaderIsReady);
-  lua_setfield(L, -2, "isReady");
-  luaPushcfunction2(L, lShaderGetNumSamplers);
-  lua_setfield(L, -2, "getNumSamplers");
-  luaPushcfunction2(L, lShaderGetNumStorageBuffers);
-  lua_setfield(L, -2, "getNumStorageBuffers");
-  luaPushcfunction2(L, lShaderGetNumStorageTextures);
-  lua_setfield(L, -2, "getNumStorageTextures");
-  luaPushcfunction2(L, lShaderGetNumUniformBuffers);
-  lua_setfield(L, -2, "getNumUniformBuffers");
+  Binding::registerFunction(L, "getCode", lShaderGetCode);
+  Binding::registerFunction(L, "isReady", lShaderIsReady);
+  Binding::registerFunction(L, "getNumSamplers", lShaderGetNumSamplers);
+  Binding::registerFunction(L, "getNumStorageBuffers",
+                            lShaderGetNumStorageBuffers);
+  Binding::registerFunction(L, "getNumStorageTextures",
+                            lShaderGetNumStorageTextures);
+  Binding::registerFunction(L, "getNumUniformBuffers",
+                            lShaderGetNumUniformBuffers);
   lua_pop(L, 1);
 
   pushSnNamed(L, "Shader");
-  luaPushcfunction2(L, lShaderNew);
-  lua_setfield(L, -2, "new");
-  luaPushcfunction2(L, lShaderCompile);
-  lua_setfield(L, -2, "compile");
-  luaPushcfunction2(L, lShaderCompileAndLoad);
-  lua_setfield(L, -2, "compileAndLoad");
+  Binding::registerFunction(L, "new", lShaderNew);
+  Binding::registerFunction(L, "compile", lShaderCompile);
+  Binding::registerFunction(L, "compileAndLoad", lShaderCompileAndLoad);
   lua_pop(L, 1);
 }
 } // namespace sinen

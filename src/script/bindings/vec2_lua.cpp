@@ -1,7 +1,6 @@
 #include "luaapi.hpp"
 #include <math/vec2.hpp>
 
-
 namespace sinen {
 static int lVec2New(lua_State *L) {
   int n = lua_gettop(L);
@@ -91,31 +90,20 @@ static int lVec2Length(lua_State *L) {
 }
 void registerVec2(lua_State *L) {
   luaL_newmetatable(L, Vec2::metaTableName());
-  luaPushcfunction2(L, udGc<Vec2>);
-  lua_setfield(L, -2, "__gc");
-  luaPushcfunction2(L, lVec2Index);
-  lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lVec2Newindex);
-  lua_setfield(L, -2, "__newindex");
-  luaPushcfunction2(L, lVec2Add);
-  lua_setfield(L, -2, "__add");
-  luaPushcfunction2(L, lVec2Sub);
-  lua_setfield(L, -2, "__sub");
-  luaPushcfunction2(L, lVec2Mul);
-  lua_setfield(L, -2, "__mul");
-  luaPushcfunction2(L, lVec2Div);
-  lua_setfield(L, -2, "__div");
-  luaPushcfunction2(L, lVec2Tostring);
-  lua_setfield(L, -2, "__tostring");
-  luaPushcfunction2(L, lVec2Copy);
-  lua_setfield(L, -2, "copy");
-  luaPushcfunction2(L, lVec2Length);
-  lua_setfield(L, -2, "length");
+  Binding::registerFunction(L, "__gc", udGc<Vec2>);
+  Binding::registerFunction(L, "__index", lVec2Index);
+  Binding::registerFunction(L, "__newindex", lVec2Newindex);
+  Binding::registerFunction(L, "__add", lVec2Add);
+  Binding::registerFunction(L, "__sub", lVec2Sub);
+  Binding::registerFunction(L, "__mul", lVec2Mul);
+  Binding::registerFunction(L, "__div", lVec2Div);
+  Binding::registerFunction(L, "__tostring", lVec2Tostring);
+  Binding::registerFunction(L, "copy", lVec2Copy);
+  Binding::registerFunction(L, "length", lVec2Length);
   lua_pop(L, 1);
 
   pushSnNamed(L, "Vec2");
-  luaPushcfunction2(L, lVec2New);
-  lua_setfield(L, -2, "new");
+  Binding::registerFunction(L, "new", lVec2New);
   lua_pop(L, 1);
 }
 } // namespace sinen

@@ -81,19 +81,14 @@ static int lColorTostring(lua_State *L) {
 }
 void registerColor(lua_State *L) {
   luaL_newmetatable(L, Color::metaTableName());
-  luaPushcfunction2(L, udGc<Color>);
-  lua_setfield(L, -2, "__gc");
-  luaPushcfunction2(L, lColorIndex);
-  lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lColorNewindex);
-  lua_setfield(L, -2, "__newindex");
-  luaPushcfunction2(L, lColorTostring);
-  lua_setfield(L, -2, "__tostring");
+  Binding::registerFunction(L, "__gc", udGc<Color>);
+  Binding::registerFunction(L, "__index", lColorIndex);
+  Binding::registerFunction(L, "__newindex", lColorNewindex);
+  Binding::registerFunction(L, "__tostring", lColorTostring);
   lua_pop(L, 1);
 
   pushSnNamed(L, "Color");
-  luaPushcfunction2(L, lColorNew);
-  lua_setfield(L, -2, "new");
+  Binding::registerFunction(L, "new", lColorNew);
   lua_pop(L, 1);
 }
 } // namespace sinen

@@ -98,46 +98,38 @@ void registerModel(lua_State *L) {
   luaL_newmetatable(L, Model::metaTableName());
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lModelGetAabb);
-  lua_setfield(L, -2, "getAABB");
-  luaPushcfunction2(L, lModelGetBoneUniformBuffer);
-  lua_setfield(L, -2, "getBoneUniformBuffer");
-  luaPushcfunction2(L, lModelPlay);
-  lua_setfield(L, -2, "play");
-  luaPushcfunction2(L, lModelUpdate);
-  lua_setfield(L, -2, "update");
-  luaPushcfunction2(L, lModelHasTexture);
-  lua_setfield(L, -2, "hasTexture");
-  luaPushcfunction2(L, lModelGetTexture);
-  lua_setfield(L, -2, "getTexture");
-  luaPushcfunction2(L, lModelSetTexture);
-  lua_setfield(L, -2, "setTexture");
+  Binding::registerFunction(L, "getAABB", lModelGetAabb);
+  Binding::registerFunction(L, "getBoneUniformBuffer",
+                            lModelGetBoneUniformBuffer);
+  Binding::registerFunction(L, "play", lModelPlay);
+  Binding::registerFunction(L, "update", lModelUpdate);
+  Binding::registerFunction(L, "hasTexture", lModelHasTexture);
+  Binding::registerFunction(L, "getTexture", lModelGetTexture);
+  Binding::registerFunction(L, "setTexture", lModelSetTexture);
   lua_pop(L, 1);
 
   pushSnNamed(L, "Model");
-  luaPushcfunction2(L, lModelNew);
-  lua_setfield(L, -2, "new");
-  luaPushcfunction2(L, lModelNewSprite);
-  lua_setfield(L, -2, "newSprite");
-  luaPushcfunction2(L, lModelNewBox);
-  lua_setfield(L, -2, "newBox");
+  Binding::registerFunction(L, "new", lModelNew);
+  Binding::registerFunction(L, "newSprite", lModelNewSprite);
+  Binding::registerFunction(L, "newBox", lModelNewBox);
   lua_pop(L, 1);
 }
 
 void registerTextureKey(lua_State *L) {
   pushSnNamed(L, "TextureKey");
-  lua_pushinteger(L, static_cast<lua_Integer>(TextureKey::BaseColor));
-  lua_setfield(L, -2, "BaseColor");
-  lua_pushinteger(L, static_cast<lua_Integer>(TextureKey::Normal));
-  lua_setfield(L, -2, "Normal");
-  lua_pushinteger(L, static_cast<lua_Integer>(TextureKey::DiffuseRoughness));
-  lua_setfield(L, -2, "DiffuseRoughness");
-  lua_pushinteger(L, static_cast<lua_Integer>(TextureKey::Metalness));
-  lua_setfield(L, -2, "Metalness");
-  lua_pushinteger(L, static_cast<lua_Integer>(TextureKey::Emissive));
-  lua_setfield(L, -2, "Emissive");
-  lua_pushinteger(L, static_cast<lua_Integer>(TextureKey::LightMap));
-  lua_setfield(L, -2, "LightMap");
+  Binding::registerInteger(L, "BaseColor",
+                         static_cast<lua_Integer>(TextureKey::BaseColor));
+  Binding::registerInteger(L, "Normal",
+                         static_cast<lua_Integer>(TextureKey::Normal));
+  Binding::registerInteger(
+      L, "DiffuseRoughness",
+      static_cast<lua_Integer>(TextureKey::DiffuseRoughness));
+  Binding::registerInteger(L, "Metalness",
+                         static_cast<lua_Integer>(TextureKey::Metalness));
+  Binding::registerInteger(L, "Emissive",
+                         static_cast<lua_Integer>(TextureKey::Emissive));
+  Binding::registerInteger(L, "LightMap",
+                         static_cast<lua_Integer>(TextureKey::LightMap));
   lua_pop(L, 1);
 }
 } // namespace sinen

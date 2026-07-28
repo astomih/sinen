@@ -153,41 +153,27 @@ static int lMeshBuilderIndexCount(lua_State *L) {
 
 void registerMeshBuilder(lua_State *L) {
   luaL_newmetatable(L, MeshBuilder::metaTableName());
-  luaPushcfunction2(L, udGc<MeshBuilder>);
-  lua_setfield(L, -2, "__gc");
+  Binding::registerFunction(L, "__gc", udGc<MeshBuilder>);
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lMeshBuilderClear);
-  lua_setfield(L, -2, "clear");
-  luaPushcfunction2(L, lMeshBuilderVertex);
-  lua_setfield(L, -2, "vertex");
-  luaPushcfunction2(L, lMeshBuilderTriangle);
-  lua_setfield(L, -2, "triangle");
-  luaPushcfunction2(L, lMeshBuilderQuad);
-  lua_setfield(L, -2, "quad");
-  luaPushcfunction2(L, lMeshBuilderAddPlane);
-  lua_setfield(L, -2, "addPlane");
-  luaPushcfunction2(L, lMeshBuilderAddBox);
-  lua_setfield(L, -2, "addBox");
-  luaPushcfunction2(L, lMeshBuilderAddSphere);
-  lua_setfield(L, -2, "addSphere");
-  luaPushcfunction2(L, lMeshBuilderAddCylinder);
-  lua_setfield(L, -2, "addCylinder");
-  luaPushcfunction2(L, lMeshBuilderAddCone);
-  lua_setfield(L, -2, "addCone");
-  luaPushcfunction2(L, lMeshBuilderRecalculateNormals);
-  lua_setfield(L, -2, "recalculateNormals");
-  luaPushcfunction2(L, lMeshBuilderToModel);
-  lua_setfield(L, -2, "toModel");
-  luaPushcfunction2(L, lMeshBuilderVertexCount);
-  lua_setfield(L, -2, "vertexCount");
-  luaPushcfunction2(L, lMeshBuilderIndexCount);
-  lua_setfield(L, -2, "indexCount");
+  Binding::registerFunction(L, "clear", lMeshBuilderClear);
+  Binding::registerFunction(L, "vertex", lMeshBuilderVertex);
+  Binding::registerFunction(L, "triangle", lMeshBuilderTriangle);
+  Binding::registerFunction(L, "quad", lMeshBuilderQuad);
+  Binding::registerFunction(L, "addPlane", lMeshBuilderAddPlane);
+  Binding::registerFunction(L, "addBox", lMeshBuilderAddBox);
+  Binding::registerFunction(L, "addSphere", lMeshBuilderAddSphere);
+  Binding::registerFunction(L, "addCylinder", lMeshBuilderAddCylinder);
+  Binding::registerFunction(L, "addCone", lMeshBuilderAddCone);
+  Binding::registerFunction(L, "recalculateNormals",
+                            lMeshBuilderRecalculateNormals);
+  Binding::registerFunction(L, "toModel", lMeshBuilderToModel);
+  Binding::registerFunction(L, "vertexCount", lMeshBuilderVertexCount);
+  Binding::registerFunction(L, "indexCount", lMeshBuilderIndexCount);
   lua_pop(L, 1);
 
   pushSnNamed(L, "MeshBuilder");
-  luaPushcfunction2(L, lMeshBuilderNew);
-  lua_setfield(L, -2, "new");
+  Binding::registerFunction(L, "new", lMeshBuilderNew);
   lua_pop(L, 1);
 }
 } // namespace sinen

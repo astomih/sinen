@@ -50,23 +50,17 @@ static int lMat4Identity(lua_State *L) {
 
 void registerMat4(lua_State *L) {
   luaL_newmetatable(L, Mat4::metaTableName());
-  luaPushcfunction2(L, udGc<Mat4>);
-  lua_setfield(L, -2, "__gc");
+  Binding::registerFunction(L, "__gc", udGc<Mat4>);
   lua_pushvalue(L, -1);
   lua_setfield(L, -2, "__index");
-  luaPushcfunction2(L, lMat4Mul);
-  lua_setfield(L, -2, "__mul");
-  luaPushcfunction2(L, lMat4Copy);
-  lua_setfield(L, -2, "copy");
-  luaPushcfunction2(L, lMat4Transpose);
-  lua_setfield(L, -2, "transpose");
+  Binding::registerFunction(L, "__mul", lMat4Mul);
+  Binding::registerFunction(L, "copy", lMat4Copy);
+  Binding::registerFunction(L, "transpose", lMat4Transpose);
   lua_pop(L, 1);
 
   pushSnNamed(L, "Mat4");
-  luaPushcfunction2(L, lMat4New);
-  lua_setfield(L, -2, "new");
-  luaPushcfunction2(L, lMat4Identity);
-  lua_setfield(L, -2, "identity");
+  Binding::registerFunction(L, "new", lMat4New);
+  Binding::registerFunction(L, "identity", lMat4Identity);
   lua_pop(L, 1);
 }
 } // namespace sinen

@@ -630,6 +630,7 @@ export type Event = {
 export type Script = {
 	load: (path: string) -> nil,
 	clearRequireCache: () -> nil,
+	loadNativeModule: (path: string) -> (boolean, string?),
 }
 
 export type Random = {

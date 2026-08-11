@@ -14,6 +14,9 @@ set(SINEN_EMSCRIPTEN_PRELOAD_MOUNT
     CACHE STRING "Virtual filesystem mount point for SINEN_EMSCRIPTEN_PRELOAD_DIR")
 
 function(sinen_configure_platform_dependencies_impl)
+  # MAIN_MODULE dynamic linking requires every object linked into the main Wasm
+  # module, including third-party static libraries, to use PIC relocations.
+  add_compile_options(-fPIC)
   if(SINEN_EMSCRIPTEN_EXCEPTIONS)
     add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-fexceptions>")
     add_link_options(-fexceptions -sNO_DISABLE_EXCEPTION_CATCHING=1)
@@ -57,6 +60,7 @@ function(sinen_configure_platform_app target)
     ${target}
     PRIVATE
       -sALLOW_MEMORY_GROWTH=1
+      -sMAIN_MODULE=2
       -sINITIAL_MEMORY=268435456
       -sMAXIMUM_MEMORY=2147483648)
   if(SINEN_EMSCRIPTEN_PRELOAD_DIR)

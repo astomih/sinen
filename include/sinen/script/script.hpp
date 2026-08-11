@@ -17,6 +17,9 @@ public:
 
   static void clearRequireCache();
 
+  static bool loadNativeModule(StringView filePath);
+  static String getNativeModuleError();
+
   static void load(StringView filePath);
   static String getFileName();
   static String getBaseDirectory();

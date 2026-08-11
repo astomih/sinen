@@ -107,6 +107,12 @@ sinen_configure_platform_webgpu()
 
 if(SINEN_MODULE_SCRIPT)
   add_subdirectory(${SINEN_SOURCE_DIR}/libs/luau)
+  if(EMSCRIPTEN)
+    # MAIN_MODULE=2 keeps normal DCE enabled. Preserve the complete Lua API so
+    # Wasm side modules can resolve APIs that the application does not call.
+    target_compile_definitions(Luau.VM
+                               PRIVATE "LUA_API=__attribute__((used))")
+  endif()
   foreach(target Luau.VM Luau.Compiler)
     get_target_property(defs ${target} INTERFACE_COMPILE_DEFINITIONS)
     if(defs)
@@ -191,6 +197,7 @@ function(sinen_glob_module target module_dir)
   file(GLOB_RECURSE SINEN_MODULE_HEADERS CONFIGURE_DEPENDS
        ${SINEN_SOURCE_DIR}/src/${module_dir}/*.hpp
        ${SINEN_SOURCE_DIR}/src/${module_dir}/*.inl
+       ${SINEN_SOURCE_DIR}/include/sinen/${module_dir}/*.h
        ${SINEN_SOURCE_DIR}/include/sinen/${module_dir}/*.hpp
        ${SINEN_SOURCE_DIR}/include/sinen/${module_dir}/*.inl)
   sinen_add_module(${target} ${SINEN_MODULE_SOURCES} ${SINEN_MODULE_HEADERS})
@@ -310,6 +317,36 @@ function(sinen_add_script_module)
   target_link_libraries(sinen_script PUBLIC Luau.VM Luau.Compiler Luau.Ast
                                             Luau.Require LuaBridge cppdap
                                             Luau.Debugger SDL3::SDL3)
+  if(CMAKE_DL_LIBS)
+    target_link_libraries(sinen_script PRIVATE ${CMAKE_DL_LIBS})
+  endif()
+endfunction()
+
+# Adds a Lua native module that can be loaded with Script.loadNativeModule.
+# Windows modules are DLLs linked to the same Luau revision. Emscripten modules
+# are side-module WebAssembly binaries whose Lua API imports resolve from the
+# Sinen main module.
+function(sinen_add_lua_module target)
+  if(NOT TARGET Luau.VM)
+    message(FATAL_ERROR
+            "sinen_add_lua_module requires SINEN_MODULE_SCRIPT=ON")
+  endif()
+
+  add_library(${target} MODULE ${ARGN})
+  target_include_directories(
+    ${target}
+    PRIVATE ${SINEN_SOURCE_DIR}/include/sinen
+            ${SINEN_SOURCE_DIR}/libs/luau/VM/include)
+  set_target_properties(${target} PROPERTIES CXX_STANDARD 23 PREFIX "")
+  set_property(TARGET ${target} PROPERTY CXX_STANDARD_REQUIRED ON)
+  target_link_libraries(${target} PRIVATE LuaBridge)
+
+  if(EMSCRIPTEN)
+    set_target_properties(${target} PROPERTIES SUFFIX ".wasm")
+    target_link_options(${target} PRIVATE -sSIDE_MODULE=1)
+  else()
+    target_link_libraries(${target} PRIVATE Luau.VM)
+  endif()
 endfunction()
 
 macro(sinen_add_enabled_module option module target)

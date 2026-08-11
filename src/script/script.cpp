@@ -16,6 +16,7 @@
 
 #include "bindings/binding.hpp"
 #include "ecs_luau.hpp"
+#include "native_module.hpp"
 #include "require.hpp"
 #include <Luau/Require.h>
 
@@ -419,6 +420,7 @@ bool Script::initialize(bool isScriptDebug) {
 }
 void Script::shutdown() {
   if (!gLua) {
+    nativeModuleManager().unload();
     return;
   }
   if (gSetupRef != LUA_NOREF) {
@@ -435,7 +437,9 @@ void Script::shutdown() {
   }
   lua_gc(gLua, LUA_GCCOLLECT, 0);
   lua_gc(gLua, LUA_GCCOLLECT, 0);
+  nativeModuleManager().close(gLua);
   lua_close(gLua);
+  nativeModuleManager().unload();
   if (isEnableDebugger && isDebuggerConnected) {
     debugger.stop();
   }
@@ -753,6 +757,24 @@ void Script::load(StringView filePath) {
   gBaseDirectory = dirnameLogicalPath(normalized);
   reload = true;
 }
+bool Script::loadNativeModule(StringView filePath) {
+  if (!gLua) {
+    nativeModuleManager().load(nullptr, filePath);
+    Log::error("Cannot load native module before Script::initialize: {}",
+               nativeModuleManager().lastError());
+    return false;
+  }
+  if (!nativeModuleManager().load(gLua, filePath)) {
+    Log::error("Failed to load native module '{}': {}", filePath,
+               nativeModuleManager().lastError());
+    return false;
+  }
+  return true;
+}
+String Script::getNativeModuleError() {
+  const std::string &error = nativeModuleManager().lastError();
+  return String(error.data(), error.size());
+}
 String Script::getFileName() { return gFileName; }
 String Script::getBaseDirectory() { return gBaseDirectory; }
 } // namespace sinen
@@ -774,10 +796,27 @@ static int lScriptClearRequireCache(lua_State *L) {
   Script::clearRequireCache();
   return 0;
 }
+static int lScriptLoadNativeModule(lua_State *L) {
+  if (lua_gettop(L) != 1) {
+    return luaLError2(
+        L, "Script.loadNativeModule expects exactly one path argument");
+  }
+  const char *filePath = luaL_checkstring(L, 1);
+  const bool loaded = Script::loadNativeModule(StringView(filePath));
+  lua_pushboolean(L, loaded);
+  if (loaded) {
+    lua_pushnil(L);
+  } else {
+    String error = Script::getNativeModuleError();
+    lua_pushlstring(L, error.data(), error.size());
+  }
+  return 2;
+}
 void registerScript(lua_State *L) {
   pushSnNamed(L, "Script");
   Binding::registerFunction(L, "load", lScriptLoad);
   Binding::registerFunction(L, "clearRequireCache", lScriptClearRequireCache);
+  Binding::registerFunction(L, "loadNativeModule", lScriptLoadNativeModule);
   lua_pop(L, 1);
 }
 } // namespace sinen

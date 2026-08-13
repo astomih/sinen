@@ -22,7 +22,9 @@ call :copy_lib "%BUILD_DIR%\libs\assimp\code\lib\libassimp.so" "%JNI_LIB_DIR%\li
 if errorlevel 1 exit /b %ERRORLEVEL%
 call :copy_lib "%BUILD_DIR%\libs\cppdap\lib\libcppdap.so" "%JNI_LIB_DIR%\libcppdap.so"
 if errorlevel 1 exit /b %ERRORLEVEL%
-call :copy_lib "%BUILD_DIR%\libs\JoltPhysics\Build\lib\libJolt.so" "%JNI_LIB_DIR%\libJolt.so"
+call :copy_lib "%BUILD_DIR%\libs\box2d\src\lib\libbox2d.so" "%JNI_LIB_DIR%\libbox2d.so"
+if errorlevel 1 exit /b %ERRORLEVEL%
+call :copy_lib "%BUILD_DIR%\libs\box3d\bin\libbox3d.so" "%JNI_LIB_DIR%\libbox3d.so"
 if errorlevel 1 exit /b %ERRORLEVEL%
 call :copy_lib "%BUILD_DIR%\libs\slang\external\miniz\lib\libminiz.so" "%JNI_LIB_DIR%\libminiz.so"
 if errorlevel 1 exit /b %ERRORLEVEL%

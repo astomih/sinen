@@ -3,6 +3,8 @@ set(SDL_SHARED ${BUILD_SHARED_LIBS})
 set(SDL_STATIC NOT ${BUILD_SHARED_LIBS})
 set(SDL3_INCLUDE_PATHS ${SINEN_SOURCE_DIR}/libs/SDL/include)
 set(ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF)
+set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL
+    "Do not treat warnings from the Assimp dependency as errors" FORCE)
 if(EMSCRIPTEN)
   set(ASSIMP_BUILD_ZLIB ON CACHE BOOL "Build assimp's bundled zlib" FORCE)
 endif()

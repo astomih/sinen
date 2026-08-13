@@ -27,7 +27,8 @@ static Shader createBuiltinShader(const unsigned char *bundleData,
   if (!device) {
     return Shader();
   }
-  const auto format = ShaderBundle::preferredFormatFor(device->getBackendAPI());
+  GPUBackendAPI backendAPI = device->getBackendAPI();
+  const auto format = ShaderBundle::preferredFormatFor(backendAPI);
   auto entry = ShaderBundle::select(
       StringView(reinterpret_cast<const char *>(bundleData), bundleSize), stage,
       format);

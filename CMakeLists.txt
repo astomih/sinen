@@ -400,9 +400,11 @@ sinen_collect_platform_sources(SINEN_PLATFORM_SOURCES)
 if(SINEN_BUILD_APP)
   if(BUILD_SHARED_LIBS)
     add_library(sinen SHARED ${SINEN_SOURCE_DIR}/src/main.cpp
+                             ${SINEN_SOURCE_DIR}/src/debug_overlay.cpp
                              ${SINEN_PLATFORM_SOURCES})
   else()
     add_executable(sinen ${SINEN_SOURCE_DIR}/src/main.cpp
+                         ${SINEN_SOURCE_DIR}/src/debug_overlay.cpp
                          ${SINEN_PLATFORM_SOURCES})
   endif()
 

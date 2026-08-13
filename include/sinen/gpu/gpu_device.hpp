@@ -63,6 +63,7 @@ public:
   virtual void releaseResources() { waitForGpuIdle(); }
 
   virtual String getDriver() const = 0;
+  virtual String getName() const { return getDriver(); }
 
   virtual GPUBackendAPI getBackendAPI() const = 0;
 

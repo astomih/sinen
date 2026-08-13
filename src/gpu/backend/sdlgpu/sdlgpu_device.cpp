@@ -385,5 +385,15 @@ void Device::waitForGpuIdle() { SDL_WaitForGPUIdle(device); }
 String Device::getDriver() const {
   return String(SDL_GetGPUDeviceDriver(device), getCreateInfo().allocator);
 }
+
+String Device::getName() const {
+  if (!device) {
+    return getDriver();
+  }
+  const SDL_PropertiesID properties = SDL_GetGPUDeviceProperties(device);
+  const char *name = SDL_GetStringProperty(
+      properties, SDL_PROP_GPU_DEVICE_NAME_STRING, nullptr);
+  return name ? String(name, getCreateInfo().allocator) : getDriver();
+}
 } // namespace sinen::gpu::sdlgpu
 #endif // EMSCRIPTEN

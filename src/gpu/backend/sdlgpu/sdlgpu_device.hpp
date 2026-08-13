@@ -54,6 +54,7 @@ public:
   void waitForGpuIdle() override;
   void releaseResources() override;
   String getDriver() const override;
+  String getName() const override;
 
   std::shared_ptr<Device> get() {
     return std::dynamic_pointer_cast<Device>(getPtr());

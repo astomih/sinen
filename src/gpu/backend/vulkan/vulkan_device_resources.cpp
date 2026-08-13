@@ -374,6 +374,15 @@ void Device::waitForGpuIdle() {
 String Device::getDriver() const {
   return String("vulkan", getCreateInfo().allocator);
 }
+
+String Device::getName() const {
+  if (physicalDevice == VK_NULL_HANDLE) {
+    return getDriver();
+  }
+  VkPhysicalDeviceProperties properties{};
+  vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+  return String(properties.deviceName, getCreateInfo().allocator);
+}
 } // namespace sinen::gpu::vulkan
 
 #endif // EMSCRIPTEN

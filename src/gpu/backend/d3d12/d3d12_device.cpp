@@ -1152,6 +1152,29 @@ String Device::getDriver() const {
   return String("direct3d12", getCreateInfo().allocator);
 }
 
+String Device::getName() const {
+  if (!adapter) {
+    return getDriver();
+  }
+
+  DXGI_ADAPTER_DESC1 desc{};
+  if (FAILED(adapter->GetDesc1(&desc))) {
+    return getDriver();
+  }
+
+  const int size = WideCharToMultiByte(CP_UTF8, 0, desc.Description, -1,
+                                       nullptr, 0, nullptr, nullptr);
+  if (size <= 1) {
+    return getDriver();
+  }
+  String name(getCreateInfo().allocator);
+  name.resize(static_cast<Size>(size));
+  WideCharToMultiByte(CP_UTF8, 0, desc.Description, -1, name.data(), size,
+                      nullptr, nullptr);
+  name.pop_back();
+  return name;
+}
+
 void Device::transition(ID3D12GraphicsCommandList *list, Texture *texture,
                         D3D12_RESOURCE_STATES after) {
   if (!texture || texture->getState() == after) {

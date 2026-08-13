@@ -55,6 +55,7 @@ public:
   static void drawImage(const Ptr<Texture> &texture, const Rect &rect) {
     drawImage(texture, rect, 0.0f);
   }
+  static void drawOverlayImage(const Ptr<Texture> &texture, const Rect &rect);
   static void drawText(StringView text, const TextStyle &style,
                        const TextTransform &transform);
   static void drawTexts(const Array<TextBatchItem> &items,
@@ -69,6 +70,7 @@ public:
   static UInt32 getMSAASampleCount();
   static void addPreDrawFunc(std::function<void()> f);
   static void addPostDrawFunc(std::function<void()> function);
+  static void addOverlayDrawFunc(std::function<void()> function);
   static void setGraphicsPipeline(const GraphicsPipeline &pipeline);
   static void resetGraphicsPipeline();
   static void setUniformBuffer(UInt32 slotIndex, const Buffer &buffer);

@@ -60,6 +60,8 @@ public:
                       gpu::TextureFormat format, int channels);
   bool loadPixels(const Buffer &buffer, uint32_t width, uint32_t height,
                   gpu::TextureFormat format, int channels);
+  bool updatePixels(const void *pixels, uint32_t width, uint32_t height,
+                    gpu::TextureFormat format, int channels);
   void setPixelData(const void *pPixels, uint32_t width, uint32_t height,
                     gpu::TextureFormat format, int channels);
   void setFloatPixelData(const float *pPixels, uint32_t width, uint32_t height,

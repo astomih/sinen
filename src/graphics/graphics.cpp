@@ -35,6 +35,7 @@ static std::optional<Camera2D> currentCamera2D;
 static std::optional<Camera3D> currentCamera3D;
 static std::list<std::function<void()>> preDrawFuncs;
 static std::list<std::function<void()>> postDrawFuncs;
+static std::list<std::function<void()>> overlayDrawFuncs;
 static Ptr<gpu::Backend> backend;
 static Ptr<gpu::Device> device;
 static GPUBackendAPI currentBackendAPI = GPUBackendAPI::SDLGPU;
@@ -293,6 +294,7 @@ static bool initializeBackend(GPUBackendAPI api, Allocator *allocator) {
 void Graphics::shutdown() {
   releaseBackendResources();
   postDrawFuncs.clear();
+  overlayDrawFuncs.clear();
 }
 
 GPUBackendAPI Graphics::chooseBackendApiByPlatformFeatures() {
@@ -317,6 +319,7 @@ static void releaseBackendResources() {
   Gui::shutdown();
   preDrawFuncs.clear();
   postDrawFuncs.clear();
+  overlayDrawFuncs.clear();
   currentPipeline = std::nullopt;
   customPipeline = std::nullopt;
   currentTextureBindings.clear();
@@ -504,6 +507,10 @@ void Graphics::render() {
   }
   Graphics::finish();
   Gui::render();
+  for (auto &f : overlayDrawFuncs) {
+    f();
+  }
+  Graphics::finish();
 
   // Rendering
 
@@ -982,6 +989,16 @@ void Graphics::drawImage(const Ptr<Texture> &texture, const Rect &rect,
   else
     currentPipeline = BuiltinPipeline::getDefault2D();
   Array<Transform2D> transforms(1, {rect.center(), angle, rect.size()});
+  setTexture(0, texture);
+  drawBase2D(transforms, sprite);
+}
+void Graphics::drawOverlayImage(const Ptr<Texture> &texture,
+                                const Rect &rect) {
+  if (!texture || !texture->getRaw()) {
+    return;
+  }
+  currentPipeline = BuiltinPipeline::getDefault2D();
+  Array<Transform2D> transforms(1, {rect.center(), 0.0f, rect.size()});
   setTexture(0, texture);
   drawBase2D(transforms, sprite);
 }
@@ -1583,6 +1600,9 @@ void Graphics::addPreDrawFunc(std::function<void()> f) {
 }
 void Graphics::addPostDrawFunc(std::function<void()> function) {
   postDrawFuncs.push_back(function);
+}
+void Graphics::addOverlayDrawFunc(std::function<void()> function) {
+  overlayDrawFuncs.push_back(function);
 }
 Ptr<gpu::Device> Graphics::getDevice() { return device; }
 } // namespace sinen

@@ -571,20 +571,35 @@ bool Texture::loadPixels(const Buffer &buffer, uint32_t width, uint32_t height,
   if (buffer.size() < 0 || static_cast<size_t>(buffer.size()) < required) {
     return false;
   }
-  texture = createNativeTexture(buffer.data(), format, width, height, channels);
+  return updatePixels(buffer.data(), width, height, format, channels);
+}
+
+bool Texture::updatePixels(const void *newPixels, uint32_t width,
+                           uint32_t height, gpu::TextureFormat format,
+                           int channels) {
+  const int expectedChannels = channelsForFormat(format);
+  if (!newPixels || width == 0 || height == 0 || channels <= 0 ||
+      expectedChannels == 0 || expectedChannels != channels) {
+    return false;
+  }
+
+  bool canReuse = false;
+  if (texture) {
+    const auto &info = texture->getCreateInfo();
+    canReuse = info.width == width && info.height == height &&
+               info.format == format &&
+               info.type == gpu::TextureType::Texture2D;
+  }
+  if (canReuse) {
+    updateNativeTexture(texture, const_cast<void *>(newPixels), channels);
+  } else {
+    texture = createNativeTexture(const_cast<void *>(newPixels), format, width,
+                                  height, channels);
+  }
   if (!texture) {
     return false;
   }
-  const auto *bytes = static_cast<const uint8_t *>(buffer.data());
-  pixels.assign(bytes, bytes + required);
-  pixelWidth = width;
-  pixelHeight = height;
-  pixelFormat = format;
-  pixelChannels = channels;
-  floatPixels.clear();
-  floatPixelWidth = 0;
-  floatPixelHeight = 0;
-  floatPixelChannels = 0;
+  setPixelData(newPixels, width, height, format, channels);
   return true;
 }
 

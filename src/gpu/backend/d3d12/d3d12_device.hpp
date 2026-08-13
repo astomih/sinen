@@ -66,6 +66,7 @@ public:
   void waitForGpuIdle() override;
   void releaseResources() override;
   String getDriver() const override;
+  String getName() const override;
   GPUBackendAPI getBackendAPI() const override { return GPUBackendAPI::D3D12; }
 
   std::shared_ptr<Device> get() {

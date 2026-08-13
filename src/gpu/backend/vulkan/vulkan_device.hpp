@@ -56,6 +56,7 @@ public:
   void waitForGpuIdle() override;
   void releaseResources() override;
   String getDriver() const override;
+  String getName() const override;
   GPUBackendAPI getBackendAPI() const override { return GPUBackendAPI::Vulkan; }
 
   // Internals for backend classes.

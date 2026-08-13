@@ -69,9 +69,6 @@ function(sinen_generate_license_header output_file)
   sinen_embed_license("KTX-Software NOTICE"
                       "https://github.com/KhronosGroup/KTX-Software"
                       "libs/ktx-software/NOTICE.md" 0 "")
-  sinen_embed_license("LuaBridge3"
-                      "https://github.com/kunitoki/LuaBridge3"
-                      "libs/LuaBridge3/LICENSE.txt" 0 "")
   sinen_embed_license("Luau" "https://github.com/luau-lang/luau"
                       "libs/luau/LICENSE.txt" 0 "")
   sinen_embed_license(

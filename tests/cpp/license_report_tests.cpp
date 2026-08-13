@@ -36,7 +36,7 @@ TEST(LicenseReportTests, WritesSelfContainedEscapedHtml) {
                          std::istreambuf_iterator<char>());
 
   EXPECT_NE(html.find("<!doctype html>"), std::string::npos);
-  EXPECT_NE(html.find("LuaBridge3"), std::string::npos);
+  EXPECT_NE(html.find("Luau"), std::string::npos);
   EXPECT_NE(html.find("Luau Debugger"), std::string::npos);
   EXPECT_NE(html.find("&lt;COPYRIGHT HOLDER&gt;"), std::string::npos);
   EXPECT_EQ(html.find("<COPYRIGHT HOLDER>"), std::string::npos);

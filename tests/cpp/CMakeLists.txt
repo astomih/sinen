@@ -46,8 +46,7 @@ if(TARGET sinen_script)
                              PRIVATE ${SINEN_SOURCE_DIR}/src
                                      ${SINEN_SOURCE_DIR}/include/sinen)
   target_link_libraries(sinen_luau_binding_tests
-                        PRIVATE LuaBridge Luau.VM Luau.Compiler
-                                GTest::gtest_main)
+                        PRIVATE Luau.VM Luau.Compiler GTest::gtest_main)
   set_property(TARGET sinen_luau_binding_tests PROPERTY CXX_STANDARD 23)
 
   add_test(NAME sinen_luau_binding_tests COMMAND sinen_luau_binding_tests)

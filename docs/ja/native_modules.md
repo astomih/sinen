@@ -34,7 +34,7 @@ SINEN_LUA_MODULE_EXPORT int sinen_lua_module_open(lua_State *L) {
 
 `sinen_lua_module_open` は保護された Lua C 関数として呼ばれます。登録が成功した場合は `0` を返してください。登録に失敗した場合は `luaL_error` を使用できます。任意の `sinen_lua_module_close(lua_State*)` をエクスポートすると、VM の終了前に呼ばれます。
 
-C++ と LuaBridge を使って関数やクラスを登録することもできます。モジュールはロード後から Luau VM が完全に閉じるまでアンロードされないため、登録した関数、クラス、`__gc` メタメソッドはその期間中有効です。
+関数やクラスは Luau C API を使って登録してください。モジュールはロード後から Luau VM が完全に閉じるまでアンロードされないため、登録した C 関数と `__gc` メタメソッドはその期間中有効です。
 
 ## ビルド
 

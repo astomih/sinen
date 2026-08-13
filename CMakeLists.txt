@@ -123,9 +123,6 @@ if(SINEN_MODULE_SCRIPT)
   endforeach()
   set_target_properties(Luau.Analysis Luau.CLI.lib Luau.CodeGen Luau.Config
                         Luau.Require PROPERTIES EXCLUDE_FROM_ALL 1)
-  set(LUABRIDGE_TESTING OFF CACHE BOOL "Build LuaBridge tests" FORCE)
-  set(LUABRIDGE_BENCHMARKS OFF CACHE BOOL "Build LuaBridge benchmarks" FORCE)
-  add_subdirectory(${SINEN_SOURCE_DIR}/libs/LuaBridge3 EXCLUDE_FROM_ALL)
   add_subdirectory(${SINEN_SOURCE_DIR}/libs/cppdap)
   add_subdirectory(${SINEN_SOURCE_DIR}/libs/luau-debugger/debugger)
 endif()
@@ -315,7 +312,7 @@ function(sinen_add_script_module)
            ${SINEN_SOURCE_DIR}/libs/cppdap/include
     PRIVATE ${SINEN_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/generated)
   target_link_libraries(sinen_script PUBLIC Luau.VM Luau.Compiler Luau.Ast
-                                            Luau.Require LuaBridge cppdap
+                                            Luau.Require cppdap
                                             Luau.Debugger SDL3::SDL3)
   if(CMAKE_DL_LIBS)
     target_link_libraries(sinen_script PRIVATE ${CMAKE_DL_LIBS})
@@ -339,8 +336,6 @@ function(sinen_add_lua_module target)
             ${SINEN_SOURCE_DIR}/libs/luau/VM/include)
   set_target_properties(${target} PROPERTIES CXX_STANDARD 23 PREFIX "")
   set_property(TARGET ${target} PROPERTY CXX_STANDARD_REQUIRED ON)
-  target_link_libraries(${target} PRIVATE LuaBridge)
-
   if(EMSCRIPTEN)
     set_target_properties(${target} PROPERTIES SUFFIX ".wasm")
     target_link_options(${target} PRIVATE -sSIDE_MODULE=1)

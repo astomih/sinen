@@ -1,29 +1,20 @@
 #include "binding.hpp"
 
-#include <LuaBridge/LuaBridge.h>
-
 namespace sinen {
-namespace {
-template <class T> void registerValue(lua_State *L, const char *name, T value) {
-  if (!luabridge::push(L, value)) {
-    luaL_error(L, "failed to register binding '%s'", name);
-    return;
-  }
-  lua_setfield(L, -2, name);
-}
-} // namespace
-
 void Binding::registerFunction(lua_State *L, const char *name,
                                lua_CFunction func) {
-  registerValue(L, name, func);
+  lua_pushcfunction(L, func, name);
+  lua_setfield(L, -2, name);
 }
 
 void Binding::registerInteger(lua_State *L, const char *name,
                               lua_Integer value) {
-  registerValue(L, name, value);
+  lua_pushinteger(L, value);
+  lua_setfield(L, -2, name);
 }
 
 void Binding::registerNumber(lua_State *L, const char *name, lua_Number value) {
-  registerValue(L, name, value);
+  lua_pushnumber(L, value);
+  lua_setfield(L, -2, name);
 }
 } // namespace sinen

@@ -34,7 +34,7 @@ SINEN_LUA_MODULE_EXPORT int sinen_lua_module_open(lua_State *L) {
 
 Sinen calls `sinen_lua_module_open` as a protected Lua C function. Return `0` after successful registration; `luaL_error` can report a registration failure. A module may also export `sinen_lua_module_close(lua_State*)`, which Sinen calls before closing the VM.
 
-C++ modules may use LuaBridge to register functions and classes. Sinen keeps each module loaded until the Luau VM has closed completely, so registered functions, classes, and `__gc` metamethods remain valid for the VM's lifetime.
+Register functions and classes with the Luau C API. Sinen keeps each module loaded until the Luau VM has closed completely, so registered C functions and `__gc` metamethods remain valid for the VM's lifetime.
 
 ## Building
 

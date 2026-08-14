@@ -72,10 +72,11 @@ build\msvc2026-debug\sinen.exe hoge.sna
 ## 3. Lifecycle
 
 - `setup()`: called once when a scene is loaded; use it for loading textures/models
+- `ready()`: called once after loads started by `setup()` finish and before the first update or draw
 - `update()`: called every frame; use it for input, game logic, and physics
 - `draw()`: called every frame for rendering
 
-`setup` is optional. `update` and `draw` are enough to run.
+All callbacks are optional. If `ready` is absent, execution proceeds directly to `update` / `draw`.
 
 ## 4. Draw an Image
 

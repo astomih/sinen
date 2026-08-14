@@ -72,10 +72,6 @@ pipeline3d:setEnableTangent(true)
 pipeline3d:setEnableDepthTest(true)
 pipeline3d:build()
 local material = sn.Material.new(pipeline3d)
-material:setTexture(1, model:getTexture(sn.TextureKey.Normal))
-material:setTexture(2, model:getTexture(sn.TextureKey.DiffuseRoughness))
-material:setTexture(3, model:getTexture(sn.TextureKey.Emissive))
-material:setTexture(4, model:getTexture(sn.TextureKey.LightMap))
 material:setTexture(5, lut)
 material:setTexture(6, cubemap)
 material:setTexture(7, irradiance)
@@ -93,6 +89,13 @@ local uniformData: { any } = {
 
 local function setWorldUniform(t: sn.Transform)
 	material:setUniformBuffer(1, sn.Buffer.new({ t:getWorldMatrix() }))
+end
+
+function ready()
+	material:setTexture(1, model:getTexture(sn.TextureKey.Normal))
+	material:setTexture(2, model:getTexture(sn.TextureKey.DiffuseRoughness))
+	material:setTexture(3, model:getTexture(sn.TextureKey.Emissive))
+	material:setTexture(4, model:getTexture(sn.TextureKey.LightMap))
 end
 
 function update()

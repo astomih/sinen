@@ -43,14 +43,17 @@ function setup()
 	pipeline3D:setEnableDepthTest(true)
 	pipeline3D:build()
 	material = sn.Material.new(pipeline3D)
-	material:setTexture(1, model:getTexture(sn.TextureKey.Normal))
-	material:setTexture(2, model:getTexture(sn.TextureKey.DiffuseRoughness))
-	material:setTexture(3, model:getTexture(sn.TextureKey.Emissive))
-	material:setTexture(4, model:getTexture(sn.TextureKey.LightMap))
 
 	uniformBuffer[1] = pos
 	uniformBuffer[2] = lightPos
 	uniformBuffer[3] = lightIntensity
+end
+
+function ready()
+	material:setTexture(1, model:getTexture(sn.TextureKey.Normal))
+	material:setTexture(2, model:getTexture(sn.TextureKey.DiffuseRoughness))
+	material:setTexture(3, model:getTexture(sn.TextureKey.Emissive))
+	material:setTexture(4, model:getTexture(sn.TextureKey.LightMap))
 end
 
 function update()

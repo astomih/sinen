@@ -103,12 +103,14 @@ void pushSnNamed(lua_State *L, const char *name) {
 static lua_State *gLua = nullptr;
 lua_State *getGlobalLua() { return gLua; }
 static int gSetupRef = LUA_NOREF;
+static int gReadyRef = LUA_NOREF;
 static int gUpdateRef = LUA_NOREF;
 static int gDrawRef = LUA_NOREF;
 
 enum class ScriptScenePhase {
   Running,
   Loading,
+  ReadyPending,
 };
 static ScriptScenePhase gScenePhase = ScriptScenePhase::Running;
 static TaskGroup gSetupTasks;
@@ -160,6 +162,8 @@ static bool registerEcs(lua_State *L) {
 static void clearSceneEntryPoints(lua_State *L) {
   lua_pushnil(L);
   lua_setglobal(L, "setup");
+  lua_pushnil(L);
+  lua_setglobal(L, "ready");
   lua_pushnil(L);
   lua_setglobal(L, "update");
   lua_pushnil(L);
@@ -427,6 +431,10 @@ void Script::shutdown() {
     luaLUnref2(gLua, LUA_REGISTRYINDEX, gSetupRef);
     gSetupRef = LUA_NOREF;
   }
+  if (gReadyRef != LUA_NOREF) {
+    luaLUnref2(gLua, LUA_REGISTRYINDEX, gReadyRef);
+    gReadyRef = LUA_NOREF;
+  }
   if (gUpdateRef != LUA_NOREF) {
     luaLUnref2(gLua, LUA_REGISTRYINDEX, gUpdateRef);
     gUpdateRef = LUA_NOREF;
@@ -636,6 +644,10 @@ void Script::executeScene() {
     luaLUnref2(gLua, LUA_REGISTRYINDEX, gSetupRef);
     gSetupRef = LUA_NOREF;
   }
+  if (gReadyRef != LUA_NOREF) {
+    luaLUnref2(gLua, LUA_REGISTRYINDEX, gReadyRef);
+    gReadyRef = LUA_NOREF;
+  }
   if (gUpdateRef != LUA_NOREF) {
     luaLUnref2(gLua, LUA_REGISTRYINDEX, gUpdateRef);
     gUpdateRef = LUA_NOREF;
@@ -674,6 +686,12 @@ void Script::executeScene() {
   } else {
     lua_pop(gLua, 1);
   }
+  lua_getglobal(gLua, "ready");
+  if (lua_isfunction(gLua, -1)) {
+    gReadyRef = luaLRef2(gLua, funcIndex);
+  } else {
+    lua_pop(gLua, 1);
+  }
   lua_getglobal(gLua, "update");
   if (lua_isfunction(gLua, -1)) {
     gUpdateRef = luaLRef2(gLua, funcIndex);
@@ -698,19 +716,40 @@ void Script::executeScene() {
   if (!gSetupTasks.isDone()) {
     gScenePhase = ScriptScenePhase::Loading;
   } else {
-    gScenePhase = ScriptScenePhase::Running;
+    gScenePhase = ScriptScenePhase::ReadyPending;
   }
 }
 
-void Script::callUpdate() {
+static bool prepareSceneFrame() {
   if (gScenePhase == ScriptScenePhase::Loading) {
     if (gSetupTasks.isDone()) {
-      gScenePhase = ScriptScenePhase::Running;
+      gScenePhase = ScriptScenePhase::ReadyPending;
     } else {
-      return;
+      return false;
     }
   }
 
+  if (gScenePhase == ScriptScenePhase::ReadyPending) {
+    // Transition first so ready() is never called more than once, even if it
+    // reports an error.
+    gScenePhase = ScriptScenePhase::Running;
+    if (gLua && gReadyRef != LUA_NOREF) {
+      lua_rawgeti(gLua, LUA_REGISTRYINDEX, gReadyRef);
+      if (lua_pcall(gLua, 0, 0, 0) != LUA_OK) {
+        const char *msg = lua_tostring(gLua, -1);
+        Log::error("[lua error] {}", msg ? msg : "(unknown error)");
+        lua_pop(gLua, 1);
+      }
+    }
+  }
+
+  return gScenePhase == ScriptScenePhase::Running;
+}
+
+void Script::callUpdate() {
+  if (!prepareSceneFrame()) {
+    return;
+  }
   if (!gLua || gUpdateRef == LUA_NOREF) {
     return;
   }
@@ -723,7 +762,7 @@ void Script::callUpdate() {
 }
 
 void Script::callDraw() {
-  if (gScenePhase == ScriptScenePhase::Loading) {
+  if (!prepareSceneFrame()) {
     return;
   }
   if (!gLua || gDrawRef == LUA_NOREF) {

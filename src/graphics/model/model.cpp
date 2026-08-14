@@ -674,6 +674,10 @@ void Model::load(StringView path) {
       });
 }
 void Model::load(const Buffer &buffer) {
+  load(buffer, "");
+}
+
+void Model::load(const Buffer &buffer, StringView formatHint) {
   const TaskGroup group = LoadContext::current();
   group.add();
 
@@ -686,12 +690,13 @@ void Model::load(const Buffer &buffer) {
 
   auto state = makePtr<AsyncModelState>();
   state->embeddedTextures.resize(6);
-  state->debugName = "Model::load(buffer)";
+  state->debugName = "Model::load(buffer, " + String(formatHint) + ")";
   const Ptr<void> stateVoid = std::static_pointer_cast<void>(state);
   this->data = stateVoid;
 
   const Buffer buf = buffer;
-  state->future = globalThreadPool().submit([state, buf]() {
+  const String hint(formatHint);
+  state->future = globalThreadPool().submit([state, buf, hint]() {
     const char *stage = "start";
     try {
       Assimp::Importer importer;
@@ -699,7 +704,8 @@ void Model::load(const Buffer &buffer) {
       const aiScene *scene = importer.ReadFileFromMemory(
           buf.data(), buf.size(),
           aiProcess_ValidateDataStructure | aiProcess_LimitBoneWeights |
-              aiProcess_JoinIdenticalVertices | aiProcess_Triangulate);
+              aiProcess_JoinIdenticalVertices | aiProcess_Triangulate,
+          hint.empty() ? nullptr : hint.c_str());
       if (!scene) {
         state->ok = false;
         return;

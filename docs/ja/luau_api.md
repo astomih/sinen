@@ -88,6 +88,34 @@ sn.Graphics.endPass(pass)
 
 `begin2D` / `begin3D` / `finish` と `beginRenderTarget` / `endRenderTarget` は既存コードとの互換性のため残されています。
 
+## 外部ファイル
+
+通常のアセットパスはプロジェクトまたはアーカイブ内に制限されています。プロジェクト外のファイルは、ユーザーがファイルダイアログで選択するか、ウィンドウへドロップした場合に限って `ExternalFile` として読み込めます。絶対パス自体はLuauへ公開されません。
+
+```luau
+sn.FileDialog.open(function(files: { sn.ExternalFile }, err: string?)
+	if err then
+		sn.Log.error(err)
+		return
+	end
+	if files[1] then
+		local texture = sn.Texture.new(files[1])
+	end
+end, {
+	{ name = "Images", pattern = "png;jpg;jpeg;ktx2" },
+})
+```
+
+ドラッグ＆ドロップは省略可能なグローバルコールバックで受け取ります。
+
+```luau
+function fileDropped(file: sn.ExternalFile)
+	local model = sn.Model.new(file)
+end
+```
+
+`ExternalFile` は `Texture.new`、`Model.new`、`Sound.new`、`Font.new` に直接渡せます。`read()` で読み取り専用の `Buffer` を取得することもできます。モデルは選択されていない隣接ファイルを読み込まないため、外部ファイルを参照する `.gltf` ではなく、自己完結した `.glb` または埋め込みデータを使用してください。
+
 ## レイトレーシング対応確認
 
 レイトレーシング機能を使う前に `sn.Raytracing.isDeviceSupported()` を確認してください。互換用に `sn.Raytracing.isSupported()` も同じ結果を返します。

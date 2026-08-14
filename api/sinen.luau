@@ -17,6 +17,25 @@ export type Buffer = {
 	toHeader: (self: Buffer, symbolName: string) -> Buffer,
 }
 
+export type ExternalFile = {
+	read: (self: ExternalFile) -> Buffer?,
+	name: (self: ExternalFile) -> string,
+	extension: (self: ExternalFile) -> string,
+}
+
+export type FileDialogFilter = {
+	name: string,
+	pattern: string,
+}
+
+export type FileDialog = {
+	open: (
+		callback: (files: { ExternalFile }, errorMessage: string?) -> nil,
+		filters: { FileDialogFilter }?,
+		allowMany: boolean?
+	) -> nil,
+}
+
 local Vec3Impl = {}
 Vec3Impl.new = function(): Vec3
 	return setmetatable(
@@ -190,7 +209,7 @@ export type Color = {
 }
 
 export type Texture = {
-	new: ((source: string | Buffer) -> Texture) & ((width: number, height: number) -> Texture),
+	new: ((source: string | Buffer | ExternalFile) -> Texture) & ((width: number, height: number) -> Texture),
 	newCubemap: (path: string) -> Texture,
 	newIrradianceCubemap: (path: string, faceSize: number?, sampleCount: number?) -> Texture,
 	newPrefilteredCubemap: (path: string, faceSize: number?, mipLevels: number?, sampleCount: number?) -> Texture,
@@ -210,7 +229,7 @@ export type RenderTexture = {
 }
 
 export type Sound = {
-	new: (source: string | Buffer) -> Sound,
+	new: (source: string | Buffer | ExternalFile) -> Sound,
 	play: (self: Sound) -> nil,
 	setVolume: (self: Sound, volume: number) -> nil,
 	setPitch: (self: Sound, pitch: number) -> nil,
@@ -263,7 +282,7 @@ export type TextureKey = {
 }
 
 export type Model = {
-	new: (source: string | Buffer) -> Model,
+	new: (source: string | Buffer | ExternalFile) -> Model,
 	newSprite: () -> Model,
 	newBox: () -> Model,
 	getAABB: (self: Model) -> AABB,
@@ -384,9 +403,11 @@ export type Font = {
 	new: ((size: number) -> Font)
 		& ((size: number, path: string) -> Font)
 		& ((size: number, buffer: Buffer) -> Font)
+		& ((size: number, file: ExternalFile) -> Font)
 		& ((size: number, method: number) -> Font)
 		& ((size: number, path: string, method: number) -> Font)
-		& ((size: number, buffer: Buffer, method: number) -> Font),
+		& ((size: number, buffer: Buffer, method: number) -> Font)
+		& ((size: number, file: ExternalFile, method: number) -> Font),
 	resize: (self: Font, size: number) -> nil,
 	region: (self: Font, text: string, fontSize: number, pivot: Pivot, position: Vec2) -> Rect,
 }
@@ -1002,6 +1023,8 @@ export type Synth = {
 return {
 	ECS = ECS,
 	Buffer = {} :: Buffer,
+	ExternalFile = {} :: ExternalFile,
+	FileDialog = {} :: FileDialog,
 	Vec3 = Vec3Impl,
 	Vec2 = Vec2Impl,
 	Mat4 = Mat4Impl,

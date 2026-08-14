@@ -297,6 +297,9 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 }
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
   ZoneScopedN("SDL_AppEvent");
+  if (event->type == SDL_EVENT_DROP_FILE && event->drop.data) {
+    Script::receiveDroppedFile(event->drop.data);
+  }
   auto wrappedEvent = createEvent(*event);
   wrappedEvent->processEvent();
   Window::processEvent(*wrappedEvent);

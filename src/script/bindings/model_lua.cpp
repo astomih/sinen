@@ -16,6 +16,7 @@
 #include <math/quaternion.hpp>
 #include <math/vector.hpp>
 #include <platform/io/asset_reader.hpp>
+#include <platform/io/external_file.hpp>
 
 namespace sinen {
 static int lModelNew(lua_State *L) {
@@ -30,6 +31,17 @@ static int lModelNew(lua_State *L) {
       return luaLError2(L, "sn.Model.new asset not found: %s", path);
     }
     model->load(StringView(path));
+  } else if (auto *file = udValueOrNull<ExternalFile>(L, 1)) {
+    auto buffer = file->read();
+    if (!buffer || buffer->size() == 0) {
+      model.reset();
+      return luaLError2(L, "sn.Model.new external file is empty or unreadable");
+    }
+    String hint = file->extension();
+    if (!hint.empty() && hint.front() == '.') {
+      hint.erase(hint.begin());
+    }
+    model->load(*buffer, hint);
   } else {
     auto &buffer = udValue<Buffer>(L, 1);
     if (buffer.size() == 0) {

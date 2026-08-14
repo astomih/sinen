@@ -1,6 +1,7 @@
 #include "luaapi.hpp"
 #include <audio/sound.hpp>
 #include <platform/io/asset_reader.hpp>
+#include <platform/io/external_file.hpp>
 
 namespace sinen {
 static int lSoundNew(lua_State *L) {
@@ -16,6 +17,9 @@ static int lSoundNew(lua_State *L) {
       return luaLError2(L, "sn.Sound.new asset not found: %s", path);
     }
     loaded = sound->load(StringView(path));
+  } else if (auto *file = udValueOrNull<ExternalFile>(L, 1)) {
+    auto buffer = file->read();
+    loaded = buffer && buffer->size() > 0 && sound->load(*buffer);
   } else {
     auto &buffer = udValue<Buffer>(L, 1);
     loaded = buffer.size() > 0 && sound->load(buffer);

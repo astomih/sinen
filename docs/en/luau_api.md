@@ -88,6 +88,34 @@ sn.Graphics.endPass(pass)
 
 `begin2D` / `begin3D` / `finish` and `beginRenderTarget` / `endRenderTarget` remain available for compatibility with existing code.
 
+## External Files
+
+Normal asset paths remain restricted to the project or archive. Files outside the project can be read as `ExternalFile` values only after the user selects them in a file dialog or drops them onto the window. Luau never receives the absolute path itself.
+
+```luau
+sn.FileDialog.open(function(files: { sn.ExternalFile }, err: string?)
+	if err then
+		sn.Log.error(err)
+		return
+	end
+	if files[1] then
+		local texture = sn.Texture.new(files[1])
+	end
+end, {
+	{ name = "Images", pattern = "png;jpg;jpeg;ktx2" },
+})
+```
+
+Drag-and-drop is delivered through an optional global callback.
+
+```luau
+function fileDropped(file: sn.ExternalFile)
+	local model = sn.Model.new(file)
+end
+```
+
+An `ExternalFile` can be passed directly to `Texture.new`, `Model.new`, `Sound.new`, and `Font.new`, or read into a read-only `Buffer` with `read()`. Model loading does not read unselected neighboring files, so use self-contained `.glb` files or embedded data instead of a `.gltf` with external dependencies.
+
 ## Ray Tracing Support
 
 Check `sn.Raytracing.isDeviceSupported()` before using ray tracing features. `sn.Raytracing.isSupported()` is kept as a compatibility alias and returns the same value.

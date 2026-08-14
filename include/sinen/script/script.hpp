@@ -14,6 +14,7 @@ public:
 
   static void callUpdate();
   static void callDraw();
+  static void receiveDroppedFile(StringView path);
 
   static void clearRequireCache();
 

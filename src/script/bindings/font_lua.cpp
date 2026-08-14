@@ -9,6 +9,7 @@
 #include <math/geometry/mesh.hpp>
 #include <math/math.hpp>
 #include <platform/io/asset_reader.hpp>
+#include <platform/io/external_file.hpp>
 
 #include <cstring>
 
@@ -59,6 +60,10 @@ static int lFontNew(lua_State *L) {
       return luaLError2(L, "sn.Font.new asset not found: %s", path);
     }
     loaded = font->load(point, StringView(path), lFontMethod(L, 3));
+  } else if (auto *file = udValueOrNull<ExternalFile>(L, 2)) {
+    auto buffer = file->read();
+    loaded = buffer && buffer->size() > 0 &&
+             font->load(point, *buffer, lFontMethod(L, 3));
   } else {
     auto &buffer = udValue<Buffer>(L, 2);
     loaded = buffer.size() > 0 && font->load(point, buffer, lFontMethod(L, 3));

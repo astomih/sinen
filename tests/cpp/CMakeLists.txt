@@ -13,6 +13,15 @@ set_property(TARGET sinen_license_report_tests PROPERTY CXX_STANDARD 23)
 
 add_test(NAME sinen_license_report_tests COMMAND sinen_license_report_tests)
 
+if(TARGET sinen_platform)
+  add_executable(sinen_external_file_tests external_file_tests.cpp)
+  target_link_libraries(sinen_external_file_tests
+                        PRIVATE sinen_platform GTest::gtest_main)
+  set_property(TARGET sinen_external_file_tests PROPERTY CXX_STANDARD 23)
+
+  add_test(NAME sinen_external_file_tests COMMAND sinen_external_file_tests)
+endif()
+
 if(TARGET sinen_gpu)
   add_executable(sinen_shader_bundle_tests shader_bundle_tests.cpp)
   target_link_libraries(sinen_shader_bundle_tests

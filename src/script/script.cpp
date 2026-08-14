@@ -1,5 +1,6 @@
 // internal
 #include <script/script.hpp>
+#include <script/bindings/external_file_lua.hpp>
 
 #include <core/allocator/global_allocator.hpp>
 #include <core/buffer/buffer.hpp>
@@ -106,6 +107,7 @@ static int gSetupRef = LUA_NOREF;
 static int gReadyRef = LUA_NOREF;
 static int gUpdateRef = LUA_NOREF;
 static int gDrawRef = LUA_NOREF;
+static int gFileDroppedRef = LUA_NOREF;
 
 enum class ScriptScenePhase {
   Running,
@@ -168,6 +170,8 @@ static void clearSceneEntryPoints(lua_State *L) {
   lua_setglobal(L, "update");
   lua_pushnil(L);
   lua_setglobal(L, "draw");
+  lua_pushnil(L);
+  lua_setglobal(L, "fileDropped");
 }
 
 static void drawNowLoadingOverlay() {
@@ -318,6 +322,7 @@ static void registerAll(lua_State *L) {
   registerCamera(L);
   registerCamera2D(L);
   registerBuffer(L);
+  registerExternalFile(L);
   registerPivot(L);
   registerRect(L);
   registerTransform(L);
@@ -443,6 +448,11 @@ void Script::shutdown() {
     luaLUnref2(gLua, LUA_REGISTRYINDEX, gDrawRef);
     gDrawRef = LUA_NOREF;
   }
+  if (gFileDroppedRef != LUA_NOREF) {
+    luaLUnref2(gLua, LUA_REGISTRYINDEX, gFileDroppedRef);
+    gFileDroppedRef = LUA_NOREF;
+  }
+  resetExternalFileCallbacks(gLua);
   lua_gc(gLua, LUA_GCCOLLECT, 0);
   lua_gc(gLua, LUA_GCCOLLECT, 0);
   nativeModuleManager().close(gLua);
@@ -623,6 +633,7 @@ void Script::executeScene() {
     return;
   }
   lua_settop(gLua, 0);
+  resetExternalFileCallbacks(gLua);
 
   gScenePhase = ScriptScenePhase::Running;
   gSetupTasks = TaskGroup::create();
@@ -655,6 +666,10 @@ void Script::executeScene() {
   if (gDrawRef != LUA_NOREF) {
     luaLUnref2(gLua, LUA_REGISTRYINDEX, gDrawRef);
     gDrawRef = LUA_NOREF;
+  }
+  if (gFileDroppedRef != LUA_NOREF) {
+    luaLUnref2(gLua, LUA_REGISTRYINDEX, gFileDroppedRef);
+    gFileDroppedRef = LUA_NOREF;
   }
   clearSceneEntryPoints(gLua);
 
@@ -704,6 +719,12 @@ void Script::executeScene() {
   } else {
     lua_pop(gLua, 1);
   }
+  lua_getglobal(gLua, "fileDropped");
+  if (lua_isfunction(gLua, -1)) {
+    gFileDroppedRef = luaLRef2(gLua, funcIndex);
+  } else {
+    lua_pop(gLua, 1);
+  }
 
   if (gSetupRef != LUA_NOREF) {
     lua_rawgeti(gLua, LUA_REGISTRYINDEX, gSetupRef);
@@ -750,6 +771,9 @@ void Script::callUpdate() {
   if (!prepareSceneFrame()) {
     return;
   }
+  if (gLua) {
+    pumpExternalFileCallbacks(gLua, gFileDroppedRef);
+  }
   if (!gLua || gUpdateRef == LUA_NOREF) {
     return;
   }
@@ -759,6 +783,10 @@ void Script::callUpdate() {
     Log::error("[lua error] {}", msg ? msg : "(unknown error)");
     lua_pop(gLua, 1);
   }
+}
+
+void Script::receiveDroppedFile(StringView path) {
+  enqueueDroppedExternalFile(path);
 }
 
 void Script::callDraw() {

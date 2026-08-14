@@ -42,6 +42,7 @@ public:
    */
   void load(StringView str);
   void load(const Buffer &buffer);
+  void load(const Buffer &buffer, StringView formatHint);
   void loadFromVertexArray(const Mesh &mesh);
   void loadSprite();
   void loadBox();

@@ -8,6 +8,7 @@
 #include <graphics/texture/texture.hpp>
 #include <math/math.hpp>
 #include <platform/io/asset_reader.hpp>
+#include <platform/io/external_file.hpp>
 
 namespace sinen {
 static int lTextureNew(lua_State *L) {
@@ -21,6 +22,14 @@ static int lTextureNew(lua_State *L) {
         return luaLError2(L, "sn.Texture.new asset not found: %s", path);
       }
       texture->load(StringView(path));
+    } else if (auto *file = udValueOrNull<ExternalFile>(L, 1)) {
+      auto buffer = file->read();
+      if (!buffer || buffer->size() == 0) {
+        texture.reset();
+        return luaLError2(
+            L, "sn.Texture.new external file is empty or unreadable");
+      }
+      texture->load(*buffer);
     } else {
       auto &buffer = udValue<Buffer>(L, 1);
       if (buffer.size() == 0) {

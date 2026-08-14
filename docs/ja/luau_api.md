@@ -31,7 +31,7 @@ sn.Graphics.endPass(pass)
 
 ## 3D Pass
 
-3D 描画は明示的な `Render3DPass` で囲みます。カメラやパイプライン、テクスチャなどの状態は pass に属し、GPU command buffer の終了とフレームの submit は `Graphics` が管理します。
+3D 描画は明示的な `Render3DPass` で囲みます。カメラと描画先はpass、再利用可能なPipeline・Texture・Uniformの組は`Material`に属します。GPU command bufferの終了とフレームのsubmitは`Graphics`が管理します。
 
 ```luau
 local camera = sn.Camera3D.new()
@@ -43,6 +43,24 @@ sn.Graphics.endPass(pass)
 
 sn.Graphics.drawText("HUD", font, sn.Vec2.new(20, 20))
 ```
+
+## Material
+
+カスタムPipelineとそのリソースは`Material`にまとめ、描画命令へ明示的に渡します。`GraphicsPipeline`は`build()`してからMaterialを作成してください。Materialの内容はdraw命令を発行した時点でcommand streamへ反映されるため、同じMaterialのUniformを更新しながら複数回描画できます。
+
+```luau
+pipeline:build()
+
+local material = sn.Material.new(pipeline)
+material:setTexture("normalMap", normalTexture)
+material:setUniformBuffer("MaterialData", materialBuffer)
+
+local pass = sn.Graphics.begin3DPass(camera)
+pass:drawModel(model, transform, material)
+sn.Graphics.endPass(pass)
+```
+
+Materialを省略すると組み込みPipelineとModelのBaseColor Textureが使われます。Pass上の`setGraphicsPipeline`、`setTexture`、`setUniformBuffer`は互換用として残されていますが、新しいコードではMaterialを使用してください。
 
 ## プロシージャル 3D モデル
 

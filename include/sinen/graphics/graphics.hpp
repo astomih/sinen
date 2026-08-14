@@ -107,6 +107,7 @@ public:
 private:
   friend class RenderPass;
   static bool activatePass(RenderPass &pass);
+  static bool activatePass(RenderPass &pass, const Material &material);
 };
 } // namespace sinen
 #endif // !SINEN_RENDER_SYSTEM_HPP

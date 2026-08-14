@@ -71,6 +71,15 @@ pipeline3d:setFragmentShader(fragment_shader)
 pipeline3d:setEnableTangent(true)
 pipeline3d:setEnableDepthTest(true)
 pipeline3d:build()
+local material = sn.Material.new(pipeline3d)
+material:setTexture(1, model:getTexture(sn.TextureKey.Normal))
+material:setTexture(2, model:getTexture(sn.TextureKey.DiffuseRoughness))
+material:setTexture(3, model:getTexture(sn.TextureKey.Emissive))
+material:setTexture(4, model:getTexture(sn.TextureKey.LightMap))
+material:setTexture(5, lut)
+material:setTexture(6, cubemap)
+material:setTexture(7, irradiance)
+material:setTexture(8, prefiltered)
 
 local lightPos: sn.Vec3 = sn.Vec3.new(1.05, 0.8, 0.75)
 local lightIntensity: number = 4.0
@@ -82,8 +91,8 @@ local uniformData: { any } = {
 	lightIntensity,
 }
 
-local function setWorldUniform(pass: sn.Render3DPass, t: sn.Transform)
-	pass:setUniformBuffer(1, sn.Buffer.new({ t:getWorldMatrix() }))
+local function setWorldUniform(t: sn.Transform)
+	material:setUniformBuffer(1, sn.Buffer.new({ t:getWorldMatrix() }))
 end
 
 function update()
@@ -122,27 +131,12 @@ end
 
 function draw()
 	local pass = sn.Graphics.begin3DPass(camera)
-	pass:resetAllTexture()
-	pass:resetGraphicsPipeline()
 	pass:drawCubemap(cubemap)
 
-	pass:resetAllTexture()
-	pass:setTexture(1, model:getTexture(sn.TextureKey.Normal))
-	pass:setTexture(2, model:getTexture(sn.TextureKey.DiffuseRoughness))
-	pass:setTexture(3, model:getTexture(sn.TextureKey.Emissive))
-	pass:setTexture(4, model:getTexture(sn.TextureKey.LightMap))
-	pass:setTexture(5, lut)
-	pass:setTexture(6, cubemap)
-	pass:setTexture(7, irradiance)
-	pass:setTexture(8, prefiltered)
+	material:setUniformBuffer(0, sn.Buffer.new(uniformData))
+	setWorldUniform(transform)
+	pass:drawModel(model, transform, material)
 
-	pass:setGraphicsPipeline(pipeline3d)
-	pass:setUniformBuffer(0, sn.Buffer.new(uniformData))
-	setWorldUniform(pass, transform)
-	pass:drawModel(model, transform)
-
-	pass:resetAllTexture()
-	pass:resetGraphicsPipeline()
 	pass:drawModel(lightModel, lightTransform)
 	sn.Graphics.endPass(pass)
 end

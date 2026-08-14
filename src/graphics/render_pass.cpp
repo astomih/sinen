@@ -13,6 +13,9 @@ RenderPass::RenderPass(Type type, UInt64 frameId,
 RenderPass::~RenderPass() = default;
 
 bool RenderPass::activate() { return Graphics::activatePass(*this); }
+bool RenderPass::activate(const Material &material) {
+  return Graphics::activatePass(*this, material);
+}
 
 void RenderPass::setGraphicsPipeline(const GraphicsPipeline &pipeline) {
   if (activate()) {
@@ -130,6 +133,13 @@ void Render2DPass::drawRect(const Rect &rect, const Color &color, float angle) {
   }
 }
 
+void Render2DPass::drawRect(const Rect &rect, const Color &color,
+                            const Material &material, float angle) {
+  if (activate(material)) {
+    Graphics::drawRect(rect, color, angle);
+  }
+}
+
 void Render2DPass::drawRects(const Array<Rect> &rects, const Color &color) {
   if (activate()) {
     Graphics::drawRects(rects, color);
@@ -143,9 +153,24 @@ void Render2DPass::drawImage(const Ptr<Texture> &texture, const Rect &rect,
   }
 }
 
+void Render2DPass::drawImage(const Ptr<Texture> &texture, const Rect &rect,
+                             const Material &material, float angle) {
+  if (activate(material)) {
+    Graphics::drawImage(texture, rect, angle);
+  }
+}
+
 void Render2DPass::drawText(StringView text, const TextStyle &style,
                             const TextTransform &transform) {
   if (activate()) {
+    Graphics::drawText(text, style, transform);
+  }
+}
+
+void Render2DPass::drawText(StringView text, const TextStyle &style,
+                            const TextTransform &transform,
+                            const Material &material) {
+  if (activate(material)) {
     Graphics::drawText(text, style, transform);
   }
 }
@@ -168,8 +193,22 @@ void Render3DPass::drawCubemap(const Ptr<Texture> &cubemap) {
   }
 }
 
+void Render3DPass::drawCubemap(const Ptr<Texture> &cubemap,
+                               const Material &material) {
+  if (activate(material)) {
+    Graphics::drawCubemap(cubemap);
+  }
+}
+
 void Render3DPass::drawModel(const Model &model, const Transform &transform) {
   if (activate()) {
+    Graphics::drawModel(model, transform);
+  }
+}
+
+void Render3DPass::drawModel(const Model &model, const Transform &transform,
+                             const Material &material) {
+  if (activate(material)) {
     Graphics::drawModel(model, transform);
   }
 }
@@ -177,6 +216,14 @@ void Render3DPass::drawModel(const Model &model, const Transform &transform) {
 void Render3DPass::drawModelInstanced(const Model &model,
                                       const Array<Transform> &transforms) {
   if (activate()) {
+    Graphics::drawModelInstanced(model, transforms);
+  }
+}
+
+void Render3DPass::drawModelInstanced(const Model &model,
+                                      const Array<Transform> &transforms,
+                                      const Material &material) {
+  if (activate(material)) {
     Graphics::drawModelInstanced(model, transforms);
   }
 }

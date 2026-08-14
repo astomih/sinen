@@ -9,16 +9,18 @@ local shadowCamera: sn.Camera3D = sn.Camera3D.new()
 local depthVS: sn.Shader = sn.Shader.new("depth_write.vert.snb", sn.ShaderStage.Vertex)
 local depthFS: sn.Shader = sn.Shader.new("depth_write.frag.snb", sn.ShaderStage.Fragment)
 local depthPipeline: sn.GraphicsPipeline = sn.GraphicsPipeline.new()
+local depthMaterial: sn.Material
 local depthRenderTexture: sn.RenderTexture = sn.RenderTexture.new()
 local depthTexture: sn.Texture = sn.Texture.new(sn.Window.size().x, sn.Window.size().y)
 local vs: sn.Shader = sn.Shader.new("shader.vert.snb", sn.ShaderStage.Vertex)
 local fs: sn.Shader = sn.Shader.new("shader.frag.snb", sn.ShaderStage.Fragment)
 local pipeline: sn.GraphicsPipeline = sn.GraphicsPipeline.new()
+local lightingMaterial: sn.Material
 local floorTexture: sn.Texture = sn.Texture.new(1, 1)
 local camera: sn.Camera3D = sn.Camera3D.new()
 
-local function setShadowUniform(pass: sn.Render3DPass, t: sn.Transform)
-	pass:setUniformBuffer(
+local function setShadowUniform(material: sn.Material, t: sn.Transform)
+	material:setUniformBuffer(
 		1,
 		sn.Buffer.new({
 			t:getWorldMatrix(),
@@ -42,6 +44,7 @@ function setup()
 	depthPipeline:setVertexShader(depthVS)
 	depthPipeline:setFragmentShader(depthFS)
 	depthPipeline:build()
+	depthMaterial = sn.Material.new(depthPipeline)
 
 	depthRenderTexture:create(sn.Window.size().x, sn.Window.size().y)
 	depthTexture:fill(sn.Color.new(1, 1, 1, 1))
@@ -50,6 +53,8 @@ function setup()
 	pipeline:setVertexShader(vs)
 	pipeline:setFragmentShader(fs)
 	pipeline:build()
+	lightingMaterial = sn.Material.new(pipeline)
+	lightingMaterial:setTexture(1, depthTexture)
 
 	floorTexture:fill(sn.Color.new(1))
 
@@ -67,21 +72,17 @@ end
 function draw()
 	-- depth write
 	local depthPass = sn.Graphics.begin3DPass(shadowCamera, depthRenderTexture)
-	depthPass:setGraphicsPipeline(depthPipeline)
-	depthPass:drawModel(model, modelTransform)
-	depthPass:drawModel(floor, floorTransform)
+	depthPass:drawModel(model, modelTransform, depthMaterial)
+	depthPass:drawModel(floor, floorTransform, depthMaterial)
 	sn.Graphics.endPass(depthPass)
 	sn.Graphics.readbackTexture(depthRenderTexture, depthTexture)
 
 	-- Lighting
 	local pass = sn.Graphics.begin3DPass(camera)
-	pass:setGraphicsPipeline(pipeline)
 
-	setShadowUniform(pass, modelTransform)
-	pass:setTexture(1, depthTexture)
-	pass:drawModel(model, modelTransform)
-	setShadowUniform(pass, floorTransform)
-	pass:setTexture(1, depthTexture)
-	pass:drawModel(floor, floorTransform)
+	setShadowUniform(lightingMaterial, modelTransform)
+	pass:drawModel(model, modelTransform, lightingMaterial)
+	setShadowUniform(lightingMaterial, floorTransform)
+	pass:drawModel(floor, floorTransform, lightingMaterial)
 	sn.Graphics.endPass(pass)
 end

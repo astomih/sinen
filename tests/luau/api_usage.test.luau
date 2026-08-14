@@ -16,22 +16,36 @@ local function renderPassApiTypecheck(
 	model: sn.Model,
 	texture: sn.Texture,
 	style: sn.TextStyle,
+	pipeline: sn.GraphicsPipeline,
 	transform: sn.Transform,
 	textTransform: sn.TextTransform
 )
 	local pass2D: sn.Render2DPass = sn.Graphics.begin2DPass(camera2D)
 	pass2D:drawRect(sn.Rect.new(0, 0, 10, 10), sn.Color.new(1))
-	pass2D:drawImage(texture, sn.Rect.new(0, 0, 10, 10))
+	local material: sn.Material = sn.Material.new(pipeline)
+	material:setTexture(0, texture)
+	material:setUniformBuffer(0, sn.Buffer.new({ 1 }))
+	pass2D:drawImage(texture, sn.Rect.new(0, 0, 10, 10), material)
 	pass2D:drawText("pass", style, textTransform)
 	sn.Graphics.endPass(pass2D)
 
 	local pass3D: sn.Render3DPass = sn.Graphics.begin3DPass(camera3D, target)
-	pass3D:drawModel(model, transform)
+	pass3D:drawModel(model, transform, material)
 	sn.Graphics.endPass(pass3D)
 end
 
 if false then
-	renderPassApiTypecheck(nil :: any, nil :: any, nil :: any, nil :: any, nil :: any, nil :: any, nil :: any, nil :: any)
+	renderPassApiTypecheck(
+		nil :: any,
+		nil :: any,
+		nil :: any,
+		nil :: any,
+		nil :: any,
+		nil :: any,
+		nil :: any,
+		nil :: any,
+		nil :: any
+	)
 end
 
 describe("Sinen Luau API", function()

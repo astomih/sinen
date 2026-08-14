@@ -7,6 +7,7 @@
 #include <graphics/builtin_pipeline.hpp>
 #include <graphics/graphics.hpp>
 #include <graphics/gui/gui.hpp>
+#include <graphics/material.hpp>
 #include <graphics/render_pass.hpp>
 #include <graphics/texture/render_texture.hpp>
 #include <math/transform/transform.hpp>
@@ -150,6 +151,82 @@ static int lGraphicsEndPass(lua_State *L) {
   return 0;
 }
 
+static int lMaterialNew(lua_State *L) {
+  auto &pipeline = udPtr<GraphicsPipeline>(L, 1);
+  if (!pipeline->get()) {
+    luaL_error(L, "Material.new requires a built GraphicsPipeline");
+    return 0;
+  }
+  udPushPtr<Material>(L, makePtr<Material>(GlobalAllocator::get(), *pipeline));
+  return 1;
+}
+static int lMaterialSetUniformBuffer(lua_State *L) {
+  auto &material = udPtr<Material>(L, 1);
+  auto &buffer = udValue<Buffer>(L, 3);
+  if (lua_type(L, 2) == LUA_TSTRING) {
+    material->setUniformBuffer(StringView(luaL_checkstring(L, 2)), buffer);
+  } else {
+    material->setUniformBuffer(static_cast<UInt32>(luaL_checkinteger(L, 2)),
+                               buffer);
+  }
+  return 0;
+}
+static int lMaterialResetUniformBuffer(lua_State *L) {
+  auto &material = udPtr<Material>(L, 1);
+  if (lua_type(L, 2) == LUA_TSTRING) {
+    material->resetUniformBuffer(StringView(luaL_checkstring(L, 2)));
+  } else {
+    material->resetUniformBuffer(static_cast<UInt32>(luaL_checkinteger(L, 2)));
+  }
+  return 0;
+}
+static int lMaterialResetAllUniformBuffers(lua_State *L) {
+  udPtr<Material>(L, 1)->resetAllUniformBuffers();
+  return 0;
+}
+static int lMaterialSetTexture(lua_State *L) {
+  auto &material = udPtr<Material>(L, 1);
+  auto &texture = udPtr<Texture>(L, 3);
+  if (lua_type(L, 2) == LUA_TSTRING) {
+    material->setTexture(StringView(luaL_checkstring(L, 2)), texture);
+  } else {
+    material->setTexture(static_cast<UInt32>(luaL_checkinteger(L, 2)), texture);
+  }
+  return 0;
+}
+static int lMaterialResetTexture(lua_State *L) {
+  auto &material = udPtr<Material>(L, 1);
+  if (lua_type(L, 2) == LUA_TSTRING) {
+    material->resetTexture(StringView(luaL_checkstring(L, 2)));
+  } else {
+    material->resetTexture(static_cast<UInt32>(luaL_checkinteger(L, 2)));
+  }
+  return 0;
+}
+static int lMaterialResetAllTexture(lua_State *L) {
+  udPtr<Material>(L, 1)->resetAllTexture();
+  return 0;
+}
+
+static void registerMaterial(lua_State *L) {
+  luaL_newmetatable(L, Material::metaTableName());
+  lua_pushvalue(L, -1);
+  lua_setfield(L, -2, "__index");
+  Binding::registerFunction(L, "setUniformBuffer", lMaterialSetUniformBuffer);
+  Binding::registerFunction(L, "resetUniformBuffer",
+                            lMaterialResetUniformBuffer);
+  Binding::registerFunction(L, "resetAllUniformBuffers",
+                            lMaterialResetAllUniformBuffers);
+  Binding::registerFunction(L, "setTexture", lMaterialSetTexture);
+  Binding::registerFunction(L, "resetTexture", lMaterialResetTexture);
+  Binding::registerFunction(L, "resetAllTexture", lMaterialResetAllTexture);
+  lua_pop(L, 1);
+
+  pushSnNamed(L, "Material");
+  Binding::registerFunction(L, "new", lMaterialNew);
+  lua_pop(L, 1);
+}
+
 template <class T> static int lRenderPassIsFinished(lua_State *L) {
   lua_pushboolean(L, udPtr<T>(L, 1)->isFinished());
   return 1;
@@ -206,18 +283,30 @@ static int lRender2DPassDrawRect(lua_State *L) {
   auto &pass = udPtr<Render2DPass>(L, 1);
   auto &rect = udValue<Rect>(L, 2);
   auto &color = udValue<Color>(L, 3);
-  const float angle =
-      lua_gettop(L) >= 4 ? static_cast<float>(luaL_checknumber(L, 4)) : 0.0f;
-  pass->drawRect(rect, color, angle);
+  if (luaLTestudata2(L, 4, Material::metaTableName())) {
+    const float angle =
+        lua_gettop(L) >= 5 ? static_cast<float>(luaL_checknumber(L, 5)) : 0.0f;
+    pass->drawRect(rect, color, *udPtr<Material>(L, 4), angle);
+  } else {
+    const float angle =
+        lua_gettop(L) >= 4 ? static_cast<float>(luaL_checknumber(L, 4)) : 0.0f;
+    pass->drawRect(rect, color, angle);
+  }
   return 0;
 }
 static int lRender2DPassDrawImage(lua_State *L) {
   auto &pass = udPtr<Render2DPass>(L, 1);
   auto &texture = udPtr<Texture>(L, 2);
   auto &rect = udValue<Rect>(L, 3);
-  const float angle =
-      lua_gettop(L) >= 4 ? static_cast<float>(luaL_checknumber(L, 4)) : 0.0f;
-  pass->drawImage(texture, rect, angle);
+  if (luaLTestudata2(L, 4, Material::metaTableName())) {
+    const float angle =
+        lua_gettop(L) >= 5 ? static_cast<float>(luaL_checknumber(L, 5)) : 0.0f;
+    pass->drawImage(texture, rect, *udPtr<Material>(L, 4), angle);
+  } else {
+    const float angle =
+        lua_gettop(L) >= 4 ? static_cast<float>(luaL_checknumber(L, 4)) : 0.0f;
+    pass->drawImage(texture, rect, angle);
+  }
   return 0;
 }
 static int lRender2DPassDrawText(lua_State *L) {
@@ -225,17 +314,32 @@ static int lRender2DPassDrawText(lua_State *L) {
   const char *text = luaL_checkstring(L, 2);
   auto &style = udValue<TextStyle>(L, 3);
   auto &transform = udValue<TextTransform>(L, 4);
-  pass->drawText(StringView(text), style, transform);
+  if (luaLTestudata2(L, 5, Material::metaTableName())) {
+    pass->drawText(StringView(text), style, transform, *udPtr<Material>(L, 5));
+  } else {
+    pass->drawText(StringView(text), style, transform);
+  }
   return 0;
 }
 static int lRender3DPassDrawCubemap(lua_State *L) {
-  udPtr<Render3DPass>(L, 1)->drawCubemap(udPtr<Texture>(L, 2));
+  auto &pass = udPtr<Render3DPass>(L, 1);
+  auto &texture = udPtr<Texture>(L, 2);
+  if (luaLTestudata2(L, 3, Material::metaTableName())) {
+    pass->drawCubemap(texture, *udPtr<Material>(L, 3));
+  } else {
+    pass->drawCubemap(texture);
+  }
   return 0;
 }
 static int lRender3DPassDrawModel(lua_State *L) {
   auto &model = udPtr<Model>(L, 2);
   auto &transform = udValue<Transform>(L, 3);
-  udPtr<Render3DPass>(L, 1)->drawModel(*model, transform);
+  auto &pass = udPtr<Render3DPass>(L, 1);
+  if (luaLTestudata2(L, 4, Material::metaTableName())) {
+    pass->drawModel(*model, transform, *udPtr<Material>(L, 4));
+  } else {
+    pass->drawModel(*model, transform);
+  }
   return 0;
 }
 static int lRender3DPassDrawModelInstanced(lua_State *L) {
@@ -249,7 +353,12 @@ static int lRender3DPassDrawModelInstanced(lua_State *L) {
     transforms.push_back(udValue<Transform>(L, -1));
     lua_pop(L, 1);
   }
-  udPtr<Render3DPass>(L, 1)->drawModelInstanced(*model, transforms);
+  auto &pass = udPtr<Render3DPass>(L, 1);
+  if (luaLTestudata2(L, 4, Material::metaTableName())) {
+    pass->drawModelInstanced(*model, transforms, *udPtr<Material>(L, 4));
+  } else {
+    pass->drawModelInstanced(*model, transforms);
+  }
   return 0;
 }
 
@@ -380,6 +489,7 @@ static int lGraphicsGetBackendName(lua_State *L) {
   return 1;
 }
 void registerGraphics(lua_State *L) {
+  registerMaterial(L);
   registerRenderPasses(L);
   pushSnNamed(L, "Graphics");
   Binding::registerFunction(L, "drawRect", lGraphicsDrawRect);

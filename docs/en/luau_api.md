@@ -31,7 +31,7 @@ sn.Graphics.endPass(pass)
 
 ## 3D Passes
 
-3D drawing is scoped by an explicit `Render3DPass`. Camera, pipeline, and texture state belong to the pass, while `Graphics` owns the GPU command buffer closure and final frame submission.
+3D drawing is scoped by an explicit `Render3DPass`. The camera and render target belong to the pass, while a reusable `Material` owns the pipeline, textures, and uniforms. `Graphics` owns GPU command buffer closure and final frame submission.
 
 ```luau
 local camera = sn.Camera3D.new()
@@ -43,6 +43,24 @@ sn.Graphics.endPass(pass)
 
 sn.Graphics.drawText("HUD", font, sn.Vec2.new(20, 20))
 ```
+
+## Materials
+
+Group a custom pipeline and its resources in a `Material`, then pass it explicitly to the draw command. Build the `GraphicsPipeline` before constructing the material. Material contents are applied when the draw command is encoded, so one material can be updated between multiple draws.
+
+```luau
+pipeline:build()
+
+local material = sn.Material.new(pipeline)
+material:setTexture("normalMap", normalTexture)
+material:setUniformBuffer("MaterialData", materialBuffer)
+
+local pass = sn.Graphics.begin3DPass(camera)
+pass:drawModel(model, transform, material)
+sn.Graphics.endPass(pass)
+```
+
+Omitting the material uses the built-in pipeline and the model's base-color texture. The pass-level `setGraphicsPipeline`, `setTexture`, and `setUniformBuffer` methods remain as compatibility APIs; new code should use materials.
 
 ## Procedural 3D Models
 

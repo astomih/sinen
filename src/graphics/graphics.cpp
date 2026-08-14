@@ -1241,13 +1241,15 @@ void Graphics::drawModel(const Model &model, const Transform &transform) {
   else
     currentPipeline = BuiltinPipeline::getDefault3D();
 
-  auto baseColor = model.getTexture(TextureKey::BaseColor);
-  if (baseColor && baseColor->getRaw()) {
-    setTexture(0, baseColor);
-  } else {
-    auto t = Texture::create();
-    t->fill(Palette::white());
-    setTexture(0, t);
+  if (!currentTextureBindings.contains(0)) {
+    auto baseColor = model.getTexture(TextureKey::BaseColor);
+    if (baseColor && baseColor->getRaw()) {
+      setTexture(0, baseColor);
+    } else {
+      auto t = Texture::create();
+      t->fill(Palette::white());
+      setTexture(0, t);
+    }
   }
 
   drawBase3D(Array<Transform>(1, transform), model);
@@ -1261,13 +1263,15 @@ void Graphics::drawModelInstanced(const Model &model,
     currentPipeline = customPipeline.value();
   else
     currentPipeline = BuiltinPipeline::getInstanced3D();
-  auto baseColor = model.getTexture(TextureKey::BaseColor);
-  if (baseColor && baseColor->getRaw()) {
-    setTexture(0, baseColor);
-  } else {
-    auto t = Texture::create();
-    t->fill(Palette::white());
-    setTexture(0, t);
+  if (!currentTextureBindings.contains(0)) {
+    auto baseColor = model.getTexture(TextureKey::BaseColor);
+    if (baseColor && baseColor->getRaw()) {
+      setTexture(0, baseColor);
+    } else {
+      auto t = Texture::create();
+      t->fill(Palette::white());
+      setTexture(0, t);
+    }
   }
   drawBase3D(transforms, model);
 }
@@ -1549,6 +1553,28 @@ bool Graphics::activatePass(RenderPass &pass) {
     currentGraphicsPass = GraphicsPass::ThreeD;
     currentCamera2D = std::nullopt;
     currentCamera3D = pass.camera3D;
+  }
+  return true;
+}
+
+bool Graphics::activatePass(RenderPass &pass, const Material &material) {
+  if (!activatePass(pass)) {
+    return false;
+  }
+  if (!material.pipeline.get()) {
+    Log::error("Attempted to draw with a material whose pipeline is not "
+               "built");
+    return false;
+  }
+
+  customPipeline = material.pipeline;
+  currentTextureBindings = material.textureBindings;
+  currentAccelerationStructureBindings = material.accelerationStructureBindings;
+  for (const auto &[slot, buffer] : material.uniformBufferBindings) {
+    currentCommandBuffer->pushVertexUniformData(slot, buffer.data(),
+                                                buffer.size());
+    currentCommandBuffer->pushFragmentUniformData(slot, buffer.data(),
+                                                  buffer.size());
   }
   return true;
 }

@@ -9,6 +9,7 @@
 #include <graphics/camera/camera2d.hpp>
 #include <graphics/camera/camera3d.hpp>
 #include <graphics/graphics_pipeline.hpp>
+#include <graphics/material.hpp>
 #include <graphics/model/model.hpp>
 #include <graphics/text_style.hpp>
 #include <graphics/texture/render_texture.hpp>
@@ -56,6 +57,7 @@ protected:
              std::optional<Camera3D> camera3D,
              std::optional<RenderTexture> target);
   bool activate();
+  bool activate(const Material &material);
 
 private:
   friend class Graphics;
@@ -81,11 +83,17 @@ public:
 
   Vec2 windowToCurrent(const Vec2 &windowPosition);
   void drawRect(const Rect &rect, const Color &color, float angle = 0.0f);
+  void drawRect(const Rect &rect, const Color &color, const Material &material,
+                float angle = 0.0f);
   void drawRects(const Array<Rect> &rects, const Color &color);
   void drawImage(const Ptr<Texture> &texture, const Rect &rect,
                  float angle = 0.0f);
+  void drawImage(const Ptr<Texture> &texture, const Rect &rect,
+                 const Material &material, float angle = 0.0f);
   void drawText(StringView text, const TextStyle &style,
                 const TextTransform &transform);
+  void drawText(StringView text, const TextStyle &style,
+                const TextTransform &transform, const Material &material);
   void drawTexts(const Array<TextBatchItem> &items, const TextStyle &style);
 };
 
@@ -97,9 +105,15 @@ public:
                std::optional<RenderTexture> target);
 
   void drawCubemap(const Ptr<Texture> &cubemap);
+  void drawCubemap(const Ptr<Texture> &cubemap, const Material &material);
   void drawModel(const Model &model, const Transform &transform);
+  void drawModel(const Model &model, const Transform &transform,
+                 const Material &material);
   void drawModelInstanced(const Model &model,
                           const Array<Transform> &transforms);
+  void drawModelInstanced(const Model &model,
+                          const Array<Transform> &transforms,
+                          const Material &material);
 };
 } // namespace sinen
 

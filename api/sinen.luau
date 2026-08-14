@@ -672,12 +672,26 @@ export type BuiltinPipelines = {
 	getCubemap: () -> GraphicsPipeline,
 }
 
+export type Material = {
+	new: (pipeline: GraphicsPipeline) -> Material,
+	setUniformBuffer: (self: Material, binding: number | string, data: Buffer) -> nil,
+	resetUniformBuffer: (self: Material, binding: number | string) -> nil,
+	resetAllUniformBuffers: (self: Material) -> nil,
+	setTexture: (self: Material, binding: number | string, texture: Texture) -> nil,
+	resetTexture: (self: Material, binding: number | string) -> nil,
+	resetAllTexture: (self: Material) -> nil,
+}
+
 export type Render2DPass = {
 	isFinished: (self: Render2DPass) -> boolean,
 	windowToCurrent: (self: Render2DPass, windowPosition: Vec2) -> Vec2,
-	drawRect: (self: Render2DPass, rect: Rect, color: Color, angle: number?) -> nil,
-	drawImage: (self: Render2DPass, texture: Texture, rect: Rect, angle: number?) -> nil,
-	drawText: (self: Render2DPass, text: string, style: TextStyle, transform: TextTransform) -> nil,
+	drawRect: ((self: Render2DPass, rect: Rect, color: Color, angle: number?) -> nil)
+		& ((self: Render2DPass, rect: Rect, color: Color, material: Material, angle: number?) -> nil),
+	drawImage: ((self: Render2DPass, texture: Texture, rect: Rect, angle: number?) -> nil)
+		& ((self: Render2DPass, texture: Texture, rect: Rect, material: Material, angle: number?) -> nil),
+	drawText: ((self: Render2DPass, text: string, style: TextStyle, transform: TextTransform) -> nil)
+		& ((self: Render2DPass, text: string, style: TextStyle, transform: TextTransform, material: Material) -> nil),
+	-- Compatibility state API. Prefer passing a Material to each draw call.
 	setGraphicsPipeline: (self: Render2DPass, pipe: GraphicsPipeline) -> nil,
 	resetGraphicsPipeline: (self: Render2DPass) -> nil,
 	setTexture: (self: Render2DPass, binding: number | string, texture: Texture) -> nil,
@@ -688,9 +702,13 @@ export type Render2DPass = {
 
 export type Render3DPass = {
 	isFinished: (self: Render3DPass) -> boolean,
-	drawModel: (self: Render3DPass, model: Model, transform: Transform) -> nil,
-	drawModelInstanced: (self: Render3DPass, model: Model, transforms: { Transform }) -> nil,
-	drawCubemap: (self: Render3DPass, cubemap: Texture) -> nil,
+	drawModel: ((self: Render3DPass, model: Model, transform: Transform) -> nil)
+		& ((self: Render3DPass, model: Model, transform: Transform, material: Material) -> nil),
+	drawModelInstanced: ((self: Render3DPass, model: Model, transforms: { Transform }) -> nil)
+		& ((self: Render3DPass, model: Model, transforms: { Transform }, material: Material) -> nil),
+	drawCubemap: ((self: Render3DPass, cubemap: Texture) -> nil)
+		& ((self: Render3DPass, cubemap: Texture, material: Material) -> nil),
+	-- Compatibility state API. Prefer passing a Material to each draw call.
 	setGraphicsPipeline: (self: Render3DPass, pipe: GraphicsPipeline) -> nil,
 	resetGraphicsPipeline: (self: Render3DPass) -> nil,
 	setTexture: (self: Render3DPass, binding: number | string, texture: Texture) -> nil,
@@ -994,6 +1012,7 @@ return {
 	TextTransform = {} :: TextTransform,
 	Color = {} :: Color,
 	GraphicsPipeline = {} :: GraphicsPipeline,
+	Material = {} :: Material,
 	ComputeBuffer = {} :: ComputeBuffer,
 	ComputePipeline = {} :: ComputePipeline,
 	Raytracing = {} :: Raytracing,

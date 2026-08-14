@@ -18,8 +18,8 @@ local lightIntensity: number = 4.0
 local uniformBuffer: { any } = {}
 local camera: sn.Camera3D = sn.Camera3D.new()
 
-local function setWorldUniform(t: sn.Transform)
-	sn.Graphics.setUniformBuffer(1, sn.Buffer.new({ t:getWorldMatrix() }))
+local function setWorldUniform(pass: sn.Render3DPass, t: sn.Transform)
+	pass:setUniformBuffer(1, sn.Buffer.new({ t:getWorldMatrix() }))
 end
 
 function setup()
@@ -77,20 +77,20 @@ function update()
 end
 
 function draw()
-	sn.Graphics.begin3D(camera)
-	sn.Graphics.setGraphicsPipeline(pipeline3D)
+	local pass = sn.Graphics.begin3DPass(camera)
+	pass:setGraphicsPipeline(pipeline3D)
 
-	sn.Graphics.setTexture(1, model:getTexture(sn.TextureKey.Normal))
-	sn.Graphics.setTexture(2, model:getTexture(sn.TextureKey.DiffuseRoughness))
-	sn.Graphics.setTexture(3, model:getTexture(sn.TextureKey.Emissive))
-	sn.Graphics.setTexture(4, model:getTexture(sn.TextureKey.LightMap))
+	pass:setTexture(1, model:getTexture(sn.TextureKey.Normal))
+	pass:setTexture(2, model:getTexture(sn.TextureKey.DiffuseRoughness))
+	pass:setTexture(3, model:getTexture(sn.TextureKey.Emissive))
+	pass:setTexture(4, model:getTexture(sn.TextureKey.LightMap))
 
-	sn.Graphics.setUniformBuffer(0, sn.Buffer.new(uniformBuffer))
-	setWorldUniform(transform)
-	sn.Graphics.drawModel(model, transform)
+	pass:setUniformBuffer(0, sn.Buffer.new(uniformBuffer))
+	setWorldUniform(pass, transform)
+	pass:drawModel(model, transform)
 
-	sn.Graphics.resetAllTexture()
-	sn.Graphics.resetGraphicsPipeline()
-	sn.Graphics.drawModel(lightModel, lightTransform)
-	sn.Graphics.finish()
+	pass:resetAllTexture()
+	pass:resetGraphicsPipeline()
+	pass:drawModel(lightModel, lightTransform)
+	sn.Graphics.endPass(pass)
 end

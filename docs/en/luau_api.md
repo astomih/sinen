@@ -18,28 +18,28 @@ local rect = sn.Rect.new(sn.Pivot.Center, sn.Vec2.new(400, 300), sn.Vec2.new(120
 sn.Graphics.drawRect(rect, sn.Color.new(1, 1, 1, 1))
 ```
 
-2D drawing can also be scoped with an explicit `Camera2D`. Without `begin2D`, or after `finish()`, 2D drawing uses the window as the implicit camera.
+New drawing code creates an explicit `Render2DPass` and issues commands through that pass. Omitting the camera uses window coordinates. End the pass in the frame where it was created by passing it to `Graphics.endPass(pass)`.
 
 ```luau
 local uiCamera = sn.Camera2D.new()
 uiCamera:resize(sn.Vec2.new(1280, 720))
 
-sn.Graphics.begin2D(uiCamera)
-sn.Graphics.drawText("HUD", font, sn.Vec2.new(20, 20))
-sn.Graphics.finish()
+local pass = sn.Graphics.begin2DPass(uiCamera)
+pass:drawText("HUD", style, transform)
+sn.Graphics.endPass(pass)
 ```
 
 ## 3D Passes
 
-3D drawing is scoped by an explicit camera pass. Call `Graphics.begin3D(camera)`, issue 3D draw calls, then call `Graphics.finish()` before returning to implicit 2D drawing.
+3D drawing is scoped by an explicit `Render3DPass`. Camera, pipeline, and texture state belong to the pass, while `Graphics` owns the GPU command buffer closure and final frame submission.
 
 ```luau
 local camera = sn.Camera3D.new()
 camera:lookat(sn.Vec3.new(1, 1, 3), sn.Vec3.new(0), sn.Vec3.new(0, 1, 0))
 
-sn.Graphics.begin3D(camera)
-sn.Graphics.drawModel(model, transform)
-sn.Graphics.finish()
+local pass = sn.Graphics.begin3DPass(camera)
+pass:drawModel(model, transform)
+sn.Graphics.endPass(pass)
 
 sn.Graphics.drawText("HUD", font, sn.Vec2.new(20, 20))
 ```
@@ -55,10 +55,20 @@ builder:addSphere(1.0, 16, 32, sn.Color.new(0.9, 0.4, 0.2, 1.0))
 local model = builder:toModel()
 local transform = sn.Transform.new()
 
-sn.Graphics.begin3D(camera)
-sn.Graphics.drawModel(model, transform)
-sn.Graphics.finish()
+local pass = sn.Graphics.begin3DPass(camera)
+pass:drawModel(model, transform)
+sn.Graphics.endPass(pass)
 ```
+
+Pass a render texture as the second argument to draw offscreen.
+
+```luau
+local pass = sn.Graphics.begin3DPass(camera, renderTexture)
+pass:drawModel(model, transform)
+sn.Graphics.endPass(pass)
+```
+
+`begin2D` / `begin3D` / `finish` and `beginRenderTarget` / `endRenderTarget` remain available for compatibility with existing code.
 
 ## Ray Tracing Support
 

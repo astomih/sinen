@@ -49,11 +49,15 @@ static std::optional<GraphicsPipeline> customPipeline;
 static Ptr<gpu::CommandBuffer> mainCommandBuffer;
 static Ptr<gpu::CommandBuffer> currentCommandBuffer;
 static Ptr<gpu::RenderPass> currentRenderPass;
+static Ptr<RenderPass> activeHighLevelPass;
+static UInt64 renderFrameId = 0;
+static bool isRenderFrameActive = false;
 static Allocator *graphicsAllocator = nullptr;
 static bool isFrameStarted = true;
 static bool isPrevDepthEnabled = true;
 static bool isChangedRenderTarget = false;
-static uint32_t drawCallCountPerFrame = 0;
+static bool mainTargetInitialized = false;
+static bool currentTargetInitialized = false;
 static Array<gpu::ColorTargetInfo> colorTargets = Array<gpu::ColorTargetInfo>();
 static gpu::DepthStencilTargetInfo depthStencilInfo;
 static Array<gpu::ColorTargetInfo> currentColorTargets;
@@ -329,6 +333,7 @@ static void releaseBackendResources() {
   currentDepthStencilInfo = {};
   depthStencilInfo = {};
   currentRenderPass = nullptr;
+  activeHighLevelPass.reset();
   currentCommandBuffer.reset();
   mainCommandBuffer.reset();
   depthTexture.reset();
@@ -348,7 +353,9 @@ static void releaseBackendResources() {
   isFrameStarted = true;
   isPrevDepthEnabled = true;
   isChangedRenderTarget = false;
-  drawCallCountPerFrame = 0;
+  isRenderFrameActive = false;
+  mainTargetInitialized = false;
+  currentTargetInitialized = false;
 }
 
 GPUBackendAPI Graphics::getBackendAPI() {
@@ -436,6 +443,7 @@ static GPUBackendAPI nextBackendAPI(GPUBackendAPI api) {
 
 void Graphics::render() {
   ZoneScopedN("Graphics::render");
+  isRenderFrameActive = false;
   {
     ZoneScopedN("preDraw");
     auto funcs = std::move(preDrawFuncs);
@@ -492,33 +500,60 @@ void Graphics::render() {
   }
   currentDepthStencilInfo = depthStencilInfo;
 
+  ++renderFrameId;
+  isRenderFrameActive = true;
+  activeHighLevelPass.reset();
+  mainTargetInitialized = false;
+  currentTargetInitialized = false;
   isFrameStarted = true;
   currentGraphicsPass = GraphicsPass::TwoD;
   currentCamera2D = std::nullopt;
   currentCamera3D = std::nullopt;
   Gui::newFrame();
-  drawCallCountPerFrame = 0;
   {
     ZoneScopedN("Script::drawScene");
     Script::callDraw();
   }
+  if (activeHighLevelPass) {
+    Log::error("A render pass was not ended during Script::draw; ending it "
+               "automatically");
+    Graphics::endPass(activeHighLevelPass);
+  }
   for (auto &f : postDrawFuncs) {
     f();
+  }
+  if (activeHighLevelPass) {
+    Log::error("A render pass was not ended by a post-draw callback; ending "
+               "it automatically");
+    Graphics::endPass(activeHighLevelPass);
   }
   Graphics::finish();
   Gui::render();
   for (auto &f : overlayDrawFuncs) {
     f();
   }
+  if (activeHighLevelPass) {
+    Log::error("A render pass was not ended by an overlay callback; ending it "
+               "automatically");
+    Graphics::endPass(activeHighLevelPass);
+  }
   Graphics::finish();
 
   // Rendering
 
-  if (drawCallCountPerFrame == 0) {
-    // Clear screen
-    beginRenderPass(true, gpu::LoadOp::Clear);
+  if (currentRenderPass) {
+    currentCommandBuffer->endRenderPass(currentRenderPass);
+    currentRenderPass = nullptr;
   }
-  commandBuffer->endRenderPass(currentRenderPass);
+  if (!mainTargetInitialized) {
+    currentCommandBuffer = mainCommandBuffer;
+    currentColorTargets = colorTargets;
+    currentDepthStencilInfo = depthStencilInfo;
+    currentTargetInitialized = false;
+    beginRenderPass(true, gpu::LoadOp::Clear);
+    currentCommandBuffer->endRenderPass(currentRenderPass);
+    currentRenderPass = nullptr;
+  }
 
   {
     ZoneScopedN("GPU submit");
@@ -528,6 +563,7 @@ void Graphics::render() {
     ZoneScopedN("GPU wait idle");
     device->waitForGpuIdle();
   }
+  isRenderFrameActive = false;
 }
 struct Transform2D {
   Vec2 position;
@@ -731,10 +767,9 @@ static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
       }
       transferBuffer->unmap();
 
-      auto uploadCommandBuffer = uploaded
-                                     ? device->acquireCommandBuffer(
-                                           {GlobalAllocator::get()})
-                                     : nullptr;
+      auto uploadCommandBuffer =
+          uploaded ? device->acquireCommandBuffer({GlobalAllocator::get()})
+                   : nullptr;
       if (uploaded && uploadCommandBuffer) {
         auto copyPass = uploadCommandBuffer->beginCopyPass();
         gpu::BufferTransferInfo src{};
@@ -754,7 +789,6 @@ static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
       instanceData.clear();
     }
   }
-  drawCallCountPerFrame++;
   prepareRenderPassFrame();
   SDL_assert(currentRenderPass);
 
@@ -777,11 +811,9 @@ static void drawBase2D(const Array<Transform2D> &transforms, const Model &model,
                               gpu::IndexElementSize::Uint32);
 
   const Mat4 &vertexParams = instanceBuffer ? viewproj : wvp;
-  commandBuffer->pushVertexUniformData(0, &vertexParams,
-                                       sizeof(vertexParams));
-  const auto instanceCount = instanceBuffer
-                                 ? static_cast<UInt32>(instanceData.size())
-                                 : 1u;
+  commandBuffer->pushVertexUniformData(0, &vertexParams, sizeof(vertexParams));
+  const auto instanceCount =
+      instanceBuffer ? static_cast<UInt32>(instanceData.size()) : 1u;
   renderPass->drawIndexedPrimitives(model.getMesh().data()->indices.size(),
                                     instanceCount, 0, 0, 0);
   clearCurrentDrawState();
@@ -807,7 +839,6 @@ static void drawBaseCubemap(const Model &model) {
   }
 
   const Mat4 wvp = cubemapViewProjection(currentCamera3D.value());
-  drawCallCountPerFrame++;
   prepareRenderPassFrame();
 
   Array<gpu::BufferBinding> vertexBufferBindings;
@@ -858,7 +889,6 @@ static void drawBase3D(const Array<Transform> transforms, const Model &model) {
       instanceData.push_back(i.getWorldMatrix());
     }
   }
-  drawCallCountPerFrame++;
   prepareRenderPassFrame();
 
   auto instanceSize = sizeof(Mat4) * instanceData.size();
@@ -976,8 +1006,7 @@ void Graphics::drawRects(const Array<Rect> &rects, const Color &color) {
   Array<Transform2D> transforms;
   transforms.reserve(rects.size());
   for (const auto &rect : rects) {
-    transforms.emplace_back(
-        Transform2D{rect.center(), 0.0f, rect.size()});
+    transforms.emplace_back(Transform2D{rect.center(), 0.0f, rect.size()});
   }
   currentCommandBuffer->pushFragmentUniformData(1, &color, sizeof(Color));
   drawBase2D(transforms, sprite);
@@ -992,8 +1021,7 @@ void Graphics::drawImage(const Ptr<Texture> &texture, const Rect &rect,
   setTexture(0, texture);
   drawBase2D(transforms, sprite);
 }
-void Graphics::drawOverlayImage(const Ptr<Texture> &texture,
-                                const Rect &rect) {
+void Graphics::drawOverlayImage(const Ptr<Texture> &texture, const Rect &rect) {
   if (!texture || !texture->getRaw()) {
     return;
   }
@@ -1187,8 +1215,7 @@ void Graphics::drawTexts(const Array<TextBatchItem> &items,
       style.color,
       Vec4(atlasSize.x, atlasSize.y, textData.distanceFieldRange, 0.0f)};
   currentCommandBuffer->pushFragmentUniformData(1, &params, sizeof(params));
-  Array<Transform2D> transforms(
-      1, {Vec2(0.0f), 0.0f, Vec2(scale)});
+  Array<Transform2D> transforms(1, {Vec2(0.0f), 0.0f, Vec2(scale)});
   drawBase2D(transforms, model, fontSampler);
 }
 void Graphics::drawCubemap(const Ptr<Texture> &cubemap) {
@@ -1259,6 +1286,10 @@ static void beginRenderPass(bool depthEnabled, gpu::LoadOp loadOp) {
   }
 
   setFullWindowViewport(currentRenderPass);
+  currentTargetInitialized = true;
+  if (currentCommandBuffer == mainCommandBuffer) {
+    mainTargetInitialized = true;
+  }
 }
 
 static Vec2 validRenderSize() {
@@ -1339,9 +1370,8 @@ static void prepareRenderPassFrame() {
     isChangedRenderTarget = false;
   }
 
-  const gpu::LoadOp loadOp = (isFrameStarted || !hasActivePass)
-                                 ? gpu::LoadOp::Clear
-                                 : gpu::LoadOp::Load;
+  const gpu::LoadOp loadOp =
+      currentTargetInitialized ? gpu::LoadOp::Load : gpu::LoadOp::Clear;
 
   beginRenderPass(depthEnabled, loadOp);
 
@@ -1379,6 +1409,183 @@ void Graphics::setMSAASampleCount(UInt32 sampleCount) {
 
 UInt32 Graphics::getMSAASampleCount() {
   return sampleCountValue(msaaSampleCount);
+}
+
+static bool canBeginHighLevelPass() {
+  if (!isRenderFrameActive || !mainCommandBuffer || !currentCommandBuffer) {
+    Log::error("A render pass can only begin while Graphics is rendering a "
+               "frame");
+    return false;
+  }
+  if (activeHighLevelPass) {
+    Log::error("Render passes cannot be nested; end the active pass first");
+    return false;
+  }
+  if (currentCommandBuffer != mainCommandBuffer) {
+    Log::error("A legacy render target is active; call endRenderTarget() "
+               "before beginning a render pass");
+    return false;
+  }
+  return true;
+}
+
+static bool isRenderTargetReady(const RenderTexture &target) {
+  if (target.width <= 0 || target.height <= 0 || !target.getTexture() ||
+      !target.getColorTarget() || !target.getDepthStencil()) {
+    Log::error("The render target must be created before beginning a render "
+               "pass");
+    return false;
+  }
+  return true;
+}
+
+static void closeCurrentGpuRenderPass() {
+  if (currentRenderPass && currentCommandBuffer) {
+    currentCommandBuffer->endRenderPass(currentRenderPass);
+    currentRenderPass = nullptr;
+  }
+}
+
+Ptr<Render2DPass> Graphics::begin2DPass() {
+  if (!canBeginHighLevelPass()) {
+    return nullptr;
+  }
+  closeCurrentGpuRenderPass();
+  auto pass = makePtr<Render2DPass>(graphicsMemory(), renderFrameId,
+                                    std::nullopt, std::nullopt);
+  activeHighLevelPass = pass;
+  activatePass(*pass);
+  return pass;
+}
+
+Ptr<Render2DPass> Graphics::begin2DPass(const Camera2D &camera) {
+  if (!canBeginHighLevelPass()) {
+    return nullptr;
+  }
+  closeCurrentGpuRenderPass();
+  auto pass = makePtr<Render2DPass>(graphicsMemory(), renderFrameId, camera,
+                                    std::nullopt);
+  activeHighLevelPass = pass;
+  activatePass(*pass);
+  return pass;
+}
+
+Ptr<Render2DPass> Graphics::begin2DPass(const RenderTexture &target) {
+  if (!canBeginHighLevelPass() || !isRenderTargetReady(target)) {
+    return nullptr;
+  }
+  closeCurrentGpuRenderPass();
+  auto pass = makePtr<Render2DPass>(graphicsMemory(), renderFrameId,
+                                    std::nullopt, target);
+  activeHighLevelPass = pass;
+  beginRenderTarget(target);
+  activatePass(*pass);
+  return pass;
+}
+
+Ptr<Render2DPass> Graphics::begin2DPass(const Camera2D &camera,
+                                        const RenderTexture &target) {
+  if (!canBeginHighLevelPass() || !isRenderTargetReady(target)) {
+    return nullptr;
+  }
+  closeCurrentGpuRenderPass();
+  auto pass =
+      makePtr<Render2DPass>(graphicsMemory(), renderFrameId, camera, target);
+  activeHighLevelPass = pass;
+  beginRenderTarget(target);
+  activatePass(*pass);
+  return pass;
+}
+
+Ptr<Render3DPass> Graphics::begin3DPass(const Camera3D &camera) {
+  if (!canBeginHighLevelPass()) {
+    return nullptr;
+  }
+  closeCurrentGpuRenderPass();
+  auto pass = makePtr<Render3DPass>(graphicsMemory(), renderFrameId, camera,
+                                    std::nullopt);
+  activeHighLevelPass = pass;
+  activatePass(*pass);
+  return pass;
+}
+
+Ptr<Render3DPass> Graphics::begin3DPass(const Camera3D &camera,
+                                        const RenderTexture &target) {
+  if (!canBeginHighLevelPass() || !isRenderTargetReady(target)) {
+    return nullptr;
+  }
+  closeCurrentGpuRenderPass();
+  auto pass =
+      makePtr<Render3DPass>(graphicsMemory(), renderFrameId, camera, target);
+  activeHighLevelPass = pass;
+  beginRenderTarget(target);
+  activatePass(*pass);
+  return pass;
+}
+
+bool Graphics::activatePass(RenderPass &pass) {
+  if (!isRenderFrameActive || pass.frameId != renderFrameId) {
+    Log::error("Attempted to use a render pass outside of its frame");
+    return false;
+  }
+  if (pass.finished) {
+    Log::error("Attempted to use a render pass after it was ended");
+    return false;
+  }
+  if (!activeHighLevelPass || activeHighLevelPass.get() != &pass) {
+    Log::error("Attempted to use a render pass that is not active");
+    return false;
+  }
+
+  currentPipeline = std::nullopt;
+  customPipeline = pass.graphicsPipeline;
+  currentTextureBindings = pass.textureBindings;
+  currentAccelerationStructureBindings = pass.accelerationStructureBindings;
+  if (pass.type == RenderPass::Type::TwoD) {
+    currentGraphicsPass = GraphicsPass::TwoD;
+    currentCamera2D = pass.camera2D;
+    currentCamera3D = std::nullopt;
+  } else {
+    currentGraphicsPass = GraphicsPass::ThreeD;
+    currentCamera2D = std::nullopt;
+    currentCamera3D = pass.camera3D;
+  }
+  return true;
+}
+
+void Graphics::endPass(const Ptr<RenderPass> &pass) {
+  if (!pass) {
+    Log::error("Graphics::endPass received a null render pass");
+    return;
+  }
+  if (pass->finished) {
+    Log::error("Graphics::endPass was called twice for the same pass");
+    return;
+  }
+  if (!activeHighLevelPass || activeHighLevelPass.get() != pass.get()) {
+    Log::error("Graphics::endPass received a pass that is not active");
+    return;
+  }
+  if (pass->frameId != renderFrameId || !isRenderFrameActive) {
+    Log::error("Graphics::endPass received a pass from another frame");
+    return;
+  }
+
+  if (pass->target.has_value()) {
+    endRenderTarget();
+  } else {
+    closeCurrentGpuRenderPass();
+  }
+
+  pass->finished = true;
+  activeHighLevelPass.reset();
+  currentGraphicsPass = GraphicsPass::TwoD;
+  currentCamera2D = std::nullopt;
+  currentCamera3D = std::nullopt;
+  currentPipeline = std::nullopt;
+  customPipeline = std::nullopt;
+  currentTextureBindings.clear();
+  currentAccelerationStructureBindings.clear();
 }
 
 void Graphics::begin2D() {
@@ -1467,6 +1674,7 @@ void Graphics::beginRenderTarget(const RenderTexture &texture) {
     return;
   }
   isChangedRenderTarget = true;
+  currentTargetInitialized = false;
   auto depthTex = texture.getDepthStencil();
   currentCommandBuffer = device->acquireCommandBuffer({GlobalAllocator::get()});
   currentColorTargets[0].loadOp = gpu::LoadOp::Clear;
@@ -1476,17 +1684,28 @@ void Graphics::beginRenderTarget(const RenderTexture &texture) {
   currentDepthStencilInfo.texture = depthTex;
   currentRenderPass = currentCommandBuffer->beginRenderPass(
       currentColorTargets, currentDepthStencilInfo);
+  currentTargetInitialized = true;
   currentRenderPass->setViewport(
       gpu::Viewport{0, 0, (float)texture.width, (float)texture.height, 0, 1});
   currentRenderPass->setScissor(0, 0, (float)texture.width,
                                 (float)texture.height);
 }
 void Graphics::endRenderTarget() {
-  currentCommandBuffer->endRenderPass(currentRenderPass);
+  if (!currentCommandBuffer || currentCommandBuffer == mainCommandBuffer) {
+    Log::error("endRenderTarget() called without an active render target");
+    return;
+  }
+  if (currentRenderPass) {
+    currentCommandBuffer->endRenderPass(currentRenderPass);
+  }
   currentRenderPass = nullptr;
   device->submitCommandBuffer(currentCommandBuffer);
   device->waitForGpuIdle();
   currentCommandBuffer = mainCommandBuffer;
+  currentColorTargets = colorTargets;
+  currentDepthStencilInfo = depthStencilInfo;
+  currentTargetInitialized = mainTargetInitialized;
+  isChangedRenderTarget = false;
 }
 bool Graphics::readbackTexture(const RenderTexture &srcRenderTexture,
                                Ptr<Texture> &out) {

@@ -82,8 +82,8 @@ local uniformData: { any } = {
 	lightIntensity,
 }
 
-local function setWorldUniform(t: sn.Transform)
-	sn.Graphics.setUniformBuffer(1, sn.Buffer.new({ t:getWorldMatrix() }))
+local function setWorldUniform(pass: sn.Render3DPass, t: sn.Transform)
+	pass:setUniformBuffer(1, sn.Buffer.new({ t:getWorldMatrix() }))
 end
 
 function update()
@@ -121,28 +121,28 @@ function update()
 end
 
 function draw()
-	sn.Graphics.begin3D(camera)
-	sn.Graphics.resetAllTexture()
-	sn.Graphics.resetGraphicsPipeline()
-	sn.Graphics.drawCubemap(cubemap)
+	local pass = sn.Graphics.begin3DPass(camera)
+	pass:resetAllTexture()
+	pass:resetGraphicsPipeline()
+	pass:drawCubemap(cubemap)
 
-	sn.Graphics.resetAllTexture()
-	sn.Graphics.setTexture(1, model:getTexture(sn.TextureKey.Normal))
-	sn.Graphics.setTexture(2, model:getTexture(sn.TextureKey.DiffuseRoughness))
-	sn.Graphics.setTexture(3, model:getTexture(sn.TextureKey.Emissive))
-	sn.Graphics.setTexture(4, model:getTexture(sn.TextureKey.LightMap))
-	sn.Graphics.setTexture(5, lut)
-	sn.Graphics.setTexture(6, cubemap)
-	sn.Graphics.setTexture(7, irradiance)
-	sn.Graphics.setTexture(8, prefiltered)
+	pass:resetAllTexture()
+	pass:setTexture(1, model:getTexture(sn.TextureKey.Normal))
+	pass:setTexture(2, model:getTexture(sn.TextureKey.DiffuseRoughness))
+	pass:setTexture(3, model:getTexture(sn.TextureKey.Emissive))
+	pass:setTexture(4, model:getTexture(sn.TextureKey.LightMap))
+	pass:setTexture(5, lut)
+	pass:setTexture(6, cubemap)
+	pass:setTexture(7, irradiance)
+	pass:setTexture(8, prefiltered)
 
-	sn.Graphics.setGraphicsPipeline(pipeline3d)
-	sn.Graphics.setUniformBuffer(0, sn.Buffer.new(uniformData))
-	setWorldUniform(transform)
-	sn.Graphics.drawModel(model, transform)
+	pass:setGraphicsPipeline(pipeline3d)
+	pass:setUniformBuffer(0, sn.Buffer.new(uniformData))
+	setWorldUniform(pass, transform)
+	pass:drawModel(model, transform)
 
-	sn.Graphics.resetAllTexture()
-	sn.Graphics.resetGraphicsPipeline()
-	sn.Graphics.drawModel(lightModel, lightTransform)
-	sn.Graphics.finish()
+	pass:resetAllTexture()
+	pass:resetGraphicsPipeline()
+	pass:drawModel(lightModel, lightTransform)
+	sn.Graphics.endPass(pass)
 end

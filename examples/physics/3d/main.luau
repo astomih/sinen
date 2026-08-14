@@ -48,10 +48,10 @@ function update()
 end
 
 function draw()
-	sn.Graphics.begin3D(camera)
-	sn.Graphics.drawModel(box, boxTransform)
+	local pass = sn.Graphics.begin3DPass(camera)
+	pass:drawModel(box, boxTransform)
 
-	sn.Graphics.drawModel(sphere, sphereTransform)
+	pass:drawModel(sphere, sphereTransform)
 	for i, c in ipairs(colliders) do
 		local transform = sn.Transform.new()
 		transform.position = c:getPosition()
@@ -59,8 +59,8 @@ function draw()
 			table.remove(colliders, i)
 		else
 			transform.scale = sn.Vec3.new(0.5)
-			sn.Graphics.drawModel(sphere, transform)
+			pass:drawModel(sphere, transform)
 		end
 	end
-	sn.Graphics.finish()
+	sn.Graphics.endPass(pass)
 end

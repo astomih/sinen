@@ -21,13 +21,9 @@ function update()
 end
 
 function draw()
-	sn.Graphics.resetGraphicsPipeline()
-
-	sn.Graphics.begin3D(camera)
-	sn.Graphics.beginRenderTarget(renderTexture)
-	sn.Graphics.drawModel(model, transform)
-	sn.Graphics.endRenderTarget()
-	sn.Graphics.finish()
+	local pass = sn.Graphics.begin3DPass(camera, renderTexture)
+	pass:drawModel(model, transform)
+	sn.Graphics.endPass(pass)
 	sn.Graphics.readbackTexture(renderTexture, out)
 
 	sn.Graphics.drawImage(out, sn.Rect.new(sn.Pivot.Center, sn.Window.center(), sn.Vec2.new(width, height)))

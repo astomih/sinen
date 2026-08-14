@@ -21,7 +21,7 @@ function update()
 end
 
 function draw()
-	sn.Graphics.begin3D(camera)
-	sn.Graphics.drawModel(model, transform)
-	sn.Graphics.finish()
+	local pass = sn.Graphics.begin3DPass(camera)
+	pass:drawModel(model, transform)
+	sn.Graphics.endPass(pass)
 end

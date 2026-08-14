@@ -672,6 +672,33 @@ export type BuiltinPipelines = {
 	getCubemap: () -> GraphicsPipeline,
 }
 
+export type Render2DPass = {
+	isFinished: (self: Render2DPass) -> boolean,
+	windowToCurrent: (self: Render2DPass, windowPosition: Vec2) -> Vec2,
+	drawRect: (self: Render2DPass, rect: Rect, color: Color, angle: number?) -> nil,
+	drawImage: (self: Render2DPass, texture: Texture, rect: Rect, angle: number?) -> nil,
+	drawText: (self: Render2DPass, text: string, style: TextStyle, transform: TextTransform) -> nil,
+	setGraphicsPipeline: (self: Render2DPass, pipe: GraphicsPipeline) -> nil,
+	resetGraphicsPipeline: (self: Render2DPass) -> nil,
+	setTexture: (self: Render2DPass, binding: number | string, texture: Texture) -> nil,
+	resetTexture: (self: Render2DPass, binding: number | string) -> nil,
+	resetAllTexture: (self: Render2DPass) -> nil,
+	setUniformBuffer: (self: Render2DPass, binding: number | string, data: Buffer) -> nil,
+}
+
+export type Render3DPass = {
+	isFinished: (self: Render3DPass) -> boolean,
+	drawModel: (self: Render3DPass, model: Model, transform: Transform) -> nil,
+	drawModelInstanced: (self: Render3DPass, model: Model, transforms: { Transform }) -> nil,
+	drawCubemap: (self: Render3DPass, cubemap: Texture) -> nil,
+	setGraphicsPipeline: (self: Render3DPass, pipe: GraphicsPipeline) -> nil,
+	resetGraphicsPipeline: (self: Render3DPass) -> nil,
+	setTexture: (self: Render3DPass, binding: number | string, texture: Texture) -> nil,
+	resetTexture: (self: Render3DPass, binding: number | string) -> nil,
+	resetAllTexture: (self: Render3DPass) -> nil,
+	setUniformBuffer: (self: Render3DPass, binding: number | string, data: Buffer) -> nil,
+}
+
 export type Graphics = {
 	-- 2D drawing uses Processing/raylib-style screen coordinates:
 	-- (0, 0) is the top-left of the window, x grows right, y grows down.
@@ -680,6 +707,14 @@ export type Graphics = {
 	drawImage: (texture: Texture, rect: Rect, angle: number?) -> nil,
 	-- drawText positions transform.position using transform.pivot.
 	drawText: (text: string, style: TextStyle, transform: TextTransform) -> nil,
+	begin2DPass: (() -> Render2DPass)
+		& ((camera: Camera2D) -> Render2DPass)
+		& ((target: RenderTexture) -> Render2DPass)
+		& ((camera: Camera2D, target: RenderTexture) -> Render2DPass),
+	begin3DPass: ((camera: Camera3D) -> Render3DPass)
+		& ((camera: Camera3D, target: RenderTexture) -> Render3DPass),
+	endPass: (pass: Render2DPass | Render3DPass) -> nil,
+	-- Compatibility API. Prefer begin2DPass/begin3DPass and endPass.
 	begin2D: (camera: Camera2D?) -> nil,
 	begin3D: (camera: Camera3D) -> nil,
 	finish: () -> nil,

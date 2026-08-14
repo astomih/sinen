@@ -60,9 +60,9 @@ function update()
 end
 
 function draw()
-	sn.Graphics.begin3D(camera)
+	local pass = sn.Graphics.begin3DPass(camera)
 	for i, model in ipairs(models) do
-		sn.Graphics.drawModel(model, transforms[i])
+		pass:drawModel(model, transforms[i])
 	end
-	sn.Graphics.finish()
+	sn.Graphics.endPass(pass)
 end

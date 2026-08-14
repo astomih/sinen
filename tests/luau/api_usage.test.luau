@@ -7,6 +7,33 @@ local describe = test.describe
 local it = test.it
 local expect = test.expect
 
+-- Kept uncalled: this verifies the public render-pass surface during Luau
+-- analysis without requiring a graphics device in the unit-test process.
+local function renderPassApiTypecheck(
+	camera2D: sn.Camera2D,
+	camera3D: sn.Camera3D,
+	target: sn.RenderTexture,
+	model: sn.Model,
+	texture: sn.Texture,
+	style: sn.TextStyle,
+	transform: sn.Transform,
+	textTransform: sn.TextTransform
+)
+	local pass2D: sn.Render2DPass = sn.Graphics.begin2DPass(camera2D)
+	pass2D:drawRect(sn.Rect.new(0, 0, 10, 10), sn.Color.new(1))
+	pass2D:drawImage(texture, sn.Rect.new(0, 0, 10, 10))
+	pass2D:drawText("pass", style, textTransform)
+	sn.Graphics.endPass(pass2D)
+
+	local pass3D: sn.Render3DPass = sn.Graphics.begin3DPass(camera3D, target)
+	pass3D:drawModel(model, transform)
+	sn.Graphics.endPass(pass3D)
+end
+
+if false then
+	renderPassApiTypecheck(nil :: any, nil :: any, nil :: any, nil :: any, nil :: any, nil :: any, nil :: any, nil :: any)
+end
+
 describe("Sinen Luau API", function()
 	it("constructs 2D values", function()
 		local center: sn.Vec2 = sn.Vec2.new(320, 240)

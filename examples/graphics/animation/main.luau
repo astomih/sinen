@@ -26,10 +26,10 @@ function update()
 end
 
 function draw()
-	sn.Graphics.begin3D(camera)
-	sn.Graphics.setGraphicsPipeline(pipeline)
-	sn.Graphics.setUniformBuffer(1, model:getBoneUniformBuffer())
+	local pass = sn.Graphics.begin3DPass(camera)
+	pass:setGraphicsPipeline(pipeline)
+	pass:setUniformBuffer(1, model:getBoneUniformBuffer())
 	-- Draw texture
-	sn.Graphics.drawModel(model, sn.Transform.new())
-	sn.Graphics.finish()
+	pass:drawModel(model, sn.Transform.new())
+	sn.Graphics.endPass(pass)
 end

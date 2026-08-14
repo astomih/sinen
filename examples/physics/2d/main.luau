@@ -98,15 +98,15 @@ function update()
 end
 
 function draw()
-	sn.Graphics.begin2D(camera)
-	sn.Graphics.drawRect(sn.Rect.new(0, 0, 32, 18), sn.Color.new(0.05, 0.06, 0.08, 1.0))
+	local pass = sn.Graphics.begin2DPass(camera)
+	pass:drawRect(sn.Rect.new(0, 0, 32, 18), sn.Color.new(0.05, 0.06, 0.08, 1.0))
 
 	for _, body in ipairs(bodies) do
 		local position = body.collider:getPosition()
 		local rotation = body.collider:getRotation()
 		local rect = sn.Rect.new(sn.Pivot.Center, position.x, position.y, body.size.x, body.size.y)
-		sn.Graphics.drawRect(rect, body.color, rotation.z)
+		pass:drawRect(rect, body.color, rotation.z)
 	end
 
-	sn.Graphics.finish()
+	sn.Graphics.endPass(pass)
 end

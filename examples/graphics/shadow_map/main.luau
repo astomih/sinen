@@ -17,8 +17,8 @@ local pipeline: sn.GraphicsPipeline = sn.GraphicsPipeline.new()
 local floorTexture: sn.Texture = sn.Texture.new(1, 1)
 local camera: sn.Camera3D = sn.Camera3D.new()
 
-local function setShadowUniform(t: sn.Transform)
-	sn.Graphics.setUniformBuffer(
+local function setShadowUniform(pass: sn.Render3DPass, t: sn.Transform)
+	pass:setUniformBuffer(
 		1,
 		sn.Buffer.new({
 			t:getWorldMatrix(),
@@ -66,25 +66,22 @@ end
 
 function draw()
 	-- depth write
-	sn.Graphics.begin3D(shadowCamera)
-	sn.Graphics.setGraphicsPipeline(depthPipeline)
-
-	sn.Graphics.beginRenderTarget(depthRenderTexture)
-	sn.Graphics.drawModel(model, modelTransform)
-	sn.Graphics.drawModel(floor, floorTransform)
-	sn.Graphics.endRenderTarget()
-	sn.Graphics.finish()
+	local depthPass = sn.Graphics.begin3DPass(shadowCamera, depthRenderTexture)
+	depthPass:setGraphicsPipeline(depthPipeline)
+	depthPass:drawModel(model, modelTransform)
+	depthPass:drawModel(floor, floorTransform)
+	sn.Graphics.endPass(depthPass)
 	sn.Graphics.readbackTexture(depthRenderTexture, depthTexture)
 
 	-- Lighting
-	sn.Graphics.begin3D(camera)
-	sn.Graphics.setGraphicsPipeline(pipeline)
+	local pass = sn.Graphics.begin3DPass(camera)
+	pass:setGraphicsPipeline(pipeline)
 
-	setShadowUniform(modelTransform)
-	sn.Graphics.setTexture(1, depthTexture)
-	sn.Graphics.drawModel(model, modelTransform)
-	setShadowUniform(floorTransform)
-	sn.Graphics.setTexture(1, depthTexture)
-	sn.Graphics.drawModel(floor, floorTransform)
-	sn.Graphics.finish()
+	setShadowUniform(pass, modelTransform)
+	pass:setTexture(1, depthTexture)
+	pass:drawModel(model, modelTransform)
+	setShadowUniform(pass, floorTransform)
+	pass:setTexture(1, depthTexture)
+	pass:drawModel(floor, floorTransform)
+	sn.Graphics.endPass(pass)
 end

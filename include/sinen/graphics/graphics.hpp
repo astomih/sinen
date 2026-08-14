@@ -6,6 +6,7 @@
 #include <optional>
 // internal
 #include "graphics_pipeline.hpp"
+#include "render_pass.hpp"
 #include <core/allocator/allocator.hpp>
 #include <core/allocator/pool_allocator.hpp>
 #include <core/data/ptr.hpp>
@@ -40,6 +41,18 @@ public:
   static String getBackendName(GPUBackendAPI api);
   static bool parseBackendName(StringView name, GPUBackendAPI &api);
   static void render();
+  [[nodiscard]] static Ptr<Render2DPass> begin2DPass();
+  [[nodiscard]] static Ptr<Render2DPass> begin2DPass(const Camera2D &camera);
+  [[nodiscard]] static Ptr<Render2DPass>
+  begin2DPass(const RenderTexture &target);
+  [[nodiscard]] static Ptr<Render2DPass>
+  begin2DPass(const Camera2D &camera, const RenderTexture &target);
+  [[nodiscard]] static Ptr<Render3DPass> begin3DPass(const Camera3D &camera);
+  [[nodiscard]] static Ptr<Render3DPass>
+  begin3DPass(const Camera3D &camera, const RenderTexture &target);
+  static void endPass(const Ptr<RenderPass> &pass);
+
+  // Compatibility API. Prefer the explicit Render2DPass/Render3DPass API.
   static void begin2D();
   static void begin2D(const Camera2D &camera);
   static void begin3D(const Camera3D &camera);
@@ -90,6 +103,10 @@ public:
   static bool readbackTexture(const RenderTexture &texture, Ptr<Texture> &out);
 
   static Ptr<gpu::Device> getDevice();
+
+private:
+  friend class RenderPass;
+  static bool activatePass(RenderPass &pass);
 };
 } // namespace sinen
 #endif // !SINEN_RENDER_SYSTEM_HPP

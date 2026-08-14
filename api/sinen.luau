@@ -2,14 +2,6 @@
 
 -- This file is a Luau definition file for Sinen's Lua API.
 
-local ECS = require("./ecs")
-
-export type Entity = ECS.Entity
-export type Component<T> = ECS.Component<T>
-export type ComponentMap = ECS.ComponentMap
-export type System = ECS.System
-export type ECSWorld = ECS.World
-
 export type Buffer = {
 	new: (array: { any }) -> Buffer,
 	fromBytes: (bytes: { number }) -> Buffer,
@@ -720,8 +712,13 @@ export type Render2DPass = {
 		& ((self: Render2DPass, rect: Rect, color: Color, material: Material, angle: number?) -> nil),
 	drawImage: ((self: Render2DPass, texture: Texture, rect: Rect, angle: number?) -> nil)
 		& ((self: Render2DPass, texture: Texture, rect: Rect, material: Material, angle: number?) -> nil),
-	drawText: ((self: Render2DPass, text: string, style: TextStyle, transform: TextTransform) -> nil)
-		& ((self: Render2DPass, text: string, style: TextStyle, transform: TextTransform, material: Material) -> nil),
+	drawText: ((self: Render2DPass, text: string, style: TextStyle, transform: TextTransform) -> nil) & ((
+		self: Render2DPass,
+		text: string,
+		style: TextStyle,
+		transform: TextTransform,
+		material: Material
+	) -> nil),
 	-- Compatibility state API. Prefer passing a Material to each draw call.
 	setGraphicsPipeline: (self: Render2DPass, pipe: GraphicsPipeline) -> nil,
 	resetGraphicsPipeline: (self: Render2DPass) -> nil,
@@ -735,8 +732,9 @@ export type Render3DPass = {
 	isFinished: (self: Render3DPass) -> boolean,
 	drawModel: ((self: Render3DPass, model: Model, transform: Transform) -> nil)
 		& ((self: Render3DPass, model: Model, transform: Transform, material: Material) -> nil),
-	drawModelInstanced: ((self: Render3DPass, model: Model, transforms: { Transform }) -> nil)
-		& ((self: Render3DPass, model: Model, transforms: { Transform }, material: Material) -> nil),
+	drawModelInstanced: ((self: Render3DPass, model: Model, transforms: { Transform }) -> nil) & (
+		(self: Render3DPass, model: Model, transforms: { Transform }, material: Material) -> nil
+	),
 	drawCubemap: ((self: Render3DPass, cubemap: Texture) -> nil)
 		& ((self: Render3DPass, cubemap: Texture, material: Material) -> nil),
 	-- Compatibility state API. Prefer passing a Material to each draw call.
@@ -760,8 +758,7 @@ export type Graphics = {
 		& ((camera: Camera2D) -> Render2DPass)
 		& ((target: RenderTexture) -> Render2DPass)
 		& ((camera: Camera2D, target: RenderTexture) -> Render2DPass),
-	begin3DPass: ((camera: Camera3D) -> Render3DPass)
-		& ((camera: Camera3D, target: RenderTexture) -> Render3DPass),
+	begin3DPass: ((camera: Camera3D) -> Render3DPass) & ((camera: Camera3D, target: RenderTexture) -> Render3DPass),
 	endPass: (pass: Render2DPass | Render3DPass) -> nil,
 	-- Compatibility API. Prefer begin2DPass/begin3DPass and endPass.
 	begin2D: (camera: Camera2D?) -> nil,
@@ -1021,7 +1018,6 @@ export type Synth = {
 }
 
 return {
-	ECS = ECS,
 	Buffer = {} :: Buffer,
 	ExternalFile = {} :: ExternalFile,
 	FileDialog = {} :: FileDialog,

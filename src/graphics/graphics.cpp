@@ -1561,13 +1561,13 @@ bool Graphics::activatePass(RenderPass &pass, const Material &material) {
   if (!activatePass(pass)) {
     return false;
   }
-  if (!material.pipeline.get()) {
+  if (!material.pipeline || !material.pipeline->get()) {
     Log::error("Attempted to draw with a material whose pipeline is not "
                "built");
     return false;
   }
 
-  customPipeline = material.pipeline;
+  customPipeline = *material.pipeline;
   currentTextureBindings = material.textureBindings;
   currentAccelerationStructureBindings = material.accelerationStructureBindings;
   for (const auto &[slot, buffer] : material.uniformBufferBindings) {

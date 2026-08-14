@@ -148,6 +148,14 @@ void Shader::load(StringView vertex_shader, ShaderStage stage) {
           state->numStorageBuffers = selected->numStorageBuffers;
           state->numStorageTextures = selected->numStorageTextures;
           state->gpuStage = selected->stage;
+          for (const auto &resource : selected->resources) {
+            Shader::ResourceBinding binding{resource.name, resource.slot};
+            if (resource.kind == ShaderBundle::ResourceKind::UniformBuffer) {
+              state->uniformBuffers.push_back(std::move(binding));
+            } else if (resource.kind == ShaderBundle::ResourceKind::Texture) {
+              state->textures.push_back(std::move(binding));
+            }
+          }
         } else {
           if (shaderFormat == ShaderFormat::WGSL &&
               (str.empty() || str.back() != '\0')) {
@@ -330,6 +338,12 @@ uint32_t Shader::getNumSamplers() const { return numSamplers; }
 uint32_t Shader::getNumStorageBuffers() const { return numStorageBuffers; }
 uint32_t Shader::getNumStorageTextures() const { return numStorageTextures; }
 uint32_t Shader::getNumUniformBuffers() const { return numUniformBuffers; }
+const Array<Shader::ResourceBinding> &Shader::getUniformBufferBindings() const {
+  return resourceBindings->uniformBuffers;
+}
+const Array<Shader::ResourceBinding> &Shader::getTextureBindings() const {
+  return resourceBindings->textures;
+}
 bool Shader::findUniformBufferSlot(StringView name, uint32_t &slot) const {
   if (!resourceBindings) {
     return false;

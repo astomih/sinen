@@ -17,6 +17,8 @@ namespace sinen {
  */
 class Shader {
 public:
+  struct ResourceBinding;
+
   Shader();
   Shader(const Ptr<gpu::Shader> &raw);
   ~Shader();
@@ -37,6 +39,8 @@ public:
   uint32_t getNumStorageBuffers() const;
   uint32_t getNumStorageTextures() const;
   uint32_t getNumUniformBuffers() const;
+  const Array<ResourceBinding> &getUniformBufferBindings() const;
+  const Array<ResourceBinding> &getTextureBindings() const;
   bool findUniformBufferSlot(StringView name, uint32_t &slot) const;
   bool findTextureSlot(StringView name, uint32_t &slot) const;
 

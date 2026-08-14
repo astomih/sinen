@@ -21,9 +21,9 @@ class Material {
 public:
   static constexpr const char *metaTableName() { return "sn.Material"; }
 
-  explicit Material(const GraphicsPipeline &pipeline);
+  explicit Material(const Ptr<GraphicsPipeline> &pipeline);
 
-  const GraphicsPipeline &getGraphicsPipeline() const { return pipeline; }
+  const Ptr<GraphicsPipeline> &getGraphicsPipeline() const { return pipeline; }
 
   void setUniformBuffer(UInt32 slotIndex, const Buffer &buffer);
   void setUniformBuffer(StringView name, const Buffer &buffer);
@@ -49,7 +49,7 @@ private:
   bool resolveUniformBufferSlot(StringView name, UInt32 &slot) const;
   bool resolveTextureSlot(StringView name, UInt32 &slot) const;
 
-  GraphicsPipeline pipeline;
+  Ptr<GraphicsPipeline> pipeline;
   Hashmap<UInt32, Buffer> uniformBufferBindings;
   Hashmap<UInt32, Ptr<Texture>> textureBindings;
   Hashmap<UInt32, Ptr<gpu::AccelerationStructure>>

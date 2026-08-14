@@ -2,18 +2,15 @@
 #include <graphics/material.hpp>
 
 namespace sinen {
-Material::Material(const GraphicsPipeline &pipeline) : pipeline(pipeline) {
-  if (!pipeline.get()) {
-    Log::error("Material was created with an unbuilt graphics pipeline");
-  }
-}
+Material::Material(const Ptr<GraphicsPipeline> &pipeline)
+    : pipeline(pipeline) {}
 
 bool Material::resolveUniformBufferSlot(StringView name, UInt32 &slot) const {
-  if (!pipeline.get()) {
-    Log::error("Material uniform binding requires a built graphics pipeline");
+  if (!pipeline) {
+    Log::error("Material uniform binding requires a graphics pipeline");
     return false;
   }
-  if (!pipeline.findUniformBufferSlot(name, slot)) {
+  if (!pipeline->findUniformBufferSlot(name, slot)) {
     Log::error("Uniform buffer '%.*s' was not found in the material pipeline",
                static_cast<int>(name.size()), name.data());
     return false;
@@ -22,11 +19,11 @@ bool Material::resolveUniformBufferSlot(StringView name, UInt32 &slot) const {
 }
 
 bool Material::resolveTextureSlot(StringView name, UInt32 &slot) const {
-  if (!pipeline.get()) {
-    Log::error("Material texture binding requires a built graphics pipeline");
+  if (!pipeline) {
+    Log::error("Material texture binding requires a graphics pipeline");
     return false;
   }
-  if (!pipeline.findTextureSlot(name, slot)) {
+  if (!pipeline->findTextureSlot(name, slot)) {
     Log::error("Texture '%.*s' was not found in the material pipeline",
                static_cast<int>(name.size()), name.data());
     return false;

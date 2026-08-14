@@ -153,11 +153,7 @@ static int lGraphicsEndPass(lua_State *L) {
 
 static int lMaterialNew(lua_State *L) {
   auto &pipeline = udPtr<GraphicsPipeline>(L, 1);
-  if (!pipeline->get()) {
-    luaL_error(L, "Material.new requires a built GraphicsPipeline");
-    return 0;
-  }
-  udPushPtr<Material>(L, makePtr<Material>(GlobalAllocator::get(), *pipeline));
+  udPushPtr<Material>(L, makePtr<Material>(GlobalAllocator::get(), pipeline));
   return 1;
 }
 static int lMaterialSetUniformBuffer(lua_State *L) {

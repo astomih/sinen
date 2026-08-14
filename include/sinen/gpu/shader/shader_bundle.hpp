@@ -8,7 +8,6 @@
 #include <gpu/shader/shader_format.hpp>
 #include <gpu/shader/shader_stage.hpp>
 
-
 #include <cstdint>
 #include <optional>
 
@@ -16,6 +15,19 @@ namespace sinen {
 
 class ShaderBundle {
 public:
+  static constexpr uint32_t formatVersion = 2;
+
+  enum class ResourceKind : uint32_t {
+    UniformBuffer = 0,
+    Texture = 1,
+  };
+
+  struct ResourceBinding {
+    ResourceKind kind = ResourceKind::UniformBuffer;
+    String name;
+    uint32_t slot = 0;
+  };
+
   struct Entry {
     ShaderStage stage = ShaderStage::Vertex;
     ShaderFormat format = ShaderFormat::SPIRV;
@@ -24,6 +36,7 @@ public:
     uint32_t numStorageBuffers = 0;
     uint32_t numStorageTextures = 0;
     uint32_t numUniformBuffers = 0;
+    Array<ResourceBinding> resources;
   };
 
   struct PackEntry {
@@ -35,11 +48,13 @@ public:
     uint32_t numStorageBuffers = 0;
     uint32_t numStorageTextures = 0;
     uint32_t numUniformBuffers = 0;
+    Array<ResourceBinding> resources;
   };
 
   static bool isBundle(StringView data);
   static Array<char> pack(const Array<PackEntry> &entries);
   static Buffer packBuffer(const Array<PackEntry> &entries);
+  static String dumpJson(const Array<PackEntry> &entries);
   static std::optional<Entry> select(StringView data, ShaderStage stage,
                                      ShaderFormat preferredFormat);
   static ShaderFormat preferredFormatFor(GPUBackendAPI backendAPI);

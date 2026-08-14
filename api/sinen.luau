@@ -351,7 +351,14 @@ export type Shader = {
 	getNumStorageBuffers: (self: Shader) -> number,
 	getNumStorageTextures: (self: Shader) -> number,
 	getNumUniformBuffers: (self: Shader) -> number,
+	getUniformBufferBindings: (self: Shader) -> { ShaderResourceBinding },
+	getTextureBindings: (self: Shader) -> { ShaderResourceBinding },
 	isReady: (self: Shader) -> boolean,
+}
+
+export type ShaderResourceBinding = {
+	name: string,
+	slot: number,
 }
 
 export type ShaderBundleEntry = {
@@ -362,10 +369,13 @@ export type ShaderBundleEntry = {
 	numStorageBuffers: number?,
 	numStorageTextures: number?,
 	numUniformBuffers: number?,
+	uniformBuffers: { ShaderResourceBinding }?,
+	textures: { ShaderResourceBinding }?,
 }
 
 export type ShaderBundle = {
 	pack: (entries: { ShaderBundleEntry }) -> Buffer,
+	dumpJson: (entries: { ShaderBundleEntry }) -> string,
 }
 
 export type Font = {

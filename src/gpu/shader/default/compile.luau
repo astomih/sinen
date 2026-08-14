@@ -115,6 +115,8 @@ local function compileTask(task: SourceTask, format: any): sn.ShaderBundleEntry
 		numStorageBuffers = shader:getNumStorageBuffers(),
 		numStorageTextures = shader:getNumStorageTextures(),
 		numUniformBuffers = shader:getNumUniformBuffers(),
+		uniformBuffers = shader:getUniformBufferBindings(),
+		textures = shader:getTextureBindings(),
 		code = code,
 	}
 end

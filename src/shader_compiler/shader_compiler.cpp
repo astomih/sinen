@@ -100,9 +100,8 @@ std::optional<uint32_t> uniformDescriptorSetForStage(ShaderStage stage) {
   return std::nullopt;
 }
 
-std::optional<uint32_t> countSpirvUniformBufferSlots(const void *data,
-                                                     size_t size,
-                                                     ShaderStage stage) {
+std::optional<uint32_t>
+countSpirvUniformBufferSlots(const void *data, size_t size, ShaderStage stage) {
   if (!data || size < 20 || (size % 4) != 0) {
     return std::nullopt;
   }
@@ -483,6 +482,74 @@ ShaderCompiler::ReflectionData getReflectionData(slang::IComponentType *program,
   return data;
 }
 
+void fillMissingResourceBindings(
+    slang::IComponentType *program,
+    ShaderCompiler::ReflectionData &reflectionData) {
+  auto *programLayout = program->getLayout();
+  if (!programLayout) {
+    return;
+  }
+
+  if (reflectionData.uniformBuffers.empty() &&
+      reflectionData.numUniformBuffers > 0) {
+    auto *typeLayout = programLayout->getGlobalParamsTypeLayout();
+    const int rangeCount = typeLayout->getBindingRangeCount();
+    uint32_t fallbackSlot = 0;
+    for (int i = 0; i < rangeCount; ++i) {
+      const auto rangeType = typeLayout->getBindingRangeType(i);
+      if (rangeType != slang::BindingType::ConstantBuffer &&
+          rangeType != slang::BindingType::ParameterBlock) {
+        continue;
+      }
+      auto *variable = typeLayout->getBindingRangeLeafVariable(i);
+      const auto reflectedSlot = bindingRangeRegisterIndex(typeLayout, i);
+      const uint32_t slot = reflectedSlot.value_or(fallbackSlot);
+      ++fallbackSlot;
+      if (variable && slot < reflectionData.numUniformBuffers) {
+        pushResourceBinding(reflectionData.uniformBuffers, variable->getName(),
+                            slot);
+      }
+    }
+
+    if (reflectionData.uniformBuffers.empty()) {
+      const unsigned int parameterCount = programLayout->getParameterCount();
+      fallbackSlot = 0;
+      for (unsigned int i = 0; i < parameterCount; ++i) {
+        auto *varLayout = programLayout->getParameterByIndex(i);
+        if (!varLayout || !isUniformBufferParameter(varLayout)) {
+          continue;
+        }
+        const unsigned bindingIndex = varLayout->getBindingIndex();
+        const uint32_t slot = isUnknownBindingValue(bindingIndex)
+                                  ? fallbackSlot
+                                  : static_cast<uint32_t>(bindingIndex);
+        ++fallbackSlot;
+        if (slot < reflectionData.numUniformBuffers) {
+          pushResourceBinding(reflectionData.uniformBuffers,
+                              varLayout->getName(), slot);
+        }
+      }
+    }
+  }
+
+  if (reflectionData.textures.empty() &&
+      reflectionData.numCombinedSamplers > 0) {
+    auto *typeLayout = programLayout->getGlobalParamsTypeLayout();
+    const int rangeCount = typeLayout->getBindingRangeCount();
+    for (int i = 0; i < rangeCount; ++i) {
+      if (!isTextureBindingRange(typeLayout->getBindingRangeType(i))) {
+        continue;
+      }
+      auto *variable = typeLayout->getBindingRangeLeafVariable(i);
+      const auto slot = bindingRangeRegisterIndex(typeLayout, i);
+      if (variable && slot && *slot < reflectionData.numCombinedSamplers) {
+        pushResourceBinding(reflectionData.textures, variable->getName(),
+                            *slot);
+      }
+    }
+  }
+}
+
 Array<char> ShaderCompiler::compileSource(StringView moduleName,
                                           StringView modulePath,
                                           StringView source, ShaderStage stage,
@@ -670,6 +737,7 @@ Array<char> ShaderCompiler::compileSource(StringView moduleName,
   overrideUniformBufferSlotCountFromCode(reflectionData, format, stage,
                                          compiledCode->getBufferPointer(),
                                          compiledCode->getBufferSize());
+  fillMissingResourceBindings(linkedProgram, reflectionData);
   Array<char> shaderData(compiledCode->getBufferSize());
   std::memcpy(shaderData.data(), compiledCode->getBufferPointer(),
               compiledCode->getBufferSize());

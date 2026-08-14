@@ -23,6 +23,7 @@ local includeSPIRV = true
 local includeSPIRV13 = true
 local includeWGSL = true
 local includeDXIL = true
+local writeDebugJson = false
 local directoryScrollY = 0.0
 local fileScrollY = 0.0
 local status = "Select a directory and a .slang file."
@@ -150,6 +151,8 @@ local function compileEntry(file: SlangFile, format: any): sn.ShaderBundleEntry
 		numStorageBuffers = shader:getNumStorageBuffers(),
 		numStorageTextures = shader:getNumStorageTextures(),
 		numUniformBuffers = shader:getNumUniformBuffers(),
+		uniformBuffers = shader:getUniformBufferBindings(),
+		textures = shader:getTextureBindings(),
 		code = code,
 	}
 end
@@ -194,7 +197,16 @@ local function compileSelected()
 		if not sn.Filesystem.write(out, bundle) then
 			error("Failed to write " .. out)
 		end
+		if writeDebugJson then
+			local debugPath = out .. ".json"
+			if not sn.Filesystem.writeText(debugPath, sn.ShaderBundle.dumpJson(entries)) then
+				error("Failed to write " .. debugPath)
+			end
+		end
 		status = "Wrote " .. out .. " (" .. tostring(bundle:size()) .. " bytes)"
+		if writeDebugJson then
+			status ..= " and " .. out .. ".json"
+		end
 	end)
 
 	if not ok then
@@ -330,6 +342,8 @@ function draw()
 		sn.Gui.checkbox("WGSL", includeWGSL, sn.Rect.new(rightX + (formatW + 6.0) * 2.0, formatY, formatW, 30.0))
 	includeDXIL =
 		sn.Gui.checkbox("DXIL", includeDXIL, sn.Rect.new(rightX + (formatW + 6.0) * 3.0, formatY, formatW, 30.0))
+	writeDebugJson =
+		sn.Gui.checkbox("Debug JSON", writeDebugJson, sn.Rect.new(rightX, formatY + 38.0, math.max(140.0, formatW * 1.5), 30.0))
 
 	local output = "Output: "
 	if selectedFile ~= nil then
@@ -337,12 +351,12 @@ function draw()
 	else
 		output ..= "(select a file)"
 	end
-	drawLabel(output, rightX, formatY + 48.0, 17)
+	drawLabel(output, rightX, formatY + 76.0, 17)
 
-	if sn.Gui.button("Compile to .snb", sn.Rect.new(rightX, formatY + 78.0, 210.0, 44.0)) then
+	if sn.Gui.button("Compile to .snb", sn.Rect.new(rightX, formatY + 106.0, 210.0, 44.0)) then
 		compileSelected()
 	end
-	if sn.Gui.button("Refresh", sn.Rect.new(rightX + 224.0, formatY + 78.0, 132.0, 44.0)) then
+	if sn.Gui.button("Refresh", sn.Rect.new(rightX + 224.0, formatY + 106.0, 132.0, 44.0)) then
 		refreshDirectory()
 	end
 

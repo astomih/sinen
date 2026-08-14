@@ -93,6 +93,31 @@ static int lShaderGetNumUniformBuffers(lua_State *L) {
   return 1;
 }
 
+static void
+pushResourceBindings(lua_State *L,
+                     const Array<Shader::ResourceBinding> &bindings) {
+  lua_createtable(L, static_cast<int>(bindings.size()), 0);
+  for (size_t i = 0; i < bindings.size(); ++i) {
+    const auto &binding = bindings[i];
+    lua_createtable(L, 0, 2);
+    lua_pushlstring(L, binding.name.data(), binding.name.size());
+    lua_setfield(L, -2, "name");
+    lua_pushinteger(L, binding.slot);
+    lua_setfield(L, -2, "slot");
+    lua_rawseti(L, -2, static_cast<lua_Integer>(i + 1));
+  }
+}
+
+static int lShaderGetUniformBufferBindings(lua_State *L) {
+  pushResourceBindings(L, udPtr<Shader>(L, 1)->getUniformBufferBindings());
+  return 1;
+}
+
+static int lShaderGetTextureBindings(lua_State *L) {
+  pushResourceBindings(L, udPtr<Shader>(L, 1)->getTextureBindings());
+  return 1;
+}
+
 void registerShader(lua_State *L) {
   luaL_newmetatable(L, Shader::metaTableName());
   lua_pushvalue(L, -1);
@@ -106,6 +131,9 @@ void registerShader(lua_State *L) {
                             lShaderGetNumStorageTextures);
   Binding::registerFunction(L, "getNumUniformBuffers",
                             lShaderGetNumUniformBuffers);
+  Binding::registerFunction(L, "getUniformBufferBindings",
+                            lShaderGetUniformBufferBindings);
+  Binding::registerFunction(L, "getTextureBindings", lShaderGetTextureBindings);
   lua_pop(L, 1);
 
   pushSnNamed(L, "Shader");

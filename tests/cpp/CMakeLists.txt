@@ -13,6 +13,18 @@ set_property(TARGET sinen_license_report_tests PROPERTY CXX_STANDARD 23)
 
 add_test(NAME sinen_license_report_tests COMMAND sinen_license_report_tests)
 
+if(TARGET sinen_gpu)
+  add_executable(sinen_shader_bundle_tests shader_bundle_tests.cpp)
+  target_link_libraries(sinen_shader_bundle_tests
+                        PRIVATE sinen_gpu GTest::gtest_main)
+  target_compile_definitions(
+    sinen_shader_bundle_tests
+    PRIVATE SINEN_TEST_SOURCE_DIR="${SINEN_SOURCE_DIR}")
+  set_property(TARGET sinen_shader_bundle_tests PROPERTY CXX_STANDARD 23)
+
+  add_test(NAME sinen_shader_bundle_tests COMMAND sinen_shader_bundle_tests)
+endif()
+
 if(TARGET sinen_script)
   if(WIN32 OR EMSCRIPTEN)
     sinen_add_lua_module(sinen_test_native_module native_module_fixture.cpp)

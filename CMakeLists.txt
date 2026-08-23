@@ -18,6 +18,7 @@ option(SINEN_MODULE_GRAPHICS "Build the Graphics module" ON)
 option(SINEN_MODULE_PHYSICS "Build the Physics module" ON)
 option(SINEN_MODULE_SCRIPT "Build the Script module" ON)
 option(SINEN_MODULE_PROFILER "Build the profiler integration module" ON)
+option(SINEN_PLUGIN_NATIVEFS "Build the unrestricted nativefs plugin" OFF)
 
 function(sinen_require_module module dependency)
   if(SINEN_MODULE_${module} AND NOT SINEN_MODULE_${dependency})
@@ -59,6 +60,9 @@ sinen_require_module(SCRIPT GRAPHICS)
 sinen_require_module(SCRIPT PHYSICS)
 if(SINEN_MODULE_PROFILER AND NOT SINEN_MODULE_CORE)
   message(FATAL_ERROR "SINEN_MODULE_PROFILER=ON requires SINEN_MODULE_CORE=ON")
+endif()
+if(SINEN_PLUGIN_NATIVEFS AND NOT SINEN_MODULE_SCRIPT)
+  message(FATAL_ERROR "SINEN_PLUGIN_NATIVEFS=ON requires SINEN_MODULE_SCRIPT=ON")
 endif()
 
 sinen_require_app_module(CORE)
@@ -319,7 +323,7 @@ function(sinen_add_script_module)
   endif()
 endfunction()
 
-# Adds a Lua native module that can be loaded with Script.loadNativeModule.
+# Adds a Lua native module that can be loaded with Script.loadPlugin.
 # Windows modules are DLLs linked to the same Luau revision. Emscripten modules
 # are side-module WebAssembly binaries whose Lua API imports resolve from the
 # Sinen main module.
@@ -394,6 +398,8 @@ if(TARGET sinen_script)
                                            sinen_physics
                                            )
 endif()
+
+add_subdirectory(${SINEN_SOURCE_DIR}/plugins)
 
 sinen_collect_platform_sources(SINEN_PLATFORM_SOURCES)
 

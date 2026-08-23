@@ -653,6 +653,7 @@ export type Event = {
 export type Script = {
 	load: (path: string) -> nil,
 	clearRequireCache: () -> nil,
+	loadPlugin: (name: string) -> (boolean, string?),
 	loadNativeModule: (path: string) -> (boolean, string?),
 }
 

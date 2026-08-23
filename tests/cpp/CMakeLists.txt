@@ -62,6 +62,14 @@ if(TARGET sinen_script)
         SINEN_TEST_FAILING_NATIVE_MODULE_PATH="$<TARGET_FILE:sinen_test_failing_native_module>")
     add_dependencies(sinen_luau_binding_tests sinen_test_native_module
                      sinen_test_failing_native_module)
+    if(TARGET sinen_plugin_nativefs)
+      target_compile_definitions(
+        sinen_luau_binding_tests
+        PRIVATE
+          SINEN_TEST_NATIVEFS_PATH="$<TARGET_FILE:sinen_plugin_nativefs>"
+          SINEN_TEST_SOURCE_DIR="${SINEN_SOURCE_DIR}")
+      add_dependencies(sinen_luau_binding_tests sinen_plugin_nativefs)
+    endif()
   endif()
   target_include_directories(sinen_luau_binding_tests
                              PRIVATE ${SINEN_SOURCE_DIR}/src

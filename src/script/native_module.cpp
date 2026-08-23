@@ -117,6 +117,24 @@ void *findSymbol(LibraryHandle handle, const char *name) {
 void closeLibrary(LibraryHandle handle) { dlclose(handle); }
 #endif
 
+const char *nativeModuleExtension() {
+#if defined(_WIN32)
+  return ".dll";
+#elif defined(__EMSCRIPTEN__)
+  return ".wasm";
+#elif defined(__APPLE__)
+  return ".dylib";
+#else
+  return ".so";
+#endif
+}
+
+std::string pathToUtf8(const std::filesystem::path &path) {
+  const auto encoded = path.u8string();
+  return std::string(reinterpret_cast<const char *>(encoded.data()),
+                     encoded.size());
+}
+
 int callModuleFunction(lua_State *state, sinen_lua_module_open_fn function) {
   return function(state);
 }
@@ -226,6 +244,61 @@ bool NativeModuleManager::load(lua_State *state, std::string_view path) {
   data.modules.push_back(
       LoadedModule{std::string(path), handle, close, true, {}});
   return true;
+}
+
+bool NativeModuleManager::loadPlugin(lua_State *state, std::string_view name) {
+  Impl &data = impl();
+  data.error.clear();
+
+  if (name.empty()) {
+    data.error = "plugin name is empty";
+    return false;
+  }
+  if (name.find('\0') != std::string_view::npos) {
+    data.error = "plugin name contains a null byte";
+    return false;
+  }
+
+  // Plugin lookup is deliberately a name-only operation. In particular,
+  // absolute paths and directory traversal must not turn this API into a
+  // general-purpose native library loader.
+  if (name.find('/') != std::string_view::npos ||
+      name.find('\\') != std::string_view::npos) {
+    data.error = "plugin name must not contain a directory separator";
+    return false;
+  }
+
+  std::filesystem::path fileName;
+  try {
+    fileName = std::filesystem::u8path(name);
+  } catch (const std::filesystem::filesystem_error &error) {
+    data.error = "invalid plugin name: " + std::string(error.what());
+    return false;
+  }
+  if (!fileName.has_filename() || fileName.has_root_path() ||
+      fileName.filename() != fileName) {
+    data.error = "plugin name must name a file in the current directory";
+    return false;
+  }
+  if (!fileName.has_extension()) {
+    fileName += nativeModuleExtension();
+  }
+
+  std::error_code filesystemError;
+  const std::filesystem::path currentDirectory =
+      std::filesystem::current_path(filesystemError);
+  if (filesystemError) {
+    data.error =
+        "cannot resolve current directory: " + filesystemError.message();
+    return false;
+  }
+
+  try {
+    return load(state, pathToUtf8(currentDirectory / fileName));
+  } catch (const std::filesystem::filesystem_error &error) {
+    data.error = "cannot resolve plugin path: " + std::string(error.what());
+    return false;
+  }
 }
 
 void NativeModuleManager::close(lua_State *state) {

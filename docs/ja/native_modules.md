@@ -52,7 +52,7 @@ Windows では `my_native_module.dll` が生成され、同じ Luau リビジョ
 
 ```luau
 local sn = require("@sinen")
-local ok, err = sn.Script.loadNativeModule("plugins/my_native_module.dll")
+local ok, err = sn.Script.loadPlugin("my_native_module")
 if not ok then
   error(err)
 end
@@ -60,6 +60,25 @@ end
 print(sn.Native.hello())
 ```
 
-Emscripten ではパスを `plugins/my_native_module.wasm` などに変更します。Wasm ファイルは、事前ロードまたは JavaScript からの書き込みによって Emscripten の仮想ファイルシステム上に配置してからロードしてください。
+拡張子を省略すると、Windows では `.dll`、Emscripten では `.wasm` など、プラットフォームの拡張子が自動で補われます。プラグイン名にはディレクトリ区切りや絶対パスを指定できず、プロセスのカレントディレクトリ直下からのみロードされます。Wasm ファイルは、事前ロードまたは JavaScript からの書き込みによって Emscripten の仮想ファイルシステム上に配置してからロードしてください。
 
-C++ からは `sinen::Script::loadNativeModule(path)` を使用できます。失敗理由は `sinen::Script::getNativeModuleError()` で取得できます。同じパスを再度指定した場合は既にロード済みとして成功します。
+C++ からは `sinen::Script::load_plugin(name)` を使用できます。失敗理由は `sinen::Script::getPluginError()` で取得できます。同じプラグインを再度指定した場合は既にロード済みとして成功します。従来の `loadNativeModule` は互換エイリアスとして残っていますが、同じカレントディレクトリ制約が適用されます。
+
+## nativefs
+
+`SINEN_PLUGIN_NATIVEFS=ON` で構成すると、サンドボックス外の絶対パスを読み取れる `nativefs` プラグインをビルドします。このオプションはデフォルトで `OFF` です。生成されたプラグインを Sinen と同じカレントディレクトリに置いてロードすると、グローバルテーブル `nativefs` に `read`、`readText`、`exists`、`enumerateDirectory`、`getCurrentDirectory`、`getAbsolutePath` が登録されます。
+
+```luau
+local sn = require("@sinen")
+local ok, err = sn.Script.loadPlugin("nativefs")
+if not ok then
+  error(err)
+end
+
+local text, readError = nativefs.readText("C:/data/example.txt")
+if not text then
+  error(readError)
+end
+```
+
+`nativefs` は意図的に通常の `sn.Filesystem` のサンドボックスを迂回します。信頼できるスクリプトからだけロードしてください。

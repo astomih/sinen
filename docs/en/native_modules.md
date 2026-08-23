@@ -52,7 +52,7 @@ Build the module and Sinen against the same Luau headers and library revision, u
 
 ```luau
 local sn = require("@sinen")
-local ok, err = sn.Script.loadNativeModule("plugins/my_native_module.dll")
+local ok, err = sn.Script.loadPlugin("my_native_module")
 if not ok then
   error(err)
 end
@@ -60,6 +60,25 @@ end
 print(sn.Native.hello())
 ```
 
-For Emscripten, use a path such as `plugins/my_native_module.wasm`. The file must already exist in Emscripten's virtual filesystem, either through preloading or a JavaScript-side write.
+When omitted, the platform extension (`.dll` on Windows, `.wasm` on Emscripten, and so on) is appended automatically. Plugin names cannot contain directory separators or absolute paths; plugins are loaded only from the process current directory. A Wasm file must already exist in Emscripten's virtual filesystem, either through preloading or a JavaScript-side write.
 
-C++ code can call `sinen::Script::loadNativeModule(path)` and retrieve failures through `sinen::Script::getNativeModuleError()`. Loading the same path again succeeds without opening a second copy.
+C++ code can call `sinen::Script::load_plugin(name)` and retrieve failures through `sinen::Script::getPluginError()`. Loading the same plugin again succeeds without opening a second copy. The former `loadNativeModule` API remains as a compatibility alias and applies the same current-directory restriction.
+
+## nativefs
+
+Configure with `SINEN_PLUGIN_NATIVEFS=ON` to build the `nativefs` plugin, which can read absolute paths outside the normal filesystem sandbox. The option is `OFF` by default. Place the resulting plugin in Sinen's current directory and load it to register `read`, `readText`, `exists`, `enumerateDirectory`, `getCurrentDirectory`, and `getAbsolutePath` in the global `nativefs` table.
+
+```luau
+local sn = require("@sinen")
+local ok, err = sn.Script.loadPlugin("nativefs")
+if not ok then
+  error(err)
+end
+
+local text, readError = nativefs.readText("C:/data/example.txt")
+if not text then
+  error(readError)
+end
+```
+
+`nativefs` deliberately bypasses the normal `sn.Filesystem` sandbox. Load it only from trusted scripts.

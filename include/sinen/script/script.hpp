@@ -18,6 +18,11 @@ public:
 
   static void clearRequireCache();
 
+  static bool load_plugin(StringView pluginName);
+  static String getPluginError();
+
+  // Compatibility aliases. Native modules now use the same current-directory
+  // plugin policy as load_plugin.
   static bool loadNativeModule(StringView filePath);
   static String getNativeModuleError();
 

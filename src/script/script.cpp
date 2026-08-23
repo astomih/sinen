@@ -824,24 +824,28 @@ void Script::load(StringView filePath) {
   gBaseDirectory = dirnameLogicalPath(normalized);
   reload = true;
 }
-bool Script::loadNativeModule(StringView filePath) {
+bool Script::load_plugin(StringView pluginName) {
   if (!gLua) {
-    nativeModuleManager().load(nullptr, filePath);
-    Log::error("Cannot load native module before Script::initialize: {}",
+    nativeModuleManager().loadPlugin(nullptr, pluginName);
+    Log::error("Cannot load plugin before Script::initialize: {}",
                nativeModuleManager().lastError());
     return false;
   }
-  if (!nativeModuleManager().load(gLua, filePath)) {
-    Log::error("Failed to load native module '{}': {}", filePath,
+  if (!nativeModuleManager().loadPlugin(gLua, pluginName)) {
+    Log::error("Failed to load plugin '{}': {}", pluginName,
                nativeModuleManager().lastError());
     return false;
   }
   return true;
 }
-String Script::getNativeModuleError() {
+String Script::getPluginError() {
   const std::string &error = nativeModuleManager().lastError();
   return String(error.data(), error.size());
 }
+bool Script::loadNativeModule(StringView filePath) {
+  return load_plugin(filePath);
+}
+String Script::getNativeModuleError() { return getPluginError(); }
 String Script::getFileName() { return gFileName; }
 String Script::getBaseDirectory() { return gBaseDirectory; }
 } // namespace sinen
@@ -863,18 +867,17 @@ static int lScriptClearRequireCache(lua_State *L) {
   Script::clearRequireCache();
   return 0;
 }
-static int lScriptLoadNativeModule(lua_State *L) {
+static int lScriptLoadPlugin(lua_State *L) {
   if (lua_gettop(L) != 1) {
-    return luaLError2(
-        L, "Script.loadNativeModule expects exactly one path argument");
+    return luaLError2(L, "Script.loadPlugin expects exactly one name argument");
   }
-  const char *filePath = luaL_checkstring(L, 1);
-  const bool loaded = Script::loadNativeModule(StringView(filePath));
+  const char *pluginName = luaL_checkstring(L, 1);
+  const bool loaded = Script::load_plugin(StringView(pluginName));
   lua_pushboolean(L, loaded);
   if (loaded) {
     lua_pushnil(L);
   } else {
-    String error = Script::getNativeModuleError();
+    String error = Script::getPluginError();
     lua_pushlstring(L, error.data(), error.size());
   }
   return 2;
@@ -883,7 +886,8 @@ void registerScript(lua_State *L) {
   pushSnNamed(L, "Script");
   Binding::registerFunction(L, "load", lScriptLoad);
   Binding::registerFunction(L, "clearRequireCache", lScriptClearRequireCache);
-  Binding::registerFunction(L, "loadNativeModule", lScriptLoadNativeModule);
+  Binding::registerFunction(L, "loadPlugin", lScriptLoadPlugin);
+  Binding::registerFunction(L, "loadNativeModule", lScriptLoadPlugin);
   lua_pop(L, 1);
 }
 } // namespace sinen

@@ -1,9 +1,0 @@
-#pragma once
-
-#include <string_view>
-
-namespace sinen {
-inline constexpr std::string_view ecsLuauSource = R"SINEN_ECS(
-@SINEN_ECS_LUAU_SOURCE@
-)SINEN_ECS";
-} // namespace sinen

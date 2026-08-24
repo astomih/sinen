@@ -7,7 +7,6 @@ local categories = {
 	{ label = "Physics", dir = "physics" },
 	{ label = "Media", dir = "media" },
 	{ label = "GPU", dir = "gpu" },
-	{ label = "Shader Compiler", dir = "shader_compiler" },
 }
 
 local numCategories = #categories

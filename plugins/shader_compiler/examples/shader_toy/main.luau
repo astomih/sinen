@@ -1,6 +1,10 @@
 local sn = require("@sinen")
 
-local titleFont: sn.Font = sn.Font.new(34)
+local shaderCompilerLoaded, shaderCompilerError = sn.Script.loadPlugin("shader_compiler")
+if not shaderCompilerLoaded then
+	error("Failed to load shader compiler plugin: " .. shaderCompilerError)
+end
+
 local infoFont: sn.Font = sn.Font.new(18)
 local blankTexture: sn.Texture = sn.Texture.new(1, 1)
 
@@ -30,7 +34,6 @@ end
 function setup()
 	sn.Graphics.resetGraphicsPipeline()
 	sn.Graphics.setClearColor(sn.Color.new(0.0, 0.0, 0.0, 1.0))
-
 
 	blankTexture:fill(sn.Color.new(1.0, 1.0, 1.0, 1.0))
 

@@ -1,3 +1,10 @@
 if(SINEN_PLUGIN_NATIVEFS)
   add_subdirectory(nativefs)
 endif()
+
+if(SINEN_PLUGIN_SHADER_COMPILER)
+  if(EMSCRIPTEN)
+    message(FATAL_ERROR "The shader compiler plugin is not supported on Emscripten")
+  endif()
+  add_subdirectory(shader_compiler)
+endif()

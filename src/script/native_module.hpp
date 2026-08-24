@@ -12,6 +12,8 @@ class NativeModuleManager {
 public:
   bool load(lua_State *state, std::string_view path);
   bool loadPlugin(lua_State *state, std::string_view name);
+  void *lastPluginSymbol(const char *name) const;
+  void setLastError(std::string error);
   void close(lua_State *state);
   void unload();
 

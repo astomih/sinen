@@ -1,5 +1,5 @@
-#ifndef SINEN_SHADER_COMPILER_HPP
-#define SINEN_SHADER_COMPILER_HPP
+#ifndef SINEN_PLUGIN_SHADER_COMPILER_HPP
+#define SINEN_PLUGIN_SHADER_COMPILER_HPP
 #include <core/data/array.hpp>
 #include <core/data/string.hpp>
 #include <gpu/shader/shader_format.hpp>
@@ -26,8 +26,6 @@ public:
 
   ShaderCompiler() = default;
 
-  Array<char> compile(StringView sourcePath, ShaderStage stage,
-                      ShaderFormat format, ReflectionData &reflectionData);
   Array<char> compileSource(StringView moduleName, StringView modulePath,
                             StringView source, ShaderStage stage,
                             ShaderFormat format,
@@ -35,4 +33,4 @@ public:
 };
 } // namespace sinen
 
-#endif // SINEN_SHADER_COMPILER_HPP
+#endif // SINEN_PLUGIN_SHADER_COMPILER_HPP

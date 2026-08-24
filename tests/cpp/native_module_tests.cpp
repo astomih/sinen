@@ -3,8 +3,13 @@
 
 #include <gtest/gtest.h>
 
+#include <gpu/shader/shader_compiler_plugin.h>
+#include <gpu/shader/shader_format.hpp>
+#include <gpu/shader/shader_stage.hpp>
+
 #include "script/native_module.hpp"
 
+#include <cstring>
 #include <filesystem>
 #include <string>
 
@@ -129,6 +134,54 @@ TEST(NativeModuleTests, NativeFsPluginReadsAbsolutePaths) {
       std::string_view::npos);
 
   lua_settop(state, 0);
+  modules.close(state);
+  lua_close(state);
+  modules.unload();
+}
+#endif
+
+#ifdef SINEN_TEST_SHADER_COMPILER_PLUGIN_PATH
+TEST(NativeModuleTests, ShaderCompilerPluginCompilesSlangSource) {
+  lua_State *state = luaL_newstate();
+  ASSERT_NE(state, nullptr);
+
+  sinen::NativeModuleManager &modules = sinen::nativeModuleManager();
+  const std::filesystem::path pluginPath =
+      SINEN_TEST_SHADER_COMPILER_PLUGIN_PATH;
+  const ScopedCurrentDirectory currentDirectory(pluginPath.parent_path());
+  ASSERT_TRUE(modules.loadPlugin(state, "shader_compiler"))
+      << modules.lastError();
+
+  void *symbol =
+      modules.lastPluginSymbol(SINEN_SHADER_COMPILER_PLUGIN_API_SYMBOL);
+  ASSERT_NE(symbol, nullptr);
+  sinen_shader_compiler_get_api_fn getApi = nullptr;
+  static_assert(sizeof(getApi) == sizeof(symbol));
+  std::memcpy(&getApi, &symbol, sizeof(getApi));
+  ASSERT_NE(getApi, nullptr);
+  const sinen_shader_compiler_api *api = getApi();
+  ASSERT_NE(api, nullptr);
+  ASSERT_EQ(api->api_version, SINEN_SHADER_COMPILER_PLUGIN_API_VERSION);
+
+  constexpr std::string_view source = R"(
+[shader("vertex")]
+float4 VSMain(float3 position : POSITION) : SV_Position
+{
+    return float4(position, 1.0);
+}
+)";
+  sinen_shader_compiler_result result{};
+  result.struct_size = sizeof(result);
+  ASSERT_TRUE(api->compile(
+      "test_shader", std::strlen("test_shader"), "test_shader.slang",
+      std::strlen("test_shader.slang"), source.data(), source.size(),
+      static_cast<uint32_t>(sinen::ShaderStage::Vertex),
+      static_cast<uint32_t>(sinen::ShaderFormat::SPIRV), &result));
+  EXPECT_NE(result.code, nullptr);
+  EXPECT_GT(result.code_size, 0u);
+  ASSERT_NE(result.release, nullptr);
+  result.release(&result);
+
   modules.close(state);
   lua_close(state);
   modules.unload();

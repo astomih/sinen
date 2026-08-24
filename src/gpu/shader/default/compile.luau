@@ -2,6 +2,11 @@
 
 local sn = require("@sinen")
 
+local shaderCompilerLoaded, shaderCompilerError = sn.Script.loadPlugin("shader_compiler")
+if not shaderCompilerLoaded then
+	error("Failed to load shader compiler plugin: " .. shaderCompilerError)
+end
+
 type SourceTask = {
 	src: string,
 	out: string,
@@ -102,22 +107,21 @@ local function compileTask(task: SourceTask, format: any): sn.ShaderBundleEntry
 			.. formatName(format)
 			.. ")"
 	)
-	local shader = sn.Shader.compile(task.src, task.stage, format)
-	local code = shader:getCode()
-	if code:size() == 0 then
+	local compiled = sn.ShaderCompiler.compile(task.src, task.stage, format)
+	if #compiled.code == 0 then
 		error("Shader compiled with empty code: " .. task.out)
 	end
 	return {
 		src = task.src,
 		stage = task.stage,
 		format = format,
-		numSamplers = shader:getNumSamplers(),
-		numStorageBuffers = shader:getNumStorageBuffers(),
-		numStorageTextures = shader:getNumStorageTextures(),
-		numUniformBuffers = shader:getNumUniformBuffers(),
-		uniformBuffers = shader:getUniformBufferBindings(),
-		textures = shader:getTextureBindings(),
-		code = code,
+		numSamplers = compiled.numSamplers,
+		numStorageBuffers = compiled.numStorageBuffers,
+		numStorageTextures = compiled.numStorageTextures,
+		numUniformBuffers = compiled.numUniformBuffers,
+		uniformBuffers = compiled.uniformBuffers,
+		textures = compiled.textures,
+		code = compiled.code,
 	}
 end
 

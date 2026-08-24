@@ -80,14 +80,25 @@ Array<ShaderBundle::PackEntry> readPackEntries(lua_State *L) {
     lua_pop(L, 1);
 
     lua_getfield(L, entryIndex, "code");
-    auto &buffer = udValue<Buffer>(L, -1);
-    const int bufferSize = buffer.size();
-    if (bufferSize < 0) {
-      luaLError2(L, "ShaderBundle entry %d code is too large",
-                 static_cast<int>(i));
+    if (lua_isstring(L, -1)) {
+      size_t codeSize = 0;
+      const char *code = lua_tolstring(L, -1, &codeSize);
+      if (codeSize > std::numeric_limits<uint32_t>::max()) {
+        luaLError2(L, "ShaderBundle entry %d code is too large",
+                   static_cast<int>(i));
+      }
+      entry.data = code;
+      entry.size = static_cast<uint32_t>(codeSize);
+    } else {
+      auto &buffer = udValue<Buffer>(L, -1);
+      const int bufferSize = buffer.size();
+      if (bufferSize < 0) {
+        luaLError2(L, "ShaderBundle entry %d code is too large",
+                   static_cast<int>(i));
+      }
+      entry.data = buffer.data();
+      entry.size = static_cast<uint32_t>(bufferSize);
     }
-    entry.data = buffer.data();
-    entry.size = static_cast<uint32_t>(bufferSize);
     lua_pop(L, 1);
 
     entry.numSamplers = readOptionalU32Field(L, entryIndex, "numSamplers");

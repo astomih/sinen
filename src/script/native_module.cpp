@@ -6,6 +6,7 @@
 
 #include <cstring>
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -170,6 +171,7 @@ bool protectedModuleCall(lua_State *state, sinen_lua_module_open_fn function,
 struct NativeModuleManager::Impl {
   std::vector<LoadedModule> modules;
   std::string error;
+  std::optional<size_t> lastPluginIndex;
 };
 
 NativeModuleManager::Impl &NativeModuleManager::impl() {
@@ -249,6 +251,7 @@ bool NativeModuleManager::load(lua_State *state, std::string_view path) {
 bool NativeModuleManager::loadPlugin(lua_State *state, std::string_view name) {
   Impl &data = impl();
   data.error.clear();
+  data.lastPluginIndex.reset();
 
   if (name.empty()) {
     data.error = "plugin name is empty";
@@ -294,11 +297,34 @@ bool NativeModuleManager::loadPlugin(lua_State *state, std::string_view name) {
   }
 
   try {
-    return load(state, pathToUtf8(currentDirectory / fileName));
+    const std::string path = pathToUtf8(currentDirectory / fileName);
+    if (!load(state, path)) {
+      return false;
+    }
+    for (size_t i = 0; i < data.modules.size(); ++i) {
+      if (data.modules[i].path == path) {
+        data.lastPluginIndex = i;
+        break;
+      }
+    }
+    return true;
   } catch (const std::filesystem::filesystem_error &error) {
     data.error = "cannot resolve plugin path: " + std::string(error.what());
     return false;
   }
+}
+
+void *NativeModuleManager::lastPluginSymbol(const char *name) const {
+  const Impl &data = impl();
+  if (!name || !data.lastPluginIndex ||
+      *data.lastPluginIndex >= data.modules.size()) {
+    return nullptr;
+  }
+  return findSymbol(data.modules[*data.lastPluginIndex].handle, name);
+}
+
+void NativeModuleManager::setLastError(std::string error) {
+  impl().error = std::move(error);
 }
 
 void NativeModuleManager::close(lua_State *state) {
@@ -323,6 +349,7 @@ void NativeModuleManager::unload() {
     closeLibrary(module->handle);
   }
   data.modules.clear();
+  data.lastPluginIndex.reset();
 }
 
 const std::string &NativeModuleManager::lastError() const {

@@ -1,5 +1,11 @@
 local sn = require("@sinen")
-local G = require("../global")
+
+local shaderCompilerLoaded, shaderCompilerError = sn.Script.loadPlugin("shader_compiler")
+if not shaderCompilerLoaded then
+	error("Failed to load shader compiler plugin: " .. shaderCompilerError)
+end
+
+local font = sn.Font.new(32)
 
 local examples = {
 	{ label = "Minimal Shader", dir = "minimal_shader" },
@@ -16,7 +22,7 @@ end
 
 function update()
 	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then
-		sn.Script.load("/main.luau")
+		sn.Event.quit()
 	end
 end
 
@@ -36,13 +42,13 @@ local function intersectsViewport(rect: sn.Rect, viewport: sn.Rect): boolean
 end
 
 function draw()
-	sn.Gui.setFont(G.font)
+	sn.Gui.setFont(font)
 	sn.Gui.setFontSize(24)
 	local windowSize = sn.Window.size()
 	local title = "Shader Compiler Examples"
 	sn.Graphics.drawText(
 		title,
-		sn.TextStyle.new(G.font, sn.Color.new(1, 1, 1, 1), 24),
+		sn.TextStyle.new(font, sn.Color.new(1, 1, 1, 1), 24),
 		sn.TextTransform.new(sn.Vec2.new(windowSize.x * 0.5, margin), 0.0, sn.Pivot.TopCenter)
 	)
 

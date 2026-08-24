@@ -8,10 +8,8 @@
 #include <core/thread/load_context.hpp>
 
 #include "core/allocator/global_allocator.hpp"
+#include "shader_compiler_service.hpp"
 #include <gpu/shader/shader_bundle.hpp>
-#ifdef SINEN_MODULE_SHADER_COMPILER
-#include <shader_compiler/shader_compiler.hpp>
-#endif
 
 // external
 #include <SDL3/SDL.h>
@@ -70,9 +68,8 @@ static void scheduleOnPreDraw(std::function<void()> f) {
   Graphics::addPreDrawFunc(std::move(f));
 }
 
-#ifdef SINEN_MODULE_SHADER_COMPILER
 static Array<Shader::ResourceBinding>
-copyResourceBindings(const Array<ShaderCompiler::ResourceBinding> &bindings) {
+copyResourceBindings(const Array<CompiledShader::ResourceBinding> &bindings) {
   Array<Shader::ResourceBinding> result;
   result.reserve(bindings.size());
   for (const auto &binding : bindings) {
@@ -80,7 +77,6 @@ copyResourceBindings(const Array<ShaderCompiler::ResourceBinding> &bindings) {
   }
   return result;
 }
-#endif
 } // namespace
 
 Shader::Shader() {
@@ -209,40 +205,6 @@ void Shader::load(StringView vertex_shader, ShaderStage stage) {
       [this] { this->async.reset(); });
 }
 
-void Shader::compile(StringView name, ShaderStage stage, ShaderFormat format) {
-  this->shader.reset();
-  shader = makePtr<Ptr<gpu::Shader>>();
-  resourceBindings = makePtr<ResourceBindings>();
-  this->stage = stage;
-  this->format = format;
-  this->code.clear();
-  this->numSamplers = 0;
-  this->numStorageBuffers = 0;
-  this->numStorageTextures = 0;
-  this->numUniformBuffers = 0;
-
-#ifdef SINEN_MODULE_SHADER_COMPILER
-  ShaderCompiler compiler;
-  ShaderCompiler::ReflectionData reflectionData{};
-  auto compiledCode = compiler.compile(name, stage, format, reflectionData);
-  if (format == ShaderFormat::WGSL &&
-      (compiledCode.empty() || compiledCode.back() != '\0')) {
-    compiledCode.push_back('\0');
-  }
-  this->code = std::move(compiledCode);
-  this->numSamplers = reflectionData.numCombinedSamplers;
-  this->numStorageBuffers = reflectionData.numStorageBuffers;
-  this->numStorageTextures = reflectionData.numStorageTextures;
-  this->numUniformBuffers = reflectionData.numUniformBuffers;
-  resourceBindings->uniformBuffers =
-      copyResourceBindings(reflectionData.uniformBuffers);
-  resourceBindings->textures = copyResourceBindings(reflectionData.textures);
-#else
-  SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-               "ShaderCompiler module is disabled. Cannot compile shader.");
-#endif
-}
-
 void Shader::compileAndLoad(StringView name, ShaderStage stage) {
   GPUBackendAPI backendAPI = Graphics::getDevice()->getBackendAPI();
   ShaderFormat format = ShaderBundle::preferredFormatFor(backendAPI);
@@ -268,33 +230,36 @@ void Shader::compileAndLoad(StringView name, ShaderStage stage,
   const TaskGroup group = LoadContext::current();
   group.add();
 
-#ifdef SINEN_MODULE_SHADER_COMPILER
-  const String str = name.data();
+  const String str(name);
   state->future = globalThreadPool().submit([state, str, stage, format] {
-    ShaderCompiler compiler;
-    ShaderCompiler::ReflectionData reflectionData{};
-    state->spirv = compiler.compile(str, stage, format, reflectionData);
+    String source = AssetReader::readAsString(str);
+    String modulePath = AssetReader::getLoadPath(str);
+    const size_t dot = str.find_last_of('.');
+    const StringView moduleName =
+        dot == String::npos ? StringView(str) : StringView(str).substr(0, dot);
+    CompiledShader compiled;
+    std::string error;
+    if (!compileShaderSource(moduleName, modulePath, source, stage, format,
+                             compiled, error)) {
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s", error.c_str());
+      state->valid = false;
+      return;
+    }
+    state->spirv = std::move(compiled.code);
     if (format == ShaderFormat::WGSL &&
         (state->spirv.empty() || state->spirv.back() != '\0')) {
       state->spirv.push_back('\0');
     }
 
     state->shaderFormat = format;
-    state->numUniformBuffers = reflectionData.numUniformBuffers;
-    state->numSamplers = reflectionData.numCombinedSamplers;
-    state->numStorageBuffers = reflectionData.numStorageBuffers;
-    state->numStorageTextures = reflectionData.numStorageTextures;
-    state->uniformBuffers = copyResourceBindings(reflectionData.uniformBuffers);
-    state->textures = copyResourceBindings(reflectionData.textures);
+    state->numUniformBuffers = compiled.numUniformBuffers;
+    state->numSamplers = compiled.numCombinedSamplers;
+    state->numStorageBuffers = compiled.numStorageBuffers;
+    state->numStorageTextures = compiled.numStorageTextures;
+    state->uniformBuffers = copyResourceBindings(compiled.uniformBuffers);
+    state->textures = copyResourceBindings(compiled.textures);
     state->gpuStage = stage;
   });
-#else
-  state->future = globalThreadPool().submit([state] {
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                 "ShaderCompiler module is disabled. Cannot compile shader.");
-    state->valid = false;
-  });
-#endif
   scheduleFuturePoll(
       state, group, scheduleOnPreDraw,
       [this, state, bindings] {

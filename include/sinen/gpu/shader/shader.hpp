@@ -26,7 +26,6 @@ public:
   static constexpr const char *metaTableName() { return "sn.Shader"; }
 
   void load(StringView name, ShaderStage stage);
-  void compile(StringView name, ShaderStage stage, ShaderFormat format);
   void compileAndLoad(StringView name, ShaderStage stage);
   void compileAndLoad(StringView name, ShaderStage stage, ShaderFormat format);
 

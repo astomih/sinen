@@ -355,7 +355,6 @@ export type ShaderFormat = {
 ---   Ray query in graphics/compute shaders: t[n]/space6 = acceleration structures
 export type Shader = {
 	new: (path: string, shaderStage: ShaderStage) -> Shader,
-	compile: (source: string, shaderStage: ShaderStage, shaderFormat: ShaderFormat) -> Shader,
 	compileAndLoad: (source: string, shaderStage: ShaderStage, shaderFormat: ShaderFormat?) -> Shader,
 	getCode: (self: Shader) -> Buffer,
 	getNumSamplers: (self: Shader) -> number,
@@ -372,10 +371,31 @@ export type ShaderResourceBinding = {
 	slot: number,
 }
 
+export type CompiledShader = {
+	code: string,
+	numSamplers: number,
+	numStorageBuffers: number,
+	numStorageTextures: number,
+	numUniformBuffers: number,
+	uniformBuffers: { ShaderResourceBinding },
+	textures: { ShaderResourceBinding },
+}
+
+export type ShaderCompiler = {
+	compile: (path: string, shaderStage: ShaderStage, shaderFormat: ShaderFormat) -> CompiledShader,
+	compileSource: (
+		moduleName: string,
+		modulePath: string,
+		source: string,
+		shaderStage: ShaderStage,
+		shaderFormat: ShaderFormat
+	) -> CompiledShader,
+}
+
 export type ShaderBundleEntry = {
 	stage: ShaderStage,
 	format: ShaderFormat,
-	code: Buffer,
+	code: Buffer | string,
 	numSamplers: number?,
 	numStorageBuffers: number?,
 	numStorageTextures: number?,
@@ -1036,6 +1056,7 @@ return {
 	AABB = {} :: AABB,
 	Timer = {} :: Timer,
 	Shader = {} :: Shader,
+	ShaderCompiler = {} :: ShaderCompiler,
 	ShaderBundle = {} :: ShaderBundle,
 	Font = {} :: Font,
 	TextStyle = {} :: TextStyle,

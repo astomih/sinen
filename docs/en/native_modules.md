@@ -82,3 +82,23 @@ end
 ```
 
 `nativefs` deliberately bypasses the normal `sn.Filesystem` sandbox. Load it only from trusted scripts.
+
+## shader_compiler
+
+Configure with `SINEN_PLUGIN_SHADER_COMPILER=ON` to build the `shader_compiler` plugin containing Slang and the ShaderCompiler implementation. The option defaults to `ON` for native builds and is forced `OFF` under Emscripten. Slang is not linked into the Sinen application.
+
+```luau
+local sn = require("@sinen")
+local ok, err = sn.Script.loadPlugin("shader_compiler")
+if not ok then
+  error(err)
+end
+
+local compiled = sn.ShaderCompiler.compile(
+  "shader.slang",
+  sn.ShaderStage.Fragment,
+  sn.ShaderFormat.SPIRV
+)
+```
+
+The former `sn.Shader.compile` function has been removed; use `sn.ShaderCompiler.compile` for compilation without loading a GPU shader. Its `code` result is a binary string that can be passed directly to a `sn.ShaderBundle.pack` entry. `sn.Shader.compileAndLoad` also uses this plugin-backed compiler service, so load the plugin before calling it.

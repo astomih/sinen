@@ -1,6 +1,6 @@
 // internal
-#include <script/script.hpp>
 #include <script/bindings/external_file_lua.hpp>
+#include <script/script.hpp>
 
 #include <core/allocator/global_allocator.hpp>
 #include <core/buffer/buffer.hpp>
@@ -10,13 +10,14 @@
 #include <core/logger/log.hpp>
 #include <core/thread/load_context.hpp>
 #include <core/thread/task_group.hpp>
+#include <gpu/shader/shader_compiler_plugin.h>
 #include <graphics/graphics.hpp>
 #include <platform/io/asset_reader.hpp>
 #include <platform/io/filesystem.hpp>
 #include <platform/window/window.hpp>
 
 #include "bindings/binding.hpp"
-#include "ecs_luau.hpp"
+#include "gpu/shader/shader_compiler_service.hpp"
 #include "native_module.hpp"
 #include "require.hpp"
 #include <Luau/Require.h>
@@ -143,24 +144,6 @@ static void installRequireAlias(lua_State *L) {
   lua_setglobal(L, "require");
 }
 
-static bool registerEcs(lua_State *L) {
-  const String source(ecsLuauSource.data(), ecsLuauSource.size());
-  if (luaLoadSource(L, source, "@sinen/ecs", "@sinen/ecs") != LUA_OK) {
-    return false;
-  }
-  if (lua_pcall(L, 0, 1, 0) != LUA_OK) {
-    const char *msg = lua_tostring(L, -1);
-    Log::error("[luau ECS error] {}", msg ? msg : "(unknown error)");
-    lua_pop(L, 1);
-    return false;
-  }
-  lua_getglobal(L, "sn");
-  lua_pushvalue(L, -2);
-  lua_setfield(L, -2, "ECS");
-  lua_pop(L, 2);
-  return true;
-}
-
 static void clearSceneEntryPoints(lua_State *L) {
   lua_pushnil(L);
   lua_setglobal(L, "setup");
@@ -259,6 +242,7 @@ void registerRenderTexture(lua_State *);
 void registerSound(lua_State *);
 void registerSynth(lua_State *);
 void registerShader(lua_State *);
+void registerShaderCompiler(lua_State *);
 void registerShaderBundle(lua_State *);
 void registerPipeline(lua_State *);
 void registerComputeBuffer(lua_State *);
@@ -334,6 +318,7 @@ static void registerAll(lua_State *L) {
   registerSound(L);
   registerSynth(L);
   registerShader(L);
+  registerShaderCompiler(L);
   registerShaderBundle(L);
   registerPipeline(L);
   registerComputeBuffer(L);
@@ -417,11 +402,6 @@ bool Script::initialize(bool isScriptDebug) {
   lua_setglobal(gLua, "sn");
 
   registerAll(gLua);
-  if (!registerEcs(gLua)) {
-    lua_close(gLua);
-    gLua = nullptr;
-    return false;
-  }
   installRequireAlias(gLua);
 
   Graphics::addPostDrawFunc(drawNowLoadingOverlay);
@@ -429,6 +409,7 @@ bool Script::initialize(bool isScriptDebug) {
 }
 void Script::shutdown() {
   if (!gLua) {
+    unregisterShaderCompilerPlugin();
     nativeModuleManager().unload();
     return;
   }
@@ -455,6 +436,7 @@ void Script::shutdown() {
   resetExternalFileCallbacks(gLua);
   lua_gc(gLua, LUA_GCCOLLECT, 0);
   lua_gc(gLua, LUA_GCCOLLECT, 0);
+  unregisterShaderCompilerPlugin();
   nativeModuleManager().close(gLua);
   lua_close(gLua);
   nativeModuleManager().unload();
@@ -835,6 +817,23 @@ bool Script::load_plugin(StringView pluginName) {
     Log::error("Failed to load plugin '{}': {}", pluginName,
                nativeModuleManager().lastError());
     return false;
+  }
+
+  void *compilerSymbol = nativeModuleManager().lastPluginSymbol(
+      SINEN_SHADER_COMPILER_PLUGIN_API_SYMBOL);
+  if (compilerSymbol) {
+    sinen_shader_compiler_get_api_fn getCompilerApi = nullptr;
+    static_assert(sizeof(getCompilerApi) == sizeof(compilerSymbol));
+    std::memcpy(&getCompilerApi, &compilerSymbol, sizeof(getCompilerApi));
+
+    std::string error;
+    if (!getCompilerApi ||
+        !registerShaderCompilerPlugin(getCompilerApi(), error)) {
+      nativeModuleManager().setLastError(std::move(error));
+      Log::error("Failed to register shader compiler plugin '{}': {}",
+                 pluginName, nativeModuleManager().lastError());
+      return false;
+    }
   }
   return true;
 }

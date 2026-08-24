@@ -82,3 +82,23 @@ end
 ```
 
 `nativefs` は意図的に通常の `sn.Filesystem` のサンドボックスを迂回します。信頼できるスクリプトからだけロードしてください。
+
+## shader_compiler
+
+`SINEN_PLUGIN_SHADER_COMPILER=ON` で構成すると、Slang と ShaderCompiler 実装を含む `shader_compiler` プラグインをビルドします。ネイティブビルドではデフォルトで `ON` ですが、Emscriptenでは強制的に `OFF` になります。Slang はSinen本体にはリンクされません。
+
+```luau
+local sn = require("@sinen")
+local ok, err = sn.Script.loadPlugin("shader_compiler")
+if not ok then
+  error(err)
+end
+
+local compiled = sn.ShaderCompiler.compile(
+  "shader.slang",
+  sn.ShaderStage.Fragment,
+  sn.ShaderFormat.SPIRV
+)
+```
+
+従来の `sn.Shader.compile` は廃止されています。コンパイルのみを行う場合は `sn.ShaderCompiler.compile` を使用してください。返される `code` はバイナリ文字列で、そのまま `sn.ShaderBundle.pack` のエントリに渡せます。`sn.Shader.compileAndLoad` もこのプラグインのコンパイラサービスを使用するため、呼び出す前にプラグインをロードする必要があります。

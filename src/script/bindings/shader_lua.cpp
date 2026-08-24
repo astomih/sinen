@@ -5,7 +5,6 @@
 #include <gpu/shader/shader.hpp>
 #include <graphics/graphics.hpp>
 #include <platform/io/asset_reader.hpp>
-#include <shader_compiler/shader_compiler.hpp>
 
 namespace sinen {
 static int lShaderNew(lua_State *L) {
@@ -35,23 +34,6 @@ static int lShaderCompileAndLoad(lua_State *L) {
     shader->compileAndLoad(StringView(name), stage, format);
   } else {
     shader->compileAndLoad(StringView(name), stage);
-  }
-  udPushPtr<Shader>(L, std::move(shader));
-  return 1;
-}
-
-static int lShaderCompile(lua_State *L) {
-  const char *name = luaL_checkstring(L, 1);
-  if (!AssetReader::exists(name)) {
-    return luaLError2(L, "sn.Shader.compile asset not found: %s", name);
-  }
-  ShaderStage stage = static_cast<ShaderStage>(luaL_checkinteger(L, 2));
-  auto format = static_cast<ShaderFormat>(luaL_checkinteger(L, 3));
-  auto shader = makePtr<Shader>();
-  shader->compile(StringView(name), stage, format);
-  if (shader->getCode().size() == 0) {
-    shader.reset();
-    return luaLError2(L, "sn.Shader.compile failed: %s", name);
   }
   udPushPtr<Shader>(L, std::move(shader));
   return 1;
@@ -138,7 +120,6 @@ void registerShader(lua_State *L) {
 
   pushSnNamed(L, "Shader");
   Binding::registerFunction(L, "new", lShaderNew);
-  Binding::registerFunction(L, "compile", lShaderCompile);
   Binding::registerFunction(L, "compileAndLoad", lShaderCompileAndLoad);
   lua_pop(L, 1);
 }

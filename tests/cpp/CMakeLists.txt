@@ -70,6 +70,13 @@ if(TARGET sinen_script)
           SINEN_TEST_SOURCE_DIR="${SINEN_SOURCE_DIR}")
       add_dependencies(sinen_luau_binding_tests sinen_plugin_nativefs)
     endif()
+    if(TARGET sinen_plugin_shader_compiler)
+      target_compile_definitions(
+        sinen_luau_binding_tests
+        PRIVATE
+          SINEN_TEST_SHADER_COMPILER_PLUGIN_PATH="$<TARGET_FILE:sinen_plugin_shader_compiler>")
+      add_dependencies(sinen_luau_binding_tests sinen_plugin_shader_compiler)
+    endif()
   endif()
   target_include_directories(sinen_luau_binding_tests
                              PRIVATE ${SINEN_SOURCE_DIR}/src

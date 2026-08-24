@@ -1,5 +1,11 @@
 local sn = require("@sinen")
-local G = require("../../global")
+
+local shaderCompilerLoaded, shaderCompilerError = sn.Script.loadPlugin("shader_compiler")
+if not shaderCompilerLoaded then
+	error("Failed to load shader compiler plugin: " .. shaderCompilerError)
+end
+
+local font = sn.Font.new(18)
 
 type SlangFile = {
 	name: string,
@@ -138,22 +144,21 @@ end
 
 local function compileEntry(file: SlangFile, format: any): sn.ShaderBundleEntry
 	sn.Log.info("Compiling " .. file.path .. " (" .. selectedStageName .. ", " .. formatName(format) .. ")")
-	local shader = sn.Shader.compile(file.path, selectedStage, format)
-	local code = shader:getCode()
-	if code:size() == 0 then
+	local compiled = sn.ShaderCompiler.compile(file.path, selectedStage, format)
+	if #compiled.code == 0 then
 		error("Shader compiled with empty code: " .. file.path)
 	end
 	return {
 		src = file.path,
 		stage = selectedStage,
 		format = format,
-		numSamplers = shader:getNumSamplers(),
-		numStorageBuffers = shader:getNumStorageBuffers(),
-		numStorageTextures = shader:getNumStorageTextures(),
-		numUniformBuffers = shader:getNumUniformBuffers(),
-		uniformBuffers = shader:getUniformBufferBindings(),
-		textures = shader:getTextureBindings(),
-		code = code,
+		numSamplers = compiled.numSamplers,
+		numStorageBuffers = compiled.numStorageBuffers,
+		numStorageTextures = compiled.numStorageTextures,
+		numUniformBuffers = compiled.numUniformBuffers,
+		uniformBuffers = compiled.uniformBuffers,
+		textures = compiled.textures,
+		code = compiled.code,
 	}
 end
 
@@ -295,7 +300,7 @@ function update()
 end
 
 function draw()
-	sn.Gui.setFont(G.font)
+	sn.Gui.setFont(font)
 	sn.Gui.setFontSize(18)
 
 	local windowSize = sn.Window.size()

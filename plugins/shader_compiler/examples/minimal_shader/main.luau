@@ -1,4 +1,10 @@
 local sn = require("@sinen")
+
+local shaderCompilerLoaded, shaderCompilerError = sn.Script.loadPlugin("shader_compiler")
+if not shaderCompilerLoaded then
+	error("Failed to load shader compiler plugin: " .. shaderCompilerError)
+end
+
 local texture: sn.Texture = sn.Texture.new("logo.png")
 
 local vertexShader: sn.Shader = sn.Shader.compileAndLoad("shader_custom.slang", sn.ShaderStage.Vertex)
@@ -16,7 +22,6 @@ local uniformBuffer: sn.Buffer = sn.Buffer.new({
 	0.5,
 	1.0,
 })
-
 
 function update()
 	if sn.Keyboard.isPressed(sn.Scancode.ESCAPE) then

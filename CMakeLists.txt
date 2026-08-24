@@ -13,12 +13,16 @@ option(SINEN_MODULE_MATH "Build the Math module" ON)
 option(SINEN_MODULE_PLATFORM "Build the Platform module" ON)
 option(SINEN_MODULE_AUDIO "Build the Audio module" ON)
 option(SINEN_MODULE_GPU "Build the GPU module" ON)
-option(SINEN_MODULE_SHADER_COMPILER "Build the ShaderCompiler module" ON)
 option(SINEN_MODULE_GRAPHICS "Build the Graphics module" ON)
 option(SINEN_MODULE_PHYSICS "Build the Physics module" ON)
 option(SINEN_MODULE_SCRIPT "Build the Script module" ON)
 option(SINEN_MODULE_PROFILER "Build the profiler integration module" ON)
 option(SINEN_PLUGIN_NATIVEFS "Build the unrestricted nativefs plugin" OFF)
+option(SINEN_PLUGIN_SHADER_COMPILER "Build the Slang shader compiler plugin" ON)
+if(EMSCRIPTEN)
+  set(SINEN_PLUGIN_SHADER_COMPILER OFF CACHE BOOL
+      "Build the Slang shader compiler plugin" FORCE)
+endif()
 
 function(sinen_require_module module dependency)
   if(SINEN_MODULE_${module} AND NOT SINEN_MODULE_${dependency})
@@ -42,9 +46,6 @@ sinen_require_module(AUDIO MATH)
 sinen_require_module(AUDIO PLATFORM)
 sinen_require_module(GPU CORE)
 sinen_require_module(GPU MATH)
-sinen_require_module(SHADER_COMPILER CORE)
-sinen_require_module(SHADER_COMPILER GPU)
-sinen_require_module(SHADER_COMPILER PLATFORM)
 sinen_require_module(GRAPHICS CORE)
 sinen_require_module(GRAPHICS MATH)
 sinen_require_module(GRAPHICS GPU)
@@ -63,6 +64,10 @@ if(SINEN_MODULE_PROFILER AND NOT SINEN_MODULE_CORE)
 endif()
 if(SINEN_PLUGIN_NATIVEFS AND NOT SINEN_MODULE_SCRIPT)
   message(FATAL_ERROR "SINEN_PLUGIN_NATIVEFS=ON requires SINEN_MODULE_SCRIPT=ON")
+endif()
+if(SINEN_PLUGIN_SHADER_COMPILER AND NOT SINEN_MODULE_SCRIPT)
+  message(FATAL_ERROR
+          "SINEN_PLUGIN_SHADER_COMPILER=ON requires SINEN_MODULE_SCRIPT=ON")
 endif()
 
 sinen_require_app_module(CORE)
@@ -160,7 +165,7 @@ if(SINEN_MODULE_PROFILER)
   add_subdirectory(${SINEN_SOURCE_DIR}/libs/tracy EXCLUDE_FROM_ALL)
 endif()
 
-if(SINEN_MODULE_SHADER_COMPILER)
+if(SINEN_PLUGIN_SHADER_COMPILER)
   add_subdirectory(${SINEN_SOURCE_DIR}/libs/slang EXCLUDE_FROM_ALL)
   sinen_configure_platform_shader_compiler(slang)
 endif()
@@ -172,8 +177,8 @@ target_compile_definitions(
   sinen_common
   INTERFACE $<$<CONFIG:Debug>:SINEN_DEBUG_WORKING_DIRECTORY>)
 
-foreach(SINEN_MODULE_NAME CORE MATH PLATFORM AUDIO GPU SHADER_COMPILER GRAPHICS
-                          PHYSICS SCRIPT PROFILER)
+foreach(SINEN_MODULE_NAME CORE MATH PLATFORM AUDIO GPU GRAPHICS PHYSICS SCRIPT
+                          PROFILER)
   if(SINEN_MODULE_${SINEN_MODULE_NAME})
     target_compile_definitions(
       sinen_common INTERFACE SINEN_MODULE_${SINEN_MODULE_NAME})
@@ -281,12 +286,6 @@ function(sinen_add_gpu_module)
   sinen_configure_platform_gpu(sinen_gpu)
 endfunction()
 
-function(sinen_add_shader_compiler_module)
-  sinen_glob_module(sinen_shader_compiler shader_compiler)
-  target_include_directories(sinen_shader_compiler PRIVATE ${SINEN_SOURCE_DIR}/src)
-  target_link_libraries(sinen_shader_compiler PUBLIC slang)
-endfunction()
-
 function(sinen_add_graphics_module)
   sinen_glob_module(sinen_graphics graphics)
   target_include_directories(
@@ -305,16 +304,13 @@ function(sinen_add_physics_module)
 endfunction()
 
 function(sinen_add_script_module)
-  file(READ ${SINEN_SOURCE_DIR}/api/ecs.luau SINEN_ECS_LUAU_SOURCE)
-  configure_file(${SINEN_SOURCE_DIR}/src/script/ecs_luau.hpp.in
-                 ${CMAKE_CURRENT_BINARY_DIR}/generated/ecs_luau.hpp @ONLY)
   sinen_glob_module(sinen_script script)
   target_include_directories(
     sinen_script
     PUBLIC ${SINEN_SOURCE_DIR}/src/script/include
            ${SINEN_SOURCE_DIR}/libs/luau-debugger/debugger/include
            ${SINEN_SOURCE_DIR}/libs/cppdap/include
-    PRIVATE ${SINEN_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/generated)
+    PRIVATE ${SINEN_SOURCE_DIR}/src)
   target_link_libraries(sinen_script PUBLIC Luau.VM Luau.Compiler Luau.Ast
                                             Luau.Require cppdap
                                             Luau.Debugger SDL3::SDL3)
@@ -360,8 +356,6 @@ sinen_add_enabled_module(SINEN_MODULE_MATH math sinen_math)
 sinen_add_enabled_module(SINEN_MODULE_PLATFORM platform sinen_platform)
 sinen_add_enabled_module(SINEN_MODULE_AUDIO audio sinen_audio)
 sinen_add_enabled_module(SINEN_MODULE_GPU gpu sinen_gpu)
-sinen_add_enabled_module(SINEN_MODULE_SHADER_COMPILER shader_compiler
-                         sinen_shader_compiler)
 sinen_add_enabled_module(SINEN_MODULE_GRAPHICS graphics sinen_graphics)
 sinen_add_enabled_module(SINEN_MODULE_PHYSICS physics sinen_physics)
 sinen_add_enabled_module(SINEN_MODULE_SCRIPT script sinen_script)
@@ -374,9 +368,6 @@ if(TARGET sinen_platform)
 endif()
 if(TARGET sinen_gpu)
   target_link_libraries(sinen_gpu PUBLIC sinen_core sinen_math)
-  if(TARGET sinen_shader_compiler)
-    target_link_libraries(sinen_gpu PUBLIC sinen_shader_compiler)
-  endif()
 endif()
 if(TARGET sinen_graphics)
   target_link_libraries(sinen_graphics PUBLIC sinen_core sinen_math sinen_gpu
@@ -387,10 +378,6 @@ if(TARGET sinen_physics)
 endif()
 if(TARGET sinen_audio)
   target_link_libraries(sinen_audio PUBLIC sinen_core sinen_math sinen_platform)
-endif()
-if(TARGET sinen_shader_compiler)
-  target_link_libraries(sinen_shader_compiler PUBLIC sinen_core sinen_gpu
-                                                     sinen_platform)
 endif()
 if(TARGET sinen_script)
   target_link_libraries(sinen_script PUBLIC sinen_core sinen_math sinen_platform

@@ -165,11 +165,6 @@ if(SINEN_MODULE_PROFILER)
   add_subdirectory(${SINEN_SOURCE_DIR}/libs/tracy EXCLUDE_FROM_ALL)
 endif()
 
-if(SINEN_PLUGIN_SHADER_COMPILER)
-  add_subdirectory(${SINEN_SOURCE_DIR}/libs/slang EXCLUDE_FROM_ALL)
-  sinen_configure_platform_shader_compiler(slang)
-endif()
-
 add_library(sinen_common INTERFACE)
 target_include_directories(sinen_common INTERFACE ${SINEN_INCLUDE_DIRS})
 

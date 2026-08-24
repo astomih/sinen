@@ -84,7 +84,7 @@ function(sinen_generate_license_header output_file)
   sinen_embed_license("RapidJSON" "https://github.com/Tencent/rapidjson"
                       "libs/rapidjson/license.txt" 0 "")
   sinen_embed_license("Slang" "https://github.com/shader-slang/slang"
-                      "libs/slang/LICENSE" 0 "")
+                      "plugins/shader_compiler/libs/slang/LICENSE" 0 "")
   sinen_embed_license("stb" "https://github.com/nothings/stb"
                       "libs/stb/LICENSE" 0 "")
   sinen_embed_license(

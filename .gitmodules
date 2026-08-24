@@ -8,7 +8,7 @@
 	path = libs/rapidjson
 	url = https://github.com/Tencent/rapidjson/
 [submodule "libs/slang"]
-	path = libs/slang
+	path = plugins/shader_compiler/libs/slang
 	url = https://github.com/shader-slang/slang
 [submodule "libs/tinyexr"]
 	path = libs/tinyexr

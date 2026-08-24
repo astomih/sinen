@@ -26,9 +26,9 @@ call :copy_lib "%BUILD_DIR%\libs\box2d\src\lib\libbox2d.so" "%JNI_LIB_DIR%\libbo
 if errorlevel 1 exit /b %ERRORLEVEL%
 call :copy_lib "%BUILD_DIR%\libs\box3d\bin\libbox3d.so" "%JNI_LIB_DIR%\libbox3d.so"
 if errorlevel 1 exit /b %ERRORLEVEL%
-call :copy_lib "%BUILD_DIR%\libs\slang\external\miniz\lib\libminiz.so" "%JNI_LIB_DIR%\libminiz.so"
+call :copy_lib "%BUILD_DIR%\plugins\shader_compiler\libs\slang\external\miniz\lib\libminiz.so" "%JNI_LIB_DIR%\libminiz.so"
 if errorlevel 1 exit /b %ERRORLEVEL%
-call :copy_lib "%BUILD_DIR%\libs\slang\source\slang\lib\libslang-compiler.so" "%JNI_LIB_DIR%\libslang-compiler.so"
+call :copy_lib "%BUILD_DIR%\plugins\shader_compiler\libs\slang\source\slang\lib\libslang-compiler.so" "%JNI_LIB_DIR%\libslang-compiler.so"
 if errorlevel 1 exit /b %ERRORLEVEL%
 call :copy_lib "%BUILD_DIR%\libs\ktx-software\lib\lib\libktx_read.so" "%JNI_LIB_DIR%\libktx_read.so"
 if errorlevel 1 exit /b %ERRORLEVEL%

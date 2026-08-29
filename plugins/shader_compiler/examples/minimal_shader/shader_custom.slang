@@ -1,4 +1,4 @@
-#include "../../common.slang"
+#include "../common.slang"
 
 struct VSInput {
   float3 position : POSITION;

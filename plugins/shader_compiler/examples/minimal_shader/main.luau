@@ -1,8 +1,8 @@
 local sn = require("@sinen")
 
 local shaderCompilerLoaded, shaderCompilerError = sn.Script.loadPlugin("shader_compiler")
-if not shaderCompilerLoaded then
-	error("Failed to load shader compiler plugin: " .. shaderCompilerError)
+if not shaderCompilerLoaded and shaderCompilerError then
+	print("Failed to load shader compiler plugin: " .. shaderCompilerError)
 end
 
 local texture: sn.Texture = sn.Texture.new("logo.png")

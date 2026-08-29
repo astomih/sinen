@@ -1,4 +1,4 @@
-# [Luau API](https://github.com/astomih/sinen/blob/main/api/sinen.luau)
+# [Luau API](https://github.com/astomih/sinen/blob/main/api/sinen/init.luau)
 
 ## 2D Coordinates
 

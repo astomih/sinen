@@ -3,6 +3,7 @@
 #include "gpu/shader/shader_compiler_service.hpp"
 
 #include <platform/io/asset_reader.hpp>
+#include <script/sinen_lua_module.h>
 
 #include <string>
 #include <utility>
@@ -59,13 +60,13 @@ int compileSource(lua_State *state, StringView moduleName,
 int lShaderCompilerCompile(lua_State *state) {
   if (lua_gettop(state) != 3) {
     return luaLError2(
-        state, "sn.ShaderCompiler.compile expects a path, stage, and format");
+        state, "ShaderCompiler.compile expects a path, stage, and format");
   }
   size_t pathSize = 0;
   const char *path = luaL_checklstring(state, 1, &pathSize);
   const StringView pathView(path, pathSize);
   if (!AssetReader::exists(pathView)) {
-    return luaLError2(state, "sn.ShaderCompiler.compile asset not found: %s",
+    return luaLError2(state, "ShaderCompiler.compile asset not found: %s",
                       path);
   }
   const ShaderStage stage =
@@ -84,7 +85,7 @@ int lShaderCompilerCompile(lua_State *state) {
 int lShaderCompilerCompileSource(lua_State *state) {
   if (lua_gettop(state) != 5) {
     return luaLError2(state,
-                      "sn.ShaderCompiler.compileSource expects module name, "
+                      "ShaderCompiler.compileSource expects module name, "
                       "module path, source, stage, and format");
   }
   size_t moduleNameSize = 0;
@@ -104,12 +105,13 @@ int lShaderCompilerCompileSource(lua_State *state) {
 
 } // namespace
 
-void registerShaderCompiler(lua_State *state) {
-  pushSnNamed(state, "ShaderCompiler");
+void registerShaderCompilerPluginBinding(lua_State *state) {
+  lua_newtable(state);
   Binding::registerFunction(state, "compile", lShaderCompilerCompile);
   Binding::registerFunction(state, "compileSource",
                             lShaderCompilerCompileSource);
-  lua_pop(state, 1);
+  lua_setfield(state, LUA_REGISTRYINDEX,
+               SINEN_LUA_PLUGIN_REGISTRY_PREFIX "shader_compiler");
 }
 
 } // namespace sinen

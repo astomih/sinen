@@ -22,12 +22,11 @@ SINEN_LUA_MODULE_EXPORT uint32_t sinen_lua_module_get_api_version(void) {
 }
 
 SINEN_LUA_MODULE_EXPORT int sinen_lua_module_open(lua_State *L) {
-  lua_getglobal(L, "sn");
   lua_newtable(L);
-  lua_pushcfunction(L, hello, "Native.hello");
+  lua_pushcfunction(L, hello, "my_native_module.hello");
   lua_setfield(L, -2, "hello");
-  lua_setfield(L, -2, "Native");
-  lua_pop(L, 1);
+  lua_setfield(L, LUA_REGISTRYINDEX,
+               SINEN_LUA_PLUGIN_REGISTRY_PREFIX "my_native_module");
   return 0;
 }
 ```
@@ -57,16 +56,17 @@ if not ok then
   error(err)
 end
 
-print(sn.Native.hello())
+local nativeModule = require("@sinen/plugin/my_native_module")
+print(nativeModule.hello())
 ```
 
-拡張子を省略すると、Windows では `.dll`、Emscripten では `.wasm` など、プラットフォームの拡張子が自動で補われます。プラグイン名にはディレクトリ区切りや絶対パスを指定できず、プロセスのカレントディレクトリ直下からのみロードされます。Wasm ファイルは、事前ロードまたは JavaScript からの書き込みによって Emscripten の仮想ファイルシステム上に配置してからロードしてください。
+拡張子を省略すると、Windows では `.dll`、Emscripten では `.wasm` など、プラットフォームの拡張子が自動で補われます。プラグイン名にはディレクトリ区切りや絶対パスを指定できず、プロセスのカレントディレクトリ直下からのみロードされます。プラグインのモジュールテーブルは `SINEN_LUA_PLUGIN_REGISTRY_PREFIX` と同じプラグイン名を組み合わせたキーへ登録してください。ロード後は `require("@sinen/plugin/<プラグイン名>")` で取得できます。Wasm ファイルは、事前ロードまたは JavaScript からの書き込みによって Emscripten の仮想ファイルシステム上に配置してからロードしてください。
 
 C++ からは `sinen::Script::load_plugin(name)` を使用できます。失敗理由は `sinen::Script::getPluginError()` で取得できます。同じプラグインを再度指定した場合は既にロード済みとして成功します。従来の `loadNativeModule` は互換エイリアスとして残っていますが、同じカレントディレクトリ制約が適用されます。
 
 ## nativefs
 
-`SINEN_PLUGIN_NATIVEFS=ON` で構成すると、サンドボックス外の絶対パスを読み取れる `nativefs` プラグインをビルドします。このオプションはデフォルトで `OFF` です。生成されたプラグインを Sinen と同じカレントディレクトリに置いてロードすると、グローバルテーブル `nativefs` に `read`、`readText`、`exists`、`enumerateDirectory`、`getCurrentDirectory`、`getAbsolutePath` が登録されます。
+`SINEN_PLUGIN_NATIVEFS=ON` で構成すると、サンドボックス外の絶対パスを読み取れる `nativefs` プラグインをビルドします。このオプションはデフォルトで `OFF` です。生成されたプラグインを Sinen と同じカレントディレクトリに置いてロードすると、`require("@sinen/plugin/nativefs")` から `read`、`readText`、`exists`、`enumerateDirectory`、`getCurrentDirectory`、`getAbsolutePath` を利用できます。
 
 ```luau
 local sn = require("@sinen")
@@ -75,6 +75,7 @@ if not ok then
   error(err)
 end
 
+local nativefs = require("@sinen/plugin/nativefs")
 local text, readError = nativefs.readText("C:/data/example.txt")
 if not text then
   error(readError)
@@ -94,11 +95,12 @@ if not ok then
   error(err)
 end
 
-local compiled = sn.ShaderCompiler.compile(
+local ShaderCompiler = require("@sinen/plugin/shader_compiler")
+local compiled = ShaderCompiler.compile(
   "shader.slang",
   sn.ShaderStage.Fragment,
   sn.ShaderFormat.SPIRV
 )
 ```
 
-従来の `sn.Shader.compile` は廃止されています。コンパイルのみを行う場合は `sn.ShaderCompiler.compile` を使用してください。返される `code` はバイナリ文字列で、そのまま `sn.ShaderBundle.pack` のエントリに渡せます。`sn.Shader.compileAndLoad` もこのプラグインのコンパイラサービスを使用するため、呼び出す前にプラグインをロードする必要があります。
+従来の `sn.Shader.compile` は廃止されています。コンパイルのみを行う場合は `require("@sinen/plugin/shader_compiler")` で取得した `ShaderCompiler.compile` を使用してください。返される `code` はバイナリ文字列で、そのまま `sn.ShaderBundle.pack` のエントリに渡せます。`sn.Shader.compileAndLoad` もこのプラグインのコンパイラサービスを使用するため、呼び出す前にプラグインをロードする必要があります。

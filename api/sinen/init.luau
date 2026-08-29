@@ -371,27 +371,6 @@ export type ShaderResourceBinding = {
 	slot: number,
 }
 
-export type CompiledShader = {
-	code: string,
-	numSamplers: number,
-	numStorageBuffers: number,
-	numStorageTextures: number,
-	numUniformBuffers: number,
-	uniformBuffers: { ShaderResourceBinding },
-	textures: { ShaderResourceBinding },
-}
-
-export type ShaderCompiler = {
-	compile: (path: string, shaderStage: ShaderStage, shaderFormat: ShaderFormat) -> CompiledShader,
-	compileSource: (
-		moduleName: string,
-		modulePath: string,
-		source: string,
-		shaderStage: ShaderStage,
-		shaderFormat: ShaderFormat
-	) -> CompiledShader,
-}
-
 export type ShaderBundleEntry = {
 	stage: ShaderStage,
 	format: ShaderFormat,
@@ -1056,7 +1035,6 @@ return {
 	AABB = {} :: AABB,
 	Timer = {} :: Timer,
 	Shader = {} :: Shader,
-	ShaderCompiler = {} :: ShaderCompiler,
 	ShaderBundle = {} :: ShaderBundle,
 	Font = {} :: Font,
 	TextStyle = {} :: TextStyle,

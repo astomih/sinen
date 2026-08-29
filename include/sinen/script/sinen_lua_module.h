@@ -15,6 +15,13 @@ typedef struct lua_State lua_State;
 #define SINEN_LUA_MODULE_OPEN_SYMBOL "sinen_lua_module_open"
 #define SINEN_LUA_MODULE_CLOSE_SYMBOL "sinen_lua_module_close"
 
+/* Plugin modules exposed to Luau are stored in the registry under this
+ * prefix. A plugin named "example" should register its module table using
+ * SINEN_LUA_PLUGIN_REGISTRY_PREFIX "example", then scripts can retrieve it
+ * with require("@sinen/plugin/example"). */
+#define SINEN_LUA_PLUGIN_REQUIRE_PREFIX "@sinen/plugin/"
+#define SINEN_LUA_PLUGIN_REGISTRY_PREFIX "sinen.plugin."
+
 #if defined(_WIN32)
 #define SINEN_LUA_MODULE_EXPORT __declspec(dllexport)
 #elif defined(__GNUC__) || defined(__clang__)

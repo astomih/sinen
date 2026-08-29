@@ -6,6 +6,9 @@
 #include <gtest/gtest.h>
 
 #include "script/bindings/binding.hpp"
+#include "script/require_alias.hpp"
+
+#include <script/sinen_lua_module.h>
 
 #include <new>
 #include <string>
@@ -106,6 +109,15 @@ int multiply(lua_State *state) {
   return 1;
 }
 
+int fallbackRequire(lua_State *state) {
+  size_t moduleNameSize = 0;
+  const char *moduleName = luaL_checklstring(state, 1, &moduleNameSize);
+  const std::string result =
+      "fallback:" + std::string(moduleName, moduleNameSize);
+  lua_pushlstring(state, result.data(), result.size());
+  return 1;
+}
+
 struct LuaState {
   LuaState() : state(luaL_newstate()) {
     if (state) {
@@ -171,4 +183,59 @@ TEST(LuauBindingTests, SinenBindingRegistersFunctionsAndValues) {
                                       : "unknown Luau runtime error");
 
   EXPECT_EQ(lua_tointeger(lua.state, -1), 84);
+}
+
+TEST(LuauBindingTests, RequireSeparatesCoreAndPluginModules) {
+  LuaState lua;
+  ASSERT_NE(lua.state, nullptr);
+
+  lua_newtable(lua.state);
+  lua_pushinteger(lua.state, 42);
+  lua_setfield(lua.state, -2, "answer");
+  lua_setglobal(lua.state, "sn");
+
+  lua_newtable(lua.state);
+  lua_pushboolean(lua.state, true);
+  lua_setfield(lua.state, -2, "available");
+  lua_setfield(lua.state, LUA_REGISTRYINDEX,
+               SINEN_LUA_PLUGIN_REGISTRY_PREFIX "nativefs");
+
+  lua_pushcfunction(lua.state, fallbackRequire, "fallback require");
+  lua_setglobal(lua.state, "require");
+  sinen::installSinenRequireAlias(lua.state);
+
+  constexpr const char *source = R"(
+local sn = require("@sinen")
+local nativefs = require("@sinen/plugin/nativefs")
+local fallback = require("./module")
+return sn.answer, nativefs.available, fallback
+)";
+
+  ASSERT_EQ(loadSource(lua.state, source), LUA_OK)
+      << (lua_tostring(lua.state, -1) ? lua_tostring(lua.state, -1)
+                                      : "unknown Luau load error");
+  ASSERT_EQ(lua_pcall(lua.state, 0, 3, 0), LUA_OK)
+      << (lua_tostring(lua.state, -1) ? lua_tostring(lua.state, -1)
+                                      : "unknown Luau runtime error");
+
+  EXPECT_EQ(lua_tointeger(lua.state, -3), 42);
+  EXPECT_TRUE(lua_toboolean(lua.state, -2));
+  EXPECT_STREQ(lua_tostring(lua.state, -1), "fallback:./module");
+}
+
+TEST(LuauBindingTests, RequireReportsPluginThatHasNotBeenLoaded) {
+  LuaState lua;
+  ASSERT_NE(lua.state, nullptr);
+
+  lua_pushcfunction(lua.state, fallbackRequire, "fallback require");
+  lua_setglobal(lua.state, "require");
+  sinen::installSinenRequireAlias(lua.state);
+
+  constexpr const char *source = "return require(\"@sinen/plugin/missing\")";
+  ASSERT_EQ(loadSource(lua.state, source), LUA_OK);
+  ASSERT_EQ(lua_pcall(lua.state, 0, 1, 0), LUA_ERRRUN);
+  ASSERT_NE(lua_tostring(lua.state, -1), nullptr);
+  EXPECT_NE(std::string_view(lua_tostring(lua.state, -1))
+                .find("sn.Script.loadPlugin(\"missing\") first"),
+            std::string_view::npos);
 }

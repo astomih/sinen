@@ -7,6 +7,23 @@ local describe = test.describe
 local it = test.it
 local expect = test.expect
 
+-- Kept uncalled: this verifies plugin modules resolve through the public
+-- @sinen/plugin namespace without requiring native plugins in this test.
+local function pluginApiTypecheck()
+	local nativefs = require("@sinen/plugin/nativefs")
+	local ShaderCompiler = require("@sinen/plugin/shader_compiler")
+
+	local exists: boolean = nativefs.exists(".")
+	local compiled =
+		ShaderCompiler.compile("shader.slang", sn.ShaderStage.Fragment, sn.ShaderFormat.SPIRV)
+	local code: string = compiled.code
+	return exists, code
+end
+
+if false then
+	pluginApiTypecheck()
+end
+
 -- Kept uncalled: this verifies the public render-pass surface during Luau
 -- analysis without requiring a graphics device in the unit-test process.
 local function renderPassApiTypecheck(

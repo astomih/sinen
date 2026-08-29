@@ -4,6 +4,7 @@ local shaderCompilerLoaded, shaderCompilerError = sn.Script.loadPlugin("shader_c
 if not shaderCompilerLoaded then
 	error("Failed to load shader compiler plugin: " .. shaderCompilerError)
 end
+local ShaderCompiler = require("@sinen/plugin/shader_compiler")
 
 local font = sn.Font.new(18)
 
@@ -144,7 +145,7 @@ end
 
 local function compileEntry(file: SlangFile, format: any): sn.ShaderBundleEntry
 	sn.Log.info("Compiling " .. file.path .. " (" .. selectedStageName .. ", " .. formatName(format) .. ")")
-	local compiled = sn.ShaderCompiler.compile(file.path, selectedStage, format)
+	local compiled = ShaderCompiler.compile(file.path, selectedStage, format)
 	if #compiled.code == 0 then
 		error("Shader compiled with empty code: " .. file.path)
 	end
@@ -347,8 +348,11 @@ function draw()
 		sn.Gui.checkbox("WGSL", includeWGSL, sn.Rect.new(rightX + (formatW + 6.0) * 2.0, formatY, formatW, 30.0))
 	includeDXIL =
 		sn.Gui.checkbox("DXIL", includeDXIL, sn.Rect.new(rightX + (formatW + 6.0) * 3.0, formatY, formatW, 30.0))
-	writeDebugJson =
-		sn.Gui.checkbox("Debug JSON", writeDebugJson, sn.Rect.new(rightX, formatY + 38.0, math.max(140.0, formatW * 1.5), 30.0))
+	writeDebugJson = sn.Gui.checkbox(
+		"Debug JSON",
+		writeDebugJson,
+		sn.Rect.new(rightX, formatY + 38.0, math.max(140.0, formatW * 1.5), 30.0)
+	)
 
 	local output = "Output: "
 	if selectedFile ~= nil then

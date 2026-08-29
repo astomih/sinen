@@ -6,6 +6,7 @@
 #include <gpu/shader/shader_compiler_plugin.h>
 #include <gpu/shader/shader_format.hpp>
 #include <gpu/shader/shader_stage.hpp>
+#include <script/sinen_lua_module.h>
 
 #include "script/native_module.hpp"
 
@@ -111,7 +112,8 @@ TEST(NativeModuleTests, NativeFsPluginReadsAbsolutePaths) {
   const ScopedCurrentDirectory currentDirectory(pluginPath.parent_path());
 
   ASSERT_TRUE(modules.loadPlugin(state, "nativefs")) << modules.lastError();
-  lua_getglobal(state, "nativefs");
+  lua_getfield(state, LUA_REGISTRYINDEX,
+               SINEN_LUA_PLUGIN_REGISTRY_PREFIX "nativefs");
   ASSERT_TRUE(lua_istable(state, -1));
   lua_getfield(state, -1, "readText");
   ASSERT_TRUE(lua_isfunction(state, -1));
@@ -133,8 +135,14 @@ TEST(NativeModuleTests, NativeFsPluginReadsAbsolutePaths) {
       std::string_view(contents, contentsSize).find("SINEN_PLUGIN_NATIVEFS"),
       std::string_view::npos);
 
+  lua_getglobal(state, "nativefs");
+  EXPECT_TRUE(lua_isnil(state, -1));
+
   lua_settop(state, 0);
   modules.close(state);
+  lua_getfield(state, LUA_REGISTRYINDEX,
+               SINEN_LUA_PLUGIN_REGISTRY_PREFIX "nativefs");
+  EXPECT_TRUE(lua_isnil(state, -1));
   lua_close(state);
   modules.unload();
 }

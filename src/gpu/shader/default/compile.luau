@@ -6,6 +6,7 @@ local shaderCompilerLoaded, shaderCompilerError = sn.Script.loadPlugin("shader_c
 if not shaderCompilerLoaded then
 	error("Failed to load shader compiler plugin: " .. shaderCompilerError)
 end
+local ShaderCompiler = require("@sinen/plugin/shader_compiler")
 
 type SourceTask = {
 	src: string,
@@ -107,7 +108,7 @@ local function compileTask(task: SourceTask, format: any): sn.ShaderBundleEntry
 			.. formatName(format)
 			.. ")"
 	)
-	local compiled = sn.ShaderCompiler.compile(task.src, task.stage, format)
+	local compiled = ShaderCompiler.compile(task.src, task.stage, format)
 	if #compiled.code == 0 then
 		error("Shader compiled with empty code: " .. task.out)
 	end

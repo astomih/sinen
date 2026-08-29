@@ -22,12 +22,11 @@ SINEN_LUA_MODULE_EXPORT uint32_t sinen_lua_module_get_api_version(void) {
 }
 
 SINEN_LUA_MODULE_EXPORT int sinen_lua_module_open(lua_State *L) {
-  lua_getglobal(L, "sn");
   lua_newtable(L);
-  lua_pushcfunction(L, hello, "Native.hello");
+  lua_pushcfunction(L, hello, "my_native_module.hello");
   lua_setfield(L, -2, "hello");
-  lua_setfield(L, -2, "Native");
-  lua_pop(L, 1);
+  lua_setfield(L, LUA_REGISTRYINDEX,
+               SINEN_LUA_PLUGIN_REGISTRY_PREFIX "my_native_module");
   return 0;
 }
 ```
@@ -57,16 +56,17 @@ if not ok then
   error(err)
 end
 
-print(sn.Native.hello())
+local nativeModule = require("@sinen/plugin/my_native_module")
+print(nativeModule.hello())
 ```
 
-When omitted, the platform extension (`.dll` on Windows, `.wasm` on Emscripten, and so on) is appended automatically. Plugin names cannot contain directory separators or absolute paths; plugins are loaded only from the process current directory. A Wasm file must already exist in Emscripten's virtual filesystem, either through preloading or a JavaScript-side write.
+When omitted, the platform extension (`.dll` on Windows, `.wasm` on Emscripten, and so on) is appended automatically. Plugin names cannot contain directory separators or absolute paths; plugins are loaded only from the process current directory. Register a plugin's module table under a registry key formed from `SINEN_LUA_PLUGIN_REGISTRY_PREFIX` and the same plugin name. After loading, scripts can retrieve it with `require("@sinen/plugin/<plugin name>")`. A Wasm file must already exist in Emscripten's virtual filesystem, either through preloading or a JavaScript-side write.
 
 C++ code can call `sinen::Script::load_plugin(name)` and retrieve failures through `sinen::Script::getPluginError()`. Loading the same plugin again succeeds without opening a second copy. The former `loadNativeModule` API remains as a compatibility alias and applies the same current-directory restriction.
 
 ## nativefs
 
-Configure with `SINEN_PLUGIN_NATIVEFS=ON` to build the `nativefs` plugin, which can read absolute paths outside the normal filesystem sandbox. The option is `OFF` by default. Place the resulting plugin in Sinen's current directory and load it to register `read`, `readText`, `exists`, `enumerateDirectory`, `getCurrentDirectory`, and `getAbsolutePath` in the global `nativefs` table.
+Configure with `SINEN_PLUGIN_NATIVEFS=ON` to build the `nativefs` plugin, which can read absolute paths outside the normal filesystem sandbox. The option is `OFF` by default. Place the resulting plugin in Sinen's current directory and load it to access `read`, `readText`, `exists`, `enumerateDirectory`, `getCurrentDirectory`, and `getAbsolutePath` through `require("@sinen/plugin/nativefs")`.
 
 ```luau
 local sn = require("@sinen")
@@ -75,6 +75,7 @@ if not ok then
   error(err)
 end
 
+local nativefs = require("@sinen/plugin/nativefs")
 local text, readError = nativefs.readText("C:/data/example.txt")
 if not text then
   error(readError)
@@ -94,11 +95,12 @@ if not ok then
   error(err)
 end
 
-local compiled = sn.ShaderCompiler.compile(
+local ShaderCompiler = require("@sinen/plugin/shader_compiler")
+local compiled = ShaderCompiler.compile(
   "shader.slang",
   sn.ShaderStage.Fragment,
   sn.ShaderFormat.SPIRV
 )
 ```
 
-The former `sn.Shader.compile` function has been removed; use `sn.ShaderCompiler.compile` for compilation without loading a GPU shader. Its `code` result is a binary string that can be passed directly to a `sn.ShaderBundle.pack` entry. `sn.Shader.compileAndLoad` also uses this plugin-backed compiler service, so load the plugin before calling it.
+The former `sn.Shader.compile` function has been removed; use `ShaderCompiler.compile` from `require("@sinen/plugin/shader_compiler")` for compilation without loading a GPU shader. Its `code` result is a binary string that can be passed directly to a `sn.ShaderBundle.pack` entry. `sn.Shader.compileAndLoad` also uses this plugin-backed compiler service, so load the plugin before calling it.

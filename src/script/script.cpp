@@ -20,6 +20,7 @@
 #include "gpu/shader/shader_compiler_service.hpp"
 #include "native_module.hpp"
 #include "require.hpp"
+#include "require_alias.hpp"
 #include <Luau/Require.h>
 
 #include <debugger.h>
@@ -117,32 +118,6 @@ enum class ScriptScenePhase {
 };
 static ScriptScenePhase gScenePhase = ScriptScenePhase::Running;
 static TaskGroup gSetupTasks;
-
-static int requireWithSinenAlias(lua_State *L) {
-  const char *moduleName = luaL_checkstring(L, 1);
-  if (std::strcmp(moduleName, "@sinen") == 0) {
-    lua_getglobal(L, "sn");
-    return 1;
-  }
-
-  lua_pushvalue(L, lua_upvalueindex(1));
-  lua_insert(L, 1);
-
-  const int nargs = lua_gettop(L) - 1;
-  lua_call(L, nargs, LUA_MULTRET);
-  return lua_gettop(L);
-}
-
-static void installRequireAlias(lua_State *L) {
-  lua_getglobal(L, "require");
-  if (!lua_isfunction(L, -1)) {
-    lua_pop(L, 1);
-    return;
-  }
-
-  lua_pushcclosure(L, requireWithSinenAlias, "require", 1);
-  lua_setglobal(L, "require");
-}
 
 static void clearSceneEntryPoints(lua_State *L) {
   lua_pushnil(L);
@@ -242,7 +217,7 @@ void registerRenderTexture(lua_State *);
 void registerSound(lua_State *);
 void registerSynth(lua_State *);
 void registerShader(lua_State *);
-void registerShaderCompiler(lua_State *);
+void registerShaderCompilerPluginBinding(lua_State *);
 void registerShaderBundle(lua_State *);
 void registerPipeline(lua_State *);
 void registerComputeBuffer(lua_State *);
@@ -318,7 +293,6 @@ static void registerAll(lua_State *L) {
   registerSound(L);
   registerSynth(L);
   registerShader(L);
-  registerShaderCompiler(L);
   registerShaderBundle(L);
   registerPipeline(L);
   registerComputeBuffer(L);
@@ -402,7 +376,7 @@ bool Script::initialize(bool isScriptDebug) {
   lua_setglobal(gLua, "sn");
 
   registerAll(gLua);
-  installRequireAlias(gLua);
+  installSinenRequireAlias(gLua);
 
   Graphics::addPostDrawFunc(drawNowLoadingOverlay);
   return true;
@@ -834,6 +808,7 @@ bool Script::load_plugin(StringView pluginName) {
                  pluginName, nativeModuleManager().lastError());
       return false;
     }
+    registerShaderCompilerPluginBinding(gLua);
   }
   return true;
 }

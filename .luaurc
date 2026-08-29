@@ -9,7 +9,7 @@
       "FunctionUnused": false
     },
     "aliases": {
-      "sinen": "./api/sinen.luau"
+      "sinen": "./api/sinen"
     },
     "lintErrors": false,
     "typeErrors": true

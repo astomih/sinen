@@ -143,13 +143,15 @@ int open(lua_State *state) {
   setFunction(state, "enumerateDirectory", enumerateDirectory);
   setFunction(state, "getCurrentDirectory", getCurrentDirectory);
   setFunction(state, "getAbsolutePath", getAbsolutePath);
-  lua_setglobal(state, "nativefs");
+  lua_setfield(state, LUA_REGISTRYINDEX,
+               SINEN_LUA_PLUGIN_REGISTRY_PREFIX "nativefs");
   return 0;
 }
 
 int close(lua_State *state) {
   lua_pushnil(state);
-  lua_setglobal(state, "nativefs");
+  lua_setfield(state, LUA_REGISTRYINDEX,
+               SINEN_LUA_PLUGIN_REGISTRY_PREFIX "nativefs");
   return 0;
 }
 
